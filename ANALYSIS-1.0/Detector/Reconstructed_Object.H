@@ -30,11 +30,12 @@ namespace ANALYSIS {
     ATOOLS::Vec4D Mom()     const { return m_mom; }
     ATOOLS::Vec4D TrueMom() const;
     
-    void   SetFlav(const ATOOLS::Flavour flav) { m_flav = flav; }
-
-    void   CorrectE(const double inv) { m_E/=inv; }
+    void   CorrectE(const double inv);
+    void   CorrectTruth(const double val);
     void   Update();
     void   SetUsed(const bool);
+
+    void SetFlavour(const ATOOLS::Flavour flav) { m_flav = flav; }
 
     void   SetIncludeTracks(const bool it) { m_includetracks = it; }
 

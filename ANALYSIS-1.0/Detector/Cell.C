@@ -97,7 +97,7 @@ void Cell::Print() const {
       msg_Out()<<"   "<<part->first<<std::endl;
       msg_Out()<<"   "<<part->first->Flav()<<" "<<part->first->Momentum()
 	       <<" ["<<part->first->Momentum().Eta()<<","<<part->first->Momentum().Phi()<<"]"
-	       <<" -> "<<part->second<<std::endl;
+	       <<" -> "<<part->second<<" = "<<part->first->Momentum()[0]/part->second<<"."<<std::endl;
     }
   }
   else

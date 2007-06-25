@@ -44,6 +44,8 @@ namespace ANALYSIS {
     Cell *        LocateCell(double);
     void          SetUsed(const bool used)   { m_used = used; }
 
+    void          MultiplyDeposit(const double fac) { m_summedE *= fac; }
+
     bool          Used()               const { return m_used; }
     double        TotalDeposit()       const { return m_summedE; }
     double        EPerp()              const { return m_summedE*m_sintheta; }

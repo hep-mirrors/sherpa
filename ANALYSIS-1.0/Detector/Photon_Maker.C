@@ -102,7 +102,6 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
   IsolateClusters();
   CorrectEnergies();
 
-  DropUsedCells();
   Particle * part;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
@@ -111,6 +110,7 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
     m_objects.pop_front();
     METvector -= part->Momentum(); 
   }
+  DropUsedCells();
 }
 
 void Photon_Maker::BuildMatchedClusters() {
@@ -184,6 +184,6 @@ void Photon_Maker::IsolateClusters() {
 
 void Photon_Maker::CorrectEnergies() {
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
-    (*olit)->CorrectE(m_inv);
+    (*olit)->CorrectE(1./m_inv);
   }  
 }

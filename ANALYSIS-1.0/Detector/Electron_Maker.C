@@ -104,7 +104,6 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & ME
   IsolateClusters();
   CorrectEnergies();
 
-  DropUsedCells();
   Particle * part;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
@@ -113,6 +112,7 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & ME
     plist->push_back(part);
     METvector -= part->Momentum(); 
   }
+  DropUsedCells();
 }
 
 void Electron_Maker::BuildMatchedClusters() {
@@ -213,6 +213,6 @@ void Electron_Maker::IsolateClusters() {
 
 void Electron_Maker::CorrectEnergies() {
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
-    (*olit)->CorrectE(m_inv);
+    (*olit)->CorrectE(1./m_inv);
   }  
 }

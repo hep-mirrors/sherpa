@@ -43,7 +43,9 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 MET_Maker::MET_Maker(Primitive_Analysis * ana,const std::string mode) : 
   Object_Definition_Base(ana,"METMaker",mode),
-  m_cutHad(1.), m_cutEM(1.)
+  m_cutHad(1.), m_cutEM(1.),
+  m_Rinfty_ECal(0.78), m_ampl_ECal(0.37), m_slope_ECal(0.2),
+  m_Rinfty_HCal(0.81), m_ampl_HCal(0.45), m_slope_HCal(0.2)
 {  
   m_kfcode=kf::none;
   GetElements();
@@ -67,7 +69,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
        cit!=cells->end();) {
     cell = (*cit);
     if (!cell->Used() && cell->TotalDeposit()>m_cutEM) {
-      METvector -= cell->TotalDeposit()*cell->Direction();
+      METvector -= ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
       cell->Reset();
       cit = cells->erase(cit);
     }
@@ -82,7 +84,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
        cit!=cells->end();) {
     cell = (*cit);
     if (!cell->Used() && cell->TotalDeposit()>m_cutHad) {
-      METvector -= cell->TotalDeposit()*cell->Direction();
+      METvector -= ReconstructedE_HCal(cell->TotalDeposit())*cell->Direction();
       cell->Reset();
       cit = cells->erase(cit);
     }
@@ -113,4 +115,13 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   METvector[0] = METvector.PPerp();
   Particle * part = new Particle(0,Flavour(m_kfcode),METvector,'r');
   plist->push_back(part);
+}
+
+
+double MET_Maker::ReconstructedE_ECal(const double dep) {
+  return m_Rinfty_ECal-m_ampl_ECal*exp(-m_slope_ECal*dep);
+}
+
+double MET_Maker::ReconstructedE_HCal(const double dep) {
+  return m_Rinfty_HCal-m_ampl_HCal*exp(-m_slope_HCal*dep);
 }

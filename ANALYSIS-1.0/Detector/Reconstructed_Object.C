@@ -1,5 +1,6 @@
 #include "Reconstructed_Object.H"
 #include "Message.H"
+#include "Random.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -70,6 +71,31 @@ Vec4D Reconstructed_Object::TrueMom() const {
     }
   }
   return trackmom+cellmom;
+}
+
+void Reconstructed_Object::CorrectTruth(const double val) {
+  double rana,dummy,factor;
+  if (m_includetracks) {
+    for (size_t i=0;i<m_tracks.size();i++) {
+      do { ran.Gaussian(rana,dummy); } while (dabs(rana)>2.*M_PI);
+      factor = 1.+val*rana/M_PI;
+      m_tracks[i]->mom = factor*m_tracks[i]->mom;
+    }
+  }
+  for (size_t i=0;i<m_cells.size();i++)  {
+    do { ran.Gaussian(rana,dummy); } while (dabs(rana)>2.*M_PI);
+    factor = 1.+val*rana/M_PI;
+    m_cells[i]->MultiplyDeposit(factor);
+  }
+  //Update();
+  //std::cout<<METHOD<<"  mom after  = "<<m_mom<<std::endl;
+}
+
+void Reconstructed_Object::CorrectE(const double val) {
+  if (m_includetracks) {
+    for (size_t i=0;i<m_tracks.size();i++) m_tracks[i]->mom = val*m_tracks[i]->mom;
+  }
+  for (size_t i=0;i<m_cells.size();i++)  m_cells[i]->MultiplyDeposit(val);
 }
 
 Particle * Reconstructed_Object::CreateParticle() { 

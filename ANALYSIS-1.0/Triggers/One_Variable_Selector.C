@@ -367,7 +367,10 @@ int One_Variable_Selector::Evaluate
     moms.clear();
     return -1;
   }
-  if (j>0 && m_flavs[i][j]==m_flavs[i][j-1]) ++k;
+  if (j>0) {
+    if (m_flavs[i][j]!=m_flavs[i][j-1]) k=0;
+    else ++k;
+  }
   int o(-1);
   for (;k<reflist.size();++k) {
     if (reflist[k]->Flav()==m_flavs[i][j]) {

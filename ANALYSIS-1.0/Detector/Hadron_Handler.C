@@ -3,6 +3,14 @@
 #include "Random.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "CXXFLAGS.H"
+
+#ifdef USING__ROOT
+#include "Scaling.H"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "My_Root.H"
+#endif 
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -80,6 +88,12 @@ Hadron_Handler::Hadron_Handler(Primitive_Analysis * ana) :
   m_dep_mean_ECal(0.5),m_dep_width_ECal(0.1),m_dep_mean_HCal(0.5),m_dep_width_HCal(0.1)
 {
   p_qualifier = Particle_Qualifier_Getter::GetObject("3","hadron");
+#ifdef USING__ROOT
+  std::string name = std::string("rEcal_had");
+  (*MYROOT::myroot)(new TH2D(name.c_str(),name.c_str(),100,0.,200.,100,0.,2.0),name);
+  name = std::string("rHcal_had");
+  (*MYROOT::myroot)(new TH2D(name.c_str(),name.c_str(),100,0.,200.,100,0.,2.0),name);
+#endif
 }
 
 Hadron_Handler::~Hadron_Handler() {}
@@ -119,11 +133,12 @@ void Hadron_Handler::DetermineECal() {
   E *= m_evis;
   int mode=(m_ECalfrac<=1.e-3)?2:m_Emode_ECal;
 
-  double dep(E*m_Emode_ECal);
+  double dep(E*m_Emode_ECal), norm(E/m_evis);
   if (mode==1) {
     std::vector<double> * params = GetSmearingParameters((&m_Esmearingparams_ECal),eta);
     if (params) {
-      E *= m_ECalfrac;
+      E    *= m_ECalfrac;
+      norm *= m_ECalfrac;
       double rana,ranb,ranc,dummy,sigma;
       do {
 	ran.Gaussian(rana,ranb);
@@ -149,11 +164,15 @@ void Hadron_Handler::DetermineECal() {
   //	   <<" by visfrac = "<<m_evis<<" and Ecalfrac = "
   //	   <<m_ECalfrac<<"(modes = "<<mode<<"/"<<m_Emode_ECal
   //	   <<", thres = "<<m_threshold_ECal<<")"<<std::endl
-  //	   <<"    ---> ECal = "<<dep<<std::endl;
+  //	   <<"    ---> ECal = "<<dep<<"  --> "<<E/m_evis<<"/"<<dep*m_evis/E<<std::endl;
   m_E_ECal = dep;
   m_eta_ECal = eta; 
   m_phi_ECal = phi;
   m_E_deposed += dep;
+#ifdef USING__ROOT
+  std::string name = std::string("rEcal_had");
+  ((TH2D*)(*MYROOT::myroot)[name])->Fill(norm,m_E_ECal/norm,1.);
+#endif
 }
 
 void Hadron_Handler::DetermineHCal() {
@@ -177,6 +196,10 @@ void Hadron_Handler::DetermineHCal() {
   //}
   m_eta_HCal = eta; 
   m_phi_HCal = phi;
+#ifdef USING__ROOT
+  std::string name = std::string("rHcal_had");
+  ((TH2D*)(*MYROOT::myroot)[name])->Fill(E/m_evis,m_E_HCal*m_evis/E,1.);
+#endif
 }
 
 void Hadron_Handler::CalculateEvis(const double E) {
@@ -207,7 +230,7 @@ void Hadron_Handler::CalculateDeposits(const double E,const double eta) {
   else {
     do ran.Gaussian(rana,dummy); while (rana<0.);
     if (test>ran.Get()) m_ECalfrac = 1.-exp(-test)*rana;
-    else m_ECalfrac = 0.+exp(-crit)*rana;
+    else m_ECalfrac = 0.+exp(-dabs(crit))*rana;
   }
   //std::cout<<METHOD<<": crit = "<<crit<<" --> test = "<<test<<" for crit = "<<m_Ecrit
   //	   <<" and exponent = "<<m_exponent<<" --> "<<m_ECalfrac<<std::endl;

@@ -10,6 +10,11 @@ namespace ANALYSIS {
   class MET_Maker : public Object_Definition_Base {
   private:
     double m_cutHad, m_cutEM;
+    double m_Rinfty_ECal, m_ampl_ECal, m_slope_ECal;
+    double m_Rinfty_HCal, m_ampl_HCal, m_slope_HCal;
+
+    double ReconstructedE_ECal(const double);
+    double ReconstructedE_HCal(const double);
   public:
     MET_Maker(Primitive_Analysis *,const std::string="ET_UP");
     ~MET_Maker();
