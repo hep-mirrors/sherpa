@@ -1,8 +1,10 @@
 #include "Run_Parameter.H"
 #include "Model_Handler.H"
 #include "Standard_Model.H"
+#include "THDM.H"
 #include "MSSM.H"
 //#include "MUED.H"
+#include "Fourth_Generation_Leptons.H"
 #include "SM_Phantom_U1.H"
 #include "ADD.H"
 #include "Message.H"
@@ -27,6 +29,16 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
 //   }
   if (model==std::string("MSSM")) {
     modelbase = new MSSM(_path,_file);
+    rpa.gen.SetModel(modelbase);
+    return modelbase;
+  }
+  if (model==std::string("THDM")) {
+    modelbase = new THDM(_path,_file);
+    rpa.gen.SetModel(modelbase);
+    return modelbase;
+  }
+  if (model==std::string("FOURTH_GEN_LEPTONS")) {
+    modelbase = new Fourth_Generation_Leptons(_path,_file);
     rpa.gen.SetModel(modelbase);
     return modelbase;
   }

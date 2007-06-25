@@ -19,8 +19,6 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
   p_functions = new ScalarFunctionsMap(*(SM->GetScalarFunctions()));
   p_matrices  = new ComplexMatricesMap(*(SM->GetComplexMatrices()));
 
-  delete SM;
-
   ReadInFile();
   if (!SanityChecks()) {
     msg.Error()<<"Potential Error in "<<METHOD<<":"<<endl
@@ -239,7 +237,6 @@ double SM_Phantom_U1::H2GluonDecay(const Flavour & flin) {
     pref *= 0.;
   double alp2  = sqr(ScalarFunction(string("alpha_S"),sqr(flin.Mass())));
   double width = pref*alp2*pow(flin.Mass(),3.);
-  std::cout<<METHOD<<":"<<ScalarFunction(string("alpha_S"),sqr(flin.Mass()))<<endl;
   return width;
 }
 
