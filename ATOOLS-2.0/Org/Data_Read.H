@@ -69,6 +69,7 @@ namespace ATOOLS {
 		SM_ZPrime     = 9,
 		SM_AGC        = 10,
 	        SM_Phantom_U1 = 11, 
+		FourthGen_Lep = 20,
 	        Unknown       = 99
     };
   };

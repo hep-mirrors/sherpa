@@ -381,6 +381,8 @@ std::string Flavour::TexName() const
   case kf::numu: {name+=std::string("\\nu_\\mu");break;}
   case kf::tau: {name= std::string("\\tau^\\m");break;}
   case kf::nutau: {name+= std::string("\\nu_\\tau");break;}
+  case kf::tau_prime: {name= std::string("{\\tau'}^\\m");break;}
+  case kf::nutau_prime: {name+= std::string("\\nu_{\\tau'}");break;}
   case kf::gluon:  {name=std::string("g");break;}
   case kf::photon: {name= std::string("\\gamma");break;}
   case kf::W: {name=std::string("W^\\m");break;}

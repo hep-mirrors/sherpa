@@ -683,6 +683,10 @@ namespace ATOOLS {
       int iq=particles[Index()].iq;
       return (anti) ? -iq : iq;
     }
+    inline void SetIntCharge(const int iq) 
+    {
+      particles[Index()].iq = iq;
+    }
     inline double IsoWeak() const {
       double c=particles[ Index() ].isow/2.;
       return (anti) ? -c : c;
@@ -848,6 +852,8 @@ namespace ATOOLS {
       case kf::numu:  return 1;
       case kf::tau:   return 0;
       case kf::nutau: return 1;
+      case kf::tau_prime:   return 0;
+      case kf::nutau_prime: return 1;
 
       case kf::sDownL:    return 0;
       case kf::sDownR:    return 0;
@@ -888,6 +894,8 @@ namespace ATOOLS {
       case kf::numu:  return 0;
       case kf::tau:   return 1;
       case kf::nutau: return 0;
+      case kf::tau_prime:   return 1;
+      case kf::nutau_prime: return 0;
 
       case kf::sDownL:    return 1;
       case kf::sDownR:    return 1;
