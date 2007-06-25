@@ -11,6 +11,7 @@
 #include "Interaction_Model_SM_ZPrime.H"
 #include "Interaction_Model_SM_AGC.H"
 #include "Interaction_Model_SM_Phantom_U1.H"
+#include "Interaction_Model_4GenLep.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -72,7 +73,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
     rpa.gen.SetModelType(ATOOLS::Model_Type::SM_Phantom_U1);
     return new Interaction_Model_SM_Phantom_U1(p_model,cplscheme,yukscheme);
   }
-
+  if (modeltype==std::string("FOURTH_GEN_LEPTONS"))  {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::FourthGen_Lep);
+    return new Interaction_Model_4GenLep(p_model,cplscheme,yukscheme);
+  }
 
   msg.Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
 	     <<"   Model not found. Initialize Standard Model."<<endl;

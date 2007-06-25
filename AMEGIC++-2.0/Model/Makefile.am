@@ -17,6 +17,7 @@ libModel_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Interaction_Model_AEW.C Interaction_Model_SM_AGC.C \
 		      Interaction_Model_MUED_QCD.C \
 		      Interaction_Model_SM_Phantom_U1.C \
+		      Interaction_Model_4GenLep.C \
 		      Interaction_Model_Handler.C
 
 pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
@@ -35,6 +36,7 @@ pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
 		 Interaction_Model_AEW.H Interaction_Model_SM_AGC.H \
 	 	 Interaction_Model_MUED_QCD.H \
 		 Interaction_Model_SM_Phantom_U1.H \
+		 Interaction_Model_4GenLep.H \
 	         Interaction_Model_SM_ZPrime.H
 
 CXXFLAGS   =-g @SHERPAFLAGS@
