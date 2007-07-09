@@ -328,7 +328,7 @@ bool Timelike_Sudakov::MEVeto(Knot * mo,double t)
   if (!m_inflav.Strong()) return false;
   Knot *gr(mo->prev);
   if (gr->t<0) return false;
-  if (m_mecorr_scheme == 0 || gr!=NULL) return false;
+  if (m_mecorr_scheme == 0 || gr==NULL) return false;
   if (m_mecorr_scheme == 2 && gr->prev) return false;
   if (m_mecorr_scheme == 1 && m_pt2<mo->maxpt2) return false;
   if (!m_inflav.IsQuark()) return false;
