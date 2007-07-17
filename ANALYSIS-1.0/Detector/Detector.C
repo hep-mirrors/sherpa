@@ -122,8 +122,8 @@ void Detector::Fill(Particle_List * plist) {
       }
     }
   }
-  std::cout<<"==================================================================="<<std::endl
-	   <<METHOD<<" gives local MET "<<localMET<<std::endl;
+  //std::cout<<"==================================================================="<<std::endl
+  //	   <<METHOD<<" gives local MET "<<localMET<<std::endl;
   //m_elements["ECal"]->PrintHits();
   //m_elements["HCal"]->PrintHits();
 }

@@ -113,7 +113,7 @@ void Reconstructed_Object::CorrectTruth(const double val) {
   }
 
   m_E_correction  = scaleit;
-  m_ET_correction = truemom.ET()/depmom.ET(); 
+  m_ET_correction = truemom.EPerp()/depmom.EPerp(); 
 }
 
 void Reconstructed_Object::CorrectE(const double val) {
