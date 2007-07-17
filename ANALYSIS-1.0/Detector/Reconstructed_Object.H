@@ -13,6 +13,7 @@ namespace ANALYSIS {
     bool            m_includetracks;
     ATOOLS::Flavour m_flav;
     double          m_E,m_eta,m_phi;
+    double          m_E_correction, m_ET_correction;
     ATOOLS::Vec4D   m_mom;
 
     std::vector<Cell *>  m_cells;
@@ -26,6 +27,8 @@ namespace ANALYSIS {
     double E()              const { return m_E; }
     double Eta()            const { return m_eta; }
     double Phi()            const { return m_phi; }
+    double E_Correction()   const { return m_E_correction; }
+    double ET_Correction()  const { return m_ET_correction; }
     ATOOLS::Flavour Flav()  const { return m_flav; }
     ATOOLS::Vec4D Mom()     const { return m_mom; }
     ATOOLS::Vec4D TrueMom() const;
@@ -35,9 +38,8 @@ namespace ANALYSIS {
     void   Update();
     void   SetUsed(const bool);
 
-    void SetFlavour(const ATOOLS::Flavour flav) { m_flav = flav; }
-
-    void   SetIncludeTracks(const bool it) { m_includetracks = it; }
+    void   SetFlavour(const ATOOLS::Flavour flav) { m_flav = flav; }
+    void   SetIncludeTracks(const bool it)        { m_includetracks = it; }
 
     void SetCells(const std::vector<Cell *> & cells);
     void AddCell(Cell * cell);
