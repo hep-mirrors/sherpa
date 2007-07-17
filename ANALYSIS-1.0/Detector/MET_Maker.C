@@ -58,17 +58,23 @@ void MET_Maker::SetCuts(const double cutHad,const double cutEM) {
 }
 
 void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D & METvector) {
-  //std::cout<<METHOD<<" for "<<p_ECal->GetHitCells()->size()<<" hit cells in ECal and "
-  //   <<p_HCal->GetHitCells()->size()<<" hit cells in HCal."<<std::endl;
+  std::cout<<METHOD<<" for "<<p_ECal->GetHitCells()->size()<<" hit cells in ECal and "
+	   <<p_HCal->GetHitCells()->size()<<" hit cells in HCal and cuts:"
+	   <<m_cutEM<<" (ECAL) and "<<m_cutHad<<" (HCAL)."<<std::endl;
 
   std::list<Cell *> * cells = p_ECal->GetHitCells();
   Cell * cell(NULL);
 
-  Vec4D checkmom(0.,0.,0.,0.);
+  Vec4D checkmom(0.,0.,0.,0.), used(0.,0.,0.,0.);
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
     cell = (*cit);
-    if (!cell->Used() && cell->TotalDeposit()>m_cutEM) {
+    if (cell->Used()) { 
+      used += cell->TotalDeposit()*cell->Direction();
+      cit++; 
+      continue; 
+    }
+    if (cell->TotalDeposit()>m_cutEM) {
       METvector -= ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
       cell->Reset();
       cit = cells->erase(cit);
@@ -79,11 +85,18 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       cit++;
     }
   }
+  std::cout<<"Checkmom after ECAL: "<<checkmom<<std::endl;
+
   cells = p_HCal->GetHitCells();
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
     cell = (*cit);
-    if (!cell->Used() && cell->TotalDeposit()>m_cutHad) {
+    if (cell->Used()) { 
+      used += cell->TotalDeposit()*cell->Direction();
+      cit++; 
+      continue; 
+    }
+    if (cell->TotalDeposit()>m_cutHad) {
       METvector -= ReconstructedE_HCal(cell->TotalDeposit())*cell->Direction();
       cell->Reset();
       cit = cells->erase(cit);
@@ -94,13 +107,19 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       cit++;
     }
   }
-
+  std::cout<<"Checkmom after HCAL: "<<checkmom<<std::endl;
+  
   std::list<Track *> tracks;
   p_chambers->GetTracks(tracks);
   Track * track(NULL);
   for (std::list<Track *>::iterator trit=tracks.begin();trit!=tracks.end();) {
     track = (*trit);
-    if (!track->used && track->mom[0]>m_cutEM) {
+    if (track->used) { 
+      used += track->mom;
+      trit++; 
+      continue; 
+    }
+    if (track->mom[0]>m_cutEM) {
       METvector -= track->mom;
       trit = tracks.erase(trit);
     }
@@ -109,6 +128,8 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       trit++;
     }
   }
+  std::cout<<"Checkmom after MCs:  "<<checkmom<<std::endl
+	   <<"    vs. used/MET"<<used<<"/"<<METvector<<std::endl;
 
 
   METvector[3] = 0.;

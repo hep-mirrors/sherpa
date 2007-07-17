@@ -5,6 +5,13 @@
 #include "MyStrStream.H"
 #include "Exception.H"
 
+#ifdef USING__ROOT
+#include "Scaling.H"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "My_Root.H"
+#endif 
+
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
@@ -59,6 +66,12 @@ Jet_Maker::Jet_Maker(Primitive_Analysis * ana,const std::string mode) :
   p_simplecone(NULL), m_jetmode(0)
 {
   GetElements();
+#ifdef USING__ROOT
+  std::string name = std::string("E_Correction");
+  (*MYROOT::myroot)(new TH2D(name.c_str(),name.c_str(),200,0.,1000.,20,0.5,1.5),name);
+  name = std::string("ET_Correction");
+  (*MYROOT::myroot)(new TH2D(name.c_str(),name.c_str(),200,0.,1000.,20,0.5,1.5),name);
+#endif
 }
 
 Jet_Maker::~Jet_Maker() {
@@ -107,9 +120,9 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       m_objects.front()->CorrectTruth(m_spread); break;
     }
     part = m_objects.front()->CreateParticle();
-    //std::cout<<"    "<<METHOD<<" found jet : "<<m_objects.front()->Mom()
-    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
-    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
+    std::cout<<"    "<<METHOD<<" found jet : "<<m_objects.front()->Mom()
+    	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
@@ -129,6 +142,12 @@ void Jet_Maker::CorrectEnergies() {
     case 0:
     default:
       (*olit)->CorrectTruth(m_spread);
+#ifdef USING__ROOT
+      std::string name = std::string("E_Correction");
+      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TreuMom()[0],(*olit)->E_Correction(),1.);
+      name = std::string("ET_Correction");
+      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TreuMom().ET(),(*olit)->ET_Correction(),1.);
+#endif
       break;
     }
   }  

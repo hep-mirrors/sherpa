@@ -106,6 +106,9 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
     plist->push_back(part);
+    std::cout<<"    "<<METHOD<<" found photon : "<<m_objects.front()->Mom()
+	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     METvector -= part->Momentum(); 

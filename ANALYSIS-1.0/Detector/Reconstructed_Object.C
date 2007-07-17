@@ -8,14 +8,17 @@ using namespace ATOOLS;
 Reconstructed_Object::Reconstructed_Object(Flavour flav,const double E,
 					   const double eta,const double phi) :
   m_includetracks(false),
-  m_flav(flav), m_E(E), m_eta(eta), m_phi(phi), m_mom(Vec4D(0.,0.,0.,0.))
+  m_flav(flav), m_E(E), m_eta(eta), m_phi(phi), 
+  m_E_correction(0.), m_ET_correction(0.),
+  m_mom(Vec4D(0.,0.,0.,0.))
 { 
 }
 
 Reconstructed_Object::Reconstructed_Object(Track * track) :
   m_includetracks(false),
-  m_flav(track->flav), m_E(track->mom[0]), 
-  m_eta(track->eta), m_phi(track->phi), m_mom(track->mom) 
+  m_flav(track->flav), m_E(track->mom[0]), m_eta(track->eta), m_phi(track->phi), 
+  m_E_correction(0.), m_ET_correction(0.),
+  m_mom(track->mom) 
 { 
   AddTrack(track);
 }
@@ -23,7 +26,9 @@ Reconstructed_Object::Reconstructed_Object(Track * track) :
 Reconstructed_Object::Reconstructed_Object(ATOOLS::Flavour flav,
 					   std::vector<Cell *> & cells) :
   m_includetracks(false),
-  m_flav(flav), m_E(0.), m_eta(0.), m_phi(0.), m_mom(Vec4D(0.,0.,0.,0.))
+  m_flav(flav), m_E(0.), m_eta(0.), m_phi(0.), 
+  m_E_correction(0.), m_ET_correction(0.),
+  m_mom(Vec4D(0.,0.,0.,0.))
 { 
   SetCells(cells);
   m_E   = m_mom[0];
@@ -52,28 +57,47 @@ void Reconstructed_Object::Update() {
 }
 
 Vec4D Reconstructed_Object::TrueMom() const {
-  Vec4D truemom(0.,0.,0.,0.),trackmom(0.,0.,0.,0.),cellmom(0.,0.,0.,0.); 
-  if (m_includetracks) {
-    for (size_t i=0;i<m_tracks.size();i++) trackmom += m_tracks[i]->mom;
-  }
-  std::set<Particle *> usedparts;
-  std::map<ATOOLS::Particle *,double> * parts;
+  Vec4D truemom(0.,0.,0.,0.);
+  std::set<Particle *> parts;
   Particle * part;
+
   for (size_t i=0;i<m_cells.size();i++) {
-    parts = m_cells[i]->ParticleEntries();
-    for (std::map<ATOOLS::Particle *,double>::iterator pit=parts->begin();
-	 pit!=parts->end();pit++) {
-      part = pit->first;
-      if (usedparts.find(part->OriginalPart())==usedparts.end()) {
-	cellmom += part->Momentum();
-	usedparts.insert(part->OriginalPart());
+    for (std::map<ATOOLS::Particle *,double>::iterator 
+	   pit=m_cells[i]->ParticleEntries()->begin();
+	 pit!=m_cells[i]->ParticleEntries()->end();pit++) {
+      part = pit->first->OriginalPart();
+      if (parts.find(part)==parts.end()) {
+	truemom += part->Momentum();
+	parts.insert(part);
       }
     }
   }
-  return trackmom+cellmom;
+  if (m_includetracks) {
+    for (size_t i=0;i<m_tracks.size();i++) {
+      truemom += m_tracks[i]->mom;
+    }
+  }
+  return truemom;
 }
 
 void Reconstructed_Object::CorrectTruth(const double val) {
+  Vec4D truemom(0.,0.,0.,0.),depmom(0.,0.,0.,0.);
+  std::set<Particle *> parts;
+  Particle * part;
+
+  for (size_t i=0;i<m_cells.size();i++) {
+    depmom  += m_cells[i]->TotalDeposit()*m_cells[i]->Direction();
+    for (std::map<ATOOLS::Particle *,double>::iterator 
+	   pit=m_cells[i]->ParticleEntries()->begin();
+	 pit!=m_cells[i]->ParticleEntries()->end();pit++) {
+      part = pit->first->OriginalPart();
+      if (parts.find(part)==parts.end()) {
+	truemom += part->Momentum();
+	parts.insert(part);
+      }
+    }
+  }
+  double scaleit(truemom[0]/depmom[0]);
   double rana,dummy,factor;
   if (m_includetracks) {
     for (size_t i=0;i<m_tracks.size();i++) {
@@ -84,11 +108,12 @@ void Reconstructed_Object::CorrectTruth(const double val) {
   }
   for (size_t i=0;i<m_cells.size();i++)  {
     do { ran.Gaussian(rana,dummy); } while (dabs(rana)>2.*M_PI);
-    factor = 1.+val*rana/M_PI;
+    factor = scaleit*(1.+val*rana/M_PI);
     m_cells[i]->MultiplyDeposit(factor);
   }
-  //Update();
-  //std::cout<<METHOD<<"  mom after  = "<<m_mom<<std::endl;
+
+  m_E_correction  = scaleit;
+  m_ET_correction = truemom.ET()/depmom.ET(); 
 }
 
 void Reconstructed_Object::CorrectE(const double val) {

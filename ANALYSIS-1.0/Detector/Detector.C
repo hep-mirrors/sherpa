@@ -103,6 +103,7 @@ void Detector::Fill(Particle_List * plist) {
   double eta,phi,E(0);
   //m_elements["ECal"]->PrintHits();
   //m_elements["HCal"]->PrintHits();
+  Vec4D localMET(0.,0.,0.,0.);
   for (size_t i=0;i<plist->size();i++) {
     part = (*plist)[i];
     for (std::map<std::string,Particle_Smearer_Base *>::iterator smit=m_smearers.begin();
@@ -116,10 +117,13 @@ void Detector::Fill(Particle_List * plist) {
 	if (E>0) { hhits+=int(m_elements["HCal"]->Fill(E,eta,phi,part)); }
 	if (smit->second->GivesMuon(eta,phi)) 
 	  m_elements["Muon_Chambers"]->Fill(part->Momentum()[0],eta,phi,part);
+	localMET+=part->Momentum();
 	continue;
       }
     }
   }
+  std::cout<<"==================================================================="<<std::endl
+	   <<METHOD<<" gives local MET "<<localMET<<std::endl;
   //m_elements["ECal"]->PrintHits();
   //m_elements["HCal"]->PrintHits();
 }
