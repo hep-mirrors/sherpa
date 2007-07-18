@@ -104,8 +104,6 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   Cell * cell(NULL);
   std::list<Cell *> * cells = p_ECal->GetHitCells();
 
-  m_cutEM = m_cutHad = 0.0;
-
   //std::cout<<"------------------ ECAL:"<<std::endl;
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {

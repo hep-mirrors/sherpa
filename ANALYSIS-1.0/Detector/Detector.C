@@ -169,6 +169,17 @@ void Detector::Print() {
  --------------------------------------------------------------------------------------------*/
 
 void Detector::Test(const int mode) {
+  //#ifdef USING__ROOT
+  //std::string name(std::string("Gaussian_Random_Test"));
+  //(*MYROOT::myroot)(new TH1D(name.c_str(),name.c_str(),70,-10.,10.),name);
+  //double rana,ranb;
+  //for (long int i=0;i<100000000;i++) {
+  //  ran.Gaussian(rana,ranb);
+  //  ((TH1D*)(*MYROOT::myroot)[name])->Fill(rana,1.);
+  //  ((TH1D*)(*MYROOT::myroot)[name])->Fill(ranb,1.);
+  //}
+  //abort();
+  //#endif
   int testevents(1),number(20);
   Flavour flav(Flavour(kf::none));
   Print();
