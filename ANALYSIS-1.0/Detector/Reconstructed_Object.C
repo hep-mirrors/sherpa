@@ -97,6 +97,7 @@ void Reconstructed_Object::CorrectTruth(const double val) {
       }
     }
   }
+  std::cout<<"   E correction : deposed = "<<depmom<<" vs. true = "<<truemom<<"."<<std::endl;
   double scaleit(truemom[0]/depmom[0]);
   double rana,dummy,factor;
   if (m_includetracks) {

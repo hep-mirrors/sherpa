@@ -100,10 +100,9 @@ void Detector::Evaluate(const ATOOLS::Blob_List &bl, double weight, int ncount)
 void Detector::Fill(Particle_List * plist) {
   int ehits=0,hhits=0;
   Particle * part(NULL);
-  double eta,phi,E(0);
-  //m_elements["ECal"]->PrintHits();
-  //m_elements["HCal"]->PrintHits();
+  double eta,phi,E(0),EECal,EHCal;
   Vec4D localMET(0.,0.,0.,0.);
+  std::cout<<METHOD<<" :"<<std::endl;
   for (size_t i=0;i<plist->size();i++) {
     part = (*plist)[i];
     for (std::map<std::string,Particle_Smearer_Base *>::iterator smit=m_smearers.begin();
@@ -111,10 +110,14 @@ void Detector::Fill(Particle_List * plist) {
       if (smit->second->TreatParticle(part)) {
 	if (smit->second->GivesTrack(eta,phi)) 
 	  m_elements["Tracker"]->Fill(E,eta,phi,part);
-	E = smit->second->EnergyInECal(eta,phi);
+	EECal = E = smit->second->EnergyInECal(eta,phi);
 	if (E>0) { ehits+=int(m_elements["ECal"]->Fill(E,eta,phi,part)); }
-	E = smit->second->EnergyInHCal(eta,phi);
+	EHCal = E = smit->second->EnergyInHCal(eta,phi);
 	if (E>0) { hhits+=int(m_elements["HCal"]->Fill(E,eta,phi,part)); }
+	std::cout<<"   Fill particle : "<<part->Flav()<<" with "<<part->Momentum()
+		 <<" --> ECal = "<<EECal<<",    HCal = "<<EHCal<<",   "
+		 <<"total dep = "<<(EECal+EHCal)<<" = "
+		 <<((EECal+EHCal)/part->Momentum()[0])<<std::endl;
 	if (smit->second->GivesMuon(eta,phi)) 
 	  m_elements["Muon_Chambers"]->Fill(part->Momentum()[0],eta,phi,part);
 	localMET+=part->Momentum();
@@ -122,10 +125,6 @@ void Detector::Fill(Particle_List * plist) {
       }
     }
   }
-  //std::cout<<"==================================================================="<<std::endl
-  //	   <<METHOD<<" gives local MET "<<localMET<<std::endl;
-  //m_elements["ECal"]->PrintHits();
-  //m_elements["HCal"]->PrintHits();
 }
 
 void Detector::ReconstructObjects(Particle_List *& plist,ATOOLS::Vec4D & METvector) {
@@ -133,6 +132,8 @@ void Detector::ReconstructObjects(Particle_List *& plist,ATOOLS::Vec4D & METvect
        defit!=m_definitions.end();defit++) {
     (*defit)->ReconstructObjects(plist,METvector);
   }
+  std::cout<<METHOD<<" : reconstruction complete."<<std::endl
+  	   <<"=================================================================="<<std::endl;
 }
 
 void Detector::Reset() {

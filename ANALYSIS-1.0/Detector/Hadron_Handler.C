@@ -151,7 +151,6 @@ void Hadron_Handler::DetermineECal() {
   }
   if (mode==2) {
     double rana,ranb;
-    //std::cout<<METHOD<<" : mean/width = "<<m_dep_mean_ECal<<"/"<<m_dep_width_ECal<<std::endl;
     do {
       ran.Gaussian(rana,ranb);
       if (m_dep_mean_ECal>E) dep = E+m_dep_width_ECal*E/m_dep_mean_ECal*ranb;
@@ -159,12 +158,6 @@ void Hadron_Handler::DetermineECal() {
     } while (dep<0.);
   }
 
-  //std::cout<<METHOD<<"============================================="<<std::endl
-  //	   <<"    Mom = "<<p_part->Momentum()<<" => E = "<<E
-  //	   <<" by visfrac = "<<m_evis<<" and Ecalfrac = "
-  //	   <<m_ECalfrac<<"(modes = "<<mode<<"/"<<m_Emode_ECal
-  //	   <<", thres = "<<m_threshold_ECal<<")"<<std::endl
-  //	   <<"    ---> ECal = "<<dep<<"  --> "<<E/m_evis<<"/"<<dep*m_evis/E<<std::endl;
   m_E_ECal = dep;
   m_eta_ECal = eta; 
   m_phi_ECal = phi;
@@ -178,22 +171,12 @@ void Hadron_Handler::DetermineECal() {
 void Hadron_Handler::DetermineHCal() {
   Vec4D mom(p_part->Momentum());
   double E(m_evis*mom[0]-m_E_deposed), eta(mom.Eta()), phi(mom.Phi());
-  //msg_Out()<<METHOD<<" remaining E = "<<E<<" vs. thres = "<<m_threshold<<"."<<std::endl
-  //	   <<"    orig: "<<mom[0]<<" in ECal : "<<m_E_deposed<<"."<<std::endl;
   if (E<0.) return; 
   if (E<m_threshold) { m_E_deposed += m_E_HCal = E*ran.Get(); }
   else {
     Deflect(false,m_Dmode_HCal,E,eta,phi);
     SmearEnergy(false,m_Emode_HCal,E,eta);
   }
-  //   if (dabs((m_E_HCal+m_E_ECal-mom[0])/mom[0])<0.1 && 
-  //       m_E_HCal/(m_E_ECal+m_E_HCal)<0.25 && m_E_HCal/(m_E_ECal+m_E_HCal)>0.15) {
-  //   std::cout<<"ratio = "<<(m_E_ECal+m_E_HCal)/(m_evis*mom[0])
-  // 	   <<" for orig E = "<<mom[0]<<" * evis = "<<m_evis<<" ==> "<<m_evis*mom[0]
-  // 	   <<" and ecalfrac = "<<m_ECalfrac<<", hcalmode = "<<m_Emode_HCal<<std::endl
-  // 	   <<"     --> E in HCal = "<<m_E_HCal<<"("<<E<<"), E in ECal = "<<m_E_ECal
-  // 	   <<" and R = "<<m_E_HCal/(m_E_ECal+m_E_HCal)<<std::endl;
-  //}
   m_eta_HCal = eta; 
   m_phi_HCal = phi;
 #ifdef USING__ROOT
@@ -203,7 +186,6 @@ void Hadron_Handler::DetermineHCal() {
 }
 
 void Hadron_Handler::CalculateEvis(const double E) {
-  //std::cout<<std::endl<<std::endl;
   m_evis = 1.-(1.-m_evis_mean)*exp(m_evis_slope/pow(E,0.13));
   double rana,ranb,sigma;
   do {
@@ -211,7 +193,6 @@ void Hadron_Handler::CalculateEvis(const double E) {
     sigma = 0.007*rana+0.15/sqrt(E)*ranb;
   } while (sigma<-1. || sigma>1);
   m_evis *= (1.+sigma);
-  //std::cout<<METHOD<<" E = "<<E<<" --> "<<m_evis/(1.+sigma)<<" ==> "<<m_evis<<std::endl;
 }
 
 /* 
@@ -232,8 +213,6 @@ void Hadron_Handler::CalculateDeposits(const double E,const double eta) {
     if (test>ran.Get()) m_ECalfrac = 1.-exp(-test)*rana;
     else m_ECalfrac = 0.+exp(-dabs(crit))*rana;
   }
-  //std::cout<<METHOD<<": crit = "<<crit<<" --> test = "<<test<<" for crit = "<<m_Ecrit
-  //	   <<" and exponent = "<<m_exponent<<" --> "<<m_ECalfrac<<std::endl;
   return;
 }
 

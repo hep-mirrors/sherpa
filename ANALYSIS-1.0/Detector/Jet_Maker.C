@@ -108,6 +108,7 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     break;
   }
 
+  std::cout<<METHOD<<" :"<<std::endl;
   Particle * part;
   while (!m_objects.empty()) {
     m_objects.front()->SetIncludeTracks(true);
@@ -120,9 +121,9 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       m_objects.front()->CorrectTruth(m_spread); break;
     }
     part = m_objects.front()->CreateParticle();
-    //std::cout<<"    "<<METHOD<<" found jet : "<<m_objects.front()->Mom()
-    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
-    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
+    std::cout<<"   Found jet : "<<m_objects.front()->Mom()
+    	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
@@ -144,9 +145,9 @@ void Jet_Maker::CorrectEnergies() {
       (*olit)->CorrectTruth(m_spread);
 #ifdef USING__ROOT
       std::string name = std::string("E_Correction");
-      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TreuMom()[0],(*olit)->E_Correction(),1.);
+      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TrueMom()[0],(*olit)->E_Correction(),1.);
       name = std::string("ET_Correction");
-      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TreuMom().ET(),(*olit)->ET_Correction(),1.);
+      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TrueMom().ET(),(*olit)->ET_Correction(),1.);
 #endif
       break;
     }

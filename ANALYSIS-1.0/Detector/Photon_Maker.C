@@ -102,13 +102,14 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
   IsolateClusters();
   CorrectEnergies();
 
+  std::cout<<METHOD<<":"<<std::endl;
   Particle * part;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
     plist->push_back(part);
-    //std::cout<<"    "<<METHOD<<" found photon : "<<m_objects.front()->Mom()
-    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
-    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
+    std::cout<<"   Found photon : "<<m_objects.front()->Mom()
+    	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     METvector -= part->Momentum(); 
@@ -117,6 +118,7 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
 }
 
 void Photon_Maker::BuildMatchedClusters() {
+  std::cout<<METHOD<<":"<<std::endl;
   std::list<Cell *> * cells = p_ECal->GetHitCells();
   if (!cells || cells->size()==0) return;
   Cell * cell;
@@ -128,6 +130,10 @@ void Photon_Maker::BuildMatchedClusters() {
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
     if (!cell->Used() && cell->TotalDeposit()>m_Estart) {
+      std::cout<<"   Found potential gamma-seed: "
+	       <<cell->ParticleEntries()->begin()->first->Flav()<<" with "
+	       <<cell->ParticleEntries()->begin()->first->Momentum()<<" --> ";
+
       cell->Centroid(eta,phi);
       cluster.clear();
       tracks.clear();
@@ -140,11 +146,13 @@ void Photon_Maker::BuildMatchedClusters() {
 	} 
       }
       if (!vetoit) {
+	std::cout<<" not track-matched, take it."<<std::endl;
 	Reconstructed_Object * object = new Reconstructed_Object(m_kfcode,E,eta,phi);
 	object->SetCells(cluster);
 	m_objects.push_back(object);
       }
       else {
+	std::cout<<" but track-matched, veto it."<<std::endl;
 	for (std::vector<Cell *>::iterator cur=cluster.begin();cur!=cluster.end();cur++)
 	  (*cur)->SetUsed(false);
       }
@@ -153,6 +161,7 @@ void Photon_Maker::BuildMatchedClusters() {
 }
 
 void Photon_Maker::IsolateClusters() {
+  std::cout<<METHOD<<":"<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -180,8 +189,16 @@ void Photon_Maker::IsolateClusters() {
       }
       if (E_ECal>m_totEM) { veto = true; break; }
     }
-    if (veto) { delete (*olit); olit = m_objects.erase(olit); }
-    else olit++;     
+    std::cout<<"    Check for isolation of "<<(*olit)->Flav()<<" --> ";
+    if (veto) { 
+      std::cout<<" not isolated (HCal = "<<E_HCal<<", ECAL = "<<E_ECal<<"), veto it."<<std::endl;
+      delete (*olit); 
+      olit = m_objects.erase(olit); 
+    }
+    else { 
+      std::cout<<" keep it."<<std::endl;
+      olit++;
+    }
   }
 }
 

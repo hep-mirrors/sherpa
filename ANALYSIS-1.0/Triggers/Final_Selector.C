@@ -173,7 +173,11 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   switch (mode) {
   case 1: p_jetalg = new Durham_Algorithm(p_qualifier); break;
   case 0: p_jetalg = new Kt_Algorithm(p_qualifier); break;
-  default: break;
+  default: 
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	       <<"   Jetmode = "<<mode<<" not found, use Kt instead."<<std::endl;
+    p_jetalg = new Kt_Algorithm(p_qualifier); 
+    break;
   }
 }
 

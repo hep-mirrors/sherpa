@@ -105,11 +105,12 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & ME
   CorrectEnergies();
 
   Particle * part;
+  std::cout<<METHOD<<":"<<std::endl;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
-    //std::cout<<"    "<<METHOD<<" found electron : "<<m_objects.front()->Mom()
-    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
-    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
+    std::cout<<"   Found electron : "<<m_objects.front()->Mom()
+    	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
@@ -127,12 +128,17 @@ void Electron_Maker::BuildMatchedClusters() {
   std::vector<Cell *> cluster;
   Track * track(NULL);
 
+  std::cout<<METHOD<<":"<<std::endl;
   double E,eta,phi;
   bool matched(true);
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
     cell->Centroid(eta,phi);
     if (!cell->Used() && cell->TotalDeposit()>m_Estart) {
+      std::cout<<"   Found potential e-seed: "
+	       <<cell->ParticleEntries()->begin()->first->Flav()<<" with "
+	       <<cell->ParticleEntries()->begin()->first->Momentum()<<" --> ";
+
       cluster.clear();
       tracks.clear();
       p_ECal->BuildCluster(cell,cluster,m_dim,E,eta,phi);
@@ -148,6 +154,8 @@ void Electron_Maker::BuildMatchedClusters() {
 	  }
 	}
 	else if (m_trackmode=="just_one") {
+	  std::cout<<"(too many tracks : "<<tracks.size()<<", "
+		   <<tracks.front()->flav<<")";
 	  if (tracks.size()==1 && !tracks.front()->used) {
 	    matched = true;
 	    track   = tracks.front();
@@ -166,6 +174,7 @@ void Electron_Maker::BuildMatchedClusters() {
 	else matched = true;
       }
       if (matched) {
+	std::cout<<" matched, take it."<<std::endl;
 	Flavour flav = (track->flav.Charge()>0)?Flavour(m_kfcode).Bar():Flavour(m_kfcode);
 	Reconstructed_Object * object(new Reconstructed_Object(flav,E,eta,phi));
 	object->SetCells(cluster);
@@ -174,14 +183,18 @@ void Electron_Maker::BuildMatchedClusters() {
 	m_objects.push_back(object);
       }
       else {
+	std::cout<<" not matched, discard it."<<std::endl;
 	for (std::vector<Cell *>::iterator cur=cluster.begin();cur!=cluster.end();cur++)
 	  (*cur)->SetUsed(false);
       }
     }
   }
+  std::cout<<METHOD<<": "<<m_objects.size()
+	   <<" track-matched candidates waiting for isolation."<<std::endl;
 }
 
 void Electron_Maker::IsolateClusters() {
+  std::cout<<METHOD<<":"<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -209,8 +222,16 @@ void Electron_Maker::IsolateClusters() {
       }
       if (E_ECal>m_totEM) { veto = true; break; }
     }
-    if (veto) { delete (*olit); olit = m_objects.erase(olit); }
-    else olit++;
+    std::cout<<"    Check for isolation of "<<(*olit)->Flav()<<" --> ";
+    if (veto) { 
+      std::cout<<" not isolated (HCal = "<<E_HCal<<", ECAL = "<<E_ECal<<"), veto it."<<std::endl;
+      delete (*olit); 
+      olit = m_objects.erase(olit); 
+    }
+    else { 
+      std::cout<<" keep it."<<std::endl;
+      olit++;
+    }
   }
 }
 

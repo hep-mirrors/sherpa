@@ -89,10 +89,6 @@ void Muon_Maker::SetECorrection(const double inv) {
 }
 
 void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvector) {
-  //std::cout<<METHOD<<std::endl;
-  //std::cout<<METHOD<<" for "<<p_ECal->GetHitCells()->size()<<" hit cells in ECal and "
-  //	   <<p_HCal->GetHitCells()->size()<<" hit cells in HCal."<<std::endl;
-
   m_objects.clear();
   GetTracks();
   IsolateTracks();
@@ -100,11 +96,12 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
 
   DropUsedTracks();
   Particle * part;
+  std::cout<<METHOD<<":"<<std::endl;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
-    //std::cout<<"    "<<METHOD<<" found muon : "<<m_objects.front()->Mom()
-    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
-    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
+    std::cout<<"   Found muon : "<<m_objects.front()->Mom()
+    	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
@@ -127,6 +124,8 @@ void Muon_Maker::GetTracks() {
       (*trit)->used = true;
     }
   }
+  std::cout<<METHOD<<": "<<m_objects.size()
+	   <<" track candidates waiting for isolation."<<std::endl;
 }
 
 void Muon_Maker::IsolateTracks() {
@@ -139,8 +138,8 @@ void Muon_Maker::IsolateTracks() {
 
   double E,eta,phi;
   bool   veto;
+  std::cout<<METHOD<<":"<<std::endl;
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();) {
-    //std::cout<<"--------------------------------------------------"<<std::endl;
     E      = (*olit)->E();
     eta    = (*olit)->Eta();
     phi    = (*olit)->Phi();
@@ -164,11 +163,16 @@ void Muon_Maker::IsolateTracks() {
 	break;
       }
     }
-    if (veto) {
+    std::cout<<"    Check for isolation of "<<(*olit)->Flav()<<" --> ";
+    if (veto) { 
+      std::cout<<" not isolated (HCal = "<<E_HCal<<", ECAL = "<<E_ECal<<"), veto it."<<std::endl;
       (*(*olit)->GetTracks().begin())->used = false;
-      olit = m_objects.erase(olit);
+      olit = m_objects.erase(olit); 
     }
-    else olit++;     
+    else { 
+      std::cout<<" keep it."<<std::endl;
+      olit++;
+    }
   }
 }
 
