@@ -108,7 +108,7 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     break;
   }
 
-  std::cout<<METHOD<<" :"<<std::endl;
+  msg_Debugging()<<METHOD<<" :"<<std::endl;
   Particle * part;
   while (!m_objects.empty()) {
     m_objects.front()->SetIncludeTracks(true);
@@ -121,7 +121,7 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       m_objects.front()->CorrectTruth(m_spread); break;
     }
     part = m_objects.front()->CreateParticle();
-    std::cout<<"   Found jet : "<<m_objects.front()->Mom()
+    msg_Debugging()<<"   Found jet : "<<m_objects.front()->Mom()
     	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
     	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();

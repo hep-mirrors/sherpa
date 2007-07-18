@@ -102,7 +102,7 @@ void Detector::Fill(Particle_List * plist) {
   Particle * part(NULL);
   double eta,phi,E(0),EECal,EHCal;
   Vec4D localMET(0.,0.,0.,0.);
-  std::cout<<METHOD<<" :"<<std::endl;
+  msg_Debugging()<<METHOD<<" :"<<std::endl;
   for (size_t i=0;i<plist->size();i++) {
     part = (*plist)[i];
     for (std::map<std::string,Particle_Smearer_Base *>::iterator smit=m_smearers.begin();
@@ -114,7 +114,7 @@ void Detector::Fill(Particle_List * plist) {
 	if (E>0) { ehits+=int(m_elements["ECal"]->Fill(E,eta,phi,part)); }
 	EHCal = E = smit->second->EnergyInHCal(eta,phi);
 	if (E>0) { hhits+=int(m_elements["HCal"]->Fill(E,eta,phi,part)); }
-	std::cout<<"   Fill particle : "<<part->Flav()<<" with "<<part->Momentum()
+	msg_Debugging()<<"   Fill particle : "<<part->Flav()<<" with "<<part->Momentum()
 		 <<" --> ECal = "<<EECal<<",    HCal = "<<EHCal<<",   "
 		 <<"total dep = "<<(EECal+EHCal)<<" = "
 		 <<((EECal+EHCal)/part->Momentum()[0])<<std::endl;
@@ -132,7 +132,7 @@ void Detector::ReconstructObjects(Particle_List *& plist,ATOOLS::Vec4D & METvect
        defit!=m_definitions.end();defit++) {
     (*defit)->ReconstructObjects(plist,METvector);
   }
-  std::cout<<METHOD<<" : reconstruction complete."<<std::endl
+  msg_Debugging()<<METHOD<<" : reconstruction complete."<<std::endl
   	   <<"=================================================================="<<std::endl;
 }
 

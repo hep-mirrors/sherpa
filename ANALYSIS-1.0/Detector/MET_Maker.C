@@ -104,14 +104,14 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   Cell * cell(NULL);
   std::list<Cell *> * cells = p_ECal->GetHitCells();
 
-  std::cout<<METHOD<<" with ECAL:"<<std::endl;
+  msg_Debugging()<<METHOD<<" with ECAL:"<<std::endl;
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
     cell = (*cit);
     if (!cell->Used() && cell->TotalDeposit()>m_cutEM) {
       cellmom += cell->TotalDeposit()*cell->Direction();
       corrmom += ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
-      std::cout<<"   Deposit = "<<cell->TotalDeposit()*cell->Direction()
+      msg_Debugging()<<"   Deposit = "<<cell->TotalDeposit()*cell->Direction()
 	       <<" --> reconstructed = "
       	       <<ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
       truecell = Vec4D(0.,0.,0.,0.);
@@ -126,7 +126,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
 	}
 	else parts[part] += ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
       }
-      std::cout<<" vs. particles = "<<truecell<<" from "<<cell->ParticleEntries()->size()
+      msg_Debugging()<<" vs. particles = "<<truecell<<" from "<<cell->ParticleEntries()->size()
       	       <<"("<<cell->ParticleEntries()->begin()->first->Flav()<<" @ "
 	       <<cell->ParticleEntries()->begin()->first->Momentum().Eta()<<")."<<std::endl;
       cell->Reset();
@@ -138,7 +138,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     }
   }
 
-  std::cout<<METHOD<<" with HCAL:"<<std::endl;
+  msg_Debugging()<<METHOD<<" with HCAL:"<<std::endl;
   cells = p_HCal->GetHitCells();
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
@@ -146,7 +146,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     if (!cell->Used() && cell->TotalDeposit()>m_cutHad) {
       cellmom += cell->TotalDeposit()*cell->Direction();
       corrmom += ReconstructedE_HCal(cell->TotalDeposit())*cell->Direction();
-      std::cout<<"   Deposit = "<<cell->TotalDeposit()*cell->Direction()
+      msg_Debugging()<<"   Deposit = "<<cell->TotalDeposit()*cell->Direction()
 	       <<" --> reconstructed = "
       	       <<ReconstructedE_HCal(cell->TotalDeposit())*cell->Direction();
       truecell = Vec4D(0.,0.,0.,0.);
@@ -161,7 +161,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
 	}
 	else parts[part] += ReconstructedE_ECal(cell->TotalDeposit())*cell->Direction();
       }
-      std::cout<<" vs. particles = "<<truecell<<" from "<<cell->ParticleEntries()->size()
+      msg_Debugging()<<" vs. particles = "<<truecell<<" from "<<cell->ParticleEntries()->size()
       	       <<"("<<cell->ParticleEntries()->begin()->first->Flav()<<")."<<std::endl;
       cell->Reset();
       cit = cells->erase(cit);
@@ -171,12 +171,12 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
       cit++;
     }
   }
-  std::cout<<"   Check particles:"<<std::endl;
+  msg_Debugging()<<"   Check particles:"<<std::endl;
   for (std::map<Particle *,Vec4D>::iterator pvit=parts.begin();pvit!=parts.end();pvit++) {
-    std::cout<<"      "<<pvit->first->Flav()<<": original mom = "<<pvit->first->Momentum()
+    msg_Debugging()<<"      "<<pvit->first->Flav()<<": original mom = "<<pvit->first->Momentum()
   	     <<" vs. reconstructed mom = "<<pvit->second<<std::endl;
   }
-  std::cout<<"   Cellmom after HCAL: corrected = "<<corrmom<<" (from deposit = "<<cellmom<<")"
+  msg_Debugging()<<"   Cellmom after HCAL: corrected = "<<corrmom<<" (from deposit = "<<cellmom<<")"
 	   <<" vs. true = "<<truemom<<std::endl;
   
   std::list<Track *> tracks;
@@ -185,7 +185,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   for (std::list<Track *>::iterator trit=tracks.begin();trit!=tracks.end();) {
     track = (*trit);
     if (!track->used && track->mom[0]>m_cutEM) {
-      std::cout<<"   Add track: "<<track->flav<<" with "<<track->mom<<std::endl;
+      msg_Debugging()<<"   Add track: "<<track->flav<<" with "<<track->mom<<std::endl;
       cellmom += track->mom;
       truemom += track->mom;
       trit = tracks.erase(trit);
@@ -201,7 +201,7 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     do { ran.Gaussian(rana,dummy); } while (dabs(rana)>2.*M_PI);
     METvector -= (1.+m_deviation*rana/M_PI)*truemom;
   }
-  std::cout<<METHOD<<" reconstructed MET : "<<METvector<<std::endl;
+  msg_Debugging()<<METHOD<<" reconstructed MET : "<<METvector<<std::endl;
 
   METvector[3] = 0.;
   METvector[0] = METvector.PPerp();

@@ -96,10 +96,10 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
 
   DropUsedTracks();
   Particle * part;
-  std::cout<<METHOD<<":"<<std::endl;
+  msg_Debugging()<<METHOD<<":"<<std::endl;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
-    std::cout<<"   Found muon : "<<m_objects.front()->Mom()
+    msg_Debugging()<<"   Found muon : "<<m_objects.front()->Mom()
     	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
     	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
@@ -124,7 +124,7 @@ void Muon_Maker::GetTracks() {
       (*trit)->used = true;
     }
   }
-  std::cout<<METHOD<<": "<<m_objects.size()
+  msg_Debugging()<<METHOD<<": "<<m_objects.size()
 	   <<" track candidates waiting for isolation."<<std::endl;
 }
 
@@ -138,7 +138,7 @@ void Muon_Maker::IsolateTracks() {
 
   double E,eta,phi;
   bool   veto;
-  std::cout<<METHOD<<":"<<std::endl;
+  msg_Debugging()<<METHOD<<":"<<std::endl;
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();) {
     E      = (*olit)->E();
     eta    = (*olit)->Eta();
@@ -163,14 +163,14 @@ void Muon_Maker::IsolateTracks() {
 	break;
       }
     }
-    std::cout<<"    Check for isolation of "<<(*olit)->Flav()<<" --> ";
+    msg_Debugging()<<"    Check for isolation of "<<(*olit)->Flav()<<" --> ";
     if (veto) { 
-      std::cout<<" not isolated (HCal = "<<E_HCal<<", ECAL = "<<E_ECal<<"), veto it."<<std::endl;
+      msg_Debugging()<<" not isolated (HCal = "<<E_HCal<<", ECAL = "<<E_ECal<<"), veto it."<<std::endl;
       (*(*olit)->GetTracks().begin())->used = false;
       olit = m_objects.erase(olit); 
     }
     else { 
-      std::cout<<" keep it."<<std::endl;
+      msg_Debugging()<<" keep it."<<std::endl;
       olit++;
     }
   }

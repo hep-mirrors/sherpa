@@ -53,7 +53,7 @@ void Simple_Cone::CalcJets(ObjectList * jets)
   std::set<Cell *> badseeds;
   
   Reconstructed_Object * jet(NULL);
-  std::cout<<METHOD<<" :"<<std::endl;
+  msg_Debugging()<<METHOD<<" :"<<std::endl;
   do {
     newjet = false;
     maxet  = m_Etmin;
@@ -79,7 +79,7 @@ void Simple_Cone::CalcJets(ObjectList * jets)
     }
 
     if (maxet>m_Etmin) {
-      std::cout<<"   Found potential cone-seed ("<<maxet<<"): "
+      msg_Debugging()<<"   Found potential cone-seed ("<<maxet<<"): "
 	       <<seed->ParticleEntries()->begin()->first->Flav()<<" with "
 	       <<seed->ParticleEntries()->begin()->first->Momentum()<<" --> ";
 
@@ -89,11 +89,11 @@ void Simple_Cone::CalcJets(ObjectList * jets)
       badseeds.insert(seed);
       cone.push_back(seed);
 
-      std::cout<<" adding in cells:"<<std::endl;
+      msg_Debugging()<<" adding in cells:"<<std::endl;
       for (cit=hcells->begin();cit!=hcells->end();cit++) {
 	if ((*cit)!=seed && !(*cit)->Used() &&  
 	    (*cit)->R2(eta,phi)<m_dR2) {
-	  std::cout<<"      add hcal :"
+	  msg_Debugging()<<"      add hcal :"
 		   <<(*cit)->ParticleEntries()->begin()->first->Flav()<<" with "
 		   <<(*cit)->ParticleEntries()->begin()->first->Momentum()<<std::endl;
 	  cone.push_back((*cit));
@@ -103,7 +103,7 @@ void Simple_Cone::CalcJets(ObjectList * jets)
       for (cit=ecells->begin();cit!=ecells->end();cit++) {
 	if ((*cit)!=seed && !(*cit)->Used() && 
 	    (*cit)->R2(eta,phi)<m_dR2) {
-	  std::cout<<"      add ecal :"
+	  msg_Debugging()<<"      add ecal :"
 		   <<(*cit)->ParticleEntries()->begin()->first->Flav()<<" with "
 		   <<(*cit)->ParticleEntries()->begin()->first->Momentum()<<std::endl;
 	  cone.push_back((*cit));
@@ -120,17 +120,15 @@ void Simple_Cone::CalcJets(ObjectList * jets)
       jet->SetIncludeTracks(true);
       jet->Update();
       
-      std::cout<<"   Cone momentum = "<<jet->Mom()<<" --> ";
+      msg_Debugging()<<"   Cone momentum = "<<jet->Mom()<<" --> ";
       if (jet->Mom().EPerp()<m_Etcut) {
-	std::cout<<"too little energy in cone ("<<jet->Mom().EPerp()<<") delete it."<<std::endl;
+	msg_Debugging()<<"too little energy in cone ("<<jet->Mom().EPerp()<<") delete it."<<std::endl;
 	jet->SetUsed(false);
 	delete jet;
       }
       else {
 	jets->push_back(jet);
-	std::cout<<"enough energy in cone ("<<jet->Mom().EPerp()<<") take it."<<std::endl;
-	//std::cout<<"    "<<METHOD<<" found jet : "<<jet->Mom()<<" "<<m_Etcut
-	//	 <<" with "<<jet->GetCells().size()<<"/"<<jet->GetTracks().size()<<std::endl;
+	msg_Debugging()<<"enough energy in cone ("<<jet->Mom().EPerp()<<") take it."<<std::endl;
 #ifdef USING__ROOT
 	std::string name("JES");
 	((TH2D*)(*MYROOT::myroot)[name])->Fill(jet->Mom().EPerp(),
