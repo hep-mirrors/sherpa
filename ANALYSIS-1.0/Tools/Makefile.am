@@ -2,6 +2,7 @@ pkglib_LTLIBRARIES       =	libAnalysisTools.la
 
 libAnalysisTools_la_SOURCES   =	\
 				Lorentz.C \
+				MET.C \
 				Blob_Selector.C \
 				List_Creator.C \
 				List_Merger.C \
