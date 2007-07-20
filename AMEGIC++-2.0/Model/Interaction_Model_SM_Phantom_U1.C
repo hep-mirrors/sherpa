@@ -513,7 +513,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     
     vertex[vanz].nleg     = 4;
     
-    kcpl0 = (M_I*g2*g2/(costW*costW*num_4))*mix21*mix11;
+    kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix21*mix11;
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -568,7 +568,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     
     vertex[vanz].nleg     = 4;
     
-    kcpl0 = (M_I*g2*g2/num_4)*mix11*mix11;
+    kcpl0 = (M_I*g2*g2/num_2)*mix11*mix11;
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -595,7 +595,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     
     vertex[vanz].nleg     = 4;
     
-    kcpl0 = (M_I*g2*g2/num_4)*mix21*mix11;
+    kcpl0 = (M_I*g2*g2/num_2)*mix21*mix11;
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -682,7 +682,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = -M_I*num_24/(num_8 * vev * vev)*
+    kcpl0 = -M_I*num_3/(vev * vev)*
       (tanb*tanb*mix12_4*(mix11_2*massH2+mix12_2*massh2)
                + mix11_4*(mix11_2*massh2 + mix12_2*massH2) 
                - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
@@ -711,7 +711,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = -M_I*num_24/(num_8 * vev * vev)*
+    kcpl0 = -M_I*num_3/(vev * vev)*
       (tanb*tanb*mix22_4*(mix11_2*massH2+mix12_2*massh2)
                + mix21_4*(mix11_2*massh2 + mix12_2*massH2) 
                - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
@@ -740,7 +740,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = M_I*num_6*mix11*mix21/(num_2 * vev * vev)*(mix12+mix11*tanb)*
+    kcpl0 = M_I*num_3*mix11*mix21/(vev * vev)*(mix12+mix11*tanb)*
             ((massH2*(mix22_3*tanb+mix21_3)+
               massh2*(mix21*mix11_2+mix22*mix12_2*tanb)));
     kcpl1 = kcpl0;
@@ -768,7 +768,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = M_I*num_6*mix11*mix21/(num_2 * vev * vev)*(mix22+mix21*tanb)*
+    kcpl0 = M_I*num_3*mix11*mix12/(vev * vev)*(mix22+mix21*tanb)*
       (massh2*(mix12_3*tanb+mix11_3)+
        massH2*(mix11*mix21_2+mix12*mix22_2*tanb));
     kcpl1 = kcpl0;
@@ -796,10 +796,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = M_I*num_4*mix12*mix11/(num_4 * vev * vev)*
+    kcpl0 = M_I*mix12*mix11/(vev * vev)*
             ( (massH2-massh2)*tanb*(mix11_4-num_4*mix11_2*mix12_2+mix12_4)
             - num_3*mix11*mix12*(massh2*mix11_2+massH2*mix12_2+
-            (massh2*mix12_2+massH2*mix11_2)*tanb));
+            (massh2*mix12_2+massH2*mix11_2)*tanb*tanb));
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -854,7 +854,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].nleg  = 4;  
     
     kcpl0 = M_I/(vev * vev)*
-            ( (massH2-massh2)*tanb*mix11*mix12*mix21*mix21-
+            ((massH2-massh2)*tanb*mix11*mix12*mix21*mix21-
               tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix22*mix22);
     kcpl1 = kcpl0;
     
@@ -881,7 +881,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    kcpl0 = M_I/(num_2 * vev * vev)*
+    kcpl0 = M_I/(vev * vev)*
             ( (massH2-massh2)*tanb*mix11*mix12*mix11*mix21-
               tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix12*mix22);
     kcpl1 = kcpl0;
