@@ -55,37 +55,37 @@ namespace AMEGIC {
   };
   inline int All_Decays::NIn() { 
     if (p_decay) return p_decay->NIn(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Nin(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Nin(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline int All_Decays::NOut() { 
     if (p_decay) return p_decay->NOut(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Nout(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Nout(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline std::string All_Decays::Name() { 
     if (p_decay) return p_decay->Name(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Name(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Name(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline const ATOOLS::Flavour * All_Decays::Flavs() { 
     if (p_decay) return p_decay->Flavours(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Flavs(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Flavs(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline const ATOOLS::Vec4D * All_Decays::Momenta() { 
     if (p_decay) return p_decay->Momenta(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Momenta(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Momenta(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline int All_Decays::NumberOfDiagrams() { 
     if (p_decay) return p_decay->NumberOfDiagrams(); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::NumberOfDiagrams(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::NumberOfDiagrams(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline AMEGIC::Point * All_Decays::Diagram(int _diag) { 
     if (p_decay) return p_decay->Diagram(_diag); 
-    ATOOLS::msg.Error()<<"Error in All_Decays::Diagram(): no decay selected. Abort run."<<std::endl;
+    msg_Error()<<"Error in All_Decays::Diagram(): no decay selected. Abort run."<<std::endl;
     abort();
   }
   inline void All_Decays::Reset() { p_decay = NULL; }

@@ -360,7 +360,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  break;
 	}
 	if (hit==0) {
-	  msg.Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
+	  msg_Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
 	  abort();
 	}
       }

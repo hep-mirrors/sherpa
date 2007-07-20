@@ -44,7 +44,7 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
     p_mehandler=static_cast<Signal_Processes*>(phase)->GetMEHandler();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
-      msg.Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
+      msg_Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
 		  <<"already included."<<std::endl;
       return;
     }
@@ -61,7 +61,7 @@ Event_Phase_Handler * Event_Handler::GetEventPhase(const size_t i) {
       count--;
     }
   }
-  msg.Error()<<"Error in Event_Handler::GetEventPhase("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Event_Handler::GetEventPhase("<<i<<")"<<std::endl
 	     <<"   Out of bounds, only "<<p_phases->size()<<" event phases."<<std::endl
 	     <<"   Will return NULL."<<std::endl;
   return NULL;
@@ -81,16 +81,16 @@ void Event_Handler::EmptyEventPhases()
 
 void Event_Handler::PrintGenericEventStructure() 
 {
-  if (!msg.LevelIsInfo()) return;
-  msg.Out()<<"----------------------------------------------------------"<<std::endl
+  if (!msg_LevelIsInfo()) return;
+  msg_Out()<<"----------------------------------------------------------"<<std::endl
 	    <<"-- SHERPA generates events with the following structure --"<<std::endl
 	    <<"----------------------------------------------------------"<<std::endl;
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg.Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
-  msg.Out()<<"---------------------------------------------------------"<<std::endl;
+  msg_Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
 void Event_Handler::Reset(const bool sameevent)
@@ -103,7 +103,7 @@ void Event_Handler::Reset(const bool sameevent)
     m_blobs.Clear();
     if (Particle::Counter()>m_lastparticlecounter || 
 	Blob::Counter()>m_lastblobcounter) {
-      msg.Error()<<METHOD<<"(): "<<Particle::Counter()
+      msg_Error()<<METHOD<<"(): "<<Particle::Counter()
 		 <<" particles and "<<Blob::Counter()
 		 <<" blobs undeleted. Continuing."<<std::endl;
       m_lastparticlecounter=Particle::Counter();
@@ -140,7 +140,7 @@ bool Event_Handler::GenerateEvent(int mode)
 {
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
-    ATOOLS::msg.Error()<<ATOOLS::om::bold
+    msg_Error()<<ATOOLS::om::bold
                      <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
                      <<ATOOLS::om::reset<<ATOOLS::om::red
                      <<"Timeout. Interrupt event generation."
@@ -217,7 +217,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	  rvalue.IncError((*pit)->Name());
 	  return false;
 	default:
-	  msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		     <<"  Unknown return value for 'Treat',"<<std::endl
 		     <<"  Will continue and hope for the best."<<std::endl;
 	  return false;
@@ -238,12 +238,12 @@ bool Event_Handler::GenerateEvent(int mode)
       }
     }
     if (!flag) {
-      msg.Error()<<"Error in Event_Handler::GenerateEvent"<<std::endl
+      msg_Error()<<"Error in Event_Handler::GenerateEvent"<<std::endl
 		 <<"   Treat by External_MC failed, mode = "<<mode<<"."<<std::endl
 		 <<"   Return 0 and hope for the best."<<std::endl;
     }
     if (m_blobs.empty()) {
-      msg.Out()<<"Potential error in Event_Handler::GenerateEvent"<<std::endl
+      msg_Out()<<"Potential error in Event_Handler::GenerateEvent"<<std::endl
 	       <<"   Empty bloblist would go into analysis !"<<std::endl;
       return false;
     }
@@ -283,7 +283,7 @@ void Event_Handler::Finish() {
   m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
-    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
 	       <<" particles / blobs undeleted !"<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;

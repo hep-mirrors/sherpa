@@ -15,12 +15,12 @@ Gluon_Decayer::Gluon_Decayer()
        fdit!=hadpars.GetConstituents()->CCMap.end();fdit++) {
     if (2.*fdit->second->Mass()<gluonmass && !fdit->first.IsAnti()) {
       m_options.insert(std::make_pair(fdit->first,new DecaySpecs()));
-      msg.Tracking()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
+      msg_Tracking()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }
   }
-  msg.Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
+  msg_Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
   if (m_options.empty()) {
-    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"   No decay channels found for gluons, will abort."<<std::endl;
     abort();
   }

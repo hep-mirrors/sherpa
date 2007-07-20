@@ -49,14 +49,14 @@ int main(int argc,char* argv[])
     Generator.InitializeTheRun(argc,argv);
     int nevt=ATOOLS::rpa.gen.NumberOfEvents();
     if (nevt>0) {
-      ATOOLS::msg.Events()<<"=========================================================================="<<std::endl
+      msg_Events()<<"=========================================================================="<<std::endl
 		       <<"Sherpa will start event generation now : "
 		       <<nevt<<" events"<<std::endl
 		       <<"=========================================================================="<<std::endl;
       Generator.InitializeTheEventHandler();
       double starttime=ATOOLS::rpa.gen.Timer().UserTime();
       for (int i=1;i<=ATOOLS::rpa.gen.NumberOfEvents();i++) {
-	//if (i==259) ATOOLS::msg.SetLevel(15); 
+	//if (i==259) msg_SetLevel(15); 
 	if (i%100==0) {
 	  double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
@@ -73,7 +73,7 @@ int main(int argc,char* argv[])
       msg_Info()<<std::endl;      
       Generator.SummarizeRun();
     }
-    ATOOLS::msg.Events()<<"=========================================================================="<<std::endl
+    msg_Events()<<"=========================================================================="<<std::endl
 		     <<"Sherpa finished its simulation run with "
 		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;
@@ -92,7 +92,7 @@ int main(int argc,char* argv[])
   }
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
-    ATOOLS::msg.Error()<<exception<<std::endl;
+    msg_Error()<<exception<<std::endl;
 #ifdef TRACE_malloc
     muntrace();  
 #endif

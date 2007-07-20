@@ -34,7 +34,7 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
     break;
   }
   default:
-    ATOOLS::msg.Error()<<"Fixed_Variable_Channel::GeneratePoint(..): "
+    msg_Error()<<"Fixed_Variable_Channel::GeneratePoint(..): "
 		       <<"Cannot handle "<<p_variable->Name()
 		       <<"! Setting weight to 0."<<std::endl;
     weight=0.0;

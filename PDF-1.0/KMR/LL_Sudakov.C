@@ -57,7 +57,7 @@ SHERPA::NLL_Sudakov_Base &LL_Sudakov::Delta(const ATOOLS::Flavour &fl)
   if (sit!=m_sud_map.end()) {
     return *(sit->second);
   }
-  ATOOLS::msg.Error()<<"LL_Sudakov::Delta("<<fl<<"): "<<ATOOLS::om::red
+  msg_Error()<<"LL_Sudakov::Delta("<<fl<<"): "<<ATOOLS::om::red
 		     <<"Did not find sudakov !"<<ATOOLS::om::reset<<std::endl;
   return *m_sud_map[ATOOLS::Flavour(ATOOLS::kf::none)];
 }

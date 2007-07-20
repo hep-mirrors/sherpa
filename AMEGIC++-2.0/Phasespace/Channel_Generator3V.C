@@ -39,7 +39,7 @@ void Channel_Generator3V::GenerateTopos(Point* p)
     if (ph->left==0 && p->middle) ph = p->middle;
   }
   if (ph == 0) {
-    msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
+    msg_Error()<<"This seems to be a 2->1 process !!!"<<endl
 	       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
     abort();
   }
@@ -300,7 +300,7 @@ void Channel_Generator3V::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     if (ph->left==0 && p->middle) ph = p->middle;
   }
   if (ph == 0) {
-    msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
+    msg_Error()<<"This seems to be a 2->1 process !!!"<<endl
 	       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
     abort();
   }
@@ -947,7 +947,7 @@ void  Channel_Generator3V::AddToVariables(int flag,const string& lhs,const strin
   else {
     // already exists
     if (rhs != declarations[name]) {
-      msg.Error()<<" ERROR in Channel_Generator3V::AddToVariables ()"<<endl;
+      msg_Error()<<" ERROR in Channel_Generator3V::AddToVariables ()"<<endl;
       abort();
     }
   }

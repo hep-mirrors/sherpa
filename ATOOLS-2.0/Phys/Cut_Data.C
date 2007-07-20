@@ -134,7 +134,7 @@ void Cut_Data::Complete()
   smin = Max(smin,sqr(2.*etmm));
   smin = Max(Getscut(str),smin);
 
-  ATOOLS::msg.Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
+  msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
   m_smin_map.clear();
 }
 

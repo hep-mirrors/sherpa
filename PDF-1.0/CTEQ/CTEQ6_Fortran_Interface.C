@@ -42,7 +42,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   char buffer[1024];
   char * err = getcwd(buffer,1024);
   if (err==NULL) {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
   }
   int stat=chdir(m_path.c_str());
   ctq6initset_(iset);
@@ -50,7 +50,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     chdir(buffer);
   }
   else {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
 	       <<"   path "<<m_path<<" not found "<<std::endl;
   }
   
@@ -96,10 +96,10 @@ void CTEQ6_Fortran_Interface::Calculate(double x,double z,double kp2,double _Q2)
   m_x=x/m_rescale;
   m_Q=sqrt(_Q2*m_pdffac);
   if(m_Q<m_q2min) {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
     m_Q=m_q2min;}
   if(m_Q>m_q2max) {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
     m_Q=m_q2max;}
 }
 

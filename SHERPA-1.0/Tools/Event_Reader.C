@@ -16,7 +16,7 @@ Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
   f_gz(false), m_inputmode(0), m_eventmode(0), m_phasemode(-1)
 {
   std::string filename=m_path+m_file;
-  msg.Out()<<" -> "<<filename<<"\n";
+  msg_Out()<<" -> "<<filename<<"\n";
 
   size_t pst=filename.find(".gz");
   size_t lng=filename.length();
@@ -28,7 +28,7 @@ Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
       filename.resize(pst);
       m_file.resize(m_file.length()-3);
     } else {
-      msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
+      msg_Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
 		 <<"   Cannot handle event file "<<filename<<".\n"
 		 <<"   Will abort the run. Please check."<<std::endl;
       abort();
@@ -41,21 +41,21 @@ Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
     m_file=m_file.substr(pst+1);
   }
 
-  msg.Out()<<" -> "<<filename<<" , "<<m_add<<" , "<<m_file<<"\n";
+  msg_Out()<<" -> "<<filename<<" , "<<m_add<<" , "<<m_file<<"\n";
   p_instream=new std::ifstream(filename.c_str());
 
   if(!p_instream->good()) {
-    msg.Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
+    msg_Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
     abort();
   }
 
   InitialSettings();
-  msg.Out()<<"Generator  = "<<m_generator<<"\n"
+  msg_Out()<<"Generator  = "<<m_generator<<"\n"
 	   <<"Input mode = "<<m_inputmode<<"\n"
 	   <<"Event mode = "<<m_eventmode<<"\n"
 	   <<"Phase mode = "<<m_phasemode<<std::endl;
-  if(f_gz) msg.Out()<<"G(un)zip handling is switched on for the whole run!\n......."<<std::endl;
+  if(f_gz) msg_Out()<<"G(un)zip handling is switched on for the whole run!\n......."<<std::endl;
 }
 
 
@@ -145,7 +145,7 @@ void Event_Reader::CloseFile() {
     p_instream=NULL;
     if(f_gz) system((std::string("gzip ")+m_path+m_add+m_file).c_str());
   } else {
-    msg.Error()<<__PRETTY_FUNCTION__<<":\n   Warning: File already closed."<<std::endl;
+    msg_Error()<<__PRETTY_FUNCTION__<<":\n   Warning: File already closed."<<std::endl;
   }
 }
 
@@ -163,7 +163,7 @@ bool Event_Reader::FillBlobs(Blob_List * blobs)
     if(nev==rpa.gen.NumberOfDicedEvents()) CloseFile();
     return result;
   }
-  msg.Error()<<"Error in Event_Reader::FillBlobs."<<std::endl
+  msg_Error()<<"Error in Event_Reader::FillBlobs."<<std::endl
 	     <<"   Phasemode = "<<m_phasemode<<" is not specified so far."<<std::endl
 	     <<"   Don't know what to do with file : "<<m_file<<", will abort the run."
 	     <<std::endl;
@@ -212,7 +212,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	    msg_Info()<<" => "<<filename<<"\n";
 	    p_instream=new std::ifstream(filename.c_str());
 	    if(!p_instream->good()) {
-	      msg.Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
+	      msg_Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
 			 <<"   Will abort the run."<<std::endl;
 	      abort();
 	    }
@@ -263,7 +263,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
       return ReadInSimpleHepEvtEvent(blobs);
     }
   }
-  msg.Error()<<"Error in Event_Reader::ReadInEvent."<<std::endl
+  msg_Error()<<"Error in Event_Reader::ReadInEvent."<<std::endl
 	     <<"   Input/Event mode = "<<m_inputmode<<" / "<<m_eventmode
 	     <<" is not specified so far."<<std::endl
 	     <<"   Don't know what to do with file : "<<m_file
@@ -327,7 +327,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	}
 	if (buffer.find("End event")!=std::string::npos) break;
 	if (buffer.find("Event :")!=std::string::npos) {
-	  msg.Error()<<"Error in Event_Reader::ReadInSimpleHepEvtEvent\n"
+	  msg_Error()<<"Error in Event_Reader::ReadInSimpleHepEvtEvent\n"
 		     <<"   Found Event start for event end.\n"
 		     <<"   Consider the current event finished and continue."<<std::endl;
 	  break;
@@ -465,7 +465,7 @@ Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, cons
   }
   if (control != 0) {
     if (flags[1]!=control) {
-      msg.Error()<<"Error in Event_Reader::TranslateFromInput."<<std::endl
+      msg_Error()<<"Error in Event_Reader::TranslateFromInput."<<std::endl
 		 <<"   Particle ID and control number do not coincide : "<<flags[1]<<" vs. "
 		 <<control<<std::endl
 		 <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<"."<<std::endl
@@ -475,7 +475,7 @@ Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, cons
   }
   Particle* part=NULL;
   if (flags.size()<4 || numbers.size()<4) {
-    msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
+    msg_Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
 	       <<"   Not enough information provided for particle construction: "
 	       <<"   ("<<flags.size()<<" "<<numbers.size()<<")\n"
 	       <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<".\n"

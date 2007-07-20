@@ -29,11 +29,11 @@ Isotropic::Isotropic(int _nout,Flavour * _flavs,string _met) :
   HD_ME_Base(_nout,_flavs) 
 {
   m_metype = "Isotropic";
-  if (msg.LevelIsDebugging()) {
-    msg.Out()<<"Initialised Isotropic("<<m_nout<<") for "<<endl
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<"Initialised Isotropic("<<m_nout<<") for "<<endl
 	     <<"   "<<p_flavs[0]<<" ->";
-    for (int i=1;i<1+m_nout;i++) msg.Out()<<" "<<p_flavs[i];
-    msg.Out()<<endl;
+    for (int i=1;i<1+m_nout;i++) msg_Out()<<" "<<p_flavs[i];
+    msg_Out()<<endl;
   }
 }
 

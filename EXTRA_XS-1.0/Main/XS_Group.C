@@ -158,7 +158,7 @@ void XS_Group::Add(XS_Base *const xsec)
   }
   else {
     if (m_nin!=xsec->NIn() || m_nout!=xsec->NOut()) {
-      ATOOLS::msg.Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
+      msg_Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
 			 <<xsec->Name()<<"' to group '"<<m_name<<"' !"<<std::endl
 			 <<"   Inconsistent number of external legs."<<std::endl; 
       return;
@@ -233,9 +233,9 @@ bool XS_Group::SelectOne()
       }
     }
     if (disc>0.) { 
-      ATOOLS::msg.Error()<<"XS_Group::SelectOne() : Cannot select process !"<<std::endl;
-      if (m_atoms) ATOOLS::msg.Error()<<"   \\dsigma_{max} = "<<m_max<<std::endl;
-      else ATOOLS::msg.Error()<<"   \\sigma_{tot} = "<<m_totalxs<<std::endl;
+      msg_Error()<<"XS_Group::SelectOne() : Cannot select process !"<<std::endl;
+      if (m_atoms) msg_Error()<<"   \\dsigma_{max} = "<<m_max<<std::endl;
+      else msg_Error()<<"   \\sigma_{tot} = "<<m_totalxs<<std::endl;
       return false;
     }
   }
@@ -360,7 +360,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
     double var=TotalVar();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-      ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
+      msg_Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
 			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<std::endl;
     }
     if (m_totalxs>0.) {
@@ -474,7 +474,7 @@ double XS_Group::Differential(double s,double t,double u)
     m_last+=m_xsecs[i]->Differential(s,t,u);
   }
   if (!(m_last<=0) && !(m_last>0)) {
-    ATOOLS::msg.Error()<<"XS_Group::Differential("<<s<<","<<t<<","<<u<<"): "<<ATOOLS::om::red
+    msg_Error()<<"XS_Group::Differential("<<s<<","<<t<<","<<u<<"): "<<ATOOLS::om::red
 		       <<"Cross section is 'nan'!"<<ATOOLS::om::reset<<std::endl;
   }
   return m_last;
@@ -488,7 +488,7 @@ double XS_Group::Differential2()
     for (size_t i=0;i<m_xsecs.size();++i) tmp += m_xsecs[i]->Differential2();
 
     if ((!(tmp<=0)) && (!(tmp>0))) {
-      ATOOLS::msg.Error()<<"---- X_Group::Differential -------------------"<<std::endl;
+      msg_Error()<<"---- X_Group::Differential -------------------"<<std::endl;
     }
     m_last += tmp;
     return tmp;
@@ -511,8 +511,8 @@ void XS_Group::SetMax(const double max,const int flag)
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      ATOOLS::msg.Error().precision(12);
-      ATOOLS::msg.Error()<<"XS_Group::SetMax(..): "
+      msg_Error().precision(12);
+      msg_Error()<<"XS_Group::SetMax(..): "
 			 <<"'"<<m_name<<"' : Summation does not agree !"<<std::endl
 			 <<"   sum = "<<sum<<" vs. total = "<<m_totalxs
 			 <<" ("<<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
@@ -586,12 +586,12 @@ void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 
 void XS_Group::Print()
 {
-  ATOOLS::msg.Out()<<(m_name!=""?m_name:"<no name>")<<" {\n";
+  msg_Out()<<(m_name!=""?m_name:"<no name>")<<" {\n";
   {
     msg_Indent();
     for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Print();
   }
-  ATOOLS::msg.Out()<<"} "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
+  msg_Out()<<"} "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }
 
 void XS_Group::SetEvents(const double number) 

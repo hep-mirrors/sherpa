@@ -191,7 +191,7 @@ void Super_Amplitude::SetZfuncSign()
   }
   // did not find a permutation
   if (ok==0) {
-    msg.Error()<<"ERROR in Super_Amplitude::SetZfuncSign : "<<std::endl
+    msg_Error()<<"ERROR in Super_Amplitude::SetZfuncSign : "<<std::endl
 	       <<"   Found no suitable factor in Super_Amplitude::SetZfuncSign(), will abort."<<endl;
     abort();
   }
@@ -263,11 +263,11 @@ int Super_Amplitude::FindNewNumber(int number)
  
 void Super_Amplitude::PrintGraph() 
 {  
-  if (!msg.LevelIsTracking()) return;
-  msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
   Single_Amplitude_Base::PrintGraph();
 
-  msg.Out()<<"Overall sign "<<sign<<endl;
+  msg_Out()<<"Overall sign "<<sign<<endl;
 }
 
 Complex Super_Amplitude::Zvalue(int ihel,int * signlist)   

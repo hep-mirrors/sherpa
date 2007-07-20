@@ -459,12 +459,12 @@ namespace AMEGIC {
 
 
     virtual int     NumberOfDiagrams() { 
-      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::NumberOfDiagrams()"<<std::endl; 
+      msg_Error()<<"Virtual Method : Process_Base::NumberOfDiagrams()"<<std::endl; 
     }
     virtual Point * Diagram(int i) { 
-      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::Diagram()"<<std::endl; 
+      msg_Error()<<"Virtual Method : Process_Base::Diagram()"<<std::endl; 
     }
     virtual bool    IsFreeOfFourVertex(Point * _p) { 
-      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::IsFreeOfFourVertex()"<<std::endl; 
+      msg_Error()<<"Virtual Method : Process_Base::IsFreeOfFourVertex()"<<std::endl; 
     }
     */

@@ -62,7 +62,7 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in Energy_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Energy_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -138,7 +138,7 @@ void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max=rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -211,7 +211,7 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
 	       <<crit.size()<<endl;
     return;
   }
@@ -287,7 +287,7 @@ void BFKL_PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in BFKL_PT_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in BFKL_PT_Selector::SetRange : "
 	       <<crit.size()<<endl;
     return;
   }
@@ -445,7 +445,7 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max)
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -525,7 +525,7 @@ void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
 			       double _max)
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -620,7 +620,7 @@ void Angle_Selector::SetRange(std::vector<Flavour> crit,
 			      double _min, double _max)
 {
   if (crit.size() != 2) {
-    msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -645,7 +645,7 @@ void Angle_Selector::SetRange(std::vector<Flavour> crit,int beam,
 			      double _min, double _max)
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -727,7 +727,7 @@ void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
-    msg.Error()<<"Wrong number of arguments in Mass_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Mass_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -811,7 +811,7 @@ void Summed_PT_Selector::SetRange(std::vector<Flavour> _crit,double _min,
 			       double _max=0.5*rpa.gen.Ecms())
 {
   if (_crit.size() != 2) {
-    msg.Error()<<"Wrong number of arguments in Summed_PT_Selector::SetRange : "
+    msg_Error()<<"Wrong number of arguments in Summed_PT_Selector::SetRange : "
 			  <<_crit.size()<<endl;
     return;
   }

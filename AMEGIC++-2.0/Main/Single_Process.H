@@ -49,7 +49,7 @@ namespace AMEGIC {
 		   int usepi,double ycut,double error,std::string e_func="1");
     ~Single_Process();
     void Add(Process_Base *) {
-      ATOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
+      msg_Error()<<"Error in Single_Process. Method Add called."<<std::endl;
       abort();
     }
 

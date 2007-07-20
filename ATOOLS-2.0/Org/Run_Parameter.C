@@ -82,9 +82,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   Data_Read dr(m_path+file);
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
-  msg.Init(gen.m_output,logfile);
-  if (msg.Level()>0) 
-    msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
+  msg->Init(gen.m_output,logfile);
+  if (msg->Level()>0) 
+    msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
@@ -153,7 +153,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
   if (color==Switch::On) {
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
@@ -170,7 +170,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 Run_Parameter::~Run_Parameter() 
 { 
-  if (msg.Level()>=1) gen.m_timer.PrintTime();
+  if (msg->Level()>=1) gen.m_timer.PrintTime();
 }
 
 bool Run_Parameter::Gen::CheckTime(const double limit)

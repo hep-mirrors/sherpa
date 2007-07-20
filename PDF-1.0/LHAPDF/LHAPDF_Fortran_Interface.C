@@ -61,7 +61,7 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
 
 void LHAPDF_Fortran_Interface::Output() {
   double scale = Flavour(kf::Z).Mass();
-  msg.Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<std::endl
+  msg_Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<std::endl
 	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<std::endl;
   lhapdfgetdesc_();
 }
@@ -75,7 +75,7 @@ double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   if (infl == Flavour(kf::gluon)) return m_f[6];
   int kfc = m_anti*int(infl);
   if (kfc<-6 || kfc>6) {
-    msg.Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
+    msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
     return 0.;
   }
   return m_f[6+kfc];

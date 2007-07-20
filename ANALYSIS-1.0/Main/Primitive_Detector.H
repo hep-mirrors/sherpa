@@ -24,7 +24,7 @@ namespace ANALYSIS {
 
   inline double Primitive_Detector_Element::Cell(const int i,const int j) {
     if (i>-1&&j>-1&&i<m_nx&&j<m_ny) return p_cells[i][j];
-    else ATOOLS::msg.Error()<<"Error in Primitive_Detector_Element "<<m_name<<std::endl
+    else msg_Error()<<"Error in Primitive_Detector_Element "<<m_name<<std::endl
 			    <<"   GetCell("<<i<<","<<j<<") out of bounds, return 0."<<std::endl;
     return 0.;
   }

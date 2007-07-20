@@ -502,7 +502,7 @@ int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
     }
     else {
       if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
-	msg.Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+	msg_Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
     }
   }
   nqed=nqedt;

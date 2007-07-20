@@ -37,14 +37,14 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Return_Value::code &rvc
 Return_Value::~Return_Value()
 {
   if (this==&rvalue) {
-    PrintStatistics(msg.LogFile());
-    if (msg.LevelIsInfo()) PrintStatistics(msg.Out());
+    PrintStatistics(msg_LogFile());
+    if (msg_LevelIsInfo()) PrintStatistics(msg_Out());
   }
 }
 
 void Return_Value::Statistics() const
 {
-  PrintStatistics(msg.Out());
+  PrintStatistics(msg_Out());
 }
 
 void Return_Value::PrintSingleStatistics(std::ostream &str,

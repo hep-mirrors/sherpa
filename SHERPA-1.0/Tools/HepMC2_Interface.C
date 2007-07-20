@@ -33,7 +33,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if(m_converted) return true;
   if (blobs->empty()) {
-    ATOOLS::msg.Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
+    msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
 		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
 		       <<"   Continue run ... ."<<std::endl;
     return true;
@@ -86,16 +86,16 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& ver
   }
   m_blob2genvertex.insert(std::make_pair(blob,vertex));
   if (!okay) {
-    ATOOLS::msg.Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
+    msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
 		       <<"   Continue event generation with new event."<<std::endl;
   }
-  if (ATOOLS::msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     ATOOLS::Vec4D check = blob->CheckMomentumConservation();
     double test         = ATOOLS::Vec3D(check).Abs();
     if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-5 &&
 	ATOOLS::dabs(test)>1.e-5)
       {
-	ATOOLS::msg.Error()<<"ERROR in "<<METHOD<<std::endl
+	msg_Error()<<"ERROR in "<<METHOD<<std::endl
 			   <<"   Momentum not conserved. Continue."<<std::endl
 			   <<"ERROR in Blob -> Vertex : "<<vertex->check_momentum_conservation()
 			   <<" <- "<<test<<" "<<check

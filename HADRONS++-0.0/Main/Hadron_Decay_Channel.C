@@ -37,7 +37,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   HD_ME_Selector mesel;                                         // ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
-  msg.Tracking()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
+  msg_Tracking()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
@@ -80,14 +80,14 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
 
 void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
 {
-  msg.Debugging()
+  msg_Debugging()
     <<"-----------------------------------------------------\n"
     <<"Modelparameters for channel: "<<m_channelname<<"\n"<<endl;
   GeneralModel::iterator md_it;
   for ( md_it = _locmd.begin(); md_it != _locmd.end(); ++md_it ) {
-    msg.Debugging()<<"   "<<md_it->first<<":\t"<<md_it->second<<endl;
+    msg_Debugging()<<"   "<<md_it->first<<":\t"<<md_it->second<<endl;
   }
-  msg.Debugging()
+  msg_Debugging()
     <<"-----------------------------------------------------"<<endl;
 }
 

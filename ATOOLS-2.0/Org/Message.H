@@ -146,7 +146,7 @@ namespace ATOOLS {
 
   };// end of class Message
 
-  extern Message msg;
+  extern Message *msg;
 
   class Indentation {
   private:
@@ -156,10 +156,10 @@ namespace ATOOLS {
   public:
 
     // constructor
-    inline Indentation(const size_t col=2) { msg.m_indent+=m_col=col; }
+    inline Indentation(const size_t col=2) { msg->m_indent+=m_col=col; }
 
     // destructor
-    inline ~Indentation() { msg.m_indent-=m_col; }
+    inline ~Indentation() { msg->m_indent-=m_col; }
 
   };//end of class Indentation
 
@@ -186,12 +186,18 @@ namespace ATOOLS {
   */
 }
 
-#define msg_Error() ATOOLS::msg.Error()
-#define msg_Out() ATOOLS::msg.Out()
-#define msg_Events() if (ATOOLS::msg.LevelIsEvents()) ATOOLS::msg.Out()
-#define msg_Info() if (ATOOLS::msg.LevelIsInfo()) ATOOLS::msg.Out()
-#define msg_Tracking() if (ATOOLS::msg.LevelIsTracking()) ATOOLS::msg.Out()
-#define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
+#define msg_LevelIsEvents() ATOOLS::msg->LevelIsEvents()
+#define msg_LevelIsInfo() ATOOLS::msg->LevelIsInfo()
+#define msg_LevelIsTracking() ATOOLS::msg->LevelIsTracking()
+#define msg_LevelIsDebugging() ATOOLS::msg->LevelIsDebugging()
+
+#define msg_Error() ATOOLS::msg->Error()
+#define msg_Out() ATOOLS::msg->Out()
+#define msg_LogFile() ATOOLS::msg->LogFile()
+#define msg_Events() if (msg_LevelIsEvents()) ATOOLS::msg->Out()
+#define msg_Info() if (msg_LevelIsInfo()) ATOOLS::msg->Out()
+#define msg_Tracking() if (msg_LevelIsTracking()) ATOOLS::msg->Out()
+#define msg_Debugging() if (msg_LevelIsDebugging()) ATOOLS::msg->Out()
 
 #define msg_Indent() ATOOLS::Indentation indent
 #define msg_Indentation(COL) ATOOLS::Indentation indent(COL)
@@ -206,7 +212,7 @@ namespace ATOOLS {
 #define mm_right(COLUMNS) ATOOLS::mm(COLUMNS,mm::right)
 
 #define METHOD \
-  ATOOLS::msg.ExtractMethodName(__PRETTY_FUNCTION__)
+  ATOOLS::msg->ExtractMethodName(__PRETTY_FUNCTION__)
 
 #define PRINT_METHOD \
   std::cout<<ATOOLS::om::blue<<METHOD<<ATOOLS::om::reset<<std::endl

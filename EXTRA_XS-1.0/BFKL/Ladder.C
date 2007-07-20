@@ -140,7 +140,7 @@ bool Ladder::GeneratePDFJet()
   // phase space weight
   m_weight/=32.0*sqr(M_PI);
   if (m_a1>1.0 || m_z1>1.0 || m_a1/m_z1>1.0) {
-    msg.Error()<<METHOD<<"(): LCM out of range."<<std::endl;
+    msg_Error()<<METHOD<<"(): LCM out of range."<<std::endl;
     return false;
   }
   if (!CheckEnergy() || m_k1.Nan() || m_q.Nan()) return false;
@@ -222,7 +222,7 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
     return 0.0;
   }
   if (!SetScales()) {
-    msg.Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
+    msg_Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
     return 0.0;
   }
 #ifdef USING__Collinear_Factorization

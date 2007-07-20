@@ -249,7 +249,7 @@ void XS_Base::ResetSelector(ATOOLS::Selector_Data *const selectordata)
     p_selector = new ATOOLS::Combined_Selector(m_nin,m_nout,p_flavours,selectordata);
   }
   else {
-    ATOOLS::msg.Error()<<"XS_Base::ResetSelector("<<selectordata<<"): "
+    msg_Error()<<"XS_Base::ResetSelector("<<selectordata<<"): "
 		       <<"(\""<<m_name<<"\")"<<std::endl
 		       <<"   No cuts specified. Initialize 'No_Selector'."<<std::endl;
     p_selector = new ATOOLS::No_Selector();
@@ -332,7 +332,7 @@ void XS_Base::AssignRegulator(const std::string &regulator,
 
 void XS_Base::Print()
 {
-  ATOOLS::msg.Out()<<m_name<<" ("<<m_orderEW<<","<<m_orderQCD
+  msg_Out()<<m_name<<" ("<<m_orderEW<<","<<m_orderQCD
 		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }
 

@@ -98,7 +98,7 @@ void Jet_Finder::Init(const Vec4D * p)
     switch (m_type) {
     case 4 : return;
     case 3 : {
-      msg.Error()<<"Jet_Finder::Init : process-type "<<m_type
+      msg_Error()<<"Jet_Finder::Init : process-type "<<m_type
 		 <<" not implemented yet !"<<std::endl;
       return;
     }
@@ -126,13 +126,13 @@ void Jet_Finder::Init(const Vec4D * p)
       
       //checks
       if (dabs(q*pp)>1.e-10) 
-	msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (1) : "
+	msg_Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (1) : "
 		   <<dabs(q*pp)<<std::endl;
       
       bool check(true);
       for (int i=0;i<3;i++) 
 	if (dabs((q[i]-store[i]))>1.e10) check = false; 
-      if (!check) msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (2) : "
+      if (!check) msg_Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (2) : "
 			     <<q-store<<std::endl;
       
       return;
@@ -144,7 +144,7 @@ void Jet_Finder::Init(const Vec4D * p)
     }  
     case 0 : return;
     default :
-      msg.Error()<<"This process-type is unknown!"<<std::endl;
+      msg_Error()<<"This process-type is unknown!"<<std::endl;
     }
   }
 }
@@ -525,33 +525,33 @@ void Jet_Finder::FillCombinations()
     name=name.substr(name.find('_')+1);
     size_t i(0);
     FillCombinations(name,i,m_nin+m_nout);
-    if (msg.LevelIsDebugging()) {
-      msg.Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
+    if (msg_LevelIsDebugging()) {
+      msg_Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
       for (size_t i(0);i<m_combs.size();++i) {
 	if (ID(m_combs[i])!=0) {
-	  msg.Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
+	  msg_Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
 		   <<m_flavs[i].Strong()<<"] & {";
 	  for (size_t j(0);j<m_combs[i].size();++j)
-	    if (m_combs[i][j]!=0) msg.Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
+	    if (m_combs[i][j]!=0) msg_Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
 					   <<m_flavs[j].Strong()<<"]";
-	  msg.Out()<<" }\n";
+	  msg_Out()<<" }\n";
 	}
       }
-      msg.Out()<<"}\n";
-      msg.Out()<<METHOD<<"(): Identified clusterings {\n";
+      msg_Out()<<"}\n";
+      msg_Out()<<METHOD<<"(): Identified clusterings {\n";
       for (size_t i(0);i<m_fills.size();++i)
 	for (size_t j(0);j<m_fills[i].size();++j)
-	  msg.Out()<<" ["<<ID(m_fills[i][j].first)<<","
+	  msg_Out()<<" ["<<ID(m_fills[i][j].first)<<","
 		   <<ID(m_fills[i][j].second)<<"] ("<<i<<")\n";
-      msg.Out()<<"}\n";
-      msg.Out()<<METHOD<<"(): Momentum combination {\n";
+      msg_Out()<<"}\n";
+      msg_Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {
-	msg.Out()<<"  "<<ID(m_mcomb[i].back())<<" -> {";
+	msg_Out()<<"  "<<ID(m_mcomb[i].back())<<" -> {";
 	for (size_t j(0);j<m_mcomb[i].size()-1;++j) 
-	  msg.Out()<<" "<<ID(m_mcomb[i][j]);
-	msg.Out()<<" }\n";
+	  msg_Out()<<" "<<ID(m_mcomb[i][j]);
+	msg_Out()<<" }\n";
       }
-      msg.Out()<<"}\n";
+      msg_Out()<<"}\n";
     }
   }
 }
@@ -574,7 +574,7 @@ void Jet_Finder::PrepareMomList()
     Vec4D::SetAccu(accu);
     if (!(Vec3D(cc)==Vec3D()) || 
 	!IsEqual(cc.Abs2(),m_moms[m_mcomb[n].back()].Abs2())) 
-      msg.Error()<<METHOD<<"(): CMS boost failure. sum = "
+      msg_Error()<<METHOD<<"(): CMS boost failure. sum = "
 		 <<cc<<" "<<cc.Abs2()<<" vs. "
 		 <<m_moms[m_mcomb[n].back()].Abs2()<<"\n";
     Vec4D::ResetAccu();
@@ -786,7 +786,7 @@ bool Jet_Finder::TwoJets(const Vec4D & p1,const bool fix)
              else { if(p1.MPerp2() < crit ) return false; }
   }
   else {
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+    msg_Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
 	     <<"    Still not implemented for mode "<<m_type<<std::endl;
   }
   return true;
@@ -835,7 +835,7 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
   double pt12_2(0.);
   if (mode == 1) {
     pt12_2 = -1000.;
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+    msg_Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
 	     <<"    Still not implemented for mode "<<m_type<<std::endl;
   }
   else pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta)/sqr(m_delta_r);
@@ -923,7 +923,7 @@ void Jet_Finder::BoostBack(Vec4D & p)
 void Jet_Finder::SetDeltaR(double dr) 
 { 
   if (dr<=1.e-6) {
-    msg.Error()<<"ERROR in Jet_Finder::SetDeltaR("<<dr<<") : "<<std::endl
+    msg_Error()<<"ERROR in Jet_Finder::SetDeltaR("<<dr<<") : "<<std::endl
 	       <<"   delta_R to small, will ignore it and leave it at delta_R ="<<m_delta_r<<"."<<std::endl;
     return;
   }

@@ -136,7 +136,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     double meweight(1.0);
     Blob_Data_Base * message = (*blob)["ME_Weight"];
     if (message) meweight = message->Get<double>();
-    else msg.Error()<<METHOD<<"(..): Missing weight information."<<std::endl;
+    else msg_Error()<<METHOD<<"(..): Missing weight information."<<std::endl;
     if (m_ckkwon) p_cluster->CalculateWeight(meweight);
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
@@ -190,7 +190,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     }
     if (p_xs) {
       if (!(p_xs->SetColours(p_moms))) {
-	msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		   <<"   Extra_XS unable to define colour flow."
 		   <<"Return 'Error' and hope for the best."<<std::endl;
 	return Return_Value::Error;
@@ -200,7 +200,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
       int col1 = blob->InParticle(0)->GetFlow(1);
       int col2 = blob->InParticle(0)->GetFlow(2);
       if (p_cluster->SetDecayColours(p_moms,p_fl,col1,col2)!=0) {
-	msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		   <<"   Extra_XS unable to define colour flow."
 		   <<"Return 'Error' and hope for the best."<<std::endl;
 	return Return_Value::Error;

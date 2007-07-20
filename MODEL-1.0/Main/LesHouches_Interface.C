@@ -36,7 +36,7 @@ void LesHouches_Interface::Run(std::string _model) {
   p_reader->SetInputPath(m_dir);
   p_reader->SetInputFile(m_inputfile);
   if (p_reader->InputPath()=="" || p_reader->InputFile()=="")
-    msg.Error()<<"ERROR in LesHouches_Interface::Run : "
+    msg_Error()<<"ERROR in LesHouches_Interface::Run : "
 	       <<"The input file for the SLHA has not been set correctly!"<<std::endl;
   
   p_reader->SetIgnoreCase(true);
@@ -80,7 +80,7 @@ void LesHouches_Interface::Info() {
       if (vs[i][0]=="3") msg_Tracking()<<"   A warning was produced saying "<<vs[i][1]<<std::endl;
     }
   }
-  else msg.Tracking()<<"Could not read Block SPINFO from SLHA file: "<<m_dir+m_inputfile<<std::endl;
+  else msg_Tracking()<<"Could not read Block SPINFO from SLHA file: "<<m_dir+m_inputfile<<std::endl;
   
   std::vector<std::vector<int> > vi;
   p_reader->SetFileBegin(std::string("Block MODSEL"));
@@ -98,7 +98,7 @@ void LesHouches_Interface::Info() {
       }
     }
   }
-  else msg.Error()<<std::endl<<"Could not read Block MODSEL from SLHA file: "
+  else msg_Error()<<std::endl<<"Could not read Block MODSEL from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
 }
 
@@ -164,7 +164,7 @@ void LesHouches_Interface::SetMasses() {
 	msg_Tracking()<<"   Set mass of "<<flav<<" to "<<vd[i][1]<<std::endl;
     }
   }
-  else msg.Error()<<std::endl<<"Could not read Block MASS from SLHA file: "
+  else msg_Error()<<std::endl<<"Could not read Block MASS from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
 }
 
@@ -209,19 +209,19 @@ void LesHouches_Interface::SetHiggsParameters() {
   p_reader->SetFileBegin(std::string("Block MINPAR"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd2,"")) 
-    msg.Error()<<std::endl<<"Could not read Block MINPAR from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block MINPAR from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;  
   
   p_reader->SetFileBegin(std::string("Block alpha"));
   p_reader->RereadInFile();
   if (!p_reader->ReadFromFile(alpha,"")) 
-    msg.Error()<<std::endl<<"Could not read Block alpha from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block alpha from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   p_reader->SetFileBegin(std::string("Block hmix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,"")) 
-    msg.Error()<<std::endl<<"Could not read Block hmix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block hmix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
 
   for (unsigned int i=0;i<vd2.size();++i) {
@@ -300,7 +300,7 @@ void LesHouches_Interface::SetInoParameters() {
   p_reader->SetFileBegin(std::string("Block nmix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block nmix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block nmix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   Matrix<4> NMix;
@@ -327,7 +327,7 @@ void LesHouches_Interface::SetInoParameters() {
   p_reader->SetFileBegin(std::string("Block Umix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block Umix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block Umix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   Matrix<2> UMix;
@@ -353,7 +353,7 @@ void LesHouches_Interface::SetInoParameters() {
   p_reader->SetFileBegin(std::string("Block Vmix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block Vmix from SLHA file: "<<
+    msg_Error()<<std::endl<<"Could not read Block Vmix from SLHA file: "<<
       m_dir+m_inputfile<<std::endl;
 
   Matrix<2> VMix;
@@ -383,7 +383,7 @@ void LesHouches_Interface::SetSquarkParameters() {
   p_reader->SetFileBegin(std::string("Block stopmix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block stopmix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block stopmix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   //transposed with respect to SLHA
@@ -436,7 +436,7 @@ void LesHouches_Interface::SetSquarkParameters() {
       if (vd[i][0]==3 && vd[i][1]==3) us[2][2]=-vd[i][2]*YU;
     }
   }
-  else msg.Error()<<std::endl<<"Could not read Block au from SLHA file: "
+  else msg_Error()<<std::endl<<"Could not read Block au from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
   
   msg_Tracking()<<"   ws is : "<<std::endl;
@@ -462,7 +462,7 @@ void LesHouches_Interface::SetSquarkParameters() {
   p_reader->SetFileBegin(std::string("Block sbotmix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block sbotmix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block sbotmix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   CMatrix Zd = CMatrix(6);
@@ -512,7 +512,7 @@ void LesHouches_Interface::SetSquarkParameters() {
       if (vd[i][0]==3 && vd[i][1]==3) ds[2][2] = -vd[i][2]*YD;  
     }
   }
-  else msg.Error()<<std::endl<<"Could not read Block ad from SLHA file: "
+  else msg_Error()<<std::endl<<"Could not read Block ad from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
   vd.clear();
   
@@ -544,7 +544,7 @@ void LesHouches_Interface::SetSleptonParameters() {
   p_reader->SetFileBegin(std::string("Block staumix"));
   p_reader->RereadInFile();
   if (!p_reader->MatrixFromFile(vd,""))
-    msg.Error()<<std::endl<<"Could not read Block staumix from SLHA file: "
+    msg_Error()<<std::endl<<"Could not read Block staumix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
   
   CMatrix Zl = CMatrix(6);
@@ -595,7 +595,7 @@ void LesHouches_Interface::SetSleptonParameters() {
       if (vd[i][0]==3 && vd[i][1]==3) ls[2][2] = -vd[i][2]*YE;  
     }
   }
-  else msg.Error()<<std::endl<<"Could not read Block ae from SLHA file: "
+  else msg_Error()<<std::endl<<"Could not read Block ae from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
   vd.clear();
   

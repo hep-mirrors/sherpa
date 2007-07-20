@@ -20,7 +20,7 @@ namespace ATOOLS
     size_t GetNumber(const std::vector<int>& spins) const
     {
       if(spins.size()!=m_spins.size()) {
-	msg.Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
+	msg_Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
       }
       int mult(1);
       size_t num(0);
@@ -29,7 +29,7 @@ namespace ATOOLS
 	mult *= m_spins[i];
       }
       if(num>this->size()) {
-	msg.Error()<<METHOD<<" Error: tried to access value out of bounce. "
+	msg_Error()<<METHOD<<" Error: tried to access value out of bounce. "
 	  <<"num="<<num<<" > "<<this->size()<<std::endl;
       }
       return num;
@@ -40,7 +40,7 @@ namespace ATOOLS
       sort(spins.begin(),spins.end(),SortByFirst);
       
       if(spins.size()!=m_spins.size()) {
-	msg.Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
+	msg_Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
       }
       int mult(1);
       size_t num(0);
@@ -49,7 +49,7 @@ namespace ATOOLS
 	mult *= m_spins[i];
       }
       if(num>this->size()) {
-	msg.Error()<<METHOD<<" Error: tried to access value out of bounce. "
+	msg_Error()<<METHOD<<" Error: tried to access value out of bounce. "
 	  <<"num="<<num<<" > "<<this->size()<<std::endl;
       }
       return num;

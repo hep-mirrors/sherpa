@@ -26,7 +26,7 @@ void Hadron_Wave_Function::AddToWaves(Flavour_Pair * pair,double weight)
 {
   if (m_waves.find(pair)==m_waves.end()) m_waves[pair] = weight;
   else {
-    msg.Error()<<"Potential error in Hadron_Wave_Function::AddToWaves"<<endl
+    msg_Error()<<"Potential error in Hadron_Wave_Function::AddToWaves"<<endl
 	       <<"   Pair "<<pair->first<<"/"<<pair->second<<" already in map."<<endl
 	       <<"   Will ignore this and continue."<<endl;
     return;

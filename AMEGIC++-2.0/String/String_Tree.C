@@ -350,7 +350,7 @@ string String_Tree::Tree2String(sknot* m,sknot* g)
   }
 
   if (m->left!=0 || m->right!=0) {
-    msg.Error()<<"Error in Tree2String: "<<m->Str()<<endl;
+    msg_Error()<<"Error in Tree2String: "<<m->Str()<<endl;
     abort();
   }
 

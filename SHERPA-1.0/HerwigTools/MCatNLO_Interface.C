@@ -32,7 +32,7 @@ MCatNLO_Interface::MCatNLO_Interface(std::string _m_path,std::string _m_file,boo
 { 
   p_herwig = new Herwig_Interface(m_path,m_file,sherpa);
   if (!ReadInTheParameters()) {
-    msg.Error()<<"Error in MCatNLO_Interface::MCatNLO_Interface: "<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::MCatNLO_Interface: "<<std::endl
 	       <<"   Did not succeed to initialize the Interface, abort the run."<<std::endl;
     abort();
   }
@@ -55,14 +55,14 @@ bool MCatNLO_Interface::ReadInTheParameters()
 
   std::string nlo_events;
   if (!reader->ReadFromFile(nlo_events,"NLO_EVENTFILE"))  {
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   No value found for token NLO_EVENTFILE. Return false."<<std::endl;
     return false;
   }
   
   ifstream from(nlo_events.c_str());
   if (!from) {
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   No NLO event-file found : "<<nlo_events<<" not in run-directory."<<std::endl
 	       <<"   Return false."<<std::endl;
     return false;
@@ -82,7 +82,7 @@ bool MCatNLO_Interface::ReadInTheParameters()
   Shorten(act);
   ecm = atof(act.c_str());
   if (!IsEqual(ecm,rpa.gen.Ecms())) {
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   C.m. energies of file and run do not coincide : "
 	       <<ecm<<" vs. "<<rpa.gen.Ecms()<<std::endl
 	       <<"   Return false."<<std::endl;
@@ -124,7 +124,7 @@ bool MCatNLO_Interface::ReadInTheParameters()
     m_proc       = ptp::Boson_Pair; 
     break;
   default: 
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   Process number not understood : "<<proc<<std::endl
 	       <<"   Return false."<<std::endl;
     return false;    
@@ -144,7 +144,7 @@ bool MCatNLO_Interface::ReadInTheParameters()
   Shorten(buf);
   if (!(act==string("P") || act==string("PBAR")) ||
       !(buf==string("P") || buf==string("PBAR")) ) {
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   Funny beam particles (1,2), not understood : ("<<act<<","<<buf<<")"<<std::endl
 	       <<"   Return false."<<std::endl;
     return false;    
@@ -173,7 +173,7 @@ bool MCatNLO_Interface::ReadInTheParameters()
   Shorten(buf);
   numb = atoi(buf.c_str());
   if (numb<rpa.gen.NumberOfEvents()) {
-    msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
+    msg_Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   Not enough NLO events in event file : "<<numb<<", "
 	       <<rpa.gen.NumberOfEvents()<<" wanted."<<std::endl
 	       <<"   Continue anyhow."<<std::endl;

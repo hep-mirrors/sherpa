@@ -185,13 +185,13 @@ bool QCD_Remnant_Base::AdjustColors()
 	  for (Dipole_Vector::iterator rit=partner->m_connected.begin();
 	       rit!=partner->m_connected.end();++rit) {
 	    if ((*rit)->Singlet(qri::real) || (*rit)->Singlet(qri::anti)) 
-	      ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
+	      msg_Error()<<"QCD_Remnant_Base::AdjustColors(): "
 				 <<"Colour singlet."<<std::endl;
 	  }
 	  for (Dipole_Vector::iterator rit=self->m_connected.begin();
 	       rit!=self->m_connected.end();++rit) {
 	    if ((*rit)->Singlet(qri::real) || (*rit)->Singlet(qri::anti)) 
-	      ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
+	      msg_Error()<<"QCD_Remnant_Base::AdjustColors(): "
 				 <<"Colour singlet."<<std::endl;
 	  }
 	  return true;

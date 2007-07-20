@@ -279,10 +279,10 @@ void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
 	(myinstream)>>iy>>idum2;
 	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
       } 
-      else ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
+      else msg_Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
       myinstream.close();
     } 
-    else ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
+    else msg_Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
   }
 }
 
@@ -484,12 +484,12 @@ void ATOOLS::Random::ReadInStatus4(const char * filename, long int index)
     strncpy(temp,status.idTag,16);
     if (strcmp(temp, "Rnd4_G_Marsaglia")) {
       // Data read in was not from a RndGen of the same type
-      ATOOLS::msg.Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
-      ATOOLS::msg.Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
+      msg_Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
+      msg_Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
     }
   }  
   else 
-    ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
+    msg_Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
 }
 
 

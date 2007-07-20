@@ -29,7 +29,7 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weig
 {
   PROFILE_LOCAL("Hadronization::Treat");
   if (bloblist->empty()) {
-    msg.Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
+    msg_Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;

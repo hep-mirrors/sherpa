@@ -73,30 +73,30 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
    if ((psh->BeamIntegrator())) {
      (psh->BeamIntegrator())->Reset();
      numberofchannels = psh->NumberOfBeamIntegrators();
-     msg.Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
+     msg_Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
    }
    if ((psh->ISRIntegrator())) {
      (psh->ISRIntegrator())->Reset();
      numberofchannels += psh->NumberOfISRIntegrators();
-     msg.Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
+     msg_Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
    }
 
   if ((psh->KMRZIntegrator())) {
     (psh->KMRZIntegrator())->Reset();
     numberofchannels += psh->NumberOfKMRZIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
   }
   if ((psh->KMRKPIntegrator())) {
     (psh->KMRKPIntegrator())->Reset();
     numberofchannels += psh->NumberOfKMRKPIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
   }
 
 
 
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->NumberOfFSRIntegrators();
-  msg.Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
+  msg_Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
 
   iter = iter0 = Max(20*int(numberofchannels),5000);
   iter1      = Max(100*int(numberofchannels),10000);
@@ -151,11 +151,11 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
 
   if (rank==0) {
     for (short int i=1;i<size;i++) MPI::COMM_WORLD.Send(&iterall, 1, MPI::INT, i, 10);   
-    msg.Out()<<"Node "<<rank<<"starts calculation with "<<iterall<<" steps."<<endl;
+    msg_Out()<<"Node "<<rank<<"starts calculation with "<<iterall<<" steps."<<endl;
   }
   else {
     MPI::COMM_WORLD.Recv(&iterall, 1, MPI::INT, 0, MPI::ANY_TAG);
-    msg.Out()<<"Node "<<rank<<"starts calculation with "<<iterall<<" steps."<<endl;
+    msg_Out()<<"Node "<<rank<<"starts calculation with "<<iterall<<" steps."<<endl;
   }
 #endif
 
@@ -172,7 +172,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
 
   for (n=ATOOLS::Max(psh->Process()->Points(),(long int)0)+1;n<=nmax;n++) {
     if (!rpa.gen.CheckTime()) {
-      ATOOLS::msg.Error()<<ATOOLS::om::bold
+      msg_Error()<<ATOOLS::om::bold
 			 <<"\nPhase_Space_Integrator::Calculate(): "
 			 <<ATOOLS::om::reset<<ATOOLS::om::red
 			 <<"Timeout. Interrupt integration."
@@ -237,7 +237,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	double local_error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	  (psh->FSRIntegrator())->N();
 
-	msg.Out()<<n<<" Node "<<rank<<" : Result : "<<local_result<<" pb +- "
+	msg_Out()<<n<<" Node "<<rank<<" : Result : "<<local_result<<" pb +- "
 		 <<local_error*100<<" % "<<"steps "<<n<<endl;
       }
       // change iteration steps or end integrations
@@ -245,7 +245,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	int olditerall=iterall;
 	MPI::COMM_WORLD.Recv(&iterall, 1, MPI::INT, 0, 10);
 	if (iterall<=n/olditerall)   iterall=n/olditerall+1;
-	msg.Out()<<"Slave "<<rank<<" changed iteration steps to "<<iterall<<endl; 
+	msg_Out()<<"Slave "<<rank<<" changed iteration steps to "<<iterall<<endl; 
 	if (iterall==0) return true;  
       }
       // check for optimizations
@@ -253,7 +253,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	//Tag 5 means optimization
 	int opt;
 	MPI::COMM_WORLD.Recv(&opt, 1, MPI::INT, 0, 5);
-	msg.Out()<<"Slave "<<rank<<" received opt-tag: "<<opt<<endl;
+	msg_Out()<<"Slave "<<rank<<" received opt-tag: "<<opt<<endl;
 	if (opt==1) psh->FSRIntegrator()->MPIOptimize(maxerror);
 	if (opt==2) psh->FSRIntegrator()->EndOptimize(maxerror);
       }
@@ -272,7 +272,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   	double local_result = (psh->FSRIntegrator())->Result() / (psh->FSRIntegrator())->N() * rpa.Picobarn();
 	double local_error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	(psh->FSRIntegrator())->N();
-	msg.Out()<<n<<" Node 0 : Result : "<<local_result<<" +- "<<local_error*100.<<" % "<<endl;
+	msg_Out()<<n<<" Node 0 : Result : "<<local_result<<" +- "<<local_error*100.<<" % "<<endl;
 	
 	// total 
 	double total_result=allsum/alln*rpa.Picobarn();
@@ -285,7 +285,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 
       while (MPI::COMM_WORLD.Iprobe(MPI::ANY_SOURCE, MPI::ANY_TAG)) {
 	MPI::COMM_WORLD.Recv(&message, 1, Mes_Type, MPI::ANY_SOURCE, MPI::ANY_TAG);	
-	msg.Out()<<" received Data from Knot "<<message.id<<endl;
+	msg_Out()<<" received Data from Knot "<<message.id<<endl;
 
 	saveiter+= message.n;
 	alln    += message.n;
@@ -298,14 +298,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (saveiter>=iter) { // check if optimization steps neccessary
 	  saveiter = 0;
 	  if (alln<=maxopt) {
-	    msg.Out()<<"Start optimization"<<endl;
+	    msg_Out()<<"Start optimization"<<endl;
 	    //Send Optimize Message with tag 5
 	    int opt = 1;
 	    for (short int i=1;i<size;i++) MPI::COMM_WORLD.Isend(&opt, 1, MPI::INT, i, 5);   
 	    psh->FSRIntegrator()->MPIOptimize(maxerror);
 	  }
 	  if (alln>=maxopt && alln<maxopt+iter) {
-	    msg.Out()<<"End optimization"<<endl;
+	    msg_Out()<<"End optimization"<<endl;
 	    int opt = 2;
 	    for (short int i=1;i<size;i++) MPI::COMM_WORLD.Isend(&opt, 1, MPI::INT, i, 5);   
 	    psh->FSRIntegrator()->EndOptimize(maxerror);
@@ -319,7 +319,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
        
 	double total_result=allsum/alln*rpa.Picobarn();
 	double total_error=sqrt((allsum2/alln-(sqr(allsum)-allsum2)/alln/(alln-1))/alln)/allsum*alln;
-	msg.Out()<<alln<<" Master : Result : "<<total_result
+	msg_Out()<<alln<<" Master : Result : "<<total_result
 		 <<" pb +- "<<total_error*100.<<" % "<<endl;
 	
 	if (total_error<maxerror || alln>=nmax) over = 1;	
@@ -368,7 +368,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)
 	  && !((psh->Process())->TotalResult()==0.)) {
-	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
+	msg_Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
 	return true;
       }
       
@@ -441,7 +441,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
     
     //Nan Check
     if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
-      msg.Out()<<"NaN knockout!!!!"<<endl;
+      msg_Out()<<"NaN knockout!!!!"<<endl;
       break;
     }
     
@@ -456,7 +456,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
       }
       //Nan Check
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
-	msg.Out()<<"NaN knockout!!!!"<<endl;
+	msg_Out()<<"NaN knockout!!!!"<<endl;
 	break;
       }
       if ((psh->Process())->TotalResult()==0.) break;

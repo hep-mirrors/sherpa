@@ -98,7 +98,7 @@ bool Remnant_Base::AdjustKinematics()
   }
   ATOOLS::ms::error_code error=shift.Scale();
   if (error!=ATOOLS::ms::no_error) {
-    ATOOLS::msg.Tracking()<<"Remnant_Base::AdjustKinematics(): "<<error<<".\n"
+    msg_Tracking()<<"Remnant_Base::AdjustKinematics(): "<<error<<".\n"
 			  <<"   Retry using new remnant pair."<<std::endl;
     while (ChooseLast()) {
       if (AdjustKinematics()) return true;
@@ -107,7 +107,7 @@ bool Remnant_Base::AdjustKinematics()
   }
   for (size_t i=0;i<2;++i) {
     if (!(p_last[i]->Momentum()[0]>0.)) {
-      ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
+      msg_Error()<<"Remnant_Base::AdjustKinematics(): "
 			 <<"Parton ("<<p_last[i]<<") has non-positive energy "
 			 <<p_last[i]->Momentum()<<std::endl;
       return false;
@@ -160,7 +160,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
 bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) 
 { 
   if (parton==NULL) {
-    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract(NULL): "
+    msg_Error()<<"Remnant_Base::TestExtract(NULL): "
 		       <<"Called with NULL pointer."<<std::endl;
     return false;
   }
@@ -173,7 +173,7 @@ bool Remnant_Base::TestExtract(const ATOOLS::Flavour &flav,
   PROFILE_HERE;
   double E(mom[0]), Eb(p_beam->Energy());
   if (E<0.0 || (E>Eb && !ATOOLS::IsEqual(E,Eb))) {
-    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "
+    msg_Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "
 		       <<"Constituent energy out of range E_b = "
 		       <<Eb<<"."<<std::endl;
     return false;

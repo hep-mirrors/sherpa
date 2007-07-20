@@ -20,7 +20,7 @@ template <class Type>
 const Type Data_Read::ReturnData(const std::string &name,const Type type) 
 {
   if (!s_nowrite)
-    ATOOLS::msg.LogFile()<<std::setiosflags(std::ios::left)
+    msg_LogFile()<<std::setiosflags(std::ios::left)
 			 <<std::setw(30)<<name<<" = "
 			 <<std::setiosflags(std::ios::left)
 			 <<std::setw(20)<<type
@@ -161,7 +161,7 @@ template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   if (value.length()==0) return ReturnData(name,NotDefined<Switch::code>());
   if (value==std::string("On")) return ReturnData(name,Switch::On);
   if (value==std::string("Off")) return ReturnData(name,Switch::Off);
-  msg.Error()<<"Error in Data_Read::GetValue<Switch::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<Switch::code>:"<<std::endl
 	     <<"   Unknown Switch::code "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Switch::code>());
 }
@@ -178,7 +178,7 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
   if (value==std::string("Laser_Backscattering")) return ReturnData(name,Beam_Type::Laser_Back);    
   if (value==std::string("Spectrum_Reader")) return ReturnData(name,Beam_Type::Spec_Read);    
   if (value==std::string("Simple_Compton")) return ReturnData(name,Beam_Type::Simple_Compton);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<std::endl
 	     <<"   Unknown Beam type  "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Beam_Type::code>());
 }
@@ -189,7 +189,7 @@ template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Beam_Generator::code>());
   std::string value = m_parameters[name];
   if (value==std::string("Internal")) return ReturnData(name,Beam_Generator::Internal);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Generator::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<Beam_Generator::code>:"<<std::endl
 	     <<"Unknown Beam generator  "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Beam_Generator::code>());
 }
@@ -201,7 +201,7 @@ template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string n
   std::string value = m_parameters[name];
   if (value==std::string("Cylinder")) return ReturnData(name,Beam_Shape::Cylinder);
   if (value==std::string("Gaussian_Cylinder")) return ReturnData(name,Beam_Shape::Gaussian_Cylinder);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Shape::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<Beam_Shape::code>:"<<std::endl
 	     <<"Unknown Beam shape  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<Beam_Shape::code>());
 }
@@ -223,7 +223,7 @@ template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name)
   if (value==std::string("Pythia"))          return ReturnData(name,ISR_Type::Pythia);   
   if (value==std::string("KKMC"))            return ReturnData(name,ISR_Type::KKMC);    
   
-  msg.Error()<<"Error in Data_Read::GetValue<ISR_Type::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<ISR_Type::code>:"<<std::endl
 	     <<"   Unknown ISR type  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<ISR_Type::code>());
 }
@@ -239,7 +239,7 @@ template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string
   if (value==std::string("String"))   return ReturnData(name,String_Type::String);    
   if (value==std::string("Library"))  return ReturnData(name,String_Type::Library);    
 
-  msg.Error()<<"Error in Data_Read::GetValue<String_Type::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<String_Type::code>:"<<std::endl
 	     <<"   Unknown String_Type  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<String_Type::code>());
 }
@@ -260,7 +260,7 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (value==std::string("SM+EHC"))   return ReturnData(name,Model_Type::SMEHC);
   if (value==std::string("SM+ZPrime"))return ReturnData(name,Model_Type::SM_ZPrime);
   if (value==std::string("SM+AGC"))   return ReturnData(name,Model_Type::SM_AGC);
-  msg.Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<std::endl
+  msg_Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<std::endl
 	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<Model_Type::code>());
 }
@@ -271,7 +271,7 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   Parameter_Map::const_iterator cit=m_parameters.find(name);
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Flavour>());
   if (!kf_table.IsInitialised()) {
-    msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<std::endl
+    msg_Error()<<"Warning in Flavour Data_Read::GetValue."<<std::endl
 	       <<"   kf table not initialized yet. Return undefined flavour."<<std::endl;
     return ReturnData(name,NotDefined<Flavour>());
   }

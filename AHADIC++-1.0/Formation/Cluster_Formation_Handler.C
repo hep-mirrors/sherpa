@@ -131,7 +131,7 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
 	if (col1==col2) construct = false;
       }
       else {
-	msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		   <<"   Assumed everything okay with blob."
 		   <<std::endl<<(*p_blob)<<std::endl;
 	abort();
@@ -202,7 +202,7 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
     pplit=m_partlists.begin();
     clist = new Cluster_List;
     if (!p_gludecayer->DecayList(*pplit)) {
-      msg.Info()<<"WARNING in "<<METHOD<<":"<<std::endl
+      msg_Info()<<"WARNING in "<<METHOD<<":"<<std::endl
 		<<"   Not enough energy to move partons on their mass shell."<<std::endl
 		<<"   Retry the formation procedure."<<std::endl;
       rvalue.IncRetryMethod(METHOD);

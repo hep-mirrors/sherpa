@@ -28,7 +28,7 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weig
 {
   PROFILE_LOCAL("Beam_Remnants::Treat");
   if (bloblist->empty()) {
-    msg.Error()<<"Beam_Remnants::Treat("<<bloblist<<","<<weight<<"): "<<endl
+    msg_Error()<<"Beam_Remnants::Treat("<<bloblist<<","<<weight<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;

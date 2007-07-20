@@ -22,7 +22,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   }
   m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
-    msg.Out()<<"WARNING in Shower_Handler : "<<std::endl
+    msg_Out()<<"WARNING in Shower_Handler : "<<std::endl
 	     <<"   final state shower is switched on, since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
@@ -41,7 +41,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
     if (p_apacic->FinShower()) p_apacic->SetMaxJetNumber(m_maxjetnumber);
   }
   else {
-    msg.Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
+    msg_Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
 	       <<"   Showers needed, but no valid shower generator found !"<<std::endl
 	       <<"   Don't know, how to deal with SHOWER_GENERATOR = "<<m_showergenerator<<std::endl
 	       <<"   Abort."<<std::endl;
@@ -71,7 +71,7 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
 {
   if (p_apacic) {
     if (!(p_apacic->ExtractPartons(m_isrshowerswitch,m_fsrshowerswitch,_bloblist))) {
-      msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
+      msg_Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
 		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
     }
 //     std::cout<<"------------------------------------------------------------------------------"<<std::endl
@@ -84,7 +84,7 @@ void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist)
 {
   if (p_apacic) {
     if (!(p_apacic->ExtractPartons(0,m_fsrshowerswitch,_bloblist))) {
-      msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
+      msg_Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
 		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
     }
   }
@@ -96,7 +96,7 @@ void Shower_Handler::CleanUp() {
 
 APACIC::Tree * Shower_Handler::GetFinTree() { 
   if (p_apacic) return p_apacic->FinTree();
-  msg.Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
+  msg_Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
 	     <<"   Apacic is not the shower handler."<<std::endl
 	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
   abort();
@@ -104,7 +104,7 @@ APACIC::Tree * Shower_Handler::GetFinTree() {
 
 APACIC::Tree ** Shower_Handler::GetIniTrees() { 
   if (p_apacic) return p_apacic->IniTrees();
-  msg.Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
+  msg_Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
 	     <<"   Apacic is not the shower handler."<<std::endl
 	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
   abort();

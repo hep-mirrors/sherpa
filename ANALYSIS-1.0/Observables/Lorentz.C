@@ -147,7 +147,7 @@ void Booster::CreateParticleList()
   Particle_List *inlist(p_ana->GetParticleList(m_listname));
   Particle_List *reflist(p_ana->GetParticleList(m_reflist));
   if (inlist==NULL || reflist==NULL) {
-    msg.Error()<<METHOD<<"(): Missing lists: '"<<m_listname
+    msg_Error()<<METHOD<<"(): Missing lists: '"<<m_listname
 	       <<"','"<<m_reflist<<"'."<<std::endl;
     return;
   }
@@ -202,7 +202,7 @@ void Rotator::CreateParticleList()
   Particle_List *inlist(p_ana->GetParticleList(m_listname));
   Particle_List *reflist(p_ana->GetParticleList(m_reflist));
   if (inlist==NULL || reflist==NULL) {
-    msg.Error()<<METHOD<<"(): Missing lists: '"<<m_listname
+    msg_Error()<<METHOD<<"(): Missing lists: '"<<m_listname
 	       <<"','"<<m_reflist<<"'."<<std::endl;
     return;
   }

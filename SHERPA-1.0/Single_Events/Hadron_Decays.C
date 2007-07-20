@@ -50,12 +50,12 @@ Hadron_Decays::~Hadron_Decays()
 
 Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & weight) 
 {
-  msg.Tracking()<<"--------- "<<METHOD<<" - START --------------"<<endl;
+  msg_Tracking()<<"--------- "<<METHOD<<" - START --------------"<<endl;
   PROFILE_HERE;
   if(p_dechandlers->empty()) return Return_Value::Nothing;
 
   if (bloblist->empty()) {
-    msg.Error()<<"Potential error in "<<METHOD<<endl
+    msg_Error()<<"Potential error in "<<METHOD<<endl
       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Nothing;
@@ -79,7 +79,7 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
       }
     }
   }
-  msg.Tracking()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<endl;
+  msg_Tracking()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<endl;
   return (didit ? Return_Value::Success : Return_Value::Nothing);
 }
 
@@ -127,7 +127,7 @@ Return_Value::code Hadron_Decays::Treat(Blob * blob)
       }
     }
     if( all_again_trials > 10 ) {
-      msg.Error()<<"Warning in "<<METHOD<<" in "
+      msg_Error()<<"Warning in "<<METHOD<<" in "
         <<"   blob ["<<blob->Id()<<"] of event "<<rpa.gen.NumberOfDicedEvents()<<endl
         <<"   retried mass dicing too often and didn't succeed. "
         <<"   Will retry event."<<endl;
@@ -246,7 +246,7 @@ Return_Value::code Hadron_Decays::Treat(int i)
           return Return_Value::Success;
         }
         else if ( ret == Return_Value::Error ) {
-          msg.Error()<<"Error in "<<METHOD<<":"<<endl
+          msg_Error()<<"Error in "<<METHOD<<":"<<endl
             <<"   Hadron_Decay_Handler "<<hdhandler->Name()<<" failed to decay "<<endl
             <<"   "<<(*part)<<","<<endl
             <<"   it returned "<<ret<<". Will retry event."<<endl;
@@ -299,7 +299,7 @@ bool Hadron_Decays::PrepareMassSmearing(Blob* blob)
   for(int i=0;i<blob->NOutP();i++) total += blob->OutParticle(i)->Momentum();
   m_max_mass = total.Mass();
   if( !(m_max_mass > 0.0) ) {
-    msg.Error()<<METHOD<<" Error: total outgoing mass in this blob:"<<endl
+    msg_Error()<<METHOD<<" Error: total outgoing mass in this blob:"<<endl
       <<"  m_max_mass="<<m_max_mass<<endl
       <<"  The blob was:"<<endl
       <<(*blob)<<endl
@@ -323,7 +323,7 @@ Hadron_Decay_Handler* Hadron_Decays::ChooseDecayHandler(Particle* part)
 {
 #ifdef DEBUG__Hadrons
   if(part->Flav().IsStable()) {
-    msg.Error()<<METHOD<<" for stable particle? part="<<part->Flav()<<endl;
+    msg_Error()<<METHOD<<" for stable particle? part="<<part->Flav()<<endl;
   }
 #endif
   for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
@@ -331,15 +331,15 @@ Hadron_Decay_Handler* Hadron_Decays::ChooseDecayHandler(Particle* part)
       return hd->second;
     }
   }
-  msg.Error()<<"Warning in "<<METHOD<<":"<<std::endl
+  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
     <<"   Unstable particle found ("<<part->Flav()<<") in "<<endl;
   if( part->ProductionBlob()->Type()==btp::Fragmentation ) {
-    msg.Error()<<"   coming out of fragmentation."<<endl;
+    msg_Error()<<"   coming out of fragmentation."<<endl;
   }
   else {
-    msg.Error()<<*(part->ProductionBlob())<<endl;
+    msg_Error()<<*(part->ProductionBlob())<<endl;
   }
-  msg.Error()<<"   but no handler found to deal with it."<<std::endl
+  msg_Error()<<"   but no handler found to deal with it."<<std::endl
     <<"   Will continue and hope for the best."<<std::endl;
   return NULL;
 }

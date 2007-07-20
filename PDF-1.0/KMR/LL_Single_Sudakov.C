@@ -57,7 +57,7 @@ double LL_Single_Sudakov::operator()(double Q, double q)
 
 double LL_Single_Sudakov::operator()(double Q) 
 {
-  ATOOLS::msg.Error()<<"LL_Single_Sudakov::operator("<<Q<<"): "
+  msg_Error()<<"LL_Single_Sudakov::operator("<<Q<<"): "
 		     <<"Did not set m_qmin yet !"<<std::endl;
   return 1.;
 }

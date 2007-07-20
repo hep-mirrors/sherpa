@@ -78,7 +78,7 @@ bool HadronDecays_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 
 int HadronDecays_Apacic_Interface::PerformShowers()
 {
-  msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
+  msg_Error()<<"ERROR in "<<METHOD<<" : "<<endl
 	     <<"   Hadron Decay Blobs must have one incoming particle only,"<<endl
 	     <<"   but seemingly there are two incoming particles."<<endl
 	     <<"   Will abort the run."<<endl;
@@ -115,7 +115,7 @@ bool HadronDecays_Apacic_Interface::FillTree(APACIC::Tree * tree)
     if (m_particles.size()==4) return FillSpectatorDecayTree(tree);
     break;
   }
-  msg.Error()<<"Error in METHOD:"<<std::endl
+  msg_Error()<<"Error in METHOD:"<<std::endl
 	     <<"   Do not know how to deal with a "
 	     <<m_N_of_singlets<<" singlets, "
 	     <<m_particles.size()<<" particles situation."<<std::endl

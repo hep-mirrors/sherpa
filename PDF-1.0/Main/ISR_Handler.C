@@ -291,7 +291,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
-    ATOOLS::msg.Error()<<METHOD<<"(..): "<<om::red
+    msg_Error()<<METHOD<<"(..): "<<om::red
 		       <<"s' out of bounds.\n"<<om::reset
 		       <<"  s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
 		       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
@@ -299,7 +299,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     return false;
   }
   if (m_ykey[2]<m_ykey[0] || m_ykey[2]>m_ykey[1]) {
-    ATOOLS::msg.Error()<<METHOD<<"(..): "<<om::red
+    msg_Error()<<METHOD<<"(..): "<<om::red
 		       <<"y out of bounds.\n"<<om::reset
 		       <<"  y_{min}, y_{max} vs. y: "<<m_ykey[0]
 		       <<", "<<m_ykey[1]<<" vs. "<<m_ykey[2]<<std::endl;

@@ -38,7 +38,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*rpa.gen.FactorizationScaleFactor()) {
-      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
+      msg_Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
 		 <<")*FACTORIZATION_SCALE_FACTOR("
 		 <<rpa.gen.FactorizationScaleFactor()<<") "
 		 <<"smaller than minimum scale given by PDF ("
@@ -444,7 +444,7 @@ void Initial_State_Shower::SetColours(Knot * k)
 	if (nc!=2) all_colors_known=0;
       }
       else {
-	msg.Error()<<"ERROR in Initial_State_Shower::SetColours:"<<std::endl
+	msg_Error()<<"ERROR in Initial_State_Shower::SetColours:"<<std::endl
 		   <<"   Strongly interacting particle "<<test->part->Flav()
 		   <<" not covered by SetColours "<<std::endl;
       }
@@ -694,7 +694,7 @@ void Initial_State_Shower::ExtractPartons(Knot *const kn,const int &beam,
     }
   }
   if (m_bl_meps_is==NULL) {
-    msg.Error()<<METHOD<<"(..): No Interface found. Abort."<<std::endl;
+    msg_Error()<<METHOD<<"(..): No Interface found. Abort."<<std::endl;
     abort();
   }
   m_bl_meps_is->SetStatus(blob_status::inactive);
@@ -797,9 +797,9 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
 {
   double E2(sqr(rpa.gen.Ecms()));
 
-  msg.Out()<<" Starting Test IS Shower :"<<std::endl;
+  msg_Out()<<" Starting Test IS Shower :"<<std::endl;
   for (long int n=1;n<=rpa.gen.NumberOfEvents();n++) { 
-    if (n%2500==0) msg.Out()<<" "<<n<<" events"<<std::endl;
+    if (n%2500==0) msg_Out()<<" "<<n<<" events"<<std::endl;
 
     for (int i=0;i<2;i++) trees[i]->Reset();
     InitTwoTrees(trees,E2);
@@ -813,11 +813,11 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
 void Initial_State_Shower::OutputTree(Tree * tree) 
 {
   if (tree->GetInitiator()==NULL) {
-    msg.Out()<<"empty Tree"<<std::endl;
+    msg_Out()<<"empty Tree"<<std::endl;
   }
   else {
     int number(0);
-    msg.Out()<<"final Tree:"<<std::endl<<*tree<<std::endl
+    msg_Out()<<"final Tree:"<<std::endl<<*tree<<std::endl
 	     <<"Total 4 Mom = "<<GetMomentum(tree->GetInitiator(),number)
 	     <<" for "<<number<<" FS particles."<<std::endl;
   }

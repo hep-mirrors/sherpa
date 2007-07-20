@@ -13,7 +13,7 @@ Environment::Environment(const std::string path,const std::string file):
   m_path(path), m_file(file),
   p_beamhandler(NULL), p_isrhandler(NULL), p_model(NULL)
 {
-  ATOOLS::msg.Init(2,"");
+  ATOOLS::msg->Init(2,"");
   ATOOLS::Data_Read dataread(m_path+m_file);
   m_modeldat=dataread.GetValue("MODEL_DATA_FILE",std::string("Model.dat"));
   m_beamdat=dataread.GetValue("BEAM_DATA_FILE",std::string("Beam.dat"));
@@ -46,7 +46,7 @@ bool Environment::InitializeTheModel()
   MODEL::Model_Handler *modelhandler = new MODEL::Model_Handler();
   p_model = modelhandler->GetModel(&dataread,m_path,m_modeldat);
   if (!p_model->RunSpectrumGenerator()) {
-    ATOOLS::msg.Error()<<"Environment::InitializeTheModel(): "
+    msg_Error()<<"Environment::InitializeTheModel(): "
 		       <<"RunSpectrumGenerator() failed. Abort."<<std::endl;
     abort();
   }
@@ -95,7 +95,7 @@ bool Environment::InitializeThePDFs()
   p_isrhandler->SetBeam(p_beamhandler->GetBeam(1),1);
   p_isrhandler->Init(splimits,kplimits);
   if (!(p_beamhandler->CheckConsistency(m_beam))) {
-    ATOOLS::msg.Error()<<"Error in Environment::InitializeThePDFs() \n"
+    msg_Error()<<"Error in Environment::InitializeThePDFs() \n"
 		       <<"   Inconsistent ISR & Beam:"<<std::endl
 		       <<"   Abort program."<<std::endl;
     abort();

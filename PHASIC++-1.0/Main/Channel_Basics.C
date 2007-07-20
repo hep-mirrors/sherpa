@@ -69,7 +69,7 @@ void Channel_Basics::Rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** rot)
 void Channel_Basics::Boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
 {
   if (q.Abs2() < 0.) {
-    ATOOLS::msg.Error()<<"Channel_Basics::Boost : Spacelike four vector ..."<<endl;
+    msg_Error()<<"Channel_Basics::Boost : Spacelike four vector ..."<<endl;
     return;
   }
   double rsq = sqrt(q.Abs2());
@@ -89,7 +89,7 @@ double Channel_Basics::SqLam(double s,double s1, double s2)
 {
   double arg1 = sqr(s-s1-s2)-4.*s1*s2;
   if (arg1>0.) return sqrt(arg1)/s;
-  ATOOLS::msg.Error()<<"Channel_Basics::SqLam argument "<<arg1<<" <0 in Channel_Basics::sqlam()"<<endl
+  msg_Error()<<"Channel_Basics::SqLam argument "<<arg1<<" <0 in Channel_Basics::sqlam()"<<endl
 			<<"s;s1;s2: "<<s<<";"<<s1<<";"<<s2<<endl;
   return 0.;
 }

@@ -122,7 +122,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       return true;
     }
   }
-  msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
+  msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
   
@@ -191,7 +191,7 @@ bool Sherpa::SummarizeRun()
 void Sherpa::DrawLogo() 
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
-  if (msg.Level()>0) msg.Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
+  if (ATOOLS::msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl
 	    <<"................................................ |       +                   "<<std::endl
 	    <<"................................................ ||  |       +  +            "<<std::endl
@@ -251,11 +251,11 @@ bool Sherpa::PerformScan()
   for (int i=0;i<=np;++i) {
     if (p_inithandler->InitializeTheFramework(i)) {
       if (!p_inithandler->CalculateTheHardProcesses()) {
-	msg.Error()<<"ERROR in Sherpa::PerfomScan("<<i<<")"<<endl;
+	msg_Error()<<"ERROR in Sherpa::PerfomScan("<<i<<")"<<endl;
       }
     }
     else {
-      msg.Error()<<"ERROR in Sherpa::InitializeRun("<<m_path<<")"<<endl;
+      msg_Error()<<"ERROR in Sherpa::InitializeRun("<<m_path<<")"<<endl;
     }
   }
 

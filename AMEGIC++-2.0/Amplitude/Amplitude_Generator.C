@@ -166,17 +166,17 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
 
 void Amplitude_Generator::Print_P(Point* p)
 {
-  if (!(ATOOLS::msg.LevelIsDebugging())) return;
+  if (!(msg_LevelIsDebugging())) return;
   if ((p->left==0) && (p->right==0)) {
-    ATOOLS::msg.Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
+    msg_Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
     return;
   }
-  ATOOLS::msg.Out()<<"left : ";
+  msg_Out()<<"left : ";
   Print_P(p->left);
-  ATOOLS::msg.Out()<<"right : ";
+  msg_Out()<<"right : ";
   Print_P(p->right);
   if(p->middle){
-    ATOOLS::msg.Out()<<" middle : ";
+    msg_Out()<<" middle : ";
     Print_P(p->middle);
   }
 }
@@ -712,7 +712,7 @@ void Amplitude_Generator::ReplaceVertex(Point * p) {
     }
   }
   if (!hit) {
-    msg.Error()<<"ERROR in Amplitude_Generator::ReplaceVertex :"<<std::endl
+    msg_Error()<<"ERROR in Amplitude_Generator::ReplaceVertex :"<<std::endl
 	       <<"   Vertex not found , something wrong with MPI mode. Abort the run."<<endl;
     abort();
   }
@@ -790,7 +790,7 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	    p[hit].ncpl = ncpl;	  
 	  }
 	  else 
-	    ATOOLS::msg.Error()<<"ERROR in Amplitude_Generator"<<endl
+	    msg_Error()<<"ERROR in Amplitude_Generator"<<endl
 			       <<"   Continue and hope for the best ..."<<std::endl;
 	}
       }
@@ -812,7 +812,7 @@ int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
       else return 0;
     }
     else 
-      msg.Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
+      msg_Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
 		 <<"   Color structure not supported. Continue and hope for the best. "<<endl;
   }
   int l1[3],l2[3],l1n[3],l2n[3];
@@ -823,7 +823,7 @@ int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
     l2n[i]=c2->Next()->ParticleArg(i);
   }
   if (c1->Next()->Type()!=cf::T)
-    msg.Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
+    msg_Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
 	       <<"   Unexpected sequence in color structure. Continue and hope for the best. "<<endl;
   
   if (l1[0]!=l2[0] && l1n[0]!=l2n[0]) {

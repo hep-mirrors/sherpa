@@ -52,10 +52,10 @@ namespace ATOOLS{
   void Spin_Correlation_Tensor::SetMode(scmode::code i)
   {
     if ( m_created && (i != m_mode) ) {
-      msg.Error()<<"Warning in Spin_Correlation_Tensor::SetMode:"<<std::endl;
-      msg.Error()<<" New spin-correlation mode "<<i<<" was selected but"<<std::endl;
-      msg.Error()<<" some Spin_Correlation_Tensor objects were already created."<<std::endl;
-      msg.Error()<<" Old mode was "<<m_mode<<std::endl;
+      msg_Error()<<"Warning in Spin_Correlation_Tensor::SetMode:"<<std::endl;
+      msg_Error()<<" New spin-correlation mode "<<i<<" was selected but"<<std::endl;
+      msg_Error()<<" some Spin_Correlation_Tensor objects were already created."<<std::endl;
+      msg_Error()<<" Old mode was "<<m_mode<<std::endl;
     }
     m_mode = i;
   }
@@ -111,7 +111,7 @@ namespace ATOOLS{
         m_particle = -1;
 //        std::cout<<aPos1<<" "<<aPos2<<"   "<<Amplitudes->size()<<std::endl;
         if( aPos1>=Amplitudes->size() || aPos2>=Amplitudes->size() ) {
-          msg.Error()<<"ERROR in Spin_Correlation_Tensor constructor : "<<std::endl
+          msg_Error()<<"ERROR in Spin_Correlation_Tensor constructor : "<<std::endl
             <<"     Tried to access an element of the amplitude tensor that does not exist."<<std::endl
             <<"     Don't know, what to do. Will abort."<<std::endl;
           abort();
@@ -269,7 +269,7 @@ namespace ATOOLS{
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i) 
   {
     if (m_particle==-1) {
-      msg.Error()<<"Spin_Correlation_Tensor::GetSigma: The requested index "<<i<<" couldn't be found."
+      msg_Error()<<"Spin_Correlation_Tensor::GetSigma: The requested index "<<i<<" couldn't be found."
 		 <<"Let's return nothing, then."<<std::endl;
       return Spin_Density_Matrix();
     }
@@ -301,7 +301,7 @@ namespace ATOOLS{
   void Spin_Correlation_Tensor::Contract(int i, Spin_Density_Matrix* SDM) 
   {
     if (m_particle == -1) {
-      msg.Error()<<"Spin_Correlation_Tensor::Contract: The index ("<<i<<") could not be found!"<<std::endl;
+      msg_Error()<<"Spin_Correlation_Tensor::Contract: The index ("<<i<<") could not be found!"<<std::endl;
       return;
     }
     if (m_particle == i) {
@@ -404,8 +404,8 @@ namespace ATOOLS{
       case 25: return 5;
       case 36: return 6;
       default: {
-	msg.Error()<<"Error in Spin_Correlation_Tensor::GetIdxRange():"<<std::endl;
-	msg.Error()<<"Can't assign size of legs ("<<p_next->size()<<") to a reasonable "
+	msg_Error()<<"Error in Spin_Correlation_Tensor::GetIdxRange():"<<std::endl;
+	msg_Error()<<"Can't assign size of legs ("<<p_next->size()<<") to a reasonable "
 		   <<"index range. Return 0"<<std::endl;
 	return 0;}
       }

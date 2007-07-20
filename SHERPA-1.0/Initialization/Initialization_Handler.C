@@ -114,7 +114,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 Initialization_Handler::~Initialization_Handler()
 {
   if (m_savestatus) {
-    msg.Error()<<METHOD<<"(): Status saved to '"
+    msg_Error()<<METHOD<<"(): Status saved to '"
 	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
     MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
     exh->PrepareTerminate();
@@ -198,7 +198,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   bool okay = InitializeTheIO();
   if (m_mode==9999) {
-    msg.Events()<<"SHERPA will read in the events."<<std::endl
+    msg_Events()<<"SHERPA will read in the events."<<std::endl
 	     <<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
@@ -239,7 +239,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   if (p_model->Name()==std::string("ADD")) {
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
-      msg.Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
+      msg_Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
 	       <<"   You are using the ADD model beyond its valid range ! "<<endl;
     }
   }
@@ -274,7 +274,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   }
 
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
-    msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl
+    msg_Error()<<"Error in Initialization of the Sherpa framework : "<<endl
 	       <<"    Detected a mismatch of flavours from beams to bunches : "<<endl
 	       <<"    "<<p_beamspectra->GetBeam(0)<<" -> "
 	       <<m_isrhandlers[isr::hard_process]->Flav(0)<<" and "
@@ -333,7 +333,7 @@ bool Initialization_Handler::InitializeTheModel()
   p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
 
   if (!p_model->RunSpectrumGenerator()) {
-    msg.Error()<<"Error in Model_Initialization::Model_Initialization."<<endl
+    msg_Error()<<"Error in Model_Initialization::Model_Initialization."<<endl
 	       <<"    RunSpectrumGenerator() delivered false. Abort()."<<endl;
     abort();
   }
@@ -386,7 +386,7 @@ bool Initialization_Handler::InitializeThePDFs()
     m_isrhandlers[id]->Init(m_bunch_splimits,kplimits);
     msg_Info()<<"Initialized the ISR["<<id<<"] : "<<m_isrhandlers[id]->Type()<<endl;
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
-      msg.Error()<<"Error in Environment::InitializeThePDFs()"<<endl
+      msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
 		 <<"   Inconsistent ISR & Beam:"<<endl
 		 <<"   Abort program."<<endl;
       abort();
@@ -438,7 +438,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 Matrix_Element_Handler * const Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
   MEHandlerIter pos = m_mehandlers.find(_key);
   if (pos!=m_mehandlers.end()) return pos->second;
-  msg.Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
+  msg_Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
 		     <<"   Key not found. Return Null pointer."<<endl;
   return NULL;
 }
@@ -525,7 +525,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   bool needextra = true; set<kf::code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
-  msg.Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
+  msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
@@ -568,7 +568,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
   HDHandlersIter pos = m_hdhandlers.find(_key);
   if (pos!=m_hdhandlers.end()) return pos->second;
-  msg.Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"
+  msg_Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"
 	     <<"   Key not found. Return Null pointer."<<endl;
   return NULL;
 }
@@ -578,20 +578,20 @@ bool Initialization_Handler::InitializeTheAnalyses()
 {
   int helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
-    ATOOLS::msg.SetLevel(2);
+    ATOOLS::msg->SetLevel(2);
     ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
     ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   helpi=p_dataread->GetValue<int>("SHOW_QUALIFIER_SYNTAX",0);
   if (helpi>0) {
-    ATOOLS::msg.SetLevel(2);
+    ATOOLS::msg->SetLevel(2);
     ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   helpi=p_dataread->GetValue<int>("SHOW_VARIABLE_SYNTAX",0);
   if (helpi>0) {
-    ATOOLS::msg.SetLevel(2);
+    ATOOLS::msg->SetLevel(2);
     ATOOLS::Variable_Base<double>::ShowVariables(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
@@ -611,11 +611,11 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   if (m_mode>8999) {
     switch (m_mode) {
     case 9000:
-      msg.Out()<<"SHERPA will generate the events through Pythia."<<std::endl
+      msg_Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
     case 9999:
-      msg.Out()<<"SHERPA will read in the events."<<std::endl
+      msg_Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
     }
@@ -626,26 +626,26 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     if (p_showerhandler->FSROn()) scalechoice += 2;
   }
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
-  msg.Events()<<"=========================================================================="<<std::endl
+  msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
-    msg.Out()<<ParameterValue()<<" ";
+    msg_Out()<<ParameterValue()<<" ";
     for (size_t i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
-      msg.Out()<<xstot<<" ";
+      msg_Out()<<xstot<<" ";
     }
     for (size_t i=0; i<procs->Size();++i) {
-      msg.Out()<<"###"<<(*procs)[i]->Name();
+      msg_Out()<<"###"<<(*procs)[i]->Name();
     }
-    msg.Out()<<endl;
+    msg_Out()<<endl;
   }
   if (ok) 
-    msg.Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
+    msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
 	     <<"=========================================================================="<<std::endl;
   else
-    msg.Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
+    msg_Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
 	     <<"=========================================================================="<<std::endl;
   return ok;
 }
@@ -670,7 +670,7 @@ void Initialization_Handler::SetScaleFactors()
   else changed=true;
   rpa.gen.SetVariable("S_KFACTOR_SCHEME",ToString(scheme));
   if (changed)
-    msg.Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
+    msg_Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
 	       <<"  Scale- and K-factors for Matrix Element weighting\n"
 	       <<"  are set to account for Parton Shower settings.\n"
 	       <<"  If re-using integration results, please make sure\n"
@@ -682,7 +682,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
   if (nr!=m_scan_istep) 
-    msg.Error()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
+    msg_Error()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
 
   bool logmode=false;
   if (m_scan_variable==string("YCUT")) {
@@ -703,7 +703,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (m_scan_variable==string("ECMS")) {
     s<<value/2.;
     s>>sval;
-    msg.Out()<<" Setting Ecms/2 to : "<<sval<<endl;
+    msg_Out()<<" Setting Ecms/2 to : "<<sval<<endl;
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
     Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+sval+"; ");
@@ -719,8 +719,8 @@ void Initialization_Handler::SetParameter(int nr) {
     rpa.gen.SetYcut(value);
   }
   else  {
-    msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
-    msg.Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
+    msg_Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
+    msg_Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
     s<<value; 
     s>>sval;
     m_options[m_scan_variable]=sval;    
@@ -832,7 +832,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	s.clear();
 	s<<ecms/2.;
 	s>>value;
-	msg.Out()<<" Setting ECMS/2 to : "<<value<<endl;
+	msg_Out()<<" Setting ECMS/2 to : "<<value<<endl;
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+value+"; ");
@@ -851,22 +851,22 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 9000:
 	m_mode       = 9000;
 	m_evtfile    = value;
-	msg.Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
+	msg_Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
 	break;
       case 9001:
 	m_mode       = 9001;
 	m_evtfile    = value;
-	msg.Out()<<" Sherpa will produce Herwig events according to "<<value<<endl;
+	msg_Out()<<" Sherpa will produce Herwig events according to "<<value<<endl;
 	break;
       case 9002:
 	m_mode       = 9002;
 	m_evtfile    = value;
-	msg.Out()<<" Sherpa will produce MCatNLO events according to "<<value<<endl;
+	msg_Out()<<" Sherpa will produce MCatNLO events according to "<<value<<endl;
 	break;
       case 9999:
 	m_mode       = 9999;
 	m_evtfile    = value;
-	msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
+	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
 	break;
       case 100:
 	m_options[key] = value;
@@ -878,29 +878,29 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  msg.Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
-	  msg.Out()<<"   employing: "<<endl;
-	  msg.Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
-	  msg.Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+	  msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
+	  msg_Out()<<"   employing: "<<endl;
+	  msg_Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+	  msg_Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
 
 	  string pyver("6.214");
-	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
+	  msg_Out()<<"    * Pythia Version "<<pyver<<endl;
 	}
 	exit(0);
       case 13:
-	msg.Out()<<" Help: "<<endl;
-	msg.Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
-	msg.Out()<<endl;
-	msg.Out()<<" Possible options: "<<endl;
-	msg.Out()<<"  -V,--version   prints the Version number"<<endl;
-	msg.Out()<<"  -?,--help      prints this help message"<<endl;
-// 	msg.Out()<<"  -xsout <filename> "<<endl;
-// 	msg.Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
-// 	msg.Out()<<"  -eventout <filename> "<<endl;
-// 	msg.Out()<<"                 sets a file where events should be printed to"<<endl;	
-	msg.Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
-	msg.Out()<<"                 performs a parameter scan"<<endl<<endl;
-	msg.Out()<<"        <variable> ... in addition to all parameters in configuration files"<<endl
+	msg_Out()<<" Help: "<<endl;
+	msg_Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
+	msg_Out()<<endl;
+	msg_Out()<<" Possible options: "<<endl;
+	msg_Out()<<"  -V,--version   prints the Version number"<<endl;
+	msg_Out()<<"  -?,--help      prints this help message"<<endl;
+// 	msg_Out()<<"  -xsout <filename> "<<endl;
+// 	msg_Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
+// 	msg_Out()<<"  -eventout <filename> "<<endl;
+// 	msg_Out()<<"                 sets a file where events should be printed to"<<endl;	
+	msg_Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
+	msg_Out()<<"                 performs a parameter scan"<<endl<<endl;
+	msg_Out()<<"        <variable> ... in addition to all parameters in configuration files"<<endl
 		 <<"                       PATH, RUNDATA, ECMS, MASS(<kfcode>) can be used"<<endl;
 	exit(0);
       case 14: 
@@ -920,13 +920,13 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	  s<<argv[++i];
 	  s>>m_scan_nsteps;
 	  m_scan_istep=0;
-	  msg.Out()<<" scanning "<<m_scan_variable
+	  msg_Out()<<" scanning "<<m_scan_variable
 	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
 	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
 	}
 	else {
-	  msg.Error()<<"ERROR:  missing scan parameter -scan"<<endl;
-	  msg.Error()<<"       try Sherpa -? for more information "<<endl;
+	  msg_Error()<<"ERROR:  missing scan parameter -scan"<<endl;
+	  msg_Error()<<"       try Sherpa -? for more information "<<endl;
 	  exit(1);
 	}
 	break;

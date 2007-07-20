@@ -69,7 +69,7 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   }
 
 
-  msg.Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
+  msg_Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
 	     <<"   Model not found. Initialize Standard Model."<<endl;
   rpa.gen.SetModelType(ATOOLS::Model_Type::SM);
   return new Interaction_Model_SM(p_model,cplscheme,yukscheme);

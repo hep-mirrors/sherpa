@@ -214,7 +214,7 @@ int main(int argc,char **argv)
   // event loop
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%2500==0) {
-      msg.Out()<<" "<<i<<" th event "<<std::endl;
+      msg_Out()<<" "<<i<<" th event "<<std::endl;
     }
 
     // determine kinematics of hard process

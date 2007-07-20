@@ -168,7 +168,7 @@ bool Matrix_Element_Handler::AddToDecays(const ATOOLS::Flavour & _flav)
   switch (m_mode) {
   case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 }
@@ -178,8 +178,8 @@ bool Matrix_Element_Handler::AddToDecays(ATOOLS::Decay_Channel * _dec)
   switch (m_mode) {
   case 1 : return p_amegic->GetAllDecays()->AddToDecays(_dec);
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::AddToDecays(";_dec->Output();
-  msg.Error()<<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays(";_dec->Output();
+  msg_Error()<<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 
 }
@@ -191,7 +191,7 @@ bool Matrix_Element_Handler::InitializeDecayTables()
   case 1 : 
     return p_amegic->GetAllDecays()->InitializeDecayTables();
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 }
@@ -202,7 +202,7 @@ bool Matrix_Element_Handler::CalculateWidths()
   case 1: 
     return p_amegic->GetAllDecays()->CalculateWidths();
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::CalculateWidths() : "<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::CalculateWidths() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 }
@@ -217,7 +217,7 @@ bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow)
     if (_ow) _dt->Flav().SetWidth(fdt->Width());
     return 1;
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::FillDecayTable() : "<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::FillDecayTable() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 }
@@ -232,16 +232,16 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
       PrintTotalXSec();
       return 1;
     }
-    msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
+    msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	       <<"   Failed to Calculate total XSec through Amegic. Abort."<<endl;
     abort();
   case 2:
     if (p_simplexs->CalculateTotalXSec(m_readin)) return 1;
-    msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
+    msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	       <<"   Failed to Calculate total XSec through SimpleXS. Abort."<<endl;
     abort();
   }
-  msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	     <<"   Failed to Calculate total XSec. m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
 }
@@ -431,7 +431,7 @@ bool Matrix_Element_Handler::GetMomentaNFlavours() {
     }
   }
   if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return false;
-  msg.Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
+  msg_Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
 	     <<"   No ME generator available to get momenta from."<<endl
 	     <<"   Continue run and hope for the best."<<endl;
   return false;
@@ -610,7 +610,7 @@ int Matrix_Element_Handler::InSwaped() {
 unsigned int Matrix_Element_Handler::NumberOfDiagrams() 
 {
   if (m_mode==1) return p_amegic->NumberOfDiagrams();
-  msg.Error()<<"Error in Matrix_Element_Handler::NumberOfDiagrams()."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::NumberOfDiagrams()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
@@ -624,7 +624,7 @@ AMEGIC::Amegic * Matrix_Element_Handler::GetAmegic()
 AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag) 
 {
   if (m_mode==1) return p_amegic->Diagram(_diag);
-  msg.Error()<<"Error in Matrix_Element_Handler::GetDiagram("<<_diag<<")."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::GetDiagram("<<_diag<<")."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
@@ -633,7 +633,7 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 // {
 //   if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
 //   if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
-//   msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
+//   msg_Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
 // 	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
 //   abort();
 // }
@@ -664,7 +664,7 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode)
     }
   }
   if (mode>0) return NULL;
-  msg.Error()<<"Error in Matrix_Element_Handler::GetXS("<<mode<<")."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::GetXS("<<mode<<")."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
@@ -697,7 +697,7 @@ unsigned long Matrix_Element_Handler::NumberOfXSecTrials()
 int Matrix_Element_Handler::OrderStrong()
 {
   if (m_mode==1) return p_amegic->OrderStrong();
-  msg.Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
@@ -705,7 +705,7 @@ int Matrix_Element_Handler::OrderStrong()
 int Matrix_Element_Handler::OrderEWeak()
 {
   if (m_mode==1) return p_amegic->OrderEWeak();
-  msg.Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
+  msg_Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }

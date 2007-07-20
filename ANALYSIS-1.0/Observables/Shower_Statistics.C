@@ -105,7 +105,7 @@ void Shower_Statistics::Output(const std::string & pname) {
 Primitive_Observable_Base & Shower_Statistics::operator+=(const Primitive_Observable_Base & ob)
 {
   if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
-    msg.Error()<<"ERROR: in Shower_Statistics::operator+=  in"<<m_name<<std::endl
+    msg_Error()<<"ERROR: in Shower_Statistics::operator+=  in"<<m_name<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
   }

@@ -166,7 +166,7 @@ bool Color_Dipole::AssignColor(Particle_Flow_Map::iterator fit,
       fit==m_flows[qri::anti].end()) return true;
   int index=fit->second->Index(oldc);
   if (index<0) {
-    ATOOLS::msg.Error()<<"Color_Dipole::AssignColor(..): "
+    msg_Error()<<"Color_Dipole::AssignColor(..): "
 		       <<"Invalid color {\n   "<<*fit->second
 		       <<" => ("<<oldc<<" -> "<<newc<<")\n   "
 		       <<*fit->first<<"\n}"<<std::endl;

@@ -241,7 +241,7 @@ bool Standard_Model::RunSpectrumGenerator() {
       return 1;
     }
 #endif    
-    msg.Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<std::endl
+    msg_Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<std::endl
 	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;
   }

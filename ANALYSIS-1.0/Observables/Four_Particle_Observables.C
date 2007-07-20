@@ -70,7 +70,7 @@ Four_Particle_Observable_Base::Four_Particle_Observable_Base
   : Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), f_special(false) {
 
   if(flavs.size()<4) {
-    msg.Error()<<"Error in Four_Particle_Observable_Base:"<<std::endl
+    msg_Error()<<"Error in Four_Particle_Observable_Base:"<<std::endl
 	       <<"   No four flavours specified, try to copy flavours."
 	       <<std::endl;
   }
@@ -247,7 +247,7 @@ void Two_Partonpair_Theta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
     plab[1]=plab[2]=0.0;
     if(plab.Abs2()<=0.0) {
       p_histo->Insert(-M_PI/100.0, weight, ncount);
-      msg.Error()<<__PRETTY_FUNCTION__<<":\n   Warning:"
+      msg_Error()<<__PRETTY_FUNCTION__<<":\n   Warning:"
 		 <<" Not able to boost the system. Insert theta=-pi/100.\n"
 		 <<std::endl;
       return;

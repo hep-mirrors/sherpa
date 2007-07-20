@@ -44,7 +44,7 @@ Primitive_Detector_Getter::operator()(const Argument_Matrix &parameters) const
 					      cur.size()>5?cur[5]:"NotLepton"));
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
-      msg.Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
+      msg_Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
     }
   }
   return detector;
@@ -118,7 +118,7 @@ void Primitive_Detector::Evaluate(const ATOOLS::Blob_List &bloblist,
 {
   Particle_List *inparticles=p_ana->GetParticleList(m_inlistname);
   if (inparticles==NULL) {
-    ATOOLS::msg.Error()<<"Primitive_Detector::Evaluate(..): "
+    msg_Error()<<"Primitive_Detector::Evaluate(..): "
 		       <<"Particle list '"<<m_inlistname<<"' not found."<<std::endl;
     return;
   }
@@ -134,16 +134,16 @@ void Primitive_Detector::Add(Primitive_Detector_Element * pde)
 }
 
 void Primitive_Detector::Print() {
-  if (!ATOOLS::msg.LevelIsInfo()) return;
-  ATOOLS::msg.Out()<<"==================================================="<<std::endl
+  if (!msg_LevelIsInfo()) return;
+  msg_Out()<<"==================================================="<<std::endl
 		   <<m_name<<" with "<<m_elements.size()<<" components : "<<std::endl;
   int i=1;
   std::string name;
   for (String_DetectorElement_Iter sdeiter=m_elements.begin();
        sdeiter!=m_elements.end();sdeiter++) {
-    ATOOLS::msg.Out()<<"Element "<<i<<": "<<sdeiter->second->Name()<<std::endl;
+    msg_Out()<<"Element "<<i<<": "<<sdeiter->second->Name()<<std::endl;
   }
-  ATOOLS::msg.Out()<<"==================================================="<<std::endl;
+  msg_Out()<<"==================================================="<<std::endl;
 }
 
 void Primitive_Detector::Fill(const ATOOLS::Blob_List * bl)
@@ -180,7 +180,7 @@ Primitive_Detector_Element * Primitive_Detector::GetElement(std::string name)
 {
   String_DetectorElement_Iter sdeiter=m_elements.find(name);
   if (sdeiter==m_elements.end()) {
-    msg.Error()<<"Potential Error in Primitive_Detector::GetElement("<<name<<") :"<<std::endl
+    msg_Error()<<"Potential Error in Primitive_Detector::GetElement("<<name<<") :"<<std::endl
 	       <<"   Element not found, return NULL and hope for the best."<<std::endl;
     return NULL;
   }

@@ -244,10 +244,10 @@ int main(int argc,char **argv)
   signal(SIGTERM,exh->SignalHandler);
   signal(SIGXCPU,exh->SignalHandler);
   try {
-    msg.Init(2,"");
+    msg_Init(2,"");
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
-    else msg.SetModifiable(false);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg_SetModifiable(true);
+    else msg_SetModifiable(false);
     PRINT_INFO("Initialize integrator");
     Primitive_Integrator integrator;
     integrator.SetShuffleMode(1);
@@ -333,7 +333,7 @@ int main(int argc,char **argv)
   }
   catch (Exception exception) {
     exception.UpdateLogFile();
-    msg.Error()<<exception<<std::endl;
+    msg_Error()<<exception<<std::endl;
     std::terminate();
   }
   catch (std::exception exception) {

@@ -61,12 +61,12 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
   tree->GetRoot()->Store();
   if (InitializeJets(tree,tree->GetRoot())) {
     if (p_kin->DoKinematics(tree->GetRoot())) return 1;
-    msg.Error()<<METHOD<<"("<<jetveto<<"): "
+    msg_Error()<<METHOD<<"("<<jetveto<<"): "
 	       <<"Kinematics failed."<<std::endl;
     return 0;
   }
   else {
-    msg.Error()<<METHOD<<"("<<jetveto<<"): "
+    msg_Error()<<METHOD<<"("<<jetveto<<"): "
 	       <<"Shower evolution failed."<<std::endl;
     return 0;
   }
@@ -286,10 +286,10 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 	return EvolveJet(tree,mo);
       }
     }
-    msg.Error()<<METHOD<<"(): Internal error."<<std::endl;
+    msg_Error()<<METHOD<<"(): Internal error."<<std::endl;
     return -1;
   }
-  msg.Error()<<METHOD<<"(): Internal error."<<std::endl;
+  msg_Error()<<METHOD<<"(): Internal error."<<std::endl;
   return -1;
 }
 
@@ -585,7 +585,7 @@ SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
   if (r==oldr || a==olda) {
     if (!SetColors(mo->left,oldr,newr,olda,newa) || 
 	!SetColors(mo->right,oldr,newr,olda,newa)) {
-      msg.Error()<<METHOD<<"(): Colour adjustment failed."<<std::endl;
+      msg_Error()<<METHOD<<"(): Colour adjustment failed."<<std::endl;
       return false;
     }
     if (r==oldr) mo->part->SetFlow(1,newr);
@@ -597,7 +597,7 @@ SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
 bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 {
   if (mo==NULL) {
-    msg.Error()<<METHOD<<"(..): Error. Void mother knot."<<std::endl;
+    msg_Error()<<METHOD<<"(..): Error. Void mother knot."<<std::endl;
     return false;
   }
   if (mo->left==NULL) {
@@ -643,7 +643,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	}
       }
       else {
-	msg.Error()<<METHOD<<"(..): Error.\n  Strong particle "
+	msg_Error()<<METHOD<<"(..): Error.\n  Strong particle "
 		   <<test->part->Flav()<<" (n_c = "<<nc
 		   <<") not covered by SetColours. "<<std::endl;
       }
@@ -774,7 +774,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	}
       }
       else {
-	msg.Out()<<METHOD<<"(..): Error.\n  Coloured "<<mo->part->Flav()
+	msg_Out()<<METHOD<<"(..): Error.\n  Coloured "<<mo->part->Flav()
 		 <<" -> "<<d1->part->Flav()<<" + "
 		 <<d2->part->Flav()<<std::endl;
 	return 0;
@@ -803,7 +803,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	  d2->part->SetFlow(1,d1->part->GetFlow(2));
 	}
 	else {
-	  msg.Out()<<METHOD<<"(..): Error.\n  Colourless "<<mo->part->Flav()
+	  msg_Out()<<METHOD<<"(..): Error.\n  Colourless "<<mo->part->Flav()
 		   <<" -> "<<d1->part->Flav()<<" + "
 		   <<d2->part->Flav()<<std::endl;
 	  return 0;
@@ -826,7 +826,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       }
     }
     if (bl_meps==NULL) {
-      ATOOLS::msg.Error()<<METHOD<<"(..): Error.\n  No ME PS Interface. "
+      msg_Error()<<METHOD<<"(..): Error.\n  No ME PS Interface. "
 			 <<"Abort."<<std::endl;
       abort();
     }
@@ -911,7 +911,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
   else {
     if (!kn->left) {
       if (bl && !jet) {
-	msg.Error()<<"ERROR in Final_State_Shower ::ExtractPartons :\n"
+	msg_Error()<<"ERROR in Final_State_Shower ::ExtractPartons :\n"
 		   <<"    No jet for Parton : "<<kn->part->Number()<<std::endl;
 	abort();
       }
@@ -989,10 +989,10 @@ bool Final_State_Shower::SmearDaughters(Knot *mo)
 void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2) 
 {
   if (!d1 || !d2 || !mo) {
-    msg.Error()<<METHOD<<"(..): Warning. called with\n";
-    if (mo) msg.Error()<<"mo :"<<*mo<<"\n"; else msg.Error()<<"mo : 0x0\n";
-    if (d1) msg.Error()<<"d1 :"<<*d1<<"\n"; else msg.Error()<<"d1 : 0x0\n";
-    if (d2) msg.Error()<<"d2 :"<<*d2<<std::endl; else msg.Error()<<"d2 : 0x0"<<std::endl;
+    msg_Error()<<METHOD<<"(..): Warning. called with\n";
+    if (mo) msg_Error()<<"mo :"<<*mo<<"\n"; else msg_Error()<<"mo : 0x0\n";
+    if (d1) msg_Error()<<"d1 :"<<*d1<<"\n"; else msg_Error()<<"d1 : 0x0\n";
+    if (d2) msg_Error()<<"d2 :"<<*d2<<std::endl; else msg_Error()<<"d2 : 0x0"<<std::endl;
     return;
   }
 
@@ -1187,13 +1187,13 @@ bool Final_State_Shower::TestShower(Tree * tree)
   double E2 = sqr(rpa.gen.Ecms());
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%2500==0) {
-      msg.Out()<<" "<<i<<" th event "<<std::endl;
+      msg_Out()<<" "<<i<<" th event "<<std::endl;
     }
     
     tree->Reset();
     InitTwojetTree(tree,E2);
     if (!PerformShower(tree,0)) return 0; 
-    if (msg.LevelIsTracking()) OutputTree(tree);
+    if (msg_LevelIsTracking()) OutputTree(tree);
   }
 
   return 1;
@@ -1307,13 +1307,13 @@ void Final_State_Shower::Reset(Knot * mo)
 void Final_State_Shower::OutputTree(Tree * tree) 
 {
   if (tree->GetRoot()==0) {
-    msg.Out()<<"Empty Tree\n";
+    msg_Out()<<"Empty Tree\n";
   }
   else {
     int number(0);
-    msg.Out()<<"Final Tree:\n"<<*tree<<std::endl
+    msg_Out()<<"Final Tree:\n"<<*tree<<std::endl
 	     <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
-    msg.Out()<<"   for "<<number<<" FS particles.\n";
+    msg_Out()<<"   for "<<number<<" FS particles.\n";
   }
 }
 
@@ -1325,7 +1325,7 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
     Vec4D ptest(mo->left->part->Momentum()+mo->right->part->Momentum());
     if (!(ptest==mo->part->Momentum())) {
       number-=10000;
-      msg.Error()<<METHOD<<"(..):  Four momentum not conserved "
+      msg_Error()<<METHOD<<"(..):  Four momentum not conserved "
 		 <<"in knot "<<mo->kn_no<<"\n"
 		 <<"  p_miss = "<<(ptest-mo->part->Momentum())<<"\n"
 		 <<"  p_old  = "<<mo->part->Momentum()<<"  "

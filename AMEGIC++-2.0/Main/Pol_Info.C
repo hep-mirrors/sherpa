@@ -157,7 +157,7 @@ void Tensor_Struc::GetPolCombos(int num, std::vector<std::vector<int> >* pol, st
     pol->push_back(cc);
     break;
   default: 
-    ATOOLS::msg.Error()<<"ERROR in Tensor_Struc::GetPolCombos : "<<std::endl
+    msg_Error()<<"ERROR in Tensor_Struc::GetPolCombos : "<<std::endl
 		       <<"   Invalid tensor type: "<<num<<", abort the run."<<std::endl;
     abort();
   }

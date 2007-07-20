@@ -16,7 +16,7 @@ Variable_Base<ValueType>::~Variable_Base() {}
 template <class ValueType>
 ValueType Variable_Base<ValueType>::Value(const Vec3D *vectors) const
 {
-  msg.Error()<<"Variable_Base::Value("<<vectors<<"): "
+  msg_Error()<<"Variable_Base::Value("<<vectors<<"): "
 	     <<"Virtual method called."<<std::endl;
   return 0.0;
 }
@@ -24,7 +24,7 @@ ValueType Variable_Base<ValueType>::Value(const Vec3D *vectors) const
 template <class ValueType>
 ValueType Variable_Base<ValueType>::Value(const Vec4D *vectors) const
 {
-  msg.Error()<<"Variable_Base::Value("<<vectors<<"): "
+  msg_Error()<<"Variable_Base::Value("<<vectors<<"): "
 	     <<"Virtual method called."<<std::endl;
   return 0.0;
 }
@@ -32,10 +32,10 @@ ValueType Variable_Base<ValueType>::Value(const Vec4D *vectors) const
 template <class ValueType>
 void Variable_Base<ValueType>::ShowVariables(const int mode)
 {
-  if (!msg.LevelIsInfo() || mode==0) return;
-  msg.Out()<<"Variable_Base::ShowVariables(): {\n\n";
-  Variable_Getter::PrintGetterInfo(msg.Out(),20);
-  msg.Out()<<"\n}"<<std::endl;
+  if (!msg_LevelIsInfo() || mode==0) return;
+  msg_Out()<<"Variable_Base::ShowVariables(): {\n\n";
+  Variable_Getter::PrintGetterInfo(msg_Out(),20);
+  msg_Out()<<"\n}"<<std::endl;
 }
 
 template <class ValueType>

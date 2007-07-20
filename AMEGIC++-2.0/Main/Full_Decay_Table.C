@@ -22,11 +22,11 @@ void Full_Decay_Channel::AddDecayProduct(const Flavour & _fl)
 void Full_Decay_Channel::Output()
 {
   FlavourSet decs = p_dec->GetDecayProducts();
-  msg.Out()<<"  "<<(p_dec->GetDecaying())<<" -> ";
-  for (FlSetIter fl=decs.begin();fl!=decs.end();++fl) msg.Out()<<(*fl)<<" ";
-  msg.Out()<<" : "<<p_dec->Width()<<" GeV.";
-  if (p_proc) msg.Out()<<"  : "<<p_proc->Name();
-  msg.Out()<<endl;
+  msg_Out()<<"  "<<(p_dec->GetDecaying())<<" -> ";
+  for (FlSetIter fl=decs.begin();fl!=decs.end();++fl) msg_Out()<<(*fl)<<" ";
+  msg_Out()<<" : "<<p_dec->Width()<<" GeV.";
+  if (p_proc) msg_Out()<<"  : "<<p_proc->Name();
+  msg_Out()<<endl;
 }
  
 
@@ -62,7 +62,7 @@ void Full_Decay_Channel::SetWidth(double _w )
 {
   if (_w<0.) p_dec->SetWidth(p_proc->TotalXS()); 
   else p_dec->SetWidth(_w);
-  if (msg.LevelIsInfo()) Output();
+  if (msg_LevelIsInfo()) Output();
 }
 
 //-----------------------------------------------------------------------
@@ -197,7 +197,7 @@ void Full_Decay_Table::CalculateWidths()
 Decay_Channel * Full_Decay_Table::GetChannel(int _ch) 
 {
   if (_ch<0 || _ch>=(int)m_channels.size()) {
-    msg.Error()<<"Error in Full_Decay_Table::Channel("<<_ch<<")."<<endl
+    msg_Error()<<"Error in Full_Decay_Table::Channel("<<_ch<<")."<<endl
 	       <<"    Out of bounds : 0 ... "<<m_channels.size()-1<<"."<<endl
 	       <<"    Return NULL."<<endl;
     return new Decay_Channel();
@@ -208,7 +208,7 @@ Decay_Channel * Full_Decay_Table::GetChannel(int _ch)
 Full_Decay_Channel * Full_Decay_Table::GetFullChannel(int _ch) 
 {
   if (_ch<0 || _ch>=(int)m_channels.size()) {
-    msg.Error()<<"Error in Full_Decay_Table::GetFullChannel("<<_ch<<")."<<endl
+    msg_Error()<<"Error in Full_Decay_Table::GetFullChannel("<<_ch<<")."<<endl
 	       <<"    Out of bounds : 0 ... "<<m_channels.size()-1<<"."<<endl
 	       <<"    Return NULL."<<endl;
     return NULL;
@@ -217,11 +217,11 @@ Full_Decay_Channel * Full_Decay_Table::GetFullChannel(int _ch)
 }
 
 void Full_Decay_Table::Output() {
-  msg.Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV ("
+  msg_Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV ("
 	   <<m_flin.Width()<<" GeV)."<<endl
 	   <<"----------------------------------------------------------------"<<endl;
   for (size_t i=0;i<m_channels.size();i++) m_channels[i]->Output();
-  msg.Out()<<"----------------------------------------------------------------"<<endl;
+  msg_Out()<<"----------------------------------------------------------------"<<endl;
 }
 
 

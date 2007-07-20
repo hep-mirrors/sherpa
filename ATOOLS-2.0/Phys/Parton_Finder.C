@@ -127,11 +127,11 @@ FindConstConnected(const Particle *start,bool forward)
     forward=!forward;
   }
   if (m_end==NULL) m_end=start;
-  if (msg.LevelIsDebugging()) {
-    msg.Out()<<"Parton_Finder::FindConstConnected(..): {\n"
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<"Parton_Finder::FindConstConnected(..): {\n"
 	     <<"   "<<*start<<" -> ("<<forward<<")\n";
-    for (size_t i=0;i<m_track.size();++i) msg.Out()<<"\n   "<<*m_track[i];
-    msg.Out()<<"\n}"<<std::endl;
+    for (size_t i=0;i<m_track.size();++i) msg_Out()<<"\n   "<<*m_track[i];
+    msg_Out()<<"\n}"<<std::endl;
   }
   return m_end;
 }

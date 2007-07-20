@@ -38,7 +38,7 @@ TwoResonances::TwoResonances(
   for (int i=1;i<5;i++) {
     if (m_i!=i && m_j!=i && m_k!=i) { m_dir=i; break; }
   }				// get the one with no resonance
-  msg.Tracking()<<"Init TwoResonances("<<name<<") : "<<endl
+  msg_Tracking()<<"Init TwoResonances("<<name<<") : "<<endl
 	   <<"     "<<fl[0]<<" -> "
 	            <<fl[m_dir]<<" "<<fl[m_k]<<" "<<fl[m_i]<<" "<<fl[m_j]<<", "<<endl
 	   <<"     "<<ms[0]<<" -> "
@@ -46,7 +46,7 @@ TwoResonances::TwoResonances(
 	   <<"  => "<<p_fl[0]<<" -> "<<p_fl[m_dir]<<" "<<m_prop1.Name()<<endl
 	   <<"     "<<p_fl[0]<<" -> "<<p_fl[m_dir]<<" "<<p_fl[m_k]<<" "<<m_prop2.Name()<<endl
 	   <<"     "<<p_fl[0]<<" -> "<<p_fl[m_dir]<<" "<<p_fl[m_k]<<" "<<p_fl[m_i]<<" "<<p_fl[m_j]<<endl;
-  msg.Debugging()
+  msg_Debugging()
        <<"  with axial @ "<<m_prop1.Mass()<<" ("<<m_prop1.Width()<<")"<<endl
 	   <<"      vector @ "<<m_prop2.Mass()<<" ("<<m_prop2.Width()<<")"<<endl;
 
@@ -177,7 +177,7 @@ m_I (i), m_J (j), m_K (k), m_L (l)
     p_fl[i] = fl[i];
     ms[i] = sqr(fl[i].PSMass());
   }
-  msg.Tracking()<<"Init TwoResonancesParallel("<<name<<") : "<<endl
+  msg_Tracking()<<"Init TwoResonancesParallel("<<name<<") : "<<endl
     <<"     "<<fl[0]<<" -> "
     <<fl[m_I]<<" "<<fl[m_J]<<" "<<fl[m_K]<<" "<<fl[m_L]<<", "<<endl
     <<"     "<<ms[0]<<" -> "

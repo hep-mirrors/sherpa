@@ -329,7 +329,7 @@ bool Simple_Chain::CreateGrid()
   }
   delete reader;
   if (!found) {
-    msg.Error()<<"Simple_Chain::CreateGrid(): "
+    msg_Error()<<"Simple_Chain::CreateGrid(): "
 	       <<"Did not find any process in '"
 	       <<InputFile()<<"'."<<std::endl;
     PHASIC::Vegas::SetOnExternal(vegas);
@@ -342,8 +342,8 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
-  if (msg.LevelIsTracking()) {
-    msg.Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
+  if (msg_LevelIsTracking()) {
+    msg_Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
     msg_Indentation(3);
     p_processes->Print();
   }
@@ -392,13 +392,13 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
   p_isr->SetFixedSprimeMin(4.0*emin*emin);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   group->ResetSelector(group->SelectorData());
-  int level=msg.Level();
-  msg.SetLevel(0);
+  int level=ATOOLS::msg->Level();
+  ATOOLS::msg->SetLevel(0);
   double error=group->PSHandler(false)->Error();
   group->PSHandler(false)->SetError(m_error);
   group->CalculateTotalXSec("");
   group->PSHandler(false)->SetError(error);
-  msg.SetLevel(level);
+  ATOOLS::msg->SetLevel(level);
   double total=group->TotalXS();
   msg_Info()<<"Simple_Chain::CheckConsistency(): {\n"
 	    <<"   \\sigma_{hard xs}   = "
@@ -409,7 +409,7 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 	    <<dabs((total-integral)/(total))*100.0
 	    <<" %\n}"<<std::endl;
   if (dabs((total-integral)/total)>m_error) {
-    msg.Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
+    msg_Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
 	       <<"   \\Delta_{rel}\\sigma / m_error = "
 	       <<dabs((total-integral)/
 		      (total*m_error))<<std::endl;
@@ -515,7 +515,7 @@ bool Simple_Chain::CalculateTotal()
 	    <<m_stop[4]<<" GeV\n}"<<std::endl;
   CalculateSigmaND();
   if (m_sigmahard<m_norm) {
-    msg.Error()<<"Simple_Chain::CalculateTotal(): "<<om::red
+    msg_Error()<<"Simple_Chain::CalculateTotal(): "<<om::red
 	       <<"\\sigma_{hard} = "
 	       <<(m_sigmahard*rpa.Picobarn()/1.e9)
 	       <<" mb < \\sigma_{nd} = "
@@ -546,7 +546,7 @@ bool Simple_Chain::CalculateTotal()
     }
     delete group;
   }
-  msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
+  msg_Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
 		<<"\n   \\sigma_{tot} = "
 		<<(m_sigmahard*rpa.Picobarn()/1.e9)
 		<<" mb @ p_\\perp = "<<m_stop[4]
@@ -685,7 +685,7 @@ bool Simple_Chain::CreateMomenta()
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
 	delete data;
 	if (weight>max) {
-	  msg.Tracking()<<"Simple_Chain::CreateMomenta(): "
+	  msg_Tracking()<<"Simple_Chain::CreateMomenta(): "
 			<<"Weight exceeded maximum.\n"
 			<<"   Setting new maximum "
 			<<max<<" -> "<<weight<<std::endl;
@@ -778,7 +778,7 @@ bool Simple_Chain::CreateMomenta()
     m_filledblob=true;
     return true;
   }
-  msg.Error()<<"Simple_Chain::CreateMomenta(..): "
+  msg_Error()<<"Simple_Chain::CreateMomenta(..): "
 	     <<"Cannot create momentum configuration."<<std::endl;
   return false;
 }
@@ -848,7 +848,7 @@ bool Simple_Chain::DiceOrderingParameter()
 { 
   PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
-    msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
+    msg_Error()<<"Simple_Chain::DiceOrderingParameter(): "
 	       <<"Value exceeded minimum: last = "<<m_last[0]
 	       <<" vs. stop = "<<m_stop[0]<<std::endl;
     s_stophard=true;
@@ -890,7 +890,7 @@ bool Simple_Chain::ReadInStatus(const std::string &path)
 	    <<path<<m_pathextra<<"'."<<std::endl;
   p_gridcreator->SetOutputPath(path+m_pathextra);
   if (!p_gridcreator->ReadInGrid()) {
-    msg.Error()<<METHOD<<"(): No status stored in '"
+    msg_Error()<<METHOD<<"(): No status stored in '"
 	       <<path<<m_pathextra<<"'"<<std::endl;
     return false;
   }

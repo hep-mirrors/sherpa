@@ -40,7 +40,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       THROW(fatal_error,"Tried to initialize a structure function for an uncharged particle.");
     }
     if (bunch_particle.IsPhoton()) {
-      msg.Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
+      msg_Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
       return new GRVph_Fortran_Interface(bunch_particle);
     }
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
@@ -65,7 +65,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 		set==std::string("cteq6l1")) && grid_path.find("CTEQ6Grid") ) {
 	  
 #ifdef USING__LHAPDF
-	msg.Error()<<"ERROR : Cannot initialize CTEQ6 interface when LHAPDF is enabled ! "<<std::endl;
+	msg_Error()<<"ERROR : Cannot initialize CTEQ6 interface when LHAPDF is enabled ! "<<std::endl;
 #else	
 	msg_Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
 	msg_Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
@@ -127,7 +127,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	msg_Tracking()<<"Initialize LHAPDF "<<set<<" : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
 #else 
-	msg.Error()<<"ERROR : USING__LHAPDF is not enabled ! "<<std::endl;
+	msg_Error()<<"ERROR : USING__LHAPDF is not enabled ! "<<std::endl;
 	pdfbase = NULL;
 #endif
       }

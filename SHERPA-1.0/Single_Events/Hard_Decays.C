@@ -28,7 +28,7 @@ Return_Value::code Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & we
   PROFILE_HERE;
 
   if (_bloblist->empty()) {
-    msg.Error()<<"Potential error in Hard_Decays::Treat."<<endl
+    msg_Error()<<"Potential error in Hard_Decays::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
@@ -49,7 +49,7 @@ Return_Value::code Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & we
 	      (myblob->OutParticle(i)->DecayBlob()!=NULL)) {
 	    decblob = myblob->OutParticle(i)->DecayBlob();
 	    if (decblob->NInP()!=1) {
-	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
+	      msg_Error()<<"Error in Hard_Decays::Treat : "<<endl
 			 <<"   wrong number of incoming particles for decayblob."<<endl
 			 <<"   Try a new event."<<endl;
 	      rvalue.IncError(METHOD);
@@ -57,7 +57,7 @@ Return_Value::code Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & we
 	    }
 	    check = decblob->RemoveInParticle(0,0);
 	    if (check->Flav()!=myblob->OutParticle(i)->Flav()) {
-	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
+	      msg_Error()<<"Error in Hard_Decays::Treat : "<<endl
 			 <<"   wrong incoming particle for decayblob : "
 			 <<check->Flav()<<" vs. "<<myblob->OutParticle(i)->Flav()<<endl
 			 <<"   Try to repeat the event."<<endl;

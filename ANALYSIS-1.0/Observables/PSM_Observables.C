@@ -144,7 +144,7 @@ Primitive_Observable_Base & PSM_Observable::operator+=(const Primitive_Observabl
     (*p_histo)+=(cob->p_histo);
   }
   else {
-    msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
+    msg_Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
   }
  
   return *this;

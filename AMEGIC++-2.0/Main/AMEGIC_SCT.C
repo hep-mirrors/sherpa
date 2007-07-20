@@ -58,7 +58,7 @@ namespace AMEGIC {
 	{ case 0: return 1;
 	  case 1: return 2;
 	  case 2: return 0; }
-      default: msg.Error()<<"Warning in AMEGIC_SCT::HADRONS_to_AMEGIC:"<<std::endl
+      default: msg_Error()<<"Warning in AMEGIC_SCT::HADRONS_to_AMEGIC:"<<std::endl
 	                  <<"Particles with a maximum number of "<<maxPol
 			  <<" are not supported, yet! Abort the run."<<std::endl;
  	  return 0;
@@ -79,7 +79,7 @@ namespace AMEGIC {
     case 0: return 1;
     case 1: return 0;
     }
-    default: msg.Error()<<"Warning in AMEGIC_SCT::HADRONS_to_AMEGIC:"<<std::endl
+    default: msg_Error()<<"Warning in AMEGIC_SCT::HADRONS_to_AMEGIC:"<<std::endl
       <<"Particles with a maximum number of "<<maxPol
       <<" are not supported, yet! Abort the run."<<std::endl;
       return 0;
@@ -103,7 +103,7 @@ namespace AMEGIC {
 	           *conj((*graphs)[c2]->Zvalue(m_A2[ampl]))
 	           *col->Mij(c1, c2)*hel->PolarizationFactor(m_A1[ampl]);
 	    if (hel->Multiplicity(ampl) != 1) {
-	      msg.Error()<<"Encoutered process for which the current version of AMEGIC cannot "
+	      msg_Error()<<"Encoutered process for which the current version of AMEGIC cannot "
 			 <<"create spin informations."<<std::endl
 			 <<"Please restart the run with option SPIN_CORRELATIONS=0 or "
 			 <<"contact the authors at support@sherpa-mc.de for a solution."<<std::endl;

@@ -67,7 +67,7 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2)
-      msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
+      msg_Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
@@ -117,7 +117,7 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2)
-      msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
+      msg_Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
@@ -329,7 +329,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
     return 0;
   case -3: return -3;
   default :
-    msg.Error()<<"ERROR in Single_Process_MHV::InitAmplitude : "<<std::endl
+    msg_Error()<<"ERROR in Single_Process_MHV::InitAmplitude : "<<std::endl
 	       <<"   Failed for "<<m_name<<"."<<endl;
 //     errs.push_back(this);
     return 1;
@@ -380,7 +380,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology * 
     WriteLibrary();
     return 0;
   default :
-    msg.Error()<<"Error in Single_Process_MHV::InitAmplitude : Failed for "<<m_name<<"."<<endl;
+    msg_Error()<<"Error in Single_Process_MHV::InitAmplitude : Failed for "<<m_name<<"."<<endl;
     return -2;
   }
 }
@@ -487,7 +487,7 @@ int Single_Process_MHV::Tests() {
 
   if (gauge_test) {
     if (!ATOOLS::IsEqual(M2,M2g)) {
-      msg.Out()<<"WARNING:  Gauge test not satisfied: "
+      msg_Out()<<"WARNING:  Gauge test not satisfied: "
 	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl
 	       <<"Gauge(1): "<<abs(M2)<<endl
 	       <<"Gauge(2): "<<abs(M2g)<<endl;
@@ -649,7 +649,7 @@ void Single_Process_MHV::CreateMappingFile() {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
-      msg.Error()<<"ERROR in Single_Process_MHV::CreateMappingFile() :"<<std::endl
+      msg_Error()<<"ERROR in Single_Process_MHV::CreateMappingFile() :"<<std::endl
 		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
       abort();
     }
@@ -768,9 +768,9 @@ void Single_Process_MHV::SetTotal(int flag, int depth)  {
     //   nothing to do for a Single_Process_MHV
   }
   if (m_nin==2 && flag==0) {
-    if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
-      for (int i=0;i<depth;++i) msg.Out()<<"  ";
-      msg.Out()<<om::bold<<m_name<<om::reset<<" : "
+    if ( (depth<=0 && msg_LevelIsInfo()) || msg_LevelIsTracking()) {
+      for (int i=0;i<depth;++i) msg_Out()<<"  ";
+      msg_Out()<<om::bold<<m_name<<om::reset<<" : "
 	       <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
 	       <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
 	       <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;
@@ -840,7 +840,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-    msg.Error()<<"ERROR in Single_Process_MHV::CalculateTotalXSec :"<<std::endl
+    msg_Error()<<"ERROR in Single_Process_MHV::CalculateTotalXSec :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation do not coincide for "<<endl
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
@@ -944,7 +944,7 @@ bool Single_Process_MHV::PrepareXSecTables() {
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-    msg.Error()<<"ERROR in Single_Process_MHV::PrepareXSecTables :"<<std::endl
+    msg_Error()<<"ERROR in Single_Process_MHV::PrepareXSecTables :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation do not coincide for "
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
@@ -1186,8 +1186,8 @@ Point * Single_Process_MHV::Diagram(int i) {
 
 void Single_Process_MHV::PrintDifferential()
 {
-  if (!(ATOOLS::msg.LevelIsDebugging())) return;
-  ATOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
+  if (!(msg_LevelIsDebugging())) return;
+  msg_Out()<<m_name<<" : "<<m_last<<" -> "
 		      <<m_lastdxs<<" @ "<<m_lastlumi<<", "<<endl;
 }
 
@@ -1236,7 +1236,7 @@ const int Single_Process_MHV::SelectedHelicity()
     if (disc<=0.) break;
   }
   if (hel>=m_helnumber) {
-    msg.Out()<<"WARNING in Single_Process_MHV::SelectedHelicity() after "<<m_throws<<std::endl;
+    msg_Out()<<"WARNING in Single_Process_MHV::SelectedHelicity() after "<<m_throws<<std::endl;
     hel = m_helnumber-1;
   }
   return hel;
@@ -1277,7 +1277,7 @@ void Single_Process_MHV::OptimizeHelicityWeights()
   double variance = (m_throws*m_helresult2)/((m_throws-1)*ATOOLS::sqr(m_helresult)) - 1./(m_throws-1);
   if (variance>0.) variance = m_helresult/m_throws * sqrt(variance);
   else {
-    msg.Error()<<"Negative variance."<<std::endl;
+    msg_Error()<<"Negative variance."<<std::endl;
     variance = m_helresult/m_throws * sqrt(-variance);
   }
 
@@ -1291,7 +1291,7 @@ void Single_Process_MHV::OptimizeHelicityWeights()
 double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom,const int hel)
 {
   if (!p_shand->Is_String()) {
-    msg.Error()<<"Error in Single_Process_MHV::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
+    msg_Error()<<"Error in Single_Process_MHV::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
 	       <<"   Sampling over helicities in processes implemented only for libs."<<std::endl
 	       <<"   Will abort the run. Check for libraries."<<std::endl;
     abort();

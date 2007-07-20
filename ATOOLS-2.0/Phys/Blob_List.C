@@ -196,7 +196,7 @@ bool Blob_List::FourMomentumConservation() const
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
   if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0)) {
-    msg.Error()<<"Blob_List::FourMomentumConservation(): ("
+    msg_Error()<<"Blob_List::FourMomentumConservation(): ("
 	       <<this<<") Invalid momenta."<<std::endl;
     return false;
   }
@@ -205,16 +205,16 @@ bool Blob_List::FourMomentumConservation() const
   bool test=inisum==finsum;
   Vec4D::ResetAccu();
   if (!test) {
-    msg.Error()<<"Blob_List::FourMomentumConservation(): ("
+    msg_Error()<<"Blob_List::FourMomentumConservation(): ("
 	       <<this<<") Four Momentum is not conserved.\n"
 	       <<"   p_{in} = "<<inisum<<" vs. p_{out} = "
 	       <<finsum<<"."<<std::endl;
-    if (msg.LevelIsDebugging()) {
-      msg.Out()<<*this<<std::endl;
+    if (msg_LevelIsDebugging()) {
+      msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
 	Vec4D sum((*bit)->CheckMomentumConservation());
 	if (sum!=Vec4D()) {
-	  msg.Out()<<METHOD<<"(..): sum = "<<sum
+	  msg_Out()<<METHOD<<"(..): sum = "<<sum
 		   <<" in\n"<<**bit<<std::endl;
 	}
       }
@@ -294,7 +294,7 @@ bool Blob_List::ColorConservation() const
     int anti=-(*pit)->GetFlow()->Code(2);
     if (real!=0) {
       if (flows.find(real)!=flows.end()) {
-	msg.Error()<<"Blob_List::ColorConservation(): "
+	msg_Error()<<"Blob_List::ColorConservation(): "
 			   <<"Doubled color index '"<<real<<"' {\n   "
 			   <<**pit<<"\n   "<<*flows[real]<<"\n}"<<std::endl;
 	singlet=false;
@@ -305,7 +305,7 @@ bool Blob_List::ColorConservation() const
     }
     if (anti!=0) {
       if (flows.find(anti)!=flows.end()) {
-	msg.Error()<<"Blob_List::ColorConservation(): "
+	msg_Error()<<"Blob_List::ColorConservation(): "
 			   <<"Doubled color index '"<<anti<<"' {\n   "
 			   <<**pit<<"\n   "<<*flows[anti]<<"\n}"<<std::endl;
 	singlet=false;
@@ -316,11 +316,11 @@ bool Blob_List::ColorConservation() const
     }
   }
   if (!flows.empty()) {
-    msg.Error()<<"Blob_List::ColorConservation(): "
+    msg_Error()<<"Blob_List::ColorConservation(): "
 	       <<"Unconnected particles {\n";
     for (std::map<int,Particle*>::iterator uit=flows.begin();
-	 uit!=flows.end();++uit) msg.Error()<<"   "<<*uit->second<<"\n";
-    msg.Error()<<"}\n"<<*this<<std::endl;
+	 uit!=flows.end();++uit) msg_Error()<<"   "<<*uit->second<<"\n";
+    msg_Error()<<"}\n"<<*this<<std::endl;
     singlet=false;
   }
   return singlet;

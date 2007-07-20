@@ -25,7 +25,7 @@ Dalitz::Dalitz(
 											// generate channel name
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].PSMass());
 											// set masses^2
-  msg.Tracking()<<"Init Dalitz("<<name<<" : "
+  msg_Tracking()<<"Init Dalitz("<<name<<" : "
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<", "
 	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<" "<<ms[3]<<")"<<endl;
   for (int i=1;i<4;i++) {

@@ -99,9 +99,9 @@ void Matrix<_rank>::MatrixOut() const
 {
   double temp=0.;
   short int range=0, prcsn=0;
-  short int io=msg.Out().precision(9);
+  short int io=msg_Out().precision(9);
   
-  msg.Out()<<std::setiosflags(std::ios::fixed);
+  msg_Out()<<std::setiosflags(std::ios::fixed);
   
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) {
@@ -111,12 +111,12 @@ void Matrix<_rank>::MatrixOut() const
   do { temp/=10.0; range+=1; } 
   while (temp>=1.0);
   
-  msg.Out()/*<<double(range)<<msg.Out().precision()*/<<endl;
+  msg_Out()/*<<double(range)<<msg_Out().precision()*/<<endl;
   
   for(short int i=0; i<_rank; i++) {
-    for(short int j=0; j<(range+12); j++) msg.Out()<<"-";
+    for(short int j=0; j<(range+12); j++) msg_Out()<<"-";
   }
-  msg.Out()<<"-"<<endl;
+  msg_Out()<<"-"<<endl;
   
   
   for(short int i=0; i<_rank; i++) {
@@ -126,25 +126,25 @@ void Matrix<_rank>::MatrixOut() const
       temp=fabs(temp)/10.0;
       do {temp*=10; temp+=1.0e-14; temp=temp-int(temp); prcsn+=1;} 
       while((temp>1.0e-10) && prcsn<9);
-      msg.Out()<<std::setw(range+prcsn+3)<<std::setprecision(prcsn);
-      if(-1.0e-11<p_m[i][j] && p_m[i][j]<1.0e-11) msg.Out()<<double(0.0);
-      else msg.Out()<<p_m[i][j];
-      for(short int k=0; k<(9-prcsn); k++) msg.Out()<<" ";
-      //msg.Out()<<std::setw(range+21)<<std::setprecision(18)<<p_m[i][j];
+      msg_Out()<<std::setw(range+prcsn+3)<<std::setprecision(prcsn);
+      if(-1.0e-11<p_m[i][j] && p_m[i][j]<1.0e-11) msg_Out()<<double(0.0);
+      else msg_Out()<<p_m[i][j];
+      for(short int k=0; k<(9-prcsn); k++) msg_Out()<<" ";
+      //msg_Out()<<std::setw(range+21)<<std::setprecision(18)<<p_m[i][j];
     }
-    msg.Out()<<endl;
+    msg_Out()<<endl;
   }
   
   
   for(short int i=0; i<_rank; i++) {
-    for(short int j=0; j<(range+12); j++) msg.Out()<<"-";
+    for(short int j=0; j<(range+12); j++) msg_Out()<<"-";
   }
-  msg.Out()<<"-"<<endl;
+  msg_Out()<<"-"<<endl;
   
-  msg.Out()<<endl;
+  msg_Out()<<endl;
   
-  msg.Out()<<std::resetiosflags(std::ios::fixed); 
-  msg.Out().precision(io);
+  msg_Out()<<std::resetiosflags(std::ios::fixed); 
+  msg_Out().precision(io);
 }   
 
 template<int _rank>
@@ -312,7 +312,7 @@ void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot) const
       z[ip]=0.0;
     }
   }
-  msg.Error()<<"Too many iterations in routine jacobi"<<endl;
+  msg_Error()<<"Too many iterations in routine jacobi"<<endl;
 }
 #undef ROTATE
 #undef NRANSI

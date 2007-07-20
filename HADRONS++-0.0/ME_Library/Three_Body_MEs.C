@@ -306,7 +306,7 @@ double P_3P_DalitzDef::operator()(const Vec4D * p)
 //void P_3P_Dalitz::SetDalitzParameters(std::vector<double> & _dals)
 //{
 //  if (_dals.size()!=5) {
-//    msg.Error()<<"Error in P_3P_Dalitz::SetDalitzParameters : "<<endl
+//    msg_Error()<<"Error in P_3P_Dalitz::SetDalitzParameters : "<<endl
 //	       <<"   Not enough parameters, only "<<_dals.size()<<","<<endl
 //	       <<"   Will ignore this."<<endl;
 //    m_a1=m_a2=m_b1=m_b2=m_c = 0.;

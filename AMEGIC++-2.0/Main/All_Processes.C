@@ -39,7 +39,7 @@ bool  All_Processes::SelectOne() {
       }
     }
     if (disc>0.) { 
-      msg.Error()<<"Error in All_Processes::SelectOne() : "<<std::endl
+      msg_Error()<<"Error in All_Processes::SelectOne() : "<<std::endl
 		 <<"   Total xsec = "<<m_totalxs<<", continue and hope for the best. "<<std::endl;
       return false;
     }
@@ -92,14 +92,14 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
     case 1:break;
     case 0:okay = 0;break;
     default:
-      msg.Error()<<"Error in All_Processes::InitAllProcesses : failed"<<endl;
+      msg_Error()<<"Error in All_Processes::InitAllProcesses : failed"<<endl;
       return -1;
     }
   }
 
   if (moms) { delete [] moms; moms = 0; }
   if (totalsize==0) {
-    msg.Error()<<"Error in All_Processes::InitAllProcesses : "<<endl
+    msg_Error()<<"Error in All_Processes::InitAllProcesses : "<<endl
 	       <<" No amplitude constructed for any process. Nothing to integrate."<<endl;
     return -1;
   }
@@ -172,7 +172,7 @@ ATOOLS::Blob_Data_Base *All_Processes::OneEvent(double _mass) {
 ATOOLS::Blob_Data_Base *All_Processes::SameEvent() {
   if (p_selected) 
     return p_selected->SameEvent();
-  msg.Error()<<"ERROR in All_Processes::SameEvent() : continue and hope for the best. "<<endl;
+  msg_Error()<<"ERROR in All_Processes::SameEvent() : continue and hope for the best. "<<endl;
   return 0;
 }
 

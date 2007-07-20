@@ -52,7 +52,7 @@ HepEvt_Interface::HepEvt_Interface() :
   //       filename += std::string(".0.evts"); 
   //       p_outstream = new std::ofstream(filename.c_str(),std::ios::out);
   //       if (!p_outstream->good()) { 
-  // 	msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+  // 	msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
   // 		   <<"   Could not open event file "<<filename<<"."<<std::endl
   // 		   <<"   Will abort the run."<<std::endl;
   // 	abort();
@@ -63,7 +63,7 @@ HepEvt_Interface::HepEvt_Interface() :
   //   else {
   //     p_instream = new std::ifstream(filename.c_str()); 
   //     if (!p_instream->good()) {
-  //       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+  //       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
   // 		 <<"   Event file "<<filename<<" not found."<<std::endl
   // 		 <<"   Will abort the run."<<std::endl;
   //       abort();
@@ -111,7 +111,7 @@ void HepEvt_Interface::ChangeOutStream(std::string & filename, long int evtsperf
   if (p_outstream->is_open()) p_outstream->close();
   p_outstream->open(filename.c_str(),std::ios::out);
   if (!p_outstream->good()) { 
-    msg.Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
+    msg_Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
 	       <<"   Could not change to event file "<<filename<<"."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
     abort();
@@ -126,7 +126,7 @@ void HepEvt_Interface::ChangeOutStream()
   std::string filename = m_path+"/"+m_file+"."+ToString(int(m_evtnumber/m_filesize))+".evts";
   p_outstream->open(filename.c_str(),std::ios::out);
   if (!p_outstream->good()) { 
-    msg.Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
+    msg_Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
 	       <<"   Could not change to event file "<<filename<<"."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
     abort();
@@ -211,16 +211,16 @@ void HepEvt_Interface::PrintEvent(const int mode, std::ostream& ostr, const int 
     WriteFormatedHepEvt(ostr,nhep);
     break;
   default:
-    msg.Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
     abort();
   }
   //   for (int i=0;i<nhep;++i) {
-  //     msg.Out()<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+  //     msg_Out()<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
   // 	     <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-  //     for (int j=0;j<5;++j) msg.Out()<<p_phep[5*i+j]<<" ";
-  //     msg.Out()<<"\n ";
-  //     for (int j=0;j<4;++j) msg.Out()<<p_vhep[4*i+j]<<" ";
-  //     msg.Out()<<"\n";
+  //     for (int j=0;j<5;++j) msg_Out()<<p_phep[5*i+j]<<" ";
+  //     msg_Out()<<"\n ";
+  //     for (int j=0;j<4;++j) msg_Out()<<p_vhep[4*i+j]<<" ";
+  //     msg_Out()<<"\n";
   //   }  
 }
 
@@ -286,7 +286,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
     for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
       if ((*bit)->Type()==btp::Bunch && (*bit)->Beam()==beam) {
 	if ((*bit)->NInP()!=1) {
- 	  msg.Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
+ 	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Bunch blob with more than one incoming particle !"<<endl
 		     <<(*bit)<<endl;
 	  abort();
@@ -299,7 +299,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
       }
       if ((*bit)->Type()==btp::Beam && (*bit)->Beam()==beam) {
 	if ((*bit)->NInP()!=1) {
-	  msg.Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
+	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Beam Remnant blob with more than one incoming particle !"<<endl
 		     <<(*bit)<<endl;
 	  abort();
@@ -312,7 +312,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
       }
       if ((*bit)->Type()==btp::IS_Shower && (*bit)->Beam()==beam) {
 	if ((*bit)->NInP()!=1) {
-	  msg.Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
+	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   IS blob with more than one incoming particle !"<<endl
 		     <<(*bit)<<endl;
 	  abort();
@@ -331,7 +331,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
     if ((*bit)->Type()==btp::ME_PS_Interface_IS) {
       if ((*bit)->NInP()!=2 || (*bit)->NOutP()!=2) {
-	msg.Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
+	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
 		   <<(*bit)<<endl;
 	abort();
@@ -350,7 +350,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
     }
     if ((*bit)->Type()==btp::Signal_Process) {
       if ((*bit)->NInP()!=2) {
-	msg.Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
+	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 		   <<"   Hard ME blob with other than 2 incoming particles !"<<endl
 		   <<(*bit)<<endl;
 	abort();
@@ -364,7 +364,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
     }
     if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
       if ((*bit)->NInP()<2 || (*bit)->NOutP()!=(*bit)->NInP()) {
-	msg.Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
+	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
 		   <<(*bit)<<endl;
 	abort();
@@ -405,7 +405,7 @@ void HepEvt_Interface::HadronDecayBlobs2HepEvt(Blob_List * const _blobs,int & _n
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
     if ((*bit)->Type()==btp::Hadron_Decay) {
       if ((*bit)->NInP()!=1) {
-	msg.Error()<<"Error in HepEvt_Interface::HadronDecays2HepEvt."<<endl
+	msg_Error()<<"Error in HepEvt_Interface::HadronDecays2HepEvt."<<endl
 		   <<"   Decay blob with other than 1 incoming particles !"<<endl
 		   <<(*bit)<<endl;
 	abort();
@@ -424,7 +424,7 @@ void HepEvt_Interface::HadronDecayBlobs2HepEvt(Blob_List * const _blobs,int & _n
 	EstablishRelations((*bit));
       }
       else {
-	msg.Error()<<"Warning : Potential error in HepEvt_Interface::HadronDecays2HepEvt."<<endl
+	msg_Error()<<"Warning : Potential error in HepEvt_Interface::HadronDecays2HepEvt."<<endl
 		   <<"   Decay blob for 1 -> 1 process with no identified mxing !"<<std::endl;
       }
     }
@@ -559,7 +559,7 @@ bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
     case gtp::Pythia:  okay = p_pythiatranslator->ConstructBlobs(blobs); break;
   case gtp::Sherpa:  //okay = ConstructBlobs(blobs); break;
     default:
-      msg.Error()<<"Error in HepEvt_Interface::ReadHepEvt."<<std::endl
+      msg_Error()<<"Error in HepEvt_Interface::ReadHepEvt."<<std::endl
 		 <<"   Generator type unspecified : "<<m_generator<<std::endl
 		 <<"   Will abort the run."<<std::endl;
       abort();
@@ -593,7 +593,7 @@ void HepEvt_Interface::OpenNewHepEvtFile()
   delete p_instream;
   p_instream = new std::ifstream(filename.c_str()); 
   if (!p_instream->good()) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Event file "<<filename<<" not found."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
     abort();
@@ -603,7 +603,7 @@ void HepEvt_Interface::OpenNewHepEvtFile()
   if ((gentype==std::string("Sherpa") && m_generator!=gtp::Sherpa) ||
       (gentype==std::string("Herwig") && m_generator!=gtp::Herwig) ||
       (gentype==std::string("Pythia") && m_generator!=gtp::Pythia)) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Types do not match : "<<gentype<<" vs. "<<int(m_generator)<<std::endl
 	       <<"   Abort the run."<<std::endl;
     std::abort();

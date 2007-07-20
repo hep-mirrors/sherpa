@@ -267,7 +267,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.r_min   = fs.r_min;
   }
   if (p_jetalg!=NULL) {
-    msg.Error()<<"Error in Final_Selector::AddSelector("<<cone<<") : "<<std::endl
+    msg_Error()<<"Error in Final_Selector::AddSelector("<<cone<<") : "<<std::endl
 	       <<"   Tried to add a cone finder based on Hcal,"
 	       <<" jet finder already present."<<std::endl
 	       <<"   Abort the run."<<std::endl;
@@ -293,23 +293,23 @@ void Final_Selector::AddKeepFlavour(const Flavour & fl)
 
 void Final_Selector::Output()
 {
-  if (!msg.LevelIsTracking()) return;
-  msg.Out()<<"Final_Selector : "<<m_fmap.size()<<"/"<<m_cmap.size()<<":"<<std::endl;
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"Final_Selector : "<<m_fmap.size()<<"/"<<m_cmap.size()<<":"<<std::endl;
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
     if (it->first!=Flavour(kf::jet)) 
-      msg.Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
+      msg_Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
 	       <<it->second.eta_min<<" ... "<<it->second.eta_max<<std::endl;
     else
-      msg.Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
+      msg_Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
 	       <<it->second.eta_min<<" ... "<<it->second.eta_max
 	       <<", jets with ktRunII, r_min = "<<it->second.r_min<<std::endl;
   }
   for (Final_Correlator_Map::iterator it=m_cmap.begin();it!=m_cmap.end();++it) {
-    msg.Out()<<" "<<it->first.first<<" "<<it->first.second<<" : "<<it->second.r_min<<std::endl;
+    msg_Out()<<" "<<it->first.first<<" "<<it->first.second<<" : "<<it->second.r_min<<std::endl;
   }
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
     if ((it->second.min_n>-1) || (it->second.max_n>-1)) {
-      msg.Out()<<" "<<it->first<<" : min = "<<it->second.min_n<<", max = "<<it->second.max_n<<std::endl;
+      msg_Out()<<" "<<it->first<<" : min = "<<it->second.min_n<<", max = "<<it->second.max_n<<std::endl;
     }
   }
 }
@@ -454,7 +454,7 @@ void Final_Selector::Extract(Particle_List * pl)
 void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
   if (pl_in==NULL) {
-    msg.Out()<<"WARNING in Final_Selector::Evaluate : particle list "<<m_inlistname<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Final_Selector::Evaluate : particle list "<<m_inlistname<<" not found "<<std::endl;
     return;
   }
   Particle_List * pl_out = new Particle_List;
@@ -573,7 +573,7 @@ Leading_Particle::Leading_Particle(const std::string & inlistname,
 				   int mode, ATOOLS::Particle_Qualifier_Base * const qualifier) :
   p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname), m_mode(mode)
 {
-  msg.Out()<<" Init Leading_Particle("<<inlistname<<","<<outlistname<<","
+  msg_Out()<<" Init Leading_Particle("<<inlistname<<","<<outlistname<<","
 	   <<mode<<","<<qualifier<<")"<<std::endl;
   m_name="Leading_Particle";
   switch (mode) {
@@ -594,7 +594,7 @@ Primitive_Observable_Base * Leading_Particle::Copy() const
 void Leading_Particle::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
   if (pl_in==NULL) {
-    msg.Out()<<"WARNING in Leading_Particle::Evaluate : particle list "
+    msg_Out()<<"WARNING in Leading_Particle::Evaluate : particle list "
 	     <<m_inlistname<<" not found "<<std::endl;
     return;
   }
@@ -619,7 +619,7 @@ void Leading_Particle::Evaluate(const Blob_List &,double value, int ncount) {
 
 void Leading_Particle::Output()
 {
-  if (!msg.LevelIsTracking()) return;
-  msg.Out()<<m_name<<"."<<std::endl;
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<m_name<<"."<<std::endl;
 }
 

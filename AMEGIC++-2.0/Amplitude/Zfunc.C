@@ -104,43 +104,43 @@ void Zfunc::ClearCalcList()
 
 void Zfunc::Print() 
 {
-  if (!ATOOLS::msg.LevelIsTracking()) return;
+  if (!msg_LevelIsTracking()) return;
 
-  msg.Out()<<"Z(["<<m_type<<"],";
-  msg.Out()<<"[";
-  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
+  msg_Out()<<"Z(["<<m_type<<"],";
+  msg_Out()<<"[";
+  for (int i=0;i<m_narg-1;i++) msg_Out()<<p_arguments[i]<<";";
   
-  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
-  msg.Out()<<"][";
-  msg.Out().precision(2);
+  if (m_narg>0) msg_Out()<<p_arguments[m_narg-1];
+  msg_Out()<<"][";
+  msg_Out().precision(2);
   for (int i=0;i<m_ncoupl-1;i++) {
     if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
 	    ATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Out()<<real(p_couplings[i])<<";";
+      msg_Out()<<real(p_couplings[i])<<";";
     if (  ATOOLS::IsZero(real(p_couplings[i])) &&
 	  !ATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Out()<<imag(p_couplings[i])<<" I;";
+      msg_Out()<<imag(p_couplings[i])<<" I;";
     if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
 	 !ATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
+      msg_Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
     if (  ATOOLS::IsZero(real(p_couplings[i])) &&
 	  ATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Out()<<"0;";
+      msg_Out()<<"0;";
   }
   if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
        ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-      msg.Out()<<real(p_couplings[m_ncoupl-1])<<"])";
+      msg_Out()<<real(p_couplings[m_ncoupl-1])<<"])";
   if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
 	!ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-    msg.Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
+    msg_Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
   if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
        !ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-    msg.Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
+    msg_Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
   if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
 	ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-	msg.Out()<<"0])";
-  msg.Out()<<endl;
-  msg.Out().precision(6);
+	msg_Out()<<"0])";
+  msg_Out()<<endl;
+  msg_Out().precision(6);
 }
 
 
@@ -169,7 +169,7 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
     if (z2.p_arguments[i]==99) n99++;
   }
   if ( (i1==0&&i2>0) || (i2==0&&i1>0) ) {
-    msg.Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index, will abort."<<endl;
+    msg_Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index, will abort."<<endl;
     abort();
   }
 
@@ -310,37 +310,37 @@ void Zfunc_Group::KillZList()
 
 void Zfunc_Group::Print() 
 {
-  if (!msg.LevelIsTracking()) return;
-  msg.Out()<<"SZ(["<<m_type<<"],";
-  msg.Out()<<"[";
-  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"SZ(["<<m_type<<"],";
+  msg_Out()<<"[";
+  for (int i=0;i<m_narg-1;i++) msg_Out()<<p_arguments[i]<<";";
   
-  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
-  msg.Out()<<"])";
-  msg.Out()<<endl;
+  if (m_narg>0) msg_Out()<<p_arguments[m_narg-1];
+  msg_Out()<<"])";
+  msg_Out()<<endl;
 
   if (m_op=='+'){  
     for (size_t i=0;i<m_zlist.size();i++) {
       if (m_zsigns[i]==-1) {
-	msg.Out()<<"   - "; //<<m_zlist[i]->p_propagators[0].numb<<" * ";
+	msg_Out()<<"   - "; //<<m_zlist[i]->p_propagators[0].numb<<" * ";
 	m_zlist[i]->Print();
       }
       else {
 	if (m_zlist[i]->p_propagators!=NULL) {
-	  msg.Out()<<"   + ";
+	  msg_Out()<<"   + ";
 	  m_zlist[i]->Print(); 
 	}
 	else {
-	  msg.Out()<<" ??? "<<" * ";m_zlist[i]->Print();
+	  msg_Out()<<" ??? "<<" * ";m_zlist[i]->Print();
 	}
       }
     }
   }
   if (m_op=='*'){
     for (size_t i=0;i<m_zlist.size();i++) {
-      if (i>0) msg.Out()<<"  *";else msg.Out()<<" ->";
+      if (i>0) msg_Out()<<"  *";else msg_Out()<<" ->";
       m_zlist[i]->Print();
     }
-    msg.Out()<<"Sum over "<<m_sumindex<<endl;
+    msg_Out()<<"Sum over "<<m_sumindex<<endl;
   }  
 }

@@ -37,7 +37,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 {
   PROFILE_HERE;
   if (bloblist->empty()) {
-    msg.Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
+    msg_Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
 	       <<"   Incoming blob list contains no entries."<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return Return_Value::Error;
@@ -124,7 +124,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 	ntrial_one = (*blob)["ME_NumberOfTrials"]->Get<int>();
       }
       else {
-	msg.Error()<<"Signal_Processes::FillBlob(..): "
+	msg_Error()<<"Signal_Processes::FillBlob(..): "
 		   <<"Missing call to OneEvent() before SameEvent() !"
 		   <<std::endl;
       }
@@ -195,7 +195,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
       return success;
     }
     else {
-      msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
+      msg_Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
 		 <<"   No hard decay tables for "<<unstable_flav<<". Abort."<<std::endl;
       abort();
     }

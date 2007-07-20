@@ -320,7 +320,7 @@ void VHAAG::ConstructMomenta(double a1,double phi,
 {
   double ps = 0.25*(sqr(s-s1-s2)-4.*s1*s2)/s;
   if (q1.PPerp()!=0.) {
-    msg.Error()<<" Error in"<<std::endl
+    msg_Error()<<" Error in"<<std::endl
 	       <<"ConstructMomenta(double a1,double phi,double s1,double s2,double s,"<<std::endl
 	       <<"                 ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)!"<<std::endl
 	       <<" q1 must be in beam direction!   q1="<<q1<<std::endl;
@@ -468,7 +468,7 @@ double VHAAG::SingleSplitWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D 
     hlp= PiFunc(a1,a2,0.,s2/s,v);
     if (hlp>0.) wt*=sqrt(hlp);
     else {
-      msg.Error()<<"Error in VHAAG::SingleSplitFWeight!"<<std::endl
+      msg_Error()<<"Error in VHAAG::SingleSplitFWeight!"<<std::endl
 		 <<"PiFunc("<<a1<<","<<a2<<",0,0,"<<v<<") = "<<hlp<<std::endl;
       wt=0.;
     }
@@ -516,7 +516,7 @@ double VHAAG::SingleSplitFWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D
     hlp= PiFunc(a1,a2,0.,0.,v);
     if (hlp>0.) wt*=sqrt(hlp);
     else {
-      msg.Error()<<"Error in VHAAG::SingleSplitFWeight!"<<std::endl
+      msg_Error()<<"Error in VHAAG::SingleSplitFWeight!"<<std::endl
 		 <<"PiFunc("<<a1<<","<<a2<<",0,0,"<<v<<") = "<<hlp<<std::endl;
       wt=-1.;
     }

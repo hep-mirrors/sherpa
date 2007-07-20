@@ -86,8 +86,8 @@ Analysis_Handler::FindArguments(const Argument_Matrix &strings,
 
 void Analysis_Handler::ShowSyntax(const size_t i)
 {
-  if (!msg.LevelIsInfo() || i==0) return;
-  msg.Out()<<"Analysis_Handler::ShowSyntax(): {\n\n"
+  if (!msg_LevelIsInfo() || i==0) return;
+  msg_Out()<<"Analysis_Handler::ShowSyntax(): {\n\n"
 	   <<"   ..     -  mandatory variable\n"
 	   <<"   ..|..  -  mandatory selection\n"
 	   <<"   [..]   -  optional variable\n"
@@ -101,8 +101,8 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 	   <<"   BEGIN_ANALYSIS {\n\n"
 	   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
 	   <<"   PATH_PIECE path\n\n";
-  Getter_Function::PrintGetterInfo(msg.Out(),15);
-  msg.Out()<<"\n   } END_ANALYSIS\n\n"
+  Getter_Function::PrintGetterInfo(msg_Out(),15);
+  msg_Out()<<"\n   } END_ANALYSIS\n\n"
 	   <<"}"<<std::endl;
 }
 
@@ -136,7 +136,7 @@ bool Analysis_Handler::ReadIn()
       else if (helpsv[j].find("Hadron")!=std::string::npos) 
 	mode=mode|ANALYSIS::do_hadron;
       else {
-	msg.Error()<<"Analysis_Handler::ReadIn(): "
+	msg_Error()<<"Analysis_Handler::ReadIn(): "
 		   <<"Invalid analysis mode '"<<helpsv[j]
 		   <<"'"<<std::endl;
 	continue;
@@ -167,16 +167,16 @@ bool Analysis_Handler::ReadIn()
       if (observable!=NULL) {
 	m_analyses.back()->AddObservable(observable);
 	if (arguments[k][0]=="Trigger") trigger=true;
-	if (msg.LevelIsTracking()) {
-	  msg.Out()<<"      new Primitive_Observable_Base(\""
+	if (msg_LevelIsTracking()) {
+	  msg_Out()<<"      new Primitive_Observable_Base(\""
 		   <<arguments[k][0]<<"\",";
 	  for (size_t i=0;i<mat.size();++i) {
-	    msg.Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
+	    msg_Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
 	    for (size_t j=1;j<mat[i].size();++j) 
-	      msg.Out()<<","<<mat[i][j];
-	    msg.Out()<<"}";
+	      msg_Out()<<","<<mat[i][j];
+	    msg_Out()<<"}";
 	  }
-	  msg.Out()<<")\n";
+	  msg_Out()<<")\n";
 	}
       }
     }
@@ -216,7 +216,7 @@ void Analysis_Handler::Clear()
 bool Analysis_Handler::ApproveTerminate()
 {
   if (m_weighted==weighted_ns) {
-    msg.Error()<<"Analysis_Handler::ApproveTerminate(): {\n"
+    msg_Error()<<"Analysis_Handler::ApproveTerminate(): {\n"
 	       <<"   Currently weighted analyses cannot be continued.\n"
 	       <<"   To stop the event generation call SIGINT 3 times.\n"
 	       <<"   The analysis status will not be written to disk.\n}"
@@ -235,12 +235,12 @@ void Analysis_Handler::Finish(const std::string &path)
 {
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath(),448)) {
-      msg.Error()<<"Analysis_Handler::Finish(..): "
+      msg_Error()<<"Analysis_Handler::Finish(..): "
 		 <<"Cannot create directory '"<<OutputPath()
 		 <<"'."<<std::endl; 
       SetOutputPath(path);
       if (!MakeDir(OutputPath(),448)) {
-	msg.Error()<<"Analysis_Handler::Finish(..): "
+	msg_Error()<<"Analysis_Handler::Finish(..): "
 		   <<"Cannot create directory '"<<OutputPath()
 		   <<"'."<<std::endl; 
 	SetOutputPath(rpa.gen.Variable("SHERPA_RUN_PATH"));

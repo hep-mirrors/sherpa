@@ -23,7 +23,7 @@ bool All_Decays::AddToDecays(const Flavour & flav)
     m_particles.insert(flav);
     return 1;
   }
-  msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
+  msg_Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
   abort();
   return 0;
@@ -45,16 +45,16 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
     Full_Decay_Channel * dc = new Full_Decay_Channel(_dec);
     if (dc->CreateDecay()) {
       dt->AddDecayChannel(dc);
-      if (msg.LevelIsTracking()) dc->Output();
+      if (msg_LevelIsTracking()) dc->Output();
       return 1;
     }
-    msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
+    msg_Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	       <<"   Specified decay is impossible : ";dc->Output();
-    msg.Error()<<"   Will continue and hope for the best."<<endl;
+    msg_Error()<<"   Will continue and hope for the best."<<endl;
     delete dc;
     return 0;
   }
-  msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
+  msg_Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
   abort();
   return 0;
@@ -63,9 +63,9 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
 
 void All_Decays::PrintDecayings()
 {
-  if (msg.LevelIsTracking()) {
-    msg.Out()<<"Final list : "<<m_particles.size()<<endl;
-    for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) msg.Out()<<(*flit)<<endl;
+  if (msg_LevelIsTracking()) {
+    msg_Out()<<"Final list : "<<m_particles.size()<<endl;
+    for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) msg_Out()<<(*flit)<<endl;
   }
 }
 
@@ -88,7 +88,7 @@ double All_Decays::Width(ATOOLS::Flavour _fl)
 {
   DMIterator dit = m_decays.find(_fl);
   if (dit->first==_fl) return dit->second->Width();
-  msg.Error()<<"ERROR in All_Decays::Width("<<_fl<<")."<<endl
+  msg_Error()<<"ERROR in All_Decays::Width("<<_fl<<")."<<endl
 	     <<"   Flavour not found in internal tables. Return width = 0 GeV."<<endl;
   return 0.;
 }
@@ -97,7 +97,7 @@ Full_Decay_Table * All_Decays::GetFullDecayTable(ATOOLS::Flavour _fl)
 {
   DMIterator dit = m_decays.find(_fl);
   if (dit->first==_fl) return dit->second;
-  msg.Error()<<"ERROR in All_Decays::GetFullDecayTable("<<_fl<<")."<<endl
+  msg_Error()<<"ERROR in All_Decays::GetFullDecayTable("<<_fl<<")."<<endl
 	     <<"   Flavour not found in internal tables. Return NULL."<<endl;
   return NULL;
 }
@@ -138,7 +138,7 @@ void All_Decays::BinaryDecays()
     if (!skippit) {
       vertexlist = m_vertextable[(*flit)];
       if (vertexlist.size()==0) {
-	msg.Error()<<"ERROR in Decay_Handler::BinaryDecays()."<<endl
+	msg_Error()<<"ERROR in Decay_Handler::BinaryDecays()."<<endl
 		   <<"   Zero-length vertex list. Abort"<<endl;
 	abort();
       }
@@ -152,7 +152,7 @@ void All_Decays::BinaryDecays()
 	  for (int j=1;j<3;j++) dc->AddDecayProduct(flavs[j]);
 	  dc->CreateDecay();
 	  dt->AddDecayChannel(dc);
-	  if (msg.LevelIsTracking()) dc->Output();
+	  if (msg_LevelIsTracking()) dc->Output();
 	}
       }
       m_decays.insert(std::make_pair((*flit),dt));
@@ -179,7 +179,7 @@ void All_Decays::ThreeBodyDecays()
     if (!skippit) {
       primarylist = m_vertextable[(*flit)];
       if (primarylist.size()==0) {
-	msg.Error()<<"ERROR in Decay_Handler::ThreeBodyDecays()."<<endl
+	msg_Error()<<"ERROR in Decay_Handler::ThreeBodyDecays()."<<endl
 		   <<"   Zero-length vertex list. Abort"<<endl;
 	abort();
       }
@@ -224,7 +224,7 @@ bool All_Decays::InitializeDecays()
     if (!dmit->second->IsEvaluated()) okay = okay && dmit->second->InitAllDecays(p_model,p_top);
   }
   if (!okay) {
-    msg.Error()<<"Amegic::InitializeDecays : "<<std::endl
+    msg_Error()<<"Amegic::InitializeDecays : "<<std::endl
 	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
 	       <<"   Type \"./makelibs\" and rerun."<<endl;
     abort();

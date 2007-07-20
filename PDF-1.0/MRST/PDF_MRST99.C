@@ -14,7 +14,7 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   m_set(_set), m_path(_path)//, p_proton(NULL)
 {
   if ((m_set<1)||(m_set>12)) {
-    msg.Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
+    msg_Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
 	       <<"    will continue with set 1."<<std::endl;
     m_set  = 1;
   }
@@ -49,21 +49,21 @@ PDF_Base *PDF_MRST99::GetCopy()
 }
 
 void PDF_MRST99::Output() {
-  msg.Out()<<" internal PDF_MRST99 : "<<endl;
+  msg_Out()<<" internal PDF_MRST99 : "<<endl;
   switch(m_set) {
-  case 1:  msg.Out()<<"          central gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 2:  msg.Out()<<"          higher gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 3:  msg.Out()<<"          lower gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 4:  msg.Out()<<"          lower alpha_s = "<<0.1125<<endl;break;
-  case 5:  msg.Out()<<"          higher alpha_s = "<<0.1225<<endl;break;
-  case 6:  msg.Out()<<"          quarks up, alpha_s = "<<0.1178<<endl;break;
-  case 7:  msg.Out()<<"          quarks down, alpha_s = "<<0.1171<<endl;break;
-  case 8:  msg.Out()<<"          strange up, central alpha_s = "<<0.1175<<endl;break;
-  case 9:  msg.Out()<<"          strange down, central alpha_s = "<<0.1175<<endl;break;
-  case 10: msg.Out()<<"          charm up, central alpha_s = "<<0.1175<<endl;break;
-  case 11: msg.Out()<<"          charm down, central alpha_s = "<<0.1175<<endl;break;
-  case 12: msg.Out()<<"          larger d/u, central alpha_s = "<<0.1175<<endl;break;
-  default : msg.Out()<<"Error in  PDF_MRST99::Output() : Set = "<<m_set<<endl;
+  case 1:  msg_Out()<<"          central gluon, central alpha_s = "<<0.1175<<endl;break;
+  case 2:  msg_Out()<<"          higher gluon, central alpha_s = "<<0.1175<<endl;break;
+  case 3:  msg_Out()<<"          lower gluon, central alpha_s = "<<0.1175<<endl;break;
+  case 4:  msg_Out()<<"          lower alpha_s = "<<0.1125<<endl;break;
+  case 5:  msg_Out()<<"          higher alpha_s = "<<0.1225<<endl;break;
+  case 6:  msg_Out()<<"          quarks up, alpha_s = "<<0.1178<<endl;break;
+  case 7:  msg_Out()<<"          quarks down, alpha_s = "<<0.1171<<endl;break;
+  case 8:  msg_Out()<<"          strange up, central alpha_s = "<<0.1175<<endl;break;
+  case 9:  msg_Out()<<"          strange down, central alpha_s = "<<0.1175<<endl;break;
+  case 10: msg_Out()<<"          charm up, central alpha_s = "<<0.1175<<endl;break;
+  case 11: msg_Out()<<"          charm down, central alpha_s = "<<0.1175<<endl;break;
+  case 12: msg_Out()<<"          larger d/u, central alpha_s = "<<0.1175<<endl;break;
+  default : msg_Out()<<"Error in  PDF_MRST99::Output() : Set = "<<m_set<<endl;
   }
 }
 

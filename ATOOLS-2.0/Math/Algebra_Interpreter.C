@@ -465,7 +465,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   std::string left=expr.substr(0,pos);
   std::string right=expr.substr(i+1);
 #ifndef USING__Calc_only
-  if (msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
     msg_Debugging()<<"Interprete_Function -> '"<<left

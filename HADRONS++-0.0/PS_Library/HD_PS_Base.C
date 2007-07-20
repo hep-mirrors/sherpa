@@ -77,7 +77,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
 {
   if (flavs[0].Kfcode() == kf::K ) return NULL;
   if ( nin>1 || nout<2 ) {
-    msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
+    msg_Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
            <<"   No PS for channel ("<<nin<<" -> "<<nout<<" )"<<endl
            <<"   Return nothing and hope for the best."<<endl;
     return NULL;
@@ -145,7 +145,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     }
   }
 
-  msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
+  msg_Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
     <<"   No channel for ("<<nin<<" -> "<<nout<<") with name "<<name<<endl
          <<"   Return nothing and hope for the best."<<endl;
   return NULL;
@@ -205,7 +205,7 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
     reader.SetInputPath(m_path);
     reader.SetInputFile(m_file);
     if(!reader.MatrixFromFile(helpsvv)) {
-      msg.Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
+      msg_Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
          <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
       abort();
     }
@@ -325,7 +325,7 @@ bool HD_PS_Base::AddChannel(string name,double weight,GeneralModel & md)
 }
 
 void HD_PS_Base::CalculateNormalisedWidth() {
-  msg.Info()<<"HD_PS_Base::CalculateNormalisedWidth() for "
+  msg_Info()<<"HD_PS_Base::CalculateNormalisedWidth() for "
     <<p_hdc->ChannelName()<<endl;
   Reset();
   long int iter = Number()*5000*int(pow(2.,int(p_hdc->NOut())-2));
@@ -357,14 +357,14 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     result = sum/n;
     disc   = sqr(sum/n)/((sum2/n - sqr(sum/n))/(n-1));
     if (disc>0) m_error  = result/sqrt(disc);
-    msg.Info()<<"     result (w/o flux): "<<result<<" +/- "<<m_error<<" ("<<m_error/result*100.<<" %)"<<endl;
+    msg_Info()<<"     result (w/o flux): "<<result<<" +/- "<<m_error<<" ("<<m_error/result*100.<<" %)"<<endl;
     if (isotropic_me && m_error/result < 0.01) break;
   } 
   m_res  = m_flux*sum/n;
   m_error *= m_flux;
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = m_res/sqrt(disc);
-  msg.Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
+  msg_Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
   // note: the m_max is w/o flux factor
 } 
 

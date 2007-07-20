@@ -24,13 +24,13 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_Ebounds[1]   = 5.e10;
 
   if (m_energy>500. && m_mode!=-1 ) {
-    msg.Out()<<" WARNING: The CompAZ spectrum is only valid for electron energies "<<endl
+    msg_Out()<<" WARNING: The CompAZ spectrum is only valid for electron energies "<<endl
 	     <<"          between 100 GeV and 400 GeV! "<<endl;
 
   } 
 
   if (m_angles!=0) {
-    msg.Out()<<"WARNING:  Laser_Backscattering::Laser_Backscattering."<<endl
+    msg_Out()<<"WARNING:  Laser_Backscattering::Laser_Backscattering."<<endl
 	     <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
     m_angles     = 0;
   }
@@ -103,10 +103,10 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
       restot += res2 = TwoPhotons(z,m_polarisation,m_polarisationL,deg); 
       restot += res3 = Rescattering(z,m_polarisation,m_polarisationL,deg);
       if (flag) ofile<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
-      else  msg.Out()<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
+      else  msg_Out()<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
       if (IsZero(restot)) {deg = 0.;restot = 1.e-17;}
       if (flag) ofile<<"  "<<deg/restot<<endl;
-      else  msg.Out()<<"  "<<deg/restot<<endl;
+      else  msg_Out()<<"  "<<deg/restot<<endl;
     }
 
     if (flag) ofile.close();
@@ -179,7 +179,7 @@ double Laser_Backscattering::Weight(Flavour flin)
 
 ATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
   if (m_angles==0) return m_x*m_vecout;
-  ATOOLS::msg.Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
+  msg_Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
 		     <<"    m_angles != 0 not implemented yet."<<endl;
   return m_x*m_vecout; 
 }

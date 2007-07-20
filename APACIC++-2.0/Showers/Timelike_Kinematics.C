@@ -135,7 +135,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
   if (mo->right->shower==3) t2=mo->right->tmo;
   double t(mo->part->Momentum().Abs2());
   if (dabs((mo->t-t)/mo->t)>1.e-7 && mo->shower!=2) {
-    msg.Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
+    msg_Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
 	       <<", p^2 = "<<t<<std::endl;
     mo->t=t;
   }
@@ -263,7 +263,7 @@ bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
       !CheckVector(mo->right->part->Momentum())) {
-    msg.Error()<<METHOD<<"(): Constructed negative energy momentum."
+    msg_Error()<<METHOD<<"(): Constructed negative energy momentum."
 	       <<std::endl;
     return false;
   }
@@ -332,7 +332,7 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
 		   <<", p_2 = "<<mo->right->part->Momentum()<<"\n";
     msg_Debugging()<<"new p_1 = "<<p1vec<<", p_2 = "<<p2vec<<"\n";
     if (p!=p1vec+p2vec) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+      msg_Error()<<METHOD<<"(..): Four momentum not conserved.\n"
 		 <<"  p_miss  = "<<(p1vec+p2vec-p)<<"\n"
 		 <<"  p_old   = "<<(p1+p2)<<" "<<(p1+p2).Abs2()<<"\n"
 		 <<"  p_new   = "<<(p1vec+p2vec)
@@ -356,7 +356,7 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
     p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
     p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
     if (p1vec.Nan() || p2vec.Nan()) {
-      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
+      msg_Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
 		 <<"mo = "<<*mo<<"d1 = "<<*mo->left<<"d2 = "<<*mo->right
 		 <<"n = "<<nm<<", e = "<<es<<"\nphi = "
 		 <<phi<<" <- "<<mo->phi<<" ("<<mo->polinfo.Angle()<<")"
@@ -444,7 +444,7 @@ bool Timelike_Kinematics::ReconstructDaughter(Knot * const d) const
   double s1(d1->part->Momentum().Abs2()), s2(d2->part->Momentum().Abs2());
   double s(d->t), eps(0.5*(s+s1-s2)/s), pi2(eps*eps-s1/s);
   if (pi2<0.0) {
-    msg.Error()<<METHOD<<"(): Cannot construct new cms."<<std::endl;
+    msg_Error()<<METHOD<<"(): Cannot construct new cms."<<std::endl;
     abort();
   }
   double z(eps+sqrt(pi2)), Q(sqrt(d->t));

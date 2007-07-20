@@ -105,10 +105,10 @@ double DGLAP_PDF::Integrate(const double &x,const double &z,const double &kp2)
   integrator.SetNCells(1000);
   integrator.SetNMax(100000);
   integrator.SetError(0.01);
-  int old=ATOOLS::msg.Level();
-  ATOOLS::msg.SetLevel(0);
+  int old=ATOOLS::msg->Level();
+  ATOOLS::msg->SetLevel(0);
   double cur=integrator.Integrate(this);
-  ATOOLS::msg.SetLevel(old);
+  ATOOLS::msg->SetLevel(old);
   msg_Tracking()<<" Result = "<<cur<<"      "<<ATOOLS::bm::cr<<std::flush;
   return cur;
 }
@@ -337,7 +337,7 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
       d1=d2;
       m2=m2-(d2-fprime)/d;
       if (++step>100 || (!(d2>=0.) && !(d2<0.))) {
-	ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
+	msg_Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
 			   <<"Integrate failed.\n   x = "<<m_x<<", z = "<<m_z
 			   <<" k_\\perp^2 = "<<m_kperp2<<" \\mu^2 = "<<m_mu2
 			   <<"( "<<step<<" steps m = "<<m2<<" )"<<std::endl;
@@ -345,7 +345,7 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
       }
     } while (ATOOLS::dabs(d2-fprime)>accuracy);
     if (m2<=ATOOLS::rpa.gen.Accu()) {
-      ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
+      msg_Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
 			 <<"Integrate failed.\n   x = "<<m_x<<", z = "<<m_z
 			 <<" k_\\perp^2 = "<<m_kperp2<<" \\mu^2 = "<<m_mu2
 			 <<"( "<<step<<" steps m = "<<m2<<" )"<<std::endl;
@@ -485,7 +485,7 @@ double Doubly_Unintegrated_PDF::GetXPDF(const ATOOLS::Flavour flavour)
 {
   if (!m_calculate) return 0.;
   if (!Unintegrate(flavour)) {
-    ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::GetXPDF("<<flavour<<"): "
+    msg_Error()<<"Doubly_Unintegrated_PDF::GetXPDF("<<flavour<<"): "
 		       <<"Cannot unintegrate PDF."<<std::endl;
   }
   return m_integrated+m_unintegrated;

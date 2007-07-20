@@ -121,7 +121,7 @@ double* Vegas::GeneratePoint(const double * ran)
     xx = ran[i]*(double)m_nd;
     ia = (int)xx;
     if (ia>=m_nd) {
-      msg.Out()<<" WARNING Vegas::GeneratePoint(const double* ran)"
+      msg_Out()<<" WARNING Vegas::GeneratePoint(const double* ran)"
 	       <<" called with ran["<<i<<"]="<<ran[i]<<"\n";
       ia=m_nd-1;
     }
@@ -143,7 +143,7 @@ double Vegas::GenerateWeight(double* xy)
     int k=0;
     while (xy[i]>p_xi[i][k]&&k<m_nd) k++;
     if (k>=m_nd) {
-      msg.Out()<<" WARNING Vegas::GenerateWeight(double* xy) called with"
+      msg_Out()<<" WARNING Vegas::GenerateWeight(double* xy) called with"
 	       <<" xy["<<i<<"]="<<xy[i]<<"\n";
       k=m_nd-1;
     }
@@ -163,8 +163,8 @@ void Vegas::AddPoint(double value,double *xy)
   if (m_mode==1){
     for (int i=0;i<m_dim;i++) {
       if (dabs(p_x[i]-xy[i])>1.e-4) {
-	msg.Error()<<"Mapping error in Vegas for "<<m_name<<endl;
-	for (int j=0;j<m_dim;j++) msg.Error()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
+	msg_Error()<<"Mapping error in Vegas for "<<m_name<<endl;
+	for (int j=0;j<m_dim;j++) msg_Error()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
 //    	abort();
 	i=m_dim;
       }
@@ -174,7 +174,7 @@ void Vegas::AddPoint(double value,double *xy)
     int k=0;
     while (xy[i]>p_xi[i][k]&&k<m_nd) k++;
     if (k>=m_nd) {
-      msg.Out()<<" WARNING Vegas::AddPoint(double value,double* xy) called with"
+      msg_Out()<<" WARNING Vegas::AddPoint(double value,double* xy) called with"
 	       <<" xy["<<i<<"]="<<xy[i]<<"\n";
       k=m_nd-1;
     }
@@ -327,7 +327,7 @@ void Vegas::ReadIn(const std::string & pid)
   getline(ifile,buffer);
   msg_Tracking()<<"Vegas::ReadIn "<<buffer<<" with "<<number<<" dimensions; nopt="<<m_nopt<<std::endl;
   if (number!=m_dim) {
-    msg.Error()<<"Error Vegas::ReadIn() - wrong dimension!"<<endl;
+    msg_Error()<<"Error Vegas::ReadIn() - wrong dimension!"<<endl;
     abort();
   }
   for (int i=0;i<m_dim;++i) {

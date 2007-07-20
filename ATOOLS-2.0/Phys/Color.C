@@ -645,7 +645,7 @@ bool Expression::Evaluate()
       ++m_cindex;
     }
 #ifndef USING__Color_only
-    if (msg.LevelIsTracking()) PrintStatus(false,false);
+    if (msg_LevelIsTracking()) PrintStatus(false,false);
 #else
     PrintStatus(false,false);
 #endif
@@ -666,7 +666,7 @@ bool Expression::Evaluate()
   if (--*this==NULL) {
 #ifndef USING__Color_only
     rpa.gen.Timer().Stop();
-    if (msg.LevelIsTracking()) PrintStatus();
+    if (msg_LevelIsTracking()) PrintStatus();
 #else
     PrintStatus();
 #endif

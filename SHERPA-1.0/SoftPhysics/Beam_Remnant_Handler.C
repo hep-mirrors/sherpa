@@ -67,7 +67,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
       bloblist->push_front
 	(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
       if (m_beam>2) {
-	msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 		   <<"   Too many bunch blobs required, "
 		   <<"return 'Error' and hope for the best."<<std::endl;
 	return Return_Value::Error;

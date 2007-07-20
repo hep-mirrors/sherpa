@@ -8,7 +8,7 @@ Channel_Interface::Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,A
   Single_Channel(nin,nout,flavour)
 {  
   if (nout != 2 || nin!=2) {
-    ATOOLS::msg.Error()<<"Channel_Interface::Channel_Interface(..): "
+    msg_Error()<<"Channel_Interface::Channel_Interface(..): "
 		       <<"Cannot handle "<<nin<<" -> "<<nout<<" processes. Abort."<<std::endl;
     exit(169);
   }
@@ -30,12 +30,12 @@ Channel_Interface::Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,A
 
 void Channel_Interface::GeneratePoint(ATOOLS::Vec4D * p,double *ran=0) 
 {
-  ATOOLS::msg.Error()<<"Channel_Interface::GeneratePoint(): Virtual method called!"<<std::endl;
+  msg_Error()<<"Channel_Interface::GeneratePoint(): Virtual method called!"<<std::endl;
 }
 
 void Channel_Interface::GenerateWeight(ATOOLS::Vec4D * p)
 {
-  ATOOLS::msg.Error()<<"Channel_Interface::GenerateWeight(): Virtual method called!"<<std::endl;
+  msg_Error()<<"Channel_Interface::GenerateWeight(): Virtual method called!"<<std::endl;
 }
 
 void Channel_Interface::ISRInfo(int &_type,double &_mass,double &_width) 

@@ -98,7 +98,7 @@ bool Pythia_HepEvt_Translator::ReconstructBeamsAndBunches()
 	  (p_jmohep[2*pos]-1==1 && p_jmohep[2*pos+1]-1==-1)) {
 	m_piter1 = m_convertH2S.find(p_jmohep[2*pos]-1); 
 	if (m_piter1==m_convertH2S.end()) {
-	  msg.Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
+	  msg_Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
 		     <<"    Potential bunch particle does not have beam particle."<<endl
 		     <<"    Will return .false. and hope that event is discarded."<<endl;
 	  return false;
@@ -151,7 +151,7 @@ bool Pythia_HepEvt_Translator::ReconstructSignalBlob()
     if (part->Status()==part_status::documentation) {
       //cout<<"   Belongs to signal."<<endl;
       if (IsZero(part->Momentum()[0])) {
-	msg.Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
+	msg_Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
 		   <<"    Signal particles with zero energy: Looks like a nonsensical event."<<endl
 		   <<"    Will return .false. and hope that event is discarded."<<endl;
 	return false;
@@ -160,7 +160,7 @@ bool Pythia_HepEvt_Translator::ReconstructSignalBlob()
     }
   }
   if (m_signalints.size()<=0) {
-    msg.Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
+    msg_Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
 	       <<"    Zero signal particles: Looks like a nonsensical event."<<endl
 	       <<"    Will return .false. and hope that event is discarded."<<endl;
     return false;
@@ -222,7 +222,7 @@ bool Pythia_HepEvt_Translator::ReconstructShowerBlob() {
   for (m_piter=m_convertH2S.begin();m_piter!=m_convertH2S.end();m_piter++) {
     if (!m_piter->second.second) continue;
     if (m_piter->second.first->Status()==part_status::documentation) {
-      msg.Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
+      msg_Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
 		 <<"    Shower/hadronization particle with documentation tag?"<<endl
 		 <<"    "<<(*m_piter->second.first)<<endl
 		 <<"    Will return .false. and hope that event is discarded."<<endl;
@@ -233,7 +233,7 @@ bool Pythia_HepEvt_Translator::ReconstructShowerBlob() {
 
 
   if (partints.size()<=0) {
-    msg.Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
+    msg_Error()<<"WARNING : Error in "<<METHOD<<" : "<<endl
 	       <<"    Zero shower particles: Will return .true. and hope for the best."<<endl;
     return true;
   }

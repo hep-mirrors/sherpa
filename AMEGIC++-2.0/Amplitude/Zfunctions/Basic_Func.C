@@ -40,7 +40,7 @@ void Basic_Func::Map(int& numb,bool& maped)
   maped=true;
 
   if (numb<0) {
-    ATOOLS::msg.Error()<<"Negative Number in Basic_Func::Map() -> numb = "<<numb<<endl;
+    msg_Error()<<"Negative Number in Basic_Func::Map() -> numb = "<<numb<<endl;
     abort();
   }
   if (numb>99) {
@@ -68,7 +68,7 @@ double Basic_Func::GetPMass(int a,int sign)
     }
   }
   if(hit) return (p1->fl).Mass();
-  ATOOLS::msg.Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl
+  msg_Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl
 		     <<ps[0].numb<<"."<<ps[1].numb<<"."<<pn<<endl;
   abort();
   return 0.;

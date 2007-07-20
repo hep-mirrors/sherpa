@@ -207,7 +207,7 @@ bool MSSM::RunSpectrumGenerator() {
       return 1;
     }
     
-    msg.Error()<<"Error in MSSM::RunSpectrumGenerator."<<std::endl
+    msg_Error()<<"Error in MSSM::RunSpectrumGenerator."<<std::endl
 	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;
   }

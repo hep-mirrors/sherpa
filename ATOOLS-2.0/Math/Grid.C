@@ -26,7 +26,7 @@ Grid::~Grid()
 void Grid::Allocate(Node<double> *current,const size_t node)
 {
 #ifdef DEBUG__Grid
-  msg.Debugging()<<"Grid<"<<m_dim<<","<<m_points
+  msg_Debugging()<<"Grid<"<<m_dim<<","<<m_points
 		 <<">::Allocate("<<current<<","<<node<<") {\n";
   {
     msg_Indent();
@@ -42,7 +42,7 @@ void Grid::Allocate(Node<double> *current,const size_t node)
     }
 #ifdef DEBUG__Grid
   }
-  msg.Debugging()<<"}"<<std::endl;
+  msg_Debugging()<<"}"<<std::endl;
 #endif
 }
 
@@ -51,12 +51,12 @@ double Grid::Y(const std::vector<size_t> &position,
 {
   if (node>position.size()+1 || 
       (node<=position.size() && position[node-1]>m_points)) {
-    msg.Error()<<"Grid<"<<m_dim<<","<<m_points<<">::Y(..): "
+    msg_Error()<<"Grid<"<<m_dim<<","<<m_points<<">::Y(..): "
 	       <<"Position specification failed."<<std::endl;
     return 0.0;
   }
 #ifdef DEBUG__Grid
-  msg.Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::Y("
+  msg_Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::Y("
 		 <<&position<<","<<current<<","<<node
 		 <<") ["<<(node>position.size()?0:position[node-1])<<"]\n";
   msg_Indent();
@@ -71,12 +71,12 @@ void Grid::SetY(const std::vector<size_t> &position,
 {
   if (node>position.size()+1 || 
       (node<=position.size() && position[node-1]>m_points)) {
-    msg.Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetY(..): "
+    msg_Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetY(..): "
 	       <<"Position specification failed."<<std::endl;
     return;
   }
 #ifdef DEBUG__Grid
-  msg.Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::SetY("
+  msg_Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::SetY("
 		 <<&position<<","<<value<<","<<current<<","<<node
 		 <<") ["<<(node>position.size()?0:position[node-1])<<"]\n";
   msg_Indent();
@@ -89,19 +89,19 @@ void Grid::SetX(const size_t position,const std::vector<double> &x,
 		Node<double> *current,const size_t node) 
 {
   if (position>m_dim) {
-    msg.Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX(..): "
+    msg_Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX(..): "
 	       <<"Position specification failed."<<std::endl;
     return;
   }
 #ifdef DEBUG__Grid
-  msg.Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX("
+  msg_Debugging()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX("
 		 <<position<<","<<x<<","<<current<<","<<node
 		 <<")\n";
   msg_Indent();
 #endif
   if (node-1==position) {
     if (x.size()!=current->size()) {
-      msg.Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX(..): "
+      msg_Error()<<"Grid<"<<m_dim<<","<<m_points<<">::SetX(..): "
 		 <<"Incorrect point number."<<std::endl;
       return;
     }
@@ -141,7 +141,7 @@ double Grid::Interpolate(const std::vector<double> &xgrid,
       hp=xgrid[i+m]-x;
       w=c[i+1]-d[i];
       if ((den=ho-hp)==0.0) 
-	msg.Error()<<"Grid::Interpolate(..): Identical x values.\n"
+	msg_Error()<<"Grid::Interpolate(..): Identical x values.\n"
 		   <<"   Result will be unreliable."<<std::endl;
       den=w/den;
       d[i]=hp*den;
@@ -248,7 +248,7 @@ bool Grid::ReadIn(const std::string &filename)
   p_file->precision(14);
   (*p_file)>>dim>>points>>dummy;
   if (dim!=m_dim || points!=m_points || dummy!="{") {
-    msg.Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
+    msg_Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
 	       <<"Inconsistent grid dimension."<<std::endl;
     delete p_file;
     return false;
@@ -257,7 +257,7 @@ bool Grid::ReadIn(const std::string &filename)
   if (!p_file->eof()) (*p_file)>>dummy;
   if (dummy!="}") result=false;
   delete p_file;
-  if (!result) msg.Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
+  if (!result) msg_Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
 			  <<"Data error."<<std::endl;
   return result;
 }
@@ -266,7 +266,7 @@ bool Grid::ReadIn(Node<double> *current,const size_t node)
 {
   for (size_t i=0;i<current->size();++i) {
     if (p_file->eof()) {
-      msg.Error()<<"Grid::ReadIn(..): "
+      msg_Error()<<"Grid::ReadIn(..): "
 		 <<"EOF at "<<i<<" ";
       return false;
     }
@@ -274,14 +274,14 @@ bool Grid::ReadIn(Node<double> *current,const size_t node)
     (*p_file)>>dummy;
     (*current)[i]=ATOOLS::ToType<double>(dummy);
     if (dummy=="nan") (*current)[i]=0.0;
-    if (ATOOLS::msg.LevelIsDebugging()) {
+    if (msg_LevelIsDebugging()) {
       msg_Debugging()<<std::string(node,' ')<<(*current)[i]<<" ";
       if (node!=m_dim-1) msg_Debugging()<<std::endl;
     }
     if (current->operator->()!=NULL) {
       if (!ReadIn((*current)()[i],node+1)) {
-        if (node==0) msg.Error()<<std::endl;
-	else msg.Error()<<i<<" ";
+        if (node==0) msg_Error()<<std::endl;
+	else msg_Error()<<i<<" ";
 	return false;
       }
     }

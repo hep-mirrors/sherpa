@@ -56,7 +56,7 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     m_showers=true;
   }
   if (dataread->GetValue<int>("CKKW_WEIGHTING_TEST",0)) {
-    msg.Error()<<om::bold<<METHOD<<"(): SEVERE WARNING {\n"<<om::reset<<om::red
+    msg_Error()<<om::bold<<METHOD<<"(): SEVERE WARNING {\n"<<om::reset<<om::red
 	       <<"  Setting CKKW_WEIGHTING_TEST disables the Parton Shower.\n"
 	       <<"  It is used for internal testing purposes only.\n"
 	       <<"  Users must never run Sherpa in this mode.\n"<<om::reset
@@ -95,8 +95,8 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   for (;trials<m_maxtrials;++trials) {
     static double accu(sqrt(rpa.gen.Accu()));
     Vec4D::SetAccu(accu);
-    if (msg.LevelIsDebugging()) {
-      msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
+    if (msg_LevelIsDebugging()) {
+      msg_Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
       OutputTrees();
     }
     if (m_isron) {
@@ -153,7 +153,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   if (trials==m_maxtrials) {
     ++rej;
     if (rej/cnt>0.1) 
-      msg.Error()<<METHOD<<"(): rej. rate = "<<rej/cnt<<".\n";
+      msg_Error()<<METHOD<<"(): rej. rate = "<<rej/cnt<<".\n";
     return -1;
   }
   p_fintree->CheckMomentumConservation();
@@ -166,7 +166,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   Vec4D sum_fs(p_finshower->GetMomentum(p_fintree->GetRoot(),number));
   Vec4D::ResetAccu();
   if (number<0) {
-    msg.Error()<<METHOD<<"(..): Four Momentum not conserved. Abort."
+    msg_Error()<<METHOD<<"(..): Four Momentum not conserved. Abort."
 	       <<std::endl;
     return 0;
   }
@@ -176,8 +176,8 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       p_finshower->Sudakov()->Vetos(0).front()|svc::lj_veto;
 #endif
   m_last_ljv=false;
-  if (msg.LevelIsDebugging()) {
-    msg.Out()<<"Apacic::PerformShowers : After showering."<<std::endl;
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<"Apacic::PerformShowers : After showering."<<std::endl;
     OutputTrees();
   }
   return 1;

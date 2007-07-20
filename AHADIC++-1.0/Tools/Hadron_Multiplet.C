@@ -602,7 +602,7 @@ void All_Hadron_Multiplets::AddMultipletWeights()
       }
       else {
 	if (wave==NULL) {
-	  msg.Error()<<"ERROR in All_Hadron_Multiplets::AddMultipletWeights():"<<endl
+	  msg_Error()<<"ERROR in All_Hadron_Multiplets::AddMultipletWeights():"<<endl
 		     <<"   No wave function found for "<<(*flit)
 		     <<",continue and hope for the best."<<endl;
 	}
@@ -624,12 +624,12 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
   Hadron_Wave_Function * wf;
   map<Flavour,double> checkit;
   for (Hadron_Multiplet_Miter mplet=p_multiplets->begin();mplet!=p_multiplets->end();mplet++) {
-    msg.Out()<<"-----------------------------------------------"<<endl
+    msg_Out()<<"-----------------------------------------------"<<endl
 	     <<" "<<mplet->second->Name()<<" with "<<mplet->second->Size()<<" elements: "<<endl;
     for (FlSetIter fl=mplet->second->GetElements()->begin();
 	 fl!=mplet->second->GetElements()->end();fl++) {
       wfm = p_wavefunctions->find((*fl));
-      if (wfm!=p_wavefunctions->end()) { wf = wfm->second; msg.Out()<<(*wf); }
+      if (wfm!=p_wavefunctions->end()) { wf = wfm->second; msg_Out()<<(*wf); }
       
       if (mplet->second->Name()==string("Nucleons        (1/2)")) {
        	WFcomponent * wfc = wf->GetWaves();
@@ -644,13 +644,13 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
       }
     } 
     if (mplet->second->Name()==string("Nucleons        (1/2)")) {
-      msg.Out()<<"Weight of individual components in "<<mplet->second->Name()<<" : "<<endl;
+      msg_Out()<<"Weight of individual components in "<<mplet->second->Name()<<" : "<<endl;
       for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
-       	msg.Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
+       	msg_Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
     }
-    msg.Out()<<"-----------------------------------------------"<<endl;
+    msg_Out()<<"-----------------------------------------------"<<endl;
   }
-  msg.Out()<<endl
+  msg_Out()<<endl
 	   <<"-------- END OF ALL_HADRON_MULTIPLETS ------"<<endl;  
 }
 
@@ -659,12 +659,12 @@ void All_Hadron_Multiplets::PrintMultiplets()
 {
   for (Hadron_Multiplet_Miter miter=p_multiplets->begin();
        miter!=p_multiplets->end();miter++) {
-    msg.Out()<<"* "<<miter->first<<" "<<miter->second->Name()
+    msg_Out()<<"* "<<miter->first<<" "<<miter->second->Name()
 	     <<" "<<miter->second->ExtraWeight()<<" "<<miter->second->Weight()<<endl;
     for (FlSetIter flit=miter->second->GetElements()->begin();
  	 flit!=miter->second->GetElements()->end();flit++) {
-      msg.Out()<<"  "<<(*flit);
+      msg_Out()<<"  "<<(*flit);
     }
-    msg.Out()<<endl<<endl;
+    msg_Out()<<endl<<endl;
   }
 }

@@ -21,10 +21,10 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
   for (int i=1;i<1+nout;i++) {
     mass-=flavs[i].Mass();
     if (mass<0.) {
-      msg.Error()<<"Error in HD_ME_Selector::GetME("<<nin<<"->"<<nout<<") : "
+      msg_Error()<<"Error in HD_ME_Selector::GetME("<<nin<<"->"<<nout<<") : "
 		 <<"   Masses do not match : "<<flavs[0].Mass()<<" -> ";
-      for (int j=1;j<nout;j++) msg.Error()<<flavs[j].Mass()<<"+";
-      msg.Error()<<flavs[nout].Mass()<<endl
+      for (int j=1;j<nout;j++) msg_Error()<<flavs[j].Mass()<<"+";
+      msg_Error()<<flavs[nout].Mass()<<endl
 		 <<"   Will return NULL and hope for the best."<<endl;
       return hdme;
     }
