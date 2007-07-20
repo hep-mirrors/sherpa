@@ -4,6 +4,7 @@
 namespace EXTRAXS { class XS_Base; }
 
 #include "Integrable_Base.H"
+#include "XS_Model_Base.H"
 
 namespace PHASIC { class Regulator_Base; }
 
@@ -14,33 +15,55 @@ namespace EXTRAXS {
 
     int **p_colours;
 
+    bool m_channels, m_ownmodel;
+
     double m_s, m_t, m_u;
+
+    XS_Model_Base *p_model;
+
+    static bool s_sortflavours;
 
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
+
+    static void SortFlavours(ATOOLS::Flavour *flavs,const size_t &n);
 
     void Init(const ATOOLS::Flavour *flavours);
 
     friend class XS_Selector;
     friend class XS_Group;
 
+    void PrepareTerminate();
+
    public:
 
     // constructors
     XS_Base(); 
-    XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
+    XS_Base(const size_t nin,const size_t nout,
+	    const ATOOLS::Flavour *flavours,XS_Model_Base *const model=NULL);
     XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
 	    const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	    BEAM::Beam_Spectra_Handler *const beamhandler,
 	    PDF::ISR_Handler *const isrhandler,
-	    ATOOLS::Selector_Data *const selectordata);
+	    ATOOLS::Selector_Data *const selectordata,
+	    XS_Model_Base *const model=NULL);
 
     // destructor
     ~XS_Base();
 
     // member functions
+    void Initialize(const PHASIC::scl::scheme scalescheme,
+		    const int kfactorscheme,
+		    BEAM::Beam_Spectra_Handler *const beamhandler,
+		    PDF::ISR_Handler *const isrhandler,
+		    ATOOLS::Selector_Data *const selectordata);
+    void InitializeModel(MODEL::Model_Base *const model,
+			 const std::string &file);
+
     void AssignRegulator(const std::string &regulator,
 			 const std::vector<double> &parameters);
+
+    virtual void SetCoreMaxJetNumber(const int &n);
 
     virtual size_t Size() const;
 
@@ -65,12 +88,15 @@ namespace EXTRAXS {
 
     virtual void Reset();
     virtual void ResetSelector(ATOOLS::Selector_Data *const selectordata);
+
+    virtual void CreateFSRChannels(); 
+    virtual void CreateISRChannels();
     
     virtual bool SetColours(const ATOOLS::Vec4D *momenta);
     virtual void SetMax(const double max,const int flag);
 
     virtual void SetISR(PDF::ISR_Handler *const isrhandler) = 0;
-    virtual void SetTotal() = 0;
+    virtual void SetTotal(const int mode=1) = 0;
 
     virtual double Differential(const double s,const double t,const double u) = 0;
     virtual bool   SetColours(const double s,const double t,const double u) = 0;
@@ -80,13 +106,23 @@ namespace EXTRAXS {
 				    const bool create) = 0;
     virtual void WriteOutXSecs(std::ofstream &outfile) = 0;
 
+    virtual bool Tests() = 0;
+
+    virtual void SetScales(const double &scale);
+    
     // inline functions
     inline int **const Colours() const { return p_colours; }
 
     inline const std::vector<ATOOLS::Flavour> &Resonances() const 
     { return m_resonances; }
 
-    inline PHASIC::Regulator_Base *const Regulator() const { return p_regulator; }
+    inline PHASIC::Regulator_Base *const Regulator() const 
+    { return p_regulator; }
+
+    inline XS_Model_Base *GetModel() const { return p_model; }
+
+    inline static void SetSortFlavours(const bool &sort)
+    { s_sortflavours=sort; }
 
   };// end of class XS_Base
 

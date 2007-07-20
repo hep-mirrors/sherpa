@@ -14,14 +14,16 @@ namespace EXTRAXS {
 
     std::vector<XS_Base *> m_xsecs;
 
-    bool m_atoms, m_channels, m_foundown;
+    bool m_atoms, m_foundown;
 
     XS_Selector *p_xsselector;
 
     ATOOLS::Selector_Data *p_selectordata;
 
-    XS_Base *Matching(const std::string &name);
-    void     PrepareTerminate();
+    bool CheckFlavours(std::vector<ATOOLS::Flavour> &cfl);
+    bool ConstructProcesses(const size_t &oew,const size_t &os,
+			    std::vector<ATOOLS::Flavour> cfl,
+			    const size_t &ci,const double &fixscale);
 
   public :
 
@@ -29,27 +31,32 @@ namespace EXTRAXS {
     // constructors
     XS_Group(); 
     XS_Group(const size_t nin,const size_t nout,const std::string &name);
-    XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
-    XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
+    XS_Group(const size_t nin,const size_t nout,
+	     const ATOOLS::Flavour *flavours,XS_Model_Base *const model);
+    XS_Group(const size_t nin,const size_t nout,
+	     const ATOOLS::Flavour *flavours,
 	     const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	     BEAM::Beam_Spectra_Handler *const beamhandler,
 	     PDF::ISR_Handler *const isrhandler,
-	     ATOOLS::Selector_Data *const selectordata);
+	     ATOOLS::Selector_Data *const selectordata,
+	     XS_Model_Base *const model);
 
     // destructor
     ~XS_Group();
 
     // member functions
+    bool ConstructProcesses(const size_t &oew,const size_t &os,
+			    const double &fixscale);
+    
     void Add(XS_Base *const xsec);
     bool Remove(XS_Base *const xsec);
     bool Delete(XS_Base *const xsec);
     void Clear();
 
     virtual void SetAtoms(const bool atoms);
-    virtual void CreateFSRChannels();
-    virtual void CreateISRChannels();
 
     void SetFactorizationScale(const std::string &muf2);
+    void SetCoreMaxJetNumber(const int &n);
 
     size_t Size() const;
 
@@ -60,7 +67,7 @@ namespace EXTRAXS {
     void SetISR(PDF::ISR_Handler *const isrhandler);
 
     void SetMax(const double max,const int flag);
-    void SetTotal();
+    void SetTotal(const int mode=1);
     void Reset();
 
     double Differential(const double s,const double t,const double u);
@@ -91,6 +98,10 @@ namespace EXTRAXS {
 
     void Print();
 
+    bool Tests();
+
+    void SetScales(const double &scale);
+
     // inline functions 
     inline void SetSelectorData(ATOOLS::Selector_Data *const data) 
     { p_selectordata=data; }
@@ -101,6 +112,8 @@ namespace EXTRAXS {
     { return p_selectordata; }
 
     inline XS_Selector *const XSSelector() const { return p_xsselector; }
+
+    XS_Base *Matching(const std::string &name);
 
   };// end of class XS_Group
 

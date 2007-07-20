@@ -3,16 +3,12 @@ pkglib_LTLIBRARIES       =	libExtraXS2_2.la
 libExtraXS2_2_la_SOURCES      =	\
 				XS_QCD.C \
 				XS_Drell_Yan.C \
-				XS_4F.C \
-				QED_Processes.C \
-				QCD_Processes.C
+				XS_4F.C
 
 pkginclude_HEADERS        =	\
 			XS_QCD.H \
 			XS_Drell_Yan.H \
-			XS_4F.H \
-			QED_Processes.H \
-			QCD_Processes.H
+			XS_4F.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

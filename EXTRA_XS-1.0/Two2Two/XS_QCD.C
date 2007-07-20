@@ -6,782 +6,750 @@
 #include "Flow.H"
 
 using namespace EXTRAXS;
-using namespace MODEL;
-using namespace ATOOLS;
-
-
-/* 
-   In all the differential cross sections the factor 1/16 Pi^2 is cancelled
-   by the factor 4 Pi for each alpha
-*/
-
+  using namespace MODEL;
+  using namespace ATOOLS;
+  
 namespace EXTRAXS {
-
-template <> 
-Single_XS *Single_XS::GetProcess<XS_pp_ffbar>(const size_t nin,const size_t nout,
-					      const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (nqed!=2 || nqcd!=0) return NULL;
-  if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
-      flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
-    return new XS_pp_ffbar(nin,nout,flavours); 
-  }
-  return NULL;
-}
-
-}
-
-XS_pp_ffbar::XS_pp_ffbar(const size_t nin,const size_t nout,
-			 const ATOOLS::Flavour *fl) :
-  Single_XS(nin,nout,fl)  
-{
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  if (p_flavours[2].Strong()) {
-    int a  = p_flavours[2].IsAnti();
-    p_colours[2][a] = 500;
-    p_colours[3][1-a] = 500;
-  }
-}
-double XS_pp_ffbar::operator()(double s,double t,double u) 
-{ 
-  return 0.0; 
-}
-
-bool XS_pp_ffbar::SetColours(double s,double t,double u) 
-{ 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
-  return 1; 
-}
-
-namespace EXTRAXS {
-
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours, 
-					       const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsQuark() && flavours[1].IsQuark() && flavours[0]!=flavours[1] &&
-      ((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
-       (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1q2_q1q2(nin,nout,flavours); 
+  
+  template <> Single_XS *Single_XS::GetProcess<XS_pp_q1qbar1>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model,
+   const size_t nqed,const size_t nqcd)
+  {
+    if (!model->IncludesModel("QED")) return NULL;
+    if (flavours[0].IsPhoton() && flavours[1].IsPhoton() && 
+ 	flavours[2].IsQuark() && flavours[3]==flavours[2].Bar()) { 
+      if (nqcd==0 && nqed==2) {
+ 	return new XS_pp_q1qbar1(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
+   
 }
-
+  
+XS_pp_q1qbar1::XS_pp_q1qbar1(const size_t nin,const size_t nout, 
+ 			     const ATOOLS::Flavour *fl,
+ 			     XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
+{
+  m_r=fl[2].IsAnti();
+  m_g=std::abs(p_model->Constant("g_1"));
+  m_eq=p_flavours[2].Charge();
+  m_m2=sqr(p_flavours[2].Mass());
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  m_nstrong=2;
 }
-
-XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+  
+double XS_pp_q1qbar1::operator()(double s,double t,double u) 
+{
+  if (s<m_threshold) return 0.;
+  double tp(t-m_m2), up(u-m_m2);
+  double mtt(2.0*(tp*(up-2.0*m_m2)-4.0*m_m2*m_m2)/(tp*tp));
+  double muu(2.0*(up*(tp-2.0*m_m2)-4.0*m_m2*m_m2)/(up*up));
+  double mtu(2.0*m_m2*(s-4.0*m_m2)/(tp*up));
+  return sqr(csqr(m_g).real()*sqr(m_eq))*3.0*(mtt+muu+2.0*mtu); 
+}
+  
+ 
+bool XS_pp_q1qbar1::SetColours(double s, double t, double u) 
+{
+  bool swap=m_swaped;
+  RestoreInOrder();
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = Min(t,u);
+  m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = Min(t,u);
+  p_colours[2+m_r][0]=p_colours[3-m_r][1]=Flow::Counter();
+  if (swap) SwapInOrder();
+  return true;
+}
+  
+namespace EXTRAXS {
+  
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsQuark() && flavours[1].IsQuark() && 
+ 	flavours[0]!=flavours[1] &&
+ 	((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
+ 	 (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
+      if (nqcd==2 && nqed==0) {
+ 	return new XS_q1q2_q1q2(nin,nout,flavours,model); 
+      }
+    }
+    return NULL;
+  }
+  
+}
+  
+XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, 
+			   const ATOOLS::Flavour *fl,
+			   XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  a  = fl[0].IsAnti();
-  p = fl[1].IsAnti();
-  aS = (*as)(sqr(rpa.gen.Ecms()));
-
+  m_a=fl[0].IsAnti();
+  m_p=fl[1].IsAnti();
+  m_g=std::abs(p_model->Constant("g_3"));
+  m_m12=sqr(p_flavours[0].Mass());
+  m_m22=sqr(p_flavours[1].Mass());
   m_nstrong=4;
 }
-
-double XS_q1q2_q1q2::operator()(double s,double t,double u) {
+  
+double XS_q1q2_q1q2::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
+  double Mt(sqr(u-m_m12-m_m22)+sqr(s-m_m12-m_m22)+2.0*t*(m_m12+m_m22));
+  return sqr(m_g*m_g)*4.0/9.0*Mt/(t*t);
 }
-
+  
 bool XS_q1q2_q1q2::SetColours(double s,double t,double u) 
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    2.0*(s*t*u)/(s*s+t*t+u*u);
   int r = !(p_flavours[0] == p_flavours[2]);
-  if (a==p) {
+  if (m_a==m_p) {
     /*
       0-----\   /-----2, if fl[0]==fl[2]
-             \ /
-	      X  t
-             / \
+      \ /
+      X  t
+      / \
       1-----/   \-----3, if fl[1]==fl[3]
 
       shower scale is u
     */
-    p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
-    p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    p_colours[0][m_a] = p_colours[3-r][m_a] = Flow::Counter();
+    p_colours[1][m_a] = p_colours[2+r][m_a] = Flow::Counter();
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+      pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qq'->qq', set scale u "<<u<<"\n";
   }
   else {
     /*
       0-----+ +-----2
-            | |
-	    | |  t
-            | |
+      | |
+      | |  t
+      | |
       1-----+ +-----3
 
       shower scale is s
     */
-    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
-    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();
+    p_colours[2+r][m_a] = p_colours[3-r][m_p] = Flow::Counter();
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+      pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb'->qqb', set scale s "<<s<<"\n";
   }
   if (swap) SwapInOrder();
   return 1; 
 }
-bool XS_q1q2_q1q2::SetColours()                           { return 1; }
-
-//----------------------------------------------------------------------
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(const size_t nin,const size_t nout,
-						     const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
-      flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() &&
-      flavours[0]!=flavours[2]) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1qbar1_q2qbar2(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model,
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
+	flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() &&
+	flavours[0]!=flavours[2]) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_q1qbar1_q2qbar2(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
 XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout, 
-				       const ATOOLS::Flavour *fl)  : 
-  Single_XS(nin,nout,fl) 
+				       const ATOOLS::Flavour *fl,
+				       XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  a = fl[0].IsAnti();
-  p = 1-a;
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_a=fl[0].IsAnti();
+  m_p=1-m_a;
+  m_g=std::abs(p_model->Constant("g_3"));
+  m_m12=sqr(p_flavours[0].Mass());
+  m_m32=sqr(p_flavours[2].Mass());
   m_nstrong=4;
 }
 
-double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
+double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
+  double Ms(sqr(u-m_m12-m_m32)+sqr(t-m_m12-m_m32)+2.0*s*(m_m12+m_m32));
+  return sqr(m_g*m_g)*4.0/9.0*Ms/(s*s); 
 }
 
 bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) 
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    2.0*(s*t*u)/(s*s+t*t+u*u);
   int r = !(p_flavours[0].IsAnti() == p_flavours[2].IsAnti());
   /*
     0\         /2, if fl[0].IsAnti()==fl[2].IsAnti()
-      \   s   /
-       ======= 
-      /       \
+    \   s   /
+    ======= 
+    /       \
     1/         \3, if fl[0].IsAnti()==fl[2].IsAnti()
 
     shower scale is t
   */
-  p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();
-  p_colours[1][p] = p_colours[3-r][p] = Flow::Counter();
+  p_colours[0][m_a] = p_colours[2+r][m_a] = Flow::Counter();
+  p_colours[1][m_p] = p_colours[3-r][m_p] = Flow::Counter();
 
   m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: qqb->q'qb', set scale t "<<t<<"\n";
+  msg_Debugging()<<"xs: qqb->q'qb', set scale t "<<t<<"\n";
   if (swap) SwapInOrder();
   return 1; 
 }
 
-bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
-
-//----------------------------------------------------------------------
-// Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
-
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsQuark() && flavours[1]==flavours[0] &&
-      flavours[2]==flavours[0] && flavours[3]==flavours[0]) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1q1_q1q1(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsQuark() && flavours[1]==flavours[0] &&
+	flavours[2]==flavours[0] && flavours[3]==flavours[0]) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_q1q1_q1q1(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
-XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, 
+			   const ATOOLS::Flavour *fl,
+			   XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  a  = fl[0].IsAnti();
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_a=fl[0].IsAnti();
+  m_g=std::abs(p_model->Constant("g_3"));
+  m_m12=sqr(p_flavours[0].Mass());
   m_nstrong=4;
 }
 
-double XS_q1q1_q1q1::operator()(double s,double t,double u) {
+double XS_q1q1_q1q1::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  Mt    = (s*s + u*u) / (t*t);
-  Mu    = (s*s + t*t) / (u*u);
-  return sqr(4.*M_PI*aS) * 4./9.*(Mt + Mu - 2./3. * (s*s) / (u*t)) /2.;
+  double Mt(sqr(u-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*t*m_m12); 
+  double Mu(sqr(t-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*u*m_m12); 
+  double Mtu(-2.0/3.0*(s*s-8.0*(s-2.0*m_m12)*m_m12-4.0*m_m12*m_m12));
+  return sqr(m_g*m_g)*4.0/9.0*(Mt/(t*t)+Mu/(u*u)+Mtu/(t*u))/2.0;
 }
 
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
 {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
-  
-  Mt      = 1. - 2.*(u*s) / (t*t);
-  Mu      = 1. - 2.*(s*t) / (u*u);
-  
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    2.0*(s*t*u)/(s*s+t*t+u*u);
+  double Mt(sqr(u-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*t*m_m12); 
+  double Mu(sqr(t-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*u*m_m12); 
   if (Mt > (Mt+Mu) * ran.Get()) {
     m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qq->qq, set scale u "<<u<<"\n";
-  }
-  else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: qq->qq, set scale t "<<t<<"\n";
-  }
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-
-
-bool XS_q1q1_q1q1::SetColours() 
-{
-  if (Mt > (Mt+Mu) * ran.Get()) {
     /*
       0----\   /----2
-            \ /
-             X  t
-            / \
+      \ /
+      X  t
+      / \
       1----/   \----3
 
       shower scale is u
     */
-    p_colours[3][a] = p_colours[0][a] = Flow::Counter();
-    p_colours[2][a] = p_colours[1][a] = Flow::Counter();
+    p_colours[3][m_a] = p_colours[0][m_a] = Flow::Counter();
+    p_colours[2][m_a] = p_colours[1][m_a] = Flow::Counter();
   }
   else {
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    msg_Debugging()<<"xs: qq->qq, set scale t "<<t<<"\n";
     /*
       0----\   /----2
-            \ /
-             =  u
-            / \
+      \ /
+      =  u
+      / \
       1----/   \----3
 
       shower scale is t
     */
-    p_colours[2][a] = p_colours[0][a] = Flow::Counter();
-    p_colours[3][a] = p_colours[1][a] = Flow::Counter();
+    p_colours[2][m_a] = p_colours[0][m_a] = Flow::Counter();
+    p_colours[3][m_a] = p_colours[1][m_a] = Flow::Counter();
   }
-  return 1;
+  if (swap) SwapInOrder();
+  return true;
 }
-
-//----------------------------------------------------------------------
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(const size_t nin,const size_t nout,
-						     const ATOOLS::Flavour *flavours, 
-						     const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
-      ((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
-       (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1qbar1_q1qbar1(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
+	((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
+	 (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_q1qbar1_q1qbar1(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
 XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout, 
-				       const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+				       const ATOOLS::Flavour *fl,
+				       XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  a  = fl[0].IsAnti();
-  p  = 1-a;
-  r = !(fl[0] == fl[2]);
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_a=fl[0].IsAnti();
+  m_p=1-m_a;
+  m_r=fl[0]!=fl[2];
+  m_g=std::abs(p_model->Constant("g_3"));
+  m_m12=sqr(p_flavours[0].Mass());
   m_nstrong=4;
 }
 
-double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
+double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  Mt = 1. - 2.*(u*s)/(t*t); 
-  Ms = 1. - 2.*(t*u)/(s*s); 
-  return sqr(4.*M_PI*aS)*4./9.*(Mt + Ms - 2./3. * (u*u) / (s*t));
+  double Mt(sqr(s-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*t*m_m12); 
+  double Ms(sqr(t-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*s*m_m12); 
+  double Mts(-2.0/3.0*(u*u-8.0*(u-2.0*m_m12)*m_m12-4.0*m_m12*m_m12));
+  return sqr(m_g*m_g)*4.0/9.0*(Mt/(t*t)+Ms/(s*s)+Mts/(t*s));
 }
 
 
-bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
+bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) 
+{
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
-
-  Mt = 1. - 2.*(u*s)/(t*t); 
-  Ms = 1. - 2.*(t*u)/(s*s); 
-
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    2.0*(s*t*u)/(s*s+t*t+u*u);
+  double Mt(sqr(s-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*t*m_m12); 
+  double Ms(sqr(t-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*s*m_m12); 
   if (Ms >  (Mt+Ms) * ran.Get()) {
     m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->qqb, set scale t "<<t<<"\n";
-  }
-  else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: qqb->qqb, set scale s "<<s<<"\n";
-  }
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-
-bool XS_q1qbar1_q1qbar1::SetColours() 
-{
-  if (Ms >  (Mt+Ms) * ran.Get()) {
     /*
       0\         /2, if fl[0]==fl[2]
-        \   s   /
-         =======
-        /       \
+      \   s   /
+      =======
+      /       \
       1/         \3, if fl[0]==fl[2]
 
       shower scale is t
     */
-    p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();	
-    p_colours[1][p] = p_colours[3-r][p] = Flow::Counter();
+    p_colours[0][m_a] = p_colours[2+m_r][m_a] = Flow::Counter();	
+    p_colours[1][m_p] = p_colours[3-m_r][m_p] = Flow::Counter();
   }
   else {
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    msg_Debugging()<<"xs: qqb->qqb, set scale s "<<s<<"\n";
     /*
       0----+ +----2
-           | |
-           | | t
-           | |
+      | |
+      | | t
+      | |
       1----+ +----3
 
       shower scale is s
     */
-    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();	
-    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
+    p_colours[0][m_a]   = p_colours[1][m_p]   = Flow::Counter();	
+    p_colours[2+m_r][m_a] = p_colours[3-m_r][m_p] = Flow::Counter();
   }
-  return 1;
+  if (swap) SwapInOrder();
+  return true;
 }
-
-//----------------------------------------------------------------------
-// Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1qbar1_gg>(const size_t nin,const size_t nout,
-						const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
-      flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1qbar1_gg(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1qbar1_gg>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
+	flavours[2].IsGluon() && flavours[3].IsGluon()) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_q1qbar1_gg(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
 XS_q1qbar1_gg::XS_q1qbar1_gg(const size_t nin,const size_t nout, 
-			     const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+			     const ATOOLS::Flavour *fl,
+			     XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  a = fl[0].IsAnti();
-  p = 1-a;
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_a=fl[0].IsAnti();
+  m_p=1-m_a;
+  m_m12=sqr(p_flavours[0].Mass());
+  m_g=std::abs(p_model->Constant("g_3"));
   m_nstrong=4;
 }
 
-double XS_q1qbar1_gg::operator()(double s,double t,double u) {
+double XS_q1qbar1_gg::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  Mt = u/t;
-  Mu = t/u;
-  return sqr(4.*M_PI*aS)* (32./27.*(Mt+Mu) - 8./3.*(t*t +u*u)/ (s*s)) /2.;
+  double tp(t-m_m12), up(u-m_m12);
+  double Mt(32.0/27.0*(tp*up-m_m12*(4.0*(m_m12+tp)+m_m12*tp/s))/(tp*tp));
+  double Mu(32.0/27.0*(up*tp-m_m12*(4.0*(m_m12+up)+m_m12*up/s))/(up*up));
+  double Ms(-8.0/3.0*(tp*tp+up*up+4.0*m_m12*s)/(s*s));
+  return sqr(m_g*m_g)*(Mt+Mu+Ms)/2.0; 
 }
 
 
-bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
+bool XS_q1qbar1_gg::SetColours(double s, double t, double u) 
+{
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
-
-  Mt    = u/t;
-  Mu    = t/u;
-
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    2.0*(s*t*u)/(s*s+t*t+u*u);
+  double tp(t-m_m12), up(u-m_m12);
+  double Mt(32.0/27.0*(tp*up-m_m12*(4.0*(m_m12+tp)+m_m12*tp/s))/(tp*tp));
+  double Mu(32.0/27.0*(up*tp-m_m12*(4.0*(m_m12+up)+m_m12*up/s))/(up*up));
+  p_colours[0][m_a] = Flow::Counter();
+  p_colours[1][m_p] = Flow::Counter();
   if (Mt > (Mt+Mu) * ran.Get()) {
     m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->gg, set scale s/t "<<s<<"/"<<t<<"\n";
-  }
-  else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: qqb->gg, set scale s/u "<<s<<"/"<<u<<"\n";
-  }
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-
-bool XS_q1qbar1_gg::SetColours() 
-{
-  p_colours[0][a] = Flow::Counter();
-  p_colours[1][p] = Flow::Counter();
-
-  if (Mt > (Mt+Mu) * ran.Get()) {
     /*
       0------+====2
-             |
-             | t
-             |
+      |
+      | t
+      |
       1------+====3
 
       shower scale is s / t
     */
-    p_colours[2][a] = p_colours[0][a];
-    p_colours[3][p] = p_colours[1][p];
-    p_colours[2][p] = p_colours[3][a] = Flow::Counter();
+    p_colours[2][m_a] = p_colours[0][m_a];
+    p_colours[3][m_p] = p_colours[1][m_p];
+    p_colours[2][m_p] = p_colours[3][m_a] = Flow::Counter();
   }
   else {
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    msg_Debugging()<<"xs: qqb->gg, set scale s/u "<<s<<"/"<<u<<"\n";
     /*
       0----\ +-==2
-            \|/
-             | u
-            /|\
+      \|/
+      | u
+      /|\
       1----/ +-==3
 
       shower scale is s / u
     */
-    p_colours[3][a] = p_colours[0][a];
-    p_colours[2][p] = p_colours[1][p];
-    p_colours[3][p] = p_colours[2][a] = Flow::Counter();
+    p_colours[3][m_a] = p_colours[0][m_a];
+    p_colours[2][m_p] = p_colours[1][m_p];
+    p_colours[3][m_p] = p_colours[2][m_a] = Flow::Counter();
   }
-  return 1;
+  if (swap) SwapInOrder();
+  return true;
 }
-
-//----------------------------------------------------------------------
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_gg_q1qbar1>(const size_t nin,const size_t nout,
-						const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsGluon() && flavours[1].IsGluon() && 
-      flavours[2].IsQuark() && flavours[3]==flavours[2].Bar()) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_gg_q1qbar1(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_gg_q1qbar1>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsGluon() && flavours[1].IsGluon() && 
+	flavours[2].IsQuark() && flavours[3]==flavours[2].Bar()) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_gg_q1qbar1(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
-XS_gg_q1qbar1::XS_gg_q1qbar1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+XS_gg_q1qbar1::XS_gg_q1qbar1(const size_t nin,const size_t nout, 
+			     const ATOOLS::Flavour *fl,
+			     XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
-  r = fl[2].IsAnti();
-
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_r=fl[2].IsAnti();
+  m_g=std::abs(p_model->Constant("g_3"));
+  m_m32=sqr(p_flavours[2].Mass());
   m_nstrong=4;
 }
 
-double XS_gg_q1qbar1::operator()(double s,double t,double u) {
+double XS_gg_q1qbar1::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  Mt = u/t;
-  Mu = t/u;
-  return sqr(4.*M_PI*aS)*(1./6.* ( Mt + Mu )   - 3./8. *(t*t +u*u)/ (s*s)); 
+  double tp(t-m_m32), up(u-m_m32);
+  double Mt(1.0/6.0*(tp*up-m_m32*(4.0*(m_m32+tp)+m_m32*tp/s))/(tp*tp));
+  double Mu(1.0/6.0*(up*tp-m_m32*(4.0*(m_m32+up)+m_m32*up/s))/(up*up));
+  double Ms(-3.0/8.0*(tp*tp+up*up+4.0*m_m32*s)/(s*s));
+  return sqr(m_g*m_g)*(Mt+Mu+Ms); 
 }
 
 
-bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
+bool XS_gg_q1qbar1::SetColours(double s, double t, double u) 
+{
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
-
-  Mt      = u/t;
-  Mu      = t/u;
-
-  if (Mt*(1-r) +Mu*r > (Mt+Mu) * ran.Get()) {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: gg->qqb, set scale t/s "<<t<<"/"<<s<<"\n";
-  }
-  else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: gg->qqb, set scale u/s "<<u<<"/"<<s<<"\n";
-  }
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-
-bool XS_gg_q1qbar1::SetColours() 
-{
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    (2.*s*t*u)/(s*s+t*t+u*u);
+  double tp(t-m_m32), up(u-m_m32);
+  double Mt(1.0/6.0*(tp*up-m_m32*(4.0*(m_m32+tp)+m_m32*tp/s))/(tp*tp));
+  double Mu(1.0/6.0*(up*tp-m_m32*(4.0*(m_m32+up)+m_m32*up/s))/(up*up));
   p_colours[0][0] = Flow::Counter();
   p_colours[0][1] = Flow::Counter();
-
-  if (Mt*(1-r) +Mu*r > (Mt+Mu) * ran.Get()) {
+  if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran.Get()) {
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    msg_Debugging()<<"xs: gg->qqb, set scale t/s "<<t<<"/"<<s<<"\n";
     /*
       0====+------2
-           |
-           |  t
-           |
+      |
+      |  t
+      |
       1====+------3
 
       shower scale is s / t
     */
-    p_colours[2+r][0] = p_colours[0][0];
-    p_colours[3-r][1] = p_colours[1][1] = Flow::Counter();
+    p_colours[2+m_r][0] = p_colours[0][0];
+    p_colours[3-m_r][1] = p_colours[1][1] = Flow::Counter();
     p_colours[1][0] = p_colours[0][1];
   }
   else {
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
+    msg_Debugging()<<"xs: gg->qqb, set scale u/s "<<u<<"/"<<s<<"\n";
     /*
       0==-+ /----2
-         \|/
-          |  u
-         /|\
+      \|/
+      |  u
+      /|\
       1==-+ \----3
 
       shower scale is u / s
     */
-    p_colours[2+r][0] = p_colours[1][0] = Flow::Counter();
-    p_colours[3-r][1] = p_colours[0][1];
+    p_colours[2+m_r][0] = p_colours[1][0] = Flow::Counter();
+    p_colours[3-m_r][1] = p_colours[0][1];
     p_colours[1][1] = p_colours[0][0];
   }
-  return 1;
+  if (swap) SwapInOrder();
+  return true;
 }
-
-//----------------------------------------------------------------------
-
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_q1g_q1g>(const size_t nin,const size_t nout,
-					     const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (((flavours[0].IsQuark() && flavours[1].IsGluon()) && 
-       ((flavours[2]==flavours[0] && flavours[3].IsGluon()) || 
-	(flavours[3]==flavours[0] && flavours[2].IsGluon()))) ||
-      ((flavours[1].IsQuark() && flavours[0].IsGluon()) && 
-       ((flavours[2]==flavours[1] && flavours[3].IsGluon()) || 
-	(flavours[3]==flavours[1] && flavours[2].IsGluon()))))  { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_q1g_q1g(nin,nout,flavours); 
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_q1g_q1g>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (((flavours[0].IsQuark() && flavours[1].IsGluon()) && 
+	 ((flavours[2]==flavours[0] && flavours[3].IsGluon()) || 
+	  (flavours[3]==flavours[0] && flavours[2].IsGluon()))) ||
+	((flavours[1].IsQuark() && flavours[0].IsGluon()) && 
+	 ((flavours[2]==flavours[1] && flavours[3].IsGluon()) || 
+	  (flavours[3]==flavours[1] && flavours[2].IsGluon()))))  { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_q1g_q1g(nin,nout,flavours,model); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
-XS_q1g_q1g::XS_q1g_q1g(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+XS_q1g_q1g::XS_q1g_q1g(const size_t nin,const size_t nout, 
+		       const ATOOLS::Flavour *fl,
+		       XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  ini_q=0;
-  swap_ut=0;
+  m_iniq=0;
+  m_swaput=0;
   if (fl[1].IsQuark()){
-    ini_q=1;
-    swap_ut=1;
+    m_iniq=1;
+    m_swaput=1;
   }
-
-  fin_q=2;
+  m_finq=2;
   if (fl[3].IsQuark()) {
-    fin_q=3;
-    if (swap_ut) swap_ut=0;
-    else swap_ut=1;
+    m_finq=3;
+    if (m_swaput) m_swaput=0;
+    else m_swaput=1;
   }
-
-  a = fl[ini_q].IsAnti();
-  p = 1-a;
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_a=fl[m_iniq].IsAnti();
+  m_p=1-m_a;
+  m_mq2=sqr(p_flavours[m_iniq].Mass());
+  m_g=std::abs(p_model->Constant("g_3"));
   m_nstrong=4;
 }
 
-double XS_q1g_q1g::operator()(double s,double t,double u) {
+double XS_q1g_q1g::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  if (swap_ut) {
-    Ms = t/s;
-    Mu = s/t;
-    return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + t*t)/(u*u));
-  }
-  Ms = u/s;
-  Mu = s/u;
-  return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + u*u)/(t*t));
+  if (m_swaput) std::swap<double>(t,u);
+  double sp(s-m_mq2), up(u-m_mq2);
+  double Ms(4.0/9.0*(sp*up-m_mq2*(4.0*(m_mq2+sp)+m_mq2*sp/t))/(sp*sp));
+  double Mu(4.0/9.0*(up*sp-m_mq2*(4.0*(m_mq2+up)+m_mq2*up/t))/(up*up));
+  double Mt(-(sp*sp+up*up+4.0*m_mq2*t)/(t*t));
+  return -sqr(m_g*m_g)*(Ms+Mu+Mt); 
 }
 
 bool XS_q1g_q1g::SetColours(double s, double t, double u) 
 {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
-  if (swap_ut) {
-    Ms      = t/s;
-    Mu      = s/t;
-  }
-  else {
-    Ms      = u/s;
-    Mu      = s/u;
-  }
-  if (Mu > (Ms+Mu) * ran.Get()) {
-    if (dabs(t)>dabs(u)) {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-      msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
-    }
-    else {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-      msg_Debugging()<<"xs: qg->qg, set scale u "<<u<<"\n";
-    }
-  }
-  else {
-    if (dabs(t)>s) {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-      msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
-    }
-    else {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-      msg_Debugging()<<"xs: qg->qg, set scale s "<<s<<"\n";
-    }
-  }
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-      
-bool XS_q1g_q1g::SetColours() 
-{
-  p_colours[ini_q][a] = Flow::Counter();
-  p_colours[fin_q][a] = Flow::Counter();
-
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    (2.*s*t*u)/(s*s+t*t+u*u);
+  if (m_swaput) std::swap<double>(t,u);
+  double sp(s-m_mq2), up(u-m_mq2);
+  double Ms(4.0/9.0*(sp*up-m_mq2*(4.0*(m_mq2+sp)+m_mq2*sp/t))/(sp*sp));
+  double Mu(4.0/9.0*(up*sp-m_mq2*(4.0*(m_mq2+up)+m_mq2*up/t))/(up*up));
+  p_colours[m_iniq][m_a] = Flow::Counter();
+  p_colours[m_finq][m_a] = Flow::Counter();
   if (Mu > (Ms+Mu) * ran.Get()) {
     /*
       1====+----2, if fl[2].IsQuark() 
-           |
-           |  u
-           |
+      |
+      |  u
+      |
       0----+====3, if fl[0].IsQuark()
 
       shower scale is t/u
     */
-    p_colours[5-fin_q][a] = p_colours[ini_q][a];
-    p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = Flow::Counter();
-    p_colours[1-ini_q][a] = p_colours[fin_q][a];
+    p_colours[5-m_finq][m_a] = p_colours[m_iniq][m_a];
+    p_colours[5-m_finq][m_p] = p_colours[1-m_iniq][m_p] = Flow::Counter();
+    p_colours[1-m_iniq][m_a] = p_colours[m_finq][m_a];
+    if (dabs(t)>dabs(u)) {
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+	pow(s*t*u,1.0/3.0);
+      msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
+    }
+    else {
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+	pow(s*t*u,1.0/3.0);
+      msg_Debugging()<<"xs: qg->qg, set scale u "<<u<<"\n";
+    }
   }
   else {
     /*
       0\        /2, if fl[0].IsQuark && fl[2].IsQuark() 
-        \      /
-        | +--+ | 
-        //    \\
+      \      /
+      | +--+ | 
+      //    \\
       1//      \\3
 
       shower scale is s/t
     */
-    p_colours[5-fin_q][p] = p_colours[fin_q][a];
-    p_colours[1-ini_q][a] = p_colours[5-fin_q][a] = Flow::Counter();
-    p_colours[1-ini_q][p] = p_colours[ini_q][a];
-  }
-
-  return 1;
-}
-
-//----------------------------------------------------------------------
-// Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
-
-namespace EXTRAXS {
-
-template <> 
-Single_XS *Single_XS::GetProcess<XS_gg_gg>(const size_t nin,const size_t nout,
-					   const ATOOLS::Flavour *flavours, 
-					      const size_t nqed, const size_t nqcd)
-{
-  if (flavours[0].IsGluon() && flavours[1].IsGluon() &&
-      flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-    if (nqcd==2 && nqed==0) {
-      return new XS_gg_gg(nin,nout,flavours); 
+    p_colours[5-m_finq][m_p] = p_colours[m_finq][m_a];
+    p_colours[1-m_iniq][m_a] = p_colours[5-m_finq][m_a] = Flow::Counter();
+    p_colours[1-m_iniq][m_p] = p_colours[m_iniq][m_a];
+    if (dabs(t)>s) {
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+	pow(s*t*u,1.0/3.0);
+      msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
+    }
+    else {
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = 
+	pow(s*t*u,1.0/3.0);
+      msg_Debugging()<<"xs: qg->qg, set scale s "<<s<<"\n";
     }
   }
-  return NULL;
+  if (swap) SwapInOrder();
+  return true;
 }
+      
+namespace EXTRAXS {
+
+  template <> 
+  Single_XS *Single_XS::GetProcess<XS_gg_gg>
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
+   const size_t nqed, const size_t nqcd)
+  {
+    if (!model->IncludesModel("QCD")) return NULL;
+    if (flavours[0].IsGluon() && flavours[1].IsGluon() &&
+	flavours[2].IsGluon() && flavours[3].IsGluon()) { 
+      if (nqcd==2 && nqed==0) {
+	return new XS_gg_gg(nin,nout,flavours,model); 
+      }
+    }
+    return NULL;
+  }
 
 }
 
-XS_gg_gg::XS_gg_gg(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
-  Single_XS(nin,nout,fl) 
+XS_gg_gg::XS_gg_gg(const size_t nin,const size_t nout, 
+		   const ATOOLS::Flavour *fl,
+		   XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_g=std::abs(p_model->Constant("g_3"));
   m_nstrong=4;
 }
 
-double XS_gg_gg::operator()(double s,double t,double u) {
+double XS_gg_gg::operator()(double s,double t,double u) 
+{
   if (s<m_threshold) return 0.;
-  Ms = 1 - t*u/(s*s);
-  Mt = 1 - s*u/(t*t);
-  Mu = 1 - s*t/(u*u);
-  return sqr(4.*M_PI*aS)*9./2. * ( Ms + Mt + Mu )/2.;
+  double Ms(1.0-t*u/(s*s));
+  double Mt(1.0-s*u/(t*t));
+  double Mu(1.0-s*t/(u*u));
+  return sqr(m_g*m_g)*9.0/2.0*(Ms+Mt+Mu)/2.0;
 }
   
-bool XS_gg_gg::SetColours(double s, double t, double u) {
+bool XS_gg_gg::SetColours(double s, double t, double u) 
+{
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
-  
-  Mu      = 1 + t*t/(u*s) - s*t/(u*u) - t*u/(s*s);
-  Ms      = 1 + s*s/(t*u) - s*t/(u*u) - u*s/(t*t);
-  Mt      = 1 + u*u/(s*t) - u*s/(t*t) - t*u/(s*s);
-
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    (2.*s*t*u)/(s*s+t*t+u*u);
   m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
   msg_Debugging()<<"xs: gg->gg, set scale s "<<s<<"\n";
-
-  bool result=SetColours();
-  if (swap) SwapInOrder();
-  return result;
-}
-    
-bool XS_gg_gg::SetColours() 
-{
   p_colours[0][0] = Flow::Counter();
   p_colours[1][1] = Flow::Counter();
-
+  double Mu(1.0+t*t/(u*s)-s*t/(u*u)-t*u/(s*s));
+  double Ms(1.0+s*s/(t*u)-s*t/(u*u)-u*s/(t*t));
+  double Mt(1.0+u*u/(s*t)-u*s/(t*t)-t*u/(s*s));
   double rr = ran.Get() * (Ms+Mt+Mu);
   if (rr-Mt < 0.) {
     /*
       0====++====2
-           ||
-           ||  t
-           ||
+      ||
+      ||  t
+      ||
       1====++====3
 
       shower scale is s/t/u
@@ -795,9 +763,9 @@ bool XS_gg_gg::SetColours()
     if (rr-Mu-Mt < 0.) {
       /*
 	0====+\---==3
-             ||\ /
-             || X u
-             ||/ \
+	||\ /
+	|| X u
+	||/ \
 	1====+/---==2
 	   
 	shower scale is s/t/u
@@ -810,9 +778,9 @@ bool XS_gg_gg::SetColours()
     else {
       /*
 	0\\       //3
-          \\  s  //
-          | ===== |
-          //     \\
+	\\  s  //
+	| ===== |
+	//     \\
 	1//       \\2
 	   
 	shower scale is s/t/u
@@ -823,10 +791,7 @@ bool XS_gg_gg::SetColours()
       p_colours[3][0] = p_colours[1][0] = Flow::Counter();
     }
   }
-  return 1;
+  if (swap) SwapInOrder();
+  return true;
 }
-
-
-
-
-
+    

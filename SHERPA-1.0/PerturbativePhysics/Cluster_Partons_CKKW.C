@@ -129,7 +129,8 @@ EXTRAXS::XS_Base *Cluster_Partons_CKKW::GetXS(EXTRAXS::XS_Group * group,
       FindInGroup(group,xs,nin,nout,fl)==std::string::npos) {
     int nqed(0),nqcd(0);
     p_ct->AddCouplings(nqed,nqcd);
-    xs = group->XSSelector()->GetXS(nin,nout,fl,false,nqed,nqcd);
+    xs = group->XSSelector()->GetXS
+      (nin,nout,fl,false,nqed,nqcd,false);
     if (xs) group->Add(xs);
   }
   p_xs = xs;

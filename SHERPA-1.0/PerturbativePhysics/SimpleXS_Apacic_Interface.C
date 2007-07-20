@@ -39,6 +39,9 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *meh
   p_psme_is(NULL),
   p_psme_fs(NULL) 
 {
+  p_twototwo->InitializeModel(mehandler->GetModel(),
+			      rpa.gen.Variable("SHERPA_CPP_PATH")+"/"+
+			      rpa.gen.Variable("ME_DATA_FILE"));
   p_twototwo->SetScaleScheme(mehandler->GetXS()->ScaleScheme());
 }
 
@@ -75,7 +78,8 @@ Return_Value::code SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Bl
   p_xs=NULL;
   if (p_twototwo->XSSelector()->FindInGroup
       (p_twototwo,p_xs,blob->NInP(),2,p_flavours)==std::string::npos) {
-    p_xs = p_twototwo->XSSelector()->GetXS(blob->NInP(),2,p_flavours);
+    p_xs = p_twototwo->XSSelector()->
+      GetXS(blob->NInP(),2,p_flavours,false,2,2,false);
     if (p_xs) p_twototwo->Add(p_xs);
   }
   p_hard=blob;

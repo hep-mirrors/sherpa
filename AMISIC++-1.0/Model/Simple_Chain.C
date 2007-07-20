@@ -194,7 +194,6 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
 		     copy,m_scalescheme,m_kfactorscheme);
   newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
   newgroup->PSHandler(false)->SetError(m_error);
-  newgroup->PSHandler(false)->SetUsePI(m_pi);
   newgroup->SetScaleScheme(m_scalescheme);
   newgroup->SetKFactorScheme(m_kfactorscheme);
   p_processes->Add(newgroup);
@@ -228,7 +227,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
 	    pdfgroup->Add(newxs);
-	    if (m_pi==0) pdfgroup->CreateISRChannels();
+	    pdfgroup->CreateISRChannels();
 	    m_processmap[newxs->Name()]=newxs;
 	    success=true;
 	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
@@ -373,8 +372,6 @@ bool Simple_Chain::SetUpInterface()
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
     group->InitIntegrators();
     group->CreateISRChannels();
-    if (m_pi!=0) group->PSHandler()->ReadIn(OutputPath()+"MC/MC_"+
-					    group->Name(),16|32);
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -608,9 +605,6 @@ bool Simple_Chain::Initialize()
   }
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
-  if (!reader->ReadFromFile(m_pi,"PI_MI")) m_pi=0;
-  m_pi=m_pi&PHASIC::psm::pi_isr;
-  if (m_pi!=0) m_vegas=0;
   if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
     m_maxreduction=10.0;
   std::string function;
@@ -685,8 +679,7 @@ bool Simple_Chain::CreateMomenta()
     p_fsrinterface->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
       Blob_Data_Base *data=selected->
-	WeightedEvent(PHASIC::psm::no_lim_isr|
-		      (PHASIC::psm::code)m_pi);
+	WeightedEvent(PHASIC::psm::no_lim_isr);
       if (data!=NULL) {
 	weight=data->Get<PHASIC::Weight_Info>().weight;
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
@@ -726,8 +719,7 @@ bool Simple_Chain::CreateMomenta()
 		SetISRRange();
 		p_isr->SetLimits();
 		selected->WeightedEvent(PHASIC::psm::no_lim_isr|
-					PHASIC::psm::no_dice_isr|
-					(PHASIC::psm::code)m_pi);
+					PHASIC::psm::no_dice_isr);
 		ResetISRRange();
 		cur->AddBinExtra(m_last[0],1.0,3);
 	      }

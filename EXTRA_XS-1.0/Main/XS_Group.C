@@ -7,7 +7,6 @@
 #include "Message.H"
 #include "Random.H"
 #include "MathTools.H"
-#include "FSR_Channel.H"
 
 #ifdef PROFILE__all
 #define PROFILE__XS_Group
@@ -19,38 +18,45 @@
 #endif
 
 using namespace EXTRAXS;
+using namespace PHASIC;
+using namespace ATOOLS;
 
-XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		   const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
+XS_Group::XS_Group(const size_t nin,const size_t nout,
+		   const ATOOLS::Flavour *flavours,
+		   const PHASIC::scl::scheme scalescheme,
+		   const int kfactorscheme,
 		   BEAM::Beam_Spectra_Handler *const beamhandler,
 		   PDF::ISR_Handler *const isrhandler,
-		   ATOOLS::Selector_Data *const selectordata):
+		   ATOOLS::Selector_Data *const selectordata,
+		   XS_Model_Base *const model):
   XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,
-	  beamhandler,isrhandler,selectordata),
-  m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
+	  beamhandler,isrhandler,selectordata,model),
+  m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
+  p_xsselector->SetOffShell(p_isrhandler->KMROn());
   p_selected=NULL;
   p_selectordata=selectordata;
-  SetScaleScheme(m_scalescheme);
 }
 
-XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
-  XS_Base(nin,nout,flavours), 
-  m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
+XS_Group::XS_Group(const size_t nin,const size_t nout,
+		   const ATOOLS::Flavour *flavours,
+		   XS_Model_Base *const model):
+  XS_Base(nin,nout,flavours,model), 
+  m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
   p_selected=NULL;
 }
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const std::string &name):
   XS_Base(nin,nout,NULL), 
-  m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
+  m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
   p_selected=NULL;
   m_name=name;
 }
 
 XS_Group::XS_Group(): 
-  m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
+  m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
   p_selected=NULL;
 }
@@ -61,10 +67,71 @@ XS_Group::~XS_Group()
   Clear();
 }
 
+bool XS_Group::CheckFlavours(std::vector<ATOOLS::Flavour> &cfl)
+{
+  int charge(0);
+  for (size_t i(0);i<cfl.size();++i) 
+    charge+=i<2?-cfl[i].IntCharge():cfl[i].IntCharge();
+  if (charge!=0) return false;
+  return true;
+}
+
+bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
+				  std::vector<ATOOLS::Flavour> cfl,
+				  const size_t &ci,const double &fixscale)
+{
+  if (ci==m_nin+m_nout) {
+    SortFlavours(&cfl.front(),m_nin);
+    SortFlavours(&cfl[m_nin],m_nout);
+    std::string name(GenerateName(m_nin,m_nout,&cfl.front()));
+    if (Matching(name)) return false;
+    size_t nt(0);
+    for (size_t i(0);i<cfl.size();++i) nt+=cfl[i].Size();
+    XS_Base *newxs(NULL);
+    if (nt>m_nin+m_nout) {
+      newxs = new XS_Group
+	(m_nin,m_nout,&cfl.front(),m_scalescheme,m_kfactorscheme,
+	 p_beamhandler,p_isrhandler,p_selectordata,p_model);
+      newxs->SetFactorizationScale(m_muf2tag);
+      if (!((XS_Group*)newxs)->ConstructProcesses(oew,os,fixscale)) {
+	delete newxs;
+	return false;
+      }
+    }
+    else {
+      if (!CheckFlavours(cfl)) return false;
+      newxs = XSSelector()->GetXS(m_nin,m_nout,&cfl.front(),false,oew,os);
+      if (newxs==NULL) return false;
+      newxs->SetFactorizationScale(m_muf2tag);
+      newxs->SetScales(fixscale);
+      newxs->Initialize(m_scalescheme,m_kfactorscheme,
+			p_beamhandler,p_isrhandler,p_selectordata);
+    }
+    newxs->SetEnhanceFunction(m_efunc);
+    Add(newxs);
+    msg_Debugging()<<METHOD<<"(): Initialized process '"<<name<<"\n";
+    return true;
+  }
+  bool one(false);
+  for (int j(0);j<p_flavours[ci].Size();++j) {
+    cfl[ci]=p_flavours[ci][j];
+    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
+  }
+  return one;
+}
+
+bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
+				  const double &fixscale)
+{
+  std::vector<Flavour> cfl(m_nin+m_nout);
+  return ConstructProcesses(oew,os,cfl,0,fixscale);
+}
+
+
 void XS_Group::Add(XS_Base *const xsec) 
 {
   if (xsec==NULL) return;
-  if (m_xsecs.size()==0) {
+  if (m_nin==0 || m_nout==0 || p_flavours==NULL) {
     m_nin=xsec->NIn();
     m_nout=xsec->NOut();
     p_flavours=new ATOOLS::Flavour[m_nin+m_nout];
@@ -222,6 +289,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
       }
       SetISR(p_isrhandler);
       p_pshandler->InitCuts();
+      for (size_t i=0;i<m_xsecs.size();++i)
+	m_xsecs[i]->Selector()->BuildCuts(p_pshandler->Cuts());
       p_isrhandler->SetSprimeMin(p_pshandler->Cuts()->Smin());
     }
     CreateFSRChannels();
@@ -309,7 +378,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
 	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
-		  <<"       max : "<<m_max<<std::endl;
+		  <<"  max : "<<m_max<<std::endl;
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")
 			      +m_name,create);
 	to.close();
@@ -322,47 +391,21 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
   }
 }
 
-void XS_Group::PrepareTerminate()  
-{
-  if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
-  SetTotal();
-  if (m_totalxs<=0.) return;
-  std::ofstream to;
-  to.open(m_resultfile.c_str(),std::ios::out);
-  to.precision(12);
-  msg_Info()<<"Store result to "<<m_resultpath<<","<<std::endl
-		    <<"   xs for "<<m_name<<" : ";
-  WriteOutXSecs(to);
-  if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-  if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
-  msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
-		      <<"       max : "<<m_max<<std::endl;
-  p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
-  to.close();
-}
-
-void XS_Group::SetTotal()  
+void XS_Group::SetTotal(const int mode)  
 { 
   m_totalxs=TotalResult();
   m_totalerr=TotalVar();
   if (p_selector) p_selector->Output();
   m_max=0.;
   for (size_t i=0;i<m_xsecs.size();++i) {
-    m_xsecs[i]->SetTotal();
+    m_xsecs[i]->SetTotal(0);
     m_max+=m_xsecs[i]->Max();
   }
-  msg_Info()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
-	    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-	    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red
-	    <<m_totalerr<<" pb = "<<m_totalerr/m_totalxs*100.
-	    <<" %"<<ATOOLS::om::reset<<" )"<<std::endl
-	    <<"      max = "<<m_max<<"\n"<<ATOOLS::om::bold<<m_name
-	    <<ATOOLS::om::reset<<" : "<<ATOOLS::om::blue<<ATOOLS::om::bold
-	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<ATOOLS::om::reset
-	    <<" +/- "<<ATOOLS::om::reset<<ATOOLS::om::blue<<m_totalerr/m_totalxs*100.
-	    <<" %,"<<ATOOLS::om::reset<<ATOOLS::om::bold<<" exp. eff: "
-	    <<ATOOLS::om::red<<(100.*m_totalxs/m_max)<<" %."
-	    <<ATOOLS::om::reset<<std::endl;
+  msg_Info()<<om::bold<<m_name<<om::reset<<" : "<<om::blue<<om::bold
+	    <<m_totalxs*rpa.Picobarn()<<" pb"<<om::reset
+	    <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.
+	    <<" %,"<<om::reset<<om::bold<<" exp. eff: "
+	    <<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<std::endl;
 }
 
 ATOOLS::Blob_Data_Base *XS_Group::OneEvent() 
@@ -476,33 +519,6 @@ void XS_Group::SetMax(const double max,const int flag)
     }
     m_totalxs=sum;
   }
-}
-
-void XS_Group::CreateFSRChannels() 
-{
-  p_pshandler->FSRIntegrator()->DropAllChannels();
-  if (p_isrhandler->KMROn()>0) {
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
-  }
-  else {
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
-  }
-  for (size_t i=0;i<m_resonances.size();++i) {
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours,m_resonances[i]));
-  }
-}      
-
-void XS_Group::CreateISRChannels() 
-{
 }
 
 void XS_Group::DeSelect() 
@@ -627,4 +643,24 @@ void XS_Group::SetFactorizationScale(const std::string &muf2)
 {
   Integrable_Base::SetFactorizationScale(muf2);
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetFactorizationScale(muf2);
+}
+
+bool XS_Group::Tests()
+{
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    if (!m_xsecs[i]->Tests()) return false;
+  return true;
+}
+
+void XS_Group::SetCoreMaxJetNumber(const int &n)
+{
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    m_xsecs[i]->SetCoreMaxJetNumber(n);
+}
+
+void XS_Group::SetScales(const double &scale)
+{
+  for (size_t i=0;i<m_xsecs.size();++i)
+    m_xsecs[i]->SetScales(scale);
+  m_scale[stp::ren]=m_scale[stp::fac]=scale;
 }

@@ -1,8 +1,5 @@
 #include "Simple_XS.H"
 
-#include "QCD_Processes.H"
-#include "QED_Processes.H"
-
 #include "ISR_Handler.H"
 #include "Run_Parameter.H"
 #include "Random.H"
@@ -23,7 +20,7 @@ using namespace std;
 
 Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 		     MODEL::Model_Base *const model):
-  XS_Group(0,0,NULL),
+  XS_Group(0,0,NULL,NULL),
   m_path(path), 
   m_file(file),
   m_minqcdjet(99), m_maxqcdjet(0), m_maxjet(2)
@@ -31,22 +28,13 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
   m_nmax=0;
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
+  InitializeModel(model,m_path+m_file);
 }
 
 Simple_XS::~Simple_XS() 
 {
   if (p_selectordata) delete p_selectordata;
   delete p_dataread; 
-}
-
-void Simple_XS::OrderFlavours(ATOOLS::Flavour *flavours)
-{
-  if ((int)flavours[0].Kfcode()>(int)flavours[1].Kfcode()) 
-    std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
-  if ((int)flavours[2].Kfcode()>(int)flavours[3].Kfcode()) 
-    std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
-  if (flavours[0].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
-  if (flavours[2].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
 }
 
 bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
@@ -65,9 +53,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   std::string processfile=
     p_dataread->GetValue<std::string>("PROCESSFILE",
 				      std::string("Processes.dat"));
+  rpa.gen.SetVariable("PROCESSFILE",processfile);
   std::string selectorfile=
     p_dataread->GetValue<std::string>("SELECTOR_FILE",
 				      std::string("Selector.dat"));
+  rpa.gen.SetVariable("SELECTORFILE",selectorfile);
   if (construct) p_selectordata = new Selector_Data(m_path+selectorfile);
   else p_selectordata = new Selector_Data();
   ATOOLS::Model_Type::code 
@@ -81,9 +71,12 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   ATOOLS::Data_Read::ResetTags();
   m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
-  double fac_scale_fac=p_dataread->
+  double fix_scale=p_dataread->
+    GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
+  double scale_fac=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  double fac_scale_fac=scale_fac*p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
-  double ren_scale_fac=p_dataread->
+  double ren_scale_fac=scale_fac*p_dataread->
     GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
   ATOOLS::rpa.gen.SetScaleFactors(fac_scale_fac,ren_scale_fac );
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
@@ -93,28 +86,30 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
-  m_usepi=p_dataread->GetValue<int>("PI",0);
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
     THROW(critical_error,"Cannot open file '"+m_path+processfile+"'");
   }
-  size_t position, order_ew, order_strong;
+  size_t position, order_ew, order_strong, psmc;
   int         flag;
   string      buf,ini,fin;
   int         nIS,   nFS;
-  Flavour   * IS,  * FS, * flavs;
-  std::string efunc="1";
+  std::vector<Flavour>  IS, FS, flavs;
+  std::string efunc="1", printgraphs;
+  double fixed_scale;
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
   reader.AddIgnore(":");
-  m_setup.clear();
   while(from) {
     getline(from,buf);
     if (buf[0] != '%' && buf.length()>0) {
+      fixed_scale=fix_scale;
       order_ew=99;
       order_strong=99;
+      psmc=0;
       efunc="1";
+      printgraphs="";
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -126,16 +121,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	  fin    = buf.substr(position+2);
 	  nIS    = ExtractFlavours(IS,ini);
 	  nFS    = ExtractFlavours(FS,fin);
-	  if (!(p_isrhandler->CheckConsistency(IS))) {
+	  if (!p_isrhandler->CheckConsistency(&IS.front())) {
 	    msg.Error()<<"Error in initialising ISR_Handler."<<endl
 		       <<" "<<p_isrhandler->Flav(0)<<" -> "<<IS[0]<<", "
 		       <<" "<<p_isrhandler->Flav(1)<<" -> "<<IS[1]<<endl
 		       <<"  Delete it and ignore the process."<<endl;
-	    flag = 0;
-	  }
-	  if (flag==0) {
-	    delete [] IS;
-	    delete [] FS;
 	  }
 	  else {
 	    do {
@@ -143,23 +133,23 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      if (buf[0] != '%' && buf.length()>0) {
 		reader.SetString(buf);
 		unsigned int order_ew_t, order_strong_t;
-		std::string efunc_t="1";
+		double fixed_scale_t;
+		std::string efunc_t="1", printgraphs_t;
 		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
 		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
+		if (reader.ReadFromString(fixed_scale_t,"scale")) fixed_scale=fixed_scale_t;
 		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
 		position = buf.find(string("process"));
 		if (!from) {
-		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
-			     <<m_path+processfile<<")."<<endl
-			     <<"   End of file reached without 'End process'-tag."<<endl
-			     <<"   Continue and hope for the best."<<endl;
+		  msg.Error()<<METHOD<<"("<<m_path+processfile<<")."<<endl
+			     <<"   EOF without 'End process' tag."<<endl;
 		  position     = 0;
 		}
 	      }
 	    }
 	    while (position==std::string::npos);
 	    if (nIS+nFS>(int)m_nmax) m_nmax = nIS+nFS;
-	    flavs              = new Flavour[nIS+nFS];
+	    flavs.resize(nIS+nFS);
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
 	    for (int i=0;i<nFS;i++) flavs[i+nIS] = FS[i]; 
 	    double inisum=0.0, finsum=0.0;
@@ -171,120 +161,63 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    }
 	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
 	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
-	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
-	      InitializeProcess(flavs,efunc,inisum,finsum,
-				order_ew,order_strong,nIS,nFS,0);
+  	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
+ 	      if (nFS>0) {
+		InitializeProcess(&flavs.front(),efunc,printgraphs,psmc,
+				  inisum,finsum,order_ew,order_strong,
+				  nIS,nFS,fixed_scale);
+	      }
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
-	    delete [] flavs;
 	  }
 	}
       }
     }
   }
-  ResetSelector(p_selectordata);
   if (ATOOLS::msg.LevelIsTracking()) this->Print();
   m_maxjet=m_nmax-m_nin;
-  if (m_xsecs.size()>0) return true;
-  msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
-	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
+  if (m_xsecs.size()>0) return Tests();
+  msg.Error()<<METHOD<<"(): No valid process in '"
+	     <<m_path+processfile<<"'."<<std::endl;
   return false;
 }
 
 void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
-				  double &inisum,double &finsum,
-				  size_t order_ew,size_t order_strong,
-				  size_t nin,size_t nout,size_t i)
+ 				  std::string &printgraphs,bool psmc,
+  				  double &inisum,double &finsum,
+  				  size_t order_ew,size_t order_strong,
+ 				  size_t nin,size_t nout,
+				  double &fixscale)
 {
-  Flavour *help = new Flavour[nin+nout];
-  for (size_t j=0;j<(size_t)flavs[i].Size();++j) {
-    for (size_t k=0;k<nin+nout;++k) help[k]=flavs[k];
-    help[i]=flavs[i][j];
-    if (i<nin+nout-1) {
-      InitializeProcess(help,efunc,inisum,finsum,
-			order_ew,order_strong,nin,nout,i+1);
-    }
-    else {
-      if (nin+nout==4) OrderFlavours(help);
-      MyStrStream converter;
-      for (size_t m=0;m<nin+nout;++m) converter<<help[m];
-      std::string name;
-      converter>>name;
-      if (m_setup.find(name)==m_setup.end()) {
-	XS_Base *newxs = XSSelector()->
-	  GetXS(nin,nout,help,false,order_ew,order_strong);
-	if (newxs!=NULL) {
-	  XS_Group *pdfgroup = 
-	    FindPDFGroup(nin,nout,help,this);
-	  if (m_regulator.length()>0) 
-	    newxs->AssignRegulator(m_regulator,m_regulation);
-	  pdfgroup->Add(newxs);
-	  pdfgroup->SetEnhanceFunction(efunc);
-	  newxs->PSHandler(false)->SetUsePI(m_usepi);
-	  newxs->
-	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
-	  newxs->SetEnhanceFunction(efunc);
-	}
-	m_setup.insert(name);
-      }
+  size_t nt(0);
+  for (size_t j=0;j<nin+nout;++j) nt+=flavs[j].Size();
+  XS_Base *newxs(NULL);
+  if (nt>nin+nout) {
+    newxs = new XS_Group(nin,nout,flavs,m_scalescheme,m_kfactorscheme,
+ 			 p_beamhandler,p_isrhandler,p_selectordata,p_model);
+    newxs->SetFactorizationScale(m_muf2tag);
+    if (!((XS_Group*)newxs)->
+	ConstructProcesses(order_ew,order_strong,fixscale)) {
+      delete newxs;
+      return;
     }
   }
-  delete [] help;
-}
-
-XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
-			       const ATOOLS::Flavour *flavours)
-{
-  for (size_t i=0;i<m_xsecs.size();++i) {
-    if (nin==m_xsecs[i]->NIn() && nout==m_xsecs[i]->NOut()) {
-      const ATOOLS::Flavour *test=m_xsecs[i]->Flavours();
-      bool hit=true;
-      for (size_t j=0; j<nin+nout;++j) if (test[j]!=flavours[j]) hit=false;
-      if (hit) return dynamic_cast<XS_Group*>(m_xsecs[i]);
-    }
+  else {
+    newxs = XSSelector()->
+      GetXS(nin,nout,flavs,false,order_ew,order_strong);
+    if (newxs==NULL) return;
+    newxs->SetFactorizationScale(m_muf2tag);
+    newxs->SetScales(fixscale);
+    newxs->Initialize(m_scalescheme,m_kfactorscheme,
+ 		      p_beamhandler,p_isrhandler,p_selectordata);
   }
-  XS_Group *newgroup = 
-    new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,
-		 p_beamhandler,p_isrhandler,p_selectordata);
-  newgroup->SetFactorizationScale(m_muf2tag);
-  newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
-  m_xsecs.push_back(newgroup);
-  return newgroup;
+  newxs->SetISRThreshold(ATOOLS::Max(inisum,finsum));
+  newxs->SetEnhanceFunction(efunc);
+  Add(newxs);
 }
-
-XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
-				  const ATOOLS::Flavour *flavours,
-				  XS_Group *const container)
-{
-  if (p_remnants[0]==NULL || p_remnants[1]==NULL) return container;
-  for (size_t i=0;i<container->Size();++i) {
-    if (nin==2 && nout==(*container)[i]->NOut()) {
-      ATOOLS::Flavour ref[2], test[2];
-      for (size_t j=0;j<2;++j) {
-	ref[j]=p_remnants[j]->ConstituentType((*container)[i]->Flavours()[j]);
-	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
-      }
-      if (ref[0]==test[0] && ref[1]==test[1])
-	return dynamic_cast<XS_Group*>((*container)[i]);
-    }
-  }
-  ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
-  for (short unsigned int i=0;i<nin;++i) 
-    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
-  XS_Group *newgroup = 
-    new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
-		 p_beamhandler,p_isrhandler,p_selectordata);
-  newgroup->SetFactorizationScale(m_muf2tag);
-  newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
-  container->Add(newgroup);
-  newgroup->PSHandler(false)->SetUsePI(m_usepi);
-  container->SetAtoms(1);
-  delete [] copy;
-  return newgroup;
-}
-
-int Simple_XS::ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer)
+  
+int Simple_XS::ExtractFlavours(std::vector<ATOOLS::Flavour> &flavours,
+			       std::string buffer)
 {
   int ii[20];
   char pc[20],pp[20];
@@ -333,7 +266,7 @@ int Simple_XS::ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer)
       buffer = buffer.substr(next);
     }
   }
-  flavours = new Flavour[count];
+  flavours.resize(count);
   for (i=0;i<count;i++) {
     flavours[i] = Flavour(kf::code(iabs(ii[i])));
     if (ii[i]<0) flavours[i] = flavours[i].Bar();

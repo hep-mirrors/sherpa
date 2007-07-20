@@ -23,29 +23,29 @@ namespace EXTRAXS {
 
     PDF::Remnant_Base *p_remnants[2];
 
-    std::set<std::string> m_setup;
-
-    int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
-    void OrderFlavours(ATOOLS::Flavour *flavours);
+    int ExtractFlavours(std::vector<ATOOLS::Flavour> &flavours,
+			std::string buffer);
 
     void InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
+			   std::string &printgraphs,bool psmc,
 			   double &inisum,double &finsum,
 			   size_t order_ew,size_t order_strong,
-			   size_t nin,size_t nout,size_t i);
+			   size_t nin,size_t nout,
+			   double &fixscale);
 
-    XS_Group *FindGroup(const size_t nin,const size_t nout,
-			const ATOOLS::Flavour *flavours);
   public :
 
     // constructor
-    Simple_XS(const std::string &path,const std::string &file,MODEL::Model_Base *const model);
+    Simple_XS(const std::string &path,const std::string &file,
+	      MODEL::Model_Base *const model);
 
     // destructor
     ~Simple_XS();
 
     // member functions
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
-			     PDF::ISR_Handler *const isrhandler,const bool construct=true);
+			     PDF::ISR_Handler *const isrhandler,
+			     const bool construct=true);
     bool CalculateTotalXSec(const std::string &resultpath);
 
     bool SelectOne();
@@ -56,15 +56,19 @@ namespace EXTRAXS {
     bool LookUpXSec(double dummy1,bool dummy2,std::string dummy3);
 
     // inline functions
-    inline const std::string &ProcessName() const { return p_selected->Selected()->Name(); }
+    inline const std::string &ProcessName() const 
+    { return p_selected->Selected()->Name(); }
 
     inline size_t NIn() const  { return p_selected->Selected()->NIn();  }
     inline size_t NOut() const { return p_selected->Selected()->NOut(); }
 
-    inline const ATOOLS::Flavour *Flavours() const { return p_selected->Selected()->Flavours(); }
-    inline const ATOOLS::Vec4D   *Momenta() const  { return p_selected->Selected()->Momenta();  }
+    inline const ATOOLS::Flavour *Flavours() const 
+    { return p_selected->Selected()->Flavours(); }
+    inline const ATOOLS::Vec4D   *Momenta() const  
+    { return p_selected->Selected()->Momenta();  }
     
-    inline int **const Colours() const { return dynamic_cast<XS_Base*>(p_selected->Selected())->Colours();  }
+    inline int **const Colours() const 
+    { return dynamic_cast<XS_Base*>(p_selected->Selected())->Colours();  }
 
     inline bool InSwaped() const { return p_selected->Selected()->InSwaped(); }
 
@@ -75,10 +79,6 @@ namespace EXTRAXS {
 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);
 
-    XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours,
-			   XS_Group *const container);
-    
   }; // end of class Simple_XS
 
 } // end of namespace EXTRAXS

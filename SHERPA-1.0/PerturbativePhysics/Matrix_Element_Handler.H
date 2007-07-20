@@ -44,6 +44,7 @@ namespace SHERPA {
     AMEGIC::Amegic     * p_amegic;
     EXTRAXS::Simple_XS * p_simplexs;
     PDF::ISR_Handler   * p_isr;
+    MODEL::Model_Base  * p_model;
     int                  m_mode;
     double               m_weight, m_procweight, m_xsecweight;
     unsigned long          m_ntrial, m_xsecntrial, m_sntrial;
@@ -144,6 +145,7 @@ namespace SHERPA {
     unsigned long        NumberOfXSecTrials();
 
     PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
+    MODEL::Model_Base  * GetModel()         { return p_model; }
     int                  UseSudakovWeight() { return m_sudakovon; }
     double               FactorisationScale();
 
@@ -151,6 +153,7 @@ namespace SHERPA {
     inline int  EventGenerationMode() const { return m_eventmode; }
     inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
     inline void ResetNumberOfTrials() { m_sntrial=0; }
+
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;

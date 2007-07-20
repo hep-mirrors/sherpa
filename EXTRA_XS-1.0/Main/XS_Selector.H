@@ -28,7 +28,8 @@ namespace EXTRAXS {
     XS_Base *GetXS(const size_t nin,const size_t nout,
 		   const ATOOLS::Flavour *flavours,
 		   const bool seperate_couplings=false,
-		   size_t nqed=2, size_t nqcd=2);
+		   size_t nqed=2, size_t nqcd=2,
+		   const bool &sort=true);
     
     static size_t FindInGroup(XS_Group *const group,XS_Base *&base,
 			      const size_t nin,const size_t nout,
