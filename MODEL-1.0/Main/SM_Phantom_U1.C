@@ -58,8 +58,8 @@ void SM_Phantom_U1::ReadInFile() {
 
   CMatrix HiggsMix(2);
   HiggsMix[0][0] = HiggsMix[1][1] = sqrt(1./(1.+sqr(ScalarConstant(string("Tan(Theta)")))));
-  HiggsMix[1][0] = sqrt(1.-sqr(abs(HiggsMix[1][1])));
-  HiggsMix[0][1] = -HiggsMix[1][0];
+  HiggsMix[0][1] = sqrt(1.-sqr(abs(HiggsMix[1][1])));
+  HiggsMix[1][0] = -HiggsMix[0][1];
 
 
   p_matrices->insert(std::make_pair(std::string("HiggsMix"),HiggsMix));
