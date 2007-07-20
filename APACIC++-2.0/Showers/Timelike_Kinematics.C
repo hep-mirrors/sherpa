@@ -555,8 +555,10 @@ ArrangeColourPartners(Particle *const aup,Knot *const d1,Knot *const d2) const
   if (!aup || !d1 || !d2)  return false;
   int jfmode(p_jf->Type());
   p_jf->SetType(1);
-  bool left(p_jf->MTij2(aup->Momentum(),d1->part->Momentum())<
-	    p_jf->MTij2(aup->Momentum(),d2->part->Momentum()));
+  bool left(p_jf->MTij2(aup->Momentum(),d1->part->Momentum(),
+			aup->Flav().Mass(),d1->part->Flav().Mass())<
+	    p_jf->MTij2(aup->Momentum(),d2->part->Momentum(),
+			aup->Flav().Mass(),d2->part->Flav().Mass()));
   p_jf->SetType(jfmode);
   if (left) return false;
   return true;

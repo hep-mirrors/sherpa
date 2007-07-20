@@ -72,7 +72,7 @@ namespace ATOOLS {
     bool   TwoJets(const Vec4D &,const bool=false);
     bool   TwoJets(const Vec4D &, const Vec4D &,const bool=false);
     bool   TwoJets(double &,double &,double &,bool);
-    double MTij2(Vec4D,Vec4D);
+    double MTij2(Vec4D,Vec4D,double=0.0,double=0.0);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
 

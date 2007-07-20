@@ -27,7 +27,7 @@ namespace SHERPA {
     std::vector<double> m_qmin;
 
     int     m_njet, m_hardjets, m_maxqcdjets, m_minqcdjets;
-    int     m_maxjetnumber, m_cut, m_max_decayjets;
+    int     m_maxjetnumber, m_cut, m_max_decayjets, m_pdf_mode;
     double  m_weight, m_asweight, m_scale, m_ycut, m_qmin_i, m_qmin_f, m_q2_f[2];
     double  m_q2_fss, m_q2_iss, m_q2_isjet, m_q2_fsjet, m_q2_amegic, m_jv_pt2;
     int     m_colors[4][2];

@@ -95,28 +95,9 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   for (;trials<m_maxtrials;++trials) {
     static double accu(sqrt(rpa.gen.Accu()));
     Vec4D::SetAccu(accu);
-    if (m_fsron) {
-      m_cms=PrepareFSR();
-      if (msg.LevelIsDebugging()) {
-	msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
-	OutputTrees();
-      }
-      if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
-	if (m_isron) {
-	  p_initrees[0]->ClearStore();
-	  p_initrees[1]->ClearStore();
-	}
-	p_fintree->ClearStore();
-	Vec4D::ResetAccu();
-	return 0;
-      }
-      p_finshower->SetAllColours(p_fintree->GetRoot());
-    }
-    else {
-      if (msg.LevelIsDebugging()) {
-	msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
-	OutputTrees();
-      }
+    if (msg.LevelIsDebugging()) {
+      msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
+      OutputTrees();
     }
     if (m_isron) {
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
@@ -128,7 +109,18 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	return 0;
       }
     }
-    BoostInLab();
+    if (m_fsron) {
+      if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
+	if (m_isron) {
+	  p_initrees[0]->ClearStore();
+	  p_initrees[1]->ClearStore();
+	}
+	p_fintree->ClearStore();
+	Vec4D::ResetAccu();
+	return 0;
+      }
+      p_finshower->SetAllColours(p_fintree->GetRoot());
+    }
     switch (p_jetveto->TestKinematics()) {
     case 1:
       msg_Debugging()<<"passed\n";
@@ -197,19 +189,6 @@ void Apacic::PrepareTrees()
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
-void Apacic::BoostInLab() 
-{
-  if (!m_fsron) return;
-  if (m_isron) {
-    p_inishower->BoostFS();
-  }
-  else {
-    Poincare lab(m_cms);
-    lab.Invert();
-    p_fintree->BoRo(lab);
-  }
-}
-
 bool Apacic::ExtractPartons(const bool ini,const bool fin,
 			    Blob_List *const bl,Particle_List *const pl) 
 {
@@ -226,14 +205,6 @@ bool Apacic::ExtractPartons(const bool ini,const bool fin,
     }
   }
   return true;
-}
-
-ATOOLS::Vec4D Apacic::PrepareFSR() 
-{
-  ATOOLS::Vec4D cms(p_fintree->GetRoot()->part->Momentum());
-  ATOOLS::Poincare cmsb(cms);
-  p_fintree->BoRo(cmsb);
-  return cms;
 }
 
 void Apacic::SetMaxJetNumber(const size_t &maxjets) 

@@ -754,6 +754,8 @@ bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int curren
       if (links[j]->Name()==name) {
 	p_partner = (Single_Process*)links[j];
 	m_sfactor = factor;
+	m_orderQCD=p_partner->OrderStrong();
+	m_orderEW=p_partner->OrderEWeak();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 	return true;
       }
@@ -894,7 +896,10 @@ void Single_Process::Minimize()
   if (p_selector && m_ownselector) { 
     delete p_selector;      
   }
+  m_orderQCD      = p_partner->OrderStrong();
+  m_orderEW       = p_partner->OrderEWeak();
   p_selector      = p_partner->Selector(); 
+  p_jf            = p_partner->p_jf;
   m_ownselector=false;
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
 }

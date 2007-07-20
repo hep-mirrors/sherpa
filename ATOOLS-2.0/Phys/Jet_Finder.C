@@ -698,10 +698,11 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 //     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
 // 		   <<ID(k)<<"["<<m_flavs[k]<<"], core = "
 // 		   <<(cl==m_nin+m_nout)<<"\n";
+    double mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
     if (m_flavs[k].Strong()) {
       if (m_type>=3 && cl==m_nin+m_nout) {
 	pt2k=pk.PPerp2();
-	if (m_pt_def) pt2k+=pk.Abs2();
+	if (m_pt_def) pt2k+=pk.Abs2()-mk*mk;
 	if (j<3) {
 	  if (pt2k<ymin*m_s) {
 	    ymin=pt2k/m_s;
@@ -712,7 +713,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	else {
 	  if (m_flavs[j].Strong()) {
 	    pt2j=pj.PPerp2();
-	    if (m_pt_def) pt2j+=pj.Abs2();
+	    if (m_pt_def) pt2j+=pj.Abs2()-mj*mj;
 	    pt2jk=2.*Min(pt2j,pt2k)*
 	      (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk))/sqr(m_delta_r);
 	    if (pt2jk<ymin*m_s) {
@@ -755,7 +756,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 
   ----------------------------------------------------------------------------------*/
 
-double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
+double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
 {
   double mt12_2(0.);
   //check for DIS situation
@@ -763,8 +764,8 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
     double pt1_2(p1.PPerp2()), mt1_2(pt1_2);
     double pt2_2(p2.PPerp2()), mt2_2(pt2_2);
     if (!m_pt_def) { 
-      mt1_2 = pt1_2+dabs(p1.Abs2());
-      mt2_2 = pt2_2+dabs(p2.Abs2());
+      mt1_2 = pt1_2+dabs(p1.Abs2())-m1*m1;
+      mt2_2 = pt2_2+dabs(p2.Abs2())-m2*m2;
     }
     if (IsZero(pt1_2/(pt1_2+pt2_2)) || IsZero(pt2_2/(pt1_2+pt2_2))) return mt1_2+mt2_2;
     else {

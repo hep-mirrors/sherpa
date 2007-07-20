@@ -625,6 +625,7 @@ void Amegic::ExtractMPvalues(string& str,vector<double>& dv)
   Shorten(str);
   int position;
   Algebra_Interpreter inter;
+  inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
   position = str.find(string("{"));
   if (position==-1) {
     dv[0]=ToType<double>(inter.Interprete(str));

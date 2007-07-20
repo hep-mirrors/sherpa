@@ -86,8 +86,9 @@ int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
 #endif
   for (int i(0);i<m_allowed;++i) {
     if (InitializeSystem(trees,0,trees[0]->GetRoot(),trees[1]->GetRoot())) {
-      p_kin->BoostInCMS(trees,0,trees[0]->GetInitiator(),trees[1]->GetInitiator());
-      m_lab=p_kin->BoostInLab(trees);
+      p_kin->BoostInCMS(trees,p_fstree,0,trees[0]->GetInitiator(),
+			trees[1]->GetInitiator());
+      m_lab=p_kin->BoostInLab(trees,p_fstree);
       return 1;
     }
   }
@@ -139,7 +140,7 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
 		   <<k2->t<<" ("<<decay2<<")\n";
     if (decay1 && k1->t<k1->tout) m_sprime/=k1->z;
     if (decay2 && k2->t<k2->tout) m_sprime/=k2->z;
-    int stat(p_kin->InitKinematics(trees,tree1,k1,k2));
+    int stat(p_kin->InitKinematics(trees,p_fstree,tree1,k1,k2));
     if (stat==-1) break;
     if (stat==1) { 
       if (!decay1) SetColours(k1);
@@ -149,7 +150,8 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
       bool t1(k1->shower==0 || k1->t<k1->tout);
       bool t2(k2->shower==0 || k2->t<k2->tout);
       if (t1 || t2)
-	if ((stat=EvolveSystem(trees,tree1,t1?k1->prev:k1,t2?k2->prev:k2))==-1) 
+	if ((stat=EvolveSystem(trees,tree1,t1?k1->prev:k1,
+			       t2?k2->prev:k2))==-1) 
 	  break;
       if (stat==1) return true;
     }
@@ -157,6 +159,7 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
   }
   trees[0]->Restore();
   trees[1]->Restore();
+  if (p_fstree!=NULL) p_fstree->Restore();
   msg_Debugging()<<"iss reset";
   msg_Debugging()<<"}\n";
   return false;
@@ -164,7 +167,8 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
 
 int Initial_State_Shower::DoKinematics()
 {
-  if (!p_kin->DoKinematics(p_istrees,m_tree1,p_k1,p_k2,false)) return 0;
+  if (!p_kin->DoKinematics(p_istrees,p_fstree,
+			   m_tree1,p_k1,p_k2,false)) return 0;
   return 1-p_suds[m_tree1]->PTVeto(p_k1->prev);
 }
 
@@ -241,7 +245,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
     }
     k4->tmax=maxt;
     if (p_fin) {
-      if (!p_kin->DoKinematics(trees,tree1,k1,k2,true)) continue;
+      if (!p_kin->DoKinematics(trees,p_fstree,tree1,k1,k2,true)) continue;
       double s12((k1->part->Momentum()+k2->part->Momentum()).Abs2());
       p_k1=k1;
       p_k2=k2;
@@ -265,7 +269,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
       k4->t     = k4->tout;
       k4->stat  = 0;
       k4->part->SetStatus(part_status::active);
-      if (!p_kin->DoKinematics(trees,tree1,k1,k2,false)) continue;
+      if (!p_kin->DoKinematics(trees,p_fstree,tree1,k1,k2,false)) continue;
     }
     if (k3->shower==1 && k3->t<k3->tout) {
       double mmaxt(p_kin->CalculateMaxT(k3,k2,false));
@@ -345,7 +349,8 @@ ChooseMother(int &ntree1,Knot *&k1, Knot *&k2,bool init)
 void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
 					       Flavour * k_flavs)
 {
-  double pt2max(sqr(rpa.gen.Ecms())), th(4.*k->z*k->z*k->t/(4.*k->z*k->z*k->t-(1.-k->z)*k->x*k->x*pt2max));
+  double pt2max(sqr(rpa.gen.Ecms()));
+  double th(4.*k->z*k->z*k->t/(4.*k->z*k->z*k->t-(1.-k->z)*k->x*k->x*pt2max));
   if (!k->part->Flav().Strong() || 
       !k_flavs[0].Strong() || !k_flavs[1].Strong() ) th=k->thcrit;
   Knot * mother(NULL);
@@ -672,28 +677,6 @@ void Initial_State_Shower::SetStartingConditions(double k1,double k2,int flag)
   }
 }
 
-void Initial_State_Shower::BoostFS() 
-{
-  if (p_fstree==NULL) return;
-  Vec4D mom1(p_istrees[0]->GetRoot()->part->Momentum());
-  Vec4D mom2(p_istrees[1]->GetRoot()->part->Momentum());
-  Vec4D vl(mom1[0]+mom2[0],-1.*Vec3D(mom1+mom2));
-  m_labboost=Poincare(vl);
-  m_labboost.BoostBack(mom1);
-  m_cmsrot=Poincare(Vec4D::ZVEC,mom1);
-  p_fstree->BoRo(m_cmsrot);
-  p_fstree->BoRo(m_labboost);
-}
-
-void Initial_State_Shower::BoostBackFS() 
-{
-  if (p_fstree==NULL) return;
-  m_labboost.Invert();
-  m_cmsrot.Invert();
-  p_fstree->BoRo(m_labboost);
-  p_fstree->BoRo(m_cmsrot);
-}
-
 void Initial_State_Shower::ExtractPartons(Knot *const kn,const int &beam,
 					  Blob *const jet,Blob_List *const bl,
 					  Particle_List *const pl) 
@@ -755,7 +738,8 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 		   blob_status::needs_hadronization);
     jet->SetId();
 #ifdef USING__Veto_Info
-    jet->AddData("IS_VS",new Blob_Data<std::vector<int> >(p_suds[beam]->Vetos()));
+    jet->AddData("IS_VS",new Blob_Data<std::vector<int> >
+		 (p_suds[beam]->Vetos()));
 #endif
     if (is_is) {
       jet->SetType(btp::IS_Shower);

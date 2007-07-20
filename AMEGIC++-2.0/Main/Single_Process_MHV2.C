@@ -742,7 +742,10 @@ void Single_Process_MHV2::Minimize()
   if (p_selector && m_ownselector) { 
     delete p_selector;      
   }
+  m_orderQCD      = p_partner->OrderStrong();
+  m_orderEW       = p_partner->OrderEWeak();
   p_selector      = p_partner->Selector(); 
+  p_jf            = p_partner->p_jf;
   m_ownselector=false;
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
 }

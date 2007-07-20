@@ -665,8 +665,8 @@ void Initialization_Handler::SetScaleFactors()
   if (!reader.ReadFromFile(fac,"FS_CPL_SCALE_FACTOR")) fac=1.0;
   else changed=true;
   rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(fac));
-  int scheme(1);
-  if (!reader.ReadFromFile(scheme,"S_KFACTOR_SCHEME")) scheme=1;
+  int scheme(0);
+  if (!reader.ReadFromFile(scheme,"S_KFACTOR_SCHEME")) scheme=0;
   else changed=true;
   rpa.gen.SetVariable("S_KFACTOR_SCHEME",ToString(scheme));
   if (changed)

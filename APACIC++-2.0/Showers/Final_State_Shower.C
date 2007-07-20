@@ -29,8 +29,8 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
-  p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",2));   
-  p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",1));   
+  p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",3));   
+  p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",2));   
   p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",0)); 
   p_sud->SetQEDMECorrectionScheme(dataread->GetValue<int>("FS_QED_ME_SCHEME",0)); 
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));

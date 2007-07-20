@@ -44,6 +44,7 @@ void Single_Channel::Reset(double value) {
   alpha    = alpha_save = value;
   weight   = 0.;
   res1     = res2       = res3 = 0.;
+  result   = result2    = 0.0;
   n_points = n_contrib  = 0;
 }
 

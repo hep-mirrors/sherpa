@@ -3,6 +3,7 @@
 
 #include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -100,6 +101,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       std::string dmin, dmax;
       from>>dmin>>dmax;
       Algebra_Interpreter inter;
+      inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
       dat.min=ToType<double>(inter.Interprete(dmin));
       dat.max=ToType<double>(inter.Interprete(dmax));
       data.push_back(dat);

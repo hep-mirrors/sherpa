@@ -64,8 +64,6 @@ namespace APACIC {
     ~Initial_State_Shower();
 
     // member functions
-    void BoostFS();
-    void BoostBackFS();
     int  DoKinematics();
 
     int  PerformShower(Tree **const initrees,Tree *const fintree,

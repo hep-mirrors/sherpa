@@ -81,7 +81,10 @@ CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
 {
   if (cit->first.m_flav.Kfcode()==kf::none) {
     cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
-    cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
+    cit->second.m_pt2ij = p_jf->MTij2
+      (p_moms[cit->first.m_i],p_moms[cit->first.m_j],
+       p_legs[0][cit->first.m_i].Flav().Mass(),
+       p_legs[0][cit->first.m_j].Flav().Mass());
     if (cit->first.m_i>1 && cit->first.m_j>1) 
       cit->second.m_pt2ij*=sqr(rpa.gen.DeltaR());
 //     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
@@ -112,7 +115,12 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
   while (true) {
     bool did_boost(InitStep(moms,nl));
     if (!SelectWinner(did_boost)) {
-      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) return this;
+      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
+	if (did_boost) for (size_t i=0;i<m_nl;++i) p_moms[i]=p_save_moms[i]; 
+	delete [] p_save_moms;
+	return this;
+      }
+      delete [] p_save_moms;
       delete this;
       return NULL;
     }
@@ -156,14 +164,7 @@ bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
 bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 {
   CD_List & cl(m_combinations);
-  if (cl.size()==0) {
-    // check if boosted  (restore saved moms)
-    if (did_boost) { 
-      for (size_t i=0;i<m_nl;++i) p_moms[i] = p_save_moms[i]; 
-    }
-    delete [] p_save_moms;
-    return false;
-  }
+  if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator qcd_winner(cl.end());
@@ -289,7 +290,9 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1]) &&
 	Combinable(p_legs[i][2],p_legs[i][3])) {
-      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3])*sqr(rpa.gen.DeltaR()));
+      double pt2ij
+	(p_jf->MTij2(p_moms[2],p_moms[3],p_legs[i][2].Flav().Mass(),
+		     p_legs[i][3].Flav().Mass())*sqr(p_jf->DeltaR()));
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
 		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
@@ -308,8 +311,12 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
     }
     else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
 	     Combinable(p_legs[i][1],p_legs[i][3])) {
-      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[2]));
-      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[3]));
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[2],
+		     p_legs[i][0].Flav().Mass(),p_legs[i][2].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[1],p_moms[3],
+		     p_legs[i][1].Flav().Mass(),p_legs[i][3].Flav().Mass()));
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
@@ -329,8 +336,12 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
     }
     else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
 	     Combinable(p_legs[i][1],p_legs[i][2])) {
-      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[3]));
-      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[2]));
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[3],
+		     p_legs[i][0].Flav().Mass(),p_legs[i][3].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[1],p_moms[2],
+		     p_legs[i][1].Flav().Mass(),p_legs[i][2].Flav().Mass()));
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "

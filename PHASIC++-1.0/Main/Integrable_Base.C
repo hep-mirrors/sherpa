@@ -50,6 +50,8 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1"), m_muf2tag(""),
   p_muf2calc(NULL), m_muf2tagset(this)
 {
+  m_anasum=m_validanasum=0.0;
+  m_expevents=m_dicedevents=m_accevents=0;
   m_gmin=-1.0;
   SetScaleScheme(m_scalescheme);
   int kfs(ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2);        
@@ -369,12 +371,14 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
       else THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
     }
     double pt2(p_jf->ActualValue()*S);
-    if ((int)m_nout==m_maxjetnumber) 
+    if ((int)m_nout==m_maxjetnumber) {
       // highest multiplicity treatment
       if (m_nstrong>2) m_scale[stp::fac]=pt2;
-    else 
+    }
+    else {
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
+    }
     SetFactorizationScale();
     m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
     m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
@@ -666,9 +670,11 @@ void Integrable_Base::SetFactorizationScale(const std::string &muf2)
 
 void Integrable_Base::SetFactorizationScale()
 { 
-  if (m_muf2tag!="")
+  if (m_muf2tag!="") {
     m_scale[stp::fac]=((TDouble*)p_muf2calc->Calculate())->m_value;
-  // msg_Debugging()<<METHOD<<"(): Set \\mu_f = "<<sqrt(m_scale[stp::ren])<<"\n";
+    msg_Debugging()<<METHOD<<"(): Set \\mu_f = "
+		   <<sqrt(m_scale[stp::fac])<<"\n";
+  }
 }
 
 std::string Tag_Setter::ReplaceTags(std::string &expr) const

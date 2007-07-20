@@ -250,13 +250,14 @@ int Jet_Veto::TestISKinematics(Knot *const knot,Knot *const partner)
 		 <<"), p_{t,ljv} = "<<knot->qljv<<" ("<<ljv<<")\n";
   Vec4D p3(knot->part->Momentum()), p2(partner->part->Momentum());
   Vec4D p4(knot->left->part->Momentum()), cms(p3+p2);
+  double m3(knot->part->Flav().Mass()), m4(knot->left->part->Flav().Mass());
   Poincare boost(cms);
   boost.Boost(p2);
   boost.Boost(p3);
   boost.Boost(p4);
   Poincare rot(p3,Vec4D::ZVEC);
   rot.Rotate(p4);
-  double pt2(p_jf->MTij2(p4,Vec4D(1.0,0.0,0.0,1.0)));
+  double pt2(p_jf->MTij2(p4,Vec4D(1.0,0.0,0.0,1.0),m4,m3));
   msg_Debugging()<<"kt = "<<sqrt(knot->pt2lcm)
  		 <<" pt = "<<sqrt(pt2)<<" <- knot = "
 		 <<knot->part->Momentum()<<" left = "
@@ -289,6 +290,9 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
     Vec4D p[3]={d[3-i]->part->Momentum(),
 		d[i]->left->part->Momentum(),
 		d[i]->right->part->Momentum()};
+    double m[3]={d[3-i]->part->Flav().Mass(),
+		 d[i]->left->part->Flav().Mass(),
+		 d[i]->right->part->Flav().Mass()};
 #ifdef BOOST_Decay_JV
     if (knot->cms!=Vec4D()) {
       Poincare cms(knot->cms);
@@ -299,9 +303,9 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
     double sf(sqrt(sqr(p[0][0])-d[3-i]->tout)/p[0].PSpat());
     for (short unsigned int j(1);j<3;++j) p[0][j]*=sf;
     p_jf->SetType(knot->cms!=Vec4D()?1:type);
-    double jpt2[3]={f[0]?p_jf->MTij2(p[0],p[1]):0.0,
-		    f[1]?p_jf->MTij2(p[0],p[2]):0.0,
-		    f[2]?p_jf->MTij2(p[1],p[2]):0.0};
+    double jpt2[3]={f[0]?p_jf->MTij2(p[0],p[1],m[0],m[1]):0.0,
+		    f[1]?p_jf->MTij2(p[0],p[2],m[0],m[2]):0.0,
+		    f[2]?p_jf->MTij2(p[1],p[2],m[1],m[2]):0.0};
     p_jf->SetType(type);
     int jets(f[0]+f[1]+f[2]), ljets(0);
     if (d[i]->left->part->Info()!='H' || 

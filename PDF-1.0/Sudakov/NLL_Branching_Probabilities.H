@@ -23,7 +23,7 @@ namespace SHERPA {
       none        = 0,
       fs          = 1,
       is          = 2,
-      linear_term = 4,
+      z_shift     = 4,
       power_corrs = 8,
       soft_kfac   = 16,
       massive     = 32,
@@ -41,9 +41,12 @@ namespace SHERPA {
     bpm::code m_mode;
 
     double m_colfac, m_dlog, m_slog, m_power[5], m_qmass;
-    double m_lambda, m_as_factor, m_kfac, m_lastas;
+    double m_lambda, m_as_factor, m_kfac, m_lastas, m_z[2];
 
     int m_pca;
+
+    void SetZBounds(const double &q, const double &Q,
+		    const double &m,const double &m1,const double &m2);
 
   public:
 
@@ -76,6 +79,7 @@ namespace SHERPA {
   public:
     GammaG_GG_Lambda(bpm::code mode, double lambda, 
 		     MODEL::Running_AlphaS * =0,double asfac=1.0);
+    double Gamma(double q, double Q);
   };
 
   class GammaG_QQ_Lambda :  public Gamma_Lambda_Base {
