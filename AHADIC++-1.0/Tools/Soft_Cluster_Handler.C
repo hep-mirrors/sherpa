@@ -389,8 +389,8 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
 
 void Soft_Cluster_Handler::ShiftMomenta(const int size)
 {
-  double masses[size];
-  Vec4D  momenta[size];
+  std::vector<double> masses(size);
+  std::vector<Vec4D>  momenta(size);
   int    pos(0);
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {
@@ -408,7 +408,7 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
       }
     }
   }
-  hadpars.AdjustMomenta(pos,momenta,masses);
+  hadpars.AdjustMomenta(pos,&momenta.front(),&masses.front());
   pos = 0;
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {
