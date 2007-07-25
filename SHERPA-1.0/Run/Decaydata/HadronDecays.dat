@@ -1,26 +1,26 @@
-!-------------------------------------------------------
-!-- Files for hadron decay tables ----------------------
-!-------------------------------------------------------
+# -------------------------------------------------------
+# -- Files for hadron decay tables ----------------------
+# -------------------------------------------------------
 
-! particle -> directory/ name.dat do not forget the / and space
+# particle -> directory/ name.dat do not forget the / and space
 15    -> TauDecays/         TauDecays.dat;
-111   -> Pi0Decays/         Pi0Decays.dat;
-211   -> PiDecays/          PiDecays.dat;
-221   -> EtaDecays/         EtaDecays.dat;
-331   -> EtaprimeDecays/        EtaprimeDecays.dat;
-113   -> Rho0Decays/        Rho0Decays.dat;
-213   -> RhoDecays/         RhoDecays.dat;
-223   -> Omega782Decays/  Omega782Decays.dat;
-321   -> KaonDecays/        KaonDecays.dat;
-310   -> KSDecays/        KSDecays.dat;
-130   -> KLDecays/        KLDecays.dat;
-115   -> A213200Decays/   A213200Decays.dat;
-215   -> A21320Decays/    A21320Decays.dat;
-225   -> F21270Decays/    F21270Decays.dat;
-335   -> F2P1525Decays/   F2P1525Decays.dat;
-311   -> K0Decays/          K0Decays.dat;
-313   -> KStar8920Decays/    KStar8920Decays.dat;
-323   -> KStar892Decays/     KStar892Decays.dat;
-315   -> K2Star14300Decays/   K2Star14300Decays.dat;
-325   -> K2Star1430Decays/    K2Star1430Decays.dat;
-333   -> PhiDecays/         PhiDecays.dat;
+# 111   -> Pi0Decays/         Pi0Decays.dat;
+# 211   -> PiDecays/          PiDecays.dat;
+# 221   -> EtaDecays/         EtaDecays.dat;
+# 331   -> EtaprimeDecays/        EtaprimeDecays.dat;
+# 113   -> Rho0Decays/        Rho0Decays.dat;
+# 213   -> RhoDecays/         RhoDecays.dat;
+# 223   -> Omega782Decays/  Omega782Decays.dat;
+# 321   -> KaonDecays/        KaonDecays.dat;
+# 310   -> KSDecays/        KSDecays.dat;
+# 130   -> KLDecays/        KLDecays.dat;
+# 115   -> A213200Decays/   A213200Decays.dat;
+# 215   -> A21320Decays/    A21320Decays.dat;
+# 225   -> F21270Decays/    F21270Decays.dat;
+# 335   -> F2P1525Decays/   F2P1525Decays.dat;
+# 311   -> K0Decays/          K0Decays.dat;
+# 313   -> KStar8920Decays/    KStar8920Decays.dat;
+# 323   -> KStar892Decays/     KStar892Decays.dat;
+# 315   -> K2Star14300Decays/   K2Star14300Decays.dat;
+# 325   -> K2Star1430Decays/    K2Star1430Decays.dat;
+# 333   -> PhiDecays/         PhiDecays.dat;

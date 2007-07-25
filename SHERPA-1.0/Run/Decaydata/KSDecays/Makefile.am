@@ -2,8 +2,10 @@ decaydir      = $(pkgdatadir)/Decaydata/KSDecays
 
 dist_decay_DATA       =	\
 			KSDecays.dat \
-			KS_pi-nu_ebe-.dat \
-			KS_pi+nu_ee+.dat \
+			KS_pi-nu_ee+.dat \
+			KS_pi+nu_ebe-.dat \
+			KS_pi-nu_mumu+.dat \
+			KS_pi+nu_mubmu-.dat \
 			KS_pi+pi-.dat \
 			KS_pipi.dat
 
