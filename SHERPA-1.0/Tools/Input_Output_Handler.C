@@ -354,7 +354,8 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
            oit!=m_outmap.end();oit++) {
         if (oit->second!=NULL) {
           std::string newfilename=oit->second->basicfilename+"."+number+oit->second->fileextension;
-          if(oit->first==iotype::Sherpa) oit->second->outstream<<newfilename<<std::endl;
+          std::string footer = newfilename.substr(newfilename.rfind("/",newfilename.size())+1);
+          if(oit->first==iotype::Sherpa) oit->second->outstream<<footer<<std::endl;
           oit->second->outstream.close();
           oit->second->outstream.open(newfilename.c_str());
           if (!oit->second->outstream.good()) { 
