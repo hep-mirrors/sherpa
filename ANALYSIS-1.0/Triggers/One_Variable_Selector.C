@@ -212,12 +212,12 @@ One_Variable_Selector_Getter::operator()
   if (histos[0].empty()) histos[0].push_back(-1.0);
   size_t max(Max(vtags.size(),Max(flavs.size(),items.size())));
   max=Max(max,Max(mins.size(),maxs.size()));
-  for (size_t i(flavs.size());i<max;++i) flavs.push_back(flavs.back());
-  for (size_t i(items.size());i<max;++i) items.push_back(items.back());
-  for (size_t i(vtags.size());i<max;++i) vtags.push_back(vtags.back());
-  for (size_t i(mins.size());i<max;++i) mins.push_back(mins.back());
-  for (size_t i(maxs.size());i<max;++i) maxs.push_back(maxs.back());
-  for (size_t i(histos[0].size());i<max;++i) histos[0].push_back(-1);
+  flavs.resize(max,flavs.back());
+  items.resize(max,items.back());
+  vtags.resize(max,vtags.back());
+  mins.resize(max,mins.back());
+  maxs.resize(max,maxs.back());
+  for (size_t i(0);i<5;++i) histos[i].resize(max,-1);
   for (size_t i(flavs.size());i<max;++i) {
     max=Max(flavs[i].size(),items[i].size());
     for (size_t j(flavs[i].size());j<max;++j) 
@@ -371,11 +371,11 @@ int One_Variable_Selector::Evaluate
     if (m_flavs[i][j]!=m_flavs[i][j-1]) k=0;
     else ++k;
   }
-  int o(-1);
+  int o(k-1);
   for (;k<reflist.size();++k) {
     if (reflist[k]->Flav()==m_flavs[i][j]) {
       ++o;
-      if (m_items[i][j]<0 || o==m_items[i][j]) {
+      if ((m_items[i][j]<0 && -o<=m_items[i][j]+1) || o==m_items[i][j]) {
 	moms.push_back(reflist[k]);
 	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k,eval));
 	if (stat<1) return stat;
