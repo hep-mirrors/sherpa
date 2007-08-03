@@ -110,7 +110,7 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
           hdme = new Tau_Three_Pseudo( nout, flavs );
         if( nEta==1 && nPseudo==2 )
           hdme = new Tau_Eta_Two_Pion( nout, flavs );
-
+	break;
       }
     case 5:
       {
@@ -126,6 +126,7 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
         if( nPion_ch==1 && nPion_0==3 ) {
           hdme = new Tau_Four_Pion_1( nout, flavs );
         }
+	break;
       }
   }
 }
