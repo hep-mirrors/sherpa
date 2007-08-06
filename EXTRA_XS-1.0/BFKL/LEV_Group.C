@@ -21,27 +21,29 @@ void LEV_Group::Add(LEV_Base *const lev)
   m_integrals.push_back(1.0); 
 }
 
-double LEV_Group::Value(const double &y,const double &kt) const
+double LEV_Group::Value(const Vec4D &k1,const Vec4D &q1,
+			const Vec4D &k2,const Vec4D &q2) const
 {
   double value(0.0);
   for (size_t i(0);i<m_levs.size();++i) 
-    value+=m_levs[i]->Value(y,kt);
+    value+=m_levs[i]->Value(k1,q1,k2,q2);
   return value;
 }
 
-double LEV_Group::MajorValue(const double &y,const double &kt) const
+double LEV_Group::MajorValue(const Vec4D &k1,const Vec4D &q1,
+			     const Vec4D &k2,const Vec4D &q2) const
 {
   double value(0.0);
   for (size_t i(0);i<m_levs.size();++i) 
-    value+=m_levs[i]->MajorValue(y,kt);
+    value+=m_levs[i]->MajorValue(k1,q1,k2,q2);
   return value;
 }
 
-double LEV_Group::MajorIntegral()
+double LEV_Group::MajorIntegral(const ATOOLS::Flavour &fl)
 {
   double value(0.0);
   for (size_t i(0);i<m_levs.size();++i) {
-    m_integrals[i]=value+=m_levs[i]->MajorIntegral();
+    m_integrals[i]=value+=m_levs[i]->MajorIntegral(fl);
   }
   return value;
 }
@@ -55,20 +57,6 @@ bool LEV_Group::SelectLEV(const double &rn)
     }
   }
   return false;
-}
-
-void LEV_Group::SetYMin(const double &ymin) 
-{
-  for (size_t i(0);i<m_levs.size();++i) 
-    m_levs[i]->SetYMin(ymin);
-  m_ymin=ymin; 
-}
-
-void LEV_Group::SetYMax(const double &ymax) 
-{
-  for (size_t i(0);i<m_levs.size();++i) 
-    m_levs[i]->SetYMax(ymax);
-  m_ymax=ymax; 
 }
 
 void LEV_Group::SetKT2Min(const double &kt2min) 

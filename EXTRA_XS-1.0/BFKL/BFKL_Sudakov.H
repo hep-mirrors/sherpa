@@ -14,8 +14,16 @@ namespace EXTRAXS {
 
     LEV_Group *p_levs;
 
-    double m_ya, m_yb, m_kt2min, m_kt2max, m_y, m_kt2, m_phi;
-    double m_oldy, m_asmax, m_integral, m_weight;
+    double m_ya, m_yb, m_kt2min, m_kt2max;
+    double m_asmax, m_integral, m_gamma, m_weight, m_ktexp;
+    double m_y, m_kt2, m_phi, m_splitweight;
+
+    ATOOLS::Vec4D   m_q;
+    ATOOLS::Flavour m_flq;
+
+    int m_ktscheme, m_splitmode;
+
+    static size_t s_nf;
 
   public:
 
@@ -28,23 +36,42 @@ namespace EXTRAXS {
     // member functions
     bool Initialize();
 
+    bool Init();
     bool Dice();
-    bool CalculateWeight(const Vector_Vector &k,const ATOOLS::Vec4D &q);
+    bool Approve(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2);
+
+    double DicePolynomial(const double &xmin,const double &xmax,
+			  const double &a,const double &rn) const;
+    double WeightPolynomial(const double &xmin,const double &xmax,
+			    const double &a,const double &x) const;
 
     // inline functions
-    inline void SetYMax(const double &ymax) { m_ya=ymax; }
-    inline void SetYMin(const double &ymin) { m_yb=ymin; }
+    inline void SetYA(const double &ya) { m_ya=ya; }
+    inline void SetYB(const double &yb) { m_yb=yb; }
 
     inline void SetKT2Min(const double &kt2min) { m_kt2min=kt2min; }
     inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
 
-    inline double GetY() const   { return m_y;   }
-    inline double GetKT2() const { return m_kt2; }
-    inline double GetPhi() const { return m_phi; }
+    inline void SetInMomentum(const ATOOLS::Vec4D &q)  { m_q=q;   }
+    inline void SetInFlavour(const ATOOLS::Flavour &f) { m_flq=f; }
 
-    inline double Weight() const { return m_weight; }
+    inline void SetKTScheme(const int &scheme) { m_ktscheme=scheme; }
+    inline void SetSplitMode(const int &mode)  { m_splitmode=mode;  }
+
+    inline double GetY() const     { return m_y;    }
+    inline double GetKT2() const   { return m_kt2;  }
+    inline double GetPhi() const   { return m_phi;  }
+
+    inline double GetWeight() const      { return m_weight;       }
+    inline double GetSplitWeight() const { return m_splitweight;  }
 
     inline LEV_Base *Selected() const { return p_levs->Selected(); }
+
+    inline int KTScheme() const  { return m_ktscheme;  }
+    inline int SplitMode() const { return m_splitmode; }
+
+    inline size_t Nf() const { return s_nf; }
 
   };// end of class BFKL_Sudakov
 

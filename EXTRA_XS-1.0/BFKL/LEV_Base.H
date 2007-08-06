@@ -35,15 +35,18 @@ namespace EXTRAXS {
     virtual ~LEV_Base();
 
     // member functions
-    virtual double Value(const double &y,const double &kt) const;
-    virtual double MajorValue(const double &y,const double &kt) const;
+    virtual double Value(const ATOOLS::Vec4D &k1,
+			 const ATOOLS::Vec4D &q1,
+			 const ATOOLS::Vec4D &k2,
+			 const ATOOLS::Vec4D &q2) const;
+    virtual double MajorValue(const ATOOLS::Vec4D &k1,
+			      const ATOOLS::Vec4D &q1,
+			      const ATOOLS::Vec4D &k2,
+			      const ATOOLS::Vec4D &q2) const;
 
-    virtual double MajorIntegral();
+    virtual double MajorIntegral(const ATOOLS::Flavour &fl);
 
     virtual bool SelectSplitting(const double &rn);
-
-    virtual void SetYMin(const double &ymin);
-    virtual void SetYMax(const double &ymax);
 
     virtual void SetKT2Min(const double &kt2min);
     virtual void SetKT2Max(const double &kt2max);
