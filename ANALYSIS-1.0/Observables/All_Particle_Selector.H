@@ -62,6 +62,25 @@ namespace ANALYSIS {
 
   };// end of class Eta_Selector
 
+  class Abs_Eta_Selector: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_outlist;
+
+  public:
+
+    Abs_Eta_Selector(const double min,const double max,
+		     const std::string &inlist,const std::string &outlist);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+    
+    void EndEvaluation(double scale);
+
+  };// end of class Abs_Eta_Selector
+
   class Y_Selector: public Primitive_Observable_Base {  
   private:
 
@@ -80,6 +99,25 @@ namespace ANALYSIS {
     void EndEvaluation(double scale);
 
   };// end of class Y_Selector
+
+  class Abs_Y_Selector: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_outlist;
+
+  public:
+
+    Abs_Y_Selector(const double min,const double max,
+		   const std::string &inlist,const std::string &outlist);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+    
+    void EndEvaluation(double scale);
+
+  };// end of class Abs_Y_Selector
 
   class Phi_Selector: public Primitive_Observable_Base {  
   private:

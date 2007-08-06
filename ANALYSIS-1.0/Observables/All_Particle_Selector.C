@@ -203,6 +203,41 @@ void Eta_Selector::EndEvaluation(double scale)
 {
 }
 
+DEFINE_SELECTOR_GETTER(Abs_Eta_Selector,Abs_Eta_Selector_Getter,"AbsEtaSel")
+
+Abs_Eta_Selector::
+Abs_Eta_Selector(const double min,const double max,
+	    const std::string &inlist,const std::string &outlist):
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<Eta<"+
+	    ATOOLS::ToString(max)+inlist)
+{
+  m_splitt_flag = false;
+  m_xmin=min;
+  m_xmax=max;
+  m_listname=inlist;
+}
+
+void Abs_Eta_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
+				double weight,int ncount)
+{
+  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
+  p_ana->AddParticleList(m_outlist,outlist);
+  for (size_t i=0;i<particlelist.size();++i) {
+    double eta=ATOOLS::dabs(particlelist[i]->Momentum().Eta());
+    if (eta>=m_xmin && eta<=m_xmax) 
+      outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
+  }
+}
+
+Primitive_Observable_Base *Abs_Eta_Selector::Copy() const
+{
+  return new Abs_Eta_Selector(m_xmin,m_xmax,m_listname,m_outlist);
+}
+
+void Abs_Eta_Selector::EndEvaluation(double scale)
+{
+}
+
 DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel")
 
 Y_Selector::
@@ -231,10 +266,45 @@ void Y_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
 
 Primitive_Observable_Base *Y_Selector::Copy() const
 {
-  return new Eta_Selector(m_xmin,m_xmax,m_listname,m_outlist);
+  return new Y_Selector(m_xmin,m_xmax,m_listname,m_outlist);
 }
 
 void Y_Selector::EndEvaluation(double scale)
+{
+}
+
+DEFINE_SELECTOR_GETTER(Abs_Y_Selector,Abs_Y_Selector_Getter,"AbsYSel")
+
+Abs_Y_Selector::
+Abs_Y_Selector(const double min,const double max,
+	    const std::string &inlist,const std::string &outlist):
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<Y<"+
+	    ATOOLS::ToString(max)+inlist)
+{
+  m_splitt_flag = false;
+  m_xmin=min;
+  m_xmax=max;
+  m_listname=inlist;
+}
+
+void Abs_Y_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
+			      double weight,int ncount)
+{
+  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
+  p_ana->AddParticleList(m_outlist,outlist);
+  for (size_t i=0;i<particlelist.size();++i) {
+    double y=ATOOLS::dabs(particlelist[i]->Momentum().Y());
+    if (y>=m_xmin && y<=m_xmax) 
+      outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
+  }
+}
+
+Primitive_Observable_Base *Abs_Y_Selector::Copy() const
+{
+  return new Abs_Y_Selector(m_xmin,m_xmax,m_listname,m_outlist);
+}
+
+void Abs_Y_Selector::EndEvaluation(double scale)
 {
 }
 
