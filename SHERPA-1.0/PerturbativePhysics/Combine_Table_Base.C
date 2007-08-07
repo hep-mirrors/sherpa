@@ -501,8 +501,15 @@ int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
       nqcdt=nqcdtt;
     }
     else {
-      if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
-	msg_Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+      if (nqedt!=nqedtt || nqcdt!=nqcdtt) {
+	msg_Tracking()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+	if (nqcdtt>nqcdt) {
+	  msg_Debugging()<<"n_{QCD} = "<<nqcdtt<<" in diagram "
+			 <<i<<" -> reset\n";
+	  nqedt=nqedtt;
+	  nqcdt=nqcdtt;
+	}
+      }
     }
   }
   nqed=nqedt;
