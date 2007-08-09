@@ -88,6 +88,27 @@ void One_Variable_Selector_Getter::PrintInfo
      <<std::setw(width+4)<<" "<<"}";
 }
 
+template <class __T>
+std::string MakeString(const std::vector<__T> &v);
+
+template <> std::string MakeString<ATOOLS::Flavour>
+(const std::vector<ATOOLS::Flavour> &v)
+{
+  if (v.empty()) return "";
+  std::string s(ToString(v.front().Kfcode()));
+  for (size_t i(1);i<v.size();++i) s+=","+ToString(v[i].Kfcode());
+  return s;
+}
+
+template <class __T>
+std::string MakeString(const std::vector<__T> &v)
+{
+  if (v.empty()) return "";
+  std::string s(ToString(v.front()));
+  for (size_t i(1);i<v.size();++i) s+=","+ToString(v[i]);
+  return s;
+}
+
 Analysis_Object *
 One_Variable_Selector_Getter::operator()
   (const Argument_Matrix &parameters) const
@@ -225,6 +246,20 @@ One_Variable_Selector_Getter::operator()
     for (size_t j(items[i].size());j<max;++j) 
       items[i].push_back(items[i].back());
   }
+  msg_Debugging()<<METHOD<<"(): Initialized {\n";
+  for (size_t i(0);i<max;++i) {
+    msg_Debugging()<<"    Tags "<<std::setw(12)<<MakeString(flavs[i])
+		   <<" "<<std::setw(9)<<MakeString(items[i])
+		   <<" "<<std::setw(9)<<vtags[i]
+		   <<" "<<std::setw(9)<<mins[i]
+		   <<" "<<std::setw(9)<<maxs[i]
+		   <<" "<<std::setw(6)<<histos[2][i]
+		   <<" "<<std::setw(6)<<histos[3][i]
+		   <<" "<<std::setw(3)<<histos[1][i]
+		   <<" "<<std::setw(2)<<histos[0][i]
+		   <<" "<<std::setw(2)<<histos[4][i]<<"\n";
+  }
+  msg_Debugging()<<"}\n";
   return new One_Variable_Selector
     (inlist,reflist,outlist,flavs,items,vtags,mins,maxs,histos,parameters());
 }

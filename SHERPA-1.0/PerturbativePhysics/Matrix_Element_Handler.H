@@ -12,6 +12,7 @@
 #include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
+#include "Data_Reader.H"
 // #include "Spin_Correlation_Tensor.H"
 #include "Amplitude_Tensor.H"
 
@@ -52,13 +53,12 @@ namespace SHERPA {
     std::string            m_name,m_signalgenerator,m_readin;
  
     int  m_eventmode;
-    int  m_sudakovon;
-    bool m_apply_hhmf;
+    int  m_sudakovon, m_apply_hhmf;
     bool m_ini_swaped;
     int  m_nmoms;
     bool m_spincorrelations;
 
-    ATOOLS::Data_Read    * p_dataread;
+    ATOOLS::Data_Reader    * p_reader;
 
     ATOOLS::Flavour *  p_flavs;
     ATOOLS::Vec4D   *  p_moms;

@@ -1,5 +1,4 @@
 #include "Matrix_Element_Handler.H"
-#include "Data_Read.H"
 #include "Message.H"
 #include "Amegic.H"
 #include "Simple_XS.H"
@@ -74,7 +73,7 @@ Matrix_Element_Handler::Matrix_Element_Handler() :
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), p_model(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
   m_sntrial(0), m_name(""), m_eventmode(1), 
-  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
+  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_reader(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
@@ -82,7 +81,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), p_model(_model), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
   m_sntrial(0), m_name(""), m_eventmode(1),
-  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
+  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_reader(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
   m_mode      = InitializeAmegic(_model,NULL,NULL);
@@ -101,17 +100,20 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
   m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
-  p_dataread        = new Data_Read(m_dir+m_file);
-  m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
-  m_sudakovon       = p_dataread->GetValue<int>("SUDAKOV WEIGHT",0);
-  m_apply_hhmf      = p_dataread->GetValue<int>("TEVATRON_WpWm",0);
+  p_reader = new Data_Reader(" ",";","!","=");
+  p_reader->SetInputPath(m_dir);
+  p_reader->SetInputFile(m_file);
+  if (!p_reader->ReadFromFile(m_signalgenerator,"ME_SIGNAL_GENERATOR")) m_signalgenerator="Amegic";
+  if (!p_reader->ReadFromFile(m_sudakovon,"SUDAKOV WEIGHT")) m_sudakovon=0;
+  if (!p_reader->ReadFromFile(m_apply_hhmf,"TEVATRON_WpWm")) m_apply_hhmf=0;
   if (m_signalgenerator==string("Amegic")) {
     if (_me) p_amegic = _me->GetAmegic(); 
     m_mode = InitializeAmegic(_model,_beam,_isr);
   }
   if (m_signalgenerator==string("Internal")) m_mode = InitializeSimpleXS(_model,_beam,_isr);
 
-  string evtm=p_dataread->GetValue<string>("EVENT_GENERATION_MODE",std::string("Unweighted"));
+  string evtm;
+  if (!p_reader->ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm==string("Unweighted"))
     m_eventmode=1;
   else {
@@ -131,7 +133,7 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 {
   if (p_moms)  delete [] p_moms;
   if (p_flavs) delete [] p_flavs;
-  if (p_dataread) { delete p_dataread; p_dataread = NULL; }
+  if (p_reader) delete p_reader;
   if (p_amegic)   { delete p_amegic;   p_amegic   = NULL; }
   if (p_simplexs) { delete p_simplexs; p_simplexs = NULL; }
 }
@@ -224,7 +226,7 @@ bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
 {
-  m_readin = p_dataread->GetValue<string>("RESULT_DIRECTORY",string("./Results"));
+  if (!p_reader->ReadFromFile(m_readin,"RESULT_DIRECTORY")) m_readin="./Results";
   switch (m_mode) { 
   case 1: 
     if (p_amegic->CalculateTotalXSec(m_readin,m_eventmode<0?-1:1)) {
