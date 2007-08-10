@@ -96,7 +96,9 @@ template <> std::string MakeString<ATOOLS::Flavour>
 {
   if (v.empty()) return "";
   std::string s(ToString(v.front().Kfcode()));
-  for (size_t i(1);i<v.size();++i) s+=","+ToString(v[i].Kfcode());
+  for (size_t i(1);i<v.size();++i) 
+    if (v[i].IsAnti()) s+=",-"+ToString(v[i].Kfcode());
+    else s+=","+ToString(v[i].Kfcode());
   return s;
 }
 
