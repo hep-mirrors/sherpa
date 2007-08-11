@@ -12,7 +12,7 @@ pkginclude_HEADERS    =	\
 			XS_Model_QCD.H \
 			XS_Model_EW.H \
 			XS_Model_SM.H \
-			XS_Model_Handler.C
+			XS_Model_Handler.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
