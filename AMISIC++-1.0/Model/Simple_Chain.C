@@ -217,7 +217,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  help[3]=flavs[3][l];
 	  OrderFlavours(help);
 	  EXTRAXS::XS_Base *newxs = p_processes->XSSelector()->
-	    GetXS(2,2,help,false,0,2);
+	    GetXS(2,2,help,false,0,2,false);
 	  if (newxs==NULL) continue;
 	  EXTRAXS::XS_Base *testxs=NULL;
 	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);

@@ -154,6 +154,8 @@ namespace SHERPA {
     inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
     inline void ResetNumberOfTrials() { m_sntrial=0; }
 
+    void SetModel(MODEL::Model_Base *model) { p_model=model; }
+
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;
