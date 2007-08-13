@@ -1,41 +1,40 @@
 #!/bin/bash
 
-DISTDIR=`date +'%y-%m-%d'`
-
 ECOPT=""
 
 print_help() {
   echo "makedist version 1.0 " && echo && \
   echo "options: -f             include full time information in distribution name" && \
-  echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
-  echo "         -u             distribute uncompressed modules" && \
+  echo "         -n <name>      write compressed distribution to <name>.tar.gz (default: Sherpa-X.X.X)" && \
   echo "         --clean        execute 'make clean' before 'make dist'" && \
   echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
   echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
   echo "         --copt         define option for 'configure'" && \
-  echo "         --no-abort     ignore exit status of 'make'" && \
-  echo "         --force        overwrite existing targets" && \
+  echo "         --include-svn  include .svn directories" && \
+  echo "         --release      prepare for release in copied tree: svn update, module renaming, --total" && \
+  echo "                        Warning: This may use much disk space, because it makes a copy of the file tree." && \
   echo "         -h             display this help and exit" && \
   echo
 }
 
+VERSION="$(cat configure.in | grep "AC_INIT" | cut -d"," -f 2 | tr -d " ")";
+DISTDIR="Sherpa-"$VERSION;
+
 while getopts :hfun: OPT
 do
   case $OPT in
-  f) DISTDIR=$DISTDIR"_"`date +'%H-%M'` ;;
-  u) COMP=FALSE ;;
+  f) DISTDIR=$DISTDIR"_"$(date +'%Y-%m-%d_%H:%M') ;;
   n) DISTDIR=$OPTARG ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
     if [ "$1" = "--clean" ]; then ALLCLEAN=TRUE 
     elif [ "$1" = "--configure" ]; then CONFIGURE=TRUE 
-    elif [ "$1" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
+    elif [ "$1" = "--include-svn" ]; then INCLUDESVN=TRUE
     elif [ "$1" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
     elif [ "$1" = "--copt" ]; then 
       CONFIGURE=TRUE && ECOPT=$2" "$ECOPT && shift 1
-    elif [ "$1" = "--no-abort" ]; then NOABORT=TRUE
-    elif [ "$1" = "--force" ]; then FORCE=TRUE 
+    elif [ "$1" = "--release" ]; then RELEASE=TRUE && TOTAL=TRUE && CONFIGURE=TRUE
     else 
       echo -n "makedist: error: unrecognized option "
       if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
@@ -48,56 +47,107 @@ do
   esac
 done
 
-if test -d $DISTDIR ; then
-  echo "makedist: error: temporary directory '$DISTDIR' exists"
-  exit 1
-fi
-if test -f $DISTDIR.tar.gz && [ "$FORCE" != "TRUE" ] ; then
-  echo "makedist: error: dist file '$DISTDIR.tar.gz' exists"
-  echo "makedist: add '--force' to override"
-  exit 2
-fi
+if [ ! "$INCLUDESVN" = "TRUE" ]; then ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE; fi
 
 echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
 echo "*************************************"
-if [ "$TOTAL" = "TRUE" ]; then
-  libtoolize --force
-  aclocal
-  automake -a
-  autoconf
-fi
-if [ "$CONFIGURE" = "TRUE" ]; then 
-  ./configure $ECOPT
-fi
-if [ "$ALLCLEAN" = "TRUE" ]; then 
-  make clean 
-fi
-CONTINUE="r"
-while [ "$CONTINUE" = "r" ]; do 
-  CONTINUE=""
-  if ! make dist ; then 
-    echo "makedist: error: \"make dist\" in $I failed"
-    if [ ! "$NOABORT" = "TRUE" ]; then
-      until [ "$CONTINUE" = "y" ] || [ "$CONTINUE" = "n" ] || [ "$CONTINUE" = "r" ]; do
-        if ! read -t 300 -n 1 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
-	  CONTINUE="n"
+
+
+if [ "$RELEASE" = "TRUE" ]; then
+  SUBSUBV=$(echo $VERSION | cut -d "." -f 3)
+  mkdir -p ../makedist;
+  rm -rf ../makedist/*
+  echo -e "  copying file tree to temporary directory ../makedist (this might take a while)"
+  cp -rp $(pwd) ../makedist/;
+  cd ../makedist/$(basename $(pwd));
+
+  if test -x "$(which svn)" && (! "$(svn status -q)" = ""); then 
+    echo "The copy of your version has local modifications:"
+    svn status -q
+    echo "Are you sure, you want to create a release tarball from that?"
+
+      until [ "$CONTINUE" = "c" ]; do
+        if ! read -t 300 -n 1 -p "(c)ontinue / (r)evert local modifications and continue / (a)bort) ? " CONTINUE ; then
+          CONTINUE="c"
         fi
         echo ""
-        if [ "$CONTINUE" = "n" ]; then
+        if [ "$CONTINUE" = "a" ]; then
           exit 1
-        elif [ "$CONTINUE" = "b" ]; then
-          bash 
-          CONTINUE="r"
+        elif [ "$CONTINUE" = "r" ]; then
+          svn revert --recursive .
+          CONTINUE="c"
         fi
       done
-    fi
+
   fi
-done
-mv SHERPA-MC-1.0.9.tar.gz $DISTDIR.tar.gz
+  svn update
+
+  ## rename modules in working copy
+  echo -e "  renaming modules in working copy";
+  MODULES=*".0";
+  for I in $MODULES; do
+    mv $I $I"."$SUBSUBV
+  done;
+  MFS=`find . -name Makefile.am`
+  for I in $MFS; do
+    sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
+    sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I.new2
+    sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I.new2 > $I.new
+    mv $I.new $I
+    rm $I.new2
+  done
+  MFS="TOOLS/makeinstall configure.in acinclude.m4"
+  for I in $MFS; do
+    sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
+    sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I
+    sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I > $I.new
+    mv $I.new $I
+  done;
+fi
+if [ "$TOTAL" = "TRUE" ]; then
+  cp INSTALL INSTALL.Sherpa;
+  autoreconf -fi
+  mv INSTALL.Sherpa INSTALL;
+fi
+if [ "$CONFIGURE" = "TRUE" ]; then
+  ./configure $ECOPT;
+fi
+if [ "$ALLCLEAN" = "TRUE" ]; then
+  make clean
+fi
+
+make distdir;
+
+if [ "$RELEASE" = "TRUE" ]; then
+  # add sample runs to distdir
+  ###########################################################
+  cd SHERPA-MC-$VERSION;
+  SAMPLERUNS="Tevatron1800 LHC EGamma LEP91";
+  for I in $SAMPLERUNS ; do
+    cp -r ../SHERPA-$VERSION/Run/$I SHERPA-$VERSION/Run/;
+    rm -rf SHERPA-$VERSION/Run/$I/.svn;
+    rm -rf SHERPA-$VERSION/Run/$I/*~;
+    rm -rf SHERPA-$VERSION/Run/$I/xsections*;
+    rm -rf SHERPA-$VERSION/Run/$I/*weight*;
+    rm -rf SHERPA-$VERSION/Run/$I/makelibs;
+    rm -rf SHERPA-$VERSION/Run/$I/Process;
+    rm -rf SHERPA-$VERSION/Run/$I/Results;
+    rm -rf SHERPA-$VERSION/Run/$I/Status__*;
+  done;
+  ###########################################################
+  cd ..;
+fi
+
+## prepare scripts
+chmod 755 TOOLS/makeinstall;
+## remove ATOOLS/Org/CXXFLAGS.H
+rm SHERPA-MC-$VERSION/*/*/CXXFLAGS.H
+## tar it
+tar -czhf $DISTDIR.tar.gz SHERPA-MC-$VERSION/;
+
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
 
 # mode:shell-script
 # sh-indentation:2
-
