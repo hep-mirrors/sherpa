@@ -296,20 +296,24 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1]) &&
 	Combinable(p_legs[i][2],p_legs[i][3])) {
-      double pt2ij
-	(dabs(p_jf->MTij2(p_moms[2],p_moms[3],p_legs[i][2].Flav().Mass(),
-			  p_legs[i][3].Flav().Mass())*sqr(p_jf->DeltaR())));
-      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[1],p_legs[i][0].Flav().Mass(),
+		     p_legs[i][1].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[2],p_moms[3],p_legs[i][2].Flav().Mass(),
+		     p_legs[i][3].Flav().Mass())*sqr(p_jf->DeltaR()));
+      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
 		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
 		     <<" -> "<<p_legs[i][2].Flav()<<" "
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
       SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
-		   p_moms[0],p_moms[1],pt2ij);
+		   p_moms[0],p_moms[1],pt2ij1);
       p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
       SetLegScales(p_hard[i][1],p_legs[i][2],p_legs[i][3],
-		   p_moms[2],p_moms[3],pt2ij);
+		   p_moms[2],p_moms[3],pt2ij2);
       p_hardc[i][0]=0;
       p_hardc[i][1]=0;
       p_hardc[i][2]=1;
@@ -318,13 +322,11 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
     else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
 	     Combinable(p_legs[i][1],p_legs[i][3])) {
       double pt2ij1
-	(dabs(p_jf->MTij2(p_moms[0],p_moms[2],
-			  p_legs[i][0].Flav().Mass(),
-			  p_legs[i][2].Flav().Mass())));
+	(p_jf->MTij2(p_moms[0],p_moms[2],p_legs[i][0].Flav().Mass(),
+		     p_legs[i][2].Flav().Mass()));
       double pt2ij2
-	(dabs(p_jf->MTij2(p_moms[1],p_moms[3],
-			  p_legs[i][1].Flav().Mass(),
-			  p_legs[i][3].Flav().Mass())));
+	(p_jf->MTij2(p_moms[1],p_moms[3],p_legs[i][1].Flav().Mass(),
+		     p_legs[i][3].Flav().Mass()));
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
@@ -350,13 +352,11 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
     else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
 	     Combinable(p_legs[i][1],p_legs[i][2])) {
       double pt2ij1
-	(dabs(p_jf->MTij2(p_moms[0],p_moms[3],
-			  p_legs[i][0].Flav().Mass(),
-			  p_legs[i][3].Flav().Mass())));
+	(p_jf->MTij2(p_moms[0],p_moms[3],p_legs[i][0].Flav().Mass(),
+			  p_legs[i][3].Flav().Mass()));
       double pt2ij2
-	(dabs(p_jf->MTij2(p_moms[1],p_moms[2],
-			  p_legs[i][1].Flav().Mass(),
-			  p_legs[i][2].Flav().Mass())));
+	(p_jf->MTij2(p_moms[1],p_moms[2],p_legs[i][1].Flav().Mass(),
+		     p_legs[i][2].Flav().Mass()));
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "

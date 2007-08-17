@@ -347,9 +347,6 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     // check for scale definition from Single_XS
     double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
 		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
-    // override scale w/ local definition from SetColours
-    if (m_q2_hard<std::numeric_limits<double>::max()) 
-      mu2r[1]=mu2r[0]=m_q2_hard;
     if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
     if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
     double qu(sqrt(mu2r[0]!=0.0?mu2r[0]:
@@ -365,6 +362,9 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     for (short unsigned int i(0);i<4;++i) {
       double rs(mu2r[i/2]!=0.0?mu2r[i/2]:p_ct->GetHardLegs()[wminqcd]
 		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
+      if (rs==std::numeric_limits<double>::max())
+	rs=p_ct->GetHardLegs()[wminqcd]
+	  [p_ct->GetHardInfo()[wminqcd][i]].KT2QED();
       m_last_q[i]=sqrt(rs);
     }
     for (short unsigned int i(0);i<2;++i) {
@@ -414,6 +414,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
   else {
     THROW(fatal_error,"No scale in hard process");
   }
+  msg_Debugging()<<"hard scales = {"<<m_last_q[0]<<","<<m_last_q[1]
+		 <<","<<m_last_q[2]<<","<<m_last_q[3]<<"}\n";
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
   if (proc->FactorizationScale()!="") {
     m_q2_f[1]=m_q2_f[0]=proc->Scale(stp::fac);

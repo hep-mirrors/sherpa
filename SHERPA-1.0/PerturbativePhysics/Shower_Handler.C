@@ -33,7 +33,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) type = 4;
   else type = 4;
 
-  p_jf = new Jet_Finder(rpa.gen.Ycut(),type,false);
+  p_jf = new Jet_Finder(rpa.gen.Ycut(),type);
   p_jf->SetDeltaR(rpa.gen.DeltaR());
 
   if (m_showergenerator==std::string("Apacic")) {

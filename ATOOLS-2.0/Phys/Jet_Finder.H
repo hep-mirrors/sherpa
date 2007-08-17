@@ -8,8 +8,7 @@
 namespace ATOOLS {
   class Jet_Finder : public Selector_Base {
     double m_ycut,m_delta_r;
-    int    m_type;
-    bool   m_pt_def;
+    int    m_type, m_mass_scheme;
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
 
     double m_shower_pt2,m_value;
@@ -55,8 +54,8 @@ namespace ATOOLS {
     double Coshyp(double);
     bool   ConstructJets(Particle_List *, double, int, bool );
   public:
-    Jet_Finder(const double,const int=1,const bool=true);
-    Jet_Finder(const int,Flavour *,const double,const int,const bool=true);
+    Jet_Finder(const double,const int=1);
+    Jet_Finder(const int,Flavour *,const double,const int);
 
     ~Jet_Finder();
 
@@ -69,14 +68,13 @@ namespace ATOOLS {
 
     bool   Trigger(const Vec4D *);
 
-    bool   TwoJets(const Vec4D &,const bool=false);
-    bool   TwoJets(const Vec4D &, const Vec4D &,const bool=false);
-    bool   TwoJets(double &,double &,double &,bool);
     double MTij2(Vec4D,Vec4D,double=0.0,double=0.0);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
 
     double   ActualValue() const;
+
+    inline void SetMassScheme(const int mode) { m_mass_scheme=mode; }
 
     inline void SetType(const int mode) { m_type=mode;   }
     inline int  Type() const            { return m_type; }
