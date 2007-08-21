@@ -543,14 +543,14 @@ double Ladder::MECorrection()
       me = new N_Parton_CDBG(m_nin,m_nvector,fl,p_model);
       Color_Integrator *cint(new Color_Integrator());
       Idx_Vector ids(m_nin+m_nout+m_naddout,0);
-      Int_Vector types(m_nin+m_nout+m_naddout,0);
+      Int_Vector types(m_nin+m_nout+m_naddout,0), acts(ids.size(),1);
       for (size_t i(0);i<ids.size();++i) {
 	ids[i]=i;
 	if (fl[i].IsGluon()) types[i]=0;
 	else if (fl[i].IsAnti()) types[i]=i<2?1:-1;
 	else types[i]=i<2?-1:1;
       }
-      cint->ConstructRepresentations(ids,types);
+      cint->ConstructRepresentations(ids,types,acts);
       cint->Initialize();
       me->SetColorIntegrator(cint);
       cint->GeneratePoint();

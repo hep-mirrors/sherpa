@@ -104,14 +104,14 @@ bool CDXS_pp_np::Tests()
   Color_Integrator *colint(p_activepshandler->ColorIntegrator());
   p_bg->SetColorIntegrator(colint);
   Idx_Vector ids(m_nin+m_nout,0);
-  Int_Vector types(m_nin+m_nout,0);
+  Int_Vector types(m_nin+m_nout,0), acts(ids.size(),1);
   for (size_t i(0);i<ids.size();++i) {
     ids[i]=i;
     if (p_flavours[i].IsGluon()) types[i]=0;
     else if (p_flavours[i].IsAnti()) types[i]=i<2?1:-1;
     else types[i]=i<2?-1:1;
   }
-  if (!colint->ConstructRepresentations(ids,types)) return false;
+  if (!colint->ConstructRepresentations(ids,types,acts)) return false;
   p_activepshandler->TestPoint(p_momenta);
   for (size_t i(0);i<m_nvector;++i) m_p[i]=p_momenta[i];
   return p_bg->GaugeTest(m_p);
