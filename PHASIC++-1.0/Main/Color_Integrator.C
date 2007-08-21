@@ -14,11 +14,18 @@ using namespace ATOOLS;
 
 std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
 {
-  switch (v.Type()) {
-  case -1: return ostr<<"|"<<v.J()<<">("<<v.Id()<<")";
-  case 0: return ostr<<"|"<<v.J()<<">["<<v.Id()<<"]<"<<v.I()<<"|";
-  case 1: return ostr<<"("<<v.Id()<<")<"<<v.I()<<"|";
-  }
+  if (v.Act())
+    switch (v.Type()) {
+    case -1: return ostr<<"|"<<v.J()<<">("<<v.Id()<<")";
+    case 0: return ostr<<"|"<<v.J()<<">["<<v.Id()<<"]<"<<v.I()<<"|";
+    case 1: return ostr<<"("<<v.Id()<<")<"<<v.I()<<"|";
+    }
+  else
+    switch (v.Type()) {
+    case -1: return ostr<<"|"<<v.J()<<">{"<<v.Id()<<"}";
+    case 0: return ostr<<"|"<<v.J()<<">{"<<v.Id()<<"}<"<<v.I()<<"|";
+    case 1: return ostr<<"{"<<v.Id()<<"}<"<<v.I()<<"|";
+    }
   return ostr<<"<error>";
 }
 
@@ -43,7 +50,7 @@ double Color_Integrator::Factorial(const double &n) const
 }
 
 bool Color_Integrator::ConstructRepresentations
-(const Idx_Vector &ids,const Int_Vector &types)
+(const Idx_Vector &ids,const Int_Vector &types,const Int_Vector &acts)
 {
   m_weight=1.0;
   m_confs.clear();
@@ -53,16 +60,14 @@ bool Color_Integrator::ConstructRepresentations
   if (ids.size()!=types.size()) THROW(fatal_error,"Internal error.");
   m_pairs=0;
   m_ids.resize(ids.size());
-  int quarks(0);
+  int fermions(0);
   for (size_t i(0);i<ids.size();++i) {
-    m_ids[i] = new Representation(ids[i],types[i]);
-    if (types[i]>=0) {
-      m_weight*=3.0;
-      if (types[i]>0) m_pairs+=1;
-    }
-    quarks+=types[i];
+    m_ids[i] = new Representation(ids[i],types[i],acts[i]);
+    if (types[i]>=0 && acts[i]>0) m_weight*=3.0;
+    if (types[i]>0) m_pairs+=1;
+    fermions+=types[i];
   }
-  if (quarks!=0) THROW(fatal_error,"Invalid number of quarks.");
+  if (fermions!=0) THROW(fatal_error,"Invalid number of fermions.");
   msg_Debugging()<<METHOD<<"(): Weight = "<<m_weight<<"\n";
   m_weight*=m_weight;
   return true;
@@ -79,6 +84,7 @@ size_t Color_Integrator::GenerateIndex()
 bool Color_Integrator::DiceColours()
 {
   for (size_t i(0);i<m_ids.size();++i) {
+    if (!m_ids[i]->Act()) continue;
     switch (m_ids[i]->Type()) {
     case -1:
       m_ids[i]->SetJ(GenerateIndex());
@@ -114,8 +120,8 @@ int Color_Integrator::ConstructConfigurations
       // and for each singlet gluon decaying into quarks
       size_t dpairs(1);
       for (size_t i(1);i<perm.size();++i){
-	if (m_ids[perm[i-1]]->Type()==1 && 
-	    m_ids[perm[i]]->Type()==-1) {
+	if (m_ids[perm[i-1]]->Type()>0 && 
+	    m_ids[perm[i-1]]->Type()==-m_ids[perm[i]]->Type()) {
 	  ++dpairs;
 	  if (m_ids[perm[i-1]]->Id()==
 	      m_ids[perm[i]]->Id()) weight/=-3.0;
@@ -138,7 +144,7 @@ int Color_Integrator::ConstructConfigurations
   }
   bool newstr(false);
   Idx_Vector tids(1,perm.back());
-  if (m_ids[perm.back()]->Type()==-1) {
+  if (m_ids[perm.back()]->Type()<0) {
     newstr=true;
     tids.pop_back();
     // find start for next string 
@@ -146,17 +152,20 @@ int Color_Integrator::ConstructConfigurations
     Idx_Vector sids(0);
     for (size_t i(0);i<ids.size();++i) {
       switch (m_ids[ids[i]]->Type()) {
-      case 1: tids.push_back(ids[i]); break;
       case 0: sids.push_back(ids[i]); break;
+      case 1: tids.push_back(ids[i]); break;
       }
     }
     if (tids.empty()) {
       // if new string starts with gluon, 
       // all remaining gluons are singlets
-      // pick randomized any to start
-      size_t cg(Max(sids.size()-1,
-		    (size_t)(sids.size()*ran.Get())));
-      tids.push_back(sids[cg]);
+      /*
+        // pick randomized any to start
+        size_t cg(Max(sids.size()-1,
+	              (size_t)(sids.size()*ran.Get())));
+        tids.push_back(sids[cg]);
+      */
+      tids.push_back(sids.front());
       // broadcast that now all gluons 
       // must be in singlet state
       sing=true;
@@ -188,9 +197,12 @@ int Color_Integrator::ConstructConfigurations
     else {
       // find all matching partons
       for (size_t i(0);i<ids.size();++i) {
-	if (m_ids[ids[i]]->Type()!=1 && 
-	    m_ids[ids[i]]->J()==last) 
+	if (m_ids[ids[i]]->Type()<=0 && 
+	    m_ids[ids[i]]->J()==last) {
 	  pids.push_back(ids[i]);
+	  // for ew particles consider only one ordering
+	  if (last==0) break;
+	}
       }
     }
     if (newstr && ids.size()==1) {
@@ -209,7 +221,7 @@ int Color_Integrator::ConstructConfigurations
       // partons left
       perm.push_back(0);
       Idx_Vector nids(newstr?ids.size()-2:ids.size()-1);
-      Idx_Type &i(nexti[depth+1]=0);
+      Idx_Type &i(nexti[depth+1]);
       while (i<pids.size()) {
 	// loop over all possible next partons
 	size_t shift(0);
@@ -228,9 +240,9 @@ int Color_Integrator::ConstructConfigurations
 	if (one && nc>0) return nc;
       }  
       i=0;
-      ++nexti[depth];
       perm.pop_back();
     }
+    ++nexti[depth];
   }
   return nc;
 }
@@ -243,8 +255,8 @@ void Color_Integrator::InitConstruction
   nexti.resize(m_ids.size(),0);
   size_t fid(0);
   for (;fid<m_ids.size();++fid) 
-    // find first quark
-    if (m_ids[fid]->Type()==1) break;
+    // find first fermion
+    if (m_ids[fid]->Type()>0) break;
   // if no quark is present take any gluon
   if (fid==m_ids.size()) --fid;
   for (size_t i(0);i<=ids.size();++i) {
@@ -408,9 +420,18 @@ bool Color_Integrator::LookUp()
 int Color_Integrator::Dice()
 {
   double weight(0.0);
-  for (size_t i(0);i<m_orders.size();++i) {
-    size_t type(IdentifyType(m_orders[i]));
-    weight+=m_alpha[type];
+  if (m_otfcc) {
+    while (NextOrder()) {
+      size_t type(IdentifyType(m_orders.front()));
+      weight+=m_alpha[type];
+    }
+    m_fincc=true;
+  }
+  else {
+    for (size_t i(0);i<m_orders.size();++i) {
+      size_t type(IdentifyType(m_orders[i]));
+      weight+=m_alpha[type];
+    }
   }
   double rn(ran.Get());
   double cmax(m_alphamode>1?m_max:m_cmax);
@@ -538,31 +559,38 @@ bool Color_Integrator::AddConfiguration(const size_t &l)
 		<<mm_left(27)<<std::flush;
     return true;
   }
-  switch (m_ids[l]->Type()) {
-  case -1: {
-    for (size_t cj(1);cj<=3;++cj) {
-      m_ids[l]->SetJ(cj);
-      AddConfiguration(l+1);
-    }
-    return true;
+  if (!m_ids[l]->Act()) {
+    m_ids[l]->SetI(0);
+    m_ids[l]->SetJ(0);
+    AddConfiguration(l+1);
   }
-  case 0: {
-    for (size_t ci(1);ci<=3;++ci) {
-      m_ids[l]->SetI(ci);
+  else {
+    switch (m_ids[l]->Type()) {
+    case -1: {
       for (size_t cj(1);cj<=3;++cj) {
 	m_ids[l]->SetJ(cj);
 	AddConfiguration(l+1);
       }
+      return true;
     }
-    return true;
-  }
-  case 1: {
-    for (size_t ci(1);ci<=3;++ci) {
-      m_ids[l]->SetI(ci);
-      AddConfiguration(l+1);
+    case 0: {
+      for (size_t ci(1);ci<=3;++ci) {
+	m_ids[l]->SetI(ci);
+	for (size_t cj(1);cj<=3;++cj) {
+	  m_ids[l]->SetJ(cj);
+	  AddConfiguration(l+1);
+	}
+      }
+      return true;
     }
-    return true;
-  }
+    case 1: {
+      for (size_t ci(1);ci<=3;++ci) {
+	m_ids[l]->SetI(ci);
+	AddConfiguration(l+1);
+      }
+      return true;
+    }
+    }
   }
   return false;
 }

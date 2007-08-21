@@ -10,13 +10,14 @@ namespace PHASIC {
   protected:
 
     size_t m_id, m_i, m_j;
-    int    m_type;
+    int    m_type, m_act;
 
   public:
 
     // constructor
-    inline Representation(const size_t &id,const int &type): 
-      m_id(id), m_i(0), m_j(0), m_type(type) {}
+    inline Representation(const size_t &id,
+			  const int &type,const int &act): 
+      m_id(id), m_i(0), m_j(0), m_type(type), m_act(act) {}
 
     // inline functions
     inline void SetI(const size_t &i) { m_i=i; }
@@ -28,6 +29,7 @@ namespace PHASIC {
     inline size_t Id() const { return m_id; }
 
     inline int Type() const { return m_type; }
+    inline int Act() const  { return m_act;  }
 
   };// end of class Representation
 
@@ -86,7 +88,8 @@ namespace PHASIC {
 
     // member functions
     bool ConstructRepresentations(const Idx_Vector &ids,
-				  const Int_Vector &types);
+				  const Int_Vector &types,
+				  const Int_Vector &acts);
 
     bool NextOrder();
     bool GenerateOrders();
