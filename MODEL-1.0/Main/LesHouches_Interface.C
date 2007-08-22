@@ -179,6 +179,7 @@ void LesHouches_Interface::SetWidths() {
   p_reader->RereadInFile();
   //
   p_reader->MatrixFromFile(vds,"");
+  if (vds.size()>0) vds.front().insert(vds.front().begin(),"DECAY");
   
   for (size_t k=0;k<vds.size();++k) {
     if (vds[k].size()>0) {
