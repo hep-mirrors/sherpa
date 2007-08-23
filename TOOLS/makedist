@@ -62,8 +62,11 @@ echo "*************************************"
 
 if [ "$RELEASE" = "TRUE" ]; then
   SUBSUBV=$(echo $VERSION | cut -d "." -f 3)
-  mkdir -p ../makedist;
-  rm -rf ../makedist/*
+  if test -d "../makedist"; then
+    echo "Directory ../makedist already exists. Please remove and retry."
+    exit 1;
+  fi
+  mkdir ../makedist;
   echo -e "  copying file tree to temporary directory ../makedist (this might take a while)"
   cp -rp $(pwd) ../makedist/;
   cd ../makedist/$(basename $(pwd));
@@ -152,6 +155,11 @@ rm SHERPA-MC-$VERSION/*/*/CXXFLAGS.H
 ## tar it
 tar -czhf "$DISTDIR.tar.gz" SHERPA-MC-$VERSION/;
 rm -rf SHERPA-MC-$VERSION/;
+if [ "$RELEASE" = "TRUE" ]; then
+  mv "$DISTDIR.tar.gz" ../../;
+  cd ../..;
+  rm -rf makedist;
+fi
 
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
