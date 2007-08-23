@@ -10,7 +10,7 @@ print_help() {
   echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
   echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
   echo "         --copt         define option for 'configure'" && \
-  echo "         --include-svn  include .svn directories" && \
+  echo "         --exclude-svn  exclude .svn directories (only necessary when they exist)" && \
   echo "         --release      prepare for release in copied tree: svn update, module renaming, --total" && \
   echo "                        Warning: This may use much disk space, because it makes a copy of the file tree." && \
   echo "         -h             display this help and exit" && \
@@ -23,18 +23,18 @@ DISTDIR="Sherpa-"$VERSION;
 while getopts :hfun: OPT
 do
   case $OPT in
-  f) DISTDIR=$DISTDIR"_"$(date +'%Y-%m-%d_%H:%M') ;;
+  f) DISTDIR=$DISTDIR"_"$(date +'%Y-%m-%d_%H-%M') ;;
   n) DISTDIR=$OPTARG ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
     if [ "$1" = "--clean" ]; then ALLCLEAN=TRUE 
     elif [ "$1" = "--configure" ]; then CONFIGURE=TRUE 
-    elif [ "$1" = "--include-svn" ]; then INCLUDESVN=TRUE
+    elif [ "$1" = "--exclude-svn" ]; then EXCLUDESVN=TRUE
     elif [ "$1" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
     elif [ "$1" = "--copt" ]; then 
       CONFIGURE=TRUE && ECOPT=$2" "$ECOPT && shift 1
-    elif [ "$1" = "--release" ]; then RELEASE=TRUE && TOTAL=TRUE && CONFIGURE=TRUE
+    elif [ "$1" = "--release" ]; then RELEASE=TRUE && TOTAL=TRUE && EXCLUDESVN=TRUE && CONFIGURE=TRUE
     else 
       echo -n "makedist: error: unrecognized option "
       if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
@@ -47,7 +47,13 @@ do
   esac
 done
 
-if [ ! "$INCLUDESVN" = "TRUE" ]; then ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE; fi
+if [ "$EXCLUDESVN" = "TRUE" ]; then 
+  ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE;
+else
+  if ! test -d ".svn"; then
+    ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE;
+  fi
+fi
 
 echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
@@ -62,7 +68,7 @@ if [ "$RELEASE" = "TRUE" ]; then
   cp -rp $(pwd) ../makedist/;
   cd ../makedist/$(basename $(pwd));
 
-  if test -x "$(which svn)" && (! "$(svn status -q)" = ""); then 
+  if test -x "$(which svn)" && test ! "$(svn status -q)" = ""; then 
     echo "The copy of your version has local modifications:"
     svn status -q
     echo "Are you sure, you want to create a release tarball from that?"
@@ -144,7 +150,8 @@ chmod 755 TOOLS/makeinstall;
 ## remove ATOOLS/Org/CXXFLAGS.H
 rm SHERPA-MC-$VERSION/*/*/CXXFLAGS.H
 ## tar it
-tar -czhf $DISTDIR.tar.gz SHERPA-MC-$VERSION/;
+tar -czhf "$DISTDIR.tar.gz" SHERPA-MC-$VERSION/;
+rm -rf SHERPA-MC-$VERSION/;
 
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
