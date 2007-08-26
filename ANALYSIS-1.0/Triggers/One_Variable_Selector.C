@@ -376,7 +376,7 @@ int One_Variable_Selector::Evaluate
     for (size_t l(0);l<vmoms.size();++l) vmoms[l]=moms[l]->Momentum();
     double val(m_vars[i]->Value(&vmoms.front(),vmoms.size()));
     bool pass(val>=m_mins[i] && val<=m_maxs[i]);
-    if (msg.LevelIsDebugging()) {
+    if (msg_LevelIsDebugging()) {
       msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
       for (size_t k(1);k<m_flavs[i].size();++k) 
 	msg_Debugging()<<","<<m_flavs[i][k].IDName();
@@ -441,7 +441,7 @@ void One_Variable_Selector::Evaluate
       std::vector<ATOOLS::Vec4D> vmoms(eval);
       double val(m_vars[i]->Value(&vmoms.front(),eval));
       bool pass(val>=m_mins[i] && val<=m_maxs[i]);
-      if (msg.LevelIsDebugging()) {
+      if (msg_LevelIsDebugging()) {
 	msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
 	for (size_t k(1);k<m_flavs[i].size();++k) 
 	  msg_Debugging()<<","<<m_flavs[i][k].IDName();
@@ -458,7 +458,7 @@ void One_Variable_Selector::Evaluate
 	return;
       }
     }
-    else if (!eval && msg.LevelIsDebugging()) {
+    else if (!eval && msg_LevelIsDebugging()) {
       msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
       for (size_t k(1);k<m_flavs[i].size();++k) 
 	msg_Debugging()<<","<<m_flavs[i][k].IDName();

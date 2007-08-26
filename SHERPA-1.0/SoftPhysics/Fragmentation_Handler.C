@@ -76,7 +76,7 @@ Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *blobli
     case int(Return_Value::Nothing) : return Return_Value::Nothing;
     case int(Return_Value::Error)   : return Return_Value::Error;
     default :
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+      msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		 <<"   ExtractSinglets yields unknown return value."<<std::endl
 		 <<"   Return 'Retry_Event' and hope for the best."<<std::endl;
       return Return_Value::Retry_Event;
@@ -87,7 +87,7 @@ Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *blobli
     case 2  : return p_ahadic->Hadronize(bloblist);
 #endif
     default : 
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+      msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		 <<"   Unknown hadronization model in mode = "<<m_mode<<"."<<std::endl
 		 <<"   Abort the run."<<std::endl;
       THROW(critical_error,"Fragmentation model not implemented.");
@@ -126,7 +126,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
     }
   }
   if (plist->empty()) {
-    msg.Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
+    msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
 		   <<"   No coloured particle found leaving shower blobs."<<endl;
     delete plist;
     return Return_Value::Nothing;

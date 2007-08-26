@@ -43,7 +43,7 @@ void Hdecay_Fortran_Interface::Run(std::string _mode) {
 
   if (yukawas[2]==0. || yukawas[3]==0. || yukawas[4]==0. || 
       yukawas[5]==0. || yukawas[7]==0. || yukawas[8]==0.)
-    msg.Out()<<"Potential error in Hdecay : "<<std::endl
+    msg_Out()<<"Potential error in Hdecay : "<<std::endl
 	     <<"   The yukawas for muon, tau, s, c, b, t MUST be larger than 0. !!!!"<<std::endl
 	     <<"   Expect nonsense results from Hdecay."<<std::endl;
 

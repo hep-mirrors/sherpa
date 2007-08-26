@@ -238,13 +238,13 @@ bool Tree::Restore(Knot *const k,Knot *const r) const
 bool Tree::Restore(Knot *const k) const
 {
   if (p_save_root==NULL) {
-    msg.Error()<<METHOD<<"(): No Storage."<<std::endl;
+    msg_Error()<<METHOD<<"(): No Storage."<<std::endl;
     return false;
   }
   Knot *ini(p_save_root);
   while (ini->prev) ini=ini->prev;
   if (!Restore(k,ini)) {
-    msg.Error()<<METHOD<<"(): Knot "<<k->kn_no<<" not found."<<std::endl;
+    msg_Error()<<METHOD<<"(): Knot "<<k->kn_no<<" not found."<<std::endl;
     return true;
   }
   return false;
@@ -265,7 +265,7 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   if (!b) return;
 
   if (!a || a==b) {
-    msg.Error()<<" Error in  Tree::CopyBackKnot "<<a<<" "<<b<<std::endl;
+    msg_Error()<<" Error in  Tree::CopyBackKnot "<<a<<" "<<b<<std::endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {
@@ -365,13 +365,13 @@ bool Tree::SingleCheckStructure(Knot *mo, Knot*gr, bool fixit)
   if (!mo) return true;
   if (!(mo->prev==gr)) {
     if (!fixit) {
-      msg.Error()<<"ERROR in Tree::SingleCheckStructure :"<<std::endl
+      msg_Error()<<"ERROR in Tree::SingleCheckStructure :"<<std::endl
 		 <<"   Relation of "<<(*gr)<<" and "<<(*mo)<<" badly defined."<<std::endl
 		 <<"   Return false."<<std::endl;
       return false;
     }
     else {
-      msg.Error()<<"WARNING in Tree::SingleCheckStructure :"<<std::endl
+      msg_Error()<<"WARNING in Tree::SingleCheckStructure :"<<std::endl
 		 <<"   Relation of "<<(*gr)<<" and "<<(*mo)<<" badly defined."<<std::endl
 		 <<"   Try to repair it and hope for the best."<<std::endl;
       mo->prev=gr;
@@ -405,7 +405,7 @@ bool Tree::CheckMomentumConservation(Knot *const knot) const
     Vec4D p(knot->part->Momentum());
     Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
     if (!(p==p1+p2)) {
-      msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+      msg_Error()<<METHOD<<"(): Four momentum not conserved in knot "
 		 <<knot->kn_no<<"\n   p      = "<<p
 		 <<"\n   p_miss = "<<(p-p1-p2)
 		 <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;

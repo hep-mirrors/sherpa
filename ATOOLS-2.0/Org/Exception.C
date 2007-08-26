@@ -25,7 +25,7 @@ Tester_Object::~Tester_Object()
 
 bool Tester_Object::ApproveTerminate()
 {
-  msg.Error()<<METHOD<<"() ["<<typeid(this).name()
+  msg_Error()<<METHOD<<"() ["<<typeid(this).name()
 	     <<"]: Virtual function called !"<<std::endl;
   exh->GenerateStackTrace(std::cout);
   return true;
@@ -42,7 +42,7 @@ bool Terminator_Object::ReadInStatus(const std::string &path)
 
 void Terminator_Object::PrepareTerminate()
 {
-  msg.Error()<<METHOD<<"() ["<<typeid(this).name()
+  msg_Error()<<METHOD<<"() ["<<typeid(this).name()
 	     <<"]: Virtual function called !"<<std::endl;
 }
 
@@ -92,11 +92,11 @@ Exception::~Exception()
 
 void Exception::UpdateLogFile() const 
 {
-  msg.LogFile()<<"Sherpa";
+  msg_LogFile()<<"Sherpa";
   if (m_class.length()>0) {
-    msg.LogFile()<<" : "<<m_class<<"::"<<m_method;
+    msg_LogFile()<<" : "<<m_class<<"::"<<m_method;
   }
-  msg.LogFile()<<" throws "<<m_type<<": "<<m_info;
+  msg_LogFile()<<" throws "<<m_type<<": "<<m_info;
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Exception &exception)

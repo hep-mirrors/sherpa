@@ -395,7 +395,7 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
 					    const std::string &datatag)
 {
   if (filename=="") {
-    ATOOLS::msg.Error()<<"Amisic_Histogram::ReadIn(..): "
+    msg_Error()<<"Amisic_Histogram::ReadIn(..): "
 		       <<"No filename specified. Abort."<<std::endl;
     return false;
   }

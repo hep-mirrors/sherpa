@@ -46,7 +46,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   p_remnants[0]=p_isrhandler->GetRemnant(0);
   p_remnants[1]=p_isrhandler->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
+    msg_Error()<<"Simple_XS::Simple_XS(..): "
 		       <<"No beam remnant handler found."<<std::endl;
   }
   XSSelector()->SetOffShell(p_isrhandler->KMROn());
@@ -132,7 +132,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	  nIS    = ExtractFlavours(IS,ini);
 	  nFS    = ExtractFlavours(FS,fin);
 	  if (!p_isrhandler->CheckConsistency(&IS.front())) {
-	    msg.Error()<<"Error in initialising ISR_Handler."<<endl
+	    msg_Error()<<"Error in initialising ISR_Handler."<<endl
 		       <<" "<<p_isrhandler->Flav(0)<<" -> "<<IS[0]<<", "
 		       <<" "<<p_isrhandler->Flav(1)<<" -> "<<IS[1]<<endl
 		       <<"  Delete it and ignore the process."<<endl;
@@ -162,7 +162,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  psmc=psmc_t;
 		position = buf.find(string("process"));
 		if (!from) {
-		  msg.Error()<<METHOD<<"("<<m_path+processfile<<")."<<endl
+		  msg_Error()<<METHOD<<"("<<m_path+processfile<<")."<<endl
 			     <<"   EOF without 'End process' tag."<<endl;
 		  position     = 0;
 		}
@@ -202,11 +202,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
       }
     }
   }
-  if (ATOOLS::msg.LevelIsTracking()) this->Print();
+  if (msg_LevelIsTracking()) this->Print();
   m_maxjet=m_nmax-m_nin;
   SetCoreMaxJetNumber(m_maxjet);
   if (m_xsecs.size()>0) return Tests();
-  msg.Error()<<METHOD<<"(): No valid process in '"
+  msg_Error()<<METHOD<<"(): No valid process in '"
 	     <<m_path+processfile<<"'."<<std::endl;
   return false;
 }
@@ -341,7 +341,7 @@ bool  Simple_XS::SelectOne()
 	return true;
       }
     }
-    msg.Error()<<"Process_Group::SelectOne(): "
+    msg_Error()<<"Process_Group::SelectOne(): "
 	       <<"Total xsec = "<<m_totalxs<<std::endl;
     p_selected = m_xsecs[0];
     p_selected->DeSelect();

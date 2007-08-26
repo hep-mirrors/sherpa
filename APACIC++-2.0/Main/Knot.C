@@ -153,7 +153,7 @@ bool Knot::CheckMomentumConservation() const
   Vec4D p(part->Momentum());
   Vec4D p1(left->part->Momentum()), p2(right->part->Momentum());
   if (!(p==p1+p2)) {
-    msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+    msg_Error()<<METHOD<<"(): Four momentum not conserved in knot "
 	       <<kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
 	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
     success=false;

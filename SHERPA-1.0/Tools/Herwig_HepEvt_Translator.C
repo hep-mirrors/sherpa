@@ -197,7 +197,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     break;
     }
     else{
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig : "<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig : "<<std::endl
     <<"   Unexpected feature in HepEvt, will continue & hope for the best."<<std::endl;
     first_fsr = false;
     break;
@@ -404,7 +404,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     FollowDaughters(i,blob,help);
     }
     else {
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
     <<"   Mother of heavy hadron has no decay blob yet."<<std::endl
     <<"   Will abort."<<Particle::Counter()<<" / "<<Blob::Counter()<<std::endl;
     }
@@ -417,7 +417,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     mother = miter->second.first;
     blob   = mother->DecayBlob();
     if (!blob) {
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
     <<"   Mother of heavy hadron flavour has no decay blob yet."<<std::endl
     <<"   Will create a new blob and hope for the best."
     <<Particle::Counter()<<" / "<<Blob::Counter()<<std::endl;
@@ -440,7 +440,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     blob->AddToInParticles(part);
     }
     else {
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig."<<std::endl
     <<"   Mother of heavy hadron has no decay blob yet."<<std::endl
     <<"   Will abort."<<Particle::Counter()<<" / "<<Blob::Counter()<<std::endl;
     }
@@ -475,7 +475,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     }
     if (signalwarner) {
     if (signal->NOutP()!=2 || signal->NInP()<2) {
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig"<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig"<<std::endl
     <<"   Signal is funny: "<<signal->NInP()<<" -> "<<signal->NOutP()<<std::endl
     <<"   ====================================="<<std::endl
     <<(*signal)<<std::endl
@@ -503,7 +503,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     int end = Max(p_jdahep[2*i]-1,p_jdahep[2*i+1]-1);
     for (int j=p_jdahep[2*i]-1;j<=end;j++) {
     if (j>m_nhep || j<0) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters("<<i<<")"<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters("<<i<<")"<<std::endl
     <<"   counter "<<j<<" out of bounds ("<<m_nhep<<")."<<std::endl
     <<"   Will abort the run."<<std::endl;
     abort();
@@ -512,7 +512,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     // Final cluster
     piter = m_convertH2S.find(j);
     if (piter==m_convertH2S.end()) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
     <<"   Mix up of secondary clusters."<<std::endl
     <<"   Will abort."<<std::endl;
     abort();
@@ -526,7 +526,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     } 
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
     <<"   Mix up of secondary clusters."<<std::endl
     <<"   Will abort."<<std::endl;
     abort();
@@ -544,7 +544,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     // Final lepton
     piter = m_convertH2S.find(j);
     if (piter==m_convertH2S.end()) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
     <<"   Mix up of secondary clusters."<<std::endl
     <<"   Will abort."<<std::endl;
     abort();
@@ -561,7 +561,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     // Final spectator
     piter = m_convertH2S.find(j);
     if (piter==m_convertH2S.end()) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
     <<"   Mix up of secondary clusters."<<std::endl
     <<"   Will abort."<<std::endl;
     abort();
@@ -578,7 +578,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     else {
     piter = m_convertH2S.find(j);
     if (piter==m_convertH2S.end()) {
-    msg.Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
+    msg_Error()<<"Error in HepEvt_Interface::FollowDaughters."<<std::endl
     <<"   Mix up of secondary clusters."<<std::endl
     <<"   Will abort."<<std::endl;
     abort();

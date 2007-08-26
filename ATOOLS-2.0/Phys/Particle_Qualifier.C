@@ -14,7 +14,7 @@ namespace ATOOLS {
   Particle_Qualifier_Base *Getter_Function<Particle_Qualifier_Base,std::string>::
   GetObject(const std::string &name,const std::string &parameters)
   {
-    msg.Tracking()<<"Looking for Qualifier '"<<name<<"' ... ";
+    msg_Tracking()<<"Looking for Qualifier '"<<name<<"' ... ";
     if (name[0]=='!') {
       std::string name1=name.substr(1);
       Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
@@ -46,10 +46,10 @@ namespace ATOOLS {
     }
     String_Getter_Map::iterator git=s_getters->find(name);
     if (git!=s_getters->end()) {
-      msg.Tracking()<<"found."<<std::endl;
+      msg_Tracking()<<"found."<<std::endl;
       return (*git->second)(parameters);
     }
-    msg.Tracking()<<"not found."<<std::endl;
+    msg_Tracking()<<"not found."<<std::endl;
     return NULL;
   }
 }
@@ -85,12 +85,12 @@ Particle_Qualifier_Base *const GetQualifier(const std::string &parameter)
 
 void Particle_Qualifier_Base::ShowQualifiers(const int mode)
 {
-  if (!msg.LevelIsInfo() || mode==0) return;
-  msg.Out()<<"Particle_Qualifier_Base::ShowQualifiers(): {\n\n";
-  msg.Out()<<"   new qualifiers can be constructed\n";
-  msg.Out()<<"   using the operators '!', '&' and '|'\n\n";
-  Particle_Qualifier_Getter::PrintGetterInfo(msg.Out(),20);
-  msg.Out()<<"\n}"<<std::endl;
+  if (!msg_LevelIsInfo() || mode==0) return;
+  msg_Out()<<"Particle_Qualifier_Base::ShowQualifiers(): {\n\n";
+  msg_Out()<<"   new qualifiers can be constructed\n";
+  msg_Out()<<"   using the operators '!', '&' and '|'\n\n";
+  Particle_Qualifier_Getter::PrintGetterInfo(msg_Out(),20);
+  msg_Out()<<"\n}"<<std::endl;
 }
 
 

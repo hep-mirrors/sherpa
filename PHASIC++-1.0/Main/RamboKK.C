@@ -35,7 +35,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   for (int i=nin;i<nin+nout;i++) {
     if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
       if(ATOOLS::IsZero(ms[i])){
-	msg.Error()<<"Error in RamboKK: "<<endl
+	msg_Error()<<"Error in RamboKK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();
       }

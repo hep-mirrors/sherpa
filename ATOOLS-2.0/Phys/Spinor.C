@@ -44,7 +44,7 @@ void Spinor::Construct(const ATOOLS::Vec4D &p)
   static double accu(sqrt(Accu()));
   if (((rpp==Complex(0.0,0.0) || rpm==Complex(0.0,0.0)) &&
        pt!=Complex(0.0,0.0)) || dabs(std::abs(pt/(rpp*rpm))-1.0)>accu) {
-    msg.Error()<<METHOD<<"(): \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
+    msg_Error()<<METHOD<<"(): \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
 	       <<" vs. |p_\\perp| = "<<std::abs(pt)<<", rel. diff. "
 	       <<(std::abs(pt/(rpp*rpm))-1.0)<<"."<<std::endl;
     THROW(fatal_error,"Cannot construct massive two-component spinor.");
@@ -60,7 +60,7 @@ Complex Spinor::operator*(const Spinor &s) const
 { 
 #ifdef TEST_Representation
   if (m_r!=s.m_r) {
-    msg.Error()<<METHOD<<"(..): Distinct representations."<<std::endl;
+    msg_Error()<<METHOD<<"(..): Distinct representations."<<std::endl;
     return Complex(0.0,0.0);
   }
 #endif

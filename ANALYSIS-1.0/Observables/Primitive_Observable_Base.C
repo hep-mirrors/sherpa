@@ -52,7 +52,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_
   m_listname(old.m_listname), p_sel(old.p_sel), m_copied(false)
 { 
   m_name=old.m_name;
-  msg.Out()<<"LEGACY WARNING:  copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
+  msg_Out()<<"LEGACY WARNING:  copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
 	   <<"                 use Copy() method instead!"<<std::endl;
   if (old.p_histo) {
     p_histo = new Histogram(old.p_histo);
@@ -76,18 +76,18 @@ void Primitive_Observable_Base::SetBlobType(const std::string & btype)
 
 void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,double, int) 
 {
-  msg.Error()<<"ERROR virtual function Primitive_Observable_Base::Evaluate (vecs) called "<<m_name<<std::endl;
+  msg_Error()<<"ERROR virtual function Primitive_Observable_Base::Evaluate (vecs) called "<<m_name<<std::endl;
 }
 
 void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,int ncount) 
 {
   if (ncount>1) {
-    msg.Out()<<"WARNING: "<<Name()
+    msg_Out()<<"WARNING: "<<Name()
 	     <<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
     Evaluate(pl,weight,ncount);
     return;
   }
-  msg.Error()<<"ERROR virutal function Primitive_Observable_Base::Evaluate (pl) called "<<m_name<<std::endl;
+  msg_Error()<<"ERROR virutal function Primitive_Observable_Base::Evaluate (pl) called "<<m_name<<std::endl;
 }
 
 void Primitive_Observable_Base::Evaluate(const Blob_List & blobs, double value, int ncount)
@@ -140,7 +140,7 @@ Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitiv
     (*p_histo)+=(*ob.p_histo);
   }
   else {
-    msg.Out()<<"Warning in Primitive_Observable_Base::operator+= :"<<std::endl<<"   "
+    msg_Out()<<"Warning in Primitive_Observable_Base::operator+= :"<<std::endl<<"   "
 	     <<Name()<<" has not overloaded the operator+="<<std::endl;
   }
   return *this;

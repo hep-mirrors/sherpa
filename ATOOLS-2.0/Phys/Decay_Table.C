@@ -30,12 +30,12 @@ void Decay_Channel::SetProcessName(const std::string _name)
 
 void Decay_Channel::Output() const
 {
-  msg.Out()<<m_flin<<" -> ";
-  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg.Out()<<(*fl)<<" ";
-  msg.Out()<<" : "<<m_width<<" GeV";
-  if (m_metype!=string("")) msg.Out()<<", ME : "<<m_metype;
-  if (m_psfile!=string("")) msg.Out()<<", PS : "<<m_psfile;
-  msg.Out()<<"."<<endl;
+  msg_Out()<<m_flin<<" -> ";
+  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg_Out()<<(*fl)<<" ";
+  msg_Out()<<" : "<<m_width<<" GeV";
+  if (m_metype!=string("")) msg_Out()<<", ME : "<<m_metype;
+  if (m_psfile!=string("")) msg_Out()<<", PS : "<<m_psfile;
+  msg_Out()<<"."<<endl;
 }
 
 
@@ -109,19 +109,19 @@ void Decay_Table::Reset() {
 }
 
 void Decay_Table::Output() {
-  msg.Out()<<"Decay table for : "<<m_flin<<", total width is now "<<m_width<<" GeV,"<<endl
+  msg_Out()<<"Decay table for : "<<m_flin<<", total width is now "<<m_width<<" GeV,"<<endl
 	   <<"   (instead of "<<m_flin.Width()<<" GeV), calculated by "<<m_generator<<endl
 	   <<"----------------------------------------------------------------"<<endl;
   for (size_t i=0;i<m_channels.size();i++) m_channels[i]->Output();
-  if (m_overwrite) msg.Out()<<" Value of Particle.dat has been overwritten by "
+  if (m_overwrite) msg_Out()<<" Value of Particle.dat has been overwritten by "
 			    <<m_generator<<"."<<endl;
-  msg.Out()<<"----------------------------------------------------------------"<<endl;
+  msg_Out()<<"----------------------------------------------------------------"<<endl;
 }
 
 double Decay_Table::Width(const int i)
 {
   if (i<0 || i>= (int)m_channels.size()) {
-    msg.Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
+    msg_Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
 	       <<"   Out of bounds : 0 ... "<<m_channels.size()<<" ."<<endl
 	       <<"   Return 0."<<endl;
     return 0.;
@@ -132,7 +132,7 @@ double Decay_Table::Width(const int i)
 Decay_Channel * Decay_Table::GetDecayChannel(const int i)
 {
   if (i<0 || i>= (int)m_channels.size()) {
-    msg.Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
+    msg_Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
 	       <<"   Out of bounds : 0 ... "<<m_channels.size()<<" ."<<endl
 	       <<"   Return NULL"<<endl;
     return NULL;

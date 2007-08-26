@@ -196,7 +196,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	break;
       default :
 	sel = NULL;
-	msg.Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
+	msg_Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
 			      <<"  Unknown type of selector-data : "<<type<<endl; 
       }
       m_update += sel->NeedUpdate(); 

@@ -41,7 +41,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_binsize     = (m_upper-m_lower)/(double(m_nbin));
 
   if (m_binsize<=0.) {
-    msg.Error()<<"Error in Histogram : Tried to initialize a histogram with  binsize <= 0 !"<<std::endl;
+    msg_Error()<<"Error in Histogram : Tried to initialize a histogram with  binsize <= 0 !"<<std::endl;
     m_active = 0;
     return;
   }
@@ -121,7 +121,7 @@ Histogram::Histogram(const std::string & pID)
     size_t k=0;
 
     if (k>=conf.size()) {
-      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
       m_active = 0;
       return;
     }
@@ -144,7 +144,7 @@ Histogram::Histogram(const std::string & pID)
     m_binsize     = (m_upper-m_lower)/(double(m_nbin-2));
     
     if (m_binsize<=0.) {
-      msg.Error()<<"Error in Histogram : "
+      msg_Error()<<"Error in Histogram : "
 		 <<"Tried to initialize a histogram with m_binsize <= 0 !"
 		 <<std::endl;
       m_active = 0;
@@ -163,7 +163,7 @@ Histogram::Histogram(const std::string & pID)
       m_psvalues[0] = Get<double>(conf[k++]);
     }    
     if (k>=conf.size()) {
-      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
       m_active = 0;
       return;
     }
@@ -176,14 +176,14 @@ Histogram::Histogram(const std::string & pID)
       m_psvalues[m_nbin-1] = Get<double>(conf[k++]);
     }    
     if (k>=conf.size()) {
-      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
       m_active = 0;
       return;
     }
     m_fills = Get<long int>(conf[k++]);
   }
   else {
-    msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+    msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
     m_active = 0;
     return;    
   }
@@ -297,19 +297,19 @@ void Histogram::Scale(double scale) {
 }
 
 void Histogram::Output() {
-  if (!msg.LevelIsDebugging()) return;
-  msg.Out()<<"----------------------------------------"<<std::endl
+  if (!msg_LevelIsDebugging()) return;
+  msg_Out()<<"----------------------------------------"<<std::endl
 	   <<"    "<<m_yvalues[0]<<std::endl
 	   <<"----------------------------------------"<<std::endl;
   double result = 0.;
   for (int i=0;i<m_nbin-2;i++) {
-    msg.Out()<<m_lower+i*m_binsize<<"  ";
-    msg.Out()<<m_yvalues[i+1]<<"  ";
-    if (m_depth>1) msg.Out()<<sqrt(m_y2values[i+1]);
+    msg_Out()<<m_lower+i*m_binsize<<"  ";
+    msg_Out()<<m_yvalues[i+1]<<"  ";
+    if (m_depth>1) msg_Out()<<sqrt(m_y2values[i+1]);
     result += m_yvalues[i+1];
-    msg.Out()<<std::endl;
+    msg_Out()<<std::endl;
   }
-  msg.Out()<<m_lower+(m_nbin-2)*m_binsize<<" == "<< m_upper<<std::endl
+  msg_Out()<<m_lower+(m_nbin-2)*m_binsize<<" == "<< m_upper<<std::endl
 	   <<"----------------------------------------"<<std::endl
 	   <<"    "<<m_yvalues[m_nbin-1]<<std::endl
 	   <<"----------------------------------------"<<std::endl
@@ -319,7 +319,7 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
-  msg.LogFile()<<"! Histogram::Output(..): "
+  msg_LogFile()<<"! Histogram::Output(..): "
 	       <<"Writing ("<<this<<") to '"<<name<<"'\n";
   std::ofstream ofile;
   ofile.open(name.c_str());
@@ -348,7 +348,7 @@ void Histogram::Output(const std::string name)
 
 void Histogram::Insert(double coordinate) {
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a "
+    msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
@@ -369,7 +369,7 @@ void Histogram::Insert(double coordinate) {
 
 void Histogram::Insert(int i,double value,int ncount) {
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a "
+    msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
@@ -404,7 +404,7 @@ void Histogram::Insert(int i,double value,int ncount) {
 
 void Histogram::Insert(double coordinate,double value,int ncount) {
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a "
+    msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
@@ -451,7 +451,7 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
 
 void Histogram::InsertRange(double start, double end, double value) {
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a "
+    msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
@@ -523,7 +523,7 @@ double Histogram::Bin(int bin) { return m_yvalues[bin]; }
 double Histogram::Bin(double coordinate) 
 { 
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
+    msg_Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
     return -1.0;
   }
   else {
@@ -542,7 +542,7 @@ double Histogram::Bin(double coordinate)
 
 void Histogram::Extrapolate(double coordinate,double * res,int mode) {
   if (!m_active) {
-    msg.Error()<<"Error in Histogram : Tried to access a histogram with binsize <= 0 ! Return 0.."<<std::endl;
+    msg_Error()<<"Error in Histogram : Tried to access a histogram with binsize <= 0 ! Return 0.."<<std::endl;
   }
   else {
     if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
@@ -675,7 +675,7 @@ double Histogram::LogCoeff() const
 Histogram & Histogram::operator+=(const Histogram & histo)
 {
   if (histo.m_nbin!=m_nbin) {
-    msg.Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
+    msg_Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
     return *this;
   }
   for (int i=0;i<m_nbin;i++) { 

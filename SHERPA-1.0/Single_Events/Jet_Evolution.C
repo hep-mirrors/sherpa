@@ -53,7 +53,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 {
   PROFILE_LOCAL("Jet_Evolution::Treat");
   if (bloblist->empty()) {
-    msg.Error()<<"Potential error in Jet_Evolution::Treat."<<endl
+    msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
 	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
@@ -76,7 +76,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	  case (int(btp::Hard_Decay))     : tag = string("HardDecays"); break;
 	  case (int(btp::Hadron_Decay))   : tag = string("HadronDecays"); break;
 	  default:
-	    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		       <<"   Do not have an interface for this type of blob:"<<std::endl
 		       <<(*blob)<<std::endl
 		       <<"   Will abort."<<std::endl;
@@ -84,7 +84,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	}
 	piIter = m_interfaces.find(tag);
 	if (piIter==m_interfaces.end()) {
-	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
+	  msg_Error()<<"Error in Jet_Evolution::Treat :"<<endl
 		     <<"   No Perturbative_Interface found for type : "<<tag<<endl
 		     <<"   Abort the run."<<endl;
 	  abort();
@@ -98,7 +98,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
 	case Return_Value::Error      : return Return_Value::Error;
 	default:
-	  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	  msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		     <<"   Unexpected status of AttachShowers for "<<std::endl<<(*blob)
 		     <<"   Return 'Error' and hope for the best."<<std::endl;
 	  return Return_Value::Error;
@@ -142,7 +142,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 	interface->CleanBlobList(bloblist,blob->Type());
       return Return_Value::Retry_Event;
     default:
-//       msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
+//       msg_Error()<<"ERROR in "<<METHOD<<":"<<endl
 // 		 <<"   Shower failure. Will try new event."<<endl;
       p_showerhandler->CleanUp();
       interface->CleanUp();
@@ -160,7 +160,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     interface->CleanUp();
     return Return_Value::Retry_Event;
   case Return_Value::Error:
-    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   DefineInitialConditions yields an error for "<<std::endl<<(*blob)
 	       <<"   Return 'Error' and hope for the best."<<std::endl;
     blob->SetStatus(blob_status::inactive);
@@ -168,7 +168,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     interface->CleanUp();
     return Return_Value::Error;
   default :
-    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   Unexpected status of DefineInitialConditions for "<<std::endl<<(*blob)
 	       <<"   Return 'Error' and hope for the best."<<std::endl;
     blob->SetStatus(blob_status::inactive);
@@ -277,7 +277,7 @@ void Jet_Evolution::SetDecayBlobPointers(Blob * blob,Blob_List * bloblist)
     if (partin->Flav().IsStable()) continue;
     pbiter = m_decmap.find(partin);
     if (pbiter==m_decmap.end()) {
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
+      msg_Error()<<"ERROR in "<<METHOD<<":"<<endl
 		 <<"   Did not find particle in map of decay blobs."<<endl
 		 <<"   Particle : "<<partin<<endl
 		 <<"   Will abort the run."<<endl;
@@ -308,7 +308,7 @@ Particle * Jet_Evolution::FollowUp(Particle * partin,Blob * dec)
     if (partout->Flav()==partin->Flav() &&
 	partout->FinalMass()==partin->FinalMass()) return FollowUp(partout,dec);
   }
-  msg.Error()<<"ERROR in JetEvolution::FollowUp:"<<endl
+  msg_Error()<<"ERROR in JetEvolution::FollowUp:"<<endl
 	     <<"   Did not find a suitable particle to follow up decay initiator through blob list."<<endl
 	     <<"   Particle = "<<partin<<endl
 	     <<"   Will abort the run."<<endl;

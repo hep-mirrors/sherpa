@@ -37,7 +37,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 {
   PROFILE_HERE;
   if (bloblist->empty()) {
-    msg.Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
+    msg_Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
 	       <<"   Incoming blob list contains no entries."<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return Return_Value::Error;
@@ -123,7 +123,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob,
 	ntrial_one = (*blob)["ME_NumberOfTrials"]->Get<int>();
       }
       else {
-	msg.Error()<<"Signal_Processes::FillBlob(..): "
+	msg_Error()<<"Signal_Processes::FillBlob(..): "
 		   <<"Missing call to OneEvent() before SameEvent() !"
 		   <<std::endl;
       }
@@ -196,7 +196,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob,
       return success;
     }
     else {
-      msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
+      msg_Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
 		 <<"   No hard decay tables for "<<unstable_flav<<". Abort."<<std::endl;
       abort();
     }
@@ -306,7 +306,7 @@ bool Signal_Processes::FillUPDFBlobs(Blob_List *const bloblist,Blob *const blob)
     isr[i]->AddToOutParticles(blob->InParticle(i));
     ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
     if (!(sum==ATOOLS::Vec4D()))
-      ATOOLS::msg.Error()<<METHOD<<"(): 4-momentum not conserved: sum = "
+      msg_Error()<<METHOD<<"(): 4-momentum not conserved: sum = "
 			 <<sum<<"."<<std::endl;
   }
   for (short unsigned int i=0;i<xs->NOut();++i) {

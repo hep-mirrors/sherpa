@@ -64,7 +64,7 @@ void Universal_Selector::CreateParticleList(bool force)
 {
   Particle_List * pl_in = p_ana->GetParticleList(m_listname);
   if (pl_in==NULL) {
-    msg.Out()<<"WARNING in Universal_Selector::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Universal_Selector::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
   }
   Blob_Data_Base * key=(*p_ana)[m_key];
 

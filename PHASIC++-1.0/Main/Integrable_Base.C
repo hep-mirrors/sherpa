@@ -155,7 +155,7 @@ double Integrable_Base::RemainTimeFactor(double maxerr)
 void Integrable_Base::SetMomenta(const Vec4D *momenta) 
 { 
   if (!p_momenta) {
-    msg.Error()<<"Integrable_Base::SetMomenta("<<momenta<<"): "
+    msg_Error()<<"Integrable_Base::SetMomenta("<<momenta<<"): "
 		       <<"p_momenta = NULL. Abort."<<std::endl;
     abort();
   }
@@ -168,7 +168,7 @@ void Integrable_Base::SetMomenta(const Vec4D *momenta)
 void Integrable_Base::SetAddMomenta(const Vec4D *momenta) 
 { 
   if (!p_addmomenta) {
-    msg.Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
+    msg_Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
 		       <<"p_addmomenta = NULL. Abort."<<std::endl;
     abort();
   }
@@ -181,7 +181,7 @@ void Integrable_Base::SetAddMomenta(const Vec4D *momenta)
 void Integrable_Base::SetAddFlavours(const Flavour *flavours) 
 { 
   if (!p_addflavours) {
-    msg.Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
+    msg_Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
 		       <<"p_addflavours = NULL. Abort."<<std::endl;
     abort();
   }
@@ -194,7 +194,7 @@ void Integrable_Base::InitWeightHistogram()
     delete p_whisto; };
   double av=TotalResult();
   if (!av>0.) {
-    msg.Error()<<"Integrable_Base::InitWeightHistogram(): "
+    msg_Error()<<"Integrable_Base::InitWeightHistogram(): "
 		       <<"No valid result: "<<av<<std::endl;
     return;
   }
@@ -257,17 +257,17 @@ void Integrable_Base::SetMax(const double max, int depth)
 
 void Integrable_Base::SetMax() 
 {
-  msg.Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
 } 
 
 void Integrable_Base::ResetMax(int) 
 {
-  msg.Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
 } 
 
 Blob_Data_Base *Integrable_Base::OneEvent() 
 {
-  msg.Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
   return false;
 } 
 
@@ -341,25 +341,25 @@ Blob_Data_Base *Integrable_Base::OneEvent(const double mass,const int mode)
 Blob_Data_Base *Integrable_Base::SameEvent() 
 {
   return p_activepshandler->SameEvent();
-  msg.Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;
   return false;
 } 
 
 Blob_Data_Base *Integrable_Base::WeightedEvent(const int mode) 
 {
-  msg.Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
 Blob_Data_Base *Integrable_Base::WeightedEventNS(const int mode) 
 {
-  msg.Error()<<"Integrable_Base::WeightedEventNS(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::WeightedEventNS(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
 Blob_Data_Base *Integrable_Base::SameWeightedEvent() 
 {
-  msg.Error()<<"Integrable_Base::SameWeightedEvent(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::SameWeightedEvent(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
@@ -370,7 +370,7 @@ void Integrable_Base::SetPSHandler(Phase_Space_Handler *const pshandler)
 
 void Integrable_Base::OptimizeResult()
 {
-  msg.Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
+  msg_Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
 } 
 
 void Integrable_Base::SetMomenta()   

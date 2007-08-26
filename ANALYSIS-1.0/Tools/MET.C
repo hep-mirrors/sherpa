@@ -71,7 +71,7 @@ void MET_Define::CreateParticleList()
   msg_Debugging()<<METHOD<<"() {\n";
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"(): Missing lists: '"<<m_inlist
+    msg_Error()<<METHOD<<"(): Missing lists: '"<<m_inlist
 	       <<"'."<<std::endl;
     return;
   }

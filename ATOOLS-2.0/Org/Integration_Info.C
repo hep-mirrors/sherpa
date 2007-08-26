@@ -43,7 +43,7 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
 {
   if (key.p_info!=NULL) {
     if (key.p_info!=this) 
-      msg.Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
+      msg_Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
 		 <<key.p_info<<"'."<<std::endl;
     else
       msg_Debugging()<<METHOD<<"(): Key '"<<&key
@@ -78,14 +78,14 @@ void Integration_Info::ReleaseKey(Info_Key &key)
 {
   String_MapPair_Map::iterator vit(m_keymap.find(key.m_name));
   if (vit==m_keymap.end()) {
-    msg.Error()<<METHOD<<"(): Name '"<<key.m_name
+    msg_Error()<<METHOD<<"(): Name '"<<key.m_name
 	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
     return;
   }
   String_KeyPair_Map &keys(vit->second.second);
   String_KeyPair_Map::iterator wit(keys.find(key.m_info));
   if (wit==keys.end()) {
-    msg.Error()<<METHOD<<"(): Info '"<<key.m_info
+    msg_Error()<<METHOD<<"(): Info '"<<key.m_info
 	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
     return;
   }
@@ -97,7 +97,7 @@ void Integration_Info::ReleaseKey(Info_Key &key)
       return;
     }
   }
-  msg.Error()<<METHOD<<"(): Pointer '"<<&key
+  msg_Error()<<METHOD<<"(): Pointer '"<<&key
 	     <<"' not found. Cannot release key."<<std::endl;
 }
 

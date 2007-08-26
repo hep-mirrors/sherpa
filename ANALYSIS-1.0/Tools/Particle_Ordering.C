@@ -67,7 +67,7 @@ using namespace ATOOLS;
     Particle_List *outlist(new Particle_List());			\
     ATOOLS::Particle_List *inlist(p_ana->GetParticleList(m_inlist));	\
     if (inlist==NULL) {							\
-      ATOOLS::msg.Error()<<METHOD<<"(): List '"<<m_inlist		\
+      msg_Error()<<METHOD<<"(): List '"<<m_inlist		\
 			 <<"' not found."<<std::endl;			\
       p_ana->AddParticleList(m_outlist,outlist);			\
       return;								\

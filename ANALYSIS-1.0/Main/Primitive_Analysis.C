@@ -70,7 +70,7 @@ void Primitive_Analysis::AddSubAnalysis(const std::string & key,Primitive_Analys
 {
   Analysis_List::const_iterator cit=m_subanalyses.find(key);
   if (cit!=m_subanalyses.end()) {
-    msg.Out()<<"WARNING in Primitive_Analysis::AddSubAnalysis :"<<std::endl
+    msg_Out()<<"WARNING in Primitive_Analysis::AddSubAnalysis :"<<std::endl
 	     <<"   Analysis "<<key<<" already existent;"<<std::endl
 	     <<" sub analysis not added, will be deleted."<<std::endl;
     if (ana) delete ana;
@@ -174,7 +174,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     }
   }
   if (nout==-1) {
-    msg.Out()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
+    msg_Out()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
     return;
   }
 
@@ -284,14 +284,14 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value/procweight,weight)) {
     if (p_partner==this) {
-      msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
+      msg_Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
 	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value/procweight<<","<<weight<<")"<<std::endl;
     }
     else if (value/procweight==0.) {
       weight=0.;
     }
     else {
-      msg.Out()<<"WARNING something is wrong in Primitive_Analysis::DoAnalysis :"<<std::endl
+      msg_Out()<<"WARNING something is wrong in Primitive_Analysis::DoAnalysis :"<<std::endl
 	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value/procweight<<","<<weight<<")"<<std::endl;
     }
   }
@@ -328,7 +328,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 
 
   if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,value);
-  if (p_partner==this && msg.LevelIsTracking()) PrintStatus();
+  if (p_partner==this && msg_LevelIsTracking()) PrintStatus();
 
   ClearAllData();
 }
@@ -512,7 +512,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key,
   if (key=="FinalState") CreateFinalStateParticleList();
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
-  msg.Error()<<METHOD<<"(): List '"<<key<<"' not found."<<std::endl;
+  msg_Error()<<METHOD<<"(): List '"<<key<<"' not found."<<std::endl;
   return NULL;
 }
 
@@ -572,20 +572,20 @@ void Primitive_Analysis::ClearAllData()
 void Primitive_Analysis::PrintStatus() 
 {
 
-  msg.Out()<<"Particle_Lists:"<<std::endl;
+  msg_Out()<<"Particle_Lists:"<<std::endl;
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
-    msg.Out()<<"   * "<<it->first<<" ("<<it->second->size()<<")"<<std::endl;
+    msg_Out()<<"   * "<<it->first<<" ("<<it->second->size()<<")"<<std::endl;
   }
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
-    msg.Out()<<"   * "<<it->first<<std::endl<<*it->second<<std::endl;
+    msg_Out()<<"   * "<<it->first<<std::endl<<*it->second<<std::endl;
   }
 
-  msg.Out()<<"Data_Container:"<<std::endl;
+  msg_Out()<<"Data_Container:"<<std::endl;
   for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) {
-    msg.Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
+    msg_Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
   }
 }
 

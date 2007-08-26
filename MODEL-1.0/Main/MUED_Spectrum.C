@@ -7,7 +7,7 @@ using namespace std;
 MUED_Spectrum::MUED_Spectrum(Data_Read * _dataread,Model_Base * _model) :
   Spectrum_Generator_Base(_dataread,_model)  
 {
-  msg.Out()<<"In "<<METHOD<<" for "<<p_model->Name()<<endl;
+  msg_Out()<<"In "<<METHOD<<" for "<<p_model->Name()<<endl;
   m_generations = (*p_model->GetScalarNumbers())["N_Generations"];
   m_invR        = (*p_model->GetScalarConstants())["1/Radius"];
   m_Lambda      = (*p_model->GetScalarConstants())["Lambda"];
@@ -27,7 +27,7 @@ MUED_Spectrum::~MUED_Spectrum()
 }
 
 void MUED_Spectrum::Run(string output) {
-  msg.Out()<<"In "<<METHOD<<endl;
+  msg_Out()<<"In "<<METHOD<<endl;
   Neutral_KK_Bosons();
   Neutral_KK_Scalars();
   LR_KK_Fermions();
@@ -36,7 +36,7 @@ void MUED_Spectrum::Run(string output) {
 void MUED_Spectrum::FillMasses() {}
 
 void MUED_Spectrum::Neutral_KK_Bosons() {
-  msg.Out()<<"In "<<METHOD<<endl;
+  msg_Out()<<"In "<<METHOD<<endl;
   double delta_m2_gn(0.);
   double diag_m2_Bn(0.),delta_m2_Bn(0.),diag_m2_Wn(0.),delta_m2_Wn(0.),off_diag2(0.);
   double a_mn2(0.),as_mn2(0.),mn2(0.);
@@ -111,7 +111,7 @@ void MUED_Spectrum::Charged_KK_Bosons() {
 }
 
 void MUED_Spectrum::Neutral_KK_Scalars() {
-  msg.Out()<<"In "<<METHOD<<endl;
+  msg_Out()<<"In "<<METHOD<<endl;
   double delta_m2_Hn(0.);
   double a_mn2(0.),mn(0.),mn2(0.);
   double mh2(sqr(p_model->ScalarConstant("MH")));
@@ -153,7 +153,7 @@ void MUED_Spectrum::Charged_KK_Scalars() {
 }
 
 void MUED_Spectrum::LR_KK_Fermions() {
-  msg.Out()<<"In "<<METHOD<<endl;
+  msg_Out()<<"In "<<METHOD<<endl;
   double delta_m_Qn(0.),delta_m_un(0.),delta_m_dn(0.),offdiag_un(0.),offdiag_dn(0.);
   double delta_m_Ln(0.),delta_m_en(0.),offdiag_en(0.);
   double a_mn2(0.),as_mn2(0.),mn(0.),mn2(0.);

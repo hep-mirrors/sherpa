@@ -60,7 +60,7 @@ bool Dipole_Jet_Finder::Trigger(const Vec4D * p)
   PROFILE_HERE;
   // create copy
   for (int i(0);i<m_nin+m_nout;++i) {
-    msg.Out()<<METHOD<<" "<<i<<":"<<p[i]<<"/"<<m_moms.size()<<endl;
+    msg_Out()<<METHOD<<" "<<i<<":"<<p[i]<<"/"<<m_moms.size()<<endl;
     m_moms[i]=p[i];
   }
   Init(&m_moms.front());
@@ -89,7 +89,7 @@ bool Dipole_Jet_Finder::Trigger(const Vec4D * p)
   bool trigger(m_kt2min>m_kt2cut);
   m_actual_y = m_kt2min/m_stot;
 
-  msg.Out()<<METHOD<<":"<<m_kt2min<<"("<<m_kt2minFF<<") --> "
+  msg_Out()<<METHOD<<":"<<m_kt2min<<"("<<m_kt2minFF<<") --> "
   	   <<m_actual_y<<" --> "<<trigger<<endl
 	   <<"-------------------------------------------------"<<endl;
   return (1-m_sel_log->Hit(1-trigger));
@@ -97,7 +97,7 @@ bool Dipole_Jet_Finder::Trigger(const Vec4D * p)
 
 void Dipole_Jet_Finder::Init(const Vec4D * p) {
   // No boost needed : Everything in Lorentz invariant fashion
-  msg.Out()<<METHOD<<" : "<<p[0]<<"/"<<p[1]<<endl;
+  msg_Out()<<METHOD<<" : "<<p[0]<<"/"<<p[1]<<endl;
   if (m_mode==dipjet_mode::dec) 
     m_kt2minII = m_kt2minIF = m_kt2minFI = m_kt2minFF = m_shat = (p[0]).Abs2();
   else
@@ -141,13 +141,13 @@ void Dipole_Jet_Finder::BuildCuts(Cut_Data * cuts)
       case (dipjet_mode::ee): 
       default:
 	cuts->energymin[i] = Max(sqrt(m_kt2cut),cuts->energymin[i]);
-	msg.Out()<<METHOD<<" : E_min("<<i<<") = "<<cuts->energymin[i]<<endl;
+	msg_Out()<<METHOD<<" : E_min("<<i<<") = "<<cuts->energymin[i]<<endl;
 	break;
       }      
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {
 	  cuts->scut[j][i] = cuts->scut[i][j] = Max(cuts->scut[i][j],m_kt2cut);	
-	  msg.Out()<<METHOD<<" : s_min("<<i<<","<<j<<") = "<<cuts->scut[i][j]<<endl;
+	  msg_Out()<<METHOD<<" : s_min("<<i<<","<<j<<") = "<<cuts->scut[i][j]<<endl;
 	}
       }
     }
@@ -289,7 +289,7 @@ double Dipole_Jet_Finder::KT_min_FF(const int i,const int j,const int k,
     pt2min = pt2;
     perm   = 3;
   }
-  msg.Out()<<METHOD<<" ("
+  msg_Out()<<METHOD<<" ("
 	   <<" 0"<<m_moms[0]<<endl
 	   <<"                               1"<<m_moms[1]<<endl
 	   <<"                               "<<i<<m_moms[i]<<endl

@@ -106,7 +106,7 @@ bool Profile_Function_Base::CalculateOMean(const double ratio)
     msg_Debugging()<<"iterate r2 = "<<ratio2<<",\t r= "<<ratio<<",\t r2-r = "<<ratio2-ratio
       		   <<"\t => "<<m_kfactor<<"\t <- "<<k1<<std::endl;
     if (!(m_kfactor>0.0)) {
-      ATOOLS::msg.Error()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
+      msg_Error()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
 			 <<"Cannot determine k."<<std::endl;
       delete gausso;
       delete gaussp;

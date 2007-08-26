@@ -21,7 +21,7 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
 
   ReadInFile();
   if (!SanityChecks()) {
-    msg.Error()<<"Potential Error in "<<METHOD<<":"<<endl
+    msg_Error()<<"Potential Error in "<<METHOD<<":"<<endl
 	       <<"   Sanity checks not passed."<<endl
 	       <<"   Continue and hope for the best."<<endl;
   }
@@ -115,7 +115,7 @@ void SM_Phantom_U1::FillWidths() {
     }
   }
   flin.SetWidth(dectable->TotalWidth());
-  if (msg.LevelIsInfo() || msg.LevelIsTracking() || msg.LevelIsDebugging()) {
+  if (msg_LevelIsInfo() || msg_LevelIsTracking() || msg_LevelIsDebugging()) {
     dectable->Output();
   }
 
@@ -141,7 +141,7 @@ void SM_Phantom_U1::FillWidths() {
     }
   }
   flin.SetWidth(dectable->TotalWidth());
-  if (msg.LevelIsInfo() || msg.LevelIsTracking() || msg.LevelIsDebugging()) {
+  if (msg_LevelIsInfo() || msg_LevelIsTracking() || msg_LevelIsDebugging()) {
     dectable->Output();
   }
 }

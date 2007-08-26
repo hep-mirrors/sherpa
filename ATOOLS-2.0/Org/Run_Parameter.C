@@ -7,6 +7,7 @@
 #include "Data_Reader.H"
 #include "Data_Collector.H"
 #include "MyStrStream.H"
+#include "Shell_Tools.H"
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -68,6 +69,8 @@ void Run_Parameter::AnalyseEnvironment()
   s_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
   s_variables["SHERPA_BIN_PATH"]=SHERPA_BINARY_PATH;
   s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
+  s_variables["HOME"]=std::string(((var=getenv("HOME"))==
+				   NULL?s_variables["SHERPA_RUN_PATH"]:var));
   s_initialized=true;
 }
 
@@ -81,9 +84,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   Data_Read dr(m_path+file);
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
-  msg.Init(gen.m_output,logfile);
-  if (msg.Level()>0) 
-    msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
+  msg->Init(gen.m_output,logfile);
+  if (msg->Level()>0) 
+    msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
@@ -122,6 +125,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
+  MakeDir(s_variables["HOME"]+"/.sherpa/",448,true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
@@ -152,7 +156,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
   if (color==Switch::On) {
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
@@ -163,7 +167,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 Run_Parameter::~Run_Parameter() 
 { 
-  if (msg.Level()>=1) gen.m_timer.PrintTime();
+  if (msg->Level()>=1) gen.m_timer.PrintTime();
 }
 
 bool Run_Parameter::Gen::CheckTime(const double limit)

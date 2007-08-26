@@ -68,10 +68,10 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     }
     delete [] oldens2;
     delete [] ens;
-    msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
+    msg_Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
         <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
         <<"   Masses :";
-    for (int i=n0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
+    for (int i=n0;i<n-1;i++) msg_Error()<<masses[i]<<", ";msg_Error()<<masses[n-1]<<"."<<endl;
     return false;
     abort();
   }
@@ -145,10 +145,10 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     }
     delete [] oldens2;
     delete [] ens;
-  msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
+  msg_Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
       <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
       <<"   Masses :";
-    for (int i=n0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
+    for (int i=n0;i<n-1;i++) msg_Error()<<masses[i]<<", ";msg_Error()<<masses[n-1]<<"."<<endl;
     return false;
     abort();
   }

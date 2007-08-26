@@ -11,7 +11,7 @@ Beam_Base::Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
 {
   double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
   if (disc<0) {
-    ATOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<std::endl
+    msg_Error()<<"Error in Beam_Base :"<<m_type<<std::endl
 		       <<"   Mismatch of energy and mass of beam particle : "
 		       <<m_beam<<" / "<<m_energy<<std::endl
 		       <<"   Will lead to termination of program."<<std::endl;

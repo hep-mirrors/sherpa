@@ -87,7 +87,7 @@ void String_Generator::ReStore()
     m_copied        = 0;
     return;
   }
-  msg.Error()<<"Error in String_Generator::ReStore():"<<endl
+  msg_Error()<<"Error in String_Generator::ReStore():"<<endl
 	     <<"   No information stored to be restored ! Abort."<<endl;
   abort();
 }
@@ -95,11 +95,11 @@ void String_Generator::ReStore()
 
 void String_Generator::Print()
 {
-  if (!(msg.LevelIsDebugging())) return;
+  if (!(msg_LevelIsDebugging())) return;
   for (size_t i=0;i<(*p_zxl).size();i++) {
-    msg.Out()<<i<<". Zfunction: Type="<<(*p_zxl)[i].zlist<<";On="<<(*p_zxl)[i].on<<";Value="<<(*p_zxl)[i].value.String(); 
-    if ((*p_zxl)[i].narg>0) msg.Out()<<";Arg[0] = "<<(*p_zxl)[i].arg[0];
-    msg.Out()<<endl;
+    msg_Out()<<i<<". Zfunction: Type="<<(*p_zxl)[i].zlist<<";On="<<(*p_zxl)[i].on<<";Value="<<(*p_zxl)[i].value.String(); 
+    if ((*p_zxl)[i].narg>0) msg_Out()<<";Arg[0] = "<<(*p_zxl)[i].arg[0];
+    msg_Out()<<endl;
   }
 }
 
@@ -466,7 +466,7 @@ void String_Generator::Calculate(Values* val)
       case 9: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),Vcplxcalc(arg[0],arg[1]));
       break;
-      default:msg.Error()<<"Unknown Z-Type: "<<(*p_zxl)[i].zlist<<endl;
+      default:msg_Error()<<"Unknown Z-Type: "<<(*p_zxl)[i].zlist<<endl;
       }
     }
   }
@@ -504,7 +504,7 @@ void String_Generator::SetOn(const string& str)
     return;
   }
 
-  msg.Error()<<"Error in String_Generator::SetOn()!"<<endl;
+  msg_Error()<<"Error in String_Generator::SetOn()!"<<endl;
 }
 
 Kabbala* String_Generator::GetKabbala(const string& str)
@@ -524,7 +524,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
       return &(*p_zxl)[number].value; 
     }
     else {
-      msg.Error()<<"Error in String_Generator::GetKabbala() : "<<str<<endl;
+      msg_Error()<<"Error in String_Generator::GetKabbala() : "<<str<<endl;
       abort();
     }
   }
@@ -592,7 +592,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
 
     return &(*p_zxl)[(*p_zxl).size()-1].value;
   }
-  msg.Error()<<"Error: No Zvalue for String: "<<str<<endl;
+  msg_Error()<<"Error: No Zvalue for String: "<<str<<endl;
   return 0;
 }
 

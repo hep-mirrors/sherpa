@@ -70,7 +70,7 @@ Spin_Density_Matrix& Spin_Density_Matrix::operator+=(Spin_Density_Matrix SDM)
 {
   PROFILE_HERE;
   if (m_entries.size() != SDM.m_entries.size()) {
-    msg.Error()<<"ERROR in Spin_Density_Matrix::operator+=:"<<endl
+    msg_Error()<<"ERROR in Spin_Density_Matrix::operator+=:"<<endl
 	       <<"SDMs with unequal numbers ("<<m_entries.size()<<","<<SDM.m_entries.size()<<") of entries passed over."<<endl
 	       <<"Operation will be ignored."<<endl;
     return *this;
@@ -93,7 +93,7 @@ Complex& Spin_Density_Matrix::operator[](size_t entry)
   if (entry<m_entries.size()) {
     return m_entries[entry];
   } else {
-    msg.Error()<<"ERROR in Spin_Density_Matrix::operator[]:"<<endl
+    msg_Error()<<"ERROR in Spin_Density_Matrix::operator[]:"<<endl
 	       <<"Rquest for entry "<<entry<<" exceeds length of data."<<endl;
     abort();
   }

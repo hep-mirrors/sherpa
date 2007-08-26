@@ -34,7 +34,7 @@ template <class ValueType>
 ValueType Variable_Base<ValueType>::Value
 (const Vec3D *vectors,const int &n) const
 {
-  msg.Error()<<"Variable_Base::Value("<<vectors<<","<<n<<"): "
+  msg_Error()<<"Variable_Base::Value("<<vectors<<","<<n<<"): "
 	     <<"Virtual method called."<<std::endl;
   return 0.0;
 }
@@ -43,7 +43,7 @@ template <class ValueType>
 ValueType Variable_Base<ValueType>::Value
 (const Vec4D *vectors,const int &n) const
 {
-  msg.Error()<<"Variable_Base::Value("<<vectors<<","<<n<<"): "
+  msg_Error()<<"Variable_Base::Value("<<vectors<<","<<n<<"): "
 	     <<"Virtual method called."<<std::endl;
   return 0.0;
 }
@@ -51,10 +51,10 @@ ValueType Variable_Base<ValueType>::Value
 template <class ValueType>
 void Variable_Base<ValueType>::ShowVariables(const int mode)
 {
-  if (!msg.LevelIsInfo() || mode==0) return;
-  msg.Out()<<"Variable_Base::ShowVariables(): {\n\n";
-  Variable_Getter::PrintGetterInfo(msg.Out(),20);
-  msg.Out()<<"\n}"<<std::endl;
+  if (!msg_LevelIsInfo() || mode==0) return;
+  msg_Out()<<"Variable_Base::ShowVariables(): {\n\n";
+  Variable_Getter::PrintGetterInfo(msg_Out(),20);
+  msg_Out()<<"\n}"<<std::endl;
 }
 
 template <class ValueType>
@@ -142,7 +142,7 @@ Calc_Variable<ValueType>::Calc_Variable(const std::string &tag):
       pos=m_formula.find("p[",pos+ex.length()+1);
     }
     p_interpreter->Interprete(m_formula);
-    if (msg.LevelIsTracking()) p_interpreter->PrintEquation();
+    if (msg_LevelIsTracking()) p_interpreter->PrintEquation();
   }
 }
 template <class ValueType>

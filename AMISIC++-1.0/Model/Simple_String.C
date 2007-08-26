@@ -98,7 +98,7 @@ bool Simple_String::CreateMomenta()
   PROFILE_HERE;
   m_filledblob=false;
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    msg.Error()<<"Simple_String::CreateMomenta(): "
+    msg_Error()<<"Simple_String::CreateMomenta(): "
 	       <<"No remnant found."<<std::endl;
     return false;
   }
@@ -109,7 +109,7 @@ bool Simple_String::CreateMomenta()
     PDF::Hadron_Remnant *hadron=
       dynamic_cast<PDF::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
-      msg.Error()<<"Simple_String::CreateMomenta(): "
+      msg_Error()<<"Simple_String::CreateMomenta(): "
 		 <<"Incoming particle is no hadron."<<std::endl;
       return false;
     }

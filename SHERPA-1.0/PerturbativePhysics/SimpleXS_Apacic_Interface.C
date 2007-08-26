@@ -57,11 +57,11 @@ Return_Value::code SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Bl
 {
   if (blob==NULL) {
     return Return_Value::Error;
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   No blob found, will return 'Error' and hope for the best."<<std::endl;
   }
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Cannot handle blobs with different than four legs:"<<std::endl
 	       <<(*blob)
 	       <<"   Will return 'Error' and hope for the best."<<std::endl;
@@ -89,7 +89,7 @@ Return_Value::code SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Bl
 Return_Value::code SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
 {
   if (!p_xs->SetColours(p_momenta)) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Could not set initial colour in "<<std::endl
 	       <<*blob
 	       <<"   Return 'Error' and hope for the best."<<std::endl;

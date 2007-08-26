@@ -181,7 +181,7 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
 {
   double x=quark->Momentum()[0]/p_beam->Energy();
   if (x>1.) {
-    msg.Out()<<" WARNING in Hadron_Remnant::ValenceQuark \n"
+    msg_Out()<<" WARNING in Hadron_Remnant::ValenceQuark \n"
 	     <<" (x-1)="<<x-1<<std::endl;
     x = 1.;
   }
@@ -219,7 +219,7 @@ bool Hadron_Remnant::DecomposeHadron()
   for (Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     if ((*pit)->Momentum()[0]>Eb || (*pit)->Momentum()[0]<0.0) {
-      msg.Error()<<"Hadron_Remnant::DecomposeHadron(): "
+      msg_Error()<<"Hadron_Remnant::DecomposeHadron(): "
 			 <<"Constituent energy out of range. \n   E_"
 			 <<(*pit)->Flav()<<" = "<<(*pit)->Momentum()[0]
 			 <<"."<<std::endl;
@@ -261,7 +261,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   // => scale should be approximately (2m)^2
   scale=Max(scale,4.0*sqr(flavour.PSMass()));
   if (scale<p_pdfbase->Q2Min()) {
-    msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
+    msg_Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
 		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;

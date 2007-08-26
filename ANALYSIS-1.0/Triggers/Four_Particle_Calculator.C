@@ -127,7 +127,7 @@ void Four_Particle_Calculator_Base::Evaluate
 {
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"(): List '"<<m_inlist
+    msg_Error()<<METHOD<<"(): List '"<<m_inlist
 		       <<"' not found."<<std::endl;
     return;
   }

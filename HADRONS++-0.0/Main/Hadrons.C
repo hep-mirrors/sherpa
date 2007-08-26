@@ -138,7 +138,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
   }
   else { // treatment for K0's
     if (nchan!=2) {
-      msg.Error()<<"ERROR in Hadrons::ChooseDecayChannel() : "<<endl
+      msg_Error()<<"ERROR in Hadrons::ChooseDecayChannel() : "<<endl
                  <<"     K0 must have two channels K(L) and K(S), but is does not."<<endl
                  <<"     Don't know what to do, will abort."<<endl;
       abort();
@@ -148,7 +148,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
   }
 
   if( p_channelmap->find(dec_channel) == p_channelmap->end() ) {
-    msg.Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
+    msg_Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
       <<"      Couldn't find appropriate channel pointer for "<<dec_channel->GetDecaying()
       <<" decay. \n"
       <<"      Don't know what to do, will abort."<<endl;
@@ -218,13 +218,13 @@ void Hadrons::ChooseDecayKinematics(
                                                       inpart);
           weight = numerator/denominator;
           if(weight>(1.0+Accu())) {
-            msg.Error()<<METHOD<<" Error: weight="<<weight<<" in "
+            msg_Error()<<METHOD<<" Error: weight="<<weight<<" in "
               <<rpa.gen.NumberOfDicedEvents()<<endl
               <<(*blob)<<endl;
           }
           trials++;
           if(trials%1000==0) {
-            msg.Error()<<METHOD<<" Warning: spin correlation trials="<<trials<<endl
+            msg_Error()<<METHOD<<" Warning: spin correlation trials="<<trials<<endl
               <<"    possibly wrong amplitudes?"<<endl
               <<(*blob)<<endl;
           }
@@ -259,7 +259,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
   Particle*  inpart    = blob->InParticle(0);
 #ifdef DEBUG__Hadrons
   if(blob->NOutP()>0) {
-    msg.Error()<<METHOD<<" Blob ["<<blob->Id()<<"] in event "<<rpa.gen.NumberOfDicedEvents()
+    msg_Error()<<METHOD<<" Blob ["<<blob->Id()<<"] in event "<<rpa.gen.NumberOfDicedEvents()
       <<" already has outparticles: "<<endl
       <<(*blob)<<endl;
   }
@@ -268,7 +268,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
       blob->NInP()!=1 ||
       blob->InParticle(0)->Status()!=part_status::active)
   {
-    msg.Error()<<METHOD<<" Blob or particle have wrong status."<<endl;
+    msg_Error()<<METHOD<<" Blob or particle have wrong status."<<endl;
     return Return_Value::Error;
   }
   
@@ -313,9 +313,9 @@ void Hadrons::ReadInConstants()
 
   vector<vector<string> > constants;
   if(!reader.MatrixFromFile(constants)) {
-    msg.Error()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
+    msg_Error()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
-    msg.Error()<<"     Will ignore it and hope for the best."<<endl;
+    msg_Error()<<"     Will ignore it and hope for the best."<<endl;
     return;
   }
 
@@ -339,7 +339,7 @@ void Hadrons::ReadInDecayTables()
 
   vector<vector<string> > Decayers;
   if(!reader.MatrixFromFile(Decayers)) {
-    msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
+    msg_Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
 	       <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
     abort();
   }
@@ -351,7 +351,7 @@ void Hadrons::ReadInDecayTables()
   for (size_t i=0;i<Decayers.size();++i) {
     fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
     if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
-      msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
+      msg_Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
 		 <<"   Flavour "<<fl
 		 <<" already in map. Don't know what to do, will abort."<<endl;
       abort();
@@ -369,26 +369,26 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   string lcpath (line[1]);      // path of decay files
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path+lcpath,line[2]);
   if (dtreader->FillDecayTable(dt)>0) {     // if at least one channel defined
-    msg.Tracking()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
+    msg_Tracking()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
     dtreader->FillInMatrixElementsAndPS(dt,p_channelmap,m_md0);
-    if( msg.LevelIsInfo() ) {
-      msg.Tracking()<<"Initialised a new decay table : "<<endl;
-      msg.Tracking()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
-      if(msg.LevelIsTracking()) dt->Output();
-      msg.Tracking()<<"Calculated decay widths using implemented models :"<<endl
+    if( msg_LevelIsInfo() ) {
+      msg_Tracking()<<"Initialised a new decay table : "<<endl;
+      msg_Tracking()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
+      if(msg_LevelIsTracking()) dt->Output();
+      msg_Tracking()<<"Calculated decay widths using implemented models :"<<endl
         <<"(only for information; they are NOT used for the simulation)"<<endl;
       for (int i=0;i<dt->NumberOfDecayChannels();i++) {			
-        msg.Tracking()
+        msg_Tracking()
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->ChannelName()<<" : "
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->Result()<<" ("
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->RelError()<<" %)"
           <<" GeV"<<endl;
       }
-      msg.Tracking()<<endl;
+      msg_Tracking()<<endl;
     }
   }
   else { 
-    msg.Error()<<"WARNING in Hadrons::InitialiseOneDecayTable : "<<endl
+    msg_Error()<<"WARNING in Hadrons::InitialiseOneDecayTable : "<<endl
 	       <<"   No decay channels found for "<<dt->Flav()<<" in file "<<line[1]<<endl
 	       <<"   Will continue and hope for the best."<<endl;
     delete dt; 

@@ -16,7 +16,7 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
 
   p_cformhandler = new Cluster_Formation_Handler(ana);
   p_cdechandler  = new Cluster_Decay_Handler(p_cformhandler->GetSoftClusterHandler(),ana);
-  msg.Tracking()<<"Initialisation of Ahadic complete."<<endl;
+  msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
 Ahadic::~Ahadic() 
@@ -52,7 +52,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	case int(Return_Value::Warning) :
 	  break;
 	default:
-	  msg.Error()<<"Error in "<<METHOD<<": "<<endl
+	  msg_Error()<<"Error in "<<METHOD<<": "<<endl
 		     <<"   Unknown return value."<<endl;
 	  abort();
 	  break;
@@ -101,7 +101,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  }
 	  return Return_Value::Success;
 	default:
-	  msg.Error()<<"Error in "<<METHOD<<": "<<endl
+	  msg_Error()<<"Error in "<<METHOD<<": "<<endl
 		     <<"   Unknown return value."<<endl;
 	  abort();
 	  break;

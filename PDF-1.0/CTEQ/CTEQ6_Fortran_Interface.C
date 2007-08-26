@@ -42,7 +42,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   char buffer[1024];
   char * err = getcwd(buffer,1024);
   if (err==NULL) {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
   }
   int stat=chdir(m_path.c_str());
   ctq6initset_(iset);
@@ -50,7 +50,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     chdir(buffer);
   }
   else {
-    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
+    msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
 	       <<"   path "<<m_path<<" not found "<<std::endl;
   }
   

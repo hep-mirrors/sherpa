@@ -103,7 +103,7 @@ bool Single_XS::CalculateTotalXSec(const std::string &resultpath,
   double var=TotalVar();
   m_totalxs=p_pshandler->Integrate()/rpa.Picobarn(); 
   if (!(IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-    msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
+    msg_Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<std::endl;
   }
   if (m_totalxs>0.) {
@@ -233,7 +233,7 @@ double Single_XS::Differential2()
 
 double Single_XS::operator()(const double s,const double t,const double u) 
 {
-  ATOOLS::msg.Error()<<"Single_XS::operator()("<<s<<","<<t<<","<<u<<"): "
+  msg_Error()<<"Single_XS::operator()("<<s<<","<<t<<","<<u<<"): "
 		     <<"Virtual method called!"<<std::endl;
   return 0.;
 }

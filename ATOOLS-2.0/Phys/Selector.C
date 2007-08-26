@@ -17,42 +17,42 @@ Selector_Base::~Selector_Base()
 }
 
 void Selector_Base::Output() { 
-  if (!(msg.LevelIsTracking())) return;
+  if (!(msg_LevelIsTracking())) return;
   if(m_sel_log) {
     m_sel_log->Output();
-    msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;
+    msg_Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;
   }
 }
 
 void Selector_Base::Add(Selector_Base *) {
-  msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
 }
 
 void Selector_Base::BuildCuts(Cut_Data *) { 
-  msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
 }
 
 void Selector_Base::UpdateCuts(double,double,Cut_Data *) { 
-  msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
 }
 
 void Selector_Base::SetRange(std::vector<Flavour>,double,double) { 
-  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
 }
 
 void Selector_Base::SetRange(std::vector<Flavour>,int,double,double) { 
-  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
 }
 
 void Selector_Base::SetRange(std::vector<Flavour>,
 			     std::vector<std::pair<double,double> > &)
 {
-  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+  msg_Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
 }
 
 bool Selector_Base::GetValue(const std::string &name,double &value)
 {
-  msg.Error()<<"Selector_Base::GetValue("<<name<<",..): "
+  msg_Error()<<"Selector_Base::GetValue("<<name<<",..): "
 	     <<"Virtual method called."<<std::endl;
   return false;
 }
@@ -84,7 +84,7 @@ Selector_Data::Selector_Data() {}
 
 Selector_Data::Selector_Data(std::string path) {
   if (!ReadInData(path)) {
-    msg.Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
+    msg_Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
 			  <<"Cannot initialise any selector. Abort."<<endl;
     abort();
   }
@@ -95,7 +95,7 @@ bool Selector_Data::ReadInData(std::string filename)
 {
   ifstream from(filename.c_str());
   if (!from) {
-    msg.Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
+    msg_Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
 			  <<"File does not exist."<<endl;
     return 0;
   }
@@ -339,7 +339,7 @@ void Selector_Data::ControlOutput() {
 void Selector_Data::FillData(int i,int & type,std::vector<Flavour> & flavs,
 			     std::vector<std::pair<double,double> > &bounds,int & help) {
   if ( (i<0) || (i>(int)data.size()) ) {
-    msg.Error()<<"Error in Selector_Data::Data("<<i<<"). "
+    msg_Error()<<"Error in Selector_Data::Data("<<i<<"). "
 			  <<"Delimiter out of bounds."<<endl
 			  <<"   Size : "<<data.size()<<endl;
     abort();

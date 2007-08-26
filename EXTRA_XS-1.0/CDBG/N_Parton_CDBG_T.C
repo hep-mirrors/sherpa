@@ -317,13 +317,13 @@ double N_Parton_CDBG_T::Differential(const std::vector<Vec4D> &momenta)
     for (size_t j(0);j<m_ampl.Results().size();++j) {
       m_cress[j][i]=m_ampl.Results()[j];
 #ifdef DEBUG__BG
-      if (msg.LevelIsDebugging()) {
-	msg.Out()<<"A["<<j<<"]("<<m_cords[i].front()
+      if (msg_LevelIsDebugging()) {
+	msg_Out()<<"A["<<j<<"]("<<m_cords[i].front()
 		 <<(m_ampl.Chiralities()[j][m_cords[i].front()]>0?'+':'-');
 	for (size_t k(1);k<m_cords[i].size();++k)
-	  msg.Out()<<","<<m_cords[i][k]
+	  msg_Out()<<","<<m_cords[i][k]
 		   <<(m_ampl.Chiralities()[j][m_cords[i][k]]>0?'+':'-');
-	msg.Out()<<") -> "<<m_cress[j][i]<<" "<<std::abs(m_cress[j][i])<<"\n";
+	msg_Out()<<") -> "<<m_cress[j][i]<<" "<<std::abs(m_cress[j][i])<<"\n";
       }
 #endif
     }

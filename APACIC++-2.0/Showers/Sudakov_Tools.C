@@ -48,7 +48,7 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
 }
 
 void Sudakov_Tools::Output() {
-  msg.Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
+  msg_Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
 		<<"   beta0        = "<<m_beta0<<std::endl
 		<<"   lambda2      = "<<m_lambda2<<std::endl	
 		<<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl

@@ -85,7 +85,7 @@ JetMass_Broadening_Calculator::JetMass_Broadening_Calculator(const std::string &
 void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, int ncout) {
   Particle_List * pl = p_ana->GetParticleList(m_listname);
   if (pl==NULL) {
-    msg.Out()<<"WARNING in JetMass_Broadening_Calculator::Evaluate : particle list "
+    msg_Out()<<"WARNING in JetMass_Broadening_Calculator::Evaluate : particle list "
 	     <<m_listname<<" not found "<<std::endl;
     return;
   }
@@ -95,7 +95,7 @@ void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, i
     thrustaxis = data->Get<Event_Shape_EE_Data>().thrustaxis;
   }
   else {
-    msg.Out()<<"WARNING in JetMass_Broadening_Calculator::Evaluate : data container "
+    msg_Out()<<"WARNING in JetMass_Broadening_Calculator::Evaluate : data container "
 	     <<m_inkey<<" not found "<<std::endl;
     return;
   }

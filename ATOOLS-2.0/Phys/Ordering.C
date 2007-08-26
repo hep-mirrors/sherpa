@@ -29,10 +29,10 @@ bool Order_Base::operator()(Particle * const &a,Particle * const &b) const
 
 void Order_Base::ShowOrders(const int mode)
 {
-  if (!msg.LevelIsInfo() || mode==0) return;
-  msg.Out()<<"Order_Base::ShowOrders(): {\n\n";
-  Order_Getter::PrintGetterInfo(msg.Out(),20);
-  msg.Out()<<"\n}"<<std::endl;
+  if (!msg_LevelIsInfo() || mode==0) return;
+  msg_Out()<<"Order_Base::ShowOrders(): {\n\n";
+  Order_Getter::PrintGetterInfo(msg_Out(),20);
+  msg_Out()<<"\n}"<<std::endl;
 }
 
 template <class Class>

@@ -62,9 +62,9 @@ double Amegic::OverflowStatistics(Process_Base * proc,int level)
     for (int i=0;i<level;++i) msg_Tracking()<<"  ";
     msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
   }
-  if (level==0 && sum!=0. && !msg.LevelIsTracking()) {
-    int save_msg = msg.Level();
-    msg.SetLevel(4);
+  if (level==0 && sum!=0. && !msg_LevelIsTracking()) {
+    int save_msg = msg->Level();
+    msg->SetLevel(4);
     msg_Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
     sum=0.;
     if ((*proc)[0]==proc) {
@@ -79,7 +79,7 @@ double Amegic::OverflowStatistics(Process_Base * proc,int level)
       for (int i=0;i<level;++i) msg_Tracking()<<"  ";
       msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
     }
-    msg.SetLevel(save_msg);
+    msg->SetLevel(save_msg);
   }
   return sum;
 }
@@ -126,14 +126,14 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 
   ATOOLS::Vec4D * moms  = 0;
 
-  msg.Events()<<"Amegic::InitializeProcesses : \n"
+  msg_Events()<<"Amegic::InitializeProcesses : \n"
 	   <<"   Process initialization started; new libraries may be created."<<std::endl;
   switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
   case 1  : 
-    msg.Events()<<"   No new libraries have been created."<<std::endl;
+    msg_Events()<<"   No new libraries have been created."<<std::endl;
     return 1;
   case 0  : 
-    msg.Error()<<"Amegic::InitializeProcesses : "<<std::endl
+    msg_Error()<<"Amegic::InitializeProcesses : "<<std::endl
 	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
 	       <<om::bold<<"   Type \"./makelibs\" in '"
 	       <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"' and rerun."<<om::reset<<endl;
@@ -148,7 +148,7 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 bool Amegic::InitializeDecays(bool constructall) {
   int maxnumber = p_dataread->GetValue<int>("DECAY_PRODUCTS",3);
   if (maxnumber>3) {
-    msg.Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
+    msg_Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
 	       <<"   Number of potential decay products larger than three."<<endl
 	       <<"   This has not been implemented yet. Reduce number of decay products"<<endl
 	       <<"   to three and continue run."<<endl;
@@ -156,7 +156,7 @@ bool Amegic::InitializeDecays(bool constructall) {
   }
   if (p_top) {
     if (m_nmax<maxnumber) {
-      msg.Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
+      msg_Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
 		 <<"   Potential inconsistency in number of legs of processes and decays."<<endl
 		 <<"   Processes : "<<m_nmax<<", Decays : "<<1+maxnumber<<endl
 		 <<"   Reduce number of legs for decay accordingly."<<endl; 
@@ -196,7 +196,7 @@ void Amegic::ReadInProcessfile(string file)
 
   ifstream from((m_path+file).c_str());
   if (!from) {
-    msg.Error()<<"ERROR in Amegic::InitializeProcesses : "<<endl
+    msg_Error()<<"ERROR in Amegic::InitializeProcesses : "<<endl
 	       <<"   Process data file : "<<(m_path+file).c_str()<<" not found."<<std::endl
 	       <<"   Abort program execution."<<endl;
     abort();
@@ -222,7 +222,7 @@ void Amegic::ReadInProcessfile(string file)
     getline(from,buf);
     position = -1;
     if (buf.length()>0 && buf[0] != '%') {
-      msg.LogFile()<<buf<<std::endl;
+      msg_LogFile()<<buf<<std::endl;
       vector<Process_Info*> AppPI;
       vector<int> AppKf;
       vector<int> AppNum;
@@ -243,19 +243,19 @@ void Amegic::ReadInProcessfile(string file)
 	  if (AppKf.size()>AppPI.size()) AppPI.push_back(pinfo);
 	  njets  = 0;
 	  if ((nIS< 1) || (nIS > 2)) {
-	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+	    msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 		       <<"   Wrong number of partons in "<<buf<<endl;
 	    flag = 0;
 	  }
 	  if (nIS==2) {
 	    if (!(CF.ValidProcess(2,IS,nFS,FS))) {
-	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+	      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Mismatch of flavours. Cannot initialize this process."<<endl
 			 <<"   flavours are "<<buf<<endl;
 	      flag = 0;
 	    }
 	    if (!(p_isr->CheckConsistency(IS))) {
-	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
+	      msg_Error()<<"Error in initialising ISR_Handler."<<endl
 			 <<" "<<p_isr->Flav(0)<<" -> "<<IS[0]<<", "
 			 <<" "<<p_isr->Flav(1)<<" -> "<<IS[1]<<endl
 			 <<"  Delete it and ignore the process."<<endl;
@@ -286,7 +286,7 @@ void Amegic::ReadInProcessfile(string file)
 	      ++pr;
 	      position = -1;
 	      if (buf.length()>0 && buf[0] != '%') {
-		msg.LogFile()<<buf<<std::endl;
+		msg_LogFile()<<buf<<std::endl;
 		position = buf.find(string("Decay :"));
 		if (position > -1) {
 		  buf    = buf.substr(position+7);
@@ -296,7 +296,7 @@ void Amegic::ReadInProcessfile(string file)
 		    fin    = buf.substr(position+2);
 		    int c=ExtractFlavours(iflb,iplb,ini);
 		    if (iflb[0].Size()>1 || c!=1) {
-		      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+		      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 				 <<"   Invalid subsequent decay channel: "<<buf<<endl;
 		      abort();
 		    }
@@ -304,19 +304,19 @@ void Amegic::ReadInProcessfile(string file)
 		    Process_Info *phelp = pinfo->FindDM(iplb[0].type[0]);
 		    if (phelp) {
 		      if (iflb[0]!=*(phelp->Flav())) {
-			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 				   <<"   Mismatch of decay flavour and identifier: "<<iflb[0]<<" "<<*(phelp->Flav())<<endl;
 			abort();
 		      }
 
 		      int c=ExtractFlavours(fflb,fplb,fin,&AppKf,&AppNum);
 		      if (c<2) {
-			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 				   <<"   Wrong number of partons in decay process: "<<buf<<endl;
 			abort();
 		      }
 		      if (!(CF.ValidProcess(1,iflb,c,fflb))) {
-			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 				   <<"   Mismatch of flavours in decay process. Cannot initialize this process."<<endl
 				   <<"   flavours are "<<buf<<endl;
 			abort();
@@ -467,7 +467,7 @@ void Amegic::ReadInProcessfile(string file)
 		  str<<buf;
 		  str>>nmax;
 		  if (nmax>m_maxjet) {
-		    msg.Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
+		    msg_Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
 		    m_maxjet = nmax;
 		    m_maxqcdjet = nmax;
 		  }		  
@@ -475,7 +475,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("End process"));
 		if (!from) {
-		  msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+		  msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			     <<"   End of file reached without 'End process'-tag."<<endl
 			     <<"   Continue and hope for the best."<<endl;
 		  position     = 0;
@@ -483,7 +483,7 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	    } while (from && position==-1);
 	    if (!pinfo || !pinfo->CheckCompleteness()) {
-	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+	      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Missing decay processes! "<<endl;
 	      if (pinfo) pinfo->Print();
 	      abort();
@@ -609,11 +609,11 @@ void Amegic::ReadInProcessfile(string file)
 		}
 	      }
 	      else {
-		msg.Out()<<"Ignored process: ";
-		for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
-		msg.Out()<<" -> ";
-		for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
-	      msg.Out()<<", kinematically not allowed."<<endl;
+		msg_Out()<<"Ignored process: ";
+		for (short int i=0;i<nIS;i++) msg_Out()<<" "<<IS[i].Name();
+		msg_Out()<<" -> ";
+		for (short int i=0;i<nFS;i++) msg_Out()<<FS[i].Name()<<" ";
+	      msg_Out()<<", kinematically not allowed."<<endl;
 	      }	    
 	      
 	      delete [] flavs;

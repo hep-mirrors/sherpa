@@ -91,7 +91,7 @@ void NLL_Sudakov::FixLambda2()
 NLL_Sudakov_Base &  NLL_Sudakov::Delta(const ATOOLS::Flavour & fl) {
   Sudakov_Map::const_iterator sit=m_sudakovs.find(fl);
   if (sit!=m_sudakovs.end()) return *(sit->second);
-  ATOOLS::msg.Out()<<"ERROR in  NLL_Sudakov::Delta : "<<std::endl
+  msg_Out()<<"ERROR in  NLL_Sudakov::Delta : "<<std::endl
 		   <<"   Did not find sudakov form factor for "<<fl<<", return default."<<std::endl;
   return *(m_sudakovs[ATOOLS::Flavour(ATOOLS::kf::none)]);
 }

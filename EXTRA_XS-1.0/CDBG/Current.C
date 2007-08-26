@@ -62,7 +62,7 @@ void Current<CType>::Evaluate()
 template <typename CType>
 void Current<CType>::Print() const
 {
-  if (!msg.LevelIsDebugging()) return;
+  if (!msg_LevelIsDebugging()) return;
   std::string id(m_id.empty()?"<no entry>":ToString(m_id.front()));
   for (size_t i(1);i<m_id.size();++i) id+=","+ToString(m_id[i]);
   msg_Debugging()<<'['<<id<<"]"<<m_fid<<"{"<<m_id.size()<<","

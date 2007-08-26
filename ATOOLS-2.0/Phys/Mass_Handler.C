@@ -22,12 +22,12 @@ Mass_Handler::~Mass_Handler()
 double Mass_Handler::GetMass(double min, double max)
 {
   if(min<0.0 || max<0.0 || min>max) {
-    msg.Error()<<METHOD<<" range not valid: min="<<min<<" max="<<max<<endl;
+    msg_Error()<<METHOD<<" range not valid: min="<<min<<" max="<<max<<endl;
     return 0.0;
   }
   double m = p_mass->GetMass(min, max);
   if (!(m>0) && !(m<0) && m!=0) {
-  msg.Error()<<METHOD<<"produced a nan:"<<endl
+  msg_Error()<<METHOD<<"produced a nan:"<<endl
       <<"  peak="<<p_mass->Peak()<<" width="<<p_mass->Width()
       <<" min="<<min<<" max="<<max<<endl;
   }
@@ -43,7 +43,7 @@ Breit_Wigner::Breit_Wigner(double peak,double width)
 
 double Breit_Wigner::GetMass(double min, double max)
 {
-  msg.Error()<<METHOD<<" not yet implemented."<<endl;
+  msg_Error()<<METHOD<<" not yet implemented."<<endl;
   abort();
 }
 

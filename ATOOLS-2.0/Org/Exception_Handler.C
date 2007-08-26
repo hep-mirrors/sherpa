@@ -101,13 +101,13 @@ void Exception_Handler::PrepareTerminate()
 
 void Exception_Handler::Exit(int exitcode)
 {
-  if (m_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "
+  if (m_print) msg_Error()<<om::bold<<"Exception_Handler::Exit: "
 			  <<om::reset<<om::blue<<"Exiting "
 			  <<m_progname<<" with code "
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
-  msg.LogFile()<<"Exception_Handler::Exit: "
+  msg_LogFile()<<"Exception_Handler::Exit: "
 	       <<"Exiting "<<m_progname<<" with code ("
 	       <<exitcode<<")"<<std::endl;
   exit(exitcode);
@@ -127,20 +127,20 @@ void ATOOLS::Terminate()
 
 void Exception_Handler::Terminate() 
 {
-  bool modifiable=msg.Modifiable();
+  bool modifiable=msg->Modifiable();
   SetExitCode();
   if ((m_signal!=SIGTERM && m_signal!=SIGINT) &&
       (m_exception==NULL || m_exception->Type()!=ex::normal_exit)) {
     if (m_print) {
-      msg.SetModifiable(false);
-      GenerateStackTrace(msg.LogFile(),true,"! ");
-      msg.SetModifiable(modifiable);
-      if (m_stacktrace) GenerateStackTrace(msg.Error());
+      msg->SetModifiable(false);
+      GenerateStackTrace(msg_LogFile(),true,"! ");
+      msg->SetModifiable(modifiable);
+      if (m_stacktrace) GenerateStackTrace(msg_Error());
     }
     rpa.gen.SetVariable
       ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+
        "/Status__"+rpa.gen.Timer().TimeString(3));
-    msg.Error()<<METHOD<<"(): Pre-crash status saved to '"
+    msg_Error()<<METHOD<<"(): Pre-crash status saved to '"
 	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
     MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
   }
@@ -242,7 +242,7 @@ void Exception_Handler::SignalHandler(int signal)
   m_signal=signal;
   m_print=true;
   std::string input="y";
-  msg.Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "
+  msg_Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "
 	     <<om::reset<<om::blue<<"Signal "<<om::reset<<om::bold
 	     <<"("<<om::red<<signal<<om::reset<<om::bold<<")"
 	     <<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
@@ -251,7 +251,7 @@ void Exception_Handler::SignalHandler(int signal)
     ++m_nsegv;
     GenerateStackTrace(std::cout,false);
     if (!rpa.gen.BatchMode()) {
-      msg.Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
+      msg_Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
       std::cin>>input;
       if (input=="y" || input=="Y") {
 	system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
@@ -259,20 +259,20 @@ void Exception_Handler::SignalHandler(int signal)
       }
     }
     if (m_nsegv>3) {
-      msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
+      msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
     }
   case SIGABRT:
     if (!m_active && m_prepared) abort();
   case SIGTERM:
   case SIGXCPU:
-    msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
+    msg_Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
     m_exitcode=2;
     Terminate();
     break;
   case SIGINT:
     if (!rpa.gen.BatchMode()) {
-      msg.Error()<<"   Do you want to stop the program (y/n/k/p/d/s)? "
+      msg_Error()<<"   Do you want to stop the program (y/n/k/p/d/s)? "
 		 <<om::reset;
       std::cin>>input;
     }
@@ -302,21 +302,21 @@ void Exception_Handler::SignalHandler(int signal)
   case SIGBUS:
     ++m_nbus;
     if (m_nbus>3) {
-      msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
+      msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
     }
     GenerateStackTrace(std::cout,false);
-    msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
+    msg_Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
     m_exitcode=3;
     Terminate();
     break;
   case SIGFPE:
-    msg.Error()<<"   Floating point exception."<<om::reset<<std::endl;
+    msg_Error()<<"   Floating point exception."<<om::reset<<std::endl;
     m_exitcode=1;
     Terminate();
     break;
   default:
-    msg.Error()<<"   Cannot handle signal."<<om::reset<<std::endl;
+    msg_Error()<<"   Cannot handle signal."<<om::reset<<std::endl;
     m_exitcode=1;
     Terminate();
   }

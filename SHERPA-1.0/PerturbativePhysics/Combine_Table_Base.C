@@ -427,7 +427,7 @@ void Combine_Table_Base::SetQ2Cut(const size_t &i,const size_t &j,
   if (q2out<0.0) {
     Combine_Table_Base *ct(this);
     while (ct->Up()) ct=ct->Up();
-    msg.Error()<<METHOD<<"(): Current table {\n"<<*ct<<"} -> combine "
+    msg_Error()<<METHOD<<"(): Current table {\n"<<*ct<<"} -> combine "
 	       <<i<<" "<<ID(idi)<<"["<<yci<<"] & "<<j<<" "<<ID(idj)
 	       <<"["<<ycj<<"]"<<std::endl;
     THROW(critical_error,"Inconsistent Q_{cut} values");
@@ -588,7 +588,7 @@ int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
     }
     else {
       if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
-	msg.Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+	msg_Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
     }
   }
   nqed=nqedt;

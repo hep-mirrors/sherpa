@@ -48,7 +48,7 @@ void Object_Definition_Base::GetElements() {
     p_chambers = dynamic_cast<Muon_Chambers *>(det->GetElement("Muon_Chambers"));
   }
   if (p_tracker==NULL || p_ECal==NULL || p_HCal==NULL) {
-    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   Not all detector components found.  Will abort."<<std::endl;
     abort();
   }

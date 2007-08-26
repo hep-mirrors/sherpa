@@ -240,7 +240,7 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   int nout=p_blob->NOutP();
   if (nin==1) {
     if (nout<4) return true;
-    msg.Error()<<"Error in Cluster_Partons_Base::ClusterConfiguration()"<<std::endl
+    msg_Error()<<"Error in Cluster_Partons_Base::ClusterConfiguration()"<<std::endl
 	       <<"   Try to cluster decay blob, nin ="<<nin<<" with nout = "<<nout<<","<<std::endl
 	       <<"   No method provided yet. Return 0."<<std::endl;
     return false;
@@ -334,7 +334,7 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ct,
     if (ct->GetLeg(i).QMin()<0.0)
       ct->GetLeg(i).SetQMin(hardjets==(size_t)m_maxqcdjets?hardqmin:
 			    Min(hardqmin,dabs(ct->GetLeg(i).QMin())));
-  if (msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     msg_Debugging()<<"table "<<ct->Up()->Number()
 		   <<" ("<<i<<"&"<<j<<") -> qmin = {";
     for (int l(0);l<ct->Up()->NLegs()-1;++l)
@@ -363,7 +363,7 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ref)
   }
   size_t hardjets(0), decayjets(0);
   SetQMin(p_ct,ref,decayjets,hardjets,hardqmin);
-  if (msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     msg_Debugging()<<"table "<<p_ct->Number()<<"       -> qmin = {";
     for (int l(0);l<p_ct->NLegs()-1;++l)
       msg_Debugging()<<p_ct->GetLeg(l).QMin()<<",";
@@ -375,7 +375,7 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ref)
 bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl) 
 {
   if (l>= maxl) {
-    msg.Error()<<" Error in Cluster_Partons_Base::FillLegs() !!! "<<std::endl;
+    msg_Error()<<" Error in Cluster_Partons_Base::FillLegs() !!! "<<std::endl;
     return 0;
   }
   if (l==0) {
@@ -458,7 +458,7 @@ int Cluster_Partons_Base::SetDecayColours(Vec4D * p, Flavour * fl,int col1,int c
     }
   case 3:
   default :
-    msg.Error()<<"Error in Cluster_Partons_Base::SetDecayColours:"<<std::endl
+    msg_Error()<<"Error in Cluster_Partons_Base::SetDecayColours:"<<std::endl
 	       <<"   Cannot handle single color in 1 -> 2 process :"
                <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<std::endl
 	       <<"   Will abort the run."<<std::endl;
@@ -495,9 +495,9 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
   case 2:
     return Set2Colours(nquark,ngluon,p,fl);
   case 1:
-    msg.Out()<<"Error in Cluster_Partons_Base::SetColours() : called for 1 coloured object. \n"
+    msg_Out()<<"Error in Cluster_Partons_Base::SetColours() : called for 1 coloured object. \n"
 	     <<"   Don't know how to handle this ! Abort the run."<<std::endl;
-    for (int i=0; i<4; ++i) msg.Out()<<i<<" : "<<fl[i]<<std::endl;
+    for (int i=0; i<4; ++i) msg_Out()<<i<<" : "<<fl[i]<<std::endl;
     abort();
   case 0:
     m_q2_fss = m_q2_iss = (p[0]+p[1]).Abs2();
@@ -513,10 +513,10 @@ int Cluster_Partons_Base::Set4Colours(const int nquark,const int ngluon,Vec4D * 
   int prop(p_ct->IdentifyHardPropagator());
   if (fl[0].IsGluon() || fl[1].IsGluon() || 
       fl[2].IsGluon() || fl[3].IsGluon() || prop<0) {
-    msg.Out()<<METHOD<<"(): Cannot set colours for "<<std::endl;
+    msg_Out()<<METHOD<<"(): Cannot set colours for "<<std::endl;
     Combine_Table_Base *ct(p_ct);
     while (ct->Up()!=NULL) ct=ct->Up();
-    msg.Error()<<*ct<<std::endl;
+    msg_Error()<<*ct<<std::endl;
     return false;
   }
   switch (prop) {
@@ -550,7 +550,7 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
   m_hard_nqed = 2;
   m_hard_nqcd = 0;
   if (nquark+ngluon>2) {
-    msg.Error()<<"ERROR in Cluster_Partons_Base::Set2Colours("<<nquark<<","<<ngluon<<")"<<std::endl
+    msg_Error()<<"ERROR in Cluster_Partons_Base::Set2Colours("<<nquark<<","<<ngluon<<")"<<std::endl
 	       <<"   Wrong number of colours, abort."<<std::endl;
     abort();
   }
@@ -706,12 +706,12 @@ void Cluster_Partons_Base::FixJetvetoPt2(double & jetveto_pt2)
     msg_Debugging()<<"reset q_{min,hard} -> "<<jetveto_pt2<<"\n";    
   }
   if (jetveto_pt2==std::numeric_limits<double>::max()) {
-    msg.Error()<<METHOD<<"(): Warning. "
+    msg_Error()<<METHOD<<"(): Warning. "
 	       <<"Using QED scale for weight calculation."<<std::endl;
     jetveto_pt2=pt2minqed;
   }
   if (jetveto_pt2==std::numeric_limits<double>::max()) {
-    msg.Error()<<METHOD<<"(..): No minimum scale found in table {\n"
+    msg_Error()<<METHOD<<"(..): No minimum scale found in table {\n"
 	       <<*p_ct<<"}\n"<<std::endl;
   }
   msg_Debugging()<<"} -> "<<sqrt(jetveto_pt2)<<"\n";
@@ -723,19 +723,19 @@ Flavour Cluster_Partons_Base::Flav(int i) {
   if (p_ct) {
     return p_ct->Flav(i);
   }
-  msg.Error()<<"ERROR in Cluster_Partons_Base::Flav. No ct."<<std::endl;
+  msg_Error()<<"ERROR in Cluster_Partons_Base::Flav. No ct."<<std::endl;
   return 0;
 }
 
 Vec4D Cluster_Partons_Base::Momentum(int i) {
   if (p_ct) return p_ct->Momentum(i);
-  msg.Error()<<"ERROR in Cluster_Partons_Base::Momentum. No ct."<<std::endl;
+  msg_Error()<<"ERROR in Cluster_Partons_Base::Momentum. No ct."<<std::endl;
   return Vec4D(0.,0.,0.,0.);
 }
 
 int Cluster_Partons_Base::Colour(const int part,const int ind) {
   if (part>-1&&part<4 && ind>-1&&ind<2) return m_colors[part][ind];
-  msg.Error()<<"ERROR in Cluster_Partons_Base::Colour("<<part<<","<<ind<<"): "<<std::endl
+  msg_Error()<<"ERROR in Cluster_Partons_Base::Colour("<<part<<","<<ind<<"): "<<std::endl
 	     <<"   Out of bounds, return -1."<<std::endl;
   return -1;
 }

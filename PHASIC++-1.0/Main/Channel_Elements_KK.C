@@ -31,7 +31,7 @@ void Channel_Elements_KK::Init(int nin,int nout,ATOOLS::Flavour* fl)
   for (int i=m_nin;i<m_nin+m_nout;i++) {
     if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
       if(ATOOLS::IsZero(ATOOLS::sqr(fl[i].Mass()))){
-	msg.Error()<<"Error in Channel_Elements_KK: "<<endl
+	msg_Error()<<"Error in Channel_Elements_KK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();
       }

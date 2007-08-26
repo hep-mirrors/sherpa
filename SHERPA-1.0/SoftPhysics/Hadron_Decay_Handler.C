@@ -101,7 +101,7 @@ Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob,const Ve
 bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) {
 #ifdef DEBUG__Hadrons
   if(min<0.0 || max<0.0 || !(min<max)) {
-    msg.Error()<<METHOD<<" with strange min, max encountered: min="<<min<<" max="<<max<<endl;
+    msg_Error()<<METHOD<<" with strange min, max encountered: min="<<min<<" max="<<max<<endl;
   }
 #endif
   double mass = 0.0;

@@ -55,7 +55,7 @@ string Amplitude_Output::Int2String(const int i) {
 
 void Amplitude_Output::LegCount(Point * mo) {
   if (!mo) {
-    msg.Error()<<"ERROR in Amplitude_Output::LegCount : no point found, continue run."<<endl;
+    msg_Error()<<"ERROR in Amplitude_Output::LegCount : no point found, continue run."<<endl;
     return;
   }
 

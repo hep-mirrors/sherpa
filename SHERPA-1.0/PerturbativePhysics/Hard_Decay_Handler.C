@@ -33,7 +33,7 @@ void Hard_Decay_Handler::ReadInDecays()
 {
   ifstream from((m_path+m_file).c_str());
   if (!from) {
-    msg.Tracking()<<"Warning :  in Hard_Decay_Handler::ReadInDecays : "<<endl
+    msg_Tracking()<<"Warning :  in Hard_Decay_Handler::ReadInDecays : "<<endl
 		  <<"   File : "<<(m_path+m_file)<<" not found ! "<<endl;
     return;
   }
@@ -99,7 +99,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	if      (dt && decayer==crit)       dt->SetSelectedChannel(decflavs,false);
 	else if (dt && decayer==crit.Bar()) dt->SetSelectedChannel(decflavs,true);
 	else {
-	  msg.Error()<<"ERROR in Hard_Decay_Handler::ReadInDecays from "<<m_path+m_file<<std::endl
+	  msg_Error()<<"ERROR in Hard_Decay_Handler::ReadInDecays from "<<m_path+m_file<<std::endl
 		     <<"   Tried to specifiy a forced decay with non-matching flavours:"
 		     <<"   "<<decayer<<" vs. "<<crit<<std::endl
 		     <<"   Will ignore this decay channel."<<std::endl;
@@ -124,13 +124,13 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
     flav = (*dit)->Flav();
     if ((*dit)->Overwrite()) {
       if (_model->FillDecay((*dit))) { 
-	if (msg.LevelIsTracking()) { (*dit)->Output(); }
+	if (msg_LevelIsTracking()) { (*dit)->Output(); }
       }
       else {
 	flav.SetWidth(-1.);
 	if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
 	if (!p_mehandler->AddToDecays(flav)) {
-	  msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+	  msg_Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
 		     <<"   Could not add "<<flav
 		     <<" to list of decays treated by ME_Handler. Abort run."<<endl;
 	  abort();
@@ -141,7 +141,7 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
       if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
       for (int i=0;i<(*dit)->NumberOfDecayChannels();i++) {
 	if (!p_mehandler->AddToDecays((*dit)->GetDecayChannel(i))) {
-	  msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+	  msg_Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
 		     <<"   Could not add "<<flav
 		     <<" to list of decays treated by ME_Handler. Abort run."<<endl;
 	  abort();
@@ -151,7 +151,7 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
     else {
       if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
       if (!p_mehandler->AddToDecays(flav)) {
-	msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+	msg_Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
 		   <<"   Could not add "<<flav
 		   <<" to list of decays treated by ME_Handler. Abort run."<<endl;
 	abort();
@@ -277,7 +277,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
     }
   }
 
-  msg.Error()<<"Error in Hard_Decay_Handler::SpecifyHardDecay("<<_part->Flav()<<")"<<endl
+  msg_Error()<<"Error in Hard_Decay_Handler::SpecifyHardDecay("<<_part->Flav()<<")"<<endl
 	     <<"   No Decay_Table found in list. Abort."<<endl;
   abort();
 }

@@ -384,7 +384,7 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   }
   // set scales
   if (!SetScales()) {
-    msg.Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
+    msg_Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
     return 0.0;
   }
   // calculate pdfs
@@ -498,7 +498,7 @@ double Ladder::MECorrection()
       XS_Selector select(NULL);
       m_xsmes[name] = me = select.GetXS(m_nin,m_naddout,&fl.front());
       if (me==NULL) {
-	msg.Error()<<METHOD<<"(): Invalid Process '"<<name<<"'."<<std::endl;
+	msg_Error()<<METHOD<<"(): Invalid Process '"<<name<<"'."<<std::endl;
 	abort();
       }
     }
@@ -555,7 +555,7 @@ double Ladder::MECorrection()
       me->SetColorIntegrator(cint);
       cint->GeneratePoint();
       if (!me->GaugeTest(moms)) {
-	msg.Error()<<METHOD<<"(): Gauge test not satisfied. Retry next."
+	msg_Error()<<METHOD<<"(): Gauge test not satisfied. Retry next."
 		   <<std::endl;
 	delete cint;
 	delete me;

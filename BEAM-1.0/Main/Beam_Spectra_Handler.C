@@ -19,7 +19,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
   for (short int i=0;i<2;i++) p_BeamBase[i] = NULL;
 
   if (!(SpecifySpectra(dataread) && InitKinematics(dataread))) {
-    msg.Error()<<"Error in Beam_Spectra_Handler::Beam_Spectra_Handler :"<<endl
+    msg_Error()<<"Error in Beam_Spectra_Handler::Beam_Spectra_Handler :"<<endl
 	       <<"    Could not init spectra or kinematics. Abort program."<<endl;
     abort();
   }
@@ -61,7 +61,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
       okay = okay&&InitializeMonochromatic(dataread,num);
       break;
     case Beam_Type::Gaussian :
-      msg.Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
+      msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
 		 <<"   Gaussian beam spectra still have to be implemented."<<endl 
 		 <<"   Will read in parameters, check the procedure and abort later."<<endl;
       okay = 0;
@@ -75,7 +75,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
       okay = okay&&InitializeSpectrumReader(dataread,num);
       break;
     default :
-      msg.Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
+      msg_Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
 		 <<"   No beam sprectum specified for beam "<<num+1<<endl
 		 <<"   Will initialize monochromatic beam."<<endl;
       okay = okay&&InitializeMonochromatic(dataread,num);
@@ -96,7 +96,7 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
 
   if ( (beam_particle!=Flavour(kf::e)) && (beam_particle!=Flavour(kf::e).Bar()) ) {
-    msg.Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
+    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
 	       <<"   Tried to initialize Laser_Backscattering for "<<beam_particle<<"."<<endl
 	       <<"   This option is not available. Result will be to terminate program."<<endl;
     return 0;
@@ -181,7 +181,7 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
 
 
 void Beam_Spectra_Handler::Output() {
-  msg.Out()<<"Beam_Spectra_Handler : "<<endl
+  msg_Out()<<"Beam_Spectra_Handler : "<<endl
 	   <<"   type = "<<m_type<<endl
 	   <<"   for    "<<p_BeamBase[0]->Beam()<<"  ("<<p_BeamBase[0]->InMomentum()<<")"<<endl
 	   <<"   and    "<<p_BeamBase[1]->Beam()<<"  ("<<p_BeamBase[1]->InMomentum()<<")"<<endl;
@@ -349,7 +349,7 @@ double Beam_Spectra_Handler::Weight(int * pol_types, double *dofs)
 	//	weight*=dabs(hel+pol)/2.;
       }
       else {
-	msg.Out()<<"ERROR: unpolarised cross section for polarised beam!! "<<endl;
+	msg_Out()<<"ERROR: unpolarised cross section for polarised beam!! "<<endl;
       } 
     }
   }

@@ -16,7 +16,7 @@ void Trigger_Base::Evaluate(const ATOOLS::Blob_List &bl,
   Particle_List *outlist(new Particle_List());
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"["<<typeid(*this).name()
+    msg_Error()<<METHOD<<"["<<typeid(*this).name()
 	       <<"](): List '"<<m_inlist<<"' not found."<<std::endl;
     p_ana->AddParticleList(m_outlist,outlist);
     return;
@@ -36,14 +36,14 @@ void Two_List_Trigger_Base::Evaluate(const ATOOLS::Blob_List &bl,
   Particle_List *outlist(new Particle_List());
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"["<<typeid(*this).name()
+    msg_Error()<<METHOD<<"["<<typeid(*this).name()
 	       <<"](): List '"<<m_inlist<<"' not found."<<std::endl;
     p_ana->AddParticleList(m_outlist,outlist);
     return;
   }
   Particle_List *reflist(p_ana->GetParticleList(m_reflist));
   if (reflist==NULL) {
-    msg.Error()<<METHOD<<"["<<typeid(*this).name()
+    msg_Error()<<METHOD<<"["<<typeid(*this).name()
 	       <<"](): List '"<<m_reflist<<"' not found."<<std::endl;
     p_ana->AddParticleList(m_outlist,outlist);
     return;
@@ -64,7 +64,7 @@ void N_List_Trigger_Base::Evaluate(const ATOOLS::Blob_List &bl,
   for (size_t i(0);i<m_inlists.size();++i) {
     inlists[i]=p_ana->GetParticleList(m_inlists[i]);
     if (inlists[i]==NULL) {
-      msg.Error()<<METHOD<<"["<<typeid(*this).name()
+      msg_Error()<<METHOD<<"["<<typeid(*this).name()
 		 <<"](): List '"<<m_inlists[i]<<"' not found."<<std::endl;
       p_ana->AddParticleList(m_outlist,outlist);
       return;

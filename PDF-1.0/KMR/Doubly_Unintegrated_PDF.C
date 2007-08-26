@@ -244,7 +244,7 @@ double Doubly_Unintegrated_PDF::GetXPDF(const ATOOLS::Flavour flavour)
 {
   if (!m_calculate) return 0.;
   if (!Unintegrate(flavour)) {
-    ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::GetXPDF("<<flavour<<"): "
+    msg_Error()<<"Doubly_Unintegrated_PDF::GetXPDF("<<flavour<<"): "
 		       <<"Cannot unintegrate PDF."<<std::endl;
   }
   return m_integrated+m_unintegrated;

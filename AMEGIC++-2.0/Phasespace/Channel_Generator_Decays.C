@@ -183,7 +183,7 @@ void Channel_Generator_Decays::Step0(int flag,Point* p,int& rannum,ofstream& sf,
     
 	  flag += 10;
 	  if (!StepS(flag,p,rannum,sf,flav,maxnumb)) {
-	    msg.Error()<<"This seems to be a 1->1 process !!!"<<endl
+	    msg_Error()<<"This seems to be a 1->1 process !!!"<<endl
 		       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }. Abort the run."<<endl;
 	    abort();
 	  }
@@ -510,7 +510,7 @@ void  Channel_Generator_Decays::AddToVariables(int flag,const string& lhs,const 
   else {
     // already exists
     if (rhs != declarations[name]) {
-      msg.Error()<<" ERROR in Channel_Generator_Decays::AddToVariables. Abort the run."<<endl;
+      msg_Error()<<" ERROR in Channel_Generator_Decays::AddToVariables. Abort the run."<<endl;
       abort();
     }
   }

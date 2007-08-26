@@ -463,41 +463,41 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
 // Output methods
 void Vertex::Print()
 {
-  if (!msg.LevelIsDebugging()) return;
+  if (!msg_LevelIsDebugging()) return;
   //3 legs
   for (int i=0;i<m_nvertex;i++) {
-    msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
-    if (m_v[i].on) msg.Out()<<"...On  ";
-    else  msg.Out()<<"...Off ";
-    msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
-    msg.Out()<<"; "<<m_v[i].Color->String();
-    msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
+    msg_Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
+    if (m_v[i].on) msg_Out()<<"...On  ";
+    else  msg_Out()<<"...Off ";
+    msg_Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
+    msg_Out()<<"; "<<m_v[i].Color->String();
+    msg_Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
   }
   //4 legs
   for (int i=m_nvertex;i<(m_n4vertex+m_nvertex);i++) {
     if (m_v4[i-m_nvertex].ncf==1) {
-      msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+      msg_Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 	       <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
-      if (m_v4[i-m_nvertex].on) msg.Out()<<"...On  ";
+      if (m_v4[i-m_nvertex].on) msg_Out()<<"...On  ";
       else  
-	msg.Out()<<"...Off ";
-      msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-      msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
-      msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
+	msg_Out()<<"...Off ";
+      msg_Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+      msg_Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
+      msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
     }
     else {
       for (short int k=0;k<m_v4[i-m_nvertex].ncf;k++) {
-	msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+	msg_Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 		 <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
 	if (m_v4[i-m_nvertex].on) 
-	  msg.Out()<<"...On  ";
+	  msg_Out()<<"...On  ";
 	else  
-	  msg.Out()<<"...Off ";
-	msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-	msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
+	  msg_Out()<<"...Off ";
+	msg_Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+	msg_Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
 	if (m_v4[i-m_nvertex].Color[k].Next()!=0) 
-	  msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next()->String();
-	msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
+	  msg_Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next()->String();
+	msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
       }
     }
   }

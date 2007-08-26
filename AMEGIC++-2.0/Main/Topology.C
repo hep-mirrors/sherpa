@@ -46,15 +46,15 @@ void Topology::Build_All(int N)
 
 void Topology::Print(Point* p)
 {
-  if (!msg.LevelIsDebugging()) return;
-  if (p==0) {ATOOLS::msg.Out()<<"End."<<endl;return;}
+  if (!msg_LevelIsDebugging()) return;
+  if (p==0) {msg_Out()<<"End."<<endl;return;}
 
-  ATOOLS::msg.Out()<<"Left - ";
+  msg_Out()<<"Left - ";
   Print(p->left);
-  ATOOLS::msg.Out()<<"Right - ";  
+  msg_Out()<<"Right - ";  
   Print(p->right);
   if (p->middle!=0) { 
-    ATOOLS::msg.Out()<<"Middle - ";  
+    msg_Out()<<"Middle - ";  
     Print(p->middle);
   }
 }

@@ -119,7 +119,7 @@ void PreSample_Multi_Channel::ResetOpt()
 
 void PreSample_Multi_Channel::Optimize(double error)
 {
-  msg.Tracking()<<"Optimize PreSample_Multi_Channel : "<<name<<endl; 
+  msg_Tracking()<<"Optimize PreSample_Multi_Channel : "<<name<<endl; 
 
 //    for (size_t i=0;i<m_subchannels.size();i++) 
 //      if (m_subchannels[i]->ValidN()>m_subchannels[i]->Number()*100)
@@ -261,14 +261,14 @@ void PreSample_Multi_Channel::GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *
 
 
 void PreSample_Multi_Channel::Print() {
-  if (!msg.LevelIsTracking()) return;
-  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"----------------------------------------------"<<endl
 		      <<"PreSample_Multi_Channel with "<<m_subchannels.size()<<" channels."<<endl;
   for (size_t i=0;i<m_subchannels.size();i++) 
-    ATOOLS::msg.Out()<<"  "<<m_subchannels[i]->Name()<<" : "<<m_alpha[i]<<endl;
-  ATOOLS::msg.Out()<<"++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
+    msg_Out()<<"  "<<m_subchannels[i]->Name()<<" : "<<m_alpha[i]<<endl;
+  msg_Out()<<"++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
   for (size_t i=0;i<m_subchannels.size();i++) m_subchannels[i]->Print();
-  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl;
+  msg_Out()<<"----------------------------------------------"<<endl;
 }                 
 
 void PreSample_Multi_Channel::WriteOut(std::string pid)

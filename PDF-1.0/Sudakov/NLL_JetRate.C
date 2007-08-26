@@ -80,7 +80,7 @@ void NLL_JetRate::InitMassive()
 void NLL_JetRate::InitIntegral(nll::code id, nll::code int_id, std::string name) 
 {
   if (id+10 != int_id) {
-    msg.Out()<<" WARNING: something fishy in NLL_JetRate::InitIntegral("<<id<<","<<int_id<<","<<name<<")"<<std::endl;
+    msg_Out()<<" WARNING: something fishy in NLL_JetRate::InitIntegral("<<id<<","<<int_id<<","<<name<<")"<<std::endl;
   } 
 
   // check if already exists!
@@ -125,7 +125,7 @@ void NLL_JetRate::SetGammas(NLL_Branching_Probability_Base * gammaq ,NLL_Branchi
 void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
 {
   if (m_qmin!=m_qmin_b) {
-    msg.Error()<<"Warning in NLL_JetRate::Rates : "<<std::endl
+    msg_Error()<<"Warning in NLL_JetRate::Rates : "<<std::endl
 	       <<"  q0 changed from "<<m_qmin<<" to "<<m_qmin_b<<std::endl
 	       <<"  deleting all integration tables "<<std::endl;
     for (Func_List::iterator i=integrals.begin(); i!=integrals.end();++i) 
@@ -446,7 +446,7 @@ double NLL_JetRate::operator()(double q)
       return (*p_gammaqm)(q,m_qmax) * (*p_deltagm)(q,m_qmin) * 
 	( Integrate(nll::GgDG,q) + Integrate(nll::GfDf,q) + Integrate(nll::GFDF,q) );
   default:
-    msg.Out()<<"ERROR in NLL_JetRate::operator()("<<m_mode<<std::endl ;
+    msg_Out()<<"ERROR in NLL_JetRate::operator()("<<m_mode<<std::endl ;
     return 0.;
   }
   

@@ -446,7 +446,7 @@ void Process_Base::SetupEnhance() {
   }
   if (m_maxeps>0.) {
     double max = GetMaxEps(m_maxeps);
-    msg.Info()<<"Maximum reduction factor for "<<m_name<<": "<<Max()/max<<" (epsilon="<<m_maxeps<<")"<<endl;
+    msg_Info()<<"Maximum reduction factor for "<<m_name<<": "<<Max()/max<<" (epsilon="<<m_maxeps<<")"<<endl;
     SetMax(max);
   }
   else if (m_maxfac!=1.) {

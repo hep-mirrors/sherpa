@@ -174,7 +174,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     spinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),100.0);
   }
   // replacement ends here
-  if (msg.LevelIsDebugging()) ListLundParameters();
+  if (msg_LevelIsDebugging()) ListLundParameters();
   if (!sherpa) {
     int helpi;
     if (reader->ReadFromFile(helpi,"EXPORT_ALPHAS")) s_exportas=(bool)helpi;
@@ -232,7 +232,7 @@ void Lund_Interface::AdjustProperties(Flavour flav)
   double sherpamass = flav.PSMass();
   flav.SetMass(pythiamass);
   if( !(abs(sherpamass-pythiamass)/sherpamass < 1.e-2) ) {
-    msg.Info()<<METHOD<<" Adjusted mass of "<<flav<<" ("<<flav.Kfcode()
+    msg_Info()<<METHOD<<" Adjusted mass of "<<flav<<" ("<<flav.Kfcode()
         <<") from "<<sherpamass<<" to "<<pythiamass<<" to allow Pythia decays."<<endl;
   }
 }
@@ -286,7 +286,7 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
       if ((*blit)->Type()!=btp::Fragmentation) {
-	msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+	msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		   <<"   Blob with status=needs_hadronizazion and "<<std::endl
 		   <<"   type different from 'Fragmentation' illegally found."<<std::endl
 		   <<"   Will retry the event and hope for the best."<<std::endl;
@@ -302,12 +302,12 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 	if(result==Return_Value::Success) break;
 	assert(result==Return_Value::Retry_Phase);
 	if(trials+1<m_maxtrials) {
-	  msg.Error()<<"Error in "<<METHOD<<"."<<endl
+	  msg_Error()<<"Error in "<<METHOD<<"."<<endl
 		     <<"   Hadronization failed. Retry it."<<endl;
 	  spdat1.mstu[23-1]=errs;   //New try, set back error sum.
 	  continue;
 	}
-	msg.Error()<<"Error in "<<METHOD<<"."<<endl
+	msg_Error()<<"Error in "<<METHOD<<"."<<endl
 		   <<"   Hadronization failed. Retry the event."<<endl;
 	return Return_Value::Retry_Event;
       }
@@ -325,10 +325,10 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
       blob->NInP()!=1 ||
       blob->InParticle(0)->Status()!=part_status::active)
   {
-    msg.Error()<<METHOD<<" returns Error."<<endl;
-    msg.Error()<<" blob->Status()="<<blob->Status()<<endl;
-    msg.Error()<<" blob->NInP()="<<blob->NInP()<<endl;
-    msg.Error()<<" part->Status()="<<blob->InParticle(0)->Status()<<endl;
+    msg_Error()<<METHOD<<" returns Error."<<endl;
+    msg_Error()<<" blob->Status()="<<blob->Status()<<endl;
+    msg_Error()<<" blob->NInP()="<<blob->NInP()<<endl;
+    msg_Error()<<" part->Status()="<<blob->InParticle(0)->Status()<<endl;
     return Return_Value::Error;
   }
 
@@ -374,15 +374,15 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   int ip(1);
   spdecy(ip);
   if (spdat1.mstu[24-1]!=0) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   SPDECY call results in error code : "<<spdat1.mstu[24-1]<<std::endl
 	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
     if (spdat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
 	rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, try new event."<<std::endl;
+      msg_Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, try new event."<<std::endl;
       return Return_Value::Retry_Method;
     }
-    msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
+    msg_Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
     THROW(critical_error,"Too many errors in lund decay.");
   }
   part->SetStatus(part_status::decayed);
@@ -429,7 +429,7 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
 	}
     }      
       if (lastc!=0)
-	msg.Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
+	msg_Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
     AddPartonToString(help2,nhep);
     delete help2;
       lastc=0;
@@ -478,23 +478,23 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
   if(spdat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
     for (int i=0;i<blob->NInP();i++) cms+=blob->InParticle(i)->Momentum();
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   SPSTRF call results in error code : "<<spdat1.mstu[24-1]
 	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()
 	       <<std::endl;
     spdat1.mstu[24-1]=0;
     if(spdat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
        rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, retrying..."
+      msg_Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, retrying..."
 		 <<std::endl;
       return Return_Value::Retry_Phase;
     }
-    msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."
+    msg_Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."
 	       <<std::endl;
     THROW(critical_error,"Too many errors in lund fragmentation.");
   }
   if(flag) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Incomplete fragmentation."<<std::endl;
     return Return_Value::Retry_Phase;
   }
@@ -621,7 +621,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     partons[2]->SetFlow(1,partons[0]->GetFlow(2));
   }
   else if(n>0) {
-    msg.Error()<<METHOD<<" wasn't able to set the color flow for"<<endl<<*blob<<endl;
+    msg_Error()<<METHOD<<" wasn't able to set the color flow for"<<endl<<*blob<<endl;
   }
 }
 
@@ -660,7 +660,7 @@ void Lund_Interface::ReadInStatus(const std::string &filename, int mode) {
     }
     myinstream.close();
   }
-  else msg.Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
+  else msg_Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
 }
 
 void Lund_Interface::WriteOutStatus(const std::string &filename)
@@ -677,7 +677,7 @@ void Lund_Interface::WriteOutStatus(const std::string &filename)
     myoutstream<<endl;
     myoutstream.close();
   }
-  else msg.Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
+  else msg_Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
 }
 
 void Lund_Interface::PrepareTerminate()
@@ -696,11 +696,11 @@ void Lund_Interface::Error(const int error)
 	  ToString(error)+")");
   }
   else {
-    msg.Error()<<"Lund_Interface::Error("<<error<<") "<<om::red
+    msg_Error()<<"Lund_Interface::Error("<<error<<") "<<om::red
 	       <<"Pythia calls PYERRM("<<error<<") in event "
 	       <<rpa.gen.NumberOfDicedEvents()<<"."
 	       <<om::reset<<endl;
-//     if (msg.LevelIsDebugging()) {
+//     if (msg_LevelIsDebugging()) {
 //       msg_Tracking()<<*s_bloblist<<endl;
       splist(2);
 //     }
@@ -764,7 +764,7 @@ Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weig
     p_hepevt->SetJdahep(p_jdahep);
     p_hepevt->SetPhep(p_phep);
     p_hepevt->SetVhep(p_vhep);
-    if (msg.LevelIsDebugging()) splist(3);
+    if (msg_LevelIsDebugging()) splist(3);
     if (p_hepevt->HepEvt2Sherpa(blobs)) { 
       okay = true; 
       break; 

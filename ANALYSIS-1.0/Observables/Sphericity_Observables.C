@@ -81,7 +81,7 @@ Sphericity_Calculator::Sphericity_Calculator(const std::string & listname)
 void Sphericity_Calculator::Evaluate(const Blob_List & ,double weight, int ncout) {
   Particle_List * pl = p_ana->GetParticleList(m_listname);
   if (pl==NULL) {
-    msg.Out()<<"WARNING in Sphericity_Calculator::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Sphericity_Calculator::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
     return;
   }
   double lambda1=0., lambda2=0., lambda3=0.;

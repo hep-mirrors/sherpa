@@ -22,7 +22,7 @@ InitKinematics(Tree **const trees,const int tree1,
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<") {\n";
   msg_Indent();
   if (k1==NULL || k2==NULL) {
-    msg.Error()<<METHOD<<"(..): No knots. Abort."<<std::endl;
+    msg_Error()<<METHOD<<"(..): No knots. Abort."<<std::endl;
     return -1;
   }
   if (!k1->shower) {
@@ -65,7 +65,7 @@ InitKinematics(Tree **const trees,const int tree1,
     m_boost=Poincare(b1);
     m_boost.Boost(o1);
     if (!(o1==v1)) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved on tree 1.\n"
+      msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 1.\n"
 		 <<"  p_miss  = "<<(v1-o1)<<"\n"
 		 <<"  p_old   = "<<o1<<" "<<o1.Abs2()<<" <- "<<k1->t<<"\n"
 		 <<"  p_new   = "<<v1<<" "<<v1.Abs2()<<" <- "<<k1->t<<"\n"
@@ -81,7 +81,7 @@ InitKinematics(Tree **const trees,const int tree1,
     m_boost=Poincare(b2);
     m_boost.Boost(o2);
     if (!(o2==v2)) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved on tree 2.\n"
+      msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 2.\n"
 		 <<"  p_miss  = "<<(v2-o2)<<"\n"
 		 <<"  p_old   = "<<o2<<" "<<o2.Abs2()<<" <- "<<k2->t<<"\n"
 		 <<"  p_new   = "<<v2<<" "<<v2.Abs2()<<" <- "<<k2->t<<"\n"
@@ -104,7 +104,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
 		 <<","<<leg<<"): {\n";
   msg_Indent();
   if (active->prev==NULL) {
-    msg.Error()<<METHOD<<"(..): No mother. Abort."<<std::endl;
+    msg_Error()<<METHOD<<"(..): No mother. Abort."<<std::endl;
     msg_Debugging()<<"}\n";
     return false;
   }
@@ -163,7 +163,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
     Vec4D v_si(v_mo + (-1.)*active->part->Momentum());
     if (active->part->Momentum().Nan() || partner->part->Momentum().Nan() ||
 	v_mo.Nan() || v_si.Nan()) {
-      msg.Error()<<METHOD<<"(..): Error. Bad vectors.\n"
+      msg_Error()<<METHOD<<"(..): Error. Bad vectors.\n"
 		 <<"  Act: "<<active->part->Momentum()<<" "
 		 <<active->part->Momentum().Abs2()<<" / "<<active->t<<"\n"
 		 <<"  Mom: "<<v_mo<<" "<<v_mo.Abs2()<<" / "<<mother->t<<"\n"
@@ -204,7 +204,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *const si,
   double E11(p_si[0]), t1(p_si.Abs2());
   static double accu(sqrt(rpa.gen.Accu()));
   if (dabs((t1-v_si.Abs2())/t1)>accu) {
-    msg.Error()<<METHOD<<"(..): Mass deviation. t1 = "<<t1
+    msg_Error()<<METHOD<<"(..): Mass deviation. t1 = "<<t1
 	       <<" t1-t1' = "<<t1-v_si.Abs2()<<std::endl;
   }
   // rotation
@@ -221,7 +221,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *const si,
   // apply rotation and boost on tree rest (sequence depending on mode)
   if (mode==3) RoBoIni(si,rot,m_boost);
   else if (mode==5) RoBoFin(si,rot,m_boost);
-  else msg.Error()<<METHOD<<"(..): Error."<<std::endl;
+  else msg_Error()<<METHOD<<"(..): Error."<<std::endl;
   msg_Debugging()<<"}\n";
 }
 
@@ -240,7 +240,7 @@ void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost)
     Vec4D pm(k->prev->part->Momentum());
     Vec4D pd(k->part->Momentum()+k->prev->left->part->Momentum());
     if (!(pm==pd)) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+      msg_Error()<<METHOD<<"(..): Four momentum not conserved.\n"
 		 <<"  p_miss  = "<<(pm-pd)<<"\n"
 		 <<"  p_old   = "<<pm<<" "<<pm.Abs2()<<"\n"
 		 <<"  p_new   = "<<pd<<" "<<pd.Abs2()<<std::endl;
@@ -286,7 +286,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,
       double tnew(v_si.Abs2());
       static double accu(sqrt(rpa.gen.Accu()));
       if (dabs(tnew/si->t-1.0)>accu)  
-	msg.Error()<<METHOD<<"(..): Relative mass deviation "
+	msg_Error()<<METHOD<<"(..): Relative mass deviation "
 		   <<(tnew/si->t-1.0)<<", "<<tnew<<" vs. "<<si->t
 		   <<". Reset t."<<std::endl;
       si->t=tnew;
@@ -364,7 +364,7 @@ double Spacelike_Kinematics::CalculateMaxT(Knot *const active,
 					   Knot *const partner,bool diced) 
 {
   if (active==NULL || partner==NULL || active->prev==NULL) {
-    msg.Error()<<METHOD<<"("<<(active?(active->prev?active->prev->kn_no:-1):-1)
+    msg_Error()<<METHOD<<"("<<(active?(active->prev?active->prev->kn_no:-1):-1)
 	       <<"->"<<(active?active->kn_no:-1)<<","
 	       <<(partner?partner->kn_no:-1)<<"): Missing knot."<<std::endl;
     return 0.;

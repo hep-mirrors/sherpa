@@ -49,7 +49,7 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
                                     )
 {
   if(part1->Flav()!=part2->Flav()) {
-    msg.Error()<<METHOD<<" Contracting particles are not the same:"<<endl
+    msg_Error()<<METHOD<<" Contracting particles are not the same:"<<endl
       <<(*part1)<<endl
       <<(*part2)<<endl;
   }
@@ -61,18 +61,18 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
     if(part2!=amps2->m_particles[i]) remainingparts.push_back(amps2->m_particles[i]);
   }
   if(remainingparts.size()!=amps1->m_particles.size()-1+amps2->m_particles.size()-1) {
-    msg.Error()<<METHOD<<" Error: not exactly one particle to contract in event "
+    msg_Error()<<METHOD<<" Error: not exactly one particle to contract in event "
       <<rpa.gen.NumberOfDicedEvents()<<"."<<endl;
     for(size_t i=0;i<remainingparts.size();i++) {
-      msg.Error()<<"remainingparts["<<i<<"]="<<remainingparts[i]->Flav()<<endl;
+      msg_Error()<<"remainingparts["<<i<<"]="<<remainingparts[i]->Flav()<<endl;
     }
     for(size_t i=0;i<amps1->m_particles.size();i++) {
-      msg.Error()<<"amps1->m_particles["<<i<<"]="<<amps1->m_particles[i]->Flav()<<endl;
+      msg_Error()<<"amps1->m_particles["<<i<<"]="<<amps1->m_particles[i]->Flav()<<endl;
     }
     for(size_t i=0;i<amps2->m_particles.size();i++) {
-      msg.Error()<<"amps2->m_particles["<<i<<"]="<<amps2->m_particles[i]->Flav()<<endl;
+      msg_Error()<<"amps2->m_particles["<<i<<"]="<<amps2->m_particles[i]->Flav()<<endl;
     }
-    msg.Error()<<"contracting particle1:"<<endl<<(*part1)<<endl
+    msg_Error()<<"contracting particle1:"<<endl<<(*part1)<<endl
       <<"contracting particle2:"<<endl<<(*part2)<<endl;
 //     abort();
   }
@@ -121,7 +121,7 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
         newamps.SetColorMatrix(amps1->GetColorMatrix());
       }
       else {
-        msg.Error()<<METHOD<<" Error: contraction not implemented for two "
+        msg_Error()<<METHOD<<" Error: contraction not implemented for two "
           <<"colorful Amplitude_Tensors yet."<<endl;
         abort();
       }
@@ -174,7 +174,7 @@ double Amplitude_Tensor::SumSquare() const
 size_t Amplitude_Tensor::ColorSize() const
 {
   if(!p_colormatrix) {
-    msg.Error()<<METHOD<<" Warning: asking for ColorSize(), but p_colormatrix has "
+    msg_Error()<<METHOD<<" Warning: asking for ColorSize(), but p_colormatrix has "
       <<"not been set yet."<<endl;
     return 1;
   }

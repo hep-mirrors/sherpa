@@ -25,7 +25,7 @@ bool NLL_Single_Sudakov::Initialize(double _m_qmin,double _m_qmax)
   m_calcmode = (Sudakov::code)(m_calcmode&896);
   m_cutmode  = (Sudakov::code)(m_cutmode&7);
   if (m_calcmode==Sudakov::table) {
-    msg.Error()<<"NLL_Single_Sudakov::Initialize("
+    msg_Error()<<"NLL_Single_Sudakov::Initialize("
 	       <<m_calcmode<<","<<m_cutmode<<"): "<<std::endl
 	       <<"Table mode not implemented. Abort."<<std::endl;
     abort();

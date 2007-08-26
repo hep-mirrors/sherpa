@@ -27,7 +27,7 @@ Detector::~Detector() {}
 void Detector::AddDetectorElement(Detector_Element * element) {
   std::string name = element->Name();
   if (m_elements.find(name)!=m_elements.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Element of type '"<<name<<"' already in detector."<<std::endl
 	       <<"   Abort the run."<<std::endl;
     abort();
@@ -37,7 +37,7 @@ void Detector::AddDetectorElement(Detector_Element * element) {
 
 Detector_Element * Detector::GetElement(std::string name) {
   if (m_elements.find(name)==m_elements.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Element of type '"<<name<<"' does not exist in detector."<<std::endl
 	       <<"   Return 'NULL' and hope for the best."<<std::endl;
     return NULL;
@@ -48,7 +48,7 @@ Detector_Element * Detector::GetElement(std::string name) {
 void Detector::AddParticleSmearer(Particle_Smearer_Base * smearer) {
   std::string name = smearer->Name();
   if (m_smearers.find(name)!=m_smearers.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Smearer of type '"<<name<<"' already in detector."<<std::endl
 	       <<"   Abort the run."<<std::endl;
     abort();
@@ -58,7 +58,7 @@ void Detector::AddParticleSmearer(Particle_Smearer_Base * smearer) {
 
 Particle_Smearer_Base * Detector::GetParticleSmearer(std::string name) {
   if (m_smearers.find(name)==m_smearers.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Element of type '"<<name<<"' does not exist in detector."<<std::endl
 	       <<"   Return 'NULL' and hope for the best."<<std::endl;
     return NULL;
@@ -75,7 +75,7 @@ Object_Definition_Base * Detector::GetObjectDefinition(std::string name) {
        odit!=m_definitions.end();odit++) {
     if ((*odit)->Name()==name) return (*odit);
   }
-  msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+  msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	     <<"   Element of type '"<<name<<"' does not exist in detector."<<std::endl
 	     <<"   Return 'NULL' and hope for the best."<<std::endl;
   return NULL;
@@ -86,7 +86,7 @@ void Detector::Evaluate(const ATOOLS::Blob_List &bl, double weight, int ncount)
   Particle_List *outlist(new Particle_List);
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"(): List '"<<m_inlist<<"' not found."<<std::endl;
+    msg_Error()<<METHOD<<"(): List '"<<m_inlist<<"' not found."<<std::endl;
     p_ana->AddParticleList(m_outlist,outlist);
     return;
   }

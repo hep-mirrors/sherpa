@@ -138,11 +138,11 @@ void Constituents::PrintConstituents() {
   double wt(0.);
   for (FlavCCMap_Iterator cmit=CCMap.begin();cmit!=CCMap.end();cmit++) {
     wt+=cmit->second->m_weight;
-    msg.Out()<<cmit->first<<" : "<<cmit->second->m_mass<<" GeV, "
+    msg_Out()<<cmit->first<<" : "<<cmit->second->m_mass<<" GeV, "
 	     <<"Spin = "<<double(cmit->second->m_ispin/2.)<<", "
 	     <<"Weight = "<<cmit->second->m_weight<<std::endl;
   }
-  msg.Out()<<"Total weight : "<<wt<<std::endl
+  msg_Out()<<"Total weight : "<<wt<<std::endl
 	   <<"------------- END OF CONSTITUENTS ---------------"<<std::endl;
 }
 

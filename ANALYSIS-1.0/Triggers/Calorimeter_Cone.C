@@ -22,11 +22,11 @@ void Calorimeter_Cone::SetAnalysis(Primitive_Analysis  * ana)
     if (p_calorimeter)
       p_calorimeter->GetDimensions(m_neta,m_nphi,m_mineta,m_maxeta);
     else {
-      msg.Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Hadronic Calorimeter"" "<<std::endl;
+      msg_Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Hadronic Calorimeter"" "<<std::endl;
     }
   }
   else {
-    msg.Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Full Detector"" "<<std::endl;
+    msg_Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Full Detector"" "<<std::endl;
   }
   if (p_jetno!=NULL) {
     for (int i=0; i<m_neta;++i) delete [] p_jetno[i];

@@ -121,7 +121,7 @@ void Spectrum_Reader::ReadFromFile()
   std::ifstream f(m_fname.c_str());
 
   if (!(f.good())) {
-    msg.Error()<<"ERROR in Spectrum_Reader::ReadFromFile : file "<<m_fname<<" not found"<<std::endl;
+    msg_Error()<<"ERROR in Spectrum_Reader::ReadFromFile : file "<<m_fname<<" not found"<<std::endl;
     return;
   }
 
@@ -150,7 +150,7 @@ void Spectrum_Reader::ReadFromFile()
 	m_bunch=Flavour(kf::e);
 	if (m_bunch==m_beam) m_remnant=Flavour(kf::photon);
 	else {
-	  msg.Out()<<"ERROR in Spectrum_Reader::ReadFromfile something wrong in beam definition"<<std::endl;
+	  msg_Out()<<"ERROR in Spectrum_Reader::ReadFromfile something wrong in beam definition"<<std::endl;
 	}
       }
       if (buffer.find("beampol")!=std::string::npos) {
@@ -172,7 +172,7 @@ void Spectrum_Reader::ReadFromFile()
       if (fbeampol==m_polarisation &&  flaserpol==m_polarisation_laser) fac=1.;
       else if (fbeampol==-m_polarisation &&  flaserpol==-m_polarisation_laser) fac=-1.;
       else {
-	msg.Out()<<"Warning in Spectrum_Reader::ReadFromFile :"<<std::endl
+	msg_Out()<<"Warning in Spectrum_Reader::ReadFromFile :"<<std::endl
 		 <<"   Beam spectrum file does match beam parameter!"<<std::endl
 		 <<"   fbeampol  = "<<fbeampol<<std::endl
 		 <<"   beampol   = "<<m_polarisation<<std::endl
@@ -212,7 +212,7 @@ void Spectrum_Reader::ReadFromFile()
       if (fbeampol==m_polarisation &&  flaserpol==m_polarisation_laser) fac=1.;
       else if (fbeampol==-m_polarisation &&  flaserpol==-m_polarisation_laser) fac=-1.;
       else {
-	msg.Out()<<"Warning in Spectrum_Reader::ReadFromFile :"<<std::endl
+	msg_Out()<<"Warning in Spectrum_Reader::ReadFromFile :"<<std::endl
 		 <<"   Beam spectrum file does match beam parameter!"<<std::endl;
 	fac=1.;
       }
@@ -264,7 +264,7 @@ void Spectrum_Reader::ReadFromFile()
       m_upper=x2;
     }
     else { 
-      msg.Error()<<"ERROR in Spectrum_Reader : Spectrum has a pole at one! "<<std::endl
+      msg_Error()<<"ERROR in Spectrum_Reader : Spectrum has a pole at one! "<<std::endl
 		 <<" m_upper="<<m_upper<<std::endl;
     }
   }
@@ -292,7 +292,7 @@ ATOOLS::Vec4D Spectrum_Reader::OutMomentum() {
 bool Spectrum_Reader::CalculateWeight(const double x,const double scale)
 {
   if (x<0. || 1.<x) {
-    msg.Out()<<"Error in Spectrum_Reader::CalculateWeight :  x out of range! ("<<x<<")"<<std::endl;
+    msg_Out()<<"Error in Spectrum_Reader::CalculateWeight :  x out of range! ("<<x<<")"<<std::endl;
     return 0.;
   }
   m_x=x;
@@ -325,7 +325,7 @@ bool Spectrum_Reader::CalculateWeight(const double x,const double scale)
     }
   }
 
-  msg.Out()<<"Error in Spectrum_Reader::CalculateWeight : x="<<x<<" not found in data points"<<std::endl;
+  msg_Out()<<"Error in Spectrum_Reader::CalculateWeight : x="<<x<<" not found in data points"<<std::endl;
   m_weight=1.;
   return false;
 }
@@ -396,7 +396,7 @@ Function_Base * Spectrum_Reader::GetFunc(MyStrStream & str, const double fac)
       return new Lin_Exp_Gauss(a0*fac,a1*fac,a2*fac,a3*fac,b2,sig,mean1,mean2);
   }
 
-  msg.Out()<<" ERROR in Spectrum_Reader::GetFunc :"<<std::endl
+  msg_Out()<<" ERROR in Spectrum_Reader::GetFunc :"<<std::endl
 	   <<"   Unknown function type in Spectrum_Reader : "<<name<<std::endl;
 
   return new Polynom0(0.);

@@ -168,7 +168,7 @@ void Jet_Observable_Base::Output(const std::string & pname) {
 Primitive_Observable_Base & Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
   if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
-    msg.Error()<<"ERROR: in Jet_Observable_Base::operator+=  in"<<m_name<<std::endl
+    msg_Error()<<"ERROR: in Jet_Observable_Base::operator+=  in"<<m_name<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
   }
@@ -308,7 +308,7 @@ void Two_Jet_Observable_Base::Reset()
 void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double minpt,const double maxpt)
 {
   if (!(/*jetno>=m_minn && */ jetno<=m_maxn)) {
-    msg.Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl
+    msg_Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl
 	       <<"   Out of bounds : "<<m_minn<<" ... "<<m_maxn<<", will continue."<<std::endl;
     return;
   }
@@ -543,12 +543,12 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int
 
   Blob_Data_Base * rates=(*p_ana)[key];
   if (!rates) {
-    msg.Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<key<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<key<<" not found "<<std::endl;
     return;
   }
   Particle_List * pl=p_ana->GetParticleList(m_reflistname);
   if (!pl) {
-    msg.Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
     return;
   }
 

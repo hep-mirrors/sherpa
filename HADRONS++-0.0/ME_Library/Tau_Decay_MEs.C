@@ -503,7 +503,7 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
   }
   // sanity check
   if (nPion_ch+nPion_0+nKaon_ch+nKaon_0 != 3) {
-    msg.Error()<<"ERROR in HADRONS::Tau_Three_Pseudo constructor\n"
+    msg_Error()<<"ERROR in HADRONS::Tau_Three_Pseudo constructor\n"
                <<"     number of three outgoing pseudoscalars != 3 ?!.\n"
                <<"     Don't know, what to do. Will abort."<<endl;
     abort();           
@@ -637,7 +637,7 @@ double Tau_Three_Pseudo::GetA123()
                 return m_Vus/4.;
     case 1101 : /* pi- K0b pi0 */
                 return 1.5*m_Vus*SQRT_05;
-    default   : msg.Error()<<"Warning in HADRONS::Tau_Decay_MEs.C in Tau_Three_Pseudo::GetA123() :\n"
+    default   : msg_Error()<<"Warning in HADRONS::Tau_Decay_MEs.C in Tau_Three_Pseudo::GetA123() :\n"
                            <<"     Obviously this three pseudoscalar channel (code "<<m_mode<<")\n"
                            <<"     doesn't have a global A123. Maybe it is not implemented yet.\n"
                            <<"     Take A123=1., will continue and hope for the best."<<endl;
@@ -660,7 +660,7 @@ void Tau_Three_Pseudo::RChT::SetModelParameters( GeneralModel _md )
       b[i] = (i==0) ? ParticleNo(int(_md("vector1_j", 3))-1) 
                     : ParticleNo(int(_md("vector2_j", 3))-1);
       if ( a[i]!=3 && b[i]!=3 ) {
-        ATOOLS::msg.Error()<<ATOOLS::om::red
+        msg_Error()<<ATOOLS::om::red
           <<"ERROR in Tau_Three_Pseudo::RChT::SetModelParameters\n"
           <<"     Resonances aren't set correctly.\n"
           <<"     Make sure you have the right settings under \"Resonances\" vector"<<i+1<<" -> _ _.\n"
@@ -755,15 +755,15 @@ Histogram * Tau_Three_Pseudo::RChT::CreatePhiHistogram()
   Histogram * myHist;
   if (f) {                          // if file exists
     // read table and create histogram
-    msg.Tracking()<<"HADRONS::Tau_Three_Pseudo::RChT::CreatePhiHistogram : \n"
+    msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::RChT::CreatePhiHistogram : \n"
              <<"     Read phi(q2) from "<<fn<<"."<<endl;
     myHist = new Histogram( fn );
   }
   else {                            // if file does not exist
     // create histogram (i.e. table of values)
-    msg.Out()<<"Create necessary phase space function for choosen parameters.\n"
+    msg_Out()<<"Create necessary phase space function for choosen parameters.\n"
              <<"This may take some time. Please wait..."<<endl;
-    msg.Tracking()<<"HADRONS::Tau_Three_Pseudo::RChT::CreatePhiHistogram : \n"
+    msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::RChT::CreatePhiHistogram : \n"
              <<"     Create phi(q2) in "<<fn<<"."<<endl;
     double low (0.),
     up  (3.2);
@@ -837,7 +837,7 @@ double Tau_Three_Pseudo::RChT::MassWidthVector( int a, double s )
       case 1020: return (a==0)? MassWidthVector(s) : sqrt(m_msV[1])*m_widthV[1];
     }
     // default:
-    msg.Error()<<"Warning: this form factor (RChT) \n"
+    msg_Error()<<"Warning: this form factor (RChT) \n"
       <<"     hasn't been implemented yet. Please use KS model."<<endl;
     return  0.;
   }
@@ -928,7 +928,7 @@ Complex Tau_Three_Pseudo::RChT::FormFactor( int j, double Q2, double s, double t
                }
   }
   // default:
-  msg.Error()<<"Warning: this form factor (RChT) \n"
+  msg_Error()<<"Warning: this form factor (RChT) \n"
     <<"     hasn't been implemented yet. Please use KS model."
     <<"     Decay mode: "<<m_mode<<endl;
   return  (j==3)? Complex(0.,0.) : Complex(1.,0.); 
@@ -954,7 +954,7 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
       b[i] = (i==0) ? ParticleNo(int(_md("vector1_j", 3))-1) 
                     : ParticleNo(int(_md("vector2_j", 3))-1);
       if ( a[i]!=3 && b[i]!=3 ) {
-        ATOOLS::msg.Error()<<ATOOLS::om::red
+        msg_Error()<<ATOOLS::om::red
           <<"ERROR in Tau_Three_Pseudo::KS::SetModelParameters\n"
           <<"     Resonances aren't set correctly.\n"
           <<"     Make sure you have the right settings under \"Resonances\" vector"<<i+1<<" -> _ _.\n"
@@ -1120,7 +1120,7 @@ Histogram * Tau_Three_Pseudo::KS::CreateGHistogram()
   Histogram * myHist;
   if (f) {                          // if file exists
     // read table and create histogram
-    msg.Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
+    msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
              <<"     Read G(q2) for   MV13="<<sqrt(m_msV[0])<<endl
              <<"                      Mv13="<<sqrt(m_msv[0])<<endl
              <<"                    beta13="<<m_Beta[0]<<endl
@@ -1132,9 +1132,9 @@ Histogram * Tau_Three_Pseudo::KS::CreateGHistogram()
   }
   else {                            // if file does not exist
     // create histogram (i.e. table of values)
-    msg.Out()<<"Create necessary phase space function for choosen parameters.\n"
+    msg_Out()<<"Create necessary phase space function for choosen parameters.\n"
              <<"This may take some time. Please wait..."<<endl;
-    msg.Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
+    msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
              <<"     Create G(q2)  for MV13="<<sqrt(m_msV[0])<<endl
              <<"                       Mv13="<<sqrt(m_msv[0])<<endl
              <<"                     beta13="<<m_Beta[0]<<endl
@@ -1258,7 +1258,7 @@ Complex Tau_Three_Pseudo::KS::Tgen( int a, int b, int c, double s, double t)
   if (m_G123) return( Tvector1(a-1,c-1,s) + Tvector2(b-1,c-1,t) );
   if (a==1) return Tvector1(a-1,c-1,t);
   if (a==2) return Tvector2(b-1,c-1,s);
-  msg.Error()<<"ERROR in HADRONS::Tau_Three_Pseudo::KS::Tgen(a,b,c,s,t) : \n"
+  msg_Error()<<"ERROR in HADRONS::Tau_Three_Pseudo::KS::Tgen(a,b,c,s,t) : \n"
              <<"    Method was called with m_G123==0 and a != 1,2.\n"
              <<"    This must not happen, will abort."<<endl;
   abort();           

@@ -24,7 +24,7 @@ Tree_Filler::~Tree_Filler() {
 void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
 {
   if ((!ini_trees && m_isrshoweron) || (!fin_tree && m_fsrshoweron)) {
-    msg.Error()<<"ERROR in Tree_Filler::FillTrees:"<<std::endl
+    msg_Error()<<"ERROR in Tree_Filler::FillTrees:"<<std::endl
 	       <<"   No trees! no shower to be performed! Aboer the run."<<std::endl;
     abort();
   } 
@@ -197,7 +197,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
 	!IsEqual(scale*asfac,knots[k]->maxpt2) &&
 	d1->part->Flav().Strong() && d2->part->Flav().Strong() &&
 	mo->part->Flav().Strong()) {
-      msg.Error()<<METHOD<<"(): scale ordering violated in knot "<<k<<".\n"
+      msg_Error()<<METHOD<<"(): scale ordering violated in knot "<<k<<".\n"
 		 <<"   last scale = "<<knots[k]->maxpt2
 		 <<", new scale = "<<scale<<std::endl;
       d1->maxpt2=scale*asfac;
@@ -221,14 +221,14 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   for (size_t i(0);i<knots.size();++i) 
     knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
   /*
-  if (msg.LevelIsDebugging()) {
-    msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<std::endl;
     if (ini_trees) {
-      msg.Out()<<"initree[0]:"<<std::endl<<*ini_trees[0]
+      msg_Out()<<"initree[0]:"<<std::endl<<*ini_trees[0]
 	       <<"initree[1]:"<<std::endl<<*ini_trees[1];
     }
-    msg.Out()<<"fin_tree:"<<std::endl<<*fin_tree
+    msg_Out()<<"fin_tree:"<<std::endl<<*fin_tree
 	     <<"****************************************"<<std::endl;
   }
   */
@@ -238,12 +238,12 @@ void Tree_Filler::FillDecayTree(Tree * fin_tree)
 {
   /*
     if (!fin_tree && m_fsrshoweron) {
-    msg.Error()<<"ERROR in Tree_Filler::FillDecayTrees: no trees!"
+    msg_Error()<<"ERROR in Tree_Filler::FillDecayTrees: no trees!"
     <<" No shower to be performed! "<<std::endl;
     return;
     } 
     if (p_blob->NInP()!=1 || p_blob->NOutP()!=2) {
-    msg.Error()<<"ERROR in Tree_Filler::FillDecayTrees: "<<std::endl
+    msg_Error()<<"ERROR in Tree_Filler::FillDecayTrees: "<<std::endl
     <<"   wrong number of articles in blob."<<std::endl;
     return;
     }
@@ -571,7 +571,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     //        -> d2 (FS)
 
     if (!mo || !d1 || !d2 ) {
-      msg.Error()<<"ERROR in Tree_Filler::EstablishRelations: "<<std::endl
+      msg_Error()<<"ERROR in Tree_Filler::EstablishRelations: "<<std::endl
 		 <<"   Can not establish relations with less than three elements, abort."<<std::endl;
       abort();
     }

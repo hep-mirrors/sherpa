@@ -285,7 +285,7 @@ bool One_Variable_Observable::Evaluate
     std::vector<ATOOLS::Vec4D> vmoms(moms.size());
     for (size_t l(0);l<vmoms.size();++l) vmoms[l]=moms[l]->Momentum();
     double val(m_vars[i]->Value(&vmoms.front(),vmoms.size()));
-    if (msg.LevelIsDebugging()) {
+    if (msg_LevelIsDebugging()) {
       msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
       for (size_t k(1);k<m_flavs[i].size();++k) 
 	msg_Debugging()<<","<<m_flavs[i][k].IDName();
@@ -327,7 +327,7 @@ void One_Variable_Observable::Evaluate
     if (m_vars[i]->IDName()=="Count") {
       std::vector<ATOOLS::Vec4D> vmoms(eval);
       double val(m_vars[i]->Value(&vmoms.front(),eval));
-      if (msg.LevelIsDebugging()) {
+      if (msg_LevelIsDebugging()) {
 	msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
 	for (size_t k(1);k<m_flavs[i].size();++k) 
 	  msg_Debugging()<<","<<m_flavs[i][k].IDName();

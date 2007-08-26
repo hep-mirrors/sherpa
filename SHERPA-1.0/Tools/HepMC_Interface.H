@@ -55,7 +55,7 @@ namespace SHERPA {
     ~HepMC_Interface();
 
     // member functions
-    void PrintEvent(int mode=1, std::ostream& ostr=ATOOLS::msg.Out());
+    void PrintEvent(int mode=1, std::ostream& ostr=msg_Out());
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
     inline void Reset() { m_converted = false; }
 

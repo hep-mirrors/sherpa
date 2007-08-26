@@ -142,12 +142,12 @@ void CDBG_Amplitude::Construct(Int_Vector ids,const size_t &n)
 
 bool CDBG_Amplitude::Construct(const Flavour_Vector &flavs)
 {
-  if (msg.LevelIsDebugging()) {
-    msg.Out()<<METHOD<<"(): {\n\n   Implemented currents:\n\n";
-    Current_Getter::PrintGetterInfo(msg.Out(),15);
-    msg.Out()<<"\n   Implemented vertices:\n\n";
-    Vertex_Getter::PrintGetterInfo(msg.Out(),15);
-    msg.Out()<<"\n}\n";
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<METHOD<<"(): {\n\n   Implemented currents:\n\n";
+    Current_Getter::PrintGetterInfo(msg_Out(),15);
+    msg_Out()<<"\n   Implemented vertices:\n\n";
+    Vertex_Getter::PrintGetterInfo(msg_Out(),15);
+    msg_Out()<<"\n}\n";
   }
   m_fl=flavs;
   m_n=m_fl.size();
@@ -191,7 +191,7 @@ void CDBG_Amplitude::SetMomenta(const Vec4D_Vector &moms)
   static double accu(sqrt(Accu()));
   CVec4D::SetAccu(accu);
   if (!((CVec4D)sum).IsZero()) 
-    msg.Error()<<METHOD<<"(): Four momentum not conserved. sum = "
+    msg_Error()<<METHOD<<"(): Four momentum not conserved. sum = "
 	       <<sum<<"."<<std::endl;
   CVec4D::SetAccu(Accu());
 }
@@ -376,22 +376,22 @@ bool CDBG_Amplitude::GaugeTest(const Vec4D_Vector &moms)
       double rat(mean/std::abs(m_ress[i])*Accu());
       if (IsEqual(m_ress[i].real(),ress[i].real(),rat) &&
 	  IsEqual(m_ress[i].imag(),ress[i].imag(),rat)) {
-	msg.Error().precision(12);
-	msg.Error()<<METHOD<<"(): Large deviation: "
+	msg_Error().precision(12);
+	msg_Error()<<METHOD<<"(): Large deviation: "
 		   <<m_ress[i]<<" vs. "<<ress[i]<<"\n  => ("
 		   <<(m_ress[i].real()/ress[i].real()-1.0)<<","
 		   <<(m_ress[i].imag()/ress[i].imag()-1.0)
 		   <<") {"<<rat<<"}."<<std::endl;
-	msg.Error().precision(6);
+	msg_Error().precision(6);
       }
       else {
-	msg.Error().precision(12);
-	msg.Error()<<METHOD<<"(): Gauge test failed. "
+	msg_Error().precision(12);
+	msg_Error()<<METHOD<<"(): Gauge test failed. "
 		   <<m_ress[i]<<" vs. "<<ress[i]<<"\n  => ("
 		   <<(m_ress[i].real()/ress[i].real()-1.0)<<","
 		   <<(m_ress[i].imag()/ress[i].imag()-1.0)
 		   <<") {"<<rat<<"}."<<std::endl;
-	msg.Error().precision(6);
+	msg_Error().precision(6);
 	return false;
       }
     }

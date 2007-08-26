@@ -67,7 +67,7 @@ Particle_Selector::Particle_Selector(const std::string & inlistname1,
   
   p_qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(outlistname,"");
   if (!p_qualifier) {
-    msg.Error()<<"ERROR in Particle_Selector: unknown particle qualifier '"
+    msg_Error()<<"ERROR in Particle_Selector: unknown particle qualifier '"
 	       <<m_mode<<"'/'"<<outlistname<<"'"<<std::endl;
     p_qualifier = new Is_Charged();
   }
@@ -92,10 +92,10 @@ void Particle_Selector::CreateParticleList()
   if (m_mode<100) pl_in = p_ana->GetParticleList(m_inlistname1);
   else pl_in = p_ana->GetParticleList(m_inlistname2);
   if (pl_in==NULL) {
-    msg.Out()<<"WARNING in Particle_Selector::Evaluate : particle list ";
-    if (m_mode<100) msg.Out()<<m_inlistname1;
-    else msg.Out()<<m_inlistname2;
-    msg.Out()<<" not found "<<std::endl;
+    msg_Out()<<"WARNING in Particle_Selector::Evaluate : particle list ";
+    if (m_mode<100) msg_Out()<<m_inlistname1;
+    else msg_Out()<<m_inlistname2;
+    msg_Out()<<" not found "<<std::endl;
     return;
   }
   

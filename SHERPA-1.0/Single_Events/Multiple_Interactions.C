@@ -57,7 +57,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   p_bloblist=bloblist;
   if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
-    msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+    msg_Error()<<"Multiple_Interactions::CheckBlobList(..): "
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
     return Return_Value::Retry_Event;
   }
@@ -77,7 +77,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
     if ((*iit)->InParticle(0)->Momentum().Nan()) {
-      msg.Error()<<METHOD<<"(): Nan momentum for "
+      msg_Error()<<METHOD<<"(): Nan momentum for "
 		 <<*(*iit)->InParticle(0)<<"\n  Kill subprocess."<<std::endl;
       if (!(*iit)->IsConnectedTo(btp::Signal_Process))
 	p_bloblist->DeleteConnected(*iit);
@@ -210,7 +210,7 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   if (p_mihandler->Type()==MI_Handler::None ||
       MI_Base::StopGeneration()) return Return_Value::Nothing;
   if (bloblist->empty()) {
-    msg.Error()<<"Multiple_Interactions::Treat(): "
+    msg_Error()<<"Multiple_Interactions::Treat(): "
 		       <<"Incoming blob list is empty!"<<std::endl;
     return Return_Value::Error;
   }

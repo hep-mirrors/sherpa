@@ -88,21 +88,21 @@ void MI_Base::UpdateAll(const MI_Base *mibase)
 
 void MI_Base::Update(const MI_Base *mibase)
 {
-  ATOOLS::msg.Error()<<"MI_Base::Update("<<mibase<<"): "
+  msg_Error()<<"MI_Base::Update("<<mibase<<"): "
 		     <<"Virtual method called!"<<std::endl;
   return;
 }
 
 bool MI_Base::Initialize()
 {
-  ATOOLS::msg.Error()<<"MI_Base::Initialize(): "
+  msg_Error()<<"MI_Base::Initialize(): "
 		     <<"Virtual method called!"<<std::endl;
   return false;
 }
 
 void MI_Base::Reset()
 {
-  ATOOLS::msg.Error()<<"MI_Base::Reset(): "
+  msg_Error()<<"MI_Base::Reset(): "
 		     <<"Virtual method called!"<<std::endl;
   return;
 }
@@ -121,14 +121,14 @@ void MI_Base::CleanUp()
 
 bool MI_Base::VetoProcess(ATOOLS::Blob *blob)
 {
-  ATOOLS::msg.Error()<<"MI_Base::VetoProcess(): "
+  msg_Error()<<"MI_Base::VetoProcess(): "
 		     <<"Virtual method called!"<<std::endl;
   return false;
 }
 
 bool MI_Base::DiceProcess()
 {
-  ATOOLS::msg.Error()<<"MI_Base::DiceProcess(): "
+  msg_Error()<<"MI_Base::DiceProcess(): "
 		     <<"Virtual method called!"<<std::endl;
   return false;
 }
@@ -146,14 +146,14 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   if (blob==NULL) {
-    ATOOLS::msg.Error()<<"MI_Base::FillBlob(..): "
+    msg_Error()<<"MI_Base::FillBlob(..): "
 		       <<"Blob is not initialized!"<<std::endl
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
   if (!m_dicedprocess) return false;
   if (m_inparticles.empty()) {
-    ATOOLS::msg.Error()<<"MI_Base::FillBlob(..): "
+    msg_Error()<<"MI_Base::FillBlob(..): "
 		       <<"Did not create any process yet!"<<std::endl
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;

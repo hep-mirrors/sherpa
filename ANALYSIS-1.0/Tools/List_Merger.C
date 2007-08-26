@@ -64,7 +64,7 @@ void List_Merger::Evaluate(const ATOOLS::Blob_List &blobs,
   for (size_t i(0);i<m_inlists.size();++i) {
     const Particle_List *inlist(p_ana->GetParticleList(m_inlists[i]));
     if (inlist==NULL) {
-      msg.Error()<<METHOD<<"(): List "<<i<<" '"<<m_inlists[i]
+      msg_Error()<<METHOD<<"(): List "<<i<<" '"<<m_inlists[i]
 		 <<"' not found."<<std::endl;
     }
     else {

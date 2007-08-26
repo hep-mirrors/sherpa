@@ -211,7 +211,7 @@ bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
     hwevnt.ierror=0;
     hwcgse();
     if (hwevnt.ierror>0) {
-      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+      msg_Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
 			 <<"   Herwig throws error with code "<<hwevnt.ierror<<"."<<std::endl
 			 <<"   Continue run with a new event and hope for the best."<<std::endl
 			 <<"   Sizes : "<<ATOOLS::Blob::Counter()<<" / "
@@ -241,7 +241,7 @@ bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
 	  return true;
 	} 
       }
-      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+      msg_Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
 			 <<"   No signal blob in event. Will continue and hope for the best."<<std::endl;
     }
     else {
@@ -250,11 +250,11 @@ bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
 	     blit!=blobs->end();++blit) delete (*blit);
 	blobs->clear();
       }
-      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+      msg_Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
 			 <<"   Could not translate HEPEVT common block into blobs."<<std::endl
 			 <<"   Trials so far : "<<trials;
-      if (trials<4) ATOOLS::msg.Error()<<", will continue."<<std::endl;
-      else ATOOLS::msg.Error()<<", will return false, unknown result."<<std::endl;
+      if (trials<4) msg_Error()<<", will continue."<<std::endl;
+      else msg_Error()<<", will return false, unknown result."<<std::endl;
     }
   }
   return false;
@@ -268,12 +268,12 @@ void Herwig_Interface::Error(const int error)
 	  ATOOLS::ToString(error)+")");
   }
   else {
-    ATOOLS::msg.Error()<<"Herwig_Interface::Error("<<error<<") "<<ATOOLS::om::red
+    msg_Error()<<"Herwig_Interface::Error("<<error<<") "<<ATOOLS::om::red
 		       <<"Herwig calls HWWARN("<<error<<") in event "
 		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"."
 		       <<ATOOLS::om::reset<<std::endl;
-    if (ATOOLS::msg.LevelIsDebugging()) {
-      ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
+    if (msg_LevelIsDebugging()) {
+      msg_Tracking()<<*s_bloblist<<std::endl;
     }
   }
 }

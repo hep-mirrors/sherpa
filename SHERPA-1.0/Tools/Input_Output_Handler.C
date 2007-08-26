@@ -96,14 +96,14 @@ bool Input_Output_Handler::InitialiseInput(const std::vector<std::string> & infi
 //     m_filename = m_path+std::string("/")+infiles[0]+std::string(".evts"); 
 //     p_instream = new std::ifstream(m_filename.c_str()); 
 //     if (!p_instream->good()) {
-//       msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+//       msg_Error()<<"ERROR in Input_Output_Handler."<<std::endl
 //                  <<"   Event file "<<m_filename<<" not found."<<std::endl
 //                  <<"   Will abort the run."<<std::endl;
 //       abort();
 //     }
 //     (*p_instream)>>gentype>>m_filesize;
 //     if (gentype!=std::string("Sherpa")) {
-//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+//       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
 //                  <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
 //                  <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
 //       abort();
@@ -120,7 +120,7 @@ bool Input_Output_Handler::InitialiseInput(const std::vector<std::string> & infi
 //     else abort();  // Schlamassel !!!!
 //     break;
 //   case iotype::D0HepEvt:
-//     msg.Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
+//     msg_Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
 //     abort();
 //     break;
 //   default :
@@ -150,7 +150,7 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
 #else
-        msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+        msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
                    <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
         abort();
 #endif
@@ -162,7 +162,7 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
 #else
-        msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+        msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
                    <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
         abort();
 #endif
@@ -189,7 +189,7 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         THROW(fatal_error,"HepMC2 format can only be created when Sherpa was linked with HepMC2, please read our Howto to fix this.");
 #endif
       default :
-        msg.LogFile()<<"ERROR in Input_Output_Handler::Input_Output_Handler("<<test<<")"<<std::endl
+        msg_LogFile()<<"ERROR in Input_Output_Handler::Input_Output_Handler("<<test<<")"<<std::endl
                      <<"   No valid output format specified. Continue run."<<std::endl;
         break;
       }
@@ -222,51 +222,51 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
 void Input_Output_Handler::AddOutputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
-  msg.Error()<<"Error in Input_Output_Handler::AddOutputMode("<<c1<<")"<<std::endl
+  msg_Error()<<"Error in Input_Output_Handler::AddOutputMode("<<c1<<")"<<std::endl
              <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
 void Input_Output_Handler::AddInputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
-  msg.Error()<<"Error in Input_Output_Handler::AddInputMode("<<c1<<")"<<std::endl
+  msg_Error()<<"Error in Input_Output_Handler::AddInputMode("<<c1<<")"<<std::endl
              <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
 void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
-  if (m_on==false || !(m_io&1) || !msg.LevelIsEvents()) return;
+  if (m_on==false || !(m_io&1) || !msg_LevelIsEvents()) return;
   switch (m_screenout) {
   case iotype::Sherpa:
     if (!blobs->empty()) {
-      msg.Out()<<"  -------------------------------------------------  "<<std::endl;
+      msg_Out()<<"  -------------------------------------------------  "<<std::endl;
       for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
-        msg.Out()<<*(*blit)<<std::endl;
-      msg.Out()<<"  -------------------------------------------------  "<<std::endl;
+        msg_Out()<<*(*blit)<<std::endl;
+      msg_Out()<<"  -------------------------------------------------  "<<std::endl;
     }
-    else msg.Out()<<"  ******** Empty event ********  "<<std::endl;
+    else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
     break;
   case iotype::HepMC:
 #ifdef USING__CLHEP
     p_hepmc->Sherpa2HepMC(blobs);
-    p_hepmc->PrintEvent(1,msg.Out());
+    p_hepmc->PrintEvent(1,msg_Out());
     break;
 #else
 #ifdef USING__HEPMC2
     p_hepmc2->Sherpa2HepMC(blobs);
-    p_hepmc2->PrintEvent(msg.Out());
+    p_hepmc2->PrintEvent(msg_Out());
     break;
 #else
-    msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+    msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
                 <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
     abort();
 #endif
 #endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
-    p_hepevt->PrintEvent(3,msg.Out(),p_hepevt->Nhep());
+    p_hepevt->PrintEvent(3,msg_Out(),p_hepevt->Nhep());
     break;
   default:
-    msg.Error()<<"Error in "<<METHOD<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<std::endl
                <<"   Unknown Output format : "<<m_outtype<<std::endl
                <<"   No output, continue run ..."<<std::endl;
     break;
@@ -305,7 +305,7 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           p_hepmc->PrintEvent(1,oit->second->outstream);
           break;
 #else
-          msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+          msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
                       <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
           abort();
 #endif
@@ -329,12 +329,12 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           p_hepmc2->PrintEvent(oit->second->outstream);
           break;
 #else
-          msg.Error()<<"Error in "<<METHOD<<": HepMC2 format can only be created when Sherpa "
+          msg_Error()<<"Error in "<<METHOD<<": HepMC2 format can only be created when Sherpa "
                       <<"was linked with HepMC2, please read our Howto to fix this."<<std::endl;
           abort();
 #endif
         default:
-          msg.Error()<<"Error in "<<METHOD<<std::endl
+          msg_Error()<<"Error in "<<METHOD<<std::endl
                      <<"   Unknown Output format : "<<oit->first<<std::endl
                    <<"   No output, continue run ..."<<std::endl;
           break;
@@ -358,7 +358,7 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           oit->second->outstream.close();
           oit->second->outstream.open(newfilename.c_str());
           if (!oit->second->outstream.good()) { 
-            msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+            msg_Error()<<"ERROR in Input_Output_Handler."<<std::endl
                        <<"   Could not open event file "
                        <<(oit->second->basicfilename+"."+number+oit->second->fileextension)
                        <<"."<<std::endl
@@ -385,7 +385,7 @@ bool Input_Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
 #endif
   case iotype::HepEvt: return p_hepevt->HepEvt2Sherpa(blobs); 
   default:
-    msg.Error()<<"Error in Input_Output_Handler::InputFromFormat."<<std::endl
+    msg_Error()<<"Error in Input_Output_Handler::InputFromFormat."<<std::endl
 	       <<"   Unknown Input format : "<<m_intype<<std::endl
 	       <<"   No input, continue run ... ."<<std::endl;
     break;
@@ -486,7 +486,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 //       (*p_instream)>>paid;
 //       I2Piter = I2P.find(paid);
 //       if (I2Piter==I2P.end()) {
-// 	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
+// 	msg_Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
 // 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
 // 		   <<"   Will return false, continue & hope for the best."<<std::endl;
 // 	blobs->clear();
@@ -498,7 +498,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 //       (*p_instream)>>paid;
 //       I2Piter = I2P.find(paid);
 //       if (I2Piter==I2P.end()) {
-// 	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
+// 	msg_Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
 // 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
 // 		   <<"   Will return false, continue & hope for the best."<<std::endl;
 // 	blobs->clear();
@@ -518,7 +518,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 //     delete p_instream;
 //     p_instream = new std::ifstream(filename.c_str()); 
 //     if (!p_instream->good()) {
-//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+//       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
 // 		 <<"   Event file "<<filename<<" not found."<<std::endl
 // 		 <<"   Will abort the run."<<std::endl;
 //       abort();
@@ -526,7 +526,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 //     std::string gentype;
 //     (*p_instream)>>gentype>>m_filesize;
 //     if (gentype!=std::string("Sherpa")) {
-//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+//       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
 // 		 <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
 // 		 <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
 //       abort();

@@ -28,19 +28,19 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
 
 void Hadronisation_Parameters::Init(string dir,string file)
 {
-  msg.Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
+  msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents = new Constituents(false);
-  // if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
+  // if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
 
   p_multiplets   = new All_Hadron_Multiplets();
-  //if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
+  //if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
   p_singletransitions  = new Single_Transitions();
-  //if (msg.LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
+  //if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
 
   p_doubletransitions  = new Double_Transitions();
-  //if (msg.LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
+  //if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
 
   p_popper       = new Pair_Popper();
 }
@@ -190,7 +190,7 @@ double Hadronisation_Parameters::Get(string keyword)
 {
   m_piter = m_parametermap.find(keyword);
   if (m_piter!=m_parametermap.end()) return m_piter->second;
-  msg.Error()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") in "<<m_parametermap.size()<<endl
+  msg_Error()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") in "<<m_parametermap.size()<<endl
 	     <<"   Keyword not found. Return 0 and hope for the best."<<endl;
   return 0.;
 }

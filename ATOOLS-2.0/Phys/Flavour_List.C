@@ -32,10 +32,10 @@ int TestListFunction() {
   flavs.push_back(Flavour(kf::d));
   flavs.push_back(Flavour(kf::gluon));
   flavs.push_back(Flavour(kf::d).Bar());
-  for (int k=0;k<flavs.size();++k) msg.Out()<<flavs[k]<<std::endl;
-  msg.Out()<<"list of "<<flavs.size()<<" Flavours:"<<std::endl;
+  for (int k=0;k<flavs.size();++k) msg_Out()<<flavs[k]<<std::endl;
+  msg_Out()<<"list of "<<flavs.size()<<" Flavours:"<<std::endl;
   for (Flavour_Iterator fliter=flavs.begin();fliter!=flavs.end();++fliter)
-    msg.Out()<<*fliter<<std::endl;
+    msg_Out()<<*fliter<<std::endl;
   return 0;
 };
 */

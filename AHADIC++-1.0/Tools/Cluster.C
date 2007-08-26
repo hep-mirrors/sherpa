@@ -94,7 +94,7 @@ Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D mom1,
     }
   }
 
-  msg.Error()<<"Error in Cluster::Cluster("<<flav1<<","<<flav2<<") :"<<std::endl
+  msg_Error()<<"Error in Cluster::Cluster("<<flav1<<","<<flav2<<") :"<<std::endl
 	     <<"   Cannot handle this colour structure."<<std::endl
 	     <<"   Abort the run."<<std::endl;
   abort();
@@ -158,7 +158,7 @@ void Cluster::Update()
       if (m_flavours[1].IsDiQuark() && m_flavours[1].IsAnti())  { m_type = ctp::dd; return; }
     }  
   }
-  msg.Error()<<"ERROR in Cluster::Update():"<<std::endl
+  msg_Error()<<"ERROR in Cluster::Update():"<<std::endl
 	     <<"   Funny flavour/colour structure : "<<m_flavours[0]<<", "<<m_flavours[1]<<std::endl
 	     <<"   Will abort."<<std::endl;
   abort();
@@ -182,7 +182,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 
   Vec4D testmom = m_momentum-m_momenta[0]-m_momenta[1];
   if (dabs(testmom.Abs2())>1.e-6 || testmom[0]>1.e-6) {
-    msg.Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
+    msg_Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
 	       <<" Was : "<<save[0]<<" ("<<save[0].Abs2()<<")"<<" -> "
 	       <<save[1]<<" ("<<save[1].Abs2()<<") + "
 	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl
@@ -191,7 +191,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 	       <<Momentum(2)<<" ("<<Momentum(2).Abs2()<<")"<<std::endl
 	       <<"   diff: "<<testmom;
     rest.Boost(m_momentum); back.BoostBack(m_momentum);
-    msg.Error()<<" from "<<newmom<<" = "<<m_momentum<<"."<<std::endl;
+    msg_Error()<<" from "<<newmom<<" = "<<m_momentum<<"."<<std::endl;
   }
 }
 
@@ -199,7 +199,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 ATOOLS::Vec4D Cluster::Momentum(const int i) const { 
   if (i==0) return m_momentum;        
   if (i<3)  return m_momenta[i-1];
-  ATOOLS::msg.Error()<<"Error in Cluster::Momentum("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Cluster::Momentum("<<i<<")"<<std::endl
 		     <<"   Out of bounds. Return cluster momentum."<<std::endl;
   abort();
   return m_momentum;
@@ -208,7 +208,7 @@ ATOOLS::Vec4D Cluster::Momentum(const int i) const {
 void Cluster::SetMomentum(const int i,const ATOOLS::Vec4D mom) { 
   if (i==0) { m_momentum     = mom; return; }       
   if (i<3)  { m_momenta[i-1] = mom; return; }       
-  ATOOLS::msg.Error()<<"Error in Cluster::SetMomentum("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Cluster::SetMomentum("<<i<<")"<<std::endl
 		     <<"   Out of bounds. Return cluster momentum."<<std::endl;
   abort();
 }
@@ -217,7 +217,7 @@ double Cluster::Mass(const int i) const {
   if (i==0) return sqrt(m_momentum.Abs2());        
   Flavour flav = m_flavours[i-1];
   if (i<3)  return  hadpars.GetConstituents()->Mass(flav);
-  ATOOLS::msg.Error()<<"Error in Cluster::Mass("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Cluster::Mass("<<i<<")"<<std::endl
 		     <<"   Out of bounds. Return cluster mass."<<std::endl;
   abort();
   return sqrt(m_momentum.Abs2());
@@ -226,7 +226,7 @@ double Cluster::Mass(const int i) const {
 void Cluster::SetFlav(const int i,const ATOOLS::Flavour & flav) { 
   if (i==1) { m_flavours[0] = flav; return; } 
   if (i==2) { m_flavours[1] = flav; return; } 
-  ATOOLS::msg.Error()<<"Error in Cluster::SetFlav("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Cluster::SetFlav("<<i<<")"<<std::endl
 		     <<"   Out of bounds. Do nothing and hope for the best."<<std::endl;  
   abort();
 }
@@ -234,7 +234,7 @@ void Cluster::SetFlav(const int i,const ATOOLS::Flavour & flav) {
 Flavour Cluster::GetFlav(const int i) const {
   if (i==1) { return m_flavours[0]; }
   if (i==2) { return m_flavours[1]; }
-  ATOOLS::msg.Error()<<"Error in Cluster::GetFlav("<<i<<")"<<std::endl
+  msg_Error()<<"Error in Cluster::GetFlav("<<i<<")"<<std::endl
 		     <<"   Out of bounds. Do nothing and hope for the best."<<std::endl;  
   abort();
 }

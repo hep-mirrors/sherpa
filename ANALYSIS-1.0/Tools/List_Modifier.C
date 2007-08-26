@@ -142,7 +142,7 @@ void Two_Particle_Modifier_Base::Evaluate
 {
   ATOOLS::Particle_List *inlist=p_ana->GetParticleList(m_inlist);
   if (inlist==NULL) {
-    msg.Error()<<METHOD<<"(): List '"<<m_inlist
+    msg_Error()<<METHOD<<"(): List '"<<m_inlist
 		       <<"' not found."<<std::endl;
     return;
   }

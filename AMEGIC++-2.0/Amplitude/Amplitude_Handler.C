@@ -68,8 +68,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
     delete gen;
   }
 
-  if (msg.LevelIsTracking()) {
-    msg.Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;
+  if (msg_LevelIsTracking()) {
+    msg_Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;
     int f=1;
     for(int i=0;i<ndecays+1;i++) {
       int j=0;
@@ -78,13 +78,13 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 	++j;
 	nn = nn->Next;
       }
-      msg.Out()<<"Process "<<i;
-      if (i==0)msg.Out()<<" (core)";
-      else msg.Out()<<" (decay)";
-      msg.Out()<<" has "<<j<<" Amplitudes"<<endl;
+      msg_Out()<<"Process "<<i;
+      if (i==0)msg_Out()<<" (core)";
+      else msg_Out()<<" (decay)";
+      msg_Out()<<" has "<<j<<" Amplitudes"<<endl;
       f*=j;
     }
-    msg.Out()<<"Total: "<<f<<" Amplitudes"<<endl;
+    msg_Out()<<"Total: "<<f<<" Amplitudes"<<endl;
   }
 
   if (ndecays==0 || subgraphlist[0]==0) firstgraph = subgraphlist[0];
@@ -96,7 +96,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
     ++ntotal;
     n = n->Next;
   }
-  msg.Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
+  msg_Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
   delete [] subgraphlist;
   delete [] b_dec;
@@ -173,10 +173,10 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   CheckEqual(firstgraph);
 
   if (ngraph==0) {
-    if (msg.LevelIsTracking()) {
-      msg.Out()<<"No graph found for ";
-      for (short int i=0;i<N;i++) msg.Out()<<fl[i]<<";";
-      msg.Out()<<endl;
+    if (msg_LevelIsTracking()) {
+      msg_Out()<<"No graph found for ";
+      for (short int i=0;i<N;i++) msg_Out()<<fl[i]<<";";
+      msg_Out()<<endl;
     }
     return;
   }
@@ -201,7 +201,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   int maxorder = 1;
   for(int i=0; i<N; i++) if (fl[i].IsKK()) maxorder--;
   if (maxorder<0) {
-    msg.Error()<<"ERROR in Amplitude_Handler::CompleteAmplitudes :"<<std::endl
+    msg_Error()<<"ERROR in Amplitude_Handler::CompleteAmplitudes :"<<std::endl
 	       <<"   Multiple external KK-particles not supported. Abort the run."<<std::endl;
     abort();
   }
@@ -227,7 +227,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   SetNumber(dummy);  
   namplitude = dummy;
 
-  if (msg.LevelIsTracking()) {
+  if (msg_LevelIsTracking()) {
     PrintGraph();
 //     BS->PrintMomlist();
   }
@@ -282,7 +282,7 @@ int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     if ((*pit)->arg[0]==iabs(zarg)) return (*pit)->momnum; 
   }  
-  msg.Error()<<"ERROR in Amplitude_Handler::PropProject() :"<<endl
+  msg_Error()<<"ERROR in Amplitude_Handler::PropProject() :"<<endl
 	     <<"   Did not find a mom-number for propagator. Abort the run."<<std::endl;
   abort();
   return 0;

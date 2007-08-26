@@ -33,7 +33,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
 	 && !(m_nPols[i]==2 && pl[i].factor[0] == pl[i].factor[1]) )  {
       m_trafoList.push_back(i);
       m_nPols[i] = 2;
-      msg.Out() <<"Flavour "<<m_flavours[i]<<" has been added to the list of "
+      msg_Out() <<"Flavour "<<m_flavours[i]<<" has been added to the list of "
 		<<"polarized massive fermions."<<endl;
     }
     // Treatment for flavours using only one polarisation amplitude
@@ -147,7 +147,7 @@ void Helicity::InitializeSpinorTransformation(Basic_Sfuncs * BS)
       // Determine the common scaling factor c.
       double denominator((p + antiSign*m*s)*k0);
       if (ATOOLS::IsZero(denominator)) {
-	msg.Error()<<"Warning: Encountered a zero-denominator while trying to "
+	msg_Error()<<"Warning: Encountered a zero-denominator while trying to "
 	           <<"construct the matrices for the polarisation transformation."<<endl
 	           <<"No transformation will occur."<<endl;
 	m_needsTrafo=false;

@@ -9,7 +9,7 @@
 int main(int argc, const char *argv[]) 
 {
   std::string arguments;
-  ATOOLS::msg.SetLevel(15);
+  msg_SetLevel(15);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
   reader->AddWordSeparator("\t");
   for (int i=0;i<argc;++i) arguments+=std::string(argv[i])+std::string(" ");
@@ -17,11 +17,11 @@ int main(int argc, const char *argv[])
   std::string inputpath, inputfile, outputfile;
   int testevents;
   if (!reader->ReadFromString(inputpath,"-p")) { 
-    ATOOLS::msg.Out()<<"main: No input path specified. Using default value './'"<<std::endl;
+    msg_Out()<<"main: No input path specified. Using default value './'"<<std::endl;
     inputpath=std::string("./");
   }
   if (!reader->ReadFromString(inputfile,"-f")) { 
-    ATOOLS::msg.Out()<<"main: No input file specified. Using default value 'MI.dat'"<<std::endl;
+    msg_Out()<<"main: No input file specified. Using default value 'MI.dat'"<<std::endl;
     inputfile=std::string("MI.dat");
   }
   if (!reader->ReadFromString(testevents,"-e")) { 
@@ -42,7 +42,7 @@ int main(int argc, const char *argv[])
   TH1D *multiplicity=NULL, *check=NULL;
   if (analyse) {
     if (!reader->ReadFromString(outputfile,"-o")) { 
-      ATOOLS::msg.Out()<<"main: No output file specified. Using default value 'output.root'"<<std::endl;
+      msg_Out()<<"main: No output file specified. Using default value 'output.root'"<<std::endl;
       outputfile=std::string("output.root");
     }
     int argcf=1;

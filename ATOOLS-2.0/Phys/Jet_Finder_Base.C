@@ -45,7 +45,7 @@ Jet_Finder_Base::~Jet_Finder_Base()
 void Jet_Finder_Base::SetDeltaR(double dr) 
 { 
   if (dr<=1.e-6) {
-    msg.Error()<<METHOD<<"(): \\delta_R to small, ignore and set to "
+    msg_Error()<<METHOD<<"(): \\delta_R to small, ignore and set to "
 	       <<m_delta_r<<"."<<std::endl;
     return;
   }

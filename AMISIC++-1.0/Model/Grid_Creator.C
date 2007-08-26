@@ -243,32 +243,32 @@ bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
 bool Grid_Creator::CreateGrid()
 {
   bool success=true;
-  int formerlevel=ATOOLS::msg.Level();
+  int formerlevel=msg->Level();
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
-  ATOOLS::msg.SetLevel(m_outputlevel);
+  msg->SetLevel(m_outputlevel);
   if (!InitializeCalculation()) {
-    ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateGrid(..): "
+    msg_Error()<<"Grid_Creator_Base::CreateGrid(..): "
 		       <<"Initialization failed! Abort."<<std::endl;
     return false;
   }
   if (!CreateInitialGrid()) {
-    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+    msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 		     <<"Initial grid creation failed."<<std::endl;
     success=false;
   }
   if (!CreateOptimizedGrid()) {
-    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+    msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 		     <<"Sorry, grid cannot be optimized."<<std::endl;
     success=false;
   }
   if (!WriteOutGrid()) {
-    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+    msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 		     <<"Sorry, grid cannot be written to '"
 		     <<OutputFile()<<"'"<<std::endl;
     success=false;
   }
-  ATOOLS::msg.SetLevel(formerlevel);
+  msg->SetLevel(formerlevel);
   msg_Info()<<"\n}"<<std::endl;
   return success;
 }

@@ -171,7 +171,7 @@ int Basic_Sfuncs::GetPolNumber(int momindex, int sign,double mass,int check)
       if (Momlist[k].arg[1]==momindex && (sign!=mt::p_s || Momlist[k].mass==mass)) return k;
 
   if (check==0){
-    ATOOLS::msg.Error()<<"******Get_Pol_Number: Not Found! "<<momindex<<" "<<sign<<" Mass:"<<mass<<endl;
+    msg_Error()<<"******Get_Pol_Number: Not Found! "<<momindex<<" "<<sign<<" Mass:"<<mass<<endl;
     abort();
   }
   return -1;
@@ -181,11 +181,11 @@ void Basic_Sfuncs::PrintMomlist()
 {
   return;
 
-  ATOOLS::msg.Out()<<"Momlist: "<<endl;
+  msg_Out()<<"Momlist: "<<endl;
   for(size_t k=0;k<Momlist.size();k++) {
-    ATOOLS::msg.Out()<<Momlist[k].arg[0]<<" --> ";
-    for (int i=1;i<Momlist[k].argnum;i++) ATOOLS::msg.Out()<<Momlist[k].arg[i]<<",";
-    ATOOLS::msg.Out()<<" type = "<<Momlist[k].type<<endl;
+    msg_Out()<<Momlist[k].arg[0]<<" --> ";
+    for (int i=1;i<Momlist[k].argnum;i++) msg_Out()<<Momlist[k].arg[i]<<",";
+    msg_Out()<<" type = "<<Momlist[k].type<<endl;
   }
 }
 
@@ -193,7 +193,7 @@ int Basic_Sfuncs::BuildTensorPolarisations(int momindex)
 {
   //Add polarisation vectors to construct tensors for external spin 2 particles
   if (momindex>nvec) {
-    msg.Error()<<"*****BuildTensorPolarisations: Not an external momentum!"<<endl;
+    msg_Error()<<"*****BuildTensorPolarisations: Not an external momentum!"<<endl;
     return 0;
   }
   Momfunc* Mom;
@@ -228,7 +228,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
 {
   //Add polarisation vectors for external particles
   if (momindex>nvec) {
-    msg.Error()<<"*****BuildPolarisations: Not an external momentum!"<<endl;
+    msg_Error()<<"*****BuildPolarisations: Not an external momentum!"<<endl;
     return 0;
   }
   Momfunc mom_func;
@@ -286,7 +286,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
   //Add polarisation vectors for cutted propagators
 {
   if (momindex<nvec) {
-    msg.Error()<<"*****BuildPolarisations: Not an internal momentum!"<<endl;
+    msg_Error()<<"*****BuildPolarisations: Not an internal momentum!"<<endl;
     return 0;
   }
   double Mass = fl.Mass();
@@ -692,7 +692,7 @@ std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j)
   
   Complex etav(csqrt(2. * Getk0() * v));
   if (ATOOLS::IsZero(etav)) {
-    msg.Error()<<"An error occured in Basic_Sfunc::GetS(). The variable 'etav' was zero."
+    msg_Error()<<"An error occured in Basic_Sfunc::GetS(). The variable 'etav' was zero."
 	       <<endl<<"This will cause a division by zero"<<endl;
   }
 

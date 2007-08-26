@@ -84,61 +84,61 @@ void Single_Channel::GeneratePoint(Vec4D * p)
 
 void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts,double *rans) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D *p,Cut_Data *cuts,double *rans): "
+  msg_Error()<<"Single_Channel::GeneratePoint(Vec4D *p,Cut_Data *cuts,double *rans): "
 		     <<"Virtual Method called !"<<std::endl;
 }
 
 void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D *p,Cut_Data *cuts): "
+  msg_Error()<<"Single_Channel::GenerateWeight(Vec4D *p,Cut_Data *cuts): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,double *rans) 
 { 
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D *p,double *rans).: "
+  msg_Error()<<"Single_Channel::GeneratePoint(Vec4D *p,double *rans).: "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D *p): "
+  msg_Error()<<"Single_Channel::GenerateWeight(Vec4D *p): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GeneratePoint(double &sprime,double &y,int mode,double *rans) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode,double *rans): "
+  msg_Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode,double *rans): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GeneratePoint(double &sprime,double &y,int mode) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode): "
+  msg_Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GenerateWeight(double sprime,double y,int mode) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GenerateWeight(double sprime,double y,int mode): "
+  msg_Error()<<"Single_Channel::GenerateWeight(double sprime,double y,int mode): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
+  msg_Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
+  msg_Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
  		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GenerateWeight(const int mode) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::GenerateWeight("<<mode<<"): "
+  msg_Error()<<"Single_Channel::GenerateWeight("<<mode<<"): "
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
@@ -154,13 +154,13 @@ void Single_Channel::SetRange(double *_sprimerange,double *_yrange)
 
 void Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::CalculateLimits(..): "
+  msg_Error()<<"Single_Channel::CalculateLimits(..): "
  		     <<"Virtual method called!"<<std::endl;
 }
 
 void Single_Channel::CalculateLimits() 
 {
-  ATOOLS::msg.Error()<<"Single_Channel::CalculateLimits(): "
+  msg_Error()<<"Single_Channel::CalculateLimits(): "
  		     <<"Virtual method called!"<<std::endl;
 }
 
@@ -172,24 +172,24 @@ void Single_Channel::GetRange()
 
 void Single_Channel::ISRInfo(int &,double &,double &) 
 {
-  ATOOLS::msg.Error()<<"Method : Single_Channel::ISRInfo()"<<std::endl;
+  msg_Error()<<"Method : Single_Channel::ISRInfo()"<<std::endl;
 }
 
 
 int Single_Channel::ChNumber() 
 {
-  ATOOLS::msg.Error()<<"Method : Single_Channel::ChNumber()"<<std::endl;
+  msg_Error()<<"Method : Single_Channel::ChNumber()"<<std::endl;
   return 0;
 }
 
 void Single_Channel::SetChNumber(int) 
 {
-  ATOOLS::msg.Error()<<"Method : Single_Channel::SetChNumber()"<<std::endl;
+  msg_Error()<<"Method : Single_Channel::SetChNumber()"<<std::endl;
 }
 
 std::string Single_Channel::ChID() 
 { 
-  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChID()"<<std::endl;
+  msg_Error()<<"Virtual Method : Single_Channel::ChID()"<<std::endl;
   return std::string(""); 
 }
 

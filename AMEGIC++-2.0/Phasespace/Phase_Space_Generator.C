@@ -35,7 +35,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   int ngraph = proc->NumberOfDiagrams();
   if (ngraph<=0) {
-    msg.Error()<<"Error in Phase_Space_Generator::Construct for "<<proc->Name()<<endl;
+    msg_Error()<<"Error in Phase_Space_Generator::Construct for "<<proc->Name()<<endl;
     abort();
   }
 
@@ -281,7 +281,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
  ifstream chlist;
   chlist.open(chlname.c_str());
   if (!IsFile(chmapname)) {
-    ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+    msg_Error()<<"Error in Phase_Space_Generator:"
 		       <<chmapname<<" not found."<<endl;
     return 0;
   }
@@ -294,7 +294,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
     if (chlist && libname[0]!='%') {
       ifstream chmap(chmapname.c_str());
       if (!RSearch(chmap,libname) || libname.find(": ")==string::npos) {
-	ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+	msg_Error()<<"Error in Phase_Space_Generator:"
 			   <<"Mapping for "<<libname<<" not found."<<endl;	
 	return 0;
       }
@@ -319,7 +319,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
  ifstream chlist;
   chlist.open(chlname.c_str());
   if (!IsFile(chmapname)) {
-    ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+    msg_Error()<<"Error in Phase_Space_Generator:"
 		       <<chmapname<<" not found."<<endl;
     return 0;
   }
@@ -332,7 +332,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
     if (chlist && libname[0]!='%') {
       ifstream chmap(chmapname.c_str());
       if (!RSearch(chmap,libname) || libname.find(string(": "))==string::npos) {
-	ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+	msg_Error()<<"Error in Phase_Space_Generator:"
 			   <<"Mapping for "<<libname<<" not found."<<endl;	
 	return 0;
       }
@@ -344,7 +344,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
       
 	Single_Channel * sc = SetChannel(nin,nout,fl,libname);
 	if (sc==0) {
-	  ATOOLS::msg.Error()<<"Phase_Space_Generator:"
+	  msg_Error()<<"Phase_Space_Generator:"
 			     <<"Channels are not compiled and linked yet."<<endl
 			     <<"Type 'make install' and run again."<<endl;
 	  return 0;

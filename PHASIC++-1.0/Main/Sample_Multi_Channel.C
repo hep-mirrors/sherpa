@@ -349,7 +349,7 @@ bool Sample_Multi_Channel::ReadIn(std::string pid)
   std::string rname;
   ifile>>rsize>>rname;
   if (rsize!=m_channels.size() || rname!=name) {
-    msg.Error()<<METHOD<<"("<<pid<<"): Inconsistent MC file."<<std::endl;
+    msg_Error()<<METHOD<<"("<<pid<<"): Inconsistent MC file."<<std::endl;
     return false;
   }
   ifile>>n_points>>n_contrib>>m_optcnt;
@@ -358,7 +358,7 @@ bool Sample_Multi_Channel::ReadIn(std::string pid)
   for (size_t i(0);i<m_channels.size();++i) {
     ifile>>rname>>points>>alpha;
     if (rname!=m_channels[i]->Name()) {
-      msg.Error()<<METHOD<<"("<<pid
+      msg_Error()<<METHOD<<"("<<pid
 		 <<"): Inconsistent channel name."<<std::endl;
       return false;
     }
@@ -386,11 +386,11 @@ void Sample_Multi_Channel::ISRInfo(int &,double &,double &)
 
 void Sample_Multi_Channel::Print() 
 {
-  if (!msg.LevelIsTracking()) return;
-  msg.Out()<<"   "<<name<<" {\n";
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"   "<<name<<" {\n";
   for (size_t i(0);i<m_channels.size();++i) 
-    msg.Out()<<std::setw(6)<<std::right<<i<<": "<<m_channels[i]->Name()
+    msg_Out()<<std::setw(6)<<std::right<<i<<": "<<m_channels[i]->Name()
 	     <<": "<<std::setw(15)<<m_channels[i]->Alpha()<<"\n";
-  msg.Out()<<"   }\n";
+  msg_Out()<<"   }\n";
 }                 
 

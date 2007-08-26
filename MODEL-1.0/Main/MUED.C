@@ -49,7 +49,7 @@ void MUED::ReadInFile() {
 bool MUED::RunSpectrumGenerator() {
   if (m_spectrum) {
     if (m_generator!=string("Internal")) {
-      msg.Error()<<"Error in MUED::RunSpectrumGenerator."<<endl
+      msg_Error()<<"Error in MUED::RunSpectrumGenerator."<<endl
 		 <<"   Unknown spectrum generator : "
 		 <<m_generator<<" use internal solution."<<endl;
       m_generator=string("Internal");

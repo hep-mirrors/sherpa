@@ -106,7 +106,7 @@ void List_Creator::CreateChargedParticleList(const ATOOLS::Blob_List *bl)
 {
   Particle_List *pl_fs(p_ana->GetParticleList("FinalState"));
   if (pl_fs==NULL) {
-    msg.Error()<<METHOD<<"(): Final state particle list not found."<<std::endl;
+    msg_Error()<<METHOD<<"(): Final state particle list not found."<<std::endl;
     return;
   }
   Particle_List *pl(new Particle_List);

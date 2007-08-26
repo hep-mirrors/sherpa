@@ -12,7 +12,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
   m_path( path ), m_file( file ), m_fulldecay(1), m_antidecays(1), m_createbooklet(0)
 {
   if (file==string("")) {
-    msg.Error()<<"Error in Decay_Table_Reader::Decay_Table_Reader("
+    msg_Error()<<"Error in Decay_Table_Reader::Decay_Table_Reader("
 	       <<path<<","<<file<<") : "<<endl
 	       <<"   No file specified, will return and hope for the best."<<endl;
     return;
@@ -26,7 +26,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
   reader.SetInputPath(path);
   reader.SetInputFile(file);
   if(!reader.MatrixFromFile(m_helpsvv)) {
-    msg.Error()<<"ERROR in Decay_Table_Reader::"
+    msg_Error()<<"ERROR in Decay_Table_Reader::"
 	       <<"Decay_Table_Reader(string,string) :\n"
 	       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
     abort();
@@ -112,7 +112,7 @@ bool Decay_Table_Reader::ExtractFlavours(vector<int> & helpkfc,string help)
   bool             hit;
   if (pos!=string::npos) help = help.substr(pos+1);
   else {
-    msg.Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
+    msg_Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
 	       <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
            <<"   Please check "<<m_path<<m_file<<"!"<<endl
 	       <<"   Will skip it."<<endl;
@@ -121,7 +121,7 @@ bool Decay_Table_Reader::ExtractFlavours(vector<int> & helpkfc,string help)
   pos    = help.find("}");
   if (pos!=string::npos) help = help.substr(0,pos);
   else {
-    msg.Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
+    msg_Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
 	       <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
            <<"   Please check "<<m_path<<m_file<<"!"<<endl
 	       <<"   Will skip it."<<endl;
@@ -140,14 +140,14 @@ bool Decay_Table_Reader::ExtractFlavours(vector<int> & helpkfc,string help)
     }
   }
 //  if (helpkfc.size()<2) {
-//    msg.Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
+//    msg_Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
 //	       <<"   Something wrong with final state of decay (Too little particles) : ";
-//    for (int j=0;j<helpkfc.size();j++) msg.Error()<<helpkfc[j]<<" ";
-//    msg.Error()<<endl<<"   Will skip it."<<endl;
+//    for (int j=0;j<helpkfc.size();j++) msg_Error()<<helpkfc[j]<<" ";
+//    msg_Error()<<endl<<"   Will skip it."<<endl;
 //    return false;
 //  } 
   if (helpkfc.size()<1) {
-    msg.Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
+    msg_Error()<<"WARNING in Decay_Table_Reader:: : "<<endl
 	       <<"   Something wrong with final state of decay. (no particles?)"<<endl
            <<"   Please check "<<m_path<<m_file<<"!"<<endl 
            <<"   Will skip it and hope for the best."<<endl;

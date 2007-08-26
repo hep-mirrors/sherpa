@@ -15,7 +15,7 @@ using namespace std;
 S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=2) {
-    msg.Error()<<"Tried to initialize S1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
+    msg_Error()<<"Tried to initialize S1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     abort();
   }
   nin  = _nin; nout = _nout;
@@ -71,7 +71,7 @@ std::string S1Channel::ChID()
 T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=2) {
-    msg.Error()<<"Tried to initialize T1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
+    msg_Error()<<"Tried to initialize T1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     abort();
   }
   nin  = _nin; 
@@ -305,7 +305,7 @@ std::string T3Channel::ChID()
 U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=2) {
-    msg.Error()<<"Tried to initialize U1Channel with nout = "<<_nout<<endl;
+    msg_Error()<<"Tried to initialize U1Channel with nout = "<<_nout<<endl;
     abort();
   }
   nin  = _nin; nout = _nout;
@@ -365,7 +365,7 @@ std::string U1Channel::ChID()
 Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=1) {
-    msg.Error()<<"Tried to initialize Decay2Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
+    msg_Error()<<"Tried to initialize Decay2Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     abort();
   }
   nin  = _nin; nout = _nout;

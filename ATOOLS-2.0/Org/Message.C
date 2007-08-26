@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 
 namespace ATOOLS {
-  Message msg;
+  Message *msg(new Message());
 }
 
 template <class Value_Type>
@@ -22,9 +22,9 @@ using namespace ATOOLS;
 std::ostream &ATOOLS::operator<<(std::ostream &str,const bm::code modifier) 
 {
   switch (modifier) {
-  case bm::back: return msg.Modifiable()?str<<"\b":str<<" \\b ";
-  case bm::cr:   return msg.Modifiable()?str<<"\r":str<<"\n";
-  case bm::bell: return msg.Modifiable()?str<<"\a":str<<" \\a ";
+  case bm::back: return msg->Modifiable()?str<<"\b":str<<" \\b ";
+  case bm::cr:   return msg->Modifiable()?str<<"\r":str<<"\n";
+  case bm::bell: return msg->Modifiable()?str<<"\a":str<<" \\a ";
   case bm::none: return str;
   }
   return str;
@@ -32,7 +32,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const bm::code modifier)
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier) 
 {
-  if (!msg.Modifiable()) return str;
+  if (!msg->Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
   case om::reset:    return str<<"\033[0m";
@@ -64,7 +64,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
  
 std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
 {
-  if (!msg.Modifiable()) return str;
+  if (!msg->Modifiable()) return str;
   switch (modifier.m_code) {
 #ifdef USING__COLOUR
   case mm::up:    return str<<"\033["<<modifier.m_num<<"A";
@@ -81,7 +81,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier) 
 {
-  if (!msg.Modifiable()) return str;
+  if (!msg->Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
   case tm::curon:  return str<<"\033[?25h";

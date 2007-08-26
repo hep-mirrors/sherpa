@@ -34,7 +34,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
   if (clin->size()==1) {
     switch (m_ctit->second.size()) {
     case 1:
-      msg.Error()<<"Potential problem in "<<METHOD<<endl;
+      msg_Error()<<"Potential problem in "<<METHOD<<endl;
       m_ctrans.clear();
       return false;
     case 2:
@@ -148,7 +148,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 
   Double_Transition_Miter dtliter = p_doubletransitions->GetTransitions()->find(flpair);
   if (dtliter==p_doubletransitions->GetTransitions()->end()) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<endl
 	       <<"   No transition table found for "<<flpair.first<<"/"<<flpair.second<<endl
 	       <<"   Return 'false' and hope for the best."<<std::endl;
     return 0.;
@@ -281,7 +281,7 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
   Single_Transition_Miter stiter = p_singletransitions->GetTransitions()->find(fpair);
   if (stiter==p_singletransitions->GetTransitions()->end()) {
-    msg.Error()<<"Potential error in  All_Single_Transitions::MustTransit :"<<endl
+    msg_Error()<<"Potential error in  All_Single_Transitions::MustTransit :"<<endl
 	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second
 	       <<", mass = "<<cluster->Mass()<<";"<<endl<<(*cluster->GetPrev())
 	       <<"   will continue and hope for the best."<<endl;

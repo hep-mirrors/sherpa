@@ -55,7 +55,7 @@ double Gamma_Lambda_Base::Gamma(double q, double Q)
 double Gamma_Lambda_Base::IntGamma(double Q0, double Q) 
 {
   if (Q0<m_lambda) {
-    msg.Error()<<"Gamma_Lambda_Base::IntGamma("<<Q0<<","<<Q<<"): \n"
+    msg_Error()<<"Gamma_Lambda_Base::IntGamma("<<Q0<<","<<Q<<"): \n"
 	       <<"   Lower bound below lambda_QCD = "<<m_lambda
 	       <<" GeV.\n   Return 1e6."<<std::endl;
     return 1.e6;

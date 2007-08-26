@@ -142,7 +142,7 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     p_lab = new Vec4D[m_nvec];  
   }
   if (!(MakeIncoming(p_lab)) ) {
-    msg.Error()<<"Phase_Space_Handler::Integrate : Error !"<<std::endl
+    msg_Error()<<"Phase_Space_Handler::Integrate : Error !"<<std::endl
 	       <<"  Either too little energy for initial state"
 	       <<"  ("<<m_E<<" vs "<<m_m[0]+m_m[1]<<") or "<<std::endl
 	       <<"  bad number of incoming particles ("<<m_nin<<")."<<std::endl;
@@ -164,7 +164,7 @@ double Phase_Space_Handler::Integrate()
   if (!InitIncoming()) return 0;
   if (rpa.gen.ModelName()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
     if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
-      msg.Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
+      msg_Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
 		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<std::endl
 		 <<"   but internal string/cut-off scale of model is "
 		 <<rpa.gen.ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
@@ -295,7 +295,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   }
   p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
-    msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
+    msg_Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
  						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
     return 0.;
@@ -372,7 +372,7 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D *p)
   static double accu(sqrt(Accu()));
   Vec4D::SetAccu(accu);
   if (!(pin==pout) || !ATOOLS::IsEqual(sin,sout,accu)) {
-    ATOOLS::msg.Error()<<"Phase_Space_Handler::Check4Momentum(..): "
+    msg_Error()<<"Phase_Space_Handler::Check4Momentum(..): "
 		       <<"Difference: "<<pin-pout<<" "<<sin-sout<<std::endl;
     Vec4D::ResetAccu();
     return false;
@@ -408,7 +408,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
     }
     else {
       if (!(p_process->Selected())) {
-	msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<std::endl;
+	msg_Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<std::endl;
 	return NULL;
       }
     }
@@ -446,7 +446,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
       if (value > max) {
 	if (!use_overflow) {
 	  // don't use overflow
-	  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
+	  msg_Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
 		   <<"   Shifted maximum in "<<p_process->Selected()->Name()<<" : "
 		    <<p_process->Selected()->Max()<<" -> "<<value<<std::endl;
 	  p_process->Selected()->SetMax(value*1.001);
@@ -486,7 +486,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
     }
   }
   m_sumtrials += m_maxtrials;
-  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
+  msg_Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl
 	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<std::endl;
   return NULL;
@@ -504,7 +504,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     }
     else {
       if (!(p_process->Selected())) {
-	msg.Error()<<"Phase_Space_Handler::WeightedEvent(): "
+	msg_Error()<<"Phase_Space_Handler::WeightedEvent(): "
 		   <<"No process selected."<<std::endl;
 	return 0;
       }
@@ -541,7 +541,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     if ((psm::code)mode&psm::no_lim_isr ||
 	(psm::code)mode&psm::no_dice_isr) return NULL;
   }
-  msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
+  msg_Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl;
   m_weight=0.;
   return NULL;
@@ -620,7 +620,7 @@ bool Phase_Space_Handler::LoadChannelLibraries()
   for (std::list<std::string>::iterator it=p_channellibnames->begin();it!=p_channellibnames->end();++it) {
     Single_Channel * sc = SetChannel(m_nin,m_nout,p_flavours,(*it),GetInfo());
     if (sc==0) {
-      ATOOLS::msg.Error()<<"Phase_Space_Handler:"
+      msg_Error()<<"Phase_Space_Handler:"
 			 <<"Channels are not compiled and linked yet."<<std::endl
 			 <<"Type 'make install' and run again."<<std::endl;
       return 0;
@@ -649,20 +649,20 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (m_nin==2) {
     if (p_beamhandler && p_beamhandler->On()>0) {
       if (!(MakeBeamChannels())) {
-	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+	msg_Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
 		   <<"   did not construct any isr channels !"<<std::endl;
       }
     }
     if (p_isrhandler) {
       if (p_isrhandler->On()>0) {
 	if (!(MakeISRChannels())) {
-	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+	  msg_Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
 		     <<"   did not construct any isr channels !"<<std::endl;
 	}
       }
       if (p_isrhandler->KMROn()) {
 	if (!(MakeKMRChannels())) {
-	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+	  msg_Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
 		     <<"   did not construct any kmr channels !"<<std::endl;
 	}
       }
@@ -713,7 +713,7 @@ bool Phase_Space_Handler::CreateIntegrators()
       p_process->FillSIntegrator(p_fsrchannels);
       break;
     default:
-      msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
+      msg_Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
       p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
     }  
   }
@@ -1318,7 +1318,7 @@ void Phase_Space_Handler::ISRChannels(const int i,Channel_Info &ci) const
     return;
   }
   else {
-    ATOOLS::msg.Error()<<"Error in Phase_Space_Handler::Isrchannels("<<i<<")"<<std::endl
+    msg_Error()<<"Error in Phase_Space_Handler::Isrchannels("<<i<<")"<<std::endl
 		       <<"  delimiter out of bounds."<<std::endl;
     abort();
   }
@@ -1332,7 +1332,7 @@ void Phase_Space_Handler::BeamChannels(const int i,Channel_Info &ci) const
     return;
   }
   else {
-    ATOOLS::msg.Error()<<"Error in Phase_Space_Handler::Beamchannels("<<i<<")"<<std::endl
+    msg_Error()<<"Error in Phase_Space_Handler::Beamchannels("<<i<<")"<<std::endl
 		       <<"  delimiter out of bounds."<<std::endl;
     abort();
   }

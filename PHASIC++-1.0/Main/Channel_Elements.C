@@ -24,7 +24,7 @@ double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
   double massfactor = Channel_Basics::SqLam(p.Abs2(),p1.Abs2(),p2.Abs2());
   if (ATOOLS::IsZero(massfactor)) return 0.;  
   if (!(massfactor>0) && !(massfactor<0)) 
-    ATOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
+    msg_Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
   return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
 }
@@ -34,7 +34,7 @@ double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,double
   double massfactor = Channel_Basics::SqLam((p1+p2).Abs2(),p1.Abs2(),p2.Abs2());
   if (ATOOLS::IsZero(massfactor)) return 0.;  
   if (!(massfactor>0) && !(massfactor<0)) 
-    ATOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
+    msg_Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
   return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
 }
@@ -57,11 +57,11 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
   p2  = p+(-1.)*p1;
 
   if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
-    ATOOLS::msg.Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
 		       <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
   }
   if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
-    ATOOLS::msg.Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
 			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
   }
 }
@@ -99,7 +99,7 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
   double wt = 1./(M_PI*Channel_Basics::SqLam(s,s1,s2)/4.*
                     pow(a+ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,1));
   if (!(wt>0) && !(wt<0)) 
-    ATOOLS::msg.Error()<<"Anisotropic2Weight produces a nan!"<<endl;
+    msg_Error()<<"Anisotropic2Weight produces a nan!"<<endl;
 
   return wt;
 }
@@ -133,11 +133,11 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
   p2 = p+(-1.)*p1;  
 
   if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
-    ATOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
 			  <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
   }
   if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
-    ATOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
 			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
   }
 }
@@ -201,7 +201,7 @@ double Channel_Elements::MasslessPropWeight(double sexp,double smin,double smax,
 
   double wt = 1./(pow(s,sexp)*Channel_Basics::PeakedWeight(0.,sexp,smin,smax,1));
   if (!(wt>0) && !(wt<0) && wt!=0) { 
-    ATOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
+    msg_Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
 			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 			  <<"   sexp = "<<sexp<<endl;
   }
@@ -218,7 +218,7 @@ double Channel_Elements::MasslessPropWeight(double sexp,double smin,double smax,
  
   double wt = 1./(pow(s,sexp)*Channel_Basics::PeakedWeight(0.,sexp,smin,smax,s,1,ran));
   if (!(wt>0) && !(wt<0) && wt!=0) { 
-    ATOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
+    msg_Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
 			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 			  <<"   sexp = "<<sexp<<endl;
   }
@@ -233,7 +233,7 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
   if (!(s>0) && !(s<0) && s!=0) {
     cout.precision(12);
     cout<<"MlPMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
-    ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
+    msg_Error()<<"MasslessPropMomenta produced a nan !"<<endl;
   }
   return s;
 }
@@ -248,7 +248,7 @@ double Channel_Elements::AntennaWeight(double amin,double amax,
  
   double wt = 1./(a*(1.-a)*Channel_Basics::BoundaryPeakedWeight(amin,amax,a,ran));
   if (!(wt>0) && !(wt<0) && wt!=0) { 
-    ATOOLS::msg.Error()<<"AntennaWeight produces a nan: "<<wt<<endl
+    msg_Error()<<"AntennaWeight produces a nan: "<<wt<<endl
 		       <<"   amin,a,amax = "<<amin<<" < "<<a<<" < "<<amax<<endl;
   }
   return wt;
@@ -259,7 +259,7 @@ double Channel_Elements::AntennaMomenta(double amin,double amax,
 {
   double a = Channel_Basics::BoundaryPeakedDist(amin,amax,ran);
   if (!(a>0) && !(a<0) && a!=0) 
-    ATOOLS::msg.Error()<<"AntennaMomenta produced a nan !"<<endl;
+    msg_Error()<<"AntennaMomenta produced a nan !"<<endl;
   return a;
 }
 
@@ -289,7 +289,7 @@ double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,dou
 		 Channel_Basics::PeakedWeight(pow(mass,4.),1.,sqr(smin),sqr(smax),1)/2.);
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    ATOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
+    msg_Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<2.<<", "<<mass*mass<<" wt = "<<wt<<endl
 			  <<"ThresholdWeight produces a nan: "<<wt<<endl;
   }
@@ -299,8 +299,8 @@ double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,dou
 double Channel_Elements::ThresholdMomenta(double mass,double smin,double smax,double ran)
 {
   double s = sqrt(Channel_Basics::PeakedDist(pow(mass,4.),1.,sqr(smin),sqr(smax),1,ran));
-  if (!(s>0) && !(s<0) && s!=0) ATOOLS::msg.Error()<<"ThresholdMomenta produced a nan !"<<endl;
-  if ((s<smin) || (s>smax))     ATOOLS::msg.Error()<<"ThresholdMomenta out of bounds !"<<endl;
+  if (!(s>0) && !(s<0) && s!=0) msg_Error()<<"ThresholdMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     msg_Error()<<"ThresholdMomenta out of bounds !"<<endl;
   return s;
 }
 
@@ -316,7 +316,7 @@ double Channel_Elements::ThresholdWeight(double sexp,double mass,double smin,dou
 		 Channel_Basics::PeakedWeight(0.,sexp,sgmin,sgmax,1));
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    ATOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
+    msg_Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<sexp<<", "<<mass*mass<<" wt = "<<wt<<endl
 			  <<"ThresholdWeight produces a nan: "<<wt<<endl;
   }
@@ -339,7 +339,7 @@ double Channel_Elements::ThresholdWeight(double sexp,double mass,double smin,dou
 		 Channel_Basics::PeakedWeight(0.,sexp,sgmin,sgmax,sg,1,ran));
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    ATOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
+    msg_Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<sexp<<", "<<mass*mass<<" wt = "<<wt<<endl
 			  <<"ThresholdWeight produces a nan: "<<wt<<endl;
   }
@@ -352,10 +352,10 @@ double Channel_Elements::ThresholdMomenta(double sexp,double mass,double smin,do
   double sgmin=sqrt(sqr(smin)+sqr(sqr(mass)));
   double sgmax=sqrt(sqr(smax)+sqr(sqr(mass)));
   double s = sqrt(sqr(Channel_Basics::PeakedDist(0.,sexp,sgmin,sgmax,1,ran))-sqr(sqr(mass)));
-  if (!(s>0) && !(s<0) && s!=0) { ATOOLS::msg.Error()<<"ThresholdMomenta produced a nan !"<<endl;
+  if (!(s>0) && !(s<0) && s!=0) { msg_Error()<<"ThresholdMomenta produced a nan !"<<endl;
   cout<<"Channel_Elements::ThresholdMomenta "<<sexp<<" "<<mass<<" "<<sgmax-sgmin<<" "<<s<<" "<<ran<<endl;
   }
-  if ((s<smin) || (s>smax)) {    ATOOLS::msg.Error()<<"ThresholdMomenta out of bounds !"<<endl;
+  if ((s<smin) || (s>smax)) {    msg_Error()<<"ThresholdMomenta out of bounds !"<<endl;
    cout<<"Channel_Elements::ThresholdMomenta "<<sexp<<" "<<mass<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
   }
   return s;
@@ -381,7 +381,7 @@ double Channel_Elements::LLPropWeight(double sexp,double pole,
   double wt = 1./(pow(pole-s,sexp)*Channel_Basics::PeakedWeight(pole,sexp,smin,smax,-1));
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    ATOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
+    msg_Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl
 			  <<"LLPropWeight produces a nan: "<<wt<<endl;
   }
@@ -399,7 +399,7 @@ double Channel_Elements::LLPropWeight(double sexp,double pole,
   double wt = 1./(pow(pole-s,sexp)*Channel_Basics::PeakedWeight(pole,sexp,smin,smax,s,-1,ran));
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    ATOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
+    msg_Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl
 			  <<"LLPropWeight produces a nan: "<<wt<<endl;
   }
@@ -415,8 +415,8 @@ double Channel_Elements::LLPropMomenta(double sexp,double pole,
   if (smin==smax) s=smax;
   else s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
 //   cout<<s<<endl;
-  if (!(s>0) && !(s<0) && s!=0) ATOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
-  if ((s<smin) || (s>smax))     ATOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
+  if (!(s>0) && !(s<0) && s!=0) msg_Error()<<"LLPropMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     msg_Error()<<"LLPropMomenta out of bounds !"<<endl;
   return s;
 }
 
@@ -448,7 +448,7 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
     wt/=atan(upper)-atan(lower);
 
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"MassivePropWeight produces a nan!"<<endl;
+      msg_Error()<<"MassivePropWeight produces a nan!"<<endl;
     }
     return wt;
   }
@@ -475,7 +475,7 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
     wt/=ymin-ymax;
 
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"MassivePropWeight produces a nan!"<<endl;
+      msg_Error()<<"MassivePropWeight produces a nan!"<<endl;
     }
     return wt;
   }
@@ -498,7 +498,7 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
   }
 //   cout<<"MPMom :  "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<" "<<mass<<" "<<width<<endl;
   if (!(s>0) && !(s<0) && s!=0) 
-    ATOOLS::msg.Error()<<"MassivePropMomenta produced a nan !"<<endl;
+    msg_Error()<<"MassivePropMomenta produced a nan !"<<endl;
   return s;
 }
 
@@ -544,11 +544,11 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double ct = (p1inh[0]*p1outh[0]-p1in*p1out)/(p1inmass*p1outmass);
   
   if  ((ct < ctmin) || (ct > ctmax)) {
-    ATOOLS::msg.Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
-    ATOOLS::msg.Error()<<"1: "<<p1in<<endl;
-    ATOOLS::msg.Error()<<"2: "<<p2in<<endl;
-    ATOOLS::msg.Error()<<"3: "<<p1out<<endl;
-    ATOOLS::msg.Error()<<"4: "<<p2out<<endl;
+    msg_Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
+    msg_Error()<<"1: "<<p1in<<endl;
+    msg_Error()<<"2: "<<p2in<<endl;
+    msg_Error()<<"3: "<<p1out<<endl;
+    msg_Error()<<"4: "<<p2out<<endl;
     return 0.;
   } 
   aminct = a-ct;
@@ -556,7 +556,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
 			Channel_Basics::Hj1(ctexp,a-ctmin,a-ctmax)*p1outmass*M_PI);
 
   if (!(wt>0) && !(wt<0)) 
-    ATOOLS::msg.Error()<<"TChannelWeight produces a nan!"<<endl;
+    msg_Error()<<"TChannelWeight produces a nan!"<<endl;
 
   return wt;
 }
@@ -608,11 +608,11 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double ct=p1outh[3]/p1outh.PSpat();
   if (ct<ctmin||ct>ctmax) {
     ran1=ran2=-1.;
-    ATOOLS::msg.Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
-    ATOOLS::msg.Error()<<"1: "<<p1in<<endl;
-    ATOOLS::msg.Error()<<"2: "<<p2in<<endl;
-    ATOOLS::msg.Error()<<"3: "<<p1out<<endl;
-    ATOOLS::msg.Error()<<"4: "<<p2out<<endl;
+    msg_Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
+    msg_Error()<<"1: "<<p1in<<endl;
+    msg_Error()<<"2: "<<p2in<<endl;
+    msg_Error()<<"3: "<<p1out<<endl;
+    msg_Error()<<"4: "<<p2out<<endl;
     return 0.;
   }
   ran1        = (pow(a-ct,1.-ctexp)-pa1);
@@ -626,7 +626,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
 			Channel_Basics::Hj1(ctexp,a-ctmin,a-ctmax)*p1outmass*M_PI);
 
   if (!(wt>0) && !(wt<0)) 
-    ATOOLS::msg.Error()<<"TChannelWeight produces a nan!"<<endl;
+    msg_Error()<<"TChannelWeight produces a nan!"<<endl;
 
   return wt;
 }
@@ -686,11 +686,11 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   p2out = pin+(-1.)*p1out;
 
   if (dabs(s1out-p1out.Abs2())>1.e-5) {
-    ATOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
 			  <<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
   }
   if (dabs(s2out-p2out.Abs2())>1.e-5) {
-    ATOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
+    msg_Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
 			  <<"s2,p2: "<<s2out<<";"<<p2out.Abs2()<<" : "<<dabs(s2out-p2out.Abs2())<<endl;
   }
   return 0;
@@ -781,15 +781,15 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
   double y=ymin+(ymax-ymin)*ran;
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
-    ATOOLS::msg.Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   // If y is close to any bound, set it to this bound
     if (ATOOLS::IsEqual(y, ymin)) 
-       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+       { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
 	 y = ymin; }
     if (ATOOLS::IsEqual(y, ymax)) 
-      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+      { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }
   }
   return y;
@@ -853,14 +853,14 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
   double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
-    ATOOLS::msg.Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
     if (ATOOLS::IsEqual(y, ymin)) 
-       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+       { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
 	 y = ymin; }
     if (ATOOLS::IsEqual(y, ymax)) 
-      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+      { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }
   }
   return y;
@@ -923,14 +923,14 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
   double y=Channel_Basics::PeakedDist(ypeak,yexponent,ymin,ymax,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
-    ATOOLS::msg.Error()<<"Channel_Elements::DiceYForward("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::DiceYForward("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
      if (ATOOLS::IsEqual(y, ymin)) 
-       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+       { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
 	 y = ymin; }
     if (ATOOLS::IsEqual(y, ymax)) 
-      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+      { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }
   }
   //std::cout<<ymin<<" "<<ymax<<" vs. "<<y<<endl;
@@ -968,7 +968,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   double wt = Channel_Basics::PeakedWeight(ypeak,yexponent,ymin,ymax,yinfo[2],-1,ran)* 
     pow(ypeak-yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"WeightYForward produces a nan!"<<endl
+      msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
       abort();
     }
@@ -988,7 +988,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   double wt = Channel_Basics::PeakedWeight(ymax-xinfo[3],yexponent,ymin,ymax,-1)* 
     pow(ymax-xinfo[3]-yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"WeightYForward produces a nan!"<<endl
+      msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
       abort();
     }
@@ -1010,16 +1010,16 @@ double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
     std::cout.precision(14);
-    ATOOLS::msg.Error()<<"Channel_Elements::DiceYBackward("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::DiceYBackward("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): ";
     std::cout.precision(14);
-ATOOLS::msg.Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+msg_Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		   <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
     if (ATOOLS::IsEqual(y, ymin)) 
-       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+       { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
 	 y = ymin; }
     if (ATOOLS::IsEqual(y, ymax)) 
-      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+      { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }
 
   }
@@ -1052,7 +1052,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)* 
     pow(-ymin-xinfo[1]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"WeightYForward produces a nan!"<<endl
+      msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
       abort();
     }
@@ -1072,7 +1072,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1)* 
     pow(-ymin-xinfo[1]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      ATOOLS::msg.Error()<<"WeightYForward produces a nan!"<<endl
+      msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
       abort();
     }
@@ -1085,7 +1085,7 @@ FlatMomenta(double sexp,double smin,double smax,double ran)
   double tmin=smin/smax, tmax=1.0;
   double s=smax*Channel_Basics::FlatDist(sexp,tmin,tmax,ran);
   if (!(s>0) && !(s<0) && s!=0) 
-    ATOOLS::msg.Error()<<"MasslessFlatMomenta produced a nan !"<<endl;
+    msg_Error()<<"MasslessFlatMomenta produced a nan !"<<endl;
   return s;
 }
 
@@ -1097,7 +1097,7 @@ FlatWeight(double sexp,double smin,double smax,double s)
   double wt=pow(log(tau),sexp)/
     (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax));
   if (!(wt>0) && !(wt<=0)) { 
-    ATOOLS::msg.Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
+    msg_Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
 		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 		       <<"   sexp = "<<sexp<<endl;
   }
@@ -1115,7 +1115,7 @@ FlatWeight(double sexp,double smin,double smax,const double s,double &ran)
   double wt=pow(log(tau),sexp)/
     (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax,tau,ran));
   if (!(wt>0) && !(wt<=0)) { 
-    ATOOLS::msg.Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
+    msg_Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
 		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 		       <<"   sexp = "<<sexp<<endl;
   }

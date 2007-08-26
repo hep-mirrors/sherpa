@@ -57,7 +57,7 @@ void Detector_Element::Evaluate(const ATOOLS::Blob_List &,double,int) {}
 std::string Detector_Element::Name() { return m_name; }
 
 void Detector_Element::PrintHits() const {
-  msg.Out()<<"Hits in "<<m_name<<" : "<<std::endl;
+  msg_Out()<<"Hits in "<<m_name<<" : "<<std::endl;
   for (std::list<Cell *>::const_iterator cit=m_hitcells.begin();
        cit!=m_hitcells.end();cit++) (*cit)->Print();
 }

@@ -75,7 +75,7 @@ bool MSSM_LQQ::RunSpectrumGenerator() {
       return 1;
     }
     
-    msg.Error()<<"Error in MSSM_LQQ::RunSpectrumGenerator."<<std::endl
+    msg_Error()<<"Error in MSSM_LQQ::RunSpectrumGenerator."<<std::endl
 	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;
   }

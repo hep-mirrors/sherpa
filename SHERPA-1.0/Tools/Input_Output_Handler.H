@@ -57,7 +57,7 @@ namespace SHERPA {
       outstream.open((basicfilename+fileextension).c_str());
       outstream.precision(precision);
       if (!outstream.good()) { 
-	ATOOLS::msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+	msg_Error()<<"ERROR in Input_Output_Handler."<<std::endl
 		   <<"   Could not open event file "<<(basicfilename+fileextension)<<"."<<std::endl
 		   <<"   Will abort the run."<<std::endl;
 	abort();

@@ -21,10 +21,10 @@ int main(int argc,char **argv)
   signal(SIGTERM,exh->SignalHandler);
   signal(SIGXCPU,exh->SignalHandler);
   try {
-    msg.Init(2,"");
+    msg_Init(2,"");
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
-    else msg.SetModifiable(false);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg_SetModifiable(true);
+    else msg_SetModifiable(false);
     Algebra_Interpreter interpreter;
     std::string expr;
     bool quiet(false);
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
       std::string argvs=argv[i];
       if (argvs=="-q") {
 	quiet=true;
-	msg.SetLevel(0);
+	msg_SetLevel(0);
 	continue;
       }
       size_t pos=argvs.find("=");
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
       std::cout<<result<<std::endl;
       return 0;
     }
-    if (msg.LevelIsTracking()) interpreter.PrintEquation();
+    if (msg_LevelIsTracking()) interpreter.PrintEquation();
     std::cout.precision(12);
     std::cout<<"Calc: recalculating tree   -> "<<expr<<" = "
 	     <<((TDouble*)interpreter.Calculate())->m_value<<std::endl;
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   }
   catch (Exception exception) {
     exception.UpdateLogFile();
-    msg.Error()<<exception<<std::endl;
+    msg_Error()<<exception<<std::endl;
     std::terminate();
   }
   catch (std::exception exception) {

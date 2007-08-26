@@ -50,7 +50,7 @@ void Multi_Channel::Add(Single_Channel * Ch) {
 
 Single_Channel * Multi_Channel::Channel(int i) { 
   if ((i<0) || (i>=(int)channels.size())) {
-    msg.Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :"
+    msg_Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :"
 	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return 0;
   }
@@ -60,7 +60,7 @@ Single_Channel * Multi_Channel::Channel(int i) {
 void Multi_Channel::DropChannel(int i) 
 {
   if ((i<0) || (i>(int)channels.size())) {
-    msg.Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :"
+    msg_Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :"
 	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return;
   }
@@ -175,7 +175,7 @@ public:
 void Multi_Channel::Optimize(double error)
 {
   if (m_fixalpha) return;
-  msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
+  msg_Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
   double aptot = 0.;
   size_t i;
@@ -345,7 +345,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
       channels[i]->GenerateWeight(p,cuts);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this->name
+	msg_Error()<<"Multi_Channel::GenerateWeight(..): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
@@ -409,7 +409,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
       channels[i]->GenerateWeight(p);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(.): ("<<this->name
+	msg_Error()<<"Multi_Channel::GenerateWeight(.): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
@@ -442,7 +442,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
       return;
     }
   }  
-  msg.Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
+  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
   channels[0]->GeneratePoint(p);
 }
 
@@ -453,7 +453,7 @@ void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
       channels[i]->GenerateWeight(sprime,y,mode);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(...): ("<<this->name
+	msg_Error()<<"Multi_Channel::GenerateWeight(...): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0.) 
@@ -485,7 +485,7 @@ void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
       return;
     }
   }  
-  msg.Error()<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
+  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
   channels[0]->GeneratePoint(sprime,y,mode,rans);
 }
 
@@ -508,7 +508,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
       return;
     }
   }  
-  msg.Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
+  msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
 }
@@ -526,7 +526,7 @@ void Multi_Channel::GenerateWeight(int mode=0)
       channels[i]->GenerateWeight(mode);
       if (!(channels[i]->Weight()>0)&&
 	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
+	msg_Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
@@ -544,12 +544,12 @@ void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width)
 
 
 void Multi_Channel::Print() {
-  if (!msg.LevelIsTracking()) return;
-  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"----------------------------------------------"<<endl
 		      <<"Multi_Channel with "<<channels.size()<<" channels."<<endl;
   for (size_t i=0;i<channels.size();i++) 
-    ATOOLS::msg.Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
-  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl;
+    msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
+  msg_Out()<<"----------------------------------------------"<<endl;
 }                 
 
 
@@ -581,7 +581,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
   double      alpha, alphasave, weight, res1, res2, res3;
   ifile>>size>>name;
   if (( size != channels.size()) || ( name != name) ) {
-    msg.Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
+    msg_Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
 	       <<"  Multi_Channel file did not coincide with actual Multi_Channel: "<<endl
 	       <<"  "<<size<<" vs. "<<channels.size()<<" and "
 	       <<"  "<<name<<" vs. "<<name<<endl;
@@ -597,13 +597,13 @@ bool Multi_Channel::ReadIn(std::string pID) {
     ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
     sum+= alpha;
     if (name != channels[i]->Name()) {
-      msg.Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
+      msg_Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
 		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
 		 <<"  "<<name<<" vs. "<<channels[i]->Name()<<endl;
       return 0;
       if (name.substr(0,name.length()-1)!=
 	  channels[i]->Name().substr(0,name.length()-1)) {
-	msg.Error()<<"   return 0."<<std::endl;
+	msg_Error()<<"   return 0."<<std::endl;
 	return 0;
       }
     }

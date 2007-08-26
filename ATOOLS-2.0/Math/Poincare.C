@@ -21,12 +21,12 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
   m_usen=m_n.PSpat2()>0.0 && m_ct<1.0;
   if(sqr(m_ct)>1.0) {
     if (!IsEqual(sqr(m_ct),1.0)) {
-      int prc(msg.Error().precision());
-      msg.Error().precision(14);
-      msg.Error()<<METHOD<<"(): cos\\theta = "<<m_ct
+      int prc(msg_Error().precision());
+      msg_Error().precision(14);
+      msg_Error()<<METHOD<<"(): cos\\theta = "<<m_ct
 		 <<". Set to +-1. "<<(m_usen?"Will":"Won't")
 		 <<" rotate."<<std::endl;
-      msg.Error().precision(prc);
+      msg_Error().precision(prc);
     }
     m_ct=m_ct>0.0?1.0:-1.0;
   }
@@ -37,7 +37,7 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
     Vec3D n(m_n), at(n*(n*a)/m_nsq), ap(a-at);
     Vec3D ta(at+m_ct*ap-m_st/m_nabs*cross(n,ap));
     if (!ATOOLS::IsZero((ta-b).Sqr())) 
-      msg.Error()<<METHOD<<"(): Inaccurate rotation {\n"
+      msg_Error()<<METHOD<<"(): Inaccurate rotation {\n"
  		 <<"  a    = "<<a<<"\n"
 		 <<"  b    = "<<b<<"\n"
 		 <<"  a'   = "<<ta<<" -> rel. dev. ("

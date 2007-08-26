@@ -35,7 +35,7 @@ void HepMC_Interface::PrintEvent(int mode, std::ostream& ostr)
     p_event->print(ostr);
     break;
   default:
-    ATOOLS::msg.Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
     abort();
   }
 }
@@ -65,15 +65,15 @@ void HepMC_Interface::InitTheMap()
     }
   }
   delete build;
-  p_particledatatable->writeParticleData(ATOOLS::msg.Debugging());
-  ATOOLS::msg.Debugging()<<std::endl;
+  p_particledatatable->writeParticleData(msg_Debugging());
+  msg_Debugging()<<std::endl;
 }
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if(m_converted) return true;
   if (blobs->empty()) {
-    ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
+    msg_Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
 		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
 		       <<"   Continue run ... ."<<std::endl;
     return true;
@@ -92,14 +92,14 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 	p_event->set_signal_process_vertex(vertex);
     }
   }
-  if (ATOOLS::msg.Debugging()) {
+  if (msg_Debugging()) {
     int charge = 0;
     for ( GenEvent::particle_const_iterator p = p_event->particles_begin();
 	  p != p_event->particles_end(); ++p ) {
       if ((*p)->status()==1) charge += (*p)->particleID().threeCharge();
     }
     if (charge!=(ATOOLS::rpa.gen.Beam1().IntCharge()+ATOOLS::rpa.gen.Beam2().IntCharge())) {
-      ATOOLS::msg.Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
+      msg_Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
 			 <<"   Charge not conserved. Continue."<<std::endl;
     }
   }
@@ -138,16 +138,16 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
   }
   m_blob2vertex.insert(std::make_pair(blob->Id(),vertex));
   if (!okay) {
-    ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
+    msg_Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
 		       <<"   Continue event generation with new event."<<std::endl;
   }
-  if (ATOOLS::msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     ATOOLS::Vec4D check = blob->CheckMomentumConservation();
     double test         = ATOOLS::Vec3D(check).Abs();
     if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-5 &&
 	ATOOLS::dabs(test)>1.e-5)
       {
-	ATOOLS::msg.Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
+	msg_Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
 			   <<"   Momentum not conserved. Continue."<<std::endl
 			   <<"ERROR in Blob -> Vertex : "<<vertex->check_momentum_conservation()
 			   <<" <- "<<test<<" "<<check

@@ -135,10 +135,10 @@ int Color_Integrator::ConstructConfigurations
     m_orders.push_back(perm);
     if (sing) weight/=-3.0;
     m_weights.push_back(weight);
-    if (msg.LevelIsDebugging()) {
-      msg.Out()<<"permutation "<<m_orders.size()<<" -> "<<perm<<" -> ";
-      for (size_t i(0);i<perm.size();++i) msg.Out()<<*m_ids[perm[i]];
-      msg.Out()<<" ("<<weight<<")\n";
+    if (msg_LevelIsDebugging()) {
+      msg_Out()<<"permutation "<<m_orders.size()<<" -> "<<perm<<" -> ";
+      for (size_t i(0);i<perm.size();++i) msg_Out()<<*m_ids[perm[i]];
+      msg_Out()<<" ("<<weight<<")\n";
     }
     return 1;
   }
@@ -330,7 +330,7 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
   for (size_t i(0);i<perm.size();++i) {
     // test for doubled indices
     if (checked.find(perm[i])!=checked.end()) {
-      msg.Error()<<METHOD<<"(): Permutation "<<perm<<" contains index "
+      msg_Error()<<METHOD<<"(): Permutation "<<perm<<" contains index "
 		 <<perm[i]<<" twice. Abort."<<std::endl;
       return false;
     }
@@ -338,7 +338,7 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
     std::set<size_t>::iterator ait(all.find(perm[i]));
     // check for invalid index
     if (ait==all.end()) {
-      msg.Error()<<METHOD<<"(): Permutation "<<perm
+      msg_Error()<<METHOD<<"(): Permutation "<<perm
 		 <<" contains invalid index "<<perm[i]
 		 <<". Abort."<<std::endl;
       return false;      
@@ -347,7 +347,7 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
   } 
   // check whether all indices occur
   if (all.size()>0) {
-    msg.Error()<<METHOD<<"(): Permutation "<<perm
+    msg_Error()<<METHOD<<"(): Permutation "<<perm
 	       <<" does not contain all indices. Abort."<<std::endl;
     return false;      
   }
@@ -357,7 +357,7 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
 
 bool Color_Integrator::GenerateOrders()
 {
-  if (msg.LevelIsDebugging()) {
+  if (msg_LevelIsDebugging()) {
     msg_Debugging()<<" --- colors --- \n";
     for (size_t i(0);i<m_ids.size();++i)
       msg_Debugging()<<i<<" -> "<<*m_ids[i]<<"\n";
@@ -532,7 +532,7 @@ bool Color_Integrator::AddConfiguration(const size_t &l)
     m_orders.clear();
     m_weights.clear();
     msg_Debugging()<<" --- colors --- \n";
-    if (msg.LevelIsDebugging()) {
+    if (msg_LevelIsDebugging()) {
       for (size_t i(0);i<m_ids.size();++i)
 	msg_Debugging()<<i<<" -> "<<*m_ids[i]<<"\n";
     }
@@ -554,7 +554,7 @@ bool Color_Integrator::AddConfiguration(const size_t &l)
     m_asum.push_back(1.0);
     msg_Debugging()<<"adding "<<m_confs.back()<<"\n";
     ++m_nv;
-    if (int(m_nv)%100==0 && msg.Modifiable())
+    if (int(m_nv)%100==0 && msg->Modifiable())
       msg_Info()<<std::setw(12)<<m_nv<<" ("<<std::setw(12)<<m_n<<")"
 		<<mm_left(27)<<std::flush;
     return true;

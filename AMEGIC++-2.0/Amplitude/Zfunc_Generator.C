@@ -202,7 +202,7 @@ void Zfunc_Generator::Convert(Point* p)
 	Convert(p);
 	return;
       }
-      msg.Error()<<"Zfunc_Generator::Convert(Point* p) : Cutting Error, abort the run."<<endl;
+      msg_Error()<<"Zfunc_Generator::Convert(Point* p) : Cutting Error, abort the run."<<endl;
       abort();
     }
   }
@@ -249,20 +249,20 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 {
-  if (!msg.LevelIsTracking()) return;
-  ATOOLS::msg.Out()<<"LorentzList: "<<endl;
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"LorentzList: "<<endl;
   for (size_t i=0;i<lflist.size();i++)
-    ATOOLS::msg.Out()<<lflist[i].String(1)<<endl;
-  ATOOLS::msg.Out()<<endl;
+    msg_Out()<<lflist[i].String(1)<<endl;
+  msg_Out()<<endl;
 }
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 {
-  if (!msg.LevelIsTracking()) return;
-  ATOOLS::msg.Out()<<"LorentzList: "<<endl;
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"LorentzList: "<<endl;
   for (size_t i=0;i<lflist.size();i++)
-    ATOOLS::msg.Out()<<lflist[i]->String(1)<<endl;
-  ATOOLS::msg.Out()<<endl;
+    msg_Out()<<lflist[i]->String(1)<<endl;
+  msg_Out()<<endl;
 }
 
 lf::code Zfunc_Generator::LFEff(lf::code type)
@@ -331,7 +331,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   }
   if (Zh->m_type==-10) {
     return 0;
-    ATOOLS::msg.Error()<<"ERROR in Zfunc_Generator::LFDetermine_Zfunc : "<<std::endl
+    msg_Error()<<"ERROR in Zfunc_Generator::LFDetermine_Zfunc : "<<std::endl
 		       <<"   No Lorentzfunction found, abort the run."<<endl;
     LFPrint(lflist);  
     abort();
@@ -492,7 +492,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
 
 	if (max<typemin) i = typemin-1;
 	if (i<0) {
-	  ATOOLS::msg.Error()<<"ERROR in Zfunc_Generator::LFFill_Zfunc() : abort the run."<<endl;
+	  msg_Error()<<"ERROR in Zfunc_Generator::LFFill_Zfunc() : abort the run."<<endl;
 	  abort();
 	}
 	//LFPrint(lfpointer);
@@ -700,7 +700,7 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
     if  (scnt<Zh->m_narg)  Zh->p_arguments[scnt]=pb->number;
     else{
       Zh->Print();
-      msg.Error()<<"ERROR in Zfunc_Generator::SetScalarArgs : "<<std::endl
+      msg_Error()<<"ERROR in Zfunc_Generator::SetScalarArgs : "<<std::endl
 		 <<"   scnt : "<<scnt<<" Zh->m_narg : "<<Zh->m_narg<<", will abort."<<endl;
       abort();
     }

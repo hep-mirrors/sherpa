@@ -34,10 +34,10 @@ ATOOLS::Blob_Data_Base * Data_Collector::operator[](const std::string name)
 
 void Data_Collector::Print() 
 {
-  msg.Out()<<"Data_Collector:"<<std::endl;
+  msg_Out()<<"Data_Collector:"<<std::endl;
   for (String_BlobDataBase_Map::iterator it=s_datacontainer.begin();
        it!=s_datacontainer.end(); ++it) {
-    msg.Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
+    msg_Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
   }
 }
 

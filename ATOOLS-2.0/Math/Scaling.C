@@ -13,7 +13,7 @@ Scaling_Base<ValueType>::~Scaling_Base() {}
 template <class ValueType>
 ValueType Scaling_Base<ValueType>::operator()(const Value_Type &x)
 { 
-  ATOOLS::msg.Error()<<"Scaling_Base::operator(): "
+  msg_Error()<<"Scaling_Base::operator(): "
 		       <<"Virtual method called!"<<std::endl; 
   return (Value_Type)0.0;
 }
@@ -21,7 +21,7 @@ ValueType Scaling_Base<ValueType>::operator()(const Value_Type &x)
 template <class ValueType>
 ValueType Scaling_Base<ValueType>::operator[](const Value_Type &y)
 { 
-  ATOOLS::msg.Error()<<"Scaling_Base::operator[]: "
+  msg_Error()<<"Scaling_Base::operator[]: "
 		     <<"Virtual method called!"<<std::endl; 
   return (Value_Type)0.0;
 }
@@ -35,10 +35,10 @@ const std::string Scaling_Base<ValueType>::Name() const
 template <class ValueType>
 void Scaling_Base<ValueType>::ShowScalings(const int mode)
 {
-  if (!msg.LevelIsInfo() || mode==0) return;
-  msg.Out()<<"Scaling_Base::ShowScalings(): {\n\n";
-  Scaling_Getter::PrintGetterInfo(msg.Out(),20);
-  msg.Out()<<"\n}"<<std::endl;
+  if (!msg_LevelIsInfo() || mode==0) return;
+  msg_Out()<<"Scaling_Base::ShowScalings(): {\n\n";
+  Scaling_Getter::PrintGetterInfo(msg_Out(),20);
+  msg_Out()<<"\n}"<<std::endl;
 }
 
 template <class Value_Type>

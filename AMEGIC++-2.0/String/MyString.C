@@ -111,7 +111,7 @@ long int MyString::length() const
 char MyString::operator[](const long int i) const
 {
   if (i>len-1) {
-    msg.Error()<<"MyString::Out of Range: "<<_string<<":"<<len<<"/"<<i<<endl;
+    msg_Error()<<"MyString::Out of Range: "<<_string<<":"<<len<<"/"<<i<<endl;
 
     return _string[0];
   }

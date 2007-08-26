@@ -156,14 +156,14 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     if (fl[i].IsGluon() && 
 	(p_xs->Colours()[i][0]==0 || p_xs->Colours()[i][1]==0))   check=false;
     if (!check) {
-      msg.Error()<<"Cluster_Partons_CKKW::SetColours(..): \n"
+      msg_Error()<<"Cluster_Partons_CKKW::SetColours(..): \n"
 		 <<"Colour check failed for the following combination:"
 		 <<std::endl;
       for (int i=0; i<4; ++i) 
-	msg.Error()<<"   "<<i<<" : "<<fl[i]<<" ("
+	msg_Error()<<"   "<<i<<" : "<<fl[i]<<" ("
 		   <<p_xs->Colours()[i][0]<<","
 		   <<p_xs->Colours()[i][1]<<")"<<std::endl;
-      msg.Error()<<"Abort."<<std::endl;
+      msg_Error()<<"Abort."<<std::endl;
       abort();
     }
   }
@@ -432,7 +432,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 	  ++cnt[i];
 	  if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
 	    if (++psur[i]/(double)cnt[i]>0.001) {
-	      msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale in "
+	      msg_Error()<<METHOD<<"(): Scale under-runs minimum PDF scale in "
 			 <<(psur[i]*1000/cnt[i])/10.0
 			 <<" % of events."<<std::endl;
 	    }

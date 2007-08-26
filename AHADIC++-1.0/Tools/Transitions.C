@@ -131,13 +131,13 @@ void Single_Transitions::PrintSingleTransitions()
   map<Flavour,double> checkit;
   for (Single_Transition_Miter stiter=p_transitions->begin();
        stiter!=p_transitions->end();stiter++) {
-    msg.Debugging()<<"("<<stiter->first.first<<","<<stiter->first.second<<") : "<<endl;
+    msg_Debugging()<<"("<<stiter->first.first<<","<<stiter->first.second<<") : "<<endl;
     for (Single_Transition_Siter sit=stiter->second->begin();
 	 sit!=stiter->second->end();sit++) {
       wave    = hadpars.GetMultiplets()->GetWaveFunction(sit->first);
       wt      = sqr(wave->WaveWeight(stiter->first.first,stiter->first.second));
       mpletwt = wave->MultipletWeight();
-      msg.Debugging()<<"   "<<sit->first<<" = "<<wt<<" * "<<mpletwt<<" = "<<sit->second<<endl;
+      msg_Debugging()<<"   "<<sit->first<<" = "<<wt<<" * "<<mpletwt<<" = "<<sit->second<<endl;
       if (checkit.find(stiter->first.first)==checkit.end()) 
 	checkit[stiter->first.first] = wt;
       else checkit[stiter->first.first] += wt;
@@ -146,10 +146,10 @@ void Single_Transitions::PrintSingleTransitions()
       else checkit[stiter->first.second] += wt;
     }
   }
-  msg.Out()<<"In total (summed weights per hadron):"<<endl;
+  msg_Out()<<"In total (summed weights per hadron):"<<endl;
   for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
-    msg.Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
-  msg.Out()<<"-------- END OF ALL_SINGLE_TRANSITIONS -----"<<endl;  
+    msg_Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
+  msg_Out()<<"-------- END OF ALL_SINGLE_TRANSITIONS -----"<<endl;  
 }
 
 
@@ -269,11 +269,11 @@ void Double_Transitions::PrintDoubleTransitions()
   map<Flavour,double> checkit;
   for (Double_Transition_Miter dtiter=p_transitions->begin();
        dtiter!=p_transitions->end();dtiter++) {
-    msg.Out()<<"Transitions for <"
+    msg_Out()<<"Transitions for <"
 	     <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
     for (Double_Transition_Siter dtit=dtiter->second->begin();
 	 dtit!=dtiter->second->end();dtit++) {
-      msg.Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
+      msg_Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
 	       <<" with "<<dtit->second<<endl;
       if (checkit.find(dtit->first.first)==checkit.end()) 
 	checkit[dtit->first.first] = dtit->second;
@@ -283,8 +283,8 @@ void Double_Transitions::PrintDoubleTransitions()
       else checkit[dtit->first.second] += dtit->second;
     }
   }
-  msg.Out()<<"In total (summed weights per hadron):"<<endl;
+  msg_Out()<<"In total (summed weights per hadron):"<<endl;
   for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
-    msg.Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
-  msg.Out()<<"-------- END OF ALL_DOUBLE_TRANSITIONS -----"<<endl;
+    msg_Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
+  msg_Out()<<"-------- END OF ALL_DOUBLE_TRANSITIONS -----"<<endl;
 }

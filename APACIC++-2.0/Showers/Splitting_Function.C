@@ -58,7 +58,7 @@ double Splitting_Function::GetLastInt()
 }
 
 void Splitting_Function::Add(Splitting_Function *) {
-  ATOOLS::msg.Error()<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
+  msg_Error()<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
 }
 
 void Splitting_Function::SelectOne() {}
@@ -79,8 +79,8 @@ const ATOOLS::Flavour &Splitting_Function::GetFlC() const
 }
 
 void Splitting_Function::PrintStat(int mode) {
-  if (!ATOOLS::msg.LevelIsDebugging()) return;
-  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Out()<<' ';
-  ATOOLS::msg.Out()<<"Splitting Function: "
+  if (!msg_LevelIsDebugging()) return;
+  if (mode>0) for(int i=0;i<mode;++i) msg_Out()<<' ';
+  msg_Out()<<"Splitting Function: "
 		   <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
 }
