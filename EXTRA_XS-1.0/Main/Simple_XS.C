@@ -118,8 +118,6 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
       psmc=0;
       efunc="1";
       printgraphs="";
-      PHASIC::cls::scheme colscheme(m_colorscheme);
-      PHASIC::hls::scheme helscheme(m_helicityscheme);
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -142,24 +140,17 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      getline(from,buf);
 	      if (buf[0] != '%' && buf.length()>0) {
 		reader.SetString(buf);
+		unsigned int order_ew_t, order_strong_t;
 		double fixed_scale_t;
-		unsigned int order_ew_t, order_strong_t, colscheme_t, helscheme_t, psmc_t;
 		std::string efunc_t="1", printgraphs_t;
 		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
 		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
 		if (reader.ReadFromString(fixed_scale_t,"scale")) fixed_scale=fixed_scale_t;
 		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
 		reader.SetTags(Integrable_Base::ColorSchemeTags());
-		if (reader.ReadFromString(colscheme_t,"Color_Scheme")) 
-		  colscheme=(PHASIC::cls::scheme)colscheme_t;
-		reader.SetTags(Integrable_Base::HelicitySchemeTags());
-		if (reader.ReadFromString(helscheme_t,"Helicity_Scheme")) 
-		  helscheme=(PHASIC::hls::scheme)helscheme_t;
 		reader.SetTags(std::map<std::string,std::string>());
 		if (reader.ReadFromString(printgraphs_t,"Print_Graphs"))
 		  printgraphs=printgraphs_t;
-		if (reader.ReadFromString(psmc_t,"Presample_MC"))
-		  psmc=psmc_t;
 		position = buf.find(string("process"));
 		if (!from) {
 		  msg_Error()<<METHOD<<"("<<m_path+processfile<<")."<<endl
@@ -193,7 +184,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      else {
 		InitializeProcess(&flavs.front(),efunc,printgraphs,psmc,
 				  inisum,finsum,order_ew,order_strong,
-				  nIS,nFS,colscheme,helscheme,fixed_scale);
+				  nIS,nFS,fixed_scale);
 	      }
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
@@ -212,12 +203,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 }
 
 void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
-				  std::string &printgraphs,bool psmc,
-				  double &inisum,double &finsum,
-				  size_t order_ew,size_t order_strong,
-				  size_t nin,size_t nout,
-				  const PHASIC::cls::scheme &clsc,
-				  const PHASIC::hls::scheme &hlsc,
+ 				  std::string &printgraphs,bool psmc,
+  				  double &inisum,double &finsum,
+  				  size_t order_ew,size_t order_strong,
+ 				  size_t nin,size_t nout,
 				  double &fixscale)
 {
   size_t nt(0);
@@ -225,11 +214,8 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
   XS_Base *newxs(NULL);
   if (nt>nin+nout) {
     newxs = new XS_Group(nin,nout,flavs,m_scalescheme,m_kfactorscheme,
-			 p_beamhandler,p_isrhandler,p_selectordata,p_model);
-    newxs->SetColorScheme(clsc);
-    newxs->SetHelicityScheme(hlsc);
-    newxs->SetGPath(printgraphs);
-    newxs->SetPSMC(psmc);
+ 			 p_beamhandler,p_isrhandler,p_selectordata,p_model);
+    newxs->SetFactorizationScale(m_muf2tag);
     if (!((XS_Group*)newxs)->
 	ConstructProcesses(order_ew,order_strong,fixscale)) {
       delete newxs;
@@ -238,20 +224,18 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
   }
   else {
     newxs = XSSelector()->
-      GetXS(nin,nout,flavs,false,order_ew,order_strong,clsc,hlsc);
+      GetXS(nin,nout,flavs,false,order_ew,order_strong);
     if (newxs==NULL) return;
+    newxs->SetFactorizationScale(m_muf2tag);
     newxs->SetScales(fixscale);
-    newxs->SetGPath(printgraphs);
-    newxs->SetPSMC(psmc);
     newxs->Initialize(m_scalescheme,m_kfactorscheme,
-		      p_beamhandler,p_isrhandler,p_selectordata);
+ 		      p_beamhandler,p_isrhandler,p_selectordata);
   }
   newxs->SetISRThreshold(ATOOLS::Max(inisum,finsum));
-  newxs->SetFactorizationScale(m_muf2tag);
   newxs->SetEnhanceFunction(efunc);
   Add(newxs);
 }
-
+  
 int Simple_XS::ExtractFlavours(std::vector<ATOOLS::Flavour> &flavours,
 			       std::string buffer)
 {

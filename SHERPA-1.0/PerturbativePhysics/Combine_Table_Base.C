@@ -373,15 +373,13 @@ void Combine_Table_Base::SetLegScales
   // must therefore check for order qed as well
   if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
   else if (leg.NQCD()>0) {
-    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
-    leg.SetKT2QCD(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
-    if (!leg.Point()->fl.Strong()) 
-      leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),leg.KT2QCD()));
+    double sti(dabs(pi.Abs2())), stj(dabs(pj.Abs2()));
+    leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),pt2ij+Max(sti,stj)));
   }
   if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
   else if (leg.NQED()>0) {
-    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
-    leg.SetKT2QED(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
+    double sti(dabs(pi.Abs2())), stj(dabs(pj.Abs2()));
+    leg.SetKT2QED(Max(dabs((pi+pj).Abs2()),pt2ij+Max(sti,stj)));
   }
   if (legi.Point()->t<10) {
     if (legj.Point()->t<10) {
@@ -587,8 +585,15 @@ int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
       nqcdt=nqcdtt;
     }
     else {
-      if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
-	msg_Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+      if (nqedt!=nqedtt || nqcdt!=nqcdtt) {
+	msg_Tracking()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+	if (nqcdtt>nqcdt) {
+	  msg_Debugging()<<"n_{QCD} = "<<nqcdtt<<" in diagram "
+			 <<i<<" -> reset\n";
+	  nqedt=nqedtt;
+	  nqcdt=nqcdtt;
+	}
+      }
     }
   }
   nqed=nqedt;

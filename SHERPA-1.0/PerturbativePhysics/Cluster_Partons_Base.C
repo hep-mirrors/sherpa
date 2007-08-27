@@ -30,9 +30,10 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   // read in some parameters
   Data_Read dr(rpa.GetPath()+
 	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
-  m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",40);
+  m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",32);
   m_sud_mode = dr.GetValue<int>("CKKW_SUDAKOV_MODE",3);
   m_as_mode  = dr.GetValue<int>("CKKW_ALPHAS_MODE",1);
+  m_pdf_mode = dr.GetValue<int>("CKKW_PDF_MODE",1);
   if (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2) {
     /*
       in principle we need the k factor also in the sudakovs
@@ -48,7 +49,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   }
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
-  m_me_as_factor=p_jf->Type()<2?0.25:1.0;
+  m_me_as_factor=1.0;//p_jf->Type()<2?0.25:1.0;
   msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
 		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
 		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
@@ -60,12 +61,12 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   if (m_fsrshoweron!=0 && (m_sud_mode&1)) {
     p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
 			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_fs_as_factor*m_me_as_factor);
+			      p_runas,m_fs_as_factor);
   }
   if (m_isrshoweron!=0 && (m_sud_mode&2)) {
     p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
 			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_is_as_factor*m_me_as_factor);
+			      p_runas,m_is_as_factor);
   }
 
   exh->AddTerminatorObject(this);
@@ -263,6 +264,7 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   m_q2_fsjet=m_q2_isjet/sqr(p_ajf->DeltaR());
   m_q2_iss=m_q2_fss=std::numeric_limits<double>::max();
   m_q2_hard=m_jv_pt2=std::numeric_limits<double>::max();
+  m_q2_f[1]=m_q2_f[0]=proc->Scale(PHASIC::stp::fac);
   return 1;
 }
 

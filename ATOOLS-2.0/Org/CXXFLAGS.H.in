@@ -7,6 +7,12 @@
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
 
+/* ld path name */
+#define LD_PATH_NAME "LD_LIBRARY_PATH"
+
+/* library suffix */
+#define LIB_SUFFIX ".so"
+
 /* Sherpa binary directory */
 #undef SHERPA_BINARY_PATH
 

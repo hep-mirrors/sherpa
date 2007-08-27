@@ -10,11 +10,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "FSR_Channel.H"
-#include "Color_Integrator.H"
-#include "Sample_Multi_Channel.H"
-#include "PreSample_Multi_Channel.H"
 #include "XS_Model_Handler.H"
-#include "VHAAG.H"
 #include "Data_Reader.H"
 
 using namespace EXTRAXS;
@@ -25,7 +21,7 @@ bool XS_Base::s_sortflavours(true);
 
 XS_Base::XS_Base():
   p_colours(NULL), 
-  m_channels(false), m_psmc(false), m_ownmodel(false),
+  m_channels(false), m_ownmodel(false),
   p_model(NULL)
 {
   m_name="Empty XS";
@@ -42,7 +38,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
   Integrable_Base(nin,nout,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
   p_colours(NULL), 
-  m_channels(false), m_psmc(false), m_ownmodel(false),
+  m_channels(false), m_ownmodel(false),
   p_model(model)
 {
   Init(flavours);
@@ -54,7 +50,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,
 		 const ATOOLS::Flavour *flavours,XS_Model_Base *const model):
   Integrable_Base(nin,nout),
   p_colours(NULL), 
-  m_channels(false), m_psmc(false), m_ownmodel(false),
+  m_channels(false), m_ownmodel(false),
   p_model(model)
 {
   Init(flavours);
@@ -341,96 +337,6 @@ void XS_Base::Print()
 		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }
 
-void XS_Base::UpdateIntegrator(Multi_Channel *&mc)
-{
-  if (m_nout<=2 || m_colorscheme!=cls::sample ||
-      (!m_psmc && mc!=NULL)) return;
-  int otfcs(0);
-  Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(otfcs,"CS_OTF")) otfcs=0;
-  else msg_Info()<<METHOD<<"(): Set on the flight sampling "<<otfcs<<".\n";
-  if (m_nout<7 && otfcs==0) 
-    p_activepshandler->ColorIntegrator()->Initialize();
-  p_activepshandler->ColorIntegrator()->SetOn(true);
-  PreSample_Multi_Channel *psmc(dynamic_cast<PreSample_Multi_Channel*>(mc));
-  Channel_Vector chs;
-  if (psmc!=NULL) chs=psmc->ExtractChannels();
-  Sample_Multi_Channel *smc
-    (new Sample_Multi_Channel
-     (m_nin,m_nout,p_flavours,p_activepshandler->ColorIntegrator()));
-  smc->Initialize(chs);
-  smc->Reset();
-  if (mc!=NULL) {
-    smc->SetValidN(mc->ValidN());
-    smc->SetN(mc->N());
-    mc->DropAllChannels();
-    delete mc;
-  }
-  mc = smc;
-  Reset();
-}
-
-void XS_Base::FillSIntegrator(Multi_Channel *&mc)
-{
-  if (m_nout>2 && m_colorscheme==cls::sample) {
-    if (!m_psmc) {
-      delete mc;
-      mc=NULL;
-      UpdateIntegrator(mc);
-      return;
-    }
-    Color_Integrator *colint(p_activepshandler->ColorIntegrator());
-    VHAAG *first(NULL);
-    PreSample_Multi_Channel *psmc
-      (new PreSample_Multi_Channel("Color Sample VHAAG",colint));
-    for (size_t i(0);i<(m_nin+m_nout)/2;++i) {
-      colint->GenerateType(i,true);
-      Idx_Vector perm(colint->Orders().front());
-      Multi_Channel *smc(new Multi_Channel(ToString(i),i));
-      Idx_Vector rperm(perm.size());
-      rperm.front()=perm.front();
-      for (size_t j(1);j<rperm.size();++j) rperm[j]=perm[perm.size()-j];
-      std::vector<size_t> hp(perm.size());
-      for (size_t j(0);j<perm.size();++j) hp[j]=perm[j];
-      VHAAG *sc(new VHAAG(m_nin,m_nout,hp,first));
-      if (first==NULL) first=sc;
-      smc->Add(sc);
-      for (size_t j(0);j<perm.size();++j) hp[j]=rperm[j];
-      sc = new VHAAG(m_nin,m_nout,hp,first);
-      smc->Add(sc);
-      psmc->AddMC(smc);
-    }
-    mc->DropAllChannels();
-    delete mc;
-    mc = psmc;
-    colint->SetOn(false);
-    return;
-  }
-  int otfcs(0);
-  Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(otfcs,"CS_OTF")) otfcs=0;
-  else msg_Info()<<METHOD<<"(): Set on the flight sampling "<<otfcs<<".\n";
-  if (m_colorscheme==cls::sample && otfcs==0) 
-    p_activepshandler->ColorIntegrator()->Initialize();
-  mc->DropAllChannels();
-  if (p_isrhandler->KMROn()>0) {
-    mc->Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
-    mc->Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
-  }
-  else {
-    mc->Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
-    mc->Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
-    mc->Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
-  }
-  for (size_t i=0;i<m_resonances.size();++i) {
-    mc->Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours,m_resonances[i]));
-  }
-}      
-
-void XS_Base::CreateISRChannels() 
-{
-}
-
 void XS_Base::PrepareTerminate()  
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
@@ -453,6 +359,33 @@ void XS_Base::PrepareTerminate()
 void XS_Base::SetCoreMaxJetNumber(const int &n)
 {
   m_coremaxjetnumber=n;
+}
+
+void XS_Base::CreateFSRChannels() 
+{
+  p_pshandler->FSRIntegrator()->DropAllChannels();
+  if (p_isrhandler->KMROn()>0) {
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
+  }
+  else {
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
+  }
+  for (size_t i=0;i<m_resonances.size();++i) {
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours,m_resonances[i]));
+  }
+}      
+
+void XS_Base::CreateISRChannels() 
+{
 }
 
 void XS_Base::SetScales(const double &scale)

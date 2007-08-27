@@ -3,7 +3,6 @@
 
 #include "PDF_Base.H"
 #include "LL_Sudakov.H"
-#include "Grid.H"
 
 namespace PDF {
 

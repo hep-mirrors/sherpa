@@ -86,6 +86,8 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1"), m_muf2tag(""),
   p_muf2calc(NULL), m_muf2tagset(this)
 {
+  m_anasum=m_validanasum=0.0;
+  m_expevents=m_dicedevents=m_accevents=0;
   m_gmin=-1.0;
   int kfs(ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2);        
   double fssf(ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1.0")));
@@ -400,12 +402,14 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     m_scale[stp::ren]=m_ycut*S;
     m_scale[stp::fac]=m_cycut*S/sqr(p_jf->DeltaR());
     double pt2(p_jf->ActualValue()*S);
-    if ((int)m_corenout==m_coremaxjetnumber) 
+    if ((int)m_corenout==m_coremaxjetnumber) {
       // highest multiplicity treatment
       if (m_nstrong>2) m_scale[stp::fac]=pt2;
-    else 
+    }
+    else {
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
+    }
     SetFactorizationScale();
     m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
     m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
@@ -590,8 +594,10 @@ double Integrable_Base::KFactor()
       if (moms[i].second.IsQuark()) 
 	p=p.IsGluon()?moms[i].second.Bar():Flavour(kf::gluon);
       if (m_scalescheme&scl::reggeise) {
-	weight*=exp(-(*as)(q.PPerp2())*(p.IsQuark()?4.0/3.0:3.0)/M_PI
-		    *log(q.PPerp2()/sqr(ptmin))
+	double qt2(q.PPerp2()), asc((*as)(qt2));
+	double b0(as->Beta0(qt2)/M_PI);
+	weight*=exp(-(p.IsQuark()?4.0/3.0:3.0)/(M_PI*b0)
+		    *log((*as)(sqr(ptmin))/asc)
 		    *(moms[i-1].first.Y()-moms[i].first.Y()));
 	msg_Debugging()<<"  q_{T,"<<i<<"} = "<<q.PPerp()<<" ("<<p
 		       <<"<-"<<moms[i].second<<")\n";
@@ -770,7 +776,7 @@ void Integrable_Base::SetScaleScheme(const scl::scheme s)
 	if (p_jf==NULL) 
 	  THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
       }
-      m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+      m_me_as_factor=1.0;//p_jf->Type()>1?1.0:0.25;
       p_jf->FillCombinations();
     }
     m_ycut=p_jf->Ycut();
@@ -804,9 +810,11 @@ void Integrable_Base::SetFactorizationScale(const std::string &muf2)
 
 void Integrable_Base::SetFactorizationScale()
 { 
-  if (m_muf2tag!="")
+  if (m_muf2tag!="") {
     m_scale[stp::fac]=((TDouble*)p_muf2calc->Calculate())->m_value;
-  // msg_Debugging()<<METHOD<<"(): Set \\mu_f = "<<sqrt(m_scale[stp::ren])<<"\n";
+    msg_Debugging()<<METHOD<<"(): Set \\mu_f = "
+		   <<sqrt(m_scale[stp::fac])<<"\n";
+  }
 }
 
 void Integrable_Base::FillSIntegrator(Multi_Channel *&mc)

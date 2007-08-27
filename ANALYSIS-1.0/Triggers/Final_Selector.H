@@ -2,8 +2,8 @@
 #define Final_Selector_H
 
 
-#include "Primitive_Observable_Base.H"
-//#include "Calorimeter_Cone.H"
+#include "Analysis_Object.H"
+#include "Calorimeter_Cone.H"
 #include "Kt_Algorithm.H"
 #include "Durham_Algorithm.H"
 #include <vector>
@@ -60,8 +60,8 @@ namespace ANALYSIS {
     void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour & ,const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour &, int, int);
-    //void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &,
-    //		     Calorimeter_Cone * const);
+    void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &,
+		     Calorimeter_Cone * const);
 
     void AddKeepFlavour(const ATOOLS::Flavour &);
 

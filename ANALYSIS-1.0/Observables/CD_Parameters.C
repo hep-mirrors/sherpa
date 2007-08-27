@@ -14,9 +14,9 @@ using namespace ATOOLS;
 #include "MyStrStream.H"
 
 DECLARE_GETTER(CD_Parameter_Calculator_Getter,"CDCalc",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Analysis_Object,Argument_Matrix);
 
-Primitive_Observable_Base * 
+Analysis_Object * 
 CD_Parameter_Calculator_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
@@ -76,7 +76,6 @@ CD_Parameter_Calculator::CD_Parameter_Calculator(const std::string & listname)
 {
   m_name = listname+"CD_Parameters_Calculator";
   m_listname = listname;
-  m_splitt_flag = false;
 }
 
 void CD_Parameter_Calculator::Evaluate(const Blob_List & ,double weight, int ncout) {
@@ -99,7 +98,7 @@ void CD_Parameter_Calculator::Evaluate(const Blob_List & ,double weight, int nco
 		 new Blob_Data<CD_Parameter_Data>(CD_Parameter_Data(cparameter,dparameter)));
 }
 
-Primitive_Observable_Base * CD_Parameter_Calculator::Copy() const
+Analysis_Object * CD_Parameter_Calculator::GetCopy() const
 {
   return new CD_Parameter_Calculator(m_listname);
 }

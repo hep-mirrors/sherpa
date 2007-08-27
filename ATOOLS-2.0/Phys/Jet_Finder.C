@@ -21,9 +21,8 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-Jet_Finder::Jet_Finder(const std::string &_ycut,
-		       const int _type,const bool _pt_def) : 
-  m_pt_def(_pt_def), m_value(0.), p_frame(NULL)
+Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) : 
+  m_mass_scheme(3), m_value(0.), p_frame(NULL)
 {
   m_ycut       = 2.0;
   m_delta_r    = 1.;
@@ -45,9 +44,8 @@ Jet_Finder::Jet_Finder(const std::string &_ycut,
 
 
 Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
-		       const std::string &_ycut,
-		       const int _type,const bool _pt_def) : 
-  m_pt_def(_pt_def), m_value(0.), p_frame(NULL)
+		       const std::string &_ycut,const int _type) : 
+  m_mass_scheme(3), m_value(0.), p_frame(NULL)
 {
   m_ycut    = 2.0;
   m_delta_r = 1.;
@@ -405,7 +403,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 	}
       }
       for (size_t k=j+1;k<momsout.size();k++) {
-	pt2jk  = 2.*sqr(Min(momsout[j][0],momsout[k][0]))*(1.-DCos12(momsout[j],momsout[k]));
+	pt2jk  = 2.*Min(momsout[j].PSpat2(),momsout[k].PSpat2())*(1.-DCos12(momsout[j],momsout[k]));
 	if (pt2jk<ymin*m_sprime) {
 	  ymin = pt2jk/m_sprime;
 	  j1 = j;k1 = k;
@@ -724,13 +722,15 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
   for (size_t ps(0);ps<m_fills[cl].size();++ps) {
     int j(m_fills[cl][ps].first), k(m_fills[cl][ps].second);
     Vec4D pj(p[j]), pk(p[k]);
-    double ycut(m_ycuts[j][k]);
-    msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-   		   <<ID(k)<<"["<<m_flavs[k]<<"], qcut = "<<sqrt(ycut*m_s);
+    double ycut(m_ycuts[j][k]), mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
+    msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<","<<mj<<"] & "
+   		   <<ID(k)<<"["<<m_flavs[k]<<","<<mk<<"], qcut = "
+		   <<sqrt(ycut*m_s);
     if (m_flavs[k].Strong()) {
       if (m_type>=3) {
 	pt2k=pk.PPerp2();
-	if (m_pt_def) pt2k+=pk.Abs2();
+	if (m_mass_scheme==1) pt2k+=dabs(pk.Abs2());
+	else if (m_mass_scheme==3) pt2k+=dabs(pk.Abs2()-mk*mk);
 	if (j<3) {
 	  msg_Debugging()<<", is -> ptk = "<<sqrt(pt2k)<<" ("
 			 <<(pt2k>=ycut*m_s)<<(pt2k<ycut*m_s?")\n":")");
@@ -743,7 +743,8 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	}
 	else if (m_flavs[j].Strong()) {
 	  pt2j=pj.PPerp2();
-	  if (m_pt_def) pt2j+=pj.Abs2();
+	  if (m_mass_scheme==1) pt2j+=dabs(pj.Abs2());
+	  else if (m_mass_scheme==3) pt2j+=dabs(pj.Abs2()-mj*mj);
 	  // delta r is taken into account in m_ycuts !
 	  pt2jk=2.*Min(pt2j,pt2k)*
 	    (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk));
@@ -771,7 +772,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	  }
 	}
 	if (j>2 && m_flavs[j].Strong()) {
-	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
+	  pt2jk=2.*Min(pj.PSpat2(),pk.PSpat2())*(1.-DCos12(pj,pk));
 	  if (pt2jk<ycut*m_sprime) return -1.0;
 	  if (pt2jk<ymin*m_sprime) {
 	    ymin=pt2jk/m_sprime;
@@ -792,17 +793,22 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 
   ----------------------------------------------------------------------------------*/
 
-double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
+double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
 {
   double mt12_2(0.);
   //check for DIS situation
   if (m_type>=2) {
     double pt1_2(p1.PPerp2()), mt1_2(pt1_2);
     double pt2_2(p2.PPerp2()), mt2_2(pt2_2);
-    if (m_pt_def) { 
-      mt1_2 = pt1_2+dabs(p1.Abs2());
-      mt2_2 = pt2_2+dabs(p2.Abs2());
+    if (m_mass_scheme==1) { 
+      mt1_2+=dabs(p1.Abs2());
+      mt2_2+=dabs(p2.Abs2());
     }
+    else if (m_mass_scheme==3) { 
+      mt1_2+=dabs(p1.Abs2()-m1*m1);
+      mt2_2+=dabs(p2.Abs2()-m2*m2);
+    }
+    if (IsZero(pt1_2) && IsZero(pt2_2)) return Max((p1+p2).Abs2(),Max(mt1_2,mt2_2));
     if (IsZero(pt1_2/(pt1_2+pt2_2)) || IsZero(pt2_2/(pt1_2+pt2_2))) return mt1_2+mt2_2;
     else {
       if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2))/sqr(m_delta_r);
@@ -810,7 +816,7 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
 		       (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2))/sqr(m_delta_r);
     }
   }
-  else mt12_2               = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+  else mt12_2 = 2.*Min(p1.PSpat2(),p2.PSpat2())*(1.-DCos12(p1,p2));
   return mt12_2;
 }
 

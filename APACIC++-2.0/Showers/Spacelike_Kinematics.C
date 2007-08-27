@@ -16,7 +16,7 @@ Spacelike_Kinematics::~Spacelike_Kinematics()
 }
 
 int Spacelike_Kinematics::
-InitKinematics(Tree **const trees,const int tree1,
+InitKinematics(Tree **const trees,Tree *const tree,const int tree1,
 	       Knot *const k1,Knot *const  k2) 
 {
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<") {\n";
@@ -47,7 +47,7 @@ InitKinematics(Tree **const trees,const int tree1,
 	       k2->prev->left->tout:k2->prev->left->t);
     if (maxt<tsi) return 0;
   }
-  double dir(BoostInCMS(trees,tree1,k1,k2));
+  double dir(BoostInCMS(trees,tree,tree1,k1,k2));
   Vec4D  o1(k1->part->Momentum()), o2(k2->part->Momentum()), cms(o1+o2);
   double t1(o1.Abs2()), t2(o2.Abs2());
   double sprime(cms.Abs2()), rtsprime(sqrt(sprime));
@@ -96,7 +96,8 @@ InitKinematics(Tree **const trees,const int tree1,
   return 1;
 }
 
-bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
+bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Tree *const tree,
+					const int &leg,
 					Knot *const active,Knot *const partner,
 					const bool test) 
 {
@@ -134,7 +135,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
 		 <<(mother->prev?mother->prev->part->Info():'-')<<","
 		 <<(sister->left?sister->left->part->Momentum()[1]:1.e37)
 		 <<" -> mode = "<<mode<<"\n";
-  BoostInCMS(trees,leg,active,partner);
+  BoostInCMS(trees,tree,leg,active,partner);
   if (mode!=7) {
     Vec4D o1(active->part->Momentum()), o2(partner->part->Momentum()), cms(o1+o2);
     double sprime(cms.Abs2()), s3(sprime/active->z-partner->t-mother->t);
@@ -181,7 +182,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
     BoostPartial(mode,mother,sister,v_mo,v_si);
   }
   if (test && mode==5) {
-    BoostFromCMS(trees);
+    BoostFromCMS(trees,tree);
     msg_Debugging()<<"}\n";
     return true;
   }
@@ -298,7 +299,8 @@ void Spacelike_Kinematics::BoostPartial(const int mode,
   msg_Debugging()<<"}\n";
 }
 
-double Spacelike_Kinematics::BoostInCMS(Tree **const trees,const int tree1,
+double Spacelike_Kinematics::BoostInCMS(Tree **const trees,Tree *const tree,
+					const int tree1,
 					Knot *const k1,Knot *const k2) 
 {
   double dir((double)k1->dir);
@@ -307,28 +309,33 @@ double Spacelike_Kinematics::BoostInCMS(Tree **const trees,const int tree1,
   m_boost=Poincare(cms);
   trees[tree1]->BoRo(m_boost);
   trees[1-tree1]->BoRo(m_boost);
+  if (tree!=NULL) tree->BoRo(m_boost);
   if (dir>0.0) m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
   else m_rot=Poincare(k2->part->Momentum(),Vec4D::ZVEC);
   
   trees[tree1]->BoRo(m_rot);
   trees[1-tree1]->BoRo(m_rot);
+  if (tree!=NULL) tree->BoRo(m_rot);
   return dir;
 }
 
-double Spacelike_Kinematics::BoostFromCMS(Tree **const trees) 
+double Spacelike_Kinematics::BoostFromCMS(Tree **const trees,Tree *const tree) 
 {
   m_rot.Invert();
   trees[0]->BoRo(m_rot);
   trees[1]->BoRo(m_rot);
+  if (tree!=NULL) tree->BoRo(m_rot);
   m_boost.Invert();
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
+  if (tree!=NULL) tree->BoRo(m_boost);
   m_rot.Invert();
   m_boost.Invert();
   return 0.;
 }
 
-Vec4D Spacelike_Kinematics::BoostInLab(Tree **const trees) 
+Vec4D Spacelike_Kinematics::BoostInLab(Tree **const trees,
+				       Tree *const tree) 
 {
   double x1(trees[0]->GetInitiator()->x), x2(trees[1]->GetInitiator()->x);
   // Only for massless initiators.
@@ -336,6 +343,7 @@ Vec4D Spacelike_Kinematics::BoostInLab(Tree **const trees)
   m_boost = Poincare(lab);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
+  if (tree!=NULL) tree->BoRo(m_boost);
   return trees[0]->GetRoot()->part->Momentum()+ 
     trees[1]->GetRoot()->part->Momentum();
 }

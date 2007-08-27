@@ -37,8 +37,10 @@ bool ATOOLS::MakeDir(std::string path,const mode_t mode,const bool create_tree)
 	struct dirent **namelist;
 	int n(scandir(piece.c_str(),&namelist,NULL,NULL));
 	for (int i(0);i<n;++i) free(namelist[i]);
-	free(namelist);
-  	if (n>=0) continue;
+	if (n>=0) {
+	  free(namelist);
+	  continue;
+	}
 	else {
 #ifdef DEBUG__Shell_Tools
 	  std::cout<<"   File exists but is not a directory.\n"

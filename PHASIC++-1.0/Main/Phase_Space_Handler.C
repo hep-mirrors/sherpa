@@ -18,6 +18,7 @@
 #include "Color_Integrator.H"
 #include "Helicity_Integrator.H"
 
+#include "Library_Loader.H"
 #include "Run_Parameter.H"
 #include "Blob.H"
 #include "Message.H"  
@@ -1356,25 +1357,13 @@ typedef Single_Channel * (*Lib_Getter_Function)(int nin,int nout,ATOOLS::Flavour
 Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
 						 std::string& pID, ATOOLS::Integration_Info * const info)
 {
-  int pos=pID.find("/");
-  std::string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
-    "/libProc_"+pID.substr(0,pos)+LIB_SUFFIX;
-  std::string gettername="Getter_"+pID.substr(pos+1); 
-
-  char * error;
-  void * module;
-  Lib_Getter_Function GetterFunction;
-
-  // try loading library
-  module = dlopen(libname.c_str(),RTLD_LAZY);
-  error  = dlerror();
-  if (module==NULL) return 0;
-
-  GetterFunction = (Lib_Getter_Function)dlsym(module,gettername.c_str());
-  error  = dlerror();
-  if (error!=NULL) return 0;
-
-  return GetterFunction(nin,nout,fl,info,this);
+  Library_Loader loader;
+  size_t pos(pID.find("/"));
+  loader.AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
+  Lib_Getter_Function gf = (Lib_Getter_Function)loader.GetLibraryFunction
+    ("Proc_"+pID.substr(0,pos),"Getter_"+pID.substr(pos+1));
+  if (gf==NULL) return NULL;
+  return gf(nin,nout,fl,info,this);
 }
 
 void Phase_Space_Handler::AddStats(const std::vector<double> &stats)

@@ -17,7 +17,7 @@ void XS_Model_SM::Initialize(MODEL::Model_Base *const model,
   m_consts["\\sin\\theta_W"]=sqrt(ScalarConstant("sin2_thetaW"));
   m_consts["\\cos\\theta_W"]=sqrt(1.0-ScalarConstant("sin2_thetaW"));
   m_consts["P_L"]=1.0;
-  m_consts["P_L"]=1.0;
+  m_consts["P_R"]=1.0;
   m_consts["v_{EW}"]=ScalarConstant("vev");
   
   m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",ecms2));  

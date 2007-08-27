@@ -4,8 +4,6 @@
 #include "BFKL_Sudakov.H"
 #include "ISR_Handler.H"
 #include "XS_Group.H"
-#include "N_Gluon_BG.H"
-#include "N_Parton_CDBG.H"
 #include "Jet_Finder.H"
 
 namespace PDF { class Doubly_Unintegrated_PDF; }
@@ -38,8 +36,7 @@ namespace EXTRAXS {
     size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode;
     size_t m_memode, m_pnmode, m_nmaxme, m_hfp;
 
-    std::map<std::string,N_Parton_CDBG*> m_cdmes;
-    std::map<std::string,XS_Base*>       m_xsmes;
+    std::map<std::string,XS_Base*> m_xsmes;
 
     ATOOLS::Poincare m_cms, m_zaxis;
 

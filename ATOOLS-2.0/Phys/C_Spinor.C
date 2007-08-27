@@ -41,41 +41,29 @@ void CSpinor::SetGauge(const int gauge)
   }
 }
 
-void CSpinor::Construct(const int h,const Vec4D &p)
+void CSpinor::Construct(const int h,const Vec4D &p,double m2)
 {
-  if (m_r>0) {
-    if (h>0) {// u+(p,m)
-      Complex rpp(csqrt(PPlus(p))), pt(PT(p));
-      m_u[0]=IsZero(rpp)?csqrt(PMinus(p)):csqrt(p.Abs2())/rpp;
-      m_u[1]=ZERO;
-      m_u[2]=rpp;
-      m_u[3]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
-    }
-    else {// u-(p,m)
-      Complex rpm(csqrt(PMinus(p))), pt(PT(p));
-      Complex emp(IsZero(pt)?ONE:PTC(p)/std::abs(pt));
-      m_u[0]=rpm*emp;
-      m_u[1]=IsZero(pt)?-csqrt(PPlus(p)):-pt*emp/rpm;
-      m_u[2]=(IsZero(rpm)?csqrt(PPlus(p)):csqrt(p.Abs2())/rpm)*emp;
-      m_u[3]=ZERO;
-    }
+  Vec4D ph(p[0]<0.0?-p.PSpat():p.PSpat(),p[1],p[2],p[3]);
+  if (m_r>0^h<0) {// u+(p,m) / v-(p,m)
+    Complex rpp(csqrt(PPlus(ph))), pt(PT(ph));
+    m_u[2]=rpp;
+    m_u[3]=IsZero(pt)?csqrt(PMinus(ph)):pt/rpp;
   }
-  else {
-    if (h<0) {// v-(p,m)
-      Complex rpm(csqrt(PMinus(p))), pt(PTC(p));
-      Complex epp(IsZero(pt)?ONE:PT(p)/std::abs(pt));
-      m_u[0]=ZERO;
-      m_u[1]=-(IsZero(rpm)?csqrt(PPlus(p)):csqrt(p.Abs2())/rpm)*epp;
-      m_u[2]=IsZero(pt)?csqrt(PPlus(p)):pt*epp/rpm;
-      m_u[3]=rpm*epp;
-    }
-    else {// v+(p,m)
-      Complex rpp(csqrt(PPlus(p))), pt(PTC(p));
-      m_u[0]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
-      m_u[1]=-rpp;
-      m_u[2]=ZERO;
-      m_u[3]=IsZero(rpp)?csqrt(PMinus(p)):csqrt(p.Abs2())/rpp;
-    }
+  else {// u-(p,m) / v+(p,m)
+    Complex rpp(csqrt(PPlus(ph))), pt(PTC(ph));
+    m_u[0]=IsZero(pt)?csqrt(PMinus(ph)):pt/rpp;
+    m_u[1]=-rpp;
+  }
+  if (m2<0.0) m2=p.Abs2();
+  if (!IsZero(m2)) {
+    double sgn(m_r>0?Sign(p[0]):-Sign(p[0]));
+    double omp(sqrt(0.5*(dabs(p[0]/ph[0])+1.0)));
+    double omm(sgn*sqrt(m2)/(2.0*dabs(ph[0])*omp));
+    size_t r(m_r>0^h<0?0:2);
+    m_u[0+r]=omm*m_u[2-r];
+    m_u[1+r]=omm*m_u[3-r];
+    m_u[2-r]*=omp;
+    m_u[3-r]*=omp;
   }
   if (m_b<0) {
     m_b=1;

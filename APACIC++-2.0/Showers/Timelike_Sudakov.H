@@ -47,7 +47,7 @@ namespace APACIC {
     bool CplVeto(double t);
     bool OrderingVeto(Knot *const mo,double ta,double wa,double z);
     bool MEVeto(Knot *const mo,double t);
-    bool MassVeto(double ta,double wa);
+    bool MassVeto(double ta,double wa,double z);
 
     double UniformPhi() const;
 

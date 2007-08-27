@@ -205,8 +205,8 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   }
 #else
   for (short int i=0;i<N;i++) {
-    if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass()))  n->MPolconvert(i+10+1,99);
-    if (fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) n->MPolconvert(i+20,99);
+    if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass()))  n->MPolconvert(i+masslessskip+1,99);
+    if (fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) n->MPolconvert(i+massiveskip,99);
   }  
 #endif
 }

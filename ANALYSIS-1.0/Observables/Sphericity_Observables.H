@@ -13,13 +13,13 @@ namespace ANALYSIS {
   };
 
 
-  class Sphericity_Calculator : public Primitive_Observable_Base {
+  class Sphericity_Calculator : public Analysis_Object {
     Momentum_Tensor m_tensor;
-    std::string m_key;
+    std::string m_key, m_listname;
   public:
     Sphericity_Calculator(const std::string & listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
-    Primitive_Observable_Base * Copy() const;    
+    Analysis_Object * GetCopy() const;    
   };
 
   class Sphericity : public Primitive_Observable_Base {

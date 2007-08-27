@@ -81,22 +81,7 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
-  class Is_Photon : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
   class Is_Charged_Lepton : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Electron : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Muon : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };

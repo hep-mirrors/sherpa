@@ -1,7 +1,7 @@
 #ifndef Calorimeter_Cone_H
 #define Calorimeter_Cone_H
 
-#include "Primitive_Hadron_Calorimeter.H"
+#include "Primitive_Calorimeter.H"
 #include "Kt_Algorithm.H"
 #include "Particle_List.H"
 #include "Vector.H"
@@ -34,7 +34,7 @@ namespace ANALYSIS {
 
     int    ** p_jetno;
 
-    Primitive_Hadron_Calorimeter * p_calorimeter;
+    Primitive_Calorimeter * p_calorimeter;
     
     std::vector<Jet_Data> m_jets;
 

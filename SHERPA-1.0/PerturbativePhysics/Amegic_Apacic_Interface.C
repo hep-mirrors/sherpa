@@ -9,6 +9,7 @@
 #include "Amegic.H"
 #include "MyStrStream.H"
 #include "Cluster_Partons_CKKW.H"
+#include "Data_Reader.H"
 
 using namespace SHERPA;
 using namespace AMEGIC;
@@ -26,10 +27,10 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   p_blob_psme_IS(NULL), p_blob_psme_FS(NULL)
 {
   p_two2two->InitializeModel(me->GetModel(),
-			     rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+
+			     rpa.gen.Variable("SHERPA_CPP_PATH")+"/"+
 			     rpa.gen.Variable("ME_DATA_FILE"));
   p_one2N->InitializeModel(me->GetModel(),
-			   rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+
+			   rpa.gen.Variable("SHERPA_CPP_PATH")+"/"+
 			   rpa.gen.Variable("ME_DATA_FILE"));
   p_fl      = new Flavour[4];
   p_moms    = new Vec4D[4];
@@ -39,8 +40,14 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   int showermode(ToType<int>(rpa.gen.Variable("SHOWER_MODE")));
   msg_Debugging()<<METHOD<<"(): Shower mode is "<<showermode<<std::endl;
   p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber,showermode);
-//   if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
-//     rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
+  if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) {
+    Data_Reader read(" ",";","!","=");
+    int force(0);
+    if (!read.ReadFromFile(force,"CKKW_ENFORCED_MODE")) force=0;
+    else msg_Info()<<METHOD<<"(): CKKW enforced mode "<<force<<".\n";
+    if (!force)
+      rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
+  }
   m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
   p_filler->SetCKKWOn(m_ckkwon);
 }  

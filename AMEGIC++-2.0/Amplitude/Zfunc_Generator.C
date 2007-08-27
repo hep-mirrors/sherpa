@@ -778,8 +778,8 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 	Zh->p_couplings[number*2+1] = Complex(0.,0.);
       }
       else {
-	if (p->fl.IsVector() && !ATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+20;
-	                                                    else Zh->p_arguments[number*2] = p->number+10+1;
+	if (p->fl.IsVector() && !ATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+massiveskip;
+	else Zh->p_arguments[number*2] = p->number+masslessskip+1;
 	Zh->p_couplings[number*2]   = Complex(1.,0.);
 	Zh->p_couplings[number*2+1] = Complex(1.,0.);
       }
@@ -829,12 +829,12 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
       Zh->p_arguments[number*2]     = pg->number;
       if (BS->Sign(pg->number)==-1) {
 	Zh->p_arguments[number*2+1]     = pg->number;
-	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+20;
-	                                                      else Zh->p_arguments[number*2] = pg->number+10+1;
+	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+massiveskip;
+	else Zh->p_arguments[number*2] = pg->number+masslessskip+1;
       }
       else {
-	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+20;
-	else Zh->p_arguments[number*2+1] = pg->number+10+1;
+	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+massiveskip;
+	else Zh->p_arguments[number*2+1] = pg->number+masslessskip+1;
       }
       Zh->p_couplings[number*2]   = Complex(1.,0.);
       Zh->p_couplings[number*2+1] = Complex(1.,0.);	

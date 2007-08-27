@@ -1,11 +1,12 @@
--------------- SHERPA 1.0.9 ---------------
+-------------- SHERPA 1.1.0 ----------------
 
 Homepage: www.sherpa-mc.de
 Contact : info@sherpa-mc.de
--------------------------------------------
+
+--------------------------------------------
 
 SHERPA is an event-generation framework for high-energy
 particle collisions. Informations about SHERPA can be 
-found on out homepage and at JHEP 0402 (2004) 056.
+found on our homepage and in JHEP 0402 (2004) 056.
 
 For an installation instruction see the INSTALL file.

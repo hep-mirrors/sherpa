@@ -288,8 +288,7 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
     return 0.;
   }
 
-  double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
-  double wt,m1,m2;
+  double MC(cluster->Mass());
   //cout<<METHOD<<" : "<<fpair.first<<"/"<<fpair.second<<" -> "
   //   <<p_singletransitions->GetHeaviestMass(fpair)<<","
   //   <<p_singletransitions->GetLightestMass(fpair)<<" vs. "<<MC
@@ -315,7 +314,6 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
 						 const double MC, bool lighter)
 {
   double wt(0.),maxwt(0.);
-  Hadron_Wave_Function * waves;
   Single_Transition_Siter start=stl->begin();
   if (lighter && hadron!=Flavour(kf::none)) {
     for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
@@ -389,8 +387,8 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
 
 void Soft_Cluster_Handler::ShiftMomenta(const int size)
 {
-  double masses[size];
-  Vec4D  momenta[size];
+  std::vector<double> masses(size);
+  std::vector<Vec4D>  momenta(size);
   int    pos(0);
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {
@@ -408,7 +406,7 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
       }
     }
   }
-  hadpars.AdjustMomenta(pos,momenta,masses);
+  hadpars.AdjustMomenta(pos,&momenta.front(),&masses.front());
   pos = 0;
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {

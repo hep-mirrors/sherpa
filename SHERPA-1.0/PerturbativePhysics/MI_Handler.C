@@ -50,9 +50,11 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
       THROW(fatal_error,"Cannot initialize Amisic.");
     }
     p_hardmehandler = new Matrix_Element_Handler();
+    p_hardmehandler->SetModel(model);
     p_hardmehandler->SetXS((EXTRAXS::Simple_XS*)p_amisic->HardBase()->XS());
     p_hardmehandler->SetUseSudakovWeight(p_amisic->HardBase()->JetVeto());
     p_softmehandler = new Matrix_Element_Handler();
+    p_softmehandler->SetModel(model);
     p_softmehandler->SetXS((EXTRAXS::Simple_XS*)p_amisic->SoftBase()->XS());
     p_softmehandler->SetUseSudakovWeight(p_amisic->SoftBase()->JetVeto());
     m_ycut=p_amisic->HardBase()->Stop(0);

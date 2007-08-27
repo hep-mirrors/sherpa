@@ -15,13 +15,13 @@ namespace ANALYSIS {
   };
 
 
-  class JetMass_Broadening_Calculator : public Primitive_Observable_Base {
-    std::string m_inkey;
+  class JetMass_Broadening_Calculator : public Analysis_Object {
+    std::string m_inkey, m_listname;
     std::string m_outkey;
   public:
     JetMass_Broadening_Calculator(const std::string & listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
-    Primitive_Observable_Base * Copy() const;    
+    Analysis_Object * GetCopy() const;    
   };
 
   class Heavy_Jet_Mass : public Primitive_Observable_Base {

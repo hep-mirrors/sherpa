@@ -92,10 +92,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
       newxs = new XS_Group
 	(m_nin,m_nout,&cfl.front(),m_scalescheme,m_kfactorscheme,
 	 p_beamhandler,p_isrhandler,p_selectordata,p_model);
-      newxs->SetColorScheme(m_colorscheme);
-      newxs->SetHelicityScheme(m_helicityscheme);
-      newxs->SetGPath(m_gpath);
-      newxs->SetPSMC(m_psmc);
+      newxs->SetFactorizationScale(m_muf2tag);
       if (!((XS_Group*)newxs)->ConstructProcesses(oew,os,fixscale)) {
 	delete newxs;
 	return false;
@@ -103,39 +100,22 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
     }
     else {
       if (!CheckFlavours(cfl)) return false;
-      newxs = XSSelector()->GetXS(m_nin,m_nout,&cfl.front(),false,oew,os,
-				  m_colorscheme,m_helicityscheme);
+      newxs = XSSelector()->GetXS(m_nin,m_nout,&cfl.front(),false,oew,os);
       if (newxs==NULL) return false;
+      newxs->SetFactorizationScale(m_muf2tag);
       newxs->SetScales(fixscale);
-      newxs->SetGPath(m_gpath);
-      newxs->SetPSMC(m_psmc);
       newxs->Initialize(m_scalescheme,m_kfactorscheme,
 			p_beamhandler,p_isrhandler,p_selectordata);
     }
-    newxs->SetFactorizationScale(FactorizationScale());
     newxs->SetEnhanceFunction(m_efunc);
     Add(newxs);
     msg_Debugging()<<METHOD<<"(): Initialized process '"<<name<<"\n";
     return true;
   }
   bool one(false);
-  if (p_flavours[ci].IsJet() && 
-      m_colorscheme==PHASIC::cls::sample) {
-    SetAtoms(true);
-    cfl[ci]=Flavour(kf::gluon);
+  for (int j(0);j<p_flavours[ci].Size();++j) {
+    cfl[ci]=p_flavours[ci][j];
     if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
-    cfl[ci]=Flavour(kf::quark);
-    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
-    cfl[ci]=Flavour(kf::quark).Bar();
-    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
-  }
-  else {
-    for (int j(0);j<p_flavours[ci].Size();++j) {
-      cfl[ci]=p_flavours[ci][j];
-      if (m_colorscheme==PHASIC::cls::sample &&
-	  p_flavours[ci].IsAnti()!=cfl[ci].IsAnti()) continue;
-      if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
-    }
   }
   return one;
 }

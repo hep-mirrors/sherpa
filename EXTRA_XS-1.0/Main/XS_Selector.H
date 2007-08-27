@@ -17,9 +17,7 @@ namespace EXTRAXS {
 
     Single_XS *GetSingleXS(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours,
-			   const size_t nqed,const size_t nqed,
-			   const PHASIC::cls::scheme &clsc,
-			   const PHASIC::hls::scheme &hlsc);
+			   const size_t nqed,const size_t nqed);
 
   public:
 
@@ -31,8 +29,6 @@ namespace EXTRAXS {
 		   const ATOOLS::Flavour *flavours,
 		   const bool seperate_couplings=false,
 		   size_t nqed=2, size_t nqcd=2,
-		   const PHASIC::cls::scheme &clsc=PHASIC::cls::sum,
-		   const PHASIC::hls::scheme &hlsc=PHASIC::hls::sum,
 		   const bool &sort=true);
     
     static size_t FindInGroup(XS_Group *const group,XS_Base *&base,

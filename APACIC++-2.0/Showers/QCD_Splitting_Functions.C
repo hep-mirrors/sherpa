@@ -302,7 +302,7 @@ q_gq::q_gq(ATOOLS::Flavour quarkflavour,double fmed) :
 }
 
 q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) : 
-  p_tools(_tools), m_fmed(fmed)  
+  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 

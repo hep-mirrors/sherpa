@@ -18,7 +18,8 @@ namespace EXTRAXS {
   {
     if (!model->IncludesModel("QED")) return NULL;
     if (flavours[0].IsPhoton() && flavours[1].IsPhoton() && 
-	flavours[2].IsQuark() && flavours[3]==flavours[2].Bar()) { 
+	(flavours[2].IsQuark() || flavours[2].IsLepton()) && 
+	flavours[3]==flavours[2].Bar()) { 
       if (nqcd==0 && nqed==2) {
 	return new XS_pp_q1qbar1(nin,nout,flavours,model); 
       }
@@ -48,7 +49,8 @@ double XS_pp_q1qbar1::operator()(double s,double t,double u)
   double mtt(2.0*(tp*(up-2.0*m_m2)-4.0*m_m2*m_m2)/(tp*tp));
   double muu(2.0*(up*(tp-2.0*m_m2)-4.0*m_m2*m_m2)/(up*up));
   double mtu(2.0*m_m2*(s-4.0*m_m2)/(tp*up));
-  return sqr(csqr(m_g).real()*sqr(m_eq))*3.0*(mtt+muu+2.0*mtu); 
+  return sqr(csqr(m_g).real()*sqr(m_eq))*
+    (p_flavours[2].Strong()?3.0:1.0)*(mtt+muu+2.0*mtu); 
 }
 
 
@@ -211,7 +213,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
   p_colours[1][m_p] = p_colours[3-r][m_p] = Flow::Counter();
 
   m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
-    msg_Debugging()<<"xs: qqb->q'qb', set scale t "<<t<<"\n";
+  msg_Debugging()<<"xs: qqb->q'qb', set scale t "<<t<<"\n";
   if (swap) SwapInOrder();
   return 1; 
 }

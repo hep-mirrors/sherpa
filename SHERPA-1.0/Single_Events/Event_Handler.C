@@ -109,15 +109,7 @@ void Event_Handler::Reset(const bool sameevent)
 		 <<" blobs undeleted. Continuing."<<std::endl;
       m_lastparticlecounter=Particle::Counter();
       m_lastblobcounter=Blob::Counter();
-      while (!ATOOLS::Particle::s_created.empty()) {
-      	std::cout<<"  delete : "<<(*ATOOLS::Particle::s_created.begin())
-		 <<" "<<(**ATOOLS::Particle::s_created.begin())<<std::endl;
-	delete (*ATOOLS::Particle::s_created.begin());
-	ATOOLS::Particle::s_created.erase(ATOOLS::Particle::s_created.begin());
-      }
-      //abort();
     }
-    //PRINT_INFO(this);
 
     Blob::Reset();
     Particle::Reset();

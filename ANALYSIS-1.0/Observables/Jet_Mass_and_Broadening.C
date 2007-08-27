@@ -17,9 +17,9 @@ using namespace ATOOLS;
 #include "MyStrStream.H"
 
 DECLARE_GETTER(JetMass_Broadening_Calculator_Getter,"JBCalc",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Analysis_Object,Argument_Matrix);
 
-Primitive_Observable_Base * 
+Analysis_Object *
 JetMass_Broadening_Calculator_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
@@ -79,7 +79,6 @@ JetMass_Broadening_Calculator::JetMass_Broadening_Calculator(const std::string &
 {
   m_name = listname+"_JetMass_Broadening_Calculator";
   m_listname = listname;
-  m_splitt_flag = false;
 }
 
 void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, int ncout) {
@@ -144,7 +143,7 @@ void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, i
 		 new Blob_Data<JetMass_Broadening_Data>(JetMass_Broadening_Data(mh,ml,bw,bn)));
 }
 
-Primitive_Observable_Base * JetMass_Broadening_Calculator::Copy() const
+Analysis_Object * JetMass_Broadening_Calculator::GetCopy() const
 {
   return new JetMass_Broadening_Calculator(m_listname);
 }

@@ -17,7 +17,7 @@ void Calorimeter_Cone::SetAnalysis(Primitive_Analysis  * ana)
   // get calorimeter
   if (detector) {
     p_calorimeter= 
-      dynamic_cast<Primitive_Hadron_Calorimeter *>(detector->GetElement("Hadronic Calorimeter"));
+      dynamic_cast<Primitive_Calorimeter *>(detector->GetElement("Hadronic Calorimeter"));
 
     if (p_calorimeter)
       p_calorimeter->GetDimensions(m_neta,m_nphi,m_mineta,m_maxeta);
@@ -38,8 +38,7 @@ void Calorimeter_Cone::SetAnalysis(Primitive_Analysis  * ana)
 
 Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double etamin, 
 				   const double etamax,double sep) : 
-  Jet_Algorithm_Base(NULL), 
-  m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), p_jetno(NULL)
+  Jet_Algorithm_Base(NULL), m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), p_jetno(NULL)
 {
 
   m_minetajet = etamin;

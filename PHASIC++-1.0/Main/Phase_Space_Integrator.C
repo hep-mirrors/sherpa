@@ -47,6 +47,8 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
 {
+  local.sum=local.sum2=0.0;
+  local.n=0; 
   maxerror=_maxerror;
   fin_opt=_fin_opt;
   psh=_psh;
@@ -102,7 +104,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->NumberOfFSRIntegrators();
   msg_Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
-  numberofchannels=500;//1<<(psh->Process()->NOut()+4);
   iter = iter0 = Max(20*int(numberofchannels),5000);
   iter1      = Max(100*int(numberofchannels),10000);
   if (iter1>50000) iter1=Max(iter0,50000);

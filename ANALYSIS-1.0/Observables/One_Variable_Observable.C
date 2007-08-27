@@ -300,14 +300,18 @@ bool One_Variable_Observable::Evaluate
     if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
     return true;
   }
-  int o(-1);
+  if (j>0) {
+    if (m_flavs[i][j]!=m_flavs[i][j-1]) k=0;
+    else ++k;
+  }
+  int o(k-1);
   bool pass(false);
   for (;k<list.size();++k) {
     if (list[k]->Flav()==m_flavs[i][j]) {
       ++o;
-      if (m_items[i][j]<0 || o==m_items[i][j]) {
+      if ((m_items[i][j]<0 && -o<=m_items[i][j]+1) || o==m_items[i][j]) {
 	moms.push_back(list[k]);
-	if (Evaluate(list,weight,ncount,moms,i,j+1,k+1,eval)) pass=true;
+	if (Evaluate(list,weight,ncount,moms,i,j+1,k,eval)) pass=true;
 	if (o==m_items[i][j]) return pass;
 	moms.pop_back();
       }

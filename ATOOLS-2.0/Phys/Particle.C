@@ -3,7 +3,6 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-#include "Exception.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -23,7 +22,6 @@ namespace ATOOLS {
 
 using namespace ATOOLS;
 
-std::set<Particle *> ATOOLS::Particle::s_created;
 
 bool ATOOLS::Particle::operator==(Particle part)
 {
@@ -95,7 +93,6 @@ namespace ATOOLS {
 
 Particle::~Particle() 
 {
-  s_created.erase(s_created.find(this));
   delete p_flow; 
   --s_totalnumber;
 }
@@ -108,9 +105,6 @@ Particle::Particle():
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.)
 {
-  s_created.insert(this);
-  //PRINT_INFO(this);
-  //exh->GenerateStackTrace(std::cout);
   ++s_totalnumber;
 }
 
@@ -122,9 +116,6 @@ Particle::Particle(const Particle &in):
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
 {
-  s_created.insert(this);
-  //PRINT_INFO(this);
-  //exh->GenerateStackTrace(std::cout);
   ++s_totalnumber;
   p_flow->SetCode(1,in.GetFlow(1));
   p_flow->SetCode(2,in.GetFlow(2));
@@ -157,9 +148,6 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(fl.Mass())
 {
-  s_created.insert(this);
-  //PRINT_INFO(this);
-  //exh->GenerateStackTrace(std::cout);
   ++s_totalnumber;
 }
 

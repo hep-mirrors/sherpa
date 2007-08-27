@@ -56,7 +56,7 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl,std::string cuttag,double error) :
   Integrable_Base(_nin,_nout,_scalescheme,_kfactorscheme,_beam,_isr),
-  m_gen_str(_gen_str), m_nex(_nex),
+  m_gen_str(_gen_str), m_nex(_nex), p_b(NULL),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_maxfac(1.),

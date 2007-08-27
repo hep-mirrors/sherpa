@@ -2,10 +2,6 @@
 #include "XS_4F.H"
 #include "XS_QCD.H"
 #include "XS_Drell_Yan.H"
-#include "Off_Shell_QCD.H"
-#include "XS_QCD_COBG.H"
-#include "XS_QCD_CDBG.H"
-#include "XS_QCD_CDBG_T.H"
 #include "Run_Parameter.H"
 
 using namespace EXTRAXS;
@@ -19,8 +15,6 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
 			    const ATOOLS::Flavour *flavours,
 			    const bool seperate_couplings,
 			    size_t nqed, size_t nqcd,
-			    const PHASIC::cls::scheme &clsc,
-			    const PHASIC::hls::scheme &hlsc,
 			    const bool &sort)
 { 
   msg_Debugging()<<METHOD<<"(): '"<<flavours[0].IDName()
@@ -33,7 +27,7 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
   XS_Base * xs=NULL;
   if (seperate_couplings) {
     for (size_t i=0;i<=nout;++i) {
-      XS_Base * xst = GetSingleXS(nin,nout,flavours,i,nout-i,clsc,hlsc);
+      XS_Base * xst = GetSingleXS(nin,nout,flavours,i,nout-i);
       if (xs==0) {
 	xs = xst;
 	//	if (xs) std::cout<<" new single !!! \n";
@@ -52,7 +46,7 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
     nqcd=Min(nqcd,(size_t)nin+nout-2);
     for (int j=nqcd;j>=0;--j) {
       for (int i=nqed;i>=0;--i) {
-	XS_Base * xst = GetSingleXS(nin,nout,flavours,i,j,clsc,hlsc);
+	XS_Base * xst = GetSingleXS(nin,nout,flavours,i,j);
 	if (xst!=NULL) {
 	  msg_Debugging()<<"'"<<xst->Name()<<"'\n";
 	  return xst;
@@ -101,9 +95,7 @@ Single_XS *Dummy_Getter(const size_t nin,const size_t nout,
 
 Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours,
-				    const size_t nqed,const size_t nqcd,
-				    const PHASIC::cls::scheme &clsc,
-				    const PHASIC::hls::scheme &hlsc)
+				    const size_t nqed,const size_t nqcd)
 { 
   Single_XS *xs=NULL;
   static Getter_Function_Map s_gettermap;
@@ -121,53 +113,43 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   Flavour_Container flc(flavours,nqed,nqcd);
   XS_Model_Base *model(p_owner->GetModel());
   if (m_offshell) { 
-    if ((xs=Single_XS::GetProcess<Off_Shell_gg_qqb>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<Off_Shell_gg_qqb>;
+    xs=NULL;
   }
   else {
-    if (clsc==PHASIC::cls::sample) {
-      if ((xs=Single_XS::GetProcess<CDXS_pp_np>
-	   (nin,nout,flavours,model,nqed,nqcd))!=NULL) 
-      if (xs!=NULL) xs->SetHelicityScheme(hlsc);
-    }
-    else {
-      if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_ee_ffbar>;
-      else if ((xs=Single_XS::GetProcess<XS_pp_q1qbar1>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_gg_gg>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
-      else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>
-		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
-      else if ((xs=Single_XS::GetProcess<XS_gg_ng>(nin,nout,flavours,nqed,nqcd))!=NULL) 
- 	s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_ng>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1_f1f1>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f1b_f1f1b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f1f1b>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f2f2b>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f1f2>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f1f2b>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f3f4>;
-      else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
-    }
+    if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_ee_ffbar>;
+    else if ((xs=Single_XS::GetProcess<XS_pp_q1qbar1>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_gg_gg>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+    else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>
+	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1_f1f1>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f1f1b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f1f1b>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f2f2b>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f1f2>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f1f2b>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f3f4>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
   }
   if (xs!=NULL) {
     xs->m_orderEW=nqed;

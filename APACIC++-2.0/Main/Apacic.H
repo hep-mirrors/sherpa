@@ -32,9 +32,6 @@ namespace APACIC {
 
     jv::mode m_jvm;
 
-    ATOOLS::Vec4D PrepareFSR();
-    void BoostInLab();
-
   public :
     
     // constructor

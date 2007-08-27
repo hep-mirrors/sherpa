@@ -69,8 +69,8 @@ bool Gluon_Decayer::Shift(Proto_Particle_List * pl)
   size_t number(pl->size());
   bool val(true);
   if (number<2) return val; 
-  Vec4D  momenta[number];
-  double masses[number];
+  std::vector<Vec4D>  momenta(number);
+  std::vector<double> masses(number);
   int k(0);
   Flavour flav;
   PPL_Iterator pit;
@@ -79,7 +79,7 @@ bool Gluon_Decayer::Shift(Proto_Particle_List * pl)
     momenta[k] = (*pit)->m_mom;
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
-  if (!hadpars.AdjustMomenta(number,momenta,masses)) val=false;
+  if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front())) val=false;
 
   k = 0;
   for (pit=pl->begin();pit!=pl->end();++pit,++k) (*pit)->m_mom = momenta[k]; 

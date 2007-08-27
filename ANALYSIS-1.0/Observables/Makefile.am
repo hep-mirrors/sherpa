@@ -24,6 +24,7 @@ libObservables_la_SOURCES     =	\
                                 Three_Particle_Observables.C \
 			    	Four_Particle_Observables.C \
 			    	Four_Particle_Observables_2.C \
+			    	Jet_Cone_Distribution.C \
 			    	Jet_Observables.C \
 				Momentum_Tensor.C \
 				CD_Parameters.C \
@@ -46,6 +47,7 @@ pkginclude_HEADERS    =	\
 			Two_Particle_Observables.H \
 			Three_Particle_Observables.H \
 			Four_Particle_Observables.H \
+			Jet_Cone_Distribution.H \
 			Jet_Observables.H \
 			Momentum_Tensor.H \
 			CD_Parameters.H \

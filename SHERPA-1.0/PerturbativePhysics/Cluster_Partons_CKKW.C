@@ -47,7 +47,7 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   p_pdf[0]=isr->PDF(0);
   p_pdf[1]=isr->PDF(1);
   std::string helps;
-  Data_Reader reader;
+  Data_Reader reader(" ",";","!","=");
   if (reader.ReadFromFile(helps,"PRINT_SUDAKOV") && helps.length()>0) 
     GenerateTables(helps);
 }
@@ -130,7 +130,7 @@ EXTRAXS::XS_Base *Cluster_Partons_CKKW::GetXS(EXTRAXS::XS_Group * group,
     int nqed(0),nqcd(0);
     p_ct->AddCouplings(nqed,nqcd);
     xs = group->XSSelector()->GetXS
-      (nin,nout,fl,false,nqed,nqcd,cls::sum,hls::sum,false);
+      (nin,nout,fl,false,nqed,nqcd,false);
     if (xs) group->Add(xs);
   }
   p_xs = xs;
@@ -339,11 +339,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
   if (wminqcd>=0) {
     // check for scale definition from Single_XS
-    double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
-		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
-    // override scale w/ local definition from SetColours
-    if (m_q2_hard<std::numeric_limits<double>::max()) 
-      mu2r[1]=mu2r[0]=m_q2_hard;
+    double mu2r[2]={0.0,0.0};
     if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
     if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
     double qu(sqrt(mu2r[0]!=0.0?mu2r[0]:
@@ -359,6 +355,9 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     for (short unsigned int i(0);i<4;++i) {
       double rs(mu2r[i/2]!=0.0?mu2r[i/2]:p_ct->GetHardLegs()[wminqcd]
 		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
+      if (rs==std::numeric_limits<double>::max())
+	rs=p_ct->GetHardLegs()[wminqcd]
+	  [p_ct->GetHardInfo()[wminqcd][i]].KT2QED();
       m_last_q[i]=sqrt(rs);
     }
     for (short unsigned int i(0);i<2;++i) {
@@ -408,43 +407,47 @@ void Cluster_Partons_CKKW::WeightHardProcess()
   else {
     THROW(fatal_error,"No scale in hard process");
   }
+  msg_Debugging()<<"hard scales = {"<<m_last_q[0]<<","<<m_last_q[1]
+		 <<","<<m_last_q[2]<<","<<m_last_q[3]<<"}\n";
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
   if (proc->FactorizationScale()!="") {
     m_q2_f[1]=m_q2_f[0]=proc->Scale(stp::fac);
   }
   else {
-    m_q2_f[0]=sqr(m_qmin[0]);
-    m_q2_f[1]=sqr(m_qmin[1]);
-    double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
-		   proc->Scale(PHASIC::stp::fac));
-    if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
-      double x[2];
-      Combine_Table_Base *ct(p_ct);
-      while (ct->Up()) ct=ct->Up();
-      ct->GetX1X2(x[0],x[1]);
-      msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
-		     <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
-		     <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
-		     <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
-      static long unsigned int cnt[2]={0,0}, psur[2]={0,0};
-      for (short unsigned int i(0);i<2;++i) { 
-	if (p_pdf[i]!=NULL) {
-	  ++cnt[i];
-	  if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
-	    if (++psur[i]/(double)cnt[i]>0.001) {
-	      msg_Error()<<METHOD<<"(): Scale under-runs minimum PDF scale in "
-			 <<(psur[i]*1000/cnt[i])/10.0
-			 <<" % of events."<<std::endl;
+    if (m_pdf_mode) {
+      m_q2_f[0]=sqr(m_qmin[0]);
+      m_q2_f[1]=sqr(m_qmin[1]);
+      double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
+		     proc->Scale(PHASIC::stp::fac));
+      if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
+	double x[2];
+	Combine_Table_Base *ct(p_ct);
+	while (ct->Up()) ct=ct->Up();
+	ct->GetX1X2(x[0],x[1]);
+	msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
+		       <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
+		       <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
+		       <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
+	static long unsigned int cnt[2]={0,0}, psur[2]={0,0};
+	for (short unsigned int i(0);i<2;++i) { 
+	  if (p_pdf[i]!=NULL) {
+	    ++cnt[i];
+	    if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
+	      if (++psur[i]/(double)cnt[i]>0.001) {
+		msg_Error()<<METHOD<<"(): Scale under-runs minimum PDF scale"
+			   <<" in "<<(psur[i]*1000/cnt[i])/10.0
+			   <<" % of events."<<std::endl;
+	      }
+	      continue;
 	    }
-	    continue;
+	    p_pdf[i]->Calculate(x[i],qmin2me);
+	    double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
+	    p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
+	    w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
+	    msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
+			   <<" ("<<ct->GetLeg(i).Flav()<<")\n";
+	    if (w>0.0) m_weight/=w;
 	  }
-	  p_pdf[i]->Calculate(x[i],qmin2me);
-	  double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
-	  p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
-	  w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
-	  msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
-			 <<" ("<<ct->GetLeg(i).Flav()<<")\n";
-	  if (w>0.0) m_weight/=w;
 	}
       }
     }
@@ -474,8 +477,6 @@ void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
     m_last_q.push_back(std::numeric_limits<double>::max());
     m_last_i.push_back(si);
     ptij = ct_tmp->GetWinner(i,j);
-    if (i<2) m_q2_iss=Max(m_q2_iss,dabs(ct_down->Momentum(i).Abs2()));
-    else m_q2_fss=Max(m_q2_fss,ct_down->Momentum(i).Abs2());
     strong_vertex = ct_down->GetLeg(i).OrderQCD()>0;
     if (ct_down->GetLeg(i).Point()->t<10) {
       if (ct_down->GetLeg(i).Flav().Strong())

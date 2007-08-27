@@ -1420,7 +1420,7 @@ void Tau_Four_Pion_3::LorenzBase::SetPrivates( Complex * _x, ATOOLS::Vec4D * _p 
   p_X[0] = p_X[1]+p_X[2]+p_X[3]+p_X[4];     // X(nu,q,0)
   // unused variables yet
   m_r[0] = m_r[1] = ATOOLS::Vec4D(0.,0.,0.,0.);
-};
+}
  
 // CLEO parameterisation
 // see hep-ex/9908024 and CERN-TH.6793/93 for details
@@ -1749,7 +1749,7 @@ void Tau_Four_Pion_1::LorenzBase::SetPrivates( Complex * _X, ATOOLS::Vec4D * _p 
   p_X[0] = p_X[1]+p_X[2]+p_X[3]+p_X[4];       // X(nu,q,0)
   // unused variables yet
   m_r[0] = m_r[1] = ATOOLS::Vec4D(0.,0.,0.,0.);
-};
+}
  
 // CLEO parameterisation
 // see hep-ex/9908024 and CERN-TH.6793/93 for details

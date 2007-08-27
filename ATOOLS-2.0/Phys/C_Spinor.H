@@ -39,11 +39,11 @@ namespace ATOOLS {
     inline CSpinor(const int &r,const int &b,const int &h,
 		   const Vec4D &p,const int c=0,
 		   const long unsigned int &hm=0,
-		   const long unsigned int &hp=0): m_r(r), m_b(b), m_c(c)
-    { m_h[0]=hm; m_h[1]=hp; Construct(h,p); }
+		   const long unsigned int &hp=0,const double &m2=-1.0): 
+      m_r(r), m_b(b), m_c(c) { m_h[0]=hm; m_h[1]=hp; Construct(h,p,m2); }
     
     // member functions
-    void Construct(const int h,const Vec4D &p);
+    void Construct(const int h,const Vec4D &p,double m2=-1.0);
 
     Complex operator*(const CSpinor &s) const;
 
@@ -154,33 +154,46 @@ namespace ATOOLS {
         p^+&p_\perp^*&-m&0\\p_\perp&p^-&0&-m\end{array}\right)u
     \f]
     The Eigenvalues are \f$\lambda=m\pm\sqrt{p^2}\f$. Eigenspinors
-    can be found by observing that \f$\left(p^\mu\gamma_\mu-m\right)\f$ 
-    \f$\left(p^\nu\gamma_\nu+m\right)=\f$ \f$p^2-m^2=0\f$. 
-    If \f$u(0,m)\f$ and \f$v(0,m)\f$ are solutions for \f$p=0\f$, 
-    \f$\lambda=0\f$ then \f$u(p,m)=(p^\mu\gamma_\mu+m)u(0,m)\f$ and 
-    \f$v(p,m)=(p^\mu\gamma_\mu-m)v(0,m)\f$ are solutions for nonzero 
-    momentum. Hence, employing \f$\phi_p=\arg{p_\perp}\f$,
-    \f[
-      u_+(p,m)=\frac{1}{\sqrt{p^+}}
-        \left(\begin{array}{c}m\\0\\p^+\\p_\perp\end{array}\right)\;,\quad
-      v_-(p,m)=\frac{e^{i\phi_p}}{\sqrt{p^-}}
-        \left(\begin{array}{c}0\\-m\\p_\perp^*\\p^-\end{array}\right)\;,
-    \f]
-    \f[
-      u_-(p,m)=\frac{e^{-i\phi_p}}{\sqrt{p^-}}
-        \left(\begin{array}{c}p^-\\-p_\perp\\m\\0\end{array}\right)\;,\quad
-      v_+(p,m)=\frac{e^{i\pi}}{\sqrt{p^+}}
-        \left(\begin{array}{c}-p_\perp^*\\p^+\\0\\-m\end{array}\right)\;.
-    \f]
-    These Eigenspinors are normalized to \f$2p^0\f$. 
-    For \f$m=0\f$ they are Eigenspinors to the chirality operator 
-    \f$\gamma^5\f$, are related by symmetry and reduce to
+    can be found by firstly constructing solutions for \f$m=0\f$.
+    One possible set of such solutions is
     \f[
       u_+(p,0)=v_-(p,0)=\left(\begin{array}{c}
-        0\\0\\\sqrt{p^+}\\\sqrt{p^-}e^{i\phi_p}\end{array}\right)\;,
+        0\\\chi_+(p)\end{array}\right)\;,\quad
       u_-(p,0)=v_+(p,0)=\left(\begin{array}{c}
-        \sqrt{p^-}e^{-i\phi_p}\\-\sqrt{p^+}\\0\\0\end{array}\right)\;.
+        \chi_-(p)\\0\end{array}\right)\;.
     \f]
+    where
+    \f[
+      \chi_+(p)=\frac{1}{\sqrt{p^+}}\left(\begin{array}{c}
+        p^+\\p_\perp\end{array}\right)=\left(\begin{array}{c}
+        \sqrt{p^+}\\\sqrt{p^-}e^{i\phi_p}\end{array}\right)\;,\quad
+      \chi_-(p)=\frac{e^{i\pi}}{\sqrt{p^+}}\left(\begin{array}{c}
+        -p_\perp^*\\p^+\end{array}\right)=\left(\begin{array}{c}
+        \sqrt{p^-}e^{-i\phi_p}\\-\sqrt{p^+}\end{array}\right)\;.
+    \f]
+    The spinors \f$\chi_\pm(p)\f$ are normalized to \f$2\,p_0\f$.
+    Defining \f$\bar p=|\vec p|\f$ and 
+    \f$\hat p=(\,{\rm sgn}(p_0)\,\bar p,\vec p\;)\f$, possible solutions 
+    for \f$m\neq 0\f$ are [Nucl. Phys. B274 (1986) 1-32]
+    \f[
+      u_+(p,m)=\frac{1}{\sqrt{2\,\bar p}}\left(\begin{array}{r}
+          \sqrt{p_0-\bar p}\;\chi_+(\hat p)\\
+	  \sqrt{p_0+\bar p}\;\chi_+(\hat p)\end{array}\right)\;,\quad
+      v_-(p,m)=\frac{1}{\sqrt{2\,\bar p}}\left(\begin{array}{r}
+          -\sqrt{p_0-\bar p}\;\chi_+(\hat p)\\
+	  \sqrt{p_0+\bar p}\;\chi_+(\hat p)\end{array}\right)\;,
+    \f]
+    \f[
+      u_-(p,m)=\frac{1}{\sqrt{2\,\bar p}}\left(\begin{array}{r}
+          \sqrt{p_0+\bar p}\;\chi_-(\hat p)\\
+          \sqrt{p_0-\bar p}\;\chi_-(\hat p)\end{array}\right)\;,\quad
+      v_+(p,m)=\frac{1}{\sqrt{2\,\bar p}}\left(\begin{array}{r}
+          \sqrt{p_0+\bar p}\;\chi_-(\hat p)\\
+	  -\sqrt{p_0-\bar p}\;\chi_-(\hat p)\end{array}\right)\;.
+    \f]
+    These Eigenspinors are orthogonal and satisfy the relations
+    \f$\bar u_\lambda(p,m)u_\lambda(p,m)=2m\f$ 
+    and \f$\bar v_\lambda(p,m)v_\lambda(p,m)=-2m\f$. 
     In the above spinor basis the color-ordered quark-quark-gluon vertex reads
     \f[
       \frac{i}{\sqrt{2}}\bar{u}\gamma^\mu v\\=

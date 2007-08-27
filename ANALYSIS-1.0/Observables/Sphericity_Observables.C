@@ -13,9 +13,9 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(Sphericity_Calculator_Getter,"SphCalc",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Analysis_Object,Argument_Matrix);
 
-Primitive_Observable_Base * 
+Analysis_Object * 
 Sphericity_Calculator_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
@@ -75,7 +75,6 @@ Sphericity_Calculator::Sphericity_Calculator(const std::string & listname)
 {
   m_name = std::string("Sphericitys_Calculator");
   m_listname = listname;
-  m_splitt_flag = false;
 }
 
 void Sphericity_Calculator::Evaluate(const Blob_List & ,double weight, int ncout) {
@@ -99,7 +98,7 @@ void Sphericity_Calculator::Evaluate(const Blob_List & ,double weight, int ncout
 		 new Blob_Data<Sphericity_Data>(Sphericity_Data(sphericity,aplanarity,planarity)));
 }
 
-Primitive_Observable_Base * Sphericity_Calculator::Copy() const
+Analysis_Object * Sphericity_Calculator::GetCopy() const
 {
   return new Sphericity_Calculator(m_listname);
 }

@@ -1,0 +1,44 @@
+#ifndef Library_Loader_H
+#define Library_Loader_H
+
+#include <vector>
+#include <map>
+#include <string>
+
+namespace ATOOLS {
+
+  class Library_Loader {
+  private:
+
+    std::vector<std::string>    m_paths;
+    std::map<std::string,void*> m_libs;
+
+    size_t m_wait;
+
+    bool CreateLockFile(const std::string &lockname);
+    bool RemoveLockFile(const std::string &lockname);
+
+  public:
+
+    // constructor
+    Library_Loader();
+
+    // member functions
+    void *LoadLibrary(const std::string &name);
+
+    void *GetLibraryFunction(const std::string &libname,
+			     const std::string &funcname);
+
+    // inline functions
+    inline void AddPath(const std::string &path)
+    { m_paths.push_back(path); }
+
+    inline void SetWaitTime(const size_t &wait) { m_wait=wait; }
+
+  };//end of class Library_Loader
+
+  extern Library_Loader *s_loader;
+
+}// end of namsepace COMPARE
+
+#endif

@@ -53,6 +53,7 @@ bool Single_XS::CalculateTotalXSec(const std::string &resultpath,
   p_pshandler->InitCuts();
   if (p_isrhandler)
     p_isrhandler->SetSprimeMin(p_pshandler->Cuts()->Smin());
+  CreateFSRChannels();
   if (!m_channels) {
     p_pshandler->CreateIntegrators();
     CreateISRChannels();

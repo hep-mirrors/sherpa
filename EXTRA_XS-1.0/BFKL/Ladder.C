@@ -9,7 +9,6 @@
 #include "Data_Reader.H"
 #include "MyStrStream.H"
 #include "XS_Selector.H"
-#include "Color_Integrator.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -68,14 +67,6 @@ Ladder::Ladder(const size_t nin,const size_t nout,
 Ladder::~Ladder()
 {
   if (p_jf!=NULL) delete p_jf;
-  std::set<N_Parton_CDBG*> delcd;
-  for (std::map<std::string,N_Parton_CDBG*>::const_iterator
-	 mit(m_cdmes.begin());mit!=m_cdmes.end();++mit) {
-    if (delcd.find(mit->second)!=delcd.end()) continue;
-    delcd.insert(mit->second);
-    delete mit->second->ColorIntegrator();
-    delete mit->second;
-  }
   for (std::map<std::string,XS_Base*>::const_iterator
 	 mit(m_xsmes.begin());mit!=m_xsmes.end();++mit) delete mit->second;
   delete p_sudakov;
@@ -107,7 +98,7 @@ bool Ladder::Initialize()
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
   if (m_memode>0) 
-    p_jf = new Jet_Finder(ToString(m_kt2min/sqr(rpa.gen.Ecms())),4,false);
+    p_jf = new Jet_Finder(ToString(m_kt2min/sqr(rpa.gen.Ecms())),4);
   p_sudakov->SetKT2Min(m_kt2min);
   return p_sudakov->Initialize();
 }
@@ -466,12 +457,15 @@ double Ladder::MECorrection()
 {
   // check jet measures
   for (size_t i(2);i<m_moms.size();++i) {
-    if (p_jf->MTij2(m_k1,m_moms[i])<m_kt2min ||
-	p_jf->MTij2(m_kn,m_moms[i])<m_kt2min) return 0.0;
+    if (p_jf->MTij2(m_k1,m_moms[i],m_fl1.Mass(),
+		    m_flavs[i].Mass())<m_kt2min ||
+	p_jf->MTij2(m_kn,m_moms[i],m_fln.Mass(),
+		    m_flavs[i].Mass())<m_kt2min) return 0.0;
     for (size_t j(i+1);j<m_moms.size();++j) 
-      if (p_jf->MTij2(m_moms[i],m_moms[j])<m_kt2min) return 0.0;
+      if (p_jf->MTij2(m_moms[i],m_moms[j],m_flavs[i].Mass(),
+		      m_flavs[j].Mass())<m_kt2min) return 0.0;
   }
-  if (p_jf->MTij2(m_k1,m_kn)<m_kt2min) return 0.0;
+  if (p_jf->MTij2(m_k1,m_kn,m_fl1.Mass(),m_fln.Mass())<m_kt2min) return 0.0;
   int ids[2]={m_y1>m_yn?0:1,m_y1>m_yn?1:0};
   double sf1(p_pdfs[ids[0]]->JetKernel()->Value(m_z1));
   double sfn(p_pdfs[ids[1]]->JetKernel()->Value(m_zn));
@@ -516,63 +510,7 @@ double Ladder::MECorrection()
     m_bfkldxs*=16.0*M_PI*m_asecms*3.0/m_moms[i].PPerp2();
   }
   if (m_memode&8) return 1.0/m_bfkldxs;
-  moms.front()=m_p1;
-  moms[1]=m_p2;
-  moms[2]=m_k1;
-  moms.back()=m_kn;  
-  N_Parton_CDBG *me(NULL);
-  std::string name(m_name);
-  std::map<std::string,N_Parton_CDBG*>::iterator mit(m_cdmes.find(name));
-  if (mit!=m_cdmes.end()) {
-    me=mit->second;
-  }
-  else {
-    std::vector<Flavour> fl(m_flavs.size()+2);
-    for (size_t i(2);i<m_flavs.size();++i) fl[i+1]=m_flavs[i];
-    fl.front()=p_addflavours[2];
-    fl[1]=p_addflavours[3];
-    fl[2]=m_fl1;
-    fl.back()=m_fln;
-    std::string mapname(MapProcess(fl));
-    if (m_cdmes.find(mapname)!=m_cdmes.end()) {
-      msg_Tracking()<<METHOD<<"(): Mapped '"<<name<<"' -> '"<<mapname<<"'\n";
-      m_cdmes[name]=me=m_cdmes[mapname];
-    }
-    else {
-      msg_Info()<<METHOD<<"(): Initialize ME correction for '"<<name<<"'.\n";
-      me = new N_Parton_CDBG(m_nin,m_nvector,fl,p_model);
-      Color_Integrator *cint(new Color_Integrator());
-      Idx_Vector ids(m_nin+m_nout+m_naddout,0);
-      Int_Vector types(m_nin+m_nout+m_naddout,0), acts(ids.size(),1);
-      for (size_t i(0);i<ids.size();++i) {
-	ids[i]=i;
-	if (fl[i].IsGluon()) types[i]=0;
-	else if (fl[i].IsAnti()) types[i]=i<2?1:-1;
-	else types[i]=i<2?-1:1;
-      }
-      cint->ConstructRepresentations(ids,types,acts);
-      cint->Initialize();
-      me->SetColorIntegrator(cint);
-      cint->GeneratePoint();
-      if (!me->GaugeTest(moms)) {
-	msg_Error()<<METHOD<<"(): Gauge test not satisfied. Retry next."
-		   <<std::endl;
-	delete cint;
-	delete me;
-	return 0.0;
-      }
-      m_cdmes[name]=m_cdmes[mapname] = me;
-    }
-  }
-  me->ColorIntegrator()->GeneratePoint();
-  m_dxs=me->ColorIntegrator()->GlobalWeight()*me->Differential(moms);
-  msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
-		 <<m_dxs<<" / ( "<<m_bfkldxs<<" * "<<m_splitweight
-		 <<" ) = "<<m_dxs/(m_bfkldxs*m_splitweight)<<" \n";
-  // bfkl me contains no symmetry factor (y-ordered)
-  // symmetry factor is introduced for correction weight only
-  double sf(Factorial(m_nout+m_naddout));
-  return m_dxs*sf/(m_bfkldxs*m_splitweight);
+  return 0.0;
 }
 
 std::string Ladder::MapProcess(const std::vector<ATOOLS::Flavour> &fl)

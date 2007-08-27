@@ -470,6 +470,7 @@ void Amegic::ReadInProcessfile(string file)
 		    msg_Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
 		    m_maxjet = nmax;
 		    m_maxqcdjet = nmax;
+		    m_coremaxjet = nmax;
 		  }		  
 		}
 
@@ -680,9 +681,13 @@ namespace AMEGIC {
       AddMPvalue(lstr+rstr,"",val,dv,nfs-ToType<int>(rstr),priority);
       return;
     }
-    std::string rlstr(rstr.substr(0,pos)), rrstr(rstr.substr(pos+1));
+    std::string rlstr(rstr.substr(0,pos)), rrstr(rstr.substr(pos+1)), rmstr;
+    if (pos>0 && ltp==pos-1) {
+      rmstr="]";
+      rrstr=rrstr.substr(1);
+    }
     for (int i(0);i<=nfs;++i)
-      AddMPvalue(lstr+rlstr+ToString(i),rrstr,val,dv,nfs-i,priority);
+      AddMPvalue(lstr+rlstr+ToString(i)+rmstr,rrstr,val,dv,nfs-i,priority);
   }
 
   template void Amegic::AddMPvalue

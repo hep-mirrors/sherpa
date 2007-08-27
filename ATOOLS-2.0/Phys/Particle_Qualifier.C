@@ -152,12 +152,6 @@ DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter,
 			"99","there",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Lepton,Is_Charged_Lepton_Getter,
 			"90","charged lepton",0)
-DEFINE_QUALIFIER_GETTER(Is_Electron,Is_Electron_Getter,
-			"91","electron",0)
-DEFINE_QUALIFIER_GETTER(Is_Muon,Is_Muon_Getter,
-			"92","muon",0)
-DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
-			"22","photon",0)
 DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter_,
 			"There","there",1)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter,
@@ -293,21 +287,6 @@ bool Is_Charged::operator() (const Particle * p)const{
 
 bool Is_Hadron::operator() (const Particle * p)const{
   if ( p && p->Flav().IsHadron() &&!p->Flav().IsDiQuark()) return 1;
-  return 0;
-}
-
-bool Is_Photon::operator() (const Particle * p)const{
-  if ( p && p->Flav().IsPhoton()) return 1;
-  return 0;
-}
-
-bool Is_Electron::operator() (const Particle * p)const{
-  if ( p && abs(p->Flav().Kfcode())==11) return 1;
-  return 0;
-}
-
-bool Is_Muon::operator() (const Particle * p)const{
-  if ( p && abs(p->Flav().Kfcode())==13) return 1;
   return 0;
 }
 

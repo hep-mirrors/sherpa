@@ -8,6 +8,9 @@
 #include "Pol_Info.H"
 #include "Pfunc.H"
 #include <list>
+
+#define masslessskip 30
+#define massiveskip 60
  
 namespace AMEGIC {
 

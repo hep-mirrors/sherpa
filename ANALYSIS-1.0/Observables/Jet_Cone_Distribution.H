@@ -2,6 +2,7 @@
 #define Jet_Cone_Distribution_H
 
 #include "Primitive_Observable_Base.H"
+#include "Primitive_Calorimeter.H"
 #include "Calorimeter_Cone.H"
 #include "Histogram.H"
 

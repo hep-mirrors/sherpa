@@ -15,11 +15,9 @@ namespace EXTRAXS {
 
     int **p_colours;
 
-    bool m_channels, m_psmc, m_ownmodel;
+    bool m_channels, m_ownmodel;
 
     double m_s, m_t, m_u;
-
-    std::string m_gpath;
 
     XS_Model_Base *p_model;
 
@@ -84,15 +82,14 @@ namespace EXTRAXS {
     void DeSelect();
     bool ReSelect(int);
 
-    void FillSIntegrator(PHASIC::Multi_Channel *&mc);
-    void UpdateIntegrator(PHASIC::Multi_Channel *&mc);
-
     virtual void Print();
 
     ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void Reset();
     virtual void ResetSelector(ATOOLS::Selector_Data *const selectordata);
+
+    virtual void CreateFSRChannels(); 
     virtual void CreateISRChannels();
     
     virtual bool SetColours(const ATOOLS::Vec4D *momenta);
@@ -124,10 +121,6 @@ namespace EXTRAXS {
     { return p_regulator; }
 
     inline XS_Model_Base *GetModel() const { return p_model; }
-
-    inline void SetPSMC(const bool psmc) { m_psmc=psmc; }
-
-    inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
     inline static void SetSortFlavours(const bool &sort)
     { s_sortflavours=sort; }

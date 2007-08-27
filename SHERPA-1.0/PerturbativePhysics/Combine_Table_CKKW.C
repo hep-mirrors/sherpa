@@ -81,7 +81,10 @@ CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
 {
   if (cit->first.m_flav.Kfcode()==kf::none) {
     cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
-    cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
+    cit->second.m_pt2ij = p_jf->MTij2
+      (p_moms[cit->first.m_i],p_moms[cit->first.m_j],
+       p_legs[0][cit->first.m_i].Flav().Mass(),
+       p_legs[0][cit->first.m_j].Flav().Mass());
     if (cit->first.m_i>1 && cit->first.m_j>1) 
       cit->second.m_pt2ij*=sqr(p_jf->DeltaR());
 //     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
@@ -164,8 +167,8 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
   if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
-  CD_List::iterator qcd_winner(cl.end());
-  double kt2(std::numeric_limits<double>::max()), kt2qcd(kt2);
+  CD_List::iterator qcd_winner(cl.end()), nqcd_winner(cl.end());
+  double kt2(std::numeric_limits<double>::max()), kt2qcd(kt2), kt2nqcd(kt2);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij);
@@ -194,9 +197,15 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	qcd_winner=cit;
 	kt2qcd=pt2ij;
       }
+      if ((p_legs[0][cit->first.m_i].Flav().Strong()||
+ 	   p_legs[0][cit->first.m_j].Flav().Strong()) && pt2ij<kt2nqcd) {
+ 	nqcd_winner=cit;
+ 	kt2nqcd=pt2ij;
+      }
     }
   }
-  // if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
+  if (nqcd_winner!=cl.end()) m_cdata_winner=nqcd_winner;
+  if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
   return m_cdata_winner!=cl.end();
 }
 
@@ -287,18 +296,24 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1]) &&
 	Combinable(p_legs[i][2],p_legs[i][3])) {
-      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3])*sqr(p_jf->DeltaR()));
-      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[1],p_legs[i][0].Flav().Mass(),
+		     p_legs[i][1].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[2],p_moms[3],p_legs[i][2].Flav().Mass(),
+		     p_legs[i][3].Flav().Mass())*sqr(p_jf->DeltaR()));
+      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
 		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
 		     <<" -> "<<p_legs[i][2].Flav()<<" "
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
       SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
-		   p_moms[0],p_moms[1],pt2ij);
+		   p_moms[0],p_moms[1],pt2ij1);
       p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
       SetLegScales(p_hard[i][1],p_legs[i][2],p_legs[i][3],
-		   p_moms[2],p_moms[3],pt2ij);
+		   p_moms[2],p_moms[3],pt2ij2);
       p_hardc[i][0]=0;
       p_hardc[i][1]=0;
       p_hardc[i][2]=1;
@@ -306,8 +321,12 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
     }
     else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
 	     Combinable(p_legs[i][1],p_legs[i][3])) {
-      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[2]));
-      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[3]));
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[2],p_legs[i][0].Flav().Mass(),
+		     p_legs[i][2].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[1],p_moms[3],p_legs[i][1].Flav().Mass(),
+		     p_legs[i][3].Flav().Mass()));
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
@@ -324,11 +343,20 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
       p_hardc[i][1]=1;
       p_hardc[i][2]=0;
       p_hardc[i][3]=1;
+      if (p_hard[i][0].Point()->t>=10) {
+ 	msg_Debugging()<<"cut t-channel propagator "
+ 		       <<p_hard[i][0].Flav()<<"\n";
+ 	return false;
+      }
     }
     else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
 	     Combinable(p_legs[i][1],p_legs[i][2])) {
-      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[3]));
-      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[2]));
+      double pt2ij1
+	(p_jf->MTij2(p_moms[0],p_moms[3],p_legs[i][0].Flav().Mass(),
+			  p_legs[i][3].Flav().Mass()));
+      double pt2ij2
+	(p_jf->MTij2(p_moms[1],p_moms[2],p_legs[i][1].Flav().Mass(),
+		     p_legs[i][2].Flav().Mass()));
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "
@@ -345,10 +373,14 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
       p_hardc[i][1]=1;
       p_hardc[i][2]=1;
       p_hardc[i][3]=0;
+      if (p_hard[i][0].Point()->t>=10) {
+ 	msg_Debugging()<<"cut u-channel propagator "
+ 		       <<p_hard[i][0].Flav()<<"\n";
+ 	return false;
+      }
     }
     else THROW(fatal_error,"No match for hard process.");
     m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
-    if (p_hard[i][0].Point()->t>=10) return false;
   }
   return true;
 }

@@ -121,10 +121,10 @@ bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny)
     z0=Max(0.5*(1.-sqrt(1.-t0/(m_t-mother->tout))),1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
-    if (m_mass_scheme>=2) m_t-=mother->tout;
+    if (m_mass_scheme&2) m_t-=mother->tout;
     ProduceT(m_t,mother->tout);
     if (m_t<t0) return 0;
-    if (m_mass_scheme>=2) m_t+=mother->tout;
+    if (m_mass_scheme&2) m_t+=mother->tout;
     // determine estimate for energy
     if (granny) m_E2=0.25*sqr(m_t+granny->E2)/granny->E2;
     if (m_t<m_E2) {
@@ -180,7 +180,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
     m_pt2=p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc);
     break;
   case 2: { // case 1 w/ zero daughter masses
-    double zlc(p_kin->LightConeZ(m_z,m_E2,t,m_tb,m_tc));
+    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
     m_pt2=zlc*(1.0-zlc)*t;
     break;
   }
@@ -203,7 +203,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
   // z-range and splitting function
   m_last_veto=3;
-  if (MassVeto(t,E2)) return true;
+  if (MassVeto(t,E2,z)) return true;
 
   // 2. alphaS
   m_last_veto=4;
@@ -225,14 +225,15 @@ double sql(const double &s,const double &s1,const double &s2)
   return sqr(s-s1-s2)-4.0*s1*s2;
 }
 
-bool Timelike_Sudakov::MassVeto(double t, double E2) 
+bool Timelike_Sudakov::MassVeto(double t, double E2,double z) 
 {
   double psw(1.0);
   if (m_shower==3) {
     // additional phasespace weight
     psw=sqrt(m_oldt/m_t)*sql(m_t,m_tb,m_tc)/sql(m_oldt,m_tb,m_tc);
   }
-  if (GetWeight(m_z,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
+  double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
+  if (GetWeight(zlc,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;

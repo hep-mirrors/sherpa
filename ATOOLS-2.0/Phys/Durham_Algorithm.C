@@ -223,4 +223,7 @@ double Durham_Algorithm::DCos12(const Vec4D & p1,const Vec4D & p2) const
   //  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-
+double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
+{
+  return 2.*Min(sqr(p1[0]),sqr(p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
+}

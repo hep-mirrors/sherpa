@@ -19,11 +19,11 @@ using namespace std;
  
 bool HD_Channel_Selector::DecomposeChannel( string name, ChannelInformation & ci )
 {
-  char s[name.size()];
-  strcpy( s, name.c_str() );
+  std::vector<char> s(name.size());
+  strcpy( &s.front(), name.c_str() );
   char delim[] = "_";
   char *result (NULL);
-  result = strtok( s, delim );
+  result = strtok( &s.front(), delim );
   int i (0);
   ci.name = "noname";
   ci.a=0; ci.b=0; ci.c=0; ci.d=0;
