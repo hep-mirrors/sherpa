@@ -1,5 +1,31 @@
 #!/bin/bash
-TIME=`date`
+
+drl() 
+{
+  drll=`echo $1 | awk '{
+    if (match($1,"/")==1) cpath=$1;
+    else cpath=ENVIRON["PWD"]"/"$1;
+    print cpath;
+  }'`
+  drlr=""
+  for (( i=2 ; 1 ; ++i )) ; do
+    drlc=`echo $drll | cut -d/ -f-$i`
+    if test -L $drlc ; then 
+      drlr=`echo \`ls -l $drlc | cut -d\> -f2\``
+    else
+      drls=`echo $drll | cut -d/ -f$i`
+      if [ "$drls" != "." ] ; then
+        drlr=$drlr"/"$drls
+      fi
+    fi
+    if [ "$drlc" = "$drll" ] ; then break ; fi
+  done
+  if [ "$drlr" != "$1" ] ; then 
+    drl $drlr
+  else
+    echo $drlr
+  fi
+}
 
 rmr () {  
   for file in * ; do                                                          
@@ -13,12 +39,12 @@ rmr () {
     rm -f $2 $i                                                                         
   done
 }                                                                               
-RUNPATH=""
-BINPATH=""
-PDFPATH=""
+TIME=`date`
+SRUNPATH=""
+SBINPATH=""
 RESULTS=""
 ANALYSIS=""
-LIBPATH="#"
+SLIBPATH="#"
 SOPTIONS=""
 BASENAME=""
 BATCH="PBS"
@@ -29,7 +55,6 @@ print_help() {
   echo "run version 1.0" && echo && \
   echo "options: -p <path>      read configuration from path <path>" && \
   echo "         -b <binpath>   take executeable from path <binpath>" && \
-  echo "         -s <pdfpath>   take pdfs from path <pdfpath>" && \
   echo "         -r <results>   write results to path <path>/<results>" && \
   echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
   echo "         -e <events>    generate <events> events" && \
@@ -41,29 +66,34 @@ print_help() {
   echo "         -O <option>    define batch system option <option>" && \
   echo "         -H <host>      run job locally on <host>" && \
   echo "         -N <level>     set nice level for nohup" && \
+  echo "         -E <events>    generate <events> testevents" && \
+  echo "         -T <time>      generate jobs with expected runtime <time>" && \
+  echo "         -Q <option>    define batch option <option> for split jobs" && \
   echo "         -S             submit job to batch system" && \
   echo "         -R             run job via nohup" && \
   echo "         -h             display this help and exit" && \
   echo
 }
 
-while getopts :p:b:s:r:a:e:n:l:o:B:C:O:H:N:SRh OPT
+while getopts :p:b:r:a:e:n:l:o:B:C:O:H:N:E:T:Q:SRh OPT
 do
   case $OPT in
-  p) RUNPATH=$OPTARG ;; 
-  b) BINPATH=$OPTARG ;; 
-  s) PDFPATH=$OPTARG ;; 
+  p) SRUNPATH=$OPTARG ;; 
+  b) SBINPATH=$OPTARG ;; 
   r) RESULTS=$OPTARG ;; 
   a) ANALYSIS=$OPTARG ;; 
   e) EVENTS=$OPTARG ;; 
   n) BASENAME=$OPTARG ;; 
-  l) LIBPATH=$OPTARG ;; 
+  l) SLIBPATH=$OPTARG ;; 
   o) SOPTIONS=$SOPTIONS" "$OPTARG ;; 
   B) BATCH=$OPTARG ;; 
   C) SLOGFILE=$OPTARG ;; 
   O) BOPTIONS=$OPTARG ;; 
   H) RHOST=$OPTARG ;;
   N) NICE=$OPTARG ;;
+  E) ETIME=$OPTARG ;; 
+  T) TEVENTS=$OPTARG ;; 
+  Q) EBOPT=$OPTARG ;; 
   S) SUBMIT=TRUE ;;
   R) RUN=TRUE ;;
   h) print_help && exit 0 ;;
@@ -76,31 +106,39 @@ do
     print_help && exit 1
   esac
 done
-if [ "$BINPATH" = "" ]; then BINPATH="." ; fi
-if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
+if [ "$SBINPATH" = "" ]; then SBINPATH="." ; fi
+if [ "$SRUNPATH" = "" ]; then SRUNPATH="./" ; fi
 if [ "$RESULTS" = "" ]; then RESULTS="./" ; fi
 if [ "$ANALYSIS" = "" ]; then ANALYSIS="./" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
-$BINPATH/Sherpa --version > /dev/null 2>&1
+$SBINPATH/Sherpa --version > /dev/null 2>&1
 if (( $? != 0 )) ; then
-  BINPATH="."
-  Sherpa --version > /dev/null 2>&1
-  if (( $? != 0 )) ; then
-    echo "run: executeable cannot be found in '$BINPATH' and \$PATH"
-    echo "run: abort"
-    exit 1
-  fi
+  for (( i=1 ; 1 ; ++i )); do
+    SBINPATH=`echo $PATH | cut -d: -f$i`
+    $SBINPATH/Sherpa --version > /dev/null 2>&1
+    if (( $? == 0 )) ; then break; fi
+    if [ "$SBINPATH" = "" ] ; then
+      echo "run: Sherpa executeable not found. abort."
+      exit 1
+    fi
+  done
 fi
+BINPATH=`drl $SBINPATH`
+echo -e "run: Sherpa found in '$BINPATH'"
+RUNPATH=`drl $SRUNPATH`
 if ! test -d $RUNPATH ; then
   echo "run: setup directory '$RUNPATH' does not exist"
   echo "run: abort"
   exit 2
 fi
-if ! test -d /$LIBPATH ; then 
-  if ! test -d /$RUNPATH ; then LIBPATH=$PWD"/"$RUNPATH
-  else LIBPATH=$RUNPATH
+echo -e "run: template path set to '$RUNPATH'"
+if ! test -d $SLIBPATH ; then 
+  if ! test -d $RUNPATH ; then SLIBPATH=$PWD"/"$RUNPATH
+  else SLIBPATH=$RUNPATH
   fi
 fi
+LIBPATH=`drl $SLIBPATH`
+echo -e "run: lib path set to '$LIBPATH'"
 if [ ! "$BATCH" = "PBS" ] && [ ! "$BATCH" = "SGE" ] ; then 
   echo "run: error: invalid batch system: '$BATCH'"
   echo "run: supported batch systems are: 'PBS' / 'SGE'"
@@ -117,11 +155,14 @@ SETUPPATH=$SETUPPATH"_"$COUNTER
 LOGFILE="run.log"
 FILE=$BASENAME"_"$COUNTER".sh"
 
+echo "run: creating run path '$SETUPPATH'"
 mkdir $SETUPPATH
 if test -d /$LIBPATH"/Process" ; then 
   ln -s $LIBPATH"/Process" $SETUPPATH"/Process"
 fi
-cp -ru $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
+cp -u $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
+if [ "$RESULTS" != "" ]; then mkdir $SETUPPATH/$RESULTS; fi
+
 echo "" > $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then 
   if [ "$BATCH" = "SGE" ] ; then
@@ -140,6 +181,9 @@ if [ "$SUBMIT" = "TRUE" ] ; then
     fi
   fi
   echo "" >> $FILE
+  echo "EVENTS=$EVENTS" >> $FILE
+  echo "" >> $FILE
+  echo "BINPATH=\"$BINPATH\"" >> $FILE
   echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
@@ -175,24 +219,68 @@ if [ "$SUBMIT" = "TRUE" ] ; then
 else
   echo "#!/bin/bash" >> $FILE
   echo "" >> $FILE
-  echo "RUNPATH=$SETUPPATH" >> $FILE
+  echo "EVENTS=$EVENTS" >> $FILE
+  echo "" >> $FILE
+  echo "BINPATH=\"$BINPATH\"" >> $FILE
+  echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
   echo "cd \$RUNPATH" >> $FILE
   echo "" >> $FILE
 fi
-if [ "$PDFPATH" != "" ] ; then
-  echo -e "export SHERPA_PDF_PATH=$PDFPATH\n" >> $FILE
-fi
-echo "export PATH=$BINPATH:\$PATH" >> $FILE
+echo "export PATH=\$BINPATH:\$PATH" >> $FILE
 echo "" >> $FILE
 
-echo -en "Sherpa " >> $FILE
-if [ ! "$RESULTS" = "" ] ; then echo -en "RESULT_DIRECTORY=\"$RESULTS\" " >> $FILE ; fi
-if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\"$ANALYSIS\" " >> $FILE ; fi
-if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
-if [ ! "$SOPTIONS" = "" ] ; then echo -en "$SOPTIONS " >> $FILE ; fi
-echo -e ">> \$LOGFILE 2>&1\n\n" >> $FILE
+CMDL="Sherpa"; CMDR="";
+if [ "$RESULTS" != "" ]; then CMDL=$CMDL" RESULT_DIRECTORY=$RESULTS"; fi
+if [ "$SOPTIONS" != "" ]; then CMDR=$CMDR" $SOPTIONS"; fi
+if [ "$ETIME" = "" ]; then
+  if [ "$ANALYSIS" != "" ]; then echo -en "$CMDL ANALYSIS_OUTPUT=$ANALYSIS" >> $FILE; fi
+  if [ "$EVENTS" != "" ]; then echo -en " EVENTS=\$EVENTS" >> $FILE ; fi
+else
+  if [ "$ANALYSIS" != "" ]; then echo -en "$CMDL ANALYSIS_OUTPUT=$ANALYSIS" >> $FILE; fi
+  if [ "$EVENTS" != "" ]; then echo -en " EVENTS=$TEVENTS" >> $FILE ; fi
+fi
+echo -e "$CMDR 2>&1 >> \$LOGFILE \n" >> $FILE
+
+if [ "$ETIME" != "" ]; then
+  echo -e "declare -i NREQ NSUB CSEEDS\n" >> $FILE
+  echo "CSEEDS=0" >> $FILE
+  echo "generate_seeds() {" >> $FILE
+  echo "  if [ \"\$1\" == \"\" ]; then" >> $FILE
+  echo "    SEEDS=\$SEEDS\" \"\$2" >> $FILE
+  echo "    (( ++CSEEDS ))" >> $FILE
+  echo "  else" >> $FILE
+  echo "    for i in \$1; do" >> $FILE
+  echo "      REM=\"\"" >> $FILE
+  echo "      for j in \$1; do " >> $FILE
+  echo "        if [ \"\$j\" != \"\$i\" ]; then REM=\$REM\" \"\$j; fi" >> $FILE
+  echo "      done" >> $FILE
+  echo "      generate_seeds \"\$REM\" \$2\$i" >> $FILE
+  echo "    done" >> $FILE
+  echo "  fi" >> $FILE
+  echo -e "}\n" >> $FILE
+  echo -e "generate_seeds \"1 2 3 4 5 6\"\n" >> $FILE
+  echo "PTIME=\`cat \$LOGFILE | grep \"Event $TEVENTS \" | awk '{ print \$4; }'\`" >> $FILE
+  echo -e "NREQ=\`echo \"scale=0; \$EVENTS/$TEVENTS*\$PTIME/($ETIME*3600)+1\" | bc -q\`" >> $FILE
+  echo -e "EEVENTS=\`echo \"scale=0; \$EVENTS/\$NREQ\" | bc -q\`" >> $FILE
+  echo -e "\necho -e \"generate \$NREQ jobs with \$EEVENTS events each\" >> \$LOGFILE.split\n\nNSUB=0" >> $FILE
+  echo "for I in \$SEEDS; do" >> $FILE
+  echo "  if (( ++NSUB > NREQ )); then exit; fi" >> $FILE
+  echo "  echo -e \"cd \"\$RUNPATH\"\n\n\"\\" >> $FILE
+  echo "\"export PATH=\$BINPATH:\\\$PATH\n\n\"\\" >> $FILE
+  echo "\"$CMDL \"\\" >> $FILE
+  SANALYSIS=`echo $ANALYSIS | sed 's/\///g'`
+  echo -n "\"ANALYSIS_OUTPUT=$SANALYSIS" >> $FILE
+  echo "_\$I/ RANDOM_SEED=\$I EVENTS=\$EEVENTS \"\\" >> $FILE
+  echo "\"$CMDR 2>&1 > job_\$I.log\" > job_\$I" >> $FILE
+  echo "  chmod 777 job_\$I" >> $FILE
+  echo "  qsub $EBOPT job_\$I 2>&1 >> \$LOGFILE.split" >> $FILE
+  echo "done" >> $FILE
+  echo "anasum -pl4 -i\""$SANALYSIS"_*/\" -o"$SANALYSIS"_sum/" > sum_jobs
+  chmod 777 sum_jobs
+  mv sum_jobs $SETUPPATH
+fi
 
 chmod 777 $FILE
 mv $FILE $SETUPPATH
@@ -224,10 +312,26 @@ elif [ "$RUN" = "TRUE" ] ; then
   fi 
 fi
 if ! [ "$SLOGFILE" = "" ] ; then
-  echo "echo -e \"\n===> $SETUPPATH <===\"" >> $SLOGFILE
-  echo "tail -1 $SETUPPATH/$LOGFILE" >> $SLOGFILE
+  if test -f $SLOGFILE; then 
+    cp $SLOGFILE $SLOGFILE~ 
+  else echo >> $SLOGFILE~; fi
+sed "1 i list(){\\
+  echo -e \"===> \`echo \$1 | awk '{ n=split(\$1,a,\"/\"); print a[n]; }'\` <===\"\\
+  if test -d \$1; then\\
+    echo \"master: \`if test -f \$1/\$2; then tail -1 \$1/\$2; else echo \\\\\"not running\\\\\"; fi\`\"\\
+    for I in \$1/job_*.log; do if test -f \$I; then\\
+      echo \"\`echo \$I | awk '{ split(\$1,a,\"job_\"); split(a[2],b,\".log\"); print b[1]; }'\`: \`tail -1 \$I\`\"\\
+    fi; done\\
+  fi\\
+  echo\\
+}\\
+# end list
+/list()/,/end\ list/ d
+$ a \
+list $SETUPPATH $LOGFILE" < $SLOGFILE~ > $SLOGFILE
   chmod 755 $SLOGFILE
 fi
+echo "run: done with job '"$BASENAME"_"$COUNTER"'"
 
 # mode:shell-script
 # sh-indentation:2
