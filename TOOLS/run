@@ -157,8 +157,9 @@ FILE=$BASENAME"_"$COUNTER".sh"
 
 echo "run: creating run path '$SETUPPATH'"
 mkdir $SETUPPATH
-if test -d /$LIBPATH"/Process" ; then 
-  ln -s $LIBPATH"/Process" $SETUPPATH"/Process"
+if ! test -d $LIBPATH ; then 
+  echo "grid_run: library path not found. abort."
+  exit 4
 fi
 cp -u $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
 if [ "$RESULTS" != "" ]; then mkdir $SETUPPATH/$RESULTS; fi
@@ -184,6 +185,7 @@ if [ "$SUBMIT" = "TRUE" ] ; then
   echo "EVENTS=$EVENTS" >> $FILE
   echo "" >> $FILE
   echo "BINPATH=\"$BINPATH\"" >> $FILE
+  echo "LIBPATH=\"$LIBPATH\"" >> $FILE
   echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
@@ -222,6 +224,7 @@ else
   echo "EVENTS=$EVENTS" >> $FILE
   echo "" >> $FILE
   echo "BINPATH=\"$BINPATH\"" >> $FILE
+  echo "LIBPATH=\"$LIBPATH\"" >> $FILE
   echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
@@ -231,7 +234,7 @@ fi
 echo "export PATH=\$BINPATH:\$PATH" >> $FILE
 echo "" >> $FILE
 
-CMDL="Sherpa"; CMDR="";
+CMDL="Sherpa SHERPA_CPP_PATH=\$LIBPATH"; CMDR="";
 if [ "$RESULTS" != "" ]; then CMDL=$CMDL" RESULT_DIRECTORY=$RESULTS"; fi
 if [ "$SOPTIONS" != "" ]; then CMDR=$CMDR" $SOPTIONS"; fi
 if [ "$ETIME" = "" ]; then
