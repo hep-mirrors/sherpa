@@ -725,7 +725,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
     double ycut(m_ycuts[j][k]), mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
     msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<","<<mj<<"] & "
    		   <<ID(k)<<"["<<m_flavs[k]<<","<<mk<<"], qcut = "
-		   <<sqrt(ycut*m_s);
+		   <<sqrt(ycut*m_s)<<"/"<<sqrt(m_gycuts[j][k]*m_s);
     if (m_flavs[k].Strong()) {
       if (m_type>=3) {
 	pt2k=pk.PPerp2();

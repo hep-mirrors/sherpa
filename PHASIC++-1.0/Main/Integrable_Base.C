@@ -780,7 +780,7 @@ void Integrable_Base::SetScaleScheme(const scl::scheme s)
       p_jf->FillCombinations();
     }
     m_ycut=p_jf->Ycut();
-    m_cycut=p_jf->CoreYcut();
+    m_cycut=p_jf->GlobalCoreYcut();
     m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms())*
       rpa.gen.RenormalizationScaleFactor();
     m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms()/p_jf->DeltaR())*
