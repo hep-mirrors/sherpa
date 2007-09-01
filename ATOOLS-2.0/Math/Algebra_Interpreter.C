@@ -256,6 +256,12 @@ DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs)
 DEFINE_UNARY_DOUBLE_FUNCTION(Prefix,"sgn",Sign)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt)
+DEFINE_UNARY_DOUBLE_FUNCTION(Sine,"sin",sin)
+DEFINE_UNARY_DOUBLE_FUNCTION(Cosine,"cos",cos)
+DEFINE_UNARY_DOUBLE_FUNCTION(Tangent,"tan",tan)
+DEFINE_UNARY_DOUBLE_FUNCTION(Arc_Sine,"asin",asin)
+DEFINE_UNARY_DOUBLE_FUNCTION(Arc_Cosine,"acos",acos)
+DEFINE_UNARY_DOUBLE_FUNCTION(Arc_Tangent,"atan",atan)
 
 #ifndef USING__double_only
 DEFINE_FUNCTION(Vec4D_Part,"Part")
@@ -690,6 +696,12 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Prefix());
   AddFunction(new Square());
   AddFunction(new Square_Root());
+  AddFunction(new Sine());
+  AddFunction(new Cosine());
+  AddFunction(new Tangent());
+  AddFunction(new Arc_Sine());
+  AddFunction(new Arc_Cosine());
+  AddFunction(new Arc_Tangent());
   AddFunction(new Minimum());
   AddFunction(new Maximum());
 #ifndef USING__double_only
