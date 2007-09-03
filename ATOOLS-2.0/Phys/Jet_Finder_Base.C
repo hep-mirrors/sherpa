@@ -16,6 +16,18 @@ namespace ATOOLS {
     return ids;
   }
 
+  size_t IDCount(size_t id)
+  {
+    size_t idc(0);
+    for (size_t n(0);id>0;++n) {
+      if (id&(1<<n)) {
+	++idc;
+	id-=1<<n;
+      }
+    }
+    return idc;
+  }
+
   template <typename Type>
   size_t ID(const std::vector<Type> &ids)
   {

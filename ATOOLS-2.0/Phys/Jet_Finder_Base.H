@@ -7,6 +7,8 @@ namespace ATOOLS {
   
   std::vector<int> ID(size_t id);
 
+  size_t IDCount(size_t id);
+
   template <typename Type>
   size_t ID(const std::vector<Type> &ids);
 
