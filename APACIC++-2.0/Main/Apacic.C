@@ -77,8 +77,7 @@ Apacic::~Apacic()
   delete p_jetveto;
 }
 
-int Apacic::PerformShowers(const int &jetveto,const int &losejv,
-			   const double &x1,const double &x2) 
+int Apacic::PerformShowers(const double &x1,const double &x2) 
 {
   PROFILE_HERE;
   if (!m_showers) return 1;
@@ -100,7 +99,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     }
     if (m_isron) {
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
-      if (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)==0) {
+      if (p_inishower->PerformShower(p_initrees,p_fintree)==0) {
 	if (m_fsron) p_fintree->ClearStore();
 	p_initrees[0]->ClearStore();
 	p_initrees[1]->ClearStore();
@@ -109,7 +108,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       }
     }
     if (m_fsron) {
-      if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
+      if (p_finshower->PerformShower(p_fintree)==0) {
 	if (m_isron) {
 	  p_initrees[0]->ClearStore();
 	  p_initrees[1]->ClearStore();

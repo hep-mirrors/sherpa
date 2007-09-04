@@ -27,7 +27,6 @@ namespace APACIC {
 
     double m_t0, m_sprime, m_pt2_1, m_pt2_2, m_th_1, m_th_2;
     int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_tree1;
-    bool   m_jetveto;
 
     ATOOLS::Vec4D    m_lab;
     ATOOLS::Poincare m_cmsrot, m_labboost;
@@ -66,8 +65,7 @@ namespace APACIC {
     // member functions
     int  DoKinematics();
 
-    int  PerformShower(Tree **const initrees,Tree *const fintree,
-		       const int jetvetoflag);
+    int  PerformShower(Tree **const initrees,Tree *const fintree);
 
     void ExtractPartons(Knot *const kn,const int &beam,
 			ATOOLS::Blob *const jet,ATOOLS::Blob_List *const bl,

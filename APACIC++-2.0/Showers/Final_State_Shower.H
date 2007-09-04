@@ -36,8 +36,7 @@ namespace APACIC {
     void InitTwojetTree(Tree *tree,double scale);
     int  EvolveJet(Tree *tree,Knot *mo,int first=0);
     int  FillBranch(Tree *tree,Knot *mo,int first);
-    int  FillISBranch(Initial_State_Shower *const ini,
-		      Tree *tree,Knot *mo,const bool jetveto,
+    int  FillISBranch(Initial_State_Shower *const ini,Tree *tree,Knot *mo,
 		      const double &sprime,const double &z,Knot *partner);
 
     void InitDaughters(Tree *tree,Knot *mo,
@@ -63,9 +62,9 @@ namespace APACIC {
     ~Final_State_Shower();
 
     // member functions
-    int PerformShower(Tree *tree, int jetvetoflag);
-    int TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
-			      Knot *const mo,const bool jetveto,
+    int PerformShower(Tree *tree);
+    int TimelikeFromSpacelike(Initial_State_Shower *const ini,
+			      Tree *const tree,Knot *const mo,
 			      const double &sprime,const double &z,
 			      Knot *partner);
 

@@ -57,13 +57,13 @@ Shower_Handler::~Shower_Handler()
 }
 
 
-int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2);
+int Shower_Handler::PerformShowers(double _x1,double _x2) {
+  if (p_apacic) return p_apacic->PerformShowers(_x1,_x2);
   return 0;
 }
 
 int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.);
+  if (p_apacic) return p_apacic->PerformShowers(1.,1.);
   return 0;
 }
 

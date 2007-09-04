@@ -373,8 +373,9 @@ void Combine_Table_Base::SetLegScales
   // must therefore check for order qed as well
   if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
   else if (leg.NQCD()>0) {
-    double sti(dabs(pi.Abs2())), stj(dabs(pj.Abs2()));
-    leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),pt2ij+Max(sti,stj)));
+    if (!leg.Point()->fl.Strong()) leg.SetKT2QCD((pi+pj).Abs2());
+    else if (!legi.Point()->fl.Strong()) leg.SetKT2QCD(pt2ij+dabs(pi.Abs2()));
+    else if (!legj.Point()->fl.Strong()) leg.SetKT2QCD(pt2ij+dabs(pj.Abs2()));
   }
   if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
   else if (leg.NQED()>0) {

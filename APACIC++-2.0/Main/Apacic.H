@@ -42,8 +42,7 @@ namespace APACIC {
     ~Apacic(); 
 
     // member functions
-    int  PerformShowers(const int &jv=0,const int &ljv=0,
-			const double &x1=1.0,const double &x2=1.0);
+    int  PerformShowers(const double &x1=1.0,const double &x2=1.0);
     bool ExtractPartons(const bool ini,const bool fin,
 			ATOOLS::Blob_List *const blist,
 			ATOOLS::Particle_List *const plist=NULL);

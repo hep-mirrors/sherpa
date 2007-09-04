@@ -15,6 +15,7 @@ using namespace AMEGIC;
 using namespace APACIC;
 using namespace ATOOLS;
 using namespace MODEL;
+using namespace PHASIC;
 
 #define CA 3.0
 #define TR 0.5
@@ -263,7 +264,7 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   m_q2_isjet=m_ycut*sqr(rpa.gen.Ecms());
   m_q2_fsjet=m_q2_isjet/sqr(p_ajf->DeltaR());
   m_q2_iss=m_q2_fss=std::numeric_limits<double>::max();
-  m_q2_hard=m_jv_pt2=std::numeric_limits<double>::max();
+  m_jv_pt2=std::numeric_limits<double>::max();
   m_q2_f[1]=m_q2_f[0]=proc->Scale(PHASIC::stp::fac);
   return 1;
 }
@@ -411,6 +412,68 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
   }
 }
 
+void Cluster_Partons_Base::SetPSScales()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Indent();
+  double lastq[4];
+  int wminqcd(-1), wminqed(-1);
+  double kt2minqcd(std::numeric_limits<double>::max()), kt2minqed(kt2minqcd);
+  for (int i(0);i<p_ct->NAmplitudes();++i) {
+    for (int j(0);j<2;++j) {
+      double kt2qcd(p_ct->GetHardLegs()[i][j].KT2QCD());
+      double kt2qed(p_ct->GetHardLegs()[i][j].KT2QED());
+      if (kt2qcd<kt2minqcd || 
+	  (IsEqual(kt2qcd,kt2minqcd) && kt2qed<kt2minqed)) {
+	wminqcd=i;
+	kt2minqcd=kt2qcd;
+      }
+      if (kt2qed<kt2minqed || 
+	  (IsEqual(kt2qed,kt2minqed) && kt2qcd<kt2minqcd)) {
+	wminqed=i;
+	kt2minqed=kt2qed;
+      }
+    }
+  }
+  msg_Debugging()<<"QCD: wmin_qcd = "<<wminqcd<<", ktmin_qcd = "
+		 <<sqrt(kt2minqcd)<<", wmin_qed = "<<wminqed
+		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
+  if (wminqcd>=0) {
+    // check for scale definition from Single_XS
+    double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
+		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
+    if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
+    if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
+    // set possibly separate scales for the two vertices
+    for (short unsigned int i(0);i<4;++i) {
+      double rs(mu2r[i/2]!=0.0?mu2r[i/2]:p_ct->GetHardLegs()[wminqcd]
+		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
+      if (rs==std::numeric_limits<double>::max())
+	rs=p_ct->GetHardLegs()[wminqcd]
+	  [p_ct->GetHardInfo()[wminqcd][i]].KT2QED();
+      lastq[i]=sqrt(rs);
+    }
+    if (m_q2_fss==std::numeric_limits<double>::max()) {
+      m_q2_iss=lastq[0]*lastq[1];
+      m_q2_fss=lastq[2]*lastq[3];
+    }
+  }
+  else if (wminqed>=0) {
+    for (short unsigned int i(0);i<4;++i) 
+      lastq[i]=sqrt(p_ct->GetHardLegs()[wminqed]
+		    [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
+    if (m_q2_fss==std::numeric_limits<double>::max()) {
+      m_q2_iss=lastq[0]*lastq[1];
+      m_q2_fss=lastq[2]*lastq[3];
+    }
+  }
+  else {
+    THROW(fatal_error,"No scale in hard process");
+  }
+  msg_Debugging()<<"hard scales = {"<<lastq[0]<<","<<lastq[1]
+		 <<","<<lastq[2]<<","<<lastq[3]<<"}\n}\n";
+}
+
 int Cluster_Partons_Base::SetDecayColours(Vec4D * p, Flavour * fl,int col1,int col2)
 {
   int ncol   = 0;
@@ -527,21 +590,18 @@ int Cluster_Partons_Base::Set4Colours(const int nquark,const int ngluon,Vec4D * 
     else m_colors[0][1]=m_colors[1][0]=500;
     if (!fl[2].IsAnti()) m_colors[2][0]=m_colors[3][1]=501;
     else m_colors[2][1]=m_colors[3][0]=501;
-    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]+p[1]).Abs2());
     break;
   case 2:
     if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[2][0]=500;
     else m_colors[0][1]=m_colors[2][1]=500;
     if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[3][0]=501;
     else m_colors[1][1]=m_colors[3][1]=501;
-    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]-p[2]).Abs2());
     break;
   case 3:
     if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[3][0]=500;
     else m_colors[0][1]=m_colors[3][1]=500;
     if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[2][0]=501;
     else m_colors[1][1]=m_colors[2][1]=501;
-    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]-p[3]).Abs2());
     break;
   }
   return true;
@@ -568,20 +628,6 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
     }
     connected[j++]=i;
   }    
-  if (connected[0]<2 ^ connected[1]<2) {
-    // t/u channel.
-    m_q2_hard = m_q2_fss = m_q2_iss = 
-      dabs((p[connected[0]]-p[connected[1]]).Abs2());
-    msg_Debugging()<<"found t/u channel: hard = fss = iss = "
-		   <<sqrt(m_q2_fss)<<"\n";
-  }
-  else {
-    // s channel.
-    m_q2_hard = m_q2_fss = m_q2_iss = 
-      dabs((p[connected[0]]+p[connected[1]]).Abs2());
-    msg_Debugging()<<"found s channel: hard = fss = iss = "
-		   <<sqrt(m_q2_fss)<<"\n";
-  }
   return 0;
 }
 
@@ -619,36 +665,6 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	m_colors[i][0+int(fl[i].IsAnti())] = 500+j;
 	j++;
       }
-    }
-    if (singlet<2) {
-      /*
-	0-------=====2
-	       |
-	       |  t
-	       |
-        1      +-----3
-
-        shower scale is s/t
-      */
-      m_q2_fss = (p[0]+p[1]).Abs2();
-      m_q2_iss = dabs((p[0]-p[2]).Abs2());
-      msg_Debugging()<<"cp: s/t-channel, fss "<<m_q2_fss
-		     <<", iss "<<m_q2_iss<<"\n";
-    }
-    else {
-      /*
-	0=====-------2
-	      |
-	      |  t
-	      |
-	1-----+      3
-
-        shower scale is t/s
-      */
-      m_q2_fss = dabs((p[0]-p[2]).Abs2());
-      m_q2_iss = (p[0]+p[1]).Abs2();
-      msg_Debugging()<<"cp: t/s-channel, fss "<<m_q2_fss
-		     <<", iss "<<m_q2_iss<<"\n";
     }
     bool tmode = (connected[0]<2 ^ connected[1]<2);
     for (int i=0;i<4;i++) {

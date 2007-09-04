@@ -50,7 +50,7 @@ Final_State_Shower::~Final_State_Shower()
   delete p_kin;
 }
 
-int Final_State_Shower::PerformShower(Tree *tree,int jetveto) 
+int Final_State_Shower::PerformShower(Tree *tree) 
 {
   PROFILE_HERE;
 #ifdef USING__Veto_Info
@@ -61,13 +61,11 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
   tree->GetRoot()->Store();
   if (InitializeJets(tree,tree->GetRoot())) {
     if (p_kin->DoKinematics(tree->GetRoot())) return 1;
-    msg_Error()<<METHOD<<"("<<jetveto<<"): "
-	       <<"Kinematics failed."<<std::endl;
+    msg_Error()<<METHOD<<"(): Kinematics failed."<<std::endl;
     return 0;
   }
   else {
-    msg_Error()<<METHOD<<"("<<jetveto<<"): "
-	       <<"Shower evolution failed."<<std::endl;
+    msg_Error()<<METHOD<<"(): Shower evolution failed."<<std::endl;
     return 0;
   }
   return 0;
@@ -129,8 +127,7 @@ bool Final_State_Shower::BoostBackDecays(Knot *const mo)
 }
 
 int Final_State_Shower::
-FillISBranch(Initial_State_Shower *const ini,
-	     Tree *tree,Knot *mo,const bool jetveto,
+FillISBranch(Initial_State_Shower *const ini,Tree *tree,Knot *mo,
 	     const double &sprime,const double &z,Knot *partner)
 {
 #ifdef USING__Veto_Info
@@ -174,7 +171,7 @@ FillISBranch(Initial_State_Shower *const ini,
       } 
       if (!ini->DoKinematics()) continue;
       mo->Store();
-      int stat(jetveto?p_jv->TestISKinematics(mo->prev,partner):1);
+      int stat(p_jv->TestISKinematics(mo->prev,partner));
       if (stat!=1) continue;
       switch (p_sud->OrderingScheme()) {
       case 1: {
@@ -210,19 +207,19 @@ FillISBranch(Initial_State_Shower *const ini,
   msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
   int stat(ini->DoKinematics());
   if (stat!=1) return stat;
-  stat=jetveto?p_jv->TestISKinematics(mo->prev,partner):1;
+  stat=p_jv->TestISKinematics(mo->prev,partner);
   if (stat!=1) return stat;
   msg_Debugging()<<"}\n";
   return 1;
 }
 
 int Final_State_Shower::
-TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
-		      Knot *const mo,const bool jetveto,
+TimelikeFromSpacelike(Initial_State_Shower *const ini,
+		      Tree *const tree,Knot *const mo,
 		      const double &sprime,const double &z,Knot *partner)
 {
   msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
-		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
+		 <<sprime<<","<<z<<"): {\n";
   msg_Indent();
 #ifdef USING__Veto_Info
   p_sud->SetMode(1);
@@ -231,7 +228,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   mo->smaxpt2=mo->maxpt2=1.0e10;
   if (mo->part->Info()!='H' || mo->left==NULL || mo->right==NULL) {
     while (true) {
-      int stat(FillISBranch(ini,tree,mo,jetveto,sprime,z,partner));
+      int stat(FillISBranch(ini,tree,mo,sprime,z,partner));
       if (stat!=1) return stat;
       stat=EvolveJet(tree,mo,-1);
       msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
@@ -271,7 +268,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       msg_Debugging()<<"intermediate shower knot "<<mo->kn_no<<"\n";
       while (true) {
 	int stat(1);
-	if ((stat=FillISBranch(ini,tree,mo,jetveto,sprime,z,partner))==-1)
+	if ((stat=FillISBranch(ini,tree,mo,sprime,z,partner))==-1)
 	  return stat;
 	msg_Debugging()<<"fillisbranch returned "<<stat<<"\n";
 	if (stat==0) {
@@ -1200,7 +1197,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
     
     tree->Reset();
     InitTwojetTree(tree,E2);
-    if (!PerformShower(tree,0)) return 0; 
+    if (!PerformShower(tree)) return 0; 
     if (msg_LevelIsTracking()) OutputTree(tree);
   }
 

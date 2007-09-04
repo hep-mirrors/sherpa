@@ -73,13 +73,12 @@ Initial_State_Shower::~Initial_State_Shower()
   delete [] p_suds;
 }
 
-int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
-					const int jetvetoflag) 
+int Initial_State_Shower::PerformShower
+(Tree **const trees,Tree *const fintree) 
 {
   PROFILE_HERE;
   p_fstree=fintree;
   p_istrees=trees;
-  m_jetveto=jetvetoflag>0;
 #ifdef USING__Veto_Info
   p_suds[0]->ClearVetos();
   p_suds[1]->ClearVetos();
@@ -250,8 +249,8 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
       p_k1=k1;
       p_k2=k2;
       m_tree1=tree1;
-      switch (p_fin->TimelikeFromSpacelike(this,trees[tree1],k4,
-					   m_jetveto,s12,k1->z,k2)) {
+      switch (p_fin->TimelikeFromSpacelike
+	      (this,trees[tree1],k4,s12,k1->z,k2)) {
       case -1:
 	return -1;
       case 0: 
@@ -803,7 +802,7 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
 
     for (int i=0;i<2;i++) trees[i]->Reset();
     InitTwoTrees(trees,E2);
-    if (!PerformShower(trees,NULL,0)) return 0;
+    if (!PerformShower(trees,NULL)) return 0;
   }
   msg_Events()<<"Initial_State_Shower::TestShower : "
 	      <<"Terminated loops over events successfully."<<std::endl;

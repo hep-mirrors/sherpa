@@ -45,11 +45,12 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
     int force(0);
     if (!read.ReadFromFile(force,"CKKW_ENFORCED_MODE")) force=0;
     else msg_Info()<<METHOD<<"(): CKKW enforced mode "<<force<<".\n";
-    if (!force)
+    if (!force) {
       rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
+      p_mehandler->SetUseSudakovWeight(0);
+    }
   }
-  m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
-  p_filler->SetCKKWOn(m_ckkwon);
+  p_filler->SetCKKWOn(p_mehandler->UseSudakovWeight());
 }  
 
 Amegic_Apacic_Interface::~Amegic_Apacic_Interface() 
@@ -137,7 +138,8 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     Blob_Data_Base * message = (*blob)["ME_Weight"];
     if (message) meweight = message->Get<double>();
     else msg_Error()<<METHOD<<"(..): Missing weight information."<<std::endl;
-    if (m_ckkwon) p_cluster->CalculateWeight(meweight);
+    if (p_mehandler->UseSudakovWeight()) p_cluster->CalculateWeight(meweight);
+    else p_cluster->SetPSScales();
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
 	      (p_cluster->OrderStrong()));
@@ -146,7 +148,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 	      (p_cluster->OrderEWeak()));
     p_blob_psme_FS->AddData
       ("Core_Process",new ATOOLS::Blob_Data<XS_Base*>(p_xs));
-    m_weight = m_ckkwon?p_cluster->Weight():1.0;
+    m_weight = p_mehandler->UseSudakovWeight()?p_cluster->Weight():1.0;
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
@@ -164,7 +166,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
       return Return_Value::New_Event;
     }
     else {
-      if (!(p_mehandler->UseSudakovWeight())) m_weight=1.;
+      if (!p_mehandler->UseSudakovWeight()) m_weight=1.;
       else {
 	// update me weight
 	Blob_Data_Base * message = (*blob)["ME_Weight"];
@@ -235,34 +237,24 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 
 int Amegic_Apacic_Interface::PerformShowers()
 {
-  int jetveto(0), losejv(m_ckkwon);
-  if (p_mehandler->UseSudakovWeight()) {
-    double scale(p_mehandler->FactorisationScale());
-    double qmin2i,qmin2f,q2lji,q2ljf; 
+  double scale(p_mehandler->FactorisationScale());
+  double qmin2i(1.0e10), qmin2f(1.0e10), q2lji(0.0), q2ljf(0.0); 
+  if (p_mehandler->UseSudakovWeight())
     p_cluster->JetvetoPt2(qmin2i,qmin2f,q2lji,q2ljf);
-    if (p_shower->GetIniTrees()!=NULL) {
-      Knot *irt1(p_shower->GetIniTrees()[0]->GetRoot());
-      Knot *irt2(p_shower->GetIniTrees()[1]->GetRoot());
-      irt1->qjv=irt2->qjv=sqrt(qmin2i);
-      irt1->qljv=irt2->qljv=sqrt(q2lji);
-      irt1->maxjets=irt2->maxjets=p_mehandler->MaxQCDJets();
-    }
-    Knot *frt(p_shower->GetFinTree()->GetRoot());
-    frt->qjv=sqrt(qmin2f);
-    frt->qljv=sqrt(q2ljf);
-    frt->maxjets=p_mehandler->MaxQCDJets();
-    p_shower->SetFactorisationScale(scale);
-    jetveto=1;
-    if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) jetveto = 0;
-    size_t qcdjets(0);
-    Process_Base *proc((Process_Base*)p_mehandler->GetAmegic()->GetProcess());
-    for (size_t i(0);i<proc->NOut();++i)
-      if (proc->Flavours()[proc->NIn()+i].Strong()) ++qcdjets;
-    if (p_mehandler->MinQCDJets()==qcdjets) losejv=0;
+  if (p_shower->GetIniTrees()!=NULL) {
+    Knot *irt1(p_shower->GetIniTrees()[0]->GetRoot());
+    Knot *irt2(p_shower->GetIniTrees()[1]->GetRoot());
+    irt1->qjv=irt2->qjv=sqrt(qmin2i);
+    irt1->qljv=irt2->qljv=sqrt(q2lji);
+    irt1->maxjets=irt2->maxjets=p_mehandler->MaxQCDJets();
   }
+  Knot *frt(p_shower->GetFinTree()->GetRoot());
+  frt->qjv=sqrt(qmin2f);
+  frt->qljv=sqrt(q2ljf);
+  frt->maxjets=p_mehandler->MaxQCDJets();
+  p_shower->SetFactorisationScale(scale);
   m_lastshowerveto = 
-    p_shower->PerformShowers(jetveto,losejv,
-			     p_mehandler->GetISR_Handler()->X1(),
+    p_shower->PerformShowers(p_mehandler->GetISR_Handler()->X1(),
 			     p_mehandler->GetISR_Handler()->X2());
   return m_lastshowerveto;
 }
