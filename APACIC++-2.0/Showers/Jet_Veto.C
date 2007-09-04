@@ -328,7 +328,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		     <<sqrt(jpt2[1])<<","<<sqrt(jpt2[2])<<"} -> "
 		     <<jets<<"("<<(f[0]+f[1]+f[2])<<") jets of type "
 		     <<(knot->cms!=Vec4D()?1:type)<<"\n";
-      if (jv && jets>f[0]+f[1]+f[2]-1) {
+      if (jv && jets>Max(f[0]+f[1]+f[2]-1,0)) {
 	msg_Debugging()<<"  jet veto\n";
 	return 0;
       }
