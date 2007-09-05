@@ -169,6 +169,7 @@ if [ "$RESULTS" != "" ]; then mkdir $SETUPPATH/$RESULTS; fi
 echo "grid_run: writing run script '$FILE'"
 echo -e "#!/bin/bash\n" > $FILE
 echo -e "source $ENVFILE\n" >> $FILE
+echo -e "ulimit -c0 -f1048576\n" >> $FILE
 echo "BINPATH=\"$BINPATH\"" >> $FILE
 echo "LIBPATH=\"$LIBPATH\"" >> $FILE
 echo -e "RUNPATH=\"$SETUPPATH\"\n" >> $FILE
@@ -280,18 +281,29 @@ if ! [ "$SLOGFILE" = "" ] ; then
   if test -f $SLOGFILE; then 
     cp $SLOGFILE $SLOGFILE~ 
   else echo >> $SLOGFILE~; fi
-sed "1 i list(){\\
+sed "1 i print(){\\
+  if test -f \$1; then\\
+    if tail -1 \$1 | grep -q -etotal -eUser; then\\
+      tail -2 \$1 | awk '{ print \$0; exit; }';\\
+      else tail -1 \$1;\\
+    fi;\\
+  else echo \\\\\"not running\\\\\";\\
+  fi\\
+}\\
+list(){\\
   echo -e \"===> \`echo \$1 | awk '{ n=split(\$1,a,\"/\"); print a[n]; }'\` <===\"\\
   if test -d \$1; then\\
-    echo \"master: \`if test -f \$1/\$2; then tail -1 \$1/\$2; else echo \\\\\"not running\\\\\"; fi\`\"\\
+    echo \"master: \`print \$1/\$2\`\"\\
     for I in \$1/job_*.log; do if test -f \$I; then\\
-      echo \"\`echo \$I | awk '{ split(\$1,a,\"job_\"); split(a[2],b,\".log\"); print b[1]; }'\`: \`tail -1 \$I\`\"\\
+      echo \"\`echo \$I | awk '{\\
+        split(\$1,a,\"job_\"); split(a[2],b,\".log\");\\
+        print b[1]; }'\`: \`print \$I\`\"\\
     fi; done\\
   fi\\
   echo\\
 }\\
 # end list
-/list()/,/end\ list/ d
+/print()/,/end\ list/ d
 $ a \
 list $SETUPPATH $LOGFILE" < $SLOGFILE~ > $SLOGFILE
   chmod 755 $SLOGFILE

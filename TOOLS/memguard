@@ -37,22 +37,13 @@ do
 done
 
 CNT=0
-FCOMMAND=$1
+COMMAND=""
 for I in $*; do
-  if (( ++CNT > 1 )); then
-    FCOMMAND=$FCOMMAND" "$I
+  if (( ++CNT > 0 )); then
+    COMMAND=$COMMAND"`echo $I | awk '{ 
+      if (match($0,\"-\")!=1) printf \" \"$0; }'`"
   fi
 done
-COMMAND=`echo $FCOMMAND | awk 'BEGIN{ s=0; }{ 
-  for (i=1;i<=NF;++i) {
-    match($i,"-"); 
-    if (RSTART==0) s=1;
-    if (s>0) {
-      printf $i;
-      if (i<NF) printf " "; 
-    }
-  }
-}'`
 if [ "$COMMAND" = "" ]; then
   echo "memguard: empty command. stop."
   exit 1
@@ -64,7 +55,8 @@ if ! test -f /proc/meminfo; then
   exit 1
 fi
 HARDLIMIT=`cat /proc/meminfo | grep MemFree | awk '{ printf $2; }'`
-echo $HARDLIMIT" kB free"
+SYSLIMIT=`cat /proc/meminfo | grep MemTotal | awk '{ printf $2; }'`
+echo $HARDLIMIT" kB free ( "$SYSLIMIT" kB total )"
 
 SOFTLIMIT=HARDLIMIT
 if [ "$RELATIVE" = "TRUE" ]; then
@@ -74,8 +66,15 @@ else
   LIMIT=`echo "scale=3; $SOFTLIMIT/$HARDLIMIT" | bc -q`
 fi
 if [ "`echo \"scale=6; $SOFTLIMIT>$HARDLIMIT\" | bc -q`" = "1" ]; then
-  echo "memguard: error: $LIMIT > 100%. stop."
-  exit 1
+  if [ "`echo \"scale=6; $SOFTLIMIT>$SYSLIMIT\" | bc -q`" = "1" ]; then
+    echo "memguard: error: $SOFTLIMIT kB exceed total memory. stop."
+    exit 1
+  fi
+  read -t 60 -p "memguard: warning: $SOFTLIMIT kB exceed \
+free memory. continue (y/n) ? " CONT
+  if [ "$CONT" != "y" ]; then 
+    exit
+  fi
 fi
 
 PRINTV=`echo "scale=2; $LIMIT*100" | bc -q`
@@ -103,7 +102,8 @@ echo "memguard: process started as pid $PROC"
     fi
     CTIME=`echo | awk '{ print systime(); }'`
     if (( CTIME >= LTIME+OUTPUT )); then
-      echo "memguard: process $PROC consumes $CMEM kB, limit is $SOFTLIMIT kB"
+      echo "memguard: process $PROC runs `ps ho \"%x\" $PROC` hrs, \
+consumes $CMEM kB, limit is $SOFTLIMIT kB"
       LTIME=CTIME
     fi
     sleep $INTERVAL
