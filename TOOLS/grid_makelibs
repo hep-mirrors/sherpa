@@ -68,7 +68,7 @@ for J in $DIRS ; do
   autoconf
   ./configure
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
-  for I in P?_*; do
+  for I in P?_* fsrchannels*; do
     if echo $I | awk '{ if (match($0,"\\.")>0) exit(1); }'; then
       SFL=$I".sh"
       echo -e "#!/bin/bash\n" > $SFL
