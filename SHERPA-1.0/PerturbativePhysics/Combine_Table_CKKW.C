@@ -80,16 +80,21 @@ void Combine_Table_CKKW::FillTable(Leg **legs,const int nlegs,const int nampl)
 CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
 {
   if (cit->first.m_flav.Kfcode()==kf::none) {
-    cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
-    cit->second.m_pt2ij = p_jf->MTij2
+    cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
+    cit->second.m_pt2ij=p_jf->MTij2
       (p_moms[cit->first.m_i],p_moms[cit->first.m_j],
        p_legs[0][cit->first.m_i].Flav().Mass(),
        p_legs[0][cit->first.m_j].Flav().Mass());
     if (cit->first.m_i>1 && cit->first.m_j>1) 
       cit->second.m_pt2ij*=sqr(rpa.gen.DeltaR());
-//     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
-//     	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
-//     	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
+    msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
+		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
+		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()
+		   <<"]): "<<p_moms[cit->first.m_i]<<"{"
+		   <<sqrt(dabs(p_moms[cit->first.m_i].Abs2()))
+		   <<"} & "<<p_moms[cit->first.m_j]<<"{"
+		   <<sqrt(dabs(p_moms[cit->first.m_j].Abs2()))<<"} -> "
+		   <<sqrt(cit->second.m_pt2ij)<<std::endl;
     return cit;
   }
   else {
@@ -197,8 +202,11 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	qcd_winner=cit;
 	kt2qcd=pt2ij;
       }
-      if ((p_legs[0][cit->first.m_i].Flav().Strong()||
- 	   p_legs[0][cit->first.m_j].Flav().Strong()) && pt2ij<kt2nqcd) {
+      if (pt2ij<kt2nqcd &&
+	  ((p_legs[0][cit->first.m_i].Flav().Strong() &&
+	    cit->first.m_i>1)||
+ 	   (p_legs[0][cit->first.m_j].Flav().Strong() &&
+	    cit->first.m_j>1))) {
  	nqcd_winner=cit;
  	kt2nqcd=pt2ij;
       }

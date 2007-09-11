@@ -378,18 +378,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       }
     }
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      if (p_ct->GetHardInfo()[wminqcd][1]==0) {
-	m_q2_iss=m_q2_fss=(p_ct->Momentum(0)+p_ct->Momentum(1)).Abs2();
-	msg_Debugging()<<"winner is s-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
-      else if (p_ct->GetHardInfo()[wminqcd][2]==0) {
-	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)+p_ct->Momentum(2)).Abs2());
-	msg_Debugging()<<"winner is t-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
-      else if (p_ct->GetHardInfo()[wminqcd][3]==0) {
-	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)-p_ct->Momentum(3)).Abs2());
-	msg_Debugging()<<"winner is u-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
+      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }
   else if (wminqed>=0) {
@@ -397,18 +387,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       m_last_q[i]=sqrt(p_ct->GetHardLegs()[wminqed]
  		       [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      if (p_ct->GetHardInfo()[wminqed][1]==0) {
-	m_q2_iss=m_q2_fss=(p_ct->Momentum(0)+p_ct->Momentum(1)).Abs2();
-	msg_Debugging()<<"winner is s-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
-      else if (p_ct->GetHardInfo()[wminqed][2]==0) {
-	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)+p_ct->Momentum(2)).Abs2());
-	msg_Debugging()<<"winner is t-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
-      else if (p_ct->GetHardInfo()[wminqed][3]==0) {
-	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)-p_ct->Momentum(3)).Abs2());
-	msg_Debugging()<<"winner is u-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
-      }
+      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }
   else {

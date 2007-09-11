@@ -22,7 +22,7 @@ using namespace ATOOLS;
   --------------------------------------------------------------------- */
 
 Jet_Finder::Jet_Finder(const double _ycut,const int _type) : 
-  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_mass_scheme(3), 
+  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_mass_scheme(1), 
   m_value(0.), p_frame(NULL)
 {
   m_name       = std::string("Jetfinder");
@@ -43,7 +43,7 @@ Jet_Finder::Jet_Finder(const double _ycut,const int _type) :
 
 
 Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,const double _ycut,const int _type) : 
-  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_mass_scheme(3), 
+  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_mass_scheme(1), 
   m_value(0.), p_frame(NULL)
 {
   m_name = std::string("Jetfinder");
@@ -698,15 +698,16 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 //     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
 // 		   <<ID(k)<<"["<<m_flavs[k]<<"], core = "
 // 		   <<(cl==m_nin+m_nout)<<"\n";
-    double mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
+    double add(0.0);
     if (m_flavs[k].Strong()) {
       if (m_type>=3 && cl==m_nin+m_nout) {
 	pt2k=pk.PPerp2();
-	if (m_mass_scheme==1) pt2k+=dabs(pk.Abs2());
-	else if (m_mass_scheme==3) pt2k+=dabs(pk.Abs2()-mk*mk);
+	if (m_mass_scheme==1) add+=dabs(pk.Abs2());
+	else if (m_mass_scheme==3) 
+	  add+=dabs(pk.Abs2()-sqr(m_flavs[k].Mass()));
 	if (j<3) {
-	  if (pt2k<ymin*m_s) {
-	    ymin=pt2k/m_s;
+	  if (add+pt2k<ymin*m_s) {
+	    ymin=(add+pt2k)/m_s;
 	    j1=j;
 	    k1=k;
 	  } 
@@ -714,12 +715,13 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	else {
 	  if (m_flavs[j].Strong()) {
 	    pt2j=pj.PPerp2();
-	    if (m_mass_scheme==1) pt2j+=dabs(pj.Abs2());
-	    else if (m_mass_scheme==3) pt2j+=dabs(pj.Abs2()-mj*mj);
+	    if (m_mass_scheme==1) add+=dabs(pj.Abs2());
+	    else if (m_mass_scheme==3) 
+	      add+=dabs(pj.Abs2()-sqr(m_flavs[j].Mass()));
 	    pt2jk=2.*Min(pt2j,pt2k)*
 	      (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk))/sqr(m_delta_r);
-	    if (pt2jk<ymin*m_s) {
-	      ymin=pt2jk/m_s;
+	    if (add+pt2jk<ymin*m_s) {
+	      ymin=(add+pt2jk)/m_s;
 	      j1=j;
 	      k1=k;
 	    }
@@ -740,8 +742,8 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	}
 	if (m_flavs[j].Strong()) {
 	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
-	  if (pt2jk<ymin*m_sprime) {
-	    ymin=pt2jk/m_sprime;
+	  if (add+pt2jk<ymin*m_sprime) {
+	    ymin=(add+pt2jk)/m_sprime;
 	    j1=j;
 	    k1=k;
 	  }
@@ -763,22 +765,18 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
   double mt12_2(0.);
   //check for DIS situation
   if (m_type>=2) {
-    double pt1_2(p1.PPerp2()), mt1_2(pt1_2);
-    double pt2_2(p2.PPerp2()), mt2_2(pt2_2);
-    if (m_mass_scheme==1) { 
-      mt1_2+=dabs(p1.Abs2());
-      mt2_2+=dabs(p2.Abs2());
-    }
-    else if (m_mass_scheme==3) { 
-      mt1_2+=dabs(p1.Abs2()-m1*m1);
-      mt2_2+=dabs(p2.Abs2()-m2*m2);
-    }
-    if (IsZero(pt1_2) && IsZero(pt2_2)) return Max((p1+p2).Abs2(),Max(mt1_2,mt2_2));
-    if (IsZero(pt1_2/(pt1_2+pt2_2)) || IsZero(pt2_2/(pt1_2+pt2_2))) return mt1_2+mt2_2;
+    double pt1_2(p1.PPerp2()), pt2_2(p2.PPerp2()), add(0.0);
+    if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
+    else if (m_mass_scheme==3)
+      add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
+    if (IsZero(pt1_2) && IsZero(pt2_2)) return Max((p1+p2).Abs2(),add);
+    if (IsZero(pt1_2/(pt1_2+pt2_2)) || 
+	IsZero(pt2_2/(pt1_2+pt2_2))) return add+pt1_2+pt2_2;
     else {
-      if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2))/sqr(m_delta_r);
-                else mt12_2 = 2.*Min(mt1_2,mt2_2) * 
-		       (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2))/sqr(m_delta_r);
+      if (m_type==2) mt12_2 = add+2.*Min(pt1_2,pt2_2)*
+	(1.-DCos12(p1,p2))/sqr(m_delta_r);
+      else mt12_2 = add+2.*Min(pt1_2,pt2_2)* 
+	(Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))/sqr(m_delta_r);
     }
   }
   else mt12_2               = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
