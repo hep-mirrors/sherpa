@@ -74,6 +74,9 @@ namespace APACIC {
     double LightConeZ(const double &z,const double &E2,
 		      const double &ta,const double &tb,
 		      const double &tc) const;
+    double EnergyZ(const double &zlc,const double &E2,
+		   const double &ta,const double &tb,
+		   const double &tc) const;
 
     // inline functions
     inline void SetZScheme(const int &scheme) { m_zscheme=scheme; }

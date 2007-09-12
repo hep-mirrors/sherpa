@@ -549,6 +549,16 @@ double Timelike_Kinematics::LightConeZ(const double &z,const double &E2,
   return zlc;
 }
 
+double Timelike_Kinematics::EnergyZ(const double &zlc,const double &E2,
+				    const double &ta,
+				    const double &tb,const double &tc) const
+{
+  // energy fraction of first daughter
+  double pph(1.0+sqrt(1.0-ta/E2));
+  double z(((ta+tb-tc)-zlc*(ta-pph*pph*E2))/(2.0*E2*pph));
+  return z;
+}
+
 bool Timelike_Kinematics::
 ArrangeColourPartners(Particle *const aup,Knot *const d1,Knot *const d2) const
 {
