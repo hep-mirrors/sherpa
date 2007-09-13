@@ -444,7 +444,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 		   <<d->part->Flav()<<", t="<<d->t<<", stats "
 		   <<d1->stat<<" "<<d2->stat<<std::endl;
     ResetDaughters(d);
-    if (p_sud->Dice(d,first==2?mo:NULL)) { 
+    if (p_sud->Dice(d,mo)) { 
       msg_Debugging()<<"test emission at ("<<d->t
 		     <<","<<d->z<<") knot "<<d->kn_no<<"\n";
       InitDaughters(tree,d,p_sud->GetFlB(),p_sud->GetFlC(),
