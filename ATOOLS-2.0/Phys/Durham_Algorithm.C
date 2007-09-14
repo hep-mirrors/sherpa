@@ -1,5 +1,6 @@
 #include "Durham_Algorithm.H"
 #include "Particle_List.H"
+#include "Data_Reader.H"
 #include "Message.H"
 
 #include <iomanip>
@@ -223,4 +224,15 @@ double Durham_Algorithm::DCos12(const Vec4D & p1,const Vec4D & p2) const
   //  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
+double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
+{
+  static int das(-1);
+  if (das<0) {
+    Data_Reader read(" ",";","!","=");
+    if (!read.ReadFromFile(das,"DURHAM_SCHEME")) das=0;
+    else msg_Info()<<METHOD<<"(): Setting durham scheme mode "<<das<<".\n";
+  }
+  if (das==0) return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
+  return 2.*Min(p1.PSpat2(),p2.PSpat2())*(1.-DCos12(p1,p2))/m_sprime;
+}
 

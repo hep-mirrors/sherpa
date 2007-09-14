@@ -23,7 +23,7 @@ namespace ATOOLS {
     Particle_List       * p_jets;
     std::vector<double> * p_kts;
 
-    inline double Y12(const Vec4D &,const Vec4D &) const;
+    double Y12(const Vec4D &,const Vec4D &) const;
     double DCos12(const Vec4D &,const Vec4D &) const;
 
     void AddToKtlist(double );
@@ -45,12 +45,6 @@ namespace ATOOLS {
   {
     return sqr(p[1])+sqr(p[2]);
   }
-  inline double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
-  {
-    return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
-  }
-
-
 
 }
 
