@@ -267,7 +267,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   
   AC_ARG_ENABLE(
     clhep,
-    AC_HELP_STRING([--enable-clhep], [Enable CLHEP support]),
+    AC_HELP_STRING([--enable-clhep=/path/to/clhep], [Enable CLHEP support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for CLHEP installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(CLHEP not enabled); clhep=false ;;
@@ -298,6 +298,26 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 AC_MSG_ERROR(\$CLHEPDIR is not a valid path and clhep-config was not found.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_CLHEPDIR}]); clhep=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_CLHEPDIR="${enableval}"
+                CONDITIONAL_CLHEPINCS="-I${enableval}/include"
+                possible_libs="libCLHEP-g++.*.a libCLHEP-g++.*.so libCLHEP.so libCLHEP-1*.so libCLHEP-2*.so"
+                for J in $possible_libs; do
+                  result=`find ${enableval}/lib -name "$J" | head -n 1`;
+                  if test "$result" != ""; then
+                    result=`basename $result | sed -e 's/lib//' | sed -e 's/\.so//' | sed -e 's/\.a//'`
+                    break;
+                  fi
+                done;
+                if test "$result" != ""; then
+                  CONDITIONAL_CLHEPLIBS="-L${enableval}/lib -R${enableval}/lib -l$result";
+                else
+                  AC_MSG_ERROR(Did not find any library of the following type in ${enableval}/lib: $possible_libs.);
+                fi
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_CLHEPDIR}]); clhep=true;;
       esac ],
     [ clhep=false ]
   )
@@ -311,7 +331,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hepmc2,
-    AC_HELP_STRING([--enable-hepmc2], [Enable HepMC (version 2.x) support]),
+    AC_HELP_STRING([--enable-hepmc2=/path/to/hepmc], [Enable HepMC (version 2.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC2 installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC2 not enabled); hepmc2=false ;;
@@ -321,6 +341,14 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -R$HEPMC2DIR/lib -lHepMC";
               else
                 AC_MSG_ERROR(\$HEPMC2DIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_HEPMC2DIR}]); hepmc2=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_HEPMC2DIR="${enableval}"
+                CONDITIONAL_HEPMC2INCS="-I${enableval}/include"
+                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -R${enableval}/lib -lHepMC";
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_HEPMC2DIR}]); hepmc2=true;;
       esac ],
@@ -336,7 +364,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     root,
-    AC_HELP_STRING([--enable-root], [Enable ROOT support]),
+    AC_HELP_STRING([--enable-root\[=/path/to/root\]], [Enable ROOT support and specify where it is installed if non-standard.]),
     [ AC_MSG_CHECKING(for ROOT installation directory)
       case "${enableval}" in
         no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
@@ -357,6 +385,15 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
              fi;
              AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+        *)   if test -d "${enableval}"; then
+               CONDITIONAL_ROOTDIR="${enableval}"
+               CONDITIONAL_ROOTINCS="-I${enableval}/include/root";
+               CONDITIONAL_ROOTLIBS="-L${enableval}/lib/root $(${enableval}/bin/root-config --glibs)";
+               CONDITIONAL_ROOTFLAGS="-Wno-long-long"
+             else
+               AC_MSG_ERROR(${enableval} is not a valid path.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
       esac ],
     [ root=false ]
   )
@@ -371,7 +408,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   
   AC_ARG_ENABLE(
     lhapdf,
-    AC_HELP_STRING([--enable-lhapdf], [Enable LHAPDF support]),
+    AC_HELP_STRING([--enable-lhapdf=/path/to/lhapdf], [Enable LHAPDF support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
@@ -384,8 +421,15 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               if ! test -d "$CONDITIONAL_LHAPDFDIR"; then
                 AC_MSG_ERROR(lhapdf-config --prefix returned a path that is not available. Please check your LHAPDF installation and set \$LHAPDFDIR manually.);
               fi
-  else
+            else
               AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
+            fi;
+            AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_LHAPDFDIR=${enableval};
+              CONDITIONAL_LHAPDFLIBS="-L${enableval}/lib -lLHAPDF ${enableval}/lib/libLHAPDF.a"
+            else
+              AC_MSG_ERROR(${enableval} is not a valid path.);
             fi;
             AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
       esac ],
