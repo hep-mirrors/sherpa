@@ -113,6 +113,7 @@ if [ "$RELEASE" = "TRUE" ]; then
     sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I > $I.new
     mv $I.new $I
   done;
+  chmod 755 TOOLS/makeinstall;
 fi
 if [ "$TOTAL" = "TRUE" ]; then
   cp INSTALL INSTALL.Sherpa;
@@ -148,8 +149,6 @@ if [ "$RELEASE" = "TRUE" ]; then
   cd ..;
 fi
 
-## prepare scripts
-chmod 755 TOOLS/makeinstall;
 ## remove ATOOLS/Org/CXXFLAGS.H
 rm SHERPA-MC-$VERSION/*/*/CXXFLAGS.H
 ## tar it
