@@ -61,12 +61,12 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   if (m_fsrshoweron!=0 && (m_sud_mode&1)) {
     p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
 			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_fs_as_factor);
+			      p_runas,m_me_as_factor*m_fs_as_factor);
   }
   if (m_isrshoweron!=0 && (m_sud_mode&2)) {
     p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
 			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_is_as_factor);
+			      p_runas,m_me_as_factor*m_is_as_factor);
   }
   m_events.resize(m_maxjetnumber,0);
   m_meweight_sum.resize(m_maxjetnumber,0.0);
@@ -384,6 +384,7 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
   if (l==0) {
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
+    alegs[root->number].SetID(1<<root->number);
     l++;
   }
   if (root->left) {
@@ -393,6 +394,7 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
   else {
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
+    alegs[root->number].SetID(1<<root->number);
     l++;
     return 1;
   }

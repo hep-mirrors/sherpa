@@ -49,7 +49,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  if (instrong==1) jettype = 2;
 	  if (instrong==2) jettype = 4;
 	}
-	rmin=Max(rmin,rpa.gen.Ycut());
+	if (rpa.gen.Ycut()>0.0) rmin=rpa.gen.Ycut();
 	rpa.gen.SetYcut(rmin);
 	rpa.gen.SetDeltaR(rmax);
 	if (ycut>0.) { 

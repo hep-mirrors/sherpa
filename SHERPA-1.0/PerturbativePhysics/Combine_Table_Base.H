@@ -19,6 +19,7 @@ namespace SHERPA {
     double *p_qmin;
     AMEGIC::lf::code m_type;
     ATOOLS::Flavour m_mapfl;
+    long unsigned int m_id;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
@@ -29,7 +30,7 @@ namespace SHERPA {
       m_kt2(std::numeric_limits<double>::max()), 
       m_kt2qcd(m_kt2), m_kt2qed(m_kt2), 
       m_minkt2(m_kt2), m_minkt2qcd(m_kt2), m_minkt2qed(m_kt2), 
-      p_qmin(NULL) {}
+      p_qmin(NULL), m_id(0) {}
     inline Leg(const Leg &leg): 
       p_point(leg.p_point), m_anti(leg.m_anti), 
       m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
@@ -37,7 +38,7 @@ namespace SHERPA {
       m_kt2(std::numeric_limits<double>::max()), 
       m_kt2qcd(m_kt2), m_kt2qed(m_kt2), m_minkt2(leg.m_minkt2),  
       m_minkt2qcd(leg.m_minkt2qcd), m_minkt2qed(leg.m_minkt2qed), 
-      p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) {}
+      p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl), m_id(leg.m_id) {}
     // member functions
     void DetermineCouplings(const int type);
     // inline functions
@@ -48,6 +49,8 @@ namespace SHERPA {
     inline int                  External() const  { return m_ext;   }
     inline const AMEGIC::Point *Point() const     { return p_point; }
     inline void SetQCDJets(const int qcdjets) { m_qcdjets=qcdjets; }
+    inline void   SetID(const size_t &id) { m_id=id;     }
+    inline size_t ID() const              { return m_id; }
     inline int  QCDJets() const               { return m_qcdjets;  }
     inline void   SetKT2(const double &kt2)    
     { m_kt2=kt2; SetMinKT2(m_kt2); }
@@ -172,6 +175,8 @@ namespace SHERPA {
     virtual bool                 IdentifyHardProcess() = 0;
     virtual int                  IdentifyHardPropagator() const = 0;
 
+    virtual void ShuffleMomenta();
+
     bool Combinable(const Leg &a,const Leg &b) const ;
 
     int    AddCouplings(int &nqed,int &nqcd) const;
@@ -190,6 +195,7 @@ namespace SHERPA {
     inline const int                  OrderStrong()                        const { return m_nstrong; }
     inline const int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table_Base * const Up()                                 const { return p_up; }
+    inline Combine_Table_Base * const Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
     inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }

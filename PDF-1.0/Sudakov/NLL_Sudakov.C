@@ -63,7 +63,7 @@ void NLL_Sudakov::PrepareMap()
     flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
       (new GammaQ_QG_Lambda
-       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
+       (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
     m_sudakovs[flav]=ssud;
     m_sudakovs[flav.Bar()]=ssud;
   }
@@ -75,7 +75,7 @@ void NLL_Sudakov::PrepareMap()
     flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
       (new GammaG_QQ_Lambda
-       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
+       (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
     csud->Add(ssud);
   }
   m_sudakovs[Flavour(kf::gluon)]=csud;

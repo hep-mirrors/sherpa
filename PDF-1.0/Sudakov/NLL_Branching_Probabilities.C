@@ -203,7 +203,9 @@ double GammaG_GG_Lambda::Gamma(double q, double Q)
 GammaG_QQ_Lambda::GammaG_QQ_Lambda(bpm::code mode, double lambda, 
 				   MODEL::Running_AlphaS * runas,
 				   double qmass,double asfac) : 
-  Gamma_Lambda_Base(bpt::gamma_g2qq,mode,lambda,runas,qmass,asfac) 
+  Gamma_Lambda_Base(bpt::gamma_g2qq,
+		    bpm::code((mode&(bpm::is|bpm::fs))|bpm::power_corrs),
+		    lambda,runas,qmass,asfac) 
 {
   m_colfac = TR;
   m_dlog   = 0.;

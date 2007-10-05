@@ -12,6 +12,47 @@
 #define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
+namespace ATOOLS {
+
+  std::vector<int> ID(size_t id)
+  {
+    std::vector<int> ids;
+    for (size_t n(0);id>0;++n) {
+      if (id&(1<<n)) {
+	ids.push_back(n);
+	id-=1<<n;
+      }
+    }
+    return ids;
+  }
+
+  size_t IDCount(size_t id)
+  {
+    size_t idc(0);
+    for (size_t n(0);id>0;++n) {
+      if (id&(1<<n)) {
+	++idc;
+	id-=1<<n;
+      }
+    }
+    return idc;
+  }
+
+  template <typename Type>
+  size_t ID(const std::vector<Type> &ids)
+  {
+    size_t id(0);
+    for (size_t i(0);i<ids.size();++i) 
+      if (ids[i]>(Type)0) id+=1<<i;
+    return id;
+  }
+
+  template size_t ID(const std::vector<int> &ids);
+  template size_t ID(const std::vector<double> &ids);
+
+
+}
+
 using namespace ATOOLS;
 
 
@@ -698,13 +739,13 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 //     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
 // 		   <<ID(k)<<"["<<m_flavs[k]<<"], core = "
 // 		   <<(cl==m_nin+m_nout)<<"\n";
-    double add(0.0);
     if (m_flavs[k].Strong()) {
+      double add(0.0);
+      if (m_mass_scheme==1) add+=dabs(pk.Abs2());
+      else if (m_mass_scheme==3) 
+	add+=dabs(pk.Abs2()-sqr(m_flavs[k].Mass()));
       if (m_type>=3 && cl==m_nin+m_nout) {
 	pt2k=pk.PPerp2();
-	if (m_mass_scheme==1) add+=dabs(pk.Abs2());
-	else if (m_mass_scheme==3) 
-	  add+=dabs(pk.Abs2()-sqr(m_flavs[k].Mass()));
 	if (j<3) {
 	  if (add+pt2k<ymin*m_s) {
 	    ymin=(add+pt2k)/m_s;
@@ -741,9 +782,12 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	  }
 	}
 	if (m_flavs[j].Strong()) {
-	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
-	  if (add+pt2jk<ymin*m_sprime) {
-	    ymin=(add+pt2jk)/m_sprime;
+	  if (m_mass_scheme==1) add+=dabs(pj.Abs2());
+	  else if (m_mass_scheme==3) 
+	    add+=dabs(pj.Abs2()-sqr(m_flavs[j].Mass()));
+	  pt2jk=2.0*Min(pj.PSpat2(),pk.PSpat2())*(1.-DCos12(pj,pk));
+	  if (pt2jk<ymin*m_sprime) {
+	    ymin=(pt2jk)/m_sprime;
 	    j1=j;
 	    k1=k;
 	  }
@@ -779,7 +823,13 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
 	(Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))/sqr(m_delta_r);
     }
   }
-  else mt12_2               = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+  else {
+    double add(0.0);
+    if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
+    else if (m_mass_scheme==3)
+      add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
+    mt12_2 = 2.0*Min(p1.PSpat2(),p2.PSpat2())*(1.0-DCos12(p1,p2));
+  }
   return mt12_2;
 }
 

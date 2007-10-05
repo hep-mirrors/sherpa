@@ -6,6 +6,14 @@
 #include "Poincare.H"
 
 namespace ATOOLS {
+
+  std::vector<int> ID(size_t id);
+
+  size_t IDCount(size_t id);
+
+  template <typename Type>
+  size_t ID(const std::vector<Type> &ids);
+
   class Jet_Finder : public Selector_Base {
     double m_ycut,m_delta_r;
     int    m_type, m_mass_scheme;

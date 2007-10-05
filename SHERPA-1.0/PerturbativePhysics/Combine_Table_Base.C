@@ -2,6 +2,8 @@
 
 #include "Exception.H"
 #include "My_Limits.H"
+#include "Jet_Finder.H"
+#include "Blob.H"
 #include <iomanip>
 
 #define MAXD std::numeric_limits<double>::max()
@@ -108,8 +110,8 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
      <<"q_{min qed}"<<std::setw(12)<<"\\sqrt{|t|}"<<" mom"<<std::endl;
     for (int l=0; l<ct.m_nlegs; ++l) {
       double mc(ct.GetLeg(l).MinKT2QCD()), me(ct.GetLeg(l).MinKT2QED());
-      s<<std::setw(3)<<l<<std::setw(8)
-       <<ct.p_legs[0][l].Flav()<<std::setw(4)
+      s<<std::setw(3)<<l<<std::setw(12)<<ToString(ID(ct.GetLeg(l).ID()))
+       <<std::setw(8)<<ct.p_legs[0][l].Flav()<<std::setw(4)
        <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
        <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
        <<"/"<<ct.GetLeg(l).NQED()<<std::setw(12)
@@ -368,6 +370,8 @@ Leg * Combine_Table_Base::CombineLegs
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
       SetLegScales(alegs[i],legs[i],legs[j],p_moms[i],p_moms[j],pt2ij);
+      size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID()), id(idi|idj);
+      alegs[i].SetID(id);
     }
     else {
       alegs[l] = Leg(legs[l]);
@@ -568,3 +572,6 @@ double Combine_Table_Base::Kt2QEDHard(const int cpl) const
   return min;
 }
 
+void Combine_Table_Base::ShuffleMomenta()
+{
+}

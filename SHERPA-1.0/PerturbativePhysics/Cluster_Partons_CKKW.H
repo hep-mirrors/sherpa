@@ -12,7 +12,7 @@ namespace SHERPA {
     std::vector<int>    m_last_i;
 
     double m_as_jet[2];
-    int    m_strong, m_nlegs;
+    int    m_strong, m_nlegs, m_smode;
     PDF::PDF_Base *p_pdf[2];
     
     void InitWeightCalculation();

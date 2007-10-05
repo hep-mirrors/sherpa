@@ -4,20 +4,22 @@
 #include "Poincare.H"
 #include "Jet_Finder.H"
 #include "Exception.H"
+#include "Blob.H"
 #include <iomanip>
 
 using namespace SHERPA;
 using namespace AMEGIC;
 using namespace ATOOLS;
-using namespace std;
 
 Combine_Table_CKKW::Combine_Table_CKKW(Jet_Finder * jf,Vec4D * moms, 
 				       Combine_Table_CKKW * up,
 				       int isrmode, int isrshoweron):
-  Combine_Table_Base(jf,moms,up,isrmode,isrshoweron) {}
+  Combine_Table_Base(jf,moms,up,isrmode,isrshoweron),
+  p_smoms(NULL) {}
 
 Combine_Table_CKKW::~Combine_Table_CKKW() 
 { 
+  if (p_smoms!=NULL) delete [] p_smoms;
 }
 
 double Combine_Table_CKKW::GetWinner(int &i,int &j)    
@@ -420,5 +422,171 @@ int Combine_Table_CKKW::IdentifyHardPropagator() const
     else THROW(fatal_error,"No match for hard process.");
   }
   return channel;
+}
+
+void Combine_Table_CKKW::InitSMomenta()
+{
+  if (p_smoms==NULL) p_smoms = new Vec4D[m_nlegs];
+  for (int i(0);i<m_nlegs;++i) p_smoms[i]=p_moms[i];
+}
+
+void Combine_Table_CKKW::ShuffleMomenta(Vec4D &pa,Vec4D &pb,
+					const double &sa,const double &sb)
+{ 
+  msg_Indent();
+  msg_Debugging()<<METHOD<<"(): {\n";
+  Vec4D p1(pa), p2(pb);
+  double r1(0.0), r2(0.0);
+  double t1(sa), t2(sb), t((pa+pb).Abs2());
+  double t1n(p1.Abs2()), t2n(p2.Abs2());
+  double A(((t2-t2n)-(t1-t1n))/(t+t1n-t2n));
+  double B((t+t2n-t1n)/(t+t1n-t2n));
+  double C(t-t1n-t2n);
+  double D((2.0*t2n-2.0*A*B*t1n+(A-B)*C)/(2.0*(t2n+B*B*t1n-B*C)));
+  double E((t2n-t2+A*A*t1n+A*C)/(t2n+B*B*t1n-B*C));
+  r2=D-sqrt(D*D-E);
+  r1=A+r2*B;
+  pa=(1.0-r1)*p1+r2*p2;
+  pb=(1.0-r2)*p2+r1*p1;
+  msg_Debugging()<<"  p_a'-p_a = "<<pa-p1<<", p_a = "<<p1
+		 <<", m_a = "<<p1.Mass()<<", m_a' = "<<pa.Mass()<<"\n";
+  msg_Debugging()<<"  p_b'-p_b = "<<pb-p2<<", p_b = "<<p2
+		 <<", m_b = "<<p2.Mass()<<", m_b' = "<<pb.Mass()<<"\n";
+  msg_Debugging()<<"  p_{ab}-p_a-p_b, old = "<<(p1+p2-pa-pb)<<"\n";
+  msg_Debugging()<<"                  new = "<<(p1+p2-pa-pb)<<"\n";
+  msg_Debugging()<<"}\n";
+}
+
+void Combine_Table_CKKW::ShuffleMomenta()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  Split_Map splits;
+  splits[p_legs[0][0].ID()]=p_legs[0][1].ID();
+  splits[p_legs[0][1].ID()]=p_legs[0][0].ID();
+  splits[p_legs[0][2].ID()]=p_legs[0][3].ID();
+  splits[p_legs[0][3].ID()]=p_legs[0][2].ID();
+  Combine_Table_Base *ct(this);
+  while (ct->Up()) {
+    ct=ct->Up();
+    int i(0), j(0);
+    ct->GetWinner(i,j);
+    long unsigned int idi(ct->GetLeg(i).ID()), idj(ct->GetLeg(j).ID());
+    splits[idi]=idj;
+    splits[idj]=idi;
+  }
+  if (msg_LevelIsDebugging()) {
+    msg_Debugging()<<"  Splittings {\n";
+    std::set<long unsigned int> output;
+    for (Split_Map::const_iterator sit(splits.begin());
+	 sit!=splits.end();++sit)
+      if (output.find(sit->first)==output.end()) {
+	output.insert(sit->second);
+	msg_Debugging()<<"    "<<ToString(ID(sit->first))
+		       <<","<<ToString(ID(sit->second))<<"\n";
+      }
+    msg_Debugging()<<"  }\n";
+  }
+  Combine_Table_CKKW *nt(this);
+  nt->InitSMomenta();
+  while (nt->Up()) {
+    msg_Debugging()<<"  Table "<<nt->Number()<<" {\n";
+    std::set<long unsigned int> shuffled;
+    Vec4D *const smoms(nt->SMomenta());
+    smoms[0]=-smoms[0];
+    smoms[1]=-smoms[1];
+    for (int ij(0);ij<nt->NLegs();++ij) {
+      msg_Indent();
+      long unsigned int idij(nt->GetLeg(ij).ID());
+      if (IDCount(idij)==1 || 
+	  shuffled.find(idij)!=shuffled.end()) continue;
+      Split_Map::const_iterator sit(splits.find(idij));
+      if (sit==splits.end()) THROW(fatal_error,"Internal error 1");
+      long unsigned int idk(sit->second), ridk(idk);
+      std::vector<int> kc;
+      Vec4D pij(smoms[ij]), pk;
+      for (int l(0);l<nt->NLegs();++l) {
+	long unsigned int idl(nt->GetLeg(l).ID());
+	if ((idl&ridk)==idl) {
+	  ridk-=idl;
+	  pk+=smoms[l];
+	  kc.push_back(l);
+	  msg_Debugging()<<"  k-add ["<<kc.back()<<"] "
+			 <<ToString(ID(idl))<<"\n";
+	  if (idk&3) ridk=0;
+	}
+	if (ridk==0) break;
+      }
+      if (ridk!=0) THROW(fatal_error,"Internal error 2");
+      msg_Debugging()<<"  ij = "<<ToString(ID(idij))
+		     <<", k = "<<ToString(ID(idk))<<"\n";
+      if ((idij&3) && (idk&3)) {
+	Poincare cms(-pij-pk);
+	cms.Boost(pij);
+	cms.Boost(pk);
+	Vec4D zdef(pij.PSpat2()>pk.PSpat2()?pij:pk);
+	Poincare zaxis(zdef[3]>0.0?zdef:-zdef,Vec4D::ZVEC);
+	zaxis.Rotate(pij);
+	zaxis.Rotate(pk);
+	for (int i(0);i<nt->NLegs();++i) {
+	  msg_Debugging()<<"  ijk-boost ["<<i<<"] "
+			 <<ToString(ID(nt->GetLeg(i).ID()))<<": "
+			 <<smoms[i];
+	  cms.Boost(smoms[i]);
+	  zaxis.Rotate(smoms[i]);
+	  msg_Debugging()<<"-> "<<smoms[i]<<"\n";
+	}
+      }
+      Vec4D pko(pk);
+      ShuffleMomenta(pij,pk,0.0,kc.size()==1?0.0:pk.Abs2());
+      smoms[ij]=pij;
+      if (kc.size()==1) {
+	smoms[kc.front()]=pk;
+      }
+      else {
+	Poincare oldcms(pko), newcms(pk);
+	for (size_t i(0);i<kc.size();++i) {
+	  msg_Debugging()<<"  k-boost ["<<kc[i]<<"] "
+			 <<ToString(ID(nt->GetLeg(kc[i]).ID()))<<"\n";
+	  oldcms.Boost(smoms[kc[i]]);
+	  newcms.BoostBack(smoms[kc[i]]);
+	}
+      }
+      shuffled.insert(idij);
+      shuffled.insert(idk);
+    }
+    smoms[0]=-smoms[0];
+    smoms[1]=-smoms[1];
+    Vec4D pin(smoms[0]+smoms[1]), pout;
+    for (int i(2);i<nt->NLegs();++i) pout+=smoms[i];
+    if (!(pin==pout)) {
+      msg_Error()<<METHOD<<"(): Four momentum not conserved.\n"
+		 <<"  p_miss  = "<<(pout-pin)<<"\n"
+		 <<"  p_out   = "<<pout<<"\n"
+		 <<"  p_in    = "<<pin<<std::endl;
+      for (int i(0);i<nt->NLegs();++i) 
+	msg_Debugging()<<"  p_{"<<i<<"} = "<<nt->Momenta()[i]
+		       <<", p_{"<<i<<"}' = "<<smoms[i]<<"\n";
+    }
+    msg_Debugging()<<"  } p_{out}-p_{in} = "<<pout-pin<<"\n";
+    nt=(Combine_Table_CKKW*)nt->Up();
+    nt->InitSMomenta();
+  }
+  msg_Debugging()<<"  New scales {\n";
+  while (nt->Down()) {
+    int i(0), j(0);
+    nt->GetWinner(i,j);
+    Leg &legi(nt->GetLeg(i)), &legj(nt->GetLeg(j));
+    Vec4D pi(nt->SMomenta()[i]), pj(nt->SMomenta()[j]);
+    double pt2ij(p_jf->MTij2(pi,pj,legi.Flav().Mass(),legj.Flav().Mass())); 
+    msg_Debugging()<<"    Table "<<nt->Number()
+		   <<": i = "<<ToString(ID(legi.ID()))
+		   <<", j = "<<ToString(ID(legj.ID()))
+		   <<", Q_{ij} = "<<sqrt(nt->Down()->GetLeg(i).KT2QCD())
+		   <<", Q_{ij}' = "<<sqrt(pt2ij)<<"\n";
+    SetLegScales(nt->Down()->GetLeg(i),legi,legj,pi,pj,pt2ij);
+    nt=(Combine_Table_CKKW*)nt->Down();
+  }
+  msg_Debugging()<<"  }\n";
+  msg_Debugging()<<"}\n";
 }
 

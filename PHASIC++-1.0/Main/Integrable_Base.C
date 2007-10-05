@@ -364,12 +364,6 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     double S(sqr(rpa.gen.Ecms()));
     m_scale[stp::fac]=rpa.gen.Ycut()*S;
     m_scale[stp::ren]=sqr(rpa.gen.DeltaR())*m_ycut*S;
-    if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
-      p_jf=(Jet_Finder *)
-	((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
-      else THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
-    }
     double pt2(p_jf->ActualValue()*S);
     if ((int)m_nout==m_maxjetnumber) {
       // highest multiplicity treatment
@@ -639,12 +633,21 @@ std::map<std::string,std::string> Integrable_Base::ScaleTags()
 void Integrable_Base::SetScaleScheme(const scl::scheme s)
 { 
   m_scalescheme=s;   
-  if ((m_scalescheme&scl::ckkw) && m_ycut<=0.0) {
-    m_ycut=rpa.gen.Ycut();
-    m_scale[stp::fac]=m_ycut*sqr(rpa.gen.Ecms())*
-      rpa.gen.FactorizationScaleFactor();
-    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.DeltaR()*rpa.gen.Ecms())*
-      rpa.gen.RenormalizationScaleFactor();
+  if (m_scalescheme&scl::ckkw) {
+    if (p_jf==NULL && p_selector!=NULL &&
+	p_selector->Name()=="Combined_Selector") {
+      p_jf=(Jet_Finder *)
+	((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
+      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+      else THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+    }
+    if (m_ycut<=0.0) {
+      m_ycut=rpa.gen.Ycut();
+      m_scale[stp::fac]=m_ycut*sqr(rpa.gen.Ecms())*
+	rpa.gen.FactorizationScaleFactor();
+      m_scale[stp::ren]=m_ycut*sqr(rpa.gen.DeltaR()*rpa.gen.Ecms())*
+	rpa.gen.RenormalizationScaleFactor();
+    }
   }
 }
 

@@ -50,6 +50,8 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   Data_Reader reader(" ",";","!","=");
   if (reader.ReadFromFile(helps,"PRINT_SUDAKOV") && helps.length()>0) 
     GenerateTables(helps);
+  if (!reader.ReadFromFile(m_smode,"CKKW_SHUFFLE_MODE")) m_smode=0;
+  else msg_Info()<<METHOD<<"(): Set shuffle mode "<<m_smode<<".\n";
 }
 
 Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
@@ -440,6 +442,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 
 void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
 {
+  if (m_smode&1) p_ct->ShuffleMomenta();
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
   ++m_counts;
