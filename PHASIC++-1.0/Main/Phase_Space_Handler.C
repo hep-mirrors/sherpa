@@ -23,6 +23,7 @@
 #include "Random.H"
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
+#include "Data_Reader.H"
 
 #include <dlfcn.h>
 
@@ -734,9 +735,12 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
 {
+  Data_Reader read(" ",";","!","=");
+  int ovf(0);
+  if (!read.ReadFromFile(ovf,"GENERATE_RESULT_DIRECTORY")) ovf=0;
   msg_Tracking()<<"Write out channels into directory : "<<pID<<std::endl;
   int  mode_dir = 448;
-  ATOOLS::MakeDir(pID.c_str(),mode_dir,force); 
+  ATOOLS::MakeDir(pID.c_str(),mode_dir,force|ovf); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_zchannels != 0) p_zchannels->WriteOut(pID+"/MC_KMR_Z");
