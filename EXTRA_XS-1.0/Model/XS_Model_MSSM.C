@@ -1,4 +1,4 @@
-#include "XS_Model_SM.H"
+#include "XS_Model_MSSM.H"
 
 #include "Run_Parameter.H"
 
@@ -6,9 +6,9 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace EXTRAXS;
 
-XS_Model_SM::XS_Model_SM(): XS_Model_Base("SM") {}
+XS_Model_MSSM::XS_Model_MSSM(): XS_Model_Base("MSSM") {}
 
-void XS_Model_SM::Initialize(MODEL::Model_Base *const model,
+void XS_Model_MSSM::Initialize(MODEL::Model_Base *const model,
 			     const std::string &file)
 {
   XS_Model_Base::Initialize(model,file);
@@ -19,24 +19,25 @@ void XS_Model_SM::Initialize(MODEL::Model_Base *const model,
   m_consts["P_L"]=1.0;
   m_consts["P_R"]=1.0;
   m_consts["v_{EW}"]=ScalarConstant("vev");
-  
   m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",ecms2));  
 }
 
-bool XS_Model_SM::IncludesModel(const std::string &name) const
+bool XS_Model_MSSM::IncludesModel(const std::string &name) const
 {
   if (name=="QED") return true;
   if (name=="EW") return true;
   if (name=="QCD") return true;
   if (name=="SM") return true;
+  if (name=="MSSM") return true;
   return false;
 }
 
-std::vector<std::string> XS_Model_SM::IncludedModels() const
+std::vector<std::string> XS_Model_MSSM::IncludedModels() const
 {
-  std::vector<std::string> models(3);
+  std::vector<std::string> models(4);
   models[0]="QCD";
   models[1]="EW";
-  models[1]="SM";
+  models[2]="QED";
+  models[3]="SM";
   return models;
 }
