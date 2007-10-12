@@ -32,29 +32,10 @@ A                     = 0.85     ! A (Wolfenstein parametrization)
 RHO                   = 0.50     ! rho (Wolfenstein parametrization)
 ETA                   = 0.50     ! eta (Wolfenstein parametrization)
 !
-HIGGS_GENERATOR       = Hdecay   ! Generator for Higgs masses & widths
-HIGGS_NNLO(M)         = 1        ! Use nnlo running of masses in higgs decays : 
-                                 ! allowed values 1,2
-HIGGS_ON_SHELL_WZ     = 1        ! Only on-shell gauge bosons in higgs decays : 
-                                 ! 0 = double,1 = single  
-HIGGS_MASS_SCHEME     = 0        ! Scheme for higgs masses in higgs decays    : 
-                                 ! running/pole
-HIGGS_NF_LIGHT_Q_IN_G = 5        ! Number of light flavours in higgs 
-                                 ! decays h->gg*->g qqbar   
-!
 ! SUSY parameters
 !
 SUSY_GENERATOR        = LesHouches
 LESHOUCHESINPUT       = LesHouches_SPS1A.dat
-!
-SUSY_SCENARIO         = mSUGRA   ! also available : AMSB, mGMSB,non-minimal GMSB, 
-                                 !                  SUGRA with enforced unification, 
-                                 !                  non-universal SUGRA
-M0                    = 200.     !
-M12                   = 200.     !
-A0                    = 100.     !
-TAN(BETA)             = 3.       !
-SIGN(MU)              = -1       !
 !
 ! ADD parameters
 !
