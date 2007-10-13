@@ -323,10 +323,11 @@ void Initial_State_Shower::
 ChooseMother(int &ntree1,Knot *&k1, Knot *&k2,bool init)
 {
   bool swap(k1->t>k2->t);
+  if (init && (k1->prev==NULL || k2->prev==NULL)) swap=k1->prev!=NULL;
   bool known1(k1->part->Info()=='H' || k1->shower==0);
   bool known2(k2->part->Info()=='H' || k2->shower==0);
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no
-		 <<"): t1 = "<<k1->t<<", t2 = "<<k2->t
+		 <<","<<init<<"): t1 = "<<k1->t<<", t2 = "<<k2->t
 		 <<", known1 = "<<known1<<", known2 = "<<known2<<"\n";
   if (known1 || known2) {
     if (known1 && !known2) swap=init;
