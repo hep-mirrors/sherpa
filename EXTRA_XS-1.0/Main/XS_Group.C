@@ -293,6 +293,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 	m_xsecs[i]->Selector()->BuildCuts(p_pshandler->Cuts());
       p_isrhandler->SetSprimeMin(p_pshandler->Cuts()->Smin());
     }
+    CreateFSRChannels();
     if (!m_channels) {
       p_pshandler->CreateIntegrators();
       CreateISRChannels();
