@@ -795,7 +795,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
   long int n,sn,son;
-  std::string filename = _resdir+"/"+m_name+".xstotal";
+  std::string filename = _resdir+"/"+m_name+".xs_tot";
   std::string histofile =_resdir+string("/WD_")+m_name+"/";
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
