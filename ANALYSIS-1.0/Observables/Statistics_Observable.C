@@ -164,8 +164,8 @@ void Statistics_Observable::Output(const std::string & pname)
     if (cit->second.m_cutxsn>1)
       cdsig+=(cw2m-sqr(cwm))/(cit->second.m_cutxsn-1.0);
   }
-//   dsig=sqrt(dsig);
-//   cdsig=sqrt(cdsig);
+  dsig=sqrt(dsig);
+  cdsig=sqrt(cdsig);
   file<<"\n# Total XS      : "<<sig<<" +- ( "
       <<dsig<<" = "<<int(dsig*100/sig)/100.0<<" % )\n";
   file<<"# Total XS (cut): "<<csig<<" +- ( "
