@@ -167,9 +167,9 @@ void Statistics_Observable::Output(const std::string & pname)
   dsig=sqrt(dsig);
   cdsig=sqrt(cdsig);
   file<<"\n# Total XS      : "<<sig<<" +- ( "
-      <<dsig<<" = "<<int(dsig*100/sig)/100.0<<" % )\n";
+      <<dsig<<" = "<<dsig/sig*100.0<<" % )\n";
   file<<"# Total XS (cut): "<<csig<<" +- ( "
-      <<cdsig<<" = "<<int(cdsig*100/csig)/100.0<<" % )\n\n";
+      <<cdsig<<" = "<<cdsig/csig*100.0<<" % )\n\n";
   file.close();
 }
 
