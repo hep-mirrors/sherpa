@@ -1225,8 +1225,8 @@ double Single_Process::DSigma2() {
   if (p_partner == this) {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
-  m_last    += tmp;
-  return tmp*p_partner->KFactor();
+  m_last    += tmp*=p_partner->KFactor();
+  return tmp;
 }
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)
