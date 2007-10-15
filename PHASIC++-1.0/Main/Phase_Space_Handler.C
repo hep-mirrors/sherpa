@@ -652,7 +652,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
 	  p_process->Selected()->SetMomenta(p_lab);
 	}
 	return new Blob_Data<Weight_Info>
-	  (Weight_Info(1.0,p_process->EnhanceFactor(),value,1,j));
+	  (Weight_Info(1.0,p_process->EnhanceFactor(),
+		       p_process->Selected()->TotalXS(),1,1));
       }
       else j=1;
     }
