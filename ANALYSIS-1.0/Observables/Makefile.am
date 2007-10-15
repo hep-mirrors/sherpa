@@ -51,7 +51,6 @@ pkginclude_HEADERS        =	\
 			HT.H \
 			PSM_Observables.H \
 			Multiplicity.H \
-			Statistics_Observable.H \
 			One_Particle_Extractor.H \
 			All_Particle_Selector.H \
 			Universal_Selector.H \
