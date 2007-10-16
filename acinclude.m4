@@ -3,7 +3,7 @@ dnl set flags according to build environment
 AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 [
   case "$build_os:$build_cpu:$build_vendor" in
-    *darwin*:*power*:*)
+    *darwin*:*:*)
       echo "checking for architecture... Darwin MacOS"
       ldflags="-dynamic -flat_namespace"
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS]) ;;

@@ -21,7 +21,7 @@
 #define SAVE_RETURN(x,name) return IsDefined(x,name);
 #endif
 
-#if defined __GNUC__ && defined __ppc__
+#if defined __GNUC__ && defined ARCH_DARWIN
 #define LIB_SUFFIX ".dylib"
 #else
 #define LIB_SUFFIX ".so"
