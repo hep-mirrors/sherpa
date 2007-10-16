@@ -173,7 +173,7 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-  m_q2_iss=m_q2_fss=dabs(p_xs->Scale(stp::ren));
+  m_q2_iss[0]=m_q2_iss[1]=m_q2_fss=dabs(p_xs->Scale(stp::ren));
   return test;
 }
 
@@ -217,7 +217,8 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 		 <<"  ->  as = "<<m_as_jet[0]<<"\n";
   msg_Debugging()<<"  cut is : "<<std::setw(12)<<sqrt(m_q2_isjet)<<"\n";
   msg_Debugging()<<"  cut fs : "<<std::setw(12)<<sqrt(m_q2_fsjet)<<"\n";
-  msg_Debugging()<<"  is ps  : "<<std::setw(12)<<sqrt(m_q2_iss)<<"\n";
+  msg_Debugging()<<"  is ps l: "<<std::setw(12)<<sqrt(m_q2_iss[0])<<"\n";
+  msg_Debugging()<<"  is ps r: "<<std::setw(12)<<sqrt(m_q2_iss[1])<<"\n";
   msg_Debugging()<<"  fs ps  : "<<std::setw(12)<<sqrt(m_q2_fss)<<"\n";
   msg_Debugging()<<"}\n"; 
 }
@@ -380,7 +381,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       }
     }
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_iss[0]=sqr(m_last_q[0]);
+      m_q2_iss[1]=sqr(m_last_q[1]);
       m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }
@@ -389,7 +391,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       m_last_q[i]=sqrt(p_ct->GetHardLegs()[wminqed]
  		       [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_iss[0]=sqr(m_last_q[0]);
+      m_q2_iss[1]=sqr(m_last_q[1]);
       m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }

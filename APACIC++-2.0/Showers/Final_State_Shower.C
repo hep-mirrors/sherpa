@@ -1006,7 +1006,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   // set color connections (if not yet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
 
-  double t_mo(mo->part->Momentum().Abs2()), st_mo(t_mo);
+  double t_mo(mo->part->Momentum().Abs2()), st_mo(mo->t);
   double tb(d1->part->Momentum().Abs2()), tc(d2->part->Momentum().Abs2());
   double E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
   double th(p_kin->GetOpeningAngle(z_mo,sqr(E_mo),t_mo,tb,tc));

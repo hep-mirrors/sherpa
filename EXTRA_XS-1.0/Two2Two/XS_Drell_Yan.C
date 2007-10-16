@@ -136,8 +136,12 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
   return sqr(4.*M_PI*alpha) * colfac * (term1+term2); 
 }
 
-bool XS_ee_ffbar::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
+bool XS_ee_ffbar::SetColours(double s,double t,double u) 
+{ 
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
+    m_scale[PHASIC::stp::sis] = 
+    s+dabs(p_momenta[0].Abs2())+dabs(p_momenta[1].Abs2());
+  m_scale[PHASIC::stp::sfs] = s;
   return 1; 
 }
 

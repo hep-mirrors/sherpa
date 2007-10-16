@@ -138,7 +138,6 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     if (message) meweight = message->Get<double>();
     else msg_Error()<<METHOD<<"(..): Missing weight information."<<std::endl;
     if (m_ckkwon) p_cluster->CalculateWeight(meweight);
-    else p_cluster->SetPSScales();
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
 	      (p_cluster->OrderStrong()));
