@@ -1,19 +1,22 @@
 ====== Changelog 1.0.10 -> 1.0.11 ======
 
-This release contains all patches provided for previous releases and in addition the following notable changes:
+Release Sherpa-1.0.11 contains all patches provided for previous releases and in addition the following notable changes:
 
 ===== User Interface changes =====
-  * Footer of ''SHERPA_OUTPUT'' files contains only the filename of the next file, not the complete path anymore.
-  * If you enable our own hadron decay module HADRONS++, only the tau decays are activated by default. Everything else will still be done by Pythia.
+  * The footer of ''SHERPA_OUTPUT'' event files contains only the filename of the next file, not the complete path anymore.
+  * If Sherpa's hadron decay module HADRONS++ is enabled, only tau-lepton decays are activated by default. Decays of unstable hadrons will still be treated through an interface to the corresponding Pythia routines.
 
 ===== New features =====
-  * Massive pure QCD processes in EXTRA-XS module
-  * Changed splitting variable in APACIC to light-cone momentum fraction
-  * Default colour setting in CKKW for core processes with four coloured objects 
-  * Compiling with gfortran instead of g77/libg2c
+  * The EXTRA-XS module has been extended by massive pure QCD processes.
+  * The parton shower splitting variables have been revised yielding a better phase space coverage. 
+  * Compiling with gfortran is now enabled as an alternative to using g77 and linking libg2c.
+  * Compliance with the gcc-4.2 compiler is provided. 
+  * Proper installation on MAC computers with an Intel processor is ensured.
 
 ===== Bugfixes =====
 
-  * Photon emission off leptons by error was fully disabled in version 1-0-10
-  * The very first 'DECAY' Block in SLHA MSSM spectrum ffiles has not been read by the SLHA interface routines, this has led to the width of the corresponding particle being set incorrectly
-  * Corrected rotation and boost sequence in APACIC IS showering
+  * There was a severe bug in the treatment of sequences of rotations and boosts in the APACIC initial state parton shower that led to a wrong prediction of jet correlations in VBF like processes.
+  * Version 1.0.10 had a bug in the identification of the possible core processes in the CKKW implementation for unstable particle production with subsequent decays, e.g. top-quark production.
+  * There was a bug in the Statistics_Observable for calculating cross sections for generated event samples. In consequence the stated cross sections for different sub-processes have been wrong.
+  * Photon emission off leptons by error was fully disabled in version 1.0.10.
+  * The very first 'DECAY' Block in SLHA MSSM spectrum files has not been read by the SLHA interface routines, this has led to the width of the corresponding particle being set incorrectly.
