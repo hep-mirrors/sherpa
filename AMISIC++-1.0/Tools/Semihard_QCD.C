@@ -47,6 +47,10 @@ void Semihard_QCD::CreateFSRChannels()
     m_fsrmode=1;
   }
   else {
+    if (m_fsrmode==3) {
+      p_pshandler->FSRIntegrator()->DropAllChannels(false);
+      m_fsrmode=0;
+    }
     if (m_fsrmode==2) {
       p_pshandler->FSRIntegrator()->DropAllChannels();
       p_pshandler->FSRIntegrator()->Add(p_fsrinterface);

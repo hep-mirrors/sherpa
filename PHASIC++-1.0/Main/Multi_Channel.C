@@ -69,12 +69,12 @@ void Multi_Channel::DropChannel(int i)
   channels.pop_back();
 }
 
-void Multi_Channel::DropAllChannels()
+void Multi_Channel::DropAllChannels(const bool del)
 {
-  for(size_t i=channels.size();i>0;i--) {
-    if (channels[i-1]) delete channels[i-1];
+  while (channels.size()) {
+    if (del) delete channels.back();
+    channels.pop_back();
   }
-  channels.clear();
 }
 
 void Multi_Channel::Reset() 

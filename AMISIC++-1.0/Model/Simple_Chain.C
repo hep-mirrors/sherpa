@@ -98,10 +98,14 @@ void Simple_Chain::CleanUp()
     p_gridcreator=NULL;
   }
   if (p_fsrinterface!=NULL) {
+    for (size_t i=0;i<p_processes->Size();++i) {
+      Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
+      group->SetFSRMode(3);
+      group->CreateFSRChannels();
+    }
     delete p_fsrinterface;
     p_fsrinterface=NULL;
   }
-  //if (p_processes!=NULL)    delete p_processes;
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
     p_environment=NULL;
@@ -365,6 +369,7 @@ bool Simple_Chain::SetUpInterface()
 {
   p_processes->Reset();
   Flavour flavour[4]={kf::jet,kf::jet,kf::jet,kf::jet};
+  if (p_fsrinterface!=NULL) delete p_fsrinterface;
   p_fsrinterface = new FSR_Channel(2,2,flavour,
 				   p_total->XAxis()->Variable()->Name());
   for (size_t i=0;i<p_processes->Size();++i) {

@@ -43,7 +43,7 @@ namespace PHASIC {
     Multi_Channel(std::string,int=0);
     virtual ~Multi_Channel();
     void             Add(Single_Channel *);  
-    virtual void     DropAllChannels();    
+    virtual void     DropAllChannels(const bool del=true);    
     void             DropChannel(int);     
     Single_Channel * Channel(int); 
     virtual void     Reset();
