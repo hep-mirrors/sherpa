@@ -68,6 +68,10 @@ else
     replace_spaces $i
     echo "done"
   done
+  echo -n "adjusting 'Run.dat' ... "
+  sed -e's/Num._Accuracy/NUM_ACCURACY/g' < Run.dat > Run.dat~
+  mv Run.dat~ Run.dat
+  echo "done"
   echo "old inputs stored in '*.old'"
 fi
 
