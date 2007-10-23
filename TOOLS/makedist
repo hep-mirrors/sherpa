@@ -1,41 +1,40 @@
 #!/bin/bash
 
-DISTDIR=`date +'%y-%m-%d'`
-
 ECOPT=""
 
 print_help() {
   echo "makedist version 1.0 " && echo && \
   echo "options: -f             include full time information in distribution name" && \
-  echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
-  echo "         -u             distribute uncompressed modules" && \
+  echo "         -n <name>      write compressed distribution to <name>.tar.gz (default: Sherpa-X.X.X)" && \
   echo "         --clean        execute 'make clean' before 'make dist'" && \
   echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
   echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
   echo "         --copt         define option for 'configure'" && \
-  echo "         --no-abort     ignore exit status of 'make'" && \
-  echo "         --force        overwrite existing targets" && \
+  echo "         --exclude-svn  exclude .svn directories (only necessary when they exist)" && \
+  echo "         --release      prepare for release in copied tree: svn update, module renaming, --total" && \
+  echo "                        Warning: This may use much disk space, because it makes a copy of the file tree." && \
   echo "         -h             display this help and exit" && \
   echo
 }
 
+VERSION="$(cat configure.in | grep "AC_INIT" | cut -d"," -f 2 | tr -d " ")";
+DISTDIR="Sherpa-"$VERSION;
+
 while getopts :hfun: OPT
 do
   case $OPT in
-  f) DISTDIR=$DISTDIR"_"`date +'%H-%M'` ;;
-  u) COMP=FALSE ;;
+  f) DISTDIR=$DISTDIR"_"$(date +'%Y-%m-%d_%H-%M') ;;
   n) DISTDIR=$OPTARG ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
     if [ "$1" = "--clean" ]; then ALLCLEAN=TRUE 
     elif [ "$1" = "--configure" ]; then CONFIGURE=TRUE 
-    elif [ "$1" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
+    elif [ "$1" = "--exclude-svn" ]; then EXCLUDESVN=TRUE
     elif [ "$1" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
     elif [ "$1" = "--copt" ]; then 
       CONFIGURE=TRUE && ECOPT=$2" "$ECOPT && shift 1
-    elif [ "$1" = "--no-abort" ]; then NOABORT=TRUE
-    elif [ "$1" = "--force" ]; then FORCE=TRUE 
+    elif [ "$1" = "--release" ]; then RELEASE=TRUE && TOTAL=TRUE && EXCLUDESVN=TRUE && CONFIGURE=TRUE
     else 
       echo -n "makedist: error: unrecognized option "
       if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
@@ -48,50 +47,48 @@ do
   esac
 done
 
-if test -d $DISTDIR ; then
-  echo "makedist: error: temporary directory '$DISTDIR' exists"
-  exit 1
-fi
-if test -f $DISTDIR.tar.gz && [ "$FORCE" != "TRUE" ] ; then
-  echo "makedist: error: dist file '$DISTDIR.tar.gz' exists"
-  echo "makedist: add '--force' to override"
-  exit 2
+if [ "$EXCLUDESVN" = "TRUE" ]; then 
+  ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE;
+else
+  if ! test -d ".svn"; then
+    ECOPT=$ECOPT" --disable-svninclude" && CONFIGURE=TRUE;
+  fi
 fi
 
 echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
 echo "*************************************"
-if [ "$TOTAL" = "TRUE" ]; then
-  libtoolize --force
-  aclocal
-  automake -a
-  autoconf
-fi
-if [ "$CONFIGURE" = "TRUE" ]; then 
-  ./configure $ECOPT
-fi
-if [ "$ALLCLEAN" = "TRUE" ]; then 
-  make clean 
-fi
-CONTINUE="r"
-while [ "$CONTINUE" = "r" ]; do 
-  CONTINUE=""
-  if ! make dist ; then 
-    echo "makedist: error: \"make dist\" in $I failed"
-    if [ ! "$NOABORT" = "TRUE" ]; then
-      until [ "$CONTINUE" = "y" ] || [ "$CONTINUE" = "n" ] || [ "$CONTINUE" = "r" ]; do
-        if ! read -t 300 -n 1 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
-	  CONTINUE="n"
+
+
+if [ "$RELEASE" = "TRUE" ]; then
+  SUBSUBV=$(echo $VERSION | cut -d "." -f 3)
+  if test -d "../makedist"; then
+    echo "Directory ../makedist already exists. Please remove and retry."
+    exit 1;
+  fi
+  mkdir ../makedist;
+  echo -e "  copying file tree to temporary directory ../makedist (this might take a while)"
+  cp -rp $(pwd) ../makedist/;
+  cd ../makedist/$(basename $(pwd));
+
+  if test -x "$(which svn)" && test ! "$(svn status -q)" = ""; then 
+    echo "The copy of your version has local modifications:"
+    svn status -q
+    echo "Are you sure, you want to create a release tarball from that?"
+
+      until [ "$CONTINUE" = "c" ]; do
+        if ! read -t 300 -n 1 -p "(c)ontinue / (r)evert local modifications and continue / (a)bort) ? " CONTINUE ; then
+          CONTINUE="c"
         fi
         echo ""
-        if [ "$CONTINUE" = "n" ]; then
+        if [ "$CONTINUE" = "a" ]; then
           exit 1
-        elif [ "$CONTINUE" = "b" ]; then
-          bash 
-          CONTINUE="r"
+        elif [ "$CONTINUE" = "r" ]; then
+          svn revert --recursive .
+          CONTINUE="c"
         fi
       done
-    fi
+
   fi
   svn update
 
@@ -168,4 +165,3 @@ exit 0
 
 # mode:shell-script
 # sh-indentation:2
-
