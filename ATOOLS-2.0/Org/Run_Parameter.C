@@ -151,7 +151,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   exh->SetStackTrace(stacktrace);
   std::string ycut=dr.GetValue<std::string>("YCUT");
   if (ycut!=NotDefined<std::string>()) gen.SetVariable("Y_CUT",ycut);
-  gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);
+  gen.m_accu = dr.GetValue<double>
+    ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
   Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
   if (color==Switch::On) {
