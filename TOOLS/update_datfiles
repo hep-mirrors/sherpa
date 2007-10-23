@@ -1,0 +1,81 @@
+#!/bin/bash
+
+files="Beam.dat Fragmentation.dat Integration.dat ISR.dat Lund.dat ME.dat Model.dat Run.dat Shower.dat"
+
+replace_spaces() {
+
+  awk '{ 
+    if ($1=="!" || match($0,"!")==1) print $0;
+    else {
+      n=split($0,a,"="); 
+      cmd="sed -e\"s/ /_/g\""; 
+      printf a[1] |& cmd; 
+      close(cmd,"to"); 
+      cmd |& getline line; 
+      close(cmd);
+      m=split(line,b,"_");
+      printf b[1];
+      for (j=2;j<=m;++j) {
+        if (b[j]!="" && b[j]!="\t" && b[j]!=" ") 
+	  printf "_"b[j];
+        else printf " "b[j];
+      } 
+      for (i=2;i<=n;++i) printf "="a[i]; 
+      printf "\n"; 
+    }
+  }' < $1 > $1~
+  mv $1~ $1
+
+}
+
+print_help() {
+    echo "update_datfiles version 1.0" && echo && \
+    echo "options: -r     undo changes on input files" && \
+    echo "         -d     diff after applying changes" && \
+    echo "         -h     display this help and exit" && echo
+}
+
+revert=0
+diffs=0
+while getopts :rdh OPT
+do
+  case $OPT in
+  r) revert=1 ;;
+  d) diffs=1 ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+      echo -n "update_datfiles: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
+      else echo "'$1'. try '-h'"
+      fi
+      print_help && exit 1
+  esac
+done
+
+if test $revert -eq 1; then
+  echo "reverting Sherpa input files"
+  for i in $files; do
+    echo -n "reverting '$i' ... "
+    if ! test -f $i.old; then echo "backup file missing"
+    else cp $i.old $i; echo "done"; fi
+  done
+else
+  echo "updating Sherpa input files"
+  for i in $files; do
+    echo -n "adjusting '$i' ... "
+    if ! test -f $i.old; then cp $i $i.old; fi
+    replace_spaces $i
+    echo "done"
+  done
+  echo "old inputs stored in '*.old'"
+fi
+
+if test $diffs -eq 1; then
+  for i in $files; do
+    if ! diff -q $i $i.old > /dev/null; then
+      echo "==> diff '$i' vs. '$i.old' <=="
+      diff $i $i.old
+    fi
+  done
+fi
