@@ -8,20 +8,25 @@ replace_spaces() {
     if ($1=="!" || match($0,"!")==1) print $0;
     else {
       n=split($0,a,"="); 
-      cmd="sed -e\"s/ /_/g\""; 
-      printf a[1] |& cmd; 
-      close(cmd,"to"); 
-      cmd |& getline line; 
-      close(cmd);
-      m=split(line,b,"_");
-      printf b[1];
-      for (j=2;j<=m;++j) {
-        if (b[j]!="" && b[j]!="\t" && b[j]!=" ") 
-	  printf "_"b[j];
-        else printf " "b[j];
-      } 
-      for (i=2;i<=n;++i) printf "="a[i]; 
-      printf "\n"; 
+      if (n==0) {
+        print $0;
+      }
+      else {
+        cmd="sed -e\"s/ /_/g\""; 
+        printf a[1] |& cmd; 
+        close(cmd,"to"); 
+        cmd |& getline line; 
+        close(cmd);
+        m=split(line,b,"_");
+        printf b[1];
+        for (j=2;j<=m;++j) {
+          if (b[j]!="" && b[j]!="\t" && b[j]!=" ") 
+	    printf "_"b[j];
+          else printf " "b[j];
+        } 
+        for (i=2;i<=n;++i) printf "="a[i]; 
+        printf "\n"; 
+      }
     }
   }' < $1 > $1~
   mv $1~ $1
