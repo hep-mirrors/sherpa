@@ -73,9 +73,9 @@ fi
 
 if test $diffs -eq 1; then
   for i in $files; do
-    if ! diff -q $i $i.old > /dev/null; then
-      echo "==> diff '$i' vs. '$i.old' <=="
-      diff $i $i.old
+    if ! diff -q $i.old $i > /dev/null; then
+      echo "==> diff '$i.old' vs. '$i' <=="
+      diff $i.old $i
     fi
   done
 fi
