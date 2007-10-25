@@ -27,7 +27,7 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
 							Blob_List * blobs)
 {
   Cluster    * cluster;
-  Blob       * blob;
+  Blob       * blob(NULL);
   Cluster_List clist;
   Cluster_Iterator cit=clusters->begin();
   while (!clusters->empty()) {

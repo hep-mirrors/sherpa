@@ -217,7 +217,7 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
   }
 
   Histogram * histomass, * histonumb;
-  if (m_analyse) {
+  if (m_analyse && clist) {
     histomass = (m_histograms.find(string("Cluster_Mass_Formation")))->second;
     histonumb = (m_histograms.find(string("Cluster_Number_Formation")))->second;
     histonumb->Insert(clist->size());
