@@ -5,6 +5,7 @@
 #include "Hadron_Multiplet.H"
 #include "Transitions.H"
 #include "Pair_Popper.H"
+#include "Strong_Coupling.H"
 #include "Vector.H"
 
 #include <map>
@@ -28,6 +29,8 @@ namespace AHADIC {
     Single_Transitions     * p_singletransitions;
     Double_Transitions     * p_doubletransitions;
     Pair_Popper            * p_popper;
+    asform::code             m_asform;
+    Strong_Coupling        * p_coupling; 
 
     StringDoubleMap          m_parametermap;
     SDiter                   m_piter;
@@ -45,6 +48,7 @@ namespace AHADIC {
     Single_Transitions     * GetSingleTransitions() { return p_singletransitions; }
     Double_Transitions     * GetDoubleTransitions() { return p_doubletransitions; }
     Pair_Popper            * GetPopper()            { return p_popper;            }
+    Strong_Coupling        * GetCoupling()          { return p_coupling;          }
 
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);  
   };

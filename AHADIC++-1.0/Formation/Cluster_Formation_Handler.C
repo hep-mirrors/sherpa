@@ -1,5 +1,6 @@
 #include "Cluster_Formation_Handler.H"
 #include "Hadronisation_Parameters.H"
+#include "Dipole_Splitter.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -7,7 +8,7 @@ using namespace std;
 
 Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
   m_single_cr(true), m_double_cr(false),
-  p_gludecayer(new Gluon_Decayer()), 
+  p_gludecayer(new Gluon_Decayer(new Dipole_Splitter(hadpars.GetCoupling()))), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
   p_softclusters(new Soft_Cluster_Handler()),

@@ -15,7 +15,9 @@ Hadronisation_Parameters AHADIC::hadpars;
 
 Hadronisation_Parameters::Hadronisation_Parameters() :
   p_constituents(NULL),p_multiplets(NULL),
-  p_singletransitions(NULL),p_doubletransitions(NULL)
+  p_singletransitions(NULL),p_doubletransitions(NULL),
+  p_popper(NULL), 
+  m_asform(asform::constant), p_coupling(NULL)
 { }
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
@@ -24,6 +26,7 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_singletransitions!=NULL) { delete p_singletransitions; p_singletransitions=NULL;  }
   if (p_doubletransitions!=NULL) { delete p_doubletransitions; p_doubletransitions=NULL;  }
   if (p_popper!=NULL)            { delete p_popper;            p_popper=NULL;             }
+  if (p_coupling!=NULL)          { delete p_coupling;          p_coupling=NULL;           }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)
@@ -43,11 +46,16 @@ void Hadronisation_Parameters::Init(string dir,string file)
   //if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
 
   p_popper       = new Pair_Popper();
+  p_coupling     = new Strong_Coupling(m_asform);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
 {
   Data_Read dataread(dir+file);
+  m_parametermap[string("pt02")]               = 
+    dataread.GetValue<double>("PT^2_0",1.);
+  m_parametermap[string("ptmax")]              = 
+    dataread.GetValue<double>("PT_MAX",1.);
   m_parametermap[string("Tension")]            = 
     dataread.GetValue<double>("COLOUR_TENSION",0.33);
   m_parametermap[string("<pt shift>")]         = 

@@ -37,9 +37,9 @@ namespace AHADIC {
     Constituents(bool=false);
     ~Constituents();
 
-    double Mass(ATOOLS::Flavour & flav);
+    double Mass(const ATOOLS::Flavour & flav);
     double MinMass();
-    double TotWeight(ATOOLS::Flavour & flav);
+    double TotWeight(const ATOOLS::Flavour & flav);
     double Smearing(ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);
 

@@ -356,10 +356,17 @@ std::ostream & AHADIC::operator<<(std::ostream & s, const Cluster_List & cl) {
   return s;
 }
 
+Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
+  m_flav(flav), m_mom(mom), m_info(info), 
+  m_mass(hadpars.GetConstituents()->Mass(flav)) {}
+
+std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle& proto) {
+  s<<"   "<<proto.m_info<<" : "<<proto.m_flav<<" "<<proto.m_mom<<std::endl;
+  return s;
+}
+
 std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle_List & pl) {
   s<<"Proto_Particle_List with "<<pl.size()<<" elements:"<<std::endl;
-  for (PPL_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) {
-    s<<"   "<<(*pit)->m_info<<" : "<<(*pit)->m_flav<<" "<<(*pit)->m_mom<<std::endl;
-  }
+  for (PPL_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) s<<(**pit)<<std::endl;
   return s;
 }

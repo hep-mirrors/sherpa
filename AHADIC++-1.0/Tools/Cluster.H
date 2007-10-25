@@ -126,9 +126,11 @@ namespace AHADIC {
     ATOOLS::Flavour m_flav;
     ATOOLS::Vec4D   m_mom;
     char            m_info;
-    Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
-      m_flav(flav), m_mom(mom), m_info(info) {}
+    double          m_mass;
+    Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info);  
   };
+
+  std::ostream & operator<<(std::ostream & s, const Proto_Particle &);
 
   typedef std::list<Proto_Particle * >        Proto_Particle_List;   
   typedef Proto_Particle_List::iterator       PPL_Iterator; 

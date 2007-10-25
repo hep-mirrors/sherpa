@@ -110,13 +110,13 @@ Constituents::~Constituents() {
 
 double Constituents::MinMass() { return m_minmass; }
 
-double Constituents::Mass(Flavour & flav) {
+double Constituents::Mass(const Flavour & flav) {
   FlavCCMap_Iterator     cmit = CCMap.find(flav);
   if (cmit==CCMap.end()) cmit = CCMap.find(flav.Bar());
   return (cmit!=CCMap.end())? cmit->second->Mass() : flav.Mass();
 }
 
-double Constituents::TotWeight(ATOOLS::Flavour & flav) {
+double Constituents::TotWeight(const ATOOLS::Flavour & flav) {
   FlavCCMap_Iterator     cmit = CCMap.find(flav);
   if (cmit==CCMap.end()) cmit = CCMap.find(flav.Bar());
   return (cmit!=CCMap.end())? cmit->second->TotWeight() : 0.;
