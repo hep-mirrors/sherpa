@@ -11,6 +11,7 @@ libAnalysisTriggers_la_SOURCES        =	\
 					Midpoint_Cone.C \
 				    	Calorimeter_Cone.C \
 					Field_Stuart_Cone_Finder.C \
+	 				D0_BFKL_Cone_Finder.C \
 					One_Particle_Extractor.C \
 					Primitive_Detector.C \
 					Primitive_Calorimeter.C
