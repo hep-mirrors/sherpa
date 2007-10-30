@@ -34,14 +34,14 @@ libObservables_la_SOURCES     =	\
 				Jet_Mass_and_Broadening.C \
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C \
-				General_Observable.C
+				General_Observable.C \
+				BFKL_Observables.C
 pkginclude_HEADERS    =	\
 			Primitive_Observable_Base.H \
 			Normalized_Observable.H \
 			HT.H \
 			PSM_Observables.H \
 			Multiplicity.H \
-			Statistics_Observable.H \
 			MI_Observables.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \
