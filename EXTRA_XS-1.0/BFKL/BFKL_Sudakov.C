@@ -78,13 +78,16 @@ bool BFKL_Sudakov::Dice()
   default:
     THROW(fatal_error,"Invalid scale scheme.");
   }
-  m_gamma=(*MODEL::as)(qt2)/(2.0*M_PI)*
-    log(m_q.PPerp2()/m_kt2min)*m_integral;
+  double b0(MODEL::as->Beta0(qt2)/M_PI);
+  double l2(qt2*exp(-1.0/(b0*(*MODEL::as)(qt2))));
+  m_gamma=1.0/(2.0*M_PI*b0)*
+    log(log(m_q.PPerp2()/l2)/log(m_kt2min/l2))*m_integral;
   // dice new y
   if (m_ya>m_yb) m_y+=log(rn[0])/m_gamma;
   else m_y-=log(rn[0])/m_gamma;
   // dice new kt2
-  m_kt2=DicePolynomial(m_kt2min,m_kt2max,m_ktexp,rn[1]);
+  m_kt2=l2*exp(DicePolynomial(log(m_kt2min/l2),
+			      log(m_kt2max/l2),m_ktexp,rn[1]));
   // dice new phi
   m_phi=2.0*M_PI*rn[2];
   // select splitting
@@ -125,8 +128,11 @@ bool BFKL_Sudakov::Approve(const ATOOLS::Vec4D &k1,
   }
   // coupling & splitting weight
   m_weight*=(*MODEL::as)(kt2)/(2.0*M_PI*m_kt2)*m_integral;
+  double qt2(q1.PPerp2()), b0(MODEL::as->Beta0(qt2)/M_PI);
+  double l2(qt2*exp(-1.0/(b0*(*MODEL::as)(qt2))));
   // kt integration domain weight
-  m_weight*=WeightPolynomial(m_kt2min,m_kt2max,m_ktexp,m_kt2);
+  m_weight*=m_kt2*WeightPolynomial
+    (log(m_kt2min/l2),log(m_kt2max/l2),m_ktexp,log(m_kt2/l2));
   // mass of t-channel particle
   double mq12(sqr(p_levs->Selected()->GetA().PSMass()));
   // propagator weight for massive quarks

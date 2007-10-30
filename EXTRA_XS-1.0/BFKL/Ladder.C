@@ -58,8 +58,8 @@ Ladder::Ladder(const size_t nin,const size_t nout,
   else msg_Info()<<METHOD<<"(): Set process name mode "<<m_pnmode<<".\n";
   if (!read.ReadFromFile(m_nmaxme,"BFKL_NMAX_ME")) m_nmaxme=4;
   else msg_Info()<<METHOD<<"(): Set nmax me "<<m_nmaxme<<".\n";
-  if (!read.ReadFromFile(m_hfp,"BFKL_HFP_MODE")) m_hfp=0;
-  else msg_Info()<<METHOD<<"(): Set heavy flavour production "<<m_hfp<<".\n";
+  if (!read.ReadFromFile(m_fname,"BFKL_PROCESS_NAME")) m_fname="";
+  else msg_Info()<<METHOD<<"(): Set process name '"<<m_fname<<"'.\n";
   if (m_memode&1) m_nmaxme=2;
   m_asecms=(*MODEL::as)(sqr(rpa.gen.Ecms()));
 }
@@ -88,7 +88,7 @@ bool Ladder::Initialize()
     p_pdfs[i]->SetSudakovMode(0);
     if (m_memode&4) p_pdfs[i]->SetOrderingMode(0);
     if (m_splitmode<2) p_pdfs[i]->SetSplitMode(0);
-    p_pdfs[i]->SetWeightMode(1);
+    p_pdfs[i]->SetWeightMode(0);
   }
   delete [] p_momenta;
   delete [] p_flavours;
@@ -148,8 +148,12 @@ bool Ladder::GeneratePDFJet()
   m_weight*=2.0*ymax;
   double kt2max(KT2Max(m_y,m_q2));
   // dice kt2
-  m_kt2=m_kt21=p_sudakov->DicePolynomial(m_kt2min,kt2max,-1.0,rn[1]);
-  m_weight*=p_sudakov->WeightPolynomial(m_kt2min,kt2max,-1.0,m_kt21);
+  double qt2(m_q2), b0(MODEL::as->Beta0(qt2)/M_PI);
+  double l2(qt2*exp(-1.0/(b0*(*MODEL::as)(qt2))));
+  m_kt2=m_kt21=l2*exp(p_sudakov->DicePolynomial
+		      (log(m_kt2min/l2),log(kt2max/l2),-1.0,rn[1]));
+  m_weight*=m_kt21*p_sudakov->WeightPolynomial
+    (log(m_kt2min/l2),log(kt2max/l2),-1.0,log(m_kt21/l2));
   // dice phi
   double phi1(2.0*M_PI*rn[2]);
   m_weight*=2.0*M_PI;
@@ -165,14 +169,16 @@ bool Ladder::GeneratePDFJet()
   m_props.back()=kf::gluon;
   if (m_splitmode>1) {
     // select t-channel quark w/ probability T_R/2C_A
-    double nf(p_sudakov->Nf()), enf(nf*0.5/6.0);
-    double rn(ran.Get()), sf(rn*(1.0+enf)), rsf(sf/enf*nf);
-    double pw(1.0+enf);
-    if (sf<enf) {
-      m_props.back()=Flavour(kf::code(1+rsf));
-      pw*=nf/enf;
+    double orn(ran.Get()), ehf(p_sudakov->Nf()*0.5/3.0);
+    double x[3]={0.0,1.0-ehf/(ehf+1.0),1.0};
+    int iv((int)Min(2.0*orn,1.0));
+    double rn(x[iv]+(orn-iv)*(x[iv+1]-x[iv]));
+    double nf(p_sudakov->Nf()), pw(1.0+2.0*nf), enf(rn*pw);
+    if (enf>1.0) {
+      m_props.back()=Flavour(kf::code(0.5+0.5*enf));
+      if (int(1.0+enf)%2==1) m_props.back()=m_props.back().Bar();
     }
-    m_weight*=pw;
+    m_weight*=pw*(x[iv+1]-x[iv]);
   }
   m_flavs[0]=m_props.back();
   // construct incoming
@@ -324,7 +330,10 @@ bool Ladder::GenerateLadder()
     size_t cnt(0);
     /* iterate */
     int stat(1);
-    while ((stat=DiceVariableMulti())>0) ++cnt;
+    while ((stat=DiceVariableMulti())>0) {
+      if (cnt>m_nfixed) return false;
+      ++cnt;
+    }
     if (stat<0) return false;
     if (m_nfixed<std::numeric_limits<size_t>::max() &&
 	cnt!=m_nfixed) return false;
@@ -393,7 +402,7 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
       (p_addflavours[3],m_fln,ran.Get())) return false;
   m_weight*=p_pdfs[0]->CorrectionWeight()*p_pdfs[1]->CorrectionWeight();
   // add ll approximation of gg->gg me
-  m_weight*=sqr(M_PI)/(2.0*m_q2)/2.0;
+  m_weight*=sqr(M_PI)/(2.0*m_q2);
   // add flux factor
   m_weight/=Flux();
   // set colours
@@ -423,11 +432,6 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_addmomenta[1]=m_kn;
   p_addflavours[0]=m_fl1;
   p_addflavours[1]=m_fln;
-  if (m_hfp==1 && (m_nout!=2 ||
-		   m_flavs[0]!=Flavour(kf::gluon) || 
-		   m_flavs[1]!=Flavour(kf::gluon) ||
-		   m_flavs[2].Kfcode()!=kf::b || 
-		   m_flavs[3]!=m_flavs[2].Bar())) return 0.0;
   double mass(m_fl1.PSMass()+m_fln.PSMass());
   if (m_k1[0]<m_fl1.PSMass() || m_kn[0]<m_fln.PSMass()) return 0.0;
   for (size_t i(2);i<2+m_nout;++i) {
@@ -443,6 +447,7 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   for (size_t i(2);i<2+m_nout;++i) name+="_"+m_flavs[i].IDName();
   name+="_"+m_fln.IDName();
   msg_Debugging()<<METHOD<<"(): Generated '"<<name<<"'\n";
+  if (m_fname!="" && name!=m_fname) return 0.0;
   m_name=name;
   if (m_memode>0 && m_nvector<=Min(m_nmaxme,(size_t)6)) 
     m_weight*=MECorrection();
@@ -489,20 +494,20 @@ double Ladder::MECorrection()
       fl[2]=m_fl1;
       fl.back()=m_fln;
       msg_Debugging()<<METHOD<<"(): Initialize '"<<name<<"'\n";
-      XS_Selector select(NULL);
-      m_xsmes[name] = me = select.GetXS(m_nin,m_naddout,&fl.front());
+      XS_Selector select(this);
+      m_xsmes[name] = me = select.GetXS
+	(m_nin,m_naddout,&fl.front(),false,0,2,false);
       if (me==NULL) {
 	msg_Error()<<METHOD<<"(): Invalid Process '"<<name<<"'."<<std::endl;
 	abort();
       }
     }
     m_dxs=(*me)(s,t,u);
-    msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
-		   <<m_dxs<<" / ( "<<m_bfkldxs<<" * "<<m_splitweight
-		   <<" ) = "<<m_dxs/(m_bfkldxs*m_splitweight)<<" \n";
+    msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "<<m_dxs
+		   <<" / ( "<<m_bfkldxs<<" * "<<m_splitweight
+		   <<" ) = "<<m_dxs/(m_bfkldxs*m_splitweight)<<"\n";
     if (m_memode&8) m_dxs=1.0;
-    double sf(2.0);
-    return m_dxs*sf/(m_bfkldxs*m_splitweight);
+    return m_dxs/(m_bfkldxs*m_splitweight);
   }
   std::vector<ATOOLS::Vec4D> moms(m_moms.size()+2);
   for (size_t i(2);i<m_moms.size();++i) {

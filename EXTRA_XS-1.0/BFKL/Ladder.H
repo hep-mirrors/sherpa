@@ -34,7 +34,9 @@ namespace EXTRAXS {
     double m_asecms;
 
     size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode;
-    size_t m_memode, m_pnmode, m_nmaxme, m_hfp;
+    size_t m_memode, m_pnmode, m_nmaxme;
+
+    std::string m_fname;
 
     std::map<std::string,XS_Base*> m_xsmes;
 
