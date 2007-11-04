@@ -3,7 +3,6 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Single_Channel.H"
-#include "PI_Interface.H"
 #include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
 #include "Helicity_Integrator.H"
@@ -31,10 +30,14 @@ struct TVec4D: public Term {
   TVec4D(const Vec4D &value): m_value(value) {}
 };// end of struct Vec4D
 
-long unsigned int Phase_Space_Integrator::nmax=std::numeric_limits<long unsigned int>::max();
+long unsigned int Phase_Space_Integrator::nmax=
+  std::numeric_limits<long unsigned int>::max();
 Phase_Space_Integrator::Phase_Space_Integrator():
   p_interpreter(NULL) 
 {
+  Data_Reader read(" ",";","!","=");
+  if (!read.ReadFromFile(nmax,"PSI_NMAX")) nmax=10000000;
+  else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
   local.id=local.n=0;
   local.sum=local.sum2=local.max=0.0;
   addtime=0.0;
