@@ -226,8 +226,8 @@ double Single_XS::Differential2()
   if (p_isrhandler && m_nin==2) {
     if (p_flavours[0]==p_flavours[1] || p_isrhandler->On()==0) return 0.;
     double tmp=m_lastdxs*p_isrhandler->Weight2(p_flavours); 
-    m_last+=tmp;
-    return tmp*KFactor();
+    m_last+=tmp*=KFactor();
+    return tmp;
   }
   return 0;
 }

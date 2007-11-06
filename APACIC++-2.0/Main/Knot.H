@@ -38,7 +38,7 @@ namespace APACIC {
     void Store(const int i=0);
     void Restore(const int i=0);
 
-    bool CheckMomentumConservation() const;
+    bool CheckMomentumConservation(const bool force=false) const;
 
   };// end of class Knot
 

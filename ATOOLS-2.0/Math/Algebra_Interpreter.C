@@ -157,7 +157,15 @@ DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_Or,"||",||,4,long int)
 bool IsAlpha(const std::string& expr) 
 {
   for (size_t i=0;i<expr.length();++i) 
-    if (expr[i]<48 || expr[i]>57) return true;
+    if (expr[i]<48 || expr[i]>57) {
+      if (expr[i]=='e' || expr[i]=='E')
+	if (i>0 && expr[i-1]>=48 && expr[i-1]<=57) continue;
+      if (expr[i]=='.' || expr[i]=='-')
+	if ((i>0 && expr[i-1]>=48 && expr[i-1]<=57) ||
+	    (i<expr.length()-1 && expr[i+1]>=48 && expr[i+1]<=57))
+	  continue;
+      return true;
+    }
   return false;
 }
 

@@ -28,8 +28,8 @@ namespace SHERPA {
 
     int     m_njet, m_hardjets, m_maxqcdjets, m_minqcdjets;
     int     m_maxjetnumber, m_cut, m_max_decayjets, m_pdf_mode;
-    double  m_weight, m_asweight, m_scale, m_ycut, m_qmin_i, m_qmin_f, m_q2_f[2];
-    double  m_q2_fss, m_q2_iss, m_q2_isjet, m_q2_fsjet, m_q2_amegic, m_jv_pt2;
+    double  m_weight, m_asweight, m_scale, m_ycut, m_q2_f[2];
+    double  m_q2_fss, m_q2_iss[2], m_q2_isjet, m_q2_fsjet, m_q2_amegic, m_jv_pt2;
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
@@ -78,7 +78,6 @@ namespace SHERPA {
     virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *) = 0;
     virtual int                SetColours(EXTRAXS::XS_Base *,ATOOLS::Vec4D *,ATOOLS::Flavour *) = 0;
     virtual void               CalculateWeight(const double &meweight) = 0;
-    void SetPSScales();
     void SetQMin(Combine_Table_Base *const ref=NULL);
 
     ATOOLS::Flavour            Flav(int);
@@ -96,9 +95,11 @@ namespace SHERPA {
     inline int    InSwaped() const    { return p_me->InSwaped(); }
 
     inline double FSShowerScale() const { return m_q2_fss;   }
-    inline double ISShowerScale() const { return m_q2_iss;   }
 
-    inline double FactorizationScale(const size_t &i) const { return m_q2_f[i]; }
+    inline double ISShowerScale(const int i) const 
+    { return m_q2_iss[i];   }
+    inline double FactorizationScale(const size_t &i) const 
+    { return m_q2_f[i]; }
     
     inline void SetMaxQCDJets(const int jets) { m_maxqcdjets=jets; }
     inline void SetMinQCDJets(const int jets) { m_minqcdjets=jets; }

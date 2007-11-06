@@ -82,7 +82,7 @@ namespace PHASIC {
     ATOOLS::Poincare *p_massboost;
 
     int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt;
-    bool m_initialized;
+    bool m_initialized, m_sintegrator;
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
 
@@ -132,7 +132,7 @@ namespace PHASIC {
     bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();
-    void UpdateIntegrators();
+    bool UpdateIntegrators();
     void InitCuts();
     bool InitIntegrators();
     

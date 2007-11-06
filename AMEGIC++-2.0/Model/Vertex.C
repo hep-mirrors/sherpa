@@ -505,7 +505,7 @@ void Vertex::Print()
 
 void Vertex::TexOutput()
 {
-  ATOOLS::MakeDir("./tex",493);
+  ATOOLS::MakeDir("./tex");
   
   system("rm ./tex/Vertex_*");  
 

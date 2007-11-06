@@ -6,10 +6,12 @@
 
 namespace SHERPA {
 
+  typedef std::map<long unsigned int,long unsigned int> Split_Map;
+
   class Combine_Table_CKKW: public Combine_Table_Base {
   private:
 
-    ATOOLS::Vec4D *p_save_moms;
+    ATOOLS::Vec4D *p_save_moms, *p_smoms;
     size_t         m_nl;
 
     std::set<Combine_Key> m_rejected;
@@ -22,6 +24,11 @@ namespace SHERPA {
     Combine_Table_CKKW *CreateNext(const bool did_boost);
     Combine_Table_CKKW *NextTable(Combine_Table_CKKW *tab,
 				  const double x1,const double x2);
+
+    void InitSMomenta();
+
+    void ShuffleMomenta(ATOOLS::Vec4D &pa,ATOOLS::Vec4D &pb,
+			const double &sa,const double &sb);
 
   public:
 
@@ -40,6 +47,10 @@ namespace SHERPA {
     double GetWinner(int &i, int &j);
     bool   IdentifyHardProcess();
     int    IdentifyHardPropagator() const;
+
+    void ShuffleMomenta();
+
+    inline ATOOLS::Vec4D *const SMomenta() const { return p_smoms; }
 
   };// end of class Combine_Table_CKKW
 

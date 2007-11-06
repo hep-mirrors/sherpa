@@ -125,7 +125,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
-  MakeDir(s_variables["HOME"]+"/.sherpa/",448,true);
+  MakeDir(s_variables["HOME"]+"/.sherpa/",true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)

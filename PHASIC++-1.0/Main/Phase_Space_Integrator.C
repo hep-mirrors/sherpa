@@ -384,8 +384,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->EndOptimize(maxerror);
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->EndOptimize(maxerror);
 	(psh->FSRIntegrator())->EndOptimize(maxerror);
-	psh->UpdateIntegrators();
-	iter   = iter0;
+	if (psh->UpdateIntegrators()) iter=iter0;
+	else iter*=2;
 	maxopt += 4*iter;
 	endopt++;
 	(psh->Process())->ResetMax(1);

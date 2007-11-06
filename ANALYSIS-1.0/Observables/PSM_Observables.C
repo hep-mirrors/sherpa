@@ -132,8 +132,7 @@ void PSM_Observable::EndEvaluation(double scale) {
 }
 
 void PSM_Observable::Output(const std::string & pname) {
-  int  mode_dir = 448;
-  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+  ATOOLS::MakeDir(pname); 
   p_histo->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());
 }
 

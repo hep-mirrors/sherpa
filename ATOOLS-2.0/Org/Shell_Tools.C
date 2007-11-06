@@ -11,7 +11,8 @@
 
 using namespace ATOOLS;
 
-bool ATOOLS::MakeDir(std::string path,const mode_t mode,const bool create_tree)
+bool ATOOLS::MakeDir(std::string path,const bool create_tree,
+		     const mode_t mode)
 {
   if (path=="") return false;
 #ifdef DEBUG__Shell_Tools

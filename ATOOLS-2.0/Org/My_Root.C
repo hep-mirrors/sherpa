@@ -32,7 +32,7 @@ My_Root::My_Root(const int argc,char **const argv):
   char **argvf = new char*[1];
   p_root = new TApplication("MyRoot",&argcf,argvf);
   if ((OutputPath()+OutputFile())!="") {
-    ATOOLS::MakeDir(OutputPath().c_str(),448);
+    ATOOLS::MakeDir(OutputPath());
     if (!system((std::string("test -f ")+OutputPath()+OutputFile()).c_str())) {
       system((std::string("rm -f ")+OutputPath()+OutputFile()).c_str());
     }

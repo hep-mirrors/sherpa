@@ -47,7 +47,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath.c_str(),493);
+  ATOOLS::MakeDir(newpath);
   if (system((string("test -f ")+newpath+string("/makelibs")).c_str())) {
     system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    string("/makelibs ")+newpath).c_str());
@@ -80,8 +80,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 
   // making directory
   if (m_gen_str>1) {
-    unsigned int  mode_dir = 0755;
-    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
+    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 }
@@ -98,7 +97,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath.c_str(),493);
+  ATOOLS::MakeDir(newpath);
   if (system(("test -f "+newpath+"/makelibs").c_str())) {
     system(("cp "+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    "/makelibs "+newpath).c_str());
@@ -131,8 +130,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 
   // making directory
   if (m_gen_str>1) {
-    unsigned int  mode_dir = 0755;
-    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
+    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 }
@@ -771,10 +769,9 @@ void Single_Process::WriteLibrary()
     ++m_libnumb;
   }
   m_libname = testname;
-  int  mode_dir = 493;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  ATOOLS::MakeDir((newpath+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
+  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;
@@ -947,7 +944,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
   long int n,sn,son;
-  std::string filename = _resdir+"/"+m_name+".xstotal";
+  std::string filename = _resdir+"/"+m_name+".xs_tot";
   std::string histofile =_resdir+string("/WD_")+m_name+"/";
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
@@ -1006,8 +1003,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       std::ofstream to;
       to.open(filename.c_str(),ios::out);
       WriteOutXSecs(to);
-      int  mode_dir = 493;
-      ATOOLS::MakeDir(histofile.c_str(),mode_dir,0); 
+      ATOOLS::MakeDir(histofile,0); 
       WriteOutHistogram(histofile);
       msg_Info()<<"Store result : xs for "<<m_name<<" : "
 		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -1030,8 +1026,7 @@ void Single_Process::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   WriteOutXSecs(to);
-  int  mode_dir = 493;
-  ATOOLS::MakeDir(m_histofile.c_str(),mode_dir,0); 
+  ATOOLS::MakeDir(m_histofile,0); 
   WriteOutHistogram(m_histofile);
   msg_Info()<<"Store result : xs for "<<m_name<<" : "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -1221,8 +1216,8 @@ double Single_Process::DSigma2() {
   if (p_partner == this) {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
-  m_last    += tmp;
-  return tmp*p_partner->KFactor();
+  m_last    += tmp*=p_partner->KFactor();
+  return tmp;
 }
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)

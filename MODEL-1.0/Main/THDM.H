@@ -6,11 +6,12 @@
 namespace MODEL {
   class THDM : public Model_Base {
   private :
+    Model_Base *p_sm;
     void ReadInFile();
   public :
     THDM(std::string,std::string);
-    ~THDM()                     {}
-    bool RunSpectrumGenerator() {}
+    ~THDM();
+    bool RunSpectrumGenerator() { return true; }
     void FillMasses();
     void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }

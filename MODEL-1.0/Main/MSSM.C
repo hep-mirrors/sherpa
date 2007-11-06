@@ -18,18 +18,21 @@ MSSM::MSSM(std::string _dir,std::string _file) :
   msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("MSSM");
 
-  Model_Base * SM = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(SM->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(SM->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(SM->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(SM->GetComplexMatrices()));
+  p_sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
+  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
+  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
+  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
 
   p_constants->insert(std::make_pair(std::string("mT"),    
-				     SM->ScalarConstant("Yukawa_t")));
-
-  delete SM;
+				     p_sm->ScalarConstant("Yukawa_t")));
 
   ReadInFile();
+}
+
+MSSM::~MSSM()  
+{
+  delete p_sm;
 }
 
 void MSSM::ReadInFile() {

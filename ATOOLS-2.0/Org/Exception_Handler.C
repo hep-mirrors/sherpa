@@ -142,7 +142,7 @@ void Exception_Handler::Terminate()
        "/Status__"+rpa.gen.Timer().TimeString(3));
     msg_Error()<<METHOD<<"(): Pre-crash status saved to '"
 	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
-    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
+    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"));
   }
   if (!ApproveTerminate()) {
     m_exception=NULL;

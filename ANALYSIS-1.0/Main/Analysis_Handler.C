@@ -254,12 +254,12 @@ void Analysis_Handler::PrepareTerminate()
 void Analysis_Handler::Finish(const std::string &path)
 {
   if (OutputPath()[OutputPath().length()-1]=='/') {
-    if (!MakeDir(OutputPath(),448)) {
+    if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "
 		 <<"Cannot create directory '"<<OutputPath()
 		 <<"'."<<std::endl; 
       SetOutputPath(path);
-      if (!MakeDir(OutputPath(),448)) {
+      if (!MakeDir(OutputPath())) {
 	msg_Error()<<"Analysis_Handler::Finish(..): "
 		   <<"Cannot create directory '"<<OutputPath()
 		   <<"'."<<std::endl; 

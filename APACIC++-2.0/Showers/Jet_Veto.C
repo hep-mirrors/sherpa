@@ -81,7 +81,7 @@ void Jet_Veto::PrepareTerminate()
 {
   if (m_histos.empty()) return;
   std::string pname("ps_rates_"+ToString(rpa.gen.Ecms())+"/");
-  if (MakeDir(pname.c_str(),448)) {
+  if (MakeDir(pname)) {
     for (size_t i(0);i<m_histos.size();++i) {
       m_histos[i]->Finalize();
       m_histos[i]->Output((pname+"r_"+ToString(i)+".dat").c_str());     

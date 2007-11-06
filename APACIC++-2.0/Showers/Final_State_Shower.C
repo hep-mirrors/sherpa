@@ -31,7 +31,7 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",3));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",2));   
-  p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",0)); 
+  p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",2)); 
   p_sud->SetQEDMECorrectionScheme(dataread->GetValue<int>("FS_QED_ME_SCHEME",0)); 
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));
   p_sud->SetKTScheme(dataread->GetValue<int>("FS_KT_SCHEME",1));
@@ -164,7 +164,7 @@ FillISBranch(Initial_State_Shower *const ini,Tree *tree,Knot *mo,
 	msg_Debugging()<<"resonance decay "<<mo->shower<<"\n";
 	InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
 		      Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
-	if (!p_kin->Shuffle(mo,0)) {
+	if (!p_kin->BoostDaughter(mo)) {
 	  msg_Debugging()<<"shuffle failed\n";
 	  continue;
 	}
@@ -1016,6 +1016,8 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   double E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
   double th(p_kin->GetOpeningAngle(z_mo,sqr(E_mo),t_mo,tb,tc));
   double maxpt2(p_kin->GetRelativeKT2(z_mo,sqr(E_mo),t_mo,tb,tc));
+  if (IsEqual(th,M_PI)) maxpt2=mo->maxpt2;
+  mo->sthcrit=th;
   if (mo->part->Flav().IsQuark() && 
       d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
     if (d1->part->Flav().IsQuark()) {
@@ -1158,7 +1160,7 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
   double th, maxpt2;
   if ((mo->left->part->Flav().Strong()) && 
       (mo->right->part->Flav().Strong())) {
-    th     = p_kin->GetOpeningAngle(mo);
+    th     = Min(mo->sthcrit,p_kin->GetOpeningAngle(mo));
     maxpt2 = p_kin->GetRelativeKT2(mo->z,mo->E2,mo->t,
 				   sqr(mo->left->part->Flav().PSMass()),
 				   sqr(mo->right->part->Flav().PSMass()));
@@ -1185,6 +1187,9 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
   mo->right->E2     = (1. - mo->z)*(1. - mo->z)*(mo->E2);
   mo->right->thcrit = th;
   mo->right->maxpt2 = maxpt2; 
+  msg_Debugging()<<"thc set "<<mo->kn_no<<"->("<<mo->left->kn_no
+		 <<","<<mo->right->kn_no<<") {"<<mo->left->part->Flav()
+		 <<","<<mo->right->part->Flav()<<"}: "<<th<<"\n"; 
 }
 
 bool Final_State_Shower::TestShower(Tree * tree) 

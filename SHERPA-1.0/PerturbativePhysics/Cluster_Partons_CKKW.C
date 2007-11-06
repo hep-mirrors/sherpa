@@ -50,6 +50,8 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   Data_Reader reader(" ",";","!","=");
   if (reader.ReadFromFile(helps,"PRINT_SUDAKOV") && helps.length()>0) 
     GenerateTables(helps);
+  if (!reader.ReadFromFile(m_smode,"CKKW_SHUFFLE_MODE")) m_smode=0;
+  else msg_Info()<<METHOD<<"(): Set shuffle mode "<<m_smode<<".\n";
 }
 
 Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
@@ -59,7 +61,7 @@ Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
 void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
 {
   msg_Info()<<METHOD<<"("<<path<<"): Generating sudakov tables {"<<std::endl;
-    MakeDir(path,448,true);
+    MakeDir(path,true);
   for (short unsigned int l(0);l<2;++l) {
     NLL_Sudakov *sud(l==0?p_fssud:p_issud);
     if (sud==NULL) break;
@@ -171,8 +173,7 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-  // msg_Debugging()<<"sc: ps scale "<<sqrt(dabs(p_xs->Scale(stp::ren)))<<"\n";
-  // m_q2_iss=m_q2_fss=dabs(p_xs->Scale(stp::ren));
+  m_q2_iss[0]=m_q2_iss[1]=m_q2_fss=dabs(p_xs->Scale(stp::ren));
   return test;
 }
 
@@ -210,9 +211,12 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 		 <<", me_as_fac = "<<m_me_as_factor
 		 <<", m_kfac = "<<m_kfac<<"\n";
   msg_Debugging()<<"  amegic : "<<std::setw(12)<<sqrt(m_q2_amegic)<<"\n";
-  msg_Debugging()<<"  cut is : "<<std::setw(12)<<sqrt(m_q2_isjet)<<"\n";
-  msg_Debugging()<<"  cut fs : "<<std::setw(12)<<sqrt(m_q2_fsjet)<<"\n";
-  msg_Debugging()<<"  is ps  : "<<std::setw(12)<<sqrt(m_q2_iss)<<"\n";
+  msg_Debugging()<<"  cut is : "<<std::setw(12)<<sqrt(m_q2_isjet)
+		 <<"  ->  as = "<<m_as_jet[1]<<"\n";
+  msg_Debugging()<<"  cut fs : "<<std::setw(12)<<sqrt(m_q2_fsjet)
+		 <<"  ->  as = "<<m_as_jet[0]<<"\n";
+  msg_Debugging()<<"  is ps l: "<<std::setw(12)<<sqrt(m_q2_iss[0])<<"\n";
+  msg_Debugging()<<"  is ps r: "<<std::setw(12)<<sqrt(m_q2_iss[1])<<"\n";
   msg_Debugging()<<"  fs ps  : "<<std::setw(12)<<sqrt(m_q2_fss)<<"\n";
   msg_Debugging()<<"}\n"; 
 }
@@ -340,7 +344,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
   if (wminqcd>=0) {
     // check for scale definition from Single_XS
-    double mu2r[2]={0.0,0.0};
+    double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
+		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
     if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
     if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
     double qu(sqrt(mu2r[0]!=0.0?mu2r[0]:
@@ -372,7 +377,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       }
     }
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_iss[0]=sqr(m_last_q[0]);
+      m_q2_iss[1]=sqr(m_last_q[1]);
       m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }
@@ -381,7 +387,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       m_last_q[i]=sqrt(p_ct->GetHardLegs()[wminqed]
  		       [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
     if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=m_last_q[0]*m_last_q[1];
+      m_q2_iss[0]=sqr(m_last_q[0]);
+      m_q2_iss[1]=sqr(m_last_q[1]);
       m_q2_fss=m_last_q[2]*m_last_q[3];
     }
   }
@@ -439,6 +446,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 
 void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
 {
+  if (m_smode&1) p_ct->ShuffleMomenta();
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
   ++m_counts;

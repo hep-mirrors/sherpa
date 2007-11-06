@@ -145,7 +145,9 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Tree *const tree,
     if (maxt_d2<t_si) return false;
     double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-t_si));
     double pz_mo(1./(2.*active->part->Momentum()[3])*(s3-2.*partner->part->E()*E_mo));
-    double pt_mo(sqrt(sqr(E_mo)-sqr(pz_mo)-mother->t)), cph(cos(active->phi)), sph(sin(active->phi));
+    double pt_mo(sqr(E_mo)-sqr(pz_mo)-mother->t), cph(cos(active->phi)), sph(sin(active->phi));
+    if (pt_mo<0.0) return false;
+    pt_mo=sqrt(pt_mo);
     if (mode>0) {
       // determine phi
       Vec4D p_mo= mother->part->Momentum();
@@ -176,8 +178,8 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Tree *const tree,
 		 <<"  test s' "<<sprime/active->z<<" =?= "
 		 <<(v_mo+partner->part->Momentum()).Abs2()<<"\n"
 		 <<"  (spr,z,t4): " <<sprime<<", "<<active->z<<", "<<t_si<<"\n"
-		 <<"  (E3,pz3,pt3,s3): "<<E_mo<<", "<<pz_mo<<", "
-		 <<pt_mo<<" "<<s3<<std::endl;
+		 <<"  (E3,pz3,pt3,\\sqrt{mo->t},m3): "<<E_mo<<", "<<pz_mo<<", "
+		 <<pt_mo<<" "<<sqrt(dabs(mother->t))<<" "<<sqrt(s3)<<std::endl;
     }
     BoostPartial(mode,mother,sister,v_mo,v_si);
   }
@@ -186,7 +188,20 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Tree *const tree,
     msg_Debugging()<<"}\n";
     return true;
   }
-  if (ResetEnergies(sister)) p_kin->DoKinematics(sister);
+  if (ResetEnergies(sister)) {
+    static double accu(sqrt(sqrt(Accu())));
+    if (sister->part->Info()=='H' && sister->left!=NULL && 
+	sister->left->part->Info()=='H' &&
+	!IsEqual(sister->t,sister->part->Momentum().Abs2(),accu)) {
+      msg_Error()<<METHOD<<"(): Large sister mass deviation: "
+		 <<sqrt(sister->part->Momentum().Abs2())<<" vs. "
+		 <<sqrt(sister->t)<<" -> "<<
+	sister->part->Momentum().Abs2()/sister->t-1.0<<std::endl;
+      msg_Debugging()<<"}\n";
+      return false;
+    }
+    p_kin->DoKinematics(sister);
+  }
   else {
     msg_Debugging()<<"}\n";
     return false;

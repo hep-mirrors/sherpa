@@ -119,6 +119,10 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->E2     = sqr(p1[0]);
   mo->thcrit = M_PI;
 
+  msg_Debugging()<<METHOD<<"(): PS scales {"
+		 <<"\n  is l: "<<sqrt(p_cluster->ISShowerScale(0))
+		 <<"\n  is r: "<<sqrt(p_cluster->ISShowerScale(1))
+		 <<"\n  fs  : "<<sqrt(p_cluster->FSShowerScale())<<"\n}\n";
   //we have a virtuality ordered shower, therefore:
   mo->t = p_cluster->FSShowerScale();
   // set jet veto scale for each emission
@@ -127,11 +131,14 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->pt2lcm = p_cluster->FSShowerScale();
   mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
     sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
-  double scale(p_cluster->ISShowerScale());
-  if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->ISJetScale());
+  double scale[2]={p_cluster->ISShowerScale(0),p_cluster->ISShowerScale(1)};
+  if (p_cluster->OrderStrong()==0) {
+    scale[0]=Max(scale[0],4.*p_cluster->ISJetScale());
+    scale[1]=Max(scale[1],4.*p_cluster->ISJetScale());
+  }
   double x1,x2;
   p_cluster->GetCombineTable()->GetX1X2(x1,x2);
-  EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale);
+  EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale[0],scale[1]);
   EstablishRelations(mo,knots[2],knots[3],1,x1,x2);      
   for (int i(0);i<2;++i) {
     knots[i]->pt2lcm=p_cluster->FactorizationScale(i);
@@ -521,7 +528,7 @@ void Tree_Filler::DetermineColourAngles(const std::vector<APACIC::Knot *> & knot
 
 
 void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
-				     int mode,double x1,double x2,double scale)
+				     int mode,double x1,double x2,double scale1,double scale2)
 {
   if (mode==1) {
     Vec4D p1(m_cms_boost*mo->part->Momentum());
@@ -562,8 +569,8 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     d1->x = x1;
     d2->x = x2;
     // set start t
-    d1->t = -scale;
-    d2->t = -scale;
+    d1->t = -scale1;
+    d2->t = -scale2;
   }
   else if (mode==2 || mode==3) {
     // initial state initialization

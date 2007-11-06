@@ -352,7 +352,7 @@ bool Simple_Chain::CreateGrid()
   }
   msg_Tracking()<<"}"<<std::endl;
   if (!p_gridcreator->ReadInGrid()) {
-    if (MakeDir(OutputPath().c_str(),493)==0) {
+    if (MakeDir(OutputPath())==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
@@ -911,7 +911,7 @@ void Simple_Chain::PrepareTerminate()
        hit!=m_differentials.end();++hit) hit->second->RestoreData();
   CopyFile(InputPath()+m_selectorfile,path+"/"+m_selectorfile);
   path+="/"+m_pathextra;
-  MakeDir(path,493,true);
+  MakeDir(path,true);
   p_gridcreator->WriteOutGrid(String_Vector(),path);
 }
 

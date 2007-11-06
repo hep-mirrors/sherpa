@@ -1,11 +1,19 @@
-21.08.2003
-========== 
-AS:
-  deleted old ChangeLog
-  Math/Histogram.C
-	linear histograms are now divided by the binwidth, in oder 
-	to give proper normalized histograms.
+====== Changelog 1.0.10 -> 1.0.11 ======
 
-  Phys/Shower_Observable.C Phys/Shower_Observable.H
-	the class Multiplicity can no als be used in hadron level 
-	analyses by giving mode==2 to the constructor
+This release contains all patches provided for previous releases and in addition the following notable changes:
+
+===== User Interface changes =====
+  * Footer of ''SHERPA_OUTPUT'' files contains only the filename of the next file, not the complete path anymore.
+  * If you enable our own hadron decay module HADRONS++, only the tau decays are activated by default. Everything else will still be done by Pythia.
+
+===== New features =====
+  * Massive pure QCD processes in EXTRA-XS module
+  * Changed splitting variable in APACIC to light-cone momentum fraction
+  * Default colour setting in CKKW for core processes with four coloured objects 
+  * Compiling with gfortran instead of g77/libg2c
+
+===== Bugfixes =====
+
+  * Photon emission off leptons by error was fully disabled in version 1-0-10
+  * The very first 'DECAY' Block in SLHA MSSM spectrum ffiles has not been read by the SLHA interface routines, this has led to the width of the corresponding particle being set incorrectly
+  * Corrected rotation and boost sequence in APACIC IS showering

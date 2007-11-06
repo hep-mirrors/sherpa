@@ -6,11 +6,12 @@
 namespace MODEL {
   class Fourth_Generation_Leptons : public Model_Base {
   private :
+    Model_Base *p_sm;
     void ReadInFile();
   public :
     Fourth_Generation_Leptons(std::string,std::string);
-    ~Fourth_Generation_Leptons() {}
-    bool RunSpectrumGenerator() {}
+    ~Fourth_Generation_Leptons();
+    bool RunSpectrumGenerator() { return true; }
     void FillMasses();
     void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }

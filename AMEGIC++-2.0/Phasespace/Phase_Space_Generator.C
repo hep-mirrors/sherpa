@@ -48,8 +48,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
-  unsigned int  mode_dir = 0755;
-  ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path).c_str(),mode_dir);
+  ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path);
   int newchannels = 0;
   //int extrachannel = 0;
   ofstream lmf;
@@ -128,8 +127,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	      fsrpath = fsrpath0 + string(hlp);
 	      fsrp = path+string("/")+fsrpath;
 	    }
-	    unsigned int  mode_dir = 0755;
-	    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
+	    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
 	    String_Library slib(1);
 	    slib.InitMakefile(fsrp);
 	  }

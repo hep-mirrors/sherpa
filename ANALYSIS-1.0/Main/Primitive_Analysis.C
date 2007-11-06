@@ -122,7 +122,10 @@ std::string Primitive_Analysis::JetID
     }
   }
   for (size_t i(0);i<name.length();++i) {
-    if (name[i]=='_' && name[i-1]!='_') ++jets;
+    if (name[i]=='_' && name[i-1]!='_' && 
+	(i<2 || name.rfind("nu",i)!=i-2) && 
+	name[i+1]!='R' && name[i+1]!='L' &&
+	(name[i+1]<48 || name[i+1]>57)) ++jets;
     else if (name[i]=='[') {
       std::string cmax;
       for (size_t j(0);j<max.length();++j) {
@@ -337,7 +340,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 {
   if (ntotal==0) ntotal=m_nevt;
   if (m_mode&ANALYSIS::output_this) 
-    ATOOLS::MakeDir(resdir+OutputPath(),448); 
+    ATOOLS::MakeDir(resdir+OutputPath()); 
 
   for (Analysis_List::iterator it=m_subanalyses.begin();
        it!=m_subanalyses.end();++it) {

@@ -50,7 +50,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   }
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
-  m_me_as_factor=1.0;//p_jf->Type()<2?0.25:1.0;
+  m_me_as_factor=p_jf->Type()<2?0.25:1.0;
   msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
 		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
 		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
@@ -61,13 +61,11 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   p_runas = MODEL::as; 
   if (m_fsrshoweron!=0 && (m_sud_mode&1)) {
     p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
-			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_fs_as_factor);
+			      p_runas,m_me_as_factor*m_fs_as_factor);
   }
   if (m_isrshoweron!=0 && (m_sud_mode&2)) {
     p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
-			      p_jf->Smax(),p_jf->Smin(),
-			      p_runas,m_is_as_factor);
+			      p_runas,m_me_as_factor*m_is_as_factor);
   }
 
   exh->AddTerminatorObject(this);
@@ -262,8 +260,8 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   CreateTables(legs,nampl,x1,x2);
   m_q2_amegic=proc->Scale(PHASIC::stp::ren);
   m_q2_isjet=m_ycut*sqr(rpa.gen.Ecms());
-  m_q2_fsjet=m_q2_isjet/sqr(p_ajf->DeltaR());
-  m_q2_iss=m_q2_fss=std::numeric_limits<double>::max();
+  m_q2_fsjet=m_q2_isjet*sqr(p_ajf->DeltaR());
+  m_q2_iss[0]=m_q2_iss[1]=m_q2_fss=std::numeric_limits<double>::max();
   m_jv_pt2=std::numeric_limits<double>::max();
   m_q2_f[1]=m_q2_f[0]=proc->Scale(PHASIC::stp::fac);
   return 1;
@@ -412,68 +410,6 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
   }
 }
 
-void Cluster_Partons_Base::SetPSScales()
-{
-  msg_Debugging()<<METHOD<<"(): {\n";
-  msg_Indent();
-  double lastq[4];
-  int wminqcd(-1), wminqed(-1);
-  double kt2minqcd(std::numeric_limits<double>::max()), kt2minqed(kt2minqcd);
-  for (int i(0);i<p_ct->NAmplitudes();++i) {
-    for (int j(0);j<2;++j) {
-      double kt2qcd(p_ct->GetHardLegs()[i][j].KT2QCD());
-      double kt2qed(p_ct->GetHardLegs()[i][j].KT2QED());
-      if (kt2qcd<kt2minqcd || 
-	  (IsEqual(kt2qcd,kt2minqcd) && kt2qed<kt2minqed)) {
-	wminqcd=i;
-	kt2minqcd=kt2qcd;
-      }
-      if (kt2qed<kt2minqed || 
-	  (IsEqual(kt2qed,kt2minqed) && kt2qcd<kt2minqcd)) {
-	wminqed=i;
-	kt2minqed=kt2qed;
-      }
-    }
-  }
-  msg_Debugging()<<"QCD: wmin_qcd = "<<wminqcd<<", ktmin_qcd = "
-		 <<sqrt(kt2minqcd)<<", wmin_qed = "<<wminqed
-		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
-  if (wminqcd>=0) {
-    // check for scale definition from Single_XS
-    double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
-		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
-    if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
-    if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
-    // set possibly separate scales for the two vertices
-    for (short unsigned int i(0);i<4;++i) {
-      double rs(mu2r[i/2]!=0.0?mu2r[i/2]:p_ct->GetHardLegs()[wminqcd]
-		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
-      if (rs==std::numeric_limits<double>::max())
-	rs=p_ct->GetHardLegs()[wminqcd]
-	  [p_ct->GetHardInfo()[wminqcd][i]].KT2QED();
-      lastq[i]=sqrt(rs);
-    }
-    if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=lastq[0]*lastq[1];
-      m_q2_fss=lastq[2]*lastq[3];
-    }
-  }
-  else if (wminqed>=0) {
-    for (short unsigned int i(0);i<4;++i) 
-      lastq[i]=sqrt(p_ct->GetHardLegs()[wminqed]
-		    [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
-    if (m_q2_fss==std::numeric_limits<double>::max()) {
-      m_q2_iss=lastq[0]*lastq[1];
-      m_q2_fss=lastq[2]*lastq[3];
-    }
-  }
-  else {
-    THROW(fatal_error,"No scale in hard process");
-  }
-  msg_Debugging()<<"hard scales = {"<<lastq[0]<<","<<lastq[1]
-		 <<","<<lastq[2]<<","<<lastq[3]<<"}\n}\n";
-}
-
 int Cluster_Partons_Base::SetDecayColours(Vec4D * p, Flavour * fl,int col1,int col2)
 {
   int ncol   = 0;
@@ -488,7 +424,7 @@ int Cluster_Partons_Base::SetDecayColours(Vec4D * p, Flavour * fl,int col1,int c
   }  
   m_colors[0][0] = col1; m_colors[0][1] = col2; 
   for (int i=1; i<3; ++i) m_colors[i][0] = m_colors[i][1] = 0;
-  m_q2_fss = m_q2_iss = p[0].Abs2();
+  m_q2_fss=m_q2_iss[0]=m_q2_iss[1] = p[0].Abs2();
   switch (ncol) {
   case 0: 
     // no colours at all.
@@ -565,7 +501,7 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
     for (int i=0; i<4; ++i) msg_Out()<<i<<" : "<<fl[i]<<std::endl;
     abort();
   case 0:
-    m_q2_fss = m_q2_iss = (p[0]+p[1]).Abs2();
+    m_q2_fss=m_q2_iss[0]=m_q2_iss[1]=(p[0]+p[1]).Abs2();
     m_hard_nqed = 2;
     m_hard_nqcd = 0;
     return 0;
@@ -584,24 +520,30 @@ int Cluster_Partons_Base::Set4Colours(const int nquark,const int ngluon,Vec4D * 
     msg_Error()<<*ct<<std::endl;
     return false;
   }
+  double s(dabs((p_ct->Momenta()[0]+p_ct->Momenta()[1]).Abs2()));
+  double t(dabs((p_ct->Momenta()[0]-p_ct->Momenta()[2]).Abs2()));
+  double u(dabs((p_ct->Momenta()[0]-p_ct->Momenta()[3]).Abs2()));
   switch (prop) {
   case 1:
     if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[1][1]=500;
     else m_colors[0][1]=m_colors[1][0]=500;
     if (!fl[2].IsAnti()) m_colors[2][0]=m_colors[3][1]=501;
     else m_colors[2][1]=m_colors[3][0]=501;
+    m_q2_iss[1]=m_q2_iss[0]=m_q2_fss=s;
     break;
   case 2:
     if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[2][0]=500;
     else m_colors[0][1]=m_colors[2][1]=500;
     if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[3][0]=501;
     else m_colors[1][1]=m_colors[3][1]=501;
+    m_q2_iss[1]=m_q2_iss[0]=m_q2_fss=t;
     break;
   case 3:
     if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[3][0]=500;
     else m_colors[0][1]=m_colors[3][1]=500;
     if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[2][0]=501;
     else m_colors[1][1]=m_colors[2][1]=501;
+    m_q2_iss[1]=m_q2_iss[0]=m_q2_fss=u;
     break;
   }
   return true;
@@ -628,6 +570,10 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
     }
     connected[j++]=i;
   }    
+  m_q2_iss[1]=m_q2_iss[0]=m_q2_fss=
+    dabs((p_ct->Momenta()[connected[0]]+p_ct->Momenta()[connected[1]]).Abs2());
+  m_q2_iss[0]+=dabs(p_ct->Momenta()[0].Abs2());
+  m_q2_iss[1]+=dabs(p_ct->Momenta()[1].Abs2());
   return 0;
 }
 
@@ -653,6 +599,10 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	j++;
       }    
     }
+    double s(dabs((p_ct->Momenta()[0]+p_ct->Momenta()[1]).Abs2()));
+    double t(dabs((p_ct->Momenta()[0]-p_ct->Momenta()[2]).Abs2()));
+    double u(dabs((p_ct->Momenta()[0]-p_ct->Momenta()[3]).Abs2()));
+    m_q2_iss[1]=m_q2_iss[0]=m_q2_fss=pow(s*t*u,1.0/3.0);
   }
   else if (ngluon==1) {
     for (int i=0;i<4;i++) {
@@ -667,6 +617,8 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       }
     }
     bool tmode = (connected[0]<2 ^ connected[1]<2);
+    Vec4D p[4]={-p_ct->Momenta()[0],-p_ct->Momenta()[1],
+		p_ct->Momenta()[2],p_ct->Momenta()[3]};
     for (int i=0;i<4;i++) {
       if (fl[i].IsGluon()) {
 	if (tmode) {
@@ -678,11 +630,20 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	    m_colors[i][1-int(fl[connected[0]].IsAnti())] = 501;
 	    m_colors[i][0+int(fl[connected[1]].IsAnti())] = 500;
 	  }
+	  m_q2_iss[i]=Min(dabs((p[i]+p[connected[0]]).Abs2()),
+			  dabs((p[i]+p[connected[1]]).Abs2()));
+	  m_q2_iss[1-i]=dabs((p[0]+p[1]).Abs2());
+	  m_q2_fss=dabs((p[i]+p[connected[1]]).Abs2());
 	}
 	else {
 	  for (int j=0;j<2;j++) {
-	    m_colors[i][j] += m_colors[connected[0]][j] + m_colors[connected[1]][j];
+	    m_colors[i][j] += m_colors[connected[0]][j] + 
+	      m_colors[connected[1]][j];
 	  }
+	  m_q2_fss=Min(dabs((p[i]+p[0]).Abs2()),dabs((p[i]+p[1]).Abs2()));
+	  int opp(i==3?0:1);
+	  m_q2_iss[opp]=dabs((p[i]+p[opp]).Abs2());
+	  m_q2_iss[1-opp]=dabs((p[i]+p[1-opp]).Abs2());
 	}
       }
     }    
@@ -691,6 +652,8 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
     msg_Debugging()<<METHOD<<" "<<i<<" "<<p_ct->GetLeg(i).Point()->fl<<" "
 		   <<m_colors[i][0]<<" "<<m_colors[i][1]<<std::endl;
   }
+  m_q2_iss[0]+=dabs(p_ct->Momenta()[0].Abs2());
+  m_q2_iss[1]+=dabs(p_ct->Momenta()[1].Abs2());
   return 0;
 }
 
@@ -797,7 +760,10 @@ std::string Cluster_Partons_Base::JetID(std::string name) const
   size_t jets(1);
   std::string subprocs;
   for (size_t i(0);i<name.length();++i) {
-    if (name[i]=='_' && name[i-1]!='_') ++jets;
+    if (name[i]=='_' && name[i-1]!='_' && 
+	(i<2 || name.rfind("nu",i)!=i-2) && 
+	name[i+1]!='R' && name[i+1]!='L' &&
+	(name[i+1]<48 || name[i+1]>57)) ++jets;
     else if (name[i]=='[') {
       int open(1);
       for (size_t j(i+1);j<name.length();++j) {

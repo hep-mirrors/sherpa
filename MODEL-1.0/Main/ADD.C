@@ -17,15 +17,18 @@ ADD::ADD(std::string _dir,std::string _file) :
   msg_Info()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("ADD");
 
-  Model_Base * SM = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(SM->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(SM->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(SM->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(SM->GetComplexMatrices()));
-
-  delete SM;
+  p_sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
+  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
+  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
+  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
 
   ReadInFile();
+}
+
+ADD::~ADD()
+{
+  delete p_sm;
 }
 
 void ADD::ReadInFile() {

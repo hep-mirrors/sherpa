@@ -5,9 +5,11 @@
 #include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Matrix.H"
+#include "Exception.H"
 
 namespace MODEL {
-  class LesHouches_Interface : public Spectrum_Generator_Base {
+  class LesHouches_Interface : public Spectrum_Generator_Base, 
+			       public ATOOLS::Terminator_Object {
     void Info();
     void SetSMInput(); 
     void SetMasses(); 
@@ -19,6 +21,9 @@ namespace MODEL {
 
     std::string          m_dir, m_inputfile;
     ATOOLS::Data_Reader *p_reader;
+
+    void PrepareTerminate();
+
   public:
     LesHouches_Interface(ATOOLS::Data_Read *,Model_Base *,std::string);
     ~LesHouches_Interface();

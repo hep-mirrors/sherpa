@@ -281,7 +281,7 @@ namespace PHASIC {
 
     void SetFactorizationScale();
 
-    virtual void FillSIntegrator(Multi_Channel *&mc);
+    virtual bool FillSIntegrator(Multi_Channel *&mc);
     virtual void UpdateIntegrator(Multi_Channel *&mc);
 
     // inline functions

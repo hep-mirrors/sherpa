@@ -125,6 +125,65 @@ Dalitz_Observable_Base_Getter::operator()(const Argument_Matrix &parameters) con
 void Dalitz_Observable_Base_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"inflav outflav outflav2 outflav3 bins min max type"; 
+  str<<"inflav outflav1 outflav2 outflav3 bins min max type"; 
+}
+
+class Scaled_Dalitz: public Dalitz_Observable_Base {
+public:
+  Scaled_Dalitz(const Flavour &in,const Flavour &out1,const Flavour &out2,const Flavour &out3,
+	 const size_t &bins,const double &min,const double &max,const int &type):
+    Dalitz_Observable_Base(in,out1,out2,out3,bins,min,max,type) {}
+  
+  Primitive_Observable_Base *Copy() const 
+  {
+    return new Scaled_Dalitz(m_inflav,m_outflavs[0],m_outflavs[1],m_outflavs[2],m_bins,m_min,m_max,m_type);
+  }
+
+  void Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,const size_t &ncount);
+
+};// end of class
+
+void Scaled_Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,const size_t &ncount)
+{
+  double min2(sqr(m_inflav.PSMass()));
+  double x1(2.0*pout[0]*pin-sqr(m_outflavs[0].PSMass()));
+  double x3(2.0*pout[2]*pin-sqr(m_outflavs[2].PSMass()));
+  p_histogram->Fill(x1,x3,weight);
+  for (size_t i(1);i<ncount;++i) p_histogram->Fill(m_min,m_min,0.0);
+}
+
+DECLARE_GETTER(Scaled_Dalitz_Observable_Getter,"ScaledDalitz",
+	       Primitive_Observable_Base,Argument_Matrix);
+
+Primitive_Observable_Base *
+Scaled_Dalitz_Observable_Getter::operator()(const Argument_Matrix &parameters) const
+{ 
+  if (parameters.size()<1) return NULL;
+  if (parameters[0].size()<8) return NULL;
+  int in(ToType<int>(parameters[0][0]));
+  int out1(ToType<int>(parameters[0][1]));
+  int out2(ToType<int>(parameters[0][2]));
+  int out3(ToType<int>(parameters[0][3]));
+  
+  Flavour flin((kf::code)abs(in));
+  if (in<0) flin=flin.Bar();
+  Flavour flout1((kf::code)abs(out1));
+  if (out1<0) flout1=flout1.Bar();
+  Flavour flout2((kf::code)abs(out2));
+  if (out2<0) flout2=flout2.Bar();
+  Flavour flout3((kf::code)abs(out3));
+  if (out3<0) flout3=flout3.Bar();
+  std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
+	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;
+  return new Dalitz(flin,flout1,flout2,flout3,ToType<int>(parameters[0][4]),
+		    ToType<double>(parameters[0][5]),
+		    ToType<double>(parameters[0][6]),
+		    ToType<int>(parameters[0][7])); 
+}
+
+void Scaled_Dalitz_Observable_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"inflav outflav1 outflav2 outflav3 bins min max type"; 
 }
 

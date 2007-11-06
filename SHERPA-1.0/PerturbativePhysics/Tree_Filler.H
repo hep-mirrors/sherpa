@@ -36,7 +36,7 @@ namespace SHERPA {
 
     void           DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
     void           EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
-				      int mode,double x1,double x2,double scale=0.);
+				      int mode,double x1,double x2,double scale1=0.,double scale2=0.);
     inline void   SetCKKWOn(const int &on) { m_ckkwon=on;   }
     inline void   SetCMSBoost(const ATOOLS::Vec4D &cms) 
     { m_cms_boost=ATOOLS::Poincare(cms); }

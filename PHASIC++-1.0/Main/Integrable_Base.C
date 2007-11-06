@@ -399,8 +399,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   if (m_nin!=2) THROW(fatal_error,"Too many incoming particles.");
   if (scheme==scl::ckkw) {
     double S(sqr(rpa.gen.Ecms()));
-    m_scale[stp::ren]=m_ycut*S;
-    m_scale[stp::fac]=m_cycut*S/sqr(p_jf->DeltaR());
+    m_scale[stp::ren]=m_ycut*sqr(p_jf->DeltaR())*S;
+    m_scale[stp::fac]=m_cycut*S;
     double pt2(p_jf->ActualValue()*S);
     if ((int)m_corenout==m_coremaxjetnumber) {
       // highest multiplicity treatment
@@ -776,14 +776,14 @@ void Integrable_Base::SetScaleScheme(const scl::scheme s)
 	if (p_jf==NULL) 
 	  THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
       }
-      m_me_as_factor=1.0;//p_jf->Type()>1?1.0:0.25;
+      m_me_as_factor=p_jf->Type()>1?1.0:0.25;
       p_jf->FillCombinations();
     }
     m_ycut=p_jf->Ycut();
     m_cycut=p_jf->GlobalCoreYcut();
-    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms())*
+    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms()*p_jf->DeltaR())*
       rpa.gen.RenormalizationScaleFactor();
-    m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms()/p_jf->DeltaR())*
+    m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms())*
       rpa.gen.FactorizationScaleFactor();
   }
 }
@@ -817,8 +817,9 @@ void Integrable_Base::SetFactorizationScale()
   }
 }
 
-void Integrable_Base::FillSIntegrator(Multi_Channel *&mc)
+bool Integrable_Base::FillSIntegrator(Multi_Channel *&mc)
 {
+  return false;
 }
 
 void Integrable_Base::UpdateIntegrator(Multi_Channel *&mc)

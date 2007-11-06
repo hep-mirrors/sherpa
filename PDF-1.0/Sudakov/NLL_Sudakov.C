@@ -26,8 +26,8 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace std;
 
-NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,
-			 MODEL::Running_AlphaS * runas,double asfac): 
+NLL_Sudakov::NLL_Sudakov(int mode,MODEL::Running_AlphaS *runas,
+			 double asfac):
   m_mode(mode), p_runas(runas), m_as_factor(asfac)
 {
   FixLambda2();
@@ -63,7 +63,7 @@ void NLL_Sudakov::PrepareMap()
     flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
       (new GammaQ_QG_Lambda
-       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
+       (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
     m_sudakovs[flav]=ssud;
     m_sudakovs[flav.Bar()]=ssud;
   }
@@ -75,7 +75,7 @@ void NLL_Sudakov::PrepareMap()
     flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
       (new GammaG_QQ_Lambda
-       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
+       (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
     csud->Add(ssud);
   }
   m_sudakovs[Flavour(kf::gluon)]=csud;

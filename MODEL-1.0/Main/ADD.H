@@ -6,10 +6,11 @@
 namespace MODEL {
   class ADD : public Model_Base {
   private :
+    Model_Base *p_sm;
     void   ReadInFile();
   public :
     ADD(std::string,std::string);
-    ~ADD()                                {}
+    ~ADD();
     bool RunSpectrumGenerator()           { return 1; }
     void FillMasses()                     {}
     void FillWidths()                     {}

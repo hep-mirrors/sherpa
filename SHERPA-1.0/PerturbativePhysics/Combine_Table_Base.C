@@ -373,14 +373,15 @@ void Combine_Table_Base::SetLegScales
   // must therefore check for order qed as well
   if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
   else if (leg.NQCD()>0) {
-    if (!leg.Point()->fl.Strong()) leg.SetKT2QCD((pi+pj).Abs2());
-    else if (!legi.Point()->fl.Strong()) leg.SetKT2QCD(pt2ij+dabs(pi.Abs2()));
-    else if (!legj.Point()->fl.Strong()) leg.SetKT2QCD(pt2ij+dabs(pj.Abs2()));
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QCD(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
+    if (!leg.Point()->fl.Strong()) 
+      leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),leg.KT2QCD()));
   }
   if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
   else if (leg.NQED()>0) {
-    double sti(dabs(pi.Abs2())), stj(dabs(pj.Abs2()));
-    leg.SetKT2QED(Max(dabs((pi+pj).Abs2()),pt2ij+Max(sti,stj)));
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QED(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
   }
   if (legi.Point()->t<10) {
     if (legj.Point()->t<10) {
@@ -653,3 +654,6 @@ double Combine_Table_Base::Kt2QEDHard(const int cpl) const
   return min;
 }
 
+void Combine_Table_Base::ShuffleMomenta()
+{
+}

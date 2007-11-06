@@ -6,6 +6,7 @@
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
 #include "Exception.H"
+#include "Shell_Tools.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -18,9 +19,19 @@ LesHouches_Interface::LesHouches_Interface(Data_Read * _dataread,
 
 
 
-LesHouches_Interface::~LesHouches_Interface() { }
+LesHouches_Interface::~LesHouches_Interface() 
+{ 
+  exh->RemoveTerminatorObject(this);
+}
 
 
+
+void LesHouches_Interface::PrepareTerminate()
+{
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  if (path=="/") return;
+  CopyFile(m_dir+"/"+m_inputfile,path+m_inputfile);
+}
 
 void LesHouches_Interface::Run(std::string _model) {
 
@@ -63,6 +74,7 @@ void LesHouches_Interface::Run(std::string _model) {
   msg_Tracking()<<"================================================================ "<<std::endl;
 
   delete p_reader;
+  exh->AddTerminatorObject(this);
 }
 
 void LesHouches_Interface::Info() {
@@ -238,9 +250,10 @@ void LesHouches_Interface::SetHiggsParameters() {
       msg_Tracking()<<"   Mu   : "<<mu<<std::endl; 
     }
     /*
+    //if running tanb shall be used  
     if (vd[i][0]==2) {
-      tanb=vd[i][1];
-      msg_Tracking()<<"   tanb : "<<tanb<<std::endl;
+    tanb=vd[i][1];
+    msg_Tracking()<<"   tanb : "<<tanb<<std::endl;
     }
     */
     if (vd[i][0]==3) vev =vd[i][1];
@@ -255,8 +268,6 @@ void LesHouches_Interface::SetHiggsParameters() {
   ZR[0][1]    = Complex(cosa,0.);
   ZR[1][0]    = Complex(cosa,0.);
   ZR[1][1]    = Complex(sina,0.);
-  //reset tanb to the input value
-  tanb = (*p_model->GetScalarConstants())["tan(beta)"];
   
   double cosb = sqrt(1./(1.+sqr(tanb)));
   double sinb = cosb*tanb;  
@@ -286,9 +297,9 @@ void LesHouches_Interface::SetHiggsParameters() {
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_R"),ZR));
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_H"),ZH));
   
-  //mu for Rosiek has changed sign with respect to SLHA
   (*p_model->GetScalarConstants())["mu"]=mu;
   (*p_model->GetScalarConstants())["tan(beta)"]=tanb;
+
   //better leave out setting the vev, 
   //it is determined by MZ already
   //(*p_model->GetScalarConstants())["vev"]=vev;

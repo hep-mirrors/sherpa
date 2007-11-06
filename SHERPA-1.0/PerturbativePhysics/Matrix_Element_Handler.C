@@ -126,7 +126,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
   if (m_mode>0) return;
-  THROW(normal_exit,m_signalgenerator+" generated libraries for hard interactions.");
+  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
+	+" for hard interactions.");
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()

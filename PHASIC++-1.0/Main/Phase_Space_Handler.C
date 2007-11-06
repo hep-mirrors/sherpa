@@ -52,7 +52,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), p_massboost(NULL),
-  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0),
+  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0), m_sintegrator(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.), p_colint(NULL), p_helint(NULL)
 {
@@ -481,7 +481,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
 	  p_process->Selected()->SetMomenta(p_lab);
 	}
 	return new Blob_Data<Weight_Info>
-	  (Weight_Info(1.0,p_process->EnhanceFactor(),value,1,j));
+	  (Weight_Info(1.0,p_process->EnhanceFactor(),
+		       p_process->Selected()->TotalXS(),1,1));
       }
       else j=1;
     }
@@ -568,9 +569,11 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
 {
+  Data_Reader read(" ",";","!","=");
+  int ovf(0);
+  if (!read.ReadFromFile(ovf,"GENERATE_RESULT_DIRECTORY")) ovf=0;
   msg_Tracking()<<"Write out channels into directory : "<<pID<<std::endl;
-  int  mode_dir = 448;
-  ATOOLS::MakeDir(pID.c_str(),mode_dir,force); 
+  ATOOLS::MakeDir(pID,force|ovf); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_zchannels != 0) p_zchannels->WriteOut(pID+"/MC_KMR_Z");
@@ -711,7 +714,7 @@ bool Phase_Space_Handler::CreateIntegrators()
       break;
     case 4:case 5:case 6: 
       DropRedundantChannels();
-      p_process->FillSIntegrator(p_fsrchannels);
+      m_sintegrator=p_process->FillSIntegrator(p_fsrchannels);
       break;
     default:
       msg_Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
@@ -727,8 +730,9 @@ bool Phase_Space_Handler::CreateIntegrators()
   return 1;
 }
 
-void Phase_Space_Handler::UpdateIntegrators()
+bool Phase_Space_Handler::UpdateIntegrators()
 {
+  if (!m_sintegrator) return false;
   double error=Process()->TotalVar()/Process()->TotalResult();
   msg_Info()<<om::blue
 	    <<Process()->TotalResult()*rpa.Picobarn()
@@ -738,6 +742,7 @@ void Phase_Space_Handler::UpdateIntegrators()
 	    <<FSRIntegrator()->ValidN()<<" ( "
 	    <<(FSRIntegrator()->ValidN()*1000/FSRIntegrator()->N())/10.0<<" % ) "<<std::endl;
   p_process->UpdateIntegrator(p_fsrchannels);
+  return true;
 }
 
 void Phase_Space_Handler::DropRedundantChannels()

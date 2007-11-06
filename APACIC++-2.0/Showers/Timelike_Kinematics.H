@@ -31,7 +31,6 @@ namespace APACIC {
     inline bool CheckVector(const ATOOLS::Vec4D &mom) const
     { return (mom.Nan() || mom[0]<0.0)?false:true; }
 
-    bool BoostDaughter(Knot * const d) const; 
     bool ReconstructDaughter(Knot * const d) const; 
 
   public:
@@ -63,6 +62,7 @@ namespace APACIC {
 
     bool DoKinematics(Knot * const mo) const;
     bool BoostDaughters(Knot * const mo) const; 
+    bool BoostDaughter(Knot * const d) const; 
 
     int UpdateDaughters(Knot *const mo,const bool force=false) const;
 

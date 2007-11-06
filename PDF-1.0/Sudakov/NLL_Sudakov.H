@@ -33,8 +33,8 @@ namespace SHERPA {
 
   public:
 
-    NLL_Sudakov(int mode, double q2max, double q2min, 
-		MODEL::Running_AlphaS *as=NULL,double asfac=1.);
+    NLL_Sudakov(int mode,MODEL::Running_AlphaS *as=NULL,
+		double asfac=1.);
 
     ~NLL_Sudakov();
 

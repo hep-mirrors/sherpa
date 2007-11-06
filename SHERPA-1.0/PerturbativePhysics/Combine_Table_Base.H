@@ -18,7 +18,7 @@ namespace SHERPA {
   private:
     AMEGIC::Point *p_point;
     int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets;
-    size_t m_id;
+    long unsigned int m_id;
     double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
     double *p_qmin, m_q2cut[3];
     AMEGIC::lf::code m_type;
@@ -170,6 +170,8 @@ namespace SHERPA {
     virtual bool                 IdentifyHardProcess() = 0;
     virtual int                  IdentifyHardPropagator() const = 0;
 
+    virtual void ShuffleMomenta();
+
     bool Combinable(const Leg &a,const Leg &b) const ;
 
     int    AddCouplings(int &nqed,int &nqcd) const;
@@ -188,6 +190,7 @@ namespace SHERPA {
     inline const int                  OrderStrong()                        const { return m_nstrong; }
     inline const int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table_Base * const Up()                                 const { return p_up; }
+    inline Combine_Table_Base * const Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
     inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }

@@ -247,8 +247,8 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   return true;
 }
 
-bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
-					     const bool force) const
+bool Timelike_Kinematics::DoSingleKinematics
+(Knot * const mo,const bool force) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<"): "
 		 <<mo->left->didkin<<"\n";
@@ -258,8 +258,10 @@ bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
     ConstructVectors(mo,p1,p2);
     mo->left->part->SetMomentum(p1);
     mo->right->part->SetMomentum(p2);
+    mo->left->didkin=true;
+    mo->right->didkin=true;
   }
-  if (!mo->CheckMomentumConservation()) return false;
+  if (!mo->CheckMomentumConservation(true)) return false;
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
       !CheckVector(mo->right->part->Momentum())) {
@@ -286,8 +288,6 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
   }
   if (!DoSingleKinematics(mo)) return false;
   mo->part->SetStatus(part_status::decayed);
-  mo->left->didkin=true;
-  mo->right->didkin=true;
   if (!DoKinematics(mo->left)) return false;
   if (!DoKinematics(mo->right)) return false;
   msg_Debugging()<<"}\n";
@@ -417,8 +417,8 @@ bool Timelike_Kinematics::BoostDaughter(Knot * const d) const
     Tree::BoRo(cms,d->right);
     Tree::BoRo(cmsp,d->left);
     Tree::BoRo(cmsp,d->right);
-//     d->CheckMomentumConservation();
   }
+  d->CheckMomentumConservation(true);
   return true;
 }
 

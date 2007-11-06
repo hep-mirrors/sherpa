@@ -87,16 +87,16 @@ void Timelike_Sudakov::AcceptBranch(const Knot *const mo)
   if (!mo->part->Flav().Strong()) {
     d1->maxpt2 = d2->maxpt2 = mo->maxpt2;
     d1->thcrit = d2->thcrit = mo->thcrit;
-    msg_Debugging()<<"  accept ew daughter = "<<d1->kn_no
-		   <<", set maxpt2 = "<<d1->maxpt2
-		   <<", thcrit = "<<d1->thcrit<<"\n";
+    msg_Debugging()<<"  accept ew "<<mo->kn_no<<"->("<<d1->kn_no<<","
+		   <<d2->kn_no<<"), set pt2 = "<<d1->maxpt2
+		   <<", th = "<<d1->thcrit<<" from "<<mo->sthcrit<<"\n";
     return;
   }
   d1->maxpt2 = d2->maxpt2 = mo->smaxpt2;
   d1->thcrit = d2->thcrit = mo->sthcrit;
-  //std::cout<<"  accept daughter = "<<d1->kn_no
-  //	   <<", set maxpt2 = "<<d1->maxpt2
-  //	   <<", thcrit = "<<d1->thcrit<<" from "<<mo->sthcrit<<"\n";
+  msg_Debugging()<<"  accept "<<mo->kn_no<<"->("<<d1->kn_no
+		 <<","<<d2->kn_no<<"), set pt2 = "<<d1->maxpt2
+		 <<", th = "<<d1->thcrit<<" from "<<mo->sthcrit<<"\n";
 }
 
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
@@ -259,7 +259,8 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   double th(p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
   mo->sthcrit=th;
   mo->smaxpt2=m_pt2;
-  msg_Debugging()<<"ts: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
+  msg_Debugging()<<"ts("<<mo->kn_no
+		 <<"): thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 : return false;

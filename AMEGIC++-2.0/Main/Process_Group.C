@@ -947,8 +947,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
-	int  mode_dir = 493;
-	ATOOLS::MakeDir(histofile.c_str(),mode_dir,0); 
+	ATOOLS::MakeDir(histofile.c_str(),0); 
 	WriteOutHistogram(histofile);
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
@@ -975,8 +974,7 @@ void Process_Group::PrepareTerminate()
   msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
   WriteOutXSecs(to);
-  int  mode_dir = 493;
-  ATOOLS::MakeDir(m_histofile.c_str(),mode_dir,0); 
+  ATOOLS::MakeDir(m_histofile.c_str(),0); 
   WriteOutHistogram(m_histofile);
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
   to.close();
