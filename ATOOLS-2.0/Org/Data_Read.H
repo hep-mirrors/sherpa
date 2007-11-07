@@ -99,6 +99,7 @@ namespace ATOOLS {
     static Parameter_Map s_commandlineparameters, s_tags;
 
     bool m_fileexists;
+    int  m_error;
     
     std::string m_filename;
 
@@ -132,6 +133,7 @@ namespace ATOOLS {
     inline std::string FileName() const { return m_filename; }
     inline static void SetTags(const Parameter_Map &tags) { s_tags=tags; }
     inline static void ResetTags() { s_tags.clear(); }
+    inline int ErrorCode() const { return m_error; }
   };  
 
   // specialisation

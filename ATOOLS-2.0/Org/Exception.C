@@ -14,6 +14,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const ex::type &type)
   case ex::not_implemented     : return str<<"not implemented";
   case ex::critical_error      : return str<<"critical error";
   case ex::fatal_error         : return str<<"fatal error";
+  case ex::missing_input       : return str<<"missing input";
   case ex::unknown             : return str<<"unknown exception";
   }
   return str;

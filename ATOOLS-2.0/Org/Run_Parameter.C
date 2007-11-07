@@ -82,6 +82,13 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   else gen.m_username=user_info->pw_gecos;
   m_path = path;
   Data_Read dr(m_path+file);
+  Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
+  if (color==Switch::On) {
+    termios testos;
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
+  }
+  if (dr.ErrorCode()>0) 
+    THROW(missing_input,"Main steering file not found. Stop.");
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(gen.m_output,logfile);
@@ -90,7 +97,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
-    if (path[0]!='/') path=std::string(getenv("PWD"))+"/"+path;
+    if (path[0]!='/') path=s_variables["SHERPA_RUN_PATH"]+"/"+path;
     while (path.length()>0 && 
 	   path[path.length()-1]=='/' || path[path.length()-1]=='.') 
       path=path.substr(0,path.length()-1);
@@ -104,7 +111,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
   if (cpppath.length()>0 && cpppath[0]=='/') s_variables["SHERPA_CPP_PATH"]=cpppath;
-  else if (path!=getenv("PWD")) s_variables["SHERPA_CPP_PATH"]=path;
+  else if (path!=s_variables["SHERPA_RUN_PATH"]) s_variables["SHERPA_CPP_PATH"]=path;
   else if (s_variables["SHERPA_CPP_PATH"].length()==0) 
     s_variables["SHERPA_CPP_PATH"]=s_variables["SHERPA_RUN_PATH"];
   // set lib path
@@ -114,12 +121,15 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
   s_variables["SHERPA_INC_PATH"]=SHERPA_INCLUDE_PATH;
+  if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
+  else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
   msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
 		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
+		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
 		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"
 		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
-		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
+		<<"   SHERPA_DAT_PATH = "<<s_variables["SHERPA_DAT_PATH"]<<"\n"
 		<<"}"<<std::endl;
 #ifndef __sgi
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
@@ -154,11 +164,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
-  Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
-  if (color==Switch::On) {
-    termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
-  }
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
                   else { ran.SetSeed(gen.m_seed); }

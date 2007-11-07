@@ -16,6 +16,7 @@ namespace ATOOLS {
       not_implemented     = 4,
       critical_error      = 5,
       fatal_error         = 6,
+      missing_input       = 7,
       unknown             = 0 
     };
     

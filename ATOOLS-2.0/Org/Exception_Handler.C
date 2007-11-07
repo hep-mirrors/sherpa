@@ -130,7 +130,9 @@ void Exception_Handler::Terminate()
   bool modifiable=msg->Modifiable();
   SetExitCode();
   if ((m_signal!=SIGTERM && m_signal!=SIGINT) &&
-      (m_exception==NULL || m_exception->Type()!=ex::normal_exit)) {
+      (m_exception==NULL || 
+       (m_exception->Type()!=ex::normal_exit &&
+	m_exception->Type()!=ex::missing_input))) {
     if (m_print) {
       msg->SetModifiable(false);
       GenerateStackTrace(msg_LogFile(),true,"! ");
@@ -227,7 +229,8 @@ void Exception_Handler::SetExitCode()
   if (m_exception==NULL) return;
   if (m_exception->m_class=="Matrix_Element_Handler") m_exitcode=201;
   else m_exitcode=1;
-  if (m_exception->m_type==ex::normal_exit) m_print=false;
+  if (m_exception->m_type==ex::normal_exit ||
+      m_exception->m_type==ex::missing_input) m_print=false;
 }
 
 void ATOOLS::SignalHandler(int signal) 

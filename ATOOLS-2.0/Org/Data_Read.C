@@ -82,6 +82,7 @@ Type  Data_Read::GetValue(std::string name) {
 }
 
 Data_Read::Data_Read(std::string filename, bool ignoremissingfile) { 
+  m_error=0;
   m_fileexists=true;
   m_filename=filename;
   ReadIn(filename,ignoremissingfile); 
@@ -113,7 +114,8 @@ void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
       m_fileexists=false;
     }
     else {
-      THROW(critical_error,"Cannot open file '"+filename+"'");
+      msg_Error()<<METHOD<<"(): Cannot open file '"+filename+"'."<<std::endl;
+      m_error=1;
     }
   }
   std::string dummy;
