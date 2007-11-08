@@ -235,7 +235,6 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   }
   if (key.find('X')!=std::string::npos) {
     msg_Debugging()<<METHOD<<"(): Max jet number reached in '"<<key<<"'\n";
-    return;
   }
 
   Primitive_Analysis * ana=GetSubAnalysis(key,mode);
