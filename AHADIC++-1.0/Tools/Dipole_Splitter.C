@@ -222,8 +222,8 @@ bool Dipole_Splitter::FixKinematics(Dipole * dip) {
   double sp2  = sqrt(sqr(sE2)-m_kin.sm2_2);
   double sp3  = sqrt(sqr(sE3)-m_kin.sm3_2);
 
-  double cos13((2.*sE1*sE3+(m_kin.sm1_2+m_kin.sm3_2)-ss13)/(2.*sp1*sp3)),
-    /*cos12((2.*E1*E2+sqr(m1)+sqr(m2)-s12)/(2.*p1*p2))*/;
+  double cos13((2.*sE1*sE3+(m_kin.sm1_2+m_kin.sm3_2)-ss13)/(2.*sp1*sp3));
+    /*cos12((2.*E1*E2+sqr(m1)+sqr(m2)-s12)/(2.*p1*p2))*/
     
   if (/*dabs(cos12)>1.01 ||*/ dabs(cos13)>1.01) {
     msg_Out()<<"ERROR in "<<METHOD<<" : |cos(angle)| = "<<cos13<<">1. from "
