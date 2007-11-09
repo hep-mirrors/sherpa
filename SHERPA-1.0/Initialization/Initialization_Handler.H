@@ -72,6 +72,7 @@ namespace SHERPA {
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
     ANALYSIS::Analysis_Handler * p_analysis;
+    void ShowParameterSyntax() const;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();

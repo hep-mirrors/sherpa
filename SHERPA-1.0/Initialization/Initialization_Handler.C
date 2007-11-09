@@ -82,9 +82,11 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
     p_dataread    = new Data_Read(m_path+m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+    ShowParameterSyntax();
     rpa.Init(m_path,m_file,argc,argv);
     return;
   }  
+  ShowParameterSyntax();
   rpa.Init(m_path,m_file,argc,argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
@@ -153,6 +155,32 @@ Initialization_Handler::~Initialization_Handler()
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
+}
+
+void Initialization_Handler::ShowParameterSyntax() const
+{
+  Data_Reader read(" ",";","!","=");
+  int helpi(0);
+  if (!read.ReadFromFile(helpi,"SHOW_ANALYSIS_SYNTAX")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    ATOOLS::Variable_Base<double>::ShowVariables(helpi);
+    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
+    ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
+  if (!read.ReadFromFile(helpi,"SHOW_QUALIFIER_SYNTAX")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
+  if (!read.ReadFromFile(helpi,"SHOW_VARIABLE_SYNTAX")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    ATOOLS::Variable_Base<double>::ShowVariables(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
 }
 
 void Initialization_Handler::PrepareTerminate()
@@ -576,29 +604,9 @@ Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  int helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
-  if (helpi>0) {
-    msg->SetLevel(2);
-    ATOOLS::Variable_Base<double>::ShowVariables(helpi);
-    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
-    ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
-    THROW(normal_exit,"Syntax shown.");
-  }
-  helpi=p_dataread->GetValue<int>("SHOW_QUALIFIER_SYNTAX",0);
-  if (helpi>0) {
-    msg->SetLevel(2);
-    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
-    THROW(normal_exit,"Syntax shown.");
-  }
-  helpi=p_dataread->GetValue<int>("SHOW_VARIABLE_SYNTAX",0);
-  if (helpi>0) {
-    msg->SetLevel(2);
-    ATOOLS::Variable_Base<double>::ShowVariables(helpi);
-    THROW(normal_exit,"Syntax shown.");
-  }
   int test = p_dataread->GetValue<int>("TEST_DETECTOR",0);
 
-  helpi=p_dataread->GetValue<int>("ANALYSIS",0);
+  int helpi=p_dataread->GetValue<int>("ANALYSIS",0);
   if (!helpi&&test==0) return true;
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
   if (outpath==NotDefined<std::string>()) outpath="";
