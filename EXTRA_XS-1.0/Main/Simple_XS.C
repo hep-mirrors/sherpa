@@ -58,7 +58,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     p_dataread->GetValue<std::string>("SELECTOR_FILE",
 				      std::string("Selector.dat"));
   rpa.gen.SetVariable("SELECTORFILE",selectorfile);
-  if (construct) p_selectordata = new Selector_Data(m_path+selectorfile);
+  if (construct) p_selectordata = new Selector_Data(m_path,selectorfile);
   else p_selectordata = new Selector_Data();
   ATOOLS::Model_Type::code 
     model=p_dataread->GetValue<ATOOLS::Model_Type::code>("SIGNAL_MODEL");
