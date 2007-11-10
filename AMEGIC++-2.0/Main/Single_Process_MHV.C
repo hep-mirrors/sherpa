@@ -55,7 +55,8 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   struct stat fst;
-  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || fst.st_mode!=S_IFREG) {
+  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || 
+      (fst.st_mode&S_IFMT)!=S_IFREG) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
@@ -106,7 +107,8 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   struct stat fst;
-  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || fst.st_mode!=S_IFREG) {
+  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || 
+      (fst.st_mode&S_IFMT)!=S_IFREG) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",

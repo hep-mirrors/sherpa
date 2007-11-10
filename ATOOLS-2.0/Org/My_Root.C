@@ -37,7 +37,7 @@ My_Root::My_Root(const int argc,char **const argv):
     ATOOLS::MakeDir(OutputPath());
     struct stat fst;
     if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
-	fst.st_mode==S_IFREG) {
+	(fst.st_mode&S_IFMT)==S_IFREG) {
       remove((OutputPath()+OutputFile()).c_str());
     }
     p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");

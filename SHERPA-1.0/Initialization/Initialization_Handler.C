@@ -559,7 +559,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     struct stat fst;
-    if (stat(decaypath.c_str(),&fst)==-1 || fst.st_mode!=S_IFDIR)
+    if (stat(decaypath.c_str(),&fst)==-1 || (fst.st_mode&S_IFMT)!=S_IFDIR)
       decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));

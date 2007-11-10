@@ -296,8 +296,9 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 bool Process_Base::IsFile(string filename)
 {
   struct stat fst;
-  if (stat(filename.c_str(),&fst)!=-1)
-    return fst.st_mode==S_IFREG;
+  if (stat(filename.c_str(),&fst)!=-1) {
+    return (fst.st_mode&S_IFMT)==S_IFREG;
+  }
   return false;
 }
 
