@@ -51,13 +51,14 @@ void Run_Parameter::AnalyseEnvironment()
 #error Sherpa was not designed for gcc 2.96
 #endif
 #endif
-  std::string gccversion;
-  system("gcc -dumpversion > sherpa_gcc_test");
-  std::ifstream *test = new std::ifstream("sherpa_gcc_test");
-  if (*test) (*test)>>gccversion;
-  delete test;
-  system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
-  if (gccversion.find("2.96")!=std::string::npos) {
+  std::string gccv;
+  FILE *pout(popen("gcc -dumpversion","r"));
+  int cch;
+  while ((cch=fgetc(pout))!=EOF) gccv+=(char)cch;
+  pclose(pout);
+  if (gccv.find('\n')!=std::string::npos) 
+    gccv=gccv.substr(0,gccv.find('\n'));
+  if (gccv.find("2.96")!=std::string::npos) {
     THROW(fatal_error,"Sherpa must not be run on gcc version 2.96 !");
   }
   char *var=NULL;

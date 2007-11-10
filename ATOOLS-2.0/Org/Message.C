@@ -2,6 +2,7 @@
 
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+
 #include <sys/stat.h>
 
 namespace ATOOLS {
@@ -133,24 +134,33 @@ void Message::InitLogFile(const std::string &logfile)
       if (!testfile.is_open()) break;
     } while (true);
   }
-  std::string command="echo \"! ****************************************\n";
-  command+="! *           Sherpa Log File            *\n";
-  command+="! ****************************************\n\" > ";
-  system((command+name).c_str());
-  command="echo \"! starting Sherpa 1.0.6 at '$HOSTNAME' ";
-  command+="(architecture $HOSTTYPE) \n! on `date`\n\" >> ";
-  system((command+name).c_str());
-  command="echo \"! +--------------------------------------+\n";
-  command+="! |            shell settings            |\n";
-  command+="! +--------------------------------------+\n\" >> ";
-  system((command+name).c_str());
-  command="echo \"! PATH=$PATH\n\n! LD_LIBRARY_PATH=$LD_LIBRARY_PATH\n\n! CLHEPDIR=$CLHEPDIR\n";
-  command+="! PWD=$PWD\n\n! Sherpa was compiled for gcc `gcc -dumpversion`\n\" >> ";
-  system((command+name).c_str());
+  std::string gccv;
+  FILE *pout(popen("gcc -dumpversion","r"));
+  int cch;
+  while ((cch=fgetc(pout))!=EOF) gccv+=(char)cch;
+  pclose(pout);
+  if (gccv.find('\n')!=std::string::npos) 
+    gccv=gccv.substr(0,gccv.find('\n'));
+  char *var=NULL;
   p_logfile = new std::ofstream(name.c_str(),std::ios::app);
-  (*p_logfile)<<"! +--------------------------------------+"<<std::endl;
-  (*p_logfile)<<"! |            run parameters            |"<<std::endl;
-  (*p_logfile)<<"! +--------------------------------------+\n"<<std::endl;
+  (*p_logfile)<<"! ****************************************\n"
+	      <<"! *           Sherpa Log File            *\n"
+	      <<"! ****************************************\n";
+  (*p_logfile)<<"! starting Sherpa 1.0.6 at '"
+	      <<std::string(((var=getenv("HOSTNAME"))==NULL?"":var))
+	      <<"' (architecture "
+	      <<std::string(((var=getenv("HOSTTYPE"))==NULL?"":var))
+	      <<") \n! on "<<rpa.gen.Timer().TimeString()<<"\n";
+  (*p_logfile)<<"! +--------------------------------------+\n"
+	      <<"! |            shell settings            |\n"
+	      <<"! +--------------------------------------+\n"
+	      <<"! PATH="<<rpa.gen.Variable("PATH")<<"\n\n"
+	      <<"! LD_LIBRARY_PATH="<<rpa.gen.Variable("LD_LIBRARY_PATH")
+	      <<"\n\n! PWD="<<rpa.gen.Variable("SHERPA_RUN_PATH")
+	      <<"\n\n! Sherpa was compiled for gcc "<<gccv<<"\n\n";
+  (*p_logfile)<<"! +--------------------------------------+\n"
+	      <<"! |            run parameters            |\n"
+	      <<"! +--------------------------------------+\n!\n";
 }
 
 void Message::SetStandard() 
