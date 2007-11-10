@@ -2,7 +2,7 @@
  *  A Class to define particle properties.
  */
 
-#include <iostream>
+#include "My_File.H"
 
 #include "Flavour.H"
 #include "MathTools.H"
@@ -584,22 +584,21 @@ void ATOOLS::ParticleInit(std::string path)
   ++pc;
 
 
-  std::string filename = (path+std::string("/Particle.dat"));
-  std::ifstream part(filename.c_str());
-  if (!part) {
-    std::cerr<<"Error in Particle_Init : File "<<filename<<" not found !"<<std::endl;
+  My_In_File part(path,"Particle.dat");
+  if (!part.Open()) {
+    std::cerr<<"Error in Particle_Init : File Particle.dat not found !"<<std::endl;
     return;
   }
   
-  part.getline(buffer,150);
+  part->getline(buffer,150);
   msg_LogFile()<<"\n! +--------------------------------------+"<<std::endl;
   msg_LogFile()<<"! |               kf table               |"<<std::endl;
   msg_LogFile()<<"! +--------------------------------------+\n"<<std::endl;
   msg_LogFile()<<"! "<<buffer<<std::endl;
 
 
-  for(;part;) {
-    part>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
+  for(;*part;) {
+    (*part)>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
 	>>Majorana>>Take>>stable>>massive>>name;
     msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
 		 <<icharge<<" \t"<<strong<<" \t"<<spin
@@ -623,19 +622,18 @@ void ATOOLS::ParticleInit(std::string path)
     }
   }
   msg_LogFile()<<std::endl;
-  part.close();
+  part.Close();
 
-  filename=(path+std::string("/Hadron.dat"));
-  std::ifstream part2(filename.c_str());
-  if (!part2) {
-    std::cerr<<"Error in Particle_Init : File "<<filename<<" not found !"<<std::endl;
+  My_In_File part2(path,"Hadron.dat");
+  if (!part2.Open()) {
+    std::cerr<<"Error in Particle_Init : File Hadron.dat not found !"<<std::endl;
   }
   else {
-    part2.getline(buffer,150);
+    part2->getline(buffer,150);
     msg_LogFile()<<"! "<<buffer<<std::endl;
   
-    for(;part2;) {
-      part2>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
+    for(;*part2;) {
+      (*part2)>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
       msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
 		   <<icharge<<" \t"<<strong<<" \t"<<spin
 		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
@@ -649,7 +647,7 @@ void ATOOLS::ParticleInit(std::string path)
 	  //	}
       }
     }
-    part2.close();
+    part2.Close();
     msg_LogFile()<<std::endl;
   }
   // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
@@ -892,15 +890,14 @@ int Flavour::WriteOut() {
   str<<ID_Had();
   str>>had_name;
 
-  std::ofstream ofile;
-
-  ofile.open((std::string("save/sm/")+sm_name+std::string(".dat")).c_str());
+  My_Out_File ofile("save/sm/",sm_name+".dat");
+  ofile.Open();
 
   Fl_Iter fli;
-  ofile<<"kf      Mass   Width    3*e     Y     SU(3)  2*Spin majorana   ON    stabil   massive   Name"<<std::endl;
+  (*ofile)<<"kf      Mass   Width    3*e     Y     SU(3)  2*Spin majorana   ON    stabil   massive   Name"<<std::endl;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy() && !flav.Kfcode()!=26) {
-      ofile<<flav.Kfcode()<<"\t"
+      (*ofile)<<flav.Kfcode()<<"\t"
 	  <<flav.PSMass()<<"\t"
 	  <<flav.Width()<<"\t"
 	  <<flav.IntCharge()<<"\t"
@@ -914,7 +911,7 @@ int Flavour::WriteOut() {
 	  <<flav.Name()<<std::endl;
     } 
   }
-  ofile.close();
+  ofile.Close();
 
   return 1;
   

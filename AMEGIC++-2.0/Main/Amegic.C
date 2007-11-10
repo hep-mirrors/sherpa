@@ -8,6 +8,7 @@
 #include "Process_Info.H"
 #include <iomanip>
 #include "Single_Process_MHV2.H"
+#include "My_File.H"
 
 //#define _DECAYS_
 
@@ -115,7 +116,7 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 
   string selfile      = p_dataread->GetValue<string>("SELECTORFILE",string("Selector.dat"));
   rpa.gen.SetVariable("SELECTORFILE",selfile);
-  p_seldata           = new Selector_Data(m_path+selfile);
+  p_seldata           = new Selector_Data(m_path,selfile);
 
   ReadInProcessfile(processfile);
 
@@ -194,8 +195,8 @@ void Amegic::ReadInProcessfile(string file)
   double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.);
   rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
 
-  ifstream from((m_path+file).c_str());
-  if (!from) {
+  My_In_File from(m_path,file);
+  if (!from.Open()) {
     msg_Error()<<"ERROR in Amegic::InitializeProcesses : "<<endl
 	       <<"   Process data file : "<<(m_path+file).c_str()<<" not found."<<std::endl
 	       <<"   Abort program execution."<<endl;
@@ -218,8 +219,8 @@ void Amegic::ReadInProcessfile(string file)
   bool        print_graphs=false;
   int         enable_mhv=0; 
   string      selectorfile;
-  while (from) {
-    getline(from,buf);
+  while (*from) {
+    getline(*from,buf);
     position = -1;
     if (buf.length()>0 && buf[0] != '%') {
       msg_LogFile()<<buf<<std::endl;
@@ -282,7 +283,7 @@ void Amegic::ReadInProcessfile(string file)
 	    enhance_function    = "1";
 	    int pr(0);
 	    do {
-	      getline(from,buf);
+	      getline(*from,buf);
 	      ++pr;
 	      position = -1;
 	      if (buf.length()>0 && buf[0] != '%') {
@@ -475,14 +476,14 @@ void Amegic::ReadInProcessfile(string file)
 		}
 
 		position       = buf.find(string("End process"));
-		if (!from) {
+		if (!*from) {
 		  msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			     <<"   End of file reached without 'End process'-tag."<<endl
 			     <<"   Continue and hope for the best."<<endl;
 		  position     = 0;
 		}
 	      }
-	    } while (from && position==-1);
+	    } while (*from && position==-1);
 	    if (!pinfo || !pinfo->CheckCompleteness()) {
 	      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Missing decay processes! "<<endl;

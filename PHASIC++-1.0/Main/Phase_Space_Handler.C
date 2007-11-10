@@ -56,7 +56,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.), p_colint(NULL), p_helint(NULL)
 {
-  Data_Read dr(rpa.GetPath()+"/Integration.dat");
+  Data_Read dr(rpa.GetPath()+"Integration.dat");
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
   m_fin_opt  = dr.GetValue<Switch::code>("FINISH_OPTIMIZATION");

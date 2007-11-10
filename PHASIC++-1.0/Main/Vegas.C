@@ -14,7 +14,7 @@ int Vegas::s_onext=-1;
 
 Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 {
-  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
+  Data_Read dr(rpa.GetPath()+string("Integration.dat"));
   m_on = dr.GetValue<Switch::code>("VEGAS");
   if (m_on==NotDefined<Switch::code>()) m_on=Switch::On;
   if (s_onext>-1) m_on=s_onext;

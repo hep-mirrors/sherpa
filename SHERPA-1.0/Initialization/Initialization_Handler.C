@@ -26,6 +26,7 @@
 #include "Hadrons.H"
 #endif
 
+#include <sys/stat.h>
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -557,7 +558,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
-    if (system(("test -d "+decaypath).c_str())) 
+    struct stat fst;
+    if (stat(decaypath.c_str(),&fst)==-1 || fst.st_mode!=S_IFDIR)
       decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
@@ -823,8 +825,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
     // variables in dat files
     if (equal!=-1 && mode==1) {
-      // perhaps check varible name first
-
       Data_Read::SetCommandLine(key,value);
       Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
     }
@@ -834,7 +834,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       MyStrStream s;
       switch (mode) {
       case 101:
-	if (value[value.length()-1]!='/') value+=std::string("/");
+	if (value[value.length()-1]=='/') value.erase(value.length()-1,1);
 	m_path=value;
 	break;
       case 102:
@@ -955,6 +955,16 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     }
   }
   if (datpath!="") m_path=datpath;
+  std::vector<std::string> searchpaths;
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
+  My_Out_File::SetSearchPaths(searchpaths);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
+  searchpaths.push_back(SHERPA_SHARE_PATH+std::string("/")+m_path);
+  searchpaths.push_back(SHERPA_SHARE_PATH);
+  My_In_File::SetSearchPaths(searchpaths);
+  rpa.gen.SetVariable("PATH_PIECE",m_path);
+  m_path="";
   return m_mode;
 }
 

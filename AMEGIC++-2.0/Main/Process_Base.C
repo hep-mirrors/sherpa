@@ -9,6 +9,7 @@
 #include "Running_AlphaQED.H"
 
 #include <algorithm>
+#include <sys/stat.h>
 #include <stdio.h>
 
 using namespace AMEGIC;
@@ -294,12 +295,10 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 
 bool Process_Base::IsFile(string filename)
 {
-  ifstream from;
-  bool     hit = 0;
-  from.open(filename.c_str());
-  if (from) hit = 1;
-  from.close();
-  return hit;
+  struct stat fst;
+  if (stat(filename.c_str(),&fst)!=-1)
+    return fst.st_mode==S_IFREG;
+  return false;
 }
 
 /*------------------------------------------------------------------------------

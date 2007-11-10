@@ -7,6 +7,7 @@
 #include "Data_Reader.H"
 #include "Message.H"
 #include "ResonanceFlavour.H"
+#include "Shell_Tools.H"
 
 using namespace HADRONS;
 using namespace PHASIC;
@@ -371,7 +372,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
 
 bool HD_PS_Base::WriteOut() {
   if ( m_read_dcfile ) {                // if DC file should be read
-    system((string("mv \"")+m_path+m_file+string("\" \"")+m_path+m_file+string(".old\"")).c_str());
+    MoveFile(m_path+m_file,m_path+m_file+".old");
 
     ofstream to;
     to.open((m_path+m_file).c_str(),ios::out);

@@ -42,7 +42,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string lmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
   string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
 
-  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
+  Data_Read dr(rpa.GetPath()+string("Integration.dat"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",4);
   if (inttype<4 && !(inttype==2 && nout==2)) return 0;
 
@@ -197,8 +197,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     from.close();
     to.close();
 
-    string mv=string("mv ")+makefilename+".tmp "+makefilename;
-    system(mv.c_str());
+    MoveFile(makefilename+".tmp",makefilename);
   }
 }
 

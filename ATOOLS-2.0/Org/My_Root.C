@@ -4,6 +4,8 @@
 #include "Shell_Tools.H"
 #include "TStyle.h"
 
+#include <sys/stat.h>
+
 using namespace MYROOT;
 
 My_Root *MYROOT::myroot=NULL;
@@ -33,8 +35,10 @@ My_Root::My_Root(const int argc,char **const argv):
   p_root = new TApplication("MyRoot",&argcf,argvf);
   if ((OutputPath()+OutputFile())!="") {
     ATOOLS::MakeDir(OutputPath());
-    if (!system((std::string("test -f ")+OutputPath()+OutputFile()).c_str())) {
-      system((std::string("rm -f ")+OutputPath()+OutputFile()).c_str());
+    struct stat fst;
+    if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
+	fst.st_mode==S_IFREG) {
+      remove((OutputPath()+OutputFile()).c_str());
     }
     p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
   }

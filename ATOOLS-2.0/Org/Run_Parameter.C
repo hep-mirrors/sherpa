@@ -66,6 +66,7 @@ void Run_Parameter::AnalyseEnvironment()
   s_variables["SHERPA_PDF_PATH"]=std::string(((var=getenv("SHERPA_PDF_PATH"))==NULL?"":var));
   s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
   s_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
+  s_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
   s_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
   s_variables["SHERPA_BIN_PATH"]=SHERPA_BINARY_PATH;
   s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
@@ -76,11 +77,12 @@ void Run_Parameter::AnalyseEnvironment()
 
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
+  m_path = path;
+  path=s_variables["PATH_PIECE"];
   gen.m_timer.Start();
   struct passwd* user_info = getpwuid(getuid());
   if (!user_info) gen.m_username="<unknown user>";
   else gen.m_username=user_info->pw_gecos;
-  m_path = path;
   Data_Read dr(m_path+file);
   Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
   if (color==Switch::On) {
@@ -121,9 +123,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
   s_variables["SHERPA_INC_PATH"]=SHERPA_INCLUDE_PATH;
-  if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
-  else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
-  msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
+  if (s_variables["SHERPA_DAT_PATH"].length()==0)
+    if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
+    else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
+  msg_Tracking()<<METHOD<<"(): Paths are {\n"
 		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
 		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
 		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"

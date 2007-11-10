@@ -3,8 +3,13 @@
 #include "Exception.H"
 
 #include <typeinfo>
+#include <map>
 
 using namespace ATOOLS;
+
+typedef std::map<std::string,std::string> String_Map;
+
+static String_Map s_filelocations;
 
 namespace ATOOLS {
   INSTANTIATE_SMART_POINTER(std::ifstream)
@@ -45,7 +50,9 @@ namespace ATOOLS {
 }
 
 template <class FileType>
-My_File<FileType>::My_File(): 
+My_File<FileType>::My_File(const std::string &path,
+			   const std::string &file): 
+  m_path(path), m_file(file), 
   p_file(NULL), m_mode(fom::permanent) {}
 
 template <class FileType>
@@ -76,10 +83,26 @@ bool My_File<FileType>::Open()
 { 
   if (m_path=="" && m_file=="") return false;
   Close();
-  p_file = new File_Type();
-  p_file->open((m_path+m_file).c_str());
-  return p_file->good();
-
+  String_Map::const_iterator fit(s_filelocations.find(m_file));
+  if (fit!=s_filelocations.end()) m_path=fit->second;
+  if ((m_path+m_file)[0]=='/') {
+    p_file = new File_Type();
+    p_file->open((m_path+m_file).c_str());
+    return p_file->good();
+  }
+  else {
+    for (size_t i(0);i<s_searchpaths.size();++i) {
+      p_file = new File_Type();
+      p_file->open((s_searchpaths[i]+"/"+m_path+m_file).c_str());
+      if (p_file->good()) {
+	if (i>0) msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
+			  <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+	m_path=s_filelocations[m_file]=s_searchpaths[i]+"/"+m_path;
+	return true;
+      }
+    }
+  }
+  return false;
 }
 
 template <class FileType>
@@ -127,6 +150,16 @@ const fom::code &My_File<FileType>::Mode() const
   return m_mode; 
 }
 
-template class My_File<std::ifstream>;
-template class My_File<std::ofstream>;
+template <class FileType>
+void My_File<FileType>::SetSearchPaths(const String_Vector &paths)
+{ 
+  s_searchpaths=paths;
+}
 
+template class My_In_File;
+
+template <> My_In_File::String_Vector My_In_File::s_searchpaths;
+
+template class My_Out_File;
+
+template <> My_Out_File::String_Vector My_Out_File::s_searchpaths;

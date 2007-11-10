@@ -2,6 +2,7 @@
 #include "Hadron_Decay_Channel.H"
 #include "Decay_Table.H"
 #include "Data_Reader.H"
+#include "Shell_Tools.H"
 #include "Message.H"
 
 using namespace HADRONS;
@@ -85,7 +86,7 @@ void Decay_Table_Reader::FillInMatrixElementsAndPS( Decay_Table * dt, Channel_Ma
 	(*chmap)[ dc ] = hdc;									//   map channel to hadronic channel
   }
   if (rewrite) {											// rewrite H file
-	system( (string("mv \"")+m_path+m_file+string("\" \"")+m_path+m_file+string(".old\"")).c_str() );
+    MoveFile(m_path+m_file,m_path+m_file+".old");
 	ofstream f( (m_path + m_file).c_str() );
 	f<<"# outgoing part. \t | BR \t | DC-file"<<endl;
 	for (int j=0; j<dt->NumberOfDecayChannels();j++) {

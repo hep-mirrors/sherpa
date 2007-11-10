@@ -4,6 +4,7 @@
 #include "Smart_Pointer.H"
 
 #include <fstream>
+#include <vector>
 #include <string>
 
 namespace ATOOLS {
@@ -29,7 +30,11 @@ namespace ATOOLS {
 
     typedef FileType File_Type;
 
+    typedef std::vector<std::string> String_Vector;
+
   protected:
+
+    static String_Vector s_searchpaths;
 
     std::string m_path, m_file;
 
@@ -40,7 +45,7 @@ namespace ATOOLS {
   public:
 
     // constructor
-    My_File();
+    My_File(const std::string &path="",const std::string &file="");
     // destructor
     ~My_File();
 
@@ -62,6 +67,8 @@ namespace ATOOLS {
     File_Type *operator()() const;
     File_Type *operator->() const;
     File_Type &operator*() const;
+
+    static void SetSearchPaths(const String_Vector &paths);
 
   };// end of class My_File
 

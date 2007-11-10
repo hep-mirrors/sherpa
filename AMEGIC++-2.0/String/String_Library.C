@@ -1,6 +1,7 @@
 #include "String_Library.H"
 #include "Run_Parameter.H"
 #include <fstream>
+#include "Shell_Tools.H"
 #include "Message.H"
 #include <stdio.h>
 
@@ -62,8 +63,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     from.close();
     to.close();
 
-    string mv=string("mv ")+name+".tmp "+name;
-    system(mv.c_str());
+    MoveFile(name+".tmp",name);
   }
   
   name=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+mkam;
@@ -91,8 +91,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     from.close();
     to.close();
 
-    string mv=string("mv ")+name+".tmp "+name;
-    system(mv.c_str());
+    MoveFile(name+".tmp",name);
   }
 
 }
@@ -148,8 +147,7 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     from.close();
     to.close();
 
-    string mv=string("mv ")+makefilename+".tmp "+makefilename;
-    system(mv.c_str());
+    MoveFile(makefilename+".tmp",makefilename);
   }
 }
 
@@ -164,7 +162,8 @@ void String_Library::InitMakefile(string pathID)
 
   if (IsFile(newMakefile)) return;
 
-  system((string("cd ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process ; cp Dummy/Makefile ")+pathID).c_str());
+  CopyFile(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/Dummy/Makefile",
+	   rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/Makefile");
 
   string pID;
   pID=pathID;

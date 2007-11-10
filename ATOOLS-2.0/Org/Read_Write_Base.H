@@ -208,10 +208,10 @@ namespace ATOOLS {
 
     inline static void SetCommandLine(const std::string commandline)
     { s_commandline.clear(); s_commandline.push_back(commandline); }
-
     inline static void SetCommandLine(const String_Vector &commandline)
     { s_commandline=commandline; }
-      inline static void AddCommandLine(const std::string commandline)
+
+    inline static void AddCommandLine(const std::string commandline)
     { s_commandline.push_back(commandline); }
     inline static void AddCommandLine(const String_Vector &commandline)
     { s_commandline.insert(s_commandline.end(),

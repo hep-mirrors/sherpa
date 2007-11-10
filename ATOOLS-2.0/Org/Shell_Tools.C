@@ -1,9 +1,10 @@
 #include "Shell_Tools.H"
 
+#include "My_File.H"
+
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
-#include <fstream>
 
 #ifdef DEBUG__Shell_Tools
 #include <iostream>
@@ -65,12 +66,21 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 
 bool ATOOLS::CopyFile(const std::string &oldname,const std::string &newname)
 {
-  std::ifstream oldfile(oldname.c_str());
-  if (oldfile.bad()) return false;
-  std::ofstream newfile(newname.c_str());
-  if (newfile.bad()) return false;
-  newfile<<oldfile.rdbuf();
+  My_In_File oldfile("",oldname);
+  if (!oldfile.Open()) return false;
+  My_Out_File newfile("",newname);
+  if (!newfile.Open()) return false;
+  (*newfile)<<oldfile->rdbuf();
+  struct stat fst;
+  stat(oldname.c_str(),&fst);
+  chmod(newname.c_str(),fst.st_mode);
   return true;
+}
+
+bool ATOOLS::MoveFile(const std::string &oldname,const std::string &newname)
+{
+  if (!CopyFile(oldname,newname)) return false;
+  return !remove(oldname.c_str());
 }
 
 std::vector<std::string> 

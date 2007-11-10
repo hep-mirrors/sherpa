@@ -507,7 +507,7 @@ void Vertex::TexOutput()
 {
   ATOOLS::MakeDir("./tex");
   
-  system("rm ./tex/Vertex_*");  
+  remove("./tex/Vertex_*");  
 
   ofstream sf;
   

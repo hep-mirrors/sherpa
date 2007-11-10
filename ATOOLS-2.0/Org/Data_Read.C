@@ -4,6 +4,7 @@
 #include "MyStrStream.H"
 #include "Exception.H"
 #include "Algebra_Interpreter.H"
+#include "My_File.H"
 #include <iomanip>
 #include <typeinfo>
 
@@ -106,9 +107,8 @@ void Data_Read::FillIn(std::string buffer) {
 }
 
 void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
-  std::ifstream *file(new std::ifstream);
-  file->open(filename.c_str());
-  if (!file->good()) {
+  My_In_File file("",filename);
+  if (!file.Open()) {
     if (ignoremissingfile) {
       msg_Tracking()<<" WARNING parameter file "<<filename<<" does not exist ! "<<std::endl;
       m_fileexists=false;
@@ -124,9 +124,7 @@ void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
     getline(*file,dummy);
     FillIn(dummy); 
   }
-  file->close();
-  delete file;
-
+  file.Close();
   AddCommandLine();
 }
 
@@ -365,32 +363,18 @@ std::string Data_Read::GenerateKey() {
 }
 
 void Data_Read::WriteOut(std::string filename,int flag) {
-  std::fstream file;
-
-#ifdef __GNUC__
-#if __GNUC__ > 2 
-  // GNU gcc 3.x.x C++ Compiler
-  std::_Ios_Openmode flagc = std::_Ios_Openmode(flag);
-  file.open(filename.c_str(),flagc);
-#else
-  // GNU gcc 2.95.x C++ Compiler
-  file.open(filename.c_str(),flag);
-#endif
-#else
-  // All others
-  file.open(filename.c_str(),flag);
-#endif
-  
+  My_Out_File file("",filename);
+  file.Open();
   // add a header
-  file<<"!======================================== "<<std::endl;
-  file<<"! File: "<<filename<<std::endl;
-  file<<"!======================================== "<<std::endl;
+  (*file)<<"!======================================== "<<std::endl;
+  (*file)<<"! File: "<<filename<<std::endl;
+  (*file)<<"!======================================== "<<std::endl;
   
   // write out map content
   for (Parameter_Iterator it = m_parameters.begin(); it!=m_parameters.end() ; ++it) {
-    file<<" "<<it->first<<" = "<<it->second<<std::endl;
+    (*file)<<" "<<it->first<<" = "<<it->second<<std::endl;
   }
-  file.close();
+  file.Close();
 }
 
 void Data_Read::Shorten(std::string& str) {

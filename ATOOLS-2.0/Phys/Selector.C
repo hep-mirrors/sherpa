@@ -82,8 +82,8 @@ std::string Selector_Base::ProcessName() const { return m_procname; }
 
 Selector_Data::Selector_Data() {}
 
-Selector_Data::Selector_Data(std::string path) {
-  if (!ReadInData(path)) {
+Selector_Data::Selector_Data(std::string path, std::string filename) {
+  if (!ReadInData(path, filename)) {
     msg_Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
 			  <<"Cannot initialise any selector. Abort."<<endl;
     abort();
@@ -91,80 +91,82 @@ Selector_Data::Selector_Data(std::string path) {
   ControlOutput();
 }
 
-bool Selector_Data::ReadInData(std::string filename) 
+bool Selector_Data::ReadInData(std::string path, std::string filename) 
 {
-  ifstream from(filename.c_str());
-  if (!from) {
-    msg_Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
+  Data_Reader reader(" ",";","!");
+  reader.AddWordSeparator("\t");
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetInputPath(path);
+  reader.SetInputFile(filename);
+  reader.SetMatrixType(mtc::transposed);
+
+  vector<vector<string> > svv;
+  if (!reader.MatrixFromFile(svv)) {
+    msg_Error()<<"Error in Selector_Data::ReadInData("<<path+filename<<"). "
 			  <<"File does not exist."<<endl;
     return 0;
   }
   
-  std::string keyword, dmin, dmax;
+  std::string keyword;
   Mom_Data    dat;
   int         crit1,crit2;
   Flavour     flav,flav2;
-  for(;from;) {
+  for (size_t i=0;i<svv.size();++i) {
     dat.type=-1;
     dat.flavs.clear();
     dat.bounds.resize(1);
-    keyword=string("");
-    from>>keyword;
-    Algebra_Interpreter inter;
-    inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
+    keyword=svv[i][0];
     if (keyword == string("JetFinder")) {
       dat.type = 1;
-      from>>dmin>>dmax;
-      rpa.gen.SetVariable("Y_CUT",dmin);
-      rpa.gen.SetVariable("DELTA_R",dmax);
+      rpa.gen.SetVariable("Y_CUT",svv[i][1]);
+      rpa.gen.SetVariable("DELTA_R",svv[i][2]);
       dat.bounds.front().first=2.0;
       dat.bounds.front().second=1.0;
       data.push_back(dat);
     }
     else if (keyword == string("ConeFinder")) {
       dat.type = 2;
-      from>>dmin;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().first=ToType<double>(svv[i][1]);
     }
     else if (keyword == string("DipoleFinder")) {
       dat.type = 3;
-      from>>dmin>>dmax;
-      Algebra_Interpreter inter;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      dat.bounds.front().first=ToType<double>(svv[i][1]);
+      dat.bounds.front().second=ToType<double>(svv[i][2]);
     }
     else if (keyword == string("Energy")) {
       dat.type = 11;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("PT")) {
       dat.type = 12;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("Rapidity")) {
       dat.type = 13;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][2]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("BeamAngle")) {
       dat.type = 14;
-      from>>crit1>>crit2>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      crit2=ToType<int>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(svv[i][3]);
+      dat.bounds.front().second=ToType<double>(svv[i][4]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
@@ -172,27 +174,28 @@ bool Selector_Data::ReadInData(std::string filename)
     }  
     else if (keyword == string("ET")) {
       dat.type = 15;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("PseudoRapidity")) {
       dat.type = 16;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("Mass")) {
       dat.type = 21;
-      from>>crit1>>crit2>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      crit2=ToType<int>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(svv[i][3]);
+      dat.bounds.front().second=ToType<double>(svv[i][4]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -202,9 +205,10 @@ bool Selector_Data::ReadInData(std::string filename)
     }
     else if (keyword == string("Angle")) {
       dat.type = 22;
-      from>>crit1>>crit2>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      crit2=ToType<int>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(svv[i][3]);
+      dat.bounds.front().second=ToType<double>(svv[i][4]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -214,24 +218,24 @@ bool Selector_Data::ReadInData(std::string filename)
     }  
     else if (keyword == string("X")) {
       dat.type = 24;
-      from>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      dat.bounds.front().first=ToType<double>(svv[i][1]);
+      dat.bounds.front().second=ToType<double>(svv[i][2]);
     }
     else if (keyword == string("BFKL_PT")) {
       dat.type = 25;
-      from>>crit1>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("DeltaEta")) {
       dat.type = 26;
-      from>>crit1>>crit2>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      crit1=ToType<int>(svv[i][1]);
+      crit2=ToType<int>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(svv[i][3]);
+      dat.bounds.front().second=ToType<double>(svv[i][4]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -249,8 +253,10 @@ bool Selector_Data::ReadInData(std::string filename)
       if (keyword=="Delta_R_Bias") dat.type=115;
       if (keyword=="Mass_Bias") dat.type=116;
       if (dat.type>110) {
-	std::string values;
-	from>>crit1>>crit2>>values>>dat.helps;
+        crit1=ToType<int>(svv[i][1]);
+        crit2=ToType<int>(svv[i][2]);
+        std::string values=svv[i][3];
+        dat.helps=svv[i][4];
 	flav = Flavour(kf::code(abs(crit1)));
 	if (crit1<0) flav  = flav.Bar();
 	flav2 = Flavour(kf::code(abs(crit2)));
@@ -272,8 +278,9 @@ bool Selector_Data::ReadInData(std::string filename)
 	}
       }
       else if (dat.type>0) {
-	std::string values;
-	from>>crit1>>values>>dat.helps;
+        crit1=ToType<int>(svv[i][1]);
+        std::string values=svv[i][2];
+        dat.helps=svv[i][3];
 	flav = Flavour(kf::code(abs(crit1)));
 	if (crit1<0) flav = flav.Bar();
 	dat.flavs.push_back(flav);
@@ -295,7 +302,6 @@ bool Selector_Data::ReadInData(std::string filename)
     }
     if (dat.type>0) data.push_back(dat);
   }
-  from.close();
   return 1;
 }
 

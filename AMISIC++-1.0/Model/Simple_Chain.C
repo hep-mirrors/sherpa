@@ -299,7 +299,7 @@ bool Simple_Chain::CreateGrid()
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   delete p_processes->SelectorData();
   p_processes->SetSelectorData
-    (new ATOOLS::Selector_Data(InputPath()+m_selectorfile));
+    (new ATOOLS::Selector_Data(InputPath(),m_selectorfile));
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());

@@ -13,6 +13,9 @@
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
 
+#include <unistd.h>
+#include <sys/stat.h>
+
 using namespace AMEGIC;
 using namespace PHASIC;
 using namespace PDF;
@@ -51,9 +54,12 @@ Single_Process_MHV2::Single_Process_MHV2(int _nin,int _nout,Flavour * _fl,
 
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (system((string("test -f ")+newpath+string("/makelibs")).c_str())) {
-    system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
-	    string("/makelibs ")+newpath).c_str());
+  struct stat fst;
+  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || fst.st_mode!=S_IFREG) {
+    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	     newpath+"/makelibs");
+    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
+	     newpath+"/grid_makelibs");
   }
   m_newlib   = false;
   m_libnumb  = 0;
@@ -99,9 +105,12 @@ Single_Process_MHV2::Single_Process_MHV2(Process_Info* pinfo,int _nin,int _nout,
 
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (system(("test -f "+newpath+"/makelibs").c_str())) {
-    system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
-	    string("/makelibs ")+newpath).c_str());
+  struct stat fst;
+  if (stat((newpath+"/makelibs").c_str(),&fst)==-1 || fst.st_mode!=S_IFREG) {
+    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	     newpath+"/makelibs");
+    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
+	     newpath+"/grid_makelibs");
   }
   m_newlib   = false;
   m_libnumb  = 0;
@@ -266,20 +275,20 @@ int Single_Process_MHV2::InitAmplitude(Interaction_Model_Base * model,Topology* 
     return -1;
   }
   procs++;
-   for (size_t j=current_atom;j<links.size();j++) {
-     if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
-       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
- 	m_sfactor = sqr(m_sfactor);
- 	msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
+  for (size_t j=current_atom;j<links.size();j++) {
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
+      if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
+	m_sfactor = sqr(m_sfactor);
+	msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
- 	if (!FoundMappingFile(m_libname,m_pslibname)) {
- 	  if (IsFile(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
- 	    system((string("cp ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
- 		    +rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
- 	    system((string("cp ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
- 		    +rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
- 	  }
- 	}
+	if (!FoundMappingFile(m_libname,m_pslibname)) {
+	  if (IsFile(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
+	    CopyFile(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name()+".map",
+		     rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name()+".map");
+	    CopyFile(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name()+".col",
+		     rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name()+".col");
+	  }
+	}
 	
  	p_partner = (Single_Process_MHV2*)links[j];
  	Minimize();
@@ -625,7 +634,7 @@ void Single_Process_MHV2::WriteLibrary()
   m_newlib=true;
   msg_Info()<<"Single_Process_MHV2::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
-  system("sync");
+  sync();
 }
 
 std::string  Single_Process_MHV2::CreateLibName()

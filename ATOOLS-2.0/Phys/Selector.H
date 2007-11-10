@@ -21,9 +21,9 @@ namespace ATOOLS {
   protected :
     std::vector<Mom_Data> data;
   private :
-    bool ReadInData(std::string);
+    bool ReadInData(std::string path, std::string filename);
   public :
-    Selector_Data(std::string path);
+    Selector_Data(std::string path, std::string filename);
     inline Selector_Data(Selector_Data & sel) : data(sel.data) {}
     Selector_Data();
     ~Selector_Data()     {};

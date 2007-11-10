@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include <fstream>
 
 #include "Flavour.H"
 #include "Algebra_Interpreter.H"
