@@ -10,6 +10,7 @@
 #include "Running_AlphaS.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Data_Reader.H"
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -565,6 +566,16 @@ double Integrable_Base::KFactor()
     return m_kfkey.Weight();
   }
   else if (m_scalescheme&scl::bfkl) {
+    static int nf(-1);
+    if (nf<0) {
+      Data_Reader read(" ",";","!","=");
+      int sm;
+      if (!read.ReadFromFile(sm,"BFKL_SPLIT_MODE")) sm=(1<<6)-1;
+      else msg_Info()<<METHOD<<"(): Set splitting mode "<<sm<<".\n";
+      nf=0;
+      for (size_t i(1);i<=5;++i) if (sm&(1<<i)) ++nf;
+      msg_Info()<<METHOD<<"(): N_f = "<<nf<<"\n";
+    }
     if (m_orderQCD<0 || m_orderEW<0) {
       THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
     }
@@ -582,13 +593,15 @@ double Integrable_Base::KFactor()
     double ptmin(0.0);
     if (ptsel!=NULL) ptmin=ptsel->PTMin();
     else THROW(critical_error,"'SCALE_SCHEME = BFKL' implies BFKL_PT <min> <max>' in 'Selector.dat'.");
+    double asr((*as)(sqr(ptmin)));
     Vec4D q(p_momenta[p_momenta[0][3]>p_momenta[1][3]?0:1]);
     Flavour p(p_flavours[p_momenta[0][3]>p_momenta[1][3]?0:1]);
     q-=moms.front().first;
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
 		   <<m_orderQCD<<") "<<p<<" {\n";
     weight*=(*as)(moms.front().first.PPerp2())/asecms;
-    msg_Debugging()<<"  k_{T,0} = "<<moms.front().first.PPerp()<<"\n";
+    msg_Debugging()<<"  k_{T,0} = "<<moms.front().first.PPerp()
+		   <<" -> as = "<<(*as)(moms.front().first.PPerp2())<<"\n";
     for (size_t i(1);i<m_nout;++i) {
       weight*=(*as)(moms[i].first.PPerp2())/asecms;
       if (moms[i].second.IsQuark()) 
@@ -596,13 +609,20 @@ double Integrable_Base::KFactor()
       if (m_scalescheme&scl::reggeise) {
 	double qt2(q.PPerp2()), asc((*as)(qt2));
 	double b0(as->Beta0(qt2)/M_PI);
-	weight*=exp(-(p.IsQuark()?4.0/3.0:3.0)/(M_PI*b0)
-		    *log((*as)(sqr(ptmin))/asc)
-		    *(moms[i-1].first.Y()-moms[i].first.Y()));
+	double z((q-moms[i].first).PPlus()/q.PPlus());
+	if (z>1) z=q.PMinus()/(q-moms[i].first).PMinus();
+ 	double sud(exp(-(p.IsQuark()?4.0/3.0*(2.0+z):2.0*3.0+nf*0.5*z)
+ 		       /(2.0*M_PI*b0)*log(asr/asc)
+ 		       *(moms[i-1].first.Y()-moms[i].first.Y())));
+	weight*=sud;
 	msg_Debugging()<<"  q_{T,"<<i<<"} = "<<q.PPerp()<<" ("<<p
-		       <<"<-"<<moms[i].second<<")\n";
+		       <<"<-"<<moms[i].second<<"), dy = "
+		       <<moms[i-1].first.Y()-moms[i].first.Y()
+		       <<" -> \\Delta = "<<sud<<"\n";
       }
-      msg_Debugging()<<"  k_{T,"<<i<<"} = "<<moms[i].first.PPerp()<<"\n";
+      msg_Debugging()<<"  k_{T,"<<i<<"} = "
+		     <<moms[i].first.PPerp()<<" -> as = "
+		     <<(*as)(moms[i].first.PPerp2())<<"\n";
       q-=moms[i].first;
     }
     m_kfkey<<weight;
