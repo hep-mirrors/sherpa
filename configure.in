@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(SHERPA MC, 1.1.0, support@sherpa-mc.de, SHERPA-MC)
-AC_CONFIG_HEADERS(config.h ATOOLS-2.0/Org/CXXFLAGS.H)
+AM_CONFIG_HEADERS(config.h ATOOLS-2.0/Org/CXXFLAGS.H)
 AM_INIT_AUTOMAKE
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})

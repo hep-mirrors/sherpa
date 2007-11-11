@@ -1,3 +1,7 @@
+dnl workaround for old automake on darwin
+
+AC_DEFUN([AM_CONFIG_HEADERS], [AC_CONFIG_HEADERS($@)])
+
 dnl set flags according to build environment
 
 AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
