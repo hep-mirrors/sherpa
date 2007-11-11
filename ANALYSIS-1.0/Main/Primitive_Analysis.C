@@ -216,12 +216,17 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     mode=mode|ANALYSIS::output_this;
     key=JetID(pname.substr(pname.find("__")+3),m_maxjettag);
     if (name!=pname && m_maxjettag!="") {
+      bool maxn(key.find('X')!=std::string::npos);
       size_t cur(ToType<int>(key)), nmax(ToType<int>(m_maxjettag));
       for (size_t i(0);i<=nmax;++i) {
-	if (i!=cur) {
+	if (i!=cur || maxn) {
 	  Primitive_Analysis * ana=GetSubAnalysis("j"+ToString(i),mode);
 	  ana->DoAnalysis(bl,0.0);
 	}
+      }
+      if (!maxn) {
+	Primitive_Analysis * ana=GetSubAnalysis("jX",mode);
+	ana->DoAnalysis(bl,0.0);
       }
     }
     key="j"+key;
