@@ -36,7 +36,7 @@ namespace SHERPA {
     int     m_sud_mode, m_bp_mode, m_as_mode;
     double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
-    int     m_hard_nqcd, m_hard_nqed, m_nstrong;
+    int     m_hard_nqcd, m_hard_nqed, m_nstrong, m_ckkw;
     double  m_counts, m_fails;
 
     EXTRAXS::XS_Base * p_xs;
@@ -103,6 +103,8 @@ namespace SHERPA {
     
     inline void SetMaxQCDJets(const int jets) { m_maxqcdjets=jets; }
     inline void SetMinQCDJets(const int jets) { m_minqcdjets=jets; }
+
+    inline void SetCKKWOn(const int &on) { m_ckkw=on; }
   };
 
   /*!

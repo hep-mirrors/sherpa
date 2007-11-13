@@ -245,15 +245,19 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
 	       <<"   No method provided yet. Return 0."<<std::endl;
     return false;
   }
+  p_ajf=p_jf;
+  m_ycut=1.0;
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
-  if (proc->Selector()->Name()=="Combined_Selector") {
-    p_ajf=(Jet_Finder *)
-      ((Combined_Selector*)proc->Selector())->GetSelector("Jetfinder");
-    if (p_ajf==NULL) THROW(critical_error,"'SUDAKOV_WEIGHT = 1' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+  if (m_ckkw) {
+    if (proc->Selector()->Name()=="Combined_Selector") {
+      p_ajf=(Jet_Finder *)
+	((Combined_Selector*)proc->Selector())->GetSelector("Jetfinder");
+      if (p_ajf==NULL) THROW(critical_error,"'SUDAKOV_WEIGHT = 1' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+    }
+    m_ycut=p_ajf->Ycut();
+    msg_Debugging()<<METHOD<<"(): process = "<<proc->Name()<<", y_cut = "
+		   <<m_ycut<<" ("<<sqrt(m_ycut)*rpa.gen.Ecms()<<")\n";
   }
-  m_ycut=p_ajf->Ycut();
-  msg_Debugging()<<METHOD<<"(): process = "<<proc->Name()<<", y_cut = "
-		 <<m_ycut<<" ("<<sqrt(m_ycut)*rpa.gen.Ecms()<<")\n";
   int nampl=p_me->NumberOfDiagrams();
   int nlegs=nin+nout;
   Leg **legs(CreateLegs(nampl,nlegs));
@@ -383,11 +387,13 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     size_t id(1<<root->number);
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
-    alegs[root->number].SetQ2Cut
-      (p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
-    alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
-    alegs[root->number].SetQ2Cut
-      (p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    if (m_ckkw) {
+      alegs[root->number].SetQ2Cut
+	(p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+      alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
+      alegs[root->number].SetQ2Cut
+	(p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    }
     alegs[root->number].SetID(id);    
     l++;
   }
@@ -399,11 +405,13 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     size_t id(1<<root->number);
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
-    alegs[root->number].SetQ2Cut
-      (p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
-    alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
-    alegs[root->number].SetQ2Cut
-      (p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    if (m_ckkw) {
+      alegs[root->number].SetQ2Cut
+	(p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+      alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
+      alegs[root->number].SetQ2Cut
+	(p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    }
     alegs[root->number].SetID(id);    
     l++;
     return 1;

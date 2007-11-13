@@ -96,6 +96,8 @@ namespace ATOOLS {
     { return m_gycuts[i][j]; }
     double   GetScaledGlobalYcut(const size_t &i,const size_t &j) const 
     { return i<3||j<3?m_gycuts[i][j]:m_gycuts[i][j]/sqr(m_delta_r); }
+
+    inline bool YCutsSet() const { return m_ycuts.size(); }
   };
 
   inline bool Jet_Finder::ConstructJets(Particle_List * pl, double y_cut, bool final_only) { 

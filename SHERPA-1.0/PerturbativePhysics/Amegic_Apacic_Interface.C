@@ -46,6 +46,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
       p_mehandler->SetUseSudakovWeight(0);
     }
   }
+  p_cluster->SetCKKWOn(p_mehandler->UseSudakovWeight());
   p_filler->SetCKKWOn(p_mehandler->UseSudakovWeight());
 }  
 

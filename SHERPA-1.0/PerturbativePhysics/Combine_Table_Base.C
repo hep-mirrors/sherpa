@@ -405,6 +405,7 @@ void Combine_Table_Base::SetLegScales
 void Combine_Table_Base::SetQ2Cut(const size_t &i,const size_t &j,
 				  double &q2in,double &q2out,const size_t &id)
 {
+  if (!p_jf->YCutsSet()) return;
   size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID());
   double yci(id==1?p_jf->GetScaledYcut(idi,idi):
 	     p_jf->GetScaledGlobalYcut(idi,idi));
