@@ -14,6 +14,7 @@ Algebra_Interpreter s_interpreter;
 
 Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
 Parameter_Map ATOOLS::Data_Read::s_tags;
+Parameter_Map ATOOLS::Data_Read::s_gtags;
 
 bool s_nowrite(true);
 
@@ -32,7 +33,7 @@ const Type Data_Read::ReturnData(const std::string &name,const Type type)
 void Data_Read::SetValue(std::string name, std::string value) {
   Shorten(name);
   Shorten(value);
-  m_parameters[name]=value;
+  m_parameters[name]=ReplaceTags(value);
 }
 
 // definition
@@ -86,6 +87,7 @@ Data_Read::Data_Read(std::string filename, bool ignoremissingfile) {
   m_error=0;
   m_fileexists=true;
   m_filename=filename;
+  m_gtags=true;
   ReadIn(filename,ignoremissingfile); 
 }
 
@@ -101,7 +103,7 @@ void Data_Read::FillIn(std::string buffer) {
       hit=value.find('!');
       if (hit!=std::string::npos) value=value.substr(0,hit);
       Shorten(value);
-      m_parameters[name]=value;
+      m_parameters[name]=ReplaceTags(value);
     }
   }
 }
@@ -406,6 +408,15 @@ std::string Data_Read::ReplaceTags(std::string &expr) const
       success=true;
     }
   }
+  if (m_gtags)
+    for (std::map<std::string,std::string>::const_iterator 
+	   tit=s_gtags.begin();tit!=s_gtags.end();++tit) {
+      size_t pos=tag.find(tit->first);
+      if (pos!=std::string::npos) {
+	tag.replace(pos,tit->first.length(),tit->second);
+	success=true;
+      }
+    }
   if (success && tag!=expr) return ReplaceTags(tag);
   return tag;
 }

@@ -40,7 +40,6 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *meh
   p_psme_fs(NULL) 
 {
   p_twototwo->InitializeModel(mehandler->GetModel(),
-			      rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+
 			      rpa.gen.Variable("ME_DATA_FILE"));
   p_twototwo->SetScaleScheme(mehandler->GetXS()->ScaleScheme());
 }

@@ -54,6 +54,8 @@ namespace AMEGIC {
 			 const int &priority);
     int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,std::vector<int>* fl=0,std::vector<int>* num=0);
     void Shorten(std::string&);
+    std::string MakeString(const std::vector<std::string> &in,
+			   const size_t &first);
   public :
     Amegic(std::string,std::string,MODEL::Model_Base *);
     ~Amegic();

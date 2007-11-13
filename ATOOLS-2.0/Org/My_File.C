@@ -83,9 +83,11 @@ bool My_File<FileType>::Open()
 { 
   if (m_path=="" && m_file=="") return false;
   Close();
-  String_Map::const_iterator fit(s_filelocations.find(m_file));
+  String_Map::const_iterator fit(s_filelocations.find(m_path+m_file));
   if (fit!=s_filelocations.end()) m_path=fit->second;
   if ((m_path+m_file)[0]=='/') {
+    msg_Debugging()<<METHOD<<"(): Relocated '"<<m_file<<"' at '"
+		   <<m_path<<"'."<<std::endl;  
     p_file = new File_Type();
     p_file->open((m_path+m_file).c_str());
     return p_file->good();
@@ -95,9 +97,10 @@ bool My_File<FileType>::Open()
       p_file = new File_Type();
       p_file->open((s_searchpaths[i]+"/"+m_path+m_file).c_str());
       if (p_file->good()) {
-	if (i>0) msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
-			  <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
-	m_path=s_filelocations[m_file]=s_searchpaths[i]+"/"+m_path;
+	if (i>0 || msg_LevelIsDebugging()) 
+	  msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
+		   <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+	m_path=s_filelocations[m_path+m_file]=s_searchpaths[i]+"/"+m_path;
 	return true;
       }
     }

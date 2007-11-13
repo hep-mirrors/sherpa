@@ -95,9 +95,9 @@ namespace ATOOLS {
   class Data_Read: public Tag_Replacer {
     //associative map (parameter name and coresponding value)
     Parameter_Map m_parameters;
-    static Parameter_Map s_commandlineparameters, s_tags;
+    static Parameter_Map s_commandlineparameters, s_tags, s_gtags;
 
-    bool m_fileexists;
+    bool m_fileexists, m_gtags;
     int  m_error;
     
     std::string m_filename;
@@ -131,7 +131,10 @@ namespace ATOOLS {
     bool FileExists() { return m_fileexists; }
     inline std::string FileName() const { return m_filename; }
     inline static void SetTags(const Parameter_Map &tags) { s_tags=tags; }
+    inline static void SetGlobalTag
+    (const std::string &tag,const std::string &value) { s_gtags[tag]=value; }
     inline static void ResetTags() { s_tags.clear(); }
+    inline static void ResetGlobalTags() { s_tags.clear(); }
     inline int ErrorCode() const { return m_error; }
   };  
 

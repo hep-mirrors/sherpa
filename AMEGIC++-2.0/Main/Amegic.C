@@ -8,7 +8,7 @@
 #include "Process_Info.H"
 #include <iomanip>
 #include "Single_Process_MHV2.H"
-#include "My_File.H"
+#include "Data_Reader.H"
 
 //#define _DECAYS_
 
@@ -104,6 +104,13 @@ Amegic::~Amegic() {
 
   ----------------------------------------------------------------------------------*/
 
+std::string Amegic::MakeString(const std::vector<std::string> &in,
+			       const size_t &first)
+{
+  std::string out(in.size()>first?in[first]:"");
+  for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
+  return out;
+}
 
 bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Handler * _isr) {
   p_beam              = _beam; 
@@ -195,14 +202,6 @@ void Amegic::ReadInProcessfile(string file)
   double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.);
   rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
 
-  My_In_File from(m_path,file);
-  if (!from.Open()) {
-    msg_Error()<<"ERROR in Amegic::InitializeProcesses : "<<endl
-	       <<"   Process data file : "<<(m_path+file).c_str()<<" not found."<<std::endl
-	       <<"   Abort program execution."<<endl;
-    abort();
-  }
-
   int         flag,position,njets;
   string      buf,ini,fin;
   int         nIS,   nFS,    nex;
@@ -219,21 +218,25 @@ void Amegic::ReadInProcessfile(string file)
   bool        print_graphs=false;
   int         enable_mhv=0; 
   string      selectorfile;
-  while (*from) {
-    getline(*from,buf);
-    position = -1;
-    if (buf.length()>0 && buf[0] != '%') {
-      msg_LogFile()<<buf<<std::endl;
+  std::vector<std::vector<std::string> > procdata;
+  Data_Reader read(" ",";","%",":");
+  read.AddWordSeparator("\t");
+  read.SetAddCommandLine(false);
+  read.SetInputPath(m_path);
+  read.SetInputFile(file);
+  if (!read.MatrixFromFile(procdata,""))
+    THROW(missing_input,"No data in"+m_path+file+"'.");
+  for (size_t nf(0);nf<procdata.size();++nf) {
+    std::vector<std::string> &cur(procdata[nf]);
+    if (cur.size()<2) continue;
       vector<Process_Info*> AppPI;
       vector<int> AppKf;
       vector<int> AppNum;
       AppPI.clear();AppKf.clear();AppNum.clear();
-      position   = buf.find(string("Process :")); 
-      flag       = 0;
-      if (position>-1 && position<(int)buf.length()) {
+      if (cur[0]=="Process") {
 	pinfo    = new Process_Info(0,0);
 	flag     = 1;
-	buf      = buf.substr(position+9);
+	buf=MakeString(cur,1);
 	position = buf.find(string("->"));
 	if (position > 0) {
 	  ini    = buf.substr(0,position);
@@ -282,15 +285,12 @@ void Amegic::ReadInProcessfile(string file)
 
 	    enhance_function    = "1";
 	    int pr(0);
-	    do {
-	      getline(*from,buf);
+	    for (size_t ng(0);ng<procdata.size();++ng) {
+	      std::vector<std::string> &cur(procdata[ng]);
+	      if (cur.size()<2) continue;
 	      ++pr;
-	      position = -1;
-	      if (buf.length()>0 && buf[0] != '%') {
-		msg_LogFile()<<buf<<std::endl;
-		position = buf.find(string("Decay :"));
-		if (position > -1) {
-		  buf    = buf.substr(position+7);
+		if (cur[0]=="Decay") {
+		  buf=MakeString(cur,1);
 		  position = buf.find(string("->"));
 		  if (position > 0) {
 		    ini    = buf.substr(0,position);
@@ -332,141 +332,82 @@ void Amegic::ReadInProcessfile(string file)
 		  }
 		}
 
-		position = buf.find(string("Excluded particles :"));
-		if (position > -1) {
-		  buf    = buf.substr(position+20);
+		if (cur[0]=="Excluded" && cur[1]=="particles") {
+		  buf=MakeString(cur,2);
 		  nex    = ExtractFlavours(excluded,pldummy,buf);
 		}
 
-		position = buf.find(string("Order electroweak :"));
-		if (position > -1) {
-		  MyStrStream str;
-		  buf    = buf.substr(position+19);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>order_ew;
+		if (cur[0]=="Order" && cur[1]=="electroweak") {
+		  order_ew=ToType<int>(cur[2]);
 		}
 
-		position     = buf.find(string("Order strong :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf    = buf.substr(position+14);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>order_strong;
+		if (cur[0]=="Order" && cur[1]=="strong") {
+		  order_strong=ToType<int>(cur[2]);
 		}
 
-		position       = buf.find(string("Selector file :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+15);
-		  Shorten(buf);
-		  selectorfile = buf;
+		if (cur[0]=="Selector" && cur[1]=="file") {
+		  selectorfile = cur[2];
 		}
 		
-		position       = buf.find(string("Scale scheme :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+14);
-		  Shorten(buf);
-		  int helpsc;
-		  str<<buf;
-		  str>>helpsc;
-		  scale_scheme = (PHASIC::scl::scheme)(helpsc);
+		if (cur[0]=="Scale" && cur[1]=="scheme") {
+		  Data_Reader rt;
+		  rt.SetTags(PHASIC::Integrable_Base::ScaleTags());
+		  rt.SetString(cur[2]);
+		  int helpi;
+		  rt.ReadFromString(helpi,"");
+		  scale_scheme = (PHASIC::scl::scheme)helpi;
+		}
+		
+		if (cur[0]=="Factorization" && cur[1]=="scale") {
+		  factorization_scale = cur[2];
 		}
 
-		position       = buf.find(string("Factorization scale :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+21);
-		  Shorten(buf);
-		  factorization_scale = buf;
+		if (cur[0]=="KFactor" && cur[1]=="scheme") {
+		  kfactor_scheme=ToType<int>(cur[2]);
 		}
 
-		position       = buf.find(string("KFactor scheme :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+16);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>kfactor_scheme;
+		if (cur[0]=="Fixed" && cur[1]=="scale") {
+		  fixed_scale=ToType<double>(cur[2]);
 		}
 
-		position       = buf.find(string("Fixed scale :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+13);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>fixed_scale;
-		}
-
-		position       = buf.find(string("Enhance_Factor :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
+		if (cur[0]=="Enhance_Factor") {
+		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,venhance_factor,pr);
 		}
-		position       = buf.find(string("Enhance_Function :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
-		  enhance_function=buf;
+		if (cur[0]=="Enhance_Function") {
+		  enhance_function=MakeString(cur,1);
 		}
-		position       = buf.find(string("Max_Reduction :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
+		if (cur[0]=="Max_Reduction") {
+		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,vmaxreduction_factor,pr);
 		}
-		position       = buf.find(string("Max_Epsilon :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
+		if (cur[0]=="Max_Epsilon") {
+		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,vmaxredepsilon,pr);
 		}
 
-		position       = buf.find(string("Integration_Error :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
+		if (cur[0]=="Integration_Error") {
+		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,vmaxerror,pr);
 		}
 
-		position       = buf.find(string("YCUT :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(buf.find(":",position)+1);
-		  Shorten(buf);
+		if (cur[0]=="YCUT") {
+		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,vycut,pr);
 		}
 
-		position       = buf.find(string("Print_Graphs"));
-		if (position > -1) {
+		if (cur[0]=="Print_Graphs") {
 		  print_graphs=true;
 		}
-		position       = buf.find(string("Enable_MHV"));
-		if (position > -1) {
+		if (cur[0]=="Enable_MHV") {
 		  enable_mhv=1;
 		}
-		position       = buf.find(string("Enable_MHV_ONLY"));
-		if (position > -1) {
+		if (cur[0]=="Enable_MHV_ONLY") {
 		  enable_mhv=4;
 		}
 
-		position     = buf.find(string("N_Max :"));
-		if (position > -1) {
-		  int nmax;
-		  MyStrStream str;      
-		  buf    = buf.substr(position+7);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>nmax;
+		if (cur[0]=="N_Max") {
+		  int nmax=ToType<int>(cur[1]);
 		  if (nmax>m_maxjet) {
 		    msg_Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
 		    m_maxjet = nmax;
@@ -474,16 +415,8 @@ void Amegic::ReadInProcessfile(string file)
 		    m_coremaxjet = nmax;
 		  }		  
 		}
-
-		position       = buf.find(string("End process"));
-		if (!*from) {
-		  msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
-			     <<"   End of file reached without 'End process'-tag."<<endl
-			     <<"   Continue and hope for the best."<<endl;
-		  position     = 0;
-		}
-	      }
-	    } while (*from && position==-1);
+		if (cur[0]=="End" && cur[1]=="process") break;
+	    }
 	    if (!pinfo || !pinfo->CheckCompleteness()) {
 	      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Missing decay processes! "<<endl;
@@ -638,7 +571,6 @@ void Amegic::ReadInProcessfile(string file)
 	  if (pinfo) delete pinfo;
 	}
       }
-    }
   }
   p_procs->SetMaxJetNumber(m_maxjet);
   p_procs->SetCoreMaxJetNumber(m_coremaxjet);

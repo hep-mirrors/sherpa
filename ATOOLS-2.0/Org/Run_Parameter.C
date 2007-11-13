@@ -173,6 +173,11 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
                   else { ran.SetSeed(gen.m_seed); }
   gen.m_ren_scale_fac=1.0;
   gen.m_fac_scale_fac=1.0;
+  msg_Out()<<METHOD<<"(): Set global tags {\n";
+  const String_Map &gtags(Read_Write_Base::GlobalTags());
+  for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)
+    msg_Debugging()<<"  '"<<tit->first<<"' -> '"<<tit->second<<"'\n";
+  msg_Debugging()<<"}\n";
 }
 
 Run_Parameter::~Run_Parameter() 

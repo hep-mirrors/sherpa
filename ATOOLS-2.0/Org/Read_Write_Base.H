@@ -51,6 +51,7 @@ namespace ATOOLS {
 
     static Buffer_Map s_buffermap;
     static String_Vector s_commandline;
+    static String_Map s_globaltags;
 
     String_Map    m_tags;
     String_Vector m_comment, m_wordsep, m_linesep;
@@ -64,7 +65,7 @@ namespace ATOOLS {
     mtc::code m_matrixtype;
 
     bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete, m_cmode;
-    bool m_allownans, m_addcommandline;
+    bool m_allownans, m_addcommandline, m_useglobaltags;
 
     size_t m_occurrence;
 
@@ -205,6 +206,8 @@ namespace ATOOLS {
     { m_allownans=allownans; }
     inline void SetAddCommandLine(const bool commandline)
     { m_addcommandline=commandline; }
+    inline void SetUseGlobalTags(const bool globaltags)
+    { m_useglobaltags=globaltags; }
 
     inline static void SetCommandLine(const std::string commandline)
     { s_commandline.clear(); s_commandline.push_back(commandline); }
@@ -244,6 +247,23 @@ namespace ATOOLS {
     { m_tags.clear(); m_tags[tag]=value; }
     inline void AddTag(const std::string &tag,const std::string &value)
     { m_tags[tag]=value; }
+
+    inline static void SetGlobalTags
+    (const std::map<std::string,std::string> &tags)
+    { s_globaltags=tags; }
+    inline static void AddGlobalTags
+    (const std::map<std::string,std::string> &tags)
+    { 
+      for (std::map<std::string,std::string>::const_iterator 
+	     tit=tags.begin();tit!=tags.end();++tit) 
+	s_globaltags[tit->first]=tit->second; 
+    }
+    inline static void SetGlobalTag
+    (const std::string &tag,const std::string &value)
+    { s_globaltags.clear(); s_globaltags[tag]=value; }
+    inline static void AddGlobalTag
+    (const std::string &tag,const std::string &value)
+    { s_globaltags[tag]=value; }
 
     // getters
     inline const Char_Vector &Blank() const
@@ -307,6 +327,15 @@ namespace ATOOLS {
     }
     inline const std::map<std::string,std::string> &Tags() const
     { return m_tags; }
+    
+    inline static const std::string &GlobalTag(const std::string &tag)
+    { 
+      std::map<std::string,std::string>::const_iterator 
+	tit(s_globaltags.find(tag));
+      return tit!=s_globaltags.end()?nullstring:tit->second;
+    }
+    inline static const std::map<std::string,std::string> &GlobalTags()
+    { return s_globaltags; }
 
     inline const String_Vector &BufferContent(const size_t i=0) const
     { return s_buffermap[InputPath(i)+InputFile(i)]; }

@@ -825,8 +825,15 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
     // variables in dat files
     if (equal!=-1 && mode==1) {
-      Data_Read::SetCommandLine(key,value);
-      Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
+      if (key[key.length()-1]==':') {
+	key.erase(key.length()-1,1);
+	Data_Read::SetGlobalTag(key,value);
+	Read_Write_Base::AddGlobalTag(key,value);
+      }
+      else {
+	Data_Read::SetCommandLine(key,value);
+	Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
+      }
     }
     
     // special variables

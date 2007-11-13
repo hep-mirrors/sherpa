@@ -9,6 +9,7 @@ using namespace ATOOLS;
 
 String_Vector Read_Write_Base::s_commandline;
 Buffer_Map Read_Write_Base::s_buffermap;
+String_Map Read_Write_Base::s_globaltags;
 
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles):
@@ -45,6 +46,7 @@ void Read_Write_Base::Init()
   m_matrixtype=mtc::transposed; 
   m_allownans=false;
   m_addcommandline=true;
+  m_useglobaltags=true;
   m_ignorecase=false;
   m_ignoreblanks=false;
   m_exactmatch=true;
@@ -276,6 +278,15 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
       success=true;
     }
   }
+  if (m_useglobaltags)
+    for (std::map<std::string,std::string>::const_iterator 
+	   tit=s_globaltags.begin();tit!=s_globaltags.end();++tit) {
+      size_t pos=tag.find(tit->first);
+      if (pos!=std::string::npos) {
+	tag.replace(pos,tit->first.length(),tit->second);
+	success=true;
+      }
+    }
   if (success && tag!=expr) return ReplaceTags(tag);
   return tag;
 }
