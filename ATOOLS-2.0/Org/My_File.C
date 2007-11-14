@@ -3,13 +3,8 @@
 #include "Exception.H"
 
 #include <typeinfo>
-#include <map>
 
 using namespace ATOOLS;
-
-typedef std::map<std::string,std::string> String_Map;
-
-static String_Map s_filelocations;
 
 namespace ATOOLS {
   INSTANTIATE_SMART_POINTER(std::ifstream)
@@ -159,10 +154,16 @@ void My_File<FileType>::SetSearchPaths(const String_Vector &paths)
   s_searchpaths=paths;
 }
 
-template class My_In_File;
+template <class FileType> 
+typename My_File<FileType>::String_Vector 
+My_File<FileType>::s_searchpaths;
+template <class FileType> 
+typename My_File<FileType>::String_Map 
+My_File<FileType>::s_filelocations;
 
-template <> My_In_File::String_Vector My_In_File::s_searchpaths;
+namespace ATOOLS {
 
-template class My_Out_File;
+  template class My_In_File;
+  template class My_Out_File;
 
-template <> My_Out_File::String_Vector My_Out_File::s_searchpaths;
+}

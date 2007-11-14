@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <map>
 
 namespace ATOOLS {
 
@@ -32,9 +33,12 @@ namespace ATOOLS {
 
     typedef std::vector<std::string> String_Vector;
 
+    typedef std::map<std::string,std::string> String_Map;
+
   protected:
 
     static String_Vector s_searchpaths;
+    static String_Map    s_filelocations;
 
     std::string m_path, m_file;
 
