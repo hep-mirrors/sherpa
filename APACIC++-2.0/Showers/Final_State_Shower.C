@@ -1000,7 +1000,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
     if (d2) msg_Error()<<"d2 :"<<*d2<<std::endl; else msg_Error()<<"d2 : 0x0"<<std::endl;
     return;
   }
-
+  
   if (d1->decay!=mo->decay) {
     d1->part->SetFlow(1,0);
     d1->part->SetFlow(2,0);
@@ -1018,11 +1018,12 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   double maxpt2(p_kin->GetRelativeKT2(z_mo,sqr(E_mo),t_mo,tb,tc));
   if (IsEqual(th,M_PI)) maxpt2=mo->maxpt2;
   mo->sthcrit=th;
+  double thcrit(mo->shower==2?th:mo->thcrit);
   if (mo->part->Flav().IsQuark() && 
       d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
     if (d1->part->Flav().IsQuark()) {
       d1->t      = mo->t;
-      d1->thcrit = mo->thcrit;
+      d1->thcrit = thcrit;
       d2->t      = st_mo;
       d2->thcrit = th;
     }
@@ -1030,7 +1031,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
       d1->t      = st_mo;
       d1->thcrit = th;
       d2->t      = mo->t;
-      d2->thcrit = mo->thcrit;
+      d2->thcrit = thcrit;
     }
     d1->maxpt2 = d2->maxpt2 = maxpt2;
   }
@@ -1038,7 +1039,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
     if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
       if ((d1->E2) > (d2->E2)) {
 	d1->t      = mo->t;
-	d1->thcrit = mo->thcrit;
+	d1->thcrit = thcrit;
 	d2->t      = st_mo;
 	d2->thcrit = th;
       }
@@ -1046,7 +1047,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
 	d1->t      = st_mo;
 	d1->thcrit = th;
 	d2->t      = mo->t;
-	d2->thcrit = mo->thcrit;
+	d2->thcrit = thcrit;
       }
       d1->maxpt2 = d2->maxpt2 = maxpt2;
     }
@@ -1054,12 +1055,12 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
       d1->t      = st_mo;
       d1->thcrit = M_PI;
       d2->t      = mo->t;
-      d2->thcrit = mo->thcrit;
+      d2->thcrit = thcrit;
       d1->maxpt2 = d2->maxpt2 = mo->maxpt2;
     }
     else if ((d1->part->Flav().Strong()) && !(d2->part->Flav().Strong())) {
       d1->t      = mo->t;
-      d1->thcrit = mo->thcrit;
+      d1->thcrit = thcrit;
       d2->t      = st_mo;
       d2->thcrit = M_PI;
       d1->maxpt2 = d2->maxpt2 = mo->maxpt2;
@@ -1088,14 +1089,23 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   if (d2->part->Info()=='H' && d2->left && 
       d2->left->part->Info()=='H') 
     d2->t=d2->part->Momentum().Abs2();
+  if (mo->shower==2) {
+    d1->sthcrit=d1->thcrit;
+    d1->smaxpt2=d1->maxpt2;
+    d2->sthcrit=d2->thcrit;
+    d2->smaxpt2=d2->maxpt2;
+  }
   if (d1->decay!=mo->decay) {
     msg_Debugging()<<"restore saved info in "
 		   <<d1->kn_no<<" & "<<d2->kn_no<<"\n";
     d1->thcrit=d1->sthcrit;
-    d1->smaxpt2=d1->smaxpt2;
+    d1->maxpt2=d1->smaxpt2;
     d2->thcrit=d2->sthcrit;
-    d2->smaxpt2=d2->smaxpt2;
+    d2->maxpt2=d2->smaxpt2;
   }
+  msg_Debugging()<<METHOD<<"(): Set "<<mo->kn_no<<"->("<<mo->left->kn_no
+		 <<","<<mo->right->kn_no<<") {"<<mo->shower<<"} "<<mo->thcrit
+		 <<" -> "<<mo->left->thcrit<<","<<mo->right->thcrit<<"\n"; 
 }
 
 void Final_State_Shower::
