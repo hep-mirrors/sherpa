@@ -287,7 +287,6 @@ void Amegic::ReadInProcessfile(string file)
 	    int pr(0);
 	    for (size_t ng(0);ng<procdata.size();++ng) {
 	      std::vector<std::string> &cur(procdata[ng]);
-	      if (cur.size()<2) continue;
 	      ++pr;
 		if (cur[0]=="Decay") {
 		  buf=MakeString(cur,1);
@@ -332,6 +331,7 @@ void Amegic::ReadInProcessfile(string file)
 		  }
 		}
 
+		if (cur.size()>1) {
 		if (cur[0]=="Excluded" && cur[1]=="particles") {
 		  buf=MakeString(cur,2);
 		  nex    = ExtractFlavours(excluded,pldummy,buf);
@@ -369,7 +369,7 @@ void Amegic::ReadInProcessfile(string file)
 		if (cur[0]=="Fixed" && cur[1]=="scale") {
 		  fixed_scale=ToType<double>(cur[2]);
 		}
-
+		}
 		if (cur[0]=="Enhance_Factor") {
 		  buf=MakeString(cur,1);
 		  ExtractMPvalues(buf,venhance_factor,pr);
@@ -406,7 +406,7 @@ void Amegic::ReadInProcessfile(string file)
 		  enable_mhv=4;
 		}
 
-		if (cur[0]=="N_Max") {
+		if (cur[0]=="N_Max" && cur.size()>1) {
 		  int nmax=ToType<int>(cur[1]);
 		  if (nmax>m_maxjet) {
 		    msg_Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
@@ -415,7 +415,7 @@ void Amegic::ReadInProcessfile(string file)
 		    m_coremaxjet = nmax;
 		  }		  
 		}
-		if (cur[0]=="End" && cur[1]=="process") break;
+		if (cur[0]=="End" && cur.size()>1 && cur[1]=="process") break;
 	    }
 	    if (!pinfo || !pinfo->CheckCompleteness()) {
 	      msg_Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
