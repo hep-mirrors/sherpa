@@ -1,6 +1,6 @@
 if LHAPDF_SUPPORT
-pkglib_LTLIBRARIES       = libLHAPDF.la 
-libLHAPDF_la_SOURCES  =	\
+pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
+libLHAPDFSherpa_la_SOURCES  =	\
 			LHAPDF_Fortran_Interface.C \
 			lhapdf_inter.f 
 pkginclude_HEADERS        =	LHAPDF_Fortran_Interface.H

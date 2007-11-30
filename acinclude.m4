@@ -336,18 +336,25 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
         yes) if test -d "$LHAPDFDIR"; then
-              CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
-              CONDITIONAL_LHAPDFLIBS="-lLHAPDF $LHAPDFDIR/lib/libLHAPDF.a"
-            elif test -x "`which lhapdf-config`"; then
-              CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
-              CONDITIONAL_LHAPDFLIBS="-lLHAPDF `lhapdf-config --prefix`/lib/libLHAPDF.a"
-              if ! test -d "$CONDITIONAL_LHAPDFDIR"; then
-                AC_MSG_ERROR(lhapdf-config --prefix returned a path that is not available. Please check your LHAPDF installation and set \$LHAPDFDIR manually.);
-              fi
-  else
-              AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
-            fi;
-            AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
+               CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
+             elif test -x "`which lhapdf-config`"; then
+               CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
+               if ! test -d "$CONDITIONAL_LHAPDFDIR"; then
+                 AC_MSG_ERROR(lhapdf-config --prefix returned a path that is \
+                              not available. Please check your LHAPDF \
+                              installation and set \$LHAPDFDIR manually.);
+               fi
+             else
+              AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and \
+                           lhapdf-config was not found.);
+             fi
+
+             if test -f "$CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.la"; then
+               CONDITIONAL_LHAPDFLIBS="-lLHAPDFSherpa -L$CONDITIONAL_LHAPDFDIR/lib -lLHAPDF";
+             else
+               CONDITIONAL_LHAPDFLIBS="-lLHAPDFSherpa $CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.a";
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
       esac ],
     [ lhapdf=false ]
   )

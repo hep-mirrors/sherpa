@@ -72,57 +72,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	pdfbase = new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
 #endif
       }
-      else if (set==std::string("Alekhin_100.LHpdf") ||
-	       set==std::string("Alekhin_1000.LHpdf") ||
-	       set==std::string("a02_lo_v.LHgrid") ||
-	       set==std::string("a02_nlo_v.LHgrid") ||
-	       set==std::string("a02_nnlo_v.LHgrid") ||
-	       set==std::string("Botje_100.LHpdf") ||
-	       set==std::string("Botje_1000.LHpdf") ||
-	       set==std::string("Fermi2002_100.LHpdf") ||
-	       set==std::string("Fermi2002_1000.LHpdf") ||
-	       set==std::string("MRST2001.LHpdf") ||
-	       set==std::string("MRST98.LHpdf") ||
-	       set==std::string("MRST2001E.LHgrid") ||
-	       set==std::string("MRST2001E.LHpdf") ||
-	       set==std::string("MRST2001lo.LHgrid") ||
-	       set==std::string("MRST2001nlo.LHgrid") ||
-	       set==std::string("MRST2001nlo.LHpdf") ||
-	       set==std::string("MRST2001nnlo.LHgrid") ||
-	       set==std::string("MRST2002nlo.LHgrid") ||
-	       set==std::string("MRST2002nlo.LHpdf") ||
-	       set==std::string("MRST2002nnlo.LHgrid") ||
-	       set==std::string("MRST2003cnlo.LHgrid") ||
-	       set==std::string("MRST2003cnlo.LHpdf") ||
-	       set==std::string("MRST2003cnnlo.LHgrid") ||
-	       set==std::string("cteq6.LHpdf")  ||
-	       set==std::string("cteq6l.LHpdf")  ||
-	       set==std::string("cteq6ll.LHpdf") ||
-	        set==std::string("cteq61.LHgrid") ||
-	       set==std::string("cteq61.LHpdf") ||
-	       set==std::string("cteq6mE.LHgrid") ||
-	       set==std::string("cteq6m.LHpdf") ||
-	       set==std::string("cteq5l.LHgrid") ||
-	       set==std::string("cteq5d.LHgrid") ||
-	       set==std::string("cteq5m1.LHgrid") ||
-	       set==std::string("cteq5m.LHgrid") ||
-	       set==std::string("cteq4l.LHgrid") ||
-	       set==std::string("cteq4d.LHgrid") ||
-	       set==std::string("cteq4l.LHgrid") ||
-	       set==std::string("cteq4m.LHgrid") ||
-	       set==std::string("GRV98lo.LHgrid") ||
-	       set==std::string("GRV98nlo.LHgrid") ||
-	       set==std::string("H12000disE.LHgrid") ||
-	       set==std::string("H12000dis.LHgrid") ||
-	       set==std::string("H12000lo2E.LHgrid") ||
-	       set==std::string("H12000lo2.LHgrid") ||
-	       set==std::string("H12000loE.LHgrid") ||
-	       set==std::string("H12000lo.LHgrid") ||
-	       set==std::string("H12000msE.LHgrid") ||
-	       set==std::string("H12000ms.LHgrid") ||
-	       set==std::string("ZEUS2002_FF.LHpdf") ||
-	       set==std::string("ZEUS2002_TR.LHpdf") ||
-	       set==std::string("ZEUS2002_ZM.LHpdf")) {
+      else if (set.find(std::string("LHpdf")) || 
+	        set.find(std::string("LHgrid"))) {
 #ifdef USING__LHAPDF
 	msg_Tracking()<<"Initialize LHAPDF "<<set<<" : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
