@@ -248,12 +248,12 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
   case iotype::HepMC:
 #ifdef USING__CLHEP
     p_hepmc->Sherpa2HepMC(blobs);
-    p_hepmc->PrintEvent(1,msg_Out());
+    p_hepmc->PrintEvent(1,msg->Out());
     break;
 #else
 #ifdef USING__HEPMC2
     p_hepmc2->Sherpa2HepMC(blobs);
-    p_hepmc2->PrintEvent(msg_Out());
+    p_hepmc2->PrintEvent(msg->Out());
     break;
 #else
     msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
@@ -263,7 +263,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 #endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
-    p_hepevt->PrintEvent(3,msg_Out(),p_hepevt->Nhep());
+    p_hepevt->PrintEvent(3,msg->Out(),p_hepevt->Nhep());
     break;
   default:
     msg_Error()<<"Error in "<<METHOD<<std::endl

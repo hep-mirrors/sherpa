@@ -89,7 +89,7 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
   msg_Out()<<"Particle_Qualifier_Base::ShowQualifiers(): {\n\n";
   msg_Out()<<"   new qualifiers can be constructed\n";
   msg_Out()<<"   using the operators '!', '&' and '|'\n\n";
-  Particle_Qualifier_Getter::PrintGetterInfo(msg_Out(),20);
+  Particle_Qualifier_Getter::PrintGetterInfo(msg->Out(),20);
   msg_Out()<<"\n}"<<std::endl;
 }
 

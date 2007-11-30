@@ -657,14 +657,14 @@ void Process_Group::SetMax(const double max, int depth) {
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      int io = msg_Out().precision(12);
+      int io = msg->Out().precision(12);
       /*
       msg_Out()<<"WARNING in Process_Group::SetMax :"<<std::endl
 	       <<"   In group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
 	       <<" sum="<<sum<<"  total:"<<m_totalxs
 	       <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
       */
-      msg_Out().precision(io);
+      msg->Out().precision(io);
     }
     if (m_atoms) m_totalxs=sum;
   }

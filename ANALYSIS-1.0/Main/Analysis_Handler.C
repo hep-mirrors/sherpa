@@ -97,9 +97,9 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 	   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
 	   <<"   PATH_PIECE path\n\n"
 	   <<"   // observable listing\n\n";
-  Observable_Getter_Function::PrintGetterInfo(msg_Out(),15);
+  Observable_Getter_Function::PrintGetterInfo(msg->Out(),15);
   msg_Out()<<"\n   // detector/trigger & tools listing\n\n";
-  Object_Getter_Function::PrintGetterInfo(msg_Out(),15);
+  Object_Getter_Function::PrintGetterInfo(msg->Out(),15);
   msg_Out()<<"\n   } END_ANALYSIS\n\n"
 	   <<"}"<<std::endl;
 }

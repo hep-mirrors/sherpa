@@ -53,7 +53,7 @@ void Variable_Base<ValueType>::ShowVariables(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
   msg_Out()<<"Variable_Base::ShowVariables(): {\n\n";
-  Variable_Getter::PrintGetterInfo(msg_Out(),20);
+  Variable_Getter::PrintGetterInfo(msg->Out(),20);
   msg_Out()<<"\n}"<<std::endl;
 }
 

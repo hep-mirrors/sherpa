@@ -21,10 +21,10 @@ int main(int argc,char **argv)
   signal(SIGTERM,exh->SignalHandler);
   signal(SIGXCPU,exh->SignalHandler);
   try {
-    msg_Init(2,"");
+    msg->Init(2,"");
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg_SetModifiable(true);
-    else msg_SetModifiable(false);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
+    else msg->SetModifiable(false);
     Algebra_Interpreter interpreter;
     std::string expr;
     bool quiet(false);
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
       std::string argvs=argv[i];
       if (argvs=="-q") {
 	quiet=true;
-	msg_SetLevel(0);
+	msg->SetLevel(0);
 	continue;
       }
       size_t pos=argvs.find("=");

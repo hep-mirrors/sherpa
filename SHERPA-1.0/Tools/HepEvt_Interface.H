@@ -103,7 +103,7 @@ namespace SHERPA {
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);
-    void PrintEvent(const int mode=1, std::ostream& ostr=msg_Out(),
+    void PrintEvent(const int mode=1, std::ostream& ostr=ATOOLS::msg->Out(),
                     const int nhep=0);
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);

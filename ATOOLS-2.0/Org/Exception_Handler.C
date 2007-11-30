@@ -135,9 +135,9 @@ void Exception_Handler::Terminate()
 	m_exception->Type()!=ex::missing_input))) {
     if (m_print) {
       msg->SetModifiable(false);
-      GenerateStackTrace(msg_LogFile(),true,"! ");
+      GenerateStackTrace(msg->LogFile(),true,"! ");
       msg->SetModifiable(modifiable);
-      if (m_stacktrace) GenerateStackTrace(msg_Error());
+      if (m_stacktrace) GenerateStackTrace(msg->Error());
     }
     rpa.gen.SetVariable
       ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+
