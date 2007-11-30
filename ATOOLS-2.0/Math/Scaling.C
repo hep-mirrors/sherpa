@@ -37,7 +37,7 @@ void Scaling_Base<ValueType>::ShowScalings(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
   msg_Out()<<"Scaling_Base::ShowScalings(): {\n\n";
-  Scaling_Getter::PrintGetterInfo(msg_Out(),20);
+  Scaling_Getter::PrintGetterInfo(msg->Out(),20);
   msg_Out()<<"\n}"<<std::endl;
 }
 

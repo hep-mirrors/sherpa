@@ -99,7 +99,7 @@ void Matrix<_rank>::MatrixOut() const
 {
   double temp=0.;
   short int range=0, prcsn=0;
-  short int io=msg_Out().precision(9);
+  short int io=msg->Out().precision(9);
   
   msg_Out()<<std::setiosflags(std::ios::fixed);
   
@@ -144,7 +144,7 @@ void Matrix<_rank>::MatrixOut() const
   msg_Out()<<endl;
   
   msg_Out()<<std::resetiosflags(std::ios::fixed); 
-  msg_Out().precision(io);
+  msg->Out().precision(io);
 }   
 
 template<int _rank>

@@ -101,7 +101,7 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 	   <<"   BEGIN_ANALYSIS {\n\n"
 	   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
 	   <<"   PATH_PIECE path\n\n";
-  Getter_Function::PrintGetterInfo(msg_Out(),15);
+  Getter_Function::PrintGetterInfo(msg->Out(),15);
   msg_Out()<<"\n   } END_ANALYSIS\n\n"
 	   <<"}"<<std::endl;
 }

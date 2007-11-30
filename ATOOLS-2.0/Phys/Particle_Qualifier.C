@@ -87,7 +87,7 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
   msg_Out()<<"Particle_Qualifier_Base::ShowQualifiers(): {\n\n";
-  Particle_Qualifier_Getter::PrintGetterInfo(msg_Out(),20);
+  Particle_Qualifier_Getter::PrintGetterInfo(msg->Out(),20);
   msg_Out()<<"\n}"<<std::endl;
 }
 

@@ -37,8 +37,8 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Return_Value::code &rvc
 Return_Value::~Return_Value()
 {
   if (this==&rvalue) {
-    PrintStatistics(msg_LogFile());
-    if (msg_LevelIsInfo()) PrintStatistics(msg_Out());
+    PrintStatistics(msg->LogFile());
+    if (msg_LevelIsInfo()) PrintStatistics(msg->Out());
   }
 }
 

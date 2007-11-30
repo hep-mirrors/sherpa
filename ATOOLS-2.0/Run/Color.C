@@ -26,16 +26,16 @@ int main(int argc,char **argv)
   signal(SIGTERM,exh->SignalHandler);
   signal(SIGXCPU,exh->SignalHandler);
   try {
-    msg_Init(2,"");
+    msg->Init(2,"");
     termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg_SetModifiable(true);
-    else msg_SetModifiable(false);
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
+    else msg->SetModifiable(false);
     std::string expr;
     for (int i=1;i<argc;++i) {
       std::string argvs=argv[i];
       size_t pos=argvs.find("-O");
       if (pos!=std::string::npos && argvs.length()>pos+2)
-	msg_SetLevel(ToType<int>(argvs.substr(pos+2)));
+	msg->SetLevel(ToType<int>(argvs.substr(pos+2)));
       else expr+=argv[i];
     }
     Expression expression(expr);

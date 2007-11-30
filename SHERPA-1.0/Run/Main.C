@@ -56,7 +56,6 @@ int main(int argc,char* argv[])
       Generator.InitializeTheEventHandler();
       double starttime=ATOOLS::rpa.gen.Timer().UserTime();
       for (int i=1;i<=ATOOLS::rpa.gen.NumberOfEvents();i++) {
-	//if (i==259) msg_SetLevel(15); 
 	if (i%100==0) {
 	  double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "

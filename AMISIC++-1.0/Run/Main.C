@@ -9,7 +9,7 @@
 int main(int argc, const char *argv[]) 
 {
   std::string arguments;
-  msg_SetLevel(15);
+  msg->SetLevel(15);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
   reader->AddWordSeparator("\t");
   for (int i=0;i<argc;++i) arguments+=std::string(argv[i])+std::string(" ");

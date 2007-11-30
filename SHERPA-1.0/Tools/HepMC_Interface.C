@@ -65,7 +65,7 @@ void HepMC_Interface::InitTheMap()
     }
   }
   delete build;
-  p_particledatatable->writeParticleData(msg_Debugging());
+  p_particledatatable->writeParticleData(ATOOLS::msg->Debugging());
   msg_Debugging()<<std::endl;
 }
 
@@ -92,7 +92,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 	p_event->set_signal_process_vertex(vertex);
     }
   }
-  if (msg_Debugging()) {
+  if (msg_LevelIsDebugging()) {
     int charge = 0;
     for ( GenEvent::particle_const_iterator p = p_event->particles_begin();
 	  p != p_event->particles_end(); ++p ) {

@@ -511,7 +511,7 @@ void XS_Group::SetMax(const double max,const int flag)
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      msg_Error().precision(12);
+      msg->Error().precision(12);
       msg_Error()<<"XS_Group::SetMax(..): "
 			 <<"'"<<m_name<<"' : Summation does not agree !"<<std::endl
 			 <<"   sum = "<<sum<<" vs. total = "<<m_totalxs
