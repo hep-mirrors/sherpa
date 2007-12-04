@@ -285,7 +285,7 @@ void Amegic::ReadInProcessfile(string file)
 
 	    enhance_function    = "1";
 	    int pr(0);
-	    for (size_t ng(0);ng<procdata.size();++ng) {
+	    for (size_t ng(nf);ng<procdata.size();++ng) {
 	      std::vector<std::string> &cur(procdata[ng]);
 	      ++pr;
 		if (cur[0]=="Decay") {
