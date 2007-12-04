@@ -86,10 +86,12 @@ void *Library_Loader::LoadLibrary(const std::string &name)
       m_libs[name]=module;
       return module;
     }
-    msg_Tracking()<<dlerror()<<std::endl;
+    char *err(dlerror());
+    msg_Tracking()<<(err==NULL?"":err)<<std::endl;
   }
   msg_Debugging()<<"} failed"<<std::endl;
-  msg_Tracking()<<dlerror()<<std::endl;
+  char *err(dlerror());
+  msg_Tracking()<<(err==NULL?"":err)<<std::endl;
   msg_Error()<<METHOD<<"(): Failed to load library 'lib"
 	     <<name<<LIB_SUFFIX<<"'."<<std::endl;
   return NULL;
