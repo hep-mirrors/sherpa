@@ -566,7 +566,7 @@ bool Simple_Chain::CalculateTotal()
 bool Simple_Chain::Initialize()
 {
   PROFILE_HERE;
-  if (InputPath()=="" || InputFile()=="") return false;
+  if (InputPath()=="" && InputFile()=="") return false;
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();

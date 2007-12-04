@@ -62,7 +62,7 @@ bool Simple_String::Initialize()
 {
   PROFILE_HERE;
   CleanUp();
-  if (InputPath()=="" || InputFile()=="") return false;
+  if (InputPath()=="" && InputFile()=="") return false;
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");

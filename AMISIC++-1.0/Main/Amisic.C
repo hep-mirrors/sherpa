@@ -37,7 +37,7 @@ Amisic::~Amisic()
 
 bool Amisic::Initialize()
 {
-  if (InputPath()=="" || InputFile()=="") return false;
+  if (InputPath()=="" && InputFile()=="") return false;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
   reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
