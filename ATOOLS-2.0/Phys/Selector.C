@@ -97,6 +97,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
   reader.AddWordSeparator("\t");
   reader.AddComment("#");
   reader.AddComment("//");
+  reader.SetAddCommandLine(false);
   reader.SetInputPath(path);
   reader.SetInputFile(filename);
   reader.SetMatrixType(mtc::transposed);
@@ -123,7 +124,6 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       rpa.gen.SetVariable("DELTA_R",svv[i][2]);
       dat.bounds.front().first=2.0;
       dat.bounds.front().second=1.0;
-      data.push_back(dat);
     }
     else if (keyword == string("ConeFinder")) {
       dat.type = 2;
@@ -243,6 +243,36 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
+    else if (keyword.find('"')==0 && 
+	     keyword[keyword.length()-1]=='"') {
+      dat.type=126;
+      dat.helps=keyword.substr(1);
+      dat.helps.erase(dat.helps.length()-1,1);
+      dat.helps+="|"+(svv[i].size()>3?svv[i][3]:"");
+      Data_Reader reader(",",";","!","=");
+      reader.SetString(svv[i][1]);
+      std::vector<int> flavs;
+      if (!reader.VectorFromString(flavs,""))
+ 	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+svv[i][1]+"'");
+      dat.flavs.clear();
+      for (size_t j(0);j<flavs.size();++j) {
+ 	flav=Flavour(kf::code(abs(flavs[j])));
+ 	if (flavs[j]<0) flav=flav.Bar();
+ 	dat.flavs.push_back(flav);
+      }
+      reader.SetString(svv[i][2]);
+      std::vector<std::vector<double> > crits;
+      if (!reader.MatrixFromString(crits,""))
+	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+svv[i][2]+"'");
+      dat.bounds.clear();
+      for (size_t j(0);j<crits.size();++j) {
+	if (crits[j].size()<2) 
+	  THROW(critical_error,
+		"Invalid Syntax in Selector.dat: '"+svv[i][2]+"'");
+	dat.bounds.push_back(std::pair<double,double>
+			     (crits[j][0],crits[j][1]));
+      }
+    }
     else if (keyword.find("Bias")!=std::string::npos) {
       dat.type=0;
       if (keyword=="ET_Bias") dat.type=101;
@@ -332,12 +362,14 @@ void Selector_Data::ControlOutput() {
     case 114: msg_Debugging()<<"DPhi_Bias  :      "; break;
     case 115: msg_Debugging()<<"DR_Bias    :      "; break;
     case 116: msg_Debugging()<<"Mass_Bias  :      "; break;
+    case 126: msg_Debugging()<<"Variable   :      "; break;
     } 
     for (size_t j(0);j<data[i].bounds.size();++j) 
       msg_Debugging()<<"{"<<data[i].bounds[j].first<<","<<data[i].bounds[j].second<<"}";
     msg_Debugging()<<" : ";
     for (size_t j=0;j<(data[i].flavs).size();j++) msg_Debugging()<<(data[i]).flavs[j]<<" ";
     if (data[i].type == 14) msg_Debugging()<<" with "<<data[i].help;
+    if (data[i].type==126) msg_Debugging()<<" -> "<<data[i].helps;
     msg_Debugging()<<endl;
   }
 }

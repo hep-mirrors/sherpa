@@ -11,6 +11,7 @@ libToolsPhys_la_SOURCES       =	\
 				Particle_List.C \
 				Cut_Data.C \
 				Selector.C \
+				Variable_Selector.C \
 				Combined_Selector.C \
 				Jet_Finder_Base.C \
 				Jet_Finder.C \
@@ -49,6 +50,7 @@ pkginclude_HEADERS    =	\
 			Decay_Table.H \
 			Cut_Data.H \
 			Selector.H \
+			Variable_Selector.H \
 			Jet_Finder_Base.H \
 			Jet_Finder.H \
 			Dipole_Jet_Finder.H \

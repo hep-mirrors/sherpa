@@ -5,6 +5,7 @@
 #include "Cone_Finder.H"
 #include "Run_Parameter.H"
 #include "Selector_Bias.H"
+#include "Variable_Selector.H"
 #include "Message.H"
 #include "MyStrStream.H"
 
@@ -193,6 +194,10 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel = new Mass_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
+	break;
+      case 126 :
+	sel = new Variable_Selector(_nin,_nout,_fl,helps);
+	sel->SetRange(critflavs,bounds);
 	break;
       default :
 	sel = NULL;
