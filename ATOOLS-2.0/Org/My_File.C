@@ -76,7 +76,10 @@ FileType &My_File<FileType>::operator*() const
 template <class FileType>
 bool My_File<FileType>::Open() 
 { 
-  if (m_path=="" && m_file=="") return false;
+  if (m_path=="" && m_file=="") {
+    p_file = new File_Type();
+    return false;
+  }
   Close();
   String_Map::const_iterator fit(s_filelocations.find(m_path+m_file));
   if (fit!=s_filelocations.end()) m_path=fit->second+"/"+m_path;
