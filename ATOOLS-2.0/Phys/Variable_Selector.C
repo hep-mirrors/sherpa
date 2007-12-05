@@ -4,6 +4,7 @@
 #include "Ordering.H"
 #include "MyStrStream.H"
 #include "Exception.H"
+#include "Data_Reader.H"
 
 #define DEBUG__Variable_Selector
 
@@ -11,7 +12,7 @@ using namespace ATOOLS;
 
 Variable_Selector::Variable_Selector
 (const int &nin,const int &nout,Flavour *const fl,
- const std::string &name): p_order(NULL)
+ const std::string &name)
 {
   m_name="Variable("+name+")";
   m_nin=nin;
@@ -26,15 +27,46 @@ Variable_Selector::Variable_Selector
        std::string(" SHOW_VARIABLE_SYNTAX=1' to list variables."));
   m_omode=name.substr(name.find('|')+1);
   if (m_omode!="") {
-    p_order = Order_Getter::GetObject(m_omode,"");
-    if (p_order==NULL) 
-      THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
+    if (m_omode[0]=='[') {
+      if (m_omode[m_omode.length()-1]!=']') 
+	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
+      Data_Reader reader(",",";","!","=");
+      std::string mode(m_omode.substr(1));
+      mode.erase(mode.length()-1,1);
+      if (mode.length()>0) {
+	reader.SetString(mode);
+	std::vector<std::string> omodes;
+	if (!reader.VectorFromString(omodes,""))
+	  THROW(critical_error,"Invalid ordering mode '"+m_omode+"'");
+	for (size_t i(0);i<omodes.size();++i) {
+	  m_orders.push_back(Order_Getter::GetObject(omodes[i],""));
+	  if (m_orders.back()==NULL) 
+	    THROW(fatal_error,"Invalid ordering mode '"+omodes[i]+"'");
+	}
+      }
+    }
+    else if (m_omode[0]=='{') {
+      if (m_omode[m_omode.length()-1]!='}') 
+	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
+      Data_Reader reader(",",";","!","=");
+      std::string ffl(m_omode.substr(1));
+      ffl.erase(ffl.length()-1,1);
+      if (ffl.length()>0) {
+	reader.SetString(ffl);
+	if (!reader.VectorFromString(m_ffl,""))
+	  THROW(critical_error,
+		"Invalid Syntax in Selector.dat: '"+m_omode+"'");
+      }
+    }
   }
 }
 
 Variable_Selector::~Variable_Selector() 
 {
-  if (p_order!=NULL) delete p_order;
+  while (m_orders.size()) {
+    delete m_orders.back();
+    m_orders.pop_back();
+  }
   delete p_variable;
   delete [] m_fl;
 }
@@ -49,12 +81,13 @@ void Variable_Selector::SetRange
   if (fl.size()<2) THROW(fatal_error,"Wrong number of flavours");
   for (size_t i(0);i<fl.size();++i) {
     bool found(false);
-    for (size_t j(0);j<m_cfl.size();++j)
-      if (m_cfl[j]==fl[i]) {
-	++m_nfl[j];
-	found=true;
-	break;
-      }
+    if (m_ffl.size()<=i)
+      for (size_t j(m_ffl.size());j<m_cfl.size();++j)
+	if (m_cfl[j]==fl[i]) {
+	  ++m_nfl[j];
+	  found=true;
+	  break;
+	}
     if (!found) {
       m_cfl.push_back(fl[i]);
       m_nfl.push_back(1);
@@ -67,14 +100,30 @@ void Variable_Selector::SetRange
   for (size_t j(0);j<m_cfl.size();++j) {
     m_name+="_"+m_cfl[j].IDName()+"-"+ToString(m_nfl[j]);
     for (int i(m_nin);i<m_n;++i)
-      if (m_cfl[j].Includes(m_fl[i])) m_sels[j].push_back(i);
+      if (m_cfl[j].Includes(m_fl[i])) {
+	if (m_ffl.size()<=j) {
+	  bool found(false);
+	  for (size_t k(0);k<m_ffl.size();++k)
+	    if (m_ffl[k]==(size_t)i) {
+	      found=true;
+	      break;
+	    }
+	  if (!found) m_sels[j].push_back(i);
+	}
+	else if (m_ffl[j]==(size_t)i) {
+	  m_sels[j].push_back(i);
+	}
+      }
     m_moms[j].resize(m_sels[j].size());
   }
   msg_Debugging()<<METHOD<<"(): order = "<<m_omode<<" {\n";
-  for (size_t j(0);j<m_bounds.size();++j)
-    msg_Debugging()<<"  "<<p_variable->Name()<<"_{"<<j
-		   <<"} -> "<<m_bounds[j].first
+  for (size_t j(0);j<m_bounds.size();++j) {
+    msg_Debugging()<<"  "<<p_variable->Name()<<"_{"<<j<<"}";
+    if (m_ffl.size()>j) msg_Debugging()<<"["<<m_ffl[j]<<"]";
+    if (m_orders.size()>j) msg_Debugging()<<"["<<m_orders[j]<<"]";
+    msg_Debugging()<<" -> "<<m_bounds[j].first
 		   <<" .. "<<m_bounds[j].second<<"\n";
+  }
   for (size_t j(0);j<m_cfl.size();++j) {
     msg_Debugging()<<"  "<<j<<": "<<m_cfl[j].IDName()
 		   <<" ("<<m_nfl[j]<<") -> {";
@@ -131,8 +180,8 @@ bool Variable_Selector::Trigger(const Vec4D *p)
   for (size_t j(0);j<m_cfl.size();++j) {
     for (size_t i(0);i<m_sels[j].size();++i)
       m_moms[j][i]=p[m_sels[j][i]];
-    if (p_order!=NULL)
-      std::sort(m_moms[j].begin(),m_moms[j].end(),*p_order);
+    if (m_orders.size()>j)
+      std::sort(m_moms[j].begin(),m_moms[j].end(),*m_orders[j]);
   }
   size_t l(0);
   std::vector<Vec4D> moms;

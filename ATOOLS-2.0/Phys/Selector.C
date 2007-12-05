@@ -93,7 +93,7 @@ Selector_Data::Selector_Data(std::string path, std::string filename) {
 
 bool Selector_Data::ReadInData(std::string path, std::string filename) 
 {
-  Data_Reader reader(" ",";","!");
+  Data_Reader reader(" ","\\;","!");
   reader.AddWordSeparator("\t");
   reader.AddComment("#");
   reader.AddComment("//");

@@ -11,15 +11,15 @@ namespace ATOOLS {
 
   class Variable_Selector : public Selector_Base {
 
-    Variable_Base<double> *p_variable;
-    Order_Base            *p_order;
+    Variable_Base<double>    *p_variable;
+    std::vector<Order_Base*>  m_orders;
 
     std::vector<std::pair<double,double> > m_bounds;
 
     std::vector<std::vector<int> >   m_sels;
     std::vector<std::vector<Vec4D> > m_moms;
     std::vector<Flavour>             m_cfl;
-    std::vector<size_t>              m_nfl;
+    std::vector<size_t>              m_nfl, m_ffl;
 
     std::string m_omode;
 
