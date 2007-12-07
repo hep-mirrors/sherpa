@@ -195,8 +195,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
   getrlimit(RLIMIT_AS,&lims);
   msg_Info()<<METHOD<<"(): Setting memory limit to "
-	    <<lims.rlim_cur/double(1<<30)<<" / "
-	    <<lims.rlim_max/double(1<<30)<<" GB."<<std::endl;
+	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
 #endif
   int stacktrace           = dr.GetValue<int>("STACK_TRACE");
   if (stacktrace==NotDefined<int>()) stacktrace=1;

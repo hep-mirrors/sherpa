@@ -96,8 +96,12 @@ bool My_File<FileType>::Open()
       p_file->open((s_searchpaths[i]+"/"+m_path+m_file).c_str());
       if (p_file->good()) {
 	if (i>0 || msg_LevelIsDebugging()) 
-	  msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
-		   <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+          if ((m_path+m_file).find("Particle.dat")==std::string::npos &&
+              (m_path+m_file).find("Hadron.dat")==std::string::npos &&
+              (m_path+m_file).find("Run.dat")==std::string::npos &&
+              (m_path+m_file).find("Decaydata")==std::string::npos)
+            msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
+                     <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
 	s_filelocations[m_path+m_file]=s_searchpaths[i];
 	m_path=s_searchpaths[i]+"/"+m_path;
 	return true;
