@@ -14,7 +14,7 @@
 
 using namespace ATOOLS;
 
-Library_Loader *ATOOLS::s_loader(NULL);
+Library_Loader *ATOOLS::s_loader(new Library_Loader());
 
 Library_Loader::Library_Loader(): m_wait(3600)
 {
@@ -87,11 +87,12 @@ void *Library_Loader::LoadLibrary(const std::string &name)
       return module;
     }
     char *err(dlerror());
-    msg_Tracking()<<(err==NULL?"":err)<<std::endl;
+    if (err!=NULL) {
+      msg_Error()<<METHOD<<"(): "<<err<<std::endl;
+      break;
+    }
   }
   msg_Debugging()<<"} failed"<<std::endl;
-  char *err(dlerror());
-  msg_Tracking()<<(err==NULL?"":err)<<std::endl;
   msg_Error()<<METHOD<<"(): Failed to load library 'lib"
 	     <<name<<LIB_SUFFIX<<"'."<<std::endl;
   return NULL;
@@ -117,3 +118,9 @@ void *Library_Loader::GetLibraryFunction(const std::string &libname,
   return func;
 }
 
+void Library_Loader::AddPath(const std::string &path)
+{ 
+  for (size_t i(0);i<m_paths.size();++i)
+    if (m_paths[i]==path) return;
+  m_paths.push_back(path); 
+}

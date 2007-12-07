@@ -30,8 +30,7 @@ namespace ATOOLS {
 			     const std::string &funcname);
 
     // inline functions
-    inline void AddPath(const std::string &path)
-    { m_paths.push_back(path); }
+    void AddPath(const std::string &path);
 
     inline void SetWaitTime(const size_t &wait) { m_wait=wait; }
 

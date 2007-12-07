@@ -339,6 +339,7 @@ void XS_Base::Print()
 
 void XS_Base::PrepareTerminate()  
 {
+  if (rpa.gen.BatchMode()) return;
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal();
   if (m_totalxs<=0.) return;

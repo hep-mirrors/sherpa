@@ -244,7 +244,6 @@ void Exception_Handler::SignalHandler(int signal)
 {
   m_signal=signal;
   m_print=true;
-  std::string input="y";
   msg_Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "
 	     <<om::reset<<om::blue<<"Signal "<<om::reset<<om::bold
 	     <<"("<<om::red<<signal<<om::reset<<om::bold<<")"
@@ -253,14 +252,6 @@ void Exception_Handler::SignalHandler(int signal)
   case SIGSEGV:
     ++m_nsegv;
     GenerateStackTrace(std::cout,false);
-    if (!rpa.gen.BatchMode()) {
-      msg_Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
-      std::cin>>input;
-      if (input=="y" || input=="Y") {
-	system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
-	kill(getpid(),9);
-      }
-    }
     if (m_nsegv>3) {
       msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
@@ -274,31 +265,6 @@ void Exception_Handler::SignalHandler(int signal)
     Terminate();
     break;
   case SIGINT:
-    if (!rpa.gen.BatchMode()) {
-      msg_Error()<<"   Do you want to stop the program (y/n/k/p/d/s)? "
-		 <<om::reset;
-      std::cin>>input;
-    }
-    if (input=="k" || input=="K") {
-      kill(getpid(),9);
-    }
-    else if (input=="p" || input=="P") {
-      bool print=m_print;
-      m_print=true;
-      PrepareTerminate();
-      m_print=print;
-      std::cin.get();
-    }
-    else if (input=="d" || input=="D") {
-      system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
-    }
-    else if (input=="s" || input=="S") {
-      GenerateStackTrace(std::cout,false);
-      std::cout<<" Hit <return> to continue. ";      
-      std::cin.get();
-      std::cin.get();
-    }
-    if (input!="y" && input!="Y") return;
     m_exitcode=1;
     Terminate();
     break;

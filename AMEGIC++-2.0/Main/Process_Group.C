@@ -962,6 +962,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 
 void Process_Group::PrepareTerminate()
 {
+  if (rpa.gen.BatchMode()) return;
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
   if (m_totalxs<=0.) return;

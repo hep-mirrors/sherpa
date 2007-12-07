@@ -248,6 +248,7 @@ bool Analysis_Handler::ApproveTerminate()
 
 void Analysis_Handler::PrepareTerminate()
 {
+  if (rpa.gen.BatchMode()) return;
   Finish();
 }
 

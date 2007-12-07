@@ -1032,6 +1032,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 
 void Single_Process::PrepareTerminate()
 {
+  if (rpa.gen.BatchMode()) return;
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
   std::ofstream to;

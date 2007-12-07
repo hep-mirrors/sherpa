@@ -12,6 +12,8 @@
 #include <termios.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 using namespace ATOOLS;
 
@@ -160,6 +162,42 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   rpa.gen.m_timer.Start();
   gen.m_batchmode          = dr.GetValue<int>("BATCH_MODE");
   if (gen.m_batchmode==NotDefined<int>()) gen.m_batchmode=1;
+#ifdef RLIMIT_AS
+  rlimit lims;
+  getrlimit(RLIMIT_AS,&lims);
+  long int slim(sysconf(_SC_PHYS_PAGES)*getpagesize());
+  msg_Tracking()<<METHOD<<"(): Getting memory limit "
+		<<slim/double(1<<30)<<" GB."<<std::endl;
+  std::vector<std::string> aspars;
+  if (!dreader.VectorFromFile(aspars,"RLIMIT_AS")) {
+    lims.rlim_cur=(rlim_t)(slim-100*(1<<20));
+  }
+  else {
+    if (aspars.size()==1) {
+      lims.rlim_cur=(rlim_t)
+	(ToType<double>(aspars[0])*double(slim));
+    }
+    else if (aspars.size()==2) {
+      if (aspars[1]=="MB") lims.rlim_cur=(rlim_t)
+	(ToType<double>(aspars[0])*(1<<20));
+      else if (aspars[1]=="GB") lims.rlim_cur=(rlim_t)
+	(ToType<double>(aspars[0])*(1<<30));
+      else if (aspars[1]=="%") lims.rlim_cur=(rlim_t)
+	(ToType<double>(aspars[0])*double(slim/100.0));
+      else
+	THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
+    }
+    else {
+      THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
+    }
+  }
+  if (setrlimit(RLIMIT_AS,&lims)!=0)
+    msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
+  getrlimit(RLIMIT_AS,&lims);
+  msg_Info()<<METHOD<<"(): Setting memory limit to "
+	    <<lims.rlim_cur/double(1<<30)<<" / "
+	    <<lims.rlim_max/double(1<<30)<<" GB."<<std::endl;
+#endif
   int stacktrace           = dr.GetValue<int>("STACK_TRACE");
   if (stacktrace==NotDefined<int>()) stacktrace=1;
   exh->SetStackTrace(stacktrace);

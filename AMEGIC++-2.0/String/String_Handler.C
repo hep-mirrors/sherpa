@@ -241,9 +241,8 @@ typedef Values* (*Getter_Function)(Basic_Sfuncs*);
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
-  Library_Loader loader;
-  loader.AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
-  Getter_Function gf = (Getter_Function)loader.GetLibraryFunction
+  s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
+  Getter_Function gf = (Getter_Function)s_loader->GetLibraryFunction
     ("Proc_"+pID.substr(1),"Getter_"+pID);
   if (gf==NULL) return NULL;
   return gf(BS);

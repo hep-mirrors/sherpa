@@ -1362,10 +1362,9 @@ typedef Single_Channel * (*Lib_Getter_Function)(int nin,int nout,ATOOLS::Flavour
 Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
 						 std::string& pID, ATOOLS::Integration_Info * const info)
 {
-  Library_Loader loader;
   size_t pos(pID.find("/"));
-  loader.AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
-  Lib_Getter_Function gf = (Lib_Getter_Function)loader.GetLibraryFunction
+  s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
+  Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
     ("Proc_"+pID.substr(0,pos),"Getter_"+pID.substr(pos+1));
   if (gf==NULL) return NULL;
   return gf(nin,nout,fl,info,this);

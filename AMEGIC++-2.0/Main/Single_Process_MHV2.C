@@ -880,6 +880,7 @@ bool Single_Process_MHV2::CalculateTotalXSec(std::string _resdir) {
 
 void Single_Process_MHV2::PrepareTerminate()
 {
+  if (rpa.gen.BatchMode()) return;
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
   std::ofstream to;
