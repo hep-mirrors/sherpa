@@ -103,11 +103,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
   reader.SetMatrixType(mtc::transposed);
 
   vector<vector<string> > svv;
-  if (!reader.MatrixFromFile(svv)) {
-    msg_Error()<<"Error in Selector_Data::ReadInData("<<path+filename<<"). "
-			  <<"File does not exist."<<endl;
-    return 0;
-  }
+  reader.MatrixFromFile(svv);
   
   std::string keyword;
   Mom_Data    dat;
