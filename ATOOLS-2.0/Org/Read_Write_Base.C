@@ -484,9 +484,11 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
   m_filecontent[i].clear();
   if (infile.Mode()==fom::permanent && !force) return;
   std::string file(InputPath(i)+InputFile(i));
-  msg_Debugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
-		 <<file<<"' -> ("<<&s_buffermap[file]<<")\n";
-  s_buffermap[file].clear();
+  if (s_buffermap.find(file)!=s_buffermap.end()) {
+    msg_Debugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
+                   <<file<<"' -> ("<<&s_buffermap[file]<<")\n";
+    s_buffermap.erase(s_buffermap.find(file));
+  }
   infile.Close(); 
 }
 
