@@ -71,6 +71,7 @@ int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
 {
   if (mo->left==NULL) return 1;
   msg_Debugging()<<METHOD<<"(): knot "<<mo->kn_no<<"\n";
+  mo->E2=sqr(mo->part->Momentum()[0]);
   msg_Indent();
   int res(1);
   if ((res=GeneratePSMasses(mo->left))!=1) return res;
@@ -140,8 +141,8 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
     mo->t=t;
   }
   if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
-    msg_Debugging()<<"missing mass "<<(t1+t2+2.0*sqrt(t1*t2))
-		   <<" vs. "<<t<<"\n";
+    msg_Debugging()<<"missing mass "<<sqrt(t1+t2+2.0*sqrt(t1*t2))
+		   <<" vs. "<<sqrt(t)<<"\n";
     return 0;
   }
   double r1(0.0), r2(0.0), z(mo->z);
