@@ -81,6 +81,7 @@ for J in $DIRS ; do
       chmod ugo+rx $SFL
       JFL=$I".jdl"
       echo "Executable = \"$SFL\";" > $JFL
+      echo "RetryCount = 0; ShallowRetryCount = 0;" >> $JFL
       echo "StdOutput = \"run.out\"; StdError = \"run.err\";" >> $JFL
       echo "OutputSandbox = {}; InputSandbox = {\"$SFL\"};" >> $JFL
       echo "$GMISC" >> $JFL
