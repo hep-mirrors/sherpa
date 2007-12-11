@@ -374,8 +374,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
         yes) if test -d "$ROOTSYS"; then
                CONDITIONAL_ROOTDIR=$ROOTSYS
-               CONDITIONAL_ROOTINCS=-I`$ROOTSYS/bin/root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --glibs`
+               CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
+               CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
              elif test -x "`which root-config`"; then
                CONDITIONAL_ROOTDIR=`root-config --prefix`;
@@ -391,8 +391,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
         *)   if test -d "${enableval}"; then
                CONDITIONAL_ROOTDIR="${enableval}"
-               CONDITIONAL_ROOTINCS="-I${enableval}/include/root";
-               CONDITIONAL_ROOTLIBS="-L${enableval}/lib/root $(${enableval}/bin/root-config --glibs)";
+               CONDITIONAL_ROOTINCS="-I${enableval}/include";
+               CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
                CONDITIONAL_ROOTFLAGS="-Wno-long-long"
              else
                AC_MSG_ERROR(${enableval} is not a valid path.);
