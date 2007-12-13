@@ -8,18 +8,21 @@ print_help(){
   echo "makelibs version 1.0" && echo && \
   echo "options: -c             \"make clean\" before compiling" && \
   echo "         -o             install single process module" && \
+  echo "         -s <envfile>   set environment settings file to <envfile>" && \
   echo "         -n <name>      set job file name <name>" && \
   echo "         -g <option>    define job submit option <option>" && \
   echo "         -G <option>    define jdl file option <option>" && \
   echo "         -h             display this help and exit" && echo
 }
 
+ENVFILE=""
 JOBFILE="submit_jobs"
-while getopts :con:g:G:h OPT
+while getopts :cos:n:g:G:h OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;; 
   o) ONE=TRUE ;;
+  s) ENVFILE=$OPTARG ;;
   n) JOBFILE=$OPTARG ;; 
   g) EDGOPTS=$EDGOPTS" "$OPTARG ;; 
   G) GMISC=`echo -e "$GMISC\n$OPTARG"` ;;
@@ -76,6 +79,7 @@ for J in $DIRS ; do
       SFL=$I".sh"
       echo -e "#!/bin/bash\n" > $SFL
       echo -e "umask 0\n" >> $SFL
+      if ! test -z "$ENVFILE"; then echo -e "source $ENVFILE\n" >> $SFL; fi
       echo -e "cd $PWD/$I\n" >> $SFL
       echo -e "make install >> $PWD/$I.log 2>&1\n" >> $SFL
       chmod ugo+rx $SFL
