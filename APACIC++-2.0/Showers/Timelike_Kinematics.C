@@ -76,8 +76,9 @@ int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
   int res(1);
   if ((res=GeneratePSMasses(mo->left))!=1) return res;
   if ((res=GeneratePSMasses(mo->right))!=1) return res;
+  mo->z=mo->left->part->Momentum()[0]/mo->part->Momentum()[0];
   if (mo->left->left==NULL || mo->right->left==NULL) 
-    res=ShuffleMomenta(mo);
+    res=ShuffleMomenta(mo,true,true);
   mo->CheckMomentumConservation(); 
   return res;
 }
@@ -125,9 +126,11 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
   return 1;
 }
 
-int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
+int Timelike_Kinematics::ShuffleMomenta
+(Knot *const mo,const bool update,const bool gpm) const
 { 
-  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"->"
+		 <<mo->left->kn_no<<","<<mo->right->kn_no<<")\n";
   msg_Indent();
   Knot *d1(mo->left), *d2(mo->right);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
@@ -135,6 +138,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
   if (mo->left->shower==3) t1=mo->left->tmo;
   if (mo->right->shower==3) t2=mo->right->tmo;
   double t(mo->part->Momentum().Abs2());
+  msg_Debugging()<<"t = "<<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<"\n";
   if (dabs((mo->t-t)/mo->t)>1.e-7 && mo->shower!=2) {
     msg_Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
 	       <<", p^2 = "<<t<<std::endl;
@@ -167,7 +171,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-  if (!CheckKinematics(mo,1)) {
+  if (!CheckKinematics(mo,1,gpm)) {
     msg_Debugging()<<"kinematics check failed "<<mo->z<<" "<<z<<std::endl;
     mo->z = z;
     return 0;
@@ -204,8 +208,8 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
   return 1;
 }
 
-bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
-					  const int &first) const
+bool Timelike_Kinematics::CheckKinematics
+(Knot *const mo,const int &first,const bool gpm) const
 {
   Knot *d1(mo->left), *d2(mo->right);
   if (d1==NULL || d2==NULL) return true;
@@ -214,8 +218,17 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
   if (mo->shower==3) t=mo->tmo;
-  if (mo->left->shower==3) t1=mo->left->tmo;
-  if (mo->right->shower==3) t2=mo->right->tmo;
+  if (d1->shower==3) t1=d1->tmo;
+  if (d2->shower==3) t2=d2->tmo;
+  if (gpm) {
+    t=mo->part->Momentum().Abs2();
+    if (d1->left!=NULL) t1=d1->part->Momentum().Abs2();
+    if (d2->left!=NULL) t2=d2->part->Momentum().Abs2();
+  }
+  msg_Debugging()<<"t = "<<t<<" ("<<mo->t<<"), t_1 = "<<t1
+		 <<" ("<<d1->t<<"), t_2 = "<<t2<<" ("<<d2->t<<")\n";
+  msg_Debugging()<<"E = "<<sqrt(mo->E2)<<", E_1 = "<<sqrt(E12)
+		 <<", E_2 = "<<sqrt(E22)<<"\n";
   // timelike daughters 
   if (t1>E12 || t2>E22) {
     msg_Debugging()<<"timelike daughters\n";

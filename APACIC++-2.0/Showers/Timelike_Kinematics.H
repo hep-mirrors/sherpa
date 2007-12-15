@@ -19,14 +19,16 @@ namespace APACIC {
     int m_zscheme;
 
     int ShuffleZ(Knot * const mo,const bool update=true) const;
-    int ShuffleMomenta(Knot * const mo,const bool update=true) const; 
+    int ShuffleMomenta(Knot * const mo,const bool update=true,
+		       const bool gpm=false) const; 
 
     void ConstructVectors(Knot *const mo,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2) const;
     void ConstructDreiBein(Knot *const mo,
 			   ATOOLS::Vec3D &n1,ATOOLS::Vec3D &n2) const;
 
-    bool CheckKinematics(Knot *const mo,const int &first) const;
+    bool CheckKinematics(Knot *const mo,const int &first,
+			 const bool gpm=false) const;
 
     inline bool CheckVector(const ATOOLS::Vec4D &mom) const
     { return (mom.Nan() || mom[0]<0.0)?false:true; }
