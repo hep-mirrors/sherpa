@@ -35,7 +35,8 @@ libObservables_la_SOURCES     =	\
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C \
 				General_Observable.C \
-				BFKL_Observables.C
+				BFKL_Observables.C \
+				Atlas_TDR_SL_Top_Fitter.C
 pkginclude_HEADERS    =	\
 			Primitive_Observable_Base.H \
 			Normalized_Observable.H \
