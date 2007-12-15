@@ -36,16 +36,6 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   int showermode(ToType<int>(rpa.gen.Variable("SHOWER_MODE")));
   msg_Debugging()<<METHOD<<"(): Shower mode is "<<showermode<<std::endl;
   p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber,showermode);
-  if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) {
-    Data_Reader read(" ",";","!","=");
-    int force(0);
-    if (!read.ReadFromFile(force,"CKKW_ENFORCED_MODE")) force=0;
-    else msg_Info()<<METHOD<<"(): CKKW enforced mode "<<force<<".\n";
-    if (!force) {
-      rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
-      p_mehandler->SetUseSudakovWeight(0);
-    }
-  }
   p_cluster->SetCKKWOn(p_mehandler->UseSudakovWeight());
   p_filler->SetCKKWOn(p_mehandler->UseSudakovWeight());
 }  
