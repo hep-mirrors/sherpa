@@ -20,7 +20,7 @@ using namespace std;
  
 bool HD_Channel_Selector::DecomposeChannel( string name, ChannelInformation & ci )
 {
-  std::vector<char> s(name.size());
+  std::vector<char> s(name.size()+1);
   strcpy( &s.front(), name.c_str() );
   char delim[] = "_";
   char *result (NULL);
