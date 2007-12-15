@@ -45,7 +45,8 @@ namespace ANALYSIS {
 		  double weight, int ncount);
     bool Evaluate(const ATOOLS::Particle_List &list,
 		  double weight,int ncount,Particle_List moms,
-		  const size_t i,const size_t j,size_t k,size_t &eval); 
+		  const size_t i,const size_t j,size_t k,
+		  size_t o,size_t &eval); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
@@ -277,7 +278,7 @@ One_Variable_Observable::~One_Variable_Observable()
 bool One_Variable_Observable::Evaluate
 (const ATOOLS::Particle_List &list,double weight,int ncount,
  Particle_List moms,const size_t i,const size_t j,size_t k,
- size_t &eval) 
+ size_t o,size_t &eval) 
 {
   if (j>=m_flavs[i].size()) {
     ++eval;
@@ -300,21 +301,17 @@ bool One_Variable_Observable::Evaluate
     if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
     return true;
   }
-  if (j>0) {
-    if (m_flavs[i][j]!=m_flavs[i][j-1]) k=0;
-    else ++k;
-  }
-  int o(k-1);
+  if (j>0 && m_flavs[i][j]!=m_flavs[i][j-1]) o=k=0;
   bool pass(false);
   for (;k<list.size();++k) {
-    if (list[k]->Flav()==m_flavs[i][j]) {
-      ++o;
-      if ((m_items[i][j]<0 && -o<=m_items[i][j]+1) || o==m_items[i][j]) {
+    if (m_flavs[i][j].Includes(list[k]->Flav())) {
+      if ((m_items[i][j]<0 && -int(o)<=m_items[i][j]+1) || int(o)==m_items[i][j]) {
 	moms.push_back(list[k]);
-	if (Evaluate(list,weight,ncount,moms,i,j+1,k,eval)) pass=true;
-	if (o==m_items[i][j]) return pass;
+	if (Evaluate(list,weight,ncount,moms,i,j+1,k+1,o+1,eval)) pass=true;
+	if (int(o)==m_items[i][j]) return pass;
 	moms.pop_back();
       }
+      ++o;
     }
   }
   return pass;
@@ -326,7 +323,7 @@ void One_Variable_Observable::Evaluate
   msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_flavs.size();++i) {
     size_t eval(0);
-    if (!Evaluate(list,weight,ncount,Particle_List(),i,0,0,eval))
+    if (!Evaluate(list,weight,ncount,Particle_List(),i,0,0,0,eval))
       if (m_dists[i]!=NULL) m_dists[i]->Insert(1.0,0.0,ncount);
     if (m_vars[i]->IDName()=="Count") {
       std::vector<ATOOLS::Vec4D> vmoms(eval);

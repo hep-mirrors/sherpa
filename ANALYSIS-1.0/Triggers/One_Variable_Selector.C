@@ -52,7 +52,7 @@ namespace ANALYSIS {
 		  double weight, int ncount);
     int Evaluate(ATOOLS::Particle_List &reflist,
 		 double weight,int ncount,ATOOLS::Particle_List &moms,
-		 const size_t i,size_t j,size_t k,size_t &eval); 
+		 const size_t i,size_t j,size_t k,size_t o,size_t &eval);
     Analysis_Object &operator+=(const Analysis_Object &obj);
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
@@ -95,8 +95,9 @@ template <> std::string MakeString<ATOOLS::Flavour>
 (const std::vector<ATOOLS::Flavour> &v)
 {
   if (v.empty()) return "";
-  std::string s(ToString(v.front().Kfcode()));
-  for (size_t i(1);i<v.size();++i) 
+  std::string s((v.front().IsAnti()?"-":"")
+		+ToString(v.front().Kfcode()));
+  for (size_t i(1);i<v.size();++i)
     if (v[i].IsAnti()) s+=",-"+ToString(v[i].Kfcode());
     else s+=","+ToString(v[i].Kfcode());
   return s;
@@ -366,7 +367,8 @@ One_Variable_Selector::~One_Variable_Selector()
 
 int One_Variable_Selector::Evaluate
 (ATOOLS::Particle_List &reflist,double weight,int ncount,
- ATOOLS::Particle_List &moms,const size_t i,size_t j,size_t k,size_t &eval) 
+ ATOOLS::Particle_List &moms,const size_t i,size_t j,size_t k,
+ size_t o,size_t &eval) 
 {
   bool count(m_vars[i]->IDName()=="Count");
   if (j>=m_flavs[i].size()) {
@@ -404,21 +406,17 @@ int One_Variable_Selector::Evaluate
     moms.clear();
     return -1;
   }
-  if (j>0) {
-    if (m_flavs[i][j]!=m_flavs[i][j-1]) k=0;
-    else ++k;
-  }
-  int o(k-1);
+  if (j>0 && m_flavs[i][j]!=m_flavs[i][j-1]) o=k=0;
   for (;k<reflist.size();++k) {
-    if (reflist[k]->Flav()==m_flavs[i][j]) {
-      ++o;
-      if ((m_items[i][j]<0 && -o<=m_items[i][j]+1) || o==m_items[i][j]) {
+    if (m_flavs[i][j].Includes(reflist[k]->Flav())) {
+      if ((m_items[i][j]<0 && -int(o)<=m_items[i][j]+1) || int(o)==m_items[i][j]) {
 	moms.push_back(reflist[k]);
-	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k,eval));
+	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k+1,o+1,eval));
 	if (stat<1) return stat;
-      	if (o==m_items[i][j]) return 1;
+      	if (int(o)==m_items[i][j]) return 1;
 	moms.pop_back();
       }
+      ++o;
     }
   }
   return 1;
@@ -436,7 +434,7 @@ void One_Variable_Selector::Evaluate
     if (i!=oldi) eval=0;
     oldi=i;
     Particle_List moms;
-    int stat(Evaluate(vreflist,weight,ncount,moms,i,0,0,eval));
+    int stat(Evaluate(vreflist,weight,ncount,moms,i,0,0,0,eval));
     if (m_vars[i]->IDName()=="Count") {
       std::vector<ATOOLS::Vec4D> vmoms(eval);
       double val(m_vars[i]->Value(&vmoms.front(),eval));
