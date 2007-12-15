@@ -95,13 +95,15 @@ bool My_File<FileType>::Open()
       p_file = new File_Type();
       p_file->open((s_searchpaths[i]+"/"+m_path+m_file).c_str());
       if (p_file->good()) {
-	if (i>0 || msg_LevelIsDebugging()) 
-          if ((m_path+m_file).find("Particle.dat")==std::string::npos &&
-              (m_path+m_file).find("Hadron.dat")==std::string::npos &&
-              (m_path+m_file).find("Run.dat")==std::string::npos &&
-              (m_path+m_file).find("Decaydata")==std::string::npos)
-            msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
-                     <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+	if (i>0 || msg_LevelIsDebugging()) {
+	  bool output(true);
+	  for (size_t j(0);j<s_nocomplains.size();++j)
+	    if ((m_path+m_file).find(s_nocomplains[i])!=
+		std::string::npos) output=false;
+	  if (output) 
+	    msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
+		     <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+	}
 	s_filelocations[m_path+m_file]=s_searchpaths[i];
 	m_path=s_searchpaths[i]+"/"+m_path;
 	return true;
@@ -162,9 +164,18 @@ void My_File<FileType>::SetSearchPaths(const String_Vector &paths)
   s_searchpaths=paths;
 }
 
+template <class FileType>
+void My_File<FileType>::SetNoComplains(const String_Vector &names)
+{ 
+  s_nocomplains=names;
+}
+
 template <class FileType> 
 typename My_File<FileType>::String_Vector 
 My_File<FileType>::s_searchpaths;
+template <class FileType> 
+typename My_File<FileType>::String_Vector 
+My_File<FileType>::s_nocomplains;
 template <class FileType> 
 typename My_File<FileType>::String_Map 
 My_File<FileType>::s_filelocations;

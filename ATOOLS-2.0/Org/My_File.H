@@ -37,7 +37,7 @@ namespace ATOOLS {
 
   protected:
 
-    static String_Vector s_searchpaths;
+    static String_Vector s_searchpaths, s_nocomplains;
     static String_Map    s_filelocations;
 
     std::string m_path, m_file;
@@ -73,6 +73,7 @@ namespace ATOOLS {
     File_Type &operator*() const;
 
     static void SetSearchPaths(const String_Vector &paths);
+    static void SetNoComplains(const String_Vector &names);
 
   };// end of class My_File
 

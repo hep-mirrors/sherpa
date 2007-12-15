@@ -14,6 +14,20 @@
 #include <pwd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+size_t getpmem()
+{
+  int mib[2]={CTL_HW,HW_PHYSMEM};
+  unsigned int miblen(2);
+  size_t pmem(0), len(sizeof(pmem));
+  if (sysctl(mib,miblen,&pmem,&len,NULL,0)!=0) {
+    std::cerr<<"sysctl failed"<<std::endl;
+    return 0;
+  }
+  return pmem;
+}
 
 using namespace ATOOLS;
 
@@ -47,6 +61,12 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
 
 void Run_Parameter::AnalyseEnvironment() 
 {
+  std::vector<std::string> names(4);
+  names[0]="Decaydata";
+  names[1]="Particle.dat";
+  names[2]="Hadron.dat";
+  names[3]="Run.dat";
+  My_In_File::SetNoComplains(names);
   if (s_initialized) return;
 #ifdef __GNUC__
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 96
@@ -165,7 +185,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
-  long int slim(sysconf(_SC_PHYS_PAGES)*getpagesize());
+  long int slim(getpmem());
   msg_Tracking()<<METHOD<<"(): Getting memory limit "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
