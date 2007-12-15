@@ -10,6 +10,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     *darwin*:*power*:*)
       echo "checking for architecture... Darwin MacOS"
       ldflags="-dynamic -flat_namespace"
+      FLIBS="-lg2c"
+      AC_SUBST(FLIBS)
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
       AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
