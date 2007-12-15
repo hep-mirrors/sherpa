@@ -1277,6 +1277,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
+//   PRINT_INFO(M2);
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 

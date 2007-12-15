@@ -182,7 +182,7 @@ void Detector::Test(const int mode) {
   //abort();
   //#endif
   int testevents(1),number(20);
-  Flavour flav(Flavour(kf::none));
+  Flavour flav(kf::none);
   Print();
   InitHistograms(mode);
   switch (mode) {

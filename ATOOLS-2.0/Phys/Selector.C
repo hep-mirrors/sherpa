@@ -152,7 +152,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       dat.type = 13;
       crit1=ToType<int>(svv[i][1]);
       dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][2]);
+      dat.bounds.front().second=ToType<double>(svv[i][3]);
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);

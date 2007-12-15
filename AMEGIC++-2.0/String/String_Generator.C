@@ -28,9 +28,11 @@ ZXlist& ZXlist::operator=(const ZXlist& copy) {
 String_Generator::String_Generator(Basic_Sfuncs* _BS) : 
   Basic_Func(this,_BS), Basic_Yfunc(this,_BS), Basic_Zfunc(this,_BS), 
   Basic_Xfunc(this,_BS), Basic_Mfunc(this,_BS), Basic_Vfunc(this,_BS), 
-  Basic_Pfunc(this,_BS), Basic_MassTermfunc(this,_BS),
+  Basic_Pfunc(this,_BS), Basic_MassTermfunc(this,_BS), Basic_Epsilonfunc(this,_BS),
   p_zxlsave(NULL), p_couplingssave(NULL), p_flavourssave(NULL), m_copied(0)
 { 
+  m_zuse.resize(11);
+  for (size_t i=0;i<11;i++) m_zuse[i]=0;
   p_zxl       = new vector<ZXlist>;
   p_couplings = new vector<Complex>;
   p_flavours  = new vector<int>;
@@ -418,6 +420,29 @@ Kabbala String_Generator::GetScplxnumber(const int a1,const int a2,Complex value
   return newz.value;
 }
 
+Kabbala String_Generator::GetEpsnumber(int* arg,int nc,Complex value) 
+{
+  int numb = GetNumber(10,value);
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
+  numb = GetNumber(10,-value);
+  if (numb!=(int)(*p_zxl).size()) return -(*p_zxl)[numb].value;
+  
+  //new Epsfunc  
+
+  ZXlist newz;
+
+  newz.zlist  = 10;
+  newz.narg   = 5;
+  newz.value  = Number(numb,value);
+  newz.arg    = new int[5];
+  for (int i=0;i<4;i++)  newz.arg[i] = arg[i];
+  newz.arg[4] = nc;
+
+  (*p_zxl).push_back(newz);
+
+  return newz.value;
+}
+
 void String_Generator::Calculate(Values* val) 
 {  
   if (val!=0) {
@@ -428,6 +453,7 @@ void String_Generator::Calculate(Values* val)
   for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].on) {
       int* arg = (*p_zxl)[i].arg;
+      if ((*p_zxl)[i].zlist>=0&&(*p_zxl)[i].zlist<11) m_zuse[(*p_zxl)[i].zlist]=1;
       switch ((*p_zxl)[i].zlist) {
       case 0: (*p_zxl)[i].value = 
 		Kabbala((*p_zxl)[i].value.String(),
@@ -465,6 +491,9 @@ void String_Generator::Calculate(Values* val)
       break;      
       case 9: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),Vcplxcalc(arg[0],arg[1]));
+      break;
+      case 10: (*p_zxl)[i].value = 
+ 		Kabbala((*p_zxl)[i].value.String(),EpsCalc(arg[0],arg[1],arg[2],arg[3],arg[4]));
       break;
       default:msg_Error()<<"Unknown Z-Type: "<<(*p_zxl)[i].zlist<<endl;
       }

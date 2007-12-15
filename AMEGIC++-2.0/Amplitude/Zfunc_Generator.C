@@ -108,7 +108,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
     if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
       }
-    if(ATOOLS::IsZero(p->fl.Mass())){
+    if(ATOOLS::IsZero(p->fl.Mass())&&rpa.gen.Model()!=ATOOLS::Model_Type::SM_AGC){
       p->m=0;
       }	
   }
@@ -571,11 +571,16 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
     Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
   case zl::AV3:
     if (Zh->m_type==zl::AV3) {
+      pb->cpl.resize(8);
       Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[2];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[3];icoupl++;
-    }
+      Zh->p_couplings[icoupl] = pb->cpl[4];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[5];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[6];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[7];icoupl++;
+   }
   default:
     if (Zh->m_type!=zl::AV3) Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
