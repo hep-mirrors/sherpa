@@ -19,6 +19,10 @@
 
 size_t getpmem()
 {
+#if defined(ARCH_LINUX) || defined(ARCH_UNIX)
+  return sysconf(_SC_PHYS_PAGES)*getpagesize();
+#endif
+#ifdef ARCH_DARWIN
   int mib[2]={CTL_HW,HW_PHYSMEM};
   unsigned int miblen(2);
   size_t pmem(0), len(sizeof(pmem));
@@ -27,6 +31,9 @@ size_t getpmem()
     return 0;
   }
   return pmem;
+#endif
+  std::cerr<<"cannot determine physical memory"<<std::endl;
+  return std::numeric_limits<size_t>::max();
 }
 
 using namespace ATOOLS;
