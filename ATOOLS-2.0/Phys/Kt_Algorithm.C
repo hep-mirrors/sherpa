@@ -80,15 +80,19 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   int n=0;
   Vec4D * moms = new Vec4D[pl->size()];
   int * bflag = new int[pl->size()];
+  static Particle_Qualifier_Base 
+    *bhad(Particle_Qualifier_Getter::GetObject("DecayedBHadron",""));
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     if ((*p_qualifier)(*it)) {
       //    if (!(*it)->Flav().IsLepton()) {
       moms[n]  = ((*it)->Momentum()); 
       bflag[n] = false;
       if (m_bflag==0) bflag[n] = (((*it)->Flav()).Kfcode()==kf::b || 
+				  (*bhad)(*it) ||
 				  ((*it)->Flav()).Kfcode()==kf::bjet);
       else if (m_bflag==-1) bflag[n] = (1-2*(*it)->Flav().IsAnti())*
 			      (((*it)->Flav()).Kfcode()==kf::b || 
+			       (*bhad)(*it) ||
 			       ((*it)->Flav()).Kfcode()==kf::bjet);
       ++n;
     }

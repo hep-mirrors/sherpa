@@ -79,7 +79,7 @@ void List_Creator::CreatePrimordialHadronsList(const ATOOLS::Blob_List *bl)
     if ((*blit)->Type()==btp::Fragmentation) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
-	if (p->Flav().IsHadron()) pl->push_back(new Particle(*p));
+	if (p->Flav().IsHadron()) pl->push_back(p);
       }
     }
   }
@@ -95,7 +95,7 @@ void List_Creator::CreateIntermediateHadronsList(const ATOOLS::Blob_List *bl)
 	(*blit)->Type()==btp::Fragmentation) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
-	if (p->Flav().IsHadron()) pl->push_back(new Particle(*p));
+	if (p->Flav().IsHadron()) pl->push_back(p);
       }
     }
   }
@@ -152,7 +152,7 @@ void List_Creator::CreateUEParticleList(const ATOOLS::Blob_List *bl)
     Blob *blb(mit->second);
     for (int i(0);i<blb->NOutP();++i) {
       Particle *p(blb->OutParticle(i));
-      pl->push_back(new Particle(*p));	
+      pl->push_back(p);	
     }
   }
   p_ana->AddParticleList("UEPartons",pl);

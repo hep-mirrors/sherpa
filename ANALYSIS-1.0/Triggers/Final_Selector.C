@@ -59,9 +59,9 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
       if (cur.size()>2) data.pt_min=ATOOLS::ToType<double>(cur[2]);
       if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
       if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
-      if (cur.size()>5 && kf==93) data.r_min=ATOOLS::ToType<double>(cur[5]);
-      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<int>(cur[6]);
-      if (cur.size()>7 && kf==93) data.f=ATOOLS::ToType<double>(cur[7]);
+      if (cur.size()>5 && (kf==93 || kf==97)) data.r_min=ATOOLS::ToType<double>(cur[5]);
+      if (cur.size()>6 && (kf==93 || kf==97)) data.bf=ATOOLS::ToType<int>(cur[6]);
+      if (cur.size()>7 && (kf==93 || kf==97)) data.f=ATOOLS::ToType<double>(cur[7]);
       selector->AddSelector(flavour,data);
     }
     else if (cur[0]=="DRMin" && cur.size()>3) {
@@ -197,15 +197,15 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.f       = fs.f;
   }
   
-  if (fl==kf::jet) {
+  if (fl==kf::jet || fl==kf::bjet) {
     switch(m_mode) {
     case 2: p_jetalg = new 
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
     }
+    if (p_jetalg) p_jetalg->Setbflag(fs.bf);
   }
-  if (p_jetalg) p_jetalg->Setbflag(fs.bf);
 }
 
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
@@ -247,6 +247,7 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
   else {
     it->second.min_n = min;  
     it->second.max_n = max;  
+    it->second.ko    = false;
   }
 }
 
@@ -264,6 +265,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.et_min  = fs.et_min;
     it->second.pt_min  = fs.pt_min;
     it->second.r_min   = fs.r_min;
+    it->second.ko      = false;
   }
   if (p_jetalg!=NULL) {
     msg_Error()<<"Error in Final_Selector::AddSelector("<<cone<<") : "<<std::endl
@@ -287,6 +289,7 @@ void Final_Selector::AddKeepFlavour(const Flavour & fl)
     for (it=m_fmap.begin();it!=m_fmap.end();++it) it->second.keep = false;
     m_extract = true;
   }
+  if (m_fmap.find(fl)==m_fmap.end()) m_fmap[fl].ko=true;
   m_fmap[fl].keep = true;
 }
 
@@ -295,7 +298,7 @@ void Final_Selector::Output()
   if (!msg_LevelIsTracking()) return;
   msg_Out()<<"Final_Selector : "<<m_fmap.size()<<"/"<<m_cmap.size()<<":"<<std::endl;
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    if (it->first!=Flavour(kf::jet)) 
+    if (it->first!=Flavour(kf::jet) && it->first!=Flavour(kf::bjet)) 
       msg_Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
 	       <<it->second.eta_min<<" ... "<<it->second.eta_max<<std::endl;
     else
@@ -459,6 +462,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_out = new Particle_List;
   // look for kt and after for other selectors
   Final_Data_Map::iterator it = m_fmap.find(Flavour(kf::jet));
+  if (it==m_fmap.end() || it->second.r_min==0.0) it = m_fmap.find(Flavour(kf::bjet));
   if (it!=m_fmap.end()) {
     if (it->second.r_min>0.) {
       std::vector<double> * diffrates=new std::vector<double>();
@@ -536,7 +540,7 @@ Analysis_Object * Final_Selector::GetCopy() const
   Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode,p_qualifier);
   fs->SetAnalysis(p_ana);
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    fs->AddSelector(it->first,it->second);
+    if (!it->second.ko) fs->AddSelector(it->first,it->second);
   }
 
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {

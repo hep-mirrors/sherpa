@@ -482,7 +482,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	    (m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G') {
 	  if ((p->Info()!='G' &&  p->Info()!='H')
 	      || (*blit)->Type()!=btp::IS_Shower) {
-	    pl->push_back(new Particle(*p));
+	    pl->push_back(p);
 	  }
 	}
       }
@@ -528,7 +528,8 @@ void Primitive_Analysis::AddParticleList(const std::string & key,Particle_List *
   PL_Container::const_iterator cit=m_pls.find(key);
   if (cit!=m_pls.end()) {
     for (Particle_List::iterator pit=cit->second->begin(); 
-	 pit!=cit->second->end();++pit) delete (*pit);
+	 pit!=cit->second->end();++pit) 
+      if ((*pit)->ProductionBlob()==NULL && (*pit)->DecayBlob()==NULL) delete *pit;
     delete cit->second;
   }
 
@@ -565,7 +566,9 @@ void Primitive_Analysis::ClearAllData()
        it!=m_pls.end(); ++it) {
     if (!it->second->empty()) {
       for (Particle_List::iterator pit=it->second->begin(); 
-      	   pit!=it->second->end();++pit) delete (*pit);
+      	   pit!=it->second->end();++pit) 
+      if ((*pit)->ProductionBlob()==NULL && (*pit)->DecayBlob()==NULL) 
+	delete *pit;
     }
     delete it->second;
   }
