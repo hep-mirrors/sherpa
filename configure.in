@@ -47,6 +47,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PDF-1.0/Makefile \
 	  MODEL-1.0/Hdecay/Makefile \
 	  MODEL-1.0/Isajet/Makefile \
+	  MODEL-1.0/Interaction_Models/Makefile \
 	  MODEL-1.0/Main/Makefile \
 	  MODEL-1.0/Makefile \
 	  PHASIC++-1.0/Main/Makefile \
@@ -61,7 +62,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMEGIC++-2.0/Amplitude/Zfunctions/Makefile \
 	  AMEGIC++-2.0/Phasespace/Makefile \
 	  AMEGIC++-2.0/String/Makefile \
-	  AMEGIC++-2.0/Model/Makefile \
 	  AMEGIC++-2.0/Makefile \
 	  APACIC++-2.0/Main/Makefile \
 	  APACIC++-2.0/Showers/Makefile \

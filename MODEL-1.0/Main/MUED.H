@@ -6,7 +6,6 @@
 namespace MODEL {
   class MUED : public Model_Base {
   private :
-    Model_Base *p_sm;
     std::string m_generator;
     void ReadInFile();
   public :

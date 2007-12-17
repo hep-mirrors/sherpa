@@ -1,6 +1,7 @@
 #include "Zfunc_Calc.H"
 
 using namespace AMEGIC;
+using namespace ATOOLS;
 
 Kabbala Zfunc_Calc::Do() 
 { 

@@ -14,18 +14,19 @@ MUED::MUED(string _dir,string _file) :
   msg_Info()<<"Initialize the MUED from "<<m_dir<<" / "<<m_file<<endl;
   m_name      = string("MUED");
 
-  p_sm = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
+  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = sm->ExtractScalarNumbers();
+  p_constants = sm->ExtractScalarConstants();
+  p_functions = sm->ExtractScalarFunctions();
+  p_matrices  = sm->ExtractComplexMatrices();
+
+  delete sm;
 
   ReadInFile();
 }
 
 MUED::~MUED()
 {
-  delete p_sm;
 }
 
 void MUED::ReadInFile() {

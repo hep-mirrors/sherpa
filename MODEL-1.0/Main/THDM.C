@@ -13,11 +13,13 @@ THDM::THDM(std::string _dir,std::string _file) :
   msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("THDM");
 
-  p_sm = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
+  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = sm->ExtractScalarNumbers();
+  p_constants = sm->ExtractScalarConstants();
+  p_functions = sm->ExtractScalarFunctions();
+  p_matrices  = sm->ExtractComplexMatrices();
+
+  delete sm;
 
   ReadInFile();
   FillMasses();
@@ -25,7 +27,6 @@ THDM::THDM(std::string _dir,std::string _file) :
 
 THDM::~THDM()
 {
-  delete p_sm;
 }
 
 void THDM::ReadInFile() {

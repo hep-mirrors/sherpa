@@ -11,8 +11,8 @@ namespace AMEGIC {
   };
   
   class Color_Generator {
-    Color_Function* CFlist;
-    Color_Function* CCFlist;
+    MODEL::Color_Function* CFlist;
+    MODEL::Color_Function* CCFlist;
     Cfunc* Clist;
     std::string stringchain;
 
@@ -30,15 +30,15 @@ namespace AMEGIC {
     Cfunc* Get() {return Clist;}
     void ColorString(int,Point*,std::string&,std::string&);
 
-    void FillString(int,Color_Function*,int&); 
+    void FillString(int,MODEL::Color_Function*,int&); 
 
     void CFKill();
     void CFConvert(int,int&,Point* p);
     void CFBuildString(int);
-    Color_Function* Get_CF() {return CFlist;}
-    Color_Function* Get_CCF(){return CCFlist;}
+    MODEL::Color_Function* Get_CF() {return CFlist;}
+    MODEL::Color_Function* Get_CCF(){return CCFlist;}
     //former private
-    std::string CF2String(Color_Function*);  
+    std::string CF2String(MODEL::Color_Function*);  
   };
 }
 #endif

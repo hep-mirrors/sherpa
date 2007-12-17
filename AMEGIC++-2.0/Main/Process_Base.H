@@ -15,7 +15,7 @@
 #include "Flavour.H"
 #include "Vector.H"
 
-#include "Interaction_Model_Base.H"
+#include "Model_Base.H"
 #include "Topology.H"
 
 #include "Message.H"
@@ -73,10 +73,10 @@ namespace AMEGIC {
     
     virtual ~Process_Base();
 
-    virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
+    virtual int    InitAmplitude(MODEL::Model_Base *,AMEGIC::Topology *,
 				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Process_Base *> &,
 				 std::vector<AMEGIC::Process_Base *> &,int &,int &,int &)=0;
-    virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
+    virtual int    InitAmplitude(MODEL::Model_Base *,AMEGIC::Topology *)        =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
 //     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
 //     			       PHASIC::channelinfos &,PHASIC::channelinfos &);

@@ -73,10 +73,10 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
+    int            InitAmplitude(MODEL::Model_Base *,Topology *,ATOOLS::Vec4D *&,
 				 std::vector<Process_Base *> &,
 				 std::vector<Process_Base *> &, int &, int &, int &);
-    int            InitAmplitude(Interaction_Model_Base *,Topology *) { return 1; }
+    int            InitAmplitude(MODEL::Model_Base *,Topology *) { return 1; }
     bool           SetUpIntegrator();
     void           InitWeightHistogram();
     Amplitude_Handler * GetAmplitudeHandler() {return 0;} 

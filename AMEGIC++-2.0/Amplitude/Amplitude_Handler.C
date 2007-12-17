@@ -14,10 +14,11 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinfo,
-				     Interaction_Model_Base * model,Topology* top,
+				     Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)

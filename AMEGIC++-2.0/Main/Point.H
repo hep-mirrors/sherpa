@@ -20,10 +20,10 @@ public:
   Point              * right;
   Point              * middle;
   Point              * prev;
-  Single_Vertex      * v;
+  MODEL::Single_Vertex * v;
   std::vector<Complex> cpl;
-  Color_Function     * Color;
-  Lorentz_Function   * Lorentz;
+  MODEL::Color_Function     * Color;
+  MODEL::Lorentz_Function   * Lorentz;
 
   Point(int extra = 0);
   Point(const Point& copy);
@@ -47,9 +47,9 @@ public:
   struct MPI_Point {
     
     int                   m_fl;  
-    MPI_Lorentz_Function  m_lf;
-    MPI_Color_Function    m_cf;
-    MPI_Single_Vertex     m_v;
+    MODEL::MPI_Lorentz_Function  m_lf;
+    MODEL::MPI_Color_Function    m_cf;
+    MODEL::MPI_Single_Vertex     m_v;
     double               m_cpl[8];
     int                  m_left, m_middle, m_right, m_num, m_b;
   };

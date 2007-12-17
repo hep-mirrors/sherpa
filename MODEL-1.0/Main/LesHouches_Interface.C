@@ -46,7 +46,7 @@ void LesHouches_Interface::Run(std::string _model) {
   p_reader->SetAddCommandLine(false);
   p_reader->SetInputPath(m_dir);
   p_reader->SetInputFile(m_inputfile);
-  if (p_reader->InputPath()=="" || p_reader->InputFile()=="")
+  if (p_reader->InputPath()=="" && p_reader->InputFile()=="")
     msg_Error()<<"ERROR in LesHouches_Interface::Run : "
 	       <<"The input file for the SLHA has not been set correctly!"<<std::endl;
   

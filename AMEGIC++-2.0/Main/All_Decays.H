@@ -4,7 +4,7 @@
 #include "Process_Group.H"
 #include "Single_Process.H"
 
-#include "Interaction_Model_Base.H"
+#include "Model_Base.H"
 #include "Topology.H"
 #include "Flavour.H"
 #include "Full_Decay_Table.H"
@@ -12,7 +12,7 @@
 #include <deque>
 
 namespace AMEGIC {
-  typedef Vertex_Table::iterator                        VTIterator;
+  typedef MODEL::Vertex_Table::iterator                        VTIterator;
 
   typedef std::map<ATOOLS::Flavour, Full_Decay_Table *> DecayMap;
   typedef DecayMap::iterator                            DMIterator;
@@ -21,9 +21,9 @@ namespace AMEGIC {
   //! The container for a list of processes.
   class All_Decays {
   private :
-    Interaction_Model_Base * p_model;
+    MODEL::Model_Base      * p_model;
     Topology               * p_top;
-    Vertex_Table             m_vertextable;
+    MODEL::Vertex_Table      m_vertextable;
     ATOOLS::FlavourSet       m_particles;
     DecayMap                 m_decays;
     Full_Decay_Channel     * p_decay;
@@ -34,7 +34,7 @@ namespace AMEGIC {
     void ArrangeDecays();
     bool InitializeDecays();
   public:
-    All_Decays(Interaction_Model_Base *,Topology *);
+    All_Decays(MODEL::Model_Base *,Topology *);
     bool AddToDecays(const ATOOLS::Flavour &);
     bool AddToDecays(ATOOLS::Decay_Channel *);
     void PrintDecayings();

@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS = Main Amplitude Phasespace String Model 
+SUBDIRS = Main Amplitude Phasespace String
 
 EXTRA_DIST = @SVNINCLUDE@

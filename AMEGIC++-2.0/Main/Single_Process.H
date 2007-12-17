@@ -83,10 +83,10 @@ namespace AMEGIC {
   public:
     bool                NewLibs() {return m_newlib;}
     bool                FoundMappingFile(std::string &,std::string &);
-    int                 InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
+    int                 InitAmplitude(MODEL::Model_Base *,Topology *,ATOOLS::Vec4D *&,
 				      std::vector<Process_Base *> &,std::vector<Process_Base *> &,
 				      int &,int &,int &);
-    int                 InitAmplitude(Interaction_Model_Base *,Topology *);
+    int                 InitAmplitude(MODEL::Model_Base *,Topology *);
     void                InitDecay(Topology* top); 
     bool                SetUpIntegrator();
     bool                IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }

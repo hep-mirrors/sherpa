@@ -1,6 +1,7 @@
 #include "Point.H"
 
 using namespace AMEGIC;
+using namespace MODEL;
 
 
 Point::Point(const Point& copy) { 

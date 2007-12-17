@@ -10,6 +10,7 @@
 
 using namespace SHERPA;
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace ATOOLS;
 
 int Combine_Table_Base::s_all(0);

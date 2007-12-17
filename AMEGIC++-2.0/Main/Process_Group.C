@@ -722,7 +722,7 @@ void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
 
   ----------------------------------------------------------------------------------*/
 
-int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,Vec4D *& testmoms,
+int Process_Group::InitAmplitude(Model_Base * model,Topology * top,Vec4D *& testmoms,
 				 vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				 int & totalsize, int & procs, int & current_atom)
 {

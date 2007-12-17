@@ -13,11 +13,13 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
   msg_Info()<<"Initialize the Fourth_Generation_Leptons from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("Fourth_Generation_Leptons");
 
-  p_sm = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
+  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = sm->ExtractScalarNumbers();
+  p_constants = sm->ExtractScalarConstants();
+  p_functions = sm->ExtractScalarFunctions();
+  p_matrices  = sm->ExtractComplexMatrices();
+
+  delete sm;
 
   ReadInFile();
   FillMasses();
@@ -30,7 +32,6 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
 
 Fourth_Generation_Leptons::~Fourth_Generation_Leptons()
 {
-  delete p_sm;
 }
 
 void Fourth_Generation_Leptons::ReadInFile() {

@@ -1,10 +1,11 @@
 #include "All_Decays.H"
 
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-All_Decays::All_Decays(Interaction_Model_Base * _model,Topology * _top) :
+All_Decays::All_Decays(Model_Base * _model,Topology * _top) :
   p_model(_model), p_top(_top), p_decay(NULL)
 {
   Vertex * vertex = p_model->GetVertex();

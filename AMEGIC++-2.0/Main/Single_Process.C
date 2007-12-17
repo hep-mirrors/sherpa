@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace PHASIC;
 using namespace PDF;
 using namespace BEAM;
@@ -254,7 +255,7 @@ void Single_Process::FixISRThreshold()
 
 
 
-int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,Vec4D *& _testmoms,
+int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _testmoms,
 				  vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
@@ -390,7 +391,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 }
 
 
-int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
+int Single_Process::InitAmplitude(Model_Base * model,Topology * top)
 {
   if (p_momenta) { delete [] p_momenta; }
   p_momenta   = new Vec4D[m_nvector]; 

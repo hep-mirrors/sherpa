@@ -2,6 +2,8 @@
 #include "String_Generator.H"
 
 using namespace AMEGIC;
+using namespace ATOOLS;
+using namespace MODEL;
 
 V4_Calc::V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

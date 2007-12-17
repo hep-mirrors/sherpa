@@ -26,26 +26,26 @@ namespace AMEGIC {
     void  Set_FermionProp(Zfunc*,Point*,Point*);
     void  IsGaugeV(Point*,int&,int&);
     
-    int   TryArgs(int,std::vector<Lorentz_Function> &,int,std::vector<Lorentz_Function> &);
-    void  LFFill_Zfunc(Zfunc*,std::vector<Lorentz_Function> &,Point*,Point*,Point*);
+    int   TryArgs(int,std::vector<MODEL::Lorentz_Function> &,int,std::vector<MODEL::Lorentz_Function> &);
+    void  LFFill_Zfunc(Zfunc*,std::vector<MODEL::Lorentz_Function> &,Point*,Point*,Point*);
   
     int   LFDetermine_Zfunc(Zfunc*,Point*,Point*,Point*);
 
-    void  Lorentz_Sequence(Point*,std::vector<Lorentz_Function> &lflist);
-    void  LFPrint(const std::vector<Lorentz_Function>&);
-    void  LFPrint(const std::vector<Lorentz_Function*>&);
-    lf::code LFEff(lf::code);
+    void  Lorentz_Sequence(Point*,std::vector<MODEL::Lorentz_Function> &lflist);
+    void  LFPrint(const std::vector<MODEL::Lorentz_Function>&);
+    void  LFPrint(const std::vector<MODEL::Lorentz_Function*>&);
+    MODEL::lf::code LFEff(MODEL::lf::code);
 
-    int Compare(int,const std::vector<Lorentz_Function*> &,int*,
-		    const std::vector<Lorentz_Function*> &,int*);
-    void CopyOrder(std::vector<Lorentz_Function> &,std::vector<Lorentz_Function*> &);
+    int Compare(int,const std::vector<MODEL::Lorentz_Function*> &,int*,
+		    const std::vector<MODEL::Lorentz_Function*> &,int*);
+    void CopyOrder(std::vector<MODEL::Lorentz_Function> &,std::vector<MODEL::Lorentz_Function*> &);
     void SetArgs(Zfunc*,int*,int*,Point*,Point*,int&);
     void SetScalarArgs(Zfunc*,int&,Point*);
-    void SearchNextProp(int,const std::vector<Lorentz_Function*> &,int*,
-			    const std::vector<Lorentz_Function*> &,int*,
+    void SearchNextProp(int,const std::vector<MODEL::Lorentz_Function*> &,int*,
+			    const std::vector<MODEL::Lorentz_Function*> &,int*,
 			int,int);
-    void SetPropDirection(int,int,const std::vector<Lorentz_Function*> &,int*,
-			          const std::vector<Lorentz_Function*> &,int*);
+    void SetPropDirection(int,int,const std::vector<MODEL::Lorentz_Function*> &,int*,
+			          const std::vector<MODEL::Lorentz_Function*> &,int*);
   public:
     Zfunc_Generator(Basic_Sfuncs* _BS) : BS(_BS) {}
     ~Zfunc_Generator();

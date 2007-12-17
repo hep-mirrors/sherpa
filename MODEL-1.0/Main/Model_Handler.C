@@ -19,40 +19,36 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
   Model_Base * modelbase = 0;
   if (model==std::string("PHANTOM_U1")) {
     modelbase = new SM_Phantom_U1(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
   }
-//   if (model==std::string("MUED")) {
+//   else if (model==std::string("MUED")) {
 //     modelbase = new MUED(_path,_file);
-//     rpa.gen.SetModel(modelbase);
-//     return modelbase;
 //   }
-  if (model==std::string("MSSM")) {
+  else if (model==std::string("MSSM")) {
     modelbase = new MSSM(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
   }
-  if (model==std::string("THDM")) {
+  else if (model==std::string("THDM")) {
     modelbase = new THDM(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
   }
-  if (model==std::string("FOURTH_GEN_LEPTONS")) {
+  else if (model==std::string("FOURTH_GEN_LEPTONS")) {
     modelbase = new Fourth_Generation_Leptons(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
   }
-  if (model==std::string("ADD")) {
+  else if (model==std::string("ADD")) {
     modelbase = new ADD(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
   }
-  if (model!=std::string("SM") && modelbase==0) { 
-      msg_Error()<<"Error in Model_Handler::GetModel :"<<std::endl
-	       <<"   Tried to initialize model : "<<model<<std::endl
+  else if (model==std::string("SM")) { 
+    modelbase = new Standard_Model(_path,_file);
+  }
+  else {
+    msg_Error()<<METHOD<<"(): Tried to initialize model : "<<model<<std::endl
 	       <<"   Option not available. Initialize Standard Model instead."<<std::endl;
+    modelbase = new Standard_Model(_path,_file);
   }
-  modelbase = new Standard_Model(_path,_file);
+  if (!modelbase->RunSpectrumGenerator()) {
+    msg_Error()<<METHOD<<"(): RunSpectrumGenerator() delivered false. Abort."<<std::endl;
+    abort();
+  }
+
+  modelbase->InitializeInteractionModel();
   rpa.gen.SetModel(modelbase);
   return modelbase;
 }

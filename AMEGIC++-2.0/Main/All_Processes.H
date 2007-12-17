@@ -12,7 +12,7 @@ namespace AMEGIC {
   class All_Processes : public Process_Group {
   public:
 
-    int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&);
+    int  InitAllProcesses(MODEL::Model_Base *,Topology *,ATOOLS::Vec4D *&);
 
     void Add(Process_Base *);
     bool SelectOne();

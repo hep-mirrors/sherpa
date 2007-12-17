@@ -64,10 +64,10 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"
   AMEGICBUILDDIR="\${top_builddir}/AMEGIC++-2.0"
   AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
-              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Model -I\${AMEGICDIR}/Amplitude/Zfunctions"
+              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Amplitude/Zfunctions"
   AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
-              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Model -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions \        
-              -lAmegic -lAmplitude -lAmegicPSGen -lZfunctions -lModel -lString"
+              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions \        
+              -lAmegic -lAmplitude -lAmegicPSGen -lZfunctions -lString"
   AC_SUBST(AMEGICDIR)
   AC_SUBST(AMEGICBUILDDIR)
   AC_SUBST(AMEGICINCS)
@@ -151,8 +151,9 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   MODELDIR="\${top_srcdir}/MODEL-1.0"
   MODELBUILDDIR="\${top_builddir}/MODEL-1.0"
-  MODELINCS="-I\${MODELDIR}/Main"
-  MODELLIBS="-L\${MODELBUILDDIR}/Main -lModelMain"
+  MODELINCS="-I\${MODELDIR}/Main -I\${MODELDIR}/Interaction_Models"
+  MODELLIBS="-L\${MODELBUILDDIR}/Main -L\${MODELBUILDDIR}/Interaction_Models \
+             -lModelMain -lModelInteractions"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
   AC_SUBST(MODELINCS)

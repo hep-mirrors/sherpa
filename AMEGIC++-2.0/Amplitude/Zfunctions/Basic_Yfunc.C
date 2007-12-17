@@ -2,6 +2,7 @@
 #include "String_Generator.H"
 
 using namespace AMEGIC;
+using namespace ATOOLS;
 using namespace std;
 
 Kabbala Basic_Yfunc::Y(const int z) 

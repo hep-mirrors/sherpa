@@ -2,6 +2,7 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 Full_Decay_Channel::Full_Decay_Channel(Decay_Channel * _dec) :
@@ -89,7 +90,7 @@ void Full_Decay_Table::AddDecayChannel(Full_Decay_Channel * _dc)
 
 
 
-bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * _top)
+bool Full_Decay_Table::InitAllDecays(Model_Base * _model,Topology * _top)
 {
   if (m_isevaluated) return 1;
   Vec4D * moms = NULL;

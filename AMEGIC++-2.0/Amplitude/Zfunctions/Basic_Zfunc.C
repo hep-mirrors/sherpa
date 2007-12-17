@@ -3,6 +3,7 @@
 #include "Basic_Sfuncs.H"
 
 using namespace AMEGIC;
+using namespace ATOOLS;
 using namespace std;
 
 Kabbala Basic_Zfunc::Z(const int z1,const int z2)

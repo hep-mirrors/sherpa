@@ -8,6 +8,7 @@
 
 using namespace PHASIC;
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
@@ -74,7 +75,7 @@ void All_Processes::SetupEnhance() {
   ----------------------------------------------------------------------------------*/
 
 
-int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * top,Vec4D *& moms)
+int All_Processes::InitAllProcesses(Model_Base * model,Topology * top,Vec4D *& moms)
 {
   vector<Process_Base *> links,errs;
   bool okay     = 1;

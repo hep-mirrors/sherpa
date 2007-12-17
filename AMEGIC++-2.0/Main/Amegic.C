@@ -14,6 +14,7 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 /*----------------------------------------------------------------------------------
@@ -26,11 +27,10 @@ Amegic::Amegic(std::string _path,std::string _file,
 	       MODEL::Model_Base * _model) :
   m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99), m_maxqcdjet(0), 
   m_maxjet(0), m_coremaxjet(0), 
-  p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
+  p_procs(NULL), p_decs(NULL), p_model(_model), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
   p_dataread          = new Data_Read(m_path+m_file);
-  InitializeInteractionModel(_model);
 
   rpa.SetPath(m_path);
   
@@ -90,7 +90,6 @@ Amegic::~Amegic() {
 
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
   if (p_fifo)     { delete p_fifo;     p_fifo     = 0;    }
-  if (p_model)    { delete p_model;    p_model    = 0;    }
   if (p_procs)    { delete p_procs;    p_procs    = 0;    }
   if (p_decs)     { delete p_decs;     p_decs     = 0;    }
   if (p_top)      { delete p_top;      p_top      = 0;    }
@@ -174,19 +173,6 @@ bool Amegic::InitializeDecays(bool constructall) {
   p_decs        = new All_Decays(p_model,p_top);
   if (constructall) return p_decs->InitializeDecayTables();
   return 1;
-}
-
-
-void Amegic::InitializeInteractionModel(MODEL::Model_Base * _model)
-{
-  string modeltype   = p_dataread->GetValue<string>("SIGNAL_MODEL",string("SM"));
-  string cplscheme   = p_dataread->GetValue<string>("COUPLING_SCHEME",string("Running"));
-  string massscheme  = p_dataread->GetValue<string>("YUKAWA_MASSES",string("Running"));
-  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME",string("Fixed"));
-
-  Interaction_Model_Handler mh(_model);
-  p_model = mh.GetModel(modeltype,cplscheme,massscheme);
-  p_model->Init_Vertex();
 }
 
 void Amegic::ReadInProcessfile(string file) 

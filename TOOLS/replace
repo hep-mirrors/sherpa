@@ -16,7 +16,7 @@ travel () {
 	test=${file%$extension} 
         if [ "$file" != "$test" ]; then
 	  echo " currently replacing '$OLD' with '$NEW' in $file"
-          sed 's/'$OLD'/'$NEW'/g' < $file > $file.new
+          sed "s/$OLD/$NEW/g" < $file > $file.new
           \mv $file.new $file 
         fi
       done

@@ -19,7 +19,7 @@ namespace AMEGIC {
     void Output();
 
     bool   CreateDecay();
-    bool   InitProcess(Interaction_Model_Base *,Topology *);
+    bool   InitProcess(MODEL::Model_Base *,Topology *);
     bool   CalculateWidth();
     bool   OneEvent(double);
     void   SetWidth(double _w = -1.);
@@ -61,7 +61,7 @@ namespace AMEGIC {
     void   AddDecayChannel(ATOOLS::Decay_Channel *);
     void   AddDecayChannel(Full_Decay_Channel *);
     void   ArrangeDecays();
-    bool   InitAllDecays(Interaction_Model_Base *,Topology *);
+    bool   InitAllDecays(MODEL::Model_Base *,Topology *);
 
     void   CalculateWidths();
     void   Output();

@@ -21,15 +21,15 @@ namespace AMEGIC {
     Basic_Sfuncs       * BS;
     ATOOLS::Flavour * fl;
 
-    virtual Kabbala SingleZvalue(Zfunc*,std::vector<int>*,std::vector<int>*,int last=0);
-    Kabbala SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0);
-    Kabbala SingleZvalueTensor(Zfunc* z,std::vector<int>* iz, std::vector<int>* iargs,int);
+    virtual ATOOLS::Kabbala SingleZvalue(Zfunc*,std::vector<int>*,std::vector<int>*,int last=0);
+    ATOOLS::Kabbala SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0);
+    ATOOLS::Kabbala SingleZvalueTensor(Zfunc* z,std::vector<int>* iz, std::vector<int>* iargs,int);
     int     FillArgs(Zfunc* z,int* args,std::vector<int>*,std::vector<int>*);
     void    SetLoopVar(std::vector<int>&,std::vector<std::vector<int> >&);
 
-    Kabbala SingleMassTerms(int iz,int iarg);
+    ATOOLS::Kabbala SingleMassTerms(int iz,int iarg);
     ATOOLS::Flavour* GetPflav(int pn);
-    Kabbala GetProp(Zfunc* z);
+    ATOOLS::Kabbala GetProp(Zfunc* z);
     void    GroupZfuncs();
   public:
     int sign;
@@ -72,7 +72,7 @@ namespace AMEGIC {
     A list of all propagators in the amplitude.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,std::vector<int>* iz,std::vector<int>* iargs,int last=0)
+    \fn ATOOLS::Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,std::vector<int>* iz,std::vector<int>* iargs,int last=0)
     Calculates the Z function z. 
     
     The vector iz contains a list of labels for propagators or external particles, 
@@ -101,7 +101,7 @@ namespace AMEGIC {
     - The result is saved in Zfunc::m_calclist and returned.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0)
+    \fn ATOOLS::Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0)
     Calculates a Zfunc_Group. 
 
     - For a group with the operator '+' it's simply the sum of all sub Z functions, 
@@ -114,7 +114,7 @@ namespace AMEGIC {
     in Single_Amplitude_Base::SetLoopVar.    
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,std::vector<int>* iz, std::vector<int>* iargs,int)
+    \fn ATOOLS::Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,std::vector<int>* iz, std::vector<int>* iargs,int)
   */
   /*!
     \fn int Single_Amplitude_Base::FillArgs(Zfunc* z,int* args,std::vector<int>*,std::vector<int>*)
@@ -133,7 +133,7 @@ namespace AMEGIC {
     Determines a list of arguments for the decomposition of a propagator.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleMassTerms(int iz,int iarg)
+    \fn ATOOLS::Kabbala Single_Amplitude_Base::SingleMassTerms(int iz,int iarg)
     Calculates the mass term for the decomposition of fermionic propagators.
   */
   /*!
@@ -141,7 +141,7 @@ namespace AMEGIC {
     Returns the flavour of the propagator with label pn.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::GetProp(Zfunc*)
+    \fn ATOOLS::Kabbala Single_Amplitude_Base::GetProp(Zfunc*)
     Returns the product of the propagators in the Zfunc.
     If the Zfunc is elementary only propagators with the flag Pfunc::on are
     returned. This avoids double countings.

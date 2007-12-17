@@ -15,8 +15,8 @@ namespace AMEGIC {
   class Single_Amplitude: public Single_Amplitude_Base {
 
     Point* Pointlist;
-    Color_Function* CFlist;
-    Color_Function* CCFlist;
+    MODEL::Color_Function* CFlist;
+    MODEL::Color_Function* CCFlist;
     SpinorDirection* spind;
     int icoul;
   public:
@@ -37,8 +37,8 @@ namespace AMEGIC {
     void MPolconvert(int,int);
     void Prop_Replace(ATOOLS::Flavour,int,int,int);
     Point*  GetPointlist();
-    inline  Color_Function* Get_CFlist()  {return CFlist;}
-    inline  Color_Function* Get_CCFlist() {return CCFlist;}
+    inline  MODEL::Color_Function* Get_CFlist()  {return CFlist;}
+    inline  MODEL::Color_Function* Get_CCFlist() {return CCFlist;}
 
     void    AddSpinorDirection(const int&,const int&);    
   };

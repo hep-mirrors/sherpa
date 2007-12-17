@@ -7,7 +7,6 @@
 namespace MODEL {
   class SM_Phantom_U1 : public Model_Base {
   private :
-    Model_Base *p_sm;
     void ReadInFile();
     bool SanityChecks();
 

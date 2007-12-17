@@ -12,6 +12,6 @@ else
 HDECAYSUBDIR     =
 endif
 
-SUBDIRS    = Main $(HDECAYSUBDIR) $(ISAJETSUBDIR) 
+SUBDIRS    = Main Interaction_Models $(HDECAYSUBDIR) $(ISAJETSUBDIR) 
 
 EXTRA_DIST    = @SVNINCLUDE@

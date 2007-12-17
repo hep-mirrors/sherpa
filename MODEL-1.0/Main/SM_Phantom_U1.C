@@ -13,11 +13,13 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
   msg_Info()<<"Initialize the SM_Phantom_U1 from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM_Phantom_U1");
 
-  p_sm = new Standard_Model(m_dir,m_file);
-  p_numbers   = new ScalarNumbersMap(*(p_sm->GetScalarNumbers()));
-  p_constants = new ScalarConstantsMap(*(p_sm->GetScalarConstants()));
-  p_functions = new ScalarFunctionsMap(*(p_sm->GetScalarFunctions()));
-  p_matrices  = new ComplexMatricesMap(*(p_sm->GetComplexMatrices()));
+  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  p_numbers   = sm->ExtractScalarNumbers();
+  p_constants = sm->ExtractScalarConstants();
+  p_functions = sm->ExtractScalarFunctions();
+  p_matrices  = sm->ExtractComplexMatrices();
+
+  delete sm;
 
   ReadInFile();
   if (!SanityChecks()) {
@@ -39,7 +41,6 @@ SM_Phantom_U1::~SM_Phantom_U1()
     }
     m_dectables.clear();
   }
-  delete p_sm;
 }
 
 void SM_Phantom_U1::ReadInFile() {

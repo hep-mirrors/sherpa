@@ -35,8 +35,8 @@ namespace AMEGIC {
     void SingleReplaceF(sknot*,int&,CharNum_Map&,char&);
     void SingleReplaceFT(sknot*,int&,CharNum_Map&,char&);
 
-    int  Compare(Color_Function*,Color_Function*);
-    int  CompareArg(int,int,int,Color_Function*,Color_Function*);
+    int  Compare(MODEL::Color_Function*,MODEL::Color_Function*);
+    int  CompareArg(int,int,int,MODEL::Color_Function*,MODEL::Color_Function*);
     
     void ExtractIndices(sknot*,CharNum_Map&);
     char DeliverIndex(CharNum_Map&,char&);

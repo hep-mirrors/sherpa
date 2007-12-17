@@ -1,17 +1,22 @@
 #include "Model_Base.H"
 #include "Spectrum_Generator_Base.H"
+#include "Interaction_Model_Handler.H"
+#include "Run_Parameter.H"
 #include "Message.H"
+#include "Exception.H"
 
 
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace std;
 
 
 Model_Base::Model_Base(std::string _dir,std::string _file) :
   m_dir(_dir), m_file(_file), p_dataread(NULL),
   p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
-  p_spectrumgenerator(NULL)
-{ }
+  p_spectrumgenerator(NULL), p_vertex(NULL), p_vertextable(NULL)
+{
+}
 
 Model_Base::~Model_Base() 
 {
@@ -27,6 +32,30 @@ Model_Base::~Model_Base()
   if (p_matrices!=NULL) delete p_matrices;
   if (p_dataread!=NULL) delete p_dataread;
   if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
+  if (p_vertex!=NULL) delete p_vertex;
+  if (p_vertextable!=NULL) delete p_vertextable;
+}
+
+void Model_Base::InitializeInteractionModel()
+{
+  Data_Read read(m_dir+rpa.gen.Variable("ME_DATA_FILE"));
+  string modeltype   = read.GetValue<string>("SIGNAL_MODEL",string("SM"));
+  string cplscheme   = read.GetValue<string>("COUPLING_SCHEME",string("Running"));
+  string massscheme  = read.GetValue<string>("YUKAWA_MASSES",string("Running"));
+  string widthscheme = read.GetValue<string>("WIDTH_SCHEME",string("Fixed"));
+
+  Interaction_Model_Handler mh(this);
+  Interaction_Model_Base * model = mh.GetModel(modeltype,cplscheme,massscheme);
+
+  p_vertex        = new Vertex(model);
+  p_vertextable   = new Vertex_Table;
+  for (int i=0;i<p_vertex->MaxNumber();++i) {
+    if ((*p_vertex)[i]->on) {
+      (*p_vertextable)[(*p_vertex)[i]->in[0]].push_back((*p_vertex)[i]);
+    }
+  }
+
+  delete model;
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {

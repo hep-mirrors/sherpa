@@ -16,7 +16,8 @@ libToolsMath_la_SOURCES       =	\
 				Permutation.C \
 				PermStore.C \
 				Primitive_Integrator.C \
-				Algebra_Interpreter.C
+				Algebra_Interpreter.C \
+				Kabbala.C
 
 pkginclude_HEADERS        =	\
 			MathTools.H \
@@ -38,7 +39,8 @@ pkginclude_HEADERS        =	\
 			Primitive_Integrator.H \
 			Algebra_Interpreter.H \
 			Cluster_Algorithm.H \
-			Cluster_Algorithm.C
+			Cluster_Algorithm.C \
+			Kabbala.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

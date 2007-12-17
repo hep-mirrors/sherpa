@@ -9,6 +9,7 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 #define lorentz_type

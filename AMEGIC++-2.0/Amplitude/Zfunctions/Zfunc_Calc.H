@@ -49,12 +49,12 @@ namespace AMEGIC {
   class Zfunc_Calc : public virtual Basic_Func {
   public:
     int                      ncoupl,narg,pn;
-    std::vector<Lorentz_Function> lorentzlist;
+    std::vector<MODEL::Lorentz_Function> lorentzlist;
     zl::code                 type; 
 
     Zfunc_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
     virtual ~Zfunc_Calc() {}
-    virtual Kabbala Do(); 
+    virtual ATOOLS::Kabbala Do(); 
     
     virtual int GetScalarNumb();
   };
@@ -69,7 +69,7 @@ namespace AMEGIC {
     The mother class of all calculator classes.
   */
   /*!
-    \fn virtual Kabbala Zfunc_Calc::Do()
+    \fn virtual ATOOLS::Kabbala Zfunc_Calc::Do()
     Pure virtual method, must be overloaded!
 
     Performs the actual calculation in derived classes.

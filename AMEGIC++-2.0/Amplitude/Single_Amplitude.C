@@ -8,6 +8,7 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 #define Cut_Fermion_Prop

@@ -361,12 +361,6 @@ bool Initialization_Handler::InitializeTheModel()
   Model_Handler * modelhandler = new Model_Handler();
   p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
 
-  if (!p_model->RunSpectrumGenerator()) {
-    msg_Error()<<"Error in Model_Initialization::Model_Initialization."<<endl
-	       <<"    RunSpectrumGenerator() delivered false. Abort()."<<endl;
-    abort();
-  }
-
   delete modelhandler;
   delete dataread;  
   return 1;

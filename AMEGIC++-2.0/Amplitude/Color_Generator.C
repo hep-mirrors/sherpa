@@ -1,6 +1,7 @@
 #include "Color_Generator.H"
 
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace std;
 
 void Color_Generator::CFConvert(int N, int& dummy, Point* p)

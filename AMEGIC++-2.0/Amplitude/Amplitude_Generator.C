@@ -57,10 +57,11 @@ namespace AMEGIC {
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace MODEL;
 using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
-					 Interaction_Model_Base * _model,Topology * _top,
+					 Model_Base * _model,Topology * _top,
 					 int _nQCD,int _nEW,
 					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
   : fl(_fl), b(_b), p_model(_model), top(_top), N(_no), nEW(_nEW), nQCD(_nQCD),

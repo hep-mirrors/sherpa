@@ -6,7 +6,6 @@
 namespace MODEL {
   class MSSM : public Model_Base {
   private :
-    Model_Base *p_sm;
     std::string m_generator;
     std::string m_benchmark,m_scenario;
     bool        m_scales,m_unification;

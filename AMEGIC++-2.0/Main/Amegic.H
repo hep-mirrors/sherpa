@@ -28,7 +28,7 @@ namespace AMEGIC {
 
     All_Processes              * p_procs;
     All_Decays                 * p_decs;
-    Interaction_Model_Base     * p_model;
+    MODEL::Model_Base          * p_model;
     Topology                   * p_top;
 
     std::ostream               * p_fifo;
@@ -38,7 +38,6 @@ namespace AMEGIC {
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;
 
-    void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
     template <typename Type> Type ExtractMPvalue(const std::string& str);
     template <typename Type>

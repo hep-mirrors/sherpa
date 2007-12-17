@@ -3,7 +3,7 @@
 
 #include "Flavour.H"
 
-#include "Interaction_Model_Base.H"
+#include "Model_Base.H"
 #include "Vertex.H"
 #include "Topology.H"
 #include "Single_Amplitude.H"
@@ -57,7 +57,7 @@ namespace AMEGIC {
     static int NMAX;
     ATOOLS::Flavour     * fl;
     int                    * b;
-    Interaction_Model_Base * p_model;
+    MODEL::Model_Base      * p_model;
     Topology               * top;
     int                      N,nEW,nQCD;
 
@@ -69,7 +69,7 @@ namespace AMEGIC {
 
     bool                     m_create_4V;
     
-    Vertex_Table     v_table;
+    MODEL::Vertex_Table     v_table;
     //exhibits the points, the topology and the permutation number
     Pre_Ampl_List    prea_table;
     //  Counter_List     counter_table;
@@ -77,7 +77,7 @@ namespace AMEGIC {
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
-    int  MatchVertex(Single_Vertex*,ATOOLS::Flavour*,std::vector<Complex>&);
+    int  MatchVertex(MODEL::Single_Vertex*,ATOOLS::Flavour*,std::vector<Complex>&);
     int  CheckEnd(Point*,ATOOLS::Flavour);  
     void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);
@@ -112,7 +112,7 @@ namespace AMEGIC {
     int CountRealAmplitudes(Single_Amplitude* first);
   public:
     static int * DivideComparisons(int cpu_size, int nampl, int rank);
-    Amplitude_Generator(int,ATOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
+    Amplitude_Generator(int,ATOOLS::Flavour *,int *,MODEL::Model_Base *,Topology *,
 			int,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();

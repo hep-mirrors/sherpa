@@ -6,7 +6,6 @@
 namespace MODEL {
   class Fourth_Generation_Leptons : public Model_Base {
   private :
-    Model_Base *p_sm;
     void ReadInFile();
   public :
     Fourth_Generation_Leptons(std::string,std::string);

@@ -6,7 +6,6 @@
 namespace MODEL {
   class THDM : public Model_Base {
   private :
-    Model_Base *p_sm;
     void ReadInFile();
   public :
     THDM(std::string,std::string);

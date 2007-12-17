@@ -12,7 +12,7 @@ namespace AMEGIC {
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class Z_Calc : public Zfunc_Calc, 
@@ -23,7 +23,7 @@ namespace AMEGIC {
   public:
     Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~Z_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVS_Calc : public Zfunc_Calc, 
@@ -37,7 +37,7 @@ namespace AMEGIC {
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
 class VVSS4_Calc : public Zfunc_Calc, 
@@ -51,7 +51,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 2; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class SSV_Calc : public Zfunc_Calc, 
@@ -61,7 +61,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~SSV_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class SSS_Calc : public Zfunc_Calc {
@@ -71,7 +71,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 3; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
   
   class SSSS_Calc : public Zfunc_Calc {
@@ -81,7 +81,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 4; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVSS_Calc : public Zfunc_Calc, 
@@ -95,7 +95,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 2; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVV_Calc : public Zfunc_Calc, 
@@ -103,11 +103,11 @@ class VVSS4_Calc : public Zfunc_Calc,
 		   public Basic_Xfunc,
 		   public Basic_Mfunc,
 		   public Basic_Vfunc {
-    Kabbala GGG();
+    ATOOLS::Kabbala GGG();
   public:
     VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~VVV_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class V4_Calc : public Zfunc_Calc, 
@@ -115,11 +115,11 @@ class VVSS4_Calc : public Zfunc_Calc,
 		  public Basic_Xfunc,
 		  public Basic_Mfunc,
 		  public Basic_Vfunc {
-    Kabbala Massless();
+    ATOOLS::Kabbala Massless();
   public:
     V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~V4_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class G4_Calc : public Zfunc_Calc, 
@@ -129,7 +129,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     G4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~G4_Calc() {}
-    Kabbala Do(); 
+    ATOOLS::Kabbala Do(); 
   };
 
   /*class VVVV_Calc : public Zfunc_Calc, 
@@ -137,17 +137,17 @@ class VVSS4_Calc : public Zfunc_Calc,
 		    public Basic_Xfunc,
 		    public Basic_Mfunc,
 		    public Basic_Vfunc {
-    Kabbala GGGG();
-    Kabbala Triple_M1(const int &,const int &,const int &,const int &,const int &);
-    Kabbala Triple_M2(const int &,const int &,const int &,const int &,const int &);
-    Kabbala Double_M1(const int &,const int &,const int &,const int &,const int &);
-    Kabbala Double_M2(const int &,const int &,const int &,const int &,const int &);
-    Kabbala Double_M3(const int &,const int &,const int &,const int &,const int &);
-    Kabbala Single_M (const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala GGGG();
+    ATOOLS::Kabbala Triple_M1(const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala Triple_M2(const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala Double_M1(const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala Double_M2(const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala Double_M3(const int &,const int &,const int &,const int &,const int &);
+    ATOOLS::Kabbala Single_M (const int &,const int &,const int &,const int &,const int &);
   public:
     VVVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~VVVV_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
     };*/
 
   /*class V5_Calc : public Zfunc_Calc, 
@@ -155,20 +155,20 @@ class VVSS4_Calc : public Zfunc_Calc,
 		  public Basic_Xfunc,
 		  public Basic_Mfunc,
 		  public Basic_Vfunc {
-    Kabbala G5();
-    Kabbala ZXXX1(const int&,const int&,const int&,
+    ATOOLS::Kabbala G5();
+    ATOOLS::Kabbala ZXXX1(const int&,const int&,const int&,
 		  const int&,const int&,const int&,
 		  const int&);
-    Kabbala ZXXX2(const int&,const int&,const int&,
+    ATOOLS::Kabbala ZXXX2(const int&,const int&,const int&,
 		  const int&,const int&,const int&,
 		  const int&);
-    Kabbala ZXXX3(const int&,const int&,const int&,
+    ATOOLS::Kabbala ZXXX3(const int&,const int&,const int&,
 		  const int&,const int&,const int&,
 		  const int&);
   public:
     V5_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~V5_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
     };*/
 
   /*class V4V3_Calc : public Zfunc_Calc, 
@@ -176,12 +176,12 @@ class VVSS4_Calc : public Zfunc_Calc,
 		    public Basic_Xfunc,
 		    public Basic_Vfunc,
 		    public Basic_Mfunc {
-    Kabbala ZXX(const int&,const int&,const int&,const int&);
-    Kabbala G4G3();
+    ATOOLS::Kabbala ZXX(const int&,const int&,const int&,const int&);
+    ATOOLS::Kabbala G4G3();
   public:
     V4V3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~V4V3_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
     };*/
 
   class AnomalousV3_Calc : public Zfunc_Calc, 
@@ -193,7 +193,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     AnomalousV3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~AnomalousV3_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class AnomalousV4_Calc : public Zfunc_Calc, 
@@ -204,7 +204,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~AnomalousV4_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
 
@@ -215,7 +215,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
     ~FFT_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVT_Calc : public Zfunc_Calc, 
@@ -225,7 +225,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
     ~VVT_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class SST_Calc : public Zfunc_Calc, 
@@ -233,7 +233,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
     ~SST_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class FFVT_Calc : public Zfunc_Calc, 
@@ -244,7 +244,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~FFVT_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVVT_Calc : public Zfunc_Calc, 
@@ -254,7 +254,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~VVVT_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class SSST_Calc : public Zfunc_Calc, 
@@ -265,7 +265,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 3; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class FFGS_Calc : public Zfunc_Calc, 
@@ -277,7 +277,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() {return 1;}
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class VVGS_Calc : public Zfunc_Calc, 
@@ -287,7 +287,7 @@ class VVSS4_Calc : public Zfunc_Calc,
   public:
     VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~VVGS_Calc() {}
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class SSGS_Calc : public Zfunc_Calc, 
@@ -298,7 +298,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() {return 1;} 
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
   
   class FFVGS_Calc : public Zfunc_Calc, 
@@ -312,7 +312,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() {return 1;}
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class Triangle_Calc : public Zfunc_Calc, 
@@ -325,7 +325,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class Box_Calc : public Zfunc_Calc, 
@@ -338,7 +338,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 
   class Pentagon_Calc : public Zfunc_Calc, 
@@ -351,7 +351,7 @@ class VVSS4_Calc : public Zfunc_Calc,
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
-    Kabbala Do();
+    ATOOLS::Kabbala Do();
   };
 }
 #endif

@@ -1,7 +1,7 @@
 #ifndef Amplitude_Handler_h
 #define Amplitude_Handler_h
 
-#include "Interaction_Model_Base.H"
+#include "Model_Base.H"
 #include "Flavour.H"
 #include "Polarisation.H"
 #include "Basic_Sfuncs.H"
@@ -41,7 +41,7 @@ namespace AMEGIC {
     int  SingleCompare(Point*,Point*,double &);
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Info*,
-		      Interaction_Model_Base *,Topology *,int &,int &,
+		      MODEL::Model_Base *,Topology *,int &,int &,
 		      Basic_Sfuncs *,String_Handler *, bool print_graph=false, bool create_4V=true);
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,

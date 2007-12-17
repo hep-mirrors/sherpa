@@ -22,9 +22,9 @@ namespace AMEGIC {
   class CValue {
   public:
     int     * p_args;
-    Kabbala   m_value;
+    ATOOLS::Kabbala   m_value;
     CValue() { p_args=0; }
-    CValue(int * _args, const Kabbala _value) : p_args(_args) , m_value(_value) {} 
+    CValue(int * _args, const ATOOLS::Kabbala _value) : p_args(_args) , m_value(_value) {} 
     inline bool Compare(int* args, int n){
       for(int i=0;i<n;++i) if (args[i]!=p_args[i]) return false;
       return true;
@@ -112,7 +112,7 @@ namespace AMEGIC {
     \class CValue
     \brief Element for Zfunc::m_calclist
     
-    This class contains a list of arguments and a Kabbala result of a Z-function, 
+    This class contains a list of arguments and a ATOOLS::Kabbala result of a Z-function, 
     to keep track for what sets of arguments a Z function was already calculated.
   */
   /*!

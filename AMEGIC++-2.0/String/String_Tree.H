@@ -14,7 +14,7 @@ namespace AMEGIC {
   public:
     sknot*   left;
     sknot*   right;
-    Kabbala* value;
+    ATOOLS::Kabbala* value;
     char     op;
 
     sknot() {strp = 0; value =0;}

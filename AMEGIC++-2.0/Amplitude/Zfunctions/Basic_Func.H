@@ -69,9 +69,9 @@ namespace AMEGIC {
     Basic_Func(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : sgen(_sgen), BS(_BS) {}
     virtual ~Basic_Func();
 
-    virtual Kabbala X(const int,const int,const int);
-    virtual Kabbala V(const int,const int);
-    virtual Kabbala Vcplx(const int,const int,const int s=1);
+    virtual ATOOLS::Kabbala X(const int,const int,const int);
+    virtual ATOOLS::Kabbala V(const int,const int);
+    virtual ATOOLS::Kabbala Vcplx(const int,const int,const int s=1);
 
     void SetArgCouplProp(int,int*,Complex*,int,Argument*,Pfunc_List*);
     void Map(int&);
@@ -83,7 +83,7 @@ namespace AMEGIC {
   public:
     Basic_Yfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
 
-    Kabbala Y(const int);
+    ATOOLS::Kabbala Y(const int);
     Complex Ycalc(const int,const int,const int,const int,const Complex&,const Complex&);
 
     template <int,int>
@@ -93,7 +93,7 @@ namespace AMEGIC {
   class Basic_Zfunc : public virtual Basic_Func {
   public:
     Basic_Zfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala Z(const int,const int);
+    ATOOLS::Kabbala Z(const int,const int);
     Complex Zcalc(const int,const int,const int,const int,
 		  const int,const int,const int,const int,
 		  const Complex&,const Complex&,const Complex&,const Complex&);
@@ -117,8 +117,8 @@ namespace AMEGIC {
   class Basic_Xfunc : public virtual Basic_Func {
   public:
     Basic_Xfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala X(const int,const int);
-    Kabbala X(const int,const int,const int);
+    ATOOLS::Kabbala X(const int,const int);
+    ATOOLS::Kabbala X(const int,const int,const int);
     Complex Xcalc(const int,const int,const int,
 		  const int,const int,
 		  const Complex&,const Complex&);
@@ -131,13 +131,13 @@ namespace AMEGIC {
   class Basic_Mfunc : public virtual Basic_Func {
   public:
     Basic_Mfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala M(const int);
+    ATOOLS::Kabbala M(const int);
   };
 
   class Basic_MassTermfunc : public virtual Basic_Func {
   public:
     Basic_MassTermfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala MassTerm(int);
+    ATOOLS::Kabbala MassTerm(int);
     Complex MassTermCalc(int,int);
     Complex MassTermCalc(int,ATOOLS::Flavour);
   };
@@ -145,9 +145,9 @@ namespace AMEGIC {
   class Basic_Vfunc : public virtual Basic_Func {
   public:
     Basic_Vfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala V(const int,const int);
+    ATOOLS::Kabbala V(const int,const int);
     Complex Vcalc(const int,const int);
-    Kabbala Vcplx(const int a,const int b,const int s=1);
+    ATOOLS::Kabbala Vcplx(const int a,const int b,const int s=1);
     Complex Vcplxcalc(const int,const int);
   };
 
@@ -160,7 +160,7 @@ namespace AMEGIC {
     Complex Propagator(double,ATOOLS::Flavour);
     Complex Pcalc(const int,const int);
     Complex Pcalc(const ATOOLS::Flavour&,const int);
-    Kabbala P(Pfunc*);
+    ATOOLS::Kabbala P(Pfunc*);
   };
 
   class Basic_Epsilonfunc : public virtual Basic_Func {
@@ -168,7 +168,7 @@ namespace AMEGIC {
     double EC(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*,const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
   public:
     Basic_Epsilonfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala Epsilon(const int,const int,const int,const int,int=1);
+    ATOOLS::Kabbala Epsilon(const int,const int,const int,const int,int=1);
     Complex EpsCalc(const int,const int,const int,const int,const int);
     template <int> Complex EpsCalc(const int,const int,const int,const int);
   };
@@ -238,7 +238,7 @@ namespace AMEGIC {
     For the definition of \f$\eta\,,\mu\f$ and S functions see class Basic_Sfuncs.
   */
   /*!
-    \fn Kabbala Basic_Xfunc::X(const int a,const int b)
+    \fn ATOOLS::Kabbala Basic_Xfunc::X(const int a,const int b)
     This method is usually called from calculator classes (Zfunc_Calc).
     a is an index for the argument array Basic_Func::arg, 
     b of the propagator array Basic_Func::ps.
@@ -246,7 +246,7 @@ namespace AMEGIC {
     The method calls the String_Generator and Basic_Xfunc::Xcalc for the numerics.
   */
   /*!
-    \fn Kabbala Basic_Xfunc::X(const int a,const int b,const int m)
+    \fn ATOOLS::Kabbala Basic_Xfunc::X(const int a,const int b,const int m)
     This method is usually called from Basic_Zfuncs, if there is the dummy 99 in the argument 
     list to indicate an explicit polarization vector.
 
@@ -290,7 +290,7 @@ namespace AMEGIC {
     For the definition of \f$\eta\,,\mu\f$ and S functions see class Basic_Sfuncs.
   */
   /*!
-    \fn Kabbala Basic_Yfunc::Y(const int a)
+    \fn ATOOLS::Kabbala Basic_Yfunc::Y(const int a)
     This method is usually called from calculator classes (Zfunc_Calc).
     a is an index of the argument array Basic_Func::arg.
 
@@ -369,7 +369,7 @@ namespace AMEGIC {
     For the definition of \f$\eta\,,\mu\f$ and S functions see class Basic_Sfuncs.
   */
   /*!
-    \fn Kabbala Basic_Zfunc::Z(const int a, const int b)
+    \fn ATOOLS::Kabbala Basic_Zfunc::Z(const int a, const int b)
     This method is usually called from calculator classes (Zfunc_Calc).
     a,b are indices of the argument array Basic_Func::arg.
 
@@ -386,7 +386,7 @@ namespace AMEGIC {
     A basic function to calculate a scalar product of four-vectors 
   */
   /*!
-    \fn Kabbala Basic_Vfunc::V(const int a,const int b)
+    \fn ATOOLS::Kabbala Basic_Vfunc::V(const int a,const int b)
     This method is usually called from calculator classes (Zfunc_Calc).
     a,b are indices of the propagator array Basic_Func::ps.
 
@@ -398,7 +398,7 @@ namespace AMEGIC {
     a,b are indices for Basic_Sfuncs::Momlist.
   */  
   /*!
-    \fn Kabbala Basic_Vfunc::Vcplx(const int a,const int b,const int s)
+    \fn ATOOLS::Kabbala Basic_Vfunc::Vcplx(const int a,const int b,const int s)
     Polarization vectors may be complex. This method checks the type of a vector
     and calculates it using Basic_Vfunc::Vcalc or Basic_Vfunc::Vcplxcalc respectively.
     a,b are indices for Basic_Sfuncs::Momlist.
@@ -416,7 +416,7 @@ namespace AMEGIC {
     Basic function to determine the mass term in massive propagators.
   */
   /*!
-    \fn Kabbala Basic_Mfunc::M(const int a)
+    \fn ATOOLS::Kabbala Basic_Mfunc::M(const int a)
     Returns \f$\frac{1}{\rm{Mass}^2}\f$ for the propagator with index a in Basic_Func::ps.
     If the propagator is massless 0 is returned.
   */

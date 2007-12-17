@@ -15,7 +15,7 @@ namespace AMEGIC {
   class ZXlist {
   public:
     int       narg, * arg;
-    Kabbala   value;
+    ATOOLS::Kabbala   value;
     int       zlist;
     sknot   * sk;
     int       on;
@@ -34,19 +34,19 @@ namespace AMEGIC {
     virtual void      ReplaceZXlist(Virtual_String_Generator*) {}   
     virtual void      ReStore()         {}
     virtual int       GetCnumber(Complex)                          = 0;
-    virtual Kabbala   GetCZnumber(Complex,std::string)             = 0;
-    virtual Kabbala   GetZnumber(int*,Complex*,Complex)            = 0; 
-    virtual Kabbala   GetXnumber(int*,Complex*,Complex)            = 0;
-    virtual Kabbala   GetYnumber(int*,Complex*,Complex)            = 0;
-    virtual Kabbala   GetPnumber(Pfunc *,int)                      = 0;   
-    virtual Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex)   = 0;
-    virtual Kabbala   GetEnumber(Complex)                          = 0;
-    virtual Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
-    virtual Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
-    virtual Kabbala   GetEpsnumber(int*,int,Complex)               = 0;     
+    virtual ATOOLS::Kabbala   GetCZnumber(Complex,std::string)             = 0;
+    virtual ATOOLS::Kabbala   GetZnumber(int*,Complex*,Complex)            = 0; 
+    virtual ATOOLS::Kabbala   GetXnumber(int*,Complex*,Complex)            = 0;
+    virtual ATOOLS::Kabbala   GetYnumber(int*,Complex*,Complex)            = 0;
+    virtual ATOOLS::Kabbala   GetPnumber(Pfunc *,int)                      = 0;   
+    virtual ATOOLS::Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex)   = 0;
+    virtual ATOOLS::Kabbala   GetEnumber(Complex)                          = 0;
+    virtual ATOOLS::Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
+    virtual ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
+    virtual ATOOLS::Kabbala   GetEpsnumber(int*,int,Complex)               = 0;     
     virtual void      Calculate(Values*)                           = 0;
     virtual int       Massless(int)                                = 0;
-    virtual Kabbala * GetKabbala(const std::string&)               = 0;
+    virtual ATOOLS::Kabbala * GetKabbala(const std::string&)               = 0;
     virtual int       ZXMaxNumber()                                = 0;
     virtual std::vector<int>* GetFlavours()                        = 0;
     virtual ZXlist*   GetZXl(const int&)                           = 0;
@@ -99,20 +99,20 @@ namespace AMEGIC {
     int GetCnumber(Complex);
     int GetFnumber(int);
     
-    Kabbala     Number(int,Complex);
-    Kabbala     GetCZnumber(Complex,std::string);
-    Kabbala     GetZnumber(int *,Complex *,Complex);
-    Kabbala     GetXnumber(int *,Complex *,Complex); 
-    Kabbala     GetYnumber(int *,Complex *,Complex); 
-    Kabbala     GetPnumber(Pfunc *,int);
-    Kabbala     GetMassnumber(int,ATOOLS::Flavour,Complex);
-    Kabbala     GetEnumber(Complex); 
-    Kabbala     GetSnumber(int,int,Complex); 
-    Kabbala     GetScplxnumber(const int,const int,Complex); 
-    Kabbala     GetEpsnumber(int*,int,Complex);
+    ATOOLS::Kabbala     Number(int,Complex);
+    ATOOLS::Kabbala     GetCZnumber(Complex,std::string);
+    ATOOLS::Kabbala     GetZnumber(int *,Complex *,Complex);
+    ATOOLS::Kabbala     GetXnumber(int *,Complex *,Complex); 
+    ATOOLS::Kabbala     GetYnumber(int *,Complex *,Complex); 
+    ATOOLS::Kabbala     GetPnumber(Pfunc *,int);
+    ATOOLS::Kabbala     GetMassnumber(int,ATOOLS::Flavour,Complex);
+    ATOOLS::Kabbala     GetEnumber(Complex); 
+    ATOOLS::Kabbala     GetSnumber(int,int,Complex); 
+    ATOOLS::Kabbala     GetScplxnumber(const int,const int,Complex); 
+    ATOOLS::Kabbala     GetEpsnumber(int*,int,Complex);
     void        Calculate(Values*); 
     int         Massless(int); 
-    Kabbala   * GetKabbala(const std::string&);
+    ATOOLS::Kabbala   * GetKabbala(const std::string&);
     int         ZXMaxNumber()               { return p_zxl->size(); }
     std::vector<int>* GetFlavours()         { return p_flavours;}
     ZXlist    * GetZXl(const int & i)       { return &(*p_zxl)[i]; }
@@ -137,18 +137,18 @@ namespace AMEGIC {
   public:
     void Reset()                                                {};
     int       GetCnumber(Complex)                               { return 0;}
-    Kabbala   GetCZnumber(Complex value,std::string)            { return Kabbala(std::string(""),value);}
-    Kabbala   GetZnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);}
-    Kabbala   GetXnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);} 
-    Kabbala   GetYnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);} 
-    Kabbala   GetPnumber(Pfunc * pl,int)                        { return Kabbala(std::string(""),pl->value);} 
-    Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex value)  { return Kabbala(std::string(""),value);}
-    Kabbala   GetEnumber(Complex value)                         { return Kabbala(std::string(""),value);}
-    Kabbala   GetSnumber(int,int,Complex value)                 { return Kabbala(std::string(""),value);}
-    Kabbala   GetScplxnumber(const int,const int,Complex value) { return Kabbala(std::string(""),value);}
-    Kabbala   GetEpsnumber(int*,int,Complex value)              { return Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetCZnumber(Complex value,std::string)            { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetZnumber(int*,Complex*,Complex value)           { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetXnumber(int*,Complex*,Complex value)           { return ATOOLS::Kabbala(std::string(""),value);} 
+    ATOOLS::Kabbala   GetYnumber(int*,Complex*,Complex value)           { return ATOOLS::Kabbala(std::string(""),value);} 
+    ATOOLS::Kabbala   GetPnumber(Pfunc * pl,int)                        { return ATOOLS::Kabbala(std::string(""),pl->value);} 
+    ATOOLS::Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex value)  { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetEnumber(Complex value)                         { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetSnumber(int,int,Complex value)                 { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex value) { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetEpsnumber(int*,int,Complex value)              { return ATOOLS::Kabbala(std::string(""),value);}
     int       Massless(int)                                     { return 0; }  
-    Kabbala * GetKabbala(const std::string&)                    { return 0;}
+    ATOOLS::Kabbala * GetKabbala(const std::string&)                    { return 0;}
     int       NumberOfzxl()                                     { return 0; }
     int       NumberOfCouplings()                               { return 0; }
     int       ZXMaxNumber()                                     { return 0; }   
