@@ -233,12 +233,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   if (rpa.gen.NumberOfEvents()>0) SetScaleFactors();
-  okay = okay && InitializeTheModel();  
   //  set masses and widths from command line
   SetParameter(nr);
   UpdateParameters();
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
+  okay = okay && InitializeTheModel();  
   okay = okay && InitializeTheAnalyses();
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
   m_isrhandlers[isr::hard_process]->AssignKeys(info);
