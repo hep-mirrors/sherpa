@@ -2,7 +2,7 @@
 #undef ARCH_DARWIN
 
 /* Architecture identified as Linux */
-#define ARCH_LINUX "1"
+#undef ARCH_LINUX
 
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
