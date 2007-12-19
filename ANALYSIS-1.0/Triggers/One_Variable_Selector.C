@@ -426,7 +426,8 @@ void One_Variable_Selector::Evaluate
 (const ATOOLS::Particle_List &inlist,const ATOOLS::Particle_List &reflist,
  ATOOLS::Particle_List &outlist,double weight, int ncount) 
 {
-  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<METHOD<<"(): '"<<m_inlist<<"'/'"<<m_reflist
+		 <<"' -> '"<<m_outlist<<"' {\n";
   p_flow->Insert(0.0,weight,ncount);
   Particle_List vreflist(reflist);
   size_t eval(0);
@@ -477,9 +478,16 @@ void One_Variable_Selector::Evaluate
     p_flow->Insert((double)i+1.5,weight,0);
   }
   msg_Debugging()<<"} passed\n";
-  outlist.resize(inlist.size());
-  for (size_t i(0);i<inlist.size();++i) 
-    outlist[i] = new Particle(*inlist[i]);
+  if (m_reflist==m_inlist) {
+    outlist.resize(vreflist.size());
+    for (size_t i(0);i<vreflist.size();++i) 
+      outlist[i] = new Particle(*vreflist[i]);
+  }
+  else {
+    outlist.resize(inlist.size());
+    for (size_t i(0);i<inlist.size();++i) 
+      outlist[i] = new Particle(*inlist[i]);
+  }
 }
 
 Analysis_Object *One_Variable_Selector::GetCopy() const
