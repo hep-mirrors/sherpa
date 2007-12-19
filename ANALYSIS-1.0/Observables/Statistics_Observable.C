@@ -42,6 +42,7 @@ namespace ANALYSIS {
     void EndEvaluation(double scale=1.0);
     void Output(const std::string & pname);
 
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &obj);
     Primitive_Observable_Base * Copy() const;
 
   };// end of class Statistics_Observable
@@ -88,6 +89,15 @@ Statistics_Observable::Statistics_Observable
   m_name="Statistics_Observable_"+m_listname;
   m_type=mode;
   m_splitt_flag=false;
+}
+
+Primitive_Observable_Base &Statistics_Observable::operator+=
+(const Primitive_Observable_Base &obj)
+{
+  const Statistics_Observable *vob((const Statistics_Observable*)&obj);
+  m_n+=vob->m_n;
+  m_stats.insert(vob->m_stats.begin(),vob->m_stats.end());
+  return *this;
 }
 
 void Statistics_Observable::Evaluate
