@@ -495,7 +495,7 @@ void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
 
   header<<"namespace AMEGIC {"<<endl<<endl;  
   header<<"class "<<pID.c_str()<<" : public Values";
-  if (sgen->UsesFunction(4)) header<<","<<endl<<"  public Baxsic_Yfunc"; 
+  if (sgen->UsesFunction(4)) header<<","<<endl<<"  public Basic_Yfunc"; 
   if (sgen->UsesFunction(1)) header<<","<<endl<<"  public Basic_Zfunc"; 
   if (sgen->UsesFunction(0)) header<<","<<endl<<"  public Basic_Xfunc"; 
   if (sgen->UsesFunction(3)||sgen->UsesFunction(9)) header<<","<<endl<<"  public Basic_Vfunc"; 
