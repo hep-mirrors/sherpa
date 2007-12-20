@@ -15,11 +15,12 @@ namespace ATOOLS {
 
     double m_value;
 
-    std::vector<Vec4D>   m_moms;
-    std::vector<Flavour> m_flavs;
+    std::map<size_t,Vec4D>   m_moms;
+    std::map<size_t,Flavour> m_flavs;
 
-    std::vector<std::vector<double> >  m_ycuts, m_gycuts;
-    std::vector<std::vector<int> >     m_mcomb;
+    std::map<size_t,std::map<size_t,double> > m_ycuts, m_gycuts;
+
+    std::vector<std::vector<int> > m_mcomb;
 
     std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
 
@@ -35,7 +36,7 @@ namespace ATOOLS {
     size_t FillCombinations(const std::string &name,const std::string &ycut,
 			    const std::string &gycut,size_t &cp,const int fl);
 
-    void PrepareMomList();
+    void PrepareMomList(const Vec4D *);
 
     void BoostInFrame(Vec4D *);
     void BoostBack(Vec4D *);
@@ -47,7 +48,7 @@ namespace ATOOLS {
     bool ConstructJetSystem(Vec4D *,Flavour *,std::vector<Vec4D> &,
 			    std::vector<int> jets,std::vector<double> & lastys);
 
-    double YminKt(Vec4D *,int &,int &,int);
+    double YminKt(int &,int &,int);
     double YminKt(Vec4D *,Flavour *,std::vector<Vec4D>,int &,int &);
     double Yij(Vec4D,Vec4D);
 
@@ -88,14 +89,12 @@ namespace ATOOLS {
     int      NeedUpdate()                   const { return m_type==1; }
     double   Smin()                         const { return m_smin; }
     double   Smax()                         const { return m_smax; }
-    double   GetYcut(const size_t &i,const size_t &j) const 
-    { return m_ycuts[i][j]; }
-    double   GetScaledYcut(const size_t &i,const size_t &j) const 
-    { return i<3||j<3?m_ycuts[i][j]:m_ycuts[i][j]/sqr(m_delta_r); }
-    double   GetGlobalYcut(const size_t &i,const size_t &j) const 
-    { return m_gycuts[i][j]; }
-    double   GetScaledGlobalYcut(const size_t &i,const size_t &j) const 
-    { return i<3||j<3?m_gycuts[i][j]:m_gycuts[i][j]/sqr(m_delta_r); }
+
+    double GetYcut(const size_t &i,const size_t &j) const;
+    double GetScaledYcut(const size_t &i,const size_t &j) const;
+    double GetGlobalYcut(const size_t &i,const size_t &j) const;
+    double GetScaledGlobalYcut(const size_t &i,const size_t &j) const;
+
 
     inline bool YCutsSet() const { return m_ycuts.size(); }
   };

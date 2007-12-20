@@ -545,11 +545,10 @@ void Jet_Finder::FillCombinations()
 {
   if (m_ycuts.empty()) {
     if (m_procname=="") THROW(fatal_error,"Process name not set.");
-    size_t size(1<<(m_nin+m_nout));
-    m_moms.resize(size);
-    m_flavs.resize(size);
-    m_ycuts.resize(size,std::vector<double>(size,-1.0));
-    m_gycuts.resize(size,std::vector<double>(size,-1.0));
+    m_moms.clear();
+    m_flavs.clear();
+    m_ycuts.clear();
+    m_gycuts.clear();
     m_fills.resize(m_nin+m_nout+1);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find('_')+1);
@@ -558,17 +557,21 @@ void Jet_Finder::FillCombinations()
     if (msg_LevelIsDebugging()) {
       msg_Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
       double s(sqr(rpa.gen.Ecms()));
-      for (size_t i(0);i<m_ycuts.size();++i) {
- 	if (ID(m_ycuts[i])!=0 && ID(m_ycuts[i])!=(size_t)(1<<i)) {
+      for (std::map<size_t,std::map<size_t,double> >::const_iterator
+	     iit(m_ycuts.begin());iit!=m_ycuts.end();++iit) {
+	size_t i(iit->first);
+	if (iit->second.size()>1)
 	  msg_Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
-		   <<m_flavs[i].Strong()<<"] & {";
-	  for (size_t j(0);j<m_ycuts[i].size();++j)
-	    if (i!=j && m_ycuts[i][j]>0.0) 
-	      msg_Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
-		       <<m_flavs[j].Strong()<<",("<<sqrt(m_ycuts[i][j]*s)
-		       <<","<<sqrt(m_gycuts[i][j]*s)<<")]";
-	  msg_Out()<<" }\n";
+		    <<m_flavs[i].Strong()<<"] & {";
+	for (std::map<size_t,double>::const_iterator
+	       jit(iit->second.begin());jit!=iit->second.end();++jit) {
+	  size_t j(jit->first);
+	  if (i!=j) 
+	    msg_Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
+		      <<m_flavs[j].Strong()<<",("<<sqrt(m_ycuts[i][j]*s)
+		      <<","<<sqrt(m_gycuts[i][j]*s)<<")]";
  	}
+	if (iit->second.size()>1) msg_Out()<<" }\n";
       }
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
@@ -589,9 +592,9 @@ void Jet_Finder::FillCombinations()
   }
 }
 
-void Jet_Finder::PrepareMomList()
+void Jet_Finder::PrepareMomList(const Vec4D *vec) 
 {
-  for (int i(m_nin+m_nout-1);i>=0;--i) m_moms[1<<i]=m_moms[i];
+  for (int i(m_nin+m_nout-1);i>=0;--i) m_moms[1<<i]=vec[i];
   for (size_t n(0);n<m_mcomb.size()-1;++n) {
     m_moms[m_mcomb[n].back()]=m_moms[m_mcomb[n].front()];
     for (size_t i(1);i<m_mcomb[n].size()-1;++i)
@@ -623,20 +626,21 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   FillCombinations();
   PROFILE_HERE;
   // create copy
+  std::vector<Vec4D> vec(m_nin+m_nout);
   for (int i(0);i<m_nin+m_nout;++i) {
-    m_moms[i]=p[i];
+    vec[i]=p[i];
 //     msg_Debugging()<<"p["<<i<<"] = "<<m_moms[i]<<" ("<<m_flavs[1<<i]<<")\n";
   }
 
-  Init(&m_moms.front());
-  BoostInFrame(&m_moms.front());
-  PrepareMomList();
+  Init(&vec.front());
+  BoostInFrame(&vec.front());
+  PrepareMomList(&vec.front());
 
   int    j,k;
   double ymin(2.0);
   msg_Debugging()<<METHOD<<"() {\n";
   for (short unsigned int cl(0);cl<m_fills.size();++cl) {
-    ymin=YminKt(&m_moms.front(),j,k,cl);
+    ymin=YminKt(j,k,cl);
     if (ymin<0.0) return 1-m_sel_log->Hit(true);
   }
   msg_Debugging()<<"} -> q_min = "<<sqrt(ymin*m_s)<<"\n";
@@ -651,16 +655,16 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
     cuts->energymin[i] = m_fl[i].SelMass();
     if (m_fl[i].Strong()) {                
       if (m_type==1) {
-	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s/4.),
+	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s/4.),
 				 cuts->energymin[i]);
       }
       else {
-	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s),
+	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s),
 				 cuts->energymin[i]);
-	double cut(m_ycuts[1<<0][1<<i]);
-	if (m_ycuts[1<<1][1<<i]>0.0) { 
-	  if (cut>0.0) cut=Min(cut,m_ycuts[1<<1][1<<i]);
-	  else cut=m_ycuts[1<<1][1<<i];
+	double cut(GetYcut(1<<0,1<<i));
+	if (GetYcut(1<<1,1<<i)>0.0) { 
+	  if (cut>0.0) cut=Min(cut,GetYcut(1<<1,1<<i));
+	  else cut=GetYcut(1<<1,1<<i);
 	}
 	if (m_type==4 && cut>0.0) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = 
@@ -670,7 +674,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  double cut(m_ycuts[1<<hadron][1<<i]);
+	  double cut(GetYcut(1<<hadron,1<<i));
 	  if (cut>0.0) {
 	    cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
 	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*cut));
@@ -682,9 +686,9 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
       }
       
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && m_ycuts[1<<i][1<<j]>0.0) {
+	if (m_fl[j].Strong() && GetYcut(1<<i,1<<j)>0.0) {
 	  cuts->scut[i][j] = cuts->scut[j][i] = 
-	    Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
+	    Max(cuts->scut[i][j],GetYcut(1<<i,1<<j)*m_s);
 	}
       }
     }
@@ -697,31 +701,31 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
     if (m_fl[i].Strong()) {                
       if (m_type==1)
-	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s/4.),
+	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s/4.),
 				 cuts->energymin[i]);
       else
-	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s),
+	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s),
 				 cuts->energymin[i]);
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && m_ycuts[1<<i][1<<j]>0.0) {
+	if (m_fl[j].Strong() && GetYcut(1<<i,1<<j)>0.0) {
 	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
-			   = Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
+			   = Max(cuts->scut[i][j],GetYcut(1<<i,1<<j)*m_s);
 	  else cuts->scut[i][j] = cuts->scut[j][i] = 
-		 Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
+		 Max(cuts->scut[i][j],GetYcut(1<<i,1<<j)*m_s);
 	}
       }
     }
   }
 }
 
-double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
+double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 {
   PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
   for (size_t ps(0);ps<m_fills[cl].size();++ps) {
     int j(m_fills[cl][ps].first), k(m_fills[cl][ps].second);
-    Vec4D pj(p[j]), pk(p[k]);
+    Vec4D pj(m_moms[j]), pk(m_moms[k]);
     double ycut(m_ycuts[j][k]), mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
     msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<","<<mj<<"] & "
    		   <<ID(k)<<"["<<m_flavs[k]<<","<<mk<<"], qcut = "
@@ -763,7 +767,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
 	  if (j==1<<hadron) {
-	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,p[hadron]));
+	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,pj));
 	    if (pt2k<ycut*m_sprime) return -1.0;
 	    if (pt2k<ymin*m_sprime) {
 	      ymin=pt2k/m_sprime;
@@ -776,6 +780,9 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	  if (m_mass_scheme==1) add+=dabs(pj.Abs2());
 	  else if (m_mass_scheme==3) add+=dabs(pj.Abs2()-mj*mj);
 	  pt2jk=2.0*Min(pj.PSpat2(),pk.PSpat2())*(1.-DCos12(pj,pk));
+	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" s' = "
+			 <<m_sprime<<" ("<<(pt2jk>=ycut*m_sprime)
+			 <<(pt2jk<ycut*m_sprime?")\n":")");
 	  if (pt2jk<ycut*m_sprime) return -1.0;
 	  if (pt2jk/sqr(m_delta_r)<ymin*m_sprime) {
 	    ymin=pt2jk/sqr(m_delta_r)/m_sprime;
@@ -899,4 +906,36 @@ void Jet_Finder::BoostBack(Vec4D & p)
 double Jet_Finder::ActualValue() const 
 {
   return m_value; 
+}
+
+double Jet_Finder::GetYcut(const size_t &i,const size_t &j) const 
+{ 
+  std::map<size_t,std::map<size_t,double> >::const_iterator 
+    iit(m_ycuts.find(i));
+  if (iit==m_ycuts.end()) return -1.0;
+  std::map<size_t,double>::const_iterator jit(iit->second.find(j));
+  if (jit==iit->second.end()) return -1.0;
+  return jit->second; 
+}
+
+double Jet_Finder::GetScaledYcut(const size_t &i,const size_t &j) const 
+{ 
+  double ycut(GetYcut(i,j));
+  return i<3||j<3?ycut:ycut/sqr(m_delta_r); 
+}
+
+double Jet_Finder::GetGlobalYcut(const size_t &i,const size_t &j) const 
+{ 
+  std::map<size_t,std::map<size_t,double> >::const_iterator 
+    iit(m_gycuts.find(i));
+  if (iit==m_gycuts.end()) return -1.0;
+  std::map<size_t,double>::const_iterator jit(iit->second.find(j));
+  if (jit==iit->second.end()) return -1.0;
+  return jit->second; 
+}
+
+double Jet_Finder::GetScaledGlobalYcut(const size_t &i,const size_t &j) const 
+{ 
+  double ycut(GetGlobalYcut(i,j));
+  return i<3||j<3?ycut:ycut/sqr(m_delta_r); 
 }
