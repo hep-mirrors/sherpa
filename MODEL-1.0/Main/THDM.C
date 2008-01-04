@@ -46,10 +46,10 @@ void THDM::ReadInFile() {
 }
 
 void THDM::FillMasses() {
-  Flavour(kf::h0).SetMass(ScalarConstant("Mh0"));
-  Flavour(kf::H0).SetMass(ScalarConstant("MH0"));
-  Flavour(kf::A0).SetMass(ScalarConstant("MA0"));
-  Flavour(kf::Hmin).SetMass(ScalarConstant("MHminus"));
+  Flavour h0(kf::h0); h0.SetMass(ScalarConstant("Mh0"));
+  Flavour H0(kf::H0); H0.SetMass(ScalarConstant("MH0"));
+  Flavour A0(kf::A0); A0.SetMass(ScalarConstant("MA0"));
+  Flavour Hmin(kf::Hmin); Hmin.SetMass(ScalarConstant("MHminus"));
 
   double alpha(ScalarConstant("alpha")),tanb(ScalarConstant("tan(beta)"));
  

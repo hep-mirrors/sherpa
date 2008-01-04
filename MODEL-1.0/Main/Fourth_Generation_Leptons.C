@@ -49,12 +49,12 @@ void Fourth_Generation_Leptons::ReadInFile() {
 }
 
 void Fourth_Generation_Leptons::FillMasses() {
-  Flavour(kf::tau_prime).SetOn(true);
-  Flavour(kf::nutau_prime).SetOn(true);
+  Flavour taup(kf::tau_prime); taup.SetOn(true);
+  Flavour nutaup(kf::nutau_prime); nutaup.SetOn(true);
 
-  Flavour(kf::tau_prime).SetMass(ScalarConstant("Yukawa_tauprime"));
-  Flavour(kf::nutau_prime).SetMass(ScalarConstant("Yukawa_nutauprime"));
+  taup.SetMass(ScalarConstant("Yukawa_tauprime"));
+  nutaup.SetMass(ScalarConstant("Yukawa_nutauprime"));
 
-  Flavour(kf::tau_prime).SetIntCharge(ScalarNumber("CHARGE_L4"));
-  Flavour(kf::nutau_prime).SetIntCharge(ScalarNumber("CHARGE_NU4"));
+  taup.SetIntCharge(ScalarNumber("CHARGE_L4"));
+  nutaup.SetIntCharge(ScalarNumber("CHARGE_NU4"));
 }
