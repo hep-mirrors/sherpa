@@ -26,12 +26,8 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   p_one2N(new XS_Group(1,3,"Simple decays")),
   p_blob_psme_IS(NULL), p_blob_psme_FS(NULL)
 {
-  p_two2two->InitializeModel(me->GetModel(),
-			     rpa.gen.Variable("SHERPA_CPP_PATH")+"/"+
-			     rpa.gen.Variable("ME_DATA_FILE"));
-  p_one2N->InitializeModel(me->GetModel(),
-			   rpa.gen.Variable("SHERPA_CPP_PATH")+"/"+
-			   rpa.gen.Variable("ME_DATA_FILE"));
+  p_two2two->InitializeModel(me->GetModel(),rpa.gen.Variable("ME_DATA_FILE"));
+  p_one2N->InitializeModel(me->GetModel(),rpa.gen.Variable("ME_DATA_FILE"));
   p_fl      = new Flavour[4];
   p_moms    = new Vec4D[4];
   p_cluster = new Cluster_Partons_CKKW

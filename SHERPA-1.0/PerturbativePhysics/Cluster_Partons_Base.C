@@ -28,8 +28,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   m_sud_mode(0), m_kfac(0.), m_counts(0.), m_fails(0.)
 {
   // read in some parameters
-  Data_Read dr(rpa.GetPath()+
-	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
+  Data_Read dr(rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
   m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",32);
   m_sud_mode = dr.GetValue<int>("CKKW_SUDAKOV_MODE",3);
   m_as_mode  = dr.GetValue<int>("CKKW_ALPHAS_MODE",1);

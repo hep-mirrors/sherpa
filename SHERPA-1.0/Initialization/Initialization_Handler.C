@@ -57,8 +57,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
-  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  rpa.gen.SetVariable("ME_DATA_FILE",_path+"/"+m_medat);
+  rpa.gen.SetVariable("SHOWER_DATA_FILE",_path+"/"+m_showerdat);
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
   rpa.gen.SetSpinCorrelation(m_spincorrelations);
   exh->AddTerminatorObject(this);
@@ -100,8 +100,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
-  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  rpa.gen.SetVariable("ME_DATA_FILE",m_path+"/"+m_medat);
+  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_path+"/"+m_showerdat);
 
   CheckFlagConsistency();
   
