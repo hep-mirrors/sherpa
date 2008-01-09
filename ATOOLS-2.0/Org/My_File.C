@@ -172,7 +172,7 @@ void My_File<FileType>::SetNoComplains(const String_Vector &names)
 
 template <class FileType> 
 typename My_File<FileType>::String_Vector 
-My_File<FileType>::s_searchpaths;
+My_File<FileType>::s_searchpaths(1,getenv("PWD"));
 template <class FileType> 
 typename My_File<FileType>::String_Vector 
 My_File<FileType>::s_nocomplains;
