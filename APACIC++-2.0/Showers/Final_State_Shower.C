@@ -983,6 +983,8 @@ bool Final_State_Shower::SmearDaughters(Knot *mo)
       t1 = mass12 + mass1*width1 * tan(ran.Get()*yrange1 + ymin1);
     if (!d2->part->Flav().IsStable() && d2->stat)
       t2 = mass22 + mass2*width2 * tan(ran.Get()*yrange2 + ymin2);
+    if (d1->left && d1->left->part->Info()=='H') t1=d1->tout;
+    if (d2->left && d2->left->part->Info()=='H') t2=d2->tout;
     if (t1+t2+sqrt(2.*t1*t2) < mo->t) {
       d1->tout = t1;
       d2->tout = t2;
