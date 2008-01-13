@@ -4,12 +4,55 @@
 #include "Message.H"
 #include "MathTools.H"
 #include "prof.hh"
+#include "IO_Handler.H"
+#include "Exception.H"
+#include "MyStrStream.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
 #define SQRT_05 0.70710678118654757
+
+std::ostream& AMEGIC::operator<<(std::ostream& os, const Momfunc& mf) {
+  os<<mf.type<<";"<<mf.argnum;
+  for (int i=0;i<mf.argnum;i++) os<<","<<mf.arg[i];
+  os<<","<<mf.angle<<","<<mf.mass<<","<<mf.cplxmass2<<";";
+  return os;
+}
+
+std::istream& AMEGIC::operator>>(std::istream& is, Momfunc& mf) {
+  std::string in;
+  is>>in;
+  if (in.length()==0) THROW(critical_error,"String to momfunc translation failed.");
+  size_t pos=in.find(";");
+  mf.type = mt::momtype(ToType<int>(in.substr(0,pos)));
+  if (pos!=std::string::npos) in=in.substr(pos+1);
+  else in="";
+  pos=in.find(",");
+  mf.argnum = ToType<int>(in.substr(0,pos));
+  if (pos!=std::string::npos) in=in.substr(pos+1);
+  else in="";
+  if (mf.arg) delete[] mf.arg;
+  mf.arg=new int[mf.argnum];
+  for (int i=0;i<mf.argnum;i++) {
+    pos=in.find(",");
+    mf.arg[i] = ToType<int>(in.substr(0,pos));	
+    if (pos!=std::string::npos) in=in.substr(pos+1);
+    else in="";
+  }
+  pos=in.find(",");
+  mf.angle = ToType<double>(in.substr(0,pos));
+  if (pos!=std::string::npos) in=in.substr(pos+1);
+  else in="";
+  pos=in.find(",");
+  mf.mass = ToType<double>(in.substr(0,pos));
+  if (pos!=std::string::npos) in=in.substr(pos+1);
+  else in="";
+  pos=in.find(";");
+  mf.cplxmass2 = ToType<Complex>(in.substr(0,pos+1));
+  return is;
+}
 
 Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b) 
   : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
@@ -18,6 +61,39 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b)
   _eta=_mu=0;
   _S0=_S1=0;
   k0_n=0;m_precalc=0;
+}
+
+Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name) 
+  : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
+{
+  _eta=_mu=0;
+  _S0=_S1=0;
+  k0_n=1;m_precalc=1;
+  name+="/Sfunc.dat";
+
+  IO_Handler ioh;
+  ioh.SetFileNameRO(name);
+
+  ioh.GetFstream()>>momcount;
+  for (int i=0;i<momcount;i++) {
+    Momfunc mf;
+    ioh.GetFstream()>>mf;
+    Momlist.push_back(mf);    
+  }
+  Initialize();
+  for (int i=0;i<momcount;i++) delete[] calc_st[i];
+  delete[] calc_st;
+  calc_st = ioh.MatrixInput<int>("",momcount,momcount);
+}
+
+void Basic_Sfuncs::Output(string name)
+{
+  name+="/Sfunc.dat";
+  IO_Handler ioh;
+  ioh.SetFileName(name);
+  ioh.Output("",momcount);
+  for (int i=0;i<momcount;i++) ioh.GetFstream()<<Momlist[i]<<endl;
+  ioh.MatrixOutput<int>("",calc_st,momcount,momcount);
 }
 
 Basic_Sfuncs::~Basic_Sfuncs() 

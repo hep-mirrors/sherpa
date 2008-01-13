@@ -59,10 +59,9 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*K_B_R(k-31);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0; 
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -107,10 +106,9 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	 
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -153,10 +151,9 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  	  	      
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -219,10 +216,9 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 
 	  kcpl1 = kcpl0;
 
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -256,10 +252,9 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	kcpl0 = -M_I*g1*charge1;
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0; 
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -294,10 +289,9 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	    ((K_Z_L(gen_sLep(flav2),j-71)*K_Z_L(gen_sLep(flav2),i-71))/num_2 - help);
 	  kcpl1 = kcpl0;	  	  
 
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -325,10 +319,9 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	  kcpl0 = -M_I*g2/(costW*num_2);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -361,10 +354,9 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	    *K_Z_L(gen_sLep(flav1),j-71);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -419,10 +411,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0; 
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None); 
@@ -458,10 +449,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0; 
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None); 
@@ -502,10 +492,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		
 		kcpl1 = kcpl0;
 		
-		vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		vertex[vanz].cpl[1]  = kcpl1.Value();
+		vertex[vanz].cpl[0]  = kcpl0; 
+		vertex[vanz].cpl[1]  = kcpl1;
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		
 		vertex[vanz].ncf   = 1;
 		vertex[vanz].Color = new Color_Function(cf::None); 
@@ -543,10 +532,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		
 		kcpl1 = kcpl0;
 		
-		vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		vertex[vanz].cpl[1]  = kcpl1.Value();
+		vertex[vanz].cpl[0]  = kcpl0; 
+		vertex[vanz].cpl[1]  = kcpl1;
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		
 		vertex[vanz].ncf   = 1;
 		vertex[vanz].Color = new Color_Function(cf::None); 
@@ -572,10 +560,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -611,10 +598,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -651,10 +637,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  
 		  kcpl1 = kcpl0;
 	      
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -685,10 +670,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		
 		kcpl1 = kcpl0;
 		
-		vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		vertex[vanz].cpl[1]  = kcpl1.Value();
+		vertex[vanz].cpl[0]  = kcpl0; 
+		vertex[vanz].cpl[1]  = kcpl1;
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		
 		vertex[vanz].ncf   = 1;
 		vertex[vanz].Color = new Color_Function(cf::None); 
@@ -727,10 +711,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
       
 	  kcpl1 = kcpl0;
       	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0; 
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -781,10 +764,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 				
 		  kcpl1 = kcpl0;
 		  
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -866,10 +848,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  
 		  kcpl1 = kcpl0;
 		  
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -914,10 +895,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
       kcpl0 = num_2*M_I*g1*g1;
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None);     
@@ -954,10 +934,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value();
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0;
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None);     
@@ -985,10 +964,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value();
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0;
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1020,10 +998,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	kcpl0 = M_I*g2*g2/(costW*costW*num_2);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1047,10 +1024,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	kcpl0 = M_I*g2*g2/num_2;
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1083,10 +1059,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	  kcpl0 = M_I*g2*g2/num_2*K_Z_L(gen_sLep(flav1),i-71)*K_Z_L(gen_sLep(flav1),j-71);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1124,10 +1099,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 				      K_Z_L(gen_sLep(flav1),j-71));
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value();
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0;
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1154,10 +1128,9 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 					     K_Z_L(gen_sLep(flav1),j-71));
 	    kcpl1 = kcpl0;
 	    
-	    vertex[vanz].cpl[0]  = kcpl0.Value();
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0;
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1205,10 +1178,9 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  kcpl1 = M_I*g2/(costW*root2)*K_Z_Nu((i-12)/2,k-81)*
 	    (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW);
 	  
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -1246,10 +1218,9 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 					    K_Z_MI(1,j-41)*K_Z_L((i-12)/2+3,k-71)*K_lI);
 	  
 	  
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -1285,10 +1256,9 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  kcpl0 = -M_I*K_lI*K_Z_MI(1,j-41)*K_Z_Nu((i-11)/2,k-81);
 	  kcpl1 = -M_I*g2*K_Z_PL(0,j-41)*K_Z_Nu((i-11)/2,k-81); 
 
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -1329,10 +1299,9 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 		       (K_Z_N_com(0,j-43)*sintW + K_Z_N_com(1,j-43)*costW) 
 		       + K_lI*K_Z_L((i-11)/2+3,k-71)*K_Z_N_com(2,j-43));
 	  
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 

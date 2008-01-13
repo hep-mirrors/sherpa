@@ -45,7 +45,7 @@ namespace AMEGIC {
     Complex   cplxmass2;
     //! type of the vector
     mt::momtype type;
-    Momfunc() {arg = 0;argnum = 0;}
+    Momfunc() {arg = 0;argnum = 0;angle=0.;mass=0.;}
     Momfunc(const Momfunc& m) {
       arg = 0;
       argnum = 0;
@@ -94,7 +94,9 @@ namespace AMEGIC {
     void PrecalcS();
   public:
     Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*);
+    Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*,std::string);
     ~Basic_Sfuncs();
+    void Output(std::string name);
 
     int    BuildMomlist(Pfunc_List&); 
     int    BuildTensorPolarisations(int); 
@@ -144,6 +146,10 @@ namespace AMEGIC {
     void StartPrecalc();
     bool IsMomSum(int,int,int);
   };
+
+  std::ostream& operator<<(std::ostream& os, const Momfunc& mf);
+  std::istream& operator>>(std::istream& is, Momfunc& mf);
+
 
   /*!
     \class Basic_Sfuncs

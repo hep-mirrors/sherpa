@@ -51,10 +51,8 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex[vanz].in[1]         = Flavour(kf::gluon);
 	  vertex[vanz].in[2]         = flav1;
 
-	  vertex[vanz].cpl[0]        = (kcpl0*mixing).Value();
-	  vertex[vanz].cpl[1]        = (kcpl1*mixing).Value();
-	  vertex[vanz].cpl[2]        = 0.;
-	  vertex[vanz].cpl[3]        = 0.;
+	  vertex[vanz].cpl[0]        = kcpl0*mixing;
+	  vertex[vanz].cpl[1]        = kcpl1*mixing;
 	  vertex[vanz].Str           = (kcpl0*mixing*PR+kcpl1*mixing*PL).String();      
 
 	  vertex[vanz].ncf           = 1;
@@ -73,10 +71,8 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex[vanz].in[1]         = Flavour(kf::gluon);
 	  vertex[vanz].in[2]         = flav1;
 
-	  vertex[vanz].cpl[0]        = (kcpl0*mixing).Value();
-	  vertex[vanz].cpl[1]        = (kcpl1*mixing).Value();
-	  vertex[vanz].cpl[2]        = 0.;
-	  vertex[vanz].cpl[3]        = 0.;
+	  vertex[vanz].cpl[0]        = kcpl0*mixing;
+	  vertex[vanz].cpl[1]        = kcpl1*mixing;
 	  vertex[vanz].Str           = (kcpl0*mixing*PR+kcpl1*mixing*PL).String();      
 
 	  vertex[vanz].ncf           = 1;
@@ -100,10 +96,8 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex[vanz].in[1]         = Flavour(kf::gluon);
 	  vertex[vanz].in[2]         = flav2;
 
-	  vertex[vanz].cpl[0]        = (kcpl0*mixing).Value();
-	  vertex[vanz].cpl[1]        = (kcpl1*mixing).Value();
-	  vertex[vanz].cpl[2]        = 0.;
-	  vertex[vanz].cpl[3]        = 0.;
+	  vertex[vanz].cpl[0]        = kcpl0*mixing;
+	  vertex[vanz].cpl[1]        = kcpl1*mixing;
 	  vertex[vanz].Str           = (kcpl0*mixing*PR+kcpl1*mixing*PL).String();      
 
 	  vertex[vanz].ncf           = 1;
@@ -120,10 +114,8 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex[vanz].in[1]         = Flavour(kf::gluon);
 	  vertex[vanz].in[2]         = flav1;
 
-	  vertex[vanz].cpl[0]        = -(kcpl0*mixing).Value();
-	  vertex[vanz].cpl[1]        = -(kcpl1*mixing).Value();
-	  vertex[vanz].cpl[2]        = 0.;
-	  vertex[vanz].cpl[3]        = 0.;
+	  vertex[vanz].cpl[0]        = -kcpl0*mixing;
+	  vertex[vanz].cpl[1]        = -kcpl1*mixing;
 	  vertex[vanz].Str           = (-kcpl0*mixing*PR-kcpl1*mixing*PL).String();      
 
 	  vertex[vanz].ncf           = 1;
@@ -159,10 +151,8 @@ void Interaction_Model_MUED_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].in[1]         = Flavour(kf::gluon);
 	vertex[vanz].in[2]         = flav;
 
-	vertex[vanz].cpl[0]        = kcpl0.Value();
-	vertex[vanz].cpl[1]        = kcpl1.Value();
-	vertex[vanz].cpl[2]        = 0.;
-	vertex[vanz].cpl[3]        = 0.;
+	vertex[vanz].cpl[0]        = kcpl0;
+	vertex[vanz].cpl[1]        = kcpl1;
 	vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();
 
 	vertex[vanz].ncf           = 1;
@@ -194,10 +184,8 @@ void Interaction_Model_MUED_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].in[1]         = flav2;
 	vertex[vanz].in[2]         = flav3;
 
-	vertex[vanz].cpl[0]        = (kcpl0/sqrt2).Value();
-	vertex[vanz].cpl[1]        = (kcpl1/sqrt2).Value();
-	vertex[vanz].cpl[2]        = 0.;
-	vertex[vanz].cpl[3]        = 0.;
+	vertex[vanz].cpl[0]        = kcpl0/sqrt2;
+	vertex[vanz].cpl[1]        = kcpl1/sqrt2;
 	vertex[vanz].Str           = (kcpl0/sqrt2*PR+kcpl1/sqrt2*PL).String();
 
 	vertex[vanz].ncf           = 1;
@@ -235,10 +223,8 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].in[3]      = flav;
     
 	vertex[vanz].nleg       = 4;
-	vertex[vanz].cpl[0]     = kcpl0.Value();
-	vertex[vanz].cpl[1]     = kcpl1.Value();
-	vertex[vanz].cpl[2]     = 0.;
-	vertex[vanz].cpl[3]     = 0.;
+	vertex[vanz].cpl[0]     = kcpl0;
+	vertex[vanz].cpl[1]     = kcpl1;
 	vertex[vanz].Str        = (kcpl0*PR+kcpl1*PL).String();
     
 	vertex[vanz].ncf        = 3;
@@ -284,10 +270,8 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[3]      = flav3;
 	  
 	  vertex[vanz].nleg       = 4;
-	  vertex[vanz].cpl[0]     = (kcpl0/sqrt2).Value();
-	  vertex[vanz].cpl[1]     = (kcpl1/sqrt2).Value();
-	  vertex[vanz].cpl[2]     = 0.;
-	  vertex[vanz].cpl[3]     = 0.;
+	  vertex[vanz].cpl[0]     = kcpl0/sqrt2;
+	  vertex[vanz].cpl[1]     = kcpl1/sqrt2;
 	  vertex[vanz].Str        = (kcpl0/sqrt2*PR+kcpl1/sqrt2*PL).String();
 	  
 	  vertex[vanz].ncf        = 3;
@@ -327,10 +311,8 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
       vertex[vanz].in[3]      = flav1;
       
       vertex[vanz].nleg       = 4;
-      vertex[vanz].cpl[0]     = (threehalf*kcpl0).Value();
-      vertex[vanz].cpl[1]     = (threehalf*kcpl1).Value();
-      vertex[vanz].cpl[2]     = 0.;
-      vertex[vanz].cpl[3]     = 0.;
+      vertex[vanz].cpl[0]     = threehalf*kcpl0;
+      vertex[vanz].cpl[1]     = threehalf*kcpl1;
       vertex[vanz].Str        = (threehalf*kcpl0*PR+threehalf*kcpl1*PL).String();
       
       vertex[vanz].ncf        = 3;
@@ -368,10 +350,8 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[2]      = flav2;
 	  vertex[vanz].in[3]      = flav2;
 	  vertex[vanz].nleg       = 4;
-	  vertex[vanz].cpl[0]     = (onehalf*kcpl0).Value();
-	  vertex[vanz].cpl[1]     = (onehalf*kcpl1).Value();
-	  vertex[vanz].cpl[2]     = 0.;
-	  vertex[vanz].cpl[3]     = 0.;
+	  vertex[vanz].cpl[0]     = onehalf*kcpl0;
+	  vertex[vanz].cpl[1]     = onehalf*kcpl1;
 	  vertex[vanz].Str        = (threehalf*kcpl0*PR+threehalf*kcpl1*PL).String();
 	    
 	  vertex[vanz].ncf        = 3;
@@ -414,10 +394,8 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[2]      = flav3;
 	  vertex[vanz].in[3]      = flav4;
 	  vertex[vanz].nleg       = 4;
-	  vertex[vanz].cpl[0]     = (onehalf*kcpl0).Value();
-	  vertex[vanz].cpl[1]     = (onehalf*kcpl1).Value();
-	  vertex[vanz].cpl[2]     = 0.;
-	  vertex[vanz].cpl[3]     = 0.;
+	  vertex[vanz].cpl[0]     = onehalf*kcpl0;
+	  vertex[vanz].cpl[1]     = onehalf*kcpl1;
 	  vertex[vanz].Str        = (threehalf*kcpl0*PR+threehalf*kcpl1*PL).String();
 	    
 	  vertex[vanz].ncf        = 3;

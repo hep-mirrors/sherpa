@@ -62,10 +62,8 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 		vertex[vanz].in[0]   = flav1;
 		vertex[vanz].in[1]   = Flavour(kf::photon);
 		vertex[vanz].in[2]   = flav2;
-		vertex[vanz].cpl[0]  = kcpl0.Value();
+		vertex[vanz].cpl[0]  = kcpl0;
 		vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
-		vertex[vanz].cpl[2]  = 0.;
-		vertex[vanz].cpl[3]  = 0.;
 		vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 		vertex[vanz].ncf     = 1;
@@ -94,10 +92,8 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	      vertex[vanz].in[0]     = flav1;
 	      vertex[vanz].in[1]     = Flavour(kf::Z);
 	      vertex[vanz].in[2]     = flav2;
-	      vertex[vanz].cpl[0]    = kcpl0.Value();
-	      vertex[vanz].cpl[1]    = kcpl1.Value();
-	      vertex[vanz].cpl[2]    = 0.;
-	      vertex[vanz].cpl[3]    = 0.;
+	      vertex[vanz].cpl[0]    = kcpl0;
+	      vertex[vanz].cpl[1]    = kcpl1;
 	      vertex[vanz].Str       = (kcpl0*PR+kcpl1*PL).String();
 	
 	      vertex[vanz].ncf       = 1;
@@ -142,10 +138,9 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 		  vertex[vanz].in[2] = flav1;
 		}
 		
-		vertex[vanz].cpl[0]  = kcpl0.Value();
-		vertex[vanz].cpl[1]  = kcpl1.Value();
+		vertex[vanz].cpl[0]  = kcpl0;
+		vertex[vanz].cpl[1]  = kcpl1;
 		vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 		vertex[vanz].ncf   = 1;
 		if (flav1.Strong()) {
@@ -201,10 +196,9 @@ void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& va
 	vertex[vanz].in[1] = flh;
 	vertex[vanz].in[2] = flav;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
 	if (flav.Strong()) {

@@ -23,7 +23,6 @@ namespace AMEGIC {
     CFColor              * CFCol_Matrix;   
     int       ngraph,namplitude,ntotal;
     int       sw_probabs;
-    double  * probabs;
     Complex * Mi;
     int probs;
     Single_Amplitude* firstgraph;
@@ -39,6 +38,8 @@ namespace AMEGIC {
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
     int  SingleCompare(Point*,Point*,double &);
+//     void Kicker(int*,int,std::string);
+    void RestoreAmplitudes(std::string path);
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Info*,
 		      MODEL::Model_Base *,Topology *,int &,int &,
@@ -49,7 +50,9 @@ namespace AMEGIC {
 				   Basic_Sfuncs* BS);
     void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,
 			    Topology*,Basic_Sfuncs*,std::string);
-    void Kicker(int*,int,std::string);
+    void CompleteLibAmplitudes(int N,std::string,std::string);
+    void StoreAmplitudeConfiguration(std::string lib);
+
     Complex Zvalue(int,int*);
     Complex Zvalue(int);
     Complex Zvalue(String_Handler*,int);
@@ -67,8 +70,6 @@ namespace AMEGIC {
     Single_Amplitude* GetFirstGraph() {return firstgraph;}
     Point* GetPointlist(int);
     void   FillPointlist();
-    void   Reset_ProbAbs();
-    double Get_Probab(int);
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
     bool   ExistFourVertex(Point *);
     int    CompareAmplitudes(Amplitude_Handler*,double &);

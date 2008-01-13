@@ -78,10 +78,9 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].in[0]   = flav;
 	vertex[vanz].in[1]   = flh0;
 	vertex[vanz].in[2]   = flav;
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].ncf     = 1;
 	if (flav.Strong()) {
 	  vertex[vanz].Color = new Color_Function(cf::D);     
@@ -102,10 +101,9 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flH0;
 	vertex[vanz].in[2] = flav;
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].ncf   = 1;
 	if (flav.Strong()) {
 	  vertex[vanz].Color = new Color_Function(cf::D);     
@@ -139,10 +137,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;
     kcpl0 = M_I*g2*flav.Yuk()*mixh;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -157,10 +154,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;
     kcpl0 = M_I*g2*flav.Yuk()*mixH;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -179,10 +175,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;
     kcpl0 = M_I*g2*flav.Yuk()/costW;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -197,10 +192,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;
     kcpl0 = M_I*g2*flav.Yuk()*mixH/costW;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -220,10 +214,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;
     kcpl0 = M_I*geffh*mixh;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -238,10 +231,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flav;    
     kcpl0 = M_I*geffH*mixH;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     vertex[vanz].nlf     = 1;
@@ -259,10 +251,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flg;
     kcpl0 = M_I*geffh*mixh;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);     
     vertex[vanz].Color->SetParticleArg(0,2);     
@@ -279,10 +270,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flg;
     kcpl0 = M_I*geffH*mixH;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);     
     vertex[vanz].Color->SetParticleArg(0,2);     
@@ -304,10 +294,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flh0;    
     kcpl0 = M_I*mixh;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);     
     vertex[vanz].Color->SetParticleArg(0,2);     
@@ -325,10 +314,9 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flH0;    
     kcpl0 = M_I*mixH;
     kcpl1 = kcpl0;
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl0.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);     
     vertex[vanz].Color->SetParticleArg(0,2);     
@@ -365,10 +353,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flA0;
   kcpl0              = -M_I*tanb*mix12*(massh2/vev);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -381,10 +368,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flA0;
   kcpl0              = -M_I*tanb*mix22*(massH2/vev);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -397,10 +383,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flH0;
   kcpl0              = M_I*(num_2*massh2+massH2)/vev*mix11*mix12*(mix11+mix21*tanb);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -414,10 +399,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flh0;
   kcpl0              = M_I*(num_2*massH2+massh2)/vev*mix21*mix22*(mix12+mix22*tanb);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -431,10 +415,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flh0;
   kcpl0              = -(num_3*M_I*massh2/vev)*(tanb*mix12_3+mix11_3);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -448,10 +431,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].in[2] = flH0;
   kcpl0              = -(num_3*M_I*massH2/vev)*(tanb*mix22_3+mix21_3);
   kcpl1              = kcpl0;
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   vertex[vanz].ncf     = 1;
   vertex[vanz].Color   = new Color_Function(cf::None);     
   vertex[vanz].nlf     = 1;
@@ -488,10 +470,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix11*mix11;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -516,10 +497,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix21*mix11;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -544,10 +524,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix21*mix21;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -571,10 +550,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/num_2)*mix11*mix11;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -598,10 +576,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/num_2)*mix21*mix11;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -625,10 +602,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     kcpl0 = (M_I*g2*g2/num_2)*mix21*mix21;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -688,10 +664,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
                - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -717,10 +692,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
                - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -745,10 +719,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
               massh2*(mix21*mix11_2+mix22*mix12_2*tanb)));
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -773,10 +746,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
        massH2*(mix11*mix21_2+mix12*mix22_2*tanb));
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -802,10 +774,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
             (massh2*mix12_2+massH2*mix11_2)*tanb*tanb));
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -830,10 +801,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
               tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix12*mix12);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -858,10 +828,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
               tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix22*mix22);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -886,10 +855,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
               tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix12*mix22);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     

@@ -19,6 +19,13 @@ Single_Amplitude_Base::Single_Amplitude_Base(int* _b,int _n, Basic_Sfuncs* _BS,
   zlist= new Zfunc_List;
 }
 
+Single_Amplitude_Base::Single_Amplitude_Base(String_Handler* _shand, int an) 
+  : shand(_shand) 
+{
+  zlist = NULL;
+  amplnumber = an;
+}
+
 Zfunc_List* Single_Amplitude_Base::GetZlist() {
   return zlist;
 }

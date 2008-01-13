@@ -2,6 +2,7 @@
 #define Single_Vertex_h
 
 #include "MyComplex.H"
+#include "Kabbala.H"
 #include "Flavour.H"
 #include "Color_Function.H"
 #include "Lorentz_Function.H"
@@ -18,7 +19,7 @@ namespace MODEL {
     int               ncf, nlf, t; // number of color functions, lorentz
                                    //  functions and ?
  
-    std::vector<Complex> cpl;      // coupling constants
+    std::vector<ATOOLS::Kabbala> cpl;      // coupling constants
     Color_Function*   Color;       // color structure 
     Lorentz_Function* Lorentz;     // lorentz structure
 
@@ -27,6 +28,7 @@ namespace MODEL {
     Single_Vertex(const Single_Vertex& v);
     ~Single_Vertex(); 
     
+    Complex Coupling(size_t i) const;
     // operators
     Single_Vertex&       operator= (const Single_Vertex&);
     const bool           operator==(const Single_Vertex&);
@@ -53,7 +55,7 @@ namespace MODEL {
 
   /*! 
     \file
-    \brief this file contains the class AMEGIC::Single_Vertex
+    \brief this file contains the class MODEL::Single_Vertex
   */
   /*! 
     \class Single_Vertex 

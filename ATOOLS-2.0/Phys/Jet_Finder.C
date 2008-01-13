@@ -599,7 +599,6 @@ void Jet_Finder::PrepareMomList(const Vec4D *vec)
     m_moms[m_mcomb[n].back()]=m_moms[m_mcomb[n].front()];
     for (size_t i(1);i<m_mcomb[n].size()-1;++i)
       m_moms[m_mcomb[n].back()]+=m_moms[m_mcomb[n][i]];
-    Vec4D cc;
 #ifdef BOOST_Decays
     Poincare cms(m_moms[m_mcomb[n].back()]);
     for (size_t i(0);i<m_mcomb[n].size()-1;++i) {

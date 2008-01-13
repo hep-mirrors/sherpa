@@ -45,10 +45,9 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  kcpl0 = M_I*g3*root2*K_Z_U((i-2)/2+3,j-51);
 	  kcpl1 = -M_I*g3*root2*K_Z_U((i-2)/2,j-51);
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::T);     
@@ -83,10 +82,9 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Color->SetParticleArg(1,2,0);     
 	  vertex[vanz].Color->SetStringArg('1','2','0');     
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].nlf     = 1;
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
@@ -115,10 +113,9 @@ void Interaction_Model_sQCD::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
       kcpl0 = -g3; 
       kcpl1 = -g3;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::F);     
@@ -154,10 +151,9 @@ void Interaction_Model_sQCD::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 	vertex[vanz].in[1] = flgl;
 	vertex[vanz].in[2] = flav;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
@@ -197,10 +193,9 @@ void Interaction_Model_sQCD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = M_I*g3*g3;
 	kcpl1 = kcpl0;
 		
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf     = 2;
 	vertex[vanz].nlf     = 2;

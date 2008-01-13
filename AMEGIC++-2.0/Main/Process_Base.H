@@ -22,10 +22,8 @@
 #include <string>
 
 namespace AMEGIC {
-  class Process_Base;
   class Amplitude_Handler;
   class Helicity;
-//   class Single_Process;
 
   class Process_Base : public PHASIC::Integrable_Base {
   protected:
@@ -52,10 +50,9 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   protected:
-    std::string *  GenerateNames(int,ATOOLS::Flavour *,Pol_Info *,
-				 std::string &,std::string &,std::string &,
-				 Process_Info *pi=NULL);
-    void           Reshuffle(int,ATOOLS::Flavour *,AMEGIC::Pol_Info *);
+    std::string *  GenerateName(int,ATOOLS::Flavour *,Pol_Info *,
+				std::string &,Process_Info *pi=NULL);
+    void           Reshuffle(int,ATOOLS::Flavour *,Pol_Info *,Process_Info*);
     bool           IsFile(std::string);
     /*------------------------------------------------------------------------------
 

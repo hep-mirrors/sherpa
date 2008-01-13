@@ -32,6 +32,7 @@ namespace AMEGIC {
     Zfunc_List* GetZlist();    
 
     Amplitude_Base* GetAmplitude(const int n) {return (n==amplnumber) ? this : 0;}
+    const int GetNumber() { return amplnumber; }
   };
 }
 #endif

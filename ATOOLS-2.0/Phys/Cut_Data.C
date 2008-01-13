@@ -278,8 +278,8 @@ double Cut_Data::Getscut(string str)
 void Cut_Data::Update(double sprime,double y) 
 {
   // boost cosmax from LAB to CMS
-  double E1     = exp(y);  
-  double E2     = exp(-y);  
+  double E1     = std::exp(y);  
+  double E2     = std::exp(-y);  
   Poincare Forward(Vec4D(E1+E2,0.,0.,E1-E2));
   Poincare Backward(Vec4D(E1+E2,0.,0.,E2-E1));
   Vec4D help;

@@ -631,6 +631,27 @@ int Order_Coupling::operator()(const Process_Info * a, const Process_Info * b) {
   return 0;
 }
 
+static FMMap s_fmm;
+
+class Order_FlavMulti {
+//   FMMap* p_fmm;
+public:
+//   Order_FlavMulti(FMMap* fmm) {p_fmm=fmm;}
+  int operator()(const Process_Info * a, const Process_Info * b);
+};
+int Order_FlavMulti::operator()(const Process_Info * a, const Process_Info * b) {
+  if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
+    if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
+    if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
+    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+      if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+    return 0;
+  }
+  if (s_fmm[int(a->p_fl->Kfcode())]==0 || s_fmm[int(b->p_fl->Kfcode())]==0) return 0;
+  if (s_fmm[int(a->p_fl->Kfcode())]>s_fmm[int(b->p_fl->Kfcode())]) return 1;
+  return 0;
+}
+
 
 //
 // Note: all order operator have to return 0 if 
@@ -640,10 +661,25 @@ int Order_Coupling::operator()(const Process_Info * a, const Process_Info * b) {
 //
 
 
-void Process_Info::Reshuffle()
+void Process_Info::Reshuffle(Process_Info *cpi)
 {
   int n=m_sublist[0].size();
   if (n==0) return;
+  for (int i=0;i<n;++i) m_sublist[0][i]->Reshuffle();
+  s_fmm.clear();
+
+  int nin = 0;
+  if (cpi) nin = cpi->Nout();
+  if (nin>0) {
+    for (int i=0;i<nin;i++) {
+      Flavour *hfl=cpi->m_sublist[0][i]->Flav();
+      if (s_fmm.find(int(hfl->Kfcode()))==s_fmm.end()) 
+	s_fmm[int(hfl->Kfcode())]=0;
+      if (hfl->IsFermion()) s_fmm[int(hfl->Kfcode())]++;
+//         cout<<i<<"I: "<<*hfl<<" "<<int(hfl->Kfcode())<<" "<<s_fmm[int(hfl->Kfcode())]<<endl;
+    }
+  }
+
   Flavour *flav = new Flavour[n];
   GetFlavList(flav);
   Flavour heaviest(kf::photon);
@@ -652,13 +688,19 @@ void Process_Info::Reshuffle()
     else if (flav[i].Mass()==heaviest.Mass() &&
 	     !flav[i].IsAnti()) heaviest=flav[i];
   }
-  delete [] flav;
 
-  for (int i=0;i<n;++i) m_sublist[0][i]->Reshuffle();
+  for (int i=0;i<n;++i) {
+    if (s_fmm.find(int(flav[i].Kfcode()))==s_fmm.end()) 
+      s_fmm[int(flav[i].Kfcode())]=0;
+    if (flav[i].IsFermion() && !(flav[i].IsMassive())) s_fmm[int(flav[i].Kfcode())]++;
+  } 
+
+  delete [] flav;
 
   std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_Kfc());
   std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_Anti());
   std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_SVFT());
+  if (s_fmm.size()>0) std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_FlavMulti());
   if (heaviest.IsAnti())  std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_InvMass());
   else   std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_Mass());
   std::stable_sort(m_sublist[0].begin(),m_sublist[0].end(),Order_Coupling());

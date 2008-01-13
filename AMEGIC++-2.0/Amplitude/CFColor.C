@@ -14,7 +14,7 @@ using namespace std;
 
 std::string CFColor::noname=string("noname");
 
-CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
+CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID,bool force)
 {
   Single_Amplitude* m1 = first;
 
@@ -41,8 +41,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       ncount = ioh.Input<int>("");
 
 
-      if (mcount==rmcount) {
-
+      if (mcount==rmcount || (force && rmcount>0)) {
+	mcount = rmcount;
 	id  = ioh.ArrayInput<int>("",mcount);
 	CFC = new CMatrix(ioh.MatrixInput<Complex>("",ncount,ncount),ncount);
 

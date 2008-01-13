@@ -10,7 +10,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
-String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS) 
+String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS,std::map<std::string,Complex>* cplmap) 
   : gen_str(_gen_str)
 {
   m_mode=1;
@@ -23,6 +23,7 @@ String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS)
   val     = 0;
   if (gen_str==0) sgen = new No_String_Generator;
              else sgen = new String_Generator(_BS);
+  sgen->SetCouplings(cplmap);
 }
 
 
@@ -64,6 +65,10 @@ bool String_Handler::SearchValues(const int _gen_str,string & pID,Basic_Sfuncs* 
   if (val!=0) {
     msg_Info()<<vpID<<" loaded."<<endl;
     val->SetCouplFlav(*sgen->GetCouplList());
+    if (sgen->NumberOfCouplings()!=val->NumberOfCouplings()) {
+      msg_Error()<<" Number of Coupling constants does not fit with Process Library "<<pID<<"!"<<endl;
+      return 0;
+    }
     working = 1;
     return 1;
   }

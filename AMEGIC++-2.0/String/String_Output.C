@@ -239,131 +239,8 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   zf<<endl;
   zf<<"  for (int i=0;i<"<<sgen->NumberOfCouplings()<<";i++) "<<"c[i] = coupl[i];"<<endl;
   zf<<"  for (int i=0;i<"<<maxhel<<";i++)"<<endl;
-  zf<<"    for (int j=0;j<"<<maxgraph<<";j++) M[i][j] = Complex(0.,0.);"<<endl;
-  zf<<endl<<"  //constant Z's"<<endl;
+  zf<<"    for (int j=0;j<"<<maxgraph<<";j++) M[i][j] = Complex(0.,0.);"<<endl<<endl;
   zf<<"  Z[0] = Complex(0.,0.);"<<endl;
-  ZXlist* zx;
-  int hit;
-  Complex norm;
-  for (int i=1;i<sgen->ZXMaxNumber();i++) {
-    zx = sgen->GetZXl(i);
-    if (zx->on && zx->zlist==2) {
-      lines++;
-      zf<<"  Z["<<i<<"] = ";
-      switch (zx->zlist) {
-      case 2: 
-	norm = zx->value.Value();
-	hit = 0;
-	//couplings
-	for (short int j=0;j<sgen->NumberOfCouplings();j++) {
-	  if ( ATOOLS::IsEqual(norm,sgen->GetCoupling(j)) ||
-	       ATOOLS::IsEqual(norm,-sgen->GetCoupling(j)) ) {
-	    hit = 1;
-	    if (ATOOLS::IsEqual(norm,-sgen->GetCoupling(j))) zf<<"-";
-	    zf<<"c["<<j<<"];"<<endl;
-	    break;
-	  }
-	}
-	if (hit) break;
-	//masses
-	if (real(norm)<0) {
-	  zf<<"-";
-	  norm = -norm;
-	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()),0.);"<<endl;
-	  break;
-	}
-	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
-			      -Flavour(kf::Z).Mass()*Flavour(kf::Z).Width())))) { 
-	    hit = 1;
-	    zf<<"(1./Complex(sqr(Flavour(kf::Z).Mass()),"
-	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
-	    break;
-	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()),0.);"<<endl;
-	  break;
-	}
-	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
-			      -Flavour(kf::W).Mass()*Flavour(kf::W).Width())))) { 
-	    hit = 1;
-	    zf<<"(1./Complex(sqr(Flavour(kf::W).Mass()),"
-	      <<"-Flavour(kf::W).Mass()*Flavour(kf::W).Width()));"<<endl;
-	    break;
-	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::h).Mass()),0.);"<<endl;
-	  break;
-	}
-	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(sqr(Flavour(kf::Z).Mass())),0.);"<<endl;
-	  break;
-	}	  
-	// double masses
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
-	  break;	
-	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
-	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
-	  break;
-	}
-	if (ATOOLS::IsEqual(norm,0.5)) {
-          hit = 1;
-          zf<<"Complex(0.5,0.);"<<endl;
-          break;
-	}
-	if (ATOOLS::IsEqual(norm,-0.5)) {
-          hit = 1;
-          zf<<"Complex(-0.5,0.);"<<endl;
-	  break;        
-	}
-	if (ATOOLS::IsEqual(norm,1./3.)) {
-          hit = 1;
-          zf<<"Complex(1./3.,0.);"<<endl;
-          break;
-	}
-	if (ATOOLS::IsEqual(norm,1.)) { 
-	  hit = 1;
-	  zf<<"Complex(1.,0.);"<<endl;
-	    break;
-	}
-	if (ATOOLS::IsEqual(norm,2.)) { 
-	  hit = 1;
-	  zf<<"Complex(2.,0.);"<<endl;
-	  break;
-	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,1.))) { 
-	  hit = 1;
-	  zf<<"Complex(0.,1.);"<<endl;
-	  break;
-	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,-1.))) { 
-	  hit = 1;
-	  zf<<"Complex(0.,-1.);"<<endl;
-	  break;
-	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,-1./4.))) { 
-	  hit = 1;
-	  zf<<"Complex(0.,-1./4.);"<<endl;
-	  break;
-	}
-	if (hit==0) {
-	  msg_Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
-	  abort();
-	}
-      }
-    }
-  }
   zf<<"}"<<endl<<endl;
 
   zf<<"void "<<pID<<"::Calculate()"<<endl;
@@ -391,9 +268,12 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
     pz=&szf;
   }
 
+  ZXlist* zx;
+  int hit;
+  Complex norm;
   for (int i=1;i<sgen->ZXMaxNumber();i++) {
     zx = sgen->GetZXl(i);
-    if (zx->on && zx->zlist!=2) {
+    if (zx->on) {
       lines++;
       (*pz)<<"  Z["<<i<<"] = ";
       int* arg = zx->arg;
@@ -420,6 +300,117 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	(*pz)<<","<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7];
 	(*pz)<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
 #endif
+	break;
+      case 2: 
+	norm = zx->value.Value();
+	hit = 0;
+	//couplings
+	for (short int j=0;j<sgen->NumberOfCouplings();j++) {
+	  if ( ATOOLS::IsEqual(norm,sgen->GetCoupling(j)) ||
+	       ATOOLS::IsEqual(norm,-sgen->GetCoupling(j)) ) {
+	    hit = 1;
+	    if (ATOOLS::IsEqual(norm,-sgen->GetCoupling(j))) (*pz)<<"-";
+	    (*pz)<<"c["<<j<<"];"<<endl;
+	    break;
+	  }
+	}
+	if (hit) break;
+	//masses
+	if (real(norm)<0) {
+	  (*pz)<<"-";
+	  norm = -norm;
+	}
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()),0.);"<<endl;
+	  break;
+	}
+	//new
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
+			      -Flavour(kf::Z).Mass()*Flavour(kf::Z).Width())))) { 
+	    hit = 1;
+	    (*pz)<<"(1./Complex(sqr(Flavour(kf::Z).Mass()),"
+	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
+	    break;
+	}
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::W).Mass()),0.);"<<endl;
+	  break;
+	}
+	//new
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
+			      -Flavour(kf::W).Mass()*Flavour(kf::W).Width())))) { 
+	    hit = 1;
+	    (*pz)<<"(1./Complex(sqr(Flavour(kf::W).Mass()),"
+	      <<"-Flavour(kf::W).Mass()*Flavour(kf::W).Width()));"<<endl;
+	    break;
+	}
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::h).Mass()),0.);"<<endl;
+	  break;
+	}
+	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(sqr(Flavour(kf::Z).Mass())),0.);"<<endl;
+	  break;
+	}	  
+	// double masses
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
+	  break;	
+	}
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
+	  break;
+	}
+	if (ATOOLS::IsEqual(norm,0.5)) {
+          hit = 1;
+          (*pz)<<"Complex(0.5,0.);"<<endl;
+          break;
+	}
+	if (ATOOLS::IsEqual(norm,-0.5)) {
+          hit = 1;
+          (*pz)<<"Complex(-0.5,0.);"<<endl;
+	  break;        
+	}
+	if (ATOOLS::IsEqual(norm,1./3.)) {
+          hit = 1;
+          (*pz)<<"Complex(1./3.,0.);"<<endl;
+          break;
+	}
+	if (ATOOLS::IsEqual(norm,1.)) { 
+	  hit = 1;
+	  (*pz)<<"Complex(1.,0.);"<<endl;
+	    break;
+	}
+	if (ATOOLS::IsEqual(norm,2.)) { 
+	  hit = 1;
+	  (*pz)<<"Complex(2.,0.);"<<endl;
+	  break;
+	}
+	if (ATOOLS::IsEqual(norm,Complex(0.,1.))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(0.,1.);"<<endl;
+	  break;
+	}
+	if (ATOOLS::IsEqual(norm,Complex(0.,-1.))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(0.,-1.);"<<endl;
+	  break;
+	}
+	if (ATOOLS::IsEqual(norm,Complex(0.,-1./4.))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(0.,-1./4.);"<<endl;
+	  break;
+	}
+	if (hit==0) {
+	  msg_Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
+	  abort();
+	}
 	break;
       case 3: 
 	(*pz)<<"Vcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
@@ -452,7 +443,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
  	(*pz)<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
  	break;
       case 10: 
- 	zf<<"EpsCalc<"<<arg[4]<<">("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<");"<<endl;
+ 	(*pz)<<"EpsCalc<"<<arg[4]<<">("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<");"<<endl;
  	break;
       }
     }
@@ -513,6 +504,7 @@ void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
   header<<"  "<<pID<<"(Basic_Sfuncs* _BS);"<<endl; 
   header<<"  ~"<<pID<<"();"<<endl;
   header<<"  void SetCouplFlav(std::vector<Complex>&);"<<endl;
+  header<<"  int NumberOfCouplings() { return "<<sgen->NumberOfCouplings()<<"; }"<<endl;
   header<<"  Complex Evaluate(int,int);"<<endl;
   header<<"  void    Calculate();"<<endl;
 }

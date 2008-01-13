@@ -31,10 +31,8 @@ void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
       vertex[vanz].in[1]         = Flavour(kf::gluon);
       vertex[vanz].in[2]         = flav;
 
-      vertex[vanz].cpl[0]        = kcpl0.Value();
-      vertex[vanz].cpl[1]        = kcpl1.Value();
-      vertex[vanz].cpl[2]        = 0.;
-      vertex[vanz].cpl[3]        = 0.;
+      vertex[vanz].cpl[0]        = kcpl0;
+      vertex[vanz].cpl[1]        = kcpl1;
       vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();      
 
       vertex[vanz].ncf           = 1;
@@ -59,10 +57,8 @@ void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
   for (short int i=0;i<3;i++) vertex[vanz].in[i] = Flavour(kf::gluon);
 
-  vertex[vanz].cpl[0]        = kcpl0.Value();
-  vertex[vanz].cpl[1]        = kcpl1.Value();
-  vertex[vanz].cpl[2]        = 0.;
-  vertex[vanz].cpl[3]        = 0.;
+  vertex[vanz].cpl[0]        = kcpl0;
+  vertex[vanz].cpl[1]        = kcpl1;
   vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();
 
   vertex[vanz].ncf           = 1;
@@ -90,10 +86,8 @@ void Interaction_Model_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   for (short int i=0;i<4;i++) vertex[vanz].in[i] = Flavour(kf::gluon);
 
   vertex[vanz].nleg            = 4;
-  vertex[vanz].cpl[0]          = kcpl0.Value();
-  vertex[vanz].cpl[1]          = kcpl1.Value();
-  vertex[vanz].cpl[2]          = 0.;
-  vertex[vanz].cpl[3]          = 0.;
+  vertex[vanz].cpl[0]          = kcpl0;
+  vertex[vanz].cpl[1]          = kcpl1;
   vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
   
   vertex[vanz].ncf             = 3;

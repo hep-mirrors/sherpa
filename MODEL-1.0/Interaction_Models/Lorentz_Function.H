@@ -134,8 +134,8 @@ namespace MODEL {
 
  /*! 
     \file
-    \brief this file contains the classes AMEGIC::Lorentz_Function
-           and AMEGIC::lf   
+    \brief this file contains the classes MODEL::Lorentz_Function
+           and MODEL::lf   
   */
 
   /*! 
@@ -153,11 +153,11 @@ namespace MODEL {
 
     In order to attach the Lorentz structure to a Single_Vertex object 
     Lorentz_Function objects are defined. A Lorentz_Function possesses a type, 
-    defined in the class AMEGIC::lf, and a number of arguments. These arguments called 
+    defined in the class MODEL::lf, and a number of arguments. These arguments called 
     partarg are of the integer type. Per default they are set to '-1'. Attached to a 
     Lorentz_Function is a string expression that contains the information of the 
     Lorentz_Function type and its arguments, see Tab. ?? for a complete list of 
-    Lorentz_Function types defined in AMEGIC++, there associated number of arguments 
+    Lorentz_Function types defined in MODEL++, there associated number of arguments 
     and the corresponding string expression. 
     
     <table width=450 align=center>

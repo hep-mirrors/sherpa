@@ -2,6 +2,7 @@
 #include "String_Generator.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Exception.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -626,4 +627,51 @@ Kabbala* String_Generator::GetKabbala(const string& str)
 }
 
 
+void String_Generator::WriteCouplings(ofstream& os)
+{
+  for (int i=0;i<NumberOfCouplings();i++) {
+    int cnt=0;
+    for (map<string,Complex>::iterator mit=p_couplmap->begin();mit!=p_couplmap->end();mit++) {
+      if (mit->second==GetCoupling(i)) {
+	cnt++;
+	os<<"cpl["<<i<<"]="<<mit->first<<endl;
+      }
+    }
+    if (cnt==0) {
+      os<<"cpl["<<i<<"]=Complex"<<GetCoupling(i)<<endl;
+    }
+  }
+}
+ 
+int String_Generator::ReadCouplings(ifstream& is)
+{
+  if (!is) return 0;
+  p_couplings->clear();
+  string str;
+  for (;is;) {
+    getline(is,str); 
+    if (str.find(string("cpl"))==0) {
+      int a=str.find("[");
+      int b=str.find("]");
+      int idx = ToType<int>(str.substr(a+1,a-b-1));
+      a = str.find("=");
+      Complex val;
+      if (str.substr(a+1,7)==string("Complex")) {
+	val = ToType<Complex>(str.substr(a+8));
+      }
+      else {
+	str = str.substr(a+1);
+	if (p_couplmap->find(str)==p_couplmap->end()) 
+	  THROW(critical_error,"Coupling constant not found, check MODEL settings!");
+	val = (*p_couplmap)[str];
+      }
+      if (idx>=NumberOfCouplings()) p_couplings->resize(idx+1);
+      if (GetCoupling(idx)==Complex(0.,0.)) (*p_couplings)[idx] = val;
+      else if (GetCoupling(idx)!=val) {
+	THROW(critical_error,"Coupling constant inconsistency, lib incompatible with MODEL settings!");
+      }
+    }
+  }
+  return NumberOfCouplings();
+}
 

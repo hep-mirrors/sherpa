@@ -59,6 +59,10 @@ namespace AMEGIC {
     virtual int       NumberOfCouplings()                          = 0;
     virtual int       NumberOfzxl()                                = 0;
     virtual int       UsesFunction(size_t i) {return 0;}
+    virtual void      SetCouplings(std::map<std::string,Complex>*) = 0;
+    virtual std::map<std::string,Complex>* GetCouplings()          = 0;
+    virtual void      WriteCouplings(std::ofstream&)               = 0;
+    virtual int       ReadCouplings(std::ifstream&)                = 0;
   };
   
 
@@ -78,6 +82,7 @@ namespace AMEGIC {
     std::vector<int>       m_zuse;
     String_Tree            m_stree,m_sthelp;
     bool                   m_copied;
+    std::map<std::string,Complex>* p_couplmap;
     int  ZXCount(); 
     int  ZNumber(int *,int *);
     int  XNumber(int *,int *);
@@ -131,6 +136,10 @@ namespace AMEGIC {
     int         GetFlavour(int i)           { return (*p_flavours)[i]; }  
     String_Tree GetStree()                  { return m_stree; }
     int         UsesFunction(size_t i)      { return m_zuse[i]; }
+    void        SetCouplings(std::map<std::string,Complex>* cplm) { p_couplmap=cplm; }
+    std::map<std::string,Complex>* GetCouplings()                 { return p_couplmap; }
+    void        WriteCouplings(std::ofstream&);
+    int         ReadCouplings(std::ifstream&);
   };
   
   class No_String_Generator : public Virtual_String_Generator {
@@ -161,6 +170,10 @@ namespace AMEGIC {
     void      SetOn(const int&)                                 {}  
     void      SetOn(const std::string&)                         {}  
     void      SetOff(const int&)                                {}  
+    void      SetCouplings(std::map<std::string,Complex>*)      {}
+    std::map<std::string,Complex>* GetCouplings()               { return NULL; }
+    void      WriteCouplings(std::ofstream&)                         {}
+    int       ReadCouplings(std::ifstream&)                          { return 0; }
   };
 
 }

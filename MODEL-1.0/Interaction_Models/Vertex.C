@@ -10,8 +10,6 @@
 
 using namespace MODEL;
 using namespace ATOOLS;
-using namespace ATOOLS;
-using namespace ATOOLS;
 using namespace std;
 
 // Constructor and Destructor
@@ -74,7 +72,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   Print();
   
   msg_Debugging()<<"... done with it ("<<m_nvertex+m_n4vertex<<")."<<endl;
-  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
+  msg_Tracking()<<"Initialized interaction model of MODEL : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
 }
 
 Vertex::~Vertex() { }
@@ -92,7 +90,7 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (m_v4[i].cpl[0]==Complex(0.,0.) && m_v4[i].cpl[1]==Complex(0.,0.))
+      if (m_v4[i].Coupling(0)==Complex(0.,0.) && m_v4[i].Coupling(1)==Complex(0.,0.))
 	m_v4[i].on = 0;
       else { 
 	if(m_v4[i].nleg==4) {
@@ -131,7 +129,7 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (m_v[i].cpl[0]==Complex(0.,0.) && m_v[i].cpl[1]==Complex(0.,0.))
+      if (m_v[i].Coupling(0)==Complex(0.,0.) && m_v[i].Coupling(1)==Complex(0.,0.))
 	m_v[i].on = 0;
       if (m_v[i].nleg==3) {  
 	for (short int k=1;k<4;k++) {
@@ -154,6 +152,40 @@ void Vertex::GenerateVertex()
 		}
 	      }
 	    }
+	  }
+	}
+      }
+    }
+  }
+  for (int i=0;i<m_nvertex;i++) {
+    for (size_t j=0;j<m_v[i].cpl.size();j++) {
+      if (m_v[i].Coupling(j)!=Complex(0.,0.)) {
+	string hstr=m_v[i].cpl[j].String();
+	for (size_t k=0;(k=hstr.find("\\"))!=string::npos;) hstr.erase(k,1); 
+	if (m_cplmap.find(hstr)==m_cplmap.end()) {
+	  m_cplmap[hstr]=m_v[i].Coupling(j);
+	}
+	else {
+	  if (m_cplmap[hstr]!=m_v[i].Coupling(j)) {
+	    msg_Error()<<"coupling ID not unique: "<<m_v[i].cpl[j].String()<<endl;
+	    abort();
+	  }
+	}
+      }
+    }
+  }
+  for (int i=0;i<m_n4vertex;i++) {
+    for (size_t j=0;j<m_v4[i].cpl.size();j++) {
+      if (m_v4[i].Coupling(j)!=Complex(0.,0.)) {
+	string hstr=m_v4[i].cpl[j].String();
+	for (size_t k=0;(k=hstr.find("\\"))!=string::npos;) hstr.erase(k,1); 
+	if (m_cplmap.find(hstr)==m_cplmap.end()) {
+	  m_cplmap[hstr]=m_v4[i].Coupling(j);
+	}
+	else {
+	  if (m_cplmap[hstr]!=m_v4[i].Coupling(j)) {
+	    msg_Error()<<"coupling ID not unique: "<<m_v[i].cpl[j].String()<<endl;
+	    abort();
 	  }
 	}
       }
@@ -291,7 +323,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 
        if (probe.Lorentz->String()==string("1")) {
 	//exchange left and right
-	Complex help = probe.cpl[0];
+	Kabbala help = probe.cpl[0];
 	probe.cpl[0] = probe.cpl[1];
 	probe.cpl[1] = help;
       }
@@ -468,7 +500,7 @@ void Vertex::Print()
     msg_Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
     if (m_v[i].on) msg_Out()<<"...On  ";
     else  msg_Out()<<"...Off ";
-    msg_Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
+    msg_Out()<<m_v[i].Coupling(0)<<";"<<m_v[i].Coupling(1);
     msg_Out()<<"; "<<m_v[i].Color->String();
     msg_Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
   }
@@ -480,7 +512,7 @@ void Vertex::Print()
       if (m_v4[i-m_nvertex].on) msg_Out()<<"...On  ";
       else  
 	msg_Out()<<"...Off ";
-      msg_Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+      msg_Out()<<m_v4[i-m_nvertex].Coupling(0)<<";"<<m_v4[i-m_nvertex].Coupling(1);
       msg_Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
       msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
     }
@@ -492,7 +524,7 @@ void Vertex::Print()
 	  msg_Out()<<"...On  ";
 	else  
 	  msg_Out()<<"...Off ";
-	msg_Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+	msg_Out()<<m_v4[i-m_nvertex].Coupling(0)<<";"<<m_v4[i-m_nvertex].Coupling(1);
 	msg_Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
 	if (m_v4[i-m_nvertex].Color[k].Next()!=0) 
 	  msg_Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next()->String();
@@ -500,6 +532,9 @@ void Vertex::Print()
       }
     }
   }
+  msg_Out()<<"Couplings:-------------------"<<endl;
+  for (tscmap::iterator mit=m_cplmap.begin();mit!=m_cplmap.end();mit++)
+    msg_Out()<<mit->first<<endl<<"         "<<mit->second<<endl; 
 }
 
 void Vertex::TexOutput()
@@ -517,7 +552,7 @@ void Vertex::TexOutput()
   
   int fmfcount = 0;  
   for (int i=0;i<m_nvertex;i++) {
-    if (m_v[i].cpl[0]!=Complex(0.,0.) && m_v[i].cpl[1]!=Complex(0.,0.)) {
+    if (m_v[i].Coupling(0)!=Complex(0.,0.) && m_v[i].Coupling(1)!=Complex(0.,0.)) {
     st.Reset();
     sknot* shelp = st.String2Tree(m_v[i].Str);
     //st.Delete(shelp,string("zero"));
@@ -670,7 +705,7 @@ void Vertex::TexOutput()
   sf.close();  
 
   for (int i=0;i<m_n4vertex;i++) {
-    if (m_v4[i].cpl[0]!=Complex(0.,0.) && m_v4[i].cpl[1]!=Complex(0.,0.)) {
+    if (m_v4[i].Coupling(0)!=Complex(0.,0.) && m_v4[i].Coupling(1)!=Complex(0.,0.)) {
     st.Reset();
     sknot* shelp = st.String2Tree(m_v4[i].Str);
     //st.Delete(shelp,string("zero"));

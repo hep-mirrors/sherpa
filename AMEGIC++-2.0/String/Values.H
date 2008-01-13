@@ -14,6 +14,7 @@ namespace AMEGIC {
     { std::cerr<<"Wrong Method in Values::Calculate()"<<std::endl;}
     virtual void    SetCouplFlav(std::vector<Complex>&) 
     { std::cerr<<"Wrong Method in Values::SetCouplFlav()"<<std::endl;}
+    virtual int    NumberOfCouplings() { return 0; }
   };
 }
 #endif

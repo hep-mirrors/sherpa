@@ -72,6 +72,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   protected :
     int                 Tests();
+    int                 TestLib();
     int                 CheckLibraries();
     int                 CheckStrings(Single_Process*);
     void                WriteLibrary();

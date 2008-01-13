@@ -11,13 +11,16 @@
 
 
 namespace MODEL {
+
+  typedef  std::map<std::string,Complex> tscmap;
+
   class Interaction_Model_Base;
 
   class Vertex {
     int m_nvertex, m_n4vertex;       // number of single vertices included
     std::vector<Single_Vertex> m_v;  // list of 3-vertices 
     std::vector<Single_Vertex> m_v4; // list of 4-vertices 
-   
+    tscmap      m_cplmap;   
     
     void        CheckEqual(ATOOLS::Flavour**,short int&);
     void        GenerateVertex();
@@ -45,6 +48,8 @@ namespace MODEL {
     inline const int MaxNumber() const {return m_nvertex;}
 
     inline const int MaxNumber4() const {return m_n4vertex;}
+    
+    inline tscmap* GetCouplings() { return &m_cplmap; }
 
     void TexOutput();
 
@@ -59,7 +64,7 @@ namespace MODEL {
 
   /*! 
     \file
-    \brief this file contains the class AMEGIC::Vertex   
+    \brief this file contains the class MODEL::Vertex   
   */
 
   /*! 

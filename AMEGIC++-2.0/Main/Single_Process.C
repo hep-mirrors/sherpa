@@ -12,6 +12,7 @@
 
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
+#include "Data_Reader.H"
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -64,8 +65,9 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_libnumb  = 0;
   m_save_max = 0.;
   m_efunc=e_func;
-  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
-  m_pslibname = m_libname;
+  m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
+  if (m_gen_str>1) m_ptypename = "P"+m_libname;
+  else m_ptypename = "N"+m_libname;
 
   PolarizationNorm();
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
@@ -118,8 +120,9 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   m_libnumb  = 0;
   m_save_max = 0.;
   m_efunc=e_func;
-  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
-  m_pslibname = m_libname;
+  m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
+  if (m_gen_str>1) m_ptypename = "P"+m_libname;
+  else m_ptypename = "N"+m_libname;
 
   PolarizationNorm();
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,cuttag);
@@ -190,11 +193,6 @@ void Single_Process::PolarizationNorm() {
   }
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,p_flin);
-#ifndef Explicit_Pols
-  m_pol.Attach(m_nin+m_nout,p_flavours);
-  m_Norm *= m_pol.Massive_Norm();
-
-#endif
 }
 
 double Single_Process::SymmetryFactors()
@@ -290,11 +288,26 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
   for (size_t i=0;i<m_nin+m_nout;i++) p_momenta[i] = _testmoms[i];
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_shand  = new String_Handler(m_gen_str,p_BS);
+
+  bool directload = true;
+  int libchk=0; 
+  Data_Reader reader(" ",";","!","=");
+  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+    if (libchk==1) {
+      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+      directload = false;
+    }
+  }  
+  if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
+  if (directload) {
+    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+string("/")+m_libname;
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
+  }
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
   
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
-				   p_BS,p_shand,m_print_graphs);
+				   p_BS,p_shand,m_print_graphs,!directload);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
@@ -322,6 +335,30 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
 	return 1;
       }
     }
+  }
+  if (directload) {
+    p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
+				  m_ptypename+string("/")+m_libname);    
+    if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
+    if (!TestLib()) return 0;
+    for (size_t j=current_atom;j<links.size();j++) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+	if (CheckMapping(links[j])) {
+	  msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+			<<"   Map processes."<<std::endl
+		   <<links[j]->Result()<<" "<<Result();
+	  p_partner = (Single_Process*)links[j];
+	  break;
+	}
+      } 
+    }
+    if (p_partner==this) {
+      links.push_back(this);
+      totalsize++;
+    }
+    Minimize();
+    return 1;
   }
 
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
@@ -398,13 +435,35 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology * top)
   p_pshandler->TestPoint(p_momenta);
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_shand  = new String_Handler(m_gen_str,p_BS);
+
+  bool directload = true;
+  int libchk=0; 
+  Data_Reader reader(" ",";","!","=");
+  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+    if (libchk==1) {
+      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+      directload = false;
+    }
+  }  
+  if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
+  if (directload) {
+    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+string("/")+m_libname;
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
+  }
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
-				   p_BS,p_shand);
+				   p_BS,p_shand,!directload);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
+  }
+  if (directload) {
+    p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
+				  m_ptypename+string("/")+m_libname);    
+    if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
+    if (!TestLib()) return 0;
+    return 1;
   }
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
 			     top,p_BS,m_ptypename+string("/")+m_name);
@@ -481,16 +540,7 @@ int Single_Process::Tests() {
   First test : gauge test
   
   --------------------------------------------------- */
-#ifndef Explicit_Pols 
-  Vec4D gauge(sqrt(3.),1.,1.,1.);
-  if (m_nout==4) gauge = p_momenta[4];
-  if (m_nout==5) gauge = p_momenta[4];
-  //?????????
-  if (m_nout==6) gauge = p_momenta[4];  
-  m_pol.Reset_Gauge_Vectors(m_nin+m_nout,p_momenta,gauge);
-#else
   p_BS->Setk0(1);
-#endif
   p_BS->CalcEtaMu(p_momenta);
   number++;
 
@@ -662,6 +712,45 @@ int Single_Process::Tests() {
   return 0;
 }
 
+int Single_Process::TestLib()
+{
+  double M2(0.);
+  double * M_doub = new double[p_hel->MaxHel()];
+
+  p_BS->CalcEtaMu((ATOOLS::Vec4D*)p_momenta);
+  p_hel->InitializeSpinorTransformation(p_BS);
+  p_shand->Calculate();
+  
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    M2 += M_doub[i] = p_ampl->Differential(i)*p_hel->Multiplicity(i)*p_hel->PolarizationFactor(i);
+  } 
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    if (M_doub[i]==0. || dabs(M_doub[i]/M2)<(ATOOLS::Accu()*1.e-2)) {
+      p_hel->SwitchOff(i);
+    }
+  }
+  if (!rpa.gen.SpinCorrelation()) {
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
+      if (p_hel->On(i)) {
+	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
+	  if (p_hel->On(j)) {
+	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
+	      p_hel->SwitchOff(j);
+	      p_hel->SetPartner(i,j);
+	      p_hel->IncMultiplicity(i);
+	    }
+	  }
+	}
+	}
+    }
+  }
+  delete[] M_doub;
+
+  m_iresult = M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
+  if (m_iresult>0.) return 1;
+  return 0;
+}
+
 int Single_Process::CheckLibraries() {
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
@@ -786,6 +875,8 @@ void Single_Process::WriteLibrary()
   ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
+  p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
+  p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
   msg_Info()<<"Single_Process::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
@@ -821,6 +912,7 @@ void Single_Process::CreateMappingFile() {
   to.open(outname.c_str(),ios::out);
   to<<"ME: "<<m_libname<<endl
     <<"PS: "<<m_pslibname<<endl;
+  p_shand->Get_Generator()->WriteCouplings(to);
   to.close();
 }
 
@@ -1238,16 +1330,6 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   PROFILE_HERE;
   double M2(0.);
 
-#ifndef Explicit_Pols   
-  Vec4D gauge(sqrt(3.),1.,1.,1.);
-  
-  if (m_nout==4) gauge = mom[4];
-  if (m_nout==5) gauge = mom[4];
-  if (m_nout==6) gauge = mom[4];
-  
-  m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
-#endif
-
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
   p_hel->InitializeSpinorTransformation(p_BS);
 
@@ -1278,7 +1360,6 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
-//   PRINT_INFO(M2);
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 
@@ -1455,15 +1536,6 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom,const int hel)
 	       <<"   Will abort the run. Check for libraries."<<std::endl;
     abort();
   }
-#ifndef Explicit_Pols   
-  Vec4D gauge(sqrt(3.),1.,1.,1.);
-  
-  if (m_nout==4) gauge = mom[4];
-  if (m_nout==5) gauge = mom[4];
-  if (m_nout==6) gauge = mom[4];
-  
-  m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
-#endif
 
   ATOOLS::Vec4D *cpmom = new ATOOLS::Vec4D[m_nvector];
   for (size_t i=0;i<m_nvector;++i) cpmom[i]=mom[i];
@@ -1499,7 +1571,7 @@ bool Single_Process::CheckMapping(const Process_Base * proc)
   // create map
   std::map<ATOOLS::Flavour,ATOOLS::Flavour> flmap;
   for (size_t i=0;i<NIn()+NOut();++i) {
-    if (partner_flavs[i]!=flavs[i]) {
+    if (flmap.find(partner_flavs[i])==flmap.end()) {
       flmap[partner_flavs[i]]=flavs[i];
       if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
 	flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();

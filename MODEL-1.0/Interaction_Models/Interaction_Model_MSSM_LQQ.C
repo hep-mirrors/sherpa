@@ -76,10 +76,9 @@ void Interaction_Model_MSSM_LQQ::c_FFS(std::vector<Single_Vertex>& vertex,int& v
 	  kcpl0 = K_zero;
 	  kcpl1 = -M_I*num_half*conj_K_LQQ(l,u,d)*conj_K_CKM((u-2)/2,gen_sDown(flav3));
 			
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::D);     

@@ -11,6 +11,7 @@
 #include "prof.hh"
 #include "MyStrStream.H"
 #include "Process_Info.H"
+#include "IO_Handler.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -21,7 +22,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 				     Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph,bool create_4V) 
-  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
+  : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
 {
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -254,15 +255,96 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   sw_probabs = 0;
 
   probs = 0;
-  
-  probabs = new double[graphs.size()];
+
+//   probabs = new double[graphs.size()];
+  Mi      = new Complex[graphs.size()];
+}
+
+void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
+{
+  std::string name = path+"/Cluster.dat";
+  IO_Handler ioh;
+  ioh.SetFileName(name);
+  ioh.Output("",int(graphs.size()));
+  for (size_t i=0;i<graphs.size();i++) {
+    int size=graphs[i]->Size();
+    int *nums= new int[size];
+    for (int j=0;j<size;j++) nums[j]=(*graphs[i])[j]->GetNumber();
+    ioh.ArrayOutput<int>("",nums,size);
+    delete [] nums;
+  }
+}
+
+void Amplitude_Handler::RestoreAmplitudes(std::string path)
+{
+  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Cluster.dat";
+  IO_Handler ioh;
+  ioh.SetFileNameRO(name);
+  size_t cg = ioh.Input<int>("");
+  if (cg!=graphs.size()) {
+    msg_Error()<<"ERROR in Amplitude_Handler::RestoreAmplitudes() :"<<endl
+	       <<"   Stored Cluster and Color information incompatible! Abort the run."<<std::endl;
+    abort();
+  }
+  int cnt=0;
+  for (size_t i=0;i<graphs.size();i++) {
+    int *nums;
+    nums=ioh.ArrayInput<int>("");
+    int size=ioh.Nx();
+    for (int j=0;j<size;j++) graphs[i]->Add(new Single_Amplitude_Base(shand,nums[j]));
+    cnt+=size;
+    delete [] nums;
+  }
+  namplitude = cnt;
+}
+
+void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib)
+{
+  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".map";
+  ifstream from;
+  from.open(name.c_str());
+  shand->Get_Generator()->ReadCouplings(from);
+  from.close();
+
+  Single_Amplitude* n = firstgraph;
+  ngraph = 0;
+  while (n) { 
+    ++ngraph;
+    n = n->Next;
+  }
+
+  //Colors
+  CFCol_Matrix   = new CFColor(N,firstgraph,false,pID,true);
+  for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
+
+  n = firstgraph;
+
+  // fill color groups
+  int ncount = 0;
+  int maxorder = 1;
+
+  while (n) {
+    while(TOrder(n)>maxorder){
+      ncount++;	   
+      n=n->Next;
+      if (!n) break;
+    }
+    if (!n) break; 
+    pointlist.push_back(n->GetPointlist()); 
+    n = n->Next;
+    ncount++;	   
+  }
+ 
+  RestoreAmplitudes(lib);
+ 
+  ngraph=pointlist.size();
+
   Mi      = new Complex[graphs.size()];
 }
 
 Amplitude_Handler::~Amplitude_Handler() 
 {
   if (CFCol_Matrix) delete CFCol_Matrix;
-  if (probabs)      delete[] probabs;
   if (Mi)           delete[] Mi;
   if (ngraph>0) {
     Single_Amplitude * n; 
@@ -580,48 +662,41 @@ bool Amplitude_Handler::ExistFourVertex(Point* p)
   return ExistFourVertex(p->right);
 }
 
-void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
-{
-  std::string name =rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".kick";
-  //  sprintf(name,"%s/Kicker.dat",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
-  fstream test;
-  test.open(name.c_str(),ios::in);
+// void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
+// {
+//   std::string name =rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".kick";
+//   //  sprintf(name,"%s/Kicker.dat",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
+//   fstream test;
+//   test.open(name.c_str(),ios::in);
 
-  if (test) {
-    test.close();
-    fstream from;
-    from.open(name.c_str(),ios::in);
-    //read in
-    int i,sw;
-    for(;from;) {
-      from>>i>>sw;
-      Switch_Vector[i-1] =sw;
-      if (sw==0) msg_Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
-      if (i==ngraph) break;
-    }
-    return;
-  }
+//   if (test) {
+//     test.close();
+//     fstream from;
+//     from.open(name.c_str(),ios::in);
+//     //read in
+//     int i,sw;
+//     for(;from;) {
+//       from>>i>>sw;
+//       Switch_Vector[i-1] =sw;
+//       if (sw==0) msg_Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
+//       if (i==ngraph) break;
+//     }
+//     return;
+//   }
 
-  test.close();
+//   test.close();
 
-  for(short int i=0;i<ngraph;i++) Switch_Vector[i] = 1;
+//   for(short int i=0;i<ngraph;i++) Switch_Vector[i] = 1;
   
 
-  ofstream to;
-  to.open(name.c_str());
+//   ofstream to;
+//   to.open(name.c_str());
 
-  for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
-}
+//   for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
+// }
 
 Point* Amplitude_Handler::GetPointlist(int n)
 { return pointlist[n];}
-
-void Amplitude_Handler::Reset_ProbAbs()
-{
-  for (size_t i=0;i<graphs.size();i++) probabs[i] = 0.;
-}
-
-double Amplitude_Handler::Get_Probab(int i) {return probabs[i];}
 
 
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)

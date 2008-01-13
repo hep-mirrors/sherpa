@@ -4,9 +4,11 @@
 #include "Flavour.H"
 #include "Pol_Info.H"
 #include <vector>
+#include <map>
 
 namespace AMEGIC {
   class Point;
+  typedef std::map<int, int> FMMap;
 
   class Process_Info {
   public:
@@ -42,7 +44,7 @@ namespace AMEGIC {
     int  GetDPOffset(int);
     Process_Info* GetSubProcess(int n);
     Process_Info* GetDecay(int &n);
-    void Reshuffle();
+    void Reshuffle(Process_Info* =0);
     std::string GenerateName();
     void MergePointList(Point**,Point*,int);
     void SetQCDjetNums();

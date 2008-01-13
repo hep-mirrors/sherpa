@@ -141,8 +141,8 @@ namespace MODEL {
 
 /*! 
     \file
-    \brief this file contains the classes AMEGIC::Color_Function
-           and AMEGIC::cf   
+    \brief this file contains the classes MODEL::Color_Function
+           and MODEL::cf   
   */
 
   /*! 
@@ -157,13 +157,13 @@ namespace MODEL {
 
     In order to attach the underlying color information to a Vertex object 
     Color_Function objects are defined. A Color_Function possesses a type, 
-    defined in the class AMEGIC::cf, and a number of arguments which come 
+    defined in the class MODEL::cf, and a number of arguments which come 
     in two types, either as an int or a char variable. Per default the integer 
     arguments of a Color_Function, called partarg, are set to '-1' and the char 
     arguments, called strarg, are set to '?'. In addition attached to a 
     Color_Function is a string expression that contains the information of the 
     Color_Function type and charakter arguments. Tab. ?? list the Color_Function 
-    types defined in AMEGIC++ and there associated number of arguments the 
+    types defined in MODEL++ and there associated number of arguments the 
     \f$ SU(3)_C\f$ analoga and the corresponding string expression.
         
     <table width=300 align=center>

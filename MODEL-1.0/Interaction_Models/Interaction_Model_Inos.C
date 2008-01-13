@@ -56,10 +56,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	    (K_Z_R(0,k-31)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
 	     K_Z_R(1,k-31)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
 	
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -84,10 +83,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	    (K_Z_H(0,0)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
 	     K_Z_H(1,0)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
 	  
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -124,10 +122,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	     (K_Z_R(0,k-31)*K_Z_N(2,j-43)-K_Z_R(1,k-31)*K_Z_N(3,j-43))*
 	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW));
 
-	  vertex[vanz].cpl[0] = kcpl0.Value();
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0;
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -158,10 +155,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	     (K_Z_H(0,k-33)*K_Z_N(2,j-43)-K_Z_H(1,k-33)*K_Z_N(3,j-43))*
 	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW));
 
-	  vertex[vanz].cpl[0] = kcpl0.Value(); 
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0; 
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -198,10 +194,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)-
 			K_Z_MI(0,i-41)*K_Z_N(2,j-43)*costW);
 
-	  vertex[vanz].cpl[0] = kcpl0.Value(); 
-	  vertex[vanz].cpl[1] = kcpl1.Value();
+	  vertex[vanz].cpl[0] = kcpl0; 
+	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None); 
@@ -237,10 +232,9 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   kcpl0 = M_I*g1;
 	   kcpl1 = kcpl0;
 	   
-	   vertex[vanz].cpl[0]  = kcpl0.Value();
-	   vertex[vanz].cpl[1]  = kcpl1.Value();
+	   vertex[vanz].cpl[0]  = kcpl0;
+	   vertex[vanz].cpl[1]  = kcpl1;
 	   vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	   vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	   
 	   vertex[vanz].ncf   = 1;
 	   vertex[vanz].Color = new Color_Function(cf::None); 
@@ -269,10 +263,9 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   kcpl0 = M_I/(costW*num_2)*g2*
 	     (K_Z_PL(0,j-41)*K_Z_PL(0,i-41) + helper);
 	   
-	   vertex[vanz].cpl[0] = kcpl0.Value();
-	   vertex[vanz].cpl[1] = kcpl1.Value(); 
+	   vertex[vanz].cpl[0] = kcpl0;
+	   vertex[vanz].cpl[1] = kcpl1; 
 	   vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	   vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	   
 	   vertex[vanz].ncf   = 1;
 	   vertex[vanz].Color = new Color_Function(cf::None); 
@@ -304,10 +297,9 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 kcpl1 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
 			 K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
 
-	 vertex[vanz].cpl[0] = kcpl0.Value();
-	 vertex[vanz].cpl[1] = kcpl1.Value(); 
+	 vertex[vanz].cpl[0] = kcpl0;
+	 vertex[vanz].cpl[1] = kcpl1; 
 	 vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	 vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	 vertex[vanz].ncf   = 1;
 	 vertex[vanz].Color = new Color_Function(cf::None); 
@@ -341,10 +333,9 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   (K_Z_N_com_conj(3,i-43)*K_Z_N_com(3,j-43)-
 	    K_Z_N_com_conj(2,i-43)*K_Z_N_com(2,j-43));
 	 
-	 vertex[vanz].cpl[0] = kcpl0.Value();
-	 vertex[vanz].cpl[1] = kcpl1.Value();
+	 vertex[vanz].cpl[0] = kcpl0;
+	 vertex[vanz].cpl[1] = kcpl1;
 	 vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	 vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	 vertex[vanz].ncf   = 1;
 	 vertex[vanz].Color = new Color_Function(cf::None); 

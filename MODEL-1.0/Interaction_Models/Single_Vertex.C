@@ -25,7 +25,11 @@ Single_Vertex::~Single_Vertex(){
       else delete [] Lorentz;
     }
 
-
+Complex Single_Vertex::Coupling(size_t i) const
+{
+  return cpl[i].Value();
+}
+ 
 // Operators
 Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
       if (Color)   if (ncf==1) delete Color;
@@ -83,8 +87,8 @@ const bool Single_Vertex::operator==(const Single_Vertex& probe)
 ostream& MODEL::operator<<(ostream& s, const Single_Vertex& sv)
 {
   return s<<'('<<sv.in[0]<<','<<sv.in[1]<<','<<sv.in[2]<<','<<sv.in[3]
-          <<") with cpl["<<sv.cpl[0]<<','<<sv.cpl[1]<<','<<sv.cpl[2]<<','<<sv.cpl[3]<<']'
-          <<" is "<<((sv.on) ? "on" : "off");
+          <<") with cpl["<<sv.Coupling(0)<<','<<sv.Coupling(1)<<','<<sv.Coupling(2)<<','<<sv.Coupling(3)<<']'
+	  <<" is "<<((sv.on) ? "on" : "off");
 }
 
 
@@ -127,8 +131,8 @@ Single_Vertex * MODEL::MPI2Single_Vertex(const MPI_Single_Vertex & mpi_v ) {
   }
 
   /*
-  v->Lorentz = AMEGIC::MPI2Lorentz_Function(mpi_v.m_lf);
-  v->Color   = AMEGIC::MPI2Color_Function(mpi_v.m_cf);
+  v->Lorentz = MODEL::MPI2Lorentz_Function(mpi_v.m_lf);
+  v->Color   = MODEL::MPI2Color_Function(mpi_v.m_cf);
   
   for (int i=0;i<7;i+=2) {
     (v->cpl[i/2]) = Complex(mpi_v.m_cpl[i],mpi_v.m_cpl[i+1]);

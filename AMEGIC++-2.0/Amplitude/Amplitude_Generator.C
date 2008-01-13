@@ -120,8 +120,11 @@ Amplitude_Generator::~Amplitude_Generator()
   }
 #endif
 
-  for(short int i=0;i<prenum;i++) delete[] prea[i].p;
+  for(int i=0;i<prenum;i++) delete[] prea[i].p;
   delete[] prea;
+
+  for(int i=0;i<prea_table.size();i++) delete[] prea_table[i].p;
+  prea_table.clear();
 }
 
 void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
@@ -192,7 +195,7 @@ int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,vector<Compl
     else {flav[2] = v->in[2];}
     if (hit==1) {
       cpl.clear();
-      for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->cpl[j]);
+      for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->Coupling(j));
       return 1;
     }
   }
@@ -500,12 +503,14 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
 	if ((prea_table[i].p[k].number>99) && ((prea_table[i].p[k].fl).IsBoson())) 
 	  prea_table[i].p[k].number += 100;
       }
-      gra = new Single_Amplitude(prea_table[i].p,prea_table[i].top,prea_table[i].perm,b,dep,N,top,BS,fl,shand);
+      if (CheckOrders(prea_table[i].p)) {
+	gra = new Single_Amplitude(prea_table[i].p,prea_table[i].top,prea_table[i].perm,b,dep,N,top,BS,fl,shand);
 
-      count++;
-      if (first) n->Next = gra;
-      else first   = gra; 
-      n = gra;
+	count++;
+	if (first) n->Next = gra;
+	else first   = gra; 
+	n = gra;
+      }
     }
   }
 }
@@ -1070,6 +1075,17 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 
+ 
+bool Amplitude_Generator::CheckOrders(Point * p)
+{
+  int hitQED = 0;
+  int hitQCD = 0;
+  hitQCD = FindQCDOrder(p,hitQCD);
+  hitQED = N -2 - hitQCD;  // N = nin + nout
+  if (hitQED > nEW || hitQCD > nQCD) return 0;
+  return 1;
+}
+ 
 
 int *  Amplitude_Generator::DivideComparisons(int cpu_size, int nampl, int rank) {
   // determine share (multi cpu only)
@@ -1321,7 +1337,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  
 	  pcopy->v      = (*v)(i);
 	  pcopy->cpl.clear();
-	  for (size_t k=0;k<(*v)(i)->cpl.size();k++) pcopy->cpl.push_back((*v)(i)->cpl[k]);
+	  for (size_t k=0;k<(*v)(i)->cpl.size();k++) pcopy->cpl.push_back((*v)(i)->Coupling(k));
 	  //set pcopy legs
 	  
 	  if (p->left->number==pnext->number) {

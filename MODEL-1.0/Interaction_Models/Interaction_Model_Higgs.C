@@ -65,10 +65,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	  kcpl0 = -M_I/v1*K_yuk(fl1)*K_Z_R(0,i-31);
 	  kcpl1 = kcpl0;
 
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  vertex[vanz].on      = 1;
 
 	  vertex[vanz].ncf   = 1;
@@ -102,10 +101,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	  kcpl0 = -M_I/v2*K_yuk(fl1)*K_Z_R(1,i-31);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  vertex[vanz].on      = 1;
 	  
 	  vertex[vanz].ncf   = 1;
@@ -143,10 +141,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = -K_yuk(fl1)/v1*K_Z_H(0,0);
 	kcpl1 = -kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
@@ -180,10 +177,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = -K_yuk(fl1)/v2*K_Z_H(1,0);
 	kcpl1 = -kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
@@ -220,10 +216,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	  kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0);
 	  kcpl0 = K_zero;	 	  
 
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
- 	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+ 	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  vertex[vanz].on      = 1;
 
 	  vertex[vanz].ncf   = 1;
@@ -260,10 +255,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	    kcpl0 = M_I/v2*root2*K_yuk(fl2)*K_Z_H(1,0)*K_CKM(geni,genj);
 	    kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0)*K_CKM(geni,genj);
 	    	   
-	    vertex[vanz].cpl[0]  = kcpl0.Value();
-	    vertex[vanz].cpl[1]  = kcpl1.Value();
+	    vertex[vanz].cpl[0]  = kcpl0;
+	    vertex[vanz].cpl[1]  = kcpl1;
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    
-	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    vertex[vanz].on      = 1;
 
 	    vertex[vanz].ncf   = 1;
@@ -307,10 +301,9 @@ void Interaction_Model_Higgs::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = M_I/num_2*g2*g2*(v1*K_Z_R(0,i-31)+v2*K_Z_R(1,i-31));
 	kcpl1 = kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    	
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
@@ -340,10 +333,9 @@ void Interaction_Model_Higgs::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = M_I/(costW*costW*num_2)*g2*g2*(v1*K_Z_R(0,i-31)+v2*K_Z_R(1,i-31));
 	kcpl1 = kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    	
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
@@ -384,10 +376,9 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
 			    vev*K_A_P(i-31,0)/num_2);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -424,10 +415,9 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
  
 	      kcpl1 = kcpl0;
 
-	      vertex[vanz].cpl[0]  = kcpl0.Value();
-	      vertex[vanz].cpl[1]  = kcpl1.Value();
+	      vertex[vanz].cpl[0]  = kcpl0;
+	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	      vertex[vanz].ncf   = 1;
 	      vertex[vanz].Color = new Color_Function(cf::None); 
@@ -454,10 +444,9 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
       kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*(num_3*K_A_R(1,1)*K_B_R(1));
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None); 
@@ -483,10 +472,9 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = -M_I/(costW*costW*num_4)*g2*g2*K_A_H(0,0)*K_B_R(i-31);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -526,10 +514,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = g2/(costW*num_2)*K_A_M(i-31,0);
 	kcpl1 = kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -557,10 +544,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
       kcpl0 = M_I*g1*cot2TW;
       kcpl1 = kcpl0;
 
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None); 
@@ -586,10 +572,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
     kcpl0 = M_I*g1;
     kcpl1 = kcpl0;
 
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None); 
@@ -618,10 +603,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
 	kcpl0 = -(M_I/num_2)*g2*K_A_M(i-31,0);
 	kcpl1 = kcpl0;
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None); 
@@ -646,10 +630,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
       kcpl0 = -g2/num_2;
       kcpl1 = kcpl0;
 
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None); 
@@ -685,10 +668,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
     kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*num_3*K_A_H(0,0)*K_A_H(0,0);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -712,10 +694,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
     kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*num_2*K_A_H(0,0)*K_A_H(0,0);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -738,10 +719,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
     kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*K_A_H(0,0)*K_A_H(0,0);
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -773,10 +753,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
 	  
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None);     
@@ -801,10 +780,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
 	  
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None);     
@@ -835,10 +813,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
 	      
 	      kcpl1 = kcpl0;
 	  
-	      vertex[vanz].cpl[0]  = kcpl0.Value();
-	      vertex[vanz].cpl[1]  = kcpl1.Value();
+	      vertex[vanz].cpl[0]  = kcpl0;
+	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	      
 	      vertex[vanz].ncf   = 1;
 	      vertex[vanz].Color = new Color_Function(cf::None);     
@@ -883,10 +860,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	kcpl0 = M_I*g2*g2/(num_2*costW*costW);
 	kcpl1 = kcpl0;
     
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -916,10 +892,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	kcpl0 = M_I*g2*g2/num_2;
 	kcpl1 = kcpl0;
     
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -946,10 +921,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
     kcpl0 = M_I*g2*g2/num_2;
     kcpl1 = kcpl0;
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
@@ -977,10 +951,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	  kcpl0 = M_I*g1*g1/(num_2*costW)*K_A_M(i-31,0);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1005,10 +978,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	  kcpl0 = -M_I*g1*g1/(num_2*sintW)*K_A_M(i-31,0);
 	  kcpl1 = kcpl0;
 	  
-	  vertex[vanz].cpl[0]  = kcpl0.Value();
-	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].cpl[0]  = kcpl0;
+	  vertex[vanz].cpl[1]  = kcpl1;
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
 	  vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1036,10 +1008,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	kcpl0 = g1*g1/(num_2*costW);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1063,10 +1034,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	kcpl0 = -g1*g1/(num_2*sintW);
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1097,10 +1067,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       kcpl0 = M_I*g1*g1*num_2*cot2TW*cot2TW;
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1124,10 +1093,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	kcpl0 = M_I*g1*g1*num_2*cot2TW;
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::None);     
@@ -1151,10 +1119,9 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       kcpl0 = M_I*g1*g1*num_2;
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl1.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::None);     

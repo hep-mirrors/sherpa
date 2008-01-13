@@ -26,7 +26,7 @@ namespace AMEGIC {
     void                       KillStrings();
     sknot*                     MakeSknotAFill(std::string &);
   public:
-    String_Handler(const int &,Basic_Sfuncs *);
+    String_Handler(const int &,Basic_Sfuncs *,std::map<std::string,Complex>*);
     String_Handler(Virtual_String_Generator *); 
     String_Handler(Virtual_String_Generator *,sknot ***); 
     ~String_Handler();  

@@ -39,10 +39,9 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
     kcpl0 = -M_I*kap;
     kcpl1 = Kabbala();
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);//GD;     
@@ -66,10 +65,9 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
     kcpl0 = M_I*om*kap;
     kcpl1 = Kabbala();
   
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::G);     
@@ -105,12 +103,9 @@ void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& 
 	kcpl0 = g3*M_I*kap/num2;
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	
-	vertex[vanz].cpl[2]  = 0.;
-	vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
@@ -134,12 +129,9 @@ void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& 
 	kcpl0 = -g3*M_I*om*kap*num15;
 	kcpl1 = kcpl0;
 	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].cpl[0]  = kcpl0;
+	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	
-	vertex[vanz].cpl[2]  = 0.;
-	vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
@@ -172,10 +164,9 @@ void Interaction_Model_QCD_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& 
   kcpl0 = g3*kap; 
   kcpl1 = kcpl0; 
 
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
   vertex[vanz].ncf   = 1;
   vertex[vanz].Color = new Color_Function(cf::F);     

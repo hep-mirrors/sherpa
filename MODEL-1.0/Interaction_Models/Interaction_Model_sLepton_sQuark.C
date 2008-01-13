@@ -79,10 +79,9 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      
 	      kcpl1 = kcpl0;
 	      
-	      vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	      vertex[vanz].cpl[1]  = kcpl1.Value();
+	      vertex[vanz].cpl[0]  = kcpl0; 
+	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	      
 	      vertex[vanz].ncf   = 1;
 	      vertex[vanz].Color = new Color_Function(cf::D);     
@@ -124,10 +123,9 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      
 	      kcpl1 = kcpl0;
 	      
-	      vertex[vanz].cpl[0]  = kcpl0.Value(); 
-	      vertex[vanz].cpl[1]  = kcpl1.Value();
+	      vertex[vanz].cpl[0]  = kcpl0; 
+	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	      
 	      vertex[vanz].ncf   = 1;
 	      vertex[vanz].Color = new Color_Function(cf::D);     
@@ -176,10 +174,9 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  kcpl0 = -M_I*factor;
 		  kcpl1 = kcpl0;
 		  
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::D);     
@@ -244,10 +241,9 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  
 		  kcpl1 = kcpl0;
 		  
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::D);     
@@ -310,10 +306,9 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  
 		  kcpl1 = kcpl0;
 		  
-		  vertex[vanz].cpl[0]  = kcpl0.Value(); 
-		  vertex[vanz].cpl[1]  = kcpl1.Value();
+		  vertex[vanz].cpl[0]  = kcpl0; 
+		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-		  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 		  
 		  vertex[vanz].ncf   = 1;
 		  vertex[vanz].Color = new Color_Function(cf::D);     

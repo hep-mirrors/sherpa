@@ -317,7 +317,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       help+=string("ZS_");
     } 
     else {
-      if (!IsZero(ph->fl.Mass())) {
+      if (!ATOOLS::IsZero(ph->fl.Mass())) {
 	help+=string("ZR")+ToString(ph->fl.Kfcode())+string("_");
       }
       else help+=string("ZS_");
@@ -337,7 +337,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     GenerateMassChain(flag,ph,ph,rannum,sf);
     break;
   case 2:
-    if (ph->m!=0 && !IsZero(ph->fl.Mass())) {
+    if (ph->m!=0 && !ATOOLS::IsZero(ph->fl.Mass())) {
       sf<<"  type  = 1;"<<endl
 	<<"  mass  = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Mass();"<<endl
 	<<"  width = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Width();"<<endl;
@@ -368,7 +368,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
   if (p->m==0) {
     int hi = p->fl.Kfcode();
     string tmstr;
-    if (flag>=0 && !IsZero(p->fl.Mass())) {
+    if (flag>=0 && !ATOOLS::IsZero(p->fl.Mass())) {
       tmstr = string("tmass")+ToString(p->number);
       sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
     }
@@ -425,7 +425,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
     string his;
     switch (flag) {
     case -11:
-      if(!IsZero(p->fl.Mass())) his = ToString(hi);
+      if(!ATOOLS::IsZero(p->fl.Mass())) his = ToString(hi);
       m_idc.push_back(string("TC")+his+
 		      string("_")+pin0sum+string("_")+pin1sum+
 		      string("_")+pout0sum+string("_")+pout1sum);
@@ -441,7 +441,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
-      if(!IsZero(p->fl.Mass())) his = ToString(hi);
+      if(!ATOOLS::IsZero(p->fl.Mass())) his = ToString(hi);
       string idh = string("TC")+his+
 	string("_")+pin0sum+string("_")+pin1sum+string("_")+pout0sum+string("_")+pout1sum;
       sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 

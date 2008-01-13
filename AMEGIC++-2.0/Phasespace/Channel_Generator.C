@@ -204,7 +204,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
     switch (tcount) {
       case 0 : {
 	if (flag==-11) {
-	  if (!IsZero(ph->fl.Mass())) {
+	  if (!ATOOLS::IsZero(ph->fl.Mass())) {
 	    help+=string("ZR")+ToString(ph->fl.Kfcode())+string("_");
 	  }
 	  else help+=string("ZS_");	
@@ -469,7 +469,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 { 
   int hi = propt[count]->fl.Kfcode();
   string tmstr;
-  if (flag>=0 && !IsZero(propt[count]->fl.Mass())) {
+  if (flag>=0 && !ATOOLS::IsZero(propt[count]->fl.Mass())) {
     tmstr = string("tmass")+ToString(count);
     sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
   }
@@ -628,7 +628,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   string his("");
   switch (flag) {
   case -11:
-    if(!IsZero(propt[count]->fl.Mass())) his = ToString(hi);
+    if(!ATOOLS::IsZero(propt[count]->fl.Mass())) his = ToString(hi);
     m_idc.push_back(string("TC")+his+
 		    string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
 		    string("_")+Order(pout0sum)+string("_")+Order(pout1sum));
@@ -644,7 +644,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     sf<<rannum++<<"]);"<<endl;
     break;
   default:
-     if(!IsZero(propt[count]->fl.Mass())) his = ToString(hi);
+     if(!ATOOLS::IsZero(propt[count]->fl.Mass())) his = ToString(hi);
      string idh = string("TC")+his+
                   string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
                   string("_")+Order(pout0sum)+string("_")+Order(pout1sum);

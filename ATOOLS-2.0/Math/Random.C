@@ -511,6 +511,6 @@ void ATOOLS::Random::Gaussian(double & x,double & y)
   while (random==0.) random = Get();
   double r(sqrt(-2.*log(random)));
 
-  x = r*cos(phi);
-  y = r*sin(phi);
+  x = r*std::cos(phi);
+  y = r*std::sin(phi);
 }

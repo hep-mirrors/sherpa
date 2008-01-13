@@ -34,6 +34,7 @@ namespace AMEGIC {
   public:
     int sign;
     Single_Amplitude_Base(int*,int,Basic_Sfuncs*,ATOOLS::Flavour* ,String_Handler*); 
+    Single_Amplitude_Base(String_Handler*,int); 
     virtual ~Single_Amplitude_Base();
 
     Complex Zvalue(int);
@@ -50,6 +51,7 @@ namespace AMEGIC {
     void PrintGraph(); 
     void SetNumber(int& i);
     Amplitude_Base* GetAmplitude(const int n);
+    const int GetNumber() { return amplnumber; }
   };
 
   /*!

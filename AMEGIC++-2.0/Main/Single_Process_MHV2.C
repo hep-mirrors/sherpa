@@ -67,8 +67,9 @@ Single_Process_MHV2::Single_Process_MHV2(int _nin,int _nout,Flavour * _fl,
   m_libnumb  = 0;
   m_save_max = 0.;
   m_efunc=e_func;
-  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
-  m_pslibname = m_libname;
+  m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
+  if (m_gen_str>1) m_ptypename = "P"+m_libname;
+  else m_ptypename = "N"+m_libname;
 
   PolarizationNorm();
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
@@ -119,8 +120,9 @@ Single_Process_MHV2::Single_Process_MHV2(Process_Info* pinfo,int _nin,int _nout,
   m_libnumb  = 0;
   m_save_max = 0.;
   m_efunc=e_func;
-  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
-  m_pslibname = m_libname;
+  m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
+  if (m_gen_str>1) m_ptypename = "P"+m_libname;
+  else m_ptypename = "N"+m_libname;
 
   PolarizationNorm();
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
@@ -269,7 +271,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
   delete [] plist;
   //////////////////////////////////////////////
 
-  p_shand  = new String_Handler(m_gen_str,p_BS);
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
 
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_print_graphs,0);
@@ -376,7 +378,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology * top)
   //////////////////////////////////////////////
 
 
-  p_shand  = new String_Handler(m_gen_str,p_BS);
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
 
 //   p_hcres   = new double*[p_hel->MaxHel()];
 //   p_hcalpha = new double*[p_hel->MaxHel()];
@@ -1307,7 +1309,7 @@ bool Single_Process_MHV2::CheckMapping(const Process_Base * proc)
   // create map
   std::map<ATOOLS::Flavour,ATOOLS::Flavour> flmap;
   for (size_t i=0;i<NIn()+NOut();++i) {
-    if (partner_flavs[i]!=flavs[i]) {
+    if (flmap.find(partner_flavs[i])==flmap.end()) {
       flmap[partner_flavs[i]]=flavs[i];
       if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
 	flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();

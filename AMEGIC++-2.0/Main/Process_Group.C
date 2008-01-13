@@ -37,6 +37,7 @@ Process_Group::Process_Group() :
   p_pl    = 0;
   m_procs.clear();
   m_efunc="1";
+  m_mfname = "";
 }
 
 Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _fl,
@@ -51,9 +52,9 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 {
   p_selected  = NULL;
 
-  string stan,oli;
   m_efunc=e_func;
-  GenerateNames(m_nin,p_flin,p_plin,m_name,stan,oli);
+
+  m_mfname = "P"+ToString(m_nin)+"_"+ToString(m_nout)+"/"+m_name+".map";
 //   PRINT_INFO(m_name);
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
@@ -111,6 +112,22 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
   // ====
 
+  set<string> whitelist;
+  if (m_mfname!=string("")) {
+    string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
+    string buffer;
+    ifstream file;
+    file.open(name.c_str()); 
+    for (;file;) {
+      getline(file,buffer); 
+      if (buffer.length()>0) {
+ 	whitelist.insert(buffer);
+      }
+    }
+    file.close();
+    if (whitelist.size()>0) m_mfname="";
+  }
+
   p_pinfo->Reshuffle();
   p_pinfo->Expand();
   int nsproc=p_pinfo->NProcs();
@@ -131,7 +148,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   p_pinfo->GetPolList(opl+m_nin);
   Process_Info *pi = NULL;
 
-  string _name,_stan,_oli;
+  string _name;
   bool flag = 1;
   bool take = 0;
   int overflow = 0;
@@ -166,14 +183,21 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
       for (int j=0;j<nsproc;j++) {
 	pi = p_pinfo->GetSubProcess(j);
  	pi->ResetSubList(nout,_fl+m_nin,_pl+m_nin);
-	pi->Reshuffle();
-	GenerateNames(m_nin,_fl,_pl,_name,_stan,_oli,pi);
+	GenerateName(m_nin,_fl,_pl,_name,pi);
 	take = 1;
-	for (size_t k=0;k<m_procs.size();k++) {
-	  if (_name == m_procs[k]->Name()) { 
-	    take = 0; 
+	if (whitelist.size()>0) {
+	  if (whitelist.find(_name)==whitelist.end()) {
+	    take=0;
 	    delete pi;
-	    break; 
+	  }
+	}
+	if (take) {
+	  for (size_t k=0;k<m_procs.size();k++) {
+	    if (_name == m_procs[k]->Name()) { 
+	      take = 0; 
+	      delete pi;
+	      break; 
+	    }
 	  }
 	}
 	if (take) {
@@ -337,8 +361,7 @@ void Process_Group::GroupProcesses() {
 	}
       }
       else if ( (flav1.IsFermion()) && (flav2.IsVector()) ) {
-	if (flav1.IsAnti())          help += string("fb_");
-	                        else help += string("f_");
+	help += string("f_");
 	if (flav2==flav2.Bar())      help += string("V_->_");
 	else if (flav2.Charge() > 0) help += string("V+_->_"); 
 	                        else help += string("V-_->_"); 
@@ -347,17 +370,14 @@ void Process_Group::GroupProcesses() {
 	if (flav1==flav1.Bar())      help += string("V_");
 	else if (flav1.Charge() > 0) help += string("V+_"); 
 	                        else help += string("V-_"); 
-	if (flav2.IsAnti())          help += string("fb_->_");
-	                        else help += string("f_->_");
+	help += string("f_->_");
       }
       else if ( (flav1.IsFermion()) && (flav2.IsFermion()) ) {
-	if ( (flav1.IsAnti()) && (flav2==flav1) )             help += string ("fb_fb_->_");
-	else if ( !(flav1.IsAnti()) && (flav2==flav1) )       help += string ("f_f_->_");
-	else if ( !(flav1.IsAnti()) && (flav2==flav1.Bar()) ) help += string ("f_fb_->_");
-	else if ( (flav1.IsAnti()) && (flav2.IsAnti()) )      help += string ("fb_fb'_->_");
-	else if ( !(flav1.IsAnti()) && (flav2.IsAnti()) )     help += string ("fb_f'_->_");
-	else if ( (flav1.IsAnti()) && !(flav2.IsAnti()) )     help += string ("f_fb'_->_");
-	else if ( !(flav1.IsAnti()) && !(flav2.IsAnti()) )    help += string ("f_f'_->_");
+	if ( flav2==flav1 )                                   help += string ("f_f_->_");
+	else if ( flav2==flav1.Bar() )                        help += string ("f_fb_->_");
+	else if (( !(flav1.IsAnti()) && (flav2.IsAnti()) ) ||    
+		 ( (flav1.IsAnti()) && !(flav2.IsAnti()) )   )help += string ("f_fb'_->_");
+	else                                                  help += string ("f_f'_->_");
       }
     }
     else {
@@ -392,6 +412,7 @@ void Process_Group::GroupProcesses() {
       group->SetISR(p_isrhandler);
       group->Add(sproc);
       group->SetParent(this);
+      group->SetMFname(m_mfname);
       m_procs.push_back(group);
     }
   }
@@ -402,6 +423,7 @@ void Process_Group::GroupProcesses() {
       msg_Tracking()<<"    "<<((*m_procs[i])[j])->Name()<<endl;
     msg_Tracking()<<"--------------------------------------------------"<<endl;
   }
+  m_mfname = "";
 }
 
 void Process_Group::Add(Process_Base * _proc) 
@@ -792,7 +814,8 @@ int Process_Group::InitAmplitude(Model_Base * model,Topology * top,Vec4D *& test
       m_procs.pop_back();
     }
   }
-
+  
+  WriteMappingFile();
   if (okay==0) {
     links.clear();
     for (size_t i=0;i<m_procs.size();i++) if (m_procs[i]) delete (m_procs[i]); 
@@ -802,7 +825,17 @@ int Process_Group::InitAmplitude(Model_Base * model,Topology * top,Vec4D *& test
   return okay;
 }
 
+void Process_Group::WriteMappingFile()
+{
+  if (m_mfname==string("")) return;
+  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
+  fstream file;
+  file.open(name.c_str(),ios::out|ios::app); 
 
+  for (size_t i=0;i<m_procs.size();i++) file<<m_procs[i]->Name()<<endl;
+
+  file.close();
+}
 
 bool Process_Group::SetUpIntegrator()
 {

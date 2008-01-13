@@ -76,10 +76,8 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].in[0] = flFermion;
 	vertex[vanz].in[1] = flZPrime;
         vertex[vanz].in[2] = Flavour(kf::code(FermionNumber));
-	vertex[vanz].cpl[0] = kcpl0.Value();
-	vertex[vanz].cpl[1] = kcpl1.Value();
-	vertex[vanz].cpl[2] = 0.;
-	vertex[vanz].cpl[3] = 0.;
+	vertex[vanz].cpl[0] = kcpl0;
+	vertex[vanz].cpl[1] = kcpl1;
         vertex[vanz].Str = (kcpl0*PR+kcpl1*PL).String(); 
 
 	// Color Function for vertex

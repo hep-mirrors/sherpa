@@ -101,7 +101,8 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
 
 //   pinfo->Print();
 //   pinfo->FullPrint();
-  pinfo->Reshuffle();
+  
+  GenerateName(m_nin,p_flin,p_plin,m_name, pinfo);
   pinfo->GetTotalFlavList(p_flout);
   pinfo->GetTotalPolList(p_plout);
   for (size_t i=0;i<m_nout;i++) { 
@@ -128,31 +129,35 @@ Process_Base::~Process_Base() {
 
   ------------------------------------------------------------------------------*/
 
-string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin,
-				     string & _name,string & _ptype, string & _lib, Process_Info* pi)
+string * Process_Base::GenerateName(int _nin, Flavour * _flin, Pol_Info * _plin,
+				     string & _name, Process_Info* pi)
 {
   Process_Info *ppi = pi;
   if (ppi==NULL) ppi=p_pinfo;
-  Reshuffle(_nin, _flin, _plin);
+
+  Process_Info ini(0,0);
+  ini.AddSubList(_nin,_flin,_plin);
+  ini.Reshuffle(ppi);
+
+  ppi->Reshuffle(&ini);
 
   if (_nin==2) {
-    if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
-      Flavour flhelp  = _flin[0];
-      _flin[0] = _flin[1];
-      _flin[1] = flhelp;
-      Pol_Info plhelp  = _plin[0];
-      _plin[0] = _plin[1];
-      _plin[1] = plhelp;    
+    if (ini.m_sublist[0][0]->Flav()->IsAnti() && !ini.m_sublist[0][1]->Flav()->IsAnti()) {
+      _flin[0] = *(ini.m_sublist[0][1]->Flav());
+      _flin[1] = *(ini.m_sublist[0][0]->Flav());
+      _plin[0] = *(ini.m_sublist[0][1]->Pol());
+      _plin[1] = *(ini.m_sublist[0][0]->Pol());
+    }
+    else {
+      _flin[0] = *(ini.m_sublist[0][0]->Flav());
+      _flin[1] = *(ini.m_sublist[0][1]->Flav());
+      _plin[0] = *(ini.m_sublist[0][0]->Pol());
+      _plin[1] = *(ini.m_sublist[0][1]->Pol());
     }
   }
   int _nout=ppi->TotalNout();
- 
-  _name=ToString(_nin)+"_"+ToString(_nout);
-  if (m_gen_str>1) _ptype      = string("P")+_name;
-  else _ptype      = string("N")+_name;
-  _lib        = _name;
-  _name      += string("_");
-  
+  _name = ToString(_nin)+"_"+ToString(_nout)+"_";
+
   for (size_t i=0;i<m_nin;i++) {
     _name += _flin[i].IDName();
     // polinfo for fully polarised incommings
@@ -176,121 +181,6 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
 }
 
 
-class S_Data {
-public:
-  S_Data(const int _i, Flavour _fl, Pol_Info _pl) :
-  i(_i),fl(_fl),pl(_pl) {}
-  int      i;
-  Flavour  fl;
-  Pol_Info pl;
-};
-
-class Order_FVST {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (a.fl.IsFermion() && !b.fl.IsFermion()) return 1;
-    if (a.fl.IsVector() && !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
-    if (a.fl.IsScalar() && !b.fl.IsScalar() && 
-	 !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
-    return 0;
-  }
-};
-
-class Order_SVFT {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (a.fl.IsScalar() && !b.fl.IsScalar()) return 1;
-    if (a.fl.IsVector() && !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
-    if (a.fl.IsFermion() && !b.fl.IsFermion() && 
-	 !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
-    return 0;
-  }
-};
-
-class Order_Mass {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a > b" return 1  else 0;
-    if (a.fl.Mass() <= b.fl.Mass()) return 0;
-    return 1;
-  }
-};
-
-class Order_InvMass {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (a.fl.Mass() < b.fl.Mass()) return 1;
-    return 0;
-  }
-};
-
-
-class Order_Kfc {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (a.fl.Kfcode() < b.fl.Kfcode()) return 1;
-    return 0;
-  }
-};
-
-
-class Order_Anti {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if ((a.fl.IsFermion() && b.fl.IsFermion())
-	&& (!a.fl.IsAnti() && b.fl.IsAnti())) return 1;
-    return 0;
-  }
-};
-
-
-class Order_Coupling {
-public:
-  int operator()(const S_Data & a, const S_Data & b) {
-      if (!a.fl.Strong() && b.fl.Strong()) return 1;
-      return 0;
-  }
-};
-
-//
-// Note: all order operator have to return 0 if 
-//       two elements are equal!
-//       Otherwise the order will change even for
-//       equal elements.
-//
-
-void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
-{
-  std::vector<S_Data> sd;
-  Flavour heaviest(kf::photon);
-  for (int i=0;i<n;++i) {
-    sd.push_back(S_Data(i,flav[i],plav[i]));
-    if (flav[i].Mass()>heaviest.Mass()) heaviest=flav[i];
-    else if (flav[i].Mass()==heaviest.Mass() &&
-	     !flav[i].IsAnti()) heaviest=flav[i];
-  }
-
-  std::stable_sort(sd.begin(),sd.end(),Order_Kfc());
-  std::stable_sort(sd.begin(),sd.end(),Order_Anti());
-  std::stable_sort(sd.begin(),sd.end(),Order_SVFT());
-  if (heaviest.IsAnti())  std::stable_sort(sd.begin(),sd.end(),Order_InvMass());
-  else   std::stable_sort(sd.begin(),sd.end(),Order_Mass());
-  std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
-  
-  
-  for (int i=0;i<n;++i) {
-    size_t pos=m_efunc.find("p["+ToString(sd[i].i)+"]");
-    if (pos!=std::string::npos) 
-      m_efunc.replace(pos,3+ToString(sd[i].i).length(),"p["+ToString(i)+"]");
-    flav[i]=sd[i].fl;
-    plav[i]=sd[i].pl;
-  }
-}
 
 
 bool Process_Base::IsFile(string filename)

@@ -60,7 +60,7 @@ namespace AMEGIC {
       Furthermore, delta functions are eliminated.
 
     */
-    CFColor(int,Single_Amplitude*,bool,std::string& pID=noname);
+    CFColor(int,Single_Amplitude*,bool,std::string& pID=noname,bool=false);
     ~CFColor();
     //! Outputs the colour matrix.
     void Output(std::string &);

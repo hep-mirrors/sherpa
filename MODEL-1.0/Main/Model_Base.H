@@ -83,6 +83,7 @@ namespace MODEL {
 
     inline Vertex              * GetVertex()          { return p_vertex; }
     inline Vertex_Table        * GetVertexTable()     const { return p_vertextable; }
+    inline  tscmap* GetCouplings()  { return p_vertex->GetCouplings(); }
   };
 
   /*!

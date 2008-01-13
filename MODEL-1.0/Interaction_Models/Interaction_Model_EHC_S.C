@@ -57,10 +57,9 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
       kcpl0 = M_I*ghgg;
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl0.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl0;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::G);     
@@ -84,10 +83,9 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
       kcpl0 = M_I;
       kcpl1 = kcpl0;
       
-      vertex[vanz].cpl[0]  = kcpl0.Value();
-      vertex[vanz].cpl[1]  = kcpl0.Value();
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl0;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
       vertex[vanz].Color = new Color_Function(cf::G);     
@@ -125,10 +123,9 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
     kcpl0 = g3*ghgg; 
     kcpl1 = kcpl0; 
     
-    vertex[vanz].cpl[0]  = kcpl0.Value();
-    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::F);     
@@ -150,10 +147,8 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].in[3] = flsh;
     
     vertex[vanz].nleg            = 4;
-    vertex[vanz].cpl[0]          = kcpl0.Value();
-    vertex[vanz].cpl[1]          = kcpl1.Value();
-    vertex[vanz].cpl[2]          = 0.;
-    vertex[vanz].cpl[3]          = 0.;
+    vertex[vanz].cpl[0]          = kcpl0;
+    vertex[vanz].cpl[1]          = kcpl1;
     vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
     
     vertex[vanz].ncf             = 3;

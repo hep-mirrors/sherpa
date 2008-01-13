@@ -85,6 +85,7 @@ namespace AMEGIC {
     int  FindQEDOrder(Point*,int&);
     int  FindQCDOrder(Point*,int&);
     void CountOrders(Single_Amplitude* &);
+    bool CheckOrders(Point * p);
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
     int  CompareColors(Point*,Point*);

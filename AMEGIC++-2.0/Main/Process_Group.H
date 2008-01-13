@@ -13,6 +13,7 @@ namespace AMEGIC {
     bool m_resetted;
     int  m_weventmode;
     int m_enable_mhv; 
+    std::string m_mfname;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -37,6 +38,7 @@ namespace AMEGIC {
     int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled,const int &nout);
     void           ConstructProcesses(ATOOLS::Selector_Data *);
     void           PrepareTerminate();
+    void           WriteMappingFile();
   public :
     bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);
@@ -57,6 +59,7 @@ namespace AMEGIC {
     size_t         Size()                          { return m_procs.size(); }
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
+    void           SetMFname(std::string name)         { m_mfname=name; }
     void           SetISRThreshold(double);
     void           SetTables(bool);
     void           SetTotal(int flag, int depth=0);
