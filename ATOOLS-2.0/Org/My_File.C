@@ -98,7 +98,7 @@ bool My_File<FileType>::Open()
 	if (i>0 || msg_LevelIsDebugging()) {
 	  bool output(true);
 	  for (size_t j(0);j<s_nocomplains.size();++j)
-	    if ((m_path+m_file).find(s_nocomplains[i])!=
+	    if ((m_path+m_file).find(s_nocomplains[j])!=
 		std::string::npos) output=false;
 	  if (output) 
 	    msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"

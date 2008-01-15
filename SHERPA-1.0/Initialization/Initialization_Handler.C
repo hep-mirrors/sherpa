@@ -45,6 +45,13 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 {
   m_scan_istep=-1;  
 
+  std::vector<std::string> names(4);
+  names[0]="Decaydata";
+  names[1]="Particle.dat";
+  names[2]="Hadron.dat";
+  names[3]="Run.dat";
+  My_In_File::SetNoComplains(names);
+
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -76,6 +83,13 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_file=std::string("Run.dat");
 
   m_scan_istep=-1;
+
+  std::vector<std::string> names(4);
+  names[0]="Decaydata";
+  names[1]="Particle.dat";
+  names[2]="Hadron.dat";
+  names[3]="Run.dat";
+  My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
 

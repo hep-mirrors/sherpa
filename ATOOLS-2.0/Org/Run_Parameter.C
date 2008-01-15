@@ -68,12 +68,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
 
 void Run_Parameter::AnalyseEnvironment() 
 {
-  std::vector<std::string> names(4);
-  names[0]="Decaydata";
-  names[1]="Particle.dat";
-  names[2]="Hadron.dat";
-  names[3]="Run.dat";
-  My_In_File::SetNoComplains(names);
   if (s_initialized) return;
 #ifdef __GNUC__
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 96
