@@ -5,8 +5,31 @@
 #include "Polarisation.H"
 #include <string>
 
+#ifdef USING__Threading 
+#include <pthread.h> 
+#endif 
+
 namespace AMEGIC {
   class Single_Process;
+
+#ifdef USING__Threading
+  class Process_Group;
+
+  struct AME_PS_TID {
+    pthread_t m_id;
+    Process_Group *p_proc;
+    double m_d;
+    const ATOOLS::Vec4D *p_p;
+    size_t m_s, m_m, m_b, m_e, m_i;
+    pthread_mutex_t m_s_mtx;
+    pthread_cond_t m_s_cnd;
+    AME_PS_TID(Process_Group *const proc): 
+      p_proc(proc), m_s(2), m_b(0), m_e(0) {}
+  };// end of struct AME_PS_TID
+
+  typedef std::vector<AME_PS_TID*> AME_PS_TID_Vector; 
+#endif
+ 
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> m_procs;
@@ -19,6 +42,12 @@ namespace AMEGIC {
       Constructors
 
       ------------------------------------------------------------------------------*/
+#ifdef USING__Threading 
+    std::vector<Process_Base *> m_umprocs, m_mprocs;
+    AME_PS_TID_Vector m_cts;
+
+    static void *TDSigma(void *arg);
+#endif 
   public :
     Process_Group(Process_Info*,int,int,ATOOLS::Flavour *&,
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,

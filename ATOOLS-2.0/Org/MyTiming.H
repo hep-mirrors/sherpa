@@ -13,6 +13,7 @@ namespace ATOOLS {
     tms starttms, currenttms, stoptms;
     clock_t startclock, currentclock, stopclock;
     int status;
+    double clk_tck;
     void SetCurrent();
   public:
     MyTiming();
@@ -21,6 +22,7 @@ namespace ATOOLS {
     void PrintTime();
     double SystemTime();
     double UserTime();
+    double RealTime();
     std::string TimeString(const int format=0);
   };
 

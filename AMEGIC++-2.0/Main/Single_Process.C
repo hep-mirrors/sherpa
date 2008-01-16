@@ -8,7 +8,6 @@
 #include "Histogram.H"
 
 #include "Random.H"
-#include "prof.hh"
 
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
@@ -682,7 +681,6 @@ int Single_Process::Tests() {
       }
     }
     delete[] M_doub;
-    PROFILE_LOCAL("Shand.Complete()");
     p_shand->Complete(p_hel);
 
     if (p_shand->Is_String()) {
@@ -1327,7 +1325,6 @@ double Single_Process::DSigma2() {
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 {
-  PROFILE_HERE;
   double M2(0.);
 
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);

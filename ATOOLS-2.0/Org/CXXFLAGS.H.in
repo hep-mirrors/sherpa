@@ -7,6 +7,9 @@
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
 
+/* multithread support */
+#undef USING__Threading
+
 /* ld path name */
 #define LD_PATH_NAME "LD_LIBRARY_PATH"
 

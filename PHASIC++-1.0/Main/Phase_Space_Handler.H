@@ -4,7 +4,11 @@
 #include "Cut_Data.H"
 #include "Integrable_Base.H"
 #include "Multi_Channel.H"
+#include "CXXFLAGS.H"
 #include <list>
+#ifdef USING__Threading
+#include <pthread.h>
+#endif
 
 namespace ATOOLS { 
   class Blob_Data_Base; 
@@ -94,6 +98,18 @@ namespace PHASIC {
 
     std::vector<std::vector<double> > m_stats;
 
+    psm::code m_cmode;
+
+#ifdef USING__Threading
+    pthread_t m_met, m_pst;
+    size_t m_sigme, m_sigps, m_uset;
+    pthread_mutex_t m_sigme_mtx, m_sigps_mtx;
+    pthread_cond_t m_sigme_cnd, m_sigps_cnd;
+
+    static void *CalculateME(void *arg);
+    static void *CalculatePS(void *arg);
+#endif
+
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
     void TestIntegration(const double);
@@ -115,6 +131,9 @@ namespace PHASIC {
     bool CreateKMRChannels();
 
     bool LoadChannelLibraries(); 
+
+    void CalculateME();
+    void CalculatePS();
 
   public:
 

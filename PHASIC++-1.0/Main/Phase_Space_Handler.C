@@ -4,7 +4,6 @@
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 
-#include "CXXFLAGS.H"
 #include "Rambo.H"
 #include "RamboKK.H"
 #include "Sarge.H"
@@ -29,16 +28,6 @@
 #include "Data_Writer.H"
 
 #include <dlfcn.h>
-
-#ifdef PROFILE__all
-#define PROFILE__Phase_Space_Handler
-#endif
-#ifdef PROFILE__Phase_Space_Handler
-#include "prof.hh"
-#else
-#define PROFILE_HERE 
-#define PROFILE_LOCAL(LOCALNAME)
-#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -97,6 +86,9 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     p_beamhandler->AssignKeys(p_info);
     p_isrhandler->AssignKeys(p_info);
   }
+#ifdef USING__Threading
+  m_uset=0;
+#endif
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -190,9 +182,45 @@ double Phase_Space_Handler::Integrate()
   }
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
-  if (m_nin==2) return p_integrator->Calculate(this,m_error,m_fin_opt);
-  if (m_nin==1) return p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
-  return 0.;
+#ifdef USING__Threading
+  m_sigps=m_sigme=2;
+  pthread_mutex_init(&m_sigme_mtx,NULL);
+  pthread_mutex_init(&m_sigps_mtx,NULL);
+  pthread_cond_init(&m_sigme_cnd,NULL);
+  pthread_cond_init(&m_sigps_cnd,NULL);
+  int tec(0);
+  if ((tec=pthread_create(&m_met,NULL,&CalculateME,(void*)this))) {
+    THROW(fatal_error,"Cannot create matrix element thread");
+  }
+  if ((tec=pthread_create(&m_pst,NULL,&CalculatePS,(void*)this)))
+    THROW(fatal_error,"Cannot create phase space thread");
+  m_uset=1;
+#endif
+  double res(0.0);
+  if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_fin_opt);
+  if (m_nin==1) res=p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
+#ifdef USING__Threading
+  m_uset=0;
+  // terminate ps calc thread
+  pthread_mutex_lock(&m_sigps_mtx);
+  m_sigps=0;
+  pthread_mutex_unlock(&m_sigps_mtx);
+  pthread_cond_signal(&m_sigps_cnd);
+  // terminate me calc thread
+  pthread_mutex_lock(&m_sigme_mtx);
+  m_sigme=0;
+  pthread_mutex_unlock(&m_sigme_mtx);
+  pthread_cond_signal(&m_sigme_cnd);
+  if ((tec=pthread_join(m_met,NULL)))
+    THROW(fatal_error,"Cannot join matrix element thread");
+  if ((tec=pthread_join(m_pst,NULL)))
+    THROW(fatal_error,"Cannot join phase space thread");
+  pthread_mutex_destroy(&m_sigme_mtx);
+  pthread_mutex_destroy(&m_sigps_mtx);
+  pthread_cond_destroy(&m_sigme_cnd);
+  pthread_cond_destroy(&m_sigps_cnd);
+#endif
+  return res;
 }
 
 bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass) 
@@ -234,10 +262,115 @@ double Phase_Space_Handler::Differential()
   return Differential(p_process);
 }
 
+void Phase_Space_Handler::CalculateME()
+{
+  if (m_nin==1) {
+    m_result_1=p_active->Differential(p_lab);
+  }
+  else {
+    double Q2(p_active->CalculateScale(p_lab));
+    if (p_isrhandler->KMROn()>0 || Q2<0.0) {
+      m_mu2key[0][0]=p_active->Scale(stp::kp21);
+      m_mu2key[1][0]=p_active->Scale(stp::kp22);
+    }
+    if (p_isrhandler->On()>0 && 
+	!(m_cmode&psm::no_dice_isr))
+      if (!p_isrhandler->CalculateWeight(Q2)) return; 
+    if (p_isrhandler->KMROn()==0) 
+      m_result_1=p_active->Differential(p_cms);
+    else m_result_1=p_active->Differential(p_lab);
+    if (p_isrhandler->On()!=3) {
+      m_result_2=0.0;
+    }
+    else {
+      if (!p_isrhandler->CalculateWeight2(Q2)) return;
+      m_result_2=p_active->Differential2();
+    }
+    if (p_beamhandler->On()>0) {
+      p_beamhandler->CalculateWeight(Q2);
+      m_result_1*=p_beamhandler->Weight();
+      m_result_2*=p_beamhandler->Weight();
+    }
+  }
+}
+
+void Phase_Space_Handler::CalculatePS()
+{
+  m_psweight=1.0;
+  if (m_nin>1) {
+    if (p_isrhandler->On()>0 && 
+	!(m_cmode&psm::no_dice_isr)) {
+      p_isrchannels->GenerateWeight(p_isrhandler->On());
+      m_psweight*=p_isrchannels->Weight();
+      if (p_isrhandler->KMROn()) {
+	p_zchannels->GenerateWeight(p_isrhandler->KMROn());
+	m_psweight*=p_zchannels->Weight();
+	p_kpchannels->GenerateWeight(p_isrhandler->KMROn());
+	m_psweight*=p_kpchannels->Weight();
+      }
+    }
+    if (p_beamhandler->On()>0) {
+      p_beamchannels->GenerateWeight(p_beamhandler->On());
+      m_psweight*=p_beamchannels->Weight();
+    }
+  }
+  p_fsrchannels->GenerateWeight(p_cms,p_cuts);
+  m_psweight*=p_fsrchannels->Weight();
+}
+
+#ifdef USING__Threading
+void *Phase_Space_Handler::CalculateME(void *arg)
+{
+  Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
+  while (true) {
+    // wait for psh to signal
+    pthread_mutex_lock(&psh->m_sigme_mtx);
+    if (psh->m_sigme==2) 
+      pthread_cond_wait(&psh->m_sigme_cnd,&psh->m_sigme_mtx);
+    if (psh->m_sigme==0) {
+      pthread_mutex_unlock(&psh->m_sigme_mtx);
+      return NULL;
+    }
+    pthread_mutex_unlock(&psh->m_sigme_mtx);
+    psh->CalculateME();
+    // signal psh to continue
+    pthread_mutex_lock(&psh->m_sigme_mtx);
+    psh->m_sigme=2;
+    pthread_mutex_unlock(&psh->m_sigme_mtx);
+    pthread_cond_signal(&psh->m_sigme_cnd);
+  }
+  return NULL;
+}
+
+void *Phase_Space_Handler::CalculatePS(void *arg)
+{
+  Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
+  while (true) {
+    // wait for psh to signal
+    pthread_mutex_lock(&psh->m_sigps_mtx);
+    if (psh->m_sigps==2) 
+      pthread_cond_wait(&psh->m_sigps_cnd,&psh->m_sigps_mtx);
+    if (psh->m_sigps==0) {
+      pthread_mutex_unlock(&psh->m_sigps_mtx);
+      return NULL;
+    }
+    pthread_mutex_unlock(&psh->m_sigps_mtx);
+    psh->CalculatePS();
+    // signal psh to continue
+    pthread_mutex_lock(&psh->m_sigps_mtx);
+    psh->m_sigps=2;
+    pthread_mutex_unlock(&psh->m_sigps_mtx);
+    pthread_cond_signal(&psh->m_sigps_cnd);
+  }
+  return NULL;
+}
+#endif
+
 double Phase_Space_Handler::Differential(Integrable_Base *const process,
 					 const psm::code mode) 
 { 
-  PROFILE_HERE;
+  m_cmode=mode;
+  p_active=process;
   if (process->Name().find("BFKL")==0)
     return p_process->Differential(p_cms);
   p_info->ResetAll();
@@ -301,7 +434,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
  						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
     return 0.;
   }
-  double Q2 = -1.;
   m_result_1 = m_result_2 = 0.;
   for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
   if (m_nin>1) {
@@ -312,50 +444,40 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   }
   if (p_process->NAddOut()>0) 
     p_process->SetAddMomenta(p_isrhandler->KMRMomenta());
-  // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
+  m_result_2=m_result_1=0.0;
   if (process->Trigger(p_lab)) {
-    m_result_1 = 1.;
-    if (m_nin>1) {
-      Q2 = process->CalculateScale(p_lab);
-      if (p_isrhandler->KMROn()>0 || Q2<0.0) {
-	m_mu2key[0][0] = process->Scale(stp::kp21);
-	m_mu2key[1][0] = process->Scale(stp::kp22);
-      }
-      if (p_isrhandler->On()>0 && !(mode&psm::no_dice_isr)) {
-	if (!p_isrhandler->CalculateWeight(Q2)) return 0.0;
-	p_isrchannels->GenerateWeight(p_isrhandler->On());
- 	m_result_1 *= p_isrchannels->Weight();
-	if (p_isrhandler->KMROn()) {
-	  p_zchannels->GenerateWeight(p_isrhandler->KMROn());
-	  m_result_1 *= p_zchannels->Weight();
- 	  p_kpchannels->GenerateWeight(p_isrhandler->KMROn());
-  	  m_result_1 *= p_kpchannels->Weight();
-	}
-      }
-      if (p_beamhandler->On()>0) {
-	p_beamhandler->CalculateWeight(Q2);
-	p_beamchannels->GenerateWeight(p_beamhandler->On());
-	m_result_1 *= p_beamchannels->Weight() * p_beamhandler->Weight();
-      }
+#ifdef USING__Threading
+    if (m_uset) {
+      // start me calc
+      pthread_mutex_lock(&m_sigme_mtx);
+      m_sigme=1;
+      pthread_mutex_unlock(&m_sigme_mtx);
+      pthread_cond_signal(&m_sigme_cnd);
+      // start ps calc
+      pthread_mutex_lock(&m_sigps_mtx);
+      m_sigps=1;
+      pthread_mutex_unlock(&m_sigps_mtx);
+      pthread_cond_signal(&m_sigps_cnd);
+      // wait for ps calc to finish
+      pthread_mutex_lock(&m_sigps_mtx);
+      if (m_sigps!=2) pthread_cond_wait(&m_sigps_cnd,&m_sigps_mtx);
+      pthread_mutex_unlock(&m_sigps_mtx);
+      // wait for me calc to finish
+      pthread_mutex_lock(&m_sigme_mtx);
+      if (m_sigme!=2) pthread_cond_wait(&m_sigme_cnd,&m_sigme_mtx);
+      pthread_mutex_unlock(&m_sigme_mtx);
     }
-    p_fsrchannels->GenerateWeight(p_cms,p_cuts);
-    if (process->ColorScheme()==cls::sample)
-      m_result_1 *= p_colint->GlobalWeight();
-    if (process->HelicityScheme()==hls::sample)
-      m_result_1 *= p_helint->Weight();
-    m_psweight = m_result_1 *= p_fsrchannels->Weight();
-    if (m_nin>1) {
-      if (p_isrhandler->On()==3) m_result_2 = m_result_1;
-      if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
-      else m_result_1 *= process->Differential(p_lab);
+    else {
+      CalculateME();
+      CalculatePS();
     }
-    else m_result_1 *= process->Differential(p_lab);
-    if (m_nin>1 && p_isrhandler->On()==3) {
-      Rotate(p_cms);
-      if (!p_isrhandler->CalculateWeight2(Q2)) return 0.0;
-      if (m_result_2 != 0.) m_result_2 *= process->Differential2();
-      else m_result_2 = 0.;
-    }
+#else
+    CalculateME();
+    CalculatePS();
+#endif
+    m_result_1*=m_psweight;
+    m_result_2*=m_psweight;
+    if (m_nin>1 && p_isrhandler->On()==3) Rotate(p_cms);
   }
   if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
     m_psweight*=m_flux=p_isrhandler->Flux();
@@ -394,7 +516,6 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameWeightedEvent()
 
 ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const int mode)
 {
-  PROFILE_HERE;
   bool use_overflow=true;
   if (m_nin==1) use_overflow=false;
   if ((mass<0) && (!m_initialized)) InitIncoming();
@@ -496,7 +617,6 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
 
 ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 {
-  PROFILE_HERE;
   if (!m_initialized) InitIncoming();
   
   double value;

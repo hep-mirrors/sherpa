@@ -8,7 +8,6 @@
 #include "Histogram.H"
 
 #include "Random.H"
-#include "prof.hh"
 
 #include "Shell_Tools.H"
 #include "MyStrStream.H"

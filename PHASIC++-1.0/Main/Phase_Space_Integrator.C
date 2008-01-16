@@ -123,6 +123,9 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   if (ncontrib>maxopt) endopt=2;
 
   addtime = 0.0;
+#ifdef USING__Threading
+  rlotime = rstarttime = ATOOLS::rpa.gen.Timer().RealTime();
+#endif
   lotime = starttime = ATOOLS::rpa.gen.Timer().UserTime();
   if (psh->Stats().size()>0)
     addtime=psh->Stats().back()[6];
@@ -365,7 +368,12 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	(psh->Process())->ResetMax(2);
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
-	  if ((psh->Process())->SPoints()==0) lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	  if ((psh->Process())->SPoints()==0) {
+#ifdef USING__Threading
+	    rlotime = ATOOLS::rpa.gen.Timer().RealTime();
+#endif
+	    lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	  }
 	}
 	fotime = true;
 	if ((psh->FSRIntegrator())->OptimizationFinished()) { 
@@ -390,7 +398,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	endopt++;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
-  lotime = ATOOLS::rpa.gen.Timer().UserTime();
+#ifdef USING__Threading
+	rlotime = ATOOLS::rpa.gen.Timer().RealTime();
+#endif
+	lotime = ATOOLS::rpa.gen.Timer().UserTime();
 	return false;
       }
 
@@ -400,15 +411,31 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	return true;
       }
       
+#ifdef USING__Threading
+      double rtime = ATOOLS::rpa.gen.Timer().RealTime();
+      double rtimeest=0.;
+      rtimeest = totalopt/double(ncontrib)*(rtime-rstarttime);
+#endif
       double time = ATOOLS::rpa.gen.Timer().UserTime();
       double timeest=0.;
       timeest = totalopt/double(ncontrib)*(time-starttime);
       if (!fotime) {
-	if (fin_opt==1)
+	if (fin_opt==1) {
 	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
 				(time-lotime)+lotime-starttime);
-	else timeest = (psh->Process())->RemainTimeFactor(maxerror)*
-	       (time-lotime)+lotime-starttime;
+#ifdef USING__Threading
+	  rtimeest = ATOOLS::Max(rtimeest,(psh->Process())->RemainTimeFactor(maxerror)*
+				(rtime-rlotime)+rlotime-rstarttime);
+#endif
+	}
+	else {
+	  timeest = (psh->Process())->RemainTimeFactor(maxerror)*
+	    (time-lotime)+lotime-starttime;
+#ifdef USING__Threading
+	  rtimeest = (psh->Process())->RemainTimeFactor(maxerror)*
+	    (rtime-rlotime)+rlotime-rstarttime;
+#endif
+	}
       }
       error=(psh->Process())->TotalVar()/(psh->Process())->TotalResult();
       msg_Info()<<om::blue
@@ -423,11 +450,19 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	msg_Info()<<"full optimization: ";
       }
       else msg_Info()<<"integration time: ";
-      msg_Info()<<" ( "<<int(time-starttime)<<" s elapsed / "
-		    <<int(timeest)-int((time-starttime))
-		    <<" s left / "<<int(timeest)
-		    <<" s total )   "<<endl;
-
+#ifdef USING__Threading
+      msg_Info()<<" ( "<<int(rtime-rstarttime+0.5)<<"("
+		<<int(time-starttime+0.5)<<") s elapsed / "
+		<<int(rtimeest+0.5)-int((rtime-rstarttime+0.5))<<"("
+		<<int(timeest+0.5)-int((time-starttime+0.5))
+		<<") s left / "<<int(rtimeest+0.5)
+		<<"("<<int(timeest+0.5)<<") s total )   "<<endl;
+#else
+      msg_Info()<<" ( "<<int(time-starttime)<<" s elapsed / " 
+		<<int(timeest)-int((time-starttime)) 
+		<<" s left / "<<int(timeest) 
+		<<" s total )   "<<endl; 
+#endif
       std::vector<double> stats(6);
       stats[0]=psh->Process()->TotalResult()*rpa.Picobarn();
       stats[1]=psh->Process()->TotalVar()*rpa.Picobarn();

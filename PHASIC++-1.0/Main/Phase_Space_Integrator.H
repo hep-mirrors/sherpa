@@ -16,7 +16,7 @@ namespace PHASIC {
     static long unsigned int nmax;
 
     double starttime, lotime, totalopt, addtime;
-    double value, maxerror;
+    double value, maxerror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
 
 #ifdef _USE_MPI_

@@ -6,6 +6,7 @@ using namespace ATOOLS;
 
 MyTiming::MyTiming()
 {
+  clk_tck=sysconf(_SC_CLK_TCK);
   status=3; //never started or stopped 
 }
 
@@ -45,8 +46,6 @@ void MyTiming::PrintTime()
   else {
     if (status==1) SetCurrent();
     double clocks=currentclock-startclock;
-    //    double clk_tck=double(CLK_TCK);  // does not work properly!
-    double clk_tck=100.;
     double secs=clocks/clk_tck;
     msg_Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<") on "
 	      <<TimeString()<<"\n";
@@ -61,16 +60,20 @@ void MyTiming::PrintTime()
 
 double MyTiming::SystemTime()
 {
-  double clk_tck=100.;
   SetCurrent();
   return (currenttms.tms_stime-starttms.tms_stime)/clk_tck;
 }
 
 double MyTiming::UserTime()
 {
-  double clk_tck=100.;
   SetCurrent();
   return (currenttms.tms_utime-starttms.tms_utime)/clk_tck;
+}
+
+double MyTiming::RealTime()
+{
+  SetCurrent();
+  return (currentclock-startclock)/clk_tck;
 }
 
 std::string MyTiming::TimeString(const int format)
