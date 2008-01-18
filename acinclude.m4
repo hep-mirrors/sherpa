@@ -7,11 +7,9 @@ dnl set flags according to build environment
 AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 [
   case "$build_os:$build_cpu:$build_vendor" in
-    *darwin*:*power*:*)
+    *darwin*:*:*)
       echo "checking for architecture... Darwin MacOS"
       ldflags="-dynamic -flat_namespace"
-      FLIBS="-lg2c"
-      AC_SUBST(FLIBS)
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
       AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
@@ -61,6 +59,17 @@ dnl @top_builddir@  relative path to the top-level of build tree
 
 AC_DEFUN([SHERPA_SETUP_VARIABLES],
 [
+  case "$build_os:$build_cpu:$build_vendor" in
+    *darwin*:*:*)
+      CFL=$(echo $FLIBS | awk '{ for (i=1;i<NF;++i) \
+        if (match($i,"-lSystem")==0 && match($i,"-lgcc_s")==0) printf " "$i; }')
+      FLIBS=$CFL
+      echo "trimming fortran libs for Darwin... "$FLIBS
+      AC_SUBST(FLIBS) ;;
+    *)
+      ;;
+  esac
+
   AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"
   AMEGICBUILDDIR="\${top_builddir}/AMEGIC++-2.0"
   AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \

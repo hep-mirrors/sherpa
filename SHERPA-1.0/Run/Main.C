@@ -4,6 +4,7 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
+#include "config.h"
 #ifdef USING__CLHEP
 #include "Input_Output_Handler.H"
 #endif
@@ -21,7 +22,10 @@
 
 using namespace SHERPA;
 
-int main(int argc,char* argv[]) 
+#ifdef __cplusplus
+extern "C" 
+#endif
+int F77_MAIN(int argc,char* argv[]) 
 {
 #ifdef TRACE_malloc
   setenv("MALLOC_TRACE","malloc_trace.log",1);
