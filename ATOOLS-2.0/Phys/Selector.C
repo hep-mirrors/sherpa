@@ -104,6 +104,8 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
 
   vector<vector<string> > svv;
   reader.MatrixFromFile(svv);
+
+  Algebra_Interpreter * ip = reader.Interpreter();
   
   std::string keyword;
   Mom_Data    dat;
@@ -123,46 +125,46 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
     }
     else if (keyword == string("ConeFinder")) {
       dat.type = 2;
-      dat.bounds.front().first=ToType<double>(svv[i][1]);
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][1]));
     }
     else if (keyword == string("DipoleFinder")) {
       dat.type = 3;
-      dat.bounds.front().first=ToType<double>(svv[i][1]);
-      dat.bounds.front().second=ToType<double>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][2]));
     }
     else if (keyword == string("Energy")) {
       dat.type = 11;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("PT")) {
       dat.type = 12;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("Rapidity")) {
       dat.type = 13;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("BeamAngle")) {
       dat.type = 14;
-      crit1=ToType<int>(svv[i][1]);
-      crit2=ToType<int>(svv[i][2]);
-      dat.bounds.front().first=ToType<double>(svv[i][3]);
-      dat.bounds.front().second=ToType<double>(svv[i][4]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
@@ -170,28 +172,28 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
     }  
     else if (keyword == string("ET")) {
       dat.type = 15;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("PseudoRapidity")) {
       dat.type = 16;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("Mass")) {
       dat.type = 21;
-      crit1=ToType<int>(svv[i][1]);
-      crit2=ToType<int>(svv[i][2]);
-      dat.bounds.front().first=ToType<double>(svv[i][3]);
-      dat.bounds.front().second=ToType<double>(svv[i][4]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -201,10 +203,10 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
     }
     else if (keyword == string("Angle")) {
       dat.type = 22;
-      crit1=ToType<int>(svv[i][1]);
-      crit2=ToType<int>(svv[i][2]);
-      dat.bounds.front().first=ToType<double>(svv[i][3]);
-      dat.bounds.front().second=ToType<double>(svv[i][4]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -214,24 +216,24 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
     }  
     else if (keyword == string("X")) {
       dat.type = 24;
-      dat.bounds.front().first=ToType<double>(svv[i][1]);
-      dat.bounds.front().second=ToType<double>(svv[i][2]);
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][2]));
     }
     else if (keyword == string("BFKL_PT")) {
       dat.type = 25;
-      crit1=ToType<int>(svv[i][1]);
-      dat.bounds.front().first=ToType<double>(svv[i][2]);
-      dat.bounds.front().second=ToType<double>(svv[i][3]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
     else if (keyword == string("DeltaEta")) {
       dat.type = 26;
-      crit1=ToType<int>(svv[i][1]);
-      crit2=ToType<int>(svv[i][2]);
-      dat.bounds.front().first=ToType<double>(svv[i][3]);
-      dat.bounds.front().second=ToType<double>(svv[i][4]);
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
@@ -279,8 +281,8 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       if (keyword=="Delta_R_Bias") dat.type=115;
       if (keyword=="Mass_Bias") dat.type=116;
       if (dat.type>110) {
-        crit1=ToType<int>(svv[i][1]);
-        crit2=ToType<int>(svv[i][2]);
+        crit1=ToType<int>(ip->Interprete(svv[i][1]));
+        crit2=ToType<int>(ip->Interprete(svv[i][2]));
         std::string values=svv[i][3];
         dat.helps=svv[i][4];
 	flav = Flavour(kf::code(abs(crit1)));
@@ -304,7 +306,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
 	}
       }
       else if (dat.type>0) {
-        crit1=ToType<int>(svv[i][1]);
+        crit1=ToType<int>(ip->Interprete(svv[i][1]));
         std::string values=svv[i][2];
         dat.helps=svv[i][3];
 	flav = Flavour(kf::code(abs(crit1)));

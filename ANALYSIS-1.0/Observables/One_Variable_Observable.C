@@ -87,6 +87,7 @@ One_Variable_Observable_Getter::operator()
   String_Vector vtags;
   Double_Matrix histos(4);
   Data_Reader reader(",",";","!","=");
+  Algebra_Interpreter *ip=reader.Interpreter();
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
@@ -113,9 +114,9 @@ One_Variable_Observable_Getter::operator()
       items.push_back(cit);
       vtags.push_back(cur[3]);
       histos[0].push_back(HistogramType(cur[7]));
-      histos[1].push_back(ToType<double>(cur[6]));
-      histos[2].push_back(ToType<double>(cur[4]));
-      histos[3].push_back(ToType<double>(cur[5]));
+      histos[1].push_back(ToType<double>(ip->Interprete(cur[6])));
+      histos[2].push_back(ToType<double>(ip->Interprete(cur[4])));
+      histos[3].push_back(ToType<double>(ip->Interprete(cur[5])));
     }
     else if (cur[0]=="Flavs" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) {
@@ -155,15 +156,15 @@ One_Variable_Observable_Getter::operator()
     }
     else if (cur[0]=="Bins" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) 
-	histos[1].push_back(ToType<double>(cur[j]));
+	histos[1].push_back(ToType<double>(ip->Interprete(cur[j])));
     }
     else if (cur[0]=="Mins" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) 
-	histos[2].push_back(ToType<double>(cur[j]));
+	histos[2].push_back(ToType<double>(ip->Interprete(cur[j])));
     }
     else if (cur[0]=="Maxs" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) 
-	histos[3].push_back(ToType<double>(cur[j]));
+	histos[3].push_back(ToType<double>(ip->Interprete(cur[j])));
     }
   }
   if (flavs.empty() || items.empty() || vtags.empty()) {
