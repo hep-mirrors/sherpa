@@ -282,11 +282,12 @@ Flavour Combine_Table_Base::MatchFlavour(Leg &a,Leg &b,Leg &c,int mode)
   }
   else if (fla.Kfcode()==flb.Kfcode()) {
     fl=b.MapFlavour();
+    if (fla.IsAnti()^flb.IsAnti()) fl=fl.Bar();
   }
   else if (fla.Kfcode()==flc.Kfcode()) {
     fl=c.MapFlavour();
+    if (fla.IsAnti()^flc.IsAnti()) fl=fl.Bar();
   }
-  if (fl.IsAnti()^fla.IsAnti()) fl=fl.Bar();
   /*
   msg_Debugging()<<"match "<<fla<<" "<<flb<<" "
 		 <<flc<<" -> "<<fl<<"\n";
