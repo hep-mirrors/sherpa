@@ -829,7 +829,7 @@ int Process_Group::InitAmplitude(Model_Base * model,Topology * top,Vec4D *& test
     else {
       bool mapped(true);
       for (size_t j(0);j<links.size();++j)
-	if (m_procs[i]==links[i]) {
+	if (m_procs[i]==links[j]) {
 	  m_umprocs.push_back(m_procs[i]);
 	  mapped=false;
 	  break;
