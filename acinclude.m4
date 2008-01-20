@@ -67,7 +67,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
       echo "trimming fortran libs for Darwin... "$FLIBS
       AC_SUBST(FLIBS) ;;
     *)
-      ;;
+      echo "resetting fortran main name for non-Darwin... main"
+      AC_DEFINE([F77_MAIN], [main]) ;;
   esac
 
   AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"
