@@ -6,10 +6,16 @@ using namespace ATOOLS;
 
 Integration_Info::Integration_Info() 
 {
+#ifdef USING__Threading
+  pthread_mutex_init(&m_mtx,NULL);
+#endif
 }
 
 Integration_Info::~Integration_Info() 
 {
+#ifdef USING__Threading
+  pthread_mutex_destroy(&m_mtx);
+#endif
   for (String_MapPair_Map::const_iterator kmit(m_keymap.begin());
        kmit!=m_keymap.end();++kmit) {
     const String_KeyPair_Map &keymap(kmit->second.second);
@@ -41,6 +47,9 @@ void Integration_Info::ResetAll()
 void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
 				 const size_t vectors)
 {
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_mtx);
+#endif
   if (key.p_info!=NULL) {
     if (key.p_info!=this) 
       msg_Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
@@ -48,6 +57,9 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
     else
       msg_Debugging()<<METHOD<<"(): Key '"<<&key
 		     <<"' already assigned."<<std::endl;
+#ifdef USING__Threading
+    pthread_mutex_unlock(&m_mtx);
+#endif
     return;
   }
   if (m_keymap.find(key.m_name)==m_keymap.end()) {
@@ -69,17 +81,31 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
   }
   key.m_weightkey=kit->second.first;
   for (Key_Vector::iterator kvit(kit->second.second.begin());
-       kvit!=kit->second.second.end();++kvit) if (*kvit==&key) return;
+       kvit!=kit->second.second.end();++kvit) if (*kvit==&key) {
+#ifdef USING__Threading
+      pthread_mutex_unlock(&m_mtx);
+#endif
+      return;
+    }
   kit->second.second.push_back(&key);
   key.p_info=this;
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_mtx);
+#endif
 }
 
 void Integration_Info::ReleaseKey(Info_Key &key)
 {
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_mtx);
+#endif
   String_MapPair_Map::iterator vit(m_keymap.find(key.m_name));
   if (vit==m_keymap.end()) {
     msg_Error()<<METHOD<<"(): Name '"<<key.m_name
 	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
+#ifdef USING__Threading
+    pthread_mutex_unlock(&m_mtx);
+#endif
     return;
   }
   String_KeyPair_Map &keys(vit->second.second);
@@ -87,6 +113,9 @@ void Integration_Info::ReleaseKey(Info_Key &key)
   if (wit==keys.end()) {
     msg_Error()<<METHOD<<"(): Info '"<<key.m_info
 	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
+#ifdef USING__Threading
+    pthread_mutex_unlock(&m_mtx);
+#endif
     return;
   }
   for (Key_Vector::iterator kit(wit->second.second.begin());
@@ -94,11 +123,17 @@ void Integration_Info::ReleaseKey(Info_Key &key)
     if (*kit==&key) { 
       wit->second.second.erase(kit);
       key.p_info=NULL;
+#ifdef USING__Threading
+      pthread_mutex_unlock(&m_mtx);
+#endif
       return;
     }
   }
   msg_Error()<<METHOD<<"(): Pointer '"<<&key
 	     <<"' not found. Cannot release key."<<std::endl;
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_mtx);
+#endif
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,
