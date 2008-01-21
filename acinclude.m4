@@ -65,10 +65,12 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
         if (match($i,"-lSystem")==0 && match($i,"-lgcc_s")==0) printf " "$i; }')
       FLIBS=$CFL
       echo "trimming fortran libs for Darwin... "$FLIBS
-      AC_SUBST(FLIBS) ;;
+      AC_SUBST(FLIBS)
+      f77_main_darwin=`(test $F77 != g77 && echo MAIN__) || echo main`
+      echo "setting fortran main name for Darwin... "$f77_main_darwin
+      AC_DEFINE_UNQUOTED([F77_MAIN], [`echo $f77_main_darwin`],[alternate entry point]) ;;
     *)
-      echo "resetting fortran main name for non-Darwin... main"
-      AC_DEFINE([F77_MAIN], [main]) ;;
+      ;;
   esac
 
   AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"

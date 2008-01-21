@@ -22,10 +22,11 @@
 
 using namespace SHERPA;
 
-#ifdef __cplusplus
-extern "C" 
+#ifdef F77_MAIN
+extern "C" int F77_MAIN(int argc,char* argv[]) 
+#else
+int main(int argc,char* argv[]) 
 #endif
-int F77_MAIN(int argc,char* argv[]) 
 {
 #ifdef TRACE_malloc
   setenv("MALLOC_TRACE","malloc_trace.log",1);
