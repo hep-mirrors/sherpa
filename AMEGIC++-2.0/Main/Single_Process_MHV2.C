@@ -279,8 +279,9 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
     return -1;
   }
   procs++;
+  map<string,Complex> dummy;
   for (size_t j=current_atom;j<links.size();j++) {
-    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,dummy)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;

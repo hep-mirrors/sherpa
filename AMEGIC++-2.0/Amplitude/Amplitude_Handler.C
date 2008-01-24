@@ -820,7 +820,7 @@ int Amplitude_Handler::TOrder(Single_Amplitude* a)
   return cnt;
 } 
 
-int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf)
+int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf, map<string,Complex> & cplmap)
 {
   if (GetTotalGraphNumber()!=c_ampl->GetTotalGraphNumber()) return 0;
   sf = 1.;
@@ -829,7 +829,7 @@ int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf)
   Single_Amplitude * n_cmp = c_ampl->GetFirstGraph();
   for (int i=0;i<GetTotalGraphNumber();i++) {
     double factor = 1.;
-    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor)) return 0;
+    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor,cplmap)) return 0;
     if (i==0) sf = factor;
     else if(!ATOOLS::IsEqual(sf,factor)) return 0;
     n     = n->Next;
@@ -838,7 +838,7 @@ int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf)
   return 1;
 }
 
-int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
+int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<string,Complex> & cplmap)
 {
   //zero check
   if (p1==0) {
@@ -870,13 +870,17 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
   for (int i=0;i<2;i++) {
     if (ratio==Complex(0.,0.) && p2->cpl[i]!=Complex(0.,0.)) ratio = p1->cpl[i]/p2->cpl[i];
     if (!ATOOLS::IsEqual(p2->cpl[i]*ratio,p1->cpl[i])) return 0;
-  } 
+    if (!ATOOLS::IsEqual(p2->cpl[i],p1->cpl[i])) {
+      string help=ToString(p2->cpl[i]);
+      if (cplmap.find(help)==cplmap.end()) cplmap[help]=p1->cpl[i];
+    } 
+  }
   sf *= abs(ratio);
   // return 1 if equal and 0 if different
   
-  if (SingleCompare(p1->middle,p2->middle,sf)) {
-    int sw1 = SingleCompare(p1->left,p2->left,sf);
-    if (sw1) sw1 = SingleCompare(p1->right,p2->right,sf);
+  if (SingleCompare(p1->middle,p2->middle,sf,cplmap)) {
+    int sw1 = SingleCompare(p1->left,p2->left,sf,cplmap);
+    if (sw1) sw1 = SingleCompare(p1->right,p2->right,sf,cplmap);
     return sw1;
   }
   return 0;

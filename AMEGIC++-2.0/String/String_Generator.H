@@ -63,6 +63,7 @@ namespace AMEGIC {
     virtual std::map<std::string,Complex>* GetCouplings()          = 0;
     virtual void      WriteCouplings(std::ofstream&)               = 0;
     virtual int       ReadCouplings(std::ifstream&)                = 0;
+    virtual void      UpdateCouplings(std::map<std::string,Complex> & cmap) = 0;
   };
   
 
@@ -140,6 +141,7 @@ namespace AMEGIC {
     std::map<std::string,Complex>* GetCouplings()                 { return p_couplmap; }
     void        WriteCouplings(std::ofstream&);
     int         ReadCouplings(std::ifstream&);
+    void        UpdateCouplings(std::map<std::string,Complex> & cmap);
   };
   
   class No_String_Generator : public Virtual_String_Generator {
@@ -172,8 +174,9 @@ namespace AMEGIC {
     void      SetOff(const int&)                                {}  
     void      SetCouplings(std::map<std::string,Complex>*)      {}
     std::map<std::string,Complex>* GetCouplings()               { return NULL; }
-    void      WriteCouplings(std::ofstream&)                         {}
-    int       ReadCouplings(std::ifstream&)                          { return 0; }
+    void      WriteCouplings(std::ofstream&)                    {}
+    int       ReadCouplings(std::ifstream&)                     { return 0; }
+    void      UpdateCouplings(std::map<std::string,Complex> & cmap) {}
   };
 
 }

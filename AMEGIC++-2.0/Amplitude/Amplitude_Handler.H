@@ -37,7 +37,7 @@ namespace AMEGIC {
     void PreCluster(Single_Amplitude* firstgraph);
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
-    int  SingleCompare(Point*,Point*,double &);
+    int  SingleCompare(Point*,Point*,double &, std::map<std::string,Complex> &);
 //     void Kicker(int*,int,std::string);
     void RestoreAmplitudes(std::string path);
   public:
@@ -72,7 +72,7 @@ namespace AMEGIC {
     void   FillPointlist();
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
     bool   ExistFourVertex(Point *);
-    int    CompareAmplitudes(Amplitude_Handler*,double &);
+    int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
   };
 
     //! The alternative color matrix, for more details see CFColor.

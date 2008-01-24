@@ -256,7 +256,7 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
 				  vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
-  if (CheckAlternatives(links,current_atom)) return 1;
+  if (CheckAlternatives(links,current_atom,Name())) return 1;
 
   if (_testmoms==0) {
     string model_name = model->Name();
@@ -312,18 +312,21 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
     return -1;
   }
   procs++;
+  map<string,Complex> cplmap;
   for (size_t j=current_atom;j<links.size();j++) {
-    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
+    cplmap.clear();
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  if (IsFile(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
-	    CopyFile(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name()+".map",
-		     rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name()+".map");
-	    CopyFile(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name()+".col",
-		     rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name()+".col");
+	  string mlname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
+	  if (IsFile(mlname+string(".map"))) { 
+	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
+	    else UpdateMappingFile(mlname,cplmap);
+	    CopyFile(mlname+".col",mnname+".col");
 	  }
 	}
 	
@@ -345,8 +348,7 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
 	if (CheckMapping(links[j])) {
 	  msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			<<"   Map processes."<<std::endl
-		   <<links[j]->Result()<<" "<<Result();
+			<<"   Map processes."<<std::endl;
 	  p_partner = (Single_Process*)links[j];
 	  break;
 	}
@@ -779,8 +781,8 @@ int Single_Process::CheckLibraries() {
 	m_pslibname = testname;
 	if (shand1) { delete shand1; shand1 = 0; }
 	//Clean p_shand!!!!
-	Minimize();
 	CreateMappingFile();
+	Minimize();
 	return 1;
       }
     } 
@@ -815,8 +817,8 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   if (ATOOLS::IsEqual(M2s,Result())) {
     m_libname = tproc->LibName();
     m_pslibname = tproc->PSLibName();
-    Minimize();
     CreateMappingFile();
+    Minimize();
     return 1;
   }
   return 0;
@@ -833,9 +835,9 @@ void Single_Process::WriteAlternativeName(string aname)
   to.close();
 }
 
-bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int current_atom)
+bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int current_atom,string procname)
 {
-  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
   if (IsFile(altname)) {
     double factor;
     string name; 
@@ -843,17 +845,19 @@ bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int curren
     from.open(altname.c_str(),ios::in);
     from>>name>>factor;
     from.close();
+    m_sfactor *= factor;
     for (size_t j=current_atom;j<links.size();j++) {
       if (links[j]->Name()==name) {
 	p_partner = (Single_Process*)links[j];
-	m_sfactor = factor;
 	m_orderQCD=p_partner->OrderStrong();
 	m_orderEW=p_partner->OrderEWeak();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 	return true;
       }
     }
+    if (CheckAlternatives(links,current_atom,name)) return true;
   }
+  m_sfactor = 1.;
   return false;
 }
 
@@ -914,8 +918,8 @@ void Single_Process::CreateMappingFile() {
   to.close();
 }
 
-bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname) {
-  
+bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname) 
+{
   std::string buf;
   int pos;
   std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
@@ -938,7 +942,29 @@ bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname
   return 0;
 }
 
-
+void Single_Process::UpdateMappingFile(std::string name, map<string,Complex> & cmap) 
+{
+  std::string buf;
+  int pos;
+  name+=".map";
+  ifstream from;
+  from.open(name.c_str());
+  getline(from,buf);
+  pos = buf.find(string("ME:"));
+  if (pos==-1) m_libname = m_pslibname = buf;
+  else {
+    m_libname = buf.substr(pos+4);
+    getline(from,buf);
+    pos = buf.find(string("PS:"));
+    if (pos==-1) m_pslibname = m_libname;
+    else m_pslibname = buf.substr(pos+4);
+    if (m_pslibname==string("")) m_pslibname = m_libname;
+  }
+  p_shand->Get_Generator()->ReadCouplings(from);
+  from.close();
+  p_shand->Get_Generator()->UpdateCouplings(cmap);
+  CreateMappingFile();
+}
 
 /*------------------------------------------------------------------------------
   

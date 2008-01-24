@@ -675,3 +675,17 @@ int String_Generator::ReadCouplings(ifstream& is)
   return NumberOfCouplings();
 }
 
+void String_Generator::UpdateCouplings(map<string,Complex> & cmap)
+{
+  int cnt=0;
+  for (int i=0;i<NumberOfCouplings();i++) {
+    string help = ToString(GetCoupling(i));
+    if (cmap.find(help)!=cmap.end()) {
+      (*p_couplings)[i] = cmap[help];
+      cnt++;
+    }
+  }
+  if (cnt!=cmap.size()) {
+    THROW(critical_error,"String_Generator::UpdateCouplings() failed: Coupling constant inconsistency.");    
+  }
+}
