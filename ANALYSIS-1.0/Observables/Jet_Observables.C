@@ -13,7 +13,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<7) return NULL;
-    std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
+    std::string list=parameters[0].size()>7?parameters[0][7]:finalstate_list;
     return new Class(HistogramType(parameters[0][6]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
@@ -25,7 +25,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   else if (parameters.size()<7) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100, nmin=1, nmax=10, mode=1;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
@@ -47,7 +47,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Arg
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<7) return NULL;
-    std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
+    std::string list=parameters[0].size()>7?parameters[0][7]:finalstate_list;
     std::string reflist=parameters[0].size()>8?parameters[0][8]:"";
     return new Jet_Differential_Rates(HistogramType(parameters[0][6]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
@@ -60,7 +60,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Arg
   else if (parameters.size()<7) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100, nmin=1, nmax=10, mode=1;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   std::string reflist="";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
@@ -101,7 +101,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 {
   m_listname=listname;
   m_name  = std::string("jet_");
-  if (listname!="Analysed") m_name=listname+std::string("_")+m_name;
+  if (listname!=finalstate_list) m_name=listname+std::string("_")+m_name;
   if (m_minn!=0) {
     MyStrStream str;
     str<<m_name<<m_mode<<"_"<<m_minn<<"_";
@@ -198,7 +198,7 @@ Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,d
 {
   m_listname = lname;
   m_name     = std::string("jet_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (lname!=finalstate_list) m_name=lname+std::string("_")+m_name;
   if (m_minn!=0) {
     MyStrStream str;
     str<<m_name<<m_mode<<"_"<<m_minn<<"_";
@@ -762,7 +762,7 @@ Three_Jet_Observable_Base::Three_Jet_Observable_Base(unsigned int type,double xm
 {
   m_listname = lname;
   m_name     = std::string("jet_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (lname!=finalstate_list) m_name=lname+std::string("_")+m_name;
   if (m_minn!=0) {
     MyStrStream str;
     str<<m_name<<m_mode<<"_"<<m_minn<<"_";

@@ -1,4 +1,5 @@
 #include "Multiplicity.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
 
@@ -10,7 +11,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    std::string list=parameters[0].size()>4?parameters[0][4]:finalstate_list;
     return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
@@ -19,7 +20,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   else if (parameters.size()<4) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);

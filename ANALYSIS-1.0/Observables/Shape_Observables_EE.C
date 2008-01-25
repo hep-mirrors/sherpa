@@ -1,4 +1,5 @@
 #include "Shape_Observables_EE.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
 
@@ -19,7 +20,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   else if (parameters.size()<4) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);

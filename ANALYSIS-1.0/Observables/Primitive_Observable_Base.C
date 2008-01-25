@@ -27,7 +27,7 @@ int ANALYSIS::HistogramType(const std::string &scale)
 
 Primitive_Observable_Base::Primitive_Observable_Base() :
   m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.),
-  m_listname(std::string("Analysed")),
+  m_listname(std::string(finalstate_list)),
   p_histo(NULL), m_nout(0), p_flavs(NULL), p_moms(NULL), 
   m_splitt_flag(true) ,p_sel(NULL), m_copied(false)
 { 
@@ -39,7 +39,7 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
 Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
 						     Selector_Base * sel) :
   m_type(type), m_nbins(nbins), m_xmin(xmin), m_xmax(xmax),
-  m_listname(std::string("Analysed")), m_splitt_flag(true), 
+  m_listname(std::string(finalstate_list)), m_splitt_flag(true), 
   p_sel(sel), m_copied(false)
 { 
   p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);

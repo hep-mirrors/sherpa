@@ -18,7 +18,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
       f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
       if (kf<0) f[i]=f[i].Bar();
     }
-    std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
+    std::string list=parameters[0].size()>8?parameters[0][8]:finalstate_list;
     return new Class(f,HistogramType(parameters[0][7]),
 		     ATOOLS::ToType<double>(parameters[0][4]),
 		     ATOOLS::ToType<double>(parameters[0][5]),
@@ -28,7 +28,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   double min=0.0, max=1.0;
   size_t bins=100;
   std::vector<ATOOLS::Flavour> f(4);
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     for (short unsigned int j=0;j<4;++j) {
@@ -292,7 +292,7 @@ Primitive_Observable_Base *const GetObservable2(const Argument_Matrix &parameter
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    std::string list=parameters[0].size()>4?parameters[0][4]:finalstate_list;
     return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
@@ -301,7 +301,7 @@ Primitive_Observable_Base *const GetObservable2(const Argument_Matrix &parameter
   else if (parameters.size()<4) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
@@ -337,7 +337,7 @@ Di_Mass::Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
 {
   m_listname=lname;
   m_name  = std::string("4jet_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (lname!=finalstate_list) m_name=lname+std::string("_")+m_name;
   m_name += "DiMass.dat";
 }
 

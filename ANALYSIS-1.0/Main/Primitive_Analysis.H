@@ -14,6 +14,8 @@ namespace ATOOLS {
 
 namespace ANALYSIS {
 
+  const static std::string finalstate_list("FinalState");
+
   enum code {
 
     unweighted      = 0,

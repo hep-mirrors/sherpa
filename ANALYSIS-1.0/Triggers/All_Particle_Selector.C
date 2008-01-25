@@ -156,7 +156,7 @@ GetParticleSelector(const Argument_Matrix &parameters)
   }
   if (parameters.size()<4) return NULL;
   double min=30.0, max=70.0;
-  std::string inlist="Analysed", outlist="Selected";
+  std::string inlist=finalstate_list, outlist="Selected";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     else if (parameters[i][0]=="InList") inlist=parameters[i][1];
@@ -200,7 +200,7 @@ GetParticleDSelector(const Argument_Matrix &parameters)
   }
   if (parameters.size()<7) return NULL;
   double min=30.0, max=70.0;
-  std::string inlist="Analysed", reflist="Jets", outlist="Selected";
+  std::string inlist=finalstate_list, reflist="Jets", outlist="Selected";
   size_t item=0;
   ATOOLS::Flavour flav(ATOOLS::kf::jet);
   for (size_t i=0;i<parameters.size();++i) {

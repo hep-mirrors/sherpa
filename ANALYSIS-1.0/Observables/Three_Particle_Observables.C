@@ -18,7 +18,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
       f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
       if (kf<0) f[i]=f[i].Bar();
     }
-    std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
+    std::string list=parameters[0].size()>7?parameters[0][7]:finalstate_list;
     return new Class(f[0],f[1],f[2],HistogramType(parameters[0][6]),
 		     ATOOLS::ToType<double>(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][4]),
@@ -28,7 +28,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   double min=0.0, max=1.0;
   size_t bins=100;
   ATOOLS::Flavour f[3];
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<3) continue;
     for (short unsigned int j=0;j<3;++j) {

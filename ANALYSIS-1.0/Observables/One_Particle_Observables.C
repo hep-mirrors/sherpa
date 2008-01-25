@@ -1,5 +1,6 @@
 #include "One_Particle_Observables.H"
 #include "MyStrStream.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
 
@@ -14,7 +15,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
     int kf=ATOOLS::ToType<int>(parameters[0][0]);
     ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
     if (kf<0) flavour=flavour.Bar();
-    std::string list=parameters[0].size()>5?parameters[0][5]:"Analysed";
+    std::string list=parameters[0].size()>5?parameters[0][5]:finalstate_list;
     return new Class(flavour,HistogramType(parameters[0][4]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<double>(parameters[0][2]),
@@ -23,7 +24,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   else if (parameters.size()<5) return NULL;
   double min=0.0, max=1.0;
   size_t bins=100;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   ATOOLS::Flavour flavour;
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;

@@ -13,7 +13,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<8) return NULL;
-    std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
+    std::string list=parameters[0].size()>8?parameters[0][8]:finalstate_list;
     return new Class(HistogramType(parameters[0][7]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
@@ -27,7 +27,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   double min=0.0, max=1.0;
   size_t bins=100;
   int p0=-1,p1=-1,p2=-1,p3=-1;
-  std::string list="Analysed", scale="Lin";
+  std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
@@ -72,7 +72,7 @@ PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbi
   m_pnb.push_back(p3);
   m_listname = lname;
   m_name     = std::string("psm_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (lname!=finalstate_list) m_name=lname+std::string("_")+m_name;
   if (m_pnb.size()==0) {
     MyStrStream str;
     str<<m_name<<"_";

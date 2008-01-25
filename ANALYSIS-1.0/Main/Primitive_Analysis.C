@@ -414,9 +414,7 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
 
 void Primitive_Analysis::CreateFinalStateParticleList()
 {
-  std::string key="FinalState";
-
-  PL_Container::const_iterator cit=m_pls.find(key);
+  PL_Container::const_iterator cit=m_pls.find(finalstate_list);
   if (cit!=m_pls.end()) return;
 
   Particle_List * pl = new Particle_List;
@@ -502,7 +500,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
     m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
     m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
   }
-  m_pls[key]=pl;
+  m_pls[finalstate_list]=pl;
   AddParticleList("NULL",new Particle_List);
 }
 
@@ -516,7 +514,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key,
   PL_Container::const_iterator cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
   if (nocreate) return NULL;
-  if (key=="FinalState") CreateFinalStateParticleList();
+  if (key==finalstate_list) CreateFinalStateParticleList();
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
   msg_Error()<<METHOD<<"(): List '"<<key<<"' not found."<<std::endl;

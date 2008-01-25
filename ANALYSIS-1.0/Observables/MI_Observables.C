@@ -1,4 +1,5 @@
 #include "MI_Observables.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
 
@@ -105,7 +106,7 @@ Primitive_Observable_Base *
 MI_Statistics_Getter::operator()(const Argument_Matrix &parameters) const
 {
   size_t scales=5;
-  std::string listname="Analysed";
+  std::string listname=finalstate_list;
   if (parameters.size()>0 && parameters[0].size()>0) {
     scales=ATOOLS::ToType<int>(parameters[0][0]);
     if (parameters[0].size()>1) listname=parameters[0][1];
