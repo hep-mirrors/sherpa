@@ -17,5 +17,6 @@ XS_Model_Base *XS_Model_Handler::GetModel(const std::string &name)
   if (name=="SM+ZPrime") return new XS_Model_SM();
   if (name=="pure_QCD") return new XS_Model_QCD();
   if (name=="pure_EW") return new XS_Model_EW();
+  if (name=="ADD") return new XS_Model_SM();
   return NULL;
 }
