@@ -5,6 +5,7 @@
 #include "MyStrStream.H"
 #include "Exception.H"
 
+#include "CXXFLAGS_PACKAGES.H"
 #ifdef USING__ROOT
 #include "Scaling.H"
 #include "TH1D.h"

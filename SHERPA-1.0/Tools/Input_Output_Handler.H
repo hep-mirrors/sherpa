@@ -1,7 +1,7 @@
 #ifndef Input_Output_Handler_H
 #define Input_Output_Handler_H
 
-#include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 #include "Message.H"
 #ifdef USING__GZIP
 #include "Gzip_Stream.H"

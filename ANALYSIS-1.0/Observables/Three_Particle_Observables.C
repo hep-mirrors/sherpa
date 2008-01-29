@@ -61,12 +61,6 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
-#ifdef USING__ROOT
-#include "Scaling.H"
-#include "My_Root.H"
-#include "TH2D.h"
-#endif 
-
 using namespace ATOOLS;
 using namespace std;
 

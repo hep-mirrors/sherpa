@@ -1,6 +1,6 @@
 #include "Simple_Cone.H"
 #include "Message.H"
-#include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 #include <algorithm>
 
 #ifdef USING__ROOT

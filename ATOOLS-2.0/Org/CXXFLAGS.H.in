@@ -2,13 +2,10 @@
 #undef ARCH_DARWIN
 
 /* Architecture identified as Linux */
-#undef ARCH_LINUX
+#define ARCH_LINUX "1"
 
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
-
-/* multithread support */
-#undef USING__Threading
 
 /* ld path name */
 #define LD_PATH_NAME "LD_LIBRARY_PATH"
@@ -49,38 +46,14 @@
 /* using AMISIC */
 #undef USING__Amisic
 
-/* Using CLHEP */
-#undef USING__CLHEP
-
-/* Using HEPMC2 */
-#undef USING__HEPMC2
-
-/* Using colour */
-#undef USING__COLOUR
-
-/* using gzip */
-#undef USING__GZIP
-
-/* using HADRONS */
-#undef USING__Hadrons
-
-/* using Hdecay */
-#undef USING__Hdecay
-
-/* using Isajet */
-#undef USING__Isajet
-
-/* using LHAPDF */
-#undef USING__LHAPDF
-
-/* using MC@NLO */
-#undef USING__MCatNLO
+/* using SHERPA */
+#undef USING__Sherpa
 
 /* using Model */
 #undef USING__Model
 
-/* using ROOT */
-#undef USING__ROOT
+/* Using colour */
+#undef USING__COLOUR
 
-/* using SHERPA */
-#undef USING__Sherpa
+/* using HADRONS */
+#undef USING__Hadrons

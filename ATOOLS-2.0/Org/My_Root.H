@@ -1,7 +1,7 @@
 #ifndef My_Root_H
 #define My_Root_H
 
-#include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 
 #ifdef USING__ROOT
 

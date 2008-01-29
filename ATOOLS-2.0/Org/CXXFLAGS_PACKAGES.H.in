@@ -1,0 +1,23 @@
+/* Using CLHEP */
+#undef USING__CLHEP
+
+/* Using HEPMC2 */
+#undef USING__HEPMC2
+
+/* using gzip */
+#undef USING__GZIP
+
+/* using Hdecay */
+#undef USING__Hdecay
+
+/* using Isajet */
+#undef USING__Isajet
+
+/* using LHAPDF */
+#undef USING__LHAPDF
+
+/* using MC@NLO */
+#undef USING__MCatNLO
+
+/* using ROOT */
+#undef USING__ROOT

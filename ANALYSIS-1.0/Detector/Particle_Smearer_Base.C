@@ -5,7 +5,7 @@
 #include "MyStrStream.H"
 #include "Random.H"
 
-#include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 #ifdef USING__ROOT
 #include "Scaling.H"
 #include "TH2D.h"

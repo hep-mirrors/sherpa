@@ -3,7 +3,7 @@
 #include "Random.H"
 #include "MyStrStream.H"
 #include "Message.H"
-#include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 
 #ifdef USING__ROOT
 #include "Scaling.H"

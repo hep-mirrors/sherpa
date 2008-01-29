@@ -1,6 +1,7 @@
 #ifndef Two_Particle_Observables_H
 #define Two_Particle_Observables_H
 
+#include "CXXFLAGS_PACKAGES.H"
 #include "Primitive_Observable_Base.H"
 
 namespace ANALYSIS {

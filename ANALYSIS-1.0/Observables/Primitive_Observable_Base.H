@@ -1,7 +1,6 @@
 #ifndef Primitive_Observable_Base_H
 #define Primitive_Observable_Base_H
 
-#include "CXXFLAGS.H"
 #include "Selector.H"
 #include "Vector.H"
 #include "Flavour.H"
