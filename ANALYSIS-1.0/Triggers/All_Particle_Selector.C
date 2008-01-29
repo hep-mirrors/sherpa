@@ -1,4 +1,5 @@
 #include "Trigger_Base.H"
+#include "Primitive_Analysis.H"
 
 #include "Message.H"
 
