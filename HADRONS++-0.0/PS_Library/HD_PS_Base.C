@@ -102,9 +102,9 @@ Single_Channel * HD_Channel_Selector::GetChannel(
             md("Width_Rho_770", Flavour(kf::rho_770_plus).Width()) );
       if( ci.res1==string("W") )  
         res.Set( 
-            kf::W, 
-            md("Mass_W",  Flavour(kf::W).PSMass()), 
-            md("Width_W", Flavour(kf::W).Width()) );
+            kf::Wplus, 
+            md("Mass_W",  Flavour(kf::Wplus).PSMass()), 
+            md("Width_W", Flavour(kf::Wplus).Width()) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
   }

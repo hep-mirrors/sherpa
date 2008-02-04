@@ -273,7 +273,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
        ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      (ATOOLS::Flavour(ATOOLS::kf::W).IsOn() && 
+      (ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn() && 
        flavours[0].IsQuark() && flavours[2].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
@@ -289,12 +289,12 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours) :
   Single_XS(nin,nout,flavours), 
   m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
-  m_W_on(ATOOLS::Flavour(ATOOLS::kf::W).IsOn()),
+  m_W_on(ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn()),
   m_anti1(int(flavours[0].IsAnti())),m_anti2(int(flavours[2].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
-  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
-  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Width())),
   m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
   m_eq1(flavours[0].Charge()),
   m_eq2(flavours[2].Charge()),
@@ -366,7 +366,8 @@ bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u)
   (*this)(s,t,u);
   if (SetColours()) {
     m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) 
+      m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   if (swap) SwapInOrder();
@@ -410,7 +411,8 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
-  //  std::cout<<"XS_f1f2_f1f2 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //  std::cout<<"XS_f1f2_f1f2 Test this : "<<flavours[0]<<" "
+  //<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
   if (!((flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
 	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
@@ -424,10 +426,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn() ||
-	ATOOLS::Flavour(ATOOLS::kf::W).IsOn()))              return NULL;
+	ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn()))          return NULL;
   if ((flavours[0].Charge()!=0. && flavours[1].Charge()!=0. &&
        ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      (ATOOLS::Flavour(ATOOLS::kf::W).IsOn() && 
+      (ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn() && 
        flavours[0].IsQuark() && flavours[1].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
@@ -443,12 +445,12 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours) :
   Single_XS(nin,nout,flavours), 
   m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
-  m_W_on(ATOOLS::Flavour(ATOOLS::kf::W).IsOn()),
+  m_W_on(ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn()),
   m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
-  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
-  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Width())),
   m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
   m_eq1(std::pow(-1.,m_anti) * flavours[0].Charge()),
   m_eq2(std::pow(-1.,m_anti) * flavours[1].Charge()),
@@ -590,10 +592,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn() ||
-	ATOOLS::Flavour(ATOOLS::kf::W).IsOn()))              return NULL;
+	ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn()))              return NULL;
   if ((flavours[0].Charge()!=0. && flavours[1].Charge()!=0. &&
        ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      (ATOOLS::Flavour(ATOOLS::kf::W).IsOn() && 
+      (ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn() && 
        flavours[0].IsQuark() && flavours[1].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
@@ -609,12 +611,12 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
 			       const ATOOLS::Flavour *flavours) :
   Single_XS(nin,nout,flavours), 
   m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
-  m_W_on(ATOOLS::Flavour(ATOOLS::kf::W).IsOn()),
+  m_W_on(ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn()),
   m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
-  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
-  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Width())),
   m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
   m_eq1(flavours[0].Charge()),
   m_eq2(flavours[1].Charge()),
@@ -751,7 +753,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nou
 	 flavours[2].IsAnti() && flavours[3].IsAnti())) )                       return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                    return NULL;
   if (nqcd!=0 || nqed!=2)                                                       return NULL;
-  if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                   return NULL;
+  if (!ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn())                                   return NULL;
   if (flavours[0].IsUptype()) {
     if (flavours[2].IsDowntype() && 
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
@@ -777,8 +779,8 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours) :
   Single_XS(nin,nout,flavours), 
   m_anti(int(flavours[0].IsAnti())), m_rev(false),
-  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
-  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Width())),
   m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
 	   (2.*ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
@@ -862,7 +864,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 {
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
   if (nqcd!=0 || nqed!=2)                                                         return NULL;
-  if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                     return NULL;
+  if (!ATOOLS::Flavour(ATOOLS::kf::Wplus).IsOn())                                     return NULL;
   if (flavours[0].IntCharge()+flavours[1].IntCharge()!=
       flavours[2].IntCharge()+flavours[3].IntCharge()) return NULL;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
@@ -932,8 +934,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours) :
   Single_XS(nin,nout,flavours), 
   m_anti(int(flavours[0].IsAnti())), m_rev(false), m_schannel(true),
-  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
-  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Wplus).Width())),
   m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
 	   (2.*ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))

@@ -41,15 +41,15 @@ void THDM::ReadInFile() {
 				     p_dataread->GetValue<double>("MH0",Flavour(kf::H0).Mass())));
   p_constants->insert(std::make_pair(std::string("MA0"),    
 				     p_dataread->GetValue<double>("MA0",Flavour(kf::A0).Mass())));
-  p_constants->insert(std::make_pair(std::string("MHminus"),    
-				     p_dataread->GetValue<double>("MHminus",Flavour(kf::Hmin).Mass())));
+  p_constants->insert(std::make_pair(std::string("MHplus"),    
+				     p_dataread->GetValue<double>("MHplus",Flavour(kf::Hplus).Mass())));
 }
 
 void THDM::FillMasses() {
   Flavour h0(kf::h0); h0.SetMass(ScalarConstant("Mh0"));
   Flavour H0(kf::H0); H0.SetMass(ScalarConstant("MH0"));
   Flavour A0(kf::A0); A0.SetMass(ScalarConstant("MA0"));
-  Flavour Hmin(kf::Hmin); Hmin.SetMass(ScalarConstant("MHminus"));
+  Flavour Hplus(kf::Hplus); Hplus.SetMass(ScalarConstant("MHplus"));
 
   double alpha(ScalarConstant("alpha")),tanb(ScalarConstant("tan(beta)"));
  

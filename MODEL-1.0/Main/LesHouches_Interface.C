@@ -170,9 +170,9 @@ void LesHouches_Interface::SetMasses() {
     Flavour flav;    
     for (unsigned int i=0;i<vd.size();++i) {
       flav.FromHepEvt(int(vd[i][0]));
-      if (flav!=Flavour(kf::W).Bar()) flav.SetMass(dabs(vd[i][1]));
+      if (flav!=Flavour(kf::Wplus)) flav.SetMass(dabs(vd[i][1]));
       if (vd[i][1]<0) flav.SetMassSign(-1);
-      if (flav!=Flavour(kf::W).Bar())
+      if (flav!=Flavour(kf::Wplus))
 	msg_Tracking()<<"   Set mass of "<<flav<<" to "<<vd[i][1]<<std::endl;
     }
   }
@@ -198,7 +198,7 @@ void LesHouches_Interface::SetWidths() {
       if (vds[k][0]=="DECAY") {
        Flavour flav;    
        flav.FromHepEvt(ATOOLS::ToType<int>(vds[k][1]));
-       if (flav!=Flavour(kf::W) || flav!=Flavour(kf::Z)) {
+       if (flav!=Flavour(kf::Wplus) || flav!=Flavour(kf::Z)) {
          flav.SetWidth(ATOOLS::ToType<double>(vds[k][2]));
          msg_Tracking()<<"   Set width of "<<flav<<" to "<<flav.Width()<<std::endl;
          else {

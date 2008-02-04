@@ -69,10 +69,6 @@ void SM_Phantom_U1::ReadInFile() {
 
 void SM_Phantom_U1::FillMasses() {
   Flavour flav;
-  flav = Flavour(kf::h);
-  flav.SetOn(false);
-  // Switch off standard model Higgs sector completely
-
   flav = Flavour(kf::h0);
   flav.SetMass(ScalarConstant(string("M_H1")));
   flav.SetMassOn(true);
@@ -82,7 +78,7 @@ void SM_Phantom_U1::FillMasses() {
   flav = Flavour(kf::A0);
   flav.SetMass(0.);
   flav.SetMassOn(true);
-  flav = Flavour(kf::ZPrime);
+  flav = Flavour(kf::Z0_2);
   flav.SetMass(ScalarConstant(string("M_Z'")));
   flav.SetMassOn(true);
 }
@@ -154,7 +150,7 @@ void SM_Phantom_U1::FillPotentialDecayProducts(set<Flavour> & flouts) {
   flouts.insert(Flavour(kf::tau));
   flouts.insert(Flavour(kf::b));
   flouts.insert(Flavour(kf::t));
-  flouts.insert(Flavour(kf::W));
+  flouts.insert(Flavour(kf::Wplus));
   flouts.insert(Flavour(kf::Z));
   flouts.insert(Flavour(kf::h0));
   flouts.insert(Flavour(kf::H0));
@@ -179,7 +175,7 @@ double SM_Phantom_U1::H2VDecay(const Flavour & flin,const Flavour & flout) {
     pref  = ScalarConstant(string("GF"))/(16.*sqrt(2.)*M_PI);
     R     = (1.-4.*x+12.*x*x)*sqrt(1.-4.*x);
     width = pref*R*pow(flin.Mass(),3.);
-    if (flout==Flavour(kf::W)) width *= 2.;
+    if (flout==Flavour(kf::Wplus)) width *= 2.;
   }
   else {
     pref  = 3.*sqr(ScalarConstant(string("GF")))/(16.*pow(M_PI,3.));

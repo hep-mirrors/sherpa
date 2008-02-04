@@ -276,7 +276,7 @@ Flavour Combine_Table_Base::MatchFlavour(Leg &a,Leg &b,Leg &c,int mode)
   */
   Flavour fl(fla);
   if (fla.IsQuark() && !(flb.Strong() && flc.Strong())) {
-    if (flb.Kfcode()==kf::W || flc.Kfcode()==kf::W) 
+    if (flb.Kfcode()==kf::Wplus || flc.Kfcode()==kf::Wplus) 
       fl=IsoFlip((flb.IsQuark()?b:c).MapFlavour());
     else fl=Flavour((flb.IsQuark()?b:c).MapFlavour());
   }

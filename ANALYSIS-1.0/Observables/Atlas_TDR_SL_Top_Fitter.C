@@ -115,8 +115,8 @@ void Atlas_TDR_SL_Top_Fitter::Evaluate
 	  double cur((list[i]->Momentum()+list[j]->Momentum()).Mass());
 	  msg_Debugging()<<"  i = "<<i<<", j = "<<j
 			 <<" -> m_jj = "<<cur<<"\n";
-	  if (dabs(cur-Flavour(kf::W).PSMass())<min) {
-	    min=cur-Flavour(kf::W).PSMass();
+	  if (dabs(cur-Flavour(kf::Wplus).PSMass())<min) {
+	    min=cur-Flavour(kf::Wplus).PSMass();
 	    imin=i;
 	    jmin=j;
 	  }

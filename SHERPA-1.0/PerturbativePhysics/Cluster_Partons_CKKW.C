@@ -296,9 +296,9 @@ double Cluster_Partons_CKKW::CouplingWeight(const bool is,Leg &leg,
   case lf::Triangle:
   case lf::Box:
   case lf::C4GS: 
-    asref=(*p_runas)(sqr(Flavour(kf::h).Mass()));
+    asref=(*p_runas)(sqr(Flavour(kf::h0).Mass()));
     if (m_kfac!=0.) asref*=1.+asref/(2.*M_PI)*m_kfac;
-    msg_Debugging()<<"higgs vertex -> q_ref = "<<Flavour(kf::h).Mass()
+    msg_Debugging()<<"higgs vertex -> q_ref = "<<Flavour(kf::h0).Mass()
 		   <<" -> asref = "<<asref<<"\n";
     return 1.0;
     break;

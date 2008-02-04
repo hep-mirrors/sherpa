@@ -96,7 +96,7 @@ void Standard_Model::ReadInFile() {
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   double eh=2./3.;
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
-    double hm=Flavour(kf::h).Mass();
+    double hm=Flavour(kf::h0).Mass();
     Effective_Higgs_Coupling ehc(hm);
     eh = ehc.GetFermionContribution(Flavour(kf::t).Mass());
   }
@@ -146,9 +146,9 @@ void Standard_Model::FixEWParameters() {
   case 1:
     // SM parameters given by alphaQED, M_W, M_Z, M_H
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    MW         = Flavour(kf::W).Mass();
+    MW         = Flavour(kf::Wplus).Mass();
     MZ         = Flavour(kf::Z).Mass();
-    MH         = Flavour(kf::h).Mass();
+    MH         = Flavour(kf::h0).Mass();
     cos2thetaW = sqr(MW/MZ);
     sin2thetaW = 1.-cos2thetaW;
     vev        = 2.*MW*sqrt(sin2thetaW/(4.*M_PI*alphaQED));
@@ -167,22 +167,22 @@ void Standard_Model::FixEWParameters() {
     break;
   case 3:
     //gmu scheme
-    MW         = Flavour(kf::W).Mass();
+    MW         = Flavour(kf::Wplus).Mass();
     MZ         = Flavour(kf::Z).Mass();
     GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     sin2thetaW = 1.-sqr(MW/MZ);
     cos2thetaW = 1.-sin2thetaW;
     alphaQED   = sqrt(2.)*GF*sqr(MW)*sin2thetaW/M_PI;
-    MH         = Flavour(kf::h).Mass();
+    MH         = Flavour(kf::h0).Mass();
     vev        = 1./(pow(2.,0.25)*sqrt(GF));
     lambdaH    = 2.*sqr(MH/vev); 
     break;
   default:
     // all SM parameters given explicitly
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    MW         = Flavour(kf::W).Mass();
+    MW         = Flavour(kf::Wplus).Mass();
     MZ         = Flavour(kf::Z).Mass();
-    MH         = Flavour(kf::h).Mass();
+    MH         = Flavour(kf::h0).Mass();
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
     vev        = p_dataread->GetValue<double>("VEV",246.);
@@ -203,7 +203,7 @@ void Standard_Model::FixEWParameters() {
   p_constants->insert(std::make_pair(std::string("vev"),         vev));
   p_constants->insert(std::make_pair(std::string("MW"),          MW));
   p_constants->insert(std::make_pair(std::string("MZ"),          MZ));
-  p_constants->insert(std::make_pair(std::string("GammaW"),      Flavour(kf::W).Width()));
+  p_constants->insert(std::make_pair(std::string("GammaW"),      Flavour(kf::Wplus).Width()));
   p_constants->insert(std::make_pair(std::string("GammaZ"),      Flavour(kf::Z).Width()));
   p_constants->insert(std::make_pair(std::string("MH"),          MH));
   p_constants->insert(std::make_pair(std::string("lambdaH"),     lambdaH));

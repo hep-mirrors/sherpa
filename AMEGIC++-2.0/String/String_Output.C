@@ -333,22 +333,22 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
 	    break;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::W).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
-			      -Flavour(kf::W).Mass()*Flavour(kf::W).Width())))) { 
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Wplus).Mass()),
+			      -Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Width())))) { 
 	    hit = 1;
-	    (*pz)<<"(1./Complex(sqr(Flavour(kf::W).Mass()),"
-	      <<"-Flavour(kf::W).Mass()*Flavour(kf::W).Width()));"<<endl;
+	    (*pz)<<"(1./Complex(sqr(Flavour(kf::Wplus).Mass()),"
+	      <<"-Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Width()));"<<endl;
 	    break;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h0).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::h).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::h0).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
@@ -357,14 +357,14 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  break;
 	}	  
 	// double masses
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::Wplus).Mass()),0.);"<<endl;
 	  break;	
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (ATOOLS::IsEqual(norm,0.5)) {

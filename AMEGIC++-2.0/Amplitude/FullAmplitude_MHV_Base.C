@@ -763,7 +763,7 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
   else if (m_flist[m_llist[1]]->LeptonFamily()==m_flist[m_llist[2]]->LeptonFamily() && m_hlist[m_llist[2]]<0 && m_hlist[m_qlist[2]]<0) {
     Complex ckm=rpa.gen.ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
     q_w=Complex((p_BS->Momentum(pn)).Abs2(),0.);
-    q_w/= q_w-pow(Flavour(kf::W).Mass(),2)+Complex(0.,1.)*Flavour(kf::W).Width()*Flavour(kf::W).Mass();
+    q_w/= q_w-pow(Flavour(kf::Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf::Wplus).Width()*Flavour(kf::Wplus).Mass();
     q_w*= ckm/(2*pow(sintw,2));
   }
 
