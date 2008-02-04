@@ -41,7 +41,7 @@ Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,
 
 void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flHmin(kf::Hmin);
+  Flavour flHplus(kf::Hplus);
   Flavour flA0(kf::A0);
   
   // l(e)/q(d) -> h0/H0 + l(e)/q(d)
@@ -197,7 +197,7 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
     }
   } 
   
-  if(flHmin.IsOn()) {
+  if(flHplus.IsOn()) {
     
     // l(e) -> H- + nu(e)
     
@@ -210,7 +210,7 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	if(fl2.IsOn() && fl2.IsLepton() && fl2.IsUptype() ) {
 	  
 	  vertex[vanz].in[0] = fl2;   
-	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[1] = flHplus;
 	  vertex[vanz].in[2] = fl1;   
 	  
 	  kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0);
@@ -249,7 +249,7 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	    int genj=(fl2.Kfcode()-2)/2; //uptype
 	   
 	    vertex[vanz].in[0] = fl2;
-	    vertex[vanz].in[1] = flHmin.Bar();
+	    vertex[vanz].in[1] = flHplus;
 	    vertex[vanz].in[2] = fl1;
 	   
 	    kcpl0 = M_I/v2*root2*K_yuk(fl2)*K_Z_H(1,0)*K_CKM(geni,genj);
@@ -281,22 +281,22 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 void Interaction_Model_Higgs::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   Flavour flZ(kf::Z);
   
   Kabbala kcpl0,kcpl1;
   
   //W- -> h0,H0 + W-
 
-  if(flW.IsOn()) {
+  if(flWplus.IsOn()) {
     
     for(short int i=31; i<33;i++){
       Flavour flav = Flavour(kf::code(i));
       if(flav.IsOn()) {
 	
-	vertex[vanz].in[0] = flW;
+	vertex[vanz].in[0] = flWplus.Bar();
 	vertex[vanz].in[1] = flav;
-	vertex[vanz].in[2] = flW;
+	vertex[vanz].in[2] = flWplus.Bar();
 
 	kcpl0 = M_I/num_2*g2*g2*(v1*K_Z_R(0,i-31)+v2*K_Z_R(1,i-31));
 	kcpl1 = kcpl0;
@@ -355,7 +355,7 @@ void Interaction_Model_Higgs::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
 
 void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
-  Flavour flHmin(kf::Hmin);    
+  Flavour flHplus(kf::Hplus);    
   Flavour flh0(kf::h0);
   Flavour flH0(kf::H0);
   Flavour flA0(kf::A0);
@@ -363,14 +363,14 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
 
   // h0,H0 -> H+ + H-
   
-  if(flHmin.IsOn()) {  
+  if(flHplus.IsOn()) {  
     for(short int i=31;i<33;i++) {
       Flavour flav = Flavour(kf::code(i)); 
       if(flav.IsOn()) {
 	
-	vertex[vanz].in[0] = flHmin;
+	vertex[vanz].in[0] = flHplus.Bar();
 	vertex[vanz].in[1] = flav;
-	vertex[vanz].in[2] = flHmin;
+	vertex[vanz].in[2] = flHplus.Bar();
 	
 	kcpl0 = -M_I*g2*g2*(K_A_H(0,0)*K_B_R(i-31)/(costW*costW*num_4)+
 			    vev*K_A_P(i-31,0)/num_2);
@@ -494,9 +494,9 @@ void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz
 
 void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {   
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   Flavour flZ(kf::Z);
-  Flavour flHmin(kf::Hmin);
+  Flavour flHplus(kf::Hplus);
   Flavour flA0(kf::A0);
   Flavour flPhoton(kf::photon);
   Kabbala kcpl0,kcpl1;
@@ -533,10 +533,10 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
     
     // H- -> Z + H-
     
-    if(flHmin.IsOn()) {
-      vertex[vanz].in[0] = flHmin;
+    if(flHplus.IsOn()) {
+      vertex[vanz].in[0] = flHplus.Bar();
       vertex[vanz].in[1] = flZ;
-      vertex[vanz].in[2] = flHmin;
+      vertex[vanz].in[2] = flHplus.Bar();
 
       Complex cos2tw = (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/(2.*sintW.Value()*costW.Value());
       Kabbala cot2TW = Kabbala(string("cot2\\theta_W"),cos2tw);
@@ -563,11 +563,11 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
   
   // H- -> Photon + H- 
   
-  if(flPhoton.IsOn() && flHmin.IsOn()) {
+  if(flPhoton.IsOn() && flHplus.IsOn()) {
     
-    vertex[vanz].in[0] = flHmin;
+    vertex[vanz].in[0] = flHplus.Bar();
     vertex[vanz].in[1] = flPhoton;
-    vertex[vanz].in[2] = flHmin;
+    vertex[vanz].in[2] = flHplus.Bar();
     
     kcpl0 = M_I*g1;
     kcpl1 = kcpl0;
@@ -590,14 +590,14 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
   
   //H- -> W- + h0/H0  
   
-  if(flW.IsOn()) {
+  if(flWplus.IsOn()) {
     for(short int i=31; i<33;i++) {
       Flavour flav = Flavour(kf::code(i)); 
       
-      if(flav.IsOn() && flHmin.IsOn()) {
+      if(flav.IsOn() && flHplus.IsOn()) {
 	
-	vertex[vanz].in[0] = flHmin;
-	vertex[vanz].in[1] = flW;  
+	vertex[vanz].in[0] = flHplus.Bar();
+	vertex[vanz].in[1] = flWplus.Bar();  
 	vertex[vanz].in[2] = flav;
 	
 	kcpl0 = -(M_I/num_2)*g2*K_A_M(i-31,0);
@@ -622,9 +622,9 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
     
     //H- -> W- +  A0
     
-    if(flHmin.IsOn() && flA0.IsOn()) {
-      vertex[vanz].in[0] = flHmin;
-      vertex[vanz].in[1] = flW;    
+    if(flHplus.IsOn() && flA0.IsOn()) {
+      vertex[vanz].in[0] = flHplus.Bar();
+      vertex[vanz].in[1] = flWplus.Bar();    
       vertex[vanz].in[2] = flA0;
 
       kcpl0 = -g2/num_2;
@@ -650,7 +650,7 @@ void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz
 
 void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
-  Flavour flHmin(kf::Hmin);    
+  Flavour flHplus(kf::Hplus);    
   Flavour flA0(kf::A0);
   
   Kabbala kcpl0,kcpl1;
@@ -682,12 +682,12 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
     vertex.push_back(Single_Vertex());vanz++;
   }
   // H- - H- - H+ - H-
-  if (flHmin.IsOn()) {
+  if (flHplus.IsOn()) {
  	
-    vertex[vanz].in[0] = flHmin;
-    vertex[vanz].in[1] = flHmin;
-    vertex[vanz].in[2] = flHmin.Bar();
-    vertex[vanz].in[3] = flHmin;
+    vertex[vanz].in[0] = flHplus.Bar();
+    vertex[vanz].in[1] = flHplus.Bar();
+    vertex[vanz].in[2] = flHplus;
+    vertex[vanz].in[3] = flHplus.Bar();
     
     vertex[vanz].nleg     = 4;
     
@@ -708,10 +708,10 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
     vertex.push_back(Single_Vertex());vanz++;
   }
   // A0 - H- - H+ - A0
-  if (flA0.IsOn() && flHmin.IsOn()) {
+  if (flA0.IsOn() && flHplus.IsOn()) {
     vertex[vanz].in[0] = flA0;
-    vertex[vanz].in[1] = flHmin;
-    vertex[vanz].in[2] = flHmin.Bar();
+    vertex[vanz].in[1] = flHplus.Bar();
+    vertex[vanz].in[2] = flHplus;
     vertex[vanz].in[3] = flA0;
     
     vertex[vanz].nleg     = 4;
@@ -739,11 +739,11 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
       Flavour flav2 = Flavour(kf::code(j));
       if (flav1.IsOn() && flav2.IsOn()) {
 	// h0/H0 - H- - H+ - h0/H0
-	if (flHmin.IsOn()) {
+	if (flHplus.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
-	  vertex[vanz].in[1] = flHmin;
-	  vertex[vanz].in[2] = flHmin.Bar();
+	  vertex[vanz].in[1] = flHplus.Bar();
+	  vertex[vanz].in[2] = flHplus;
 	  vertex[vanz].in[3] = flav2;
 	  
 	  vertex[vanz].nleg     = 4;
@@ -836,9 +836,9 @@ void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& van
 void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   Flavour flZ(kf::Z);
-  Flavour flHmin(kf::Hmin);    
+  Flavour flHplus(kf::Hplus);    
   Flavour flA0(kf::A0);
   Flavour flPhoton(kf::photon);
   
@@ -882,10 +882,10 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       Flavour flav = Flavour(kf::code(i));
       if(flav.IsOn()) {
 	
- 	vertex[vanz].in[0] = flW;
+ 	vertex[vanz].in[0] = flWplus.Bar();
 	vertex[vanz].in[1] = flav;
 	vertex[vanz].in[2] = flav;
-	vertex[vanz].in[3] = flW;
+	vertex[vanz].in[3] = flWplus.Bar();
   
 	vertex[vanz].nleg     = 4;
 
@@ -909,12 +909,12 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
     }
   }
 
-  if (flW.IsOn() && flHmin.IsOn()) {
+  if (flWplus.IsOn() && flHplus.IsOn()) {
     //W -> H- - H- - W
-    vertex[vanz].in[0] = flW;
-    vertex[vanz].in[1] = flHmin.Bar();
-    vertex[vanz].in[2] = flHmin;
-    vertex[vanz].in[3] = flW;
+    vertex[vanz].in[0] = flWplus.Bar();
+    vertex[vanz].in[1] = flHplus;
+    vertex[vanz].in[2] = flHplus.Bar();
+    vertex[vanz].in[3] = flWplus.Bar();
     
     vertex[vanz].nleg     = 4;
 
@@ -941,8 +941,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       if(flav.IsOn()) {
 	if(flZ.IsOn()) {
 
-	  vertex[vanz].in[0] = flW.Bar();
-	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[0] = flWplus;
+	  vertex[vanz].in[1] = flHplus;
 	  vertex[vanz].in[2] = flav;
 	  vertex[vanz].in[3] = flZ;
 	  
@@ -968,8 +968,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
 	
 	if(flPhoton.IsOn()) {
 
-	  vertex[vanz].in[0] = flW.Bar();
-	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[0] = flWplus;
+	  vertex[vanz].in[1] = flHplus;
 	  vertex[vanz].in[2] = flav;
 	  vertex[vanz].in[3] = flPhoton;
   
@@ -998,8 +998,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
     if (flA0.IsOn()) {
       if (flZ.IsOn()) {
 	
- 	vertex[vanz].in[0] = flW.Bar();
-	vertex[vanz].in[1] = flHmin.Bar();
+ 	vertex[vanz].in[0] = flWplus;
+	vertex[vanz].in[1] = flHplus;
 	vertex[vanz].in[2] = flA0;
 	vertex[vanz].in[3] = flZ;
   
@@ -1024,8 +1024,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       }
       if (flPhoton.IsOn()) {
 	
-	vertex[vanz].in[0] = flW.Bar();
-	vertex[vanz].in[1] = flHmin.Bar();
+	vertex[vanz].in[0] = flWplus;
+	vertex[vanz].in[1] = flHplus;
 	vertex[vanz].in[2] = flA0;
 	vertex[vanz].in[3] = flPhoton;
   
@@ -1051,15 +1051,16 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
     }
   }
   //P/Z -> H- - H- - Z/P 
-  if (flHmin.IsOn()) {
+  if (flHplus.IsOn()) {
     if (flZ.IsOn()) {
       
       Kabbala cot2TW = Kabbala(string("cot2\\theta_W"),
-			       (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/(2.*sintW.Value()*costW.Value()));
+			       (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/
+			       (2.*sintW.Value()*costW.Value()));
       
       vertex[vanz].in[0] = flZ;
-      vertex[vanz].in[1] = flHmin;
-      vertex[vanz].in[2] = flHmin.Bar();
+      vertex[vanz].in[1] = flHplus.Bar();
+      vertex[vanz].in[2] = flHplus;
       vertex[vanz].in[3] = flZ;
       
       vertex[vanz].nleg     = 4;
@@ -1084,8 +1085,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
       if(flPhoton.IsOn()) {
 
 	vertex[vanz].in[0] = flZ;
-	vertex[vanz].in[1] = flHmin;
-	vertex[vanz].in[2] = flHmin.Bar();
+	vertex[vanz].in[1] = flHplus.Bar();
+	vertex[vanz].in[2] = flHplus;
 	vertex[vanz].in[3] = flPhoton;
 	
 	vertex[vanz].nleg     = 4;
@@ -1110,8 +1111,8 @@ void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& van
     }
     if(flPhoton.IsOn()) {
        vertex[vanz].in[0] = flPhoton;
-       vertex[vanz].in[1] = flHmin;
-       vertex[vanz].in[2] = flHmin.Bar();
+       vertex[vanz].in[1] = flHplus.Bar();
+       vertex[vanz].in[2] = flHplus;
        vertex[vanz].in[3] = flPhoton;
        
       vertex[vanz].nleg     = 4;

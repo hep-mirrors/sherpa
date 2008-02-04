@@ -129,7 +129,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
   //return;
   Flavour flphoton(kf::photon);
   Flavour flZ(kf::Z);
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
   for (short int i=1;i<17;i++) {
@@ -281,7 +281,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	    }
 	  }
 	  //W + graviton
-	  if (flW.IsOn()&&flgraviton.IsOn()) {
+	  if (flWplus.IsOn()&&flgraviton.IsOn()) {
 	    short int hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
@@ -302,7 +302,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      }
 	      if (!ATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
 		vertex[vanz].nleg     = 4;
-		vertex[vanz].in[1] = Flavour(kf::W);
+		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;
 		  vertex[vanz].in[2] = flav2;
@@ -336,7 +336,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	    }
 	  }
 	  //W + gscalar
-	  if (flW.IsOn()&&flgs.IsOn()) {
+	  if (flWplus.IsOn()&&flgs.IsOn()) {
 	    short int hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
@@ -357,7 +357,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      }
 	      if (!ATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
 		vertex[vanz].nleg     = 4;
-		vertex[vanz].in[1] = Flavour(kf::W);
+		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;
 		  vertex[vanz].in[2] = flav2;
@@ -401,7 +401,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
   Kabbala kcpl0,kcpl1;  
-  Flavour flav(kf::W);
+  Flavour flav(kf::Wplus);
 
   if (flgraviton.IsOn()){  
     // W graviton W
@@ -479,7 +479,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
   }
   if (!flgs.IsOn()) return;
   
-  flav = Flavour(kf::W);
+  flav = Flavour(kf::Wplus);
   // W gscalar W
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -559,7 +559,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
 void Interaction_Model_EW_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flgraviton(kf::graviton);
-  Flavour flav(kf::W);
+  Flavour flav(kf::Wplus);
   Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
   charge = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
 
@@ -622,7 +622,7 @@ void Interaction_Model_EW_Grav::c_SST(std::vector<Single_Vertex>& vertex,int& va
 
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
-  Flavour flh = Flavour(kf::h);
+  Flavour flh = Flavour(kf::h0);
 
  if (flh.IsOn()&&flgraviton.IsOn()) {  
     vertex[vanz].in[0] = flh;
@@ -679,7 +679,7 @@ void Interaction_Model_EW_Grav::c_SSST(std::vector<Single_Vertex>& vertex,int& v
 
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
-  Flavour flh = Flavour(kf::h);
+  Flavour flh = Flavour(kf::h0);
 
  if (flh.IsOn()&&flgraviton.IsOn()) {  
     vertex[vanz].nleg     = 4;

@@ -39,7 +39,7 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 
   Flavour flphoton(kf::photon);
   Flavour flZ(kf::Z);
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   for (short int i=17;i<19;i++) {
     Flavour flav1               = Flavour(kf::code(i));
     Kabbala charge1             = Kabbala(string("Q_{")+flav1.TexName()+string("}"),flav1.Charge());
@@ -114,7 +114,7 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	    }
 	  }
 	  //W
-	  if (flW.IsOn()) {
+	  if (flWplus.IsOn()) {
 	    short int hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
@@ -128,7 +128,7 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	      if (flav1.IsDowntype() && i>10 && j==i+1) 
 		kcpl1 = -M_I/root2*g2;
 	      if (!ATOOLS::IsZero(kcpl1.Value())) {
-		vertex[vanz].in[1] = Flavour(kf::W);
+		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;
 		  vertex[vanz].in[2] = flav2;
@@ -178,7 +178,7 @@ void Interaction_Model_4GenLep::c_VVVV(std::vector<Single_Vertex>& vertex,int& v
 void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  
 { 
   p_mosm->c_FFS(vertex,vanz);
-  Flavour flh(kf::h);
+  Flavour flh(kf::h0);
   Kabbala kcpl0,kcpl1,M_h;
   if (!flh.IsOn()) return;
 

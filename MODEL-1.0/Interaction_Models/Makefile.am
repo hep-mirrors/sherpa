@@ -6,19 +6,21 @@ libModelInteractions_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Interaction_Model_QCD.C Interaction_Model_EW.C \
 		      Interaction_Model_SM.C \
 		      Interaction_Model_Higgs.C Interaction_Model_THDM.C \
-		      Interaction_Model_Inos.C Interaction_Model_sLepton_EW.C \
-		      Interaction_Model_sQCD.C Interaction_Model_sQuark_EW.C \
-		      Interaction_Model_sLepton_sQuark.C \
-		      Interaction_Model_MSSM.C Interaction_Model_EHC_S.C\
+		      Interaction_Model_EHC_S.C\
 		      Interaction_Model_QCD_Grav.C Interaction_Model_EW_Grav.C \
 		      Interaction_Model_ADD.C \
 		      Interaction_Model_EHC.C Interaction_Model_SMEHC.C \
-		      Interaction_Model_SM_ZPrime.C Interaction_Model_MSSM_EHC.C \
+		      Interaction_Model_SM_ZPrime.C 
 		      Interaction_Model_AEW.C Interaction_Model_SM_AGC.C \
 		      Interaction_Model_MUED_QCD.C \
 		      Interaction_Model_SM_Phantom_U1.C \
 		      Interaction_Model_4GenLep.C \
 		      Interaction_Model_Handler.C
+#		      Interaction_Model_Inos.C Interaction_Model_sLepton_EW.C \
+#		      Interaction_Model_sQCD.C Interaction_Model_sQuark_EW.C \
+#		      Interaction_Model_sLepton_sQuark.C \
+#		      Interaction_Model_MSSM.C \
+#		      Interaction_Model_MSSM_EHC.C 
 
 pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
 		 Single_Vertex.H Vertex.H \

@@ -34,7 +34,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 {
   Flavour flphoton(kf::photon);
   Flavour flZ(kf::Z);
-  Flavour flW(kf::W);
+  Flavour flWplus(kf::Wplus);
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
     Flavour flav1               = Flavour(kf::code(i));
@@ -100,7 +100,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 		vertex[vanz].Color->SetStringArg('0','2');     
 	      }
 	      else 
-		  vertex[vanz].Color = new Color_Function(cf::None);
+		vertex[vanz].Color = new Color_Function(cf::None);
 
 	      vertex[vanz].nlf     = 1;
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
@@ -111,7 +111,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 	    }
 	  }
 	  //W
-	  if (flW.IsOn()) {
+	  if (flWplus.IsOn()) {
 	    short int hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
@@ -131,7 +131,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 		  kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);
 	      }
 	      if (!ATOOLS::IsZero(kcpl1.Value())) {
-		vertex[vanz].in[1] = Flavour(kf::W);
+		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;
 		  vertex[vanz].in[2] = flav2;
@@ -171,7 +171,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 
 void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flW(kf::W);
+  Flavour flW(kf::Wplus);
   Flavour flZ(kf::Z);
   Flavour flP(kf::photon);
   Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
@@ -180,58 +180,58 @@ void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
   if (flW.IsOn() && flP.IsOn()) {
 
-  // photon WW
-  vertex[vanz].in[0] = flW;
-  vertex[vanz].in[1] = Flavour(kf::photon);
-  vertex[vanz].in[2] = flW;
-
-  kcpl0 = M_I*g1*charge;
-  kcpl1 = kcpl0;
-
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
-
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
-
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
-}
+    // photon WW
+    vertex[vanz].in[0] = flW;
+    vertex[vanz].in[1] = Flavour(kf::photon);
+    vertex[vanz].in[2] = flW;
+    
+    kcpl0 = M_I*g1*charge;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
+    vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
   if (flZ.IsOn()) {
- 
-  // ZWW
-  vertex[vanz].in[0] = flW;
-  vertex[vanz].in[1] = Flavour(kf::Z);
-  vertex[vanz].in[2] = flW;
-
-  kcpl0 = M_I*g2*charge*costW;
-  kcpl1 = kcpl0;
-  
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
-
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
-
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    
+    // ZWW
+    vertex[vanz].in[0] = flW;
+    vertex[vanz].in[1] = Flavour(kf::Z);
+    vertex[vanz].in[2] = flW;
+    
+    kcpl0 = M_I*g2*charge*costW;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
+    vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
 
 void Interaction_Model_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh(kf::h);
+  Flavour flh(kf::h0);
   Kabbala kcpl0,kcpl1,M_h;
   if (!flh.IsOn()) return;
 
@@ -277,20 +277,20 @@ void Interaction_Model_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 
 void Interaction_Model_EW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh(kf::h);
+  Flavour flh(kf::h0);
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
- if (!flh.IsOn()) return;
+  if (!flh.IsOn()) return;
   
-  Flavour flav(kf::W);
+  Flavour flWplus(kf::Wplus);
   // W h W
-  if (flav.IsOn()) {
-    vertex[vanz].in[0] = flav;
+  if (flWplus.IsOn()) {
+    vertex[vanz].in[0] = flWplus.Bar();
     vertex[vanz].in[1] = flh;
-    vertex[vanz].in[2] = flav;
+    vertex[vanz].in[2] = flWplus.Bar();
     
-    kcpl0 = M_I*g2*flav.Yuk();
+    kcpl0 = M_I*g2*flWplus.Yuk();
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0;
@@ -308,7 +308,7 @@ void Interaction_Model_EW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex.push_back(Single_Vertex());vanz++;
   }
 
-  flav = Flavour(kf::Z);
+  Flavour flav = Flavour(kf::Z);
   // Z h Z
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -337,11 +337,11 @@ void Interaction_Model_EW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 
 void Interaction_Model_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh = Flavour(kf::h);
+  Flavour flh = Flavour(kf::h0);
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
- if (flh.IsOn()) {  
+  if (flh.IsOn()) {  
     vertex[vanz].in[0] = flh;
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flh;
@@ -367,7 +367,7 @@ void Interaction_Model_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 
 void Interaction_Model_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh = Flavour(kf::h);
+  Flavour flh = Flavour(kf::h0);
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
@@ -400,117 +400,116 @@ void Interaction_Model_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 
 void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-
-  Flavour flavW(kf::W);
+  Flavour flavWplus(kf::Wplus);
   Flavour flavZ(kf::Z);
   Flavour flavP(kf::photon);
   Kabbala kcpl0,kcpl1;
   
   // Ph - W - W - Ph  
-  if (flavW.IsOn() && flavP.IsOn()) {
-  vertex[vanz].in[0] = flavP;
-  vertex[vanz].in[1] = flavW;
-  vertex[vanz].in[2] = flavW.Bar();
-  vertex[vanz].in[3] = flavP;
+  if (flavWplus.IsOn() && flavP.IsOn()) {
+    vertex[vanz].in[0] = flavP;
+    vertex[vanz].in[1] = flavWplus.Bar();
+    vertex[vanz].in[2] = flavWplus;
+    vertex[vanz].in[3] = flavP;
   
-  vertex[vanz].nleg     = 4;
+    vertex[vanz].nleg     = 4;
 
-  kcpl0 = -M_I*g1*g1;
-  kcpl1 = kcpl0;
+    kcpl0 = -M_I*g1*g1;
+    kcpl1 = kcpl0;
     
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);
-  vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);
+    vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   // Ph - W - W - Z  
-  if (flavW.IsOn() && flavP.IsOn() && flavZ.IsOn()) {
-  vertex[vanz].in[0] = flavP;
-  vertex[vanz].in[1] = flavW;
-  vertex[vanz].in[2] = flavW.Bar();
-  vertex[vanz].in[3] = flavZ;
+  if (flavWplus.IsOn() && flavP.IsOn() && flavZ.IsOn()) {
+    vertex[vanz].in[0] = flavP;
+    vertex[vanz].in[1] = flavWplus.Bar();
+    vertex[vanz].in[2] = flavWplus;
+    vertex[vanz].in[3] = flavZ;
 
-  vertex[vanz].nleg     = 4;  
+    vertex[vanz].nleg     = 4;  
 
-  kcpl0 = -M_I*g1*g1*costW/sintW;
-  kcpl1 = kcpl0;
+    kcpl0 = -M_I*g1*g1*costW/sintW;
+    kcpl1 = kcpl0;
   
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);     
-  vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);     
+    vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   // Z - W - W - Z  
-  if (flavW.IsOn() && flavZ.IsOn()) {
-  vertex[vanz].in[0] = flavZ;
-  vertex[vanz].in[1] = flavW;
-  vertex[vanz].in[2] = flavW.Bar();
-  vertex[vanz].in[3] = flavZ;
+  if (flavWplus.IsOn() && flavZ.IsOn()) {
+    vertex[vanz].in[0] = flavZ;
+    vertex[vanz].in[1] = flavWplus.Bar();
+    vertex[vanz].in[2] = flavWplus;
+    vertex[vanz].in[3] = flavZ;
   
-  vertex[vanz].nleg     = 4;
+    vertex[vanz].nleg     = 4;
 
-  kcpl0 = -M_I*g1*g1*costW*costW/(sintW*sintW);
-  kcpl1 = kcpl0;
+    kcpl0 = -M_I*g1*g1*costW*costW/(sintW*sintW);
+    kcpl1 = kcpl0;
   
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);     
-  vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4);     
+    vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   
- // W - W - W - W  
-  if (flavW.IsOn()) {
-  vertex[vanz].in[0] = flavW.Bar();
-  vertex[vanz].in[1] = flavW;
-  vertex[vanz].in[2] = flavW.Bar();
-  vertex[vanz].in[3] = flavW.Bar();
+  // W - W - W - W  
+  if (flavWplus.IsOn()) {
+    vertex[vanz].in[0] = flavWplus;
+    vertex[vanz].in[1] = flavWplus.Bar();
+    vertex[vanz].in[2] = flavWplus;
+    vertex[vanz].in[3] = flavWplus;
   
-  vertex[vanz].nleg     = 4;
+    vertex[vanz].nleg     = 4;
 
-  kcpl0 = M_I*g1*g1/(sintW*sintW);
-  kcpl1 = kcpl0;
+    kcpl0 = M_I*g1*g1/(sintW*sintW);
+    kcpl1 = kcpl0;
   
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[0]  = kcpl0;
+    vertex[vanz].cpl[1]  = kcpl1;
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4); 
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge4); 
+    vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
 
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
@@ -518,9 +517,9 @@ void Interaction_Model_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala num_2 = Kabbala(string("2"),2.);  
 
-  Flavour flavW(kf::W);
+  Flavour flavWplus(kf::Wplus);
   Flavour flavZ(kf::Z);
-  Flavour flavh(kf::h);
+  Flavour flavh(kf::h0);
   Kabbala kcpl0,kcpl1;
   
   // h - Z - Z - h  
@@ -551,11 +550,11 @@ void Interaction_Model_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
   }
 
   // h - W - W - h  
-  if (flavW.IsOn() && flavh.IsOn()) {
-    vertex[vanz].in[0] = flavW;
+  if (flavWplus.IsOn() && flavh.IsOn()) {
+    vertex[vanz].in[0] = flavWplus.Bar();
     vertex[vanz].in[1] = flavh;
     vertex[vanz].in[2] = flavh;
-    vertex[vanz].in[3] = flavW;
+    vertex[vanz].in[3] = flavWplus.Bar();
     
     vertex[vanz].nleg     = 4;
     

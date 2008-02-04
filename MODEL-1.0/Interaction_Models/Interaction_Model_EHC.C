@@ -14,7 +14,7 @@ Interaction_Model_EHC::Interaction_Model_EHC(MODEL::Model_Base * _model,
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
-  double hmass2 = sqr(Flavour(kf::h).Mass());
+  double hmass2 = sqr(Flavour(kf::h0).Mass());
 
   geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_GG_EFF")));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
@@ -39,7 +39,7 @@ Interaction_Model_EHC::Interaction_Model_EHC(MODEL::Model_Base * _model,
 
 void Interaction_Model_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh(kf::h);
+  Flavour flh(kf::h0);
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
@@ -132,7 +132,7 @@ void Interaction_Model_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
   
-  Flavour flh(kf::h);
+  Flavour flh(kf::h0);
   Flavour flg(kf::gluon);
   if(!flh.IsOn()||!flg.IsOn())return;
 

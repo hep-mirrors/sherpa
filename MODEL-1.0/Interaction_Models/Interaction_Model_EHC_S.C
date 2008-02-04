@@ -14,7 +14,7 @@ Interaction_Model_EHC_S::Interaction_Model_EHC_S(MODEL::Model_Base * _model,
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
-  double hmass2 = sqr(Flavour(kf::h).Mass());
+  double hmass2 = sqr(Flavour(kf::h0).Mass());
 
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
 		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));

@@ -52,16 +52,16 @@ namespace ATOOLS {
       
       gluon                  = 21,
       photon                 = 22,
-      W                      = 23,
-      Z                      = 24,
-      h                      = 25,
+      Z                      = 23,
+      Wplus                  = 24,
+      h0                     = 25,
       
-      //Z0_2                   = 32,
-      //Z0_3                   = 33,
-      //W_2                    = 34,
-      //H0                     = 35,
-      //A0                     = 36,
-      //Hmin                   = 37,
+      Z0_2                   = 32,
+      Z0_3                   = 33,
+      W_2plus                = 34,
+      H0                     = 35,
+      A0                     = 36,
+      Hplus                  = 37,
 
       //Graviton               = 39,
       //GScalar                = 40,
@@ -84,20 +84,6 @@ namespace ATOOLS {
       ------------------------------------------ */
       graviton               = 27,
       gscalar                = 28,
-
-      /* ------------------------------------------
-	THDM - has to get other numbers to comply 
-	       with the PDG numbering scheme
-      ------------------------------------------ */
-      h0                     = 31,
-      H0                     = 32,
-      A0                     = 33,
-      Hmin                   = 34,
-
-      /* ------------------------------------------
-        Left-Right Symmetric Models
-	----------------------------------------- */
-      ZPrime                 = 35,
 
       /* ------------------------------------------
 	SUSY - has to get other numbers to comply 

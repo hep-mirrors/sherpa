@@ -46,7 +46,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
 
 
 // create FFV vertices with Z' if it's on
-  Flavour flZPrime(kf::ZPrime);
+  Flavour flZPrime(kf::Z0_2);
   if (flZPrime.IsOn()) {
 
     // parse through all fermions than couple to Z' and create vertices

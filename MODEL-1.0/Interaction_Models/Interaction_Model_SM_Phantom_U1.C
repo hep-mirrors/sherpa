@@ -129,12 +129,12 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
   mixH = Kabbala(string("O_{21}"),ComplexMatrixElement("HiggsMix",1,0));
 
   Kabbala num_2 = Kabbala(string("2"),2.);  
-  Flavour flav(kf::W);
+  Flavour flav(kf::Wplus);
   // W h W
   if (flav.IsOn()) {
-    vertex[vanz].in[0] = flav;
+    vertex[vanz].in[0] = flav.Bar();
     vertex[vanz].in[1] = flh0;
-    vertex[vanz].in[2] = flav;
+    vertex[vanz].in[2] = flav.Bar();
     kcpl0 = M_I*g2*flav.Yuk()*mixh;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
@@ -444,7 +444,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
 
 void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& vanz) { 
   Flavour flh0(kf::h0), flH0(kf::H0);
-  Flavour flavW(kf::W);
+  Flavour flavW(kf::Wplus);
   Flavour flavZ(kf::Z);
 
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
@@ -540,10 +540,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
   }
   // h0 - W - W - h0  
   if (flavW.IsOn() && flh0.IsOn()) {
-    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[0] = flavW.Bar();
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flh0;
-    vertex[vanz].in[3] = flavW;
+    vertex[vanz].in[3] = flavW.Bar();
     
     vertex[vanz].nleg     = 4;
     
@@ -566,10 +566,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
   }
  // H0 - W - W - h0  
   if (flavW.IsOn() && flh0.IsOn() && flH0.IsOn()) {
-    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[0] = flavW.Bar();
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flh0;
-    vertex[vanz].in[3] = flavW;
+    vertex[vanz].in[3] = flavW.Bar();
     
     vertex[vanz].nleg     = 4;
     
@@ -592,10 +592,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
   }
  // H0 - W - W - H0  
   if (flavW.IsOn() && flH0.IsOn()) {
-    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[0] = flavW.Bar();
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flH0;
-    vertex[vanz].in[3] = flavW;
+    vertex[vanz].in[3] = flavW.Bar();
     
     vertex[vanz].nleg     = 4;
     
