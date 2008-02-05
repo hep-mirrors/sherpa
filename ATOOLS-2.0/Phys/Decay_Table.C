@@ -22,9 +22,9 @@ void Decay_Channel::SetProcessName(const std::string _name)
     m_processname = _name;
     return;
   }
-  m_processname = m_flin.Name()+string("->");
+  m_processname = m_flin.IDName()+string("->");
   for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) 
-    m_processname += fl->Name()+string("_");
+    m_processname += fl->IDName()+string("_");
   m_processname = m_processname.substr(0,m_processname.size()-1);
 }
 
@@ -118,6 +118,11 @@ void Decay_Table::Output() {
   if (m_overwrite) msg_Out()<<" Value of Particle.dat has been overwritten by "
 			    <<m_generator<<"."<<endl;
   msg_Out()<<"----------------------------------------------------------------"<<endl;
+}
+
+void Decay_Table::UpdateWidth() {
+  m_width = 0.;
+  for (size_t i=0;i<m_channels.size();i++) m_width+= m_channels[i]->Width();
 }
 
 double Decay_Table::Width(const int i)

@@ -43,7 +43,7 @@ namespace MODEL {
     Model_Base(std::string,std::string);
     virtual ~Model_Base();
     void InitializeInteractionModel();
-    void FillDecayTables() {}
+    void FillDecayTables();
     virtual bool RunSpectrumGenerator()           = 0;
     virtual void FillMasses()                     = 0;
     virtual void FillWidths()                     = 0;

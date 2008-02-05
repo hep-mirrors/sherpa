@@ -28,7 +28,6 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   ReadInFile();
  
   AddToDataCollector(); 
-
 }
 
 void Standard_Model::ReadInFile() {

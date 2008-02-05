@@ -14,7 +14,9 @@ using namespace std;
 Model_Base::Model_Base(std::string _dir,std::string _file) :
   m_dir(_dir), m_file(_file), p_dataread(NULL),
   p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
-  p_spectrumgenerator(NULL), p_vertex(NULL), p_vertextable(NULL)
+  p_spectrumgenerator(NULL), 
+  p_vertex(NULL), p_vertextable(NULL), 
+  p_decays(NULL)
 {
 }
 
@@ -28,12 +30,13 @@ Model_Base::~Model_Base()
     }
     delete p_functions;
   }
-  if (p_constants!=NULL) delete p_constants;
-  if (p_matrices!=NULL) delete p_matrices;
-  if (p_dataread!=NULL) delete p_dataread;
+  if (p_constants!=NULL)         delete p_constants;
+  if (p_matrices!=NULL)          delete p_matrices;
+  if (p_dataread!=NULL)          delete p_dataread;
   if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
-  if (p_vertex!=NULL) delete p_vertex;
-  if (p_vertextable!=NULL) delete p_vertextable;
+  if (p_vertex!=NULL)            delete p_vertex;
+  if (p_vertextable!=NULL)       delete p_vertextable;
+  if (p_decays!=NULL)            delete p_decays;
 }
 
 void Model_Base::InitializeInteractionModel()
@@ -56,6 +59,22 @@ void Model_Base::InitializeInteractionModel()
   }
 
   delete model;
+}
+
+void Model_Base::FillDecayTables() {
+  p_decays = new All_Decays(this);
+  Flavour flav;
+  for (std::map<ATOOLS::Flavour, Vertex_List>::iterator vit=p_vertextable->begin();
+       vit!=p_vertextable->end();vit++) {
+    flav = vit->first;
+    if (!flav.IsStable() && flav.Width()<0.) {
+      std::cout<<METHOD<<" : "<<flav<<" : "<<flav.Width()<<std::endl;
+      p_decays->AddToDecays(flav); 
+    }
+  }
+  p_decays->InitializeDecayTables();
+  p_decays->CalculateWidths();
+  abort();
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {

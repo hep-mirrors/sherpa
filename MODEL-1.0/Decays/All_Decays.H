@@ -14,8 +14,8 @@ namespace MODEL {
   //! The container for all hard decays.
   class All_Decays {
   private :
-    Vertex_Table * p_vertextable;
-    DecayMap     * p_decays;
+    Vertex_Table     * p_vertextable;
+    DecayMap         * p_decays;
 
     std::map<ATOOLS::Flavour,double> m_maxestimates;
     
@@ -29,6 +29,7 @@ namespace MODEL {
     bool AddToDecays(const ATOOLS::Flavour &);
     bool AddToDecays(ATOOLS::Decay_Channel *);
     bool InitializeDecayTables();
+    bool CalculateWidths();
     double Width(const ATOOLS::Flavour & fl);
     
     DecayMap * const            GetDecayMap()    { return p_decays; }

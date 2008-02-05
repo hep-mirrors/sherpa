@@ -86,6 +86,7 @@ namespace ATOOLS {
     void SetSmearing()                       { m_smearing  = 1; }
     void SetWidthGenerator(std::string _gen) { m_generator = _gen; }
     void Output();
+    void UpdateWidth();
 
     bool            FixedDecay()             { return m_fixdecay;  }
     bool            Overwrite()              { return m_overwrite; }

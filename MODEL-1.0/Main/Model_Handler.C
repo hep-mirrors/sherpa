@@ -49,6 +49,7 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
   }
 
   modelbase->InitializeInteractionModel();
+  modelbase->FillDecayTables();
   rpa.gen.SetModel(modelbase);
   return modelbase;
 }

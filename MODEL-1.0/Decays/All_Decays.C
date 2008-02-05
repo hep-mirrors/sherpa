@@ -1,5 +1,6 @@
 #include "All_Decays.H"
 #include "Model_Base.H"
+#include "Width_Calculator.H"
 #include "Vertex.H"
 #include <complex>
 
@@ -10,8 +11,8 @@ using namespace ATOOLS;
 All_Decays::All_Decays(Model_Base * model) :
   p_vertextable(model->GetVertexTable()),p_decays(new DecayMap)
 {  
-  std::cout<<METHOD<<" vertextable = "<<p_vertextable<<" with "<<p_vertextable->size()
-	   <<" from model "<<model<<std::endl;
+  //std::cout<<METHOD<<" vertextable = "<<p_vertextable<<" with "<<p_vertextable->size()
+  //	   <<" from model "<<model<<std::endl;
 }
 
 bool All_Decays::AddToDecays(const ATOOLS::Flavour & flav) 
@@ -25,7 +26,7 @@ bool All_Decays::AddToDecays(const ATOOLS::Flavour & flav)
 
 bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * dc) 
 {
-  Flavour    flav = dc->GetDecaying();
+  Flavour flav = dc->GetDecaying();
   // This is maybe a bit too much - maybe if there's no vertex, 
   // we should have isotropic decays.
   if (!CheckInVertex(flav)) return false;
@@ -42,9 +43,22 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * dc)
 }
 
 bool All_Decays::InitializeDecayTables() {
+  if (p_decays->empty()) return false;
   BinaryDecays();
   ThreeBodyDecays();
   ArrangeDecays();
+  PrintDecayTables();
+  return true;
+}
+
+bool All_Decays::CalculateWidths() {
+  Width_Calculator calc(p_vertextable);
+  for (DMIterator dmit=p_decays->begin();dmit!=p_decays->end();dmit++) {
+    for (int i=0;i<dmit->second->NumberOfDecayChannels();i++) {
+      dmit->second->GetDecayChannel(i)->SetWidth(calc.Width(dmit->second->GetDecayChannel(i)));
+    }
+    dmit->second->UpdateWidth();
+ }
   PrintDecayTables();
   return true;
 }
@@ -72,7 +86,10 @@ void All_Decays::BinaryDecays()
       Vertex_List & vertexlist = (*p_vertextable)[inflav];
       for (size_t i=0;i<vertexlist.size();i++) {
 	sv = vertexlist[i];
-	if (sv->on && sv->nleg==3) {
+	if (sv->on && sv->nleg==3 &&
+	    sv->in[0]!=Flavour(kf::shgluon) && 
+	    sv->in[1]!=Flavour(kf::shgluon) && 
+	    sv->in[2]!=Flavour(kf::shgluon)) {
 	  if (inflav.Mass()>sv->in[1].Mass()+sv->in[2].Mass()) {
 	    dc = new Decay_Channel(inflav);
 	    dc->AddDecayProduct(sv->in[1]);
@@ -112,10 +129,12 @@ void All_Decays::ThreeBodyDecays() {
     Vertex_List & vertexlist = (*p_vertextable)[inflav];
     for (size_t i=0;i<vertexlist.size();i++) {
       sv1 = vertexlist[i];
-      if (sv1->on && sv1->nleg==3) {
+      if (sv1->on && sv1->nleg==3 &&
+	  sv1->in[0]!=Flavour(kf::shgluon) && 
+	  sv1->in[1]!=Flavour(kf::shgluon) && sv1->in[1]!=inflav && 
+	  sv1->in[2]!=Flavour(kf::shgluon) && sv1->in[2]!=inflav) {
 	est = std::norm(sv1->cpl[0].Value())+std::norm(sv1->cpl[1].Value());
-	if (inflav!=sv1->in[1] && inflav!=sv1->in[2] &&
-	    inflav.Mass()<sv1->in[1].Mass()+sv1->in[2].Mass() &&
+	if (inflav.Mass()<sv1->in[1].Mass()+sv1->in[2].Mass() &&
 	    (sv1->in[1].Mass()+sv1->in[2].Mass()-inflav.Mass())/
 	    sqrt(sqr(sv1->in[1].Width())+sqr(sv1->in[2].Width()))<est/crit) {
 	  for (int j=1;j<3;j++) {
@@ -124,6 +143,9 @@ void All_Decays::ThreeBodyDecays() {
 	      sv2 = vertexlist2[k];
 	      if (sv2->on && sv2->nleg==3) {
 		if (inflav.Mass()>sv1->in[3-j].Mass()+sv2->in[1].Mass()+sv2->in[2].Mass()) {
+		  //std::cout<<sv1->in[0]<<" --> "<<sv1->in[1]<<" "<<sv1->in[2]<<" ("<<j<<") ==> "
+		  //	   <<sv2->in[0]<<" --> "<<sv2->in[1]<<" "<<sv2->in[2]<<" + "
+		  //	   <<sv1->in[3-j]<<" from "<<vertexlist2.size()<<std::endl;
 		  dc = new Decay_Channel(inflav);
 		  dc->AddDecayProduct(sv1->in[3-j]);
 		  dc->AddDecayProduct(sv2->in[1]);

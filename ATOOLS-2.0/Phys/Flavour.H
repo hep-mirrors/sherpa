@@ -58,7 +58,7 @@ namespace ATOOLS {
       
       Z0_2                   = 32,
       Z0_3                   = 33,
-      W_2plus                = 34,
+      Wplus_2                = 34,
       H0                     = 35,
       A0                     = 36,
       Hplus                  = 37,

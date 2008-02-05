@@ -278,11 +278,10 @@ void Interaction_Model_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 void Interaction_Model_EW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh(kf::h0);
-  Kabbala kcpl0,kcpl1;  
-  Kabbala num_2 = Kabbala(string("2"),2.);  
- 
   if (!flh.IsOn()) return;
-  
+
+  Kabbala kcpl0,kcpl1;  
+  Kabbala num_2 = Kabbala(string("2"),2.);    
   Flavour flWplus(kf::Wplus);
   // W h W
   if (flWplus.IsOn()) {
