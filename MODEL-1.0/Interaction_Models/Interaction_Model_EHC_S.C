@@ -43,7 +43,7 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
-  for (int i=31;i<33;i++) {
+  for (int i=25;i<36;i+=10) {
     Flavour flh = Flavour(kf::code(i));
     if (!flh.IsOn()) return;
     
@@ -109,7 +109,7 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
 {
   Kabbala kcpl0,kcpl1; 
   
-  for (int i=31;i<33;i++) {
+  for (int i=25;i<36;i+=10) {
     Flavour flh = Flavour(kf::code(i));
     Flavour flg(kf::gluon);
     if(!flh.IsOn()||!flg.IsOn())return;

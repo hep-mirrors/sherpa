@@ -1,14 +1,12 @@
 #ifndef Interaction_Model_SMEHC_h
 #define Interaction_Model_SMEHC_h
 
-#include "Interaction_Model_QCD.H"
-#include "Interaction_Model_EW.H"
+#include "Interaction_Model_SM.H"
 #include "Interaction_Model_EHC.H"
 
 namespace MODEL {  
   class Interaction_Model_SMEHC : public Interaction_Model_Base {
-    Interaction_Model_QCD       * p_moqcd;
-    Interaction_Model_EW        * p_moew;
+    Interaction_Model_SM        * p_mosm;
     Interaction_Model_EHC       * p_mohl;
   public:
     Interaction_Model_SMEHC(MODEL::Model_Base *,std::string,std::string);

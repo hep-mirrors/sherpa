@@ -13,7 +13,8 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
 					   string _cplscheme,string _yukscheme) :
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
-  p_mosm  = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
+  p_moew  = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
+  p_moqcd = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   double Ecms2  = sqr(rpa.gen.Ecms());
   double hmass2 = sqr(Flavour(kf::h0).Mass());
   double Hmass2 = sqr(Flavour(kf::H0).Mass());
@@ -46,16 +47,19 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
 
 void Interaction_Model_SM_Phantom_U1::c_FFV(vector<Single_Vertex>& vertex,int& vanz)
 {
-  p_mosm->c_FFV(vertex,vanz);
+  p_moew->c_FFV(vertex,vanz);
+  p_moqcd->c_FFV(vertex,vanz);
 }
 
 void Interaction_Model_SM_Phantom_U1::c_VVV(vector<Single_Vertex>& vertex,int& vanz)
 {
-  p_mosm->c_VVV(vertex,vanz);
+  p_moew->c_VVV(vertex,vanz);
+  p_moqcd->c_VVV(vertex,vanz);
 }
 void Interaction_Model_SM_Phantom_U1::c_VVVV(vector<Single_Vertex>& vertex,int& vanz)
 {
-  p_mosm->c_VVVV(vertex,vanz);
+  p_moew->c_VVVV(vertex,vanz);
+  p_moqcd->c_VVVV(vertex,vanz);
 }
 
 void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& vanz)  { 
@@ -872,5 +876,6 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
 
 Interaction_Model_SM_Phantom_U1::~Interaction_Model_SM_Phantom_U1()
 {
-  delete p_mosm;
+  delete p_moew;
+  delete p_moqcd;
 }

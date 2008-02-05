@@ -1,13 +1,15 @@
 #ifndef Interaction_Model_SM_Phantom_U1_h
 #define Interaction_Model_SM_Phantom_U1_h
 
-#include "Interaction_Model_SM.H"
+#include "Interaction_Model_QCD.H"
+#include "Interaction_Model_EW.H"
 #include "Interaction_Model_Base.H"
 #include "Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_SM_Phantom_U1 : public Interaction_Model_Base {
-    Interaction_Model_SM * p_mosm;
+    Interaction_Model_EW  * p_moew;
+    Interaction_Model_QCD * p_moqcd;
     ATOOLS::Kabbala g1,g2,sintW,costW,PL,PR,M_I,root2,vev;
     ATOOLS::Kabbala GF,tanb,geffh,geffH,ghgg,gHgg;
   public:

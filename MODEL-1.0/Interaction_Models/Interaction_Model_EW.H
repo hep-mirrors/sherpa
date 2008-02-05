@@ -12,14 +12,14 @@ namespace MODEL {
   public:
     Interaction_Model_EW(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);
-    void c_FFS(std::vector<Single_Vertex>&,int &);
+    void c_FFS(std::vector<Single_Vertex>&,int &) {}
     void c_VVV(std::vector<Single_Vertex>&,int &);
-    void c_VVS(std::vector<Single_Vertex>&,int &);
-    void c_SSV(std::vector<Single_Vertex>&,int &)  {}
-    void c_SSS(std::vector<Single_Vertex>&,int &);
+    void c_VVS(std::vector<Single_Vertex>&,int &) {}
+    void c_SSV(std::vector<Single_Vertex>&,int &) {}
+    void c_SSS(std::vector<Single_Vertex>&,int &) {}
     void c_VVVV(std::vector<Single_Vertex>&,int &);
-    void c_SSVV(std::vector<Single_Vertex>&,int &);
-    void c_SSSS(std::vector<Single_Vertex>&,int &);
+    void c_SSVV(std::vector<Single_Vertex>&,int &) {}
+    void c_SSSS(std::vector<Single_Vertex>&,int &) {}
 
     void c_FFT(std::vector<Single_Vertex>&,int&)  {}
     void c_VVT(std::vector<Single_Vertex>&,int&)  {} 

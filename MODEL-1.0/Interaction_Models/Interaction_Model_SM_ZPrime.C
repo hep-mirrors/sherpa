@@ -10,10 +10,11 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Interaction_Model_SM_ZPrime::Interaction_Model_SM_ZPrime(
-MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
-: Interaction_Model_Base(_model,_cplscheme,_yukscheme)
-{ // The Standard Model is part of this extended model
+Interaction_Model_SM_ZPrime::Interaction_Model_SM_ZPrime(MODEL::Model_Base * _model, 
+							 std::string _cplscheme,std::string _yukscheme) : 
+  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+{ 
+  // The Standard Model is part of this extended model
   p_moSM  = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme);
 
   // set up constants for the model
@@ -41,18 +42,18 @@ MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
 
 void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-// create the vertices for the standard model
+  // create the vertices for the standard model
   p_moSM->c_FFV(vertex,vanz);
-
-
-// create FFV vertices with Z' if it's on
+  
+  
+  // create FFV vertices with Z' if it's on
   Flavour flZPrime(kf::Z0_2);
   if (flZPrime.IsOn()) {
-
+    
     // parse through all fermions than couple to Z' and create vertices
     int PossibleFermions[12] = {1,2,3,4,5,6,11,12,13,14,15,16};
     for (int i=0; i<12; i++) {
-
+      
       // initialize the currently parsed fermion
       int FermionNumber = PossibleFermions[i];
       Flavour flFermion = Flavour(kf::code(FermionNumber));
@@ -62,7 +63,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
                           flFermion.LeptonNumber());
       Kabbala Y3R = Kabbala(string("YR_{")+flFermion.TexName()+string("}"),
                             flFermion.IsoWeak());
-
+      
       if (flFermion.IsOn()) {
         // create the vertex for that particular fermion and a Z'.
 	// Right-handed neutrinos will not take part in any interaction.
@@ -109,17 +110,24 @@ void Interaction_Model_SM_ZPrime::c_VVV(std::vector<Single_Vertex>& vertex,int& 
 { // ZPrime does not couple on any gauge boson.
   // Reason: None of the quantum numbers Z' does couple to (B, L, Y)
   //         are carried by any gauge boson.
-  p_moSM->c_VVV(vertex,vanz); }
+  p_moSM->c_VVV(vertex,vanz); 
+}
 void Interaction_Model_SM_ZPrime::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 { // No Z' interactions here - same reason as in c_VVV
-  p_moSM->c_VVVV(vertex,vanz); }
+  p_moSM->c_VVVV(vertex,vanz); 
+}
 
 // no interaction with the Higgs particles implemented => no interaction here
-void Interaction_Model_SM_ZPrime::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_FFS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_VVS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_SSS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) { p_moSM->c_SSVV(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) { p_moSM->c_SSSS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  
+{ p_moSM->c_FFS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)  
+{ p_moSM->c_VVS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)  
+{ p_moSM->c_SSS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) 
+{ p_moSM->c_SSVV(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) 
+{ p_moSM->c_SSSS(vertex,vanz); }
 
 Interaction_Model_SM_ZPrime::~Interaction_Model_SM_ZPrime()
 {

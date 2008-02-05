@@ -2,14 +2,16 @@
 #define Interaction_Model_SM_AGC_h
 
 #include "Interaction_Model_QCD.H"
+#include "Interaction_Model_Higgs_SM.H"
 #include "Interaction_Model_AEW.H"
 #include "Interaction_Model_Base.H"
 #include "Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_SM_AGC : public Interaction_Model_Base {
-    Interaction_Model_QCD * p_moqcd;
-    Interaction_Model_AEW * p_moaew;
+    Interaction_Model_QCD      * p_moqcd;
+    Interaction_Model_Higgs_SM * p_mosmh;
+    Interaction_Model_AEW      * p_moaew;
   public:
     Interaction_Model_SM_AGC(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);

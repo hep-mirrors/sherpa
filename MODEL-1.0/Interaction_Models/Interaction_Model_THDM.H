@@ -1,15 +1,16 @@
 #ifndef Interaction_Model_THDM_h
 #define Interaction_Model_THDM_h
 
-#include "Interaction_Model_Higgs.H"
+#include "Interaction_Model_Higgs_THDM.H"
 #include "Interaction_Model_SM.H"
 #include "Interaction_Model_Base.H"
 #include "Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_THDM : public Interaction_Model_Base {
-    Interaction_Model_SM    * p_mosm;
-    Interaction_Model_Higgs * p_mohiggs;
+    Interaction_Model_QCD        * p_moqcd;
+    Interaction_Model_EW         * p_moew;
+    Interaction_Model_Higgs_THDM * p_mohiggs;
   public:
     Interaction_Model_THDM(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);
