@@ -3,6 +3,7 @@
 
 #include "Data_Read.H"
 #include "Flavour.H"
+#include "All_Decays.H"
 #include "Decay_Table.H"
 #include "Matrix.H"
 #include "Function_Base.H"
@@ -33,6 +34,7 @@ namespace MODEL {
     Spectrum_Generator_Base * p_spectrumgenerator;
     Vertex                  * p_vertex;
     Vertex_Table            * p_vertextable;
+    All_Decays              * p_decays;
 
     int                       m_spectrum;
 
@@ -41,6 +43,7 @@ namespace MODEL {
     Model_Base(std::string,std::string);
     virtual ~Model_Base();
     void InitializeInteractionModel();
+    void FillDecayTables() {}
     virtual bool RunSpectrumGenerator()           = 0;
     virtual void FillMasses()                     = 0;
     virtual void FillWidths()                     = 0;
@@ -73,17 +76,23 @@ namespace MODEL {
       return temp;
     }
 
-    virtual int                       ScalarNumber(const std::string);
-    virtual double                    ScalarConstant(const std::string);
+    virtual int                     ScalarNumber(const std::string);
+    virtual double                  ScalarConstant(const std::string);
     virtual ATOOLS::Function_Base * GetScalarFunction(const std::string);
-    virtual double                    ScalarFunction(const std::string,double);
-    virtual double                    ScalarFunction(const std::string);
+    virtual double                  ScalarFunction(const std::string,double);
+    virtual double                  ScalarFunction(const std::string);
     virtual ATOOLS::CMatrix         ComplexMatrix(const std::string);
-    virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
+    virtual Complex                 ComplexMatrixElement(const std::string,const int,const int);
 
-    inline Vertex              * GetVertex()          { return p_vertex; }
-    inline Vertex_Table        * GetVertexTable()     const { return p_vertextable; }
-    inline  tscmap* GetCouplings()  { return p_vertex->GetCouplings(); }
+    inline  Vertex       * GetVertex()            { return p_vertex; }
+    inline  Vertex_Table * GetVertexTable() const { return p_vertextable; }
+    inline  tscmap       * GetCouplings()         { return p_vertex->GetCouplings(); }
+    virtual All_Decays   * GetDecays()            { return p_decays; }    
+    DecayMap * const       GetDecayMap()          { return p_decays->GetDecayMap(); }
+    ATOOLS::Decay_Table  * const  GetDecayTable(const ATOOLS::Flavour & flav) {
+      return p_decays->GetDecayTable(flav);
+    }
+    
   };
 
   /*!

@@ -168,7 +168,7 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
 bool Matrix_Element_Handler::AddToDecays(const ATOOLS::Flavour & _flav) 
 {
   switch (m_mode) {
-  case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
+    //case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
   }
   msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -178,7 +178,7 @@ bool Matrix_Element_Handler::AddToDecays(const ATOOLS::Flavour & _flav)
 bool Matrix_Element_Handler::AddToDecays(ATOOLS::Decay_Channel * _dec)
 {
   switch (m_mode) {
-  case 1 : return p_amegic->GetAllDecays()->AddToDecays(_dec);
+    //case 1 : return p_amegic->GetAllDecays()->AddToDecays(_dec);
   }
   msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays(";_dec->Output();
   msg_Error()<<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -190,8 +190,8 @@ bool Matrix_Element_Handler::AddToDecays(ATOOLS::Decay_Channel * _dec)
 bool Matrix_Element_Handler::InitializeDecayTables()
 {
   switch (m_mode) {
-  case 1 : 
-    return p_amegic->GetAllDecays()->InitializeDecayTables();
+    //  case 1 : 
+    //return p_amegic->GetAllDecays()->InitializeDecayTables();
   }
   msg_Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -201,8 +201,8 @@ bool Matrix_Element_Handler::InitializeDecayTables()
 bool Matrix_Element_Handler::CalculateWidths() 
 {
   switch (m_mode) {
-  case 1: 
-    return p_amegic->GetAllDecays()->CalculateWidths();
+    //case 1: 
+    //return p_amegic->GetAllDecays()->CalculateWidths();
   }
   msg_Error()<<"Error in Matrix_Element_Handler::CalculateWidths() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -212,12 +212,12 @@ bool Matrix_Element_Handler::CalculateWidths()
 bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow) 
 {
   switch (m_mode) {
-  case 1: 
-    AMEGIC::Full_Decay_Table * fdt;
-    fdt = p_amegic->GetAllDecays()->GetFullDecayTable(_dt->Flav());
-    for (int i=0;i<fdt->NumberOfChannels();i++) _dt->AddDecayChannel(fdt->GetChannel(i));
-    if (_ow) _dt->Flav().SetWidth(fdt->Width());
-    return 1;
+    //case 1: 
+    //AMEGIC::Full_Decay_Table * fdt;
+    //fdt = p_amegic->GetAllDecays()->GetFullDecayTable(_dt->Flav());
+    //for (int i=0;i<fdt->NumberOfChannels();i++) _dt->AddDecayChannel(fdt->GetChannel(i));
+    //if (_ow) _dt->Flav().SetWidth(fdt->Width());
+    //return 1;
   }
   msg_Error()<<"Error in Matrix_Element_Handler::FillDecayTable() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -357,7 +357,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double _mass) 
 {
   switch (m_mode) {
-  case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
+    //case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
   }
   return false;
 }
@@ -523,7 +523,7 @@ unsigned int Matrix_Element_Handler::NOut() {
 
 unsigned int Matrix_Element_Handler::NDecOut() {
   switch (m_mode) {
-  case 1: return p_amegic->GetAllDecays()->NOut();
+    //case 1: return p_amegic->GetAllDecays()->NOut();
   }
   return 0;
 }
@@ -549,7 +549,7 @@ const ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
 
 const ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
   switch (m_mode) {
-  case 1: return p_amegic->GetAllDecays()->Momenta();
+    //case 1: return p_amegic->GetAllDecays()->Momenta();
   }
   return NULL;
 }

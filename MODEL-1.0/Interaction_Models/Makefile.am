@@ -10,7 +10,7 @@ libModelInteractions_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Interaction_Model_QCD_Grav.C Interaction_Model_EW_Grav.C \
 		      Interaction_Model_ADD.C \
 		      Interaction_Model_EHC.C Interaction_Model_SMEHC.C \
-		      Interaction_Model_SM_ZPrime.C 
+		      Interaction_Model_SM_ZPrime.C \
 		      Interaction_Model_AEW.C Interaction_Model_SM_AGC.C \
 		      Interaction_Model_MUED_QCD.C \
 		      Interaction_Model_SM_Phantom_U1.C \

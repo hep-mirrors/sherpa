@@ -99,6 +99,7 @@ namespace ATOOLS {
     Decay_Channel * GetDecayChannel(const int);
     Decay_Channel * GetDecayChannel(const FlavourSet);
     Decay_Channel * GetOneDecayChannel();
+    void            EraseDecayChannel(const int);
   };
 }
 

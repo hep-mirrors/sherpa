@@ -78,12 +78,14 @@ void Decay_Table::Select(const int flag) {
       if (flag==1) {
 	p_selected  = (*m_seliter);
 	m_seliter++;
-	if (m_seliter==m_selectedchannels.end()) m_seliter = m_selectedchannels.begin();
+	if (m_seliter==m_selectedchannels.end()) 
+	  m_seliter = m_selectedchannels.begin();
       }
       if (flag==-1) {
 	p_selected  = (*m_seliterbar);
 	m_seliterbar++;
-	if (m_seliterbar==m_selectedchannelsbar.end()) m_seliterbar = m_selectedchannelsbar.begin();
+	if (m_seliterbar==m_selectedchannelsbar.end()) 
+	  m_seliterbar = m_selectedchannelsbar.begin();
       }
       return;
     }
@@ -149,3 +151,9 @@ Decay_Channel * Decay_Table::GetOneDecayChannel()
 
 double Decay_Table::Width(const FlavourSet) { return 0.; }
 Decay_Channel * Decay_Table::GetDecayChannel(const FlavourSet) { return NULL; }
+
+void Decay_Table::EraseDecayChannel(const int i) {
+  delete m_channels[i];
+  for (size_t j=i;j<m_channels.size()-1;j++) m_channels[j] = m_channels[j+1];
+  m_channels.pop_back();
+}

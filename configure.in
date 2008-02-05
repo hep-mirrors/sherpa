@@ -47,6 +47,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PDF-1.0/Makefile \
 	  MODEL-1.0/Hdecay/Makefile \
 	  MODEL-1.0/Isajet/Makefile \
+	  MODEL-1.0/Decays/Makefile \
 	  MODEL-1.0/Interaction_Models/Makefile \
 	  MODEL-1.0/Main/Makefile \
 	  MODEL-1.0/Makefile \

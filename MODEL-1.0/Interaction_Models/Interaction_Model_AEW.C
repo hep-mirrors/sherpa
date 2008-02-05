@@ -199,7 +199,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
   charge = Kabbala(string("Q_{")+flWplus.TexName()+string("}"),flWplus.Charge());
 
-  if (flWmin.IsOn() && flP.IsOn()) {
+  if (flWplus.IsOn() && flP.IsOn()) {
 
     // photon WW
     vertex[vanz].in[0] = flWplus;
@@ -330,12 +330,12 @@ void Interaction_Model_AEW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
  
   if (!flh.IsOn()) return;
   
-  Flavour flav(kf::W);
+  Flavour flav(kf::Wplus);
   // W h W
   if (flav.IsOn()) {
-    vertex[vanz].in[0] = flav;
+    vertex[vanz].in[0] = flav.Bar();
     vertex[vanz].in[1] = flh;
-    vertex[vanz].in[2] = flav;
+    vertex[vanz].in[2] = flav.Bar();
     
     kcpl0 = M_I*g2*flav.Yuk();
     kcpl1 = kcpl0;
@@ -457,7 +457,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   Kabbala num_3 = Kabbala(string("3"),3.);  
   
   // Ph - W - W - Ph  
-  if (flavWmin.IsOn() && flavP.IsOn()) {
+  if (flavWplus.IsOn() && flavP.IsOn()) {
     vertex[vanz].in[0] = flavP;
     vertex[vanz].in[1] = flavWplus.Bar();
     vertex[vanz].in[2] = flavWplus;
@@ -596,8 +596,8 @@ void Interaction_Model_AEW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala num_2 = Kabbala(string("2"),2.);  
 
-  Flavour flavWplus(kf::Wplus)
-    Flavour flavZ(kf::Z);
+  Flavour flavWplus(kf::Wplus);
+  Flavour flavZ(kf::Z);
   Flavour flavh(kf::h0);
   Kabbala kcpl0,kcpl1;
   
@@ -629,7 +629,7 @@ void Interaction_Model_AEW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
   }
 
   // h - W - W - h  
-  if (flavW.IsOn() && flavh.IsOn()) {
+  if (flavWplus.IsOn() && flavh.IsOn()) {
     vertex[vanz].in[0] = flavWplus.Bar();
     vertex[vanz].in[1] = flavh;
     vertex[vanz].in[2] = flavh;

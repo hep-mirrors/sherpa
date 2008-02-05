@@ -2,7 +2,7 @@
 #define Amegic_h
 
 #include "All_Processes.H"
-#include "All_Decays.H"
+//#include "All_Decays.H"
 
 #include "Model_Base.H"
 #include "Interaction_Model_Base.H"
@@ -27,7 +27,7 @@ namespace AMEGIC {
     int m_nmax,m_count,m_minqcdjet,m_maxqcdjet,m_maxjet,m_coremaxjet;
 
     All_Processes              * p_procs;
-    All_Decays                 * p_decs;
+    //    All_Decays                 * p_decs;
     MODEL::Model_Base          * p_model;
     Topology                   * p_top;
 
@@ -70,7 +70,7 @@ namespace AMEGIC {
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     PHASIC::Integrable_Base  *const GetProcess() const { return p_procs->Selected(); }
     Process_Base    * Processes();
-    All_Decays      * GetAllDecays()     { return p_decs; }
+    //All_Decays      * GetAllDecays()     { return p_decs; }
     std::string       ProcessName()      { return p_procs->Selected()->Name(); }
     int               NIn()              { return p_procs->Selected()->NIn(); }
     int               NOut()             { return p_procs->Selected()->NOut(); }

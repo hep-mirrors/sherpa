@@ -163,9 +163,10 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   MODELDIR="\${top_srcdir}/MODEL-1.0"
   MODELBUILDDIR="\${top_builddir}/MODEL-1.0"
-  MODELINCS="-I\${MODELDIR}/Main -I\${MODELDIR}/Interaction_Models"
+  MODELINCS="-I\${MODELDIR}/Main -I\${MODELDIR}/Interaction_Models -I\${MODELDIR}/Decays"
   MODELLIBS="-L\${MODELBUILDDIR}/Main -L\${MODELBUILDDIR}/Interaction_Models \
-             -lModelMain -lModelInteractions"
+	     -L\${MODELBUILDDIR}/Decays \	
+             -lModelMain -lModelInteractions -lModelDecays"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
   AC_SUBST(MODELINCS)
