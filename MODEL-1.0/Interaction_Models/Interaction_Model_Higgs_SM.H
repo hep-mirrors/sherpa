@@ -13,7 +13,7 @@ namespace MODEL {
     void c_FFS(std::vector<Single_Vertex>&,int &);
     void c_VVV(std::vector<Single_Vertex>&,int &) {}
     void c_VVS(std::vector<Single_Vertex>&,int &);
-    void c_SSV(std::vector<Single_Vertex>&,int &);
+    void c_SSV(std::vector<Single_Vertex>&,int &) {}
     void c_SSS(std::vector<Single_Vertex>&,int &);
     void c_VVVV(std::vector<Single_Vertex>&,int &) {}
     void c_SSVV(std::vector<Single_Vertex>&,int &);
