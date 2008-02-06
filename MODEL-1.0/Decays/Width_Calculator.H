@@ -8,16 +8,27 @@
 namespace MODEL {
   class Width_Calculator {
   private :
+    double m_M,m_m[3];
+
     Vertex_Table * p_vertextable;
     Single_Vertex * FindVertex(const ATOOLS::Flavour &,
 			       const ATOOLS::Flavour &,const ATOOLS::Flavour &);
 
     double TwoBodyPref(const double M,const double m1,const double m2);
     double Lambda2(const double M,const double m1,const double m2);
+    double ColorFactor(Single_Vertex *);
+    double Norm(ATOOLS::Flavour);
 
+    double SFF(ATOOLS::Decay_Channel * dec);
+    double SVV(ATOOLS::Decay_Channel * dec);
+    double SVS(ATOOLS::Decay_Channel * dec);
+    double SSS(ATOOLS::Decay_Channel * dec);
     double VFF(ATOOLS::Decay_Channel * dec);
     double VSS(ATOOLS::Decay_Channel * dec);
     double VVS(ATOOLS::Decay_Channel * dec);
+    double VVV(ATOOLS::Decay_Channel * dec);
+    double FFS(ATOOLS::Decay_Channel * dec);
+    double FFV(ATOOLS::Decay_Channel * dec);
   public:
     Width_Calculator(Vertex_Table * vertextable) : p_vertextable(vertextable) {}
 

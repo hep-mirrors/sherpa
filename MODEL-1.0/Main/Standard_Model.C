@@ -271,8 +271,12 @@ void Standard_Model::AddToDataCollector()
 {
   double MZ = ScalarConstant(std::string("MZ"));
   
-  Data_Collector::AddData("ALPHAS",new Blob_Data<double>(ScalarFunction(std::string("alpha_S"),sqr(MZ))));
-  Data_Collector::AddData("1/ALPHAQED(MZ)",new Blob_Data<double>(1./ScalarFunction(std::string("alpha_QED"),sqr(MZ))));
-  Data_Collector::AddData("MW",new Blob_Data<double>(ScalarConstant(std::string("MW"))));
-  Data_Collector::AddData("MZ",new Blob_Data<double>(MZ));
+  Data_Collector::AddData("ALPHAS",
+			  new Blob_Data<double>(ScalarFunction(std::string("alpha_S"),sqr(MZ))));
+  Data_Collector::AddData("1/ALPHAQED(MZ)",
+			  new Blob_Data<double>(1./ScalarFunction(std::string("alpha_QED"),sqr(MZ))));
+  Data_Collector::AddData("MW",
+			  new Blob_Data<double>(ScalarConstant(std::string("MW"))));
+  Data_Collector::AddData("MZ",
+			  new Blob_Data<double>(MZ));
 }

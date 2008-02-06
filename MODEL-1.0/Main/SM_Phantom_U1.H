@@ -9,25 +9,12 @@ namespace MODEL {
   private :
     void ReadInFile();
     bool SanityChecks();
-
-    std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *> m_dectables;
-
-    void   FillPotentialDecayProducts(std::set<ATOOLS::Flavour> &);
-    double H2FDecay(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
-    double H2VDecay(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
-    double H2SDecay(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
-    double H2GluonDecay(const ATOOLS::Flavour &);
-    double H2PhotonDecay(const ATOOLS::Flavour &);
-
-    void    ConstructTriangleFactors();
-    double  GetFermionContribution(double);
-    Complex f(double);
   public :
     SM_Phantom_U1(std::string,std::string);
     ~SM_Phantom_U1();
     bool RunSpectrumGenerator()           { return true; }
     void FillMasses();
-    void FillWidths();
+    void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!

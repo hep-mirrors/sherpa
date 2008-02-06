@@ -33,6 +33,7 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * dc)
   DMIterator dmit = p_decays->find(flav);
   if (dmit==p_decays->end()) {
     Decay_Table * dt = new Decay_Table(flav);
+    dt->SetWidthGenerator(std::string("Sherpa"));
     dt->AddDecayChannel(dc);
     (*p_decays)[flav] = new Decay_Table(flav);
   }
