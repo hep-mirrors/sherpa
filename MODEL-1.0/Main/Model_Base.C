@@ -74,7 +74,6 @@ void Model_Base::FillDecayTables() {
   }
   p_decays->InitializeDecayTables();
   p_decays->CalculateWidths();
-  abort();
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {
