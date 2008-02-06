@@ -62,6 +62,7 @@ namespace ATOOLS {
       H0                     = 35,
       A0                     = 36,
       Hplus                  = 37,
+      Hplusplus              = 38,
 
       //Graviton               = 39,
       //GScalar                = 40,
