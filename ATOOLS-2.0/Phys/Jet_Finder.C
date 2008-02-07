@@ -431,6 +431,12 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
       fl.erase(fl.length()-1,1);
       bar=true;
     }
+    else if ((fl[0]=='W' || fl[0]=='H')) {
+      if (fl[fl.length()-1]=='-') {
+	fl[fl.length()-1]='+';
+	bar=true;
+      }
+    }
     else if (fl[fl.length()-1]=='+') {
       fl[fl.length()-1]='-';
       bar=true;

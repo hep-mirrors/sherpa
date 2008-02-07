@@ -60,10 +60,9 @@ int Kf_To_Int::ToInt(kf::code kfc)
 
 kf::code Kf_To_Int::FromString(std::string st)
 {
-  for(int i=0;i<anz;i++) {
+  for(int i=0;i<anz;i++) 
     if (std::string(particles[i].n)==st) return kf_tab[i];
-  }
-
+  
   return kf::none;
 }
 
@@ -154,6 +153,7 @@ Flavour::Flavour(kf::code _kfc, bool _anti):
   case kf::photon:   return;
   case kf::Z:        return;
   case kf::Z0_2:     return;
+  case kf::Z0_3:     return;
   case kf::gluon:    return;
   case kf::shgluon:  return;
   case kf::gluonqgc: return;
@@ -179,6 +179,7 @@ const Flavour Flavour::Bar() const
   case kf::photon:   return flbar;
   case kf::Z:        return flbar;
   case kf::Z0_2:     return flbar;
+  case kf::Z0_3:     return flbar;
   case kf::gluon:    return flbar;
   case kf::shgluon:  return flbar;
   case kf::gluonqgc: return flbar;
@@ -239,14 +240,15 @@ int Flavour::HepEvt() {
   if (IsDiQuark())                           return (anti)? -Kfcode():Kfcode();
   if (IsGluon())                             return 21;
   if (IsPhoton())                            return 22;
-  //if (kfc==kf::Z)                            return 23;
-  if (kfc==kf::Z0_2)                         return 32;
-  //if (kfc==kf::W)                            return (anti)? 24:-24;
-  //if ((kfc==kf::h) || (kfc==kf::h0))         return 25;
+  if (kfc==kf::Z)                            return 23;
+  if (kfc==kf::Wplus)                        return (anti)? -24:24;
+  if (kfc==kf::h0)                           return 25;
 
+  if (kfc==kf::Z0_2)                         return 32;
+  if (kfc==kf::Z0_3)                         return 33;
   if (kfc==kf::H0)                           return 35;
   if (kfc==kf::A0)                           return 36;
-  //if (kfc==kf::Hmin)                         return (anti)? 37:-37;
+  if (kfc==kf::Hplus)                        return (anti)? -37:37;
   if (kfc==kf::graviton)                     return 39;
   if (kfc==kf::gscalar)                      return 89;
 
@@ -307,21 +309,16 @@ void Flavour::FromHepEvt(int code) {
   if (code==9000211) { kfc = kf::a_0_980_plus;  return; }
   if (code==9010221) { kfc = kf::f_0_980;       return; }
 
-  if ((code<23) || (code>100 && code<1000000) || (code>9000000)) {
+  if ((code<26) || (code>100 && code<1000000) || (code>9000000)) {
     kfc = kf::code(code);
     return;
   }
   switch (code) {
-    //case 23:      kfc = kf::Z; return; 
-    //case 24:      kfc = kf::W; anti = 1-anti; return; 
-    //case 25: 
-    //if (Flavour(kf::h0).IsOn()) kfc = kf::h0; 
-    //else kfc = kf::h; 
-    //return;
-    //case 32:      kfc = kf::ZPrime; return;
-    //case 35:      kfc = kf::H0; return;
-    //case 36:      kfc = kf::A0; return;
-    //case 37:      kfc = kf::Hmin; anti = 1-anti; return; 
+  case 32:      kfc = kf::Z0_2; return;
+  case 33:      kfc = kf::Z0_3; return;
+  case 35:      kfc = kf::H0; return;
+  case 36:      kfc = kf::A0; return;
+  case 37:      kfc = kf::Hplus; return; 
   case 39:      kfc = kf::graviton; return;
   case 89:      kfc = kf::gscalar; return;
   case 91:      kfc = kf::cluster; return;   // pythia cluster ....
@@ -386,7 +383,7 @@ std::string Flavour::TexName() const
   case kf::Wplus: {name=std::string("W^\\p");break;}
   case kf::Z: {name=std::string("Z^0");break;}
   case kf::Z0_2: {name=std::string("Z'");break;}
-    //case kf::h: {name=std::string("h");break;}
+  case kf::Z0_3: {name=std::string("Z''");break;}
   case kf::h0: {name=std::string("h^0");break;}
   case kf::H0: {name=std::string("H^0");break;}
   case kf::A0: {name=std::string("A^0");break;}
@@ -493,7 +490,7 @@ std::string Flavour::IDName() const
     if (!IsBaryon() && 
 	(Kfcode()==kf::pi_plus ||
 	 Kfcode()==kf::K_plus  ||
-	 Kfcode()==kf::Hplus ||
+	 Kfcode()==kf::Hplus   ||
 	 Kfcode()==kf::Wplus )) {
       name.erase(name.length()-1,1);
       if (IsAnti()) name += string("-");
