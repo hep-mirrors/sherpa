@@ -4,6 +4,7 @@
 #include "PDF_MRST01LO.H"
 #include "GRVph_Fortran_Interface.H"
 
+#include "CXXFLAGS_PACKAGES.H"
 #ifdef USING__LHAPDF
 #include "LHAPDF_Fortran_Interface.H"
 #else
