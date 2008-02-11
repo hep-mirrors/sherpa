@@ -23,11 +23,13 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_MUED_QCD.C \
 				Interaction_Model_4GenLep.C \
 				Interaction_Model_Handler.C
-#		      Interaction_Model_Inos.C Interaction_Model_sLepton_EW.C \
-#		      Interaction_Model_sQCD.C Interaction_Model_sQuark_EW.C \
-#		      Interaction_Model_sLepton_sQuark.C \
-#		      Interaction_Model_MSSM.C \
-#		      Interaction_Model_MSSM_EHC.C 
+	     		        Interaction_Model_Inos.C \
+                                Interaction_Model_sLepton_EW.C \
+	       		        Interaction_Model_sQCD.C \
+				Interaction_Model_sQuark_EW.C \
+		      		Interaction_Model_sLepton_sQuark.C \
+		      		Interaction_Model_MSSM.C \
+		      		Interaction_Model_MSSM_EHC.C 
 
 pkginclude_HEADERS = \
 				Lorentz_Function.H Color_Function.H \
@@ -51,7 +53,15 @@ pkginclude_HEADERS = \
 				Interaction_Model_ADD.H \
 				Interaction_Model_MUED_QCD.H \
 				Interaction_Model_4GenLep.H \
-				Interaction_Model_Handler.H
+				Interaction_Model_Handler.H  \
+	     		        Interaction_Model_Inos.H \
+                                Interaction_Model_sLepton_EW.H \
+	       		        Interaction_Model_sQCD.H \
+				Interaction_Model_sQuark_EW.H \
+		      		Interaction_Model_sLepton_sQuark.H \
+		      		Interaction_Model_MSSM.H \
+		      		Interaction_Model_MSSM_EHC.H 
+
 
 CXXFLAGS   =-g @SHERPAFLAGS@
 
