@@ -113,4 +113,5 @@ Interaction_Model_MSSM_EHC::~Interaction_Model_MSSM_EHC()
   delete p_moslepton;
   delete p_mosqcd;
   delete p_mosquark;
+  delete p_moslesqu;
 }

@@ -90,39 +90,39 @@ namespace ATOOLS {
 	SUSY - has to get other numbers to comply 
 	       with the PDG numbering scheme
       ------------------------------------------ */
-      Chargino1              = 41,
-      Chargino2              = 42,
-      Neutralino1            = 43,
-      Neutralino2            = 44,
-      Neutralino3            = 45,
-      Neutralino4            = 46,
-      Gluino                 = 47,
+      Chargino1              = 1000024,
+      Chargino2              = 1000037,
+      Neutralino1            = 1000022,
+      Neutralino2            = 1000023,
+      Neutralino3            = 1000025,
+      Neutralino4            = 1000035,
+      Gluino                 = 1000021,
       
-      sUpL                   = 51,
-      sCharmL                = 52,
-      sTop1                  = 53,
-      sUpR                   = 54,
-      sCharmR                = 55,
-      sTop2                  = 56,
+      sUpL                   = 1000002,
+      sCharmL                = 1000004,
+      sTop1                  = 1000006,
+      sUpR                   = 2000002,
+      sCharmR                = 2000004,
+      sTop2                  = 2000006,
       
-      sDownL                 = 61,
-      sStrangeL              = 62,
-      sBottom1               = 63,
-      sDownR                 = 64,
-      sStrangeR              = 65,
-      sBottom2               = 66,
+      sDownL                 = 1000001,
+      sStrangeL              = 1000003,
+      sBottom1               = 1000005,
+      sDownR                 = 2000001,
+      sStrangeR              = 2000003,
+      sBottom2               = 2000005,
 
       
-      sElectronL             = 71,
-      sMuL                   = 72,
-      sTau1                  = 73,
-      sElectronR             = 74,
-      sMuR                   = 75,
-      sTau2                  = 76,
+      sElectronL             = 1000011,
+      sMuL                   = 1000013,
+      sTau1                  = 1000015,
+      sElectronR             = 2000011,
+      sMuR                   = 2000013,
+      sTau2                  = 2000015,
       
-      sNu1                   = 81,
-      sNu2                   = 82,
-      sNu3                   = 83,
+      sNu1                   = 1000012,
+      sNu2                   = 1000014,
+      sNu3                   = 1000016,
       
       /* ------------------------------------------
 	KK modes: numbers 5k000xx, 6k000xx for k-th resonance 
@@ -810,19 +810,21 @@ namespace ATOOLS {
     }
 
     inline bool IsSlepton() const {
-      if ((abs(kfc)>70) && (abs(kfc)<80)) return 1;
+      if (((abs(kfc)>1000010) && (abs(kfc)<1000016)) ||
+	  ((abs(kfc)>2000010) && (abs(kfc)<2000016))) return 1;
       return 0;      
     }
     inline bool IsSneutrino() const {
-      if ((abs(kfc)>80) && (abs(kfc)<84)) return 1;
+      if ((abs(kfc)>1000011) && (abs(kfc)<1000017)) return 1;
       return 0;      
     }
     inline bool IsChargino() const {
-      if ((abs(kfc)>40) && (abs(kfc)<43)) return 1;
+      if ((abs(kfc)==1000024) || (abs(kfc)==1000037)) return 1;
       return 0;      
     }
     inline bool IsNeutralino() const {
-      if ((abs(kfc)>42) && (abs(kfc)<47)) return 1;
+      if ((abs(kfc)==1000022) || (abs(kfc)==1000023) ||
+	  (abs(kfc)==1000025) || (abs(kfc)==1000035)) return 1;
       return 0;      
     }
     inline bool IsUptype() const {

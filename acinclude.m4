@@ -176,12 +176,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   HDECAYLIBS="-L\${MODELBUILDDIR}/Hdecay -lHdecay"
   AC_SUBST(HDECAYINCS)
   AC_SUBST(HDECAYLIBS)
-  
-  ISAJETINCS="-I\${MODELDIR}/Isajet"
-  ISAJETLIBS="-L\${MODELBUILDDIR}/Isajet -lIsajet"
-  AC_SUBST(ISAJETINCS)
-  AC_SUBST(ISAJETLIBS)
-  
+    
   PDFDIR="\${top_srcdir}/PDF-1.0"
   PDFBUILDDIR="\${top_builddir}/PDF-1.0"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
@@ -527,26 +522,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_DEFINE([USING__ATOOLS_only], "1", [not using Model, using ATOOLS_only])
   fi
   AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
-
-  AC_ARG_ENABLE(isajetinclude,
-    AC_HELP_STRING([--disable-isajetinclude], [Disable inclusion of Isajet stuff]),
-    [ AC_MSG_CHECKING(whether to include Isajet stuff);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); isajetinclude=true;;
-        no)  AC_MSG_RESULT(no); isajetinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include Isajet stuff); AC_MSG_RESULT(yes); isajetinclude=true; ]
-  )
-  dnl comment out if isajet to be compiled
-  echo "Hardwired: Omitting all Isajet stuff"; isajetinclude=false;
-  if test "$isajetinclude" = "true" ; then
-    AC_DEFINE([USING__Isajet], "1", [using Isajet])
-    CONDITIONAL_ISAJETINCS="\${ISAJETINCS}"
-    CONDITIONAL_ISAJETLIBS="\${ISAJETLIBS}"
-  fi
-  AC_SUBST(CONDITIONAL_ISAJETINCS)
-  AC_SUBST(CONDITIONAL_ISAJETLIBS)
-  AM_CONDITIONAL(ISAJET_SUPPORT, test "$isajetinclude" = "true" )
   
   AC_ARG_ENABLE(hdecayinclude,
     AC_HELP_STRING([--disable-hdecayinclude], [Disable inclusion of Hdecay stuff]),

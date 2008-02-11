@@ -350,7 +350,7 @@ void Flavour::FromHepEvt(int code) {
   case 1000024: kfc = kf::Chargino1; anti = 1-anti; return;
   case 1000025: kfc = kf::Neutralino3; return;
   case 1000035: kfc = kf::Neutralino4; return;
-  case 1000037: kfc = kf::Chargino2; anti = 1-anti; return;
+  case 1000037: kfc = kf::Chargino2; anti = 1-anti;  return;
 
   default: cerr<<"Error in Flavour::FromHepEvt() : No flavour for "<<code<<endl;
   }

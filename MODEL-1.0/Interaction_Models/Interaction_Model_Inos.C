@@ -33,28 +33,35 @@ Interaction_Model_Inos::Interaction_Model_Inos(MODEL::Model_Base * _model,
 
 void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
- 
   Kabbala kcpl0,kcpl1;
+  int higgs,n_ino,c_ino;
 
-  for (short int k=31;k<34;k++) {
-    Flavour flav3 = Flavour(kf::code(k));
+  for (short int k=0;k<3;k++) {
+    if (k==0) higgs=25;
+    if (k==1) higgs=35;
+    if (k==2) higgs=36;
+    Flavour flav3 = Flavour(kf::code(higgs));
     // Chargino - Chargino - Higgs
-    for (short int i=41;i<43;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=i;j<43;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k != 33)) {
+    for (short int i=0;i<2;i++) {
+      if (i==0) c_ino=1000024;
+      else      c_ino=1000037;
+      Flavour flav1 = Flavour(kf::code(c_ino));
+      for (short int j=i;j<2;j++) {
+	if (j==0) c_ino=1000024;
+	else      c_ino=1000037;
+      	Flavour flav2 = Flavour(kf::code(c_ino));
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k!=2)) {
 	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav1;
 	
 	  kcpl0 = -M_I/root2*g2*
-	    (K_Z_R(0,k-31)*K_Z_PL(0,j-41)*K_Z_MI(1,i-41)+
-	     K_Z_R(1,k-31)*K_Z_PL(1,j-41)*K_Z_MI(0,i-41));
+	    (K_Z_R(0,k)*K_Z_PL(0,j)*K_Z_MI(1,i)+
+	     K_Z_R(1,k)*K_Z_PL(1,j)*K_Z_MI(0,i));
 	  
 	  kcpl1 = -M_I/root2*g2*
-	    (K_Z_R(0,k-31)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
-	     K_Z_R(1,k-31)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
+	    (K_Z_R(0,k)*K_Z_PL(0,i)*K_Z_MI(1,j)+
+	     K_Z_R(1,k)*K_Z_PL(1,i)*K_Z_MI(0,j));
 	
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
@@ -68,20 +75,19 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  
 	  vertex[vanz].on     = 1;
 	  vertex.push_back(Single_Vertex());vanz++;
-	  //checked RK
 	}
-	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
-	  vertex[vanz].in[0] = flav2;
-	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav1;
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k==2)) {
+	  vertex[vanz].in[0] = flav2.Bar();
+	  vertex[vanz].in[2] = flav3;
+	  vertex[vanz].in[1] = flav1.Bar();
 
 	  kcpl0 = g2/root2*
-	    (K_Z_H(0,0)*K_Z_PL(0,j-41)*K_Z_MI(1,i-41)+
-	     K_Z_H(1,0)*K_Z_PL(1,j-41)*K_Z_MI(0,i-41));
+	    (K_Z_H(0,0)*K_Z_PL(0,j)*K_Z_MI(1,i)+
+	     K_Z_H(1,0)*K_Z_PL(1,j)*K_Z_MI(0,i));
 
 	  kcpl1 = -g2/root2*
-	    (K_Z_H(0,0)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
-	     K_Z_H(1,0)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
+	    (K_Z_H(0,0)*K_Z_PL(0,i)*K_Z_MI(1,j)+
+	     K_Z_H(1,0)*K_Z_PL(1,i)*K_Z_MI(0,j));
 	  
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
@@ -100,27 +106,33 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
     }
     
   // Neutralino - Neutralino - Higgs
-  for (short int i=43;i<47;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=43;j<47;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k != 33) && (i<=j)) {
+  for (short int i=0;i<4;i++) {
+    if (i<2)  n_ino=1000022+i;
+    if (i==2) n_ino=1000025;
+    if (i==3) n_ino=1000035;
+    Flavour flav1 = Flavour(kf::code(n_ino));
+      for (short int j=i;j<4;j++) {
+	if (j<2)  n_ino=1000022+j;
+	if (j==2) n_ino=1000025;
+	if (j==3) n_ino=1000035;
+    	Flavour flav2 = Flavour(kf::code(n_ino));
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k!=2)) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[2] = flav2;
 	  vertex[vanz].in[1] = flav3;
 	  // Z_N have to be complex conjugated for cpl[0]
 	  
 	  kcpl0 = M_I/(costW*num_2)*g2*
-	    ((K_Z_R(0,k-31)*K_Z_N(2,j-43)-K_Z_R(1,k-31)*K_Z_N(3,j-43))*
-	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW)+
-	     (K_Z_R(0,k-31)*K_Z_N(2,i-43)-K_Z_R(1,k-31)*K_Z_N(3,i-43))*
-	     (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW));
+	    ((K_Z_R(0,k)*K_Z_N(2,j)-K_Z_R(1,k)*K_Z_N(3,j))*
+	     (K_Z_N(0,i)*sintW-K_Z_N(1,i)*costW)+
+	     (K_Z_R(0,k)*K_Z_N(2,i)-K_Z_R(1,k)*K_Z_N(3,i))*
+	     (K_Z_N(0,j)*sintW-K_Z_N(1,j)*costW));
 	  
 	  kcpl1 = M_I/(costW*num_2)*g2*
-	    ((K_Z_R(0,k-31)*K_Z_N(2,i-43)-K_Z_R(1,k-31)*K_Z_N(3,i-43))*
-	     (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW)+
-	     (K_Z_R(0,k-31)*K_Z_N(2,j-43)-K_Z_R(1,k-31)*K_Z_N(3,j-43))*
-	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW));
+	    ((K_Z_R(0,k)*K_Z_N(2,i)-K_Z_R(1,k)*K_Z_N(3,i))*
+	     (K_Z_N(0,j)*sintW-K_Z_N(1,j)*costW)+
+	     (K_Z_R(0,k)*K_Z_N(2,j)-K_Z_R(1,k)*K_Z_N(3,j))*
+	     (K_Z_N(0,i)*sintW-K_Z_N(1,i)*costW));
 
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
@@ -134,26 +146,24 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  
 	  vertex[vanz].on     = 1;
 	  vertex.push_back(Single_Vertex());vanz++;
-	  //checked FK & RK & SS 
 	}
-	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k==2)) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[2] = flav2;
 	  vertex[vanz].in[1] = flav3;
 	  // Z_N have to be complex conjugated for cpl[0]
 
-
 	  kcpl0 = -g2/(costW*num_2)*
-	    ((K_Z_H(0,k-33)*K_Z_N(2,j-43)-K_Z_H(1,k-33)*K_Z_N(3,j-43))*
-	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW) +
-	     (K_Z_H(0,k-33)*K_Z_N(2,i-43)-K_Z_H(1,k-33)*K_Z_N(3,i-43))*
-	     (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW));
+	    ((K_Z_H(0,0)*K_Z_N(2,j)-K_Z_H(1,0)*K_Z_N(3,j))*
+	     (K_Z_N(0,i)*sintW-K_Z_N(1,i)*costW) +
+	     (K_Z_H(0,0)*K_Z_N(2,i)-K_Z_H(1,0)*K_Z_N(3,i))*
+	     (K_Z_N(0,j)*sintW-K_Z_N(1,j)*costW));
 
 	  kcpl1 = g2/(costW*num_2)*
-	    ((K_Z_H(0,k-33)*K_Z_N(2,i-43)-K_Z_H(1,k-33)*K_Z_N(3,i-43))*
-	     (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW) +
-	     (K_Z_H(0,k-33)*K_Z_N(2,j-43)-K_Z_H(1,k-33)*K_Z_N(3,j-43))*
-	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW));
+	    ((K_Z_H(0,0)*K_Z_N(2,i)-K_Z_H(1,0)*K_Z_N(3,i))*
+	     (K_Z_N(0,j)*sintW-K_Z_N(1,j)*costW) +
+	     (K_Z_H(0,0)*K_Z_N(2,j)-K_Z_H(1,0)*K_Z_N(3,j))*
+	     (K_Z_N(0,i)*sintW-K_Z_N(1,i)*costW));
 
 	  vertex[vanz].cpl[0] = kcpl0; 
 	  vertex[vanz].cpl[1] = kcpl1;
@@ -167,32 +177,36 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  
 	  vertex[vanz].on      = 1;
 	  vertex.push_back(Single_Vertex());vanz++;
-	  //checked SS 
 	}
       }
     }
   }
   // Neutralino - Higgs - Chargino
-  Flavour flHm = Flavour(kf::Hmin);
+  Flavour flHm = Flavour(kf::Hplus).Bar();
   if (flHm.IsOn()) {
-    for (short int i=41;i<43;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=43;j<47;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=0;i<2;i++) {
+      if (i==0) c_ino=1000024;
+      else      c_ino=1000037;
+      Flavour flav1 = Flavour(kf::code(c_ino));
+      for (short int j=0;j<4;j++) {
+	if (j<2)  n_ino=1000022+j;
+	if (j==2) n_ino=1000025;
+	if (j==3) n_ino=1000035;
+	Flavour flav2 = Flavour(kf::code(n_ino));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flHm;
 	  vertex[vanz].in[2] = flav1.Bar();
 	  
 	  kcpl0 = -M_I*g2/costW*
-	    K_Z_H(1,0)*(K_Z_PL(1,i-41)/root2*
-			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)+
-			K_Z_PL(0,i-41)*K_Z_N(3,j-43)*costW);
+	    K_Z_H(1,0)*(K_Z_PL(1,i)/root2*
+			(K_Z_N(0,j)*sintW+K_Z_N(1,j)*costW)+
+			K_Z_PL(0,i)*K_Z_N(3,j)*costW);
 	  
 	  kcpl1 = M_I*g2/costW*
-	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
-			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)-
-			K_Z_MI(0,i-41)*K_Z_N(2,j-43)*costW);
+	    K_Z_H(0,0)*(K_Z_MI(1,i)/root2*
+			(K_Z_N(0,j)*sintW+K_Z_N(1,j)*costW)-
+			K_Z_MI(0,i)*K_Z_N(2,j)*costW);
 
 	  vertex[vanz].cpl[0] = kcpl0; 
 	  vertex[vanz].cpl[1] = kcpl1;
@@ -217,12 +231,17 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
    Kabbala kcpl0,kcpl1;  
    Flavour flph = Flavour(kf::photon);
    Flavour flZ = Flavour(kf::Z);
-
+   int c_ino,n_ino;
+   
    //Chargino - Z/Photon - Chargino
-   for (short int i=41;i<43;i++) {
-     Flavour flav1 = Flavour(kf::code(i));
-     for (short int j=i;j<43;j++) {
-       Flavour flav2 = Flavour(kf::code(j));
+   for (short int i=0;i<2;i++) {
+     if (i==0) c_ino = 1000024;
+     else      c_ino = 1000037;
+     Flavour flav1 = Flavour(kf::code(c_ino));
+     for (short int j=i;j<2;j++) {
+     if (j==0) c_ino = 1000024;
+     else      c_ino = 1000037;
+     Flavour flav2 = Flavour(kf::code(c_ino));
        if (flav1.IsOn() && flav2.IsOn()) {
 	 if (flav1==flav2 && flph.IsOn()) {
 	   vertex[vanz].in[0] = flav1;
@@ -241,7 +260,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   
 	   vertex[vanz].nlf     = 1;
 	   vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
-	   vertex[vanz].Lorentz->SetParticleArg(1);     
+	   vertex[vanz].Lorentz->SetParticleArg(2);     
 	   
 	   vertex[vanz].on      = 1;
 	   vertex.push_back(Single_Vertex());vanz++;
@@ -253,15 +272,15 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   if (flav1 == flav2) helper = Kabbala(string("cos2\\theta_W"),
 						1.-2.*sintW.Value()*
 						sintW.Value());
-	   vertex[vanz].in[0] = flav1;
-	   vertex[vanz].in[1] = flZ;
-	   vertex[vanz].in[2] = flav2;	  
+	   vertex[vanz].in[0] = flav1.Bar();
+	   vertex[vanz].in[2] = flZ;
+	   vertex[vanz].in[1] = flav2.Bar();	  
 	   
 	   kcpl1 = M_I/(costW*num_2)*g2*
-	     (K_Z_MI(0,j-41)*K_Z_MI(0,i-41) + helper);
+	     (K_Z_MI(0,j)*K_Z_MI(0,i) + helper);
 
 	   kcpl0 = M_I/(costW*num_2)*g2*
-	     (K_Z_PL(0,j-41)*K_Z_PL(0,i-41) + helper);
+	     (K_Z_PL(0,j)*K_Z_PL(0,i) + helper);
 	   
 	   vertex[vanz].cpl[0] = kcpl0;
 	   vertex[vanz].cpl[1] = kcpl1; 
@@ -272,7 +291,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   
 	   vertex[vanz].nlf     = 1;
 	   vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
-	   vertex[vanz].Lorentz->SetParticleArg(1);     
+	   vertex[vanz].Lorentz->SetParticleArg(2);     
 	   
 	   vertex[vanz].on     = 1;
 	   vertex.push_back(Single_Vertex());vanz++;
@@ -281,21 +300,26 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
      }
    }
    
-   //Chargino - Neutralino - W-
-   for (short int i=43;i<47;i++) {
-     Flavour flav1 = Flavour(kf::code(i));
-     for (short int j=41;j<43;j++) {
-       Flavour flav2 = Flavour(kf::code(j));
+   //Chargino - Neutralino - W+
+   for (short int i=0;i<4;i++) {
+     if (i<2)  n_ino=1000022+i;
+     if (i==2) n_ino=1000025;
+     if (i==3) n_ino=1000035;
+     Flavour flav1 = Flavour(kf::code(n_ino));
+     for (short int j=0;j<2;j++) {
+       if (j==0) c_ino = 1000024;
+       else      c_ino = 1000037;
+       Flavour flav2 = Flavour(kf::code(c_ino));
        if (flav1.IsOn() && flav2.IsOn()) {
 	 vertex[vanz].in[0] = flav1;
-	 vertex[vanz].in[1] = Flavour(kf::W).Bar();
+	 vertex[vanz].in[1] = Flavour(kf::Wplus);
 	 vertex[vanz].in[2] = flav2;
 
-	 kcpl0 = M_I*g2*(K_Z_N(1,i-43)*K_Z_PL(0,j-41)-
-			 K_Z_N(3,i-43)*K_Z_PL(1,j-41)/root2);
+	 kcpl0 = M_I*g2*(K_Z_N(1,i)*K_Z_PL(0,j)-
+			 K_Z_N(3,i)*K_Z_PL(1,j)/root2);
 
-	 kcpl1 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
-			 K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
+	 kcpl1 = M_I*g2*(K_Z_N(1,i)*K_Z_MI(0,j)+
+			 K_Z_N(2,i)*K_Z_MI(1,j)/root2);
 
 	 vertex[vanz].cpl[0] = kcpl0;
 	 vertex[vanz].cpl[1] = kcpl1; 
@@ -306,7 +330,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 
 	 vertex[vanz].nlf     = 1;
 	 vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
-	 vertex[vanz].Lorentz->SetParticleArg(1);     
+	 vertex[vanz].Lorentz->SetParticleArg(2);     
 	 
 	 vertex[vanz].on     = 1;
 	 vertex.push_back(Single_Vertex());vanz++;
@@ -316,10 +340,16 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
    }
    
    //Neutralino - Z - Neutralino
-   for (short int j=43;j<47;j++) {
-     Flavour flav1 = Flavour(kf::code(j));
-     for (short int i=j;i<47;i++) {
-       Flavour flav2 = Flavour(kf::code(i));
+   for (short int j=0;j<4;j++) {
+     if (j<2)  n_ino=1000022+j;
+     if (j==2) n_ino=1000025;
+     if (j==3) n_ino=1000035;
+     Flavour flav1 = Flavour(kf::code(n_ino));
+     for (short int i=j;i<4;i++) {
+       if (i<2)  n_ino=1000022+i;
+       if (i==2) n_ino=1000025;
+       if (i==3) n_ino=1000035;
+       Flavour flav2 = Flavour(kf::code(n_ino));
        if (flav1.IsOn() && flav2.IsOn() && flZ.IsOn()) {
 	 
 	 vertex[vanz].in[0] = flav1;
@@ -327,11 +357,11 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 vertex[vanz].in[2] = flav2;
 	 
 	 kcpl0 = -M_I/(costW*num_2)*g2*
-	   (K_Z_N_com(3,i-43)*K_Z_N_com_conj(3,j-43)-
-	    K_Z_N_com(2,i-43)*K_Z_N_com_conj(2,j-43));
+	   (K_Z_N_com(3,i)*K_Z_N_com_conj(3,j)-
+	    K_Z_N_com(2,i)*K_Z_N_com_conj(2,j));
 	 kcpl1 = M_I/(costW*num_2)*g2*
-	   (K_Z_N_com_conj(3,i-43)*K_Z_N_com(3,j-43)-
-	    K_Z_N_com_conj(2,i-43)*K_Z_N_com(2,j-43));
+	   (K_Z_N_com_conj(3,i)*K_Z_N_com(3,j)-
+	    K_Z_N_com_conj(2,i)*K_Z_N_com(2,j));
 	 
 	 vertex[vanz].cpl[0] = kcpl0;
 	 vertex[vanz].cpl[1] = kcpl1;
@@ -346,7 +376,6 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 
 	 vertex[vanz].on      = 1;
 	 vertex.push_back(Single_Vertex());vanz++;
-	 //checked FK & RK & SS 
        }
      }
    }  

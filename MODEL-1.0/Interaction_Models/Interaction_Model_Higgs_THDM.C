@@ -62,7 +62,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[1] = flav;
 	  vertex[vanz].in[2] = fl1; 
 	  
-	  kcpl0 = -M_I/v1*K_yuk(fl1)*K_Z_R(0,(i-25/10));
+	  kcpl0 = -M_I/v1*K_yuk(fl1)*K_Z_R(0,(i-25)/10);
 	  kcpl1 = kcpl0;
 
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -373,7 +373,7 @@ void Interaction_Model_Higgs_THDM::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].in[2] = flHplus.Bar();
 	
 	kcpl0 = -M_I*g2*g2*(K_A_H(0,0)*K_B_R((i-25)/10)/(costW*costW*num_4)+
-			    vev*K_A_P((i-25/10),0)/num_2);
+			    vev*K_A_P((i-25)/10,0)/num_2);
 	kcpl1 = kcpl0;
 	
 	vertex[vanz].cpl[0]  = kcpl0;

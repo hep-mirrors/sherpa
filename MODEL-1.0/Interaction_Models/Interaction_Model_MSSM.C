@@ -109,4 +109,5 @@ Interaction_Model_MSSM::~Interaction_Model_MSSM()
   delete p_moslepton;
   delete p_mosqcd;
   delete p_mosquark;
+  delete p_moslesqu;
 }

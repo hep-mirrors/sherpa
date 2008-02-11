@@ -51,16 +51,22 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 
 void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz) {  
   Kabbala kcpl0,kcpl1; 
-
+  int n_ino,c_ino,s_qu;
+  
   //quark - squark - neutralino
-  for (short int j=43;j<47;j++) {
-    Flavour flneu = Flavour(kf::code(j));
+  for (short int j=0;j<4;j++) {
+    if (j<2)  n_ino=1000022+j; 
+    if (j==2) n_ino=1000025; 
+    if (j==3) n_ino=1000035; 
+    Flavour flneu = Flavour(kf::code(n_ino));
     if (flneu.IsOn()) {
       //uptypes 
       for (short int k=2;k<7;k+=2) {
 	Flavour flav1 = Flavour(kf::code(k));
-	for (short int i=51;i<57;i++) {
-	  Flavour flav2 = Flavour(kf::code(i));
+	for (short int i=1;i<7;i++) {
+	  if (i<4) s_qu=1000000 + 2*i;
+	  else     s_qu=2000000 + 2*i - 6;
+	  Flavour flav2 = Flavour(kf::code(s_qu));
 	  if (flav1.IsOn() && flav2.IsOn() && (k/2-1)==gen_sUp(flav2)) {
 	    vertex[vanz].in[0] = flav1;
 	    vertex[vanz].in[1] = flav2;
@@ -69,12 +75,12 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    Kabbala K_uI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_2}\\sqrt{2}"),
 				     flav1.Yuk()/v2.Value()*sqrt(2.));
 	  
-	    kcpl0 = M_I*((g1*root2*num_2)/(costW*num_3)*K_Z_U((k-2)/2+3,i-51)*K_Z_N(0,j-43)+
-			 -(K_uI*K_Z_U(gen_sUp(flav2),i-51))*K_Z_N(3,j-43)); 
+	    kcpl0 = M_I*((g1*root2*num_2)/(costW*num_3)*K_Z_U((k-2)/2+3,i-1)*K_Z_N(0,j)+
+			 -(K_uI*K_Z_U(gen_sUp(flav2),i-1))*K_Z_N(3,j)); 
 	    
-	    kcpl1 = M_I*(-g2/(costW*root2)*K_Z_U((k-2)/2,i-51)*
-			 (K_Z_N(0,j-43)*(sintW/num_3) + K_Z_N(1,j-43)*costW)
- 			 -(K_uI*K_Z_U(gen_sUp(flav2)+3,i-51))*K_Z_N(3,j-43));
+	    kcpl1 = M_I*(-g2/(costW*root2)*K_Z_U((k-2)/2,i-1)*
+			 (K_Z_N(0,j)*(sintW/num_3) + K_Z_N(1,j)*costW)
+ 			 -(K_uI*K_Z_U(gen_sUp(flav2)+3,i-1))*K_Z_N(3,j));
 	    
 	    vertex[vanz].cpl[0] = kcpl0;
 	    vertex[vanz].cpl[1] = kcpl1;
@@ -93,63 +99,61 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  }
 	}
       }
-    }
-  }
-
-  for (short int j=43;j<47;j++) {
-    Flavour flneu = Flavour(kf::code(j));
-    if (flneu.IsOn()) {
       //downtypes 
       for (short int k=1;k<6;k+=2) {
-	  Flavour flav1 = Flavour(kf::code(k));
-	  for (short int i=61;i<67;i++) {
-	    Flavour flav2 = Flavour(kf::code(i));
-	    if (flav1.IsOn() && flav2.IsOn() && ((k-1)/2)==gen_sDown(flav2)) {
-	      vertex[vanz].in[0] = flav1;
-	      vertex[vanz].in[1] = flav2;
-	      vertex[vanz].in[2] = flneu;
-
-	      Kabbala K_dI = Kabbala(string("d^I"),-flav1.Yuk()*sqrt(2.)/v1.Value());
-	      
-	      kcpl0 = M_I*((-(g1*root2)/
-			    (costW*num_3))*K_Z_D((k-1)/2+3,i-61)*K_Z_N(0,j-43)+
-			   (K_dI*K_Z_D(gen_sDown(flav2),i-61)*K_Z_N(2,j-43)));
-	      
-	      kcpl1 = M_I*(-g2/(costW*root2)*K_Z_D((k-1)/2,i-61)*
-			   (K_Z_N(0,j-43)*(sintW/num_3)-K_Z_N(1,j-43)*costW)+
-			   (K_dI*K_Z_D(gen_sDown(flav2)+3,i-61))*K_Z_N(2,j-43));
-
-	      vertex[vanz].cpl[0] = kcpl0;
-	      vertex[vanz].cpl[1] = kcpl1;
-	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
-
-	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function(cf::D);     
-	      vertex[vanz].Color->SetParticleArg(0,1);     
-	      vertex[vanz].Color->SetStringArg('0','1');     
-	      
-	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
-	    	
-	      vertex[vanz].on     = 1;
-	      vertex.push_back(Single_Vertex());vanz++;
-	    }
+	Flavour flav1 = Flavour(kf::code(k));
+	for (short int i=1;i<7;i++) {
+	  if (i<4) s_qu = 1000000 + 2*i -1;
+	  else     s_qu = 2000000 + 2*i -7;
+	  Flavour flav2 = Flavour(kf::code(s_qu));
+	  if (flav1.IsOn() && flav2.IsOn() && ((k-1)/2)==gen_sDown(flav2)) {
+	    vertex[vanz].in[0] = flav1;
+	    vertex[vanz].in[1] = flav2;
+	    vertex[vanz].in[2] = flneu;
+	    
+	    Kabbala K_dI = Kabbala(string("d^I"),-flav1.Yuk()*sqrt(2.)/v1.Value());
+	    
+	    kcpl0 = M_I*((-(g1*root2)/
+			  (costW*num_3))*K_Z_D((k-1)/2+3,i-1)*K_Z_N(0,j)+
+			 (K_dI*K_Z_D(gen_sDown(flav2),i-1)*K_Z_N(2,j)));
+	    
+	    kcpl1 = M_I*(-g2/(costW*root2)*K_Z_D((k-1)/2,i-1)*
+			 (K_Z_N(0,j)*(sintW/num_3)-K_Z_N(1,j)*costW)+
+			 (K_dI*K_Z_D(gen_sDown(flav2)+3,i-1))*K_Z_N(2,j));
+	    
+	    vertex[vanz].cpl[0] = kcpl0;
+	    vertex[vanz].cpl[1] = kcpl1;
+	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
+	    
+	    vertex[vanz].ncf   = 1;
+	    vertex[vanz].Color = new Color_Function(cf::D);     
+	    vertex[vanz].Color->SetParticleArg(0,1);     
+	    vertex[vanz].Color->SetStringArg('0','1');     
+	    
+	    vertex[vanz].nlf     = 1;
+	    vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	    
+	    vertex[vanz].on     = 1;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
+	}
       }
     }
   }
-
+  
   //d-quark - Chargino - sup
   for (short int i=1;i<6;i+=2) {
     Flavour flav1 = Flavour(kf::code(i));
-      
     Kabbala K_dI = Kabbala(string("d^I"),
 			   -flav1.Yuk()/v1.Value()*sqrt(2.));
-    
-    for (short int j=41;j<43;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
-      for (short int k=51;k<57;k++) {
-	Flavour flav3 = Flavour(kf::code(k));
+    for (short int j=0;j<2;j++) {
+      if (j==0) c_ino=1000024;
+      else      c_ino=1000037;
+      Flavour flav2 = Flavour(kf::code(c_ino));
+      for (short int k=1;k<7;k++) {
+	if (k<4) s_qu=1000000 + 2*k;
+	else     s_qu=2000000 + 2*k - 6;
+	Flavour flav3 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
@@ -158,11 +162,11 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav3)+2)).Yuk()*
 				 sqrt(2.)/v2.Value());
 
-	  kcpl0 = -M_I*K_dI*K_Z_MI(1,j-41)*K_Z_U(gen_sUp(flav3),k-51)*
+	  kcpl0 = -M_I*K_dI*K_Z_MI(1,j)*K_Z_U(gen_sUp(flav3),k-1)*
 	    K_CKM(gen_sUp(flav3),(i-1)/2);
 	  
-	  kcpl1 = M_I*(-g2*K_Z_PL(0,j-41)*K_Z_U(gen_sUp(flav3),k-51)+
-		       K_uI*K_Z_PL(1,j-41)*K_Z_U(gen_sUp(flav3)+3,k-51))*
+	  kcpl1 = M_I*(-g2*K_Z_PL(0,j)*K_Z_U(gen_sUp(flav3),k-1)+
+		       K_uI*K_Z_PL(1,j)*K_Z_U(gen_sUp(flav3)+3,k-1))*
 		       K_CKM(gen_sUp(flav3),(i-1)/2);
 
 	  vertex[vanz].cpl[0] = kcpl0;
@@ -186,27 +190,29 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
   //u-quark - Chargino - sdown
   for (short int i=2;i<7;i+=2) {
     Flavour flav1 = Flavour(kf::code(i));
-    
     Kabbala K_uJ = Kabbala(string("u^J"),flav1.Yuk()*sqrt(2.)/v2.Value());
-    
-    for (short int j=41;j<43;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
-      for (short int k=61;k<67;k++) {
-	Flavour flav3 = Flavour(kf::code(k));
+    for (short int j=0;j<2;j++) {
+      if (j==0) c_ino=1000024;
+      else      c_ino=1000037;
+      Flavour flav2 = Flavour(kf::code(c_ino));
+      for (short int k=1;k<7;k++) {
+	if (k<4) s_qu=1000000 + 2*k - 1;
+	else     s_qu=2000000 + 2*k - 7;
+	Flavour flav3 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav2.Bar();
-	  
+	  	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
 				 -Flavour(kf::code(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
 				 v1.Value());
 	  
-	  kcpl0 = M_I*K_uJ*K_Z_D(gen_sDown(flav3),k-61)*K_Z_PL(1,j-41)*
+	  kcpl0 = M_I*K_uJ*K_Z_D(gen_sDown(flav3),k-1)*K_Z_PL(1,j)*
 	    conj_K_CKM((i-2)/2,gen_sDown(flav3));
 	  
-	  kcpl1 = -M_I*(g2*K_Z_D(gen_sDown(flav3),k-61)*K_Z_MI(0,j-41)+
-			K_dI*K_Z_D(gen_sDown(flav3)+3,k-61)*K_Z_MI(1,j-41))*
+	  kcpl1 = -M_I*(g2*K_Z_D(gen_sDown(flav3),k-1)*K_Z_MI(0,j)+
+			K_dI*K_Z_D(gen_sDown(flav3)+3,k-1)*K_Z_MI(1,j))*
 			conj_K_CKM((i-2)/2,gen_sDown(flav3));
 			
 	  vertex[vanz].cpl[0] = kcpl0;
@@ -232,14 +238,16 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1,help;
+  int s_qu;
   
   //squark - Photon - squark
-  
   Flavour flph = Flavour(kf::photon);
   if (flph.IsOn()) {
     //sUpypes
-    for (short int i=51 ;i<57;i++) {
-      Flavour flav = Flavour(kf::code(i));
+    for (short int i=1 ;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav = Flavour(kf::code(s_qu));
       if (flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flph;
@@ -270,8 +278,10 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
     }
 
     //sDowntypes
-    for (short int i=61 ;i<67;i++) {
-      Flavour flav = Flavour(kf::code(i));
+    for (short int i=1 ;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav = Flavour(kf::code(s_qu));
       if (flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flph;
@@ -306,10 +316,14 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
   Flavour flZ = Flavour(kf::Z);
   if (flZ.IsOn()) {
     //sUptypes
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=i;j<57;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j;
+	else     s_qu=2000000 + 2*j - 6;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
@@ -321,7 +335,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	  if (i==j) {help = sintW*sintW*num_2/num_3;}  
 
 	  kcpl0 = -M_I*g2/costW*
-	    (K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav2),i-51)/num_2-help);
+	    (K_Z_U(gen_sUp(flav2),j-1)*K_Z_U(gen_sUp(flav2),i-1)/num_2-help);
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -343,10 +357,14 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
       }
     }
     //sDowntypes
-    for (short int i=61 ;i<67;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61 ;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1 ;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i ;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
@@ -358,7 +376,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	  if (i==j) { help = sintW*sintW/num_3; }  
 	  
 	  kcpl0 = M_I*g2/costW*
-	    (K_Z_D(gen_sDown(flav2),j-61)*K_Z_D(gen_sDown(flav2),i-61)/num_2-help);
+	    (K_Z_D(gen_sDown(flav2),j-1)*K_Z_D(gen_sDown(flav2),i-1)/num_2-help);
 	  kcpl1 = kcpl0;
 
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -382,23 +400,27 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
   }    
   
   //supquarks - W - sdownquarks
-  Flavour flW = Flavour(kf::W);
+  Flavour flW = Flavour(kf::Wplus);
   if (flW.IsOn()) {
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
-	  vertex[vanz].in[1] = flW.Bar();
+	  vertex[vanz].in[1] = flW;
 	  vertex[vanz].in[2] = flav2;
 	
 	  Kabbala factor = K_zero;
 	  
 	  for (int I=0;I<3;I++) {
 	    for (int J=0;J<3;J++) {
-	      factor += K_Z_D(I,j-61)*K_Z_U(J,i-51)*
+	      factor += K_Z_D(I,j-1)*K_Z_U(J,i-1)*
 				    conj_K_CKM(J,I);
 	    }
 	  }
@@ -430,17 +452,21 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1,help;
-    
+  int s_qu;
   //sQuarks - A0 - sQuarks
   
   Flavour flA0 = Flavour(kf::A0);
   if (flA0.IsOn()) {
     //uptypes
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=51;j<57;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn() && i<=j) {
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j;
+	else     s_qu=2000000 + 2*j - 6;
+     	Flavour flav2 = Flavour(kf::code(s_qu));
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
 				 (v2).Value()*sqrt(2.));
@@ -449,16 +475,16 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[1] = flA0;
 	  vertex[vanz].in[2] = flav2.Bar();
 	  
-	  kcpl0 = -(K_uI*K_Z_H(0,0)*(mu*K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1)+3,j-51)-
-				    conj_mu*K_Z_U(gen_sUp(flav1),j-51)*
-				    K_Z_U(gen_sUp(flav1)+3,i-51))+
-		   K_Z_H(1,0)*(K_u_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),j-51)*
-			       K_Z_U(gen_sUp(flav2)+3,i-51)-
-			       K_u_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),i-51)*
-			       K_Z_U(gen_sUp(flav2)+3,j-51))+
-		   K_Z_H(0,0)*(K_w_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),i-51)*
-			       K_Z_U(gen_sUp(flav2)+3,j-51)-K_w_S(gen_sUp(flav1),gen_sUp(flav2))*
-			       K_Z_U(gen_sUp(flav1),j-51)*K_Z_U(gen_sUp(flav2)+3,i-51)))*invroot2;
+	  kcpl0 = -(K_uI*K_Z_H(0,0)*(mu*K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1)+3,j-1)-
+				    conj_mu*K_Z_U(gen_sUp(flav1),j-1)*
+				    K_Z_U(gen_sUp(flav1)+3,i-1))+
+		   K_Z_H(1,0)*(K_u_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),j-1)*
+			       K_Z_U(gen_sUp(flav2)+3,i-1)-
+			       K_u_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),i-1)*
+			       K_Z_U(gen_sUp(flav2)+3,j-1))+
+		   K_Z_H(0,0)*(K_w_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),i-1)*
+			       K_Z_U(gen_sUp(flav2)+3,j-1)-K_w_S(gen_sUp(flav1),gen_sUp(flav2))*
+			       K_Z_U(gen_sUp(flav1),j-1)*K_Z_U(gen_sUp(flav2)+3,i-1)))*invroot2;
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -480,11 +506,15 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
       }
     }
     //downtypes
-    for (short int i=61;i<67;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn() && i<=j) {
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
 				 -Flavour(kf::code(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
@@ -493,24 +523,24 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[1] = flA0;
 	  vertex[vanz].in[2] = flav2;
 	  
-	  kcpl0 = -(K_dI*K_Z_H(1,0)*(conj_mu*K_Z_D(gen_sDown(flav1),i-61)*
-				     K_Z_D(gen_sDown(flav1)+3,j-61)
-				     -mu*K_Z_D(gen_sDown(flav1),j-61)*
-				     K_Z_D(gen_sDown(flav1)+3,i-61))
+	  kcpl0 = -(K_dI*K_Z_H(1,0)*(conj_mu*K_Z_D(gen_sDown(flav1),i-1)*
+				     K_Z_D(gen_sDown(flav1)+3,j-1)
+				     -mu*K_Z_D(gen_sDown(flav1),j-1)*
+				     K_Z_D(gen_sDown(flav1)+3,i-1))
 		   
 		   + K_Z_H(0,0)*(K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
-				  K_Z_D(gen_sDown(flav1),j-61)*
-				  K_Z_D(gen_sDown(flav2)+3,i-61)-
+				  K_Z_D(gen_sDown(flav1),j-1)*
+				  K_Z_D(gen_sDown(flav2)+3,i-1)-
 				  K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
-				  K_Z_D(gen_sDown(flav1),i-61)*
-				  K_Z_D(gen_sDown(flav2)+3,j-61))
+				  K_Z_D(gen_sDown(flav1),i-1)*
+				  K_Z_D(gen_sDown(flav2)+3,j-1))
 		   
 		   +K_Z_H(1,0)*(K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
-				 K_Z_D(gen_sDown(flav1),j-61)*
-				 K_Z_D(gen_sDown(flav2)+3,i-61)-
+				 K_Z_D(gen_sDown(flav1),j-1)*
+				 K_Z_D(gen_sDown(flav2)+3,i-1)-
 				 K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
-				 K_Z_D(gen_sDown(flav1),i-61)*
-				 K_Z_D(gen_sDown(flav2)+3,j-61)))*invroot2;
+				 K_Z_D(gen_sDown(flav1),i-1)*
+				 K_Z_D(gen_sDown(flav2)+3,j-1)))*invroot2;
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -536,15 +566,19 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
   
   //sQuarks - h0/H0 - sQuarks
   
-  for (short int k=31;k<33;k++) {
-    Flavour flH = Flavour(kf::code(k)); 
+  for (short int k=0;k<2;k++) {
+    Flavour flH = Flavour(kf::code(25+k*10)); 
     if (flH.IsOn()) {
     //uptypes  
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=51;j<57;j++) {
-	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.IsOn() && flav2.IsOn() && i<=j){
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j;
+	else     s_qu=2000000 + 2*j - 6;
+	Flavour flav2 =Flavour(kf::code(s_qu));
+	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flH;
 	  vertex[vanz].in[2] = flav2;
@@ -560,21 +594,21 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  
 	  if (i==j) {help = num_1;}
 	  
-	  kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_B_R(k-31)*
-		       (help+fac*K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1),j-51))
-		       -K_uI*K_uI*v2*K_Z_R(1,k-31)*
-		       (K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1),j-51)+
-		 	K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_U(gen_sUp(flav1)+3,j-51))
-		       +K_Z_R(1,k-31)*invroot2*K_u_S(gen_sUp(flav1),gen_sUp(flav2))*
-		       (K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav2)+3,j-51)+
-			K_Z_U(gen_sUp(flav1),j-51)*K_Z_U(gen_sUp(flav2)+3,i-51))
-		       +K_Z_R(0,k-31)*invroot2*K_w_S(gen_sUp(flav1),gen_sUp(flav2))*
-		       (K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav2)+3,j-51)+
-			K_Z_U(gen_sUp(flav1),j-51)*K_Z_U(gen_sUp(flav2)+3,i-51))
-		       +K_uI*K_Z_R(0,k-31)*invroot2*mu*(K_Z_U(gen_sUp(flav1),j-51)*
-							K_Z_U(gen_sUp(flav1)+3,i-51)+
-							K_Z_U(gen_sUp(flav1),i-51)*
-							K_Z_U(gen_sUp(flav1)+3,j-51))
+	  kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_B_R(k)*
+		       (help+fac*K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1),j-1))
+		       -K_uI*K_uI*v2*K_Z_R(1,k)*
+		       (K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1),j-1)+
+		 	K_Z_U(gen_sUp(flav1)+3,i-1)*K_Z_U(gen_sUp(flav1)+3,j-1))
+		       +K_Z_R(1,k)*invroot2*K_u_S(gen_sUp(flav1),gen_sUp(flav2))*
+		       (K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav2)+3,j-1)+
+			K_Z_U(gen_sUp(flav1),j-1)*K_Z_U(gen_sUp(flav2)+3,i-1))
+		       +K_Z_R(0,k)*invroot2*K_w_S(gen_sUp(flav1),gen_sUp(flav2))*
+		       (K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav2)+3,j-1)+
+			K_Z_U(gen_sUp(flav1),j-1)*K_Z_U(gen_sUp(flav2)+3,i-1))
+		       +K_uI*K_Z_R(0,k)*invroot2*mu*(K_Z_U(gen_sUp(flav1),j-1)*
+							K_Z_U(gen_sUp(flav1)+3,i-1)+
+							K_Z_U(gen_sUp(flav1),i-1)*
+							K_Z_U(gen_sUp(flav1)+3,j-1))
 		       );
 	  
 	  kcpl1 = kcpl0;
@@ -598,11 +632,15 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
     }
     
     //downtypes
-    for (short int i=61;i<67;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.IsOn() && flav2.IsOn() && i<=j){
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=i;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 =Flavour(kf::code(s_qu));
+	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flH;
 	  vertex[vanz].in[2] = flav2;
@@ -618,21 +656,21 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  
 	  if (i==j) {help = num_1;}
 	  
-	  kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_B_R(k-31)*
-		       (help+fac*K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav1),j-61))
-		       -K_dI*K_dI*v1*K_Z_R(0,k-31)*
-		       (K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav1),j-61)+
-			K_Z_D(gen_sDown(flav1)+3,i-61)*K_Z_D(gen_sDown(flav1)+3,j-61))
-		       -K_Z_R(0,k-31)*invroot2*K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
-		       (K_Z_D(gen_sDown(flav1),j-61)*K_Z_D(gen_sDown(flav2)+3,i-61)+
-			K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav2)+3,j-61))
-		       +K_Z_R(1,k-31)*invroot2*K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
-		       (K_Z_D(gen_sDown(flav1),j-61)*K_Z_D(gen_sDown(flav2)+3,i-61)+
-			K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav2)+3,j-61))
-		       -K_dI*K_Z_R(1,k-31)*invroot2*(conj_mu*K_Z_D(gen_sDown(flav1),i-61)*
-						     K_Z_D(gen_sDown(flav1)+3,j-61)+
-						     mu*K_Z_D(gen_sDown(flav1),j-61)*
-						     K_Z_D(gen_sDown(flav1)+3,i-61)));
+	  kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_B_R(k)*
+		       (help+fac*K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav1),j-1))
+		       -K_dI*K_dI*v1*K_Z_R(0,k)*
+		       (K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav1),j-1)+
+			K_Z_D(gen_sDown(flav1)+3,i-1)*K_Z_D(gen_sDown(flav1)+3,j-1))
+		       -K_Z_R(0,k)*invroot2*K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
+		       (K_Z_D(gen_sDown(flav1),j-1)*K_Z_D(gen_sDown(flav2)+3,i-1)+
+			K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav2)+3,j-1))
+		       +K_Z_R(1,k)*invroot2*K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
+		       (K_Z_D(gen_sDown(flav1),j-1)*K_Z_D(gen_sDown(flav2)+3,i-1)+
+			K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav2)+3,j-1))
+		       -K_dI*K_Z_R(1,k)*invroot2*(conj_mu*K_Z_D(gen_sDown(flav1),i-1)*
+						     K_Z_D(gen_sDown(flav1)+3,j-1)+
+						     mu*K_Z_D(gen_sDown(flav1),j-1)*
+						     K_Z_D(gen_sDown(flav1)+3,i-1)));
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -658,14 +696,18 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
   }  
   //sUp - H+ - sDown
   
-  Flavour flHmin = Flavour(kf::Hmin);
-  if (flHmin.IsOn()) {
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+  Flavour flHplus = Flavour(kf::Hplus);
+  if (flHplus.IsOn()) {
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	vertex[vanz].in[0] = flav1;
-	vertex[vanz].in[1] = flHmin.Bar();
+	vertex[vanz].in[1] = flHplus;
 	vertex[vanz].in[2] = flav2;
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
@@ -674,16 +716,16 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	Kabbala K_uJ = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sDown(flav2)+2)).Yuk()/
 			       (v2).Value()*sqrt(2.));
 	
-	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf::W).Mass());
+	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf::Wplus).Mass());
 	
 	kcpl0 = M_I*((-(g2*g2)/num_2*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))+
 		      v1*K_dI*K_dI*K_Z_H(0,0)+v2*K_uJ*K_uJ*K_Z_H(1,0))*invroot2*
 		     K_CKM(gen_sUp(flav1),gen_sDown(flav2))*
-		     K_Z_D(gen_sDown(flav2),j-61)*K_Z_U(gen_sUp(flav1),i-51)
+		     K_Z_D(gen_sDown(flav2),j-1)*K_Z_U(gen_sUp(flav1),i-1)
 
 		     - sintW*K_massW*root2/g1*K_uJ*K_dI*
 		     K_CKM(gen_sUp(flav1),gen_sDown(flav2))*
-		     K_Z_D(gen_sDown(flav2)+3,j-61)*K_Z_U(gen_sUp(flav1)+3,i-51)
+		     K_Z_D(gen_sDown(flav2)+3,j-1)*K_Z_U(gen_sUp(flav1)+3,i-1)
 
 		     + (K_Z_H(0,0)*conj_mu*K_uJ*K_CKM(gen_sUp(flav1),gen_sDown(flav2))
 			+(K_Z_H(0,0)*K_w_S(0,gen_sUp(flav1))-K_Z_H(1,0)*K_u_S(0,gen_sUp(flav1)))*
@@ -692,7 +734,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 			conj_K_CKM(gen_sUp(flav1),1)+
 			(K_Z_H(0,0)*K_w_S(2,gen_sUp(flav1))-K_Z_H(1,0)*K_u_S(2,gen_sUp(flav1)))*
 			K_CKM(gen_sUp(flav1),2))*
-		     K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_D(gen_sDown(flav2),j-61)
+		     K_Z_U(gen_sUp(flav1)+3,i-1)*K_Z_D(gen_sDown(flav2),j-1)
 		     + ((K_Z_H(0,0)*K_d_S(0,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(0,gen_sUp(flav1)))*
 			conj_K_CKM(0,gen_sDown(flav2))+
 			(K_Z_H(0,0)*K_d_S(1,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(1,gen_sUp(flav1)))*
@@ -700,7 +742,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 			(K_Z_H(0,0)*K_d_S(2,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(2,gen_sUp(flav1)))*
 			conj_K_CKM(2,gen_sDown(flav2))-
 			K_Z_H(1,0)*mu*K_dI*conj_K_CKM(gen_sUp(flav1),gen_sDown(flav2)))*
-		     K_Z_U(gen_sDown(flav2),i-51)*K_Z_D(gen_sUp(flav1)+3,j-61));
+		     K_Z_U(gen_sDown(flav2),i-1)*K_Z_D(gen_sUp(flav1)+3,j-1));
 	
 	kcpl1 = kcpl0;
 	
@@ -725,24 +767,25 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 
 void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flavW(kf::W);
+  Flavour flavW(kf::Wplus);
   Flavour flavZ(kf::Z);
   Flavour flavPhoton(kf::photon);
   Kabbala kcpl0,kcpl1,help;
+  int s_qu;
   
-  for (short int i=51;i<67;i++) {
-    if (i==57) i=61;
-    Flavour flav = Flavour(kf::code(i));
-       if (flav.IsOn() && flavPhoton.IsOn()) {
+  for (short int l=1;l<3;l++) {
+    for (short int i=1;i<7;i++) {
+      s_qu = l*1000000 + i;
+      Flavour flav = Flavour(kf::code(s_qu));
+      if (flav.IsOn() && flavPhoton.IsOn()) {
 	// P - U/D - U/D - P  
-	 vertex[vanz].in[0] = flavPhoton;
-	 vertex[vanz].in[1] = flav.Bar();
-	 vertex[vanz].in[2] = flav;
-	 vertex[vanz].in[3] = flavPhoton;
-	 
-	 vertex[vanz].nleg     = 4;
-	 
-	 
+	vertex[vanz].in[0] = flavPhoton;
+	vertex[vanz].in[1] = flav.Bar();
+	vertex[vanz].in[2] = flav;
+	vertex[vanz].in[3] = flavPhoton;
+	
+	vertex[vanz].nleg     = 4;
+	
 	 Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 	 
 	 kcpl0 = M_I*charge*charge*num_2*g1*g1;;
@@ -763,14 +806,19 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	 
 	 vertex[vanz].on      = 1;
 	 vertex.push_back(Single_Vertex());vanz++;
-       }
+      }
+    }
   }
   
   // P - U - U - Z  
-  for (short int i=51;i<57;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=51;j<57;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;i++) {
+    if (i<4) s_qu=1000000 + 2*i;
+    else     s_qu=2000000 + 2*i - 6;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=1;j<7;j++) {
+      if (j<4) s_qu=1000000 + 2*j;
+      else     s_qu=2000000 + 2*j - 6;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flavPhoton.IsOn() && flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 
@@ -786,9 +834,9 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  if (i==j) {help = sintW*sintW*num_4/num_3;}  
 
 	  kcpl0 = num_2*M_I*g1*g2/(num_3*costW)*
-	    ((K_Z_U(0,j-51)*K_Z_U(0,i-51)+ 
-	      K_Z_U(1,j-51)*K_Z_U(1,i-51)+ 
-	      K_Z_U(2,j-51)*K_Z_U(2,i-51)) - help);
+	    ((K_Z_U(0,j-1)*K_Z_U(0,i-1)+ 
+	      K_Z_U(1,j-1)*K_Z_U(1,i-1)+ 
+	      K_Z_U(2,j-1)*K_Z_U(2,i-1)) - help);
 	  kcpl1 = kcpl0;
 	  	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -811,10 +859,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     }
   }
   // P - D - D - Z  
-  for (short int i=61;i<67;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=61;j<67;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;i++) {
+    if (i<4) s_qu=1000000 + 2*i - 1;
+    else     s_qu=2000000 + 2*i - 7;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=1;j<7;j++) {
+      if (j<4) s_qu=1000000 + 2*j - 1;
+      else     s_qu=2000000 + 2*j - 7;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flavPhoton.IsOn() && flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 
@@ -830,9 +882,9 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  if (i==j) {help = sintW*sintW*num_2/num_3;}  
 
 	  kcpl0 = M_I*g1*g2/(num_3*costW)*
-	    ((K_Z_D(0,j-61)*K_Z_D(0,i-61) +
-	      K_Z_D(1,j-61)*K_Z_D(1,i-61) +
-	      K_Z_D(2,j-61)*K_Z_D(2,i-61)) - help);
+	    ((K_Z_D(0,j-1)*K_Z_D(0,i-1) +
+	      K_Z_D(1,j-1)*K_Z_D(1,i-1) +
+	      K_Z_D(2,j-1)*K_Z_D(2,i-1)) - help);
 	  kcpl1 = kcpl0;
 	  	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -856,10 +908,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   }
 
   // Z - U - U - Z  
-  for (short int i=51;i<57;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=51;j<57;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;i++) {
+    if (i<4) s_qu=1000000 + 2*i;
+    else     s_qu=2000000 + 2*i - 6;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=1;j<7;j++) {
+      if (j<4) s_qu=1000000 + 2*j;
+      else     s_qu=2000000 + 2*j - 6;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	  
@@ -876,9 +932,9 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = num_2*M_I*g1*g1/(num_3*costW*costW)*
 	    (num_4/num_3*help*sintW*sintW + (num_3 - num_2*num_4*sintW*sintW)/(num_4*sintW*sintW)*
-	     (K_Z_U(0,i-51)*K_Z_U(0,j-51) + 
-	      K_Z_U(1,i-51)*K_Z_U(1,j-51) + 
-	      K_Z_U(2,i-51)*K_Z_U(2,j-51)));
+	     (K_Z_U(0,i-1)*K_Z_U(0,j-1) + 
+	      K_Z_U(1,i-1)*K_Z_U(1,j-1) + 
+	      K_Z_U(2,i-1)*K_Z_U(2,j-1)));
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -901,10 +957,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     }
   }
   // Z - D - D - Z  
-  for (short int i=61;i<67;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=61;j<67;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;i++) {
+    if (i<4) s_qu=1000000 + 2*i - 1;
+    else     s_qu=2000000 + 2*i - 7;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=1;j<7;j++) {
+      if (j<4) s_qu=1000000 + 2*j - 1;
+      else     s_qu=2000000 + 2*j - 7;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 	  
@@ -921,9 +981,9 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = num_2*M_I*g1*g1/(num_3*costW*costW)*
 	    (num_1/num_3*help*sintW*sintW + (num_3 - num_4*sintW*sintW)/(num_4*sintW*sintW)*
-	     (K_Z_D(0,i-61)*K_Z_D(0,j-61) + 
-	      K_Z_D(1,i-61)*K_Z_D(1,j-61) + 
-	      K_Z_D(2,i-61)*K_Z_D(2,j-61)));
+	     (K_Z_D(0,i-1)*K_Z_D(0,j-1) + 
+	      K_Z_D(1,i-1)*K_Z_D(1,j-1) + 
+	      K_Z_D(2,i-1)*K_Z_D(2,j-1)));
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -947,16 +1007,20 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   }
 
   // W - D - U - P/Z  
-  for (short int i=51;i<57;i++) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=61;j<67;j++) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;i++) {
+    if (i<4) s_qu=1000000 + 2*i;
+    else     s_qu=2000000 + 2*i - 6;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=1;j<7;j++) {
+      if (j<4) s_qu=1000000 + 2*j - 1;
+      else     s_qu=2000000 + 2*j - 7;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flav1.IsOn() && flav2.IsOn()) {
 	// W - D - U - P  
 	if (flavW.IsOn()) {
 	  if (flavPhoton.IsOn()) {
 
-	    vertex[vanz].in[0] = flavW;
+	    vertex[vanz].in[0] = flavW.Bar();
 	    vertex[vanz].in[1] = flav1.Bar();
 	    vertex[vanz].in[2] = flav2;
 	    vertex[vanz].in[3] = flavPhoton;
@@ -967,7 +1031,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    for (int I=0;I<3;I++) {
 	      for (int J=0;J<3;J++) {
-		factor += K_Z_D(I,j-61)*K_Z_U(J,i-51)*
+		factor += K_Z_D(I,j-1)*K_Z_U(J,i-1)*
 				      conj_K_CKM(J,I);
 	      }
 	    }
@@ -996,7 +1060,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  if (flavZ.IsOn()) {
 	    // W - D - U - Z  
 	    
-	    vertex[vanz].in[0] = flavW;
+	    vertex[vanz].in[0] = flavW.Bar();
 	    vertex[vanz].in[1] = flav1.Bar();
 	    vertex[vanz].in[2] = flav2;
 	    vertex[vanz].in[3] = flavZ;
@@ -1007,7 +1071,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    for (int I=0;I<3;I++) {
 	      for (int J=0;J<3;J++) {
-		factor += K_Z_D(I,j-61)*K_Z_U(J,i-51)*
+		factor += K_Z_D(I,j-1)*K_Z_U(J,i-1)*
 				      conj_K_CKM(J,I);
 	      }
 	    }
@@ -1038,23 +1102,26 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   }
   // W - D/U - D/U - W  
   if (flavW.IsOn()) {
-    for (short int i=61;i<67;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  // W - D - D - W  
-	  
-	  vertex[vanz].in[0] = flavW;
+	  vertex[vanz].in[0] = flavW.Bar();
 	  vertex[vanz].in[1] = flav1.Bar();
 	  vertex[vanz].in[2] = flav2;
-	  vertex[vanz].in[3] = flavW;
+	  vertex[vanz].in[3] = flavW.Bar();
 	    
 	  vertex[vanz].nleg     = 4;
 	  
-	  kcpl0 = M_I*g2*g2/num_2*(K_Z_D(0,i-61)*K_Z_D(0,j-61) +
-				   K_Z_D(1,i-61)*K_Z_D(1,j-61) +
-				   K_Z_D(2,i-61)*K_Z_D(2,j-61));
+	  kcpl0 = M_I*g2*g2/num_2*(K_Z_D(0,i-1)*K_Z_D(0,j-1) +
+				   K_Z_D(1,i-1)*K_Z_D(1,j-1) +
+				   K_Z_D(2,i-1)*K_Z_D(2,j-1));
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -1075,23 +1142,27 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	}
       }
     }
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=51;j<57;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j;
+	else     s_qu=2000000 + 2*j - 6;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  // W - U - U - W  
 	  
-	  vertex[vanz].in[0] = flavW;
+	  vertex[vanz].in[0] = flavW.Bar();
 	  vertex[vanz].in[1] = flav1.Bar();
 	  vertex[vanz].in[2] = flav2;
-	  vertex[vanz].in[3] = flavW;
+	  vertex[vanz].in[3] = flavW.Bar();
 	    
 	  vertex[vanz].nleg     = 4;
 	  
-	  kcpl0 = M_I*g2*g2/num_2*(K_Z_U(0,i-51)*K_Z_U(0,j-51) +
-				   K_Z_U(1,i-51)*K_Z_U(1,j-51) +
-				   K_Z_U(2,i-51)*K_Z_U(2,j-51));
+	  kcpl0 = M_I*g2*g2/num_2*(K_Z_U(0,i-1)*K_Z_U(0,j-1) +
+				   K_Z_U(1,i-1)*K_Z_U(1,j-1) +
+				   K_Z_U(2,i-1)*K_Z_U(2,j-1));
 
 	  kcpl1 = kcpl0;
 	  
@@ -1121,8 +1192,10 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   
   if (flgluon.IsOn()) {
     // G - U/D - U/D - P  
-    for (short int i=51;i<57;i++) {
-      Flavour flav = Flavour(kf::code(i));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav = Flavour(kf::code(s_qu));
       if (flav.IsOn() && flavPhoton.IsOn()) {
 	// G - U - U - P  
  	vertex[vanz].in[0] = flgluon;
@@ -1154,8 +1227,10 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	vertex.push_back(Single_Vertex());vanz++;
       }
     }
-    for (short int i=61;i<67;i++) {
-      Flavour flav = Flavour(kf::code(i));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav = Flavour(kf::code(s_qu));
       if (flav.IsOn() && flavPhoton.IsOn()) {
 	// G - D - D - P  
 	vertex[vanz].in[0] = flgluon;
@@ -1188,10 +1263,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
       }
     }
     // G - U/D - U/D - Z  
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=51;j<57;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j;
+	else     s_qu=2000000 + 2*j - 6;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flavZ.IsOn()) {
 	  if (gen_sUp(flav1)==gen_sUp(flav2)) {
 	    // G - U - U - Z  
@@ -1206,7 +1285,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    if (i==j) {help = sintW*sintW*num_4/num_3;}  
 	    
-	    kcpl0 = M_I*g2*g3/costW*(K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav1),i-51) - help);
+	    kcpl0 = M_I*g2*g3/costW*
+	      (K_Z_U(gen_sUp(flav2),j-1)*K_Z_U(gen_sUp(flav1),i-1) - help);
 	    kcpl1 = kcpl0;
 	    
 	    vertex[vanz].cpl[0]  = kcpl0;
@@ -1228,10 +1308,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	}
       }
     }
-    for (short int i=61;i<67;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i - 1;
+      else     s_qu=2000000 + 2*i - 7;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flavZ.IsOn()) {
 	  if (gen_sDown(flav1)==gen_sDown(flav2)) {
 	    // G - D - D - Z  
@@ -1246,7 +1330,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    if (i==j) {help = sintW*sintW*num_2/num_3;}  
 	    
-	    kcpl0 = M_I*g2*g3/costW*(-K_Z_D(gen_sDown(flav1),j-61)*K_Z_D(gen_sDown(flav1),i-61) + help);
+	    kcpl0 = M_I*g2*g3/costW*
+	      (-K_Z_D(gen_sDown(flav1),j-1)*K_Z_D(gen_sDown(flav1),i-1) + help);
 	    kcpl1 = kcpl0;
 	    
 	    vertex[vanz].cpl[0]  = kcpl0;
@@ -1270,21 +1355,25 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     }
 
     // G - D - U - W  
-    for (short int i=51;i<57;i++) {
-      Flavour flav1 = Flavour(kf::code(i));
-      for (short int j=61;j<67;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
+    for (short int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flav1 = Flavour(kf::code(s_qu));
+      for (short int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flav2 = Flavour(kf::code(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  if (flavW.IsOn()) {
 	    
-	    vertex[vanz].in[0] = flavW;
+	    vertex[vanz].in[0] = flavW.Bar();
 	    vertex[vanz].in[1] = flav1.Bar();
 	    vertex[vanz].in[2] = flav2;
 	    vertex[vanz].in[3] = flgluon;
 	    
 	    vertex[vanz].nleg     = 4;
-	    kcpl0 = M_I*g2*g3*root2*(K_Z_D(gen_sDown(flav2),j-61)*K_Z_U(gen_sUp(flav1),i-51))*
+	    kcpl0 = M_I*g2*g3*root2*(K_Z_D(gen_sDown(flav2),j-1)*K_Z_U(gen_sUp(flav1),i-1))*
 	      conj_K_CKM(gen_sUp(flav1),gen_sDown(flav2));
 	    
 	    kcpl1 = kcpl0;
@@ -1313,15 +1402,20 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flHmin(kf::Hmin);    
+  Flavour flHmin=Flavour(kf::Hplus).Bar();    
   Flavour flA0(kf::A0);    
   Kabbala kcpl0,kcpl1,num_1,help;
+  int s_qu;
 
   //up-squarks Higgs interactions
-  for (short int i=51;i<57;++i) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=i;j<57;++j) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;++i) {
+    if (i<4) s_qu=1000000 + 2*i;
+    else     s_qu=2000000 + 2*i - 6;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=i;j<7;++j) {
+      if (j<4) s_qu=1000000 + 2*j;
+      else     s_qu=2000000 + 2*j - 6;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	
 	Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
@@ -1344,16 +1438,16 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_A_H(0,0)*
 		       (help-(num_3+num_2*sintW*sintW)/(num_4*sintW*sintW)*
-			K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1),j-51))
+			K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1),j-1))
 		       -K_uI*K_uI*K_Z_H(1,0)*K_Z_H(1,0)*
-		       K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_U(gen_sUp(flav1)+3,j-51)
+		       K_Z_U(gen_sUp(flav1)+3,i-1)*K_Z_U(gen_sUp(flav1)+3,j-1)
 		       -K_dI*K_dI*K_Z_H(0,0)*K_Z_H(0,0)*
-		       (K_Z_U(0,i-51)*K_CKM(0,gen_sUp(flav1)) +
-			K_Z_U(1,i-51)*K_CKM(1,gen_sUp(flav1)) +
-			K_Z_U(2,i-51)*K_CKM(1,gen_sUp(flav1)))*
-		       (K_Z_U(0,j-51)*conj_K_CKM(0,gen_sUp(flav1)) +
-			K_Z_U(1,j-51)*conj_K_CKM(1,gen_sUp(flav1)) +
-			K_Z_U(2,j-51)*conj_K_CKM(1,gen_sUp(flav1))));
+		       (K_Z_U(0,i-1)*K_CKM(0,gen_sUp(flav1)) +
+			K_Z_U(1,i-1)*K_CKM(1,gen_sUp(flav1)) +
+			K_Z_U(2,i-1)*K_CKM(1,gen_sUp(flav1)))*
+		       (K_Z_U(0,j-1)*conj_K_CKM(0,gen_sUp(flav1)) +
+			K_Z_U(1,j-1)*conj_K_CKM(1,gen_sUp(flav1)) +
+			K_Z_U(2,j-1)*conj_K_CKM(1,gen_sUp(flav1))));
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -1387,10 +1481,10 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_A_H(0,0)*
 		       (help+(num_3-num_4*num_2*sintW*sintW)/(num_4*sintW*sintW)*
-			K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1),j-51))
+			K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1),j-1))
 		       -K_uI*K_uI*K_Z_H(1,0)*K_Z_H(1,0)*
-		       (K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1),j-51) + 
-			K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_U(gen_sUp(flav1)+3,j-51)));
+		       (K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav1),j-1) + 
+			K_Z_U(gen_sUp(flav1)+3,i-1)*K_Z_U(gen_sUp(flav1)+3,j-1)));
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -1410,10 +1504,10 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sUp - sUp - h0/H0 
-	for (int k=31;k<33;k++) {
-	  Flavour flh1 = Flavour(kf::code(k));
-	  for (int l=k;l<33;l++) {
-	    Flavour flh2 = Flavour(kf::code(l));
+	for (int k=0;k<2;k++) {
+	  Flavour flh1 = Flavour(kf::code(25+k*10));
+	  for (int l=k;l<2;l++) {
+	    Flavour flh2 = Flavour(kf::code(25+l*10));
 	    if (flh1.IsOn() && flh2.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flh1;
@@ -1426,12 +1520,12 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      help = K_zero;
 	      if(i==j) help = num_1;
 	      
-	      kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_A_R(k-31,l-31)*
+	      kcpl0 = M_I*(-g1*g1/(costW*costW*num_3)*K_A_R(k,l)*
 			   (help+(num_3-num_4*num_2*sintW*sintW)/(num_4*sintW*sintW)*
-			    K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav2),j-51))-
-			   K_uI*K_uI*K_Z_R(1,k-31)*K_Z_R(1,l-31)*
-			   (K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav2),j-51) + 
-			    K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_U(gen_sUp(flav2)+3,j-51)));
+			    K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav2),j-1))-
+			   K_uI*K_uI*K_Z_R(1,k)*K_Z_R(1,l)*
+			   (K_Z_U(gen_sUp(flav1),i-1)*K_Z_U(gen_sUp(flav2),j-1) + 
+			    K_Z_U(gen_sUp(flav1)+3,i-1)*K_Z_U(gen_sUp(flav2)+3,j-1)));
 	      
 	      kcpl1 = kcpl0;
 	      
@@ -1456,10 +1550,14 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
     }
   }
   //down-squarks Higgs interactions
-  for (short int i=61;i<67;++i) {
-    Flavour flav1 = Flavour(kf::code(i));
-    for (short int j=i;j<67;++j) {
-      Flavour flav2 = Flavour(kf::code(j));
+  for (short int i=1;i<7;++i) {
+    if (i<4) s_qu=1000000 + 2*i - 1;
+    else     s_qu=2000000 + 2*i - 7;
+    Flavour flav1 = Flavour(kf::code(s_qu));
+    for (short int j=i;j<7;++j) {
+      if (j<4) s_qu=1000000 + 2*j - 1;
+      else     s_qu=2000000 + 2*j - 7;
+      Flavour flav2 = Flavour(kf::code(s_qu));
       if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 		
 	//Hmin -> sdown - sdown - Hmin 
@@ -1479,17 +1577,17 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  
 	  for (int x=0;x<3;x++) {
 	    for (int y=0;y<3;y++) {
-	      fac1 += K_u(0)*conj_K_CKM(0,x)*K_CKM(0,y)*K_Z_D(y,i-61)*K_Z_D(x,j-61); 
-	      fac2 += K_u(1)*conj_K_CKM(1,x)*K_CKM(1,y)*K_Z_D(y,i-61)*K_Z_D(x,j-61); 
-	      fac3 += K_u(2)*conj_K_CKM(2,x)*K_CKM(2,y)*K_Z_D(y,i-61)*K_Z_D(x,j-61); 
+	      fac1 += K_u(0)*conj_K_CKM(0,x)*K_CKM(0,y)*K_Z_D(y,i-1)*K_Z_D(x,j-1); 
+	      fac2 += K_u(1)*conj_K_CKM(1,x)*K_CKM(1,y)*K_Z_D(y,i-1)*K_Z_D(x,j-1); 
+	      fac3 += K_u(2)*conj_K_CKM(2,x)*K_CKM(2,y)*K_Z_D(y,i-1)*K_Z_D(x,j-1); 
 	    }
 	  }
 	  
 	  kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_A_H(0,0)*
 		       (help-(num_3-num_2*sintW*sintW)/(num_2*sintW*sintW)*
-			K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav1),j-61))
+			K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav1),j-1))
 		       -K_d(gen_sDown(flav1))*K_d(gen_sDown(flav1))*K_Z_H(1,0)*K_Z_H(1,0)*
-		       K_Z_D(gen_sDown(flav1)+3,i-61)*K_Z_D(gen_sDown(flav1)+3,j-61)
+		       K_Z_D(gen_sDown(flav1)+3,i-1)*K_Z_D(gen_sDown(flav1)+3,j-1)
 		       -K_Z_H(1,0)*K_Z_H(1,0)*
 		       (fac1 + fac2 + fac3));
 	         
@@ -1525,10 +1623,10 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_A_H(0,0)*
 		       (help+(num_3-num_4*sintW*sintW)/(num_2*sintW*sintW)*
-			K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav1),j-61))
+			K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav1),j-1))
 		       -K_d(gen_sDown(flav1))*K_d(gen_sDown(flav1))*K_Z_H(1,0)*K_Z_H(1,0)*
-		       (K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav1),j-61) + 
-			K_Z_D(gen_sDown(flav1)+3,i-61)*K_Z_D(gen_sDown(flav1)+3,j-61)));
+		       (K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav1),j-1) + 
+			K_Z_D(gen_sDown(flav1)+3,i-1)*K_Z_D(gen_sDown(flav1)+3,j-1)));
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -1548,10 +1646,10 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sdown - sdown - h0/H0 
-	for (int k=31;k<33;k++) {
-	  Flavour flh1 = Flavour(kf::code(k));
-	  for (int l=k;l<33;l++) {
-	    Flavour flh2 = Flavour(kf::code(l));
+	for (int k=0;k<2;k++) {
+	  Flavour flh1 = Flavour(kf::code(25+k*10));
+	  for (int l=k;l<2;l++) {
+	    Flavour flh2 = Flavour(kf::code(25+l*10));
 	    if (flh1.IsOn() && flh2.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flh1;
@@ -1564,12 +1662,12 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      help = K_zero;
 	      if(i==j) help = num_1;
 	      
-	      kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_A_R(k-31,l-31)*
+	      kcpl0 = M_I*(g1*g1/(costW*costW*num_6)*K_A_R(k,l)*
 			   (help+(num_3-num_4*sintW*sintW)/(num_2*sintW*sintW)*
-			    K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav2),j-61))-
-			   K_d(gen_sDown(flav1))*K_d(gen_sDown(flav1))*K_Z_R(1,k-31)*K_Z_R(1,l-31)*
-			   (K_Z_D(gen_sDown(flav1),i-61)*K_Z_D(gen_sDown(flav2),j-61) + 
-			    K_Z_D(gen_sDown(flav1)+3,i-61)*K_Z_D(gen_sDown(flav2)+3,j-61)));
+			    K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav2),j-1))-
+			   K_d(gen_sDown(flav1))*K_d(gen_sDown(flav1))*K_Z_R(1,k)*K_Z_R(1,l)*
+			   (K_Z_D(gen_sDown(flav1),i-1)*K_Z_D(gen_sDown(flav2),j-1) + 
+			    K_Z_D(gen_sDown(flav1)+3,i-1)*K_Z_D(gen_sDown(flav2)+3,j-1)));
 	      
 	      kcpl1 = kcpl0;
 	      
@@ -1595,10 +1693,14 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
   }
   //H- -> sdown - supb - H0/h0
   if (flHmin.IsOn()) {
-    for (int i=51;i<57;i++) {
-      Flavour flsup = Flavour(kf::code(i));
-      for (int j=61;j<67;j++) {
-	Flavour flsdown = Flavour(kf::code(j));
+    for (int i=1;i<7;i++) {
+      if (i<4) s_qu=1000000 + 2*i;
+      else     s_qu=2000000 + 2*i - 6;
+      Flavour flsup = Flavour(kf::code(s_qu));
+      for (int j=1;j<7;j++) {
+	if (j<4) s_qu=1000000 + 2*j - 1;
+	else     s_qu=2000000 + 2*j - 7;
+	Flavour flsdown = Flavour(kf::code(s_qu));
 	if (flsup.IsOn() && flsdown.IsOn()) {
 	  
 	  Kabbala fac1,fac2,fac3,fac4;
@@ -1606,15 +1708,15 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  
 	  for (int x=0;x<3;x++) {
 	    for (int y=0;y<3;y++) {
-	      fac1 += conj_K_CKM(x,y)*K_Z_U(x,i-51)*K_Z_D(y,j-61); 
-	      fac2 += conj_K_CKM(x,y)*K_u(x)*K_d(y)*K_Z_U(x+3,i-51)*K_Z_D(y+3,j-61); 
-	      fac3 += conj_K_CKM(x,y)*K_u(x)*K_u(x)*K_Z_U(x,i-51)*K_Z_D(y,j-61);
-	      fac4 += conj_K_CKM(x,y)*K_d(y)*K_d(y)*K_Z_U(x,i-51)*K_Z_D(y,j-61);
+	      fac1 += conj_K_CKM(x,y)*K_Z_U(x,i-1)*K_Z_D(y,j-1); 
+	      fac2 += conj_K_CKM(x,y)*K_u(x)*K_d(y)*K_Z_U(x+3,i-1)*K_Z_D(y+3,j-1); 
+	      fac3 += conj_K_CKM(x,y)*K_u(x)*K_u(x)*K_Z_U(x,i-1)*K_Z_D(y,j-1);
+	      fac4 += conj_K_CKM(x,y)*K_d(y)*K_d(y)*K_Z_U(x,i-1)*K_Z_D(y,j-1);
 	    }
 	  }
 	  
-	  for (int l=31;l<33;l++) {
-	    Flavour flh = Flavour(kf::code(l));
+	  for (int l=0;l<2;l++) {
+	    Flavour flh = Flavour(kf::code(25+l*10));
 	    if (flh.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flHmin;
@@ -1625,11 +1727,11 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].nleg  = 4;  
 	      
 	      
-	      kcpl0 = M_I/root2*(-g2*g2/num_2*(K_Z_H(0,0)*K_Z_R(0,l-31) + 
-					       K_Z_H(1,0)*K_Z_R(1,l-31))*fac1 
-				 - K_A_P(l-31,0)*fac2 
-				 + K_Z_H(1,0)*K_Z_R(1,l-31)*fac3
-				 + K_Z_H(0,0)*K_Z_R(0,l-31)*fac4);
+	      kcpl0 = M_I/root2*(-g2*g2/num_2*(K_Z_H(0,0)*K_Z_R(0,l) + 
+					       K_Z_H(1,0)*K_Z_R(1,l))*fac1 
+				 - K_A_P(l,0)*fac2 
+				 + K_Z_H(1,0)*K_Z_R(1,l)*fac3
+				 + K_Z_H(0,0)*K_Z_R(0,l)*fac4);
 	      
 	      kcpl1 = kcpl0;
 	    
@@ -1860,12 +1962,12 @@ Kabbala Interaction_Model_sQuark_EW::K_Z_N(short int i,short int j)
 int Interaction_Model_sQuark_EW::gen_sUp(Flavour fl)
 {
   int gen_sUp;
-
-  if (fl.Kfcode() == 51 || fl.Kfcode() == 54)
+  
+  if (fl.Kfcode() == 1000002 || fl.Kfcode() == 2000002)
     gen_sUp = 0;
-  if (fl.Kfcode() == 52 || fl.Kfcode() == 55)
+  if (fl.Kfcode() == 1000004 || fl.Kfcode() == 2000004)
     gen_sUp = 1;
-  if (fl.Kfcode() == 53 || fl.Kfcode() == 56)
+  if (fl.Kfcode() == 1000006 || fl.Kfcode() == 2000006)
     gen_sUp = 2;
 
   return gen_sUp;
@@ -1875,11 +1977,11 @@ int Interaction_Model_sQuark_EW::gen_sDown(Flavour fl)
 {
   int gen_sDown;
 
-  if (fl.Kfcode() == 61 || fl.Kfcode() == 64)
+  if (fl.Kfcode() == 1000001 || fl.Kfcode() == 2000001)
     gen_sDown = 0;
-  if (fl.Kfcode() == 62 || fl.Kfcode() == 65)
+  if (fl.Kfcode() == 1000003 || fl.Kfcode() == 2000003)
     gen_sDown = 1;
-  if (fl.Kfcode() == 63 || fl.Kfcode() == 66)
+  if (fl.Kfcode() == 1000005 || fl.Kfcode() == 2000005)
     gen_sDown = 2;
 
   return gen_sDown;
