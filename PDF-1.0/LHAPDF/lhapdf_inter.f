@@ -5,7 +5,7 @@ C
 C******************************************************************
 
       SUBROUTINE LHAPDFINITSET(set)
-      character*256 set
+      character*(*) set
       call initpdfset(set)
       end
 
