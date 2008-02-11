@@ -8,7 +8,7 @@ using namespace ATOOLS;
 
 extern "C" {
   void   lhapdreset_();
-  void   lhapdfinitset_(const char *);
+  void   lhapdfinitset_(const char *, int len);
   void   lhapdfinit_(int &);
   void   lhapdfevolve_(double &,double &,double *);
   double lhapdfalphas_(double &);
@@ -32,7 +32,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     std::string full = m_path+std::string("/")+m_set;
     const char * help;
     help = full.c_str();
-    lhapdfinitset_(help);
+    lhapdfinitset_(help, strlen(help));
     lhapdfinit_(m_member);
   }
 
