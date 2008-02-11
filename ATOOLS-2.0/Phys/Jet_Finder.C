@@ -670,10 +670,10 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
       }
       else {
 	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
-	if (m_type==4 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i])) {
+	if (m_type==4 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i]) && !m_fl[i].IsMassive()) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
 	    Min(cuts->cosmax[0][i],sqrt(1.-4.*m_ycut));
-	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s-sqr(m_fl[i].SelMass())),cuts->etmin[i]);
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
@@ -698,8 +698,13 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
                	         (hadron-hadron collisions)
  
 	  */
-	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
-			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+	  if (m_type>=2) {
+	    if (m_fl[i].IsMassive()||m_fl[j].IsMassive())
+	      cuts->scut[j][i] = cuts->scut[i][j] 
+		= Max(cuts->scut[i][j],sqr(m_fl[i].SelMass()+m_fl[j].SelMass()));	      
+	    else cuts->scut[j][i] = cuts->scut[i][j] 
+		   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+	  }
 	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_s);
 	}
       }
