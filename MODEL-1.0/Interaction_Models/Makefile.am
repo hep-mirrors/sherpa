@@ -22,7 +22,7 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_ADD.C \
 				Interaction_Model_MUED_QCD.C \
 				Interaction_Model_4GenLep.C \
-				Interaction_Model_Handler.C
+				Interaction_Model_Handler.C \
 	     		        Interaction_Model_Inos.C \
                                 Interaction_Model_sLepton_EW.C \
 	       		        Interaction_Model_sQCD.C \
