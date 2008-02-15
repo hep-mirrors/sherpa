@@ -688,8 +688,22 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
   std::string datpath;
 
-  for (int i=1; i<argc;++i) {
-    string par = string(argv[i]);
+  // Add parameters from Run.dat to command line
+  // (this makes it possible to overwrite particle properties in Run.dat)
+  Data_Reader dr;
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_file);
+  std::vector<std::vector<std::string> > helpsvv;
+  dr.MatrixFromFile(helpsvv,"");
+  std::vector<std::string> helpsv(helpsvv.size());
+  for (size_t i(0);i<helpsvv.size();++i)
+    for (size_t j(0);j<helpsvv[i].size();++j) helpsv[i]+=helpsvv[i][j];
+  for (int i(1);i<argc;++i)
+    helpsv.push_back(argv[i]);
+
+  for (int i=0; i<helpsv.size();++i) {
+    string par = helpsv[i];
     string key,value;
     size_t equal=par.find("=");
     if (equal!=std::string::npos) {
