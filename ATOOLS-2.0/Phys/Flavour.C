@@ -8,6 +8,7 @@
 #include "MathTools.H"
 #include "Exception.H"
 #include "MyStrStream.H"
+#include "Data_Reader.H"
 
 #ifdef PROFILE__all
 #include "prof.hh"
@@ -592,9 +593,18 @@ void ATOOLS::ParticleInit(std::string path)
   msg_LogFile()<<"! "<<buffer<<std::endl;
 
 
+  Data_Reader dr(" ",";","!","=");
   for(;*part;) {
     (*part)>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
 	>>Majorana>>Take>>stable>>massive>>name;
+    double helpd;
+    int helpi;
+    std::string num("["+ToString(kfc)+"]");
+    if (dr.ReadFromFile(helpd,"MASS"+num)) mass=helpd;
+    if (dr.ReadFromFile(helpd,"WIDTH"+num)) width=helpd;
+    if (dr.ReadFromFile(helpi,"ACTIVE"+num)) Take=helpi;
+    if (dr.ReadFromFile(helpi,"STABLE"+num)) stable=helpi;
+    if (dr.ReadFromFile(helpi,"MASSIVE"+num)) massive=helpi;
     msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
 		 <<icharge<<" \t"<<strong<<" \t"<<spin
 		 <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
@@ -629,10 +639,17 @@ void ATOOLS::ParticleInit(std::string path)
   
     for(;*part2;) {
       (*part2)>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
+      double helpd;
+      int helpi;
+      std::string num("["+ToString(kfc)+"]");
+      if (dr.ReadFromFile(helpd,"MASS"+num)) mass=helpd;
+      if (dr.ReadFromFile(helpd,"WIDTH"+num)) width=helpd;
+      if (dr.ReadFromFile(helpi,"ACTIVE"+num)) Take=helpi;
+      if (dr.ReadFromFile(helpi,"STABLE"+num)) stable=helpi;
       msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
 		   <<icharge<<" \t"<<strong<<" \t"<<spin
 		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
-		   <<massive<<" \t"<<name<<std::endl;
+		   <<name<<std::endl;
       if (kfc!=kfcold) {  // read last line only once!	
 	//	if (Take) {
 	  ++pc;

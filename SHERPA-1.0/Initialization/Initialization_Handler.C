@@ -43,8 +43,6 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_evtreader(NULL),
   p_analysis(NULL)
 {
-  m_scan_istep=-1;  
-
   std::vector<std::string> names(4);
   names[0]="Decaydata";
   names[1]="Particle.dat";
@@ -81,8 +79,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
-
-  m_scan_istep=-1;
 
   std::vector<std::string> names(4);
   names[0]="Decaydata";
@@ -247,9 +243,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   if (rpa.gen.NumberOfEvents()>0) SetScaleFactors();
-  //  set masses and widths from command line
-  SetParameter(nr);
-  UpdateParameters();
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
   okay = okay && InitializeTheModel();  
@@ -654,18 +647,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
-  if (ok && m_scan_istep!=-1) {
-    AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
-    msg_Out()<<ParameterValue()<<" ";
-    for (size_t i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
-      msg_Out()<<xstot<<" ";
-    }
-    for (size_t i=0; i<procs->Size();++i) {
-      msg_Out()<<"###"<<(*procs)[i]->Name();
-    }
-    msg_Out()<<endl;
-  }
   if (ok) 
     msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
 	     <<"=========================================================================="<<std::endl;
@@ -703,95 +684,6 @@ void Initialization_Handler::SetScaleFactors()
 	       <<om::reset<<om::bold<<"}"<<om::reset<<std::endl;
 }
 
-void Initialization_Handler::SetParameter(int nr) {
-  if (nr<0) return;
-
-  if (nr!=m_scan_istep) 
-    msg_Error()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
-
-  bool logmode=false;
-  if (m_scan_variable==string("YCUT")) {
-    logmode=true;
-  }
-
-  if (logmode) {
-    m_scan_value=m_scan_begin*exp(log(m_scan_end/m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps));
-  }
-  else {
-    m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
-  }
-
-  double value=m_scan_value;
-
-  MyStrStream s;
-  string sval;
-  if (m_scan_variable==string("ECMS")) {
-    s<<value/2.;
-    s>>sval;
-    msg_Out()<<" Setting Ecms/2 to : "<<sval<<endl;
-    Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
-    Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
-    Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+sval+"; ");
-    Read_Write_Base::AddCommandLine("BEAM_ENERGY_2 = "+sval+"; ");
-  }
-  else if (m_scan_variable.find("MASS(")!=string::npos || m_scan_variable.find("WIDTH(")!=string::npos ) {
-    s<<value;
-    s>>sval;
-    m_options[m_scan_variable]=sval;
-    // make sure UpdateParameters() is called
-  }   
-  else if (m_scan_variable==string("YCUT")) {
-    rpa.gen.SetVariable("Y_CUT",ToString(value));
-  }
-  else  {
-    msg_Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
-    msg_Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
-    s<<value; 
-    s>>sval;
-    m_options[m_scan_variable]=sval;    
-    //    exit(1);
-  }
-
-  s.clear();
-  double vmax=m_scan_end, vmin=m_scan_begin, vstep=(m_scan_end-m_scan_begin)/double(m_scan_nsteps);
-  const  double ln10=log(10.);
-  if (logmode) {
-    value=log(value)/ln10;
-    vmax=log(vmax)/ln10;
-    vmin=log(vmin)/ln10;
-    vstep=(vmax-vmin)/double(m_scan_nsteps);
-  }
-  double fac=exp(-ln10*int(log(vstep)/ln10-.999));
-  value=dabs(value*fac);vmax=dabs(vmax*fac);vmin=dabs(vmin*fac);
-  int nprec=int(log(Max(vmax,vmin))/ln10+.9999);
-  
-  s.width(nprec);
-  s.fill('0');
-  s<<int(value);
-  s>>sval;
-
-  std::string resdir="none";
-  Parameter_Iterator it=m_options.find("#RESULT_DIRECTORY");
-  if (it==m_options.end()) {
-    Data_Read dataread(m_path+m_medat);
-    resdir=dataread.GetValue<string>("RESULT_DIRECTORY",string("./Results"));
-    m_options["#RESULT_DIRECTORY"]=resdir;
-  }
-  else {
-    resdir=it->second;
-  }
-  size_t pos=resdir.find("$");
-  if (pos!=std::string::npos) {
-    if (pos!=resdir.size()) resdir=resdir.substr(0,pos)+sval+resdir.substr(pos+1);
-    else resdir=resdir.substr(0,pos)+sval;
-    std::cout<<"new RESULT_DIRECTORY = #"<<resdir<<"#\n";
-    m_options["RESULT_DIRECTORY"]=resdir;
-    ATOOLS::MakeDir(resdir,0755);
-  }
-
-  ++m_scan_istep;
-}
-
 int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
   map<std::string,int> special_options;
@@ -800,13 +692,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["-?"]=13;
   special_options["-h"]=13;
   special_options["--help"]=13;
-  special_options["-scan"]=14;
-  special_options["-xsout"]=15;
-  special_options["-eventout"]=16;
 
   special_options["PATH"]=101;
   special_options["RUNDATA"]=102;
-  special_options["ECMS"]=103;
   special_options["STATUS_PATH"]=110;
   special_options["SAVE_STATUS"]=111;
   special_options["PYTHIA"]=9000;
@@ -824,7 +712,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       mode=1;
       value = par.substr(equal+1);
       key   = par = par.substr(0,equal);
-      if (key.find("MASS")!=string::npos || key.find("WIDTH")!=string::npos) mode=100;
     }
 
 
@@ -854,19 +741,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	break;
       case 102:
 	m_file=value;
-	break;
-      case 103:
-	s<<value;
-	double ecms;
-	s>>ecms;
-	s.clear();
-	s<<ecms/2.;
-	s>>value;
-	msg_Out()<<" Setting ECMS/2 to : "<<value<<endl;
-	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
-	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
-	Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+value+"; ");
-	Read_Write_Base::AddCommandLine("BEAM_ENERGY_2 = "+value+"; ");
 	break;
       case 110:
 	if (value[value.length()-1]!='/') value+=std::string("/");
@@ -924,42 +798,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	msg_Out()<<" Possible options: "<<endl;
 	msg_Out()<<"  -V,--version   prints the Version number"<<endl;
 	msg_Out()<<"  -?,--help      prints this help message"<<endl;
-// 	msg_Out()<<"  -xsout <filename> "<<endl;
-// 	msg_Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
-// 	msg_Out()<<"  -eventout <filename> "<<endl;
-// 	msg_Out()<<"                 sets a file where events should be printed to"<<endl;	
-	msg_Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
-	msg_Out()<<"                 performs a parameter scan"<<endl<<endl;
-	msg_Out()<<"        <variable> ... in addition to all parameters in configuration files"<<endl
-		 <<"                       PATH, RUNDATA, ECMS, MASS(<kfcode>) can be used"<<endl;
 	exit(0);
-      case 14: 
-	// scan
-	m_mode=14;
-	Data_Read::SetCommandLine("EVENTS","0");
-	Read_Write_Base::AddCommandLine("EVENTS = 0; ");
-	if (i+4<argc) {
-	  m_scan_variable=argv[++i];
-	  MyStrStream s;
-	  s<<argv[++i];
-	  s>>m_scan_begin;
-	  s.clear();
-	  s<<argv[++i];
-	  s>>m_scan_end;
-	  s.clear();
-	  s<<argv[++i];
-	  s>>m_scan_nsteps;
-	  m_scan_istep=0;
-	  msg_Out()<<" scanning "<<m_scan_variable
-	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
-	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
-	}
-	else {
-	  msg_Error()<<"ERROR:  missing scan parameter -scan"<<endl;
-	  msg_Error()<<"       try Sherpa -? for more information "<<endl;
-	  exit(1);
-	}
-	break;
       case 15:
 	// xsout
 	break;
@@ -1022,50 +861,4 @@ void Initialization_Handler::CheckFlagConsistency()
   // check if all MI.dat / Decays.dat
   
 
-}
-
-int Initialization_Handler::UpdateParameters() 
-{
-  for (Parameter_Iterator it = m_options.begin(); it!=m_options.end() ; ++it) {
-    MyStrStream s;
-    string key=it->first;
-    string value=it->second;
-    if (key[0]=='#') continue;
-    if (key.find("MASS(")!=string::npos || key.find("WIDTH(")!=string::npos ) {
-      int a=key.find("(")+1;
-      int b=key.find(")")-a;
-      msg_Tracking()<<"Flavour "<<key.substr(a,b);
-      s<<key.substr(a,b);
-      int kfc;
-      s>>kfc;
-      s.clear();
-      Flavour fl((kf::code)kfc);
-      msg_Tracking()<<" : "<<fl<<endl;
-      if (key.find("MASS(")!=string::npos) {
-	double mass=fl.Mass();
-	msg_Tracking()<<" old mass = "<<mass<<endl;
-	s<<value;
-	s>>mass;
-	s.clear();
-	msg_Tracking()<<" new mass = "<<mass<<endl;
-	fl.SetMass(mass);
-      }
-      if (key.find(string("WIDTH("))!=string::npos) {
-	msg_Tracking()<<"key:"<<key<<endl;
-	double width=fl.Width();
-	msg_Tracking()<<" old width = "<<width<<endl;
-	s<<value;
-	s>>width;
-	s.clear();
-	msg_Tracking()<<" new width = "<<width<<endl;
-	fl.SetWidth(width);
-      }
-    }
-    else {
-      msg_Info()<<" update "<<key<<" = "<<value<<endl;
-      Data_Read::SetCommandLine(key,value);
-      Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
-    }
-  }
-  return 1;
 }

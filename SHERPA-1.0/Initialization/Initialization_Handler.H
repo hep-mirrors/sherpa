@@ -51,10 +51,6 @@ namespace SHERPA {
     ATOOLS::Data_Read * p_dataread;
 
     int m_mode;
-    std::string m_scan_variable;
-    double m_scan_begin, m_scan_end, m_scan_value;
-    int m_scan_nsteps;
-    int m_scan_istep;
     ATOOLS::Parameter_Map m_options;
     bool m_spincorrelations, m_savestatus;
 
@@ -91,7 +87,6 @@ namespace SHERPA {
     int  ExtractCommandLineParameters(int argc,char * argv[]);
     void CheckFlagConsistency();
     bool CheckBeamISRConsistency();
-    void SetParameter(int nr);
     void SetScaleFactors();
     void PrepareTerminate();
 
@@ -131,10 +126,7 @@ namespace SHERPA {
     Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
 
     int    const Mode()           const { return m_mode; };
-    int    const NumberOfSteps()  const { return m_scan_nsteps; }
-    double const ParameterValue() const { return m_scan_value; }
 
-    int    UpdateParameters();
   };
 
   /*!

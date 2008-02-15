@@ -105,22 +105,17 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   DrawLogo();
 
   int mode = p_inithandler->Mode();  
-  if (mode==14) {
-    return PerformScan();
-  }
-  else {
-    if (p_inithandler->InitializeTheFramework()) {
-      if (!p_inithandler->CalculateTheHardProcesses()) return false;
-      if (statuspath!="") {
-	bool res(exh->ReadInStatus(statuspath));
-	if (oldargs) {
-	  for (int i(0);i<argc;++i) delete [] argv[i];
-	  delete [] argv;
-	}
-	return res;
+  if (p_inithandler->InitializeTheFramework()) {
+    if (!p_inithandler->CalculateTheHardProcesses()) return false;
+    if (statuspath!="") {
+      bool res(exh->ReadInStatus(statuspath));
+      if (oldargs) {
+        for (int i(0);i<argc;++i) delete [] argv[i];
+        delete [] argv;
       }
-      return true;
+      return res;
     }
+    return true;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
@@ -243,21 +238,4 @@ void Sherpa::DrawLogo()
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-}
-
-bool Sherpa::PerformScan() 
-{
-  int np = p_inithandler->NumberOfSteps();
-  for (int i=0;i<=np;++i) {
-    if (p_inithandler->InitializeTheFramework(i)) {
-      if (!p_inithandler->CalculateTheHardProcesses()) {
-	msg_Error()<<"ERROR in Sherpa::PerfomScan("<<i<<")"<<endl;
-      }
-    }
-    else {
-      msg_Error()<<"ERROR in Sherpa::InitializeRun("<<m_path<<")"<<endl;
-    }
-  }
-
-  return 1;
 }

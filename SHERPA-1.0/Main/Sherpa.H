@@ -29,8 +29,6 @@ namespace SHERPA {
     bool     SummarizeRun();
     long int NumberOfErrors() { return m_errors; } 
     
-    bool     PerformScan();
-
     inline Initialization_Handler *const GetInitHandler() const 
     { return p_inithandler; }
     inline Event_Handler *const GetEventHandler() const 
