@@ -435,11 +435,11 @@ void Initial_State_Shower::SetColours(Knot * k)
       int nc(0);
       if (test->part->GetFlow(1)) ++nc;
       if (test->part->GetFlow(2)) ++nc;
-      if (test->part->Flav().IsQuark()) {
+      if (test->part->Flav().IsQuark() || test->part->Flav().IsSquark()) {
 	++nquark;
 	if (nc!=1) all_colors_known=0;
       }
-      else if (test->part->Flav().IsGluon()) {
+      else if (test->part->Flav().IsGluon() || test->part->Flav().IsGluino()) {
 	++ngluon;
 	if (nc!=2) all_colors_known=0;
       }
@@ -502,9 +502,9 @@ void Initial_State_Shower::SetColours(Knot * k)
     return;
   }
 
-  if (mother->part->Flav().IsQuark()) {
+  if (mother->part->Flav().IsQuark() || mother->part->Flav().IsSquark()) {
     if (mother->part->Flav().IsAnti()) {
-      if (k->part->Flav().IsQuark()) {
+      if (k->part->Flav().IsQuark() || k->part->Flav().IsSquark()) {
 	/*
 	  mother             k = antiquark
 	    -----   ---------
@@ -534,7 +534,7 @@ void Initial_State_Shower::SetColours(Knot * k)
       }
     }
     else {
-      if (k->part->Flav().IsQuark()) {
+      if (k->part->Flav().IsQuark() || k->part->Flav().IsSquark()) {
 	/*
 	  mother             k = quark
 	    -----   ---------
@@ -565,7 +565,7 @@ void Initial_State_Shower::SetColours(Knot * k)
     }
   }
   else {
-    if (k->part->Flav().IsQuark()) {
+    if (k->part->Flav().IsQuark() || k->part->Flav().IsSquark()) {
       if (k->part->Flav().IsAnti()) {
 	/*
 	  mother        sister = quark

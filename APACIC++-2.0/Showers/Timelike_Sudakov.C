@@ -2,6 +2,7 @@
 
 #include "QCD_Splitting_Functions.H"
 #include "QED_Splitting_Functions.H"
+#include "SUSY_QCD_Splitting_Functions.H"
 #include "Timelike_Kinematics.H"
 #include "Sudakov_Tools.H"
 #include "Knot.H"
@@ -47,6 +48,20 @@ void Timelike_Sudakov::Init(const double fmed)
     }
   }
   Add(new g_gg(p_tools,fmed));
+  
+  //susy splitting functions
+  if (rpa.gen.ModelName()==std::string("MSSM")) {
+    for (short int i=1;i<3;i++) {
+      for (short int j=1;j<7;j++) {
+	Flavour fl = Flavour(kf::code(i*1000000 + j));
+	if (fl.IsOn()) {
+	  Add(new SQuark__SQuark_Gluon(fl,p_tools));
+	  Add(new SQuark__SQuark_Gluon(fl.Bar(),p_tools));
+	  Add(new Gluino__Gluino_Gluon(p_tools));
+        }
+      }
+    }
+  }     
   PrintStat();
 }
 

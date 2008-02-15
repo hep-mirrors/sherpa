@@ -627,13 +627,13 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	  else cnt.insert(c);
 	}
       }
-      if (test->part->Flav().IsQuark()) { 
+      if (test->part->Flav().IsQuark() || test->part->Flav().IsSquark()) { 
 	if (nc!=1) {
 	  all_colors_known=0;
 	  break;
 	}
       }
-      else if (test->part->Flav().IsGluon()) {
+      else if (test->part->Flav().IsGluon() || test->part->Flav().IsGluino()) {
 	if (nc!=2) {
 	  all_colors_known=0;
 	  break;
@@ -669,36 +669,36 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
   else if (mo->part->Flav().Kfcode()!=kf::none) {
     Knot * partner(NULL), * nopart(NULL);
     if (mo->part->Flav().Strong()) {
-      if (mo->part->Flav().IsQuark()) {
+      if (mo->part->Flav().IsQuark() || mo->part->Flav().IsSquark()) {
 	partner = d1; nopart = d2;
-	if (d2->part->Flav().IsQuark()) {
+	if (d2->part->Flav().IsQuark() || d2->part->Flav().IsSquark()) {
 	  partner = d2;
 	  nopart  = d1;
 	}
-	if (partner->part->Flav().IsQuark() && 
+	if ((partner->part->Flav().IsQuark() || partner->part->Flav().IsSquark()) && 
 	    partner->part->Flav().IsAnti() && 
-	    nopart->part->Flav().IsGluon()) {
+	    (nopart->part->Flav().IsGluon() || nopart->part->Flav().IsGluino())) {
 	  partner->part->SetFlow(2,-1);
 	  nopart->part->SetFlow(1,partner->part->GetFlow(2));
 	  nopart->part->SetFlow(2,mo->part->GetFlow(2));
 	} 
-	if (partner->part->Flav().IsQuark() && 
+	if ((partner->part->Flav().IsQuark() || partner->part->Flav().IsSquark()) && 
 	    !partner->part->Flav().IsAnti() && 
-	    nopart->part->Flav().IsGluon()) {
+	    (nopart->part->Flav().IsGluon() || nopart->part->Flav().IsGluino())) {
 	  partner->part->SetFlow(1,-1);
 	  nopart->part->SetFlow(1,mo->part->GetFlow(1));
 	  nopart->part->SetFlow(2,partner->part->GetFlow(1));
 	} 
-	if (partner->part->Flav().IsQuark() && 
-	    !nopart->part->Flav().Strong()) {
+	if ((partner->part->Flav().IsQuark() || partner->part->Flav().IsSquark())
+	    && !nopart->part->Flav().Strong()) {
 	  partner->part->SetFlow(1,mo->part->GetFlow(1));
 	  partner->part->SetFlow(2,mo->part->GetFlow(2));
 	}
       } 
-      else if (mo->part->Flav().IsGluon()) {
+      else if (mo->part->Flav().IsGluon() || mo->part->Flav().IsGluino()) {
 	if (mo->prev) {
-	  if (d1->part->Flav().IsQuark() && 
-	      d2->part->Flav().IsQuark()) {
+	  if ((d1->part->Flav().IsQuark() || d1->part->Flav().IsSquark()) && 
+	      (d2->part->Flav().IsQuark() || d2->part->Flav().IsSquark())) {
 	    if (d1->part->Flav().IsAnti()) {
 	      d1->part->SetFlow(2,mo->part->GetFlow(2));
 	      d2->part->SetFlow(1,mo->part->GetFlow(1));
@@ -708,8 +708,8 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	      d1->part->SetFlow(1,mo->part->GetFlow(1));
 	    }
 	  }
-	  else if (d1->part->Flav().IsGluon() && 
-		   d2->part->Flav().IsGluon()) {
+	  else if ((d1->part->Flav().IsGluon() || d1->part->Flav().IsGluino()) && 
+		   (d2->part->Flav().IsGluon() || d2->part->Flav().IsGluino())) {
 	    Particle *aup(FindAuntParton(mo));
 	    partner = d1; 
 	    nopart = d2;
@@ -757,12 +757,12 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	    }
 	  }
 	  else {
-	    if (d1->part->Flav().IsGluon() && 
+	    if ((d1->part->Flav().IsGluon() || d1->part->Flav().IsGluino()) && 
 		!d2->part->Flav().Strong()) {
 	      d1->part->SetFlow(1,mo->part->GetFlow(1));
 	      d1->part->SetFlow(2,mo->part->GetFlow(2));
 	    }
-	    else if (d2->part->Flav().IsGluon() && 
+	    else if ((d2->part->Flav().IsGluon() || d2->part->Flav().IsGluino()) && 
 		     !d1->part->Flav().Strong()) {
 	      d2->part->SetFlow(1,mo->part->GetFlow(1));
 	      d2->part->SetFlow(2,mo->part->GetFlow(2));
@@ -780,11 +780,14 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
     else {
       // colour neutral mother
       if (d1->part->Flav().Strong() && d2->part->Flav().Strong()) {      
-	if (d1->part->Flav().IsQuark() && d2->part->Flav().IsQuark()) {
+	if ((d1->part->Flav().IsQuark() || d1->part->Flav().IsSquark()) && 
+	    (d2->part->Flav().IsQuark() || d2->part->Flav().IsSquark())) {
 	  partner = d1; 
 	  nopart = d2;
-	  if (d1->part->Flav().IsQuark() && d1->part->Flav().IsAnti() && 
-	      d2->part->Flav().IsQuark() && !d2->part->Flav().IsAnti()) {
+	  if ((d1->part->Flav().IsQuark() || d1->part->Flav().IsSquark()) && 
+	      d1->part->Flav().IsAnti() && 
+	      (d2->part->Flav().IsQuark() || d2->part->Flav().IsSquark()) && 
+	      !d2->part->Flav().IsAnti()) {
 	    partner = d2; 
 	    nopart = d1;
 	  }
@@ -793,7 +796,8 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	  nopart->part->SetFlow(2,partner->part->GetFlow(1));
 	  nopart->part->SetFlow(1,0);
 	}
-	else if (d1->part->Flav().IsGluon() && d2->part->Flav().IsGluon()) {
+	else if ((d1->part->Flav().IsGluon() || d1->part->Flav().IsGluino()) && 
+		 (d2->part->Flav().IsGluon() || d2->part->Flav().IsGluino())) {
 	  d1->part->SetFlow(1,-1);
 	  d1->part->SetFlow(2,-1);
 	  d2->part->SetFlow(2,d1->part->GetFlow(1));

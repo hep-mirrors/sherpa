@@ -479,8 +479,8 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
 {
   // *** 2 -> 2 processes with unambiguous coulor structure
   // (a) no colors
-  // (b) two quarks
-  // (c) two quarks and one gluon
+  // (b) two (s)quarks
+  // (c) two (s)quarks and one gluon/gluino
   // (d) two gluons (ADD-Model) 
   // (e) three gluons (ADD-Model)
 
@@ -520,8 +520,11 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
 int Cluster_Partons_Base::Set4Colours(const int nquark,const int ngluon,Vec4D * p,Flavour * fl)
 {
   int prop(p_ct->IdentifyHardPropagator());
-  if (fl[0].IsGluon() || fl[1].IsGluon() || 
-      fl[2].IsGluon() || fl[3].IsGluon() || prop<0) {
+  if (fl[0].IsGluon() || fl[0].IsGluino() || 
+      fl[1].IsGluon() || fl[1].IsGluino() || 
+      fl[2].IsGluon() || fl[2].IsGluino() || 
+      fl[3].IsGluon() || fl[3].IsGluino() || prop<0) {
+
     msg_Out()<<METHOD<<"(): Cannot set colours for "<<std::endl;
     Combine_Table_Base *ct(p_ct);
     while (ct->Up()!=NULL) ct=ct->Up();
@@ -599,7 +602,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	singlet = i; 
 	continue; 
       }
-      if (fl[i].IsGluon()) {
+      if (fl[i].IsGluon() || fl[i].IsGluino()) {
 	connected[j] = i;
 	m_colors[i][0+(i>1)] = 500+j; 
 	if (j==2) j=-1;
@@ -628,7 +631,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
     Vec4D p[4]={-p_ct->Momenta()[0],-p_ct->Momenta()[1],
 		p_ct->Momenta()[2],p_ct->Momenta()[3]};
     for (int i=0;i<4;i++) {
-      if (fl[i].IsGluon()) {
+      if (fl[i].IsGluon() || fl[i].IsGluino()) {
 	if (tmode) {
 	  if (i<2) {
 	    m_colors[i][1-int(fl[connected[1]].IsAnti())] = 500;
