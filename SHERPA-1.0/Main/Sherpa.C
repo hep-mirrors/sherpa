@@ -104,7 +104,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   p_inithandler  = new Initialization_Handler(argc, argv);
   DrawLogo();
 
-  int mode = p_inithandler->Mode();  
   if (p_inithandler->InitializeTheFramework()) {
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
     if (statuspath!="") {

@@ -51,7 +51,6 @@ namespace SHERPA {
     ATOOLS::Data_Read * p_dataread;
 
     int m_mode;
-    ATOOLS::Parameter_Map m_options;
     bool m_spincorrelations, m_savestatus;
 
     MODEL::Model_Base          * p_model;

@@ -686,128 +686,73 @@ void Initialization_Handler::SetScaleFactors()
 
 int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
-  map<std::string,int> special_options;
-  special_options["-V"]=12;
-  special_options["--version"]=12;
-  special_options["-?"]=13;
-  special_options["-h"]=13;
-  special_options["--help"]=13;
-
-  special_options["PATH"]=101;
-  special_options["RUNDATA"]=102;
-  special_options["STATUS_PATH"]=110;
-  special_options["SAVE_STATUS"]=111;
-  special_options["PYTHIA"]=9000;
-  special_options["EVTDATA"]=9999;
-  
   std::string datpath;
-  
 
   for (int i=1; i<argc;++i) {
-    int mode   = 0;
     string par = string(argv[i]);
     string key,value;
-    int equal  = par.find("=");
-    if (equal!=-1) {
-      mode=1;
+    size_t equal=par.find("=");
+    if (equal!=std::string::npos) {
       value = par.substr(equal+1);
       key   = par = par.substr(0,equal);
-    }
-
-
-    if (special_options.find(par)!=special_options.end()) 
-      mode = special_options[par];
-
-    // variables in dat files
-    if (equal!=-1 && mode==1) {
-      if (key[key.length()-1]==':') {
-	key.erase(key.length()-1,1);
-	Data_Read::SetGlobalTag(key,value);
-	Read_Write_Base::AddGlobalTag(key,value);
-      }
-      else {
-	Data_Read::SetCommandLine(key,value);
-	Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
-      }
-    }
-    
-    // special variables
-    if (mode>=100) {
-      MyStrStream s;
-      switch (mode) {
-      case 101:
+      if (key=="PATH") {
 	if (value[value.length()-1]=='/') value.erase(value.length()-1,1);
 	m_path=value;
-	break;
-      case 102:
+      }
+      else if (key=="RUNDATA") {
 	m_file=value;
-	break;
-      case 110:
+      }
+      else if (key=="STATUS_PATH") {
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	datpath=value;
-	break;
-      case 111:
+      }
+      else if (key=="SAVE_STATUS") {
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	rpa.gen.SetVariable
 	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
 	m_savestatus=true;
-	break;
-      case 9000:
+      }
+      else if (key=="PYTHIA") {
 	m_mode       = 9000;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
-	break;
-      case 9001:
-	m_mode       = 9001;
-	m_evtfile    = value;
-	msg_Out()<<" Sherpa will produce Herwig events according to "<<value<<endl;
-	break;
-      case 9002:
-	m_mode       = 9002;
-	m_evtfile    = value;
-	msg_Out()<<" Sherpa will produce MCatNLO events according to "<<value<<endl;
-	break;
-      case 9999:
+      }
+      else if (key=="EVTDATA") {
 	m_mode       = 9999;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
-	break;
-      case 100:
-	m_options[key] = value;
       }
+      else {
+        if (key[key.length()-1]==':') {
+          key.erase(key.length()-1,1);
+          Data_Read::SetGlobalTag(key,value);
+          Read_Write_Base::AddGlobalTag(key,value);
+        }
+        else {
+          Data_Read::SetCommandLine(key,value);
+          Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
+        }
+      }
+    }
+    else if (par=="--version" || par=="-v"){
+      msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
+      msg_Out()<<"   employing: "<<endl;
+      msg_Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+      msg_Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+      msg_Out()<<"    * Pythia Version 6.214"<<endl;
+      exit(0);
     }
     else {
-      // other option
-      switch (mode) {
-      case 12:
-	{
-	  // should call a version roution
-	  msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
-	  msg_Out()<<"   employing: "<<endl;
-	  msg_Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
-	  msg_Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
-
-	  string pyver("6.214");
-	  msg_Out()<<"    * Pythia Version "<<pyver<<endl;
-	}
-	exit(0);
-      case 13:
-	msg_Out()<<" Help: "<<endl;
-	msg_Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
-	msg_Out()<<endl;
-	msg_Out()<<" Possible options: "<<endl;
-	msg_Out()<<"  -V,--version   prints the Version number"<<endl;
-	msg_Out()<<"  -?,--help      prints this help message"<<endl;
-	exit(0);
-      case 15:
-	// xsout
-	break;
-      case 16:
-	// eventout
-	break;
-      }
+      msg_Out()<<" Usage: "<<endl;
+      msg_Out()<<" Sherpa [<variable>=<value>] "<<endl;
+      msg_Out()<<endl;
+      msg_Out()<<" Possible options: "<<endl;
+      msg_Out()<<"  -v,--version   prints the Version number"<<endl;
+      msg_Out()<<"  -?,--help      prints this help message"<<endl;
+      exit(0);
     }
   }
+
   if (datpath!="") m_path=datpath;
   std::vector<std::string> searchpaths;
   searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
@@ -839,6 +784,17 @@ void Initialization_Handler::CheckFlagConsistency()
     }
 
     //  ME.dat 
+    if (dr.GetValue<std::string>("SCALE_SCHEME","0")!="CKKW" ||
+        dr.GetValue<std::string>("KFACTOR_SCHEME","0")!="1" ||
+        dr.GetValue<std::string>("COUPLING_SCHEME","0")!="Running_alpha_S") {
+      msg_Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
+                 <<"  CKKW is switched on by 'SUDAKOV_WEIGHT = 1'.\n"
+                 <<"  This causes the following settings:\n"
+                 <<"    SCALE_SCHEME = CKKW\n"
+                 <<"    KFACTOR_SCHEME = 1\n"
+                 <<"    COUPLING_SCHEME = Running_alpha_S\n"<<om::reset
+                 <<om::bold<<"}"<<om::reset<<std::endl;
+    }
     Data_Read::SetCommandLine("SCALE_SCHEME","CKKW");
     Data_Read::SetCommandLine("KFACTOR_SCHEME","1");
     Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
