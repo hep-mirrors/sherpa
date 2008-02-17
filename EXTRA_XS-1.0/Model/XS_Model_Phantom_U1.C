@@ -34,7 +34,7 @@ bool XS_Model_Phantom_U1::IncludesModel(const std::string &name) const
 
 std::vector<std::string> XS_Model_Phantom_U1::IncludedModels() const
 {
-  std::vector<std::string> models(2);
+  std::vector<std::string> models(3);
   models[0]="QCD";
   models[1]="EW";
   models[2]="PHANTOM_U1";

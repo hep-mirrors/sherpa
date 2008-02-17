@@ -1,6 +1,7 @@
 #include "XS_Selector.H"
 #include "XS_4F.H"
 #include "XS_QCD.H"
+#include "XS_SQCD.H"
 #include "XS_Drell_Yan.H"
 #include "Run_Parameter.H"
 
@@ -150,6 +151,30 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
       s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f3f4>;
     else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
       s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
+    //SUSY-QCD processes
+    else if (rpa.gen.ModelName()==std::string("MSSM")) {
+      if ((xs=Single_XS::GetProcess<XS_gg_GluinoGluino>(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1g_sQ1Gluino>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_gg_sQ1sQbar1>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_GluinoGluino>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_sQ1sQbar1>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1qbar1_sQ2sQbar2>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1q1_sQ1sQ1>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+      else if ((xs=Single_XS::GetProcess<XS_q1q1_sQ1LsQ1R>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+      else if ((xs=Single_XS::GetProcess<XS_q1q2_sQ1sQ2>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1qbar2_sQ1sQbar2>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+      else if ((xs=Single_XS::GetProcess<XS_q1q2_sQ1LsQ2R>
+		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    }
   }
   if (xs!=NULL) {
     xs->m_orderEW=nqed;

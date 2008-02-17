@@ -34,10 +34,11 @@ bool XS_Model_MSSM::IncludesModel(const std::string &name) const
 
 std::vector<std::string> XS_Model_MSSM::IncludedModels() const
 {
-  std::vector<std::string> models(4);
+  std::vector<std::string> models(5);
   models[0]="QCD";
   models[1]="EW";
   models[2]="QED";
   models[3]="SM";
+  models[3]="MSSM";
   return models;
 }

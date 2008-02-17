@@ -144,18 +144,18 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
 {
   p_xs=xs;
   if (!p_xs) return Cluster_Partons_Base::SetColours(p,fl);
-
+  
   m_hard_nqed = p_xs->OrderEWeak();
   m_hard_nqcd = p_xs->OrderStrong();
   bool test(p_xs->SetColours(p)), check(true);
   for (int i=0; i<4; ++i) {
-    if (fl[i].IsQuark()) {
+    if (fl[i].IsQuark() || fl[i].IsSquark()) {
       if ( fl[i].IsAnti() && 
 	   (p_xs->Colours()[i][0]!=0 || p_xs->Colours()[i][1]==0)) check=false;
       if (!fl[i].IsAnti() && 
 	  (p_xs->Colours()[i][0]==0 || p_xs->Colours()[i][1]!=0)) check=false;
     }
-    if (fl[i].IsGluon() && 
+    if ((fl[i].IsGluon() || fl[i].IsGluino()) && 
 	(p_xs->Colours()[i][0]==0 || p_xs->Colours()[i][1]==0))   check=false;
     if (!check) {
       msg_Error()<<"Cluster_Partons_CKKW::SetColours(..): \n"
