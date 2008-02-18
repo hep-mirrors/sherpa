@@ -9,8 +9,6 @@ namespace ATOOLS {
 
   size_t IDCount(size_t id);
 
-  template <typename Type>
-  size_t ID(const std::vector<Type> &ids);
 
   class Jet_Finder_Base: public Selector_Base {
   protected:

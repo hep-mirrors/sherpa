@@ -28,19 +28,6 @@ namespace ATOOLS {
     return idc;
   }
 
-  template <typename Type>
-  size_t ID(const std::vector<Type> &ids)
-  {
-    size_t id(0);
-    for (size_t i(0);i<ids.size();++i) 
-      if (ids[i]>(Type)0) id+=1<<i;
-    return id;
-  }
-
-  template size_t ID(const std::vector<int> &ids);
-  template size_t ID(const std::vector<double> &ids);
-
-
 }
 
 using namespace ATOOLS;
