@@ -592,19 +592,38 @@ void ATOOLS::ParticleInit(std::string path)
   msg_LogFile()<<"! +--------------------------------------+\n"<<std::endl;
   msg_LogFile()<<"! "<<buffer<<std::endl;
 
-
+  std::map<int,double> cdm, cdw;
+  std::map<int,int> cia, cis, cim;
   Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.AddIgnore("[");
+  dr.AddIgnore("]");
+  std::vector<std::vector<double> > helpdvv;
+  if (dr.MatrixFromFile(helpdvv,"MASS"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cdm[int(helpdvv[i][0])]=helpdvv[i][1];
+  if (dr.MatrixFromFile(helpdvv,"WIDTH"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cdw[int(helpdvv[i][0])]=helpdvv[i][1];
+  if (dr.MatrixFromFile(helpdvv,"ACTIVE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cia[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"STABLE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cis[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
   for(;*part;) {
     (*part)>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
 	>>Majorana>>Take>>stable>>massive>>name;
-    double helpd;
-    int helpi;
-    std::string num("["+ToString(kfc)+"]");
-    if (dr.ReadFromFile(helpd,"MASS"+num)) mass=helpd;
-    if (dr.ReadFromFile(helpd,"WIDTH"+num)) width=helpd;
-    if (dr.ReadFromFile(helpi,"ACTIVE"+num)) Take=helpi;
-    if (dr.ReadFromFile(helpi,"STABLE"+num)) stable=helpi;
-    if (dr.ReadFromFile(helpi,"MASSIVE"+num)) massive=helpi;
+    std::map<int,double>::const_iterator dit;
+    if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
+    if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
+    std::map<int,int>::const_iterator iit;
+    if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
+    if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
+    if ((iit=cim.find(kfc))!=cim.end()) massive=iit->second;
     msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
 		 <<icharge<<" \t"<<strong<<" \t"<<spin
 		 <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
@@ -639,16 +658,14 @@ void ATOOLS::ParticleInit(std::string path)
   
     for(;*part2;) {
       (*part2)>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
-      double helpd;
-      int helpi;
-      std::string num("["+ToString(kfc)+"]");
-      if (dr.ReadFromFile(helpd,"MASS"+num)) mass=helpd;
-      if (dr.ReadFromFile(helpd,"WIDTH"+num)) width=helpd;
-      if (dr.ReadFromFile(helpi,"ACTIVE"+num)) Take=helpi;
-      if (dr.ReadFromFile(helpi,"STABLE"+num)) stable=helpi;
+      std::map<int,double>::const_iterator dit;
+      if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
+      if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
+      std::map<int,int>::const_iterator iit;
+      if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
+      if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
       msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
-		   <<icharge<<" \t"<<strong<<" \t"<<spin
-		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
+		   <<icharge<<" \t"<<spin<<" \t"<<Take<<" \t"<<stable<<" \t"
 		   <<name<<std::endl;
       if (kfc!=kfcold) {  // read last line only once!	
 	//	if (Take) {

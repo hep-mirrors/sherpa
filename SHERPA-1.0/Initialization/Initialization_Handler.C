@@ -690,9 +690,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
   // Add parameters from Run.dat to command line
   // (this makes it possible to overwrite particle properties in Run.dat)
-  Data_Reader dr;
+  Data_Reader dr(" ",";","!");
   dr.AddWordSeparator("\t");
-  dr.AddComment("!");
   dr.AddComment("#");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_file);
