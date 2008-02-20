@@ -30,6 +30,10 @@ namespace MODEL {
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int order, const double fac) : 
   m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac)
 {
+  if(m_fac==1.0 && ATOOLS::rpa.gen.AsScaleFactor()!=1.0) {
+    m_fac=ATOOLS::rpa.gen.AsScaleFactor();
+    PRINT_INFO("Operator approach, mu_r="<<m_fac);
+  }
   m_type  = std::string("Running Coupling");
   p_thresh  = NULL;
 
