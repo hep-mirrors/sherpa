@@ -661,7 +661,7 @@ void Initialization_Handler::SetScaleFactors()
   if (rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
-  reader.SetInputPath(m_path+"/");
+  reader.SetInputPath(rpa.gen.Variable("SHERPA_DAT_PATH")+m_path+"/");
   reader.SetInputFile(m_showerdat);
   bool changed(false);
   double fac(1.0);
@@ -703,7 +703,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   for (int i(1);i<argc;++i)
     helpsv.push_back(argv[i]);
 
-  for (int i=0; i<helpsv.size();++i) {
+  for (int i=0; i<(int)helpsv.size();++i) {
     string par = helpsv[i];
     string key,value;
     size_t equal=par.find("=");
