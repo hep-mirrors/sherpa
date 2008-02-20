@@ -251,7 +251,7 @@ int Flavour::HepEvt() {
   if (kfc==kf::A0)                           return 36;
   if (kfc==kf::Hplus)                        return (anti)? -37:37;
   if (kfc==kf::graviton)                     return 39;
-  if (kfc==kf::gscalar)                      return 89;
+  if (kfc==kf::gscalar)                      return 40;
 
   if (IsSquark() || IsSlepton() || IsSneutrino() || IsIno()) {
     
@@ -321,7 +321,7 @@ void Flavour::FromHepEvt(int code) {
   case 36:      kfc = kf::A0; return;
   case 37:      kfc = kf::Hplus; return; 
   case 39:      kfc = kf::graviton; return;
-  case 89:      kfc = kf::gscalar; return;
+  case 40:      kfc = kf::gscalar; return;
   case 91:      kfc = kf::cluster; return;   // pythia cluster ....
   case 92:      kfc = kf::string; return;    // pythia string ....
   case 1000001: kfc = kf::sDownL; return;
@@ -631,10 +631,6 @@ void ATOOLS::ParticleInit(std::string path)
     if (kfc!=kfcold) { // read last line only once!
       *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
 			 strong, spin, Majorana, Take, stable, massive, name, 1);
-      //isrphoton
-      if (kfc==22)
-	*(pi++)=Part_Info( kf::code(26), mass, width, charge, icharge, 
-			   strong, spin, Majorana, Take, stable, massive, "isrphoton",1);
       //dummy for 4gluon-higgs vertex
       if (kfc==21) {
 	*(pi++)=Part_Info( kf::shgluon, mass, width, charge, icharge, 
@@ -680,7 +676,6 @@ void ATOOLS::ParticleInit(std::string path)
     msg_LogFile()<<std::endl;
   }
   // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
-  *(pi++) = Part_Info( kf::pol,      0.,0., 0, 0,0, 0,0,0,1,0,"polarisation",1);
   *(pi++) = Part_Info( kf::lepton,   0.,0.,-3,-1,0, 1,0,1,1,0,"lepton",1);
   *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 1,0,1,1,0,"neutrino",1);
   *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 1,0,1,1,0,"fermion",1);
@@ -925,7 +920,7 @@ int Flavour::WriteOut() {
   Fl_Iter fli;
   (*ofile)<<"kf      Mass   Width    3*e     Y     SU(3)  2*Spin majorana   ON    stabil   massive   Name"<<std::endl;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy() && !flav.Kfcode()!=26) {
+    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy()) {
       (*ofile)<<flav.Kfcode()<<"\t"
 	  <<flav.PSMass()<<"\t"
 	  <<flav.Width()<<"\t"

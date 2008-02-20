@@ -185,7 +185,7 @@ void Single_Process_MHV2::PolarizationNorm() {
     p_b[i]        = 1; 
   } 
   for (size_t i=m_nin+m_nout;i<m_nvector;i++) { 
-    p_flavours[i] = Flavour(kf::pol); 
+    p_flavours[i] = Flavour(kf::none); 
     p_b[i]        = 1; 
   }
 

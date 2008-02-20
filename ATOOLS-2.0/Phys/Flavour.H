@@ -64,27 +64,18 @@ namespace ATOOLS {
       Hplus                  = 37,
       Hplusplus              = 38,
 
-      //Graviton               = 39,
-      //GScalar                = 40,
+      graviton               = 39,
+      gscalar                = 40,
 
       /* ------------------------------------------
 	helpers
       ------------------------------------------ */
-      isrphoton              = 26,
-      pol                    = 70,
-      gluonqgc               = 99,
-
       // dummy for shrinked gluon in 
       // 4gluon-higgs vertex
 
-      shgluon                = 29,
+      shgluon                = 89,
 
-      /* ------------------------------------------
-	LED - has to get other numbers to comply 
-	       with the PDG numbering scheme
-      ------------------------------------------ */
-      graviton               = 27,
-      gscalar                = 28,
+      gluonqgc               = 99,
 
       /* ------------------------------------------
 	SUSY - has to get other numbers to comply 
@@ -793,7 +784,7 @@ namespace ATOOLS {
       return (kfc==kf::jet); 
     }
     inline bool IsPhoton() const {
-      return ((kfc==kf::photon) || (kfc==kf::isrphoton));
+      return (kfc==kf::photon);
     }
     inline bool IsSquark() const  {
       return ((Strong()>0) && (IntSpin()==0) && !(Majorana())); 

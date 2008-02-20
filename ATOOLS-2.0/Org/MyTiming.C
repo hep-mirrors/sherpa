@@ -1,6 +1,7 @@
 #include "MyTiming.H"
 #include "Message.H"
 #include <iostream>
+#include <unistd.h>
 using std::endl;
 using namespace ATOOLS;
 
