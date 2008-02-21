@@ -16,12 +16,15 @@ namespace AHADIC {
     FlavDecayMap        m_options;
     DipoleList          m_dipoles;
 
-    bool    Shift(Proto_Particle_List * plin=NULL);
     bool    FillDipoleList(Proto_Particle_List * plin=NULL);
+    void    UpdatePPList(Proto_Particle_List * plin=NULL);
     void    PrintDipoleList();
 
     bool    DecayDipoles();
     DipIter SelectDipole();
+    bool    Rescue(DipIter & dip);
+    bool    MergeDipoles(DipIter & dip1,DipIter & dip2);
+    void    SplitIt(Dipole *,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
   public:
     Gluon_Decayer(Dipole_Splitter *);
     ~Gluon_Decayer();

@@ -1,4 +1,5 @@
 #include "Hadronisation_Parameters.H"
+#include "Soft_Cluster_Handler.H"
 #include "Flavour.H"
 #include "Momenta_Stretcher.H"
 #include "MathTools.H"
@@ -16,8 +17,8 @@ Hadronisation_Parameters AHADIC::hadpars;
 Hadronisation_Parameters::Hadronisation_Parameters() :
   p_constituents(NULL),p_multiplets(NULL),
   p_singletransitions(NULL),p_doubletransitions(NULL),
-  p_popper(NULL), 
-  m_asform(asform::constant), p_coupling(NULL)
+  p_softclusters(NULL), 
+  m_asform(asform::constant), p_coupling(NULL), p_splitter(NULL)
 { }
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
@@ -25,28 +26,36 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_multiplets!=NULL)        { delete p_multiplets;        p_multiplets=NULL;         }
   if (p_singletransitions!=NULL) { delete p_singletransitions; p_singletransitions=NULL;  }
   if (p_doubletransitions!=NULL) { delete p_doubletransitions; p_doubletransitions=NULL;  }
-  if (p_popper!=NULL)            { delete p_popper;            p_popper=NULL;             }
+  if (p_splitter!=NULL)          { delete p_splitter;          p_splitter=NULL;           }
   if (p_coupling!=NULL)          { delete p_coupling;          p_coupling=NULL;           }
+  if (p_softclusters!=NULL)      { delete p_softclusters;      p_softclusters=NULL;       }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)
 {
   msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
-  p_constituents = new Constituents(false);
-  // if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
+  p_constituents      = new Constituents(false);
+  // if (msg_LevelIsTracking()) 
+  p_constituents->PrintConstituents();
 
-  p_multiplets   = new All_Hadron_Multiplets();
+  p_multiplets        = new All_Hadron_Multiplets();
   //if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
-  p_singletransitions  = new Single_Transitions();
+  p_singletransitions = new Single_Transitions();
   //if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
 
-  p_doubletransitions  = new Double_Transitions();
+  p_doubletransitions = new Double_Transitions();
   //if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
 
-  p_popper       = new Pair_Popper();
-  p_coupling     = new Strong_Coupling(m_asform);
+  p_softclusters      = new Soft_Cluster_Handler(p_singletransitions,p_doubletransitions,
+						 m_parametermap[string("Offset_C->H")],
+						 m_parametermap[string("Offset_C->HH")],
+						 m_parametermap[string("C->HH_Decay_Exponent")],
+						 m_parametermap[string("C->HH_Decay_Angle")],
+						 m_parametermap[string("Photon_Energy")]);
+  p_coupling          = new Strong_Coupling(m_asform,m_parametermap[string("pt02")]);
+  p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
@@ -56,22 +65,14 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("PT^2_0",1.);
   m_parametermap[string("ptmax")]              = 
     dataread.GetValue<double>("PT_MAX",1.);
-  m_parametermap[string("Tension")]            = 
-    dataread.GetValue<double>("COLOUR_TENSION",0.33);
-  m_parametermap[string("<pt shift>")]         = 
-    dataread.GetValue<double>("<PT_SHIFT>",0.5);
-  m_parametermap[string("<Y>")]                = 
-    dataread.GetValue<double>("<Y*_SHIFT>",0.5);
-  m_parametermap[string("Y*_WIDTH")]           = 
-    dataread.GetValue<double>("Y*_WIDTH",dabs(Get("<Y>"))>1.e-3?Get("<Y>"):0.5);
-  m_parametermap[string("C->HH_Decay_Exponent")]       = 
-    dataread.GetValue<double>("C->HH_DECAY_EXPONENT",0.5);
-  m_parametermap[string("MassFraction")]       = 
-    dataread.GetValue<double>("CLUSTER_MASS_FRACTION",0.5);
   m_parametermap[string("Offset_C->H")] =
     dataread.GetValue<double>("TRANSITION_OFFSET",0.75);      
   m_parametermap[string("Offset_C->HH")] =
     dataread.GetValue<double>("DECAY_OFFSET",0.5);      
+  m_parametermap[string("C->HH_Decay_Exponent")]       = 
+    dataread.GetValue<double>("C->HH_DECAY_EXPONENT",0.5);
+  m_parametermap[string("C->HH_Decay_Angle")]              = 
+    dataread.GetValue<double>("C->HH_DECAY_THETA_EXPONENT",2.);
   m_parametermap[string("Photon_Energy")] =
     dataread.GetValue<double>("PHOTON_ENERGY",hadpars.Get((string("Offset_C->HH"))));      
   m_parametermap[string("Strange_fraction")] =
@@ -121,17 +122,17 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Multiplet_exc_Delta_L1R0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_DELTA*_3/2",0.6);
   m_parametermap[string("Mass_glue")]          = 
-    dataread.GetValue<double>("M_GLUE",0.75);
+    dataread.GetValue<double>("M_GLUE",Flavour(kf::gluon).PSMass());
   m_parametermap[string("Mass_down")]          = 
-    dataread.GetValue<double>("M_DOWN",0.32);
+    dataread.GetValue<double>("M_DOWN",Flavour(kf::d).PSMass());
   m_parametermap[string("Mass_up")]            = 
-    dataread.GetValue<double>("M_UP",0.32);
+    dataread.GetValue<double>("M_UP",Flavour(kf::u).PSMass());
   m_parametermap[string("Mass_strange")]       = 
-    dataread.GetValue<double>("M_STRANGE",0.45);
+    dataread.GetValue<double>("M_STRANGE",Flavour(kf::s).PSMass());
   m_parametermap[string("Mass_charm")]         = 
-    dataread.GetValue<double>("M_CHARM",1.8);
+    dataread.GetValue<double>("M_CHARM",Flavour(kf::c).PSMass());
   m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",5.2);
+    dataread.GetValue<double>("M_BOTTOM",Flavour(kf::b).PSMass());
   m_parametermap[string("Mass_dd1")]           = 
     dataread.GetValue<double>("M_DD_1",2.*Get("Mass_down"));
   m_parametermap[string("Mass_ud0")]           = 
@@ -215,17 +216,17 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       cms += moms[i];
       if (dabs(moms[i].Abs2())>1.e-6) prepare = true;
     } 
-    if (Vec3D(cms).Abs()>1.e-3) { 
+    if (Vec3D(cms).Abs()>1.e-6) { 
       boost = true;
       rest  = Poincare(cms);
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
-    if (prepare) success = success && stretcher.ZeroThem(0,n,moms);
+    if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-15);
     success = success && stretcher.MassThem(0,n,moms,masses);
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
     return success;
   } 
-  else return stretcher.MassThem(0,n,moms,masses);
+  else return stretcher.MassThem(0,n,moms,masses,1.e-15);
 }

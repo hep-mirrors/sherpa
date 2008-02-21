@@ -63,21 +63,20 @@ namespace AHADIC {
     AHADIC::Hadronisation_Parameters::GetConstituents().
 
     The total weights are given in the following way:
-    -  u, d quarks:   \f$wt = \frac12(1-\chi_B)\cdot(1-\chi_S)\f$ 
-    -  s quarks: \f$wt = (1-\chi_B)\cdot\chi_S\f$ 
-    -  \f$ud_0\f$ diquarks: \f$wt = \frac{1}{\Sigma}(1-\chi_B)\f$ 
-    -  \f$sd_0\f$, \f$su_0\f$ diquarks: \f$wt = \frac{\chi_{SQ}}{\Sigma}(1-\chi_B)\f$ 
-    -  \f$dd_1\f$, \f$uu_1\f$ diquarks: \f$wt = 3\frac{\chi_1}{\Sigma}(1-\chi_B)\f$ 
-    -  \f$sd_1\f$, \f$su_1\f$ diquarks: \f$wt = 3\frac{\chi_1\chi_{SQ}}{\Sigma}(1-\chi_B)\f$ 
-    -  \f$ss_1\f$ diquarks: \f$wt = 3\frac{\chi_1\chi_{SS}}{\Sigma}(1-\chi_B)\f$ 
+    -  u, d quarks:   \f$wt = 1\f$ 
+    -  s quarks: \f$wt = \chi_S\f$ 
+    -  \f$ud_0\f$ diquarks: \f$wt = \chi_B\f$ 
+    -  \f$sd_0\f$, \f$su_0\f$ diquarks: \f$wt = \chi_{SQ}\chi_B\f$ 
+    -  \f$dd_1\f$, \f$uu_1\f$ diquarks: \f$wt = 3\chi_1\chi_B\f$ 
+    -  \f$sd_1\f$, \f$su_1\f$ diquarks: \f$wt = 3\chi_1\chi_{SQ}\chi_B\f$ 
+    -  \f$ss_1\f$ diquarks: \f$wt = 3\chi_1\chi_{SS}\chi_B\f$ 
 
     Here \f$\chi_{B, S}\f$ are the baryon and strangeness suppression parameters, respectively.
     With the suppression factors \f$\chi_{SQ}\f$ and \f$\chi_{SS}\f$ for dingle and double
     strange diquarks and \f$chi_1\f$ for spin-1 diquarks, the sum of weights for the different
-    diquarks species \f$\sigma\f$ is given by
+    diquarks species \f$\Sigma\f$ is given by
 
-    \f$\Sigma = 
-    1\cdot(1+2\cdot \chi_{SQ}) + 3\chi_1\cdot(2+2\cdot \chi_{SQ}+1\cdot\chi_{SS})\f$.
+    \f$\Sigma = 2+\chi_S+\chi_B\cdot[1+2\chi_{SQ}+3\chi_1(2+2\chi_{SQ}+\chi_{SS})]\f$.
 
     Since the methods are just simple access methods, no further documentation seems to be 
     neccessary.
@@ -97,7 +96,7 @@ namespace AHADIC {
   */
   /*!
     \var double m_minmass
-    \brief The mass of the lightest constituent, usually a d or u quark, with a mass around 300 MeV.
+    \brief The mass of the lightest constituent (no gluon), usually a d or u quark.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for Constituents

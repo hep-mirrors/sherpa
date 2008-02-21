@@ -6,17 +6,15 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Cluster_Handler::Soft_Cluster_Handler() :
-  m_stmode(stm::masswidthXwaves), 
-  m_dtmode(dtm::waves_PS), 
-  p_singletransitions(hadpars.GetSingleTransitions()),
-  p_doubletransitions(hadpars.GetDoubleTransitions()),
-  p_popper(hadpars.GetPopper()),
-  m_alpha(hadpars.Get(string("C->HH_Decay_Exponent"))),
-  m_fraction(sqr(hadpars.Get(string("MassFraction")))),
-  m_offset1(hadpars.Get(string("Offset_C->H"))),
-  m_offset2(hadpars.Get(string("Offset_C->HH"))),
-  m_photonenergy(hadpars.Get(string("Photon_Energy")))
+Soft_Cluster_Handler::Soft_Cluster_Handler(Single_Transitions * singletransitions,
+					   Double_Transitions * doubletransitions,
+					   const double offset1,const double offset2,
+					   const double alpha,const double eta,
+					   const double photonenergy) :
+  m_stmode(stm::masswidthXwaves), m_dtmode(dtm::waves_PS), 
+  p_singletransitions(singletransitions), p_doubletransitions(doubletransitions),
+  m_offset1(offset1), m_offset2(offset2),
+  m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy)
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() {}
@@ -48,27 +46,56 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
   ShiftMomenta(clin->size());
 
+#ifdef AHAmomcheck
+    Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
+    for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) checkbef += (*cit)->Momentum(); 
+#endif
   Flavour had1,had2;
   m_ctit=m_ctrans.begin();
-  //cout<<METHOD<<" before loop "<<endl;
   while (m_ctrans.size()>0) {
     if (m_ctit->second.size()==1) {
       blob->AddToOutParticles(m_ctit->first->GetSelf());
+#ifdef AHAmomcheck
+      checkaft += m_ctit->first->Momentum();
+      if (dabs((m_ctit->first->GetSelf()->Momentum()-m_ctit->first->Momentum()).Abs2())>1.e-12) {
+	msg_Out()<<METHOD<<" cluster and particle momentum do not agree: "
+		 <<(m_ctit->first->GetSelf()->Momentum()-m_ctit->first->Momentum())
+		 <<" ("<<(m_ctit->first->GetSelf()->Momentum()-m_ctit->first->Momentum()).Abs2()<<")."
+		 <<std::endl;
+      }
+#endif
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
 	if ((*cit)==m_ctit->first) { 
 	  delete (*cit);
 	  clin->erase(cit);
+#ifdef AHAmomcheck
+	  msg_Out()<<METHOD<<" involving a C->H transition."<<std::endl;
+#endif
 	  break;
 	}
       }
     }
     else if (m_ctit->second.size()==2) {
       FixHHDecay(m_ctit->first,m_ctit->second[0],m_ctit->second[1]);
+#ifdef AHAmomcheck
+      checkaft += m_ctit->first->GetLeft()->Momentum();
+      checkaft += m_ctit->first->GetRight()->Momentum();
+#endif
     }
     if (m_ctit==m_ctrans.end()) break; 
     m_ctrans.erase(m_ctit++);
   }
-  //cout<<METHOD<<" after loop "<<endl;
+
+#ifdef AHAmomcheck
+  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+    if (!(*cit)->GetLeft()) checkaft += (*cit)->Momentum(); 
+  }
+  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
+    msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
+	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
+  }
+  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+#endif
   return true;
 }
 
@@ -85,9 +112,6 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
     transformweight = TransformWeight(cluster,hadron); 
   }
   if (decayweight<=0. && transformweight<=0.) {
-    //cout<<METHOD<<" 0 ("<<mustdecay<<") : "<<decayweight<<" ; "<<transformweight<<" for "
-    //	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-    //	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
 
@@ -119,10 +143,6 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	}
       }
     }
-    //cout<<METHOD<<" 1 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-    //	<<transformweight<<" ("<<hadron<<") for "
-    //	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-    //	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
   // regular case.
@@ -132,10 +152,6 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
   }
   else m_ctrans[cluster].push_back(hadron);
 
-  //cout<<METHOD<<" 2 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-  //   <<transformweight<<" ("<<hadron<<") for "
-  //   <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-  //   <<"----------------------------------------------------------------------"<<endl;
   return;
 }
  
@@ -143,8 +159,8 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 {
   had1 = had2 = Flavour(kf::none);
   Flavour_Pair flpair;
-  flpair.first  = cluster->GetFlav(1);
-  flpair.second = cluster->GetFlav(2);
+  flpair.first  = cluster->GetTrip()->m_flav;
+  flpair.second = cluster->GetAnti()->m_flav;
 
   Double_Transition_Miter dtliter = p_doubletransitions->GetTransitions()->find(flpair);
   if (dtliter==p_doubletransitions->GetTransitions()->end()) {
@@ -217,25 +233,22 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       }
     }
   }
-
-  //cout<<METHOD<<" Total : ("<<forceit<<")      "
-  //   <<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<" "
-  //   <<MC<<"("<<flpair.first<<", "<<flpair.second<<")"<<endl
-  //   <<"                               Alternative : "
-  //   <<altweight/(16.*M_PI*MC*MC*MC)<<" --> "<<alt1<<" & "<<alt2<<endl;
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
 void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
+#ifdef AHAmomcheck
+  Vec4D checkbef = cluster->Momentum();
+#endif
+
   double M       = cluster->Mass(), M2 = M*M;
   double m12     = sqr(had1.PSMass()), m22 = sqr(had2.PSMass());
-  double ptmax2  = m_fraction*(sqr(M2-m12-m22)-4.*m12*m22)/(4.*M2); 
-
-  double pt      = p_popper->SelectPT(ptmax2);
 
   cluster->BoostInCMSAndRotateOnZ();
   double E1      = (M2+m12-m22)/(2.*M);
+  double sinthet = pow(ran.Get(),m_eta);
+  double pt      = sqrt(sqr(E1)-m12)*sinthet;
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
@@ -244,16 +257,27 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Flavour & had1,Flavour &
   Particle * part;
   Cluster * clus;
   clus = new Cluster();
-  clus->SetMomentum(0,p1);
+  clus->SetMomentum(p1);
   clus->SetPrev(cluster);
   cluster->SetLeft(clus);
 
   clus = new Cluster();
-  clus->SetMomentum(0,p2);
+  clus->SetMomentum(p2);
   clus->SetPrev(cluster);
   cluster->SetRight(clus);
 
   cluster->RotateAndBoostBack();
+
+#ifdef AHAmomcheck
+  if (dabs((checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2())>1.e-12) {
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+	       <<"    Four-momentum not conserved: "
+	       <<checkbef<<" vs. "<<(cluster->GetLeft()->Momentum()+cluster->GetRight()->Momentum())
+	       <<" : "<<(checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2()
+	       <<"."<<std::endl;
+  }
+  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+#endif
 
   part = new Particle(-1,had1,cluster->GetLeft()->Momentum());
   part->SetNumber();
@@ -276,8 +300,8 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
 					     bool lighter)
 {
   Flavour_Pair fpair;
-  fpair.first  = cluster->GetFlav(1);
-  fpair.second = cluster->GetFlav(2);
+  fpair.first  = cluster->GetTrip()->m_flav;
+  fpair.second = cluster->GetAnti()->m_flav;
   if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
   Single_Transition_Miter stiter = p_singletransitions->GetTransitions()->find(fpair);
   if (stiter==p_singletransitions->GetTransitions()->end()) {
@@ -289,10 +313,6 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   }
 
   double MC(cluster->Mass());
-  //cout<<METHOD<<" : "<<fpair.first<<"/"<<fpair.second<<" -> "
-  //   <<p_singletransitions->GetHeaviestMass(fpair)<<","
-  //   <<p_singletransitions->GetLightestMass(fpair)<<" vs. "<<MC
-  //   <<" -> "<<(p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC)<<endl;
   if (p_doubletransitions->GetLightestMass(fpair)<MC) {
     if (p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC) return 0.;
   }
@@ -389,11 +409,17 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
 {
   std::vector<double> masses(size);
   std::vector<Vec4D>  momenta(size);
-  int    pos(0);
+  int    pos(0),pos1;
+#ifdef AHAmomcheck
+  Vec4D checkbef(0.,0.,0.,0.),checkaft(0.,0.,0.,0.);
+#endif
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {
       masses[pos]  = m_ctit->second.begin()->Mass();
       momenta[pos] = m_ctit->first->Momentum();
+#ifdef AHAmomcheck
+      checkbef    += momenta[pos];
+#endif
       pos++;
     }
   }
@@ -402,27 +428,48 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
       if (m_ctit->second.size()!=1) {
 	masses[pos]  = m_ctit->first->Mass();
 	momenta[pos] = m_ctit->first->Momentum();
+#ifdef AHAmomcheck
+	checkbef    += momenta[pos];
+#endif 
 	pos++;
       }
     }
   }
+
   hadpars.AdjustMomenta(pos,&momenta.front(),&masses.front());
+
   pos = 0;
   for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
     if (m_ctit->second.size()==1) {
-      m_ctit->first->SetMomentum(0,momenta[pos]);
+#ifdef AHAmomcheck
+      checkaft += momenta[pos];
+#endif
+      m_ctit->first->SetMomentum(momenta[pos]);
       m_ctit->first->GetSelf()->SetMomentum(momenta[pos]);
       m_ctit->first->GetSelf()->SetFinalMass(masses[pos]);
       m_ctit->first->GetSelf()->SetFlav((*m_ctit->second.begin()));
       pos++;
     }
   }
+  pos1 = pos;
   if (pos<2) {
     for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
       if (m_ctit->second.size()!=1) {
 	m_ctit->first->RescaleMomentum(momenta[pos]);
+#ifdef AHAmomcheck
+	checkaft += m_ctit->first->Momentum();
+#endif
 	pos++;
       }
     }
   }
+#ifdef AHAmomcheck
+  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
+    msg_Out()<<METHOD<<" yields a momentum violation for  "<<pos1<<" : "
+  	     <<checkbef<<" - "<<checkaft<<" --> "
+  	     <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+  }
+  else msg_Out()<<METHOD<<" conserves momentum : "
+  		<<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+#endif
 }

@@ -8,7 +8,8 @@
 using namespace ATOOLS;
 using namespace std;
 
-bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const double * masses)
+bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const double * masses,
+				 const double rel)
 {
   if ((n-n0)==2) {
     Vec4D cms         = momenta[n0]+momenta[n-1];
@@ -46,7 +47,7 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     if (cms[0]>xmt) {
       double ET  = sqrt(cms.Abs2()); 
       double x   = sqrt(1.-sqr(xmt/ET));
-      double acc = ET*1.e-14;
+      double acc = dabs(rel)*ET;
       
       double f0,g0,x2;
       for (int i=0;i<10;i++) {
@@ -78,7 +79,8 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
   return false;
 }
 
-bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<double> masses)
+bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<double> masses,
+				 const double rel)
 {
   int n=0;
   if(momenta.size()==masses.size()) n = momenta.size();
@@ -113,7 +115,6 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     double * ens       = new double[n];
     Vec4D cms          = Vec4D(0.,0.,0.,0.);
     for (short int k=n0;k<n;k++) {
-//       std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
       xmt       += masses[k];
       cms       += momenta[k];
       oldens2[k] = sqr(momenta[k][0]);
@@ -121,7 +122,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     if (cms[0]>xmt) {
       double ET  = sqrt(cms.Abs2());
       double x   = sqrt(1.-sqr(xmt/ET));
-      double acc = ET*1.e-14;
+      double acc = dabs(rel)*ET;
       
       double f0,g0,x2;
       for (int i=0;i<10;i++) {
@@ -135,9 +136,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
         x -= f0/(x*g0);
       }
       for (short int k=n0;k<n;k++) {
-//         std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
         momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
-//         std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
       }
       delete [] oldens2;
       delete [] ens;
@@ -155,7 +154,8 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
   return false;
 }
 
-bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta)
+bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta,
+				 const double rel)
 {
   if ((n-n0)==2) {
     double energy   = momenta[n0][0]+momenta[n-1][0];
@@ -176,7 +176,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta)
     }
     double ET  = sqrt(cms.Abs2());
     double x   = 1./sqrt(1.-sqr(xmt/ET));
-    double acc = ET*1.e-14;
+    double acc = dabs(rel)*ET;
     xmt        = 0.;
 
     double f0,g0,x2;
@@ -191,9 +191,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta)
       x -= f0/(x*g0);
     }
     for (short int k=n0;k<n;k++) {
-//       std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
       momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
-//       std::cout<<"momenta["<<k<<"]="<<momenta[k]<<std::endl;
     }
     delete [] oldps2;
     delete [] ens;
@@ -203,7 +201,8 @@ bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta)
 }
 
 
-bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta)
+bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
+				 const double rel)
 {
   int n = momenta.size();
   
@@ -226,7 +225,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta)
     }
     double ET  = sqrt(cms.Abs2());
     double x   = 1./sqrt(1.-sqr(xmt/ET));
-    double acc = ET*1.e-14;
+    double acc = dabs(rel)*ET;
     xmt        = 0.;
     
     double f0,g0,x2;
@@ -241,9 +240,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta)
       x -= f0/(x*g0);
     }
     for (short int k=n0;k<n;k++) {
-//       std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
       momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
-//       std::cout<<"momenta["<<k<<"]="<<momenta[k]<<std::endl;
     }
     delete [] oldps2;
     delete [] ens;

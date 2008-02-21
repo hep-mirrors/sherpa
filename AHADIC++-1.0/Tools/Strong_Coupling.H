@@ -20,7 +20,7 @@ namespace AHADIC {
     asform::code m_form;
     double       m_beta0, m_Lambda2, m_kappa2, m_pt02, m_asmax;
   public:
-    Strong_Coupling(const asform::code);
+    Strong_Coupling(const asform::code,const double);
 
     const double operator()(double q2) const;     
     const double MaxValue() const { return m_asmax; }

@@ -12,12 +12,12 @@ Single_Transitions::Single_Transitions() :
   p_transitions(new Single_Transition_Map),
   m_offset(hadpars.Get(string("Offset_C->H")))
 {
-  Constituents          * constituents = hadpars.GetConstituents();
+  Constituents * constituents = hadpars.GetConstituents();
 
   double mass=100.;
   for (FlavCCMap_Iterator flit=constituents->CCMap.begin();
        flit!=constituents->CCMap.end();flit++) {
-    if (flit->second->Mass()<mass) {
+    if (flit->second->Mass()<mass && flit->first!=Flavour(kf::gluon)) {
       mass                   = flit->second->Mass();
       m_lightest_constituent = flit->first;
     }
@@ -57,17 +57,17 @@ Single_Transitions::~Single_Transitions()
       delete stiter->second;
     }
     p_transitions->clear();
-    p_transitions = NULL;
+    delete p_transitions;
   }
 }
 
 bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
   Flavour_Pair fpair;
-  fpair.first  = cluster->GetFlav(1);
-  fpair.second = cluster->GetFlav(2);
+  fpair.first  = cluster->GetTrip()->m_flav;
+  fpair.second = cluster->GetAnti()->m_flav;
   if (!(fpair.first.IsDiQuark() && fpair.second.IsDiQuark())) return false;
-  double  mass = cluster->Mass(0);
+  double  mass = cluster->Mass();
   Flavour_Pair fpair1,fpair2;
   fpair1.first = fpair.first;            fpair1.second = m_lightest_constituent.Bar();
   fpair2.first = m_lightest_constituent; fpair2.second = fpair.second;
@@ -223,9 +223,12 @@ Double_Transitions::Double_Transitions() :
 }
 
 Double_Transitions::~Double_Transitions() {
-  while (!p_transitions->empty()) {
-    delete (p_transitions->begin()->second); 
-    p_transitions->erase(p_transitions->begin());
+  if (p_transitions) {
+    while (!p_transitions->empty()) {
+      delete (p_transitions->begin()->second); 
+      p_transitions->erase(p_transitions->begin());
+    }
+    delete p_transitions;
   }
 }
 

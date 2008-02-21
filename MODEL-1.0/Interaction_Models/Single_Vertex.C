@@ -15,8 +15,11 @@ using namespace std;
 Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL) 
 { ncf = nlf = t = 0; nleg=3; cpl.resize(4);}
 
-Single_Vertex::Single_Vertex(const Single_Vertex& v): Color(NULL), 
-  Lorentz(NULL) { *this=v; }
+Single_Vertex::Single_Vertex(const Single_Vertex& v): 
+  ncf(0), nlf(0), t(0), Color(NULL), Lorentz(NULL) 
+{ 
+  *this=v; 
+}
 
 Single_Vertex::~Single_Vertex(){
       if (Color)   if (ncf==1) delete Color;
@@ -57,8 +60,7 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
 	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
 	else {
 	  Lorentz = new Lorentz_Function[nlf];
-	  for (int i=0;i<nlf;i++)
-	    Lorentz[i] = v.Lorentz[i];
+	  for (int i=0;i<nlf;i++) Lorentz[i] = v.Lorentz[i];
 	}
       }
       return *this;

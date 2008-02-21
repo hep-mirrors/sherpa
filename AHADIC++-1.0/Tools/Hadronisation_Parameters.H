@@ -4,8 +4,8 @@
 #include "Constituents.H"
 #include "Hadron_Multiplet.H"
 #include "Transitions.H"
-#include "Pair_Popper.H"
 #include "Strong_Coupling.H"
+#include "Dipole_Splitter.H"
 #include "Vector.H"
 
 #include <map>
@@ -18,8 +18,7 @@ namespace AHADIC {
   typedef std::map<std::string,double> StringDoubleMap;
   typedef StringDoubleMap::iterator    SDiter;
 
-
-  class Pair_Popper;
+  class Soft_Cluster_Handler;
 
   class Hadronisation_Parameters {
   private:
@@ -28,9 +27,10 @@ namespace AHADIC {
     All_Hadron_Multiplets  * p_multiplets;
     Single_Transitions     * p_singletransitions;
     Double_Transitions     * p_doubletransitions;
-    Pair_Popper            * p_popper;
+    Soft_Cluster_Handler   * p_softclusters;
     asform::code             m_asform;
     Strong_Coupling        * p_coupling; 
+    Dipole_Splitter        * p_splitter;
 
     StringDoubleMap          m_parametermap;
     SDiter                   m_piter;
@@ -43,12 +43,13 @@ namespace AHADIC {
     void   Init(std::string,std::string);
     double Get(std::string keyword);
 
-    Constituents           * GetConstituents()      { return p_constituents;      }
-    All_Hadron_Multiplets  * GetMultiplets()        { return p_multiplets;        }
-    Single_Transitions     * GetSingleTransitions() { return p_singletransitions; }
-    Double_Transitions     * GetDoubleTransitions() { return p_doubletransitions; }
-    Pair_Popper            * GetPopper()            { return p_popper;            }
-    Strong_Coupling        * GetCoupling()          { return p_coupling;          }
+    Constituents           * GetConstituents()       { return p_constituents;      }
+    All_Hadron_Multiplets  * GetMultiplets()         { return p_multiplets;        }
+    Single_Transitions     * GetSingleTransitions()  { return p_singletransitions; }
+    Double_Transitions     * GetDoubleTransitions()  { return p_doubletransitions; }
+    Strong_Coupling        * GetCoupling()           { return p_coupling;          }
+    Dipole_Splitter        * GetSplitter()           { return p_splitter;          }
+    Soft_Cluster_Handler   * GetSoftClusterHandler() { return p_softclusters;      }
 
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);  
   };
@@ -67,9 +68,10 @@ namespace AHADIC {
     parameter map (a map connecting word-strings with double numbers), the constituent characteristics 
     (accessible through AHADIC::Constituents), the hadron multiplets (AHADIC::All_Hadron_Multiplets), 
     the static single and double hadron transition probabilities of clusters with a given flavour 
-    content (realised by AHADIC::Single_Transitions and AHADIC::Double_Transitions), and the
-    pair popper responsible for flavour and kt-selection in the non-pertubative cluster break-up
-    process (realised through AHADIC::Pair_Popper). These classes are all initialised only once,
+    content (realised by AHADIC::Single_Transitions and AHADIC::Double_Transitions), the
+    AHADIC::Dipole_Splitter relevant for the breakup of clusters and the decay of the incident
+    gluons into constituents, and the AHADIC::Soft_Cluster_Handler which chacks for and manages
+    the transition of clusters into hadrons.  These classes are all initialised only once,
     made accessible through the Hadronisation_Parameters, and, after the run, deleted by the 
     Hadronisation_Parameters.
   */
@@ -105,8 +107,14 @@ namespace AHADIC {
     Get-method.
   */
   /*!
-    \var Pair_Popper * Hadronisation_Parameters::p_popper
-    \brief Pointer to the AHADIC::Pair_Popper object. It is also initialised only once, in
+    \var Dipole_Splitter * Hadronisation_Parameters::p_splitter
+    \brief Pointer to the AHADIC::Dipole_Splitter object. It is also initialised only once, in
+    the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
+    Get-method.
+  */
+  /*!
+    \var Soft_Cluster_Handler * Hadronisation_Parameters::p_softclusters
+    \brief Pointer to the AHADIC::Soft_Cluster_Handler object. It is also initialised only once, in
     the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
     Get-method.
   */
@@ -131,7 +139,8 @@ namespace AHADIC {
     \fn Hadronisation_Parameters::~Hadronisation_Parameters()
     \brief Destructor, deleting the Hadronisation_Parameters::p_constituents, 
     Hadronisation_Parameters::p_multiplets, Hadronisation_Parameters::p_singletransiions,
-    Hadronisation_Parameters::p_doubletransitions, and the Hadronisation_Parameters::p_popper.
+    Hadronisation_Parameters::p_doubletransitions, the Hadronisation_Parameters::p_splitter, 
+    and the Hadronisation_Parameters::p_softclusters.
   */
   /*!
     \fn void Hadronisation_Parameters::Init(std::string,std::string)
@@ -139,7 +148,8 @@ namespace AHADIC {
     method with the arguments of path and filename, and initialises the 
     Hadronisation_Parameters::p_constituents, Hadronisation_Parameters::p_multiplets, 
     Hadronisation_Parameters::p_singletransiions, Hadronisation_Parameters::p_doubletransitions, 
-    and the Hadronisation_Parameters::p_popper.
+    the Hadronisation_Parameters::p_splitter,
+    and the Hadronisation_Parameters::p_softclusters.
   */
   /*!
     \fn void Hadronisation_Parameters::ReadParameters(std::string,std::string)
@@ -170,8 +180,13 @@ namespace AHADIC {
     Hadronisation_Parameters::p_singletransitions.
   */
   /*!
-    \fn Pair_Popper * Hadronisation_Parameters::GetPopper()
-    \brief  Returns the pointer to the AHADIC::Pair_Popper, Hadronisation_Parameters::p_popper.
+    \fn Dipole_Splitter * Hadronisation_Parameters::GetSplitter()
+    \brief  Returns the pointer to the AHADIC::Dipole_Splitter, Hadronisation_Parameters::p_splitter.
+  */
+  /*!
+    \fn Soft_Cluster_Handler * Hadronisation_Parameters::GetSoftclusterHandler()
+    \brief  Returns the pointer to the AHADIC::Soft_Cluster_Handler, 
+    Hadronisation_Parameters::p_softclusters.
   */
   /*!
     \fn bool Hadronisation_Parameters::AdjustMomenta(const int,ATOOLS::Vec4D *,const double *)

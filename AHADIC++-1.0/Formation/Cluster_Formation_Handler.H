@@ -9,7 +9,6 @@
 #include "Blob_List.H"
 #include "Blob.H"
 #include "Histogram.H"
-#include "Return_Value.H"
 #include <map>
 
 
@@ -25,28 +24,30 @@ namespace AHADIC {
 
     ATOOLS::Blob                      * p_blob;
     Cluster_List                      * p_clulist;
-    VectorOfPPLs                        m_partlists;
+    ListOfPPLs                          m_partlists;
     std::vector<Cluster_List *>         m_clulists;
 
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     void Reset();
-    ATOOLS::Return_Value::code ExtractSinglets();
-    ATOOLS::Return_Value::code FormOriginalClusters();
-    ATOOLS::Return_Value::code ApplyColourReconnections();
-    ATOOLS::Return_Value::code ClustersToHadrons(ATOOLS::Blob_List *);
-    ATOOLS::Return_Value::code MergeClusterListsIntoOne();
+    bool ShiftOnMassShells();
+    bool ShiftList(Proto_Particle_List *);
+    Proto_Particle_List * SelectFromList(ListOfPPLs * lppl,Proto_Particle_List * ppl=NULL);
+    bool ExtractSinglets();
+    bool FormOriginalClusters();
+    bool ApplyColourReconnections();
+    bool ClustersToHadrons(ATOOLS::Blob_List *);
+    bool MergeClusterListsIntoOne();
+
   public:
     Cluster_Formation_Handler(bool=false);
     ~Cluster_Formation_Handler();
 
-    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *,
-					    ATOOLS::Blob_List *);
+    int FormClusters(ATOOLS::Blob *,ATOOLS::Blob_List *);
 
     //! general access routines
     //@{
-    Soft_Cluster_Handler * GetSoftClusterHandler() { return p_softclusters; }
     Cluster_List         * GetClusters()           { return p_clulist;  }
     ATOOLS::Blob         * GetFragmentationBlob()  { return p_blob; }
   };
@@ -134,7 +135,7 @@ namespace AHADIC {
     after the method Cluster_Formation_Handler::MergeClusterListsIntoOne() has been called.
   */
   /*!
-    \var VectorOfPPLs Cluster_Formation_Handler::m_partlists
+    \var ListOfPPLs Cluster_Formation_Handler::m_partlists
     \brief This vector contains all colour-singlet lists of proto-particles.
   */
   /*!
@@ -161,14 +162,14 @@ namespace AHADIC {
     is hadronised.
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
+    \fn bool Cluster_Formation_Handler::ExtractSinglets()
     \brief Reorganises the incoming parton list in lists of colour-singlet configurations.    
 
     In so doing, each full Sherpa particle is translated into a largely reduced Proto_Particle,
     which contains only flavour and momentum information.  
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
+    \fn bool Cluster_Formation_Handler::FormOriginalClusters()
     \brief Forms the original clusters.
 
     This proceeds in the following steps:
@@ -177,7 +178,7 @@ namespace AHADIC {
       list is merged with another of list.
     - Then the gluons in each remaining Proto_Particle list are decayed through the method
       Gluon_Decayer::DecayList(Proto_Particle_List * plin=NULL).  In case, problems are encountered
-      in the gluon decays, the method returns Return_Value::Retry_Method.
+      in the gluon decays, the method returns "false".
     - If this was successful, the only method of the Cluster_Former,
       Cluster_Former::ConstructClusters(Proto_Particle_List *,Cluster_List *) is invoked to build the 
       primoridal clusters by just adding bit-by-bit two colour-adjacent (di-)quarks into a cluster. 
@@ -185,7 +186,7 @@ namespace AHADIC {
       are now being filled.
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
+    \fn bool Cluster_Formation_Handler::ApplyColourReconnections()
     \brief Here, the colourb reconnections are steered.
 
     In Ahadic, non-perturbative colour reconnections are modelled by reshuffling the constituents
@@ -200,7 +201,7 @@ namespace AHADIC {
     Eventually, the mass and number histograms "Cluster_Mass_Reconnections" are now being filled.
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List *)
+    \fn bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List *)
     \brief Manages the forced transition of light clusters into hadrons.
 
     The procedure here is as follows:
@@ -219,7 +220,7 @@ namespace AHADIC {
     \todo: Understand the first step better.  
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
+    \fn bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
     \brief Here, all cluster list are merged into the global list.
   */
   /*!
@@ -234,7 +235,7 @@ namespace AHADIC {
     Cluster_Former, the Colour_Reconnections, the Soft_Cluster_Handler, and the cluster list.
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::FormClusters(ATOOLS::Blob *,ATOOLS::Blob_List *)
+    \fn int Cluster_Formation_Handler::FormClusters(ATOOLS::Blob *,ATOOLS::Blob_List *)
     \brief The central method of the class, steers the formation of clusters through the
     steps outlined above (and, in short, below).  
 

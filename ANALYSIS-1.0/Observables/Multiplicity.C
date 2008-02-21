@@ -103,54 +103,83 @@ void Hadron_Multiplicities::Evaluate(const ATOOLS::Particle_List & pl, double we
     flav = (*pliter)->Flav();
     if (!flav.IsHadron() && !flav.IsPhoton()) continue;
     kfc  = flav.Kfcode();
-    if (kfc==kf::photon)              p_obs->Insert(0,weight,ncount); 
-    if (kfc==kf::pi)                  p_obs->Insert(1,weight,ncount); 
-    if (kfc==kf::pi_plus)             p_obs->Insert(2,weight,ncount); 
-    if (kfc==kf::eta)                 p_obs->Insert(3,weight,ncount); 
+    if (kfc==kf::photon)              p_obs->Insert(99.5,weight,ncount); 
+    if (kfc==kf::pi)                  p_obs->Insert(1.5,weight,ncount); 
+    if (kfc==kf::pi_plus)             p_obs->Insert(2.5,weight,ncount); 
+    if (kfc==kf::eta)                 p_obs->Insert(3.5,weight,ncount); 
     if (m_listname=="PrimordialHadrons") 
-      if (kfc==kf::K)                 p_obs->Insert(4,weight,ncount); 
-    else 
-      if (kfc==kf::K_L||kfc==kf::K_S) p_obs->Insert(4,weight,ncount); 
+      if (kfc==kf::K)                 p_obs->Insert(4.5,weight,ncount); 
+    //else 
+      if (kfc==kf::K_L||kfc==kf::K_S) p_obs->Insert(4.5,weight,ncount); 
     
-    if (kfc==kf::K_plus)              p_obs->Insert(5,weight,ncount); 
-    if (kfc==kf::eta_prime_958)       p_obs->Insert(6,weight,ncount); 
+    if (kfc==kf::K_plus)              p_obs->Insert(5.5,weight,ncount); 
+    if (kfc==kf::eta_prime_958)       p_obs->Insert(6.5,weight,ncount); 
 
-    if (kfc==kf::D_plus)              p_obs->Insert(11,weight,ncount); 
-    if (kfc==kf::D)                   p_obs->Insert(12,weight,ncount); 
-    if (kfc==kf::D_s_plus)            p_obs->Insert(13,weight,ncount); 
+    if (kfc==kf::rho_770)             p_obs->Insert(11.5,weight,ncount); 
+    if (kfc==kf::rho_770_plus)        p_obs->Insert(12.5,weight,ncount); 
+    if (kfc==kf::omega_782)           p_obs->Insert(13.5,weight,ncount); 
+    if (kfc==kf::K_star_892)          p_obs->Insert(14.5,weight,ncount); 
+    if (kfc==kf::K_star_892_plus)     p_obs->Insert(15.5,weight,ncount); 
+    if (kfc==kf::phi_1020)            p_obs->Insert(16.5,weight,ncount); 
 
-    if (kfc==kf::rho_770)             p_obs->Insert(21,weight,ncount); 
-    if (kfc==kf::rho_770_plus)        p_obs->Insert(22,weight,ncount); 
-    if (kfc==kf::omega_782)           p_obs->Insert(23,weight,ncount); 
-    if (kfc==kf::K_star_892)          p_obs->Insert(24,weight,ncount); 
-    if (kfc==kf::K_star_892_plus)     p_obs->Insert(25,weight,ncount); 
-    if (kfc==kf::phi_1020)            p_obs->Insert(26,weight,ncount); 
 
-    if (kfc==kf::D_star_2010_plus)    p_obs->Insert(31,weight,ncount); 
-    if (kfc==kf::D_star_2007)         p_obs->Insert(32,weight,ncount); 
-    if (kfc==kf::D_s_star_plus)       p_obs->Insert(33,weight,ncount); 
+    if (kfc==kf::D_plus)              p_obs->Insert(21.5,weight,ncount); 
+    if (kfc==kf::D)                   p_obs->Insert(22.5,weight,ncount); 
+    if (kfc==kf::D_s_plus)            p_obs->Insert(23.5,weight,ncount); 
+    if (kfc==kf::eta_c_1S)            p_obs->Insert(24.5,weight,ncount); 
+    if (kfc==kf::B_plus)              p_obs->Insert(25.5,weight,ncount); 
+    if (kfc==kf::B)                   p_obs->Insert(26.5,weight,ncount); 
+    if (kfc==kf::B_s)                 p_obs->Insert(27.5,weight,ncount); 
+    if (kfc==kf::B_c)                 p_obs->Insert(28.5,weight,ncount); 
+    if (kfc==kf::eta_b)               p_obs->Insert(29.5,weight,ncount); 
 
-    if (kfc==kf::p_plus)              p_obs->Insert(51,weight,ncount); 
-    if (kfc==kf::n)                   p_obs->Insert(52,weight,ncount); 
-    if (kfc==kf::Sigma_plus)          p_obs->Insert(53,weight,ncount); 
-    if (kfc==kf::Sigma)               p_obs->Insert(54,weight,ncount); 
-    if (kfc==kf::Sigma_minus)         p_obs->Insert(55,weight,ncount); 
-    if (kfc==kf::Lambda)              p_obs->Insert(56,weight,ncount); 
-    if (kfc==kf::Xi)                  p_obs->Insert(57,weight,ncount); 
-    if (kfc==kf::Xi_minus)            p_obs->Insert(58,weight,ncount); 
+    if (kfc==kf::D_star_2010_plus)    p_obs->Insert(31.5,weight,ncount); 
+    if (kfc==kf::D_star_2007)         p_obs->Insert(32.5,weight,ncount); 
+    if (kfc==kf::D_s_star_plus)       p_obs->Insert(33.5,weight,ncount); 
+    if (kfc==kf::J_psi_1S)            p_obs->Insert(34.5,weight,ncount); 
+    if (kfc==kf::B_star_plus)         p_obs->Insert(35.5,weight,ncount); 
+    if (kfc==kf::B_star)              p_obs->Insert(36.5,weight,ncount); 
+    if (kfc==kf::B_s_star)            p_obs->Insert(37.5,weight,ncount); 
+    if (kfc==kf::B_c_star)            p_obs->Insert(38.5,weight,ncount); 
+    if (kfc==kf::Upsilon_1S)          p_obs->Insert(39.5,weight,ncount); 
 
-    if (kfc==kf::Delta_1232_plus_plus) p_obs->Insert(61,weight,ncount); 
-    if (kfc==kf::Delta_1232_plus)     p_obs->Insert(62,weight,ncount); 
-    if (kfc==kf::Delta_1232)          p_obs->Insert(63,weight,ncount); 
-    if (kfc==kf::Delta_1232_minus)    p_obs->Insert(64,weight,ncount); 
-    if (kfc==kf::Sigma_1385_plus)     p_obs->Insert(65,weight,ncount); 
-    if (kfc==kf::Sigma_1385)          p_obs->Insert(66,weight,ncount); 
-    if (kfc==kf::Sigma_1385_minus)    p_obs->Insert(67,weight,ncount); 
-    if (kfc==kf::Xi_1530)             p_obs->Insert(68,weight,ncount); 
-    if (kfc==kf::Xi_1530_minus)       p_obs->Insert(69,weight,ncount); 
-    if (kfc==kf::Omega_minus)         p_obs->Insert(70,weight,ncount); 
-    }
-  for (int i=0;i<100;++i) p_norm->Insert(i,weight,ncount);
+    if (kfc==kf::f_2_1270)            p_obs->Insert(41.5,weight,ncount); 
+    if (kfc==kf::f_2_prime_1525)      p_obs->Insert(42.5,weight,ncount); 
+    if (kfc==kf::psi_2S)              p_obs->Insert(43.5,weight,ncount); 
+
+    if (kfc==kf::p_plus)              p_obs->Insert(51.5,weight,ncount); 
+    if (kfc==kf::n)                   p_obs->Insert(52.5,weight,ncount); 
+    if (kfc==kf::Sigma_plus)          p_obs->Insert(53.5,weight,ncount); 
+    if (kfc==kf::Sigma)               p_obs->Insert(54.5,weight,ncount); 
+    if (kfc==kf::Sigma_minus)         p_obs->Insert(55.5,weight,ncount); 
+    if (kfc==kf::Lambda)              p_obs->Insert(56.5,weight,ncount); 
+    if (kfc==kf::Xi)                  p_obs->Insert(57.5,weight,ncount); 
+    if (kfc==kf::Xi_minus)            p_obs->Insert(58.5,weight,ncount); 
+
+    if (kfc==kf::Delta_1232_plus_plus) p_obs->Insert(61.5,weight,ncount); 
+    if (kfc==kf::Delta_1232_plus)     p_obs->Insert(62.5,weight,ncount); 
+    if (kfc==kf::Delta_1232)          p_obs->Insert(63.5,weight,ncount); 
+    if (kfc==kf::Delta_1232_minus)    p_obs->Insert(64.5,weight,ncount); 
+    if (kfc==kf::Sigma_1385_plus)     p_obs->Insert(65.5,weight,ncount); 
+    if (kfc==kf::Sigma_1385)          p_obs->Insert(66.5,weight,ncount); 
+    if (kfc==kf::Sigma_1385_minus)    p_obs->Insert(67.5,weight,ncount); 
+    if (kfc==kf::Xi_1530)             p_obs->Insert(68.5,weight,ncount); 
+    if (kfc==kf::Xi_1530_minus)       p_obs->Insert(69.5,weight,ncount); 
+    if (kfc==kf::Omega_minus)         p_obs->Insert(70.5,weight,ncount); 
+
+    if (kfc==kf::Lambda_c_plus)       p_obs->Insert(81.5,weight,ncount); 
+    if (kfc==kf::Sigma_c_2455_plus)   p_obs->Insert(82.5,weight,ncount); 
+    if (kfc==kf::Sigma_c_2455_plus_plus) p_obs->Insert(83.5,weight,ncount); 
+    if (kfc==kf::Xi_c_2466)           p_obs->Insert(84.5,weight,ncount);     
+    if (kfc==kf::Xi_c_2466_plus)      p_obs->Insert(85.5,weight,ncount);     
+
+    if (kfc==kf::Lambda_b)            p_obs->Insert(91.5,weight,ncount); 
+    if (kfc==kf::Sigma_b_5820)        p_obs->Insert(92.5,weight,ncount); 
+    if (kfc==kf::Sigma_b_5820_plus)   p_obs->Insert(93.5,weight,ncount); 
+    if (kfc==kf::Xi_b_5840)           p_obs->Insert(94.5,weight,ncount);     
+    if (kfc==kf::Xi_b_5840_minus)     p_obs->Insert(95.5,weight,ncount);     
+  }
+  for (int i=0;i<100;++i) p_norm->Insert(i+.5,weight,ncount);
 }
 
 Primitive_Observable_Base * Hadron_Multiplicities::Copy() const

@@ -11,10 +11,10 @@ namespace ATOOLS {
   class Momenta_Stretcher {
   public:
     Momenta_Stretcher() {}
-    bool MassThem(const int, const int, Vec4D *, const double *);
-    bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses);
-    bool ZeroThem(const int, const int, Vec4D *);
-    bool ZeroThem(const int n0, std::vector<Vec4D>& moms);
+    bool MassThem(const int, const int, Vec4D *, const double *,const double=-1.e-14);
+    bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses,const double=-1.e-14);
+    bool ZeroThem(const int, const int, Vec4D *,const double=-1.e-14);
+    bool ZeroThem(const int n0, std::vector<Vec4D>& moms,const double=1.e-14);
     bool StretchBlob( Blob* blob, std::vector<double> masses = std::vector<double>());
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
   };

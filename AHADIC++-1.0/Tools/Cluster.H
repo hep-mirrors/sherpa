@@ -8,6 +8,8 @@
 #include <list>
 #include <iostream>
 
+#define AHA_momcheck
+
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
 
@@ -18,31 +20,34 @@ namespace AHADIC {
     static long int s_AHAblobs;
   };
 
-  struct ctp {
-    enum code {
-      no = 0,
-      qq = 11,
-      qd = 12,
-      dq = 21,
-      dd = 22
-    };
+  struct Proto_Particle {
+  public:
+    ATOOLS::Flavour m_flav;
+    ATOOLS::Vec4D   m_mom;
+    char            m_info;
+    double          m_mass;
+    Proto_Particle(const Proto_Particle &);  
+    Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info);  
+    ~Proto_Particle();
   };
 
-  struct ltp {
-    enum code {
-      no          = 0,
-      leadingtrip = 1,
-      leadinganti = 2,
-      leadingboth = 3
-    };
-  };
+  std::ostream & operator<<(std::ostream & s, const Proto_Particle &);
+
+  typedef std::list<Proto_Particle * >        Proto_Particle_List;   
+  typedef Proto_Particle_List::iterator       PPL_Iterator; 
+  typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
+  typedef std::list<Proto_Particle_List *>    ListOfPPLs;
+  typedef ListOfPPLs::iterator                LPPL_Iterator;
+
+  std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
+
 
   class Cluster {
   private:
-    ctp::code           m_type;
-    ltp::code           m_leads;
-    ATOOLS::Flavour     m_flavours[2];
-    ATOOLS::Vec4D       m_momentum, m_momenta[2];
+    Proto_Particle    * p_trip, * p_anti;
+
+    ATOOLS::Vec4D       m_momentum;
+
     ATOOLS::Poincare    m_boost,m_rotate;
     bool                m_hasboost,m_hasrotate;
 
@@ -53,31 +58,12 @@ namespace AHADIC {
     int                 m_number;
   public:
     Cluster();
-    Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D,
-	    const ATOOLS::Flavour &,const ATOOLS::Vec4D);
+    Cluster(Proto_Particle *,Proto_Particle *);
     ~Cluster();
 
-    ATOOLS::Blob     * CHHDecayBlob();
-
-    Cluster          * GetLeft()  const;
-    Cluster          * GetRight() const;
-    Cluster          * GetPrev()  const;
-    void               SetLeft(Cluster *);
-    void               SetRight(Cluster *);
-    void               SetPrev(Cluster *);
-    ATOOLS::Particle * GetSelf() const;
-    void               SetSelf(ATOOLS::Particle *);
-    void               DeleteLeft();
-    void               DeleteRight();
-    ATOOLS::Flavour    GetFlav(const int) const;
-    void               SetFlav(const int,const ATOOLS::Flavour &);
-    ATOOLS::Vec4D      Momentum(const int=0) const;
-    void               SetMomentum(const int,const ATOOLS::Vec4D);
-    ltp::code          GetLeads() const;
-    void               SetLeads(const ltp::code);
-    double             Mass2() const;
-    double             Mass(const int=0) const;
     void               Update();
+    ATOOLS::Blob     * ConstructDecayBlob();
+
     void               RescaleMomentum(ATOOLS::Vec4D);
     void               BoostInCMSAndRotateOnZ();
     void               RotateAndBoostBack();
@@ -89,6 +75,28 @@ namespace AHADIC {
     void               RotateBack(ATOOLS::Poincare &);
     void               BoostBack(ATOOLS::Vec4D &);
     void               RotateAndBoostBack(ATOOLS::Vec4D &);
+
+    Cluster          * GetLeft()  const;
+    Cluster          * GetRight() const;
+    Cluster          * GetPrev()  const;
+    void               SetLeft(Cluster *);
+    void               SetRight(Cluster *);
+    void               SetPrev(Cluster *);
+    void               DeleteLeft();
+    void               DeleteRight();
+
+    ATOOLS::Particle * GetSelf() const;
+    void               SetSelf(ATOOLS::Particle *);
+
+    Proto_Particle   * GetTrip() const;
+    Proto_Particle   * GetAnti() const;
+    void               SetTrip(Proto_Particle *);
+    void               SetAnti(Proto_Particle *);
+    ATOOLS::Vec4D      Momentum() const;
+    void               SetMomentum(const ATOOLS::Vec4D);
+    double             Mass2() const;
+    double             Mass() const;
+
     friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
     inline int         Number()             { return m_number; }
@@ -98,20 +106,25 @@ namespace AHADIC {
   };
 
 
-  inline Cluster          * Cluster::GetLeft()                  const { return p_left;  }
-  inline Cluster          * Cluster::GetRight()                 const { return p_right; }
-  inline Cluster          * Cluster::GetPrev()                  const { return p_prev;  }
-  inline void               Cluster::SetLeft(Cluster * left)          { p_left  = left;  }
-  inline void               Cluster::SetRight(Cluster * right)        { p_right = right; }
-  inline void               Cluster::SetPrev(Cluster * prev)          { p_prev  = prev;  }
+  inline Cluster          * Cluster::GetLeft() const           { return p_left;  }
+  inline Cluster          * Cluster::GetRight() const          { return p_right; }
+  inline Cluster          * Cluster::GetPrev() const           { return p_prev;  }
+  inline void               Cluster::SetLeft(Cluster * left)   { p_left  = left;  }
+  inline void               Cluster::SetRight(Cluster * right) { p_right = right; }
+  inline void               Cluster::SetPrev(Cluster * prev)   { p_prev  = prev;  }
   inline void               Cluster::DeleteLeft()  { delete p_left;  p_left  = NULL; }
   inline void               Cluster::DeleteRight() { delete p_right; p_right = NULL; }
-  inline double             Cluster::Mass2()                    const { return m_momentum.Abs2(); }
-  inline ltp::code          Cluster::GetLeads()                 const { return m_leads; }
-  inline void               Cluster::SetLeads(const ltp::code l)      { m_leads = l; }
-  inline ATOOLS::Particle * Cluster::GetSelf()                  const { return p_self; }
-  inline void               Cluster::SetSelf(ATOOLS::Particle * part) { p_self = part; }
+  inline ATOOLS::Particle * Cluster::GetSelf() const                    { return p_self; }
+  inline void               Cluster::SetSelf(ATOOLS::Particle * part)   { p_self = part; }
 
+  inline Proto_Particle   * Cluster::GetTrip() const           { return p_trip; }
+  inline Proto_Particle   * Cluster::GetAnti() const           { return p_anti; }
+  inline void               Cluster::SetTrip(Proto_Particle * trip) { p_trip = trip; }
+  inline void               Cluster::SetAnti(Proto_Particle * anti) { p_anti = anti; }
+  inline ATOOLS::Vec4D      Cluster::Momentum() const                   { return m_momentum; }
+  inline void               Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
+  inline double             Cluster::Mass2() const             { return m_momentum.Abs2(); }
+  inline double             Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
 
 
 
@@ -120,55 +133,12 @@ namespace AHADIC {
   typedef Cluster_List::const_iterator Cluster_Const_Iterator;
 
   std::ostream & operator<<(std::ostream & s, const Cluster_List & pl);
-
-  struct Proto_Particle {
-  public:
-    ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom;
-    char            m_info;
-    double          m_mass;
-    Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info);  
-  };
-
-  std::ostream & operator<<(std::ostream & s, const Proto_Particle &);
-
-  typedef std::list<Proto_Particle * >        Proto_Particle_List;   
-  typedef Proto_Particle_List::iterator       PPL_Iterator; 
-  typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
-  typedef std::vector<Proto_Particle_List *>  VectorOfPPLs;
-  typedef VectorOfPPLs::iterator              VPPL_Iterator;
-
-  std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
   /*!
     \file 
-    \brief Contains the class AHADIC::Cluster and the structs AHADIC::ctp and
-    AHADIC::ltp, which further descibe and label cluster properties, and the struct
+    \brief Contains the class AHADIC::Cluster, the structs AHADIC::control and 
     AHADIC::Proto_Particle.
   */
 
-  /*!
-    \struct ctp
-    \brief Description of AHADIC::Cluster type. 
-
-    Available labels are: 
-    - none                = 0, 
-    - quark-antiquark     = 11, 
-    - quark-diquark       = 12, 
-    - antidiquark-quark   = 21, 
-    - antidiquark-diquark = 22.
-    In practise, they are not used at the moment.
-  */
-  /*!
-    \struct ltp
-    \brief Identifying leading particles in a AHADIC::Cluster. 
-
-    Available labels are: 
-    - no          = 0,
-    - leadingtrip = 1,
-    - leadinganti = 2,
-    - leadingboth = 3
-    In practise, they are not used at the moment.
-  */
   /*!
     \struct Proto_Particle 
     \brief This struct is used for the construction of clusters. 
@@ -182,8 +152,8 @@ namespace AHADIC {
 
     The basic objects of this hadronisation model are colourless objects composed of 
     a quark-antiquark pair or similar (diquarks). In the realisation here, the objects 
-    are more or less carriers of information: flavour of the quarks, their momenta, 
-    links to their offsprings.
+    are more or less carriers of information: flavour of the quarks and their momenta,
+    both encoded in a Proto_Particle, links to the clusters' offsprings.
 
     During hadronisation, the clusters are formed (see AHADIC::Cluster_Formation_Handler
     and the classes called by it), after the gluons have been split into colour 
@@ -196,26 +166,47 @@ namespace AHADIC {
   */
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member variables for struct Proto_Particle
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \var ATOOLS::Flavour Proto_Particle::m_flav
+    \brief The original particles flavour, copied in this little container.
+  */
+  /*!
+    \var ATOOLS::Vec4D Proto_Particle::m_mom
+    \brief The original particles four-momentum, copied in this little container.
+  */
+  /*!
+    \var char Proto_Particle::m_info
+    \brief The original particles info-char, copied in this little container.
+  */
+  /*!
+    \fn Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) 
+    \brief Explicit constructor, increments the counter::AHAprotoparticles counter.
+  */
+  /*!
+    \fn Proto_Particle::Proto_Particle(const Proto_Particle &) 
+    \brief Copy constructor, increments the counter::AHAprotoparticles counter.
+  */
+  /*!
+    \fn Proto_Particle::~Proto_Particle()
+    \brief Destructor, decrements the counter::AHAprotoparticles counter.
+  */
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member variables for Cluster
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \var ctp::code Cluster::m_type
-    \brief The actual type of the cluster. 
-
-    In the default constructor it is set to "no", otherwise chosen corresponding to the 
-    flavours, cf. the description of AHADIC::ctp.
+    \var Proto_Particle * Cluster::p_trip
+    \brief The Proto_Particle with triplet colour charge (quark or antidiquark).
   */
   /*!
-    \var ATOOLS::Flavour Cluster::m_flavours[2]
-    \brief The flavours of the two constituents of the cluster. 
+    \var Proto_Particle * Cluster::p_antitrip
+    \brief The Proto_Particle with antitriplet colour charge (antiquark or diquark).
   */
   /*!
     \var ATOOLS::Vec4D Cluster::m_momentum
     \brief The momentum of the cluster.
-  */
-  /*!
-    \var ATOOLS::Vec4D Cluster::m_momenta[2]
-    \brief The momenta of the two constituents of the cluster. 
   */
   /*!
     \var ATOOLS::Poincare Cluster::m_boost
@@ -257,6 +248,7 @@ namespace AHADIC {
     \brief A pointer to a particle representing the cluster - this can be used for extended
     event records.
   */
+
   /*!
     \var static long int Cluster::s_cluster_count
     \brief For debugging reasons - a counter checking whether all clusters have been
@@ -284,26 +276,24 @@ namespace AHADIC {
     the actual (static) number.  
   */
   /*!
-    \fn Cluster::Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D,
-                         const ATOOLS::Flavour &,const ATOOLS::Vec4D)
+    \fn Cluster::Cluster(Proto_Particle * trip, Proto_Particle * anti)
     \brief Constructive constructor
 
-    Here, the flavours are sorted such that the colour structure is triplet-antitriplet,
-    and the type is then set accordingly. If no legal colour structure is found, the 
-    program aborts.  Also, momenta are set and the cluster's total momentum is set to
-    the sum of its two constituents' momenta.  Also, the AHADIC::Cluster::s_cluster_count and
-    AHADIC::Cluster::s_cluster_number are incremented and the cluster number is set to
-    the actual (static) number.    
+    Here, the Proto_Particle's must be sorted such that the colour structure is 
+    triplet-antitriplet.  If no legal colour structure is found, the program aborts.  
+    The cluster's total momentum is set to the sum of its two constituents' momenta.  Also, 
+    the AHADIC::Cluster::s_cluster_count and AHADIC::Cluster::s_cluster_number are incremented 
+    and the cluster number is set to the actual (static) number.    
   */
   /*!
     \fn Cluster::~Cluster()
     \brief Destructor.
 
-    In principle, the destructor doesn't do anything but decrementing the cluster counter
+    The destructor deletes the two Proto_Particle's and decrements the cluster counter 
     AHADIC::Cluster::s_cluster_count.
   */
   /*!
-    \fn ATOOLS::Blob * Cluster::CHHDecayBlob()
+    \fn ATOOLS::Blob * Cluster::DecayBlob()
     \brief Constructs and returns a decay blob for the cluster.
 
     This method constructs a decay blob for the cluster with the type ATOOLS::btp::Cluster_Decay
@@ -314,84 +304,82 @@ namespace AHADIC {
   */
   /*!
     \fn Cluster * Cluster::GetLeft()  const
-    \brief Returns the pointer to the left offspring cluster, p_left.
+    \brief Returns the pointer to the left offspring cluster, Cluster::p_left.
   */
   /*!
     \fn Cluster * Cluster::GetRight()  const
-    \brief Returns the pointer to the right offspring cluster, p_right.
+    \brief Returns the pointer to the right offspring cluster, Cluster::p_right.
   */
   /*!
     \fn Cluster * Cluster::GetPrev()  const
-    \brief Returns the pointer to the originator cluster, p_prev.
+    \brief Returns the pointer to the originator cluster, Cluster::p_prev.
+  */
+  /*!
+    \fn void Cluster::SetLeft(Cluster *);
+    \brief Sets the pointer to the left offspring cluster, Cluster::p_left. 
+
+    This method is actually not being used in the code.
+  */
+  /*!
+    \fn void Cluster::SetRight(Cluster *);
+    \brief Sets the pointer to the right offspring cluster, Cluster::p_right.
+
+    This method is actually not being used in the code.
+  */
+  /*!
+    \fn void Cluster::SetPrev(Cluster *);
+    \brief Sets the pointer to the originator cluster, Cluster::p_prev.
+
+    This method is actually not being used in the code.
   */
   /*!
     \fn ATOOLS::Particle * Cluster::GetSelf() const
     \brief Returns the poniter to the cluster particle.
   */
   /*!
-    \fn void Cluster::SetLeft(Cluster *);
-    \brief Sets the pointer to the left offspring cluster, p_left. 
-
-    This method is actually not being used in the code.
-  */
-  /*!
-    \fn void Cluster::SetRight(Cluster *);
-    \brief Sets the pointer to the right offspring cluster, p_right.
-
-    This method is actually not being used in the code.
-  */
-  /*!
-    \fn void Cluster::SetPrev(Cluster *);
-    \brief Sets the pointer to the originator cluster, p_prev.
-
-    This method is actually not being used in the code.
-  */
-  /*!
    \fn void Cluster::SetSelf(ATOOLS::Particle *)
    \brief Sets the cluster's particle pointer.
   */
   /*!
+    \fn Proto_Particle * Cluster::GetTrip()  const
+    \brief Returns the pointer to the triplet constituent, Cluster::p_trip.
+  */
+  /*!
+    \fn Proto_Particle * Cluster::GetAnti()  const
+    \brief Returns the pointer to the antitriplet constituent, Cluster::p_anti.
+  */
+  /*!
+    \fn void Cluster::SetTrip(Proto_Particle *);
+    \brief Sets the pointer to the triplet constituent, Cluster::p_trip. 
+  */
+  /*!
+    \fn void Cluster::SetAnti(Proto_Particle *);
+    \brief Sets the pointer to the antitriplet constituent, Cluster::p_anti.
+  */
+
+  /*!
     \fn void Cluster::DeleteLeft();
-    \brief Deletes the left offspring and sets the pointer p_left to NULL.
+    \brief Deletes the left offspring and sets the pointer Cluster::p_left to NULL.
 
     This method is actually not being used in the code.
   */
   /*!
     \fn void Cluster::DeleteRight();
-    \brief Deletes the right offspring and sets the pointer p_right to NULL.
+    \brief Deletes the right offspring and sets the pointer Cluster::p_right to NULL.
 
     This method is actually not being used in the code.
   */
   /*!
-    \fn ATOOLS::Flavour Cluster::GetFlav(const int) const
-    \brief Returns the first or second flavour of m_flavours, the integer should be 1 or 2.
+    \fn ATOOLS::Vec4D Cluster::Momentum() const
+    \brief Returns the clusters momentum.
   */
   /*!
-    \fn void Cluster::SetFlav(const int,const ATOOLS::Flavour &)
-    \brief Sets the first or second flavour of m_flavours, the integer should be 1 or 2.
+    \fn void Cluster::SetMomentum()
+    \brief Sets the clusters momentum.
   */
   /*!
-    \fn ATOOLS::Vec4D Cluster::Momentum(const int=0) const
-    \brief Returns the momentum of one of the offsprings (argument equals 1 or 2) or the 
-    clusters momentum (argument=0).
-  */
-  /*!
-    \fn void Cluster::SetMomentum(const int,const ATOOLS::Vec4D)
-    \brief Sets the momentum of one of the offsprings (argument equals 1 or 2) or the 
-    clusters momentum (argument=0).
-  */
-  /*!
-    \fn ltp::code Cluster::GetLeads() const;
-    \brief Returns the code for the leading particle configuration.
-  */
-  /*!
-    \fn void Cluster::SetLeads(const ltp::code);
-    \brief Sets the code for the leading particle configuration. 
-  */
-  /*!
-    \fn double Cluster::Mass(const int=0) const;
-    \brief Returns the constituent mass of one of the offsprings (argument equals 1 or 2) or 
-    the clusters mass (argument=0), calculated directly from its momentum.
+    \fn double Cluster::Mass() const;
+    \brief Returns the clusters mass, calculated directly from its momentum.
   */
   /*!
     \fn double Cluster::Mass2() const;
@@ -399,14 +387,8 @@ namespace AHADIC {
   */
   /*!
     \fn void Cluster::Update()
-    \brief Performs on an actual cluster the same steps as in the constructive constructor, i.e.
-    refreshs momenta and structure.
-
-    This method refreshs the clusters momentum (equals then the sum of its two offsprings),
-    checks for the colour structure of the constituents and sets the type accordingly. In
-    case the colour configuration is illegal, the run aborts.  This method is used in
-    AHADIC::Colour_Reconnections, where, eventually, constituents are exchanged between
-    two clusters.
+    \brief Performs on an actual cluster the same steps as in the constructive constructor, 
+    i.e. refreshs the momentum and checks the structure.
   */
   /*!
     \fn void Cluster::RescaleMomentum(ATOOLS::Vec4D)
@@ -428,7 +410,7 @@ namespace AHADIC {
 
     To this end, first Cluster::BoostInCMS() is called before a suitable rotation is constructed.
     It is defined such that the first constituent is oriented along the positive z-axis.  With
-    this rotation Cluster::Rotate is called (and m_hasrotate is set to 'true').
+    this rotation Cluster::Rotate is called (and Cluster::m_hasrotate is set to 'true').
   */
   /*!
     \fn void Cluster::RotateAndBoostBack();
@@ -440,18 +422,18 @@ namespace AHADIC {
     \fn void Cluster::BoostInCMS()
     \brief Boosts the cluster, its constituents, and all offsprings into its c.m. system.
 
-    If there is no boost so far (m_hasboost=false) the c.m. system of the cluster is 
+    If there is no boost so far (Cluster::m_hasboost=false) the c.m. system of the cluster is 
     constructed from its momentum. This momentum, the two constituents' momenta and all 
     offsprings are boosted into the clusters' c.m. system. Finally, the cluster particle's 
-    momentum is updated and m_hasboost is set to 'true'.    
+    momentum is updated and Cluster::m_hasboost is set to 'true'.    
   */
   /*!
     \fn void Cluster::BoostBack()
     \brief Boosts the cluster, its constituents, and all offsprings back into the lab system.
 
-    If there is already a boost (m_hasboost=true) the clusters momentum, the two constituents' 
-    momenta and all ofsprings are boosted back (into the lab system). Finally, the cluster particle's 
-    momentum is updated and m_hasboost is set to 'false'.    
+    If there is already a boost (Cluster::m_hasboost=true) the clusters momentum, the two 
+    constituents' momenta and all ofsprings are boosted back (into the lab system). Finally, 
+    the cluster particle's momentum is updated and Cluster::m_hasboost is set to 'false'.    
   */
   /*!
     \fn void Cluster::Boost(ATOOLS::Poincare &)
@@ -500,25 +482,6 @@ namespace AHADIC {
   /*!
     \fn inline void ResetClusterNumber()
     Resets the counter.  For debugging only.
-  */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Description of member variables for struct Proto_Particle
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  /*!
-    \var ATOOLS::Flavour Proto_Particle::m_flav
-    \brief The original particles flavour, copied in this little container.
-  */
-  /*!
-    \var ATOOLS::Vec4D Proto_Particle::m_mom
-    \brief The original particles four-momentum, copied in this little container.
-  */
-  /*!
-    \var char Proto_Particle::m_info
-    \brief The original particles info-char, copied in this little container.
-  */
-  /*!
-    \fn Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) 
-    \brief Explicit constructor, the only one available and used.
   */
 }
 #endif

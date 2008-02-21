@@ -7,8 +7,9 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Strong_Coupling::Strong_Coupling(const asform::code form) :
-  m_form(form)
+Strong_Coupling::Strong_Coupling(const asform::code form,
+				 const double pt02) :
+  m_form(form), m_pt02(pt02)
 {
   m_pt02    = hadpars.Get(std::string("pt02"));
   m_beta0   = 12.*M_PI/(33.-2.*3.);

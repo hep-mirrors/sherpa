@@ -17,12 +17,7 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
   while (!plin->empty()) {
     pit1=plin->begin();
     pit2 = pit1;pit2++;
-    cluster = new Cluster((*pit1)->m_flav,(*pit1)->m_mom,
-			  (*pit2)->m_flav,(*pit2)->m_mom);
-    lead = 0;
-    if ((*pit1)->m_info=='L') lead+=1; 
-    if ((*pit2)->m_info=='L') lead+=2;
-    if (lead>0) cluster->SetLeads(ltp::code(lead));
+    cluster = new Cluster((*pit1),(*pit2));
     clout->push_back(cluster);
 
     Particle * self = new Particle(-1,Flavour(kf::cluster),cluster->Momentum());
@@ -33,8 +28,6 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     control::s_AHAparticles++;
     cluster->SetSelf(self);
 
-    delete (*pit1);    delete (*pit2); 
     plin->pop_front(); plin->pop_front();
-    control::s_AHAprotoparticles-=2;
   }
 }

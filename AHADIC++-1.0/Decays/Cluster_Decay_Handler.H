@@ -2,11 +2,11 @@
 #define Cluster_Decay_Handler_H
 
 #include "Cluster_Part.H"
+#include "Dipole_Splitter.H"
 #include "Soft_Cluster_Handler.H"
 #include "Blob_List.H"
 #include "Cluster.H"
 #include "Cluster_Decay_Analysis.H"
-#include "Return_Value.H"
 
 
 namespace AHADIC {
@@ -19,10 +19,10 @@ namespace AHADIC {
  
     ATOOLS::Blob *  DecayIt(Cluster *);
   public:
-    Cluster_Decay_Handler(Soft_Cluster_Handler *,bool=false);
+    Cluster_Decay_Handler(bool=false);
     ~Cluster_Decay_Handler();
 
-    ATOOLS::Return_Value::code DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL);
+    int DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL);
   };
   /*!
     \file Cluster_Decay_Handler.H
@@ -79,7 +79,7 @@ namespace AHADIC {
     \brief Deletes the Cluster_Part and the  Cluster_Decay_Analysis object.
   */
   /*!
-    \fn ATOOLS::Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL)
+    \fn int Cluster_Decay_Handler::DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL)
     \brief Managing the decays of the clusters in a Cluster_List into secondary
     clusters and, ultimately, the primordial hadrons.
 

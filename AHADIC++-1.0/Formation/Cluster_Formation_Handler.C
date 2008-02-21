@@ -1,6 +1,17 @@
 #include "Cluster_Formation_Handler.H"
 #include "Hadronisation_Parameters.H"
-#include "Dipole_Splitter.H"
+
+namespace AHADIC {
+  bool triplet(Proto_Particle * pp) {
+    return ((pp->m_flav.IsQuark() && !pp->m_flav.IsAnti()) ||
+	    (pp->m_flav.IsDiQuark() && pp->m_flav.IsAnti()) );
+  }
+  
+  bool antitriplet(Proto_Particle * pp) {
+    return ((pp->m_flav.IsQuark() && pp->m_flav.IsAnti()) ||
+	    (pp->m_flav.IsDiQuark() && !pp->m_flav.IsAnti()) );
+  }
+}
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -8,17 +19,17 @@ using namespace std;
 
 Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
   m_single_cr(true), m_double_cr(false),
-  p_gludecayer(new Gluon_Decayer(new Dipole_Splitter(hadpars.GetCoupling()))), 
+  p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter())), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
-  p_softclusters(new Soft_Cluster_Handler()),
+  p_softclusters(hadpars.GetSoftClusterHandler()),
   p_clulist(new Cluster_List),
   m_analyse(ana)
 { 
   if (m_analyse) {
-    m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,50.,100);
-    m_histograms[string("Cluster_Mass_Reconnections")] = new Histogram(0,0.,50.,100);
-    m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,50.,100);
+    m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,100.,200);
+    m_histograms[string("Cluster_Mass_Reconnections")] = new Histogram(0,0.,100.,200);
+    m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,100.,200);
     m_histograms[string("Cluster_Number_Formation")]   = new Histogram(0,0.,20.,20);
     m_histograms[string("Cluster_Number_Transformed")] = new Histogram(0,0.,20.,20);
   }
@@ -44,57 +55,33 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer   = NULL; }
   if (p_cformer)      { delete p_cformer;      p_cformer      = NULL; }
   if (p_recons)       { delete p_recons;       p_recons       = NULL; }
-  if (p_softclusters) { delete p_softclusters; p_softclusters = NULL; }
   if (p_clulist)      { delete p_clulist;      p_clulist      = NULL; }
 }
 
-Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob,
-							   Blob_List * bl)
+int Cluster_Formation_Handler::FormClusters(Blob * blob,Blob_List * bl)
 {
   Reset();
-  if (blob==NULL) Return_Value::Error;
+  if (blob==NULL) return 1;
   p_blob = blob;
 
-  switch (int(ExtractSinglets())) {
-  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
-  case int(Return_Value::Success) : 
-  default:
-    break;
-  }
-  switch (int(FormOriginalClusters())) {
-  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
-  case int(Return_Value::Success) : 
-  default:
-    break;
-  }
+  if (!ExtractSinglets())          return -1;
+  if (!ShiftOnMassShells())        return -1;
+  if (!FormOriginalClusters())     return 0;
+  if (!ApplyColourReconnections()) return 0;
+  if (!ClustersToHadrons(bl))      return 0;
+  if (!MergeClusterListsIntoOne()) return 0;
 
-  switch (int(ApplyColourReconnections())) {
-  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
-  case int(Return_Value::Success) : 
-  default:
-    break;
+  if (msg->LevelIsDebugging()) {
+    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(*p_clulist)<<std::endl;
   }
-  switch (int(ClustersToHadrons(bl))) {
-  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
-  case int(Return_Value::Success) : 
-  default:
-    break;
-  }
-  switch (int(MergeClusterListsIntoOne())) {
-  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
-  case int(Return_Value::Success) : 
-  default:
-    break;
-  }
-
-  return Return_Value::Success;
+  return 1;
 }
 
 
 void Cluster_Formation_Handler::Reset()
 {
   if (m_partlists.size()>0) {
-    for (VPPL_Iterator plit=m_partlists.begin();
+    for (LPPL_Iterator plit=m_partlists.begin();
 	 plit!=m_partlists.end();plit++) delete (*plit); 
   }
   m_partlists.clear();
@@ -111,14 +98,12 @@ void Cluster_Formation_Handler::Reset()
   m_clulists.clear();
 }
 
-
-Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
+bool Cluster_Formation_Handler::ExtractSinglets()
 {
-  Particle            * part;
   Proto_Particle_List * pli(NULL);
-  bool        construct(false);
-  int         col1, col2;
-
+  bool       construct(false);
+  int        col1, col2;
+  Particle * part;
   for (int i=0;i<p_blob->NInP();i++) {
     part = p_blob->InParticle(i); 
     if ((part->Status()!=part_status::active && part->Status()!=part_status::fragmented) || 
@@ -126,7 +111,6 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
     if (construct) {
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
-	control::s_AHAprotoparticles++;
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
 	if (col1==col2) construct = false;
@@ -136,7 +120,7 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
 		   <<"   Assumed everything okay with blob."
 		   <<std::endl<<(*p_blob)<<std::endl;
 	abort();
-	return Return_Value::Error;
+	return false;
       }
     }
     else {
@@ -144,70 +128,180 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
       Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
-      control::s_AHAprotoparticles++;
       pli->push_back(copy);
       m_partlists.push_back(pli);
       construct = true;
     }
   }
-  return Return_Value::Success;
+  return true;
 }
 
+bool Cluster_Formation_Handler::ShiftOnMassShells() {
+  ListOfPPLs shiftables, nonshiftables;
+  LPPL_Iterator pplit;
+  PPL_Iterator  pit;
+  size_t npl(m_partlists.size());
+  while (!m_partlists.empty()) {
+    pplit = m_partlists.begin();
+    Vec4D  mom(0.,0.,0.,0.);
+    double mass(0.);
+    for (pit=(*pplit)->begin();pit!=(*pplit)->end();++pit) {
+      mom  += (*pit)->m_mom;
+      mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
+    }
+    if (mom.Abs2()>sqr(mass)) shiftables.push_back((*pplit));
+                         else nonshiftables.push_back((*pplit));
+    pplit=m_partlists.erase(pplit);
+  }  
 
-Return_Value::code Cluster_Formation_Handler::FormOriginalClusters() 
+  Proto_Particle_List * pplin;
+  int k(0);
+  while (!nonshiftables.empty()) {
+    bool takefromshift(false);
+    if (nonshiftables.size()==1) {
+      if (shiftables.empty()) return false;
+      pplin = SelectFromList(&shiftables);
+      takefromshift = true;
+    }
+    else pplin = new Proto_Particle_List;
+    int i(0);
+    while (!nonshiftables.empty()) {
+      Proto_Particle_List * pplout(nonshiftables.front());
+      while(!pplout->empty()) {
+	pplin->push_back(pplout->front());
+	pplout->pop_front();
+      }
+      delete pplout;
+      nonshiftables.pop_front();
+    }
+
+    Vec4D  mom(0.,0.,0.,0.);
+    double mass(0.);
+    for (pit=pplin->begin();pit!=pplin->end();++pit) {
+      mom  += (*pit)->m_mom;
+      mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
+    }
+    if (takefromshift) {
+      if (mom.Abs2()<sqr(mass)) {
+	shiftables.remove(pplin);
+	nonshiftables.push_back(pplin);
+      }
+    }    
+    else shiftables.push_back(pplin);
+  }
+
+  while (!shiftables.empty()) {
+    Proto_Particle_List * pplist = (*shiftables.begin()), * ppl;
+    int num = count_if(pplist->begin(),pplist->end(),triplet);
+    ShiftList(pplist);
+    if (num==0 ||
+	(num==1 && triplet((*pplist->begin())))) 
+      m_partlists.push_back((*shiftables.begin()));
+    else {
+      Proto_Particle * stopit;
+      PPL_Iterator pit1;
+      if (pplist->front()->m_flav.IsGluon()) {
+	while (pplist->front()->m_flav.IsGluon()) {
+	  pplist->push_back(pplist->front());
+	  pplist->pop_front();
+	}
+      }
+      while (!pplist->empty()) {
+	ppl  = new Proto_Particle_List;
+	pit  = find_if(pplist->begin(),pplist->end(),antitriplet);
+	do {
+	  ppl->push_back(pplist->front());
+	  pplist->pop_front();
+	} while (pit!=pplist->begin());
+	ppl->push_back(pplist->front());
+	pplist->pop_front();
+	m_partlists.push_back(ppl);
+      }
+      delete pplist;
+    }
+    shiftables.pop_front();
+  }
+
+  return true;
+}
+
+Proto_Particle_List * Cluster_Formation_Handler::SelectFromList(ListOfPPLs * lppl,
+								Proto_Particle_List * ppl)
+{
+  double maxmass(0.0);
+  Proto_Particle_List * winner(NULL);
+  for (LPPL_Iterator pplit=lppl->begin();pplit!=lppl->end();pplit++) {
+    if (ppl && (*pplit)==ppl) continue;
+    Vec4D mom(0.,0.,0.,0.);
+    for (PPL_Iterator pit=(*pplit)->begin();pit!=(*pplit)->end();pit++) {
+      mom += (*pit)->m_mom;
+    }
+    if (mom.Abs2()>maxmass) {
+      winner  = (*pplit);
+      maxmass = mom.Abs2();
+    }
+  }
+  return winner;
+}
+
+bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
+{
+  size_t number(pl->size());
+  if (number<2) return true; 
+  bool val(true);
+  std::vector<Vec4D>  momenta(number);
+  std::vector<double> masses(number);
+  int k(0);
+  Flavour flav;
+  PPL_Iterator pit;
+
+#ifdef AHAmomcheck
+  Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
+#endif
+  for (pit=pl->begin();pit!=pl->end();++pit,++k) {
+    flav       = (*pit)->m_flav;
+    momenta[k] = (*pit)->m_mom;
+#ifdef AHAmomcheck
+    checkbef  += momenta[k];
+#endif
+    masses[k]  = hadpars.GetConstituents()->Mass(flav);
+  }
+  if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front())) val=false;
+  
+  k = 0;
+  for (pit=pl->begin();pit!=pl->end();++pit,++k) {
+    (*pit)->m_mom = momenta[k]; 
+#ifdef AHAmomcheck
+    checkaft += (*pit)->m_mom;
+#endif
+  }
+
+#ifdef AHAmomcheck
+  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
+    msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
+	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
+  }
+  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+#endif
+
+  return val;
+}
+
+bool Cluster_Formation_Handler::FormOriginalClusters()
 {
   Cluster_List * clist=NULL;
-  VPPL_Iterator pplit,help;
-  Vec4D  totvec;
-  double totmass;
-  Flavour flav;
-  bool rearrange;
-  do {
-    rearrange = false;
-    for (pplit=m_partlists.begin();pplit!=m_partlists.end();pplit++) {
-      totmass = 0.;
-      totvec  = Vec4D(0.,0.,0.,0.);
-      for (PPL_Iterator pit=(*pplit)->begin();pit!=(*pplit)->end();++pit) {
-	flav     = (*pit)->m_flav;
-	totmass += hadpars.GetConstituents()->Mass(flav);
-	totvec  += (*pit)->m_mom;
-      }
-      if (sqr(totmass)>totvec.Abs2()) {
-	rearrange = true;
-	help = pplit;
-	help++;
-	if (help==m_partlists.end()) {
-	  help = pplit;
-	  help--;
-	  while (!(*pplit)->empty()) { 
-	    (*help)->push_back((*pplit)->front()); 
-	    (*pplit)->pop_front(); 
-	  }
-	  m_partlists.pop_back();	  
-	  break;
-	}
-	else {
-	  while (!(*help)->empty())  { 
-	    (*pplit)->push_back((*help)->front()); 
-	    (*help)->pop_front(); 
-	  }
-	  pplit=m_partlists.erase(help);
-	  break;
-	}
-      }
-    }
-  } while(rearrange);
-  
-  
+  LPPL_Iterator pplit;
+
   while (!m_partlists.empty()) {
     pplit=m_partlists.begin();
     clist = new Cluster_List;
     if (!p_gludecayer->DecayList(*pplit)) {
       msg_Info()<<"WARNING in "<<METHOD<<":"<<std::endl
-		<<"   Not enough energy to move partons on their mass shell."<<std::endl
+		<<"   Not enough energy to move partons on their mass shell:"<<std::endl
+		<<(**pplit)
 		<<"   Retry the formation procedure."<<std::endl;
       rvalue.IncRetryMethod(METHOD);
-      return Return_Value::Retry_Method;
+      return false;
     }
     else {
       p_cformer->ConstructClusters(*pplit,clist);
@@ -226,11 +320,11 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
       histomass->Insert((*cit)->Mass());
     }
   }
-  return Return_Value::Success;
+  return true;
 }
 
 
-Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
+bool Cluster_Formation_Handler::ApplyColourReconnections()
 {
   std::vector<Cluster_List *>::iterator clit1, clit2;
   if (m_single_cr) {
@@ -257,13 +351,31 @@ Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
       }
     }
   }
-  return Return_Value::Success;
+  return true;
 }
 
-Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
+bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 {
+  Vec4D checkbef(0.,0.,0.,0.);
+  for (std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
+       clit!=m_clulists.end();clit++) {
+    if (!(*clit)->empty()) {
+      for (Cluster_Iterator cit=(*clit)->begin();cit!=(*clit)->end();cit++) {
+	checkbef += (*cit)->Momentum();
+      }
+    }
+  }
+
   std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
   while(clit!=m_clulists.end()) {
+    if (msg->LevelIsDebugging()) {
+      msg_Out()<<"======================================================="<<std::endl
+	       <<METHOD<<" deal with a cluster list:"<<((*clit)->size())<<std::endl
+	       <<(**clit);
+    }
+    Vec4D beflocal(0.,0.,0.,0.), aftlocal(0.,0.,0.,0.);
+    for (Cluster_Iterator cit=(*clit)->begin();cit!=(*clit)->end();cit++) beflocal += (*cit)->Momentum();
+
     if (!p_softclusters->TreatClusterList((*clit),p_blob)) {
       Cluster_List * clist = NULL;
       int maxsize = 10000;
@@ -280,21 +392,46 @@ Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_Lis
       Cluster_Iterator endit=(*clit)->end();
       while (cit!=endit) {
 	if (!(*cit)->GetLeft()) {
+	  //msg_Out()<<" No decay: "<<(*(*cit)->GetSelf())<<std::endl;
 	  p_blob->AddToOutParticles((*cit)->GetSelf());
 	  cit++;
 	}
 	else {
 	  if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none)) {
+	    //msg_Out()<<" Two new proto clusters for "<<(**cit)<<std::endl;
 	    (*clit)->push_back((*cit)->GetLeft());
 	    (*clit)->push_back((*cit)->GetRight());
 	  }
 	  else {
+	    //msg_Out()<<" Looks like a decay: "<<std::endl
+	    //	     <<"           "<<(*(*cit)->GetSelf())<<std::endl
+	    //	     <<"           "<<(*(*cit)->GetLeft()->GetSelf())<<std::endl
+	    //	     <<"           "<<(*(*cit)->GetRight()->GetSelf())<<std::endl
+	    //	     <<std::endl;
+	    
 	    p_blob->AddToOutParticles((*cit)->GetSelf());
-	    bl->push_back((*cit)->CHHDecayBlob());
+	    Blob * decblob((*cit)->ConstructDecayBlob());
+	    bl->push_back(decblob);
+
+#ifdef AHAmomcheck
+	    if (dabs(decblob->CheckMomentumConservation().Abs2())>1.e-12) {
+	      msg_Out()<<METHOD<<" : Momentum violation at cluster decay blob : "
+		       <<decblob->CheckMomentumConservation()<<std::endl
+		       <<(*decblob)<<std::endl;
+	    }
+	    else {
+	      msg_Out()<<METHOD<<" : Momentum conservation at cluster decay blob : "
+		       <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
+	    }
+#endif
 	  }
 	  if (*cit) delete (*cit);
 	  cit = (*clit)->erase(cit);
 	}
+      }
+      if (msg->LevelIsDebugging()) {
+	msg_Out()<<"         remaining cluster list with size "<<(*clit)->size()<<std::endl
+		 <<"======================================================="<<std::endl;
       }
       clit++;
     }
@@ -315,11 +452,11 @@ Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_Lis
     }
     histonumb->Insert(numb);
   }
-  return Return_Value::Success;
+  return true;
 }
 
 
-Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
+bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
 {
   if (!p_clulist->empty()) {
     do {
@@ -341,5 +478,5 @@ Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
     }
   }
   Reset();
-  return Return_Value::Success;
+  return true;
 }

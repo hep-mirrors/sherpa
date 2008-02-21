@@ -7,13 +7,11 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Cluster_Decay_Handler::Cluster_Decay_Handler(Soft_Cluster_Handler * softclusters,bool ana) :
-  p_softclusters(softclusters),
-  p_analysis(NULL)
-{ 
-  p_clus = new Cluster_Part();
-  if (ana) p_analysis = new Cluster_Decay_Analysis();
-}
+Cluster_Decay_Handler::Cluster_Decay_Handler(bool ana) :
+  p_softclusters(hadpars.GetSoftClusterHandler()),
+  p_clus(new Cluster_Part(hadpars.GetSplitter())),
+  p_analysis(ana?new Cluster_Decay_Analysis():NULL)
+{ }
 
 
 
@@ -23,8 +21,7 @@ Cluster_Decay_Handler::~Cluster_Decay_Handler()
   if (p_analysis) { delete p_analysis; p_analysis=NULL; }
 }
 
-Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
-							Blob_List * blobs)
+int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blobs)
 {
   Cluster    * cluster;
   Blob       * blob(NULL);
@@ -32,37 +29,42 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
   Cluster_Iterator cit=clusters->begin();
   while (!clusters->empty()) {
     cluster = (*cit);
-    //cout<<METHOD<<" ############################### "<<clusters->size()<<endl<<(**cit)<<endl;
     blob    = DecayIt(cluster);
     blobs->push_back(blob);
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
     p_softclusters->TreatClusterList(&clist,blob);
     Cluster_Iterator dcit=clist.begin();
-    //cout<<"   ---- before loop "<<clist.size()<<endl;
     while (!clist.empty()) {
       if ((*dcit)) {
-	//cout<<"  add to blob . "<<(*(*dcit)->GetSelf())<<endl;
 	blob->AddToOutParticles((*dcit)->GetSelf());
 	if (!(*dcit)->GetLeft() && !(*dcit)->GetRight()) {
 	  clusters->push_back((*dcit));
 	}
 	else {
-	  //cout<<"                     before fill blob ."<<endl;
-	  blobs->push_back((*dcit)->CHHDecayBlob());
-	  //cout<<"                      after fill blob ."<<endl;
+	  Blob * decblob((*dcit)->ConstructDecayBlob());
+#ifdef AHAmomcheck
+	  if (dabs(decblob->CheckMomentumConservation().Abs2())>1.e-12) {
+	    msg_Out()<<METHOD<<" : Momentum violation at cluster decay blob : "
+		     <<decblob->CheckMomentumConservation()<<std::endl
+		     <<(*decblob)<<std::endl;
+	  }
+	  else {
+	    msg_Out()<<METHOD<<" : Momentum conservation at cluster decay blob : "
+		     <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
+	  }
+#endif
+	  blobs->push_back(decblob);
 	  if ((*dcit)->GetLeft()) {
 	    if ((*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none) ||
 		(*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::cluster)) {
 	      clusters->push_back((*dcit)->GetLeft());
-	      //cout<<"  add to clusters: "<<(*(*dcit)->GetLeft())<<endl;
 	    }
 	  }
 	  if ((*dcit)->GetRight()) {
 	    if ((*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::none) ||
 		(*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::cluster)) {
 	      clusters->push_back((*dcit)->GetRight());
-	      //cout<<"  add to clusters: "<<(*(*dcit)->GetRight())<<endl;
 	    }
 	  }
 	  if (*dcit) delete (*dcit);
@@ -75,7 +77,7 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
   }
   if (blob!=NULL && p_analysis) p_analysis->AnalyseThis(blob);  
 
-  return Return_Value::Success;
+  return 1;
 }
 
 

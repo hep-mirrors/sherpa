@@ -32,9 +32,7 @@ namespace AHADIC {
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
-    Pair_Popper        * p_popper;
-    double               m_alpha,m_fraction;
-    double               m_offset1,m_offset2,m_photonenergy;
+    double               m_offset1,m_offset2,m_alpha,m_eta,m_photonenergy;
     
     std::map<Cluster *,std::vector<ATOOLS::Flavour> >           m_ctrans;
     std::map<Cluster *,std::vector<ATOOLS::Flavour> >::iterator m_ctit;
@@ -51,7 +49,11 @@ namespace AHADIC {
     double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,
 		       const double,bool=false);
   public:
-    Soft_Cluster_Handler();
+    Soft_Cluster_Handler(Single_Transitions * singletransitions,
+			 Double_Transitions * doubletransitions,
+			 const double offset1,const double offset2,
+			 const double alpha,const double eta,
+			 const double photonenergy);
     ~Soft_Cluster_Handler();
     bool           TreatClusterList(Cluster_List *,ATOOLS::Blob *);
 
@@ -125,23 +127,10 @@ namespace AHADIC {
     to lists of pairs of hadrons with fitting wave function components and their value.  
   */
   /*!
-    \var Pair_Popper * Soft_Cluster_Handler::p_popper
-    \brief A pointer to the AHADIC::Pair_Popper.
-
-    It is used for the determination of \f$p_\perp\f$ in the hadronic decays of clusters, and,
-    eventually, for the inclusion of flavor-mass dependent popping weights in cluster decays.
-  */
-  /*!
     \var double Soft_Cluster_Handler::m_alpha
     \brief The (tunable) exponent \f$\alpha\f$ in the calculation of the decay weights.
 
     This parameter is set through 'C->HH_DECAY_EXPONENT'.
-  */
-  /*!
-    \var double Soft_Cluster_Handler::m_fraction
-    \brief The (tunable) momentum fraction \f$\xi_s\f$ in the determination of decay kinematics.
-
-    This parameter is set through 'CLUSTER_MASS_FRACTION'.
   */
   /*!
     \var double Soft_Cluster_Handler::m_offset1
@@ -305,15 +294,9 @@ namespace AHADIC {
     \brief Fixes the kinematics of a cluster decay into two hadrons and saves the
     information in the cluster's offsprings.
 
-    First, a \f$p_\perp\f$ is selected through the AHADIC::Pair_Popper, with a maximal
-    \f$p_\perp\f$ of 
-    \f[
-    p_\perp^{\rm max} = \xi_s\frac{(M_c^2-m_1^2-m_2^2)^2-4m_1^2m_2^2}{4M_c^2}
-    \f]
-    with \f$\xi_s\f$ realized through Soft_Cluster_Handler::m_fraction.
-    With the \f$p_\perp\f$ for the decay at hand  - it is taken w.r.t. the original direction of
-    the clusters constituents - the kinematics is fully fixed up to the azimuthal angle
-    which is picked flat at random.  
+    With the \f$\theta\f$ selected according to \f$\sin^\eta\theta\f$ for the decay at hand  - 
+    it is taken w.r.t. the original direction of the clusters constituents - the kinematics 
+    is fully fixed up to the azimuthal angle which is picked flat at random.  
   */
   /*!
     \fn void Soft_Cluster_Handler::ShiftMomenta(const int)

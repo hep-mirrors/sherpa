@@ -26,22 +26,11 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
   cit1 = cit2 = clin->begin(); cit2++;
   do {
     if (TestClusters((*cit1),(*cit2),gen)) {
-      Flavour helpfla = (*cit1)->GetFlav(2);
-      Vec4D   helpmom = (*cit1)->Momentum(2);
-      (*cit1)->SetFlav(2,(*cit2)->GetFlav(2));
-      (*cit1)->SetMomentum(2,(*cit2)->Momentum(2));
-      (*cit2)->SetFlav(2,helpfla);
-      (*cit2)->SetMomentum(2,helpmom);
-      lead1 = int((*cit1)->GetLeads());
-      lead2 = int((*cit2)->GetLeads());
-      if (lead1>1 && lead2<2) {
-	(*cit1)->SetLeads(ltp::code(int((*cit1)->GetLeads())-2));
-	(*cit2)->SetLeads(ltp::code(int((*cit2)->GetLeads())+2));
-      } 
-      else if (lead1<2 && lead2>1) {
-	(*cit1)->SetLeads(ltp::code(int((*cit1)->GetLeads())+2));
-	(*cit2)->SetLeads(ltp::code(int((*cit2)->GetLeads())-2));
-      } 
+      Proto_Particle * help = (*cit1)->GetAnti();
+
+      (*cit1)->SetAnti((*cit2)->GetAnti());
+      (*cit2)->SetAnti(help);
+
       (*cit1)->Update();
       (*cit2)->Update();
       if (m_w14/(m_w23+m_w14)>ran.Get()) { cit2++; gen++; }
@@ -61,8 +50,8 @@ void Colour_Reconnections::Two_Singlet_CR(Cluster_List * cl1,Cluster_List * cl2)
 
 bool Colour_Reconnections::TestClusters(Cluster * cl1,Cluster * cl2,int gen)
 {
-  double kinweight = KinematicWeight(cl1->Momentum(1),cl1->Momentum(2),
-				     cl2->Momentum(1),cl2->Momentum(2));
+  double kinweight = KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
+				     cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
   double colweight = ColourWeight(gen);
   if (kinweight*colweight>ran.Get()) return true;
   return false;
