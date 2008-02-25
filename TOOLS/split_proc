@@ -12,6 +12,15 @@ function cflavs(fl,b,e,nc)
   for (j=b;j<e;++j) ++nc[fl[j]];  
 }
 
+function checkqs(fl,n)
+{
+  nc["21"]=0; nc["94"]=0;
+  cflavs(nfl,0,n,nc);
+  cqs=""(nc["94"]/2);
+  if (match(cqs,"[.]")>0) return 0;
+  return 1;
+}
+
 function genpid(fl,n,pid)
 {
   pid=""; fpid="";
@@ -41,6 +50,7 @@ function genfid(cbfn,cpid)
 function expand(fl,i,n, al)
 {
   if (i==n) {
+    if (!checkqs(fl,n)) return;
     cpid=genpid(fl,n,pid);
     if (cpid in pst) return; pst[cpid]=1;
     cfn=genfid(bfn,cpid);
