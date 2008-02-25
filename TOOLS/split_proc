@@ -14,16 +14,17 @@ function cflavs(fl,b,e,nc)
 
 function genpid(fl,n,pid)
 {
-  pid="";
+  pid=""; fpid="";
   nc["21"]=0; nc["94"]=0;
   cflavs(nfl,0,2,nc);
   if (nc["21"]>0) pid=""nc["21"]"G";
   if (nc["94"]>0) pid=pid""nc["94"]"Q";
-  pid=pid"-";
   nc["21"]=0; nc["94"]=0;
   cflavs(nfl,2,n,nc);
-  if (nc["21"]>0) pid=pid""nc["21"]"G";
-  if (nc["94"]>0) pid=pid""nc["94"]"Q";
+  if (nc["21"]>0) fpid=""nc["21"]"G";
+  if (nc["94"]>0) fpid=fpid""nc["94"]"Q";
+  if (pid!="" && fpid!="") pid=pid"-"fpid;
+  else pid=pid""fpid;
   return pid;
 }
 
@@ -43,11 +44,20 @@ function expand(fl,i,n, al)
     cpid=genpid(fl,n,pid);
     if (cpid in pst) return; pst[cpid]=1;
     cfn=genfid(bfn,cpid);
-    print "  writing '"cfn"'";
-    printf "Process :"pflavs(nfl,0,2) > cfn;
-    printf " ->"pflavs(nfl,2,n) > cfn;
-    print "" > cfn; 
-    for (j in al) print al[j] > cfn;
+    if (cfn in pcnt) {
+      print "%" >> cfn;
+      pcnt[cfn]++;
+    }
+    else {
+      printf "" > cfn;
+      pcnt[cfn]=1;
+    }
+    print "  writing '"cfn"'("pcnt[cfn]")";
+    printf "Process :"pflavs(nfl,0,2) >> cfn;
+    printf " ->"pflavs(nfl,2,n) >> cfn;
+    print "" >> cfn; 
+    for (j in al) print al[j] >> cfn;
+    close(cfn);
     return;
   }
   if (fl[i]=="93") {
@@ -74,7 +84,7 @@ BEGIN{ ra=0; }
     }
     else {
       ra=1; fln=0;
-      for (i=3;i<NF;++i) 
+      for (i=3;i<=NF;++i)
 	if ($i!="->") fl[fln++]=$i;
       next;
     }
