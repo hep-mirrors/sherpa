@@ -20,8 +20,12 @@ namespace MODEL {
   typedef std::map<std::string,ATOOLS::Function_Base *> ScalarFunctionsMap; 
   typedef std::map<std::string,ATOOLS::CMatrix>         ComplexMatricesMap; 
 
+  class Interaction_Model_Base;
+
   class Model_Base {
   protected:
+    Interaction_Model_Base  * p_model;
+
     std::string               m_dir,m_file;
     std::string               m_name;
 
@@ -54,6 +58,8 @@ namespace MODEL {
     virtual ScalarFunctionsMap * GetScalarFunctions() { return p_functions; }
     virtual ScalarConstantsMap * GetScalarConstants() { return p_constants; }
     virtual ComplexMatricesMap * GetComplexMatrices() { return p_matrices; }
+
+    inline Interaction_Model_Base *GetInteractionModel() { return p_model; }
 
     inline ScalarNumbersMap * ExtractScalarNumbers() {
       ScalarNumbersMap * temp(p_numbers);

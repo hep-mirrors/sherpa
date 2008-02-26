@@ -265,7 +265,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i]=p_flin[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-p_flout[i-m_nin];
-  p_MHVamp = FullAmplitude_MHV_Handler(m_nin+m_nout,plist,p_momlist); 
+  p_MHVamp = FullAmplitude_MHV_Handler(model,m_nin+m_nout,plist,p_momlist); 
 
   delete [] plist;
   //////////////////////////////////////////////
@@ -372,7 +372,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology * top)
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i]=p_flin[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-p_flout[i-m_nin];
-  p_MHVamp = FullAmplitude_MHV_Handler(m_nin+m_nout,plist,p_momlist);
+  p_MHVamp = FullAmplitude_MHV_Handler(model,m_nin+m_nout,plist,p_momlist);
 
   delete [] plist;
   //////////////////////////////////////////////

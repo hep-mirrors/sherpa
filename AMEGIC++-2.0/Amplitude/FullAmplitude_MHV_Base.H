@@ -9,6 +9,7 @@
 #include "PermStore.H"
 #include "Permutation.H"
 #include "Flavour.H"
+#include "Model_Base.H"
 
 using namespace ATOOLS;
 
@@ -19,6 +20,8 @@ namespace AMEGIC {
     
   class FullAmplitude_MHV_Base {
   protected:
+
+    MODEL::Interaction_Model_Base *p_model;
 
     PermStore* p_permstore;	
     Permutation* p_permutation;
@@ -45,7 +48,7 @@ namespace AMEGIC {
   public:
 	
     // constructor
-    FullAmplitude_MHV_Base(int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Base(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
 
     //destructor
     virtual ~FullAmplitude_MHV_Base(); 
@@ -71,7 +74,7 @@ namespace AMEGIC {
   public:
 	
     // constructor
-    FullAmplitude_MHV_PureG(int part,int* plist,MomentumList *BS); 
+    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist,MomentumList *BS); 
 
     //destructor
     ~FullAmplitude_MHV_PureG();
@@ -94,7 +97,7 @@ namespace AMEGIC {
   public:
     
     // constructor
-    FullAmplitude_MHV_Q2(int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
 
     //destructor
     ~FullAmplitude_MHV_Q2();
@@ -119,7 +122,7 @@ namespace AMEGIC {
   public:
     
     // constructor
-    FullAmplitude_MHV_Q4(int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
 
     //destructor
     ~FullAmplitude_MHV_Q4();
@@ -143,7 +146,7 @@ namespace AMEGIC {
     public:
 	
     // constructor
-    FullAmplitude_MHV_Q2L2(int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q2L2(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
 
     //destructor
     ~FullAmplitude_MHV_Q2L2();
@@ -153,7 +156,7 @@ namespace AMEGIC {
 
 
 
-  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(int part,int* plist,MomentumList* BS); 
+  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
   
 
 }// end of namespace AMEGIC

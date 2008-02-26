@@ -4,10 +4,12 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "MathTools.H"
+#include "Interaction_Model_Base.H"
 #include <iostream>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
+using namespace MODEL;
 using namespace std;
 
 
@@ -19,7 +21,8 @@ using namespace std;
 
 // constructor
 
-FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(int np,int *pl,MomentumList* BS): 
+FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,int np,int *pl,MomentumList* BS): 
+  p_model(model->GetInteractionModel()),
   p_permstore(0), p_permutation(0), p_calc(0), p_BS(BS), m_colorstore(0), m_ampstore(0), p_norm(1), colorflag(false),
   n_part(np), m_plist(0), m_perm(0), m_permgl(0)
 { 
@@ -31,7 +34,7 @@ FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(int np,int *pl,MomentumList* BS):
   }
   m_perm= new int[np]; 
   p_calc = new MHVCalculator(n_part,p_BS,m_plist);
-  m_cpl=pow(4.*M_PI*rpa.gen.ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)np-2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)np-2.);
   //msg_Info()<<"Amplitude ("; 
   //for (int y=0;y<np-1;y++) msg_Info()<<pl[y]<<",";
   //msg_Info()<<pl[np-1]<<") has been initialized"<<endl;
@@ -139,8 +142,8 @@ double FullAmplitude_MHV_Base::Result()
 
 // constructor
 
-FullAmplitude_MHV_PureG::FullAmplitude_MHV_PureG(int np,int *pl,MomentumList* BS):
-  FullAmplitude_MHV_Base(np,pl,BS)
+FullAmplitude_MHV_PureG::FullAmplitude_MHV_PureG(Model_Base *model,int np,int *pl,MomentumList* BS):
+  FullAmplitude_MHV_Base(model,np,pl,BS)
 { 
   p_norm=pow((double)2.,(int)n_part);
   p_permutation = new Permutation(n_part-2);
@@ -261,8 +264,8 @@ bool FullAmplitude_MHV_PureG::AmpStore()
 
 // constructor
 
-FullAmplitude_MHV_Q2::FullAmplitude_MHV_Q2(int np,int *pl,MomentumList* BS): 
-  FullAmplitude_MHV_Base(np,pl,BS)
+FullAmplitude_MHV_Q2::FullAmplitude_MHV_Q2(Model_Base *model,int np,int *pl,MomentumList* BS): 
+  FullAmplitude_MHV_Base(model,np,pl,BS)
 { 
   p_norm=pow((double)2.,(int)n_part-2);
   p_permutation = new Permutation(n_part-2);
@@ -402,8 +405,8 @@ bool FullAmplitude_MHV_Q2::AmpStore()
 
 // constructor
 
-FullAmplitude_MHV_Q4::FullAmplitude_MHV_Q4(int np,int *pl,MomentumList* BS): 
-  FullAmplitude_MHV_Base(np,pl,BS), p_calc_partner(0)
+FullAmplitude_MHV_Q4::FullAmplitude_MHV_Q4(Model_Base *model,int np,int *pl,MomentumList* BS): 
+  FullAmplitude_MHV_Base(model,np,pl,BS), p_calc_partner(0)
 { 
   p_norm=pow((double)2.,(int)n_part-4);
   p_permutation = new Permutation(n_part-3);
@@ -621,11 +624,11 @@ double FullAmplitude_MHV_Q4::Result()
 
 // constructor
 
-FullAmplitude_MHV_Q2L2::FullAmplitude_MHV_Q2L2(int np,int *pl,MomentumList* BS): 
- FullAmplitude_MHV_Base(np,pl,BS), m_qlist(0), m_llist(0)
+FullAmplitude_MHV_Q2L2::FullAmplitude_MHV_Q2L2(Model_Base *model,int np,int *pl,MomentumList* BS): 
+  FullAmplitude_MHV_Base(model,np,pl,BS), m_qlist(0), m_llist(0)
 { 
-  m_cpl=pow(4.*M_PI*rpa.gen.ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-4.);
-  m_cpl*=4*pow(4.*M_PI*rpa.gen.ScalarFunction(std::string("alpha_QED")),(double)2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-4.);
+  m_cpl*=4*pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),sqr(rpa.gen.Ecms())),(double)2.);
   p_norm=pow((double)2.,(int)n_part-4);
   p_permutation = new Permutation(n_part-4);
   maxn= p_permutation->MaxNumber();
@@ -736,8 +739,8 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
   double y_lepton(2*m_flist[m_llist[2]]->IsoWeak());
   double q_quark(m_flist[m_qlist[2]]->Charge());
   double q_lepton(m_flist[m_llist[2]]->Charge());
-  double sintw(sqrt(rpa.gen.ScalarConstant(std::string("sin2_thetaW"))));
-  double costw(sqrt(1-rpa.gen.ScalarConstant(std::string("sin2_thetaW"))));
+  double sintw(sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+  double costw(sqrt(1-p_model->ScalarConstant(std::string("sin2_thetaW"))));
   
   Pfunc pf(3);
   pf.arg[1]=m_llist[1];	
@@ -761,7 +764,7 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
 
   // W exchange
   else if (m_flist[m_llist[1]]->LeptonFamily()==m_flist[m_llist[2]]->LeptonFamily() && m_hlist[m_llist[2]]<0 && m_hlist[m_qlist[2]]<0) {
-    Complex ckm=rpa.gen.ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
+    Complex ckm=p_model->ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
     q_w=Complex((p_BS->Momentum(pn)).Abs2(),0.);
     q_w/= q_w-pow(Flavour(kf::Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf::Wplus).Width()*Flavour(kf::Wplus).Mass();
     q_w*= ckm/(2*pow(sintw,2));
@@ -784,20 +787,20 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(int part,int* plist,MomentumList* BS) 
+AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(Model_Base *model,int part,int* plist,MomentumList* BS) 
 {
   FullAmplitude_MHV_Base* fullamp(0);
   MHVCalculator calc(part,BS,plist);
   const int *qlist=(calc.GetQlist());
   
-  if (qlist[0]==0) fullamp = new FullAmplitude_MHV_PureG(part,plist,BS);  // pure gluons
+  if (qlist[0]==0) fullamp = new FullAmplitude_MHV_PureG(model,part,plist,BS);  // pure gluons
   else if (qlist[0]==2) {
     for (int i=1;i<3;i++) {
       if (!Flavour((kf::code)abs(qlist[i+2]),qlist[i+2]<0).IsQuark() || Flavour((kf::code)abs(qlist[i+2]),qlist[i+2]<0).IsMassive()) {
 	THROW(fatal_error,"Fullamplitude_MHV_Handler: Amplitude is not implemented");
       }  
     }
-    fullamp = new FullAmplitude_MHV_Q2(part,plist,BS);                    // 2 massless quarks
+    fullamp = new FullAmplitude_MHV_Q2(model,part,plist,BS);                    // 2 massless quarks
   }
   else if (qlist[0]==4) {
     int nq(0), nl(0);
@@ -806,8 +809,8 @@ AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(int part,int* 
       else if (Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsLepton() && !Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsMassive()) nl++;
       else THROW(fatal_error,"Fullamplitude_MHV_Handler: Amplitude is not implemented"); 
     }
-    if (nq==4)  fullamp = new FullAmplitude_MHV_Q4(part,plist,BS);       // 4 massless quarks
-    else if (nq==2 && nl==2) fullamp = new FullAmplitude_MHV_Q2L2(part,plist,BS);  // 2 massless quarks + 2 leptons
+    if (nq==4)  fullamp = new FullAmplitude_MHV_Q4(model,part,plist,BS);       // 4 massless quarks
+    else if (nq==2 && nl==2) fullamp = new FullAmplitude_MHV_Q2L2(model,part,plist,BS);  // 2 massless quarks + 2 leptons
   }
   
   if (fullamp) return fullamp;

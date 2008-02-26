@@ -49,3 +49,7 @@ Interaction_Model_Base::~Interaction_Model_Base()
 {
 } 
 
+std::string Interaction_Model_Base::Name()    
+{ 
+  return p_model->Name(); 
+} 

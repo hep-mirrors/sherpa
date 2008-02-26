@@ -12,7 +12,7 @@ using namespace std;
 
 
 Model_Base::Model_Base(std::string _dir,std::string _file) :
-  m_dir(_dir), m_file(_file), p_dataread(NULL),
+  p_model(NULL), m_dir(_dir), m_file(_file), p_dataread(NULL),
   p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
   p_spectrumgenerator(NULL), 
   p_vertex(NULL), p_vertextable(NULL), 
@@ -22,6 +22,7 @@ Model_Base::Model_Base(std::string _dir,std::string _file) :
 
 Model_Base::~Model_Base() 
 {
+  delete p_model;
   if (p_numbers!=NULL) delete p_numbers;
   if (p_functions!=NULL) {
     while (!p_functions->empty()) {
@@ -48,9 +49,9 @@ void Model_Base::InitializeInteractionModel()
   string widthscheme = read.GetValue<string>("WIDTH_SCHEME",string("Fixed"));
 
   Interaction_Model_Handler mh(this);
-  Interaction_Model_Base * model = mh.GetModel(modeltype,cplscheme,massscheme);
+  p_model = mh.GetModel(modeltype,cplscheme,massscheme);
 
-  p_vertex        = new Vertex(model);
+  p_vertex        = new Vertex(p_model);
   p_vertextable   = new Vertex_Table;
   for (int i=0;i<p_vertex->MaxNumber();++i) {
     if ((*p_vertex)[i]->on) {
@@ -58,7 +59,6 @@ void Model_Base::InitializeInteractionModel()
     }
   }
 
-  delete model;
 }
 
 void Model_Base::FillDecayTables() {

@@ -42,7 +42,7 @@ namespace MODEL {
     virtual ATOOLS::CMatrix         ComplexMatrix(const std::string);
     virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
 
-    virtual std::string          Name()               { return p_model->Name(); } 
+    virtual std::string          Name();
   };
 }
 
