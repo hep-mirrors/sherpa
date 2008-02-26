@@ -1,0 +1,44 @@
+#!/bin/bash
+
+SN=`echo $1/Run.*.dat | wc -w`
+RN=`echo $1/r_1/*.xs* | wc -w`
+MR=`expr $SN - $RN`
+
+echo "sum_xss: $SN setups`test $MR -eq 0 ||\
+  echo \", $MR results missing\"`"
+
+awk 'BEGIN{ 
+  pb=3.89379656e8;
+  xs=0; err=0; ofn=""; nosort=0;
+  print "sum_xss: {";
+}
+{ 
+  if (ofn==FILENAME) nextfile;
+  ofn=FILENAME;
+  cpn=$1; cxs=$2*pb; cerr=$4*pb;
+  xs+=cxs; err+=cerr*cerr;
+  if (cxs in pns) nosort=1; 
+  pns[cxs]=cpn; xss[cxs]=cxs; errs[cxs]=cerr;
+  pnc[cpn]=cpn; xsc[cpn]=cxs; errc[cpn]=cerr;
+}
+END{
+  if (!nosort) {
+    n=asort(xss);
+    for (i=n;i>0;--i) {
+      cxs=xss[i];
+      crerr=errs[cxs]/cxs*100;
+      print "  proc "n-i+1": "pns[cxs]": "cxs\
+        " +- ( "errs[cxs]" = "crerr" % )";
+    }
+  }
+  else {
+    for (cpn in pnc) {
+      crerr=errc[cpn]/xsc[cpn]*100;
+      print "  read: "cpn": "xsc[cpn]" +- ( "\
+        errc[cpn]" = "crerr" % )";
+    }
+  }
+  print "} -> \033[1msum\033[0m : \033[34m"\
+    xs"\033[0m +- ( \033[31m"sqrt(err)" = "\
+    sqrt(err)/xs*100" %\033[0m )";
+}' $1/r_1/*.xs*
