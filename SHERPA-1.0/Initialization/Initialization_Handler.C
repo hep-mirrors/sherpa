@@ -687,23 +687,9 @@ void Initialization_Handler::SetScaleFactors()
 int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
   std::string datpath;
-
-  // Add parameters from Run.dat to command line
-  // (this makes it possible to overwrite particle properties in Run.dat)
-  Data_Reader dr(" ",";","!");
-  dr.AddWordSeparator("\t");
-  dr.AddComment("#");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_file);
-  std::vector<std::vector<std::string> > helpsvv;
-  dr.MatrixFromFile(helpsvv,"");
-  std::vector<std::string> helpsv(helpsvv.size());
-  for (size_t i(0);i<helpsvv.size();++i)
-    for (size_t j(0);j<helpsvv[i].size();++j) helpsv[i]+=helpsvv[i][j];
-  for (int i(1);i<argc;++i)
-    helpsv.push_back(argv[i]);
-
-  for (int i=0; i<(int)helpsv.size();++i) {
+  std::vector<std::string> helpsv(argc-1);
+  for (int i(0);i<argc-1;++i) helpsv[i]=argv[i+1];
+  for (size_t i=0;i<helpsv.size();++i) {
     string par = helpsv[i];
     string key,value;
     size_t equal=par.find("=");
@@ -765,6 +751,21 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"  -v,--version   prints the Version number"<<endl;
       msg_Out()<<"  -?,--help      prints this help message"<<endl;
       exit(0);
+    }
+    if (int(i)==argc-2) {
+      // Add parameters from Run.dat to command line
+      // (this makes it possible to overwrite particle properties in Run.dat)
+      Data_Reader dr(" ",";","!");
+      dr.AddWordSeparator("\t");
+      dr.AddComment("#");
+      dr.SetInputPath(m_path);
+      dr.SetInputFile(m_file);
+      std::vector<std::vector<std::string> > helpsvv;
+      dr.MatrixFromFile(helpsvv,"");
+      for (size_t i(0);i<helpsvv.size();++i) {
+	helpsv.push_back("");
+	for (size_t j(0);j<helpsvv[i].size();++j) helpsv.back()+=helpsvv[i][j];
+      }
     }
   }
 
