@@ -67,7 +67,7 @@ void Model_Base::FillDecayTables() {
   for (std::map<ATOOLS::Flavour, Vertex_List>::iterator vit=p_vertextable->begin();
        vit!=p_vertextable->end();vit++) {
     flav = vit->first;
-    if (!flav.IsStable() && flav.Width()<0.) {
+    if (flav.IsOn() && !flav.IsStable() && flav.Width()<0.) {
       std::cout<<METHOD<<" : "<<flav<<" : "<<flav.Width()<<std::endl;
       p_decays->AddToDecays(flav); 
     }
