@@ -370,17 +370,17 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 	return 1;
       }
       if (resultpath!=std::string("")) {
-	std::ofstream to;
-	to.open(filename.c_str(),std::ios::out);
-	to.precision(12);
 	msg_Info()<<"Store result : xs for "<<m_name<<" : ";
-	WriteOutXSecs(to);
 	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
 	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
 		  <<"  max : "<<m_max<<std::endl;
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")
 			      +m_name,create);
+	std::ofstream to;
+	to.open(filename.c_str(),std::ios::out);
+	to.precision(12);
+	WriteOutXSecs(to);
 	to.close();
       }
       ATOOLS::exh->RemoveTerminatorObject(this);

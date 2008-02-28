@@ -1128,16 +1128,16 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       return 1;
     }
     if (_resdir!=string("")) {
-      std::ofstream to;
-      to.open(filename.c_str(),ios::out);
-      WriteOutXSecs(to);
-      ATOOLS::MakeDir(histofile,0); 
-      WriteOutHistogram(histofile);
       msg_Info()<<"Store result : xs for "<<m_name<<" : "
 		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		<<"       max : "<<m_max<<endl;
+      ATOOLS::MakeDir(histofile,0); 
+      WriteOutHistogram(histofile);
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
+      std::ofstream to;
+      to.open(filename.c_str(),ios::out);
+      WriteOutXSecs(to);
       to.close();
     }
     ATOOLS::exh->RemoveTerminatorObject(this);
@@ -1152,9 +1152,6 @@ void Single_Process::PrepareTerminate()
   if (rpa.gen.BatchMode()) return;
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
-  std::ofstream to;
-  to.open(m_resultfile.c_str(),ios::out);
-  WriteOutXSecs(to);
   ATOOLS::MakeDir(m_histofile,0); 
   WriteOutHistogram(m_histofile);
   msg_Info()<<"Store result : xs for "<<m_name<<" : "
@@ -1162,6 +1159,9 @@ void Single_Process::PrepareTerminate()
 	    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
+  std::ofstream to;
+  to.open(m_resultfile.c_str(),ios::out);
+  WriteOutXSecs(to);
   to.close();
 }
 

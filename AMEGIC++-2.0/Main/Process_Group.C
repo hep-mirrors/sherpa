@@ -1018,18 +1018,18 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	return 1;
       }
       if (_resdir!=string("")) {
-	std::ofstream to;
-	to.open(filename.c_str(),ios::out);
-	to.precision(12);
 	msg_Info()<<"Store result : xs for "<<m_name<<" : ";
 	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
 	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
-	WriteOutXSecs(to);
 	ATOOLS::MakeDir(histofile.c_str(),0); 
 	WriteOutHistogram(histofile);
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
+	std::ofstream to;
+	to.open(filename.c_str(),ios::out);
+	to.precision(12);
+	WriteOutXSecs(to);
 	to.close();
       }
       ATOOLS::exh->RemoveTerminatorObject(this);
@@ -1046,18 +1046,18 @@ void Process_Group::PrepareTerminate()
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
   if (m_totalxs<=0.) return;
-  std::ofstream to;
-  to.open(m_resultfile.c_str(),ios::out);
-  to.precision(12);
   msg_Info()<<"Store result : xs for "<<m_name<<" : ";
   if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
   if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
   msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
-  WriteOutXSecs(to);
   ATOOLS::MakeDir(m_histofile.c_str(),0); 
   WriteOutHistogram(m_histofile);
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
+  std::ofstream to;
+  to.open(m_resultfile.c_str(),ios::out);
+  to.precision(12);
+  WriteOutXSecs(to);
   to.close();
 }
 
