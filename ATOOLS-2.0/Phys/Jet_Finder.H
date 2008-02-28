@@ -50,7 +50,9 @@ namespace ATOOLS {
 
     double YminKt(int &,int &,int);
     double YminKt(Vec4D *,Flavour *,std::vector<Vec4D>,int &,int &);
-    double Yij(Vec4D,Vec4D);
+
+    double CPerp2(Vec4D& p);
+    double CDij(Vec4D& p1,Vec4D& p2);
 
     double DEta12(Vec4D &,Vec4D &);
     double CosDPhi12(Vec4D &,Vec4D &);

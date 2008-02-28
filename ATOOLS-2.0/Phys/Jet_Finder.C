@@ -4,6 +4,7 @@
 #include "Exception.H"
 #include "MyStrStream.H"
 #include "Blob.H"
+#include "Data_Reader.H"
 #include <cassert>
 
 #ifdef PROFILE__Analysis_Phase
@@ -35,6 +36,13 @@ Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) :
   m_smax       = m_s;
 
   m_sel_log    = new Selector_Log(m_name);
+
+  int help;
+  Data_Reader reader(" ",";","!","=");
+  if (reader.ReadFromFile(help,"JF_MASS_SCHEME")) {
+    m_mass_scheme = help;
+    msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
+  }
 }
 
 /*---------------------------------------------------------------------
@@ -83,6 +91,13 @@ Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
   
   m_smax    = m_s;
   m_sel_log = new Selector_Log(m_name);
+
+  int help;
+  Data_Reader reader(" ",";","!","=");
+  if (reader.ReadFromFile(help,"JF_MASS_SCHEME")) {
+    m_mass_scheme = help;
+    msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
+  }
 }
 
 Jet_Finder::~Jet_Finder() {
@@ -655,7 +670,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   double ymin(2.0);
   msg_Debugging()<<METHOD<<"() {\n";
   for (short unsigned int cl(0);cl<m_fills.size();++cl) {
-    ymin=YminKt(j,k,cl);
+    ymin=Min(ymin,YminKt(j,k,cl));
     if (ymin<0.0) return 1-m_sel_log->Hit(true);
   }
   msg_Debugging()<<"} -> q_min = "<<sqrt(ymin*m_s)<<"\n";
@@ -670,22 +685,32 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
     cuts->energymin[i] = m_fl[i].SelMass();
     if (m_fl[i].Strong()) {                
       if (m_type==1) {
-	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s/4.),
+	cuts->energymin[i] = Max(sqrt(GetScaledYcut(1<<i,1<<i) * m_s/4.),
 				 cuts->energymin[i]);
       }
       else {
-	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s),
+	cuts->energymin[i] = Max(sqrt(GetScaledYcut(1<<i,1<<i) * m_s),
 				 cuts->energymin[i]);
 	double cut(GetYcut(1<<0,1<<i));
 	if (GetYcut(1<<1,1<<i)>0.0) { 
 	  if (cut>0.0) cut=Min(cut,GetYcut(1<<1,1<<i));
 	  else cut=GetYcut(1<<1,1<<i);
 	}
-	if (m_type==4 && cut>0.0 && !m_fl[i].IsMassive()) {
-	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = 
-	    cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-	    Min(cuts->cosmax[0][i],sqrt(1.-4.*cut));
-	  cuts->etmin[i] = Max(sqrt(cut * m_s-sqr(m_fl[i].SelMass())),cuts->etmin[i]);
+	if (m_type==4 && cut>0.0 ) { 
+	  if (!m_fl[i].IsMassive()) {
+	    cuts->cosmax[0][i] = cuts->cosmax[1][i] = 
+	      cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
+	      Min(cuts->cosmax[0][i],sqrt(1.-4.*cut));
+	  }
+	  switch (m_mass_scheme) {
+	  case 1:
+	  case 10:
+	  case 11:
+	    cuts->etmin[i] = Max(sqrt(cut * m_s-sqr(m_fl[i].SelMass())),cuts->etmin[i]);
+	    break;
+	  default:
+	    cuts->etmin[i] = Max(sqrt(cut * m_s),cuts->etmin[i]);	    
+	  }
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
@@ -703,8 +728,23 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong() && GetYcut(1<<i,1<<j)>0.0) {
           if (m_type>=2 && (m_fl[i].IsMassive() || m_fl[j].IsMassive())) {
-	    cuts->scut[i][j] = cuts->scut[j][i]
-              = Max(cuts->scut[i][j],sqr(m_fl[i].SelMass()+m_fl[j].SelMass()));
+	    double scut(0.);
+	    switch (m_mass_scheme) {
+	    case 1:
+	      scut = Max(sqr(m_fl[i].SelMass()+m_fl[j].SelMass()),
+			 GetYcut(1<<i,1<<j)*m_s-sqr(m_fl[i].SelMass())-sqr(m_fl[j].SelMass()));
+	      break;
+	    case 0:
+	    case 3:
+	    case 10:
+	    case 20:
+	      scut = sqr(m_fl[i].SelMass()+m_fl[j].SelMass())+GetYcut(1<<i,1<<j)*m_s;
+	      break;
+	    case 11:
+	    case 21:
+	      scut = sqr(m_fl[i].SelMass())+sqr(m_fl[j].SelMass())+GetYcut(1<<i,1<<j)*m_s;
+	    }
+	    cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],scut);
 	  }
           else {
 	    cuts->scut[i][j] = cuts->scut[j][i]
@@ -780,7 +820,7 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
       if (m_mass_scheme==1) add+=dabs(pk.Abs2());
       else if (m_mass_scheme==3) add+=dabs(pk.Abs2()-mk*mk);
       if (m_type>=3) {
-	pt2k=pk.PPerp2();
+	pt2k=CPerp2(pk);
 	if (j<3) {
 	  msg_Debugging()<<", is -> ptk = "<<sqrt(pt2k)<<" ("
 			 <<(pt2k>=ycut*m_s)<<(pt2k<ycut*m_s?")\n":")");
@@ -792,12 +832,11 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 	  } 
 	}
 	else if (m_flavs[j].Strong()) {
-	  pt2j=pj.PPerp2();
+	  pt2j=CPerp2(pj);
 	  if (m_mass_scheme==1) add+=dabs(pj.Abs2());
 	  else if (m_mass_scheme==3) add+=dabs(pj.Abs2()-mj*mj);
 	  // delta r is taken into account in m_ycuts !
-	  pt2jk=2.*Min(pt2j,pt2k)*
-	    (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk));
+	  pt2jk=2.*Min(pt2j,pt2k)*CDij(pj,pk);
 	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" ("
 			 <<(pt2jk>=ycut*m_s)<<(pt2jk<ycut*m_s?")\n":")");
 	  if (add+pt2jk<ycut*m_s) return -1.0;
@@ -822,8 +861,6 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 	  }
 	}
 	if (j>2 && m_flavs[j].Strong()) {
-	  if (m_mass_scheme==1) add+=dabs(pj.Abs2());
-	  else if (m_mass_scheme==3) add+=dabs(pj.Abs2()-mj*mj);
 	  pt2jk=2.0*Min(pj.PSpat2(),pk.PSpat2())*(1.-DCos12(pj,pk));
 	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" s' = "
 			 <<m_sprime<<" ("<<(pt2jk>=ycut*m_sprime)
@@ -853,7 +890,7 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
   double mt12_2(0.);
   //check for DIS situation
   if (m_type>=2) {
-    double pt1_2(p1.PPerp2()), pt2_2(p2.PPerp2()), add(0.0);
+    double pt1_2(CPerp2(p1)), pt2_2(CPerp2(p1)), add(0.0);
     if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
     else if (m_mass_scheme==3)
       add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
@@ -863,8 +900,7 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
     else {
       if (m_type==2) mt12_2 = add+2.*Min(pt1_2,pt2_2)*
 	(1.-DCos12(p1,p2))/sqr(m_delta_r);
-      else mt12_2 = add+2.*Min(pt1_2,pt2_2)* 
-	(Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))/sqr(m_delta_r);
+      else mt12_2 = add+2.*Min(pt1_2,pt2_2)*CDij(p1,p2)/sqr(m_delta_r);
     }
   }
   else {
@@ -903,6 +939,37 @@ double Jet_Finder::Coshyp(double x)
   // return 0.5*(exp(x)+exp(-x));
   return cosh(x);
 }
+
+double Jet_Finder::CPerp2(Vec4D& p) 
+{
+  switch (m_mass_scheme) {
+  case 10:
+  case 11:
+    return p.MPerp2();
+  case 20:
+  case 21:
+    return p.EPerp2();
+  default:
+    return p.PPerp2();
+  }
+}
+
+double Jet_Finder::CDij(Vec4D& p1,Vec4D& p2) 
+{
+  switch (m_mass_scheme) {
+  case 10:
+    return (Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))*sqrt(p1.PPerp2()/p1.MPerp2()*p2.PPerp2()/p2.MPerp2());
+  case 11:
+    return p1*p2/sqrt(p1.MPerp2()*p2.MPerp2());
+  case 20:
+    return (Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))*sqrt(p1.PPerp2()/p1.EPerp2()*p2.PPerp2()/p2.EPerp2());
+  case 21:
+    return p1*p2/sqrt(p1.EPerp2()*p2.EPerp2());
+  default:
+    return Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2);   
+  }
+}
+
 
 void Jet_Finder::BoostInFrame(Vec4D * p)
 {
