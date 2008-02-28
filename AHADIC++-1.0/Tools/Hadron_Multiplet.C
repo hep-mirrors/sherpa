@@ -9,6 +9,7 @@ using namespace std;
 
 
 All_Hadron_Multiplets::All_Hadron_Multiplets() :
+  m_singletsuppression(hadpars.Get("Singlet_Suppression")),
   p_wavefunctions(NULL), p_multiplets(NULL)
 {
   ConstructWaveFunctions();
@@ -16,6 +17,8 @@ All_Hadron_Multiplets::All_Hadron_Multiplets() :
   CreateMultiplets();
   AddMultipletWeights();
   //PrintMultiplets();
+  //PrintWaveFunctions();
+  //abort();
 }
 
 All_Hadron_Multiplets::~All_Hadron_Multiplets() 
@@ -105,7 +108,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	pair->second = flavs[0].Bar();
 	wavefunction->AddToWaves(pair,+1./sqrt(2.));
       } 
-      if (fl1==2) {
+      else if (fl1==2) {
+	//std::cout<<METHOD<<" : "<<m_singletsuppression<<" for sin(theta) = "<<sinth<<std::endl;
 	if (iso0==1) {
 	  weight       = 1/sqrt(3.);
 	  wavefunction = new Hadron_Wave_Function;
@@ -122,8 +126,9 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  wavefunction->AddToWaves(pair,weight);
 	}
 	else {
-	  weight         = costh/sqrt(3.)+sinth/sqrt(6.);
-	  if (weight>1.e-3) {
+	  weight         = (-costh/sqrt(6.)-sinth/sqrt(3.))
+	    *((1.-m_singletsuppression)+costh*m_singletsuppression);
+	  if (dabs(weight)>1.e-3) {
 	    wavefunction = new Hadron_Wave_Function;
 	    wavefunction->AddToWaves(pair,weight);
 	    flavs[0]     = Flavour(kf::code(1));
@@ -132,8 +137,9 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	    pair->second = flavs[0].Bar();
 	    wavefunction->AddToWaves(pair,weight);
 	  }
-	  weight         = costh/sqrt(3.)-2.*sinth/sqrt(6.);
-	  if (weight>1.e-3) {
+	  weight         = (2.*costh/sqrt(6.)-sinth/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
+	  if (dabs(weight)>1.e-3) {
 	    flavs[0]     = Flavour(kf::code(3));
 	    pair         = new Flavour_Pair;
 	    pair->first  = flavs[0];
@@ -143,14 +149,17 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  }
 	}
       } 
-      if (fl1==3) {
-	weight         = 2.*costh/sqrt(6.)+sinth/sqrt(3.);
-	if (weight>1.e-3) {
+      else if (fl1==3) {
+	//std::cout<<METHOD<<" : "<<m_singletsuppression<<" for sin(theta) = "<<sinth<<std::endl;
+	weight         = (2.*sinth/sqrt(6.)+costh/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
+	if (dabs(weight)>1.e-3) {
 	  wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
 	}
-	weight         = costh/sqrt(6.)-sinth/sqrt(3.);
-	if (weight>1.e-3) {
+	weight         = (-sinth/sqrt(6.)+costh/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
+	if (dabs(weight)>1.e-3) {
 	  flavs[0]     = Flavour(kf::code(1));
 	  pair         = new Flavour_Pair;
 	  pair->first  = flavs[0];
@@ -174,7 +183,7 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       wavefunction->AddToWaves(pair,1.);
     }
   }
-  wavefunction->SetSpin(spin);
+  if (wavefunction) wavefunction->SetSpin(spin);
   return wavefunction;
 }
 

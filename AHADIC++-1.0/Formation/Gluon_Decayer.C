@@ -136,6 +136,8 @@ bool Gluon_Decayer::DecayDipoles() {
     //for (DipIter dipiter=m_dipoles.begin();dipiter!=m_dipoles.end();dipiter++)
     //  (*dipiter)->Output();
 #endif
+    //std::cout<<METHOD<<" splits the following dipole:"<<std::endl;
+    //(*dip)->Output();
     if (!p_splitter->SplitDipole((*dip))) {
       if (!Rescue(dip)) { 
 	//	msg_Out()<<"............... Rescue failed ..................."<<std::endl;
@@ -262,21 +264,17 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
 void Gluon_Decayer::SplitIt(Dipole * dip,Vec4D checkbef) {
   Proto_Particle * new1, * new2;
   p_splitter->GetNewParticles(new1,new2);
-  DipIter neighbour,partner;
+  DipIter neighbour;
 #ifdef AHAmomcheck
   Vec4D checkaft(0.,0.,0.,0.);
 #endif
   if ((*m_dipoles.begin())->Triplet()->m_flav.IsGluon()) {
-    if (!(dip->Triplet()->m_flav.IsGluon() && 
-	  dip->AntiTriplet()->m_flav.IsGluon())) {
-    }
+    //std::cout<<METHOD<<" g-g-g-g "<<dip->IsSwitched()<<std::endl;
     while ((*m_dipoles.begin())!=dip) {
       m_dipoles.push_back((*m_dipoles.begin()));
       m_dipoles.pop_front();
     }
     if (dip->IsSwitched()) {
-      partner = m_dipoles.begin();
-      partner++;
       dip->SetTriplet(new2);
       neighbour = m_dipoles.end();
       neighbour--;
@@ -285,34 +283,26 @@ void Gluon_Decayer::SplitIt(Dipole * dip,Vec4D checkbef) {
     else {
       m_dipoles.push_back((*m_dipoles.begin()));
       m_dipoles.pop_front();
-      partner = m_dipoles.end();
-      partner--;
-      partner--;
-       dip->SetAntiTriplet(new1);
+      dip->SetAntiTriplet(new1);
       neighbour = m_dipoles.begin();
       (*neighbour)->SetTriplet(new2);
     }
   }
   else {
+    //std::cout<<METHOD<<" q-g-g-q "<<dip->IsSwitched()<<std::endl;
     DipIter test;
     for (test=m_dipoles.begin();test!=m_dipoles.end();test++) {
       if ((*test)==dip) break;
     }
-    neighbour = partner = test;
+    //std::cout<<"    check this: "<<(*test)<<"/"<<dip<<" test = begin "
+    //	     <<(test==m_dipoles.begin())<<std::endl;
+    neighbour = test;
     if (dip->IsSwitched()) {
-      if (dip->Triplet()->m_flav.IsGluon() && 
-	  dip->AntiTriplet()->m_flav.IsGluon()) {
-	partner++;
-      }
       dip->SetTriplet(new2);
       neighbour--;
       (*neighbour)->SetAntiTriplet(new1);
     }
     else {
-      if (dip->Triplet()->m_flav.IsGluon() && 
-	  dip->AntiTriplet()->m_flav.IsGluon()) {
-	partner--;
-      }
       dip->SetAntiTriplet(new1);
       neighbour++;
       (*neighbour)->SetTriplet(new2);      

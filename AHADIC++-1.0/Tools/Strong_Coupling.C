@@ -17,16 +17,14 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
     (rpa.gen.GetScalarFunction(std::string("alpha_S")));
   m_Lambda2 = m_pt02*exp(-1./(m_beta0*(*as)(m_pt02)));
   m_kappa2  = m_pt02/exp(1.)*m_beta0*log(m_pt02/m_Lambda2);
-  if (msg_LevelIsDebugging()) {
-    std::ofstream was;
-    was.open("as_in_ahadic_test.dat");
-    for (double Q(0.01);Q<10.;Q*=1.001) {
-      PRINT_INFO(Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").");
-      was<<Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").\n";
-    }
-    was.close();
-    //abort();
+  std::ofstream was;
+  was.open("as_in_ahadic_test.dat");
+  for (double Q(0.01);Q<10.;Q*=1.001) {
+    PRINT_INFO(Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").");
+    was<<Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").\n";
   }
+  was.close();
+
   m_asmax = (*this)(m_pt02);
 }
 
