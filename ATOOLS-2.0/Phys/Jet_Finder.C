@@ -43,6 +43,7 @@ Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) :
     m_mass_scheme = help;
     msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
   }
+  //PRINT_INFO("  Jet finder mass scheme set to: "<<m_mass_scheme);
 }
 
 /*---------------------------------------------------------------------
@@ -98,6 +99,7 @@ Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
     m_mass_scheme = help;
     msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
   }
+  //PRINT_INFO("  Jet finder mass scheme set to: "<<m_mass_scheme);
 }
 
 Jet_Finder::~Jet_Finder() {
@@ -605,7 +607,6 @@ PRINT_INFO(it->first<<","<<jt->first<<":"<<jt->second<<"="<<m_ycuts[it->first][j
 	               <<","<<sqrt(m_gycuts[it->first][jt->first]*s)<<")]";
 	  msg_Out()<<" }\n";
         }
-	if (it->second.size()>1) msg_Out()<<" }\n";
       }
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
@@ -840,8 +841,8 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" ("
 			 <<(pt2jk>=ycut*m_s)<<(pt2jk<ycut*m_s?")\n":")");
 	  if (add+pt2jk<ycut*m_s) return -1.0;
-	  if (add+pt2jk/sqr(m_delta_r)<ymin*m_s) {
-	    ymin=(add+pt2jk/sqr(m_delta_r))/m_s;
+	  if (add+pt2jk<ymin*sqr(m_delta_r)*m_s) {
+	    ymin=(add+pt2jk)/sqr(m_delta_r)/m_s;
 	    j1=j;
 	    k1=k;
 	  }
@@ -892,15 +893,14 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
   if (m_type>=2) {
     double pt1_2(CPerp2(p1)), pt2_2(CPerp2(p1)), add(0.0);
     if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
-    else if (m_mass_scheme==3)
-      add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
+    else if (m_mass_scheme==3) add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
     if (IsZero(pt1_2) && IsZero(pt2_2)) return Max((p1+p2).Abs2(),add);
     if (IsZero(pt1_2/(pt1_2+pt2_2)) || 
 	IsZero(pt2_2/(pt1_2+pt2_2))) return add+pt1_2+pt2_2;
     else {
       if (m_type==2) mt12_2 = add+2.*Min(pt1_2,pt2_2)*
 	(1.-DCos12(p1,p2))/sqr(m_delta_r);
-      else mt12_2 = add+2.*Min(pt1_2,pt2_2)*CDij(p1,p2)/sqr(m_delta_r);
+      else mt12_2 = (add+2.*Min(pt1_2,pt2_2)*CDij(p1,p2))/sqr(m_delta_r);
     }
   }
   else {
