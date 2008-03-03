@@ -123,7 +123,7 @@ Amplitude_Generator::~Amplitude_Generator()
   for(int i=0;i<prenum;i++) delete[] prea[i].p;
   delete[] prea;
 
-  for(int i=0;i<prea_table.size();i++) delete[] prea_table[i].p;
+  for(unsigned int i=0;i<prea_table.size();i++) delete[] prea_table[i].p;
   prea_table.clear();
 }
 
@@ -1050,7 +1050,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     hitQED = N -2 - hitQCD;  // N = nin + nout
     if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
     if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
-    if (hitQED > nEW || hitQCD > nQCD) {
+    if ((nEW<99  && hitQED!=nEW) || (nQCD<99 && hitQCD!=nQCD)) {
       ++count;
       if (f1==first) {
 	first = f1->Next;
@@ -1082,7 +1082,8 @@ bool Amplitude_Generator::CheckOrders(Point * p)
   int hitQCD = 0;
   hitQCD = FindQCDOrder(p,hitQCD);
   hitQED = N -2 - hitQCD;  // N = nin + nout
-  if (hitQED > nEW || hitQCD > nQCD) return 0;
+  if (nEW<99  && hitQED!=nEW)  return 0; 
+  if (nQCD<99 && hitQCD!=nQCD) return 0; 
   return 1;
 }
  

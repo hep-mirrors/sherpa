@@ -430,8 +430,8 @@ std::string Flavour::TexName() const
   case kf::e: {name=std::string("e^\\p");break;}
   case kf::mu: {name=std::string("\\mu^\\p");break;}
   case kf::tau: {name= std::string("\\tau^\\p");break;}
-  case kf::Wplus: {name=std::string("W^\\-");break;}
-  case kf::Hplus: {name=std::string("H^\\-");break;}
+  case kf::Wplus: {name=std::string("W^\\m");break;}
+  case kf::Hplus: {name=std::string("H^\\m");break;}
   case kf::Chargino1 :{name=std::string("\\chi^\\p_1");break;}
   case kf::Chargino2 :{name=std::string("\\chi^\\p_2");break;}
   case kf::Neutralino1 :{name=std::string("\\chi^0_1");break;}
