@@ -12,21 +12,6 @@ using namespace ATOOLS;
 
 Order_Base::~Order_Base() {}
 
-bool Order_Base::operator()(const Vec4D &a,const Vec4D &b) const
-{
-  THROW(fatal_error,"Virtual function called");
-}
-
-bool Order_Base::operator()(const Particle &a,const Particle &b) const
-{
-  THROW(fatal_error,"Virtual function called");
-}
-
-bool Order_Base::operator()(Particle * const &a,Particle * const &b) const
-{
-  THROW(fatal_error,"Virtual function called");
-}
-
 void Order_Base::ShowOrders(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
@@ -59,12 +44,13 @@ Order_Base *const GetOrder(const std::string &parameter)
 
 class Order_Up_E : public Order_Base {
 public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
+  static bool OrderV(const Vec4D &a,const Vec4D &b)
   { return dabs(a[0])>dabs(b[0]); }
-  bool operator()(const Particle &a,const Particle &b) const 
+  static bool OrderP(const Particle &a,const Particle &b)
   { return dabs(a.Momentum()[0])>dabs(b.Momentum()[0]); }
-  bool operator()(Particle * const &a,Particle * const &b) const 
+  static bool OrderPP(Particle * const &a,Particle * const &b)
   { return dabs(a->Momentum()[0])>dabs(b->Momentum()[0]); }
+  Order_Up_E(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
 DEFINE_ORDER_GETTER(Order_Up_E,Order_Up_E_Getter,"E_UP","order E ascending")
@@ -73,12 +59,13 @@ DEFINE_ORDER_GETTER(Order_Up_E,Order_Up_E_Getter,"E_UP","order E ascending")
 
 class Order_Up_ET : public Order_Base {
 public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
+  static bool OrderV(const Vec4D &a,const Vec4D &b) 
   { return a.EPerp()>b.EPerp(); }
-  bool operator()(const Particle &a,const Particle &b) const 
+  static bool OrderP(const Particle &a,const Particle &b) 
   { return a.Momentum().EPerp()>b.Momentum().EPerp(); }
-  bool operator()(Particle * const &a,Particle * const &b) const 
+  static bool OrderPP(Particle * const &a,Particle * const &b) 
   { return a->Momentum().EPerp()>b->Momentum().EPerp(); }
+  Order_Up_ET(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
 DEFINE_ORDER_GETTER(Order_Up_ET,Order_Up_ET_Getter,"ET_UP","order ET ascending")
@@ -87,12 +74,13 @@ DEFINE_ORDER_GETTER(Order_Up_ET,Order_Up_ET_Getter,"ET_UP","order ET ascending")
 
 class Order_Up_PT : public Order_Base {
 public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
+  static bool OrderV(const Vec4D &a,const Vec4D &b) 
   { return a.PPerp2()>b.PPerp2(); }
-  bool operator()(const Particle &a,const Particle &b) const 
+  static bool OrderP(const Particle &a,const Particle &b) 
   { return a.Momentum().PPerp2()>b.Momentum().PPerp2(); }
-  bool operator()(Particle * const &a,Particle * const &b) const 
+  static bool OrderPP(Particle * const &a,Particle * const &b) 
   { return a->Momentum().PPerp2()>b->Momentum().PPerp2(); }
+  Order_Up_PT(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
 DEFINE_ORDER_GETTER(Order_Up_PT,Order_Up_PT_Getter,"PT_UP","order PT ascending")
@@ -101,12 +89,13 @@ DEFINE_ORDER_GETTER(Order_Up_PT,Order_Up_PT_Getter,"PT_UP","order PT ascending")
 
 class Order_Up_Eta : public Order_Base {
 public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
+  static bool OrderV(const Vec4D &a,const Vec4D &b) 
   { return dabs(a.Eta())>dabs(b.Eta()); }
-  bool operator()(const Particle &a,const Particle &b) const 
+  static bool OrderP(const Particle &a,const Particle &b) 
   { return dabs(a.Momentum().Eta())>dabs(b.Momentum().Eta()); }
-  bool operator()(Particle * const &a,Particle * const &b) const 
+  static bool OrderPP(Particle * const &a,Particle * const &b) 
   { return dabs(a->Momentum().Eta())>dabs(b->Momentum().Eta()); }
+  Order_Up_Eta(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
 DEFINE_ORDER_GETTER(Order_Up_Eta,Order_Up_Eta_Getter,"ETA_UP","order eta ascending")
