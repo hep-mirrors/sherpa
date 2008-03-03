@@ -5,13 +5,14 @@
 #include "Return_Value.H"
 
 namespace AHADIC {
-  class Hadronisation_Parameters;
 
   struct asform {
     enum code {
-      constant = 0,
-      fall_off = 1,
-      unkonwn  = 99
+      constant           = 0,
+      fall_off           = 1,
+      fixed              = 2,
+      fall_off_times_fix = 3,
+      unknown            = 99
     };
   };
 

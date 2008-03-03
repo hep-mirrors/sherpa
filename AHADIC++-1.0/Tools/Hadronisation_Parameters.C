@@ -19,7 +19,9 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
   p_singletransitions(NULL),p_doubletransitions(NULL),
   p_softclusters(NULL), 
   m_asform(asform::constant), p_coupling(NULL), p_splitter(NULL)
-{ }
+{
+  m_asform=asform::fall_off_times_fix;
+}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL)      { delete p_constituents;      p_constituents=NULL;       }
@@ -65,6 +67,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("PT^2_0",1.);
   m_parametermap[string("ptmax")]              = 
     dataread.GetValue<double>("PT_MAX",1.);
+  m_parametermap[string("asfix")]              = 
+    dataread.GetValue<double>("AS_FIX",0.0);
   m_parametermap[string("Offset_C->H")] =
     dataread.GetValue<double>("TRANSITION_OFFSET",0.75);      
   m_parametermap[string("Offset_C->HH")] =

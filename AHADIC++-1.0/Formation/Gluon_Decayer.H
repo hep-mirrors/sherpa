@@ -11,7 +11,6 @@ namespace AHADIC {
   private:
     double              m_pt2min;
     Dipole_Splitter   * p_splitter;
-    Strong_Coupling   * p_as;
 
     FlavDecayMap        m_options;
     DipoleList          m_dipoles;
