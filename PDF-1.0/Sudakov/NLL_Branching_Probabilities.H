@@ -56,7 +56,8 @@ namespace SHERPA {
     double AlphaS(double q2);
     double Gamma(double q, double Q);
     double IntGamma(double q, double Q);
-
+    void   SetColFac(double colfac) {m_colfac=colfac;}
+    
   };
   
   class GammaQ_QG_Lambda :  public Gamma_Lambda_Base {

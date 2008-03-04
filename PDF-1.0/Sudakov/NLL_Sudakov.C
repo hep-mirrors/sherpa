@@ -1,5 +1,6 @@
 #include "NLL_Sudakov.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Running_AlphaS.H"
 #include <iomanip> 
@@ -59,6 +60,7 @@ void NLL_Sudakov::PrepareMap()
   NLL_Single_Sudakov   *ssud(NULL);
   Flavour flav;
   bpm::code bpmode((bpm::code)(m_mode));
+  //Quark Sudakovs
   for (int k=1;k<=6;++k) {
     flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
@@ -67,6 +69,18 @@ void NLL_Sudakov::PrepareMap()
     m_sudakovs[flav]=ssud;
     m_sudakovs[flav.Bar()]=ssud;
   }
+  
+  if (rpa.gen.ModelName()==std::string("MSSM")) {
+    //Gluino Sudakov
+    flav=Flavour(kf::Gluino);
+    GammaQ_QG_Lambda * GL = new GammaQ_QG_Lambda
+      (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor);
+    GL->SetColFac(CA);
+    ssud = new NLL_Single_Sudakov(GL,smode);
+    m_sudakovs[flav]=ssud;
+  }
+  
+  //Gluon Sudakov
   csud = new NLL_Combined_Sudakov(smode);
   ssud = new NLL_Single_Sudakov
     (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
