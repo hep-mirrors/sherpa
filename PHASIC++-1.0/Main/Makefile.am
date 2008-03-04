@@ -12,8 +12,6 @@ libPhasespace_la_SOURCES      =	\
 				Threshold.C \
 				Leading_Log.C \
 				LBS_Compton_Peak.C \
-			   	Leading_Log_Z.C \
-			   	LL_KPerp.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
@@ -40,8 +38,6 @@ pkginclude_HEADERS        =	\
 			Threshold.H \
 			Leading_Log.H \
 			LBS_Compton_Peak.H \
-		 	Leading_Log_Z.H \
-		 	LL_KPerp.H \
 			FSR_Channel.H \
 			Channel_Interface.H \
 			Rambo.H \
