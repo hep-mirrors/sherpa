@@ -149,19 +149,11 @@ void XS_Group::Add(XS_Base *const xsec)
   if (m_orderEW!=xsec->m_orderEW) m_orderEW=-1;
   if (m_orderQCD!=xsec->m_orderQCD) m_orderQCD=-1;
   if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
-  if (xsec->NAddIn()>m_naddin || xsec->NAddOut()>m_naddout) {
-    if (p_addmomenta!=NULL) delete [] p_addmomenta;
-    m_naddin=xsec->NAddIn();
-    m_naddout=xsec->NAddOut(); 
-    p_addmomenta = new ATOOLS::Vec4D[m_naddin+m_naddout];
-  }
-  else {
-    if (m_nin!=xsec->NIn() || m_nout!=xsec->NOut()) {
-      msg_Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
-			 <<xsec->Name()<<"' to group '"<<m_name<<"' !"<<std::endl
-			 <<"   Inconsistent number of external legs."<<std::endl; 
-      return;
-    }
+  if (m_nin!=xsec->NIn() || m_nout!=xsec->NOut()) {
+    msg_Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
+	       <<xsec->Name()<<"' to group '"<<m_name<<"' !"<<std::endl
+	       <<"   Inconsistent number of external legs."<<std::endl; 
+    return;
   }  
   m_xsecs.push_back(xsec);
   if (!m_atoms) xsec->SetParent(this);
@@ -466,8 +458,6 @@ double XS_Group::Differential(double s,double t,double u)
   m_last = 0;
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetMomenta(p_momenta);
-    if (m_naddin>0 || m_naddout>0) 
-      m_xsecs[i]->SetAddMomenta(p_addmomenta);
     m_last+=m_xsecs[i]->Differential(s,t,u);
   }
   if (!(m_last<=0) && !(m_last>0)) {

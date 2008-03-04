@@ -127,10 +127,10 @@ namespace PHASIC {
   protected:
 
     std::string m_name, m_resultpath, m_resultfile, m_histofile;
-    size_t      m_nin, m_nout, m_naddin, m_naddout, m_nvector, m_corenout;
+    size_t      m_nin, m_nout, m_nvector, m_corenout;
 
-    ATOOLS::Flavour *p_flavours, *p_addflavours;
-    ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
+    ATOOLS::Flavour *p_flavours;
+    ATOOLS::Vec4D   *p_momenta;
 
     scl::scheme m_scalescheme;
     cls::scheme m_colorscheme;
@@ -211,9 +211,6 @@ namespace PHASIC {
   
     // member functions
     void SetMomenta(const ATOOLS::Vec4D *momenta); 
-
-    void SetAddFlavours(const ATOOLS::Flavour *flavours); 
-    void SetAddMomenta(const ATOOLS::Vec4D *momenta); 
 
     ATOOLS::Blob_Data_Base *OneEvent(const double mass,const int mode);
 
@@ -322,17 +319,9 @@ namespace PHASIC {
     inline size_t NOut() const    { return m_nout;    }
     inline size_t NVector() const { return m_nvector; }
 
-    inline size_t NAddIn()  { return Selected()->m_naddin;  }
-    inline size_t NAddOut() { return Selected()->m_naddout; }
-
     inline const std::string     &Name() const     { return m_name;     }
     inline const ATOOLS::Flavour *Flavours() const { return p_flavours; }
     inline const ATOOLS::Vec4D   *Momenta() const  { return p_momenta;  }
-
-    inline const ATOOLS::Flavour *AddFlavours()
-    { return Selected()->p_addflavours; }
-    inline const ATOOLS::Vec4D   *AddMomenta()
-    { return Selected()->p_addmomenta;  }
 
     inline double Last() const     { return m_last;     }
     inline double LastXS() const   { return m_lastdxs;  }

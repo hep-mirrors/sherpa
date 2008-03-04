@@ -68,10 +68,9 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 PDF::ISR_Handler *const isrhandler,
 				 Selector_Data *const selectordata,
 				 const cls::scheme &clsc,const hls::scheme &hlsc):
-  m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
+  m_name(""), m_nin(nin), m_nout(nout),
   m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), m_corenout(nout),
-  p_flavours(NULL), p_addflavours(NULL), 
-  p_momenta(new Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
+  p_flavours(NULL), p_momenta(new Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), 
   m_scalescheme(scalescheme), m_colorscheme(clsc), m_helicityscheme(hlsc), m_kfactorscheme(kfactorscheme), 
   m_maxjetnumber(99), m_coremaxjetnumber(99),
   m_nstrong(0), m_neweak(0), m_orderQCD(-1), m_orderEW(-1), m_usepi(0),
@@ -103,8 +102,6 @@ Integrable_Base::~Integrable_Base()
   if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
   if (p_momenta!=NULL) delete [] p_momenta;
-  if (p_addflavours!=NULL) delete [] p_addflavours;
-  if (p_addmomenta!=NULL) delete [] p_addmomenta;
   if (p_whisto!=NULL) delete p_whisto;
   if (p_pshandler) delete p_pshandler;
   delete p_regulator;
@@ -166,29 +163,6 @@ void Integrable_Base::SetMomenta(const Vec4D *momenta)
   if (Selected()!=this) 
     for (size_t i=0;i<NVector();++i) 
       Selected()->p_momenta[i]=momenta[i];
-}
-
-void Integrable_Base::SetAddMomenta(const Vec4D *momenta) 
-{ 
-  if (!p_addmomenta) {
-    msg_Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
-		       <<"p_addmomenta = NULL. Abort."<<std::endl;
-    abort();
-  }
-  for (size_t i=0;i<NAddIn()+NAddOut();++i) p_addmomenta[i]=momenta[i];
-  if (Selected()!=this) 
-    for (size_t i=0;i<NAddIn()+NAddOut();++i) 
-      Selected()->p_addmomenta[i]=momenta[i];
-}
-
-void Integrable_Base::SetAddFlavours(const Flavour *flavours) 
-{ 
-  if (!p_addflavours) {
-    msg_Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
-		       <<"p_addflavours = NULL. Abort."<<std::endl;
-    abort();
-  }
-  for (size_t i=0;i<NAddIn()+NAddOut();++i) p_addflavours[i]=flavours[i];
 }
 
 void Integrable_Base::InitWeightHistogram() 

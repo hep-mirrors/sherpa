@@ -223,9 +223,6 @@ void XS_Base::SwapInOrder()
   std::swap(p_flavours[0],p_flavours[1]);
   std::swap(p_momenta[0],p_momenta[1]);
   std::swap(p_colours[0],p_colours[1]);
-  if (m_naddout>0) {
-    std::swap(p_addmomenta[0],p_addmomenta[1]);
-  }
   m_swaped=true;
 }
 
@@ -235,9 +232,6 @@ void XS_Base::RestoreInOrder()
     std::swap(p_flavours[0],p_flavours[1]);
     std::swap(p_momenta[0],p_momenta[1]);
     std::swap(p_colours[0],p_colours[1]);
-    if (m_naddout>0) {
-      std::swap(p_addmomenta[0],p_addmomenta[1]);
-    }
     m_swaped=false;
   }
 }

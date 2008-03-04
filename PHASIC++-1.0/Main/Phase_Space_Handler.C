@@ -553,10 +553,6 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
 	m_sumtrials += i;m_events ++;
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
-	  if (p_process->NAddOut()>0) {
-	    ATOOLS::Vec4D *addvecs=(ATOOLS::Vec4D*)p_process->AddMomenta();
-	    Rotate(addvecs,p_process->NAddOut());
-	  }
 	  p_process->Selected()->SetMomenta(p_lab);
 	  p_process->Selected()->SwapInOrder();
 	  rot=true;
@@ -604,10 +600,6 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       if (p_process->Selected()->Name().find("BFKL")!=0) {
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
-	  if (p_process->NAddOut()>0) {
-	    ATOOLS::Vec4D* addvecs=(ATOOLS::Vec4D*)p_process->AddMomenta();
-	    Rotate(addvecs,p_process->NAddOut());
-	  }
 	  selected->SetMomenta(p_lab);
 	  selected->SwapInOrder();
 	}
