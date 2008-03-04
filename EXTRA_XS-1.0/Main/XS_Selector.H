@@ -13,8 +13,6 @@ namespace EXTRAXS {
 
     XS_Base *p_owner;
 
-    bool m_offshell;
-
     Single_XS *GetSingleXS(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours,
 			   const size_t nqed,const size_t nqed);
@@ -35,11 +33,6 @@ namespace EXTRAXS {
 			      const size_t nin,const size_t nout,
 			      const ATOOLS::Flavour *flavours);
     
-    // inline functions
-    inline void SetOffShell(const bool offshell)   { m_offshell=offshell;   }
-
-    inline bool OffShell() const  { return m_offshell;  }
-
   };// end of class XS_Selector
 
 }//end of namespace EXTRAXS

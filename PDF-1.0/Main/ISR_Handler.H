@@ -19,19 +19,19 @@ namespace PDF {
     ISR_Base **p_isrbase;
 
     ATOOLS::Integration_Info *p_info;
-    ATOOLS::Info_Key          m_spkey, m_ykey, m_xkey, m_zkey[2], m_kpkey[2];
+    ATOOLS::Info_Key          m_spkey, m_ykey, m_xkey;
     ATOOLS::Info_Key          m_mu2key[2], m_beamspkey, m_beamykey;
 
     std::string m_name, m_type;
 
-    int m_mode, m_kmrmode, m_kperpscheme, m_rmode; 
+    int m_mode, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
-    double m_splimits[3],m_ylimits[2], m_kplimits[3], m_zlimits[2];
+    double m_splimits[3],m_ylimits[2];
     double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
 
-    ATOOLS::Poincare m_cmsboost, m_kmrboost, m_kmrrot;
-    ATOOLS::Vec4D    m_fixvecs[2], p_cms[2], p_kmrlast[2];
+    ATOOLS::Poincare m_cmsboost;
+    ATOOLS::Vec4D    m_fixvecs[2], p_cms[2];
 
     std::vector<double> m_info_lab, m_info_cms;
 
@@ -100,12 +100,9 @@ namespace PDF {
     { return p_isrbase[beam]->Flavour(); }
 
     inline int On()    { return m_mode;    }
-    inline int KMROn() { return m_kmrmode; }
 
     inline double *SprimeRange()         { return m_splimits;    }
     inline double *YRange()              { return m_ylimits;     }
-    inline double *KMRZRange()           { return m_zlimits;     }
-    inline double *KMRKpRange()          { return m_kplimits;    }
     inline double  Exponent(const int i) { return m_exponent[i]; }
 
     inline double SprimeMin() const { return m_splimits[0]; }
@@ -121,8 +118,6 @@ namespace PDF {
     inline double X2() const { return m_x[1]; }
 
     inline double Flux() const { return m_flux; }
-
-    inline const ATOOLS::Vec4D *KMRMomenta() const { return p_kmrlast; }
 
     inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
     { if (i<2) p_beam[i]=beam; }

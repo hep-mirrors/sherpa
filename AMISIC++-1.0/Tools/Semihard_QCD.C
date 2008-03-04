@@ -30,20 +30,12 @@ void Semihard_QCD::CreateFSRChannels()
 {
   if (m_fsrmode==0 || p_fsrinterface==NULL) {
     p_pshandler->FSRIntegrator()->DropAllChannels();
-    if (p_isrhandler->KMROn()>0) {
-      p_pshandler->FSRIntegrator()->
-	Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
-      p_pshandler->FSRIntegrator()->
-	Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
-    }
-    else {
-      p_pshandler->FSRIntegrator()->
-	Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
-      p_pshandler->FSRIntegrator()->
-	Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
-      p_pshandler->FSRIntegrator()->
-	Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
-    }
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
     m_fsrmode=1;
   }
   else {
@@ -91,17 +83,9 @@ void Semihard_QCD::InitIntegrators()
     for (unsigned int i=0;i<m_xsecs.size();i++) 
       m_xsecs[i]->SetISR(p_isrhandler);
     p_pshandler->ISRIntegrator()->DropAllChannels();
-    if (p_pshandler->KMRZIntegrator()!=NULL) 
-      p_pshandler->KMRZIntegrator()->DropAllChannels();
-    if (p_pshandler->KMRKPIntegrator()!=NULL) 
-      p_pshandler->KMRKPIntegrator()->DropAllChannels();
   }
   p_pshandler->CreateIntegrators();
   p_pshandler->ISRIntegrator()->Reset();
-  if (p_isrhandler->KMROn()) {
-    p_pshandler->KMRZIntegrator()->Reset();
-    p_pshandler->KMRKPIntegrator()->Reset();
-  }
   p_pshandler->FSRIntegrator()->Reset();
   m_channels=true;
 }

@@ -49,7 +49,6 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     msg_Error()<<"Simple_XS::Simple_XS(..): "
 		       <<"No beam remnant handler found."<<std::endl;
   }
-  XSSelector()->SetOffShell(p_isrhandler->KMROn());
   std::string processfile=
     p_dataread->GetValue<std::string>("PROCESSFILE",
 				      std::string("Processes.dat"));

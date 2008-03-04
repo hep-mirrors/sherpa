@@ -9,8 +9,7 @@ using namespace EXTRAXS;
 using namespace ATOOLS;
 
 XS_Selector::XS_Selector(XS_Base *const owner):
-  p_owner(owner),
-  m_offshell(false) {}
+  p_owner(owner) {}
 
 XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
 			    const ATOOLS::Flavour *flavours,
@@ -113,10 +112,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   }
   Flavour_Container flc(flavours,nqed,nqcd);
   XS_Model_Base *model(p_owner->GetModel());
-  if (m_offshell) { 
-    xs=NULL;
-  }
-  else {
     if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours,nqed,nqcd))!=NULL) 
       s_gettermap[flc]=&Single_XS::GetProcess<XS_ee_ffbar>;
     else if ((xs=Single_XS::GetProcess<XS_pp_q1qbar1>
@@ -175,7 +170,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
       else if ((xs=Single_XS::GetProcess<XS_q1q2_sQ1LsQ2R>
 		(nin,nout,flavours,model,nqed,nqcd))!=NULL);
     }
-  }
   if (xs!=NULL) {
     xs->m_orderEW=nqed;
     xs->m_orderQCD=nqcd;

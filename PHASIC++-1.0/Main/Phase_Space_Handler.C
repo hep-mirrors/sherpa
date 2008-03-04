@@ -8,8 +8,6 @@
 #include "RamboKK.H"
 #include "Sarge.H"
 #include "VHAAG.H"
-#include "Leading_Log_Z.H"
-#include "LL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
 #include "Running_AlphaS.H"
@@ -29,6 +27,9 @@
 
 #include <dlfcn.h>
 
+#define PTS long unsigned int
+#define PT(ARG) (PTS)(ARG)
+
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
@@ -39,7 +40,7 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
 					 ISR_Handler *ih,Beam_Spectra_Handler *bh, double error): 
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
-  p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
+  p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0), m_sintegrator(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
@@ -64,14 +65,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     if (p_beamhandler) {
       if (p_beamhandler->On()>0) p_beamchannels = new Multi_Channel("beam_"+proc->Name());
     }
-    if (p_isrhandler) {
-      if (p_isrhandler->On()>0) {
-	p_isrchannels = new Multi_Channel("isr_"+proc->Name());
- 	if (p_isrhandler->KMROn()>0) {
- 	  p_zchannels = new Multi_Channel("kmr_z_"+proc->Name());
- 	  p_kpchannels = new Multi_Channel("kmr_kp_"+proc->Name());
-	}
-      }
+    if (p_isrhandler && p_isrhandler->On()>0) {
+      p_isrchannels = new Multi_Channel("isr_"+proc->Name());
     }
   }
   if (m_nin==2) {
@@ -81,8 +76,6 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     m_beamykey.Assign("y beam",3,0,p_info);
     m_mu2key[0].Assign("mu2_1",1,0,p_info);
     m_mu2key[1].Assign("mu2_2",1,0,p_info);
-    m_isrkpkey[0].Assign("k_perp_1",4,1,p_info);
-    m_isrkpkey[1].Assign("k_perp_2",4,1,p_info);
     p_beamhandler->AssignKeys(p_info);
     p_isrhandler->AssignKeys(p_info);
   }
@@ -96,8 +89,6 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_helint!=NULL) delete p_helint;
   if (p_colint!=NULL) delete p_colint;
   if (p_fsrchannels)  { delete p_fsrchannels;  p_fsrchannels = 0;   }
-  if (p_kpchannels)   { delete p_kpchannels;   p_kpchannels = 0;    }
-  if (p_zchannels)    { delete p_zchannels;    p_zchannels = 0;     }
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
@@ -173,12 +164,6 @@ double Phase_Space_Handler::Integrate()
     if (p_isrchannels) 
       msg_Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
 		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<std::endl;
-    if (p_zchannels) 
-      msg_Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
- 		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<std::endl;
-    if (p_kpchannels) 
-      msg_Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
- 		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<std::endl;
   }
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
@@ -269,16 +254,14 @@ void Phase_Space_Handler::CalculateME()
   }
   else {
     double Q2(p_active->CalculateScale(p_lab));
-    if (p_isrhandler->KMROn()>0 || Q2<0.0) {
+    if (Q2<0.0) {
       m_mu2key[0][0]=p_active->Scale(stp::kp21);
       m_mu2key[1][0]=p_active->Scale(stp::kp22);
     }
     if (p_isrhandler->On()>0 && 
 	!(m_cmode&psm::no_dice_isr))
       if (!p_isrhandler->CalculateWeight(Q2)) return; 
-    if (p_isrhandler->KMROn()==0) 
-      m_result_1=p_active->Differential(p_cms);
-    else m_result_1=p_active->Differential(p_lab);
+    m_result_1=p_active->Differential(p_lab);
     if (p_isrhandler->On()!=3) {
       m_result_2=0.0;
     }
@@ -302,12 +285,6 @@ void Phase_Space_Handler::CalculatePS()
 	!(m_cmode&psm::no_dice_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());
       m_psweight*=p_isrchannels->Weight();
-      if (p_isrhandler->KMROn()) {
-	p_zchannels->GenerateWeight(p_isrhandler->KMROn());
-	m_psweight*=p_zchannels->Weight();
-	p_kpchannels->GenerateWeight(p_isrhandler->KMROn());
-	m_psweight*=p_kpchannels->Weight();
-      }
     }
     if (p_beamhandler->On()>0) {
       p_beamchannels->GenerateWeight(p_beamhandler->On());
@@ -397,16 +374,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       p_isrhandler->SetLimits();
       p_isrhandler->SetMasses(p_process->Selected()->Flavours(),m_nout);
       if (p_isrhandler->On()>0) { 
-	if (p_isrhandler->KMROn()) {
-	  p_kpchannels->
-	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  p_zchannels->
-	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  p_isrhandler->
-	    SetSprimeMax(p_isrhandler->SprimeMax()+
-			 (m_isrkpkey[0](0)+m_isrkpkey[1](0)).Abs2());
-	  if (p_isrhandler->SprimeMax()<p_isrhandler->SprimeMin()) return 0.0;
-	}
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -414,8 +381,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 			       p_process->Selected()->Flavours(),m_nin+m_nout)) {
       if (p_beamchannels) p_beamchannels->NoDice();    
       if (p_isrchannels)  p_isrchannels->NoDice();    
-      if (p_zchannels)  p_zchannels->NoDice();    
-      if (p_kpchannels)  p_kpchannels->NoDice();    
       p_fsrchannels->NoDice();
       return 0.;
     }
@@ -442,8 +407,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (p_massboost) for (int i=0;i<m_nvec;++i) 
       p_massboost->BoostBack(p_lab[i]);
   }
-  if (p_process->NAddOut()>0) 
-    p_process->SetAddMomenta(p_isrhandler->KMRMomenta());
   m_result_2=m_result_1=0.0;
   if (process->Trigger(p_lab)) {
 #ifdef USING__Threading
@@ -696,8 +659,6 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
   ATOOLS::MakeDir(pID,force|ovf); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
-  if (p_zchannels != 0) p_zchannels->WriteOut(pID+"/MC_KMR_Z");
-  if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+"/MC_KMR_KP");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
   if (p_helint!=NULL) p_helint->WriteOut(pID);
@@ -714,8 +675,6 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   bool okay = 1;
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
-  if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+"/MC_KMR_Z");
-  if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+"/MC_KMR_KP");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
   if (p_helint!=NULL) p_helint->ReadIn(pID);
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
@@ -784,12 +743,6 @@ bool Phase_Space_Handler::CreateIntegrators()
 		     <<"   did not construct any isr channels !"<<std::endl;
 	}
       }
-      if (p_isrhandler->KMROn()) {
-	if (!(MakeKMRChannels())) {
-	  msg_Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
-		     <<"   did not construct any kmr channels !"<<std::endl;
-	}
-      }
     }
   }
   if (m_nin==2) { 
@@ -844,8 +797,6 @@ bool Phase_Space_Handler::CreateIntegrators()
   msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
   if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
   if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-  if (p_zchannels) msg_Tracking()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
-  if (p_kpchannels) msg_Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
   if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
   return 1;
 }
@@ -1184,71 +1135,6 @@ bool Phase_Space_Handler::MakeISRChannels()
   return CreateISRChannels();
 }
 
-void Phase_Space_Handler::MakeZChannels(const int type)
-{
-  Channel_Info ci;
-  ci.type=type;
-  ci.parameters.push_back(.0625);
-  ci.parameters.push_back(.99);
-  m_zparams.push_back(ci);
-  ci.parameters[0]=.125;
-  m_zparams.push_back(ci);
-  ci.parameters[0]=.25;
-  m_zparams.push_back(ci);
-  ci.parameters[0]=.5;
-  m_zparams.push_back(ci);
-  ci.parameters[0]=.75;
-  m_zparams.push_back(ci);
-  ci.parameters[0]=.875;
-  m_zparams.push_back(ci);
-  ci.parameters.clear();
-}
-
-bool Phase_Space_Handler::MakeKMRChannels()
-{
-  if (m_zparams.size()>0) return CreateKMRChannels();
-  Channel_Info ci;
-  if (!p_flavours[0].IsLepton() && !p_flavours[1].IsLepton()) {
-    // z channels
-    if (p_flavours[0].IsQuark() && p_flavours[1].IsQuark()) {
-      MakeZChannels(1);
-    }
-    else if (p_flavours[0].IsQuark() && p_flavours[1].IsGluon()) {
-      MakeZChannels(1);
-      MakeZChannels(2);
-    }
-    else if (p_flavours[0].IsGluon() && p_flavours[1].IsQuark()) {
-      MakeZChannels(1);
-      MakeZChannels(3);
-    }
-    else if ((p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) ||
-	     (p_flavours[0].IsJet() && p_flavours[1].IsJet())) {
-      MakeZChannels(1);
-      MakeZChannels(2);
-      MakeZChannels(3);
-      MakeZChannels(4);
-    }
-    // k_\perp channels
-    ci.type=0;
-    ci.parameters.push_back(1.001);
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=1.167;
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=1.333;
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=1.5;
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=1.667;
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=1.833;
-    m_kpparams.push_back(ci);
-    ci.parameters[0]=2.0;
-    m_kpparams.push_back(ci);
-    ci.parameters.clear();
-  }
-  return CreateKMRChannels();
-}
-
 bool Phase_Space_Handler::CreateBeamChannels()
 {
   if (m_beamparams.size() < 1) return 0;
@@ -1402,40 +1288,6 @@ bool Phase_Space_Handler::CreateISRChannels()
   return 1;
 }
 
-bool Phase_Space_Handler::CreateKMRChannels()
-{
-  if (m_zparams.size() < 1) return 0;
-  Single_Channel *channel=NULL;   
-  for (size_t i=0;i<m_zparams.size();++i) {
-    switch (m_zparams[i].type) {
-    case 0:
-    case 1: channel = new Leading_Log_Z_QQ(m_zparams[i].parameters[0],
-					   m_zparams[i].parameters[1],"",p_info);
-      p_zchannels->Add(channel);
-      if (m_zparams[i].type!=0) break;
-    case 2: channel = new Leading_Log_Z_QG(m_zparams[i].parameters[0],
-					   m_zparams[i].parameters[1],"",p_info);
-      p_zchannels->Add(channel);
-      if (m_zparams[i].type!=0) break;
-    case 3: channel = new Leading_Log_Z_GQ(m_zparams[i].parameters[0],
-					   m_zparams[i].parameters[1],"",p_info);
-      p_zchannels->Add(channel);
-      if (m_zparams[i].type!=0) break;
-    case 4: channel = new Leading_Log_Z_GG(m_zparams[i].parameters[0],
-					   m_zparams[i].parameters[1],"",p_info);
-      p_zchannels->Add(channel);
-      if (m_zparams[i].type!=0) break;
-    default:
-      break;
-    }
-  }
-  for (size_t i=0;i<m_kpparams.size();++i) {
-    channel = new LL_KPerp(m_kpparams[i].parameters[0],"",p_info);
-    p_kpchannels->Add(channel);
-  }
-  return 1;
-}
-
 void Phase_Space_Handler::ISRChannels(const int i,Channel_Info &ci) const 
 {
   if (i<(int)m_isrparams.size()) {
@@ -1484,8 +1336,9 @@ Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavou
 {
   size_t pos(pID.find("/"));
   s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
-  Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
-    ("Proc_"+pID.substr(0,pos),"Getter_"+pID.substr(pos+1));
+  Lib_Getter_Function gf = (Lib_Getter_Function)
+    PT(s_loader->GetLibraryFunction("Proc_"+pID.substr(0,pos),
+				    "Getter_"+pID.substr(pos+1)));
   if (gf==NULL) return NULL;
   return gf(nin,nout,fl,info,this);
 }

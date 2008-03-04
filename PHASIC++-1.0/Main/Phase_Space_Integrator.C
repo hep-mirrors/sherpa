@@ -77,8 +77,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   int numberofchannels = 1;
 
   msg_Tracking()<<"Integrators : "<<psh->BeamIntegrator()<<" / "
-		<<psh->ISRIntegrator()<<" / "<<psh->FSRIntegrator()
-		<<" / "<<psh->KMRZIntegrator()<<" / "<<psh->KMRKPIntegrator()<<endl;
+		<<psh->ISRIntegrator()<<" / "<<psh->FSRIntegrator()<<endl;
   
    if ((psh->BeamIntegrator())) {
      (psh->BeamIntegrator())->Reset();
@@ -90,19 +89,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
      numberofchannels += psh->NumberOfISRIntegrators();
      msg_Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
    }
-
-  if ((psh->KMRZIntegrator())) {
-    (psh->KMRZIntegrator())->Reset();
-    numberofchannels += psh->NumberOfKMRZIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
-  }
-  if ((psh->KMRKPIntegrator())) {
-    (psh->KMRKPIntegrator())->Reset();
-    numberofchannels += psh->NumberOfKMRKPIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
-  }
-
-
 
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->NumberOfFSRIntegrators();
@@ -227,8 +213,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   if (psh->ColorIntegrator()==NULL || psh->ColorIntegrator()->ValidPoint()) {
     if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value*enhance);    
     if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value*enhance);    
-    if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->AddPoint(value*enhance);    
-    if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->AddPoint(value*enhance);    
     if (psh->HelicityIntegrator()) psh->HelicityIntegrator()->AddPoint(value*enhance);
     (psh->FSRIntegrator())->AddPoint(value*enhance);    
   }
@@ -361,8 +345,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       if ((ncontrib<=maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
-	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->Optimize(maxerror);
-	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->Optimize(maxerror);
 	if ((psh->HelicityIntegrator()))  (psh->HelicityIntegrator())->Optimize();
 	(psh->FSRIntegrator())->Optimize(maxerror);
 	(psh->Process())->ResetMax(2);
@@ -389,8 +371,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       if ((ncontrib==maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
-	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->EndOptimize(maxerror);
-	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->EndOptimize(maxerror);
 	(psh->FSRIntegrator())->EndOptimize(maxerror);
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;

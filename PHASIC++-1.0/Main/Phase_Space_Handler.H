@@ -69,16 +69,15 @@ namespace PHASIC {
     static ATOOLS::Integration_Info *p_info;
 
     ATOOLS::Info_Key  m_isrspkey, m_isrykey, m_beamspkey, m_beamykey;
-    ATOOLS::Info_Key  m_mu2key[2], m_isrkpkey[2];
+    ATOOLS::Info_Key  m_mu2key[2];
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
 
-    Multi_Channel *p_fsrchannels, *p_zchannels, *p_kpchannels;
-    Multi_Channel *p_isrchannels, *p_beamchannels;
+    Multi_Channel *p_fsrchannels, *p_isrchannels, *p_beamchannels;
     std::list<std::string>* p_channellibnames;
 
-    channelinfos m_beamparams, m_isrparams, m_zparams, m_kpparams;
+    channelinfos m_beamparams, m_isrparams;
 
     ATOOLS::Flavour *p_flavours;
     ATOOLS::Vec4D   *p_cms, *p_lab;
@@ -124,11 +123,9 @@ namespace PHASIC {
 
     bool MakeBeamChannels();
     bool MakeISRChannels();
-    bool MakeKMRChannels();
 
     bool CreateBeamChannels();
     bool CreateISRChannels();
-    bool CreateKMRChannels();
 
     bool LoadChannelLibraries(); 
 
@@ -189,10 +186,6 @@ namespace PHASIC {
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }
-    inline Multi_Channel *const KMRKPIntegrator() const 
-    { return p_kpchannels;   }
-    inline Multi_Channel *const KMRZIntegrator() const  
-    { return p_zchannels;    }
     inline Multi_Channel *const ISRIntegrator() const   
     { return p_isrchannels;  }
     inline Multi_Channel *const FSRIntegrator() const   
@@ -207,17 +200,11 @@ namespace PHASIC {
     { return p_beamchannels->Number(); }
     inline int NumberOfISRIntegrators() const   
     { return p_isrchannels->Number();  }
-    inline int NumberOfKMRKPIntegrators() const 
-    { return p_kpchannels->Number();   }
-    inline int NumberOfKMRZIntegrators() const  
-    { return p_zchannels->Number();    }
     inline int NumberOfFSRIntegrators() const   
     { return p_fsrchannels->Number();  }
 
     inline channelinfos &BeamParameters() { return m_beamparams; } 
     inline channelinfos &ISRParameters()  { return m_isrparams;  } 
-    inline channelinfos &ZParameters()    { return m_zparams;    } 
-    inline channelinfos &KPParameters()   { return m_kpparams;   } 
 
     inline Integrable_Base *const Process() const { return p_process; }
     inline Integrable_Base *const Active() const  { return p_active;  }

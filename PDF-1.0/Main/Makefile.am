@@ -18,7 +18,6 @@ pkginclude_HEADERS       =	\
 			ISR_Base.H \
 			Intact.H \
 			Structure_Function.H\
-			ISR_Info.H \
 		 	ISR_Handler.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@

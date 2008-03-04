@@ -195,7 +195,6 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
 		     copy,m_scalescheme,m_kfactorscheme);
-  newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
   newgroup->PSHandler(false)->SetError(m_error);
   newgroup->SetScaleScheme(m_scalescheme);
   newgroup->SetKFactorScheme(m_kfactorscheme);
@@ -302,7 +301,6 @@ bool Simple_Chain::CreateGrid()
     (new ATOOLS::Selector_Data(InputPath(),m_selectorfile));
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
-  p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
   reader->AddIgnore("->");
   reader->AddIgnore("to");
@@ -534,7 +532,6 @@ bool Simple_Chain::CalculateTotal()
     group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),help,
 			     p_processes->ScaleScheme(),
 			     p_processes->KFactorScheme());
-    group->XSSelector()->SetOffShell(p_isr->KMROn());
     std::map<EXTRAXS::XS_Base*,EXTRAXS::XS_Group*> parents;
     for (Process_Map::iterator pit=m_processmap.begin();
 	 pit!=m_processmap.end();++pit) {

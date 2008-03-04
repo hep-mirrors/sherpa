@@ -33,7 +33,6 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,
 	  beamhandler,isrhandler,selectordata,model),
   m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
-  p_xsselector->SetOffShell(p_isrhandler->KMROn());
   p_selected=NULL;
   p_selectordata=selectordata;
 }
@@ -347,8 +346,6 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 	}
 	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
 	if (p_pshandler->ISRIntegrator() != 0) p_pshandler->ISRIntegrator()->Print();
-	if (p_pshandler->KMRZIntegrator() != 0) p_pshandler->KMRZIntegrator()->Print();
-	if (p_pshandler->KMRKPIntegrator() != 0) p_pshandler->KMRKPIntegrator()->Print();
 	if (p_pshandler->FSRIntegrator() != 0) p_pshandler->FSRIntegrator()->Print();
       }
     }

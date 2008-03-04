@@ -365,20 +365,12 @@ void XS_Base::SetCoreMaxJetNumber(const int &n)
 void XS_Base::CreateFSRChannels() 
 {
   p_pshandler->FSRIntegrator()->DropAllChannels();
-  if (p_isrhandler->KMROn()>0) {
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
-  }
-  else {
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
-  }
+  p_pshandler->FSRIntegrator()->
+    Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
+  p_pshandler->FSRIntegrator()->
+    Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+  p_pshandler->FSRIntegrator()->
+    Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
   for (size_t i=0;i<m_resonances.size();++i) {
     p_pshandler->FSRIntegrator()->
       Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours,m_resonances[i]));

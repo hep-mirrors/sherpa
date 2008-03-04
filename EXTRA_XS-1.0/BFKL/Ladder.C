@@ -116,8 +116,6 @@ void Ladder::CreateFSRChannels()
 void Ladder::CreateISRChannels() 
 {
   p_pshandler->ISRIntegrator()->DropAllChannels();
-  p_pshandler->KMRKPIntegrator()->DropAllChannels();
-  p_pshandler->KMRZIntegrator()->DropAllChannels();
 }
 
 double Ladder::Flux() const
