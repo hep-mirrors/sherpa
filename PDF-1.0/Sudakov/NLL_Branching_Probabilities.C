@@ -129,6 +129,34 @@ double GammaQ_QG_Lambda::Gamma(double q, double Q)
   return Max(val,0.0);
 }
 
+GammasQ_sQG_Lambda::GammasQ_sQG_Lambda(bpm::code mode, double lambda, 
+				   MODEL::Running_AlphaS * runas,
+				   double qmass, double asfac) : 
+  Gamma_Lambda_Base(bpt::gamma_q2qg,mode,lambda,runas,qmass,asfac) 
+{
+  m_colfac = CF;
+  m_dlog = 1.0;
+  m_slog = -1.;
+}
+
+double GammasQ_sQG_Lambda::Gamma(double q, double Q) 
+{
+  //no power corrections supported
+  SetZBounds(q,Q,m_qmass,m_qmass,0.0);
+  double val(Gamma_Lambda_Base::Gamma(q,Q));
+  if (m_qmass==0.0 || 
+      !(m_mode&bpm::massive || m_mode&bpm::dead_cone)) return Max(val,0.0);
+  if (m_mode&bpm::dead_cone) {
+    if (q<m_qmass) val+=2.0*m_colfac*m_lastas/M_PI/q*log(q/m_qmass);
+  }
+  else {
+    val+=m_colfac*m_lastas/M_PI/q* 
+	(0.5-q/m_qmass*atan(m_qmass/q)-
+	 (1.0-0.5*sqr(q/m_qmass))*log(1.0+sqr(m_qmass/q)));
+  }
+  return Max(val,0.0);
+}
+
 GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(bpm::code mode, double lambda, 
 				   MODEL::Running_AlphaS * runas,
 				   double qmass,double asfac) : 

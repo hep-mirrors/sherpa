@@ -68,6 +68,14 @@ namespace SHERPA {
     double Gamma(double q, double Q);
   };
 
+  class GammasQ_sQG_Lambda :  public Gamma_Lambda_Base {
+  public:
+    GammasQ_sQG_Lambda(bpm::code mode, double lambda, 
+		       MODEL::Running_AlphaS * =0,double sqmass=0.0,
+		       double asfac=1.0);
+    double Gamma(double q, double Q);
+  };
+
   class GammaQ_GQ_Lambda :  public Gamma_Lambda_Base {
   public:
     GammaQ_GQ_Lambda(bpm::code mode, double lambda, 

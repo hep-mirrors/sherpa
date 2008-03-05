@@ -78,6 +78,20 @@ void NLL_Sudakov::PrepareMap()
     GL->SetColFac(CA);
     ssud = new NLL_Single_Sudakov(GL,smode);
     m_sudakovs[flav]=ssud;
+    
+    //sQuark Sudakovs
+    for (short int l=1;l<3;l++) {
+      for (short int i=1;i<7;i++) {
+	int fl = l*1000000 + i;
+	flav = Flavour(kf::code(fl));
+	std::cout<<" flav is : "<<flav<<" mass is "<<flav.PSMass()<<std::endl;  
+	ssud = new NLL_Single_Sudakov
+	  (new GammasQ_sQG_Lambda
+	   (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
+	m_sudakovs[flav]=ssud;
+	m_sudakovs[flav.Bar()]=ssud;
+      }
+    }
   }
   
   //Gluon Sudakov
