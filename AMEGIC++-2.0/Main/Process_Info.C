@@ -726,7 +726,7 @@ string Process_Info::GenerateName()
       name+=m_sublist[0][i]->GenerateName();
       name+=string("]");
     }
-    if (i<m_sublist[0].size()-1) name+=string("_");
+    if (i<m_sublist[0].size()-1) name+=string("__");
   }
 
   return name;

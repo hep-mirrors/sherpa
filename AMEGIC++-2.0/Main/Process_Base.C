@@ -156,7 +156,7 @@ string * Process_Base::GenerateName(int _nin, Flavour * _flin, Pol_Info * _plin,
     }
   }
   int _nout=ppi->TotalNout();
-  _name = ToString(_nin)+"_"+ToString(_nout)+"_";
+  _name = ToString(_nin)+"_"+ToString(_nout)+"__";
 
   for (size_t i=0;i<m_nin;i++) {
     _name += _flin[i].IDName();
@@ -172,9 +172,8 @@ string * Process_Base::GenerateName(int _nin, Flavour * _flin, Pol_Info * _plin,
     }
 
 
-    _name += string("_");
+    _name += string("__");
   }
-  _name += string("__");
 
   _name +=ppi->GenerateName();
   return &_name;

@@ -517,15 +517,13 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 			(name.substr(i+1,j-i-1),ncut,ngcut,cp,fl-1));
 	  m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
 	  sum=sum|pos.back();
-	  sp=i=j+2;
+	  sp=i=j+3;
 	  break;
 	}
       }
     }
     else if (name[i]=='_') {
-      if (name[i-1]!='_' && (i<2 || name.rfind("nu",i)!=i-2) && 
-	  name[i+1]!='R' && name[i+1]!='L' &&
-	  (name[i+1]<48 || name[i+1]>57)) {
+      if (name[i-1]!='_' && name[i+1]=='_') {
 	pos.push_back(1<<cp++);
 	m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
 	sum=sum|pos.back();
@@ -583,7 +581,7 @@ void Jet_Finder::FillCombinations()
     m_gycuts.clear();
     m_fills.resize(m_nin+m_nout+1);
     std::string name(m_procname.substr(m_procname.find('_')+1));
-    name=name.substr(name.find('_')+1);
+    name=name.substr(name.find("__")+2);
     size_t i(0);
     FillCombinations(name,m_cuttag,rpa.gen.Variable("Y_CUT"),i,m_nin+m_nout);
 /*
