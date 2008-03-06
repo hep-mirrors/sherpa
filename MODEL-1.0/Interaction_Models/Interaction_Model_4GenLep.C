@@ -37,18 +37,18 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 {
   p_mosm->c_FFV(vertex,vanz);
 
-  Flavour flphoton(kf::photon);
-  Flavour flZ(kf::Z);
-  Flavour flWplus(kf::Wplus);
+  Flavour flphoton(kf_photon);
+  Flavour flZ(kf_Z);
+  Flavour flWplus(kf_Wplus);
   for (short int i=17;i<19;i++) {
-    Flavour flav1               = Flavour(kf::code(i));
+    Flavour flav1               = Flavour((kf_code)(i));
     Kabbala charge1             = Kabbala(string("Q_{")+flav1.TexName()+string("}"),flav1.Charge());
     Kabbala isoweak1            = Kabbala(string("T_{")+flav1.TexName()+string("}"),flav1.IsoWeak());
 
     Kabbala kcpl0,kcpl1;    
     if (flav1.IsOn()) {
       for (short int j=i;j<19;j++) {
-	Flavour flav2           = Flavour(kf::code(j));
+	Flavour flav2           = Flavour((kf_code)(j));
 	Kabbala charge2         = Kabbala(string("Q_{")+flav2.TexName()+string("}"),flav2.Charge());
 	Kabbala isoweak2        = Kabbala(string("T_{")+ flav2.TexName()+string("}"),flav2.IsoWeak());	
 	
@@ -60,7 +60,7 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	      kcpl1             = kcpl0;
 	      if (!ATOOLS::IsZero(kcpl0.Value())) {
 		vertex[vanz].in[0]   = flav1;
-		vertex[vanz].in[1]   = Flavour(kf::photon);
+		vertex[vanz].in[1]   = Flavour(kf_photon);
 		vertex[vanz].in[2]   = flav2;
 		vertex[vanz].cpl[0]  = kcpl0;
 		vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
@@ -90,7 +90,7 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	      kcpl1             = -M_I/costW*(isoweak1-charge1*sintW*sintW)*g2;
 	     
 	      vertex[vanz].in[0]     = flav1;
-	      vertex[vanz].in[1]     = Flavour(kf::Z);
+	      vertex[vanz].in[1]     = Flavour(kf_Z);
 	      vertex[vanz].in[2]     = flav2;
 	      vertex[vanz].cpl[0]    = kcpl0;
 	      vertex[vanz].cpl[1]    = kcpl1;
@@ -178,12 +178,12 @@ void Interaction_Model_4GenLep::c_VVVV(std::vector<Single_Vertex>& vertex,int& v
 void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  
 { 
   p_mosm->c_FFS(vertex,vanz);
-  Flavour flh(kf::h0);
+  Flavour flh(kf_h0);
   Kabbala kcpl0,kcpl1,M_h;
   if (!flh.IsOn()) return;
 
   for (short int i=17;i<19;i++) {
-    Flavour flav = Flavour(kf::code(i));
+    Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
       M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.PSMass());

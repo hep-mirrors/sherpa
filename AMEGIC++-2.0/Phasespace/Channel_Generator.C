@@ -241,8 +241,8 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	    }
 	  }
 	  sf<<"  type  = 1;"<<endl
-	    <<"  mass  = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Mass();"<<endl
-	    <<"  width = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Width();"<<endl;
+	    <<"  mass  = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Mass();"<<endl
+	    <<"  width = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Width();"<<endl;
 	  return;
 	}
       }
@@ -400,9 +400,9 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     sf<<"  type  = 2;"<<endl
       <<"  mass  = ";
     for (int i=0;i<tcount;i++) {
-      sf<<"Flavour(kf::code("<<props[i]->fl.Kfcode()<<")).Mass() + ";
+      sf<<"Flavour((kf_code)("<<props[i]->fl.Kfcode()<<")).Mass() + ";
     } 
-    sf<<"Flavour(kf::code("<<props[tcount]->fl.Kfcode()<<")).Mass();"<<endl;
+    sf<<"Flavour((kf_code)("<<props[tcount]->fl.Kfcode()<<")).Mass();"<<endl;
     sf<<"  width = 0.;"<<endl;
     return;
   }
@@ -471,7 +471,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   string tmstr;
   if (flag>=0 && !ATOOLS::IsZero(propt[count]->fl.Mass())) {
     tmstr = string("tmass")+ToString(count);
-    sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+    sf<<"  double "<<tmstr<<" = Flavour((kf_code)("<<hi<<")).Mass();"<<endl;
   }
   else tmstr = string("0.");
 
@@ -807,7 +807,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     int hi = 0;
     if (maxpole>0.) {
       hi = (_plist[hit]->fl).Kfcode();
-      if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+      if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
     } 
     switch (flag) {
     case -11: case -1:

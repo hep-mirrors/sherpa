@@ -88,10 +88,10 @@ void shpdpr_(double *x,double *q2,double *xppr) {
     for (int i=0;i<=10;++i) {
       Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,0.,0.,*q2);
       if (i!=3 && i!=4) {
-	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)));
+	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((kf_code)(i-5)));
       }
       else {
-	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)));
+	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((kf_code)(2-i)));
       }
     }
   }

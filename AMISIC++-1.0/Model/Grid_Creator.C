@@ -150,7 +150,7 @@ bool Grid_Creator::InitializeCalculation()
 {
   int helpi=0;
   m_criterion=p_xaxis->Variable()->SelectorID();
-  std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
+  std::vector<ATOOLS::Flavour> flavours(1,(kf_jet));
   std::vector<std::pair<double,double> > bounds
     (1,std::pair<double,double>(m_gridxmin,m_gridxmax));
   p_processes->SelectorData()->

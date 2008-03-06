@@ -111,7 +111,7 @@ GetSOneParticleObservable(const Argument_Matrix &parameters)
     if (parameters[0].size()<6) return NULL;
     std::string list(parameters[0].size()>6?parameters[0][6]:"FinalState");
     int kf=ATOOLS::ToType<int>(parameters[0][0]);
-    ATOOLS::Flavour flav((ATOOLS::kf::code)abs(kf));
+    ATOOLS::Flavour flav((kf_code)abs(kf));
     if (kf<0) flav=flav.Bar();
     return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
 		     HistogramType(parameters[0][5]),
@@ -157,7 +157,7 @@ void SOne_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &inlist
   size_t pos=std::string::npos;
   for (size_t i=0;i<inlist.size();++i) {
     if (inlist[i]->Flav()==m_flavour || 
-	m_flavour.Kfcode()==ATOOLS::kf::none) {
+	m_flavour.Kfcode()==kf_none) {
       ++no;
       if (no==(int)m_item) {
 	pos=i;

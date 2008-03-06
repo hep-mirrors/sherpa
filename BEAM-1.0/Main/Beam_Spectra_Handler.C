@@ -90,12 +90,12 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number);  
-  Flavour beam_particle     = Flavour(kf::code(abs(flav)));
+  Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
 
-  if ( (beam_particle!=Flavour(kf::e)) && (beam_particle!=Flavour(kf::e).Bar()) ) {
+  if ( (beam_particle!=Flavour(kf_e)) && (beam_particle!=Flavour(kf_e).Bar()) ) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
 	       <<"   Tried to initialize Laser_Backscattering for "<<beam_particle<<"."<<endl
 	       <<"   This option is not available. Result will be to terminate program."<<endl;
@@ -118,7 +118,7 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Read * dataread,int num
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number);  
-  Flavour beam_particle     = Flavour(kf::code(abs(flav)));
+  Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number);
   double beam_polarization  = dataread->GetValue<double>("BEAM_POL_"+number);
@@ -138,7 +138,7 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number);  
-  Flavour beam_particle     = Flavour(kf::code(abs(flav)));
+  Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
@@ -198,14 +198,14 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
     }
     /*
       if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (! ( ((_beams[i]==Flavour(kf::e)) || (_beams[i]==Flavour(kf::e).Bar())) &&
-      (_bunches[i]==Flavour(kf::photon))         ) ) {
+      if (! ( ((_beams[i]==Flavour(kf_e)) || (_beams[i]==Flavour(kf_e).Bar())) &&
+      (_bunches[i]==Flavour(kf_photon))         ) ) {
       fit = 0;
       break;
       }
       }
       if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if (! ( ((_beams[i] == Flavour(kf::e)) || (_beams[i] == Flavour(kf::e).Bar())) &&
+      if (! ( ((_beams[i] == Flavour(kf_e)) || (_beams[i] == Flavour(kf_e).Bar())) &&
       (_beams[i] == _bunches[i])         ) ) {
       fit = 0;
       break;
@@ -232,13 +232,13 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
     }
     /*
       if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (_bunches[i]!=Flavour(kf::photon)) {
+      if (_bunches[i]!=Flavour(kf_photon)) {
       fit = 0;
       break;
       }
       }
       if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if ((_bunches[i]!=Flavour(kf::e) && _bunches[i]!=Flavour(kf::e).Bar()) ||
+      if ((_bunches[i]!=Flavour(kf_e) && _bunches[i]!=Flavour(kf_e).Bar()) ||
       (_bunches[i]!=GetBeam(i)->Bunch()) ){
       fit = 0;
       break;

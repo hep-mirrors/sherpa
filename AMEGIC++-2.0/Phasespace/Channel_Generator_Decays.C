@@ -389,7 +389,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
     int hi = 0;
     if (maxpole>0.) {
       hi = (_plist[hit]->fl).Kfcode();
-      if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+      if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
     } 
     switch (flag) {
     case -11: case -1:

@@ -32,7 +32,7 @@ namespace SHERPA {
 #ifdef DEBUG__Hadrons
 #ifdef USING__ROOT
     TFile* p_file;
-    std::map<ATOOLS::kf::code,TH1D*> mass_hists;
+    std::map<kf_code,TH1D*> mass_hists;
 #endif
 #endif
 

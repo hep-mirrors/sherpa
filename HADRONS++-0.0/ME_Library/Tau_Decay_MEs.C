@@ -21,8 +21,8 @@ Tau_Lepton::Tau_Lepton( int _nout, Flavour *_fl ) :
 {
   m_metype = string("Tau_Lepton");
   for( int i=1; i<4; i++ ) {
-    if( p_flavs[i].Kfcode() == kf::e ||
-        p_flavs[i].Kfcode() == kf::mu ) { m_lep = i; break; }           // that's the lepton
+    if( p_flavs[i].Kfcode() == kf_e ||
+        p_flavs[i].Kfcode() == kf_mu ) { m_lep = i; break; }           // that's the lepton
   }
   // find the corresponding neutrinos
   for( int i=1; i<4; i++ ) {
@@ -82,7 +82,7 @@ Tau_Pseudo::Tau_Pseudo( int _nout, Flavour *_fl ) :
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 ) m_nutau = i;
     else m_pion = i;                            // that's the pion
   }
-  m_pionmode = (p_flavs[m_pion].Kfcode() == kf::pi_plus) ? 1 : 0;
+  m_pionmode = (p_flavs[m_pion].Kfcode() == kf_pi_plus) ? 1 : 0;
     // 1=pion mode, 0=kaon mode
 }
  
@@ -134,14 +134,14 @@ Tau_Two_Pion::Tau_Two_Pion( int _nout, Flavour *_fl ) :
   for( int i=1; i<4; i++ ) {
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )  m_nutau = i;
     else {
-      if( p_flavs[i].Kfcode() == kf::pi || 
-          p_flavs[i].Kfcode() == kf::K ||
-          p_flavs[i].Kfcode() == kf::K_S ||
-          p_flavs[i].Kfcode() == kf::K_L )                       m_pion0 = i;
+      if( p_flavs[i].Kfcode() == kf_pi || 
+          p_flavs[i].Kfcode() == kf_K ||
+          p_flavs[i].Kfcode() == kf_K_S ||
+          p_flavs[i].Kfcode() == kf_K_L )                       m_pion0 = i;
       else                                              m_pion_ch = i;
     }
   }
-  m_pionmode = (p_flavs[m_pion_ch].Kfcode() == kf::pi_plus) ? 1 : 0;
+  m_pionmode = (p_flavs[m_pion_ch].Kfcode() == kf_pi_plus) ? 1 : 0;
     // 1 = 2 pion mode, 0 = 2 kaon mode
 }
 
@@ -159,19 +159,19 @@ void Tau_Two_Pion::SetModelParameters( GeneralModel _md )
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
 
-  m_MR       = _md("Mass_rho_770", Flavour(kf::rho_770_plus).PSMass() );
-  m_MRR      = _md("Mass_rho_1450", Flavour(kf::rho_1450_plus).PSMass() );
-  m_MRRR     = _md("Mass_rho_1700", Flavour(kf::rho_1700_plus).PSMass() );
-  m_GR       = _md("Width_rho_770", Flavour(kf::rho_770_plus).Width() );
-  m_GRR      = _md("Width_rho_1450", Flavour(kf::rho_1450_plus).Width() );
-  m_GRRR     = _md("Width_rho_1700", Flavour(kf::rho_1700_plus).Width() );
+  m_MR       = _md("Mass_rho_770", Flavour(kf_rho_770_plus).PSMass() );
+  m_MRR      = _md("Mass_rho_1450", Flavour(kf_rho_1450_plus).PSMass() );
+  m_MRRR     = _md("Mass_rho_1700", Flavour(kf_rho_1700_plus).PSMass() );
+  m_GR       = _md("Width_rho_770", Flavour(kf_rho_770_plus).Width() );
+  m_GRR      = _md("Width_rho_1450", Flavour(kf_rho_1450_plus).Width() );
+  m_GRRR     = _md("Width_rho_1700", Flavour(kf_rho_1700_plus).Width() );
 
   m_MR2      = m_MR*m_MR;
   m_MRR2     = m_MRR*m_MRR;
   m_MRRR2    = m_MRRR*m_MRRR;
 
-  m_m2_pi    = sqr( Flavour(kf::pi_plus).PSMass() );
-  m_m2_K     = sqr( Flavour(kf::K_plus).PSMass() );
+  m_m2_pi    = sqr( Flavour(kf_pi_plus).PSMass() );
+  m_m2_K     = sqr( Flavour(kf_K_plus).PSMass() );
    
   // coefficients for KS model
   m_beta     = _md("beta", 0. );
@@ -272,12 +272,12 @@ Tau_Pion_Kaon::Tau_Pion_Kaon( int _nout, Flavour *_fl ) :
     m_ms[i] = sqr(p_flavs[i].PSMass());
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )          m_nutau = i;    // neutrino
     else {
-      if( p_flavs[i].Kfcode() == kf::pi || 
-          p_flavs[i].Kfcode() == kf::pi_plus )   m_pion = i;     // pion
+      if( p_flavs[i].Kfcode() == kf_pi || 
+          p_flavs[i].Kfcode() == kf_pi_plus )   m_pion = i;     // pion
       else if (m_kaon<0)                                        m_kaon = i;     // kaon
     }
   }
-  m_chpionmode = (p_flavs[m_pion].Kfcode() == kf::pi_plus) ? 1 : 0;
+  m_chpionmode = (p_flavs[m_pion].Kfcode() == kf_pi_plus) ? 1 : 0;
 }
 
 void Tau_Pion_Kaon::SetModelParameters( GeneralModel _md ) 
@@ -295,19 +295,19 @@ void Tau_Pion_Kaon::SetModelParameters( GeneralModel _md )
              break;
   }
   p_ff->SetModelParameters( _md );
-  p_ff->SetMasses2( m_ms[m_pion], m_ms[m_kaon], sqr(Flavour(kf::eta).PSMass()) );
+  p_ff->SetMasses2( m_ms[m_pion], m_ms[m_kaon], sqr(Flavour(kf_eta).PSMass()) );
 }
 
 // Resonance Chiral Theory
 
 void Tau_Pion_Kaon::RChT::SetModelParameters( GeneralModel _md ) 
 {
-  m_MK2      = sqr( _md("Mass_K*_892", Flavour(kf::K_star_892_plus).PSMass()) );
-  m_GK       = _md("Width_K*_892", Flavour(kf::K_star_892_plus).Width());
-  m_MK02     = sqr( _md("Mass_K*0_892", Flavour(kf::K_star_892).PSMass()) );
-  m_GK0      = _md("Width_K*0_892", Flavour(kf::K_star_892).Width());
+  m_MK2      = sqr( _md("Mass_K*_892", Flavour(kf_K_star_892_plus).PSMass()) );
+  m_GK       = _md("Width_K*_892", Flavour(kf_K_star_892_plus).Width());
+  m_MK02     = sqr( _md("Mass_K*0_892", Flavour(kf_K_star_892).PSMass()) );
+  m_GK0      = _md("Width_K*0_892", Flavour(kf_K_star_892).Width());
   m_fpi2     = sqr( _md("fpi", 0.0924) );
-  m_renorm2  = sqr( _md("renorm",_md("Mass_rho_770",Flavour(kf::rho_770_plus).PSMass())));
+  m_renorm2  = sqr( _md("renorm",_md("Mass_rho_770",Flavour(kf_rho_770_plus).PSMass())));
 }
 
 void Tau_Pion_Kaon::RChT::SetMasses2( double _mPi2, double _mK2, double _mEta2 )
@@ -407,17 +407,17 @@ Complex Tau_Pion_Kaon::RChT::ScalarFormFactor( double s )
 
 void Tau_Pion_Kaon::KS::SetModelParameters( GeneralModel _md ) 
 {
-  m_MR      = _md("Mass_K*_892", Flavour(kf::K_star_892_plus).PSMass());
-  m_MRR     = _md("Mass_K*_1410", Flavour(kf::K_star_1410).PSMass());
+  m_MR      = _md("Mass_K*_892", Flavour(kf_K_star_892_plus).PSMass());
+  m_MRR     = _md("Mass_K*_1410", Flavour(kf_K_star_1410).PSMass());
 
-  m_GR      = _md("Width_K*_892", Flavour(kf::K_star_892_plus).Width());
-  m_GRR     = _md("Width_K*_1410", Flavour(kf::K_star_1410_plus).Width());
+  m_GR      = _md("Width_K*_892", Flavour(kf_K_star_892_plus).Width());
+  m_GRR     = _md("Width_K*_1410", Flavour(kf_K_star_1410_plus).Width());
 
   m_MR2     = sqr(m_MR);
   m_MRR2    = sqr(m_MRR);
 
-  m_m2      = sqr( Flavour(kf::pi_plus).Mass() );
-  m_mK2     = sqr( Flavour(kf::K_plus).Mass() );
+  m_m2      = sqr( Flavour(kf_pi_plus).Mass() );
+  m_mK2     = sqr( Flavour(kf_K_plus).Mass() );
 
   m_beta    = _md("beta", 0.);
   m_running = int( _md("RUNNING_WIDTH", 1 ) );
@@ -493,12 +493,12 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
   m_ms[0] = sqr( p_flavs[0].PSMass() );
   // count number of pions, kaons and calc. mass^2
   for( int i=1; i<5; i++ ) {
-    if( p_flavs[i].Kfcode() == kf::pi_plus )   nPion_ch++;
-    if( p_flavs[i].Kfcode() == kf::pi )        nPion_0++;
-    if( p_flavs[i].Kfcode() == kf::K_plus )    nKaon_ch++;
-    if( p_flavs[i].Kfcode() == kf::K ||                   
-        p_flavs[i].Kfcode() == kf::K_L ||                     
-        p_flavs[i].Kfcode() == kf::K_S )       nKaon_0++;
+    if( p_flavs[i].Kfcode() == kf_pi_plus )   nPion_ch++;
+    if( p_flavs[i].Kfcode() == kf_pi )        nPion_0++;
+    if( p_flavs[i].Kfcode() == kf_K_plus )    nKaon_ch++;
+    if( p_flavs[i].Kfcode() == kf_K ||                   
+        p_flavs[i].Kfcode() == kf_K_L ||                     
+        p_flavs[i].Kfcode() == kf_K_S )       nKaon_0++;
     m_ms[i] = sqr( p_flavs[i].PSMass() );
   }
   // sanity check
@@ -515,7 +515,7 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 ) m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::pi_plus ) m_pseudo_3 = i;
+                    if( p_flavs[i].Kfcode() == kf_pi_plus ) m_pseudo_3 = i;
                     else if( m_pseudo_1<0 ) m_pseudo_1 = i;
                     else m_pseudo_2 = i;
                   }
@@ -525,7 +525,7 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 ) m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::K_plus ) m_pseudo_3 = i;
+                    if( p_flavs[i].Kfcode() == kf_K_plus ) m_pseudo_3 = i;
                     else if( m_pseudo_1<0 ) m_pseudo_1 = i;
                     else m_pseudo_2 = i;
                   }
@@ -550,12 +550,12 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )    m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::K_S ) {
+                    if( p_flavs[i].Kfcode() == kf_K_S ) {
                       if (m_pseudo_1 < 0)                               m_pseudo_1 = i;
                       else                                              m_pseudo_3 = i;
                     }
-                    if( p_flavs[i].Kfcode() == kf::pi_plus )            m_pseudo_2 = i;
-                    if( p_flavs[i].Kfcode() == kf::K_L ) {
+                    if( p_flavs[i].Kfcode() == kf_pi_plus )            m_pseudo_2 = i;
+                    if( p_flavs[i].Kfcode() == kf_K_L ) {
                       if (m_pseudo_3<0)                                 m_pseudo_3 = i;
                       else                                              m_pseudo_1 = i;
                     }
@@ -566,11 +566,11 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )    m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::K ||
-                        p_flavs[i].Kfcode() == kf::K_L ||
-                        p_flavs[i].Kfcode() == kf::K_S )                m_pseudo_3 = i;
-                    if( p_flavs[i].Kfcode() == kf::pi )                 m_pseudo_2 = i;
-                    if( p_flavs[i].Kfcode() == kf::K_plus )             m_pseudo_1 = i;
+                    if( p_flavs[i].Kfcode() == kf_K ||
+                        p_flavs[i].Kfcode() == kf_K_L ||
+                        p_flavs[i].Kfcode() == kf_K_S )                m_pseudo_3 = i;
+                    if( p_flavs[i].Kfcode() == kf_pi )                 m_pseudo_2 = i;
+                    if( p_flavs[i].Kfcode() == kf_K_plus )             m_pseudo_1 = i;
                   }
                 }
                 break;
@@ -578,11 +578,11 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )    m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::pi )                 m_pseudo_3 = i;
-                    if( p_flavs[i].Kfcode() == kf::K ||
-                        p_flavs[i].Kfcode() == kf::K_S ||
-                        p_flavs[i].Kfcode() == kf::K_L )                m_pseudo_2 = i;
-                    if( p_flavs[i].Kfcode() == kf::pi_plus )            m_pseudo_1 = i;
+                    if( p_flavs[i].Kfcode() == kf_pi )                 m_pseudo_3 = i;
+                    if( p_flavs[i].Kfcode() == kf_K ||
+                        p_flavs[i].Kfcode() == kf_K_S ||
+                        p_flavs[i].Kfcode() == kf_K_L )                m_pseudo_2 = i;
+                    if( p_flavs[i].Kfcode() == kf_pi_plus )            m_pseudo_1 = i;
                   }
                 }
                 break;
@@ -672,37 +672,37 @@ void Tau_Three_Pseudo::RChT::SetModelParameters( GeneralModel _md )
       else c[i] = (a[i]==3)? b[i] : a[i];
     }
     // masses and widths of vector resonances (v and v')
-    MV[0] = _md("Mass_vector_1", Flavour(kf::rho_770_plus).PSMass() );
-    GV[0] = _md("Width_vector_1", Flavour(kf::rho_770_plus).Width() );
-    MV[1] = _md("Mass_vector_2", Flavour(kf::rho_770_plus).PSMass() );
-    GV[1] = _md("Width_vector_2", Flavour(kf::rho_770_plus).Width() );
+    MV[0] = _md("Mass_vector_1", Flavour(kf_rho_770_plus).PSMass() );
+    GV[0] = _md("Width_vector_1", Flavour(kf_rho_770_plus).Width() );
+    MV[1] = _md("Mass_vector_2", Flavour(kf_rho_770_plus).PSMass() );
+    GV[1] = _md("Width_vector_2", Flavour(kf_rho_770_plus).Width() );
   }
   else {
     c[0] = c[1] = 1;
     // masses and widths of vector resonances (v and v')
-    MV[0] = _md("Mass_vector", Flavour(kf::rho_770_plus).PSMass() );
-    GV[0] = _md("Width_vector", Flavour(kf::rho_770_plus).Width() );
+    MV[0] = _md("Mass_vector", Flavour(kf_rho_770_plus).PSMass() );
+    GV[0] = _md("Width_vector", Flavour(kf_rho_770_plus).Width() );
     MV[1] = MV[0];
     GV[1] = GV[0];
   }
    
   // set correct parameters (using corresponding settings under "Resonances" in DC file)
    
-  m_MA       = _md("Mass_axial", Flavour(kf::a_1_1260_plus).PSMass());            // mass of axial resonance
+  m_MA       = _md("Mass_axial", Flavour(kf_a_1_1260_plus).PSMass());            // mass of axial resonance
   m_MA2      = sqr(m_MA);                           // mass^2 of axial resonance
   m_msV[0]   = sqr( MV[c[0]-1] );                   // mass^2 of vector resonance 13
   m_msV[1]   = sqr( MV[c[1]-1] );                   // mass^2 of vector resonance 23
    
-  m_GA_at_MA2 = _md("Width_axial", Flavour(kf::a_1_1260_plus).Width());         // on-shell axial width
+  m_GA_at_MA2 = _md("Width_axial", Flavour(kf_a_1_1260_plus).Width());         // on-shell axial width
   m_widthV[0] = GV[c[0]-1];                         // on-shell vector 13 width
   m_widthV[1] = GV[c[1]-1];                         // on-shell vector 23 width
 
   m_fpi2   = sqr(_md("fpi", 0.0924));
   m_l0     = _md("lambda0", 1.);                    // fit parameter lambda0
   m_gammaR = _md("gamma_rho_770", 1.);              // global factor for rho width
-  m_m      = Flavour( kf::pi_plus ).PSMass();         // pion mass
+  m_m      = Flavour( kf_pi_plus ).PSMass();         // pion mass
   m_m2     = sqr(m_m);                              // pion mass^2
-  m_mK2    = sqr( Flavour( kf::K_plus ).PSMass() );   // Kaon mass^2
+  m_mK2    = sqr( Flavour( kf_K_plus ).PSMass() );   // Kaon mass^2
   m_exp_alpha = _md("exp_alpha", 2.45);             // exponent in off-shell GA
   m_l1     = _md("lambda1", 0.5);                   // fit parameter        
   m_l2     = _md("lambda2", 0.);                    // fit parameter
@@ -966,14 +966,14 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
       else c[i] = (a[i]==3)? b[i] : a[i];
     }
     // masses and widths of vector resonances (v and v')
-    MV[0] = _md("Mass_vector_1", Flavour(kf::rho_770_plus).PSMass() );
-    GV[0] = _md("Width_vector_1", Flavour(kf::rho_770_plus).Width() );
-    MV[1] = _md("Mass_vector_2", Flavour(kf::rho_770_plus).PSMass() );
-    GV[1] = _md("Width_vector_2", Flavour(kf::rho_770_plus).Width() );
-    Mv[0] = _md("Mass_vector'_1", Flavour(kf::rho_1450_plus).PSMass() );
-    Gv[0] = _md("Width_vector'_1", Flavour(kf::rho_1450_plus).Width());
-    Mv[1] = _md("Mass_vector'_2", Flavour(kf::rho_1450_plus).PSMass() );
-    Gv[1] = _md("Width_vector'_2", Flavour(kf::rho_1450_plus).Width() );
+    MV[0] = _md("Mass_vector_1", Flavour(kf_rho_770_plus).PSMass() );
+    GV[0] = _md("Width_vector_1", Flavour(kf_rho_770_plus).Width() );
+    MV[1] = _md("Mass_vector_2", Flavour(kf_rho_770_plus).PSMass() );
+    GV[1] = _md("Width_vector_2", Flavour(kf_rho_770_plus).Width() );
+    Mv[0] = _md("Mass_vector'_1", Flavour(kf_rho_1450_plus).PSMass() );
+    Gv[0] = _md("Width_vector'_1", Flavour(kf_rho_1450_plus).Width());
+    Mv[1] = _md("Mass_vector'_2", Flavour(kf_rho_1450_plus).PSMass() );
+    Gv[1] = _md("Width_vector'_2", Flavour(kf_rho_1450_plus).Width() );
     // relative strength
     Beta[0] = _md("beta_1", 0. );
     Beta[1] = _md("beta_2", 0. );
@@ -981,12 +981,12 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
   else {
     c[0] = c[1] = 1;
     // masses and widths of vector resonances (v and v')
-    MV[0] = _md("Mass_vector", Flavour(kf::rho_770_plus).PSMass() );
-    GV[0] = _md("Width_vector", Flavour(kf::rho_770_plus).Width() );
+    MV[0] = _md("Mass_vector", Flavour(kf_rho_770_plus).PSMass() );
+    GV[0] = _md("Width_vector", Flavour(kf_rho_770_plus).Width() );
     MV[1] = MV[0];
     GV[1] = GV[0];
-    Mv[0] = _md("Mass_vector'", Flavour(kf::rho_1450_plus).PSMass() );
-    Gv[0] = _md("Width_vector'", Flavour(kf::rho_1450_plus).Width() );
+    Mv[0] = _md("Mass_vector'", Flavour(kf_rho_1450_plus).PSMass() );
+    Gv[0] = _md("Width_vector'", Flavour(kf_rho_1450_plus).Width() );
     Mv[1] = Mv[0];
     Gv[1] = Gv[0];
     // relative strength
@@ -996,8 +996,8 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
    
   // set correct parameters (using corresponding settings under "Resonances" in DC file)
    
-  m_MA       = _md("Mass_axial", Flavour(kf::a_1_1260_plus).PSMass());     // mass of axial resonance
-  m_MAA      = _md("Mass_axial'", Flavour(kf::a_1_1260_plus).PSMass());   // mass of axial resonance'
+  m_MA       = _md("Mass_axial", Flavour(kf_a_1_1260_plus).PSMass());     // mass of axial resonance
+  m_MAA      = _md("Mass_axial'", Flavour(kf_a_1_1260_plus).PSMass());   // mass of axial resonance'
   m_MA2      = sqr( m_MA );                         // mass^2 of axial resonance
   m_MAA2     = sqr( m_MAA );                        // mass^2 of axial resonance'
   m_msV[0]   = sqr( MV[c[0]-1] );                   // mass^2 of vector resonance 13
@@ -1008,8 +1008,8 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
   m_Beta[1]  = Beta[c[1]-1];                        // weight factor for vector resonance' 23
   m_alpha    = _md("alpha", 0.);                    // weight factor for axial resonance'
    
-  m_GA        = _md("Width_axial",Flavour(kf::a_1_1260_plus).Width()  );         // on-shell axial width
-  m_GAA       = _md("Width_axial'", Flavour(kf::a_1_1260_plus).Width() );        // on-shell axial' width
+  m_GA        = _md("Width_axial",Flavour(kf_a_1_1260_plus).Width()  );         // on-shell axial width
+  m_GAA       = _md("Width_axial'", Flavour(kf_a_1_1260_plus).Width() );        // on-shell axial' width
   m_widthV[0] = GV[c[0]-1];                         // on-shell vector 13 width
   m_widthV[1] = GV[c[1]-1];                         // on-shell vector 23 width
   m_widthv[0] = Gv[c[0]-1];                         // on-shell vector' 13 width
@@ -1361,7 +1361,7 @@ Tau_Four_Pion_3::Tau_Four_Pion_3( int _nout, Flavour *_fl ) :
     m_ms[i] = sqr( p_flavs[i].PSMass() );
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )  m_nutau = i;    // neutrino
     else {
-      if( p_flavs[i].Kfcode() == kf::pi )               m_pion0 = i;    // pi0
+      if( p_flavs[i].Kfcode() == kf_pi )               m_pion0 = i;    // pi0
       else {
         if( p_flavs[0].IsAnti()==p_flavs[i].IsAnti() )  m_pion3 = i;    // pi+
         else {
@@ -1431,24 +1431,24 @@ void Tau_Four_Pion_3::KS::SetModelParameters( GeneralModel _md )
   m_grop    = _md("grop", 12.924);
   m_Go3p    = _md("Go3p", 1476.);
 
-  m_mpi2    = sqr( Flavour(kf::pi_plus).PSMass() );
-  m_mpi02   = sqr( Flavour(kf::pi).PSMass() );
+  m_mpi2    = sqr( Flavour(kf_pi_plus).PSMass() );
+  m_mpi02   = sqr( Flavour(kf_pi).PSMass() );
 
-  m_MR      = _md("Mass_rho_770",  Flavour(kf::rho_770_plus).PSMass()  );
-  m_MRR     = _md("Mass_rho_1450", Flavour(kf::rho_1450_plus).PSMass() );
-  m_MRRR    = _md("Mass_rho_1700", Flavour(kf::rho_1700_plus).PSMass() );
-  m_MO      = _md("Mass_omega",    Flavour(kf::omega_782).PSMass() );
-  m_MF      = _md("Mass_f0_980",   Flavour(kf::f_0_980).PSMass() );
-  m_MS      = _md("Mass_sigma",    Flavour(kf::f_0_980).PSMass()  );
-  m_MA      = _md("Mass_a1_1260",  Flavour(kf::a_1_1260_plus).PSMass());
+  m_MR      = _md("Mass_rho_770",  Flavour(kf_rho_770_plus).PSMass()  );
+  m_MRR     = _md("Mass_rho_1450", Flavour(kf_rho_1450_plus).PSMass() );
+  m_MRRR    = _md("Mass_rho_1700", Flavour(kf_rho_1700_plus).PSMass() );
+  m_MO      = _md("Mass_omega",    Flavour(kf_omega_782).PSMass() );
+  m_MF      = _md("Mass_f0_980",   Flavour(kf_f_0_980).PSMass() );
+  m_MS      = _md("Mass_sigma",    Flavour(kf_f_0_980).PSMass()  );
+  m_MA      = _md("Mass_a1_1260",  Flavour(kf_a_1_1260_plus).PSMass());
    
-  m_GR      = _md("Width_rho_770",  Flavour(kf::rho_770_plus).Width()  );
-  m_GRR     = _md("Width_rho_1450", Flavour(kf::rho_1450_plus).Width() );
-  m_GRRR    = _md("Width_rho_1700", Flavour(kf::rho_1700_plus).Width() );
-  m_GO      = _md("Width_omega",    Flavour(kf::omega_782).Width() );
-  m_GF      = _md("Width_f0_980",   Flavour(kf::f_0_980).Width() );
-  m_GS      = _md("Width_sigma",    Flavour(kf::f_0_980).Width()  );
-  m_GA      = _md("Width_a1_1260",  Flavour(kf::a_1_1260_plus).Width());
+  m_GR      = _md("Width_rho_770",  Flavour(kf_rho_770_plus).Width()  );
+  m_GRR     = _md("Width_rho_1450", Flavour(kf_rho_1450_plus).Width() );
+  m_GRRR    = _md("Width_rho_1700", Flavour(kf_rho_1700_plus).Width() );
+  m_GO      = _md("Width_omega",    Flavour(kf_omega_782).Width() );
+  m_GF      = _md("Width_f0_980",   Flavour(kf_f_0_980).Width() );
+  m_GS      = _md("Width_sigma",    Flavour(kf_f_0_980).Width()  );
+  m_GA      = _md("Width_a1_1260",  Flavour(kf_a_1_1260_plus).Width());
    
   m_MR2     = m_MR*m_MR;
   m_MRR2    = m_MRR*m_MRR;
@@ -1702,7 +1702,7 @@ Tau_Four_Pion_1::Tau_Four_Pion_1( int _nout, Flavour *_fl ) :
     m_ms[i] = sqr( p_flavs[i].PSMass() );
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )  m_nutau = i;    // neutrino
     else {
-      if( p_flavs[i].Kfcode() == kf::pi_plus )          m_pion3 = i;    // pi-
+      if( p_flavs[i].Kfcode() == kf_pi_plus )          m_pion3 = i;    // pi-
       else {
         if( m_pion0==-1 )                               m_pion0 = i;    // pi0
         else {
@@ -1758,16 +1758,16 @@ void Tau_Four_Pion_1::KS::SetModelParameters( GeneralModel _md )
 {
   m_fpi2    = sqr(_md("fpi",0.0924))*2.;        // redefine fpi with factor sqrt(2)
 
-  m_mpi2    = sqr( Flavour(kf::pi_plus).PSMass() );
-  m_mpi02   = sqr( Flavour(kf::pi).PSMass() );
+  m_mpi2    = sqr( Flavour(kf_pi_plus).PSMass() );
+  m_mpi02   = sqr( Flavour(kf_pi).PSMass() );
 
-  m_MR      = _md("Mass_rho_770",  Flavour(kf::rho_770_plus).PSMass());
-  m_MRR     = _md("Mass_rho_1450", Flavour(kf::rho_1450_plus).PSMass() );
-  m_MRRR    = _md("Mass_rho_1700", Flavour(kf::rho_1700_plus).PSMass() );
+  m_MR      = _md("Mass_rho_770",  Flavour(kf_rho_770_plus).PSMass());
+  m_MRR     = _md("Mass_rho_1450", Flavour(kf_rho_1450_plus).PSMass() );
+  m_MRRR    = _md("Mass_rho_1700", Flavour(kf_rho_1700_plus).PSMass() );
    
-  m_GR      = _md("Width_rho_770",  Flavour(kf::rho_770_plus).Width());
-  m_GRR     = _md("Width_rho_1450", Flavour(kf::rho_1450_plus).Width() );
-  m_GRRR    = _md("Width_rho_1700", Flavour(kf::rho_1700_plus).Width() );
+  m_GR      = _md("Width_rho_770",  Flavour(kf_rho_770_plus).Width());
+  m_GRR     = _md("Width_rho_1450", Flavour(kf_rho_1450_plus).Width() );
+  m_GRRR    = _md("Width_rho_1700", Flavour(kf_rho_1700_plus).Width() );
    
   m_MR2     = m_MR*m_MR;
   m_MRR2    = m_MRR*m_MRR;
@@ -1868,9 +1868,9 @@ Tau_Eta_Two_Pion::Tau_Eta_Two_Pion( int _nout, Flavour *_fl ) :
     m_ms[i] = sqr( p_flavs[i].PSMass() );
     if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )  m_nutau = i;    // neutrino
     else {
-      if( p_flavs[i].Kfcode() == kf::pi )               m_pion0 = i;    // pi0
-      if( p_flavs[i].Kfcode() == kf::pi_plus )          m_pion  = i;    // pi
-      if( p_flavs[i].Kfcode() == kf::eta )              m_eta   = i;    // eta
+      if( p_flavs[i].Kfcode() == kf_pi )               m_pion0 = i;    // pi0
+      if( p_flavs[i].Kfcode() == kf_pi_plus )          m_pion  = i;    // pi
+      if( p_flavs[i].Kfcode() == kf_eta )              m_eta   = i;    // eta
     }
   }
 }

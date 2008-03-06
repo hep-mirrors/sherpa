@@ -49,8 +49,8 @@ void Cambridge_Algorithm::AddToKtlist(double kt2) {
 void Cambridge_Algorithm::AddToJetlist(const Vec4D & mom, bool bf) {
   ++m_njets;
   if (p_jets) {
-    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
-    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::bjet),mom));
+    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_jet),mom));
+    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_bjet),mom));
   }
 }
 
@@ -73,7 +73,7 @@ bool Cambridge_Algorithm::ConstructJets(const Particle_List * pl, Particle_List 
     momsum+=(*it)->Momentum();
     if ((*p_qualifier)(*it)) {
       p_moms[n]  = ((*it)->Momentum()); 
-      p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+      p_bflag[n] = (((*it)->Flav()).Kfcode()==kf_b)&& !m_bflag;
       ++n;
     }
   }
@@ -117,7 +117,7 @@ bool Cambridge_Algorithm::ConstructJets(const Particle_List * pl, Particle_List 
       momsum+=(*it)->Momentum();
       if ((*p_qualifier)(*it)) {
 	p_moms[n]  = ((*it)->Momentum()); 
-	p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+	p_bflag[n] = (((*it)->Flav()).Kfcode()==kf_b)&& !m_bflag;
 	++n;
       }
     }

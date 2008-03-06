@@ -37,7 +37,7 @@ namespace BEAM {
 
     virtual double Energy();
     virtual double Polarisation();
-    virtual double Weight(ATOOLS::Flavour fl=ATOOLS::kf::none);
+    virtual double Weight(ATOOLS::Flavour fl=kf_none);
     virtual double Exponent();
     virtual double Xmax();
     virtual double Peak();
@@ -135,7 +135,7 @@ namespace BEAM {
     important once Weizsaecker-Williams type spectra are considered.
   */
   /*!
-    \fn double Beam_Base::Weight(ATOOLS::Flavour fl=Flavour(kf::none))
+    \fn double Beam_Base::Weight(ATOOLS::Flavour fl=Flavour(kf_none))
     Returns the weight. A flavour checking could be included in the future.
   */
   /*!

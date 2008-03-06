@@ -483,7 +483,7 @@ void Amplitude_Handler::PreCluster(Single_Amplitude* firstgraph)
     vector<int> propselect;
     Pfunc_List* pl = f1->GetPlist();
     for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit)
-      if((*pit)->fl.Kfcode()==kf::photon||(*pit)->fl.Kfcode()==kf::Z) 
+      if((*pit)->fl.Kfcode()==kf_photon||(*pit)->fl.Kfcode()==kf_Z) 
 	propselect.push_back((*pit)->arg[0]);
     for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit)
       if((*pit)->fl.IsScalar()) 

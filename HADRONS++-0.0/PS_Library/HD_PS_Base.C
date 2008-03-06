@@ -76,7 +76,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     string name,
     GeneralModel & md )
 {
-  if (flavs[0].Kfcode() == kf::K ) return NULL;
+  if (flavs[0].Kfcode() == kf_K ) return NULL;
   if ( nin>1 || nout<2 ) {
     msg_Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
            <<"   No PS for channel ("<<nin<<" -> "<<nout<<" )"<<endl
@@ -94,17 +94,17 @@ Single_Channel * HD_Channel_Selector::GetChannel(
   if (nout==3) {
     if (ci.name==string("Dalitz")) {
       ResonanceFlavour res;
-      if( ci.res1==string("photon") )    res.Set( kf::photon, 0., 0. );
+      if( ci.res1==string("photon") )    res.Set( kf_photon, 0., 0. );
       if( ci.res1==string("rho(770)") )  
         res.Set( 
-            kf::rho_770, 
-            md("Mass_Rho_770",  Flavour(kf::rho_770_plus).PSMass()), 
-            md("Width_Rho_770", Flavour(kf::rho_770_plus).Width()) );
+            kf_rho_770, 
+            md("Mass_Rho_770",  Flavour(kf_rho_770_plus).PSMass()), 
+            md("Width_Rho_770", Flavour(kf_rho_770_plus).Width()) );
       if( ci.res1==string("W") )  
         res.Set( 
-            kf::Wplus, 
-            md("Mass_W",  Flavour(kf::Wplus).PSMass()), 
-            md("Width_W", Flavour(kf::Wplus).Width()) );
+            kf_Wplus, 
+            md("Mass_W",  Flavour(kf_Wplus).PSMass()), 
+            md("Width_W", Flavour(kf_Wplus).Width()) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
   }
@@ -112,8 +112,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     if( ci.name==string("TwoResonances") ) {
       ResonanceFlavour res_a( 
           ci.res1, 
-          md("Mass_"+ci.res1, Flavour(kf::a_1_1260_plus).PSMass()),
-          md("Width_"+ci.res1,Flavour(kf::a_1_1260_plus).Width())); 
+          md("Mass_"+ci.res1, Flavour(kf_a_1_1260_plus).PSMass()),
+          md("Width_"+ci.res1,Flavour(kf_a_1_1260_plus).Width())); 
       string helpname;                      // name of vector resonanance as it appears in md
       helpname = ci.res2;                   // take name unchanged
       if( (int)helpname[helpname.size()-1] >= 48 &&
@@ -122,14 +122,14 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       }
       ResonanceFlavour res_v( 
           ci.res2,
-          md("Mass_"+helpname, Flavour(kf::rho_770_plus).PSMass()),
-          md("Width_"+helpname,Flavour(kf::rho_770_plus).Width()) ); 
+          md("Mass_"+helpname, Flavour(kf_rho_770_plus).PSMass()),
+          md("Width_"+helpname,Flavour(kf_rho_770_plus).Width()) ); 
       return new TwoResonances( flavs, res_a, ci.a, res_v, ci.b, ci.c );
     }
     if( ci.name==string("TwoResonancesParallel") ) {
       ResonanceFlavour res_1( ci.res1,
-                              md("Mass_"+ci.res1, Flavour(kf::tau).PSMass()),
-                              md("Width_"+ci.res1,Flavour(kf::tau).Width())
+                              md("Mass_"+ci.res1, Flavour(kf_tau).PSMass()),
+                              md("Width_"+ci.res1,Flavour(kf_tau).Width())
                             );
       string helpname;                      // name of vector resonanance as it appears in md
       helpname = ci.res2;                   // take name unchanged
@@ -140,8 +140,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       }
       ResonanceFlavour res_2(
                               ci.res2,
-                              md("Mass_"+helpname, Flavour(kf::tau).PSMass()),
-                              md("Width_"+helpname,Flavour(kf::tau).Width()) );
+                              md("Mass_"+helpname, Flavour(kf_tau).PSMass()),
+                              md("Width_"+helpname,Flavour(kf_tau).Width()) );
       return new TwoResonancesParallel( flavs, res_1, ci.a, ci.b, res_2, ci.c, ci.d );
     }
   }

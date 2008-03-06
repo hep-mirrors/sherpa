@@ -90,19 +90,19 @@ void MUED_Spectrum::Neutral_KK_Bosons() {
     cout<<" Mix : ("<<Eigenvectors[0][0]<<"  "<<Eigenvectors[0][1]<<endl
 	<<"        "<<Eigenvectors[1][0]<<"  "<<Eigenvectors[1][1]<<")."<<endl;
 
-    Flavour Gn(kf::code(int(kfno+i*100000+21))); Gn.SetMass(mGn);
-    Flavour An(kf::code(int(kfno+i*100000+22))); An.SetMass(mAn);
-    Flavour Zn(kf::code(int(kfno+i*100000+24))); Zn.SetMass(mZn);
+    Flavour Gn((kf_code)(int(kfno+i*100000+21))); Gn.SetMass(mGn);
+    Flavour An((kf_code)(int(kfno+i*100000+22))); An.SetMass(mAn);
+    Flavour Zn((kf_code)(int(kfno+i*100000+24))); Zn.SetMass(mZn);
 
     if (i==1) {
-      std::cout<<"Check "<<Flavour(kf::KK_gluon_1).Mass()
-	       <<"/"<<Flavour(kf::KK_B1_1).Mass()
-	       <<"/"<<Flavour(kf::KK_W3_1).Mass()<<endl;
+      std::cout<<"Check "<<Flavour(kf_KK_gluon_1).Mass()
+	       <<"/"<<Flavour(kf_KK_B1_1).Mass()
+	       <<"/"<<Flavour(kf_KK_W3_1).Mass()<<endl;
     }
     else if (i==2) {
-      std::cout<<"Check "<<Flavour(kf::KK_gluon_2).Mass()
-	       <<"/"<<Flavour(kf::KK_B1_2).Mass()
-	       <<"/"<<Flavour(kf::KK_W3_2).Mass()<<endl;
+      std::cout<<"Check "<<Flavour(kf_KK_gluon_2).Mass()
+	       <<"/"<<Flavour(kf_KK_B1_2).Mass()
+	       <<"/"<<Flavour(kf_KK_W3_2).Mass()<<endl;
     }
   }
 }
@@ -129,22 +129,22 @@ void MUED_Spectrum::Neutral_KK_Scalars() {
       p_model->ScalarConstant("M2bar_H") +
       mn2/(4.*M_PI)*log(m_Lambda2/mn2)*
       (3./2.*a_mn2/m_sin2thetaW + 3./4.*a_mn2/m_cos2thetaW - lambdaH/(4.*M_PI));
-    flav = Flavour(kf::code(5000000+i*100000+35));
+    flav = Flavour((kf_code)(5000000+i*100000+35));
     flav.SetMass(sqrt(mn2+delta_m2_Hn+mh2));
-    flav = Flavour(kf::code(5000000+i*100000+36));
+    flav = Flavour((kf_code)(5000000+i*100000+36));
     flav.SetMass(sqrt(mn2+delta_m2_Hn+mz2));
-    flav = Flavour(kf::code(5000000+i*100000+37));
+    flav = Flavour((kf_code)(5000000+i*100000+37));
     flav.SetMass(sqrt(mn2+delta_m2_Hn+mw2));
 
     if (i==1) {
-      std::cout<<"Check "<<Flavour(kf::KK_H_1).Mass()
-	       <<"/"<<Flavour(kf::KK_A_1).Mass()
-	       <<"/"<<Flavour(kf::KK_Hplus_1).Mass()<<endl;
+      std::cout<<"Check "<<Flavour(kf_KK_H_1).Mass()
+	       <<"/"<<Flavour(kf_KK_A_1).Mass()
+	       <<"/"<<Flavour(kf_KK_Hplus_1).Mass()<<endl;
     }
     else if (i==2) {
-      std::cout<<"Check "<<Flavour(kf::KK_H_2).Mass()
-	       <<"/"<<Flavour(kf::KK_A_2).Mass()
-	       <<"/"<<Flavour(kf::KK_Hplus_2).Mass()<<endl;
+      std::cout<<"Check "<<Flavour(kf_KK_H_2).Mass()
+	       <<"/"<<Flavour(kf_KK_A_2).Mass()
+	       <<"/"<<Flavour(kf_KK_Hplus_2).Mass()<<endl;
     }
   }
 }
@@ -237,60 +237,60 @@ void MUED_Spectrum::LR_KK_Fermions() {
 	  <<") --> L_n = "<<sqrt(EigenvaluesL[0])<<", e_n = "<<sqrt(EigenvaluesL[1])<<endl;
       
 
-      Flavour F1(kf::code(int(kfnoL+i*100000+1+(j-1)*2))); F1.SetMass(sqrt(EigenvaluesD[0]));
-      Flavour F2(kf::code(int(kfnoR+i*100000+1+(j-1)*2))); F2.SetMass(sqrt(EigenvaluesD[1]));
-      Flavour F3(kf::code(int(kfnoL+i*100000+2+(j-1)*2))); F3.SetMass(sqrt(EigenvaluesU[0]));
-      Flavour F4(kf::code(int(kfnoR+i*100000+2+(j-1)*2))); F4.SetMass(sqrt(EigenvaluesU[1]));
-      Flavour F5(kf::code(int(kfnoL+i*100000+11+(j-1)*2))); F5.SetMass(sqrt(EigenvaluesL[0]));
-      Flavour F6(kf::code(int(kfnoR+i*100000+11+(j-1)*2))); F6.SetMass(sqrt(EigenvaluesL[1]));
-      Flavour F7(kf::code(int(kfnoL+i*100000+12+(j-1)*2))); F7.SetMass(sqrt(EigenvaluesL[0]));    
+      Flavour F1((kf_code)(int(kfnoL+i*100000+1+(j-1)*2))); F1.SetMass(sqrt(EigenvaluesD[0]));
+      Flavour F2((kf_code)(int(kfnoR+i*100000+1+(j-1)*2))); F2.SetMass(sqrt(EigenvaluesD[1]));
+      Flavour F3((kf_code)(int(kfnoL+i*100000+2+(j-1)*2))); F3.SetMass(sqrt(EigenvaluesU[0]));
+      Flavour F4((kf_code)(int(kfnoR+i*100000+2+(j-1)*2))); F4.SetMass(sqrt(EigenvaluesU[1]));
+      Flavour F5((kf_code)(int(kfnoL+i*100000+11+(j-1)*2))); F5.SetMass(sqrt(EigenvaluesL[0]));
+      Flavour F6((kf_code)(int(kfnoR+i*100000+11+(j-1)*2))); F6.SetMass(sqrt(EigenvaluesL[1]));
+      Flavour F7((kf_code)(int(kfnoL+i*100000+12+(j-1)*2))); F7.SetMass(sqrt(EigenvaluesL[0]));    
     }
     cout<<"Check for "<<i<<"th KK resonance"<<endl;
     if (i==1) {
-      cout<<" d_{LR} :"<<Flavour(kf::KK_dL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_dR_1).Mass()
-	  <<" s_{LR} :"<<Flavour(kf::KK_sL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_sR_1).Mass()
-	  <<" b_{21} :"<<Flavour(kf::KK_b2_1).Mass()
-	  <<"/"<<Flavour(kf::KK_b1_1).Mass()<<endl
-	  <<" u_{LR} :"<<Flavour(kf::KK_uL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_uR_1).Mass()
-	  <<" c_{LR} :"<<Flavour(kf::KK_cL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_cR_1).Mass()
-	  <<" t_{21} :"<<Flavour(kf::KK_t2_1).Mass()
-	  <<"/"<<Flavour(kf::KK_t1_1).Mass()<<endl
-	  <<" nu_e :"<<Flavour(kf::KK_nueL_1).Mass()
-	  <<" nu_mu :"<<Flavour(kf::KK_numuL_1).Mass()
-	  <<" nu_tau :"<<Flavour(kf::KK_nutauL_1).Mass()<<endl
-	  <<" e_{LR} :"<<Flavour(kf::KK_eL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_eR_1).Mass()
-	  <<" mu_{LR} :"<<Flavour(kf::KK_muL_1).Mass()
-	  <<"/"<<Flavour(kf::KK_muR_1).Mass()
-	  <<" tau_{21} :"<<Flavour(kf::KK_tau2_1).Mass()
-	  <<"/"<<Flavour(kf::KK_tau1_1).Mass()<<endl;
+      cout<<" d_{LR} :"<<Flavour(kf_KK_dL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_dR_1).Mass()
+	  <<" s_{LR} :"<<Flavour(kf_KK_sL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_sR_1).Mass()
+	  <<" b_{21} :"<<Flavour(kf_KK_b2_1).Mass()
+	  <<"/"<<Flavour(kf_KK_b1_1).Mass()<<endl
+	  <<" u_{LR} :"<<Flavour(kf_KK_uL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_uR_1).Mass()
+	  <<" c_{LR} :"<<Flavour(kf_KK_cL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_cR_1).Mass()
+	  <<" t_{21} :"<<Flavour(kf_KK_t2_1).Mass()
+	  <<"/"<<Flavour(kf_KK_t1_1).Mass()<<endl
+	  <<" nu_e :"<<Flavour(kf_KK_nueL_1).Mass()
+	  <<" nu_mu :"<<Flavour(kf_KK_numuL_1).Mass()
+	  <<" nu_tau :"<<Flavour(kf_KK_nutauL_1).Mass()<<endl
+	  <<" e_{LR} :"<<Flavour(kf_KK_eL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_eR_1).Mass()
+	  <<" mu_{LR} :"<<Flavour(kf_KK_muL_1).Mass()
+	  <<"/"<<Flavour(kf_KK_muR_1).Mass()
+	  <<" tau_{21} :"<<Flavour(kf_KK_tau2_1).Mass()
+	  <<"/"<<Flavour(kf_KK_tau1_1).Mass()<<endl;
     }
     else if (i==2) {
-      cout<<" d_{LR} :"<<Flavour(kf::KK_dL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_dR_2).Mass()
-	  <<" s_{LR} :"<<Flavour(kf::KK_sL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_sR_2).Mass()
-	  <<" b_{21} :"<<Flavour(kf::KK_b2_2).Mass()
-	  <<"/"<<Flavour(kf::KK_b1_2).Mass()<<endl
-	  <<" u_{LR} :"<<Flavour(kf::KK_uL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_uR_2).Mass()
-	  <<" c_{LR} :"<<Flavour(kf::KK_cL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_cR_2).Mass()
-	  <<" t_{21} :"<<Flavour(kf::KK_t2_2).Mass()
-	  <<"/"<<Flavour(kf::KK_t1_2).Mass()<<endl
-	  <<" nu_e :"<<Flavour(kf::KK_nueL_2).Mass()
-	  <<" nu_mu :"<<Flavour(kf::KK_numuL_2).Mass()
-	  <<" nu_tau :"<<Flavour(kf::KK_nutauL_2).Mass()<<endl
-	  <<" e_{LR} :"<<Flavour(kf::KK_eL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_eR_2).Mass()
-	  <<" mu_{LR} :"<<Flavour(kf::KK_muL_2).Mass()
-	  <<"/"<<Flavour(kf::KK_muR_2).Mass()
-	  <<" tau_{21} :"<<Flavour(kf::KK_tau2_2).Mass()
-	  <<"/"<<Flavour(kf::KK_tau1_2).Mass()<<endl;
+      cout<<" d_{LR} :"<<Flavour(kf_KK_dL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_dR_2).Mass()
+	  <<" s_{LR} :"<<Flavour(kf_KK_sL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_sR_2).Mass()
+	  <<" b_{21} :"<<Flavour(kf_KK_b2_2).Mass()
+	  <<"/"<<Flavour(kf_KK_b1_2).Mass()<<endl
+	  <<" u_{LR} :"<<Flavour(kf_KK_uL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_uR_2).Mass()
+	  <<" c_{LR} :"<<Flavour(kf_KK_cL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_cR_2).Mass()
+	  <<" t_{21} :"<<Flavour(kf_KK_t2_2).Mass()
+	  <<"/"<<Flavour(kf_KK_t1_2).Mass()<<endl
+	  <<" nu_e :"<<Flavour(kf_KK_nueL_2).Mass()
+	  <<" nu_mu :"<<Flavour(kf_KK_numuL_2).Mass()
+	  <<" nu_tau :"<<Flavour(kf_KK_nutauL_2).Mass()<<endl
+	  <<" e_{LR} :"<<Flavour(kf_KK_eL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_eR_2).Mass()
+	  <<" mu_{LR} :"<<Flavour(kf_KK_muL_2).Mass()
+	  <<"/"<<Flavour(kf_KK_muR_2).Mass()
+	  <<" tau_{21} :"<<Flavour(kf_KK_tau2_2).Mass()
+	  <<"/"<<Flavour(kf_KK_tau1_2).Mass()<<endl;
     }
   }
 }

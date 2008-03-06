@@ -91,8 +91,7 @@ double Width_Calculator::Norm(Flavour in)
   double norm(1.);
   if (in.IsFermion())                 norm/=2.;
   else if (in.IsVector())             norm/=3.;
-  if (abs(in.StrongCharge())==3)      norm/=3.;
-  else if (abs(in.StrongCharge())==9) norm/=8.;
+  norm/=abs(in.StrongCharge());
   return norm;
 }
 

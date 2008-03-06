@@ -10,7 +10,7 @@ using namespace ATOOLS;
 #define CF 4.0/3.0
 
 Q_QG::Q_QG(const Flavour &q): 
-  Splitting_Kernel(q,q,kf::gluon) {}
+  Splitting_Kernel(q,q,kf_gluon) {}
 
 double Q_QG::operator()(const double &z) const
 {
@@ -23,7 +23,7 @@ double Q_QG::Integral(const double &zmin,const double &zmax) const
 }
 
 Q_GQ::Q_GQ(const Flavour &q): 
-  Splitting_Kernel(q,kf::gluon,q), m_swaped(q) {}
+  Splitting_Kernel(q,kf_gluon,q), m_swaped(q) {}
 
 double Q_GQ::operator()(const double &z) const
 {
@@ -36,7 +36,7 @@ double Q_GQ::Integral(const double &zmin,const double &zmax) const
 }
 
 G_QQ::G_QQ(const Flavour &q): 
-  Splitting_Kernel(kf::gluon,q,q.Bar()) {}
+  Splitting_Kernel(kf_gluon,q,q.Bar()) {}
 
 double G_QQ::operator()(const double &z) const
 {
@@ -50,7 +50,7 @@ double G_QQ::Integral(const double &zmin,const double &zmax) const
 }
 
 G_GG::G_GG(): 
-  Splitting_Kernel(kf::gluon,kf::gluon,kf::gluon) {}
+  Splitting_Kernel(kf_gluon,kf_gluon,kf_gluon) {}
 
 double G_GG::operator()(const double &z) const
 {

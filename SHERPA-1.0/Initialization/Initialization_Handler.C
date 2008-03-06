@@ -542,17 +542,18 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
   double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
   if( max_propertime > 0.0) {
-    Fl_Iter fli;
-    for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+    for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+	kfit!=s_kftable.end();++kfit) {
+      Flavour flav(kfit->first);
       if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
-          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf::K)
+          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf_K)
       {
         flav.SetStable(true);
       }
     }
   }
   
-  bool needextra = true; set<kf::code>* hadrons_cans=NULL;
+  bool needextra = true; set<kf_code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
@@ -580,7 +581,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     }
     else lund      = p_fragmentation->GetLundInterface();
     if(hadrons_cans) {
-      for(set<kf::code>::iterator cankf=hadrons_cans->begin();cankf!=hadrons_cans->end();cankf++) {
+      for(set<kf_code>::iterator cankf=hadrons_cans->begin();cankf!=hadrons_cans->end();cankf++) {
         lund->SwitchOffDecays((*cankf));
       }
     }

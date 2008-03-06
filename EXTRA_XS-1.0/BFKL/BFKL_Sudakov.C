@@ -23,7 +23,7 @@ bool BFKL_Sudakov::Initialize()
   if (m_splitmode&1) p_levs->Add(new G_GG());
   for (size_t i(1);i<=s_nf;++i) {
     if (m_splitmode&(1<<i)) {
-      Flavour fl((kf::code)i);
+      Flavour fl((kf_code)i);
       p_levs->Add(new Q_GQ(fl));
       p_levs->Add(new Q_GQ(fl.Bar()));
       p_levs->Add(new Q_QG(fl));

@@ -26,8 +26,8 @@ namespace EXTRAXS {
       m_fla(base.m_fla), m_flb(base.m_flb), 
       m_flc(base.m_flc), p_selected(this) {}
     inline LEV_Base():
-      m_fla(ATOOLS::kf::none), m_flb(ATOOLS::kf::none), 
-      m_flc(ATOOLS::kf::none), p_selected(this) {}
+      m_fla(kf_none), m_flb(kf_none), 
+      m_flc(kf_none), p_selected(this) {}
     
   public:
     

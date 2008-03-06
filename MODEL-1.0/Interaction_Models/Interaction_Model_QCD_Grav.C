@@ -27,9 +27,9 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
 {
   Kabbala kcpl0,kcpl1; 
   
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
-  Flavour flav(kf::gluon);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
+  Flavour flav(kf_gluon);
   if(flgraviton.IsOn()){
 
     vertex[vanz].in[0] = flav;
@@ -86,17 +86,17 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
 void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
   Kabbala kcpl0,kcpl1;
   
   for (short int i=1;i<7;i++) {
-    Flavour flav = Flavour(kf::code(i));
+    Flavour flav = Flavour((kf_code)(i));
     if (flav.Strong() && flav.IsOn()) {
       if(flgraviton.IsOn()) { 
 	vertex[vanz].nleg    = 4;
 	vertex[vanz].in[0] = flav;
-	vertex[vanz].in[1] = Flavour(kf::gluon);
+	vertex[vanz].in[1] = Flavour(kf_gluon);
 	vertex[vanz].in[2] = flav;
 	vertex[vanz].in[3] = flgraviton;
 	
@@ -122,7 +122,7 @@ void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& 
       if(flgs.IsOn()){
 	vertex[vanz].nleg    = 4;
 	vertex[vanz].in[0] = flav;
-	vertex[vanz].in[1] = Flavour(kf::gluon);
+	vertex[vanz].in[1] = Flavour(kf_gluon);
 	vertex[vanz].in[2] = flav;
 	vertex[vanz].in[3] = flgs;
 	
@@ -153,12 +153,12 @@ void Interaction_Model_QCD_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& 
 {
   Kabbala kcpl0,kcpl1; 
   
-  Flavour flgraviton(kf::graviton);
+  Flavour flgraviton(kf_graviton);
   if(!flgraviton.IsOn())return;
 
   vertex[vanz].nleg    = 4;
   for (short int i=0;i<3;i++)
-    vertex[vanz].in[i] = Flavour(kf::gluon);
+    vertex[vanz].in[i] = Flavour(kf_gluon);
   vertex[vanz].in[3] = flgraviton;
   
   kcpl0 = g3*kap; 

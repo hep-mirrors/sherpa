@@ -130,7 +130,7 @@ public:
 	  pit=towlist.erase(pit);
 	}
       }
-      outlist.push_back(new Particle(-1,kf::jet,ETCenter(tlist)));
+      outlist.push_back(new Particle(-1,kf_jet,ETCenter(tlist)));
       outlist.back()->SetInfo('P');
       msg_Debugging()<<"    precluster "<<*outlist.back()<<"\n";
     }

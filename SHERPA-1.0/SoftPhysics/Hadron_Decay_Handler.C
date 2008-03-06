@@ -23,9 +23,9 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
   p_hadrons(_hadrons),
   p_lund(NULL)
 {
-  p_cans = new set<kf::code>;
-  map<kf::code,Decay_Table *> * decmap = p_hadrons->GetDecayMap();
-  for (map<kf::code,Decay_Table *>::iterator decit=decmap->begin();
+  p_cans = new set<kf_code>;
+  map<kf_code,Decay_Table *> * decmap = p_hadrons->GetDecayMap();
+  for (map<kf_code,Decay_Table *>::iterator decit=decmap->begin();
        decit!=decmap->end();decit++) p_cans->insert(decit->first);
 }
 #endif
@@ -38,20 +38,21 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 #endif
   p_lund(_lund)
 { 
-  p_cans = new set<kf::code>;
-  Flavour flav(kf::tau);
+  p_cans = new set<kf_code>;
+  Flavour flav(kf_tau);
   if (flav.IsOn() && !flav.IsStable()) {
     if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
   }
-  Fl_Iter fli;
-  for (flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end();++kfit) {
+    Flavour flav(kfit->first);
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
       if (p_lund->IsAllowedDecay(flav.Kfcode())) {
         p_cans->insert(flav.Kfcode());
         p_lund->AdjustProperties(flav);
       }
     }
-    if( flav.Kfcode()==kf::K_L || flav.Kfcode()==kf::K_S || flav.Kfcode()==kf::K) {
+    if( flav.Kfcode()==kf_K_L || flav.Kfcode()==kf_K_S || flav.Kfcode()==kf_K) {
       // adjust for K0, KL and KS even if stable,
       // otherwise 1->1 decay with different masses fails
       p_lund->AdjustProperties(flav);
@@ -65,7 +66,7 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
   delete p_cans;
 }
 
-bool Hadron_Decay_Handler::CanDealWith(kf::code kf) {
+bool Hadron_Decay_Handler::CanDealWith(kf_code kf) {
   switch (m_mode) {
   case 0:
     if (p_cans->find(kf)!=p_cans->end()) return true;
@@ -111,8 +112,8 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
     break;
 #ifdef USING__Hadrons
   case 1:
-    kf::code kfc = part->RefFlav().Kfcode();
-    if(kfc==kf::K || kfc==kf::K_S || kfc==kf::K_L) return true;
+    kf_code kfc = part->RefFlav().Kfcode();
+    if(kfc==kf_K || kfc==kf_K_S || kfc==kf_K_L) return true;
     Mass_Handler masshandler(part->RefFlav());
     Blob_Data_Base* data = (*(part->DecayBlob()))["hdc"];
     Hadron_Decay_Channel * hdc=NULL;

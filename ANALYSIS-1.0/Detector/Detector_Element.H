@@ -25,7 +25,7 @@ namespace ANALYSIS {
     virtual std::list<Cell *>  * GetHitCells() { return (&m_hitcells); }
     virtual Cell               * GetCell(const double eta,const double phi);
     virtual void GetTracks(std::list<Track *> &,const double eta=0,const double phi=0,
-			   const double R2=0,ATOOLS::kf::code=ATOOLS::kf::none);
+			   const double R2=0,kf_code=kf_none);
 
     virtual void Evaluate(const ATOOLS::Blob_List &,double,int);
 

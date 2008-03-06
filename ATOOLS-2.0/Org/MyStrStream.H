@@ -61,6 +61,9 @@ namespace ATOOLS {
     return converted;
   }
 
+  std::string StringReplace(const std::string &original,
+                            const std::string &from, const std::string &to);
+
 }// end of namespace ATOOLS;
 
 #endif

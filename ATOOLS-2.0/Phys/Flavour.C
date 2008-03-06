@@ -1,468 +1,209 @@
-/*  Flavour.C: Definitions for Flavour class
- *  A Class to define particle properties.
- */
-
-#include "My_File.H"
-
 #include "Flavour.H"
+
 #include "MathTools.H"
 #include "Exception.H"
 #include "MyStrStream.H"
 #include "Data_Reader.H"
+#include "My_File.H"
 
-#ifdef PROFILE__all
-#include "prof.hh"
-#else
-#ifdef PROFILE__Flavour
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
-#endif
-
-namespace ATOOLS {
-  Part_Info particles[MAX_PARTICLES];
-  int Kf_To_Int::is_initialised(0);
-  Kf_To_Int kf_table;
+namespace ATOOLS 
+{
+  KF_Table s_kftable;
 }
 
 using namespace ATOOLS;
-using namespace std;
 
-void Kf_To_Int::Init()
+Particle_Info::Particle_Info(const Particle_Info &info):
+  m_kfc(info.m_kfc), m_mass(info.m_mass), m_yuk(info.m_yuk), 
+  m_width(info.m_width), m_icharge(info.m_icharge), m_isoweak(info.m_isoweak), 
+  m_strong(info.m_strong), m_spin(info.m_spin), m_stable(info.m_stable), 
+  m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
+  m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
+  m_idname(info.m_idname), m_texname(info.m_texname)
 {
-  if (is_initialised) return;
-  is_initialised=true;
-  for(anz=0;anz<MAX_PARTICLES;++anz) {
-    kf_tab[anz] = particles[anz].kfc;
-    if(kf_tab[anz]==kf::none) break;
-  }
-
-  if(anz==MAX_PARTICLES) {
-    THROW(fatal_error,"Too many particle types.");
-  }
+  m_content.resize(info.m_content.size());
+  for (size_t i(0);i<info.m_content.size();++i) 
+    m_content[i] = new Flavour(*info.m_content[i]); 
 }
 
-int Kf_To_Int::ToInt(kf::code kfc)
+Particle_Info::Particle_Info
+(const kf_code &kfc,const double &mass,const double &width,
+ const int icharge,const int isoweak,const int strong,
+ const int spin,const int majorana,const bool on,
+ const bool stable,bool massive,const std::string &idname,
+ const std::string &texname,const bool dummy):
+  m_kfc(kfc), m_mass(mass), m_yuk(mass), m_width(width),
+  m_icharge(icharge), m_isoweak(isoweak), m_strong(strong), m_spin(spin), 
+  m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
+  m_on(on), m_massive(massive), m_hadron(0), m_idname(idname), 
+  m_texname(texname) 
 {
-  std::map<kf::code,int>::const_iterator kfit(m_kftoint.find(kfc));
-  if (kfit!=m_kftoint.end()) return kfit->second;
-  for(int i=0;i<anz+1;i++) { 
-    if (kf_tab[i]==kfc) {
-      m_kftoint[kfc]=i;
-      return i; 
-    }
-  }
-  std::cerr<<"ERROR in Kf_To_Int::to_int(): Particle type unknown ! "
-	   <<kfc<<" in "<<anz<<std::endl;
-  abort();
-  return -1;
+  m_content.push_back(new Flavour(m_kfc));
 }
 
-kf::code Kf_To_Int::FromString(std::string st)
+Particle_Info::Particle_Info
+(const kf_code &kfc,const double &mass,const double &width,
+ const int icharge,const int isoweak,const int spin,const bool on,
+ const bool stable,const std::string &idname,const std::string &texname):
+  m_kfc(kfc), m_mass(mass), m_yuk(0.0), m_width(width),
+  m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_spin(spin), 
+  m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), m_on(on), 
+  m_massive(1), m_hadron(1), m_idname(idname), m_texname(texname) 
 {
-  for(int i=0;i<anz;i++) 
-    if (std::string(particles[i].n)==st) return kf_tab[i];
-  
-  return kf::none;
+  m_content.push_back(new Flavour(m_kfc));
 }
 
-
-
-
-Part_Info::Part_Info(kf::code kfc_, 
-		     double mass, double width, int icharge, int isoweak, 
-		     bool strong, int spin, bool Majorana, 
-		     bool Take, bool stable,bool massive,
-		     char* name,int _masssign) : 
-  kfc(kfc_), m(mass), w(width), yuk(mass), iq(icharge), isow(isoweak), sp(spin), stbl(stable), masssign(_masssign),  
-  str(strong), Maj(Majorana), on(Take), msv(massive),hadron(0), n(name), group(0) { 
-  n  = new char[strlen(name)+1];
-  strcpy(n,name);
-}
-
-Part_Info::Part_Info(kf::code kfc_, 
-		     double mass, double width, int icharge, int isoweak, 
-		     int spin, bool Take, bool stable,
-		     char* name) : 
-  kfc(kfc_), m(mass), w(width), yuk(0.), iq(icharge), isow(isoweak), sp(spin), stbl(stable), masssign(1), 
-  str(0), Maj(0), on(Take), msv(1), hadron(1), n(name), group(0) { 
-  n  = new char[strlen(name)+1];
-  strcpy(n,name);
-}
-
-Part_Info::~Part_Info() 
+Particle_Info::~Particle_Info()
 { 
-  delete[] n; 
-  for (size_t i(0);i<flavs.size();++i) delete flavs[i];
+  for (size_t i(0);i<m_content.size();++i) 
+    delete m_content[i]; 
 }
 
-void Part_Info::Add(const Flavour _fl) {
-  if (_fl.Size()==1) {
-    flavs.push_back(new Flavour(_fl));
-    return;
-  }
-  for (int i=0;i<_fl.Size();i++) {
-    flavs.push_back(new Flavour(_fl[i]));
-  }
+void Particle_Info::Add(const Flavour &fl)
+{ 
+  for (size_t i(0);i<fl.Size();++i) 
+    m_content.push_back(new Flavour(fl[i])); 
 }
 
-const int Part_Info::Size() {
-  if (!group) return 1;
-  return flavs.size();
+Flavour Particle_Info::operator[](const size_t &i) const
+{ 
+  return *m_content[i]; 
 }
 
-const bool Part_Info::Includes(Flavour _fl) {
-  bool isin;
-  for (int j=0;j<_fl.Size();j++) {
-    isin = 0;
-    for (size_t i=0;i<flavs.size();i++) {
-      if (flavs[i]->Kfcode() == _fl[j].Kfcode()) { isin = 1; break; }
-    }
-    if (isin==0) return 0;
-  }
-  return 1;
-}
-
-Flavour Part_Info::operator[](const int i) {
-  if (!group) return Flavour(kfc);
-  if ((i<0) || (i>(int)flavs.size())) {
-    std::cerr<<"Error in Part_Info::operator[]("<<i<<") . Delimiter out of bounds."<<std::endl;
-    return Flavour(kfc);
-  }
-  return (*flavs[i]);
-}
-
-void Part_Info::SetGroup() { group = 1; }
-
-
-
-
-Flavour Flavour::operator[](int idx) const  { 
-  if (!(particles[ Index() ].group)) return (*this);
-  if (anti) return particles[ Index() ][idx].Bar();
-  return particles[ Index() ][idx];
-}
-
-
-
-//NEW for ADICIC!
-Flavour::Flavour(kf::code _kfc, bool _anti):
-  kfc(_kfc), anti(0)
+bool Particle_Info::Includes(const Flavour &fl) const
 {
-  switch (_kfc) {
-  case kf::photon:   return;
-  case kf::Z:        return;
-  case kf::Z0_2:     return;
-  case kf::Z0_3:     return;
-  case kf::gluon:    return;
-  case kf::shgluon:  return;
-  case kf::gluonqgc: return;
-  case kf::h0:       return;
-  case kf::H0:       return;
-  case kf::A0:       return;
-  case kf::graviton: return;
-  case kf::gscalar:  return;
-  case kf::none:     return;
-  default: ;
+  for (size_t j(0);j<fl.Size();++j) {
+    bool found(false);
+    for (size_t i(0);i<m_content.size();++i)
+      if (m_content[i]->Kfcode()==fl[j].Kfcode()) { 
+	found=true; 
+	break; 
+      }
+    if (!found) return false;
   }
-  if (Majorana()) return;
-  anti=_anti;
+  return true;
 }
-//***************
 
-
-
-const Flavour Flavour::Bar() const 
+KF_Table::~KF_Table()
 {
-  Flavour flbar(*this);
-  switch (flbar.Kfcode()) {
-  case kf::photon:   return flbar;
-  case kf::Z:        return flbar;
-  case kf::Z0_2:     return flbar;
-  case kf::Z0_3:     return flbar;
-  case kf::gluon:    return flbar;
-  case kf::shgluon:  return flbar;
-  case kf::gluonqgc: return flbar;
-  case kf::h0:       return flbar;
-  case kf::H0:       return flbar;
-  case kf::A0:       return flbar;
-  case kf::graviton: return flbar;
-  case kf::gscalar:  return flbar;
-  case kf::none:     return flbar;
-  default: ;
-  }
-  if (Majorana()) return flbar;
-  flbar.anti=(anti)?0:1;
-  return flbar;
+  for (const_iterator kfit(begin());kfit!=end();++kfit)
+    delete kfit->second;
 }
 
+kf_code KF_Table::KFFromIDName(const std::string &idname) const
+{
+  for(const_iterator kfit(begin());kfit!=end();++kfit) 
+    if (kfit->second->m_idname==idname) return kfit->first;
+  return kf_none;
+}
 
-int Flavour::Ctq() {
-  int code;
-  switch(kfc) {
-  case kf::u    : code=1;break;
-  case kf::d    : code=2;break;
-  case kf::s    : code=3;break;
-  case kf::c    : code=4;break;
-  case kf::b    : code=5;break;
-  case kf::t    : code=6;break;
-  case kf::gluon: code=0;break;
-  default       : code=7;
-  }
-  if(anti) code= -code;
+kf_code KF_Table::KFFromTexName(const std::string &texname) const
+{
+  for(const_iterator kfit(begin());
+      kfit!=end();++kfit) 
+    if (kfit->second->m_texname==texname) return kfit->first;
+  return kf_none;
+}
+
+int Flavour::Ctq() const
+{
+  long int code(*this);
+  if (IsGluon()) return 0;
   return code+6;
 }
 
-void Flavour::FromCtq(int code) {
-  anti = 0;
-  switch(abs(code)) {
-  case 0 : kfc=kf::t;break;
-  case 1 : kfc=kf::b;break;
-  case 2 : kfc=kf::c;break;
-  case 3 : kfc=kf::s;break;
-  case 4 : kfc=kf::d;break;
-  case 5 : kfc=kf::u;break;
-  case 6 : kfc=kf::gluon;break;
-  default: kfc=kf::none;
-  }
+void Flavour::FromCtq(const int code)
+{
+  m_anti=code<6;
+  m_kfc=(kf_code)abs(code-6);
+  if (code==6) m_kfc=kf_gluon;
 }
 
-int Flavour::HepEvt() {
-  if (kfc==kf::a_0_1450)                     return 10111; 
-  if (kfc==kf::a_0_1450_plus)                return (anti)? -10211 : 10211;
-  if (kfc==kf::f_0_1370)                     return 10221; 
-  if (kfc==kf::f_0_1710)                     return 10331;
-  if (kfc==kf::a_0_980)                      return 9000111; 
-  if (kfc==kf::a_0_980_plus)                 return (anti)? -9000211 : 9000211; 
-  if (kfc==kf::f_0_980)                      return 9010221;
-
-  if (IsLepton() || IsQuark() || IsHadron()) return (anti)? -Kfcode():Kfcode();
-  if (IsDiQuark())                           return (anti)? -Kfcode():Kfcode();
-  if (IsGluon())                             return 21;
-  if (IsPhoton())                            return 22;
-  if (kfc==kf::Z)                            return 23;
-  if (kfc==kf::Wplus)                        return (anti)? -24:24;
-  if (kfc==kf::h0)                           return 25;
-
-  if (kfc==kf::Z0_2)                         return 32;
-  if (kfc==kf::Z0_3)                         return 33;
-  if (kfc==kf::H0)                           return 35;
-  if (kfc==kf::A0)                           return 36;
-  if (kfc==kf::Hplus)                        return (anti)? -37:37;
-  if (kfc==kf::graviton)                     return 39;
-  if (kfc==kf::gscalar)                      return 40;
-
-  if (IsSquark() || IsSlepton() || IsSneutrino() || IsIno()) {
-    
-    int pdgnum = -1;
-       
-    if (kfc==kf::sDownL)                     pdgnum = 1000001;
-    if (kfc==kf::sUpL)                       pdgnum = 1000002;
-    if (kfc==kf::sStrangeL)                  pdgnum = 1000003;
-    if (kfc==kf::sCharmL)                    pdgnum = 1000004;
-    if (kfc==kf::sBottom1)                   pdgnum = 1000005;
-    if (kfc==kf::sTop1)                      pdgnum = 1000006;
-    if (kfc==kf::sElectronL)                 pdgnum = 1000011;
-    if (kfc==kf::sNu1)                       pdgnum = 1000012;
-    if (kfc==kf::sMuL)                       pdgnum = 1000013;
-    if (kfc==kf::sNu2)                       pdgnum = 1000014;
-    if (kfc==kf::sTau1)                      pdgnum = 1000015;
-    if (kfc==kf::sNu3)                       pdgnum = 1000016;
-    
-    if (kfc==kf::sDownR)                     pdgnum = 2000001;
-    if (kfc==kf::sUpR)                       pdgnum = 2000002;
-    if (kfc==kf::sStrangeR)                  pdgnum = 2000003;
-    if (kfc==kf::sCharmR)                    pdgnum = 2000004;
-    if (kfc==kf::sBottom2)                   pdgnum = 2000005;
-    if (kfc==kf::sTop2)                      pdgnum = 2000006;
-    if (kfc==kf::sElectronR)                 pdgnum = 2000011;
-    if (kfc==kf::sMuR)                       pdgnum = 2000013;
-    if (kfc==kf::sTau2)                      pdgnum = 2000015;
-  
-    if (kfc==kf::Chargino1)                  pdgnum = -1000024; 
-    if (kfc==kf::Chargino2)                  pdgnum = -1000037; 
-    
-    if (pdgnum!=-1) return (anti) ? -pdgnum: pdgnum;
+int Flavour::HepEvt() 
+{
+  switch (m_kfc) {
+  case kf_a_0_1450:      return 10111;
+  case kf_a_0_1450_plus: return m_anti?-10211:10211;
+  case kf_f_0_1370:      return 10221;
+  case kf_f_0_1710:      return 10331;
+  case kf_a_0_980:       return 9000111;
+  case kf_a_0_980_plus:  return m_anti?-9000211:9000211;
+  case kf_f_0_980:       return 9010221;
   }
-
-  if (IsGluino())                            return 1000021;
-  if (IsIno()) {
-    if (kfc==kf::Neutralino1)                return 1000022; 
-    if (kfc==kf::Neutralino2)                return 1000023; 
-    if (kfc==kf::Neutralino3)                return 1000025; 
-    if (kfc==kf::Neutralino4)                return 1000035; 
-  }
-
-  cerr<<"Error in Flavour::HepEvt() : No HepEvt number for "<<Flavour(kfc)<<endl;
-  return 0;
+  return (long int)*this;
 }
 
-void Flavour::FromHepEvt(int code) {
-  anti = (code<0);
-  code = abs(code);
-  
-  if (code==10111)   { kfc = kf::a_0_1450;      return; }
-  if (code==10211)   { kfc = kf::a_0_1450_plus; return; } 
-  if (code==10221)   { kfc = kf::f_0_1370;      return; }
-  if (code==10331)   { kfc = kf::f_0_1710;      return; }
-  if (code==9000111) { kfc = kf::a_0_980;       return; }
-  if (code==9000211) { kfc = kf::a_0_980_plus;  return; }
-  if (code==9010221) { kfc = kf::f_0_980;       return; }
-
-  if ((code<26) || (code>100 && code<1000000) || (code>9000000)) {
-    kfc = kf::code(code);
-    return;
-  }
+void Flavour::FromHepEvt(long int code) 
+{
+  m_anti=code<0;
+  m_kfc=code=(kf_code)abs(code);
   switch (code) {
-  case 32:      kfc = kf::Z0_2; return;
-  case 33:      kfc = kf::Z0_3; return;
-  case 35:      kfc = kf::H0; return;
-  case 36:      kfc = kf::A0; return;
-  case 37:      kfc = kf::Hplus; return; 
-  case 39:      kfc = kf::graviton; return;
-  case 40:      kfc = kf::gscalar; return;
-  case 91:      kfc = kf::cluster; return;   // pythia cluster ....
-  case 92:      kfc = kf::string; return;    // pythia string ....
-  case 1000001: kfc = kf::sDownL; return;
-  case 1000002: kfc = kf::sUpL; return;
-  case 1000003: kfc = kf::sStrangeL; return;
-  case 1000004: kfc = kf::sCharmL; return;
-  case 1000005: kfc = kf::sBottom1; return;
-  case 1000006: kfc = kf::sTop1; return;
-  case 1000011: kfc = kf::sElectronL; return;
-  case 1000012: kfc = kf::sNu1; return;
-  case 1000013: kfc = kf::sMuL; return;
-  case 1000014: kfc = kf::sNu2; return;
-  case 1000015: kfc = kf::sTau1; return;
-  case 1000016: kfc = kf::sNu3; return;
-  case 2000001: kfc = kf::sDownR; return;
-  case 2000002: kfc = kf::sUpR; return;
-  case 2000003: kfc = kf::sStrangeR; return;
-  case 2000004: kfc = kf::sCharmR; return;
-  case 2000005: kfc = kf::sBottom2; return;
-  case 2000006: kfc = kf::sTop2; return;
-  case 2000011: kfc = kf::sElectronR; return;
-  case 2000013: kfc = kf::sMuR; return;
-  case 2000015: kfc = kf::sTau2; return;
-  case 1000021: kfc = kf::Gluino; return;
-  case 1000022: kfc = kf::Neutralino1; return;
-  case 1000023: kfc = kf::Neutralino2; return;
-  case 1000024: kfc = kf::Chargino1; anti = 1-anti; return;
-  case 1000025: kfc = kf::Neutralino3; return;
-  case 1000035: kfc = kf::Neutralino4; return;
-  case 1000037: kfc = kf::Chargino2; anti = 1-anti;  return;
-
-  default: cerr<<"Error in Flavour::FromHepEvt() : No flavour for "<<code<<endl;
+  case 10111:   m_kfc=kf_a_0_1450; break;
+  case 10211:   m_kfc=kf_a_0_1450_plus; break;
+  case 10221:   m_kfc=kf_f_0_1370; break;
+  case 10331:   m_kfc=kf_f_0_1710; break;
+  case 9000111: m_kfc=kf_a_0_980; break;
+  case 9000211: m_kfc=kf_a_0_980_plus; break;
+  case 9010221: m_kfc=kf_f_0_980; break; 
+  case 91:      m_kfc=kf_cluster; break;
+  case 92:      m_kfc=kf_string; break;
   }
-  return;
 }
 
 std::string Flavour::TexName() const 
 {
+  if (SelfAnti()) return s_kftable[m_kfc]->m_texname;
   std::string name;
-
-  if (anti) name = std::string("\\bar ");
-
-  switch(kfc) {
-  case kf::d: {name+=std::string("d");break;}
-  case kf::u: {name+=std::string("u");break;}
-  case kf::s: {name+=std::string("s");break;}
-  case kf::c: {name+=std::string("c");break;}
-  case kf::b: {name+=std::string("b");break;}
-  case kf::t: {name+=std::string("t");break;}
-  case kf::e: {name=std::string("e^\\m");break;}
-  case kf::nue: {name += std::string("\\nu_e");break;}
-  case kf::mu: {name=std::string("\\mu^\\m");break;}
-  case kf::numu: {name+=std::string("\\nu_\\mu");break;}
-  case kf::tau: {name= std::string("\\tau^\\m");break;}
-  case kf::nutau: {name+= std::string("\\nu_\\tau");break;}
-  case kf::tau_prime: {name= std::string("{\\tau'}^\\m");break;}
-  case kf::nutau_prime: {name+= std::string("\\nu_{\\tau'}");break;}
-  case kf::gluon:  {name=std::string("g");break;}
-  case kf::photon: {name= std::string("\\gamma");break;}
-  case kf::Wplus: {name=std::string("W^\\p");break;}
-  case kf::Z: {name=std::string("Z^0");break;}
-  case kf::Z0_2: {name=std::string("Z'");break;}
-  case kf::Z0_3: {name=std::string("Z''");break;}
-  case kf::h0: {name=std::string("h^0");break;}
-  case kf::H0: {name=std::string("H^0");break;}
-  case kf::A0: {name=std::string("A^0");break;}
-  case kf::Hplus: {name=std::string("H^\\p");break;}
-  case kf::Chargino1 :{name=std::string("\\chi^\\m_1");break;}
-  case kf::Chargino2 :{name=std::string("\\chi^\\m_2");break;}
-  case kf::Neutralino1 :{name=std::string("\\chi^0_1");break;}
-  case kf::Neutralino2 :{name=std::string("\\chi^0_2");break;}
-  case kf::Neutralino3 :{name=std::string("\\chi^0_3");break;}
-  case kf::Neutralino4 :{name=std::string("\\chi^0_4");break;}
-  case kf::Gluino :{name=std::string("\\tilde g");break;}
-  case kf::sUpL :{name=std::string("\\tilde u_L");break;}
-  case kf::sUpR :{name=std::string("\\tilde u_R");break;}
-  case kf::sCharmL :{name=std::string("\\tilde c_L");break;}
-  case kf::sCharmR :{name=std::string("\\tilde c_R");break;}
-  case kf::sTop2 :{name=std::string("\\tilde t_2");break;}
-  case kf::sTop1 :{name=std::string("\\tilde t_1");break;}
-  case kf::sDownL :{name=std::string("\\tilde d_L");break;}
-  case kf::sDownR :{name=std::string("\\tilde d_R");break;}
-  case kf::sStrangeL :{name=std::string("\\tilde s_L");break;}
-  case kf::sStrangeR :{name=std::string("\\tilde s_R");break;}
-  case kf::sBottom2 :{name=std::string("\\tilde b_2");break;}
-  case kf::sBottom1 :{name=std::string("\\tilde b_1");break;}
-  case kf::sElectronL :{name=std::string("\\tilde e_L");break;}
-  case kf::sElectronR :{name=std::string("\\tilde e_R");break;}
-  case kf::sMuL :{name=std::string("\\tilde\\mu_L");break;}
-  case kf::sMuR :{name=std::string("\\tilde\\mu_R");break;}
-  case kf::sTau2 :{name=std::string("\\tilde\\tau_2");break;}
-  case kf::sTau1 :{name=std::string("\\tilde\\tau_1");break;}
-  case kf::sNu1 :{name=std::string("\\tilde\\nu_1");break;}
-  case kf::sNu2 :{name=std::string("\\tilde\\nu_2");break;}
-  case kf::sNu3 :{name=std::string("\\tilde\\nu_3");break;}
-  case kf::p_plus :{name+=std::string("P");break;}
-  case kf::jet :{name=std::string("j");break;}
-  case kf::lepton :{name=std::string("l");break;}
-  case kf::neutrino :{name=std::string("\\nu");break;}
-  case kf::quark :{name=std::string("q");break;}
-  default : break;
+  if (m_anti) name="\\overline{";
+  switch (m_kfc) {
+  case kf_pi : {name+=std::string("\\pi^{0}");break;}
+  case kf_K : {name+=std::string("K^{0}");break;}
+  case kf_K_L : {name+=std::string("K_{L}");break;}
+  case kf_K_S : {name+=std::string("K_{S}");break;}
+  case kf_D : {name+=std::string("D^{0}"); break;}
+  case kf_B : {name+=std::string("B^{0}"); break;}
+  default :
+    if (IsHadron()) {
+      name+=IDName();
+      name=StringReplace(name, "+", "{^{+}}");
+      name=StringReplace(name, "-", "{^{-}}");
+      name=StringReplace(name, "*", "{^{*}}");
+      name=StringReplace(name, "'", "{^{\\prime}}");
+      name=StringReplace(name, "(", "{_{(");
+      name=StringReplace(name, ")", ")}}");
+      name=StringReplace(name, "eta", "\\eta ");
+      name=StringReplace(name, "rho", "\\rho ");
+      name=StringReplace(name, "pi", "\\pi ");
+      name=StringReplace(name, "omega", "\\omega ");
+      name=StringReplace(name, "phi", "\\phi ");
+      name=StringReplace(name, "psi", "\\psi ");
+      name=StringReplace(name, "Delta", "\\Delta ");
+      name=StringReplace(name, "Sigma", "\\Sigma ");
+      name=StringReplace(name, "Lambda", "\\Lambda ");
+      name=StringReplace(name, "Xi", "\\Xi ");
+      name=StringReplace(name, "Omega", "\\Omega ");
+    }
+    else {
+      name+=s_kftable[m_kfc]->m_texname;
+    }
+    break;
   }
-
-  if (anti) {
-  switch(kfc) {
-  case kf::e: {name=std::string("e^\\p");break;}
-  case kf::mu: {name=std::string("\\mu^\\p");break;}
-  case kf::tau: {name= std::string("\\tau^\\p");break;}
-  case kf::Wplus: {name=std::string("W^\\m");break;}
-  case kf::Hplus: {name=std::string("H^\\m");break;}
-  case kf::Chargino1 :{name=std::string("\\chi^\\p_1");break;}
-  case kf::Chargino2 :{name=std::string("\\chi^\\p_2");break;}
-  case kf::Neutralino1 :{name=std::string("\\chi^0_1");break;}
-  case kf::Neutralino2 :{name=std::string("\\chi^0_2");break;}
-  case kf::Neutralino3 :{name=std::string("\\chi^0_3");break;}
-  case kf::Neutralino4 :{name=std::string("\\chi^0_4");break;}
-  case kf::Gluino :{name=std::string("\\tilde g^\\ti");break;}
-  case kf::sUpL :{name=std::string("\\tilde u_L^\\ti");break;}
-  case kf::sUpR :{name=std::string("\\tilde u_R^\\ti");break;}
-  case kf::sCharmL :{name=std::string("\\tilde c_L^\\ti");break;}
-  case kf::sCharmR :{name=std::string("\\tilde c_R^\\ti");break;}
-  case kf::sTop2 :{name=std::string("\\tilde t_2^\\ti");break;}
-  case kf::sTop1 :{name=std::string("\\tilde t_1^\\ti");break;}
-  case kf::sDownL :{name=std::string("\\tilde d_L^\\ti");break;}
-  case kf::sDownR :{name=std::string("\\tilde d_R^\\ti");break;}
-  case kf::sStrangeL :{name=std::string("\\tilde s_L^\\ti");break;}
-  case kf::sStrangeR :{name=std::string("\\tilde s_R^\\ti");break;}
-  case kf::sBottom2 :{name=std::string("\\tilde b_2^\\ti");break;}
-  case kf::sBottom1 :{name=std::string("\\tilde b_1^\\ti");break;}
-  case kf::sElectronL :{name=std::string("\\tilde e_L^\\ti");break;}
-  case kf::sElectronR :{name=std::string("\\tilde e_R^\\ti");break;}
-  case kf::sMuL :{name=std::string("\\tilde\\mu_L^\\ti");break;}
-  case kf::sMuR :{name=std::string("\\tilde\\mu_R^\\ti");break;}
-  case kf::sTau2 :{name=std::string("\\tilde\\tau_2^\\ti");break;}
-  case kf::sTau1 :{name=std::string("\\tilde\\tau_1^\\ti");break;}
-  case kf::sNu1 :{name=std::string("\\tilde\\nu_1^\\ti");break;}
-  case kf::sNu2 :{name=std::string("\\tilde\\nu_2^\\ti");break;}
-  case kf::sNu3 :{name=std::string("\\tilde\\nu_3^\\ti");break;}  
-  default : break;}
+  if (m_anti) {
+    name+="}";
+    switch (m_kfc) {
+    case kf_pi : {name=std::string("\\pi^{0}");break;}
+    case kf_pi_plus : {name=std::string("\\pi^{-}");break;}
+    case kf_K : {name=std::string("\\bar K^{0}");break;}
+    case kf_K_plus : {name=std::string("K^{-}");break;}
+    case kf_K_L : {name=std::string("K_{L}");break;}
+    case kf_K_S : {name=std::string("K_{S}");break;}
+    case kf_D_plus : {name=std::string("D^{-}"); break;}
+    case kf_B_plus : {name=std::string("B^{-}"); break;}
+    case kf_rho_770_plus : {name=std::string("\\rho_{(770)}^{-}"); break;}
+    case kf_rho_1450_plus : {name=std::string("\\rho_{(1450)}^{-}"); break;}
+    case kf_rho_1700_plus : {name=std::string("\\rho_{(1700)}^{-}"); break;}
+    }
   }
-  
   return name;
 }
 
@@ -479,106 +220,78 @@ std::string Flavour::ShellName() const
 
 std::string Flavour::IDName() const 
 {
-  std::string name = string(Name());
-  if (Kfcode()==kf::e  ||
-      Kfcode()==kf::mu ||
-      Kfcode()==kf::tau) {
+  std::string name(s_kftable[m_kfc]->m_idname);
+  if (m_kfc==kf_e || m_kfc==kf_mu || m_kfc==kf_tau) {
     name.erase(name.length()-1,1);
-    if (IsAnti()) name += string("+");
-    else name += string("-");      
+    if (IsAnti()) name+="+";
+    else name+="-";      
   }
   else {
-    if (!IsBaryon() && 
-	(Kfcode()==kf::pi_plus ||
-	 Kfcode()==kf::K_plus  ||
-	 Kfcode()==kf::Hplus   ||
-	 Kfcode()==kf::Wplus )) {
+    if (m_kfc==kf_pi_plus ||
+	m_kfc==kf_K_plus  ||
+	m_kfc==kf_Hplus   ||
+	m_kfc==kf_Wplus) {
       name.erase(name.length()-1,1);
-      if (IsAnti()) name += string("-");
-      else name += string("+");      
+      if (IsAnti()) name+="-";
+      else name+="+";      
     }
-    else if (IsAnti()) name += string("b"); 
+    else if (IsAnti()) name+="b"; 
   }
-  if (Kfcode()==kf::photon) name= string("P");
-  if (Kfcode()==kf::gluon)  name= string("G");
-  if (Kfcode()==kf::jet)    name= string("j");
-  if (Kfcode()==kf::quark)  name= string("Q");
-
-  string hname;
-  size_t i;
-  // erase _quark
-  for (;;) {
-    i = name.find("_quark");
-    if (i==string::npos) break;
-    hname = name;
-    name = hname.substr(0,i) + hname.substr(i+6); 
-  }
-
   return name;
 }
 
-std::ostream& ATOOLS::operator<<(std::ostream& os, const Flavour& f)
+bool Flavour::IsDiQuark() const 
 {
-  if(f.anti) {
-    if (f==Flavour(kf::e).Bar())      return os<<"e+";
-    if (f==Flavour(kf::mu).Bar())     return os<<"mu+";
-    if (f==Flavour(kf::tau).Bar())    return os<<"tau+";
-    if (f==Flavour(kf::Wplus).Bar())  return os<<"W-";
-
-    if (f==Flavour(kf::p_plus).Bar())  return os<<"P-";
-    if (f==Flavour(kf::pi_plus).Bar()) return os<<"pi-";
-    if (f==Flavour(kf::K_plus).Bar())  return os<<"K-";
-    
-    bool found = 1;
-    string tmp = string(f.Name());
-    int pos = tmp.find("+");
-    if (!f.IsBaryon()) {
-      if (pos>-1) {
-	while (found) {
-	  pos = tmp.find("+");
-	  if (pos>-1) tmp.replace(pos,pos,string("-"));
-	  else found = 0;
-	}
-	return os<<tmp.c_str();
-      }
-      
-      pos = tmp.find("-");
-      if (pos>-1) {
-	while (found) {
-	  pos = tmp.find("-");
-	  if (pos>-1) tmp.replace(pos,pos,string("+"));
-	  else found = 0;
-	}
-	return os<<tmp.c_str();
-      }
-    }
-    return os<<(string("anti-")+string(f.Name())).c_str();
+  if(abs(m_kfc)>=1103&&abs(m_kfc)<=5505) {
+    double help=abs(m_kfc)/100.0-int(abs(m_kfc)/100.0); 
+    if(help<0.031) return true;
   }
-  return os<<f.Name();
+  return false;
 }
 
-// Definitions of all particles
+bool Flavour::IsBaryon() const 
+{
+  if (abs(m_kfc)<1000)             return 0;
+  if (m_kfc-1000*int(m_kfc/1000)==0) return 0;
+  return !IsDiQuark();
+}
 
-void ATOOLS::ParticleInit(std::string path)
+bool Flavour::IsB_Hadron() const 
+{
+  if (abs(m_kfc)<100)                            return 0;
+  if (m_kfc-100*int(m_kfc/100)<10)                 return 0;
+  if (abs((m_kfc-100*int(m_kfc/100))/10)==5)       return 1;
+  if (abs((m_kfc-1000*int(m_kfc/1000))/100)==5)    return 1;
+  if (abs((m_kfc-10000*int(m_kfc/10000))/1000)==5) return 1;
+  return 0;
+}
+
+bool Flavour::IsC_Hadron() const 
+{
+  if (abs(m_kfc)<100)                            return 0;
+  if (m_kfc-100*int(m_kfc/100)<10)                 return 0;
+  if (abs((m_kfc-100*int(m_kfc/100))/10)==4)       return 1;
+  if (abs((m_kfc-1000*int(m_kfc/1000))/100)==4)    return 1;
+  if (abs((m_kfc-10000*int(m_kfc/10000))/1000)==4) return 1;
+  return 0;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
+{
+  return os<<fl.IDName();
+}
+
+void ATOOLS::ParticleInit(const std::string &path)
 {
   static bool initialized(false);
   if (initialized) return;
   initialized=true;
-  Part_Info * pi = particles;
 
-  int    kfc,charge,icharge,spin;
-  int    kfcold=-1;
-  bool   strong,Majorana,Take,stable,massive;
+  kf_code kfc, kfcold=kf_none;
+  int    charge,icharge,spin,strong,Majorana;
+  bool   Take,stable,massive;
   double mass,width;
-  char   name[20];
-  char   buffer[150];
-
-  int pc=0;
-
-  *(pi++) = Part_Info( kf::start, -1,0,100000,0,0,0,0,0,1,0,
-		       "Fatal error: particle type does not exist!",1 );
-  ++pc;
-
+  std::string idname, texname, buffer;
 
   My_In_File part(path,"Particle.dat");
   if (!part.Open()) {
@@ -586,7 +299,7 @@ void ATOOLS::ParticleInit(std::string path)
     return;
   }
   
-  part->getline(buffer,150);
+  getline(*part,buffer);
   msg_LogFile()<<"\n! +--------------------------------------+"<<std::endl;
   msg_LogFile()<<"! |               kf table               |"<<std::endl;
   msg_LogFile()<<"! +--------------------------------------+\n"<<std::endl;
@@ -616,27 +329,28 @@ void ATOOLS::ParticleInit(std::string path)
       if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
   for(;*part;) {
     (*part)>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
-	>>Majorana>>Take>>stable>>massive>>name;
-    std::map<int,double>::const_iterator dit;
-    if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
-    if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
-    std::map<int,int>::const_iterator iit;
-    if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
-    if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
-    if ((iit=cim.find(kfc))!=cim.end()) massive=iit->second;
-    msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
-		 <<icharge<<" \t"<<strong<<" \t"<<spin
-		 <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
-		 <<massive<<" \t"<<name<<std::endl;
+	   >>Majorana>>Take>>stable>>massive>>idname>>texname;
     if (kfc!=kfcold) { // read last line only once!
-      *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
-			 strong, spin, Majorana, Take, stable, massive, name, 1);
+      std::map<int,double>::const_iterator dit;
+      if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
+      if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
+      std::map<int,int>::const_iterator iit;
+      if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
+      if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
+      if ((iit=cim.find(kfc))!=cim.end()) massive=iit->second;
+      msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"
+		   <<charge<<" \t"<<icharge<<" \t"<<strong<<" \t"<<spin
+		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
+ 		   <<massive<<" \t"<<idname<<"\t "<<texname<<std::endl;
+      s_kftable[kfc] = new
+	Particle_Info(kfc,mass,width,charge,icharge,strong,spin,
+		      Majorana,Take,stable,massive,idname,texname);
       //dummy for 4gluon-higgs vertex
-      if (kfc==21) {
-	*(pi++)=Part_Info( kf::shgluon, mass, width, charge, icharge, 
-			   strong, spin, Majorana, Take, stable, massive, "shgluon",1);
-	*(pi++)=Part_Info( kf::gluonqgc, mass, width, charge, icharge, 
-			   strong, 2*spin, Majorana, Take, stable, massive, "gluonqgc",1);
+      if (kfc==kf_gluon) {
+	s_kftable[kf_shgluon] = new
+	  Particle_Info(kf_shgluon,mass,width,charge,icharge,
+			strong,spin,Majorana,Take,stable,massive,
+			"shgluon","shgluon",1);
       }
       kfcold = kfc;
     }
@@ -646,301 +360,92 @@ void ATOOLS::ParticleInit(std::string path)
 
   My_In_File part2(path,"Hadron.dat");
   if (!part2.Open()) {
-    std::cerr<<"Error in Particle_Init : File Hadron.dat not found !"<<std::endl;
+    std::cerr<<"Error: Hadron.dat not found !"<<std::endl;
   }
   else {
-    part2->getline(buffer,150);
+    getline(*part2,buffer);
     msg_LogFile()<<"! "<<buffer<<std::endl;
   
     for(;*part2;) {
-      (*part2)>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
-      std::map<int,double>::const_iterator dit;
-      if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
-      if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
-      std::map<int,int>::const_iterator iit;
-      if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
-      if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
-      msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
-		   <<icharge<<" \t"<<spin<<" \t"<<Take<<" \t"<<stable<<" \t"
-		   <<name<<std::endl;
-      if (kfc!=kfcold) {  // read last line only once!	
-	//	if (Take) {
-	  ++pc;
-	  *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
-			     spin, Take, stable, name);
-	  kfcold=kfc;
-	  //	}
+      (*part2)>>kfc>>mass>>width>>charge>>icharge
+	      >>spin>>Take>>stable>>idname;
+      texname=idname;
+      if (kfc!=kfcold) { // read last line only once!
+	std::map<int,double>::const_iterator dit;
+	if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
+	if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
+	std::map<int,int>::const_iterator iit;
+	if ((iit=cia.find(kfc))!=cia.end()) Take=iit->second;
+	if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
+	msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"
+		     <<charge<<" \t"<<icharge<<" \t"<<spin<<" \t"
+		     <<Take<<" \t"<<stable<<" \t"<<idname<<"\t "
+		     <<texname<<std::endl;
+	s_kftable[kfc] = new
+	  Particle_Info(kfc,mass,width,charge,icharge, 
+			spin,Take,stable,idname,texname);
+	kfcold=kfc;
       }
     }
     part2.Close();
     msg_LogFile()<<std::endl;
   }
-  // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
-  *(pi++) = Part_Info( kf::lepton,   0.,0.,-3,-1,0, 1,0,1,1,0,"lepton",1);
-  *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 1,0,1,1,0,"neutrino",1);
-  *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 1,0,1,1,0,"fermion",1);
-  *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 2,0,1,1,0,"jet",1);
-  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 1,0,1,1,0,"Quark",1);
-  *(pi++) = Part_Info( kf::seaquark, 0.,0., 0, 0,1, 1,0,1,1,0,"seaquark",1);
 
-  *(pi++) = Part_Info( kf::cluster,    0.,0., 0, 0,0, 0,0,1,1,0,"cluster",1);
-  *(pi++) = Part_Info( kf::string,    0.,0., 0, 0,0, 0,0,1,1,0,"string",1);
-  *(pi++) = Part_Info( kf::bjet,      0.,0., 0, 0,1, 2,0,1,1,0,"bjet",1);
+  s_kftable[kf_none] = new
+    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle");
+  s_kftable[kf_cluster] = new
+    Particle_Info(kf_cluster,0.,0.,0,0,0,0,0,1,1,0,"cluster","cluster");
+  s_kftable[kf_string] = new
+    Particle_Info (kf_string,0.,0.,0,0,0,0,0,1,1,0,"string","string");
+  s_kftable[kf_seaquark] = new
+    Particle_Info(kf_seaquark,0.,0.,0,0,1,1,0,1,1,0,"seaquark","seaquark");
+  s_kftable[kf_bjet] = new
+    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet");
 
-  *(pi++)=Part_Info( kf::none, -1,0,0,0,0,0,0,0,1,0, "no_particle",1);
-
-  kf_table.Init(); 
-
-
-  Flavour addit;
-  Flavour test = Flavour(kf::jet);
-  int idx      = kf_table.ToInt(test.Kfcode());
-  particles[idx].SetGroup();
+  s_kftable[kf_fermion] = new
+    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion");
+  s_kftable[kf_jet] = new
+    Particle_Info(kf_jet,0.,0.,0,0,1, 2,0,1,1,0,"j","jet");
+  s_kftable[kf_quark] = new
+    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark");
+  s_kftable[kf_lepton] = new
+    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton");
+  s_kftable[kf_neutrino] = new
+    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino");
+  s_kftable[kf_fermion]->m_content.clear();
+  s_kftable[kf_jet]->m_content.clear();
+  s_kftable[kf_quark]->m_content.clear();
+  s_kftable[kf_lepton]->m_content.clear();
+  s_kftable[kf_neutrino]->m_content.clear();
   for (int i=1;i<7;i++) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_jet]->Add(addit);
+      s_kftable[kf_jet]->Add(addit.Bar());
+      s_kftable[kf_quark]->Add(addit);
+      s_kftable[kf_quark]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
-  particles[idx].Add(Flavour(kf::gluon));
-
-  test = Flavour(kf::quark);
-  idx      = kf_table.ToInt(test.Kfcode());
-  particles[idx].SetGroup();
-  for (int i=1;i<7;i++) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
-    }
-  }
-
-  test = Flavour(kf::lepton);
-  idx      = kf_table.ToInt(test.Kfcode());
-  particles[idx].SetGroup();
+  s_kftable[kf_jet]->Add(Flavour(kf_gluon));
   for (int i=11;i<17;i+=2) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_lepton]->Add(addit);
+      s_kftable[kf_lepton]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
-  test = Flavour(kf::neutrino);
-  idx      = kf_table.ToInt(test.Kfcode());
-  particles[idx].SetGroup();
   for (int i=12;i<18;i+=2) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
-    }
-  }
-
-  test = Flavour(kf::fermion);
-  idx      = kf_table.ToInt(test.Kfcode());
-  particles[idx].SetGroup();
-  for (int i=1;i<7;i++) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
-    }
-  }
-  for (int i=11;i<17;i++) {
-    addit = Flavour(kf::code(i));
-    if (addit.Mass()==0.) {
-      particles[idx].Add(addit);
-      particles[idx].Add(addit.Bar());
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_neutrino]->Add(addit);
+      s_kftable[kf_neutrino]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
 }
   
-// Unique Identifier of Particle.dat
-// aaaaaa-bbbbbb-ccccccc 
-// a   SM   - particles
-// b    MSSM - particles
-// c    everything else
-// each
-// (n)nn  number of particles in this section 
-//      xxxx 
-// double 0.mmmmm00000 * 10^ee => int ((ee+mmmmm)&0xFFFF)rot(kf::code * number of flags + flag)
-
-// Switch off masses for SM fermions
-
-void SetMassless()
-{
-  particles[ kf_table.ToInt(kf::d) ].msv=0;
-  particles[ kf_table.ToInt(kf::u) ].msv=0;
-  particles[ kf_table.ToInt(kf::s) ].msv=0;
-  particles[ kf_table.ToInt(kf::c) ].msv=0;
-  particles[ kf_table.ToInt(kf::b) ].msv=0;
-  //particles[ kf_table.ToInt(kf::t) ].msv=0;
-
-  particles[ kf_table.ToInt(kf::e) ].msv=0;
-  particles[ kf_table.ToInt(kf::mu) ].msv=0;
-  particles[ kf_table.ToInt(kf::tau) ].msv=0;
-  particles[ kf_table.ToInt(kf::nue) ].msv=0;
-  particles[ kf_table.ToInt(kf::numu) ].msv=0;
-  particles[ kf_table.ToInt(kf::nutau) ].msv=0;
-}
-
-int Flavour::GetIntID(double value) {
-  // double 0.mmmmm00000 * 10^ee
-  // negative exponent possible
-  // negative mantisse is not included!!!!
-  if (value==0) return 0;
-
-  int length = 4;
-  int exp_10=int(log(value)/log(10.));
-  // quick
-  double nref=pow(10.,exp_10)*pow(2.,-length*4+4);
-  if (exp_10>=0) exp_10=exp_10&0x7F;
-  else exp_10=0x80+((-exp_10)&0x7F);
-
-  int result = int (value/nref+0.5)*0x100+exp_10;
-  return result;
-}
-
-
-int Flavour::PropertiesID() {
-// IntID(mass) + Rot(IntID(width),8,16)  xor flags
-  int pid=GetIntID(PSMass());
-  int wid=GetIntID(Width());
-  pid^=Rot(wid,12,24);
-
-  pid=pid^FlagID();
-  return pid;
-}
-
-int Flavour::FlagID() {
-  //ch+4 -3, -1, 0, 2       
-  //    1   3   4  6
-  //
-  //y+1 0 1 2
-  //s   0 1 2
-  //
-  //mj   0 1
-  //on  0 1
-  //t   0 1
-  //M   0 1 
-  //
-  // su3 0 1
-  int ix=Index();
-
-  int flag=0;
-  flag+= IntCharge() +4;
-  flag*=16;
-  flag+= (particles[ix].isow +1)*4 + particles[ix].sp;
-  flag*=16;
-  flag+=  particles[ix].Maj*8+ particles[ix].on*4+ ((bool)particles[ix].stbl)*2 + particles[ix].msv;
-  flag*=16;
-  flag+=  particles[ix].str;
-  return flag;
-}
-
-
-int Flavour::Rot( int value , int rotby, int length) {
-  int cut=1;
-  rotby=rotby%length;
-  cut=cut<<length; 
-  int mask=cut-1;
-  value=value&mask;
-  for (int i=0; i<rotby; ++i) {
-    value=value<<1;
-    if (value&cut) 
-      value=(value|1)&mask;
-  }
-  return value;
-}
-
-int Flavour::ID_SM() {
-  Fl_Iter fli;
-  int count=0;
-  int sm_id=0;
-
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy() && (flav.Kfcode()!=35)) {
-      count++;
-      int local_id=flav.PropertiesID();
-      local_id=Rot(local_id,flav.Kfcode(),24);
-      sm_id=sm_id^local_id;
-    } 
-  }
-  return sm_id+(count*0x1000000);
-}
-
-int Flavour::ID_MSSM() {
-  Fl_Iter fli;
-  int count=0;
-  int mssm_id=0;
-
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && !flav.IsHadron() && flav.IsSusy()) {
-      count++;
-      int local_id=flav.PropertiesID();
-      local_id=Rot(local_id,flav.Kfcode(),24);
-      mssm_id=mssm_id^local_id;
-    } 
-  }
-  return mssm_id+(count*0x1000000);
-
-}
-
-int Flavour::ID_Had() {
-  Fl_Iter fli;
-  int count=0;
-  int had_id=0;
-
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && flav.IsHadron() && !flav.IsSusy()) {
-      count++;
-      int local_id=flav.PropertiesID();
-      local_id=Rot(local_id,flav.Kfcode(),24);
-      had_id=had_id^local_id;
-    } 
-  }
-  return had_id+(count*0x1000000);
-}
-
-int Flavour::WriteOut() {
-  std::string sm_name, mssm_name, had_name;
-  MyStrStream str;
-
-  str<<ID_SM();
-  str>>sm_name;
-  str<<ID_MSSM();
-  str>>mssm_name;
-  str<<ID_Had();
-  str>>had_name;
-
-  My_Out_File ofile("save/sm/",sm_name+".dat");
-  ofile.Open();
-
-  Fl_Iter fli;
-  (*ofile)<<"kf      Mass   Width    3*e     Y     SU(3)  2*Spin majorana   ON    stabil   massive   Name"<<std::endl;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy()) {
-      (*ofile)<<flav.Kfcode()<<"\t"
-	  <<flav.PSMass()<<"\t"
-	  <<flav.Width()<<"\t"
-	  <<flav.IntCharge()<<"\t"
-	  <<flav.IsoWeak()*2.<<"\t"
-	  <<flav.Strong()<<"\t"
-	  <<flav.IntSpin()<<"\t"
-	  <<flav.Majorana()<<"\t"
-	  <<flav.IsOn()<<"\t"
-	  <<flav.IsStable()<<"\t"
-	  <<flav.IsMassive()<<"\t"
-	  <<flav.Name()<<std::endl;
-    } 
-  }
-  ofile.Close();
-
-  return 1;
-  
-
-
-}
-
-

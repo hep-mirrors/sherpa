@@ -186,8 +186,8 @@ P_P2Gamma::P_P2Gamma(int _nout,Flavour * _flavs) :
                 else m_phot2 = i;
     } 
   }
-  m_mrho2 = sqr(Flavour(kf::rho_770).Mass());
-  m_grho2 = sqr(Flavour(kf::rho_770).Width());
+  m_mrho2 = sqr(Flavour(kf_rho_770).Mass());
+  m_grho2 = sqr(Flavour(kf_rho_770).Width());
 
 //  cout<<"New P2Gamma "<<p_flavs[0]<<" -> "
 //      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]
@@ -243,8 +243,8 @@ P_3P_DalitzDef::P_3P_DalitzDef(int _nout,Flavour * _flavs) :
 {   
   m_metype = string("P_3P_DalitzDef");
   for (int i=1;i<4;i++) {
-    if (p_flavs[i]!=Flavour(kf::pi)) {
-      if (p_flavs[i]!=Flavour(kf::pi_plus)) {
+    if (p_flavs[i]!=Flavour(kf_pi)) {
+      if (p_flavs[i]!=Flavour(kf_pi_plus)) {
 	m_allpions=false;
 	break;
       }
@@ -253,9 +253,9 @@ P_3P_DalitzDef::P_3P_DalitzDef(int _nout,Flavour * _flavs) :
   }
   if (!m_allsame) {
     for (int i=1;i<4;i++) {
-      if (p_flavs[i]==Flavour(kf::pi))                              m_pi0 = i;
-      if (p_flavs[i]==Flavour(kf::pi_plus) && !p_flavs[i].IsAnti()) m_pip = i;
-      if (p_flavs[i]==Flavour(kf::pi_plus) &&  p_flavs[i].IsAnti()) m_pim = i;
+      if (p_flavs[i]==Flavour(kf_pi))                              m_pi0 = i;
+      if (p_flavs[i]==Flavour(kf_pi_plus) && !p_flavs[i].IsAnti()) m_pip = i;
+      if (p_flavs[i]==Flavour(kf_pi_plus) &&  p_flavs[i].IsAnti()) m_pim = i;
     }
   }
 //  cout<<"New DalitzDef "<<p_flavs[0]<<" -> "

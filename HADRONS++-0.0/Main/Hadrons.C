@@ -50,7 +50,7 @@ void Hadrons::CreateBookletNow()
   f<<"\\title{Decay Information}\n\\maketitle\n";
 
   // text 
-  for ( map<kf::code,Decay_Table *>::iterator pos = p_decaymap->begin(); pos != p_decaymap->end(); ++pos) {
+  for ( map<kf_code,Decay_Table *>::iterator pos = p_decaymap->begin(); pos != p_decaymap->end(); ++pos) {
 	Decay_Table * dt  (pos->second);
 	f<<"\\section{Decaying Particle: "<<dt->Flav()<<"}\n";
 	f<<"\\begin{center} \n\\begin{tabular}{ll}\n";
@@ -118,7 +118,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
   
   const int nchan = p_table->NumberOfDecayChannels();
   Decay_Channel * dec_channel;
-  if (p_table->Flav().Kfcode() != kf::K ) {
+  if (p_table->Flav().Kfcode() != kf_K ) {
     double TotalWidth = p_table->TotalWidth();
     bool channel_chosen (0);
     int k (0);
@@ -344,12 +344,12 @@ void Hadrons::ReadInDecayTables()
     abort();
   }
 
-  p_decaymap = new map<ATOOLS::kf::code,ATOOLS::Decay_Table *>;
+  p_decaymap = new map<kf_code,ATOOLS::Decay_Table *>;
   p_channelmap = new map< Decay_Channel*, Hadron_Decay_Channel* >;
   Decay_Table * dt;
   Flavour fl;
   for (size_t i=0;i<Decayers.size();++i) {
-    fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
+    fl = Flavour((kf_code)(atoi((Decayers[i][0]).c_str())));
     if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
       msg_Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
 		 <<"   Flavour "<<fl
@@ -365,7 +365,7 @@ void Hadrons::ReadInDecayTables()
 // line: kfcode -> filepath/  filename
 Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
 {
-  Decay_Table * dt              = new Decay_Table(Flavour(kf::code(atoi((line[0]).c_str()))));
+  Decay_Table * dt              = new Decay_Table(Flavour((kf_code)(atoi((line[0]).c_str()))));
   string lcpath (line[1]);      // path of decay files
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path+lcpath,line[2]);
   if (dtreader->FillDecayTable(dt)>0) {     // if at least one channel defined

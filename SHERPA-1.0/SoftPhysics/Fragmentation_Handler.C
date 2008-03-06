@@ -108,8 +108,8 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	    plist->push_back(part);
 	    part->SetStatus(part_status::fragmented);
 	  }
-	  else if (part->Flav()==Flavour(kf::tau) ||
-		   part->Flav()==Flavour(kf::tau).Bar()) {
+	  else if (part->Flav()==Flavour(kf_tau) ||
+		   part->Flav()==Flavour(kf_tau).Bar()) {
 	    blob = new Blob();
 	    blob->SetId();
 	    blob->SetType(btp::Fragmentation);

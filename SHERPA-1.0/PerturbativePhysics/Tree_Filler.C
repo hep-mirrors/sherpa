@@ -109,7 +109,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   Vec4D p2(m_cms_boost*ctb->Momentum(2));
   Vec4D p3(m_cms_boost*ctb->Momentum(3));
   
-  *(mo->part) = Particle(0,Flavour(kf::none),sum);
+  *(mo->part) = Particle(0,Flavour(kf_none),sum);
   mo->part->SetInfo('M');
   mo->part->SetStatus(part_status::decayed);
   mo->didkin = true;

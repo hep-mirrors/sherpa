@@ -141,7 +141,7 @@ One_Variable_Selector_Getter::operator()
       }
       flavs.push_back(Flavour_Vector(cfl.size()));
       for (size_t k(0);k<cfl.size();++k) {
-	flavs.back()[k]=Flavour((kf::code)abs(cfl[k]));
+	flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
 	if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
       }
       reader.SetString(cur[2]);
@@ -178,7 +178,7 @@ One_Variable_Selector_Getter::operator()
 	}
 	flavs.push_back(Flavour_Vector(cfl.size()));
 	for (size_t k(0);k<cfl.size();++k) {
-	  flavs.back()[k]=Flavour((kf::code)abs(cfl[k]));
+	  flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
 	  if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
 	}
       }

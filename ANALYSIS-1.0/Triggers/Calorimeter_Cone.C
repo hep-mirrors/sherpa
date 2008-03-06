@@ -57,11 +57,11 @@ Calorimeter_Cone::~Calorimeter_Cone()
 void Calorimeter_Cone::Test()
 {
   Particle_List * pl = new Particle_List;
-  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(sqrt(500.),20.,10.,0.)));
-  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,40.,0.,30.)));
-  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(10.,5.,3.,4.)));
-  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,-40.,0.,30.)));
-  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,20.,-20.,30.)));
+  pl->push_back(new Particle(1,Flavour(kf_p_plus),Vec4D(sqrt(500.),20.,10.,0.)));
+  pl->push_back(new Particle(1,Flavour(kf_p_plus),Vec4D(50.,40.,0.,30.)));
+  pl->push_back(new Particle(1,Flavour(kf_p_plus),Vec4D(10.,5.,3.,4.)));
+  pl->push_back(new Particle(1,Flavour(kf_p_plus),Vec4D(50.,-40.,0.,30.)));
+  pl->push_back(new Particle(1,Flavour(kf_p_plus),Vec4D(50.,20.,-20.,30.)));
 
   p_calorimeter->Fill(pl);
   p_calorimeter->Print();
@@ -161,7 +161,7 @@ bool Calorimeter_Cone::ConstructJets(const Particle_List *, Particle_List * jets
   if (jets) {
     int i=1;
     for (std::vector<Jet_Data>::iterator it=m_jets.begin();it!=m_jets.end();++it,++i) {
-      jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
+      jets->push_back(new Particle(i,Flavour(kf_jet),it->mom));
       kt2->push_back(it->mom.PPerp2());
     }
   }

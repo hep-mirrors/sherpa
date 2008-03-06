@@ -276,8 +276,8 @@ bool Pythia_HepEvt_Translator::ReconstructShowerBlob() {
     if (!m_piter->second.second) continue;
     part    = m_piter->second.first;
     if (!part->Flav().IsHadron() && 
-	part->Flav()!=Flavour(kf::cluster) &&
-	part->Flav()!=Flavour(kf::string)) {
+	part->Flav()!=Flavour(kf_cluster) &&
+	part->Flav()!=Flavour(kf_string)) {
       pos   = p_jmohep[2*(*m_spiter)]-1;
       flag  = false;
       //cout<<"Check for "<<(*m_spiter)<<", mother = "<<pos<<" ("
@@ -338,7 +338,7 @@ bool Pythia_HepEvt_Translator::ReconstructShowerBlob() {
         // If decay chain
 	if (dau1!=dau2 && 
 	    ((partints.find(dau1)==partints.end() || partints.find(dau2)==partints.end()) ||
-	     part->Flav().Kfcode()==kf::tau)) {
+	     part->Flav().Kfcode()==kf_tau)) {
 	  //cout<<"Decay this : "<<(*m_spiter)<<" -> "
 	  //   <<dau1<<" / "<<dau2<<" "<<m_piter1->second.first->Flav()<<"."<<endl;
 	  Blob * blob = new Blob();
@@ -375,8 +375,8 @@ bool Pythia_HepEvt_Translator::ReconstructFragmentationBlob() {
     part     = m_piter->second.first;
     frag     = p_jdahep[2*pos]-1;
     m_piter1 = m_convertH2S.find(frag);
-    if (m_piter1->second.first->Flav()==Flavour(kf::string) ||
-	m_piter1->second.first->Flav()==Flavour(kf::cluster)) {
+    if (m_piter1->second.first->Flav()==Flavour(kf_string) ||
+	m_piter1->second.first->Flav()==Flavour(kf_cluster)) {
       // Make sure, particle does not show up in 2 blobs - may happen to bunchparticles.
       if (part->DecayBlob()) {
 	//cout<<METHOD<<" EXTRA!!!"<<endl;

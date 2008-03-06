@@ -40,16 +40,16 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
     if (k==0) higgs=25;
     if (k==1) higgs=35;
     if (k==2) higgs=36;
-    Flavour flav3 = Flavour(kf::code(higgs));
+    Flavour flav3 = Flavour((kf_code)(higgs));
     // Chargino - Chargino - Higgs
     for (short int i=0;i<2;i++) {
       if (i==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav1 = Flavour(kf::code(c_ino));
+      Flavour flav1 = Flavour((kf_code)(c_ino));
       for (short int j=i;j<2;j++) {
 	if (j==0) c_ino=1000024;
 	else      c_ino=1000037;
-      	Flavour flav2 = Flavour(kf::code(c_ino));
+      	Flavour flav2 = Flavour((kf_code)(c_ino));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k!=2)) {
 	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flav3;
@@ -110,12 +110,12 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
     if (i<2)  n_ino=1000022+i;
     if (i==2) n_ino=1000025;
     if (i==3) n_ino=1000035;
-    Flavour flav1 = Flavour(kf::code(n_ino));
+    Flavour flav1 = Flavour((kf_code)(n_ino));
       for (short int j=i;j<4;j++) {
 	if (j<2)  n_ino=1000022+j;
 	if (j==2) n_ino=1000025;
 	if (j==3) n_ino=1000035;
-    	Flavour flav2 = Flavour(kf::code(n_ino));
+    	Flavour flav2 = Flavour((kf_code)(n_ino));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k!=2)) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[2] = flav2;
@@ -182,17 +182,17 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
     }
   }
   // Neutralino - Higgs - Chargino
-  Flavour flHm = Flavour(kf::Hplus).Bar();
+  Flavour flHm = Flavour(kf_Hplus).Bar();
   if (flHm.IsOn()) {
     for (short int i=0;i<2;i++) {
       if (i==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav1 = Flavour(kf::code(c_ino));
+      Flavour flav1 = Flavour((kf_code)(c_ino));
       for (short int j=0;j<4;j++) {
 	if (j<2)  n_ino=1000022+j;
 	if (j==2) n_ino=1000025;
 	if (j==3) n_ino=1000035;
-	Flavour flav2 = Flavour(kf::code(n_ino));
+	Flavour flav2 = Flavour((kf_code)(n_ino));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flHm;
@@ -229,19 +229,19 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
    Kabbala kcpl0,kcpl1;  
-   Flavour flph = Flavour(kf::photon);
-   Flavour flZ = Flavour(kf::Z);
+   Flavour flph = Flavour(kf_photon);
+   Flavour flZ = Flavour(kf_Z);
    int c_ino,n_ino;
    
    //Chargino - Z/Photon - Chargino
    for (short int i=0;i<2;i++) {
      if (i==0) c_ino = 1000024;
      else      c_ino = 1000037;
-     Flavour flav1 = Flavour(kf::code(c_ino));
+     Flavour flav1 = Flavour((kf_code)(c_ino));
      for (short int j=i;j<2;j++) {
      if (j==0) c_ino = 1000024;
      else      c_ino = 1000037;
-     Flavour flav2 = Flavour(kf::code(c_ino));
+     Flavour flav2 = Flavour((kf_code)(c_ino));
        if (flav1.IsOn() && flav2.IsOn()) {
 	 if (flav1==flav2 && flph.IsOn()) {
 	   vertex[vanz].in[0] = flav1;
@@ -305,14 +305,14 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
      if (i<2)  n_ino=1000022+i;
      if (i==2) n_ino=1000025;
      if (i==3) n_ino=1000035;
-     Flavour flav1 = Flavour(kf::code(n_ino));
+     Flavour flav1 = Flavour((kf_code)(n_ino));
      for (short int j=0;j<2;j++) {
        if (j==0) c_ino = 1000024;
        else      c_ino = 1000037;
-       Flavour flav2 = Flavour(kf::code(c_ino));
+       Flavour flav2 = Flavour((kf_code)(c_ino));
        if (flav1.IsOn() && flav2.IsOn()) {
 	 vertex[vanz].in[0] = flav1;
-	 vertex[vanz].in[1] = Flavour(kf::Wplus);
+	 vertex[vanz].in[1] = Flavour(kf_Wplus);
 	 vertex[vanz].in[2] = flav2;
 
 	 kcpl0 = M_I*g2*(K_Z_N(1,i)*K_Z_PL(0,j)-
@@ -344,16 +344,16 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
      if (j<2)  n_ino=1000022+j;
      if (j==2) n_ino=1000025;
      if (j==3) n_ino=1000035;
-     Flavour flav1 = Flavour(kf::code(n_ino));
+     Flavour flav1 = Flavour((kf_code)(n_ino));
      for (short int i=j;i<4;i++) {
        if (i<2)  n_ino=1000022+i;
        if (i==2) n_ino=1000025;
        if (i==3) n_ino=1000035;
-       Flavour flav2 = Flavour(kf::code(n_ino));
+       Flavour flav2 = Flavour((kf_code)(n_ino));
        if (flav1.IsOn() && flav2.IsOn() && flZ.IsOn()) {
 	 
 	 vertex[vanz].in[0] = flav1;
-	 vertex[vanz].in[1] = Flavour(kf::Z);	
+	 vertex[vanz].in[1] = Flavour(kf_Z);	
 	 vertex[vanz].in[2] = flav2;
 	 
 	 kcpl0 = -M_I/(costW*num_2)*g2*

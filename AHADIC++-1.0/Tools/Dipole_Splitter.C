@@ -81,7 +81,7 @@ Dipole * Dipole_Splitter::EmitGluon(const double pt2max) {
   SetSpectatorAndSplitter();
 
   m_M2      = p_dip->Mass2();
-  m_flav    = Flavour(kf::gluon);
+  m_flav    = Flavour(kf_gluon);
   m_m1      = p_constituents->Mass(p_spect->m_flav);
   m_m12     = sqr(m_m1);
   m_m2      = p_constituents->Mass(m_flav);
@@ -118,7 +118,7 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   m_xt2     = m_xt2max = 1./4.;
   m_y       = m_ybound = -1./2. * log(m_xt2min);  
   m_pref    = 0.;
-  m_flav    = Flavour(kf::none);
+  m_flav    = Flavour(kf_none);
   double maxwt(0.), wt;
   for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
     if (fdit->second->popweight<=0. || 
@@ -217,7 +217,7 @@ bool Dipole_Splitter::SelectPT_Y(bool glusplit) {
 }
 
 bool Dipole_Splitter::Veto() {
-  if (m_flav==Flavour(kf::none))        return true;
+  if (m_flav==Flavour(kf_none))        return true;
   double ytruebound(log(1./(2.*sqrt(m_xt2))*(1.+sqrt(1.-4.*m_xt2))));
   if (dabs(m_y)>ytruebound)             return true;
   CalculateInvariants();

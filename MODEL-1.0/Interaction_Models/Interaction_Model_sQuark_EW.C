@@ -58,15 +58,15 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
     if (j<2)  n_ino=1000022+j; 
     if (j==2) n_ino=1000025; 
     if (j==3) n_ino=1000035; 
-    Flavour flneu = Flavour(kf::code(n_ino));
+    Flavour flneu = Flavour((kf_code)(n_ino));
     if (flneu.IsOn()) {
       //uptypes 
       for (short int k=2;k<7;k+=2) {
-	Flavour flav1 = Flavour(kf::code(k));
+	Flavour flav1 = Flavour((kf_code)(k));
 	for (short int i=1;i<7;i++) {
 	  if (i<4) s_qu=1000000 + 2*i;
 	  else     s_qu=2000000 + 2*i - 6;
-	  Flavour flav2 = Flavour(kf::code(s_qu));
+	  Flavour flav2 = Flavour((kf_code)(s_qu));
 	  if (flav1.IsOn() && flav2.IsOn() && (k/2-1)==gen_sUp(flav2)) {
 	    vertex[vanz].in[0] = flav1;
 	    vertex[vanz].in[1] = flav2;
@@ -101,11 +101,11 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
       }
       //downtypes 
       for (short int k=1;k<6;k+=2) {
-	Flavour flav1 = Flavour(kf::code(k));
+	Flavour flav1 = Flavour((kf_code)(k));
 	for (short int i=1;i<7;i++) {
 	  if (i<4) s_qu = 1000000 + 2*i -1;
 	  else     s_qu = 2000000 + 2*i -7;
-	  Flavour flav2 = Flavour(kf::code(s_qu));
+	  Flavour flav2 = Flavour((kf_code)(s_qu));
 	  if (flav1.IsOn() && flav2.IsOn() && ((k-1)/2)==gen_sDown(flav2)) {
 	    vertex[vanz].in[0] = flav1;
 	    vertex[vanz].in[1] = flav2;
@@ -143,23 +143,23 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
   
   //d-quark - Chargino - sup
   for (short int i=1;i<6;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     Kabbala K_dI = Kabbala(string("d^I"),
 			   -flav1.Yuk()/v1.Value()*sqrt(2.));
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav2 = Flavour(kf::code(c_ino));
+      Flavour flav2 = Flavour((kf_code)(c_ino));
       for (short int k=1;k<7;k++) {
 	if (k<4) s_qu=1000000 + 2*k;
 	else     s_qu=2000000 + 2*k - 6;
-	Flavour flav3 = Flavour(kf::code(s_qu));
+	Flavour flav3 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav2;
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav3)+2)).Yuk()*
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav3)+2)).Yuk()*
 				 sqrt(2.)/v2.Value());
 
 	  kcpl0 = -M_I*K_dI*K_Z_MI(1,j)*K_Z_U(gen_sUp(flav3),k-1)*
@@ -189,23 +189,23 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
   }
   //u-quark - Chargino - sdown
   for (short int i=2;i<7;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     Kabbala K_uJ = Kabbala(string("u^J"),flav1.Yuk()*sqrt(2.)/v2.Value());
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav2 = Flavour(kf::code(c_ino));
+      Flavour flav2 = Flavour((kf_code)(c_ino));
       for (short int k=1;k<7;k++) {
 	if (k<4) s_qu=1000000 + 2*k - 1;
 	else     s_qu=2000000 + 2*k - 7;
-	Flavour flav3 = Flavour(kf::code(s_qu));
+	Flavour flav3 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav2.Bar();
 	  	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
+				 -Flavour((kf_code)(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
 				 v1.Value());
 	  
 	  kcpl0 = M_I*K_uJ*K_Z_D(gen_sDown(flav3),k-1)*K_Z_PL(1,j)*
@@ -241,13 +241,13 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
   int s_qu;
   
   //squark - Photon - squark
-  Flavour flph = Flavour(kf::photon);
+  Flavour flph = Flavour(kf_photon);
   if (flph.IsOn()) {
     //sUpypes
     for (short int i=1 ;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav = Flavour(kf::code(s_qu));
+      Flavour flav = Flavour((kf_code)(s_qu));
       if (flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flph;
@@ -281,7 +281,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
     for (short int i=1 ;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav = Flavour(kf::code(s_qu));
+      Flavour flav = Flavour((kf_code)(s_qu));
       if (flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flph;
@@ -313,17 +313,17 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 
   //squark - Z - squark
 
-  Flavour flZ = Flavour(kf::Z);
+  Flavour flZ = Flavour(kf_Z);
   if (flZ.IsOn()) {
     //sUptypes
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
@@ -360,11 +360,11 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
     for (short int i=1 ;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i ;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
@@ -400,16 +400,16 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
   }    
   
   //supquarks - W - sdownquarks
-  Flavour flW = Flavour(kf::Wplus);
+  Flavour flW = Flavour(kf_Wplus);
   if (flW.IsOn()) {
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = flav1;
@@ -455,20 +455,20 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
   int s_qu;
   //sQuarks - A0 - sQuarks
   
-  Flavour flA0 = Flavour(kf::A0);
+  Flavour flA0 = Flavour(kf_A0);
   if (flA0.IsOn()) {
     //uptypes
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-     	Flavour flav2 = Flavour(kf::code(s_qu));
+     	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
 				 (v2).Value()*sqrt(2.));
 	  
 	  vertex[vanz].in[0] = flav1.Bar();
@@ -509,15 +509,15 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+				 -Flavour((kf_code)(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
 	  
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flA0;
@@ -567,17 +567,17 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
   //sQuarks - h0/H0 - sQuarks
   
   for (short int k=0;k<2;k++) {
-    Flavour flH = Flavour(kf::code(25+k*10)); 
+    Flavour flH = Flavour((kf_code)(25+k*10)); 
     if (flH.IsOn()) {
     //uptypes  
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-	Flavour flav2 =Flavour(kf::code(s_qu));
+	Flavour flav2 =Flavour((kf_code)(s_qu));
 	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flH;
@@ -585,7 +585,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  
 	  help = K_zero;
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
 				 (v2).Value()*sqrt(2.));
 	  
 	  Kabbala fac = Kabbala(string("\\frac{3-8sin^2\\theta_W}{4sin^2\\theta_W}"),
@@ -635,11 +635,11 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 =Flavour(kf::code(s_qu));
+	Flavour flav2 =Flavour((kf_code)(s_qu));
 	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flH;
@@ -648,7 +648,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  help = K_zero;
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+				 -Flavour((kf_code)(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
 	  
 	  Kabbala fac = Kabbala(string("\\frac{3-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(3.-4.*(sintW).Value()*(sintW).Value())/
@@ -696,27 +696,27 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
   }  
   //sUp - H+ - sDown
   
-  Flavour flHplus = Flavour(kf::Hplus);
+  Flavour flHplus = Flavour(kf_Hplus);
   if (flHplus.IsOn()) {
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	vertex[vanz].in[0] = flav1;
 	vertex[vanz].in[1] = flHplus;
 	vertex[vanz].in[2] = flav2;
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
-			       -Flavour(kf::code(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+			       -Flavour((kf_code)(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
 	
-	Kabbala K_uJ = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sDown(flav2)+2)).Yuk()/
+	Kabbala K_uJ = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sDown(flav2)+2)).Yuk()/
 			       (v2).Value()*sqrt(2.));
 	
-	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf::Wplus).Mass());
+	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf_Wplus).Mass());
 	
 	kcpl0 = M_I*((-(g2*g2)/num_2*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))+
 		      v1*K_dI*K_dI*K_Z_H(0,0)+v2*K_uJ*K_uJ*K_Z_H(1,0))*invroot2*
@@ -767,16 +767,16 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 
 void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flavW(kf::Wplus);
-  Flavour flavZ(kf::Z);
-  Flavour flavPhoton(kf::photon);
+  Flavour flavW(kf_Wplus);
+  Flavour flavZ(kf_Z);
+  Flavour flavPhoton(kf_photon);
   Kabbala kcpl0,kcpl1,help;
   int s_qu;
   
   for (short int l=1;l<3;l++) {
     for (short int i=1;i<7;i++) {
       s_qu = l*1000000 + i;
-      Flavour flav = Flavour(kf::code(s_qu));
+      Flavour flav = Flavour((kf_code)(s_qu));
       if (flav.IsOn() && flavPhoton.IsOn()) {
 	// P - U/D - U/D - P  
 	vertex[vanz].in[0] = flavPhoton;
@@ -814,11 +814,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;i++) {
     if (i<4) s_qu=1000000 + 2*i;
     else     s_qu=2000000 + 2*i - 6;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=1;j<7;j++) {
       if (j<4) s_qu=1000000 + 2*j;
       else     s_qu=2000000 + 2*j - 6;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flavPhoton.IsOn() && flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 
@@ -862,11 +862,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;i++) {
     if (i<4) s_qu=1000000 + 2*i - 1;
     else     s_qu=2000000 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=1;j<7;j++) {
       if (j<4) s_qu=1000000 + 2*j - 1;
       else     s_qu=2000000 + 2*j - 7;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flavPhoton.IsOn() && flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 
@@ -911,11 +911,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;i++) {
     if (i<4) s_qu=1000000 + 2*i;
     else     s_qu=2000000 + 2*i - 6;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=1;j<7;j++) {
       if (j<4) s_qu=1000000 + 2*j;
       else     s_qu=2000000 + 2*j - 6;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	  
@@ -960,11 +960,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;i++) {
     if (i<4) s_qu=1000000 + 2*i - 1;
     else     s_qu=2000000 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=1;j<7;j++) {
       if (j<4) s_qu=1000000 + 2*j - 1;
       else     s_qu=2000000 + 2*j - 7;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flavZ.IsOn()) {
 	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 	  
@@ -1010,11 +1010,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;i++) {
     if (i<4) s_qu=1000000 + 2*i;
     else     s_qu=2000000 + 2*i - 6;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=1;j<7;j++) {
       if (j<4) s_qu=1000000 + 2*j - 1;
       else     s_qu=2000000 + 2*j - 7;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flav1.IsOn() && flav2.IsOn()) {
 	// W - D - U - P  
 	if (flavW.IsOn()) {
@@ -1105,11 +1105,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  // W - D - D - W  
 	  vertex[vanz].in[0] = flavW.Bar();
@@ -1145,11 +1145,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  // W - U - U - W  
 	  
@@ -1188,14 +1188,14 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 
   //Interactions of two squarks an EW gauge boson and a gluon
   
-  Flavour flgluon = Flavour(kf::gluon);
+  Flavour flgluon = Flavour(kf_gluon);
   
   if (flgluon.IsOn()) {
     // G - U/D - U/D - P  
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav = Flavour(kf::code(s_qu));
+      Flavour flav = Flavour((kf_code)(s_qu));
       if (flav.IsOn() && flavPhoton.IsOn()) {
 	// G - U - U - P  
  	vertex[vanz].in[0] = flgluon;
@@ -1230,7 +1230,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav = Flavour(kf::code(s_qu));
+      Flavour flav = Flavour((kf_code)(s_qu));
       if (flav.IsOn() && flavPhoton.IsOn()) {
 	// G - D - D - P  
 	vertex[vanz].in[0] = flgluon;
@@ -1266,11 +1266,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flavZ.IsOn()) {
 	  if (gen_sUp(flav1)==gen_sUp(flav2)) {
 	    // G - U - U - Z  
@@ -1311,11 +1311,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i - 1;
       else     s_qu=2000000 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn() && flavZ.IsOn()) {
 	  if (gen_sDown(flav1)==gen_sDown(flav2)) {
 	    // G - D - D - Z  
@@ -1358,11 +1358,11 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
     for (short int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flav1 = Flavour(kf::code(s_qu));
+      Flavour flav1 = Flavour((kf_code)(s_qu));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_qu));
+	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  if (flavW.IsOn()) {
@@ -1402,8 +1402,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flHmin=Flavour(kf::Hplus).Bar();    
-  Flavour flA0(kf::A0);    
+  Flavour flHmin=Flavour(kf_Hplus).Bar();    
+  Flavour flA0(kf_A0);    
   Kabbala kcpl0,kcpl1,num_1,help;
   int s_qu;
 
@@ -1411,18 +1411,18 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;++i) {
     if (i<4) s_qu=1000000 + 2*i;
     else     s_qu=2000000 + 2*i - 6;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=i;j<7;++j) {
       if (j<4) s_qu=1000000 + 2*j;
       else     s_qu=2000000 + 2*j - 6;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	
-	Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
+	Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
 			       (v2).Value()*sqrt(2.));
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
-			       -Flavour(kf::code(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+			       -Flavour((kf_code)(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
 	
 	//Hmin -> sup - sup - Hmin 
 	if (flHmin.IsOn()) {
@@ -1505,9 +1505,9 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	}
 	//h0/H0 -> sUp - sUp - h0/H0 
 	for (int k=0;k<2;k++) {
-	  Flavour flh1 = Flavour(kf::code(25+k*10));
+	  Flavour flh1 = Flavour((kf_code)(25+k*10));
 	  for (int l=k;l<2;l++) {
-	    Flavour flh2 = Flavour(kf::code(25+l*10));
+	    Flavour flh2 = Flavour((kf_code)(25+l*10));
 	    if (flh1.IsOn() && flh2.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flh1;
@@ -1553,11 +1553,11 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
   for (short int i=1;i<7;++i) {
     if (i<4) s_qu=1000000 + 2*i - 1;
     else     s_qu=2000000 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_qu));
+    Flavour flav1 = Flavour((kf_code)(s_qu));
     for (short int j=i;j<7;++j) {
       if (j<4) s_qu=1000000 + 2*j - 1;
       else     s_qu=2000000 + 2*j - 7;
-      Flavour flav2 = Flavour(kf::code(s_qu));
+      Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 		
 	//Hmin -> sdown - sdown - Hmin 
@@ -1647,9 +1647,9 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	}
 	//h0/H0 -> sdown - sdown - h0/H0 
 	for (int k=0;k<2;k++) {
-	  Flavour flh1 = Flavour(kf::code(25+k*10));
+	  Flavour flh1 = Flavour((kf_code)(25+k*10));
 	  for (int l=k;l<2;l++) {
-	    Flavour flh2 = Flavour(kf::code(25+l*10));
+	    Flavour flh2 = Flavour((kf_code)(25+l*10));
 	    if (flh1.IsOn() && flh2.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flh1;
@@ -1696,11 +1696,11 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
     for (int i=1;i<7;i++) {
       if (i<4) s_qu=1000000 + 2*i;
       else     s_qu=2000000 + 2*i - 6;
-      Flavour flsup = Flavour(kf::code(s_qu));
+      Flavour flsup = Flavour((kf_code)(s_qu));
       for (int j=1;j<7;j++) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour flsdown = Flavour(kf::code(s_qu));
+	Flavour flsdown = Flavour((kf_code)(s_qu));
 	if (flsup.IsOn() && flsdown.IsOn()) {
 	  
 	  Kabbala fac1,fac2,fac3,fac4;
@@ -1716,7 +1716,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  }
 	  
 	  for (int l=0;l<2;l++) {
-	    Flavour flh = Flavour(kf::code(25+l*10));
+	    Flavour flh = Flavour((kf_code)(25+l*10));
 	    if (flh.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flHmin;
@@ -1993,7 +1993,7 @@ Kabbala Interaction_Model_sQuark_EW::K_u(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("u^")+string(hi),
-		 Flavour(kf::code(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
+		 Flavour((kf_code)(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sQuark_EW::K_d(short int i)
@@ -2002,6 +2002,6 @@ Kabbala Interaction_Model_sQuark_EW::K_d(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("d^")+string(hi),
-		 -Flavour(kf::code(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
+		 -Flavour((kf_code)(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
 }
 	

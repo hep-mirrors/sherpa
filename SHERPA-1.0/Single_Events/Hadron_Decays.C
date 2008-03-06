@@ -26,7 +26,7 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
 #ifdef USING__ROOT
   p_file = new TFile("masses.root","RECREATE");
   Fl_Iter fli;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+  for (Flavour flav=fli.first();flav!=Flavour(kf_none);flav = fli.next()) {
     if (flav.IsOn() && (flav.IsHadron() || flav.IsLepton())) {
       double limit = flav.Width()==0.0?0.01*flav.PSMass():flav.Width();
       double min = flav.PSMass()-3.0*limit;
@@ -349,7 +349,7 @@ void Hadron_Decays::CleanUp() {}
 void Hadron_Decays::Finish(const std::string &) {
 #ifdef DEBUG__Hadrons
 #ifdef USING__ROOT
-  map<kf::code,TH1D*>::iterator it;
+  map<kf_code,TH1D*>::iterator it;
   for(it=mass_hists.begin();it!=mass_hists.end();it++) {
     if(it->second->GetEntries()>0) {
       it->second->Write();

@@ -57,9 +57,9 @@ namespace ATOOLS {
     // Methods for accessing the global spin-correlation settings.
   public:
 
-    static void AddPossibleParticles( std::set<ATOOLS::kf::code> * flavs  );
-    static void AddPossibleParticle( ATOOLS::kf::code flav );
-    static bool PossibleParticle( ATOOLS::kf::code flav );
+    static void AddPossibleParticles( std::set<kf_code> * flavs  );
+    static void AddPossibleParticle( kf_code flav );
+    static bool PossibleParticle( kf_code flav );
     static void PrintPossibleParticles();
 
     static void SetMode(scmode::code mode);
@@ -128,15 +128,15 @@ namespace ATOOLS {
     of the program (in the HADRONS module), namely the tau-fermion.
   */
   /*!
-    \fn  static void Spin_Correlation_Tensor::AddPossibleParticles( std::set<ATOOLS::kf::code> * flavs  )
+    \fn  static void Spin_Correlation_Tensor::AddPossibleParticles( std::set<kf_code> * flavs  )
     \brief Stores the list of kf-codes given as particle types for which spin informations are created.
   */
   /*!
-    \fn static void Spin_Correlation_Tensor::AddPossibleParticle( ATOOLS::kf::code flav )
+    \fn static void Spin_Correlation_Tensor::AddPossibleParticle( kf_code flav )
     \brief Enables creation of spin information for the particle type flav.
   */
   /*!
-    \fn static bool Spin_Correlation_Tensor::PossibleParticle( ATOOLS::kf::code flav )
+    \fn static bool Spin_Correlation_Tensor::PossibleParticle( kf_code flav )
     \brief Tells the program if spin informations for particle type flav are created.
   */
   /*!

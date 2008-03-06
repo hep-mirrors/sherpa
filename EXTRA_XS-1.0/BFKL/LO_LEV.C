@@ -9,7 +9,7 @@ using namespace EXTRAXS;
 using namespace ATOOLS;
 
 G_GG::G_GG(): 
-  LEV_Base(ATOOLS::kf::gluon,ATOOLS::kf::gluon,ATOOLS::kf::gluon) {}
+  LEV_Base(kf_gluon,kf_gluon,kf_gluon) {}
 
 double G_GG::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const
@@ -30,7 +30,7 @@ double G_GG::MajorIntegral(const ATOOLS::Flavour &fl)
 }
 
 Q_GQ::Q_GQ(const ATOOLS::Flavour &q): 
-  LEV_Base(q,ATOOLS::kf::gluon,q) {}
+  LEV_Base(q,kf_gluon,q) {}
 
 double Q_GQ::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const
@@ -51,7 +51,7 @@ double Q_GQ::MajorIntegral(const ATOOLS::Flavour &fl)
 }
 
 Q_QG::Q_QG(const ATOOLS::Flavour &q): 
-  LEV_Base(q,ATOOLS::kf::gluon,q) {}
+  LEV_Base(q,kf_gluon,q) {}
 
 double Q_QG::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const
@@ -74,7 +74,7 @@ double Q_QG::MajorIntegral(const ATOOLS::Flavour &fl)
 }
 
 G_QQ::G_QQ(const ATOOLS::Flavour &q): 
-  LEV_Base(ATOOLS::kf::gluon,q,q.Bar()) {}
+  LEV_Base(kf_gluon,q,q.Bar()) {}
 
 double G_QQ::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const

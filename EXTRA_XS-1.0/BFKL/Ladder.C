@@ -79,7 +79,7 @@ bool Ladder::Initialize()
   m_moms.resize(m_nin);
   m_kt2min=0.0;
   for (short unsigned int i(0);i<m_nin;++i) {
-    m_flavs.push_back(kf::gluon);
+    m_flavs.push_back(kf_gluon);
     p_pdfs[i]=dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrhandler->PDF(i));
     if (p_pdfs[i]==NULL || 
 	p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
@@ -164,7 +164,7 @@ bool Ladder::GeneratePDFJet()
   m_yn=rn[3]*2.0*ymax-ymax;
   m_weight*=2.0*ymax;
   // dice first flavour
-  m_props.back()=kf::gluon;
+  m_props.back()=kf_gluon;
   if (m_splitmode>1) {
     // select t-channel quark w/ probability T_R/2C_A
     double orn(ran.Get()), ehf(p_sudakov->Nf()*0.5/3.0);
@@ -173,7 +173,7 @@ bool Ladder::GeneratePDFJet()
     double rn(x[iv]+(orn-iv)*(x[iv+1]-x[iv]));
     double nf(p_sudakov->Nf()), pw(1.0+2.0*nf), enf(rn*pw);
     if (enf>1.0) {
-      m_props.back()=Flavour(kf::code(0.5+0.5*enf));
+      m_props.back()=Flavour((kf_code)(0.5+0.5*enf));
       if (int(1.0+enf)%2==1) m_props.back()=m_props.back().Bar();
     }
     m_weight*=pw*(x[iv+1]-x[iv]);
@@ -259,8 +259,8 @@ bool Ladder::DiceFixedMulti()
   m_phi=ran.Get()*2.0*M_PI;
   /* add new rung */
   m_moms.push_back(Vec4D());
-  m_flavs.push_back(kf::gluon);
-  m_props.push_back(kf::gluon);
+  m_flavs.push_back(kf_gluon);
+  m_props.push_back(kf_gluon);
   if (!ConstructRung() || !BoostToLab() || 
       !ConstructIncoming()) return false;
   if (m_kt2<m_kt2min || m_q.PPerp2()<m_kt2min) return false;
@@ -525,7 +525,7 @@ std::string Ladder::MapProcess(const std::vector<ATOOLS::Flavour> &fl)
     if (flmap.find(fl[i])==flmap.end()) {
       if (fl[i].IsQuark()) {
 	Flavour qr(fl[i].Kfcode());
-	flmap[qr]=Flavour((kf::code)ckf++);
+	flmap[qr]=Flavour((kf_code)ckf++);
 	flmap[qr.Bar()]=flmap[qr].Bar();
       }
       else {

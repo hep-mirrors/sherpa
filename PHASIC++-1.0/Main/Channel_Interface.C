@@ -23,7 +23,7 @@ Channel_Interface::Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,A
   name = "Channel Interface";
   mass = width = 0.; 
   type = 0;
-  if (res!=ATOOLS::Flavour(ATOOLS::kf::none)) {
+  if (res!=ATOOLS::Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
 }

@@ -35,7 +35,7 @@ namespace HADRONS {
     std::string           m_path, m_file, m_constfile;
     Channel_Map         * p_channelmap;
     ATOOLS::Decay_Table * p_table;
-    std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *>
+    std::map<kf_code,ATOOLS::Decay_Table *>
                         * p_decaymap;
     GeneralModel          m_md0;                // starter model
     bool                  m_spincorrelations;
@@ -67,7 +67,7 @@ namespace HADRONS {
                                                   Hadron_Decay_Channel* hdc );
     ATOOLS::Return_Value::code     PerformDecay( ATOOLS::Blob* blob, const ATOOLS::Vec4D& );
 
-    std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
+    std::map<kf_code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 
     void CreateBookletNow();
     void SetSpinCorrelations(bool sc);

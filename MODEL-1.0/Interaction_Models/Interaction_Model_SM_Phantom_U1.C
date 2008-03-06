@@ -16,8 +16,8 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   p_moew  = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
   p_moqcd = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   double Ecms2  = sqr(rpa.gen.Ecms());
-  double hmass2 = sqr(Flavour(kf::h0).Mass());
-  double Hmass2 = sqr(Flavour(kf::H0).Mass());
+  double hmass2 = sqr(Flavour(kf_h0).Mass());
+  double Hmass2 = sqr(Flavour(kf_H0).Mass());
 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
@@ -63,7 +63,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVVV(vector<Single_Vertex>& vertex,int& 
 }
 
 void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& vanz)  { 
-  Flavour flh0(kf::h0), flH0(kf::H0);
+  Flavour flh0(kf_h0), flH0(kf_H0);
   if (!flh0.IsOn() && !flH0.IsOn()) return;
   Kabbala kcpl0,kcpl1,massf,mixh,mixH;
   mixh = Kabbala(string("O_{11}"),ComplexMatrixElement("HiggsMix",0,0));
@@ -71,11 +71,11 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
-    Flavour flav = Flavour(kf::code(i));
+    Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
       massf = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
-		      ScalarFunction(string("m")+flav.Name(),sqr(flh0.Mass())));
+		      ScalarFunction(string("m")+flav.IDName(),sqr(flh0.Mass())));
       kcpl0 = -M_I*massf*mixh/vev;
       kcpl1 = kcpl0;
       if (!ATOOLS::IsZero(kcpl0.Value())) {
@@ -126,14 +126,14 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& vanz)  { 
-  Flavour flh0(kf::h0), flH0(kf::H0);
+  Flavour flh0(kf_h0), flH0(kf_H0);
   if (!flh0.IsOn() && !flH0.IsOn()) return;
   Kabbala kcpl0,kcpl1,massf,mixh,mixH;
   mixh = Kabbala(string("O_{11}"),ComplexMatrixElement("HiggsMix",0,0));
   mixH = Kabbala(string("O_{21}"),ComplexMatrixElement("HiggsMix",1,0));
 
   Kabbala num_2 = Kabbala(string("2"),2.);  
-  Flavour flav(kf::Wplus);
+  Flavour flav(kf_Wplus);
   // W h W
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav.Bar();
@@ -171,7 +171,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
   }
 
 
-  flav = Flavour(kf::Z);
+  flav = Flavour(kf_Z);
   // Z h Z
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -210,7 +210,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
 
   bool ehc(false);
 
-  flav = Flavour(kf::photon);
+  flav = Flavour(kf_photon);
   // Photon h Photon
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -247,7 +247,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex.push_back(Single_Vertex());vanz++;
   }
 
-  Flavour flg(kf::gluon);
+  Flavour flg(kf_gluon);
   // Gluon h Gluon
   if (flg.IsOn()) {
     vertex[vanz].in[0] = flg;
@@ -290,7 +290,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
   }
 
 
-  Flavour flsh(kf::shgluon);
+  Flavour flsh(kf_shgluon);
   // gluon h shgluon
   if (flg.IsOn() && flsh.IsOn()) {
     vertex[vanz].in[2] = flg;
@@ -335,7 +335,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& vanz)  { 
-  Flavour flh0(kf::h0), flH0(kf::H0), flA0(kf::A0);
+  Flavour flh0(kf_h0), flH0(kf_H0), flA0(kf_A0);
 
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
   Kabbala mix11_3,mix21_3,mix12_3,mix22_3,num_2,num_3;
@@ -447,9 +447,9 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& vanz) { 
-  Flavour flh0(kf::h0), flH0(kf::H0);
-  Flavour flavW(kf::Wplus);
-  Flavour flavZ(kf::Z);
+  Flavour flh0(kf_h0), flH0(kf_H0);
+  Flavour flavW(kf_Wplus);
+  Flavour flavZ(kf_Z);
 
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
   Kabbala num_2,num_4;
@@ -623,7 +623,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& vanz) { 
-  Flavour flh0(kf::h0), flH0(kf::H0), flA0(kf::A0);
+  Flavour flh0(kf_h0), flH0(kf_H0), flA0(kf_A0);
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
   Kabbala num_2,num_4,num_3,num_6,num_8,num_24;
   Kabbala mix11_3,mix21_3,mix12_3,mix22_3;

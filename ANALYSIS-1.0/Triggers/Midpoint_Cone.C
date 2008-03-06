@@ -28,8 +28,8 @@ void Midpoint_Cone::AddToKtlist(double kt2) {
 
 void Midpoint_Cone::AddToJetlist(const Vec4D & mom, bool bf) {
   if (p_jets) {
-    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
-    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::bjet),mom));
+    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_jet),mom));
+    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_bjet),mom));
   }
 }
 
@@ -50,7 +50,7 @@ bool Midpoint_Cone::ConstructJets(const Particle_List *pl, Particle_List * jets,
       //    if (!(*it)->Flav().IsLepton()) {
       _Vector p((*it)->Momentum());
       _M_pp.push_back(p); 
-      bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+      bflag[n] = (((*it)->Flav()).Kfcode()==kf_b)&& !m_bflag;
       ++n;
     }
   }

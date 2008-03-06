@@ -26,7 +26,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_q2max=1.e12;
 
   m_bunch = _bunch; 
-  if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
+  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   if (!initlhapdf) {
     initlhapdf = true;
     std::string full = m_path+std::string("/")+m_set;
@@ -37,13 +37,13 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   }
 
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour(kf::code(i)));
-    m_partons.push_back(Flavour(kf::code(i)).Bar());
+    m_partons.push_back(Flavour((kf_code)(i)));
+    m_partons.push_back(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf::gluon));
-  m_partons.push_back(Flavour(kf::jet));
-  m_partons.push_back(Flavour(kf::quark));
-  m_partons.push_back(Flavour(kf::quark).Bar());                               
+  m_partons.push_back(Flavour(kf_gluon));
+  m_partons.push_back(Flavour(kf_jet));
+  m_partons.push_back(Flavour(kf_quark));
+  m_partons.push_back(Flavour(kf_quark).Bar());                               
 }
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
@@ -60,7 +60,7 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
 }
 
 void LHAPDF_Fortran_Interface::Output() {
-  double scale = Flavour(kf::Z).Mass();
+  double scale = Flavour(kf_Z).Mass();
   msg_Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<std::endl
 	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<std::endl;
   lhapdfgetdesc_();
@@ -72,7 +72,7 @@ void LHAPDF_Fortran_Interface::Calculate(double x,double z,double kp2,double Q2)
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
-  if (infl == Flavour(kf::gluon)) return m_f[6];
+  if (infl == Flavour(kf_gluon)) return m_f[6];
   int kfc = m_anti*int(infl);
   if (kfc<-6 || kfc>6) {
     msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;

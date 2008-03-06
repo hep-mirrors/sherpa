@@ -277,7 +277,7 @@ int Simple_XS::ExtractFlavours(std::vector<ATOOLS::Flavour> &flavours,
   }
   flavours.resize(count);
   for (i=0;i<count;i++) {
-    flavours[i] = Flavour(kf::code(iabs(ii[i])));
+    flavours[i] = Flavour((kf_code)(iabs(ii[i])));
     if (ii[i]<0) flavours[i] = flavours[i].Bar();
   }
   return count;

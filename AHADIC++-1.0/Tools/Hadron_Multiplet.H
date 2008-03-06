@@ -235,7 +235,7 @@ namespace AHADIC {
     \fn void All_Hadron_Multiplets::ConstructWaveFunctions()
     \brief Constructs all wave functions through corresponding calls to specialised methods.
 
-    In so doing, this method iterates over all flavours in the particle list, ATOOLS::kf_table and 
+    In so doing, this method iterates over all flavours in the particle list, kf_table and 
     analyses the respective codes. From the codes individual quark flavours can be extracted for 
     hadrons; depending on whether there are two or three flavours specified, either 
     All_Hadron_Multiplets::ConstructMesonWaveFunction(const int,const int,const int,const int,const int,const int) 

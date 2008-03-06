@@ -48,29 +48,29 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa.gen.Bunch(i);
-  if (flav[0]==kf::e && flav[1]==kf::p_plus) {
+  if (flav[0]==kf_e && flav[1]==kf_p_plus) {
     beam[0]="e-";
     beam[1]="p+";
   }
-  else if (flav[0]==kf::p_plus && flav[1]==kf::e) {
+  else if (flav[0]==kf_p_plus && flav[1]==kf_e) {
     beam[0]="p+";
     beam[1]="e-";
   }
-  else if (flav[0]==kf::e && flav[1]==kf::photon) {
+  else if (flav[0]==kf_e && flav[1]==kf_photon) {
     if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
     beam[1]="gamma";
     spsubs.msub[33]=1;    
   }
-  else if (flav[0]==kf::photon && flav[1]==kf::e) {
+  else if (flav[0]==kf_photon && flav[1]==kf_e) {
     beam[0]="gamma";
     if (flav[1].IsAnti()) beam[1]="e+"; else beam[1]="e-";
     spsubs.msub[33]=1;    
   }
-  else if (flav[0]==kf::photon && flav[1]==kf::photon) {
+  else if (flav[0]==kf_photon && flav[1]==kf_photon) {
     for (size_t i=0;i<2;++i) beam[i]="gamma";
     spsubs.msub[57]=1;    
   }
-  else if (flav[0].Kfcode()==kf::e && flav[1].Kfcode()==kf::e) {
+  else if (flav[0].Kfcode()==kf_e && flav[1].Kfcode()==kf_e) {
     for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="e+"; else beam[i]="e-";
     spsubs.msub[0]=1;    
     sppars.mstp[47]=1;
@@ -210,13 +210,13 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   delete reader;
 }
 
-bool Lund_Interface::IsAllowedDecay(kf::code can)
+bool Lund_Interface::IsAllowedDecay(kf_code can)
 {
   if (spcomp(int(can))<501 && spdat3.mdcy[1-1][spcomp(int(can))-1]==1) return true;
   return false;
 }
 
-void Lund_Interface::SwitchOffDecays(kf::code kfc)
+void Lund_Interface::SwitchOffDecays(kf_code kfc)
 {
   int kc = spcomp(int(kfc));
   if(kc>500) return;
@@ -394,7 +394,7 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
 int Lund_Interface::PrepareFragmentationBlob(Blob * blob) 
 {
   int nhep = 0;
-  hepevt.idhep[nhep]=Flavour(kf::photon).HepEvt();
+  hepevt.idhep[nhep]=Flavour(kf_photon).HepEvt();
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
   hepevt.phep[nhep][3]=blob->CMS()[0];
   double pabs=(blob->CMS()).Abs2();
@@ -411,8 +411,8 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
   for (int i(0);i<blob->NInP();++i) {
     Particle * part = blob->InParticle(i);
   if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
-    Flavour            flav = Flavour(kf::d);
-    if (ran.Get()<0.5) flav = Flavour(kf::u);
+    Flavour            flav = Flavour(kf_d);
+    if (ran.Get()<0.5) flav = Flavour(kf_u);
       Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
       Particle *help2(new Particle(-1,flav.Bar(),help1->Momentum()));
     help1->SetStatus(part_status::active);
@@ -528,10 +528,10 @@ void Lund_Interface::FillFragmentationBlob(Blob *blob)
   Vec4D momentum, position;
   for (int i=0;i<hepevt.nhep;++i) {
     if ((hepevt.isthep[i]!=2)&&(hepevt.isthep[i]!=1)&&(hepevt.isthep[i]!=149)) continue;
-    if (hepevt.idhep[i]==93) flav=Flavour(kf::cluster);
+    if (hepevt.idhep[i]==93) flav=Flavour(kf_cluster);
                         else flav.FromHepEvt(hepevt.idhep[i]);
-    if (flav==Flavour(kf::string) || 
-	flav==Flavour(kf::cluster)) {
+    if (flav==Flavour(kf_string) || 
+	flav==Flavour(kf_cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
         flav.FromHepEvt(hepevt.idhep[j]);
 	momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],

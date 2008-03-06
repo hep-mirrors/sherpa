@@ -272,7 +272,7 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   
   Parameter_Map::const_iterator cit=m_parameters.find(name);
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Flavour>());
-  if (!kf_table.IsInitialised()) {
+  if (!s_kftable.empty()) {
     msg_Error()<<"Warning in Flavour Data_Read::GetValue."<<std::endl
 	       <<"   kf table not initialized yet. Return undefined flavour."<<std::endl;
     return ReturnData(name,NotDefined<Flavour>());
@@ -287,9 +287,9 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
     anti=1;
   }
   
-  kf::code kfc;
-  kfc = kf_table.FromString(value);
-  if (kfc!=kf::none) return ReturnData(name,Flavour(kfc));
+  kf_code kfc;
+  kfc = s_kftable.KFFromIDName(value);
+  if (kfc!=kf_none) return ReturnData(name,Flavour(kfc));
   else {
     hit = value.find(std::string("+"));
     if (hit!=-1) {
@@ -304,15 +304,15 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
       }
     }
   }
-  kfc = kf_table.FromString(value);
-  if (kfc!=kf::none) {
+  kfc = s_kftable.KFFromIDName(value);
+  if (kfc!=kf_none) {
     if (anti) return ReturnData(name,(Flavour(kfc).Bar()));
     return Flavour(kfc);
   }
   s_nowrite=true;
   int kfci = GetValue<int>(name);
   s_nowrite=false;
-  Flavour fl = Flavour(kf::code(abs(kfci)));
+  Flavour fl = Flavour((kf_code)abs(kfci));
   if (kfci<0) fl = fl.Bar();
   return ReturnData(name,fl);
 }

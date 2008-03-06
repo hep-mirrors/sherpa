@@ -235,7 +235,7 @@ bool Is_BHadron_Decay_Product::operator() (const Particle * p) const {
 
 bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
   if (!p) return 0;
-  if (p->Flav().Kfcode()==kf::b) return 1;
+  if (p->Flav().Kfcode()==kf_b) return 1;
   Blob * b = p->ProductionBlob();
   if (!b || b->Type()==btp::Beam || b->Type()==btp::Signal_Process) return 0;
   return operator()(b->InParticle(0));
@@ -249,7 +249,7 @@ void Is_KF_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { str<<"kf code, usage: KF(<kf code>)"; }
 
 Is_KF::Is_KF(const std::string &kfcode):
-  m_kfcode((kf::code)abs(ToType<int>(kfcode))) {}
+  m_kfcode((kf_code)abs(ToType<int>(kfcode))) {}
 
 bool Is_KF::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==m_kfcode ) return 1;
@@ -266,7 +266,7 @@ void Is_Flav_Getter::PrintInfo(std::ostream &str,const size_t width) const
 Is_Flav::Is_Flav(const std::string &kfcode)
 {
   int id(ToType<int>(kfcode));
-  m_flav=Flavour((kf::code)abs(id)); 
+  m_flav=Flavour((kf_code)abs(id)); 
   if (id<0) m_flav=m_flav.Bar();
 }
 
@@ -318,76 +318,76 @@ bool Is_Neutral::operator() (const Particle * p)const{
 }
 
 bool Is_Charged_Pion::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::pi_plus) return 1;
+  if ( p && p->Flav().Kfcode()==kf_pi_plus) return 1;
   return 0;
 }
 
 bool Is_Neutral_Pion::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::pi) return 1;
+  if ( p && p->Flav().Kfcode()==kf_pi) return 1;
   return 0;
 }
 
 bool Is_Charged_Kaon::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::K_plus) return 1;
+  if ( p && p->Flav().Kfcode()==kf_K_plus) return 1;
   return 0;
 }
 bool Is_Neutral_Kaon::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::K) return 1;
+  if ( p && p->Flav().Kfcode()==kf_K) return 1;
   return 0;
 }
 
 bool Is_Charged_KStar::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::K_star_892_plus) return 1;
+  if ( p && p->Flav().Kfcode()==kf_K_star_892_plus) return 1;
   return 0;
 }
 
 bool Is_Neutral_KStar::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::K_star_892) return 1;
+  if ( p && p->Flav().Kfcode()==kf_K_star_892) return 1;
   return 0;
 }
 
 bool Is_Rho0::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::rho_770) return 1;
+  if ( p && p->Flav().Kfcode()==kf_rho_770) return 1;
   return 0;
 }
 
 bool Is_Eta::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::eta) return 1;
+  if ( p && p->Flav().Kfcode()==kf_eta) return 1;
   return 0;
 }
 
 bool Is_EtaPrime::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::eta_prime_958) return 1;
+  if ( p && p->Flav().Kfcode()==kf_eta_prime_958) return 1;
   return 0;
 }
 
 bool Is_Phi::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::phi_1020) return 1;
+  if ( p && p->Flav().Kfcode()==kf_phi_1020) return 1;
   return 0;
 }
 
 bool Is_Omega::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::omega_782) return 1;
+  if ( p && p->Flav().Kfcode()==kf_omega_782) return 1;
   return 0;
 }
 
 bool Is_Lambda::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Lambda) return 1;
+  if ( p && p->Flav().Kfcode()==kf_Lambda) return 1;
   return 0;
 }
 
 bool Is_Charged_Sigma::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Sigma_minus) return 1;
+  if ( p && p->Flav().Kfcode()==kf_Sigma_minus) return 1;
   return 0;
 }
 
 bool Is_Charged_Xi::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Xi_minus) return 1;
+  if ( p && p->Flav().Kfcode()==kf_Xi_minus) return 1;
   return 0;
 }
 
 bool Is_Neutral_Xi::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Xi) return 1;
+  if ( p && p->Flav().Kfcode()==kf_Xi) return 1;
   return 0;
 }
 

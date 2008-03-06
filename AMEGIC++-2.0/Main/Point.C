@@ -1,5 +1,7 @@
 #include "Point.H"
 
+#include <iostream>
+
 using namespace AMEGIC;
 using namespace MODEL;
 

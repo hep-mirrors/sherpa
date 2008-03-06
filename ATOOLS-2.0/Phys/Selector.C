@@ -137,7 +137,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -146,7 +146,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -155,7 +155,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -165,7 +165,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit2=ToType<int>(ip->Interprete(svv[i][2]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
       dat.help = crit2;
@@ -175,7 +175,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -184,7 +184,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -194,10 +194,10 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit2=ToType<int>(ip->Interprete(svv[i][2]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
-      flav = Flavour(kf::code(abs(crit2)));
+      flav = Flavour((kf_code)abs(crit2));
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -207,10 +207,10 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit2=ToType<int>(ip->Interprete(svv[i][2]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
-      flav = Flavour(kf::code(abs(crit2)));
+      flav = Flavour((kf_code)abs(crit2));
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }  
@@ -224,7 +224,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit1=ToType<int>(ip->Interprete(svv[i][1]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][2]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][3]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -234,10 +234,10 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       crit2=ToType<int>(ip->Interprete(svv[i][2]));
       dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
       dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
-      flav = Flavour(kf::code(abs(crit1)));
+      flav = Flavour((kf_code)abs(crit1));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
-      flav = Flavour(kf::code(abs(crit2)));
+      flav = Flavour((kf_code)abs(crit2));
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
@@ -254,7 +254,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
  	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+svv[i][1]+"'");
       dat.flavs.clear();
       for (size_t j(0);j<flavs.size();++j) {
- 	flav=Flavour(kf::code(abs(flavs[j])));
+ 	flav=Flavour((kf_code)abs(flavs[j]));
  	if (flavs[j]<0) flav=flav.Bar();
  	dat.flavs.push_back(flav);
       }
@@ -285,9 +285,9 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
         crit2=ToType<int>(ip->Interprete(svv[i][2]));
         std::string values=svv[i][3];
         dat.helps=svv[i][4];
-	flav = Flavour(kf::code(abs(crit1)));
+	flav = Flavour((kf_code)abs(crit1));
 	if (crit1<0) flav  = flav.Bar();
-	flav2 = Flavour(kf::code(abs(crit2)));
+	flav2 = Flavour((kf_code)abs(crit2));
 	if (crit2<0) flav2 = flav2.Bar();
 	dat.flavs.push_back(flav);
 	dat.flavs.push_back(flav2);
@@ -309,7 +309,7 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
         crit1=ToType<int>(ip->Interprete(svv[i][1]));
         std::string values=svv[i][2];
         dat.helps=svv[i][3];
-	flav = Flavour(kf::code(abs(crit1)));
+	flav = Flavour((kf_code)abs(crit1));
 	if (crit1<0) flav = flav.Bar();
 	dat.flavs.push_back(flav);
 	Data_Reader reader(",",";","!","=");

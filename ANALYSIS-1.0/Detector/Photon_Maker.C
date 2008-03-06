@@ -70,7 +70,7 @@ Photon_Maker::Photon_Maker(Primitive_Analysis * ana,const std::string mode) :
   m_R2hadiso(sqr(0.2)),m_relhad(0.01),m_minhad(1.),
   m_R2EMiso(sqr(0.2)),m_totEM(5.0),m_minEM(1.)
 { 
-  m_kfcode=kf::photon;
+  m_kfcode=kf_photon;
   GetElements();
 }
 
@@ -138,7 +138,7 @@ void Photon_Maker::BuildMatchedClusters() {
       cluster.clear();
       tracks.clear();
       p_ECal->BuildCluster(cell,cluster,m_dim,E,eta,phi);
-      p_tracker->GetTracks(tracks,eta,phi,m_R2track,kf::none);
+      p_tracker->GetTracks(tracks,eta,phi,m_R2track,kf_none);
       if (tracks.size()>0) {
 	vetoit = false;
 	for (trit=tracks.begin(); trit!=tracks.end(); trit++) {

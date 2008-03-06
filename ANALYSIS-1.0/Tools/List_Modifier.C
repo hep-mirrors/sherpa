@@ -76,7 +76,7 @@ GetTwoParticleModifier(const Argument_Matrix &parameters)
     ATOOLS::Flavour flav[2];
     for (size_t i(0);i<2;++i) {
       int kf=ATOOLS::ToType<int>(parameters[0][2*i]);
-      flav[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      flav[i]=ATOOLS::Flavour((kf_code)abs(kf));
       if (kf<0) flav[i]=flav[i].Bar();
       item[i]=ATOOLS::ToType<size_t>(parameters[0][2*i+1]);
     }
@@ -154,7 +154,7 @@ void Two_Particle_Modifier_Base::Evaluate
     no=-1;
     for (size_t i(0);i<inlist->size();++i) {
       if ((*inlist)[i]->Flav()==m_flav[k] || 
-	  m_flav[k].Kfcode()==ATOOLS::kf::none) {
+	  m_flav[k].Kfcode()==kf_none) {
 	++no;
 	if (no==(int)m_item[k]) {
 	  pos[k]=i;

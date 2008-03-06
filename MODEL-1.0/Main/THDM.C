@@ -36,20 +36,20 @@ void THDM::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("alpha"),    
 				     p_dataread->GetValue<double>("ALPHA",0.)));
   p_constants->insert(std::make_pair(std::string("Mh0"),    
-				     p_dataread->GetValue<double>("Mh0",Flavour(kf::h0).Mass())));
+				     p_dataread->GetValue<double>("Mh0",Flavour(kf_h0).Mass())));
   p_constants->insert(std::make_pair(std::string("MH0"),    
-				     p_dataread->GetValue<double>("MH0",Flavour(kf::H0).Mass())));
+				     p_dataread->GetValue<double>("MH0",Flavour(kf_H0).Mass())));
   p_constants->insert(std::make_pair(std::string("MA0"),    
-				     p_dataread->GetValue<double>("MA0",Flavour(kf::A0).Mass())));
+				     p_dataread->GetValue<double>("MA0",Flavour(kf_A0).Mass())));
   p_constants->insert(std::make_pair(std::string("MHplus"),    
-				     p_dataread->GetValue<double>("MHplus",Flavour(kf::Hplus).Mass())));
+				     p_dataread->GetValue<double>("MHplus",Flavour(kf_Hplus).Mass())));
 }
 
 void THDM::FillMasses() {
-  Flavour h0(kf::h0); h0.SetMass(ScalarConstant("Mh0"));
-  Flavour H0(kf::H0); H0.SetMass(ScalarConstant("MH0"));
-  Flavour A0(kf::A0); A0.SetMass(ScalarConstant("MA0"));
-  Flavour Hplus(kf::Hplus); Hplus.SetMass(ScalarConstant("MHplus"));
+  Flavour h0(kf_h0); h0.SetMass(ScalarConstant("Mh0"));
+  Flavour H0(kf_H0); H0.SetMass(ScalarConstant("MH0"));
+  Flavour A0(kf_A0); A0.SetMass(ScalarConstant("MA0"));
+  Flavour Hplus(kf_Hplus); Hplus.SetMass(ScalarConstant("MHplus"));
 
   double alpha(ScalarConstant("alpha")),tanb(ScalarConstant("tan(beta)"));
  

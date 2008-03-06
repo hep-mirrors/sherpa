@@ -181,10 +181,10 @@ GetSTwoParticleObservable(const Argument_Matrix &parameters)
     std::string list(parameters[0].size()>8?parameters[0][8]:"FinalState");
     std::string rlist(parameters[0].size()>9?parameters[0][9]:list);
     int kf=ATOOLS::ToType<int>(parameters[0][0]);
-    ATOOLS::Flavour flav((ATOOLS::kf::code)abs(kf));
+    ATOOLS::Flavour flav((kf_code)abs(kf));
     if (kf<0) flav=flav.Bar();
     kf=ATOOLS::ToType<int>(parameters[0][2]);
-    ATOOLS::Flavour refflav((ATOOLS::kf::code)abs(kf));
+    ATOOLS::Flavour refflav((kf_code)abs(kf));
     if (kf<0) refflav=refflav.Bar();
     return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
 		     refflav,ATOOLS::ToType<size_t>(parameters[0][3]),
@@ -198,7 +198,7 @@ GetSTwoParticleObservable(const Argument_Matrix &parameters)
   double min=30.0, max=70.0;
   std::string inlist="Jets", reflist="Jets";
   size_t item=0, refitem=1;
-  ATOOLS::Flavour flav(ATOOLS::kf::jet), refflav(ATOOLS::kf::jet);
+  ATOOLS::Flavour flav(kf_jet), refflav(kf_jet);
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     else if (parameters[i][0]=="InList") inlist=parameters[i][1];
@@ -211,12 +211,12 @@ GetSTwoParticleObservable(const Argument_Matrix &parameters)
     else if (parameters[i][0]=="Scale") scale=HistogramType(parameters[i][1]);
     else if (parameters[i][0]=="Flav1") {
       int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      flav=ATOOLS::Flavour(ATOOLS::kf::code(abs(kf)));
+      flav=ATOOLS::Flavour((kf_code)(abs(kf)));
       if (kf<0) flav=flav.Bar();
     }
     else if (parameters[i][0]=="Flav2") {
       int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      refflav=ATOOLS::Flavour(ATOOLS::kf::code(abs(kf)));
+      refflav=ATOOLS::Flavour((kf_code)(abs(kf)));
       if (kf<0) refflav=refflav.Bar();
     }
   }
@@ -265,7 +265,7 @@ void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &list,
   size_t pos=std::string::npos, refpos=std::string::npos;
   for (size_t i=0;i<list.size();++i) {
     if (list[i]->Flav()==m_flavour || 
-	m_flavour.Kfcode()==ATOOLS::kf::none) {
+	m_flavour.Kfcode()==kf_none) {
       ++no;
       if (no==(int)m_item) {
 	pos=i;
@@ -275,7 +275,7 @@ void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &list,
   }
   for (size_t i=0;i<reflist->size();++i) {
     if ((*reflist)[i]->Flav()==m_refflavour || 
-	m_refflavour.Kfcode()==ATOOLS::kf::none) {
+	m_refflavour.Kfcode()==kf_none) {
       ++refno;
       if (refno==(int)m_refitem) {
 	refpos=i;

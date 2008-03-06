@@ -273,7 +273,7 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool
   int j=0;
   for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it,++j) {
     (*it)= new Particle(**it);
-    (*it)->SetFlav(Flavour(kf::jet));
+    (*it)->SetFlav(Flavour(kf_jet));
     (*it)->SetMomentum(momsout[j]);
   }
 
@@ -440,10 +440,10 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 Flavour Jet_Finder::GetFlavour(std::string fl)
 {
   bool bar(false);
-  if (fl=="j") return Flavour(kf::jet);
-  if (fl=="Q") return Flavour(kf::quark);
-  if (fl=="G") return Flavour(kf::gluon);
-  if (fl=="P") return Flavour(kf::photon);
+  if (fl=="j") return Flavour(kf_jet);
+  if (fl=="Q") return Flavour(kf_quark);
+  if (fl=="G") return Flavour(kf_gluon);
+  if (fl=="P") return Flavour(kf_photon);
   if (fl.length()>1) {
     if (fl[fl.length()-1]=='b') {
       fl.erase(fl.length()-1,1);
@@ -460,9 +460,9 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
       bar=true;
     }
   }
-  Flavour flav(kf_table.FromString(fl));
-  if (fl=="Q") return Flavour(kf::quark);
-  if (flav.Kfcode()==kf::none) 
+  Flavour flav(s_kftable.KFFromIDName(fl));
+  if (fl=="Q") return Flavour(kf_quark);
+  if (flav.Kfcode()==kf_none) 
     THROW(critical_error,"No flavour for '"+fl+"'.");
   if (bar) flav=flav.Bar();
   return flav;

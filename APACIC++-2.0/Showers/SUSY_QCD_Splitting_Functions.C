@@ -13,7 +13,7 @@ SQuark__SQuark_Gluon::SQuark__SQuark_Gluon(ATOOLS::Flavour squarkflavour) : p_to
 {
   m_flavs[0] = squarkflavour; 
   m_flavs[1] = squarkflavour; 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon);
   m_alpha    = 1.;
 }
 
@@ -22,7 +22,7 @@ SQuark__SQuark_Gluon::SQuark__SQuark_Gluon(ATOOLS::Flavour squarkflavour,Sudakov
 {
   m_flavs[0] = squarkflavour; 
   m_flavs[1] = squarkflavour; 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon);
   m_alpha    = p_tools->GetASmax();
 }
 
@@ -59,18 +59,18 @@ double SQuark__SQuark_Gluon::Integral(double zmin, double zmax)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Gluon__Gluino_Gluino::Gluon__Gluino_Gluino(): p_tools(0) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_Gluino); 
+  m_flavs[2] = ATOOLS::Flavour(kf_Gluino); 
   m_alpha    = 1.;
 }
 
 Gluon__Gluino_Gluino::Gluon__Gluino_Gluino(Sudakov_Tools * _tools) :
   p_tools (_tools) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_Gluino); 
+  m_flavs[2] = ATOOLS::Flavour(kf_Gluino); 
   m_alpha    = p_tools->GetASmax();
 }
 
@@ -108,18 +108,18 @@ double Gluon__Gluino_Gluino::Integral(double zmin, double zmax)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Gluino__Gluino_Gluon::Gluino__Gluino_Gluon() 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
+  m_flavs[0] = ATOOLS::Flavour(kf_Gluino); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[2] = ATOOLS::Flavour(kf_Gluino); 
   m_alpha    = 1.;
 }
 
 Gluino__Gluino_Gluon::Gluino__Gluino_Gluon(Sudakov_Tools * _tools) : 
   p_tools(_tools) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::Gluino); 
+  m_flavs[0] = ATOOLS::Flavour(kf_Gluino); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[2] = ATOOLS::Flavour(kf_Gluino); 
   m_alpha    = p_tools->GetASmax();
 }
 
@@ -154,7 +154,7 @@ double Gluino__Gluino_Gluon::Integral(double zmin, double zmax)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Gluon__SQuark_SQuark::Gluon__SQuark_SQuark(ATOOLS::Flavour squarkflavour): p_tools(0) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = squarkflavour; 
   m_flavs[2] = squarkflavour.Bar(); 
   m_alpha    = 1.;
@@ -163,7 +163,7 @@ Gluon__SQuark_SQuark::Gluon__SQuark_SQuark(ATOOLS::Flavour squarkflavour): p_too
 Gluon__SQuark_SQuark::Gluon__SQuark_SQuark(ATOOLS::Flavour squarkflavour,Sudakov_Tools * _tools) :
   p_tools (_tools) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = squarkflavour; 
   m_flavs[2] = squarkflavour.Bar(); 
   m_alpha    = p_tools->GetASmax();

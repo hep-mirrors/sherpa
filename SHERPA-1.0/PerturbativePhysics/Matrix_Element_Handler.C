@@ -579,8 +579,8 @@ void  Matrix_Element_Handler::SetupHHMF()
   m_particle_maps.push_back(chargeconj);
 
   Particle_Map  muon;
-  muon.Add(Flavour(kf::e),Flavour(kf::mu));
-  muon.Add(Flavour(kf::nue).Bar(),Flavour(kf::numu).Bar());
+  muon.Add(Flavour(kf_e),Flavour(kf_mu));
+  muon.Add(Flavour(kf_nue).Bar(),Flavour(kf_numu).Bar());
   m_particle_maps.push_back(muon);
 
   muon.SetFlipAnti();

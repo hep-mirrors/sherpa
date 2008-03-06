@@ -25,8 +25,8 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
   FillMasses();
 
   std::cout<<METHOD
-	   <<" : m(tau') = "<<Flavour(kf::tau_prime).PSMass()<<"("<<Flavour(kf::tau_prime).Charge()<<")"
-	   <<",  m(nutau') = "<<Flavour(kf::nutau_prime).PSMass()<<"("<<Flavour(kf::nutau_prime).Charge()<<")"
+	   <<" : m(tau') = "<<Flavour(kf_tau_prime).PSMass()<<"("<<Flavour(kf_tau_prime).Charge()<<")"
+	   <<",  m(nutau') = "<<Flavour(kf_nutau_prime).PSMass()<<"("<<Flavour(kf_nutau_prime).Charge()<<")"
 	   <<"."<<std::endl;
 }
 
@@ -36,8 +36,8 @@ Fourth_Generation_Leptons::~Fourth_Generation_Leptons()
 
 void Fourth_Generation_Leptons::ReadInFile() {
   p_dataread = new Data_Read(m_dir+m_file);
-  double massf4  = p_dataread->GetValue<double>("MASS_L",Flavour(kf::tau_prime).PSMass());
-  double massnu4 = p_dataread->GetValue<double>("MASS_NU",Flavour(kf::nutau_prime).PSMass());
+  double massf4  = p_dataread->GetValue<double>("MASS_L",Flavour(kf_tau_prime).PSMass());
+  double massnu4 = p_dataread->GetValue<double>("MASS_NU",Flavour(kf_nutau_prime).PSMass());
 
   p_constants->insert(std::make_pair(std::string("Yukawa_tauprime"),massf4));
   p_constants->insert(std::make_pair(std::string("Yukawa_nutauprime"),massnu4)); 
@@ -49,8 +49,8 @@ void Fourth_Generation_Leptons::ReadInFile() {
 }
 
 void Fourth_Generation_Leptons::FillMasses() {
-  Flavour taup(kf::tau_prime); taup.SetOn(true);
-  Flavour nutaup(kf::nutau_prime); nutaup.SetOn(true);
+  Flavour taup(kf_tau_prime); taup.SetOn(true);
+  Flavour nutaup(kf_nutau_prime); nutaup.SetOn(true);
 
   taup.SetMass(ScalarConstant("Yukawa_tauprime"));
   nutaup.SetMass(ScalarConstant("Yukawa_nutauprime"));

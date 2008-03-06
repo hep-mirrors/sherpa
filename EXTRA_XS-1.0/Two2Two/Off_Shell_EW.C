@@ -33,11 +33,11 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
 				     const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  MZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
-  GZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
+  MZ2=ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass());
+  GZ2=ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width());
   alpha  = aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   sin2tw = ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-  if (ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()) kappa  = 1./(4.*sin2tw*(1.-sin2tw));
+  if (ATOOLS::Flavour(kf_Z).IsOn()) kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else kappa  = 0.;
   mass     = flavours[2].Mass();
   qe       = flavours[0].Charge();
@@ -62,12 +62,12 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
     colfac  = 1./3.;
     kswitch = 1;
   }
-  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::Z));
+  m_resonances.push_back(ATOOLS::Flavour(kf_Z));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
   p_addflavours = new ATOOLS::Flavour[2];
-  p_addflavours[0]=ATOOLS::kf::gluon;
-  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addflavours[0]=kf_gluon;
+  p_addflavours[1]=kf_gluon;
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
 }
@@ -137,22 +137,22 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
   Single_XS(nin,nout,flavours) 
 {
   int ints[2];
-  for (short int i=0;i<2;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  for (short int i=0;i<2;++i) ints[i]=kf_table.ToInt(flavours[i].Kfcode());
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
   m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
   m_ckm2[1]=1.;
-  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
-  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
+  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(kf_W).Mass());
+  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(kf_W).Width());
   m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
-  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
+  m_resonances.push_back(ATOOLS::Flavour(kf_W));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
   p_addflavours = new ATOOLS::Flavour[2];
-  p_addflavours[0]=ATOOLS::kf::gluon;
-  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addflavours[0]=kf_gluon;
+  p_addflavours[1]=kf_gluon;
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
 }
@@ -202,20 +202,20 @@ Off_Shell_q1q2b_q3q4b::Off_Shell_q1q2b_q3q4b(const size_t nin,const size_t nout,
   Single_XS(nin,nout,flavours) 
 {
   int ints[4];
-  for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  for (short int i=0;i<4;++i) ints[i]=kf_table.ToInt(flavours[i].Kfcode());
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
   if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
   m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
   m_ckm2[1]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[2]/2-1,ints[3]/2));
   if (m_ckm2[1]==0.) m_ckm2[1]=1.;
-  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
-  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
+  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(kf_W).Mass());
+  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(kf_W).Width());
   m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
   p_colours[2][flavours[2].IsAnti()]=p_colours[3][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
-  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
+  m_resonances.push_back(ATOOLS::Flavour(kf_W));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
 }

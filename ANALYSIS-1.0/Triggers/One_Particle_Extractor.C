@@ -50,7 +50,7 @@ GetOneParticleSelector(const Argument_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<8) return NULL;
     int kf=ATOOLS::ToType<int>(parameters[0][1]);
-    ATOOLS::Flavour flav((ATOOLS::kf::code)abs(kf));
+    ATOOLS::Flavour flav((kf_code)abs(kf));
     if (kf<0) flav=flav.Bar();
     return new Class(parameters[0][0],flav,
 		     ATOOLS::ToType<size_t>(parameters[0][2]),
@@ -62,7 +62,7 @@ GetOneParticleSelector(const Argument_Matrix &parameters)
   double min=30.0, max=70.0;
   std::string type="p_\\perp", inlist="Jets", reflist="Jets", outlist="LeadJets";
   size_t item=0;
-  ATOOLS::Flavour flav(ATOOLS::kf::jet);
+  ATOOLS::Flavour flav(kf_jet);
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     else if (parameters[i][0]=="Type") type=parameters[i][1];
@@ -74,7 +74,7 @@ GetOneParticleSelector(const Argument_Matrix &parameters)
     else if (parameters[i][0]=="Item") item=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="Flav") {
       int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      flav=ATOOLS::Flavour(ATOOLS::kf::code(abs(kf)));
+      flav=ATOOLS::Flavour((kf_code)(abs(kf)));
       if (kf<0) flav=flav.Bar();
     }
   }
@@ -126,7 +126,7 @@ void One_Particle_Extractor::Evaluate(const ATOOLS::Particle_List &inlist,
   int no=-1; 
   for (size_t i=0;i<reflist.size();++i) {
     if (reflist[i]->Flav()==m_flavour || 
-	m_flavour.Kfcode()==ATOOLS::kf::none) {
+	m_flavour.Kfcode()==kf_none) {
       if (++no==(int)m_item) {
 	double pt=(*p_variable)(&reflist[i]->Momentum());
 	for (size_t j=0;j<inlist.size();++j) {

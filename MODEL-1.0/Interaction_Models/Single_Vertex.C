@@ -128,7 +128,7 @@ Single_Vertex * MODEL::MPI2Single_Vertex(const MPI_Single_Vertex & mpi_v ) {
   v = new Single_Vertex();
   
   for (int i=0;i<4;++i) {
-    v->in[i] = Flavour((kf::code)(abs(mpi_v.m_fl[i])));
+    v->in[i] = Flavour((kf_code)(abs(mpi_v.m_fl[i])));
     if (mpi_v.m_fl[i]<0) v->in[i]=v->in[i].Bar();
   }
 

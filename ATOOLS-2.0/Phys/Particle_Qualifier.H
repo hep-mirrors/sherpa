@@ -52,7 +52,7 @@ namespace ATOOLS {
 
   class Is_KF : public Particle_Qualifier_Base {
   private:
-    kf::code m_kfcode;
+    kf_code m_kfcode;
   public:
     Is_KF(const std::string &kfcode);
     bool operator()(const Particle *) const;

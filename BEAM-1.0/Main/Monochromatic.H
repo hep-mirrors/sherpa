@@ -11,7 +11,7 @@ namespace BEAM {
     Beam_Base * Copy();     
     ATOOLS::Flavour Remnant();
     bool        CalculateWeight(const double,const double);
-    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
+    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
     bool        On() { return 0; }
   };
   /*!
@@ -45,7 +45,7 @@ namespace BEAM {
     No weight is calculated so far.
   */  
   /*!
-    \fn double Monochromatic::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf::none))
+    \fn double Monochromatic::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none))
     The weight is returned. It has been initialised in the constructor.
   */  
 }

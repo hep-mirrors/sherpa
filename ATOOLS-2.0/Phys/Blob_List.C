@@ -375,7 +375,7 @@ void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
   while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }
 
-bool Blob_List::Shorten(kf::code kfc,btp::code out,btp::code in)
+bool Blob_List::Shorten(kf_code kfc,btp::code out,btp::code in)
 {
   bool shorten(false);
   Blob_List::iterator mother(begin()),daughter;
@@ -408,6 +408,6 @@ bool Blob_List::Shorten(kf::code kfc,btp::code out,btp::code in)
   return shorten;
 }
 
-void Blob_List::ShortenRecursively(kf::code kfc,btp::code out,btp::code in) {
+void Blob_List::ShortenRecursively(kf_code kfc,btp::code out,btp::code in) {
   while (Shorten(kfc,out,in)) {}
 }

@@ -63,11 +63,11 @@ void Interaction_Model_MSSM_LQQ::c_FFS(std::vector<Single_Vertex>& vertex,int& v
   //u-quark - lepton - sdown
 
   for (short int u=2;u<7;u+=2) {
-    Flavour flavu = Flavour(kf::code(u));    
+    Flavour flavu = Flavour((kf_code)(u));    
     for (short int d=61;d<67;d++) {
-      Flavour flavd = Flavour(kf::code(d));
+      Flavour flavd = Flavour((kf_code)(d));
     for (short int l=11;l<16;l+=2) {
-      Flavour flavl = Flavour(kf::code(l));
+      Flavour flavl = Flavour((kf_code)(l));
 	if (flavu.IsOn() && flavd.IsOn() && flavl.IsOn()) {
 	  vertex[vanz].in[0] = flavu;
 	  vertex[vanz].in[1] = flavl;

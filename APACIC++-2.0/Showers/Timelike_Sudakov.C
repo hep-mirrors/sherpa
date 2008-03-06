@@ -33,7 +33,7 @@ void Timelike_Sudakov::Init(const double fmed)
     (m_cpl_scheme,m_pt2min*m_rscalefac,m_pt2max*m_rscalefac);
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
-    Flavour fl = Flavour(kf::code(i));
+    Flavour fl = Flavour((kf_code)(i));
     if (fl.IsOn()) {
       if (fl.Strong()) {
 	Add(new q_qg(fl,p_tools,fmed));
@@ -53,7 +53,7 @@ void Timelike_Sudakov::Init(const double fmed)
   if (rpa.gen.ModelName()==std::string("MSSM")) {
     for (short int i=1;i<3;i++) {
       for (short int j=1;j<7;j++) {
-	Flavour fl = Flavour(kf::code(i*1000000 + j));
+	Flavour fl = Flavour((kf_code)(i*1000000 + j));
 	if (fl.IsOn()) {
 	  Add(new SQuark__SQuark_Gluon(fl,p_tools));
 	  Add(new SQuark__SQuark_Gluon(fl.Bar(),p_tools));

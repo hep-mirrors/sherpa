@@ -22,13 +22,13 @@ GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch)
   m_d = m_u = m_s = m_c = m_b = m_g = 0.;
   
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour(kf::code(i)));
-    m_partons.push_back(Flavour(kf::code(i)).Bar());
+    m_partons.push_back(Flavour((kf_code)(i)));
+    m_partons.push_back(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf::gluon));
-  m_partons.push_back(Flavour(kf::jet));
-  m_partons.push_back(Flavour(kf::quark));
-  m_partons.push_back(Flavour(kf::quark).Bar());                               
+  m_partons.push_back(Flavour(kf_gluon));
+  m_partons.push_back(Flavour(kf_jet));
+  m_partons.push_back(Flavour(kf_quark));
+  m_partons.push_back(Flavour(kf_quark).Bar());                               
 }
 
 PDF_Base * GRVph_Fortran_Interface::GetCopy()
@@ -49,7 +49,7 @@ double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
 {
   double value = 0.;
 
-  if (infl == Flavour(kf::gluon)) value = m_g;
+  if (infl == Flavour(kf_gluon)) value = m_g;
   if (infl.Kfcode()==1)           value = m_d;
   if (infl.Kfcode()==2)           value = m_u;
   if (infl.Kfcode()==3)           value = m_s;

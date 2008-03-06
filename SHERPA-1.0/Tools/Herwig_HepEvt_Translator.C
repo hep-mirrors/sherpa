@@ -23,7 +23,7 @@ void Herwig_HepEvt_Translator::HepEvt2Particle(const int pos)
 
     Flavour flav;
     if ((m_generator==gtp::Herwig) &&
-    (p_idhep[pos]==94 || p_idhep[pos]==0)) flav=Flavour(kf::none);
+    (p_idhep[pos]==94 || p_idhep[pos]==0)) flav=Flavour(kf_none);
     else flav.FromHepEvt(p_idhep[pos]);
     Vec4D momentum     = Vec4D(p_phep[3+pos*5],p_phep[0+pos*5],p_phep[1+pos*5],p_phep[2+pos*5]);
     Particle * newpart = new Particle(pos+1,flav,momentum);
@@ -105,7 +105,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     case 124:
     if (p_isthep[p_jmohep[2*i]-1]==125 || 
     p_isthep[p_jmohep[2*i]-1]==195 || p_isthep[p_jmohep[2*i]-1]==155) break;
-    if (part->Flav()==Flavour(kf::none) && 
+    if (part->Flav()==Flavour(kf_none) && 
     p_idhep[p_jdahep[2*i]-1]==94 && p_isthep[p_jdahep[2*i]-1]==144) {
     helper = p_jdahep[2*(p_jdahep[2*(p_jdahep[2*i]-1)]-1)]-1;
     if (p_idhep[helper]==0 && p_isthep[helper]==155) {
@@ -621,15 +621,15 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     }
     }
     else {
-    ATOOLS::kf::code in=incoming->Flav().Kfcode();
+    kf_code in=incoming->Flav().Kfcode();
     for (int i=0;i<beam->NOutP();++i) {
-    ATOOLS::kf::code out=beam->OutParticle(i)->Flav().Kfcode();
-    if (in==kf::e && out==kf::photon) {
+    kf_code out=beam->OutParticle(i)->Flav().Kfcode();
+    if (in==kf_e && out==kf_photon) {
     beam->SetType(btp::Bunch);
     beam->OutParticle(0)->DecayBlob()->SetType(btp::Beam);
     }
 
-    //if (in==kf::e && out==kf::e) {
+    //if (in==kf_e && out==kf_e) {
     //  beam->SetType(btp::Bunch);
     //  beam->OutParticle(0)->DecayBlob()->SetType(btp::Beam);
     //}
@@ -749,7 +749,7 @@ bool Herwig_HepEvt_Translator::ConstructBlobs(ATOOLS::Blob_List * const blobs)
     meps = dec->OutParticle(0)->DecayBlob();
     if (meps==NULL) 
     dec->SetType(btp::FS_Shower);	    
-    else if (meps->OutParticle(0)->Flav()==Flavour(kf::string))
+    else if (meps->OutParticle(0)->Flav()==Flavour(kf_string))
     dec->SetType(btp::FS_Shower);	    
     }
     }

@@ -50,9 +50,9 @@ double Running_AlphaQED::operator()(double t)
   else if (Q2<100.0) i=2;
     
   double sig_lep_gg = m_alpha0/(3.*M_PI) * 
-    (PiGamma(Flavour(kf::e),Q2)+PiGamma(Flavour(kf::mu),Q2)+PiGamma(Flavour(kf::tau),Q2));
+    (PiGamma(Flavour(kf_e),Q2)+PiGamma(Flavour(kf_mu),Q2)+PiGamma(Flavour(kf_tau),Q2));
   double sig_ha_gg  = m_A[i] + m_B[i]*log(1+m_C[i]*Q2);
-  double sig_top_gg = m_alpha0/(3.*M_PI) * 3. * (PiGamma(Flavour(kf::t),Q2));
+  double sig_top_gg = m_alpha0/(3.*M_PI) * 3. * (PiGamma(Flavour(kf_t),Q2));
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
   return m_alpha0/(1.-sigma_gg);

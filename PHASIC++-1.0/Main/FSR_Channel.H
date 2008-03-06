@@ -21,7 +21,7 @@ namespace PHASIC {
     Vegas *p_vegas;
   public :
     S1Channel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     ~S1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
@@ -47,7 +47,7 @@ namespace PHASIC {
     Vegas *p_vegas;
   public :
     T1Channel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     ~T1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
@@ -74,7 +74,7 @@ namespace PHASIC {
     Vegas *p_vegas;
   public :
     T2Channel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     ~T2Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
@@ -100,7 +100,7 @@ namespace PHASIC {
     Vegas *p_vegas;
   public :
     T3Channel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     ~T3Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
@@ -128,7 +128,7 @@ namespace PHASIC {
     Vegas *p_vegas;
   public :
     U1Channel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     ~U1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
@@ -154,7 +154,7 @@ namespace PHASIC {
     int    chnumber;
   public :
     Decay2Channel(int,int,ATOOLS::Flavour *,
-		  ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+		  ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
     void GeneratePoint(ATOOLS::Vec4D * p,double *);
     void GenerateWeight(ATOOLS::Vec4D * p);
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 

@@ -138,7 +138,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *par
     }
     else {
       bool found(false);
-      for (int j(0);j<p_isrbase[i]->Flavour().Size();++j)
+      for (size_t j(0);j<p_isrbase[i]->Flavour().Size();++j)
 	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
 	  found=true;
 	  break;
@@ -155,7 +155,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
   for (int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) {
       fit = 0;
-      for (unsigned int j = 0;j<(PDF(i)->Partons()).size();j++) {
+      for (size_t j = 0;j<(PDF(i)->Partons()).size();j++) {
 	if (partons[i] == (PDF(i)->Partons())[j]) {
 	  fit = 1;
 	  break; 
@@ -165,7 +165,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
     }
     else {
       bool found(false);
-      for (int j(0);j<p_isrbase[i]->Flavour().Size();++j)
+      for (size_t j(0);j<p_isrbase[i]->Flavour().Size();++j)
 	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
 	  found=true;
 	  break;

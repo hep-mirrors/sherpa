@@ -74,7 +74,7 @@ public:
       if (particlelist[i]->Momentum().PPerp2()>=m_pt2min) {
 	if (eta>=m_etamin && eta<=m_etamax) {
 	  jetlist->push_back(new ATOOLS::Particle(*particlelist[i]));
-	  jetlist->back()->SetFlav(ATOOLS::kf::jet);
+	  jetlist->back()->SetFlav(kf_jet);
 	}
 	else if (eta>=etaplus && eta<=etaminus) {
 	  addlist.push_back(new ATOOLS::Particle(*particlelist[i]));

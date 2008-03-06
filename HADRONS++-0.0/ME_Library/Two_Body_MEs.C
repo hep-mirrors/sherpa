@@ -82,7 +82,7 @@ V_FF::V_FF( int _nout, Flavour *_fl ) :
 void V_FF::SetModelParameters( GeneralModel _md )
 {
   double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
-  m_global  = GF*SQRT_05*Flavour(kf::Wplus).PSMass();
+  m_global  = GF*SQRT_05*Flavour(kf_Wplus).PSMass();
   m_cR  = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL  = Complex(0.,_md("a",1.)+_md("b",1.));
 }

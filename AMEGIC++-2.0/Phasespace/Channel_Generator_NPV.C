@@ -380,8 +380,8 @@ void Channel_Generator_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   case 2:
     if (ph->m!=0 && !ATOOLS::IsZero(ph->fl.Mass())) {
       sf<<"  type  = 1;"<<endl
-	<<"  mass  = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Mass();"<<endl
-	<<"  width = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Width();"<<endl;
+	<<"  mass  = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Mass();"<<endl
+	<<"  width = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Width();"<<endl;
       return;
     }
     {
@@ -408,7 +408,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
     string tmstr;
     if (flag>=0 && !ATOOLS::IsZero(p->fl.Mass())) {
       tmstr = string("tmass")+ToString(p->number);
-      sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+      sf<<"  double "<<tmstr<<" = Flavour((kf_code)("<<hi<<")).Mass();"<<endl;
     }
     else tmstr = string("0.");
     string pin0sum(""),pin1sum("");
@@ -719,7 +719,7 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
   if (mummy.length()>2) hi = 2;
   if (maxpole>0.) {
     hi = (p->fl).Kfcode();
-    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
   } 
   string thexp("1.5");
   if (p->m==0) thexp = string("1.5");
@@ -807,7 +807,7 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
   if (mummy.length()>2) hi = 2;
   if (maxpole>0.) {
     hi = (p->fl).Kfcode();
-    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
   } 
   switch (flag) {
   case -11: 

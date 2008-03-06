@@ -88,9 +88,9 @@ void All_Decays::BinaryDecays()
       for (size_t i=0;i<vertexlist.size();i++) {
 	sv = vertexlist[i];
 	if (sv->on && sv->nleg==3 &&
-	    sv->in[0]!=Flavour(kf::shgluon) && 
-	    sv->in[1]!=Flavour(kf::shgluon) && 
-	    sv->in[2]!=Flavour(kf::shgluon)) {
+	    sv->in[0]!=Flavour(kf_shgluon) && 
+	    sv->in[1]!=Flavour(kf_shgluon) && 
+	    sv->in[2]!=Flavour(kf_shgluon)) {
 	  if (inflav.Mass()>sv->in[1].Mass()+sv->in[2].Mass()) {
 	    dc = new Decay_Channel(inflav);
 	    dc->AddDecayProduct(sv->in[1]);
@@ -131,9 +131,9 @@ void All_Decays::ThreeBodyDecays() {
     for (size_t i=0;i<vertexlist.size();i++) {
       sv1 = vertexlist[i];
       if (sv1->on && sv1->nleg==3 &&
-	  sv1->in[0]!=Flavour(kf::shgluon) && 
-	  sv1->in[1]!=Flavour(kf::shgluon) && sv1->in[1]!=inflav && 
-	  sv1->in[2]!=Flavour(kf::shgluon) && sv1->in[2]!=inflav) {
+	  sv1->in[0]!=Flavour(kf_shgluon) && 
+	  sv1->in[1]!=Flavour(kf_shgluon) && sv1->in[1]!=inflav && 
+	  sv1->in[2]!=Flavour(kf_shgluon) && sv1->in[2]!=inflav) {
 	est = std::norm(sv1->cpl[0].Value())+std::norm(sv1->cpl[1].Value());
 	if (inflav.Mass()<sv1->in[1].Mass()+sv1->in[2].Mass() &&
 	    (sv1->in[1].Mass()+sv1->in[2].Mass()-inflav.Mass())/

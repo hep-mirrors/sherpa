@@ -52,7 +52,7 @@ bool Doubly_Unintegrated_PDF::Initialize()
 {
   for (size_t i=0;i<m_partons.size();++i) {
     if (m_partons[i].Size()>1) {
-      for (int j=0;j<m_partons[i].Size();++j) {
+      for (size_t j=0;j<m_partons[i].Size();++j) {
 	m_branching[m_partons[i][j]] = 
 	  new LL_Branching(m_partons[i][j],p_alphas);
       }
@@ -216,7 +216,7 @@ SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,const double &rn)
     }
     lastsum=m_partsums[i].first;
   }
-  c=a=Flavour(kf::none);
+  c=a=Flavour(kf_none);
   p_jkernel=NULL;
   m_cweight=0.0;
   return false;
@@ -300,7 +300,7 @@ void Doubly_Unintegrated_PDF::Test()
     for (double j=-2.0;j<3.0;j+=0.05) {
       Calculate(0.01,0.1,exp(i),exp(j));
       std::cout<<i<<" "<<j<<" "<<exp(i)<<" "<<exp(j)<<std::endl;
-      p_weights->Fill(i,j,GetXPDF(ATOOLS::kf::gluon));
+      p_weights->Fill(i,j,GetXPDF(kf_gluon));
     }
   }
   THROW(normal_exit,"finished histogram");
@@ -332,17 +332,17 @@ void Doubly_Unintegrated_PDF::Test()
     MYROOT::myroot->AddObject(sudg2,"sudg2");
     for (double logkt=log(min)+step;logkt<log(max);logkt+=step) {
       double kt=exp(logkt);
-      sudu->Fill(log(kt/91.),p_sudakov->Delta(ATOOLS::kf::u)(91.,kt));
-      sudg->Fill(log(kt/91.),p_sudakov->Delta(ATOOLS::kf::gluon)(91.,kt));
+      sudu->Fill(log(kt/91.),p_sudakov->Delta(kf_u)(91.,kt));
+      sudg->Fill(log(kt/91.),p_sudakov->Delta(kf_gluon)(91.,kt));
     }
     for (double logmu=log(min)+step;logmu<log(max);logmu+=step) {
       for (double logkt=log(min)+step;logkt<log(max);logkt+=step) {
 	double kt=exp(logkt), mu=exp(logmu);
 	if (logkt<logmu) {
 	  sudu2->Fill(log(kt/91.),log(mu/91.),
-		      p_sudakov->Delta(ATOOLS::kf::u)(mu,kt));
+		      p_sudakov->Delta(kf_u)(mu,kt));
 	  sudg2->Fill(log(kt/91.),log(mu/91.),
-		      p_sudakov->Delta(ATOOLS::kf::gluon)(mu,kt));
+		      p_sudakov->Delta(kf_gluon)(mu,kt));
 	}
       }
     }

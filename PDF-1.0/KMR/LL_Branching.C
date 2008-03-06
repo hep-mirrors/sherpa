@@ -19,7 +19,7 @@ void LL_Branching::Initializer_Function::Initialize() const
   static bool initialized=false;
   if (initialized) return;
   for (int i=1;i<=s_nfmax;++i) {
-    Flavour cur((kf::code)i);
+    Flavour cur((kf_code)i);
     s_splittings.insert(new Q_QG(cur));
     s_splittings.insert(new Q_QG(cur.Bar()));
     s_splittings.insert(new Q_GQ(cur));
@@ -50,7 +50,7 @@ LL_Branching::LL_Branching(const Flavour flavour,
   m_splittings.push_back(*Find(m_flavour,m_flavour));
   if (m_flavour.IsGluon()) {
     for (int i=1;i<=s_nfmax;++i) {
-      m_splittings.push_back(*Find(m_flavour,(kf::code)i));
+      m_splittings.push_back(*Find(m_flavour,(kf_code)i));
     }
   }
   else if (!m_flavour.IsQuark()) {
@@ -68,7 +68,7 @@ void LL_Branching::GenerateName()
   m_name=std::string("lls_");
   sstr.clear();
   sstr<<m_splittings[0]->GetA()<<"_as("
-      <<Flavour((kf::code)24).PSMass()<<")-"
+      <<Flavour((kf_code)24).PSMass()<<")-"
       <<p_alphas->AsMZ()<<"_o-"<<p_alphas->Order()<<".dat";
   sstr>>temp;
   m_name+=temp;

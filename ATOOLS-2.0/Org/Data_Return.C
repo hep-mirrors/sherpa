@@ -49,6 +49,6 @@ template <> Model_Type::code ATOOLS::NotDefined<Model_Type::code>()
 
 template <> Flavour ATOOLS::NotDefined<Flavour>() 
 { 
-  return Flavour(kf::none); 
+  return Flavour(kf_none); 
 } 
 

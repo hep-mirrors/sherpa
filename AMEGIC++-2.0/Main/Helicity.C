@@ -13,7 +13,7 @@ using namespace AMEGIC;
 using namespace std;
 
 Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) : 
-  m_flavours(Nin+Nout, kf::none), m_nPols(Nin+Nout),
+  m_flavours(Nin+Nout, kf_none), m_nPols(Nin+Nout),
   m_allowTrafo(true), m_needsTrafo(false)  
 {
  

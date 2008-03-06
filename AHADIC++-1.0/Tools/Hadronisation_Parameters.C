@@ -128,17 +128,17 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Multiplet_exc_Delta_L1R0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_DELTA*_3/2",0.6);
   m_parametermap[string("Mass_glue")]          = 
-    dataread.GetValue<double>("M_GLUE",Flavour(kf::gluon).PSMass());
+    dataread.GetValue<double>("M_GLUE",Flavour(kf_gluon).PSMass());
   m_parametermap[string("Mass_down")]          = 
-    dataread.GetValue<double>("M_DOWN",Flavour(kf::d).PSMass());
+    dataread.GetValue<double>("M_DOWN",Flavour(kf_d).PSMass());
   m_parametermap[string("Mass_up")]            = 
-    dataread.GetValue<double>("M_UP",Flavour(kf::u).PSMass());
+    dataread.GetValue<double>("M_UP",Flavour(kf_u).PSMass());
   m_parametermap[string("Mass_strange")]       = 
-    dataread.GetValue<double>("M_STRANGE",Flavour(kf::s).PSMass());
+    dataread.GetValue<double>("M_STRANGE",Flavour(kf_s).PSMass());
   m_parametermap[string("Mass_charm")]         = 
-    dataread.GetValue<double>("M_CHARM",Flavour(kf::c).PSMass());
+    dataread.GetValue<double>("M_CHARM",Flavour(kf_c).PSMass());
   m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",Flavour(kf::b).PSMass());
+    dataread.GetValue<double>("M_BOTTOM",Flavour(kf_b).PSMass());
   m_parametermap[string("Mass_dd1")]           = 
     dataread.GetValue<double>("M_DD_1",2.*Get("Mass_down"));
   m_parametermap[string("Mass_ud0")]           = 

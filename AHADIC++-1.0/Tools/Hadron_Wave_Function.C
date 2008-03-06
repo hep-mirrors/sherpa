@@ -6,7 +6,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadron_Wave_Function::Hadron_Wave_Function() :
-  m_hadron(Flavour(kf::none)), m_spin(-1), m_kfcode(0), m_mpletwt(1.), m_barrable(false)
+  m_hadron(Flavour(kf_none)), m_spin(-1), m_kfcode(0), m_mpletwt(1.), m_barrable(false)
 { }
 
 Hadron_Wave_Function::Hadron_Wave_Function(const ATOOLS::Flavour & _hadron) :

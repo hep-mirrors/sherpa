@@ -48,7 +48,7 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
       for (int i=nqed;i>=0;--i) {
 	XS_Base * xst = GetSingleXS(nin,nout,flavours,i,j);
 	if (xst!=NULL) {
-	  msg_Debugging()<<"'"<<xst->Name()<<"'\n";
+	  msg_Debugging()<<"'"<<xst->Name()<<"' "<<typeid(*xst).name()<<"\n";
 	  return xst;
 	}
       }

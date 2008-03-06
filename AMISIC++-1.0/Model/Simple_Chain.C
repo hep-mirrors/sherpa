@@ -191,7 +191,7 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   Flavour *copy = new Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
     copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=kf::jet;
+  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=kf_jet;
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
 		     copy,m_scalescheme,m_kfactorscheme);
@@ -315,13 +315,13 @@ bool Simple_Chain::CreateGrid()
       int current;
       bool success=true;
       for (unsigned int j=0;j<4;++j) {
-	flavour[j]=Flavour(kf_table.FromString(temp[i][j]));
-	if (flavour[j].Kfcode()==kf::none) {
+	flavour[j]=Flavour(s_kftable.KFFromIDName(temp[i][j]));
+	if (flavour[j].Kfcode()==kf_none) {
 	  reader->SetString(temp[i][j]);
 	  reader->ReadFromString(current);
-	  flavour[j]=Flavour((kf::code)abs(current));
+	  flavour[j]=Flavour((kf_code)abs(current));
 	  if (current<0) flavour[j]=flavour[j].Bar();
-	  if (flavour[j].Kfcode()==kf::none) success=false;
+	  if (flavour[j].Kfcode()==kf_none) success=false;
 	}
       }
       if (!success) continue;
@@ -366,7 +366,7 @@ bool Simple_Chain::CreateGrid()
 bool Simple_Chain::SetUpInterface()
 {
   p_processes->Reset();
-  Flavour flavour[4]={kf::jet,kf::jet,kf::jet,kf::jet};
+  Flavour flavour[4]={kf_jet,kf_jet,kf_jet,kf_jet};
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
   p_fsrinterface = new FSR_Channel(2,2,flavour,
 				   p_total->XAxis()->Variable()->Name());
@@ -388,7 +388,7 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 				    const double integral)
 {  
   int helpi=0, criterion=grid->XAxis()->Variable()->SelectorID();
-  std::vector<Flavour> flavours(1,(kf::jet));
+  std::vector<Flavour> flavours(1,(kf_jet));
   std::vector<std::pair<double,double> > bounds
     (1,std::pair<double,double>(min,max));
   group->SelectorData()->AddData(criterion,flavours,bounds,helpi);
@@ -428,8 +428,8 @@ void Simple_Chain::CalculateSigmaND()
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
   double s=sqr(rpa.gen.Ecms());
-  double mp=Flavour(kf::p_plus).Mass();
-  double mpi=Flavour(kf::pi).Mass();
+  double mp=Flavour(kf_p_plus).Mass();
+  double mpi=Flavour(kf_pi).Mass();
   double ap=0.25, s0=8.0, y0=log(s/(mp*mp));
   double M1res=2.0, M2res=2.0, cres=2.0;
   double M1min=mp+2.0*mpi, M2min=mp+2.0*mpi;
@@ -527,7 +527,7 @@ bool Simple_Chain::CalculateTotal()
 	       <<" mb !"<<om::reset<<std::endl;
   }
   if (m_check) {
-    Flavour help[4]={kf::jet,kf::jet,kf::jet,kf::jet};
+    Flavour help[4]={kf_jet,kf_jet,kf_jet,kf_jet};
     Semihard_QCD *group;
     group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),help,
 			     p_processes->ScaleScheme(),

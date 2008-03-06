@@ -30,8 +30,8 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
-  if (ATOOLS::rpa.gen.Beam1().Kfcode()==ATOOLS::kf::e && 
-      ATOOLS::rpa.gen.Beam2().Kfcode()==ATOOLS::kf::e) jetmode=1;
+  if (ATOOLS::rpa.gen.Beam1().Kfcode()==kf_e && 
+      ATOOLS::rpa.gen.Beam2().Kfcode()==kf_e) jetmode=1;
   std::string inlist="FinalState", outlist="Analysed";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {
@@ -50,8 +50,8 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="Finder" && cur.size()>1) {
       int kf=ATOOLS::ToType<int>(cur[1]);
-      // if (kf!=ATOOLS::kf::jet || kf==ATOOLS::kf::bjet) continue;
-      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      // if (kf!=kf_jet || kf==kf_bjet) continue;
+      ATOOLS::Flavour flavour((kf_code)abs(kf));
       if (kf<0) flavour=flavour.Bar();
       data.pt_min=0.;
       data.eta_min=-20.;
@@ -66,10 +66,10 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
     }
     else if (cur[0]=="DRMin" && cur.size()>3) {
       int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour f1((ATOOLS::kf::code)abs(kf));
+      ATOOLS::Flavour f1((kf_code)abs(kf));
       if (kf<0) f1=f1.Bar();
       kf=ATOOLS::ToType<int>(cur[2]);
-      ATOOLS::Flavour f2((ATOOLS::kf::code)abs(kf));
+      ATOOLS::Flavour f2((kf_code)abs(kf));
       if (kf<0) f2=f2.Bar();
       data.r_min=0.;
       if (cur.size()>3) data.r_min=ATOOLS::ToType<double>(cur[3]);
@@ -77,14 +77,14 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
     }
     else if (cur[0]=="Counts" && cur.size()>3) {
       int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      ATOOLS::Flavour flavour((kf_code)abs(kf));
       if (kf<0) flavour=flavour.Bar();
       selector->AddSelector(flavour,ATOOLS::ToType<int>(cur[2]),
 			    ATOOLS::ToType<int>(cur[3]));
     }
     else if (cur[0]=="Keep" && cur.size()>1) {
       int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      ATOOLS::Flavour flavour((kf_code)abs(kf));
       if (kf<0) flavour=flavour.Bar();
       selector->AddKeepFlavour(flavour);
     }
@@ -197,7 +197,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.f       = fs.f;
   }
   
-  if (fl==kf::jet || fl==kf::bjet) {
+  if (fl==kf_jet || fl==kf_bjet) {
     switch(m_mode) {
     case 2: p_jetalg = new 
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
@@ -280,8 +280,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
 {
   msg_Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
-  if (fl==Flavour(kf::lepton)) {
-    for (int i=0;i<fl.Size();++i) AddKeepFlavour(fl[i]);
+  if (fl==Flavour(kf_lepton)) {
+    for (size_t i=0;i<fl.Size();++i) AddKeepFlavour(fl[i]);
   }
 
   if(!m_extract) {
@@ -298,7 +298,7 @@ void Final_Selector::Output()
   if (!msg_LevelIsTracking()) return;
   msg_Out()<<"Final_Selector : "<<m_fmap.size()<<"/"<<m_cmap.size()<<":"<<std::endl;
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    if (it->first!=Flavour(kf::jet) && it->first!=Flavour(kf::bjet)) 
+    if (it->first!=Flavour(kf_jet) && it->first!=Flavour(kf_bjet)) 
       msg_Out()<<" "<<it->first<<" : pt_min = "<<it->second.pt_min<<", eta = "
 	       <<it->second.eta_min<<" ... "<<it->second.eta_max<<std::endl;
     else
@@ -461,8 +461,8 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   }
   Particle_List * pl_out = new Particle_List;
   // look for kt and after for other selectors
-  Final_Data_Map::iterator it = m_fmap.find(Flavour(kf::jet));
-  if (it==m_fmap.end() || it->second.r_min==0.0) it = m_fmap.find(Flavour(kf::bjet));
+  Final_Data_Map::iterator it = m_fmap.find(Flavour(kf_jet));
+  if (it==m_fmap.end() || it->second.r_min==0.0) it = m_fmap.find(Flavour(kf_bjet));
   if (it!=m_fmap.end()) {
     if (it->second.r_min>0.) {
       std::vector<double> * diffrates=new std::vector<double>();

@@ -34,7 +34,7 @@ namespace BEAM {
     Beam_Base     * Copy();
     void            PrintSpectra(std::string,int=0);
     bool            CalculateWeight(double,double);
-    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
+    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
     ATOOLS::Vec4D   OutMomentum();
 
     double          Polarisation()       { return m_polar; }
@@ -216,7 +216,7 @@ namespace BEAM {
     incoming lepton and in accordance with the mode given by Laser_Backscattering::m_mode.
   */
   /*!
-    \fn double Laser_Backscattering::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf::none));
+    \fn double Laser_Backscattering::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
     After checking that the outgoing particle indeed is a photon, the calculated weight
     is returned. In principle, from there one could also return an electron energy distribution,
     but this has not been implmeneted yet.

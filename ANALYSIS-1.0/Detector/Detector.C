@@ -182,7 +182,7 @@ void Detector::Test(const int mode) {
   //abort();
   //#endif
   int testevents(1),number(20);
-  Flavour flav(kf::none);
+  Flavour flav(kf_none);
   Print();
   InitHistograms(mode);
   switch (mode) {
@@ -192,32 +192,32 @@ void Detector::Test(const int mode) {
   case 2:
     testevents = 100; number = 100;
     for (int j=0;j<10;j++) {
-      flav = Flavour(kf::e);
+      flav = Flavour(kf_e);
       msg_Out()<<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
   	       <<"Testing "<<m_elements.size()<<" detector elements "
   	       <<"with "<<flav<<" at "<<Energy(j)<<" GeV."<<std::endl;
       for (long int i=0;i<testevents;i++) TestIsotropicEvent(number,j,flav);
-      flav = Flavour(kf::photon);
+      flav = Flavour(kf_photon);
       msg_Out()<<"================================================================"<<std::endl
  	       <<"================================================================"<<std::endl
 	       <<"================================================================"<<std::endl
 	       <<"Testing "<<m_elements.size()<<" detector elements "
 	       <<"with "<<flav<<" at "<<Energy(j)<<" GeV."<<std::endl;
-      for (long int i=0;i<testevents;i++) TestIsotropicEvent(number,j,Flavour(kf::photon));
-      flav = Flavour(kf::pi);
+      for (long int i=0;i<testevents;i++) TestIsotropicEvent(number,j,Flavour(kf_photon));
+      flav = Flavour(kf_pi);
       msg_Out()<<"================================================================"<<std::endl
  	       <<"================================================================"<<std::endl
  	       <<"================================================================"<<std::endl
  	       <<"Testing "<<m_elements.size()<<" detector elements "
   	       <<"with "<<flav<<" at "<<Energy(j)<<" GeV."<<std::endl;
-      for (long int i=0;i<testevents;i++) TestIsotropicEvent(number,j,Flavour(kf::pi));
+      for (long int i=0;i<testevents;i++) TestIsotropicEvent(number,j,Flavour(kf_pi));
     } 
     break;
   case 3:
     for (int j=0;j<10;j++) {
-      flav = Flavour(kf::e);
+      flav = Flavour(kf_e);
       msg_Out()<<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
@@ -227,7 +227,7 @@ void Detector::Test(const int mode) {
     }
   case 4:
     for (int j=0;j<10;j++) {
-      flav = Flavour(kf::e);
+      flav = Flavour(kf_e);
       msg_Out()<<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
   	       <<"================================================================"<<std::endl
@@ -246,7 +246,7 @@ void Detector::TestRandomIsotropicEvent(const int number) {
   msg_Out()<<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl;
-  Particle_List * plist = ProduceParticleList("Rambo",number,1000,Flavour(kf::none));
+  Particle_List * plist = ProduceParticleList("Rambo",number,1000,Flavour(kf_none));
   Fill(plist);
   for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
        elit!=m_elements.end();elit++) elit->second->PrintHits();
@@ -358,9 +358,9 @@ void Detector::FillHistograms(const int j,const Flavour flav) {
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     Detector_Segment * segment = (*cit)->GetEtastrip()->GetSegment();
     segment->Dimensions(etamin,etamax);
-    if (flav.Kfcode()==kf::e)           tag = std::string("electron");
-    else if (flav.Kfcode()==kf::photon) tag = std::string("photon");
-    else if (flav.Kfcode()==kf::pi)     tag = std::string("pion");
+    if (flav.Kfcode()==kf_e)           tag = std::string("electron");
+    else if (flav.Kfcode()==kf_photon) tag = std::string("photon");
+    else if (flav.Kfcode()==kf_pi)     tag = std::string("pion");
     else return;
 
     if ((*cit)->ParticleEntries()->size()>1) continue;
@@ -406,26 +406,26 @@ Particle_List * Detector::ProduceParticleList(const std::string mode,
   Flavour  * flavs = new Flavour[n+1];
   int code;
   for (int i=1;i<n+1;i++) {
-    if (flav==Flavour(kf::none)) {
+    if (flav==Flavour(kf_none)) {
       code = int((ran.Get()>0.5?-1:1)*(0.5+3.49999*ran.Get()));
       switch (code) {
-      case -3: flavs[i] = Flavour(kf::pi_plus).Bar(); break;
-      case -2: flavs[i] = Flavour(kf::mu).Bar();      break;
-      case -1: flavs[i] = Flavour(kf::e).Bar();       break;
-      case  1: flavs[i] = Flavour(kf::e);             break;
-      case  2: flavs[i] = Flavour(kf::mu);            break;
-      case  3: flavs[i] = Flavour(kf::pi_plus);       break;
+      case -3: flavs[i] = Flavour(kf_pi_plus).Bar(); break;
+      case -2: flavs[i] = Flavour(kf_mu).Bar();      break;
+      case -1: flavs[i] = Flavour(kf_e).Bar();       break;
+      case  1: flavs[i] = Flavour(kf_e);             break;
+      case  2: flavs[i] = Flavour(kf_mu);            break;
+      case  3: flavs[i] = Flavour(kf_pi_plus);       break;
       case  0: 
-      default: flavs[i] = Flavour(kf::photon);        break;
+      default: flavs[i] = Flavour(kf_photon);        break;
       }
     }
     else if (mode=="Radiation+") {
       code = int((ran.Get()>0.5?-1:1)*(0.5+1.49999*ran.Get()));
       switch (code) {
-      case -1: flavs[i] = Flavour(kf::pi_plus).Bar(); break;
-      case  1: flavs[i] = Flavour(kf::pi_plus);       break;
+      case -1: flavs[i] = Flavour(kf_pi_plus).Bar(); break;
+      case  1: flavs[i] = Flavour(kf_pi_plus);       break;
       case  0: 
-      default: flavs[i] = Flavour(kf::pi);            break;
+      default: flavs[i] = Flavour(kf_pi);            break;
       }
     }
     else flavs[i] = flav;
@@ -446,7 +446,7 @@ Particle_List * Detector::ProduceParticleList(const std::string mode,
     }
   }
   else if ((mode=="Radiation" || mode=="Radiation+") &&
-	   (flav==Flavour(kf::e) || flav==Flavour(kf::e).Bar())) {
+	   (flav==Flavour(kf_e) || flav==Flavour(kf_e).Bar())) {
     int count(1), number;
     if (mode=="Radiation+") {
       moms[0] = Vec4D(n*E,0.,0.,0.);
@@ -479,7 +479,7 @@ Particle_List * Detector::ProduceParticleList(const std::string mode,
 	xi      = 2.*M_PI*ran.Get();
 	moms[count+i] = omega*Vec4D(1.,sinzeta*cos(xi),sinzeta*sin(xi),coszeta);
 	rotate.Rotate(moms[count+i]);
-	flavs[count+i] = Flavour(kf::photon);
+	flavs[count+i] = Flavour(kf_photon);
       }
       p = sqrt(sqr(e)-sqr(flav.PSMass()));
       moms[count]  = Vec4D(E,p*sintheta*cos(phi),p*sintheta*sin(phi),p*costheta);

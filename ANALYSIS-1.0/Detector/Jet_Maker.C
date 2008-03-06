@@ -157,7 +157,7 @@ void Jet_Maker::CorrectEnergies() {
 
 void Jet_Maker::IdentifyBs() {
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit ++) {
-    if (p_btagging->Tag((*olit))) (*olit)->SetFlavour(Flavour(kf::bjet));
+    if (p_btagging->Tag((*olit))) (*olit)->SetFlavour(Flavour(kf_bjet));
   }
 }
 

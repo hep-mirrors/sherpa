@@ -16,7 +16,7 @@ using namespace ATOOLS;
 
 Simple_Cone::Simple_Cone(const double Etcut,const double Etmin, double sep) : 
   m_Etcut(Etcut), m_Etmin(Etmin), m_dR(sep), m_dR2(sep*sep),
-  m_flav(Flavour(kf::jet))
+  m_flav(Flavour(kf_jet))
 { 
 #ifdef USING__ROOT
   std::string name("JES");

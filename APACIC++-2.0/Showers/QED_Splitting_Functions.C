@@ -12,7 +12,7 @@ f_fp::f_fp(ATOOLS::Flavour fermionflavour)
 {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = fermionflavour; // b
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::photon); // c
+  m_flavs[2] = ATOOLS::Flavour(kf_photon); // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());
   m_alpha    = 1.;
 }
@@ -21,7 +21,7 @@ f_fp::f_fp(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
   p_tools (_tools) {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = fermionflavour; // b
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::photon); // c
+  m_flavs[2] = ATOOLS::Flavour(kf_photon); // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());
   m_alpha    = p_tools->GetAQEDmax();
 }
@@ -62,7 +62,7 @@ double f_fp::CrudeInt(double _zmin, double _zmax)
 f_pf::f_pf(ATOOLS::Flavour fermionflavour) 
 {
   m_flavs[0] = fermionflavour; // a
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::photon); // b
+  m_flavs[1] = ATOOLS::Flavour(kf_photon); // b
   m_flavs[2] = fermionflavour; // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());
   m_alpha    = 1.;
@@ -72,7 +72,7 @@ f_pf::f_pf(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
   p_tools (_tools) 
 {
   m_flavs[0] = fermionflavour; // a
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::photon); // b
+  m_flavs[1] = ATOOLS::Flavour(kf_photon); // b
   m_flavs[2] = fermionflavour; // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());
   m_alpha    = p_tools->GetAQEDmax();
@@ -109,7 +109,7 @@ double f_pf::CrudeInt(double _zmin, double _zmax) {
 
 p_ff::p_ff(ATOOLS::Flavour fermionflavour) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::photon); // a
+  m_flavs[0] = ATOOLS::Flavour(kf_photon); // a
   m_flavs[1] = fermionflavour; // b
   m_flavs[2] = fermionflavour.Bar(); // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());
@@ -119,7 +119,7 @@ p_ff::p_ff(ATOOLS::Flavour fermionflavour)
 p_ff::p_ff(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
   p_tools (_tools) 
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::photon); // a
+  m_flavs[0] = ATOOLS::Flavour(kf_photon); // a
   m_flavs[1] = fermionflavour; // b
   m_flavs[2] = fermionflavour.Bar(); // c
   m_qsqr     = ATOOLS::sqr(fermionflavour.Charge());

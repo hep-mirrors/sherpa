@@ -36,9 +36,9 @@ GetConstituents(const ATOOLS::Flavour flav)
   int hadint=(flav.Kfcode()-flav.Kfcode()/10000)/10;
   if ((hadint>100)&&(hadint<1000)) {
     m_constit.resize(3);
-    m_constit[0]=Flavour(kf::code(hadint)/100);
-    m_constit[1]=Flavour(kf::code((hadint-(hadint/100)*100)/10));
-    m_constit[2]=Flavour(kf::code(hadint-(hadint/10)*10));
+    m_constit[0]=Flavour((kf_code)(hadint)/100);
+    m_constit[1]=Flavour((kf_code)((hadint-(hadint/100)*100)/10));
+    m_constit[2]=Flavour((kf_code)(hadint-(hadint/10)*10));
     if (flav.IsAnti()) {
       for(int i=0;i<3;i++) m_constit[i]=m_constit[i].Bar();
     }
@@ -50,8 +50,8 @@ GetConstituents(const ATOOLS::Flavour flav)
   }
   if ((hadint>10)&&(hadint<100)) {
     m_constit.resize(2);
-    m_constit[0]=Flavour(kf::code(hadint)/10);
-    m_constit[1]=Flavour(kf::code(hadint-(hadint/10)*10));
+    m_constit[0]=Flavour((kf_code)(hadint)/10);
+    m_constit[1]=Flavour((kf_code)(hadint-(hadint/10)*10));
     if (flav.IsAnti()) {
       for(int i=0;i<2;i++) m_constit[i]=m_constit[i].Bar();
     }
@@ -194,18 +194,18 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
 ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
 {
   bool found=false;
-  kf::code rem[2];
+  kf_code rem[2];
   for (short unsigned int i=0,j=0;i<3;++i) {
     if (m_constit[i]==flav && !found) found=true;
     else rem[j++]=m_constit[i].Kfcode();
   }
-  Flavour anti=Flavour(kf::code(abs(rem[0])*1000+abs(rem[1])*100+3));
+  Flavour anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+3));
   if (rem[0]!=rem[1]) {
     if (ran.Get()<0.25) 
-      anti=Flavour(kf::code(abs(rem[0])*1000+abs(rem[1])*100+1));
+      anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+1));
   }
   else {
-    anti=Flavour(kf::code(abs(rem[0])*1100+3));
+    anti=Flavour((kf_code)(abs(rem[0])*1100+3));
   }
   if (flav.IsAnti()) anti=anti.Bar();
   return anti;
@@ -287,7 +287,7 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
   PROFILE_HERE;
   if (!m_initialized) {
     bool found(false);
-    kf::code di[3];
+    kf_code di[3];
     if (flavour.IsQuark()) {
       short unsigned int j=0;
       for (Flavour_Vector::const_iterator flit(m_constit.begin());
@@ -311,15 +311,15 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
       Flavour fl(m_constit[single]);
       for (short unsigned int j=0, i=0;i<3;i++) 
 	if (i!=single) di[j++]=m_constit[i].Kfcode();
-      if (di[0]>di[1]) difl=Flavour((kf::code)(di[0]*1000+di[1]*100+1));
-      else if (di[1]>di[0]) difl=Flavour((kf::code)(di[1]*1000+di[0]*100+1));
-      else difl=Flavour((kf::code)(di[0]*1100+3));
+      if (di[0]>di[1]) difl=Flavour((kf_code)(di[0]*1000+di[1]*100+1));
+      else if (di[1]>di[0]) difl=Flavour((kf_code)(di[1]*1000+di[0]*100+1));
+      else difl=Flavour((kf_code)(di[0]*1100+3));
       if (m_constit[single].IsAnti()) difl=difl.Bar();
       return difl.PSMass()+fl.PSMass()+flavour.Bar().PSMass();
     }
-    if (di[0]>di[1]) difl=Flavour((kf::code)(di[0]*1000+di[1]*100+1));
-    else if (di[1]>di[0]) difl=Flavour((kf::code)(di[1]*1000+di[0]*100+1));
-    else difl=Flavour((kf::code)(di[0]*1100+3));
+    if (di[0]>di[1]) difl=Flavour((kf_code)(di[0]*1000+di[1]*100+1));
+    else if (di[1]>di[0]) difl=Flavour((kf_code)(di[1]*1000+di[0]*100+1));
+    else difl=Flavour((kf_code)(di[0]*1100+3));
     if (m_constit[0].IsAnti()) difl=difl.Bar();
     return difl.PSMass();
   }
@@ -331,15 +331,15 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
 
 ATOOLS::Flavour Hadron_Remnant::ConstituentType(const ATOOLS::Flavour &flavour) 
 {
-  if (flavour.IsGluon()) return kf::gluon;
-  return kf::quark;
-  if (flavour.Kfcode()==kf::quark || 
-      flavour.Kfcode()==kf::seaquark) return flavour.Kfcode();
+  if (flavour.IsGluon()) return kf_gluon;
+  return kf_quark;
+  if (flavour.Kfcode()==kf_quark || 
+      flavour.Kfcode()==kf_seaquark) return flavour.Kfcode();
   if (flavour.IsQuark()) {
     for (size_t i=0;i<m_constit.size();++i) 
-      if (flavour==m_constit[i]) return kf::quark;
-    return kf::seaquark;
+      if (flavour==m_constit[i]) return kf_quark;
+    return kf_seaquark;
   }
-  return kf::none;
+  return kf_none;
 }
 

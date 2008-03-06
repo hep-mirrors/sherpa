@@ -1,8 +1,8 @@
 pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
-				Ordering.C \
 				Flavour.C \
+				Ordering.C \
 				Particle.C \
 				Particle_Qualifier.C \
 			        Simple_Polarisation_Info.C \
@@ -41,6 +41,7 @@ libToolsPhys_la_SOURCES       =	\
 
 pkginclude_HEADERS    =	\
 			Ordering.H \
+			Flavour_Tags.H \
 			Flavour.H \
 			Particle.H \
 			Particle_Qualifier.H \

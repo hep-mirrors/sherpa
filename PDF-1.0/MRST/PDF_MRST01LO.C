@@ -39,15 +39,15 @@ PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path):
 {
   m_type=std::string("MRST01LO");
   m_bunch=bunch;
-  if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
+  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour(kf::code(i)));
-    m_partons.push_back(Flavour(kf::code(i)).Bar());
+    m_partons.push_back(Flavour((kf_code)(i)));
+    m_partons.push_back(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf::gluon));
-  m_partons.push_back(Flavour(kf::jet));
-  m_partons.push_back(Flavour(kf::quark));
-  m_partons.push_back(Flavour(kf::quark).Bar());
+  m_partons.push_back(Flavour(kf_gluon));
+  m_partons.push_back(Flavour(kf_jet));
+  m_partons.push_back(Flavour(kf_quark));
+  m_partons.push_back(Flavour(kf_quark).Bar());
   m_xmin=1.e-5;
   m_xmax=1.;
   m_q2min=1.25;
@@ -84,18 +84,18 @@ double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl)
   if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
   switch (kfc) {
-  case  ATOOLS::kf::d : return m_rescale*(p_xpdfv[0]+p_xpdf[0]);
-  case -ATOOLS::kf::d : return m_rescale*p_xpdf[0]; 
-  case  ATOOLS::kf::u : return m_rescale*(p_xpdfv[1]+p_xpdf[1]);
-  case -ATOOLS::kf::u : return m_rescale*p_xpdf[1]; 
-  case  ATOOLS::kf::s :
-  case -ATOOLS::kf::s : return m_rescale*p_xpdf[2];
-  case  ATOOLS::kf::c : 
-  case -ATOOLS::kf::c : return m_rescale*p_xpdf[3];
-  case  ATOOLS::kf::b : 
-  case -ATOOLS::kf::b : return m_rescale*p_xpdf[4];
-  case  ATOOLS::kf::gluon : 
-  case -ATOOLS::kf::gluon :return m_rescale*p_xpdf[5]; 
+  case  kf_d : return m_rescale*(p_xpdfv[0]+p_xpdf[0]);
+  case -kf_d : return m_rescale*p_xpdf[0]; 
+  case  kf_u : return m_rescale*(p_xpdfv[1]+p_xpdf[1]);
+  case -kf_u : return m_rescale*p_xpdf[1]; 
+  case  kf_s :
+  case -kf_s : return m_rescale*p_xpdf[2];
+  case  kf_c : 
+  case -kf_c : return m_rescale*p_xpdf[3];
+  case  kf_b : 
+  case -kf_b : return m_rescale*p_xpdf[4];
+  case  kf_gluon : 
+  case -kf_gluon :return m_rescale*p_xpdf[5]; 
   default: return 0.;
   }
 }

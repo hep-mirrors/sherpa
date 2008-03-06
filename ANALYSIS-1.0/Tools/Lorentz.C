@@ -72,7 +72,7 @@ Booster_Getter::operator()(const Argument_Matrix &parameters) const
     else if (cur[0]=="Flavs" && cur.size()>1) {
       for (size_t i(1);i<cur.size();++i) {
 	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf::code)abs(kf)));
+	flavs.push_back(Flavour((kf_code)abs(kf)));
 	if (kf<0) flavs.back()=flavs.back().Bar();
       }
     }
@@ -114,7 +114,7 @@ Rotator_Getter::operator()(const Argument_Matrix &parameters) const
     else if (cur[0]=="Flavs" && cur.size()>1) {
       for (size_t i(1);i<cur.size();++i) {
 	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf::code)abs(kf)));
+	flavs.push_back(Flavour((kf_code)abs(kf)));
 	if (kf<0) flavs.back()=flavs.back().Bar();
       }
     }

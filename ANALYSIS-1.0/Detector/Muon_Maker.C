@@ -66,7 +66,7 @@ Muon_Maker::Muon_Maker(Primitive_Analysis * ana,const std::string mode) :
   m_R2hadiso(sqr(0.2)),m_relhad(0.01),m_minhad(1.),
   m_R2EMiso(sqr(0.2)),m_totEM(5.0),m_minEM(1.)
 { 
-  m_kfcode=kf::mu;
+  m_kfcode=kf_mu;
   GetElements();
 }
 
@@ -116,7 +116,7 @@ void Muon_Maker::GetTracks() {
   std::list<Track *>::iterator trit;
   for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
     if (!(*trit)->used &&
-	((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar()) &&
+	((*trit)->flav==Flavour(kf_mu)||(*trit)->flav==Flavour(kf_mu).Bar()) &&
 	(*trit)->mom[0]>m_Estart) {
       Reconstructed_Object * object = new Reconstructed_Object((*trit));
       object->SetIncludeTracks(true);

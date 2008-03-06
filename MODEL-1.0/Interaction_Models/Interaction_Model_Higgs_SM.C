@@ -32,17 +32,17 @@ Interaction_Model_Higgs_SM::Interaction_Model_Higgs_SM(MODEL::Model_Base * _mode
 
 void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh(kf::h0);
+  Flavour flh(kf_h0);
   Kabbala kcpl0,kcpl1,M_h;
   if (!flh.IsOn()) return;
 
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
-    Flavour flav = Flavour(kf::code(i));
+    Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
       M_h = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
-		    ScalarFunction(std::string("m")+std::string(flav.Name()),sqr(flh.PSMass())));
+		    ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.PSMass())));
 
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;
@@ -78,12 +78,12 @@ void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& v
 
 void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh(kf::h0);
+  Flavour flh(kf_h0);
   if (!flh.IsOn()) return;
 
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);    
-  Flavour flWplus(kf::Wplus);
+  Flavour flWplus(kf_Wplus);
   // W h W
   if (flWplus.IsOn()) {
     vertex[vanz].in[0] = flWplus.Bar();
@@ -108,7 +108,7 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex.push_back(Single_Vertex());vanz++;
   }
 
-  Flavour flav = Flavour(kf::Z);
+  Flavour flav = Flavour(kf_Z);
   // Z h Z
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -137,7 +137,7 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
 
 void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh = Flavour(kf::h0);
+  Flavour flh = Flavour(kf_h0);
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
@@ -167,7 +167,7 @@ void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& v
 
 void Interaction_Model_Higgs_SM::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flh = Flavour(kf::h0);
+  Flavour flh = Flavour(kf_h0);
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
@@ -202,9 +202,9 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
 {
   Kabbala num_2 = Kabbala(string("2"),2.);  
 
-  Flavour flavWplus(kf::Wplus);
-  Flavour flavZ(kf::Z);
-  Flavour flavh(kf::h0);
+  Flavour flavWplus(kf_Wplus);
+  Flavour flavZ(kf_Z);
+  Flavour flavh(kf_h0);
   Kabbala kcpl0,kcpl1;
   
   // h - Z - Z - h  

@@ -109,14 +109,14 @@ void Atlas_TDR_SL_Top_Fitter::Evaluate
   size_t imin(0), jmin(0);
   double min(std::numeric_limits<double>::max());
   for (size_t i(0);i<list.size();++i) {
-    if (list[i]->Flav().Kfcode()==kf::jet)
+    if (list[i]->Flav().Kfcode()==kf_jet)
       for (size_t j(i+1);j<list.size();++j) 
-	if (list[j]->Flav().Kfcode()==kf::jet) {
+	if (list[j]->Flav().Kfcode()==kf_jet) {
 	  double cur((list[i]->Momentum()+list[j]->Momentum()).Mass());
 	  msg_Debugging()<<"  i = "<<i<<", j = "<<j
 			 <<" -> m_jj = "<<cur<<"\n";
-	  if (dabs(cur-Flavour(kf::Wplus).PSMass())<min) {
-	    min=cur-Flavour(kf::Wplus).PSMass();
+	  if (dabs(cur-Flavour(kf_Wplus).PSMass())<min) {
+	    min=cur-Flavour(kf_Wplus).PSMass();
 	    imin=i;
 	    jmin=j;
 	  }
@@ -139,7 +139,7 @@ void Atlas_TDR_SL_Top_Fitter::Evaluate
   size_t kmax(0);
   double max(0.0);
   for (size_t i(0);i<list.size();++i) {
-    if (list[i]->Flav().Kfcode()==kf::bjet) {
+    if (list[i]->Flav().Kfcode()==kf_bjet) {
       double cur((list[imin]->Momentum()+list[jmin]->Momentum()
 		  +list[i]->Momentum()).PPerp2());
       msg_Debugging()<<"  k = "<<i<<" -> pt_jjb = "<<sqrt(cur)<<"\n";

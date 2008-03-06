@@ -114,7 +114,7 @@ bool Simple_String::CreateMomenta()
       return false;
     }
     const std::vector<Flavour> &constit=
-      hadron->GetConstituents(kf::none);
+      hadron->GetConstituents(kf_none);
     double pz=0.0, phi=ran.Get()*2.0*M_PI;
     for (size_t j=0;j<constit.size();++j) {
       if (constit[j].IsQuark() && constit[j].IsAnti()==i) {

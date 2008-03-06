@@ -43,12 +43,13 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
 {
   p_wavefunctions = new Hadron_WF_Map; 
   Flavour hadron;
-  int     kfcode, fl1,fl2,fl3, help;
+  int     fl1,fl2,fl3, help;
   Hadron_Wave_Function * wavefunction;
 
-  for (int i=0;i<kf_table.Size();i++) {
-    kfcode = kf_table.FromInt(i);
-    hadron = Flavour(kf::code(kfcode));
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end();++kfit) {
+    kf_code kfcode = kfit->first;
+    hadron = Flavour(kfcode);
     if (!hadron.IsHadron() || !hadron.IsOn()) continue;
     
     fl1 = int(kfcode/10)-int(kfcode/100)*10;
@@ -87,8 +88,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
   Flavour                flavs[2];
   Flavour_Pair         * pair;
 
-  flavs[0]     = Flavour(kf::code(fl1)).Bar();
-  flavs[1]     = Flavour(kf::code(fl2));
+  flavs[0]     = Flavour((kf_code)(fl1)).Bar();
+  flavs[1]     = Flavour((kf_code)(fl2));
   pair         = new Flavour_Pair;
   pair->first  = flavs[1];
   pair->second = flavs[0];
@@ -102,7 +103,7 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       if (fl1==1) {
 	wavefunction = new Hadron_Wave_Function;
 	wavefunction->AddToWaves(pair,-1./sqrt(2.));
-	flavs[0]     = Flavour(kf::code(fl1+1));
+	flavs[0]     = Flavour((kf_code)(fl1+1));
 	pair         = new Flavour_Pair;
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
@@ -114,12 +115,12 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  weight       = 1/sqrt(3.);
 	  wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour(kf::code(1));
+	  flavs[0]     = Flavour((kf_code)(1));
 	  pair         = new Flavour_Pair;
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
 	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour(kf::code(3));
+	  flavs[0]     = Flavour((kf_code)(3));
 	  pair         = new Flavour_Pair;
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
@@ -131,7 +132,7 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  if (dabs(weight)>1.e-3) {
 	    wavefunction = new Hadron_Wave_Function;
 	    wavefunction->AddToWaves(pair,weight);
-	    flavs[0]     = Flavour(kf::code(1));
+	    flavs[0]     = Flavour((kf_code)(1));
 	    pair         = new Flavour_Pair;
 	    pair->first  = flavs[0];
 	    pair->second = flavs[0].Bar();
@@ -140,7 +141,7 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  weight         = (2.*costh/sqrt(6.)-sinth/sqrt(3.))
 	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
 	  if (dabs(weight)>1.e-3) {
-	    flavs[0]     = Flavour(kf::code(3));
+	    flavs[0]     = Flavour((kf_code)(3));
 	    pair         = new Flavour_Pair;
 	    pair->first  = flavs[0];
 	    pair->second = flavs[0].Bar();
@@ -160,13 +161,13 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	weight         = (-sinth/sqrt(6.)+costh/sqrt(3.))
 	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
 	if (dabs(weight)>1.e-3) {
-	  flavs[0]     = Flavour(kf::code(1));
+	  flavs[0]     = Flavour((kf_code)(1));
 	  pair         = new Flavour_Pair;
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
 	  if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour(kf::code(2));
+	  flavs[0]     = Flavour((kf_code)(2));
 	  pair         = new Flavour_Pair;
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
@@ -254,20 +255,20 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
   switch (wf) {
   case 1020:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos2*1000+pos3*100+3));
     wavefunction->AddToWaves(pair,1.);
     break;
   case 1030:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos2*1000+pos3*100+3));
     wavefunction->AddToWaves(pair,1.);
     break;
   case 810:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = Flavour((kf_code)(pos1*1000+pos2*100+3));
     wavefunction->AddToWaves(pair,+1.);
     break;
   case 820:
@@ -275,71 +276,71 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
     if (wf==82 || wf==820) di=+1;
                       else di=-1;
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = (pos1>pos2)? Flavour(kf::code(pos1*1000+pos2*100+2+di)) :
-                                Flavour(kf::code(pos2*1000+pos1*100+2+di));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2+di)) :
+                                Flavour((kf_code)(pos2*1000+pos1*100+2+di));
     wavefunction->AddToWaves(pair,+1.);
     break;
   case 100:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos3*1000+pos2*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos3*1000+pos2*100+3));
     wavefunction->AddToWaves(pair,+1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos2));
-    pair->second = (pos1>pos3)? Flavour(kf::code(pos1*1000+pos3*100+3)) : 
-                                Flavour(kf::code(pos3*1000+pos1*100+3)); 
+    pair->first  = Flavour((kf_code)(pos2));
+    pair->second = (pos1>pos3)? Flavour((kf_code)(pos1*1000+pos3*100+3)) : 
+                                Flavour((kf_code)(pos3*1000+pos1*100+3)); 
     wavefunction->AddToWaves(pair,+1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3)); 
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = Flavour((kf_code)(pos1*1000+pos2*100+3)); 
     wavefunction->AddToWaves(pair,+1./sqrt(3.));
     break;    
   case 101:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos3*1000+pos2*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos3*1000+pos2*100+3));
     wavefunction->AddToWaves(pair,1.);
     break;
   case 102:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos2*1000+pos3*100+3));
     wavefunction->AddToWaves(pair,1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos2));
-    pair->second = (pos1>pos3) ? Flavour(kf::code(pos1*1000+pos3*100+3)) :
-                                 Flavour(kf::code(pos3*1000+pos1*100+3));
+    pair->first  = Flavour((kf_code)(pos2));
+    pair->second = (pos1>pos3) ? Flavour((kf_code)(pos1*1000+pos3*100+3)) :
+                                 Flavour((kf_code)(pos3*1000+pos1*100+3));
     wavefunction->AddToWaves(pair,sqrt(2./3.));
     break;
   case 103:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = Flavour((kf_code)(pos2*1000+pos3*100+3));
     wavefunction->AddToWaves(pair,1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos2));
-    pair->second = Flavour(kf::code(pos1*1000+pos3*100+3));
+    pair->first  = Flavour((kf_code)(pos2));
+    pair->second = Flavour((kf_code)(pos1*1000+pos3*100+3));
     wavefunction->AddToWaves(pair,1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = Flavour((kf_code)(pos1*1000+pos2*100+3));
     wavefunction->AddToWaves(pair,1./sqrt(3.));
     break;
   case 81:
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = Flavour((kf_code)(pos1*1000+pos2*100+3));
     wavefunction->AddToWaves(pair,+1./sqrt(3.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = (pos2>pos3)? Flavour(kf::code(pos2*1000+pos3*100+3)) : 
-                                Flavour(kf::code(pos3*1000+pos2*100+3)); 
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+3)) : 
+                                Flavour((kf_code)(pos3*1000+pos2*100+3)); 
     wavefunction->AddToWaves(pair,+1./sqrt(6.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = (pos2>pos3)? Flavour(kf::code(pos2*1000+pos3*100+1)) : 
-                                Flavour(kf::code(pos3*1000+pos2*100+1)); 
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+1)) : 
+                                Flavour((kf_code)(pos3*1000+pos2*100+1)); 
     wavefunction->AddToWaves(pair,+1./sqrt(2.));
     break;
   case 82:
@@ -347,34 +348,34 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
     if (wf==82) di=+1;
            else di=-1;
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = (pos1>pos2)? Flavour(kf::code(pos1*1000+pos2*100+2+di)) :
-                                Flavour(kf::code(pos2*1000+pos1*100+2+di));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2+di)) :
+                                Flavour((kf_code)(pos2*1000+pos1*100+2+di));
     wavefunction->AddToWaves(pair,+1./sqrt(12.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = (pos2>pos3)? Flavour(kf::code(pos2*1000+pos3*100+2+di)) : 
-                                Flavour(kf::code(pos3*1000+pos2*100+2+di)); 
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+2+di)) : 
+                                Flavour((kf_code)(pos3*1000+pos2*100+2+di)); 
     wavefunction->AddToWaves(pair,+1./sqrt(12.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos2));
-    pair->second = (pos1>pos3)? Flavour(kf::code(pos1*1000+pos3*100+2+di)) : 
-                                Flavour(kf::code(pos3*1000+pos1*100+2+di)); 
+    pair->first  = Flavour((kf_code)(pos2));
+    pair->second = (pos1>pos3)? Flavour((kf_code)(pos1*1000+pos3*100+2+di)) : 
+                                Flavour((kf_code)(pos3*1000+pos1*100+2+di)); 
     wavefunction->AddToWaves(pair,+1./sqrt(12.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = (pos1>pos2)? Flavour(kf::code(pos1*1000+pos2*100+2-di)) :
-                                Flavour(kf::code(pos2*1000+pos1*100+2-di));
+    pair->first  = Flavour((kf_code)(pos3));
+    pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2-di)) :
+                                Flavour((kf_code)(pos2*1000+pos1*100+2-di));
     wavefunction->AddToWaves(pair,+1./sqrt(4.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos1));
-    pair->second = (pos2>pos3)? Flavour(kf::code(pos2*1000+pos3*100+2-di)) : 
-                                Flavour(kf::code(pos3*1000+pos2*100+2-di)); 
+    pair->first  = Flavour((kf_code)(pos1));
+    pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+2-di)) : 
+                                Flavour((kf_code)(pos3*1000+pos2*100+2-di)); 
     wavefunction->AddToWaves(pair,+1./sqrt(4.));
     pair         = new Flavour_Pair;
-    pair->first  = Flavour(kf::code(pos2));
-    pair->second = (pos1>pos3)? Flavour(kf::code(pos1*1000+pos3*100+2-di)) : 
-                                Flavour(kf::code(pos3*1000+pos1*100+2-di)); 
+    pair->first  = Flavour((kf_code)(pos2));
+    pair->second = (pos1>pos3)? Flavour((kf_code)(pos1*1000+pos3*100+2-di)) : 
+                                Flavour((kf_code)(pos3*1000+pos1*100+2-di)); 
     wavefunction->AddToWaves(pair,+1./sqrt(4.));
     break;
   }

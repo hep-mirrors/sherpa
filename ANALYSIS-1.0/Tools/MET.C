@@ -49,7 +49,7 @@ MET_Define_Getter::operator()(const Argument_Matrix &parameters) const
     else if (cur[0]=="Flavs" && cur.size()>1) {
       for (size_t i(1);i<cur.size();++i) {
 	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf::code)abs(kf)));
+	flavs.push_back(Flavour((kf_code)abs(kf)));
 	if (kf<0) flavs.back()=flavs.back().Bar();
       }
     }
@@ -92,7 +92,7 @@ void MET_Define::CreateParticleList()
       outlist->push_back(new Particle(*(*inlist)[i]));
     }
   }
-  Particle *met(new Particle(1,Flavour((kf::code)99999),cms));
+  Particle *met(new Particle(1,Flavour((kf_code)99999),cms));
   met->SetNumber(0);
   outlist->push_back(met);
   msg_Debugging()<<"  add  "<<*met<<"\n}\n";

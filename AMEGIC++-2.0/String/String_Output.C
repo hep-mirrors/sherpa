@@ -320,51 +320,51 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  (*pz)<<"-";
 	  norm = -norm;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Z).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf_Z).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
-			      -Flavour(kf::Z).Mass()*Flavour(kf::Z).Width())))) { 
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Z).Mass()),
+			      -Flavour(kf_Z).Mass()*Flavour(kf_Z).Width())))) { 
 	    hit = 1;
-	    (*pz)<<"(1./Complex(sqr(Flavour(kf::Z).Mass()),"
-	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
+	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Z).Mass()),"
+	      <<"-Flavour(kf_Z).Mass()*Flavour(kf_Z).Width()));"<<endl;
 	    break;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Wplus).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::Wplus).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Wplus).Mass()),
-			      -Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Width())))) { 
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Wplus).Mass()),
+			      -Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width())))) { 
 	    hit = 1;
-	    (*pz)<<"(1./Complex(sqr(Flavour(kf::Wplus).Mass()),"
-	      <<"-Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Width()));"<<endl;
+	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Wplus).Mass()),"
+	      <<"-Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width()));"<<endl;
 	    break;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h0).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_h0).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::h0).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf_h0).Mass()),0.);"<<endl;
 	  break;
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf_Z).Mass())))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(sqr(Flavour(kf::Z).Mass())),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(sqr(Flavour(kf_Z).Mass())),0.);"<<endl;
 	  break;
 	}	  
 	// double masses
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::Wplus).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Z).Mass()*Flavour(kf_Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::Wplus).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf_Z).Mass()*Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;	
 	}
-	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Mass()))) { 
 	  hit = 1;
-	  (*pz)<<"Complex(1./sqr(Flavour(kf::Wplus).Mass()*Flavour(kf::Wplus).Mass()),0.);"<<endl;
+	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (ATOOLS::IsEqual(norm,0.5)) {

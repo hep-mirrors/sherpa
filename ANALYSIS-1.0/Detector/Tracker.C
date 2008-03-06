@@ -72,11 +72,11 @@ bool Tracker::Fill(const double E,const double eta,
   return true;
 }
 
-void Tracker::Print(ATOOLS::kf::code kfcode) {
+void Tracker::Print(kf_code kfcode) {
   bool printit(true);
   for (std::list<Track *>::iterator trit=m_tracks.begin();
        trit!=m_tracks.end();trit++) {
-    if (kfcode!=kf::none) {
+    if (kfcode!=kf_none) {
       printit = false;
       if ((*trit)->flav.Kfcode()==kfcode) printit = true;
     }

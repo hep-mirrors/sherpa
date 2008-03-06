@@ -33,7 +33,7 @@ bool Electron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   }
   if (!ATOOLS::IsZero(ptot[0])) {
     ATOOLS::Particle *rem = 
-      new ATOOLS::Particle(-1,ATOOLS::Flavour(ATOOLS::kf::photon),ptot);
+      new ATOOLS::Particle(-1,ATOOLS::Flavour(kf_photon),ptot);
     rem->SetNumber((long int)rem);
     rem->SetInfo('F');
     rem->SetStatus(ATOOLS::part_status::active);
@@ -56,6 +56,6 @@ bool Electron_Remnant::AdjustKinematics()
 ATOOLS::Flavour Electron_Remnant::
 ConstituentType(const ATOOLS::Flavour &flavour) 
 {
-  if (flavour.Kfcode()==ATOOLS::kf::e) return flavour;
-  return ATOOLS::kf::none;
+  if (flavour.Kfcode()==kf_e) return flavour;
+  return kf_none;
 }

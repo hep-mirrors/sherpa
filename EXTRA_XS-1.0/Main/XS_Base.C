@@ -115,7 +115,7 @@ public:
 void XS_Base::SortFlavours(ATOOLS::Flavour *flavs,const size_t &n)
 {
   std::vector<ATOOLS::Flavour> fl(n);
-  ATOOLS::Flavour heaviest(ATOOLS::kf::photon);
+  ATOOLS::Flavour heaviest(kf_photon);
   for (size_t i(0);i<n;++i) {
     fl[i]=flavs[i];
     if (flavs[i].Mass()>heaviest.Mass()) heaviest=flavs[i];
@@ -162,13 +162,13 @@ std::string XS_Base::GenerateName(const size_t nin,const size_t nout,
   std::string name(ATOOLS::ToString(nin)+"_"+ATOOLS::ToString(nout));
   for (size_t i(0);i<nin;++i) {
     name+="_"+std::string(flavours[i].IDName());
-    if (flavours[i].Kfcode()==kf::quark && flavours[i].IsAnti())
+    if (flavours[i].Kfcode()==kf_quark && flavours[i].IsAnti())
       name+="b";
   }
   name+="__";
   for (size_t i(nin);i<nin+nout;++i) {
     name+="_"+std::string(flavours[i].IDName());
-    if (flavours[i].Kfcode()==kf::quark && flavours[i].IsAnti())
+    if (flavours[i].Kfcode()==kf_quark && flavours[i].IsAnti())
       name+="b";
   }
   return name;

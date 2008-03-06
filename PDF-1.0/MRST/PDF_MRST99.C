@@ -21,18 +21,18 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   m_type=std::string("MRST99")+ATOOLS::ToString(m_set);
   m_bunch  = _bunch;
   m_anti   = 1;
-  if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti = -1;
+  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti = -1;
 
   if (p_proton==NULL) p_proton = new c_mrst(m_path);
 
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour(kf::code(i)));
-    m_partons.push_back(Flavour(kf::code(i)).Bar());
+    m_partons.push_back(Flavour((kf_code)(i)));
+    m_partons.push_back(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf::gluon));
-  m_partons.push_back(Flavour(kf::jet));
-  m_partons.push_back(Flavour(kf::quark));
-  m_partons.push_back(Flavour(kf::quark).Bar());
+  m_partons.push_back(Flavour(kf_gluon));
+  m_partons.push_back(Flavour(kf_jet));
+  m_partons.push_back(Flavour(kf_quark));
+  m_partons.push_back(Flavour(kf_quark).Bar());
 
   m_xmin=MRST99::xmin;
   m_xmax=MRST99::xmax;
@@ -84,19 +84,19 @@ double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl)
   if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
   switch (kfc) {
-  case  ATOOLS::kf::d : return m_rescale*(m_content.dnv + m_content.dsea);
-  case -ATOOLS::kf::d : return m_rescale*m_content.dsea; 
-  case  ATOOLS::kf::u : return m_rescale*(m_content.upv + m_content.usea);
-  case -ATOOLS::kf::u : return m_rescale*m_content.usea; 
-  case  ATOOLS::kf::s :
-  case -ATOOLS::kf::s : return m_rescale*m_content.str;
-  case  ATOOLS::kf::c : 
-  case -ATOOLS::kf::c : return m_rescale*m_content.chm;
-  case  ATOOLS::kf::b : 
-  case -ATOOLS::kf::b : return m_rescale*m_content.bot;
-  case ATOOLS::kf::gluon : 
+  case  kf_d : return m_rescale*(m_content.dnv + m_content.dsea);
+  case -kf_d : return m_rescale*m_content.dsea; 
+  case  kf_u : return m_rescale*(m_content.upv + m_content.usea);
+  case -kf_u : return m_rescale*m_content.usea; 
+  case  kf_s :
+  case -kf_s : return m_rescale*m_content.str;
+  case  kf_c : 
+  case -kf_c : return m_rescale*m_content.chm;
+  case  kf_b : 
+  case -kf_b : return m_rescale*m_content.bot;
+  case kf_gluon : 
   // pseudo anti gluon for anti-proton
-  case -ATOOLS::kf::gluon :return m_rescale*m_content.glu; 
+  case -kf_gluon :return m_rescale*m_content.glu; 
   default: return 0.;
   }
 }

@@ -28,7 +28,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
   sprintf(help,"%i",num+1);
   std::string number         = string(help); 
   int         flav           = dataread->GetValue<int>("BUNCH_"+number);  
-  bunch_particle             = Flavour(kf::code(abs(flav)));
+  bunch_particle             = Flavour((kf_code)abs(flav));
   if (flav<0) bunch_particle = bunch_particle.Bar();
 
   if (dataread->GetValue<Switch::code>("ISR_"+number)) {    
@@ -44,7 +44,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       msg_Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
       return new GRVph_Fortran_Interface(bunch_particle);
     }
-    if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
+    if ((bunch_particle==Flavour(kf_p_plus) || (bunch_particle==Flavour(kf_p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
       Switch::code kmr      = dataread->GetValue<Switch::code>("KMR_DUPDF");
       Switch::code cont     = dataread->GetValue<Switch::code>("CONTINUE_PDF");

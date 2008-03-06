@@ -55,14 +55,14 @@ void NLL_Sudakov::PrepareMap()
 {
   int  smode=Sudakov::numeric;
   NLL_Dummy_Sudakov * dsud(new NLL_Dummy_Sudakov());
-  m_sudakovs[Flavour(kf::none)] = dsud;
+  m_sudakovs[Flavour(kf_none)] = dsud;
   NLL_Combined_Sudakov *csud(NULL);
   NLL_Single_Sudakov   *ssud(NULL);
   Flavour flav;
   bpm::code bpmode((bpm::code)(m_mode));
   //Quark Sudakovs
   for (int k=1;k<=6;++k) {
-    flav=Flavour(kf::code(k));
+    flav=Flavour((kf_code)(k));
     ssud = new NLL_Single_Sudakov
       (new GammaQ_QG_Lambda
        (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
@@ -72,7 +72,7 @@ void NLL_Sudakov::PrepareMap()
   
   if (rpa.gen.ModelName()==std::string("MSSM")) {
     //Gluino Sudakov
-    flav=Flavour(kf::Gluino);
+    flav=Flavour(kf_Gluino);
     GammaQ_QG_Lambda * GL = new GammaQ_QG_Lambda
       (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor);
     GL->SetColFac(CA);
@@ -83,7 +83,7 @@ void NLL_Sudakov::PrepareMap()
     for (short int l=1;l<3;l++) {
       for (short int i=1;i<7;i++) {
 	int fl = l*1000000 + i;
-	flav = Flavour(kf::code(fl));
+	flav = Flavour((kf_code)(fl));
 	std::cout<<" flav is : "<<flav<<" mass is "<<flav.PSMass()<<std::endl;  
 	ssud = new NLL_Single_Sudakov
 	  (new GammasQ_sQG_Lambda
@@ -100,18 +100,18 @@ void NLL_Sudakov::PrepareMap()
     (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
   csud->Add(ssud);
   for (int k=1;k<=6;++k) {
-    flav=Flavour(kf::code(k));
+    flav=Flavour((kf_code)(k));
     ssud = new NLL_Single_Sudakov
       (new GammaG_QQ_Lambda
        (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
     csud->Add(ssud);
   }
-  m_sudakovs[Flavour(kf::gluon)]=csud;
+  m_sudakovs[Flavour(kf_gluon)]=csud;
 }
 
 void NLL_Sudakov::FixLambda2() 
 {
-  m_mu2    = sqr(Flavour(kf::Z).Mass());
+  m_mu2    = sqr(Flavour(kf_Z).Mass());
   m_asmu   = (*as)(m_mu2);
   m_lambda = sqrt( m_mu2 * exp(-4.*M_PI/(BETA0 * m_asmu)));
 }                 
@@ -121,5 +121,5 @@ NLL_Sudakov_Base &  NLL_Sudakov::Delta(const ATOOLS::Flavour & fl) {
   if (sit!=m_sudakovs.end()) return *(sit->second);
   msg_Out()<<"ERROR in  NLL_Sudakov::Delta : "<<std::endl
 		   <<"   Did not find sudakov form factor for "<<fl<<", return default."<<std::endl;
-  return *(m_sudakovs[ATOOLS::Flavour(ATOOLS::kf::none)]);
+  return *(m_sudakovs[ATOOLS::Flavour(kf_none)]);
 }

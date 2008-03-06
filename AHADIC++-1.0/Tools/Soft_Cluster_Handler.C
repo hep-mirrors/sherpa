@@ -126,7 +126,7 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
       if (hadron.Mass()+m_photonenergy<cluster->Mass()) {
 	// selected hadron for transformation is lighter, compensate with photon
 	m_ctrans[cluster].push_back(hadron);
-	m_ctrans[cluster].push_back(Flavour(kf::photon));
+	m_ctrans[cluster].push_back(Flavour(kf_photon));
       }
       else {
 	// selected hadron for transformation is heavier, select a new one
@@ -139,7 +139,7 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	else {
 	  // force decay into lighter hadron plus photon, irrespecitve of how soft.
 	  m_ctrans[cluster].push_back(hadron);
-	  m_ctrans[cluster].push_back(Flavour(kf::photon));
+	  m_ctrans[cluster].push_back(Flavour(kf_photon));
 	}
       }
     }
@@ -157,7 +157,7 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
  
 double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
-  had1 = had2 = Flavour(kf::none);
+  had1 = had2 = Flavour(kf_none);
   Flavour_Pair flpair;
   flpair.first  = cluster->GetTrip()->m_flav;
   flpair.second = cluster->GetAnti()->m_flav;
@@ -196,7 +196,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   }
   if (totweight==0. && altweight==0.) return 0.;
 
-  had1 = had2 = Flavour(kf::none); 
+  had1 = had2 = Flavour(kf_none); 
   double disc = totweight*ran.Get();
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
@@ -214,7 +214,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
     }
   }
 
-  Flavour alt1 = Flavour(kf::none), alt2 = Flavour(kf::none);
+  Flavour alt1 = Flavour(kf_none), alt2 = Flavour(kf_none);
   if (altweight!=0) {
     disc = altweight*ran.Get();
     for (Double_Transition_Siter decit=dtliter->second->begin();
@@ -335,7 +335,7 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
 {
   double wt(0.),maxwt(0.);
   Single_Transition_Siter start=stl->begin();
-  if (lighter && hadron!=Flavour(kf::none)) {
+  if (lighter && hadron!=Flavour(kf_none)) {
     for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
       if (siter->first==hadron) {
 	start = siter; 
@@ -367,7 +367,7 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
 {
   double wt(0.), totweight(0.), minwidth(1.e6);
   Single_Transition_Siter start=stl->begin();
-  if (lighter && hadron!=Flavour(kf::none)) {
+  if (lighter && hadron!=Flavour(kf_none)) {
     for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
       if (siter->first==hadron) {
 	start = siter;

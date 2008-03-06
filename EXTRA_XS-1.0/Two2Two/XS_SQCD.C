@@ -45,7 +45,7 @@ XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const size_t nin,const size_t nout,
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=std::abs(p_model->Constant("g_3"));
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_nstrong=4;
 }
 
@@ -133,7 +133,7 @@ XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const size_t nin,const size_t nout,
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=std::abs(p_model->Constant("g_3"));
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
   m_nstrong=4;
@@ -229,7 +229,7 @@ XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const size_t nin,const size_t nout,
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=std::abs(p_model->Constant("g_3"));
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
   m_nstrong=4;
@@ -363,7 +363,7 @@ XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const size_t nin,const size_t nout,
   m_a=fl[0].IsAnti();
   m_g3=std::abs(p_model->Constant("g_3"));
   m_msquark2=sqr(p_flavours[2].Mass());
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_nstrong=4;
 }
 
@@ -450,7 +450,7 @@ XS_q1q1_sQ1LsQ1R::XS_q1q1_sQ1LsQ1R(const size_t nin,const size_t nout,
   m_g3=std::abs(p_model->Constant("g_3"));
   m_msq32=sqr(p_flavours[2].Mass());
   m_msq42=sqr(p_flavours[3].Mass());
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_nstrong=4;
 }
 
@@ -539,7 +539,7 @@ XS_q1qbar1_sQ1sQbar1::XS_q1qbar1_sQ1sQbar1(const size_t nin,const size_t nout,
   m_p=1-m_a;
   m_r=!SuperPartner(fl[2],fl[0]);
   m_g3=std::abs(p_model->Constant("g_3"));
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msquark2=sqr(fl[2].Mass());
   m_nstrong=4;
 }
@@ -623,8 +623,8 @@ XS_q1qbar1_GluinoGluino::XS_q1qbar1_GluinoGluino(const size_t nin,const size_t n
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   int flav = abs(fl[0].Kfcode());
-  m_msqL2=sqr(Flavour(kf::code(1000000+flav)).Mass());
-  m_msqR2=sqr(Flavour(kf::code(2000000+flav)).Mass());
+  m_msqL2=sqr(Flavour((kf_code)(1000000+flav)).Mass());
+  m_msqR2=sqr(Flavour((kf_code)(2000000+flav)).Mass());
   m_g3=std::abs(p_model->Constant("g_3"));
   m_nstrong=4;
 }
@@ -832,7 +832,7 @@ XS_q1g_sQ1Gluino::XS_q1g_sQ1Gluino(const size_t nin,const size_t nout,
   m_a=fl[m_iniq].IsAnti();
   m_p=1-m_a;
   m_msquark2=sqr(p_flavours[m_finq].Mass());
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_g3=std::abs(p_model->Constant("g_3"));
   m_nstrong=4;
 }
@@ -939,7 +939,7 @@ XS_gg_GluinoGluino::XS_gg_GluinoGluino(const size_t nin,const size_t nout,
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_g3=std::abs(p_model->Constant("g_3"));
-  m_mgluino2=sqr(Flavour(kf::Gluino).Mass());
+  m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_nstrong=4;
 }
 

@@ -31,7 +31,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 
   m_type=m_set;
   m_bunch = _bunch;
-  if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
+  if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   int iset = 0;
   
   if (m_set==std::string("cteq6m"))  iset = 1;
@@ -55,13 +55,13 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   }
   
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour(kf::code(i)));
-    m_partons.push_back(Flavour(kf::code(i)).Bar());
+    m_partons.push_back(Flavour((kf_code)(i)));
+    m_partons.push_back(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf::gluon));
-  m_partons.push_back(Flavour(kf::jet));
-  m_partons.push_back(Flavour(kf::quark));
-  m_partons.push_back(Flavour(kf::quark).Bar());                               
+  m_partons.push_back(Flavour(kf_gluon));
+  m_partons.push_back(Flavour(kf_jet));
+  m_partons.push_back(Flavour(kf_quark));
+  m_partons.push_back(Flavour(kf_quark).Bar());                               
 }
 
 PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
@@ -110,9 +110,9 @@ double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   if ((m_x>m_xmax && m_rescale<1.) || m_rescale<0.) return 0.;
   int cteqindex;
   switch (infl.Kfcode()) {
-  case ATOOLS::kf::gluon: cteqindex=0;                  break;
-  case ATOOLS::kf::d:     cteqindex=m_anti*int(infl)*2; break;
-  case ATOOLS::kf::u:     cteqindex=m_anti*int(infl)/2; break;
+  case kf_gluon: cteqindex=0;                  break;
+  case kf_d:     cteqindex=m_anti*int(infl)*2; break;
+  case kf_u:     cteqindex=m_anti*int(infl)/2; break;
   default:                cteqindex=m_anti*int(infl);   break;
   }
   if (!m_calculated[5-cteqindex]) {

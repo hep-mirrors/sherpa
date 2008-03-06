@@ -51,7 +51,7 @@ int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
         if ( BR<1.e-6 ) BR=1.e-6;
         dc = new Decay_Channel(dt->Flav());						//   create new decay channel
         for (size_t j=0;j<helpkfc.size();++j) {
-          flav = Flavour(kf::code(abs(helpkfc[j])));
+          flav = Flavour((kf_code)(abs(helpkfc[j])));
           if (helpkfc[j]<0) flav = flav.Bar();
           dc->AddDecayProduct(flav);				
         }

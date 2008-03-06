@@ -44,16 +44,19 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
   // SM thresholds for strong interactions, i.e. QCD
   //------------------------------------------------------------
   m_nth = 0;
-  Fl_Iter fli;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) 
-    if (flav.Strong() && flav.Kfcode()<=kf::gluon) m_nth++;
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
+    if (Flavour(kfit->first).Strong()) m_nth++;
+  }
 
   p_thresh        = new AsDataSet[m_nth+1]; 
   double * masses = new double[m_nth];
   
-  short int count = 0;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.Strong() && flav.Kfcode()<=kf::gluon) {
+  int count = 0;
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
+    Flavour flav(kfit->first);
+    if (flav.Strong()) {
       masses[count] = sqr(flav.PSMass());
       count++;
     }

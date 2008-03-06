@@ -60,9 +60,9 @@ void Kt_Algorithm::AddToKtlist(double kt2) {
 
 void Kt_Algorithm::AddToJetlist(const Vec4D & mom, int bf) {
   if (p_jets) {
-    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
-    else p_jets->push_back(new Particle(p_jets->size(),bf>0?Flavour(kf::bjet):
-					Flavour(kf::bjet).Bar(),mom));
+    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_jet),mom));
+    else p_jets->push_back(new Particle(p_jets->size(),bf>0?Flavour(kf_bjet):
+					Flavour(kf_bjet).Bar(),mom));
   }
 }
 
@@ -87,13 +87,13 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
       //    if (!(*it)->Flav().IsLepton()) {
       moms[n]  = ((*it)->Momentum()); 
       bflag[n] = false;
-      if (m_bflag==0) bflag[n] = (((*it)->Flav()).Kfcode()==kf::b || 
+      if (m_bflag==0) bflag[n] = (((*it)->Flav()).Kfcode()==kf_b || 
 				  (*bhad)(*it) ||
-				  ((*it)->Flav()).Kfcode()==kf::bjet);
+				  ((*it)->Flav()).Kfcode()==kf_bjet);
       else if (m_bflag==-1) bflag[n] = (1-2*(*it)->Flav().IsAnti())*
-			      (((*it)->Flav()).Kfcode()==kf::b || 
+			      (((*it)->Flav()).Kfcode()==kf_b || 
 			       (*bhad)(*it) ||
-			       ((*it)->Flav()).Kfcode()==kf::bjet);
+			       ((*it)->Flav()).Kfcode()==kf_bjet);
       ++n;
     }
   }

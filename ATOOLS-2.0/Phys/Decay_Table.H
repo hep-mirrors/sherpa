@@ -54,13 +54,13 @@ namespace ATOOLS {
     if (i<0 || i>(int)m_flouts.size()) {
       msg_Out()<<"WARNING in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
 	       <<"   out of bounds, return no flavour."<<std::endl;
-      return Flavour(kf::none);
+      return Flavour(kf_none);
     }
     for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
       if (i==0) return (*flit);
       --i;
     }
-    return Flavour(kf::none);
+    return Flavour(kf_none);
   }
 
 

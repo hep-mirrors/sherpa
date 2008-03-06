@@ -14,7 +14,7 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour,double fmed) :
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon);
   m_alpha    = 1.;
 }
 
@@ -23,7 +23,7 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon);
   m_alpha    = p_tools->GetASmax();
   if (s_kfactorscheme==1) m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
@@ -96,18 +96,18 @@ double q_qg::Integral(double zmin, double zmax)
 g_gg::g_gg(double fmed) : 
   p_tools(0), m_kfactor(1.0), m_fmed(fmed)  
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon); 
   m_alpha    = 1.;
 }
 
 g_gg::g_gg(Sudakov_Tools * _tools,double fmed) : 
   p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 { 
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
-  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
+  m_flavs[2] = ATOOLS::Flavour(kf_gluon); 
   m_alpha    = p_tools->GetASmax();
   if (s_kfactorscheme==1)
     m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
@@ -217,7 +217,7 @@ double g_gg::Integral(double zmin, double zmax)
 g_qq::g_qq(ATOOLS::Flavour quarkflavour,double fmed) : 
   p_tools(0), m_fmed(fmed)  
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = quarkflavour.Bar(); 
   m_alpha    = 1.;
@@ -226,7 +226,7 @@ g_qq::g_qq(ATOOLS::Flavour quarkflavour,double fmed) :
 g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
   p_tools (_tools), m_fmed(fmed)  
 {
-  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = quarkflavour.Bar(); 
   m_alpha    = p_tools->GetASmax();
@@ -296,7 +296,7 @@ q_gq::q_gq(ATOOLS::Flavour quarkflavour,double fmed) :
   m_kfactor(1.0), m_fmed(fmed) 
 {
   m_flavs[0] = quarkflavour; 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[2] = quarkflavour; 
   m_alpha    = 1.;
 }
@@ -305,7 +305,7 @@ q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
   p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
-  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[2] = quarkflavour; 
   m_alpha    = p_tools->GetASmax();
   if (s_kfactorscheme==1) m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;

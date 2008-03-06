@@ -8,7 +8,7 @@ namespace ANALYSIS {
   public:
     Track() : 
       used(false), eta(0.), phi(0.), mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
-      flav(ATOOLS::Flavour(ATOOLS::kf::none)) {}
+      flav(ATOOLS::Flavour(kf_none)) {}
 
     bool   used;
     double eta,phi;

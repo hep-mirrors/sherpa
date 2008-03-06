@@ -142,7 +142,7 @@ double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour)
 
 ATOOLS::Flavour Remnant_Base::ConstituentType(const ATOOLS::Flavour &flavour) 
 {
-  return ATOOLS::kf::none;
+  return kf_none;
 }
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 

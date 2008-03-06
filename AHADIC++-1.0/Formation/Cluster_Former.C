@@ -20,7 +20,7 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     cluster = new Cluster((*pit1),(*pit2));
     clout->push_back(cluster);
 
-    Particle * self = new Particle(-1,Flavour(kf::cluster),cluster->Momentum());
+    Particle * self = new Particle(-1,Flavour(kf_cluster),cluster->Momentum());
     self->SetNumber();
     self->SetStatus(part_status::active);
     self->SetInfo('C');

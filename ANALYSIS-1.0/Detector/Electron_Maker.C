@@ -71,7 +71,7 @@ Electron_Maker::Electron_Maker(Primitive_Analysis * ana,const std::string mode) 
   m_R2EMiso(sqr(0.2)),m_totEM(5.0),m_minEM(1.),
   m_trackmode(std::string("exact"))
 { 
-  m_kfcode=kf::e;
+  m_kfcode=kf_e;
   GetElements();
 }
 
@@ -148,7 +148,7 @@ void Electron_Maker::BuildMatchedClusters() {
       if (tracks.size()>0) {
 	if (m_trackmode=="exact") {
 	  if (tracks.size()==1 && !(*tracks.begin())->used &&
-	      (*tracks.begin())->flav.Kfcode()==kf::e) {
+	      (*tracks.begin())->flav.Kfcode()==kf_e) {
 	    matched = true;
 	    track   = (*tracks.begin());
 	  }
@@ -164,7 +164,7 @@ void Electron_Maker::BuildMatchedClusters() {
 	else if (m_trackmode=="any_electron") {
 	  for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
 	    if (!(*trit)->used &&
-		((*trit)->flav==Flavour(kf::e)||(*trit)->flav==Flavour(kf::e).Bar())) {
+		((*trit)->flav==Flavour(kf_e)||(*trit)->flav==Flavour(kf_e).Bar())) {
 	      matched = true; 
 	      track   = (*trit);
 	      break;

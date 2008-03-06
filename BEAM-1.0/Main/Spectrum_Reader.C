@@ -103,7 +103,7 @@ Spectrum_Reader::Spectrum_Reader(const Flavour beam, const double energy,
   m_weight=1.;
   m_mode=0;
   m_remnant = m_beam;
-  m_bunch   = Flavour(kf::photon);  // may be overwritten from file below!
+  m_bunch   = Flavour(kf_photon);  // may be overwritten from file below!
 
   ReadFromFile();
 
@@ -147,8 +147,8 @@ void Spectrum_Reader::ReadFromFile()
 	m_mode=0;
       if (buffer.find("electron_spectrum")!=std::string::npos ||
 	  buffer.find("electron_spec")!=std::string::npos) {
-	m_bunch=Flavour(kf::e);
-	if (m_bunch==m_beam) m_remnant=Flavour(kf::photon);
+	m_bunch=Flavour(kf_e);
+	if (m_bunch==m_beam) m_remnant=Flavour(kf_photon);
 	else {
 	  msg_Out()<<"ERROR in Spectrum_Reader::ReadFromfile something wrong in beam definition"<<std::endl;
 	}
@@ -343,7 +343,7 @@ void Spectrum_Reader::PrintSpectra(std::string name,int) {
   std::ofstream f(name.c_str());
   for (double x=0.001; x<=1.; x+=0.003) {
     CalculateWeight(x,1.);
-    double y=Weight(Flavour(kf::photon));
+    double y=Weight(Flavour(kf_photon));
     double p=Polarisation();
     f<<x<<"  "<<y<<"  "<<p<<std::endl;
   }

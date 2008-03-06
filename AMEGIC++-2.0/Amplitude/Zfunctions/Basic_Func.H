@@ -31,7 +31,7 @@ namespace AMEGIC {
 
   class Argument {
   public:
-    ATOOLS::kf::code        kfcode;
+    kf_code        kfcode;
     Spinor::code    spinortype;
     Direction::code direction;
     int             numb;

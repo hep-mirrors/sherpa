@@ -420,7 +420,7 @@ void Amegic::ReadInProcessfile(string file)
 
 	    do {
 	      for (size_t i=0;i<AppNum.size();i++) {
-		Flavour afl=Flavour(kf::code(iabs(AppKf[i])));
+		Flavour afl=Flavour((kf_code)(iabs(AppKf[i])));
 		Pol_Info apl=Pol_Info(afl);
 		for (int j=0;j<ii[i];j++) AppPI[i]->m_sublist[0].push_back(new Process_Info(&afl,&apl));
 	      }
@@ -531,9 +531,9 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	      else {
 		msg_Out()<<"Ignored process: ";
-		for (short int i=0;i<nIS;i++) msg_Out()<<" "<<IS[i].Name();
+		for (short int i=0;i<nIS;i++) msg_Out()<<" "<<IS[i].IDName();
 		msg_Out()<<" -> ";
-		for (short int i=0;i<nFS;i++) msg_Out()<<FS[i].Name()<<" ";
+		for (short int i=0;i<nFS;i++) msg_Out()<<FS[i].IDName()<<" ";
 	      msg_Out()<<", kinematically not allowed."<<endl;
 	      }	    
 	      
@@ -770,7 +770,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf,std::vector<in
   pl = new Pol_Info[count];
   
   for (i=0;i<count;i++) {
-    fl[i] = Flavour(kf::code(iabs(ii[i])));
+    fl[i] = Flavour((kf_code)(iabs(ii[i])));
     if (ii[i]<0) fl[i] = fl[i].Bar();
     pl[i]=Pol_Info(fl[i]);
 
@@ -853,6 +853,7 @@ bool Amegic::CalculateTotalXSec(string _resdir,int mode)
 
 bool Amegic::CalculateBranchingWidths(string _resdir) {
   //return p_decs->CalculateWidths(_resdir);
+  return false;
 }
 
 void Amegic::SetResDir(string _respath) {

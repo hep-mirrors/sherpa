@@ -47,8 +47,8 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E,
   m_inipt2=blob->ConstOutParticle(0)->Momentum().PPerp2();
   m1->maxpt2=m1->pt2lcm=m_inipt2;
   m2->maxpt2=m2->pt2lcm=m_inipt2;
-  m1->dir=m1->part->Momentum()[3]>0.0?1.0:-1.0;
-  m2->dir=m2->part->Momentum()[3]>0.0?1.0:-1.0;
+  m1->dir=m1->part->Momentum()[3]>0.0?1:-1;
+  m2->dir=m2->part->Momentum()[3]>0.0?1:-1;
 }
 
 void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E,

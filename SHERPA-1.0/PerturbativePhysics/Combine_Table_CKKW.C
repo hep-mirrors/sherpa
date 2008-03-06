@@ -81,7 +81,7 @@ void Combine_Table_CKKW::FillTable(Leg **legs,const int nlegs,const int nampl)
 
 CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
 {
-  if (cit->first.m_flav.Kfcode()==kf::none) {
+  if (cit->first.m_flav.Kfcode()==kf_none) {
     cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     cit->second.m_pt2ij=p_jf->MTij2
       (p_moms[cit->first.m_i],p_moms[cit->first.m_j],

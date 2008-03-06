@@ -182,8 +182,8 @@ namespace EXTRAXS {
   };
  
   inline bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm) {
-    if (susy==ATOOLS::Flavour(ATOOLS::kf::Gluino) && 
-	sm==ATOOLS::Flavour(ATOOLS::kf::gluon)) return true;
+    if (susy==ATOOLS::Flavour(kf_Gluino) && 
+	sm==ATOOLS::Flavour(kf_gluon)) return true;
     if (susy.IsSquark() && sm.IsQuark() &&
 	((susy.IsAnti() && sm.IsAnti()) || (!susy.IsAnti() && !sm.IsAnti()))) {
       if (abs(sm.Kfcode()) == (abs(susy.Kfcode())-1000000) ||

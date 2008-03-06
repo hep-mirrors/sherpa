@@ -45,7 +45,7 @@ void HepMC_Interface::InitTheMap()
   p_particledatatable = new DefaultConfig::ParticleDataTable();
   ATOOLS::Fl_Iter fli;
   HepPDT::TableBuilder *build = new HepPDT::TableBuilder(*p_particledatatable);
-  for (ATOOLS::Flavour flav=fli.first();flav!=ATOOLS::Flavour(ATOOLS::kf::none);flav=fli.next()) {
+  for (ATOOLS::Flavour flav=fli.first();flav!=ATOOLS::Flavour(kf_none);flav=fli.next()) {
     if (flav.IsOn() && flav.Size()==1) {
       HepPDT::TempParticleData& tpd1 = build->getParticleData(HepPDT::ParticleID(flav.HepEvt()));
       tpd1.tempParticleName=flav.TexName();

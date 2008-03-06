@@ -16,22 +16,22 @@ Constituents::Constituents(bool no_diquarks) :
 
   // Gluon
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_glue"),2,flwt,spwt);
-  CCMap[Flavour(kf::gluon)] = cc;
+  CCMap[Flavour(kf_gluon)] = cc;
 
   // Light quarks
   double sfrac(hadpars.Get("Strange_fraction")), bfrac(hadpars.Get("Baryon_fraction"));
   double wt(1.-bfrac);
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_down"),1,1.,sm);
-  CCMap[Flavour(kf::d)] = cc;
+  CCMap[Flavour(kf_d)] = cc;
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_up"),1,1.,sm);
-  CCMap[Flavour(kf::u)] = cc;  
+  CCMap[Flavour(kf_u)] = cc;  
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,sfrac,sm);
-  CCMap[Flavour(kf::s)] = cc;
+  CCMap[Flavour(kf_s)] = cc;
 
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_charm"),1,0.,sm);
-  CCMap[Flavour(kf::c)] = cc;
+  CCMap[Flavour(kf_c)] = cc;
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_bottom"),1,0.,sm);
-  CCMap[Flavour(kf::b)] = cc;
+  CCMap[Flavour(kf_b)] = cc;
 
   if (!no_diquarks) {
     // Light Di-quarks, spin 0
@@ -40,63 +40,63 @@ Constituents::Constituents(bool no_diquarks) :
     double sp1sup(hadpars.Get("P_di_1_by_P_di_0"));
 
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud0"),0,bfrac,sm);
-    CCMap[Flavour(kf::ud_0)] = cc;
+    CCMap[Flavour(kf_ud_0)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd0"),0,bfrac*qssup,sm);
-    CCMap[Flavour(kf::sd_0)] = cc;
+    CCMap[Flavour(kf_sd_0)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_su0"),0,bfrac*qssup,sm);
-    CCMap[Flavour(kf::su_0)] = cc;
+    CCMap[Flavour(kf_su_0)] = cc;
     
     // Light Di-quarks, spin 1
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_dd1"),2,3.*bfrac*sp1sup,sm);
-    CCMap[Flavour(kf::dd_1)] = cc;
+    CCMap[Flavour(kf_dd_1)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud1"),2,3.*bfrac*sp1sup,sm);
-    CCMap[Flavour(kf::ud_1)] = cc;
+    CCMap[Flavour(kf_ud_1)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_uu1"),2,3.*bfrac*sp1sup,sm);
-    CCMap[Flavour(kf::uu_1)] = cc;
+    CCMap[Flavour(kf_uu_1)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd1"),2,3.*bfrac*sp1sup*qssup,sm);
-    CCMap[Flavour(kf::sd_1)] = cc;
+    CCMap[Flavour(kf_sd_1)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_su1"),2,3.*bfrac*sp1sup*qssup,sm);
-    CCMap[Flavour(kf::su_1)] = cc;
+    CCMap[Flavour(kf_su_1)] = cc;
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_ss1"),2,3.*bfrac*sp1sup*sssup,sm);
-    CCMap[Flavour(kf::ss_1)] = cc;
+    CCMap[Flavour(kf_ss_1)] = cc;
 
     if (!no_heavies) {
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cd0"),0,0.,sm);
-      CCMap[Flavour(kf::cd_0)] = cc;
+      CCMap[Flavour(kf_cd_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cu0"),0,0.,sm);
-      CCMap[Flavour(kf::cu_0)] = cc;
+      CCMap[Flavour(kf_cu_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cs0"),0,0.,sm);
-      CCMap[Flavour(kf::cs_0)] = cc;
+      CCMap[Flavour(kf_cs_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cd1"),0,0.,sm);
-      CCMap[Flavour(kf::cd_1)] = cc;
+      CCMap[Flavour(kf_cd_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cu1"),0,0.,sm);
-      CCMap[Flavour(kf::cu_1)] = cc;
+      CCMap[Flavour(kf_cu_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cs1"),0,0.,sm);
-      CCMap[Flavour(kf::cs_1)] = cc;
+      CCMap[Flavour(kf_cs_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_cc1"),0,0.,sm);
-      CCMap[Flavour(kf::cc_1)] = cc;
+      CCMap[Flavour(kf_cc_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bd0"),0,0.,sm);
-      CCMap[Flavour(kf::bd_0)] = cc;
+      CCMap[Flavour(kf_bd_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bu0"),0,0.,sm);
-      CCMap[Flavour(kf::bu_0)] = cc;
+      CCMap[Flavour(kf_bu_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bs0"),0,0.,sm);
-      CCMap[Flavour(kf::bs_0)] = cc;
+      CCMap[Flavour(kf_bs_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bc0"),0,0.,sm);
-      CCMap[Flavour(kf::bc_0)] = cc;
+      CCMap[Flavour(kf_bc_0)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bd1"),0,0.,sm);
-      CCMap[Flavour(kf::bd_1)] = cc;
+      CCMap[Flavour(kf_bd_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bu1"),0,0.,sm);
-      CCMap[Flavour(kf::bu_1)] = cc;
+      CCMap[Flavour(kf_bu_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bs1"),0,0.,sm);
-      CCMap[Flavour(kf::bs_1)] = cc;
+      CCMap[Flavour(kf_bs_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bc1"),0,0.,sm);
-      CCMap[Flavour(kf::bc_1)] = cc;
+      CCMap[Flavour(kf_bc_1)] = cc;
       cc = new ConstituentCharacteristic(hadpars.Get("Mass_bb1"),0,0.,sm);
-      CCMap[Flavour(kf::bb_1)] = cc;
+      CCMap[Flavour(kf_bb_1)] = cc;
     }
   }
   for (FlavCCMap_Iterator cmit=CCMap.begin(); cmit!=CCMap.end();cmit++) {
-    if (cmit->first!=Flavour(kf::gluon) &&
+    if (cmit->first!=Flavour(kf_gluon) &&
 	cmit->second->Mass()<m_minmass) m_minmass = cmit->second->Mass();
   }
 }

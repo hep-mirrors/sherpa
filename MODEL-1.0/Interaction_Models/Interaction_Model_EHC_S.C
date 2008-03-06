@@ -14,7 +14,7 @@ Interaction_Model_EHC_S::Interaction_Model_EHC_S(MODEL::Model_Base * _model,
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
-  double hmass2 = sqr(Flavour(kf::h0).Mass());
+  double hmass2 = sqr(Flavour(kf_h0).Mass());
 
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
 		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
@@ -38,16 +38,16 @@ Interaction_Model_EHC_S::Interaction_Model_EHC_S(MODEL::Model_Base * _model,
 
 void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  //Flavour flh0(kf::h0);
+  //Flavour flh0(kf_h0);
   
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
   for (int i=25;i<36;i+=10) {
-    Flavour flh = Flavour(kf::code(i));
+    Flavour flh = Flavour((kf_code)(i));
     if (!flh.IsOn()) return;
     
-    Flavour flg(kf::gluon);
+    Flavour flg(kf_gluon);
     // Gluon h Gluon
     if (flg.IsOn()) {
       vertex[vanz].in[0] = flg;
@@ -73,7 +73,7 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
       vertex[vanz].on      = 1;
       vertex.push_back(Single_Vertex());vanz++;
     }
-    Flavour flsh(kf::shgluon);
+    Flavour flsh(kf_shgluon);
     // gluon h shgluon
     if (flg.IsOn() && flsh.IsOn()) {
       vertex[vanz].in[2] = flg;
@@ -110,8 +110,8 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
   Kabbala kcpl0,kcpl1; 
   
   for (int i=25;i<36;i+=10) {
-    Flavour flh = Flavour(kf::code(i));
-    Flavour flg(kf::gluon);
+    Flavour flh = Flavour((kf_code)(i));
+    Flavour flg(kf_gluon);
     if(!flh.IsOn()||!flg.IsOn())return;
     
     // 3 gluon higgs
@@ -139,7 +139,7 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
     
-    Flavour flsh(kf::shgluon);
+    Flavour flsh(kf_shgluon);
     kcpl0 = M_I*g3*g3*ghgg; 
     kcpl1 = kcpl0; 
     if(!flsh.IsOn()) return;

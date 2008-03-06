@@ -15,7 +15,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
     ATOOLS::Flavour f[3];
     for (short unsigned int i=0;i<3;++i) {
       int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      f[i]=ATOOLS::Flavour((kf_code)abs(kf));
       if (kf<0) f[i]=f[i].Bar();
     }
     std::string list=parameters[0].size()>7?parameters[0][7]:finalstate_list;
@@ -34,7 +34,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
     for (short unsigned int j=0;j<3;++j) {
       if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
 	int kf=ATOOLS::ToType<int>(parameters[i][1]);
-	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+	f[j]=ATOOLS::Flavour((kf_code)abs(kf));
 	if (kf<0) f[j]=f[j].Bar();
       }
     }

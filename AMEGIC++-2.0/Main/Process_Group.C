@@ -70,7 +70,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
     p_b[i]  = 1; 
   } 
   for (size_t i=m_nin+m_nout;i<m_nvector;i++) { 
-    p_flavours[i] = Flavour(kf::none); 
+    p_flavours[i] = Flavour(kf_none); 
     p_b[i]  = 1; 
   }
 
@@ -132,7 +132,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   p_pinfo->Expand();
   int nsproc=p_pinfo->NProcs();
   int nout = p_pinfo->Nout();
-  int  * flindex = new int[m_nin+nout];
+  size_t  * flindex = new size_t[m_nin+nout];
   for (size_t i=0;i<m_nin+nout;i++) flindex[i] = 0;
   char * plindex = new char[m_nin+nout];
   for (size_t i=0;i<m_nin+nout;i++) plindex[i] = ' ';

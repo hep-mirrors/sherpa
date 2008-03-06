@@ -1,11 +1,10 @@
 #ifndef Data_Read_H
 #define Data_Read_H
 
-#include <string>
-#include <map>
-
 #include "Flavour.H"
 #include "Algebra_Interpreter.H"
+
+#include <iostream>
 
 namespace ATOOLS {  
   //! The On/Off switch.

@@ -49,9 +49,9 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
   
   //sneutrino - Higgs - sneutrino
   for (short int i=0;i<3;i++) {
-    Flavour flav = Flavour(kf::code(1000012+2*i));
+    Flavour flav = Flavour((kf_code)(1000012+2*i));
     for (short int k=0;k<2;k++) {
-      Flavour flh = Flavour(kf::code(25+k*10));
+      Flavour flh = Flavour((kf_code)(25+k*10));
       if (flh.IsOn() && flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flh;
@@ -78,26 +78,26 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 
   //sneutrino - Hmin - slepton
  
-  Flavour flHm = Flavour(kf::Hplus).Bar();
+  Flavour flHm = Flavour(kf_Hplus).Bar();
   if (flHm.IsOn()) {
     for (short int i=0;i<3;i++) {
-      Flavour flav1 = Flavour(kf::code(1000012+2*i));
+      Flavour flav1 = Flavour((kf_code)(1000012+2*i));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 =Flavour(kf::code(s_lep));
+	Flavour flav2 =Flavour((kf_code)(s_lep));
 	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1.Bar();
 	  vertex[vanz].in[1] = flHm;
 	  vertex[vanz].in[2] = flav2.Bar();
      
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav2.TexName()+string("}}{ v_1}\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav2)+11)).Yuk()/v1.Value()*sqrt(2.));
+				 -Flavour((kf_code)(2*gen_sLep(flav2)+11)).Yuk()/v1.Value()*sqrt(2.));
 
 	  kcpl0 = M_I*K_Z_Nu(gen_sLep(flav2),i)*
 	    (-root2*g2*g2/num_4*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))*
 	     K_Z_L(gen_sLep(flav2),j-1)-
-	     K_Z_H(0,0)*(K_yuk(Flavour(kf::code(2*gen_sLep(flav2)+11)))*K_lI*K_Z_L(gen_sLep(flav2),j-1)-
+	     K_Z_H(0,0)*(K_yuk(Flavour((kf_code)(2*gen_sLep(flav2)+11)))*K_lI*K_Z_L(gen_sLep(flav2),j-1)-
 			 (K_l_S(gen_sLep(flav2),0)*K_Z_L(3,j-1)+
 			  K_l_S(gen_sLep(flav2),1)*K_Z_L(4,j-1)+
 			  K_l_S(gen_sLep(flav2),2)*K_Z_L(5,j-1)))
@@ -127,23 +127,23 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
   }
   
   //slepton - A0 - slepton
-  Flavour flA0 = Flavour(kf::A0);
+  Flavour flA0 = Flavour(kf_A0);
   if (flA0.IsOn()) {
     for (short int i=1;i<7;i++) {
       if (i<4) s_lep = 1000010 + 2*i - 1;
       else     s_lep = 2000010 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_lep));
+      Flavour flav1 = Flavour((kf_code)(s_lep));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 =Flavour(kf::code(s_lep));
+	Flavour flav2 =Flavour((kf_code)(s_lep));
 	if(flav1.IsOn() && flav2.IsOn()){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flA0;
 	  vertex[vanz].in[2] = flav2;
 
 	  Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string("})}{ v_1}\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+				 -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
      
 	  kcpl0 = -(K_l_S(gen_sLep(flav1),gen_sLep(flav2))*
 		   (K_Z_L(gen_sLep(flav1),j-1)*K_Z_L(gen_sLep(flav2)+3,i-1)-
@@ -178,15 +178,15 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
   //slepton - h0/H0 - slepton
  
   for (short int k=0;k<2;k++) {
-    Flavour flH = Flavour(kf::code(25+k*10)); 
+    Flavour flH = Flavour((kf_code)(25+k*10)); 
     for (short int i=1;i<7;i++) {
       if (i<4) s_lep = 1000010 + 2*i - 1;
       else     s_lep = 2000010 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_lep));
+      Flavour flav1 = Flavour((kf_code)(s_lep));
       for (short int j=i;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 =Flavour(kf::code(s_lep));
+	Flavour flav2 =Flavour((kf_code)(s_lep));
 	if(flH.IsOn() && flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)){
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flH;
@@ -195,7 +195,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  Kabbala help = K_zero;
 
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+				 -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
 	 
 	  Kabbala fac = Kabbala(string("\\frac{1-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(1.-4.*(sintW).Value()*(sintW).Value())/
@@ -250,12 +250,12 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
   int s_lep;
   
   //slepton - Photon - slepton
-  Flavour flPh = Flavour(kf::photon);
+  Flavour flPh = Flavour(kf_photon);
   if (flPh.IsOn()) {
     for (short int i=1;i<7;i++) {
       if (i<4) s_lep = 1000010 + 2*i - 1;
       else     s_lep = 2000010 + 2*i - 7;
-      Flavour flav = Flavour(kf::code(s_lep));
+      Flavour flav = Flavour((kf_code)(s_lep));
       Kabbala charge1 = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
       if (flav.IsOn()) {
 	vertex[vanz].in[0] = flav;
@@ -283,16 +283,16 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
   }
  
  //slepton - Z - slepton
-  Flavour flZ = Flavour(kf::Z);
+  Flavour flZ = Flavour(kf_Z);
   if (flZ.IsOn()) {
     for (short int i=1;i<7;i++) {
       if (i<4) s_lep = 1000010 + 2*i - 1;
       else     s_lep = 2000010 + 2*i - 7;
-      Flavour flav1 = Flavour(kf::code(s_lep));
+      Flavour flav1 = Flavour((kf_code)(s_lep));
       for (short int j=i;j<7;j++) {
 	 if (j<4) s_lep = 1000010 + 2*j - 1;
 	 else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_lep));
+	Flavour flav2 = Flavour((kf_code)(s_lep));
 	if (flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)) {
 	  
 	  Kabbala help = K_zero;
@@ -326,7 +326,7 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 
     //sneutrino - Z - sneutrino
     for (short int i=0;i<3;i++) {
-      Flavour flav = Flavour(kf::code(1000012+2*i));
+      Flavour flav = Flavour((kf_code)(1000012+2*i));
       if (flav.IsOn()) {
  	  vertex[vanz].in[0] = flav;
 	  vertex[vanz].in[1] = flZ;
@@ -354,14 +354,14 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
   }
   
   //sneutrino - W - slepton
-  Flavour flWplus = Flavour(kf::Wplus);
+  Flavour flWplus = Flavour(kf_Wplus);
   if (flWplus.IsOn()) {
       for (short int i=0;i<3;i++) {
-      Flavour flav1 = Flavour(kf::code(1000012+2*i));
+      Flavour flav1 = Flavour((kf_code)(1000012+2*i));
       for (short int j=1;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 =Flavour(kf::code(s_lep));
+	Flavour flav2 =Flavour((kf_code)(s_lep));
 	if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flWplus;
@@ -393,8 +393,8 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flHmin = Flavour(kf::Hplus).Bar();    
-  Flavour flA0(kf::A0);    
+  Flavour flHmin = Flavour(kf_Hplus).Bar();    
+  Flavour flA0(kf_A0);    
   int s_lep;
   
   Kabbala kcpl0,kcpl1,help,K_lI, num_1;
@@ -403,11 +403,11 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
   for (short int i=1;i<7;++i) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_lep));
+    Flavour flav1 = Flavour((kf_code)(s_lep));
       for (short int j=i;j<7;++j) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour flav2 = Flavour(kf::code(s_lep));
+	Flavour flav2 = Flavour((kf_code)(s_lep));
 	if (flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)) {
 
 	  //Hmin -> slepton - slepton - Hmin 
@@ -423,7 +423,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    if(i==j) help = num_1;
 	    
 	    K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			   -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			   -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
 	    
 	    
 	    kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_H(0,0)*
@@ -460,7 +460,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    if(i==j) help = num_1;
 	    
 	    K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			   -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			   -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
 	    
 	    
 	    kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_H(0,0)*
@@ -487,9 +487,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  }
 	  //h0/H0 -> slepton - slepton - h0/H0 
 	  for (int k=0;k<2;k++) {
-	    Flavour flh1 = Flavour(kf::code(25+k*10));
+	    Flavour flh1 = Flavour((kf_code)(25+k*10));
 	    for (int l=k;l<2;l++) {
-	      Flavour flh2 = Flavour(kf::code(25+l*10));
+	      Flavour flh2 = Flavour((kf_code)(25+l*10));
 	      if (flh1.IsOn() && flh2.IsOn()) {
 		
 		vertex[vanz].in[0] = flh1;
@@ -503,7 +503,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		if(i==j) help = num_1;
 		
 		K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			       -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			       -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
 		
 		
 		kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_R(k,l)*
@@ -535,13 +535,13 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
   }
 
   for (short int i=0;i<3;++i) {
-    Flavour flsnu = Flavour(kf::code(1000012+2*i));
+    Flavour flsnu = Flavour((kf_code)(1000012+2*i));
     if (flsnu.IsOn()) {
       //h0/H0 -> snu - snub - h0/H0
         for (int k=0;k<2;k++) {
-	    Flavour flh1 = Flavour(kf::code(25+k*10));
+	    Flavour flh1 = Flavour((kf_code)(25+k*10));
 	    for (int l=k;l<2;l++) {
-	      Flavour flh2 = Flavour(kf::code(25+l*10));
+	      Flavour flh2 = Flavour((kf_code)(25+l*10));
 	      if (flh1.IsOn() && flh2.IsOn()) {
 		
 		vertex[vanz].in[0] = flh1;
@@ -608,7 +608,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 				   (2.*sintW.Value()*costW.Value()));
 	  
 	  
-	  Flavour lepton = Flavour(kf::code(11+i*2));
+	  Flavour lepton = Flavour((kf_code)(11+i*2));
 	  
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
 				 -lepton.Yuk()/v1.Value()*sqrt(2.));
@@ -638,18 +638,18 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  for (int j=1;j<7;j++) {
 	    if (j<4) s_lep = 1000010 + 2*j - 1;
 	    else     s_lep = 2000010 + 2*j - 7;
-	    Flavour flslep = Flavour(kf::code(s_lep));
+	    Flavour flslep = Flavour((kf_code)(s_lep));
 	    if (gen_sLep(flsnu)==gen_sLep(flslep)) {
 	      // H- -> sLepton - snub - h0/H0
 	      for (int k=0;k<2;k++) {
-		Flavour flh = Flavour(kf::code(25+k*10));
+		Flavour flh = Flavour((kf_code)(25+k*10));
 		if (flh.IsOn()) {
 		  vertex[vanz].in[0] = flHmin;
 		  vertex[vanz].in[1] = flsnu.Bar();
 		  vertex[vanz].in[2] = flslep;
 		  vertex[vanz].in[3] = flh;
 		  
-		  Flavour lepton = Flavour(kf::code(11+gen_sLep(flslep)*2));
+		  Flavour lepton = Flavour((kf_code)(11+gen_sLep(flslep)*2));
 		  
 		  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
 					 -lepton.Yuk()/v1.Value()*sqrt(2.));
@@ -683,7 +683,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		vertex[vanz].in[2] = flslep;
 		vertex[vanz].in[3] = flA0;
 		
-		Flavour lepton = Flavour(kf::code(11+gen_sLep(flslep)*2));
+		Flavour lepton = Flavour((kf_code)(11+gen_sLep(flslep)*2));
 		
 		Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
 				       -lepton.Yuk()/v1.Value()*sqrt(2.));
@@ -715,10 +715,10 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
   }
   //snu - snu - snu - snu
   for (short int i=0;i<3;++i) {
-    Flavour snu1 = Flavour(kf::code(1000012+2*i));
+    Flavour snu1 = Flavour((kf_code)(1000012+2*i));
     if (snu1.IsOn()) {
       for (short int j=i;j<3;++j) {
-	Flavour snu2 = Flavour(kf::code(1000012+2*j));
+	Flavour snu2 = Flavour((kf_code)(1000012+2*j));
 	if (snu2.IsOn()) {
 	  
 	  vertex[vanz].in[0] = snu1;
@@ -754,12 +754,12 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  for (int k=1;k<7;k++) {
 	    if (k<4) s_lep = 1000010 + 2*k - 1;
 	    else     s_lep = 2000010 + 2*k - 7;
-	    Flavour slep1 = Flavour(kf::code(s_lep));
+	    Flavour slep1 = Flavour((kf_code)(s_lep));
 	    if (slep1.IsOn()) {
 	      for (int l=k;l<7;l++) {
 		if (l<4) s_lep = 1000010 + 2*l - 1;
 		else     s_lep = 2000010 + 2*l - 7;
-		Flavour slep2 = Flavour(kf::code(s_lep));
+		Flavour slep2 = Flavour((kf_code)(s_lep));
 		if (slep2.IsOn()) {
 		  
 		  vertex[vanz].in[0] = snu1;
@@ -817,22 +817,22 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
   for (int i=1;i<7;i++) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour slepi = Flavour(kf::code(s_lep));
+    Flavour slepi = Flavour((kf_code)(s_lep));
     if (slepi.IsOn()) {
       for (int j=1;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour slepj = Flavour(kf::code(s_lep));
+	Flavour slepj = Flavour((kf_code)(s_lep));
 	if (slepj.IsOn()) {
 	  for (int k=1;k<7;k++) {
 	    if (k<4) s_lep = 1000010 + 2*k - 1;
 	    else     s_lep = 2000010 + 2*k - 7;
-	    Flavour slepk = Flavour(kf::code(s_lep));
+	    Flavour slepk = Flavour((kf_code)(s_lep));
 	    if (slepk.IsOn()) {
 	      for (int l=1;l<7;l++) {
 		if (l<4) s_lep = 1000010 + 2*l - 1;
 		else     s_lep = 2000010 + 2*l - 7;
-		Flavour slepl = Flavour(kf::code(s_lep));
+		Flavour slepl = Flavour((kf_code)(s_lep));
 		if (slepl.IsOn()) {
 	
 		  vertex[vanz].in[0] = slepi;
@@ -910,9 +910,9 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 
 void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flavWm = Flavour(kf::Wplus).Bar();
-  Flavour flavZ(kf::Z);
-  Flavour flavPhoton(kf::photon);
+  Flavour flavWm = Flavour(kf_Wplus).Bar();
+  Flavour flavZ(kf_Z);
+  Flavour flavPhoton(kf_photon);
   Kabbala kcpl0,kcpl1,help,num_1;
   num_1    = Kabbala(string("1"),1.);    	
   int s_lep;
@@ -920,7 +920,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
   for (short int i=1;i<7;i++) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour flav = Flavour(kf::code(s_lep));
+    Flavour flav = Flavour((kf_code)(s_lep));
     if(flav.IsOn() && flavPhoton.IsOn()){
       
       // P - L - L - P  
@@ -952,11 +952,11 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
   for (short int i=1;i<7;i++) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_lep));
+    Flavour flav1 = Flavour((kf_code)(s_lep));
     for (short int j=1;j<7;j++) {
       if (j<4) s_lep = 1000010 + 2*j - 1;
       else     s_lep = 2000010 + 2*j - 7;
-      Flavour flav2 = Flavour(kf::code(s_lep));
+      Flavour flav2 = Flavour((kf_code)(s_lep));
       if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)) {
 	if(flavZ.IsOn()) {
 	  help = K_zero;
@@ -1026,7 +1026,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
   }
   
   for (short int i=0;i<3;i++) {
-    Flavour flav = Flavour(kf::code(1000012+2*i));
+    Flavour flav = Flavour((kf_code)(1000012+2*i));
     if(flav.IsOn()) { 
       if (flavZ.IsOn()) {
 	// Z - snu - snu - Z  
@@ -1085,11 +1085,11 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
   for (short int i=1;i<7;i++) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour flav1 = Flavour(kf::code(s_lep));
+    Flavour flav1 = Flavour((kf_code)(s_lep));
     for (short int j=i;j<7;j++) {
       if (j<4) s_lep = 1000010 + 2*j - 1;
       else     s_lep = 2000010 + 2*j - 7;
-      Flavour flav2 =Flavour(kf::code(s_lep));
+      Flavour flav2 =Flavour((kf_code)(s_lep));
       if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)){
 	
 	// W - L - L - W  
@@ -1125,11 +1125,11 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
   
   // W - snu - L - P/Z  
   for (short int i=0;i<3;i++) {
-    Flavour flav1 = Flavour(kf::code(1000012+2*i));
+    Flavour flav1 = Flavour((kf_code)(1000012+2*i));
     for (short int j=1;j<7;j++) {
       if (j<4) s_lep = 1000010 + 2*j - 1;
       else     s_lep = 2000010 + 2*j - 7;
-      Flavour flav2 =Flavour(kf::code(s_lep));
+      Flavour flav2 =Flavour((kf_code)(s_lep));
       if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)){
 	
 	// W - snu - L - P  
@@ -1202,25 +1202,25 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
   int n_ino,c_ino,s_lep;
   
   Kabbala K_l1 = Kabbala(string("l^1"),
-			 -Flavour(kf::code(11)).Yuk()/v1.Value()*sqrt(2.));
+			 -Flavour((kf_code)(11)).Yuk()/v1.Value()*sqrt(2.));
 
   Kabbala K_l2 = Kabbala(string("l^2"),
-			 -Flavour(kf::code(13)).Yuk()/v1.Value()*sqrt(2.));
+			 -Flavour((kf_code)(13)).Yuk()/v1.Value()*sqrt(2.));
   
   Kabbala K_l3 = Kabbala(string("l^3"),
-			 -Flavour(kf::code(15)).Yuk()/v1.Value()*sqrt(2.));
+			 -Flavour((kf_code)(15)).Yuk()/v1.Value()*sqrt(2.));
   
   //neutrino - sneutrino - neutralino
   
   for (short int i=12;i<17;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     for (short int j=0;j<4;j++) {
       if (j<2)  n_ino=1000022+j;
       if (j==2) n_ino=1000025;
       if (j==3) n_ino=1000035;
-      Flavour flav2 = Flavour(kf::code(n_ino));
+      Flavour flav2 = Flavour((kf_code)(n_ino));
       for (short int k=0;k<3;k++) {
-	Flavour flav3 = Flavour(kf::code(1000012+2*k));
+	Flavour flav3 = Flavour((kf_code)(1000012+2*k));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
@@ -1250,19 +1250,19 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
   //neutrino - slepton - Chargino  
 
   for (short int i=12;i<17;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     
     Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}\\sqrt{2}"),
-			   -Flavour(kf::code(i-1)).Yuk()/v1.Value()*sqrt(2.));
+			   -Flavour((kf_code)(i-1)).Yuk()/v1.Value()*sqrt(2.));
    
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav2 = Flavour(kf::code(c_ino));
+      Flavour flav2 = Flavour((kf_code)(c_ino));
       for (short int k=1;k<7;k++) {
 	if (k<4) s_lep = 1000010 + 2*k - 1;
 	else     s_lep = 2000010 + 2*k - 7;
-	Flavour flav3 = Flavour(kf::code(s_lep));
+	Flavour flav3 = Flavour((kf_code)(s_lep));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
@@ -1293,7 +1293,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
   //lepton - Chargino - sneutrino  
  
   for (short int i=11;i<16;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
   
     Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string(")}}{ v_1}\\sqrt{2}"),
 			   -flav1.Yuk()/v1.Value()*sqrt(2.));
@@ -1301,9 +1301,9 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
-      Flavour flav2 = Flavour(kf::code(c_ino));
+      Flavour flav2 = Flavour((kf_code)(c_ino));
       for (short int k=0;k<3;k++) {
-	Flavour flav3 = Flavour(kf::code(1000012+2*k));
+	Flavour flav3 = Flavour((kf_code)(1000012+2*k));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
@@ -1332,16 +1332,16 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
   //lepton - slepton - Neutralino  
  
   for (short int i=11;i<16;i+=2) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     for (short int j=0;j<4;j++) {
       if (j<2)  n_ino=1000022+j;
       if (j==2) n_ino=1000025;
       if (j==3) n_ino=1000035;
-      Flavour flav2 = Flavour(kf::code(n_ino));
+      Flavour flav2 = Flavour((kf_code)(n_ino));
       for (short int k=1;k<7;k++) {
 	if (k<4) s_lep = 1000010 + 2*k - 1;
 	else     s_lep = 2000010 + 2*k - 7;
-	Flavour flav3 = Flavour(kf::code(s_lep));
+	Flavour flav3 = Flavour((kf_code)(s_lep));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (i-11)/2==gen_sLep(flav3)) {
 	  
 	  //fixed + save
@@ -1383,7 +1383,7 @@ Kabbala Interaction_Model_sLepton_EW::K_l(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("l^")+string(hi),
-		 -Flavour(kf::code(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
+		 -Flavour((kf_code)(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
 
 }
 

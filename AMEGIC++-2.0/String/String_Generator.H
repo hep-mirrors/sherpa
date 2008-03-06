@@ -48,7 +48,7 @@ namespace AMEGIC {
     virtual int       Massless(int)                                = 0;
     virtual ATOOLS::Kabbala * GetKabbala(const std::string&)               = 0;
     virtual int       ZXMaxNumber()                                = 0;
-    virtual std::vector<int>* GetFlavours()                        = 0;
+    virtual std::vector<long int>* GetFlavours()                   = 0;
     virtual ZXlist*   GetZXl(const int&)                           = 0;
     virtual Complex   GetCoupling(const int&)                      = 0;
     virtual std::vector<Complex>* GetCouplList()                   = 0;
@@ -79,7 +79,7 @@ namespace AMEGIC {
 			   public Basic_Epsilonfunc {
     std::vector<ZXlist>  * p_zxl,       * p_zxlsave;
     std::vector<Complex> * p_couplings, * p_couplingssave;
-    std::vector<int>     * p_flavours,  * p_flavourssave;
+    std::vector<long int>* p_flavours,  * p_flavourssave;
     std::vector<int>       m_zuse;
     String_Tree            m_stree,m_sthelp;
     bool                   m_copied;
@@ -103,7 +103,7 @@ namespace AMEGIC {
     int ECount(); 
     
     int GetCnumber(Complex);
-    int GetFnumber(int);
+    int GetFnumber(long int);
     
     ATOOLS::Kabbala     Number(int,Complex);
     ATOOLS::Kabbala     GetCZnumber(Complex,std::string);
@@ -120,7 +120,7 @@ namespace AMEGIC {
     int         Massless(int); 
     ATOOLS::Kabbala   * GetKabbala(const std::string&);
     int         ZXMaxNumber()               { return p_zxl->size(); }
-    std::vector<int>* GetFlavours()         { return p_flavours;}
+    std::vector<long int>* GetFlavours()    { return p_flavours;}
     ZXlist    * GetZXl(const int & i)       { return &(*p_zxl)[i]; }
     Complex     GetCoupling(const int & i)  { return (*p_couplings)[i]; }
     std::vector<Complex>* GetCouplList()    { return p_couplings; }
@@ -163,7 +163,7 @@ namespace AMEGIC {
     int       NumberOfzxl()                                     { return 0; }
     int       NumberOfCouplings()                               { return 0; }
     int       ZXMaxNumber()                                     { return 0; }   
-    std::vector<int>* GetFlavours()                             { return NULL; }
+    std::vector<long int>* GetFlavours()                        { return NULL; }
     ZXlist*   GetZXl(const int&)                                { return NULL; }
     Complex   GetCoupling(const int&)                           { return Complex(0.,0.); }
     std::vector<Complex>* GetCouplList()                        { return NULL; }

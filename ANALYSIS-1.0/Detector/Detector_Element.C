@@ -73,7 +73,7 @@ Cell * Detector_Element::GetCell(const double eta,const double phi) {
 }
 
 void Detector_Element::GetTracks(std::list<Track *> & tracks,const double eta,const double phi,
-				 const double R2,kf::code kfcode) {
+				 const double R2,kf_code kfcode) {
   tracks.clear();
   for (std::list<Track *>::iterator trit=m_tracks.begin();trit!=m_tracks.end();trit++) {
     if ( (eta==0&&phi==0&&R2==0) ||

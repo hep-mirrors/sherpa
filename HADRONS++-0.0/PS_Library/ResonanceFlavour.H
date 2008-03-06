@@ -11,10 +11,10 @@ namespace HADRONS {
 	public:
 	ResonanceFlavour() {};
 	ResonanceFlavour( std::string _name, double _mass, double width );
-	ResonanceFlavour( ATOOLS::kf::code _kfc, double _mass, double width );
+	ResonanceFlavour( kf_code _kfc, double _mass, double width );
 	~ResonanceFlavour() {}
 
-	void Set( ATOOLS::kf::code _kfc, double _mass, double width );
+	void Set( kf_code _kfc, double _mass, double width );
 	 
 	double Mass() { return m_mass; }
 	double Width() { return m_width; }

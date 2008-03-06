@@ -85,12 +85,12 @@ Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout
 XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl) 
   : Single_XS(nin,nout,fl) 
 {
-  MZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
-  GZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
+  MZ2    = sqr(ATOOLS::Flavour(kf_Z).Mass());
+  GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
  
   alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
   sin2tw = rpa.gen.ScalarConstant(string("sin2_thetaW"));
-  if (ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()) 
+  if (ATOOLS::Flavour(kf_Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else
     kappa  = 0.;

@@ -48,7 +48,7 @@ namespace BEAM {
     ATOOLS::Flavour Remnant();
 
     bool        CalculateWeight(const double,const double);
-    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
+    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
     double          Polarisation()       { return m_polar; }
     bool        On() { return 1; }
     double          Exponent()           { return 0.5; }
@@ -90,7 +90,7 @@ namespace BEAM {
     bool Spectrum_Reader::CalculateWeight(const double,const double)
   */  
   /*!
-    \fn double Spectrum_Reader::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf::none))
+    \fn double Spectrum_Reader::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none))
   */  
 }
 #endif

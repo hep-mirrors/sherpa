@@ -2,7 +2,6 @@
 #define HepEvt_Interface_H
 
 #include "Pythia_HepEvt_Translator.H"
-#include "Herwig_HepEvt_Translator.H"
 #include "Message.H"
 #include "Particle.H"
 #include <map>
@@ -17,14 +16,12 @@ namespace SHERPA {
     enum code {
       Unspecified  = 0,
       Sherpa       = 1,
-      Herwig       = 2,
       Pythia       = 3
     };
   };
 
   class HepEvt_Interface {
     friend class Pythia_HepEvt_Translator;
-    friend class Herwig_HepEvt_Translator;
   private:
     bool            m_hadronized;
     bool            m_io;
@@ -47,7 +44,6 @@ namespace SHERPA {
     int      m_fl1, m_fl2;
 
     Pythia_HepEvt_Translator * p_pythiatranslator;
-    Herwig_HepEvt_Translator * p_herwigtranslator;
 
     void WriteFullHepEvt(std::ostream& ostr,int nevt);
     void WriteFormatedHepEvt(std::ostream& ostr,int nevt);

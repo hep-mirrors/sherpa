@@ -20,7 +20,7 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
 
   m_bunch  = _bunch;
   m_partons.push_back(m_bunch);
-  m_type   = std::string("PDF_")+std::string(m_bunch.Name());
+  m_type   = std::string("PDF_")+std::string(m_bunch.IDName());
   
   m_mass   = m_bunch.PSMass();
   m_alpha  = (*aqed)(sqr(rpa.gen.Ecms()));

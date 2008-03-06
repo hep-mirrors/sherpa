@@ -21,7 +21,7 @@ namespace ANALYSIS {
     bool Fill(const double E,const double eta,const double phi,ATOOLS::Particle * part);
     void SetAcceptance(const double etamin,const double etamax);
 
-    void Print(ATOOLS::kf::code=ATOOLS::kf::none);
+    void Print(kf_code=kf_none);
   };
 }
 

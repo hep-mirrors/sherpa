@@ -397,7 +397,7 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 	  cit++;
 	}
 	else {
-	  if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none)) {
+	  if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf_none)) {
 	    //msg_Out()<<" Two new proto clusters for "<<(**cit)<<std::endl;
 	    (*clit)->push_back((*cit)->GetLeft());
 	    (*clit)->push_back((*cit)->GetRight());

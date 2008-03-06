@@ -39,7 +39,7 @@ void Standard_Model::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("Yukawa_mu"), 
 				     p_dataread->GetValue<double>("YUKAWA_MU",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_tau"), 
-				     p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf::tau).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).PSMass())));
   p_constants->insert(std::make_pair(std::string("Yukawa_d"), 
 				     p_dataread->GetValue<double>("YUKAWA_D",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_u"), 
@@ -49,9 +49,9 @@ void Standard_Model::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("Yukawa_c"), 
 				     p_dataread->GetValue<double>("YUKAWA_C",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_b"), 
-				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf::b).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).PSMass())));
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
-				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf::t).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).PSMass())));
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",0);
   double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.1188);
@@ -64,40 +64,40 @@ void Standard_Model::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));
   p_functions->insert(std::make_pair(std::string("alpha_S"),as));
 
-  Running_Fermion_Mass * md   = new Running_Fermion_Mass(Flavour(kf::d),
+  Running_Fermion_Mass * md   = new Running_Fermion_Mass(Flavour(kf_d),
 							 ScalarConstant(std::string("Yukawa_d")),as);
-  Running_Fermion_Mass * mu   = new Running_Fermion_Mass(Flavour(kf::u),
+  Running_Fermion_Mass * mu   = new Running_Fermion_Mass(Flavour(kf_u),
 							 ScalarConstant(std::string("Yukawa_u")),as);
-  Running_Fermion_Mass * ms   = new Running_Fermion_Mass(Flavour(kf::s),
+  Running_Fermion_Mass * ms   = new Running_Fermion_Mass(Flavour(kf_s),
 							 ScalarConstant(std::string("Yukawa_s")),as);
-  Running_Fermion_Mass * mc   = new Running_Fermion_Mass(Flavour(kf::c),
+  Running_Fermion_Mass * mc   = new Running_Fermion_Mass(Flavour(kf_c),
 							 ScalarConstant(std::string("Yukawa_c")),as);
-  Running_Fermion_Mass * mb   = new Running_Fermion_Mass(Flavour(kf::b),
+  Running_Fermion_Mass * mb   = new Running_Fermion_Mass(Flavour(kf_b),
 							 ScalarConstant(std::string("Yukawa_b")),as);
-  Running_Fermion_Mass * mt   = new Running_Fermion_Mass(Flavour(kf::t),
+  Running_Fermion_Mass * mt   = new Running_Fermion_Mass(Flavour(kf_t),
 							 ScalarConstant(std::string("Yukawa_t")),as);
-  Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf::e),
+  Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf_e),
 							 ScalarConstant(std::string("Yukawa_e")),as);
-  Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf::mu),
+  Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf_mu),
 							 ScalarConstant(std::string("Yukawa_mu")),as);
-  Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf::tau),
+  Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf_tau),
 							 ScalarConstant(std::string("Yukawa_tau")),as);
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::d).Name()),md));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::u).Name()),mu));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::s).Name()),ms));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::c).Name()),mc));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::b).Name()),mb));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::t).Name()),mt));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::e).Name()),me));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::mu).Name()),mmu));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::tau).Name()),mtau));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_d).IDName()),md));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_u).IDName()),mu));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_s).IDName()),ms));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_c).IDName()),mc));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_b).IDName()),mb));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_t).IDName()),mt));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_e).IDName()),me));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_mu).IDName()),mmu));
+  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_tau).IDName()),mtau));
 
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   double eh=2./3.;
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
-    double hm=Flavour(kf::h0).Mass();
+    double hm=Flavour(kf_h0).Mass();
     Effective_Higgs_Coupling ehc(hm);
-    eh = ehc.GetFermionContribution(Flavour(kf::t).Mass());
+    eh = ehc.GetFermionContribution(Flavour(kf_t).Mass());
   }
   p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
 
@@ -145,9 +145,9 @@ void Standard_Model::FixEWParameters() {
   case 1:
     // SM parameters given by alphaQED, M_W, M_Z, M_H
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    MW         = Flavour(kf::Wplus).Mass();
-    MZ         = Flavour(kf::Z).Mass();
-    MH         = Flavour(kf::h0).Mass();
+    MW         = Flavour(kf_Wplus).Mass();
+    MZ         = Flavour(kf_Z).Mass();
+    MH         = Flavour(kf_h0).Mass();
     cos2thetaW = sqr(MW/MZ);
     sin2thetaW = 1.-cos2thetaW;
     vev        = 2.*MW*sqrt(sin2thetaW/(4.*M_PI*alphaQED));
@@ -166,22 +166,22 @@ void Standard_Model::FixEWParameters() {
     break;
   case 3:
     //gmu scheme
-    MW         = Flavour(kf::Wplus).Mass();
-    MZ         = Flavour(kf::Z).Mass();
+    MW         = Flavour(kf_Wplus).Mass();
+    MZ         = Flavour(kf_Z).Mass();
     GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     sin2thetaW = 1.-sqr(MW/MZ);
     cos2thetaW = 1.-sin2thetaW;
     alphaQED   = sqrt(2.)*GF*sqr(MW)*sin2thetaW/M_PI;
-    MH         = Flavour(kf::h0).Mass();
+    MH         = Flavour(kf_h0).Mass();
     vev        = 1./(pow(2.,0.25)*sqrt(GF));
     lambdaH    = 2.*sqr(MH/vev); 
     break;
   default:
     // all SM parameters given explicitly
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    MW         = Flavour(kf::Wplus).Mass();
-    MZ         = Flavour(kf::Z).Mass();
-    MH         = Flavour(kf::h0).Mass();
+    MW         = Flavour(kf_Wplus).Mass();
+    MZ         = Flavour(kf_Z).Mass();
+    MH         = Flavour(kf_h0).Mass();
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
     vev        = p_dataread->GetValue<double>("VEV",246.);
@@ -194,7 +194,7 @@ void Standard_Model::FixEWParameters() {
 
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
   
-  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf::mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
+  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
   
   p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
@@ -202,8 +202,8 @@ void Standard_Model::FixEWParameters() {
   p_constants->insert(std::make_pair(std::string("vev"),         vev));
   p_constants->insert(std::make_pair(std::string("MW"),          MW));
   p_constants->insert(std::make_pair(std::string("MZ"),          MZ));
-  p_constants->insert(std::make_pair(std::string("GammaW"),      Flavour(kf::Wplus).Width()));
-  p_constants->insert(std::make_pair(std::string("GammaZ"),      Flavour(kf::Z).Width()));
+  p_constants->insert(std::make_pair(std::string("GammaW"),      Flavour(kf_Wplus).Width()));
+  p_constants->insert(std::make_pair(std::string("GammaZ"),      Flavour(kf_Z).Width()));
   p_constants->insert(std::make_pair(std::string("MH"),          MH));
   p_constants->insert(std::make_pair(std::string("lambdaH"),     lambdaH));
   p_constants->insert(std::make_pair(std::string("GF"),          GF));

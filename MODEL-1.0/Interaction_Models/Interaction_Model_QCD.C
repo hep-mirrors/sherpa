@@ -25,10 +25,10 @@ void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
   Kabbala kcpl1 = kcpl0;
 
   for (short int i=1;i<=6;i++) {
-    Flavour flav = Flavour(kf::code(i));
-    if (flav.Strong() && flav.IsOn() && Flavour(kf::gluon).IsOn()) { 
+    Flavour flav = Flavour((kf_code)(i));
+    if (flav.Strong() && flav.IsOn() && Flavour(kf_gluon).IsOn()) { 
       vertex[vanz].in[0]         = flav;
-      vertex[vanz].in[1]         = Flavour(kf::gluon);
+      vertex[vanz].in[1]         = Flavour(kf_gluon);
       vertex[vanz].in[2]         = flav;
 
       vertex[vanz].cpl[0]        = kcpl0;
@@ -53,9 +53,9 @@ void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   Kabbala kcpl0 = -g3;
   Kabbala kcpl1 = kcpl0; 
   
-  if (Flavour(kf::gluon).IsOn()) {
+  if (Flavour(kf_gluon).IsOn()) {
 
-  for (short int i=0;i<3;i++) vertex[vanz].in[i] = Flavour(kf::gluon);
+  for (short int i=0;i<3;i++) vertex[vanz].in[i] = Flavour(kf_gluon);
 
   vertex[vanz].cpl[0]        = kcpl0;
   vertex[vanz].cpl[1]        = kcpl1;
@@ -81,9 +81,9 @@ void Interaction_Model_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   Kabbala kcpl0 = -M_I*g3*g3; 
   Kabbala kcpl1 = kcpl0; 
   
-  if (Flavour(kf::gluon).IsOn()) { 
+  if (Flavour(kf_gluon).IsOn()) { 
 
-  for (short int i=0;i<4;i++) vertex[vanz].in[i] = Flavour(kf::gluon);
+  for (short int i=0;i<4;i++) vertex[vanz].in[i] = Flavour(kf_gluon);
 
   vertex[vanz].nleg            = 4;
   vertex[vanz].cpl[0]          = kcpl0;

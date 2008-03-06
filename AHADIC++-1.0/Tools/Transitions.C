@@ -17,7 +17,7 @@ Single_Transitions::Single_Transitions() :
   double mass=100.;
   for (FlavCCMap_Iterator flit=constituents->CCMap.begin();
        flit!=constituents->CCMap.end();flit++) {
-    if (flit->second->Mass()<mass && flit->first!=Flavour(kf::gluon)) {
+    if (flit->second->Mass()<mass && flit->first!=Flavour(kf_gluon)) {
       mass                   = flit->second->Mass();
       m_lightest_constituent = flit->first;
     }
@@ -93,7 +93,7 @@ bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavo
 }
 
 Flavour Single_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {
-  Flavour had = Flavour(kf::none);
+  Flavour had = Flavour(kf_none);
   Single_Transition_Miter stiter = p_transitions->find(fpair);
   if (stiter==p_transitions->end())  return had;
   Single_Transition_List * stl  = stiter->second;
@@ -106,7 +106,7 @@ Flavour Single_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {
 }
 
 Flavour Single_Transitions::GetHeaviestTransition(const Flavour_Pair & fpair) {
-  Flavour had = Flavour(kf::none);
+  Flavour had = Flavour(kf_none);
   Single_Transition_Miter stiter = p_transitions->find(fpair);
   if (stiter!=p_transitions->end()) had =  stiter->second->begin()->first;
   return had;
@@ -114,13 +114,13 @@ Flavour Single_Transitions::GetHeaviestTransition(const Flavour_Pair & fpair) {
 
 double Single_Transitions::GetLightestMass(const Flavour_Pair & fpair) {
   Flavour had = GetLightestTransition(fpair);
-  if (had==Flavour(kf::none)) return -1.;
+  if (had==Flavour(kf_none)) return -1.;
   return had.PSMass();
 }
 
 double Single_Transitions::GetHeaviestMass(const Flavour_Pair & fpair) {
   Flavour had = GetHeaviestTransition(fpair);
-  if (had==Flavour(kf::none)) return -1.;
+  if (had==Flavour(kf_none)) return -1.;
   return had.PSMass();
 }
 
@@ -234,7 +234,7 @@ Double_Transitions::~Double_Transitions() {
 
 Flavour_Pair Double_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {
   Flavour_Pair pair;
-  pair.first = pair.second = Flavour(kf::none);
+  pair.first = pair.second = Flavour(kf_none);
   Double_Transition_Miter dtiter = p_transitions->find(fpair);
   if (dtiter==p_transitions->end())  return pair;
   Double_Transition_List * dtl  = dtiter->second;
@@ -249,7 +249,7 @@ Flavour_Pair Double_Transitions::GetLightestTransition(const Flavour_Pair & fpai
 
 Flavour_Pair Double_Transitions::GetHeaviestTransition(const Flavour_Pair & fpair) {
   Flavour_Pair pair;
-  pair.first = pair.second = Flavour(kf::none);
+  pair.first = pair.second = Flavour(kf_none);
   Double_Transition_Miter dtiter = p_transitions->find(fpair);
   if (dtiter!=p_transitions->end()) pair = dtiter->second->begin()->first;
   return pair;
@@ -257,13 +257,13 @@ Flavour_Pair Double_Transitions::GetHeaviestTransition(const Flavour_Pair & fpai
 
 double Double_Transitions::GetLightestMass(const Flavour_Pair & fpair) {
   Flavour_Pair pair = GetLightestTransition(fpair);
-  if (pair.first==Flavour(kf::none) || pair.second==Flavour(kf::none)) return -1.;
+  if (pair.first==Flavour(kf_none) || pair.second==Flavour(kf_none)) return -1.;
   return pair.first.Mass()+pair.second.Mass();
 }
 
 double Double_Transitions::GetHeaviestMass(const Flavour_Pair & fpair) {
   Flavour_Pair pair = GetHeaviestTransition(fpair);
-  if (pair.first==Flavour(kf::none) || pair.second==Flavour(kf::none)) return -1.;
+  if (pair.first==Flavour(kf_none) || pair.second==Flavour(kf_none)) return -1.;
   return pair.first.Mass()+pair.second.Mass();
 }
 

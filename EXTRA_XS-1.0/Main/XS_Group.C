@@ -112,7 +112,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
     return true;
   }
   bool one(false);
-  for (int j(0);j<p_flavours[ci].Size();++j) {
+  for (size_t j(0);j<p_flavours[ci].Size();++j) {
     cfl[ci]=p_flavours[ci][j];
     if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
   }

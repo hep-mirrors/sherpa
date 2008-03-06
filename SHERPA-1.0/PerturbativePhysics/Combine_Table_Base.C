@@ -63,7 +63,7 @@ std::ostream &SHERPA::operator<<(std::ostream &ostr,const Leg &leg)
 std::ostream& SHERPA::operator<<(std::ostream& s,const Combine_Key &ck)
 {
   s<<" "<<ck.m_i<<"&"<<ck.m_j;
-  if (ck.m_flav.Kfcode()!=kf::none) s<<"["<<std::setw(6)<<ck.m_flav<<"]";
+  if (ck.m_flav.Kfcode()!=kf_none) s<<"["<<std::setw(6)<<ck.m_flav<<"]";
   else s<<std::string(8,' ');
   return s;
 }
@@ -256,12 +256,12 @@ void Leg::DetermineCouplings(const int type)
 ATOOLS::Flavour Combine_Table_Base::IsoFlip(const ATOOLS::Flavour &fl)
 {
   switch (fl.Kfcode()) {
-  case kf::u: return fl.IsAnti()?Flavour(kf::d).Bar():Flavour(kf::d);
-  case kf::d: return fl.IsAnti()?Flavour(kf::u).Bar():Flavour(kf::u);
-  case kf::c: return fl.IsAnti()?Flavour(kf::s).Bar():Flavour(kf::s);
-  case kf::s: return fl.IsAnti()?Flavour(kf::c).Bar():Flavour(kf::c);
-  case kf::t: return fl.IsAnti()?Flavour(kf::b).Bar():Flavour(kf::b);
-  case kf::b: return fl.IsAnti()?Flavour(kf::t).Bar():Flavour(kf::t);
+  case kf_u: return fl.IsAnti()?Flavour(kf_d).Bar():Flavour(kf_d);
+  case kf_d: return fl.IsAnti()?Flavour(kf_u).Bar():Flavour(kf_u);
+  case kf_c: return fl.IsAnti()?Flavour(kf_s).Bar():Flavour(kf_s);
+  case kf_s: return fl.IsAnti()?Flavour(kf_c).Bar():Flavour(kf_c);
+  case kf_t: return fl.IsAnti()?Flavour(kf_b).Bar():Flavour(kf_b);
+  case kf_b: return fl.IsAnti()?Flavour(kf_t).Bar():Flavour(kf_t);
   default: break;
   }
   return fl;
@@ -276,7 +276,7 @@ Flavour Combine_Table_Base::MatchFlavour(Leg &a,Leg &b,Leg &c,int mode)
   */
   Flavour fl(fla);
   if (fla.IsQuark() && !(flb.Strong() && flc.Strong())) {
-    if (flb.Kfcode()==kf::Wplus || flc.Kfcode()==kf::Wplus) 
+    if (flb.Kfcode()==kf_Wplus || flc.Kfcode()==kf_Wplus) 
       fl=IsoFlip((flb.IsQuark()?b:c).MapFlavour());
     else fl=Flavour((flb.IsQuark()?b:c).MapFlavour());
   }
@@ -300,13 +300,13 @@ Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
   Leg & a=legs[i], & b=legs[j], mo;
   /*
   msg_Debugging()<<METHOD<<" "<<(a.Point()->prev?
-				 a.Point()->prev->fl:Flavour(kf::p_plus))
+				 a.Point()->prev->fl:Flavour(kf_p_plus))
 		 <<" ("<<(b.Point()->prev?
-			 b.Point()->prev->fl:Flavour(kf::p_plus))
+			 b.Point()->prev->fl:Flavour(kf_p_plus))
 		 <<" "<<(b.Point()->prev->left?
-			 b.Point()->prev->left->fl:Flavour(kf::p_plus))
+			 b.Point()->prev->left->fl:Flavour(kf_p_plus))
 		 <<" "<<(b.Point()->prev->right?
-			 b.Point()->prev->right->fl:Flavour(kf::p_plus))
+			 b.Point()->prev->right->fl:Flavour(kf_p_plus))
 		 <<"), a="<<a.Point()->fl<<", b="<<b.Point()->fl<<"\n";
   */
   if ( (a.Point()->prev == b.Point()->prev) && (a.Point()->prev != 0) ) {

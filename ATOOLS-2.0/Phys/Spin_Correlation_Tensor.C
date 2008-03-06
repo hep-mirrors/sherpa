@@ -22,18 +22,18 @@ namespace ATOOLS{
 
   // ACCESS METHODS FOR THE STATIC MEMBERS
 
-  void Spin_Correlation_Tensor::AddPossibleParticles( std::set<ATOOLS::kf::code> * flavs )
+  void Spin_Correlation_Tensor::AddPossibleParticles( std::set<kf_code> * flavs )
   {
-    for (std::set<ATOOLS::kf::code>::iterator iter=flavs->begin(); iter!=flavs->end(); ++iter)
+    for (std::set<kf_code>::iterator iter=flavs->begin(); iter!=flavs->end(); ++iter)
       m_possible_particles.insert(int(*iter));  
   }
 
-  void Spin_Correlation_Tensor::AddPossibleParticle( ATOOLS::kf::code flav )
+  void Spin_Correlation_Tensor::AddPossibleParticle( kf_code flav )
   {
     m_possible_particles.insert(int(flav));
   }
   
-  bool Spin_Correlation_Tensor::PossibleParticle( ATOOLS::kf::code flav)
+  bool Spin_Correlation_Tensor::PossibleParticle( kf_code flav)
   {
     for (std::set<int>::iterator iter=m_possible_particles.begin(); 
 	 iter!=m_possible_particles.end(); ++iter)

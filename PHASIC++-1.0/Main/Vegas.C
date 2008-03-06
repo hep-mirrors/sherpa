@@ -196,9 +196,9 @@ void Vegas::AddPoint(double value,double *xy)
   m_mode=0;
   if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {
     int v=(m_nevt-m_snevt)/m_autooptimize;
-    if (m_cevt*10*v>m_autooptimize) { 
+    if (m_cevt*10*v>(unsigned long)m_autooptimize) { 
       if (m_nopt==0) { 
-	if(m_cevt*2>m_nd) Optimize();
+	if(m_cevt*2>(unsigned long)m_nd) Optimize();
       }
       else if(m_cevt>m_nd*m_nopt) Optimize();
     }

@@ -39,16 +39,16 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
   std::set<int>::iterator git1;
   Flavour flav1,flav2;
 
-  if (Flavour(kf::gluon).IsOn()) {
+  if (Flavour(kf_gluon).IsOn()) {
     for (git1=m_generations.begin();git1!=m_generations.end();git1++) {
       for (short int i=1;i<=6;i++) {
 	mixing = Cos((*git1),i)*Cos((*git1),i)+Sin((*git1),i)*Sin((*git1),i);
 
 	// N0N+n0n
-	flav1  = Flavour(kf::code((50+(*git1))*100000+i));
+	flav1  = Flavour((kf_code)((50+(*git1))*100000+i));
 	if (flav1.Strong() && flav1.IsOn()) { 
 	  vertex[vanz].in[0]         = flav1;
-	  vertex[vanz].in[1]         = Flavour(kf::gluon);
+	  vertex[vanz].in[1]         = Flavour(kf_gluon);
 	  vertex[vanz].in[2]         = flav1;
 
 	  vertex[vanz].cpl[0]        = kcpl0*mixing;
@@ -65,10 +65,10 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex[vanz].on            = 1;
 	  vertex.push_back(Single_Vertex());vanz++;
 	} 
-	flav1  = Flavour(kf::code((60+(*git1))*100000+i));
+	flav1  = Flavour((kf_code)((60+(*git1))*100000+i));
 	if (flav1.Strong() && flav1.IsOn()) { 
 	  vertex[vanz].in[0]         = flav1;
-	  vertex[vanz].in[1]         = Flavour(kf::gluon);
+	  vertex[vanz].in[1]         = Flavour(kf_gluon);
 	  vertex[vanz].in[2]         = flav1;
 
 	  vertex[vanz].cpl[0]        = kcpl0*mixing;
@@ -88,12 +88,12 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 
 	// N0n-N0n
 	mixing = Cos((*git1),i)*Sin((*git1),i)+Sin((*git1),i)*Cos((*git1),i);
-	flav1  = Flavour(kf::code((50+(*git1))*100000+i));
-	flav2  = Flavour(kf::code((60+(*git1))*100000+i));
+	flav1  = Flavour((kf_code)((50+(*git1))*100000+i));
+	flav2  = Flavour((kf_code)((60+(*git1))*100000+i));
 	if (flav1.Strong() && flav1.IsOn() &&
 	    flav2.Strong() && flav2.IsOn()) { 
 	  vertex[vanz].in[0]         = flav1;
-	  vertex[vanz].in[1]         = Flavour(kf::gluon);
+	  vertex[vanz].in[1]         = Flavour(kf_gluon);
 	  vertex[vanz].in[2]         = flav2;
 
 	  vertex[vanz].cpl[0]        = kcpl0*mixing;
@@ -111,7 +111,7 @@ void Interaction_Model_MUED_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & 
 	  vertex.push_back(Single_Vertex());vanz++;
 
 	  vertex[vanz].in[0]         = flav2;
-	  vertex[vanz].in[1]         = Flavour(kf::gluon);
+	  vertex[vanz].in[1]         = Flavour(kf_gluon);
 	  vertex[vanz].in[2]         = flav1;
 
 	  vertex[vanz].cpl[0]        = -kcpl0*mixing;
@@ -143,12 +143,12 @@ void Interaction_Model_MUED_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& v
   Kabbala kcpl1 = kcpl0; 
   
   std::set<int>::iterator git1,git2;
-  if (Flavour(kf::gluon).IsOn()) {
+  if (Flavour(kf_gluon).IsOn()) {
     for (git1=m_generations.begin();git1!=m_generations.end();git1++) {
-      Flavour flav = Flavour(kf::code((50+(*git1))*100000+21));
+      Flavour flav = Flavour((kf_code)((50+(*git1))*100000+21));
       if (flav.Strong() && flav.IsOn()) { 
 	vertex[vanz].in[0]         = flav;
-	vertex[vanz].in[1]         = Flavour(kf::gluon);
+	vertex[vanz].in[1]         = Flavour(kf_gluon);
 	vertex[vanz].in[2]         = flav;
 
 	vertex[vanz].cpl[0]        = kcpl0;
@@ -174,9 +174,9 @@ void Interaction_Model_MUED_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& v
     for (git2=git1;git2!=m_generations.end();git2++) {
       int gen3 = (*git1)+(*git2);
       if (gen3>ScalarNumber(std::string("Number_Of_KK_Excitations"))) continue;
-      Flavour flav1 = Flavour(kf::code((50+(*git1))*100000+21));
-      Flavour flav2 = Flavour(kf::code((50+(*git2))*100000+21));
-      Flavour flav3 = Flavour(kf::code((50+gen3)*100000+21));
+      Flavour flav1 = Flavour((kf_code)((50+(*git1))*100000+21));
+      Flavour flav2 = Flavour((kf_code)((50+(*git2))*100000+21));
+      Flavour flav3 = Flavour((kf_code)((50+gen3)*100000+21));
       if (flav1.Strong() && flav1.IsOn() && 
 	  flav2.Strong() && flav2.IsOn() &&
 	  flav3.Strong() && flav3.IsOn()) { 
@@ -213,12 +213,12 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
   
   // 2 gluons: 00nn
   std::set<int>::iterator git1,git2,git3;
-  if (Flavour(kf::gluon).IsOn()) { 
+  if (Flavour(kf_gluon).IsOn()) { 
     for (git1=m_generations.begin();git1!=m_generations.end();git1++) {
-      Flavour flav = Flavour(kf::code((50+(*git1))*100000+21));
+      Flavour flav = Flavour((kf_code)((50+(*git1))*100000+21));
       if (flav.Strong() && flav.IsOn()) { 
-	vertex[vanz].in[0]      = Flavour(kf::gluon);
-	vertex[vanz].in[1]      = Flavour(kf::gluon);
+	vertex[vanz].in[0]      = Flavour(kf_gluon);
+	vertex[vanz].in[1]      = Flavour(kf_gluon);
 	vertex[vanz].in[2]      = flav;
 	vertex[vanz].in[3]      = flav;
     
@@ -257,14 +257,14 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
       for (git2=git1;git2!=m_generations.end();git2++) {
 	int gen3 = (*git1)+(*git2);
 	if (gen3>ScalarNumber(std::string("Number_Of_KK_Excitations"))) continue;
-	Flavour flav1 = Flavour(kf::code((50+(*git1))*100000+21));
-	Flavour flav2 = Flavour(kf::code((50+(*git2))*100000+21));
-	Flavour flav3 = Flavour(kf::code((50+gen3)*100000+21));
+	Flavour flav1 = Flavour((kf_code)((50+(*git1))*100000+21));
+	Flavour flav2 = Flavour((kf_code)((50+(*git2))*100000+21));
+	Flavour flav3 = Flavour((kf_code)((50+gen3)*100000+21));
 	if (flav1.Strong() && flav1.IsOn() && 
 	    flav2.Strong() && flav2.IsOn() &&
 	    flav3.Strong() && flav3.IsOn()) { 
 
-	  vertex[vanz].in[0]      = Flavour(kf::gluon);
+	  vertex[vanz].in[0]      = Flavour(kf_gluon);
 	  vertex[vanz].in[1]      = flav1;
 	  vertex[vanz].in[2]      = flav2;
 	  vertex[vanz].in[3]      = flav3;
@@ -302,7 +302,7 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
     }
   }
   for (git1=m_generations.begin();git1!=m_generations.end();git1++) {
-    Flavour flav1 = Flavour(kf::code((50+(*git1))*100000+21));
+    Flavour flav1 = Flavour((kf_code)((50+(*git1))*100000+21));
     // 4KKs: nnnn
     if (flav1.Strong() && flav1.IsOn()) {
       vertex[vanz].in[0]      = flav1;
@@ -340,7 +340,7 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
       vertex.push_back(Single_Vertex());vanz++;
     }
     for (git2=git1;git2!=m_generations.end();git2++) {
-      Flavour flav2 = Flavour(kf::code((50+(*git2))*100000+21));
+      Flavour flav2 = Flavour((kf_code)((50+(*git2))*100000+21));
       if (flav1.Strong() && flav1.IsOn() && 
 	  flav2.Strong() && flav2.IsOn()) {
 	// 4KKs: nnmm
@@ -380,10 +380,10 @@ void Interaction_Model_MUED_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
 	}
       }
       for (git3=git2;git3!=m_generations.end();git3++) {
-	Flavour flav3 = Flavour(kf::code((50+(*git3))*100000+21));
+	Flavour flav3 = Flavour((kf_code)((50+(*git3))*100000+21));
 	int gen4 = (*git1)+(*git2)+(*git3);
 	if (gen4>ScalarNumber(std::string("Number_Of_KK_Excitations"))) continue;
-	Flavour flav4 = Flavour(kf::code((50+gen4)*100000+21));
+	Flavour flav4 = Flavour((kf_code)((50+gen4)*100000+21));
 	// 4KKs: nmk(n+m+k)
 	if (flav1.Strong() && flav1.IsOn() && 
 	    flav2.Strong() && flav2.IsOn() &&
@@ -432,7 +432,7 @@ Kabbala Interaction_Model_MUED_QCD::Cos(const int KK,const int gen)
   char sup[1], kfc[1];
   sprintf(sup,"%i",KK);
   sprintf(kfc,"%i",gen);
-  Flavour flav = Flavour(kf::code(gen));
+  Flavour flav = Flavour((kf_code)(gen));
   return Kabbala(string("\\cos\\gamma^{("+string(sup)+")}_{"+flav.TexName()+"}"),
 		 ScalarConstant(string("cos(gamma)[")+string(sup)+"]["+string(kfc)+string("]")));
 }
@@ -442,7 +442,7 @@ Kabbala Interaction_Model_MUED_QCD::Sin(const int KK,const int gen)
   char sup[1], kfc[1];
   sprintf(sup,"%i",KK);
   sprintf(kfc,"%i",gen);
-  Flavour flav = Flavour(kf::code(gen));
+  Flavour flav = Flavour((kf_code)(gen));
   return Kabbala(string("\\sin\\gamma^{("+string(sup)+")}_{"+flav.TexName()+"}"),
 		 ScalarConstant(string("sin(gamma)[")+string(sup)+"]["+string(kfc)+string("]")));
 }

@@ -164,7 +164,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob,
        i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],
 			    p_mehandler->Momenta()[i]);
-    if( particle->Flav().Kfcode() != kf::tau )
+    if( particle->Flav().Kfcode() != kf_tau )
       if (!(particle->Flav().IsStable())) {
         unstable = true;
         unstable_flav = particle->Flav();

@@ -51,7 +51,7 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 	       <<checkbef<<" vs. "<<checkaft<<" : "<<(checkbef-checkaft).Abs2()<<"."<<std::endl;
   }
 
-  Particle * part = new Particle(-1,Flavour(kf::cluster),cluster->GetLeft()->Momentum()); 
+  Particle * part = new Particle(-1,Flavour(kf_cluster),cluster->GetLeft()->Momentum()); 
   part->SetNumber();
   part->SetStatus(part_status::active);
   part->SetInfo('C');
@@ -59,7 +59,7 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
   control::s_AHAparticles++;
   cluster->GetLeft()->SetSelf(part);
   
-  part = new Particle(-1,Flavour(kf::cluster),cluster->GetRight()->Momentum()); 
+  part = new Particle(-1,Flavour(kf_cluster),cluster->GetRight()->Momentum()); 
   part->SetNumber();
   part->SetStatus(part_status::active);
   part->SetInfo('C');

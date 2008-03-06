@@ -131,7 +131,7 @@ bool HadronDecays_Apacic_Interface::FillBinaryDecayTree(APACIC::Tree * tree) {
   for (int i=0;i<2;i++) momom += m_particles[i]->Momentum();
   double scale(momom.Abs2());
 
-  APACIC::Knot * mo = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  APACIC::Knot * mo = tree->NewKnot(Flavour(kf_photon),momom,scale,0.);
   mo->part->SetStatus(part_status::decayed);
   mo->part->SetInfo('M');
   mo->E2      = scale;
@@ -191,7 +191,7 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
     }
   }
 
-  APACIC::Knot * mo        = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  APACIC::Knot * mo        = tree->NewKnot(Flavour(kf_photon),momom,scale,0.);
   mo->part->SetStatus(part_status::decayed);
   mo->part->SetInfo('M');
   mo->E2                   = scale;
@@ -275,7 +275,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   for (int i=0;i<4;i++) momom += m_particles[i]->Momentum();
   double scale(momom.Abs2());
 
-  APACIC::Knot * mo = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  APACIC::Knot * mo = tree->NewKnot(Flavour(kf_photon),momom,scale,0.);
   mo->part->SetStatus(part_status::decayed);
   mo->part->SetInfo('M');
   mo->E2      = scale;
@@ -290,7 +290,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   for (int i=0;i<2;i++) momom += m_particles[i]->Momentum();
   scale = momom.Abs2();
 
-  mo->left = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  mo->left = tree->NewKnot(Flavour(kf_photon),momom,scale,0.);
   mo->left->part->SetStatus(part_status::decayed);
   mo->left->part->SetInfo('M');
   mo->left->t       = scale;
@@ -328,7 +328,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   for (int i=2;i<4;i++) momom += m_particles[i]->Momentum();
   scale = momom.Abs2();
 
-  mo->right = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  mo->right = tree->NewKnot(Flavour(kf_photon),momom,scale,0.);
   mo->right->part->SetStatus(part_status::decayed);
   mo->right->part->SetInfo('M');
   mo->right->t       = scale;

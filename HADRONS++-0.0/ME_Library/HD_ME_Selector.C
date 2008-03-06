@@ -16,8 +16,8 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 {
   HD_ME_Base * hdme = NULL;							// pointer on ME_Base
   double mass = flavs[0].Mass();					// mass of decaying particle
-  if (flavs[0]==Flavour(kf::tau) || 
-      flavs[0]==Flavour(kf::tau)) mass = flavs[0].PSMass();
+  if (flavs[0]==Flavour(kf_tau) || 
+      flavs[0]==Flavour(kf_tau)) mass = flavs[0].PSMass();
 
   // sanity check if sum of outgoing masses > incoming mass
   for (int i=1;i<1+nout;i++) {
@@ -34,11 +34,11 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 
   // Select ME depending on decaying particle
   switch (flavs[0]) {
-    case (kf::tau):
+    case (kf_tau):
       SelectTauDecay(nout,flavs,hdme);
       break;
-    case (kf::eta):
-    case (kf::eta_prime_958):
+    case (kf_eta):
+    case (kf_eta_prime_958):
       SelectLightPseudoScalarDecay(nout,flavs,hdme);
       break;
   }
@@ -58,8 +58,8 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
       {
         int nPion(0), nKaon(0);
         for( int i=1; i<3; i++ ) {
-          if( flavs[i].Kfcode() == kf::pi_plus ) nPion++;
-          if( flavs[i].Kfcode() == kf::K_plus ) nKaon++;
+          if( flavs[i].Kfcode() == kf_pi_plus ) nPion++;
+          if( flavs[i].Kfcode() == kf_K_plus ) nKaon++;
         }
         if( nPion == 1 ) {
           hdme = new Tau_Pseudo( nout, flavs );
@@ -74,11 +74,11 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
         int nLep(0), nPion(0), nKaon(0);
         for( int i=1; i<4; i++ ) {
           if( flavs[i].IsLepton() ) nLep++;
-          if( flavs[i].Kfcode() == kf::pi_plus ||
-              flavs[i].Kfcode() == kf::pi ) nPion++;
-          if( flavs[i].Kfcode() == kf::K_plus ||
-              flavs[i].Kfcode() == kf::K_S ||
-              flavs[i].Kfcode() == kf::K_L ) nKaon++;
+          if( flavs[i].Kfcode() == kf_pi_plus ||
+              flavs[i].Kfcode() == kf_pi ) nPion++;
+          if( flavs[i].Kfcode() == kf_K_plus ||
+              flavs[i].Kfcode() == kf_K_S ||
+              flavs[i].Kfcode() == kf_K_L ) nKaon++;
         }
         if( nLep == 3 ) {
           hdme = new Tau_Lepton( nout, flavs );
@@ -99,12 +99,12 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
         int nPseudo(0), nEta(0);
         // count number of pseudoscalars
         for( int i=1; i<5; i++ ) {
-          if( flavs[i].Kfcode() == kf::pi_plus ||
-              flavs[i].Kfcode() == kf::pi ||
-              flavs[i].Kfcode() == kf::K_plus ||
-              flavs[i].Kfcode() == kf::K_L ||
-              flavs[i].Kfcode() == kf::K_S) nPseudo++;
-          if( flavs[i].Kfcode() == kf::eta ) nEta++;
+          if( flavs[i].Kfcode() == kf_pi_plus ||
+              flavs[i].Kfcode() == kf_pi ||
+              flavs[i].Kfcode() == kf_K_plus ||
+              flavs[i].Kfcode() == kf_K_L ||
+              flavs[i].Kfcode() == kf_K_S) nPseudo++;
+          if( flavs[i].Kfcode() == kf_eta ) nEta++;
         }
         if( nPseudo==3 )
           hdme = new Tau_Three_Pseudo( nout, flavs );
@@ -117,8 +117,8 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
         int nPion_ch (0), nPion_0 (0);
         // count number of pions
         for( int i=1; i<6; i++ ) {
-          if( flavs[i].Kfcode() == kf::pi_plus ) nPion_ch++;
-          if( flavs[i].Kfcode() == kf::pi )      nPion_0++;
+          if( flavs[i].Kfcode() == kf_pi_plus ) nPion_ch++;
+          if( flavs[i].Kfcode() == kf_pi )      nPion_0++;
         }
         if( nPion_ch==3 && nPion_0==1 ) {
           hdme = new Tau_Four_Pion_3( nout, flavs );
@@ -139,24 +139,24 @@ void HD_ME_Selector::SelectLightPseudoScalarDecay(
 //   msg_Tracking()<<"HD_ME_Selector::SelectLightPseudoScalarDecay 1->"<<nout<<endl;
 //   switch (nout) {
 //   case 2:
-//     if (flavs[1]==Flavour(kf::photon) &&
-// 	flavs[2]==Flavour(kf::photon))
+//     if (flavs[1]==Flavour(kf_photon) &&
+// 	flavs[2]==Flavour(kf_photon))
 //       hdme = new P_2Gamma(nout,flavs);
 //     break;
 //   case 3:
 //     if (flavs[1].IsLepton() &&
 // 	flavs[2].IsLepton() && flavs[2].IsAnti() &&
-// 	flavs[3]==Flavour(kf::photon)) {
+// 	flavs[3]==Flavour(kf_photon)) {
 //       hdme = new P_GammaFF(nout,flavs);
 //     }
 //     if (IsPseudoScalar(flavs[1]) &&
-// 	flavs[2]==Flavour(kf::photon) &&
-// 	flavs[3]==Flavour(kf::photon)) {
+// 	flavs[2]==Flavour(kf_photon) &&
+// 	flavs[3]==Flavour(kf_photon)) {
 //       hdme = new P_P2Gamma(nout,flavs);
 //     }
-//     if (flavs[1]==Flavour(kf::pi_plus) &&
-// 	flavs[2]==Flavour(kf::pi_plus).Bar() &&
-// 	flavs[3]==Flavour(kf::photon)) {
+//     if (flavs[1]==Flavour(kf_pi_plus) &&
+// 	flavs[2]==Flavour(kf_pi_plus).Bar() &&
+// 	flavs[3]==Flavour(kf_photon)) {
 //       hdme = new P_2PGamma(nout,flavs);
 //       SetVector_For_2PS(nout,1,2,flavs,hdme);
 //     }
@@ -175,20 +175,20 @@ void HD_ME_Selector::SetVector_For_2PS(int nout,int PS1, int PS2,
   double mass   = flavs[0].Mass();
   double charge = flavs[PS1].Charge()+flavs[PS2].Charge();
   if (charge==0.) {
-    if (flavs[0].Mass()>Flavour(kf::rho_770).Mass())    
-      hdme->AddVector(Flavour(kf::rho_770).Mass(),Flavour(kf::rho_770).Width());
-    if (flavs[0].Mass()>Flavour(kf::omega_782).Mass())
-      hdme->AddVector(Flavour(kf::omega_782).Mass(),Flavour(kf::omega_782).Width());
-    if (flavs[0].Mass()>Flavour(kf::K_star_892).Mass())
-      hdme->AddVector(Flavour(kf::K_star_892).Mass(),Flavour(kf::K_star_892).Width());
-    if (flavs[0].Mass()>Flavour(kf::phi_1020).Mass())
-      hdme->AddVector(Flavour(kf::phi_1020).Mass(),Flavour(kf::phi_1020).Width());
+    if (flavs[0].Mass()>Flavour(kf_rho_770).Mass())    
+      hdme->AddVector(Flavour(kf_rho_770).Mass(),Flavour(kf_rho_770).Width());
+    if (flavs[0].Mass()>Flavour(kf_omega_782).Mass())
+      hdme->AddVector(Flavour(kf_omega_782).Mass(),Flavour(kf_omega_782).Width());
+    if (flavs[0].Mass()>Flavour(kf_K_star_892).Mass())
+      hdme->AddVector(Flavour(kf_K_star_892).Mass(),Flavour(kf_K_star_892).Width());
+    if (flavs[0].Mass()>Flavour(kf_phi_1020).Mass())
+      hdme->AddVector(Flavour(kf_phi_1020).Mass(),Flavour(kf_phi_1020).Width());
   }
   else if (charge!=0.) {
-    if (flavs[0].Mass()>Flavour(kf::rho_770).Mass())
-      hdme->AddVector(Flavour(kf::rho_770).Mass(),Flavour(kf::rho_770).Width());
-    if (flavs[0].Mass()>Flavour(kf::K_star_892).Mass())
-      hdme->AddVector(Flavour(kf::K_star_892).Mass(),Flavour(kf::K_star_892).Width());
+    if (flavs[0].Mass()>Flavour(kf_rho_770).Mass())
+      hdme->AddVector(Flavour(kf_rho_770).Mass(),Flavour(kf_rho_770).Width());
+    if (flavs[0].Mass()>Flavour(kf_K_star_892).Mass())
+      hdme->AddVector(Flavour(kf_K_star_892).Mass(),Flavour(kf_K_star_892).Width());
   }
 }
 

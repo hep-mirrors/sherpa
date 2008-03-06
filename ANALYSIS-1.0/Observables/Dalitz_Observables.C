@@ -106,13 +106,13 @@ Dalitz_Observable_Base_Getter::operator()(const Argument_Matrix &parameters) con
   int out2(ToType<int>(parameters[0][2]));
   int out3(ToType<int>(parameters[0][3]));
   
-  Flavour flin((kf::code)abs(in));
+  Flavour flin((kf_code)abs(in));
   if (in<0) flin=flin.Bar();
-  Flavour flout1((kf::code)abs(out1));
+  Flavour flout1((kf_code)abs(out1));
   if (out1<0) flout1=flout1.Bar();
-  Flavour flout2((kf::code)abs(out2));
+  Flavour flout2((kf_code)abs(out2));
   if (out2<0) flout2=flout2.Bar();
-  Flavour flout3((kf::code)abs(out3));
+  Flavour flout3((kf_code)abs(out3));
   if (out3<0) flout3=flout3.Bar();
   std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
 	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;
@@ -165,13 +165,13 @@ Scaled_Dalitz_Observable_Getter::operator()(const Argument_Matrix &parameters) c
   int out2(ToType<int>(parameters[0][2]));
   int out3(ToType<int>(parameters[0][3]));
   
-  Flavour flin((kf::code)abs(in));
+  Flavour flin((kf_code)abs(in));
   if (in<0) flin=flin.Bar();
-  Flavour flout1((kf::code)abs(out1));
+  Flavour flout1((kf_code)abs(out1));
   if (out1<0) flout1=flout1.Bar();
-  Flavour flout2((kf::code)abs(out2));
+  Flavour flout2((kf_code)abs(out2));
   if (out2<0) flout2=flout2.Bar();
-  Flavour flout3((kf::code)abs(out3));
+  Flavour flout3((kf_code)abs(out3));
   if (out3<0) flout3=flout3.Bar();
   std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
 	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;

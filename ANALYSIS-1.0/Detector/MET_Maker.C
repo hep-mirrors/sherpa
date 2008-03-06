@@ -63,7 +63,7 @@ MET_Maker::MET_Maker(Primitive_Analysis * ana,const std::string mode) :
   m_Rinfty_ECal(0.78), m_ampl_ECal(0.37), m_slope_ECal(0.2),
   m_Rinfty_HCal(0.81), m_ampl_HCal(0.45), m_slope_HCal(0.2)
 {  
-  m_kfcode=kf::none;
+  m_kfcode=kf_none;
   GetElements();
 }
 

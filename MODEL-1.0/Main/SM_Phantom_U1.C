@@ -67,16 +67,16 @@ bool SM_Phantom_U1::SanityChecks() {
 
 void SM_Phantom_U1::FillMasses() {
   Flavour flav;
-  flav = Flavour(kf::h0);
+  flav = Flavour(kf_h0);
   flav.SetMass(ScalarConstant(string("M_H1")));
   flav.SetMassOn(true);
-  flav = Flavour(kf::H0);
+  flav = Flavour(kf_H0);
   flav.SetMass(ScalarConstant(string("M_H2")));
   flav.SetMassOn(true);
-  flav = Flavour(kf::A0);
+  flav = Flavour(kf_A0);
   flav.SetMass(0.);
   flav.SetMassOn(true);
-  flav = Flavour(kf::Z0_2);
+  flav = Flavour(kf_Z0_2);
   flav.SetMass(ScalarConstant(string("M_Z'")));
   flav.SetMassOn(true);
 }

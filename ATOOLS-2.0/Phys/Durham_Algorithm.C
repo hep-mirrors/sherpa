@@ -49,9 +49,9 @@ void Durham_Algorithm::AddToKtlist(double kt2) {
 
 void Durham_Algorithm::AddToJetlist(const Vec4D & mom, int bf) {
   if (p_jets) {
-    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
-    else p_jets->push_back(new Particle(p_jets->size(),bf>0?Flavour(kf::bjet):
-					Flavour(kf::bjet).Bar(),mom));
+    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf_jet),mom));
+    else p_jets->push_back(new Particle(p_jets->size(),bf>0?Flavour(kf_bjet):
+					Flavour(kf_bjet).Bar(),mom));
   }
 }
 
@@ -77,11 +77,11 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
     if ((*p_qualifier)(*it)) {
       p_moms[n]  = ((*it)->Momentum());
       p_bflag[n] = 0; 
-      if (m_bflag==0) p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b || 
-				    ((*it)->Flav()).Kfcode()==kf::bjet);
+      if (m_bflag==0) p_bflag[n] = (((*it)->Flav()).Kfcode()==kf_b || 
+				    ((*it)->Flav()).Kfcode()==kf_bjet);
       else if (m_bflag==-1) p_bflag[n] = (1-2*(*it)->Flav().IsAnti())*
-			      (((*it)->Flav()).Kfcode()==kf::b || 
-			       ((*it)->Flav()).Kfcode()==kf::bjet);
+			      (((*it)->Flav()).Kfcode()==kf_b || 
+			       ((*it)->Flav()).Kfcode()==kf_bjet);
       ++n;
     }
   }

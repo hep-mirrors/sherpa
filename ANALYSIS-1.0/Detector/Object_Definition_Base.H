@@ -20,7 +20,7 @@ namespace ANALYSIS {
     bool   m_elements;
     std::string m_name;
 
-    ATOOLS::kf::code m_kfcode;
+    kf_code m_kfcode;
 
     ATOOLS::Particle_List * p_myparticles;
     ATOOLS::Order_Base    * p_order;

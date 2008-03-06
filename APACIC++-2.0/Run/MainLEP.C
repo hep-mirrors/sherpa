@@ -165,8 +165,8 @@ int main(int argc,char **argv)
   Model_Base    * model        = new Standard_Model("./","Model.dat");
 
   ISR_Base ** isrbases = new ISR_Base*[2];
-  isrbases[0] = new Intact(Flavour(kf::e));     
-  isrbases[1] = new Intact(Flavour(kf::e).Bar());
+  isrbases[0] = new Intact(Flavour(kf_e));     
+  isrbases[1] = new Intact(Flavour(kf_e).Bar());
   ISR_Handler * isr = new ISR_Handler(isrbases);
 
   // init analysis
@@ -198,7 +198,7 @@ int main(int argc,char **argv)
     double sintheta=sqrt(1.-costheta*costheta);
     double phi=2.*M_PI*ran.Get();
 
-    Flavour quark=Flavour(kf::code(1+int(ran.Get()*4.)));
+    Flavour quark=Flavour((kf_code)(1+int(ran.Get()*4.)));
 
     Vec3D dir(sin(phi)*sintheta,cos(phi)*sintheta,costheta);
 
@@ -211,7 +211,7 @@ int main(int argc,char **argv)
     Knot * k3 = tree->NewKnot();
 
     mo->z       = 0.5;
-    *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(rscale,0,0,0));
+    *(mo->part) = Particle(1,Flavour(kf_photon),Vec4D(rscale,0,0,0));
     mo->E2    = scale;
     mo->t    = scale;  
     

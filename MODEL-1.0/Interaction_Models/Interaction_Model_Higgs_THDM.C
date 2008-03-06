@@ -41,21 +41,21 @@ Interaction_Model_Higgs_THDM::Interaction_Model_Higgs_THDM(MODEL::Model_Base * _
 
 void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flHplus(kf::Hplus);
-  Flavour flA0(kf::A0);
+  Flavour flHplus(kf_Hplus);
+  Flavour flA0(kf_A0);
   
   // l(e)/q(d) -> h0/H0 + l(e)/q(d)
   
   for(short int i=25;i<36;i+=10) {
     
-    Flavour flav = Flavour(kf::code(i));
+    Flavour flav = Flavour((kf_code)(i));
     Kabbala kcpl0,kcpl1;
 
     if(flav.IsOn()) {
       
       for(short int j=1;j<17;j++) {
 	if (j==7) j=11;
-	Flavour fl1 = Flavour(kf::code(j)); 
+	Flavour fl1 = Flavour((kf_code)(j)); 
        	if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
 	  
 	  vertex[vanz].in[0] = fl1; 
@@ -91,7 +91,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
       
       for(short int t=1;t<17;t++) {
 	if (t==7) t=11;
-	Flavour fl1 = Flavour(kf::code(t)); 
+	Flavour fl1 = Flavour((kf_code)(t)); 
 	if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
 	  
 	  vertex[vanz].in[0] = fl1; 
@@ -130,7 +130,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
  
     for(short int k=1;k<17;k++) {
       if (k==7) k=11;
-      Flavour fl1 = Flavour(kf::code(k)); 
+      Flavour fl1 = Flavour((kf_code)(k)); 
       if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
 		
 	vertex[vanz].in[0] = fl1; 
@@ -167,7 +167,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
     // q(u) -> A0 + q(u)
     
     for(short int z=1;z<7;z++) { 
-      Flavour fl1 = Flavour(kf::code(z)); 
+      Flavour fl1 = Flavour((kf_code)(z)); 
       if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
 	
 	vertex[vanz].in[0] = fl1; 
@@ -204,9 +204,9 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
     Kabbala kcpl0,kcpl1;
 
     for(short int i=11;i<17;i++) {
-      Flavour fl1 = Flavour(kf::code(i)); 
+      Flavour fl1 = Flavour((kf_code)(i)); 
       if(fl1.IsOn() && fl1.IsLepton() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
-	Flavour fl2 = Flavour(kf::code(i=i+1));
+	Flavour fl2 = Flavour((kf_code)(i=i+1));
 	if(fl2.IsOn() && fl2.IsLepton() && fl2.IsUptype() ) {
 	  
 	  vertex[vanz].in[0] = fl2;   
@@ -237,11 +237,11 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
     // q(d) -> H- + q(u) 
     
     for(short int j=1;j<7;j++) {
-      Flavour fl1 = Flavour(kf::code(j));
+      Flavour fl1 = Flavour((kf_code)(j));
       Kabbala kcpl0,kcpl1;
       if(fl1.IsOn() && fl1.IsQuark() && fl1.IsDowntype()) {
 	for(short int k=1;k<7;k++) {
-	  Flavour fl2 = Flavour(kf::code(k));
+	  Flavour fl2 = Flavour((kf_code)(k));
 	  if(fl2.IsOn() && fl2.IsQuark() && fl2.IsUptype() && 
 	     ((fl1.Yuk() > 1.) || (fl2.Yuk() > 1.)) ) {
 	    
@@ -281,8 +281,8 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 void Interaction_Model_Higgs_THDM::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
-  Flavour flWplus(kf::Wplus);
-  Flavour flZ(kf::Z);
+  Flavour flWplus(kf_Wplus);
+  Flavour flZ(kf_Z);
   
   Kabbala kcpl0,kcpl1;
   
@@ -291,7 +291,7 @@ void Interaction_Model_Higgs_THDM::c_VVS(std::vector<Single_Vertex>& vertex,int&
   if(flWplus.IsOn()) {
     
     for(short int i=25; i<36;i+=10){
-      Flavour flav = Flavour(kf::code(i));
+      Flavour flav = Flavour((kf_code)(i));
       if(flav.IsOn()) {
 	
 	vertex[vanz].in[0] = flWplus.Bar();
@@ -323,7 +323,7 @@ void Interaction_Model_Higgs_THDM::c_VVS(std::vector<Single_Vertex>& vertex,int&
   
   if(flZ.IsOn()){
     for(short int i=25; i<36;i+=10){
-      Flavour flav = Flavour(kf::code(i));
+      Flavour flav = Flavour((kf_code)(i));
       if(flav.IsOn()) {
 	
  	vertex[vanz].in[0] = flZ;
@@ -355,17 +355,17 @@ void Interaction_Model_Higgs_THDM::c_VVS(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_Higgs_THDM::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
-  Flavour flHplus(kf::Hplus);    
-  Flavour flh0(kf::h0);
-  Flavour flH0(kf::H0);
-  Flavour flA0(kf::A0);
+  Flavour flHplus(kf_Hplus);    
+  Flavour flh0(kf_h0);
+  Flavour flH0(kf_H0);
+  Flavour flA0(kf_A0);
   Kabbala kcpl0,kcpl1;
 
   // h0,H0 -> H+ + H-
   
   if(flHplus.IsOn()) {  
     for(short int i=25; i<36;i+=10){
-      Flavour flav = Flavour(kf::code(i)); 
+      Flavour flav = Flavour((kf_code)(i)); 
       if(flav.IsOn()) {
 	
 	vertex[vanz].in[0] = flHplus.Bar();
@@ -398,10 +398,10 @@ void Interaction_Model_Higgs_THDM::c_SSS(std::vector<Single_Vertex>& vertex,int&
   
   if(flh0.IsOn()) { 
     for(short int j=25; j<36;j+=10){
-      Flavour flav2 = Flavour(kf::code(j));
+      Flavour flav2 = Flavour((kf_code)(j));
       if(flav2.IsOn()) {
 	for(short int k=25; k<36;k+=10){
-	  Flavour flav3 = Flavour(kf::code(k));
+	  Flavour flav3 = Flavour((kf_code)(k));
 	  if(flav3.IsOn()) {
 	    if(flav2 != flH0 || flav3 != flh0) {
 	      
@@ -462,7 +462,7 @@ void Interaction_Model_Higgs_THDM::c_SSS(std::vector<Single_Vertex>& vertex,int&
     
     if(flA0.IsOn()) {
       for(short int i=25;i<36;i+=10) {
-	Flavour flav = Flavour(kf::code(i));
+	Flavour flav = Flavour((kf_code)(i));
 	if(flav.IsOn()) {
 	  
 	vertex[vanz].in[0] = flA0;
@@ -494,18 +494,18 @@ void Interaction_Model_Higgs_THDM::c_SSS(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_Higgs_THDM::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {   
-  Flavour flWplus(kf::Wplus);
-  Flavour flZ(kf::Z);
-  Flavour flHplus(kf::Hplus);
-  Flavour flA0(kf::A0);
-  Flavour flPhoton(kf::photon);
+  Flavour flWplus(kf_Wplus);
+  Flavour flZ(kf_Z);
+  Flavour flHplus(kf_Hplus);
+  Flavour flA0(kf_A0);
+  Flavour flPhoton(kf_photon);
   Kabbala kcpl0,kcpl1;
 
   // A0 -> Z + h0/H0 
   
   if(flZ.IsOn()) {
     for(short int i=25; i<36;i+=10) {
-      Flavour flav = Flavour(kf::code(i)); 
+      Flavour flav = Flavour((kf_code)(i)); 
       if(flav.IsOn() && flA0.IsOn()) {
 	vertex[vanz].in[0] = flA0;
 	vertex[vanz].in[1] = flZ;
@@ -593,7 +593,7 @@ void Interaction_Model_Higgs_THDM::c_SSV(std::vector<Single_Vertex>& vertex,int&
   
   if(flWplus.IsOn()) {
     for(short int i=25; i<36;i+=10) {
-      Flavour flav = Flavour(kf::code(i)); 
+      Flavour flav = Flavour((kf_code)(i)); 
       
       if(flav.IsOn() && flHplus.IsOn()) {
 	
@@ -651,8 +651,8 @@ void Interaction_Model_Higgs_THDM::c_SSV(std::vector<Single_Vertex>& vertex,int&
 
 void Interaction_Model_Higgs_THDM::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
-  Flavour flHplus(kf::Hplus);    
-  Flavour flA0(kf::A0);
+  Flavour flHplus(kf_Hplus);    
+  Flavour flA0(kf_A0);
   
   Kabbala kcpl0,kcpl1;
 
@@ -735,9 +735,9 @@ void Interaction_Model_Higgs_THDM::c_SSSS(std::vector<Single_Vertex>& vertex,int
   }
 
   for (int i=25;i<36;i+=10) {
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     for (int j=i;j<36;j+=10) {
-      Flavour flav2 = Flavour(kf::code(j));
+      Flavour flav2 = Flavour((kf_code)(j));
       if (flav1.IsOn() && flav2.IsOn()) {
 	// h0/H0 - H- - H+ - h0/H0
 	if (flHplus.IsOn()) {
@@ -796,9 +796,9 @@ void Interaction_Model_Higgs_THDM::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	}
 	// h0/H0 - h0/H0 - h0/H0 - h0/H0 
 	for (int k=25;k<36;k+=10) {
-	  Flavour flav3 = Flavour(kf::code(k));
+	  Flavour flav3 = Flavour((kf_code)(k));
 	  for (int l=k;l<36;l+=10) {
-	    Flavour flav4 = Flavour(kf::code(l));
+	    Flavour flav4 = Flavour((kf_code)(l));
 	    if (flav3.IsOn() && flav4.IsOn()) {
 	      
 	      vertex[vanz].in[0] = flav1;
@@ -837,11 +837,11 @@ void Interaction_Model_Higgs_THDM::c_SSSS(std::vector<Single_Vertex>& vertex,int
 void Interaction_Model_Higgs_THDM::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
-  Flavour flWplus(kf::Wplus);
-  Flavour flZ(kf::Z);
-  Flavour flHplus(kf::Hplus);    
-  Flavour flA0(kf::A0);
-  Flavour flPhoton(kf::photon);
+  Flavour flWplus(kf_Wplus);
+  Flavour flZ(kf_Z);
+  Flavour flHplus(kf_Hplus);    
+  Flavour flA0(kf_A0);
+  Flavour flPhoton(kf_photon);
   
   Kabbala kcpl0,kcpl1;
 
@@ -849,7 +849,7 @@ void Interaction_Model_Higgs_THDM::c_SSVV(std::vector<Single_Vertex>& vertex,int
   if (flZ.IsOn()) {
     for(short int i=25; i<37;++i){
       if (i==26) i=35;
-      Flavour flav = Flavour(kf::code(i));
+      Flavour flav = Flavour((kf_code)(i));
       if(flav.IsOn()) {
 	
  	vertex[vanz].in[0] = flZ;
@@ -882,7 +882,7 @@ void Interaction_Model_Higgs_THDM::c_SSVV(std::vector<Single_Vertex>& vertex,int
   if (flZ.IsOn()) {
     for(short int i=25; i<37;++i){
       if (i==26) i=35;
-      Flavour flav = Flavour(kf::code(i));
+      Flavour flav = Flavour((kf_code)(i));
       if(flav.IsOn()) {
 	
  	vertex[vanz].in[0] = flWplus.Bar();
@@ -940,7 +940,7 @@ void Interaction_Model_Higgs_THDM::c_SSVV(std::vector<Single_Vertex>& vertex,int
     
     // W+ -> H+ + h0/H0 + Z/P 
     for (short int i=25;i<36;i+=10){
-      Flavour flav = Flavour(kf::code(i));
+      Flavour flav = Flavour((kf_code)(i));
       if(flav.IsOn()) {
 	if(flZ.IsOn()) {
 

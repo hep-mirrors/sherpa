@@ -666,7 +666,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
   		mo->decay->part->GetFlow(2),mo->part->GetFlow(2));
     }
   }
-  else if (mo->part->Flav().Kfcode()!=kf::none) {
+  else if (mo->part->Flav().Kfcode()!=kf_none) {
     Knot * partner(NULL), * nopart(NULL);
     if (mo->part->Flav().Strong()) {
       if (mo->part->Flav().IsQuark() || mo->part->Flav().IsSquark()) {
@@ -1229,7 +1229,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   double start_th=200;
 
   Knot * mo   = tree->NewKnot();
-  *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(sqrt(scale),0,0,0));
+  *(mo->part) = Particle(1,Flavour(kf_photon),Vec4D(sqrt(scale),0,0,0));
   mo->part->SetStatus(part_status::decayed);
   mo->part->SetInfo('M');
   mo->t       = scale;
@@ -1246,7 +1246,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
 
   Flavour mo_flavs[2];
   for(;;) {
-    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*4.)));   
+    mo_flavs[0] = Flavour((kf_code)(1+int(ran.Get()*4.)));   
     if (4.*sqr(mo_flavs[0].PSMass()) < scale) break;
   }
   mo_flavs[1] = mo_flavs[0].Bar();

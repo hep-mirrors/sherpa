@@ -16,7 +16,7 @@ namespace PHASIC {
 
     // constructor
     Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,
-		      ATOOLS::Flavour res=ATOOLS::Flavour(ATOOLS::kf::none)); 
+		      ATOOLS::Flavour res=ATOOLS::Flavour(kf_none)); 
 
     // setter
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }

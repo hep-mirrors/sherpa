@@ -6,7 +6,7 @@
 #include "ISR_Vegas.H"
 #include "ISR_Handler.H"
 
-#define INIFL ATOOLS::Flavour(ATOOLS::kf::jet)
+#define INIFL ATOOLS::Flavour(kf_jet)
 
 using namespace AMISIC;
 

@@ -40,16 +40,16 @@ Interaction_Model_EW_Grav::Interaction_Model_EW_Grav(MODEL::Model_Base * _model,
 
 void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
 	
     if (flav1.IsOn()) {
       for (short int j=i;j<17;j++) {
 	if (j==7) j=11;	
-	Flavour flav2 = Flavour(kf::code(j));
+	Flavour flav2 = Flavour((kf_code)(j));
 	
 	if (flav2.IsOn()) {
 	  if (flav1==flav2) {
@@ -62,7 +62,7 @@ void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& va
 	      kcpl1 = num2*mf;
 	      
 	      vertex[vanz].in[0] = flav1;
-	      vertex[vanz].in[1] = Flavour(kf::graviton);
+	      vertex[vanz].in[1] = Flavour(kf_graviton);
 	      vertex[vanz].in[2] = flav2;
 	      vertex[vanz].cpl[0]  = kcpl0;
 	      vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
@@ -95,7 +95,7 @@ void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& va
 	      kcpl1 = mf*Kabbala(string("8/3"),8./3.);
 	      
 	      vertex[vanz].in[0] = flav1;
-	      vertex[vanz].in[1] = Flavour(kf::gscalar);
+	      vertex[vanz].in[1] = Flavour(kf_gscalar);
 	      vertex[vanz].in[2] = flav2;
 	      vertex[vanz].cpl[0] = kcpl0;
 	      vertex[vanz].cpl[1] = kcpl0;
@@ -127,21 +127,21 @@ void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& va
 void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   //return;
-  Flavour flphoton(kf::photon);
-  Flavour flZ(kf::Z);
-  Flavour flWplus(kf::Wplus);
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
+  Flavour flphoton(kf_photon);
+  Flavour flZ(kf_Z);
+  Flavour flWplus(kf_Wplus);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
-    Flavour flav1 = Flavour(kf::code(i));
+    Flavour flav1 = Flavour((kf_code)(i));
     Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),flav1.Charge());
     Kabbala isoweak1 = Kabbala(string("T_{")+flav1.TexName()+string("}"),flav1.IsoWeak());
     
     if (flav1.IsOn()) {
       for (short int j=i;j<17;j++) {
 	if (j==7) j=11;	
-	Flavour flav2 = Flavour(kf::code(j));
+	Flavour flav2 = Flavour((kf_code)(j));
 	Kabbala charge2 = Kabbala(string("Q_{")+flav2.TexName()+string("}"),flav2.Charge());
 	Kabbala isoweak2 = Kabbala(string("T_{")+ flav2.TexName()+string("}"),flav2.IsoWeak());	
 	      
@@ -157,7 +157,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      if (!ATOOLS::IsZero(charge1.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[0] = flav1;
-		vertex[vanz].in[1] = Flavour(kf::photon);
+		vertex[vanz].in[1] = Flavour(kf_photon);
 		vertex[vanz].in[2] = flav2;
 		vertex[vanz].in[3] = flgraviton;
 		vertex[vanz].cpl[0]  = kcpl0;
@@ -190,7 +190,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      
 	      vertex[vanz].nleg     = 4;
 	      vertex[vanz].in[0] = flav1;
-	      vertex[vanz].in[1] = Flavour(kf::Z);
+	      vertex[vanz].in[1] = Flavour(kf_Z);
 	      vertex[vanz].in[2] = flav2;
 	      vertex[vanz].in[3] = flgraviton;
 	      vertex[vanz].cpl[0] = kcpl0;
@@ -223,7 +223,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      if (!ATOOLS::IsZero(charge1.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[0] = flav1;
-		vertex[vanz].in[1] = Flavour(kf::photon);
+		vertex[vanz].in[1] = Flavour(kf_photon);
 		vertex[vanz].in[2] = flav2;
 		vertex[vanz].in[3] = flgs;
 		vertex[vanz].cpl[0]  = kcpl0;
@@ -256,7 +256,7 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 	      
 	      vertex[vanz].nleg     = 4;
 	      vertex[vanz].in[0] = flav1;
-	      vertex[vanz].in[1] = Flavour(kf::Z);
+	      vertex[vanz].in[1] = Flavour(kf_Z);
 	      vertex[vanz].in[2] = flav2;
 	      vertex[vanz].in[3] = flgs;
 	      vertex[vanz].cpl[0] = kcpl0;
@@ -398,10 +398,10 @@ void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& v
 
 void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
   Kabbala kcpl0,kcpl1;  
-  Flavour flav(kf::Wplus);
+  Flavour flav(kf_Wplus);
 
   if (flgraviton.IsOn()){  
     // W graviton W
@@ -428,7 +428,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
       vertex.push_back(Single_Vertex());vanz++;
     }
 
-    flav = Flavour(kf::Z);
+    flav = Flavour(kf_Z);
     // Z graviton Z
     if (flav.IsOn()) {
       vertex[vanz].in[0] = flav;
@@ -452,7 +452,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
       vertex[vanz].on      = 1;
       vertex.push_back(Single_Vertex());vanz++;
     }
-    flav = Flavour(kf::photon);
+    flav = Flavour(kf_photon);
     // photon graviton photon
     if (flav.IsOn()) {
       vertex[vanz].in[0] = flav;
@@ -479,7 +479,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
   }
   if (!flgs.IsOn()) return;
   
-  flav = Flavour(kf::Wplus);
+  flav = Flavour(kf_Wplus);
   // W gscalar W
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -505,7 +505,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
     vertex.push_back(Single_Vertex());vanz++;
   }
 
-  flav = Flavour(kf::Z);
+  flav = Flavour(kf_Z);
   // Z gscalar Z
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -530,7 +530,7 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
   }
-  flav = Flavour(kf::photon);
+  flav = Flavour(kf_photon);
   // photon gscalar photon
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -558,8 +558,8 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
 
 void Interaction_Model_EW_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Flavour flgraviton(kf::graviton);
-  Flavour flav(kf::Wplus);
+  Flavour flgraviton(kf_graviton);
+  Flavour flav(kf_Wplus);
   Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
   charge = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
 
@@ -568,7 +568,7 @@ void Interaction_Model_EW_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& v
     // photon WW graviton
     vertex[vanz].nleg     = 4;
     vertex[vanz].in[0] = flav;
-    vertex[vanz].in[1] = Flavour(kf::photon);
+    vertex[vanz].in[1] = Flavour(kf_photon);
     vertex[vanz].in[2] = flav;
     vertex[vanz].in[3] = flgraviton;
    
@@ -592,7 +592,7 @@ void Interaction_Model_EW_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& v
     // ZWW graviton
     vertex[vanz].nleg     = 4;
     vertex[vanz].in[0] = flav;
-    vertex[vanz].in[1] = Flavour(kf::Z);
+    vertex[vanz].in[1] = Flavour(kf_Z);
     vertex[vanz].in[2] = flav;
     vertex[vanz].in[3] = flgraviton;
     
@@ -620,9 +620,9 @@ void Interaction_Model_EW_Grav::c_SST(std::vector<Single_Vertex>& vertex,int& va
 {
   Kabbala kcpl0,kcpl1;
 
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
-  Flavour flh = Flavour(kf::h0);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
+  Flavour flh = Flavour(kf_h0);
 
  if (flh.IsOn()&&flgraviton.IsOn()) {  
     vertex[vanz].in[0] = flh;
@@ -677,9 +677,9 @@ void Interaction_Model_EW_Grav::c_SSST(std::vector<Single_Vertex>& vertex,int& v
   Kabbala kcpl0,kcpl1,yuk;
   Kabbala num3  = Kabbala(string("3"),3.);
 
-  Flavour flgraviton(kf::graviton);
-  Flavour flgs(kf::gscalar);
-  Flavour flh = Flavour(kf::h0);
+  Flavour flgraviton(kf_graviton);
+  Flavour flgs(kf_gscalar);
+  Flavour flh = Flavour(kf_h0);
 
  if (flh.IsOn()&&flgraviton.IsOn()) {  
     vertex[vanz].nleg     = 4;

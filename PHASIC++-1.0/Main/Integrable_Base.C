@@ -579,7 +579,7 @@ double Integrable_Base::KFactor()
     for (size_t i(1);i<m_nout;++i) {
       weight*=(*as)(moms[i].first.PPerp2())/asecms;
       if (moms[i].second.IsQuark()) 
-	p=p.IsGluon()?moms[i].second.Bar():Flavour(kf::gluon);
+	p=p.IsGluon()?moms[i].second.Bar():Flavour(kf_gluon);
       if (m_scalescheme&scl::reggeise) {
 	double qt2(q.PPerp2()), asc((*as)(qt2));
 	double b0(as->Beta0(qt2)/M_PI);

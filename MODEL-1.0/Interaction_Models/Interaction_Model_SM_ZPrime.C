@@ -47,7 +47,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
   
   
   // create FFV vertices with Z' if it's on
-  Flavour flZPrime(kf::Z0_2);
+  Flavour flZPrime(kf_Z0_2);
   if (flZPrime.IsOn()) {
     
     // parse through all fermions than couple to Z' and create vertices
@@ -56,7 +56,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
       
       // initialize the currently parsed fermion
       int FermionNumber = PossibleFermions[i];
-      Flavour flFermion = Flavour(kf::code(FermionNumber));
+      Flavour flFermion = Flavour((kf_code)(FermionNumber));
       Kabbala B = Kabbala(string("B_{")+flFermion.TexName()+string("}"),
                           flFermion.BaryonNumber());
       Kabbala L = Kabbala(string("L_{")+ flFermion.TexName()+string("}"),
@@ -76,7 +76,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& 
 	// set couplings and particle info for current vertex
 	vertex[vanz].in[0] = flFermion;
 	vertex[vanz].in[1] = flZPrime;
-        vertex[vanz].in[2] = Flavour(kf::code(FermionNumber));
+        vertex[vanz].in[2] = Flavour((kf_code)(FermionNumber));
 	vertex[vanz].cpl[0] = kcpl0;
 	vertex[vanz].cpl[1] = kcpl1;
         vertex[vanz].Str = (kcpl0*PR+kcpl1*PL).String(); 

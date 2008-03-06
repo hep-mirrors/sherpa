@@ -64,7 +64,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	    break;
 	  }
 	}
-	crit = Flavour(kf::code(int(abs(double(kfc)))));
+	crit = Flavour((kf_code)(int(abs(double(kfc)))));
 	dt   = new Decay_Table(crit);
 	m_decaytables.insert(dt);
       }
@@ -78,7 +78,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	  MyStrStream sstream;
 	  sstream<<buf.substr(0,pos);
 	  sstream>>kfc;
-	  decayer = Flavour(kf::code(int(abs(double(kfc)))));
+	  decayer = Flavour((kf_code)(int(abs(double(kfc)))));
 	  if (kfc<0) decayer = decayer.Bar();
 	  buf = buf.substr(pos+2);
 	}
@@ -90,7 +90,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	    MyStrStream sstream;
 	    sstream<<buf.substr(0,pos);
 	    sstream>>kfc;
-	    flav = Flavour(kf::code(int(abs(double(kfc)))));
+	    flav = Flavour((kf_code)(int(abs(double(kfc)))));
 	    if (kfc<0) flav = flav.Bar();
 	    decflavs.insert(flav);
 	    buf = buf.substr(pos);

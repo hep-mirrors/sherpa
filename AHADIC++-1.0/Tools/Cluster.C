@@ -111,13 +111,13 @@ Blob * Cluster::ConstructDecayBlob()
 
   if (p_left && p_left->p_self) {
     blob->AddToOutParticles(p_left->p_self);
-    if (p_left->p_self->Flav()!=Flavour(kf::cluster)) {
+    if (p_left->p_self->Flav()!=Flavour(kf_cluster)) {
       delete p_left; p_left=NULL;
     }
   }
   if (p_right && p_right->p_self) {
     blob->AddToOutParticles(p_right->p_self);
-    if (p_right->p_self->Flav()!=Flavour(kf::cluster)) {
+    if (p_right->p_self->Flav()!=Flavour(kf_cluster)) {
       delete p_right; p_right=NULL;
     }
   }

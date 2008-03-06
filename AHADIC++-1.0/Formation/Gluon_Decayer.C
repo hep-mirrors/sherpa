@@ -130,7 +130,7 @@ bool Gluon_Decayer::DecayDipoles() {
     msg_Out()<<"~~~~~~~~~~~~~~ "<<METHOD<<"("<<m_dipoles.size()<<") ~~~~~~~~~~~~~~~~~~"<<std::endl;
     Vec4D checkbef(0.,0.,0.,0.);
     for (DipIter dipiter=m_dipoles.begin();dipiter!=m_dipoles.end();dipiter++) {
-      if ((*dipiter)->AntiTriplet()->m_flav!=Flavour(kf::gluon)) checkbef += (*dipiter)->Momentum();
+      if ((*dipiter)->AntiTriplet()->m_flav!=Flavour(kf_gluon)) checkbef += (*dipiter)->Momentum();
       else checkbef += (*dipiter)->Triplet()->m_mom;
     }
     //for (DipIter dipiter=m_dipoles.begin();dipiter!=m_dipoles.end();dipiter++)
@@ -312,7 +312,7 @@ void Gluon_Decayer::SplitIt(Dipole * dip,Vec4D checkbef) {
   for (DipIter dipiter=m_dipoles.begin();dipiter!=m_dipoles.end();dipiter++) {
     (*dipiter)->Update();
 #ifdef AHAmomcheck
-    if ((*dipiter)->AntiTriplet()->m_flav!=Flavour(kf::gluon)) checkaft += (*dipiter)->Momentum();
+    if ((*dipiter)->AntiTriplet()->m_flav!=Flavour(kf_gluon)) checkaft += (*dipiter)->Momentum();
     else checkaft += (*dipiter)->Triplet()->m_mom;
 #endif
   }

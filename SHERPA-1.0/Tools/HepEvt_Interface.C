@@ -17,12 +17,10 @@ HepEvt_Interface::HepEvt_Interface(int _generator) :
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(gtp::code(_generator)), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL),
-  p_pythiatranslator(NULL),p_herwigtranslator(NULL)
+  p_pythiatranslator(NULL)
 { 
   if (m_generator==gtp::Pythia)      
     p_pythiatranslator = new Pythia_HepEvt_Translator(this);
-  else if (m_generator==gtp::Herwig) 
-    p_herwigtranslator = new Herwig_HepEvt_Translator(this);
 }
 
 HepEvt_Interface::HepEvt_Interface(gtp::code _generator) : 
@@ -30,12 +28,10 @@ HepEvt_Interface::HepEvt_Interface(gtp::code _generator) :
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(_generator), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL),
-  p_pythiatranslator(NULL),p_herwigtranslator(NULL)
+  p_pythiatranslator(NULL)
 { 
   if (m_generator==gtp::Pythia)      
     p_pythiatranslator = new Pythia_HepEvt_Translator(this);
-  else if (m_generator==gtp::Herwig) 
-    p_herwigtranslator = new Herwig_HepEvt_Translator(this);
 }
 
 HepEvt_Interface::HepEvt_Interface() :
@@ -71,7 +67,6 @@ HepEvt_Interface::HepEvt_Interface() :
   //     std::string gentype;
   //     (*p_instream)>>gentype>>m_filesize;
   //     if (gentype==std::string("Sherpa")) m_generator = gtp::Sherpa;
-  //     if (gentype==std::string("Herwig")) m_generator = gtp::Herwig;
   //     if (gentype==std::string("Pythia")) m_generator = gtp::Pythia;
   //     m_evtcount=0;
   //   }
@@ -555,7 +550,6 @@ bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
   bool okay(false);
   //std::cout<<METHOD<<" : "<<p_instream<<" "<<m_nhep<<std::endl;
   switch (m_generator)  {
-    case gtp::Herwig:  okay = p_herwigtranslator->ConstructBlobs(blobs); break;
     case gtp::Pythia:  okay = p_pythiatranslator->ConstructBlobs(blobs); break;
   case gtp::Sherpa:  //okay = ConstructBlobs(blobs); break;
     default:
@@ -601,7 +595,6 @@ void HepEvt_Interface::OpenNewHepEvtFile()
   std::string gentype;
   (*p_instream)>>gentype>>m_filesize;
   if ((gentype==std::string("Sherpa") && m_generator!=gtp::Sherpa) ||
-      (gentype==std::string("Herwig") && m_generator!=gtp::Herwig) ||
       (gentype==std::string("Pythia") && m_generator!=gtp::Pythia)) {
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Types do not match : "<<gentype<<" vs. "<<int(m_generator)<<std::endl

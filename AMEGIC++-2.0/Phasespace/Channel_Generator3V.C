@@ -335,8 +335,8 @@ void Channel_Generator3V::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   case 2:
     if (ph->m!=0 && !ATOOLS::IsZero(ph->fl.Mass())) {
       sf<<"  type  = 1;"<<endl
-	<<"  mass  = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Mass();"<<endl
-	<<"  width = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Width();"<<endl;
+	<<"  mass  = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Mass();"<<endl
+	<<"  width = Flavour((kf_code)("<<ph->fl.Kfcode()<<")).Width();"<<endl;
       return;
     }
     {
@@ -366,7 +366,7 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
     string tmstr;
     if (flag>=0 && !ATOOLS::IsZero(p->fl.Mass())) {
       tmstr = string("tmass")+ToString(p->number);
-      sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+      sf<<"  double "<<tmstr<<" = Flavour((kf_code)("<<hi<<")).Mass();"<<endl;
     }
     else tmstr = string("0.");
     string pin0sum(""),pin1sum("");
@@ -668,7 +668,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   if (mummy.length()>2) hi = 2;
   if (maxpole>0.) {
     hi = (p->fl).Kfcode();
-    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
   } 
   string thexp("1.5");
   if (p->m==0) thexp = string("1.5");
@@ -834,7 +834,7 @@ string Channel_Generator3V::GetFlMass(Point* p)
 {
   if (p->left==0) return string("");
   if (p->fl.Mass()>PMassSum(p->left,0)+PMassSum(p->right,0)) {
-    return string("Flavour(kf::code(")+ToString((p->fl).Kfcode())+string(")).Mass()");
+    return string("Flavour((kf_code)(")+ToString((p->fl).Kfcode())+string(")).Mass()");
   } 
   string h1 = GetFlMass(p->left);
   string h2 = GetFlMass(p->right);

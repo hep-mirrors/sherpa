@@ -156,7 +156,7 @@ double Polarisation::Massless_Norm(int N,Flavour* fl,Basic_Sfuncs* BS)
       if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass()) ) {
         for (short int j=i+1;j<N+1;j++) {
 	  if ((fl[j].IsVector() && ATOOLS::IsZero(fl[j].Mass()) ) || 
-	      (fl[j]==Flavour(kf::pol))) {
+	      (fl[j]==Flavour(kf_pol))) {
 	    norm *= BS->Norm(i,j);
 	    break;
 	  }
@@ -190,11 +190,11 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   for (short int i=0;i<N;i++) {
     if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass())) {
       if (!( (fl[i+1].IsVector() && ATOOLS::IsZero(fl[i+1].Mass())) ||
-	     fl[i+1]==Flavour(kf::pol) ) ) {
+	     fl[i+1]==Flavour(kf_pol) ) ) {
 	//search next boson or pol
 	for (short int j=i+1;j<N+1;j++) {
 	  if ( (fl[j].IsVector() && ATOOLS::IsZero(fl[j].Mass())) ||
-	       fl[j]==Flavour(kf::pol) ) {
+	       fl[j]==Flavour(kf_pol) ) {
 	    n->MPolconvert(i+10+1,j+10);
 	    break;
 	  }

@@ -36,7 +36,7 @@ String_Generator::String_Generator(Basic_Sfuncs* _BS) :
   for (size_t i=0;i<11;i++) m_zuse[i]=0;
   p_zxl       = new vector<ZXlist>;
   p_couplings = new vector<Complex>;
-  p_flavours  = new vector<int>;
+  p_flavours  = new vector<long int>;
   Reset();
 }
 
@@ -176,7 +176,7 @@ int String_Generator::GetCnumber(Complex coupl)
   return (*p_couplings).size()-1;
 }
 
-int String_Generator::GetFnumber(int fl)
+int String_Generator::GetFnumber(long int fl)
 {
   for (size_t i=0;i<(*p_flavours).size();i++) {
     if (fl==(*p_flavours)[i]) return i;
@@ -326,7 +326,7 @@ Kabbala String_Generator::GetPnumber(Pfunc* pl,int numb)
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==5) {
       if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),pl->value) &&
-	  ((*p_flavours)[int((*p_zxl)[i].arg[0])]==(pl->fl).Kfcode()) )
+	  ((*p_flavours)[int((*p_zxl)[i].arg[0])]==(long int)(pl->fl).Kfcode()) )
 	return (*p_zxl)[i].value;
     }
   }
@@ -351,8 +351,7 @@ Kabbala String_Generator::GetMassnumber(int numb,ATOOLS::Flavour fl,Complex valu
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==7) {
       if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value) &&
-	  ( ((*p_flavours)[int((*p_zxl)[i].arg[0])]==fl.Kfcode()) ||
-	    ((*p_flavours)[int((*p_zxl)[i].arg[0])]==-fl.Kfcode() && fl.IsAnti()) )
+	  ( (*p_flavours)[int((*p_zxl)[i].arg[0])]==(long int)(fl) )
 	  ) 
 	return (*p_zxl)[i].value;
     }
@@ -677,7 +676,7 @@ int String_Generator::ReadCouplings(ifstream& is)
 
 void String_Generator::UpdateCouplings(map<string,Complex> & cmap)
 {
-  int cnt=0;
+  size_t cnt=0;
   for (int i=0;i<NumberOfCouplings();i++) {
     string help = ToString(GetCoupling(i));
     if (cmap.find(help)!=cmap.end()) {

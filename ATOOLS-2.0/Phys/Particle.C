@@ -100,7 +100,7 @@ Particle::~Particle()
 Particle::Particle():
   m_number(-1), m_jetnumber(-1), m_status(part_status::undefined), 
   m_info('X'), 
-  m_fl(Flavour(kf::none)), m_momentum(Vec4D(0,0,0,0)), 
+  m_fl(Flavour(kf_none)), m_momentum(Vec4D(0,0,0,0)), 
   p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.)
@@ -169,7 +169,7 @@ void Particle::Copy(Particle * in)  {
 
 double Particle::ProperTime() 
 {
-  if (m_fl.Kfcode() == kf::K) return 0.;
+  if (m_fl.Kfcode() == kf_K) return 0.;
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
@@ -318,9 +318,9 @@ void Particle2MPI(const Particle * p , MPI_Particle & mpi_p) {
   
 Particle * MPI2Particle(const MPI_Particle & mpi_p ) {
   Particle * p ;
-  if (mpi_p.m_fl>0) p= new Particle(mpi_p.id, Flavour((kf::code)mpi_p.m_fl),
+  if (mpi_p.m_fl>0) p= new Particle(mpi_p.id, Flavour((kf_code)mpi_p.m_fl),
 			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
-  else p= new Particle(mpi_p.id, Flavour((kf::code)(-mpi_p.m_fl)).Bar(),
+  else p= new Particle(mpi_p.id, Flavour((kf_code)(-mpi_p.m_fl)).Bar(),
 			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
   if (mpi_p.m_flow[0]) p->SetFlow(1,mpi_p.m_flow[0]);
   if (mpi_p.m_flow[1]) p->SetFlow(2,mpi_p.m_flow[1]);

@@ -50,7 +50,7 @@ bool Spacelike_Sudakov::Initialize()
 
   if (p_pdf->Bunch().IsHadron()) {
     for (int i=1;i<6;++i) {
-      Flavour fl = Flavour(kf::code(i));
+      Flavour fl = Flavour((kf_code)(i));
       Add(new q_qg(fl,p_tools));
       Add(new q_qg(fl.Bar(),p_tools));
       Add(new q_gq(fl,p_tools));
@@ -63,12 +63,12 @@ bool Spacelike_Sudakov::Initialize()
   }
 
   if (p_pdf->Bunch().IsLepton()) {
-    Add(new f_fp(Flavour(kf::e),p_tools));
-    Add(new f_fp(Flavour(kf::e).Bar(),p_tools));
-    Add(new f_pf(Flavour(kf::e),p_tools));
-    Add(new f_pf(Flavour(kf::e).Bar(),p_tools));
-    Add(new p_ff(Flavour(kf::e),p_tools));
-    Add(new p_ff(Flavour(kf::e).Bar(),p_tools));
+    Add(new f_fp(Flavour(kf_e),p_tools));
+    Add(new f_fp(Flavour(kf_e).Bar(),p_tools));
+    Add(new f_pf(Flavour(kf_e),p_tools));
+    Add(new f_pf(Flavour(kf_e).Bar(),p_tools));
+    Add(new p_ff(Flavour(kf_e),p_tools));
+    Add(new p_ff(Flavour(kf_e).Bar(),p_tools));
   }
 
   PrintStat();

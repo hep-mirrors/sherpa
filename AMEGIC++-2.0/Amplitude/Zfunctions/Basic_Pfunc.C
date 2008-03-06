@@ -19,7 +19,7 @@ Complex Basic_Pfunc::Pcalc(const Flavour& fl,const int a)
 { return Propagator((BS->Momentum(a)).Abs2(),fl);}
 
 Complex Basic_Pfunc::Pcalc(const int fl,const int a)
-{ return Pcalc(Flavour(kf::code(fl)),a);}
+{ return Pcalc(Flavour((kf_code)(fl)),a);}
 
 Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
 {

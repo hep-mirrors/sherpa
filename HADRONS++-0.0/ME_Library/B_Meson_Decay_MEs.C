@@ -17,12 +17,12 @@ Semileptonic_B_Meson::Semileptonic_B_Meson( int _nout, Flavour *_fl ) :
 {
   m_metype = string("Semileptonic_B_Meson");
   for( int i=1; i<4; i++ ) {
-    if( p_flavs[i].Kfcode() == kf::e ||
-	p_flavs[i].Kfcode() == kf::mu ||
-	p_flavs[i].Kfcode() == kf::tau ) m_lep = i; // that's the lepton
-    else if( p_flavs[i].Kfcode() == kf::nue ||
-	     p_flavs[i].Kfcode() == kf::numu ||
-	     p_flavs[i].Kfcode() == kf::nutau ) m_nu = i; // that's the lepton
+    if( p_flavs[i].Kfcode() == kf_e ||
+	p_flavs[i].Kfcode() == kf_mu ||
+	p_flavs[i].Kfcode() == kf_tau ) m_lep = i; // that's the lepton
+    else if( p_flavs[i].Kfcode() == kf_nue ||
+	     p_flavs[i].Kfcode() == kf_numu ||
+	     p_flavs[i].Kfcode() == kf_nutau ) m_nu = i; // that's the lepton
     else m_had = i;
   }
   m_Bmass   = p_flavs[0].Mass();

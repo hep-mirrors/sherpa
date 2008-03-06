@@ -31,7 +31,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
 
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
@@ -86,7 +86,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   name   = "T-Channel";
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
@@ -143,7 +143,7 @@ T2Channel::T2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (nout>2) name   = ToString(nin)+"->"+ToString(nout)+"_"+name;
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
@@ -229,7 +229,7 @@ T3Channel::T3Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (nout>2) name   = ToString(nin)+"->"+ToString(nout)+"_"+name;
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
@@ -320,7 +320,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   name   = "U-Channel";
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
@@ -380,7 +380,7 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   name   = "Decay2-Channel";
   mass   = width = 0.; 
   type   = 0;
-  if (res!=Flavour(kf::none)) {
+  if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
 }

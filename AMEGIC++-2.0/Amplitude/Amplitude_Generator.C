@@ -130,7 +130,7 @@ Amplitude_Generator::~Amplitude_Generator()
 void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
 {
   p->b     = 0;
-  p->fl    = Flavour(kf::none);
+  p->fl    = Flavour(kf_none);
   if ((p->left==0) && (p->right==0)) {
     p->number = *perm;
     p->fl = fl[*perm];
@@ -158,7 +158,7 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
   if (hit) return;
   if (p==0) return;
   if ((p->left!=0) && (p->right!=0)) {
-    if ((p->left->fl==Flavour(kf::none)) || (p->right->fl==Flavour(kf::none))) {
+    if ((p->left->fl==Flavour(kf_none)) || (p->right->fl==Flavour(kf_none))) {
       hit = p;
       return;
     }
@@ -172,15 +172,16 @@ void Amplitude_Generator::Print_P(Point* p)
 {
   if (!(msg_LevelIsDebugging())) return;
   if ((p->left==0) && (p->right==0)) {
-    msg_Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
+    msg_Out()<<"  "<<p->fl<<"("<<p->b<<")"<<endl;
     return;
   }
-  msg_Out()<<"left : ";
+  msg_Indent();
+  msg_Out()<<"left : \n";
   Print_P(p->left);
-  msg_Out()<<"right : ";
+  msg_Out()<<"right : \n";
   Print_P(p->right);
   if(p->middle){
-    msg_Out()<<" middle : ";
+    msg_Out()<<" middle : \n";
     Print_P(p->middle);
   }
 }
@@ -189,10 +190,10 @@ int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,vector<Compl
 {
   if (flav[0] == v->in[0]) {
     int hit = 1;
-    if (flav[1] != Flavour(kf::none)) {if (flav[1] != v->in[1]) hit = 0;}
-    else {flav[1] = v->in[1];}
-    if (flav[2] != Flavour(kf::none)) {if (flav[2] != v->in[2]) hit = 0;}
-    else {flav[2] = v->in[2];}
+    if (flav[1] != Flavour(kf_none)) {if (flav[1] != v->in[1]) hit = 0;}
+    else { flav[1] = v->in[1];}
+    if (flav[2] != Flavour(kf_none)) {if (flav[2] != v->in[2]) hit = 0;}
+    else { flav[2] = v->in[2];}
     if (hit==1) {
       cpl.clear();
       for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->Coupling(j));
@@ -206,7 +207,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 {
   if (p==0) return 1;
   if (p->left==0) return 1;
-  if (((p->left->fl)!=Flavour(kf::none)) && ((p->right->fl)!=Flavour(kf::none))) { 
+  if (((p->left->fl)!=Flavour(kf_none)) && ((p->right->fl)!=Flavour(kf_none))) { 
     Flavour flav[3];
     Flavour s_flav[3];
     vector <Complex> cpl;
@@ -306,43 +307,43 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
       flav[1] = p->left->fl;
       flav[2] = p->right->fl;
 
-      if (p->left->fl  == Flavour(kf::none)) p->left->b  = 0;
-      if (p->right->fl == Flavour(kf::none)) p->right->b = 0;
+      if (p->left->fl  == Flavour(kf_none)) p->left->b  = 0;
+      if (p->right->fl == Flavour(kf_none)) p->right->b = 0;
 
       if (flav[0].Majorana()) {
-	if (p->left->fl != Flavour(kf::none)) {
+	if (p->left->fl != Flavour(kf_none)) {
 	  if (p->left->fl.IsFermion()) {
 	    if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	  }
 	  else if (p->left->b   == -1) flav[1] = flav[1].Bar();
 	}
-	if (p->left->fl==Flavour(kf::none)) p->left->b = p->b;
+	if (p->left->fl==Flavour(kf_none)) p->left->b = p->b;
 	
-	if (p->right->fl != Flavour(kf::none)) {
+	if (p->right->fl != Flavour(kf_none)) {
 	  if (p->right->fl.IsFermion()) {
 	    if (p->b*p->right->b == 1)  flav[2] = flav[2].Bar();
 	}
 	else if (p->right->b  == -1) flav[2] = flav[2].Bar();  
 	}
-	if (p->right->fl==Flavour(kf::none)) p->right->b = p->b;
+	if (p->right->fl==Flavour(kf_none)) p->right->b = p->b;
       }
       else {
 	if (flav[0].IsBoson()) {
 	  if (p->left->b   == -1) flav[1] = flav[1].Bar();
 	  if (p->right->b  == -1) flav[2] = flav[2].Bar();
-	  if (p->left->fl  == Flavour(kf::none)) p->left->b  = -1;
-	  if (p->right->fl == Flavour(kf::none)) p->right->b = -1;
+	  if (p->left->fl  == Flavour(kf_none)) p->left->b  = -1;
+	  if (p->right->fl == Flavour(kf_none)) p->right->b = -1;
 	}
 	else {
 	  if (flav[0].IsAnti()) {
 	    if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	    if (p->right->b     ==-1)  flav[2] = flav[2].Bar();
-	    if (p->left->fl     == Flavour(kf::none)) p->left->b = p->b;
+	    if (p->left->fl     == Flavour(kf_none)) p->left->b = p->b;
 	  }
 	  else {
 	    if (p->b*p->right->b == 1) flav[2] = flav[2].Bar();
 	    if (p->left->b       ==-1) flav[1] = flav[1].Bar();
-	    if (p->right->fl     == Flavour(kf::none)) p->right->b = p->b;
+	    if (p->right->fl     == Flavour(kf_none)) p->right->b = p->b;
 	  }
 	}
       }
@@ -373,8 +374,8 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  //match
 	  int ll = 0;
 	  top->Copy(prea[ap].p,preah,ll);
-	  if (p->left->fl==Flavour(kf::none))  p->left->fl  = flav[1];
-	  if (p->right->fl==Flavour(kf::none)) p->right->fl = flav[2];
+	  if (p->left->fl==Flavour(kf_none))  p->left->fl  = flav[1];
+	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
 	  p->v          = vl[i];
 	  *(p->Color)   = *(vl[i]->Color);
 	  *(p->Lorentz) = *(vl[i]->Lorentz);
@@ -431,7 +432,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
     if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) {
       for (int j=0;j<dep;j++) {
 	if (((prea_table[i].p[j].fl).IsBoson()) && 
-	    (prea_table[i].p[j].fl!=Flavour(kf::gluon))) { sw1 = 0; break; }
+	    (prea_table[i].p[j].fl!=Flavour(kf_gluon))) { sw1 = 0; break; }
       }
     }
     // test if 3-Vertex
@@ -1014,7 +1015,7 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   if (p->number>99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
     countQCD += 2;
     hit       = 1;
-    if (p->fl==Flavour(kf::shgluon)) countQCD += 2;
+    if (p->fl==Flavour(kf_shgluon)) countQCD += 2;
   }
   //External gluon 
   if (p->number<99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
@@ -1509,7 +1510,7 @@ int Amplitude_Generator::Count4G(Point * p) {
   v4+=Count4G(p->right);
   if (p->middle) {
     v4+=Count4G(p->middle);
-    Flavour gluon=Flavour(kf::gluon);
+    Flavour gluon=Flavour(kf_gluon);
     if ((p->fl==gluon)&&(p->left->fl==gluon)&&(p->middle->fl==gluon)&&(p->right->fl==gluon))
       v4+=1;
   }

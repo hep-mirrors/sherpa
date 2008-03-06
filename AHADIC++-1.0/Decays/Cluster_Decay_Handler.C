@@ -56,14 +56,14 @@ int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blo
 #endif
 	  blobs->push_back(decblob);
 	  if ((*dcit)->GetLeft()) {
-	    if ((*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none) ||
-		(*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::cluster)) {
+	    if ((*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf_none) ||
+		(*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf_cluster)) {
 	      clusters->push_back((*dcit)->GetLeft());
 	    }
 	  }
 	  if ((*dcit)->GetRight()) {
-	    if ((*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::none) ||
-		(*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::cluster)) {
+	    if ((*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf_none) ||
+		(*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf_cluster)) {
 	      clusters->push_back((*dcit)->GetRight());
 	    }
 	  }

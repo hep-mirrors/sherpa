@@ -32,7 +32,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
 
 Complex Basic_MassTermfunc::MassTermCalc(int a,int fl)
 {
-  Flavour flav = Flavour(kf::code(iabs(fl)));
+  Flavour flav = Flavour((kf_code)(iabs(fl)));
   if (fl<0) flav = flav.Bar();
   return MassTermCalc(a,flav);
 }

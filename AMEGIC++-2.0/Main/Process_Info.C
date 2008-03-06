@@ -2,6 +2,7 @@
 #include "MathTools.H"
 #include "Point.H"
 #include <algorithm>
+#include <iostream>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -57,7 +58,7 @@ void Process_Info::AddSubList(int n,ATOOLS::Flavour* fl,Pol_Info* pl)
 void Process_Info::ResetSubList(int n,ATOOLS::Flavour* fl,Pol_Info* pl)
 {
   if (m_sublist[0].size()!= (size_t) n) {
-    cout<<" Process_Info::ResetSubList : wrong particle number: "<<n<<" vs. "<<m_sublist[0].size()<<endl;
+    std::cout<<" Process_Info::ResetSubList : wrong particle number: "<<n<<" vs. "<<m_sublist[0].size()<<std::endl;
     abort();
   }
   for (int i=0;i<n;i++) {
@@ -303,7 +304,8 @@ void Process_Info::Expand()
   }
   
   if (m_sublist.size()>1) return;
-  int container=0,mode=0; 
+  kf_code container=0;
+  int mode=0; 
   for (size_t i=0;i<m_sublist[0].size();i++) {
     if(m_sublist[0][i]->p_fl->Size()>1) {
       if (mode>0 && container!=m_sublist[0][i]->p_fl->Kfcode()) mode=-10;
@@ -317,7 +319,7 @@ void Process_Info::Expand()
     Pol_Info* plout = new Pol_Info[nout];
     GetFlavList(flout);
     GetPolList(plout);
-    int  * flindex = new int[nout];
+    size_t  * flindex = new size_t[nout];
     for (size_t i=0;i<nout;i++) flindex[i] = 0;
     bool flag = 1;
     for (;;) {
@@ -343,7 +345,7 @@ void Process_Info::Expand()
 	else {
 	  if (i==0) flag = 0;
 	  else {
-	    int maxi = 0;
+	    size_t maxi = 0;
 	    for (size_t j=0;j<i;++j) if (flindex[j]>maxi) maxi=flindex[j];
 	    if (mode<0) flindex[i] = 0;
 	    else flindex[i] = maxi+1;
@@ -682,7 +684,7 @@ void Process_Info::Reshuffle(Process_Info *cpi)
 
   Flavour *flav = new Flavour[n];
   GetFlavList(flav);
-  Flavour heaviest(kf::photon);
+  Flavour heaviest(kf_photon);
   for (int i=0;i<n;++i) {
     if (flav[i].Mass()>heaviest.Mass()) heaviest=flav[i];
     else if (flav[i].Mass()==heaviest.Mass() &&

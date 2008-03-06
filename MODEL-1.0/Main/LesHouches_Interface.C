@@ -170,9 +170,9 @@ void LesHouches_Interface::SetMasses() {
     Flavour flav;    
     for (unsigned int i=0;i<vd.size();++i) {
       flav.FromHepEvt(int(vd[i][0]));
-      if (flav!=Flavour(kf::Wplus)) flav.SetMass(dabs(vd[i][1]));
+      if (flav!=Flavour(kf_Wplus)) flav.SetMass(dabs(vd[i][1]));
       if (vd[i][1]<0) flav.SetMassSign(-1);
-      if (flav!=Flavour(kf::Wplus))
+      if (flav!=Flavour(kf_Wplus))
 	msg_Tracking()<<"   Set mass of "<<flav<<" to "<<vd[i][1]<<std::endl;
     }
   }
@@ -198,7 +198,7 @@ void LesHouches_Interface::SetWidths() {
       if (vds[k][0]=="DECAY") {
        Flavour flav;    
        flav.FromHepEvt(ATOOLS::ToType<int>(vds[k][1]));
-       if (flav!=Flavour(kf::Wplus) || flav!=Flavour(kf::Z)) {
+       if (flav!=Flavour(kf_Wplus) || flav!=Flavour(kf_Z)) {
          flav.SetWidth(ATOOLS::ToType<double>(vds[k][2]));
          msg_Tracking()<<"   Set width of "<<flav<<" to "<<flav.Width()<<std::endl;
          else {
@@ -438,7 +438,7 @@ void LesHouches_Interface::SetSquarkParameters() {
   double v2 = (*p_model->GetScalarConstants())["vev"] * 
     (*p_model->GetScalarConstants())["tan(beta)"] * 
     sqrt(1./(1.+sqr((*p_model->GetScalarConstants())["tan(beta)"])));
-  double YU = Flavour(kf::code(6)).Yuk()/v2*sqrt(2.);
+  double YU = Flavour((kf_code)(6)).Yuk()/v2*sqrt(2.);
   
   p_reader->SetFileBegin(std::string("Block au"));
   p_reader->RereadInFile();  
@@ -514,7 +514,7 @@ void LesHouches_Interface::SetSquarkParameters() {
   
   double v1 = (*p_model->GetScalarConstants())["vev"] * 
     sqrt(1./(1.+sqr((*p_model->GetScalarConstants())["tan(beta)"])));
-  double YD = -Flavour(kf::code(5)).Yuk()/v1*sqrt(2.);
+  double YD = -Flavour((kf_code)(5)).Yuk()/v1*sqrt(2.);
   
   p_reader->SetFileBegin(std::string("Block ad"));
   p_reader->RereadInFile();   
@@ -597,7 +597,7 @@ void LesHouches_Interface::SetSleptonParameters() {
   
   double v1 = (*p_model->GetScalarConstants())["vev"] * 
     sqrt(1./(1.+sqr((*p_model->GetScalarConstants())["tan(beta)"])));
-  double YE = -Flavour(kf::code(15)).Yuk()/v1*sqrt(2.); 
+  double YE = -Flavour((kf_code)(15)).Yuk()/v1*sqrt(2.); 
   
   p_reader->SetFileBegin(std::string("Block ae"));
   p_reader->RereadInFile();   

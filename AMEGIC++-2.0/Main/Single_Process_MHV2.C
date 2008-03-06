@@ -185,7 +185,7 @@ void Single_Process_MHV2::PolarizationNorm() {
     p_b[i]        = 1; 
   } 
   for (size_t i=m_nin+m_nout;i<m_nvector;i++) { 
-    p_flavours[i] = Flavour(kf::none); 
+    p_flavours[i] = Flavour(kf_none); 
     p_b[i]        = 1; 
   }
 
@@ -200,10 +200,10 @@ void Single_Process_MHV2::PolarizationNorm() {
 double Single_Process_MHV2::SymmetryFactors()
 {
   double sym = 1.;
-  Fl_Iter fli;
-  for (Flavour hflav=fli.first();hflav!=Flavour(kf::none);hflav = fli.next()) {
-    // no need to compare Hadrons: if (hflav.IsHadron()) break;
-    if (hflav==Flavour(kf::pi)) break; 
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end();++kfit) {
+    Flavour hflav(kfit->first);
+    if (hflav.IsHadron()) continue; 
     int cp  = 0;
     int cap = 0;
     for (size_t j=0;j<m_nout;j++) {

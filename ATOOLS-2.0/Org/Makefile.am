@@ -8,6 +8,7 @@ GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
 libToolsOrg_la_SOURCES        = \
+				MyStrStream.C \
 				Return_Value.C \
 				Shell_Tools.C \
 				STL_Tools.C \

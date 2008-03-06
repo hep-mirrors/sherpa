@@ -52,18 +52,18 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 
   //snu - squark - squark - snu
   for (short int i=0;i<3;i++) {
-    Flavour snu = Flavour(kf::code(1000012+2*i));
+    Flavour snu = Flavour((kf_code)(1000012+2*i));
     if (snu.IsOn()) {
       //uptypes
       for (short int j=1;j<7;++j) {
 	if (j<4) s_qu=1000000 + 2*j;
 	else     s_qu=2000000 + 2*j - 6;
-	Flavour squark1 = Flavour(kf::code(s_qu));
+	Flavour squark1 = Flavour((kf_code)(s_qu));
 	if (squark1.IsOn()) {
 	  for (short int k=1;k<7;++k) {
 	    if (k<4) s_qu=1000000 + 2*k;
 	    else     s_qu=2000000 + 2*k - 6;
-	    Flavour squark2 = Flavour(kf::code(s_qu));
+	    Flavour squark2 = Flavour((kf_code)(s_qu));
 	    if (squark2.IsOn()) {
       	      
 	      vertex[vanz].in[0] = snu;
@@ -106,12 +106,12 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
       for (short int j=1;j<7;++j) {
 	if (j<4) s_qu=1000000 + 2*j - 1;
 	else     s_qu=2000000 + 2*j - 7;
-	Flavour squark1 = Flavour(kf::code(s_qu));
+	Flavour squark1 = Flavour((kf_code)(s_qu));
 	if (squark1.IsOn()) {
 	  for (short int k=1;k<7;++k) {
 	    if (k<4) s_qu=1000000 + 2*k - 1;
 	    else     s_qu=2000000 + 2*k - 7;
-	    Flavour squark2 = Flavour(kf::code(s_qu));
+	    Flavour squark2 = Flavour((kf_code)(s_qu));
 	    if (squark2.IsOn()) {
       
 	      vertex[vanz].in[0] = snu;
@@ -154,17 +154,17 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
       for (int k=1;k<7;k++) {
 	if (k<4) s_lep = 1000010 + 2*k - 1;
 	else     s_lep = 2000010 + 2*k - 7;
-	Flavour slep = Flavour(kf::code(s_lep));
+	Flavour slep = Flavour((kf_code)(s_lep));
 	if (slep.IsOn()) {
 	  for (int l=1;l<7;l++) {
 	    if (l<4) s_qu=1000000 + 2*l - 1;
 	    else     s_qu=2000000 + 2*l - 7;
-	    Flavour sdown = Flavour(kf::code(s_qu));
+	    Flavour sdown = Flavour((kf_code)(s_qu));
 	    if (sdown.IsOn()) {
 	      for (int m=1;m<7;m++) {
 		if (m<4) s_qu=1000000 + 2*m;
 		else     s_qu=2000000 + 2*m - 6;
-		Flavour sup = Flavour(kf::code(s_qu));
+		Flavour sup = Flavour((kf_code)(s_qu));
 		if (sup.IsOn()) {
 		  
 		  vertex[vanz].in[0] = snu;
@@ -216,23 +216,23 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
   for (int i=1;i<7;i++) {
     if (i<4) s_lep = 1000010 + 2*i - 1;
     else     s_lep = 2000010 + 2*i - 7;
-    Flavour slepi = Flavour(kf::code(s_lep));
+    Flavour slepi = Flavour((kf_code)(s_lep));
     if (slepi.IsOn()) {
       for (int j=1;j<7;j++) {
 	if (j<4) s_lep = 1000010 + 2*j - 1;
 	else     s_lep = 2000010 + 2*j - 7;
-	Flavour slepj = Flavour(kf::code(s_lep));
+	Flavour slepj = Flavour((kf_code)(s_lep));
 	if (slepj.IsOn()) {
 	  //uptypes
 	  for (int k=1;k<7;k++) {
 	    if (k<4) s_qu=1000000 + 2*k;
 	    else     s_qu=2000000 + 2*k - 6;
-	    Flavour supk = Flavour(kf::code(s_qu));
+	    Flavour supk = Flavour((kf_code)(s_qu));
 	    if (supk.IsOn()) {
 	      for (int l=1;l<7;l++) {
 		if (l<4) s_qu=1000000 + 2*l;
 		else     s_qu=2000000 + 2*l - 6;
-		Flavour supl = Flavour(kf::code(s_qu));
+		Flavour supl = Flavour((kf_code)(s_qu));
 		if (supl.IsOn()) {
 	
 		  vertex[vanz].in[0] = supk.Bar();
@@ -286,12 +286,12 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	  for (int k=1;k<7;k++) {
 	    if (k<4) s_qu=1000000 + 2*k - 1;
 	    else     s_qu=2000000 + 2*k - 7;
-	    Flavour sdownk = Flavour(kf::code(s_qu));
+	    Flavour sdownk = Flavour((kf_code)(s_qu));
 	    if (sdownk.IsOn()) {
 	      for (int l=1;l<7;l++) {
 		if (l<4) s_qu=1000000 + 2*l - 1;
 		else     s_qu=2000000 + 2*l - 7;
-		Flavour sdownl = Flavour(kf::code(s_qu));
+		Flavour sdownl = Flavour((kf_code)(s_qu));
 		if (sdownl.IsOn()) {
 	
 		  vertex[vanz].in[0] = sdownk;
@@ -364,7 +364,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_l(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("l^")+string(hi),
-		 -Flavour(kf::code(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
+		 -Flavour((kf_code)(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
 
 }
 
@@ -374,7 +374,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_u(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("u^")+string(hi),
-		 Flavour(kf::code(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
+		 Flavour((kf_code)(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sLepton_sQuark::K_d(short int i)
@@ -383,7 +383,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_d(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("d^")+string(hi),
-		 -Flavour(kf::code(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
+		 -Flavour((kf_code)(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sLepton_sQuark::K_Z_Nu(short int i,short int j)       

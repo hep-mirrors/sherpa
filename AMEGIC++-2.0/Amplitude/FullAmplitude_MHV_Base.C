@@ -29,7 +29,7 @@ FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,int np,int *pl,
   m_plist= new int[np];
   for (int y=0;y<np;y++) {
     m_plist[y]=pl[y];
-    Flavour *fl = new Flavour((kf::code)abs(pl[y]),pl[y]<0);
+    Flavour *fl = new Flavour((kf_code)abs(pl[y]),pl[y]<0);
     m_flist.push_back(fl);
   }
   m_perm= new int[np]; 
@@ -754,7 +754,7 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
     
     // Z exchange
     q_w=Complex((p_BS->Momentum(pn)).Abs2(),0.);	  
-    q_w/= q_w-pow(Flavour(kf::Z).Mass(),2)+Complex(0.,1.)*Flavour(kf::Z).Width()*Flavour(kf::Z).Mass();
+    q_w/= q_w-pow(Flavour(kf_Z).Mass(),2)+Complex(0.,1.)*Flavour(kf_Z).Width()*Flavour(kf_Z).Mass();
     
     if (m_hlist[m_llist[2]]<0) q_w*=(y_lepton/(2*sintw*costw)-q_lepton*sintw/costw);
     else q_w*=(-q_lepton*sintw/costw);
@@ -766,7 +766,7 @@ bool FullAmplitude_MHV_Q2L2::AmpStore()
   else if (m_flist[m_llist[1]]->LeptonFamily()==m_flist[m_llist[2]]->LeptonFamily() && m_hlist[m_llist[2]]<0 && m_hlist[m_qlist[2]]<0) {
     Complex ckm=p_model->ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
     q_w=Complex((p_BS->Momentum(pn)).Abs2(),0.);
-    q_w/= q_w-pow(Flavour(kf::Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf::Wplus).Width()*Flavour(kf::Wplus).Mass();
+    q_w/= q_w-pow(Flavour(kf_Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf_Wplus).Width()*Flavour(kf_Wplus).Mass();
     q_w*= ckm/(2*pow(sintw,2));
   }
 
@@ -796,7 +796,7 @@ AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(Model_Base *mo
   if (qlist[0]==0) fullamp = new FullAmplitude_MHV_PureG(model,part,plist,BS);  // pure gluons
   else if (qlist[0]==2) {
     for (int i=1;i<3;i++) {
-      if (!Flavour((kf::code)abs(qlist[i+2]),qlist[i+2]<0).IsQuark() || Flavour((kf::code)abs(qlist[i+2]),qlist[i+2]<0).IsMassive()) {
+      if (!Flavour((kf_code)abs(qlist[i+2]),qlist[i+2]<0).IsQuark() || Flavour((kf_code)abs(qlist[i+2]),qlist[i+2]<0).IsMassive()) {
 	THROW(fatal_error,"Fullamplitude_MHV_Handler: Amplitude is not implemented");
       }  
     }
@@ -805,8 +805,8 @@ AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(Model_Base *mo
   else if (qlist[0]==4) {
     int nq(0), nl(0);
     for (int i=1;i<5;i++) {
-      if (Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsQuark() && !Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsMassive()) nq++;
-      else if (Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsLepton() && !Flavour((kf::code)abs(qlist[i+4]),qlist[i+4]<0).IsMassive()) nl++;
+      if (Flavour((kf_code)abs(qlist[i+4]),qlist[i+4]<0).IsQuark() && !Flavour((kf_code)abs(qlist[i+4]),qlist[i+4]<0).IsMassive()) nq++;
+      else if (Flavour((kf_code)abs(qlist[i+4]),qlist[i+4]<0).IsLepton() && !Flavour((kf_code)abs(qlist[i+4]),qlist[i+4]<0).IsMassive()) nl++;
       else THROW(fatal_error,"Fullamplitude_MHV_Handler: Amplitude is not implemented"); 
     }
     if (nq==4)  fullamp = new FullAmplitude_MHV_Q4(model,part,plist,BS);       // 4 massless quarks

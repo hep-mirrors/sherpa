@@ -23,7 +23,7 @@ public:
   {
     ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
     p_ana->AddParticleList(m_outlist,outlist);
-    for (int beam, b=0;b<3;++b) {
+    for (int beam(0), b=0;b<3;++b) {
       switch (b) {
       case 0: 
 	beam=0; 

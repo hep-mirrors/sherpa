@@ -24,7 +24,7 @@ namespace ATOOLS {
     const Particle *m_start, *m_end;
 
     std::set<btp::code> m_excludeblobs;
-    std::set<kf::code>  m_excludeflavours;
+    std::set<kf_code>  m_excludeflavours;
 
     Parton_Tester *p_criterion;
     Particle_List  m_track;
@@ -59,7 +59,7 @@ namespace ATOOLS {
 
     inline void Exclude(const btp::code code) 
     { m_excludeblobs.insert(code); }
-    inline void Exclude(const kf::code code)  
+    inline void Exclude(const kf_code code)  
     { m_excludeflavours.insert(code); }
 
     inline Particle *Start() const { return (Particle*)m_start; }

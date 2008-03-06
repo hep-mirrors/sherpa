@@ -308,7 +308,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 
       for (short int i=0;i<orig.nleg;i++) {
 	//pseudoscalar
-	if (orig.in[i]==Flavour(kf::A0)) conjugate *= -1;
+	if (orig.in[i]==Flavour(kf_A0)) conjugate *= -1;
       }
       
       if (orig.Lorentz->Type()==lf::SSV ||
@@ -603,7 +603,7 @@ void Vertex::TexOutput()
     if (m_v[i].in[1].IsVector()) {
       if (m_v[i].in[0].IsFermion() && m_v[i].in[2].IsFermion()) {
 	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl; 
-	if (m_v[i].in[1]==Flavour(kf::gluon))
+	if (m_v[i].in[1]==Flavour(kf_gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
@@ -617,7 +617,7 @@ void Vertex::TexOutput()
       }
       
       if (m_v[i].in[0].IsVector() && m_v[i].in[2].IsVector() ){
-	if (m_v[i].in[1]==Flavour(kf::gluon)) {
+	if (m_v[i].in[1]==Flavour(kf_gluon)) {
 	  sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
 	  sf<<"\\fmf{curly}{v1,l1}"<<endl;
 	}
@@ -633,7 +633,7 @@ void Vertex::TexOutput()
       }   
       
       if (m_v[i].in[0].IsScalar() && m_v[i].in[2].IsScalar()) {
-	if (m_v[i].in[1]==Flavour(kf::gluon))
+	if (m_v[i].in[1]==Flavour(kf_gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
@@ -755,7 +755,7 @@ void Vertex::TexOutput()
     
     if (m_v4[i].in[0].IsVector()) {
       if (m_v4[i].in[1].IsVector()) {
-      if (m_v4[i].in[1]==Flavour(kf::gluon)) {
+      if (m_v4[i].in[1]==Flavour(kf_gluon)) {
 	sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
 	sf<<"\\fmf{curly}{l1,v1,l2}"<<endl;
       }

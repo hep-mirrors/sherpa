@@ -631,13 +631,13 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2)
   m_th_1  = m_th_2  = M_PI;
 
   Knot * d1   = trees[0]->NewKnot();
-  *(d1->part) = Particle(1,Flavour(kf::u),x1*E*Vec4D(1.,0.,0.,1.));
+  *(d1->part) = Particle(1,Flavour(kf_u),x1*E*Vec4D(1.,0.,0.,1.));
   d1->part->SetStatus(part_status::active);
   d1->part->SetInfo('G');
   d1->part->SetFlow(1,500);
   d1->part->SetFlow(2,501);
   d1->t       = -scale;
-  d1->tout    = sqr(Flavour(kf::u).PSMass()); 
+  d1->tout    = sqr(Flavour(kf_u).PSMass()); 
   d1->x       = x1;
   d1->E2      = sqr(x1*E);
   d1->maxpt2  = scale;
@@ -646,7 +646,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2)
   d1->stat    = 1;
   
   Knot * d2   = trees[1]->NewKnot();
-  *(d2->part) = Particle(2,Flavour(kf::u).Bar(),x2*E*Vec4D(1.,0.,0.,-1.));
+  *(d2->part) = Particle(2,Flavour(kf_u).Bar(),x2*E*Vec4D(1.,0.,0.,-1.));
   d2->part->SetStatus(part_status::active);
   d2->part->SetInfo('G');
   d2->part->SetFlow(1,502);

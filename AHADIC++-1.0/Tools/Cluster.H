@@ -270,7 +270,7 @@ namespace AHADIC {
     \brief Default constructor 
 
     In this constructor, the type is set to 'no', all momenta are zero, and there
-    are no flavours - hence ATOOLS::Flavour(ATOOLS::kf::none).  It is used only in the
+    are no flavours - hence ATOOLS::Flavour(kf_none).  It is used only in the
     AHADIC::Soft_Cluster_Handler.  Also, the AHADIC::Cluster::s_cluster_count and
     AHADIC::Cluster::s_cluster_number are incremented and the cluster number is set to
     the actual (static) number.  

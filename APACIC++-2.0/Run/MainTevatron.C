@@ -59,7 +59,7 @@ class Hard_Process {
 
 
 Hard_Process::Hard_Process() :
-  proton(kf::p_plus),antiproton(proton.Bar()),
+  proton(kf_p_plus),antiproton(proton.Bar()),
   nxsecs(5),
   ntotal(0),sumxs(0.),sumxs2(0.)
 {
@@ -70,8 +70,8 @@ Hard_Process::Hard_Process() :
   xsecs = new XS_Base*[nxsecs];
   sigmas = new double[2*nxsecs];
   for (int i=0; i<nxsecs; ++i) {
-    Flavour electron=Flavour(kf::e);
-    Flavour quark=Flavour(kf::code(i+1));
+    Flavour electron=Flavour(kf_e);
+    Flavour quark=Flavour((kf_code)(i+1));
     Flavour flavours[4];
     flavours[0]=quark;
     flavours[1]=quark.Bar();
@@ -235,7 +235,7 @@ int main(int argc,char **argv)
     Vec4D mom0(E,0,0,E);
     Vec4D mom1(E,0,0,-E);
 
-    Flavour electron = Flavour(kf::e);
+    Flavour electron = Flavour(kf_e);
     Flavour quark    = hardprocess->Parton1();
 
     Vec3D dir(sin(phi)*sintheta,cos(phi)*sintheta,costheta);
@@ -250,7 +250,7 @@ int main(int argc,char **argv)
 
     // final state part
     mo->z       = 0.5;
-    *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(rscale,0,0,0));
+    *(mo->part) = Particle(1,Flavour(kf_photon),Vec4D(rscale,0,0,0));
     mo->E2    = scale;
     mo->t    = scale;  
     

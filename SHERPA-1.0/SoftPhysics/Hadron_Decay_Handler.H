@@ -26,7 +26,7 @@ namespace SHERPA {
     HADRONS::Hadrons            * p_hadrons;
 #endif
     Lund_Interface              * p_lund; 
-    std::set<ATOOLS::kf::code>  * p_cans;
+    std::set<kf_code>  * p_cans;
 
   public :
 #ifdef USING__Hadrons
@@ -37,14 +37,14 @@ namespace SHERPA {
     ~Hadron_Decay_Handler();
 
     ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *, const ATOOLS::Vec4D&);
-    bool CanDealWith(ATOOLS::kf::code);
+    bool CanDealWith(kf_code);
 
 #ifdef USING__Hadrons
     HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
 #endif
     Lund_Interface   * GetLund()    { return p_lund; }
     std::string        Name()       { return m_decmodel; }
-    std::set<ATOOLS::kf::code>  * GetCans() { return p_cans; }
+    std::set<kf_code>  * GetCans() { return p_cans; }
     void               SetMassSmearing(bool ms)      { m_mass_smearing = ms; }
     bool               GetMassSmearing()             { return m_mass_smearing; }
     bool               DiceMass(ATOOLS::Particle*, double min, double max);

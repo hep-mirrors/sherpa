@@ -30,16 +30,16 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 
   //quark - squark - gluino
 
-  Flavour flgluino = Flavour(kf::Gluino);
+  Flavour flgluino = Flavour(kf_Gluino);
   if (flgluino.IsOn()) {
   //uptype - sup - gluino
     for (short int i=2;i<7;i+=2) {
-      Flavour flav1 = Flavour(kf::code(i));
+      Flavour flav1 = Flavour((kf_code)(i));
       int fl; 
       for (short int j=1;j<7;j++) {
 	if (j<4) fl = 1000000 + 2*j;
 	else     fl = 2000000 + 2*j - 6;
-	Flavour flav2 = Flavour(kf::code(fl));
+	Flavour flav2 = Flavour((kf_code)(fl));
 	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav2)==((i-2)/2)) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[2] = flav2;
@@ -68,12 +68,12 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
     }
     //downtype - sdown - gluino
     for (short int i=1;i<6;i+=2) {
-      Flavour flav1 = Flavour(kf::code(i));
+      Flavour flav1 = Flavour((kf_code)(i));
       int fl;
       for (short int j=1;j<7;j++) {
 	if (j<4) fl = 1000000 + 2*j -1;
 	else     fl = 2000000 + 2*j -7;
-	Flavour flav2 = Flavour(kf::code(fl));
+	Flavour flav2 = Flavour((kf_code)(fl));
 	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav2)==((i-1)/2)) {
 
 	  vertex[vanz].in[0] = flav1;
@@ -108,9 +108,9 @@ void Interaction_Model_sQCD::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
   Kabbala kcpl0,kcpl1;
   
   //gluino - gluon - gluino
-  Flavour flgluino = Flavour(kf::Gluino);
+  Flavour flgluino = Flavour(kf_Gluino);
   if (flgluino.IsOn()) {      
-    Flavour flgluon = Flavour(kf::gluon);
+    Flavour flgluon = Flavour(kf_gluon);
     if (flgluon.IsOn()) {
       vertex[vanz].in[0] = flgluino;
       vertex[vanz].in[1] = flgluon;
@@ -144,14 +144,14 @@ void Interaction_Model_sQCD::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
   
   Kabbala kcpl0,kcpl1;
 
-  Flavour flgl = Flavour(kf::gluon); 
+  Flavour flgl = Flavour(kf_gluon); 
   if (flgl.IsOn()) {    
     kcpl0 = -g3*M_I;
     kcpl1 = kcpl0;
     for (short int l=1;l<3;l++) {
       for (short int i=1;i<7;i++) {
 	int fl = l*1000000 + i;
-	Flavour flav = Flavour(kf::code(fl));
+	Flavour flav = Flavour((kf_code)(fl));
 	if (flav.IsOn()) { 
 	  vertex[vanz].in[0] = flav;
 	  vertex[vanz].in[1] = flgl;
@@ -181,14 +181,14 @@ void Interaction_Model_sQCD::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 void Interaction_Model_sQCD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
-  Flavour flgl = Flavour(kf::gluon); 
+  Flavour flgl = Flavour(kf_gluon); 
   
   //sQuark - Gluon - Gluon - sQuark
   if (flgl.IsOn()) {    
     for (short int l=1;l<3;l++) {
       for (short int i=1;i<7;i++) {
 	int fl = l*1000000 + i;
-	Flavour flav = Flavour(kf::code(fl));
+	Flavour flav = Flavour((kf_code)(fl));
 	if (flav.IsOn()) {
 	  vertex[vanz].in[0] = flgl;
 	  vertex[vanz].in[1] = flav.Bar();

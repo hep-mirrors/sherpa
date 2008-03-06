@@ -127,8 +127,8 @@ namespace SHERPA {
     The following two lines are equivalent:
     \verbatim
 
-      dg = sud.Delta(Flavour(kf::gluon))(Q,Q0);
-      dg = sud.Delta(Flavour(kf::gluon),Q,Q0);
+      dg = sud.Delta(Flavour(kf_gluon))(Q,Q0);
+      dg = sud.Delta(Flavour(kf_gluon),Q,Q0);
     \endverbatim
   */
   /*!
