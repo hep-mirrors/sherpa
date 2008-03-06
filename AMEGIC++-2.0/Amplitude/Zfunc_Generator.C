@@ -6,6 +6,7 @@
 #include "Vector.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Interaction_Model_Base.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -51,16 +52,16 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
     zcalc.push_back(new SSSS_Calc(_sgen,_BS));
 
-    if(rpa.gen.Model()==ATOOLS::Model_Type::SMEHC || 
-       rpa.gen.Model()==ATOOLS::Model_Type::MSSM_EHC ||
-       rpa.gen.Model()==ATOOLS::Model_Type::SM_Phantom_U1) {
+    if(rpa.gen.Model()->GetInteractionModel()->Code()=="SM+EHC" || 
+       rpa.gen.Model()->GetInteractionModel()->Code()=="MSSM+EHC" ||
+       rpa.gen.Model()->GetInteractionModel()->Code()=="SM+Phantom_U1") {
       zcalc.push_back(new Triangle_Calc(_sgen,_BS));
       zcalc.push_back(new Box_Calc(_sgen,_BS));
       zcalc.push_back(new Pentagon_Calc(_sgen,_BS));
     }
 
     
-    if(rpa.gen.Model()==ATOOLS::Model_Type::ADD){
+    if(rpa.gen.Model()->GetInteractionModel()->Code()=="ADD"){
       zcalc.push_back(new FFT_Calc(_sgen,_BS));
       zcalc.push_back(new VVT_Calc(_sgen,_BS));
       zcalc.push_back(new SST_Calc(_sgen,_BS));
@@ -72,7 +73,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
       zcalc.push_back(new SSGS_Calc(_sgen,_BS));
       zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
     }
-    if(rpa.gen.Model()==ATOOLS::Model_Type::SM_AGC){
+    if(rpa.gen.Model()->GetInteractionModel()->Code()=="SM+AGC"){
       zcalc.push_back(new AnomalousV3_Calc(_sgen,_BS));
       zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
     }     
@@ -109,7 +110,8 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
     if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
       }
-    if(ATOOLS::IsZero(p->fl.Mass())&&rpa.gen.Model()!=ATOOLS::Model_Type::SM_AGC){
+    if(ATOOLS::IsZero(p->fl.Mass())&&rpa.gen.Model()->
+       GetInteractionModel()->Code()!="SM+AGC"){
       p->m=0;
       }	
   }

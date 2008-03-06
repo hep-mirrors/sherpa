@@ -10,7 +10,7 @@ using namespace std;
 Interaction_Model_MUED_QCD::Interaction_Model_MUED_QCD(MODEL::Model_Base * _model,
 						       std::string _cplscheme,
 						       std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
 

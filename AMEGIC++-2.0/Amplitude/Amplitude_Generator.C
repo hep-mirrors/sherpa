@@ -5,6 +5,7 @@
 #include "Message.H"
 #include "MathTools.H"
 #include "Permutation.H"
+#include "Interaction_Model_Base.H"
 
 //Do not use this here !!! 
 //This is only for test purposes !!!
@@ -429,7 +430,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   Single_Amplitude* gra;
   for (size_t i=0;i<prea_table.size();i++) {
     int sw1 = 1;
-    if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) {
+    if (rpa.gen.Model()->GetInteractionModel()->Code()=="pure_QCD") {
       for (int j=0;j<dep;j++) {
 	if (((prea_table[i].p[j].fl).IsBoson()) && 
 	    (prea_table[i].p[j].fl!=Flavour(kf_gluon))) { sw1 = 0; break; }

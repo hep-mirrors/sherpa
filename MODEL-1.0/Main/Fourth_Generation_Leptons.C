@@ -6,6 +6,17 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+DECLARE_GETTER(Fourth_Generation_Leptons_Getter,"FOURTH_GEN_LEPTONS",Model_Base,Model_Arguments);
+
+Model_Base *Fourth_Generation_Leptons_Getter::operator()(const Model_Arguments &args) const
+{
+  return new Fourth_Generation_Leptons(args.m_path,args.m_file);
+}
+
+void Fourth_Generation_Leptons_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Standard Model + 4th generation leptons"; 
+}
 
 Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

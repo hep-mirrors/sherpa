@@ -28,7 +28,6 @@ namespace ATOOLS {
   template <> Beam_Type::code NotDefined<Beam_Type::code>(); 
   template <> ISR_Type::code NotDefined<ISR_Type::code>(); 
   template <> String_Type::code NotDefined<String_Type::code>(); 
-  template <> Model_Type::code NotDefined<Model_Type::code>(); 
   template <> Flavour NotDefined<Flavour>(); 
 
 }// end of namespace ATOOLS

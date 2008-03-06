@@ -242,12 +242,12 @@ void String_Handler::Z_Kill()
   }
 }
 
-typedef Values* (*Getter_Function)(Basic_Sfuncs*);
+typedef Values* (*Lib_Getter_Function)(Basic_Sfuncs*);
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
   s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
-  Getter_Function gf = (Getter_Function)s_loader->GetLibraryFunction
+  Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
     ("Proc_"+pID.substr(1),"Getter_"+pID);
   if (gf==NULL) return NULL;
   return gf(BS);

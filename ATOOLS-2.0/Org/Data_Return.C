@@ -42,11 +42,6 @@ template <> String_Type::code ATOOLS::NotDefined<String_Type::code>()
   return String_Type::Unknown; 
 } 
 
-template <> Model_Type::code ATOOLS::NotDefined<Model_Type::code>() 
-{ 
-  return Model_Type::Unknown; 
-} 
-
 template <> Flavour ATOOLS::NotDefined<Flavour>() 
 { 
   return Flavour(kf_none); 

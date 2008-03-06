@@ -9,9 +9,25 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(Interaction_Model_4GenLep_Getter,"FOURTH_GEN_LEPTONS",
+	       Interaction_Model_Base,Interaction_Model_Arguments);
+
+Interaction_Model_Base *Interaction_Model_4GenLep_Getter::
+operator()(const Interaction_Model_Arguments &args) const
+{
+  return new Interaction_Model_4GenLep
+    (args.p_model,args.m_cplscheme,args.m_yukscheme);
+}
+
+void Interaction_Model_4GenLep_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"Standard Model + 4th generation leptons"; 
+}
+
 Interaction_Model_4GenLep::Interaction_Model_4GenLep(MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("FOURTH_GEN_LEPTONS",_model,_cplscheme,_yukscheme)
 { 
   p_mosm    = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
 

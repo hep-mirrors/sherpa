@@ -52,26 +52,6 @@ namespace ATOOLS {
     };
   };
 
-  //! The different Model types
-  class Model_Type {
-  public:
-    enum code { pure_QCD      = 0, 
-	        QCD           = 1, 
-	        pure_EW       = 2, 
-	        SM            = 3, 
-	        MSSM          = 4, 
-	        THDM          = 5,
-	        MSSM_EHC      = 4, 
-	        ADD           = 7,
-	        SMEHC         = 8,
-		SM_ZPrime     = 9,
-		SM_AGC        = 10,
-	        SM_Phantom_U1 = 11, 
-		FourthGen_Lep = 20,
-	        Unknown       = 99
-    };
-  };
-
   //! different (QED) - ISR realization  
   class ISR_Type {
   public:
@@ -125,8 +105,6 @@ namespace ATOOLS {
 
     static void SetCommandLine(std::string name, std::string value);
 
-    std::string GenerateKey();
-    
     bool FileExists() { return m_fileexists; }
     inline std::string FileName() const { return m_filename; }
     inline static void SetTags(const Parameter_Map &tags) { s_tags=tags; }
@@ -141,7 +119,6 @@ namespace ATOOLS {
 
   template <>  std::string        Data_Read::GetValue<std::string>(std::string);
   template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string);
-  template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string);
   template <>  Flavour Data_Read::GetValue<Flavour>(std::string);
   template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string);
   template <>  Beam_Generator::code    Data_Read::GetValue<Beam_Generator::code>(std::string);
@@ -217,11 +194,6 @@ namespace ATOOLS {
   /*!
     \fn    void Data_Read::SetValue(std::string name, Type value)
     \brief set a value for a parameter
-  */
-
-  /*!
-    \fn    std::string Data_Read::GenerateKey()
-    \brief generates a (hopefully) unique identifier
   */
 
   /*!   

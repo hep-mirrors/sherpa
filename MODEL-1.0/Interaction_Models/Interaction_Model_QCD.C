@@ -7,9 +7,25 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(Interaction_Model_QCD_Getter,"pure_QCD",
+	       Interaction_Model_Base,Interaction_Model_Arguments);
+
+Interaction_Model_Base *Interaction_Model_QCD_Getter::
+operator()(const Interaction_Model_Arguments &args) const
+{
+  return new Interaction_Model_QCD
+    (args.p_model,args.m_cplscheme,args.m_yukscheme);
+}
+
+void Interaction_Model_QCD_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"QCD"; 
+}
+
 Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
 					     std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("pure_QCD",_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
 

@@ -132,20 +132,13 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
 	      (nin,nout,flavours,model,nqed,nqcd))!=NULL); 
     else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>
 	      (nin,nout,flavours,model,nqed,nqcd))!=NULL);
-    else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1_f1f1>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f1f1b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f1f1b>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f2f2b>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f1f2>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f1f2b>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f3f4>;
-    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-      s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
+    else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f1f1b>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+    else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,model,nqed,nqcd))!=NULL);
+    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+    else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
+    else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
     //SUSY-QCD processes
     else if (rpa.gen.ModelName()==std::string("MSSM")) {
       if ((xs=Single_XS::GetProcess<XS_gg_GluinoGluino>(nin,nout,flavours,model,nqed,nqcd))!=NULL);

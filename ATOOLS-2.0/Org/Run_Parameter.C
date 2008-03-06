@@ -50,7 +50,6 @@ Run_Parameter::Run_Parameter()
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu        = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf_none);
-  gen.m_rpa_id    = gen.m_flavour_id = std::string("");
 #ifndef USING__ATOOLS_only
   gen.p_model     = NULL;
 #endif
@@ -226,7 +225,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
-  gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
                   else { ran.SetSeed(gen.m_seed); }
   gen.m_ren_scale_fac=1.0;

@@ -9,9 +9,25 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(Interaction_Model_EW_Getter,"pure_EW",
+	       Interaction_Model_Base,Interaction_Model_Arguments);
+
+Interaction_Model_Base *Interaction_Model_EW_Getter::
+operator()(const Interaction_Model_Arguments &args) const
+{
+  return new Interaction_Model_EW
+    (args.p_model,args.m_cplscheme,args.m_yukscheme);
+}
+
+void Interaction_Model_EW_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"Electroweak Theory"; 
+}
+
 Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
 					   std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("pure_EW",_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
 

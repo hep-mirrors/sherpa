@@ -1,11 +1,17 @@
 #include "Interaction_Model_Base.H"
+
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE MODEL::Interaction_Model_Base
+#define PARAMETER_TYPE MODEL::Interaction_Model_Arguments
+#include "Getter_Function.C"
+
 #include "Message.H"
 
 using namespace MODEL;
 
-Interaction_Model_Base::Interaction_Model_Base(MODEL::Model_Base * _model,
+Interaction_Model_Base::Interaction_Model_Base(const std::string &code,MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
-  p_model(_model), m_cplscheme(_cplscheme), m_yukscheme(_yukscheme)  
+  p_model(_model), m_code(code), m_cplscheme(_cplscheme), m_yukscheme(_yukscheme)  
 { 
 }
 

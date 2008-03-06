@@ -43,9 +43,7 @@ namespace ATOOLS {
       double              m_ecms;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
-      std::string         m_rpa_id, m_flavour_id;
 #ifndef USING__ATOOLS_only
-      Model_Type::code    m_modelcode;
       MODEL::Model_Base * p_model;
 #endif
       Vec4D m_pbeam[2];
@@ -101,8 +99,7 @@ namespace ATOOLS {
       inline double PDFScaleFactor() const { return m_pdf_scalefac; }    //for the operator approach.
       inline double AsScaleFactor() const { return m_as_scalefac; }
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
-      inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
-      inline Model_Type::code Model()                     { return m_modelcode; }
+      inline MODEL::Model_Base *Model() const { return p_model; }
 
       inline std::string ModelName()                      { return p_model->Name(); } 
       inline int ScalarNumber(const std::string _name)                { return p_model->ScalarNumber(_name); }
@@ -129,10 +126,6 @@ namespace ATOOLS {
       */
 
       inline double Accu()                                { return m_accu; }
-      inline std::string GetRpaID()                       { return m_rpa_id; }
-      inline std::string GetFlavourID()                   { return m_flavour_id; }
-      inline void  SetRpaID(const std::string & _id)      { m_rpa_id = _id; }
-      inline void  SetFlavourID(const std::string & _id)  { m_flavour_id = _id; }
       
       friend class Run_Parameter;
     } gen;

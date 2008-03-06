@@ -8,9 +8,25 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(Interaction_Model_THDM_Getter,"THDM",
+	       Interaction_Model_Base,Interaction_Model_Arguments);
+
+Interaction_Model_Base *Interaction_Model_THDM_Getter::
+operator()(const Interaction_Model_Arguments &args) const
+{
+  return new Interaction_Model_THDM
+    (args.p_model,args.m_cplscheme,args.m_yukscheme);
+}
+
+void Interaction_Model_THDM_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"Two Higgs Doublet Model"; 
+}
+
 Interaction_Model_THDM::Interaction_Model_THDM(MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("THDM",_model,_cplscheme,_yukscheme)
 { 
   p_moew    = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
   p_moqcd   = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 

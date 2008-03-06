@@ -68,6 +68,7 @@ namespace SHERPA {
     Event_Reader               * p_evtreader;
     ANALYSIS::Analysis_Handler * p_analysis;
     void ShowParameterSyntax() const;
+    void LoadLibraries() const;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -92,8 +93,6 @@ namespace SHERPA {
   public :
 
     Initialization_Handler(int argc,char * argv[]);
-    Initialization_Handler(std::string=std::string("./"),
-			   std::string=std::string("Run.dat"));
     ~Initialization_Handler();
 
     bool InitializeTheFramework(int =-1);

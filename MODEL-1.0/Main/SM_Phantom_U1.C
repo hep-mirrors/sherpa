@@ -6,6 +6,18 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(SM_Phantom_U1_Getter,"PHANTOM_U1",Model_Base,Model_Arguments);
+
+Model_Base *SM_Phantom_U1_Getter::operator()(const Model_Arguments &args) const
+{
+  return new SM_Phantom_U1(args.m_path,args.m_file);
+}
+
+void SM_Phantom_U1_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Standard Model + phantom Higgs"; 
+}
+
 
 SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

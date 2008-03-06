@@ -10,6 +10,18 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+DECLARE_GETTER(ADD_Getter,"ADD",Model_Base,Model_Arguments);
+
+Model_Base *ADD_Getter::operator()(const Model_Arguments &args) const
+{
+  return new ADD(args.m_path,args.m_file);
+}
+
+void ADD_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"ADD"; 
+}
+
 
 ADD::ADD(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

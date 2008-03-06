@@ -22,7 +22,6 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_ADD.C \
 				Interaction_Model_MUED_QCD.C \
 				Interaction_Model_4GenLep.C \
-				Interaction_Model_Handler.C \
 	     		        Interaction_Model_Inos.C \
                                 Interaction_Model_sLepton_EW.C \
 	       		        Interaction_Model_sQCD.C \
@@ -53,7 +52,6 @@ pkginclude_HEADERS = \
 				Interaction_Model_ADD.H \
 				Interaction_Model_MUED_QCD.H \
 				Interaction_Model_4GenLep.H \
-				Interaction_Model_Handler.H  \
 	     		        Interaction_Model_Inos.H \
                                 Interaction_Model_sLepton_EW.H \
 	       		        Interaction_Model_sQCD.H \

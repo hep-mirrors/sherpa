@@ -11,6 +11,18 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+DECLARE_GETTER(MSSM_Getter,"MSSM",Model_Base,Model_Arguments);
+
+Model_Base *MSSM_Getter::operator()(const Model_Arguments &args) const
+{
+  return new MSSM(args.m_path,args.m_file);
+}
+
+void MSSM_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"MSSM"; 
+}
+
 
 MSSM::MSSM(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

@@ -15,6 +15,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nout,
 					       const ATOOLS::Flavour *flavours,
+					       XS_Model_Base *const model,
 					       const size_t nqed, const size_t nqcd)
 {
   //  std::cout<<"XS_f1f1_f1f1 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
@@ -24,7 +25,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
 	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
     
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn()))         return NULL;
@@ -130,6 +131,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t nout,
 						 const ATOOLS::Flavour *flavours,
+						 XS_Model_Base *const model,
 						 const size_t nqed, const size_t nqcd)
 {
   //  std::cout<<"XS_f1f1b_f1f1b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
@@ -139,7 +141,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
   if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
 	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
   
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn()))         return NULL;
@@ -258,6 +260,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t nout,
 						 const ATOOLS::Flavour *flavours,
+						 XS_Model_Base *const model,
 						 const size_t nqed, const size_t nqcd)
 {
   //  std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<"\n";
@@ -269,7 +272,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
   if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
 	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
   
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
        ATOOLS::Flavour(kf_photon).IsOn()) ||
@@ -409,6 +412,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nout,
 					       const ATOOLS::Flavour *flavours,
+					       XS_Model_Base *const model,
 					       const size_t nqed, const size_t nqcd)
 {
   //  std::cout<<"XS_f1f2_f1f2 Test this : "<<flavours[0]<<" "
@@ -422,7 +426,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
   if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
 	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
 
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn() ||
@@ -576,6 +580,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t nout,
 						 const ATOOLS::Flavour *flavours,
+						 XS_Model_Base *const model,
 						 const size_t nqed, const size_t nqcd)
 {
   kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
@@ -588,7 +593,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
   if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
 	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
   
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn() ||
@@ -736,6 +741,7 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nout,
 					       const ATOOLS::Flavour *flavours,
+					       XS_Model_Base *const model,
 					       const size_t nqed, const size_t nqcd)
 {
   //  std::cout<<"XS_f1f2_f1f2 : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
@@ -751,7 +757,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nou
 	 !flavours[2].IsAnti() && !flavours[3].IsAnti()) &&
        !(flavours[0].IsAnti() && flavours[1].IsAnti() && 
 	 flavours[2].IsAnti() && flavours[3].IsAnti())) )                       return NULL;
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                    return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                                       return NULL;
   if (!ATOOLS::Flavour(kf_Wplus).IsOn())                                   return NULL;
   if (flavours[0].IsUptype()) {
@@ -860,9 +866,10 @@ namespace EXTRAXS {
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t nout,
 						 const ATOOLS::Flavour *flavours,
+						 XS_Model_Base *const model,
 						 const size_t nqed, const size_t nqcd)
 {
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
+  if (model->Name()=="QCD") return NULL;
   if (nqcd!=0 || nqed!=2)                                                         return NULL;
   if (!ATOOLS::Flavour(kf_Wplus).IsOn())                                     return NULL;
   if (flavours[0].IntCharge()+flavours[1].IntCharge()!=

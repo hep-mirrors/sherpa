@@ -1,13 +1,16 @@
 #include "Environment.H"
 
-#include "Model_Handler.H"
+#include "Model_Base.H"
 #include "PDF_Handler.H"
 #include "Structure_Function.H"
 #include "Intact.H"
 #include "Run_Parameter.H"
 #include "Phase_Space_Handler.H"
+#include "Data_Reader.H"
 
 using namespace AMISIC;
+using namespace MODEL;
+using namespace ATOOLS;
 
 Environment::Environment(const std::string path,const std::string file): 
   m_path(path), m_file(file),
@@ -42,15 +45,20 @@ bool Environment::InitializeTheEnvironment()
 
 bool Environment::InitializeTheModel()
 {
-  ATOOLS::Data_Read dataread(m_path+m_modeldat);
-  MODEL::Model_Handler *modelhandler = new MODEL::Model_Handler();
-  p_model = modelhandler->GetModel(&dataread,m_path,m_modeldat);
-  if (!p_model->RunSpectrumGenerator()) {
-    msg_Error()<<"Environment::InitializeTheModel(): "
-		       <<"RunSpectrumGenerator() failed. Abort."<<std::endl;
-    abort();
-  }
-  delete modelhandler;
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_modeldat);
+  std::string name;
+  if (!read.ReadFromFile(name,"MODEL")) name="SM";
+  p_model=Model_Base::Model_Getter_Function::
+    GetObject(name,Model_Arguments(m_path,m_modeldat));
+  if (p_model==NULL) THROW(fatal_error,"Model not implemented");
+  if (!p_model->RunSpectrumGenerator())
+    THROW(fatal_error,"RunSpectrumGenerator failed");
+  p_model->InitializeInteractionModel();
+  p_model->FillDecayTables();
+  rpa.gen.SetModel(p_model);
   return true;
 }
 

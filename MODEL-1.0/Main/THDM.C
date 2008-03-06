@@ -6,6 +6,18 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+DECLARE_GETTER(THDM_Getter,"THDM",Model_Base,Model_Arguments);
+
+Model_Base *THDM_Getter::operator()(const Model_Arguments &args) const
+{
+  return new THDM(args.m_path,args.m_file);
+}
+
+void THDM_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Two Higgs Doublet Model"; 
+}
+
 
 THDM::THDM(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

@@ -8,9 +8,25 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+DECLARE_GETTER(Interaction_Model_MSSM_EHC_Getter,"MSSM+EHC",
+	       Interaction_Model_Base,Interaction_Model_Arguments);
+
+Interaction_Model_Base *Interaction_Model_MSSM_EHC_Getter::
+operator()(const Interaction_Model_Arguments &args) const
+{
+  return new Interaction_Model_MSSM_EHC
+    (args.p_model,args.m_cplscheme,args.m_yukscheme);
+}
+
+void Interaction_Model_MSSM_EHC_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"MSSM + Effective Higgs Coupling"; 
+}
+
 Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+  Interaction_Model_Base("MSSM+EHC",_model,_cplscheme,_yukscheme)
 { 
   p_moehc     = new Interaction_Model_EHC_S(p_model,_cplscheme,_yukscheme); 
   p_mothdm    = new Interaction_Model_THDM(p_model,_cplscheme,_yukscheme); 

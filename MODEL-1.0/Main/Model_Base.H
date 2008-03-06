@@ -10,6 +10,7 @@
 #include "MathTools.H"
 #include "MyComplex.H"
 #include "Vertex.H"
+#include "Getter_Function.H"
 #include <map>
 
 namespace MODEL { class Spectrum_Generator_Base; }
@@ -22,7 +23,18 @@ namespace MODEL {
 
   class Interaction_Model_Base;
 
+  struct Model_Arguments {
+    std::string m_path, m_file;
+    Model_Arguments(const std::string &path,const std::string &file):
+      m_path(path), m_file(file) {}
+  };// end of struct Model_Arguments
+
   class Model_Base {
+  public:
+
+    typedef ATOOLS::Getter_Function<Model_Base,Model_Arguments> 
+    Model_Getter_Function;
+
   protected:
     Interaction_Model_Base  * p_model;
 
@@ -46,6 +58,7 @@ namespace MODEL {
   public:
     Model_Base(std::string,std::string);
     virtual ~Model_Base();
+    static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
     void FillDecayTables();
     virtual bool RunSpectrumGenerator()           = 0;

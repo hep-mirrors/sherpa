@@ -8,6 +8,18 @@ using namespace ATOOLS;
 using namespace std;
 
 
+DECLARE_GETTER(MUED_Getter,"MUED",Model_Base,Model_Arguments);
+
+Model_Base *MUED_Getter::operator()(const Model_Arguments &args) const
+{
+  return new MUED(args.m_path,args.m_file);
+}
+
+void MUED_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"MUED"; 
+}
+
 MUED::MUED(string _dir,string _file) :
   Model_Base(_dir,_file)
 {

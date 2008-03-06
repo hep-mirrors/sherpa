@@ -246,27 +246,6 @@ template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string
   return ReturnData(name,NotDefined<String_Type::code>());
 }
 
-template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string name) {
-  Shorten(name);
-  Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Model_Type::code>());
-  std::string value = m_parameters[name];
-  if (value==std::string("pure_QCD")) return ReturnData(name,Model_Type::pure_QCD);
-  if (value==std::string("QCD"))      return ReturnData(name,Model_Type::QCD);
-  if (value==std::string("pure_EW"))  return ReturnData(name,Model_Type::pure_EW);
-  if (value==std::string("SM"))       return ReturnData(name,Model_Type::SM);
-  if (value==std::string("MSSM"))     return ReturnData(name,Model_Type::MSSM);
-  if (value==std::string("THDM"))     return ReturnData(name,Model_Type::THDM);
-  if (value==std::string("MSSM+EHC")) return ReturnData(name,Model_Type::MSSM_EHC);
-  if (value==std::string("ADD"))      return ReturnData(name,Model_Type::ADD);
-  if (value==std::string("SM+EHC"))   return ReturnData(name,Model_Type::SMEHC);
-  if (value==std::string("SM+ZPrime"))return ReturnData(name,Model_Type::SM_ZPrime);
-  if (value==std::string("SM+AGC"))   return ReturnData(name,Model_Type::SM_AGC);
-  msg_Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<std::endl
-	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<std::endl;
-  return ReturnData(name,NotDefined<Model_Type::code>());
-}
-
 template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   Shorten(name);
   
@@ -322,46 +301,6 @@ int Data_Read::Crossfoot(std::string name) {
   for (size_t i=0;i<name.length();++i)
     sum+=int(name[i]);
   return sum;
-}
-
-std::string Data_Read::GenerateKey() {
-  // Hexadeximal Number
-  //  nn_m_dddddd
-  //  v v  version main and subnumber of code (not included yet)
-  //  nn  number of parameters readin
-  //  m   model number
-  //  dddddd = Sum_i (cross sum of name * cross sum of value above)
-  //  output hex,
-
-  // possible extensions: 
-  // * output 0-9,A-Z stat hex (130 times as many states))
-  // * additional rotation by position
-  // * make partitions of parameters that have been used and those that have not been used.
-
-  int sum=0;
-  for (Parameter_Iterator it = m_parameters.begin(); it!=m_parameters.end() ; ++it) {
-    int id= ((Crossfoot(it->first)&0xff)*Crossfoot(it->second))&0xffffff;
-    sum^=id;
-  }
-  sum=(sum&0xffffff); //|(0x1000000*(parameters.size() & 255));
-
-  MyStrStream str;  
-  std::string key;
-  str.setf(std::ios::hex, std::ios::basefield);
-  str<<(m_parameters.size() & 255);
-  Model_Type::code m = GetValue<Model_Type::code>("MODEL");
-  str<<"_";
-  if (m!=Model_Type::Unknown) {
-    str<<int(m);
-  }
-  else {
-    str<<"_";
-  }
-  str<<"_";
-  str<<sum;
-
-  str>>key;
-  return key;
 }
 
 void Data_Read::WriteOut(std::string filename,int flag) {

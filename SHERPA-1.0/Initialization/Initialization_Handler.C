@@ -2,7 +2,7 @@
 #include "Initialization_Handler.H"
 
 #include "Input_Output_Handler.H"
-#include "Model_Handler.H"
+#include "Model_Base.H"
 #include "Structure_Function.H"
 #include "Intact.H"
 #include "PDF_Handler.H"
@@ -19,6 +19,7 @@
 #include "Variable.H"
 #include "Lund_Interface.H"
 #include "Data_Writer.H"
+#include "Library_Loader.H"
 
 #include "Spin_Correlation_Tensor.H"
 
@@ -34,41 +35,6 @@ using namespace BEAM;
 using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
-
-Initialization_Handler::Initialization_Handler(string _path,string _file) : 
-  m_path(_path), m_file(_file), m_mode(0), m_savestatus(false),
-  p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
-  p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
-  p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
-  p_evtreader(NULL),
-  p_analysis(NULL)
-{
-  std::vector<std::string> names(4);
-  names[0]="Decaydata";
-  names[1]="Particle.dat";
-  names[2]="Hadron.dat";
-  names[3]="Run.dat";
-  My_In_File::SetNoComplains(names);
-
-  p_dataread         = new Data_Read(m_path+m_file);
-  m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
-  m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
-  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
-  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
-  m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
-  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
-  m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
-  m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
-  m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
-  m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
-  m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
-  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
-  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
-  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
-  rpa.gen.SetSpinCorrelation(m_spincorrelations);
-  exh->AddTerminatorObject(this);
-}
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
@@ -97,6 +63,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     rpa.Init(m_path,m_file,argc,argv);
     return;
   }  
+  LoadLibraries();
   ShowParameterSyntax();
   rpa.Init(m_path,m_file,argc,argv);
 
@@ -168,10 +135,26 @@ Initialization_Handler::~Initialization_Handler()
   exh->RemoveTerminatorObject(this);
 }
 
+void Initialization_Handler::LoadLibraries() const
+{
+  Data_Reader read(" ",";","!","=");
+  std::vector<std::string> ldadd;
+  if (!read.VectorFromFile(ldadd,"SHERPA_LDADD")) return;
+  for (size_t i(0);i<ldadd.size();++i) 
+    if (!s_loader->LoadLibrary(ldadd[i])) 
+      THROW(fatal_error,"Cannot load extra library.");
+}
+
 void Initialization_Handler::ShowParameterSyntax() const
 {
   Data_Reader read(" ",";","!","=");
   int helpi(0);
+  if (!read.ReadFromFile(helpi,"SHOW_MODEL_SYNTAX")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    MODEL::Model_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
   if (!read.ReadFromFile(helpi,"SHOW_ANALYSIS_SYNTAX")) helpi=0;
   if (helpi>0) {
     msg->SetLevel(2);
@@ -362,14 +345,21 @@ bool Initialization_Handler::InitializeTheExternalMC()
 
 bool Initialization_Handler::InitializeTheModel()
 {
-  if (p_model) { delete p_model; p_model = NULL; }
-  Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
-  // - add commandline parameter - !!
-  Model_Handler * modelhandler = new Model_Handler();
-  p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
-
-  delete modelhandler;
-  delete dataread;  
+  if (p_model) delete p_model;
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_modeldat);
+  std::string name;
+  if (!read.ReadFromFile(name,"MODEL")) name="SM";
+  p_model=Model_Base::Model_Getter_Function::
+    GetObject(name,Model_Arguments(m_path,m_modeldat));
+  if (p_model==NULL) THROW(not_implemented,"Model not implemented");
+  if (!p_model->RunSpectrumGenerator())
+    THROW(fatal_error,"RunSpectrumGenerator failed");
+  p_model->InitializeInteractionModel();
+  p_model->FillDecayTables();
+  rpa.gen.SetModel(p_model);
   return 1;
 }
 

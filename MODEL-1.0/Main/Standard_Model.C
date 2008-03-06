@@ -14,6 +14,17 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+DECLARE_GETTER(Standard_Model_Getter,"SM",Model_Base,Model_Arguments);
+
+Model_Base *Standard_Model_Getter::operator()(const Model_Arguments &args) const
+{
+  return new Standard_Model(args.m_path,args.m_file);
+}
+
+void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Standard Model"; 
+}
 
 Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

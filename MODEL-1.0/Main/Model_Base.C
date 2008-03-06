@@ -1,15 +1,18 @@
 #include "Model_Base.H"
+
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE MODEL::Model_Base
+#define PARAMETER_TYPE MODEL::Model_Arguments
+#include "Getter_Function.C"
+
 #include "Spectrum_Generator_Base.H"
-#include "Interaction_Model_Handler.H"
+#include "Interaction_Model_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Exception.H"
 
-
 using namespace MODEL;
 using namespace ATOOLS;
-using namespace std;
-
 
 Model_Base::Model_Base(std::string _dir,std::string _file) :
   p_model(NULL), m_dir(_dir), m_file(_file), p_dataread(NULL),
@@ -40,16 +43,29 @@ Model_Base::~Model_Base()
   if (p_decays!=NULL)            delete p_decays;
 }
 
+void Model_Base::ShowSyntax(const size_t i)
+{
+  if (!msg_LevelIsInfo() || i==0) return;
+  msg_Out()<<METHOD<<"(): {\n\n"
+	   <<"   // model listing\n\n";
+  Model_Getter_Function::PrintGetterInfo(msg->Out(),25);
+  msg_Out()<<"\n   // interaction model listing\n\n";
+  Interaction_Model_Base::Interaction_Model_Getter_Function::
+    PrintGetterInfo(msg->Out(),25);
+  msg_Out()<<"\n}"<<std::endl;
+}
+
 void Model_Base::InitializeInteractionModel()
 {
   Data_Read read(m_dir+rpa.gen.Variable("ME_DATA_FILE"));
-  string modeltype   = read.GetValue<string>("SIGNAL_MODEL",string("SM"));
-  string cplscheme   = read.GetValue<string>("COUPLING_SCHEME",string("Running"));
-  string massscheme  = read.GetValue<string>("YUKAWA_MASSES",string("Running"));
-  string widthscheme = read.GetValue<string>("WIDTH_SCHEME",string("Fixed"));
+  std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL","SM");
+  std::string cplscheme   = read.GetValue<std::string>("COUPLING_SCHEME","Running");
+  std::string massscheme  = read.GetValue<std::string>("YUKAWA_MASSES","Running");
+  std::string widthscheme = read.GetValue<std::string>("WIDTH_SCHEME","Fixed");
 
-  Interaction_Model_Handler mh(this);
-  p_model = mh.GetModel(modeltype,cplscheme,massscheme);
+  p_model = Interaction_Model_Base::Interaction_Model_Getter_Function::GetObject
+    (modeltype,Interaction_Model_Arguments(this,cplscheme,massscheme));
+  if (p_model==NULL) THROW(not_implemented,"Interaction model not implemented");
 
   p_vertex        = new Vertex(p_model);
   p_vertextable   = new Vertex_Table;

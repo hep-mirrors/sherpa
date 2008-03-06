@@ -1,6 +1,5 @@
 #include "Amegic.H"
 
-#include "Interaction_Model_Handler.H"
 #include "Message.H"
 #include "Topology.H"
 #include "Algebra_Interpreter.H"

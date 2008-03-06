@@ -10,12 +10,27 @@ namespace MODEL {
 
   struct Single_Vertex; 
 
+  struct Interaction_Model_Arguments {
+    Model_Base *p_model;
+    std::string m_cplscheme, m_yukscheme;
+    Interaction_Model_Arguments
+    (Model_Base *const model,const std::string &cpl,const std::string &yuk): 
+      p_model(model), m_cplscheme(cpl), m_yukscheme(yuk) {}
+  };// end of struct Interaction_Model_Arguments
+
   class Interaction_Model_Base {
+  public:
+
+    typedef ATOOLS::Getter_Function
+    <Interaction_Model_Base,Interaction_Model_Arguments> 
+    Interaction_Model_Getter_Function;
+
   protected:  
     MODEL::Model_Base * p_model;
-    std::string         m_cplscheme,m_yukscheme;
+    std::string         m_code, m_cplscheme,m_yukscheme;
   public:
-    Interaction_Model_Base(MODEL::Model_Base *,std::string,std::string);
+    Interaction_Model_Base(const std::string &code,
+			   MODEL::Model_Base *,std::string,std::string);
 
     virtual ~Interaction_Model_Base();
 
@@ -43,6 +58,7 @@ namespace MODEL {
     virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
 
     virtual std::string          Name();
+    inline std::string Code() const { return m_code; }
   };
 }
 
