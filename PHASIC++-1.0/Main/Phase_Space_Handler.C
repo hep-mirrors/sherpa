@@ -261,7 +261,7 @@ void Phase_Space_Handler::CalculateME()
     if (p_isrhandler->On()>0 && 
 	!(m_cmode&psm::no_dice_isr))
       if (!p_isrhandler->CalculateWeight(Q2)) return; 
-    m_result_1=p_active->Differential(p_lab);
+    m_result_1=p_active->Differential(p_cms);
     if (p_isrhandler->On()!=3) {
       m_result_2=0.0;
     }
