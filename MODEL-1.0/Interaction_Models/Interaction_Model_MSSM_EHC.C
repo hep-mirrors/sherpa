@@ -28,6 +28,7 @@ Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _mode
 					       std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("MSSM+EHC",_model,_cplscheme,_yukscheme)
 { 
+  m_loops=true;
   p_moehc     = new Interaction_Model_EHC_S(p_model,_cplscheme,_yukscheme); 
   p_mothdm    = new Interaction_Model_THDM(p_model,_cplscheme,_yukscheme); 
   p_moinos    = new Interaction_Model_Inos(p_model,_cplscheme,_yukscheme); 

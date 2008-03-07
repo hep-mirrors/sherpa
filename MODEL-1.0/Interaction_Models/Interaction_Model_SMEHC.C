@@ -26,6 +26,7 @@ Interaction_Model_SMEHC::Interaction_Model_SMEHC(MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("SM+EHC",_model,_cplscheme,_yukscheme)
 { 
+  m_loops=true;
   p_mosm      = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   p_mohl      = new Interaction_Model_EHC(p_model,_cplscheme,_yukscheme); 
 }

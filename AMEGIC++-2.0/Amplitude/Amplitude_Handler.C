@@ -813,7 +813,7 @@ void Amplitude_Handler::FillAmplitudes(Amplitude_Tensor *atensor,Helicity* hel,d
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  
-  if(rpa.gen.Model()->GetInteractionModel()->Code()!="ADD") return 0;
+  if(!rpa.gen.Model()->GetInteractionModel()->HasTensors()) return 0;
   int cnt=0;
   Pfunc_List* pl = a->GetPlist();
   for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit)

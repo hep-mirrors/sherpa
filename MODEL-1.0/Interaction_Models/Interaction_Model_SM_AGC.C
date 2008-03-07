@@ -28,6 +28,7 @@ Interaction_Model_SM_AGC::Interaction_Model_SM_AGC(MODEL::Model_Base * _model,
 					   std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("SM+AGC",_model,_cplscheme,_yukscheme)
 { 
+  m_agcs=true;
   p_moqcd = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   p_mosmh = new Interaction_Model_Higgs_SM(p_model,_cplscheme,_yukscheme); 
   p_moaew = new Interaction_Model_AEW(p_model,_cplscheme,_yukscheme); 

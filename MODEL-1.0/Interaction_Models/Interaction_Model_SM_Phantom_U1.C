@@ -29,6 +29,7 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
 					   string _cplscheme,string _yukscheme) :
   Interaction_Model_Base("SM+Phantom_U1",_model,_cplscheme,_yukscheme)
 { 
+  m_loops=true;
   p_moew  = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
   p_moqcd = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   double Ecms2  = sqr(rpa.gen.Ecms());

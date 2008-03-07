@@ -52,16 +52,14 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
     zcalc.push_back(new SSSS_Calc(_sgen,_BS));
 
-    if(rpa.gen.Model()->GetInteractionModel()->Code()=="SM+EHC" || 
-       rpa.gen.Model()->GetInteractionModel()->Code()=="MSSM+EHC" ||
-       rpa.gen.Model()->GetInteractionModel()->Code()=="SM+Phantom_U1") {
+    if(rpa.gen.Model()->GetInteractionModel()->HasLoops()) {
       zcalc.push_back(new Triangle_Calc(_sgen,_BS));
       zcalc.push_back(new Box_Calc(_sgen,_BS));
       zcalc.push_back(new Pentagon_Calc(_sgen,_BS));
     }
 
     
-    if(rpa.gen.Model()->GetInteractionModel()->Code()=="ADD"){
+    if(rpa.gen.Model()->GetInteractionModel()->HasTensors()){
       zcalc.push_back(new FFT_Calc(_sgen,_BS));
       zcalc.push_back(new VVT_Calc(_sgen,_BS));
       zcalc.push_back(new SST_Calc(_sgen,_BS));
@@ -73,7 +71,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
       zcalc.push_back(new SSGS_Calc(_sgen,_BS));
       zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
     }
-    if(rpa.gen.Model()->GetInteractionModel()->Code()=="SM+AGC"){
+    if(rpa.gen.Model()->GetInteractionModel()->HasAGCs()){
       zcalc.push_back(new AnomalousV3_Calc(_sgen,_BS));
       zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
     }     

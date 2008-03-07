@@ -28,6 +28,7 @@ namespace MODEL {
   protected:  
     MODEL::Model_Base * p_model;
     std::string         m_code, m_cplscheme,m_yukscheme;
+    bool m_tensors, m_loops, m_agcs;
   public:
     Interaction_Model_Base(const std::string &code,
 			   MODEL::Model_Base *,std::string,std::string);
@@ -59,6 +60,10 @@ namespace MODEL {
 
     virtual std::string          Name();
     inline std::string Code() const { return m_code; }
+
+    inline bool HasLoops() const   { return m_loops;   }
+    inline bool HasTensors() const { return m_tensors; }
+    inline bool HasAGCs() const    { return m_agcs;    }
   };
 }
 

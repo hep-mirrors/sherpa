@@ -11,7 +11,8 @@ using namespace MODEL;
 
 Interaction_Model_Base::Interaction_Model_Base(const std::string &code,MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
-  p_model(_model), m_code(code), m_cplscheme(_cplscheme), m_yukscheme(_yukscheme)  
+  p_model(_model), m_code(code), m_cplscheme(_cplscheme), m_yukscheme(_yukscheme), 
+  m_tensors(false), m_loops(false), m_agcs(false)
 { 
 }
 

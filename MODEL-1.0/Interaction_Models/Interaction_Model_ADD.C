@@ -26,6 +26,7 @@ Interaction_Model_ADD::Interaction_Model_ADD(MODEL::Model_Base * _model,
 					   std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("ADD",_model,_cplscheme,_yukscheme)
 { 
+  m_tensors=true;
   p_moqcd     = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   p_moew      = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
   p_moqcdgrav = new Interaction_Model_QCD_Grav(p_model,_cplscheme,_yukscheme); 
