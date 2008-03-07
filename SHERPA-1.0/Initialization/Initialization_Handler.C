@@ -680,8 +680,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   std::string datpath;
   std::vector<std::string> helpsv(argc-1);
   for (int i(0);i<argc-1;++i) helpsv[i]=argv[i+1];
-  for (size_t i=0;i<helpsv.size();++i) {
-    string par = helpsv[i];
+  for (std::vector<std::string>::iterator oit(helpsv.begin());
+       oit!=helpsv.end();++oit) {
+    string par = *oit;
     string key,value;
     size_t equal=par.find("=");
     if (equal!=std::string::npos) {
@@ -690,40 +691,35 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       if (key=="PATH") {
 	if (value[value.length()-1]=='/') value.erase(value.length()-1,1);
 	m_path=value;
+        oit=helpsv.erase(oit);
       }
       else if (key=="RUNDATA") {
 	m_file=value;
+        oit=helpsv.erase(oit);
       }
       else if (key=="STATUS_PATH") {
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	datpath=value;
+        oit=helpsv.erase(oit);
       }
       else if (key=="SAVE_STATUS") {
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	rpa.gen.SetVariable
 	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
 	m_savestatus=true;
+        oit=helpsv.erase(oit);
       }
       else if (key=="PYTHIA") {
 	m_mode       = 9000;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
+        oit=helpsv.erase(oit);
       }
       else if (key=="EVTDATA") {
 	m_mode       = 9999;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
-      }
-      else {
-        if (key[key.length()-1]==':') {
-          key.erase(key.length()-1,1);
-          Data_Read::SetGlobalTag(key,value);
-          Read_Write_Base::AddGlobalTag(key,value);
-        }
-        else {
-          Data_Read::SetCommandLine(key,value);
-          Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
-        }
+        oit=helpsv.erase(oit);
       }
     }
     else if (par=="--version" || par=="-v"){
@@ -743,19 +739,36 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"  -?,--help      prints this help message"<<endl;
       exit(0);
     }
-    if (int(i)==argc-2) {
-      // Add parameters from Run.dat to command line
-      // (this makes it possible to overwrite particle properties in Run.dat)
-      Data_Reader dr(" ",";","!");
-      dr.AddWordSeparator("\t");
-      dr.AddComment("#");
-      dr.SetInputPath(m_path);
-      dr.SetInputFile(m_file);
-      std::vector<std::vector<std::string> > helpsvv;
-      dr.MatrixFromFile(helpsvv,"");
-      for (size_t i(0);i<helpsvv.size();++i) {
-	helpsv.push_back("");
-	for (size_t j(0);j<helpsvv[i].size();++j) helpsv.back()+=helpsvv[i][j];
+  }
+
+  // Add parameters from Run.dat to command line
+  // (this makes it possible to overwrite particle properties in Run.dat)
+  Data_Reader dr(" ",";","!");
+  dr.AddWordSeparator("\t");
+  dr.AddComment("#");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_file);
+  std::vector<std::vector<std::string> > helpsvv;
+  dr.MatrixFromFile(helpsvv,"");
+  for (size_t i(0);i<helpsvv.size();++i) {
+    helpsv.push_back("");
+    for (size_t j(0);j<helpsvv[i].size();++j) helpsv.back()+=helpsvv[i][j];
+  }
+  for (size_t i=0;i<helpsv.size();++i) {
+    string par = helpsv[i];
+    string key,value;
+    size_t equal=par.find("=");
+    if (equal!=std::string::npos) {
+      value = par.substr(equal+1);
+      key   = par = par.substr(0,equal);
+      if (key[key.length()-1]==':') {
+        key.erase(key.length()-1,1);
+        Data_Read::SetGlobalTag(key,value);
+        Read_Write_Base::AddGlobalTag(key,value);
+      }
+      else {
+        Data_Read::SetCommandLine(key,value);
+        Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
       }
     }
   }
