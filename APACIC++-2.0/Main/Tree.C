@@ -388,10 +388,7 @@ bool Tree::CheckStructure(bool fixit)
 
 bool Tree::CheckMomentumConservation() const 
 {
-  static double accu(sqrt(rpa.gen.Accu()));
-  Vec4D::SetAccu(accu);
   bool success(CheckMomentumConservation(GetInitiator()));
-  Vec4D::ResetAccu();
   return success;
 }
 
@@ -400,11 +397,12 @@ bool Tree::CheckMomentumConservation(Knot *const knot) const
   if (knot==NULL) return true;
   msg_Indent();
   bool success(true);
-  if (knot->left!=NULL && knot->part->Momentum()!=Vec4D()) {
+  static double accu(sqrt(rpa.gen.Accu()));
+  if (knot->left!=NULL && !IsEqual(knot->part->Momentum(),Vec4D(),accu)) {
     msg_Debugging()<<"fmc check "<<knot->kn_no<<"\n"; 
     Vec4D p(knot->part->Momentum());
     Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
-    if (!(p==p1+p2)) {
+    if (!IsEqual(p,p1+p2,accu)) {
       msg_Error()<<METHOD<<"(): Four momentum not conserved in knot "
 		 <<knot->kn_no<<"\n   p      = "<<p
 		 <<"\n   p_miss = "<<(p-p1-p2)

@@ -456,14 +456,11 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D *p)
   for (int i=m_nin;i<m_nin+m_nout;i++) pout += p[i];
   double sin = pin.Abs2(), sout = pout.Abs2();
   static double accu(sqrt(Accu()));
-  Vec4D::SetAccu(accu);
-  if (!(pin==pout) || !ATOOLS::IsEqual(sin,sout,accu)) {
+  if (!IsEqual(pin,pout,accu) || !IsEqual(sin,sout,accu)) {
     msg_Error()<<"Phase_Space_Handler::Check4Momentum(..): "
 		       <<"Difference: "<<pin-pout<<" "<<sin-sout<<std::endl;
-    Vec4D::ResetAccu();
     return false;
   }
-  Vec4D::ResetAccu();
   return true;
 }
 

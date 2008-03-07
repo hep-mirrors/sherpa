@@ -114,7 +114,6 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
-    ATOOLS::Vec4D::ResetAccu();
     Lund_Interface::SaveStatus();
 
     Blob *signal(new Blob());
@@ -132,7 +131,6 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
-    ATOOLS::Vec4D::ResetAccu();
     Lund_Interface::SaveStatus();
   }
 } 
@@ -152,7 +150,6 @@ bool Event_Handler::GenerateEvent(int mode)
   switch (mode) {
   case 0:
     Reset();
-    ATOOLS::Vec4D::ResetAccu();
     ATOOLS::ran.SaveStatus();
     do {
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {

@@ -91,8 +91,6 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
   ++cnt;
   size_t trials(0);
   for (;trials<m_maxtrials;++trials) {
-    static double accu(sqrt(rpa.gen.Accu()));
-    Vec4D::SetAccu(accu);
     if (msg_LevelIsDebugging()) {
       msg_Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
       OutputTrees();
@@ -103,7 +101,6 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
 	if (m_fsron) p_fintree->ClearStore();
 	p_initrees[0]->ClearStore();
 	p_initrees[1]->ClearStore();
-	Vec4D::ResetAccu();
 	return 0;
       }
     }
@@ -114,7 +111,6 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
 	  p_initrees[1]->ClearStore();
 	}
 	p_fintree->ClearStore();
-	Vec4D::ResetAccu();
 	return 0;
       }
       p_finshower->SetAllColours(p_fintree->GetRoot());
@@ -147,7 +143,6 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
     p_initrees[1]->ClearStore();
   }
   if (m_fsron) p_fintree->ClearStore();
-  Vec4D::ResetAccu();
   if (trials==m_maxtrials) {
     ++rej;
     if (rej/cnt>0.1) 
@@ -162,7 +157,6 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
   msg_Debugging()<<"kinematics check passed"<<std::endl;
   int number(0);
   Vec4D sum_fs(p_finshower->GetMomentum(p_fintree->GetRoot(),number));
-  Vec4D::ResetAccu();
   if (number<0) {
     msg_Error()<<METHOD<<"(..): Four Momentum not conserved. Abort."
 	       <<std::endl;

@@ -53,8 +53,6 @@ namespace ATOOLS {
   inline double  sqr(const double &x)   { return x*x; } 
   inline Complex csqr(const Complex &x) { return x*x; } 
 
-  inline int IsZero(const double &a)  { return dabs(a)<Accu()?1:0;     }
-  inline int IsZero(const Complex &a) { return std::abs(a)<Accu()?1:0; }
 
   inline int IsEqual(const double &a,const double &b) 
   {
@@ -84,6 +82,57 @@ namespace ATOOLS {
   double ReIncompleteGamma0(double x,double prec=1.e-6);
 
   double DiLog(double x);
+
+
+
+  template<typename Scalar> inline bool IsNan(const Scalar& x) { abort(); }
+  template<typename Scalar> inline bool IsZero(const Scalar& x) { abort(); }
+  template<typename Scalar> inline double Abs(const Scalar& x) { abort(); }
+
+
+  template<> inline bool IsNan<double>(const double& x) { 
+    return std::isnan(x);
+  }
+  template<> inline bool IsZero<double>(const double& x) {
+    return dabs(x)<Accu()?1:0;
+  }
+  template<> inline double Abs<double>(const double& x) {
+    return x>0.0?x:-x;
+  }
+
+
+  template<> inline bool IsNan<Complex>(const Complex& x) {
+    return (std::isnan(real(x)) || std::isnan(imag(x))); 
+  }
+  template<> inline bool IsZero<Complex>(const Complex& x) {
+    return std::abs(x)<Accu()?1:0;
+  }
+  template<> inline double Abs<Complex>(const Complex& x) {
+    return std::abs(x);
+  }
+
+
+
+  template<class T1, class T2>
+  struct promote_trait {
+  };
+
+#define DECLARE_PROMOTE(A,B,C)           \
+  template<> struct promote_trait<A,B> { \
+    typedef C T_promote;                 \
+  }
+
+  DECLARE_PROMOTE(double,Complex,Complex);
+  DECLARE_PROMOTE(Complex,double,Complex);
+  DECLARE_PROMOTE(int,double,double);
+  DECLARE_PROMOTE(double,int,double);
+  DECLARE_PROMOTE(int,Complex,Complex);
+  DECLARE_PROMOTE(Complex,int,Complex);
+  
+  DECLARE_PROMOTE(double,double,double);
+  DECLARE_PROMOTE(Complex,Complex,Complex);
+
+#define PROMOTE(TYPE1,TYPE2) typename promote_trait<TYPE1,TYPE2>::T_promote
 
   /*!
     \file

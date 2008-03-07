@@ -2,6 +2,7 @@
 
 #include "Message.H"
 #include "Blob.H"
+#include "Run_Parameter.H"
 
 using namespace ATOOLS;
 using namespace APACIC;
@@ -150,10 +151,12 @@ bool Knot::CheckMomentumConservation(const bool force) const
 {
   if (left==NULL || (stat==3 && !force)) return true;
   bool success(true);
+  static double accu(sqrt(rpa.gen.Accu()));
   Vec4D p(part->Momentum());
   Vec4D p1(left->part->Momentum()), p2(right->part->Momentum());
-  if (p==Vec4D() || p1==Vec4D() || p2==Vec4D()) return true;
-  if (!(p==p1+p2)) {
+  if (IsEqual(p,Vec4D(),accu) || IsEqual(p1,Vec4D(),accu) || 
+      IsEqual(p2,Vec4D(),accu)) return true;
+  if (!IsEqual(p,p1+p2,accu)) {
     msg_Error()<<METHOD<<"(): Four momentum not conserved in knot "
 	       <<kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
 	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;

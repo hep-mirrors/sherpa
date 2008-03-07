@@ -15,7 +15,6 @@
 
 namespace ATOOLS {
   class Decay_Table;
-  class Vec4D;
   class Particle;
   class Particle_List;
   class Spin_Density_Matrix;

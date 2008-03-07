@@ -8,11 +8,12 @@
 
 #include "Return_Value.H"
 #include "Flavour.H"
+#include "Vector.H"
 
 #ifdef USING__Hadrons
 namespace HADRONS { class Hadrons; }
 #endif
-namespace ATOOLS { class Blob; class Particle; class Vec4D; }
+namespace ATOOLS { class Blob; class Particle; }
 
 namespace SHERPA {
   class Lund_Interface;

@@ -3,10 +3,9 @@
 
 #include <vector>
 #include "Blob.H"
+#include "Vector.H"
 
 namespace ATOOLS {
-
-  class Vec4D;
   
   class Momenta_Stretcher {
   public:

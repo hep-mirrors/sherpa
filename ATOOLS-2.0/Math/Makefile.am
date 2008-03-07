@@ -24,6 +24,8 @@ pkginclude_HEADERS        =	\
 			Random.H \
 			Function_Base.H \
 			Poincare.H \
+			Vec3.H \
+			Vec4.H \
 			Vector.H \
 			MyComplex.H \
 			Matrix.H \

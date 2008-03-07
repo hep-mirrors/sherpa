@@ -2,12 +2,11 @@
 #define Variable_H
 
 #include "Getter_Function.H"
+#include "Vector.H"
 #include <string>
 
 namespace ATOOLS {
 
-  class Vec3D;
-  class Vec4D;
 
   template <class ValueType>
   class Variable_Base {

@@ -201,9 +201,7 @@ bool Blob_List::FourMomentumConservation() const
     return false;
   }
   static double accu(sqrt(rpa.gen.Accu()));
-  Vec4D::SetAccu(accu);
-  bool test=inisum==finsum;
-  Vec4D::ResetAccu();
+  bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
     msg_Error()<<"Blob_List::FourMomentumConservation(): ("
 	       <<this<<") Four Momentum is not conserved.\n"

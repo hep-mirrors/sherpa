@@ -175,7 +175,6 @@ void T2Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * 
   }
   CE.TChannelMomenta(p[0],pr,p[2],p[3],ms[2],ms[3],tmass,
 		     .5,ctmax,-ctmax,1.,0,ran[3*nout-4-2],ran[3*nout-4-1]);
-  Vec4D::SetAccu(1.0e-10);
 }
 
 void T2Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
@@ -262,7 +261,6 @@ void T3Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * 
   CE.TChannelMomenta(pl,p[1],p[nin+nout-2],p[nin+nout-1],
 		     ms[nin+nout-2],ms[nin+nout-1],tmass,
 		     .5,ctmax,-ctmax,1.,0,ran[3*nout-4-2],ran[3*nout-4-1]);
-  Vec4D::SetAccu(1.0e-10);
 }
 
 void T3Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
