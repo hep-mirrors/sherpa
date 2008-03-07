@@ -3,7 +3,6 @@
 #include "CFColor.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-#include "Interaction_Model_Base.H"
 
 #include "IO_Handler.H"
 
@@ -35,12 +34,10 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID,bool force)
     if (!gc) { 
       IO_Handler ioh;
       ioh.SetFileNameRO(name);
-      int model, rmcount;
+      int rmcount;
 
-      model  = ioh.Input<int>("");
       rmcount = ioh.Input<int>("");
       ncount = ioh.Input<int>("");
-
 
       if (mcount==rmcount || (force && rmcount>0)) {
 	mcount = rmcount;
@@ -496,22 +493,6 @@ void CFColor::Output(string & dirname) {
   name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname+".col";
   IO_Handler ioh;
   ioh.SetFileName(name);
-
-  std::string mc(rpa.gen.Model()->GetInteractionModel()->Code());
-  int mid(0);
-  if (mc=="pure_QCD") mid=1;
-  else if (mc=="pure_EW") mid=2;
-  else if (mc=="SM") mid=3;
-  else if (mc=="MSSM") mid=4;
-  else if (mc=="THDM") mid=5;
-  else if (mc=="MSSM+EHC") mid=6;
-  else if (mc=="ADD") mid=7;
-  else if (mc=="SM+EHC") mid=8;
-  else if (mc=="SM+ZPrime") mid=9;
-  else if (mc=="SM+AGC") mid=10;
-  else if (mc=="SM+Phantom_U1") mid=11;
-  else if (mc=="FOURTH_GEN_LEPTONS") mid=12;
-  ioh.Output("",mid);
   ioh.Output("",mcount);          // no of ampls
   ioh.Output("",ncount);          // size of colormatrix
 
