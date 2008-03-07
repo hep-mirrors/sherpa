@@ -63,9 +63,9 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     rpa.Init(m_path,m_file,argc,argv);
     return;
   }  
+  rpa.Init(m_path,m_file,argc,argv);
   LoadLibraries();
   ShowParameterSyntax();
-  rpa.Init(m_path,m_file,argc,argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));

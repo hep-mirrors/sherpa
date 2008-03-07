@@ -8,6 +8,7 @@
 #include "Data_Collector.H"
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
+#include "Library_Loader.H"
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -164,6 +165,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   MakeDir(s_variables["HOME"]+"/.sherpa/",true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
+  s_loader->AddPath(rpa.gen.Variable("SHERPA_RUN_PATH"));
   // read only if defined (no error message if not defined)
 
   Data_Reader dreader(" ",";","!","=");
