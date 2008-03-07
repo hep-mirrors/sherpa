@@ -61,7 +61,7 @@ namespace ATOOLS {
       return *this;
     }
 
-    inline Vec4<Scalar> operator-() {
+    inline Vec4<Scalar> operator-() const {
       return Vec4<Scalar>(-m_x[0],-m_x[1],-m_x[2],-m_x[3]);
     }
 
