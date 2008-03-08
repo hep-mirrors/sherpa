@@ -1,8 +1,41 @@
 #!/bin/bash
 
-SN=`echo $1/Run.*.dat | wc -w`
-RN=`echo $1/r_1/*.xs* | wc -w`
+print_help() 
+{
+  echo "sum_xss version 1.0" && echo && \
+  echo "options: -p <path>      sum cross sections in <path>" && \
+  echo "         -n <name>      sum processes with name <name>" && \
+  echo "         -h             display this help and exit" && \
+  echo
+}
+
+SPATH="."
+SNAME="*"
+while getopts :p:n:h OPT
+do
+  case $OPT in
+  p) SPATH=$OPTARG ;; 
+  n) SNAME=$OPTARG ;; 
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    echo -n "sum_xss: error: unrecognized option "
+    if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+    else echo "'$1'. try '--help'"
+    fi
+    print_help && exit 1
+  esac
+done
+
+SN=`echo $SPATH/Run\.*\.dat | wc -w`
+RN=`echo $SPATH/r_1/$SNAME\.xs* | awk '{ \
+  if (match($1,"*")==0) print $0; }' | wc -w`
 MR=`expr $SN - $RN`
+
+if test $RN -eq 0; then 
+  echo "sum_xss: no results yet"
+  exit 1
+fi
 
 echo "sum_xss: $SN setups`test $MR -eq 0 ||\
   echo \", $MR results missing\"`"
@@ -41,4 +74,4 @@ END{
   print "} -> \033[1msum\033[0m : \033[34m"\
     xs"\033[0m +- ( \033[31m"sqrt(err)" = "\
     sqrt(err)/xs*100" %\033[0m )";
-}' $1/r_1/*.xs*
+}' $SPATH/r_1/$SNAME\.xs*
