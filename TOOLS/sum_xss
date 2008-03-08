@@ -40,7 +40,21 @@ fi
 echo "sum_xss: $SN setups`test $MR -eq 0 ||\
   echo \", $MR results missing\"`"
 
-awk 'BEGIN{ 
+awk '
+function genptp(pn)
+{
+  ng=nq=0; 
+  np=split(pn,spn,"_"); 
+  for (ip=1;ip<=np;++ip) { 
+    if (spn[ip]=="G") ++ng; 
+    else if (spn[ip]=="Q") ++nq; 
+  }
+  ptp="";
+  if (ng>0) ptp=""ng"G"; 
+  if (nq>0) ptp=""ptp""nq"Q"; 
+  return ptp;
+}
+BEGIN{ 
   pb=3.89379656e8;
   xs=0; err=0; ofn=""; nosort=0;
   print "sum_xss: {";
@@ -60,18 +74,19 @@ END{
     for (i=n;i>0;--i) {
       cxs=xss[i];
       crerr=errs[cxs]/cxs*100;
-      print "  proc "n-i+1": "pns[cxs]": "cxs\
-        " +- ( "errs[cxs]" = "crerr" % )";
+      print "  proc "n-i+1" ("genptp(pns[cxs])"): "pns[cxs]\
+        ": "cxs" +- ( "errs[cxs]" = "crerr" % )";
     }
   }
   else {
     for (cpn in pnc) {
       crerr=errc[cpn]/xsc[cpn]*100;
-      print "  read: "cpn": "xsc[cpn]" +- ( "\
-        errc[cpn]" = "crerr" % )";
+      print "  read: "cpn" ("genptp(xsc[cpn])"): "xsc[cpn]\
+        " +- ( "errc[cpn]" = "crerr" % )";
     }
   }
   print "} -> \033[1msum\033[0m : \033[34m"\
     xs"\033[0m +- ( \033[31m"sqrt(err)" = "\
     sqrt(err)/xs*100" %\033[0m )";
-}' $SPATH/r_1/$SNAME\.xs*
+}
+' $SPATH/r_1/$SNAME\.xs*
