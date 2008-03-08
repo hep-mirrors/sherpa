@@ -5,17 +5,20 @@ print_help()
   echo "sum_xss version 1.0" && echo && \
   echo "options: -p <path>      sum cross sections in <path>" && \
   echo "         -n <name>      sum processes with name <name>" && \
+  echo "         -t <type>      sum processes of type <type>" && \
   echo "         -h             display this help and exit" && \
   echo
 }
 
 SPATH="."
 SNAME="*"
-while getopts :p:n:h OPT
+STYPE=".*"
+while getopts :p:n:t:h OPT
 do
   case $OPT in
   p) SPATH=$OPTARG ;; 
   n) SNAME=$OPTARG ;; 
+  t) STYPE=$OPTARG ;; 
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -62,11 +65,13 @@ BEGIN{
 { 
   if (ofn==FILENAME) nextfile;
   ofn=FILENAME;
-  cpn=$1; cxs=$2*pb; cerr=$4*pb;
-  xs+=cxs; err+=cerr*cerr;
-  if (cxs in pns) nosort=1; 
-  pns[cxs]=cpn; xss[cxs]=cxs; errs[cxs]=cerr;
-  pnc[cpn]=cpn; xsc[cpn]=cxs; errc[cpn]=cerr;
+  cpn=$1; cxs=$2*pb; cerr=$4*pb; cpt=genptp(cpn);
+  if (match(cpt,"'$STYPE'")>0) {
+    xs+=cxs; err+=cerr*cerr;
+    if (cxs in pns) nosort=1; 
+    pns[cxs]=cpn; xss[cxs]=cxs; errs[cxs]=cerr; pts[cxs]=cpt;
+    pnc[cpn]=cpn; xsc[cpn]=cxs; errc[cpn]=cerr; ptc[cpn]=cpt;
+  }
 }
 END{
   if (!nosort) {
@@ -74,19 +79,19 @@ END{
     for (i=n;i>0;--i) {
       cxs=xss[i];
       crerr=errs[cxs]/cxs*100;
-      print "  proc "n-i+1" ("genptp(pns[cxs])"): "pns[cxs]\
-        ": "cxs" +- ( "errs[cxs]" = "crerr" % )";
+      print "  proc "n-i+1" ("pts[cxs]"): "pns[cxs]\
+        ": "cxs" pb +- ( "errs[cxs]" pb = "crerr" % )";
     }
   }
   else {
     for (cpn in pnc) {
       crerr=errc[cpn]/xsc[cpn]*100;
-      print "  read: "cpn" ("genptp(xsc[cpn])"): "xsc[cpn]\
-        " +- ( "errc[cpn]" = "crerr" % )";
+      print "  read ("ptc[cpn]"): "cpn" "xsc[cpn]\
+        " pb +- ( "errc[cpn]" pb = "crerr" % )";
     }
   }
   print "} -> \033[1msum\033[0m : \033[34m"\
-    xs"\033[0m +- ( \033[31m"sqrt(err)" = "\
+    xs" pb\033[0m +- ( \033[31m"sqrt(err)" pb = "\
     sqrt(err)/xs*100" %\033[0m )";
 }
 ' $SPATH/r_1/$SNAME\.xs*
