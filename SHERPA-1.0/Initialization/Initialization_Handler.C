@@ -681,7 +681,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   std::vector<std::string> helpsv(argc-1);
   for (int i(0);i<argc-1;++i) helpsv[i]=argv[i+1];
   for (std::vector<std::string>::iterator oit(helpsv.begin());
-       oit!=helpsv.end();++oit) {
+       oit!=helpsv.end();) {
     string par = *oit;
     string key,value;
     size_t equal=par.find("=");
@@ -721,6 +721,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
         oit=helpsv.erase(oit);
       }
+      else {
+	++oit;
+      }
     }
     else if (par=="--version" || par=="-v"){
       msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
@@ -750,12 +753,13 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   dr.SetInputFile(m_file);
   std::vector<std::vector<std::string> > helpsvv;
   dr.MatrixFromFile(helpsvv,"");
+  std::vector<std::string> helpsv2(helpsvv.size());
   for (size_t i(0);i<helpsvv.size();++i) {
-    helpsv.push_back("");
-    for (size_t j(0);j<helpsvv[i].size();++j) helpsv.back()+=helpsvv[i][j];
+    for (size_t j(0);j<helpsvv[i].size();++j) helpsv2[i]+=helpsvv[i][j];
   }
-  for (size_t i=0;i<helpsv.size();++i) {
-    string par = helpsv[i];
+  helpsv2.insert(helpsv2.end(),helpsv.begin(),helpsv.end());
+  for (size_t i(0);i<helpsv2.size();++i) {
+    string par = helpsv2[i];
     string key,value;
     size_t equal=par.find("=");
     if (equal!=std::string::npos) {
