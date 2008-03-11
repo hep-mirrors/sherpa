@@ -182,16 +182,16 @@ Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & 
   Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Angles",_lname) 
 { 
   (*MYROOT::myroot)(new TH2D(ATOOLS::ToString(this).c_str(),
-			     (m_flav1.Name()+std::string("_")+m_flav2.Name()+
-			      std::string("_Angles")).c_str(),
+			     (m_flav1.IDName()+std::string("_")+m_flav2.IDName()
+                              +std::string("_Angles")).c_str(),
 			     64,0.,M_PI,64,0.,M_PI),
-		    m_flav1.Name()+std::string("_")+m_flav2.Name()+
+		    m_flav1.IDName()+std::string("_")+m_flav2.IDName()+
 		    std::string("_Angles"));
 }
 
 void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
 {
-  ((TH2D*)(*MYROOT::myroot)[m_flav1.Name()+std::string("_")+m_flav2.Name()+
+  ((TH2D*)(*MYROOT::myroot)[m_flav1.IDName()+std::string("_")+m_flav2.IDName()+
 			    std::string("_Angles")])->Fill(mom1.Theta(),mom2.Theta(),weight);
 } 
 
