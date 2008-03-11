@@ -264,7 +264,7 @@ namespace ATOOLS {
       kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode());
       if (kf1>kf2) return true;
       if (kf1<kf2) return false;
-      return fl1.IsAnti()&&!fl2.IsAnti();
+      return !(fl1.IsAnti()&&!fl2.IsAnti());
     }
   };// end of class Flavour_Sorting_Criterion
 
