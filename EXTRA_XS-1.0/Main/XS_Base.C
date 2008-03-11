@@ -161,13 +161,12 @@ std::string XS_Base::GenerateName(const size_t nin,const size_t nout,
 {
   std::string name(ATOOLS::ToString(nin)+"_"+ATOOLS::ToString(nout));
   for (size_t i(0);i<nin;++i) {
-    name+="_"+std::string(flavours[i].IDName());
+    name+="__"+std::string(flavours[i].IDName());
     if (flavours[i].Kfcode()==kf_quark && flavours[i].IsAnti())
       name+="b";
   }
-  name+="__";
   for (size_t i(nin);i<nin+nout;++i) {
-    name+="_"+std::string(flavours[i].IDName());
+    name+="__"+std::string(flavours[i].IDName());
     if (flavours[i].Kfcode()==kf_quark && flavours[i].IsAnti())
       name+="b";
   }
