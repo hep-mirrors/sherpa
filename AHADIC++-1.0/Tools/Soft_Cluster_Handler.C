@@ -29,7 +29,11 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
 
   m_ctit=m_ctrans.begin();
+  PRINT_VAR(clin->size());
+  PRINT_VAR(*(m_ctit->first));
   if (clin->size()==1) {
+    PRINT_VAR(m_ctit->second.size());
+    PRINT_VAR(*(m_ctit->first));
     switch (m_ctit->second.size()) {
     case 1:
       msg_Error()<<"Potential problem in "<<METHOD<<endl;
@@ -43,6 +47,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
       return true;
     }
   }
+  PRINT_VAR(*(m_ctit->first));
 
   ShiftMomenta(clin->size());
 
@@ -102,14 +107,23 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 {
   vector<Flavour> flist;
+  if(m_ctrans.begin()!=m_ctrans.end()) PRINT_VAR(*m_ctrans.begin()->first);
+  PRINT_VAR(*cluster);
   m_ctrans[cluster] = flist;
   Flavour had1,had2,hadron;
 
   double decayweight(0.), transformweight(0.);
-  if (p_singletransitions->MustDesintegrate(cluster,had1,had2)) decayweight=1.;
+  PRINT_VAR(*m_ctrans.begin()->first);
+  PRINT_VAR((m_ctrans.begin()->first==cluster));
+  if (p_singletransitions->MustDesintegrate(cluster,had1,had2)) {
+    decayweight=1.;
+    PRINT_VAR(*m_ctrans.begin()->first);
+  }
   else {
     decayweight     = DecayWeight(cluster,had1,had2);
+    PRINT_VAR(*m_ctrans.begin()->first);
     transformweight = TransformWeight(cluster,hadron); 
+    PRINT_VAR(*m_ctrans.begin()->first);
   }
   if (decayweight<=0. && transformweight<=0.) {
     return;
@@ -131,6 +145,7 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
       else {
 	// selected hadron for transformation is heavier, select a new one
 	transformweight = TransformWeight(cluster,hadron,true); 
+        PRINT_VAR(*m_ctrans.begin()->first);
 	if (decayweight/(decayweight+transformweight)>ran.Get()) {
 	  // but now decay is favoured -> no problem
 	  m_ctrans[cluster].push_back(had1);
@@ -151,12 +166,15 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
     m_ctrans[cluster].push_back(had2);
   }
   else m_ctrans[cluster].push_back(hadron);
+  PRINT_VAR(*m_ctrans.begin()->first);
 
   return;
 }
  
 double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
+  PRINT_VAR(*m_ctrans.begin()->first);
+  PRINT_VAR(*cluster);
   had1 = had2 = Flavour(kf_none);
   Flavour_Pair flpair;
   flpair.first  = cluster->GetTrip()->m_flav;
@@ -173,6 +191,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
   double wt,m1,m2;
   bool   forceit(false);
+  PRINT_VAR(*m_ctrans.begin()->first);
 
   double altweight(0.);
   if (flpair.first.Mass()+flpair.second.Mass()+
@@ -194,6 +213,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       if  (m1+m2<MC+int(forceit)*m_offset2) totweight += wt;
     }
   }
+  PRINT_VAR(*m_ctrans.begin()->first);
   if (totweight==0. && altweight==0.) return 0.;
 
   had1 = had2 = Flavour(kf_none); 
@@ -213,6 +233,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       }
     }
   }
+  PRINT_VAR(*m_ctrans.begin()->first);
 
   Flavour alt1 = Flavour(kf_none), alt2 = Flavour(kf_none);
   if (altweight!=0) {
@@ -233,6 +254,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       }
     }
   }
+  PRINT_VAR(*m_ctrans.begin()->first);
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
@@ -417,6 +439,7 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
     if (m_ctit->second.size()==1) {
       masses[pos]  = m_ctit->second.begin()->Mass();
       momenta[pos] = m_ctit->first->Momentum();
+      PRINT_VAR(pos<<" "<<momenta[pos]);
 #ifdef AHAmomcheck
       checkbef    += momenta[pos];
 #endif
@@ -428,6 +451,8 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
       if (m_ctit->second.size()!=1) {
 	masses[pos]  = m_ctit->first->Mass();
 	momenta[pos] = m_ctit->first->Momentum();
+        PRINT_VAR(*(m_ctit->first));
+        PRINT_VAR(pos<<" "<<momenta[pos]);
 #ifdef AHAmomcheck
 	checkbef    += momenta[pos];
 #endif 
@@ -436,6 +461,7 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
     }
   }
 
+  PRINT_VAR(pos<<" "<<size<<" "<<momenta.size());
   hadpars.AdjustMomenta(pos,&momenta.front(),&masses.front());
 
   pos = 0;
@@ -455,6 +481,7 @@ void Soft_Cluster_Handler::ShiftMomenta(const int size)
   if (pos<2) {
     for (m_ctit=m_ctrans.begin();m_ctit!=m_ctrans.end();m_ctit++) {
       if (m_ctit->second.size()!=1) {
+        PRINT_VAR(pos<<" "<<momenta.size()<<" "<<momenta[pos]);
 	m_ctit->first->RescaleMomentum(momenta[pos]);
 #ifdef AHAmomcheck
 	checkaft += m_ctit->first->Momentum();

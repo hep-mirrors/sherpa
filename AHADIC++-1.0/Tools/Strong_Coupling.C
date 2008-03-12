@@ -20,7 +20,7 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
   std::ofstream was;
   was.open("as_in_ahadic_test.dat");
   for (double Q(0.01);Q<10.;Q*=1.001) {
-    PRINT_INFO(Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").");
+    //PRINT_INFO(Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").");
     was<<Q<<" "<<(*this)(sqr(Q))<<" : "<<(*this)(m_pt02)<<" ("<<sqrt(m_pt02)<<").\n";
   }
   was.close();

@@ -63,6 +63,7 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL),
   m_number(s_cluster_number++)
 {
+  PRINT_VAR(m_momentum);
   s_cluster_count++;
   if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
@@ -85,6 +86,7 @@ Cluster::~Cluster()
 void Cluster::Update()
 {
   m_momentum = p_trip->m_mom + p_anti->m_mom;
+  PRINT_VAR(m_momentum);
   if (!p_trip && !p_anti) return;
   if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
@@ -127,6 +129,10 @@ Blob * Cluster::ConstructDecayBlob()
 
 void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 {
+  PRINT_VAR(m_momentum);
+  PRINT_VAR(newmom);
+  PRINT_VAR(p_trip->m_mom);
+  PRINT_VAR(p_anti->m_mom);
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
@@ -146,6 +152,10 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
   if (p_right)  p_right->Boost(rest);
   if (p_right)  p_right->BoostBack(back);
   m_momentum = newmom;
+  PRINT_VAR(m_momentum);
+  PRINT_VAR(newmom);
+  PRINT_VAR(p_trip->m_mom);
+  PRINT_VAR(p_anti->m_mom);
 
   Vec4D testmom = m_momentum-p_trip->m_mom-p_anti->m_mom;
   if (dabs(testmom.Abs2())>1.e-6 || testmom[0]>1.e-6) {
@@ -160,6 +170,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
     else msg_Error()<<"No antitriplet: "<<p_anti<<" ";
     msg_Error()<<"   diff: "<<testmom;
     rest.Boost(m_momentum); back.BoostBack(m_momentum);
+    PRINT_VAR(m_momentum);
     msg_Error()<<" from "<<newmom<<" = "<<m_momentum<<"."<<std::endl;
   }
   if (p_left!=NULL) {
@@ -169,18 +180,22 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 }
 
 void Cluster::BoostInCMSAndRotateOnZ() {
+  PRINT_INFO(*this);
   if (!p_trip) return;
   BoostInCMS();
+  PRINT_INFO(*this);
 
   m_rotate = ATOOLS::Poincare(p_trip->m_mom,ATOOLS::Vec4D(1.,ATOOLS::Vec3D::ZVEC));
   ATOOLS::Vec4D copy0(p_trip->m_mom), copy1(p_anti->m_mom);
   m_rotate.Rotate(copy0);
   m_rotate.Rotate(copy1);
+  PRINT_INFO(*this);
   if (copy0[3]<copy1[3]) {
     m_rotate = ATOOLS::Poincare(p_trip->m_mom,ATOOLS::Vec4D(1.,(-1.)*ATOOLS::Vec3D::ZVEC));
   }
   m_hasrotate = true;
   Rotate(m_rotate);
+  PRINT_INFO(*this);
 }
 
 void Cluster::RotateAndBoostBack() {
@@ -194,14 +209,17 @@ void Cluster::RotateAndBoostBack() {
 
 void Cluster::BoostInCMS() {
   if (m_hasboost || m_hasrotate) return;
+  PRINT_INFO(this<<" "<<m_momentum);
   m_boost = ATOOLS::Poincare(m_momentum);
   m_boost.Boost(m_momentum);
+  PRINT_INFO(this<<" "<<m_momentum);
   if (p_trip) m_boost.Boost(p_trip->m_mom);
   if (p_anti) m_boost.Boost(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Boost(m_boost);
   if (p_right!=NULL) p_right->Boost(m_boost);
 
   if (p_self) p_self->SetMomentum(m_momentum);
+  PRINT_INFO(this<<" "<<m_momentum);
   m_hasboost = true;
 }
 

@@ -222,5 +222,30 @@ namespace ATOOLS {
            <<":("<<ATOOLS::om::green<<"\""<<INFO<<"\"" \
            <<ATOOLS::om::reset<<")"<<std::endl
 
+#define VAR(ARG) #ARG<<"="<<ARG
+
+#define PRINT_VAR(VAR) \
+  msg_Out()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__<<" "   \
+  <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
+  <<VAR<<ATOOLS::om::reset<<std::endl
+
+#define PRINT_FUNC(a1) \
+  msg_Out()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
+  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl
+
+#define DEBUG_INFO(INFO) \
+  msg_Debugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__      \
+  <<"("<<ATOOLS::om::green<<"\""<<INFO<<"\""                    \
+  <<ATOOLS::om::reset<<")"<<std::endl
+
+#define DEBUG_VAR(VAR) \
+  msg_Debugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__<<" " \
+  <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
+  <<VAR<<ATOOLS::om::reset<<std::endl
+
+#define DEBUG_FUNC(a1) \
+  msg_Debugging()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
+  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl; msg_Indent()
+
 #endif
 

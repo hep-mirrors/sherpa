@@ -299,24 +299,31 @@ bool Dipole_Splitter::FixKinematics(bool glusplit) {
   Vec4D checkbef(q);
 #endif
 
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
+
   Poincare boostk(k);
   boostk.Boost(m_mom1);
   boostk.Boost(m_mom2);
   boostk.Boost(m_mom3);
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   
   Poincare boost(q);
   boost.Boost(q1);
   boost.Boost(q2);
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   Poincare rotate(q1,Vec4D(1.,Vec3D::ZVEC));
   rotate.Rotate(q1);
   rotate.Rotate(q2);
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
 
   rotate.RotateBack(m_mom1);
   rotate.RotateBack(m_mom2);
   rotate.RotateBack(m_mom3);
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   boost.BoostBack(m_mom1);
   boost.BoostBack(m_mom2);
   boost.BoostBack(m_mom3);
+  PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
 
 #ifdef AHAmomcheck
   Vec4D checkaft = m_mom1+m_mom2+m_mom3;
