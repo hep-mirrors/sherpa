@@ -4,6 +4,7 @@ print_help()
 {
   echo "sum_xss version 1.0" && echo && \
   echo "options: -p <path>      sum cross sections in <path>" && \
+  echo "         -r <path>      sum results in subdir <path>" && \
   echo "         -n <name>      sum processes with name <name>" && \
   echo "         -t <type>      sum processes of type <type>" && \
   echo "         -h             display this help and exit" && \
@@ -11,12 +12,14 @@ print_help()
 }
 
 SPATH="."
+RPATH="r_1"
 SNAME="*"
 STYPE=".*"
-while getopts :p:n:t:h OPT
+while getopts :p:r:n:t:h OPT
 do
   case $OPT in
   p) SPATH=$OPTARG ;; 
+  r) RPATH=$OPTARG ;; 
   n) SNAME=$OPTARG ;; 
   t) STYPE=$OPTARG ;; 
   h) print_help && exit 0 ;;
@@ -31,7 +34,7 @@ do
 done
 
 SN=`echo $SPATH/Run\.*\.dat | wc -w`
-RN=`echo $SPATH/r_1/$SNAME\.xs* | awk '{ \
+RN=`echo $SPATH/$RPATH/$SNAME\.xs* | awk '{ \
   if (match($1,"*")==0) print $0; }' | wc -w`
 MR=`expr $SN - $RN`
 
@@ -94,4 +97,4 @@ END{
     xs" pb\033[0m +- ( \033[31m"sqrt(err)" pb = "\
     sqrt(err)/xs*100" %\033[0m )";
 }
-' $SPATH/r_1/$SNAME\.xs*
+' $SPATH/$RPATH/$SNAME\.xs*
