@@ -34,16 +34,15 @@ namespace AHADIC {
     
     double               m_offset1,m_offset2,m_alpha,m_eta,m_photonenergy;
     
-    std::map<Cluster *,std::vector<ATOOLS::Flavour> >           m_ctrans;
-    std::map<Cluster *,std::vector<ATOOLS::Flavour> >::iterator m_ctit;
+    Cluster_List *       m_clin;
 
-    void   CheckCluster(Cluster *,bool);
+    int    CheckCluster(Cluster *,bool);
     double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     double TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false);
-    void   FixHHDecay(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    void   FixHHDecay(Cluster *);
 
 
-    void   ShiftMomenta(const int);
+    void   ShiftMomenta(Cluster_List *,int);
     double SimpleMassCriterion(Single_Transition_List *,ATOOLS::Flavour &,
 			       const double,bool=false);
     double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,

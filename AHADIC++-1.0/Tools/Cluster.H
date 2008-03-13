@@ -45,7 +45,6 @@ namespace AHADIC {
   class Cluster {
   private:
     Proto_Particle    * p_trip, * p_anti;
-
     ATOOLS::Vec4D       m_momentum;
 
     ATOOLS::Poincare    m_boost,m_rotate;
@@ -53,9 +52,11 @@ namespace AHADIC {
 
     Cluster           * p_left, * p_right, * p_prev;
     ATOOLS::Particle  * p_self;
+    int                 m_number;
+
+    std::vector<ATOOLS::Flavour> m_decayproducts;
 
     static long int     s_cluster_count, s_cluster_number;
-    int                 m_number;
   public:
     Cluster();
     Cluster(Proto_Particle *,Proto_Particle *);
@@ -97,6 +98,12 @@ namespace AHADIC {
     double             Mass2() const;
     double             Mass() const;
 
+    void               push_back(ATOOLS::Flavour);
+    void               clear();
+    const size_t       size() const;
+    ATOOLS::Flavour    operator[](size_t pos);
+
+
     friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
     inline int         Number()             { return m_number; }
@@ -125,6 +132,10 @@ namespace AHADIC {
   inline void               Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
   inline double             Cluster::Mass2() const             { return m_momentum.Abs2(); }
   inline double             Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
+  inline void               Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
+  inline void               Cluster::clear()                         { m_decayproducts.clear(); }
+  inline const size_t       Cluster::size() const                    { return m_decayproducts.size(); }
+  inline ATOOLS::Flavour    Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
 
 
 
