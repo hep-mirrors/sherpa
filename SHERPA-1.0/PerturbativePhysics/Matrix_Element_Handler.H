@@ -47,7 +47,7 @@ namespace SHERPA {
     PDF::ISR_Handler   * p_isr;
     MODEL::Model_Base  * p_model;
     int                  m_mode;
-    double               m_weight, m_procweight, m_xsecweight;
+    double               m_weight, m_procweight, m_xsecweight, m_xf1, m_xf2;
     unsigned long          m_ntrial, m_xsecntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
@@ -153,6 +153,9 @@ namespace SHERPA {
     inline int  EventGenerationMode() const { return m_eventmode; }
     inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
     inline void ResetNumberOfTrials() { m_sntrial=0; }
+
+    inline double XF1() const { return m_xf1; }
+    inline double XF2() const { return m_xf2; }
 
     void SetModel(MODEL::Model_Base *model) { p_model=model; }
 

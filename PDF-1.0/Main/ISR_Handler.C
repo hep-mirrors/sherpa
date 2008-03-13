@@ -319,18 +319,22 @@ bool ISR_Handler::CalculateWeight2(const double scale)
 double ISR_Handler::Weight(const Flavour *const flin)
 {
   if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_x[0],0,false) &&
-		    CheckRemnantKinematics(flin[1],m_x[1],1,false)))
-    return p_isrbase[0]->Weight(flin[0])*p_isrbase[1]->Weight(flin[1])
-      /m_weight;
+		    CheckRemnantKinematics(flin[1],m_x[1],1,false))) {
+    m_xf1[0]=p_isrbase[0]->Weight(flin[0]);
+    m_xf2[0]=p_isrbase[1]->Weight(flin[1]);
+    return m_xf1[0]*m_xf2[0]/m_weight;
+  }
   return 0.;
 }
 
 double ISR_Handler::Weight2(const Flavour *const flin)
 {
   if (CheckRemnantKinematics(flin[0],m_x[0],1,true) &&
-      CheckRemnantKinematics(flin[1],m_x[1],0,true)) 
-    return p_isrbase[0]->Weight(flin[1])*p_isrbase[1]->Weight(flin[0])
-      /m_weight;
+      CheckRemnantKinematics(flin[1],m_x[1],0,true)) {
+    m_xf1[1]=p_isrbase[0]->Weight(flin[1]);
+    m_xf2[1]=p_isrbase[1]->Weight(flin[0]);
+    return m_xf1[1]*m_xf2[1]/m_weight;
+  }
   return 0.;
 }
 

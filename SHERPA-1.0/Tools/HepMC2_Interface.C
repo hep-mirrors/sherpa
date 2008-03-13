@@ -9,8 +9,10 @@
 #include "HepMC/GenVertex.h"
 #include "HepMC/GenParticle.h"
 #include "HepMC/SimpleVector.h"
+#include "HepMC/PdfInfo.h"
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 HepMC2_Interface::HepMC2_Interface():
   p_event(new HepMC::GenEvent()), m_converted(false)
@@ -47,8 +49,24 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     if (Sherpa2HepMC(*(blit),vertex)) {
       p_event->add_vertex(vertex);
-      if ((*blit)->Type()==ATOOLS::btp::Signal_Process)
+      if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         p_event->set_signal_process_vertex(vertex);
+        if((*blit)->NInP()==2) {
+          kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
+          kf_code fl2=(*blit)->InParticle(1)->Flav().HepEvt();
+          double x1=(*blit)->InParticle(0)->Momentum()[0]/rpa.gen.PBeam(0)[0];
+          double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa.gen.PBeam(1)[0];
+          double q(0.0), p1(0.0), p2(0.0);
+          Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
+          if (facscale) q=sqrt(facscale->Get<double>());
+          Blob_Data_Base *xf1((**blit)["XF1"]);
+          Blob_Data_Base *xf2((**blit)["XF2"]);
+          if (xf1) p1=xf1->Get<double>();
+          if (xf1) p2=xf2->Get<double>();
+          HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
+          p_event->set_pdf_info(pdfinfo);
+        }
+      }
     }
   }
   m_converted=true;

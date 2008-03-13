@@ -548,18 +548,23 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
       else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
 	m_sumtrials += i;m_events ++;
+        double xf1(0.0), xf2(0.0);
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
 	  p_process->Selected()->SetMomenta(p_lab);
 	  p_process->Selected()->SwapInOrder();
 	  rot=true;
+          xf1=p_isrhandler->XF1(1);
+          xf2=p_isrhandler->XF2(1);
 	}
 	else {
 	  p_process->Selected()->SetMomenta(p_lab);
+          xf1=p_isrhandler->XF1(0);
+          xf2=p_isrhandler->XF2(0);
 	}
 	return new Blob_Data<Weight_Info>
 	  (Weight_Info(1.0,p_process->EnhanceFactor(),
-		       p_process->Selected()->TotalXS(),1,1));
+		       p_process->Selected()->TotalXS(),xf1,xf2,1,1));
       }
       else j=1;
     }
@@ -594,14 +599,19 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     if (value > 0.) {
       m_sumtrials+=i;
       ++m_events;
+      double xf1(0.0), xf2(0.0);
       if (p_process->Selected()->Name().find("BFKL")!=0) {
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
 	  selected->SetMomenta(p_lab);
 	  selected->SwapInOrder();
+          xf1=p_isrhandler->XF1(1);
+          xf2=p_isrhandler->XF2(1);
 	}
 	else {
 	  selected->SetMomenta(p_lab);
+          xf1=p_isrhandler->XF1(0);
+          xf2=p_isrhandler->XF2(0);
 	}
       }
       m_weight=value;
@@ -609,7 +619,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       return new Blob_Data<Weight_Info>
 	(Weight_Info(m_weight,p_process->GMin()>=0.0?
 		     selected->ProcWeight()/p_process->Parent()->ProcWeight():1.0,
-		     m_weight,m_trials,m_trials));
+		     m_weight,xf1,xf2,m_trials,m_trials));
     }
     // call from amisic
     if ((psm::code)mode&psm::no_lim_isr ||

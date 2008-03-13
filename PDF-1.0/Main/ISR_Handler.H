@@ -38,6 +38,8 @@ namespace PDF {
     BEAM::Beam_Base *p_beam[2];
     Remnant_Base    *p_remnants[2];
 
+    double m_xf1[2], m_xf2[2];
+
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
@@ -116,6 +118,9 @@ namespace PDF {
 
     inline double X1() const { return m_x[0]; }
     inline double X2() const { return m_x[1]; }
+
+    inline double XF1(int i) const { return m_xf1[i]; }
+    inline double XF2(int i) const { return m_xf2[i]; }
 
     inline double Flux() const { return m_flux; }
 

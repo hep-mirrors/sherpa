@@ -319,6 +319,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     Blob_Data_Base * message = UnweightedEvent();
     if (message) {
       PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+      m_xf1=winfo.xf1;
+      m_xf2=winfo.xf2;
       m_weight =  winfo.weight;
       m_procweight = winfo.procweight;
       m_xsecweight = winfo.xsecweight;
@@ -339,6 +341,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   }
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+    m_xf1=winfo.xf1;
+    m_xf2=winfo.xf2;
     m_weight =  winfo.weight * rpa.Picobarn();
     m_procweight = winfo.procweight;
     m_xsecweight = winfo.xsecweight;
@@ -377,6 +381,8 @@ bool Matrix_Element_Handler::GenerateSameEvent()
     Blob_Data_Base * message = UnweightedSameEvent();
     if (message) {
       PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+      m_xf1=winfo.xf1;
+      m_xf2=winfo.xf2;
       m_weight     =  winfo.weight;
       m_procweight = winfo.procweight;
       m_xsecweight = winfo.xsecweight;
@@ -395,6 +401,8 @@ bool Matrix_Element_Handler::GenerateSameEvent()
   }
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+    m_xf1=winfo.xf1;
+    m_xf2=winfo.xf2;
     m_weight =  winfo.weight * rpa.Picobarn();
     m_ntrial =  winfo.ntrial;
     delete message;
