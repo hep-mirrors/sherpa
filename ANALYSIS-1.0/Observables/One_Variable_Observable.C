@@ -253,13 +253,18 @@ void One_Variable_Observable::Output(const std::string & pname)
   msg_Debugging()<<METHOD<<"(): {\n";
   std::string bname(pname+"/"+m_name);
   ATOOLS::MakeDir(pname); 
+  std::set<std::string> names;
   for (size_t i(0);i<m_dists.size();++i) 
     if (m_dists[i]!=NULL) {
       std::string name(bname+"_"+m_vars[i]->IDName());
       for (size_t j(0);j<m_flavs[i].size();++j) 
 	name+="_"+m_flavs[i][j].IDName()+ToString(m_items[i][j]);
-      msg_Debugging()<<"  write '"<<name<<".dat'\n";
-      m_dists[i]->Output((name+".dat").c_str());
+      int n(0);
+      std::string id;
+      while (names.find(name+id)!=names.end()) id="_"+ToString(++n);
+      msg_Debugging()<<"  write '"<<name<<id<<".dat'\n";
+      m_dists[i]->Output((name+id+".dat").c_str());
+      names.insert(name+id);
     }
   msg_Debugging()<<"}\n";
 }

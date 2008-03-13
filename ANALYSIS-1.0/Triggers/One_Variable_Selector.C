@@ -27,8 +27,9 @@ namespace ANALYSIS {
 
   typedef std::vector<ATOOLS::Histogram*> Histogram_Vector;
 
-  class One_Variable_Selector: public Two_List_Trigger_Base {
+  class One_Variable_Selector: public Trigger_Base {
   private:
+    String_Matrix m_cndlist;
     Flavour_Matrix   m_flavs;
     Int_Matrix       m_items;
     String_Vector    m_vtags;
@@ -39,15 +40,14 @@ namespace ANALYSIS {
     ATOOLS::Histogram *p_flow;
   public:
     One_Variable_Selector
-    (const std::string &inlist,const std::string &reflist,
-     const std::string &outlist,const Flavour_Matrix &flavs,
-     const Int_Matrix &items,const String_Vector &vtags,
-     const Double_Vector &mins,const Double_Vector &maxs,
-     const Double_Matrix &m_histos,Primitive_Analysis *const ana,
-     const std::string &name="");
+    (const std::string &inlist,const std::string &outlist,
+     const String_Matrix &cndlist,
+     const Flavour_Matrix &flavs,const Int_Matrix &items,
+     const String_Vector &vtags,const Double_Vector &mins,
+     const Double_Vector &maxs,const Double_Matrix &m_histos,
+     Primitive_Analysis *const ana,const std::string &name="");
     ~One_Variable_Selector();
     void Evaluate(const ATOOLS::Particle_List &inlist,
-		  const ATOOLS::Particle_List &reflist,
 		  ATOOLS::Particle_List &outlist,
 		  double weight, int ncount);
     int Evaluate(ATOOLS::Particle_List &reflist,
@@ -71,8 +71,8 @@ void One_Variable_Selector_Getter::PrintInfo
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"RefList list\n"
      <<std::setw(width+7)<<" "<<"OutList list\n"
+     <<std::setw(width+7)<<" "<<"CndList inlist outlist\n"
      <<std::setw(width+7)<<" "<<"Tags    flavi1,.. itemi1,.. "
      <<"vari mini maxi [mini maxi binsi typei [itemi]]\n"
      <<std::setw(width+7)<<" "<<"Flavs   flav11,.. .. flavN1,..\n"
@@ -116,7 +116,8 @@ Analysis_Object *
 One_Variable_Selector_Getter::operator()
   (const Argument_Matrix &parameters) const
 {
-  std::string inlist("FinalState"), outlist("Selected"), reflist;
+  std::string inlist("FinalState"), outlist("Selected");
+  String_Matrix cndlist;
   Flavour_Matrix flavs;
   Int_Matrix items;
   String_Vector vtags;
@@ -125,12 +126,14 @@ One_Variable_Selector_Getter::operator()
   Data_Reader reader(",",";","!","=");
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) {
-      inlist=cur[1];
-      if (reflist=="") reflist=inlist;
-    }
-    else if (cur[0]=="RefList" && cur.size()>1) reflist=cur[1];
+    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
+    else if (cur[0]=="RefList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
+    else if (cur[0]=="CndList" && cur.size()>2) {
+      cndlist.push_back(String_Vector(2));
+      cndlist.back().front()=cur[1];
+      cndlist.back().back()=cur[2];
+    }
     else if (cur[0]=="Tags" && cur.size()>5) {
       reader.SetString(cur[1]);
       std::vector<int> cfl;
@@ -264,7 +267,8 @@ One_Variable_Selector_Getter::operator()
   }
   msg_Debugging()<<"}\n";
   return new One_Variable_Selector
-    (inlist,reflist,outlist,flavs,items,vtags,mins,maxs,histos,parameters());
+    (inlist,outlist,cndlist,flavs,items,vtags,
+     mins,maxs,histos,parameters());
 }
 
 #include "Primitive_Analysis.H"
@@ -272,13 +276,13 @@ One_Variable_Selector_Getter::operator()
 using namespace ATOOLS;
 
 One_Variable_Selector::One_Variable_Selector
-(const std::string &inlist,const std::string &reflist,
- const std::string &outlist,const Flavour_Matrix &flavs,
- const Int_Matrix &items,const String_Vector &vtags,
- const Double_Vector &mins,const Double_Vector &maxs,
- const Double_Matrix &histos,Primitive_Analysis *const ana,
- const std::string &name):
-  Two_List_Trigger_Base(inlist,reflist,outlist),
+(const std::string &inlist,const std::string &outlist,
+ const String_Matrix &cndlist,
+ const Flavour_Matrix &flavs,const Int_Matrix &items,
+ const String_Vector &vtags,const Double_Vector &mins,
+ const Double_Vector &maxs,const Double_Matrix &histos,
+ Primitive_Analysis *const ana,const std::string &name):
+  Trigger_Base(inlist,outlist), m_cndlist(cndlist),
   m_flavs(flavs), m_items(items), m_vtags(vtags), 
   m_mins(mins), m_maxs(maxs), m_histos(histos), m_dists(flavs.size(),NULL)
 {
@@ -293,8 +297,8 @@ One_Variable_Selector::One_Variable_Selector
   if (name!="") m_name=name;
   else {
     size_t n(0);
-    while (ana->GetObject(m_reflist+"_"+ToString(n))!=NULL) ++n;
-    m_name=m_reflist+"_"+ToString(n);
+    while (ana->GetObject(m_inlist+"_"+ToString(n))!=NULL) ++n;
+    m_name=m_inlist+"_"+ToString(n);
   }
   p_flow = new ATOOLS::Histogram(1,0.0,(double)m_flavs.size(),m_flavs.size());
   if (ana->Mode()&weighted) return;
@@ -423,13 +427,17 @@ int One_Variable_Selector::Evaluate
 }
 
 void One_Variable_Selector::Evaluate
-(const ATOOLS::Particle_List &inlist,const ATOOLS::Particle_List &reflist,
- ATOOLS::Particle_List &outlist,double weight, int ncount) 
+(const ATOOLS::Particle_List &inlist,ATOOLS::Particle_List &outlist,
+ double weight, int ncount) 
 {
-  msg_Debugging()<<METHOD<<"(): '"<<m_inlist<<"'/'"<<m_reflist
-		 <<"' -> '"<<m_outlist<<"' {\n";
+  msg_Debugging()<<METHOD<<"(): '"<<m_inlist<<"' -> '"<<m_outlist<<"' {\n";
+  std::vector<Particle_List*> cndlist(m_cndlist.size());
+  for (size_t i(0);i<m_cndlist.size();++i) {
+    cndlist[i] = new Particle_List();
+    p_ana->AddParticleList(m_cndlist[i][1],cndlist[i]);
+  }
   p_flow->Insert(0.0,weight,ncount);
-  Particle_List vreflist(reflist);
+  Particle_List vreflist(inlist);
   size_t eval(0);
   for (int oldi(0), i(0);i<(int)m_flavs.size();++i) {
     if (i!=oldi) eval=0;
@@ -478,22 +486,26 @@ void One_Variable_Selector::Evaluate
     p_flow->Insert((double)i+1.5,weight,0);
   }
   msg_Debugging()<<"} passed\n";
-  if (m_reflist==m_inlist) {
-    outlist.resize(vreflist.size());
-    for (size_t i(0);i<vreflist.size();++i) 
-      outlist[i] = new Particle(*vreflist[i]);
-  }
-  else {
-    outlist.resize(inlist.size());
-    for (size_t i(0);i<inlist.size();++i) 
-      outlist[i] = new Particle(*inlist[i]);
+  outlist.resize(vreflist.size());
+  for (size_t i(0);i<vreflist.size();++i) 
+    outlist[i] = new Particle(*vreflist[i]);
+  for (size_t i(0);i<m_cndlist.size();++i) {
+    Particle_List *list(p_ana->GetParticleList(m_cndlist[i][0]));
+    if (list==NULL) {
+      msg_Error()<<METHOD<<"(): List '"<<m_cndlist[i][0]
+		 <<"' not found."<<std::endl;
+      continue;
+    }
+    cndlist[i]->resize(list->size());
+    for (size_t j(0);j<list->size();++j) 
+      (*cndlist[i])[j] = new Particle(*(*list)[j]);
   }
 }
 
 Analysis_Object *One_Variable_Selector::GetCopy() const
 {
   return new One_Variable_Selector
-    (m_inlist,m_reflist,m_outlist,m_flavs,m_items,m_vtags,
+    (m_inlist,m_outlist,m_cndlist,m_flavs,m_items,m_vtags,
      m_mins,m_maxs,m_histos,p_ana,m_name);
 }
 
