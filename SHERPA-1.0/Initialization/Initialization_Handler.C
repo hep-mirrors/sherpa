@@ -318,7 +318,8 @@ bool Initialization_Handler::InitializeTheIO()
   outfiles.push_back(p_dataread->GetValue<string>("HEPEVT_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPMC2_OUTPUT",string("")));
-  std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
+  std::string evtpath = p_dataread->GetValue<string>
+    ("EVT_FILE_PATH",rpa.gen.Variable("PATH_PIECE"));
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
   int precision       = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
