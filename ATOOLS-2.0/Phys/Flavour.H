@@ -54,6 +54,7 @@ namespace ATOOLS {
     bool Includes(const Flavour &fl) const;
     
     void Add(const Flavour &fl);
+    void Clear();
 
     Flavour operator[](const size_t &i) const;
 

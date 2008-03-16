@@ -55,8 +55,14 @@ Particle_Info::Particle_Info
 
 Particle_Info::~Particle_Info()
 { 
+  Clear();
+}
+
+void Particle_Info::Clear()
+{ 
   for (size_t i(0);i<m_content.size();++i) 
     delete m_content[i]; 
+  m_content.clear();
 }
 
 void Particle_Info::Add(const Flavour &fl)
@@ -412,11 +418,11 @@ void ATOOLS::ParticleInit(const std::string &path)
     Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton");
   s_kftable[kf_neutrino] = new
     Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino");
-  s_kftable[kf_fermion]->m_content.clear();
-  s_kftable[kf_jet]->m_content.clear();
-  s_kftable[kf_quark]->m_content.clear();
-  s_kftable[kf_lepton]->m_content.clear();
-  s_kftable[kf_neutrino]->m_content.clear();
+  s_kftable[kf_fermion]->Clear();
+  s_kftable[kf_jet]->Clear();
+  s_kftable[kf_quark]->Clear();
+  s_kftable[kf_lepton]->Clear();
+  s_kftable[kf_neutrino]->Clear();
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0) {
