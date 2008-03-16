@@ -16,56 +16,29 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Data_Reader.H"
-
-#ifdef PROFILE__all
-#define PROFILE__Sherpa
-#endif
-#ifdef PROFILE__Sherpa
-#include "prof.hh"
-#else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
-#endif
+#include "Library_Loader.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-namespace SHERPA {
-  Sherpa generator;
-}
-
-extern "C" {
-  void apainit_() {
-    SHERPA::generator.InitializeTheRun(0,NULL);
-    SHERPA::generator.InitializeTheEventHandler();
-  }
-  void aparun_() {
-    SHERPA::generator.GenerateOneEvent();
-  }
-  void apaend_() {
-    SHERPA::generator.SummarizeRun();
-  }
-}
-
 Sherpa::Sherpa() :
   p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL)
 {
-  PROFILE_HERE;
+  ATOOLS::s_loader = new Library_Loader();
   m_errors = 0;
   m_trials = 100;
 }
 
 Sherpa::~Sherpa() 
 {
-  PROFILE_HERE;
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
+  delete ATOOLS::s_loader;
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
-  PROFILE_HERE;
   m_path = std::string("./");
   int oldc(argc);
   char **oldargs(NULL);
@@ -159,7 +132,6 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent() 
 {
-  PROFILE_HERE;
   ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {

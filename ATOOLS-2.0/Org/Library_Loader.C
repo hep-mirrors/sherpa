@@ -14,7 +14,7 @@
 
 using namespace ATOOLS;
 
-Library_Loader *ATOOLS::s_loader(new Library_Loader());
+Library_Loader *ATOOLS::s_loader(NULL);
 
 Library_Loader::Library_Loader(): m_wait(3600)
 {
