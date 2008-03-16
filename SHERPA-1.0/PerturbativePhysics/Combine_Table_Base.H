@@ -21,7 +21,7 @@ namespace SHERPA {
     long unsigned int m_id;
     double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
     double *p_qmin, m_q2cut[3];
-    MODEL::lf::code m_type;
+    std::string m_type;
     ATOOLS::Flavour m_mapfl;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
@@ -73,7 +73,7 @@ namespace SHERPA {
     inline const int OrderQED() const { return m_nqed; }
     inline const int NQCD() const { return m_pqcd; }
     inline const int NQED() const { return m_pqed; }
-    inline const MODEL::lf::code Type() const { return m_type; }
+    inline const std::string Type() const { return m_type; }
     inline void SetMapFlavour(const ATOOLS::Flavour &fl) { m_mapfl=fl; }
     inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }
   };// end of class Leg

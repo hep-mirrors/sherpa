@@ -510,8 +510,7 @@ void Amplitude_Handler::PreCluster(Single_Amplitude* firstgraph)
 	int n1=0;
 	for(int j=0;j<zh[1]->m_narg;j++)if(zh[1]->p_arguments[j]>99)n1++;
 	if (n0<=1 || n1<=1 || 
-	   ( (zh[0]->m_type==zl::Y || zh[0]->m_type==zl::Z) && 
-	     (zh[0]->m_type==zl::Y || zh[0]->m_type==zl::Z)    ) ) {
+	    (zh[0]->m_type=="Y" || zh[0]->m_type=="Z") ) {
 
 	  Zfunc *zh0,*zh1;
 	  

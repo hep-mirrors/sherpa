@@ -6,6 +6,8 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+DEFINE_ZFTENSORCALC_GETTER(FFT_Calc,FFTCalc_Getter,"FFT","fft calculator")
+
 FFT_Calc::FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
@@ -13,11 +15,13 @@ FFT_Calc::FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Xfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS)
 { 
-  type     = zl::FFT;
+  type="FFT";
   ncoupl=4;narg=4;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::FFT));
-  lorentzlist[0].SetParticleArg(0);
+  lorentzlist.push_back(LF_Getter::GetObject("FFT",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(VVT_Calc,VVTCalc_Getter,"VVT","vvt calculator")
 
 VVT_Calc::VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -26,26 +30,30 @@ VVT_Calc::VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Xfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVT;
+  type="VVT";
   ncoupl=7;narg=6;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::VVT));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(1);
-  lorentzlist[2].SetParticleArg(0,1,2);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVT",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,1,2);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(SST_Calc,SSTCalc_Getter,"SST","sst calculator")
 
 SST_Calc::SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::SST;
+  type="SST";
   ncoupl=7;narg=6;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::SST));
-  lorentzlist[0].SetParticleArg(0,1,2);
+  lorentzlist.push_back(LF_Getter::GetObject("SST",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0,1,2);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(FFVT_Calc,FFVTCalc_Getter,"FFVT","ffvt calculator")
 
 FFVT_Calc::FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -55,13 +63,15 @@ FFVT_Calc::FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS)
 { 
-  type     = zl::FFVT;
+  type="FFVT";
   ncoupl=7;narg=6;pn=2;
-  lorentzlist.push_back(Lorentz_Function(lf::FFVT));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist[0].SetParticleArg(0,1);
-  lorentzlist[1].SetParticleArg(0);
+  lorentzlist.push_back(LF_Getter::GetObject("FFVT",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0,1);
+  lorentzlist[1]->SetParticleArg(0);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(VVVT_Calc,VVVTCalc_Getter,"VVVT","vvvt calculator")
 
 VVVT_Calc::VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -70,29 +80,33 @@ VVVT_Calc::VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Xfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVVT;
+  type="VVVT";
   ncoupl=9;narg=8;pn=4;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::VVVT));
-  for (short int i=0;i<3;i++) lorentzlist[i].SetParticleArg(i);
-  lorentzlist[3].SetParticleArg(0,1,2,3);     
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVVT",LF_Key()));
+  for (short int i=0;i<3;i++) lorentzlist[i]->SetParticleArg(i);
+  lorentzlist[3]->SetParticleArg(0,1,2,3);     
 }
+
+DEFINE_ZFTENSORCALC_GETTER(SSST_Calc,SSSTCalc_Getter,"SSST","ssst calculator")
 
 SSST_Calc::SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::SSST;
+  type="SSST";
   ncoupl=2;narg=2;pn=1;
 #ifdef Scalar_Args
   narg=5;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::SSST));
-  lorentzlist[0].SetParticleArg(0);     
+  lorentzlist.push_back(LF_Getter::GetObject("SSST",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);     
 }
+
+DEFINE_ZFTENSORCALC_GETTER(FFGS_Calc,FFGSCalc_Getter,"FFGS","ffgs calculator")
 
 FFGS_Calc::FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -100,14 +114,15 @@ FFGS_Calc::FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Yfunc(_sgen,_BS), 
   Basic_Xfunc(_sgen,_BS) 
 { 
-  type     = zl::FFGS;
+  type="FFGS";
   ncoupl=3;narg=2;pn=3;
 #ifdef Scalar_Args
   narg=3;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::FFGS));
+  lorentzlist.push_back(LF_Getter::GetObject("FFGS",LF_Key()));
 }
 
+DEFINE_ZFTENSORCALC_GETTER(VVGS_Calc,VVGSCalc_Getter,"VVGS","vvgs calculator")
 
 VVGS_Calc::VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -116,29 +131,33 @@ VVGS_Calc::VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Xfunc(_sgen,_BS),
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVGS;
+  type="VVGS";
   ncoupl=8;narg=6;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::VVGS));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(1);
-  lorentzlist[2].SetParticleArg(0,1,2);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVGS",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,1,2);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(SSGS_Calc,SSGSCalc_Getter,"SSGS","ssgs calculator")
 
 SSGS_Calc::SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::SSGS;
+  type="SSGS";
   ncoupl=6;narg=4;pn=2;
 #ifdef Scalar_Args
   narg=5;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::SSGS));
-  lorentzlist[0].SetParticleArg(0,1);
+  lorentzlist.push_back(LF_Getter::GetObject("SSGS",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0,1);
 }
+
+DEFINE_ZFTENSORCALC_GETTER(FFVGS_Calc,FFVGSCalc_Getter,"FFVGS","ffvgs calculator")
 
 FFVGS_Calc::FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -147,15 +166,15 @@ FFVGS_Calc::FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Xfunc(_sgen,_BS),
   Basic_Mfunc(_sgen,_BS),
   Basic_Vfunc(_sgen,_BS) { 
-  type     = zl::FFVGS;
+  type="FFVGS";
   ncoupl=4;narg=4;pn=1;
 #ifdef Scalar_Args
   narg=5;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::FFVGS));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(0);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFVGS",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(0);
 }
 
 

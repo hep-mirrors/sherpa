@@ -311,17 +311,17 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	if (orig.in[i]==Flavour(kf_A0)) conjugate *= -1;
       }
       
-      if (orig.Lorentz->Type()==lf::SSV ||
-	  orig.Lorentz->Type()==lf::Gauge3 || 
-	  orig.Lorentz->Type()==lf::AGauge3) conjugate *= -1;
+      if (orig.Lorentz.front()->Type()=="SSV" ||
+	  orig.Lorentz.front()->Type()=="Gauge3" || 
+	  orig.Lorentz.front()->Type()=="AGauge3") conjugate *= -1;
       
       if (conjugate==-1) {
 	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
       }
 
-      probe.Color->Conjugate();
+      probe.Color.front().Conjugate();
 
-       if (probe.Lorentz->String()==string("1")) {
+       if (probe.Lorentz.front()->String()=="1") {
 	//exchange left and right
 	Kabbala help = probe.cpl[0];
 	probe.cpl[0] = probe.cpl[1];
@@ -357,11 +357,11 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       }
     }
 
-  for (int i=0;i<probe.ncf;i++) {
+  for (size_t i=0;i<probe.Color.size();i++) {
     ColorExchange(&probe.Color[i],newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
   }
-  for (int i=0;i<probe.nlf;i++)
-  LorentzExchange(&probe.Lorentz[i],newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
+  for (size_t i=0;i<probe.Lorentz.size();i++)
+  LorentzExchange(probe.Lorentz[i],newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
   
   return 1;
 }
@@ -501,23 +501,23 @@ void Vertex::Print()
     if (m_v[i].on) msg_Out()<<"...On  ";
     else  msg_Out()<<"...Off ";
     msg_Out()<<m_v[i].Coupling(0)<<";"<<m_v[i].Coupling(1);
-    msg_Out()<<"; "<<m_v[i].Color->String();
-    msg_Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
+    msg_Out()<<"; "<<m_v[i].Color.front().String();
+    msg_Out()<<"; "<<m_v[i].Lorentz.front()->String()<<endl;
   }
   //4 legs
   for (int i=m_nvertex;i<(m_n4vertex+m_nvertex);i++) {
-    if (m_v4[i-m_nvertex].ncf==1) {
+    if (m_v4[i-m_nvertex].Color.size()==1) {
       msg_Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 	       <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
       if (m_v4[i-m_nvertex].on) msg_Out()<<"...On  ";
       else  
 	msg_Out()<<"...Off ";
       msg_Out()<<m_v4[i-m_nvertex].Coupling(0)<<";"<<m_v4[i-m_nvertex].Coupling(1);
-      msg_Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
-      msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
+      msg_Out()<<"; "<<m_v4[i-m_nvertex].Color.front().String();
+      msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz.front()->String()<<endl;
     }
     else {
-      for (short int k=0;k<m_v4[i-m_nvertex].ncf;k++) {
+      for (size_t k=0;k<m_v4[i-m_nvertex].Color.size();k++) {
 	msg_Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 		 <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
 	if (m_v4[i-m_nvertex].on) 
@@ -528,7 +528,7 @@ void Vertex::Print()
 	msg_Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
 	if (m_v4[i-m_nvertex].Color[k].Next()!=0) 
 	  msg_Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next()->String();
-	msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
+	msg_Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k]->String()<<endl;
       }
     }
   }

@@ -76,8 +76,8 @@ double Width_Calculator::Lambda2(const double M,const double m1,const double m2)
 double Width_Calculator::ColorFactor(Single_Vertex * vertex) 
 {
   double colfac(1.);
-  if (vertex->ncf==1) {
-    switch (int(vertex->Color->m_type)) {
+  if (vertex->Color.size()==1) {
+    switch (int(vertex->Color.back().m_type)) {
     case (int(cf::D)) : colfac *= 3.; break;
     case (int(cf::T)) : colfac *= 4.; break;
     case (int(cf::F)) : colfac *=24.; break;

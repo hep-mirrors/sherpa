@@ -5,15 +5,19 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+DEFINE_ZFCALC_GETTER(Y_Calc,YCalc_Getter,"Y","y calculator")
+
 Y_Calc::Y_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) 
   : Basic_Func(_sgen,_BS), Zfunc_Calc(_sgen,_BS), Basic_Yfunc(_sgen,_BS) { 
-  type     = zl::Y;
+  type="Y";
   ncoupl=2;narg=2;pn=1;
 #ifdef Scalar_Args
   narg=3;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::FFS));
+  lorentzlist.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 }
+
+DEFINE_ZFCALC_GETTER(Z_Calc,ZCalc_Getter,"Z","z calculator")
 
 Z_Calc::Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -23,13 +27,15 @@ Z_Calc::Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS)
 { 
-  type     = zl::Z;
+  type="Z";
   ncoupl=4;narg=4;pn=1;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(0);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(0);
 }
+
+DEFINE_ZFCALC_GETTER(VVS_Calc,VVSCalc_Getter,"VVS","vvs calculator")
 
 VVS_Calc::VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -39,18 +45,20 @@ VVS_Calc::VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVS;
+  type="VVS";
   ncoupl=5;narg=4;pn=2;
 #ifdef Scalar_Args
   narg=5;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gab));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(1);
-  lorentzlist[2].SetParticleArg(0,1);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gab",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,1);
 }
+
+DEFINE_ZFCALC_GETTER(VVSS4_Calc,VVSS4Calc_Getter,"VVSS4","vvss4 calculator")
 
 VVSS4_Calc::VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -60,18 +68,20 @@ VVSS4_Calc::VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVSS4;
+  type="VVSS4";
   ncoupl=5;narg=4;pn=2;
 #ifdef Scalar_Args
   narg=6;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::VVSS));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(1);
-  lorentzlist[2].SetParticleArg(0,1);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,1);
 }
+
+DEFINE_ZFCALC_GETTER(SSV_Calc,SSVCalc_Getter,"SSV","ssv calculator")
 
 SSV_Calc::SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -80,37 +90,43 @@ SSV_Calc::SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::SSV;
+  type="SSV";
   ncoupl=7;narg=6;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::SSV));
-  lorentzlist[0].SetParticleArg(2);
-  lorentzlist[1].SetParticleArg(0,1,2);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("SSV",LF_Key()));
+  lorentzlist[0]->SetParticleArg(2);
+  lorentzlist[1]->SetParticleArg(0,1,2);
 }
+
+DEFINE_ZFCALC_GETTER(SSS_Calc,SSSCalc_Getter,"SSS","sss calculator")
 
 SSS_Calc::SSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS),
   Zfunc_Calc(_sgen,_BS)
 { 
-  type     = zl::SSS;
+  type="SSS";
   ncoupl=1;narg=0;pn=0;
 #ifdef Scalar_Args
   narg=3;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::SSS));
+  lorentzlist.push_back(LF_Getter::GetObject("SSS",LF_Key()));
 }
+
+DEFINE_ZFCALC_GETTER(SSSS_Calc,SSSSCalc_Getter,"SSSS","ssss calculator")
 
 SSSS_Calc::SSSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS),
   Zfunc_Calc(_sgen,_BS)
 { 
-  type     = zl::SSSS;
+  type="SSSS";
   ncoupl=1;narg=0;pn=0;
 #ifdef Scalar_Args
   narg=4;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::SSSS));
+  lorentzlist.push_back(LF_Getter::GetObject("SSSS",LF_Key()));
 }
+
+DEFINE_ZFCALC_GETTER(VVSS_Calc,VVSSCalc_Getter,"VVSS","vvss calculator")
 
 VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -120,19 +136,19 @@ VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::VVSS;
+  type="VVSS";
   ncoupl=6;narg=4;pn=3;
 #ifdef Scalar_Args
   narg=6;
 #endif
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gab));
-  lorentzlist.push_back(Lorentz_Function(lf::Gab));
-  lorentzlist[0].SetParticleArg(0);
-  lorentzlist[1].SetParticleArg(1);
-  lorentzlist[2].SetParticleArg(0,2);
-  lorentzlist[3].SetParticleArg(2,1);
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gab",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gab",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,2);
+  lorentzlist[3]->SetParticleArg(2,1);
 }
 
 Kabbala Y_Calc::Do() {return Y(0);}

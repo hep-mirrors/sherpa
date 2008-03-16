@@ -33,7 +33,7 @@ public:
   ~Point() {
     if (nextra>0) delete[] extrafl;
     delete Color;
-    delete Lorentz;
+    if (Lorentz) delete Lorentz;
   }
   void Print();
   void ResetExternalNumbers(int);

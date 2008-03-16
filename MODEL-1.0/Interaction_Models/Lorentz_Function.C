@@ -1,9 +1,41 @@
 #include "Lorentz_Function.H"
 #include "Message.H"
 
-using namespace MODEL;
+#define COMPILE__Getter_Function
+#define PARAMETER_TYPE MODEL::LF_Key
+#define OBJECT_TYPE MODEL::Lorentz_Function
+#include "Getter_Function.C"
 
-void Lorentz_Function::AddPermutation(int sign,int a,int b=-1,int c=-1,int d=-1)
+using namespace MODEL;
+#include "Exception.H"
+Lorentz_Function::Lorentz_Function(const std::string &type): 
+  m_type(type), p_next(NULL) 
+{
+  for (short int i=0;i<4;i++) m_partarg[i] = -1;
+}
+
+Lorentz_Function::~Lorentz_Function() 
+{
+  for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
+  if (p_next) delete p_next;
+}
+
+Lorentz_Function *Lorentz_Function::GetCopy() const 
+{
+  Lorentz_Function *copy(LF_Getter::GetObject(m_type,LF_Key()));
+  *copy=*this;
+  return copy;
+}
+
+void Lorentz_Function::SetParticleArg(int a,int b,int c,int d) 
+{
+  m_partarg[0] = a;
+  m_partarg[1] = b;
+  m_partarg[2] = c;
+  m_partarg[3] = d;
+}
+
+void Lorentz_Function::AddPermutation(int sign,int a,int b,int c,int d)
 {
   int* newperm = new int[NofIndex()];
   newperm[0] = m_partarg[a];
@@ -21,92 +53,6 @@ void Lorentz_Function::InitPermutation()
     for (size_t i=0;i<m_permlist.size();i++) delete[] m_permlist[i]; 
     m_permlist.clear();
     m_signlist.clear();
-  }
-
-  switch (m_type) {
-  case lf::Gab   : 
-    AddPermutation(1,0,1);
-    AddPermutation(1,1,0);  
-    break;
-  case lf::VVSS   : 
-    AddPermutation(1,0,1);
-    AddPermutation(1,1,0);  
-    break;
-  case lf::Gauge3:
-  case lf::AGauge3:
-    AddPermutation( 1,0,1,2);
-    AddPermutation(-1,0,2,1);  
-    AddPermutation(-1,1,0,2);
-    AddPermutation(-1,2,1,0);  
-    AddPermutation( 1,1,2,0);
-    AddPermutation( 1,2,0,1);  
-    break;
-  case lf::Gauge4: 
-  case lf::AGauge4: 
-    AddPermutation( 1,0,1,2,3);
-    AddPermutation( 1,1,0,2,3);
-    AddPermutation( 1,0,1,3,2);
-    AddPermutation( 1,1,0,3,2);
-    AddPermutation( 1,2,3,1,0);    
-    AddPermutation( 1,3,2,1,0);
-    AddPermutation( 1,2,3,0,1);
-    AddPermutation( 1,3,2,0,1);
-    break;
-  case lf::Gluon4: 
-    AddPermutation( 1,0,1,2,3);
-    AddPermutation(-1,2,1,0,3);
-    AddPermutation(-1,0,3,2,1);
-    AddPermutation( 1,2,3,0,1);
-    AddPermutation( 1,1,0,3,2);
-    AddPermutation(-1,3,0,1,2);
-    AddPermutation(-1,1,2,3,0);
-    AddPermutation( 1,3,2,1,0);
-    break;
-  case lf::SSV   : 
-    AddPermutation( 1,0,1,2);
-    AddPermutation(-1,1,0,2);
-    break;
-  case lf::VVT:
-    AddPermutation( 1,0,1,2);
-    AddPermutation( 1,1,0,2);
-    break;
-  case lf::SST:
-    AddPermutation( 1,0,1,2);
-    AddPermutation( 1,1,0,2);
-    break;    
-  case lf::VVGS:
-    AddPermutation( 1,0,1,2);
-    AddPermutation( 1,1,0,2);
-    break;
-  case lf::SSGS:
-    AddPermutation( 1,0,1);
-    AddPermutation( 1,1,0);
-    break;
-  case lf::VVVT:
-    AddPermutation( 1,0,1,2,3);
-    AddPermutation(-1,0,2,1,3);  
-    AddPermutation(-1,1,0,2,3);
-    AddPermutation(-1,2,1,0,3);  
-    AddPermutation( 1,1,2,0,3);
-    AddPermutation( 1,2,0,1,3);  
-    break;    
-  case lf::Triangle   : 
-    AddPermutation(1,0,1);
-    AddPermutation(1,1,0);  
-    break;
-  case lf::Box:
-    AddPermutation( 1,0,1,2);
-    AddPermutation(-1,0,2,1);  
-    AddPermutation(-1,1,0,2);
-    AddPermutation(-1,2,1,0);  
-    AddPermutation( 1,1,2,0);
-    AddPermutation( 1,2,0,1);  
-    break;
-  case lf::C4GS   : 
-     AddPermutation(1,0,1);
-     AddPermutation(1,1,0);  
-     break;
-  default : break;
   }
   m_permcount = 0;
 }
@@ -143,110 +89,9 @@ void Lorentz_Function2MPI(const Lorentz_Function * lf , MPI_Lorentz_Function & m
 
 Lorentz_Function * MPI2Lorentz_Function(const MPI_Lorentz_Function & mpi_lf ) 
 {
-  Lorentz_Function * lf = new Lorentz_Function((lf::code)(mpi_lf.m_type));
+  Lorentz_Function * lf = LF_Getter::GetObject(mpi_lf.m_type,LF_Key());
   lf->SetParticleArg(mpi_lf.m_partarg[0],mpi_lf.m_partarg[1],mpi_lf.m_partarg[2],mpi_lf.m_partarg[3]);
   return lf;
-}
-
-std::string Lorentz_Function::String(int shortversion) const 
-{
-  if (m_type==lf::SSS)  return std::string("1");
-  if (m_type==lf::FFS)  return std::string("1");
-  if (m_type==lf::SSSS) return std::string("1");
-  std::string help;
-  switch (m_type) {
-  case lf::Gamma:  
-    // Gam[0]
-    help = std::string("Gam[") + Str(0) + std::string("]");break;
-  case lf::Pol:  
-    // Eps[0]
-    help = std::string("Eps[") + Str(0) + std::string("]");break;
-  case lf::Gab:   
-    // G[0,1]
-    help = std::string("G[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  case lf::VVSS:   
-    // G(2V2S)[0,1]
-    help = std::string("G(2V2S)[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  case lf::Gauge3: 
-    // (P[0,2]-P[1,2])*G(0,1)+(P[1,0]-P[2,0])*G(1,2)+(P[2,1]-P[0,1])*G(2,0)
-    if (shortversion) {
-      help += std::string("V3[") + Str(0) + std::string(",") + 
-	Str(1) + std::string(",") + 
-	Str(2) + std::string("]");
-    }
-    else {
-      help  = std::string("(P[") + Str(0) + std::string(",") + Str(2) + std::string("]-");
-      help += std::string("P[")  + Str(1) + std::string(",") + Str(2) + std::string("])*");
-      help += std::string("G[")  + Str(0) + std::string(",") + Str(1) + std::string("]");
-	  
-      help += std::string("+");
-	  
-      help += std::string("(P[") + Str(1) + std::string(",") + Str(0) + std::string("]-");
-      help += std::string("P[")  + Str(2) + std::string(",") + Str(0) + std::string("])*");
-      help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("]");
-	  
-      help += std::string("+");
-	  
-      help += std::string("(P[") + Str(2) + std::string(",") + Str(1) + std::string("]-");
-      help += std::string("P[")  + Str(0) + std::string(",") + Str(1) + std::string("])*");
-      help += std::string("G[")  + Str(2) + std::string(",") + Str(0) + std::string("]");
-    }
-    break;
-  case lf::SSV:
-    //P[0,2]-P[1,2]
-    help = std::string("P[") + Str(0) + std::string(",") + Str(2) +std::string("]-"); 
-    help += std::string("P[") + Str(1) + std::string(",") + Str(2) +std::string("]");
-    break;
-  case lf::Gauge4: 
-    //(2G(0,1)*G(2,3)-G(0,2)*G(1,3)-G(0,3)*G(1,2))
-    help  = std::string("(2*G[")  + Str(0) + std::string(",") + Str(1) + std::string("]*");
-    help += std::string("G[")  + Str(2) + std::string(",") + Str(3) + std::string("]-");
-    help += std::string("G[")  + Str(0) + std::string(",") + Str(2) + std::string("]*");
-    help += std::string("G[")  + Str(1) + std::string(",") + Str(3) + std::string("]-");
-    help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
-    help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("])");
-    break;
-  case lf::Gluon4:
-    //G(0,1)*G(2,3)-G(0,3)*G(2,1)
-    if (shortversion) {
-      help += std::string("G4[") + Str(0) + std::string(",") + 
-	Str(1) + std::string(",") + 
-	Str(2) + std::string(",") + 
-	Str(3) + std::string("]");
-    }
-    else {
-      help  = std::string("(G[")  + Str(0) + std::string(",") + Str(1) + std::string("]*");
-      help += std::string("G[")  + Str(2) + std::string(",") + Str(3) + std::string("]-");
-      help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
-      help += std::string("G[")  + Str(2) + std::string(",") + Str(1) + std::string("])");
-    }
-    break;
-  case lf::FFT:
-    help = std::string("FFT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  case lf::FFVT:
-    help = std::string("FFVT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  case lf::FFVGS:
-    help = std::string("FFVGS[") + Str(0) + std::string("]");break;
-  case lf::VVT:
-    help = std::string("VVT[") + Str(0) + std::string(",") + Str(1) 
-      + std::string(",") + Str(2) + std::string("]");break;    
-  case lf::VVGS:
-    help = std::string("VVGS[") + Str(0) + std::string(",") + Str(1) 
-      + std::string(",") + Str(2) + std::string("]");break;
-  case lf::Triangle:   
-    // G[0,1]
-    help = std::string("T[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  case lf::Box:   
-    // G[0,1]
-    help = std::string("B[") + Str(0) + std::string(",") + Str(1) + std::string(",") + 
-      Str(2) + std::string("]");break;
-  case lf::C4GS:   
-    // G[0,1]
-    help = std::string("AddOn5Vertex[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-  default :
-    return std::string("1");
-  }     
-  return help;
 }
 
 std::string Lorentz_Function::Str(int a) const
@@ -269,7 +114,7 @@ std::ostream & MODEL::operator<<(std::ostream & s, const MPI_Lorentz_Function & 
 Lorentz_Function & Lorentz_Function::operator=(const Lorentz_Function & l)
 {
   if (this!=&l) {
-    m_type     =l.m_type;
+    if (m_type!=l.m_type) THROW(fatal_error,"Internal error");
     m_permcount=l.m_permcount;
     int noi=l.NofIndex();
 
@@ -287,15 +132,9 @@ Lorentz_Function & Lorentz_Function::operator=(const Lorentz_Function & l)
     }
     for (int i=0; i<4;++i) 
       m_partarg[i]=l.m_partarg[i];
-    if (l.p_next!=0) 
-      p_next = new Lorentz_Function(*(l.p_next));
-    else
-      p_next = 0;
+    if (l.p_next!=0) p_next = l.p_next->GetCopy();
+    else p_next = 0;
   }
   return *this;
 }
 
-Lorentz_Function::~Lorentz_Function() {
-  for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
-  if (p_next) delete p_next;
-}

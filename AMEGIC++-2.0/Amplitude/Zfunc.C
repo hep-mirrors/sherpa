@@ -173,7 +173,7 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
     abort();
   }
 
-  m_type   = zl::Unknown;
+  m_type   = "";
   m_narg   = z1.m_narg   + z2.m_narg - i1 - i2 - n99;
   m_ncoupl = z1.m_ncoupl + z2.m_ncoupl;
   m_nprop  = 0;

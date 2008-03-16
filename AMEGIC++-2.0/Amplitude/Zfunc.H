@@ -36,7 +36,7 @@ namespace AMEGIC {
   class Zfunc {
   public:
 
-    int       m_type; // Number of args, multi gluons etc.
+    std::string m_type;
     int       m_narg,m_ncoupl;
     int*      p_arguments;
     Complex*  p_couplings;

@@ -236,15 +236,9 @@ void Leg::DetermineCouplings(const int type)
   else ++m_pqed;
   if (m_pqcd==3) ++m_nqcd;
   else ++m_nqed;
-  switch (p->Lorentz->Type()) {
-  case lf::Triangle:
-  case lf::Box:
-  case lf::C4GS:
-    m_nqcd+=2;
-    break;
-  default:
-    break;
-  }
+  if (p->Lorentz->Type()=="Triangle" ||
+      p->Lorentz->Type()=="Box" ||
+      p->Lorentz->Type()=="C4GS") m_nqcd+=2;
   m_type=p->Lorentz->Type();
   /*
   msg_Debugging()<<METHOD<<"("<<type<<"): "<<p->fl<<"->"

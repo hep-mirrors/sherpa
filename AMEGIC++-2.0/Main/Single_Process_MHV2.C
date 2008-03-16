@@ -270,7 +270,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
   delete [] plist;
   //////////////////////////////////////////////
 
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
 
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_print_graphs,0);
@@ -378,7 +378,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology * top)
   //////////////////////////////////////////////
 
 
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
 
 //   p_hcres   = new double*[p_hel->MaxHel()];
 //   p_hcalpha = new double*[p_hel->MaxHel()];

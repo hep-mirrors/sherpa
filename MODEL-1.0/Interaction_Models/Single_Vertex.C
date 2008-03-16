@@ -1,32 +1,29 @@
 #include "Single_Vertex.H"
-//#include "Message.H"
+#include "Message.H"
 #include "Vector.H"
 #include "Shell_Tools.H"
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
 
-
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
 // Constructors and Destructors
-Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL) 
-{ ncf = nlf = t = 0; nleg=3; cpl.resize(4);}
+Single_Vertex::Single_Vertex()
+{ t = 0; nleg=3; cpl.resize(4);}
 
 Single_Vertex::Single_Vertex(const Single_Vertex& v): 
-  ncf(0), nlf(0), t(0), Color(NULL), Lorentz(NULL) 
+  t(0)
 { 
   *this=v; 
 }
 
-Single_Vertex::~Single_Vertex(){
-      if (Color)   if (ncf==1) delete Color;
-      else delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-      else delete [] Lorentz;
-    }
+Single_Vertex::~Single_Vertex()
+{
+  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
+}
 
 Complex Single_Vertex::Coupling(size_t i) const
 {
@@ -34,11 +31,10 @@ Complex Single_Vertex::Coupling(size_t i) const
 }
  
 // Operators
-Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
-      if (Color)   if (ncf==1) delete Color;
-                   else        delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-                   else        delete [] Lorentz;
+Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) 
+{
+  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
+  Lorentz=std::vector<Lorentz_Function*>();
     
       if (this!=&v) {
 	for (short int i=0;i<4;i++) in[i]  = v.in[i];
@@ -48,20 +44,13 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
 	nleg = v.nleg;
 	Str  = v.Str;
 	on   = v.on;
-	ncf  = v.ncf;
-	nlf  = v.nlf;
 	t=v.t;
-	if (ncf==1) Color   = new Color_Function(*v.Color);
-	else {
-	  Color = new Color_Function[ncf];
-	  for (int i=0;i<ncf;i++)
-	    Color[i] = v.Color[i];
-	}
-	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
-	else {
-	  Lorentz = new Lorentz_Function[nlf];
-	  for (int i=0;i<nlf;i++) Lorentz[i] = v.Lorentz[i];
-	}
+	Color.resize(v.Color.size());
+	for (size_t i(0);i<Color.size();++i)
+	  Color[i] = v.Color[i];
+	Lorentz.resize(v.Lorentz.size());
+	for (size_t i(0);i<Lorentz.size();++i)
+	  Lorentz[i] = v.Lorentz[i]->GetCopy();
       }
       return *this;
     }

@@ -303,7 +303,7 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
   
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_print_graphs,!directload);
@@ -452,7 +452,7 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology * top)
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetCouplings());
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,!directload);
   if (p_ampl->GetGraphNumber()==0) {

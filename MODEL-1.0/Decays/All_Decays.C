@@ -15,6 +15,11 @@ All_Decays::All_Decays(Model_Base * model) :
   //	   <<" from model "<<model<<std::endl;
 }
 
+All_Decays::~All_Decays()
+{
+  delete p_decays;
+}
+
 bool All_Decays::AddToDecays(const ATOOLS::Flavour & flav) 
 {
   if (CheckInVertex(flav) && p_decays->find(flav)==p_decays->end()) {

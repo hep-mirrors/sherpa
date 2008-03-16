@@ -4,6 +4,8 @@
 #include <vector>
 #include "Basic_Func.H"
 #include "Lorentz_Function.H"
+#include "Getter_Function.H"
+#include "Interaction_Model_Base.H"
 
 #define Scalar_Args
 
@@ -11,54 +13,30 @@ namespace AMEGIC {
 
   class Basic_Sfuncs;
 
-  class zl {
-  public:
-    enum code {Y      = -1, 
-	       Z      = 0, 
-	       VVV    = 1,
-	       VVS    = 2,
-	       SSV    = 3,
-	       SSS    = 4,
-	       VVVV   = 5,
-	       V4     = 6,
-	       G4     = 7,
-	       V5     = 9,
-               V4V3   = 10, 
-               VVSS   = 11,
-	       VVSS4  = 12,//the generic interaction of 2 vectors and 2 scalars
-	       SSSS   = 13,//the generic interaction of 4 scalars
-	       AV4    = 20,//Anomalous gauge coupling
-	       AV3    = 21,//Anomalous gauge coupling
-	       FFT    = 60,
-	       VVT    = 61,
-	       SST    = 62,
-	       FFVT   = 63,
-	       VVVT   = 64,
-	       SSST   = 65,
-	       FFGS   = 70,
-	       VVGS   = 71,
-	       SSGS   = 72,
-	       FFVGS  = 73,
-	       Unknown= 99,
-               Triangle = 101,
-	       Box      = 102,
-	       Pentagon = 103
-    }; 
+  struct ZFCalc_Key {
+    Virtual_String_Generator *p_sgen;
+    Basic_Sfuncs *p_bs;
+    MODEL::Interaction_Model_Base *p_model;
+    ZFCalc_Key(Virtual_String_Generator *const sgen,Basic_Sfuncs *const bs,
+	       MODEL::Interaction_Model_Base *const model):
+      p_sgen(sgen), p_bs(bs), p_model(model) {}
   };
-  
+
   class Zfunc_Calc : public virtual Basic_Func {
   public:
     int                      ncoupl,narg,pn;
-    std::vector<MODEL::Lorentz_Function> lorentzlist;
-    zl::code                 type; 
+    std::vector<MODEL::Lorentz_Function*> lorentzlist;
+    std::string type; 
 
     Zfunc_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
-    virtual ~Zfunc_Calc() {}
+    virtual ~Zfunc_Calc();
     virtual ATOOLS::Kabbala Do(); 
     
     virtual int GetScalarNumb();
   };
   
+  typedef ATOOLS::Getter_Function<Zfunc_Calc,ZFCalc_Key> ZFCalc_Getter;
+
   /*!
     \class zl
     \brief Calculator type codes.
@@ -101,6 +79,35 @@ namespace AMEGIC {
     Unique identifier for the calculator.
   */
 }
+
+#define DEFINE_ZFCALC_GETTER(CLASS,NAME,TAG,INFO)			\
+  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+  { return new CLASS(key.p_sgen,key.p_bs); }				\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<INFO; }
+#define DEFINE_ZFLOOPCALC_GETTER(CLASS,NAME,TAG,INFO)			\
+  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+  { if (!key.p_model->HasLoops()) return NULL;				\
+    return new CLASS(key.p_sgen,key.p_bs); }				\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<INFO; }
+#define DEFINE_ZFTENSORCALC_GETTER(CLASS,NAME,TAG,INFO)			\
+  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+  { if (!key.p_model->HasTensors()) return NULL;			\
+    return new CLASS(key.p_sgen,key.p_bs); }				\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<INFO; }
+#define DEFINE_ZFAGCCALC_GETTER(CLASS,NAME,TAG,INFO)			\
+  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+  { if (!key.p_model->HasAGCs()) return NULL;				\
+    return new CLASS(key.p_sgen,key.p_bs); }				\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<INFO; }
+
 #endif
 
 

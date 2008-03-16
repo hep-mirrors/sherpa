@@ -102,16 +102,16 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].cpl[0]  = kcpl0;
 	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].ncf     = 1;
+	
 	if (flav.Strong()) {
-	  vertex[vanz].Color = new Color_Function(cf::D);     
-	  vertex[vanz].Color->SetParticleArg(0,2);     
-	  vertex[vanz].Color->SetStringArg('0','2');     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.back().SetParticleArg(0,2);     
+	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	}
 	else 
-	  vertex[vanz].Color  = new Color_Function(cf::None);	
-	vertex[vanz].nlf      = 1;
-	vertex[vanz].Lorentz  = new Lorentz_Function(lf::FFS);
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));;	
+	
+	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 	vertex[vanz].on       = 1;
 	vertex.push_back(Single_Vertex());vanz++;
       }
@@ -125,16 +125,16 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].cpl[0]  = kcpl0;
 	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].ncf   = 1;
+	
 	if (flav.Strong()) {
-	  vertex[vanz].Color = new Color_Function(cf::D);     
-	  vertex[vanz].Color->SetParticleArg(0,2);     
-	  vertex[vanz].Color->SetStringArg('0','2');     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.back().SetParticleArg(0,2);     
+	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	}
 	else 
-	  vertex[vanz].Color = new Color_Function(cf::None);
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+	
+	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 	vertex[vanz].on      = 1;
 	vertex.push_back(Single_Vertex());vanz++;
       }
@@ -161,11 +161,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
@@ -178,11 +178,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
   }
@@ -199,11 +199,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);  
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));  
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
@@ -216,11 +216,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);  
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));  
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
   }
@@ -238,11 +238,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());vanz++;
 
@@ -255,11 +255,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());vanz++;
   }
@@ -275,13 +275,13 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());
     vanz++;
@@ -294,13 +294,13 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());
     vanz++;
@@ -318,13 +318,13 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::C4GS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("C4GS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex[vanz].t       = -1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -338,13 +338,13 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::C4GS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("C4GS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     vertex[vanz].on      = ehc;
     vertex[vanz].t       = -1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -377,10 +377,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
@@ -392,10 +392,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
   
@@ -407,10 +407,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
@@ -423,10 +423,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
@@ -439,10 +439,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
@@ -455,10 +455,10 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   vertex[vanz].cpl[0]  = kcpl0;
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].ncf     = 1;
-  vertex[vanz].Color   = new Color_Function(cf::None);     
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
 }
@@ -495,12 +495,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -522,12 +522,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -549,12 +549,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -575,12 +575,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -601,12 +601,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -627,12 +627,12 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -689,11 +689,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -717,11 +717,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -744,11 +744,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -771,11 +771,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -799,11 +799,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -826,11 +826,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -853,11 +853,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -880,11 +880,11 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;

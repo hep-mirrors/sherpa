@@ -10,6 +10,9 @@
 #ifndef EXACTMATCH
 #define EXACTMATCH true
 #endif
+#ifndef SORT_CRITERION
+#define SORT_CRITERION std::less<std::string>
+#endif
 
 #include "Getter_Function.H"
 #include "STL_Tools.H"
@@ -20,15 +23,17 @@
 
 using namespace ATOOLS;
 
-template<class ObjectType,class ParameterType>
-typename Getter_Function<ObjectType,ParameterType>::String_Getter_Map *
-Getter_Function<ObjectType,ParameterType>::s_getters=NULL;
+template<class ObjectType,class ParameterType,class SortCriterion>
+typename Getter_Function<ObjectType,ParameterType,SortCriterion>::
+String_Getter_Map *Getter_Function<ObjectType,ParameterType,SortCriterion>::
+s_getters=NULL;
 
-template<class ObjectType,class ParameterType>
-bool Getter_Function<ObjectType,ParameterType>::s_exactmatch=EXACTMATCH;
+template<class ObjectType,class ParameterType,class SortCriterion>
+bool Getter_Function<ObjectType,ParameterType,SortCriterion>::
+s_exactmatch=EXACTMATCH;
 
-template<class ObjectType,class ParameterType>
-Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class SortCriterion>
+Getter_Function<ObjectType,ParameterType,SortCriterion>::
 Getter_Function(const std::string &name):
   m_display(true)
 {
@@ -54,8 +59,8 @@ Getter_Function(const std::string &name):
   }
 }
 
-template<class ObjectType,class ParameterType>
-Getter_Function<ObjectType,ParameterType>::~Getter_Function()
+template<class ObjectType,class ParameterType,class SortCriterion>
+Getter_Function<ObjectType,ParameterType,SortCriterion>::~Getter_Function()
 {
   for (typename String_Getter_Map::iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
@@ -70,15 +75,15 @@ Getter_Function<ObjectType,ParameterType>::~Getter_Function()
   }
 }
 
-template<class ObjectType,class ParameterType>
-void Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class SortCriterion>
+void Getter_Function<ObjectType,ParameterType,SortCriterion>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"No Information";
 }
 
-template<class ObjectType,class ParameterType>
-ObjectType * Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class SortCriterion>
+ObjectType * Getter_Function<ObjectType,ParameterType,SortCriterion>::
 operator()(const Parameter_Type &parameters) const
 {
   std::cout<<"Getter_Function::operator(): "
@@ -86,8 +91,8 @@ operator()(const Parameter_Type &parameters) const
   return NULL;
 }
 
-template<class ObjectType,class ParameterType>
-void Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class SortCriterion>
+void Getter_Function<ObjectType,ParameterType,SortCriterion>::
 PrintGetterInfo(std::ostream &str,const size_t width)
 {
   const IOS_BASE::fmtflags def=str.flags();
@@ -102,15 +107,22 @@ PrintGetterInfo(std::ostream &str,const size_t width)
   str.setf(def);
 }
 
-template<class ObjectType,class ParameterType>
-ObjectType *Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class SortCriterion>
+ObjectType *Getter_Function<ObjectType,ParameterType,SortCriterion>::
+GetObject(const Parameter_Type &parameters) const
+{
+  return (*this)(parameters);
+}
+
+template<class ObjectType,class ParameterType,class SortCriterion>
+ObjectType *Getter_Function<ObjectType,ParameterType,SortCriterion>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
   if (!s_exactmatch) {
     for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
 	 git!=s_getters->rend();++git) {
       if ((name.length()==0 && git->first.length()==0) ||
-	  (git->first.length()>0 && name.find(git->first)==0))
+	  (git->first.length()>0 && name.find(git->first)!=std::string::npos))
 	return (*git->second)(parameters);
     }
     return NULL;
@@ -120,6 +132,21 @@ GetObject(const std::string &name,const Parameter_Type &parameters)
   return NULL;
 }
 
-template class Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>;
+template<class ObjectType,class ParameterType,class SortCriterion>
+std::vector<const Getter_Function<ObjectType,ParameterType,SortCriterion> *>
+Getter_Function<ObjectType,ParameterType,SortCriterion>::
+GetGetters(const std::string &name)
+{
+  Getter_List list;
+  for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
+       git!=s_getters->rend();++git) {
+    if (name.length()==0 ||
+	(git->first.length()>0 && git->first.find(name)!=std::string::npos))
+    list.push_back(git->second);
+  }
+  return list;
+}
+
+template class Getter_Function<OBJECT_TYPE,PARAMETER_TYPE,SORT_CRITERION>;
 
 #endif

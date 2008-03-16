@@ -59,12 +59,12 @@ void Interaction_Model_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
 
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -84,14 +84,14 @@ void Interaction_Model_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
 
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Triangle",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -110,14 +110,14 @@ void Interaction_Model_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::G);     
-    vertex[vanz].Color->SetParticleArg(0,2);     
-    vertex[vanz].Color->SetStringArg('0','2');     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.back().SetParticleArg(0,2);     
+    vertex[vanz].Color.back().SetStringArg('0','2');     
 
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::C4GS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("C4GS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
     vertex[vanz].t       = -1;
@@ -149,14 +149,14 @@ void Interaction_Model_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].cpl[1]  = kcpl1;
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::F);     
-  vertex[vanz].Color->SetParticleArg(0,2,1);     
-  vertex[vanz].Color->SetStringArg('0','2','1');     
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+  vertex[vanz].Color.back().SetParticleArg(0,2,1);     
+  vertex[vanz].Color.back().SetStringArg('0','2','1');     
 
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Box);     
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
+  
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Box",LF_Key()));     
+  vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
 
   vertex[vanz].on      = 1;
   vertex.push_back(Single_Vertex());vanz++;
@@ -173,26 +173,26 @@ void Interaction_Model_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].cpl[1]          = kcpl1;
   vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
   
-  vertex[vanz].ncf             = 3;
-  vertex[vanz].nlf             = 3;
   
-  vertex[vanz].Color           = new Color_Function[3];
-  vertex[vanz].Lorentz         = new Lorentz_Function[3]; 
+  
+  
+  vertex[vanz].Color.resize(3);
+  vertex[vanz].Lorentz.resize(3); 
 
   vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4',
 				   new Color_Function(cf::F,1,3,4,'1','3','4'));
-  vertex[vanz].Lorentz[0]      = Lorentz_Function(lf::Gluon4);
-  vertex[vanz].Lorentz[0].SetParticleArg(0,1,2,3);     
+  vertex[vanz].Lorentz[0]=LF_Getter::GetObject("Gluon4",LF_Key());
+  vertex[vanz].Lorentz[0]->SetParticleArg(0,1,2,3);     
 
   vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4',
 				   new Color_Function(cf::F,1,2,4,'1','2','4'));
-  vertex[vanz].Lorentz[1]      = Lorentz_Function(lf::Gluon4);
-  vertex[vanz].Lorentz[1].SetParticleArg(0,1,3,2);     
+  vertex[vanz].Lorentz[1]=LF_Getter::GetObject("Gluon4",LF_Key());
+  vertex[vanz].Lorentz[1]->SetParticleArg(0,1,3,2);     
 
   vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4',
 				   new Color_Function(cf::F,3,2,4,'3','2','4')); 
-  vertex[vanz].Lorentz[2]      = Lorentz_Function(lf::Gluon4);     
-  vertex[vanz].Lorentz[2].SetParticleArg(0,3,1,2);     
+  vertex[vanz].Lorentz[2]=LF_Getter::GetObject("Gluon4",LF_Key());     
+  vertex[vanz].Lorentz[2]->SetParticleArg(0,3,1,2);     
   
   vertex[vanz].on              = 1;
   vertex[vanz].t               = 1;

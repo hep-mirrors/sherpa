@@ -1,6 +1,7 @@
 #include "XS_Model_Base.H"
 
 #include "Data_Read.H"
+#include "Message.H"
 
 using namespace ATOOLS;
 using namespace MODEL;

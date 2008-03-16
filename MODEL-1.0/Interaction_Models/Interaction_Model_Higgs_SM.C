@@ -56,17 +56,17 @@ void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& v
 	vertex[vanz].cpl[1]  = kcpl1;
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-	vertex[vanz].ncf   = 1;
+	
 	if (flav.Strong()) {
-	  vertex[vanz].Color = new Color_Function(cf::D);     
-	  vertex[vanz].Color->SetParticleArg(0,2);     
-	  vertex[vanz].Color->SetStringArg('0','2');     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.back().SetParticleArg(0,2);     
+	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	}
 	else 
-	  vertex[vanz].Color = new Color_Function(cf::None);
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));;
 	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	
+	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 
 	vertex[vanz].on      = 1;
 	vertex.push_back(Single_Vertex());vanz++;
@@ -97,12 +97,12 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
 
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);     
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -122,12 +122,12 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
 
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);  
-    vertex[vanz].Lorentz->SetParticleArg(0,2);     
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));  
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -154,11 +154,11 @@ void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -187,11 +187,11 @@ void Interaction_Model_Higgs_SM::c_SSSS(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -223,12 +223,12 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -250,12 +250,12 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function(cf::None);     
     
-    vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
-    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    
+    
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;

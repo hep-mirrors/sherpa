@@ -4,6 +4,7 @@
 #include "Simple_XS.H"
 #include "Random.H"
 #include "Exception.H"
+#include "Decay_Table.H"
 #include <iomanip>
 
 using namespace SHERPA;

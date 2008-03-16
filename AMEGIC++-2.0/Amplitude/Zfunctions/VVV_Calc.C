@@ -5,6 +5,8 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+DEFINE_ZFCALC_GETTER(VVV_Calc,VVVCalc_Getter,"VVV","vvv calculator")
+
 VVV_Calc::VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
@@ -13,14 +15,14 @@ VVV_Calc::VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS)
 { 
-  type     = zl::VVV;
+  type="VVV";
   ncoupl=10;narg=6;pn=3;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gauge3));
-  for (short int i=0;i<3;i++) lorentzlist[i].SetParticleArg(i);
-  lorentzlist[3].SetParticleArg(0,1,2);     
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gauge3",LF_Key()));
+  for (short int i=0;i<3;i++) lorentzlist[i]->SetParticleArg(i);
+  lorentzlist[3]->SetParticleArg(0,1,2);     
 }
 
 Kabbala VVV_Calc::GGG() 

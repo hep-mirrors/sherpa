@@ -5,6 +5,8 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+DEFINE_ZFAGCCALC_GETTER(AnomalousV4_Calc,AnomalousV4Calc_Getter,"AV4","anomalous v4 calculator")
+
 AnomalousV4_Calc::AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
   Zfunc_Calc(_sgen,_BS),
@@ -13,15 +15,15 @@ AnomalousV4_Calc::AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs*
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type     = zl::AV4;
+  type="AV4";
   ncoupl=10;narg=8;pn=4;
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
-  lorentzlist.push_back(Lorentz_Function(lf::AGauge4));
-  for (short int i=0;i<4;i++) lorentzlist[i].SetParticleArg(i);
-  lorentzlist[4].SetParticleArg(0,1,2,3);     
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("AGauge4",LF_Key()));
+  for (short int i=0;i<4;i++) lorentzlist[i]->SetParticleArg(i);
+  lorentzlist[4]->SetParticleArg(0,1,2,3);     
 }
 
 Kabbala AnomalousV4_Calc::Do() 

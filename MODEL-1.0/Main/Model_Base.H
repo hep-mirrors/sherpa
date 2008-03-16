@@ -3,19 +3,28 @@
 
 #include "Data_Read.H"
 #include "Flavour.H"
-#include "All_Decays.H"
-#include "Decay_Table.H"
 #include "Matrix.H"
 #include "Function_Base.H"
 #include "MathTools.H"
 #include "MyComplex.H"
-#include "Vertex.H"
 #include "Getter_Function.H"
 #include <map>
 
-namespace MODEL { class Spectrum_Generator_Base; }
+namespace ATOOLS { class Decay_Table; } 
 
 namespace MODEL {
+
+  class Spectrum_Generator_Base;
+  class All_Decays;
+  class Vertex;
+  class Single_Vertex;
+
+  typedef  std::vector<Single_Vertex *>  Vertex_List;
+  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
+
+  typedef std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *> DecayMap;
+  typedef DecayMap::iterator                              DMIterator;
+  
   typedef std::map<std::string,int>                     ScalarNumbersMap; 
   typedef std::map<std::string,double>                  ScalarConstantsMap; 
   typedef std::map<std::string,ATOOLS::Function_Base *> ScalarFunctionsMap; 
@@ -105,12 +114,10 @@ namespace MODEL {
 
     inline  Vertex       * GetVertex()            { return p_vertex; }
     inline  Vertex_Table * GetVertexTable() const { return p_vertextable; }
-    inline  tscmap       * GetCouplings()         { return p_vertex->GetCouplings(); }
     virtual All_Decays   * GetDecays()            { return p_decays; }    
-    DecayMap * const       GetDecayMap()          { return p_decays->GetDecayMap(); }
-    ATOOLS::Decay_Table  * const  GetDecayTable(const ATOOLS::Flavour & flav) {
-      return p_decays->GetDecayTable(flav);
-    }
+
+    DecayMap             * const  GetDecayMap() const;
+    ATOOLS::Decay_Table  * const  GetDecayTable(const ATOOLS::Flavour & flav) const;
     
   };
 

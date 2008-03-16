@@ -136,12 +136,13 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->number = *perm;
     p->fl = fl[*perm];
     p->b  = b[*perm];
+    if (p->Lorentz) delete p->Lorentz;
     if (p->fl.IsBoson()) {
-      *(p->Lorentz) = Lorentz_Function(lf::Pol);
+      p->Lorentz = LF_Getter::GetObject("Pol",LF_Key());
       p->Lorentz->SetParticleArg(0);
     }
     else {
-      *(p->Lorentz) = Lorentz_Function(lf::None);
+      p->Lorentz = LF_Getter::GetObject("None",LF_Key());
       p->Lorentz->SetParticleArg();
     }
 
@@ -257,8 +258,9 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 	p->cpl.clear();
 	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	p->v = vl[j];
-	*(p->Color)   = *(vl[j]->Color);
-	*(p->Lorentz) = *(vl[j]->Lorentz);
+	*p->Color = vl[j]->Color.back();
+	if (p->Lorentz) delete p->Lorentz;
+	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
 	p->t = vl[j]->t;
 	  
 	return 1;
@@ -378,8 +380,9 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  if (p->left->fl==Flavour(kf_none))  p->left->fl  = flav[1];
 	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
 	  p->v          = vl[i];
-	  *(p->Color)   = *(vl[i]->Color);
-	  *(p->Lorentz) = *(vl[i]->Lorentz);
+	  *p->Color = vl[i]->Color.back();
+	  if (p->Lorentz) delete p->Lorentz;
+	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();
 	  p->t = vl[i]->t;
 	  
 	  p->cpl.clear();
@@ -863,7 +866,7 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
   
   // return 1 if equal and 0 if different
   
-  if (p1->Lorentz->Type()==lf::C4GS && p2->Lorentz->Type()==lf::C4GS) 
+  if (p1->Lorentz->Type()=="C4GS" && p2->Lorentz->Type()=="C4GS") 
     return Compare5Vertex(p1,p2);
 
   if (SingleCompare(p1->middle,p2->middle)) {
@@ -1357,16 +1360,18 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  //setting the contraction flags
 	  pnext->m  = 1;
 	  
-	  if ((*v)(i)->ncf==1) {
-	    *(pcopy->Color)   = *((*v)(i)->Color);
-	    *(pcopy->Lorentz) = *((*v)(i)->Lorentz);
+	  if ((*v)(i)->Color.size()==1) {
+	    *pcopy->Color = (*v)(i)->Color.back();
+	    if (p->Lorentz) delete p->Lorentz;
+	    pcopy->Lorentz = (*v)(i)->Lorentz.front()->GetCopy();
 	    pcopy->t = (*v)(i)->t;
 	    break;
 	  }
 	  else {
-	    for (short int k=0;k<(*v)(i)->ncf;k++) {
-	      *(pcopy->Color)   = ((*v)(i)->Color)[k];
-	      *(pcopy->Lorentz) = ((*v)(i)->Lorentz)[k];
+	    for (size_t k=0;k<(*v)(i)->Color.size();k++) {
+	      *pcopy->Color = (*v)(i)->Color[k];
+	      if (p->Lorentz) delete p->Lorentz;
+	      pcopy->Lorentz = (*v)(i)->Lorentz[k]->GetCopy();
 	      pcopy->t = (*v)(i)->t;
 	      
 	      Color_Function* cfmemo = pcopy->Color;

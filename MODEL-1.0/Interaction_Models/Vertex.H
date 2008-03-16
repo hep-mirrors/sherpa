@@ -58,8 +58,6 @@ namespace MODEL {
   
   std::ostream& operator<<(std::ostream&, const Vertex&);
 
-  typedef  std::vector<Single_Vertex *>  Vertex_List;
-  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
 
 
   /*! 

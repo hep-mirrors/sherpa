@@ -88,13 +88,13 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
-	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function(cf::D);     
-	      vertex[vanz].Color->SetParticleArg(2,3);     
-	      vertex[vanz].Color->SetStringArg('2','3');     
 	      
-	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.back().SetParticleArg(2,3);     
+	      vertex[vanz].Color.back().SetStringArg('2','3');     
+	      
+	      
+	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
 	      if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
@@ -136,13 +136,13 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].cpl[1]  = kcpl1;
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
-	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function(cf::D);     
-	      vertex[vanz].Color->SetParticleArg(2,3);     
-	      vertex[vanz].Color->SetStringArg('2','3');     
 	      
-	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.back().SetParticleArg(2,3);     
+	      vertex[vanz].Color.back().SetStringArg('2','3');     
+	      
+	      
+	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
 	      if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
@@ -193,13 +193,13 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
-		  vertex[vanz].ncf   = 1;
-		  vertex[vanz].Color = new Color_Function(cf::D);     
-		  vertex[vanz].Color->SetParticleArg(2,3);     
-		  vertex[vanz].Color->SetStringArg('2','3');     
 		  
-		  vertex[vanz].nlf     = 1;
-		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.back().SetParticleArg(2,3);     
+		  vertex[vanz].Color.back().SetStringArg('2','3');     
+		  
+		  
+		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
@@ -268,13 +268,13 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
-		  vertex[vanz].ncf   = 1;
-		  vertex[vanz].Color = new Color_Function(cf::D);     
-		  vertex[vanz].Color->SetParticleArg(0,1);     
-		  vertex[vanz].Color->SetStringArg('0','1');     
 		  
-		  vertex[vanz].nlf     = 1;
-		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.back().SetParticleArg(0,1);     
+		  vertex[vanz].Color.back().SetStringArg('0','1');     
+		  
+		  
+		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
@@ -337,13 +337,13 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].cpl[1]  = kcpl1;
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
-		  vertex[vanz].ncf   = 1;
-		  vertex[vanz].Color = new Color_Function(cf::D);     
-		  vertex[vanz].Color->SetParticleArg(0,1);     
-		  vertex[vanz].Color->SetStringArg('0','1');     
 		  
-		  vertex[vanz].nlf     = 1;
-		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.back().SetParticleArg(0,1);     
+		  vertex[vanz].Color.back().SetStringArg('0','1');     
+		  
+		  
+		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}

@@ -3,6 +3,7 @@
 
 #include "Flavour.H"
 #include "Decay_Table.H"
+#include "Model_Base.H"
 #include "Vertex.H"
 
 namespace MODEL {

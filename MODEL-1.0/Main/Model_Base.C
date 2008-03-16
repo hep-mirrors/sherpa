@@ -8,7 +8,10 @@
 #include "Spectrum_Generator_Base.H"
 #include "Interaction_Model_Base.H"
 #include "Run_Parameter.H"
+#include "All_Decays.H"
+#include "Decay_Table.H"
 #include "Message.H"
+#include "Vertex.H"
 #include "Exception.H"
 
 using namespace MODEL;
@@ -195,5 +198,15 @@ Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,co
   msg_Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<")("<<_i<<","<<_j<<") : "<<std::endl
 	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0;
+}
+
+MODEL::DecayMap * const Model_Base::GetDecayMap() const
+{ 
+  return p_decays->GetDecayMap(); 
+}
+
+ATOOLS::Decay_Table * const Model_Base::GetDecayTable(const ATOOLS::Flavour & flav) const
+{
+  return p_decays->GetDecayTable(flav);
 }
 

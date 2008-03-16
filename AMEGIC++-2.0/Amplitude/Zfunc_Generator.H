@@ -26,19 +26,18 @@ namespace AMEGIC {
     void  Set_FermionProp(Zfunc*,Point*,Point*);
     void  IsGaugeV(Point*,int&,int&);
     
-    int   TryArgs(int,std::vector<MODEL::Lorentz_Function> &,int,std::vector<MODEL::Lorentz_Function> &);
-    void  LFFill_Zfunc(Zfunc*,std::vector<MODEL::Lorentz_Function> &,Point*,Point*,Point*);
+    int   TryArgs(int,std::vector<MODEL::Lorentz_Function*> &,int,std::vector<MODEL::Lorentz_Function*> &);
+    void  LFFill_Zfunc(Zfunc*,std::vector<MODEL::Lorentz_Function*> &,Point*,Point*,Point*);
   
     int   LFDetermine_Zfunc(Zfunc*,Point*,Point*,Point*);
 
-    void  Lorentz_Sequence(Point*,std::vector<MODEL::Lorentz_Function> &lflist);
-    void  LFPrint(const std::vector<MODEL::Lorentz_Function>&);
+    void  Lorentz_Sequence(Point*,std::vector<MODEL::Lorentz_Function*> &lflist);
     void  LFPrint(const std::vector<MODEL::Lorentz_Function*>&);
-    MODEL::lf::code LFEff(MODEL::lf::code);
+    std::string LFEff(const std::string &);
 
     int Compare(int,const std::vector<MODEL::Lorentz_Function*> &,int*,
 		    const std::vector<MODEL::Lorentz_Function*> &,int*);
-    void CopyOrder(std::vector<MODEL::Lorentz_Function> &,std::vector<MODEL::Lorentz_Function*> &);
+    void CopyOrder(std::vector<MODEL::Lorentz_Function*> &,std::vector<MODEL::Lorentz_Function*> &);
     void SetArgs(Zfunc*,int*,int*,Point*,Point*,int&);
     void SetScalarArgs(Zfunc*,int&,Point*);
     void SearchNextProp(int,const std::vector<MODEL::Lorentz_Function*> &,int*,

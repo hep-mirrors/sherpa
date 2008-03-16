@@ -1,7 +1,7 @@
 #include "Zfunc_Generator.H"
 #include "String_Generator.H"
 #include "Basic_Sfuncs.H"
-#include "Calculator.H"
+#include "Zfunc_Calc.H"
 #include "Zfunc.H"
 #include "Vector.H"
 #include "Run_Parameter.H"
@@ -33,48 +33,22 @@ ZF_Vector Zfunc_Generator::zcalc;
 
 void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS, int ngraph)
 {
-  if (ngraph==1) {
-    for (size_t i=0;i<zcalc.size();i++) delete zcalc[i];
-    zcalc.clear();
-    
-    zcalc.push_back(new Y_Calc(_sgen,_BS));
-    zcalc.push_back(new Z_Calc(_sgen,_BS));
-    zcalc.push_back(new VVV_Calc(_sgen,_BS));
-    //zcalc.push_back(new VVVV_Calc(_sgen,_BS));
-    zcalc.push_back(new V4_Calc(_sgen,_BS));
-    zcalc.push_back(new G4_Calc(_sgen,_BS));
-    //zcalc.push_back(new V5_Calc(_sgen,_BS));
-    //zcalc.push_back(new V4V3_Calc(_sgen,_BS));
-    zcalc.push_back(new VVS_Calc(_sgen,_BS));
-    zcalc.push_back(new SSV_Calc(_sgen,_BS));
-    zcalc.push_back(new SSS_Calc(_sgen,_BS));
-    zcalc.push_back(new VVSS_Calc(_sgen,_BS));
-    zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
-    zcalc.push_back(new SSSS_Calc(_sgen,_BS));
-
-    if(MODEL::s_model->GetInteractionModel()->HasLoops()) {
-      zcalc.push_back(new Triangle_Calc(_sgen,_BS));
-      zcalc.push_back(new Box_Calc(_sgen,_BS));
-      zcalc.push_back(new Pentagon_Calc(_sgen,_BS));
-    }
-
-    
-    if(MODEL::s_model->GetInteractionModel()->HasTensors()){
-      zcalc.push_back(new FFT_Calc(_sgen,_BS));
-      zcalc.push_back(new VVT_Calc(_sgen,_BS));
-      zcalc.push_back(new SST_Calc(_sgen,_BS));
-      zcalc.push_back(new FFVT_Calc(_sgen,_BS));
-      zcalc.push_back(new VVVT_Calc(_sgen,_BS));
-      zcalc.push_back(new SSST_Calc(_sgen,_BS));
-      zcalc.push_back(new FFGS_Calc(_sgen,_BS));
-      zcalc.push_back(new VVGS_Calc(_sgen,_BS));
-      zcalc.push_back(new SSGS_Calc(_sgen,_BS));
-      zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
-    }
-    if(MODEL::s_model->GetInteractionModel()->HasAGCs()){
-      zcalc.push_back(new AnomalousV3_Calc(_sgen,_BS));
-      zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
-    }     
+  if (ngraph!=1) return;
+  for (size_t i=0;i<zcalc.size();i++) delete zcalc[i];
+  zcalc.clear();
+  ZFCalc_Key key(_sgen,_BS,MODEL::s_model->GetInteractionModel());
+  ZFCalc_Getter::Getter_List zfclist(ZFCalc_Getter::GetGetters());
+  for (ZFCalc_Getter::Getter_List::const_iterator 
+	 git(zfclist.begin());git!=zfclist.end();++git) {
+    Zfunc_Calc *nc((*git)->GetObject(key));
+    if (nc!=NULL) zcalc.push_back(nc);
+  }
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<METHOD<<"(): {\n\n   Implemented calculators:\n\n";
+    ZFCalc_Getter::PrintGetterInfo(msg_Out(),15);
+    msg_Out()<<"\n   Implemented Lorentz functions:\n\n";
+    LF_Getter::PrintGetterInfo(msg_Out(),15);
+    msg_Out()<<"\n}\n";
   }
 }
 
@@ -197,8 +171,8 @@ void Zfunc_Generator::Convert(Point* p)
 	    return;
 	  }
       }
-      if(pf!=0 && ((p->Lorentz)->Type()==lf::FFVT || 
-                   (p->Lorentz)->Type()==lf::FFVGS  ) ){
+      if(pf!=0 && ((p->Lorentz)->Type()=="FFVT" || 
+                   (p->Lorentz)->Type()=="FFVGS"  ) ){
 	pb->m=1;
 	Convert(p);
 	return;
@@ -214,11 +188,11 @@ void Zfunc_Generator::Convert(Point* p)
   if (p->middle) Convert(p->middle);
 }
 
-void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflist)
+void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function*> &lflist)
 { 
   if (pb->left==0 && (pb->fl.IsScalar()||pb->fl.IsTensor())) return;
  
-  lflist.push_back(*(pb->Lorentz));
+  lflist.push_back(pb->Lorentz->GetCopy());
 
   //Endpoints are scalar or non-bosons
   int skal,vec;
@@ -229,32 +203,23 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
     if (pb->middle!=0) {
             if (pb->middle->fl.IsVector() && pb->middle->m==0) Lorentz_Sequence(pb->middle,lflist);
       if (pb->middle->m==1 && !pb->middle->fl.IsTensor()) {
-	Lorentz_Function lf(lf::Pol);
-	lf.SetParticleArg(pb->middle->number);
+	Lorentz_Function *lf(LF_Getter::GetObject("Pol",LF_Key()));
+	lf->SetParticleArg(pb->middle->number);
 	lflist.push_back(lf);
       }
     }
 
     if (pb->left->m==1 && !pb->left->fl.IsTensor()) {
-      Lorentz_Function lf(lf::Pol);
-      lf.SetParticleArg(pb->left->number);
+      Lorentz_Function *lf(LF_Getter::GetObject("Pol",LF_Key()));
+      lf->SetParticleArg(pb->left->number);
       lflist.push_back(lf);
     }
     if (pb->right->m==1 && !pb->right->fl.IsTensor()) {
-      Lorentz_Function lf(lf::Pol);
-      lf.SetParticleArg(pb->right->number);
+      Lorentz_Function *lf(LF_Getter::GetObject("Pol",LF_Key()));
+      lf->SetParticleArg(pb->right->number);
       lflist.push_back(lf);
     }
   }
-}
-
-void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
-{
-  if (!msg_LevelIsTracking()) return;
-  msg_Out()<<"LorentzList: "<<endl;
-  for (size_t i=0;i<lflist.size();i++)
-    msg_Out()<<lflist[i].String(1)<<endl;
-  msg_Out()<<endl;
 }
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
@@ -266,28 +231,28 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
   msg_Out()<<endl;
 }
 
-lf::code Zfunc_Generator::LFEff(lf::code type)
+std::string Zfunc_Generator::LFEff(const std::string &type)
 { 
-  return (type==lf::Pol) ? lf::Gamma : type;
+  return (type=="Pol") ? "Gamma" : type;
 }
 
 int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 {
   Zh->m_type = -10;
-  vector<Lorentz_Function> lflist;
-  if (pf!=0) lflist.push_back(*(p->Lorentz));
+  vector<Lorentz_Function*> lflist;
+  if (pf!=0) lflist.push_back(p->Lorentz->GetCopy());
 
   if (pf==0 && pb->fl.IsVector()) {
-    Lorentz_Function lf(lf::Pol);
-    lf.SetParticleArg(pb->number);
+    Lorentz_Function *lf(LF_Getter::GetObject("Pol",LF_Key()));
+    lf->SetParticleArg(pb->number);
     lflist.push_back(lf);
   }
   
   if (!( (pb->fl.IsScalar() || pb->m==1) && pf!=0)) Lorentz_Sequence(pb,lflist);
   else {
     if (pb->m==1 && pf!=0 && !pb->fl.IsTensor()) {
-      Lorentz_Function lf(lf::Pol);
-      lf.SetParticleArg(pb->number);
+      Lorentz_Function *lf(LF_Getter::GetObject("Pol",LF_Key()));
+      lf->SetParticleArg(pb->number);
       lflist.push_back(lf);
     }
   }
@@ -296,12 +261,12 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   for (size_t i=0;i<zcalc.size();i++) {
     if (lflist.size()==(zcalc[i]->lorentzlist).size()) {
       int hit = 1; 
-      vector<int> typerem;
+      vector<std::string> typerem;
       
       for (size_t j=0;j<lflist.size();j++) {
 	int hit2 = 1;
 	for (size_t k=0;k<typerem.size();k++) {
-	  if (typerem[k]==LFEff(lflist[j].Type())) {
+	  if (typerem[k]==LFEff(lflist[j]->Type())) {
 	    hit2 = 0;
 	    break;
 	  }
@@ -310,17 +275,17 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 	  //counting
 	  int type1 = 0;
 	  for (size_t k=j;k<lflist.size();k++) {
-	    if (LFEff(lflist[j].Type())==LFEff(lflist[k].Type())) type1++;
+	    if (LFEff(lflist[j]->Type())==LFEff(lflist[k]->Type())) type1++;
 	  }
 	  int type2 = 0;
 	  for (size_t k=0;k<(zcalc[i]->lorentzlist).size();k++) {
-	    if (LFEff(lflist[j].Type())==LFEff((zcalc[i]->lorentzlist[k]).Type())) type2++;
+	    if (LFEff(lflist[j]->Type())==LFEff((zcalc[i]->lorentzlist[k])->Type())) type2++;
 	  }  
 	  if (type1!=type2) {
 	    hit = 0;
 	    break;
 	  }
-	  else typerem.push_back(LFEff(lflist[j].Type()));
+	  else typerem.push_back(LFEff(lflist[j]->Type()));
 	}
       }
       if (hit) {
@@ -330,22 +295,23 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
       }
     }
   }
-  if (Zh->m_type==-10) {
+  if (Zh->m_type=="") {
+    for (size_t i(0);i<lflist.size();++i) delete lflist[i];
     return 0;
-    msg_Error()<<"ERROR in Zfunc_Generator::LFDetermine_Zfunc : "<<std::endl
-		       <<"   No Lorentzfunction found, abort the run."<<endl;
+    msg_Error()<<METHOD<<"(): Invalid Lorentz function."<<endl;
     LFPrint(lflist);  
     abort();
   }
 
   LFFill_Zfunc(Zh,lflist,p,pf,pb);
+  for (size_t i(0);i<lflist.size();++i) delete lflist[i];
   return 1;
 }
 
 
-void Zfunc_Generator::CopyOrder(vector<Lorentz_Function> &lflist,vector<Lorentz_Function*> & lfpointer)
+void Zfunc_Generator::CopyOrder(vector<Lorentz_Function*> &lflist,vector<Lorentz_Function*> & lfpointer)
 {
-  for (size_t i=0;i<lflist.size();i++) lfpointer.push_back(&lflist[i]);
+  for (size_t i=0;i<lflist.size();i++) lfpointer.push_back(lflist[i]);
 
   for (size_t i=0;i<lfpointer.size();i++) 
     for (size_t j=i+1;j<lfpointer.size();j++) {
@@ -399,7 +365,7 @@ int Zfunc_Generator::Compare(int Nargs,
   return lfpointer.size();
 }
 
-void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
+void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function*> &lflist,
 				   Point* p,Point* pf,Point* pb)
 {
   vector<Lorentz_Function*> lfpointer;
@@ -532,46 +498,43 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
     }
   }
 
-  if(Zh->m_type>=zl::FFT && Zh->m_type<zl::FFGS) Set_Tensor(Zh,p);
+  if(Zh->m_type.find('T')!=std::string::npos) Set_Tensor(Zh,p);
   
   //Special cases
   int icoupl        = Zh->m_narg - Zh->p_calculator->GetScalarNumb();
-
-  switch (Zh->m_type) {
-    
-  case zl::SSST: break;
-  case zl::FFT:
+  if (Zh->m_type=="FFT") {
     if (pf==0) Set_Out(Zh,0,pb,p);
     //else Set_In(Zh,0,p,pf,pb);
     Set_FermionProp(Zh,p,pf);
-    break;
-  case zl::FFGS:
-    Set_FermionProp(Zh,p,pf);
-    Zh->p_couplings[2]=p->cpl[2];
-  case zl::Y:
-        if (pf==0) Set_Out(Zh,0,pb,p);
-              else Set_In(Zh,0,p,pf,pb);
-    break;
-  case zl::FFVT:
-  case zl::FFVGS:
+  }
+  else if (Zh->m_type=="FFGS" || Zh->m_type=="Y") {
+    if (pf==0) Set_Out(Zh,0,pb,p);
+    else Set_In(Zh,0,p,pf,pb);
+    if (Zh->m_type=="FFGS") {
+      Set_FermionProp(Zh,p,pf);
+      Zh->p_couplings[2]=p->cpl[2];
+    }
+  }
+  else if (Zh->m_type=="FFVT" || Zh->m_type=="FFVGS") {
     if(pf==0){
       Set_Out(Zh,0,pb,p);
-      if(pb->fl.IsVector()){Set_In(Zh,1,p,0,pb);break;}
-      if(pb->left->fl.IsVector()){Set_Out(Zh,1,pb->left,p);break;}
-      if(pb->right->fl.IsVector()){Set_Out(Zh,1,pb->right,p);break;}
-      if(pb->middle->fl.IsVector()){Set_Out(Zh,1,pb->middle,p);break;}
+      if (pb->fl.IsVector()) Set_In(Zh,1,p,0,pb);
+      else if (pb->left->fl.IsVector()) Set_Out(Zh,1,pb->left,p);
+      else if (pb->right->fl.IsVector()) Set_Out(Zh,1,pb->right,p);
+      else if (pb->middle->fl.IsVector()) Set_Out(Zh,1,pb->middle,p);
     }
     else if(!p->middle && pb->fl.IsVector()){
       Set_Out(Zh,0,pb,p);
-      Set_In(Zh,1,p,pf,pb);break;
+      Set_In(Zh,1,p,pf,pb);
     }
-  case zl::Z:Set_Out(Zh,1,pb,p);break;
-  case zl::SSGS:
-  case zl::VVGS:
-  case zl::AV4:
+  }
+  else if (Zh->m_type=="Z") {
+    Set_Out(Zh,1,pb,p);
+  }
+  else if (Zh->m_type=="SSGS" || Zh->m_type=="VVGS" || Zh->m_type=="AV4") {
     Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
-  case zl::AV3:
-    if (Zh->m_type==zl::AV3) {
+  }
+  else if (Zh->m_type=="AV3") {
       pb->cpl.resize(8);
       Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
@@ -581,9 +544,12 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
       Zh->p_couplings[icoupl] = pb->cpl[5];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[6];icoupl++;
       Zh->p_couplings[icoupl] = pb->cpl[7];icoupl++;
-   }
-  default:
-    if (Zh->m_type!=zl::AV3) Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+    SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
+    SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
+    SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
+  }
+  else {
+    Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
@@ -592,13 +558,15 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
   if(Zh->p_calculator->GetScalarNumb()>0){
     int scnt=Zh->p_calculator->narg - Zh->p_calculator->GetScalarNumb();
     if(pb->fl.IsScalar()) SetScalarArgs(Zh,scnt,pb);
-    if(Zh->m_type==zl::FFVGS && pb->fl.IsVector()) pb=p;   
-    if(Zh->m_type!=zl::Y && Zh->m_type!=zl::FFGS){
+
+    if(Zh->m_type=="FFVGS" && pb->fl.IsVector()) pb=p;   
+    if(Zh->m_type!="Y" && Zh->m_type!="FFGS"){
       SetScalarArgs(Zh,scnt,pb->left);
       SetScalarArgs(Zh,scnt,pb->right);
       SetScalarArgs(Zh,scnt,pb->middle);
     } 
-   }
+    
+  }
   delete[] lfnumb;
   delete[] canumb;
 }
@@ -613,7 +581,7 @@ void Zfunc_Generator::SetPropDirection(int Nargs,int incoming,
   int start = -1;
   //works only for incoming vectors!!!!
   for (size_t i=0;i<lfpointer.size();i++) {
-    if (LFEff(lfpointer[i]->Type())==lf::Gamma) {
+    if (LFEff(lfpointer[i]->Type())=="Gamma") {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
 	if (lfpointer[i]->ParticleArg(k)==incoming) {
 	  start = i;
@@ -729,7 +697,7 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 {
   if(p->fl.IsTensor())return;
   int nb=number;
-  if (Zh->m_type==zl::FFVT||Zh->m_type==zl::FFVGS)nb--;
+  if (Zh->m_type=="FFVT"||Zh->m_type=="FFVGS")nb--;
   if (Zh->m_nprop>nb && nb>=0) {
     Zh->p_propagators[nb].numb      = pb->number;
     Zh->p_propagators[nb].kfcode    = (pb->fl).Kfcode();
@@ -796,14 +764,14 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
 {
   int nb=number;
-  if (Zh->m_type==zl::FFVT||Zh->m_type==zl::FFVGS)nb--;
+  if (Zh->m_type=="FFVT"||Zh->m_type=="FFVGS")nb--;
   if (Zh->m_nprop>nb && nb>=0) {
     Zh->p_propagators[nb].numb      = pg->number;
     Zh->p_propagators[nb].kfcode    = (pg->fl).Kfcode();
     Zh->p_propagators[nb].direction = Direction::Outgoing;
   }
 
-  if ((pg->fl).IsScalar() && (pg->left==0 || Zh->m_type==zl::SSV || p!=pg)) {
+  if ((pg->fl).IsScalar() && (pg->left==0 || Zh->m_type=="SSV" || p!=pg)) {
     Zh->p_arguments[number*2]     = pg->number;
     Zh->p_arguments[number*2+1]   = pg->number;
     Zh->p_couplings[number*2]   = Complex(0.,0.);
@@ -872,9 +840,9 @@ void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
   Zh->p_arguments[narg-2]     = pt->number;
   Zh->p_arguments[narg-1]     = pt->number;
   int ic=narg-2;
-  switch(Zh->m_type){
-    case zl::FFT: Zh->p_couplings[2]=pb->cpl[2];
-    case zl::FFVT: ic=0;break;  
+  if (Zh->m_type=="FFT" || Zh->m_type=="FFVT"){
+    Zh->p_couplings[2]=pb->cpl[2];
+    if (Zh->m_type=="FFVT") ic=0;  
   }
   Zh->p_couplings[ic]       = pb->cpl[0];
   Zh->p_couplings[ic+1]     = pb->cpl[1];  

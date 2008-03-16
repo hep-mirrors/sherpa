@@ -9,7 +9,7 @@ using namespace MODEL;
 Point::Point(const Point& copy) { 
   extrafl = 0;
   Color   = new Color_Function;
-  Lorentz = new Lorentz_Function;
+  Lorentz = NULL;
   middle  = 0;
   cpl.clear();
   nextra = 0;
@@ -21,7 +21,7 @@ Point::Point(int extra) : nextra(extra)  {
   extrafl = 0;
   v       = 0;
   Color   = new Color_Function;
-  Lorentz = new Lorentz_Function;
+  Lorentz = NULL;
   middle  = 0;
   cpl.clear();
   if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
@@ -36,7 +36,9 @@ Point& Point::operator=(const Point& p) {
     fl     = p.fl;
       
     *Color = *p.Color; 
-    *Lorentz = *p.Lorentz; 
+    if (Lorentz) delete Lorentz;
+    Lorentz=NULL;
+    if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
  
     if (nextra>0) delete[] extrafl;
     nextra = p.nextra;

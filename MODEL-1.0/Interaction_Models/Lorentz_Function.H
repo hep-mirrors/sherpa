@@ -2,124 +2,64 @@
 #define Lorentz_Function_h
 
 #include "MyStrStream.H"
+#include "Getter_Function.H"
 #include <vector>
 
 namespace MODEL {
 
-  class lf {
-  public:
-    enum code {None   = 0, 
-	       Gamma  = 1, 
-	       Gab    = 2, 
-	       Gauge3 = 3, 
-	       Gauge4 = 4, 
-	       Gluon4 = 5, 
-	       SSV    = 6, 
-	       SSS    = 7, 
-	       FFS    = 8, 
-	       Pol    =10,
-	       VVSS   =11,//the generic interaction of 2 vectors and 2 scalars (Gab)
-	       SSSS   =12,//the generic interaction of 4 scalars
-	       AGauge4=20,//Anomalous gauge coupling 
-	       AGauge3=21,//Anomalous gauge coupling 
-	       FFT    =60,
-	       VVT    =61,
-	       SST    =62,
-	       FFVT   =63,
-	       VVVT   =64,
-	       SSST   =65,
-               FFGS   =70,
-	       VVGS   =71,
-	       SSGS   =72,
-	       FFVGS  =73,
-	       Unknown=99,
-	       Triangle=101,//effective Higgs-PP or -GG interaction via triangle-loop
-	       Box    =102,//effective Higgs-GGG interaction via box-loop
-	       C4GS   =110//effective Higgs-GGGG interaction (together with Gluon4)
-    }; 
-  };
-  
+  struct LF_Key {};
+
   class Lorentz_Function {
-    lf::code  m_type; 
-    int       m_partarg[4];
-    int       m_permcount;
+  private:
+
+    Lorentz_Function(const Lorentz_Function &l): p_next(NULL) { *this=l; }
+
+  protected:
+
+    std::string m_type; 
+
+    int m_partarg[4], m_permcount;
+
     std::vector<int*> m_permlist;
     std::vector<int>  m_signlist;
     Lorentz_Function* p_next;
 
     std::string Str(int a) const;
+
   public:
-    Lorentz_Function(lf::code type=lf::Unknown) :m_type(type), p_next(NULL) {
-      for (short int i=0;i<4;i++) m_partarg[i] = -1;
-    }
 
-    Lorentz_Function(const Lorentz_Function & l) : p_next(NULL)
-    {
-      *this=l;
-    }
+    Lorentz_Function(const std::string &type);
 
-    Lorentz_Function & operator=(const Lorentz_Function & l);
+    virtual ~Lorentz_Function();
 
-    ~Lorentz_Function();
+    virtual int NofIndex() const = 0;
 
+    virtual std::string String(int shortversion=0) const = 0;
 
-    int NofIndex() const {
-      switch (m_type) {
-      case lf::Gamma : return 1;
-      case lf::Gab   : return 2;
-      case lf::Gauge3: return 3;
-      case lf::Gauge4: return 4;
-      case lf::Gluon4: return 4;
-      case lf::SSV   : return 3;	
-      case lf::Pol   : return 1;	
-      case lf::VVSS  : return 2;	
-      case lf::FFT   : return 1;
-      case lf::VVT   : return 3;
-      case lf::SST   : return 3;
-      case lf::FFVT  : return 2;
-      case lf::VVVT  : return 4;
-      case lf::SSST  : return 1;
-      case lf::VVGS  : return 3;
-      case lf::FFVGS : return 1;
-      case lf::SSGS  : return 2;
-      case lf::Triangle: return 2;	
-      case lf::Box   : return 3;
-      case lf::C4GS  : return 2;	
-      case lf::AGauge3: return 3;
-      case lf::AGauge4: return 4;
-      default: return 0;
-      }
-      //default (includes FFS, SSS and SSSS )
-      return 0;
-    }
+    virtual void InitPermutation();
 
-    void SetParticleArg(int a=-1, int b=-1,int c=-1,int d=-1) {
-      m_partarg[0] = a;m_partarg[1] = b;
-      m_partarg[2] = c;m_partarg[3] = d;
-    }
-
-    int ParticleArg(int i) const
-    { 
-      return m_partarg[i];
-    }
-    lf::code Type() const
-    {
-      return m_type;
-    }
+    void SetParticleArg(int a=-1,int b=-1,int c=-1,int d=-1);
+    void AddPermutation(int sign,int a,int b=-1,int c=-1,int d=-1);
 
     int  GetSign();
-    void AddPermutation(int,int,int,int,int);
-    void InitPermutation();
     int  ResetPermutation();
     int  NextPermutation();
 
-    std::string String(int shortversion=0) const;
-  };
+    Lorentz_Function &operator=(const Lorentz_Function &l);
+    Lorentz_Function *GetCopy() const;
+
+    inline int ParticleArg(int i) const { return m_partarg[i]; }
+
+    inline std::string Type() const { return m_type; }
+
+  };// end of class Lorentz_Function
+
+  typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
 
   // Format of a Lorentz_Function to transport via MPI:
   struct MPI_Lorentz_Function {
     
-    int m_type;
+    std::string m_type;
     int    m_partarg[4];         
 
    };
@@ -392,5 +332,13 @@ namespace MODEL {
      \brief Associated list of signs corresponding to the permutations in m_permlist.
    */
 }
+
+#define DEFINE_LF_GETTER(CLASS,NAME,TAG,INFO)				\
+  DECLARE_GETTER(NAME,TAG,Lorentz_Function,LF_Key);			\
+  Lorentz_Function *NAME::operator()(const LF_Key &key) const		\
+  { return new CLASS(); }						\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<INFO; }
+
 #endif
 

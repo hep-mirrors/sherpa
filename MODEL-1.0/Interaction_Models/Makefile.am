@@ -1,7 +1,9 @@
 pkglib_LTLIBRARIES = libModelInteractions.la
 
 libModelInteractions_la_SOURCES = \
-				Lorentz_Function.C Color_Function.C \
+				Lorentz_Function.C \
+				Lorentz_Functions.C \
+				Color_Function.C \
 				Single_Vertex.C Vertex.C \
 				Interaction_Model_Base.C \
 				Interaction_Model_QCD.C \

@@ -16,12 +16,11 @@ namespace MODEL {
     ATOOLS::Flavour   in[4];       // flavours at the legs 
     short int         on;          // flag if vertex is on
     std::string       Str;         // name of the vertex
-    int               ncf, nlf, t; // number of color functions, lorentz
-                                   //  functions and ?
+    int               t;
  
     std::vector<ATOOLS::Kabbala> cpl;      // coupling constants
-    Color_Function*   Color;       // color structure 
-    Lorentz_Function* Lorentz;     // lorentz structure
+    std::vector<Color_Function>   Color;       // color structure 
+    std::vector<Lorentz_Function*> Lorentz;     // lorentz structure
 
     // constructors and destructor
     Single_Vertex();

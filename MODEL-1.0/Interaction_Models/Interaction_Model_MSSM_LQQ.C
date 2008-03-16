@@ -80,13 +80,13 @@ void Interaction_Model_MSSM_LQQ::c_FFS(std::vector<Single_Vertex>& vertex,int& v
 	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
-	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function(cf::D);     
-	  vertex[vanz].Color->SetParticleArg(0,1);     
-	  vertex[vanz].Color->SetStringArg('0','1');     
 	  
-	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.back().SetParticleArg(0,1);     
+	  vertex[vanz].Color.back().SetStringArg('0','1');     
+	  
+	  
+	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 	  
 	  vertex[vanz].on     = 1;
 	  vertex.push_back(Single_Vertex());vanz++;

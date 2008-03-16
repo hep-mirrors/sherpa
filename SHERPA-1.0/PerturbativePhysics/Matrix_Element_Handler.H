@@ -16,6 +16,8 @@
 // #include "Spin_Correlation_Tensor.H"
 #include "Amplitude_Tensor.H"
 
+namespace ATOOLS { class Decay_Channel; }
+
 namespace AMEGIC { class Amegic; 
                    class Point;  }
 

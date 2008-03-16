@@ -3,13 +3,11 @@
 
 #include "Flavour.H"
 #include "Decay_Table.H"
+#include "Model_Base.H"
 #include "Vertex.H"
 
 namespace MODEL {
   class Model_Base;
-  
-  typedef std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *> DecayMap;
-  typedef DecayMap::iterator                              DMIterator;
   
   //! The container for all hard decays.
   class All_Decays {
@@ -26,6 +24,7 @@ namespace MODEL {
     void PrintDecayTables();
   public:
     All_Decays(Model_Base *);
+    ~All_Decays();
     bool AddToDecays(const ATOOLS::Flavour &);
     bool AddToDecays(ATOOLS::Decay_Channel *);
     bool InitializeDecayTables();
