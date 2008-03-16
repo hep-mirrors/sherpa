@@ -32,6 +32,7 @@ My_Root::My_Root(const int argc,char **const argv):
   SetOutputFile(file);
   int argcf=1;
   char **argvf = new char*[1];
+  argvf[0] = "";
   p_root = new TApplication("MyRoot",&argcf,argvf);
   if ((OutputPath()+OutputFile())!="") {
     ATOOLS::MakeDir(OutputPath());
