@@ -148,7 +148,8 @@ void Jet_Maker::CorrectEnergies() {
       std::string name = std::string("E_Correction");
       ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TrueMom()[0],(*olit)->E_Correction(),1.);
       name = std::string("ET_Correction");
-      ((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TrueMom().ET(),(*olit)->ET_Correction(),1.);
+      // Vec4D has no member ET.
+      //((TH2D*)(*MYROOT::myroot)[name])->Fill((*olit)->TrueMom().ET(),(*olit)->ET_Correction(),1.);
 #endif
       break;
     }
