@@ -114,6 +114,8 @@ namespace MODEL {
     
   };
 
+  extern Model_Base *s_model;
+
   /*!
     \namespace MODEL
     \brief The namespace to host and evaluate parameters of physical models

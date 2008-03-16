@@ -1,7 +1,7 @@
 #include "Strong_Coupling.H"
 #include "Hadronisation_Parameters.H"
 #include "Running_AlphaS.H"
-#include "Run_Parameter.H"
+#include "Model_Base.H"
 #include "Message.H"
 
 using namespace AHADIC;
@@ -13,7 +13,7 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
 {
   m_beta0   = 12.*M_PI/(33.-2.*3.);
   MODEL::Running_AlphaS * as = static_cast<MODEL::Running_AlphaS *>
-    (rpa.gen.GetScalarFunction(std::string("alpha_S")));
+    (MODEL::s_model->GetScalarFunction(std::string("alpha_S")));
   m_Lambda2 = m_pt02*exp(-1./(m_beta0*(*as)(m_pt02)));
   m_kappa2  = m_pt02/exp(1.)*m_beta0*log(m_pt02/m_Lambda2);
   m_asmax   = (*this)(m_pt02);

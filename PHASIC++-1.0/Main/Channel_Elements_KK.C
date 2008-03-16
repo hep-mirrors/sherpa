@@ -3,7 +3,7 @@
 #include "Vector.H"
 #include "MathTools.H"
 #include "Random.H"
-#include "Run_Parameter.H"
+#include "Model_Base.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -27,7 +27,7 @@ void Channel_Elements_KK::Init(int nin,int nout,ATOOLS::Flavour* fl)
   m_nin = nin;
   m_nout = nout;
   m_kkp=-1;m_mpss=1.;
-  int mode = rpa.gen.ScalarNumber(std::string("KK_mode"));
+  int mode = MODEL::s_model->ScalarNumber(std::string("KK_mode"));
   for (int i=m_nin;i<m_nin+m_nout;i++) {
     if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
       if(ATOOLS::IsZero(ATOOLS::sqr(fl[i].Mass()))){
@@ -37,9 +37,9 @@ void Channel_Elements_KK::Init(int nin,int nout,ATOOLS::Flavour* fl)
       }
       m_kkp=i;
       
-      m_ed  = rpa.gen.ScalarNumber(std::string("ED"));
-      m_r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
-      m_gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
+      m_ed  = MODEL::s_model->ScalarNumber(std::string("ED"));
+      m_r2  = sqr(MODEL::s_model->ScalarConstant(std::string("Radius")));
+      m_gn  = MODEL::s_model->ScalarConstant(std::string("G_Newton"));
 
       //Calculation of Gamma(ed/2)
       if(m_ed%2==0) m_gam=1.;

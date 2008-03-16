@@ -1,5 +1,6 @@
 #include "GRVph_Fortran_Interface.H"
 #include "Run_Parameter.H"
+#include "Model_Base.H"
 #include "Message.H"
 #include <unistd.h> 
 
@@ -56,7 +57,7 @@ double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   if (infl.Kfcode()==4)           value = m_c;
   if (infl.Kfcode()==5)           value = m_b;
   
-  value  *= rpa.gen.ScalarFunction(std::string("alpha_QED"),sqr(rpa.gen.Ecms()));
+  value  *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),sqr(rpa.gen.Ecms()));
   
   return value;
 }

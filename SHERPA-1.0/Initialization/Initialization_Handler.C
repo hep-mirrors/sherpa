@@ -360,7 +360,7 @@ bool Initialization_Handler::InitializeTheModel()
     THROW(fatal_error,"RunSpectrumGenerator failed");
   p_model->InitializeInteractionModel();
   p_model->FillDecayTables();
-  rpa.gen.SetModel(p_model);
+  MODEL::s_model=p_model;
   return 1;
 }
 

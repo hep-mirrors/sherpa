@@ -50,7 +50,7 @@ void Timelike_Sudakov::Init(const double fmed)
   Add(new g_gg(p_tools,fmed));
   
   //susy splitting functions
-  if (rpa.gen.ModelName()==std::string("MSSM")) {
+  if (MODEL::s_model->Name()==std::string("MSSM")) {
     for (short int i=1;i<3;i++) {
       for (short int j=1;j<7;j++) {
 	Flavour fl = Flavour((kf_code)(i*1000000 + j));

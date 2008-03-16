@@ -51,9 +51,6 @@ Run_Parameter::Run_Parameter()
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu        = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf_none);
-#ifndef USING__ATOOLS_only
-  gen.p_model     = NULL;
-#endif
   gen.m_ndicedevents = 0;
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);

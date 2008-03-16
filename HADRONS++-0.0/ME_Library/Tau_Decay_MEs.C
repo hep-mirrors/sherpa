@@ -2,7 +2,7 @@
 #include "Message.H"
 #include "XYZFuncs.H"
 #include "Histogram.H"
-#include "Run_Parameter.H"
+#include "Model_Base.H"
 #include <stdio.h>
 
 using namespace HADRONS;
@@ -33,7 +33,7 @@ Tau_Lepton::Tau_Lepton( int _nout, Flavour *_fl ) :
  
 void Tau_Lepton::SetModelParameters( GeneralModel _md ) 
 { 
-  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double GF = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) ); 
   m_global  = GF*SQRT_05;
   m_cR1 = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL1 = Complex(0.,_md("a",1.)+_md("b",1.));
@@ -89,10 +89,10 @@ Tau_Pseudo::Tau_Pseudo( int _nout, Flavour *_fl ) :
 void Tau_Pseudo::SetModelParameters( GeneralModel _md ) 
 { 
   double Vxx  = m_pionmode ? 
-      _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()) : 
-      _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real());
+      _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real()) : 
+      _md("Vus", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 1).real());
   double fxx  = m_pionmode ? _md("fpi", 0.0924) : _md("fK", 0.113);
-  double GF   = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double GF   = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) ); 
   m_global = fxx * GF * Vxx;
   m_cR   = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL   = Complex(0.,_md("a",1.)+_md("b",1.));
@@ -152,8 +152,8 @@ void Tau_Two_Pion::SetModelParameters( GeneralModel _md )
   m_running  = int( _md("RUNNING_WIDTH", 1 ) );
   m_ff       = int( _md("FORM_FACTOR", 1 ) );
   m_fpi      = _md("fpi", 0.0924 );
-  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() );
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double Vud = _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real() );
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) ); 
   double CG  = m_pionmode ? 1. : SQRT_05;   // Clebsch-Gordon
   m_global   = GF * CG * Vud;           // GF * V_CKM * CG
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
@@ -282,8 +282,8 @@ Tau_Pion_Kaon::Tau_Pion_Kaon( int _nout, Flavour *_fl ) :
 
 void Tau_Pion_Kaon::SetModelParameters( GeneralModel _md ) 
 { 
-  double Vus  =_md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() );
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double Vus  =_md("Vus", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 1).real() );
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) ); 
   m_global   = GF*Vus/2.;
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
@@ -596,12 +596,12 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
  
 void Tau_Three_Pseudo::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vud      = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() );
-  m_Vus      = _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() );
+  m_Vud      = _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real() );
+  m_Vus      = _md("Vus", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 1).real() );
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
   double fpi = _md("fpi", 0.0924 );
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) ); 
   m_global   = 2.*GF/(3.*fpi)*GetA123();        // also sets m_deltas
   switch( int(_md("FORM_FACTOR", 1)) ) {
     case 2 : p_ff = new RChT();
@@ -1384,8 +1384,8 @@ void Tau_Four_Pion_3::SetModelParameters( GeneralModel _md )
 { 
   m_cR     = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL     = Complex(0.,_md("a",1.)+_md("b",1.));
-  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
+  double Vud = _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real());
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")));
   m_global   = GF*SQRT_05*Vud;
 
   Complex sum (0.,0.);
@@ -1723,8 +1723,8 @@ Tau_Four_Pion_1::Tau_Four_Pion_1( int _nout, Flavour *_fl ) :
  
 void Tau_Four_Pion_1::SetModelParameters( GeneralModel _md ) 
 { 
-  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
+  double Vud = _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real());
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")));
   m_global   = GF*SQRT_05*Vud;
   m_cR     = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL     = Complex(0.,_md("a",1.)+_md("b",1.));
@@ -1880,8 +1880,8 @@ void Tau_Eta_Two_Pion::SetModelParameters( GeneralModel _md )
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
   double fpi = _md("fpi", 0.0924);
-  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
-  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
+  double GF  = _md("GF", MODEL::s_model->ScalarConstant(string("GF")));
+  double Vud = _md("Vud", MODEL::s_model->ComplexMatrixElement(string("CKM"), 0, 0).real());
   m_global =  2./3.*GF*Vud/fpi;  
 }
 

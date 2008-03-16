@@ -191,7 +191,7 @@ int main(int argc,char **argv)
   
   Data_Read     * dataread     = new Data_Read("Shower.dat");
   Model_Base    * model        = new Standard_Model("./","Model.dat");
-  rpa.gen.SetModel(model);
+  MODEL::s_model=p_model;
 
   Hard_Process * hardprocess = new Hard_Process();
 

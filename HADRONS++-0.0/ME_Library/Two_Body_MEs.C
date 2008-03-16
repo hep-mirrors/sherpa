@@ -1,7 +1,7 @@
 #include "Two_Body_MEs.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 #include "XYZFuncs.H"
+#include "Model_Base.H"
 #include "Tools.H"
 
 using namespace HADRONS;
@@ -27,7 +27,7 @@ F_VF::F_VF( int _nout, Flavour *_fl ) :
  
 void F_VF::SetModelParameters( GeneralModel _md ) 
 {
-  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
+  double GF = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) );
   m_global  = GF*SQRT_05*(p_flavs[m_boson].PSMass());
   m_cR  = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL  = Complex(0.,_md("a",1.)+_md("b",1.));
@@ -81,7 +81,7 @@ V_FF::V_FF( int _nout, Flavour *_fl ) :
 
 void V_FF::SetModelParameters( GeneralModel _md )
 {
-  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
+  double GF = _md("GF", MODEL::s_model->ScalarConstant(string("GF")) );
   m_global  = GF*SQRT_05*Flavour(kf_Wplus).PSMass();
   m_cR  = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL  = Complex(0.,_md("a",1.)+_md("b",1.));

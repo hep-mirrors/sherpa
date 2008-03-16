@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include "Model_Base.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -31,7 +32,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   delete[] Z;
 
   kkp=-1;mpss=1.;
-  int mode = rpa.gen.ScalarNumber(std::string("KK_mode"));
+  int mode = MODEL::s_model->ScalarNumber(std::string("KK_mode"));
   for (int i=nin;i<nin+nout;i++) {
     if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
       if(ATOOLS::IsZero(ms[i])){
@@ -41,9 +42,9 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       }
       kkp=i;
       
-      ed  = rpa.gen.ScalarNumber(std::string("ED"));
-      r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
-      gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
+      ed  = MODEL::s_model->ScalarNumber(std::string("ED"));
+      r2  = sqr(MODEL::s_model->ScalarConstant(std::string("Radius")));
+      gn  = MODEL::s_model->ScalarConstant(std::string("G_Newton"));
 
       //Calculation of Gamma(ed/2)
       if(ed%2==0) gam=1.;

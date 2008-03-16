@@ -89,7 +89,7 @@ XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavou
   GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
  
   alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
-  sin2tw = rpa.gen.ScalarConstant(string("sin2_thetaW"));
+  sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
   if (ATOOLS::Flavour(kf_Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else

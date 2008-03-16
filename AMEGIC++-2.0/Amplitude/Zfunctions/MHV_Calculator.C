@@ -1,5 +1,6 @@
 #include "MHV_Calculator.H"
 #include "Pfunc.H"
+#include "Model_Base.H"
 #include "Run_Parameter.H"
 
 using namespace AMEGIC;
@@ -38,7 +39,7 @@ MHV_Calculator::MHV_Calculator(int part, Basic_Sfuncs* BS) :
     for (Pfunc_Iterator it=pl.begin();it!=pl.end();it++) delete (*it);
   }
 
-  m_cpl=pow(4.*M_PI*rpa.gen.ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-2.);
+  m_cpl=pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-2.);
 
 //   std::cout<<"MHV_Calculator: constructor finalized"<<std::endl;
 }

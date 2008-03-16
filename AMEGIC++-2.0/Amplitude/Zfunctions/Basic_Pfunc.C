@@ -1,7 +1,7 @@
 #include "Basic_Func.H"
 #include "Basic_Sfuncs.H"
 #include "String_Generator.H"
-#include "Run_Parameter.H"
+#include "Model_Base.H"
 #include "MathTools.H"
 
 using namespace AMEGIC;
@@ -26,7 +26,7 @@ Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
   Complex value;
   
   if(fl.IsKK()){    
-    if(rpa.gen.ScalarNumber(std::string("KK_mode"))>0) value=KKProp(p2);
+    if(MODEL::s_model->ScalarNumber(std::string("KK_mode"))>0) value=KKProp(p2);
     else {
       value = Complex(1.,0.)/
 	Complex(p2-sqr(fl.Mass()),fl.Mass()*fl.Width());
@@ -78,13 +78,13 @@ double Basic_Pfunc::IEfunc(double x,int ed)
 
 Complex Basic_Pfunc::KKProp(double p2)
 {
-  int    ed  = rpa.gen.ScalarNumber(std::string("ED"));
-  double gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
-  double ms  = rpa.gen.ScalarConstant(std::string("M_s"));
-  double msq = rpa.gen.ScalarConstant(std::string("M2_s"));
+  int    ed  = MODEL::s_model->ScalarNumber(std::string("ED"));
+  double gn  = MODEL::s_model->ScalarConstant(std::string("G_Newton"));
+  double ms  = MODEL::s_model->ScalarConstant(std::string("M_s"));
+  double msq = MODEL::s_model->ScalarConstant(std::string("M2_s"));
 
   double vr,vv;
-  switch(rpa.gen.ScalarNumber(std::string("KK_mode"))){
+  switch(MODEL::s_model->ScalarNumber(std::string("KK_mode"))){
   case 1:
     if(ed==2)vr=log(msq/ATOOLS::dabs(p2));
     else vr=2./(ed-2);

@@ -140,7 +140,7 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
     else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,model,nqed,nqcd))!=NULL); 
     //SUSY-QCD processes
-    else if (rpa.gen.ModelName()==std::string("MSSM")) {
+    else if (MODEL::s_model->Name()==std::string("MSSM")) {
       if ((xs=Single_XS::GetProcess<XS_gg_GluinoGluino>(nin,nout,flavours,model,nqed,nqcd))!=NULL);
       else if ((xs=Single_XS::GetProcess<XS_q1g_sQ1Gluino>
 		(nin,nout,flavours,model,nqed,nqcd))!=NULL);

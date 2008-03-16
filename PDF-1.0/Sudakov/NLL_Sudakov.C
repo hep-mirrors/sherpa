@@ -1,8 +1,8 @@
 #include "NLL_Sudakov.H"
 #include "Message.H"
-#include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Running_AlphaS.H"
+#include "Model_Base.H"
 #include <iomanip> 
 #include <stdio.h>
 
@@ -70,7 +70,7 @@ void NLL_Sudakov::PrepareMap()
     m_sudakovs[flav.Bar()]=ssud;
   }
   
-  if (rpa.gen.ModelName()==std::string("MSSM")) {
+  if (MODEL::s_model->Name()==std::string("MSSM")) {
     //Gluino Sudakov
     flav=Flavour(kf_Gluino);
     GammaQ_QG_Lambda * GL = new GammaQ_QG_Lambda

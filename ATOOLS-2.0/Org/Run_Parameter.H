@@ -4,9 +4,6 @@
 #include "CXXFLAGS.H"
 #include <string>
 #include <map>
-#ifndef USING__ATOOLS_only
-#include "Model_Base.H"
-#endif
 #include "Data_Read.H"
 #include "Flavour.H"
 #include "Matrix.H"
@@ -43,9 +40,6 @@ namespace ATOOLS {
       double              m_ecms;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
-#ifndef USING__ATOOLS_only
-      MODEL::Model_Base * p_model;
-#endif
       Vec4D m_pbeam[2];
       MyTiming m_timer;
       double m_timeout;
@@ -89,7 +83,6 @@ namespace ATOOLS {
       { s_variables[key]=value; }
       inline double WAnaScale()                          { return m_wana_scale;}
       inline void   SetWAnaScale(double ws)              { m_wana_scale=ws; }
-#ifndef USING__ATOOLS_only
       void SetScaleFactors(double f, double r) {
 	m_fac_scale_fac = f;
 	m_ren_scale_fac = r;
@@ -98,22 +91,6 @@ namespace ATOOLS {
       inline double RenormalizationScaleFactor() { return m_ren_scale_fac; }
       inline double PDFScaleFactor() const { return m_pdf_scalefac; }    //for the operator approach.
       inline double AsScaleFactor() const { return m_as_scalefac; }
-      inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
-      inline MODEL::Model_Base *Model() const { return p_model; }
-
-      inline std::string ModelName()                      { return p_model->Name(); } 
-      inline int ScalarNumber(const std::string _name)                { return p_model->ScalarNumber(_name); }
-      inline double ScalarConstant(const std::string _name)           { return p_model->ScalarConstant(_name); }
-      inline double ScalarFunction(const std::string _name,double _t) { return p_model->ScalarFunction(_name,_t); }
-      inline double ScalarFunction(const std::string _name)           { return p_model->ScalarFunction(_name); }
-      inline CMatrix ComplexMatrix(const std::string _name) { return p_model->ComplexMatrix(_name); }
-      inline Complex ComplexMatrixElement(const std::string _name,const int _i,const int _j) { 
-	return p_model->ComplexMatrixElement(_name,_i,_j); 
-      }
-      inline Function_Base * GetScalarFunction(const std::string _name) { 
-	return p_model->GetScalarFunction(_name); 
-      }
-#endif
 
       /*
       inline int Output()                                 { return m_output; }

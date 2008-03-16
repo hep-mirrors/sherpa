@@ -24,6 +24,7 @@
 #include "MyStrStream.H"
 #include "Data_Reader.H"
 #include "Data_Writer.H"
+#include "Model_Base.H"
 
 #include <dlfcn.h>
 
@@ -146,12 +147,12 @@ double Phase_Space_Handler::Integrate()
     return p_process->TotalXS()*rpa.Picobarn();
   p_integrator = new Phase_Space_Integrator();
   if (!InitIncoming()) return 0;
-  if (rpa.gen.ModelName()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
-    if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
+  if (MODEL::s_model->Name()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
+    if (rpa.gen.Ecms()>MODEL::s_model->ScalarConstant(std::string("M_cut"))) {
       msg_Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
 		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<std::endl
 		 <<"   but internal string/cut-off scale of model is "
-		 <<rpa.gen.ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
+		 <<MODEL::s_model->ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
 		 <<"   Return 0 pb as cross section for process "<<p_process->Name()<<std::endl;
       return 0.;
     }

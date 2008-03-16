@@ -52,14 +52,14 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
     zcalc.push_back(new SSSS_Calc(_sgen,_BS));
 
-    if(rpa.gen.Model()->GetInteractionModel()->HasLoops()) {
+    if(MODEL::s_model->GetInteractionModel()->HasLoops()) {
       zcalc.push_back(new Triangle_Calc(_sgen,_BS));
       zcalc.push_back(new Box_Calc(_sgen,_BS));
       zcalc.push_back(new Pentagon_Calc(_sgen,_BS));
     }
 
     
-    if(rpa.gen.Model()->GetInteractionModel()->HasTensors()){
+    if(MODEL::s_model->GetInteractionModel()->HasTensors()){
       zcalc.push_back(new FFT_Calc(_sgen,_BS));
       zcalc.push_back(new VVT_Calc(_sgen,_BS));
       zcalc.push_back(new SST_Calc(_sgen,_BS));
@@ -71,7 +71,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
       zcalc.push_back(new SSGS_Calc(_sgen,_BS));
       zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
     }
-    if(rpa.gen.Model()->GetInteractionModel()->HasAGCs()){
+    if(MODEL::s_model->GetInteractionModel()->HasAGCs()){
       zcalc.push_back(new AnomalousV3_Calc(_sgen,_BS));
       zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
     }     
@@ -108,7 +108,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
     if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
       }
-    if(ATOOLS::IsZero(p->fl.Mass())&&rpa.gen.Model()->
+    if(ATOOLS::IsZero(p->fl.Mass())&&MODEL::s_model->
        GetInteractionModel()->Code()!="SM+AGC"){
       p->m=0;
       }	

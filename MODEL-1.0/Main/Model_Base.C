@@ -14,6 +14,11 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+namespace MODEL 
+{
+  Model_Base *s_model;
+}
+
 Model_Base::Model_Base(std::string _dir,std::string _file) :
   p_model(NULL), m_dir(_dir), m_file(_file), p_dataread(NULL),
   p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
