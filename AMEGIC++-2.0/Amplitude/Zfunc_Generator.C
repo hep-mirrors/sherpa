@@ -238,7 +238,7 @@ std::string Zfunc_Generator::LFEff(const std::string &type)
 
 int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 {
-  Zh->m_type = -10;
+  Zh->m_type = "";
   vector<Lorentz_Function*> lflist;
   if (pf!=0) lflist.push_back(p->Lorentz->GetCopy());
 
@@ -498,7 +498,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function*> &lflist,
     }
   }
 
-  if(Zh->m_type.find('T')!=std::string::npos) Set_Tensor(Zh,p);
+  if(Zh->m_type[Zh->m_type.length()-1]=='T') Set_Tensor(Zh,p);
   
   //Special cases
   int icoupl        = Zh->m_narg - Zh->p_calculator->GetScalarNumb();
@@ -840,10 +840,8 @@ void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
   Zh->p_arguments[narg-2]     = pt->number;
   Zh->p_arguments[narg-1]     = pt->number;
   int ic=narg-2;
-  if (Zh->m_type=="FFT" || Zh->m_type=="FFVT"){
-    Zh->p_couplings[2]=pb->cpl[2];
-    if (Zh->m_type=="FFVT") ic=0;  
-  }
+  if (Zh->m_type=="FFT") Zh->p_couplings[2]=pb->cpl[2];
+  if (Zh->m_type=="FFT" || Zh->m_type=="FFVT") ic=0;
   Zh->p_couplings[ic]       = pb->cpl[0];
   Zh->p_couplings[ic+1]     = pb->cpl[1];  
 }	

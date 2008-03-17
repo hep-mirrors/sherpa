@@ -24,27 +24,6 @@ MPI::Datatype   mpi_point_type;
 #endif
 
 
-std::ostream & AMEGIC::operator<<(std::ostream & s, const Point * p)
-{
-//   s<<p;
-//   return s;
-  s<<" t="<<p->t<<" ";
-  if ((p->left==0) && (p->right==0)) {
-    s<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<std::endl;
-    return s;
-  }
-  s<<" ["<<p->fl<<"("<<p->b<<")]"<<std::endl;
-  s<<"left : ";
-  s<<p->left;
-  s<<"right : ";
-  s<<p->right;
-  if(p->middle){
-    s<<" middle : ";
-    s<<p->middle;
-  }
-  return s;
-}
-
 
 namespace AMEGIC {
   class Compare_Pre_Amplitudes {
@@ -1362,7 +1341,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  
 	  if ((*v)(i)->Color.size()==1) {
 	    *pcopy->Color = (*v)(i)->Color.back();
-	    if (p->Lorentz) delete p->Lorentz;
+	    if (pcopy->Lorentz) delete pcopy->Lorentz;
 	    pcopy->Lorentz = (*v)(i)->Lorentz.front()->GetCopy();
 	    pcopy->t = (*v)(i)->t;
 	    break;
@@ -1370,7 +1349,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  else {
 	    for (size_t k=0;k<(*v)(i)->Color.size();k++) {
 	      *pcopy->Color = (*v)(i)->Color[k];
-	      if (p->Lorentz) delete p->Lorentz;
+	      if (pcopy->Lorentz) delete pcopy->Lorentz;
 	      pcopy->Lorentz = (*v)(i)->Lorentz[k]->GetCopy();
 	      pcopy->t = (*v)(i)->t;
 	      
