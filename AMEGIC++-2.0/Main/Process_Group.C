@@ -991,8 +991,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       AME_PS_TID *tid(m_cts[i]);
       pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_s=0;
-      pthread_mutex_unlock(&tid->m_s_mtx);
       pthread_cond_signal(&tid->m_s_cnd);
+      pthread_mutex_unlock(&tid->m_s_mtx);
       int tec(0);
       if ((tec=pthread_join(tid->m_id,NULL)))
 	THROW(fatal_error,"Cannot join thread"+ToString(i));
@@ -1223,8 +1223,8 @@ void *Process_Group::TDSigma(void *arg)
     // signal group to continue
     pthread_mutex_lock(&tid->m_s_mtx);
     tid->m_s=2;
-    pthread_mutex_unlock(&tid->m_s_mtx);
     pthread_cond_signal(&tid->m_s_cnd);
+    pthread_mutex_unlock(&tid->m_s_mtx);
   }
   return NULL;
 }
@@ -1250,8 +1250,8 @@ double Process_Group::Differential(const Vec4D * p)
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_umprocs.size());
       tid->m_s=1;
-      pthread_mutex_unlock(&tid->m_s_mtx);
       pthread_cond_signal(&tid->m_s_cnd);
+      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
@@ -1272,8 +1272,8 @@ double Process_Group::Differential(const Vec4D * p)
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_mprocs.size());
       tid->m_s=1;
-      pthread_mutex_unlock(&tid->m_s_mtx);
       pthread_cond_signal(&tid->m_s_cnd);
+      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
@@ -1323,8 +1323,8 @@ double Process_Group::Differential2()
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_umprocs.size());
       tid->m_s=1;
-      pthread_mutex_unlock(&tid->m_s_mtx);
       pthread_cond_signal(&tid->m_s_cnd);
+      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
@@ -1345,8 +1345,8 @@ double Process_Group::Differential2()
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_mprocs.size());
       tid->m_s=1;
-      pthread_mutex_unlock(&tid->m_s_mtx);
       pthread_cond_signal(&tid->m_s_cnd);
+      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
