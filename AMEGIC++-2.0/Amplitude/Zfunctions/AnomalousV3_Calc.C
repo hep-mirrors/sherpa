@@ -1,6 +1,9 @@
 #include "Calculator.H"
 #include "String_Generator.H"
 #include "Message.H"
+#include "Zfunc_Generator.H"
+#include "Point.H"
+#include "Zfunc.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -74,4 +77,31 @@ Kabbala AnomalousV3_Calc::Do()
 
   return f1*t1+f2*t2-f3*t3+f4*t4+t5*f5+t6*f6-t7*f7;
 
+}
+
+void AnomalousV3_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			       Point *const p,Point *const pf,Point *&pb,
+			       int *lfnumb,int *canumb)
+{
+  int icoupl(zf->m_narg-GetScalarNumb());
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  pb->cpl.resize(8);
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[2];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[3];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[4];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[5];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[6];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[7];icoupl++;
+  zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
 }

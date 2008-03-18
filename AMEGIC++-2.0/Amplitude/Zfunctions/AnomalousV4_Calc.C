@@ -1,5 +1,8 @@
 #include "Calculator.H"
 #include "String_Generator.H"
+#include "Zfunc_Generator.H"
+#include "Point.H"
+#include "Zfunc.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -48,7 +51,24 @@ Kabbala AnomalousV4_Calc::Do()
 
 }
 
-
+void AnomalousV4_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			       Point *const p,Point *const pf,Point *&pb,
+			       int *lfnumb,int *canumb)
+{
+  int icoupl(zf->m_narg-GetScalarNumb());
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+  zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
 
 
 

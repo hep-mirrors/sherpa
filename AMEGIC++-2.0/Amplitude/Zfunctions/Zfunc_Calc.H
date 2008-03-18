@@ -12,6 +12,9 @@
 namespace AMEGIC {
 
   class Basic_Sfuncs;
+  class Zfunc_Generator;
+  class Point;
+  class Zfunc;
 
   struct ZFCalc_Key {
     Virtual_String_Generator *p_sgen;
@@ -30,9 +33,14 @@ namespace AMEGIC {
 
     Zfunc_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
     virtual ~Zfunc_Calc();
+
+    Zfunc_Calc *GetCopy() const;
     virtual ATOOLS::Kabbala Do(); 
     
     virtual int GetScalarNumb();
+    virtual void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			 Point *const p,Point *const pf,Point *&pb,
+			 int *lfnumb,int *canumb);
   };
   
   typedef ATOOLS::Getter_Function<Zfunc_Calc,ZFCalc_Key> ZFCalc_Getter;
@@ -89,21 +97,21 @@ namespace AMEGIC {
 #define DEFINE_ZFLOOPCALC_GETTER(CLASS,NAME,TAG,INFO)			\
   DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
-  { if (!key.p_model->HasLoops()) return NULL;				\
+  { if (key.p_model && !key.p_model->HasLoops()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<INFO; }
 #define DEFINE_ZFTENSORCALC_GETTER(CLASS,NAME,TAG,INFO)			\
   DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
-  { if (!key.p_model->HasTensors()) return NULL;			\
+  { if (key.p_model && !key.p_model->HasTensors()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<INFO; }
 #define DEFINE_ZFAGCCALC_GETTER(CLASS,NAME,TAG,INFO)			\
   DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
-  { if (!key.p_model->HasAGCs()) return NULL;				\
+  { if (key.p_model && !key.p_model->HasAGCs()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<INFO; }

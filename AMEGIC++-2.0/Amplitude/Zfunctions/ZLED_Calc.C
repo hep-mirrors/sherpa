@@ -1,6 +1,9 @@
 #include "Basic_Sfuncs.H"
 #include "Calculator.H"
 #include "String_Generator.H"
+#include "Zfunc_Generator.H"
+#include "Point.H"
+#include "Zfunc.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -195,6 +198,23 @@ Kabbala FFT_Calc::Do()
       (X(0,1)-X(0,2)-Y(0) * sgen->GetEnumber(coupl[2])) );
 }
 
+void FFT_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		       Point *const p,Point *const pf,Point *&pb,
+		       int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if (pf==0) zfc->Set_Out(zf,0,pb,p);
+  //else zfc->Set_In(zf,0,p,pf,pb);
+  zfc->Set_FermionProp(zf,p,pf);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 Kabbala VVT_Calc::Do() 
 {
   int sarg[4];
@@ -225,6 +245,20 @@ Kabbala VVT_Calc::Do()
 			Z01*( V03*V12 + V02*V13 ) ) );
 }
 
+void VVT_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		       Point *const p,Point *const pf,Point *&pb,
+		       int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 Kabbala SST_Calc::Do() 
 {
   int sarg[4];
@@ -240,6 +274,20 @@ Kabbala SST_Calc::Do()
     ( ( sgen->GetEnumber(coupl[5]) + V(0,1) ) * Vcplx(sarg[2],sarg[3]) -
       Vcplx(sarg[0],sarg[2],s0) * Vcplx(sarg[1],sarg[3],s1) -
       Vcplx(sarg[0],sarg[3],s0) * Vcplx(sarg[1],sarg[2],s1) );     
+}
+
+void SST_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		       Point *const p,Point *const pf,Point *&pb,
+		       int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
 }
 
 Kabbala FFVT_Calc::Do() 
@@ -258,6 +306,31 @@ Kabbala FFVT_Calc::Do()
     ( X(0,2,1)*X(1,2,0) + X(0,2,0)*X(1,2,1) - Z(0,1)*V23x2
       - M(0)*( X(0,2,1)*Vcplx(sarg[0],sarg[2],s0) + X(0,2,0)*Vcplx(sarg[0],sarg[3],s0)
 	       - X(0,0)*V23x2 )*X(1,0) );
+}
+
+void FFVT_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if(pf==0){
+    zfc->Set_Out(zf,0,pb,p);
+    if(pb->fl.IsVector()) zfc->Set_In(zf,1,p,0,pb);
+    else if(pb->left->fl.IsVector()) zfc->Set_Out(zf,1,pb->left,p);
+    else if(pb->right->fl.IsVector()) zfc->Set_Out(zf,1,pb->right,p);
+    else if(pb->middle->fl.IsVector()) zfc->Set_Out(zf,1,pb->middle,p);
+  }
+  else if(!p->middle && pb->fl.IsVector()){
+    zfc->Set_Out(zf,0,pb,p);
+    zfc->Set_In(zf,1,p,pf,pb);
+  }
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
 }
 
 Kabbala VVVT_Calc::Do() 
@@ -287,6 +360,20 @@ Kabbala VVVT_Calc::Do()
 	       X(1,3,1)*(Vcplx(sarg[2],sarg[3],s2)-Vcplx(sarg[0],sarg[3],s0))) );
 }
 
+void VVVT_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 Kabbala SSST_Calc::Do() 
 {
   int sarg[2];
@@ -295,9 +382,37 @@ Kabbala SSST_Calc::Do()
   return sgen->GetEnumber(coupl[0])* Vcplx(sarg[0],sarg[1]);     
 }
 
+void SSST_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  zfc->Set_Tensor(zf,p);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 Kabbala FFGS_Calc::Do() 
 {
   return X(0,1)-X(0,2)-Y(0) * sgen->GetEnumber(coupl[2]);
+}
+
+void FFGS_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  zfc->Set_FermionProp(zf,p,pf);
+  zf->p_couplings[2]=p->cpl[2];
+  if (pf==0) zfc->Set_Out(zf,0,pb,p);
+  else zfc->Set_In(zf,0,p,pf,pb);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+  }
 }
 
 Kabbala VVGS_Calc::Do() 
@@ -307,10 +422,48 @@ Kabbala VVGS_Calc::Do()
       X(0,0)*X(1,2) + X(0,2)*X(1,1) );
 }
 
+void VVGS_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  int icoupl(zf->m_narg-GetScalarNumb());
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+  zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 Kabbala SSGS_Calc::Do() 
 {
   return sgen->GetEnumber(coupl[4]) *
     ( V(0,1) + sgen->GetEnumber(coupl[5]) );
+}
+
+void SSGS_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			Point *const p,Point *const pf,Point *&pb,
+			int *lfnumb,int *canumb)
+{
+  int icoupl(zf->m_narg-GetScalarNumb());
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+  zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
 }
 
 Kabbala FFVGS_Calc::Do() 
@@ -319,4 +472,28 @@ Kabbala FFVGS_Calc::Do()
   return (Z(0,1)-M(0)*X(0,0)*X(1,0));
 }
 
+void FFVGS_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+			 Point *const p,Point *const pf,Point *&pb,
+			 int *lfnumb,int *canumb)
+{
+  if(pf==0){
+    zfc->Set_Out(zf,0,pb,p);
+    if(pb->fl.IsVector()) zfc->Set_In(zf,1,p,0,pb);
+    else if(pb->left->fl.IsVector()) zfc->Set_Out(zf,1,pb->left,p);
+    else if(pb->right->fl.IsVector()) zfc->Set_Out(zf,1,pb->right,p);
+    else if(pb->middle->fl.IsVector()) zfc->Set_Out(zf,1,pb->middle,p);
+  }
+  else if(!p->middle && pb->fl.IsVector()){
+    zfc->Set_Out(zf,0,pb,p);
+    zfc->Set_In(zf,1,p,pf,pb);
+  }
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    if(pb->fl.IsVector()) pb=p;   
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
 

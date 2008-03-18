@@ -498,75 +498,10 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function*> &lflist,
     }
   }
 
-  if(Zh->m_type[Zh->m_type.length()-1]=='T') Set_Tensor(Zh,p);
   
   //Special cases
-  int icoupl        = Zh->m_narg - Zh->p_calculator->GetScalarNumb();
-  if (Zh->m_type=="FFT") {
-    if (pf==0) Set_Out(Zh,0,pb,p);
-    //else Set_In(Zh,0,p,pf,pb);
-    Set_FermionProp(Zh,p,pf);
-  }
-  else if (Zh->m_type=="FFGS" || Zh->m_type=="Y") {
-    if (pf==0) Set_Out(Zh,0,pb,p);
-    else Set_In(Zh,0,p,pf,pb);
-    if (Zh->m_type=="FFGS") {
-      Set_FermionProp(Zh,p,pf);
-      Zh->p_couplings[2]=p->cpl[2];
-    }
-  }
-  else if (Zh->m_type=="FFVT" || Zh->m_type=="FFVGS") {
-    if(pf==0){
-      Set_Out(Zh,0,pb,p);
-      if (pb->fl.IsVector()) Set_In(Zh,1,p,0,pb);
-      else if (pb->left->fl.IsVector()) Set_Out(Zh,1,pb->left,p);
-      else if (pb->right->fl.IsVector()) Set_Out(Zh,1,pb->right,p);
-      else if (pb->middle->fl.IsVector()) Set_Out(Zh,1,pb->middle,p);
-    }
-    else if(!p->middle && pb->fl.IsVector()){
-      Set_Out(Zh,0,pb,p);
-      Set_In(Zh,1,p,pf,pb);
-    }
-  }
-  else if (Zh->m_type=="Z") {
-    Set_Out(Zh,1,pb,p);
-  }
-  else if (Zh->m_type=="SSGS" || Zh->m_type=="VVGS" || Zh->m_type=="AV4") {
-    Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
-  }
-  else if (Zh->m_type=="AV3") {
-      pb->cpl.resize(8);
-      Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[2];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[3];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[4];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[5];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[6];icoupl++;
-      Zh->p_couplings[icoupl] = pb->cpl[7];icoupl++;
-    SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
-    SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
-    SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
-  }
-  else {
-    Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
-    SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
-    SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
-    SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
-  }
+  Zh->p_calculator->SetArgs(this,Zh,p,pf,pb,lfnumb,canumb);
 
-  if(Zh->p_calculator->GetScalarNumb()>0){
-    int scnt=Zh->p_calculator->narg - Zh->p_calculator->GetScalarNumb();
-    if(pb->fl.IsScalar()) SetScalarArgs(Zh,scnt,pb);
-
-    if(Zh->m_type=="FFVGS" && pb->fl.IsVector()) pb=p;   
-    if(Zh->m_type!="Y" && Zh->m_type!="FFGS"){
-      SetScalarArgs(Zh,scnt,pb->left);
-      SetScalarArgs(Zh,scnt,pb->right);
-      SetScalarArgs(Zh,scnt,pb->middle);
-    } 
-    
-  }
   delete[] lfnumb;
   delete[] canumb;
 }

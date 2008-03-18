@@ -1,5 +1,6 @@
 #include "Calculator.H"
 #include "String_Generator.H"
+#include "Zfunc_Generator.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -153,10 +154,36 @@ VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
 
 Kabbala Y_Calc::Do() {return Y(0);}
 
+void Y_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		     Point *const p,Point *const pf,Point *&pb,
+		     int *lfnumb,int *canumb)
+{
+  if (pf==0) zfc->Set_Out(zf,0,pb,p);
+  else zfc->Set_In(zf,0,p,pf,pb);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+  }
+}
+
 Kabbala Z_Calc::Do() 
 {
   if (IsZero(M(0))) return Z(0,1);
   return (Z(0,1)-M(0)*X(0,0)*X(1,0));
+}
+
+void Z_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		     Point *const p,Point *const pf,Point *&pb,
+		     int *lfnumb,int *canumb)
+{
+  zfc->Set_Out(zf,1,pb,p);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
 }
 
 Kabbala VVS_Calc::Do() 
