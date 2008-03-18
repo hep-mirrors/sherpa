@@ -172,11 +172,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(MODELINCS)
   AC_SUBST(MODELLIBS)
   
-  HDECAYINCS="-I\${MODELDIR}/Hdecay"
-  HDECAYLIBS="-L\${MODELBUILDDIR}/Hdecay -lHdecay"
-  AC_SUBST(HDECAYINCS)
-  AC_SUBST(HDECAYLIBS)
-    
   PDFDIR="\${top_srcdir}/PDF-1.0"
   PDFBUILDDIR="\${top_builddir}/PDF-1.0"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
@@ -507,42 +502,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(GZIP_SUPPORT, test "$zlib" = "true")
   AC_SUBST(CONDITIONAL_GZIPLIBS)
 
-  AC_ARG_ENABLE(modelinclude,
-    AC_HELP_STRING([--disable-modelinclude], [Disable inclusion of MODEL headers]),
-    [ AC_MSG_CHECKING(whether to include MODEL headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); modelinclude=true;;
-        no)  AC_MSG_RESULT(no); modelinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include MODEL headers); AC_MSG_RESULT(yes); modelinclude=true; ]
-  )
-  if test "$modelinclude" = "true" ; then
-    AC_DEFINE([USING__Model], "1", [using Model])
-  else
-    AC_DEFINE([USING__ATOOLS_only], "1", [not using Model, using ATOOLS_only])
-  fi
-  AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
-  
-  AC_ARG_ENABLE(hdecayinclude,
-    AC_HELP_STRING([--disable-hdecayinclude], [Disable inclusion of Hdecay stuff]),
-    [ AC_MSG_CHECKING(whether to include Hdecay stuff);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); hdecayinclude=true;;
-        no)  AC_MSG_RESULT(no); hdecayinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include Hdecay stuff); AC_MSG_RESULT(yes); hdecayinclude=true; ]
-  )
-  dnl comment out if hdecay to be compiled
-  echo "Hardwired: Omitting all Hdecay stuff"; hdecayinclude=false;
-  if test "$hdecayinclude" = "true" ; then
-    AC_DEFINE([USING__Hdecay], "1", [using Hdecay])
-    CONDITIONAL_HDECAYLIBS="\${HDECAYLIBS}"
-    CONDITIONAL_HDECAYINCS="\${HDECAYINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_HDECAYLIBS)
-  AC_SUBST(CONDITIONAL_HDECAYINCS)
-  AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
-  
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
     [ AC_MSG_CHECKING(whether to include AMISIC headers);
@@ -596,23 +555,4 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HADRONSLIBS)
   AC_SUBST(CONDITIONAL_HADRONSINCS)
   AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
-  
-  SHERPASUBDIR="SHERPA-1.0"
-  AC_ARG_ENABLE(sherpainclude,
-    AC_HELP_STRING([--disable-sherpainclude], [Disable inclusion of SHERPA headers]),
-    [ AC_MSG_CHECKING(whether to include SHERPA headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); sherpainclude=true;;
-        no)  AC_MSG_RESULT(no); sherpainclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include SHERPA stuff); AC_MSG_RESULT(yes); sherpainclude=true; ]
-  )
-  if test "$sherpainclude" = "true" ; then
-    AC_DEFINE([USING__Sherpa], "1", [using SHERPA])
-    CONDITIONAL_SHERPAINCS="\${SHERPAINCS}"
-    CONDITIONAL_SHERPALIBS="\${SHERPALIBS}"
-  fi
-  AC_SUBST(CONDITIONAL_SHERPALIBS)
-  AC_SUBST(CONDITIONAL_SHERPAINCS)
-  AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
 ])

@@ -7,6 +7,9 @@
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
 
+/* alternate entry point */
+#undef F77_MAIN
+
 /* multithread support */
 #undef USING__Threading
 
@@ -40,20 +43,11 @@
 /* Sherpa version */
 #undef SHERPA_VERSION
 
-/* not using Model, using ATOOLS_only */
-#undef USING__ATOOLS_only
-
 /* using AHADIC */
 #undef USING__Ahadic
 
 /* using AMISIC */
 #undef USING__Amisic
-
-/* using SHERPA */
-#undef USING__Sherpa
-
-/* using Model */
-#undef USING__Model
 
 /* Using colour */
 #undef USING__COLOUR

@@ -16,10 +16,6 @@
 #define PROFILE_HERE
 #endif
 
-#ifdef DEBUG__Simple_String
-#include "Debugger.H"
-#endif
-
 using namespace AMISIC;
 using namespace ATOOLS;
 

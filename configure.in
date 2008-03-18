@@ -29,7 +29,6 @@ SHERPA_SETUP_VARIABLES
 
 SHERPA_SETUP_CONFIGURE_OPTIONS
 
-dnl Comment in/out MODEL-1.0/{Isajet, Hdecay}
 AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
 	  ATOOLS-2.0/Org/Makefile \
@@ -45,8 +44,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PDF-1.0/KMR/Makefile \
 	  PDF-1.0/Remnant/Makefile \
 	  PDF-1.0/Makefile \
-	  MODEL-1.0/Hdecay/Makefile \
-	  MODEL-1.0/Isajet/Makefile \
 	  MODEL-1.0/Decays/Makefile \
 	  MODEL-1.0/Interaction_Models/Makefile \
 	  MODEL-1.0/Main/Makefile \
@@ -69,7 +66,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMISIC++-1.0/Tools/Makefile \
 	  AMISIC++-1.0/Model/Makefile \
 	  AMISIC++-1.0/Main/Makefile \
-	  AMISIC++-1.0/Run/Makefile \
 	  AMISIC++-1.0/Makefile \
 	  AHADIC++-1.0/Tools/Makefile \
 	  AHADIC++-1.0/Formation/Makefile \

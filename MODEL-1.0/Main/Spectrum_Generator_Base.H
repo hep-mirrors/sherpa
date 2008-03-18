@@ -30,8 +30,8 @@ namespace MODEL {
     \brief is the base class for all spectrum generators to be linked.
 
     Spectrum_Generator_Base is the base class used for wrappers around various
-    spectrum generators, so far the two Fortran codes Hdecay and Isasusy have been 
-    linked. If these codes allow for it, the base class is not only useful to 
+    spectrum generators, like the LesHouches interface.
+    If these codes allow for it, the base class is not only useful to 
     store particles and their masses, but also widths and branching ratios can
     be stored in corresponding vectors. However, at the moment this option is not 
     fully exploited.

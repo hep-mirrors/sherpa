@@ -1,3 +1,0 @@
-rm -rf Doc
-mkdir Doc
-doxygen Doxyfile 

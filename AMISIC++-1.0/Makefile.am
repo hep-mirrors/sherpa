@@ -3,7 +3,6 @@ MAKE  =	make
 SUBDIRS       =	\
 		Tools \
 		Model \
-		Main\
-		Run
+		Main
 
 EXTRA_DIST    = @SVNINCLUDE@ config.doxygen

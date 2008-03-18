@@ -6,7 +6,6 @@
 namespace MODEL {
   class Standard_Model : public Model_Base {
   private :
-    std::string m_generator;
     int         m_ewscheme,m_ckmorder;
     void ReadInFile();
     void FixEWParameters();
@@ -14,10 +13,10 @@ namespace MODEL {
   public :
     Standard_Model(std::string,std::string);
     ~Standard_Model()                   {}
-    bool RunSpectrumGenerator();
+    bool RunSpectrumGenerator() { return true; }
     void FillMasses() {}
     void FillWidths() {}
-    bool FillDecay(ATOOLS::Decay_Table *);
+    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
     void AddToDataCollector();
   };
   /*!
@@ -25,13 +24,7 @@ namespace MODEL {
     \brief contains the Standard_Model (no surprise)
     
     There are different options implemented how to define the elctrowek sector of the SM, all of them
-    steered through m_ewscheme that can be read in. At the moment, only HDECAY is interfaced as spectrum 
-    generator for the decay modes of the Higgs boson, more should be added. 
-  */
-  /*!
-    \var std::string Standard_Model::m_generator
-    The spectrum generator to be used. At the moment, only Hdecay for the Higgs boson decays is
-    available.
+    steered through m_ewscheme that can be read in. 
   */
   /*!
     \var int Standard_Model::m_ewscheme
@@ -56,12 +49,6 @@ namespace MODEL {
     \fn Standard_Model::Standard_Model(std::string,std::string)
     The constructor initializes the parameters of this class and the pointers to
     the searchable maps.
-  */
-  /*!
-    \fn bool Standard_Model::RunSpectrumGenerator()
-    In this method the spectrum generator is specified and initialised to run.
-    At the moment ,the only option is to run Hdecay.
-    \todo More geenrators, maybe one for the electroweak sector ?
   */
   /*!
     \fn void Standard_Model::ReadInFile()

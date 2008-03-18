@@ -4,7 +4,7 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
-#include "config.h"
+#include "CXXFLAGS.H"
 #ifdef USING__CLHEP
 #include "Input_Output_Handler.H"
 #endif

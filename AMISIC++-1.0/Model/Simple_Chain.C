@@ -27,7 +27,6 @@
 // #define DEBUG__Simple_Chain
 
 #ifdef DEBUG__Simple_Chain
-#include "Debugger.H"
 const std::string differentialfile=std::string("differential.dat");
 const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");

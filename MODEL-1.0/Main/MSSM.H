@@ -25,7 +25,7 @@ namespace MODEL {
   */
   /*!
     \var std::string MSSM::m_generator
-    The spectrum generator to be used. At the moment, only Isajet/Isasusy is available.
+    The spectrum generator to be used. At the moment, only LesHouches is available.
     \todo Interface more SUSY generators.
   */
   /*!
@@ -58,7 +58,7 @@ namespace MODEL {
   /*!
     \fn bool MSSM::RunSpectrumGenerator()
     In this method the spectrum generator is specified and initialised to run.
-    At the moment ,the only option is to run Hdecay.
+    At the moment ,the only option is to run LesHouches.
   */
   /*!
     \fn void MSSM::ReadInFile()

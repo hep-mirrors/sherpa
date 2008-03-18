@@ -192,8 +192,7 @@ namespace MODEL {
   /*!
     \var Spectrum_Generator_Base * Model_Base::p_spectrumgenerator
     A pointer to the spectrum generator object to be used in the calculation of masses, branching widths
-    and the like. Right now, only two such generators are actually implemented, namely HDECAY and Isajet/Isasusy,
-    both through a corresponding XXX_Fortran_Interface class.
+    and the like. Right now, only one such generator is actually implemented, namely LesHouches.
   */
   /*!
     \fn Model_Base::Model_Base(std::string,std::string)

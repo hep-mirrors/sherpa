@@ -32,7 +32,6 @@ libToolsOrg_la_SOURCES        = \
 				Info_Key.C \
 				Integration_Info.C \
 				Library_Loader.C \
-				Debugger.C \
 				$(GZIPSTREAMSOURCES) \
 				My_Root.C
 
@@ -69,8 +68,6 @@ pkginclude_HEADERS       =	\
 			Integration_Info.H \
 			Integration_Info.inl.H \
 			Library_Loader.H \
-			Debugger.H \
-			Debugger.inl.H \
 			Node.H \
 			Node.C \
 			$(GZIPSTREAMHEADERS) \

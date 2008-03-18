@@ -1,11 +1,5 @@
 MAKE       = make 
 
-if HDECAY_SUPPORT
-HDECAYSUBDIR     =	Hdecay
-else
-HDECAYSUBDIR     =
-endif
-
-SUBDIRS    = Main Interaction_Models Decays $(HDECAYSUBDIR) 
+SUBDIRS    = Main Interaction_Models Decays
 
 EXTRA_DIST    = @SVNINCLUDE@

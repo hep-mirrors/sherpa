@@ -7,12 +7,6 @@
 /* using gzip */
 #undef USING__GZIP
 
-/* using Hdecay */
-#undef USING__Hdecay
-
-/* using Isajet */
-#undef USING__Isajet
-
 /* using LHAPDF */
 #undef USING__LHAPDF
 

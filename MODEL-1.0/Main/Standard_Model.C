@@ -5,11 +5,6 @@
 #include "Effective_Higgs_Coupling.H"
 #include "Message.H"
 #include "Data_Collector.H"
-#ifdef USING__HDECAY
-#include "Hdecay_Fortran_Interface.H"
-#else
-#include "Spectrum_Generator_Base.H"
-#endif
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -251,32 +246,6 @@ void Standard_Model::FixCKM() {
   p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
 }
 
-
-bool Standard_Model::RunSpectrumGenerator() {
-  m_spectrum = p_dataread->GetValue<int>("GENERATOR_ON",0);
-  if (m_spectrum) {
-    m_generator = p_dataread->GetValue<std::string>("HIGGS_GENERATOR",std::string("Hdecay"));
-#ifdef USING__HDECAY
-    if (m_generator==std::string("Hdecay")) {
-      p_spectrumgenerator = new HDECAY::Hdecay_Fortran_Interface(p_dataread,this);
-      p_spectrumgenerator->Run(std::string("SM"));
-      return 1;
-    }
-#endif    
-    msg_Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<std::endl
-	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
-    return 0;
-  }
-  return 1;
-}
-
-bool Standard_Model::FillDecay(ATOOLS::Decay_Table * dt) 
-{
-  if (m_generator==std::string("Hdecay")) {
-    return p_spectrumgenerator->FillDecay(dt);
-  }
-  return 0;
-}
 
 void Standard_Model::AddToDataCollector() 
 {

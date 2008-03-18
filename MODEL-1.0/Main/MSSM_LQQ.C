@@ -58,15 +58,6 @@ void MSSM_LQQ::ReadInFile() {
 bool MSSM_LQQ::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("LesHouches"));
-#ifdef USING__ISAJET
-    if (m_generator==std::string("Isajet")) {
-      p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
-      p_spectrumgenerator->Run(std::string(m_scenario));
-      p_spectrumgenerator->FillMasses();
-      //p_spectrumgenerator->FillDecays();
-      return 1;
-    }
-#endif
     if (m_generator==std::string("LesHouches")) {
       p_spectrumgenerator = new LesHouches_Interface(p_dataread,this,m_dir);
       p_spectrumgenerator->Run(std::string(m_scenario));

@@ -1,3 +1,3 @@
 SUBDIRS = Main
 
-EXTRA_DIST     = docit Doxyfile @SVNINCLUDE@
+EXTRA_DIST     = Doxyfile @SVNINCLUDE@
