@@ -974,29 +974,38 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     Data_Reader read(" ",";","!","=");
     if (!read.ReadFromFile(helpi,"AMEGIC_PS_THREADS")) helpi=2;
     else msg_Info()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      AME_PS_TID *tid(new AME_PS_TID(this));
-      m_cts[i] = tid;
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&TDSigma,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
+    if (helpi>0) {
+      m_cts.resize(helpi);
+      for (size_t i(0);i<m_cts.size();++i) {
+	AME_PS_TID *tid(new AME_PS_TID(this));
+	m_cts[i] = tid;
+	pthread_cond_init(&tid->m_s_cnd,NULL);
+	pthread_cond_init(&tid->m_t_cnd,NULL);
+	pthread_mutex_init(&tid->m_s_mtx,NULL);
+	pthread_mutex_init(&tid->m_t_mtx,NULL);
+	pthread_mutex_lock(&tid->m_s_mtx);
+	pthread_mutex_lock(&tid->m_t_mtx);
+	tid->m_s=1;
+	int tec(0);
+	if ((tec=pthread_create(&tid->m_id,NULL,&TDSigma,(void*)tid)))
+	  THROW(fatal_error,"Cannot create thread "+ToString(i));
+      }
     }
 #endif
     m_totalxs = p_pshandler->Integrate();
 #ifdef USING__Threading
     for (size_t i(0);i<m_cts.size();++i) {
       AME_PS_TID *tid(m_cts[i]);
-      pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_s=0;
-      pthread_cond_signal(&tid->m_s_cnd);
-      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
       int tec(0);
       if ((tec=pthread_join(tid->m_id,NULL)))
 	THROW(fatal_error,"Cannot join thread"+ToString(i));
+      pthread_mutex_unlock(&tid->m_t_mtx);
+      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_mutex_destroy(&tid->m_t_mtx);
       pthread_mutex_destroy(&tid->m_s_mtx);
+      pthread_cond_destroy(&tid->m_t_cnd);
       pthread_cond_destroy(&tid->m_s_cnd);
     }
     m_cts.clear();
@@ -1195,13 +1204,9 @@ void *Process_Group::TDSigma(void *arg)
   while (true) {
     // wait for group to signal
     pthread_mutex_lock(&tid->m_s_mtx);
-    if (tid->m_s==2)
-      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    if (tid->m_s==0) {
-      pthread_mutex_unlock(&tid->m_s_mtx);
-      return NULL;
-    }
     pthread_mutex_unlock(&tid->m_s_mtx);
+    pthread_cond_signal(&tid->m_s_cnd);
+    if (tid->m_s==0) return NULL;
     // worker routine
     tid->m_d=0.0;
     if (tid->m_m&4) {
@@ -1221,10 +1226,7 @@ void *Process_Group::TDSigma(void *arg)
 	  tid->m_d+=tid->p_proc->m_umprocs[tid->m_i]->DSigma2();
     }
     // signal group to continue
-    pthread_mutex_lock(&tid->m_s_mtx);
-    tid->m_s=2;
-    pthread_cond_signal(&tid->m_s_cnd);
-    pthread_mutex_unlock(&tid->m_s_mtx);
+    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
   }
   return NULL;
 }
@@ -1244,45 +1246,39 @@ double Process_Group::Differential(const Vec4D * p)
     if (m_umprocs.size()%m_cts.size()>0) ++d;
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_m=1;
       tid->p_p=p;
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_umprocs.size());
-      tid->m_s=1;
-      pthread_cond_signal(&tid->m_s_cnd);
-      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
       i+=d;
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      if (tid->m_s!=2) pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+      pthread_mutex_lock(&tid->m_t_mtx);
+      pthread_mutex_unlock(&tid->m_t_mtx);
+      pthread_cond_signal(&tid->m_t_cnd);
       m_last+=tid->m_d;
-      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
     if (m_mprocs.size()%m_cts.size()>0) ++d;
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_m=5;
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_mprocs.size());
-      tid->m_s=1;
-      pthread_cond_signal(&tid->m_s_cnd);
-      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
       i+=d;
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      if (tid->m_s!=2) pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+      pthread_mutex_lock(&tid->m_t_mtx);
+      pthread_mutex_unlock(&tid->m_t_mtx);
+      pthread_cond_signal(&tid->m_t_cnd);
       m_last+=tid->m_d;
-      pthread_mutex_unlock(&tid->m_s_mtx);
     }
   }
 #else
@@ -1318,44 +1314,38 @@ double Process_Group::Differential2()
     if (m_umprocs.size()%m_cts.size()>0) ++d;
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_m=2;
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_umprocs.size());
-      tid->m_s=1;
-      pthread_cond_signal(&tid->m_s_cnd);
-      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
       i+=d;
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      if (tid->m_s!=2) pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+      pthread_mutex_lock(&tid->m_t_mtx);
+      pthread_mutex_unlock(&tid->m_t_mtx);
+      pthread_cond_signal(&tid->m_t_cnd);
       tmp+=tid->m_d;
-      pthread_mutex_unlock(&tid->m_s_mtx);
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
     if (m_mprocs.size()%m_cts.size()>0) ++d;
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
       tid->m_m=6;
       tid->m_b=i;
       tid->m_e=Min(i+=d,m_mprocs.size());
-      tid->m_s=1;
-      pthread_cond_signal(&tid->m_s_cnd);
-      pthread_mutex_unlock(&tid->m_s_mtx);
+      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     }
     // suspend calculator threads
     for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
       i+=d;
       AME_PS_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      if (tid->m_s!=2) pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+      pthread_mutex_lock(&tid->m_t_mtx);
+      pthread_mutex_unlock(&tid->m_t_mtx);
+      pthread_cond_signal(&tid->m_t_cnd);
       tmp+=tid->m_d;
-      pthread_mutex_unlock(&tid->m_s_mtx);
     }
   }
 #else

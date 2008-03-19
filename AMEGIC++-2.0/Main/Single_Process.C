@@ -1328,7 +1328,14 @@ double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   }
   if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
   if (m_nin==2) {
+#ifdef USING__Threading
+    static pthread_mutex_t s_pdf_mtx;
+    pthread_mutex_lock(&s_pdf_mtx);
+#endif
     m_lastlumi = p_isrhandler->Weight(p_flin);
+#ifdef USING__Threading
+    pthread_mutex_unlock(&s_pdf_mtx);
+#endif
     int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
     double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
     if (p_pl[0].num>1) pols[0] = 99;
@@ -1344,7 +1351,14 @@ double Single_Process::DSigma2() {
   if ((p_flin[0]==p_flin[1]) || (p_isrhandler->On()==0) ) return 0.;
   if (p_partner == this) {
   }
+#ifdef USING__Threading
+  static pthread_mutex_t s_pdf_mtx;
+  pthread_mutex_lock(&s_pdf_mtx);
+#endif
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
+#ifdef USING__Threading
+  pthread_mutex_unlock(&s_pdf_mtx);
+#endif
   m_last    += tmp*=p_partner->KFactor();
   return tmp;
 }

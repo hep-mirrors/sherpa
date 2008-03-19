@@ -21,8 +21,8 @@ namespace AMEGIC {
     double m_d;
     const ATOOLS::Vec4D *p_p;
     size_t m_s, m_m, m_b, m_e, m_i;
-    pthread_mutex_t m_s_mtx;
-    pthread_cond_t m_s_cnd;
+    pthread_mutex_t m_s_mtx, m_t_mtx;
+    pthread_cond_t m_s_cnd, m_t_cnd;
     AME_PS_TID(Process_Group *const proc): 
       p_proc(proc), m_s(2), m_b(0), m_e(0) {}
   };// end of struct AME_PS_TID
