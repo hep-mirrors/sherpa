@@ -15,7 +15,7 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
   ampl=0;
   counter=0;
   maincounter=1;
-  subcounter='a';
+  subcounter=0;
   super_amplitude=false;
   for (int i=0; i<3;++i) captions.push_back("");
   WriteHeader();
@@ -130,7 +130,7 @@ void Amplitude_Output::WriteOut(Point * start) {
   }
   MyStrStream str;
   if (super_amplitude) 
-    str<<maincounter<<subcounter++;
+    str<<maincounter<<"("<<subcounter++<<")";
   else 
     str<<maincounter++;
   str>>captions[counter%3];

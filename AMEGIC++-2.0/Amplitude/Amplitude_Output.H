@@ -11,7 +11,7 @@ namespace AMEGIC {
   class Amplitude_Output {
     int counter;
     int maincounter;
-    char subcounter;
+    int subcounter;
     bool super_amplitude;
     std::ofstream  pios;
     int nin, nout, nmed;   // total
@@ -39,7 +39,7 @@ namespace AMEGIC {
     void EndSuperAmplitude();
   };
 
-  inline void Amplitude_Output::BeginSuperAmplitude() { super_amplitude=true; subcounter='a';}
+  inline void Amplitude_Output::BeginSuperAmplitude() { super_amplitude=true; subcounter=0;}
   inline void Amplitude_Output::EndSuperAmplitude() { super_amplitude=false; ++maincounter;}
 }
 

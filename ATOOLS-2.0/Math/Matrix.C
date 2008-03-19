@@ -366,4 +366,5 @@ CMatrix::~CMatrix() {
 template class Matrix<2>; 
 template class Matrix<3>; 
 template class Matrix<4>; 
+template class Matrix<5>;
 template class Matrix<6>; 

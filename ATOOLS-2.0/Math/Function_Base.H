@@ -30,6 +30,9 @@ namespace ATOOLS {
     virtual double operator()(double x);
     virtual double operator()();
 
+    virtual double FindZero(double, double, int MAX_ITR=150, double precision=2.2e-16);
+    virtual bool IterateBisection(double &,double &,double &,double);
+    
   };
 
 // --------------------------------------------------

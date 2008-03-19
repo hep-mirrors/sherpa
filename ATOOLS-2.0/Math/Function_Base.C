@@ -1,5 +1,7 @@
 #include "Function_Base.H"
 
+#include <math.h>
+
 using namespace ATOOLS;
 
 Function_Base::~Function_Base() {}
@@ -25,3 +27,62 @@ double Function_Base::operator()()
 std::string Function_Base::Type()                     
 { return m_type; }
 
+
+double Function_Base::FindZero(double x_min, double x_max,int MAX_ITR,double precision) {
+
+  double root = 0.5 * (x_min + x_max);
+  double x_lower = x_min;
+  double x_upper = x_max;
+
+  bool SUCCESS = false;
+
+  for(int i=0;i<MAX_ITR;i++){
+    SUCCESS=this->IterateBisection(root,x_lower,x_upper,precision);
+    if(SUCCESS) break;
+  }
+
+  return root;
+
+}
+
+
+bool Function_Base::IterateBisection(double& root, double& x_lower, double& x_upper, double precision){
+  // Bisection algorithm inspired by gsl-1.9
+
+  double x_bisect,f_bisect;
+
+  const double f_lower = x_lower;
+  const double f_upper = x_upper;
+
+
+  if ( fabs(f_lower-0.0)<precision )
+    {
+      root = x_lower;
+      x_upper = x_lower;
+      return true;
+    }
+
+  if ( fabs(f_upper-0.0)<precision)
+    {
+      root = x_upper ;
+      x_lower = x_upper;
+      return true;
+    }
+
+  x_bisect = ( x_lower + x_upper) / 2.0;
+  f_bisect = (*this)(x_bisect);
+
+  if ((f_lower > 0.0 && f_bisect < 0.0) || (f_lower < 0.0 && f_bisect > 0.0))
+    {
+      root = 0.5 * (x_lower + x_bisect) ;
+      x_upper = x_bisect;
+    }
+  else
+    {
+      root = 0.5 * (x_bisect + x_upper) ;
+      x_lower = x_bisect;
+    }
+
+  return false; // keep searching!!!
+
+}
