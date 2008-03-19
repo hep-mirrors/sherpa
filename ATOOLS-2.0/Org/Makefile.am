@@ -36,6 +36,7 @@ libToolsOrg_la_SOURCES        = \
 				My_Root.C
 
 pkginclude_HEADERS       =	\
+			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
 			Return_Value.H \
 			Smart_Pointer.H \
