@@ -65,6 +65,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   }  
   rpa.Init(m_path,m_file,argc,argv);
   LoadLibraries();
+  ran.InitExternal(m_path,m_file);
   ShowParameterSyntax();
 
   p_dataread         = new Data_Read(m_path+m_file);
