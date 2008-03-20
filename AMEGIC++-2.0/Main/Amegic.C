@@ -29,7 +29,10 @@ Amegic::Amegic(std::string _path,std::string _file,
   p_procs(NULL), p_model(_model), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
-  p_dataread          = new Data_Read(m_path+m_file);
+  p_dataread          = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_path);
+  p_dataread->SetInputFile(m_file);
 
   rpa.SetPath(m_path);
   
@@ -176,9 +179,9 @@ bool Amegic::InitializeDecays(bool constructall) {
 
 void Amegic::ReadInProcessfile(string file) 
 {
-  Data_Read::SetTags(PHASIC::Integrable_Base::ScaleTags());
+  p_dataread->SetTags(PHASIC::Integrable_Base::ScaleTags());
   PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",0));
-  ATOOLS::Data_Read::ResetTags();
+  p_dataread->SetTags(std::map<std::string,std::string>());
   std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double _scale           = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));

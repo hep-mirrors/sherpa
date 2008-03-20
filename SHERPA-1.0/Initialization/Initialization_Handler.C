@@ -9,7 +9,6 @@
 #include "PDF_Base.H"
 #include "Initial_State_Shower.H"
 #include "MI_Base.H"
-#include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Message.H"
 #include "Scaling.H"
@@ -54,10 +53,19 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
+  if (m_file.find("|")==std::string::npos) {
+    Read_Write_Base cf(1,0," ","!",";","=");
+    cf.SetInputPath(m_path);
+    cf.SetInputFile(m_file+"|(run){|}(run)");
+    if (cf.OpenInFile()) m_file+="|(run){|}(run)";
+  }
 
   if (m_mode==9999) {
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
-    p_dataread    = new Data_Read(m_path+m_file);
+    p_dataread    = new Data_Reader(" ",";","!","=");
+    p_dataread->AddWordSeparator("\t");
+    p_dataread->SetInputPath(m_path);
+    p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     ShowParameterSyntax();
     rpa.Init(m_path,m_file,argc,argv);
@@ -68,7 +76,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ran.InitExternal(m_path,m_file);
   ShowParameterSyntax();
 
-  p_dataread         = new Data_Read(m_path+m_file);
+  p_dataread    = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_path);
+  p_dataread->SetInputFile(m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
   m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
@@ -83,6 +94,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
   rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  rpa.gen.SetVariable("INTEGRATION_DATA_FILE",p_dataread->GetValue<string>
+		      ("INTEGRATION_DATA_FILE","Integration.dat"));
 
   CheckFlagConsistency();
   
@@ -199,7 +212,8 @@ void Initialization_Handler::PrepareTerminate()
 	   path+rpa.gen.Variable("SELECTORFILE"));
   CopyFile(m_path+rpa.gen.Variable("PROCESSFILE"),
 	   path+rpa.gen.Variable("PROCESSFILE"));
-  CopyFile(m_path+"Integration.dat",path+"Integration.dat");
+  CopyFile(m_path+rpa.gen.Variable("INTEGRATION_DATA_FILE"),
+	   path+rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   CopyFile(m_path+"Particle.dat",path+"Particle.dat");
   CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
   Data_Writer writer;
@@ -369,10 +383,12 @@ bool Initialization_Handler::InitializeTheModel()
 bool Initialization_Handler::InitializeTheBeams()
 {
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
-  Data_Read * dataread = new Data_Read(m_path+m_beamdat);
-  p_beamspectra        = new Beam_Spectra_Handler(dataread);
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddWordSeparator("\t");
+  dataread.SetInputPath(m_path);
+  dataread.SetInputFile(m_beamdat);
+  p_beamspectra        = new Beam_Spectra_Handler(&dataread);
   msg_Info()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
-  delete dataread;  
   return 1;
 }
 
@@ -383,7 +399,10 @@ bool Initialization_Handler::InitializeThePDFs()
     isr::id id=(isr::id)(i+1);
     if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
       delete m_isrhandlers[id]; 
-    Data_Read dataread(m_path+m_isrdat[i]);
+    Data_Reader dataread(" ",";","!","=");
+    dataread.AddWordSeparator("\t");
+    dataread.SetInputPath(m_path);
+    dataread.SetInputFile(m_isrdat[i]);
     PDF_Handler pdfhandler;
     PDF_Base * pdfbase;
     ISR_Base ** isrbases = new ISR_Base*[2];
@@ -520,7 +539,10 @@ bool Initialization_Handler::InitializeTheFragmentation()
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
-  Data_Read dr(m_path+m_hadrondecaysdat);
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_hadrondecaysdat);
   std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Off"));
   if (frag=="Off") return true;
 
@@ -604,8 +626,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 
   int helpi=p_dataread->GetValue<int>("ANALYSIS",0);
   if (!helpi&&test==0) return true;
-  std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
-  if (outpath==NotDefined<std::string>()) outpath="";
+  std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
   p_analysis = new ANALYSIS::Analysis_Handler();
   p_analysis->SetInputPath(m_path);
   p_analysis->SetInputFile(m_analysisdat);
@@ -769,11 +790,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       key   = par = par.substr(0,equal);
       if (key[key.length()-1]==':') {
         key.erase(key.length()-1,1);
-        Data_Read::SetGlobalTag(key,value);
         Read_Write_Base::AddGlobalTag(key,value);
       }
       else {
-        Data_Read::SetCommandLine(key,value);
         Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
       }
     }
@@ -796,7 +815,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
 void Initialization_Handler::CheckFlagConsistency()
 {
-  Data_Read dr(m_path+m_medat);
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_medat);
   int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
   rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString(sudweight));
 
@@ -805,7 +827,6 @@ void Initialization_Handler::CheckFlagConsistency()
     //  Run.dat
     long nevt = p_dataread->GetValue<long>("EVENTS",0);
     if (nevt<=0) {
-      Data_Read::SetCommandLine("EVENTS","1");
       Read_Write_Base::AddCommandLine("EVENTS = 1; ");
     }
 
@@ -821,20 +842,14 @@ void Initialization_Handler::CheckFlagConsistency()
                  <<"    COUPLING_SCHEME = Running_alpha_S\n"<<om::reset
                  <<om::bold<<"}"<<om::reset<<std::endl;
     }
-    Data_Read::SetCommandLine("SCALE_SCHEME","CKKW");
-    Data_Read::SetCommandLine("KFACTOR_SCHEME","1");
-    Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
     Read_Write_Base::AddCommandLine("SCALE_SCHEME = CKKW; ");
     Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 1; ");
     Read_Write_Base::AddCommandLine("COUPLING_SCHEME = Running_alpha_S; ");
 
     //  Shower.dat
-    Data_Read::SetCommandLine("FSR_SHOWER","1");
     Read_Write_Base::AddCommandLine("FSR_SHOWER = 1; ");
   }
   else {
-    Data_Read::SetCommandLine("JET_VETO_SCHEME","0");
-    Data_Read::SetCommandLine("LOSE_JET_SCHEME","0");
     Read_Write_Base::AddCommandLine("JET_VETO_SCHEME = 0; ");
     Read_Write_Base::AddCommandLine("LOSE_JET_SCHEME = 0; ");
   }

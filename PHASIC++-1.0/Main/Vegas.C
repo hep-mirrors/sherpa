@@ -14,9 +14,11 @@ int Vegas::s_onext=-1;
 
 Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 {
-  Data_Read dr(rpa.GetPath()+string("Integration.dat"));
-  m_on = dr.GetValue<Switch::code>("VEGAS");
-  if (m_on==NotDefined<Switch::code>()) m_on=Switch::On;
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(rpa.GetPath());
+  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  m_on = dr.GetValue<std::string>("VEGAS","On")=="On"?1:0;
   if (s_onext>-1) m_on=s_onext;
   m_dim  = dim;
   m_sum  = 0.;

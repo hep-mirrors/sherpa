@@ -56,6 +56,14 @@ namespace ATOOLS {
     inline const std::string String() const
     { return m_string; }
 
+    template <class Read_Type> inline Read_Type
+    GetValue(const std::string &parameter,const Read_Type &def)
+    { 
+      Read_Type val; 
+      if (!ReadFromFile(val,parameter)) return def; 
+      return val; 
+    }
+
   }; // end of class Data_Reader
 
 } // end of namespace ATOOLS

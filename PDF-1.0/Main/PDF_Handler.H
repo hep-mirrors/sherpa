@@ -3,14 +3,15 @@
 
 #include "PDF_Base.H"
 #include "Flavour.H"
-#include "Data_Read.H"
+
+namespace ATOOLS { class Data_Reader; }
 
 namespace PDF {
   class PDF_Handler {
     bool m_initlhapdf;
   public:
     PDF_Handler() : m_initlhapdf(0) {};
-    PDF_Base * GetPDFLib(ATOOLS::Data_Read *,ATOOLS::Flavour &,const int);
+    PDF_Base * GetPDFLib(ATOOLS::Data_Reader *,ATOOLS::Flavour &,const int);
   };
   /*!
     \namespace PDF

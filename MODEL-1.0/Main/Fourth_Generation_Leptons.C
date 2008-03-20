@@ -46,7 +46,10 @@ Fourth_Generation_Leptons::~Fourth_Generation_Leptons()
 }
 
 void Fourth_Generation_Leptons::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
   double massf4  = p_dataread->GetValue<double>("MASS_L",Flavour(kf_tau_prime).PSMass());
   double massnu4 = p_dataread->GetValue<double>("MASS_NU",Flavour(kf_nutau_prime).PSMass());
 

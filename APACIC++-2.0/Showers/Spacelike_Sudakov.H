@@ -5,7 +5,7 @@
 #include "Random.H"
 #include "Veto_Info.H"
 
-namespace ATOOLS { class Data_Read; }
+namespace ATOOLS { class Data_Reader; }
 
 namespace PDF {
   class PDF_Base;
@@ -48,7 +48,7 @@ namespace APACIC {
     void UniformPhi() { m_phi =  2.*M_PI*ATOOLS::ran.Get(); };
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
-		      double,ATOOLS::Data_Read *,const size_t); 
+		      double,ATOOLS::Data_Reader *,const size_t); 
     ~Spacelike_Sudakov();
     bool Initialize();
     bool Dice(Knot * mother,double sprime,double m2p,int & extra_pdf);

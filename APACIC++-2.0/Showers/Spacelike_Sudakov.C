@@ -27,7 +27,7 @@ using namespace ATOOLS;
 
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacelike_Kinematics * kin,
-				     double pt2min,ATOOLS::Data_Read * dataread,const size_t beam) : 
+				     double pt2min,ATOOLS::Data_Reader * dataread,const size_t beam) : 
   Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), 
   p_pdfa(pdf->GetBasicPDF()->GetCopy()),
   m_pt2min(dabs(pt2min)), 

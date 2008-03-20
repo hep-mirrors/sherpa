@@ -57,7 +57,7 @@ namespace APACIC {
 			 ATOOLS::Jet_Finder *const jf,
 			 Final_State_Shower *const fin,
 			 MODEL::Model_Base *const model,
-			 ATOOLS::Data_Read *const read);
+			 ATOOLS::Data_Reader *const read);
 
     // destructor
     ~Initial_State_Shower();

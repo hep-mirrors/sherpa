@@ -10,8 +10,9 @@
 #include "Model_Base.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
-#include "Data_Read.H"
 #include "Jet_Veto.H"
+
+namespace ATOOLS { class Data_Reader; }
 
 namespace APACIC {
 
@@ -36,7 +37,7 @@ namespace APACIC {
     
     // constructor
     Apacic(PDF::ISR_Handler *const isr,MODEL::Model_Base *const model,
-	   ATOOLS::Jet_Finder *const jf,ATOOLS::Data_Read *const dataread);
+	   ATOOLS::Jet_Finder *const jf,ATOOLS::Data_Reader *const dataread);
 
     // destructor
     ~Apacic(); 

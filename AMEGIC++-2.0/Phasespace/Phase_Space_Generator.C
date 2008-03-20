@@ -42,7 +42,10 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string lmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
   string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
 
-  Data_Read dr(rpa.GetPath()+string("Integration.dat"));
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(rpa.GetPath());
+  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",4);
   if (inttype<4 && !(inttype==2 && nout==2)) return 0;
 

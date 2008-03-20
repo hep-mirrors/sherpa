@@ -7,8 +7,9 @@
 #include "Model_Base.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
-#include "Data_Read.H"
 #include "Jet_Veto.H"
+
+namespace ATOOLS { class Data_Reader; }
 
 namespace APACIC {
 
@@ -57,7 +58,7 @@ namespace APACIC {
     //constructor
     Final_State_Shower(MODEL::Model_Base *const model,
 		       ATOOLS::Jet_Finder *const jf,
-		       ATOOLS::Data_Read *const dataread);
+		       ATOOLS::Data_Reader *const dataread);
     // destructor
     ~Final_State_Shower();
 

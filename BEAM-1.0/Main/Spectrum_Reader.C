@@ -2,6 +2,7 @@
 #include "MyStrStream.H"
 #include "Function_Base.H"
 #include "MathTools.H"
+#include "Message.H"
 
 using namespace BEAM;
 using namespace ATOOLS;

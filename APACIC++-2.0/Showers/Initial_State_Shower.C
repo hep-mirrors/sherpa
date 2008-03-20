@@ -1,7 +1,7 @@
 #include "Initial_State_Shower.H"
 
 #include "PDF_Handler.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "MyStrStream.H"
 #include "Veto_Info.H"
 #include <iomanip>
@@ -20,7 +20,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
 					   ATOOLS::Jet_Finder *const jf,
 					   Final_State_Shower *const fin,
 					   MODEL::Model_Base *const model,
-					   Data_Read *const dataread) : 
+					   Data_Reader *const dataread) : 
   p_fin(fin),
   p_tools(new Sudakov_Tools(model)),
   p_kin(new Spacelike_Kinematics(jf)),
@@ -44,7 +44,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
 		 <<"smaller than minimum scale given by PDF ("
 		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
-		 <<dataread->FileName()<<"\n";
+		 <<dataread->InputFile()<<"\n";
       THROW(fatal_error,"Minimal PDF scale too low.");
     }
     p_suds[i] = new Spacelike_Sudakov

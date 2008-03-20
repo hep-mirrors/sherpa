@@ -1,7 +1,6 @@
 #ifndef Model_Base_h
 #define Model_Base_h
 
-#include "Data_Read.H"
 #include "Flavour.H"
 #include "Matrix.H"
 #include "Function_Base.H"
@@ -10,7 +9,10 @@
 #include "Getter_Function.H"
 #include <map>
 
-namespace ATOOLS { class Decay_Table; } 
+namespace ATOOLS { 
+  class Decay_Table; 
+  class Data_Reader;
+} 
 
 namespace MODEL {
 
@@ -50,7 +52,7 @@ namespace MODEL {
     std::string               m_dir,m_file;
     std::string               m_name;
 
-    ATOOLS::Data_Read       * p_dataread;
+    ATOOLS::Data_Reader     * p_dataread;
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
     ScalarFunctionsMap      * p_functions;

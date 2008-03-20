@@ -14,7 +14,6 @@
 
 #include "Flavour.H"
 #include "Pol_Info.H"
-#include "Data_Read.H"
 #include <vector>
 
 
@@ -33,7 +32,7 @@ namespace AMEGIC {
 
     std::ostream               * p_fifo;
 
-    ATOOLS::Data_Read          * p_dataread;
+    ATOOLS::Data_Reader        * p_dataread;
     ATOOLS::Selector_Data      * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;

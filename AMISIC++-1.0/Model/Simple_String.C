@@ -5,6 +5,7 @@
 #include "Reggeon_Trajectory.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+#include "Beam_Base.H"
 #include "Random.H"
 
 #ifdef PROFILE__all

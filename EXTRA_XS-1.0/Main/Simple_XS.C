@@ -4,7 +4,7 @@
 #include "Run_Parameter.H"
 #include "Random.H"
 #include "MyStrStream.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Data_Reader.H"
 #include "Model_Base.H"
 #include "XS_Selector.H"
@@ -26,7 +26,10 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 {
   m_nmax=0;
   m_atoms=1;
-  p_dataread = new Data_Read(m_path+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->SetWordSeparator("\t");
+  p_dataread->SetInputPath(m_path);
+  p_dataread->SetInputFile(m_file);
   InitializeModel(model,m_path+m_file);
 }
 
@@ -58,18 +61,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   rpa.gen.SetVariable("SELECTORFILE",selectorfile);
   if (construct) p_selectordata = new Selector_Data(m_path,selectorfile);
   else p_selectordata = new Selector_Data();
-  ATOOLS::Data_Read::SetTags(Integrable_Base::ScaleTags());
+  p_dataread->SetTags(Integrable_Base::ScaleTags());
   m_scalescheme=(PHASIC::scl::scheme)
     p_dataread->GetValue<int>("SCALE_SCHEME",0);
-  ATOOLS::Data_Read::ResetTags();
-  ATOOLS::Data_Read::SetTags(Integrable_Base::ColorSchemeTags());
-  m_colorscheme=(PHASIC::cls::scheme)
-    p_dataread->GetValue<int>("COLOR_SCHEME",1);
-  ATOOLS::Data_Read::ResetTags();
-  ATOOLS::Data_Read::SetTags(Integrable_Base::HelicitySchemeTags());
-  m_helicityscheme=(PHASIC::hls::scheme)
-    p_dataread->GetValue<int>("HELICITY_SCHEME",1);
-  ATOOLS::Data_Read::ResetTags();
+  p_dataread->SetTags(std::map<std::string,std::string>());
   m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fix_scale=p_dataread->

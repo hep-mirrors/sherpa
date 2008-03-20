@@ -4,7 +4,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-MUED_Spectrum::MUED_Spectrum(Data_Read * _dataread,Model_Base * _model) :
+MUED_Spectrum::MUED_Spectrum(Data_Reader * _dataread,Model_Base * _model) :
   Spectrum_Generator_Base(_dataread,_model)  
 {
   msg_Out()<<"In "<<METHOD<<" for "<<p_model->Name()<<endl;

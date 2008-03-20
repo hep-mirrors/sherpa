@@ -1,5 +1,5 @@
 #include "MI_Handler.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 
 #include "Matrix_Element_Handler.H"
 
@@ -32,13 +32,14 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
 {
 #ifdef USING__Amisic
   std::string mihandler="None";
-  ATOOLS::Data_Read read(path+file,true);
-  if (read.FileExists()) {
-    mihandler=read.GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
-    m_scalescheme=read.GetValue<int>("MI_HARD_SCALE",1);
-    path+=read.GetValue<std::string>("INPUT_PATH",std::string(""));
-    file=read.GetValue<std::string>("INPUT_FILE",file);
-  }
+  ATOOLS::Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(path);
+  read.SetInputFile(file);
+  mihandler=read.GetValue<std::string>("MI_HANDLER","Amisic");
+  m_scalescheme=read.GetValue<int>("MI_HARD_SCALE",1);
+  path+=read.GetValue<std::string>("INPUT_PATH","");
+  file=read.GetValue<std::string>("INPUT_FILE",file);
   if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
       !ATOOLS::rpa.gen.Beam2().IsHadron()) mihandler="None";
   if (mihandler==std::string("Amisic")) {

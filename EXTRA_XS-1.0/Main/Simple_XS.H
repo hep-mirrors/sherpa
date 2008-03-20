@@ -3,7 +3,7 @@
 
 #include "XS_Group.H"
 
-namespace ATOOLS { class Data_Read;    }
+namespace ATOOLS { class Data_Reader;  }
 namespace MODEL  { class Model_Base;   }
 namespace PDF    { class Remnant_Base; }
 
@@ -16,7 +16,7 @@ namespace EXTRAXS {
 
     size_t m_nmax, m_count, m_minqcdjet, m_maxqcdjet, m_maxjet;
 
-    ATOOLS::Data_Read *p_dataread;
+    ATOOLS::Data_Reader *p_dataread;
 
     std::string         m_regulator;
     std::vector<double> m_regulation;

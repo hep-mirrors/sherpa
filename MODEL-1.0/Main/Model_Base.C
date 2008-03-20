@@ -7,6 +7,7 @@
 
 #include "Spectrum_Generator_Base.H"
 #include "Interaction_Model_Base.H"
+#include "Data_Reader.H"
 #include "Run_Parameter.H"
 #include "All_Decays.H"
 #include "Decay_Table.H"
@@ -65,7 +66,10 @@ void Model_Base::ShowSyntax(const size_t i)
 
 void Model_Base::InitializeInteractionModel()
 {
-  Data_Read read(m_dir+rpa.gen.Variable("ME_DATA_FILE"));
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(m_dir);
+  read.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL","SM");
   std::string cplscheme   = read.GetValue<std::string>("COUPLING_SCHEME","Running");
   std::string massscheme  = read.GetValue<std::string>("YUKAWA_MASSES","Running");

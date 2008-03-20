@@ -104,14 +104,17 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   struct passwd* user_info = getpwuid(getuid());
   if (!user_info) gen.m_username="<unknown user>";
   else gen.m_username=user_info->pw_gecos;
-  Data_Read dr(m_path+file);
-  Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT",Switch::On);
-  if (color==Switch::On) {
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(file);
+  std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
+  if (color=="On") {
     termios testos;
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
-  if (dr.ErrorCode()>0) 
-    THROW(missing_input,"Main steering file not found. Stop.");
+//   if (dr.ErrorCode()>0) 
+//     THROW(missing_input,"Main steering file not found. Stop.");
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(gen.m_output,logfile);
@@ -176,11 +179,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     if (seeds.size() == 2) { gen.m_seed2 = seeds[1]; } 
   } else gen.m_seed=1234;
 
-  gen.m_timeout            = dr.GetValue<double>("TIMEOUT");
+  gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa.gen.m_timer.Start();
-  gen.m_batchmode          = dr.GetValue<int>("BATCH_MODE");
-  if (gen.m_batchmode==NotDefined<int>()) gen.m_batchmode=1;
+  gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",1);
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
@@ -216,11 +218,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg_Info()<<METHOD<<"(): Setting memory limit to "
 	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
 #endif
-  int stacktrace           = dr.GetValue<int>("STACK_TRACE");
-  if (stacktrace==NotDefined<int>()) stacktrace=1;
+  int stacktrace = dr.GetValue<int>("STACK_TRACE",1);
   exh->SetStackTrace(stacktrace);
-  std::string ycut=dr.GetValue<std::string>("YCUT");
-  if (ycut!=NotDefined<std::string>()) gen.SetVariable("Y_CUT",ycut);
+  std::string ycut=dr.GetValue<std::string>("YCUT","");
+  if (ycut!="") gen.SetVariable("Y_CUT",ycut);
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time

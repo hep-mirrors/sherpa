@@ -4,6 +4,7 @@
 #include "Random.H"
 #include "MyStrStream.H"
 #include "Veto_Info.H"
+#include "Data_Reader.H"
 
 #ifdef PROFILE__all
 #include "prof.hh"
@@ -17,7 +18,7 @@ using namespace ATOOLS;
 
 Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
 				       ATOOLS::Jet_Finder *const jf,
-				       Data_Read *const dataread):
+				       Data_Reader *const dataread):
   p_kin(new Timelike_Kinematics(jf)), 
   p_sud(new Timelike_Sudakov(p_kin,model)), 
   p_jv(NULL)

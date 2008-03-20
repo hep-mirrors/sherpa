@@ -45,7 +45,10 @@ MSSM::~MSSM()
 }
 
 void MSSM::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
 
   m_scales     = m_unification = 0;
   m_benchmark  = p_dataread->GetValue<std::string>("BENCHMARK",std::string(""));

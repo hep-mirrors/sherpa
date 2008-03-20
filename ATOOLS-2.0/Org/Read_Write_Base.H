@@ -59,7 +59,7 @@ namespace ATOOLS {
     Char_Vector   m_blank;
     String_Cube   m_filecontent;
     
-    char m_escape;
+    char m_escape, m_namesplit;
 
     vtc::code m_vectortype;
     mtc::code m_matrixtype;
@@ -96,6 +96,7 @@ namespace ATOOLS {
 			  int &line,int &pos,
 			  const int level,const bool keep);
     void InterpreteBuffer(String_Vector &buffer);
+    void SplitInFileName(const size_t &i);
 
   public:
 
@@ -234,6 +235,8 @@ namespace ATOOLS {
 
     inline void SetEscape(const char escape)
     { m_escape=escape; }
+    inline void SetNameSplit(const char namesplit)
+    { m_namesplit=namesplit; }
 
     inline void SetTags(const std::map<std::string,std::string> &tags)
     { m_tags=tags; }
@@ -310,6 +313,8 @@ namespace ATOOLS {
 
     inline char Escape() const
     { return m_escape; }
+    inline char NameSplit() const
+    { return m_namesplit; }
 
     inline bool RereadInFile(const unsigned int i=0)
     { CloseInFile(i,true); return OpenInFile(i,true); }

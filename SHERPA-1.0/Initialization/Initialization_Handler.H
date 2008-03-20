@@ -16,7 +16,7 @@
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
 #include "Event_Reader.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 
 #include <map>
 #include <string>
@@ -48,7 +48,7 @@ namespace SHERPA {
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
 
-    ATOOLS::Data_Read * p_dataread;
+    ATOOLS::Data_Reader *p_dataread;
 
     int m_mode;
     bool m_spincorrelations, m_savestatus;

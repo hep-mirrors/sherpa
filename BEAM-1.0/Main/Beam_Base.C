@@ -1,5 +1,7 @@
 #include "Beam_Base.H"
 
+#include "Message.H"
+
 using namespace BEAM;
 
 Beam_Base::Beam_Base(std::string _type,const ATOOLS::Flavour _beam,

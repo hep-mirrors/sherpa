@@ -2,7 +2,7 @@
 #include "Tree.H"
 #include "ISR_Handler.H"
 #include "Message.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "MyStrStream.H"
 
 using namespace SHERPA;
@@ -15,7 +15,10 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   p_apacic(NULL), 
   p_jf(NULL), p_isr_handler(_isr)
 {
-  Data_Read dataread(dir+file);
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddWordSeparator("\t");
+  dataread.SetInputPath(dir);
+  dataread.SetInputFile(file);
   m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
   if (_isr) {

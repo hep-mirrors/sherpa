@@ -4,8 +4,9 @@
 #include "Beam_Base.H"
 #include "Vector.H"
 #include "Poincare.H"
-#include "Data_Read.H"
 #include "Info_Key.H"
+
+namespace ATOOLS { class Data_Reader; }
 
 namespace BEAM {
   class Beam_Spectra_Handler {
@@ -23,13 +24,13 @@ namespace BEAM {
     std::string           m_name,m_type;
     ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
   private:
-    bool InitKinematics(ATOOLS::Data_Read *);
-    bool SpecifySpectra(ATOOLS::Data_Read *);
-    bool InitializeLaserBackscattering(ATOOLS::Data_Read *,int);
-    bool InitializeSpectrumReader(ATOOLS::Data_Read *,int);
-    bool InitializeMonochromatic(ATOOLS::Data_Read *,int);
+    bool InitKinematics(ATOOLS::Data_Reader *);
+    bool SpecifySpectra(ATOOLS::Data_Reader *);
+    bool InitializeLaserBackscattering(ATOOLS::Data_Reader *,int);
+    bool InitializeSpectrumReader(ATOOLS::Data_Reader *,int);
+    bool InitializeMonochromatic(ATOOLS::Data_Reader *,int);
   public:
-    Beam_Spectra_Handler(ATOOLS::Data_Read *);
+    Beam_Spectra_Handler(ATOOLS::Data_Reader *);
     ~Beam_Spectra_Handler();
     
     void   Output();

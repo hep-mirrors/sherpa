@@ -3,7 +3,7 @@
 
 #include "Spectrum_Generator_Base.H"
 #include "Model_Base.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Decay_Table.H"
 
 namespace MODEL {
@@ -19,7 +19,7 @@ namespace MODEL {
     void Charged_KK_Scalars();
     void LR_KK_Fermions();
   public:
-    MUED_Spectrum(ATOOLS::Data_Read *,Model_Base *);
+    MUED_Spectrum(ATOOLS::Data_Reader *,Model_Base *);
     ~MUED_Spectrum();
     void Run(std::string);
     void FillMasses();

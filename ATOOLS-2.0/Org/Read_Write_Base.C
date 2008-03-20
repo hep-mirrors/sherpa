@@ -54,6 +54,19 @@ void Read_Write_Base::Init()
   m_cmode=false;
   m_occurrence=std::string::npos;
   m_escape='\\';
+  m_namesplit='|';
+}
+
+void Read_Write_Base::SplitInFileName(const size_t &i)
+{
+  std::string name(InputFile(i));
+  size_t sb(name.find(m_namesplit));
+  if (sb==std::string::npos) return;
+  size_t se(name.find(m_namesplit,sb+1));
+  if (se==std::string::npos) return;
+  SetInputFile(name.substr(0,sb),i);
+  m_filebegin.push_back(name.substr(sb+1,se-sb-1));
+  m_fileend.push_back(name.substr(se+1));
 }
 
 bool Read_Write_Base::IsBlank(const char &ch) const
@@ -391,6 +404,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
   }
   if (InFileMode(i)==fom::unknown) SetInFileMode(fom::permanent);
   if (!m_filecontent[i].empty()) return true;
+  SplitInFileName(i);
   std::string lastline, file(InputPath(i)+InputFile(i));
   String_Vector &buffer(s_buffermap[file]);
   msg_Debugging()<<METHOD<<"(): ("<<this<<") checks buffer '"

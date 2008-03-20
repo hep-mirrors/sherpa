@@ -21,7 +21,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
-	       ATOOLS::Jet_Finder *const jf,Data_Read *const dataread):
+	       ATOOLS::Jet_Finder *const jf,Data_Reader *const dataread):
   p_inishower(NULL), p_finshower(NULL), 
   p_jetveto(NULL),
   p_initrees(NULL), p_fintree(NULL),

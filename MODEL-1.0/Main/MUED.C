@@ -42,7 +42,10 @@ MUED::~MUED()
 }
 
 void MUED::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
 
   m_spectrum  = p_dataread->GetValue<int>("GENERATOR_ON",1);
   m_generator = p_dataread->GetValue<string>("GENERATOR",string("Internal"));

@@ -3,6 +3,7 @@
 #include "Spectrum_Reader.H"
 #include "Laser_Backscattering.H"
 #include "Run_Parameter.H" 
+#include "Data_Reader.H"
 #include "Message.H"
 #include <stdio.h>
 
@@ -12,7 +13,7 @@ using namespace BEAM;
 using namespace std;
 
 
-Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) : 
+Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Reader * dataread) : 
   p_BeamBase(NULL) 
 {
   p_BeamBase = new Beam_Base*[2];
@@ -44,7 +45,7 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
 }
 
 
-bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
+bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
 {
   bool okay   = 1;
   char help[20];
@@ -53,9 +54,9 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
     sprintf(help,"%i",num+1);
     std::string number   = string(help); 
 
-    beam_spectrum        = dataread->GetValue<Beam_Type::code>("BEAM_SPECTRUM_"+number);
+    beam_spectrum = dataread->GetValue<int>("BEAM_SPECTRUM_"+number,(int)Beam_Type::Unknown);
     if ((beam_spectrum!=Beam_Type::Monochromatic) && (beam_spectrum!=Beam_Type::Gaussian)) 
-      spectrum_generator = dataread->GetValue<Beam_Generator::code>("SPECTRUM_"+number); 
+      spectrum_generator = dataread->GetValue<int>("SPECTRUM_"+number,(int)Beam_Generator::Unknown); 
     switch (beam_spectrum) {
     case Beam_Type::Monochromatic :
       okay = okay&&InitializeMonochromatic(dataread,num);
@@ -67,7 +68,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
       okay = 0;
       break;
     case Beam_Type::Simple_Compton :
-      dataread->SetValue("LASER_MODE","-1");
+      dataread->AddCommandLine("LASER_MODE = -1");
     case Beam_Type::Laser_Back :
       okay = okay&&InitializeLaserBackscattering(dataread,num);
       break;
@@ -85,15 +86,15 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
   return okay;
 }
 
-bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,int num) {
+bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Reader * dataread,int num) {
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number);  
+  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number);
-  double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
 
   if ( (beam_particle!=Flavour(kf_e)) && (beam_particle!=Flavour(kf_e).Bar()) ) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
@@ -101,11 +102,12 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
 	       <<"   This option is not available. Result will be to terminate program."<<endl;
     return 0;
   }      
-  double Laser_energy       = dataread->GetValue<double>("E_LASER_"+number);
-  double Laser_polarization = dataread->GetValue<double>("P_LASER_"+number);
-  int mode                  = dataread->GetValue<int>("LASER_MODE");
-  int angles                = dataread->GetValue<Switch::code>("LASER_ANGLES",Switch::Off);
-  int nonlin                = dataread->GetValue<Switch::code>("LASER_NONLINEARITY");
+  double Laser_energy       = dataread->GetValue<double>("E_LASER_"+number,0.0);
+  double Laser_polarization = dataread->GetValue<double>("P_LASER_"+number,0.0);
+  int mode                  = dataread->GetValue<int>("LASER_MODE",0);
+  std::string anglesx       = dataread->GetValue<std::string>("LASER_ANGLES","Off");
+  std::string nonlinx       = dataread->GetValue<std::string>("LASER_NONLINEARITY","Off");
+  int angles(anglesx=="On"?1:0), nonlin(nonlinx=="On"?1:0);
 
   p_BeamBase[num]          = new Laser_Backscattering(beam_particle,beam_energy,beam_polarization,
 						      Laser_energy,Laser_polarization,
@@ -113,19 +115,19 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   return 1;
 }
 
-bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Read * dataread,int num) {
+bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Reader * dataread,int num) {
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number);  
+  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number);
-  double beam_polarization  = dataread->GetValue<double>("BEAM_POL_"+number);
-  double laser_energy       = dataread->GetValue<double>("E_LASER_"+number);
-  double laser_polarization = dataread->GetValue<double>("P_LASER_"+number);
+  double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double beam_polarization  = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
+  double laser_energy       = dataread->GetValue<double>("E_LASER_"+number,0.0);
+  double laser_polarization = dataread->GetValue<double>("P_LASER_"+number,0.0);
 
-  std::string spectrumfile  = dataread->GetValue<std::string>("SPECTRUM_FILE_"+number);
+  std::string spectrumfile  = dataread->GetValue<std::string>("SPECTRUM_FILE_"+number,"");
 
   p_BeamBase[num] = new Spectrum_Reader(beam_particle,beam_energy,beam_polarization,
 					laser_energy, laser_polarization,
@@ -133,21 +135,21 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Read * dataread,int num
   return 1;
 }
 
-bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num) {
+bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int num) {
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number);  
+  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number);
-  double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
   p_BeamBase[num]           = new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
   return 1;
 }
 
 
-bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
+bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
  
   // cms system from beam momenta - this is for potential assymmetric collisions.
   Vec4D  P      = p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum();
@@ -155,8 +157,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
   double E      = sqrt(s);
   rpa.gen.SetEcms(E);
 
-  m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN");
-  m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX"),Upper1()*Upper2());
+  m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN",0.0);
+  m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX",1.0),Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;

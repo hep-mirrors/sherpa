@@ -4,6 +4,7 @@
 #include "Running_Fermion_Mass.H"
 #include "Effective_Higgs_Coupling.H"
 #include "Message.H"
+#include "Data_Reader.H"
 #include "Data_Collector.H"
 
 using namespace MODEL;
@@ -37,7 +38,10 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file) :
 }
 
 void Standard_Model::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
   FixEWParameters();  
   FixCKM();
   p_constants->insert(std::make_pair(std::string("Yukawa_e"), 

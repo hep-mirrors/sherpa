@@ -42,7 +42,10 @@ THDM::~THDM()
 }
 
 void THDM::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
   p_constants->insert(std::make_pair(std::string("tan(beta)"),    
 				     p_dataread->GetValue<double>("TAN(BETA)",0.)));
   p_constants->insert(std::make_pair(std::string("alpha"),    

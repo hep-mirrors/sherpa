@@ -194,7 +194,9 @@ void XS_Base::InitializeModel(MODEL::Model_Base *const model,
 			      const std::string &file)
 {
   if (m_ownmodel && p_model!=NULL) delete p_model;
-  Data_Read read(file);
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputFile(file);
   std::string mt(read.GetValue<std::string>("SIGNAL_MODEL","SM"));
   p_model = XS_Model_Handler::GetModel(mt);
   if (p_model==NULL) THROW(fatal_error,"Interaction model not implemented");

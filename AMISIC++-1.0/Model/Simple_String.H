@@ -6,7 +6,6 @@
 */
 
 #include "MI_Base.H"
-#include "Environment.H"
 
 namespace PDF    { 
 

@@ -1,6 +1,6 @@
 #include "Fragmentation_Handler.H"
 
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Run_Parameter.H"
 #include "Shell_Tools.H"
 #include "Return_Value.H"
@@ -28,7 +28,10 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
 #endif
   p_lund(NULL)
 {
-  Data_Read dr(m_dir+m_file);
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_dir);
+  dr.SetInputFile(m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Pythiav6.214"));
   if (m_fragmentationmodel==string("Lund")) {
     m_sfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));

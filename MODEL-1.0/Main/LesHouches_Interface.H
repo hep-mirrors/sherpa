@@ -2,7 +2,6 @@
 #define LesHouches_Interface_h
 
 #include "Spectrum_Generator_Base.H"
-#include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Matrix.H"
 #include "Exception.H"
@@ -25,7 +24,7 @@ namespace MODEL {
     void PrepareTerminate();
 
   public:
-    LesHouches_Interface(ATOOLS::Data_Read *,Model_Base *,std::string);
+    LesHouches_Interface(ATOOLS::Data_Reader *,Model_Base *,std::string);
     ~LesHouches_Interface();
     void Run(std::string);
     void FillMasses();

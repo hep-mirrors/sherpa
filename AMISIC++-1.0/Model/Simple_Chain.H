@@ -10,7 +10,6 @@
 #include "Profile_Function_Base.H"
 #include "Fixed_Variable_Channel.H"
 #include "Simple_XS.H"
-#include "Environment.H"
 
 namespace PDF    { class Remnant_Base; }
 
@@ -43,7 +42,6 @@ namespace AMISIC {
     EXTRAXS::Simple_XS *p_processes;
     FSR_Channel        *p_fsrinterface;
 
-    AMISIC::Environment        *p_environment;
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;

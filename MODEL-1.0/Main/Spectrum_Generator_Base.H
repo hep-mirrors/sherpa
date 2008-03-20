@@ -3,13 +3,13 @@
 
 #include "Model_Base.H"
 #include "MathTools.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Decay_Table.H"
 
 namespace MODEL {
   class Spectrum_Generator_Base {
   protected:
-    ATOOLS::Data_Read * p_dataread;
+    ATOOLS::Data_Reader * p_dataread;
     Model_Base        * p_model;
 
     std::vector<double>          m_masses;
@@ -17,7 +17,7 @@ namespace MODEL {
     std::vector<ATOOLS::Flavour> m_particles;
     std::vector<ATOOLS::Decay_Table *> m_decays;
   public:
-    Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *);
+    Spectrum_Generator_Base(ATOOLS::Data_Reader *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
     virtual void Run(std::string)                 = 0;
     virtual void FillMasses()                     = 0;

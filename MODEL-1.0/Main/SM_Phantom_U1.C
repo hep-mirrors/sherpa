@@ -1,5 +1,6 @@
 #include "SM_Phantom_U1.H"
 #include "Standard_Model.H"
+#include "Data_Reader.H"
 #include "Message.H"
 
 using namespace MODEL;
@@ -47,7 +48,10 @@ SM_Phantom_U1::~SM_Phantom_U1()
 { }
 
 void SM_Phantom_U1::ReadInFile() {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
   p_constants->insert(make_pair(string("Tan(Beta)"),    
 				p_dataread->GetValue<double>("Tan(Beta)",1.)));
   p_constants->insert(make_pair(string("Tan(Theta)"),    

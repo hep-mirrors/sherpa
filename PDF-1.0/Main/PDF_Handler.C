@@ -16,22 +16,23 @@
 #include "Doubly_Unintegrated_PDF.H"
 #include "Continued_PDF.H"
 #include "Run_Parameter.H"
+#include "Data_Reader.H"
 #include <stdio.h>
 
 using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
+PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particle,
 				  const int num) {
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number         = string(help); 
-  int         flav           = dataread->GetValue<int>("BUNCH_"+number);  
+  int         flav           = dataread->GetValue<int>("BUNCH_"+number,0);  
   bunch_particle             = Flavour((kf_code)abs(flav));
   if (flav<0) bunch_particle = bunch_particle.Bar();
 
-  if (dataread->GetValue<Switch::code>("ISR_"+number)) {    
+  if (dataread->GetValue<std::string>("ISR_"+number,"Off")=="On") {    
     if (bunch_particle.IsLepton()) {
       if (bunch_particle.IntCharge()!=0) {
 	return new PDF_Electron(bunch_particle,
@@ -46,8 +47,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
     }
     if ((bunch_particle==Flavour(kf_p_plus) || (bunch_particle==Flavour(kf_p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
-      Switch::code kmr      = dataread->GetValue<Switch::code>("KMR_DUPDF");
-      Switch::code cont     = dataread->GetValue<Switch::code>("CONTINUE_PDF");
+      std::string kmr      = dataread->GetValue<std::string>("KMR_DUPDF","Off");
+      std::string cont     = dataread->GetValue<std::string>("CONTINUE_PDF","Off");
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
@@ -84,7 +85,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 #endif
       }
       if (pdfbase!=NULL) {
-	if (kmr==Switch::On) {
+	if (kmr=="On") {
 	  double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
 	  Doubly_Unintegrated_PDF *dupdf =
 	    new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,mu0*mu0);
@@ -95,7 +96,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	  dupdf->Initialize();
 	  return dupdf;
 	}
- 	if (cont==Switch::On) {
+ 	if (cont=="On") {
 	  int pcscheme=dataread->GetValue("CONTINUATION",(int)1);
 	  return new Continued_PDF(pdfbase,(pcs::type)pcscheme);
 	}

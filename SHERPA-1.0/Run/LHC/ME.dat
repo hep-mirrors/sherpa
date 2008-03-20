@@ -7,7 +7,7 @@ EVENT_GENERATION_MODE = Unweighted
 SIGNAL_MODEL          = SM          ! subset of a physical model
                                     ! or the whole SM, MSSM, ADD
 !
-COUPLING_SCHEME       = Running alpha_S ! Fixed   (default value) or 
+COUPLING_SCHEME       = Running_alpha_S ! Fixed   (default value) or 
                                     ! Running (s for ME generators, pt for 2->2)
 YUKAWA_MASSES         = Fixed       ! Fixed   (polemass) or 
                                     ! Running (higgs mass)

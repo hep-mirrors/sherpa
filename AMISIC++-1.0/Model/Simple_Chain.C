@@ -14,6 +14,7 @@
 #include "Remnant_Base.H"
 #include "Data_Reader.H"
 #include "MyStrStream.H"
+#include "ISR_Handler.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_Chain
@@ -41,7 +42,7 @@ Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
-  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
+  p_processes(NULL), p_fsrinterface(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
   m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
@@ -55,7 +56,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
-  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(model), 
+  p_processes(NULL), p_fsrinterface(NULL), p_model(model), 
   p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
   m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
@@ -104,13 +105,6 @@ void Simple_Chain::CleanUp()
     }
     delete p_fsrinterface;
     p_fsrinterface=NULL;
-  }
-  if (!m_external) {
-    if (p_environment!=NULL) delete p_environment;
-    p_environment=NULL;
-    p_model=NULL;
-    p_beam=NULL;
-    p_isr=NULL;
   }
   if (p_differential!=NULL) {
     delete p_differential;
@@ -571,22 +565,6 @@ bool Simple_Chain::Initialize()
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  if (!m_external && p_environment==NULL) {
-    std::string file;
-    if (!reader->ReadFromFile(file,"ENVIRONMENT")) file="Run.dat";
-    p_environment = new Environment(InputPath(),file);
-    if (!p_environment->InitializeTheEnvironment()) return false;
-    p_model=p_environment->Model();
-    p_beam=p_environment->BeamHandler();
-    p_isr=p_environment->ISRHandler();
-    if (!reader->ReadFromFile(file,"PROCESS_FILE")) file="Processes.dat";
-    SetInputFile(file,1);
-    m_ecms=rpa.gen.Ecms();
-    m_start[4]=m_start[0]=m_ecms/2;
-    m_start[3]=m_start[2]=m_ecms/2;
-    m_stop[4]=m_stop[0]=0.0;
-    m_stop[3]=m_stop[2]=0.0;
-  }
   if (!ReadInData()) return false;
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");

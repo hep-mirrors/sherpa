@@ -3,9 +3,34 @@
 
 #include "Flavour.H"
 #include "Vector.H"
-#include "Message.H"
 
 namespace BEAM {
+
+  class Beam_Type {
+  public:
+    enum code { Monochromatic  = 0,
+		Gaussian       = 1,
+	        Laser_Back     = 2,
+	        Simple_Compton = 3,
+		Spec_Read      = 4,
+	        Unknown        = 99
+    };
+  };
+
+  class Beam_Shape {
+  public:
+    enum code { Cylinder          = 0,
+                Gaussian_Cylinder = 1,
+		Unknown           = 99
+    };
+  };
+
+  class Beam_Generator {
+  public:
+    enum code { Internal          = 0,
+		Unknown           = 99
+    };
+  };
 
   class Beam_Base { 
   protected:

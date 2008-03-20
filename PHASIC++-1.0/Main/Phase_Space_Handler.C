@@ -47,14 +47,16 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.), p_colint(NULL), p_helint(NULL)
 {
-  Data_Read dr(rpa.GetPath()+"Integration.dat");
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(rpa.GetPath());
+  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
-  m_fin_opt  = dr.GetValue<Switch::code>("FINISH_OPTIMIZATION");
-  if (m_fin_opt==NotDefined<Switch::code>()) m_fin_opt=Switch::Off;
+  m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","Off")=="On"?1:0;
   if (error>0.) {
     m_error   = error;
-    m_fin_opt = Switch::Off;
+    m_fin_opt = 0;
   }
   p_flavours = new Flavour[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = proc->Flavours()[i];

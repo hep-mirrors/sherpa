@@ -13,8 +13,8 @@ using namespace ATOOLS;
 using namespace std;
 
 
-LesHouches_Interface::LesHouches_Interface(Data_Read * _dataread,
-						   Model_Base * _model, std::string _dir) :
+LesHouches_Interface::LesHouches_Interface(Data_Reader * _dataread,
+					   Model_Base * _model, std::string _dir) :
   Spectrum_Generator_Base(_dataread,_model),m_dir(_dir) { }
 
 

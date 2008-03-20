@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "IO_Handler.H"
 #include "MyStrStream.H"
-#include "Data_Return.H"
 #include "MyComplex.H"
 #include "Message.H"
 
@@ -291,13 +290,11 @@ int IO_Handler::ValueInput(std::string name, Type & value) {
   // looking for name
   Variable_Map::const_iterator cit=m_vars.find(name);
   if (cit==m_vars.end()) {
-    value =  NotDefined<Type>();
     return 0;
   } 
   else {
     std::string svalue = m_vars[name];
     if (svalue.length()==0) {
-      value=NotDefined<Type>();
       return 0;
     }
     MyStrStream str;  

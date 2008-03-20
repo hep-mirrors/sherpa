@@ -1,6 +1,6 @@
 #include "XS_Model_Base.H"
 
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Message.H"
 
 using namespace ATOOLS;
@@ -19,7 +19,9 @@ void XS_Model_Base::Initialize(MODEL::Model_Base *const model,
 {
   msg_Debugging()<<METHOD<<"(\""<<file<<"\"): {\n";
   p_model=model;
-  Data_Read read(file);
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputFile(file);
   m_cplscheme=read.GetValue<std::string>("COUPLING_SCHEME","Running");
   m_yukscheme=read.GetValue<std::string>("YUKAWA_MASSES","Running");
   m_widthscheme=read.GetValue<std::string>("WIDTH_SCHEME","Fixed");

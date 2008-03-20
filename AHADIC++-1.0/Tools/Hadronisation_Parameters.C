@@ -3,7 +3,7 @@
 #include "Flavour.H"
 #include "Momenta_Stretcher.H"
 #include "MathTools.H"
-#include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Message.H"
 
 using namespace AHADIC;
@@ -62,7 +62,10 @@ void Hadronisation_Parameters::Init(string dir,string file)
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
 {
-  Data_Read dataread(dir+file);
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddWordSeparator("\t");
+  dataread.SetInputPath(dir);
+  dataread.SetInputFile(file);
   m_parametermap[string("pt02")]               = 
     dataread.GetValue<double>("PT^2_0",1.);
   m_parametermap[string("ptmax")]              = 
