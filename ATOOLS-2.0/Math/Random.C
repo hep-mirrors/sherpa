@@ -3,13 +3,13 @@
 #include "MathTools.H"
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
+#include "Data_Reader.H"
 #include <iostream>
 
-#ifdef PROFILE__all
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE ATOOLS::External_RNG
+#define PARAMETER_TYPE ATOOLS::RNG_Key
+#include "Getter_Function.C"
 
 using namespace std;
 using namespace ATOOLS;
@@ -35,7 +35,7 @@ ATOOLS::Random ATOOLS::ran(1234, 4321);
 
 
 ATOOLS::Random::Random(long nid): 
-  p_outstream(NULL) 
+  p_external(NULL), p_outstream(NULL)
 { 
   SetSeed(nid); 
   ATOOLS::exh->AddTerminatorObject(this);
@@ -45,6 +45,7 @@ ATOOLS::Random::Random(long nid):
 
 ATOOLS::Random::~Random() 
 { 
+  if (p_external) delete p_external;
   if (p_outstream!=NULL) {
     p_outstream->close();
     delete p_outstream;
@@ -60,7 +61,6 @@ static long siv[NTAB];
 
 double ATOOLS::Random::Ran2(long *idum)
 {
-  PROFILE_HERE;
   int   j;
   long  k;
   double temp;
@@ -200,6 +200,7 @@ double ATOOLS::Random::Ran3()
 
 
 int ATOOLS::Random::WriteOutStatus(const char * filename){
+  if (p_external!=NULL) return 1;
   // if Ran4 is the active Random Generator, then use its method
   if (activeGenerator==4) {return WriteOutStatus4(filename);}
   // write out every Statusregister of Random Number generator
@@ -247,6 +248,7 @@ bool ATOOLS::Random::ReadInStatus(const std::string &path)
 }
 
 void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
+  if (p_external!=NULL) return;
   // check what type of data is in target file
   ifstream file(filename);
   // Check if the first 20 bytes in file are a known identifier and
@@ -306,6 +308,7 @@ void ATOOLS::Random::SetSeed(long int nid)
 
 void ATOOLS::Random::SaveStatus()
 {
+  if (p_external!=NULL) return;
   if (activeGenerator==4) { return SaveStatus4(); };
   m_sid=m_id; 
   m_sinext=m_inext; 
@@ -319,6 +322,7 @@ void ATOOLS::Random::SaveStatus()
 
 void ATOOLS::Random::RestoreStatus()
 {
+  if (p_external!=NULL) return;
   if (activeGenerator==4) { return RestoreStatus4(); };
   m_id=m_sid; 
   m_inext=m_sinext; 
@@ -332,6 +336,7 @@ void ATOOLS::Random::RestoreStatus()
 
 void ATOOLS::Random::PrepareTerminate()
 {
+  if (p_external!=NULL) return;
   std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
   if (path=="") return;
   RestoreStatus();
@@ -357,7 +362,25 @@ void ATOOLS::Random::PrepareTerminate()
    each subsequence having a length of approximately 10^30.
 */
 
-ATOOLS::Random::Random(int ij,int kl) : p_outstream(NULL)
+bool Random::InitExternal(const std::string &path,const std::string &file)
+{
+  Data_Reader read(" ",";","!","=");
+  read.SetInputPath(path);
+  read.SetInputFile(file);
+  std::string name;
+  if (!read.ReadFromFile(name,"EXTERNAL_RNG")) return false;
+  p_external = RNG_Getter::GetObject(name,RNG_Key());
+  if (p_external==NULL) {
+    msg_Out()<<METHOD<<"(): {\n\n  // available RNGs\n\n";
+    RNG_Getter::PrintGetterInfo(msg->Out(),20);
+    msg_Out()<<"\n\n}"<<std::endl;
+    THROW(fatal_error,"RNG '"+name+"' not found.");
+  }
+  msg_Info()<<METHOD<<"(): Initialized external RNG '"<<name<<"'."<<std::endl;
+  return true;
+}
+
+ATOOLS::Random::Random(int ij,int kl) : p_external(NULL), p_outstream(NULL)
 {  
    SetSeed(ij, kl); 
    ATOOLS::exh->AddTerminatorObject(this);
@@ -494,12 +517,9 @@ void ATOOLS::Random::ReadInStatus4(const char * filename, long int index)
 void ATOOLS::Random::SaveStatus4() { backupStat = status; }
 void ATOOLS::Random::RestoreStatus4() { status = backupStat; }
 
-void ATOOLS::Random::InitExternal(void *_parent) 
-{
-}
-
 double ATOOLS::Random::Get()   
 {
+  if (p_external) return p_external->Get();
   // Sherpa internal
   if (activeGenerator==4) return Ran4();
   else                    return Ran2(&m_id);
@@ -514,3 +534,4 @@ void ATOOLS::Random::Gaussian(double & x,double & y)
   x = r*std::cos(phi);
   y = r*std::sin(phi);
 }
+

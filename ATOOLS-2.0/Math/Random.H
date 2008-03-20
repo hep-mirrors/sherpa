@@ -4,8 +4,21 @@
 #include <fstream>
 #include "MathTools.H"
 #include "Exception.H"
+#include "Getter_Function.H"
 
 namespace ATOOLS {
+
+  struct RNG_Key {
+  };
+
+  class External_RNG {
+  public:
+
+    virtual double Get() = 0;
+
+  };
+
+  typedef Getter_Function<External_RNG,RNG_Key> RNG_Getter;
 
   class Random: public Terminator_Object {
   private:
@@ -17,6 +30,8 @@ namespace ATOOLS {
     int      m_inext,m_inextp;
     int      m_sinext,m_sinextp;
     char     m_outname[150];
+
+    External_RNG *p_external;
 
     // Variables for Ran4()
     struct Ran4Status{
@@ -53,7 +68,7 @@ namespace ATOOLS {
     ~Random();
     
     // member functions
-    void InitExternal(void *parent);
+    bool InitExternal(const std::string &path,const std::string &file);
     void SetSeed(long nid);  // seed for Rnd2()
     void SetSeed(int, int);  // seed for Rnd4()
     inline long int GetSeed() { return m_id; }

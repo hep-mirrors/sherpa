@@ -62,6 +62,7 @@ Getter_Function(const std::string &name):
 template<class ObjectType,class ParameterType,class SortCriterion>
 Getter_Function<ObjectType,ParameterType,SortCriterion>::~Getter_Function()
 {
+  if (s_getters==NULL) return;
   for (typename String_Getter_Map::iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
     if (git->second==this) {
@@ -95,6 +96,7 @@ template<class ObjectType,class ParameterType,class SortCriterion>
 void Getter_Function<ObjectType,ParameterType,SortCriterion>::
 PrintGetterInfo(std::ostream &str,const size_t width)
 {
+  if (s_getters==NULL) return;
   const IOS_BASE::fmtflags def=str.flags();
   str.setf(IOS_BASE::left,IOS_BASE::adjustfield);
   for (typename String_Getter_Map::const_iterator git=s_getters->begin();
@@ -118,6 +120,7 @@ template<class ObjectType,class ParameterType,class SortCriterion>
 ObjectType *Getter_Function<ObjectType,ParameterType,SortCriterion>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
+  if (s_getters==NULL) return NULL;
   if (!s_exactmatch) {
     for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
 	 git!=s_getters->rend();++git) {
@@ -138,6 +141,7 @@ Getter_Function<ObjectType,ParameterType,SortCriterion>::
 GetGetters(const std::string &name)
 {
   Getter_List list;
+  if (s_getters==NULL) return list;
   for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
        git!=s_getters->rend();++git) {
     if (name.length()==0 ||
