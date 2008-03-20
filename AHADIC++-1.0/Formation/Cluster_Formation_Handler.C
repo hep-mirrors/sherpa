@@ -193,7 +193,7 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
   while (!shiftables.empty()) {
     Proto_Particle_List * pplist = (*shiftables.begin()), * ppl;
     int num = count_if(pplist->begin(),pplist->end(),triplet);
-    ShiftList(pplist);
+    if (!ShiftList(pplist)) return false;
     if (num==0 ||
 	(num==1 && triplet((*pplist->begin())))) 
       m_partlists.push_back((*shiftables.begin()));
@@ -266,8 +266,11 @@ bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
 #endif
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
-  if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front())) val=false;
-  
+  if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front()))  {
+    //std::cout<<"===================================================="<<std::endl;
+    //PRINT_VAR(" AdjustMomenta bug from here.");
+    return false;
+  }
   k = 0;
   for (pit=pl->begin();pit!=pl->end();++pit,++k) {
     (*pit)->m_mom = momenta[k]; 
@@ -305,6 +308,11 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
     }
     else {
       p_cformer->ConstructClusters(*pplit,clist);
+      //std::cout<<std::endl
+      //	       <<METHOD<<" ================================"<<std::endl
+      //	       <<(*clist)<<std::endl
+      //	       <<"==================================================="
+      //	       <<std::endl<<std::endl;
       m_clulists.push_back(clist);    
     }
     delete (*pplit);
@@ -356,6 +364,7 @@ bool Cluster_Formation_Handler::ApplyColourReconnections()
 
 bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 {
+#ifdef AHAmomcheck
   Vec4D checkbef(0.,0.,0.,0.);
   for (std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
        clit!=m_clulists.end();clit++) {
@@ -365,6 +374,7 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
       }
     }
   }
+#endif
 
   std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
   while(clit!=m_clulists.end()) {
@@ -374,7 +384,8 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 	       <<(**clit);
     }
     Vec4D beflocal(0.,0.,0.,0.), aftlocal(0.,0.,0.,0.);
-    for (Cluster_Iterator cit=(*clit)->begin();cit!=(*clit)->end();cit++) beflocal += (*cit)->Momentum();
+    for (Cluster_Iterator cit=(*clit)->begin();
+	 cit!=(*clit)->end();cit++) beflocal += (*cit)->Momentum();
 
     if (!p_softclusters->TreatClusterList((*clit),p_blob)) {
       Cluster_List * clist = NULL;
@@ -477,6 +488,12 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
       }
     }
   }
+  //std::cout<<std::endl
+  //	   <<METHOD<<" =========================================="<<std::endl
+  //	   <<(*p_clulist)<<std::endl
+  //	   <<"=========================================================="
+  //	   <<std::endl<<std::endl;
+
   Reset();
   return true;
 }

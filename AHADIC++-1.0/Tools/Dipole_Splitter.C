@@ -18,6 +18,9 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   Dipole * dip1 = new Dipole(new Proto_Particle((*clu->GetTrip())),
 			     new Proto_Particle((*clu->GetAnti())));
   p_dip = dip1;
+  //std::cout<<" "<<METHOD<<" --------------------------- "<<std::endl;
+  //p_dip->Output();
+
   if (msg->LevelIsDebugging()) {
     msg_Out()<<METHOD<<" : "<<clu->Momentum()<<" ("<<clu->Mass2()<<")."<<std::endl;
     p_dip->Output();
@@ -29,6 +32,9 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   dip1->Update();
   dip2->Update();
 
+  //std::cout<<"    splitted it :"<<std::endl;
+  //dip1->Output();
+  //dip2->Output();
 
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"       after gluon emission: "<<std::endl;
@@ -36,15 +42,19 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
     dip2->Output();
   }
 
+  //if (ran.Get()<(dip1->Mass2()-dip1->Triplet()->Mass())/
+  //   (dip1->Mass2()+dip2->Mass2()-dip1->Triplet()->Mass()-dip2->AntiTriplet()->Mass())) {
   if (ran.Get()<dip1->Mass2()/(dip1->Mass2()+dip2->Mass2())) {
     if (!SplitDipole(dip1,pt2max) && !SplitDipole(dip2,pt2max)) {
       msg_Out()<<METHOD<<" yields error due to unsplittable dipole."<<std::endl;
+      msg_Out()<<(*clu)<<std::endl;
       return false;
     }
   }
   else {
     if (!SplitDipole(dip2,pt2max) && !SplitDipole(dip1,pt2max)) {
       msg_Out()<<METHOD<<" yields error due to unsplittable dipole."<<std::endl;
+      msg_Out()<<(*clu)<<std::endl;
       return false;
     }
   }
@@ -112,6 +122,8 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   SetSpectatorAndSplitter();
   m_M2      = p_dip->Mass2();
   m_m1      = p_constituents->Mass(p_spect->m_flav);
+  //std::cout<<METHOD<<" : check masses : "<<sqrt(m_M2)<<" - "<<m_m1<<" - "<<m_2p3min<<std::endl;
+  if (sqrt(m_M2)-m_m1-m_2p3min<=1.e-8) return false;
   m_m12     = sqr(m_m1);
   m_xt2min  = sqr((m_m1+m_2p3min/2.)*(m_2p3min)/m_M2);
   if (pt2max<0.) m_pt2veto = -pt2max;
@@ -192,9 +204,17 @@ bool Dipole_Splitter::DetermineSplitting(bool glusplit) {
 
 bool Dipole_Splitter::SelectPT_Y(bool glusplit) {
   double expo = sqr(log(m_xt2))-log(ran.Get())/(m_asmax*m_pref);
-  if (expo<0.)        return false;
+  if (expo<0.) {
+    //std::cout<<METHOD<<" yields false for "<<expo
+    //	     <<" ("<<m_xt2<<", "<<m_asmax<<", "<<m_pref<<")"<<std::endl;
+    return false;
+  }
   m_xt2 = exp(-sqrt(expo));
-  if (m_xt2<m_xt2min) return false;
+  if (m_xt2<m_xt2min) {
+    //std::cout<<"   SelectPT_Y yields false for "<<expo
+    //	     <<" ("<<m_xt2<<"<"<<m_xt2min<<", "<<m_asmax<<", "<<m_pref<<")"<<std::endl;
+    return false;
+  }
   m_y   = m_ybound*(2.*ran.Get()-1.);
   if (glusplit) {
     FDIter fdit;
@@ -241,13 +261,13 @@ bool Dipole_Splitter::MinimalDecay(bool glusplit) {
     m_m22 = m_m32 = sqr(m_m2);
   }
   else {
-    m_2p3 = m_2p3min;
-    m_m2  = m_m3 = m_2p3min/2.;
-    m_m22 = m_m32 = sqr(m_m2);
+    m_2p3 = m_2p3min+m_m3;
+    //m_m2  = m_m3 = m_2p3min/2.;
+    //m_m22 = m_m32 = sqr(m_m2);
   }
 
   m_s23 = sqr(m_2p3);
-  m_s12 = m_m12+m_m22+m_m2/(m_m2+m_m3)*(m_M2-m_m12-m_s23);
+  m_s12 = m_m12+m_m22+Max(m_m2,m_2p3min/2.)/m_2p3*(m_M2-m_m12-m_s23);
 
   if (!ConstructKinematics()) {
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
@@ -265,9 +285,17 @@ void Dipole_Splitter::CalculateInvariants() {
 }
 
 bool Dipole_Splitter::ConstructKinematics() {
-  if (m_s12<sqr(m_m1+m_m2) || m_s23<sqr(m_m2+m_m3)) return false;
+  if (m_s12<sqr(m_m1+m_m2) || m_s23<sqr(m_m2+m_m3)) {
+    //std::cout<<" fail 1: "<<m_s12<<" and "<<m_s23<<" from "<<m_m1<<", "<<m_m2<<", "<<m_m3<<std::endl;
+    return false;
+  }
   double Mred2 = m_M2-(m_s23+m_m12);     
-  if (sqr(Mred2)<4.*m_s23*m_m12 || Mred2<0.) return false;
+  if (sqr(Mred2)<4.*m_s23*m_m12 || Mred2<0.) {
+    //std::cout<<" fail 2: "
+    //	     <<m_s12<<" and "<<m_s23<<" from "<<m_m1<<", "<<m_m2<<", "<<m_m3
+    //	     <<" vs. "<<m_M2<<" --> "<<Mred2<<std::endl;
+    return false;
+  }
   double gamma = (Mred2+sqrt(sqr(Mred2)-4.*m_s23*m_m12))/2.;
   double a1    = Max(m_m12,0.)/gamma;
   double a23   = m_s23/gamma;
@@ -279,12 +307,20 @@ bool Dipole_Splitter::ConstructKinematics() {
   double z3    = 1.-z2;
   m_pt2        = z2*(1.-z2)*m_s23-(1.-z2)*m_m22-z2*m_m32;
   if (ATOOLS::IsZero(m_pt2)) m_pt2 = 0.;
-  if (m_pt2<0. || m_pt2>m_pt2veto) return false;                                   
+  if (m_pt2<0. || m_pt2>m_pt2veto) {
+    //std::cout<<" fail 3 with a1, a23 = "<<a1<<", "<<a23
+    //	     <<"; z2, z3 = "<<z2<<", "<<z3
+    //	     <<" and pt2 = "<<m_pt2<<" vs. "<<m_pt2veto<<std::endl;
+    return false;
+  }                                   
   double phi   = 2.*M_PI*ran.Get();
   Vec4D kperp  = sqrt(m_pt2)*Vec4D(0.,cos(phi),sin(phi),0.);
   double y2    = (m_m22+m_pt2)/(z2*m_s23);
   double y3    = (m_m32+m_pt2)/(z3*m_s23);
 
+  //std::cout<<METHOD<<" with a1, a23 = "<<a1<<", "<<a23
+  //	   <<"; z2, z3 = "<<z2<<", "<<z3<<"; y2, y3 = "<<y2<<", "<<y3
+  //	   <<" and pt2 = "<<m_pt2<<std::endl;
   m_mom1       = lminus+a1*lplus;
   m_mom2       = z2*lplus+y2*a23*lminus+kperp;
   m_mom3       = z3*lplus+y3*a23*lminus-kperp;

@@ -68,7 +68,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("ptmax")]              = 
     dataread.GetValue<double>("PT_MAX",1.);
   m_parametermap[string("asfix")]              = 
-    dataread.GetValue<double>("AS_FIX",0.0);
+    dataread.GetValue<double>("AS_FIX",1.0);
   m_parametermap[string("Offset_C->H")] =
     dataread.GetValue<double>("TRANSITION_OFFSET",0.75);      
   m_parametermap[string("Offset_C->HH")] =
@@ -214,12 +214,15 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
 {
   Momenta_Stretcher stretcher;
   if (n==1) return false;
+  bool success(true);
   if (n!=2) {
-    bool  prepare=false,boost=false,success=true;
+    bool  prepare=false,boost=false;
     Poincare rest;
     Vec4D cms = Vec4D(0.,0.,0.,0.);
+    double mass(0.);
     for (int i=0;i<n;i++) {
-      cms += moms[i];
+      cms  += moms[i];
+      mass += masses[i];
       if (dabs(moms[i].Abs2())>1.e-6) prepare = true;
     } 
     if (Vec3D(cms).Abs()>1.e-6) { 
@@ -227,12 +230,28 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       rest  = Poincare(cms);
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
-    if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-15);
+    if (mass>sqrt(cms.Abs2())) {
+      PRINT_VAR(": Total mass = "<<mass<<", Total E = "<<sqrt(cms.Abs2()));
+      for (int i=0;i<n;i++) {
+	std::cout<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+      }
+    }
+    if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
     success = success && stretcher.MassThem(0,n,moms,masses);
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
-    return success;
   } 
-  else return stretcher.MassThem(0,n,moms,masses,1.e-15);
+  else {
+    success = stretcher.MassThem(0,n,moms,masses,1.e-10);
+  }
+  if (!success) {
+    PRINT_VAR(": Total mass = "<<(moms[0]+moms[1]).Abs2());
+    for (int i=0;i<n;i++) {
+      std::cout<<"   "<<i<<"th particle = "<<masses[i]<<" : "
+	       <<moms[i]<<" "<<moms[i].Abs2()<<std::endl;
+    }
+    std::cout<<"---------------------------------------------------------"<<std::endl;
+  }
+  return success;
 }

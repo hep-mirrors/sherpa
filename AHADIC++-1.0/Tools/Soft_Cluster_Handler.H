@@ -36,13 +36,15 @@ namespace AHADIC {
     
     Cluster_List *       m_clin;
 
-    int    CheckCluster(Cluster *,bool);
-    double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    double TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false);
+    int    CheckCluster(Cluster *,bool,const double=-1.);
+    double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,const double=-1.);
+    double TransformWeight(Cluster *,ATOOLS::Flavour &,const double=-1.,bool=false);
     void   FixHHDecay(Cluster *);
 
 
-    void   ShiftMomenta(Cluster_List *,int);
+    bool   CheckIfAllowed(Cluster_List * clin,int size,double & E);
+    bool   UpdateTransitions(Cluster_List * clin,int size);
+    void   ShiftMomenta(Cluster_List *,int,bool=false);
     double SimpleMassCriterion(Single_Transition_List *,ATOOLS::Flavour &,
 			       const double,bool=false);
     double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,

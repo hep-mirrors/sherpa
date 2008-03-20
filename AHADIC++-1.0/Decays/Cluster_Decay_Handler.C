@@ -93,6 +93,10 @@ Blob * Cluster_Decay_Handler::DecayIt(Cluster * cluster)
   cluster->GetSelf()->SetStatus(part_status::decayed);
   cluster->GetSelf()->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
 
+  //std::cout<<std::endl
+  //	   <<METHOD<<"========================================="<<std::endl
+  //	   <<(*cluster)<<std::endl;
+
   p_clus->TestDecay(cluster);
 
   return blob;
