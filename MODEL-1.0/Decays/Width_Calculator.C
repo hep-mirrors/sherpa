@@ -12,9 +12,9 @@ double Width_Calculator::Width(Decay_Channel * dec) {
     switch (dec->NumberOfDecayProducts()) {
     case 2:
       if (dec->GetDecayProduct(0).IsFermion() &&
-	  dec->GetDecayProduct(1).IsFermion())  break;
+	  dec->GetDecayProduct(1).IsFermion()) return SFF(dec);
       if (dec->GetDecayProduct(0).IsScalar() &&
-	  dec->GetDecayProduct(1).IsScalar())   return SSS(dec);
+	  dec->GetDecayProduct(1).IsScalar()) return SSS(dec);
       if ((dec->GetDecayProduct(0).IsVector() &&
 	   dec->GetDecayProduct(1).IsScalar()) ||
 	  (dec->GetDecayProduct(1).IsVector() &&
@@ -36,9 +36,25 @@ double Width_Calculator::Width(Decay_Channel * dec) {
       if ((dec->GetDecayProduct(0).IsVector() &&
 	   dec->GetDecayProduct(1).IsScalar()) ||
 	  (dec->GetDecayProduct(1).IsVector() &&
-	   dec->GetDecayProduct(0).IsScalar())) break;
+	   dec->GetDecayProduct(0).IsScalar())) return VVS(dec);
       if (dec->GetDecayProduct(0).IsVector() &&
-	  dec->GetDecayProduct(1).IsVector())   break;
+	  dec->GetDecayProduct(1).IsVector())   return VVV(dec);
+    case 3:
+    default:
+      break;
+    }
+  }
+  else if (dec->GetDecaying().IsFermion()) {
+    switch (dec->NumberOfDecayProducts()) {
+    case 2:
+      if ((dec->GetDecayProduct(0).IsFermion() &&
+	   dec->GetDecayProduct(1).IsVector())||
+           (dec->GetDecayProduct(1).IsFermion() &&
+	    dec->GetDecayProduct(0).IsVector())) return FFV(dec);
+      if ((dec->GetDecayProduct(0).IsFermion() &&
+	   dec->GetDecayProduct(1).IsScalar())||
+          (dec->GetDecayProduct(1).IsFermion() &&
+	   dec->GetDecayProduct(0).IsScalar())) return FFS(dec);
     case 3:
     default:
       break;
@@ -76,8 +92,8 @@ double Width_Calculator::Lambda2(const double M,const double m1,const double m2)
 double Width_Calculator::ColorFactor(Single_Vertex * vertex) 
 {
   double colfac(1.);
-  if (vertex->Color.size()==1) {
-    switch (int(vertex->Color.back().m_type)) {
+  if (vertex->Color.size()==1){
+    switch  (int(vertex->Color.back().m_type)){
     case (int(cf::D)) : colfac *= 3.; break;
     case (int(cf::T)) : colfac *= 4.; break;
     case (int(cf::F)) : colfac *=24.; break;
@@ -91,7 +107,8 @@ double Width_Calculator::Norm(Flavour in)
   double norm(1.);
   if (in.IsFermion())                 norm/=2.;
   else if (in.IsVector())             norm/=3.;
-  norm/=abs(in.StrongCharge());
+  if (abs(in.StrongCharge())==3)      norm/=3.;
+  else if (abs(in.StrongCharge())==9) norm/=8.;
   return norm;
 }
 
@@ -189,8 +206,15 @@ double Width_Calculator::VVS(Decay_Channel * dec) {
 double Width_Calculator::VVV(Decay_Channel * dec) {
   Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
+  double m02(sqr(m_M)),m12(sqr(m_m[0])),m22(sqr(m_m[1]));
+  double ME2  = (std::norm(vertex->cpl[0].Value()))*
+     ((sqr(m02) - 2*m02*m12 + sqr(m12) - 2*m02*m22 - 2*m12*m22 + sqr(m22))*
+      (sqr(m02) + 10*m02*m12 + sqr(m12) + 10*m02*m22 + 10*m12*m22 + sqr(m22)))/
+      (4.*m02*m12*m22);
 
-  double ME2   = 0.;
+  //if ((dec->GetDecayProduct(0))==(dec->GetDecayProduct(1)))
+  // ME2*=1./2;
+ 
   double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
 
   return width;
@@ -200,10 +224,10 @@ double Width_Calculator::FFS(Decay_Channel * dec) {
   Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
 
-  double ME2   = (2.*m_M*m_m[0]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value())) +
-                 (sqr(m_M)+sqr(m_m[0])-sqr(m_m[1]))*
+  double ME2   = (2.*m_M*m_m[1]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value())) +
+                 (sqr(m_M)+sqr(m_m[1])-sqr(m_m[0]))*
                  (std::norm(vertex->cpl[0].Value())+std::norm(vertex->cpl[1].Value())));
-  double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
+  double width = TwoBodyPref(m_M,m_m[1],m_m[0])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
 
   return width;
 }
@@ -211,12 +235,12 @@ double Width_Calculator::FFS(Decay_Channel * dec) {
 double Width_Calculator::FFV(Decay_Channel * dec) {
   Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
-  double M2(sqr(m_M)),m02(sqr(m_m[0])),m12(sqr(m_m[1]));
+  double M2(sqr(m_M)),m02(sqr(m_m[1])),m12(sqr(m_m[0]));
 
-  double ME2   = (M2+m02-m12 + (M2 -m02-m12)*(M2-m02+m12)/m12)*
+  double ME2   = (M2+m02-m12 +(M2 -m02-m12)*(M2-m02+m12)/m12)*
                  (std::norm(vertex->cpl[0].Value())+std::norm(vertex->cpl[1].Value()))-
                  6.*m_M*m_m[0]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value())) ;
-  double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
+  double width = TwoBodyPref(m_M,m_m[1],m_m[0])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
 
   return width;
 }
