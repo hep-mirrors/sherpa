@@ -125,6 +125,9 @@ namespace ANALYSIS {
     inline const std::string &Name() const { return m_name; }
     inline const int          Mode() const { return m_mode; }
 
+    inline const ATOOLS::String_BlobDataBase_Map &GetData()
+    { return m_datacontainer; }
+
   };// end of class Primitive_Analysis
 
 }// end of namespace ANALYSIS
