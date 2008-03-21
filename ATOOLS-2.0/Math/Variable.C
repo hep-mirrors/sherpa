@@ -49,6 +49,18 @@ ValueType Variable_Base<ValueType>::Value
 }
 
 template <class ValueType>
+bool Variable_Base<ValueType>::Init(const std::string &name)
+{
+  return true;
+}
+
+template <class ValueType>
+Algebra_Interpreter *Variable_Base<ValueType>::GetInterpreter() const
+{
+  return NULL;
+}
+
+template <class ValueType>
 void Variable_Base<ValueType>::ShowVariables(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
@@ -103,6 +115,7 @@ class Calc_Variable: public Variable_Base<ValueType>,
 private:
   std::string m_formula;
   Algebra_Interpreter *p_interpreter;
+  const Tag_Replacer *p_replacer;
   mutable std::vector<Vec4D> m_p;
 public:
   Calc_Variable(const std::string &tag);
@@ -119,31 +132,53 @@ public:
     for (int i(0);i<n;++i) m_p[i]=vectors[i];
     return ((TDouble*)p_interpreter->Calculate())->m_value;
   }
+  Algebra_Interpreter *GetInterpreter() const
+  {
+    return p_interpreter;
+  }
+  bool Init(const std::string &name);
   std::string ReplaceTags(std::string &expr) const;
   ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
 };// end of class Calc_Variable
 template <class ValueType>
 Calc_Variable<ValueType>::Calc_Variable(const std::string &tag): 
-  Variable_Base<ValueType>("Calc"), m_formula(tag)
+  Variable_Base<ValueType>("Calc"), m_formula(tag), 
+  p_interpreter(new Algebra_Interpreter()), p_replacer(NULL)
 {
+  p_interpreter->SetTagReplacer(this);
+  Init(m_formula);
+}
+template <class ValueType> bool
+Calc_Variable<ValueType>::Init(const std::string &name)
+{
+  m_formula=name;
   msg_Debugging()<<METHOD<<"(): m_formula = '"<<m_formula<<"'\n";
-  size_t bpos(m_formula.find("("));
-  if (bpos==std::string::npos) return;
-  m_formula=m_formula.substr(bpos);
-  if ((bpos=m_formula.rfind(")"))==std::string::npos) return;
-  m_formula=m_formula.substr(1,bpos-1);
-  if (m_formula.length()>0) {
-    p_interpreter = new Algebra_Interpreter();
-    p_interpreter->SetTagReplacer(this);
-    size_t pos(m_formula.find("p["));
-    while (pos!=std::string::npos) {
-      std::string ex(m_formula.substr(pos+2,m_formula.find("]",pos)-pos-2));
-      p_interpreter->AddTag("p["+ex+"]","(1.0,0.0,0.0,1.0)");
-      pos=m_formula.find("p[",pos+ex.length()+1);
-    }
-    p_interpreter->Interprete(m_formula);
-    if (msg_LevelIsTracking()) p_interpreter->PrintEquation();
+  size_t cbpos(m_formula.find("{"));
+  if (cbpos!=std::string::npos) {
+    std::string reps(m_formula.substr(cbpos+1));
+    m_formula=m_formula.substr(0,cbpos);
+    if ((cbpos=reps.rfind("}"))==std::string::npos) 
+      THROW(fatal_error,"Invalid syntax");
+    reps=reps.substr(0,cbpos);
+    p_replacer=dynamic_cast<const Tag_Replacer*>
+      ((const Tag_Replacer*)ToType<long unsigned int>(reps));
+    if (p_replacer==NULL) THROW(fatal_error,"Invalid pointer");
   }
+  size_t bpos(m_formula.find("("));
+  if (bpos==std::string::npos) return false;
+  m_formula=m_formula.substr(bpos);
+  if ((bpos=m_formula.rfind(")"))==std::string::npos) return false;
+  m_formula=m_formula.substr(1,bpos-1);
+  if (m_formula.length()==0) return false;
+  size_t pos(m_formula.find("p["));
+  while (pos!=std::string::npos) {
+    std::string ex(m_formula.substr(pos+2,m_formula.find("]",pos)-pos-2));
+    p_interpreter->AddTag("p["+ex+"]","(1.0,0.0,0.0,1.0)");
+    pos=m_formula.find("p[",pos+ex.length()+1);
+  }
+  p_interpreter->Interprete(m_formula);
+  if (msg_LevelIsTracking()) p_interpreter->PrintEquation();
+  return true;
 }
 template <class ValueType>
 Calc_Variable<ValueType>::~Calc_Variable()
@@ -163,6 +198,7 @@ ATOOLS::Term *Calc_Variable<ValueType>::ReplaceTags(ATOOLS::Term *term) const
     if (i>=m_p.size()) THROW(fatal_error,"Invalid tag.");
     ((TVec4D*)term)->m_value=m_p[i];
   }
+  else if (p_replacer!=NULL) return p_replacer->ReplaceTags(term);
   else THROW(fatal_error,"Invalid tag.");
   return term;
 }

@@ -8,7 +8,22 @@
 #include "Histogram.H"
 #include "Shell_Tools.H"
 #include "Exception.H"
+#include "Algebra_Interpreter.H"
 #include <iomanip>
+
+namespace ATOOLS {
+
+  struct TDouble: public Term {
+    double m_value;
+    TDouble(const double &value): m_value(value) {}
+  };// end of struct Double
+  
+  struct TVec4D: public Term {
+    Vec4D m_value;
+    TVec4D(const Vec4D &value): m_value(value) {}
+  };// end of struct Vec4D
+
+}
 
 using namespace ATOOLS;
 
@@ -27,6 +42,15 @@ namespace ANALYSIS {
 
   typedef std::vector<ATOOLS::Histogram*> Histogram_Vector;
 
+  class OVS_Tag_Replacer: public Tag_Replacer {
+  private:
+    Primitive_Analysis *p_ana;
+  public:
+    OVS_Tag_Replacer(Primitive_Analysis *const ana): p_ana(ana) {}
+    std::string ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+  };// end of class OVS_Tag_Replacer
+
   class One_Variable_Selector: public Trigger_Base {
   private:
     String_Matrix m_cndlist;
@@ -38,6 +62,7 @@ namespace ANALYSIS {
     Double_Matrix    m_histos;
     Histogram_Vector m_dists;
     ATOOLS::Histogram *p_flow;
+    OVS_Tag_Replacer m_repl;
   public:
     One_Variable_Selector
     (const std::string &inlist,const std::string &outlist,
@@ -283,16 +308,29 @@ One_Variable_Selector::One_Variable_Selector
  const Double_Vector &maxs,const Double_Matrix &histos,
  Primitive_Analysis *const ana,const std::string &name):
   Trigger_Base(inlist,outlist), m_cndlist(cndlist),
-  m_flavs(flavs), m_items(items), m_vtags(vtags), 
-  m_mins(mins), m_maxs(maxs), m_histos(histos), m_dists(flavs.size(),NULL)
+  m_flavs(flavs), m_items(items), m_vtags(vtags), m_mins(mins), m_maxs(maxs), 
+  m_histos(histos), m_dists(flavs.size(),NULL), m_repl(ana)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   m_vars.resize(m_vtags.size(),NULL);
   for (size_t i(0);i<m_vtags.size();++i) {
-    m_vars[i]=ATOOLS::Variable_Getter::GetObject(m_vtags[i],m_vtags[i]);
+    if (m_vtags[i].find("Calc")==std::string::npos)
+      m_vars[i]=ATOOLS::Variable_Getter::GetObject(m_vtags[i],m_vtags[i]);
+    else m_vars[i]=ATOOLS::Variable_Getter::GetObject(m_vtags[i],"Calc(1)");
     if (m_vars[i]==NULL) THROW
       (fatal_error,"Variable '"+m_vtags[i]+"' does not exist. Run 'Sherpa"+
        std::string(" SHOW_ANALYSIS_SYNTAX=1' to list variables."));
+    ATOOLS::Algebra_Interpreter *inter=m_vars[i]->GetInterpreter();
+    if (inter!=NULL) {
+      const String_BlobDataBase_Map &data(ana->GetData());
+      for (String_BlobDataBase_Map::const_iterator 
+	     dit(data.begin());dit!=data.end();++dit) {
+	Blob_Data<double> *dat(dynamic_cast<Blob_Data<double>*>(dit->second));
+	if (dat!=NULL) inter->AddTag(dit->first,"0");
+	else inter->AddTag(dit->first,"(0,0,0,0)");
+      }
+      m_vars[i]->Init(m_vtags[i]+"{"+ToString((long unsigned int)(&m_repl))+"}");
+    }
   }
   if (name!="") m_name=name;
   else {
@@ -500,6 +538,30 @@ void One_Variable_Selector::Evaluate
     for (size_t j(0);j<list->size();++j) 
       (*cndlist[i])[j] = new Particle(*(*list)[j]);
   }
+}
+
+std::string OVS_Tag_Replacer::ReplaceTags(std::string &expr) const
+{
+  THROW(fatal_error,"Invalid function call");
+}
+
+Term *OVS_Tag_Replacer::ReplaceTags(Term *term) const
+{
+  size_t bpos(term->m_tag.find('['));
+  if (bpos!=std::string::npos) {
+    Blob_Data<Vec4D> *dat(dynamic_cast<Blob_Data<Vec4D>*>((*p_ana)[term->m_tag]));
+    if (dat!=NULL) {
+      ((TVec4D*)term)->m_value=dat->Get();
+      return term;
+    }
+    THROW(critical_error,"Tag '"+term->m_tag+"' not found");
+  }
+  Blob_Data<double> *dat(dynamic_cast<Blob_Data<double>*>((*p_ana)[term->m_tag]));
+  if (dat!=NULL) {
+    ((TDouble*)term)->m_value=dat->Get();
+    return term;
+  }
+  THROW(critical_error,"Tag '"+term->m_tag+"' not found");
 }
 
 Analysis_Object *One_Variable_Selector::GetCopy() const

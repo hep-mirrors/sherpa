@@ -7,6 +7,7 @@
 
 namespace ATOOLS {
 
+  class Algebra_Interpreter;
 
   template <class ValueType>
   class Variable_Base {
@@ -30,6 +31,8 @@ namespace ATOOLS {
     virtual ~Variable_Base();
 
     // member functions
+    virtual bool Init(const std::string &name="");
+
     const std::string &Name() const;
     const std::string &IDName() const;
 
@@ -40,6 +43,8 @@ namespace ATOOLS {
 
     virtual Value_Type Value(const Vec3D *vectors,const int &n=1) const;
     virtual Value_Type Value(const Vec4D *vectors,const int &n=1) const;
+
+    virtual Algebra_Interpreter *GetInterpreter() const;
 
     static void ShowVariables(const int mode=1);
 

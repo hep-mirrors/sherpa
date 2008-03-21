@@ -14,7 +14,8 @@ libAnalysisTriggers_la_SOURCES        =	\
 	 				D0_BFKL_Cone_Finder.C \
 					One_Particle_Extractor.C \
 					Primitive_Detector.C \
-					Primitive_Calorimeter.C
+					Primitive_Calorimeter.C \
+					Tau_Reconstruction.C 
 
 pkginclude_HEADERS    =	\
 			Trigger_Base.H \
