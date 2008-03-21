@@ -125,7 +125,7 @@ GetObject(const std::string &name,const Parameter_Type &parameters)
     for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
 	 git!=s_getters->rend();++git) {
       if ((name.length()==0 && git->first.length()==0) ||
-	  (git->first.length()>0 && name.find(git->first)!=std::string::npos))
+	  (git->first.length()>0 && name.find(git->first)==0))
 	return (*git->second)(parameters);
     }
     return NULL;
