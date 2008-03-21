@@ -80,7 +80,7 @@ void MET_Define::CreateParticleList()
   for (size_t i(0);i<inlist->size();++i) {
     bool found(false);
     for (size_t j(0);j<m_flavs.size();++j) {
-      if ((*inlist)[i]->Flav()==m_flavs[j]) {
+      if (m_flavs[j].Includes((*inlist)[i]->Flav())) {
 	msg_Debugging()<<"  skip "<<*(*inlist)[i]<<"\n";
 	cms+=(*inlist)[i]->Momentum();
 	found=true;
@@ -92,7 +92,7 @@ void MET_Define::CreateParticleList()
       outlist->push_back(new Particle(*(*inlist)[i]));
     }
   }
-  Particle *met(new Particle(1,Flavour((kf_code)99999),cms));
+  Particle *met(new Particle(1,Flavour(kf_none),cms));
   met->SetNumber(0);
   outlist->push_back(met);
   msg_Debugging()<<"  add  "<<*met<<"\n}\n";
