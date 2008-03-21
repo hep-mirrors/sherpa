@@ -111,11 +111,11 @@ namespace ATOOLS {
     ~Read_Write_Base();
 
     // member functions
-    bool OpenInFile(const unsigned int i=0,const bool force=false);
+    bool OpenInFile(const unsigned int i=0,const int mode=0);
     bool OpenOutFile(const unsigned int i=0);
 
-    void CloseInFile(const unsigned int i=0,const bool force=false);
-    void CloseOutFile(const unsigned int i=0,const bool force=false);
+    void CloseInFile(const unsigned int i=0,const int mode=0);
+    void CloseOutFile(const unsigned int i=0,const int mode=0);
 
     std::string StripEscapes(const std::string &buffer) const;
 
@@ -317,9 +317,9 @@ namespace ATOOLS {
     { return m_namesplit; }
 
     inline bool RereadInFile(const unsigned int i=0)
-    { CloseInFile(i,true); return OpenInFile(i,true); }
+    { CloseInFile(i,1); return OpenInFile(i,1); }
     inline bool RescanInFile(const unsigned int i=0)
-    { CloseInFile(i,false); return OpenInFile(i,false); }
+    { CloseInFile(i,0); return OpenInFile(i,2); }
     
     inline Algebra_Interpreter *Interpreter() const
     { return p_interpreter; }

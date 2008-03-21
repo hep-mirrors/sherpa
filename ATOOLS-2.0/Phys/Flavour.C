@@ -4,7 +4,7 @@
 #include "Exception.H"
 #include "MyStrStream.H"
 #include "Data_Reader.H"
-#include "My_File.H"
+#include "Run_Parameter.H"
 
 namespace ATOOLS 
 {
@@ -293,19 +293,23 @@ void ATOOLS::ParticleInit(const std::string &path)
   if (initialized) return;
   initialized=true;
 
-  kf_code kfc, kfcold=kf_none;
+  kf_code kfc;
   int    charge,icharge,spin,strong,Majorana;
   bool   Take,stable,massive;
   double mass,width;
   std::string idname, texname, buffer;
 
-  My_In_File part(path,"Particle.dat");
-  if (!part.Open()) {
-    std::cerr<<"Error in Particle_Init : File Particle.dat not found !"<<std::endl;
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetAddCommandLine(false);
+  read.SetInputPath(path);
+  read.SetInputFile(rpa.gen.Variable("PARTICLE_DATA_FILE"));
+  if (!read.OpenInFile()) {
+    msg_Error()<<METHOD<<"(): File '"
+	       <<rpa.gen.Variable("PARTICLE_DATA_FILE")
+	       <<"' not found."<<std::endl;
     return;
   }
-  
-  getline(*part,buffer);
   msg_LogFile()<<"\n! +--------------------------------------+"<<std::endl;
   msg_LogFile()<<"! |               kf table               |"<<std::endl;
   msg_LogFile()<<"! +--------------------------------------+\n"<<std::endl;
@@ -333,10 +337,21 @@ void ATOOLS::ParticleInit(const std::string &path)
   if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  for(;*part;) {
-    (*part)>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
-	   >>Majorana>>Take>>stable>>massive>>idname>>texname;
-    if (kfc!=kfcold) { // read last line only once!
+  std::vector<std::vector<std::string> > helpsvv;
+  read.MatrixFromFile(helpsvv);
+  for(size_t i(1);i<helpsvv.size();++i) {
+    if (helpsvv[i].size()!=13) {
+      msg_Error()<<METHOD<<"(): Inconsistent entry in line "<<i
+		 <<" of '"<<read.InputFile()<<"'."<<std::endl;
+      continue;
+    }
+    kfc=ToType<int>(helpsvv[i][0]); 
+    mass=ToType<double>(helpsvv[i][1]); width=ToType<double>(helpsvv[i][2]);
+    charge=ToType<int>(helpsvv[i][3]); icharge=ToType<int>(helpsvv[i][4]);
+    strong=ToType<int>(helpsvv[i][5]); spin=ToType<int>(helpsvv[i][6]);
+    Majorana=ToType<int>(helpsvv[i][7]); Take=ToType<int>(helpsvv[i][8]);
+    stable=ToType<int>(helpsvv[i][9]); massive=ToType<int>(helpsvv[i][10]);
+    idname=helpsvv[i][11]; texname=helpsvv[i][12];
       std::map<int,double>::const_iterator dit;
       if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
       if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
@@ -358,25 +373,32 @@ void ATOOLS::ParticleInit(const std::string &path)
 			strong,spin,Majorana,Take,stable,massive,
 			"shgluon","shgluon",1);
       }
-      kfcold = kfc;
-    }
   }
   msg_LogFile()<<std::endl;
-  part.Close();
-
-  My_In_File part2(path,"Hadron.dat");
-  if (!part2.Open()) {
-    std::cerr<<"Error: Hadron.dat not found !"<<std::endl;
+  read.SetFileBegin(std::vector<std::string>());
+  read.SetFileEnd(std::vector<std::string>());
+  read.SetInputFile(rpa.gen.Variable("HADRON_DATA_FILE"));
+  read.RescanInFile();
+  if (!read.OpenInFile()) {
+    msg_Error()<<METHOD<<"(): File '"
+	       <<rpa.gen.Variable("HADRON_DATA_FILE")
+	       <<"' not found."<<std::endl;
   }
   else {
-    getline(*part2,buffer);
     msg_LogFile()<<"! "<<buffer<<std::endl;
-  
-    for(;*part2;) {
-      (*part2)>>kfc>>mass>>width>>charge>>icharge
-	      >>spin>>Take>>stable>>idname;
+    read.MatrixFromFile(helpsvv);
+    for(size_t i(1);i<helpsvv.size();++i) {
+      if (helpsvv[i].size()!=9) {
+	msg_Error()<<METHOD<<"(): Inconsistent entry in line "<<i
+		   <<" of '"<<read.InputFile()<<"'."<<std::endl;
+	continue;
+      }
+      kfc=ToType<int>(helpsvv[i][0]); 
+      mass=ToType<double>(helpsvv[i][1]); width=ToType<double>(helpsvv[i][2]);
+      charge=ToType<int>(helpsvv[i][3]); icharge=ToType<int>(helpsvv[i][4]);
+      spin=ToType<int>(helpsvv[i][5]); Take=ToType<int>(helpsvv[i][6]);
+      stable=ToType<int>(helpsvv[i][7]); idname=helpsvv[i][8];
       texname=idname;
-      if (kfc!=kfcold) { // read last line only once!
 	std::map<int,double>::const_iterator dit;
 	if ((dit=cdm.find(kfc))!=cdm.end()) mass=dit->second;
 	if ((dit=cdw.find(kfc))!=cdw.end()) width=dit->second;
@@ -390,10 +412,7 @@ void ATOOLS::ParticleInit(const std::string &path)
 	s_kftable[kfc] = new
 	  Particle_Info(kfc,mass,width,charge,icharge, 
 			spin,Take,stable,idname,texname);
-	kfcold=kfc;
-      }
     }
-    part2.Close();
     msg_LogFile()<<std::endl;
   }
 

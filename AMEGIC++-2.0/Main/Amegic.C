@@ -213,7 +213,7 @@ void Amegic::ReadInProcessfile(string file)
   read.SetInputPath(m_path);
   read.SetInputFile(file);
   if (!read.MatrixFromFile(procdata,""))
-    THROW(missing_input,"No data in"+m_path+file+"'.");
+    THROW(missing_input,"No data in "+m_path+file+"'.");
   for (size_t nf(0);nf<procdata.size();++nf) {
     std::vector<std::string> &cur(procdata[nf]);
     if (cur.size()<2) continue;

@@ -67,6 +67,8 @@ void Read_Write_Base::SplitInFileName(const size_t &i)
   SetInputFile(name.substr(0,sb),i);
   m_filebegin.push_back(name.substr(sb+1,se-sb-1));
   m_fileend.push_back(name.substr(se+1));
+  msg_Debugging()<<METHOD<<"(): Set '"<<m_filebegin.back()
+		 <<"'->'"<<m_fileend.back()<<"'.\n"; 
 }
 
 bool Read_Write_Base::IsBlank(const char &ch) const
@@ -392,7 +394,7 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
   }
 }
 
-bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
+bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
 {  
   if (InputPath(i)+InputFile(i)==nullstring) {
     if (m_addcommandline && CommandLine().size()>0) {
@@ -403,14 +405,14 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
     return false;
   }
   if (InFileMode(i)==fom::unknown) SetInFileMode(fom::permanent);
-  if (!m_filecontent[i].empty()) return true;
+  if (!m_filecontent[i].empty()&&mode==0) return true;
   SplitInFileName(i);
   std::string lastline, file(InputPath(i)+InputFile(i));
   String_Vector &buffer(s_buffermap[file]);
   msg_Debugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
 		 <<file<<"' -> ("<<&buffer<<")\n";
   My_In_File infile(InFile(i));
-  if (force || buffer.empty()) {
+  if (mode&2 || buffer.empty()) {
     msg_Debugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
 		   <<"', mode = "<<infile.Mode()<<"\n";
     infile.Open();	
@@ -488,7 +490,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
   return m_filecontent[i].size();
 }
 
-void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
+void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
 { 
   msg_Debugging()<<METHOD<<"(): ("<<this<<") closes file '"
 		 <<InputPath(i)+InputFile(i)<<"', mode = "
@@ -496,7 +498,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
   My_In_File infile(InFile(i));
   if (infile()==NULL) return;
   m_filecontent[i].clear();
-  if (infile.Mode()==fom::permanent && !force) return;
+  if (infile.Mode()==fom::permanent && !mode) return;
   std::string file(InputPath(i)+InputFile(i));
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_Debugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
@@ -520,11 +522,11 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
   return !outfile->bad();
 }
 
-void Read_Write_Base::CloseOutFile(const unsigned int i,const bool force)
+void Read_Write_Base::CloseOutFile(const unsigned int i,const int mode)
 { 
   My_Out_File outfile(OutFile(i));
   if (outfile()==NULL) return;
-  if (outfile.Mode()==fom::permanent && !force) return;
+  if (outfile.Mode()==fom::permanent && !mode) return;
   if (m_fileend.size()>0 && !outfile->bad()) {
     (*outfile)<<m_fileend[0]<<std::endl;
   }

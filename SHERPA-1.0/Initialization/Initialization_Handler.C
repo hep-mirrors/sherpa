@@ -53,12 +53,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
-  if (m_file.find("|")==std::string::npos) {
-    Read_Write_Base cf(1,0," ","!",";","=");
-    cf.SetInputPath(m_path);
-    cf.SetInputFile(m_file+"|(run){|}(run)");
-    if (cf.OpenInFile()) m_file+="|(run){|}(run)";
-  }
 
   if (m_mode==9999) {
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
@@ -96,6 +90,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   rpa.gen.SetVariable("INTEGRATION_DATA_FILE",p_dataread->GetValue<string>
 		      ("INTEGRATION_DATA_FILE","Integration.dat"));
+  rpa.gen.SetVariable("PARTICLE_DATA_FILE",p_dataread->GetValue<string>
+		      ("PARTICLE_DATA_FILE","Particle.dat"));
+  rpa.gen.SetVariable("HADRON_DATA_FILE",p_dataread->GetValue<string>
+		      ("HADRON_DATA_FILE","Hadron.dat"));
 
   CheckFlagConsistency();
   
@@ -766,6 +764,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       exit(0);
     }
   }
+  if (m_file.find("|")==std::string::npos) {
+    Read_Write_Base cf(1,0," ","!",";","=");
+    cf.SetInputPath(m_path);
+    cf.SetInputFile(m_file+"|(run){|}(run)");
+    if (cf.OpenInFile()) m_file+="|(run){|}(run)";
+  }
 
   // Add parameters from Run.dat to command line
   // (this makes it possible to overwrite particle properties in Run.dat)
@@ -778,7 +782,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   dr.MatrixFromFile(helpsvv,"");
   std::vector<std::string> helpsv2(helpsvv.size());
   for (size_t i(0);i<helpsvv.size();++i) {
-    for (size_t j(0);j<helpsvv[i].size();++j) helpsv2[i]+=helpsvv[i][j];
+    for (size_t j(0);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
   }
   helpsv2.insert(helpsv2.end(),helpsv.begin(),helpsv.end());
   for (size_t i(0);i<helpsv2.size();++i) {
@@ -795,6 +799,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       else {
         Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
       }
+    }
+    else {
+      Read_Write_Base::AddCommandLine(par+";");
     }
   }
 
