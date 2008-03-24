@@ -287,7 +287,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
   return args[1];
 }
 
-#define DEFINE_ONE_VECTOR_OPERATOR(NAME,TAG,OP)				\
+#define DEFINE_ONE_VECTOR_FUNCTION(NAME,TAG,OP)				\
   DEFINE_FUNCTION(NAME,TAG)						\
   {									\
     if (args.size()!=1)							\
@@ -302,17 +302,17 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
     return res;								\
   }									\
 
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Mass,"Mass",Mass)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_MPerp,"MPerp",MPerp)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_MPerp2,"MPerp2",MPerp2)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta)
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_Abs2,"Abs2",Abs2)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_Mass,"Mass",Mass)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_PPerp,"PPerp",PPerp)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_PPerp2,"PPerp2",PPerp2)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_MPerp,"MPerp",MPerp)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_MPerp2,"MPerp2",MPerp2)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_Theta,"Theta",Theta)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_Eta,"Eta",Eta)
+DEFINE_ONE_VECTOR_FUNCTION(Vec4D_Phi,"Phi",Phi)
 
-#define DEFINE_TWO_VECTOR_OPERATOR(NAME,TAG,OP)				\
+#define DEFINE_TWO_VECTOR_FUNCTION(NAME,TAG,OP)				\
   DEFINE_FUNCTION(NAME,TAG)						\
   {									\
     if (args.size()!=2)							\
@@ -329,10 +329,10 @@ DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
     return res;								\
   }									\
 
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp)
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta)
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta)
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi)
+DEFINE_TWO_VECTOR_FUNCTION(Vec4D_PPerpR,"PPerpR",PPerp)
+DEFINE_TWO_VECTOR_FUNCTION(Vec4D_ThetaR,"ThetaR",Theta)
+DEFINE_TWO_VECTOR_FUNCTION(Vec4D_DEta,"DEta",DEta)
+DEFINE_TWO_VECTOR_FUNCTION(Vec4D_DPhi,"DPhi",DPhi)
 
 #define DEFINE_ITERATED_VECTOR_OPERATOR(NAME,TAG,OP)                 \
   DEFINE_FUNCTION(NAME,TAG)                                          \
@@ -354,6 +354,25 @@ DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi)
 
 DEFINE_ITERATED_VECTOR_OPERATOR(Vec4D_Plus,"Plus",+)
 DEFINE_ITERATED_VECTOR_OPERATOR(Vec4D_Minus,"Minus",-)
+
+#define DEFINE_TWO_VECTOR_OPERATOR(NAME,TAG,OP)				\
+  DEFINE_FUNCTION(NAME,TAG)						\
+  {									\
+    if (args.size()!=2)							\
+      THROW(fatal_error,"Operator requires 2 arguments.");		\
+    Vec4D arg0=ToType<Vec4D>(args[0]);  			        \
+    Vec4D arg1=ToType<Vec4D>(args[1]);	        		        \
+    return ToString(arg0 OP arg1);					\
+  }									\
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
+  {									\
+    TDouble *res = new TDouble((((TVec4D*)args[0])->m_value)		\
+			       OP(((TVec4D*)args[1])->m_value));	\
+    p_interpreter->AddTerm(res);                                        \
+    return res;								\
+  }									\
+
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_Times,"Times",*)
 #endif
 
 Interpreter_Function::~Interpreter_Function() 
@@ -729,6 +748,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_DPhi());
   AddFunction(new Vec4D_Plus());
   AddFunction(new Vec4D_Minus());
+  AddFunction(new Vec4D_Times());
 #endif
 }
 
