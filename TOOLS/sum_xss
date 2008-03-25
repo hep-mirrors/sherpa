@@ -7,6 +7,7 @@ print_help()
   echo "         -r <path>      sum results in subdir <path>" && \
   echo "         -n <name>      sum processes with name <name>" && \
   echo "         -t <type>      sum processes of type <type>" && \
+  echo "         -e             get estimate using run.log" && \
   echo "         -h             display this help and exit" && \
   echo
 }
@@ -15,13 +16,15 @@ SPATH="."
 RPATH="r_1"
 SNAME="*"
 STYPE=".*"
-while getopts :p:r:n:t:h OPT
+EMODE=0
+while getopts :p:r:n:t:eh OPT
 do
   case $OPT in
   p) SPATH=$OPTARG ;; 
   r) RPATH=$OPTARG ;; 
   n) SNAME=$OPTARG ;; 
   t) STYPE=$OPTARG ;; 
+  e) EMODE=1 ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -33,6 +36,7 @@ do
   esac
 done
 
+if test $EMODE -eq 0; then
 SN=`echo $SPATH/Run\.*\.dat | wc -w`
 RN=`echo $SPATH/$RPATH/$SNAME\.xs* | awk '{ \
   if (match($1,"*")==0) print $0; }' | wc -w`
@@ -55,25 +59,26 @@ function genptp(pn)
     if (spn[ip]=="G") ++ng; 
     else if (spn[ip]=="Q") ++nq; 
   }
-  ptp="";
-  if (ng>0) ptp=""ng"G"; 
-  if (nq>0) ptp=""ptp""nq"Q"; 
+  ptp=""ng","nq; 
   return ptp;
 }
 BEGIN{ 
   pb=3.89379656e8;
-  xs=0; err=0; ofn=""; nosort=0;
-  print "sum_xss: {";
+  xs=0; err=0; eff=0; ofn=""; nosort=0;
+  print "sum_xss: (G,Q) {";
 }
 { 
   if (ofn==FILENAME) nextfile;
   ofn=FILENAME;
-  cpn=$1; cxs=$2*pb; cerr=$4*pb; cpt=genptp(cpn);
+  cpn=$1; cxs=$2*pb; cerr=$4*pb; 
+  cpt=genptp(cpn); cef=$2/$3;
   if (match(cpt,"'$STYPE'")>0) {
-    xs+=cxs; err+=cerr*cerr;
+    xs+=cxs; err+=cerr*cerr; eff+=cef*cxs;
     if (cxs in pns) nosort=1; 
-    pns[cxs]=cpn; xss[cxs]=cxs; errs[cxs]=cerr; pts[cxs]=cpt;
-    pnc[cpn]=cpn; xsc[cpn]=cxs; errc[cpn]=cerr; ptc[cpn]=cpt;
+    pns[cxs]=cpn; xss[cxs]=cxs; errs[cxs]=cerr; 
+    pts[cxs]=cpt; efs[cxs]=cef;
+    pnc[cpn]=cpn; xsc[cpn]=cxs; errc[cpn]=cerr; 
+    ptc[cpn]=cpt; efc[cpn]=cef;
   }
 }
 END{
@@ -83,13 +88,74 @@ END{
       cxs=xss[i];
       crerr=errs[cxs]/cxs*100;
       print "  proc "n-i+1" ("pts[cxs]"): "pns[cxs]\
-        ": "cxs" pb +- ( "errs[cxs]" pb = "crerr" % )";
+        ": "cxs" pb +- ( "errs[cxs]" pb = "crerr\
+        " % ) eff = "efs[cxs];
     }
   }
   else {
     for (cpn in pnc) {
       crerr=errc[cpn]/xsc[cpn]*100;
       print "  read ("ptc[cpn]"): "cpn" "xsc[cpn]\
+        " pb +- ( "errc[cpn]" pb = "crerr\
+        " % ) eff = "efc[cpn];
+    }
+  }
+  print "} -> \033[1msum\033[0m : \033[34m"\
+    xs" pb\033[0m +- ( \033[31m"sqrt(err)" pb = "\
+    sqrt(err)/xs*100" %\033[0m ), eff = \033[32m"\
+    eff/xs"\033[0m";
+}
+' $SPATH/r_1/$SNAME\.xs*
+else
+SN=`echo $SPATH/Run\.*\.dat | wc -w`
+RN=`echo $SPATH/run\.log\.$SNAME | awk '{ \
+  if (match($1,"*")==0) print $0; }' | wc -w`
+MR=`expr $SN - $RN`
+
+if test $RN -eq 0; then 
+  echo "sum_xss: no results yet"
+  exit 1
+fi
+
+echo "sum_xss: $SN setups`test $MR -eq 0 ||\
+  echo \", $MR results missing\"`"
+
+awk '
+BEGIN{ 
+  xs=0; err=0; eff=0; ofn=""; nosort=0;
+  print "sum_xss: estimate {";
+}
+{ 
+  if (match(FILENAME,"'$STYPE'")==0) nextfile;
+  ofn=FILENAME;
+  cpn=FILENAME; sub(".*run.log.","",cpn);
+  while (ofn==FILENAME) {
+    if ($3=="+-") { cxs=$1; cerr=$5; ceff=0; }
+    if (!getline) break;
+  }
+  xs+=cxs; err+=cerr*cerr; eff+=cef*cxs;
+  if (cxs in pns) nosort=1; 
+  pns[cxs]=cpn; xss[cxs]=cxs; 
+  errs[cxs]=cerr; pts[cxs]=cpt;
+  pnc[cpn]=cpn; xsc[cpn]=cxs; 
+  errc[cpn]=cerr; ptc[cpn]=cpt;
+}
+END{
+  if (!nosort) {
+    n=asort(xss);
+    for (i=n;i>0;--i) {
+      cxs=xss[i];
+      if (cxs>0) crerr=errs[cxs]/cxs*100;
+      else crerr=0;
+      print "  proc "n-i+1": "pns[cxs]\
+        ": "cxs" pb +- ( "errs[cxs]" pb = "crerr" % )";
+    }
+  }
+  else {
+    for (cpn in pnc) {
+      if (xsc[cpn]>0) crerr=errc[cpn]/xsc[cpn]*100;
+      else crerr=0;
+      print "  read: "cpn" "xsc[cpn]\
         " pb +- ( "errc[cpn]" pb = "crerr" % )";
     }
   }
@@ -97,4 +163,5 @@ END{
     xs" pb\033[0m +- ( \033[31m"sqrt(err)" pb = "\
     sqrt(err)/xs*100" %\033[0m )";
 }
-' $SPATH/$RPATH/$SNAME\.xs*
+' $SPATH/run\.log\.$SNAME
+fi
