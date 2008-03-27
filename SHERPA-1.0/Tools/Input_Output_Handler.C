@@ -233,6 +233,14 @@ void Input_Output_Handler::AddInputMode(const iotype::code c1)
 }
 
 void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
+  if (m_screenout==iotype::HepMC) {
+#ifdef USING__CLHEP
+    p_hepmc->Sherpa2HepMC(blobs);
+#endif
+#ifdef USING__HEPMC2
+    p_hepmc2->Sherpa2HepMC(blobs);
+#endif
+  }
   if (m_on==false || !(m_io&1) || !msg_LevelIsEvents()) return;
   switch (m_screenout) {
   case iotype::Sherpa:
@@ -414,6 +422,8 @@ void Input_Output_Handler::SherpaOutput(std::ostream & outstream,
 	P2I.insert(std::make_pair((*blit)->OutParticle(i),P2I.size()+1));
     }
   }
+  outstream<<"# created by SHERPA "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
+           <<std::endl;
   outstream<<m_evtnumber<<" "<<P2I.size()<<" "<<blobs->size()<<" "<<weight<<std::endl;
   Particle * part;
   int kfc;
