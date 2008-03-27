@@ -535,3 +535,6 @@ void ATOOLS::Random::Gaussian(double & x,double & y)
   y = r*std::sin(phi);
 }
 
+External_RNG::~External_RNG()
+{
+}

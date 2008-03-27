@@ -14,6 +14,8 @@ namespace ATOOLS {
   class External_RNG {
   public:
 
+    virtual ~External_RNG();
+
     virtual double Get() = 0;
 
   };
