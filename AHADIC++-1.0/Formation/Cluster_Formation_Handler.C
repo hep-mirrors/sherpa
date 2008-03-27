@@ -118,8 +118,8 @@ bool Cluster_Formation_Handler::ExtractSinglets()
       else {
 	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		   <<"   Assumed everything okay with blob."
-		   <<std::endl<<(*p_blob)<<std::endl;
-	abort();
+		   <<std::endl<<(*p_blob)<<std::endl
+		   <<"   will try new event."<<std::endl;
 	return false;
       }
     }
@@ -267,8 +267,6 @@ bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
   if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front()))  {
-    //std::cout<<"===================================================="<<std::endl;
-    //PRINT_VAR(" AdjustMomenta bug from here.");
     return false;
   }
   k = 0;
@@ -299,20 +297,14 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
     pplit=m_partlists.begin();
     clist = new Cluster_List;
     if (!p_gludecayer->DecayList(*pplit)) {
-      msg_Info()<<"WARNING in "<<METHOD<<":"<<std::endl
-		<<"   Not enough energy to move partons on their mass shell:"<<std::endl
-		<<(**pplit)
-		<<"   Retry the formation procedure."<<std::endl;
-      rvalue.IncRetryMethod(METHOD);
+      msg_Error()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   Could not form a suitable list after gluon decays from :"<<std::endl
+		 <<(**pplit)
+		 <<"   Try a new event."<<std::endl;
       return false;
     }
     else {
       p_cformer->ConstructClusters(*pplit,clist);
-      //std::cout<<std::endl
-      //	       <<METHOD<<" ================================"<<std::endl
-      //	       <<(*clist)<<std::endl
-      //	       <<"==================================================="
-      //	       <<std::endl<<std::endl;
       m_clulists.push_back(clist);    
     }
     delete (*pplit);
@@ -378,11 +370,6 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 
   std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
   while(clit!=m_clulists.end()) {
-    if (msg->LevelIsDebugging()) {
-      msg_Out()<<"======================================================="<<std::endl
-	       <<METHOD<<" deal with a cluster list:"<<((*clit)->size())<<std::endl
-	       <<(**clit);
-    }
     Vec4D beflocal(0.,0.,0.,0.), aftlocal(0.,0.,0.,0.);
     for (Cluster_Iterator cit=(*clit)->begin();
 	 cit!=(*clit)->end();cit++) beflocal += (*cit)->Momentum();
@@ -403,23 +390,15 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
       Cluster_Iterator endit=(*clit)->end();
       while (cit!=endit) {
 	if (!(*cit)->GetLeft()) {
-	  //msg_Out()<<" No decay: "<<(*(*cit)->GetSelf())<<std::endl;
 	  p_blob->AddToOutParticles((*cit)->GetSelf());
 	  cit++;
 	}
 	else {
 	  if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf_none)) {
-	    //msg_Out()<<" Two new proto clusters for "<<(**cit)<<std::endl;
 	    (*clit)->push_back((*cit)->GetLeft());
 	    (*clit)->push_back((*cit)->GetRight());
 	  }
 	  else {
-	    //msg_Out()<<" Looks like a decay: "<<std::endl
-	    //	     <<"           "<<(*(*cit)->GetSelf())<<std::endl
-	    //	     <<"           "<<(*(*cit)->GetLeft()->GetSelf())<<std::endl
-	    //	     <<"           "<<(*(*cit)->GetRight()->GetSelf())<<std::endl
-	    //	     <<std::endl;
-	    
 	    p_blob->AddToOutParticles((*cit)->GetSelf());
 	    Blob * decblob((*cit)->ConstructDecayBlob());
 	    bl->push_back(decblob);
@@ -488,12 +467,6 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
       }
     }
   }
-  //std::cout<<std::endl
-  //	   <<METHOD<<" =========================================="<<std::endl
-  //	   <<(*p_clulist)<<std::endl
-  //	   <<"=========================================================="
-  //	   <<std::endl<<std::endl;
-
   Reset();
   return true;
 }

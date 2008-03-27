@@ -31,8 +31,9 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter) :
   msg_Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
   if (m_options.empty()) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   No decay channels found for gluons, will abort."<<std::endl;
-    abort();
+	       <<"   No decay channels found for gluons, will abort the run."<<std::endl
+	       <<"   Please contact the Sherpa group for further assistance."<<std::endl;
+    exit(0);
   }
 }
 
@@ -57,7 +58,7 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
   for (PPL_Iterator pit=plin->begin();pit!=plin->end();pit++) checkbef += (*pit)->m_mom;
 #endif
 
-  FillDipoleList(plin);
+  if (!FillDipoleList(plin)) return false;
   DecayDipoles();
   UpdatePPList(plin);
 
@@ -102,8 +103,8 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
       msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		 <<"    Last flavour in list = "<<(*pit)->m_flav
 		 <<" but first flavour = "<<begin->m_flav<<"."<<std::endl
-		 <<"   Don't know what to do, abort."<<std::endl;
-      abort();
+		 <<"   Don't know what to do, try new event."<<std::endl;
+      return false;
     }
   }
   return true;

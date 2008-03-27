@@ -74,6 +74,8 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	}
 	if (moveon) break;
       }
+      if (!moveon) return Return_Value::Retry_Event;
+
 #ifdef AHAmomcheck
       if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12) {
 	msg_Out()<<"=============================================================="<<endl
@@ -93,6 +95,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
       		    <<(*blob)<<endl;
 #endif
 
+      moveon = false;
       for (int i=0;i<m_maxtrials;i++) {
 	switch (p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs)) {
 	case -1 : return Return_Value::Retry_Event;
@@ -113,6 +116,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	    blob->SetType(btp::Fragmentation);
 	  }
 	  blob->UnsetStatus(blob_status::needs_hadronization);
+	  moveon = true;
 	  break;
 	}
 	if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
@@ -121,7 +125,8 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	    control::s_AHAparticles!=blob->NOutP() ||
 	    control::s_AHAprotoparticles!=0) {
 	  msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
-		   <<"   Momentum violation for "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
+		   <<"   Momentum violation for "<<(clus.RemainingClusters()-1)
+		   <<" remaining clusters."<<endl
 		   <<" Blobs =  = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
 		   <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
 		   <<"   : "<<blob->CheckMomentumConservation()<<endl
@@ -145,7 +150,8 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 #endif
 	}
       }
+      if (!moveon) return Return_Value::Retry_Event;
     }	  
-  }    
+  }
   return Return_Value::Success;
 }  

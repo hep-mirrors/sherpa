@@ -50,11 +50,6 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 	       <<"    Four-momentum not conserved: "
 	       <<checkbef<<" vs. "<<checkaft<<" : "<<(checkbef-checkaft).Abs2()<<"."<<std::endl;
   }
-
-  //std::cout<<"   --> "<<std::endl
-  //	   <<" "<<(*cluster->GetLeft())
-  //	   <<" "<<(*cluster->GetRight())<<std::endl;
-
   Particle * part = new Particle(-1,Flavour(kf_cluster),cluster->GetLeft()->Momentum()); 
   part->SetNumber();
   part->SetStatus(part_status::active);
@@ -77,8 +72,7 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 
 bool Cluster_Part::ClusterDecay(Cluster * const cluster)
 {
-  bool okay(p_splitter->SplitCluster(cluster));
-  return okay;
+  return p_splitter->SplitCluster(cluster);
 }
 
 

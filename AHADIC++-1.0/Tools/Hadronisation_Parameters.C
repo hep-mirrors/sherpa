@@ -234,10 +234,13 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
     if (mass>sqrt(cms.Abs2())) {
-      PRINT_VAR(": Total mass = "<<mass<<", Total E = "<<sqrt(cms.Abs2()));
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		 <<"   Total mass = "<<mass<<", total E = "<<sqrt(cms.Abs2())<<std::endl;
       for (int i=0;i<n;i++) {
-	std::cout<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
       }
+      msg_Error()<<"   Will lead to retrying the event."<<std::endl;
+      return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
     success = success && stretcher.MassThem(0,n,moms,masses);
@@ -249,12 +252,12 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
     success = stretcher.MassThem(0,n,moms,masses,1.e-10);
   }
   if (!success) {
-    PRINT_VAR(": Total mass = "<<(moms[0]+moms[1]).Abs2());
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+	       <<"   Could not shift particles on new shells."<<std::endl;
     for (int i=0;i<n;i++) {
-      std::cout<<"   "<<i<<"th particle = "<<masses[i]<<" : "
-	       <<moms[i]<<" "<<moms[i].Abs2()<<std::endl;
+      msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
     }
-    std::cout<<"---------------------------------------------------------"<<std::endl;
+    msg_Error()<<"   Will lead to retrying the event."<<std::endl;
   }
   return success;
 }

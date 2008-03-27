@@ -30,6 +30,7 @@ int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blo
   while (!clusters->empty()) {
     cluster = (*cit);
     blob    = DecayIt(cluster);
+    if (blob==NULL) return -1;
     blobs->push_back(blob);
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
@@ -93,11 +94,10 @@ Blob * Cluster_Decay_Handler::DecayIt(Cluster * cluster)
   cluster->GetSelf()->SetStatus(part_status::decayed);
   cluster->GetSelf()->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
 
-  //std::cout<<std::endl
-  //	   <<METHOD<<"========================================="<<std::endl
-  //	   <<(*cluster)<<std::endl;
-
-  p_clus->TestDecay(cluster);
+  if (!p_clus->TestDecay(cluster)) {
+    delete blob;
+    return NULL;
+  }
 
   return blob;
 }

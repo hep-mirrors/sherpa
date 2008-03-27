@@ -18,8 +18,6 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   Dipole * dip1 = new Dipole(new Proto_Particle((*clu->GetTrip())),
 			     new Proto_Particle((*clu->GetAnti())));
   p_dip = dip1;
-  //std::cout<<" "<<METHOD<<" --------------------------- "<<std::endl;
-  //p_dip->Output();
 
   if (msg->LevelIsDebugging()) {
     msg_Out()<<METHOD<<" : "<<clu->Momentum()<<" ("<<clu->Mass2()<<")."<<std::endl;
@@ -32,29 +30,27 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   dip1->Update();
   dip2->Update();
 
-  //std::cout<<"    splitted it :"<<std::endl;
-  //dip1->Output();
-  //dip2->Output();
-
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"       after gluon emission: "<<std::endl;
     dip1->Output();
     dip2->Output();
   }
 
-  //if (ran.Get()<(dip1->Mass2()-dip1->Triplet()->Mass())/
-  //   (dip1->Mass2()+dip2->Mass2()-dip1->Triplet()->Mass()-dip2->AntiTriplet()->Mass())) {
-  if (ran.Get()<dip1->Mass2()/(dip1->Mass2()+dip2->Mass2())) {
+  if (ran.Get()<(dip1->Mass2()-dip1->Triplet()->m_mom.Abs2())/
+      (dip1->Mass2()-dip1->Triplet()->m_mom.Abs2()+
+       dip2->Mass2()-dip2->AntiTriplet()->m_mom.Abs2())) {
     if (!SplitDipole(dip1,pt2max) && !SplitDipole(dip2,pt2max)) {
-      msg_Out()<<METHOD<<" yields error due to unsplittable dipole."<<std::endl;
-      msg_Out()<<(*clu)<<std::endl;
+      msg_Error()<<"Error in "<<METHOD<<" :"<<std::endl
+		 <<"   Two unsplittable dipoles emerging from :"<<std::endl
+		 <<(*clu)<<std::endl;
       return false;
     }
   }
   else {
     if (!SplitDipole(dip2,pt2max) && !SplitDipole(dip1,pt2max)) {
-      msg_Out()<<METHOD<<" yields error due to unsplittable dipole."<<std::endl;
-      msg_Out()<<(*clu)<<std::endl;
+      msg_Error()<<"Error in "<<METHOD<<" :"<<std::endl
+		 <<"   Two unsplittable dipoles emerging from :"<<std::endl
+		 <<(*clu)<<std::endl;
       return false;
     }
   }
@@ -271,9 +267,10 @@ bool Dipole_Splitter::MinimalDecay(bool glusplit) {
 
   if (!ConstructKinematics()) {
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
-	       <<"   Could not construct any decay for dipole !"<<std::endl;
+	       <<"   Could not construct any decay for dipole below."<<std::endl
+	       <<"   This will lead to a new event."<<std::endl;
     p_dip->Output();
-    abort();
+    return false;
   }
   return true;
 }

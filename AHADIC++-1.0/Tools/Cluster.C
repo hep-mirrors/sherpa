@@ -71,9 +71,9 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
   msg_Error()<<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
-	     <<"   Cannot handle this colour structure."<<std::endl
-	     <<"   Abort the run."<<std::endl;
-  abort();
+	     <<"   Cannot handle this colour structure, will abort the run."<<std::endl
+	     <<"   Please contact the Sherpa group for further assistance."<<std::endl;
+  exit(0);
 }
 
 Cluster::~Cluster() 
@@ -94,9 +94,9 @@ void Cluster::Update()
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
   msg_Error()<<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
-	     <<"   Cannot handle this colour structure."<<std::endl
-	     <<"   Abort the run."<<std::endl;
-  abort();
+	     <<"   Cannot handle this colour structure, will abort the run."<<std::endl
+	     <<"   Please contact the Sherpa group for further assistance."<<std::endl;
+  exit(0);
 }
 
 Blob * Cluster::ConstructDecayBlob()
