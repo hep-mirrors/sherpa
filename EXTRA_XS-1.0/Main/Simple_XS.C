@@ -51,14 +51,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     msg_Error()<<"Simple_XS::Simple_XS(..): "
 		       <<"No beam remnant handler found."<<std::endl;
   }
-  std::string processfile=
-    p_dataread->GetValue<std::string>("PROCESSFILE",
-				      std::string("Processes.dat"));
-  rpa.gen.SetVariable("PROCESSFILE",processfile);
-  std::string selectorfile=
-    p_dataread->GetValue<std::string>("SELECTOR_FILE",
-				      std::string("Selector.dat"));
-  rpa.gen.SetVariable("SELECTORFILE",selectorfile);
+  std::string processfile=rpa.gen.Variable("PROCESSFILE");
+  std::string selectorfile=rpa.gen.Variable("SELECTORFILE");
   if (construct) p_selectordata = new Selector_Data(m_path,selectorfile);
   else p_selectordata = new Selector_Data();
   p_dataread->SetTags(Integrable_Base::ScaleTags());

@@ -53,6 +53,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
+  ShowParameterSyntax();
 
   if (m_mode==9999) {
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
@@ -61,15 +62,25 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_dataread->SetInputPath(m_path);
     p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    ShowParameterSyntax();
     rpa.Init(m_path,m_file,argc,argv);
     return;
   }  
+
+  SetFileNames();
+
   rpa.Init(m_path,m_file,argc,argv);
   LoadLibraries();
   ran.InitExternal(m_path,m_file);
-  ShowParameterSyntax();
 
+  CheckFlagConsistency();
+  
+  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
+  rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  exh->AddTerminatorObject(this);
+}
+
+void Initialization_Handler::SetFileNames()
+{
   p_dataread    = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_path);
@@ -86,20 +97,64 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+  std::string particledat=p_dataread->GetValue<string>
+    ("PARTICLE_DATA_FILE","Particle.dat");
+  std::string hadrondat=p_dataread->GetValue<string>
+    ("HADRON_DATA_FILE","Hadron.dat");
+  std::string integrationdat=p_dataread->GetValue<string>
+    ("INTEGRATION_DATA_FILE","Integration.dat");
+  std::string processdat=p_dataread->GetValue<string>
+    ("PROCESSFILE",string("Processes.dat"));
+  std::string selectordat=p_dataread->
+    GetValue<string>("SELECTORFILE",string("Selector.dat"));
+
+  std::string fname(m_file);
+  if (fname.find("|")!=std::string::npos) 
+    fname=fname.substr(0,fname.find("|"));
+  Read_Write_Base cf(1,0," ",";","!","=");
+  cf.SetAddCommandLine(false);
+  cf.SetInputPath(m_path);
+  cf.SetInputFile(fname+"|(particle){|}(particle)");
+  if (cf.OpenInFile()) particledat=fname+"|(particle){|}(particle)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(hadron){|}(hadron)");
+  if (cf.RereadInFile()) hadrondat=fname+"|(hadron){|}(hadron)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(beam){|}(beam)");
+  if (cf.RereadInFile()) m_beamremnantdat=m_beamdat=fname+"|(beam){|}(beam)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(isr){|}(isr)");
+  if (cf.RereadInFile()) m_isrdat[0]=m_isrdat[1]=fname+"|(isr){|}(isr)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(model){|}(model)");
+  if (cf.RereadInFile()) m_modeldat=fname+"|(model){|}(model)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(me){|}(me)");
+  if (cf.RereadInFile()) m_medat=fname+"|(me){|}(me)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(processes){|}(processes)");
+  if (cf.RereadInFile()) processdat=fname+"|(processes){|}(processes)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(selector){|}(selector)");
+  if (cf.RereadInFile()) selectordat=fname+"|(selector){|}(selector)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(mi){|}(mi)");
+  if (cf.RereadInFile()) m_midat=fname+"|(mi){|}(mi)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(shower){|}(shower)");
+  if (cf.RereadInFile()) m_showerdat=fname+"|(shower){|}(shower)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(fragmentation){|}(fragmentation)");
+  if (cf.RereadInFile()) m_fragmentationdat=
+    m_hadrondecaysdat=fname+"|(fragmentation){|}(fragmentation)";
+
   rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
-  rpa.gen.SetVariable("INTEGRATION_DATA_FILE",p_dataread->GetValue<string>
-		      ("INTEGRATION_DATA_FILE","Integration.dat"));
-  rpa.gen.SetVariable("PARTICLE_DATA_FILE",p_dataread->GetValue<string>
-		      ("PARTICLE_DATA_FILE","Particle.dat"));
-  rpa.gen.SetVariable("HADRON_DATA_FILE",p_dataread->GetValue<string>
-		      ("HADRON_DATA_FILE","Hadron.dat"));
-
-  CheckFlagConsistency();
-  
-  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
-  rpa.gen.SetSpinCorrelation(m_spincorrelations);
-  exh->AddTerminatorObject(this);
+  rpa.gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
+  rpa.gen.SetVariable("PARTICLE_DATA_FILE",particledat);
+  rpa.gen.SetVariable("HADRON_DATA_FILE",hadrondat);
+  rpa.gen.SetVariable("PROCESSFILE",processdat);
+  rpa.gen.SetVariable("SELECTORFILE",selectordat);
 }
 
 
@@ -765,7 +820,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     }
   }
   if (m_file.find("|")==std::string::npos) {
-    Read_Write_Base cf(1,0," ","!",";","=");
+    Read_Write_Base cf(1,0," ",";","!","=");
     cf.SetInputPath(m_path);
     cf.SetInputFile(m_file+"|(run){|}(run)");
     if (cf.OpenInFile()) m_file+="|(run){|}(run)";

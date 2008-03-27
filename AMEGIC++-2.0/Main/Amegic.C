@@ -116,14 +116,12 @@ std::string Amegic::MakeString(const std::vector<std::string> &in,
 bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Handler * _isr) {
   p_beam              = _beam; 
   p_isr               = _isr;
-  string processfile  = p_dataread->GetValue<string>("PROCESSFILE",string("Processes.dat"));
-  rpa.gen.SetVariable("PROCESSFILE",processfile);
+  string processfile  = rpa.gen.Variable("PROCESSFILE");
   p_procs             = new All_Processes();
   p_procs->SetName("All_Processes");
   p_procs->SetAtoms(1);
 
-  string selfile      = p_dataread->GetValue<string>("SELECTORFILE",string("Selector.dat"));
-  rpa.gen.SetVariable("SELECTORFILE",selfile);
+  string selfile      = rpa.gen.Variable("SELECTORFILE");
   p_seldata           = new Selector_Data(m_path,selfile);
 
   ReadInProcessfile(processfile);

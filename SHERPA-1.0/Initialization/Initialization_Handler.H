@@ -89,6 +89,7 @@ namespace SHERPA {
     bool CheckBeamISRConsistency();
     void SetScaleFactors();
     void PrepareTerminate();
+    void SetFileNames();
 
   public :
 

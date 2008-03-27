@@ -175,6 +175,8 @@ namespace ATOOLS {
     inline void AddIgnore(const String_Vector &ignore)
     { m_ignore.insert(m_ignore.end(),ignore.begin(),ignore.end()); }
 
+    inline void ClearFileBegin()
+    { m_filebegin.clear(); }
     inline void SetFileBegin(const std::string filebegin)
     { m_filebegin.clear(); m_filebegin.push_back(filebegin); }
     inline void SetFileBegin(const String_Vector &filebegin)
@@ -185,6 +187,8 @@ namespace ATOOLS {
     { m_filebegin.insert(m_filebegin.end(),
 			 filebegin.begin(),filebegin.end()); }
 
+    inline void ClearFileEnd()
+    { m_fileend.clear(); }
     inline void SetFileEnd(const std::string fileend)
     { m_fileend.clear(); m_fileend.push_back(fileend); }
     inline void SetFileEnd(const String_Vector &fileend)
