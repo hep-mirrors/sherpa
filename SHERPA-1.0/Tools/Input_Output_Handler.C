@@ -129,7 +129,7 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
     if (p_hepmc2==NULL) p_hepmc2   = new HepMC2_Interface();
 #else
     THROW(fatal_error,"HepMC format can only be created when Sherpa was linked"
-          +" with HepMC2, please read our Howto to fix this.");
+          +std::string(" with HepMC2, please read our Howto to fix this."));
 #endif
   }
   else if (mode=="HepEvt") {
@@ -180,7 +180,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
     break;
 #else
     THROW(fatal_error, "HepMC format can only be created when Sherpa was linked"
-          +" with HepMC2, please read our Howto for more information.");
+          +std::string(" with HepMC2, please read our Howto for more information."));
 #endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
@@ -232,8 +232,7 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           break;
 #else
           THROW(fatal_error, "HepMC format can only be created when Sherpa was "
-                +"linked with HepMC2, please read our Howto for more "
-                +"information.");
+                +std::string("linked with HepMC2, please read our Howto for more information."));
 #endif
         default:
           msg_Error()<<"Error in "<<METHOD<<std::endl
