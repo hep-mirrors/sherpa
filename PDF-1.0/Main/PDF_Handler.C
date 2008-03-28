@@ -52,7 +52,11 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
+#ifdef USING__LHAPDF
+      grid_path=getenv("LHAPDFDIR")+std::string("/")+grid_path;
+#else
       grid_path=ATOOLS::rpa.gen.Variable("SHERPA_PDF_PATH")+std::string("/")+grid_path;
+#endif
       if (set==std::string("MRST99")) {
 	msg_Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
