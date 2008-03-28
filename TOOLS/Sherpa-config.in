@@ -6,7 +6,7 @@ case $1 in
   --prefix)
     echo @prefix@;;
   --libs)
-    echo -L@prefix@/lib/@PACKAGE_TARNAME@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_CLHEPLIBS@ @CONDITIONAL_HEPMC2LIBS@;;
+    echo -L@prefix@/lib/@PACKAGE_TARNAME@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@;;
   --incdir)
     echo @prefix@/include/@PACKAGE_TARNAME@;;
   --datadir)
