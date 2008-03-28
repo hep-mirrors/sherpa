@@ -121,24 +121,43 @@ echo "sum_xss: $SN setups`test $MR -eq 0 ||\
   echo \", $MR results missing\"`"
 
 awk '
+function genptp(pn)
+{
+  ng=nq=0; 
+  split(pn,spn,"-"); 
+  for (snn in spn) { 
+    nspa=split(spn[snn],spna,"G"); 
+    if (nspa>1) ng+=spna[1];
+    nspb=split(spna[nspa],spnb,"Q"); 
+    if (nspb>1) nq+=spnb[1];
+  }
+  ptp=""ng","nq; 
+  return ptp;
+}
 BEGIN{ 
   xs=0; err=0; eff=0; ofn=""; nosort=0;
-  print "sum_xss: estimate {";
+  print "sum_xss: (G,Q) estimate {";
 }
 { 
-  if (match(FILENAME,"'$STYPE'")==0) nextfile;
   ofn=FILENAME;
+  cxs=0; cerr=0; ceff=0;
   cpn=FILENAME; sub(".*run.log.","",cpn);
   while (ofn==FILENAME) {
-    if ($3=="+-") { cxs=$1; cerr=$5; ceff=0; }
+    if ($3=="+-") 
+      if ($1!="nan") { cxs=$1; cerr=$5; ceff=0; }
+      else { print "  "cpn\
+        ": \033[31mlast xs info is nan\033[0m"; }
     if (!getline) break;
   }
-  xs+=cxs; err+=cerr*cerr; eff+=cef*cxs;
-  if (cxs in pns) nosort=1; 
-  pns[cxs]=cpn; xss[cxs]=cxs; 
-  errs[cxs]=cerr; pts[cxs]=cpt;
-  pnc[cpn]=cpn; xsc[cpn]=cxs; 
-  errc[cpn]=cerr; ptc[cpn]=cpt;
+  cpt=genptp(cpn);
+  if (match(cpt,"'$STYPE'")>0) {
+    xs+=cxs; err+=cerr*cerr; eff+=cef*cxs;
+    if (cxs in pns) nosort=1; 
+    pns[cxs]=cpn; xss[cxs]=cxs; 
+    errs[cxs]=cerr; pts[cxs]=cpt;
+    pnc[cpn]=cpn; xsc[cpn]=cxs; 
+    errc[cpn]=cerr; ptc[cpn]=cpt;
+  }
 }
 END{
   if (!nosort) {
@@ -147,7 +166,7 @@ END{
       cxs=xss[i];
       if (cxs>0) crerr=errs[cxs]/cxs*100;
       else crerr=0;
-      print "  proc "n-i+1": "pns[cxs]\
+      print "  proc "n-i+1" ("pts[cxs]"): "pns[cxs]\
         ": "cxs" pb +- ( "errs[cxs]" pb = "crerr" % )";
     }
   }
@@ -155,7 +174,7 @@ END{
     for (cpn in pnc) {
       if (xsc[cpn]>0) crerr=errc[cpn]/xsc[cpn]*100;
       else crerr=0;
-      print "  read: "cpn" "xsc[cpn]\
+      print "  read   ("ptc[cpn]"): "cpn": "xsc[cpn]\
         " pb +- ( "errc[cpn]" pb = "crerr" % )";
     }
   }
