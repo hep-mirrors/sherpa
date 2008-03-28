@@ -5,9 +5,6 @@
 #include "Exception.H"
 #include "Run_Parameter.H"
 #include "CXXFLAGS.H"
-#ifdef USING__CLHEP
-#include "Input_Output_Handler.H"
-#endif
 
 #ifdef USING__ROOT
 #include "My_Root.H"
@@ -56,9 +53,6 @@ int main(int argc,char* argv[])
 		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
-#ifdef USING__CLHEP
-// 	Generator.GetIOHandler()->GetHepMCInterface()->PrintHepMCEvent();
-#endif
       }
       msg_Info()<<std::endl;      
       Generator.SummarizeRun();

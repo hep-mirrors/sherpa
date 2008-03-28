@@ -6,9 +6,6 @@
 #include "Exception.H"
 #include "MyStrStream.H"
 #include "HepEvt_Interface.H"
-#ifdef USING__CLHEP
-#include "HepMC_Interface.H"
-#endif
 #ifdef USING__HEPMC2
 #include "HepMC2_Interface.H"
 #endif
@@ -40,9 +37,6 @@ Input_Output_Handler::Input_Output_Handler(const std::string mode,
                                            const int precision):
   m_on(true), m_io(1), m_precision(precision),
   m_outtype(iotype::Unknown), m_screenout(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef USING__CLHEP
-  p_hepmc(NULL), 
-#endif
 #ifdef USING__HEPMC2
   p_hepmc2(NULL), 
 #endif
@@ -59,9 +53,6 @@ Input_Output_Handler::Input_Output_Handler(const std::string mode,
 
 Input_Output_Handler::~Input_Output_Handler() 
 {
-#ifdef USING__CLHEP
-  if (p_hepmc)        { delete p_hepmc;  p_hepmc  = NULL; }
-#endif
 #ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2; p_hepmc2 = NULL; }
 #endif
@@ -85,46 +76,6 @@ Input_Output_Handler::~Input_Output_Handler()
 
 bool Input_Output_Handler::InitialiseInput(const std::vector<std::string> & infiles) {
   return false;
-
-//   for (size_t i=0;i<infiles.size();++i) {
-//     m_intype=m_intype|(iotype::code)(pow(2.,int(i))*(infiles[i]!=std::string("")));
-//   }
-//   std::string gentype;
-//   switch (m_intype) {
-//   case iotype::Sherpa:
-//     m_filename = m_path+std::string("/")+infiles[0]+std::string(".evts"); 
-//     p_instream = new std::ifstream(m_filename.c_str()); 
-//     if (!p_instream->good()) {
-//       msg_Error()<<"ERROR in Input_Output_Handler."<<std::endl
-//                  <<"   Event file "<<m_filename<<" not found."<<std::endl
-//                  <<"   Will abort the run."<<std::endl;
-//       abort();
-//     }
-//     (*p_instream)>>gentype>>m_filesize;
-//     if (gentype!=std::string("Sherpa")) {
-//       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
-//                  <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
-//                  <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
-//       abort();
-//     }
-//     break;
-// #ifdef USING__CLHEP
-//   case iotype::HepMC: 
-//     if (p_hepmc==NULL) p_hepmc  = new HepMC_Interface();
-//     break;
-// #endif
-//   case iotype::HepEvt:
-//     // Obacht !!!!!
-//     if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(false,1,m_path,infiles[2]);
-//     else abort();  // Schlamassel !!!!
-//     break;
-//   case iotype::D0HepEvt:
-//     msg_Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
-//     abort();
-//     break;
-//   default :
-//     break;
-//   }
 }
 
 
@@ -141,30 +92,6 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         ns          = new NameStream(m_path+"/"+outfiles[0],".evts",m_precision);
         m_outmap[iotype::Sherpa] = ns;
         break;
-      case 2:
-#ifdef USING__CLHEP
-        m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[1],".hepmc",m_precision);
-        m_outmap[iotype::HepMC] = ns;
-        if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
-        break;
-#else
-        msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                   <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-        abort();
-#endif
-      case 4:
-#ifdef USING__CLHEP
-        m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[2],".old.hepmc",m_precision);
-        m_outmap[iotype::OldHepMC] = ns;
-        if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
-        break;
-#else
-        msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                   <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-        abort();
-#endif
       case 8:
         m_outtype   = m_outtype|test;
         ns          = new NameStream(m_path+"/"+outfiles[3],".hepevt",m_precision);
@@ -198,14 +125,11 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
   if (mode=="Sherpa") m_screenout=iotype::Sherpa;
   else if (mode=="HepMC") {
     m_screenout=iotype::HepMC;
-#ifdef USING__CLHEP
-    if (p_hepmc==NULL) p_hepmc   = new HepMC_Interface(); 
-#else
 #ifdef USING__HEPMC2
     if (p_hepmc2==NULL) p_hepmc2   = new HepMC2_Interface();
 #else
-    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked with CLHEP or HepMC2, please read our Howto to fix this.");
-#endif
+    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked"
+          +" with HepMC2, please read our Howto to fix this.");
 #endif
   }
   else if (mode=="HepEvt") {
@@ -234,9 +158,6 @@ void Input_Output_Handler::AddInputMode(const iotype::code c1)
 
 void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
   if (m_screenout==iotype::HepMC) {
-#ifdef USING__CLHEP
-    p_hepmc->Sherpa2HepMC(blobs);
-#endif
 #ifdef USING__HEPMC2
     p_hepmc2->Sherpa2HepMC(blobs);
 #endif
@@ -253,20 +174,13 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
     else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
     break;
   case iotype::HepMC:
-#ifdef USING__CLHEP
-    p_hepmc->Sherpa2HepMC(blobs);
-    p_hepmc->PrintEvent(1,msg->Out());
-    break;
-#else
 #ifdef USING__HEPMC2
     p_hepmc2->Sherpa2HepMC(blobs);
     p_hepmc2->PrintEvent(msg->Out());
     break;
 #else
-    msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-    abort();
-#endif
+    THROW(fatal_error, "HepMC format can only be created when Sherpa was linked"
+          +" with HepMC2, please read our Howto for more information.");
 #endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
@@ -281,9 +195,6 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 }
 
 void Input_Output_Handler::ResetInterfaces() {
-#ifdef USING__CLHEP
-  if (p_hepmc) p_hepmc->Reset();
-#endif 
 #ifdef USING__HEPMC2
   if (p_hepmc2) p_hepmc2->Reset();
 #endif 
@@ -306,22 +217,6 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
         case iotype::Sherpa:
           SherpaOutput(oit->second->outstream,blobs);
           break;
-        case iotype::HepMC:
-#ifdef USING__CLHEP
-          p_hepmc->Sherpa2HepMC(blobs);
-          p_hepmc->PrintEvent(1,oit->second->outstream);
-          break;
-#else
-          msg_Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                      <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-          abort();
-#endif
-        case iotype::OldHepMC:
-#ifdef USING__CLHEP
-          p_hepmc->Sherpa2HepMC(blobs);
-          p_hepmc->PrintEvent(2,oit->second->outstream);
-          break;
-#endif
         case iotype::HepEvt:
           p_hepevt->Sherpa2HepEvt(blobs);
           p_hepevt->PrintEvent(1,oit->second->outstream,p_hepevt->Nhep());
@@ -336,9 +231,9 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           p_hepmc2->PrintEvent(oit->second->outstream);
           break;
 #else
-          msg_Error()<<"Error in "<<METHOD<<": HepMC2 format can only be created when Sherpa "
-                      <<"was linked with HepMC2, please read our Howto to fix this."<<std::endl;
-          abort();
+          THROW(fatal_error, "HepMC format can only be created when Sherpa was "
+                +"linked with HepMC2, please read our Howto for more "
+                +"information.");
 #endif
         default:
           msg_Error()<<"Error in "<<METHOD<<std::endl
@@ -387,10 +282,6 @@ bool Input_Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   if (!(m_io&4)) return false;
   switch (m_intype) {
   case iotype::Sherpa: return SherpaInput(blobs); 
-#ifdef USING__CLHEP
-  case iotype::HepMC: 
-    THROW(not_implemented,"Reading input from HepMC is not yet possible.");
-#endif
   case iotype::HepEvt: return p_hepevt->HepEvt2Sherpa(blobs); 
   default:
     msg_Error()<<"Error in Input_Output_Handler::InputFromFormat."<<std::endl

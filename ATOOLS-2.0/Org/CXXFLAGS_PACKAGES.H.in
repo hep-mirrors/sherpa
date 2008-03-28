@@ -1,6 +1,3 @@
-/* Using CLHEP */
-#undef USING__CLHEP
-
 /* Using HEPMC2 */
 #undef USING__HEPMC2
 

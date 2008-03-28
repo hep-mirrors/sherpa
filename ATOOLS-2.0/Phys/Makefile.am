@@ -70,7 +70,6 @@ pkginclude_HEADERS    =	\
 			Momentum_Shifter.H \
 			Spin_Correlation_Tensor.H \
 			Spin_Density_Matrix.H \
-			Event.H \
 			Color.H \
 			Spinor.H \
 			C_Vector.H \

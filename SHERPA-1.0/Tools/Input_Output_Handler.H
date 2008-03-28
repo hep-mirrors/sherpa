@@ -17,9 +17,6 @@ namespace ATOOLS {
 namespace SHERPA {
 
   class HepEvt_Interface;
-#ifdef USING__CLHEP
-  class HepMC_Interface;
-#endif
 #ifdef USING__HEPMC2
   class HepMC2_Interface;
 #endif
@@ -72,9 +69,6 @@ namespace SHERPA {
     iotype::code    m_outtype, m_screenout, m_intype;
 
     ATOOLS::Blob_List        * p_blobs;        
-#ifdef USING__CLHEP
-    HepMC_Interface          * p_hepmc;
-#endif
 #ifdef USING__HEPMC2
     HepMC2_Interface         * p_hepmc2;
 #endif
@@ -114,9 +108,6 @@ namespace SHERPA {
     // inline functions
     inline bool OutputOn() const { return (m_io&1 || m_io&2); }
 
-#ifdef USING__CLHEP
-    inline HepMC_Interface *const GetHepMCInterface() const { return p_hepmc; }
-#endif
 #ifdef USING__HEPMC2
     inline HepMC2_Interface *const GetHepMC2Interface() const { return p_hepmc2; }
 #endif
