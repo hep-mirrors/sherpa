@@ -122,10 +122,7 @@ std::string Primitive_Analysis::JetID
     }
   }
   for (size_t i(0);i<name.length();++i) {
-    if (name[i]=='_' && name[i-1]!='_' && 
-	(i<2 || name.rfind("nu",i)!=i-2) && 
-	name[i+1]!='R' && name[i+1]!='L' &&
-	(name[i+1]<48 || name[i+1]>57)) ++jets;
+    if (name[i]=='_' && name[i-1]=='_') ++jets;
     else if (name[i]=='[') {
       std::string cmax;
       for (size_t j(0);j<max.length();++j) {
@@ -214,7 +211,10 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     if (mode&ANALYSIS::splitt_extra)
       mode=m_mode^ANALYSIS::splitt_extra;
     mode=mode|ANALYSIS::output_this;
-    key=JetID(pname.substr(pname.find("__")+3),m_maxjettag);
+    std::string fsname(pname.substr(pname.find("__")+3));
+    fsname=fsname.substr(fsname.find("__")+3);
+    fsname=fsname.substr(fsname.find("__")+3);
+    key=JetID(fsname,m_maxjettag);
     if (name!=pname && m_maxjettag!="") {
       bool maxn(key.find('X')!=std::string::npos);
       size_t cur(ToType<int>(key)), nmax(ToType<int>(m_maxjettag));
