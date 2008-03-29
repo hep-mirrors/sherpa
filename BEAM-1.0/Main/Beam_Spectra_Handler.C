@@ -57,9 +57,9 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
     std::string  bs(dataread->GetValue<std::string>("BEAM_SPECTRUM_"+number,"Unknown"));
     if (bs=="Monochromatic") beam_spectrum=0;
     else if (bs=="Gaussian") beam_spectrum=1;
-    else if (bs=="Laser_Back") beam_spectrum=2;
+    else if (bs=="Laser_Backscattering") beam_spectrum=2;
     else if (bs=="Simple_Compton") beam_spectrum=3;
-    else if (bs=="Spec_Read") beam_spectrum=4;
+    else if (bs=="Spectrum_Reader") beam_spectrum=4;
     else beam_spectrum = 99;
     if ((beam_spectrum!=Beam_Type::Monochromatic) && (beam_spectrum!=Beam_Type::Gaussian)) 
       spectrum_generator = dataread->GetValue<int>("SPECTRUM_"+number,(int)Beam_Generator::Unknown); 
