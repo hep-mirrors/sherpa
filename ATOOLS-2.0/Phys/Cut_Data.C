@@ -168,8 +168,10 @@ double Cut_Data::Getscut
     for (size_t i(0);i<pl.size();++i) if (pl[i]!=' ') idl+=pl[i];
     for (size_t i(0);i<pr.size();++i) if (pr[i]!=' ') idr+=pr[i];
     double ml(sqrt(Getscut(idl))), mr(sqrt(Getscut(idr)));
+#ifdef DEBUG__Cut_Data
     msg_Debugging()<<"m_{"<<idl<<"} + m_{"<<idr<<"} = "
 		   <<ml<<" + "<<mr<<" = "<<ml+mr<<"\n";
+#endif
     return sqr(ml+mr);
   }
   msg_Indent();
