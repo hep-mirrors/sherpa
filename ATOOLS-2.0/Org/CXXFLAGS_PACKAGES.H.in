@@ -7,6 +7,9 @@
 /* using LHAPDF */
 #undef USING__LHAPDF
 
+/* LHAPDF data directory */
+#undef LHAPDFDATADIR
+
 /* using MC@NLO */
 #undef USING__MCatNLO
 
