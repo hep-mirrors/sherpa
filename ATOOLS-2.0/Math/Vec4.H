@@ -149,14 +149,14 @@ namespace ATOOLS {
     }
     
     inline const Scalar PPerp2(const Vec4<Scalar>& ref) const {
+      Scalar ppref = PPerp(ref);
+      return ppref*ppref;
+    }
+    inline const Scalar PPerp(const Vec4<Scalar>& ref) const {
       Vec3<Scalar> perp=1./ATOOLS::Max(Vec3<Scalar>(ref).Abs(),1.e-12)*
         Vec3<Scalar>(ref);
       perp=Vec3<Scalar>(*this)-perp*(perp*Vec3<Scalar>(*this));
       return perp.Abs();
-    }
-    inline const Scalar PPerp(const Vec4<Scalar>& ref) const {
-      Scalar ppref=PPerp(ref);
-      return ppref*ppref;
     }
 
     // some functions which only make sense for doubles
