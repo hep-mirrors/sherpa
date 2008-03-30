@@ -36,7 +36,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   read.AddWordSeparator("\t");
   read.SetInputPath(path);
   read.SetInputFile(file);
-  mihandler=read.GetValue<std::string>("MI_HANDLER","Amisic");
+  mihandler=read.GetValue<std::string>("MI_HANDLER","None");
   m_scalescheme=read.GetValue<int>("MI_HARD_SCALE",1);
   path+=read.GetValue<std::string>("INPUT_PATH","");
   file=read.GetValue<std::string>("INPUT_FILE",file);
