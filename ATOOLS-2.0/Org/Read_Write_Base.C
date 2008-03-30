@@ -50,7 +50,7 @@ void Read_Write_Base::Init()
   m_ignorecase=false;
   m_ignoreblanks=false;
   m_exactmatch=true;
-  m_interprete=false;
+  m_interprete=true;
   m_cmode=false;
   m_occurrence=std::string::npos;
   m_escape='\\';
