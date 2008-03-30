@@ -5,7 +5,6 @@
 #include "Effective_Higgs_Coupling.H"
 #include "Message.H"
 #include "Data_Reader.H"
-#include "Data_Collector.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -34,7 +33,6 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file) :
 
   ReadInFile();
  
-  AddToDataCollector(); 
 }
 
 void Standard_Model::ReadInFile() {
@@ -250,17 +248,3 @@ void Standard_Model::FixCKM() {
   p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
 }
 
-
-void Standard_Model::AddToDataCollector() 
-{
-  double MZ = ScalarConstant(std::string("MZ"));
-  
-  Data_Collector::AddData("ALPHAS",
-			  new Blob_Data<double>(ScalarFunction(std::string("alpha_S"),sqr(MZ))));
-  Data_Collector::AddData("1/ALPHAQED(MZ)",
-			  new Blob_Data<double>(1./ScalarFunction(std::string("alpha_QED"),sqr(MZ))));
-  Data_Collector::AddData("MW",
-			  new Blob_Data<double>(ScalarConstant(std::string("MW"))));
-  Data_Collector::AddData("MZ",
-			  new Blob_Data<double>(MZ));
-}

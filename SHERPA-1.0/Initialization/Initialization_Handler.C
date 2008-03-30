@@ -14,7 +14,6 @@
 #include "Scaling.H"
 #include "Shell_Tools.H"
 #include "Particle_Qualifier.H"
-#include "Data_Collector.H"
 #include "Variable.H"
 #include "Lund_Interface.H"
 #include "Data_Writer.H"

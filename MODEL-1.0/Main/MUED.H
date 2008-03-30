@@ -15,7 +15,6 @@ namespace MODEL {
     void FillMasses()                     {}
     void FillWidths()                     {}
     bool FillDecay(ATOOLS::Decay_Table *) { return true; }
-    void AddToDataCollector();
   };
   /*!
     \class MUED

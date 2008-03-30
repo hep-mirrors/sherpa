@@ -1,8 +1,6 @@
 #include "Process_Base.H"
 #include "Run_Parameter.H"
-//#include "Standard_Selector.H"
 #include "Combined_Selector.H"
-#include "Data_Collector.H"
 #include "Message.H"
 
 #include "Running_AlphaS.H"
@@ -301,15 +299,6 @@ void Process_Base::SetMax(const double max, int depth)
 } 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
 void Process_Base::SetCoreMaxJetNumber(int max)         { m_coremaxjetnumber = max; } 
-void Process_Base::AddToDataCollector(int i)
-{
-  std::string name;
-  for (size_t j=0; j<m_nin; ++j) name+=p_flavours[j].TexName()+"\\,";
-  name+="\\to\\,";
-  for (size_t j=m_nin; j<m_nin+m_nout; ++j) name+=p_flavours[j].TexName()+"\\,";
-  ATOOLS::Process_Info pi(name,m_totalxs*rpa.Picobarn(),m_totalerr*rpa.Picobarn());
-  Data_Collector::AddData("PROCESS"+ToString(i),new Blob_Data<ATOOLS::Process_Info>(pi));
-}
 
 /*------------------------------------------------------------------------------
 

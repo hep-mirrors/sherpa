@@ -17,7 +17,6 @@ namespace MODEL {
     void FillMasses() {}
     void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
-    void AddToDataCollector();
   };
   /*!
     \class Standard_Model

@@ -20,7 +20,6 @@ libToolsOrg_la_SOURCES        = \
 				Read_Write_Base.C \
 				Data_Reader.C \
 				Data_Writer.C \
-				Data_Collector.C \
 				Run_Parameter.C \
 				MyTiming.C \
 				Message.C \
@@ -50,7 +49,6 @@ pkginclude_HEADERS       =	\
 			Data_Reader.H \
 			Data_Writer.H \
 			My_Limits.H \
-			Data_Collector.H \
 			Run_Parameter.H \
 			Message.H \
 			List_Algorithms.H \

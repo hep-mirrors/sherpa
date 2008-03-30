@@ -5,7 +5,6 @@
 #include "Exception.H"
 #include "Random.H"
 #include "Data_Reader.H"
-#include "Data_Collector.H"
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
 #include "Library_Loader.H"
@@ -260,19 +259,15 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
-  Data_Collector::AddData("ECMS",new Blob_Data<double>(m_ecms));
 }
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
   m_pbeam[i]=pbeam;
-  //  Data_Collector::AddData("PBEAM"+ToString(i),new Blob_Data<Vec4D>(m_pbeam[i]));
 }
 void  Run_Parameter::Gen::SetBeam1(const Flavour b) { 
   m_beam1  = b;   
-  Data_Collector::AddData("BEAM1",new Blob_Data<std::string>(m_beam1.TexName()));
 }
 void  Run_Parameter::Gen::SetBeam2(const Flavour b) { 
   m_beam2  = b;   
-  Data_Collector::AddData("BEAM2",new Blob_Data<std::string>(m_beam2.TexName()));
 }
 
 std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
