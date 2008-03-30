@@ -1350,7 +1350,8 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
   if (mo->left) {
     Vec4D p(GetMomentum(mo->left,number)+GetMomentum(mo->right,number));
     Vec4D ptest(mo->left->part->Momentum()+mo->right->part->Momentum());
-    if (!(ptest==mo->part->Momentum())) {
+    static double accu(sqrt(rpa.gen.Accu()));
+    if (!IsEqual(ptest,mo->part->Momentum(),accu)) {
       number-=10000;
       msg_Error()<<METHOD<<"(..):  Four momentum not conserved "
 		 <<"in knot "<<mo->kn_no<<"\n"
