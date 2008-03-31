@@ -239,7 +239,7 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       for (int i=0;i<n;i++) {
 	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
       }
-      msg_Error()<<"   Will lead to retrying the event."<<std::endl;
+      msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);

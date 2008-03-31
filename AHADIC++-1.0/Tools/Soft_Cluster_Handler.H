@@ -44,7 +44,7 @@ namespace AHADIC {
 
     bool   CheckIfAllowed(Cluster_List * clin,int size,double & E);
     bool   UpdateTransitions(Cluster_List * clin,int size);
-    void   ShiftMomenta(Cluster_List *,int,bool=false);
+    bool   ShiftMomenta(Cluster_List *,int,bool=false);
     double SimpleMassCriterion(Single_Transition_List *,ATOOLS::Flavour &,
 			       const double,bool=false);
     double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,

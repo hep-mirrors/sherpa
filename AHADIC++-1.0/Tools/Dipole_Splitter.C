@@ -118,7 +118,8 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   SetSpectatorAndSplitter();
   m_M2      = p_dip->Mass2();
   m_m1      = p_constituents->Mass(p_spect->m_flav);
-  //std::cout<<METHOD<<" : check masses : "<<sqrt(m_M2)<<" - "<<m_m1<<" - "<<m_2p3min<<std::endl;
+  //std::cout<<METHOD<<" : check masses : "
+  //<<sqrt(m_M2)<<" - "<<m_m1<<" - "<<m_2p3min<<std::endl;
   if (sqrt(m_M2)-m_m1-m_2p3min<=1.e-8) return false;
   m_m12     = sqr(m_m1);
   m_xt2min  = sqr((m_m1+m_2p3min/2.)*(m_2p3min)/m_M2);
@@ -148,7 +149,7 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
 	       <<"   Could not split dipole, must retry event."<<std::endl;
     return false;
   }
-  if (FixKinematics()) {  
+  if (FixKinematics()) {
     delete p_split;
     return true;
   }
@@ -157,6 +158,8 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
 }
 
 void Dipole_Splitter::SetSpectatorAndSplitter() {
+  //msg_Out()<<METHOD<<" for "<<std::endl;
+  //p_dip->Output();
   if (p_dip->Triplet()->m_flav.IsGluon() && 
       (p_dip->AntiTriplet()->m_flav.IsQuark() ||
        p_dip->AntiTriplet()->m_flav.IsDiQuark())) {

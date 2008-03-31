@@ -34,7 +34,7 @@ int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blo
     blobs->push_back(blob);
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
-    p_softclusters->TreatClusterList(&clist,blob);
+    if (!p_softclusters->TreatClusterList(&clist,blob)) return 0;
     Cluster_Iterator dcit=clist.begin();
     while (!clist.empty()) {
       if ((*dcit)) {

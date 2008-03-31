@@ -22,8 +22,9 @@ namespace AHADIC {
     bool    DecayDipoles();
     DipIter SelectDipole();
     bool    Rescue(DipIter & dip);
-    bool    MergeDipoles(DipIter & dip1,DipIter & dip2);
-    void    SplitIt(Dipole *,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
+    void    AfterSplit(DipIter dip);
+    void    MergeDipoles(DipIter & dip1,DipIter & dip2);
+    void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
   public:
     Gluon_Decayer(Dipole_Splitter *);
     ~Gluon_Decayer();

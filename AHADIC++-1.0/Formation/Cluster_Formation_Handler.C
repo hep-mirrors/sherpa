@@ -68,7 +68,7 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob,Blob_List * bl)
   if (!ShiftOnMassShells())        return -1;
   if (!FormOriginalClusters())     return 0;
   if (!ApplyColourReconnections()) return 0;
-  if (!ClustersToHadrons(bl))      return 0;
+  if (!ClustersToHadrons(bl))      return -1;
   if (!MergeClusterListsIntoOne()) return 0;
 
   if (msg->LevelIsDebugging()) {
@@ -375,6 +375,11 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 	 cit!=(*clit)->end();cit++) beflocal += (*cit)->Momentum();
 
     if (!p_softclusters->TreatClusterList((*clit),p_blob)) {
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		 <<"   Did not find a kinematically allowed solution for a " 
+		 <<"single cluster list."<<std::endl
+		 <<"   Will trigger a new event."<<std::endl;
+      if (m_clulists.size()==1) return false;
       Cluster_List * clist = NULL;
       int maxsize = 10000;
       for (std::vector<Cluster_List *>::iterator clit1=m_clulists.begin();

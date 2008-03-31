@@ -63,7 +63,8 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	case -1 : return Return_Value::Retry_Event;
 	case  0 :
 	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
-		     <<"   Cluster formation did not work out properly in the "<<i<<"th attempt,"<<std::endl
+		     <<"   Cluster formation did not work out properly in the "
+		     <<i<<"th attempt,"<<std::endl
 		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  rvalue.IncRetryMethod(METHOD);
 	  if (blob) { blob->RemoveOutParticles(); }
@@ -101,7 +102,8 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	case -1 : return Return_Value::Retry_Event;
 	case  0 :
 	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
-		     <<"   Cluster decays did not work out properly in the "<<i<<"th attempt,"<<std::endl
+		     <<"   Cluster decays did not work out properly in the "
+		     <<i<<"th attempt,"<<std::endl
 		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  rvalue.IncRetryMethod(METHOD);
 	  if (blob) { blob->RemoveOutParticles(); }

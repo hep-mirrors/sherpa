@@ -38,19 +38,31 @@ namespace AHADIC {
     m_massbar2  = ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
   }
   inline void Dipole::Update() {
-    m_mustdecay = (p_triplet->m_flav.IsGluon() || p_triplet->m_flav.IsGluon());
-    m_mass2     = (p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-    m_massbar2  = ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
+    if (p_triplet && p_antitriplet) {
+      m_mustdecay = (p_triplet->m_flav.IsGluon() || p_triplet->m_flav.IsGluon());
+      m_mass2     = (p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
+      m_massbar2  = ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
+    }
   }
   inline void Dipole::Output() {
     Update();
-    msg_Out()<<"--- Dipole ("<<p_triplet->m_flav<<" "
-	     <<p_antitriplet->m_flav<<", "<<sqrt(m_mass2)<<") ---"<<std::endl
-	     <<"--- "<<p_triplet->m_mom<<" "
-	     <<sqrt(ATOOLS::Max(p_triplet->m_mom.Abs2(),0.))<<" + " 
-	     <<p_antitriplet->m_mom<<" "
-	     <<sqrt(ATOOLS::Max(p_antitriplet->m_mom.Abs2(),0.))
-	     <<" ---"<<std::endl; 
+    msg_Out()<<"--- Dipole ("<<p_triplet<<" "<<p_antitriplet<<" : ";
+    if (p_triplet) msg_Out()<<p_triplet->m_flav;
+    else msg_Out()<<" no flav ";
+    msg_Out()<<" ";
+    if (p_antitriplet) msg_Out()<<p_antitriplet->m_flav;
+    else msg_Out()<<" no flav ";
+    msg_Out()<<", "<<sqrt(m_mass2)<<") ---"<<std::endl<<"--- ";
+    if (p_triplet)	
+      msg_Out()<<p_triplet->m_mom<<" "
+	       <<sqrt(ATOOLS::Max(p_triplet->m_mom.Abs2(),0.));
+    else msg_Out()<<" XXX ";
+    msg_Out()<<" + "; 
+    if (p_antitriplet)	
+      msg_Out()<<p_antitriplet->m_mom<<" "
+	       <<sqrt(ATOOLS::Max(p_antitriplet->m_mom.Abs2(),0.));
+    else msg_Out()<<" XXX ";
+    msg_Out()<<" ---"<<std::endl; 
   }
 
   inline bool   Dipole::MustDecay()  { return m_mustdecay; }
