@@ -13,7 +13,7 @@ using namespace SHERPA;
 using namespace std;
 
 HepEvt_Interface::HepEvt_Interface(int _generator) : 
-  m_converted(false), p_instream(NULL), p_outstream(NULL),
+  p_instream(NULL), p_outstream(NULL),
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(gtp::code(_generator)), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL),
@@ -24,7 +24,7 @@ HepEvt_Interface::HepEvt_Interface(int _generator) :
 }
 
 HepEvt_Interface::HepEvt_Interface(gtp::code _generator) : 
-  m_converted(false), p_instream(NULL), p_outstream(NULL),
+  p_instream(NULL), p_outstream(NULL),
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(_generator), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL),
@@ -35,7 +35,7 @@ HepEvt_Interface::HepEvt_Interface(gtp::code _generator) :
 }
 
 HepEvt_Interface::HepEvt_Interface() :
-  m_converted(false), p_instream(NULL), p_outstream(NULL),
+  p_instream(NULL), p_outstream(NULL),
   m_evtnumber(0), m_nhep(-1), m_evtcount(0), m_generator(gtp::Unspecified)
 {
   // io = true : Output mode, Sherpa2HepEvt
@@ -133,7 +133,6 @@ void HepEvt_Interface::ChangeOutStream()
 
 
 bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
-  if(m_converted) return true;
   m_convertS2H.clear();
 
   m_evtnumber++;
@@ -189,34 +188,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   //   case 4 :  WriteD0HepEvt(nhep); break;
   //   default:  WriteFullHepEvt(nhep);
   //   }
-  m_converted=true;
   return true;
-}
-
-void HepEvt_Interface::PrintEvent(const int mode, std::ostream& ostr, const int nhep)
-{
-  switch(mode) {
-  case 1:
-    WriteFullHepEvt(ostr,nhep);
-    break;
-  case 2:
-    WriteD0HepEvt(ostr,nhep);
-    break;
-  case 3:
-    WriteFormatedHepEvt(ostr,nhep);
-    break;
-  default:
-    msg_Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
-    abort();
-  }
-  //   for (int i=0;i<nhep;++i) {
-  //     msg_Out()<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
-  // 	     <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-  //     for (int j=0;j<5;++j) msg_Out()<<p_phep[5*i+j]<<" ";
-  //     msg_Out()<<"\n ";
-  //     for (int j=0;j<4;++j) msg_Out()<<p_vhep[4*i+j]<<" ";
-  //     msg_Out()<<"\n";
-  //   }  
 }
 
 void HepEvt_Interface::WriteFullHepEvt(std::ostream& ostr, int nhep)
@@ -245,19 +217,6 @@ void HepEvt_Interface::WriteD0HepEvt(std::ostream& ostr, int nhep)
     ostr<<"\n";
   }
 }
-
-// void HepEvt_Interface::WriteReducedHepEvt(int nhep)
-// {
-//   ostr<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
-//   for (int i=0;i<nhep;++i) {
-//     ostr<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
-// 	       <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-//     for (int j=0;j<5;++j) ostr<<p_phep[5*i+j]<<" ";
-//     ostr<<"\n ";
-//     for (int j=0;j<4;++j) ostr<<p_vhep[4*i+j]<<" ";
-//     ostr<<"\n";
-//   }
-// }
 
 void HepEvt_Interface::WriteFormatedHepEvt(std::ostream& ostr, int nhep)
 {

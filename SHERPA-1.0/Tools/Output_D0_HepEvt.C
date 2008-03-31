@@ -1,0 +1,11 @@
+#include "Output_D0_HepEvt.H"
+
+using namespace SHERPA;
+using namespace ATOOLS;
+using namespace std;
+
+void Output_D0_HepEvt::Output(Blob_List* blobs, const double weight) 
+{
+  m_hepevt.Sherpa2HepEvt(blobs);
+  m_hepevt.WriteD0HepEvt(m_outstream,m_hepevt.Nhep());
+}

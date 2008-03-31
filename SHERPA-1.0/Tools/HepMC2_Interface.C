@@ -15,7 +15,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 HepMC2_Interface::HepMC2_Interface():
-  p_event(new HepMC::GenEvent()), m_converted(false)
+  p_event(new HepMC::GenEvent())
 {
 }
 
@@ -24,16 +24,8 @@ HepMC2_Interface::~HepMC2_Interface()
   delete p_event;
 }
 
-void HepMC2_Interface::PrintEvent(std::ostream& ostr)
-{
-  // probably need to use HepMC::IO_Ascii::write_event( const GenEvent* evt )
-  // but that doesn't support writing to a stream :-((
-  p_event->print(ostr);
-}
-
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
-  if(m_converted) return true;
   if (blobs->empty()) {
     msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
 		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
@@ -69,7 +61,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
       }
     }
   }
-  m_converted=true;
   return true;
 }
 

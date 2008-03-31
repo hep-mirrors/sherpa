@@ -29,7 +29,6 @@ namespace SHERPA {
     std::map<ATOOLS::Particle*,HepMC::GenParticle *> m_particle2genparticle;
 
     HepMC::GenEvent *p_event;
-    bool             m_converted;
 
     bool Sherpa2HepMC(ATOOLS::Blob *,HepMC::GenVertex *&);
     bool Sherpa2HepMC(ATOOLS::Particle *,HepMC::GenParticle *&);
@@ -43,9 +42,7 @@ namespace SHERPA {
     ~HepMC2_Interface();
 
     // member functions
-    void PrintEvent(std::ostream& ostr=ATOOLS::msg->Out());
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
-    inline void Reset() { m_converted = false; }
 
     // inline functions
     inline HepMC::GenEvent *const GenEvent() { return p_event; }

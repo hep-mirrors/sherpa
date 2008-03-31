@@ -45,10 +45,6 @@ namespace SHERPA {
 
     Pythia_HepEvt_Translator * p_pythiatranslator;
 
-    void WriteFullHepEvt(std::ostream& ostr,int nevt);
-    void WriteFormatedHepEvt(std::ostream& ostr,int nevt);
-    //     void WriteReducedHepEvt(int nevt);
-    void WriteD0HepEvt(std::ostream& ostr,int nevt);
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
     void FSBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
@@ -99,8 +95,9 @@ namespace SHERPA {
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);
-    void PrintEvent(const int mode=1, std::ostream& ostr=ATOOLS::msg->Out(),
-                    const int nhep=0);
+    void WriteFullHepEvt(std::ostream& ostr,int nevt);
+    void WriteD0HepEvt(std::ostream& ostr,int nevt);
+    void WriteFormatedHepEvt(std::ostream& ostr,int nevt);
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
     bool HepEvt2Sherpa(ATOOLS::Blob_List * const);
