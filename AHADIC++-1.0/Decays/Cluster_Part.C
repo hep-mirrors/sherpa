@@ -72,7 +72,11 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 
 bool Cluster_Part::ClusterDecay(Cluster * const cluster)
 {
-  return p_splitter->SplitCluster(cluster);
+  bool ok(p_splitter->SplitCluster(cluster));
+  if (!ok)
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+               <<"   Could not split cluster, may lead to new event."<<std::endl;
+  return ok;
 }
 
 

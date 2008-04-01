@@ -34,7 +34,40 @@ int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blo
     blobs->push_back(blob);
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
-    if (!p_softclusters->TreatClusterList(&clist,blob)) return 0;
+    if (!p_softclusters->TreatClusterList(&clist,blob)) {
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		 <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
+		 <<"   Will trigger retrying the event."<<std::endl;
+      std::cout<<"   --- check: "<<cluster<<" ---> "
+	       <<cluster->GetLeft()<<"/"<<cluster->GetRight()<<" in "<<blob<<std::endl;
+      if (cluster->GetLeft())  {
+	if (cluster->GetLeft()->GetSelf()) {
+	  delete cluster->GetLeft()->GetSelf();
+	  control::s_AHAparticles--;
+	}
+	delete cluster->GetLeft();
+      }
+      if (cluster->GetRight()) {
+	if (cluster->GetRight()->GetSelf()) {
+	  delete cluster->GetRight()->GetSelf();
+	  control::s_AHAparticles--;
+	}
+	delete cluster->GetRight();
+      }
+      if (cluster->GetSelf()) {
+      	cluster->GetSelf()->ProductionBlob()->RemoveOutParticle(cluster->GetSelf(),true);
+      	cluster->GetSelf()->DecayBlob()->RemoveInParticle(cluster->GetSelf(),true);
+      	delete cluster->GetSelf();
+      	control::s_AHAparticles--;
+      }
+      delete cluster; 
+      cluster=NULL;
+      clusters->erase(cit);
+      delete blob; blob=NULL;
+      blobs->pop_back();
+      control::s_AHAblobs--;
+      return -1;
+    }
     Cluster_Iterator dcit=clist.begin();
     while (!clist.empty()) {
       if ((*dcit)) {
@@ -51,8 +84,8 @@ int Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob_List * blo
 		     <<(*decblob)<<std::endl;
 	  }
 	  else {
-	    msg_Out()<<METHOD<<" : Momentum conservation at cluster decay blob : "
-		     <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
+	    msg_Debugging()<<METHOD<<" : Momentum conservation at cluster decay blob : "
+			   <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
 	  }
 #endif
 	  blobs->push_back(decblob);
@@ -96,7 +129,8 @@ Blob * Cluster_Decay_Handler::DecayIt(Cluster * cluster)
 
   if (!p_clus->TestDecay(cluster)) {
     delete blob;
-    return NULL;
+    blob = NULL;
+    control::s_AHAblobs--;
   }
 
   return blob;

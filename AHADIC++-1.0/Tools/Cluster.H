@@ -8,7 +8,7 @@
 #include <list>
 #include <iostream>
 
-#define AHA_momcheck
+#define AHAmomcheck
 
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);

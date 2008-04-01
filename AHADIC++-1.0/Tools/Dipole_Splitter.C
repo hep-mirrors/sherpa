@@ -17,6 +17,8 @@ Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
 bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   Dipole * dip1 = new Dipole(new Proto_Particle((*clu->GetTrip())),
 			     new Proto_Particle((*clu->GetAnti())));
+  //std::cout<<"### Two new Proto_Particles ("
+  //	   <<dip1->Triplet()<<"/"<<dip1->AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
   p_dip = dip1;
 
   if (msg->LevelIsDebugging()) {
@@ -25,7 +27,19 @@ bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max) {
   }
 
   Dipole * dip2 = EmitGluon(pt2max);
-  if (!dip2) return false;
+  if (!dip2) {
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+               <<"   Could not emit gluon, hence no dipole splitting."<<std::endl
+               <<"   Return false, may lead to new event."<<std::endl;
+    //std::cout<<"### Delete Proto_Particle ("<<dip1->Triplet()
+    //	     <<"/"<<dip1->Triplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
+    delete dip1->Triplet();
+    //std::cout<<"### Delete Proto_Particle ("<<dip1->AntiTriplet()
+    //	     <<"/"<<dip1->AntiTriplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
+    delete dip1->AntiTriplet();
+    delete dip1;
+    return false;
+  }
   dip1->SetAntiTriplet(dip2->Triplet());
   dip1->Update();
   dip2->Update();
@@ -150,6 +164,8 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
     return false;
   }
   if (FixKinematics()) {
+    //std::cout<<"### Delete Proto_Particle ("<<p_split
+    //	     <<"/"<<p_split->m_flav<<") in "<<METHOD<<"."<<std::endl;
     delete p_split;
     return true;
   }
@@ -368,20 +384,21 @@ bool Dipole_Splitter::FixKinematics(bool glusplit) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
  	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
   if (glusplit) {
     p_out1 = new Proto_Particle(m_flav.Bar(),m_mom2,'l');
     p_out2 = new Proto_Particle(m_flav,m_mom3,'l');
+    //std::cout<<"### Two new Proto_Particles ("<<p_out1<<"/"<<p_out2
+    //	     <<" -- "<<m_flav.Bar()<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
   }
   else {
     p_out1 = new Proto_Particle(m_flav,m_mom2,'l');
+    //std::cout<<"### New Proto_Particle ("<<p_out1<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
     p_out2 = NULL;
     p_split->m_mom = m_mom3;
   }
   p_spect->m_mom = m_mom1;
   return true;
 }
-
-

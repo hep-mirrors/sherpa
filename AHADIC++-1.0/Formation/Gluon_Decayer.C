@@ -74,7 +74,7 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
   	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
   if (msg->LevelIsDebugging()) {
@@ -300,7 +300,7 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
   	     <<Q<<" - "<<Qafter<<" --> "<<(Q-Qafter).Abs2()<<std::endl;    
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 }
 
@@ -410,10 +410,10 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
   	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
-    for (Diter diter=m_dipoles.begin();diter!=m_dipoles.end();diter++)
+    for (DipIter diter=m_dipoles.begin();diter!=m_dipoles.end();diter++)
       (*diter)->Output();
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 }
 

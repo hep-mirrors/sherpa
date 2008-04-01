@@ -78,8 +78,12 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
 
 Cluster::~Cluster() 
 {
-  if (p_trip) { delete p_trip; p_trip=NULL; }
-  if (p_anti) { delete p_anti; p_anti=NULL; }
+  if (p_trip) { 
+    delete p_trip; p_trip=NULL; 
+  }
+  if (p_anti) { 
+    delete p_anti; p_anti=NULL; 
+  }
   s_cluster_count--;
 }
 

@@ -54,8 +54,12 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
     if (!breakit) break;
   }
 
-  if (!ShiftMomenta(clin,clin->size(),!breakit)) return false;
-
+  if (!ShiftMomenta(clin,clin->size(),!breakit)) {
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		 <<"   Could not shift momenta."<<std::endl
+		 <<"   Will possibly lead to retrying the event."<<std::endl;
+    return false;
+  }
 #ifdef AHAmomcheck
   Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) 
@@ -78,7 +82,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
       delete cluster;
       cit = clin->erase(cit);
 #ifdef AHAmomcheck
-      msg_Out()<<METHOD<<" involving a C->H transition."<<std::endl;
+      msg_Debugging()<<METHOD<<" involving a C->H transition."<<std::endl;
 #endif
       continue;
     }
@@ -100,7 +104,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
 	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
   return true;
 }
@@ -283,7 +287,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster)
 	       <<(checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2()
 	       <<"."<<std::endl;
   }
-  else msg_Out()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
   part = new Particle(-1,had1,cluster->GetLeft()->Momentum());
@@ -530,8 +534,8 @@ bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin,int size,bool takeal
   	     <<checkbef<<" - "<<checkaft<<" --> "
   	     <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
   }
-  else msg_Out()<<METHOD<<" conserves momentum : "
-  		<<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+  else msg_Debugging()<<METHOD<<" conserves momentum : "
+		      <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
 #endif
   return true;
 }

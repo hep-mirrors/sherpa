@@ -27,6 +27,7 @@ Ahadic::~Ahadic()
 
 Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
+  bool retry(false);
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"##########################################################################"<<endl
 	     <<"###################################### IN ################################"<<endl;
@@ -43,6 +44,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
   Cluster clus;
   clus.ResetClusterNumber();
 
+  control::s_AHAblobs=0;
   control::s_AHAparticles=0;
 
   bool moveon(false);
@@ -54,22 +56,27 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
       blob->SetTypeSpec("AHADIC-1.0");
       double norm2 = blob->CheckMomentumConservation().Abs2();
 #ifdef AHAmomcheck
-      msg_Out()<<"=============================================================="<<endl
-      	       <<METHOD<<" (0) momentum of incoming in blob : "
-      	       <<blob->CheckMomentumConservation()<<"   ("<<norm2<<") "<<endl;
+      //msg_Out()<<"=============================================================="<<endl
+      //	       <<METHOD<<" (0) momentum of incoming in blob : "
+      //	       <<blob->CheckMomentumConservation()<<"   ("<<norm2<<") "<<endl;
 #endif
       for (int i=0;i<m_maxtrials;i++) {
 	switch (p_cformhandler->FormClusters(blob,blobs)) {
-	case -1 : return Return_Value::Retry_Event;
+	case -1 : 
+	  msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+		     <<"   Will retry event."<<std::endl;
+	  return Return_Value::Retry_Event;
 	case  0 :
 	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
 		     <<"   Cluster formation did not work out properly in the "
-		     <<i<<"th attempt,"<<std::endl
+		     <<(i+1)<<"th attempt,"<<std::endl
 		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  rvalue.IncRetryMethod(METHOD);
-	  if (blob) { blob->RemoveOutParticles(); }
-	  continue;
+	  retry = true;
+	  if (blob) { blob->DeleteOutParticles(); }
+	  break;
 	case 1 :
+	  if (retry) msg_Out()<<"   Passed cluster formation now ("<<(i+1)<<"th trial)."<<std::endl;
 	  moveon = true;
 	  break;
 	}
@@ -78,37 +85,46 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
       if (!moveon) return Return_Value::Retry_Event;
 
 #ifdef AHAmomcheck
-      if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12) {
-	msg_Out()<<"=============================================================="<<endl
-		 <<METHOD<<" (1) momentum violation for : "<<endl
-		 <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
-		 <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-		 <<", "<<blob->CheckMomentumConservation()<<"   ("
-		 <<blob->CheckMomentumConservation().Abs2()<<") "<<endl
-		 <<(*blob)<<endl
-		 <<(*p_cformhandler->GetClusters())<<endl;
-      }
-      else msg_Out()<<"=============================================================="<<endl
-      		    <<METHOD<<" (1) momentum conservation for : "<<endl
-      		    <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
-      		    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-      		    <<", "<<blob->CheckMomentumConservation().Abs2()<<endl
-      		    <<(*blob)<<endl;
+      //if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12) {
+      //	msg_Out()<<"=============================================================="<<endl
+      //		 <<METHOD<<" (1) momentum violation for : "<<endl
+      //		 <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
+      //		 <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+      //		 <<", "<<blob->CheckMomentumConservation()<<"   ("
+      //		 <<blob->CheckMomentumConservation().Abs2()<<") "<<endl
+      //		 <<(*blob)<<endl
+      //		 <<(*p_cformhandler->GetClusters())<<endl;
+      //}
+      //else msg_Out()<<"=============================================================="<<endl
+      //		    <<METHOD<<" (1) momentum conservation for : "<<endl
+      //		    <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
+      //		    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+      //		    <<", "<<blob->CheckMomentumConservation().Abs2()<<endl
+      //		    <<(*blob)<<endl;
 #endif
 
-      moveon = false;
+      retry = moveon = false;
       for (int i=0;i<m_maxtrials;i++) {
 	switch (p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs)) {
-	case -1 : return Return_Value::Retry_Event;
+	case -1 : 
+	  msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+		     <<"   Will retry event."<<std::endl;
+	  return Return_Value::Retry_Event;
 	case  0 :
 	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
 		     <<"   Cluster decays did not work out properly in the "
-		     <<i<<"th attempt,"<<std::endl
+		     <<(i+1)<<"th attempt,"<<std::endl
 		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  rvalue.IncRetryMethod(METHOD);
-	  if (blob) { blob->RemoveOutParticles(); }
-	  continue;
+	  retry = true;
+	  if (blob) { blob->DeleteOutParticles(); }
+	  msg_Out()<<"   Blobs = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
+		   <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+		   <<"   : "<<blob->CheckMomentumConservation()<<endl
+		   <<"   "<<(*blob)<<endl;
+	  break;
 	case  1 :
+	  if (retry) msg_Out()<<"   Passed cluster decays now ("<<(i+1)<<"th trial)."<<std::endl;
 	  blob->AddStatus(blob_status::needs_hadrondecays);
 	  if (!m_fullinfo) {
 	    blobs->MergeSubsequentTypeRecursively(btp::Cluster_Formation,btp::Cluster_Decay,
@@ -121,39 +137,42 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  moveon = true;
 	  break;
 	}
-	if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
-	    clus.RemainingClusters()!=1 ||
-	    control::s_AHAblobs!=0 || 
-	    control::s_AHAparticles!=blob->NOutP() ||
-	    control::s_AHAprotoparticles!=0) {
-	  msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
-		   <<"   Momentum violation for "<<(clus.RemainingClusters()-1)
-		   <<" remaining clusters."<<endl
-		   <<" Blobs =  = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
-		   <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-		   <<"   : "<<blob->CheckMomentumConservation()<<endl
-		   <<(*blob)<<endl;
-	  return Return_Value::Retry_Event;
-	}
-	else {
+	if (moveon) break;
+      }
+      if (!moveon) return Return_Value::Retry_Event;
+
+      if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
+	  (clus.RemainingClusters()!=1 && clus.RemainingClusters()!=0) ||
+	  control::s_AHAblobs!=0 || 
+	  control::s_AHAparticles!=blob->NOutP() ||
+	  control::s_AHAprotoparticles!=0) {
+	msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
+		 <<"   Momentum/particle-blob number violation for "<<(clus.RemainingClusters()-1)
+		 <<" remaining clusters."<<endl
+		 <<" Blobs = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
+		 <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+		 <<"   : "<<blob->CheckMomentumConservation()<<endl
+		 <<(*blob)<<endl;
+	abort();
+	return Return_Value::Retry_Event;
+      }
+      else {
+	if (msg->LevelIsDebugging()) {
 #ifdef AHAmomcheck
 	  msg_Out()<<"Momentum conservation at the end : "<<blob->CheckMomentumConservation()<<endl
 		   <<(*blob)<<endl
 		   <<"##########################  OUT : No Error ###############################"<<endl
 		   <<"##########################################################################"<<endl;
 #else
-	  if (msg->LevelIsDebugging()) {
-	    msg_Out()<<METHOD<<" : "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
-		     <<(*blob)<<(*blobs)
-		     <<"##############################################################"<<endl
-		     <<"##############################################################"<<endl
-		     <<"##############################################################"<<endl;
-	  }
+	  msg_Out()<<METHOD<<" : "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
+		   <<(*blob)<<(*blobs)
+		   <<"##############################################################"<<endl
+		   <<"##############################################################"<<endl
+		   <<"##############################################################"<<endl;
 #endif
 	}
       }
-      if (!moveon) return Return_Value::Retry_Event;
-    }	  
+    }  
   }
   return Return_Value::Success;
 }  
