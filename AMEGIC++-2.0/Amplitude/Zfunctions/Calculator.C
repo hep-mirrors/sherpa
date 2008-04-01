@@ -159,11 +159,10 @@ void Y_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
 		     int *lfnumb,int *canumb)
 {
   if (pf==0) zfc->Set_Out(zf,0,pb,p);
-  else zfc->Set_In(zf,0,p,pf,pb);
-  if(GetScalarNumb()>0){
-    int scnt(narg-GetScalarNumb());
-    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
-  }
+  else       zfc->Set_In(zf,0,p,pf,pb);
+
+  int scnt(narg-GetScalarNumb());
+  if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
 }
 
 Kabbala Z_Calc::Do() 
@@ -177,13 +176,6 @@ void Z_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
 		     int *lfnumb,int *canumb)
 {
   zfc->Set_Out(zf,1,pb,p);
-  if(GetScalarNumb()>0){
-    int scnt(narg-GetScalarNumb());
-    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
-    zfc->SetScalarArgs(zf,scnt,pb->left);
-    zfc->SetScalarArgs(zf,scnt,pb->right);
-    zfc->SetScalarArgs(zf,scnt,pb->middle);
-  }
 }
 
 Kabbala VVS_Calc::Do() 

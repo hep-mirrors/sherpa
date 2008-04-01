@@ -61,13 +61,6 @@ void AnomalousV4_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
   zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
   zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
   zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
-  if(GetScalarNumb()>0){
-    int scnt(narg-GetScalarNumb());
-    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
-    zfc->SetScalarArgs(zf,scnt,pb->left);
-    zfc->SetScalarArgs(zf,scnt,pb->right);
-    zfc->SetScalarArgs(zf,scnt,pb->middle);
-  }
 }
 
 

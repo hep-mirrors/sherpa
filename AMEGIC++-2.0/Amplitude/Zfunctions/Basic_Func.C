@@ -35,7 +35,6 @@ void Basic_Func::Map(int& numb)
 
 void Basic_Func::Map(int& numb,bool& maped) 
 {
-
   if(maped) return;
   maped=true;
 
