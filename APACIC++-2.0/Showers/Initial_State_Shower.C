@@ -37,10 +37,11 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
-    if (isr->PDF(i)->Q2Min()>m_t0*rpa.gen.FactorizationScaleFactor()) {
+    if (isr->PDF(i)->Q2Min()>m_t0*
+	ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"))) {
       msg_Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
 		 <<")*FACTORIZATION_SCALE_FACTOR("
-		 <<rpa.gen.FactorizationScaleFactor()<<") "
+		 <<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<") "
 		 <<"smaller than minimum scale given by PDF ("
 		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
@@ -52,8 +53,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
     p_suds[i]->SetMaxScale(shadron);
     p_suds[i]->SetMinEnergy(emin);
-    p_suds[i]->SetPDFScaleFactor
-      (cplscalefac*rpa.gen.FactorizationScaleFactor());
+    p_suds[i]->SetPDFScaleFactor(cplscalefac);
     p_suds[i]->SetCouplingScaleFactor(cplscalefac);
     p_suds[i]->SetCouplingScheme(cplscheme);
     p_suds[i]->SetPDFScheme(pdfscheme);

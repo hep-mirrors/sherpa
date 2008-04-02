@@ -37,10 +37,6 @@ namespace ATOOLS {
       double m_timeout;
       bool m_batchmode;
       std::string m_username;
-      double m_fac_scale_fac;
-      double m_ren_scale_fac;
-      double m_pdf_scalefac;    //operator approach.
-      double m_as_scalefac;     //operator approach.
       bool m_spincorrelations;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
@@ -75,14 +71,6 @@ namespace ATOOLS {
       { s_variables[key]=value; }
       inline double WAnaScale()                          { return m_wana_scale;}
       inline void   SetWAnaScale(double ws)              { m_wana_scale=ws; }
-      void SetScaleFactors(double f, double r) {
-	m_fac_scale_fac = f;
-	m_ren_scale_fac = r;
-      }
-      inline double FactorizationScaleFactor() { return m_fac_scale_fac; }
-      inline double RenormalizationScaleFactor() { return m_ren_scale_fac; }
-      inline double PDFScaleFactor() const { return m_pdf_scalefac; }    //for the operator approach.
-      inline double AsScaleFactor() const { return m_as_scalefac; }
 
       /*
       inline int Output()                                 { return m_output; }

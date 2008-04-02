@@ -181,12 +181,12 @@ void Amegic::ReadInProcessfile(string file)
   PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",0));
   p_dataread->SetTags(std::map<std::string,std::string>());
   std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
+  std::string _renscale   = p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
+  msg_Debugging()<<METHOD<<"(): Set scales {\n"
+		 <<"  fac scale: "<<_facscale<<"\n"
+		 <<"  ren scale: "<<_renscale<<"\n}\n";
   int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double _scale           = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
-  double scale_factor     = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
-  double factorization_scale_factor   = scale_factor*p_dataread->GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
-  double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.);
-  rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
 
   int         flag,position,njets;
   string      buf,ini,fin;
@@ -200,7 +200,7 @@ void Amegic::ReadInProcessfile(string file)
   std::map<std::string,std::pair<int,double> >  
     venhance_factor,vmaxreduction_factor,vmaxredepsilon,vmaxerror;
   std::map<std::string,std::pair<int,std::string> > vycut;
-  std::string enhance_function="1", factorization_scale;
+  std::string enhance_function="1", factorization_scale, renormalization_scale;
   bool        print_graphs=false;
   int         enable_mhv=0; 
   string      selectorfile;
@@ -257,6 +257,7 @@ void Amegic::ReadInProcessfile(string file)
 	    selectorfile        = string("");
 	    scale_scheme        = _sc;
 	    factorization_scale = _facscale;
+	    renormalization_scale = _renscale;
 	    kfactor_scheme      = _kfactor_scheme;
 	    fixed_scale         = _scale;
 	    order_ew            = 99;
@@ -346,6 +347,9 @@ void Amegic::ReadInProcessfile(string file)
 		
 		if (cur[0]=="Factorization" && cur[1]=="scale") {
 		  factorization_scale = cur[2];
+		}
+		if (cur[0]=="Renormalization" && cur[1]=="scale") {
+		  renormalization_scale = cur[2];
 		}
 
 		if (cur[0]=="KFactor" && cur[1]=="scheme") {
@@ -524,6 +528,7 @@ void Amegic::ReadInProcessfile(string file)
 		if (proc) {
 		  proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 		  proc->SetFactorizationScale(factorization_scale);
+		  proc->SetRenormalizationScale(renormalization_scale);
 		  if (print_graphs) proc->SetPrintGraphs();
 		  p_procs->Add(proc);
 		  print_graphs=false;

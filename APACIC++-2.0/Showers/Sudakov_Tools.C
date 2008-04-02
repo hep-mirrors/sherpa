@@ -11,19 +11,17 @@ using namespace ATOOLS;
 
 Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * model) :
   p_as(model->GetScalarFunction(std::string("alpha_S"))),
-  p_aqed(model->GetScalarFunction(std::string("alpha_QED"))),
-  m_scalefac(1.)
+  p_aqed(model->GetScalarFunction(std::string("alpha_QED")))
 { 
 }
 
 void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
 					  const double tmin,const double tmax)
 {
-  m_scalefac=1.0;
   if (scheme>0) {
-    m_alphaQEDmax = (*p_aqed)(tmax*rpa.gen.RenormalizationScaleFactor());    
+    m_alphaQEDmax = (*p_aqed)(tmax);    
     double cutq2  = static_cast<Running_AlphaS*>(p_as)->CutQ2();
-    if (tmin*rpa.gen.RenormalizationScaleFactor()<cutq2) 
+    if (tmin<cutq2) 
       m_alphaSmax=AlphaS(cutq2); 
     else m_alphaSmax  = AlphaS(tmin);    
     /*
@@ -37,7 +35,6 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
       abort();
     */
     FixLambda2(sqr((Flavour(kf_Z)).Mass())); 
-    Setscalefac(tmin);   
   }
   else {
     m_alphaQEDmax       = 1./128.;     
@@ -51,45 +48,29 @@ void Sudakov_Tools::Output() {
   msg_Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
 		<<"   beta0        = "<<m_beta0<<std::endl
 		<<"   lambda2      = "<<m_lambda2<<std::endl	
-		<<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf_Z)).Mass()))<<"  (estimated)"<<std::endl
 		<<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf_Z)).Mass()))<<"  (exact)"<<std::endl
 		<<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf_Z)).Mass()))<<"  (exact)"<<std::endl
-		<<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl
-		<<"   scalefac     = "<<m_scalefac<<", "
-		<<rpa.gen.RenormalizationScaleFactor()<<"."<<std::endl;
-}
-
-double Sudakov_Tools::CrudeAlphaS(const double t) const 
-{
-  return m_scalefac/
-    (m_beta0*log(dabs(t)*rpa.gen.RenormalizationScaleFactor()/m_lambda2));
+		<<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl;
 }
 
 double Sudakov_Tools::AlphaS(double t) const 
 {
-  return (*p_as)(dabs(t)*rpa.gen.RenormalizationScaleFactor());
+  return (*p_as)(dabs(t));
 }
 
 double Sudakov_Tools::Alpha(double t) const 
 {
-  return (*p_aqed)(ATOOLS::dabs(t)*
-		   ATOOLS::rpa.gen.RenormalizationScaleFactor());
+  return (*p_aqed)(ATOOLS::dabs(t));
 }
 
 double Sudakov_Tools::Nf(double t) const 
 {
-  return ((Running_AlphaS*)p_as)->
-    Nf(dabs(t)*rpa.gen.RenormalizationScaleFactor());
-}
-
-void Sudakov_Tools::Setscalefac(double t0) 
-{
-  m_scalefac = AlphaS(dabs(t0))/CrudeAlphaS(dabs(t0));
+  return ((Running_AlphaS*)p_as)->Nf(dabs(t));
 }
 
 void Sudakov_Tools::FixLambda2(double t) 
 { 
-  t         = dabs(t*rpa.gen.RenormalizationScaleFactor());
+  t         = dabs(t);
   m_beta0   = ((Running_AlphaS*)p_as)->Beta0(t)/M_PI;  
   m_lambda2 = t*exp(-1./(m_beta0*AlphaS(t)));
 }

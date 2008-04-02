@@ -1578,3 +1578,9 @@ void Process_Group::SetFactorizationScale(const std::string &muf2)
   Integrable_Base::SetFactorizationScale(muf2);
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetFactorizationScale(muf2);
 }
+
+void Process_Group::SetRenormalizationScale(const std::string &mur2)
+{
+  Integrable_Base::SetRenormalizationScale(mur2);
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetRenormalizationScale(mur2);
+}

@@ -226,14 +226,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
                   else { ran.SetSeed(gen.m_seed); }
-  gen.m_ren_scale_fac=1.0;
-  gen.m_fac_scale_fac=1.0;
-  gen.m_pdf_scalefac=dr.GetValue<double>("PDF_SCALE_FACTOR",1.0);
-  gen.m_as_scalefac=dr.GetValue<double>("AS_SCALE_FACTOR",1.0);
-  if(gen.m_pdf_scalefac!=1.0 || gen.m_as_scalefac!=1.0) {
-    PRINT_INFO("Attention: Operator approach for scale variations activated.  mu_f="
-	       <<gen.m_pdf_scalefac<<";  mu_r="<<gen.m_as_scalefac);
-  }
   msg_Debugging()<<METHOD<<"(): Set global tags {\n";
   const String_Map &gtags(Read_Write_Base::GlobalTags());
   for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)

@@ -300,9 +300,9 @@ double Cluster_Partons_CKKW::CouplingWeight(const bool is,Leg &leg,
     msg_Debugging()<<"higgs vertex -> q_ref = "<<Flavour(kf_h0).Mass()
 		   <<" -> asref = "<<asref<<"\n";
   }
-  double as_ptij(0.), rf(rpa.gen.RenormalizationScaleFactor());
-  if (is) as_ptij=(*p_runas)(rf*m_me_as_factor*sqr(kt)*m_is_as_factor);
-  else as_ptij=(*p_runas)(rf*m_me_as_factor*sqr(kt)*m_fs_as_factor);
+  double as_ptij(0.);
+  if (is) as_ptij=(*p_runas)(m_me_as_factor*sqr(kt)*m_is_as_factor);
+  else as_ptij=(*p_runas)(m_me_as_factor*sqr(kt)*m_fs_as_factor);
   if (m_kfac!=0.) as_ptij*=1.+as_ptij/(2.*M_PI)*m_kfac;
   msg_Debugging()<<"as weight (\\alpha_s("<<m_me_as_factor<<"*sqr("<<kt<<")*"
 		 <<(is?m_is_as_factor:m_fs_as_factor)

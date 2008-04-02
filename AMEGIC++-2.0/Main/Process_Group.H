@@ -126,6 +126,7 @@ namespace AMEGIC {
     void           RescaleXSec(double);
     void           SetupEnhance();
     void           SetFactorizationScale(const std::string &muf2);
+    void           SetRenormalizationScale(const std::string &mur2);
 
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);

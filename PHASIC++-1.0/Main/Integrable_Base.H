@@ -180,13 +180,13 @@ namespace PHASIC {
 
     bool m_ownselector;
 
-    std::string m_efunc, m_muf2tag;
+    std::string m_efunc, m_muf2tag, m_mur2tag;
 
     ATOOLS::Info_Key m_kfkey;
 
-    ATOOLS::Algebra_Interpreter *p_muf2calc;
+    ATOOLS::Algebra_Interpreter *p_muf2calc, *p_mur2calc;
 
-    Tag_Setter m_muf2tagset;
+    Tag_Setter m_muf2tagset, m_mur2tagset;
 
   public:
 
@@ -275,8 +275,10 @@ namespace PHASIC {
     void SetScaleScheme(const scl::scheme s);
 
     virtual void SetFactorizationScale(const std::string &muf2);
+    virtual void SetRenormalizationScale(const std::string &mur2);
 
     void SetFactorizationScale();
+    void SetRenormalizationScale();
 
     virtual bool FillSIntegrator(Multi_Channel *&mc);
     virtual void UpdateIntegrator(Multi_Channel *&mc);
@@ -381,6 +383,8 @@ namespace PHASIC {
 
     inline Phase_Space_Handler *const PSHandler(const bool own=true) 
     { if (own) return p_pshandler; return p_activepshandler; }
+
+    inline ATOOLS::Jet_Finder_Base *JetFinder() const { return p_jf; }
     
     inline std::string EnhanceFunction() const { return m_efunc; }
 

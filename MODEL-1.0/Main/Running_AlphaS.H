@@ -62,19 +62,11 @@ namespace MODEL {
     inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
     inline double AsMZ()                 { return m_as_MZ;      }
     inline double AsFixed()              { return m_defval;     }
-    inline int    Nf(const double q2);
+    int    Nf(const double q2);
 
     inline double CutQ2() { return m_cutq2; }    
     inline double ScaleFactor() { return m_fac; }
   };
-
-  inline int Running_AlphaS::Nf(const double q2) {
-    for (int i=0;i<=m_nth;++i) {
-      if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
-	return p_thresh[i].nf;
-    }
-    return m_nth;
-  }
 
   extern Running_AlphaS * as;
 

@@ -16,11 +16,10 @@ namespace APACIC {
     ATOOLS::Function_Base *p_as, *p_aqed;
 
     int    m_scheme;
-    double m_lambda2, m_beta0, m_scalefac;
+    double m_lambda2, m_beta0;
     double m_alphaSmax, m_alphaQEDmax;
 
     void FixLambda2(double);
-    void Setscalefac(double);
 
     void Output();
 
@@ -32,13 +31,12 @@ namespace APACIC {
 
     void CalculateMaxCouplings(const int,const double,const double);
 
-    double CrudeAlphaS(double) const;
     double AlphaS(double) const;
     double Nf(double) const;
     double Alpha(double) const;
 
     inline double GetLambda2() const { return m_lambda2;                  }
-    inline double GetBnorm() const   { return 2.*M_PI*m_beta0/m_scalefac; }
+    inline double GetBnorm() const   { return 2.*M_PI*m_beta0;            }
     inline double GetASmax() const   { return m_alphaSmax;                }
     inline double GetAQEDmax() const { return m_alphaQEDmax;              }
   };

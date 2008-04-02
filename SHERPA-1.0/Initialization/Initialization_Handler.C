@@ -292,7 +292,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheAnalyses();
     return true;
   }
-  if (rpa.gen.NumberOfEvents()>0) SetScaleFactors();
+  SetScaleFactors();
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeTheModel();  
   okay = okay && InitializeThePDFs();
@@ -706,7 +706,20 @@ bool Initialization_Handler::CalculateTheHardProcesses()
 
 void Initialization_Handler::SetScaleFactors() 
 {
-  if (rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_medat);
+  double sf(dr.GetValue<double>("SCALE_FACTOR",1.));
+  rpa.gen.SetVariable("FACTORIZATION_SCALE_FACTOR",
+		      ToString(sf*dr.GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.0)));
+  rpa.gen.SetVariable("RENORMALIZATION_SCALE_FACTOR",
+		      ToString(sf*dr.GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.0)));
+  msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
+		 <<"  fac scale: "<<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
+		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+  if (rpa.gen.NumberOfEvents()==0 || 
+      rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
   reader.SetInputPath(rpa.gen.Variable("SHERPA_DAT_PATH")+m_path+"/");

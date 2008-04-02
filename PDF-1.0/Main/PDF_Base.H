@@ -37,7 +37,7 @@ namespace PDF {
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
-    double m_ren_scale_factor;
+    double m_fac_scale_factor;
     double m_pdffac;    //operator approach.
 
     void SingleExtract(const ATOOLS::Flavour flavour,const double x);
@@ -84,11 +84,6 @@ namespace PDF {
     { GetBasicPDF()->SingleExtract(flavour,x); }
     inline void Reset()
     { GetBasicPDF()->SingleReset(); }
-
-    inline double RenormalizationScaleFactor() const 
-    { return m_ren_scale_factor; }
-    inline void SetRenormalizationScaleFactor(double r) 
-    { m_ren_scale_factor = r; }
 
   };
   

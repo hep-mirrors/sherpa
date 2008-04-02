@@ -60,15 +60,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     p_dataread->GetValue<int>("SCALE_SCHEME",0);
   p_dataread->SetTags(std::map<std::string,std::string>());
   m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
+  m_mur2tag=p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fix_scale=p_dataread->
     GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
-  double scale_fac=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
-  double fac_scale_fac=scale_fac*p_dataread->
-    GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
-  double ren_scale_fac=scale_fac*p_dataread->
-    GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
-  ATOOLS::rpa.gen.SetScaleFactors(fac_scale_fac,ren_scale_fac );
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
   if (regulate>0) {
     m_regulator=p_dataread->GetValue<std::string>
@@ -189,6 +184,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
     newxs = new XS_Group(nin,nout,flavs,m_scalescheme,m_kfactorscheme,
  			 p_beamhandler,p_isrhandler,p_selectordata,p_model);
     newxs->SetFactorizationScale(m_muf2tag);
+    newxs->SetRenormalizationScale(m_mur2tag);
     if (!((XS_Group*)newxs)->
 	ConstructProcesses(order_ew,order_strong,fixscale)) {
       delete newxs;
@@ -200,6 +196,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
       GetXS(nin,nout,flavs,false,order_ew,order_strong);
     if (newxs==NULL) return;
     newxs->SetFactorizationScale(m_muf2tag);
+    newxs->SetRenormalizationScale(m_mur2tag);
     newxs->SetScales(fixscale);
     newxs->Initialize(m_scalescheme,m_kfactorscheme,
  		      p_beamhandler,p_isrhandler,p_selectordata);

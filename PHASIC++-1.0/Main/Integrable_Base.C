@@ -84,7 +84,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
   p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1"), m_muf2tag(""),
-  p_muf2calc(NULL), m_muf2tagset(this)
+  p_muf2calc(NULL), p_mur2calc(NULL), m_muf2tagset(this), m_mur2tagset(this)
 {
   m_anasum=m_validanasum=0.0;
   m_expevents=m_dicedevents=m_accevents=0;
@@ -98,6 +98,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 
 Integrable_Base::~Integrable_Base()
 {
+  if (p_mur2calc!=NULL) delete p_mur2calc;
   if (p_muf2calc!=NULL) delete p_muf2calc;
   if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
@@ -385,9 +386,10 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
     }
+    SetRenormalizationScale();
     SetFactorizationScale();
-    m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
-    m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
+    m_kfkey[0]=m_scale[stp::ren];
+    m_kfkey[1]=m_scale[stp::fac];
     return m_scale[stp::fac]*m_ps_cpl_factor;
   }
   double pt2(-1.0);
@@ -480,10 +482,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     std::vector<Vec4D> moms(m_nout);
     for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
     std::sort(moms.begin(),moms.end(),Order_Y());
-    m_kfkey[0]=m_scale[stp::kp21]=
-      rpa.gen.FactorizationScaleFactor()*moms.front().PPerp2();
-    m_kfkey[1]=m_scale[stp::kp22]=
-      rpa.gen.FactorizationScaleFactor()*moms.back().PPerp2();
+    m_kfkey[0]=m_scale[stp::kp21]=moms.front().PPerp2();
+    m_kfkey[1]=m_scale[stp::kp22]=moms.back().PPerp2();
     msg_Debugging()<<"set scale "<<m_scale[stp::kp21]<<" "<<m_scale[stp::kp21]<<"\n";
     scheme-=scl::bfkl;
     if (scheme!=scl::unknown && scheme!=scl::reggeise) 
@@ -500,9 +500,12 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   }
   if (pt2<0. || scheme!=scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
+  m_scale[stp::fac]=m_scale[stp::ren]=pt2;
+  SetRenormalizationScale();
   SetFactorizationScale();
-  m_kfkey[0]=m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
-  m_kfkey[1]=m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
+  m_kfkey[0]=m_scale[stp::ren];
+  m_kfkey[1]=m_scale[stp::fac];
+  msg_Debugging()<<"scale: "<<m_scale[stp::ren]<<" "<<m_scale[stp::ren]<<"\n";
   if (Selected()==NULL) return m_scale[stp::fac]*m_ps_cpl_factor;
   return (*Selected()->p_regulator)[m_scale[stp::fac]*m_ps_cpl_factor]; 
 }
@@ -775,10 +778,8 @@ void Integrable_Base::SetScaleScheme(const scl::scheme s)
     }
     m_ycut=p_jf->Ycut();
     m_cycut=p_jf->GlobalCoreYcut();
-    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms()*p_jf->DeltaR())*
-      rpa.gen.RenormalizationScaleFactor();
-    m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms())*
-      rpa.gen.FactorizationScaleFactor();
+    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms()*p_jf->DeltaR());
+    m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms());
   }
 }
 
@@ -796,9 +797,31 @@ void Integrable_Base::SetFactorizationScale(const std::string &muf2)
   p_muf2calc->AddTag("MU_F","1.0");
   p_muf2calc->AddTag("MU_R","1.0");
   p_muf2calc->AddTag("H_T","1.0");
+  p_muf2calc->AddTag("Q_MIN","1.0");
   for (size_t i=0;i<NIn()+NOut();++i) 
     p_muf2calc->AddTag("p["+ToString(i)+"]",ToString(p_momenta[i]));
   p_muf2calc->Interprete(m_muf2tag);
+  msg_Debugging()<<"}\n";
+}
+
+void Integrable_Base::SetRenormalizationScale(const std::string &mur2)
+{ 
+  m_mur2tag=mur2;   
+  if (m_mur2tag=="") return;
+  msg_Debugging()<<METHOD<<"(): Set scale '"<<mur2<<"' in '"<<Name()<<"' {\n";
+  msg_Indent();
+  if (p_mur2calc==NULL) {
+    p_mur2calc = new Algebra_Interpreter();
+    p_mur2calc->SetTagReplacer(&m_mur2tagset);
+    m_mur2tagset.SetCalculator(p_mur2calc);
+  }
+  p_mur2calc->AddTag("MU_F","1.0");
+  p_mur2calc->AddTag("MU_R","1.0");
+  p_mur2calc->AddTag("H_T","1.0");
+  p_mur2calc->AddTag("Q_MIN","1.0");
+  for (size_t i=0;i<NIn()+NOut();++i) 
+    p_mur2calc->AddTag("p["+ToString(i)+"]",ToString(p_momenta[i]));
+  p_mur2calc->Interprete(m_mur2tag);
   msg_Debugging()<<"}\n";
 }
 
@@ -808,6 +831,15 @@ void Integrable_Base::SetFactorizationScale()
     m_scale[stp::fac]=((TDouble*)p_muf2calc->Calculate())->m_value;
     msg_Debugging()<<METHOD<<"(): Set \\mu_f = "
 		   <<sqrt(m_scale[stp::fac])<<"\n";
+  }
+}
+
+void Integrable_Base::SetRenormalizationScale()
+{ 
+  if (m_mur2tag!="") {
+    m_scale[stp::ren]=((TDouble*)p_mur2calc->Calculate())->m_value;
+    msg_Debugging()<<METHOD<<"(): Set \\mu_r = "
+		   <<sqrt(m_scale[stp::ren])<<"\n";
   }
 }
 
@@ -839,6 +871,12 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
     double ht(0.0);
     for (size_t i(0);i<p_ib->NOut();++i) ht+=p_ib->Momenta()[i+p_ib->NIn()].PPerp();
     ((TDouble*)term)->m_value=sqr(ht);
+    return term;
+  }
+  if (term->m_tag=="Q_MIN") {
+    if (p_ib->JetFinder()==NULL) 
+      THROW(fatal_error,"Q_MIN cannot be used without jet finder");
+    ((TDouble*)term)->m_value=p_ib->JetFinder()->ActualValue()*sqr(rpa.gen.Ecms());
     return term;
   }
   int i=ATOOLS::ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3));

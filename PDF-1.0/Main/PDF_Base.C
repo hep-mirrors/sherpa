@@ -4,6 +4,7 @@
 #include "Info_Key.H"
 #include "Run_Parameter.H"
 #include "Exception.H"
+#include "MyStrStream.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -26,15 +27,16 @@ std::size_t PDF_Base::Box::TrueEntryNumber() const {
 
 
 PDF_Base::PDF_Base()
-  : m_type("none"), m_exponent(1.), m_rescale(1.), m_ren_scale_factor(1.), m_pdffac(1.0) {
+  : m_type("none"), m_exponent(1.), m_rescale(1.), m_fac_scale_factor(1.), m_pdffac(1.0) {
 
   s_box.v_pdfp.push_back(this);
-  m_ren_scale_factor = ATOOLS::rpa.gen.RenormalizationScaleFactor();
-  m_pdffac = ATOOLS::rpa.gen.PDFScaleFactor();
-  if(m_pdffac!=1.0) PRINT_INFO("Operator approach, mu_f="<<m_pdffac);
+  if (rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
+    m_fac_scale_factor = ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   msg_Tracking()<<s_box.v_pdfp.size()<<"|"<<s_box.TrueEntryNumber()
                 <<"    PDF_Base CONSTRUCT "<<m_copies.size()<<" "<<this
                 <<std::endl;
+  if (m_fac_scale_factor!=1.0) 
+    msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac_scale_factor<<"\n";
 }
 
 PDF_Base::~PDF_Base() {
@@ -62,7 +64,7 @@ double PDF_Base::Cut(const std::string &type)
 
 void PDF_Base::Calculate(double x,double Q2)
 {
-  Calculate(x,0.,0.,Q2*m_ren_scale_factor);
+  Calculate(x,0.,0.,Q2*m_fac_scale_factor);
 }
 
 void PDF_Base::SingleExtract(const ATOOLS::Flavour flavour,const double x) 

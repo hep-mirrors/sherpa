@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "MathTools.H"
+#include "MyStrStream.H"
 // #include "Model.H"
 // #include "Distribution_Functions.H"
 
@@ -30,10 +31,10 @@ namespace MODEL {
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int order, const double fac) : 
   m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac)
 {
-  if(m_fac==1.0 && ATOOLS::rpa.gen.AsScaleFactor()!=1.0) {
-    m_fac=ATOOLS::rpa.gen.AsScaleFactor();
-    PRINT_INFO("Operator approach, mu_r="<<m_fac);
+  if(m_fac==1.0 && rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
+    m_fac=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   }
+  if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   m_type  = std::string("Running Coupling");
   p_thresh  = NULL;
 
@@ -351,6 +352,15 @@ double  Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);
 }
 
+int Running_AlphaS::Nf(const double sc) 
+{
+  double q2(sc*m_fac);
+  for (int i=0;i<=m_nth;++i) {
+    if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
+      return p_thresh[i].nf;
+  }
+  return m_nth;
+}
 
 void Running_AlphaS::SelfTest() {
   /*

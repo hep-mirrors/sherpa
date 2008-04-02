@@ -92,6 +92,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
 	(m_nin,m_nout,&cfl.front(),m_scalescheme,m_kfactorscheme,
 	 p_beamhandler,p_isrhandler,p_selectordata,p_model);
       newxs->SetFactorizationScale(m_muf2tag);
+      newxs->SetRenormalizationScale(m_mur2tag);
       if (!((XS_Group*)newxs)->ConstructProcesses(oew,os,fixscale)) {
 	delete newxs;
 	return false;
@@ -102,6 +103,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
       newxs = XSSelector()->GetXS(m_nin,m_nout,&cfl.front(),false,oew,os);
       if (newxs==NULL) return false;
       newxs->SetFactorizationScale(m_muf2tag);
+      newxs->SetRenormalizationScale(m_mur2tag);
       newxs->SetScales(fixscale);
       newxs->Initialize(m_scalescheme,m_kfactorscheme,
 			p_beamhandler,p_isrhandler,p_selectordata);
@@ -638,6 +640,13 @@ void XS_Group::SetFactorizationScale(const std::string &muf2)
   Integrable_Base::SetFactorizationScale(muf2);
   for (size_t i=0;i<m_xsecs.size();++i) 
     m_xsecs[i]->SetFactorizationScale(muf2);
+}
+
+void XS_Group::SetRenormalizationScale(const std::string &mur2)
+{
+  Integrable_Base::SetRenormalizationScale(mur2);
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    m_xsecs[i]->SetRenormalizationScale(mur2);
 }
 
 bool XS_Group::Tests()

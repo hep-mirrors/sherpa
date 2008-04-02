@@ -56,6 +56,7 @@ namespace EXTRAXS {
     virtual void SetAtoms(const bool atoms);
 
     void SetFactorizationScale(const std::string &muf2);
+    void SetRenormalizationScale(const std::string &mur2);
     void SetCoreMaxJetNumber(const int &n);
 
     size_t Size() const;
