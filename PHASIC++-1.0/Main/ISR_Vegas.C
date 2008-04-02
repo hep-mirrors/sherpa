@@ -49,7 +49,7 @@ Threshold_Uniform_V::Threshold_Uniform_V(const double mass,const double sexp,con
   ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp)
 {
-  name=std::string("Threshold_Uniform_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Threshold_Uniform_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -103,7 +103,7 @@ Threshold_Forward_V::Threshold_Forward_V(const double mass,const double sexp,con
   m_mass(mass), m_sexp(sexp), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Forward_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Threshold_Forward_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -159,7 +159,7 @@ Threshold_Backward_V::Threshold_Backward_V(const double mass,const double sexp,c
   m_mass(mass), m_sexp(sexp), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Backward_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Threshold_Backward_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -214,7 +214,7 @@ Threshold_Central_V::Threshold_Central_V(const double mass,const double sexp,con
   ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp)
 {
-  name=std::string("Threshold_Central_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Threshold_Central_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -270,7 +270,7 @@ Resonance_Uniform_V::Resonance_Uniform_V(const double mass,const double width,
   m_mass(mass),
   m_width(width)
 {
-  name=std::string("Resonance_Uniform_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Resonance_Uniform_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -326,7 +326,7 @@ Resonance_Forward_V::Resonance_Forward_V(const double mass,const double width,co
   m_width(width),
   m_yexponent(yexponent)
 {
-  name=std::string("Resonance_Forward_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Resonance_Forward_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -384,7 +384,7 @@ Resonance_Backward_V::Resonance_Backward_V(const double mass,const double width,
   m_width(width),
   m_yexponent(yexponent)
 {
-  name=std::string("Resonance_Backward_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Resonance_Backward_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -441,7 +441,7 @@ Resonance_Central_V::Resonance_Central_V(const double mass,const double width,
   m_mass(mass),
   m_width(width)
 {
-  name=std::string("Resonance_Central_")+ATOOLS::ToString((int)(100.*mass));
+  name=std::string("Resonance_Central_")+ATOOLS::ToString((int)(100.*mass+0.01));
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -496,7 +496,7 @@ Simple_Pole_Uniform_V::Simple_Pole_Uniform_V(const double exponent,const std::st
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
-  name=std::string("Simple_Pole_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
+  name=std::string("Simple_Pole_Uniform_")+ATOOLS::ToString((int)(100.*exponent+0.01));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -551,7 +551,7 @@ Simple_Pole_Forward_V::Simple_Pole_Forward_V(const double sexponent,const double
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
-  name=std::string("Simple_Pole_Forward_")+ATOOLS::ToString((int)(100.*sexponent));
+  name=std::string("Simple_Pole_Forward_")+ATOOLS::ToString((int)(100.*sexponent+0.01));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -608,7 +608,7 @@ Simple_Pole_Backward_V::Simple_Pole_Backward_V(const double sexponent,const doub
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
-  name=std::string("Simple_Pole_Backward_")+ATOOLS::ToString((int)(100.*sexponent));
+  name=std::string("Simple_Pole_Backward_")+ATOOLS::ToString((int)(100.*sexponent+0.01));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -664,7 +664,7 @@ Simple_Pole_Central_V::Simple_Pole_Central_V(const double exponent,const std::st
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
-  name=std::string("Simple_Pole_Central_")+ATOOLS::ToString((int)(100.*exponent));
+  name=std::string("Simple_Pole_Central_")+ATOOLS::ToString((int)(100.*exponent+0.01));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -720,7 +720,7 @@ Leading_Log_Uniform_V::Leading_Log_Uniform_V(const double beta,const double fact
   m_beta(beta),
   m_factor(factor)
 {
-  name=std::string("Leading_Log_Uniform_")+ATOOLS::ToString((int)(100.*beta));
+  name=std::string("Leading_Log_Uniform_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -782,7 +782,7 @@ Leading_Log_Forward_V::Leading_Log_Forward_V(const double beta,const double fact
   m_factor(factor),
   m_yexponent(yexponent)
 {
-  name=std::string("Leading_Log_Forward_")+ATOOLS::ToString((int)(100.*beta));
+  name=std::string("Leading_Log_Forward_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -846,7 +846,7 @@ Leading_Log_Backward_V::Leading_Log_Backward_V(const double beta,const double fa
   m_factor(factor),
   m_yexponent(yexponent)
 {
-  name=std::string("Leading_Log_Backward_")+ATOOLS::ToString((int)(100.*beta));
+  name=std::string("Leading_Log_Backward_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -908,7 +908,7 @@ Leading_Log_Central_V::Leading_Log_Central_V(const double beta,const double fact
   m_beta(beta),
   m_factor(factor)
 {
-  name=std::string("Leading_Log_Central_")+ATOOLS::ToString((int)(100.*beta));
+  name=std::string("Leading_Log_Central_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -1258,7 +1258,7 @@ Flat_ISR_V::Flat_ISR_V(const double exponent,const std::string cinfo,
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
-  name=std::string("Simple_Pole_PDF_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
+  name=std::string("Simple_Pole_PDF_Uniform_")+ATOOLS::ToString((int)(100.*exponent+0.01));
   m_spkey.SetInfo(std::string("Simple_Pole_PDF_")+ATOOLS::ToString(exponent));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
