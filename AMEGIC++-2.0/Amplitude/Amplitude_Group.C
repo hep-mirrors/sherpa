@@ -30,8 +30,6 @@ public:
 
 Amplitude_Group::~Amplitude_Group()
 {
-  //for (int i=0;i<graphs.size();i++) delete graphs[i];
-  //graphs.clear();
 }
 
 void Amplitude_Group::PrintGraph() {

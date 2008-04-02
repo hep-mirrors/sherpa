@@ -25,6 +25,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 				     String_Handler* _shand, bool print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
 {
+  groupname = "Amplitude_Handler";
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
   int nin = 1;
@@ -345,6 +346,9 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
 
 Amplitude_Handler::~Amplitude_Handler() 
 {
+  for (int i=0;i<graphs.size();i++) delete graphs[i];
+  graphs.clear();
+
   if (CFCol_Matrix) delete CFCol_Matrix;
   if (Mi)           delete[] Mi;
   if (ngraph>0) {

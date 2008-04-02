@@ -34,6 +34,7 @@ namespace AMEGIC {
     std::string             groupname;          
   public:
     ~Amplitude_Group();
+    bool IsGroup() { return true; }
     Complex Zvalue(String_Handler*,int);
     Complex Zvalue(int);
     Complex Zvalue(int,int*);

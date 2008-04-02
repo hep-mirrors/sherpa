@@ -6,6 +6,19 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
+Super_Amplitude::Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
+				 ATOOLS::Flavour* _fl,String_Handler* _shand) 
+  : Single_Amplitude_Base(_b,_n,_BS,_fl,_shand) 
+{
+  groupname = std::string("Super-Amplitude");
+}
+
+Super_Amplitude::~Super_Amplitude()                   
+{
+  for (int i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
+  graphs.clear();  
+}
+
 void Super_Amplitude::ClearCalcList()                   
 {
   Single_Amplitude_Base::ClearCalcList();
