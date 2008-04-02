@@ -95,6 +95,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
+  if (p_massboost)    { delete p_massboost;    p_massboost = 0;     }
   delete [] p_cms;
   delete [] p_lab;
   delete [] p_flavours;
