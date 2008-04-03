@@ -209,6 +209,7 @@ int ATOOLS::Random::WriteOutStatus(const char * filename){
   //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
   if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
     p_outstream->close();
+    delete p_outstream;
     p_outstream = 0;
   }
   if (p_outstream == 0){
@@ -300,7 +301,12 @@ void ATOOLS::Random::SetSeed(long int nid)
   m_id = nid<0 ? nid : -nid;
   InitRan3(&m_id);
   m_written=0;    
-  p_outstream=0;
+
+  if (p_outstream!=NULL) {
+    p_outstream->close();
+    delete p_outstream;
+    p_outstream=0;
+  }
   std::strcpy(m_outname,"");
   activeGenerator = 2;
 }
@@ -395,7 +401,11 @@ void ATOOLS::Random::SetSeed(int ij, int kl)
    strcpy(status.idTag, "Rnd4_G_Marsaglia");
 
    m_written=0;    
-   p_outstream=0;
+   if (p_outstream!=NULL) {
+     p_outstream->close();
+     delete p_outstream;
+     p_outstream=0;
+   }
    std::strcpy(m_outname,"");
 
    // Init routine of the Random Generator Rnd4
@@ -469,6 +479,7 @@ int ATOOLS::Random::WriteOutStatus4(const char * filename)
   // dunno what this is good for - kept from old routine
   if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
     p_outstream->close();
+    delete p_outstream;
     p_outstream = 0;
   }
   if (p_outstream == 0){

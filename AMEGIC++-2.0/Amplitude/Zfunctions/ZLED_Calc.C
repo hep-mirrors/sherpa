@@ -316,9 +316,12 @@ void FFVT_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
     else if(pb->right->fl.IsVector()) zfc->Set_Out(zf,1,pb->right,p);
     else if(pb->middle->fl.IsVector()) zfc->Set_Out(zf,1,pb->middle,p);
   }
-  else if(!p->middle && pb->fl.IsVector()){
-    zfc->Set_Out(zf,0,pb,p);
-    zfc->Set_In(zf,1,p,pf,pb);
+  else {
+    if(!p->middle && pb->fl.IsVector()){
+      zfc->Set_Out(zf,0,pb,p);
+      zfc->Set_In(zf,1,p,pf,pb);
+    }
+    else zfc->Set_Out(zf,1,pb,p);
   }
 }
 
@@ -461,9 +464,12 @@ void FFVGS_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
     else if(pb->right->fl.IsVector()) zfc->Set_Out(zf,1,pb->right,p);
     else if(pb->middle->fl.IsVector()) zfc->Set_Out(zf,1,pb->middle,p);
   }
-  else if(!p->middle && pb->fl.IsVector()){
-    zfc->Set_Out(zf,0,pb,p);
-    zfc->Set_In(zf,1,p,pf,pb);
+  else {
+    if(!p->middle && pb->fl.IsVector()){
+      zfc->Set_Out(zf,0,pb,p);
+      zfc->Set_In(zf,1,p,pf,pb);
+    }
+    else zfc->Set_Out(zf,1,pb,p);
   }
 
   int scnt(narg-GetScalarNumb());

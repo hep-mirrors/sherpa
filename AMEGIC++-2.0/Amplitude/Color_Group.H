@@ -8,7 +8,7 @@ namespace AMEGIC {
   public:
     Color_Group() { groupname = std::string("Color"); }
     ~Color_Group() {
-      for (int i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
+      for (size_t i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
       graphs.clear();  
     }
   };

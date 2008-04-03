@@ -289,11 +289,15 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
     abort();
   }
   int cnt=0;
+  Amplitude_Base* ab;
   for (size_t i=0;i<graphs.size();i++) {
     int *nums;
     nums=ioh.ArrayInput<int>("");
     int size=ioh.Nx();
-    for (int j=0;j<size;j++) graphs[i]->Add(new Single_Amplitude_Base(shand,nums[j]));
+    for (int j=0;j<size;j++) {
+      graphs[i]->Add(ab=new Single_Amplitude_Base(shand,nums[j]));
+      m_ramplist.push_back(ab);
+    }
     cnt+=size;
     delete [] nums;
   }
@@ -346,8 +350,11 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
 
 Amplitude_Handler::~Amplitude_Handler() 
 {
-  for (int i=0;i<graphs.size();i++) delete graphs[i];
+  for (size_t i=0;i<graphs.size();i++) delete graphs[i];
   graphs.clear();
+
+  for (size_t i=0;i<m_ramplist.size();i++) delete m_ramplist[i];
+  m_ramplist.clear();
 
   if (CFCol_Matrix) delete CFCol_Matrix;
   if (Mi)           delete[] Mi;

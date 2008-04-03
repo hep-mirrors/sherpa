@@ -28,6 +28,8 @@ namespace AMEGIC {
     Single_Amplitude* firstgraph;
     std::vector<Point*> pointlist;
     bool m_print_graph;
+    std::vector<Amplitude_Base*> m_ramplist;
+
 //     AMEGIC_SCT* p_SCT;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
