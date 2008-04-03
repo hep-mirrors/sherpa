@@ -63,18 +63,13 @@ namespace MODEL {
     Vertex_Table            * p_vertextable;
     All_Decays              * p_decays;
 
-    int                       m_spectrum;
-
-    virtual void ReadInFile() = 0;
+    virtual void FillSpectrum() = 0;
   public:
     Model_Base(std::string,std::string);
     virtual ~Model_Base();
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
     void FillDecayTables();
-    virtual bool RunSpectrumGenerator()           = 0;
-    virtual void FillMasses()                     = 0;
-    virtual void FillWidths()                     = 0;
     virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
 
     virtual std::string          Name()               { return m_name; } 
@@ -206,25 +201,8 @@ namespace MODEL {
     In the destructor all maps are emptied, all members deleted.
   */
   /*!
-    \fn virtual void Model_Base::ReadInFile()
-    A virtual method to read in the data file and set the parameters, this will be specified on a model-by-model
-    base.
-  */
-  /*!
-    \fn virtual bool Model_Base::RunSpectrumGenerator()
-    A virtual method to run the chosen spectrum generator, this will be specified on a model-by-model
-    base.
-  */
-  /*!
-    \fn virtual void Model_Base::FillMasses()
-    To fill in the calculated masses and reset the corresponding mass in the flavour class.
-  */
-  /*!
-    \fn virtual void Model_Base::FillWidths()
-    To define decay modes and branching widths with help of hte spectrum generator. It is foreseen that
-    corresponding couplings in the AMEGIC::Interaction_Model_Base can be adjusted to reproduce the
-    widths. This is still to be implemented.
-    \todo Pass the decay information into the Interaction_Model_Base.
+    \fn virtual void Model_Base::FillSpectrum()
+    A virtual method to read in the data file and set the parameters, this will be specified on a model-by-model base. 
   */
   /*!
     \fn virtual int Model_Base::ScalarNumber(const std::string)

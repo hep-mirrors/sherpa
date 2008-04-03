@@ -21,8 +21,7 @@ namespace MODEL {
   public:
     MUED_Spectrum(ATOOLS::Data_Reader *,Model_Base *);
     ~MUED_Spectrum();
-    void Run(std::string);
-    void FillMasses();
+    void Run();
     void FillDecays()                     { }
     bool FillDecay(ATOOLS::Decay_Table *) { return true; }
   };

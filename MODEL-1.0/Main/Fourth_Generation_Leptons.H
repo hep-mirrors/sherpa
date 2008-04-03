@@ -6,13 +6,10 @@
 namespace MODEL {
   class Fourth_Generation_Leptons : public Model_Base {
   private :
-    void ReadInFile();
+    void FillSpectrum();
   public :
     Fourth_Generation_Leptons(std::string,std::string);
     ~Fourth_Generation_Leptons();
-    bool RunSpectrumGenerator() { return true; }
-    void FillMasses();
-    void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
@@ -34,17 +31,8 @@ namespace MODEL {
     In this method the spectrum generator is specified and initialised to run.
   */
   /*!
-    \fn void Fourth_Generation_Leptons::ReadInFile()
+    \fn void Fourth_Generation_Leptons::FillSpectrum()
     This method is called by the constructor and selects the model framework.
-  */
-  /*!
-    \fn void Fourth_Generation_Leptons::FillMasses()
-    \todo This method should be implemented.
-  */
-  /*!
-    \fn void Fourth_Generation_Leptons::FillWidths()
-    This method should be implemented. A good way would be to calculate couplings in vertices
-    from decay widths to guarantee internal consistency.
   */
 }
 

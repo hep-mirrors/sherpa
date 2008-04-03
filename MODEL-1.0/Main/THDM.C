@@ -33,15 +33,14 @@ THDM::THDM(std::string _dir,std::string _file) :
 
   delete sm;
 
-  ReadInFile();
-  FillMasses();
+  FillSpectrum();
 }
 
 THDM::~THDM()
 {
 }
 
-void THDM::ReadInFile() {
+void THDM::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
@@ -58,9 +57,8 @@ void THDM::ReadInFile() {
 				     p_dataread->GetValue<double>("MA0",Flavour(kf_A0).Mass())));
   p_constants->insert(std::make_pair(std::string("MHplus"),    
 				     p_dataread->GetValue<double>("MHplus",Flavour(kf_Hplus).Mass())));
-}
 
-void THDM::FillMasses() {
+
   Flavour h0(kf_h0); h0.SetMass(ScalarConstant("Mh0"));
   Flavour H0(kf_H0); H0.SetMass(ScalarConstant("MH0"));
   Flavour A0(kf_A0); A0.SetMass(ScalarConstant("MA0"));
@@ -106,3 +104,4 @@ void THDM::FillMasses() {
   p_matrices->insert(std::make_pair(std::string("Z_R"),ZR));
   p_matrices->insert(std::make_pair(std::string("Z_H"),ZH));
 }
+

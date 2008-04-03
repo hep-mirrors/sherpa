@@ -6,13 +6,10 @@
 namespace MODEL {
   class ADD : public Model_Base {
   private :
-    void   ReadInFile();
+    void   FillSpectrum();
   public :
     ADD(std::string,std::string);
     ~ADD();
-    bool RunSpectrumGenerator()           { return 1; }
-    void FillMasses()                     {}
-    void FillWidths()                     {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
@@ -30,8 +27,8 @@ namespace MODEL {
     In this model, no spectrum generator is needed so far.
   */
   /*!
-    \fn void ADD::ReadInFile()
-    This method is called by the constructor and defiens the model parameters.
+    \fn void ADD::FillSpectrum()
+    This method is called by the constructor and defines the model parameters.
     The following default values apply:
     -f[G_N = 6.707\cdot 10^{-39},\; 
        N_{\rm E.D.} = 2,\;

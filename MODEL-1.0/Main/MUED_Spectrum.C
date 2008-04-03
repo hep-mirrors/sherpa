@@ -26,14 +26,12 @@ MUED_Spectrum::~MUED_Spectrum()
     m_decays.erase(m_decays.begin(),m_decays.end());
 }
 
-void MUED_Spectrum::Run(string output) {
+void MUED_Spectrum::Run() {
   msg_Out()<<"In "<<METHOD<<endl;
   Neutral_KK_Bosons();
   Neutral_KK_Scalars();
   LR_KK_Fermions();
 }
-
-void MUED_Spectrum::FillMasses() {}
 
 void MUED_Spectrum::Neutral_KK_Bosons() {
   msg_Out()<<"In "<<METHOD<<endl;

@@ -77,6 +77,7 @@ void Model_Base::InitializeInteractionModel()
 
   p_model = Interaction_Model_Base::Interaction_Model_Getter_Function::GetObject
     (modeltype,Interaction_Model_Arguments(this,cplscheme,massscheme));
+  
   if (p_model==NULL) THROW(not_implemented,"Interaction model not implemented");
 
   p_vertex        = new Vertex(p_model);

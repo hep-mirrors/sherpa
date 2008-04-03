@@ -10,7 +10,7 @@ namespace MODEL {
   class Spectrum_Generator_Base {
   protected:
     ATOOLS::Data_Reader * p_dataread;
-    Model_Base        * p_model;
+    Model_Base          * p_model;
 
     std::vector<double>          m_masses;
     std::vector<double>          m_widths;
@@ -19,8 +19,7 @@ namespace MODEL {
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Reader *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
-    virtual void Run(std::string)                 = 0;
-    virtual void FillMasses()                     = 0;
+    virtual void Run()                            = 0;
     virtual void FillDecays()                     = 0;
     virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
   };
@@ -43,7 +42,7 @@ namespace MODEL {
   */
   /*!
     ATOOLS::Data_Read * Spectrum_Generator_Base::p_dataread
-    A pointer to the model's dataread object. It is handed over through the constructor.
+    A pointer to the model's Data_Reader object. It is handed over through the constructor.
     This might become important, if more information is needed.
   */
   /*!

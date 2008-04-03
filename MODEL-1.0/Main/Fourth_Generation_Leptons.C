@@ -32,8 +32,7 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
 
   delete sm;
 
-  ReadInFile();
-  FillMasses();
+  FillSpectrum();
 
   std::cout<<METHOD
 	   <<" : m(tau') = "<<Flavour(kf_tau_prime).PSMass()<<"("<<Flavour(kf_tau_prime).Charge()<<")"
@@ -45,7 +44,7 @@ Fourth_Generation_Leptons::~Fourth_Generation_Leptons()
 {
 }
 
-void Fourth_Generation_Leptons::ReadInFile() {
+void Fourth_Generation_Leptons::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
@@ -60,9 +59,7 @@ void Fourth_Generation_Leptons::ReadInFile() {
 				   3*p_dataread->GetValue<int>("CHARGE_L",-1)));
   p_numbers->insert(std::make_pair(std::string("CHARGE_NU4"),    
 				   3*p_dataread->GetValue<int>("CHARGE_NU",0)));  
-}
 
-void Fourth_Generation_Leptons::FillMasses() {
   Flavour taup(kf_tau_prime); taup.SetOn(true);
   Flavour nutaup(kf_nutau_prime); nutaup.SetOn(true);
 
@@ -72,3 +69,4 @@ void Fourth_Generation_Leptons::FillMasses() {
   taup.SetIntCharge(ScalarNumber("CHARGE_L4"));
   nutaup.SetIntCharge(ScalarNumber("CHARGE_NU4"));
 }
+

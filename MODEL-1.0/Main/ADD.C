@@ -33,14 +33,14 @@ ADD::ADD(std::string _dir,std::string _file) :
 
   delete sm;
 
-  ReadInFile();
+  FillSpectrum();
 }
 
 ADD::~ADD()
 {
 }
 
-void ADD::ReadInFile() {
+void ADD::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);

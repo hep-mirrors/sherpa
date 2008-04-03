@@ -33,10 +33,9 @@ void LesHouches_Interface::PrepareTerminate()
   CopyFile(m_dir+"/"+m_inputfile,path+m_inputfile);
 }
 
-void LesHouches_Interface::Run(std::string _model) {
+void LesHouches_Interface::Run() {
+  m_inputfile = p_dataread->GetValue<std::string>("SLHA_INPUT",std::string("LesHouches.dat"));
 
-  m_inputfile = p_dataread->GetValue<std::string>("LESHOUCHESINPUT",std::string("LesHouches.dat"));
-  
   msg_Tracking()<<"================================================================ "<<std::endl;
   msg_Tracking()<<"MSSM spectrum generated according to the SUSY Les Houches Accord! "<<std::endl;
   msg_Tracking()<<"Les Houches input file is: "<<m_dir+m_inputfile<<std::endl;
@@ -51,7 +50,6 @@ void LesHouches_Interface::Run(std::string _model) {
 	       <<"The input file for the SLHA has not been set correctly!"<<std::endl;
   
   p_reader->SetIgnoreCase(true);
-  //p_reader->SetIgnoreBlanks(true);
   p_reader->AddFileEnd(std::string("Block"));
   
   p_reader->OpenInFile();
@@ -181,16 +179,18 @@ void LesHouches_Interface::SetMasses() {
 }
 
 void LesHouches_Interface::SetWidths() {
-  
   msg_Tracking()<<std::endl<<"  Reading decay data: "<<std::endl;
   p_reader->SetFileEnd("dummy");
   std::vector<std::vector<std::string> >   vds;
+  
+  p_reader->SetIgnoreCase(false);
   
   //
   p_reader->SetFileBegin(std::string("DECAY"));
   p_reader->RereadInFile();
   //
   p_reader->MatrixFromFile(vds,"");
+
   if (vds.size()>0) vds.front().insert(vds.front().begin(),"DECAY");
   
   for (size_t k=0;k<vds.size();++k) {
@@ -208,6 +208,7 @@ void LesHouches_Interface::SetWidths() {
       }
     }
   }
+  p_reader->SetIgnoreCase(true);
   p_reader->AddFileEnd("Block"); 
 }
 
@@ -638,8 +639,5 @@ void LesHouches_Interface::SetSleptonParameters() {
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_nu"),ZNue));
 }
 
-void LesHouches_Interface::FillMasses() {
-  
-}
 
 

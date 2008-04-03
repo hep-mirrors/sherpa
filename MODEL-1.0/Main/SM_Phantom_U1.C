@@ -34,20 +34,19 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
 
   delete sm;
 
-  ReadInFile();
+  FillSpectrum();
+
   if (!SanityChecks()) {
     msg_Error()<<"Potential Error in "<<METHOD<<":"<<endl
 	       <<"   Sanity checks not passed."<<endl
 	       <<"   Continue and hope for the best."<<endl;
   }
-  FillMasses();
-  FillWidths();
 }
 
 SM_Phantom_U1::~SM_Phantom_U1() 
 { }
 
-void SM_Phantom_U1::ReadInFile() {
+void SM_Phantom_U1::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
@@ -70,18 +69,8 @@ void SM_Phantom_U1::ReadInFile() {
   HiggsMix[0][1] = sqrt(1.-sqr(abs(HiggsMix[1][1])));
   HiggsMix[1][0] = -HiggsMix[0][1];
 
-
   p_matrices->insert(std::make_pair(std::string("HiggsMix"),HiggsMix));
-}
-
-bool SM_Phantom_U1::SanityChecks() {
-  if (ScalarConstant(string("Tan(Beta)"))<1.e-6 ||
-      ScalarConstant(string("M_H1"))<0.       || 
-      ScalarConstant(string("M_H2"))<0.) return false;
-  return true;
-}
-
-void SM_Phantom_U1::FillMasses() {
+  
   Flavour flav;
   flav = Flavour(kf_h0);
   flav.SetMass(ScalarConstant(string("M_H1")));
@@ -96,5 +85,13 @@ void SM_Phantom_U1::FillMasses() {
   flav.SetMass(ScalarConstant(string("M_Z'")));
   flav.SetMassOn(true);
 }
+
+bool SM_Phantom_U1::SanityChecks() {
+  if (ScalarConstant(string("Tan(Beta)"))<1.e-6 ||
+      ScalarConstant(string("M_H1"))<0.       || 
+      ScalarConstant(string("M_H2"))<0.) return false;
+  return true;
+}
+
 
 

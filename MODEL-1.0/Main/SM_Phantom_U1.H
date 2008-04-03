@@ -7,14 +7,11 @@
 namespace MODEL {
   class SM_Phantom_U1 : public Model_Base {
   private :
-    void ReadInFile();
+    void FillSpectrum();
     bool SanityChecks();
   public :
     SM_Phantom_U1(std::string,std::string);
     ~SM_Phantom_U1();
-    bool RunSpectrumGenerator()           { return true; }
-    void FillMasses();
-    void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
@@ -32,11 +29,7 @@ namespace MODEL {
     initialized pointers to the searchable maps. 
   */
   /*!
-    \fn bool SM_Phantom_U1::RunSpectrumGenerator()
-    Empty.
-  */
-  /*!
-    \fn void SM_Phantom_U1::ReadInFile()
+    \fn void SM_Phantom_U1::FillSpectrum()
     This method is called by the constructor and selects the model framework. 
     There are four parameters (in addition to the SM ones):
     - \f$\tan\beta\f$, the ratio \f$v_2/v_1\f$ of the two vevs of the Higgs doublet
@@ -46,14 +39,6 @@ namespace MODEL {
     - \f$m_{H_1,2}\f$, the mass of the two Higgs bosons.
     - \f$m_{Z'}\f$, the mass of the additional \f$U(1)\f$ \f$Z'\f$ boson.
     - \f$g'_1\f$, the gauge coupling of the additional \f$U(1)\f$.
-  */
-  /*!
-    \fn void SM_Phantom_U1::FillMasses()
-    \todo This method should be implemented.
-  */
-  /*!
-    \fn void SM_Phantom_U1::FillWidths()
-    \todo This method should be implemented.
   */
 }
 

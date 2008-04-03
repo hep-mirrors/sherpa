@@ -26,7 +26,7 @@ namespace MODEL {
   public:
     LesHouches_Interface(ATOOLS::Data_Reader *,Model_Base *,std::string);
     ~LesHouches_Interface();
-    void Run(std::string);
+    void Run();
     void FillMasses();
     void FillDecays() {}
     bool FillDecay(ATOOLS::Decay_Table *) {return true;}

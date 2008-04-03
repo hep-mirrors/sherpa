@@ -6,14 +6,11 @@
 namespace MODEL {
   class MUED : public Model_Base {
   private :
-    std::string m_generator;
-    void ReadInFile();
+    void FillSpectrum();
+    void RunSpectrumGenerator();
   public :
     MUED(std::string,std::string);
     ~MUED();
-    bool RunSpectrumGenerator();
-    void FillMasses()                     {}
-    void FillWidths()                     {}
     bool FillDecay(ATOOLS::Decay_Table *) { return true; }
   };
   /*!
@@ -34,21 +31,13 @@ namespace MODEL {
     the searchable maps.
   */
   /*!
+    \fn void MUED::FillSpectrum()
+    This method is called by the constructor and set all the model parameters, to do
+    so it subsequently calls MUED::RunSpectrumGenerator().
+  */
+  /*!
     \fn bool MUED::RunSpectrumGenerator()
-    In this method the spectrum generator is specified and initialised to run.
-  */
-  /*!
-    \fn void MUED::ReadInFile()
-    This method is called by the constructor.
-  */
-  /*!
-    \fn void MUED::FillMasses()
-    \todo This method should be implemented.
-  */
-  /*!
-    \fn void MUED::FillWidths()
-    This method should be implemented. A good way would be to calculate couplings in vertices
-    from decay widths to guarantee internal consistency.
+    In this method the actual spectrum is obtained employing the class MUED_Spectrum.
   */
 }
 

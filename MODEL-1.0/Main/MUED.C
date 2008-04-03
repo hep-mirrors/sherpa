@@ -34,21 +34,19 @@ MUED::MUED(string _dir,string _file) :
 
   delete sm;
 
-  ReadInFile();
+  FillSpectrum();
 }
 
 MUED::~MUED()
 {
 }
 
-void MUED::ReadInFile() {
+void MUED::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
   p_dataread->SetInputFile(m_file);
 
-  m_spectrum  = p_dataread->GetValue<int>("GENERATOR_ON",1);
-  m_generator = p_dataread->GetValue<string>("GENERATOR",string("Internal"));
   p_numbers->insert(make_pair(string("N_Generations"),
 			      p_dataread->GetValue<int>("GENERATIONS",1)));
   p_constants->insert(make_pair(string("1/Radius"),
@@ -62,25 +60,11 @@ void MUED::ReadInFile() {
       <<ScalarNumber("N_Generations")<<" / "
       <<ScalarConstant("1/Radius")<<" / "
       <<ScalarConstant("Lambda")<<"."<<endl;
+
+  RunSpectrumGenerator();
 }
 
-
-bool MUED::RunSpectrumGenerator() {
-  if (m_spectrum) {
-    if (m_generator!=string("Internal")) {
-      msg_Error()<<"Error in MUED::RunSpectrumGenerator."<<endl
-		 <<"   Unknown spectrum generator : "
-		 <<m_generator<<" use internal solution."<<endl;
-      m_generator=string("Internal");
-    }
-    if (m_generator==string("Internal")) {
-      p_spectrumgenerator = new MUED_Spectrum(p_dataread,this);
-      p_spectrumgenerator->Run("MUED_Spectrum_Output.dat");
-      p_spectrumgenerator->FillMasses();
-      abort();
-      return 1;
-    }
-    return 0;
-  }
-  return 1;
+void MUED::RunSpectrumGenerator() {
+  p_spectrumgenerator = new MUED_Spectrum(p_dataread,this);
+  p_spectrumgenerator->Run();
 }

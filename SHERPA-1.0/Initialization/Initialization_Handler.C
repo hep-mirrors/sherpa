@@ -405,8 +405,6 @@ bool Initialization_Handler::InitializeTheModel()
   p_model=Model_Base::Model_Getter_Function::
     GetObject(name,Model_Arguments(m_path,m_modeldat));
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
-  if (!p_model->RunSpectrumGenerator())
-    THROW(fatal_error,"RunSpectrumGenerator failed");
   p_model->InitializeInteractionModel();
   p_model->FillDecayTables();
   MODEL::s_model=p_model;

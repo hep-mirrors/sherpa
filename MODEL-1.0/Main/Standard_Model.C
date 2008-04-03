@@ -18,7 +18,7 @@ Model_Base *Standard_Model_Getter::operator()(const Model_Arguments &args) const
 
 void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model"; 
+  str<<"Standard Model";
 }
 
 Standard_Model::Standard_Model(std::string _dir,std::string _file) :
@@ -31,11 +31,11 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
 
-  ReadInFile();
+  FillSpectrum();
  
 }
 
-void Standard_Model::ReadInFile() {
+void Standard_Model::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
@@ -99,7 +99,7 @@ void Standard_Model::ReadInFile() {
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_e).IDName()),me));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_mu).IDName()),mmu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_tau).IDName()),mtau));
-
+  
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   double eh=2./3.;
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
@@ -108,7 +108,7 @@ void Standard_Model::ReadInFile() {
     eh = ehc.GetFermionContribution(Flavour(kf_t).Mass());
   }
   p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
-
+  
   //Anomalous gauge couplings (hep-ph/0001065)
   p_constants->insert(std::make_pair(std::string("Alpha_4"),
 				     p_dataread->GetValue<double>("ALPHA_4_G_4",0.)));

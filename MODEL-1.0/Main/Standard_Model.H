@@ -6,16 +6,13 @@
 namespace MODEL {
   class Standard_Model : public Model_Base {
   private :
-    int         m_ewscheme,m_ckmorder;
-    void ReadInFile();
+    int  m_ewscheme,m_ckmorder;
+    void FillSpectrum();
     void FixEWParameters();
     void FixCKM();
   public :
     Standard_Model(std::string,std::string);
     ~Standard_Model()                   {}
-    bool RunSpectrumGenerator() { return true; }
-    void FillMasses() {}
-    void FillWidths() {}
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
   /*!
@@ -71,15 +68,6 @@ namespace MODEL {
     are read in and the CKM matrix is set up to a certain order in the Cabbibo-angle, as
     given by m_ckmorder, per default zero, i.e. a diagonal CKM matrix. The default values for the 
     paraemters are \f$\lambda=0.22,\; A=0.8,\; \eta=\rho=0.5\f$.
-  */
-  /*!
-    \fn void Standard_Model::FillMasses()
-    \todo This method should be implemented.
-  */
-  /*!
-    \fn void Standard_Model::FillWidths()
-    This method should be implemented. A good way would be to calculate couplings in vertices
-    from decay widths to guarantee internal consistency.
   */
 }
 
