@@ -2,7 +2,6 @@
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
 #include "Running_Fermion_Mass.H"
-#include "Effective_Higgs_Coupling.H"
 #include "Message.H"
 #include "Data_Reader.H"
 
@@ -100,51 +99,7 @@ void Standard_Model::FillSpectrum() {
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_mu).IDName()),mmu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_tau).IDName()),mtau));
   
-  //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
-  double eh=2./3.;
-  if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
-    double hm=Flavour(kf_h0).Mass();
-    Effective_Higgs_Coupling ehc(hm);
-    eh = ehc.GetFermionContribution(Flavour(kf_t).Mass());
-  }
-  p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
-  
-  //Anomalous gauge couplings (hep-ph/0001065)
-  p_constants->insert(std::make_pair(std::string("Alpha_4"),
-				     p_dataread->GetValue<double>("ALPHA_4_G_4",0.)));
-  p_constants->insert(std::make_pair(std::string("Alpha_5"),
-				     p_dataread->GetValue<double>("ALPHA_5",0.)));
-  //Anomalous gauge couplings (Nucl. Phys. B282 (1987) 253-307)
-  p_constants->insert(std::make_pair(std::string("g1_gamma"),
-				     p_dataread->GetValue<double>("G1_GAMMA",1.)));
-  p_constants->insert(std::make_pair(std::string("kappa_gamma"),
-				     p_dataread->GetValue<double>("KAPPA_GAMMA",1.)));
-  p_constants->insert(std::make_pair(std::string("lambda_gamma"),
-				     p_dataread->GetValue<double>("LAMBDA_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("g4_gamma"),
-				     p_dataread->GetValue<double>("G4_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("g5_gamma"),
-				     p_dataread->GetValue<double>("G5_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("kappat_gamma"),
-				     p_dataread->GetValue<double>("KAPPAT_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("lambdat_gamma"),
-				     p_dataread->GetValue<double>("LAMBDAT_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("g1_Z"),
-				     p_dataread->GetValue<double>("G1_Z",1.)));
-  p_constants->insert(std::make_pair(std::string("kappa_Z"),
-				     p_dataread->GetValue<double>("KAPPA_Z",1.)));
-  p_constants->insert(std::make_pair(std::string("lambda_Z"),
-				     p_dataread->GetValue<double>("LAMBDA_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("g4_Z"),
-				     p_dataread->GetValue<double>("G4_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("g5_Z"),
-				     p_dataread->GetValue<double>("G5_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("kappat_Z"),
-				     p_dataread->GetValue<double>("KAPPAT_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("lambdat_Z"),
-				     p_dataread->GetValue<double>("LAMBDAT_Z",0.)));
 }
-
 
 void Standard_Model::FixEWParameters() {
   double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF=1.16639e-5;

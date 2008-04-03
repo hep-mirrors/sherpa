@@ -6,7 +6,7 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Fourth_Generation_Leptons_Getter,"FOURTH_GEN_LEPTONS",Model_Base,Model_Arguments);
+DECLARE_GETTER(Fourth_Generation_Leptons_Getter,"SM+4thLF",Model_Base,Model_Arguments);
 
 Model_Base *Fourth_Generation_Leptons_Getter::operator()(const Model_Arguments &args) const
 {
@@ -15,14 +15,14 @@ Model_Base *Fourth_Generation_Leptons_Getter::operator()(const Model_Arguments &
 
 void Fourth_Generation_Leptons_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + 4th generation leptons"; 
+  str<<"Standard Model + 4th Lepton Family"; 
 }
 
 Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg_Info()<<"Initialize the Fourth_Generation_Leptons from "<<m_dir<<" / "<<m_file<<std::endl;
-  m_name      = std::string("Fourth_Generation_Leptons");
+  msg_Info()<<"Initialize the Standard Model \\w 4th Lepton Family from "<<m_dir<<" / "<<m_file<<std::endl;
+  m_name      = std::string("SM+4thLF");
 
   Standard_Model * sm = new Standard_Model(m_dir,m_file);
   p_numbers   = sm->ExtractScalarNumbers();
@@ -34,7 +34,7 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
 
   FillSpectrum();
 
-  std::cout<<METHOD
+  msg_Tracking()<<METHOD
 	   <<" : m(tau') = "<<Flavour(kf_tau_prime).PSMass()<<"("<<Flavour(kf_tau_prime).Charge()<<")"
 	   <<",  m(nutau') = "<<Flavour(kf_nutau_prime).PSMass()<<"("<<Flavour(kf_nutau_prime).Charge()<<")"
 	   <<"."<<std::endl;

@@ -70,11 +70,11 @@ void Model_Base::InitializeInteractionModel()
   read.AddWordSeparator("\t");
   read.SetInputPath(m_dir);
   read.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
-  std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL","SM");
+  std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL",m_name);
   std::string cplscheme   = read.GetValue<std::string>("COUPLING_SCHEME","Running");
   std::string massscheme  = read.GetValue<std::string>("YUKAWA_MASSES","Running");
   std::string widthscheme = read.GetValue<std::string>("WIDTH_SCHEME","Fixed");
-
+  
   p_model = Interaction_Model_Base::Interaction_Model_Getter_Function::GetObject
     (modeltype,Interaction_Model_Arguments(this,cplscheme,massscheme));
   

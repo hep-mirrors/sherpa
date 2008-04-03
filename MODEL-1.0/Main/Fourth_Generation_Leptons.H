@@ -17,18 +17,10 @@ namespace MODEL {
     \brief contains the Fourth_Generation_Leptons (no surprise)
   */
   /*!
-    \var std::string Fourth_Generation_Leptons::m_generator
-    The spectrum generator to be used: Internal.
-  */
-  /*!
     \fn Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string,std::string)
     The constructor first initalizes the subset of the Standard Model, MODEL::SM. 
     Its parameters (i.e. constants, functions, matrices) are then copied into the newly 
     initialized pointers to the searchable maps. 
-  */
-  /*!
-    \fn bool Fourth_Generation_Leptons::RunSpectrumGenerator()
-    In this method the spectrum generator is specified and initialised to run.
   */
   /*!
     \fn void Fourth_Generation_Leptons::FillSpectrum()

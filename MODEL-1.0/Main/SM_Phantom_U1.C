@@ -7,7 +7,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(SM_Phantom_U1_Getter,"PHANTOM_U1",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_Phantom_U1_Getter,"SM+Phantom_U1",Model_Base,Model_Arguments);
 
 Model_Base *SM_Phantom_U1_Getter::operator()(const Model_Arguments &args) const
 {
@@ -16,15 +16,15 @@ Model_Base *SM_Phantom_U1_Getter::operator()(const Model_Arguments &args) const
 
 void SM_Phantom_U1_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + phantom Higgs"; 
+  str<<"Standard Model + U(1) phantom Higgs"; 
 }
 
 
 SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg_Info()<<"Initialize the SM_Phantom_U1 from "<<m_dir<<" / "<<m_file<<std::endl;
-  m_name      = std::string("SM_Phantom_U1");
+  msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "<<m_dir<<" / "<<m_file<<std::endl;
+  m_name      = std::string("SM+Phantom_U1");
 
   Standard_Model * sm = new Standard_Model(m_dir,m_file);
   p_numbers   = sm->ExtractScalarNumbers();

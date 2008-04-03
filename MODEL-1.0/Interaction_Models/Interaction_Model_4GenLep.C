@@ -9,7 +9,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Interaction_Model_4GenLep_Getter,"FOURTH_GEN_LEPTONS",
+DECLARE_GETTER(Interaction_Model_4GenLep_Getter,"SM+4thLF",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
 Interaction_Model_Base *Interaction_Model_4GenLep_Getter::

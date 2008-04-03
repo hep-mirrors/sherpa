@@ -4,7 +4,6 @@
 #include "Model_Base.H"
 #include "Vertex.H"
 #include <vector>
-//#include "Run_Parameter.H"
 
 namespace MODEL {
 

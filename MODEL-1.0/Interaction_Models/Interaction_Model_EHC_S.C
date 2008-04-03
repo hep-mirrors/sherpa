@@ -14,10 +14,6 @@ Interaction_Model_EHC_S::Interaction_Model_EHC_S(MODEL::Model_Base * _model,
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
-  double hmass2 = sqr(Flavour(kf_h0).Mass());
-
-  ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
@@ -38,9 +34,7 @@ Interaction_Model_EHC_S::Interaction_Model_EHC_S(MODEL::Model_Base * _model,
 
 void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  //Flavour flh0(kf_h0);
-  
-  Kabbala kcpl0,kcpl1;  
+  Kabbala kcpl0,kcpl1,ghgg;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
   for (int i=25;i<36;i+=10) {
@@ -54,6 +48,9 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
       vertex[vanz].in[1] = flh;
       vertex[vanz].in[2] = flg;
       
+      ghgg  = Kabbala(std::string("g_{")+flh.TexName()+std::string("hgg}"),ScalarConstant(std::string("Higgs_gg_fac"))*
+			      ScalarFunction(std::string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+  
       kcpl0 = M_I*ghgg;
       kcpl1 = kcpl0;
       
@@ -104,10 +101,9 @@ void Interaction_Model_EHC_S::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz
 }
  
 
-
 void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
-  Kabbala kcpl0,kcpl1; 
+  Kabbala kcpl0,kcpl1,ghgg; 
   
   for (int i=25;i<36;i+=10) {
     Flavour flh = Flavour((kf_code)(i));
@@ -120,13 +116,15 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
       vertex[vanz].in[i] = flg;
     vertex[vanz].in[3] = flh;
     
+    ghgg  = Kabbala(std::string("g_{")+flh.TexName()+std::string("hgg}"),ScalarConstant(std::string("Higgs_gg_fac"))*
+		    ScalarFunction(std::string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+    
     kcpl0 = g3*ghgg; 
     kcpl1 = kcpl0; 
     
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-    
     
     vertex[vanz].Color.push_back(Color_Function(cf::F));;     
     vertex[vanz].Color.back().SetParticleArg(0,2,1);     
@@ -150,8 +148,6 @@ void Interaction_Model_EHC_S::c_VVVV(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].cpl[0]          = kcpl0;
     vertex[vanz].cpl[1]          = kcpl1;
     vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
-    
-    
     
     
     vertex[vanz].Color.resize(3);

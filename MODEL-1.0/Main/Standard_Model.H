@@ -47,7 +47,7 @@ namespace MODEL {
     the searchable maps.
   */
   /*!
-    \fn void Standard_Model::ReadInFile()
+    \fn void Standard_Model::FillSpectrum()
     This method is called by the constructor and, through FixEWParameters and FixCKM defines
     all parameters in the electroweak sector before the Yukawa couplings of the fermions
     are read in and set in the corresponding flavour data. The running coupling \f$\alpha_s\f$
