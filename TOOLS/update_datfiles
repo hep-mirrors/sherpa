@@ -79,20 +79,23 @@ replace_spaces() {
 
 print_help() {
     echo "update_datfiles version 1.0" && echo && \
-    echo "options: -r     undo changes on input files" && \
-    echo "         -d     diff after applying changes" && \
-    echo "         -n     do not combine into one file" && \
-    echo "         -c     combine into one file only" && \
-    echo "         -h     display this help and exit" && echo
+    echo "options: -i <file> act on input file <file>" && \
+    echo "         -r        undo changes on input files" && \
+    echo "         -d        diff after applying changes" && \
+    echo "         -n        do not combine into one file" && \
+    echo "         -c        combine into one file only" && \
+    echo "         -h        display this help and exit" && echo
 }
 
+ifile='Run*dat'
 revert=0
 diffs=0
 nocomb=0
 conly=0
-while getopts :rdnch OPT
+while getopts :i:rdnch OPT
 do
   case $OPT in
+  i) ifile=$OPTARG ;;
   r) revert=1 ;;
   d) diffs=1 ;;
   n) nocomb=1 ;;
@@ -117,7 +120,7 @@ if test -f Hadron.dat; then
   mv Hadron.dat Hadron.dat.old
 fi
 if test $conly -eq 0; then
-  for j in Run*dat; do
+  for j in $ifile; do
     if ! test -f $j; then continue; fi
     files=`get_filenames $j 1`
     if test $revert -eq 1; then
@@ -155,7 +158,7 @@ fi
 
 if test $nocomb -eq 1; then exit; fi
 
-for j in Run*dat; do
+for j in $ifile; do
   rundat=`echo $j | sed -e's/\*/./g'`
   cf=`get_filenames $j 0`
   sumname=`echo $rundat | sed -e's/Run/All/g'`
