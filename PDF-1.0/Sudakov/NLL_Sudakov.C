@@ -84,7 +84,6 @@ void NLL_Sudakov::PrepareMap()
       for (short int i=1;i<7;i++) {
 	int fl = l*1000000 + i;
 	flav = Flavour((kf_code)(fl));
-	std::cout<<" flav is : "<<flav<<" mass is "<<flav.PSMass()<<std::endl;  
 	ssud = new NLL_Single_Sudakov
 	  (new GammasQ_sQG_Lambda
 	   (bpmode,m_lambda,p_runas,flav.PSMass(),m_as_factor),smode);
