@@ -1,11 +1,11 @@
 #!/bin/bash
 
-files="Beam.dat Fragmentation.dat Integration.dat ISR.dat Lund.dat ME.dat Model.dat Run.dat Shower.dat"
+files="Beam.dat Fragmentation.dat Integration.dat ISR.dat Lund.dat ME.dat Model.dat Shower.dat"
 
 replace_spaces() {
 
   awk '{ 
-    if (match($1,"!")==1) print $0;
+    if ($1=="!" || match($0,"!")==1) print $0;
     else {
       n=split($0,a,"="); 
       if (n==0) {
@@ -60,23 +60,27 @@ done
 
 if test $revert -eq 1; then
   echo "reverting Sherpa input files"
-  for i in $files; do
+  for i in $files Run*.dat; do
     echo -n "reverting '$i' ... "
     if ! test -f $i.old; then echo "backup file missing"
     else cp $i.old $i; echo "done"; fi
   done
 else
   echo "updating Sherpa input files"
+  for i in Run*.dat; do
+    echo -n "adjusting '$i' ... "
+    if ! test -f $i.old; then cp $i $i.old; fi
+    replace_spaces $i
+    sed -e's/Num._Accuracy/NUM_ACCURACY/g' < $i > $i~
+    mv $i~ $i
+    echo "done"
+  done
   for i in $files; do
     echo -n "adjusting '$i' ... "
     if ! test -f $i.old; then cp $i $i.old; fi
     replace_spaces $i
     echo "done"
   done
-  echo -n "adjusting 'Run.dat' ... "
-  sed -e's/Num._Accuracy/NUM_ACCURACY/g' < Run.dat > Run.dat~
-  mv Run.dat~ Run.dat
-  echo "done"
   echo "old inputs stored in '*.old'"
 fi
 
