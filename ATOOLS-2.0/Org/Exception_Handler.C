@@ -129,7 +129,8 @@ void Exception_Handler::Terminate()
 {
   bool modifiable=msg->Modifiable();
   SetExitCode();
-  if ((m_signal!=SIGTERM && m_signal!=SIGINT) &&
+  if ((m_signal!=SIGTERM && m_signal!=SIGINT &&
+       m_signal!=SIGXCPU) &&
       (m_exception==NULL || 
        (m_exception->Type()!=ex::normal_exit &&
 	m_exception->Type()!=ex::missing_input))) {
