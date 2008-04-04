@@ -1,6 +1,50 @@
 #!/bin/bash
 
-files="Beam.dat Fragmentation.dat Integration.dat ISR.dat Lund.dat ME.dat Model.dat Shower.dat"
+get_filenames()
+{
+
+  if test -f $1; then
+    gfnrf=$(awk 'BEGIN{ 
+        fns["BEAM_DATA_FILE"]="Beam.dat"; 
+        fns["ISR_DATA_FILE"]="ISR.dat"; 
+        fns["MODEL_DATA_FILE"]="Model.dat"; 
+        fns["ME_DATA_FILE"]="ME.dat"; 
+        if ('$2'==0) fns["MI_DATA_FILE"]="MI.dat"; 
+        fns["SHOWER_DATA_FILE"]="Shower.dat"; 
+        fns["FRAGMENTATION_DATA_FILE"]="Fragmentation.dat"; 
+      }{
+        if ($1 in fns) fns[$1]=$3;
+      }
+      END{ 
+        for (i in fns) print " "fns[i];
+        print ","fns["ME_DATA_FILE"];
+      }' < $1)
+    gfncf=$1" "$(echo $gfnrf | cut -d, -f1)" Integration.dat"
+    gfnme=$(echo $gfnrf | cut -d, -f2)
+  else
+    gfncf="Beam.dat ISR.dat Model.dat ME.dat \
+      Integration.dat MI.dat Shower.dat Fragmentation.dat"
+    gfnme="ME.dat"
+  fi
+  if test $2 -eq 0; then
+    if test -f $gfnme; then
+      gfnrf=$(awk 'BEGIN{ 
+          fns["PROCESSFILE"]="Processes.dat"; 
+          fns["SELECTORFILE"]="Selector.dat"; 
+        }{
+          if ($1 in fns) fns[$1]=$3;
+        }
+        END{ 
+          for (i in fns) print " "fns[i];
+        }' < $gfnme)
+      gfncf=$gfncf" "$gfnrf
+    else
+      gfncf=$gfncf" Processes.dat Selector.dat"
+    fi
+  fi
+  echo $gfncf
+
+}
 
 replace_spaces() {
 
@@ -37,16 +81,22 @@ print_help() {
     echo "update_datfiles version 1.0" && echo && \
     echo "options: -r     undo changes on input files" && \
     echo "         -d     diff after applying changes" && \
+    echo "         -n     do not combine into one file" && \
+    echo "         -c     combine into one file only" && \
     echo "         -h     display this help and exit" && echo
 }
 
 revert=0
 diffs=0
-while getopts :rdh OPT
+nocomb=0
+conly=0
+while getopts :rdnch OPT
 do
   case $OPT in
   r) revert=1 ;;
   d) diffs=1 ;;
+  n) nocomb=1 ;;
+  c) conly=1 ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -58,37 +108,69 @@ do
   esac
 done
 
-if test $revert -eq 1; then
-  echo "reverting Sherpa input files"
-  for i in $files Run*.dat; do
-    echo -n "reverting '$i' ... "
-    if ! test -f $i.old; then echo "backup file missing"
-    else cp $i.old $i; echo "done"; fi
-  done
-else
-  echo "updating Sherpa input files"
-  for i in Run*.dat; do
-    echo -n "adjusting '$i' ... "
-    if ! test -f $i.old; then cp $i $i.old; fi
-    replace_spaces $i
-    sed -e's/Num._Accuracy/NUM_ACCURACY/g' < $i > $i~
-    mv $i~ $i
-    echo "done"
-  done
-  for i in $files; do
-    echo -n "adjusting '$i' ... "
-    if ! test -f $i.old; then cp $i $i.old; fi
-    replace_spaces $i
-    echo "done"
-  done
-  echo "old inputs stored in '*.old'"
+if test -f Particle.dat; then
+  echo -e "\033[1mwarning:\033[31m 'Particle.dat' is no longer used\033[0m"
+  mv Particle.dat Particle.dat.old
 fi
-
-if test $diffs -eq 1; then
-  for i in $files; do
-    if ! diff -q $i.old $i > /dev/null; then
-      echo "==> diff '$i.old' vs. '$i' <=="
-      diff $i.old $i
+if test -f Hadron.dat; then
+  echo -e "\033[1mwarning:\033[31m 'Hadron.dat' is no longer used\033[0m"
+  mv Hadron.dat Hadron.dat.old
+fi
+if test $conly -eq 0; then
+  for j in Run*dat; do
+    if ! test -f $j; then continue; fi
+    files=`get_filenames $j 1`
+    if test $revert -eq 1; then
+      echo "reverting Sherpa input files"
+      for i in $files; do
+        echo -n "reverting '$i' ... "
+        if ! test -f $i.old && test -f $i; then 
+          echo "backup file missing"
+        else cp $i.old $i; echo "done"; fi
+      done
+    else
+      echo "updating Sherpa input files"
+      for i in $files; do
+        if ! test -f $i; then continue; fi
+        echo -n "adjusting '$i' ... "
+        if ! test -f $i.old; then cp $i $i.old; fi
+        replace_spaces $i
+        sed -e's/Num._Accuracy/NUM_ACCURACY/g' \
+            -e's/Running alpha_S/Running_alpha_S/g' < $i > $i~
+        mv $i~ $i
+        echo "done"
+      done
+      echo "old inputs stored in '*.old'"
+    fi
+    if test $diffs -eq 1; then
+      for i in $files; do
+        if ! diff -q $i.old $i > /dev/null; then
+          echo "==> diff '$i.old' vs. '$i' <=="
+          diff $i.old $i
+        fi
+      done
     fi
   done
 fi
+
+if test $nocomb -eq 1; then exit; fi
+
+for j in Run*dat; do
+  rundat=`echo $j | sed -e's/\*/./g'`
+  cf=`get_filenames $j 0`
+  sumname=`echo $rundat | sed -e's/Run/All/g'`
+  echo "writing setup in '$rundat' to '$sumname' {"
+  echo -n > $sumname
+  for i in $cf; do
+    if ! test -f $i; then 
+      echo "  file '$i' not found ... skipped"
+      continue
+    fi
+    echo "  adding file '$i'"
+    nfname=`echo $i | awk '{ split($1,a,".dat"); print tolower(a[1]); }'`
+    echo "("$nfname"){" >> $sumname
+      if test -f $i; then sed -e's/^/  /g' < $i >> $sumname; fi
+    echo "}("$nfname")" >> $sumname
+  done
+  echo "} done"
+done
