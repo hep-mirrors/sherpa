@@ -55,6 +55,7 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer   = NULL; }
   if (p_cformer)      { delete p_cformer;      p_cformer      = NULL; }
   if (p_recons)       { delete p_recons;       p_recons       = NULL; }
+  if (p_primaries)    { delete p_primaries;    p_primaries    = NULL; }
 }
 
 int Cluster_Formation_Handler::FormClusters(Blob * blob)
