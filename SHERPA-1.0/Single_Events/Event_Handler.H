@@ -37,7 +37,7 @@ namespace SHERPA {
 
     void PrintGenericEventStructure();
 
-    bool GenerateEvent(int=0);
+    bool GenerateEvent(int=0, bool reset=true);
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }

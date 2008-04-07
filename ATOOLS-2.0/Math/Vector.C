@@ -17,6 +17,7 @@ template<> const double Vec4D::CosPhi() const {
   return Max(Min(m_x[1]/PPerp(),1.0),-1.0);
 }
 template<> const double Vec4D::SinPhi() const {
+  if (PPerp() == 0.0) return 0.0;
   return Max(Min(m_x[2]/PPerp(),1.0),-1.0);
 }
 template<> const double Vec4D::Phi() const {

@@ -53,6 +53,10 @@ namespace ATOOLS {
    */
   typedef Vec3<Complex> Vec3C;
   typedef Vec4<Complex> Vec4C;
+  inline Vec4C conj(const Vec4C& v) {
+    return Vec4C(std::conj(v[0]),std::conj(v[1]),
+                 std::conj(v[2]),std::conj(v[3]));
+  }
 
 }
 

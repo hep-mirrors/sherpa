@@ -2,6 +2,7 @@ MAKE = make
 
 SUBDIRS       = \
 		ATOOLS-2.0 \
+		HELICITIES \
 		BEAM-1.0 \
 		PDF-1.0 \
 		MODEL-1.0 \
@@ -12,6 +13,7 @@ SUBDIRS       = \
 		AMISIC++-1.0 \
 		AHADIC++-1.0 \
 		HADRONS++-0.0 \
+		PHOTONS++-1.0 \
 		ANALYSIS-1.0 \
 		SHERPA-1.0 \
 		TOOLS

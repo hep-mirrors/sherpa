@@ -18,8 +18,8 @@ namespace SHERPA {
 
     double m_inipt2, m_finpt2;
 
-    bool   Connected(const ATOOLS::Particle *p1,const ATOOLS::Particle *p2);
-    double Angle(const ATOOLS::Particle *p1,const ATOOLS::Blob *blob);
+    static bool Connected(const ATOOLS::Particle*p1,const ATOOLS::Particle*p2);
+    static double Angle(const ATOOLS::Particle *p1,const ATOOLS::Blob *blob);
 
   public :
 
@@ -34,6 +34,8 @@ namespace SHERPA {
 			    const double &ecms,const double &scale);
     void InitializeOutGoing(ATOOLS::Blob *blob,
 			    const double &ecms,const double &scale);
+    static void InitializeNOutGoing(ATOOLS::Blob *blob, APACIC::Tree*tree,
+                                    double scale);
 
     void JetVetoPt2(double &inipt2,double &finpt2);
 

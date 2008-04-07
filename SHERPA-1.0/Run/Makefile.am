@@ -13,11 +13,12 @@ AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@ ## $(MCATNLOFLAGS)
 INCLUDES      = @SHERPAINCS@ @ANALYSISINCS@ @CONDITIONAL_HADRONSINCS@ \
 		@APACICINCS@ @CONDITIONAL_AMISICINCS@ @AMEGICINCS@ \
 		@AHADICINCS@ @EXTRAXSINCS@ @PHASICINCS@ @MODELINCS@ \
-		@PDFINCS@ @BEAMINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
+		@CONDITIONAL_PHOTONSINCS@ @PDFINCS@ @BEAMINCS@ @ATOOLSINCS@ \
+		@CONDITIONAL_ROOTINCS@
 
 dist_pkgdata_SCRIPTS  =	makelibs grid_makelibs
 
-SUBDIRS       =	CTEQ6Grid MRST99Grid Decaydata
+SUBDIRS       =	CTEQ6Grid MRST99Grid
 
 dist_pkgdata_DATA         = \
 			Run.dat \
@@ -25,3 +26,25 @@ dist_pkgdata_DATA         = \
                         Hadron.dat
 
 EXTRA_DIST    =	@SVNINCLUDE@
+
+install-data-local:
+	@echo "Installing Decaydata."; \
+	for i in Decaydata/*; do \
+	  if test -d $$i; then \
+	    mkdir -p $(pkgdatadir)/$$i; \
+	    for j in $$i/*.dat; do \
+	      cp $$j $(pkgdatadir)/$$i/; \
+	    done; \
+	    if test -d $$i/PhaseSpaceFunctions; then \
+	      cp -rf $$i/PhaseSpaceFunctions $(pkgdatadir)/$$i/; \
+	    fi; \
+	  fi; \
+	done; \
+	cp Decaydata/*.dat $(pkgdatadir)/Decaydata/;
+
+uninstall-local:
+	@echo "Removing Decaydata."; \
+	rm -rf "$(pkgdatadir)/Decaydata"; \
+	if test "$$(ls -A $(pkgdatadir))" = ""; then \
+	rm -rf "$(pkgdatadir)"; \
+	fi;

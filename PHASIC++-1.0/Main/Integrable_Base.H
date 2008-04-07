@@ -9,13 +9,13 @@
 #include "Exception.H"
 #include "Histogram.H"
 #include "Spin_Correlation_Tensor.H"
-#include "Amplitude_Tensor.H"
 #include "Info_Key.H"
 #include "Algebra_Interpreter.H"
 
 #include <string>
 
 namespace ATOOLS { class Blob_Data_Base; }
+namespace HELICITIES { class Amplitude_Tensor; }
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler; }
 
@@ -223,7 +223,7 @@ namespace PHASIC {
     virtual double Differential2() = 0;
     virtual void   AddPoint(const double xs);
     virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
-    virtual void   FillAmplitudes(ATOOLS::Amplitude_Tensor*,double=1.);
+    virtual void   FillAmplitudes(HELICITIES::Amplitude_Tensor*,double=1.);
 
     virtual double CalculateScale(const ATOOLS::Vec4D *momenta);
     virtual double KFactor();

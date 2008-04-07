@@ -251,6 +251,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
 
 bool Momenta_Stretcher::StretchBlob(Blob* blob, vector<double> masses)
 {
+  if(blob->GetOutParticles().size()<2) return true;
   blob->BoostInCMS();
   bool use_finalmasses = masses.size()==0;
   Particle_Vector outparts = blob->GetOutParticles();
@@ -260,8 +261,8 @@ bool Momenta_Stretcher::StretchBlob(Blob* blob, vector<double> masses)
     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
     momenta.push_back( (*pit)->Momentum() );
   }
-  ZeroThem(0,momenta);
-  MassThem(0,momenta,masses);
+  if(!ZeroThem(0,momenta)) return false;
+  if(!MassThem(0,momenta,masses)) return false;;
   for(size_t i=0;i<outparts.size();i++) {
     outparts[i]->SetMomentum(momenta[i]);
   }
@@ -284,7 +285,7 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts, std::ve
   for(size_t i=0; i<moms.size(); i++) {
     moms[i] = boost*moms[i];
   }
-  ZeroThem(0,moms);
+  if(!ZeroThem(0,moms)) return false;
   if(! MassThem(0,moms,masses)) return false;
   boost.Invert();
   for(size_t i=0; i<moms.size(); i++) {

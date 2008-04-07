@@ -32,12 +32,8 @@ libToolsPhys_la_SOURCES       =	\
 				Flow.C \
 				Color.C \
 				Spinor.C \
-				C_Vector.C \
-				C_Tensor.C \
-				C_Spinor.C \
 				Momenta_Stretcher.C \
-				Mass_Handler.C \
-				Amplitude_Tensor.C
+				Mass_Handler.C
 
 pkginclude_HEADERS    =	\
 			Ordering.H \
@@ -72,12 +68,8 @@ pkginclude_HEADERS    =	\
 			Spin_Density_Matrix.H \
 			Color.H \
 			Spinor.H \
-			C_Vector.H \
-			C_Tensor.H \
-			C_Spinor.H \
 			Momenta_Stretcher.H \
-			Mass_Handler.H \
-			Amplitude_Tensor.H
+			Mass_Handler.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

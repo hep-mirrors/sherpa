@@ -1407,7 +1407,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 //   return SCT;
 // }
 
-void Single_Process::FillAmplitudes(Amplitude_Tensor* atensor,double sfactor)
+void Single_Process::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor,double sfactor)
 {
   if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
   else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));

@@ -10,7 +10,8 @@ namespace ATOOLS {
   protected :
     std::string m_processname;
     std::string m_metype, m_psfile;
-    double      m_width, m_minmass;
+    double      m_width, m_deltawidth, m_minmass;
+    std::string m_origin;
     Flavour     m_flin;
     FlavourSet  m_flouts;
   public :
@@ -19,15 +20,19 @@ namespace ATOOLS {
     Decay_Channel(const Decay_Channel &);
     void AddDecayProduct(const Flavour &);
     void SetWidth(const double &);
+    void SetDeltaWidth(const double &);
     void Output() const;
     void SetProcessName(const std::string=std::string(""));
     void SetMEType(const std::string=std::string(""));
     void SetPSFile(const std::string=std::string(""));
+    void SetOrigin(const std::string=std::string(""));
 
     std::string ProcessName() const;
     std::string METype() const;
     std::string PSFile() const;
+    std::string Origin() const;
     double      Width() const;
+    double      DeltaWidth() const;
     Flavour     GetDecaying() const;
     int         NumberOfDecayProducts() const;
     FlavourSet  GetDecayProducts() const;
@@ -41,11 +46,15 @@ namespace ATOOLS {
   }
   inline void        Decay_Channel::SetWidth(const double & _width)           { m_width  = _width; }
   inline double      Decay_Channel::Width() const                             { return m_width;   }
+  inline void        Decay_Channel::SetDeltaWidth(const double & _delta)      { m_deltawidth  = _delta; }
+  inline double      Decay_Channel::DeltaWidth() const                        { return m_deltawidth;   }
   inline std::string Decay_Channel::ProcessName() const                       { return m_processname; }
   inline void        Decay_Channel::SetMEType(const std::string _metype)      { m_metype = _metype; }
   inline void        Decay_Channel::SetPSFile(const std::string _psfile)      { m_psfile = _psfile; }
+  inline void        Decay_Channel::SetOrigin(const std::string _origin)      { m_origin = _origin; }
   inline std::string Decay_Channel::METype() const                            { return m_metype; }
   inline std::string Decay_Channel::PSFile() const                            { return m_psfile; }
+  inline std::string Decay_Channel::Origin() const                            { return m_origin; }
   inline Flavour     Decay_Channel::GetDecaying() const                       { return m_flin;    }
   inline int         Decay_Channel::NumberOfDecayProducts() const             { return m_flouts.size();  }
   inline double      Decay_Channel::MinimalMass() const                       { return m_minmass; }
@@ -70,7 +79,6 @@ namespace ATOOLS {
     std::string                   m_generator;
     double                        m_width;
     Flavour                       m_flin;
-    FlavourSet                    m_flouts;
   private :
     std::vector <Decay_Channel *> m_channels;
     Decay_Channel *               p_selected;
@@ -92,7 +100,6 @@ namespace ATOOLS {
     bool            Overwrite()              { return m_overwrite; }
     bool            Smearing()               { return m_smearing;  }
     Flavour         Flav()                   { return m_flin;      }
-    FlavourSet      GetDecayFlavs()          { return m_flouts;    }
     double          TotalWidth()             { return m_width;     }
     int             NumberOfDecayChannels()  { return m_channels.size(); } 
     double          Width(const int);

@@ -17,6 +17,7 @@
 #include "Variable.H"
 #include "Lund_Interface.H"
 #include "Data_Writer.H"
+#include "Hadron_Decays.H"
 #include "Library_Loader.H"
 
 #include "Spin_Correlation_Tensor.H"
@@ -37,7 +38,7 @@ using namespace std;
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_mihandler(NULL),
+  p_fragmentation(NULL), p_mihandler(NULL), p_softphotons(NULL),
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
   p_analysis(NULL)
 {
@@ -95,6 +96,7 @@ void Initialization_Handler::SetFileNames()
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+  m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
   std::string particledat=p_dataread->GetValue<string>
     ("PARTICLE_DATA_FILE","Particle.dat");
@@ -171,6 +173,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
+  if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
@@ -316,6 +319,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftPhotons();
   }
   return okay;
 }
@@ -598,6 +602,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       }
     }
   }
+  Hadron_Decays::SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
   
   bool needextra = true; set<kf_code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
@@ -606,16 +611,12 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
-    struct stat fst;
-    if (stat(decaypath.c_str(),&fst)==-1 || (fst.st_mode&S_IFMT)!=S_IFDIR)
-      decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
     HADRONS::Hadrons* hadrons = new HADRONS::Hadrons(decaypath,decayfile,decayconstfile);
     hadrons->SetSpinCorrelations(m_spincorrelations);
     hdhandler              = new Hadron_Decay_Handler(hadrons);
     hadrons_cans = hdhandler->GetCans();
-    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Hadrons"] = hdhandler;
   }
 #endif
@@ -632,7 +633,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       }
     }
     hdhandler      = new Hadron_Decay_Handler(lund);
-    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
@@ -651,6 +651,14 @@ Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::
   return NULL;
 }
 
+
+bool Initialization_Handler::InitializeTheSoftPhotons()
+{
+  if (p_softphotons) { delete p_softphotons; p_softphotons = NULL; }
+  p_softphotons = new Soft_Photon_Handler(m_path,m_softphotonsdat);
+  msg_Info()<<"Initialized the Soft_Photon_Handler."<<endl;
+  return true;
+}
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {

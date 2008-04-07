@@ -7,13 +7,14 @@ using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
   m_metype(string("")), m_psfile(string("")), 
-  m_width(0.), m_minmass(0.), m_flin(_flin)
+  m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_origin(""), m_flin(_flin)
  { }
 
 Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
   m_processname(_dec.m_processname),
   m_metype(_dec.m_metype), m_psfile(_dec.m_psfile),
-  m_width(_dec.m_width), m_minmass(_dec.m_minmass), 
+  m_width(_dec.m_width), m_deltawidth(_dec.m_deltawidth), 
+  m_minmass(_dec.m_minmass), m_origin(_dec.m_origin),
   m_flin(_dec.m_flin), m_flouts(_dec.m_flouts) { }
 
 void Decay_Channel::SetProcessName(const std::string _name) 
@@ -32,7 +33,9 @@ void Decay_Channel::Output() const
 {
   msg_Out()<<m_flin<<" -> ";
   for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg_Out()<<(*fl)<<" ";
-  msg_Out()<<" : "<<m_width<<" GeV";
+  msg_Out()<<" : "<<m_width;
+  if (m_deltawidth>=0.) msg_Out()<<" (+/-"<<m_deltawidth<<")";
+  msg_Out()<<" GeV";
   if (m_metype!=string("")) msg_Out()<<", ME : "<<m_metype;
   if (m_psfile!=string("")) msg_Out()<<", PS : "<<m_psfile;
   msg_Out()<<"."<<endl;
@@ -49,6 +52,13 @@ Decay_Table::Decay_Table(const Flavour _flin) :
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
+  for(size_t i=0;i<m_channels.size();i++) {
+    if(m_channels[i]->GetDecayProducts()==_dc->GetDecayProducts() &&
+       _dc->Width()!=0.0) {
+      msg_Error()<<METHOD<<" Warning: Duplicate decaychannel: ";
+      _dc->Output();
+    }
+  }
   m_channels.push_back(_dc);
   m_width += _dc->Width();
 }
@@ -114,7 +124,19 @@ void Decay_Table::Output() {
   msg_Out()<<"Decay table for : "<<m_flin<<", total width is now "<<m_width<<" GeV,"<<endl
 	   <<"   (instead of "<<m_flin.Width()<<" GeV), calculated by "<<m_generator<<endl
 	   <<"----------------------------------------------------------------"<<endl;
-  for (size_t i=0;i<m_channels.size();i++) m_channels[i]->Output();
+  for (size_t i=0;i<m_channels.size();i++) {
+    m_channels[i]->Output();
+    if( m_channels[i]->DeltaWidth() >= 0. ) {
+      double wanted_br = m_channels[i]->Width()/m_flin.Width()*100.;
+      double upper_br  = (m_channels[i]->Width()+m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
+      double lower_br  = (m_channels[i]->Width()-m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
+      double exp_br    = m_channels[i]->Width()/m_width*100.;
+      if( exp_br > upper_br || exp_br < lower_br ) {  
+        msg_Out()<<om::red<<"     WARNING: branching ratio "
+          <<exp_br<<"% is out of bounds ("<<wanted_br <<" +/- "<<(upper_br-lower_br)/2.<<" %)."<<om::reset<<endl;
+      }
+    }
+  }
   if (m_overwrite) msg_Out()<<" Value of Particle.dat has been overwritten by "
 			    <<m_generator<<"."<<endl;
   msg_Out()<<"----------------------------------------------------------------"<<endl;
@@ -153,9 +175,15 @@ Decay_Channel * Decay_Table::GetOneDecayChannel()
   return NULL;
 }
 
-
 double Decay_Table::Width(const FlavourSet) { return 0.; }
-Decay_Channel * Decay_Table::GetDecayChannel(const FlavourSet) { return NULL; }
+
+Decay_Channel * Decay_Table::GetDecayChannel(const FlavourSet decayproducts)
+{
+  for(size_t i=0;i<m_channels.size();i++) {
+    if(m_channels[i]->GetDecayProducts() == decayproducts) return m_channels[i];
+  }
+  return NULL;
+}
 
 void Decay_Table::EraseDecayChannel(const int i) {
   delete m_channels[i];

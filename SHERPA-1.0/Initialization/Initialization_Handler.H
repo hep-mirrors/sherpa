@@ -13,6 +13,7 @@
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
 #include "MI_Handler.H"
+#include "Soft_Photon_Handler.H"
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
 #include "Event_Reader.H"
@@ -44,6 +45,7 @@ namespace SHERPA {
     std::string m_path,m_file,m_evtfile;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_decaydat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
+    std::string m_softphotonsdat;
 
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
@@ -63,6 +65,7 @@ namespace SHERPA {
     Fragmentation_Handler      * p_fragmentation;
     HDHandlersMap                m_hdhandlers;
     MI_Handler                 * p_mihandler; 
+    Soft_Photon_Handler        * p_softphotons;
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
@@ -82,6 +85,7 @@ namespace SHERPA {
     bool InitializeTheBeamRemnants();
     bool InitializeTheFragmentation();
     bool InitializeTheHadronDecays();
+    bool InitializeTheSoftPhotons();
     bool InitializeTheAnalyses();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
@@ -107,7 +111,6 @@ namespace SHERPA {
     Hadron_Decay_Handler        * const GetHadronDecayHandler(std::string);
     //ANALYSIS::Analysis_Handler  * const GetAnalysisHandler(std::string);
     inline PDF::ISR_Handler     * const GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
-
     MEHandlersMap               * const GetMatrixElementHandlers()       { return &m_mehandlers;     }
     ANALYSIS::Analysis_Handler  * const GetSampleAnalysis()        const { return p_analysis;        }
     MODEL::Model_Base           * const GetModel()                 const { return p_model;           }
@@ -120,6 +123,7 @@ namespace SHERPA {
     HDHandlersMap               * const GetHadronDecayHandlers()         { return &m_hdhandlers;     }
     ATOOLS::Flavour             * const GetBunches()                     { return m_bunch_particles; }
     MI_Handler                  * const GetMIHandler()             const { return p_mihandler;       }
+    Soft_Photon_Handler         * const GetSoftPhotonHandler()     const { return p_softphotons;     }
     Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
     Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
     Event_Reader                * const GetEventReader()           const { return p_evtreader;       }

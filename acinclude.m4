@@ -127,7 +127,9 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   ATOOLSDIR="\${top_srcdir}/ATOOLS-2.0"
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS-2.0"
   ATOOLSINCS="-I\${ATOOLSDIR}/Phys -I\${ATOOLSDIR}/Math -I\${ATOOLSDIR}/Org"
-  ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math -L\${ATOOLSBUILDDIR}/Org -lToolsPhys -lToolsMath -lToolsOrg"
+  ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math \
+              -L\${ATOOLSBUILDDIR}/Org \
+              -lToolsPhys -lToolsMath -lToolsOrg"
   AC_SUBST(ATOOLSDIR)
   AC_SUBST(ATOOLSBUILDDIR)
   AC_SUBST(ATOOLSINCS)
@@ -141,6 +143,15 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(BEAMBUILDDIR)
   AC_SUBST(BEAMINCS)
   AC_SUBST(BEAMLIBS)
+
+  HELICITIESDIR="\${top_srcdir}/HELICITIES"
+  HELICITIESBUILDDIR="\${top_builddir}/HELICITIES"
+  HELICITIESINCS="-I\${HELICITIESDIR}/Main"
+  HELICITIESLIBS="-L\${HELICITIESBUILDDIR}/Main -lHelicitiesMain"
+  AC_SUBST(HELICITIESDIR)
+  AC_SUBST(HELICITIESBUILDDIR)
+  AC_SUBST(HELICITIESINCS)
+  AC_SUBST(HELICITIESLIBS)
   
   EXTRAXSDIR="\${top_srcdir}/EXTRA_XS-1.0"
   EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS-1.0"
@@ -153,13 +164,27 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   HADRONSDIR="\${top_srcdir}/HADRONS++-0.0"
   HADRONSBUILDDIR="\${top_builddir}/HADRONS++-0.0"
-  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library"
-  HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library -L\${HADRONSBUILDDIR}/PS_Library \
-               -lHadronsMain -lHadronsMEs -lHadronsPSs"
+  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library \
+               -I\${HADRONSDIR}/Current_Library -I\${HADRONSDIR}/PS_Library"
+  HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library \
+               -L\${HADRONSBUILDDIR}/Current_Library -L\${HADRONSBUILDDIR}/PS_Library \
+               -lHadronsMain -lHadronsMEs -lHadronsCurrents -lHadronsPSs"
   AC_SUBST(HADRONSDIR)
   AC_SUBST(HADRONSBUILDDIR)
   AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)
+  
+  PHOTONSDIR="\${top_srcdir}/PHOTONS++-1.0"
+  PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++-1.0"
+  PHOTONSINCS="-I\${PHOTONSDIR}/Main -I\${PHOTONSDIR}/Tools -I\${PHOTONSDIR}/PhaseSpace \
+               -I\${PHOTONSDIR}/MEs"
+  PHOTONSLIBS="-L\${PHOTONSBUILDDIR}/Main -L\${PHOTONSBUILDDIR}/Tools \
+               -L\${PHOTONSBUILDDIR}/PhaseSpace -L\${PHOTONSBUILDDIR}/MEs \
+               -lPhotonsMain -lPhotonsTools -lPhotonsPhaseSpace -lPhotonsMEs"
+  AC_SUBST(PHOTONSDIR)
+  AC_SUBST(PHOTONSBUILDDIR)
+  AC_SUBST(PHOTONSINCS)
+  AC_SUBST(PHOTONSLIBS)
   
   MODELDIR="\${top_srcdir}/MODEL-1.0"
   MODELBUILDDIR="\${top_builddir}/MODEL-1.0"
@@ -501,4 +526,22 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HADRONSLIBS)
   AC_SUBST(CONDITIONAL_HADRONSINCS)
   AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
+  
+  AC_ARG_ENABLE(photonsinclude,
+    AC_HELP_STRING([--disable-photonsinclude], [Disable inclusion of PHOTONS headers]),
+    [ AC_MSG_CHECKING(whether to include PHOTONS headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); photonsinclude=true;;
+        no)  AC_MSG_RESULT(no); photonsinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include PHOTONS stuff); AC_MSG_RESULT(yes); photonsinclude=true; ]
+  )
+  if test "$photonsinclude" = "true" ; then
+    AC_DEFINE([USING__Photons], "1", [using PHOTONS])
+    CONDITIONAL_PHOTONSLIBS="\${PHOTONSLIBS}"
+    CONDITIONAL_PHOTONSINCS="\${PHOTONSINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_PHOTONSLIBS)
+  AC_SUBST(CONDITIONAL_PHOTONSINCS)
+  AM_CONDITIONAL(PHOTONS_SUPPORT, test "$photonsinclude" = "true" )
 ])

@@ -33,6 +33,8 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
 	  ATOOLS-2.0/Org/Makefile \
 	  ATOOLS-2.0/Makefile \
+          HELICITIES/Main/Makefile \
+          HELICITIES/Makefile \
 	  BEAM-1.0/Main/Makefile \
 	  BEAM-1.0/Makefile \
 	  PDF-1.0/Main/Makefile \
@@ -74,8 +76,16 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AHADIC++-1.0/Makefile \
 	  HADRONS++-0.0/Main/Makefile \
 	  HADRONS++-0.0/ME_Library/Makefile \
+	  HADRONS++-0.0/Current_Library/Makefile \
 	  HADRONS++-0.0/PS_Library/Makefile \
+	  HADRONS++-0.0/Run/Makefile \
 	  HADRONS++-0.0/Makefile \
+	  PHOTONS++-1.0/Main/Makefile \
+          PHOTONS++-1.0/Tools/Makefile \
+          PHOTONS++-1.0/PhaseSpace/Makefile \
+          PHOTONS++-1.0/MEs/Makefile \
+          PHOTONS++-1.0/Run/Makefile \
+	  PHOTONS++-1.0/Makefile \
 	  ANALYSIS-1.0/Makefile \
 	  ANALYSIS-1.0/Tools/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \
@@ -92,29 +102,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Makefile \
 	  SHERPA-1.0/Run/CTEQ6Grid/Makefile \
 	  SHERPA-1.0/Run/MRST99Grid/Makefile \
-	  SHERPA-1.0/Run/Decaydata/Makefile \
-	  SHERPA-1.0/Run/Decaydata/A213200Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/A21320Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/EtaDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/EtaprimeDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/F21270Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/F2P1525Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/K0Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/K2Star14300Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/K2Star1430Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/KaonDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/KLDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/KSDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/KStar8920Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/KStar892Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/Omega782Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/PhiDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/Pi0Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/PiDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/Rho0Decays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/RhoDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/TauDecays/Makefile \
-	  SHERPA-1.0/Run/Decaydata/TauDecays/PhaseSpaceFunctions/Makefile \
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
           TOOLS/Sherpa-config \

@@ -554,7 +554,7 @@ void Lund_Interface::FillFragmentationBlob(Blob *blob)
 void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
 {
   Flavour    flav;
-  Vec4D      momentum, position;
+  Vec4D      momentum;
   Particle * particle;
 
   int n_q(0), n_g(0); Particle_Vector partons;
@@ -574,14 +574,12 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     flav.FromHepEvt(idhep);
     momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		   hepevt.phep[j][1],hepevt.phep[j][2]);
-    position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
-		   hepevt.vhep[j][1],hepevt.vhep[j][2]);
+    // don't fill blob position vector here, because decay is in CMS until boosting back
     particle = new Particle(-1,flav,momentum);
     particle->SetNumber(0);
     particle->SetStatus(part_status::active);
     particle->SetInfo('P');
     particle->SetFinalMass(hepevt.phep[j][4]);
-    blob->SetPosition(position);
     blob->AddToOutParticles(particle);
     
     if(abs(idhep)>0 && abs(idhep)<7) {

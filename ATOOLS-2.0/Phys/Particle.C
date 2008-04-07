@@ -169,7 +169,6 @@ void Particle::Copy(Particle * in)  {
 
 double Particle::ProperTime() 
 {
-  if (m_fl.Kfcode() == kf_K) return 0.;
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
@@ -236,8 +235,8 @@ double       Particle::E() const                     { return m_momentum[0];}
 double       Particle::FinalMass() const             { return m_finalmass; }
 void         Particle::SetMomentum(const Vec4D& vc4) { m_momentum = vc4; }
 double       Particle::Time() const                  { return m_dec_time; }
-void         Particle::SetTime(const int t)          { m_dec_time = t; }
-void         Particle::SetTime()                     { m_dec_time = LifeTime(); }
+void         Particle::SetTime(const double t)       { m_dec_time = t; }
+void         Particle::SetTime()                     { m_dec_time = m_fl.DiceLifeTime(); }
 
 // Production and decay vertices
 Vec4D Particle::XProd() const

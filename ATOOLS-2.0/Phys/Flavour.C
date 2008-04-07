@@ -5,6 +5,8 @@
 #include "MyStrStream.H"
 #include "Data_Reader.H"
 #include "Run_Parameter.H"
+#include "Run_Parameter.H"
+#include "Random.H"
 
 namespace ATOOLS 
 {
@@ -15,7 +17,9 @@ using namespace ATOOLS;
 
 Particle_Info::Particle_Info(const Particle_Info &info):
   m_kfc(info.m_kfc), m_mass(info.m_mass), m_yuk(info.m_yuk), 
-  m_width(info.m_width), m_icharge(info.m_icharge), m_isoweak(info.m_isoweak), 
+  m_width(info.m_width),
+  m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2), 
+  m_icharge(info.m_icharge), m_isoweak(info.m_isoweak), 
   m_strong(info.m_strong), m_spin(info.m_spin), m_stable(info.m_stable), 
   m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
   m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
@@ -33,10 +37,11 @@ Particle_Info::Particle_Info
  const bool stable,bool massive,const std::string &idname,
  const std::string &texname,const bool dummy):
   m_kfc(kfc), m_mass(mass), m_yuk(mass), m_width(width),
+  m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(strong), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_on(on), m_massive(massive), m_hadron(0), m_idname(idname), 
-  m_texname(texname) 
+  m_texname(texname)
 {
   m_content.push_back(new Flavour(m_kfc));
 }
@@ -213,12 +218,20 @@ std::string Flavour::TexName() const
   return name;
 }
 
+std::string Flavour::RootName() const
+{
+  std::string name=StringReplace(TexName(), "\\", "#");
+  name=StringReplace(name,"#overline","#bar");
+  return name;
+}
+
 std::string Flavour::ShellName() const 
 {
   std::string name(IDName());
   size_t pos(0);
   while ((pos=name.find("("))!=std::string::npos) name.replace(pos,1,"");
   while ((pos=name.find(")"))!=std::string::npos) name.replace(pos,1,"");
+  while ((pos=name.find("/"))!=std::string::npos) name.replace(pos,1,"");
   while ((pos=name.find("'"))!=std::string::npos) name.replace(pos,1,"prime");
   while ((pos=name.find("*"))!=std::string::npos) name.replace(pos,1,"star");
   return name;
@@ -233,10 +246,8 @@ std::string Flavour::IDName() const
     else name+="-";      
   }
   else {
-    if (m_kfc==kf_pi_plus ||
-	m_kfc==kf_K_plus  ||
-	m_kfc==kf_Hplus   ||
-	m_kfc==kf_Wplus) {
+    if (m_kfc==kf_Hplus || m_kfc==kf_Wplus ||
+        (IsHadron() && !IsBaryon() && name[name.length()-1]=='+')) {
       name.erase(name.length()-1,1);
       if (IsAnti()) name+="-";
       else name+="+";      
@@ -257,8 +268,7 @@ bool Flavour::IsDiQuark() const
 
 bool Flavour::IsBaryon() const 
 {
-  if (abs(m_kfc)<1000)             return 0;
-  if (m_kfc-1000*int(m_kfc/1000)==0) return 0;
+  if (abs(m_kfc)%10000<1000) return false;
   return !IsDiQuark();
 }
 
@@ -280,6 +290,12 @@ bool Flavour::IsC_Hadron() const
   if (abs((m_kfc-1000*int(m_kfc/1000))/100)==4)    return 1;
   if (abs((m_kfc-10000*int(m_kfc/10000))/1000)==4) return 1;
   return 0;
+}
+
+double Flavour::DiceLifeTime() const
+{
+  double proper_time = rpa.hBar() / Width();
+  return -proper_time*log(1.-ran.Get());
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
@@ -412,6 +428,13 @@ void ATOOLS::ParticleInit(const std::string &path)
 	s_kftable[kfc] = new
 	  Particle_Info(kfc,mass,width,charge,icharge, 
 			spin,Take,stable,idname,texname);
+        if(kfc==kf_pi||kfc==kf_eta||kfc==kf_eta_prime_958||kfc==kf_eta_c_1S||
+           kfc==kf_eta_b||kfc==kf_rho_770||kfc==kf_omega_782||
+           kfc==kf_phi_1020||kfc==kf_J_psi_1S||kfc==kf_Upsilon_1S||
+           kfc==kf_a_2_1320||kfc==kf_f_2_1270||kfc==kf_f_2_prime_1525||
+           kfc==kf_chi_c2_1P||kfc==kf_chi_b2_1P) {
+          s_kftable[kfc]->m_majorana=-1;
+        }
     }
     msg_LogFile()<<std::endl;
   }

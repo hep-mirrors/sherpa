@@ -12,6 +12,7 @@
 #include "MyStrStream.H"
 #include "Process_Info.H"
 #include "IO_Handler.H"
+#include "Spin_Structure.H"
 #include "Interaction_Model_Base.H"
 
 using namespace AMEGIC;
@@ -788,7 +789,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   return M;
 }
 
-void Amplitude_Handler::FillAmplitudes(Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
+void Amplitude_Handler::FillAmplitudes(HELICITIES::Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
 {
   atensor->SetColorMatrix(CFCol_Matrix->GetCMatrix());
   vector<Complex> amps; amps.resize(graphs.size());

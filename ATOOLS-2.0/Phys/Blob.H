@@ -149,6 +149,8 @@ namespace ATOOLS {
     inline static void Reset(const int number=0)  { s_currentnumber = number; }
     inline bool Has(blob_status::code status)     { return (int(status&m_status)>0); }
     bool IsConnectedTo(const btp::code &type) const;
+    Blob *      UpstreamBlob() const;
+    Blob *      DownstreamBlob() const;
     void        SetStatus(blob_status::code status=blob_status::inactive) {
       m_status = status;
     }
@@ -266,6 +268,22 @@ namespace ATOOLS {
     \brief boost blob back in lab system
     
     \warning this is not jet implemented!
+  */
+  
+  /*!
+    \fn Blob* Blob::UpstreamBlob()
+    \brief Return unique upstream blob, if it exists
+    
+    Will return the production blob of all inparticles, if it is equal among them.
+    Otherwise it will return NULL.
+  */
+  
+  /*!
+    \fn Blob* Blob::DownstreamBlob()
+    \brief Return unique downstream blob, if it exists
+    
+    Will return the decay blob of all outparticles, if it is equal among them.
+    Otherwise it will return NULL.
   */
 }
 

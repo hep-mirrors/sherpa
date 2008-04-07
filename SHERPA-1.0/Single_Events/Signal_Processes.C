@@ -1,6 +1,7 @@
 #include "Signal_Processes.H"
 
 #include "XS_Base.H"
+#include "Spin_Structure.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Signal_Processes
@@ -14,6 +15,7 @@
 
 using namespace SHERPA;
 using namespace ATOOLS;
+using namespace HELICITIES;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
 				   Hard_Decay_Handler * hdhandler) :

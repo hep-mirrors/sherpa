@@ -5,6 +5,7 @@
 #include "Tree.H"
 #include "Blob.H"
 #include "Poincare.H"
+#include "Interface_Tools.H"
 #include <list>
 
 namespace SHERPA {
@@ -13,17 +14,9 @@ namespace SHERPA {
 
   class HadronDecays_Apacic_Interface: public Perturbative_Interface {
   private:
-    int            m_N_of_singlets;
-    ATOOLS::Blob * p_blob;
+    ATOOLS::Blob *p_blob, *p_decayblob;
 
-    std::vector<ATOOLS::Particle * > m_particles;
-
-    ATOOLS::Poincare m_boost;               
-
-    bool FillTree(APACIC::Tree *);
-    bool FillBinaryDecayTree(APACIC::Tree *);
-    bool FillTertiaryDecayTree(APACIC::Tree *);
-    bool FillSpectatorDecayTree(APACIC::Tree *);
+    ATOOLS::Poincare m_boost;         
   public :
 
     // constructor

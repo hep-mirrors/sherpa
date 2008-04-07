@@ -44,9 +44,11 @@ namespace ATOOLS {
     CMatrix(Complex**,int);
     CMatrix(const CMatrix&);
     ~CMatrix();
+    CMatrix         Conjugate();
     int             Rank() const            { return m_rank; }
     Complex       * operator[](int i)       { return p_m[i]; }
     const Complex * operator[](int i) const { return p_m[i]; }
+    Vec4C operator* (const Vec4C& cvec);
     Complex ** GetMatrix()      const { return p_m; } 
   };
 

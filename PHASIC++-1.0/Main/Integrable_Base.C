@@ -714,7 +714,7 @@ Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
   return NULL;
 }
 
-void Integrable_Base::FillAmplitudes(ATOOLS::Amplitude_Tensor*,double)
+void Integrable_Base::FillAmplitudes(HELICITIES::Amplitude_Tensor*,double)
 {
   return;
 }

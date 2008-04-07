@@ -14,8 +14,8 @@
 #include "Blob.H"
 #include "Data_Reader.H"
 // #include "Spin_Correlation_Tensor.H"
-#include "Amplitude_Tensor.H"
 
+namespace HELICITIES { class Amplitude_Tensor; }
 namespace ATOOLS { class Decay_Channel; }
 
 namespace AMEGIC { class Amegic; 
@@ -137,7 +137,7 @@ namespace SHERPA {
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
 //     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
-    void                 FillAmplitudes(ATOOLS::Amplitude_Tensor*);
+    void                 FillAmplitudes(HELICITIES::Amplitude_Tensor*);
     bool                 SpinCorrelations();
     void                 SetSpinCorrelations(bool sc);
     double               Weight();

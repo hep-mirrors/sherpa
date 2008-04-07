@@ -21,7 +21,7 @@ namespace ATOOLS {
   public:
 
     kf_code m_kfc;
-    double  m_mass, m_yuk, m_width;
+    double  m_mass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
     int     m_icharge, m_isoweak, m_strong;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana;
     bool    m_on, m_massive, m_hadron;
@@ -34,7 +34,8 @@ namespace ATOOLS {
 
     // default constructor
     inline Particle_Info(): 
-      m_kfc(kf_none), m_mass(0.0), m_yuk(0.0), m_width(0.0), m_icharge(0), 
+      m_kfc(kf_none), m_mass(0.0), m_yuk(0.0), m_width(0.0), m_dg(0.0),
+      m_dm(0.0), m_qoverp2(1.0), m_icharge(0), 
       m_isoweak(0), m_strong(0), m_spin(0), m_stable(1), m_masssign(0), 
       m_dummy(1), m_majorana(0), m_on(0), m_massive(0), m_hadron(0) {}
     Particle_Info(const Particle_Info &info);
@@ -103,11 +104,14 @@ namespace ATOOLS {
     std::string IDName() const;
     std::string ShellName() const;
     std::string TexName() const;
+    std::string RootName() const;
 
     bool IsDiQuark() const;
     bool IsBaryon() const;
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
+
+    double DiceLifeTime() const;
 
     // inline functions
     inline Flavour Bar() const { return Flavour(m_kfc,!m_anti); }
@@ -190,7 +194,18 @@ namespace ATOOLS {
     { return s_kftable[m_kfc]->m_mass; }
     inline double Yuk() const     
     { return s_kftable[m_kfc]->m_yuk; }
-
+    inline double DeltaGamma() const
+    { return s_kftable[m_kfc]->m_dg; }
+    inline void SetDeltaGamma(double dgamma) const
+    {  s_kftable[m_kfc]->m_dg = dgamma; }
+    inline double DeltaM() const
+    {  return s_kftable[m_kfc]->m_dm; }
+    inline void SetDeltaM(double dm) const
+    {  s_kftable[m_kfc]->m_dm = dm; }
+    inline double QOverP2() const
+    {  return s_kftable[m_kfc]->m_qoverp2; }
+    inline void SetQOverP2(double qoverp2) const
+    {  s_kftable[m_kfc]->m_qoverp2 = qoverp2; }
     inline int MassSign() const { return s_kftable[m_kfc]->m_masssign; }
 
     inline void SetWidth(const double &width) const 
@@ -205,6 +220,7 @@ namespace ATOOLS {
     inline bool IsBoson() const   { return IntSpin()%2==0; }
     inline bool IsScalar() const  { return IntSpin()==0;   }
     inline bool IsVector() const  { return IntSpin()==2;   }
+    inline bool IsRaritaSchwinger() const { return IntSpin()==3; }
     inline bool IsTensor() const  { return IntSpin()==4;   }
 
     inline int LeptonFamily() const 

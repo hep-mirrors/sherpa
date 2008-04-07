@@ -71,7 +71,7 @@ namespace ATOOLS {
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);
     void   SetDecayBlob(Blob *);
-    void   SetTime(const int);
+    void   SetTime(const double);
     void   SetTime();
     void   SetFlav(const Flavour &);
     void   SetFlow(Flow *);

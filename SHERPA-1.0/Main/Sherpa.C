@@ -120,7 +120,9 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
-    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHadronDecayHandlers()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHadronDecayHandlers(),
+                                                    p_inithandler->GetSoftPhotonHandler()));
+
     break;
   }
   ANALYSIS::Analysis_Handler * ana = p_inithandler->GetSampleAnalysis();

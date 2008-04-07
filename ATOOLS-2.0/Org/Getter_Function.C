@@ -94,17 +94,21 @@ operator()(const Parameter_Type &parameters) const
 
 template<class ObjectType,class ParameterType,class SortCriterion>
 void Getter_Function<ObjectType,ParameterType,SortCriterion>::
-PrintGetterInfo(std::ostream &str,const size_t width)
+PrintGetterInfo(std::ostream &str,const size_t width, const std::string &indent,
+                const std::string &separator, const std::string &lineend,
+                const std::string &replacefrom, const std::string &replaceto)
 {
   if (s_getters==NULL) return;
   const IOS_BASE::fmtflags def=str.flags();
   str.setf(IOS_BASE::left,IOS_BASE::adjustfield);
   for (typename String_Getter_Map::const_iterator git=s_getters->begin();
-       git!=s_getters->end();++git) {
+       git!=s_getters->end();++git)
+  {
     if (!git->second->m_display) continue;
-    str<<"   "<<std::setw(width)<<git->first<<" ";
+    std::string escapedname=StringReplace(git->first,replacefrom,replaceto);
+    str<<indent<<std::setw(width)<<escapedname<<separator;
     git->second->PrintInfo(str,width);
-    str<<"\n";
+    str<<lineend;
   }
   str.setf(def);
 }

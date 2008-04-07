@@ -114,6 +114,7 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
+    ATOOLS::ran.SaveStatus();
     Lund_Interface::SaveStatus();
 
     Blob *signal(new Blob());
@@ -123,7 +124,7 @@ void Event_Handler::Reset(const bool sameevent)
     m_blobs.push_back(signal);
   }
   else {
-    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+    if (p_mehandler && p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
     Blob *signal(m_blobs.FindFirst(btp::Signal_Process));
     m_blobs.Clear(signal);
     signal->SetStatus(blob_status::internal_flag |
@@ -131,11 +132,12 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
+    ATOOLS::ran.SaveStatus();
     Lund_Interface::SaveStatus();
   }
 } 
 
-bool Event_Handler::GenerateEvent(int mode) 
+bool Event_Handler::GenerateEvent(int mode, bool reset) 
 {
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
@@ -149,8 +151,7 @@ bool Event_Handler::GenerateEvent(int mode)
   double weight = 1.;
   switch (mode) {
   case 0:
-    Reset();
-    ATOOLS::ran.SaveStatus();
+    if(reset) Reset();
     do {
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {
 	if ((*pit)->Type()==eph::Analysis) {
@@ -197,7 +198,7 @@ bool Event_Handler::GenerateEvent(int mode)
     } while (m_blobs.empty() || 
 	     m_blobs.FindFirst(btp::Signal_Process)->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
-    p_mehandler->ResetNumberOfTrials();
+    if(p_mehandler) p_mehandler->ResetNumberOfTrials();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) {
 	switch ((*pit)->Treat(&m_blobs,weight)) {
@@ -226,7 +227,7 @@ bool Event_Handler::GenerateEvent(int mode)
   case 9000:
   case 9001:
   case 9002: {
-    Reset();
+    if(reset) Reset();
     m_blobs.Clear();
     bool flag = false;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -252,7 +253,7 @@ bool Event_Handler::GenerateEvent(int mode)
     return true;
   }
   case 9999: {
-    Reset();
+    if(reset) Reset();
     bool flag(true);
     while (flag) {
       flag = false;

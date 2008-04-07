@@ -4,6 +4,7 @@
 #include "Simple_XS.H"
 #include "Random.H"
 #include "Exception.H"
+#include "Spin_Structure.H"
 #include "Decay_Table.H"
 #include <iomanip>
 
@@ -648,7 +649,7 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 //   abort();
 // }
 
-void Matrix_Element_Handler::FillAmplitudes(ATOOLS::Amplitude_Tensor* atensor) 
+void Matrix_Element_Handler::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor) 
 {
   p_amegic->GetProcess()->FillAmplitudes(atensor);
 }

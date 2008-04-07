@@ -44,7 +44,12 @@ namespace ATOOLS {
     virtual ~Getter_Function();
 
     // member functions
-    static void PrintGetterInfo(std::ostream &str,const size_t width);
+    static void PrintGetterInfo(std::ostream &str,const size_t width,
+                                const std::string &indent="   ",
+                                const std::string &separator=" ",
+                                const std::string &lineend="\n",
+                                const std::string &replacefrom="",
+                                const std::string &replaceto="");
 
     Object_Type *GetObject(const Parameter_Type &parameters) const;
 

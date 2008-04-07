@@ -542,3 +542,23 @@ bool Blob::IsConnectedTo(const btp::code &type) const
   std::set<const Blob*> checked;
   return IsConnectedTo(type,checked);
 }
+
+Blob* Blob::UpstreamBlob() const
+{
+  if(NInP()==0) return NULL;
+  Blob* upstream = ConstInParticle(0)->ProductionBlob();
+  for (int i(1);i<NInP();++i) {
+    if(ConstInParticle(i)->ProductionBlob()!=upstream) return NULL;
+  }
+  return upstream;
+}
+
+Blob* Blob::DownstreamBlob() const
+{
+  if(NOutP()==0) return NULL;
+  Blob* downstream = ConstOutParticle(0)->DecayBlob();
+  for (int i(1);i<NOutP();++i) {
+    if(ConstOutParticle(i)->DecayBlob()!=downstream) return NULL;
+  }
+  return downstream;
+}

@@ -14,9 +14,10 @@ namespace ATOOLS {
     inline Vec4() {
       m_x[0]=m_x[1]=m_x[2]=m_x[3]=Scalar(0.0);
     }
-    inline Vec4(const Vec4<Scalar> & vec) {
-      m_x[0] = vec.m_x[0]; m_x[1] = vec.m_x[1];
-      m_x[2] = vec.m_x[2]; m_x[3] = vec.m_x[3];
+    template<typename Scalar2>
+    inline Vec4(const Vec4<Scalar2> & vec) {
+      m_x[0] = vec[0]; m_x[1] = vec[1];
+      m_x[2] = vec[2]; m_x[3] = vec[3];
     }
     inline Vec4(const Scalar& x0, const Scalar& x1,
                 const Scalar& x2, const Scalar& x3) {
