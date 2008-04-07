@@ -1,0 +1,19 @@
+# Decay: B(s) --> D(s0)*(2317)- nu_mu mu+ 
+#        0    --> 1             2     3   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  0.0003879 1.742e-06 0.006961;
+</Result>

@@ -19,6 +19,20 @@ namespace HADRONS {
     std::string ChID()              { return std::string("Iso2");}
   }; // end of class
 
+  class Iso1Channel : public PHASIC::Single_Channel {
+    ATOOLS::Vec4D m_decvec;
+    int           m_chnumber;
+  public :
+    Iso1Channel(const ATOOLS::Flavour *);
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    int  ChNumber()                 { return m_chnumber;       }
+    void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
+    std::string ChID()              { return std::string("Iso1");}
+  }; // end of class
+
 
   /*!
 	\file Two_Body_PSs.H

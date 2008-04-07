@@ -4,7 +4,6 @@
 #include "Transitions.H"
 #include "Hadronisation_Parameters.H"
 #include "Cluster.H"
-#include "Blob.H"
 
 namespace AHADIC {
   struct stm {
@@ -39,7 +38,7 @@ namespace AHADIC {
     int    CheckCluster(Cluster *,bool,const double=-1.);
     double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,const double=-1.);
     double TransformWeight(Cluster *,ATOOLS::Flavour &,const double=-1.,bool=false);
-    void   FixHHDecay(Cluster *);
+    void   FixHHDecay(Cluster *,ATOOLS::Blob *);
 
 
     bool   CheckIfAllowed(Cluster_List * clin,int size,double & E);
@@ -56,7 +55,7 @@ namespace AHADIC {
 			 const double alpha,const double eta,
 			 const double photonenergy);
     ~Soft_Cluster_Handler();
-    bool           TreatClusterList(Cluster_List *,ATOOLS::Blob *);
+    bool   TreatClusterList(Cluster_List *,ATOOLS::Blob *);
 
   };
 

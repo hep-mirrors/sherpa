@@ -1,0 +1,3 @@
+SUBDIRS = Main
+
+EXTRA_DIST    = @SVNINCLUDE@

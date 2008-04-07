@@ -2,40 +2,39 @@
 #include "Message.H"
 #include "Random.H"
 #include "Blob.H"
+#include "Blob_List.H"
 #include "Particle.H"
 #include "Lund_Interface.H"
 #include "Mass_Handler.H"
+#include "Run_Parameter.H"
+#include "Hadrons.H"
+#include "Decay_Map.H"
+#include "Hadron_Decay_Table.H"
+#include "Hadron_Decay_Channel.H"
+#include "Mixing_Handler.H"
+
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
-
-#ifdef USING__Hadrons
-#include "Hadrons.H"
-#include "Hadron_Decay_Channel.H"
 using namespace HADRONS;
-#endif
 
 
-#ifdef USING__Hadrons
 Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
   m_decmodel(string("Hadrons")), m_mode(1),
   p_hadrons(_hadrons),
   p_lund(NULL)
 {
   p_cans = new set<kf_code>;
-  map<kf_code,Decay_Table *> * decmap = p_hadrons->GetDecayMap();
-  for (map<kf_code,Decay_Table *>::iterator decit=decmap->begin();
-       decit!=decmap->end();decit++) p_cans->insert(decit->first);
+  FlDtVMap* decmap = p_hadrons->DecayMap();
+  for (FlDtVMap::iterator decit=decmap->begin(); decit!=decmap->end(); decit++)
+    p_cans->insert(decit->first.Kfcode());
 }
-#endif
 
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   m_decmodel(string("Lund")), m_mode(0),
-#ifdef USING__Hadrons
   p_hadrons(NULL), 
-#endif
   p_lund(_lund)
 { 
   p_cans = new set<kf_code>;
@@ -64,6 +63,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
   delete p_cans;
+  if (p_hadrons) delete p_hadrons; p_hadrons=NULL;
 }
 
 bool Hadron_Decay_Handler::CanDealWith(kf_code kf) {
@@ -71,61 +71,80 @@ bool Hadron_Decay_Handler::CanDealWith(kf_code kf) {
   case 0:
     if (p_cans->find(kf)!=p_cans->end()) return true;
     return false;
-#ifdef USING__Hadrons
   case 1:
     if (p_cans->find(kf)!=p_cans->end()) return true;
     return false;
-#endif
   }
   return false;
 }
 
-Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob,const Vec4D& labmom)
+bool Hadron_Decay_Handler::CreateDecayBlob(Blob* blob)
 {
-  Return_Value::code ret = Return_Value::Success;
+  DEBUG_FUNC("blob->Id()="<<blob->Id());
+  // after this method has run, the blob is supposed to have 
+  // everything prepared that the DiceMass method with its
+  // InParticle needs.
+  
+//   if(part->Time()==0.0) part->SetTime();
+//   SetPosition(blob);
+  
+//   PerformMixing(blob, bloblist);
+//   blob=bloblist->back();
+  
+  bool returncode;
   switch (m_mode) {
-#ifdef USING__Hadrons
     case 1:
+      DEBUG_INFO("with Sherpa.");
       blob->SetTypeSpec("Sherpa");
-      ret = p_hadrons->PerformDecay(blob,labmom);
+      returncode = p_hadrons->CreateDecayBlob(blob);
       break;
-#endif
     case 0:
+      DEBUG_INFO("with Pythia.");
       blob->SetTypeSpec("Pythia_v6.214");
-      ret = p_lund->PerformDecay(blob);
+      returncode = true;
       break;
   }
-
-  return ret;
+  return true;
 }
 
-bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) {
-#ifdef DEBUG__Hadrons
-  if(min<0.0 || max<0.0 || !(min<max)) {
-    msg_Error()<<METHOD<<" with strange min, max encountered: min="<<min<<" max="<<max<<endl;
+bool Hadron_Decay_Handler::FillDecayBlob(Blob *blob, const Vec4D& labmom)
+{
+  DEBUG_FUNC("blob->Id()="<<blob->Id());
+  // after this method has run, the blob is supposed to be complete
+  // with kinematics in CMS, and with on-shell particles.
+  switch (m_mode) {
+    case 1:
+      DEBUG_INFO("with Sherpa.");
+      return p_hadrons->FillDecayBlob(blob, labmom);
+    case 0:
+      DEBUG_INFO("with Pythia.");
+      return p_lund->PerformDecay(blob);
   }
-#endif
+  return false;
+}
+
+bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) 
+{
   double mass = 0.0;
   switch (m_mode) {
   case 0:
     mass = p_lund->DiceMass(part->RefFlav().Kfcode(),min,max);
     break;
-#ifdef USING__Hadrons
   case 1:
+    Blob* decayblob=part->DecayBlob();
     kf_code kfc = part->RefFlav().Kfcode();
-    if(kfc==kf_K || kfc==kf_K_S || kfc==kf_K_L) return true;
+    if(kfc==kf_K || kfc==kf_K_S || kfc==kf_K_L || decayblob->Type()!=btp::Hadron_Decay) 
+      return true;
     Mass_Handler masshandler(part->RefFlav());
-    Blob_Data_Base* data = (*(part->DecayBlob()))["hdc"];
-    Hadron_Decay_Channel * hdc=NULL;
+    Blob_Data_Base* data = (*decayblob)["hdc"];
     if(data) {
-      hdc = data->Get<Hadron_Decay_Channel*>();
-      double decaymin = hdc->DecayChannel()->MinimalMass();
+      Hadron_Decay_Channel* hdc = data->Get<Hadron_Decay_Channel*>();
+      double decaymin = hdc->MinimalMass();
       if(decaymin>max) mass = -1.0;
       else             mass = masshandler.GetMass(decaymin, max);
     }
     else mass = masshandler.GetMass(min, max);
     break;
-#endif
   }
   
   if(mass>0.0) {
@@ -137,7 +156,29 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
 
 void Hadron_Decay_Handler::SetSignalProcessBlob(ATOOLS::Blob* spblob)
 {
-#ifdef USING__Hadrons
   if(m_mode==1) p_hadrons->SetSignalProcessBlob(spblob);
-#endif
+}
+
+bool Hadron_Decay_Handler::PerformMixing(Particle* inpart, Blob_List* bloblist)
+{
+  if(m_mode==1) return p_hadrons->MixingHandler()->PerformMixing(inpart, bloblist);
+  else          return false;
+}
+
+void Hadron_Decay_Handler::CleanUp()
+{
+  if(m_mode==1) p_hadrons->CleanUp();
+}
+
+bool Hadron_Decay_Handler::IsExclusiveDecaychannel(Blob* blob, FlavourSet decayproducts)
+{
+  if(m_mode==1) {
+    if(blob->TypeSpec()=="Sherpa") {
+      Decay_Map* decaymap = p_hadrons->DecayMap();
+      Hadron_Decay_Table* dt = decaymap->FindDecay(blob->InParticle(0)->Flav());
+      if(dt->GetDecayChannel(decayproducts)) return true;
+      else                                   return false;
+    }
+  }
+  return false;
 }

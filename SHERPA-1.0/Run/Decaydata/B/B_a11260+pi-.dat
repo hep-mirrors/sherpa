@@ -1,0 +1,19 @@
+# Decay: B --> a(1)(1260)+ pi- 
+#        0 --> 1           2   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  1.854e-33 3.35e-35 1.938e-31;
+</Result>

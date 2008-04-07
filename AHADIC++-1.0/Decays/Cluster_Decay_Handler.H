@@ -14,15 +14,17 @@ namespace AHADIC {
   private:
     Soft_Cluster_Handler   * p_softclusters;
     Cluster_Part           * p_clus;
+    Cluster_List           * p_clulist;
 
     Cluster_Decay_Analysis * p_analysis;
  
-    ATOOLS::Blob *  DecayIt(Cluster *);
+    ATOOLS::Blob * DecayIt(Cluster *);
+    ATOOLS::Blob * ClusterDecayBlob(Cluster *,Cluster_List *);
   public:
-    Cluster_Decay_Handler(bool=false);
+    Cluster_Decay_Handler(Cluster_List *,bool=false);
     ~Cluster_Decay_Handler();
 
-    int DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL);
+    int DecayClusters(ATOOLS::Blob *);
   };
   /*!
     \file Cluster_Decay_Handler.H

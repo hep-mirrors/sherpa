@@ -1,0 +1,19 @@
+# Decay: Xi(b) --> Xi(c)+ nu_taub tau- 
+#        0     --> 1      2       3    
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  0.0002825 2.071e-06 0.01084;
+</Result>

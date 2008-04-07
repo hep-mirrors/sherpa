@@ -39,45 +39,24 @@ Cluster_Part::~Cluster_Part()
 
 bool Cluster_Part::TestDecay(Cluster * const cluster)
 {
+  if (!cluster->Active()) return true;
+#ifdef AHAmomcheck
   Vec4D checkbef = cluster->Momentum();
+#endif
   cluster->BoostInCMSAndRotateOnZ();
-  if (!ClusterDecay(cluster)) return false;
+  if (!p_splitter->SplitCluster(cluster)) {
+    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+               <<"   Could not split cluster, may lead to new event."<<std::endl;
+    return false;
+  }
   cluster->RotateAndBoostBack();
+#ifdef AHAmomcheck
   Vec4D checkaft = cluster->GetLeft()->Momentum()+cluster->GetRight()->Momentum();
-
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
     msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"    Four-momentum not conserved: "
 	       <<checkbef<<" vs. "<<checkaft<<" : "<<(checkbef-checkaft).Abs2()<<"."<<std::endl;
   }
-  Particle * part = new Particle(-1,Flavour(kf_cluster),cluster->GetLeft()->Momentum()); 
-  part->SetNumber();
-  part->SetStatus(part_status::active);
-  part->SetInfo('C');
-  part->SetFinalMass(cluster->GetLeft()->Mass());
-  control::s_AHAparticles++;
-  cluster->GetLeft()->SetSelf(part);
-  
-  part = new Particle(-1,Flavour(kf_cluster),cluster->GetRight()->Momentum()); 
-  part->SetNumber();
-  part->SetStatus(part_status::active);
-  part->SetInfo('C');
-  part->SetFinalMass(cluster->GetRight()->Mass());
-  control::s_AHAparticles++;
-  cluster->GetRight()->SetSelf(part);
-
+#endif
   return true;
 }
-
-
-bool Cluster_Part::ClusterDecay(Cluster * const cluster)
-{
-  bool ok(p_splitter->SplitCluster(cluster));
-  if (!ok)
-    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-               <<"   Could not split cluster, may lead to new event."<<std::endl;
-  return ok;
-}
-
-
-

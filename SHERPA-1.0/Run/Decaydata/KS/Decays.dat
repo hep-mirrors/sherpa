@@ -1,0 +1,8 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+
+{111,111}	 | 0.3069(0.0005)[PDG]	 | KS_pipi.dat;
+{211,-211}	 | 0.692(0.0005)[PDG]	 | KS_pi+pi-.dat;
+{211,-12,11}	 | 0.00035(2e-05)[PDG]	 | KS_pi+nu_ebe-.dat;
+{-211,12,-11}	 | 0.00035(2e-05)[PDG]	 | KS_pi-nu_ee+.dat;
+{211,-14,13}	 | 0.000235(3e-06)[PDG]	 | KS_pi+nu_mubmu-.dat;
+{-211,14,-13}	 | 0.000235(3e-06)[PDG]	 | KS_pi-nu_mumu+.dat;

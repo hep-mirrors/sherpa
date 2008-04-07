@@ -17,12 +17,10 @@ namespace AHADIC {
     Dipole_Splitter * p_splitter;
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
-
-    bool   ClusterDecay(Cluster * const);
   public:
     Cluster_Part(Dipole_Splitter * =NULL);
     ~Cluster_Part();
-    bool TestDecay(Cluster *);
+    bool TestDecay(Cluster * const);
   };
 
   /*!

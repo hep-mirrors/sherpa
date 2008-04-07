@@ -9,6 +9,7 @@
 #include <iostream>
 
 #define AHAmomcheck
+//#define memchecker
 
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
@@ -44,26 +45,31 @@ namespace AHADIC {
 
   class Cluster {
   private:
+    bool                m_active;
     Proto_Particle    * p_trip, * p_anti;
     ATOOLS::Vec4D       m_momentum;
+    ATOOLS::Flavour     m_flav;
 
     ATOOLS::Poincare    m_boost,m_rotate;
     bool                m_hasboost,m_hasrotate;
 
     Cluster           * p_left, * p_right, * p_prev;
-    ATOOLS::Particle  * p_self;
     int                 m_number;
 
     std::vector<ATOOLS::Flavour> m_decayproducts;
 
     static long int     s_cluster_count, s_cluster_number;
   public:
-    Cluster();
+    Cluster(ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.),
+	    ATOOLS::Flavour=ATOOLS::Flavour(kf_cluster),
+	    bool active=true);
     Cluster(Proto_Particle *,Proto_Particle *);
     ~Cluster();
 
     void               Update();
     ATOOLS::Blob     * ConstructDecayBlob();
+
+    ATOOLS::Particle * GetSelf() const;
 
     void               RescaleMomentum(ATOOLS::Vec4D);
     void               BoostInCMSAndRotateOnZ();
@@ -77,17 +83,19 @@ namespace AHADIC {
     void               BoostBack(ATOOLS::Vec4D &);
     void               RotateAndBoostBack(ATOOLS::Vec4D &);
 
+    bool               Active() const;
+    ATOOLS::Flavour    GetFlav() const;
     Cluster          * GetLeft()  const;
     Cluster          * GetRight() const;
     Cluster          * GetPrev()  const;
+    void               SetActive(bool);
+    void               SetFlav(ATOOLS::Flavour);
     void               SetLeft(Cluster *);
     void               SetRight(Cluster *);
     void               SetPrev(Cluster *);
     void               DeleteLeft();
     void               DeleteRight();
 
-    ATOOLS::Particle * GetSelf() const;
-    void               SetSelf(ATOOLS::Particle *);
 
     Proto_Particle   * GetTrip() const;
     Proto_Particle   * GetAnti() const;
@@ -104,38 +112,46 @@ namespace AHADIC {
     ATOOLS::Flavour    operator[](size_t pos);
 
 
+    void               Print();
+    void               Delete();
+
     friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
     inline int         Number()             { return m_number; }
     inline int         RemainingClusters()  { return s_cluster_count; }
     inline int         ClusterCounter()     { return s_cluster_number; }
     inline void        ResetClusterNumber() { s_cluster_number = 0; }
+    inline void        ResetClusterCount()  { s_cluster_count = 0; }
   };
 
 
-  inline Cluster          * Cluster::GetLeft() const           { return p_left;  }
-  inline Cluster          * Cluster::GetRight() const          { return p_right; }
-  inline Cluster          * Cluster::GetPrev() const           { return p_prev;  }
-  inline void               Cluster::SetLeft(Cluster * left)   { p_left  = left;  }
-  inline void               Cluster::SetRight(Cluster * right) { p_right = right; }
-  inline void               Cluster::SetPrev(Cluster * prev)   { p_prev  = prev;  }
-  inline void               Cluster::DeleteLeft()  { delete p_left;  p_left  = NULL; }
-  inline void               Cluster::DeleteRight() { delete p_right; p_right = NULL; }
-  inline ATOOLS::Particle * Cluster::GetSelf() const                    { return p_self; }
-  inline void               Cluster::SetSelf(ATOOLS::Particle * part)   { p_self = part; }
+  
+  inline bool              Cluster::Active() const            { return m_active; }
+  inline ATOOLS::Flavour   Cluster::GetFlav() const           { return m_flav;   }
+  inline Cluster         * Cluster::GetLeft() const           { return p_left;   }
+  inline Cluster         * Cluster::GetRight() const          { return p_right;  }
+  inline Cluster         * Cluster::GetPrev() const           { return p_prev;   }
+  inline void              Cluster::SetActive(bool act)       { m_active = act;  }
+  inline void              Cluster::SetFlav(ATOOLS::Flavour fl) { m_flav = fl; }
+  inline void              Cluster::SetLeft(Cluster * left)   { p_left  = left;  }
+  inline void              Cluster::SetRight(Cluster * right) { p_right = right; }
+  inline void              Cluster::SetPrev(Cluster * prev)   { p_prev  = prev;  }
+  inline void              Cluster::DeleteLeft()  { delete p_left;  p_left  = NULL; }
+  inline void              Cluster::DeleteRight() { delete p_right; p_right = NULL; }
 
-  inline Proto_Particle   * Cluster::GetTrip() const           { return p_trip; }
-  inline Proto_Particle   * Cluster::GetAnti() const           { return p_anti; }
-  inline void               Cluster::SetTrip(Proto_Particle * trip) { p_trip = trip; }
-  inline void               Cluster::SetAnti(Proto_Particle * anti) { p_anti = anti; }
-  inline ATOOLS::Vec4D      Cluster::Momentum() const                   { return m_momentum; }
-  inline void               Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
-  inline double             Cluster::Mass2() const             { return m_momentum.Abs2(); }
-  inline double             Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
-  inline void               Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
-  inline void               Cluster::clear()                         { m_decayproducts.clear(); }
-  inline const size_t       Cluster::size() const                    { return m_decayproducts.size(); }
-  inline ATOOLS::Flavour    Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
+
+  inline Proto_Particle  * Cluster::GetTrip() const           { return p_trip; }
+  inline Proto_Particle  * Cluster::GetAnti() const           { return p_anti; }
+  inline void              Cluster::SetTrip(Proto_Particle * trip) { p_trip = trip; }
+  inline void              Cluster::SetAnti(Proto_Particle * anti) { p_anti = anti; }
+  inline ATOOLS::Vec4D     Cluster::Momentum() const                   { return m_momentum; }
+  inline void              Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
+  inline double            Cluster::Mass2() const             { return m_momentum.Abs2(); }
+  inline double            Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
+  inline void              Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
+  inline void              Cluster::clear()                         { m_decayproducts.clear(); }
+  inline const size_t      Cluster::size() const                    { return m_decayproducts.size(); }
+  inline ATOOLS::Flavour   Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
 
 
 

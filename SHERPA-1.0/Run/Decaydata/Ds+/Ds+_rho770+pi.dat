@@ -1,0 +1,19 @@
+# Decay: D(s)+ --> rho(770)+ pi 
+#        0     --> 1         2  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  1.793e-34 2.881e-36 6.178e-33;
+</Result>

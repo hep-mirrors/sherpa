@@ -1,0 +1,19 @@
+# Decay: D --> K*(892)b pi+ pi- pi 
+#        0 --> 1        2   3   4  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  3.552e-08 1.883e-10 5.125e-07;
+</Result>

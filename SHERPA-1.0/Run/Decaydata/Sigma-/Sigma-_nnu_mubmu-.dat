@@ -1,0 +1,19 @@
+# Decay: Sigma- --> n nu_mub mu- 
+#        0      --> 1 2      3   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  6.345e-06 5.517e-08 6.193e-05;
+</Result>

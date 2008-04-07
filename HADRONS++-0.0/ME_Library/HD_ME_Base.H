@@ -5,57 +5,47 @@
 #include "Vector.H"
 #include <string>
 #include <utility>
-#include "Amplitude_Tensor.H"
+#include "Spin_Structure.H"
+#include "Tools.H"
+#include "Getter_Function.H"
+
+#define DEFINE_ME_GETTER(CLASS,NAME,TAG)                              \
+DECLARE_GETTER(NAME,TAG,HD_ME_Base,Flavour_Info);                     \
+HD_ME_Base* NAME::operator()(const Flavour_Info &parameters) const    \
+{ return new CLASS(parameters.flavs, parameters.n, parameters.indices,TAG); }
 
 namespace HADRONS {
 
-  typedef std::map<std::string,double> String_Map;
-
-  struct GeneralModel: public String_Map {
-  public:
-    inline double operator()(const std::string &tag,const double &def) const 
-    {
-      String_Map::const_iterator fit(find(tag));
-      return fit!=end()?fit->second:def;
-    }
-  };
-
   class HD_ME_Base {
   protected:
-    std::string       m_metype;
-    int               m_nout;
-    ATOOLS::Flavour * p_flavs;
+    std::string       m_name;
+    int               m_n;
+    ATOOLS::Flavour * m_flavs;
     double          * p_masses,* p_masses2;
     std::string       m_path;
     bool              m_anti;
+    int             * p_i;  // "external" indices
+
+    virtual double lambdaNorm(const double,const double,const double);
   public:
-    HD_ME_Base(int,ATOOLS::Flavour *);
+    HD_ME_Base(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name);
     virtual ~HD_ME_Base();
     void SetPath( std::string s ) { m_path=s; }
-    std::string METype() { return m_metype; }
+    virtual std::string Name() { return m_name; }
     void SetAnti(bool anti) { m_anti = anti; }
 
-    virtual void   operator()(
-        const ATOOLS::Vec4D      * p, 
-        ATOOLS::Spin_Amplitudes  * amps,
-        int                        k0_n ) = 0;
+    virtual void   operator()(const ATOOLS::Vec4D* p,
+                              HELICITIES::Spin_Amplitudes* amps) = 0;
     virtual void   AddVector(double,double) {}
     virtual void   SetModelParameters( GeneralModel _md ) {};
+    virtual bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g);
   }; // end of class HD_ME_Base
 
-  class Isotropic : public HD_ME_Base {
-  public:
-    Isotropic(int,ATOOLS::Flavour *,
-              std::string _met=std::string(""));
-    void   operator()(
-                       const ATOOLS::Vec4D  * _p,
-                       ATOOLS::Spin_Amplitudes * amps,
-                       int                    k0_n );
-  }; // end of class Isotropic
-  
+  typedef ATOOLS::Getter_Function<HD_ME_Base,Flavour_Info> HD_ME_Getter_Function;
+
   /*!
   \file HD_ME_Base.H
-  \brief Declares the classes HADRONS::HD_ME_Base and HADRONS::Isotropic as well as the structure
+  \brief Declares the classes HADRONS::HD_ME_Base as well as the structure
     HADRONS::GeneralModel.
 
   This file can be found in the directory \c ME_Library.
@@ -89,12 +79,12 @@ namespace HADRONS {
     \section spin The Implemention of Spin Correlations
 
     At this stage, the implementation of the spin correlation algorithm will be explained a bit.
-    Each ME class (Tau_Lepton, Tau_Pseudo, ...) has to set up an ATOOLS::Amplitude_Tensor.
+    Each ME class (Tau_Lepton, Tau_Pseudo, ...) has to set up an HELICITIES::Amplitude_Tensor.
     This is a structure where an entry stands for a value of the ME (\e not squared) with
     a certain helicity combination. That is, each helicity combination has its own entry in 
     the Amplitude_Tensor. To make it easy to insert an amplitude for a specific helicity
     combination, it provides a number of methods. Have a look at the documentation in
-    ATOOLS::Amplitude_Tensor for them.
+    HELICITIES::Amplitude_Tensor for them.
   */
 
   /*!
@@ -142,13 +132,6 @@ namespace HADRONS {
   /*!
   \var HD_ME_Base::m_metype
   Type of ME.
-  */
-
-  /*!
-  \class Isotropic
-  \brief Provides an isotropic decay ME (i.e. only according to phasespace weight).
-
-  This class is a subclass of HADRONS::HD_ME_Base.
   */
 
 } // end of namespace

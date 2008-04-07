@@ -2,6 +2,7 @@
 #include "Soft_Cluster_Handler.H"
 #include "Cluster.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -9,25 +10,26 @@ using namespace std;
 
 
 Ahadic::Ahadic(string path,string file,bool ana)  :
-  m_fullinfo(false), m_maxtrials(3)
+  m_fullinfo(false), m_maxtrials(3), p_clulist(new Cluster_List)
 {
   hadpars.Init(path,file);
   ana=true;
 
-  p_cformhandler = new Cluster_Formation_Handler(ana);
-  p_cdechandler  = new Cluster_Decay_Handler(ana);
+  p_cformhandler = new Cluster_Formation_Handler(p_clulist,ana);
+  p_cdechandler  = new Cluster_Decay_Handler(p_clulist,ana);
   msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
 Ahadic::~Ahadic() 
 {
+  if (p_clulist)      { delete p_clulist;      p_clulist=NULL;  }
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
 }
 
-Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
+Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
-  bool retry(false);
+  rvalue.IncCall(METHOD);
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"##########################################################################"<<endl
 	     <<"###################################### IN ################################"<<endl;
@@ -39,140 +41,164 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 		 <<"##########################################################################"<<endl;
     }
   }
-  
   Blob * blob(NULL);
-  Cluster clus;
-  clus.ResetClusterNumber();
-
-  control::s_AHAblobs=0;
-  control::s_AHAparticles=0;
-
   bool moveon(false);
-  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+  double norm2(sqr(rpa.gen.Ecms()));
+  Return_Value::code result;
+  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
-      blob = (*blit);
-      blob->SetType(btp::Cluster_Formation);
-      blob->SetTypeSpec("AHADIC-1.0");
-      double norm2 = blob->CheckMomentumConservation().Abs2();
-#ifdef AHAmomcheck
-      //msg_Out()<<"=============================================================="<<endl
-      //	       <<METHOD<<" (0) momentum of incoming in blob : "
-      //	       <<blob->CheckMomentumConservation()<<"   ("<<norm2<<") "<<endl;
-#endif
-      for (int i=0;i<m_maxtrials;i++) {
-	switch (p_cformhandler->FormClusters(blob,blobs)) {
-	case -1 : 
-	  msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
-		     <<"   Will retry event."<<std::endl;
-	  return Return_Value::Retry_Event;
-	case  0 :
+      blob   = (*blit);
+      moveon = false;
+      Reset();
+      for (short int i=0;i<m_maxtrials;i++) {
+	result = Hadronize(blob,i);
+	switch (result) {
+	case Return_Value::Success : 
+	  ++blit;
+	  moveon = true;
+	  break;
+	case Return_Value::Retry_Event : 
+	  msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+		     <<"   Hadronization for blob "
+		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
+		     <<"did not work out,"<<std::endl
+		     <<"   will trigger retrying the event."<<std::endl;
+	  CleanUp(blob);
+	  return result;
+	case Return_Value::Retry_Method :
 	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
-		     <<"   Cluster formation did not work out properly in the "
-		     <<(i+1)<<"th attempt,"<<std::endl
+		     <<"   Hadronization for blob "
+		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
+		     <<"did not work out properly in the "<<(i+1)<<"th attempt,"<<std::endl
 		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  rvalue.IncRetryMethod(METHOD);
-	  retry = true;
-	  if (blob) { blob->DeleteOutParticles(); }
+	  CleanUp(blob);
 	  break;
-	case 1 :
-	  if (retry) msg_Out()<<"   Passed cluster formation now ("<<(i+1)<<"th trial)."<<std::endl;
+	case Return_Value::Nothing :
+	default:
+	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+		     <<"   Calling Hadronization for Blob("<<blob<<") yields "
+		     <<int(result)<<"."<<std::endl
+		     <<"   Continue and hope for the best."<<std::endl;
 	  moveon = true;
+	  ++blit;
 	  break;
 	}
 	if (moveon) break;
       }
-      if (!moveon) return Return_Value::Retry_Event;
 
-#ifdef AHAmomcheck
-      //if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12) {
-      //	msg_Out()<<"=============================================================="<<endl
-      //		 <<METHOD<<" (1) momentum violation for : "<<endl
-      //		 <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
-      //		 <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-      //		 <<", "<<blob->CheckMomentumConservation()<<"   ("
-      //		 <<blob->CheckMomentumConservation().Abs2()<<") "<<endl
-      //		 <<(*blob)<<endl
-      //		 <<(*p_cformhandler->GetClusters())<<endl;
-      //}
-      //else msg_Out()<<"=============================================================="<<endl
-      //		    <<METHOD<<" (1) momentum conservation for : "<<endl
-      //		    <<"   "<<clus.RemainingClusters()<<" remaining clusters and blobs/particles = "
-      //		    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-      //		    <<", "<<blob->CheckMomentumConservation().Abs2()<<endl
-      //		    <<(*blob)<<endl;
-#endif
-
-      retry = moveon = false;
-      for (int i=0;i<m_maxtrials;i++) {
-	switch (p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs)) {
-	case -1 : 
-	  msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
-		     <<"   Will retry event."<<std::endl;
-	  return Return_Value::Retry_Event;
-	case  0 :
-	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
-		     <<"   Cluster decays did not work out properly in the "
-		     <<(i+1)<<"th attempt,"<<std::endl
-		     <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
-	  rvalue.IncRetryMethod(METHOD);
-	  retry = true;
-	  if (blob) { blob->DeleteOutParticles(); }
-	  msg_Out()<<"   Blobs = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
-		   <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-		   <<"   : "<<blob->CheckMomentumConservation()<<endl
-		   <<"   "<<(*blob)<<endl;
-	  break;
-	case  1 :
-	  if (retry) msg_Out()<<"   Passed cluster decays now ("<<(i+1)<<"th trial)."<<std::endl;
-	  blob->AddStatus(blob_status::needs_hadrondecays);
-	  if (!m_fullinfo) {
-	    blobs->MergeSubsequentTypeRecursively(btp::Cluster_Formation,btp::Cluster_Decay,
-						  control::s_AHAblobs,
-						  control::s_AHAparticles);
-	    blob->SetStatus(blob_status::needs_hadrondecays);
-	    blob->SetType(btp::Fragmentation);
-	  }
-	  blob->UnsetStatus(blob_status::needs_hadronization);
-	  moveon = true;
-	  break;
-	}
-	if (moveon) break;
-      }
-      if (!moveon) return Return_Value::Retry_Event;
-
-      if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
-	  (clus.RemainingClusters()!=1 && clus.RemainingClusters()!=0) ||
-	  control::s_AHAblobs!=0 || 
-	  control::s_AHAparticles!=blob->NOutP() ||
-	  control::s_AHAprotoparticles!=0) {
-	msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
-		 <<"   Momentum/particle-blob number violation for "<<(clus.RemainingClusters()-1)
-		 <<" remaining clusters."<<endl
-		 <<" Blobs = "<<control::s_AHAblobs<<"/ protos = "<<control::s_AHAprotoparticles
-		 <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-		 <<"   : "<<blob->CheckMomentumConservation()<<endl
-		 <<(*blob)<<endl;
-	abort();
-	return Return_Value::Retry_Event;
+      CleanUp();
+      moveon = moveon && SanityCheck(blob,norm2);	    
+      if (moveon) {
+	blob->SetStatus(blob_status::needs_hadrondecays);
+	blob->SetType(btp::Fragmentation);
       }
       else {
-	if (msg->LevelIsDebugging()) {
-#ifdef AHAmomcheck
-	  msg_Out()<<"Momentum conservation at the end : "<<blob->CheckMomentumConservation()<<endl
-		   <<(*blob)<<endl
-		   <<"##########################  OUT : No Error ###############################"<<endl
-		   <<"##########################################################################"<<endl;
-#else
-	  msg_Out()<<METHOD<<" : "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
-		   <<(*blob)<<(*blobs)
-		   <<"##############################################################"<<endl
-		   <<"##############################################################"<<endl
-		   <<"##############################################################"<<endl;
-#endif
-	}
+	CleanUp(blob);
+	return Return_Value::Retry_Event;
       }
-    }  
+    }
+    else blit++;
   }
   return Return_Value::Success;
 }  
+
+
+
+Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
+  blob->SetType(btp::Cluster_Formation);
+  blob->SetTypeSpec("AHADIC-1.0");
+
+  switch (p_cformhandler->FormClusters(blob)) {
+  case -1 : 
+    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+	       <<"   Will retry event."<<std::endl;
+    return Return_Value::Retry_Event;
+  case  0 :
+    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+	       <<"   Will retry method."<<std::endl;
+    return Return_Value::Retry_Method;
+  case 1 :
+    if (retry>0) msg_Out()<<"   Passed cluster formation now ("<<retry<<"th trial)."<<std::endl;    
+    break;
+  }
+  
+  if (msg->LevelIsDebugging()) {
+    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(*p_clulist)<<std::endl;
+  }
+  
+  switch (p_cdechandler->DecayClusters(blob)) {
+  case -1 : 
+    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+	       <<"   Will retry event."<<std::endl;
+    return Return_Value::Retry_Event;
+  case  0 :
+    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+	       <<"   Will retry method."<<std::endl;
+    return Return_Value::Retry_Method;
+  case  1 :
+    if (retry) msg_Out()<<"   Passed cluster decays now ("<<retry<<"th trial)."<<std::endl;
+    break;
+  }
+
+
+  if (msg->LevelIsDebugging()) {
+#ifdef AHAmomcheck
+      msg_Out()<<"Momentum conservation at the end : "<<blob->CheckMomentumConservation()<<endl
+	       <<(*blob)<<endl
+	       <<"##########################  OUT : No Error ###############################"<<endl
+	       <<"##########################################################################"<<endl;
+#else
+      msg_Out()<<METHOD<<" : "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
+	       <<(*blob)<<(*blobs)
+	       <<"##############################################################"<<endl
+	       <<"##############################################################"<<endl
+	       <<"##############################################################"<<endl;
+#endif
+  }
+  
+  return Return_Value::Success;
+}
+
+
+void Ahadic::Reset() {
+  Cluster clus;
+  clus.ResetClusterNumber();
+  clus.ResetClusterCount();
+  control::s_AHAparticles = control::s_AHAprotoparticles = 0;
+}
+
+bool Ahadic::SanityCheck(Blob * blob,double norm2) {
+  Cluster clus;
+  if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
+      (clus.RemainingClusters()!=1 && clus.RemainingClusters()!=0) ||
+      control::s_AHAparticles!=blob->NOutP() ||
+      control::s_AHAprotoparticles!=0) {
+    msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
+	     <<"   Momentum/particle-blob number violation for "<<(clus.RemainingClusters()-1)
+	     <<" remaining clusters (norm2 = "<<norm2<<")."<<endl
+	     <<"   Protoparticles = "<<control::s_AHAprotoparticles
+	     <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+	     <<"   : "<<blob->CheckMomentumConservation()<<endl
+	     <<(*blob)<<endl;
+    return false;
+  }
+  msg_Debugging()<<"Passed "<<METHOD<<" with "
+		 <<"protoparticles = "<<control::s_AHAprotoparticles
+		 <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+		 <<"   : "<<blob->CheckMomentumConservation()<<endl
+		 <<(*blob)<<endl;
+  return true;
+}
+
+void Ahadic::CleanUp(Blob * blob) {
+  Cluster_List * clusters = p_cformhandler->GetPrimaryClusters();
+  while (!clusters->empty()) {
+    if (msg_LevelIsDebugging()) clusters->front()->Print();
+    clusters->front()->Delete();
+    clusters->pop_front();
+  }
+
+  if (blob) blob->DeleteOutParticles(0);
+}

@@ -19,16 +19,17 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(Single_Transitions * singletransition
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() {}
 
-bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
+bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   Cluster_Iterator cit;
   Cluster * cluster;
 
   int size(0);
   for (cit=clin->begin();cit!=clin->end();cit++) {
-    if ((*cit)==NULL) continue;
+    if ((*cit)==NULL || !(*cit)->Active()) continue;
     size += CheckCluster((*cit),clin->size()==1);
   }
+  if (size==0) return true;
 
 
   if (clin->size()==1) {
@@ -40,12 +41,17 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 		 <<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     case 2:
-      FixHHDecay(cluster);
+      FixHHDecay(cluster,blob);
     case 0:
     default:
       return true;
     }
   }
+
+#ifdef AHAmomcheck
+  Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
+  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) checkbef += (*cit)->Momentum(); 
+#endif
 
   double E(-1.);
   bool breakit(true);
@@ -60,46 +66,39 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 		 <<"   Will possibly lead to retrying the event."<<std::endl;
     return false;
   }
-#ifdef AHAmomcheck
-  Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
-  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) 
-    checkbef += (*cit)->Momentum(); 
-#endif
+
   Flavour had1,had2;
   for (cit=clin->begin();cit!=clin->end();) {
     cluster = (*cit);
-    if (cluster->size()==1) {
-      blob->AddToOutParticles(cluster->GetSelf());
-#ifdef AHAmomcheck
-      checkaft += cluster->Momentum();
-      if (dabs((cluster->GetSelf()->Momentum()-cluster->Momentum()).Abs2())>1.e-12) {
-	msg_Out()<<METHOD<<" cluster and particle momentum do not agree: "
-		 <<(cluster->GetSelf()->Momentum()-cluster->Momentum())
-		 <<" ("<<(cluster->GetSelf()->Momentum()-cluster->Momentum()).Abs2()<<")."
-		 <<std::endl;
-      }
-#endif
-      delete cluster;
-      cit = clin->erase(cit);
-#ifdef AHAmomcheck
-      msg_Debugging()<<METHOD<<" involving a C->H transition."<<std::endl;
-#endif
-      continue;
-    }
-    else if (cluster->size()>1) {
-      FixHHDecay(cluster);
+    switch (cluster->size()) {
+    case 2:
+      FixHHDecay(cluster,blob);
 #ifdef AHAmomcheck
       checkaft += cluster->GetLeft()->Momentum();
       checkaft += cluster->GetRight()->Momentum();
 #endif
+      cluster->SetActive(false);
+      cit = clin->erase(cit);
+      break;
+    case 1:
+      blob->AddToOutParticles(cluster->GetSelf());
+#ifdef AHAmomcheck
+      checkaft += cluster->Momentum();
+      msg_Debugging()<<METHOD<<" involving a C->H transition."<<std::endl;
+#endif
+      cluster->SetActive(false);
+      cit = clin->erase(cit);
+      break;
+    case 0:
+#ifdef AHAmomcheck
+      checkaft += cluster->Momentum();
+#endif
+      cit++;
+      break;
     }
-    cit++;
   }
 
 #ifdef AHAmomcheck
-  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-    if (!(*cit)->GetLeft()) checkaft += (*cit)->Momentum(); 
-  }
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
 	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
@@ -111,6 +110,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
 int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,const double Mmax)
 {
+  cluster->clear();
   Flavour had1,had2,hadron;
 
   double decayweight(0.), transformweight(0.);
@@ -245,10 +245,10 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
-void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster)
+void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
 {
 #ifdef AHAmomcheck
-  Vec4D checkbef = cluster->Momentum();
+  Vec4D  checkbef = cluster->Momentum();
 #endif
   Flavour had1((*cluster)[0]), had2((*cluster)[1]);
 
@@ -266,17 +266,25 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster)
 
   Particle * part;
   Cluster * clus;
-  clus = new Cluster();
-  clus->SetMomentum(p1);
+  clus = new Cluster(p1,had1,false);
   clus->SetPrev(cluster);
   cluster->SetLeft(clus);
+#ifdef memchecker
+  std::cout<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
+#endif
 
-  clus = new Cluster();
-  clus->SetMomentum(p2);
+  clus = new Cluster(p2,had2,false);
   clus->SetPrev(cluster);
   cluster->SetRight(clus);
+#ifdef memchecker
+  std::cout<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
+#endif
 
   cluster->RotateAndBoostBack();
+
+  blob->AddToOutParticles(cluster->GetLeft()->GetSelf());
+  blob->AddToOutParticles(cluster->GetRight()->GetSelf());
+
 
 #ifdef AHAmomcheck
   if (dabs((checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2())>1.e-12) {
@@ -290,22 +298,12 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster)
   else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
-  part = new Particle(-1,had1,cluster->GetLeft()->Momentum());
-  part->SetNumber();
-  part->SetInfo('P');
-  part->SetStatus(part_status::active);
-  part->SetFinalMass(had1.PSMass());
-  control::s_AHAparticles++;
-  cluster->GetLeft()->SetSelf(part);
-  
-  part = new Particle(-1,had2,cluster->GetRight()->Momentum());
-  part->SetNumber();
-  part->SetInfo('P');
-  part->SetStatus(part_status::active);
-  part->SetFinalMass(had2.PSMass());
-  control::s_AHAparticles++;
-  cluster->GetRight()->SetSelf(part);
 }
+
+
+
+
+
 
 double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour & hadron,
 					     const double Mmax,bool lighter)
@@ -509,9 +507,7 @@ bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin,int size,bool takeal
       checkaft += momenta[pos];
 #endif
       cluster->SetMomentum(momenta[pos]);
-      cluster->GetSelf()->SetMomentum(momenta[pos]);
-      cluster->GetSelf()->SetFinalMass(masses[pos]);
-      cluster->GetSelf()->SetFlav((*cluster)[0]);
+      cluster->SetFlav((*cluster)[0]);
       pos++;
     }
   }

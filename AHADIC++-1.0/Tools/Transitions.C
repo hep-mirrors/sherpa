@@ -63,6 +63,7 @@ Single_Transitions::~Single_Transitions()
 
 bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
+  //std::cout<<METHOD<<" for "<<std::endl<<(*cluster)<<std::endl;
   Flavour_Pair fpair;
   fpair.first  = cluster->GetTrip()->m_flav;
   fpair.second = cluster->GetAnti()->m_flav;

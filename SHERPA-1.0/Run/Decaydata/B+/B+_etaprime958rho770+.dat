@@ -1,0 +1,19 @@
+# Decay: B+ --> eta'(958) rho(770)+ 
+#        0  --> 1         2         
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  3.248e-33 5.914e-35 3.36e-31;
+</Result>

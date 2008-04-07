@@ -1,0 +1,19 @@
+# Decay: Sigma- --> Lambda nu_eb e- 
+#        0      --> 1      2     3  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  4.956e-07 3.852e-09 3.316e-06;
+</Result>

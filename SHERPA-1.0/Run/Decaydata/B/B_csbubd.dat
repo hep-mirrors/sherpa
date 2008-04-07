@@ -1,0 +1,25 @@
+# Decay: B --> c sb ub d 
+#        0 --> 1 2  3  4 
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 IsotropicSpectator_4
+</Phasespace>
+
+<ME>
+  1.0 0.0 QQ_QQQQ_Spectator[0,3,2,1,4]
+</ME>
+
+<QQ_QQQQ_Spectator[0,3,2,1,4]>
+  colourflip_ratio = 0.0
+  Vxx_decay = 0.004
+  Vxx_production = 0.973
+</QQ_QQQQ_Spectator[0,3,2,1,4]>
+
+<Result>
+  7.611e-16 1.375e-18 1.642e-14;
+</Result>

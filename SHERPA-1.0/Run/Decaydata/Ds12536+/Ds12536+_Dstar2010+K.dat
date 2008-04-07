@@ -1,0 +1,19 @@
+# Decay: D(s1)(2536)+ --> D*(2010)+ K 
+#        0            --> 1         2 
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  0.000929 0 0.004711;
+</Result>

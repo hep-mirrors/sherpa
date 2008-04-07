@@ -20,6 +20,13 @@ namespace AHADIC {
     int                         m_maxtrials;
     Cluster_Formation_Handler * p_cformhandler;
     Cluster_Decay_Handler     * p_cdechandler;
+    
+    Cluster_List              * p_clulist;
+
+    ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob *,int retry=0);
+    void Reset();
+    bool SanityCheck(ATOOLS::Blob * blob,double norm=-1.);
+    void CleanUp(ATOOLS::Blob * blob=NULL);
   public:
     Ahadic(std::string path=std::string("./"),
 	   std::string file=std::string("Cluster.dat"),bool=false);

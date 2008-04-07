@@ -4,78 +4,198 @@
 #include "HD_ME_Base.H"
 
 namespace HADRONS {
-  class P_GammaFF : public HD_ME_Base {
-    int m_phot,m_f1,m_f2;
+
+  class B_Bpi_pwave : public HD_ME_Base {
+    Complex m_cL, m_cR;
   public:
-    P_GammaFF(int,ATOOLS::Flavour *);
-    double operator()(const ATOOLS::Vec4D *);
-    void   operator()( 
-        const ATOOLS::Vec4D  * _p, 
-        std::vector<Complex> * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                    k0_n );
+    B_Bpi_pwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
   };
 
-  class P_2PGamma : public HD_ME_Base {
-    int m_phot,m_p1,m_p2;
+  class B3_Bpi_pwave : public HD_ME_Base {
+    Complex m_cL, m_cR;
   public:
-    P_2PGamma(int,ATOOLS::Flavour *);
-    void   operator()( 
-        const ATOOLS::Vec4D  * _p, 
-        std::vector<Complex> * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                    k0_n );
-    double operator()(const ATOOLS::Vec4D *);
+    B3_Bpi_pwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
   };
 
-  class P_P2Gamma : public HD_ME_Base {
-    int    m_phot1, m_phot2, m_p;
-    double m_mrho2, m_grho2;
+  class B_Bpi_swave : public HD_ME_Base {
+    Complex m_cL, m_cR;
   public:
-    P_P2Gamma(int,ATOOLS::Flavour *);
-    void   operator()( 
-        const ATOOLS::Vec4D  * _p, 
-        std::vector<Complex> * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                    k0_n );
-    double operator()(const ATOOLS::Vec4D *);
+    B_Bpi_swave(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
   };
 
-  class P_3P_DalitzDef : public HD_ME_Base {
-  private:
-    bool m_allpions, m_allsame;
-    int  m_pi0, m_pip, m_pim;
+  class B3_Bpi_dwave : public HD_ME_Base {
+    Complex m_cL, m_cR;
   public:
-    P_3P_DalitzDef(int,ATOOLS::Flavour *);
-    double operator()(const ATOOLS::Vec4D *);
+    B3_Bpi_dwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
   };
 
-//  class P_3P_Dalitz : public HD_ME_Base {
-//  private:
-//    double m_a1,m_a2,m_b1,m_b2,m_c;
-//  public:
-//    P_3P_Dalitz(int,ATOOLS::Flavour *);
-//    double operator()(const ATOOLS::Vec4D *);
-//    void   SetDalitzParameters(std::vector<double> &);
-//  };
-//
+  class B_Bphoton_M1 : public HD_ME_Base {
+    double m_fac;
+  public:
+    B_Bphoton_M1(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+  class B3_Bphoton_M1 : public HD_ME_Base {
+    Complex m_cL, m_cR;
+  public:
+    B3_Bphoton_M1(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+  class B3_Bphoton_M1_2 : public HD_ME_Base {
+    Complex m_cL, m_cR;
+  public:
+    B3_Bphoton_M1_2(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+  class B_Bphoton_E1 : public HD_ME_Base {
+    Complex m_cL, m_cR;
+  public:
+    B_Bphoton_E1(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+  class B3_Bphoton_E1 : public HD_ME_Base {
+    Complex m_cL, m_cR;
+  public:
+    B3_Bphoton_E1(ATOOLS::Flavour* flavs, int n, int* decayindices,
+                std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+  class QQ_PGG : public HD_ME_Base {
+    double m_min_mass2;
+  public:
+    QQ_PGG(ATOOLS::Flavour* flavs, int n, int* decayindices,
+           std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
+    void operator()(
+                    const ATOOLS::Vec4D  * p,
+                    HELICITIES::Spin_Amplitudes     * amps
+                    );
+    void SetModelParameters( GeneralModel _md );
+  };
+
+//   class P_GammaFF : public HD_ME_Base {
+//     int m_phot,m_f1,m_f2;
+//   public:
+//     P_GammaFF(int,ATOOLS::Flavour *);
+//     double operator()(const ATOOLS::Vec4D *);
+//     void   operator()( 
+//         const ATOOLS::Vec4D  * _p, 
+//         std::vector<Complex> * _ampls_tensor, 
+//         std::vector<std::pair<int,int> > * _indices,
+//         int                    k0_n );
+//   };
+// 
+//   class P_2PGamma : public HD_ME_Base {
+//     int m_phot,m_p1,m_p2;
+//   public:
+//     P_2PGamma(int,ATOOLS::Flavour *);
+//     void   operator()( 
+//         const ATOOLS::Vec4D  * _p, 
+//         std::vector<Complex> * _ampls_tensor, 
+//         std::vector<std::pair<int,int> > * _indices,
+//         int                    k0_n );
+//     double operator()(const ATOOLS::Vec4D *);
+//   };
+// 
+//   class P_P2Gamma : public HD_ME_Base {
+//     int    m_phot1, m_phot2, m_p;
+//     double m_mrho2, m_grho2;
+//   public:
+//     P_P2Gamma(int,ATOOLS::Flavour *);
+//     void   operator()( 
+//         const ATOOLS::Vec4D  * _p, 
+//         std::vector<Complex> * _ampls_tensor, 
+//         std::vector<std::pair<int,int> > * _indices,
+//         int                    k0_n );
+//     double operator()(const ATOOLS::Vec4D *);
+//   };
+
+//   class P_3P_DalitzDef : public HD_ME_Base {
+//   private:
+//     bool m_allpions, m_allsame;
+//     int  m_pi0, m_pip, m_pim;
+//   public:
+//     P_3P_DalitzDef(int,ATOOLS::Flavour *);
+//     double operator()(const ATOOLS::Vec4D *);
+//   };
+
   class P_3P_Dalitz : public HD_ME_Base {
-
-    int    m_pseudo_1, m_pseudo_2, m_pseudo_3;
-    double m_mProd1, m_mProd2, m_mProd3, m_mDecayer;
+    // indices: P0=0, P1=1, P2=2, P3=3
     double m_const,m_liny,m_linx,m_linyphase,m_linxphase,
       m_quady,m_quadx,m_quadyphase,m_quadxphase,
       m_phaseliny,m_phaselinx,m_phasequady,m_phasequadx;
   public:
-    P_3P_Dalitz(int,ATOOLS::Flavour *);
+    P_3P_Dalitz(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name):
+      HD_ME_Base(flavs,n,decayindices,name) {};
     double operator()(const ATOOLS::Vec4D *);
     void   operator()( 
-        const ATOOLS::Vec4D  * _p, 
-        std::vector<Complex> * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                    k0_n );
+        const ATOOLS::Vec4D     * _p,
+	HELICITIES::Spin_Amplitudes * amps);
     void SetModelParameters( GeneralModel _md );
   };
+
 }
 
 

@@ -4,16 +4,12 @@
 #include <set>
 #include <iterator>
 
-#include "CXXFLAGS.H"
-
 #include "Return_Value.H"
 #include "Flavour.H"
 #include "Vector.H"
 
-#ifdef USING__Hadrons
 namespace HADRONS { class Hadrons; }
-#endif
-namespace ATOOLS { class Blob; class Particle; }
+namespace ATOOLS { class Blob; class Particle; class Blob_List;}
 
 namespace SHERPA {
   class Lund_Interface;
@@ -22,34 +18,30 @@ namespace SHERPA {
   protected :
     std::string                   m_decmodel;
     int                           m_mode;
-    bool                          m_mass_smearing;
-#ifdef USING__Hadrons
     HADRONS::Hadrons            * p_hadrons;
-#endif
     Lund_Interface              * p_lund; 
     std::set<kf_code>  * p_cans;
 
   public :
-#ifdef USING__Hadrons
     Hadron_Decay_Handler(HADRONS::Hadrons *);
-#endif
     Hadron_Decay_Handler(Lund_Interface *);
 
     ~Hadron_Decay_Handler();
-
-    ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *, const ATOOLS::Vec4D&);
+    
+    bool CreateDecayBlob(ATOOLS::Blob*);
+    bool FillDecayBlob(ATOOLS::Blob *, const ATOOLS::Vec4D& labmom);
+    
     bool CanDealWith(kf_code);
 
-#ifdef USING__Hadrons
     HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
-#endif
     Lund_Interface   * GetLund()    { return p_lund; }
     std::string        Name()       { return m_decmodel; }
     std::set<kf_code>  * GetCans() { return p_cans; }
-    void               SetMassSmearing(bool ms)      { m_mass_smearing = ms; }
-    bool               GetMassSmearing()             { return m_mass_smearing; }
     bool               DiceMass(ATOOLS::Particle*, double min, double max);
     void               SetSignalProcessBlob(ATOOLS::Blob* spblob);
+    bool               PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist);
+    void               CleanUp();
+    bool               IsExclusiveDecaychannel(ATOOLS::Blob* blob, ATOOLS::FlavourSet results);
   };
 
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;
@@ -66,23 +58,21 @@ namespace SHERPA {
 
     Knows all different hadron decay handlers and can tell whether a specific
     one can deal with an unstable particle (CanDealWith()). It can then pass
-    the to be decayed blob to it (FillHadronDecayBlob()).
+    the to be decayed blob to it (CreateDecayBlob() and FillDecayBlob()).
     */
   /*!
-    \fn FillHadronDecayBlob(ATOOLS::Blob *)
-    \brief Passes the to be decayed blob to the hadron decay handler
+    \fn CreateDecayBlob(ATOOLS::Blob *)
+    \brief Passes the to be created blob to the hadron decay handler
     incorporated.
-
-    It calls the decay method of its hadron decay handler for the given blob,
-    and returns the \c Return_Value::code that it receives from it.
+    The handler then has the chance to prepare the blob and attach any
+    information necessary for its inparticle's mass dicing to it.
     */
   /*!
-    \fn EraseTreated(std::set<int> *)
-    \brief Erases all kfcodes, which the HADRONS module is
-    able to decay, from the given set
-
-    This is used for finding out whether we need an additional decay module
-    (like Lund).
+    \fn FillDecayBlob(ATOOLS::Blob *)
+    \brief Passes the to be filled blob to the hadron decay handler
+    incorporated. It calls the decay method of its hadron decay handler
+    for the given blob. The blob is in the incoming particle's rest frame
+    all the time.
     */
 
 #endif

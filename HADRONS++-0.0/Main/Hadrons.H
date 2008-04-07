@@ -10,65 +10,63 @@
 #include <map>
 #include "Flavour.H"
 #include "Return_Value.H"
-#include "Decay_Table_Reader.H"
-#include "HD_ME_Base.H"
+#include "Vector.H"
 
 namespace ATOOLS {
-  class Decay_Table;
   class Particle;
   class Particle_List;
   class Spin_Density_Matrix;
   class Blob;
   class Blob_List;
   class CMatrix;
-  class Amplitude_Tensor;
   class Poincare;
+  class Decay_Channel;
 }
 
-namespace HADRONS {
-  class Hadron_Decay_Channel;
-  
-  class Hadrons {
+namespace HELICITIES { class Amplitude_Tensor; }
 
+namespace HADRONS {
+  class Decay_Map;
+  class Hadron_Decay_Table;
+  class Hadron_Decay_Channel;
+  class Mixing_Handler;
+
+  class Hadrons {
   private:
-    std::string           m_path, m_file, m_constfile;
-    Channel_Map         * p_channelmap;
-    ATOOLS::Decay_Table * p_table;
-    std::map<kf_code,ATOOLS::Decay_Table *>
-                        * p_decaymap;
-    GeneralModel          m_md0;                // starter model
+    Decay_Map           * p_decaymap;
+    Mixing_Handler      * p_mixinghandler;
     bool                  m_spincorrelations;
     ATOOLS::CMatrix     * p_color_unitmatrix;
     ATOOLS::Blob        * p_spblob;
 
-    void ReadInConstants();
-    void ReadInDecayTables();
-    ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
-
-    bool                  FindDecay( const ATOOLS::Flavour & );
     ATOOLS::Blob* GetSignalProcessBlob(ATOOLS::Particle* inpart);
-    ATOOLS::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
-      ATOOLS::Particle*& outpart,const ATOOLS::Vec4D& labmom);
+    HELICITIES::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
+                                                   ATOOLS::Particle*& outpart,
+                                                   const ATOOLS::Vec4D& labmom);
+    Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob, Hadron_Decay_Table*);
+    void                   DiceUncorrelatedKinematics(
+                                    std::vector<ATOOLS::Vec4D> & moms,
+                                    Hadron_Decay_Channel       * hdc,
+                                    bool                         anti);
+    bool                   SetColorFlow(ATOOLS::Blob* blob);
 
   public: 
     Hadrons(
         std::string _path=std::string("./"), 
         std::string _file=std::string("HadronDecays.dat"),
         std::string _constfile=std::string("HadronConstants.dat") );
-	
-    Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob);
-    void                   DiceUncorrelatedKinematics(
-                                    std::vector<ATOOLS::Vec4D> & moms,
-                                    Hadron_Decay_Channel       * hdc,
-                                    bool anti );
-    void                   ChooseDecayKinematics( ATOOLS::Blob* blob,
-                                                  const ATOOLS::Vec4D&,
-                                                  Hadron_Decay_Channel* hdc );
-    ATOOLS::Return_Value::code     PerformDecay( ATOOLS::Blob* blob, const ATOOLS::Vec4D& );
+    ~Hadrons();
 
-    std::map<kf_code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
+    Decay_Map* DecayMap() { return p_decaymap; }
+    Mixing_Handler* MixingHandler() { return p_mixinghandler; }
+    
+    void ChooseDecayKinematics( ATOOLS::Blob* blob,
+                                const ATOOLS::Vec4D&,
+                                Hadron_Decay_Channel* hdc );
+    bool CreateDecayBlob(ATOOLS::Blob* blob);
+    bool FillDecayBlob(ATOOLS::Blob* blob, const ATOOLS::Vec4D& labmom);
+    void CleanUp();
 
-    void CreateBookletNow();
     void SetSpinCorrelations(bool sc);
     void SetSignalProcessBlob(ATOOLS::Blob* spblob) { p_spblob=spblob; }
   }; // end of class Hadrons

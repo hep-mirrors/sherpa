@@ -48,19 +48,21 @@ std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle_List & 
   return s;
 }
 
-Cluster::Cluster() :
-  p_trip(NULL), p_anti(NULL), m_momentum(Vec4D(0.,0.,0.,0.)),
+Cluster::Cluster(Vec4D mom,Flavour flav,bool active) :
+  m_active(active), p_trip(NULL), p_anti(NULL), 
+  m_momentum(mom), m_flav(flav),
   m_hasboost(false), m_hasrotate(false), 
-  p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL),
+  p_left(NULL), p_right(NULL), p_prev(NULL),
   m_number(s_cluster_number++)
 {
   s_cluster_count++;
 }
 
 Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
-  p_trip(trip), p_anti(anti), m_momentum(p_trip->m_mom+p_anti->m_mom),
+  m_active(true), p_trip(trip), p_anti(anti), 
+  m_momentum(p_trip->m_mom+p_anti->m_mom), m_flav(Flavour(kf_cluster)),
   m_hasboost(false), m_hasrotate(false), 
-  p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL),
+  p_left(NULL), p_right(NULL), p_prev(NULL),
   m_number(s_cluster_number++)
 {
   ////PRINT_VAR(m_momentum);
@@ -73,15 +75,23 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   msg_Error()<<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
 	     <<"   Cannot handle this colour structure, will abort the run."<<std::endl
 	     <<"   Please contact the Sherpa group for further assistance."<<std::endl;
-  exit(0);
+  abort();
 }
 
 Cluster::~Cluster() 
 {
   if (p_trip) { 
+#ifdef memchecker
+    std::cout<<"### Delete Proto_Particle ("<<p_trip
+    	     <<"/"<<p_trip->m_flav<<") in "<<METHOD<<"."<<std::endl;
+#endif
     delete p_trip; p_trip=NULL; 
   }
   if (p_anti) { 
+#ifdef memchecker
+    std::cout<<"### Delete Proto_Particle ("<<p_anti
+    	     <<"/"<<p_anti->m_flav<<") in "<<METHOD<<"."<<std::endl;
+#endif
     delete p_anti; p_anti=NULL; 
   }
   s_cluster_count--;
@@ -103,6 +113,16 @@ void Cluster::Update()
   exit(0);
 }
 
+Particle * Cluster::GetSelf() const { 
+  Particle * part(new Particle(-1,m_flav,m_momentum));
+  part->SetNumber();
+  part->SetInfo('P');
+  part->SetStatus(part_status::active);
+  part->SetFinalMass(m_flav.PSMass());
+  control::s_AHAparticles++;
+  return part;
+}
+
 Blob * Cluster::ConstructDecayBlob()
 {
   Blob * blob = new Blob();
@@ -111,21 +131,20 @@ Blob * Cluster::ConstructDecayBlob()
   blob->SetTypeSpec("AHADIC-1.0");
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->SetId();
-  blob->AddToInParticles(p_self);
-  p_self->SetStatus(part_status::decayed);
-  p_self->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
+  Particle * part(GetSelf());
+  blob->AddToInParticles(part);
+  part->SetStatus(part_status::decayed);
+  part->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
 
-  if (p_left && p_left->p_self) {
-    blob->AddToOutParticles(p_left->p_self);
-    if (p_left->p_self->Flav()!=Flavour(kf_cluster)) {
-      delete p_left; p_left=NULL;
-    }
+  if (p_left) {
+    part = p_left->GetSelf();
+    blob->AddToOutParticles(part);
+    if (part->Flav()!=Flavour(kf_cluster)) p_left->m_active=false;
   }
-  if (p_right && p_right->p_self) {
-    blob->AddToOutParticles(p_right->p_self);
-    if (p_right->p_self->Flav()!=Flavour(kf_cluster)) {
-      delete p_right; p_right=NULL;
-    }
+  if (p_right) {
+    part = p_right->GetSelf();
+    blob->AddToOutParticles(part);
+    if (part->Flav()!=Flavour(kf_cluster)) p_right->m_active=false;
   }
 
   return blob;
@@ -133,10 +152,6 @@ Blob * Cluster::ConstructDecayBlob()
 
 void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 {
-  //PRINT_VAR(m_momentum);
-  //PRINT_VAR(newmom);
-  //PRINT_VAR(p_trip->m_mom);
-  //PRINT_VAR(p_anti->m_mom);
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
@@ -222,8 +237,6 @@ void Cluster::BoostInCMS() {
   if (p_left!=NULL)  p_left->Boost(m_boost);
   if (p_right!=NULL) p_right->Boost(m_boost);
 
-  if (p_self) p_self->SetMomentum(m_momentum);
-  //PRINT_INFO(this<<" "<<m_momentum);
   m_hasboost = true;
 }
 
@@ -235,7 +248,6 @@ void Cluster::BoostBack() {
   if (p_left!=NULL)  p_left->BoostBack(m_boost);
   if (p_right!=NULL) p_right->BoostBack(m_boost);
 
-  if (p_self) p_self->SetMomentum(m_momentum);
   m_hasboost = false;
 }
 
@@ -245,8 +257,6 @@ void Cluster::Boost(Poincare & boost) {
   if (p_anti) boost.Boost(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Boost(boost);
   if (p_right!=NULL) p_right->Boost(boost);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
 }
 
 void Cluster::BoostBack(Poincare & boost) {
@@ -255,8 +265,6 @@ void Cluster::BoostBack(Poincare & boost) {
   if (p_anti) boost.BoostBack(p_anti->m_mom);
   if (p_left!=NULL)  p_left->BoostBack(boost);
   if (p_right!=NULL) p_right->BoostBack(boost);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
 }
 
 void Cluster::Rotate(Poincare & rotate) {
@@ -265,8 +273,6 @@ void Cluster::Rotate(Poincare & rotate) {
   if (p_anti) rotate.Rotate(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Rotate(rotate);
   if (p_right!=NULL) p_right->Rotate(rotate);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
 }
 
 void Cluster::RotateBack(Poincare & rotate) {
@@ -275,8 +281,6 @@ void Cluster::RotateBack(Poincare & rotate) {
   if (p_anti) rotate.RotateBack(p_anti->m_mom);
   if (p_left!=NULL)  p_left->RotateBack(rotate);
   if (p_right!=NULL) p_right->RotateBack(rotate);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
 }
 
 void Cluster::BoostBack(ATOOLS::Vec4D & mom) {
@@ -290,9 +294,26 @@ void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
   m_boost.BoostBack(mom);
 }
 
+void Cluster::Print() {
+  msg_Out()<<"   Cluster ["<<m_active<<", "<<m_number<<", "<<size()<<"] "
+	   <<"("<<m_flav<<" with "<<m_momentum<<") ---> ";
+  if (p_left)  msg_Out()<<" (l) "<<p_left->m_number<<" ";
+  if (p_right) msg_Out()<<" (r) "<<p_right->m_number;
+  msg_Out()<<std::endl;
+  if (p_left) p_left->Print(); 
+  if (p_right) p_right->Print(); 
+}
+
+void Cluster::Delete() {
+  if (p_left)  p_left->Delete();
+  if (p_right) p_right->Delete();
+
+  delete this;
+}
+
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
-     <<"Cluster ["<<cluster.m_number<<", "<<cluster.size()<<"] "
+     <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "<<cluster.size()<<"] "
      <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ): "<<std::endl;
   if (cluster.p_trip) str<<"  "<<(*cluster.p_trip);
   if (cluster.p_anti) str<<"  "<<(*cluster.p_anti);

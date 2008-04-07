@@ -6,7 +6,6 @@
 #include "Colour_Reconnections.H"
 #include "Soft_Cluster_Handler.H"
 #include "Cluster.H"
-#include "Blob_List.H"
 #include "Blob.H"
 #include "Histogram.H"
 #include <map>
@@ -22,8 +21,7 @@ namespace AHADIC {
     Colour_Reconnections              * p_recons;
     Soft_Cluster_Handler              * p_softclusters;
 
-    ATOOLS::Blob                      * p_blob;
-    Cluster_List                      * p_clulist;
+    Cluster_List                      * p_clulist, * p_primaries;
     ListOfPPLs                          m_partlists;
     std::vector<Cluster_List *>         m_clulists;
 
@@ -34,22 +32,18 @@ namespace AHADIC {
     bool ShiftOnMassShells();
     bool ShiftList(Proto_Particle_List *);
     Proto_Particle_List * SelectFromList(ListOfPPLs * lppl,Proto_Particle_List * ppl=NULL);
-    bool ExtractSinglets();
+    bool ExtractSinglets(ATOOLS::Blob *);
     bool FormOriginalClusters();
     bool ApplyColourReconnections();
-    bool ClustersToHadrons(ATOOLS::Blob_List *);
+    bool ClustersToHadrons(ATOOLS::Blob *);
     bool MergeClusterListsIntoOne();
 
   public:
-    Cluster_Formation_Handler(bool=false);
+    Cluster_Formation_Handler(Cluster_List *,bool=false);
     ~Cluster_Formation_Handler();
 
-    int FormClusters(ATOOLS::Blob *,ATOOLS::Blob_List *);
-
-    //! general access routines
-    //@{
-    Cluster_List         * GetClusters()           { return p_clulist;  }
-    ATOOLS::Blob         * GetFragmentationBlob()  { return p_blob; }
+    int FormClusters(ATOOLS::Blob *);
+    Cluster_List * GetPrimaryClusters() const { return p_primaries; }
   };
   /*!
     \file Cluster_Formation_Handler.H

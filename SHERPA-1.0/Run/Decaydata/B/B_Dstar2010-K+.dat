@@ -1,0 +1,19 @@
+# Decay: B --> D*(2010)- K+ 
+#        0 --> 1         2  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  4.582e-34 7.923e-36 5.149e-32;
+</Result>

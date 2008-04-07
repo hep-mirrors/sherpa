@@ -5,7 +5,21 @@
 
 Vud = 0.9744            ! CKM matrix element
 Vus = 0.2204            ! CKM matrix element
-fpi = 0.0924            ! pion decay constant
-fK  = 0.113             ! kaon decay constant
-! GF = ... enter your own Fermi constant if you do not
-!          want to take the value from Model.dat
+fpi = 0.1307            ! pion decay constant
+fK  = 0.1598             ! kaon decay constant
+
+# # values from PDG 2006
+# # x = Delta m / Gamma
+# # y = Delta Gamma / 2Gamma
+# 
+# x_K = 0.946
+# y_K = -0.9965
+# 
+# x_D = 0.0
+# y_D = 0.0
+# 
+# x_B = 0.776
+# y_B = 0.0
+# 
+# x_Bs = 30.0
+# y_Bs = 0.155

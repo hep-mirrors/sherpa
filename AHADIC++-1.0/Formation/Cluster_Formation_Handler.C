@@ -17,13 +17,13 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
+Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List * clulist,bool ana) :
   m_single_cr(true), m_double_cr(false),
   p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter())), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
   p_softclusters(hadpars.GetSoftClusterHandler()),
-  p_clulist(new Cluster_List),
+  p_clulist(clulist),p_primaries(new Cluster_List),
   m_analyse(ana)
 { 
   if (m_analyse) {
@@ -55,25 +55,24 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer   = NULL; }
   if (p_cformer)      { delete p_cformer;      p_cformer      = NULL; }
   if (p_recons)       { delete p_recons;       p_recons       = NULL; }
-  if (p_clulist)      { delete p_clulist;      p_clulist      = NULL; }
 }
 
-int Cluster_Formation_Handler::FormClusters(Blob * blob,Blob_List * bl)
+int Cluster_Formation_Handler::FormClusters(Blob * blob)
 {
   Reset();
-  if (blob==NULL) return 1;
-  p_blob = blob;
+  p_clulist->clear();
+  p_primaries->clear();
 
-  if (!ExtractSinglets())          return -1;
+  if (blob==NULL) return 1;
+
+  if (!ExtractSinglets(blob))      return -1;
   if (!ShiftOnMassShells())        return -1;
   if (!FormOriginalClusters())     return 0;
   if (!ApplyColourReconnections()) return 0;
   if (!MergeClusterListsIntoOne()) return 0;
-  if (!ClustersToHadrons(bl))      return -1;
+  if (!ClustersToHadrons(blob))    return -1;
 
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(*p_clulist)<<std::endl;
-  }
+
   return 1;
 }
 
@@ -91,7 +90,10 @@ void Cluster_Formation_Handler::Reset()
 	 clit!=m_clulists.end();clit++) {
       if ((*clit)->size()>0) {
 	do { 
-         delete (*clit)->back(); 
+#ifdef memchecker
+	  std::cout<<"@@@ Delete cluster "<<((*clit)->back())<<" in "<<METHOD<<"."<<std::endl;
+#endif
+	  delete (*clit)->back(); 
           (*clit)->pop_back(); 
         } while (!(*clit)->empty());
       }
@@ -101,20 +103,23 @@ void Cluster_Formation_Handler::Reset()
   m_clulists.clear();
 }
 
-bool Cluster_Formation_Handler::ExtractSinglets()
+bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 {
   Proto_Particle_List * pli(NULL);
   bool       construct(false);
   int        col1, col2;
   Particle * part;
-  for (int i=0;i<p_blob->NInP();i++) {
-    part = p_blob->InParticle(i); 
+  for (int i=0;i<blob->NInP();i++) {
+    part = blob->InParticle(i); 
     if ((part->Status()!=part_status::active && part->Status()!=part_status::fragmented) || 
 	(part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
     if (construct) {
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
-	//std::cout<<"### New Proto_Particle ("<<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
+#ifdef memchecker
+	std::cout<<"### New Proto_Particle ("
+		 <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
+#endif
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
 	if (col1==col2) construct = false;
@@ -122,7 +127,7 @@ bool Cluster_Formation_Handler::ExtractSinglets()
       else {
 	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		   <<"   Assumed everything okay with blob."
-		   <<std::endl<<(*p_blob)<<std::endl
+		   <<std::endl<<(*blob)<<std::endl
 		   <<"   will try new event."<<std::endl;
 	return false;
       }
@@ -132,7 +137,10 @@ bool Cluster_Formation_Handler::ExtractSinglets()
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
       Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
-      //std::cout<<"### New Proto_Particle ("<<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
+#ifdef memchecker
+      std::cout<<"### New Proto_Particle ("
+	       <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
+#endif
       pli->push_back(copy);
       m_partlists.push_back(pli);
       construct = true;
@@ -363,6 +371,9 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
 {
   if (!p_clulist->empty()) {
     do {
+#ifdef memchecker
+      std::cout<<"@@@ Delete cluster "<<p_clulist->back()<<" in "<<METHOD<<"."<<std::endl;
+#endif
       if (p_clulist->back()) delete p_clulist->back();
       p_clulist->pop_back();
     } while (!p_clulist->empty());
@@ -381,10 +392,12 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne()
     }
   }
   Reset();
+  for (Cluster_Iterator cit=p_clulist->begin();cit!=p_clulist->end();cit++)
+    p_primaries->push_back((*cit));
   return true;
 }
 
-bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
+bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 {
 #ifdef AHAmomcheck
   Vec4D checkbef(0.,0.,0.,0.);
@@ -393,52 +406,16 @@ bool Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
   }
 #endif
 
-  if (!p_softclusters->TreatClusterList(p_clulist,p_blob)) {
+  if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
     msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
 	       <<"   Will trigger a new event."<<std::endl;
     return false;
   }
-  if (!p_clulist->empty()) {
-    Cluster_Iterator cit=p_clulist->begin(), endit=p_clulist->end();
-    while (cit!=endit) {
-      if (!(*cit)->GetLeft()) {
-	p_blob->AddToOutParticles((*cit)->GetSelf());
-	cit++;
-      }
-      else {
-	if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf_none)) {
-	  p_clulist->push_back((*cit)->GetLeft());
-	  p_clulist->push_back((*cit)->GetRight());
-	}
-	else {
-	  p_blob->AddToOutParticles((*cit)->GetSelf());
-	  Blob * decblob((*cit)->ConstructDecayBlob());
-	  bl->push_back(decblob);
-	  
-#ifdef AHAmomcheck
-	  if (dabs(decblob->CheckMomentumConservation().Abs2())>1.e-12) {
-	    msg_Out()<<METHOD<<" : Momentum violation at cluster decay blob : "
-		     <<decblob->CheckMomentumConservation()<<std::endl
-		     <<(*decblob)<<std::endl;
-	  }
-	  else {
-	    msg_Debugging()<<METHOD<<" : Momentum conservation at cluster decay blob : "
-			   <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
-	  }
-#endif
-	}
-	if (*cit) delete (*cit);
-	cit = p_clulist->erase(cit);
-      }
-      if (msg->LevelIsDebugging()) {
-	msg_Out()<<"         remaining cluster list with size "<<p_clulist->size()<<std::endl
-		 <<"======================================================="<<std::endl;
-      }
-    }
+  if (msg->LevelIsDebugging()) {
+    msg_Out()<<"         remaining cluster list with size "<<p_clulist->size()<<std::endl
+	     <<"======================================================="<<std::endl;
   }
-
-  
 
   Histogram * histomass, * histonumb;
   if (m_analyse) {

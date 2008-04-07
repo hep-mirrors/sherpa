@@ -1,0 +1,19 @@
+# Decay: B(s) --> psi(2S) eta 
+#        0    --> 1       2   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  4.45e-35 6.447e-37 3.753e-33;
+</Result>

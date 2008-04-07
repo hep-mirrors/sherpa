@@ -1,0 +1,19 @@
+# Decay: B(c)+ --> eta(c)(1S) D(s)*+ 
+#        0     --> 1          2      
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  1.99e-34 3.78e-36 3.408e-32;
+</Result>

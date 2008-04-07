@@ -14,6 +14,7 @@ namespace AHADIC {
     Proto_Particle * p_triplet, * p_antitriplet; 
   public:
     Dipole(Proto_Particle * trip,Proto_Particle * anti);
+    ~Dipole() {}
 
     void Update();
     void Output();

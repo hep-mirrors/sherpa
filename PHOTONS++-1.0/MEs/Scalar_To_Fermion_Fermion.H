@@ -1,0 +1,43 @@
+#ifndef Scalar_To_Fermion_Fermion_H
+#define Scalar_To_Fermion_Fermion_H
+
+#include "PHOTONS_ME_Base.H"
+#include "Dipole_FF.H"
+
+using namespace ATOOLS;
+
+namespace PHOTONS {
+  class Scalar_To_Fermion_Fermion: public PHOTONS_ME_Base, public Dipole_FF {
+    private:
+      bool      m_switch;
+
+      virtual void    BoostOriginalPVVToMultipoleCMS();
+      virtual void    FillMomentumArrays();
+
+
+      virtual Complex InfraredSubtractedME_0_0();
+      virtual Complex InfraredSubtractedME_0_1();
+      virtual Complex InfraredSubtractedME_0_2();
+
+      virtual Complex InfraredSubtractedME_1_05(unsigned int);
+      virtual Complex InfraredSubtractedME_1_15(unsigned int);
+
+      virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
+
+    public:
+      Scalar_To_Fermion_Fermion(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
+      virtual ~Scalar_To_Fermion_Fermion();
+
+      virtual double GetBeta_0_0();
+      virtual double GetBeta_0_1();
+      virtual double GetBeta_0_2();
+
+      virtual double GetBeta_1_1(unsigned int);
+      virtual double GetBeta_1_2(unsigned int);
+
+      virtual double GetBeta_2_2(unsigned int, unsigned int);
+
+      virtual double Smod(unsigned int);
+  };
+}
+#endif

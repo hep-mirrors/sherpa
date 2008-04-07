@@ -1,0 +1,19 @@
+# Decay: B+ --> chi(c1)(1P) K+ 
+#        0  --> 1           2  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  5.609e-35 8.427e-37 4.581e-33;
+</Result>

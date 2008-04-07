@@ -1,0 +1,24 @@
+# Decay: B(s) --> D*_1s+b nu_tau tau+ 
+#        0    --> 1       2      3    
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  GF 0.0 VA_F_F[2,3] VA_P_V[0,1]
+</ME>
+
+<VA_P_V[0,1]>
+  # hep-ph/0608264
+  FORM_FACTOR   = 8
+</VA_P_V[0,1]>
+
+<Result>
+  1.224e-15 3.413e-18 2.779e-14;
+</Result>

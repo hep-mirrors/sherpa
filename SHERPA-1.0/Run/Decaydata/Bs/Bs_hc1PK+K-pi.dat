@@ -1,0 +1,19 @@
+# Decay: B(s) --> h(c)(1P) K+ K- pi 
+#        0    --> 1        2  3  4  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  4.94e-08 9.632e-11 4.35e-06;
+</Result>

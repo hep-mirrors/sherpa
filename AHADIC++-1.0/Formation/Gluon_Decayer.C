@@ -49,15 +49,13 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
 {
   if (plin==NULL || plin->empty()) return true;
 
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<std::endl<<std::endl<<std::endl
-	     <<"------------------------------------------------------------"<<std::endl
-	     <<"------------------------------------------------------------"<<std::endl
-	     <<"------------------------------------------------------------"<<std::endl
-	     <<"------------------------------------------------------------"<<std::endl
-	     <<"   "<<METHOD<<" : incoming particle list."<<std::endl<<(*plin)
-	     <<std::endl<<std::endl;
-  }
+  msg_Debugging()<<std::endl<<std::endl<<std::endl
+		 <<"------------------------------------------------------------"<<std::endl
+		 <<"------------------------------------------------------------"<<std::endl
+		 <<"------------------------------------------------------------"<<std::endl
+		 <<"------------------------------------------------------------"<<std::endl
+		 <<"   "<<METHOD<<" : incoming particle list."<<std::endl<<(*plin)
+		 <<std::endl<<std::endl;
 
 #ifdef AHAmomcheck
   Vec4D checkbef(0.,0.,0.,0.), checkaft(0.,0.,0.,0.);
@@ -77,29 +75,25 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
   else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<"   "<<METHOD<<" : outgoing particle list."<<std::endl<<(*plin)
-	     <<"------------------------------------------------------------"<<std::endl<<std::endl;
-  }
-
+  msg_Debugging()<<"   "<<METHOD<<" : outgoing particle list."<<std::endl<<(*plin)
+		 <<"------------------------------------------------------------"
+		 <<std::endl<<std::endl;
+  
   return true;
 }
 
 bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
 {
-  Vec4D intot(0.,0.,0.,0.);
   PPL_Iterator pit(plin->begin()), pit1(plin->begin());
   pit1++;
   Proto_Particle * begin(*pit);
   Dipole * dip;
   do {
-    intot += (*pit)->m_mom;
     dip = new Dipole(*pit,*pit1);
     m_dipoles.push_back(dip);
     pit = pit1;
     pit1++;
   } while (pit1!=plin->end());
-  intot += (*pit)->m_mom;
   if ((*pit)->m_flav.IsGluon()) {
     if (begin->m_flav.IsGluon()) {
       dip = new Dipole(*pit,begin);
@@ -138,13 +132,11 @@ bool Gluon_Decayer::DecayDipoles() {
     }
   }
   DipIter dipiter;
-  do { 
+  do {
     dipiter = SelectDipole(); 
     if (dipiter==m_dipoles.end()) return true;
 #ifdef AHAmomcheck
-    if (msg->LevelIsDebugging()) {
-      msg_Out()<<"~~~~~~~~~~ "<<METHOD<<"("<<m_dipoles.size()<<") ~~~~~~~~~~~~~~"<<std::endl;
-    }
+    msg_Debugging()<<"~~~~~~~~~~ "<<METHOD<<"("<<m_dipoles.size()<<") ~~~~~~~~~~~~~~"<<std::endl;
     Vec4D checkbef(0.,0.,0.,0.);
     for (DipIter diter=m_dipoles.begin();diter!=m_dipoles.end();diter++) {
       if ((*diter)->AntiTriplet()->m_flav!=Flavour(kf_gluon)) 
@@ -159,7 +151,7 @@ bool Gluon_Decayer::DecayDipoles() {
     }
     if (!p_splitter->SplitDipole((*dipiter))) {
       if (!Rescue(dipiter)) { 
-	//msg_Out()<<"............... Rescue failed ..................."<<std::endl;
+	msg_Debugging()<<"............... Rescue failed ..................."<<std::endl;
 	dipiter=m_dipoles.begin(); continue; 
       }
     }
@@ -170,7 +162,7 @@ bool Gluon_Decayer::DecayDipoles() {
     SplitIt(dipiter);
 #endif
     if (msg->LevelIsDebugging()) {
-      msg_Out()<<METHOD<<" for "<<m_dipoles.size()<<" dipoles:"<<std::endl;
+      msg_Out()<<METHOD<<" (after splitting) for "<<m_dipoles.size()<<" dipoles:"<<std::endl;
       for (DipIter diter=m_dipoles.begin();diter!=m_dipoles.end();diter++) (*diter)->Output();
     }
   } while (dipiter!=m_dipoles.end());

@@ -1,0 +1,44 @@
+#ifndef Tau_To_Lepton_Neutrinos_H
+#define Tau_To_Lepton_Neutrinos_H
+
+#include "PHOTONS_ME_Base.H"
+#include "Dipole_FI.H"
+
+using namespace ATOOLS;
+
+namespace PHOTONS {
+  class Tau_To_Lepton_Neutrinos: public PHOTONS_ME_Base, public Dipole_FI {
+    private:
+      bool      m_switch;
+      bool      m_fermi;
+
+      virtual void    BoostOriginalPVVToMultipoleCMS();
+      virtual void    FillMomentumArrays();
+
+
+      virtual Complex InfraredSubtractedME_0_0();
+      virtual Complex InfraredSubtractedME_0_1();
+      virtual Complex InfraredSubtractedME_0_2();
+
+      virtual Complex InfraredSubtractedME_1_05(unsigned int);
+      virtual Complex InfraredSubtractedME_1_15(unsigned int);
+
+      virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
+
+    public:
+      Tau_To_Lepton_Neutrinos(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
+      virtual ~Tau_To_Lepton_Neutrinos();
+
+      virtual double GetBeta_0_0();
+      virtual double GetBeta_0_1();
+      virtual double GetBeta_0_2();
+
+      virtual double GetBeta_1_1(unsigned int);
+      virtual double GetBeta_1_2(unsigned int);
+
+      virtual double GetBeta_2_2(unsigned int, unsigned int);
+
+      virtual double Smod(unsigned int);
+  };
+}
+#endif

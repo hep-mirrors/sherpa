@@ -1,0 +1,19 @@
+# Decay: tau- --> pi+ pi- pi- pi pi pi nu_tau 
+#        0    --> 1   2   3   4  5  6  7      
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  2.959e-17 5.761e-20 4.543e-16;
+</Result>

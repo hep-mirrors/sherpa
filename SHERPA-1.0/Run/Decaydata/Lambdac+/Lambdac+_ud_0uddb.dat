@@ -1,0 +1,19 @@
+# Decay: Lambda(c)+ --> ud_0 u d db 
+#        0          --> 1    2 3 4  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Baryon_Diquark_3Quarks[0,1,3,2,4]
+</ME>
+
+<Result>
+  2.627e-06 4.693e-09 2.072e-05;
+</Result>

@@ -1,0 +1,24 @@
+# Decay: B --> a(0)(980)- K+ pi pi 
+#        0 --> 1          2  3  4  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  0.5 TwoResonances_K(1)(1400)+_4_K*(892)+_23
+  0.5 TwoResonances_K(1)(1400)+_3_K*(892)+_24
+</Phasespace>
+
+<ME>
+  GF 0.0 VA_P_P[0,1] VA_0_PPP[4,3,2]
+</ME>
+
+<VA_P_P[0,1]>
+  FORM_FACTOR   = 2
+</VA_P_P[0,1]>
+
+<Result>
+  3.314e-20 6.441e-23 4.111e-17;
+</Result>

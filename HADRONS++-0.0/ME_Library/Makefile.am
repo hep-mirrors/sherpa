@@ -2,26 +2,30 @@ pkglib_LTLIBRARIES = libHadronsMEs.la
 
 libHadronsMEs_la_SOURCES = \
 		HD_ME_Base.C \
-		HD_ME_Selector.C \
+		Generic.C \
+		Eta_Decay_MEs.C \
 		Four_Body_MEs.C \
 		Three_Body_MEs.C \
 		Two_Body_MEs.C \
-		B_Meson_Decay_MEs.C \
-		Tau_Decay_MEs.C  \
-		XYZFuncs.C \
-		Tools.C
+		B_K_Semileptonic.C \
+		B_KStar_Semileptonic.C
 
 pkginclude_HEADERS = \
 		HD_ME_Base.H \
-		HD_ME_Selector.H \
+		Generic.H \
+		PseudoScalar_Decay_MEs.H \
+		Eta_Decay_MEs.H \
+		Vector_Decay_MEs.H \
+		Phi_Decay_MEs.H \
+		Tensor_Decay_MEs.H \
+		Baryon_SimpleDecay_MEs.H \
+		HeavyBaryon_SimpleTwoBody_Decay_MEs.H \
 		Four_Body_MEs.H \
 		Three_Body_MEs.H \
-		Two_Body_MEs.H  \
-		B_Meson_Decay_MEs.H \
-		Tau_Decay_MEs.H \
-		XYZFuncs.H \
-		Tools.H
+		Two_Body_MEs.H \
+		B_K_Semileptonic.H \
+		B_KStar_Semileptonic.H
 
-INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@
+INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@ @HELICITIESINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

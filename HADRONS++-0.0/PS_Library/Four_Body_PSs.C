@@ -4,6 +4,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Random.H"
+#include "Poincare.H"
 
 
 using namespace HADRONS; 
@@ -13,13 +14,13 @@ using namespace std;
 
 TwoResonances::TwoResonances(
 	const Flavour * fl,
-	ResonanceFlavour prop1, 
+	SimpleResonanceFlavour prop1, 
 	const int _k,
-	ResonanceFlavour prop2,
+	SimpleResonanceFlavour prop2,
 	const int _i,
-	const int _j ) :
-  Single_Channel(1,4,fl),
-  m_P(Vec4D(fl[0].Mass(),0.,0.,0.)),
+	const int _j )
+: Single_Channel(1,4,fl), 
+  m_P(Vec4D(fl[0].PSMass(),0.,0.,0.)), 
   m_prop1 (prop1), m_prop2 (prop2),
   m_i (_i), m_j (_j), m_k (_k)
 {
@@ -53,11 +54,16 @@ TwoResonances::TwoResonances(
   rannum = 8;
   rans = new double[rannum];
   p_vegas = new Vegas(rannum,100,name);
-  Integration_Info *info;
-  info = new Integration_Info();
-  m_kI_123_4.Assign(std::string("I_123_4"),2,0,info);
-  m_kI_12_3.Assign(std::string("I_12_3"),2,0,info);
-  m_kI_1_2.Assign(std::string("I_1_2"),2,0,info);
+  p_info = new Integration_Info();
+  m_kI_123_4.Assign(std::string("I_123_4"),2,0,p_info);
+  m_kI_12_3.Assign(std::string("I_12_3"),2,0,p_info);
+  m_kI_1_2.Assign(std::string("I_1_2"),2,0,p_info);
+}
+
+TwoResonances::~TwoResonances() {
+  if (p_fl!=NULL) delete [] p_fl; p_fl = NULL;
+  if (p_vegas) delete p_vegas; p_vegas=NULL;
+  if (p_info) delete p_info; p_info=NULL;
 }
 
 void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
@@ -91,12 +97,10 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
   CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
 }
 
-void TwoResonances::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
+void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double * _ran)
 {
-  PRINT_INFO("not implemented");
-  abort();
+  THROW(fatal_error, "not implemented.");
 }
-
 
 void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
 {
@@ -144,132 +148,102 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
   weight = wt;
 }
 
-void TwoResonances::GenerateWeight(Vec4D* p,Cut_Data * cuts)
+void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
 {
-  PRINT_INFO("not implemented");
-  abort();
+  THROW(fatal_error, "not implemented.");
 }
-
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-TwoResonancesParallel::TwoResonancesParallel( const Flavour * fl,
-                                              ResonanceFlavour prop1,
-                                              const int i,
-                                              const int j,
-                                              ResonanceFlavour prop2,
-                                              const int k,
-                                              const int l ) :
-Single_Channel(1,4,fl),
-m_P(Vec4D(fl[0].Mass(),0.,0.,0.)),
-m_prop1 (prop1), m_prop2 (prop2),
-m_I (i), m_J (j), m_K (k), m_L (l)
+IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator) :
+  Single_Channel(1,4,fl), m_spectator(spectator), m_spectator_mass(fl[spectator].PSMass())
 {
-  name = string("TwoResonancesParallel_")
-    + prop1.Name() + string("_")
-    + ToString(m_I) + ToString(m_J)
-    + string("_") + prop2.Name() + string("_")
-    + ToString(m_K)+ToString(m_L);
-
-  p_fl = new Flavour[5];
-  for (short int i=0;i<nin+nout;i++) {
-    p_fl[i] = fl[i];
-    ms[i] = sqr(fl[i].PSMass());
+  Flavour isotropicflavs[4];
+  isotropicflavs[0] = Flavour(kf_none);
+  int j=1;
+  for (short int i=1;i<nin+nout;i++) {
+    if(i!=m_spectator) {
+      isotropicflavs[j] = fl[i];
+      j++;
+    }
   }
-  msg_Tracking()<<"Init TwoResonancesParallel("<<name<<") : "<<endl
-    <<"     "<<fl[0]<<" -> "
-    <<fl[m_I]<<" "<<fl[m_J]<<" "<<fl[m_K]<<" "<<fl[m_L]<<", "<<endl
-    <<"     "<<ms[0]<<" -> "
-    <<ms[m_I]<<" "<<ms[m_J]<<" "<<ms[m_K]<<" "<<ms[m_L]<<endl
-    <<"  => "<<p_fl[0]<<" -> "<<m_prop1.Name()<<" "<<m_prop2.Name()<<endl
-    <<"     "<<p_fl[0]<<" -> "<<p_fl[m_I]<<" "<<p_fl[m_J]<<" "<<p_fl[m_K]<<" "<<p_fl[m_L]<<endl;
-
-  rannum = 8;
-  rans = new double[rannum];
-  Integration_Info *info;
-  info = new Integration_Info();
-  m_kI_IJ_KL.Assign(std::string("I_IJ_KL"),2,0,info);
-  m_kI_I_J.Assign(std::string("I_I_J"),2,0,info);
-  m_kI_K_L.Assign(std::string("I_K_L"),2,0,info);
-  m_kZRIJ_155.Assign(std::string("ZRIJ_155"),2,0,info);
-  p_vegas = new Vegas(rannum,100,name);
+  double mass_saved = isotropicflavs[0].PSMass();
+  m_decayer_mass = fl[0].PSMass()-fl[spectator].PSMass();
+  isotropicflavs[0].SetMass(m_decayer_mass);
+  m_rambo = new Rambo(1,3,isotropicflavs,true);
+  isotropicflavs[0].SetMass(mass_saved);
 }
 
-void TwoResonancesParallel::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
+void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double * _ran)
 {
-  PRINT_INFO("not implemented");
-  abort();
+  THROW(fatal_error, "not implemented.");
 }
 
-void TwoResonancesParallel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
+
+void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 {
-  // 0 -> prop1[-> I J] prop2[-> K L]
-  double *ran = p_vegas->GeneratePoint(_ran);
-  for(int i=0;i<rannum;i++) rans[i]=ran[i];
-  Vec4D  pIJKL = p[0];
-  double sIJKL = dabs(pIJKL.Abs2());
-  double sIJ_min = sqr( sqrt(ms[m_I]) + sqrt(ms[m_J]) );
-  double sKL_min = sqr( sqrt(ms[m_K]) + sqrt(ms[m_L]) );
-  double sKL_max = sqr(sqrt(sIJKL)-sqrt(sIJ_min));
-  Vec4D  pKL;
-  double sKL;
-  sKL = CE.MassivePropMomenta(m_prop2.Mass(),m_prop2.Width(),1,sKL_min,sKL_max,ran[0]);
-  double sIJ_max = sqr(sqrt(sIJKL)-sqrt(sKL));
-  Vec4D  pIJ;
-  double sIJ;
-  sIJ = CE.MassivePropMomenta(m_prop1.Mass(),m_prop1.Width(),1,sIJ_min,sIJ_max,ran[1]);
-  CE.Isotropic2Momenta(pIJKL,sIJ,sKL,pIJ,pKL,ran[2],ran[3]);
-  double sJ = ms[m_J];
-  double sI = ms[m_I];
-  CE.Isotropic2Momenta(pIJ,sI,sJ,p[m_I],p[m_J],ran[4],ran[5]);
-  double sK = ms[m_K];
-  double sL = ms[m_L];
-  CE.Isotropic2Momenta(pKL,sK,sL,p[m_K],p[m_L],ran[6],ran[7]);
+  // dice the momentum of the decayer and spectator quark
+  // according to PSpat() = gauss(mean=lambda_qcd, sigma=lambda_qcd/mQ)
+  // and costheta, phi uniform
+  double lambda_qcd=0.2;
+  double pspat;
+  do {
+    double gauss1, gauss2;
+    ran.Gaussian(gauss1,gauss2);
+    pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss1;
+    if(pspat<1e-6) pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss2;
+  } while(pspat<1e-6);
+  double costheta = ran.Get()*2.0-1.0;
+  double sintheta = sin(acos(costheta));
+  double phi = ran.Get()*2.0*M_PI;
+  double px = pspat*sintheta*cos(phi);
+  double py = pspat*sintheta*sin(phi);
+  double pz = pspat*costheta;
+  Vec4D spectator_mom = Vec4D(sqrt(sqr(m_spectator_mass)+sqr(pspat)), px, py, pz);
+  Vec4D decayer_mom = Vec4D(p[0][0]-spectator_mom[0], -px, -py, -pz);
+  
+  Vec4D isotropicmoms[4];
+  Poincare boost(decayer_mom);
+  isotropicmoms[0] = boost*decayer_mom;
+  m_rambo->GeneratePoint(isotropicmoms);
+  
+  boost.Invert();
+  int j=1;
+  for (short int i=1;i<nin+nout;i++) {
+    if(i==m_spectator) {
+      p[i] = spectator_mom;
+    }
+    else {
+      p[i] = boost*isotropicmoms[j];
+      j++;
+    }
+  }
 }
 
-void TwoResonancesParallel::GenerateWeight(Vec4D* p,Cut_Data * cuts)
+
+void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
 {
-  PRINT_INFO("not implemented");
-  abort();
+  THROW(fatal_error, "not implemented.");
 }
 
-void TwoResonancesParallel::GenerateWeight(ATOOLS::Vec4D * p)
+
+void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p)
 {
-  // 0 -> prop1[-> I J] prop2[-> K L]
-  double wt = 1.;
-  Vec4D  pIJKL = p[0];
-  double sIJKL = dabs(pIJKL.Abs2());
-  double sIJ_min = sqr( sqrt(ms[m_I]) + sqrt(ms[m_J]) );
-  double sKL_min = sqr( sqrt(ms[m_K]) + sqrt(ms[m_L]) );
-  double sKL_max = sqr(sqrt(sIJKL)-sqrt(sIJ_min));
-  Vec4D  pKL = p[m_K]+p[m_L];
-  double sKL = dabs(pKL.Abs2());
-  wt *= CE.MassivePropWeight(m_prop2.Mass(),m_prop2.Width(),1,sKL_min,sKL_max,sKL,rans[0]);
-  double sIJ_max = sqr(sqrt(sIJKL)-sqrt(sKL));
-  Vec4D  pIJ = p[m_J]+p[m_I];
-  double sIJ = dabs(pIJ.Abs2());
-  wt *= CE.MassivePropWeight(m_prop1.Mass(),m_prop1.Width(),1,sIJ_min,sIJ_max,sIJ,rans[1]);
-  if (m_kI_IJ_KL.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kI_IJ_KL<<CE.Isotropic2Weight(pIJ,pKL,m_kI_IJ_KL[0],m_kI_IJ_KL[1]);
-  wt *= m_kI_IJ_KL.Weight();
-  
-  rans[2]= m_kI_IJ_KL[0];
-  rans[3]= m_kI_IJ_KL[1];
-  if (m_kI_I_J.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kI_I_J<<CE.Isotropic2Weight(p[m_I],p[m_J],m_kI_I_J[0],m_kI_I_J[1]);
-  wt *= m_kI_I_J.Weight();
-  
-  rans[4]= m_kI_I_J[0];
-  rans[5]= m_kI_I_J[1];
-  if (m_kI_K_L.Weight()==ATOOLS::UNDEFINED_WEIGHT)
-    m_kI_K_L<<CE.Isotropic2Weight(p[m_K],p[m_L],m_kI_K_L[0],m_kI_K_L[1]);
-  wt *= m_kI_K_L.Weight();
-  
-  rans[6]= m_kI_K_L[0];
-  rans[7]= m_kI_K_L[1];
-  double vw = p_vegas->GenerateWeight(rans);
-  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,4*3.-4.);
-  
-  weight = wt;
+  Vec4D isotropicmoms[4];
+  int j=1;
+  for (short int i=1;i<nin+nout;i++) {
+    if(i!=m_spectator) {
+      isotropicmoms[j] = p[i];
+      j++;
+    }
+  }
+  isotropicmoms[0] = isotropicmoms[1]+isotropicmoms[2]+isotropicmoms[3];
+  Poincare boost(isotropicmoms[0]);
+  for(int i=0;i<4;i++) {
+    boost.Boost(isotropicmoms[i]);
+  }
+  m_rambo->GenerateWeight(isotropicmoms);
+  SetWeight(m_rambo->Weight());
 }
+

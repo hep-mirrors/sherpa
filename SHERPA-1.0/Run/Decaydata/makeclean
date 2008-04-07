@@ -1,11 +1,27 @@
-FILES=`grep Result */*.dat -l`      # find files with Result
-for I in $FILES; do                 # for all files
-  echo "clean $I and save old version in $I.old"
-  cp $I $I.old
-  csplit $I /Result/                # split at line above Result
-  mv xx00 $I                        # rename file
-  rm xx01                           # delete last 3 lines
-done 
+#!/bin/sh
+
+DIRECTORIES=`find -maxdepth 1 -mindepth 1 -type d | grep -v '/[.]'`
+
+for I in $DIRECTORIES; do
+  cd $I
+  FILES=`grep Result *.dat -l`      # find files with Result
+  for J in $FILES; do                 # for all files
+    echo "cleaning $I"
+    break;
+  done;
+  for J in $FILES; do                 # for all files
+    cp $J .$J.old
+    csplit --quiet $J /Result/                # split at line above Result
+    mv xx00 $J                        # rename file
+    rm xx01                           # delete last 3 lines
+  done;
+  cd ..
+done;
 
 PSF=`find -name "PhaseSpaceFunctions"`  # find Phase Space Functions dir
-rm $PSF/*.dat
+for I in $PSF; do
+  FILES=`find $I -name "*.dat"`
+  for J in $FILES; do
+    rm $J
+  done;
+done;
