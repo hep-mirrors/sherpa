@@ -74,6 +74,13 @@
 425     -> D2star2460/        Decays.dat;
 435     -> Ds2star2573+/      Decays.dat;
 #
+# Beautiful Tensors
+#
+515     -> B2star/            Decays.dat;
+525     -> B2star+/           Decays.dat;
+535     -> Bs2star/           Decays.dat;
+545     -> Bc2star+/          Decays.dat;
+#
 # J-Excited(L=1,s=0) Pseudoscalars
 #
 10111 -> a0980/             Decays.dat;
@@ -89,6 +96,13 @@
 10421   -> D0star2400/        Decays.dat;
 10431   -> Ds0star2317+/      Decays.dat;
 #
+# J-Excited(L=1,s=0) Beautiful Pseudoscalars
+#
+10511   -> B0star/            Decays.dat;
+10521   -> B0star+/           Decays.dat;
+10531   -> Bs0star/           Decays.dat;
+10541   -> Bc0star+/          Decays.dat;
+#
 # J-Excited(L=1,S=0) Vectors
 #
 10113	-> b11235/            Decays.dat;
@@ -103,7 +117,13 @@
 10413   -> D12420+/           Decays.dat;
 10423   -> D12420/            Decays.dat;
 10433   -> Ds12536+/          Decays.dat;
-20423   -> D12430/            Decays.dat;
+#
+# J-Excited(L=1,S=0) Beautiful Vectors
+#
+10513   -> B1L/               Decays.dat;
+10523   -> B1L+/              Decays.dat;
+10533   -> Bs1L/              Decays.dat;
+10543   -> Bc1L+/             Decays.dat;
 #
 # J-Excited(L=1,S=1) Vectors
 #
@@ -116,7 +136,16 @@
 #
 # J-Excited(L=1,S=1) Charmed Vectors
 #
+20413   -> D1H+/              Decays.dat;
+20423   -> D12430/            Decays.dat;
 20433   -> Ds12460+/          Decays.dat;
+#
+# J-Excited(L=1,S=1) Beautiful Vectors
+#
+20513   -> B1H/               Decays.dat;
+20523   -> B1H+/              Decays.dat;
+20533   -> Bs1H/              Decays.dat;
+20543   -> Bc1H+/             Decays.dat;
 #
 # Radially Excited Pseudoscalars
 #
@@ -273,6 +302,7 @@
 5224     -> Sigmabstar+/     Decays.dat
 5314     -> Xibstar-/        Decays.dat
 5324     -> Xibstar/         Decays.dat
+5334     -> Omegabstar-/     Decays.dat
 
 ##################################################################
 ##################################################################
