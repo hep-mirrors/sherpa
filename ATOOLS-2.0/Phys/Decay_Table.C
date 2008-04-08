@@ -131,7 +131,7 @@ void Decay_Table::Output() {
       double upper_br  = (m_channels[i]->Width()+m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
       double lower_br  = (m_channels[i]->Width()-m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
       double exp_br    = m_channels[i]->Width()/m_width*100.;
-      if( exp_br > upper_br || exp_br < lower_br ) {  
+      if( exp_br > upper_br+Accu() || exp_br < lower_br-Accu() ) {  
         msg_Out()<<om::red<<"     WARNING: branching ratio "
           <<exp_br<<"% is out of bounds ("<<wanted_br <<" +/- "<<(upper_br-lower_br)/2.<<" %)."<<om::reset<<endl;
       }
@@ -145,6 +145,22 @@ void Decay_Table::Output() {
 void Decay_Table::UpdateWidth() {
   m_width = 0.;
   for (size_t i=0;i<m_channels.size();i++) m_width+= m_channels[i]->Width();
+}
+
+void Decay_Table::ScaleToWidth() {
+  if(m_flin.Width()/m_width!=1.0) {
+    double delta_tot(0.0);
+    for (size_t i=0;i<m_channels.size();i++)
+      delta_tot+=m_channels[i]->DeltaWidth();
+    if (delta_tot>0.0) {
+      for (size_t i=0;i<m_channels.size();i++) {
+        double scale_fac=m_channels[i]->DeltaWidth()/delta_tot;
+        m_channels[i]->SetWidth(m_channels[i]->Width()+
+                                scale_fac*(m_flin.Width()-m_width));
+      }
+      UpdateWidth();
+    }
+  }
 }
 
 double Decay_Table::Width(const int i)

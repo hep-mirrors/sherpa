@@ -73,6 +73,8 @@ Blob_List* GenerateEvent()
   mother_part->SetTime();
   
   Blob* blob = blobs->AddBlob(btp::Signal_Process);
+  blob->SetTypeSpec("1_1__"+mother_flav.IDName()+"__"+mother_flav.IDName()+"__"+
+                    mother_flav.IDName()+"__"+mother_flav.IDName());
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->AddToInParticles(mother_in_part);
   blob->AddToOutParticles(mother_part);

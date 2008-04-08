@@ -98,6 +98,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     Write(ostr);
     ostr.close();
   }
+  ScaleToWidth();
 }
 
 
@@ -197,6 +198,8 @@ void Hadron_Decay_Table::ExtractBRInfo( string entry, double & sbr, double & sdb
   // extract BR
   if( posmin!=string::npos ) sbr = ToType<double>(entry.substr(0,posmin));
   else                       sbr = ToType<double>(entry.substr(0));
+
+  if (sdbr==-1.0) sdbr = sbr;
 }
 
 void Hadron_Decay_Table::UpdateWidth(Hadron_Decay_Channel * hdc,const double &width)
