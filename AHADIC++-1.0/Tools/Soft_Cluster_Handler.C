@@ -31,7 +31,6 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
   }
   if (size==0) return true;
 
-
   if (clin->size()==1) {
     cluster = (*clin->begin());
     switch (cluster->size()) {
@@ -42,6 +41,8 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
       return false;
     case 2:
       FixHHDecay(cluster,blob);
+      cluster->SetActive(false);
+      clin->clear();
     case 0:
     default:
       return true;
