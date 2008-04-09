@@ -1026,9 +1026,9 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   if (IsEqual(th,M_PI)) maxpt2=mo->maxpt2;
   mo->sthcrit=th;
   double thcrit(mo->shower==2?th:mo->thcrit);
-  if (mo->part->Flav().IsQuark() && 
+  if ((mo->part->Flav().IsQuark() || mo->part->Flav().IsSquark()) && 
       d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
-    if (d1->part->Flav().IsQuark()) {
+    if (d1->part->Flav().IsQuark() || d1->part->Flav().IsSquark() ) {
       d1->t      = mo->t;
       d1->thcrit = thcrit;
       d2->t      = st_mo;
