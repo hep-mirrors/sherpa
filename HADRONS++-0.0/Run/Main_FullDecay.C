@@ -77,6 +77,7 @@ Blob_List* GenerateEvent()
                     mother_flav.IDName()+"__"+mother_flav.IDName());
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->AddToInParticles(mother_in_part);
+  mother_in_part->SetStatus(part_status::decayed);
   blob->AddToOutParticles(mother_part);
 
   p_eventhandler->GenerateEvent(0, false);

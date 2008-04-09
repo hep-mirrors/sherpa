@@ -80,18 +80,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     }
   }
 
-  if(nchannels==0) {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
-      <<"   No decay channels found for "<<Flav()<<" in file "<<file<<endl
-      <<"   Will continue and hope for the best."<<endl;
-  }
-  else {
-    msg_Info()<<om::blue<<"Found "<<NumberOfDecayChannels()
-      <<" decay channels for "<<Flav()
-      <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<om::reset<<endl;
-    if(msg_LevelIsTracking()) Output();
-  }
-
   if(rewrite) {
     MoveFile(path+file, path+"."+file+".old");
     ofstream ostr( (path + file).c_str() );
@@ -104,6 +92,18 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 
 void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
 {
+  if(NumberOfDecayChannels()==0) {
+    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
+      <<"   No decay channels found for "<<Flav()<<endl
+      <<"   Will continue and hope for the best."<<endl;
+  }
+  else {
+    msg_Info()<<om::blue<<"Initialising "<<NumberOfDecayChannels()
+      <<" decay channels for "<<Flav()
+      <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<om::reset<<endl;
+    if(msg_LevelIsDebugging()) Output();
+  }
+
   Hadron_Decay_Channel* hdc;
   for (int i=0; i<NumberOfDecayChannels(); i++) {
     hdc = (Hadron_Decay_Channel*) GetDecayChannel(i);
@@ -179,27 +179,41 @@ bool Hadron_Decay_Table::ExtractFlavours(vector<int> & helpkfc,string help)
   return true;
 }
  
-void Hadron_Decay_Table::ExtractBRInfo( string entry, double & sbr, double & sdbr, string & sorigin )
+void Hadron_Decay_Table::ExtractBRInfo( string entry, double & br, double & dbr, string & origin )
 {
   size_t posa, posb;        // start and end of things b/w brackets
   size_t posmin;            // start of first bracket
+
+  std::string sbr, sdbr;
+
   // extract Delta BR
   posa = entry.find("(");
   posb = entry.find(")");
   posmin = posa;
-  if( posa!=string::npos && posb!=string::npos ) sdbr = ToType<double>(entry.substr(posa+1,posb-posa-1));
-  else                                           sdbr = -1.0; // no Delta BR given
+  if(posa!=string::npos && posb!=string::npos)
+    sdbr = entry.substr(posa+1,posb-posa-1);
+  else sdbr = "-1.0";
+
   // extract Origin
   posa = entry.find("[");
   posb = entry.find("]");
-  if( posmin==string::npos || (posmin!=string::npos && posmin>posa) ) posmin = posa;
-  if( posa!=string::npos && posb!=string::npos ) sorigin = entry.substr(posa+1,posb-posa-1);
-  else                                           sorigin = string("");   // no Origin
-  // extract BR
-  if( posmin!=string::npos ) sbr = ToType<double>(entry.substr(0,posmin));
-  else                       sbr = ToType<double>(entry.substr(0));
+  if(posmin==string::npos || (posmin!=string::npos && posmin>posa)) posmin=posa;
+  if(posa!=string::npos && posb!=string::npos)
+    origin = entry.substr(posa+1,posb-posa-1);
+  else origin = string("");
 
-  if (sdbr==-1.0) sdbr = sbr;
+  // extract BR
+  if( posmin!=string::npos ) sbr = entry.substr(0,posmin);
+  else                       sbr = entry.substr(0);
+
+  Algebra_Interpreter ip;
+  sdbr=ip.Interprete(sdbr);
+  sbr=ip.Interprete(sbr);
+
+  dbr=ToType<double>(sdbr);
+  br=ToType<double>(sbr);
+
+  if (dbr==-1.0) dbr = br;
 }
 
 void Hadron_Decay_Table::UpdateWidth(Hadron_Decay_Channel * hdc,const double &width)
