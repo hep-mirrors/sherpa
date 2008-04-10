@@ -1,5 +1,6 @@
 #include "Photons.H"
 #include "Data_Reader.H"
+#include "Run_Parameter.H"
 
 
 using namespace PHOTONS;
@@ -10,6 +11,7 @@ using namespace std;
 int    PHOTONS::Photons::s_mode     = 0;
 bool   PHOTONS::Photons::s_useme    = 0;
 double PHOTONS::Photons::s_ircutoff = 0;
+double PHOTONS::Photons::s_accu     = 1E-6;
 
 // member functions of class Photons
 
@@ -19,6 +21,7 @@ Photons::Photons(Data_Reader* reader, bool ana) :
   s_mode          = reader->GetValue<int>("YFS_MODE",0);
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-1);
+  s_accu          = sqrt(rpa.gen.Accu());
   m_success       = false;
   m_photonsadded  = false;
 }
@@ -29,6 +32,7 @@ Photons::Photons(bool ana) :
   s_mode          = 2;
   s_useme         = true;
   s_ircutoff      = 1E-1;
+  s_accu          = sqrt(rpa.gen.Accu());
   m_success       = false;
   m_photonsadded  = false;
 }
