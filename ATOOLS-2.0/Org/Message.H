@@ -245,7 +245,8 @@ namespace ATOOLS {
 
 #define DEBUG_FUNC(a1) \
   msg_Debugging()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
-  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl; msg_Indent()
+  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl; \
+  if (msg_LevelIsDebugging()) msg_Indent()
 
 #endif
 

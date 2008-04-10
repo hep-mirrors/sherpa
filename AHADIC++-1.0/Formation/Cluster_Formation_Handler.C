@@ -1,3 +1,4 @@
+#include <cassert>
 #include "Cluster_Formation_Handler.H"
 #include "Hadronisation_Parameters.H"
 
@@ -55,6 +56,7 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer   = NULL; }
   if (p_cformer)      { delete p_cformer;      p_cformer      = NULL; }
   if (p_recons)       { delete p_recons;       p_recons       = NULL; }
+  if (p_primaries)    { delete p_primaries;    p_primaries    = NULL; }
 }
 
 int Cluster_Formation_Handler::FormClusters(Blob * blob)
@@ -67,9 +69,13 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob)
 
   if (!ExtractSinglets(blob))      return -1;
   if (!ShiftOnMassShells())        return -1;
+  //PRINT_INFO("A"<<*p_clulist);
   if (!FormOriginalClusters())     return 0;
+  //PRINT_INFO("B"<<*p_clulist);
   if (!ApplyColourReconnections()) return 0;
+  //PRINT_INFO("C"<<*p_clulist);
   if (!MergeClusterListsIntoOne()) return 0;
+  //PRINT_INFO("D"<<*p_clulist);
   if (!ClustersToHadrons(blob))    return -1;
 
 
@@ -153,85 +159,71 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
   ListOfPPLs shiftables, nonshiftables;
   LPPL_Iterator pplit;
   PPL_Iterator  pit;
-  size_t npl(m_partlists.size());
-  while (!m_partlists.empty()) {
-    pplit = m_partlists.begin();
+  for(pplit=m_partlists.begin(); pplit!=m_partlists.end(); ++pplit) {
     Vec4D  mom(0.,0.,0.,0.);
     double mass(0.);
-    for (pit=(*pplit)->begin();pit!=(*pplit)->end();++pit) {
+    for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
       mom  += (*pit)->m_mom;
       mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
     }
-    if (mom.Abs2()>sqr(mass)) shiftables.push_back((*pplit));
-                         else nonshiftables.push_back((*pplit));
-    pplit=m_partlists.erase(pplit);
-  }  
-
-  Proto_Particle_List * pplin;
-  int k(0);
-  while (!nonshiftables.empty()) {
+    Proto_Particle_List* copy=new Proto_Particle_List(**pplit);
+    if(mom.Abs2()>sqr(mass)) shiftables.push_back(copy);
+    else nonshiftables.push_back(copy);
+  }
+  Proto_Particle_List* pplin;
+  while(!nonshiftables.empty()) {
     bool takefromshift(false);
-    if (nonshiftables.size()==1) {
-      if (shiftables.empty()) return false;
-      pplin = SelectFromList(&shiftables);
-      takefromshift = true;
-    }
-    else pplin = new Proto_Particle_List;
-    int i(0);
-    while (!nonshiftables.empty()) {
-      Proto_Particle_List * pplout(nonshiftables.front());
-      while(!pplout->empty()) {
-	pplin->push_back(pplout->front());
-	pplout->pop_front();
+    if(nonshiftables.size()==1) {
+      if(shiftables.empty()) {
+	delete nonshiftables.front();
+	assert(0);    //preliminary
+	return false;
       }
-      delete pplout;
+      pplin=SelectFromList(&shiftables);
+      takefromshift=true;
+    }
+    else pplin=new Proto_Particle_List;
+    while(!nonshiftables.empty()) {
+      pplin->splice(pplin->end(),*nonshiftables.front());
+      delete nonshiftables.front();
       nonshiftables.pop_front();
     }
-
     Vec4D  mom(0.,0.,0.,0.);
     double mass(0.);
-    for (pit=pplin->begin();pit!=pplin->end();++pit) {
+    for(pit=pplin->begin(); pit!=pplin->end(); ++pit) {
       mom  += (*pit)->m_mom;
       mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
     }
-    if (takefromshift) {
-      if (mom.Abs2()<sqr(mass)) {
-	shiftables.remove(pplin);
+    if(mom.Abs2()<sqr(mass)) {
+      if(takefromshift) {
+ 	shiftables.remove(pplin);
 	nonshiftables.push_back(pplin);
       }
-    }    
-    else shiftables.push_back(pplin);
+      else nonshiftables.push_back(pplin);
+    }
+    else { if(!takefromshift) shiftables.push_back(pplin);}
   }
 
-  while (!shiftables.empty()) {
-    Proto_Particle_List * pplist = (*shiftables.begin()), * ppl;
-    int num = count_if(pplist->begin(),pplist->end(),triplet);
-    if (!ShiftList(pplist)) return false;
-    if (num==0 ||
-	(num==1 && triplet((*pplist->begin())))) 
-      m_partlists.push_back((*shiftables.begin()));
-    else {
-      Proto_Particle * stopit;
-      PPL_Iterator pit1;
-      if (pplist->front()->m_flav.IsGluon()) {
-	while (pplist->front()->m_flav.IsGluon()) {
-	  pplist->push_back(pplist->front());
-	  pplist->pop_front();
-	}
-      }
-      while (!pplist->empty()) {
-	ppl  = new Proto_Particle_List;
-	pit  = find_if(pplist->begin(),pplist->end(),antitriplet);
-	do {
-	  ppl->push_back(pplist->front());
-	  pplist->pop_front();
-	} while (pit!=pplist->begin());
-	ppl->push_back(pplist->front());
-	pplist->pop_front();
-	m_partlists.push_back(ppl);
-      }
-      delete pplist;
+  /*
+  for(pplit=m_partlists.begin();pplit!=m_partlists.end();++pplit)
+      std::cout<<**pplit<<std::endl;
+  PRINT_INFO("--------------");
+  for(pplit=shiftables.begin();pplit!=shiftables.end();++pplit)
+    std::cout<<**pplit<<std::endl;
+  */
+
+  assert(nonshiftables.empty());
+
+  while(!shiftables.empty()) {
+    Proto_Particle_List* pplist=shiftables.front();
+    if(!ShiftList(pplist)) {
+      delete pplist; shiftables.pop_front();
+      while(!shiftables.empty()) {
+	delete shiftables.front(); shiftables.pop_front();}
+      assert(0);    //preliminary
+      return false;
     }
+    delete pplist;
     shiftables.pop_front();
   }
 

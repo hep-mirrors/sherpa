@@ -160,9 +160,6 @@ void Dipole_FI::AddRadiation() {
         }
         ReturnMomenta();
       }
-      else {
-        DeleteAll(m_softphotons);
-      }
     }
   }
 }
@@ -187,6 +184,7 @@ bool Dipole_FI::CheckIfExceedingPhotonEnergyLimits() {
   if (m_K[0] < sqrt(m_M*m_M + (nC/(2*nC+nN)*Vec3D(m_K))*(nC/(2*nC+nN)*Vec3D(m_K))) - sum)   return true;
   else {
     return false;
+    msg_Info()<<"!!!generated photons violate momentum conservation, retrying event!!!"<<endl;
   }
 }
 
@@ -195,7 +193,7 @@ void Dipole_FI::CheckMomentumConservationInQCMS() {
   if ((m_u > 1) || (m_u < 0)) msg_Out()<<"u: "<<m_u<<endl;
   m_success = false;
   Vec4D p   = m_newdipole.at(0)->Momentum();
-  // after radiation in Q-CMS
+  // after radiation  in Q-CMS
   m_P = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=1; i<m_newdipole.size(); i++) {
     m_P = m_P + m_newdipole.at(i)->Momentum();
@@ -203,13 +201,12 @@ void Dipole_FI::CheckMomentumConservationInQCMS() {
   m_PN  = CalculateMomentumSum(m_newspectator);
   m_K   = CalculateMomentumSum(m_softphotons);
   // difference
-  Vec4D diff  = p - m_P - m_PN - m_K;
-  double accu = m_accu*m_newdipole.at(0)->Momentum()[0];
-  if ((abs(diff[0]) < accu) && (abs(diff[1]) < accu) &&
-      (abs(diff[2]) < accu) && (abs(diff[3]) < accu))
+  Vec4D diff = p - m_P - m_PN - m_K;
+  if ((abs(diff[0]) < m_accu) && (abs(diff[1]) < m_accu) && 
+      (abs(diff[2]) < m_accu) && (abs(diff[3]) < m_accu))
     m_success = true;
   else {
-    msg_Out()<<"momentum not conserved! residual is: "<<diff<<" accuracy is: "<<accu<<endl;
+    msg_Out()<<"momentum not conserved! residual is: "<<diff<<endl;
     for (unsigned int i=0;i<m_olddipole.size();i++) {
       msg_Out()<<*m_olddipole.at(i)<<endl;
     }

@@ -15,6 +15,9 @@ namespace PHOTONS {
     private:
       double              m_omegaMax;
       double              m_omegaMin;
+      unsigned int        m_number1;
+      unsigned int        m_number2;
+      unsigned int        m_number3;
       Particle_Vector     m_dipole;
 
       double              m_nbar;
@@ -22,8 +25,10 @@ namespace PHOTONS {
 
       void    CalculateAvaragePhotonNumber();
       double  CalculateBeta(Vec4D);
-      double  InterferenceTerm(double, double, double, double);
-      double  InterferenceTermAlternative(double, double, double, double);
+      double  Function(double, double, double, double);
+      double  IntegralOne(double, double, double);
+      double  IntegralTwo(double, double, double);
+      double  IntegrateInterferenceTerm(double, double, double);
 
     public:
       Avarage_Photon_Number(Particle_Vector, double, double);

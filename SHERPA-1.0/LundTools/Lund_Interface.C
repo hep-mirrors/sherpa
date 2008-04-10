@@ -212,6 +212,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
 
 bool Lund_Interface::IsAllowedDecay(kf_code can)
 {
+  if (can==kf_tau) return false;
   if (spcomp(int(can))<501 && spdat3.mdcy[1-1][spcomp(int(can))-1]==1) return true;
   return false;
 }

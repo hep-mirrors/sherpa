@@ -95,6 +95,7 @@ namespace ATOOLS {
     void SetWidthGenerator(std::string _gen) { m_generator = _gen; }
     void Output();
     void UpdateWidth();
+    void ScaleToWidth();
 
     bool            FixedDecay()             { return m_fixdecay;  }
     bool            Overwrite()              { return m_overwrite; }

@@ -177,7 +177,28 @@ void Hadrons::ChooseDecayKinematics(
 Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Table* table)
 {
   Blob_Data_Base* data = (*blob)["hdc"];
-  if(data) return data->Get<Hadron_Decay_Channel*>();
+  if(data) {
+    if(blob->Has(blob_status::internal_flag)) {
+      bool partonic_finalstate(false);
+      Hadron_Decay_Channel* hdc;
+      do {
+        table->Select();
+        hdc = (Hadron_Decay_Channel*) table->GetOneDecayChannel();
+        FlavourSet flavs=hdc->GetDecayProducts();
+        for (FlSetIter fl=flavs.begin(); fl!=flavs.end(); fl++) {
+          if(fl->Strong()) {
+            partonic_finalstate=true;
+            break;
+          }
+        }
+      } while (!partonic_finalstate);
+      DEBUG_INFO("retrying with "<<hdc->ChannelName());
+      blob->UnsetStatus(blob_status::internal_flag);
+      blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>(hdc));
+      return hdc;
+    }
+    else return data->Get<Hadron_Decay_Channel*>();
+  }
 
   // set CP asymmetries due to interference between with mixing and without
   bool setasymmetries = p_mixinghandler->SetCPAsymmetries(blob->InParticle(0), table);
@@ -207,7 +228,7 @@ void Hadrons::DiceUncorrelatedKinematics(
   const double max = hdc->GetPS()->Maximum();    // note: no flux in max.
   do {
     value = hdc->Differential(&moms.front(),anti);
-    if(value/max>1.05 && max>1e-32) {
+    if(value/max>1.05 && max>1e-30) {
       msg_Info()<<METHOD<<" warning: d\\Gamma(x)="<<value<<" > max(d\\Gamma)="
                 <<max<<std::endl;
       rvalue.IncRetryMethod(METHOD);

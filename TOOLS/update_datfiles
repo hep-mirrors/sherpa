@@ -139,7 +139,8 @@ if test $conly -eq 0; then
         if ! test -f $i.old; then cp $i $i.old; fi
         replace_spaces $i
         sed -e's/Num._Accuracy/NUM_ACCURACY/g' \
-            -e's/Running alpha_S/Running_alpha_S/g' < $i > $i~
+            -e's/Running alpha_S/Running_alpha_S/g' \
+            -e's/LESHOUCHESINPUT/SLHA_INPUT/g' < $i > $i~
         mv $i~ $i
         echo "done"
       done
