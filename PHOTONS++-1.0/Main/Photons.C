@@ -16,7 +16,7 @@ double PHOTONS::Photons::s_ircutoff = 0;
 Photons::Photons(Data_Reader* reader, bool ana) :
   m_analyse(ana)
 {
-  s_mode          = reader->GetValue<int>("YFS_MODE",1);
+  s_mode          = reader->GetValue<int>("YFS_MODE",0);
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-1);
   m_success       = false;
