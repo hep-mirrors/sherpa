@@ -202,8 +202,7 @@ bool Hadron_Decays::CreateDecayBlob(Particle* inpart)
   blob->AddToInParticles(inpart);
   Hadron_Decay_Handler * hdhandler = ChooseDecayHandler(inpart);
   if(hdhandler==NULL || !hdhandler->CreateDecayBlob(blob)) {
-    msg_Error()<<"Failed to create decay blob for "<<*inpart<<endl
-               <<"Is a decay handler active for this particle?"<<endl<<endl;
+    msg_Error()<<"Failed to create decay blob for "<<*inpart<<endl;
     return false;
   }
   blob->SetStatus(blob_status::needs_hadrondecays);

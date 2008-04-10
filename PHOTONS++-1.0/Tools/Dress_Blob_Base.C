@@ -16,7 +16,7 @@ Dress_Blob_Base::Dress_Blob_Base() {
   m_photonsadded  = false;
   m_soft          = false;
   if (PHOTONS::Photons::s_mode == 1) m_soft = true;
-  m_accu          = rpa.gen.Accu();
+  m_accu          = PHOTONS::Photons::s_accu;
   m_genweight     = 1;
   m_genmaxweight  = 1;
   m_nbar          = 0;

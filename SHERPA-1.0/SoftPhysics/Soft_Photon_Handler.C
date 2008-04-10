@@ -15,7 +15,7 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile) :
   dataread->SetInputPath(path);
   dataread->SetInputFile(datfile);
 
-  m_mode = softphotons::code(dataread->GetValue<int>("YFS_MODE",0));
+  m_mode = softphotons::code(dataread->GetValue<int>("YFS_MODE",1));
   if ((m_mode == softphotons::exp) || (m_mode == softphotons::exp_order1))
     p_yfs  = new Photons(dataread,true);
   else

@@ -27,6 +27,7 @@ namespace PHOTONS {
     static int                  s_mode;
     static bool                 s_useme;
     static double               s_ircutoff;
+    static double               s_accu;
   };
 
 

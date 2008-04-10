@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{521,-321}	 | 0.3[Pythia]	 | Bs2star_B+K-.dat;
-{511,-311}	 | 0.3[Pythia]	 | Bs2star_BKb.dat;
-{523,-321}	 | 0.2[Pythia]	 | Bs2star_Bstar+K-.dat;
-{513,-311}	 | 0.2[Pythia]	 | Bs2star_BstarKb.dat;
