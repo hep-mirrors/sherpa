@@ -10,15 +10,13 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_EW.C \
 				Interaction_Model_Higgs_SM.C \
 				Interaction_Model_SM.C \
-		      		Interaction_Model_EHC.C \
-				Interaction_Model_SMEHC.C \
+				Interaction_Model_SM_EHC.C \
 				Interaction_Model_SM_ZPrime.C \
 				Interaction_Model_AEW.C \
 				Interaction_Model_SM_AGC.C \
 				Interaction_Model_SM_Phantom_U1.C \
 				Interaction_Model_Higgs_THDM.C \
 				Interaction_Model_THDM.C \
-				Interaction_Model_EHC_S.C\
 				Interaction_Model_QCD_Grav.C \
 				Interaction_Model_EW_Grav.C \
 				Interaction_Model_ADD.C \
@@ -40,15 +38,13 @@ pkginclude_HEADERS = \
 				Interaction_Model_EW.H \
 				Interaction_Model_Higgs_SM.H \
 				Interaction_Model_SM.H \
-		      		Interaction_Model_EHC.H \
-				Interaction_Model_SMEHC.H \
+				Interaction_Model_SM_EHC.H \
 				Interaction_Model_SM_ZPrime.H \
 				Interaction_Model_AEW.H \
 				Interaction_Model_SM_AGC.H \
 				Interaction_Model_SM_Phantom_U1.H \
 				Interaction_Model_Higgs_THDM.H \
 				Interaction_Model_THDM.H \
-				Interaction_Model_EHC_S.H\
 				Interaction_Model_QCD_Grav.H \
 				Interaction_Model_EW_Grav.H \
 				Interaction_Model_ADD.H \

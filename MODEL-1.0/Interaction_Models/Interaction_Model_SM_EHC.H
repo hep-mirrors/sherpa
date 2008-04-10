@@ -1,15 +1,14 @@
-#ifndef Interaction_Model_SMEHC_h
-#define Interaction_Model_SMEHC_h
+#ifndef Interaction_Model_SM_EHC_h
+#define Interaction_Model_SM_EHC_h
 
 #include "Interaction_Model_SM.H"
-#include "Interaction_Model_EHC.H"
 
 namespace MODEL {  
-  class Interaction_Model_SMEHC : public Interaction_Model_Base {
+  class Interaction_Model_SM_EHC : public Interaction_Model_Base {
     Interaction_Model_SM        * p_mosm;
-    Interaction_Model_EHC       * p_mohl;
+    ATOOLS::Kabbala geff,ghgg,g1,g2,g3,sintW,costW,PL,PR,M_I,root2,vev;
   public:
-    Interaction_Model_SMEHC(MODEL::Model_Base *,std::string,std::string);
+    Interaction_Model_SM_EHC(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);
     void c_VVV(std::vector<Single_Vertex>&,int &);
     void c_VVVV(std::vector<Single_Vertex>&,int &);
@@ -25,7 +24,7 @@ namespace MODEL {
     void c_VVVT(std::vector<Single_Vertex>&,int &)  {}
     void c_FFVT(std::vector<Single_Vertex>&,int &)  {}
     void c_SSST(std::vector<Single_Vertex>&,int &)  {}
-    ~Interaction_Model_SMEHC();
+    ~Interaction_Model_SM_EHC();
 };
 }
 #endif

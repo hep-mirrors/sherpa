@@ -1,7 +1,6 @@
 #ifndef Interaction_Model_MSSM_EHC_h
 #define Interaction_Model_MSSM_EHC_h
 
-#include "Interaction_Model_EHC_S.H"
 #include "Interaction_Model_THDM.H"
 #include "Interaction_Model_Inos.H"
 #include "Interaction_Model_sLepton_EW.H"
@@ -13,14 +12,13 @@
 
 namespace MODEL {  
   class Interaction_Model_MSSM_EHC : public Interaction_Model_Base {
-    Interaction_Model_EHC_S          * p_moehc;
     Interaction_Model_THDM           * p_mothdm;
     Interaction_Model_Inos           * p_moinos;
     Interaction_Model_sLepton_EW     * p_moslepton;
     Interaction_Model_sQCD           * p_mosqcd;
     Interaction_Model_sQuark_EW      * p_mosquark;
     Interaction_Model_sLepton_sQuark * p_moslesqu;
-
+    ATOOLS::Kabbala ghgg,g1,g2,g3,sintW,costW,PL,PR,M_I,root2,vev;
   public:
     Interaction_Model_MSSM_EHC(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);
