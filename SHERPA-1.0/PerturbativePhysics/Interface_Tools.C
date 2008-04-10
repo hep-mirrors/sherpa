@@ -103,33 +103,11 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E,
 void Interface_Tools::InitializeNOutGoing(Blob *blob, Tree* tree, double scale)
 {
   DEBUG_FUNC("blob->Id()="<<blob->Id());
-//   blob->SetCMS();
-//   blob->BoostInCMS();
   Knot *dummy=tree->NewKnot();
-  Vec4D prop(blob->InParticle(0)->Momentum());
   std::vector<Knot*> knots(blob->NOutP());
-  for (size_t i(0);i<knots.size()/2;++i) {
+  for (size_t i(0);i<knots.size();++i) {
     Particle *part(blob->OutParticle(i));
     DEBUG_INFO("treat "<<*part);
-    prop-=part->Momentum();
-    knots[i]=tree->NewKnot(part);
-    knots[i]->part->SetInfo('H');
-    knots[i]->part->SetStatus(part_status::active);
-    knots[i]->t=scale;
-    knots[i]->costh=-1.; 
-    knots[i]->thcrit=Angle(part,blob);
-    knots[i]->tout=sqr(part->Flav().PSMass());
-    knots[i]->E2=sqr(part->Momentum()[0]);
-    knots[i]->stat=3;
-    knots[i]->part->SetProductionBlob(blob);
-    knots[i]->didkin=true;
-    DEBUG_INFO("knot "<<i<<" "<<*knots[i]);
-  }
-  prop=blob->InParticle(1)->Momentum();
-  for (size_t i(knots.size()-1);i>=knots.size()/2;--i) {
-    Particle *part(blob->OutParticle(i));
-    DEBUG_INFO("treat "<<*part);
-    prop-=part->Momentum();
     knots[i]=tree->NewKnot(part);
     knots[i]->part->SetInfo('H');
     knots[i]->part->SetStatus(part_status::active);
@@ -145,7 +123,6 @@ void Interface_Tools::InitializeNOutGoing(Blob *blob, Tree* tree, double scale)
   }
   Knot *left(knots.front()), *right(knots.back());
   for (size_t i(1);i<knots.size()/2;++i) {
-//     PRINT_INFO("combine left "<<i);
     Knot *mo=tree->NewKnot();
     mo->part->SetMomentum(left->part->Momentum()+knots[i]->part->Momentum());
     mo->part->SetFlow(1,100);
@@ -161,10 +138,8 @@ void Interface_Tools::InitializeNOutGoing(Blob *blob, Tree* tree, double scale)
     mo->left=left;
     mo->right=knots[i];
     left=mo;
-//     DEBUG_INFO("new knot "<<*mo);
   }
   for (size_t i(knots.size()-2);i>=knots.size()/2;--i) {
-//     PRINT_INFO("combine right "<<i);
     Knot *mo=tree->NewKnot();
     mo->part->SetMomentum(right->part->Momentum()+knots[i]->part->Momentum());
     mo->part->SetFlow(1,100);
@@ -180,7 +155,6 @@ void Interface_Tools::InitializeNOutGoing(Blob *blob, Tree* tree, double scale)
     mo->left=right;
     mo->right=knots[i];
     right=mo;
-//     DEBUG_INFO("new knot "<<*mo);
   }
   dummy->part->SetMomentum(left->part->Momentum()+right->part->Momentum());
   dummy->part->SetInfo('f');
@@ -195,14 +169,7 @@ void Interface_Tools::InitializeNOutGoing(Blob *blob, Tree* tree, double scale)
   left->prev=right->prev=dummy;
   dummy->left=left;
   dummy->right=right;
-//   blob->BoostInLab();
   tree->CheckMomentumConservation();
-//   DEBUG_INFO(*tree);
-//   DEBUG_VAR(p_initrees[0]<<" "<<p_initrees[1]);
-//   p_initrees[0]->Reset();
-//   p_initrees[1]->Reset();
-//   DEBUG_VAR(tree);
-//   DEBUG_INFO(*tree);
 }
 
 bool Interface_Tools::Connected(const Particle *a,const Particle *b) 
