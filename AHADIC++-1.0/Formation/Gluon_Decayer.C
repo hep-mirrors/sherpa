@@ -48,6 +48,12 @@ Gluon_Decayer::~Gluon_Decayer() {
 bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
 {
   if (plin==NULL || plin->empty()) return true;
+  if (!m_dipoles.empty()) {
+    while (!m_dipoles.empty()) {
+      delete (*m_dipoles.begin());
+      m_dipoles.pop_front();
+    }
+  }
 
   msg_Debugging()<<std::endl<<std::endl<<std::endl
 		 <<"------------------------------------------------------------"<<std::endl
@@ -152,8 +158,7 @@ bool Gluon_Decayer::DecayDipoles() {
     if (!p_splitter->SplitDipole((*dipiter))) {
       switch (Rescue(dipiter)) {
       case -1:
-	msg_Out()<<"............... Rescue failed ..................."<<std::endl;
-	abort();
+	msg_Debugging()<<"............... Rescue failed ..................."<<std::endl;
 	return false;
       case 0:  
 	dipiter=m_dipoles.begin(); continue; 
