@@ -168,8 +168,8 @@ void Vegas::AddPoint(double value,double *xy)
   if (m_mode==1){
     for (int i=0;i<m_dim;i++) {
       if (dabs(p_x[i]-xy[i])>1.e-4) {
-	msg_Error()<<"Mapping error in Vegas for "<<m_name<<endl;
-	for (int j=0;j<m_dim;j++) msg_Error()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
+	msg_Tracking()<<"Mapping error in Vegas for "<<m_name<<endl;
+	for (int j=0;j<m_dim;j++) msg_Tracking()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
 //    	abort();
 	i=m_dim;
       }

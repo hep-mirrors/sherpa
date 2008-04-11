@@ -7,7 +7,6 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
-//#include "../Amplitude/Zfunctions/MHV_Calculator.H"
 #include "Permutation.H"
 #include <vector>
 #include "Mom.H"

@@ -202,7 +202,7 @@ void Amegic::ReadInProcessfile(string file)
   std::map<std::string,std::pair<int,std::string> > vycut;
   std::string enhance_function="1", factorization_scale, renormalization_scale;
   bool        print_graphs=false;
-  int         enable_mhv=0; 
+  int         enable_mhv=1; 
   string      selectorfile;
   std::vector<std::vector<std::string> > procdata;
   Data_Reader read(" ",";","%",":");
@@ -388,6 +388,9 @@ void Amegic::ReadInProcessfile(string file)
 
 		if (cur[0]=="Print_Graphs") {
 		  print_graphs=true;
+		}
+		if (cur[0]=="Disable_MHV") {
+		  enable_mhv=0;
 		}
 		if (cur[0]=="Enable_MHV") {
 		  enable_mhv=1;
