@@ -24,6 +24,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_xmax=1.;
   m_q2min=1.;
   m_q2max=1.e12;
+  m_type="LHA["+m_set+"]";
 
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
