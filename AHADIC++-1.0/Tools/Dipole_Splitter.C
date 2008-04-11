@@ -5,6 +5,7 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
+size_t Dipole::s_cnt=0;
 
 Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
   p_as(as),p_constituents(hadpars.GetConstituents()), p_options(NULL),
@@ -21,13 +22,12 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
   std::cout<<"### Two new Proto_Particles ("
   	   <<dip1->Triplet()<<"/"<<dip1->AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
 #endif
+
   p_dip = dip1;
   if (msg->LevelIsDebugging()) {
     msg_Out()<<METHOD<<" : "<<cluster->Momentum()<<" ("<<cluster->Mass2()<<")."<<std::endl;
     p_dip->Output();
   }
-
-
 
   Dipole * dip2 = EmitGluon(pt2max);
   if (!dip2) {
@@ -69,6 +69,8 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
     msg_Error()<<"Error in "<<METHOD<<" :"<<std::endl
 	       <<"   Two unsplittable dipoles emerging from :"<<std::endl
 	       <<(*cluster)<<std::endl;
+    //delete dip1->Triplet();
+    //delete dip1->AntiTriplet();
     delete dip1;
     delete dip2;
     return false;

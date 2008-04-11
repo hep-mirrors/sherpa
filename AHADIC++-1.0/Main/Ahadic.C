@@ -1,3 +1,4 @@
+#include <cassert>
 #include "Ahadic.H"
 #include "Soft_Cluster_Handler.H"
 #include "Cluster.H"
@@ -10,19 +11,18 @@ using namespace std;
 
 
 Ahadic::Ahadic(string path,string file,bool ana)  :
-  m_fullinfo(false), m_maxtrials(3), p_clulist(new Cluster_List)
+  m_fullinfo(false), m_maxtrials(3), m_clulist(), m_prilist()
 {
   hadpars.Init(path,file);
   ana=true;
 
-  p_cformhandler = new Cluster_Formation_Handler(p_clulist,ana);
-  p_cdechandler  = new Cluster_Decay_Handler(p_clulist,ana);
+  p_cformhandler = new Cluster_Formation_Handler(&m_clulist,&m_prilist,ana);
+  p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,ana);
   msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
 Ahadic::~Ahadic() 
 {
-  if (p_clulist)      { delete p_clulist;      p_clulist=NULL;  }
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
 }
@@ -107,6 +107,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 
 Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
+  assert(m_clulist.empty() && m_prilist.empty());
   blob->SetType(btp::Cluster_Formation);
   blob->SetTypeSpec("AHADIC-1.0");
 
@@ -125,7 +126,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   }
   
   if (msg->LevelIsDebugging()) {
-    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(*p_clulist)<<std::endl;
+    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(m_clulist)<<std::endl;
   }
   
   switch (p_cdechandler->DecayClusters(blob)) {
@@ -150,33 +151,39 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 	       <<"##########################  OUT : No Error ###############################"<<endl
 	       <<"##########################################################################"<<endl;
 #else
-      msg_Out()<<METHOD<<" : "<<(clus.RemainingClusters()-1)<<" remaining clusters."<<endl
+      msg_Out()<<METHOD<<" : "<<(Cluster::RemainingClusters())<<" remaining clusters."<<endl
 	       <<(*blob)<<(*blobs)
 	       <<"##############################################################"<<endl
 	       <<"##############################################################"<<endl
 	       <<"##############################################################"<<endl;
 #endif
   }
-  
+
+  assert(m_clulist.empty());
   return Return_Value::Success;
+
 }
 
 
 void Ahadic::Reset() {
-  Cluster clus;
-  clus.ResetClusterNumber();
-  clus.ResetClusterCount();
-  control::s_AHAparticles = control::s_AHAprotoparticles = 0;
+  assert(!Cluster::RemainingClusters());
+  if(control::s_AHAprotoparticles) {
+    assert(control::s_AHAprotoparticles==control::l_oflow.size());
+    PRINT_INFO(control::s_AHAprotoparticles<<" vs "<<control::l_oflow.size());
+    while(!control::l_oflow.empty()) delete control::l_oflow.front();
+  }
+  assert(control::s_AHAprotoparticles==0);
+  Cluster::ResetClusterNumber();
+  control::s_AHAparticles=0;
 }
 
 bool Ahadic::SanityCheck(Blob * blob,double norm2) {
-  Cluster clus;
   if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
-      (clus.RemainingClusters()!=1 && clus.RemainingClusters()!=0) ||
-      control::s_AHAparticles!=blob->NOutP() ||
-      control::s_AHAprotoparticles!=0) {
+      Cluster::RemainingClusters()!=0 ||
+      control::s_AHAparticles!=blob->NOutP()/* ||
+					       control::s_AHAprotoparticles!=0*/) {
     msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
-	     <<"   Momentum/particle-blob number violation for "<<(clus.RemainingClusters()-1)
+	     <<"   Momentum/particle-blob number violation for "<<(Cluster::RemainingClusters())
 	     <<" remaining clusters (norm2 = "<<norm2<<")."<<endl
 	     <<"   Protoparticles = "<<control::s_AHAprotoparticles
 	     <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
@@ -193,12 +200,11 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 }
 
 void Ahadic::CleanUp(Blob * blob) {
-  Cluster_List * clusters = p_cformhandler->GetPrimaryClusters();
-  while (!clusters->empty()) {
-    if (msg_LevelIsDebugging()) clusters->front()->Print();
-    clusters->front()->Delete();
-    clusters->pop_front();
+  m_clulist.clear();
+  while(!m_prilist.empty()) {
+    if(msg_LevelIsDebugging()) m_prilist.front()->Print();
+    m_prilist.front()->Delete();
+    m_prilist.pop_front();
   }
-
-  if (blob) blob->DeleteOutParticles(0);
+  if(blob) blob->DeleteOutParticles(0);
 }

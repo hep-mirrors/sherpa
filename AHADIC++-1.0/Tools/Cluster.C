@@ -12,13 +12,15 @@ namespace AHADIC {
 
   long int control::s_AHAparticles=0;
   long int control::s_AHAprotoparticles=0;
-  long int control::s_AHAblobs=0;  
-}
+  long int control::s_AHAblobs=0;
 
+  Proto_Particle_List control::l_oflow=Proto_Particle_List();
+}
 
 Proto_Particle::Proto_Particle(const Proto_Particle & pp) :
   m_flav(pp.m_flav), m_mom(pp.m_mom), m_info(pp.m_info), m_mass(pp.m_mass)
 { 
+  control::l_oflow.push_back(this);
   control::s_AHAprotoparticles++; 
 }
 
@@ -26,12 +28,15 @@ Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info)
   m_flav(flav), m_mom(mom), m_info(info), 
   m_mass(hadpars.GetConstituents()->Mass(flav)) 
 { 
+  control::l_oflow.push_back(this);
   control::s_AHAprotoparticles++; 
 }
 
 
 Proto_Particle::~Proto_Particle()
 { 
+  PPL_Iterator hit=find(control::l_oflow.begin(),control::l_oflow.end(),this);
+  if(hit!=control::l_oflow.end()) control::l_oflow.erase(hit);
   control::s_AHAprotoparticles--; 
 }
 
@@ -53,7 +58,7 @@ Cluster::Cluster(Vec4D mom,Flavour flav,bool active) :
   m_momentum(mom), m_flav(flav),
   m_hasboost(false), m_hasrotate(false), 
   p_left(NULL), p_right(NULL), p_prev(NULL),
-  m_number(s_cluster_number++)
+  m_number(++s_cluster_number)
 {
   s_cluster_count++;
 }
@@ -63,7 +68,7 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   m_momentum(p_trip->m_mom+p_anti->m_mom), m_flav(Flavour(kf_cluster)),
   m_hasboost(false), m_hasrotate(false), 
   p_left(NULL), p_right(NULL), p_prev(NULL),
-  m_number(s_cluster_number++)
+  m_number(++s_cluster_number)
 {
   ////PRINT_VAR(m_momentum);
   s_cluster_count++;

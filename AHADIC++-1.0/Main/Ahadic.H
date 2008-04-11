@@ -21,7 +21,8 @@ namespace AHADIC {
     Cluster_Formation_Handler * p_cformhandler;
     Cluster_Decay_Handler     * p_cdechandler;
     
-    Cluster_List              * p_clulist;
+    Cluster_List m_clulist;
+    Cluster_List m_prilist;
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob *,int retry=0);
     void Reset();

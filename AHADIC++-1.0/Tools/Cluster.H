@@ -14,13 +14,6 @@
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
 
-  struct control {
-  public:
-    static long int s_AHAparticles;
-    static long int s_AHAprotoparticles;
-    static long int s_AHAblobs;
-  };
-
   struct Proto_Particle {
   public:
     ATOOLS::Flavour m_flav;
@@ -42,6 +35,13 @@ namespace AHADIC {
 
   std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
 
+  struct control {
+  public:
+    static long int s_AHAparticles;
+    static long int s_AHAprotoparticles;
+    static long int s_AHAblobs;
+    static Proto_Particle_List l_oflow;
+  };
 
   class Cluster {
   private:
@@ -54,7 +54,7 @@ namespace AHADIC {
     bool                m_hasboost,m_hasrotate;
 
     Cluster           * p_left, * p_right, * p_prev;
-    int                 m_number;
+    long int            m_number;
 
     std::vector<ATOOLS::Flavour> m_decayproducts;
 
@@ -117,11 +117,9 @@ namespace AHADIC {
 
     friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
-    inline int         Number()             { return m_number; }
-    inline int         RemainingClusters()  { return s_cluster_count; }
-    inline int         ClusterCounter()     { return s_cluster_number; }
-    inline void        ResetClusterNumber() { s_cluster_number = 0; }
-    inline void        ResetClusterCount()  { s_cluster_count = 0; }
+    inline long int    Number()             { return m_number; }
+    static long int    RemainingClusters()  { return s_cluster_count; }
+    static void        ResetClusterNumber() { s_cluster_number = 0; }
   };
 
 
@@ -286,7 +284,7 @@ namespace AHADIC {
     \brief For debugging reasons - a quick way of identifying clusters.
   */
   /*!
-    \var int Cluster::m_number
+    \var long int Cluster::m_number
     \brief For debugging reasons - a quick way of identifying clusters.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -501,10 +499,6 @@ namespace AHADIC {
   /*!
     \fn inline int RemainingClusters()
     Returns the number of undeleted clusters.  For debugging only.
-  */
-  /*!
-    \fn inline int ClusterCounter()
-    Gives the value of the actual counter.  For debugging only.
   */
   /*!
     \fn inline void ResetClusterNumber()

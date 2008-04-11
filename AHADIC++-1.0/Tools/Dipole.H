@@ -1,20 +1,22 @@
 #ifndef Dipole_H
 #define Dipole_H
 
+#include <cassert>
 #include "Cluster.H"
 #include "Constituents.H"
 
 namespace AHADIC {
   class Hadronisation_Parameters;
 
-  class Dipole {  
+  class Dipole {
+    static size_t s_cnt;
   private:
     bool   m_mustdecay,m_switched;
     double m_mass2,m_massbar2;
     Proto_Particle * p_triplet, * p_antitriplet; 
   public:
     Dipole(Proto_Particle * trip,Proto_Particle * anti);
-    ~Dipole() {}
+    ~Dipole() { --s_cnt;}
 
     void Update();
     void Output();
@@ -33,20 +35,21 @@ namespace AHADIC {
   };
 
   inline Dipole::Dipole(Proto_Particle * trip,Proto_Particle * anti) {
-    p_triplet   = trip; p_antitriplet = anti;
-    m_mustdecay = (p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon()); 
-    m_mass2     = (p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-    m_massbar2  = ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
+    ++s_cnt;
+    p_triplet    =trip;
+    p_antitriplet=anti;
+    m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon()); 
+    m_mass2   =(p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
+    m_massbar2=ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
   }
   inline void Dipole::Update() {
     if (p_triplet && p_antitriplet) {
-      m_mustdecay = (p_triplet->m_flav.IsGluon() || p_triplet->m_flav.IsGluon());
-      m_mass2     = (p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-      m_massbar2  = ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
+      m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon());
+      m_mass2   =(p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
+      m_massbar2= ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
     }
   }
   inline void Dipole::Output() {
-    Update();
     msg_Out()<<"--- Dipole ("<<p_triplet<<" "<<p_antitriplet<<" : ";
     if (p_triplet) msg_Out()<<p_triplet->m_flav;
     else msg_Out()<<" no flav ";

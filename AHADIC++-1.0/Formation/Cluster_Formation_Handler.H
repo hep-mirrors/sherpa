@@ -23,7 +23,7 @@ namespace AHADIC {
 
     Cluster_List                      * p_clulist, * p_primaries;
     ListOfPPLs                          m_partlists;
-    std::vector<Cluster_List *>         m_clulists;
+    std::vector<Cluster_List*>          m_clulists;
 
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
@@ -39,11 +39,10 @@ namespace AHADIC {
     bool MergeClusterListsIntoOne();
 
   public:
-    Cluster_Formation_Handler(Cluster_List *,bool=false);
+    Cluster_Formation_Handler(Cluster_List*, Cluster_List*, bool=false);
     ~Cluster_Formation_Handler();
 
     int FormClusters(ATOOLS::Blob *);
-    Cluster_List * GetPrimaryClusters() const { return p_primaries; }
   };
   /*!
     \file Cluster_Formation_Handler.H
