@@ -332,17 +332,9 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
 //     if (p_partner!=this) links.push_back(this);
     
     totalsize++;
-    return 1;
     if (m_gen_str<2) return 1;
-    if (p_partner!=this) {
-      msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : "<<std::endl
-		    <<"   Strings of process "<<m_name<<" and partner "
-		    <<p_partner->Name()<<" did not fit."<<std::endl
-		    <<"   Have to write new library."<<std::endl;
-    }
-    WriteLibrary();
-    if (p_partner==this && Result()>0.) SetUpIntegrator();
-    return 0;
+    if (p_partner==this && Result()>0.) return SetUpIntegrator();
+    return 1;
   case -3: return -3;
   default :
     msg_Error()<<"ERROR in Single_Process_MHV2::InitAmplitude : "<<std::endl
