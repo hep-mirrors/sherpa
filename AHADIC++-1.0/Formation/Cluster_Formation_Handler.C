@@ -68,7 +68,7 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 
   if (!ExtractSinglets(blob))      return -1;
   if (!ShiftOnMassShells())        return -1;
-  if (!FormOriginalClusters())     return 0;
+  if (!FormOriginalClusters())     return -1;
   if (!ApplyColourReconnections()) return 0;
   if (!MergeClusterListsIntoOne()) return 0;
   if (!ClustersToHadrons(blob))    return -1;

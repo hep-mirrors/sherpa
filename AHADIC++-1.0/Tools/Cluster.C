@@ -182,8 +182,8 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
   //PRINT_VAR(p_anti->m_mom);
 
   Vec4D testmom = m_momentum-p_trip->m_mom-p_anti->m_mom;
-  if (dabs(testmom.Abs2())>1.e-6 || testmom[0]>1.e-6) {
-    msg_Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
+  if (dabs(testmom.Abs2()/save[0][0])>1.e-6 || testmom[0]/save[0][0]>1.e-6) {
+    msg_Error()<<"Maybe error in "<<METHOD<<"("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
 	       <<" Was : "<<save[0]<<" ("<<save[0].Abs2()<<")"<<" -> "
 	       <<save[1]<<" ("<<save[1].Abs2()<<") + "
 	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl

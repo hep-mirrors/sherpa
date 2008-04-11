@@ -248,9 +248,9 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 
 void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
 {
-#ifdef AHAmomcheck
+  //#ifdef AHAmomcheck
   Vec4D  checkbef = cluster->Momentum();
-#endif
+  //#endif
   Flavour had1((*cluster)[0]), had2((*cluster)[1]);
 
   double M       = cluster->Mass(), M2 = M*M;
@@ -287,7 +287,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
   blob->AddToOutParticles(cluster->GetRight()->GetSelf());
 
 
-#ifdef AHAmomcheck
+  //#ifdef AHAmomcheck
   if (dabs((checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2())>1.e-12) {
     msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"    Four-momentum not conserved: "
@@ -296,14 +296,10 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
 	       <<(checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2()
 	       <<"."<<std::endl;
   }
-  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
-#endif
+  else msg_Debugging()<<METHOD<<" conserves momentum:"<<std::endl;
+  //#endif
 
 }
-
-
-
-
 
 
 double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour & hadron,
@@ -527,9 +523,10 @@ bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin,int size,bool takeal
   }
 #ifdef AHAmomcheck
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
-    msg_Out()<<METHOD<<" yields a momentum violation for  "<<pos1<<" : "
-  	     <<checkbef<<" - "<<checkaft<<" --> "
+    msg_Out()<<METHOD<<" yields a momentum violation for  "<<pos1<<" : "<<std::endl
+  	     <<"   "<<checkbef<<" - "<<checkaft<<" --> "
   	     <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+    msg_Out()<<(*clin)<<std::endl;
   }
   else msg_Debugging()<<METHOD<<" conserves momentum : "
 		      <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;

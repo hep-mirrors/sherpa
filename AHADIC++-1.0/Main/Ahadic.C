@@ -179,6 +179,7 @@ void Ahadic::Reset() {
 
 bool Ahadic::SanityCheck(Blob * blob,double norm2) {
   if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
+      (norm2<0. && norm2>0.) ||
       Cluster::RemainingClusters()!=0 ||
       control::s_AHAparticles!=blob->NOutP()/* ||
 					       control::s_AHAprotoparticles!=0*/) {
@@ -189,6 +190,7 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 	     <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
 	     <<"   : "<<blob->CheckMomentumConservation()<<endl
 	     <<(*blob)<<endl;
+    abort();
     return false;
   }
   msg_Debugging()<<"Passed "<<METHOD<<" with "

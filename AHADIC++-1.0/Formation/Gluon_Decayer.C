@@ -63,12 +63,12 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
 #endif
 
   if (!FillDipoleList(plin)) return false;
-  DecayDipoles();
+  if (!DecayDipoles()) return false;
   UpdatePPList(plin);
 
 #ifdef AHAmomcheck
   for (PPL_Iterator pit=plin->begin();pit!=plin->end();pit++) checkaft += (*pit)->m_mom;
-  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
+  if (dabs((checkbef-checkaft).Abs2()/checkbef.Abs2())>1.e-6) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
   	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
   }
@@ -150,9 +150,17 @@ bool Gluon_Decayer::DecayDipoles() {
       (*dipiter)->Output();
     }
     if (!p_splitter->SplitDipole((*dipiter))) {
-      if (!Rescue(dipiter)) { 
-	msg_Debugging()<<"............... Rescue failed ..................."<<std::endl;
+      switch (Rescue(dipiter)) {
+      case -1:
+	msg_Out()<<"............... Rescue failed ..................."<<std::endl;
+	abort();
+	return false;
+      case 0:  
 	dipiter=m_dipoles.begin(); continue; 
+	break;
+      case 1:
+      default:
+	break;
       }
     }
     else AfterSplit(dipiter);
@@ -184,7 +192,7 @@ DipIter Gluon_Decayer::SelectDipole() {
   return winner;
 }
 
-bool Gluon_Decayer::Rescue(DipIter & dip) {
+int Gluon_Decayer::Rescue(DipIter & dip) {
   if (msg->LevelIsDebugging()) {
     msg_Out()<<METHOD<<" "<<METHOD<<" "<<METHOD<<" "<<METHOD<<std::endl;
     (*dip)->Output();
@@ -197,7 +205,7 @@ bool Gluon_Decayer::Rescue(DipIter & dip) {
       if (p_splitter->SplitDipole((*partner))) {
 	AfterSplit(partner);
 	dip = partner;
-	return true;
+	return 1;
       }
     }
     if (dip!=m_dipoles.begin()) {
@@ -206,7 +214,7 @@ bool Gluon_Decayer::Rescue(DipIter & dip) {
       if (p_splitter->SplitDipole((*partner))) {
 	AfterSplit(partner);
 	dip = partner;
-	return true;
+	return 1;
       }
     }
     if ((*dip)==(*m_dipoles.rbegin())) { 
@@ -227,7 +235,7 @@ bool Gluon_Decayer::Rescue(DipIter & dip) {
     if (p_splitter->SplitDipole((*partner))) {
       AfterSplit(partner);
       dip = partner;
-      return true;
+      return 1;
     }
     dip1 = dip; dip2 = partner;
   }
@@ -237,12 +245,22 @@ bool Gluon_Decayer::Rescue(DipIter & dip) {
     if (p_splitter->SplitDipole((*partner))) {
       AfterSplit(partner);
       dip = partner;
-      return true;
+      return 1;
     }
     dip1 = partner; dip2 = dip;
   }
+  if (m_dipoles.size()==2 &&
+      (*dip1)->Triplet()->m_flav.IsGluon() &&
+      (*dip1)->AntiTriplet()->m_flav.IsGluon() &&
+      (*dip1)->Triplet() == (*dip2)->AntiTriplet() &&
+      (*dip1)->AntiTriplet() == (*dip2)->Triplet()) {
+    msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
+	       <<"   A gluon-gluon singlet with low mass : "<<sqrt((*dip1)->Mass2())<<","<<std::endl
+	       <<"   Do not know how to handle this, trigger new event."<<std::endl;
+    return -1;
+  }
   MergeDipoles(dip1,dip2); 
-  return false;
+  return 0;
 }
 
 void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
@@ -250,6 +268,12 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
     msg_Out()<<METHOD<<" for : "<<(*dip1)<<" + "<<(*dip2)<<std::endl
 	     <<sqrt((*dip1)->Mass2())<<" vs. "<<sqrt((*dip2)->Mass2())<<std::endl;
   }
+  Dipole save1(new Proto_Particle((*(*dip1)->Triplet())),
+	       new Proto_Particle((*(*dip1)->AntiTriplet())));
+  Dipole save2(new Proto_Particle((*(*dip2)->Triplet())),
+	       new Proto_Particle((*(*dip2)->AntiTriplet())));
+
+
   Vec4D   Q(0.,0.,0.,0.),pi,pj,pk;
   Q += pi = (*dip1)->Triplet()->m_mom;
   Q += pj = (*dip2)->Triplet()->m_mom;
@@ -290,10 +314,16 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Vec4D Qafter = (*dip1)->Momentum();
   if (dabs((Q-Qafter).Abs2())>1.e-12) {
     msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
-  	     <<Q<<" - "<<Qafter<<" --> "<<(Q-Qafter).Abs2()<<std::endl;    
+  	     <<Q<<" - "<<Qafter<<" --> "<<(Q-Qafter).Abs2()<<std::endl;
+    save1.Output();
+    save2.Output();
   }
   else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
+  delete save1.Triplet();
+  delete save1.AntiTriplet();
+  delete save2.Triplet();
+  delete save2.AntiTriplet();
 }
 
 void Gluon_Decayer::AfterSplit(DipIter dip) {
