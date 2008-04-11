@@ -1,18 +1,27 @@
+if LHAPDF_SUPPORT
+MRSTEXTRADIST = \
+			mrst99.cc \
+			mrst2001lo.f \
+			PDF_MRST99.C \
+			PDF_MRST01LO.C \
+			mrst99.h \
+			PDF_MRST99.H \
+			PDF_MRST01LO.H
+else
 pkglib_LTLIBRARIES       = libMRST.la
-
 libMRST_la_SOURCES   =	\
 			mrst99.cc \
 			mrst2001lo.f \
 			PDF_MRST99.C \
 			PDF_MRST01LO.C
-
 pkginclude_HEADERS        = \
 			mrst99.h \
 			PDF_MRST99.H \
 			PDF_MRST01LO.H
+endif
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@
 
-EXTRA_DIST    = @SVNINCLUDE@
+EXTRA_DIST    = @SVNINCLUDE@ $(MRSTEXTRADIST)

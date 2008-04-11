@@ -234,6 +234,14 @@ void Input_Output_Handler::AddInputMode(const iotype::code c1)
 }
 
 void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
+  if (m_screenout==iotype::HepMC) {
+#ifdef USING__CLHEP
+    p_hepmc->Sherpa2HepMC(blobs);
+#endif
+#ifdef USING__HEPMC2
+    p_hepmc2->Sherpa2HepMC(blobs);
+#endif
+  }
   if (m_on==false || !(m_io&1) || !msg_LevelIsEvents()) return;
   switch (m_screenout) {
   case iotype::Sherpa:

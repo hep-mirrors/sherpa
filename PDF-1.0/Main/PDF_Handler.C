@@ -1,13 +1,13 @@
 #include "PDF_Handler.H"
 #include "PDF_Electron.H"
-#include "PDF_MRST99.H"
-#include "PDF_MRST01LO.H"
 #include "GRVph_Fortran_Interface.H"
 
 #ifdef USING__LHAPDF
 #include "LHAPDF_Fortran_Interface.H"
 #else
 #include "CTEQ6_Fortran_Interface.H"
+#include "PDF_MRST99.H"
+#include "PDF_MRST01LO.H"
 #endif
 
 #include "Exception.H"
@@ -52,12 +52,22 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
       grid_path=ATOOLS::rpa.gen.Variable("SHERPA_PDF_PATH")+std::string("/")+grid_path;
       if (set==std::string("MRST99")) {
+#ifdef USING__LHAPDF
+	msg_Error()<<"ERROR : Cannot initialize MRST interface when LHAPDF "
+                   <<"is enabled ! "<<std::endl;
+#else
 	msg_Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
+#endif
       }
       else if (set==std::string("MRST01LO")) {
+#ifdef USING__LHAPDF
+	msg_Error()<<"ERROR : Cannot initialize MRST interface when LHAPDF "
+                   <<"is enabled ! "<<std::endl;
+#else
 	msg_Tracking()<<"Initialize MRST01LO from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST01LO(bunch_particle,grid_path);
+#endif
       }
       else if ((set==std::string("cteq6m") ||
 		set==std::string("cteq6d") ||
