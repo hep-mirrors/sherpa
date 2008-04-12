@@ -190,7 +190,8 @@ void Sherpa::DrawLogo()
 	    <<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Authors:        Tanju Gleisberg, Stefan Hoeche, Frank Krauss,           "<<std::endl
-	    <<"                     Steffen Schumann, Frank Siegert, Jan Winter             "<<std::endl
+	    <<"                     Marek Schoenherr, Steffen Schumann, Frank Siegert,      "<<std::endl
+            <<"                     Jan Winter."<<std::endl
 	    <<"     Former Authors: Timo Fischer, Ralf Kuhn, Thomas Laubrich,               "<<std::endl
 	    <<"                     Andreas Schaelicke                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
