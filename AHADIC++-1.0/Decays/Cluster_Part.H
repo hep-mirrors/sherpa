@@ -7,6 +7,7 @@
 #include "Histogram.H"
 #include "Hadronisation_Parameters.H"
 #include "Return_Value.H"
+#include "Histogram.H"
 #include <map>
 
 
@@ -18,7 +19,7 @@ namespace AHADIC {
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
   public:
-    Cluster_Part(Dipole_Splitter * =NULL);
+    Cluster_Part(Dipole_Splitter * =NULL,bool=false);
     ~Cluster_Part();
     bool TestDecay(Cluster * const);
   };

@@ -5,6 +5,8 @@
 #include "Strong_Coupling.H"
 #include "Cluster.H"
 #include "Blob.H"
+#include "Histogram.H"
+#include <map>
 
 namespace AHADIC {
   class Gluon_Decayer {
@@ -14,6 +16,9 @@ namespace AHADIC {
 
     FlavDecayMap        m_options;
     DipoleList          m_dipoles;
+
+    bool                                      m_analyse;
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     bool    FillDipoleList(Proto_Particle_List * plin=NULL);
     void    UpdatePPList(Proto_Particle_List * plin=NULL);
@@ -26,7 +31,7 @@ namespace AHADIC {
     void    MergeDipoles(DipIter & dip1,DipIter & dip2);
     void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
   public:
-    Gluon_Decayer(Dipole_Splitter *);
+    Gluon_Decayer(Dipole_Splitter *,bool=false);
     ~Gluon_Decayer();
     bool DecayList(Proto_Particle_List * plin=NULL);
   };

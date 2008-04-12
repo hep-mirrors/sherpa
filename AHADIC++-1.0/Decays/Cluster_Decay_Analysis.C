@@ -8,6 +8,7 @@ using namespace std;
 
 Cluster_Decay_Analysis::Cluster_Decay_Analysis() 
 {
+  return;
   m_histograms[string("pi+_Number")]                 = new Histogram(0,0.,20.,20);
   m_histograms[string("pi-_Number")]                 = new Histogram(0,0.,20.,20);
   m_histograms[string("pi0_Number")]                 = new Histogram(0,0.,20.,20);
@@ -46,6 +47,7 @@ Cluster_Decay_Analysis::Cluster_Decay_Analysis()
 
 Cluster_Decay_Analysis::~Cluster_Decay_Analysis()
 { 
+  return;
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator hit=m_histograms.begin();
@@ -60,6 +62,7 @@ Cluster_Decay_Analysis::~Cluster_Decay_Analysis()
 
 void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
 {
+  return;
   int Npiplus=0,Npiminus=0,Npi0=0,NKplus=0,NKminus=0,NK0=0,NK0b=0,Neta=0,Netaprime=0,NPS=0;
   int Nrhoplus=0,Nrhominus=0,Nrho0=0,NKstarplus=0,NKstarminus=0,NKstar0=0,NKstar0b=0,
     Nomega=0,Nphi=0,NV=0;

@@ -22,7 +22,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
 						     Cluster_List* prilist,
 						     bool ana) :
   m_single_cr(true), m_double_cr(false),
-  p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter())), 
+  p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter(),ana)), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
   p_softclusters(hadpars.GetSoftClusterHandler()),
@@ -47,7 +47,7 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler() {
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
 	 hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      name  = hit->first+string(".dat");
+      name  = string("Fragmentation_Analysis/")+hit->first+std::string(".dat");
       histo->Output(name);
       delete histo;
     }

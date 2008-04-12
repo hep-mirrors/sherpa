@@ -7,8 +7,8 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 
-Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter) :
-  p_splitter(splitter)
+Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
+  p_splitter(splitter), m_analyse(ana)
 { 
   double norm(0.);
   for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
@@ -27,6 +27,13 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter) :
       msg_Tracking()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }
   }
+  if (m_analyse) {
+    m_histograms[std::string("PT_Gluon")]        = new Histogram(0,0.,1.,50);
+    m_histograms[std::string("PT_Rescue")]       = new Histogram(0,0.,1.,50);
+    m_histograms[std::string("Flavour_Gluon")]   = new Histogram(0,0.,15.,15);
+    m_histograms[std::string("Flavour_Rescue")]  = new Histogram(0,0.,15.,15);
+  }
+
   p_splitter->SetOptions(&m_options);
 
   msg_Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
@@ -39,6 +46,19 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter) :
 }
 
 Gluon_Decayer::~Gluon_Decayer() {
+  if (m_analyse) {
+    Histogram * histo;
+    std::string name;
+    for (std::map<std::string,Histogram *>::iterator hit=m_histograms.begin();
+	 hit!=m_histograms.end();hit++) {
+      histo = hit->second;
+      name  = std::string("Fragmentation_Analysis/")+hit->first+std::string(".dat");
+      histo->Output(name);
+      delete histo;
+    }
+    m_histograms.clear();
+  }
+
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();++fdit) {
     if (fdit->second!=NULL) { delete fdit->second; fdit->second=NULL; }
   }
@@ -164,11 +184,21 @@ bool Gluon_Decayer::DecayDipoles() {
 	dipiter=m_dipoles.begin(); continue; 
 	break;
       case 1:
+	if (m_analyse) {
+	  Histogram* histo((m_histograms.find(std::string("PT_Rescue")))->second);
+	  histo->Insert(sqrt(p_splitter->PT2()));
+	}
       default:
 	break;
       }
     }
-    else AfterSplit(dipiter);
+    else {
+      AfterSplit(dipiter);
+      if (m_analyse) {
+	Histogram* histo((m_histograms.find(std::string("PT_Gluon")))->second);
+	histo->Insert(sqrt(p_splitter->PT2()));
+      }
+    }
 #ifdef AHAmomcheck
     SplitIt(dipiter,checkbef);
 #else

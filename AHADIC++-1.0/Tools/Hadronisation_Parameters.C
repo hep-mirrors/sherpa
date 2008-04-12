@@ -20,7 +20,7 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
   p_softclusters(NULL), 
   m_asform(asform::constant), p_coupling(NULL), p_splitter(NULL)
 {
-  m_asform=asform::fall_off_times_fix;
+  m_asform=asform::constant;
 }
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
@@ -55,7 +55,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
 						 m_parametermap[string("Offset_C->HH")],
 						 m_parametermap[string("C->HH_Decay_Exponent")],
 						 m_parametermap[string("C->HH_Decay_Angle")],
-						 m_parametermap[string("Photon_Energy")]);
+						 m_parametermap[string("Photon_Energy")],true);
   p_coupling          = new Strong_Coupling(m_asform,m_parametermap[string("pt02")]);
   p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 }

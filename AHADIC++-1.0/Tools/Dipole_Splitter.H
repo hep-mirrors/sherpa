@@ -5,7 +5,6 @@
 #include "Cluster.H"
 #include "Dipole.H"
 #include "Poincare.H"
-#include "Return_Value.H"
 
 namespace AHADIC {
   class Hadronisation_Parameters;
@@ -47,6 +46,9 @@ namespace AHADIC {
     void UpdateSpectator();
     void GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2);
     void SetOptions(FlavDecayMap *);
+
+    double          PT2()  { return m_pt2; }
+    ATOOLS::Flavour Flav() { return m_flav; }
   };
 
   inline void Dipole_Splitter::GetNewParticles(Proto_Particle *& out1,

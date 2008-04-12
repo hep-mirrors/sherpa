@@ -10,14 +10,33 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(Single_Transitions * singletransition
 					   Double_Transitions * doubletransitions,
 					   const double offset1,const double offset2,
 					   const double alpha,const double eta,
-					   const double photonenergy) :
+					   const double photonenergy,bool ana) :
   m_stmode(stm::masswidthXwaves), m_dtmode(dtm::waves_PS), 
   p_singletransitions(singletransitions), p_doubletransitions(doubletransitions),
   m_offset1(offset1), m_offset2(offset2),
-  m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy)
-{ }
+  m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
+  m_ana(ana)
+{ 
+  if (m_ana) {
+    m_histograms[string("PT_HH")]      = new Histogram(0,0.,1.5,150);
+  }
+}
 
-Soft_Cluster_Handler::~Soft_Cluster_Handler() {}
+Soft_Cluster_Handler::~Soft_Cluster_Handler() 
+{
+  if (m_ana) {
+    Histogram * histo;
+    string name;
+    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
+	 hit!=m_histograms.end();hit++) {
+      histo = hit->second;
+      name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
+      histo->Output(name);
+      delete histo;
+    }
+    m_histograms.clear();
+  }
+}
 
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
@@ -264,6 +283,11 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
   Vec4D  p2      = cluster->Momentum()-p1;
+
+  if (m_ana) {
+    Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
+    histo->Insert(pt);
+  }
 
   Particle * part;
   Cluster * clus;

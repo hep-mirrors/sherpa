@@ -344,7 +344,7 @@ bool Dipole_Splitter::ConstructKinematics() {
     return false;
   }                                   
   double phi   = 2.*M_PI*ran.Get();
-  Vec4D kperp  = sqrt(m_pt2)*Vec4D(0.,cos(phi),sin(phi),0.);
+  Vec4D  kperp = sqrt(m_pt2)*Vec4D(0.,cos(phi),sin(phi),0.);
   double y2    = (m_m22+m_pt2)/(z2*m_s23);
   double y3    = (m_m32+m_pt2)/(z3*m_s23);
 

@@ -7,17 +7,13 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Cluster_Part::Cluster_Part(Dipole_Splitter * splitter) :
-  m_ana(true), p_splitter(splitter)
+Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
+  m_ana(ana), p_splitter(splitter)
 { 
+  msg_Out()<<METHOD<<" with "<<m_ana<<std::endl;
   if (m_ana) {
-    m_histograms[string("YStar_by_YStarMax")] = new Histogram(0,-1.,1.,100);
-    m_histograms[string("YStar")]             = new Histogram(0,-5.,5.,100);
-    m_histograms[string("YBar_by_YBarMax")]   = new Histogram(0,-1.,1.,100);
-    m_histograms[string("YBar")]              = new Histogram(0,-5.,5.,100);
-    m_histograms[string("Flavour")]           = new Histogram(0,0.,15.,15);
-    m_histograms[string("PT")]                = new Histogram(0,0.,1.5,150);
-    m_histograms[string("SQQ")]               = new Histogram(0,0.,5.,100);
+    m_histograms[string("Flavour_Cluster")] = new Histogram(0,0.,15.,15);
+    m_histograms[string("PT_Cluster")]      = new Histogram(0,0.,1.5,150);
   }
 }
 
@@ -29,7 +25,7 @@ Cluster_Part::~Cluster_Part()
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
 	 hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      name  = string("Analysis/")+hit->first+string(".dat");
+      name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
       histo->Output(name);
       delete histo;
     }
@@ -49,6 +45,13 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
                <<"   Could not split cluster, may lead to new event."<<std::endl;
     return false;
   }
+  if (m_ana) {
+    Vec4D lmom(cluster->GetLeft()->Momentum());
+    double pt = sqrt(sqr(lmom[1]) + sqr(lmom[2]));
+    Histogram* histo((m_histograms.find(std::string("PT_Cluster")))->second);
+    histo->Insert(pt);
+  }
+
   cluster->RotateAndBoostBack();
 #ifdef AHAmomcheck
   Vec4D checkaft = cluster->GetLeft()->Momentum()+cluster->GetRight()->Momentum();

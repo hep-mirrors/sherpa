@@ -4,6 +4,8 @@
 #include "Transitions.H"
 #include "Hadronisation_Parameters.H"
 #include "Cluster.H"
+#include "Histogram.H"
+#include <map>
 
 namespace AHADIC {
   struct stm {
@@ -35,6 +37,10 @@ namespace AHADIC {
     
     Cluster_List *       m_clin;
 
+    bool                                      m_ana;
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
+
+
     int    CheckCluster(Cluster *,bool,const double=-1.);
     double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,const double=-1.);
     double TransformWeight(Cluster *,ATOOLS::Flavour &,const double=-1.,bool=false);
@@ -53,7 +59,7 @@ namespace AHADIC {
 			 Double_Transitions * doubletransitions,
 			 const double offset1,const double offset2,
 			 const double alpha,const double eta,
-			 const double photonenergy);
+			 const double photonenergy,bool ana=false);
     ~Soft_Cluster_Handler();
     bool   TreatClusterList(Cluster_List *,ATOOLS::Blob *);
 
