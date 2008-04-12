@@ -23,12 +23,11 @@ namespace MODEL
   Model_Base *s_model;
 }
 
-Model_Base::Model_Base(std::string _dir,std::string _file) :
-  p_model(NULL), m_dir(_dir), m_file(_file), p_dataread(NULL),
-  p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
-  p_spectrumgenerator(NULL), 
-  p_vertex(NULL), p_vertextable(NULL), 
-  p_decays(NULL)
+Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
+  p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
+  p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_functions(NULL), 
+  p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
+  p_vertextable(NULL), p_decays(NULL)
 {
 }
 
@@ -56,13 +55,96 @@ void Model_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   // model listing\n\n";
+	   <<"   // available model implementations (specified through MODEL=<value>)\n\n";
   Model_Getter_Function::PrintGetterInfo(msg->Out(),25);
-  msg_Out()<<"\n   // interaction model listing\n\n";
+  msg_Out()<<"\n   // available sets of interaction vertices (specified through SIGNAL_MODEL=<value> in ME.dat)\n"
+	   <<"   // default given by MODEL switch\n\n";
   Interaction_Model_Base::Interaction_Model_Getter_Function::
     PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
+
+void Model_Base::ReadParticleData() {
+  
+  if (!m_elementary) return;
+  
+  std::map<int,double> cdm, cdw;
+  std::map<int,int> cia, cis, cim;
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.AddIgnore("[");
+  dr.AddIgnore("]");
+  dr.SetAddCommandLine(true);
+  dr.SetInputPath(m_dir);
+  dr.SetInputFile(m_file);
+  std::vector<std::vector<double> > helpdvv;
+  if (dr.MatrixFromFile(helpdvv,"MASS"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cdm[int(helpdvv[i][0])]=helpdvv[i][1];
+  if (dr.MatrixFromFile(helpdvv,"WIDTH"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cdw[int(helpdvv[i][0])]=helpdvv[i][1];
+  if (dr.MatrixFromFile(helpdvv,"ACTIVE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cia[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"STABLE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cis[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+
+  //set masses
+  std::map<int,double>::const_iterator dit=cdm.begin();
+  for (;dit!=cdm.end();dit++) {
+    if (s_kftable.find(dit->first)!=s_kftable.end()) {
+      s_kftable[dit->first]->m_mass = dit->second;
+      msg_Tracking()<<" set mass of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
+    }
+  }
+  //set widths
+  dit=cdw.begin();
+  for (;dit!=cdw.end();dit++) {
+    if (s_kftable.find(dit->first)!=s_kftable.end()) {
+      s_kftable[dit->first]->m_width = dit->second;
+      msg_Tracking()<<" set width of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
+    }
+  }
+  //set (in)active
+  std::map<int,int>::const_iterator iit=cia.begin();
+  for (;iit!=cia.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_on = iit->second;
+      if (iit->second==0)
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" inactive "<<std::endl; 
+      else
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" active "<<std::endl; 
+    }
+  }
+  //set (un)stable
+  iit=cis.begin();
+  for (;iit!=cis.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_stable = iit->second;
+      if (iit->second==0)
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" unstable "<<std::endl; 
+      else
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" stable "<<std::endl; 
+    }
+  }
+  //set massive/massless
+  iit=cim.begin();
+  for (;iit!=cim.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_massive = iit->second;
+      if (iit->second==0)
+	msg_Tracking()<<" set flavour "<<Flavour(dit->first)<<" massless "<<std::endl; 
+      else
+	msg_Tracking()<<" set flavour "<<Flavour(dit->first)<<" massive "<<std::endl; 
+    }
+  }
+}
+
 
 void Model_Base::InitializeInteractionModel()
 {
@@ -87,7 +169,6 @@ void Model_Base::InitializeInteractionModel()
       (*p_vertextable)[(*p_vertex)[i]->in[0]].push_back((*p_vertex)[i]);
     }
   }
-
 }
 
 void Model_Base::FillDecayTables() {

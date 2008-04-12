@@ -21,7 +21,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_THDM_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Two Higgs Doublet Model"; 
+  str<<"The Two Higgs Doublet Model"; 
 }
 
 Interaction_Model_THDM::Interaction_Model_THDM(MODEL::Model_Base * _model,

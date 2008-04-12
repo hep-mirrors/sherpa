@@ -2,6 +2,7 @@
 #include "Standard_Model.H"
 #include "Message.H"
 #include "Data_Reader.H"
+#include <iomanip>
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -10,25 +11,35 @@ DECLARE_GETTER(SM_AGC_Getter,"SM+AGC",Model_Base,Model_Arguments);
 
 Model_Base *SM_AGC_Getter::operator()(const Model_Arguments &args) const
 {
-  return new SM_AGC(args.m_path,args.m_file);
+  return new SM_AGC(args.m_path,args.m_file,args.m_elementary);
 }
 
 void SM_AGC_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + Anomalous Gauge Couplings";
+   str<<"The Standard Model + Anomalous Gauge Couplings\n"
+      <<std::setw(width+4)<<" "<<"{\n"
+      <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+      <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
+      <<std::setw(width+7)<<" "<<"- ALPHA_4_G_4 and ALPHA_5 (L_4,5 parameter of Ref. hep-ph/0001065)\n"
+      <<std::setw(width+7)<<" "<<"- Lagrangian parameters of Hagiwara et. al, Nucl. Phys. B282:253,1987\n"
+      <<std::setw(width+10)<<" "<<"- G1_GAMMA,KAPPA_GAMMA,LAMBDA_GAMMA,G4_GAMMA,G5_GAMMA\n"
+      <<std::setw(width+10)<<" "<<"- KAPPAT_GAMMA,LAMBDAT_GAMMA,G1_Z,KAPPA_Z,LAMBDA_Z\n"
+      <<std::setw(width+10)<<" "<<"- G4_Z,G5_Z,KAPPAT_Z,LAMBDAT_Z\n"
+      <<std::setw(width+4)<<" "<<"}\n";
 }
 
-SM_AGC::SM_AGC(std::string _dir,std::string _file) :
-  Model_Base(_dir,_file)
+SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
+  Model_Base(_dir,_file,_elementary)
 {
-  msg_Info()<<"Initialize the Standard Model \\w AGC from "<<m_dir<<" / "<<m_file<<std::endl;
+  if (m_elementary)
+    msg_Info()<<"Initialize the Standard Model \\w AGC from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+AGC");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
-  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
   p_numbers   = sm->ExtractScalarNumbers();
   p_constants = sm->ExtractScalarConstants();
   p_functions = sm->ExtractScalarFunctions();

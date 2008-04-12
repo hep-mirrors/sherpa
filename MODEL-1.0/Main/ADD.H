@@ -6,9 +6,10 @@
 namespace MODEL {
   class ADD : public Model_Base {
   private :
-    void   FillSpectrum();
+    void ParticleInit();
+    void FillSpectrum();
   public :
-    ADD(std::string,std::string);
+    ADD(std::string,std::string,bool);
     ~ADD();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };

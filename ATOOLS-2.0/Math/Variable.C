@@ -266,6 +266,25 @@ public:
 };// end of class MPerp
 template <class ValueType>
 MPerp<ValueType>::MPerp(): Variable_Base<ValueType>("m_\\perp","mT") {}
+
+template <class ValueType>
+class MTWW: public Variable_Base<ValueType> {
+public:
+  MTWW();
+  ValueType Value(const Vec4D *vectors,const int &n) const 
+  { 
+    if (n!=3) THROW(fatal_error,"Variable MTWW only defined for three momenta."); 
+    Vec4D ll(vectors[0]+vectors[1]);
+    double m2ll(ll*ll);
+    Vec4D miss(vectors[2]);
+    Vec3D llp = Vec3D(ll[1],ll[2],0.);
+    Vec3D missp = Vec3D(miss[1],miss[2],0.);
+    return sqrt(sqr(sqrt(llp*llp+m2ll)+sqrt(missp*missp+m2ll))-(llp+missp)*(llp+missp));
+  }
+};// end of class MTWW
+template <class ValueType>
+MTWW<ValueType>::MTWW(): Variable_Base<ValueType>("m_\\perp(WW)","mTWW") {}
+
   
 template <class ValueType>
 class HT: public Variable_Base<ValueType> {
@@ -518,6 +537,9 @@ DEFINE_VARIABLE_GETTER(EPerp<double>,EPerp_Getter_2,"ET","E_\\perp",1)
 template class MPerp<double>;
 DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter,"m_\\perp","m_\\perp",0)
 DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter_2,"mT","m_\\perp",1)
+template class MTWW<double>;
+DEFINE_VARIABLE_GETTER(MTWW<double>,MTWW_Getter,"m_\\perp(WW)","m_\\perp(WW)",0)
+DEFINE_VARIABLE_GETTER(MTWW<double>,MTWW_Getter_2,"mTWW","m_\\perp(WW)",1)
 template class HT<double>;
 DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_2,"H_T","H_T",0)
 DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_3,"HT","H_T",1)

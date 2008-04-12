@@ -6,9 +6,10 @@
 namespace MODEL {
   class Fourth_Generation_Leptons : public Model_Base {
   private :
+    void ParticleInit();
     void FillSpectrum();
   public :
-    Fourth_Generation_Leptons(std::string,std::string);
+    Fourth_Generation_Leptons(std::string,std::string,bool);
     ~Fourth_Generation_Leptons();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };

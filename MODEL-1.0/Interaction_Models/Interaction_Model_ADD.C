@@ -19,7 +19,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_ADD_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"ADD"; 
+  str<<"The ADD model of large extra dimensions"; 
 }
 
 Interaction_Model_ADD::Interaction_Model_ADD(MODEL::Model_Base * _model,

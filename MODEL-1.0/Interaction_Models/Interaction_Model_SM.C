@@ -21,7 +21,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_SM_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model"; 
+  str<<"The Standard Model"; 
 }
 
 Interaction_Model_SM::Interaction_Model_SM(MODEL::Model_Base * _model,

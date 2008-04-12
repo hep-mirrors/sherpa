@@ -12,8 +12,7 @@ void XS_Model_QCD::Initialize(MODEL::Model_Base *const model,
 			     const std::string &file)
 {
   XS_Model_Base::Initialize(model,file);
-  double ecms2(sqr(rpa.gen.Ecms()));
-  m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",ecms2));  
+  m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",rpa.gen.CplScale()));  
 }
 
 bool XS_Model_QCD::IncludesModel(const std::string &name) const

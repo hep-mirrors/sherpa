@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Standard_Model.H"
 #include "Spectrum_Generator_Base.H"
+#include <iomanip>
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -10,22 +11,31 @@ DECLARE_GETTER(ADD_Getter,"ADD",Model_Base,Model_Arguments);
 
 Model_Base *ADD_Getter::operator()(const Model_Arguments &args) const
 {
-  return new ADD(args.m_path,args.m_file);
+  return new ADD(args.m_path,args.m_file,args.m_elementary);
 }
 
 void ADD_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"ADD"; 
+  str<<"The ADD model of large extra dimensions\n";
+  str<<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
+     <<std::setw(width+7)<<" "<<"- N_ED (number of extra dimensions)\n"
+     <<std::setw(width+7)<<" "<<"- G_NEWTON (Newton's gravity constant)\n"
+     <<std::setw(width+7)<<" "<<"- KK_CONVENTION (values 0,1,2,3,4,5, see documentation)\n"
+     <<std::setw(width+7)<<" "<<"- M_S (string scale, depends on KK_CONVENTION)\n"
+     <<std::setw(width+7)<<" "<<"- M_CUT (cut-off scale for c.m. energy)\n"
+     <<std::setw(width+4)<<" "<<"}\n";
 }
 
 
-ADD::ADD(std::string _dir,std::string _file) :
-  Model_Base(_dir,_file)
+ADD::ADD(std::string _dir,std::string _file,bool _elementary) :
+  Model_Base(_dir,_file,_elementary)
 {
   msg_Info()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("ADD");
 
-  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
   p_numbers   = sm->ExtractScalarNumbers();
   p_constants = sm->ExtractScalarConstants();
   p_functions = sm->ExtractScalarFunctions();
@@ -33,11 +43,20 @@ ADD::ADD(std::string _dir,std::string _file) :
 
   delete sm;
 
+  ParticleInit();
   FillSpectrum();
 }
 
 ADD::~ADD()
 {
+}
+
+void ADD::ParticleInit() {
+  //add the graviton and the gravi-scalar
+  s_kftable[39] = new Particle_Info(39,100.,0.,0,0,0,4,-1,1,1,1,"graviton","G");
+  s_kftable[40] = new Particle_Info(40,100.,0.,0,0,0,0,-1,1,1,1,"gscalar","G_s");
+
+  ReadParticleData();
 }
 
 void ADD::FillSpectrum() {

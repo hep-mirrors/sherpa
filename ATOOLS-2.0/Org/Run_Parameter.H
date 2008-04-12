@@ -28,8 +28,9 @@ namespace ATOOLS {
       long int            m_nevents, m_ndicedevents, m_estimatedevents;
       double              m_wana_scale;
       long int            m_seed;
-      long int            m_seed2; 
+      long int            m_seed2;
       double              m_ecms;
+      double              m_cplscale;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
       Vec4D m_pbeam[2];
@@ -47,7 +48,9 @@ namespace ATOOLS {
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
+      inline double CplScale()                            { return m_cplscale; }
       void   SetEcms(double _ecms);
+      void   SetCplScale(double _cplscale);
       inline Vec4D PBeam(short unsigned int i)            { return m_pbeam[i]; }
       void   SetPBeam(short unsigned int i,Vec4D pbeam);
       inline bool   SpinCorrelation()                     { return m_spincorrelations; }

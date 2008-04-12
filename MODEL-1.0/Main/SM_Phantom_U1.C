@@ -2,6 +2,7 @@
 #include "Standard_Model.H"
 #include "Data_Reader.H"
 #include "Message.H"
+#include <iomanip>
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -11,22 +12,28 @@ DECLARE_GETTER(SM_Phantom_U1_Getter,"SM+Phantom_U1",Model_Base,Model_Arguments);
 
 Model_Base *SM_Phantom_U1_Getter::operator()(const Model_Arguments &args) const
 {
-  return new SM_Phantom_U1(args.m_path,args.m_file);
+  return new SM_Phantom_U1(args.m_path,args.m_file,args.m_elementary);
 }
 
 void SM_Phantom_U1_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + U(1) phantom Higgs"; 
+  str<<"The Standard Model + U(1) phantom Higgs\n"
+     <<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
+     <<std::setw(width+7)<<" "<<"- ...\n"
+     <<std::setw(width+4)<<" "<<"}\n";
 }
 
 
-SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
-  Model_Base(_dir,_file)
+SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file,bool _elementary) :
+  Model_Base(_dir,_file,_elementary)
 {
-  msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "<<m_dir<<" / "<<m_file<<std::endl;
+  if (m_elementary)
+    msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+Phantom_U1");
 
-  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
   p_numbers   = sm->ExtractScalarNumbers();
   p_constants = sm->ExtractScalarConstants();
   p_functions = sm->ExtractScalarFunctions();
@@ -34,6 +41,7 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
 
   delete sm;
 
+  ParticleInit();
   FillSpectrum();
 
   if (!SanityChecks()) {
@@ -45,6 +53,16 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
 
 SM_Phantom_U1::~SM_Phantom_U1() 
 { }
+
+void SM_Phantom_U1::ParticleInit() {
+  //add Higgs particles and new gauge boson
+  //kf_code,mass,width,3*charge,icharge,strong,2*spin,majorana,take,stable,massive,idname,tex_name
+  s_kftable[kf_H0]   = new Particle_Info(kf_H0,1000.,10.0,0,0,0,0,-1,1,1,1,"H0","H_0");
+  s_kftable[kf_A0]   = new Particle_Info(kf_A0,1000.,10.0,0,0,0,0,-1,1,1,1,"A0","A_0");
+  s_kftable[kf_Z0_2] = new Particle_Info(kf_Z0_2,1000.,10.0,0,0,0,2,-1,0,1,1,"Z'","Z'");
+
+  ReadParticleData();
+}
 
 void SM_Phantom_U1::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");

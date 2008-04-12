@@ -7,11 +7,12 @@ namespace MODEL {
   class Standard_Model : public Model_Base {
   private :
     int  m_ewscheme,m_ckmorder;
+    void ParticleInit();
     void FillSpectrum();
     void FixEWParameters();
     void FixCKM();
   public :
-    Standard_Model(std::string,std::string);
+    Standard_Model(std::string,std::string,bool);
     ~Standard_Model()                   {}
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };

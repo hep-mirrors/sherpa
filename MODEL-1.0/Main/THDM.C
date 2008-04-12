@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Standard_Model.H"
 #include "Spectrum_Generator_Base.H"
+#include <iomanip>
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -10,22 +11,31 @@ DECLARE_GETTER(THDM_Getter,"THDM",Model_Base,Model_Arguments);
 
 Model_Base *THDM_Getter::operator()(const Model_Arguments &args) const
 {
-  return new THDM(args.m_path,args.m_file);
+  return new THDM(args.m_path,args.m_file,args.m_elementary);
 }
 
 void THDM_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Two Higgs Doublet Model"; 
+  str<<"The Two Higgs Doublet Model\n"
+     <<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
+     <<std::setw(width+7)<<" "<<"- properties of the h0,H0,A0 and H+ particle\n"
+     <<std::setw(width+10)<<" "<<"- MASS[i] and WIDTH[i] for i=25,35,36,37\n"
+     <<std::setw(width+7)<<" "<<"- TAN(BETA) (ratio of v_2 and v_1)\n"
+     <<std::setw(width+7)<<" "<<"- ALPHA (the Higgs mixing angle)\n"
+     <<std::setw(width+4)<<" "<<"}\n";
 }
 
 
-THDM::THDM(std::string _dir,std::string _file) :
-  Model_Base(_dir,_file)
+THDM::THDM(std::string _dir,std::string _file,bool _elementary) :
+  Model_Base(_dir,_file,_elementary)
 {
-  msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
+  if (m_elementary)
+    msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("THDM");
 
-  Standard_Model * sm = new Standard_Model(m_dir,m_file);
+  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
   p_numbers   = sm->ExtractScalarNumbers();
   p_constants = sm->ExtractScalarConstants();
   p_functions = sm->ExtractScalarFunctions();
@@ -33,11 +43,22 @@ THDM::THDM(std::string _dir,std::string _file) :
 
   delete sm;
 
+  ParticleInit();
   FillSpectrum();
 }
 
 THDM::~THDM()
 {
+}
+
+void THDM::ParticleInit() {
+  //add Higgses
+  //kf_code,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,idname,tex_name
+  s_kftable[35] = new Particle_Info(35,1000.,10.0,0,0,0,0,-1,1,1,1,"H0","H_0");
+  s_kftable[36] = new Particle_Info(36,1000.,10.0,0,0,0,0,-1,1,1,1,"A0","A_0");
+  s_kftable[37] = new Particle_Info(37,1000.,10.0,3,0,0,0,0,1,1,1,"H+","H^+");
+
+  ReadParticleData();
 }
 
 void THDM::FillSpectrum() {

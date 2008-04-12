@@ -261,13 +261,13 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
   int minus = 1;
 
-  if (p->number>99 && p->m==1) {
+  if (p->number>99 && p->m==1 && !p->fl.Majorana()) {
     // ====>===== Fermion number flow
     // ----<----- Orientation
     // ---->----- Momentum Flow
     minus = -1;
   }
-  if (p->number>99 && p->m==-1) {
+  if (p->number>99 && p->m==-1 && !p->fl.Majorana()) {
     // ====<===== Fermion number flow
     // ----<----- Orientation
     // ---->----- Momentum Flow

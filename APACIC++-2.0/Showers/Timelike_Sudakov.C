@@ -61,7 +61,7 @@ void Timelike_Sudakov::Init(const double fmed)
         }
       }
     }
-  }     
+  }
   PrintStat();
 }
 

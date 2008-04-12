@@ -13,10 +13,8 @@ Interaction_Model_sLepton_sQuark::Interaction_Model_sLepton_sQuark(MODEL::Model_
 							   std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
-  double Ecms2 = sqr(rpa.gen.Ecms());
-
   g1       = Kabbala(string("g_1"),
-		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),Ecms2)));
+		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),rpa.gen.CplScale())));
   g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
 		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
   sintW    = Kabbala(string("\\sin\\theta_W"),

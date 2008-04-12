@@ -592,7 +592,6 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
 #endif
 
   if (sign<0 && value.Value()!=Complex(0.,0.)) value = -value; 
-  //if (sign<0) value = -value; 
   if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
   return value.Value();
 }

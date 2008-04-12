@@ -112,8 +112,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     termios testos;
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
-//   if (dr.ErrorCode()>0) 
-//     THROW(missing_input,"Main steering file not found. Stop.");
+  //   if (dr.ErrorCode()>0) 
+  //     THROW(missing_input,"Main steering file not found. Stop.");
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(gen.m_output,logfile);
@@ -165,8 +165,18 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   s_loader->AddPath(rpa.gen.Variable("SHERPA_RUN_PATH"));
-  // read only if defined (no error message if not defined)
 
+  //determine and set scale for coupling initialization
+  std::string beamdat=dr.GetValue<std::string>("BEAM_DATA_FILE",std::string("Beam.dat"));
+  Data_Reader beamer(" ",";","!","=");
+  beamer.AddWordSeparator("\t");
+  beamer.SetInputFile(path+std::string("/")+beamdat);
+  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
+  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",0.0);
+  rpa.gen.SetCplScale(4.*beam1*beam2);
+  //
+
+  // read only if defined (no error message if not defined)
   Data_Reader dreader(" ",";","!","=");
   dreader.AddWordSeparator("\t");
   dreader.SetInputFile(m_path+file);
@@ -251,6 +261,9 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
+}
+void  Run_Parameter::Gen::SetCplScale(double _cplscale)     { 
+  m_cplscale = _cplscale;
 }
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
   m_pbeam[i]=pbeam;

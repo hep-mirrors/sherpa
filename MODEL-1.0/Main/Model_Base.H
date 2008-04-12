@@ -36,8 +36,9 @@ namespace MODEL {
 
   struct Model_Arguments {
     std::string m_path, m_file;
-    Model_Arguments(const std::string &path,const std::string &file):
-      m_path(path), m_file(file) {}
+    bool m_elementary;
+    Model_Arguments(const std::string &path,const std::string &file,const bool &elementary):
+      m_path(path), m_file(file), m_elementary(elementary) {}
   };// end of struct Model_Arguments
 
   class Model_Base {
@@ -51,6 +52,7 @@ namespace MODEL {
 
     std::string               m_dir,m_file;
     std::string               m_name;
+    bool                      m_elementary;
 
     ATOOLS::Data_Reader     * p_dataread;
     ScalarNumbersMap        * p_numbers;
@@ -63,9 +65,11 @@ namespace MODEL {
     Vertex_Table            * p_vertextable;
     All_Decays              * p_decays;
 
+    virtual void ParticleInit() = 0;
     virtual void FillSpectrum() = 0;
+    void ReadParticleData();
   public:
-    Model_Base(std::string,std::string);
+    Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();

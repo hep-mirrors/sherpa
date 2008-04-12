@@ -6,9 +6,10 @@
 namespace MODEL {
   class SM_AGC : public Model_Base {
   private :
+    void ParticleInit() {}
     void FillSpectrum();
   public :
-    SM_AGC(std::string,std::string);
+    SM_AGC(std::string,std::string,bool);
     ~SM_AGC()                   {}
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };

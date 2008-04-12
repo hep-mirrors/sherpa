@@ -22,7 +22,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_MSSM_EHC_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"MSSM + Effective Higgs Coupling"; 
+  str<<"The MSSM + Effective Higgs Gluon Coupling"; 
 }
 
 Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _model,
@@ -37,12 +37,12 @@ Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _mode
   p_mosquark  = new Interaction_Model_sQuark_EW(p_model,_cplscheme,_yukscheme); 
   p_moslesqu  = new Interaction_Model_sLepton_sQuark(p_model,_cplscheme,_yukscheme); 
 
-   double Ecms2 = sqr(rpa.gen.Ecms());
+  double scale = rpa.gen.CplScale();
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),Ecms2)));
+  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
 		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW = Kabbala(std::string("\\cos\\theta_W"),

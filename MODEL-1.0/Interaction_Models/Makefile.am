@@ -11,7 +11,6 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_Higgs_SM.C \
 				Interaction_Model_SM.C \
 				Interaction_Model_SM_EHC.C \
-				Interaction_Model_SM_ZPrime.C \
 				Interaction_Model_AEW.C \
 				Interaction_Model_SM_AGC.C \
 				Interaction_Model_SM_Phantom_U1.C \
@@ -20,7 +19,6 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_QCD_Grav.C \
 				Interaction_Model_EW_Grav.C \
 				Interaction_Model_ADD.C \
-				Interaction_Model_MUED_QCD.C \
 				Interaction_Model_4GenLep.C \
 	     		        Interaction_Model_Inos.C \
                                 Interaction_Model_sLepton_EW.C \
@@ -39,7 +37,6 @@ pkginclude_HEADERS = \
 				Interaction_Model_Higgs_SM.H \
 				Interaction_Model_SM.H \
 				Interaction_Model_SM_EHC.H \
-				Interaction_Model_SM_ZPrime.H \
 				Interaction_Model_AEW.H \
 				Interaction_Model_SM_AGC.H \
 				Interaction_Model_SM_Phantom_U1.H \
@@ -48,7 +45,6 @@ pkginclude_HEADERS = \
 				Interaction_Model_QCD_Grav.H \
 				Interaction_Model_EW_Grav.H \
 				Interaction_Model_ADD.H \
-				Interaction_Model_MUED_QCD.H \
 				Interaction_Model_4GenLep.H \
 	     		        Interaction_Model_Inos.H \
                                 Interaction_Model_sLepton_EW.H \

@@ -13,14 +13,14 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 							 std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
-  double Ecms2 = sqr(rpa.gen.Ecms());
+  double scale = rpa.gen.CplScale();
 
   g1       = Kabbala(string("g_1"),
-		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),Ecms2)));
+		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),scale)));
   g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
 		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
   g3    = Kabbala(string("g_3"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   sintW    = Kabbala(string("\\sin\\theta_W"),
 		     sqrt(ScalarConstant(string("sin2_thetaW"))));
   costW    = Kabbala(string("\\cos\\theta_W"),

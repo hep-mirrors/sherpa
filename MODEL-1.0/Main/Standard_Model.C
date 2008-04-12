@@ -4,6 +4,7 @@
 #include "Running_Fermion_Mass.H"
 #include "Message.H"
 #include "Data_Reader.H"
+#include <iomanip>
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -12,26 +13,58 @@ DECLARE_GETTER(Standard_Model_Getter,"SM",Model_Base,Model_Arguments);
 
 Model_Base *Standard_Model_Getter::operator()(const Model_Arguments &args) const
 {
-  return new Standard_Model(args.m_path,args.m_file);
+  return new Standard_Model(args.m_path,args.m_file,args.m_elementary);
 }
 
 void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model";
+  str<<"The Standard Model\n";
+  str<<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, see documentation)\n"
+     <<std::setw(width+7)<<" "<<"- ...\n"
+     <<std::setw(width+7)<<" "<<"- ...\n"
+     <<std::setw(width+7)<<" "<<"- ...\n"
+     <<std::setw(width+4)<<" "<<"}";
 }
 
-Standard_Model::Standard_Model(std::string _dir,std::string _file) :
-  Model_Base(_dir,_file)
+Standard_Model::Standard_Model(std::string _dir,std::string _file,bool _elementary) :
+  Model_Base(_dir,_file,_elementary)
 {
-  msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
+  if (m_elementary) 
+    msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
-
+  
+  ParticleInit();
   FillSpectrum();
- 
+}
+
+void Standard_Model::ParticleInit() {
+  //add SM particles
+  //kf_code,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,idname,tex_name
+  s_kftable[1] = new Particle_Info(1,0.01,.0,-1,-1,3,1,0,1,1,0,"d","d");
+  s_kftable[2] = new Particle_Info(2,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
+  s_kftable[3] = new Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
+  s_kftable[4] = new Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
+  s_kftable[5] = new Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,1,"b","b");
+  s_kftable[6] = new Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
+  s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
+  s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
+  s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
+  s_kftable[14] = new Particle_Info(14,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
+  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,1,1,"tau-","\\tau^-");
+  s_kftable[16] = new Particle_Info(16,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
+  s_kftable[21] = new Particle_Info(21,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
+  s_kftable[22] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
+  s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
+  s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
+  s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
+  
+  ReadParticleData();
 }
 
 void Standard_Model::FillSpectrum() {

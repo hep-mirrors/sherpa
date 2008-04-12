@@ -21,7 +21,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_MSSM_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"MSSM"; 
+  str<<"The Minimal Supersymmetric Standard Model"; 
 }
 
 Interaction_Model_MSSM::Interaction_Model_MSSM(MODEL::Model_Base * _model,

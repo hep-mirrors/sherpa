@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
       }
     }
     rpa.Init("./","Run.dat",argc,argv);
-    MODEL::s_model = new Standard_Model("./","Model.dat");
+    MODEL::s_model = new Standard_Model("./","Model.dat",true);
     rpa.gen.SetEcms(1.0);
     msg->SetModifiable(true);
 

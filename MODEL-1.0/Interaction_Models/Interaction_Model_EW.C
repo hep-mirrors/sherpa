@@ -22,17 +22,15 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_EW_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Electroweak Theory"; 
+  str<<"The SM electroweak sector only"; 
 }
 
 Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
 					   std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("pure_EW",_model,_cplscheme,_yukscheme)
 { 
-  double Ecms2 = sqr(rpa.gen.Ecms());
-
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale())));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),

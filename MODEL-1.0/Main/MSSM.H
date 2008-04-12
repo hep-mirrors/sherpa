@@ -6,10 +6,11 @@
 namespace MODEL {
   class MSSM : public Model_Base {
   private :
+    void ParticleInit();
     void FillSpectrum();
     void RunSpectrumGenerator();
   public :
-    MSSM(std::string,std::string);
+    MSSM(std::string,std::string,bool);
     ~MSSM();
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };

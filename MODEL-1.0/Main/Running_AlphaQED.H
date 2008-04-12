@@ -8,7 +8,7 @@ namespace MODEL {
   class Running_AlphaQED : public ATOOLS::Function_Base {
     const static double m_A[4],m_B[4],m_C[4];
     double m_alpha0,m_alpha_MZ,m_alpha_eff;
-    double m_MZ2,m_ecms2,m_split_scale;
+    double m_MZ2,m_split_scale;
   
 
     double  PiGamma(const ATOOLS::Flavour &, double);

@@ -304,22 +304,24 @@ std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 }
 
 void ATOOLS::ParticleInit(const std::string &path)
-{
+{ 
   static bool initialized(false);
   if (initialized) return;
   initialized=true;
-
   kf_code kfc;
   int    charge,icharge,spin,strong,Majorana;
   bool   Take,stable,massive;
   double mass,width;
   std::string idname, texname, buffer;
-
+  
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetAddCommandLine(false);
   read.SetInputPath(path);
+
+  /*
   read.SetInputFile(rpa.gen.Variable("PARTICLE_DATA_FILE"));
+
   if (!read.OpenInFile()) {
     msg_Error()<<METHOD<<"(): File '"
 	       <<rpa.gen.Variable("PARTICLE_DATA_FILE")
@@ -330,6 +332,7 @@ void ATOOLS::ParticleInit(const std::string &path)
   msg_LogFile()<<"! |               kf table               |"<<std::endl;
   msg_LogFile()<<"! +--------------------------------------+\n"<<std::endl;
   msg_LogFile()<<"! "<<buffer<<std::endl;
+  */
 
   std::map<int,double> cdm, cdw;
   std::map<int,int> cia, cis, cim;
@@ -353,14 +356,16 @@ void ATOOLS::ParticleInit(const std::string &path)
   if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  
   std::vector<std::vector<std::string> > helpsvv;
+  /*
   read.MatrixFromFile(helpsvv);
   for(size_t i(1);i<helpsvv.size();++i) {
     if (helpsvv[i].size()!=13) {
       msg_Error()<<METHOD<<"(): Inconsistent entry in line "<<i
-		 <<" of '"<<read.InputFile()<<"'."<<std::endl;
+  		 <<" of '"<<read.InputFile()<<"'."<<std::endl;
       continue;
-    }
+   }
     kfc=ToType<int>(helpsvv[i][0]); 
     mass=ToType<double>(helpsvv[i][1]); width=ToType<double>(helpsvv[i][2]);
     charge=ToType<int>(helpsvv[i][3]); icharge=ToType<int>(helpsvv[i][4]);
@@ -376,24 +381,19 @@ void ATOOLS::ParticleInit(const std::string &path)
       if ((iit=cis.find(kfc))!=cis.end()) stable=iit->second;
       if ((iit=cim.find(kfc))!=cim.end()) massive=iit->second;
       msg_LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"
-		   <<charge<<" \t"<<icharge<<" \t"<<strong<<" \t"<<spin
-		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
- 		   <<massive<<" \t"<<idname<<"\t "<<texname<<std::endl;
-      s_kftable[kfc] = new
-	Particle_Info(kfc,mass,width,charge,icharge,strong,spin,
-		      Majorana,Take,stable,massive,idname,texname);
-      //dummy for 4gluon-higgs vertex
-      if (kfc==kf_gluon) {
-	s_kftable[kf_shgluon] = new
-	  Particle_Info(kf_shgluon,mass,width,charge,icharge,
-			strong,spin,Majorana,Take,stable,massive,
-			"shgluon","shgluon",1);
-      }
+  		   <<charge<<" \t"<<icharge<<" \t"<<strong<<" \t"<<spin
+  		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
+  		   <<massive<<" \t"<<idname<<"\t "<<texname<<std::endl;
+     s_kftable[kfc] = new
+  	Particle_Info(kfc,mass,width,charge,icharge,strong,spin,
+  		      Majorana,Take,stable,massive,idname,texname);
   }
   msg_LogFile()<<std::endl;
+  */
   read.SetFileBegin(std::vector<std::string>());
   read.SetFileEnd(std::vector<std::string>());
   read.SetInputFile(rpa.gen.Variable("HADRON_DATA_FILE"));
+
   read.RescanInFile();
   if (!read.OpenInFile()) {
     msg_Error()<<METHOD<<"(): File '"

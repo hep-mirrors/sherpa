@@ -7,10 +7,11 @@
 namespace MODEL {
   class SM_Phantom_U1 : public Model_Base {
   private :
+    void ParticleInit();
     void FillSpectrum();
     bool SanityChecks();
   public :
-    SM_Phantom_U1(std::string,std::string);
+    SM_Phantom_U1(std::string,std::string,bool);
     ~SM_Phantom_U1();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };

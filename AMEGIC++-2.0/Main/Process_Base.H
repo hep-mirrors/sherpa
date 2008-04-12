@@ -125,8 +125,6 @@ namespace AMEGIC {
     void SetSigmaSum(const double sigma2)    { m_ssigma2=sigma2; }
     void SetSPoints(const long int points)   { m_sn=points;           }
 
-    void AddToDataCollector(int i);
-
 
     /*------------------------------------------------------------------------------
 

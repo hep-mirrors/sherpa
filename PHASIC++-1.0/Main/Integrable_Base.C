@@ -530,7 +530,7 @@ double Integrable_Base::KFactor()
     m_scale[stp::fac]=m_kfkey[1];
     double asn(as->AlphaS(m_me_as_factor*m_ps_cpl_factor*m_scale[stp::ren]));
     if (m_ps_kfactor!=0.0) asn*=1.+asn/(2.0*M_PI)*m_ps_kfactor;
-    m_kfkey<<m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
+    m_kfkey<<m_rfactor*pow(asn/as->AlphaS(rpa.gen.CplScale()),m_orderQCD);
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
 		   <<m_orderQCD<<") {\n"
 		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
@@ -558,7 +558,7 @@ double Integrable_Base::KFactor()
     }
     if (m_nstrong<=2) return 1.0;
     SetMomenta();
-    double weight(1.0), asecms((*as)(sqr(rpa.gen.Ecms())));
+    double weight(1.0), ascplscale((*as)(rpa.gen.CplScale()));
     std::vector<std::pair<Vec4D,Flavour> > moms(m_nout);
     for (size_t i(0);i<m_nout;++i)
       moms[i]=std::pair<Vec4D,Flavour>
@@ -576,11 +576,11 @@ double Integrable_Base::KFactor()
     q-=moms.front().first;
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
 		   <<m_orderQCD<<") "<<p<<" {\n";
-    weight*=(*as)(moms.front().first.PPerp2())/asecms;
+    weight*=(*as)(moms.front().first.PPerp2())/ascplscale;
     msg_Debugging()<<"  k_{T,0} = "<<moms.front().first.PPerp()
 		   <<" -> as = "<<(*as)(moms.front().first.PPerp2())<<"\n";
     for (size_t i(1);i<m_nout;++i) {
-      weight*=(*as)(moms[i].first.PPerp2())/asecms;
+      weight*=(*as)(moms[i].first.PPerp2())/ascplscale;
       if (moms[i].second.IsQuark()) 
 	p=p.IsGluon()?moms[i].second.Bar():Flavour(kf_gluon);
       if (m_scalescheme&scl::reggeise) {
@@ -614,7 +614,7 @@ double Integrable_Base::KFactor()
     if (m_orderQCD>0) {
       m_scale[stp::ren]=m_kfkey[0];
       m_kfkey<<m_rfactor*pow(as->AlphaS(m_scale[stp::ren])/
-			     as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
+			     as->AlphaS(rpa.gen.CplScale()),m_orderQCD);
       return m_kfkey.Weight();
     } 
     else 

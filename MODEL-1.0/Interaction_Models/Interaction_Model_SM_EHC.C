@@ -20,7 +20,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_SM_EHC_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + Effective Higgs Coupling"; 
+  str<<"The Standard Model + Effective Higgs Coupling"; 
 }
 
 Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
@@ -30,17 +30,17 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   m_loops=true;
   p_mosm      = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   
-  double Ecms2 = sqr(rpa.gen.Ecms());
+  double scale = rpa.gen.CplScale();
   double hmass2 = sqr(Flavour(kf_h0).Mass());
   
-  geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_GG_EFF")));
+  geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_PP_EFF")));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
 		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),Ecms2)));
+  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
 		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW = Kabbala(std::string("\\cos\\theta_W"),

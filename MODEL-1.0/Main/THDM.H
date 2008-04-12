@@ -6,9 +6,10 @@
 namespace MODEL {
   class THDM : public Model_Base {
   private :
+    void ParticleInit();
     void FillSpectrum();
   public :
-    THDM(std::string,std::string);
+    THDM(std::string,std::string,bool);
     ~THDM();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };

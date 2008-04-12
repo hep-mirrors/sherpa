@@ -12,14 +12,14 @@ void XS_Model_MSSM::Initialize(MODEL::Model_Base *const model,
 			     const std::string &file)
 {
   XS_Model_Base::Initialize(model,file);
-  double ecms2(sqr(rpa.gen.Ecms()));
-  m_consts["g_1"]=sqrt(4.*M_PI*ScalarFunction("alpha_QED",ecms2));
+  double scale(rpa.gen.CplScale());
+  m_consts["g_1"]=sqrt(4.*M_PI*ScalarFunction("alpha_QED",scale));
   m_consts["\\sin\\theta_W"]=sqrt(ScalarConstant("sin2_thetaW"));
   m_consts["\\cos\\theta_W"]=sqrt(1.0-ScalarConstant("sin2_thetaW"));
   m_consts["P_L"]=1.0;
   m_consts["P_R"]=1.0;
   m_consts["v_{EW}"]=ScalarConstant("vev");
-  m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",ecms2));  
+  m_consts["g_3"]=sqrt(4.*M_PI*ScalarFunction("alpha_S",scale));  
 }
 
 bool XS_Model_MSSM::IncludesModel(const std::string &name) const

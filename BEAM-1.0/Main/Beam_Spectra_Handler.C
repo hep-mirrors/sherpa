@@ -83,7 +83,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
       break;
     default :
       msg_Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
-		 <<"   No beam sprectum specified for beam "<<num+1<<endl
+		 <<"   No beam spectrum specified for beam "<<num+1<<endl
 		 <<"   Will initialize monochromatic beam."<<endl;
       okay = okay&&InitializeMonochromatic(dataread,num);
       break;
@@ -157,7 +157,7 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int nu
 
 bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
  
-  // cms system from beam momenta - this is for potential assymmetric collisions.
+  // cms system from beam momenta - this is for potential asymmetric collisions.
   Vec4D  P      = p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum();
   double s      = P.Abs2();
   double E      = sqrt(s);

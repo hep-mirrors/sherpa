@@ -89,7 +89,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
   }
   else p->m = 0;
 
-  // spin 2 particels must be cutted
+  // spin 2 particles must be cutted
   if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
   // "new gauge test" cut all massless propagators

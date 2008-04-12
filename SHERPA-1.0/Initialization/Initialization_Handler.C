@@ -285,19 +285,22 @@ void Initialization_Handler::PrepareTerminate()
 
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
+  bool okay = InitializeTheIO();
+  SetScaleFactors();
+  okay = okay && InitializeTheModel();  
+  //
   if (nr<=0) {
     ATOOLS::ParticleInit(m_path); 
   }
-  bool okay = InitializeTheIO();
+  //
+  
   if (m_mode==9999) {
     msg_Events()<<"SHERPA will read in the events."<<std::endl
-	     <<"   The full framework is not needed."<<std::endl;
+		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
   }
-  SetScaleFactors();
   okay = okay && InitializeTheBeams();
-  okay = okay && InitializeTheModel();  
   okay = okay && InitializeThePDFs();
   okay = okay && InitializeTheAnalyses();
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
@@ -407,7 +410,7 @@ bool Initialization_Handler::InitializeTheModel()
   std::string name;
   if (!read.ReadFromFile(name,"MODEL")) name="SM";
   p_model=Model_Base::Model_Getter_Function::
-    GetObject(name,Model_Arguments(m_path,m_modeldat));
+    GetObject(name,Model_Arguments(m_path,m_modeldat,true));
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
   p_model->InitializeInteractionModel();
   p_model->FillDecayTables();

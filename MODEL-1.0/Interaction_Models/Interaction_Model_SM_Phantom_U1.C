@@ -22,7 +22,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_SM_Phantom_U1_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + phantom Higgs"; 
+  str<<"The Standard Model + phantom Higgs"; 
 }
 
 Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
@@ -32,12 +32,11 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   m_loops=true;
   p_moew  = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
   p_moqcd = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
-  double Ecms2  = sqr(rpa.gen.Ecms());
   double hmass2 = sqr(Flavour(kf_h0).Mass());
   double Hmass2 = sqr(Flavour(kf_H0).Mass());
 
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale())));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
@@ -53,11 +52,11 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   tanb  = Kabbala(string("\\tan\\beta"),ScalarConstant(string("Tan(Beta)")));
 
   geffh = Kabbala(std::string("I_S^{(h)}"),
-		  ScalarConstant(std::string("Higgs_GG_eff_h"))*
+		  ScalarConstant(std::string("Higgs_PP_eff_h"))*
 		  ScalarFunction(std::string("alpha_S"),hmass2)/
 		  (2.*M_PI*ScalarConstant(std::string("vev"))));
   geffH = Kabbala(std::string("I_S^{(H)}"),
-		  ScalarConstant(std::string("Higgs_GG_eff_H"))*
+		  ScalarConstant(std::string("Higgs_PP_eff_H"))*
 		  ScalarFunction(std::string("alpha_S"),Hmass2)/
 		  (2.*M_PI*ScalarConstant(std::string("vev"))));
 }

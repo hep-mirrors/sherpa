@@ -21,7 +21,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_SM_AGC_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"Standard Model + Anomalous Gauge Couplings"; 
+  str<<"The Standard Model + Anomalous Gauge Couplings"; 
 }
 
 Interaction_Model_SM_AGC::Interaction_Model_SM_AGC(MODEL::Model_Base * _model,

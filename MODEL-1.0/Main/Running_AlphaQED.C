@@ -24,7 +24,6 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const 
 {
   m_type = std::string("Running Coupling");
   m_split_scale = sqr(m_split_scale);
-  m_ecms2       = sqr(rpa.gen.Ecms());
   m_alpha_MZ    = Aqed(m_MZ2);
   m_defval      = Aqed(m_MZ2);
 }
