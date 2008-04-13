@@ -81,6 +81,10 @@ Blob_List* GenerateEvent()
   blob->AddToOutParticles(mother_part);
 
   p_eventhandler->GenerateEvent(0, false);
+  if (blobs->size()<2) { // retried event
+    CleanUpEvent(blobs);
+    return GenerateEvent();
+  }
 
   return blobs;
 }

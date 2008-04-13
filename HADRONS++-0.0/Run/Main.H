@@ -82,7 +82,7 @@ void small_sherpa_init(int argc, char *argv[])
   rpa.gen.SetVariable("HADRON_DATA_FILE","Hadron.dat");
   rpa.Init("","Run.dat",argc,argv);
   ATOOLS::ParticleInit("");
-  MODEL::s_model = new MODEL::Standard_Model("","Model.dat");
+  MODEL::s_model = new MODEL::Standard_Model("","Model.dat",true);
   msg->SetModifiable(true);
 }
 
