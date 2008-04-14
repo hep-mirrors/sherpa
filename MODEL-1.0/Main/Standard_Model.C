@@ -46,12 +46,16 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,bool _elementa
 void Standard_Model::ParticleInit() {
   //add SM particles
   //kf_code,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,idname,tex_name
-  s_kftable[1] = new Particle_Info(1,0.01,.0,-1,-1,3,1,0,1,1,0,"d","d");
-  s_kftable[2] = new Particle_Info(2,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
-  s_kftable[3] = new Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
-  s_kftable[4] = new Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
-  s_kftable[5] = new Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,1,"b","b");
-  s_kftable[6] = new Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
+  s_kftable[1] = new  Particle_Info(1,0.01,.0,-1,-1,3,1,0,1,1,0,"d","d");
+  s_kftable[2] = new  Particle_Info(2,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
+  s_kftable[3] = new  Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
+  s_kftable[4] = new  Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
+  s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,1,"b","b");
+  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
+  //for debugging only 
+  s_kftable[7] = new  Particle_Info(7,10000.,100.,-1,-1,3,1,0,1,1,1,"b'","b'");
+  s_kftable[8] = new  Particle_Info(8,10000.,100.,2,1,3,1,0,1,1,1,"t'","t'");
+  //end
   s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
   s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
