@@ -10,7 +10,6 @@ namespace ATOOLS {
   
   class Jet_Finder : public Jet_Finder_Base {
 
-    int    m_mass_scheme;
     double m_ene, m_s, m_sprime;
 
     double m_value;
@@ -54,10 +53,7 @@ namespace ATOOLS {
     double CPerp2(Vec4D& p);
     double CDij(Vec4D& p1,Vec4D& p2);
 
-    double DEta12(Vec4D &,Vec4D &);
-    double CosDPhi12(Vec4D &,Vec4D &);
     double DCos12(Vec4D &,Vec4D &);
-    double Coshyp(double);
     bool   ConstructJets(Particle_List *, double, int, bool );
   public:
     Jet_Finder(const std::string &,const int=1);
@@ -81,8 +77,6 @@ namespace ATOOLS {
     void   UpdateCuts(double,double,Cut_Data *);
 
     double   ActualValue() const;
-
-    inline void SetMassScheme(const int mode) { m_mass_scheme=mode; }
 
     inline void SetType(const int mode) { m_type=mode;   }
     inline int  Type() const            { return m_type; }

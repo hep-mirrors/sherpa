@@ -440,7 +440,8 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     Knot *d(ChooseDaughter(mo));
     msg_Debugging()<<"selected daughter "<<d->kn_no<<", "
 		   <<d->part->Flav()<<", t="<<d->t<<", stats "
-		   <<d1->stat<<" "<<d2->stat<<std::endl;
+		   <<d1->stat<<" "<<d2->stat<<", thc = "
+		   <<d1->thcrit<<" "<<d1->sthcrit<<std::endl;
     ResetDaughters(d);
     if (p_sud->Dice(d,mo)) { 
       msg_Debugging()<<"test emission at ("<<d->t
@@ -1062,12 +1063,12 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
       d1->t      = st_mo;
       d1->thcrit = M_PI;
       d2->t      = mo->t;
-      d2->thcrit = thcrit;
+      d2->thcrit = mo->thcrit;
       d1->maxpt2 = d2->maxpt2 = mo->maxpt2;
     }
     else if ((d1->part->Flav().Strong()) && !(d2->part->Flav().Strong())) {
       d1->t      = mo->t;
-      d1->thcrit = thcrit;
+      d1->thcrit = mo->thcrit;
       d2->t      = st_mo;
       d2->thcrit = M_PI;
       d1->maxpt2 = d2->maxpt2 = mo->maxpt2;

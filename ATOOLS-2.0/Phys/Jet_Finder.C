@@ -5,7 +5,6 @@
 #include "MyStrStream.H"
 #include "Blob.H"
 #include "Data_Reader.H"
-#include <cassert>
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -24,7 +23,7 @@ using namespace ATOOLS;
   --------------------------------------------------------------------- */
 
 Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) : 
-  m_mass_scheme(1), m_value(0.), p_frame(NULL)
+  m_value(0.), p_frame(NULL)
 {
   m_ycut       = 2.0;
   m_delta_r    = 1.;
@@ -36,14 +35,6 @@ Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) :
   m_smax       = m_s;
 
   m_sel_log    = new Selector_Log(m_name);
-
-  int help;
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(help,"JF_MASS_SCHEME")) {
-    m_mass_scheme = help;
-    msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
-  }
-  //PRINT_INFO("  Jet finder mass scheme set to: "<<m_mass_scheme);
 }
 
 /*---------------------------------------------------------------------
@@ -55,7 +46,7 @@ Jet_Finder::Jet_Finder(const std::string &_ycut,const int _type) :
 
 Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
 		       const std::string &_ycut,const int _type) : 
-  m_mass_scheme(1), m_value(0.), p_frame(NULL)
+  m_value(0.), p_frame(NULL)
 {
   m_ycut    = 2.0;
   m_delta_r = 1.;
@@ -92,14 +83,6 @@ Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
   
   m_smax    = m_s;
   m_sel_log = new Selector_Log(m_name);
-
-  int help;
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(help,"JF_MASS_SCHEME")) {
-    m_mass_scheme = help;
-    msg_Tracking()<<METHOD<<": Set mass scheme to "<<m_mass_scheme<<"."<<std::endl;
-  }
-  //PRINT_INFO("  Jet finder mass scheme set to: "<<m_mass_scheme);
 }
 
 Jet_Finder::~Jet_Finder() {
@@ -388,10 +371,10 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   PROFILE_HERE;
   double ymin = 2.;
   j1=-3; k1=-3;
-  double pt2jk,pt2j,pt2k;
   for (size_t j=0;j<momsout.size();j++) {
     if (m_type>=3) {
-      pt2j = (sqr(momsout[j][1]) + sqr(momsout[j][2]));
+      double pt2j=Min(MTij2(momsout[j],momsin[0]),
+		      MTij2(momsout[j],momsin[1]));
       if (pt2j < ymin*m_s) {
 	ymin = pt2j/m_s;
 	k1   = j;
@@ -399,9 +382,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 	                                else j1 = -1;
       }
       for (size_t k=j+1;k<momsout.size();k++) {
-	pt2k  = (sqr(momsout[k][1]) + sqr(momsout[k][2]));
-	pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(momsout[j],momsout[k])) - 
-				     CosDPhi12(momsout[j],momsout[k]));
+	double pt2jk = MTij2(momsout[j],momsout[k]);
 	if (pt2jk<ymin*m_s) {
 	  ymin = pt2jk/m_s;
 	  j1 = j;k1 = k;
@@ -411,7 +392,8 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
     else {
       if (m_type==2) {
 	int hadron=m_fl[0].Strong()?0:1;
-	pt2j = 2.*sqr(momsout[j][0])*(1.-DCos12(momsout[j],momsin[hadron]));
+	double pt2j = 2.*sqr(momsout[j][0])*
+	  (1.-DCos12(momsout[j],momsin[hadron]));
 	if (pt2j < ymin*m_sprime) {
 	  ymin = pt2j/m_sprime;
 	  k1   = j;
@@ -421,7 +403,8 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 	}
       }
       for (size_t k=j+1;k<momsout.size();k++) {
-	pt2jk  = 2.*Min(momsout[j].PSpat2(),momsout[k].PSpat2())*(1.-DCos12(momsout[j],momsout[k]));
+	double pt2jk  = 2.*Min(momsout[j].PSpat2(),momsout[k].PSpat2())*
+	  (1.-DCos12(momsout[j],momsout[k]));
 	if (pt2jk<ymin*m_sprime) {
 	  ymin = pt2jk/m_sprime;
 	  j1 = j;k1 = k;
@@ -545,13 +528,6 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
   m_cycut=ToType<double>(interpreter.Interprete(ccut));
   m_gcycut=ToType<double>(interpreter.Interprete(cgcut));
   for (size_t i(0);i<pos.size();++i) {
-    //for(std::map<size_t,size_t>::const_iterator it=m_map.begin(); it!=m_map.end(); ++it) {
-    //  if(pos[i]<0) THROW(fatal_error,"This code is negative!");
-    //  if(it->first==(size_t)pos[i]) THROW(fatal_error,"This code has been already kept!");
-    //}
-    //size_t cde(m_map.size());
-    //m_map[pos[i]]=cde;
-    //PRINT_INFO("pos,"<<i<<": "<<pos[i]<<"  "<<m_map[pos[i]]<<"  "<<m_flavs[pos[i]]);
     bool isi((pos[i]&(1<<0)) || (pos[i]&(1<<1)));
     m_ycuts[pos[i]][pos[i]]=isi?m_cycut:m_cycut*sqr(m_delta_r);
     m_gycuts[pos[i]][pos[i]]=isi?m_gcycut:m_gcycut*sqr(m_delta_r);
@@ -574,7 +550,6 @@ void Jet_Finder::FillCombinations()
 {
   if (m_ycuts.empty()) {
     if (m_procname=="") THROW(fatal_error,"Process name not set.");
-    //size_t size(1<<(m_nin+m_nout)); PRINT_INFO(m_nin<<","<<m_nout<<","<<size<<","<<(1<<0));
     m_moms.clear();
     m_flavs.clear();
     m_ycuts.clear();
@@ -584,38 +559,37 @@ void Jet_Finder::FillCombinations()
     name=name.substr(name.find("__")+2);
     size_t i(0);
     FillCombinations(name,m_cuttag,rpa.gen.Variable("Y_CUT"),i,m_nin+m_nout);
-/*
-for(std::map<size_t,Flavour>::const_iterator it=m_flavs.begin(); it!=m_flavs.end(); ++it) {
-PRINT_INFO(it->first<<":"<<it->second);}
-for(std::map<size_t,std::map<size_t,double> >::const_iterator it=m_ycuts.begin(); it!=m_ycuts.end(); ++it) {
-for(std::map<size_t,double>::const_iterator jt=m_ycuts[it->first].begin(); jt!=m_ycuts[it->first].end(); ++jt) {
-PRINT_INFO(it->first<<","<<jt->first<<":"<<jt->second<<"="<<m_ycuts[it->first][jt->first]);
-}}
-*/
     if (msg_LevelIsDebugging()) {
       msg_Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
       double s(sqr(rpa.gen.Ecms()));
-      for(std::map<size_t,std::map<size_t,double> >::const_iterator it=m_ycuts.begin(); it!=m_ycuts.end(); ++it) {
-        if(it->second.size()>1) {
-	  msg_Out()<<"  "<<it->first<<" : "<<ID(it->first)<<"["<<m_flavs[it->first]<<","<<m_flavs[it->first].Strong()<<"] & {";
-          for(std::map<size_t,double>::const_iterator jt=(it->second).begin(); jt!=(it->second).end(); ++jt)
-	    if(it->first!=jt->first)
-	      msg_Out()<<" "<<ID(jt->first)<<"["<<m_flavs[jt->first]<<","
-	               <<m_flavs[jt->first].Strong()<<",("<<sqrt(m_ycuts[it->first][jt->first]*s)
-	               <<","<<sqrt(m_gycuts[it->first][jt->first]*s)<<")]";
-	  msg_Out()<<" }\n";
-        }
+      for (std::map<size_t,std::map<size_t,double> >::const_iterator
+	     iit(m_ycuts.begin());iit!=m_ycuts.end();++iit) {
+	size_t i(iit->first);
+	if (iit->second.size()>1)
+	  msg_Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
+		   <<m_flavs[i].Strong()<<"] & {";
+	for (std::map<size_t,double>::const_iterator
+	       jit(iit->second.begin());jit!=iit->second.end();++jit) {
+	  size_t j(jit->first);
+	  if (i!=j) 
+	    msg_Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
+		     <<m_flavs[j].Strong()<<",("<<sqrt(m_ycuts[i][j]*s)
+		     <<","<<sqrt(m_gycuts[i][j]*s)<<")]";
+	}
+	if (iit->second.size()>1) msg_Out()<<" }\n";
       }
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
       for (size_t i(0);i<m_fills.size();++i)
 	for (size_t j(0);j<m_fills[i].size();++j)
-	  msg_Out()<<"  ["<<ID(m_fills[i][j].first)<<","<<ID(m_fills[i][j].second)<<"] ("<<i<<")\n";
+	  msg_Out()<<"  ["<<ID(m_fills[i][j].first)<<","
+		   <<ID(m_fills[i][j].second)<<"] ("<<i<<")\n";
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {
 	msg_Out()<<"  "<<ID(m_mcomb[i].back())<<" -> {";
-	for (size_t j(0);j<m_mcomb[i].size()-1;++j) msg_Out()<<" "<<ID(m_mcomb[i][j]);
+	for (size_t j(0);j<m_mcomb[i].size()-1;++j) 
+	  msg_Out()<<" "<<ID(m_mcomb[i][j]);
 	msg_Out()<<" }\n";
       }
       msg_Out()<<"}\n";
@@ -701,15 +675,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	      cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
 	      Min(cuts->cosmax[0][i],sqrt(1.-4.*cut));
 	  }
-	  switch (m_mass_scheme) {
-	  case 1:
-	  case 10:
-	  case 11:
-	    cuts->etmin[i] = Max(sqrt(cut * m_s-sqr(m_fl[i].SelMass())),cuts->etmin[i]);
-	    break;
-	  default:
-	    cuts->etmin[i] = Max(sqrt(cut * m_s),cuts->etmin[i]);	    
-	  }
+	  cuts->etmin[i] = Max(sqrt(cut * m_s-sqr(m_fl[i].SelMass())),cuts->etmin[i]);
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
@@ -727,22 +693,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong() && GetYcut(1<<i,1<<j)>0.0) {
           if (m_type>=2 && (m_fl[i].IsMassive() || m_fl[j].IsMassive())) {
-	    double scut(0.);
-	    switch (m_mass_scheme) {
-	    case 1:
-	      scut = Max(sqr(m_fl[i].SelMass()+m_fl[j].SelMass()),
-			 GetYcut(1<<i,1<<j)*m_s-sqr(m_fl[i].SelMass())-sqr(m_fl[j].SelMass()));
-	      break;
-	    case 0:
-	    case 3:
-	    case 10:
-	    case 20:
-	      scut = sqr(m_fl[i].SelMass()+m_fl[j].SelMass())+GetYcut(1<<i,1<<j)*m_s;
-	      break;
-	    case 11:
-	    case 21:
-	      scut = sqr(m_fl[i].SelMass())+sqr(m_fl[j].SelMass())+GetYcut(1<<i,1<<j)*m_s;
-	    }
+	    double scut=sqr(m_fl[i].SelMass())+sqr(m_fl[j].SelMass())+GetYcut(1<<i,1<<j)*m_s;
 	    cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],scut);
 	  }
           else {
@@ -806,41 +757,37 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 {
   PROFILE_HERE;
   double ymin = 2.;
-  double pt2jk,pt2j,pt2k;
+  Vec4D p0(m_moms[1]), p1(m_moms[2]);
+  double m0(m_flavs[1].SelMass()), m1(m_flavs[2].SelMass());
   for (size_t ps(0);ps<m_fills[cl].size();++ps) {
     int j(m_fills[cl][ps].first), k(m_fills[cl][ps].second);
     Vec4D pj(m_moms[j]), pk(m_moms[k]);
-    double ycut(m_ycuts[j][k]), mj(m_flavs[j].Mass()), mk(m_flavs[k].Mass());
+    double ycut(m_ycuts[j][k]);
+    double mj(m_flavs[j].SelMass()), mk(m_flavs[k].SelMass());
     msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<","<<mj<<"] & "
-   		   <<ID(k)<<"["<<m_flavs[k]<<","<<mk<<"], qcut = "
+		   <<ID(k)<<"["<<m_flavs[k]<<","<<mk<<"], qcut = "
 		   <<sqrt(ycut*m_s)<<"/"<<sqrt(m_gycuts[j][k]*m_s);
     if (m_flavs[k].Strong()) {
-      double add(0.0);
-      if (m_mass_scheme==1) add+=dabs(pk.Abs2());
-      else if (m_mass_scheme==3) add+=dabs(pk.Abs2()-mk*mk);
       if (m_type>=3) {
-	pt2k=CPerp2(pk);
 	if (j<3) {
+	  double pt2k=Min(MTij2(p0,pk,m0,mk),MTij2(p1,pk,m1,mk));
 	  msg_Debugging()<<", is -> ptk = "<<sqrt(pt2k)<<" ("
 			 <<(pt2k>=ycut*m_s)<<(pt2k<ycut*m_s?")\n":")");
-	  if (add+pt2k<ycut*m_s) return -1.0;
-	  if (add+pt2k<ymin*m_s) {
-	    ymin=(add+pt2k)/m_s;
+	  if (pt2k<ycut*m_s) return -1.0;
+	  if (pt2k<ymin*m_s) {
+	    ymin=pt2k/m_s;
 	    j1=j;
 	    k1=k;
 	  } 
 	}
 	else if (m_flavs[j].Strong()) {
-	  pt2j=CPerp2(pj);
-	  if (m_mass_scheme==1) add+=dabs(pj.Abs2());
-	  else if (m_mass_scheme==3) add+=dabs(pj.Abs2()-mj*mj);
 	  // delta r is taken into account in m_ycuts !
-	  pt2jk=2.*Min(pt2j,pt2k)*CDij(pj,pk);
+	  double pt2jk=MTij2(pj,pk,mj,mk);
 	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" ("
 			 <<(pt2jk>=ycut*m_s)<<(pt2jk<ycut*m_s?")\n":")");
-	  if (add+pt2jk<ycut*m_s) return -1.0;
-	  if (add+pt2jk<ymin*sqr(m_delta_r)*m_s) {
-	    ymin=(add+pt2jk)/sqr(m_delta_r)/m_s;
+	  if (pt2jk<ycut*m_s) return -1.0;
+	  if (pt2jk<ymin*sqr(m_delta_r)*m_s) {
+	    ymin=pt2jk/sqr(m_delta_r)/m_s;
 	    j1=j;
 	    k1=k;
 	  }
@@ -850,7 +797,7 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
 	  if (j==1<<hadron) {
-	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,pj));
+	    double pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,pj));
 	    if (pt2k<ycut*m_sprime) return -1.0;
 	    if (pt2k<ymin*m_sprime) {
 	      ymin=pt2k/m_sprime;
@@ -860,7 +807,7 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 	  }
 	}
 	if (j>2 && m_flavs[j].Strong()) {
-	  pt2jk=2.0*Min(pj.PSpat2(),pk.PSpat2())*(1.-DCos12(pj,pk));
+	  double pt2jk=MTij2(pj,pk,mj,mk);
 	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" s' = "
 			 <<m_sprime<<" ("<<(pt2jk>=ycut*m_sprime)
 			 <<(pt2jk<ycut*m_sprime?")\n":")");
@@ -886,44 +833,14 @@ double Jet_Finder::YminKt(int & j1,int & k1,int cl)
 
 double Jet_Finder::MTij2(Vec4D p1,Vec4D p2,double m1,double m2)
 {
-  double mt12_2(0.);
-  //check for DIS situation
   if (m_type>=2) {
-    double pt1_2(CPerp2(p1)), pt2_2(CPerp2(p1)), add(0.0);
-    if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
-    else if (m_mass_scheme==3) add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
-    if (IsZero(pt1_2) && IsZero(pt2_2)) return Max((p1+p2).Abs2(),add);
-    if (IsZero(pt1_2/(pt1_2+pt2_2)) || 
-	IsZero(pt2_2/(pt1_2+pt2_2))) return add+pt1_2+pt2_2;
-    else {
-      if (m_type==2) mt12_2 = add+2.*Min(pt1_2,pt2_2)*
-	(1.-DCos12(p1,p2))/sqr(m_delta_r);
-      else mt12_2 = (add+2.*Min(pt1_2,pt2_2)*CDij(p1,p2))/sqr(m_delta_r);
-    }
+    double pt1_2(p1.PPerp2()), pt2_2(p2.PPerp2());
+    if (IsZero(pt1_2) && IsZero(pt2_2)) return 2.0*p1*p2;
+    if (IsZero(pt1_2)) return CPerp2(p2);
+    if (IsZero(pt2_2)) return CPerp2(p1);
+    return 2.0*Min(CPerp2(p1),CPerp2(p2))*CDij(p1,p2)/sqr(m_delta_r);
   }
-  else {
-    double add(0.0);
-    if (m_mass_scheme==1) add+=dabs(p1.Abs2())+dabs(p2.Abs2());
-    else if (m_mass_scheme==3)
-      add+=dabs(p1.Abs2()-m1*m1)+dabs(p2.Abs2()-m2*m2);
-    mt12_2 = 2.0*Min(p1.PSpat2(),p2.PSpat2())*(1.0-DCos12(p1,p2));
-  }
-  return mt12_2;
-}
-
-double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
-{
-  // eta1,2 = -log(tan(theta_1,2)/2)   
-  double c1=p1[3]/Vec3D(p1).Abs();
-  double c2=p2[3]/Vec3D(p2).Abs();
-  return  0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
-}
-
-double Jet_Finder::CosDPhi12(Vec4D & p1,Vec4D & p2)
-{
-  double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
-  double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-  return (p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2);
+  return 2.0*Min(p1.PSpat2(),p2.PSpat2())*(1.0-DCos12(p1,p2));
 }
 
 double Jet_Finder::DCos12(Vec4D & p1,Vec4D & p2)
@@ -931,41 +848,14 @@ double Jet_Finder::DCos12(Vec4D & p1,Vec4D & p2)
   return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-double Jet_Finder::Coshyp(double x) 
-{
-  //  return 0.5*(std::exp(x)+std::exp(-x));
-  // return 0.5*(exp(x)+exp(-x));
-  return cosh(x);
-}
-
 double Jet_Finder::CPerp2(Vec4D& p) 
 {
-  switch (m_mass_scheme) {
-  case 10:
-  case 11:
-    return p.MPerp2();
-  case 20:
-  case 21:
-    return p.EPerp2();
-  default:
-    return p.PPerp2();
-  }
+  return dabs(p.Abs2())+p.PPerp2();
 }
 
 double Jet_Finder::CDij(Vec4D& p1,Vec4D& p2) 
 {
-  switch (m_mass_scheme) {
-  case 10:
-    return (Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))*sqrt(p1.PPerp2()/p1.MPerp2()*p2.PPerp2()/p2.MPerp2());
-  case 11:
-    return p1*p2/sqrt(p1.MPerp2()*p2.MPerp2());
-  case 20:
-    return (Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2))*sqrt(p1.PPerp2()/p1.EPerp2()*p2.PPerp2()/p2.EPerp2());
-  case 21:
-    return p1*p2/sqrt(p1.EPerp2()*p2.EPerp2());
-  default:
-    return Coshyp(DEta12(p1,p2))-CosDPhi12(p1,p2);   
-  }
+  return p1*p2/sqrt(CPerp2(p1)*CPerp2(p2));
 }
 
 
