@@ -21,12 +21,23 @@ void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) cons
   str<<"The Standard Model\n";
   str<<std::setw(width+4)<<" "<<"{\n"
      <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- ...\n"
-     <<std::setw(width+7)<<" "<<"- ...\n"
-     <<std::setw(width+7)<<" "<<"- ...\n"
+     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
+     <<std::setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
+     <<std::setw(width+7)<<" "<<"- ALPHAS(default) (fixed strong coupling)\n"
+     <<std::setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
+     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
+     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
+     <<std::setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
+     <<std::setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
+     <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<std::setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<std::setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
+     <<std::setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
+     <<std::setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
+
 
 Standard_Model::Standard_Model(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
