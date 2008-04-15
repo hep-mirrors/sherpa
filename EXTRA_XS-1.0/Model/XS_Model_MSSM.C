@@ -39,6 +39,6 @@ std::vector<std::string> XS_Model_MSSM::IncludedModels() const
   models[1]="EW";
   models[2]="QED";
   models[3]="SM";
-  models[3]="MSSM";
+  models[4]="MSSM";
   return models;
 }

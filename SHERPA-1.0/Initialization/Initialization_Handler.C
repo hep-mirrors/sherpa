@@ -149,6 +149,7 @@ void Initialization_Handler::SetFileNames()
   if (cf.RereadInFile()) m_fragmentationdat=
     m_hadrondecaysdat=fname+"|(fragmentation){|}(fragmentation)";
 
+  rpa.gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
   rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   rpa.gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);

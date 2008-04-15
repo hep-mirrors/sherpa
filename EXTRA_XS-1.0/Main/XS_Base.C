@@ -197,8 +197,14 @@ void XS_Base::InitializeModel(MODEL::Model_Base *const model,
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetInputFile(file);
-  std::string mt(read.GetValue<std::string>("SIGNAL_MODEL","SM"));
-  p_model = XS_Model_Handler::GetModel(mt);
+  //
+  std::string modelfile(rpa.gen.Variable("MODEL_DATA_FILE"));
+  Data_Reader mr(" ",";","!","=");
+  mr.AddWordSeparator("\t");
+  mr.SetInputFile(modelfile);
+  std::string md = mr.GetValue<std::string>("MODEL","SM");
+  p_model = XS_Model_Handler::GetModel(md);
+  //
   if (p_model==NULL) THROW(fatal_error,"Interaction model not implemented");
   p_model->Initialize(model,file);
   m_ownmodel=true;
