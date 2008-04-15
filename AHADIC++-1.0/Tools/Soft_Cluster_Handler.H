@@ -47,9 +47,9 @@ namespace AHADIC {
     void   FixHHDecay(Cluster *,ATOOLS::Blob *);
 
 
-    bool   CheckIfAllowed(Cluster_List * clin,int size,double & E);
+    bool   CheckIfAllowed(Cluster_List * clin,double & E);
     bool   UpdateTransitions(Cluster_List * clin,int size);
-    bool   ShiftMomenta(Cluster_List *,int,bool=false);
+    bool   ShiftMomenta(Cluster_List *);
     double SimpleMassCriterion(Single_Transition_List *,ATOOLS::Flavour &,
 			       const double,bool=false);
     double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,

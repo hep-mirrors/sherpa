@@ -40,9 +40,14 @@ Single_Transitions::Single_Transitions() :
 	(*stiter->second)[hadron] += wtprod;
       }
       else {
-	stl = new Single_Transition_List;
-	(*stl)[hadron] = wtprod;
-	(*p_transitions)[(*(singlewave->first))] = stl;
+	//std::cout<<"New Single Transition List for "
+	//	 <<singlewave->first->first<<" "<<singlewave->first->second<<" --> "
+	//	 <<singlewave->second<<" in "<<hadron<<std::endl;
+	if (wtprod>0.) {
+	  stl = new Single_Transition_List;
+	  (*stl)[hadron] = wtprod;
+	  (*p_transitions)[(*(singlewave->first))] = stl;
+	}
       }
     }
   }
@@ -132,13 +137,14 @@ void Single_Transitions::PrintSingleTransitions()
   map<Flavour,double> checkit;
   for (Single_Transition_Miter stiter=p_transitions->begin();
        stiter!=p_transitions->end();stiter++) {
-    msg_Debugging()<<"("<<stiter->first.first<<","<<stiter->first.second<<") : "<<endl;
+    msg_Out()<<"("<<stiter->first.first<<","<<stiter->first.second<<") : "<<endl;
     for (Single_Transition_Siter sit=stiter->second->begin();
 	 sit!=stiter->second->end();sit++) {
       wave    = hadpars.GetMultiplets()->GetWaveFunction(sit->first);
       wt      = sqr(wave->WaveWeight(stiter->first.first,stiter->first.second));
       mpletwt = wave->MultipletWeight();
-      msg_Debugging()<<"   "<<sit->first<<" = "<<wt<<" * "<<mpletwt<<" = "<<sit->second<<endl;
+      msg_Out()<<"   "<<sit->first<<" ("<<sit->first.Mass()<<" ) = "
+	       <<wt<<" * "<<mpletwt<<" = "<<sit->second<<endl;
       if (checkit.find(stiter->first.first)==checkit.end()) 
 	checkit[stiter->first.first] = wt;
       else checkit[stiter->first.first] += wt;

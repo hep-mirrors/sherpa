@@ -59,7 +59,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  moveon = true;
 	  break;
 	case Return_Value::Retry_Event : 
-	  msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	  msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
 		     <<"   Hadronization for blob "
 		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
 		     <<"did not work out,"<<std::endl
@@ -67,7 +67,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  CleanUp(blob);
 	  return result;
 	case Return_Value::Retry_Method :
-	  msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
+	  msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
 		     <<"   Hadronization for blob "
 		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
 		     <<"did not work out properly in the "<<(i+1)<<"th attempt,"<<std::endl
@@ -77,7 +77,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  break;
 	case Return_Value::Nothing :
 	default:
-	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+	  msg_Tracking()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Calling Hadronization for Blob("<<blob<<") yields "
 		     <<int(result)<<"."<<std::endl
 		     <<"   Continue and hope for the best."<<std::endl;
@@ -113,11 +113,11 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 
   switch (p_cformhandler->FormClusters(blob)) {
   case -1 : 
-    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 	       <<"   Will retry event."<<std::endl;
     return Return_Value::Retry_Event;
   case  0 :
-    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 	       <<"   Will retry method."<<std::endl;
     return Return_Value::Retry_Method;
   case 1 :
@@ -131,11 +131,11 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 
-    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 	       <<"   Will retry event."<<std::endl;
     return Return_Value::Retry_Event;
   case  0 :
-    msg_Error()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 	       <<"   Will retry method."<<std::endl;
     return Return_Value::Retry_Method;
   case  1 :

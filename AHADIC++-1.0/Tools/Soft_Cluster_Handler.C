@@ -54,9 +54,9 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
     cluster = (*clin->begin());
     switch (cluster->size()) {
     case 1:
-      msg_Error()<<"Potential problem in "<<METHOD<<" : "<<std::endl
-		 <<"   Clusterlist with one element that needs to transform to a hadron."<<std::endl
-		 <<"   Will possibly lead to retrying the event."<<std::endl;
+      msg_Tracking()<<"Potential problem in "<<METHOD<<" : "<<std::endl
+		    <<"   Clusterlist with one element that needs to transform to a hadron."<<std::endl
+		    <<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     case 2:
       FixHHDecay(cluster,blob);
@@ -75,15 +75,15 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 
   double E(-1.);
   bool breakit(true);
-  while (!CheckIfAllowed(clin,clin->size(),E)) {
+  while (!CheckIfAllowed(clin,E)) {
     breakit = UpdateTransitions(clin,clin->size());
     if (!breakit) break;
   }
 
-  if (!ShiftMomenta(clin,clin->size(),!breakit)) {
-      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-		 <<"   Could not shift momenta."<<std::endl
-		 <<"   Will possibly lead to retrying the event."<<std::endl;
+  if (!ShiftMomenta(clin)) {
+    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		  <<"   Could not shift momenta."<<std::endl
+		  <<"   Will possibly lead to retrying the event."<<std::endl;
     return false;
   }
 
@@ -130,6 +130,9 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 
 int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,const double Mmax)
 {
+  msg_Debugging()<<METHOD<<" for "<<cluster->Mass()
+		 <<" ( "<<cluster->GetTrip()->m_flav
+		 <<" / "<<cluster->GetAnti()->m_flav<<")."<<std::endl;
   cluster->clear();
   Flavour had1,had2,hadron;
 
@@ -159,7 +162,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,const do
       }
       else {
 	// selected hadron for transformation is heavier, select a new one
-	transformweight = TransformWeight(cluster,hadron,true); 
+	transformweight = TransformWeight(cluster,hadron,cluster->Mass(),true); 
 	if (decayweight/(decayweight+transformweight)>ran.Get()) {
 	  // but now decay is favoured -> no problem
 	  cluster->push_back(had1);
@@ -172,15 +175,18 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,const do
 	}
       }
     }
+    msg_Debugging()<<"    ---> forced decay "<<(*cluster)[0]<<" "<<(*cluster)[1]<<"."<<std::endl;
     return 2;
   }
   // regular case.
   if (decayweight/(decayweight+transformweight)>ran.Get()) {
     cluster->push_back(had1);
     cluster->push_back(had2);
+    msg_Debugging()<<"    ---> regular decay "<<(*cluster)[0]<<" "<<(*cluster)[1]<<"."<<std::endl;
     return 2;
   }
   else cluster->push_back(hadron);
+  msg_Debugging()<<"    ---> transition "<<(*cluster)[0]<<"."<<std::endl;
   return 1;
 }
  
@@ -295,14 +301,14 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
   clus->SetPrev(cluster);
   cluster->SetLeft(clus);
 #ifdef memchecker
-  std::cout<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
+  msg_Debugging()<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
 #endif
 
   clus = new Cluster(p2,had2,false);
   clus->SetPrev(cluster);
   cluster->SetRight(clus);
 #ifdef memchecker
-  std::cout<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
+  msg_Debugging()<<"@@@ New cluster "<<clus<<" from "<<METHOD<<"."<<std::endl;
 #endif
 
   cluster->RotateAndBoostBack();
@@ -313,12 +319,12 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
 
   //#ifdef AHAmomcheck
   if (dabs((checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2())>1.e-12) {
-    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-	       <<"    Four-momentum not conserved: "
-	       <<checkbef<<" vs. "<<(cluster->GetLeft()->Momentum()+cluster->GetRight()->Momentum())
-	       <<" : "
-	       <<(checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2()
-	       <<"."<<std::endl;
+    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		  <<"    Four-momentum not conserved: "
+		  <<checkbef<<" vs. "<<(cluster->GetLeft()->Momentum()+cluster->GetRight()->Momentum())
+		  <<" : "
+		  <<(checkbef-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum()).Abs2()
+		  <<"."<<std::endl;
   }
   else msg_Debugging()<<METHOD<<" conserves momentum:"<<std::endl;
   //#endif
@@ -346,9 +352,16 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   double MC(Mmax<0?cluster->Mass():Mmax);
   if (p_doubletransitions->GetLightestMass(fpair)<MC) {
     if (p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC && !lighter) {
+      msg_Debugging()<<METHOD<<" yields no transition for Mclu = "<<cluster->Mass()<<", MC = "<<MC
+		     <<" and MH = "<<p_singletransitions->GetHeaviestMass(fpair)<<"."<<std::endl;
       return tfwt;
     }
   }
+
+  msg_Debugging()<<METHOD<<" for "<<fpair.first<<"/"<<fpair.second<<"("<<cluster->Mass()<<")"
+		 <<" --> Mmax = "<<Mmax<<" in "
+		 <<p_singletransitions->GetLightestMass(fpair)<<" --> "
+		 <<p_singletransitions->GetHeaviestMass(fpair)<<"."<<std::endl;
   
   switch (m_stmode) {
   case (stm::massXwaves) :
@@ -360,6 +373,7 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   default :
     tfwt = MWCriterion(stiter->second,hadron,MC,lighter);
   }
+  msg_Debugging()<<METHOD<<" returns weight = "<<tfwt<<" for "<<hadron<<"."<<std::endl;
   return tfwt;
 }
 
@@ -367,15 +381,22 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
 						 Flavour & hadron,
 						 const double MC, bool lighter)
 {
+  if (lighter)
+    msg_Debugging()<<METHOD<<" for mass = "<<MC<<" and "<<hadron<<" ("<<lighter<<")."<<std::endl;
+
   double wt(0.),maxwt(0.);
   Single_Transition_Siter start=stl->begin();
   if (lighter && hadron!=Flavour(kf_none)) {
     for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
       if (siter->first==hadron) {
 	start = siter; 
-	if ((siter++)!=stl->end()) start++;
-	if (dabs(start->first.Mass()-hadron.Mass())<1.e-2) {
-	  if ((siter++)!=stl->end()) start++;
+	if ((++siter)!=stl->end()) {
+	  start++;
+	  if (dabs(start->first.Mass()-hadron.Mass())<1.e-2) {
+	    if ((++siter)!=stl->end()) {
+	      start++;
+	    }
+	  }
 	}
 	break;
       }
@@ -383,6 +404,9 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
   }
   
 
+  if (lighter)
+    msg_Debugging()<<METHOD<<" for lighter = "<<lighter<<" && hadron mass = "
+		   <<start->first.Mass()<<" vs. Mcluster = "<<MC<<std::endl;
   for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
     if (lighter && siter->first.Mass()>MC) continue;
     wt = 1./pow(sqr(sqr(MC)-sqr(siter->first.Mass()))+1.e-8,0.25);
@@ -392,6 +416,8 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
       maxwt  = wt;
     }
   }
+  if (lighter)
+    msg_Debugging()<<METHOD<<" returns weight = "<<maxwt<<" for "<<hadron<<"."<<std::endl;
   return maxwt;
 }
 
@@ -399,29 +425,35 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
 					 Flavour & hadron,
 					 const double MC, bool lighter)
 {
+  if (lighter)
+    msg_Debugging()<<METHOD<<" for mass = "<<MC<<" and "<<hadron<<"."<<std::endl;
+  //for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) 
+  // msg_Debugging()<<"   "<<siter->first<<" --> "<<siter->second<<"."<<std::endl;
+
   double wt(0.), totweight(0.), minwidth(1.e6);
   Single_Transition_Siter start=stl->begin();
   if (lighter && hadron!=Flavour(kf_none)) {
     for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
       if (siter->first==hadron) {
 	start = siter;
-	if ((siter++)!=stl->end()) start++;
+	if ((++siter)!=stl->end()) start++;
 	if (start->first.Mass()-hadron.Mass()<1.e-2) {
-	  if ((siter++)!=stl->end()) start++;
+	  if ((++siter)!=stl->end()) start++;
 	}
 	break;
       }
     }
   }
   
+  if (lighter)
+    msg_Debugging()<<"   Try to find a new hadron starting at "<<start->first<<"("<<MC<<")."<<std::endl;
   for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
     if (!siter->first.IsStable() && (siter->first.Width()<minwidth)) 
       minwidth = siter->first.Width();
   }
   if (minwidth==1.e6) return SimpleMassCriterion(stl,hadron,MC,lighter);
   for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
-    if (lighter && siter->first.Mass()>MC) continue;
-    if (siter->first.IsStable()) 
+    if (siter->first.IsStable())
       wt = sqr(siter->first.Mass()*minwidth)/
 	(sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*minwidth));
     else 
@@ -433,127 +465,132 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
       totweight = wt;
     }
   }
+  if (lighter)
+    msg_Debugging()<<METHOD<<" returns weight = "<<(totweight/(2.*MC))
+		   <<" for "<<hadron<<"."<<std::endl;
   return totweight/(2.*MC);;
 }
 
-bool Soft_Cluster_Handler::CheckIfAllowed(Cluster_List * clin,int size,double & E) {
+bool Soft_Cluster_Handler::CheckIfAllowed(Cluster_List * clin,double & E) {
   double totmass(0.);
   Vec4D  totmom(0.,0.,0.,0.);
   Cluster * cluster;
-  int count(0), dec(0);
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
-    if (cluster->size()==1) {
+    switch (cluster->size()) {
+    case 1: 
       totmass += (*cluster)[0].Mass();
-      if (E<0) totmom += cluster->Momentum();
-      count++;
+      break;
+    case 2:
+    case 0:
+    default:
+      totmass += cluster->Mass();
+      break;
     }
-    else if (cluster->size()==2) dec++;
+    if (E<0) totmom += cluster->Momentum();
   }
-  if (count<1) return true;
   if (E<0) E = sqrt(totmom.Abs2());
+  msg_Debugging()<<METHOD<<" yields "<<(totmass<E)<<" for m="<<totmass<<" vs. E="<<E<<"."<<std::endl;
+  if (totmass<E && clin->size()==2) {
+    for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+      cluster = (*cit);
+      msg_Debugging()<<"   Cluster, M = "<<cluster->Mass()
+		     <<" ("<<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<")";
+      if (cluster->size()==1) 
+	msg_Debugging()<<" --> "<<(*cluster)[0]<<" ("<<(*cluster)[0].Mass()<<")."<<std::endl;
+      else msg_Debugging()<<"."<<std::endl;
+    }
+  }
   return (totmass<E);
 }
 
 bool Soft_Cluster_Handler::UpdateTransitions(Cluster_List * clin,int size) {
+  msg_Debugging()<<METHOD<<" for "<<size<<" clusters:"<<std::endl<<(*clin)<<std::endl;
   Cluster * cluster;
   Flavour hadron;
   bool    transform(false);
   double  tfwt;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
+    msg_Debugging()<<"   cluster("<<cluster->Mass()<<") ---> "<<cluster->size();
     if (cluster->size()==1) {
-      hadron = (*cluster)[0]; 
-      tfwt   = TransformWeight(cluster,hadron,hadron.Mass(),true);
+      msg_Debugging()<<std::endl;
+      hadron = (*cluster)[0];
+      msg_Debugging()<<"("<<hadron<<")";
+      tfwt   = TransformWeight(cluster,hadron,cluster->Mass(),true);
+      msg_Debugging()<<"    ---> weight = "<<tfwt<<" for "<<hadron;
       if (tfwt>0.) {
 	cluster->clear();
 	cluster->push_back(hadron);
 	transform = true;
       }
     }
+    msg_Debugging()<<"."<<std::endl;
   }
+  msg_Debugging()<<METHOD<<" yields "<<transform<<std::endl;
   return transform;
 }
 
-bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin,int size,bool takeall)
+bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin)
 {
 #ifdef AHAmomcheck
   Vec4D checkbef(0.,0.,0.,0.),checkaft(0.,0.,0.,0.);
 #endif
-  std::vector<double> masses(size);
-  std::vector<Vec4D>  momenta(size);
-  int    pos(0),pos1;
+  size_t size(clin->size());
+  std::vector<double> masses;
+  std::vector<Vec4D>  momenta;
   Cluster * cluster;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
-    if (cluster->size()==1) {
-      masses[pos]  = (*cluster)[0].Mass();
-      momenta[pos] = cluster->Momentum();
+    switch (cluster->size()) {
+    case 1: 
+      masses.push_back((*cluster)[0].Mass());
+      break;
+    case 2:
+    case 0:
+    default:
+      masses.push_back(cluster->Mass());
+      break;
+    }
+    momenta.push_back(cluster->Momentum());
 #ifdef AHAmomcheck
-      checkbef    += momenta[pos];
+    checkbef += cluster->Momentum();
 #endif
-      pos++;
-    }
   }
-  if (pos<2 || takeall) {
-    for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-      cluster = (*cit);
-      if (cluster->size()!=1) {
-	masses[pos]  = cluster->Mass();
-	momenta[pos] = cluster->Momentum();
-#ifdef AHAmomcheck
-	checkbef    += momenta[pos];
-#endif 
-	pos++;
+  if (!hadpars.AdjustMomenta(size,&momenta.front(),&masses.front())) {
+    if (size>1) {
+      msg_Tracking()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : "<<std::endl
+		    <<"   Could not adjust momenta for : "<<std::endl;
+      int i(0);
+      for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+	msg_Debugging()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Debugging()<<" ("<<((**cit)[0])<<" )";
+	msg_Debugging()<<" for "<<std::endl<<(**cit)<<std::endl;
       }
-    }
-  }
-  
-  if (!hadpars.AdjustMomenta(pos,&momenta.front(),&masses.front())) {
-    if (pos>1) {
-      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-		 <<"   Could not adjust momenta for : "<<std::endl;
-      for (int i=0;i<pos;i++) {
-	msg_Error()<<"   "<<i<<" th particle: "<<masses[i]<<" "<<momenta[i]<<std::endl;
-      }
-      msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
+      msg_Tracking()<<"   Will possibly lead to retrying the event."<<std::endl;
     }
     return false;
   }
-  pos = 0;
+  int pos(0);
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
-    if (cluster->size()==1) {
+    if (cluster->size()==1) cluster->SetFlav((*cluster)[0]);
+    else cluster->RescaleMomentum(momenta[pos]);
 #ifdef AHAmomcheck
-      checkaft += momenta[pos];
+    checkaft += momenta[pos];
 #endif
-      cluster->SetMomentum(momenta[pos]);
-      cluster->SetFlav((*cluster)[0]);
-      pos++;
-    }
-  }
-  pos1 = pos;
-  if (pos<2 || takeall) {
-  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-    cluster = (*cit);
-      if (cluster->size()!=1) {
-	cluster->RescaleMomentum(momenta[pos]);
-#ifdef AHAmomcheck
-	checkaft += cluster->Momentum();
-#endif
-	pos++;
-      }
-    }
+    cluster->SetMomentum(momenta[pos]);
+    pos++;
   }
 #ifdef AHAmomcheck
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
-    msg_Out()<<METHOD<<" yields a momentum violation for  "<<pos1<<" : "<<std::endl
+    msg_Out()<<METHOD<<" yields a momentum violation for  "<<size<<" : "<<std::endl
   	     <<"   "<<checkbef<<" - "<<checkaft<<" --> "
-  	     <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+  	     <<(checkbef-checkaft).Abs2()<<"("<<size<<")."<<std::endl;
     msg_Out()<<(*clin)<<std::endl;
   }
   else msg_Debugging()<<METHOD<<" conserves momentum : "
-		      <<(checkbef-checkaft).Abs2()<<"("<<pos1<<", "<<size<<")."<<std::endl;
+		      <<(checkbef-checkaft).Abs2()<<"("<<size<<")."<<std::endl;
 #endif
   return true;
 }

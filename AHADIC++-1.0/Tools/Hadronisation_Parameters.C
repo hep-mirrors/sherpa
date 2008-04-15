@@ -38,17 +38,16 @@ void Hadronisation_Parameters::Init(string dir,string file)
   msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents      = new Constituents(false);
-  // if (msg_LevelIsTracking()) 
-  p_constituents->PrintConstituents();
+  if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
 
   p_multiplets        = new All_Hadron_Multiplets();
-  //if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
+  if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
   p_singletransitions = new Single_Transitions();
-  //if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
+  if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
 
   p_doubletransitions = new Double_Transitions();
-  //if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
+  if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
 
   p_softclusters      = new Soft_Cluster_Handler(p_singletransitions,p_doubletransitions,
 						 m_parametermap[string("Offset_C->H")],
@@ -208,8 +207,8 @@ double Hadronisation_Parameters::Get(string keyword)
 {
   m_piter = m_parametermap.find(keyword);
   if (m_piter!=m_parametermap.end()) return m_piter->second;
-  msg_Error()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") in "<<m_parametermap.size()<<endl
-	     <<"   Keyword not found. Return 0 and hope for the best."<<endl;
+  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") in "<<m_parametermap.size()<<endl
+		<<"   Keyword not found. Return 0 and hope for the best."<<endl;
   return 0.;
 }
 
@@ -234,12 +233,12 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
     if (mass>sqrt(cms.Abs2())) {
-      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-		 <<"   Total mass = "<<mass<<", total E = "<<sqrt(cms.Abs2())<<std::endl;
+      msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		    <<"   Total mass = "<<mass<<", total E = "<<sqrt(cms.Abs2())<<std::endl;
       for (int i=0;i<n;i++) {
-	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+	msg_Tracking()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
       }
-      msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
+      msg_Tracking()<<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
@@ -252,12 +251,12 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
     success = stretcher.MassThem(0,n,moms,masses,1.e-10);
   }
   if (!success) {
-    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-	       <<"   Could not shift particles on new shells."<<std::endl;
+    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		  <<"   Could not shift particles on new shells."<<std::endl;
     for (int i=0;i<n;i++) {
-      msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+      msg_Tracking()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
     }
-    msg_Error()<<"   Will lead to retrying the event."<<std::endl;
+    msg_Tracking()<<"   Will lead to retrying the event."<<std::endl;
   }
   return success;
 }

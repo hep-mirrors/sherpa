@@ -10,7 +10,6 @@ using namespace std;
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
   m_ana(ana), p_splitter(splitter)
 { 
-  msg_Out()<<METHOD<<" with "<<m_ana<<std::endl;
   if (m_ana) {
     m_histograms[string("Flavour_Cluster")] = new Histogram(0,0.,15.,15);
     m_histograms[string("PT_Cluster")]      = new Histogram(0,0.,1.5,150);
@@ -41,8 +40,8 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 #endif
   cluster->BoostInCMSAndRotateOnZ();
   if (!p_splitter->SplitCluster(cluster)) {
-    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-               <<"   Could not split cluster, may lead to new event."<<std::endl;
+    msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
+		  <<"   Could not split cluster, may lead to new event."<<std::endl;
     return false;
   }
   if (m_ana) {

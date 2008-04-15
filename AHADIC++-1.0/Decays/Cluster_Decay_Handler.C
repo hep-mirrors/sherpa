@@ -34,9 +34,10 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       clist.push_back(cluster->GetLeft());
       clist.push_back(cluster->GetRight());
       if (!p_softclusters->TreatClusterList(&clist,blob)) {
-	msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-		   <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
-		   <<"   Will trigger retrying the event."<<std::endl;
+	msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		      <<"   Did not find a kinematically allowed "
+		      <<"solution for the cluster list."<<std::endl
+		      <<"   Will trigger retrying the event."<<std::endl;
 	return -1;
       }
       while (!clist.empty()) {

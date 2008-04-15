@@ -131,10 +131,10 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 	if (col1==col2) construct = false;
       }
       else {
-	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		   <<"   Assumed everything okay with blob."
-		   <<std::endl<<(*blob)<<std::endl
-		   <<"   will try new event."<<std::endl;
+	msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
+		      <<"   Assumed everything okay with blob."
+		      <<std::endl<<(*blob)<<std::endl
+		      <<"   will try new event."<<std::endl;
 	Reset();
 	return false;
       }
@@ -207,10 +207,10 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
   }
 
   /*
-  for(pplit=m_partlists.begin();pplit!=m_partlists.end();++pplit)
-      std::cout<<**pplit<<std::endl;
-  PRINT_INFO("--------------");
-  for(pplit=shiftables.begin();pplit!=shiftables.end();++pplit)
+    for(pplit=m_partlists.begin();pplit!=m_partlists.end();++pplit)
+    std::cout<<**pplit<<std::endl;
+    PRINT_INFO("--------------");
+    for(pplit=shiftables.begin();pplit!=shiftables.end();++pplit)
     std::cout<<**pplit<<std::endl;
   */
 
@@ -310,10 +310,10 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
       pplit=m_partlists.erase(pplit);
     }
     else {
-      msg_Error()<<"WARNING in "<<METHOD<<":"<<std::endl
-		 <<"   Could not form a suitable list after gluon decays from :"<<std::endl
-		 <<(**pplit)
-		 <<"   Try a new event."<<std::endl;
+      msg_Tracking()<<"WARNING in "<<METHOD<<":"<<std::endl
+		    <<"   Could not form a suitable list after gluon decays from :"<<std::endl
+		    <<(**pplit)
+		    <<"   Try a new event."<<std::endl;
       Reset();
       return false;
     }
@@ -396,9 +396,9 @@ bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 #endif
 
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
-    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
-	       <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
-	       <<"   Will trigger a new event."<<std::endl;
+    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+		  <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
+		  <<"   Will trigger a new event."<<std::endl;
     return false;
   }
   if (msg->LevelIsDebugging()) {

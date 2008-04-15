@@ -24,7 +24,7 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
       decspec->popweight = hadpars.GetConstituents()->TotWeight(fdit->first)/norm;
       decspec->massmin   = 2.*hadpars.GetConstituents()->Mass(fdit->first);
       m_options.insert(std::make_pair(fdit->first,decspec));
-      msg_Tracking()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
+      msg_Debugging()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }
   }
   if (m_analyse) {
@@ -36,7 +36,7 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
 
   p_splitter->SetOptions(&m_options);
 
-  msg_Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
+  msg_Debugging()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
   if (m_options.empty()) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"   No decay channels found for gluons, will abort the run."<<std::endl
@@ -289,9 +289,9 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip1)->AntiTriplet()->m_flav.IsGluon() &&
       (*dip1)->Triplet() == (*dip2)->AntiTriplet() &&
       (*dip1)->AntiTriplet() == (*dip2)->Triplet()) {
-    msg_Error()<<"Warning in "<<METHOD<<" : "<<std::endl
-	       <<"   A gluon-gluon singlet with low mass : "<<sqrt((*dip1)->Mass2())<<","<<std::endl
-	       <<"   Do not know how to handle this, trigger new event."<<std::endl;
+    msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
+		  <<"   A gluon-gluon singlet with low mass : "<<sqrt((*dip1)->Mass2())<<","<<std::endl
+		  <<"   Do not know how to handle this, trigger new event."<<std::endl;
     return -1;
   }
   MergeDipoles(dip1,dip2); 
@@ -447,11 +447,11 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
     if (msg->LevelIsDebugging()) {
       msg_Out()<<"   check for neighbour after setting: "
 	       <<(*partner)<<":"
-	       <<(*partner)->Triplet()<<" / "<<(*partner)->AntiTriplet()<<std::endl;
-      msg_Out()<<"  "<<(*partner)->Triplet()->m_flav<<std::endl;
-      msg_Out()<<"  "<<(*partner)->AntiTriplet()->m_flav<<std::endl;
-      msg_Out()<<"  "<<dip->Triplet()->m_flav<<std::endl;
-      msg_Out()<<"  "<<dip->AntiTriplet()->m_flav<<std::endl;
+	       <<(*partner)->Triplet()<<" / "<<(*partner)->AntiTriplet()<<std::endl
+	       <<"  "<<(*partner)->Triplet()->m_flav<<std::endl
+	       <<"  "<<(*partner)->AntiTriplet()->m_flav<<std::endl
+	       <<"  "<<dip->Triplet()->m_flav<<std::endl
+	       <<"  "<<dip->AntiTriplet()->m_flav<<std::endl;
     }
   }
 

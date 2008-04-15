@@ -27,11 +27,12 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
       momenta[n0]      = Vec4D(energy0,p0);
       momenta[n-1]      = Vec4D(energy1,p1);
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);      
-      //PRINT_VAR("Enough energy: "<<masses[n0]<<" + "<<masses[n-1]<<" < "<<energy);
       return true; 
     }
     else {
-      PRINT_VAR("Too little energy: "<<masses[n0]<<" + "<<masses[n-1]<<" > "<<energy);
+      msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+		    <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
+		    <<" > "<<energy<<"."<<std::endl;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
       return false; 
     }
@@ -71,10 +72,10 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     }
     delete [] oldens2;
     delete [] ens;
-    msg_Error()<<"ERROR in "<<METHOD<<" : "<<endl
-	       <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)
-	       <<" masses ("<<xmt<<"); return false"<<endl
-	       <<"   Masses & momenta:"<<endl;
+    msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<endl
+		  <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)
+		  <<" masses ("<<xmt<<"); return false"<<endl
+		  <<"   Masses & momenta:"<<endl;
     for (int i=n0;i<n;i++) msg_Error()<<"  "<<masses[i]<<" : "<<momenta[i]<<std::endl;
     return false;
     abort();
@@ -88,7 +89,6 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
   int n=0;
   if(momenta.size()==masses.size()) n = momenta.size();
   else {
-    ////PRINT_VAR("Size mismatch : "<<momenta.size()<<" vs. "<<masses.size());
     return false;
   }
   if ((n-n0)==2) {
@@ -107,11 +107,12 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
       momenta[n0]      = Vec4D(energy0,p0);
       momenta[n-1]      = Vec4D(energy1,p1);
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
-      //PRINT_VAR("Enough energy: "<<masses[n0]<<" + "<<masses[n-1]<<" < "<<energy);
       return true;
     }
     else {
-      //PRINT_VAR("Too little energy: "<<masses[n0]<<" + "<<masses[n-1]<<" > "<<energy);
+      msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+		    <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
+		    <<" > "<<energy<<"."<<std::endl;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
       return false;
     }

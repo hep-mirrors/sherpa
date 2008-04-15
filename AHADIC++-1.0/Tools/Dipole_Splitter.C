@@ -19,7 +19,7 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
   Dipole * dip1 = new Dipole(new Proto_Particle((*cluster->GetTrip())),
 			     new Proto_Particle((*cluster->GetAnti())));
 #ifdef memchecker
-  std::cout<<"### Two new Proto_Particles ("
+  msg_Out()<<"### Two new Proto_Particles ("
   	   <<dip1->Triplet()<<"/"<<dip1->AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
 #endif
 
@@ -31,16 +31,16 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
 
   Dipole * dip2 = EmitGluon(pt2max);
   if (!dip2) {
-    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-               <<"   Could not emit gluon, hence no dipole splitting."<<std::endl
-               <<"   Return false, may lead to new event."<<std::endl;
+    msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
+		  <<"   Could not emit gluon, hence no dipole splitting."<<std::endl
+		  <<"   Return false, may lead to new event."<<std::endl;
 #ifdef memchecker
-    std::cout<<"### Delete Proto_Particle ("<<dip1->Triplet()
+    msg_Out()<<"### Delete Proto_Particle ("<<dip1->Triplet()
     	     <<"/"<<dip1->Triplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
     delete dip1->Triplet();
 #ifdef memchecker
-    std::cout<<"### Delete Proto_Particle ("<<dip1->AntiTriplet()
+    msg_Out()<<"### Delete Proto_Particle ("<<dip1->AntiTriplet()
     	     <<"/"<<dip1->AntiTriplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
     delete dip1->AntiTriplet();
@@ -66,11 +66,9 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
     second = dip1;
   }
   if (!SplitDipole(first,pt2max) && !SplitDipole(second,pt2max)) {
-    msg_Error()<<"Error in "<<METHOD<<" :"<<std::endl
-	       <<"   Two unsplittable dipoles emerging from :"<<std::endl
-	       <<(*cluster)<<std::endl;
-    //delete dip1->Triplet();
-    //delete dip1->AntiTriplet();
+    msg_Tracking()<<"Error in "<<METHOD<<" :"<<std::endl
+		  <<"   Two unsplittable dipoles emerging from :"<<std::endl
+		  <<(*cluster)<<std::endl;
     delete dip1;
     delete dip2;
     return false;
@@ -95,7 +93,7 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
   Cluster * left  = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
   Cluster * right = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
 #ifdef memchecker
-  std::cout<<"@@@ Two new clusters "<<left<<"/"<<right<<" from "<<METHOD<<"."<<std::endl;
+  msg_Out()<<"@@@ Two new clusters "<<left<<"/"<<right<<" from "<<METHOD<<"."<<std::endl;
 #endif
 
   cluster->SetLeft(left);
@@ -128,8 +126,8 @@ Dipole * Dipole_Splitter::EmitGluon(const double pt2max) {
   m_pref    = 4./3.;
 
   if (!DetermineSplitting(false)) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   Could not split dipole, must retry event."<<std::endl;
+    msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
+		  <<"   Could not split dipole, must retry event."<<std::endl;
     return NULL;
   }
   if (FixKinematics(false)) {
@@ -144,8 +142,6 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   SetSpectatorAndSplitter();
   m_M2      = p_dip->Mass2();
   m_m1      = p_constituents->Mass(p_spect->m_flav);
-  //std::cout<<METHOD<<" : check masses : "
-  //<<sqrt(m_M2)<<" - "<<m_m1<<" - "<<m_2p3min<<std::endl;
   if (sqrt(m_M2)-m_m1-m_2p3min<=1.e-8) return false;
   m_m12     = sqr(m_m1);
   m_xt2min  = sqr((m_m1+m_2p3min/2.)*(m_2p3min)/m_M2);
@@ -171,25 +167,23 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   }
 
   if (!DetermineSplitting()) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   Could not split dipole, must retry event."<<std::endl;
+    msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
+		  <<"   Could not split dipole, must retry event."<<std::endl;
     return false;
   }
   if (FixKinematics()) {
 #ifdef memchecker
-    std::cout<<"### Delete Proto_Particle ("<<p_split
+    msg_Out()<<"### Delete Proto_Particle ("<<p_split
     	     <<"/"<<p_split->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
     delete p_split;
     return true;
   }
-  msg_Error()<<"ERROR in "<<METHOD<<" FixKinematics did not work out!"<<std::endl;
+  msg_Tracking()<<"ERROR in "<<METHOD<<" FixKinematics did not work out!"<<std::endl;
   return false;
 }
 
 void Dipole_Splitter::SetSpectatorAndSplitter() {
-  //msg_Out()<<METHOD<<" for "<<std::endl;
-  //p_dip->Output();
   if (p_dip->Triplet()->m_flav.IsGluon() && 
       (p_dip->AntiTriplet()->m_flav.IsQuark() ||
        p_dip->AntiTriplet()->m_flav.IsDiQuark())) {
@@ -234,14 +228,10 @@ bool Dipole_Splitter::DetermineSplitting(bool glusplit) {
 bool Dipole_Splitter::SelectPT_Y(bool glusplit) {
   double expo = sqr(log(m_xt2))-log(ran.Get())/(m_asmax*m_pref);
   if (expo<0.) {
-    //std::cout<<METHOD<<" yields false for "<<expo
-    //	     <<" ("<<m_xt2<<", "<<m_asmax<<", "<<m_pref<<")"<<std::endl;
     return false;
   }
   m_xt2 = exp(-sqrt(expo));
   if (m_xt2<m_xt2min) {
-    //std::cout<<"   SelectPT_Y yields false for "<<expo
-    //	     <<" ("<<m_xt2<<"<"<<m_xt2min<<", "<<m_asmax<<", "<<m_pref<<")"<<std::endl;
     return false;
   }
   m_y   = m_ybound*(2.*ran.Get()-1.);
@@ -291,18 +281,18 @@ bool Dipole_Splitter::MinimalDecay(bool glusplit) {
   }
   else {
     m_2p3 = m_2p3min+m_m3;
-    //m_m2  = m_m3 = m_2p3min/2.;
-    //m_m22 = m_m32 = sqr(m_m2);
   }
 
   m_s23 = sqr(m_2p3);
   m_s12 = m_m12+m_m22+Max(m_m2,m_2p3min/2.)/m_2p3*(m_M2-m_m12-m_s23);
 
   if (!ConstructKinematics()) {
-    msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+    if (msg->LevelIsTracking()) {
+      msg_Out()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Could not construct any decay for dipole below."<<std::endl
 	       <<"   This will lead to a new event."<<std::endl;
-    p_dip->Output();
+      p_dip->Output();
+    }
     return false;
   }
   return true;
@@ -316,14 +306,10 @@ void Dipole_Splitter::CalculateInvariants() {
 
 bool Dipole_Splitter::ConstructKinematics() {
   if (m_s12<sqr(m_m1+m_m2) || m_s23<sqr(m_m2+m_m3)) {
-    //std::cout<<" fail 1: "<<m_s12<<" and "<<m_s23<<" from "<<m_m1<<", "<<m_m2<<", "<<m_m3<<std::endl;
     return false;
   }
   double Mred2 = m_M2-(m_s23+m_m12);     
   if (sqr(Mred2)<4.*m_s23*m_m12 || Mred2<0.) {
-    //std::cout<<" fail 2: "
-    //	     <<m_s12<<" and "<<m_s23<<" from "<<m_m1<<", "<<m_m2<<", "<<m_m3
-    //	     <<" vs. "<<m_M2<<" --> "<<Mred2<<std::endl;
     return false;
   }
   double gamma = (Mred2+sqrt(sqr(Mred2)-4.*m_s23*m_m12))/2.;
@@ -338,9 +324,6 @@ bool Dipole_Splitter::ConstructKinematics() {
   m_pt2        = z2*(1.-z2)*m_s23-(1.-z2)*m_m22-z2*m_m32;
   if (ATOOLS::IsZero(m_pt2)) m_pt2 = 0.;
   if (m_pt2<0. || m_pt2>m_pt2veto) {
-    //std::cout<<" fail 3 with a1, a23 = "<<a1<<", "<<a23
-    //	     <<"; z2, z3 = "<<z2<<", "<<z3
-    //	     <<" and pt2 = "<<m_pt2<<" vs. "<<m_pt2veto<<std::endl;
     return false;
   }                                   
   double phi   = 2.*M_PI*ran.Get();
@@ -348,9 +331,6 @@ bool Dipole_Splitter::ConstructKinematics() {
   double y2    = (m_m22+m_pt2)/(z2*m_s23);
   double y3    = (m_m32+m_pt2)/(z3*m_s23);
 
-  //std::cout<<METHOD<<" with a1, a23 = "<<a1<<", "<<a23
-  //	   <<"; z2, z3 = "<<z2<<", "<<z3<<"; y2, y3 = "<<y2<<", "<<y3
-  //	   <<" and pt2 = "<<m_pt2<<std::endl;
   m_mom1       = lminus+a1*lplus;
   m_mom2       = z2*lplus+y2*a23*lminus+kperp;
   m_mom3       = z3*lplus+y3*a23*lminus-kperp;
@@ -365,31 +345,24 @@ bool Dipole_Splitter::FixKinematics(bool glusplit) {
   Vec4D checkbef(q);
 #endif
 
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
-
   Poincare boostk(k);
   boostk.Boost(m_mom1);
   boostk.Boost(m_mom2);
   boostk.Boost(m_mom3);
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   
   Poincare boost(q);
   boost.Boost(q1);
   boost.Boost(q2);
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   Poincare rotate(q1,Vec4D(1.,Vec3D::ZVEC));
   rotate.Rotate(q1);
   rotate.Rotate(q2);
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
 
   rotate.RotateBack(m_mom1);
   rotate.RotateBack(m_mom2);
   rotate.RotateBack(m_mom3);
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
   boost.BoostBack(m_mom1);
   boost.BoostBack(m_mom2);
   boost.BoostBack(m_mom3);
-  //PRINT_INFO(m_mom1<<" "<<m_mom2<<" "<<m_mom3<<" "<<q1<<" "<<q2<<" "<<q);
 
 #ifdef AHAmomcheck
   Vec4D checkaft = m_mom1+m_mom2+m_mom3;
@@ -405,14 +378,14 @@ bool Dipole_Splitter::FixKinematics(bool glusplit) {
     p_out1 = new Proto_Particle(m_flav.Bar(),m_mom2,'l');
     p_out2 = new Proto_Particle(m_flav,m_mom3,'l');
 #ifdef memchecker
-    std::cout<<"### Two new Proto_Particles ("<<p_out1<<"/"<<p_out2
+    msg_Out()<<"### Two new Proto_Particles ("<<p_out1<<"/"<<p_out2
     	     <<" -- "<<m_flav.Bar()<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
 #endif
   }
   else {
     p_out1 = new Proto_Particle(m_flav,m_mom2,'l');
 #ifdef memchecker
-    std::cout<<"### New Proto_Particle ("<<p_out1<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
+    msg_Out()<<"### New Proto_Particle ("<<p_out1<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
 #endif
     p_out2 = NULL;
     p_split->m_mom = m_mom3;
