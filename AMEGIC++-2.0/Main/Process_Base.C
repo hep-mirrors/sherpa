@@ -97,9 +97,6 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
     if (p_flin[i].IntCharge()!=0)  m_neweak++;
   }
 
-//   pinfo->Print();
-//   pinfo->FullPrint();
-  
   GenerateName(m_nin,p_flin,p_plin,m_name, pinfo);
   pinfo->GetTotalFlavList(p_flout);
   pinfo->GetTotalPolList(p_plout);
@@ -136,7 +133,6 @@ string * Process_Base::GenerateName(int _nin, Flavour * _flin, Pol_Info * _plin,
   Process_Info ini(0,0);
   ini.AddSubList(_nin,_flin,_plin);
   ini.Reshuffle(ppi);
-
   ppi->Reshuffle(&ini);
 
   if (_nin==2) {

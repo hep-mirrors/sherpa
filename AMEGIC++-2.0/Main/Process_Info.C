@@ -514,8 +514,13 @@ int Order_FVST::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->IsScalar() && !b->m_sublist[0][i]->p_fl->IsScalar()) return 0;
+      if (a->m_sublist[0][i]->p_fl->IsVector() && !b->m_sublist[0][i]->p_fl->IsScalar() && !b->m_sublist[0][i]->p_fl->IsVector()) return 0;
+      if (a->m_sublist[0][i]->p_fl->IsFermion() && !b->m_sublist[0][i]->p_fl->IsFermion() && 
+	  !b->m_sublist[0][i]->p_fl->IsScalar() && !b->m_sublist[0][i]->p_fl->IsVector()) return 0;      
+   }
     return 0;
   }
   if (a->p_fl->IsFermion() && !b->p_fl->IsFermion()) return 1;
@@ -534,8 +539,13 @@ int Order_SVFT::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->IsFermion() && !b->m_sublist[0][i]->p_fl->IsFermion()) return 0;
+      if (a->m_sublist[0][i]->p_fl->IsVector() && !b->m_sublist[0][i]->p_fl->IsFermion() && !b->m_sublist[0][i]->p_fl->IsVector()) return 0;
+      if (a->m_sublist[0][i]->p_fl->IsScalar() && !b->m_sublist[0][i]->p_fl->IsScalar() && 
+	  !b->m_sublist[0][i]->p_fl->IsFermion() && !b->m_sublist[0][i]->p_fl->IsVector()) return 0;
+    }
     return 0;
   }
   if (a->p_fl->IsScalar() && !b->p_fl->IsScalar()) return 1;
@@ -554,8 +564,10 @@ int Order_Mass::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->Mass() < b->m_sublist[0][i]->p_fl->Mass()) return 0;
+    }
     return 0;
   }
   if (a->p_fl->Mass() <= b->p_fl->Mass()) return 0;
@@ -571,8 +583,10 @@ int Order_InvMass::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->Mass() > b->m_sublist[0][i]->p_fl->Mass()) return 0;
+    }
     return 0;
   }
   if (a->p_fl->Mass() < b->p_fl->Mass()) return 1;
@@ -589,8 +603,10 @@ int Order_Kfc::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->Kfcode() > b->m_sublist[0][i]->p_fl->Kfcode()) return 0;
+    }
     return 0;
   }
   if (a->p_fl->Kfcode() < b->p_fl->Kfcode()) return 1;
@@ -607,8 +623,11 @@ int Order_Anti::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (!(a->m_sublist[0][i]->p_fl->IsFermion() && b->m_sublist[0][i]->p_fl->IsFermion())) return 0;
+      if ((a->m_sublist[0][i]->p_fl->IsAnti() && !b->m_sublist[0][i]->p_fl->IsAnti())) return 0;
+    }
     return 0;
   }
   if ((a->p_fl->IsFermion() && b->p_fl->IsFermion())
@@ -625,8 +644,10 @@ int Order_Coupling::operator()(const Process_Info * a, const Process_Info * b) {
   if (*a->p_fl==*b->p_fl && (a->m_sublist[0].size()>0 || b->m_sublist[0].size()>0)) {
     if (a->m_sublist[0].size()>b->m_sublist[0].size()) return 1;
     if (a->m_sublist[0].size()<b->m_sublist[0].size()) return 0;
-    for (size_t i=0;i<a->m_sublist[0].size();++i) 
+    for (size_t i=0;i<a->m_sublist[0].size();++i) {
       if (operator()(a->m_sublist[0][i],b->m_sublist[0][i])) return 1;
+      if (a->m_sublist[0][i]->p_fl->Strong() && !b->m_sublist[0][i]->p_fl->Strong()) return 0;
+    }
     return 0;
   }
   if (!a->p_fl->Strong() && b->p_fl->Strong()) return 1;
