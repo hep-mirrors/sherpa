@@ -79,8 +79,8 @@
 {3201,-3,2,1}	 | 0.035[EvtGen]	 | Lambdac+_su_0sbud.dat;
 {2101,2,1,-1}	 | 0.035[EvtGen]	 | Lambdac+_ud_0uddb.dat;
 {2203,3}	 | 0.095[EvtGen]	 | Lambdac+_uu_1s.dat;
-{3201,2}	 | 0.14[EvtGen]	 | Lambdac+_su_0u.dat; # sends AHADIC into loop, Lund works
-{3203,2}	 | 0.14[EvtGen]	 | Lambdac+_su_1u.dat; # see above
+{3201,2}	 | 0.14[EvtGen]	 | Lambdac+_su_0u.dat;
+{3203,2}	 | 0.14[EvtGen]	 | Lambdac+_su_1u.dat;
 {2203,1}	 | 0.03[EvtGen]	 | Lambdac+_uu_1d.dat;
 {2101,2}	 | 0.015[EvtGen]	 | Lambdac+_ud_0u.dat;
 {2103,2}	 | 0.015[EvtGen]	 | Lambdac+_ud_1u.dat;
