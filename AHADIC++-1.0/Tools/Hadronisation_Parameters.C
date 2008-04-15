@@ -226,12 +226,6 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       mass += masses[i];
       if (dabs(moms[i].Abs2())>1.e-6) prepare = true;
     } 
-
-    /*
-    for (int i=0;i<n;i++) {
-      std::cout<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
-    }
-    */
     if (Vec3D(cms).Abs()>1.e-6) { 
       boost = true;
       rest  = Poincare(cms);

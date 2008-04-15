@@ -177,7 +177,7 @@ void Ahadic::Reset() {
   assert(!Cluster::RemainingClusters());
   if(control::s_AHAprotoparticles) {
     assert(control::s_AHAprotoparticles==control::l_oflow.size());
-    PRINT_INFO(control::s_AHAprotoparticles<<" vs "<<control::l_oflow.size());
+    //PRINT_INFO(control::s_AHAprotoparticles<<" vs "<<control::l_oflow.size());
     while(!control::l_oflow.empty()) delete control::l_oflow.front();
   }
   assert(control::s_AHAprotoparticles==0);
