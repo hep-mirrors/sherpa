@@ -6,7 +6,7 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace EXTRAXS;
 
-XS_Model_Phantom_U1::XS_Model_Phantom_U1(): XS_Model_Base("Phantom_U1") {}
+XS_Model_Phantom_U1::XS_Model_Phantom_U1(): XS_Model_Base("SM+Phantom_U1") {}
 
 void XS_Model_Phantom_U1::Initialize(MODEL::Model_Base *const model,
 			     const std::string &file)
@@ -28,7 +28,7 @@ bool XS_Model_Phantom_U1::IncludesModel(const std::string &name) const
   if (name=="QED") return true;
   if (name=="EW") return true;
   if (name=="QCD") return true;
-  if (name=="PHANTOM_U1") return true;
+  if (name=="SM+PHANTOM_U1") return true;
   return false;
 }
 
@@ -37,6 +37,6 @@ std::vector<std::string> XS_Model_Phantom_U1::IncludedModels() const
   std::vector<std::string> models(3);
   models[0]="QCD";
   models[1]="EW";
-  models[2]="PHANTOM_U1";
+  models[2]="SM+PHANTOM_U1";
   return models;
 }
