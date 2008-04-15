@@ -164,7 +164,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	else {
 	  if (opl[i].GetPol()!=' ' && opl[i].GetPol()!='s') {
 	    msg_Out()<<" WARNING in Process_Group::ConstructProcesses : "<<std::endl
-		     <<"   wrong polarisation state in Particle.dat."<<endl
+		     <<"   wrong polarisation state."<<endl
 		     <<" Polarisation ignored, run will continue."<<endl;
 	  }
 	}

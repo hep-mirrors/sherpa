@@ -166,7 +166,7 @@ namespace AHADIC {
     \brief This class sets up and manages the various hadron multiplets. 
 
     The full work of this class is steered by the constructor, which, first, iterates over all hadrons
-    that are switched on in Hadron.dat, and constructs their wave functions. These wavefunctions are
+    that are switched on, and constructs their wave functions. These wavefunctions are
     stored in the All_Hadron_Multiplets::p_wavefunctions and sorted into different \f$SU(6)\f$ multiplets, 
     stored in All_Hadron_Multiplets::p_multiplets. This class is initialised by the object
     Hadronisation_Parameters and made available to the rest of the code through a corresponding Get-method, 

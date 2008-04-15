@@ -137,7 +137,7 @@ void Decay_Table::Output() {
       }
     }
   }
-  if (m_overwrite) msg_Out()<<" Value of Particle.dat has been overwritten by "
+  if (m_overwrite) msg_Out()<<" Intrinsic value has been overwritten by "
 			    <<m_generator<<"."<<endl;
   msg_Out()<<"----------------------------------------------------------------"<<endl;
 }

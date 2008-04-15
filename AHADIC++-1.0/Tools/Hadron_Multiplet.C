@@ -51,7 +51,6 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
     kf_code kfcode = kfit->first;
     hadron = Flavour(kfcode);
     if (!hadron.IsHadron() || !hadron.IsOn()) continue;
-    
     fl1 = int(kfcode/10)-int(kfcode/100)*10;
     fl2 = int(kfcode/100)-int(kfcode/1000)*10;
     fl3 = int(kfcode/1000)-int(kfcode/10000)*10;
@@ -252,6 +251,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
   Flavour_Pair             * pair;
+
   switch (wf) {
   case 1020:
     pair         = new Flavour_Pair;

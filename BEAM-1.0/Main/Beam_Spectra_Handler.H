@@ -29,6 +29,7 @@ namespace BEAM {
     bool InitializeLaserBackscattering(ATOOLS::Data_Reader *,int);
     bool InitializeSpectrumReader(ATOOLS::Data_Reader *,int);
     bool InitializeMonochromatic(ATOOLS::Data_Reader *,int);
+    void InitializeFlav(kf_code);
   public:
     Beam_Spectra_Handler(ATOOLS::Data_Reader *);
     ~Beam_Spectra_Handler();

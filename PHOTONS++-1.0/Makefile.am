@@ -1,6 +1,6 @@
 MAKE = make
 
-SUBDIRS       = Main Tools MEs PhaseSpace Run
+SUBDIRS       = Main Tools MEs PhaseSpace
 
 AM_CXXFLAGS = @SHERPAFLAGS@
 

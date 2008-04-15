@@ -39,7 +39,6 @@ void Hadronisation_Parameters::Init(string dir,string file)
   ReadParameters(dir,file);
   p_constituents      = new Constituents(false);
   if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
-
   p_multiplets        = new All_Hadron_Multiplets();
   if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
@@ -227,6 +226,12 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       mass += masses[i];
       if (dabs(moms[i].Abs2())>1.e-6) prepare = true;
     } 
+
+    /*
+    for (int i=0;i<n;i++) {
+      std::cout<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+    }
+    */
     if (Vec3D(cms).Abs()>1.e-6) { 
       boost = true;
       rest  = Poincare(cms);

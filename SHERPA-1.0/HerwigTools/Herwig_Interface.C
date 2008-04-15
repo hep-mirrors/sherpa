@@ -148,8 +148,7 @@ void Herwig_Interface::ReadInTheParameters()
   if (!reader->ReadFromFile(orderas,"ORDER_ALPHAS"))  orderas = 0;
   if (!reader->ReadFromFile(asmz,"ALPHAS(MZ)"))       asmz    = 0.1188;
   if (!reader->ReadFromFile(asdef,"ALPHAS(default)")) asdef   = asmz;
-  reader->SetInputFile("Particle.dat");
-  if (!reader->ReadFromFile(mz,"24    ")) mz=91.188;
+  mz=91.188;
   MODEL::as = new MODEL::Running_AlphaS(asmz,mz*mz,orderas);
   MODEL::as->SetDefault(asdef);
 #endif

@@ -160,8 +160,6 @@ namespace SHERPA {
   /*!
     \var std::string Initialization_Handler::m_path
     The path where the steering input data and all other input data files are to be found.
-    Also, the particle data are read in through the files "Particle.dat" and "Hadron.dat" 
-    in the same path. The default for the path is "./".
   */
   /*!
     \var std::string Initialization_Handler::m_file

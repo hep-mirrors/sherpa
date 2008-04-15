@@ -289,8 +289,6 @@ namespace ATOOLS {
   typedef FlavourSet::iterator FlSetIter;
   typedef FlavourSet::const_iterator FlSetConstIter;
 
-  void ParticleInit(const std::string &path);
-
 }// end of namespace ATOOLS
 
 #endif

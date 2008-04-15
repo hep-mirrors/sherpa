@@ -46,7 +46,9 @@ int main(int argc, char *argv[])
   signal(SIGTERM,ATOOLS::SignalHandler);
   signal(SIGXCPU,ATOOLS::SignalHandler);
   try {
-    ATOOLS::ParticleInit("./");
+    //ATOOLS::ParticleInit("./");
+    has to be replaced by model and fragmentation handler init, because that's
+    where particle initialization is done now.
     for (int i=1; i<argc;++i) {
       string par = string(argv[i]);
       string key,value;

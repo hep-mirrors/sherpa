@@ -19,6 +19,9 @@ using namespace ATOOLS;
 using namespace std;
 #ifdef USING__Ahadic
 using namespace AHADIC;
+#include "Hadron_Init.H"
+#else
+#error Ahadic must be enabled for filling the hadron tables.
 #endif
 
 Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
@@ -38,6 +41,11 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     p_lund = new Lund_Interface(m_dir,m_sfile,true);
     m_mode=1;
     exh->AddTerminatorObject(this);
+    // hack for particle initialization, because we don't want to replicate
+    // this method in the obsolete Lund Interface.
+    Hadron_Init init;
+    init.Init();
+    init.OverWriteProperties(dr);
     return;
   }
 #ifdef USING__Ahadic

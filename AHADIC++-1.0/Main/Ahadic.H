@@ -11,6 +11,7 @@
 #include "Blob_List.H"
 #include "Particle_List.H"
 #include "Return_Value.H"
+#include "Data_Reader.H"
 
 
 namespace AHADIC {
@@ -34,6 +35,7 @@ namespace AHADIC {
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
+    void ParticleInit(ATOOLS::Data_Reader & overwrite);
   };
   /*!
     \file Ahadic.H

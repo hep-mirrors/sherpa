@@ -106,7 +106,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	}
       }
 
-      // Check, if width of particle.dat is to be overwritten by total width as calculated
+      // Check, if intrinsic width is to be overwritten by total width as calculated
       pos     = buf.find(string("overwrite"));  
       if (pos!=std::string::npos && pos<=buf.length()) dt->SetOverwrite(); 
 

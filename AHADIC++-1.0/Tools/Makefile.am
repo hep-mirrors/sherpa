@@ -9,6 +9,7 @@ libAhadicTools_la_SOURCES = \
 			    Strong_Coupling.C \
 			    Dipole_Splitter.C \
 			    Soft_Cluster_Handler.C \
+			    Hadron_Init.C \
                             Hadronisation_Parameters.C
 
 pkginclude_HEADERS = \
@@ -21,6 +22,7 @@ pkginclude_HEADERS = \
                      Hadron_Multiplet.H \
                      Transitions.H \
 		     Soft_Cluster_Handler.H \
+		     Hadron_Init.H \
                      Hadronisation_Parameters.H
 
 INCLUDES = @ATOOLSINCS@ @MODELINCS@

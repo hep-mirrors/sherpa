@@ -97,6 +97,7 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Reader * dataread,
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
@@ -126,6 +127,7 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Reader * dataread,int n
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
@@ -146,6 +148,7 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int nu
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
   int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
@@ -304,6 +307,24 @@ bool Beam_Spectra_Handler::MakeBeams(Vec4D * p)
     if (m_mode==2) m_x1 = 1.;
 
     return 1;
+  }
+}
+
+void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
+{
+  if (s_kftable.find(flav)==s_kftable.end()) {
+    if (flav==kf_p_plus) {
+      s_kftable[flav]=new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,1,"P+","P+");
+    }
+    else if (flav==kf_n) {
+      s_kftable[flav]=new Particle_Info(kf_n,0.939566,7.424e-28,0,0,1,1,1,"n","n");
+    }
+    else if (flav==kf_e) {
+      s_kftable[flav] = new Particle_Info(kf_e,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
+    }
+    else if (flav==kf_photon) {
+      s_kftable[flav] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
+    }
   }
 }
 

@@ -186,12 +186,6 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     if (!reader->ReadFromFile(asmz,"ALPHAS(MZ)")) asmz=0.1188;
     if (!reader->ReadFromFile(asdef,"ALPHAS(default)")) asdef=asmz;
     mz=91.188;
-    reader->SetInputFile("Particle.dat");
-    vector<vector<double> > helpdvv;
-    reader->MatrixFromFile(helpdvv,"");
-    for (size_t i=0;i<helpdvv.size();++i) {
-      if (helpdvv[i][0]==24. && helpdvv.size()>1) mz=helpdvv[i][1];
-    }
     MODEL::as = new MODEL::Running_AlphaS(asmz,mz*mz,orderas);
     MODEL::as->SetDefault(asdef);
     p_hepevt = new HepEvt_Interface(gtp::Pythia);

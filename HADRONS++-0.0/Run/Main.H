@@ -56,9 +56,7 @@ void small_sherpa_init(int argc, char *argv[])
 
   std::vector<std::string> names(4);
   names[0]="Decaydata";
-  names[1]="Particle.dat";
-  names[2]="Hadron.dat";
-  names[3]="Run.dat";
+  names[1]="Run.dat";
   My_In_File::SetNoComplains(names);
 
   for (int i=1; i<argc;++i) {
@@ -78,8 +76,6 @@ void small_sherpa_init(int argc, char *argv[])
     }
   }
   ATOOLS::s_loader = new Library_Loader();
-  rpa.gen.SetVariable("PARTICLE_DATA_FILE","Particle.dat");
-  rpa.gen.SetVariable("HADRON_DATA_FILE","Hadron.dat");
   rpa.Init("","Run.dat",argc,argv);
   ATOOLS::ParticleInit("");
   MODEL::s_model = new MODEL::Standard_Model("","Model.dat",true);

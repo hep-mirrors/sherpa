@@ -4,6 +4,7 @@
 #include "Cluster.H"
 #include "Message.H"
 #include "Run_Parameter.H"
+#include "Hadron_Init.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -13,6 +14,13 @@ using namespace std;
 Ahadic::Ahadic(string path,string file,bool ana)  :
   m_fullinfo(false), m_maxtrials(3), m_clulist(), m_prilist()
 {
+  
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(path);
+  dr.SetInputFile(file);
+  ParticleInit(dr);
+
   hadpars.Init(path,file);
   ana=true;
 
@@ -209,4 +217,10 @@ void Ahadic::CleanUp(Blob * blob) {
     m_prilist.pop_front();
   }
   if(blob) blob->DeleteOutParticles(0);
+}
+
+void Ahadic::ParticleInit(Data_Reader & overwrite) {
+  Hadron_Init init;
+  init.Init();
+  init.OverWriteProperties(overwrite);
 }

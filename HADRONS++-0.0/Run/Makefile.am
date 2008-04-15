@@ -1,15 +1,9 @@
 SYSLIBS	      =	$(FLIBS) -lm -ldl
 
-bin_PROGRAMS  = SingleDecay \
-	HadronFullDecayNoAnalysis \
+bin_PROGRAMS  = HadronFullDecayNoAnalysis \
 	HadronFullDecayMixingAnalysis \
 	HadronFullDecayInclusiveAnalysis \
   PhotonAnalysis
-
-SingleDecay_SOURCES        =	Main_SingleDecay.C
-SingleDecay_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \
-			@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
-SingleDecay_LDFLAGS        =	@ldflags@
 
 HadronFullDecayNoAnalysis_SOURCES        =	Main_HadronFullDecayNoAnalysis.C
 HadronFullDecayNoAnalysis_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \

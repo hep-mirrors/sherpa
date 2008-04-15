@@ -47,9 +47,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   std::vector<std::string> names(4);
   names[0]="Decaydata";
-  names[1]="Particle.dat";
-  names[2]="Hadron.dat";
-  names[3]="Run.dat";
+  names[1]="Run.dat";
   My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
@@ -98,10 +96,6 @@ void Initialization_Handler::SetFileNames()
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  std::string particledat=p_dataread->GetValue<string>
-    ("PARTICLE_DATA_FILE","Particle.dat");
-  std::string hadrondat=p_dataread->GetValue<string>
-    ("HADRON_DATA_FILE","Hadron.dat");
   std::string integrationdat=p_dataread->GetValue<string>
     ("INTEGRATION_DATA_FILE","Integration.dat");
   std::string processdat=p_dataread->GetValue<string>
@@ -116,10 +110,6 @@ void Initialization_Handler::SetFileNames()
   cf.SetAddCommandLine(false);
   cf.SetInputPath(m_path);
   cf.SetInputFile(fname+"|(particle){|}(particle)");
-  if (cf.OpenInFile()) particledat=fname+"|(particle){|}(particle)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(hadron){|}(hadron)");
-  if (cf.RereadInFile()) hadrondat=fname+"|(hadron){|}(hadron)";
   cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(beam){|}(beam)");
   if (cf.RereadInFile()) m_beamremnantdat=m_beamdat=fname+"|(beam){|}(beam)";
@@ -153,8 +143,6 @@ void Initialization_Handler::SetFileNames()
   rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   rpa.gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
-  rpa.gen.SetVariable("PARTICLE_DATA_FILE",particledat);
-  rpa.gen.SetVariable("HADRON_DATA_FILE",hadrondat);
   rpa.gen.SetVariable("PROCESSFILE",processdat);
   rpa.gen.SetVariable("SELECTORFILE",selectordat);
 }
@@ -270,8 +258,6 @@ void Initialization_Handler::PrepareTerminate()
 	   path+rpa.gen.Variable("PROCESSFILE"));
   CopyFile(m_path+rpa.gen.Variable("INTEGRATION_DATA_FILE"),
 	   path+rpa.gen.Variable("INTEGRATION_DATA_FILE"));
-  CopyFile(m_path+"Particle.dat",path+"Particle.dat");
-  CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
   Data_Writer writer;
   writer.SetOutputFile(path+"cmd");
   writer.SetVectorType(vtc::vertical);
@@ -289,11 +275,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   bool okay = InitializeTheIO();
   SetScaleFactors();
   okay = okay && InitializeTheModel();  
-  //
-  if (nr<=0) {
-    ATOOLS::ParticleInit(m_path); 
-  }
-  //
   
   if (m_mode==9999) {
     msg_Events()<<"SHERPA will read in the events."<<std::endl

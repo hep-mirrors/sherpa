@@ -74,6 +74,60 @@ void Standard_Model::ParticleInit() {
   s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
   s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
   s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
+
+  // add pseudo particles and containers
+  s_kftable[kf_none] = new
+    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle");
+  s_kftable[kf_seaquark] = new
+    Particle_Info(kf_seaquark,0.,0.,0,0,1,1,0,1,1,0,"seaquark","seaquark");
+  s_kftable[kf_bjet] = new
+    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet");
+
+  s_kftable[kf_fermion] = new
+    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion");
+  s_kftable[kf_jet] = new
+    Particle_Info(kf_jet,0.,0.,0,0,1, 2,0,1,1,0,"j","jet");
+  s_kftable[kf_quark] = new
+    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark");
+  s_kftable[kf_lepton] = new
+    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton");
+  s_kftable[kf_neutrino] = new
+    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino");
+  s_kftable[kf_fermion]->Clear();
+  s_kftable[kf_jet]->Clear();
+  s_kftable[kf_quark]->Clear();
+  s_kftable[kf_lepton]->Clear();
+  s_kftable[kf_neutrino]->Clear();
+  for (int i=1;i<7;i++) {
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_jet]->Add(addit);
+      s_kftable[kf_jet]->Add(addit.Bar());
+      s_kftable[kf_quark]->Add(addit);
+      s_kftable[kf_quark]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
+    }
+  }
+  s_kftable[kf_jet]->Add(Flavour(kf_gluon));
+  for (int i=11;i<17;i+=2) {
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_lepton]->Add(addit);
+      s_kftable[kf_lepton]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
+    }
+  }
+  for (int i=12;i<18;i+=2) {
+    Flavour addit((kf_code)i);
+    if (addit.Mass()==0.0) {
+      s_kftable[kf_neutrino]->Add(addit);
+      s_kftable[kf_neutrino]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
+    }
+  }
   
   ReadParticleData();
 }
