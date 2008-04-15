@@ -45,7 +45,9 @@ namespace AMEGIC {
     Complex   cplxmass2;
     //! type of the vector
     mt::momtype type;
-    Momfunc() {arg = 0;argnum = 0;angle=0.;mass=0.;}
+    //! kf code
+    kf_code kfc;
+    Momfunc() {arg = 0;argnum = 0;angle=0.;mass=0.;kfc=0;}
     Momfunc(const Momfunc& m) {
       arg = 0;
       argnum = 0;
@@ -69,6 +71,7 @@ namespace AMEGIC {
 	cplxmass2    = m.cplxmass2;
 	angle   = m.angle;
 	type    = m.type;
+	kfc     = m.kfc;
       }
       return *this;
     }
@@ -92,11 +95,13 @@ namespace AMEGIC {
     void CalcMomlist();
     void CalcS(int i, int j);
     void PrecalcS();
+    void UpdateMasses(std::string);
   public:
     Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*);
-    Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*,std::string);
+    Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*,std::string,std::string);
     ~Basic_Sfuncs();
     void Output(std::string name);
+    void WriteMomFlavs(std::ofstream& os);
 
     int    BuildMomlist(Pfunc_List&); 
     int    BuildTensorPolarisations(int); 

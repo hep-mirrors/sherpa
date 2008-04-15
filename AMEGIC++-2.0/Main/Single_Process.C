@@ -299,8 +299,9 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
   }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+string("/")+m_libname;
-    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
+    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
@@ -448,8 +449,9 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology * top)
   }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+string("/")+m_libname;
-    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr);  
+    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
@@ -915,6 +917,7 @@ void Single_Process::CreateMappingFile() {
   to<<"ME: "<<m_libname<<endl
     <<"PS: "<<m_pslibname<<endl;
   p_shand->Get_Generator()->WriteCouplings(to);
+  p_BS->WriteMomFlavs(to);
   to.close();
 }
 

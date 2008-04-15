@@ -17,7 +17,7 @@ using namespace std;
 std::ostream& AMEGIC::operator<<(std::ostream& os, const Momfunc& mf) {
   os<<mf.type<<";"<<mf.argnum;
   for (int i=0;i<mf.argnum;i++) os<<","<<mf.arg[i];
-  os<<","<<mf.angle<<","<<mf.mass<<","<<mf.cplxmass2<<";";
+  os<<","<<mf.angle<<","<<0<<","<<0<<";";
   return os;
 }
 
@@ -63,7 +63,7 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b)
   k0_n=0;m_precalc=0;
 }
 
-Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name) 
+Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name,string name2) 
   : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
 {
   _eta=_mu=0;
@@ -84,6 +84,37 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string nam
   for (int i=0;i<momcount;i++) delete[] calc_st[i];
   delete[] calc_st;
   calc_st = ioh.MatrixInput<int>("",momcount,momcount);
+  UpdateMasses(name2);
+}
+
+void Basic_Sfuncs::UpdateMasses(string name)
+{
+  int cnt=0;
+  ifstream is;
+  is.open(name.c_str());
+  string str;
+  for (;is;) {
+    getline(is,str); 
+    if (str.find(string("fl"))==0) {
+      int a=str.find("[");
+      int b=str.find("]");
+      int idx = ToType<int>(str.substr(a+1,a-b-1));
+      if (idx<momcount) {
+	cnt++;
+	a = str.find("=");
+	kf_code kfc = ToType<int>(str.substr(a+1));
+	Momlist[idx].kfc = kfc;
+	Flavour flav(kfc);
+	Momlist[idx].mass = flav.Mass();
+	if (idx>=nmom) Momlist[idx].cplxmass2 = Complex(sqr(flav.Mass()),flav.Width()*flav.Mass());
+      }
+      else {
+	THROW(critical_error,"Inconsistent flavour entry in *.map");
+      }
+    }
+  }
+  if (cnt!=momcount) THROW(critical_error,"Missing flavour in *.map");
+  is.close();  
 }
 
 void Basic_Sfuncs::Output(string name)
@@ -94,6 +125,13 @@ void Basic_Sfuncs::Output(string name)
   ioh.Output("",momcount);
   for (int i=0;i<momcount;i++) ioh.GetFstream()<<Momlist[i]<<endl;
   ioh.MatrixOutput<int>("",calc_st,momcount,momcount);
+}
+
+void Basic_Sfuncs::WriteMomFlavs(ofstream& os)
+{
+  for (int i=0;i<momcount;i++) {
+    os<<"fl["<<i<<"]="<<Momlist[i].kfc<<endl;
+  }
 }
 
 Basic_Sfuncs::~Basic_Sfuncs() 
@@ -139,6 +177,7 @@ int Basic_Sfuncs::InitializeMomlist()
     Mom.arg[0] = i;
     Mom.type=mt::mom;
     Mom.mass   = fl[i].Mass();
+    Mom.kfc    = fl[i].Kfcode();
     Momlist.push_back(Mom);
   }
   return nvec; 
@@ -177,7 +216,8 @@ int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl)
       Mom->argnum = p->argnum;
       Mom->arg    = new int[Mom->argnum];
       Mom->arg[0] = momcount;
-      Mom->type=mt::prop;
+      Mom->type   = mt::prop;
+      Mom->kfc    = p->fl.Kfcode();
       p->momnum   = momcount;
       for (int i=1;i<p->argnum;i++) 
 	Mom->arg[i] = p->arg[i];
@@ -280,8 +320,9 @@ int Basic_Sfuncs::BuildTensorPolarisations(int momindex)
   Mom->arg    = new int[Mom->argnum];
   Mom->arg[0] = momcount;
   Mom->arg[1] = momindex;
-  Mom->type=mt::p_m;  
-  Mom->mass=Momlist[momindex].mass;
+  Mom->type   = mt::p_m;  
+  Mom->mass   = Momlist[momindex].mass;
+  Mom->kfc    = Momlist[momindex].kfc;
   momcount++;
   Momlist.push_back(*Mom);
 
@@ -332,6 +373,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
     mom_func.type=mt::p_m;
   }
   mom_func.mass=Momlist[momindex].mass;
+  mom_func.kfc =Momlist[momindex].kfc;
   momcount++;
   Momlist.push_back(mom_func);
 
@@ -345,6 +387,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   default:mom_func.type=mt::p_p;
   }
   mom_func.mass=Momlist[momindex].mass;
+  mom_func.kfc =Momlist[momindex].kfc;
   momcount++;
   Momlist.push_back(mom_func);
   if(ATOOLS::IsZero(Momlist[momindex].mass))  return momcount;
@@ -353,6 +396,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   mom_func.arg[0] = momcount;
   mom_func.type=mt::p_l;
   mom_func.mass=Momlist[momindex].mass;
+  mom_func.kfc =Momlist[momindex].kfc;
   momcount++;
   Momlist.push_back(mom_func);
   return momcount;
@@ -375,6 +419,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
   Mom->arg[1] = momindex;
   Mom->mass  = Mass;
   Mom->cplxmass2 = Mass2;
+  Mom->kfc = fl.Kfcode(); 
 
   if (GetPolNumber(momindex,mt::p_lh,0,1)==-1) {
     //Polarisation -1
