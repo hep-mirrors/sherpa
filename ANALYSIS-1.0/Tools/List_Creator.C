@@ -91,8 +91,9 @@ void List_Creator::CreateIntermediateHadronsList(const ATOOLS::Blob_List *bl)
   Particle_List *pl(new Particle_List);
   for (Blob_List::const_iterator blit(bl->begin());
        blit!=bl->end();++blit) {
-    if ((*blit)->Type()==btp::Hadron_Decay || 
-	(*blit)->Type()==btp::Fragmentation) {
+    if (((*blit)->Type()==btp::Hadron_Decay || 
+	 (*blit)->Type()==btp::Fragmentation) &&
+	(*blit)->NOutP()>1) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
 	if (p->Flav().IsHadron()) pl->push_back(p);

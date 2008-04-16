@@ -110,7 +110,7 @@ void Hadron_Multiplicities::Evaluate(const ATOOLS::Particle_List & pl, double we
     if (m_listname=="PrimordialHadrons") 
       if (kfc==kf_K)                 p_obs->Insert(4.5,weight,ncount); 
     //else 
-      if (kfc==kf_K_L||kfc==kf_K_S) p_obs->Insert(4.5,weight,ncount); 
+      if (kfc==kf_K_L||kfc==kf_K_S||kfc==kf_K) p_obs->Insert(4.5,weight,ncount); 
     
     if (kfc==kf_K_plus)              p_obs->Insert(5.5,weight,ncount); 
     if (kfc==kf_eta_prime_958)       p_obs->Insert(6.5,weight,ncount); 
