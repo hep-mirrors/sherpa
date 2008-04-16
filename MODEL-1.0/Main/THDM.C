@@ -45,6 +45,10 @@ THDM::THDM(std::string _dir,std::string _file,bool _elementary) :
 
   ParticleInit();
   FillSpectrum();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 THDM::~THDM()

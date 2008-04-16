@@ -49,6 +49,10 @@ SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   
   ParticleInit();
   FillSpectrum();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 void SM_EHC::ParticleInit() {
@@ -116,6 +120,10 @@ MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
   
   ParticleInit();
   FillSpectrum();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 void MSSM_EHC::ParticleInit() {

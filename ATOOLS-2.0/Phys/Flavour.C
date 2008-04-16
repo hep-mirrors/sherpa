@@ -302,3 +302,86 @@ std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 {
   return os<<fl.IDName();
 }
+
+void ATOOLS::OutputHadrons(std::ostream &str) {
+  
+  str<<" List of Hadron data \n";
+  str<<"          IDName";
+  str<<std::setw(10)<<"kfc";
+  str<<std::setw(14)<<"MASS[<kfc>]";
+  str<<std::setw(16)<<"WIDTH[<kfc>]";
+  str<<std::setw(16)<<"STABLE[<kfc>]";
+  str<<std::setw(17)<<"ACTIVE[<kfc>]\n";
+  
+  KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
+  
+  for (;kfit!=s_kftable.end();++kfit) {
+    Flavour flav(kfit->first);
+    if ((flav.IsHadron() || flav.IsDiQuark())
+	&& flav.Size()==1 && flav.Kfcode()!=0) {
+      str<<std::setw(16)<<flav.IDName();
+      str<<std::setw(10)<<flav.Kfcode();
+      str<<std::setw(14)<<flav.Mass();
+      str<<std::setw(16)<<flav.Width();
+      str<<std::setw(16)<<flav.IsStable();
+      str<<std::setw(16)<<flav.IsOn();
+      str<<"\n";
+    }
+  }  
+  str<<"\n";
+}
+     
+void ATOOLS::OutputParticles(std::ostream &str) {
+  
+  str<<" List of Particle Data \n";
+  str<<"      IDName";
+  str<<std::setw(10)<<"kfc";
+  str<<std::setw(14)<<"MASS[<kfc>]";
+  str<<std::setw(16)<<"WIDTH[<kfc>]";
+  str<<std::setw(16)<<"STABLE[<kfc>]";
+  str<<std::setw(16)<<"MASSIVE[<kfc>]";
+  str<<std::setw(16)<<"ACTIVE[<kfc>]\n";
+
+  KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
+  
+  for (;kfit!=s_kftable.end();++kfit) {
+    Flavour flav(kfit->first);
+    if (!flav.IsHadron() && flav.Size()==1 && flav.Kfcode()!=0) {
+      str<<std::setw(12)<<flav.IDName();
+      str<<std::setw(10)<<flav.Kfcode();
+      str<<std::setw(14)<<flav.Mass();
+      str<<std::setw(16)<<flav.Width();
+      str<<std::setw(16)<<flav.IsStable();
+      str<<std::setw(16)<<flav.IsMassive();
+      str<<std::setw(15)<<flav.IsOn();
+      str<<"\n";    
+    }
+  }
+  str<<"\n";
+}
+
+void ATOOLS::OutputContainers(std::ostream &str) {
+  
+  str<<" List of Particle Containers \n";
+  str<<"    IDName";
+  str<<std::setw(8)<<"kfc";
+  str<<std::setw(18)<<"Constituents\n";
+
+  KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
+  
+  for (;kfit!=s_kftable.end();++kfit) {
+    Flavour flav(kfit->first);
+    if (!flav.IsHadron() && flav.Size()!=1 && flav.Kfcode()!=0) {
+      str<<std::setw(10)<<flav.IDName();
+      str<<std::setw(8)<<flav.Kfcode();
+      str<<std::setw(6)<<"{";
+      for (unsigned int i=0;i<flav.Size();i++) {
+	if (i!=flav.Size()-1) str<<flav[i].IDName()<<",";
+	if (i==flav.Size()-1) str<<flav[i].IDName();
+      }
+      str<<"}\n";
+    }
+  }
+  str<<"\n";
+}
+

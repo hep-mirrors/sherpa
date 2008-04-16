@@ -48,7 +48,10 @@ SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
   delete sm;
   
   FillSpectrum();
- 
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 void SM_AGC::FillSpectrum() {

@@ -9,12 +9,17 @@
 #include <string> 
 #include <vector>
 #include <set>
+#include <iostream>
 #include <map>
 
 namespace ATOOLS {
 
   class Flavour;
-
+  
+  void OutputHadrons(std::ostream&);
+  void OutputParticles(std::ostream&);
+  void OutputContainers(std::ostream&);
+  
   typedef std::vector<Flavour*> PFlavour_Vector;
 
   struct Particle_Info {
@@ -58,7 +63,7 @@ namespace ATOOLS {
     void Clear();
 
     Flavour operator[](const size_t &i) const;
-
+    
     inline size_t Size() const  { return m_content.size();   }
     inline bool   Group() const { return m_content.size()>1; }
 

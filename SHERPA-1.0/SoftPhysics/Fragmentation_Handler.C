@@ -46,12 +46,14 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     Hadron_Init init;
     init.Init();
     init.OverWriteProperties(dr);
+    ATOOLS::OutputHadrons(msg->Tracking());
     return;
   }
 #ifdef USING__Ahadic
   else if (m_fragmentationmodel==string("Ahadic")) {
     m_sfile=dr.GetValue<string>("AHADIC_FILE",string("Cluster.dat"));
     p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile,true);
+    ATOOLS::OutputHadrons(msg->Tracking());
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;

@@ -43,11 +43,10 @@ Fourth_Generation_Leptons::Fourth_Generation_Leptons(std::string _dir,std::strin
 
   ParticleInit();
   FillSpectrum();
-
-  msg_Tracking()<<METHOD
-	   <<" : m(tau') = "<<Flavour(kf_tau_prime).PSMass()<<"("<<Flavour(kf_tau_prime).Charge()<<")"
-	   <<",  m(nutau') = "<<Flavour(kf_nutau_prime).PSMass()<<"("<<Flavour(kf_nutau_prime).Charge()<<")"
-	   <<"."<<std::endl;
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 Fourth_Generation_Leptons::~Fourth_Generation_Leptons()

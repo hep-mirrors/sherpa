@@ -52,6 +52,10 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,bool _elementa
   
   ParticleInit();
   FillSpectrum();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 }
 
 void Standard_Model::ParticleInit() {
@@ -61,13 +65,13 @@ void Standard_Model::ParticleInit() {
   s_kftable[2] = new  Particle_Info(2,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
   s_kftable[3] = new  Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
   s_kftable[4] = new  Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
-  s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,1,"b","b");
+  s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
   s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
   s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
   s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
   s_kftable[14] = new Particle_Info(14,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
-  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,1,1,"tau-","\\tau^-");
+  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,1,0,"tau-","\\tau^-");
   s_kftable[16] = new Particle_Info(16,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
   s_kftable[21] = new Particle_Info(21,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
   s_kftable[22] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");

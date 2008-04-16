@@ -30,7 +30,8 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
   p_dataread->SetWordSeparator("\t");
   p_dataread->SetInputPath(m_path);
   p_dataread->SetInputFile(m_file);
-  InitializeModel(model,m_path+m_file);
+  std::string modelfile=rpa.gen.Variable("MODELFILE");
+  InitializeModel(model,m_path+modelfile);
 }
 
 Simple_XS::~Simple_XS() 
