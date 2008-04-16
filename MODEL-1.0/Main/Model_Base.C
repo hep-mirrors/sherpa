@@ -139,9 +139,9 @@ void Model_Base::ReadParticleData() {
     if (s_kftable.find(iit->first)!=s_kftable.end()) {
       s_kftable[iit->first]->m_massive = iit->second;
       if (iit->second==0)
-	msg_Tracking()<<" set flavour "<<Flavour(dit->first)<<" massless "<<std::endl; 
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massless "<<std::endl; 
       else
-	msg_Tracking()<<" set flavour "<<Flavour(dit->first)<<" massive "<<std::endl; 
+	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massive "<<std::endl; 
     }
   }
 }
