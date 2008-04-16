@@ -75,6 +75,8 @@ void Standard_Model::ParticleInit() {
   s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
   s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
 
+  ReadParticleData();
+
   // add pseudo particles and containers
   s_kftable[kf_none] = new
     Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle");
@@ -100,13 +102,15 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_neutrino]->Clear();
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0) {
+    std::cout<<METHOD<<" test for "<<addit<<" -> "<<addit.Mass()<<" "<<addit.IsMassive()<<std::endl;
+    if (addit.Mass()==0.0 || !addit.IsMassive()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
       s_kftable[kf_quark]->Add(addit);
       s_kftable[kf_quark]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
       s_kftable[kf_fermion]->Add(addit.Bar());
+      std::cout<<"  added it."<<std::endl;
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
@@ -128,8 +132,6 @@ void Standard_Model::ParticleInit() {
       s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
-  
-  ReadParticleData();
 }
 
 void Standard_Model::FillSpectrum() {
