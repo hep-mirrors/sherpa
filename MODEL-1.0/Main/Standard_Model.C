@@ -116,7 +116,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
   for (int i=11;i<17;i+=2) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0) {
+    if (addit.Mass()==0.0 || !addit.IsMassive()) {
       s_kftable[kf_lepton]->Add(addit);
       s_kftable[kf_lepton]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
