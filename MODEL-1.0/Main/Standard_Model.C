@@ -102,7 +102,6 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_neutrino]->Clear();
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
-    std::cout<<METHOD<<" test for "<<addit<<" -> "<<addit.Mass()<<" "<<addit.IsMassive()<<std::endl;
     if (addit.Mass()==0.0 || !addit.IsMassive()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
@@ -110,7 +109,6 @@ void Standard_Model::ParticleInit() {
       s_kftable[kf_quark]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
       s_kftable[kf_fermion]->Add(addit.Bar());
-      std::cout<<"  added it."<<std::endl;
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
