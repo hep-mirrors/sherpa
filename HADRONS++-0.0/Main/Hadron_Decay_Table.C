@@ -98,9 +98,9 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
       <<"   Will continue and hope for the best."<<endl;
   }
   else {
-    msg_Info()<<om::blue<<"Initialising "<<NumberOfDecayChannels()
+    msg_Tracking()<<"Initialising "<<NumberOfDecayChannels()
       <<" decay channels for "<<Flav()
-      <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<om::reset<<endl;
+      <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<endl;
     if(msg_LevelIsDebugging()) Output();
   }
 

@@ -226,13 +226,25 @@ void Hadrons::DiceUncorrelatedKinematics(
   }
   double value(0.);
   const double max = hdc->GetPS()->Maximum();    // note: no flux in max.
+  int trials(0);
   do {
+    if(trials>10000) {
+      msg_Error()<<METHOD<<"("<<hdc->ChannelName()<<"): "
+                 <<"Rejected hadron decay kinematics 10000 times. "
+                 <<"This indicates a wrong maximum. "
+                 <<"Will accept kinematics."
+                 <<endl;
+      rvalue.IncRetryMethod(METHOD);
+      break;
+    }
     value = hdc->Differential(&moms.front(),anti);
     if(value/max>1.05 && max>1e-30) {
       msg_Info()<<METHOD<<"("<<hdc->ChannelName()<<") warning:"<<endl
                 <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max<<std::endl;
       rvalue.IncRetryMethod(METHOD);
+      break;
     }
+    trials++;
   } while( ran.Get() > value/max );
 }
 

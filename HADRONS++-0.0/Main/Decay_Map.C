@@ -87,6 +87,11 @@ void Decay_Map::Read()
     msg_Error()<<METHOD<<" Warning:\n"
       <<"   No decayers found in "<<m_decaypath<<m_decayfile<<"."<<endl;
   }
+  else {
+    msg_Info()<<METHOD<<":"<<endl
+              <<"   Initializing hadron decay tables. This may take some time."
+              <<endl;
+  }
   
   Flavour fl;
   bool createbooklet=false;

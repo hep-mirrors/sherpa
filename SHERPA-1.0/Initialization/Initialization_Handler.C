@@ -621,8 +621,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
-    THROW(critical_error,"Fragmentation model not implemented.");
-    abort();
+    THROW(fatal_error,"Hadron decay model not implemented.");
   }
   msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "<<decmodel<<endl;
   return true;
