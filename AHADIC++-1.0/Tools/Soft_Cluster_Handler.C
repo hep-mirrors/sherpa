@@ -74,10 +74,28 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 #endif
 
   double E(-1.);
-  bool breakit(true);
+  int count(0);
+  bool tried(false);
   while (!CheckIfAllowed(clin,E)) {
-    breakit = UpdateTransitions(clin,clin->size());
-    if (!breakit) break;
+    if (tried) {
+      msg_Info()<<"Error in "<<METHOD<<":"<<std::endl
+		<<"   Could not find any lighter combination for E = "<<E<<" in:"<<std::endl
+		<<(*clin)<<std::endl
+		<<"   after trying to enforce one, will retry event."<<std::endl;
+      return false;
+    }
+    if (!UpdateTransitions(clin,clin->size())) {
+      msg_Debugging()<<"Will try to enforce a transition for E = "<<E<<std::endl;
+      if (!TryToEnforceTransition(clin)) {
+	msg_Info()<<"Error in "<<METHOD<<":"<<std::endl
+		  <<"   Could not find any lighter combination for E = "<<E<<" in:"<<std::endl
+		  <<(*clin)<<std::endl
+		  <<"   will retry event."<<std::endl;
+	return false;
+      }
+      else tried=true;
+    }
+    if ((count++)>1000) abort();
   }
 
   if (!ShiftMomenta(clin)) {
@@ -411,7 +429,7 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
     if (lighter && siter->first.Mass()>MC) continue;
     wt = 1./pow(sqr(sqr(MC)-sqr(siter->first.Mass()))+1.e-8,0.25);
     if (m_stmode==stm::massXwaves) wt *= siter->second;
-    if (wt>maxwt) {
+    if (wt>maxwt && siter->first!=hadron) {
       hadron = siter->first;
       maxwt  = wt;
     }
@@ -460,7 +478,7 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
       wt = sqr(siter->first.Mass()*siter->first.Width())/
 	(sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*siter->first.Width()));
     if (m_stmode==stm::masswidthXwaves) wt *= siter->second;
-    if (wt>totweight) {
+    if (wt>totweight && siter->first!=hadron) {
       hadron    = siter->first;
       totweight = wt;
     }
@@ -529,6 +547,104 @@ bool Soft_Cluster_Handler::UpdateTransitions(Cluster_List * clin,int size) {
   }
   msg_Debugging()<<METHOD<<" yields "<<transform<<std::endl;
   return transform;
+}
+
+bool Soft_Cluster_Handler::TryToEnforceTransition(Cluster_List * clin) {
+  bool success(true);
+#ifdef AHAmomcheck
+  Vec4D checkbef(0.,0.,0.,0.),checkaft(0.,0.,0.,0.);
+  msg_Debugging()<<"In "<<METHOD<<" for : "<<std::endl<<(*clin)<<std::endl;
+#endif
+  size_t size(0);
+  std::vector<double> masses;
+  std::vector<Vec4D>  momenta;
+  Cluster * cluster;
+  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+    cluster = (*cit);
+    switch (cluster->size()) {
+    case 1: 
+      masses.push_back((*cluster)[0].Mass());
+      momenta.push_back(cluster->Momentum());
+      ++size;
+      break;
+    case 2:
+    case 0:
+      masses.push_back(cluster->GetTrip()->m_mom.Abs2());
+      masses.push_back(cluster->GetAnti()->m_mom.Abs2());
+      momenta.push_back(cluster->GetTrip()->m_mom);
+      momenta.push_back(cluster->GetAnti()->m_mom);
+      size+=2;
+    default:
+      break;
+    }
+#ifdef AHAmomcheck
+    checkbef += cluster->Momentum();
+#endif
+  }
+  if (!hadpars.AdjustMomenta(size,&momenta.front(),&masses.front())) {
+    if (size>1) {
+      msg_Out()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : "<<std::endl
+	       <<"   Could not adjust momenta for : "<<std::endl;
+      int i(0);
+      for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+	msg_Out()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Debugging()<<" ("<<((**cit)[0])<<" )";
+	msg_Out()<<" for "<<std::endl<<(**cit)<<std::endl;
+      }
+      msg_Tracking()<<"   Will possibly lead to retrying the event."<<std::endl;
+    }
+    return false;
+  }
+  int pos(0);
+
+  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
+    cluster = (*cit);
+    switch (cluster->size()) {
+    case 1:
+      cluster->SetFlav((*cluster)[0]);
+      cluster->SetMomentum(momenta[pos]);
+      break;
+    case 2: 
+#ifdef AHAmomcheck
+      checkaft += momenta[pos];
+#endif
+      cluster->GetTrip()->m_mom=momenta[pos++];
+      cluster->GetAnti()->m_mom=momenta[pos];
+      cluster->Update();		
+      if (cluster->Mass()<(*cluster)[0].Mass()+(*cluster)[1].Mass()) {
+	msg_Debugging()<<"Problem in "<<METHOD<<":"<<std::endl
+		       <<"   New cluster mass too low : "
+		       <<cluster->Mass()<<" vs. "<<(*cluster)[0]<<"+"<<(*cluster)[1]<<std::endl;
+	success=false;
+      }
+      break;
+    case 0:
+#ifdef AHAmomcheck
+      checkaft += momenta[pos];
+#endif
+      cluster->GetTrip()->m_mom=momenta[pos++];
+      cluster->GetAnti()->m_mom=momenta[pos];
+      cluster->Update();		
+      break;
+    default:
+      break;
+    }
+#ifdef AHAmomcheck
+    checkaft += momenta[pos];
+#endif
+    pos++;
+  }
+#ifdef AHAmomcheck
+  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
+    msg_Out()<<METHOD<<" yields a momentum violation for  "<<size<<" : "<<std::endl
+  	     <<"   "<<checkbef<<" - "<<checkaft<<" --> "
+  	     <<(checkbef-checkaft).Abs2()<<"("<<size<<")."<<std::endl;
+    msg_Out()<<(*clin)<<std::endl;
+  }
+  else msg_Debugging()<<METHOD<<" conserves momentum : "
+		      <<(checkbef-checkaft).Abs2()<<"("<<size<<") for ."<<std::endl<<(*clin)<<std::endl;
+#endif
+  return success;  
 }
 
 bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin)

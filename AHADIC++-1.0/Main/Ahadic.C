@@ -119,6 +119,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   blob->SetType(btp::Cluster_Formation);
   blob->SetTypeSpec("AHADIC-1.0");
 
+  msg_Debugging()<<"In "<<METHOD<<" with "<<std::endl<<(*blob)<<std::endl;
   switch (p_cformhandler->FormClusters(blob)) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
@@ -133,9 +134,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
     break;
   }
   
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<METHOD<<": finally the cluster list :"<<std::endl<<(m_clulist)<<std::endl;
-  }
+  msg_Debugging()<<METHOD<<": finally the cluster list :"<<std::endl<<(m_clulist)<<std::endl;
   
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 

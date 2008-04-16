@@ -8,7 +8,7 @@
 #include <list>
 #include <iostream>
 
-//#define AHAmomcheck
+#define AHAmomcheck
 //#define memchecker
 
 namespace AHADIC {

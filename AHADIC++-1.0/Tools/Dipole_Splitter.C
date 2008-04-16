@@ -120,7 +120,7 @@ Dipole * Dipole_Splitter::EmitGluon(const double pt2max) {
   m_m32     = sqr(m_m3);
   m_2p3     = m_m3;
   m_xt2min  = sqr(m_m1+m_2p3min/2.)*sqr(m_m3+m_2p3min/2.)/m_M2;
-  if (pt2max<0.) m_pt2veto = -pt2max;
+  if (pt2max>0.) m_pt2veto = pt2max;
   m_xt2     = m_xt2max = 1./4.;
   m_y       = m_ybound = -1./2. * log(m_xt2min);  
   m_pref    = 4./3.;
@@ -145,7 +145,7 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
   if (sqrt(m_M2)-m_m1-m_2p3min<=1.e-8) return false;
   m_m12     = sqr(m_m1);
   m_xt2min  = sqr((m_m1+m_2p3min/2.)*(m_2p3min)/m_M2);
-  if (pt2max<0.) m_pt2veto = -pt2max;
+  if (pt2max>0.) m_pt2veto = pt2max;
   m_xt2     = m_xt2max = 1./4.;
   m_y       = m_ybound = -1./2. * log(m_xt2min);  
   m_pref    = 0.;
