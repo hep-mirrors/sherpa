@@ -143,13 +143,14 @@ void Single_Transitions::PrintSingleTransitions()
       wave    = hadpars.GetMultiplets()->GetWaveFunction(sit->first);
       wt      = sqr(wave->WaveWeight(stiter->first.first,stiter->first.second));
       mpletwt = wave->MultipletWeight();
+      if (mpletwt<=0.) continue;
       msg_Out()<<"   "<<sit->first<<" ("<<sit->first.Mass()<<" ) = "
 	       <<wt<<" * "<<mpletwt<<" = "<<sit->second<<endl;
       if (checkit.find(stiter->first.first)==checkit.end()) 
 	checkit[stiter->first.first] = wt;
       else checkit[stiter->first.first] += wt;
       if (checkit.find(stiter->first.second)==checkit.end()) 
-       	checkit[stiter->first.second] = wt;
+	checkit[stiter->first.second] = wt;
       else checkit[stiter->first.second] += wt;
     }
   }

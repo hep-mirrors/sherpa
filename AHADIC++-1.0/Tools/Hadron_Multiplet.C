@@ -351,7 +351,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
     pair->first  = Flavour((kf_code)(pos3));
     pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2+di)) :
                                 Flavour((kf_code)(pos2*1000+pos1*100+2+di));
-    wavefunction->AddToWaves(pair,+1./sqrt(12.));
+    wavefunction->AddToWaves(pair,+1./sqrt(3.));
     pair         = new Flavour_Pair;
     pair->first  = Flavour((kf_code)(pos1));
     pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+2+di)) : 
@@ -362,11 +362,11 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
     pair->second = (pos1>pos3)? Flavour((kf_code)(pos1*1000+pos3*100+2+di)) : 
                                 Flavour((kf_code)(pos3*1000+pos1*100+2+di)); 
     wavefunction->AddToWaves(pair,+1./sqrt(12.));
-    pair         = new Flavour_Pair;
-    pair->first  = Flavour((kf_code)(pos3));
-    pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2-di)) :
-                                Flavour((kf_code)(pos2*1000+pos1*100+2-di));
-    wavefunction->AddToWaves(pair,+1./sqrt(4.));
+    //pair         = new Flavour_Pair;
+    //pair->first  = Flavour((kf_code)(pos3));
+    //pair->second = (pos1>pos2)? Flavour((kf_code)(pos1*1000+pos2*100+2-di)) :
+    //                            Flavour((kf_code)(pos2*1000+pos1*100+2-di));
+    //wavefunction->AddToWaves(pair,+1./sqrt(4.));
     pair         = new Flavour_Pair;
     pair->first  = Flavour((kf_code)(pos1));
     pair->second = (pos2>pos3)? Flavour((kf_code)(pos2*1000+pos3*100+2-di)) : 
@@ -634,6 +634,7 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
   Hadron_Wave_Function * wf;
   map<Flavour,double> checkit;
   for (Hadron_Multiplet_Miter mplet=p_multiplets->begin();mplet!=p_multiplets->end();mplet++) {
+    if (mplet->second->Weight()<=0.) continue;
     msg_Out()<<"-----------------------------------------------"<<endl
 	     <<" "<<mplet->second->Name()<<" with "<<mplet->second->Size()<<" elements: "<<endl;
     for (FlSetIter fl=mplet->second->GetElements()->begin();

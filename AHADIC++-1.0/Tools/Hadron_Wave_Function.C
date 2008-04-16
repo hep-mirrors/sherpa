@@ -43,8 +43,8 @@ Hadron_Wave_Function * Hadron_Wave_Function::Anti() {
     Flavour_Pair * pair;
     for (WFcompiter wfc=m_waves.begin();wfc!=m_waves.end();wfc++) {
       pair         = new Flavour_Pair;
-      pair->first    = wfc->first->second.Bar();
-      pair->second    = wfc->first->first.Bar();
+      pair->first  = wfc->first->second.Bar();
+      pair->second = wfc->first->first.Bar();
       wf->AddToWaves(pair,wfc->second);
     }
   }
@@ -68,7 +68,8 @@ ostream & operator<<(ostream & s, Hadron_Wave_Function & wf)
   s<<" "<<wf.m_hadron<<" ("<<wf.m_kfcode<<"), spin = "<<(wf.m_spin-1)/2.<<endl;
   WFcomponent * waves = wf.GetWaves();
   for (WFcompiter wfc=waves->begin();wfc!=waves->end();wfc++) {
-    s<<"     "<<wfc->first->first<<" "<<wfc->first->second<<" : "<<wfc->second<<endl;
+    s<<"     "<<wfc->first->first<<" "<<wfc->first->second
+     <<" : "<<wfc->second<<" ---> "<<(1./(wfc->second*wfc->second))<<endl;
   }
   return s;
 }
