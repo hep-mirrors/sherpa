@@ -92,27 +92,27 @@ if [ "$RELEASE" = "TRUE" ]; then
   fi
   svn update
 
-  ## rename modules in working copy
-  echo -e "  renaming modules in working copy";
-  MODULES=*".0";
-  for I in $MODULES; do
-    mv $I $I"."$SUBSUBV
-  done;
-  MFS=`find . -name Makefile.am`
-  for I in $MFS; do
-    sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
-    sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I.new2
-    sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I.new2 > $I.new
-    mv $I.new $I
-    rm $I.new2
-  done
-  MFS="TOOLS/makeinstall configure.in acinclude.m4"
-  for I in $MFS; do
-    sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
-    sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I
-    sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I > $I.new
-    mv $I.new $I
-  done;
+#   ## rename modules in working copy
+#   echo -e "  renaming modules in working copy";
+#   MODULES=*".0";
+#   for I in $MODULES; do
+#     mv $I $I"."$SUBSUBV
+#   done;
+#   MFS=`find . -name Makefile.am`
+#   for I in $MFS; do
+#     sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
+#     sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I.new2
+#     sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I.new2 > $I.new
+#     mv $I.new $I
+#     rm $I.new2
+#   done
+#   MFS="TOOLS/makeinstall configure.in acinclude.m4"
+#   for I in $MFS; do
+#     sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
+#     sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I
+#     sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I > $I.new
+#     mv $I.new $I
+#   done;
   chmod 755 TOOLS/makeinstall;
 fi
 if [ "$TOTAL" = "TRUE" ]; then
@@ -135,15 +135,15 @@ if [ "$RELEASE" = "TRUE" ]; then
   cd SHERPA-MC-$VERSION;
   SAMPLERUNS="Tevatron1800 LHC EGamma LEP91";
   for I in $SAMPLERUNS ; do
-    cp -r ../SHERPA-$VERSION/Run/$I SHERPA-$VERSION/Run/;
-    rm -rf SHERPA-$VERSION/Run/$I/.svn;
-    rm -rf SHERPA-$VERSION/Run/$I/*~;
-    rm -rf SHERPA-$VERSION/Run/$I/xsections*;
-    rm -rf SHERPA-$VERSION/Run/$I/*weight*;
-    rm -rf SHERPA-$VERSION/Run/$I/makelibs;
-    rm -rf SHERPA-$VERSION/Run/$I/Process;
-    rm -rf SHERPA-$VERSION/Run/$I/Results;
-    rm -rf SHERPA-$VERSION/Run/$I/Status__*;
+    cp -r ../SHERPA/Run/$I SHERPA/Run/;
+    rm -rf SHERPA/Run/$I/.svn;
+    rm -rf SHERPA/Run/$I/*~;
+    rm -rf SHERPA/Run/$I/xsections*;
+    rm -rf SHERPA/Run/$I/*weight*;
+    rm -rf SHERPA/Run/$I/makelibs;
+    rm -rf SHERPA/Run/$I/Process;
+    rm -rf SHERPA/Run/$I/Results;
+    rm -rf SHERPA/Run/$I/Status__*;
   done;
   ###########################################################
   cd ..;

@@ -1,7 +1,7 @@
-INSTALLING SHERPA 1.1.0
-------------------------
+INSTALLING SHERPA
+------------------
 
-Sherpa 1.1.0 provides the standard GNU installation procedure.
+Sherpa provides the standard GNU installation procedure.
 The default prefix is $PWD. If not specified differently, the 
 directory structure after installation is organized as follows
 
@@ -18,7 +18,7 @@ directory structure after installation is organized as follows
 
 INSTALLATION:
 
- - Unpack the Sherpa-1.1.0.tar.gz file obtained from www.sherpa-mc.de
+ - Unpack the Sherpa-X.Y.Z.tar.gz file obtained from www.sherpa-mc.de
    to the folder where you want Sherpa to reside in (for example 
    ~/MySherpa/). 
    When you read this file you will probably have done this already.

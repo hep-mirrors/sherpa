@@ -73,8 +73,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
       ;;
   esac
 
-  AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"
-  AMEGICBUILDDIR="\${top_builddir}/AMEGIC++-2.0"
+  AMEGICDIR="\${top_srcdir}/AMEGIC++"
+  AMEGICBUILDDIR="\${top_builddir}/AMEGIC++"
   AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
               -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Amplitude/Zfunctions"
   AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
@@ -85,8 +85,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AMEGICINCS)
   AC_SUBST(AMEGICLIBS)
 
-  AMISICDIR="\${top_srcdir}/AMISIC++-1.0"
-  AMISICBUILDDIR="\${top_builddir}/AMISIC++-1.0"
+  AMISICDIR="\${top_srcdir}/AMISIC++"
+  AMISICBUILDDIR="\${top_builddir}/AMISIC++"
   AMISICINCS="-I\${AMISICDIR}/Main -I\${AMISICDIR}/Tools -I\${AMISICDIR}/Model"
   AMISICLIBS="-L\${AMISICBUILDDIR}/Main -L\${AMISICBUILDDIR}/Tools -L\${AMISICBUILDDIR}/Model \
               -lAmisic -lAmisicModel -lAmisicTools"
@@ -95,8 +95,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AMISICINCS)
   AC_SUBST(AMISICLIBS)
 
-  AHADICDIR="\${top_srcdir}/AHADIC++-1.0"
-  AHADICBUILDDIR="\${top_builddir}/AHADIC++-1.0"
+  AHADICDIR="\${top_srcdir}/AHADIC++"
+  AHADICBUILDDIR="\${top_builddir}/AHADIC++"
   AHADICINCS="-I\${AHADICDIR}/Main -I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
 	      -I\${AHADICDIR}/Decays"
   AHADICLIBS="-L\${AHADICBUILDDIR}/Main -L\${AHADICBUILDDIR}/Tools -L\${AHADICBUILDDIR}/Formation -L\${AHADICBUILDDIR}/Decays \
@@ -106,8 +106,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AHADICINCS)
   AC_SUBST(AHADICLIBS)
   
-  ANALYSISDIR="\${top_srcdir}/ANALYSIS-1.0"
-  ANALYSISBUILDDIR="\${top_builddir}/ANALYSIS-1.0"
+  ANALYSISDIR="\${top_srcdir}/ANALYSIS"
+  ANALYSISBUILDDIR="\${top_builddir}/ANALYSIS"
   ANALYSISINCS="-I\${ANALYSISDIR}/Tools -I\${ANALYSISDIR}/Detector -I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Triggers -I\${ANALYSISDIR}/Observables"
   ANALYSISLIBS="-L\${ANALYSISBUILDDIR}/Tools -L\${ANALYSISBUILDDIR}/Main -L\${ANALYSISBUILDDIR}/Triggers -L\${ANALYSISBUILDDIR}/Detector -L\${ANALYSISBUILDDIR}/Observables -lAnalysis -lAnalysisTools -lAnalysisTriggers -lAnalysisDetector -lObservables"
   AC_SUBST(ANALYSISDIR)
@@ -115,8 +115,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(ANALYSISINCS)
   AC_SUBST(ANALYSISLIBS)
   
-  APACICDIR="\${top_srcdir}/APACIC++-2.0"
-  APACICBUILDDIR="\${top_builddir}/APACIC++-2.0"
+  APACICDIR="\${top_srcdir}/APACIC++"
+  APACICBUILDDIR="\${top_builddir}/APACIC++"
   APACICINCS="-I\${APACICDIR}/Main -I\${APACICDIR}/Showers"
   APACICLIBS="-L\${APACICBUILDDIR}/Main -L\${APACICBUILDDIR}/Showers -lApacicShowers -lApacicMain"
   AC_SUBST(APACICDIR)
@@ -124,8 +124,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(APACICINCS)
   AC_SUBST(APACICLIBS)
   
-  ATOOLSDIR="\${top_srcdir}/ATOOLS-2.0"
-  ATOOLSBUILDDIR="\${top_builddir}/ATOOLS-2.0"
+  ATOOLSDIR="\${top_srcdir}/ATOOLS"
+  ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
   ATOOLSINCS="-I\${ATOOLSDIR}/Phys -I\${ATOOLSDIR}/Math -I\${ATOOLSDIR}/Org"
   ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math \
               -L\${ATOOLSBUILDDIR}/Org \
@@ -135,8 +135,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(ATOOLSINCS)
   AC_SUBST(ATOOLSLIBS)
   
-  BEAMDIR="\${top_srcdir}/BEAM-1.0"
-  BEAMBUILDDIR="\${top_builddir}/BEAM-1.0"
+  BEAMDIR="\${top_srcdir}/BEAM"
+  BEAMBUILDDIR="\${top_builddir}/BEAM"
   BEAMINCS="-I\${BEAMDIR}/Main"
   BEAMLIBS="-L\${BEAMBUILDDIR}/Main -lBeam"
   AC_SUBST(BEAMDIR)
@@ -153,8 +153,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(HELICITIESINCS)
   AC_SUBST(HELICITIESLIBS)
   
-  EXTRAXSDIR="\${top_srcdir}/EXTRA_XS-1.0"
-  EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS-1.0"
+  EXTRAXSDIR="\${top_srcdir}/EXTRA_XS"
+  EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS"
   EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main -I\${EXTRAXSDIR}/Model"
   EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Two2Two -L\${EXTRAXSBUILDDIR}/Main -L\${EXTRAXSBUILDDIR}/Model -lExtraXSModel -lExtraXS -lExtraXS2_2"
   AC_SUBST(EXTRAXSDIR)
@@ -162,8 +162,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(EXTRAXSINCS)
   AC_SUBST(EXTRAXSLIBS)
   
-  HADRONSDIR="\${top_srcdir}/HADRONS++-0.0"
-  HADRONSBUILDDIR="\${top_builddir}/HADRONS++-0.0"
+  HADRONSDIR="\${top_srcdir}/HADRONS++"
+  HADRONSBUILDDIR="\${top_builddir}/HADRONS++"
   HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library \
                -I\${HADRONSDIR}/Current_Library -I\${HADRONSDIR}/PS_Library"
   HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library \
@@ -174,8 +174,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)
   
-  PHOTONSDIR="\${top_srcdir}/PHOTONS++-1.0"
-  PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++-1.0"
+  PHOTONSDIR="\${top_srcdir}/PHOTONS++"
+  PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++"
   PHOTONSINCS="-I\${PHOTONSDIR}/Main -I\${PHOTONSDIR}/Tools -I\${PHOTONSDIR}/PhaseSpace \
                -I\${PHOTONSDIR}/MEs"
   PHOTONSLIBS="-L\${PHOTONSBUILDDIR}/Main -L\${PHOTONSBUILDDIR}/Tools \
@@ -186,8 +186,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(PHOTONSINCS)
   AC_SUBST(PHOTONSLIBS)
   
-  MODELDIR="\${top_srcdir}/MODEL-1.0"
-  MODELBUILDDIR="\${top_builddir}/MODEL-1.0"
+  MODELDIR="\${top_srcdir}/MODEL"
+  MODELBUILDDIR="\${top_builddir}/MODEL"
   MODELINCS="-I\${MODELDIR}/Main -I\${MODELDIR}/Interaction_Models -I\${MODELDIR}/Decays"
   MODELLIBS="-L\${MODELBUILDDIR}/Main -L\${MODELBUILDDIR}/Interaction_Models \
 	     -L\${MODELBUILDDIR}/Decays \	
@@ -197,8 +197,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(MODELINCS)
   AC_SUBST(MODELLIBS)
   
-  PDFDIR="\${top_srcdir}/PDF-1.0"
-  PDFBUILDDIR="\${top_builddir}/PDF-1.0"
+  PDFDIR="\${top_srcdir}/PDF"
+  PDFBUILDDIR="\${top_builddir}/PDF"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
            -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/KMR -I\${PDFDIR}/Remnant"
   PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant -L\${PDFBUILDDIR}/LHAPDF \
@@ -217,8 +217,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   MRSTLIBS="-L\${PDFBUILDDIR}/MRST -lMRST"
   AC_SUBST(MRSTLIBS)
   
-  PHASICDIR="\${top_srcdir}/PHASIC++-1.0"
-  PHASICBUILDDIR="\${top_builddir}/PHASIC++-1.0"
+  PHASICDIR="\${top_srcdir}/PHASIC++"
+  PHASICBUILDDIR="\${top_builddir}/PHASIC++"
   PHASICINCS="-I\${PHASICDIR}/Main"
   PHASICLIBS="-L\${PHASICBUILDDIR}/Main -lPhasespace"
   AC_SUBST(PHASICDIR)
@@ -226,8 +226,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(PHASICINCS)
   AC_SUBST(PHASICLIBS)
   
-  SHERPADIR="\${top_srcdir}/SHERPA-1.0"
-  SHERPABUILDDIR="\${top_builddir}/SHERPA-1.0"
+  SHERPADIR="\${top_srcdir}/SHERPA"
+  SHERPABUILDDIR="\${top_builddir}/SHERPA"
   SHERPAINCS="-I\${SHERPADIR}/Single_Events -I\${SHERPADIR}/PerturbativePhysics \
               -I\${SHERPADIR}/LundTools -I\${SHERPADIR}/Tools -I\${SHERPADIR}/Main \
               -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
