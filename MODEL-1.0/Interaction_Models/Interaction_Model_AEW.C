@@ -40,7 +40,7 @@ Interaction_Model_AEW::Interaction_Model_AEW(MODEL::Model_Base * _model,
   kappa_Z  = Kabbala(string("\\kappa^{Z}"),ScalarConstant(std::string("kappa_Z")));
   lambda_Z = Kabbala(string("\\lambda^{Z}"),ScalarConstant(std::string("lambda_Z")));
   g4_Z     = Kabbala(string("g_4^{Z}"),ScalarConstant(std::string("g4_Z")));
-  g5_Z     = Kabbala(string("g_5^{Z}"),ScalarConstant(std::string("g4_Z")));
+  g5_Z     = Kabbala(string("g_5^{Z}"),ScalarConstant(std::string("g5_Z")));
   kappat_Z = Kabbala(string("\\kappat^{Z}"),ScalarConstant(std::string("kappat_Z")));
   lambdat_Z= Kabbala(string("\\lambdat^{Z}"),ScalarConstant(std::string("lambdat_Z")));
 }
@@ -219,7 +219,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     kcpl1 = kcpl*kappat_p;
     kcpl2 = kcpl*lambdat_p/(Wyuk*Wyuk);
     kcpl3 = kcpl*M_I*g5_p;
-    vertex[vanz].cpl.push_back(kcpl0);  //i*g5
+    vertex[vanz].cpl.push_back(kcpl3);  //i*g5
     vertex[vanz].cpl.push_back(kcpl1);  //kappat
     vertex[vanz].cpl.push_back(kcpl2);  //lambdat/m_W^2
     vertex[vanz].cpl.push_back(kcpl0);  //g1
