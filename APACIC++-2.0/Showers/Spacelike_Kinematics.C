@@ -64,7 +64,7 @@ InitKinematics(Tree **const trees,Tree *const tree,const int tree1,
     Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,dir*sgnt*(E1*p1-pz*o1[0]));
     m_boost=Poincare(b1);
     m_boost.Boost(o1);
-    if (!(o1==v1)) {
+    if (!IsEqual(o1,v1,sqrt(rpa.gen.Accu()))) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 1.\n"
 		 <<"  p_miss  = "<<(v1-o1)<<"\n"
 		 <<"  p_old   = "<<o1<<" "<<o1.Abs2()<<" <- "<<k1->t<<"\n"
@@ -80,7 +80,7 @@ InitKinematics(Tree **const trees,Tree *const tree,const int tree1,
     Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,-dir*sgnt*(E2*p2-pz*o2[0]));
     m_boost=Poincare(b2);
     m_boost.Boost(o2);
-    if (!(o2==v2)) {
+    if (!IsEqual(o2,v2,sqrt(rpa.gen.Accu()))) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 2.\n"
 		 <<"  p_miss  = "<<(v2-o2)<<"\n"
 		 <<"  p_old   = "<<o2<<" "<<o2.Abs2()<<" <- "<<k2->t<<"\n"
