@@ -285,20 +285,20 @@ void Standard_Model::FixCKM() {
   double Cabibbo=0.0,A=.8,rho,eta;
   m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);  
   if (m_ckmorder>0) {
-    Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.22);
+    Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.2272);
     CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[0][1] += Cabibbo * Complex( 1.,0.);
     CKM[1][0] += Cabibbo * Complex(-1.,0.);
   }
   if (m_ckmorder>1) {
-    A          = p_dataread->GetValue<double>("A",0.8);
+    A          = p_dataread->GetValue<double>("A",0.818);
     CKM[1][2] += A*sqr(Cabibbo)  * Complex( 1.,0.);
     CKM[2][1] += A*sqr(Cabibbo)  * Complex(-1.,0.);
   }
   if (m_ckmorder>2) {
-    eta        = p_dataread->GetValue<double>("ETA",0.5);
-    rho        = p_dataread->GetValue<double>("RHO",0.5);
+    eta        = p_dataread->GetValue<double>("ETA",0.349);
+    rho        = p_dataread->GetValue<double>("RHO",0.227);
     CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
     CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }

@@ -52,8 +52,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   dr.SetInputPath(rpa.GetPath());
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
-  m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
-  m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","Off")=="On"?1:0;
+  m_inttype  = dr.GetValue<int>("INTEGRATOR",6);
+  m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
   if (error>0.) {
     m_error   = error;
     m_fin_opt = 0;

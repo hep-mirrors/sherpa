@@ -30,7 +30,9 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
   Splitting_Function::SetKFactorScheme
     (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&1);        
   m_fsron=bool(dataread->GetValue<int>("FSR_SHOWER",1));
-  m_isron=bool(dataread->GetValue<int>("ISR_SHOWER",1));
+  m_isron = 0;
+  if (isr && isr->On()>0) m_isron=1;
+  m_isron=bool(dataread->GetValue<int>("ISR_SHOWER",m_isron));
   if ((rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron())
       && (m_fsron^m_isron)) 
     THROW(fatal_error,"Shower must be enabled for hadronic initial state.");

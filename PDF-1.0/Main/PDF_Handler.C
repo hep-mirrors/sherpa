@@ -28,11 +28,22 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number         = string(help); 
-  int         flav           = dataread->GetValue<int>("BUNCH_"+number,0);  
+  int defaultflav(0);
+  if (num==0) {
+    defaultflav=rpa.gen.Beam1().IsAnti()? 
+      -rpa.gen.Beam1().Kfcode() : rpa.gen.Beam1().Kfcode();
+  }
+  else if (num==1) {
+    defaultflav=rpa.gen.Beam2().IsAnti()? 
+      -rpa.gen.Beam2().Kfcode() : rpa.gen.Beam2().Kfcode();
+  }
+  int flav = dataread->GetValue<int>("BUNCH_"+number,defaultflav);
   bunch_particle             = Flavour((kf_code)abs(flav));
   if (flav<0) bunch_particle = bunch_particle.Bar();
 
-  if (dataread->GetValue<std::string>("ISR_"+number,"Off")=="On") {    
+  string defaultisr("Off");
+  if (bunch_particle.Kfcode()==kf_p_plus) defaultisr="On";
+  if (dataread->GetValue<std::string>("ISR_"+number,defaultisr)=="On") {    
     if (bunch_particle.IsLepton()) {
       if (bunch_particle.IntCharge()!=0) {
 	return new PDF_Electron(bunch_particle,
@@ -49,8 +60,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
       PDF_Base *pdfbase=NULL;
       std::string kmr      = dataread->GetValue<std::string>("KMR_DUPDF","Off");
       std::string cont     = dataread->GetValue<std::string>("CONTINUE_PDF","Off");
-      std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
-      std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
+      std::string set       = dataread->GetValue<string>("PDF_SET",std::string("cteq6l"));
+      std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("CTEQ6Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
       grid_path=ATOOLS::rpa.gen.Variable("SHERPA_PDF_PATH")+std::string("/")+grid_path;
       if (set==std::string("MRST99")) {

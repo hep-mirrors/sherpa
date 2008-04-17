@@ -35,7 +35,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_dir);
   dr.SetInputFile(m_file);
-  m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Pythiav6.214"));
+  m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   if (m_fragmentationmodel==string("Lund")) {
     m_sfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));
     Hadron_Init init;

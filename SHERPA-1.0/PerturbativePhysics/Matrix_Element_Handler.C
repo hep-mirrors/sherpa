@@ -106,7 +106,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   p_reader->SetInputPath(m_dir);
   p_reader->SetInputFile(m_file);
   if (!p_reader->ReadFromFile(m_signalgenerator,"ME_SIGNAL_GENERATOR")) m_signalgenerator="Amegic";
-  if (!p_reader->ReadFromFile(m_sudakovon,"SUDAKOV_WEIGHT")) m_sudakovon=0;
+  if (!p_reader->ReadFromFile(m_sudakovon,"SUDAKOV_WEIGHT")) m_sudakovon=1;
   if (!p_reader->ReadFromFile(m_apply_hhmf,"TEVATRON_WpWm")) m_apply_hhmf=0;
   if (m_signalgenerator==string("Amegic")) {
     if (_me) p_amegic = _me->GetAmegic(); 

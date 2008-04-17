@@ -135,9 +135,19 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     if (help[i].size()>1) if ((int)help[i][0]>0) sppars.parp[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"PARJ");
+  bool found21(false), found41(false), found42(false);
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.parj[(int)help[i][0]-1]=help[i][1];
+    if (help[i].size()>1) 
+      if ((int)help[i][0]>0) {
+        spdat1.parj[(int)help[i][0]-1]=help[i][1];
+        if((int)help[i][0]==21) found21=true;
+        if((int)help[i][0]==41) found41=true;
+        if((int)help[i][0]==42) found42=true;
+      }
   }
+  if(!found21) spdat1.parj[21-1]=0.36; // sigma
+  if(!found41) spdat1.parj[41-1]=0.25; // a
+  if(!found42) spdat1.parj[42-1]=0.75; // b
   reader->MatrixFromFile(help,"PARU");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.paru[(int)help[i][0]-1]=help[i][1];

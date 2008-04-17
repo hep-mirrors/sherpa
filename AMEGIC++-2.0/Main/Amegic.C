@@ -178,14 +178,14 @@ bool Amegic::InitializeDecays(bool constructall) {
 void Amegic::ReadInProcessfile(string file) 
 {
   p_dataread->SetTags(PHASIC::Integrable_Base::ScaleTags());
-  PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",0));
+  PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",1));
   p_dataread->SetTags(std::map<std::string,std::string>());
   std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   std::string _renscale   = p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
   msg_Debugging()<<METHOD<<"(): Set scales {\n"
 		 <<"  fac scale: "<<_facscale<<"\n"
 		 <<"  ren scale: "<<_renscale<<"\n}\n";
-  int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
+  int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",1);
   double _scale           = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
 
   int         flag,position,njets;

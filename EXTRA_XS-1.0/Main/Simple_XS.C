@@ -58,11 +58,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   else p_selectordata = new Selector_Data();
   p_dataread->SetTags(Integrable_Base::ScaleTags());
   m_scalescheme=(PHASIC::scl::scheme)
-    p_dataread->GetValue<int>("SCALE_SCHEME",0);
+    p_dataread->GetValue<int>("SCALE_SCHEME",1);
   p_dataread->SetTags(std::map<std::string,std::string>());
   m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_mur2tag=p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
-  m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
+  m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",1);
   double fix_scale=p_dataread->
     GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);

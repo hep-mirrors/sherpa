@@ -437,7 +437,7 @@ bool Initialization_Handler::InitializeThePDFs()
       else isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
       ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
     }
-    m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",0.);
+    m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",1e-10);
     m_bunch_splimits[1] = dataread.GetValue<double>("ISR_SMAX",1.);
     double kplimits[2];
     kplimits[0] = dataread.GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
@@ -564,7 +564,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_hadrondecaysdat);
-  std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Off"));
+  std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   if (frag=="Off") return true;
 
   if (m_hdhandlers.size()>0) {
@@ -591,7 +591,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   
   bool needextra = true; set<kf_code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
-  string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
+  string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
@@ -709,7 +709,7 @@ void Initialization_Handler::SetScaleFactors()
 		 <<"  fac scale: "<<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
   if (rpa.gen.NumberOfEvents()==0 || 
-      rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
+      rpa.gen.Variable("SUDAKOV_WEIGHT","1")!="1") return;
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
   reader.SetInputPath(rpa.gen.Variable("SHERPA_DAT_PATH")+m_path+"/");
@@ -865,7 +865,7 @@ void Initialization_Handler::CheckFlagConsistency()
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_medat);
-  int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
+  int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",1);
   rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString(sudweight));
 
   // if SUDAKOV_WEIGHT=On
@@ -877,8 +877,8 @@ void Initialization_Handler::CheckFlagConsistency()
     }
 
     //  ME.dat 
-    if (dr.GetValue<std::string>("SCALE_SCHEME","0")!="CKKW" ||
-        dr.GetValue<std::string>("KFACTOR_SCHEME","0")!="1" ||
+    if (dr.GetValue<std::string>("SCALE_SCHEME","CKKW")!="CKKW" ||
+        dr.GetValue<std::string>("KFACTOR_SCHEME","1")!="1" ||
         dr.GetValue<std::string>("COUPLING_SCHEME","0")!="Running_alpha_S") {
       msg_Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
                  <<"  CKKW is switched on by 'SUDAKOV_WEIGHT = 1'.\n"

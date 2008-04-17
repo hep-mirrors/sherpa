@@ -55,7 +55,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
     sprintf(help,"%i",num+1);
     std::string number   = string(help); 
 
-    std::string  bs(dataread->GetValue<std::string>("BEAM_SPECTRUM_"+number,"Unknown"));
+    std::string  bs(dataread->GetValue<std::string>("BEAM_SPECTRUM_"+number,"Monochromatic"));
     if (bs=="Monochromatic") beam_spectrum=0;
     else if (bs=="Gaussian") beam_spectrum=1;
     else if (bs=="Laser_Backscattering") beam_spectrum=2;
@@ -167,7 +167,7 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
   double E      = sqrt(s);
   rpa.gen.SetEcms(E);
 
-  m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN",0.0);
+  m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN",1e-10);
   m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX",1.0),Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;

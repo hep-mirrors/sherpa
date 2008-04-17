@@ -21,7 +21,14 @@ dist_pkgdata_SCRIPTS  =	makelibs grid_makelibs
 SUBDIRS       =	CTEQ6Grid MRST99Grid
 
 dist_pkgdata_DATA         = \
-			Run.dat
+			Analysis.dat \
+			Fragmentation.dat \
+			Integration.dat \
+			ISR.dat \
+			ME.dat \
+			MI.dat \
+			Run.dat \
+			Shower.dat
 
 EXTRA_DIST    =	@SVNINCLUDE@
 
