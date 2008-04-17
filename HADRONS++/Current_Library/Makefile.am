@@ -37,4 +37,24 @@ pkginclude_HEADERS = \
         VA_F_F.H
 
 INCLUDES = @HADRONSINCS@ @ATOOLSINCS@ @MODELINCS@ @HELICITIESINCS@
-EXTRA_DIST    = @SVNINCLUDE@
+EXTRA_DIST    = @SVNINCLUDE@ \
+		VA_B_B3_HO.C \
+		VA_B_B3_ST.C \
+		VA_B_B_HO.C \
+		VA_B_B_ST.C \
+		VA_P_P_ISGW.C \
+		VA_P_P_ISGW2.C \
+		VA_P_P_HQET.C \
+		VA_P_P_HQET2.C \
+		VA_P_P_PoleFit.C \
+		VA_P_P_Polynomial.C \
+		VA_P_P_BallZwicky.C \
+		VA_P_T_ISGW.C \
+		VA_P_T_ISGW2.C \
+		VA_P_V_ISGW.C \
+		VA_P_V_ISGW2.C \
+		VA_P_V_HQET.C \
+		VA_P_V_HQET2.C \
+		VA_P_V_SumRules3.C \
+		VA_P_V_PoleFit.C \
+		VA_P_V_hepph0007169.C

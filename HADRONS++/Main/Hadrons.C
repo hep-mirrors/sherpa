@@ -239,8 +239,9 @@ void Hadrons::DiceUncorrelatedKinematics(
     }
     value = hdc->Differential(&moms.front(),anti);
     if(value/max>1.05 && max>1e-30) {
-      msg_Info()<<METHOD<<"("<<hdc->ChannelName()<<") warning:"<<endl
-                <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max<<std::endl;
+      msg_Tracking()<<METHOD<<"("<<hdc->ChannelName()<<") warning:"<<endl
+                    <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max
+                    <<std::endl;
       rvalue.IncRetryMethod(METHOD);
       break;
     }

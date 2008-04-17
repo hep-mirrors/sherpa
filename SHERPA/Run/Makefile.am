@@ -53,3 +53,17 @@ uninstall-local:
 	if test "$$(ls -A $(pkgdatadir))" = ""; then \
 	rm -rf "$(pkgdatadir)"; \
 	fi;
+
+dist-hook:
+	for i in Decaydata/*; do \
+	  if test -d $$i; then \
+	    mkdir -p $(distdir)/$$i; \
+	    for j in $$i/*.dat; do \
+	      cp $$j $(distdir)/$$i/; \
+	    done; \
+	    if test -d $$i/PhaseSpaceFunctions; then \
+	      cp -rf $$i/PhaseSpaceFunctions $(distdir)/$$i/; \
+	    fi; \
+	  fi; \
+	done; \
+	cp Decaydata/*.dat $(distdir)/Decaydata/;

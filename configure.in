@@ -78,13 +78,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  HADRONS++/ME_Library/Makefile \
 	  HADRONS++/Current_Library/Makefile \
 	  HADRONS++/PS_Library/Makefile \
-	  HADRONS++/Run/Makefile \
 	  HADRONS++/Makefile \
 	  PHOTONS++/Main/Makefile \
           PHOTONS++/Tools/Makefile \
           PHOTONS++/PhaseSpace/Makefile \
           PHOTONS++/MEs/Makefile \
-          PHOTONS++/Run/Makefile \
 	  PHOTONS++/Makefile \
 	  ANALYSIS/Makefile \
 	  ANALYSIS/Tools/Makefile \

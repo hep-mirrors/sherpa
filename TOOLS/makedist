@@ -11,8 +11,7 @@ print_help() {
   echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
   echo "         --copt         define option for 'configure'" && \
   echo "         --exclude-svn  exclude .svn directories (only necessary when they exist)" && \
-  echo "         --release      prepare for release in copied tree: svn update, module renaming, --total" && \
-  echo "                        Warning: This may use much disk space, because it makes a copy of the file tree." && \
+  echo "         --release      create tarball for release" && \
   echo "         -h             display this help and exit" && \
   echo
 }
@@ -61,16 +60,6 @@ echo "*************************************"
 
 
 if [ "$RELEASE" = "TRUE" ]; then
-  SUBSUBV=$(echo $VERSION | cut -d "." -f 3)
-  if test -d "../makedist"; then
-    echo "Directory ../makedist already exists. Please remove and retry."
-    exit 1;
-  fi
-  mkdir ../makedist;
-  echo -e "  copying file tree to temporary directory ../makedist (this might take a while)"
-  cp -rp $(pwd) ../makedist/;
-  cd ../makedist/$(basename $(pwd));
-
   if test -x "$(which svn)" && test ! "$(svn status -q)" = ""; then 
     echo "The copy of your version has local modifications:"
     svn status -q
@@ -88,37 +77,13 @@ if [ "$RELEASE" = "TRUE" ]; then
           CONTINUE="c"
         fi
       done
-
   fi
-  svn update
-
-#   ## rename modules in working copy
-#   echo -e "  renaming modules in working copy";
-#   MODULES=*".0";
-#   for I in $MODULES; do
-#     mv $I $I"."$SUBSUBV
-#   done;
-#   MFS=`find . -name Makefile.am`
-#   for I in $MFS; do
-#     sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
-#     sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I.new2
-#     sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I.new2 > $I.new
-#     mv $I.new $I
-#     rm $I.new2
-#   done
-#   MFS="TOOLS/makeinstall configure.in acinclude.m4"
-#   for I in $MFS; do
-#     sed -e 's/-0.0/-0.0.'$SUBSUBV'/g' < $I > $I.new
-#     sed -e 's/-1.0/-1.0.'$SUBSUBV'/g' < $I.new > $I
-#     sed -e 's/-2.0/-2.0.'$SUBSUBV'/g' < $I > $I.new
-#     mv $I.new $I
-#   done;
-  chmod 755 TOOLS/makeinstall;
+  if test -x "$(which svn)"; then
+      svn update;
+  fi
 fi
 if [ "$TOTAL" = "TRUE" ]; then
-  cp INSTALL INSTALL.Sherpa;
-  autoreconf -fi
-  mv INSTALL.Sherpa INSTALL;
+  autoreconf -i
 fi
 if [ "$CONFIGURE" = "TRUE" ]; then
   ./configure $ECOPT;
@@ -149,16 +114,9 @@ if [ "$RELEASE" = "TRUE" ]; then
   cd ..;
 fi
 
-## remove ATOOLS/Org/CXXFLAGS.H
-rm SHERPA-MC-$VERSION/*/*/CXXFLAGS.H
 ## tar it
 tar -czhf "$DISTDIR.tar.gz" SHERPA-MC-$VERSION/;
 rm -rf SHERPA-MC-$VERSION/;
-if [ "$RELEASE" = "TRUE" ]; then
-  mv "$DISTDIR.tar.gz" ../../;
-  cd ../..;
-  rm -rf makedist;
-fi
 
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
