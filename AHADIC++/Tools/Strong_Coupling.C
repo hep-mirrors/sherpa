@@ -17,12 +17,12 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
   m_Lambda2 = m_pt02*exp(-1./(m_beta0*(*as)(m_pt02)));
   m_kappa2  = m_pt02/exp(1.)*m_beta0*log(m_pt02/m_Lambda2);
   m_asmax   = (*this)(m_pt02);
-  std::ofstream was;
-  was.open("as_in_ahadic_test.dat");
-  for (double Q(0.01);Q<10.;Q*=1.001) {
-    was<<Q<<" "<<(*this)(sqr(Q))<<" "<<((*this)(Q*Q)/(Q*Q))<<"\n";
-  }
-  was.close();
+//   std::ofstream was;
+//   was.open("as_in_ahadic_test.dat");
+//   for (double Q(0.01);Q<10.;Q*=1.001) {
+//     was<<Q<<" "<<(*this)(sqr(Q))<<" "<<((*this)(Q*Q)/(Q*Q))<<"\n";
+//   }
+//   was.close();
 }
 
 const double Strong_Coupling::operator()(double q2) const {
