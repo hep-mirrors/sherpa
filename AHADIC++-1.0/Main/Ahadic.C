@@ -19,7 +19,6 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
   dr.SetInputFile(file);
-  ParticleInit(dr);
 
   hadpars.Init(path,file);
   ana=true;
@@ -211,10 +210,4 @@ void Ahadic::CleanUp(Blob * blob) {
     m_prilist.pop_front();
   }
   if(blob) blob->DeleteOutParticles(0);
-}
-
-void Ahadic::ParticleInit(Data_Reader & overwrite) {
-  Hadron_Init init;
-  init.Init();
-  init.OverWriteProperties(overwrite);
 }

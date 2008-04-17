@@ -35,7 +35,6 @@ namespace AHADIC {
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
-    void ParticleInit(ATOOLS::Data_Reader & overwrite);
   };
   /*!
     \file Ahadic.H
