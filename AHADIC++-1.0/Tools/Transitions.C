@@ -68,20 +68,21 @@ Single_Transitions::~Single_Transitions()
 
 bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
-  //std::cout<<METHOD<<" for "<<std::endl<<(*cluster)<<std::endl;
-  Flavour_Pair fpair;
-  fpair.first  = cluster->GetTrip()->m_flav;
-  fpair.second = cluster->GetAnti()->m_flav;
-  if (!(fpair.first.IsDiQuark() && fpair.second.IsDiQuark())) return false;
+  if (!(cluster->GetTrip()->m_flav.IsDiQuark() && 
+	cluster->GetAnti()->m_flav.IsDiQuark()))   return false;
+
   double  mass = cluster->Mass();
   Flavour_Pair fpair1,fpair2;
-  fpair1.first = fpair.first;            fpair1.second = m_lightest_constituent.Bar();
-  fpair2.first = m_lightest_constituent; fpair2.second = fpair.second;
+
+  fpair1.first = cluster->GetTrip()->m_flav; fpair1.second = m_lightest_constituent.Bar();
+  fpair2.first = m_lightest_constituent; fpair2.second = cluster->GetAnti()->m_flav;
+
   had1 = GetLightestTransition(fpair1);
   had2 = GetLightestTransition(fpair2);
   if (had1.Mass()+had2.Mass()<mass) return false;
 
-  int      kfc1  = int(fpair.first.Kfcode()), kfc2 = int(fpair.second.Kfcode());
+  int kfc1 = int(cluster->GetTrip()->m_flav.Kfcode());
+  int kfc2 = int(cluster->GetAnti()->m_flav.Kfcode());
   
   fpair1.second  = Flavour(int(kfc1/1000)).Bar(); 
   fpair2.second  = Flavour(int((kfc1-int(kfc1/1000)*1000)/100)).Bar();
@@ -95,7 +96,8 @@ bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavo
   }
   had1 = GetLightestTransition(fpair1);
   had2 = GetLightestTransition(fpair2);
-  return true;
+  if (had1.Mass()+had2.Mass()<mass) return true;
+  return false;
 }
 
 Flavour Single_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {

@@ -8,28 +8,8 @@
 #include <map>
 
 namespace AHADIC {
-  struct stm {
-    enum code {
-      simplemass      = 1,
-      massXwaves      = 2,
-      masswidth       = 11,
-      masswidthXwaves = 12
-    };
-  };
-
-  struct dtm {
-    enum code {
-      PS_only      = 0,
-      waves_PS     = 1
-    };
-  };
-  
-  
-
   class Soft_Cluster_Handler {
   private:
-    stm::code            m_stmode;
-    dtm::code            m_dtmode;
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
@@ -41,20 +21,17 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
 
-    int    CheckCluster(Cluster *,bool,const double=-1.);
-    double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,const double=-1.);
-    double TransformWeight(Cluster *,ATOOLS::Flavour &,const double=-1.,bool=false);
+    int    CheckCluster(Cluster *,bool,bool=false);
+    int    EnforceDecay(Cluster *); 
+    double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    double TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false);
     void   FixHHDecay(Cluster *,ATOOLS::Blob *);
 
 
     bool   CheckIfAllowed(Cluster_List * clin,double & E);
-    bool   UpdateTransitions(Cluster_List * clin,int size);
+    bool   UpdateTransitions(Cluster_List * clin);
     bool   TryToEnforceTransition(Cluster_List * clin);
     bool   ShiftMomenta(Cluster_List *);
-    double SimpleMassCriterion(Single_Transition_List *,ATOOLS::Flavour &,
-			       const double,bool=false);
-    double MWCriterion(Single_Transition_List *,ATOOLS::Flavour &,
-		       const double,bool=false);
   public:
     Soft_Cluster_Handler(Single_Transitions * singletransitions,
 			 Double_Transitions * doubletransitions,
