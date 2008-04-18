@@ -125,6 +125,7 @@ bool Hadron_Decay_Handler::FillDecayBlob(Blob *blob, const Vec4D& labmom)
 
 bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) 
 {
+  DEBUG_FUNC(part->RefFlav()<<" "<<min<<" "<<max);
   double mass = 0.0;
   switch (m_mode) {
   case 0:
@@ -140,12 +141,15 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
     if(data) {
       Hadron_Decay_Channel* hdc = data->Get<Hadron_Decay_Channel*>();
       double decaymin = hdc->MinimalMass();
+      DEBUG_VAR(hdc->ChannelName());
+      DEBUG_VAR(decaymin);
       if(decaymin>max) mass = -1.0;
       else             mass = masshandler.GetMass(decaymin, max);
     }
     else mass = masshandler.GetMass(min, max);
     break;
   }
+  DEBUG_VAR(mass);
   if(mass>0.0) {
     part->SetFinalMass(mass);
     return true;

@@ -42,7 +42,7 @@ namespace ATOOLS {
 
   inline void Decay_Channel::AddDecayProduct(const Flavour & _flout) { 
     m_flouts.insert(_flout); 
-    m_minmass += _flout.Mass();
+    m_minmass += _flout.PSMass();
   }
   inline void        Decay_Channel::SetWidth(const double & _width)           { m_width  = _width; }
   inline double      Decay_Channel::Width() const                             { return m_width;   }
