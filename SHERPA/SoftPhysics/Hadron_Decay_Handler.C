@@ -146,7 +146,6 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
     else mass = masshandler.GetMass(min, max);
     break;
   }
-  
   if(mass>0.0) {
     part->SetFinalMass(mass);
     return true;

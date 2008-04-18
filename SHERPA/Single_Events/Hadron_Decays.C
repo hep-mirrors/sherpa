@@ -95,7 +95,10 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
         if((*it)->Flav().IsStable()) continue;
         if(!CreateDecayBlob(*it)) return Return_Value::Retry_Event;
       }
-      SetMasses(blob);
+      if(!SetMasses(blob)) {
+	msg_Error()<<METHOD<<" failed to set masses, retrying event."<<endl<<*blob<<endl;
+        return Return_Value::Retry_Event;
+      }
       Momenta_Stretcher stretch;
       if(!stretch.StretchBlob(blob)) {
         msg_Error()<<METHOD<<" failed to stretch blob, retrying event."<<endl<<*blob<<endl;
@@ -229,7 +232,7 @@ bool Hadron_Decays::SetMasses(Blob * blob)
     max_mass = total.Mass();
   }
   
-  bool success=true;
+  bool success=true; size_t cnt=0;
   do {
     success=true;
     double max = max_mass;
@@ -243,7 +246,8 @@ bool Hadron_Decays::SetMasses(Blob * blob)
       else {
         Hadron_Decay_Handler * hdhandler = ChooseDecayHandler((*it));
         if(!hdhandler->DiceMass(*it,0.,max)) {
-          success=false;
+          success=false; ++cnt;
+	  if(cnt>22) { DEBUG_INFO("failed."); return false;}
           break;
         }
         max-=(*it)->FinalMass();
