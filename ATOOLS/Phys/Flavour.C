@@ -321,7 +321,7 @@ void ATOOLS::OutputHadrons(std::ostream &str) {
 	&& flav.Size()==1 && flav.Kfcode()!=0) {
       str<<std::setw(16)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
-      str<<std::setw(14)<<flav.Mass();
+      str<<std::setw(14)<<flav.PSMass();
       str<<std::setw(16)<<flav.Width();
       str<<std::setw(16)<<flav.IsStable();
       str<<std::setw(16)<<flav.IsOn();
@@ -349,7 +349,7 @@ void ATOOLS::OutputParticles(std::ostream &str) {
     if (!flav.IsHadron() && flav.Size()==1 && flav.Kfcode()!=0) {
       str<<std::setw(12)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
-      str<<std::setw(14)<<flav.Mass();
+      str<<std::setw(14)<<flav.PSMass();
       str<<std::setw(16)<<flav.Width();
       str<<std::setw(16)<<flav.IsStable();
       str<<std::setw(16)<<flav.IsMassive();
