@@ -66,8 +66,6 @@ void Model_Base::ShowSyntax(const size_t i)
 
 void Model_Base::ReadParticleData() {
   
-  if (!m_elementary) return;
-  
   std::map<int,double> cdm, cdw;
   std::map<int,int> cia, cis, cim;
   Data_Reader dr(" ",";","!","=");
