@@ -180,11 +180,9 @@
 {311,211,-211}   | 3.6e-05[EvtGen]     | B_Kpi+pi-.dat;
 {323,-211}       | 0.0 | B_Kstar892+pi-.dat; # ^^ included
 {10321,-211}     | 0.0 | B_K0star1430+pi-.dat; # ^^ included
-{30323,-211}     | 0.0 | B_Kstar1680+pi-.dat; # ^^ included
 {321,-211,111}   | 7e-06[EvtGen]       | B_K+pi-pi.dat;
 {323,-211}       | 0.0 | B_Kstar892+pi-.dat; # ^^ included
 {10321,-211}     | 0.0 | B_K0star1430+pi-.dat; # ^^ included
-{30323,-211}     | 0.0 | B_Kstar1680+pi-.dat; # ^^ included
 {321,-311,-211}  | 5e-07[EvtGen]       | B_K+Kbpi-.dat;
 {-213,211,111}   | 4e-05[EvtGen]       | B_rho770-pi+pi.dat;
 {213,-213}       | 0.0 | B_rho770+rho770-.dat; # ^^ included
@@ -297,8 +295,6 @@
 {313,-311}       | 3e-06[EvtGen]        | B_Kstar892Kb.dat;
 {10311,111}      | 1e-06[EvtGen]       | B_K0star1430pi.dat;
 {10311,-311}     | 3e-06[EvtGen]       | B_K0star1430Kb.dat;
-{30313,111}      | 1e-06[EvtGen]        | B_Kstar1680pi.dat;
-{30313,311}      | 1e-06[EvtGen]        | B_Kstar1680K.dat;
 {323,-321}       | 2e-06[EvtGen]        | B_Kstar892+K-.dat;
 {113,111}        | 0[EvtGen]         | B_rho770pi.dat;
 {311,113}        | 5.2e-06[EvtGen]   | B_Krho770.dat;
