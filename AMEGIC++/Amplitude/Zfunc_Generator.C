@@ -72,7 +72,7 @@ void Zfunc_Generator::LorentzConvert(Point* p)
   LorentzConvert(p->middle);
 }
 
-void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
+void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvectors)
 {
   if (p==0) return; 
 
@@ -81,11 +81,10 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
     notcut++;
     if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
-      }
-    if(ATOOLS::IsZero(p->fl.Mass())&&MODEL::s_model->
-       GetInteractionModel()->Code()!="SM+AGC"){
-      p->m=0;
-      }	
+    }
+    if (ATOOLS::IsZero(p->fl.Mass())) p->m=0;
+
+    if (p->Lorentz->CutVectors()||cutvectors) p->m=1;
   }
   else p->m = 0;
 
@@ -98,9 +97,9 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
       p->m=1;
     }	
   }
-  MarkCut(p->right,notcut,p->fl.IsFermion());
-  MarkCut(p->left,notcut,p->fl.IsFermion());
-  MarkCut(p->middle,notcut,p->fl.IsFermion()); 
+  MarkCut(p->right,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
+  MarkCut(p->left,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
+  MarkCut(p->middle,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors()); 
 }
 
 void Zfunc_Generator::Convert(Point* p)

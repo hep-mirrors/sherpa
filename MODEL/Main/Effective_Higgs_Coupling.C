@@ -19,9 +19,28 @@ Complex Effective_Higgs_Coupling::f(double tau)
   return -.25*a*a;
 }
 
-double Effective_Higgs_Coupling::GetFermionContribution(double mass)
+Complex Effective_Higgs_Coupling::GetFermionContribution(double mass,bool pseudoscalar)
 {
-  if (mass<=0.) return 2./3.;
+  if (!pseudoscalar) {
+    if (mass<=0.) return Complex(2./3.,0.);
+    double tau=ATOOLS::sqr(2.*mass/m_mhiggs);
+    return tau*(Complex(1.,0.)+(1.-tau)*f(tau));
+  }
+  if (mass<=0.) return Complex(-1.,0.);
   double tau=ATOOLS::sqr(2.*mass/m_mhiggs);
-  return tau*(1.+(1.-tau)*real(f(tau)));
+  return tau*f(tau);  
+}
+
+Complex Effective_Higgs_Coupling::GetVectorContribution(double mass)
+{
+  if (mass<=0.) return -3.5;
+  double tau=ATOOLS::sqr(2.*mass/m_mhiggs);
+  return Complex(-1.-1.5*tau,0.)-1.5*tau*(2.-tau)*f(tau);
+}
+
+Complex Effective_Higgs_Coupling::GetScalarContribution(double mass)
+{
+  if (mass<=0.) return 1./6.;
+  double tau=ATOOLS::sqr(2.*mass/m_mhiggs);
+  return 0.5*tau*(tau*f(tau)-Complex(1.,0.));
 }

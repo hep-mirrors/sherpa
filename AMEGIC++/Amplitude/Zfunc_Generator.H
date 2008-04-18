@@ -53,7 +53,7 @@ namespace AMEGIC {
 
     void BuildZlist(Virtual_String_Generator*,Basic_Sfuncs*,int);
     void LorentzConvert(Point*);
-    void MarkCut(Point*,int notcut,bool fromfermion=false);
+    void MarkCut(Point*,int notcut,bool fromfermion=false,bool cutvectors=false);
     void Convert(Point*);
 
     void SetDirection(int,SpinorDirection*);

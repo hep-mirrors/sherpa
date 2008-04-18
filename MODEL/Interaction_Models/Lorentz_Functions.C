@@ -228,6 +228,7 @@ class LF_AGauge3: public Lorentz_Function {
 public:  
   LF_AGauge3(): Lorentz_Function("AGauge3") {}
   int NofIndex() const { return 3; }
+  bool CutVectors() { return true; }
   void InitPermutation() 
   {
     Lorentz_Function::InitPermutation(); 
@@ -458,4 +459,44 @@ public:
 }; 
 DEFINE_LF_GETTER(LF_C4GS,LFC4GS_Getter,"C4GS","")
 
+class LF_PseudoTriangle: public Lorentz_Function {
+public:
+  LF_PseudoTriangle(): Lorentz_Function("PseudoTriangle") {}
+  int NofIndex() const { return 2; }
+  bool CutVectors() { return true; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation(1,0,1);
+    AddPermutation(1,1,0);
+  }
+  std::string String(int shortversion) const 
+  {
+    // G[0,1]
+    return "PsT["+Str(0)+","+Str(1)+"]";
+  }
+};
+DEFINE_LF_GETTER(LF_PseudoTriangle,LFPseudoTriangle_Getter,"PseudoTriangle","")
+class LF_PseudoBox: public Lorentz_Function {
+public:
+  LF_PseudoBox(): Lorentz_Function("PseudoBox") {}
+  int NofIndex() const { return 3; }
+  bool CutVectors() { return true; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation( 1,0,1,2);
+    AddPermutation(-1,0,2,1);  
+    AddPermutation(-1,1,0,2);
+    AddPermutation(-1,2,1,0);  
+    AddPermutation( 1,1,2,0);
+    AddPermutation( 1,2,0,1);  
+  }
+  std::string String(int shortversion) const 
+  {
+    // G[0,1]
+    return "PsB["+Str(0)+","+Str(1)+","+Str(2)+"]";
+  }
+};
+DEFINE_LF_GETTER(LF_PseudoBox,LFPseudoBox_Getter,"PseudoBox","")
 

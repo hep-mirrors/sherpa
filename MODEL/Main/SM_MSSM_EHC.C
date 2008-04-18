@@ -70,7 +70,7 @@ void SM_EHC::FillSpectrum() {
   p_dataread->SetInputFile(m_file);
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
-  double eh=2./3.;
+  Complex eh(2./3.,0.);
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
     double hm=Flavour(kf_h0).Mass();
     Effective_Higgs_Coupling ehc(hm);
@@ -78,7 +78,7 @@ void SM_EHC::FillSpectrum() {
   }
   double hpp = p_dataread->GetValue<double>("HIGGS_PP_EFF",0.);
   p_constants->insert(std::make_pair(std::string("HIGGS_PP_EFF"),hpp));
-  p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
+  p_constants->insert(std::make_pair(std::string("h0_gg_fac"),real(eh)));
 }
 
 
@@ -141,13 +141,47 @@ void MSSM_EHC::FillSpectrum() {
   p_dataread->SetInputFile(m_file);
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
-  double eh=2./3.;
-  if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
+
+  double sina = real(ComplexMatrixElement(std::string("Z_R"),1,1)); 
+  double cosa = real(ComplexMatrixElement(std::string("Z_R"),0,1)); 
+  double sinb = real(ComplexMatrixElement(std::string("Z_H"),1,1)); 
+  double cosb = real(ComplexMatrixElement(std::string("Z_H"),1,0)); 
+
+  int fm = p_dataread->GetValue<int>("FINITE_TOP_MASS",0);
+
+  //h0
+  Complex eh0(0.,0.);          
+  { //top
     double hm=Flavour(kf_h0).Mass();
     Effective_Higgs_Coupling ehc(hm);
-    eh = ehc.GetFermionContribution(Flavour(kf_t).Mass());
+    double mass = Flavour(kf_t).Mass();
+    if (!fm) mass=-1.;
+    eh0 += (cosa/sinb)*ehc.GetFermionContribution(mass);
   }
-  p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
+  //to be added: squarks!
+
+  Complex eH0(0.,0.);
+  { //top
+    double hm=Flavour(kf_H0).Mass();
+    Effective_Higgs_Coupling ehc(hm);
+    double mass = Flavour(kf_t).Mass();
+    if (!fm) mass=-1.;
+    eH0 += (sina/sinb)*ehc.GetFermionContribution(mass);
+  }
+  //to be added: squarks!
+
+  Complex eA0(0.,0.);
+  { //top
+    double hm=Flavour(kf_A0).Mass();
+    Effective_Higgs_Coupling ehc(hm);
+    double mass = Flavour(kf_t).Mass();
+    if (!fm) mass=-1.;
+    eA0 += (cosb/sinb)*ehc.GetFermionContribution(mass,1);
+  }
+
+  p_constants->insert(std::make_pair(std::string("h0_gg_fac"),real(eh0)));
+  p_constants->insert(std::make_pair(std::string("H0_gg_fac"),real(eH0)));
+  p_constants->insert(std::make_pair(std::string("A0_gg_fac"),real(eA0)));
 }
 
 

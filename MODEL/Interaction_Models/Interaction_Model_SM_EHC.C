@@ -34,7 +34,7 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   double hmass2 = sqr(Flavour(kf_h0).Mass());
   
   geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_PP_EFF")));
-  ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
+  ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
 		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));

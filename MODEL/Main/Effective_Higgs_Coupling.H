@@ -14,7 +14,9 @@ namespace MODEL {
     // constructor
     Effective_Higgs_Coupling(const double mhiggs);
     
-    double GetFermionContribution(double mass);
+    Complex GetFermionContribution(double mass,bool pseudoscalar=false);
+    Complex GetVectorContribution(double mass);
+    Complex GetScalarContribution(double mass);
   };
 
 }

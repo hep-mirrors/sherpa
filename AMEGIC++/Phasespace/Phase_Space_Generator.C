@@ -47,6 +47,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   dr.SetInputPath(rpa.GetPath());
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",6);
+  if (nin==1&&nout==2) return 0;
   if (inttype<4 && !(inttype==2 && nout==2)) return 0;
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);

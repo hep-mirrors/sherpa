@@ -395,5 +395,35 @@ class VVSS4_Calc : public Zfunc_Calc,
 #endif
     ATOOLS::Kabbala Do();
   };
+
+  class PseudoTriangle_Calc : public Zfunc_Calc, 
+			      public Basic_Zfunc,
+			      public Basic_Xfunc,
+			      public Basic_Vfunc,
+			      public Basic_Epsilonfunc {
+  public:
+    PseudoTriangle_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~PseudoTriangle_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    ATOOLS::Kabbala Do();
+  };
+
+  class PseudoBox_Calc : public Zfunc_Calc, 
+			 public Basic_Zfunc,
+			 public Basic_Xfunc,
+			 public Basic_Vfunc,
+			 public Basic_Epsilonfunc {
+  public:
+    PseudoBox_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~PseudoBox_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    ATOOLS::Kabbala Do();
+  };
+
+
 }
 #endif

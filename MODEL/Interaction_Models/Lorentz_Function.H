@@ -38,6 +38,8 @@ namespace MODEL {
 
     virtual void InitPermutation();
 
+    virtual bool CutVectors() { return false; }
+
     void SetParticleArg(int a=-1,int b=-1,int c=-1,int d=-1);
     void AddPermutation(int sign,int a,int b=-1,int c=-1,int d=-1);
 
