@@ -391,6 +391,23 @@ void Hadron_Init::Init() {
     Particle_Info(kf_cluster,0.,0.,0,0,0,0,0,1,1,0,"cluster","cluster");
   s_kftable[kf_string] = new
     Particle_Info (kf_string,0.,0.,0,0,0,0,0,1,1,0,"string","string");
+
+  // set self-anti property
+  s_kftable[kf_pi]->m_majorana=-1;
+  s_kftable[kf_eta]->m_majorana=-1;
+  s_kftable[kf_eta_prime_958]->m_majorana=-1;
+  s_kftable[kf_eta_c_1S]->m_majorana=-1;
+  s_kftable[kf_eta_b]->m_majorana=-1;
+  s_kftable[kf_rho_770]->m_majorana=-1;
+  s_kftable[kf_omega_782]->m_majorana=-1;
+  s_kftable[kf_phi_1020]->m_majorana=-1;
+  s_kftable[kf_J_psi_1S]->m_majorana=-1;
+  s_kftable[kf_Upsilon_1S]->m_majorana=-1;
+  s_kftable[kf_a_2_1320]->m_majorana=-1;
+  s_kftable[kf_f_2_1270]->m_majorana=-1;
+  s_kftable[kf_f_2_prime_1525]->m_majorana=-1;
+  s_kftable[kf_chi_c2_1P]->m_majorana=-1;
+  s_kftable[kf_chi_b2_1P]->m_majorana=-1;
 }
 
 void Hadron_Init::OverWriteProperties(Data_Reader& dr)
