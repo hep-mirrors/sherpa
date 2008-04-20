@@ -672,12 +672,26 @@ bool Simple_Chain::CreateMomenta()
 	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
 	}
 	bool take(true);
-	for (size_t j=0;j<selected->NVector();++j) 
+	double mass(0.0);
+	Vec4D sum;
+	for (size_t j=0;j<selected->NIn();++j) {
+	  sum+=selected->Momenta()[j];
+	  mass+=selected->Flavours()[j].PSMass();
 	  if (selected->Momenta()[j][0]<=selected->Flavours()[j].PSMass()) {
 	    take=false;
 	    break;
 	  }
-	if (!take) continue;
+	}
+	if (!take || sum.Mass()<mass) continue;
+	mass=0.0;
+	for (size_t j=selected->NIn();j<selected->NVector();++j) {
+	  mass+=selected->Flavours()[j].PSMass();
+	  if (selected->Momenta()[j][0]<=selected->Flavours()[j].PSMass()) {
+	    take=false;
+	    break;
+	  }
+	}
+	if (!take || sum.Mass()<mass) continue;
 	if (p_fsrinterface->Trigger()) {
 	  double rn=ran.Get();
 	  if (weight*m_maxreduction>=max*rn) {
