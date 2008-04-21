@@ -1,27 +1,4 @@
-!-------------------------------------------------------
-!-- Beam parameters ------------------------------------
-!-------------------------------------------------------
 BEAM_1          = 11                 ! possible beam particles:  P+, P-, e+, e-
 BEAM_ENERGY_1   = 7000.                ! in GeV
-BEAM_POL_1      = 0.                   ! Polarization degree -1 ... 1
-BEAM_SPECTRUM_1 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
-K_PERP_MEAN_1	= 0.2
-K_PERP_SIGMA_1	= 0.8
-!
 BEAM_2          = -11                 ! possible beam particles:  P+, P-, e+, e- 
 BEAM_ENERGY_2   = 7000.                ! in GeV
-BEAM_POL_2      = 0.                   ! Polarization degree -1 ... 1
-BEAM_SPECTRUM_2 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
-K_PERP_MEAN_2	= 0.2
-K_PERP_SIGMA_2	= 0.8
-!
-BEAM_SMIN       = 1.e-10               ! Minimal fraction of nominal s after beam spectra
-BEAM_SMAX       = 1.0                  ! Maximal fraction of nominal s after beam spectra
-!
-E_LASER_1          = 1.17e-9           ! Laser energy in GeV
-P_LASER_1          = 0.                ! Laser polarization +-1
-E_LASER_2          = 1.17e-9           ! Laser energy in GeV
-P_LASER_2          = 0.                ! Laser polarization +-1
-LASER_MODE         = 0                 ! 0 = all, 1,2,3 = individual components
-LASER_ANGLES       = Off               ! On/Off
-LASER_NONLINEARITY = On                ! On/Off

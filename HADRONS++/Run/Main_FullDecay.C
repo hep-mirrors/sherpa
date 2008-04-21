@@ -71,6 +71,7 @@ Blob_List* GenerateEvent()
   Particle* mother_in_part = new Particle( 1,mother_flav,Vec4D(mother_flav.PSMass(),0.,0.,0.) );
   Particle* mother_part = new Particle( 1,mother_flav,Vec4D(mother_flav.PSMass(),0.,0.,0.) );
   mother_part->SetTime();
+  mother_part->SetFinalMass(mother_flav.PSMass());
   
   Blob* blob = blobs->AddBlob(btp::Signal_Process);
   blob->SetTypeSpec("1_1__"+mother_flav.IDName()+"__"+mother_flav.IDName()+"__"+

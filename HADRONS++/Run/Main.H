@@ -15,6 +15,8 @@
 #include "Hadron_Decay_Table.H"
 #include "Hadron_Decay_Channel.H"
 
+#include "Hadron_Init.H"
+
 #include "CXXFLAGS_PACKAGES.H"
 #ifdef USING__ROOT
 #include "TFile.h"
@@ -42,7 +44,8 @@ void FinishGenerator();
 
 void small_sherpa_init(int argc, char *argv[])
 {
-  // use this for small programs, which don't use the full Sherpa framework, but only Hadrons
+  // use this for small programs, which don't use the full Sherpa framework,
+  // but only Hadrons
 
   std::vector<std::string> searchpaths;
   searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
@@ -77,8 +80,14 @@ void small_sherpa_init(int argc, char *argv[])
   }
   ATOOLS::s_loader = new Library_Loader();
   rpa.Init("","Run.dat",argc,argv);
-  ATOOLS::ParticleInit("");
   MODEL::s_model = new MODEL::Standard_Model("","Model.dat",true);
+  MODEL::s_model->InitializeInteractionModel();
+  
+  AHADIC::Hadron_Init hi;
+  hi.Init();
+  Data_Reader overwrite;
+  hi.OverWriteProperties(overwrite);
+
   msg->SetModifiable(true);
 }
 

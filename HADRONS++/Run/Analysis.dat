@@ -1,6 +1,6 @@
 BEGIN_ANALYSIS {
 
 LEVEL  Hadrons
-PATH_PIECE Analysis/Sherpa
+PATH_PIECE Sherpa/
 
 } END_ANALYSIS

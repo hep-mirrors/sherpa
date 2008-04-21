@@ -153,6 +153,7 @@ Blob_List* GenerateEvent()
   Blob_List* blobs = new Blob_List();
   Particle* mother_part = new Particle( 1,mother_flav,Vec4D(mother_flav.PSMass(),0.,0.,0.) );
   mother_part->SetTime();
+  mother_part->SetFinalMass(mother_flav.PSMass());
   
   Blob* blob = blobs->AddBlob(btp::Hadron_Decay);
   blob->SetStatus(blob_status::needs_hadrondecays);

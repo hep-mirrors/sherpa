@@ -1,31 +1,31 @@
-SYSLIBS	      =	$(FLIBS) -lm -ldl
-
-bin_PROGRAMS  = HadronFullDecayNoAnalysis \
+bin_PROGRAMS  = SingleDecay \
+	HadronFullDecayNoAnalysis \
 	HadronFullDecayMixingAnalysis \
 	HadronFullDecayInclusiveAnalysis \
-  PhotonAnalysis
+	PhotonAnalysis
 
-HadronFullDecayNoAnalysis_SOURCES        =	Main_HadronFullDecayNoAnalysis.C
-HadronFullDecayNoAnalysis_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \
-	@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
-HadronFullDecayNoAnalysis_LDFLAGS        =	@ldflags@
+FULL_LDADD = $(FLIBS) -lm -ldl -L$(pkglibdir) -lSherpaMain \
+  @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
 
+SingleDecay_SOURCES = Main_SingleDecay.C
+SingleDecay_LDADD   = $(FULL_LDADD)
+SingleDecay_LDFLAGS = @ldflags@
 
-HadronFullDecayMixingAnalysis_SOURCES        =	Main_HadronFullDecayMixingAnalysis.C
-HadronFullDecayMixingAnalysis_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \
-	@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
-HadronFullDecayMixingAnalysis_LDFLAGS        =	@ldflags@
+HadronFullDecayNoAnalysis_SOURCES = Main_HadronFullDecayNoAnalysis.C
+HadronFullDecayNoAnalysis_LDADD   = $(FULL_LDADD)
+HadronFullDecayNoAnalysis_LDFLAGS = @ldflags@
 
+HadronFullDecayMixingAnalysis_SOURCES = Main_HadronFullDecayMixingAnalysis.C
+HadronFullDecayMixingAnalysis_LDADD   = $(FULL_LDADD)
+HadronFullDecayMixingAnalysis_LDFLAGS = @ldflags@
 
-HadronFullDecayInclusiveAnalysis_SOURCES        =	Main_HadronFullDecayInclusiveAnalysis.C
-HadronFullDecayInclusiveAnalysis_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \
-	@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
-HadronFullDecayInclusiveAnalysis_LDFLAGS        =	@ldflags@
+HadronFullDecayInclusiveAnalysis_SOURCES = Main_HadronFullDecayInclusiveAnalysis.C
+HadronFullDecayInclusiveAnalysis_LDADD   = $(FULL_LDADD)
+HadronFullDecayInclusiveAnalysis_LDFLAGS = @ldflags@
 
-PhotonAnalysis_SOURCES        =	Main_PhotonFullDistributionAnalysis.C
-PhotonAnalysis_LDADD  =	$(SYSLIBS) -L$(pkglibdir) -lSherpaMain \
-	@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
-PhotonAnalysis_LDFLAGS        =	@ldflags@
+PhotonAnalysis_SOURCES = Main_PhotonFullDistributionAnalysis.C
+PhotonAnalysis_LDADD   = $(FULL_LDADD)
+PhotonAnalysis_LDFLAGS = @ldflags@
 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
