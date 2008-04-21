@@ -396,6 +396,8 @@ void Hadron_Init::Init() {
   s_kftable[kf_pi]->m_majorana=-1;
   s_kftable[kf_eta]->m_majorana=-1;
   s_kftable[kf_eta_prime_958]->m_majorana=-1;
+  s_kftable[kf_K_L]->m_majorana=-1;
+  s_kftable[kf_K_S]->m_majorana=-1;
   s_kftable[kf_eta_c_1S]->m_majorana=-1;
   s_kftable[kf_eta_b]->m_majorana=-1;
   s_kftable[kf_rho_770]->m_majorana=-1;
