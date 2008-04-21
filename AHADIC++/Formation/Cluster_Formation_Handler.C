@@ -178,7 +178,6 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
       if(shiftables.empty()) {
 	delete nonshiftables.front();
 	Reset();
-	assert(0);    //preliminary
 	return false;
       }
       pplin=SelectFromList(&shiftables);
@@ -223,7 +222,6 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
       while(!shiftables.empty()) {
 	delete shiftables.front(); shiftables.pop_front();}
       Reset();
-      assert(0);    //preliminary
       return false;
     }
     delete pplist;
