@@ -79,7 +79,7 @@ namespace AMEGIC {
     void                WriteAlternativeName(std::string); 
     bool                CheckAlternatives(std::vector<Process_Base *> &,int,std::string);
     std::string         CreateLibName();
-    void                CreateMappingFile();
+    void                CreateMappingFile(Single_Process*);
     void                UpdateMappingFile(std::string,std::map<std::string,Complex> &); 
     bool                CreateChannelLibrary();
   public:
@@ -91,6 +91,7 @@ namespace AMEGIC {
     int                 InitAmplitude(MODEL::Model_Base *,Topology *);
     void                InitDecay(Topology* top); 
     bool                SetUpIntegrator();
+    void                WriteMomFlavs(std::ofstream& to) { p_BS->WriteMomFlavs(to); }
     bool                IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
     String_Handler    * GetStringHandler()             { return p_shand;}
     Amplitude_Handler * GetAmplitudeHandler()          { return p_ampl;}
