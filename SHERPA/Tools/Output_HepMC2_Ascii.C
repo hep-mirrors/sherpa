@@ -17,6 +17,11 @@ Output_HepMC2_Ascii::Output_HepMC2_Ascii(string basename,string ext,
     THROW(fatal_error, "Could not open event file "+m_basename+ext+".")
 }
 
+Output_HepMC2_Ascii::~Output_HepMC2_Ascii()
+{
+  if(p_ioascii) delete p_ioascii; p_ioascii=NULL;
+}
+
 void Output_HepMC2_Ascii::Output(Blob_List* blobs, const double weight) 
 {
   m_hepmc2.Sherpa2HepMC(blobs);

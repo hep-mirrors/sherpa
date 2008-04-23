@@ -12,6 +12,7 @@ namespace SHERPA {
     HepMC::IO_Ascii* p_ioascii;
   public:
     Output_HepMC2_Ascii(std::string basename,std::string ext,int precision);
+    ~Output_HepMC2_Ascii();
     void Output(ATOOLS::Blob_List* blobs, double weight);
     void ChangeFile(std::string number);
   };
