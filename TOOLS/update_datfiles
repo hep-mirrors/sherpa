@@ -176,5 +176,15 @@ for j in $ifile; do
       if test -f $i; then sed -e's/^/  /g' < $i >> $sumname; fi
     echo "}("$nfname")" >> $sumname
   done
+  sed -e'/BEAM_DATA_FILE/ d' \
+      -e'/ISR_DATA_FILE/ d' \
+      -e'/MODEL_DATA_FILE/ d' \
+      -e'/ME_DATA_FILE/ d' \
+      -e'/MI_DATA_FILE/ d' \
+      -e'/SHOWER_DATA_FILE/ d' \
+      -e'/FRAGMENTATION_DATA_FILE/ d' \
+      -e'/PROCESSFILE/ d' \
+      -e'/SELECTORFILE/ d' < $sumname > $sumname~
+  mv $sumname~ $sumname
   echo "} done"
 done
