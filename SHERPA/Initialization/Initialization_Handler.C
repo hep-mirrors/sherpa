@@ -109,8 +109,6 @@ void Initialization_Handler::SetFileNames()
   Read_Write_Base cf(1,0," ",";","!","=");
   cf.SetAddCommandLine(false);
   cf.SetInputPath(m_path);
-  cf.SetInputFile(fname+"|(particle){|}(particle)");
-  cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(beam){|}(beam)");
   if (cf.RereadInFile()) m_beamremnantdat=m_beamdat=fname+"|(beam){|}(beam)";
   cf.ClearFileBegin(); cf.ClearFileEnd();
@@ -128,6 +126,9 @@ void Initialization_Handler::SetFileNames()
   cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(selector){|}(selector)");
   if (cf.RereadInFile()) selectordat=fname+"|(selector){|}(selector)";
+  cf.ClearFileBegin(); cf.ClearFileEnd();
+  cf.SetInputFile(fname+"|(integration){|}(integration)");
+  if (cf.RereadInFile()) integrationdat=fname+"|(integration){|}(integration)";
   cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(mi){|}(mi)");
   if (cf.RereadInFile()) m_midat=fname+"|(mi){|}(mi)";
@@ -385,6 +386,13 @@ bool Initialization_Handler::InitializeTheExternalMC()
 bool Initialization_Handler::InitializeTheModel()
 {
   if (p_model) delete p_model;
+  //determine and set scale for coupling initialization
+  Data_Reader beamer(" ",";","!","=");
+  beamer.AddWordSeparator("\t");
+  beamer.SetInputFile(m_path+m_beamdat);
+  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
+  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",0.0);
+  rpa.gen.SetCplScale(4.*beam1*beam2);
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);

@@ -166,16 +166,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   s_loader->AddPath(rpa.gen.Variable("SHERPA_RUN_PATH"));
 
-  //determine and set scale for coupling initialization
-  std::string beamdat=dr.GetValue<std::string>("BEAM_DATA_FILE",std::string("Beam.dat"));
-  Data_Reader beamer(" ",";","!","=");
-  beamer.AddWordSeparator("\t");
-  beamer.SetInputFile(path+std::string("/")+beamdat);
-  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
-  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",0.0);
-  rpa.gen.SetCplScale(4.*beam1*beam2);
-  //
-
   // read only if defined (no error message if not defined)
   Data_Reader dreader(" ",";","!","=");
   dreader.AddWordSeparator("\t");
