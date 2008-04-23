@@ -104,9 +104,9 @@ namespace PHASIC {
 
 #ifdef USING__Threading
     pthread_t m_met, m_pst;
-    size_t m_sigme, m_sigps, m_uset;
-    pthread_mutex_t m_sigme_mtx, m_sigps_mtx;
-    pthread_cond_t m_sigme_cnd, m_sigps_cnd;
+    size_t m_sig, m_uset;
+    pthread_mutex_t m_sme_mtx, m_sps_mtx, m_tme_mtx, m_tps_mtx;
+    pthread_cond_t m_sme_cnd, m_sps_cnd, m_tme_cnd, m_tps_cnd;
 
     static void *CalculateME(void *arg);
     static void *CalculatePS(void *arg);

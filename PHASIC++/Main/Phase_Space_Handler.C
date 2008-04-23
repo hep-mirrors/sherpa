@@ -172,42 +172,53 @@ double Phase_Space_Handler::Integrate()
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
 #ifdef USING__Threading
-  m_sigps=m_sigme=2;
-  pthread_mutex_init(&m_sigme_mtx,NULL);
-  pthread_mutex_init(&m_sigps_mtx,NULL);
-  pthread_cond_init(&m_sigme_cnd,NULL);
-  pthread_cond_init(&m_sigps_cnd,NULL);
+  pthread_cond_init(&m_sme_cnd,NULL);
+  pthread_cond_init(&m_tme_cnd,NULL);
+  pthread_mutex_init(&m_sme_mtx,NULL);
+  pthread_mutex_init(&m_tme_mtx,NULL);
+  pthread_mutex_lock(&m_sme_mtx);
+  pthread_mutex_lock(&m_tme_mtx);
+  pthread_cond_init(&m_sps_cnd,NULL);
+  pthread_cond_init(&m_tps_cnd,NULL);
+  pthread_mutex_init(&m_sps_mtx,NULL);
+  pthread_mutex_init(&m_tps_mtx,NULL);
+  pthread_mutex_lock(&m_sps_mtx);
+  pthread_mutex_lock(&m_tps_mtx);
+  m_uset=1;
+  m_sig=1;
   int tec(0);
   if ((tec=pthread_create(&m_met,NULL,&CalculateME,(void*)this))) {
     THROW(fatal_error,"Cannot create matrix element thread");
   }
   if ((tec=pthread_create(&m_pst,NULL,&CalculatePS,(void*)this)))
     THROW(fatal_error,"Cannot create phase space thread");
-  m_uset=1;
 #endif
   double res(0.0);
   if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_fin_opt);
   if (m_nin==1) res=p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
 #ifdef USING__Threading
   m_uset=0;
+  m_sig=0;
   // terminate ps calc thread
-  pthread_mutex_lock(&m_sigps_mtx);
-  m_sigps=0;
-  pthread_mutex_unlock(&m_sigps_mtx);
-  pthread_cond_signal(&m_sigps_cnd);
+  pthread_cond_wait(&m_sps_cnd,&m_sps_mtx);
+  if ((tec=pthread_join(m_pst,NULL)))OB
+    THROW(fatal_error,"Cannot join phase space thread");
+  pthread_mutex_unlock(&m_tps_mtx);
+  pthread_mutex_unlock(&m_sps_mtx);
+  pthread_mutex_destroy(&m_tps_mtx);
+  pthread_mutex_destroy(&m_sps_mtx);
+  pthread_cond_destroy(&m_tps_cnd);
+  pthread_cond_destroy(&m_sps_cnd);
   // terminate me calc thread
-  pthread_mutex_lock(&m_sigme_mtx);
-  m_sigme=0;
-  pthread_mutex_unlock(&m_sigme_mtx);
-  pthread_cond_signal(&m_sigme_cnd);
+  pthread_cond_wait(&m_sme_cnd,&m_sme_mtx);
   if ((tec=pthread_join(m_met,NULL)))
     THROW(fatal_error,"Cannot join matrix element thread");
-  if ((tec=pthread_join(m_pst,NULL)))
-    THROW(fatal_error,"Cannot join phase space thread");
-  pthread_mutex_destroy(&m_sigme_mtx);
-  pthread_mutex_destroy(&m_sigps_mtx);
-  pthread_cond_destroy(&m_sigme_cnd);
-  pthread_cond_destroy(&m_sigps_cnd);
+  pthread_mutex_unlock(&m_tme_mtx);
+  pthread_mutex_unlock(&m_sme_mtx);
+  pthread_mutex_destroy(&m_tme_mtx);
+  pthread_mutex_destroy(&m_sme_mtx);
+  pthread_cond_destroy(&m_tme_cnd);
+  pthread_cond_destroy(&m_sme_cnd);
 #endif
   return res;
 }
@@ -305,20 +316,13 @@ void *Phase_Space_Handler::CalculateME(void *arg)
   Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
   while (true) {
     // wait for psh to signal
-    pthread_mutex_lock(&psh->m_sigme_mtx);
-    if (psh->m_sigme==2) 
-      pthread_cond_wait(&psh->m_sigme_cnd,&psh->m_sigme_mtx);
-    if (psh->m_sigme==0) {
-      pthread_mutex_unlock(&psh->m_sigme_mtx);
-      return NULL;
-    }
-    pthread_mutex_unlock(&psh->m_sigme_mtx);
+    pthread_mutex_lock(&psh->m_sme_mtx);
+    pthread_mutex_unlock(&psh->m_sme_mtx);
+    pthread_cond_signal(&psh->m_sme_cnd);
+    if (psh->m_sig==0) return NULL;
     psh->CalculateME();
     // signal psh to continue
-    pthread_mutex_lock(&psh->m_sigme_mtx);
-    psh->m_sigme=2;
-    pthread_mutex_unlock(&psh->m_sigme_mtx);
-    pthread_cond_signal(&psh->m_sigme_cnd);
+    pthread_cond_wait(&psh->m_tme_cnd,&psh->m_tme_mtx);
   }
   return NULL;
 }
@@ -328,20 +332,13 @@ void *Phase_Space_Handler::CalculatePS(void *arg)
   Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
   while (true) {
     // wait for psh to signal
-    pthread_mutex_lock(&psh->m_sigps_mtx);
-    if (psh->m_sigps==2) 
-      pthread_cond_wait(&psh->m_sigps_cnd,&psh->m_sigps_mtx);
-    if (psh->m_sigps==0) {
-      pthread_mutex_unlock(&psh->m_sigps_mtx);
-      return NULL;
-    }
-    pthread_mutex_unlock(&psh->m_sigps_mtx);
+    pthread_mutex_lock(&psh->m_sps_mtx);
+    pthread_mutex_unlock(&psh->m_sps_mtx);
+    pthread_cond_signal(&psh->m_sps_cnd);
+    if (psh->m_sig==0) return NULL;
     psh->CalculatePS();
     // signal psh to continue
-    pthread_mutex_lock(&psh->m_sigps_mtx);
-    psh->m_sigps=2;
-    pthread_mutex_unlock(&psh->m_sigps_mtx);
-    pthread_cond_signal(&psh->m_sigps_cnd);
+    pthread_cond_wait(&psh->m_tps_cnd,&psh->m_tps_mtx);
   }
   return NULL;
 }
@@ -416,23 +413,17 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 #ifdef USING__Threading
     if (m_uset) {
       // start me calc
-      pthread_mutex_lock(&m_sigme_mtx);
-      m_sigme=1;
-      pthread_mutex_unlock(&m_sigme_mtx);
-      pthread_cond_signal(&m_sigme_cnd);
+      pthread_cond_wait(&m_sme_cnd,&m_sme_mtx);
       // start ps calc
-      pthread_mutex_lock(&m_sigps_mtx);
-      m_sigps=1;
-      pthread_mutex_unlock(&m_sigps_mtx);
-      pthread_cond_signal(&m_sigps_cnd);
+      pthread_cond_wait(&m_sps_cnd,&m_sps_mtx);
       // wait for ps calc to finish
-      pthread_mutex_lock(&m_sigps_mtx);
-      if (m_sigps!=2) pthread_cond_wait(&m_sigps_cnd,&m_sigps_mtx);
-      pthread_mutex_unlock(&m_sigps_mtx);
+      pthread_mutex_lock(&m_tps_mtx);
+      pthread_mutex_unlock(&m_tps_mtx);
+      pthread_cond_signal(&m_tps_cnd);
       // wait for me calc to finish
-      pthread_mutex_lock(&m_sigme_mtx);
-      if (m_sigme!=2) pthread_cond_wait(&m_sigme_cnd,&m_sigme_mtx);
-      pthread_mutex_unlock(&m_sigme_mtx);
+      pthread_mutex_lock(&m_tme_mtx);
+      pthread_mutex_unlock(&m_tme_mtx);
+      pthread_cond_signal(&m_tme_cnd);
     }
     else {
       CalculateME();
@@ -977,14 +968,12 @@ bool Phase_Space_Handler::MakeBeamChannels()
     ci.parameters.clear();
   }
   else {
-    // Laser Backscattering spectrum
-    //if ((p_flavours[0].IsPhoton()) || (p_flavours[1].IsPhoton())) {
     ci.type = 0;
     (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(1.);
+    (ci.parameters).push_back(0.99);
     m_beamparams.push_back(ci);
     ci.parameters.clear();
-
+    // Laser Backscattering spectrum
     ci.type = 3;
     (ci.parameters).push_back(p_beamhandler->Peak());
     (ci.parameters).push_back(p_beamhandler->Exponent(1));
