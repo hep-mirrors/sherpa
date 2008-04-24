@@ -201,7 +201,7 @@ double Phase_Space_Handler::Integrate()
   m_sig=0;
   // terminate ps calc thread
   pthread_cond_wait(&m_sps_cnd,&m_sps_mtx);
-  if ((tec=pthread_join(m_pst,NULL)))OB
+  if ((tec=pthread_join(m_pst,NULL)))
     THROW(fatal_error,"Cannot join phase space thread");
   pthread_mutex_unlock(&m_tps_mtx);
   pthread_mutex_unlock(&m_sps_mtx);
