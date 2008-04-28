@@ -2,6 +2,7 @@
 #include "Monochromatic.H"
 #include "Spectrum_Reader.H"
 #include "Laser_Backscattering.H"
+#include "EPA.H"
 #include "Run_Parameter.H" 
 #include "Data_Reader.H"
 #include "Message.H"
@@ -61,6 +62,7 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
     else if (bs=="Laser_Backscattering") beam_spectrum=2;
     else if (bs=="Simple_Compton") beam_spectrum=3;
     else if (bs=="Spectrum_Reader") beam_spectrum=4;
+    else if (bs=="EPA") beam_spectrum=5;
     else beam_spectrum = 99;
     if ((beam_spectrum!=Beam_Type::Monochromatic) && (beam_spectrum!=Beam_Type::Gaussian)) 
       spectrum_generator = dataread->GetValue<int>("SPECTRUM_"+number,(int)Beam_Generator::Unknown); 
@@ -78,6 +80,9 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
       dataread->AddCommandLine("LASER_MODE = -1");
     case Beam_Type::Laser_Back :
       okay = okay&&InitializeLaserBackscattering(dataread,num);
+      break;
+    case Beam_Type::EPA :
+      okay = okay&&InitializeEPA(dataread,num);
       break;
     case Beam_Type::Spec_Read :
       okay = okay&&InitializeSpectrumReader(dataread,num);
@@ -159,6 +164,32 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int nu
 }
 
 
+bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num) 
+{
+  std::string number(ToString(num+1));
+  int     flav              = dataread->GetValue<int>("BEAM_"+number,num+1);  
+  InitializeFlav((kf_code)abs(flav));
+  Flavour beam_particle     = Flavour((kf_code)(abs(flav)));
+  if (flav<0) beam_particle = beam_particle.Bar();
+
+  //  msg.Out()<<" Flavour(kf::p_plus)="<<Flavour(kf::p_plus)<<endl;
+    if ( (beam_particle!=Flavour(kf_p_plus)) && (beam_particle!=Flavour(kf_p_plus).Bar()) ) {
+    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
+	       <<"   Tried to initialize EPA for "<<beam_particle<<"."<<endl
+	       <<"   This option is not available. Result will be to terminate program."<<endl;
+    return 0;
+    }
+    //  msg.Out()<<"InitializeEPA; flav "<<flav<<" kf::code="<< kf::code(flav) << endl; // 
+  
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
+  double  beam_mass         = beam_particle.PSMass();
+  double  beam_charge       = beam_particle.Charge();
+  p_BeamBase[num]           = new EPA(beam_particle,beam_mass,beam_charge,
+				      beam_energy,beam_polarization,1-2*num,dataread);
+  return 1;
+}
+
 bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
  
   // cms system from beam momenta - this is for potential asymmetric collisions.
@@ -166,6 +197,7 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
   double s      = P.Abs2();
   double E      = sqrt(s);
   rpa.gen.SetEcms(E);
+  Read_Write_Base::AddGlobalTag("E_CMS",ToString(rpa.gen.Ecms()));
 
   m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN",1e-10);
   m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX",1.0),Upper1()*Upper2());

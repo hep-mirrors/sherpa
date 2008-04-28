@@ -13,6 +13,7 @@ namespace BEAM {
 	        Laser_Back     = 2,
 	        Simple_Compton = 3,
 		Spec_Read      = 4,
+		EPA            = 5,
 	        Unknown        = 99
     };
   };
