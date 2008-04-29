@@ -31,28 +31,30 @@ Current_Base::~Current_Base()
   if (p_masses!=NULL) delete[] p_masses; p_masses=NULL;
 }
 
-
-void HADRONS::ContractCurrents( HADRONS::Current_Base* c1,
-                                HADRONS::Current_Base* c2,
-                                const ATOOLS::Vec4D * moms,
-                                Complex mefactor,
-                                HELICITIES::Spin_Amplitudes* amps)
-{
-  c1->Calc(moms);
-  c2->Calc(moms);
-
-  std::vector<int> spins,spins1,spins2;
-  for(size_t i=0;i<amps->size();i++) {
-    spins=amps->GetSpinCombination(i);
-    spins1.clear(); spins2.clear();
-    for(size_t j=0;j<c1->GetN();j++) spins1.push_back(spins[c1->DecayIndices()[j]]);
-    for(size_t j=0;j<c2->GetN();j++) spins2.push_back(spins[c2->DecayIndices()[j]]);
-    // now we know the spin combinations in both currents, let's fill the results:
-    (*amps)[i]+=mefactor*c1->Get(spins1)*c2->Get(spins2);
-  }
-}
-
 namespace HADRONS {
+  void ContractCurrents(HADRONS::Current_Base* c1,
+                        HADRONS::Current_Base* c2,
+                        const ATOOLS::Vec4D * moms,
+                        Complex mefactor,
+                        HELICITIES::Spin_Amplitudes* amps)
+  {
+    c1->Calc(moms);
+    c2->Calc(moms);
+    
+    std::vector<int> spins,spins1,spins2;
+    for(size_t i=0;i<amps->size();i++) {
+      spins=amps->GetSpinCombination(i);
+      spins1.clear(); spins2.clear();
+      for(size_t j=0;j<c1->GetN();j++)
+        spins1.push_back(spins[c1->DecayIndices()[j]]);
+      for(size_t j=0;j<c2->GetN();j++)
+        spins2.push_back(spins[c2->DecayIndices()[j]]);
+      // now we know the spin combinations in both currents
+      // let's fill the results:
+      (*amps)[i]+=mefactor*c1->Get(spins1)*c2->Get(spins2);
+    }
+  }
+
   std::ostream& operator<<(std::ostream& s, const HADRONS::Current_Base& cb)
   {
     s<<cb.Name()<<" current with "<<cb.size()<<" spin combinations:"<<endl;
