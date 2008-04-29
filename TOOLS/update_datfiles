@@ -233,6 +233,7 @@ print_help() {
     echo "         -d        diff after applying changes" && \
     echo "         -n        do not combine into one file" && \
     echo "         -c        combine into one file only" && \
+    echo "         -o        clean up all old files after finish" && \
     echo "         -h        display this help and exit" && echo
 }
 
@@ -241,7 +242,8 @@ revert=0
 diffs=0
 nocomb=0
 conly=0
-while getopts :i:rdnch OPT
+cleanup=0
+while getopts :i:rdncho OPT
 do
   case $OPT in
   i) ifile=$OPTARG ;;
@@ -249,6 +251,7 @@ do
   d) diffs=1 ;;
   n) nocomb=1 ;;
   c) conly=1 ;;
+  o) cleanup=1 ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -341,3 +344,19 @@ for j in $ifile; do
   mv $rundat.new $rundat
   echo "} done"
 done
+
+if test $cleanup -eq 1; then
+  rm *.old
+  olddatfiles=$(ls *.dat | grep -v "Run\.dat" | grep -v "Analysis\.dat")
+  for i in $olddatfiles; do
+    if test -d .svn; then
+      svn rm --force $i
+    else
+      rm $i
+    fi
+  done
+  if test -d .svn; then
+    svn rm --force Hadron.dat
+    svn rm --force Particle.dat
+  fi
+fi
