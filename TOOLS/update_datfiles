@@ -77,6 +77,155 @@ replace_spaces() {
 
 }
 
+update_kfcodes() {
+if ! test -f $1.old; then cp $1 $1.old; fi
+sed ':a;N;$!ba
+s/\(\s\)27/\1#27#/g
+s/\(\s\)-27/\1#-27#/g
+s/\(\s\)28/\1#28#/g
+s/\(\s\)-28/\1#-28#/g
+s/\(\s\)71/\1#71#/g
+s/\(\s\)-71/\1#-71#/g
+s/\(\s\)62/\1#62#/g
+s/\(\s\)-62/\1#-62#/g
+s/\(\s\)53/\1#53#/g
+s/\(\s\)-53/\1#-53#/g
+s/\(\s\)44/\1#44#/g
+s/\(\s\)-44/\1#-44#/g
+s/\(\s\)81/\1#81#/g
+s/\(\s\)-81/\1#-81#/g
+s/\(\s\)72/\1#72#/g
+s/\(\s\)-72/\1#-72#/g
+s/\(\s\)63/\1#63#/g
+s/\(\s\)-63/\1#-63#/g
+s/\(\s\)54/\1#54#/g
+s/\(\s\)-54/\1#-54#/g
+s/\(\s\)45/\1#45#/g
+s/\(\s\)-45/\1#-45#/g
+s/\(\s\)82/\1#82#/g
+s/\(\s\)-82/\1#-82#/g
+s/\(\s\)73/\1#73#/g
+s/\(\s\)-73/\1#-73#/g
+s/\(\s\)64/\1#64#/g
+s/\(\s\)-64/\1#-64#/g
+s/\(\s\)55/\1#55#/g
+s/\(\s\)-55/\1#-55#/g
+s/\(\s\)46/\1#46#/g
+s/\(\s\)-46/\1#-46#/g
+s/\(\s\)83/\1#83#/g
+s/\(\s\)-83/\1#-83#/g
+s/\(\s\)74/\1#74#/g
+s/\(\s\)-74/\1#-74#/g
+s/\(\s\)65/\1#65#/g
+s/\(\s\)-65/\1#-65#/g
+s/\(\s\)56/\1#56#/g
+s/\(\s\)-56/\1#-56#/g
+s/\(\s\)47/\1#47#/g
+s/\(\s\)-47/\1#-47#/g
+s/\(\s\)75/\1#75#/g
+s/\(\s\)-75/\1#-75#/g
+s/\(\s\)66/\1#66#/g
+s/\(\s\)-66/\1#-66#/g
+s/\(\s\)76/\1#76#/g
+s/\(\s\)-76/\1#-76#/g
+s/\(\s\)31/\1#31#/g
+s/\(\s\)-31/\1#-31#/g
+s/\(\s\)41/\1#41#/g
+s/\(\s\)-41/\1#-41#/g
+s/\(\s\)32/\1#32#/g
+s/\(\s\)-32/\1#-32#/g
+s/\(\s\)51/\1#51#/g
+s/\(\s\)-51/\1#-51#/g
+s/\(\s\)42/\1#42#/g
+s/\(\s\)-42/\1#-42#/g
+s/\(\s\)33/\1#33#/g
+s/\(\s\)-33/\1#-33#/g
+s/\(\s\)24/\1#24#/g
+s/\(\s\)-24/\1#-24#/g
+s/\(\s\)23/\1#23#/g
+s/\(\s\)-23/\1#-23#/g
+s/\(\s\)61/\1#61#/g
+s/\(\s\)-61/\1#-61#/g
+s/\(\s\)52/\1#52#/g
+s/\(\s\)-52/\1#-52#/g
+s/\(\s\)43/\1#43#/g
+s/\(\s\)-43/\1#-43#/g
+' < $1.old > $1~
+sed ':a;N;$!ba
+s/\(\s\)#27#/\139/g
+s/\(\s\)#-27#/\1-39/g
+s/\(\s\)#28#/\140/g
+s/\(\s\)#-28#/\1-40/g
+s/\(\s\)#71#/\11000011/g
+s/\(\s\)#-71#/\1-1000011/g
+s/\(\s\)#62#/\11000003/g
+s/\(\s\)#-62#/\1-1000003/g
+s/\(\s\)#53#/\11000006/g
+s/\(\s\)#-53#/\1-1000006/g
+s/\(\s\)#44#/\11000023/g
+s/\(\s\)#-44#/\1-1000023/g
+s/\(\s\)#81#/\11000012/g
+s/\(\s\)#-81#/\1-1000012/g
+s/\(\s\)#72#/\11000013/g
+s/\(\s\)#-72#/\1-1000013/g
+s/\(\s\)#63#/\11000005/g
+s/\(\s\)#-63#/\1-1000005/g
+s/\(\s\)#54#/\12000002/g
+s/\(\s\)#-54#/\1-2000002/g
+s/\(\s\)#45#/\11000025/g
+s/\(\s\)#-45#/\1-1000025/g
+s/\(\s\)#82#/\11000014/g
+s/\(\s\)#-82#/\1-1000014/g
+s/\(\s\)#73#/\11000015/g
+s/\(\s\)#-73#/\1-1000015/g
+s/\(\s\)#64#/\12000001/g
+s/\(\s\)#-64#/\1-2000001/g
+s/\(\s\)#55#/\12000004/g
+s/\(\s\)#-55#/\1-2000004/g
+s/\(\s\)#46#/\11000035/g
+s/\(\s\)#-46#/\1-1000035/g
+s/\(\s\)#83#/\11000016/g
+s/\(\s\)#-83#/\1-1000016/g
+s/\(\s\)#74#/\12000011/g
+s/\(\s\)#-74#/\1-2000011/g
+s/\(\s\)#65#/\12000003/g
+s/\(\s\)#-65#/\1-2000003/g
+s/\(\s\)#56#/\12000006/g
+s/\(\s\)#-56#/\1-2000006/g
+s/\(\s\)#47#/\11000021/g
+s/\(\s\)#-47#/\1-1000021/g
+s/\(\s\)#75#/\12000013/g
+s/\(\s\)#-75#/\1-2000013/g
+s/\(\s\)#66#/\12000005/g
+s/\(\s\)#-66#/\1-2000005/g
+s/\(\s\)#76#/\12000015/g
+s/\(\s\)#-76#/\1-2000015/g
+s/\(\s\)#31#/\125/g
+s/\(\s\)#-31#/\1-25/g
+s/\(\s\)#41#/\11000024/g
+s/\(\s\)#-41#/\1-1000024/g
+s/\(\s\)#32#/\135/g
+s/\(\s\)#-32#/\1-35/g
+s/\(\s\)#51#/\11000002/g
+s/\(\s\)#-51#/\1-1000002/g
+s/\(\s\)#42#/\11000037/g
+s/\(\s\)#-42#/\1-1000037/g
+s/\(\s\)#33#/\136/g
+s/\(\s\)#-33#/\1-36/g
+s/\(\s\)#24#/\123/g
+s/\(\s\)#-24#/\1-23/g
+s/\(\s\)#23#/\1-24/g
+s/\(\s\)#-23#/\124/g
+s/\(\s\)#61#/\11000001/g
+s/\(\s\)#-61#/\1-1000001/g
+s/\(\s\)#52#/\11000004/g
+s/\(\s\)#-52#/\1-1000004/g
+s/\(\s\)#43#/\11000022/g
+s/\(\s\)#-43#/\1-1000022/g
+' < $1~ > $1
+rm $1~
+}
+
 print_help() {
     echo "update_datfiles version 1.0" && echo && \
     echo "options: -i <file> act on input file <file>" && \
@@ -112,11 +261,15 @@ do
 done
 
 if test -f Particle.dat; then
-  echo -e "\033[1mwarning:\033[31m 'Particle.dat' is no longer used\033[0m"
+  echo -e "\033[1mwarning:\033[31m 'Particle.dat' is no longer used."
+  echo -e "Please add your modifications to the model section of Run.dat."
+  echo -e "\033[0m"
   mv Particle.dat Particle.dat.old
 fi
 if test -f Hadron.dat; then
-  echo -e "\033[1mwarning:\033[31m 'Hadron.dat' is no longer used\033[0m"
+  echo -e "\033[1mwarning:\033[31m 'Hadron.dat' is no longer used."
+  echo -e "Please add your modifications to the fragmentation section."
+  echo -e "\033[0m"
   mv Hadron.dat Hadron.dat.old
 fi
 if test $conly -eq 0; then
@@ -144,6 +297,7 @@ if test $conly -eq 0; then
         mv $i~ $i
         echo "done"
       done
+      update_kfcodes "Processes.dat"
       echo "old inputs stored in '*.old'"
     fi
     if test $diffs -eq 1; then
@@ -162,9 +316,8 @@ if test $nocomb -eq 1; then exit; fi
 for j in $ifile; do
   rundat=`echo $j | sed -e's/\*/./g'`
   cf=`get_filenames $j 0`
-  sumname=`echo $rundat | sed -e's/Run/All/g'`
-  echo "writing setup in '$rundat' to '$sumname' {"
-  echo -n > $sumname
+  echo "writing setup in '$rundat' {"
+  echo -n > $rundat.new
   for i in $cf; do
     if ! test -f $i; then 
       echo "  file '$i' not found ... skipped"
@@ -172,9 +325,9 @@ for j in $ifile; do
     fi
     echo "  adding file '$i'"
     nfname=`echo $i | awk '{ split($1,a,".dat"); print tolower(a[1]); }'`
-    echo "("$nfname"){" >> $sumname
-      if test -f $i; then sed -e's/^/  /g' < $i >> $sumname; fi
-    echo "}("$nfname")" >> $sumname
+    echo "("$nfname"){" >> $rundat.new
+      if test -f $i; then sed -e's/^/  /g' < $i >> $rundat.new; fi
+    echo "}("$nfname")" >> $rundat.new
   done
   sed -e'/BEAM_DATA_FILE/ d' \
       -e'/ISR_DATA_FILE/ d' \
@@ -184,7 +337,7 @@ for j in $ifile; do
       -e'/SHOWER_DATA_FILE/ d' \
       -e'/FRAGMENTATION_DATA_FILE/ d' \
       -e'/PROCESSFILE/ d' \
-      -e'/SELECTORFILE/ d' < $sumname > $sumname~
-  mv $sumname~ $sumname
+      -e'/SELECTORFILE/ d' -i $rundat.new
+  mv $rundat.new $rundat
   echo "} done"
 done
