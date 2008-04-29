@@ -55,7 +55,7 @@ pkginclude_HEADERS = \
 		      		Interaction_Model_MSSM_EHC.H 
 
 
-CXXFLAGS   =-g @SHERPAFLAGS@
+AM_CXXFLAGS   =-g @SHERPAFLAGS@
 
 INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
 
