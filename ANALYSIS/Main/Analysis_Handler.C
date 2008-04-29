@@ -156,6 +156,9 @@ bool Analysis_Handler::ReadIn()
     std::string maxjettag;
     if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
     m_analyses.back()->SetMaxJetTag(maxjettag);
+    int splitjetconts;
+    if (!reader.ReadFromFile(splitjetconts,"JETCONTS")) splitjetconts=1;
+    m_analyses.back()->SetSplitJetConts(splitjetconts);
     reader.MatrixFromFile(helpsvv,"");
     Argument_Matrix arguments(helpsvv);
     for (size_t k=0;k<helpsvv.size();++k) {

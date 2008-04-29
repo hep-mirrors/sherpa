@@ -210,7 +210,8 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     mode=m_mode^ANALYSIS::splitt_jetseeds;
     if (mode&ANALYSIS::splitt_extra)
       mode=m_mode^ANALYSIS::splitt_extra;
-    mode=mode|ANALYSIS::output_this;
+    if (!m_splitjetconts)
+      mode=mode-(mode&ANALYSIS::output_this);
     std::string fsname(pname.substr(pname.find("__")+3));
     fsname=fsname.substr(fsname.find("__")+3);
     fsname=fsname.substr(fsname.find("__")+3);

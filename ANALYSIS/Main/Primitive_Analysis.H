@@ -77,7 +77,7 @@ namespace ANALYSIS {
     Primitive_Analysis   * p_partner;
     Weight_Statistics      m_stats;
 
-    bool  m_active;
+    bool  m_active, m_splitjetconts;
 
     std::string JetID(std::string name,std::string max) const;
     
@@ -121,6 +121,7 @@ namespace ANALYSIS {
     
     // inline methods
     inline void SetMaxJetTag(const std::string &tag) { m_maxjettag=tag; }
+    inline void SetSplitJetConts(bool tag) { m_splitjetconts=tag; }
 
     inline const std::string &Name() const { return m_name; }
     inline const int          Mode() const { return m_mode; }
