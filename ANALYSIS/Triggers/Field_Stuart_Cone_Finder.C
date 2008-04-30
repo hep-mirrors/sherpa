@@ -106,10 +106,13 @@ public:
     }
     // delete obsolete
     for (ATOOLS::Particle_List::iterator pit=jetlist->begin();
-	 pit!=jetlist->end();++pit) {
+	 pit!=jetlist->end();) {
       if (*pit==NULL) {
 	jetlist->erase(pit);
 	pit=jetlist->begin();
+      }
+      else {
+	++pit;
       }
     }
     for (ATOOLS::Particle_List::iterator pit=addlist.begin();
