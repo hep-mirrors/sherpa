@@ -51,8 +51,8 @@ bool Function_Base::IterateBisection(double& root, double& x_lower, double& x_up
 
   double x_bisect,f_bisect;
 
-  const double f_lower = x_lower;
-  const double f_upper = x_upper;
+  const double f_lower = this->GetValue(x_lower);
+  const double f_upper = this->GetValue(x_upper);
 
 
   if ( fabs(f_lower-0.0)<precision )
@@ -70,7 +70,7 @@ bool Function_Base::IterateBisection(double& root, double& x_lower, double& x_up
     }
 
   x_bisect = ( x_lower + x_upper) / 2.0;
-  f_bisect = (*this)(x_bisect);
+  f_bisect = this->GetValue(x_bisect);
 
   if ((f_lower > 0.0 && f_bisect < 0.0) || (f_lower < 0.0 && f_bisect > 0.0))
     {
