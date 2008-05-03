@@ -56,20 +56,15 @@ namespace AMISIC {
       fills the respective histograms.
     */
 
-    bool InitializeCalculation();
+    bool InitializeCalculation(EXTRAXS::XS_Group *const process);
     /*!
       \fn bool InitializeCalculation()
       \brief Initializes the calculation.
     */
-    bool CreateInitialGrid();
+    bool CreateGrid(EXTRAXS::XS_Group *const process);
     /*!
       \fn bool CreateInitialGrid()
-      \brief Creates the initial grid.
-    */
-    bool CreateOptimizedGrid();
-    /*!
-      \fn bool CreateOptimizedGrid()
-      \brief Minimizes the error of the grid.
+      \brief Creates the grid.
     */
     
     friend class Simple_Chain;

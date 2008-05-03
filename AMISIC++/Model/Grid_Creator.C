@@ -146,19 +146,19 @@ bool Grid_Creator::ReadInGrid()
   return true;
 }
 
-bool Grid_Creator::InitializeCalculation()
+bool Grid_Creator::InitializeCalculation(EXTRAXS::XS_Group *const processes)
 {
   int helpi=0;
   m_criterion=p_xaxis->Variable()->SelectorID();
   std::vector<ATOOLS::Flavour> flavours(1,(kf_jet));
   std::vector<std::pair<double,double> > bounds
     (1,std::pair<double,double>(m_gridxmin,m_gridxmax));
-  p_processes->SelectorData()->
+  processes->SelectorData()->
     SetData(m_criterion,flavours,bounds,helpi);
-  p_processes->ResetSelector(p_processes->SelectorData());
-  p_processes->Reset();
-  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()
-				  +MCExtension(),true);
+  processes->ResetSelector(processes->SelectorData());
+  processes->Reset();
+  processes->CalculateTotalXSec(OutputPath()+OutputFile()
+				+MCExtension(),true);
   return true;
 }
 
@@ -166,11 +166,16 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
+    Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
+    if (process->Max()==0.0) {
+      histo->Add(0.0,0.0); 
+      return true;
+    }
     process->Parent()->SetSelected(process);
     ATOOLS::Blob_Data_Base *xsdata=process->Parent()->SameWeightedEvent();
+    if (xsdata==NULL) return false;
     PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
     delete xsdata;
-    Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
     const ATOOLS::Vec4D *p=process->Momenta();
     double value=(*p_variable)(&p[0]);
     for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,(*p_variable)(&p[i]));
@@ -184,41 +189,20 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
   return true;
 }
 
-bool Grid_Creator::CreateOptimizedGrid()
+bool Grid_Creator::CreateGrid(EXTRAXS::XS_Group *const processes)
 {
-  msg_Info()<<"Grid_Creator::CreateOptimizedGrid(): "
-	    <<"Optimizing grid for MI.\n";
+  msg_Info()<<"Grid_Creator::CreateGrid("<<processes<<"): "
+	    <<"Initializing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   msg_Info()<<ATOOLS::tm::curoff;
   for (;m_events<m_maxevents;++m_events) {
-    if (!UpdateHistogram(p_processes)) return false;
+    if (!UpdateHistogram(processes)) return false;
     if ((m_events%(m_maxevents/100))==0 && m_events>0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
       msg_Info()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
 		<<int(diff)<<" s elapsed / "
 		<<int((m_maxevents-m_events)/(double)m_events*diff)
 		<<" s left / "<<int(m_maxevents/(double)m_events*diff)
-		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
-    }
-  }
-  msg_Info()<<ATOOLS::tm::curon;
-  return true;
-}
-
-bool Grid_Creator::CreateInitialGrid()
-{
-  msg_Info()<<"Grid_Creator::CreateInitialGrid(): "
-	    <<"Initializing grid for MI.\n";
-  double starttime=ATOOLS::rpa.gen.Timer().UserTime();
-  msg_Info()<<ATOOLS::tm::curoff;
-  for (;m_events<m_initevents;++m_events) {
-    if (!UpdateHistogram(p_processes)) return false;
-    if ((m_events%(m_initevents/100))==0 && m_events>0) {
-      double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
-      msg_Info()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
-		<<int(diff)<<" s elapsed / "
-		<<int((m_initevents-m_events)/(double)m_events*diff)
-		<<" s left / "<<int(m_initevents/(double)m_events*diff)
 		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
@@ -247,19 +231,14 @@ bool Grid_Creator::CreateGrid()
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
   msg->SetLevel(m_outputlevel);
-  if (!InitializeCalculation()) {
+  if (!InitializeCalculation(p_processes)) {
     msg_Error()<<"Grid_Creator_Base::CreateGrid(..): "
-		       <<"Initialization failed! Abort."<<std::endl;
+	       <<"Initialization failed! Abort."<<std::endl;
     return false;
   }
-  if (!CreateInitialGrid()) {
+  if (!CreateGrid(p_processes)) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
-		     <<"Initial grid creation failed."<<std::endl;
-    success=false;
-  }
-  if (!CreateOptimizedGrid()) {
-    msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
-		     <<"Sorry, grid cannot be optimized."<<std::endl;
+	     <<"Grid creation failed."<<std::endl;
     success=false;
   }
   if (!WriteOutGrid()) {
