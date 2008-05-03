@@ -17,6 +17,7 @@
 #include "MyStrStream.H"
 #include "Data_Reader.H"
 #include "Library_Loader.H"
+#include "CXXFLAGS_PACKAGES.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
