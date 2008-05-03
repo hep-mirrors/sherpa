@@ -245,7 +245,7 @@ bool Timelike_Sudakov::MassVeto(double t, double E2,double z)
   double psw(1.0);
   if (m_shower==3) {
     // additional phasespace weight
-    psw=sqrt(m_oldt/m_t)*sql(m_t,m_tb,m_tc)/sql(m_oldt,m_tb,m_tc);
+    psw=m_oldt/m_t*sqrt(sql(m_t,m_tb,m_tc)/sql(m_oldt,m_tb,m_tc));
   }
   double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
   if (GetWeight(zlc,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
