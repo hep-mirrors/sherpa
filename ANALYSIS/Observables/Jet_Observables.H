@@ -23,6 +23,7 @@ namespace ANALYSIS {
     Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode, unsigned int minn, unsigned int maxn, 
 			const std::string & listname=std::string("Jets"));
+    virtual ~Jet_Observable_Base();
 
     void Evaluate(const ATOOLS::Particle_List & pl,double weight, int ncount);
     void Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount);

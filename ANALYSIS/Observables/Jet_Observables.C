@@ -113,6 +113,15 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
     m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
 }
 
+Jet_Observable_Base::~Jet_Observable_Base()
+{
+  for (size_t i=0;i<m_histos.size();++i) {
+    delete m_histos[i];
+    m_histos[i]=NULL;
+  }
+  m_histos.clear();
+}
+
 void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
 {
   if ((m_mode==1 && pl.size()>=m_minn) ||
