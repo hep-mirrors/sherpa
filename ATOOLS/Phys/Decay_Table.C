@@ -1,6 +1,7 @@
 #include "Decay_Table.H"
 #include "Random.H"
 #include "Message.H"
+#include "Mass_Handler.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -39,6 +40,57 @@ void Decay_Channel::Output() const
   if (m_metype!=string("")) msg_Out()<<", ME : "<<m_metype;
   if (m_psfile!=string("")) msg_Out()<<", PS : "<<m_psfile;
   msg_Out()<<"."<<endl;
+}
+
+double DCLambda(double a, double b, double c)
+{
+  double L = (sqr(a-b-c)-4.*b*c);
+  if (L>0.0) return sqrt(L)/2/sqrt(a);
+  if (L>-Accu()) return 0.0;
+  msg_Error()<<"m_a="<<sqrt(a)<<" m_b="<<sqrt(b)<<" m_c="<<sqrt(c)<<endl;
+  msg_Error()<<"L="<<L<<endl;
+  THROW(fatal_error,"passed impossible mass combinations.");
+  return 0.;
+}
+
+double DCWeight(double s, double sp, double b, double c)
+{
+  return DCLambda(sp,b,c)/DCLambda(s,b,c)*s/sp;
+}
+
+double Decay_Channel::DiceMass(double min, double max) const
+{
+  double mass=-1.0;
+  double decaymin = MinimalMass();
+  DEBUG_VAR(decaymin);
+  Mass_Handler masshandler(GetDecaying());
+  if(decaymin>max) mass=-1.0;
+  else if (decaymin==0.0) mass = masshandler.GetMass(decaymin, max);
+  else {
+    double s=sqr(GetDecaying().PSMass());
+    double mb(0.0), mc(0.0);
+    for (int i=0; i<NumberOfDecayProducts(); ++i) {
+      mc+=GetDecayProduct(i).PSMass();
+      if(GetDecayProduct(i).PSMass()>mb)
+        mb=GetDecayProduct(i).PSMass();
+    }
+    mc-=mb;
+    double b=sqr(mb);
+    double c=sqr(mc);
+    double spmax=2.0*b+2.0*c+sqrt(sqr(b)+14.0*b*c+sqr(c));
+    double wmax=DCWeight(s,spmax,b,c);
+    double w=0.0;
+    int trials(0);
+    do {
+      mass = masshandler.GetMass(decaymin, max);
+      double sp=sqr(mass);
+      w=DCWeight(s,sp,b,c);
+      ++trials;
+      if (w>wmax+Accu())
+        THROW(fatal_error,"w > wmax");
+    } while (w<ran.Get()*wmax && trials<1000);
+  }
+  return mass;
 }
 
 

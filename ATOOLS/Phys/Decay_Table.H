@@ -38,6 +38,7 @@ namespace ATOOLS {
     FlavourSet  GetDecayProducts() const;
     Flavour     GetDecayProduct(int) const;
     double      MinimalMass() const;
+    double      DiceMass(double min, double max) const;
   };
 
   inline void Decay_Channel::AddDecayProduct(const Flavour & _flout) { 

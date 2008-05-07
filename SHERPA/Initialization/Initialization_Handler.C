@@ -601,6 +601,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
+  if (decmodel=="Off") return true;
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));

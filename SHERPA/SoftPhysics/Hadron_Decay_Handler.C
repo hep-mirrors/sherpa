@@ -136,19 +136,18 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
     kf_code kfc = part->RefFlav().Kfcode();
     if(kfc==kf_K || kfc==kf_K_S || kfc==kf_K_L || decayblob->Type()!=btp::Hadron_Decay) 
       return true;
-    Mass_Handler masshandler(part->RefFlav());
     Blob_Data_Base* data = (*decayblob)["hdc"];
     if(data) {
       Hadron_Decay_Channel* hdc = data->Get<Hadron_Decay_Channel*>();
-      double decaymin = hdc->MinimalMass();
-      DEBUG_VAR(hdc->ChannelName());
-      DEBUG_VAR(decaymin);
-      if(decaymin>max) mass = -1.0;
-      else             mass = masshandler.GetMass(decaymin, max);
+      mass=hdc->DiceMass(min, max);
     }
-    else mass = masshandler.GetMass(min, max);
+    else {
+      Mass_Handler masshandler(part->RefFlav());
+      mass = masshandler.GetMass(min, max);
+    }
     break;
   }
+  
   DEBUG_VAR(mass);
   if(mass>0.0) {
     part->SetFinalMass(mass);
