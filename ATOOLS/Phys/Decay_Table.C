@@ -47,9 +47,9 @@ double DCLambda(double a, double b, double c)
   double L = (sqr(a-b-c)-4.*b*c);
   if (L>0.0) return sqrt(L)/2/sqrt(a);
   if (L>-Accu()) return 0.0;
+  msg_Error()<<"passed impossible mass combination:"<<std::endl;
   msg_Error()<<"m_a="<<sqrt(a)<<" m_b="<<sqrt(b)<<" m_c="<<sqrt(c)<<endl;
   msg_Error()<<"L="<<L<<endl;
-  THROW(fatal_error,"passed impossible mass combinations.");
   return 0.;
 }
 
@@ -87,7 +87,7 @@ double Decay_Channel::DiceMass(double min, double max) const
       w=DCWeight(s,sp,b,c);
       ++trials;
       if (w>wmax+Accu())
-        THROW(fatal_error,"w > wmax");
+        msg_Error()<<METHOD<<" w="<<w<<" > wmax="<<wmax<<std::endl;
     } while (w<ran.Get()*wmax && trials<1000);
   }
   return mass;
