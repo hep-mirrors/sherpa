@@ -20,9 +20,11 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers,
 {
 #ifdef DEBUG__Hadrons
 #ifdef USING__ROOT
+  msg_Info()<<"Creating mass histograms in masses.root"<<endl;
   p_file = new TFile("masses.root","RECREATE");
-  Fl_Iter fli;
-  for (Flavour flav=fli.first();flav!=Flavour(kf_none);flav = fli.next()) {
+  KFCode_ParticleInfo_Map::const_iterator it;
+  for (it=s_kftable.begin();it!=s_kftable.end();it++) {
+    Flavour flav(it->first);
     if (flav.IsOn() && (flav.IsHadron() || flav.IsLepton())) {
       double limit = flav.Width()==0.0?0.01*flav.PSMass():flav.Width();
       double min = flav.PSMass()-3.0*limit;

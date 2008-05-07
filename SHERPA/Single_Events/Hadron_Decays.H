@@ -4,6 +4,7 @@
 #include "Event_Phase_Handler.H"
 #include "Hadron_Decay_Handler.H"
 #include "Return_Value.H"
+#include "CXXFLAGS_PACKAGES.H"
 
 namespace ATOOLS {
   class Blob;
