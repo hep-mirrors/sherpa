@@ -132,10 +132,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
     sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
   double scale[2]={p_cluster->ISShowerScale(0),p_cluster->ISShowerScale(1)};
+  /*
+  //  the setting below aims at generating enough shower radiation
+  //  to fill below the onset of the hard me.
+  //  this is unphysical, since it does not respect the factorisation scale !
   if (p_cluster->OrderStrong()==0) {
     scale[0]=Max(scale[0],4.*p_cluster->ISJetScale());
     scale[1]=Max(scale[1],4.*p_cluster->ISJetScale());
   }
+  */
   double x1,x2;
   p_cluster->GetCombineTable()->GetX1X2(x1,x2);
   EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale[0],scale[1]);

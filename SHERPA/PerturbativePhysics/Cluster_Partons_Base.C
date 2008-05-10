@@ -98,7 +98,10 @@ void Cluster_Partons_Base::WriteOutWeights()
   for (std::map<std::string,size_t>::const_iterator pit(m_pidmap.begin());
        pit!=m_pidmap.end();++pit) {
     size_t i(pit->second);
-    std::string jid(JetID(pit->first.substr(pit->first.find("__")+3)));
+    std::string fsname(pit->first.substr(pit->first.find("__")+3));
+    fsname=fsname.substr(fsname.find("__")+3);
+    fsname=fsname.substr(fsname.find("__")+3);
+    std::string jid(JetID(fsname));
     std::map<std::string,size_t>::iterator iit(jidmap.find(jid));
     if (iit==jidmap.end()) {
       events.resize(events.size()+1,0);
@@ -772,10 +775,7 @@ std::string Cluster_Partons_Base::JetID(std::string name) const
   size_t jets(1);
   std::string subprocs;
   for (size_t i(0);i<name.length();++i) {
-    if (name[i]=='_' && name[i-1]!='_' && 
-	(i<2 || name.rfind("nu",i)!=i-2) && 
-	name[i+1]!='R' && name[i+1]!='L' &&
-	(name[i+1]<48 || name[i+1]>57)) ++jets;
+    if (name[i]=='_' && name[i-1]=='_') ++jets;
     else if (name[i]=='[') {
       int open(1);
       for (size_t j(i+1);j<name.length();++j) {
