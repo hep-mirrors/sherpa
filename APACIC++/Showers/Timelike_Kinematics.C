@@ -81,9 +81,9 @@ int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
     res=ShuffleMomenta(mo,true,true);
   mo->CheckMomentumConservation(); 
   if (!res) {
-    msg_Error()<<METHOD<<"(): Invalid kinematics in splitting "
-	       <<mo<<"->("<<mo->left<<","<<mo->right<<") {\n\n"
-	       <<*mo<<*mo->left<<*mo->right<<"}"<<std::endl;
+    msg_Tracking()<<METHOD<<"(): Invalid kinematics in splitting "
+		  <<mo<<"->("<<mo->left<<","<<mo->right<<") {\n\n"
+		  <<*mo<<*mo->left<<*mo->right<<"}"<<std::endl;
   }
   return res;
 }

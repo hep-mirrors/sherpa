@@ -107,13 +107,14 @@ int Apacic::PerformShowers(const double &x1,const double &x2)
       }
     }
     if (m_fsron) {
-      if (p_finshower->PerformShower(p_fintree)==0) {
+      int res(p_finshower->PerformShower(p_fintree));
+      if (res<=0) {
 	if (m_isron) {
 	  p_initrees[0]->ClearStore();
 	  p_initrees[1]->ClearStore();
 	}
 	p_fintree->ClearStore();
-	return 0;
+	return res;
       }
       p_finshower->SetAllColours(p_fintree->GetRoot());
     }

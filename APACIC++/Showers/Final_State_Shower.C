@@ -246,7 +246,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,
       mo->shower=2;
       mo->stat=3;
     }
-    if (p_kin->GeneratePSMasses(mo)!=1) return -1;
+    if (p_kin->GeneratePSMasses(mo)!=1) return 0;
     if (mo->shower==2 && mo->decay==NULL) {
       mo->decay = tree->NewKnot();
       mo->decay->Copy(mo);
