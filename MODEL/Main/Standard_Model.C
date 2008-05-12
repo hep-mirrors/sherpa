@@ -162,8 +162,8 @@ void Standard_Model::FillSpectrum() {
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
 				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).PSMass())));
 
-  int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",0);
-  double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.1188);
+  int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
+  double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
   double MZ2            = sqr((*p_constants)[std::string("MZ")]);
 
