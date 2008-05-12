@@ -33,7 +33,6 @@ void InitialiseAnalysis()
   flavours.push_back(Flavour(kf_K_plus));
   flavours.push_back(Flavour(kf_K_plus).Bar());
   flavours.push_back(Flavour(kf_K_L));
-  flavours.push_back(Flavour(kf_K_L).Bar());
   flavours.push_back(Flavour(kf_e));
   flavours.push_back(Flavour(kf_e).Bar());
   flavours.push_back(Flavour(kf_nue));
