@@ -114,7 +114,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
   //   if (dr.ErrorCode()>0) 
   //     THROW(missing_input,"Main steering file not found. Stop.");
-  gen.m_output = dr.GetValue<int>("OUTPUT",0);
+  gen.m_output = dr.GetValue<int>("OUTPUT",2);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(gen.m_output,logfile);
   if (msg->Level()>0) 
