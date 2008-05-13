@@ -100,15 +100,10 @@ if [ "$RELEASE" = "TRUE" ]; then
   cd SHERPA-MC-$VERSION;
   SAMPLERUNS="Tevatron1800 LHC EGamma LEP91";
   for I in $SAMPLERUNS ; do
-    cp -r ../SHERPA/Run/$I SHERPA/Run/;
-    rm -rf SHERPA/Run/$I/.svn;
-    rm -rf SHERPA/Run/$I/*~;
-    rm -rf SHERPA/Run/$I/xsections*;
-    rm -rf SHERPA/Run/$I/*weight*;
-    rm -rf SHERPA/Run/$I/makelibs;
-    rm -rf SHERPA/Run/$I/Process;
-    rm -rf SHERPA/Run/$I/Results;
-    rm -rf SHERPA/Run/$I/Status__*;
+    mkdir SHERPA/Run/$I;
+    for j in $(svn ls ../SHERPA/Run/$I); do
+      cp ../SHERPA/Run/$I/$j SHERPA/Run/$I/;
+    done;
   done;
   ###########################################################
   cd ..;
