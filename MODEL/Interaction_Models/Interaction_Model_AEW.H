@@ -9,6 +9,8 @@ namespace MODEL {
     ATOOLS::Kabbala g1,g2,sintW,costW,PL,PR,M_I,root2,vev,a4,a5;
     ATOOLS::Kabbala g1_p,lambda_p,kappa_p,g4_p,g5_p,lambdat_p,kappat_p;
     ATOOLS::Kabbala g1_Z,lambda_Z,kappa_Z,g4_Z,g5_Z,lambdat_Z,kappat_Z;
+    ATOOLS::Kabbala f4_Z,f5_Z,f4_p,f5_p;
+    ATOOLS::Kabbala h1_Z,h2_Z,h3_Z,h4_Z,h1_p,h2_p,h3_p,h4_p;
     ATOOLS::Kabbala K_CKM(short int i,short int j);  
     ATOOLS::Kabbala conj_K_CKM(short int i,short int j);
   public:

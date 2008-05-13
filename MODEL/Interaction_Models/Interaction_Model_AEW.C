@@ -43,6 +43,21 @@ Interaction_Model_AEW::Interaction_Model_AEW(MODEL::Model_Base * _model,
   g5_Z     = Kabbala(string("g_5^{Z}"),ScalarConstant(std::string("g5_Z")));
   kappat_Z = Kabbala(string("\\kappat^{Z}"),ScalarConstant(std::string("kappat_Z")));
   lambdat_Z= Kabbala(string("\\lambdat^{Z}"),ScalarConstant(std::string("lambdat_Z")));
+
+  f4_Z     = Kabbala(string("f_4^{Z}"),ScalarConstant(std::string("f4_Z")));
+  f5_Z     = Kabbala(string("f_5^{Z}"),ScalarConstant(std::string("f5_Z")));
+  f4_p     = Kabbala(string("f_4^{gamma}"),ScalarConstant(std::string("f4_gamma")));
+  f5_p     = Kabbala(string("f_5^{gamma}"),ScalarConstant(std::string("f5_gamma")));
+  
+  h1_Z     = Kabbala(string("h_1^{Z}"),ScalarConstant(std::string("h1_Z")));
+  h2_Z     = Kabbala(string("h_2^{Z}"),ScalarConstant(std::string("h2_Z")));
+  h3_Z     = Kabbala(string("h_3^{Z}"),ScalarConstant(std::string("h3_Z")));
+  h4_Z     = Kabbala(string("h_4^{Z}"),ScalarConstant(std::string("h4_Z")));
+  h1_p     = Kabbala(string("h_1^{gamma}"),ScalarConstant(std::string("h1_gamma")));
+  h2_p     = Kabbala(string("h_2^{gamma}"),ScalarConstant(std::string("h2_gamma")));
+  h3_p     = Kabbala(string("h_3^{gamma}"),ScalarConstant(std::string("h3_gamma")));
+  h4_p     = Kabbala(string("h_4^{gamma}"),ScalarConstant(std::string("h4_gamma")));
+  
 }
 
 void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
@@ -194,6 +209,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   Flavour flP(kf_photon);
   Kabbala kcpl,kcpl0,kcpl1,kcpl2,kcpl3,charge;
   Kabbala Wyuk = Kabbala(string("M_{")+flWplus.TexName()+string("}"),flWplus.Yuk());
+  Kabbala Zyuk = Kabbala(string("M_{")+flZ.TexName()+string("}"),flZ.Yuk());
 
   charge = Kabbala(string("Q_{")+flWplus.TexName()+string("}"),flWplus.Charge());
 
@@ -201,7 +217,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     // photon WW
     vertex[vanz].in[0] = flWplus;
-    vertex[vanz].in[1] = Flavour(kf_photon);
+    vertex[vanz].in[1] = flP;
     vertex[vanz].in[2] = flWplus;
     
     kcpl = M_I*g1*charge;
@@ -239,7 +255,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
  
     // ZWW
     vertex[vanz].in[0] = flWplus;
-    vertex[vanz].in[1] = Flavour(kf_Z);
+    vertex[vanz].in[1] = flZ;
     vertex[vanz].in[2] = flWplus;
 
     kcpl = M_I*g2*charge*costW;
@@ -266,6 +282,87 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge3",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+  
+
+  if (flZ.IsOn()) {
+    //ZZZ
+    vertex[vanz].in[0] = flZ;
+    vertex[vanz].in[1] = flZ;
+    vertex[vanz].in[2] = flZ;
+
+    kcpl = M_I*g1;
+    kcpl0 = kcpl*f4_Z/(Zyuk*Zyuk);
+    kcpl1 = kcpl*f5_Z/(Zyuk*Zyuk);
+  
+    vertex[vanz].cpl[0]  = kcpl0;  //f4
+    vertex[vanz].cpl[1]  = kcpl1;  //f5
+
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+       
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AZZZ",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  
+    // ZZ Photon
+    vertex[vanz].in[0] = flZ;
+    vertex[vanz].in[1] = flP;
+    vertex[vanz].in[2] = flZ;
+
+    kcpl = M_I*g1;
+    kcpl0 = kcpl*f4_p/(Zyuk*Zyuk);
+    kcpl1 = kcpl*f5_p/(Zyuk*Zyuk);
+  
+    vertex[vanz].cpl[0]  = kcpl0;  //f4
+    vertex[vanz].cpl[1]  = kcpl1;  //f5
+
+    kcpl0 = kcpl*h1_Z/(Zyuk*Zyuk);
+    kcpl1 = kcpl*h2_Z/(Zyuk*Zyuk*Zyuk*Zyuk);
+    kcpl2 = kcpl*h3_Z/(Zyuk*Zyuk);
+    kcpl3 = kcpl*h4_Z/(Zyuk*Zyuk*Zyuk*Zyuk);
+
+    vertex[vanz].cpl[2]  = kcpl0;       //h1
+    vertex[vanz].cpl[3]  = kcpl1;       //h2
+    vertex[vanz].cpl.push_back(kcpl2);  //h3
+    vertex[vanz].cpl.push_back(kcpl3);  //h4
+    vertex[vanz].cpl.push_back(kcpl0);  //h1
+    vertex[vanz].cpl.push_back(kcpl1);  //h2
+
+    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+       
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AZZG",LF_Key()));
+    vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+
+
+    // Z Photon Photon
+    vertex[vanz].in[0] = flP;
+    vertex[vanz].in[1] = flP;
+    vertex[vanz].in[2] = flZ;
+
+    kcpl = M_I*g1;
+
+    kcpl0 = kcpl*h1_p/(Zyuk*Zyuk);
+    kcpl1 = kcpl*h2_p/(Zyuk*Zyuk*Zyuk*Zyuk);
+    kcpl2 = kcpl*h3_p/(Zyuk*Zyuk);
+    kcpl3 = kcpl*h4_p/(Zyuk*Zyuk*Zyuk*Zyuk);
+
+    vertex[vanz].cpl[0]  = kcpl0;       //h1
+    vertex[vanz].cpl[1]  = kcpl1;       //h2
+    vertex[vanz].cpl[2]  = kcpl2;       //h3
+    vertex[vanz].cpl[3]  = kcpl3;       //h4
+
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
+       
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AZGG",LF_Key()));
     vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
 
     vertex[vanz].on      = 1;

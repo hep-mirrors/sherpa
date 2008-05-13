@@ -269,6 +269,79 @@ public:
   }
 };
 DEFINE_LF_GETTER(LF_AGauge3,LFAGauge3_Getter,"AGauge3","")
+
+class LF_AZZZ: public Lorentz_Function {
+public:  
+  LF_AZZZ(): Lorentz_Function("AZZZ") {}
+  int NofIndex() const { return 3; }
+  bool CutVectors() { return true; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation(1,0,1,2);
+    AddPermutation(1,0,2,1);  
+    AddPermutation(1,1,0,2);
+    AddPermutation(1,2,1,0);  
+    AddPermutation(1,1,2,0);
+    AddPermutation(1,2,0,1);  
+  }
+  std::string String(int shortversion) const 
+  {
+    std::string help;
+    help += std::string("AZZZ[") + Str(0) + std::string(",") + 
+      Str(1) + std::string(",") + 
+      Str(2) + std::string("]");
+    return help;
+  }
+};
+DEFINE_LF_GETTER(LF_AZZZ,LFAZZZ_Getter,"AZZZ","")
+
+
+class LF_AZZG: public Lorentz_Function {
+public:  
+  LF_AZZG(): Lorentz_Function("AZZG") {}
+  int NofIndex() const { return 3; }
+  bool CutVectors() { return true; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation(1,0,1,2);
+    AddPermutation(1,0,2,1);  
+  }
+  std::string String(int shortversion) const 
+  {
+    std::string help;
+    help += std::string("AZZG[") + Str(0) + std::string(",") + 
+      Str(1) + std::string(",") + 
+      Str(2) + std::string("]");
+    return help;
+  }
+};
+DEFINE_LF_GETTER(LF_AZZG,LFAZZG_Getter,"AZZG","")
+
+
+class LF_AZGG: public Lorentz_Function {
+public:  
+  LF_AZGG(): Lorentz_Function("AZGG") {}
+  int NofIndex() const { return 3; }
+  bool CutVectors() { return true; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation(1,0,1,2);
+    AddPermutation(1,2,1,0);  
+  }
+  std::string String(int shortversion) const 
+  {
+    std::string help;
+    help += std::string("AZGG[") + Str(0) + std::string(",") + 
+      Str(1) + std::string(",") + 
+      Str(2) + std::string("]");
+    return help;
+  }
+};
+DEFINE_LF_GETTER(LF_AZGG,LFAZGG_Getter,"AZGG","")
+
 class LF_FFT: public Lorentz_Function {
 public: 
   LF_FFT(): Lorentz_Function("FFT") {}

@@ -326,6 +326,12 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  break;
 	}
 	//new
+	if (ATOOLS::IsEqual(norm,sqr(Flavour(kf_Z).Mass()))) { 
+	  hit = 1;
+	  (*pz)<<"Complex(sqr(Flavour(kf_Z).Mass()),0.);"<<endl;
+	  break;
+	}
+	//new
 	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Z).Mass()),
 			      -Flavour(kf_Z).Mass()*Flavour(kf_Z).Width())))) { 
 	    hit = 1;

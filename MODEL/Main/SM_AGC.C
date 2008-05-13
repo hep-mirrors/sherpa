@@ -22,9 +22,14 @@ void SM_AGC_Getter::PrintInfo(std::ostream &str,const size_t width) const
       <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
       <<std::setw(width+7)<<" "<<"- ALPHA_4_G_4 and ALPHA_5 (L_4,5 parameter of Ref. hep-ph/0001065)\n"
       <<std::setw(width+7)<<" "<<"- Lagrangian parameters of Hagiwara et. al, Nucl. Phys. B282:253,1987\n"
+      <<std::setw(width+10)<<" "<<"W-W-Z/photon:\n"
       <<std::setw(width+10)<<" "<<"- G1_GAMMA,KAPPA_GAMMA,LAMBDA_GAMMA,G4_GAMMA,G5_GAMMA\n"
       <<std::setw(width+10)<<" "<<"- KAPPAT_GAMMA,LAMBDAT_GAMMA,G1_Z,KAPPA_Z,LAMBDA_Z\n"
       <<std::setw(width+10)<<" "<<"- G4_Z,G5_Z,KAPPAT_Z,LAMBDAT_Z\n"
+      <<std::setw(width+10)<<" "<<"Z-Z/photon-Z/photon:"
+      <<std::setw(width+10)<<" "<<"- F4_GAMMA,F5_GAMMA,F4_Z,F5_Z\n"
+      <<std::setw(width+10)<<" "<<"- H1_GAMMA,H2_GAMMA,H3_GAMMA,H4_GAMMA\n"
+      <<std::setw(width+10)<<" "<<"- H1_Z,H2_Z,H3_Z,H4_Z\n"
       <<std::setw(width+4)<<" "<<"}\n";
 }
 
@@ -94,6 +99,30 @@ void SM_AGC::FillSpectrum() {
 				     p_dataread->GetValue<double>("KAPPAT_Z",0.)));
   p_constants->insert(std::make_pair(std::string("lambdat_Z"),
 				     p_dataread->GetValue<double>("LAMBDAT_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("f4_gamma"),
+				     p_dataread->GetValue<double>("F4_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("f5_gamma"),
+				     p_dataread->GetValue<double>("F5_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("f4_Z"),
+				     p_dataread->GetValue<double>("F4_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("f5_Z"),
+				     p_dataread->GetValue<double>("F5_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("h1_gamma"),
+				     p_dataread->GetValue<double>("H1_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("h2_gamma"),
+				     p_dataread->GetValue<double>("H2_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("h3_gamma"),
+				     p_dataread->GetValue<double>("H3_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("h4_gamma"),
+				     p_dataread->GetValue<double>("H4_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("h1_Z"),
+				     p_dataread->GetValue<double>("H1_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("h2_Z"),
+				     p_dataread->GetValue<double>("H2_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("h3_Z"),
+				     p_dataread->GetValue<double>("H3_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("h4_Z"),
+				     p_dataread->GetValue<double>("H4_Z",0.)));
 }
 
 

@@ -190,21 +190,6 @@ class VVSS4_Calc : public Zfunc_Calc,
     ATOOLS::Kabbala Do();
     };*/
 
-  class AnomalousV3_Calc : public Zfunc_Calc, 
-			   public Basic_Zfunc,
-			   public Basic_Xfunc,
-			   public Basic_Mfunc,
-			   public Basic_Vfunc,
-			   public Basic_Epsilonfunc {
-  public:
-    AnomalousV3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~AnomalousV3_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
   class AnomalousV4_Calc : public Zfunc_Calc, 
 			   public Basic_Zfunc,
 			   public Basic_Xfunc,

@@ -471,7 +471,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function*> &lflist,
   Zh->m_sign = 1;
 
   for (size_t j=0;j<permpointer.size();j++) Zh->m_sign *= permpointer[j]->GetSign();
-  
+
   SetPropDirection(Zh->p_calculator->pn,pb->number,lfpointer,lfnumb,capointer,canumb);
 
 
