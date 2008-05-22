@@ -53,7 +53,7 @@ Cluster_Decay_Analysis::~Cluster_Decay_Analysis()
   for (map<string,Histogram *>::iterator hit=m_histograms.begin();
        hit!=m_histograms.end();hit++) {
     histo = hit->second;
-    name  = string("Analysis/")+hit->first+string(".dat");
+    name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
     histo->Output(name);
     delete histo;
   }
