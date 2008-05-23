@@ -33,6 +33,6 @@ Kabbala Basic_Mfunc::M(const int a)
   }
   if (ATOOLS::IsZero(mass2)) return sgen->GetEnumber(0.);
 
-  return sgen->GetEnumber(1./mass2);
+  return sgen->GetMnumber(p1->fl,1./mass2);
 
 }

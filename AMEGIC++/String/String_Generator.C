@@ -374,6 +374,28 @@ Kabbala String_Generator::GetMassnumber(int numb,ATOOLS::Flavour fl,Complex valu
   return newz.value;
 }
 
+Kabbala String_Generator::GetMnumber(ATOOLS::Flavour fl,Complex value) 
+{
+  for (size_t i=0;i<(*p_zxl).size();i++) {
+    if ((*p_zxl)[i].zlist==8) {
+      if (ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value)) return (*p_zxl)[i].value;
+    }
+  }
+  //new Zfunc P -> propagator
+  ZXlist newz;
+
+  newz.zlist = 8;
+  newz.value = Number((*p_zxl).size(),value);
+  newz.narg  = 1;
+  newz.arg   = new int[1];
+
+  newz.arg[0] = fl.Kfcode();
+
+  (*p_zxl).push_back(newz);
+
+  return newz.value;
+}
+
 Kabbala String_Generator::GetSnumber(const int a1,const int a2,Complex value) 
 {
   for (size_t i=0;i<(*p_zxl).size();i++) {
@@ -488,6 +510,12 @@ void String_Generator::Calculate(Values* val)
 	(*p_zxl)[i].value = 
 		Kabbala((*p_zxl)[i].value.String(), 
 			MassTermCalc(arg[1],(*p_flavours)[arg[0]]));
+      break;      
+      case 8: 
+	(*p_zxl)[i].value = 
+		Kabbala((*p_zxl)[i].value.String(), 
+			1./Complex(sqr(Flavour(arg[0]).Mass()),
+				   -Flavour(arg[0]).Mass()*Flavour(arg[0]).Width()));
       break;      
       case 9: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),Vcplxcalc(arg[0],arg[1]));

@@ -332,26 +332,12 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  break;
 	}
 	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Z).Mass()),
-			      -Flavour(kf_Z).Mass()*Flavour(kf_Z).Width())))) { 
-	    hit = 1;
-	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Z).Mass()),"
-	      <<"-Flavour(kf_Z).Mass()*Flavour(kf_Z).Width()));"<<endl;
-	    break;
-	}
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Wplus).Mass()))) { 
 	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Wplus).Mass()),
-			      -Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width())))) { 
-	    hit = 1;
-	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Wplus).Mass()),"
-	      <<"-Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width()));"<<endl;
-	    break;
-	}
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_h0).Mass()))) { 
 	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_h0).Mass()),0.);"<<endl;
@@ -444,6 +430,10 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	break;
       case 7: 
 	(*pz)<<"MassTermCalc("<<arg[1]<<",f["<<arg[0]<<"]);"<<endl;
+	break;
+      case 8: 
+	(*pz)<<"(1./Complex(sqr(Flavour("<<arg[0]<<").Mass()),"
+	     <<"-Flavour("<<arg[0]<<").Mass()*Flavour("<<arg[0]<<").Width()));"<<endl;
 	break;
       case 9: 
  	(*pz)<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;

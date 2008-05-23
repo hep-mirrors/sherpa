@@ -40,6 +40,7 @@ namespace AMEGIC {
     virtual ATOOLS::Kabbala   GetYnumber(int*,Complex*,Complex)            = 0;
     virtual ATOOLS::Kabbala   GetPnumber(Pfunc *,int)                      = 0;   
     virtual ATOOLS::Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex)   = 0;
+    virtual ATOOLS::Kabbala   GetMnumber(ATOOLS::Flavour,Complex)          = 0;
     virtual ATOOLS::Kabbala   GetEnumber(Complex)                          = 0;
     virtual ATOOLS::Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
     virtual ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
@@ -112,6 +113,7 @@ namespace AMEGIC {
     ATOOLS::Kabbala     GetYnumber(int *,Complex *,Complex); 
     ATOOLS::Kabbala     GetPnumber(Pfunc *,int);
     ATOOLS::Kabbala     GetMassnumber(int,ATOOLS::Flavour,Complex);
+    ATOOLS::Kabbala     GetMnumber(ATOOLS::Flavour,Complex);
     ATOOLS::Kabbala     GetEnumber(Complex); 
     ATOOLS::Kabbala     GetSnumber(int,int,Complex); 
     ATOOLS::Kabbala     GetScplxnumber(const int,const int,Complex); 
@@ -154,6 +156,7 @@ namespace AMEGIC {
     ATOOLS::Kabbala   GetYnumber(int*,Complex*,Complex value)           { return ATOOLS::Kabbala(std::string(""),value);} 
     ATOOLS::Kabbala   GetPnumber(Pfunc * pl,int)                        { return ATOOLS::Kabbala(std::string(""),pl->value);} 
     ATOOLS::Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex value)  { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetMnumber(ATOOLS::Flavour,Complex value)         { return ATOOLS::Kabbala(std::string(""),value);}
     ATOOLS::Kabbala   GetEnumber(Complex value)                         { return ATOOLS::Kabbala(std::string(""),value);}
     ATOOLS::Kabbala   GetSnumber(int,int,Complex value)                 { return ATOOLS::Kabbala(std::string(""),value);}
     ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex value) { return ATOOLS::Kabbala(std::string(""),value);}
