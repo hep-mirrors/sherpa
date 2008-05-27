@@ -11,7 +11,7 @@
 #ifndef __USE_GNU
 #ifdef __GNUC__
 #define __USE_GNU
-#ifdef __ppc__
+#ifdef ARCH_DARWIN
 #undef USING_Stack_Trace
 #endif
 #else 
