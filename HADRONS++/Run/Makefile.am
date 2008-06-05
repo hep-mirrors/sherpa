@@ -1,4 +1,5 @@
 bin_PROGRAMS  = SingleDecay \
+	SingleDecayPhotons \
 	HadronFullDecayNoAnalysis \
 	HadronFullDecayMixingAnalysis \
 	HadronFullDecayInclusiveAnalysis \
@@ -10,6 +11,10 @@ FULL_LDADD = $(FLIBS) -lm -ldl -L$(pkglibdir) -lSherpaMain \
 SingleDecay_SOURCES = Main_SingleDecay.C
 SingleDecay_LDADD   = $(FULL_LDADD)
 SingleDecay_LDFLAGS = @ldflags@
+
+SingleDecayPhotons_SOURCES = Main_SingleDecayPhotons.C
+SingleDecayPhotons_LDADD   = $(FULL_LDADD)
+SingleDecayPhotons_LDFLAGS = @ldflags@
 
 HadronFullDecayNoAnalysis_SOURCES = Main_HadronFullDecayNoAnalysis.C
 HadronFullDecayNoAnalysis_LDADD   = $(FULL_LDADD)
