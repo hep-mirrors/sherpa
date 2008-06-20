@@ -45,10 +45,11 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,bool _elementa
   if (m_elementary) 
     msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM");
-  p_numbers   = new ScalarNumbersMap();
-  p_constants = new ScalarConstantsMap();
-  p_functions = new ScalarFunctionsMap();
-  p_matrices  = new ComplexMatricesMap();
+  p_numbers          = new ScalarNumbersMap();
+  p_constants        = new ScalarConstantsMap();
+  p_complexconstants = new ComplexConstantsMap();
+  p_functions        = new ScalarFunctionsMap();
+  p_matrices         = new ComplexMatricesMap();
   
   ParticleInit();
   FillSpectrum();

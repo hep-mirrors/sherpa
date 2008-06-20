@@ -25,8 +25,9 @@ void Interaction_Model_SM_Phantom_U1_Getter::PrintInfo
   str<<"The Standard Model + phantom Higgs"; 
 }
 
-Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
-					   string _cplscheme,string _yukscheme) :
+Interaction_Model_SM_Phantom_U1::
+Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
+				string _cplscheme,string _yukscheme) :
   Interaction_Model_Base("SM+Phantom_U1",_model,_cplscheme,_yukscheme)
 { 
   m_loops=true;
@@ -51,14 +52,22 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   GF    = Kabbala(string("GF"),ScalarConstant(string("GF")));
   tanb  = Kabbala(string("\\tan\\beta"),ScalarConstant(string("Tan(Beta)")));
 
-  geffh = Kabbala(std::string("I_S^{(h)}"),
-		  ScalarConstant(std::string("Higgs_PP_eff_h"))*
-		  ScalarFunction(std::string("alpha_S"),hmass2)/
-		  (2.*M_PI*ScalarConstant(std::string("vev"))));
-  geffH = Kabbala(std::string("I_S^{(H)}"),
-		  ScalarConstant(std::string("Higgs_PP_eff_H"))*
-		  ScalarFunction(std::string("alpha_S"),Hmass2)/
-		  (2.*M_PI*ScalarConstant(std::string("vev"))));
+  ghgg = Kabbala(std::string("I_S^{(h)}"),
+		 ComplexConstant(std::string("h0_gg_fac"))*
+		 ScalarFunction(std::string("alpha_S"),hmass2)/
+		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+  gHgg = Kabbala(std::string("I_S^{(H)}"),
+		 ComplexConstant(std::string("H0_gg_fac"))*
+		 ScalarFunction(std::string("alpha_S"),Hmass2)/
+		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+  ghpp = Kabbala(std::string("I_P^{(h)}"),
+		 ComplexConstant(std::string("h0_pp_fac"))*
+		 ScalarFunction(std::string("alpha_QED"),hmass2)/
+		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+  gHpp = Kabbala(std::string("I_P^{(H)}"),
+		 ComplexConstant(std::string("H0_pp_fac"))*
+		 ScalarFunction(std::string("alpha_QED"),Hmass2)/
+		 (2.*M_PI*ScalarConstant(std::string("vev"))));
 }
 
 void Interaction_Model_SM_Phantom_U1::c_FFV(vector<Single_Vertex>& vertex,int& vanz)
@@ -89,9 +98,9 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
     if (i==7) i=11;
     Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
-      
       massf = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
 		      ScalarFunction(string("m")+flav.IDName(),sqr(flh0.Mass())));
+
       kcpl0 = -M_I*massf*mixh/vev;
       kcpl1 = kcpl0;
       if (!ATOOLS::IsZero(kcpl0.Value())) {
@@ -224,7 +233,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex.push_back(Single_Vertex());vanz++;
   }
 
-  bool ehc(false);
+  bool ehc(true);
 
   flav = Flavour(kf_photon);
   // Photon h Photon
@@ -232,7 +241,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flav;
-    kcpl0 = M_I*geffh*mixh;
+    kcpl0 = M_I*ghpp*mixh;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
@@ -249,7 +258,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flav;    
-    kcpl0 = M_I*geffH*mixH;
+    kcpl0 = M_I*gHpp*mixH;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
@@ -263,13 +272,14 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex.push_back(Single_Vertex());vanz++;
   }
 
+  ehc = true;
   Flavour flg(kf_gluon);
   // Gluon h Gluon
   if (flg.IsOn()) {
     vertex[vanz].in[0] = flg;
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flg;
-    kcpl0 = M_I*geffh*mixh;
+    kcpl0 = M_I*ghgg*mixh;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;
@@ -288,7 +298,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flg;
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flg;
-    kcpl0 = M_I*geffH*mixH;
+    kcpl0 = M_I*gHgg*mixH;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl0;

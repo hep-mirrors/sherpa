@@ -1,6 +1,7 @@
 #include "SM_Phantom_U1.H"
 #include "Standard_Model.H"
 #include "Data_Reader.H"
+#include "Effective_Higgs_Coupling.H"
 #include "Message.H"
 #include <iomanip>
 
@@ -30,14 +31,16 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file,bool _elementary
   Model_Base(_dir,_file,_elementary)
 {
   if (m_elementary)
-    msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "<<m_dir<<" / "<<m_file<<std::endl;
+    msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "
+	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+Phantom_U1");
 
-  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
-  p_numbers   = sm->ExtractScalarNumbers();
-  p_constants = sm->ExtractScalarConstants();
-  p_functions = sm->ExtractScalarFunctions();
-  p_matrices  = sm->ExtractComplexMatrices();
+  Standard_Model * sm(new Standard_Model(m_dir,m_file,false));
+  p_numbers          = sm->ExtractScalarNumbers();
+  p_constants        = sm->ExtractScalarConstants();
+  p_complexconstants = sm->ExtractComplexConstants();
+  p_functions        = sm->ExtractScalarFunctions();
+  p_matrices         = sm->ExtractComplexMatrices();
 
   delete sm;
 
@@ -63,6 +66,8 @@ void SM_Phantom_U1::ParticleInit() {
   s_kftable[kf_H0]   = new Particle_Info(kf_H0,1000.,10.0,0,0,0,0,-1,1,1,1,"H0","H_0");
   s_kftable[kf_A0]   = new Particle_Info(kf_A0,1000.,10.0,0,0,0,0,-1,1,1,1,"A0","A_0");
   s_kftable[kf_Z0_2] = new Particle_Info(kf_Z0_2,1000.,10.0,0,0,0,2,-1,0,1,1,"Z'","Z'");
+  //add pseudo gluon
+  s_kftable[kf_shgluon] = new Particle_Info(kf_shgluon,0.,0.0,0,0,8,2,-1,1,1,0,"shgluon","shgluon",1);
 
   ReadParticleData();
 }
@@ -96,15 +101,48 @@ void SM_Phantom_U1::FillSpectrum() {
   flav = Flavour(kf_h0);
   flav.SetMass(ScalarConstant(string("M_H1")));
   flav.SetMassOn(true);
+  flav.SetStable(false);
+  flav.SetWidth(-1.);
   flav = Flavour(kf_H0);
   flav.SetMass(ScalarConstant(string("M_H2")));
   flav.SetMassOn(true);
+  flav.SetStable(false);
+  flav.SetWidth(-1.);
   flav = Flavour(kf_A0);
   flav.SetMass(0.);
   flav.SetMassOn(true);
+  flav.SetWidth(0.);
   flav = Flavour(kf_Z0_2);
   flav.SetMass(ScalarConstant(string("M_Z'")));
   flav.SetMassOn(true);
+  flav.SetWidth(0.);
+
+
+  //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
+  Complex ehf(0.,0.),eHf(0.,0.),ehW(0.,0.),eHW(0.,0.);
+  //top
+  double mt(Flavour(kf_t).Mass()), mW(Flavour(kf_Wplus).Mass()),
+    mh(Flavour(kf_h0).Mass()), mH(Flavour(kf_H0).Mass());
+  Effective_Higgs_Coupling ehc(mh);
+  ehf = ehc.GetFermionContribution(mt,false);
+  ehW = ehc.GetVectorContribution(mW);
+  Effective_Higgs_Coupling eHc(mH);
+  eHf = eHc.GetFermionContribution(mt,false);
+  eHW = ehc.GetVectorContribution(mW);
+
+  //std::cout<<"Check this.  Photons :"
+  //	   <<(3.*ehf*sqr(Flavour(kf_t).Charge())+ehW*sqr(Flavour(kf_Wplus).Charge()))<<" / "
+  //	   <<(3.*eHf*sqr(Flavour(kf_t).Charge())+eHW*sqr(Flavour(kf_Wplus).Charge()))
+  //	   <<" and gluons : "
+  //	   <<ehf<<" / "<<eHf<<std::endl;
+  p_complexconstants->insert(std::make_pair(std::string("h0_gg_fac"),ehf));
+  p_complexconstants->insert(std::make_pair(std::string("H0_gg_fac"),eHf));
+  p_complexconstants->insert(std::make_pair(std::string("h0_pp_fac"),
+  					    (3.*ehf*sqr(Flavour(kf_t).Charge())+
+  					     ehW*sqr(Flavour(kf_Wplus).Charge()))));
+  p_complexconstants->insert(std::make_pair(std::string("H0_pp_fac"),
+  					    (3.*eHf*sqr(Flavour(kf_t).Charge())+
+  					     eHW*sqr(Flavour(kf_Wplus).Charge()))));
 }
 
 bool SM_Phantom_U1::SanityChecks() {

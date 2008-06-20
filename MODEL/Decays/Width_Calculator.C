@@ -116,18 +116,22 @@ double Width_Calculator::Norm(Flavour in)
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 double Width_Calculator::SFF(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double M2(sqr(m_M)),m02(sqr(m_m[0])),m12(sqr(m_m[1]));
-  double ME2   = (M2-m02-m12)*(std::norm(vertex->cpl[0].Value())+std::norm(vertex->cpl[1].Value()))-
-                 2.*m_m[0]*m_m[1]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value()));
+  double ME2   = (M2-m02-m12)*(std::norm(vertex->cpl[0].Value())+
+			       std::norm(vertex->cpl[1].Value()))-
+                 2.*m_m[0]*m_m[1]*(2.*std::abs(vertex->cpl[0].Value()*
+					       vertex->cpl[1].Value()));
   double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
 
   return width;
 }
 
 double Width_Calculator::SSS(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double ME2   = std::norm(vertex->cpl[0].Value());
   if ((dec->GetDecayProduct(0))==(dec->GetDecayProduct(1)))
@@ -138,7 +142,8 @@ double Width_Calculator::SSS(Decay_Channel * dec) {
 }
 
 double Width_Calculator::SVS(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double m02(sqr(m_M)),m12(sqr(m_m[1])),m22(sqr(m_m[0]));
 
@@ -151,20 +156,16 @@ double Width_Calculator::SVS(Decay_Channel * dec) {
 }
 
 double Width_Calculator::SVV(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
 
   double M2(sqr(m_M)),m02(sqr(m_m[0])),m12(sqr(m_m[1]));
 
-  double ME2 = std::norm(vertex->cpl[0].Value());
-  if (m_m[0]>0. && m_m[1]>0.)
-    ME2 *= (sqr(M2-m02-m12)+8.*m02*m12)/(4.*m02*m12);
-  else if ((m_m[0]==0. && m_m[1]>0.) || (m_m[0]>0. && m_m[1]==0.))
-    ME2 *= 3.;
-  else if (m_m[0]==0. && m_m[1]==0.) 
-    ME2 *= 4.;
+  double ME2 = std::norm(vertex->cpl[0].Value())*(2.*sqr(M2)-m02*m12);
 
-  if ((dec->GetDecayProduct(0))==(dec->GetDecayProduct(1)))
+  if ((dec->GetDecayProduct(0))==(dec->GetDecayProduct(1)) &&
+      dec->GetDecayProduct(0).Strong()==false)
     ME2*=1./2; 
   double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
 
@@ -173,7 +174,8 @@ double Width_Calculator::SVV(Decay_Channel * dec) {
 
 
 double Width_Calculator::VFF(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
 
   double ME2   = 
@@ -186,7 +188,8 @@ double Width_Calculator::VFF(Decay_Channel * dec) {
 }
 
 double Width_Calculator::VSS(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double m02(sqr(m_M)),m12(sqr(m_m[0])),m22(sqr(m_m[1]));
   double ME2   =  std::norm(vertex->cpl[0].Value());
@@ -200,7 +203,8 @@ double Width_Calculator::VSS(Decay_Channel * dec) {
 }
 
 double Width_Calculator::VVS(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double M2(sqr(m_M)),m02(sqr(m_m[0])),m12(sqr(m_m[1]));
   double ME2   = (std::norm(vertex->cpl[0].Value()))*
@@ -211,12 +215,13 @@ double Width_Calculator::VVS(Decay_Channel * dec) {
 }
 
 double Width_Calculator::VVV(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double m02(sqr(m_M)),m12(sqr(m_m[0])),m22(sqr(m_m[1]));
   double ME2  = (std::norm(vertex->cpl[0].Value()))*
-     ((sqr(m02) - 2*m02*m12 + sqr(m12) - 2*m02*m22 - 2*m12*m22 + sqr(m22))*
-      (sqr(m02) + 10*m02*m12 + sqr(m12) + 10*m02*m22 + 10*m12*m22 + sqr(m22)))/
+     ((sqr(m02) - 2.*m02*m12 + sqr(m12) - 2.*m02*m22 - 2.*m12*m22 + sqr(m22))*
+      (sqr(m02) + 10.*m02*m12 + sqr(m12) + 10.*m02*m22 + 10.*m12*m22 + sqr(m22)))/
       (4.*m02*m12*m22);
 
   if ((dec->GetDecayProduct(0))==(dec->GetDecayProduct(1))) ME2*=1./2;
@@ -227,7 +232,8 @@ double Width_Calculator::VVV(Decay_Channel * dec) {
 }
 
 double Width_Calculator::FFS(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
 
   double ME2   = (2.*m_M*m_m[1]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value())) +
@@ -239,7 +245,8 @@ double Width_Calculator::FFS(Decay_Channel * dec) {
 }
 
 double Width_Calculator::FFV(Decay_Channel * dec) {
-  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
+  Single_Vertex * vertex(FindVertex(dec->GetDecaying(),
+				    dec->GetDecayProduct(0),dec->GetDecayProduct(1)));
   if (vertex==NULL) return 0.;
   double M2(sqr(m_M)),m02(sqr(m_m[1])),m12(sqr(m_m[0]));
 

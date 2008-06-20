@@ -24,6 +24,10 @@ double Interaction_Model_Base::ScalarConstant(const std::string _name) {
   return p_model->ScalarConstant(_name);
 }
 
+Complex Interaction_Model_Base::ComplexConstant(const std::string _name) {
+  return p_model->ComplexConstant(_name);
+}
+
 ATOOLS::CMatrix Interaction_Model_Base::ComplexMatrix(const std::string _name) {
   return p_model->ComplexMatrix(_name);
 }

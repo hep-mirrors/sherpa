@@ -25,8 +25,8 @@ namespace MODEL
 
 Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
-  p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_functions(NULL), 
-  p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
+  p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
+  p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
   p_vertextable(NULL), p_decays(NULL)
 {
 }
@@ -43,6 +43,7 @@ Model_Base::~Model_Base()
     delete p_functions;
   }
   if (p_constants!=NULL)         delete p_constants;
+  if (p_complexconstants!=NULL)  delete p_complexconstants;
   if (p_matrices!=NULL)          delete p_matrices;
   if (p_dataread!=NULL)          delete p_dataread;
   if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
@@ -176,8 +177,10 @@ void Model_Base::FillDecayTables() {
   for (std::map<ATOOLS::Flavour, Vertex_List>::iterator vit=p_vertextable->begin();
        vit!=p_vertextable->end();vit++) {
     flav = vit->first;
+    //std::cout<<"Check for potential decays of "<<flav<<" "
+    //	     <<flav.IsOn()<<" "<<flav.IsStable()<<" "<<flav.Width()<<std::endl;
     if (flav.IsOn() && !flav.IsStable() && flav.Width()<0.) {
-      std::cout<<METHOD<<" : "<<flav<<" : "<<flav.Width()<<std::endl;
+      //std::cout<<METHOD<<" : "<<flav<<" : "<<flav.Width()<<std::endl;
       p_decays->AddToDecays(flav); 
     }
   }
@@ -210,6 +213,20 @@ double Model_Base::ScalarConstant(const std::string _name) {
   msg_Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<std::endl
 	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
+}
+
+
+Complex Model_Base::ComplexConstant(const std::string _name) {
+  if (p_complexconstants->empty()) {
+    msg_Error()<<"Error in Model_Base::ComplexConstant("<<_name<<") : "<<std::endl
+	       <<"   No constants stored in model "<<m_name<<". Return 0."<<std::endl;
+    return 0.;
+  }
+  if (p_complexconstants->count(_name)>0) return (*p_complexconstants)[_name];
+
+  msg_Error()<<"Error in Model_Base::ComplexConstant("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
+  return Complex(0.,0.);
 }
 
 

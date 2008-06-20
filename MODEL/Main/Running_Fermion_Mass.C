@@ -1,5 +1,6 @@
 #include "Running_Fermion_Mass.H"
 #include "MathTools.H"
+#include "Message.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -35,5 +36,6 @@ void Running_Fermion_Mass::SelfTest() {
   double m_test = m_polemass/2.;
   for (int i=0;i<100;i++) {
     m_test += m_polemass/20.*i;
+    std::cout<<"  "<<m_test<<" "<<(*this)(sqr(m_test))<<std::endl;
   }
 }

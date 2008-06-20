@@ -50,12 +50,13 @@ namespace MODEL {
     virtual void c_FFVT(std::vector<Single_Vertex>&,int&) = 0;
     virtual void c_SSST(std::vector<Single_Vertex>&,int&) = 0;
 
-    virtual int                       ScalarNumber(const std::string);
-    virtual double                    ScalarConstant(const std::string);
+    virtual int                     ScalarNumber(const std::string);
+    virtual double                  ScalarConstant(const std::string);
+    virtual Complex                 ComplexConstant(const std::string);
     virtual ATOOLS::Function_Base * ScalarFunction(const std::string);
-    virtual double                    ScalarFunction(const std::string,double);
+    virtual double                  ScalarFunction(const std::string,double);
     virtual ATOOLS::CMatrix         ComplexMatrix(const std::string);
-    virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
+    virtual Complex                 ComplexMatrixElement(const std::string,const int,const int);
 
     virtual std::string          Name();
     inline std::string Code() const { return m_code; }

@@ -35,7 +35,8 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   
   geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_PP_EFF")));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
+		  ScalarFunction(std::string("alpha_S"),hmass2)/
+		  (2.*M_PI*ScalarConstant(std::string("vev"))));
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
@@ -72,8 +73,7 @@ void Interaction_Model_SM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   
   // 3 gluon higgs
   vertex[vanz].nleg    = 4;
-  for (short int i=0;i<3;i++)
-    vertex[vanz].in[i] = flg;
+  for (short int i=0;i<3;i++) vertex[vanz].in[i] = flg;
   vertex[vanz].in[3] = flh;
   
   kcpl0 = g3*ghgg; 

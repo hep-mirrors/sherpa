@@ -10,10 +10,7 @@ using namespace ATOOLS;
 
 All_Decays::All_Decays(Model_Base * model) :
   p_vertextable(model->GetVertexTable()),p_decays(new DecayMap)
-{  
-  //std::cout<<METHOD<<" vertextable = "<<p_vertextable<<" with "<<p_vertextable->size()
-  //	   <<" from model "<<model<<std::endl;
-}
+{  }
 
 All_Decays::~All_Decays()
 {
@@ -53,7 +50,7 @@ bool All_Decays::InitializeDecayTables() {
   BinaryDecays();
   ThreeBodyDecays();
   ArrangeDecays();
-  PrintDecayTables();
+  //PrintDecayTables();
   return true;
 }
 
@@ -64,7 +61,7 @@ bool All_Decays::CalculateWidths() {
       dmit->second->GetDecayChannel(i)->SetWidth(calc.Width(dmit->second->GetDecayChannel(i)));
     }
     dmit->second->UpdateWidth();
- }
+  }
   PrintDecayTables();
   return true;
 }

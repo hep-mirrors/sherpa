@@ -29,6 +29,7 @@ namespace MODEL {
   
   typedef std::map<std::string,int>                     ScalarNumbersMap; 
   typedef std::map<std::string,double>                  ScalarConstantsMap; 
+  typedef std::map<std::string,Complex>                 ComplexConstantsMap; 
   typedef std::map<std::string,ATOOLS::Function_Base *> ScalarFunctionsMap; 
   typedef std::map<std::string,ATOOLS::CMatrix>         ComplexMatricesMap; 
 
@@ -57,6 +58,7 @@ namespace MODEL {
     ATOOLS::Data_Reader     * p_dataread;
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
+    ComplexConstantsMap     * p_complexconstants;
     ScalarFunctionsMap      * p_functions;
     ComplexMatricesMap      * p_matrices; 
 
@@ -76,11 +78,12 @@ namespace MODEL {
     void FillDecayTables();
     virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
 
-    virtual std::string          Name()               { return m_name; } 
-    virtual ScalarNumbersMap   * GetScalarNumbers()   { return p_numbers; }
-    virtual ScalarFunctionsMap * GetScalarFunctions() { return p_functions; }
-    virtual ScalarConstantsMap * GetScalarConstants() { return p_constants; }
-    virtual ComplexMatricesMap * GetComplexMatrices() { return p_matrices; }
+    virtual std::string           Name()                { return m_name; } 
+    virtual ScalarNumbersMap    * GetScalarNumbers()    { return p_numbers; }
+    virtual ScalarFunctionsMap  * GetScalarFunctions()  { return p_functions; }
+    virtual ScalarConstantsMap  * GetScalarConstants()  { return p_constants; }
+    virtual ComplexConstantsMap * GetComplexConstants() { return p_complexconstants; }
+    virtual ComplexMatricesMap  * GetComplexMatrices()  { return p_matrices; }
 
     inline Interaction_Model_Base *GetInteractionModel() { return p_model; }
 
@@ -99,6 +102,11 @@ namespace MODEL {
       p_constants=NULL;
       return temp;
     }
+    inline ComplexConstantsMap * ExtractComplexConstants() {
+      ComplexConstantsMap * temp(p_complexconstants);
+      p_complexconstants=NULL;
+      return temp;
+    }
     inline ComplexMatricesMap * ExtractComplexMatrices() {
       ComplexMatricesMap * temp(p_matrices);
       p_matrices=NULL;
@@ -107,6 +115,7 @@ namespace MODEL {
 
     virtual int                     ScalarNumber(const std::string);
     virtual double                  ScalarConstant(const std::string);
+    virtual Complex                 ComplexConstant(const std::string);
     virtual ATOOLS::Function_Base * GetScalarFunction(const std::string);
     virtual double                  ScalarFunction(const std::string,double);
     virtual double                  ScalarFunction(const std::string);
