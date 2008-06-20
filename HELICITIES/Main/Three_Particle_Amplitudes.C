@@ -174,7 +174,8 @@ void SVV::operator()(const Vec4D * moms,const bool anti)
       spins.push_back(make_pair(0,0));
       spins.push_back(make_pair(1,V1pol));
       spins.push_back(make_pair(2,V2pol));
-      Insert(eps1[V1pol]*eps2[V2pol],spins);
+      Insert((eps1[V1pol]*eps2[V2pol])*(moms[p_i[1]]*moms[p_i[2]])-
+	     (eps1[V1pol]*moms[p_i[2]])*(moms[p_i[1]]*eps2[V2pol]),spins);
     }
   }
 }
