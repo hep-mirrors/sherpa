@@ -68,7 +68,7 @@ void Model_Base::ShowSyntax(const size_t i)
 void Model_Base::ReadParticleData() {
   
   std::map<int,double> cdm, cdw;
-  std::map<int,int> cia, cis, cim;
+  std::map<int,int> cia, cis, cim, cic;
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.AddIgnore("[");
@@ -92,6 +92,9 @@ void Model_Base::ReadParticleData() {
   if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"INTCHARGE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cic[int(helpdvv[i][0])]=int(helpdvv[i][1]);
 
   //set masses
   std::map<int,double>::const_iterator dit=cdm.begin();
@@ -141,6 +144,15 @@ void Model_Base::ReadParticleData() {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massless "<<std::endl; 
       else
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massive "<<std::endl; 
+    }
+  }
+  //set electrical charges
+  iit=cic.begin();
+  for (;iit!=cic.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_icharge = iit->second;
+      msg_Tracking()<<" set charge of "<<Flavour(iit->first)<<" to "
+		    <<Flavour(iit->first).Charge()<<std::endl; 
     }
   }
 }
