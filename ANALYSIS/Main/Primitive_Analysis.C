@@ -15,7 +15,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) :
-  m_active(true)
+  m_active(true), m_splitjetconts(true)
 {
   m_nevt = 0;
   p_partner = this;
@@ -26,7 +26,7 @@ Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) 
 }
 
 Primitive_Analysis::Primitive_Analysis(const int mode) :
-  m_nevt(0), p_partner(this), m_active(true)
+  m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true)
 {
   m_mode = mode;
 
