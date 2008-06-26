@@ -26,8 +26,14 @@ using namespace PDF;
 using namespace ATOOLS;
 
 
-Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacelike_Kinematics * kin,
-				     double pt2min,ATOOLS::Data_Reader * dataread,const size_t beam) : 
+size_t Spacelike_Sudakov::s_nem(0);
+size_t Spacelike_Sudakov::s_maxem(std::numeric_limits<size_t>::max());
+
+Spacelike_Sudakov::
+Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,
+		  Spacelike_Kinematics * kin,
+		  double pt2min,ATOOLS::Data_Reader * dataread,
+		  const size_t beam) : 
   Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), 
   p_pdfa(pdf->GetBasicPDF()->GetCopy()),
   m_pt2min(dabs(pt2min)), 
@@ -98,6 +104,11 @@ void Spacelike_Sudakov::AcceptBranch(const Knot *const mo)
 bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,
 			     double m2p,int & extra_pdf) 
 {
+  if (s_nem>=s_maxem) {
+    mo->t    = mo->tout;
+    mo->stat = 0;
+    return false; 
+  }
   PROFILE_HERE;
   mo->tmax = mo->t;  // last start t
   m_inflav = mo->part->Flav(); 

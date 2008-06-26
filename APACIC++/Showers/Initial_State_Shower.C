@@ -62,6 +62,12 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
     if (!p_suds[i]->Initialize()) 
       THROW(fatal_error,"failed to intialize is sudakov");
   }
+  int maxem(-1);
+  Data_Reader read(" ",";","!","=");
+  if (read.ReadFromFile(maxem,"PS_MAX_EMISSIONS")) {
+    msg_Info()<<METHOD<<"(): Set maximum emission number "<<maxem<<".\n";
+    Spacelike_Sudakov::SetMaxEmissions(maxem);
+  }
   m_t0 = - dabs(m_t0);
 }
 
@@ -120,6 +126,7 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
 {
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<"): {\n";
   msg_Indent();
+  Spacelike_Sudakov::SetEmissions(0);
   if (k1==NULL || k2==NULL) THROW(fatal_error,"No trees.");
   int decay1(k1->shower>0), decay2(k2->shower>0);
   SetDirection(trees[0]->GetInitiator());
@@ -307,6 +314,7 @@ int Initial_State_Shower::FillBranch(Tree **const trees,const int tree1,
  		   <<", z = "<<active->z<<", pt = "
 		   <<sqrt(active->prev->pt2lcm)<<"\n";
     msg_Debugging()<<"}\n";
+    p_suds[tree1]->AddEmission();
     return 1;
   }
   active->prev   = 0;

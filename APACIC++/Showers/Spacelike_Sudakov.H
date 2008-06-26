@@ -27,6 +27,7 @@ namespace APACIC {
     double m_pt2min, m_s_hadron, m_t0, m_emin;
 
     int    m_cpl_scheme,m_pdf_scheme, m_ordering_scheme;
+    static size_t s_nem, s_maxem;
 
     double m_facscale, m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
     // mother
@@ -76,6 +77,10 @@ namespace APACIC {
     inline void SetOrderingScheme(const int &scheme) { m_ordering_scheme=scheme; }
 
     inline double PT2() const { return m_pt2; }
+
+    inline static void SetMaxEmissions(const size_t &n) { s_maxem=n; }
+    inline static void SetEmissions(const size_t &n)    { s_nem=n;   }
+    inline static void AddEmission()                    { ++s_nem;   }
 
 #ifdef USING__Veto_Info
     inline std::vector<int> &Vetos() { return m_vetos; }
