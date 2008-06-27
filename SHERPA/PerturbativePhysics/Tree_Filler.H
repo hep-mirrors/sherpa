@@ -12,6 +12,7 @@ namespace SHERPA {
   private:
     Cluster_Partons_Base * p_cluster;
     int                    m_maxjetnumber, m_isrshoweron, m_fsrshoweron, m_ckkwon;
+    double                 m_scale2factor;
     APACIC::Tree         * p_local_tree;
 
     APACIC::Final_State_Shower * p_fsrshower;

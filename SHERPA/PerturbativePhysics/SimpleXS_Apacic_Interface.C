@@ -37,7 +37,8 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *meh
   p_momenta(new Vec4D[4]), 
   p_flavours(new Flavour[4]), 
   p_psme_is(NULL),
-  p_psme_fs(NULL) 
+  p_psme_fs(NULL),
+  m_scale2factor(showerhandler->PSScale2Factor()) 
 {
   p_twototwo->InitializeModel(mehandler->GetModel(),
 			      rpa.gen.Variable("ME_DATA_FILE"));
@@ -107,7 +108,7 @@ Return_Value::code SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
       blob->OutParticle(i)->SetFlow(j+1,p_xs->Colours()[i+blob->NInP()][j]);
     }
   }
-  m_scale=p_xs->Scale(PHASIC::stp::ren);
+  m_scale=m_scale2factor*p_xs->Scale(PHASIC::stp::ren);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
   if (m_ini) p_tools->InitializeIncoming(blob,E,m_scale);
   if (m_fin) p_tools->InitializeOutGoing(blob,E,m_scale);

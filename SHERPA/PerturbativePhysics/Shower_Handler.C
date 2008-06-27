@@ -11,7 +11,7 @@ using namespace ATOOLS;
 Shower_Handler::Shower_Handler(std::string dir,std::string file,
 			       MODEL::Model_Base * _model,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
-  m_maxjetnumber(_maxjet), m_showermi(true), 
+  m_maxjetnumber(_maxjet), m_showermi(true), m_ps_scale2_factor(1.), 
   p_apacic(NULL), 
   p_jf(NULL), p_isr_handler(_isr)
 {
@@ -27,10 +27,12 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
     msg_Out()<<"WARNING in Shower_Handler : "<<std::endl
-	     <<"   final state shower is switched on, since initial state shower is turned on as well."<<std::endl;
+	     <<"   final state shower is switched on, "
+	     <<"since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
-  m_showermi = dataread.GetValue<int>("SHOWER_MI",1);
+  m_showermi        = dataread.GetValue<int>("SHOWER_MI",1);
+  m_ps_scale2_factor = dataread.GetValue<double>("PS_SCALE2_FACTOR",1.); 
   rpa.gen.SetVariable("SHOWER_MODE",dataread.GetValue<std::string>("SHOWER_MODE","0"));
   int type(4);
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton())          type = 1;

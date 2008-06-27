@@ -8,8 +8,9 @@ using namespace std;
 
 Tree_Filler::Tree_Filler(Cluster_Partons_Base * cluster,
 			 Shower_Handler *shower,int maxjetno,int showermode) : 
-  p_cluster(cluster), m_maxjetnumber(maxjetno), 
+  p_cluster(cluster), m_maxjetnumber(maxjetno),
   m_isrshoweron(shower->ISROn()), m_fsrshoweron(shower->FSROn()),
+  m_scale2factor(shower->PSScale2Factor()),  
   p_local_tree(NULL), p_fsrshower(shower->GetApacic()->FinShower()),
   m_showermode(showermode)
 {
@@ -124,13 +125,14 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
 		 <<"\n  is r: "<<sqrt(p_cluster->ISShowerScale(1))
 		 <<"\n  fs  : "<<sqrt(p_cluster->FSShowerScale())<<"\n}\n";
   //we have a virtuality ordered shower, therefore:
-  mo->t = p_cluster->FSShowerScale();
+  mo->t = m_scale2factor*p_cluster->FSShowerScale();
   // set jet veto scale for each emission
   double q2j(p_cluster->FSJetScale());
   if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
   mo->pt2lcm = p_cluster->FSShowerScale();
-  mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
-    sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
+  mo->maxpt2 = m_scale2factor*
+    (m_ckkwon?q2j/m_fss_scale_fac:
+              sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout)));
   double scale[2]={p_cluster->ISShowerScale(0),p_cluster->ISShowerScale(1)};
   /*
   //  the setting below aims at generating enough shower radiation
@@ -147,12 +149,13 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   EstablishRelations(mo,knots[2],knots[3],1,x1,x2);      
   for (int i(0);i<2;++i) {
     knots[i]->pt2lcm=p_cluster->FactorizationScale(i);
-    knots[i]->maxpt2=m_ckkwon?q2j/m_iss_scale_fac:mo->t;
+    knots[i]->maxpt2=m_scale2factor*(m_ckkwon?q2j/m_iss_scale_fac:mo->t);
   }
   for (int i(2);i<4;++i) {
     knots[i]->pt2lcm=mo->pt2lcm;
-    knots[i]->maxpt2=m_ckkwon?q2j/m_fss_scale_fac:
-      sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
+    knots[i]->maxpt2=m_scale2factor*
+      (m_ckkwon?q2j/m_fss_scale_fac:
+       sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout)));
   }
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
@@ -232,7 +235,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   }
   for (size_t i(0);i<knots.size();++i) 
     knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
-  /*
+
   if (msg_LevelIsDebugging()) {
     msg_Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<std::endl;
@@ -243,7 +246,6 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     msg_Out()<<"fin_tree:"<<std::endl<<*fin_tree
 	     <<"****************************************"<<std::endl;
   }
-  */
 }
 
 void Tree_Filler::FillDecayTree(Tree * fin_tree)
@@ -543,7 +545,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     mo->left  = d1;
     mo->right = d2;
     mo->zs    = mo->z = p2[0]/p1[0];
-//     mo->stat  = 0;
+    //     mo->stat  = 0;
     mo->part->SetStatus(part_status::decayed);
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
 
@@ -574,8 +576,8 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     d1->x = x1;
     d2->x = x2;
     // set start t
-    d1->t = -scale1;
-    d2->t = -scale2;
+    d1->t = -m_scale2factor*scale1;
+    d2->t = -m_scale2factor*scale2;
   }
   else if (mode==2 || mode==3) {
     // initial state initialization

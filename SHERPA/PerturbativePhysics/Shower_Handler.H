@@ -18,6 +18,7 @@ namespace SHERPA {
 
     std::string            m_showergenerator;
     bool                   m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
+    double                 m_ps_scale2_factor;
     APACIC::Apacic       * p_apacic;
     ATOOLS::Jet_Finder   * p_jf;
     PDF::ISR_Handler     * p_isr_handler;       
@@ -38,9 +39,10 @@ namespace SHERPA {
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();
     APACIC::Apacic          * GetApacic() { return p_apacic; }
-    void SetFactorisationScale(const double scale)        { p_apacic->SetFactorisationScale(scale); }
-    inline bool ShowerMI() const { return m_showermi; }
-    inline ATOOLS::Jet_Finder *JetFinder() const          { return p_jf; }
+    void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
+    inline bool ShowerMI() const                   { return m_showermi; }
+    inline ATOOLS::Jet_Finder *JetFinder() const   { return p_jf; }
+    inline double PSScale2Factor() const           { return m_ps_scale2_factor; }
   };
 
 
