@@ -7,6 +7,7 @@ dist_pkgbin_SCRIPTS   =	\
 			makeinstall \
 			makedist \
 			codestatistics \
-			rmlibs
+			rmlibs \
+			update_datfiles
 
 EXTRA_DIST    = @SVNINCLUDE@
