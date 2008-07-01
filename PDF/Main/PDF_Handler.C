@@ -98,8 +98,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
       else if (set.find(std::string("LHpdf")) || 
 	        set.find(std::string("LHgrid"))) {
 #ifdef USING__LHAPDF
-	msg_Tracking()<<"Initialize LHAPDF "<<set<<" : "<<version<<" from "<<LHAPDFDATADIR<<endl;
-	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,LHAPDFDATADIR,m_initlhapdf);
+	msg_Tracking()<<"Initialize LHAPDF "<<set<<" : "<<version<<endl;
+	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,m_initlhapdf);
 #else 
 	msg_Error()<<"ERROR : USING__LHAPDF is not enabled ! "<<std::endl;
 	pdfbase = NULL;

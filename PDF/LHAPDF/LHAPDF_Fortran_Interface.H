@@ -9,11 +9,11 @@ namespace PDF {
   private:
     std::string m_set;
     int         m_member;
-    std::string m_path;
     int         m_anti;
     double      m_f[13];
+    std::vector<double> m_fv;
   public:
-    LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string,bool &);
+    LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int,bool &);
     PDF_Base * GetCopy();
     void   Output();
 

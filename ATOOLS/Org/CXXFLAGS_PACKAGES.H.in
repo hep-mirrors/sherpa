@@ -7,8 +7,8 @@
 /* using LHAPDF */
 #undef USING__LHAPDF
 
-/* LHAPDF data directory */
-#undef LHAPDFDATADIR
+/* using native C++ wrapper */
+#undef LHAPDF__NATIVE__WRAPPER
 
 /* using MC@NLO */
 #undef USING__MCatNLO

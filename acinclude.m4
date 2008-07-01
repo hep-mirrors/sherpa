@@ -415,23 +415,14 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
             fi;
       esac;
       if test -d "$CONDITIONAL_LHAPDFDIR"; then
-        if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config" -a \
-                -d "$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --pdfsets-path)"; then
-          CONDITIONAL_LHAPDFDATADIR=$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --pdfsets-path);
-        else
-          pdfsetdir=$(find $CONDITIONAL_LHAPDFDIR -name PDFsets | head -n1);
-          if test -d "$pdfsetdir"; then
-            CONDITIONAL_LHAPDFDATADIR="$pdfsetdir";
-          else
-            AC_MSG_ERROR(Unable to determine path where PDFsets are stored. \
-                         Please contact the Sherpa authors with details of your \
-                         LHAPDF installation.);
-          fi
-        fi
         if test -f "$CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.la"; then
           CONDITIONAL_LHAPDFLIBS="-lLHAPDFSherpa -L$CONDITIONAL_LHAPDFDIR/lib -lLHAPDF";
         else
           CONDITIONAL_LHAPDFLIBS="-lLHAPDFSherpa $CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.a";
+        fi;
+        if test -f "$CONDITIONAL_LHAPDFDIR/include/lhapdf/LHAPDF.h"; then
+          lhapdfnativewrapper=true;
+          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include/lhapdf";
         fi;
         AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
       else
@@ -443,12 +434,15 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$lhapdf" = "true" ; then
     AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
-    AC_DEFINE_UNQUOTED([LHAPDFDATADIR], "${CONDITIONAL_LHAPDFDATADIR}", [LHAPDF data directory])
+    if test "$lhapdfnativewrapper" = "true"; then
+      AC_DEFINE([LHAPDF__NATIVE__WRAPPER], "1", [using native C++ wrapper])
+    fi
   fi
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
-  AC_SUBST(CONDITIONAL_LHAPDFDATADIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
+  AC_SUBST(CONDITIONAL_LHAPDFINCS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
+  AM_CONDITIONAL(LHAPDF_NATIVE_WRAPPER, test "$lhapdfnativewrapper" = "true")
 
   AC_ARG_ENABLE(
     gzip,

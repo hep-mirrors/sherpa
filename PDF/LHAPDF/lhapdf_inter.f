@@ -11,6 +11,13 @@ C******************************************************************
 
 C******************************************************************
 
+      SUBROUTINE LHAPDFINITSETBYNAME(set)
+      character*(*) set
+      call initpdfsetbyname(set)
+      end
+
+C******************************************************************
+
       SUBROUTINE LHAPDFINIT(member)
       integer member
       call initpdf(member)
