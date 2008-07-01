@@ -37,6 +37,7 @@ size_t getpmem()
 }
 
 using namespace ATOOLS;
+using namespace std;
 
 bool ATOOLS::Run_Parameter::s_initialized=false;
 std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
@@ -70,25 +71,13 @@ void Run_Parameter::AnalyseEnvironment()
 #error Sherpa was not designed for gcc 2.96
 #endif
 #endif
-  std::string gccv;
-  FILE *pout(popen("gcc -dumpversion","r"));
-  int cch;
-  while ((cch=fgetc(pout))!=EOF) gccv+=(char)cch;
-  pclose(pout);
-  if (gccv.find('\n')!=std::string::npos) 
-    gccv=gccv.substr(0,gccv.find('\n'));
-  if (gccv.find("2.96")!=std::string::npos) {
-    THROW(fatal_error,"Sherpa must not be run on gcc version 2.96 !");
-  }
   char *var=NULL;
   s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
   s_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
-  s_variables["SHERPA_PDF_PATH"]=std::string(((var=getenv("SHERPA_PDF_PATH"))==NULL?"":var));
   s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
   s_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
   s_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
   s_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
-  s_variables["SHERPA_BIN_PATH"]=SHERPA_BINARY_PATH;
   s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
   s_variables["HOME"]=std::string(((var=getenv("HOME"))==
 				   NULL?s_variables["SHERPA_RUN_PATH"]:var));
@@ -107,13 +96,13 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(file);
+  PRINT_VAR(path);
+  PRINT_VAR(file);
   std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
   if (color=="On") {
     termios testos;
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
-  //   if (dr.ErrorCode()>0) 
-  //     THROW(missing_input,"Main steering file not found. Stop.");
   gen.m_output = dr.GetValue<int>("OUTPUT",2);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(gen.m_output,logfile);
@@ -127,12 +116,23 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 	   path[path.length()-1]=='/' || path[path.length()-1]=='.') 
       path=path.substr(0,path.length()-1);
   }
-  // set pdf path
-  std::string pdfpath=dr.GetValue<std::string>("SHERPA_PDF_PATH",std::string(""));
-  if (pdfpath.length()>0 && pdfpath[0]=='/') s_variables["SHERPA_PDF_PATH"]=pdfpath;
-  else if (s_variables["SHERPA_PDF_PATH"].length()==0) 
-    s_variables["SHERPA_PDF_PATH"]=SHERPA_SHARE_PATH;
-  s_variables["SHERPA_SHARE_PATH"]=SHERPA_SHARE_PATH;
+
+  char *var=NULL; string val;
+  // set share path
+  val=string(((var=getenv("SHERPA_SHARE_PATH"))==NULL?SHERPA_SHARE_PATH:var));
+  s_variables["SHERPA_SHARE_PATH"]=dr.GetValue<string>("SHERPA_SHARE_PATH",val);
+
+  // set include path
+  val=string(((var=getenv("SHERPA_INC_PATH"))==NULL?SHERPA_INCLUDE_PATH:var));
+  s_variables["SHERPA_INC_PATH"]=dr.GetValue<string>("SHERPA_INC_PATH",val);
+
+  // set library path 
+  val=string(((var=getenv("SHERPA_LIBRARY_PATH"))==NULL?
+              SHERPA_LIBRARY_PATH:var));
+  s_variables["SHERPA_LIBRARY_PATH"]=
+    dr.GetValue<string>("SHERPA_LIBRARY_PATH",val);
+
+
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
   if (cpppath.length()>0 && cpppath[0]=='/') s_variables["SHERPA_CPP_PATH"]=cpppath;
@@ -145,14 +145,12 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   else if (s_variables["SHERPA_LIB_PATH"].length()==0) 
     s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
-  s_variables["SHERPA_INC_PATH"]=SHERPA_INCLUDE_PATH;
   if (s_variables["SHERPA_DAT_PATH"].length()==0)
     if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
     else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
   msg_Tracking()<<METHOD<<"(): Paths are {\n"
-		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
 		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
-		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"
+		<<"   SHERPA_SHARE_PATH = "<<s_variables["SHERPA_SHARE_PATH"]<<"\n"
 		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
 		<<"   SHERPA_DAT_PATH = "<<s_variables["SHERPA_DAT_PATH"]<<"\n"

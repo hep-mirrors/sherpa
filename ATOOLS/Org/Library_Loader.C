@@ -4,7 +4,6 @@
 #include "Exception.H"
 #include "Message.H"
 #include "Run_Parameter.H"
-#include "CXXFLAGS.H"
 
 #include <sys/stat.h>
 #include <dlfcn.h>
@@ -19,7 +18,7 @@ Library_Loader *ATOOLS::s_loader(NULL);
 Library_Loader::Library_Loader(): m_wait(3600)
 {
   m_paths=EnvironmentVariable(LD_PATH_NAME);
-  m_paths.push_back(SHERPA_LIBRARY_PATH);
+  m_paths.push_back(rpa.gen.Variable("SHERPA_LIBRARY_PATH"));
 }
 
 bool Library_Loader::CreateLockFile(const std::string &lockname)

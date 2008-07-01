@@ -257,11 +257,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
-  AC_DEFINE_UNQUOTED([SHERPA_BUILD_PATH], "$PWD", [Sherpa build path])
   AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR/SHERPA-MC", [Sherpa include directory])
-  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], "$BINDIR/SHERPA-MC", [Sherpa binary directory])
   AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR/SHERPA-MC", [Sherpa library directory])
-  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])

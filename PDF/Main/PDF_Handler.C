@@ -63,7 +63,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("cteq6l"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("CTEQ6Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
-      grid_path=ATOOLS::rpa.gen.Variable("SHERPA_PDF_PATH")+std::string("/")+grid_path;
+      grid_path=ATOOLS::rpa.gen.Variable("SHERPA_SHARE_PATH")+std::string("/")+grid_path;
       if (set==std::string("MRST99")) {
 #ifdef USING__LHAPDF
 	msg_Error()<<"ERROR : Cannot initialize MRST interface when LHAPDF "

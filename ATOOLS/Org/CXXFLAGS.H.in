@@ -19,20 +19,11 @@
 /* library suffix */
 #define LIB_SUFFIX ".so"
 
-/* Sherpa binary directory */
-#undef SHERPA_BINARY_PATH
-
-/* Sherpa build path */
-#undef SHERPA_BUILD_PATH
-
 /* Sherpa include directory */
 #undef SHERPA_INCLUDE_PATH
 
 /* Sherpa library directory */
 #undef SHERPA_LIBRARY_PATH
-
-/* Sherpa data directory */
-#undef SHERPA_PDFS_PATH
 
 /* Sherpa data directory */
 #undef SHERPA_SHARE_PATH
