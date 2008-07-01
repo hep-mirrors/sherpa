@@ -81,6 +81,19 @@ void Run_Parameter::AnalyseEnvironment()
   s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
   s_variables["HOME"]=std::string(((var=getenv("HOME"))==
 				   NULL?s_variables["SHERPA_RUN_PATH"]:var));
+
+  // set share path
+  s_variables["SHERPA_SHARE_PATH"]=
+    (var=getenv("SHERPA_SHARE_PATH"))==NULL?SHERPA_SHARE_PATH:var;
+
+  // set include path
+  s_variables["SHERPA_INC_PATH"]=
+    (var=getenv("SHERPA_INCLUDE_PATH"))==NULL?SHERPA_INCLUDE_PATH:var;
+
+  // set library path 
+  s_variables["SHERPA_LIBRARY_PATH"]=
+    (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?SHERPA_LIBRARY_PATH:var;
+
   s_initialized=true;
 }
 
@@ -116,22 +129,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 	   path[path.length()-1]=='/' || path[path.length()-1]=='.') 
       path=path.substr(0,path.length()-1);
   }
-
-  char *var=NULL; string val;
-  // set share path
-  val=string(((var=getenv("SHERPA_SHARE_PATH"))==NULL?SHERPA_SHARE_PATH:var));
-  s_variables["SHERPA_SHARE_PATH"]=dr.GetValue<string>("SHERPA_SHARE_PATH",val);
-
-  // set include path
-  val=string(((var=getenv("SHERPA_INC_PATH"))==NULL?SHERPA_INCLUDE_PATH:var));
-  s_variables["SHERPA_INC_PATH"]=dr.GetValue<string>("SHERPA_INC_PATH",val);
-
-  // set library path 
-  val=string(((var=getenv("SHERPA_LIBRARY_PATH"))==NULL?
-              SHERPA_LIBRARY_PATH:var));
-  s_variables["SHERPA_LIBRARY_PATH"]=
-    dr.GetValue<string>("SHERPA_LIBRARY_PATH",val);
-
 
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));

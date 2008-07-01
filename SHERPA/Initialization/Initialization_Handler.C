@@ -859,8 +859,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   My_Out_File::SetSearchPaths(searchpaths);
   searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
   searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
-  searchpaths.push_back(SHERPA_SHARE_PATH+std::string("/")+m_path);
-  searchpaths.push_back(SHERPA_SHARE_PATH);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH"));
   My_In_File::SetSearchPaths(searchpaths);
   rpa.gen.SetVariable("PATH_PIECE",m_path);
   m_path="";
