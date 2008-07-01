@@ -5,6 +5,7 @@
 #include "Exception.H"
 #include "Run_Parameter.H"
 #include "CXXFLAGS.H"
+#include "CXXFLAGS_PACKAGES.H"
 
 #ifdef USING__ROOT
 #include "My_Root.H"
