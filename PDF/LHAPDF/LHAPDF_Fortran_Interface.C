@@ -7,7 +7,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 #ifdef LHAPDF__NATIVE__WRAPPER
-#include "LHAPDF.h"
+#include "LHAPDF/LHAPDF.h"
 #else
 extern "C" {
   void   lhapdreset_();

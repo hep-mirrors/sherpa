@@ -417,9 +417,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         else
           CONDITIONAL_LHAPDFLIBS="-lLHAPDFSherpa $CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.a";
         fi;
-        if test -f "$CONDITIONAL_LHAPDFDIR/include/lhapdf/LHAPDF.h"; then
+        if test -f "$CONDITIONAL_LHAPDFDIR/include/LHAPDF/LHAPDF.h"; then
           lhapdfnativewrapper=true;
-          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include/lhapdf";
+          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
         fi;
         AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
       else
