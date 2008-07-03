@@ -35,10 +35,10 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   dataread.SetInputPath(_m_path);
   dataread.SetInputFile(_m_file);
   m_scheme        = dataread.GetValue<int>("K_PERP_SCHEME",0);
-  // defaults from HL_MPI
+  // defaults from Z peak
   double default1(0.0), default2(0.0);
   if (rpa.gen.Beam1().Kfcode()==kf_p_plus) default1=0.33;
-  if (rpa.gen.Beam2().Kfcode()==kf_p_plus) default2=0.33;
+  if (rpa.gen.Beam2().Kfcode()==kf_p_plus) default2=0.8;
   m_kperpmean[0]  = dataread.GetValue<double>("K_PERP_MEAN_1",default1);
   m_kperpmean[1]  = dataread.GetValue<double>("K_PERP_MEAN_2",default2);
   m_kperpsigma[0] = dataread.GetValue<double>("K_PERP_SIGMA_1",m_kperpmean[0]);
