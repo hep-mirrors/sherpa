@@ -109,8 +109,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(file);
-  PRINT_VAR(path);
-  PRINT_VAR(file);
   std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
   if (color=="On") {
     termios testos;
