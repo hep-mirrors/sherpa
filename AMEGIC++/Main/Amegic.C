@@ -199,8 +199,8 @@ void Amegic::ReadInProcessfile(string file)
   double      fixed_scale;
   std::map<std::string,std::pair<int,double> >  
     venhance_factor,vmaxreduction_factor,vmaxredepsilon,vmaxerror;
-  std::map<std::string,std::pair<int,std::string> > vycut;
-  std::string enhance_function="1", factorization_scale, renormalization_scale;
+  std::map<std::string,std::pair<int,std::string> > vycut, venhance_function;
+  std::string factorization_scale, renormalization_scale;
   bool        print_graphs=false;
   int         enable_mhv=1; 
   string      selectorfile;
@@ -266,11 +266,11 @@ void Amegic::ReadInProcessfile(string file)
 
 	    vycut.clear();
 	    venhance_factor.clear();
+	    venhance_function.clear();
 	    vmaxreduction_factor.clear();
 	    vmaxredepsilon.clear();
 	    vmaxerror.clear();
 
-	    enhance_function    = "1";
 	    int pr(0);
 	    for (size_t ng(nf);ng<procdata.size();++ng) {
 	      std::vector<std::string> &cur(procdata[ng]);
@@ -365,7 +365,8 @@ void Amegic::ReadInProcessfile(string file)
 		  ExtractMPvalues(buf,venhance_factor,pr);
 		}
 		if (cur[0]=="Enhance_Function") {
-		  enhance_function=MakeString(cur,1);
+		  buf=MakeString(cur,1);
+		  ExtractMPvalues(buf,venhance_function,pr);
 		}
 		if (cur[0]=="Max_Reduction") {
 		  buf=MakeString(cur,1);
@@ -442,6 +443,7 @@ void Amegic::ReadInProcessfile(string file)
 	      
 	      nFS = pcinfo->TotalNout();
 	      AddMPvalues(venhance_factor,nFS);
+	      AddMPvalues(venhance_function,nFS);
 	      AddMPvalues(vmaxreduction_factor,nFS);
 	      AddMPvalues(vmaxredepsilon,nFS);
 	      AddMPvalues(vycut,nFS);
@@ -450,10 +452,12 @@ void Amegic::ReadInProcessfile(string file)
 	      double maxreduction_factor(1.);
 	      double maxredepsilon(0.);
 	      double maxerror(-1.);
-	      std::string ycut("-1.");
+	      std::string ycut("-1."), enhance_function("1");
 	      std::string pnid(ToString(nFS));
 	      if (venhance_factor.find(pnid)!=venhance_factor.end())
 		enhance_factor=venhance_factor[pnid].second;
+	      if (venhance_function.find(pnid)!=venhance_function.end())
+		enhance_function=venhance_function[pnid].second;
 	      if (vmaxreduction_factor.find(pnid)!=vmaxreduction_factor.end())
 		maxreduction_factor=vmaxreduction_factor[pnid].second;
 	      if (vmaxredepsilon.find(pnid)!=vmaxredepsilon.end())
@@ -466,6 +470,8 @@ void Amegic::ReadInProcessfile(string file)
 			     <<nFS<<"' '"<<pnid<<"'\n";
 	      if (venhance_factor.find(pnid)!=venhance_factor.end())
 		enhance_factor=venhance_factor[pnid].second;
+	      if (venhance_function.find(pnid)!=venhance_function.end())
+		enhance_function=venhance_function[pnid].second;
 	      if (vmaxreduction_factor.find(pnid)!=vmaxreduction_factor.end())
 		maxreduction_factor=vmaxreduction_factor[pnid].second;
 	      if (vmaxredepsilon.find(pnid)!=vmaxredepsilon.end())
