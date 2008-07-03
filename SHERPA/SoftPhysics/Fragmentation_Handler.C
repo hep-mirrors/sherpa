@@ -33,6 +33,8 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
+  dr.AddIgnore("[");
+  dr.AddIgnore("]");
   dr.SetInputPath(m_dir);
   dr.SetInputFile(m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
