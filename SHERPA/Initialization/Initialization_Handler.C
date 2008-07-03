@@ -888,7 +888,7 @@ void Initialization_Handler::CheckFlagConsistency()
     //  ME.dat 
     if (dr.GetValue<std::string>("SCALE_SCHEME","CKKW")!="CKKW" ||
         dr.GetValue<std::string>("KFACTOR_SCHEME","1")!="1" ||
-        dr.GetValue<std::string>("COUPLING_SCHEME","0")!="Running_alpha_S") {
+        dr.GetValue<std::string>("COUPLING_SCHEME","Running_alpha_S")!="Running_alpha_S") {
       msg_Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
                  <<"  CKKW is switched on by 'SUDAKOV_WEIGHT = 1'.\n"
                  <<"  This causes the following settings:\n"
