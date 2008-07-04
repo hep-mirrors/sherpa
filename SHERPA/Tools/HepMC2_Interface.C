@@ -10,6 +10,10 @@
 #include "HepMC/GenParticle.h"
 #include "HepMC/SimpleVector.h"
 #include "HepMC/PdfInfo.h"
+#include "CXXFLAGS_PACKAGES.H"
+#ifdef USING__HEPMC2__UNITS
+#include "HepMC/Units.h"
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -34,6 +38,10 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
   }
   if (p_event!=NULL) delete p_event;
   p_event = new HepMC::GenEvent();
+#ifdef USING__HEPMC2__UNITS
+  p_event->use_units(HepMC::Units::GEV,
+                     HepMC::Units::MM);
+#endif
   p_event->set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();

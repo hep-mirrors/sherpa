@@ -15,6 +15,7 @@
 #include "HepMC/GenEvent.h"
 #include "Output_HepMC2.H"
 #include "Output_HepMC2_Ascii.H"
+#include "Output_HepMC2_Genevent.H"
 #endif
 
 #include <stdio.h>
@@ -57,6 +58,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string d0hepevtoutput=dr->GetValue<string>("D0_HEPEVT_OUTPUT",string(""));
   string hepmc2output=dr->GetValue<string>("HEPMC2_OUTPUT",string(""));
   string hepmc2asciiout=dr->GetValue<string>("HEPMC2_ASCII_OUTPUT",string(""));
+  string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
     ("EVT_FILE_PATH",rpa.gen.Variable("PATH_PIECE"));
   int precision       = dr->GetValue<int>("OUTPUT_PRECISION",6);
@@ -88,6 +90,15 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
 #ifdef USING__HEPMC2
     m_outmap["HEPMC2_ASCII"]=
       new Output_HepMC2_Ascii(evtpath+"/"+hepmc2asciiout,".hepmc2a",precision);
+#else
+    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
+          +string("with HepMC2, please read our Howto for more information."));
+#endif
+  }
+  if (!hepmc2genevent.empty()) {
+#ifdef USING__HEPMC2
+    m_outmap["HEPMC2_GENEVENT"]= new
+      Output_HepMC2_Genevent(evtpath+"/"+hepmc2genevent,".hepmc2g",precision);
 #else
     THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
           +string("with HepMC2, please read our Howto for more information."));

@@ -339,11 +339,24 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_HEPMC2DIR}]); hepmc2=true;;
-      esac ],
+      esac
+      if test -f "$CONDITIONAL_HEPMC2DIR/include/HepMC/IO_GenEvent.h"; then
+        hepmciogenevent=true;
+      fi;
+      if test -f "$CONDITIONAL_HEPMC2DIR/include/HepMC/Units.h"; then
+        hepmcunits=true;
+      fi;
+      ],
     [ hepmc2=false ]
   )
   if test "$hepmc2" = "true" ; then
     AC_DEFINE([USING__HEPMC2], "1", [Using HEPMC2])
+    if test "$hepmciogenevent" = "true"; then
+      AC_DEFINE([USING__HEPMC2__IOGENEVENT], "1", [HepMC::IO_GenEvent available])
+    fi
+    if test "$hepmcunits" = "true"; then
+      AC_DEFINE([USING__HEPMC2__UNITS], "1", [HepMC::Units available])
+    fi
   fi
   AC_SUBST(CONDITIONAL_HEPMC2DIR)
   AC_SUBST(CONDITIONAL_HEPMC2INCS)

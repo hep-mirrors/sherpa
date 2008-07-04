@@ -1,6 +1,12 @@
 /* Using HEPMC2 */
 #undef USING__HEPMC2
 
+/* HepMC::IO_GenEvent available */
+#undef USING__HEPMC2__IOGENEVENT
+
+/* HepMC::Units available */
+#undef USING__HEPMC2__UNITS
+
 /* using gzip */
 #undef USING__GZIP
 
