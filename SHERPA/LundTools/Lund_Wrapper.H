@@ -5,6 +5,7 @@
 #include "Lund_Interface.H"
 #include "ISR_Handler.H"
 #include "Exception.H"
+#include <cstring>
 
 using namespace SHERPA;
 

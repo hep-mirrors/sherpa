@@ -16,6 +16,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <limits>
 
 size_t getpmem()
 {
@@ -124,7 +125,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (path.length()>0) {
     if (path[0]!='/') path=s_variables["SHERPA_RUN_PATH"]+"/"+path;
     while (path.length()>0 && 
-	   path[path.length()-1]=='/' || path[path.length()-1]=='.') 
+	   (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
       path=path.substr(0,path.length()-1);
   }
 
@@ -140,9 +141,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   else if (s_variables["SHERPA_LIB_PATH"].length()==0) 
     s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
-  if (s_variables["SHERPA_DAT_PATH"].length()==0)
+  if (s_variables["SHERPA_DAT_PATH"].length()==0) {
     if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
     else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
+  }
   msg_Tracking()<<METHOD<<"(): Paths are {\n"
 		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
 		<<"   SHERPA_SHARE_PATH = "<<s_variables["SHERPA_SHARE_PATH"]<<"\n"

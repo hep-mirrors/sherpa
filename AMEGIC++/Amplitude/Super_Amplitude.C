@@ -15,7 +15,7 @@ Super_Amplitude::Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
 
 Super_Amplitude::~Super_Amplitude()                   
 {
-  for (int i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
+  for (size_t i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
   graphs.clear();  
 }
 

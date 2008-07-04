@@ -137,7 +137,7 @@ namespace SHERPA {
     Leg **p_hard;
     int **p_hardc;
     
-    void SetQ2Cut(const size_t &i,const size_t &i,
+    void SetQ2Cut(const size_t &i,const size_t &j,
 		  double &q2in,double &q2out,const size_t &id);
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,

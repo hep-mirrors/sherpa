@@ -20,8 +20,8 @@ namespace EXTRAXS {
     if (flavours[0].IsQuark() && flavours[1].IsQuark() &&
 	flavours[2].IsSquark() && flavours[3].IsSquark() &&
 	flavours[0]!=flavours[1] && 
-	(!flavours[0].IsAnti() && !flavours[1].IsAnti() || 
-	 flavours[0].IsAnti() && flavours[1].IsAnti()) &&
+	((!flavours[0].IsAnti() && !flavours[1].IsAnti()) || 
+	 (flavours[0].IsAnti() && flavours[1].IsAnti())) &&
 	((SuperPartner(flavours[2],flavours[0])  && 
 	  SuperPartner(flavours[3],flavours[1])) ||
 	 (SuperPartner(flavours[3],flavours[0])  && 

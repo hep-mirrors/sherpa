@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Vector.H"
 #include "prof.hh"
+#include <cstring>
 
 using namespace AMEGIC;
 using namespace ATOOLS;

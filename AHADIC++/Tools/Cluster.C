@@ -2,6 +2,7 @@
 #include "Hadronisation_Parameters.H"
 #include "Message.H"
 #include "Poincare.H"
+#include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;

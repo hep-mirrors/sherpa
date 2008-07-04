@@ -782,7 +782,7 @@ void Channel_Generator3V::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 
 
 
-void Channel_Generator3V::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point* p)
+void Channel_Generator3V::CalcSmin(int flag,const char* min,string lm,ofstream& sf,Point* p)
 {
   // sum_{i<j} sij + (2-n)*sum_i m_i^2
 

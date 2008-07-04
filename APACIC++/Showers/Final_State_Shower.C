@@ -400,7 +400,7 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 Knot *Final_State_Shower::ChooseDaughter(Knot * mo)
 {
   Knot *d1(mo->left), *d2(mo->right);
-  if (d1->stat==3^d2->stat==3) return d1->stat==3?d1:d2;
+  if ((d1->stat==3)^(d2->stat==3)) return d1->stat==3?d1:d2;
   if ((d1->t>d1->tout && d2->t>d2->tout) && d1->t==d2->t) 
     return ran.Get()>0.5?d1:d2;
   if ((d1->t>d1->tout && d1->t>=d2->t) || d2->t<=d2->tout) {

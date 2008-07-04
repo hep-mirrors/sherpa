@@ -880,57 +880,57 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
   if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
 	flavours[2].IsQuark() &&flavours[3].IsQuark()))                           return NULL;
   if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
-    if (flavours[2].IsUptype() && 
+    if ((flavours[2].IsUptype() && 
 	(!flavours[3].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
 	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
-    if (flavours[3].IsUptype() && 
+    if ((flavours[3].IsUptype() && 
 	(!flavours[2].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
 	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
-    if (flavours[2].IsDowntype() && 
+    if ((flavours[2].IsDowntype() && 
 	(!flavours[3].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
 	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
-    if (flavours[3].IsDowntype() && 
+    if ((flavours[3].IsDowntype() && 
 	(!flavours[2].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
 	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
     if (!flavours[2].IsDowntype() || !flavours[3].IsDowntype() ||
 	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
-    if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
+    if ((!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0))) ||
 	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
-    if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
+    if ((!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0))) ||
 	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
     if (!flavours[2].IsUptype() || !flavours[3].IsUptype() ||
 	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
-    if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
+    if ((!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0))) ||
 	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
-    if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
+    if ((!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)) ||
+	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0))) ||
 	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   return new XS_f1f2b_f3f4b(nin,nout,flavours); 

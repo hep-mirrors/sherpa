@@ -11,6 +11,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Data_Reader.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace MODEL;

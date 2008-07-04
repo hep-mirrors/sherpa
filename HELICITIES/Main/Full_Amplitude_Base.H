@@ -27,8 +27,6 @@ namespace HELICITIES {
     size_t ColorSize() const;
     const  ATOOLS::CMatrix* GetColorMatrix() const;
     void   SetColorMatrix(const ATOOLS::CMatrix* colormatrix);
-
-    friend  std::ostream& operator<<(std::ostream&,const Full_Amplitude_Base &);
   };
 
   inline const ATOOLS::CMatrix * Full_Amplitude_Base::GetColorMatrix() const { 

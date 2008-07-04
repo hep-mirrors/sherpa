@@ -125,11 +125,15 @@ int All_Processes::InitAllProcesses(Model_Base * model,Topology * top,Vec4D *& m
   }
 
   msg_Tracking()<<"All_Processes::InitAllProcesses ";
-  if (okay) msg_Tracking()<<" successful."<<endl
-			  <<"  "<<procs<<" processes using "<<totalsize<<" libraries."<<endl;
-       else msg_Tracking()<<" failed."<<endl
-			  <<"  "<<totalsize<<" libraries "<<" for "
-			  <<procs<<" processes created."<<endl;
+  if (okay) {
+    msg_Tracking()<<" successful."<<endl
+                  <<"  "<<procs<<" processes using "<<totalsize<<" libraries."<<endl;
+  }
+  else {
+    msg_Tracking()<<" failed."<<endl
+                  <<"  "<<totalsize<<" libraries "<<" for "
+                  <<procs<<" processes created."<<endl;
+  }
   return okay;
 }
 

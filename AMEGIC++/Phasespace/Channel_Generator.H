@@ -27,7 +27,7 @@ typedef std::map<std::string,std::string> Decls;
     void        GenerateMasses(int,Point **,int,int&,std::ofstream&);
     std::string LinkedMasses(Point *);
     void        SetProps(Point *,Point **,Point **,int&);
-    void        CalcSmin(int,char*,std::string,std::ofstream&,Point*);
+    void        CalcSmin(int,const char*,std::string,std::ofstream&,Point*);
     void        CalcTSmin(int,String_List&,std::ofstream&);
     void        IdentifyProps(Point *);
     void        BackLinks(Point *,Point * &);

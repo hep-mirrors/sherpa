@@ -631,7 +631,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	j++;
       }
     }
-    bool tmode = (connected[0]<2 ^ connected[1]<2);
+    bool tmode = ((connected[0]<2) ^ (connected[1]<2));
     Vec4D p[4]={-p_ct->Momenta()[0],-p_ct->Momenta()[1],
 		p_ct->Momenta()[2],p_ct->Momenta()[3]};
     for (int i=0;i<4;i++) {

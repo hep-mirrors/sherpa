@@ -5,6 +5,7 @@
 #include "Run_Parameter.H"
 #include "Data_Reader.H"
 #include <iostream>
+#include <cstring>
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ATOOLS::External_RNG

@@ -4,6 +4,7 @@
 #include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Flavour.H"
+#include <algorithm>
 
 using namespace ATOOLS;
 using namespace std;

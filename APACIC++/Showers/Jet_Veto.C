@@ -3,6 +3,7 @@
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
 #include "Data_Reader.H"
+#include <limits>
 
 #ifdef PROFILE__all
 #include "prof.hh"

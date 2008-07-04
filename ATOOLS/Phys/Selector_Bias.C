@@ -1,6 +1,7 @@
 #include "Selector_Bias.H"
 
 #include "Exception.H"
+#include <algorithm>
 
 using namespace ATOOLS;
 

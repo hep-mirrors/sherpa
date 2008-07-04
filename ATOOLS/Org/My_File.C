@@ -3,6 +3,7 @@
 #include "Exception.H"
 
 #include <typeinfo>
+#include <cstdlib>
 
 using namespace ATOOLS;
 

@@ -20,6 +20,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include <typeinfo>
+#include <cstdlib>
 
 using namespace ATOOLS;
 

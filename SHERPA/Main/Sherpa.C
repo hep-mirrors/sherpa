@@ -19,6 +19,7 @@
 #include "Library_Loader.H"
 #include "CXXFLAGS.H"
 #include "CXXFLAGS_PACKAGES.H"
+#include <cstring>
 
 using namespace SHERPA;
 using namespace ATOOLS;

@@ -12,6 +12,7 @@
 #include "FSR_Channel.H"
 #include "XS_Model_Handler.H"
 #include "Data_Reader.H"
+#include <algorithm>
 
 using namespace EXTRAXS;
 using namespace PHASIC;

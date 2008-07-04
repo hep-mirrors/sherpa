@@ -118,10 +118,12 @@ void Model_Base::ReadParticleData() {
   for (;iit!=cia.end();iit++) {
     if (s_kftable.find(iit->first)!=s_kftable.end()) {
       s_kftable[iit->first]->m_on = iit->second;
-      if (iit->second==0)
+      if (iit->second==0) {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" inactive "<<std::endl; 
-      else
+      }
+      else {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" active "<<std::endl; 
+      }
     }
   }
   //set (un)stable
@@ -129,10 +131,12 @@ void Model_Base::ReadParticleData() {
   for (;iit!=cis.end();iit++) {
     if (s_kftable.find(iit->first)!=s_kftable.end()) {
       s_kftable[iit->first]->m_stable = iit->second;
-      if (iit->second==0)
+      if (iit->second==0) {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" unstable "<<std::endl; 
-      else
+      }
+      else {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" stable "<<std::endl; 
+      }
     }
   }
   //set massive/massless
@@ -140,10 +144,12 @@ void Model_Base::ReadParticleData() {
   for (;iit!=cim.end();iit++) {
     if (s_kftable.find(iit->first)!=s_kftable.end()) {
       s_kftable[iit->first]->m_massive = iit->second;
-      if (iit->second==0)
+      if (iit->second==0) {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massless "<<std::endl; 
-      else
+      }
+      else {
 	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massive "<<std::endl; 
+      }
     }
   }
   //set electrical charges

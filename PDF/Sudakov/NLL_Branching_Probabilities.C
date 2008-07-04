@@ -88,7 +88,7 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(bpm::code mode, double lambda,
   m_colfac = CF;
   m_dlog = 1.0;
   m_slog = -3./4.;
-  if (m_mode & bpm::power_corrs) 
+  if (m_mode & bpm::power_corrs) {
     if (m_mode & bpm::fs) {
       m_power[0] = 1.5;
     }
@@ -97,6 +97,7 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(bpm::code mode, double lambda,
       m_power[1] = -0.25;
       m_pca=1;
     }
+  }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
 
@@ -165,7 +166,7 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(bpm::code mode, double lambda,
   m_colfac = CF;
   m_dlog = 1.0;
   m_slog = -3./4.;
-  if (m_mode & bpm::power_corrs)
+  if (m_mode & bpm::power_corrs) {
     if (m_mode & bpm::fs) {
       m_power[0] = 1.5;
     }
@@ -174,6 +175,7 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(bpm::code mode, double lambda,
       m_power[1] = -0.25;
       m_pca=1;
     }
+  }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
 

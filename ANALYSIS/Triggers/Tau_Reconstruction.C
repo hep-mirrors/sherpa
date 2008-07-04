@@ -3,6 +3,7 @@
 #include "Ordering.H"
 #include "Exception.H"
 #include "Shell_Tools.H"
+#include <algorithm>
 
 namespace ANALYSIS {
 

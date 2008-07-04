@@ -15,7 +15,7 @@ namespace EXTRAXS {
 
     Single_XS *GetSingleXS(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours,
-			   const size_t nqed,const size_t nqed);
+			   const size_t nqed,const size_t nqcd);
 
   public:
 

@@ -5,6 +5,7 @@
 #ifdef __GNUC__
 // GNU C++ Compiler       
 #include <cmath>        
+#include <cstdlib>
 
 /*
   if __GNUC__ == 3 && __GNUC_MINOR__ == 0.

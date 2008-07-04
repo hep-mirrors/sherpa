@@ -23,7 +23,7 @@ typedef std::map<std::string,std::string> Decls;
 
     void        GenerateMasses(int,Point **,int,int&,std::ofstream&);
     std::string LinkedMasses(Point *);
-    void        CalcSmin(int,char*,std::string,std::ofstream&,Point*);
+    void        CalcSmin(int,const char*,std::string,std::ofstream&,Point*);
     bool        Massive(ATOOLS::Flavour fl) { return (fl.Mass()!=0.) ? 1:0; }
     std::string Order(std::string);
     std::string IString(int);

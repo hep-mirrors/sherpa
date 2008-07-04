@@ -11,6 +11,7 @@
 #ifndef USING__double_only
 #include "Vector.H"
 #endif
+#include <typeinfo>
 
 using namespace ATOOLS;
 
@@ -643,7 +644,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
        oit!=p_interpreter->Operators().rend();++oit) {
     if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
     else pos=expr.rfind(oit->second->Tag());
-    if (pos!=std::string::npos)
+    if (pos!=std::string::npos) {
       if (!oit->second->Binary()) {
 	op=oit->second;
 	break;
@@ -651,6 +652,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
       else {
 	return expr;
       }
+    }
   }
   if (op==NULL) return expr;
   std::string lrstr=expr.substr(0,pos);

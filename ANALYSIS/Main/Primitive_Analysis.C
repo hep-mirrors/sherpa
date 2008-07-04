@@ -478,7 +478,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
 	if (p->DecayBlob()==NULL || 
-	    (m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G') {
+	    ((m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G')) {
 	  if ((p->Info()!='G' &&  p->Info()!='H')
 	      || (*blit)->Type()!=btp::IS_Shower) {
 	    pl->push_back(p);

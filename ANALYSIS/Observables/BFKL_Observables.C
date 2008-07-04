@@ -10,7 +10,7 @@ namespace ANALYSIS {
   public:
 
     Decorrelation_vs_DEta(const int type,const double &ptmin,
-			  const double ptmin,const double ptmax,
+			  const double etamin,const double etamax,
 			  const int nbins,const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -28,7 +28,7 @@ namespace ANALYSIS {
   public:
 
     BFKL_DEta(const int type,const double &ptmin,
-	 const double ptmin,const double ptmax,
+	 const double etamin,const double etamax,
 	 const int nbins,const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -46,7 +46,7 @@ namespace ANALYSIS {
   public:
 
     BFKL_Two_Eta(const int type,const double &ptmin,
-	 const double ptmin,const double ptmax,
+	 const double etamin,const double etamax,
 	 const int nbins,const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,

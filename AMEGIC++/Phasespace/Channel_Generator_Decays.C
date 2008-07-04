@@ -438,7 +438,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
 }
 
 
-void Channel_Generator_Decays::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point* p)
+void Channel_Generator_Decays::CalcSmin(int flag,const char* min,string lm,ofstream& sf,Point* p)
 {
   // sum_{i<j} sij + (2-n)*sum_i m_i^2
 

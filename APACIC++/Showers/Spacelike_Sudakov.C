@@ -12,6 +12,7 @@
 #include "Veto_Info.H"
 
 #include <iomanip>
+#include <limits>
 
 #ifdef PROFILE__all
 #include "prof.hh"

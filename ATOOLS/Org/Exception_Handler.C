@@ -71,8 +71,12 @@ bool Exception_Handler::ApproveTerminate()
   for (size_t i=0;i<m_testerobjects.size();++i) 
     if (!m_testerobjects[i]->ApproveTerminate()) approved=false;
   m_noremove=false;
-  if (approved && m_print) msg_Tracking()<<"... approved."<<std::endl;
-  else if (m_print) msg_Tracking()<<"... refused."<<std::endl;
+  if (approved && m_print) {
+    msg_Tracking()<<"... approved."<<std::endl;
+  }
+  else {
+    if (m_print) msg_Tracking()<<"... refused."<<std::endl;
+  }
   return approved;
 }
 

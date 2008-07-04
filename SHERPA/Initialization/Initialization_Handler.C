@@ -694,12 +694,14 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
-  if (ok) 
+  if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
 	     <<"=========================================================================="<<std::endl;
-  else
+  }
+  else {
     msg_Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
 	     <<"=========================================================================="<<std::endl;
+  }
   return ok;
 }
 

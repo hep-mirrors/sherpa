@@ -49,7 +49,7 @@ Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
 Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
                                          bool out) : std::vector<Vec4C>()
 {
-  double m2(p.Abs2()), pPSpat(p.PSpat());
+  double pPSpat(p.PSpat());
   if (pPSpat < Accu()) {      // decay from rest
     push_back(Vec4C(Complex(0.,0.), Complex(SQRT_05,0.), Complex(0.,-SQRT_05),
                     Complex(0.,0.)));

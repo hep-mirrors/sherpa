@@ -5,6 +5,7 @@
 #include "MyStrStream.H"
 #include "Exception.H"
 #include "Data_Reader.H"
+#include <algorithm>
 
 #define DEBUG__Variable_Selector
 

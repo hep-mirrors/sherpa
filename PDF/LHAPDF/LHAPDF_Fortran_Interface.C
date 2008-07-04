@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "CXXFLAGS_PACKAGES.H"
+#include <cstring>
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -41,7 +42,6 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     std::string full = m_set;
     const char * help;
     help = full.c_str();
-    PRINT_INFO("lhapdfinitsetbyname_("<<help<<", "<<strlen(help)<<");");
     lhapdfinitsetbyname_(help, strlen(help));
     lhapdfinit_(m_member);
 #endif

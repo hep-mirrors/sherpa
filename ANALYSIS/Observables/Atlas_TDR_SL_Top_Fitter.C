@@ -8,6 +8,7 @@
 #include "Shell_Tools.H"
 #include "Exception.H"
 #include <iomanip>
+#include <limits>
 
 using namespace ATOOLS;
 

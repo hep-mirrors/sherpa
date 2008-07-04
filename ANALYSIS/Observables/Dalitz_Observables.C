@@ -145,7 +145,6 @@ public:
 
 void Scaled_Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,const size_t &ncount)
 {
-  double min2(sqr(m_inflav.PSMass()));
   double x1(2.0*pout[0]*pin-sqr(m_outflavs[0].PSMass()));
   double x3(2.0*pout[2]*pin-sqr(m_outflavs[2].PSMass()));
   p_histogram->Fill(x1,x3,weight);

@@ -45,7 +45,7 @@ void CSpinor::SetGauge(const int gauge)
 void CSpinor::Construct(const int h,const Vec4D &p,double m2)
 {
   Vec4D ph(p[0]<0.0?-p.PSpat():p.PSpat(),p[1],p[2],p[3]);
-  if (m_r>0^h<0) {// u+(p,m) / v-(p,m)
+  if ((m_r>0)^(h<0)) {// u+(p,m) / v-(p,m)
     Complex rpp(csqrt(PPlus(ph))), pt(PT(ph));
     m_u[2]=rpp;
     m_u[3]=IsZero(pt)?csqrt(PMinus(ph)):pt/rpp;
@@ -60,7 +60,7 @@ void CSpinor::Construct(const int h,const Vec4D &p,double m2)
     double sgn(m_r>0?Sign(p[0]):-Sign(p[0]));
     double omp(sqrt(0.5*(dabs(p[0]/ph[0])+1.0)));
     double omm(sgn*sqrt(m2)/(2.0*dabs(ph[0])*omp));
-    size_t r(m_r>0^h<0?0:2);
+    size_t r((m_r>0)^(h<0)?0:2);
     m_u[0+r]=omm*m_u[2-r];
     m_u[1+r]=omm*m_u[3-r];
     m_u[2-r]*=omp;

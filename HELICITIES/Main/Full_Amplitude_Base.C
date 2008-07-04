@@ -43,10 +43,3 @@ double Full_Amplitude_Base::SummedSquared(const Vec4D * moms,bool anti) {
   }
   return result;
 }
-
-namespace HELICITIES {
-  std::ostream& operator<<( std::ostream&, const Full_Amplitude_Base &) {}
-  Full_Amplitude_Base Contraction(Particle * const part1, 
-				  Full_Amplitude_Base * const amps1,
-				  Full_Amplitude_Base * const amps2) {}
-}
