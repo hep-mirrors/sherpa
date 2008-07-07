@@ -217,6 +217,27 @@ Primitive_Observable_Base * One_Particle_E::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_M,One_Particle_M_Getter,"M")
+
+One_Particle_M::One_Particle_M(const Flavour & flav,
+				     int type,double xmin,double xmax,int nbins,
+				     const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"M") { }
+
+
+void One_Particle_M::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  double mass = mom.Mass();
+  p_histo->Insert(mass,weight,ncount); 
+} 
+
+Primitive_Observable_Base * One_Particle_M::Copy() const
+{
+  return new One_Particle_M(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 DEFINE_OBSERVABLE_GETTER(One_Particle_BeamAngle,One_Particle_BeamAngle_Getter,"BeamAngle")
 
 One_Particle_BeamAngle::One_Particle_BeamAngle(const Flavour & flav,

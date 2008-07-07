@@ -233,8 +233,17 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     }
     ct_test = ct_test->Up();
   }
-  for (size_t i(0);i<knots.size();++i) 
+  for (size_t i(0);i<knots.size();++i) {
     knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
+    if (knots[i]->part->Flav().IsMassive() &&
+	knots[i]->part->Momentum().Abs2()>rpa.gen.Accu()) 
+      knots[i]->tout=knots[i]->part->Momentum().Abs2();
+    if (dabs(knots[i]->tout)>dabs(knots[i]->t)) knots[i]->t = knots[i]->tout;
+    //std::cout<<METHOD<<" sets tout = "<<knots[i]->tout
+    //	     <<" for "<<knots[i]->part->Flav()
+    //	     <<" from "<<knots[i]->part->Momentum().Abs2()
+    //	     <<" and "<<sqr(knots[i]->part->Flav().PSMass())<<"."<<std::endl;
+  }
 
   if (msg_LevelIsDebugging()) {
     msg_Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
@@ -386,7 +395,11 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   k->part->SetInfo(info);
   k->part->SetStatus(part_status::active);  //final
   k->tout=sqr(flav.PSMass());
-  if (dabs(mom.Abs2())>rpa.gen.Accu()) k->tout=mom.Abs2(); 
+  if (k->part->Flav().IsMassive() && 
+      mom.Abs2()>rpa.gen.Accu()) k->tout=mom.Abs2(); 
+  if (dabs(k->tout)>dabs(k->t)) k->t = k->tout;
+  //std::cout<<METHOD<<" sets tout = "<<k->tout<<" mass = "<<k->tout
+  //	   <<" ("<<mom.Abs2()<<")"<<" for "<<flav<<"."<<std::endl;
   k->E2        = sqr(mom[0]);
   k->costh     = 0; 
   k->shower=po.External();
