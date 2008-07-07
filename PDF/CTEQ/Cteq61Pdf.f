@@ -228,7 +228,7 @@ C
          Endif
  10   Continue
 C      Stop ' There is no available I/O unit. '
-      Print ' There is no available I/O unit. '
+      Print *, ' There is no available I/O unit. '
       CALL ERRMSG()
 C               *************************
       End
