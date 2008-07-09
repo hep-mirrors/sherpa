@@ -28,29 +28,22 @@ HepMC2_Interface::~HepMC2_Interface()
   delete p_event;
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
+                                    HepMC::GenEvent& event)
 {
-  if (blobs->empty()) {
-    msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
-		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
-		       <<"   Continue run ... ."<<std::endl;
-    return true;
-  }
-  if (p_event!=NULL) delete p_event;
-  p_event = new HepMC::GenEvent();
 #ifdef USING__HEPMC2__UNITS
-  p_event->use_units(HepMC::Units::GEV,
-                     HepMC::Units::MM);
+  event.use_units(HepMC::Units::GEV,
+                  HepMC::Units::MM);
 #endif
-  p_event->set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+  event.set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     if (Sherpa2HepMC(*(blit),vertex)) {
-      p_event->add_vertex(vertex);
+      event.add_vertex(vertex);
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
-        p_event->set_signal_process_vertex(vertex);
+        event.set_signal_process_vertex(vertex);
         if((*blit)->NInP()==2) {
           kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
           if ((*blit)->InParticle(0)->Flav().IsAnti()) fl1=-fl1;
@@ -68,12 +61,25 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
           if (xf1) p1=xf1->Get<double>();
           if (xf1) p2=xf2->Get<double>();
           HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
-          p_event->set_pdf_info(pdfinfo);
+          event.set_pdf_info(pdfinfo);
         }
       }
     }
   }
   return true;
+}
+
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
+{
+  if (blobs->empty()) {
+    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
+               <<"   Empty list - nothing to translate into HepMC."<<std::endl
+               <<"   Continue run ... ."<<std::endl;
+    return true;
+  }
+  if (p_event!=NULL) delete p_event;
+  p_event = new HepMC::GenEvent();
+  return Sherpa2HepMC(blobs, *p_event);
 }
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)
