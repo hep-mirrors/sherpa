@@ -39,6 +39,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex;
+  std::vector<HepMC::GenParticle*> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     if (Sherpa2HepMC(*(blit),vertex)) {
       event.add_vertex(vertex);
@@ -64,7 +65,15 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           event.set_pdf_info(pdfinfo);
         }
       }
+      else if ((*blit)->Type()==ATOOLS::btp::Beam) {
+        if (vertex->particles_in_size()==1) {
+          beamparticles.push_back(*vertex->particles_in_const_begin());
+        }
+      }
     }
+  }
+  if (beamparticles.size()==2) {
+    event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
   return true;
 }
