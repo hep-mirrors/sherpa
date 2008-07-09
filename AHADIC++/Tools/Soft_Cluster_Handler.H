@@ -13,7 +13,7 @@ namespace AHADIC {
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
-    double               m_offset1,m_offset2,m_alpha,m_eta,m_photonenergy;
+    double               m_offset1,m_offset2,m_kappa,m_alpha,m_eta,m_photonenergy;
     
     Cluster_List *       m_clin;
 
@@ -36,7 +36,7 @@ namespace AHADIC {
     Soft_Cluster_Handler(Single_Transitions * singletransitions,
 			 Double_Transitions * doubletransitions,
 			 const double offset1,const double offset2,
-			 const double alpha,const double eta,
+			 const double kappa,const double alpha,const double eta,
 			 const double photonenergy,bool ana=false);
     ~Soft_Cluster_Handler();
     bool   TreatClusterList(Cluster_List *,ATOOLS::Blob *);

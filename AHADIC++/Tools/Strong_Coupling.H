@@ -12,6 +12,7 @@ namespace AHADIC {
       fall_off           = 1,
       fixed              = 2,
       fall_off_times_fix = 3,
+      GDH_inspired       = 10,
       unknown            = 99
     };
   };
@@ -19,7 +20,11 @@ namespace AHADIC {
   class Strong_Coupling : public ATOOLS::Function_Base {
   private:
     asform::code m_form;
-    double       m_beta0, m_Lambda2, m_kappa2, m_pt02, m_asmax;
+    double       m_beta0, m_Lambda, m_Lambda2, m_kappa2, m_pt02, m_asmax;
+
+    double m_gamma, m_a, m_b, m_c, m_d, m_m2;
+    const double mg2(const double) const;
+    const double n(const double)   const;
   public:
     Strong_Coupling(const asform::code,const double);
 

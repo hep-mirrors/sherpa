@@ -19,9 +19,7 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
   p_singletransitions(NULL),p_doubletransitions(NULL),
   p_softclusters(NULL), 
   m_asform(asform::constant), p_coupling(NULL), p_splitter(NULL)
-{
-  m_asform=asform::constant;
-}
+{ }
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL)      { delete p_constituents;      p_constituents=NULL;       }
@@ -51,9 +49,11 @@ void Hadronisation_Parameters::Init(string dir,string file)
   p_softclusters      = new Soft_Cluster_Handler(p_singletransitions,p_doubletransitions,
 						 m_parametermap[string("Offset_C->H")],
 						 m_parametermap[string("Offset_C->HH")],
+						 m_parametermap[string("C->H_Transition_Factor")],
 						 m_parametermap[string("C->HH_Decay_Exponent")],
 						 m_parametermap[string("C->HH_Decay_Angle")],
 						 m_parametermap[string("Photon_Energy")],true);
+  if (m_parametermap[string("pt02")]==0.) m_asform = asform::GDH_inspired;
   p_coupling          = new Strong_Coupling(m_asform,m_parametermap[string("pt02")]);
   p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 }
@@ -74,6 +74,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("TRANSITION_OFFSET",-1.0);      
   m_parametermap[string("Offset_C->HH")] =
     dataread.GetValue<double>("DECAY_OFFSET",0.2);      
+  m_parametermap[string("C->H_Transition_Factor")]       = 
+    dataread.GetValue<double>("C->H_TRANSITION_FACTOR",1.);
   m_parametermap[string("C->HH_Decay_Exponent")]       = 
     dataread.GetValue<double>("C->HH_DECAY_EXPONENT",8.);
   m_parametermap[string("C->HH_Decay_Angle")]              = 

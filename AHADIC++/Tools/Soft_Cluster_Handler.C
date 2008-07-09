@@ -9,13 +9,15 @@ using namespace std;
 Soft_Cluster_Handler::Soft_Cluster_Handler(Single_Transitions * singletransitions,
 					   Double_Transitions * doubletransitions,
 					   const double offset1,const double offset2,
+					   const double kappa,
 					   const double alpha,const double eta,
 					   const double photonenergy,bool ana) :
   p_singletransitions(singletransitions), p_doubletransitions(doubletransitions),
   m_offset1(offset1), m_offset2(offset2),
-  m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
+  m_kappa(kappa), m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
   m_ana(ana)
 { 
+  //std::cout<<METHOD<<":"<<m_kappa<<std::endl;exit(1);
   if (m_ana) {
     m_histograms[string("PT_HH")]      = new Histogram(0,0.,1.5,150);
   }
@@ -541,10 +543,12 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
       if (siter->first.IsStable())
-	wt = sqr(siter->first.Mass()*minwidth)/
+	wt = m_kappa*sqr(MC*minwidth)/
+	  //wt = sqr(siter->first.Mass()*minwidth)/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*minwidth));
       else 
-	wt = sqr(siter->first.Mass()*siter->first.Width())/
+	wt = m_kappa*sqr(MC*siter->first.Width())/
+	  //wt = sqr(siter->first.Mass()*siter->first.Width())/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*siter->first.Width()));
       wt *= siter->second;
     }
@@ -555,10 +559,12 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
       if (siter->first.IsStable())
-	wt = sqr(siter->first.Mass()*minwidth)/
+	wt = m_kappa*sqr(MC*minwidth)/
+	  //wt = sqr(siter->first.Mass()*minwidth)/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*minwidth));
       else 
-	wt = sqr(siter->first.Mass()*siter->first.Width())/
+	wt = m_kappa*sqr(MC*siter->first.Width())/
+	  //wt = sqr(siter->first.Mass()*siter->first.Width())/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*siter->first.Width()));
       wt *= siter->second;
     }
