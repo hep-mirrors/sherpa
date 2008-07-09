@@ -60,7 +60,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string hepmc2asciiout=dr->GetValue<string>("HEPMC2_ASCII_OUTPUT",string(""));
   string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
-    ("EVT_FILE_PATH",rpa.gen.Variable("PATH_PIECE"));
+    ("EVT_FILE_PATH",rpa.gen.Variable("SHERPA_RUN_PATH"));
   int precision       = dr->GetValue<int>("OUTPUT_PRECISION",6);
   m_outmode = dr->GetValue<string>("EVENT_MODE",string("Sherpa"));
   m_filesize = dr->GetValue<int>("FILE_SIZE",1000);
