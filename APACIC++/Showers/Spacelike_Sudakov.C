@@ -298,9 +298,10 @@ bool Spacelike_Sudakov::PTVeto(Knot *knot)
   double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
   if (knot->part->Flav().IsGluon() && knot->right->part->Flav().IsGluon()) 
     if (ran.Get()<0.5) pt2=knot->right->maxpt2;
-  knot->smaxpt2=pt2;
+  knot->smaxpt2=Max(0.0,pt2);
   msg_Debugging()<<"ss: knot "<<knot->kn_no<<", maxpt = "
-		 <<sqrt(knot->maxpt2)<<", pt = "<<sqrt(pt2)<<std::endl;
+		 <<sqrt(knot->maxpt2)<<", pt = "<<sqrt(dabs(pt2))
+		 <<"("<<pt2<<")"<<std::endl;
   if (m_ordering_scheme==1 &&
       knot->part->Info()!='H' && 
       (pt2<0.0 || pt2>knot->maxpt2)) {

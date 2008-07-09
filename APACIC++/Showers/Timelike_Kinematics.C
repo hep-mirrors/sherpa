@@ -516,6 +516,7 @@ GetOpeningAngle(const double &z,const double &E2,const double &ta,
 {
   // opening angle of daughter partons in current frame
   double E12(z*z*E2), E22((1.0-z)*(1.0-z)*E2);
+  if (E12<tb || E22<tc) return 0.0;
   //exact: 
   double costh((2.0*z*(1.0-z)*E2-ta+tb+tc)/(2.0*sqrt((E12-tb)*(E22-tc))));
   //approx: 
