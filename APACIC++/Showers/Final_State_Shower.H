@@ -73,7 +73,7 @@ namespace APACIC {
 
     void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
-    void ExtractPartons(Knot *knot,ATOOLS::Blob *blob,
+    void ExtractPartons(Knot *knot,ATOOLS::Blob *&blob,
 			ATOOLS::Blob_List *blist,
 			ATOOLS::Particle_List *plist=NULL);
     void ExtractFinalState(ATOOLS::Blob *,Knot * =NULL);

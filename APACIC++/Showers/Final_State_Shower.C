@@ -825,7 +825,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
   return ( SetColours(d1,kin) && SetColours(d2,kin) );
 }
 
-void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
+void Final_State_Shower::ExtractPartons(Knot *kn,Blob *&jet,
 					Blob_List *bl,Particle_List *pl) 
 {
   // fetch last ME PS blob
@@ -858,11 +858,14 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	p->SetFinalMass(p->Momentum().Mass());
       }
       if (bl) {
+	if (jet==NULL) {
 	jet = new Blob();
 #ifdef USING__Veto_Info
 	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
 	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
 #endif
+	bl->push_back(jet);
+	}
 	p->SetStatus(part_status::decayed);
 	jet->AddToInParticles(p);
       }
@@ -883,7 +886,6 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	jet->SetTypeSpec("APACIC++2.0");
 	jet->SetStatus(blob_status::needs_harddecays |
 		       blob_status::needs_hadronization);
-	bl->push_back(jet);
       }
       return;
     }
@@ -903,18 +905,20 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	  bl_meps->SetStatus(blob_status::inactive);
 	}
 	if (bl) {
+	  if (jet==NULL) {
 	  jet = new Blob();
 #ifdef USING__Veto_Info
 	  jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
 	  jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
 #endif
-	  jet->AddToInParticles(p);
 	  jet->SetId();
 	  jet->SetType(btp::FS_Shower);
 	  jet->SetTypeSpec("APACIC++2.0");
 	  jet->SetStatus(blob_status::needs_harddecays |
 			 blob_status::needs_hadronization);
 	  bl->push_back(jet);
+	  }
+	  jet->AddToInParticles(p);
 	}
       }
     }

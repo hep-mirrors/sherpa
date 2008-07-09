@@ -188,8 +188,10 @@ bool Apacic::ExtractPartons(const bool ini,const bool fin,
 			    Blob_List *const bl,Particle_List *const pl) 
 {
   if (fin) {
-    if (p_fintree->CheckStructure(true)) 
-      p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
+    if (p_fintree->CheckStructure(true)) {
+      Blob *jet(NULL);
+      p_finshower->ExtractPartons(p_fintree->GetRoot(),jet,bl,pl);
+    }
     else return false;
   }
   if (ini) {
