@@ -255,7 +255,8 @@ void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost)
     RoBoFin(k->prev->left,rot,boost);
     Vec4D pm(k->prev->part->Momentum());
     Vec4D pd(k->part->Momentum()+k->prev->left->part->Momentum());
-    if (!(pm==pd)) {
+    static double accu(sqrt(rpa.gen.Accu()));
+    if (!IsEqual(pm,pd,accu)) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved.\n"
 		 <<"  p_miss  = "<<(pm-pd)<<"\n"
 		 <<"  p_old   = "<<pm<<" "<<pm.Abs2()<<"\n"
