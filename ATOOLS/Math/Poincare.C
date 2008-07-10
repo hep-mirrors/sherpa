@@ -53,10 +53,12 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
 Poincare::Poincare(Vec4D v): 
   m_status(1), m_beta(v), m_rsq(v.Mass()), m_usen(false)
 {
+  if (IsZero(m_rsq) || IsEqual(m_rsq,-m_beta[0])) m_status=0;
 }
    
 void Poincare::Boost(Vec4D& v)
 {
+  if (m_status==0) return;
   double v0((m_beta[0]*v[0]-Vec3D(m_beta)*Vec3D(v))/m_rsq);
   double c1((v[0]+v0)/(m_rsq+m_beta[0]));
   v=Vec4D(v0,Vec3D(v)-c1*Vec3D(m_beta)); 
@@ -64,6 +66,7 @@ void Poincare::Boost(Vec4D& v)
   
 void Poincare::BoostBack(Vec4D& v)
 {
+  if (m_status==0) return;
   double v0((m_beta[0]*v[0]+Vec3D(m_beta)*Vec3D(v))/m_rsq);
   double c1((v[0]+v0)/(m_rsq+m_beta[0]));
   v=Vec4D(v0,Vec3D(v)+c1*Vec3D(m_beta));  
