@@ -200,10 +200,10 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   PDFDIR="\${top_srcdir}/PDF"
   PDFBUILDDIR="\${top_builddir}/PDF"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
-           -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/KMR -I\${PDFDIR}/Remnant"
+           -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/Remnant"
   PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant -L\${PDFBUILDDIR}/LHAPDF \
-           -L\${PDFBUILDDIR}/GRV -L\${PDFBUILDDIR}/Sudakov -L\${PDFBUILDDIR}/KMR -L\${PDFBUILDDIR}/Remnant \
-           -lPDF -lDUPDF -lSudakov -lGRV -lRemnant"
+           -L\${PDFBUILDDIR}/GRV -L\${PDFBUILDDIR}/Sudakov -L\${PDFBUILDDIR}/Remnant \
+           -lPDF -lSudakov -lGRV -lRemnant"
   AC_SUBST(PDFDIR)
   AC_SUBST(PDFBUILDDIR)
   AC_SUBST(PDFINCS)

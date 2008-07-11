@@ -9,7 +9,6 @@
 #include "NLL_Single_Sudakov.H"
 #include "NLL_Combined_Sudakov.H"
 #include "NLL_Branching_Probabilities.H"
-#include "NLL_JetRate.H"
 #include "MyStrStream.H"
 
 namespace SHERPA {

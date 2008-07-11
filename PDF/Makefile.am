@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS       =	Main LHAPDF MRST CTEQ GRV Sudakov KMR Remnant
+SUBDIRS       =	Main LHAPDF MRST CTEQ GRV Sudakov Remnant
 
 EXTRA_DIST    = @SVNINCLUDE@

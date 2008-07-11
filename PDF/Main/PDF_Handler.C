@@ -13,7 +13,6 @@
 
 #include "Exception.H"
 #include "Running_AlphaS.H"
-#include "Doubly_Unintegrated_PDF.H"
 #include "Continued_PDF.H"
 #include "Run_Parameter.H"
 #include "Data_Reader.H"
@@ -58,7 +57,6 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
     }
     if ((bunch_particle==Flavour(kf_p_plus) || (bunch_particle==Flavour(kf_p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
-      std::string kmr      = dataread->GetValue<std::string>("KMR_DUPDF","Off");
       std::string cont     = dataread->GetValue<std::string>("CONTINUE_PDF","Off");
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("cteq6l"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("CTEQ6Grid"));
@@ -106,17 +104,6 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
 #endif
       }
       if (pdfbase!=NULL) {
-	if (kmr=="On") {
-	  double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
-	  Doubly_Unintegrated_PDF *dupdf =
-	    new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,mu0*mu0);
-	  int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
-	  dupdf->SetKPerpScheme((kps::type)kpscheme);
-	  double exponent=dataread->GetValue("KMR_FIXED_EXPONENT",(double)0.0);
-	  dupdf->SetFixedKtExponent(exponent);
-	  dupdf->Initialize();
-	  return dupdf;
-	}
  	if (cont=="On") {
 	  int pcscheme=dataread->GetValue("CONTINUATION",(int)1);
 	  return new Continued_PDF(pdfbase,(pcs::type)pcscheme);

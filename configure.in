@@ -43,7 +43,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/CTEQ/Makefile \
 	  PDF/GRV/Makefile \
 	  PDF/Sudakov/Makefile \
-	  PDF/KMR/Makefile \
 	  PDF/Remnant/Makefile \
 	  PDF/Makefile \
 	  MODEL/Decays/Makefile \

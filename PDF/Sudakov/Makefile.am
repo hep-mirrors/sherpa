@@ -7,7 +7,6 @@ libSudakov_la_SOURCES =	\
 			NLL_Single_Sudakov.C \
 			NLL_Combined_Sudakov.C \
 			NLL_Sudakov.C \
-			NLL_JetRate.C \
 			Splitting_Kernel.C \
 			QCD_Splitting_Kernels.C
 
@@ -18,7 +17,6 @@ pkginclude_HEADERS        =	\
 			NLL_Single_Sudakov.H \
 			NLL_Combined_Sudakov.H \
 			NLL_Sudakov.H \
-			NLL_JetRate.H \
 			Splitting_Kernel.H \
 			QCD_Splitting_Kernels.H
 
