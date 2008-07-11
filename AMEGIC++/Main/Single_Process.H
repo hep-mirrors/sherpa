@@ -142,7 +142,6 @@ namespace AMEGIC {
     ATOOLS::Blob_Data_Base * OneEvent(double = -1.);
     ATOOLS::Blob_Data_Base * SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
-    ATOOLS::Blob_Data_Base * WeightedEventNS(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);

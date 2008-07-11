@@ -42,8 +42,6 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Blob_List &blobs,
 		  double value=1.0,int ncount=1);
     
-    void EndEvaluation(double scale);
-
     virtual bool Modify(Particle *&p1,Particle *&p2) const = 0;
 
   };// end of class Two_Particle_Modifier_Base
@@ -170,10 +168,6 @@ void Two_Particle_Modifier_Base::Evaluate
       (*outlist)[i] = new ATOOLS::Particle(*(*inlist)[i]);
     Modify((*outlist)[pos[0]],(*outlist)[pos[1]]);
   }
-}
-
-void Two_Particle_Modifier_Base::EndEvaluation(double scale)
-{
 }
 
 std::string Two_Particle_Modifier_Base::ReplaceTags(std::string &expr) const

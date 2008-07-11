@@ -23,7 +23,6 @@ namespace ANALYSIS {
     Analysis_Object *GetCopy() const;    
     Analysis_Object &operator+=(const Analysis_Object & ob);
 
-    void EndEvaluation(double scale);
     void Output(const std::string & pname);
 
   };// end of class Tau_Reconstruction
@@ -109,10 +108,6 @@ void Tau_Reconstruction::Evaluate(const ATOOLS::Particle_List &inlist,
   p_ana->AddData(m_outlist+"_x1",new Blob_Data<double>(x1));
   p_ana->AddData(m_outlist+"_x2",new Blob_Data<double>(x2));
   p_ana->AddData(m_outlist+"_mtautau",new Blob_Data<double>(mtautau));  
-}
-
-void Tau_Reconstruction::EndEvaluation(double scale) 
-{
 }
 
 Analysis_Object &Tau_Reconstruction::operator+=(const Analysis_Object & ob)

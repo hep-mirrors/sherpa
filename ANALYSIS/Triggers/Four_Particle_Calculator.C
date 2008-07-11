@@ -28,8 +28,6 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Blob_List &bl,
 		  double weight,int ncount);
     
-    void EndEvaluation(double scale);
-
     virtual bool Calculate(const Particle *p1,const Particle *p2,
 			   const Particle *p3,const Particle *p4) const = 0;
 
@@ -150,10 +148,6 @@ void Four_Particle_Calculator_Base::Evaluate
   for (size_t k(0);k<4;++k) if (pos[k]==std::string::npos) return;
   Calculate((*inlist)[pos[0]],(*inlist)[pos[1]],
 	    (*inlist)[pos[2]],(*inlist)[pos[3]]);
-}
-
-void Four_Particle_Calculator_Base::EndEvaluation(double scale)
-{
 }
 
 DECLARE_GETTER(IMF_Getter,"BWMassFit",

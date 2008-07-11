@@ -19,8 +19,6 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
-    void EndEvaluation(double scale);
-
     Primitive_Observable_Base *Copy() const;
 
   };// end of class Total_Momentum
@@ -74,10 +72,6 @@ void Total_Momentum::Evaluate(const ATOOLS::Particle_List &inlist,
   for (size_t i(0);i<inlist.size();++i) sum+=inlist[i]->Momentum();
   msg_Debugging()<<"adding '"<<m_outlist<<"' = "<<sum<<"\n";
   p_ana->AddData(m_outlist,new Blob_Data<Vec4D>(sum));
-}
-
-void Total_Momentum::EndEvaluation(double scale)
-{
 }
 
 Primitive_Observable_Base *Total_Momentum::Copy() const

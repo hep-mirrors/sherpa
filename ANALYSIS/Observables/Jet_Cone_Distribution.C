@@ -96,6 +96,14 @@ void Jet_Cone_Distribution::EndEvaluation(double scale)
   }
 }
 
+void Jet_Cone_Distribution::Restore(double scale) 
+{
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
+  }
+}
+
 void Jet_Cone_Distribution::Reset()
 {
   p_histo->Reset();
@@ -235,6 +243,14 @@ void Jet_Cone_Dependence::EndEvaluation(double scale)
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
+  }
+}
+
+void Jet_Cone_Dependence::Restore(double scale) 
+{
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
   }
 }
 
@@ -410,6 +426,14 @@ void Jet_Cone_Shape::EndEvaluation(double scale)
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
+  }
+}
+
+void Jet_Cone_Shape::Restore(double scale) 
+{
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
   }
 }
 

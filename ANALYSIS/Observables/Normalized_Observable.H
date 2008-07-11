@@ -25,7 +25,8 @@ namespace ANALYSIS {
     Primitive_Observable_Base &
     operator+=(const Primitive_Observable_Base &obs);
 
-    void EndEvaluation(double scale);
+    void Restore(double scale=1.0);
+    void EndEvaluation(double scale=1.0);
 
   };// end of class Normalized_Observable
 

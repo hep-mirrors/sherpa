@@ -188,6 +188,16 @@ void MI_Statistics::EndEvaluation(double scale)
   }
 }
 
+void MI_Statistics::Restore(double scale) 
+{
+  if (scale!=1.) p_histo->Scale(scale);
+  p_histo->Restore();
+  for (size_t i=0;i<m_scales.size();++i) {
+    if (scale!=1.) m_scales[i]->Scale(scale);
+    m_scales[i]->Restore();
+  }
+}
+
 void MI_Statistics::Output(const std::string & pname) 
 {
   if (p_histo) {

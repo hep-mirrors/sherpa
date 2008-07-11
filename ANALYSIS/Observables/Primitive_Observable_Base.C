@@ -105,6 +105,14 @@ void Primitive_Observable_Base::EndEvaluation(double scale) {
   }
 }
 
+void Primitive_Observable_Base::Restore(double scale) 
+{
+  if (p_histo) {
+    if (scale!=1.) p_histo->Scale(scale);
+    p_histo->Restore();
+  }
+}
+
 /*
 void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const Flavour * _flavs) {
   m_nout = _nout; p_moms = _moms; p_flavs = _flavs;

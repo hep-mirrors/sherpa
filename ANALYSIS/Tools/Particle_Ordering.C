@@ -56,7 +56,6 @@ using namespace ATOOLS;
     void Evaluate(const ATOOLS::Blob_List &bl,				\
 		  double weight,int ncount);				\
     Analysis_Object *GetCopy() const;					\
-    void EndEvaluation(double scale);					\
   };									\
   DEFINE_ORDERING_GETTER(NAME,GNAME,TAG)				\
   NAME::NAME(const std::string &inlist,const std::string &outlist):	\
@@ -81,10 +80,7 @@ using namespace ATOOLS;
   Analysis_Object *NAME::GetCopy() const				\
   {									\
     return new NAME(m_inlist,m_outlist);				\
-  }									\
-  void NAME::EndEvaluation(double scale)				\
-  {									\
-  }									
+  }								       
   
 
 namespace ANALYSIS {

@@ -30,8 +30,6 @@ namespace ANALYSIS {
 		  ATOOLS::Particle_List &outlist,
 		  double value,int ncount);
     
-    void EndEvaluation(double scale);
-
     virtual bool Select(const Particle *p1,const Particle *p2) const = 0;
 
   };// end of class Two_Particle_Selector_Base
@@ -282,10 +280,6 @@ void Two_Particle_Selector_Base::Evaluate
     for (size_t i=0;i<inlist.size();++i) 
       outlist[i] = new ATOOLS::Particle(*inlist[i]);
   }
-}
-
-void Two_Particle_Selector_Base::EndEvaluation(double scale)
-{
 }
 
 DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DPhi_Selector,

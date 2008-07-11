@@ -18,7 +18,8 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &,double, int);
     void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
     
-    void EndEvaluation(double);
+    void EndEvaluation(double scale=1.0);
+    void Restore(double scale=1.0);
     virtual void Output(const std::string & pname);
 
     Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);

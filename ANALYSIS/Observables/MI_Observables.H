@@ -16,7 +16,8 @@ namespace ANALYSIS {
     ~MI_Statistics();
 
     void Evaluate(const ATOOLS::Blob_List &blobs,double weight=1.,int ncount=1);
-    void EndEvaluation(double scale);
+    void EndEvaluation(double scale=1.0);
+    void Restore(double scale=1.0);
     void Output(const std::string & pname);
 
     Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);

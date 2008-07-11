@@ -26,7 +26,6 @@ void All_Processes::Add(Process_Base * _proc)
 }
 
 bool  All_Processes::SelectOne() {
-  if (m_weventmode<0) return SelectOneFromList(); 
   DeSelect();
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
@@ -176,7 +175,6 @@ ATOOLS::Blob_Data_Base *All_Processes::SameEvent() {
 
 ATOOLS::Blob_Data_Base *All_Processes::WeightedEvent(const int mode) 
 {
-  if (m_weventmode<0) return WeightedEventNS(mode);
   long int trials(0);
   ATOOLS::Blob_Data_Base *res(NULL);
   do {

@@ -97,8 +97,6 @@ namespace AMEGIC {
     bool        LookUpXSec(double,bool,std::string);
     bool        PrepareXSecTables();
     
-    void AddEvent(const double xs,const double validxs,const int ncounts);
-    
  };
 
   inline Process_Base * Amegic::Processes() { return p_procs; }

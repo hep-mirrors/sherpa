@@ -27,8 +27,6 @@ namespace ANALYSIS {
     fill_helper     = 16,
     fill_all        = 24,
     
-    weighted_ns     = 32,
-    
     output_this     = 128,
     output_jet      = 256,
     output_process  = 512,
@@ -48,16 +46,6 @@ namespace ANALYSIS {
   typedef std::map<std::string,ATOOLS::Particle_List*>  PL_Container;
   typedef std::map<std::string,Primitive_Analysis *>    Analysis_List;
 
-  struct Weight_Statistics {
-    double sum_weight;
-    unsigned long nevt;
-    double sum_weight_one;
-    unsigned long nevt_one;
-    Weight_Statistics() :
-      sum_weight(0.),nevt(0),sum_weight_one(0.),nevt_one(0) {}
-  };
-
-
   class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
 
@@ -75,7 +63,6 @@ namespace ANALYSIS {
     const ATOOLS::Blob_List    * p_blobs;
 
     Primitive_Analysis   * p_partner;
-    Weight_Statistics      m_stats;
 
     bool  m_active, m_splitjetconts;
 
@@ -99,7 +86,8 @@ namespace ANALYSIS {
     
     void AddSubAnalysis(const std::string &,Primitive_Analysis *);
     void DoAnalysis(const ATOOLS::Blob_List * const , const double);
-    void FinishAnalysis(const std::string &, long=0, double =1.);
+    void FinishAnalysis(const std::string &);
+    void RestoreAnalysis();
     
     void AddObject(Analysis_Object *obj);
     Analysis_Object *GetObject(const std::string & key);

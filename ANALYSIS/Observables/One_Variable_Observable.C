@@ -48,7 +48,8 @@ namespace ANALYSIS {
 		  const size_t i,const size_t j,size_t k,
 		  size_t o,size_t &eval); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
-    void EndEvaluation(double scale);
+    void EndEvaluation(double scale=1.0);
+    void Restore(double scale=1.0);
     void Output(const std::string & pname);
     Primitive_Observable_Base *Copy() const;    
   };// end of class One_Variable_Observable
@@ -245,6 +246,15 @@ void One_Variable_Observable::EndEvaluation(double scale)
     if (m_dists[i]!=NULL) {
       m_dists[i]->Finalize();
       if (scale!=1.0) m_dists[i]->Scale(scale);
+    }
+}
+
+void One_Variable_Observable::Restore(double scale) 
+{
+  for (size_t i(0);i<m_dists.size();++i) 
+    if (m_dists[i]!=NULL) {
+      if (scale!=1.0) m_dists[i]->Scale(scale);
+      m_dists[i]->Restore();
     }
 }
 

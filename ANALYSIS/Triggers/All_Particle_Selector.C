@@ -22,8 +22,6 @@ namespace ANALYSIS {
     
     virtual bool Select(const ATOOLS::Particle *p) const = 0;
 
-    void EndEvaluation(double scale);
-
   };// end of class Particle_Selector_Base
 
   class PT_Selector: public Particle_Selector_Base {  
@@ -132,8 +130,6 @@ namespace ANALYSIS {
     
     Analysis_Object *GetCopy() const;
     
-    void EndEvaluation(double scale);
-
   };// end of class DPhi_Selector
 
 }// end of namespace ANALYSIS
@@ -254,10 +250,6 @@ void Particle_Selector_Base::Evaluate(const ATOOLS::Particle_List &inlist,
     if (Select(inlist[i])) 
       outlist.push_back(new ATOOLS::Particle(*inlist[i]));
   }
-}
-
-void Particle_Selector_Base::EndEvaluation(double scale)
-{
 }
 
 DEFINE_SELECTOR_GETTER(PT_Selector,PT_Selector_Getter,"PTSel")
@@ -432,6 +424,3 @@ Analysis_Object *DPhi_Selector::GetCopy() const
 			   m_reflist,m_inlist,m_outlist);
 }
 
-void DPhi_Selector::EndEvaluation(double scale)
-{
-}

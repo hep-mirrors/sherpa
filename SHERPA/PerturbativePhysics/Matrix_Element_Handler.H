@@ -111,7 +111,6 @@ namespace SHERPA {
     bool GenerateSameEvent();
 
     double ExpectedEvents() const;
-    void   AddEvent(const double xs,const double validxs,const int ncounts);
 
     void SetAmegic(AMEGIC::Amegic *);
     void SetXS(EXTRAXS::Simple_XS *);

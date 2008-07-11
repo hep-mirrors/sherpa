@@ -19,7 +19,6 @@ namespace ANALYSIS {
       m_xssum(0.0), m_cutxssum(0.0), m_sudsum(0.0), m_cutsudsum(0.0),
       m_sum(0.0), m_cutsum(0.0), m_sum2(0.0), m_cutsum2(0.0) {} 
 
-    void EndEvaluation(const double scale=1.0);
     void Output(const std::string &pname);
 
   };// end of struct Statistics_Data
@@ -40,6 +39,7 @@ namespace ANALYSIS {
 		  double weight=1.0,int ncount=1);
 
     void EndEvaluation(double scale=1.0);
+    void Restore(double scale=1.0);
     void Output(const std::string & pname);
 
     Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &obj);
@@ -141,6 +141,10 @@ void Statistics_Observable::Evaluate
 }
 
 void Statistics_Observable::EndEvaluation(double scale) 
+{
+}
+
+void Statistics_Observable::Restore(double scale) 
 {
 }
 

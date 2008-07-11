@@ -12,6 +12,8 @@ namespace SHERPA {
 
     ANALYSIS::Analysis_Handler *p_analysis;
 
+    size_t m_wit;
+
   public:
     
     // constructors

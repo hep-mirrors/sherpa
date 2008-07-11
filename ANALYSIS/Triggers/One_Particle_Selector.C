@@ -29,8 +29,6 @@ namespace ANALYSIS {
 
     virtual bool Select(const ATOOLS::Particle *p) const = 0;
     
-    void EndEvaluation(double scale);
-
   };// end of class One_Particle_Selector_Base
 
   class One_PT_Selector: public One_Particle_Selector_Base {  
@@ -197,10 +195,6 @@ void One_Particle_Selector_Base::Evaluate(const ATOOLS::Particle_List &inlist,
       }
     }
   }
-}
-
-void One_Particle_Selector_Base::EndEvaluation(double scale)
-{
 }
 
 DEFINE_ONE_SELECTOR_GETTER(One_PT_Selector,

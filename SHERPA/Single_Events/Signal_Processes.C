@@ -54,12 +54,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
       if ((*blit)->Type()==btp::Signal_Process) {
 	if ((*blit)->Status()==blob_status::inactive && !m_addedxs) {
  	  Blob_Data_Base * message = (*(*blit))["ME_Weight"];
- 	  double lastweight = message->Get<double>();
  	  message = (*(*blit))["ME_Weight_One"];
-	  double nljweight = lastweight;
-	  if (message) nljweight = message->Get<double>();
-	  p_mehandler->AddEvent(nljweight/rpa.Picobarn(),
-				lastweight/rpa.Picobarn(),0);
 	  m_addedxs=true;
 	}
 	if ((*blit)->Has(blob_status::needs_signal)) {

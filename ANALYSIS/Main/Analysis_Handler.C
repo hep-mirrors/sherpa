@@ -23,7 +23,7 @@ using namespace ATOOLS;
 size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
-  m_weighted(0), m_initialized(false), m_scalefactor(0.) {}
+  m_weighted(0), m_initialized(false) {}
 
 Analysis_Handler::~Analysis_Handler()
 {
@@ -147,8 +147,6 @@ bool Analysis_Handler::ReadIn()
     msg_Info()<<"\")\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
     mode=mode|m_weighted;
-    if(m_weighted==ANALYSIS::weighted_ns) 
-      m_scalefactor=(double)rpa.gen.NumberOfEstimatedEvents();
     m_analyses.push_back(new Primitive_Analysis(ToString(i),mode));
     std::string outpath;
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
@@ -237,26 +235,13 @@ void Analysis_Handler::Clear()
        ait!=m_analyses.end();++ait) (*ait)->ClearAllData(); 
 }
 
-bool Analysis_Handler::ApproveTerminate()
-{
-  if (m_weighted==weighted_ns) {
-    msg_Error()<<"Analysis_Handler::ApproveTerminate(): {\n"
-	       <<"   Currently weighted analyses cannot be continued.\n"
-	       <<"   To stop the event generation call SIGINT 3 times.\n"
-	       <<"   The analysis status will not be written to disk.\n}"
-	       <<std::endl;
-    return false;
-  }
-  return true;
-}
-
 void Analysis_Handler::PrepareTerminate()
 {
   if (rpa.gen.BatchMode()) return;
   Finish();
 }
 
-void Analysis_Handler::Finish(const std::string &path)
+void Analysis_Handler::WriteOut(const std::string &path,const bool cont)
 {
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
@@ -272,15 +257,21 @@ void Analysis_Handler::Finish(const std::string &path)
       }
     }
   }
+  if (cont) msg_Info()<<"\n";
   msg_Info()<<"Analysis_Handler::Finish(..): {\n";
-  double ws=rpa.gen.WAnaScale();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
     msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
 	      <<"'."<<std::endl; 
-    (*ait)->FinishAnalysis(OutputPath(),(long int)m_scalefactor,ws); 
+    (*ait)->FinishAnalysis(OutputPath());
+    if (cont) (*ait)->RestoreAnalysis();
   }
   msg_Info()<<"}"<<std::endl;
+}
+
+void Analysis_Handler::Finish(const std::string &path)
+{
+  WriteOut(path,false);
   if (m_analyses.size()) {
     exh->RemoveTerminatorObject(this);
   }

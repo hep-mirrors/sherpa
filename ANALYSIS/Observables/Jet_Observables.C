@@ -161,6 +161,13 @@ void Jet_Observable_Base::EndEvaluation(double scale) {
   }
 }
 
+void Jet_Observable_Base::Restore(double scale) {
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
+  }
+}
+
 void Jet_Observable_Base::Output(const std::string & pname) {
   ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
@@ -273,6 +280,13 @@ void Two_Jet_Observable_Base::EndEvaluation(double scale) {
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
+  }
+}
+
+void Two_Jet_Observable_Base::Restore(double scale) {
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
   }
 }
 
@@ -828,6 +842,13 @@ void Three_Jet_Observable_Base::EndEvaluation(double scale) {
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
+  }
+}
+
+void Three_Jet_Observable_Base::Restore(double scale) {
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Restore();
   }
 }
 

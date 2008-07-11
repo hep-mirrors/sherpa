@@ -24,7 +24,8 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &list, 
 		  double weight, int ncount);
     Analysis_Object &operator+=(const Analysis_Object &obj);
-    void EndEvaluation(double scale);
+    void Restore(double scale=1.0);
+    void EndEvaluation(double scale=1.0);
     void Output(const std::string & pname);
     Primitive_Observable_Base *Copy() const;    
   };// end of class Atlas_TDR_SL_Top_Fitter
@@ -86,6 +87,16 @@ void Atlas_TDR_SL_Top_Fitter::EndEvaluation(double scale)
     p_mjj->Scale(scale);
     p_mjjb->Scale(scale);
   }
+}
+
+void Atlas_TDR_SL_Top_Fitter::Restore(double scale) 
+{
+  if (scale!=1.0) {
+    p_mjj->Scale(scale);
+    p_mjjb->Scale(scale);
+  }
+  p_mjj->Restore();
+  p_mjjb->Restore();
 }
 
 void Atlas_TDR_SL_Top_Fitter::Output(const std::string & pname) 

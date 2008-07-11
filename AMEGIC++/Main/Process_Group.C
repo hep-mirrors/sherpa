@@ -31,7 +31,7 @@ using namespace std;
 
 Process_Group::Process_Group() :
   Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,PHASIC::scl::unknown,0,-1.),
-  m_resetted(false), m_weventmode(0), m_enable_mhv(0)
+  m_resetted(false), m_enable_mhv(0)
 { 
   m_name  = "Empty_Group"; 
   p_pl    = 0;
@@ -48,7 +48,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 			     std::string e_func, int enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
-  m_resetted(false), m_weventmode(0), m_enable_mhv(enable_mhv)
+  m_resetted(false), m_enable_mhv(enable_mhv)
 {
   p_selected  = NULL;
 
@@ -483,29 +483,8 @@ void Process_Group::WriteOutHistogram(std::string filename)
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->WriteOutHistogram(filename);
 }
 
-void Process_Group::SetEvents(const double number) 
-{
-  m_gmin=1.;
-  m_expevents=m_dicedevents=0;
-  m_anasum=m_validanasum=0.0;
-  for (size_t i=0;i<m_procs.size();++i) {
-    m_procs[i]->SetEvents(number/TriggerEfficiency());
-    m_expevents+=m_procs[i]->ExpectedEvents();
-//     PRINT_INFO(Parent()->Name()<<" "<<Name()<<" "<<m_procs[i]->Name()<<" "
-//  	       <<m_procs[i]->ExpectedEvents()<<" "<<m_expevents);
-  }
-   for (size_t i=0;i<m_procs.size();++i) {
-     m_procs[i]->SetPW((double)m_procs[i]->ExpectedEvents());
-   }
-   if (Parent()==this) {
-     rpa.gen.SetNumberOfEstimatedEvents(m_expevents);
-     SetPW((double)m_expevents);
-   }
-}
-
 bool Process_Group::SelectOne()
 {
-  if (m_weventmode<0) return SelectOneFromList();
   DeSelect();
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
@@ -572,33 +551,13 @@ bool Process_Group::SelectOne()
   return true;
 }
 
-bool Process_Group::SelectOneFromList()
-{
-  DeSelect();
-  for (size_t i=0;i<m_procs.size();i++) {
-    if (m_procs[i]->DicedEvents()<m_procs[i]->ExpectedEvents()) {
-      p_selected=m_procs[i];
-      if (p_selected->SelectOneFromList()) {
-	if (Parent()==this) {
-	  AddEvent(0.0,0.0,1);
-	}
-	break;
-      }
-    }
-  }
-  if (p_selected==NULL) return false;
-  return true;
-}
-
 void Process_Group::DeSelect() {
   p_selected = 0;
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->DeSelect();
 }
 
 bool Process_Group::ReSelect(int i) {
-  if (m_weventmode>=0) return SelectOne();
-  if (i==1) return true;
-  return Parent()->SelectOne();
+  return SelectOne();
 }
 
 void Process_Group::Empty() {
@@ -1399,32 +1358,7 @@ ATOOLS::Blob_Data_Base *Process_Group::SameEvent() {
   return p_pshandler->SameEvent();
 }
 
-ATOOLS::Blob_Data_Base *Process_Group::WeightedEventNS(const int mode) 
-{
-  if (m_atoms) {
-    bool oldresetted=false;
-    while (!oldresetted) {
-      while (SelectOneFromList()) {
-	ATOOLS::Blob_Data_Base *info = p_selected->WeightedEventNS(mode);
-	if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()-1)
-	  rpa.gen.SetNumberOfEvents(rpa.gen.NumberOfEvents()+1);
-	if (info!=NULL) return info;
-      }
-      oldresetted=m_resetted;
-      if (!m_resetted) {
-	double gmin=10.;
-	ResetEvents(gmin);
-	m_resetted=true;
-      }
-    }
-    rpa.gen.SetNumberOfEvents(rpa.gen.NumberOfDicedEvents());
-    return NULL;
-  }
-  return p_pshandler->WeightedEvent(mode);
-}
-
 ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent(const int mode) {
-  if (m_weventmode<0) return WeightedEventNS(mode);
   if (m_atoms) {
     SelectOne();
     return p_selected->WeightedEvent(mode);
@@ -1533,44 +1467,9 @@ void Process_Group::SetPrintGraphs(bool print_graphs)
  for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetPrintGraphs(print_graphs);
 }
 
-void Process_Group::AddEvent(const double xs,const double validxs,const int ncounts)
-{ 
-  m_dicedevents+=ncounts;
-  if (xs!=0.) m_accevents++;
-  p_selected->AddEvent(xs,validxs,ncounts);
-}
-
-void Process_Group::ResetEvents(double gmin)
-{
-  m_gmin = gmin;
-//   PRINT_INFO(Name());
-  if (Parent()==this){
-    double number = 0.;
-    GetGMin(gmin,number);
-    number/=(double)m_dicedevents*rpa.gen.NumberOfEvents()/(double)m_accevents;
-//     PRINT_INFO(gmin<<" "<<number);
-    gmin=ATOOLS::Min(gmin,number);
-    rpa.gen.SetWAnaScale(gmin);
-  }
-  m_expevents=0;
-  for (size_t i=0;i<m_procs.size();++i) {
-    m_procs[i]->ResetEvents(gmin);
-    m_expevents+=m_procs[i]->ExpectedEvents();
-//     PRINT_INFO(m_dicedevents<<" "<<m_expevents<<" "<<gmin);    
-  }
-  if (Parent()==this)
-    rpa.gen.SetNumberOfEstimatedEvents(m_expevents);
-}
-
 void Process_Group::GetGMin(double &g, double &meff)
 {
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->GetGMin(g,meff);
-}
-
-void Process_Group::SetWEventMode(int mode) 
-{ 
-  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetWEventMode(mode);
-  m_weventmode=mode; 
 }
 
 void Process_Group::SetFactorizationScale(const std::string &muf2)

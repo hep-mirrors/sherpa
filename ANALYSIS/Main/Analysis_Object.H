@@ -55,6 +55,7 @@ namespace ANALYSIS {
 			  double value,int ncount) = 0;
 
     virtual void Reset();
+    virtual void Restore(double scale=1.0);
     virtual void EndEvaluation(double scale=1.0);
     virtual void Output(const std::string &pname);
 

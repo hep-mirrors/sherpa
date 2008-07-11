@@ -72,3 +72,9 @@ void Normalized_Observable::EndEvaluation(double scale)
   }                                                                
 }
 
+void Normalized_Observable::Restore(double scale)
+{
+  double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
+  p_obs->Scale(n*(m_xmax-m_xmin)/m_nbins/scale);              
+  p_norm->Scale(n/scale);                                 
+}

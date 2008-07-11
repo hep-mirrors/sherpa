@@ -274,7 +274,6 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
     p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }
-  SetEvents(rpa.gen.NumberOfEvents());
   msg_Info()<<"In Simple_XS::CalculateTotalXSec() = "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;

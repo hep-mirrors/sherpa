@@ -28,10 +28,8 @@ namespace ANALYSIS {
 
     int    m_weighted; 
     bool   m_initialized;
-    double m_scalefactor;
 
     void Clean();
-    bool ApproveTerminate();
     void PrepareTerminate();
 
   public:
@@ -46,6 +44,7 @@ namespace ANALYSIS {
     bool ReadIn();
 
     void DoAnalysis(const ATOOLS::Blob_List *bloblist,const double weight);
+    void WriteOut(const std::string &path="",const bool cont=true);
     void Finish(const std::string &path="");
     void Clear();
     
@@ -57,11 +56,9 @@ namespace ANALYSIS {
 					 size_t &starty,size_t &startx);
 
     // inline functions
-    inline void SetWeighted(const int weighted)    { m_weighted=weighted;  }
-    inline void SetScaleFactor(const double factor) { m_scalefactor=factor; }
+    inline void SetWeighted(const int weighted) { m_weighted=weighted; }
     
-    inline int Weighted() const      { return m_weighted;    }
-    inline double ScaleFactor() const { return m_scalefactor; }
+    inline int Weighted() const { return m_weighted; }
 
   };// end of class Analysis_Handler   
 

@@ -1434,11 +1434,6 @@ ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent(const int mode)
   return p_partner->WeightedEvent(mode); 
 }
 
-ATOOLS::Blob_Data_Base * Single_Process::WeightedEventNS(const int mode)     
-{ 
-  return WeightedEvent(mode); 
-}
-
 ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() 
 { 
   if (p_partner==this) return p_pshandler->SameWeightedEvent(); 

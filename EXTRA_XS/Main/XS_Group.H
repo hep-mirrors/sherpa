@@ -82,14 +82,10 @@ namespace EXTRAXS {
 			    const bool create=false);
     void WriteOutXSecs(std::ofstream &outfile);
     bool SelectOne();
-    bool SelectOneFromList();
     void DeSelect();
     bool ReSelect(int);
-    void SetEvents(const double number);
 
     void SetISRThreshold(const double threshold);
-    void AddEvent(const double xs,const double validxs,const int ncounts);
-    void ResetEvents();
 
     ATOOLS::Blob_Data_Base *OneEvent();
     ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);

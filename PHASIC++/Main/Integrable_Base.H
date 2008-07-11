@@ -231,10 +231,7 @@ namespace PHASIC {
     virtual void DeSelect() = 0;
     virtual bool ReSelect(int) = 0;
     virtual bool SelectOne() = 0;
-    virtual bool SelectOneFromList() = 0;
 
-    virtual void SetEvents(const double number);
-    virtual void ResetEvents(double gmin);
     virtual void GetGMin(double &gmin, double &meff);
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
@@ -245,7 +242,6 @@ namespace PHASIC {
     virtual ATOOLS::Blob_Data_Base *SameEvent();
 
     virtual ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
-    virtual ATOOLS::Blob_Data_Base *WeightedEventNS(const int mode=0);
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
@@ -254,9 +250,6 @@ namespace PHASIC {
     virtual void InitWeightHistogram();
     virtual void ReadInHistogram(std::string);
     virtual void WriteOutHistogram(std::string);
-
-    virtual void AddEvent(const double xs,const double validxs,
-			  const int ncounts);
 
     virtual double TriggerEfficiency();
     

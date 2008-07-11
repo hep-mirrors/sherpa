@@ -131,6 +131,10 @@ void PSM_Observable::EndEvaluation(double scale) {
     p_histo->Finalize();
 }
 
+void PSM_Observable::Restore(double scale) {
+    p_histo->Restore();
+}
+
 void PSM_Observable::Output(const std::string & pname) {
   ATOOLS::MakeDir(pname); 
   p_histo->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());

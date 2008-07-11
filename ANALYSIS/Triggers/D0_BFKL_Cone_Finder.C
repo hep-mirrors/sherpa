@@ -271,10 +271,6 @@ public:
     msg_Debugging()<<"}\n";
   }
 
-  void EndEvaluation(double scale) 
-  {
-  }
-
 };
 
 DECLARE_GETTER(DB_Cone_Getter,"DBCone",Analysis_Object,Argument_Matrix);

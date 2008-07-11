@@ -283,8 +283,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   double procweight=1.;
-  if (m_mode&ANALYSIS::weighted_ns || 
-      !(m_mode&ANALYSIS::weighted)) {
+  if (!(m_mode&ANALYSIS::weighted)) {
     Blob_Data_Base *info((*p_partner)["Process_Weight"]);
     if (info!=NULL) procweight=info->Get<double>();
   }
@@ -312,10 +311,6 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     ncount_one = (*p_partner)["ME_NumberOfTrials_One"]->Get<int>();
   }
   if (weight==0.) weight_one=0.;
-  m_stats.sum_weight     += weight;
-  m_stats.nevt           += ncount;
-  m_stats.sum_weight_one += weight_one;
-  m_stats.nevt_one       += ncount_one;
   
   // do nonsplittable (helper and legacy objects) first
   if (m_mode&ANALYSIS::fill_helper) {
@@ -341,16 +336,15 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   ClearAllData();
 }
 
-void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, double xs) 
+void Primitive_Analysis::FinishAnalysis(const std::string & resdir) 
 {
-  if (ntotal==0) ntotal=m_nevt;
   if (m_mode&ANALYSIS::output_this) 
     ATOOLS::MakeDir(resdir+OutputPath()); 
 
   for (Analysis_List::iterator it=m_subanalyses.begin();
        it!=m_subanalyses.end();++it) {
     std::string dir=resdir+OutputPath()+std::string("/")+it->first;
-    it->second->FinishAnalysis(dir,ntotal,xs);
+    it->second->FinishAnalysis(dir);
   }
 
   if (!(m_mode&ANALYSIS::splitt_phase)) {
@@ -369,29 +363,21 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	}
       }
       else {
-	if (m_mode&ANALYSIS::weighted_ns) {
-	  m_objects[i]->EndEvaluation(double(m_stats.nevt)/double(ntotal)*xs);
-	}
-	else {
-	  if ((m_mode&ANALYSIS::weighted)==0 ) {
-	    m_objects[i]->EndEvaluation(double(m_nevt)/double(ntotal)*xs);
-	  }
-	  else {
-	    if (m_stats.nevt_one>0 && m_stats.sum_weight!=0.) {
-	      double xshist=m_stats.sum_weight/double(m_stats.nevt);
-	      double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
-	      m_objects[i]->EndEvaluation(xsreal/xshist);
-	    }
-	    else {
-	      m_objects[i]->EndEvaluation();
-	    }
-	  }
-	}
+	m_objects[i]->EndEvaluation();
       }
       if (m_mode&ANALYSIS::output_this) 
 	m_objects[i]->Output(resdir+OutputPath());
     }
   }
+}
+
+void Primitive_Analysis::RestoreAnalysis() 
+{
+  for (Analysis_List::iterator it=m_subanalyses.begin();
+       it!=m_subanalyses.end();++it)
+    it->second->RestoreAnalysis();
+  for (size_t i(0);i<m_objects.size();++i)
+    m_objects[i]->Restore();
 }
 
 void Primitive_Analysis::Init()

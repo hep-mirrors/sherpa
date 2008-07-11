@@ -119,10 +119,6 @@ public:
 	 pit!=addlist.end();++pit) if (*pit!=NULL) delete *pit;
   }
 
-  void EndEvaluation(double scale) 
-  {
-  }
-
 };
 
 DECLARE_GETTER(FS_Cone_Getter,"FSCone",

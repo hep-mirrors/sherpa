@@ -31,8 +31,6 @@ namespace ANALYSIS {
     
     Analysis_Object *GetCopy() const;
     
-    void EndEvaluation(double scale);
-
   };// end of class One_Particle_Extractor
 
 }// end of namespace ANALYSIS
@@ -144,9 +142,5 @@ Analysis_Object *One_Particle_Extractor::GetCopy() const
   return new One_Particle_Extractor
     (p_variable->Name(),m_flavour,m_item,
      m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
-}
-
-void One_Particle_Extractor::EndEvaluation(double scale)
-{
 }
 

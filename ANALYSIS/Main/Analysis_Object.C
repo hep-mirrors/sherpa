@@ -17,6 +17,8 @@ Analysis_Object::~Analysis_Object() {}
 
 void Analysis_Object::Reset() {}
 
+void Analysis_Object::Restore(double scale) {}
+
 void Analysis_Object::EndEvaluation(double scale) {}
 
 void Analysis_Object::Test(const int mode) {}

@@ -584,44 +584,6 @@ void XS_Group::Print()
   msg_Out()<<"} "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }
 
-void XS_Group::SetEvents(const double number) 
-{
-  m_gmin=1.;
-  m_expevents=m_dicedevents=0;
-  m_anasum=m_validanasum=0.0;
-  for (size_t i=0;i<m_xsecs.size();++i) {
-    m_xsecs[i]->SetEvents(number);
-    m_expevents+=m_xsecs[i]->ExpectedEvents();
-  }
-}
-
-bool XS_Group::SelectOneFromList()
-{
-  std::cout.precision(12);
-  DeSelect();
-  //  if (ATOOLS::IsEqual(m_xssum,m_dicedxssum)) return false;
-  for (size_t i=0;i<m_xsecs.size();i++) {
-    if (m_xsecs[i]->DicedEvents()<m_xsecs[i]->ExpectedEvents()) {
-//       PRINT_INFO(m_xsecs[i]->DicedEvents()<<" "<<m_xsecs[i]->Events()<<" "<<m_xsecs[i]->Name());
-      p_selected=m_xsecs[i];
-      if (p_selected->SelectOneFromList()) break;
-    }
-  }
-//    PRINT_INFO(Name()<<" selected "<<(p_selected==NULL?"NULL":p_selected->Name()));
-  if (p_selected==NULL) return false;
-  return true;
-}
-
-void XS_Group::AddEvent(const double xs,const double validxs,const int ncounts)
-{ 
-  m_dicedevents+=ncounts; 
-  p_selected->AddEvent(xs,validxs,ncounts);
-}
-
-void XS_Group::ResetEvents()
-{
-}
-
 void XS_Group::SetISRThreshold(const double threshold) 
 {
   m_threshold=threshold;

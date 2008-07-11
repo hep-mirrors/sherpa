@@ -60,6 +60,7 @@ namespace ANALYSIS {
 
     virtual void EndEvaluation(double scale=1.);
     virtual void Reset();
+    virtual void Restore(double scale=1.0);
     virtual void Output(const std::string & pname);
 
     virtual void SetBlobType(const std::string & btype=std::string(""));

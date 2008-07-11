@@ -250,18 +250,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   abort();
 }
 
-void Matrix_Element_Handler::AddEvent(const double xs,const double validxs,const int ncounts) 
-{
-  switch (m_mode) { 
-  case 1: 
-    p_amegic->AddEvent(xs,validxs,ncounts);
-    return;
-  case 2:
-    p_simplexs->AddEvent(xs,validxs,ncounts);
-    return;
-  }
-}
-
 double Matrix_Element_Handler::ExpectedEvents() const
 {
   switch (m_mode) { 

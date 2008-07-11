@@ -79,7 +79,8 @@ namespace ANALYSIS {
 		 double weight,int ncount,ATOOLS::Particle_List &moms,
 		 const size_t i,size_t j,size_t k,size_t o,size_t &eval);
     Analysis_Object &operator+=(const Analysis_Object &obj);
-    void EndEvaluation(double scale);
+    void EndEvaluation(double scale=1.0);
+    void Restore(double scale=1.0);
     void Output(const std::string & pname);
     Analysis_Object *GetCopy() const;    
   };// end of class One_Variable_Selector
@@ -376,6 +377,17 @@ void One_Variable_Selector::EndEvaluation(double scale)
     }
   p_flow->Finalize();
   if (scale!=1.0) p_flow->Scale(scale);
+}
+
+void One_Variable_Selector::Restore(double scale) 
+{
+  for (size_t i(0);i<m_dists.size();++i) 
+    if (m_dists[i]!=NULL) {
+      if (scale!=1.0) m_dists[i]->Scale(scale);
+      m_dists[i]->Restore();
+    }
+  if (scale!=1.0) p_flow->Scale(scale);
+  p_flow->Restore();
 }
 
 void One_Variable_Selector::Output(const std::string & pname) 

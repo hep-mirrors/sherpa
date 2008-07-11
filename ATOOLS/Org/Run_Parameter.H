@@ -25,8 +25,7 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
       //std::string         m_runtime;
-      long int            m_nevents, m_ndicedevents, m_estimatedevents;
-      double              m_wana_scale;
+      long int            m_nevents, m_ndicedevents;
       long int            m_seed;
       long int            m_seed2;
       double              m_ecms;
@@ -41,7 +40,6 @@ namespace ATOOLS {
       bool m_spincorrelations;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
-      inline long   NumberOfEstimatedEvents()             { return m_estimatedevents; }
       inline long   NumberOfDicedEvents()                 { return m_ndicedevents; }
       inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
@@ -67,23 +65,10 @@ namespace ATOOLS {
       inline bool   BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
-      inline void   SetNumberOfEstimatedEvents(const long N) { m_estimatedevents=N; }
       inline const std::string &UserName() { return m_username; }
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 
       { s_variables[key]=value; }
-      inline double WAnaScale()                          { return m_wana_scale;}
-      inline void   SetWAnaScale(double ws)              { m_wana_scale=ws; }
-
-      /*
-      inline int Output()                                 { return m_output; }
-      inline int Error()                                  { return (m_output>=0); }
-      inline int Events()                                 { return (m_output&1); }
-      inline int Tracking()                               { return (m_output&4); }
-      inline int Debugging()                              { return (m_output&8); }
-      inline int SetOutput(int o)                         { return m_output = o; }
-      inline void OutputOff()                             { m_output = -1; }
-      */
 
       inline double Accu()                                { return m_accu; }
       
