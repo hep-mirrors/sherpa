@@ -119,6 +119,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
   Part_List * plist = new Part_List;
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
+      std::vector<Particle*> taus;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
 	if (part->Status()==part_status::active) {
@@ -128,17 +129,22 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	  }
 	  else if (part->Flav()==Flavour(kf_tau) ||
 		   part->Flav()==Flavour(kf_tau).Bar()) {
-	    blob = new Blob();
-	    blob->SetId();
-	    blob->SetType(btp::Fragmentation);
-	    blob->SetStatus(blob_status::needs_hadrondecays);
-	    blob->AddToInParticles(part);
-	    blob->AddToOutParticles(new Particle((*part)));
-	    blob->InParticle(0)->SetStatus(part_status::decayed);
-	    blob->OutParticle(0)->SetStatus(part_status::active);
-            bloblist->push_back(blob);
+            taus.push_back(part);
 	  }
 	}
+      }
+      if (taus.size()>0) {
+        blob = new Blob();
+        blob->SetId();
+        blob->SetType(btp::Fragmentation);
+        blob->SetStatus(blob_status::needs_hadrondecays);
+        for (size_t i=0;i<taus.size();++i) {
+          blob->AddToInParticles(taus[i]);
+          taus[i]->SetStatus(part_status::decayed);
+          blob->AddToOutParticles(new Particle((*taus[i])));
+          blob->GetOutParticles().back()->SetStatus(part_status::active);
+        }
+        bloblist->push_back(blob);
       }
       (*blit)->UnsetStatus(blob_status::needs_hadronization);
     }
