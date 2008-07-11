@@ -241,6 +241,32 @@ bool Selector_Data::ReadInData(std::string path, std::string filename)
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
+        else if (keyword == string("DeltaPhi")) {
+      dat.type = 27;
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
+      flav = Flavour((kf_code)abs(crit1));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      flav = Flavour((kf_code)abs(crit2));
+      if (crit2<0) flav = flav.Bar();
+      dat.flavs.push_back(flav);
+    }
+    else if (keyword == string("DeltaR")) {
+      dat.type = 28;
+      crit1=ToType<int>(ip->Interprete(svv[i][1]));
+      crit2=ToType<int>(ip->Interprete(svv[i][2]));
+      dat.bounds.front().first=ToType<double>(ip->Interprete(svv[i][3]));
+      dat.bounds.front().second=ToType<double>(ip->Interprete(svv[i][4]));
+      flav = Flavour((kf_code)abs(crit1));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      flav = Flavour((kf_code)abs(crit2));
+      if (crit2<0) flav = flav.Bar();
+      dat.flavs.push_back(flav);
+    }
     else if (keyword.find('"')==0 && 
 	     keyword[keyword.length()-1]=='"') {
       dat.type=126;
@@ -352,7 +378,9 @@ void Selector_Data::ControlOutput() {
     case 16: msg_Debugging()<<"PseudoRaps :      "; break;  
     case 21: msg_Debugging()<<"Masses     :      "; break;
     case 22: msg_Debugging()<<"Angles     :      "; break;
-    case 26: msg_Debugging()<<"DeltaR     :      "; break;
+    case 26: msg_Debugging()<<"DeltaEtaR  :      "; break;
+    case 27: msg_Debugging()<<"DeltaPhi   :      "; break;
+    case 28: msg_Debugging()<<"DeltaR     :      "; break;
     case 101: msg_Debugging()<<"ET_Bias    :      "; break;
     case 102: msg_Debugging()<<"PT_Bias    :      "; break;
     case 103: msg_Debugging()<<"Eta_Bias   :      "; break;
