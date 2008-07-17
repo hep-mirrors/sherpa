@@ -16,6 +16,7 @@ libHadronsCurrents_la_SOURCES = \
 	VA_B_DstarPi.C \
 	VA_B_B.C \
 	VA_B_B3.C \
+	VA_B_B_hepph9409272.C \
         VA_F_F.C
 
 pkginclude_HEADERS = \
