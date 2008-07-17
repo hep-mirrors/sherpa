@@ -163,9 +163,8 @@ void Flavour::FromHepEvt(long int code)
 
 std::string Flavour::TexName() const 
 {
-  if (SelfAnti()) return s_kftable[m_kfc]->m_texname;
   std::string name;
-  if (m_anti) name="\\overline{";
+  if (m_anti && (!SelfAnti())) name="\\overline{";
   switch (m_kfc) {
   case kf_pi : {name+=std::string("\\pi^{0}");break;}
   case kf_K : {name+=std::string("K^{0}");break;}
@@ -199,7 +198,7 @@ std::string Flavour::TexName() const
     }
     break;
   }
-  if (m_anti) {
+  if (m_anti && (!SelfAnti())) {
     name+="}";
     switch (m_kfc) {
     case kf_pi : {name=std::string("\\pi^{0}");break;}
