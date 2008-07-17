@@ -94,21 +94,6 @@ fi
 
 make distdir;
 
-if [ "$RELEASE" = "TRUE" ]; then
-  # add sample runs to distdir
-  ###########################################################
-  cd SHERPA-MC-$VERSION;
-  SAMPLERUNS="Tevatron1800 LHC EGamma LEP91";
-  for I in $SAMPLERUNS ; do
-    mkdir SHERPA/Run/$I;
-    for j in $(svn ls ../SHERPA/Run/$I); do
-      cp ../SHERPA/Run/$I/$j SHERPA/Run/$I/;
-    done;
-  done;
-  ###########################################################
-  cd ..;
-fi
-
 ## tar it
 tar -czhf "$DISTDIR.tar.gz" SHERPA-MC-$VERSION/;
 rm -rf SHERPA-MC-$VERSION/;

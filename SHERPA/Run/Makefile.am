@@ -67,3 +67,16 @@ dist-hook:
 	  fi; \
 	done; \
 	cp Decaydata/*.dat $(distdir)/Decaydata/;
+	SAMPLERUNS="Tevatron1800 LHC EGamma LEP91"; \
+	for i in $$SAMPLERUNS ; do \
+	  mkdir -p $(distdir)/$$i; \
+	  if test -x $$(which svn); then \
+	    for j in $$(svn ls $$i); do \
+	      cp $$j $(distdir)/$$i/; \
+	    done; \
+          else \
+	    for j in $$i/*.dat; do \
+	      cp $$j $(distdir)/$$i/; \
+	    done; \
+	  fi; \
+	done;
