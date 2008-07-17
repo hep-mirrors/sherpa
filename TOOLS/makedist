@@ -92,11 +92,8 @@ if [ "$ALLCLEAN" = "TRUE" ]; then
   make clean
 fi
 
-make distdir;
-
-## tar it
-tar -czhf "$DISTDIR.tar.gz" SHERPA-MC-$VERSION/;
-rm -rf SHERPA-MC-$VERSION/;
+make dist;
+mv "SHERPA-MC-$VERSION.tar.gz" "$DISTDIR.tar.gz"
 
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
