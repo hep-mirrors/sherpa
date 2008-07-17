@@ -202,9 +202,9 @@ bool Hadron_Decays::CreateDecayBlob(Particle* inpart)
   if(inpart->DecayBlob()) abort();
   if(inpart->Flav().IsStable()) return true;
   if(inpart->Time()==0.0) inpart->SetTime();
-  SetPosition(inpart->ProductionBlob());
   Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);
   blob->AddToInParticles(inpart);
+  SetPosition(blob);
   Hadron_Decay_Handler * hdhandler = ChooseDecayHandler(inpart);
   if(hdhandler==NULL || !hdhandler->CreateDecayBlob(blob)) {
     msg_Error()<<"Failed to create decay blob for "<<*inpart<<endl
