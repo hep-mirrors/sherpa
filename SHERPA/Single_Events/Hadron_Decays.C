@@ -75,7 +75,7 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
       
       // random shuffle, against bias in spin correlations and mixing
       Particle_Vector daughters = blob->GetOutParticles();
-      random_shuffle(daughters.begin(), daughters.end());
+      random_shuffle(daughters.begin(), daughters.end(), ran);
       
       // fixme: temporary bugfix for AHADIC sometimes not setting the correct finalmass
       for (Particle_Vector::iterator it=daughters.begin();it!=daughters.end();++it) {
@@ -144,7 +144,7 @@ bool Hadron_Decays::Treat(Blob * blob)
   inpart->SetStatus(part_status::decayed);
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
-  random_shuffle(daughters.begin(), daughters.end());
+  random_shuffle(daughters.begin(), daughters.end(), ran);
   
   // create daughter decay blob stubs and then set daughter masses
   if(blob->Has(blob_status::needs_hadrondecays)) {

@@ -82,6 +82,7 @@ namespace ATOOLS {
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();   
+    ptrdiff_t operator() (ptrdiff_t max);
     // produce two Gaussian distributed random number using active Generator
     void   Gaussian(double &,double &);
 

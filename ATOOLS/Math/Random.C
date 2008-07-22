@@ -537,6 +537,10 @@ double ATOOLS::Random::Get()
   else                    return Ran2(&m_id);
 }
 
+ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
+  return static_cast<ptrdiff_t>(Get() * max);
+}
+
 void ATOOLS::Random::Gaussian(double & x,double & y)   
 {
   double phi(2.*M_PI*Get()), random(Get());
