@@ -98,6 +98,8 @@
                                     ! 5=GRW (Lambda_T(GRW)=M_S for virtual Graviton exchange
   				  !        or M_D=M_S for real Gravtion production)
   				  ! only KK_CONVENTION's 1,2 or 5 are applicable for real Graviton production!
+  ! set tau unstable
+  STABLE[15]=0
 }(model)
 (me){
   !-------------------------------------------------------
