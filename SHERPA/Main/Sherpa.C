@@ -31,6 +31,8 @@ Sherpa::Sherpa() :
   ATOOLS::s_loader = new Library_Loader();
   m_errors = 0;
   m_trials = 100;
+  m_debuginterval = 0;
+  m_debugstep = 0;
 }
 
 Sherpa::~Sherpa() 
@@ -90,6 +92,18 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       }
       return res;
     }
+
+    Data_Reader read(" ",";","!","=");
+    long int debuginterval(0);
+    if (read.ReadFromFile(debuginterval,"DEBUG_INTERVAL")) {
+      m_debuginterval=debuginterval;
+      msg_Info()<<"Setting debug interval to "<<m_debuginterval<<std::endl;
+    }
+    long int debugstep(0);
+    if (read.ReadFromFile(debugstep,"DEBUG_STEP")) {
+      m_debugstep=debugstep;
+      ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+    }
     return true;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
@@ -139,7 +153,32 @@ bool Sherpa::GenerateOneEvent()
 {
   ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
   for (int i=0;i<m_trials;i++) {
+    if(m_debuginterval>0 && rpa.gen.NumberOfDicedEvents()%m_debuginterval==0){
+      std::string fname=ToString(rpa.gen.NumberOfDicedEvents())+".dat";
+      ran.WriteOutStatus(("random."+fname).c_str());
+    }
+    if (m_debugstep>0) {
+      ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+    }
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
+      if(m_debuginterval>0 && rpa.gen.NumberOfDicedEvents()%m_debuginterval==0){
+        std::string fname=ToString(rpa.gen.NumberOfDicedEvents())+".dat";
+        std::ofstream eventout(("refevent."+fname).c_str());
+        eventout<<*p_eventhandler->GetBlobs()<<std::endl;
+        eventout.close();
+      }
+      if (m_debugstep>0) {
+        std::ofstream event(("event."+ToString(m_debugstep)+".dat").c_str());
+        event<<*p_eventhandler->GetBlobs()<<std::endl;
+        event.close();
+        msg_Out()<<"==============================================="<<std::endl;
+        msg_Out()<<"Generating diff for event "<<m_debugstep<<std::endl;
+        std::string cmd="diff -ub refevent."+ToString(m_debugstep)+".dat "+
+          "event."+ToString(m_debugstep)+".dat";
+        system(cmd.c_str());
+        msg_Out()<<"==============================================="<<std::endl;
+        THROW(normal_exit,"Debug event written.");
+      }
       p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
       p_iohandler->PrintEvent(p_eventhandler->GetBlobs());
       return 1;

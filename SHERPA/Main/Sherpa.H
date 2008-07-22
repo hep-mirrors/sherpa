@@ -11,7 +11,7 @@ namespace SHERPA {
   class Sherpa {
   private:
     std::string   m_path;
-    long int      m_errors,m_trials;
+    long int      m_errors,m_trials, m_debugstep, m_debuginterval;
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
