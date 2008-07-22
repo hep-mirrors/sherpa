@@ -312,7 +312,7 @@ One_Variable_Selector::One_Variable_Selector
   m_flavs(flavs), m_items(items), m_vtags(vtags), m_mins(mins), m_maxs(maxs), 
   m_histos(histos), m_dists(flavs.size(),NULL), m_repl(ana)
 {
-  m_isobs=true;
+  m_isobs=false;
   msg_Debugging()<<METHOD<<"(): {\n";
   m_vars.resize(m_vtags.size(),NULL);
   for (size_t i(0);i<m_vtags.size();++i) {

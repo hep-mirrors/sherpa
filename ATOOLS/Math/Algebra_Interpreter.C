@@ -782,7 +782,9 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
+#ifdef DEBUG__Interpreter
   msg_Debugging()<<METHOD<<"("<<expr<<") {\n";
+#endif
   if (p_root!=NULL) delete p_root;
   p_root=p_leaf=NULL;
   while (m_leafs.size()>0) {
@@ -806,10 +808,14 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
       (*p_leaf)[0] = new Number(result,p_replacer);
     AddLeaf((*p_leaf)[0]);
     result=p_replacer->ReplaceTags(result);
+#ifdef DEBUG__Interpreter
     msg_Debugging()<<"} -> "<<result<<std::endl;
+#endif
     return result;
   }
+#ifdef DEBUG__Interpreter
   msg_Debugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
+#endif
   p_root = p_leaf;
   return result.substr(1,pos-1);
 }

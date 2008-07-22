@@ -81,6 +81,7 @@ Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
   m_startaxes(4), m_maxidentaxes(2), m_accuracy(1.e-4),
   m_key(std::string("EvtShapeData"))
 { 
+  m_isobs=false;
   m_name        = std::string("Event_Shapes_EE");
 }
 
@@ -113,7 +114,9 @@ void Event_Shapes_EE::Select(const Particle_List & pl_in,double value,int ncount
 									      m_oblateness,
 									      m_thrustaxis,m_majoraxis,
 									      m_minoraxis)));
-
+  p_ana->AddData(m_key+"_ThrustAxis",new Blob_Data<Vec4D>(Vec4D(0.0,m_thrustaxis)));
+  p_ana->AddData(m_key+"_MajorAxis",new Blob_Data<Vec4D>(Vec4D(0.0,m_majoraxis)));
+  p_ana->AddData(m_key+"_MinorAxis",new Blob_Data<Vec4D>(Vec4D(0.0,m_minoraxis)));
   m_vectors.clear(); m_vectors_save.clear();
   p_ana->AddParticleList(m_outlistname,pl_out);
 }
