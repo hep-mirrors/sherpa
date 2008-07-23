@@ -389,3 +389,57 @@ void Process_Base::SetPrintGraphs(bool print_graphs)
 }
 
 void Process_Base::SetWEventMode(int mode) {}
+
+void Process_Base::TestPoint(Vec4D *tp)
+{
+  Flavour* flavs=new Flavour[m_nin+m_nout];
+  Vec4D *hmom=new Vec4D[m_nin+m_nout];
+  vector<Process_Info*> decaylist;
+  for (size_t i=0;i<m_nin;i++) flavs[i]=p_flavours[i];
+  size_t n=p_pinfo->GetOnshellFlavList(&flavs[m_nin],decaylist);
+  p_pshandler->TestPoint(hmom,m_nin,n,flavs);
+  for (size_t i=0;i<m_nin;i++) tp[i]=hmom[i];
+  size_t cnt=m_nin;
+  for (size_t i=0;i<n;i++) {
+    if (decaylist[i]==0) tp[cnt++]=hmom[i+m_nin];
+    else {
+      tp[cnt]=hmom[i+m_nin];
+      DecayPoint(tp,decaylist[i],cnt);
+    }
+  }
+  delete[] flavs;
+  delete[] hmom;
+}
+
+void Process_Base::DecayPoint(Vec4D *tp,Process_Info* pinfo,size_t &cnt)
+{
+  size_t nout=pinfo->TotalNout();
+  Flavour* flavs=new Flavour[1+nout];
+  Vec4D *hmom=new Vec4D[1+nout];
+  flavs[0]=*(pinfo->p_fl);
+  hmom[0]=Vec4D(tp[cnt].Abs(),0.,0.,0.);
+  vector<Process_Info*> decaylist;
+  size_t n=pinfo->GetOnshellFlavList(&flavs[1],decaylist);
+  p_pshandler->TestPoint(hmom,1,n,flavs);
+  Poincare bst(tp[cnt]);
+  for (size_t i=0;i<n;i++) {
+    bst.BoostBack(hmom[i+1]);
+    if (decaylist[i]==0) tp[cnt++]=hmom[i+1];
+    else {
+      tp[cnt]=hmom[i+1];
+      DecayPoint(tp,decaylist[i],cnt);
+    }
+  }
+  delete[] flavs;
+  delete[] hmom;  
+}
+
+
+void Process_Base::FillOnshellConditions()
+{
+  if (!p_selector) return;
+  int cnt=m_nin;
+  vector<pair<string,double> > osc;
+  p_pinfo->GetOSConditions(osc,cnt);
+  for(size_t i=0;i<osc.size();i++) p_selector->AddOnshellCondition(osc[i].first,osc[i].second);  
+}

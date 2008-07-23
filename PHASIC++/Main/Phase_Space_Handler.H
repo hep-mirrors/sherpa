@@ -168,6 +168,7 @@ namespace PHASIC {
 
     void AddPoint(const double xs);
     void TestPoint(ATOOLS::Vec4D *const p);
+    void TestPoint(ATOOLS::Vec4D *const p,int nin,int nout, ATOOLS::Flavour* flav);
 
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;

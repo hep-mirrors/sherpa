@@ -10,6 +10,7 @@ namespace ATOOLS {
     long int       m_count;
     int            m_update;
     std::vector<Selector_Base *> m_sels;
+    std::vector<std::pair<std::string,double> > m_osc;
   public:
     Combined_Selector() {};
     Combined_Selector(int,int,Flavour *,Selector_Data *,
@@ -25,6 +26,7 @@ namespace ATOOLS {
     Selector_Base * operator[](size_t);
     Selector_Base * GetSelector(std::string);
     void SetProcessName(const std::string &name);
+    void AddOnshellCondition(std::string,double);
   };
 
 

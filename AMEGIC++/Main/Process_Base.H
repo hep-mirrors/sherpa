@@ -82,6 +82,11 @@ namespace AMEGIC {
     virtual Amplitude_Handler * GetAmplitudeHandler() =0;   
     virtual Helicity *          GetHelicity() =0;
     virtual bool                NewLibs() =0;
+
+    void TestPoint(ATOOLS::Vec4D *tp);
+    void DecayPoint(ATOOLS::Vec4D *tp,Process_Info* pinfo,size_t &cnt);
+    void FillOnshellConditions();
+    int  OSDecays() { return p_pinfo->OSDecays(); }
 /*------------------------------------------------------------------------------
 
       Process management

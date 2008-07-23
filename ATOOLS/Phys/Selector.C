@@ -72,7 +72,6 @@ std::string Selector_Base::Name()                          { return m_name; }
 void   Selector_Base::SetProcessName(const std::string &name) { m_procname=name; }
 std::string Selector_Base::ProcessName() const { return m_procname; }
 
-
 /*-----------------------------------------------------------------------------------
 
   Selector_Data

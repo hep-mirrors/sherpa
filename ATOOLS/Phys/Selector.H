@@ -86,6 +86,7 @@ namespace ATOOLS {
     inline size_t NOut() const { return m_nout; }
     inline size_t NTot() const { return m_n;    }
 
+    virtual void AddOnshellCondition(std::string,double) {}
   };
 
   class Selector_Log {

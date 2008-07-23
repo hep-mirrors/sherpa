@@ -682,9 +682,12 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   case 0:
     sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     if (maxpole>0.) {
-      sf<<"  double s"<< mummy
-	<<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
+      if (p->zwf==0) {
+	sf<<"  double s"<< mummy
+	  <<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
+	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
+      }
+      else sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl;
     }
     else {
       sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta("<<thexp<<","
@@ -703,8 +706,10 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     if (maxpole>0.) {
-      sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+      if (p->zwf==0) {
+	sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
+	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+      }
     }
     else {
       sf<<"  wt *= CE.ThresholdWeight("<<thexp<<","<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"

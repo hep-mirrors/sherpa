@@ -409,7 +409,7 @@ Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
       if (pc==iabs(z->p_propagators[i].numb) && !p->fl.Is5VDummy()) {
 	if(z->GetOp()==0 && p->on==1)break;
 	if (p->haspol && p->fl.IsVector()) sign*=-1;
-        Pols*= bpf.P(p);
+	Pols*= bpf.P(p);
 	cnt++;
 	break;
       } 

@@ -12,6 +12,7 @@ public:
   int             number;
   int             b;
   int             t;  // t=10: intermediate particle in decay treatment
+  int             zwf;
   int             m;
   ATOOLS::Flavour   fl;
   ATOOLS::Flavour * extrafl;

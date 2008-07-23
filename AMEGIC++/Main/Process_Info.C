@@ -19,6 +19,7 @@ Process_Info::Process_Info(ATOOLS::Flavour *fl,Pol_Info *pl)
   vector<Process_Info*> dummy;
   m_sublist.push_back(dummy);
   m_maxqcdjets = 0;
+  m_zerowidth  = 0;
 }
 
 Process_Info::Process_Info(Process_Info *pi)
@@ -32,6 +33,7 @@ Process_Info::Process_Info(Process_Info *pi)
   m_sublist[0].clear();  
   for (int i=0;i<pi->Nout();i++) m_sublist[0].push_back(new Process_Info(pi->m_sublist[0][i]));
   m_maxqcdjets = pi->m_maxqcdjets;
+  m_zerowidth = pi->m_zerowidth;
 }
 
 Process_Info::~Process_Info()
@@ -175,7 +177,8 @@ Process_Info* Process_Info::GetSubProcess(int n)
 Process_Info* Process_Info::GetSubProcess(int n, int& dn)
 {
   Process_Info* pi = new Process_Info(p_fl,p_pl);
-  pi->m_maxqcdjets=m_maxqcdjets;
+  pi->m_maxqcdjets = m_maxqcdjets;
+  pi->m_zerowidth  = m_zerowidth;
   if (m_sublist[0].size()==0) return pi;
 
   int cn=n/dn;
@@ -216,6 +219,32 @@ int Process_Info::GetTotalFlavList(ATOOLS::Flavour* fl, int n)
   return dn;
 }
 
+size_t Process_Info::GetOnshellFlavList(ATOOLS::Flavour* fl, vector<Process_Info*> &decaylist, bool first)
+{
+  if (m_sublist[0].size()==0) {
+    fl[0]=*p_fl;
+    decaylist.push_back(NULL);
+    return 1;
+  }
+  if (!first&&m_zerowidth==1) {
+    fl[0]=*p_fl;
+    decaylist.push_back(this);
+    return 1;
+  }
+  size_t i=0;
+  for (size_t j=0;j<m_sublist[0].size();j++) {
+    i+=m_sublist[0][j]->GetOnshellFlavList(&fl[i],decaylist,0);
+  }
+  return i;
+}
+
+int Process_Info::OSDecays()
+{
+  int k=m_zerowidth;
+  for (size_t i=0;i<m_sublist[0].size();i++) k+= m_sublist[0][i]->OSDecays();
+  return k;
+}
+
 void Process_Info::GetTotalPolList(Pol_Info* pl)
 {
   if (m_sublist[0].size()==0) {
@@ -253,12 +282,32 @@ bool Process_Info::CheckCompleteness()
   return true;
 }
 
+void Process_Info::GetOSConditions(vector<pair<string, double> >& osc,int &cnt)
+{
+  if (m_sublist[0].size()==0) {
+    cnt++;
+    return;
+  }
+
+  for (size_t i=0;i<m_sublist[0].size();i++) {
+    if (m_sublist[0][i]->m_zerowidth) {
+      int nt=m_sublist[0][i]->TotalNout();
+      string str="";
+      for (int j=cnt;j<nt+cnt;j++) str+=ToString(j);
+      osc.push_back(pair<string, double>(str,sqr(m_sublist[0][i]->Flav()->Mass())));
+    }
+    m_sublist[0][i]->GetOSConditions(osc,cnt);
+  }
+  return;
+}
+
 void Process_Info::Print()
 {
   if (p_fl==0) cout<<" Final State:";
   for (size_t i=0;i<m_sublist[0].size();i++) {
     cout<<" "<<*(m_sublist[0][i]->p_fl);
     if (m_sublist[0][i]->m_sublist[0].size()>0) {
+      if (m_sublist[0][i]->m_zerowidth) cout<<"|";
       cout<<"(->";
       m_sublist[0][i]->Print();
 	cout<<")";
@@ -274,6 +323,7 @@ void Process_Info::FullPrint()
     for (size_t i=0;i<m_sublist[0].size();i++) {
       cout<<" "<<*(m_sublist[0][i]->p_fl);
       if (m_sublist[0][i]->m_sublist[0].size()>0) {
+	if (m_sublist[0][i]->m_zerowidth) cout<<"|";
 	cout<<"(->";
 	m_sublist[0][i]->FullPrint();
 	cout<<")";
@@ -285,6 +335,7 @@ void Process_Info::FullPrint()
       for (size_t i=0;i<m_sublist[j].size();i++) {
 	cout<<" "<<*(m_sublist[j][i]->p_fl);
 	if (m_sublist[j][i]->m_sublist[0].size()>0) {
+	  if (m_sublist[j][i]->m_zerowidth) cout<<"|";
 	  cout<<"(->";
 	  m_sublist[j][i]->FullPrint();
 	  cout<<")";
@@ -333,7 +384,10 @@ void Process_Info::Expand()
 	vector<Process_Info*> dummy;
 	for (size_t i=0;i<nout;i++) {
 	  if (m_sublist[0][i]->p_fl->Size()==1) dummy.push_back(m_sublist[0][i]);
-	  else dummy.push_back(new Process_Info(&flout[i],&plout[i]));
+	  else {
+	    dummy.push_back(new Process_Info(&flout[i],&plout[i]));
+	    dummy[dummy.size()-1]->m_zerowidth=m_sublist[0][i]->m_zerowidth;
+	  }
 	}
 	m_sublist.push_back(dummy);
       }
@@ -394,6 +448,7 @@ Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, in
 	    np[j].number = 100;
 	    hp = hhp;
  	    np[j].t = 10+m_sublist[0][i]->m_maxqcdjets;
+	    np[j].zwf = m_sublist[0][i]->m_zerowidth;
 	  }
 	  else {
 	    np[j].number = ep;

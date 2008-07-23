@@ -17,6 +17,7 @@ void Prop_Generator::Convert(Point* p)
     Pfunc* Ph = new Pfunc;
     Ph->on = 1;
     Ph->haspol = p->m; 
+    Ph->zerowidth = p->zwf; 
 
     Ph->fl = p->fl;
     if (p->middle) Ph->argnum = 4;
@@ -35,6 +36,7 @@ void Prop_Generator::Convert(Point* p)
       for (short int i=0;i<p->nextra;i++) {
 	Pfunc* Ph2  = new Pfunc;
 	Ph2->haspol = 0;    
+	Ph2->zerowidth = p->zwf; 
 	Ph2->on     = 1;	
 	Ph2->fl = p->extrafl[i];
 	Ph2->argnum = Ph->argnum;

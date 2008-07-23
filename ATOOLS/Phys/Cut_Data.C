@@ -235,6 +235,11 @@ double Cut_Data::Getscut(string str)
   return sc;
 }
 
+void Cut_Data::Setscut(std::string str,double d)
+{
+  m_smin_map[str]=d;
+}
+
 /*void Cut_Data::Init(Cut_Data * _cuts,Flavour * _fl) {
   ncut      = _cuts->ncut;
   fl        = _fl;

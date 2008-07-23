@@ -91,6 +91,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   }
   int ng = 2;
   if (inttype==4 || kk_fs) ng=1;
+  if (proc->OSDecays()>0) ng=1;
 
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {

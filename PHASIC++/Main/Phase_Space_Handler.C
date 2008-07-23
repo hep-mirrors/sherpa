@@ -108,6 +108,7 @@ void Phase_Space_Handler::InitCuts()
   if (p_cuts!=NULL) delete p_cuts;
   p_cuts = new ATOOLS::Cut_Data();
   p_cuts->Init(m_nin+m_nout,p_flavours);
+  p_process->FillOnshellConditions();
   if (p_process->Selector()) (p_process->Selector())->BuildCuts(p_cuts);
 }
 
@@ -641,6 +642,17 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
     while (!p_colint->GeneratePoint()); 
   if (p_process->HelicityScheme()==hls::sample)
     while (!p_helint->GeneratePoint()); 
+  delete TestCh;
+}
+
+void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,int nin,int nout, Flavour* flav)
+{
+  if (nin==2) {
+    m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
+    MakeIncoming(p);
+  }
+  Single_Channel * TestCh = new Rambo(nin,nout,flav);
+  TestCh->GeneratePoint(p,p_cuts);
   delete TestCh;
 }
 

@@ -275,7 +275,7 @@ void Amegic::ReadInProcessfile(string file)
 	    for (size_t ng(nf);ng<procdata.size();++ng) {
 	      std::vector<std::string> &cur(procdata[ng]);
 	      ++pr;
-		if (cur[0]=="Decay") {
+		if (cur[0]=="Decay"||cur[0]=="DecayOS") {
 		  buf=MakeString(cur,1);
 		  position = buf.find(string("->"));
 		  if (position > 0) {
@@ -309,6 +309,10 @@ void Amegic::ReadInProcessfile(string file)
 			abort();
 		      }
 		      phelp->AddSubList(c,fflb,fplb);
+		      if (cur[0]=="DecayOS") {
+			phelp->m_zerowidth=1;
+		      }
+
 		      if (AppKf.size()>AppPI.size()) AppPI.push_back(phelp);
 		      delete [] fflb;
 		      delete [] fplb;		      

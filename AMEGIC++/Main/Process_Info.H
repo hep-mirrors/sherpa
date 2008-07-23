@@ -15,7 +15,7 @@ namespace AMEGIC {
     ATOOLS::Flavour* p_fl;
     Pol_Info* p_pl;
     std::vector<std::vector<Process_Info*> > m_sublist;
-    int m_maxqcdjets;
+    int m_maxqcdjets,m_zerowidth;
   protected:
     Process_Info* GetSubProcess(int n,int& dn);
     int  GetDPOffset(int&,int&);
@@ -34,6 +34,8 @@ namespace AMEGIC {
     size_t GetStableFlavList(ATOOLS::Flavour* fl, int n=0);
     void GetPolList(Pol_Info*);
     int  GetTotalFlavList(ATOOLS::Flavour*,int n=-1);
+    size_t GetOnshellFlavList(ATOOLS::Flavour* fl, std::vector<Process_Info*> &decaylist, bool first=1);
+    int  OSDecays();
     void GetTotalPolList(Pol_Info*);
     Process_Info* FindDM(char);
     bool CheckCompleteness();
@@ -49,6 +51,7 @@ namespace AMEGIC {
     void MergePointList(Point**,Point*,int);
     void SetQCDjetNums();
 
+    void GetOSConditions(std::vector<std::pair<std::string, double> >& osc,int &cnt);
     void Print();
     void FullPrint();
 

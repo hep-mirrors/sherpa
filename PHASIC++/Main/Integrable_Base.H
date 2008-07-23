@@ -368,6 +368,7 @@ namespace PHASIC {
     { return p_cuts;     }
     inline ATOOLS::Selector_Base *const Selector() const 
     { return p_selector; }
+    virtual void FillOnshellConditions() {}
 
     inline BEAM::Beam_Spectra_Handler *const Beam() const 
     { return p_beamhandler; }

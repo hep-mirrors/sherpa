@@ -10,16 +10,24 @@ using namespace std;
 
 Kabbala Basic_Pfunc::P(Pfunc* p1)
 { 
+  if (p1->zerowidth==1) {
+    p1->value = Pcalc(p1->fl,-1);
+    return sgen->GetPnumber(p1,-1);
+  }
   p1->value = Pcalc(p1->fl,p1->momnum);
   return sgen->GetPnumber(p1,p1->momnum);
 }
 
-
 Complex Basic_Pfunc::Pcalc(const Flavour& fl,const int a)
-{ return Propagator((BS->Momentum(a)).Abs2(),fl);}
+{ 
+  if (a<0) return Complex(sqrt(M_PI/(fl.Mass()*fl.Width())),0.);
+  return Propagator((BS->Momentum(a)).Abs2(),fl);
+}
 
 Complex Basic_Pfunc::Pcalc(const int fl,const int a)
-{ return Pcalc(Flavour((kf_code)(fl)),a);}
+{ 
+  return Pcalc(Flavour((kf_code)(fl)),a);
+}
 
 Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
 {

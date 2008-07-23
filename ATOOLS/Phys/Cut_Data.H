@@ -34,6 +34,7 @@ namespace ATOOLS {
     void Reset(bool);
     const double Smin() const { return smin; }
     double Getscut(std::string);
+    void Setscut(std::string,double);
   };    
 
 

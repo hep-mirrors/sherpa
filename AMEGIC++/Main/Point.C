@@ -18,6 +18,7 @@ Point::Point(const Point& copy) {
 } 
 
 Point::Point(int extra) : nextra(extra)  { 
+  zwf     = 0;
   extrafl = 0;
   v       = 0;
   Color   = new Color_Function;
@@ -32,6 +33,7 @@ Point& Point::operator=(const Point& p) {
     number = p.number;
     b      = p.b;
     t      = p.t;
+    zwf    = p.zwf;
     m      = p.m;
     fl     = p.fl;
       

@@ -252,7 +252,10 @@ void Combined_Selector::BuildCuts(Cut_Data * cuts)
     if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
   for (size_t i=0; i<m_sels.size(); ++i) 
     if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
+
+  for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
   cuts->Complete();
+  for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
 }
 
 void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
@@ -261,6 +264,12 @@ void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
   if (NeedUpdate()) 
     for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
   cuts->Update(sprime,y);      
+  for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
+}
+
+void Combined_Selector::AddOnshellCondition(std::string s,double d)
+{
+  m_osc.push_back(std::pair<std::string,double>(s,d));
 }
 
 void Combined_Selector::Output()

@@ -13,6 +13,7 @@ namespace AMEGIC {
     Complex value;
     int     on;
     int     haspol;
+    int     zerowidth;
     ATOOLS::Flavour fl;
 
 
@@ -21,6 +22,7 @@ namespace AMEGIC {
       argnum = a;
       arg = new int[argnum];
       haspol = 0;
+      zerowidth = 0;
     }
     Pfunc(const Pfunc& p) {
       argnum = 0;
@@ -39,11 +41,12 @@ namespace AMEGIC {
 	  for (int i=0;i<argnum;i++) arg[i] = p.arg[i];
 	} 
 
-	momnum = p.momnum;
-	value  = p.value;
-	on     = p.on;
-	haspol = p.haspol;
-	fl     = p.fl;
+	momnum    = p.momnum;
+	value     = p.value;
+	on        = p.on;
+	haspol    = p.haspol;
+	zerowidth = p.zerowidth;
+	fl        = p.fl;
       }
       return *this;
     }

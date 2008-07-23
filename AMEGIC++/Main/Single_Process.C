@@ -269,17 +269,20 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
 	p_pshandler->TestPoint(_testmoms);
 	rpa.gen.SetEcms(ecms);    
 	Vec4D * dummys = new Vec4D[m_nvector];
-	p_pshandler->TestPoint(dummys);
+	if (p_pinfo->OSDecays()) TestPoint(dummys);
+	else p_pshandler->TestPoint(dummys);
 	delete [] dummys;
       }
       else {
 	_testmoms = new Vec4D[m_nvector];
-	p_pshandler->TestPoint(_testmoms);
+	if (p_pinfo->OSDecays()) TestPoint(_testmoms);
+	else p_pshandler->TestPoint(_testmoms);
       }
     }
     else {
       _testmoms = new Vec4D[m_nvector];
-      p_pshandler->TestPoint(_testmoms);
+      if (p_pinfo->OSDecays()) TestPoint(_testmoms);
+      else p_pshandler->TestPoint(_testmoms);
     }
   }
   if (p_momenta) { delete [] p_momenta; }
@@ -437,7 +440,8 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology * top)
 {
   if (p_momenta) { delete [] p_momenta; }
   p_momenta   = new Vec4D[m_nvector]; 
-  p_pshandler->TestPoint(p_momenta);
+  if (p_pinfo->OSDecays()) TestPoint(p_momenta);
+  else p_pshandler->TestPoint(p_momenta);
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
 
