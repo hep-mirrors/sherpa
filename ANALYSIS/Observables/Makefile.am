@@ -36,7 +36,8 @@ libObservables_la_SOURCES     =	\
 				Four_Jet_Angles.C \
 				General_Observable.C \
 				BFKL_Observables.C \
-				Atlas_TDR_SL_Top_Fitter.C
+				Atlas_TDR_SL_Top_Fitter.C \
+				ChargedDEta.C
 pkginclude_HEADERS    =	\
 			Primitive_Observable_Base.H \
 			Normalized_Observable.H \
@@ -57,7 +58,8 @@ pkginclude_HEADERS    =	\
 			Shape_Observables_EE.H \
 			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
-			Four_Jet_Angles.H
+			Four_Jet_Angles.H \
+			ChargedDEta.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
