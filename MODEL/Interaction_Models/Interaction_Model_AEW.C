@@ -238,7 +238,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl.push_back(kcpl3);  //i*g5
     vertex[vanz].cpl.push_back(kcpl1);  //kappat
     vertex[vanz].cpl.push_back(kcpl2);  //lambdat/m_W^2
-    vertex[vanz].cpl.push_back(kcpl0);  //g1
+    vertex[vanz].cpl.push_back(kcpl);  //overall coupling factor
     vertex[vanz].Str+=kcpl3.String()+"|"+kcpl1.String()+"|"+kcpl2.String();
     
     
@@ -275,7 +275,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl.push_back(kcpl3);  //i*g5
     vertex[vanz].cpl.push_back(kcpl1);  //kappat
     vertex[vanz].cpl.push_back(kcpl2);  //lambdat/m_W^2
-    vertex[vanz].cpl.push_back(kcpl0);  //g1
+    vertex[vanz].cpl.push_back(kcpl);  //overall coupling factor
 
     
     vertex[vanz].Color.push_back(Color_Function(cf::None));;     

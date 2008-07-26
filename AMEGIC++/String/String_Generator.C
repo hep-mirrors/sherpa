@@ -29,11 +29,12 @@ ZXlist& ZXlist::operator=(const ZXlist& copy) {
 String_Generator::String_Generator(Basic_Sfuncs* _BS) : 
   Basic_Func(this,_BS), Basic_Yfunc(this,_BS), Basic_Zfunc(this,_BS), 
   Basic_Xfunc(this,_BS), Basic_Mfunc(this,_BS), Basic_Vfunc(this,_BS), 
-  Basic_Pfunc(this,_BS), Basic_MassTermfunc(this,_BS), Basic_Epsilonfunc(this,_BS),
+  Basic_Pfunc(this,_BS), Basic_MassTermfunc(this,_BS), 
+  Basic_Epsilonfunc(this,_BS), Unitarityfunc(this,_BS),
   p_zxlsave(NULL), p_couplingssave(NULL), p_flavourssave(NULL), m_copied(0)
 { 
-  m_zuse.resize(11);
-  for (size_t i=0;i<11;i++) m_zuse[i]=0;
+  m_zuse.resize(12);
+  for (size_t i=0;i<12;i++) m_zuse[i]=0;
   p_zxl       = new vector<ZXlist>;
   p_couplings = new vector<Complex>;
   p_flavours  = new vector<long int>;
@@ -465,6 +466,25 @@ Kabbala String_Generator::GetEpsnumber(int* arg,int nc,Complex value)
   return newz.value;
 }
 
+Kabbala String_Generator::GetSFnumber(Complex value,int zn) 
+{
+  for (size_t i=0;i<(*p_zxl).size();i++) {
+    if ((*p_zxl)[i].zlist==zn) {
+      return (*p_zxl)[i].value;
+    }
+  }
+  //new special function
+  ZXlist newz;
+
+  newz.zlist  = zn;
+  newz.value  = Number((*p_zxl).size(),value);
+  newz.narg   = 0;
+  newz.arg    = 0;
+  (*p_zxl).push_back(newz);
+
+  return newz.value;
+}
+
 void String_Generator::Calculate(Values* val) 
 {  
   if (val!=0) {
@@ -475,7 +495,7 @@ void String_Generator::Calculate(Values* val)
   for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].on) {
       int* arg = (*p_zxl)[i].arg;
-      if ((*p_zxl)[i].zlist>=0&&(*p_zxl)[i].zlist<11) m_zuse[(*p_zxl)[i].zlist]=1;
+      if ((*p_zxl)[i].zlist>=0&&(*p_zxl)[i].zlist<12) m_zuse[(*p_zxl)[i].zlist]=1;
       switch ((*p_zxl)[i].zlist) {
       case 0: (*p_zxl)[i].value = 
 		Kabbala((*p_zxl)[i].value.String(),
@@ -522,6 +542,8 @@ void String_Generator::Calculate(Values* val)
       break;
       case 10: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),EpsCalc(arg[0],arg[1],arg[2],arg[3],arg[4]));
+      case 11: (*p_zxl)[i].value = 
+ 		Kabbala((*p_zxl)[i].value.String(),Ucalc());
       break;
       default:msg_Error()<<"Unknown Z-Type: "<<(*p_zxl)[i].zlist<<endl;
       }

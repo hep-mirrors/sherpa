@@ -104,6 +104,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   if (sgen->UsesFunction(5)) cfile<<","<<endl<<"     Basic_Pfunc(0,_BS)"; 
   if (sgen->UsesFunction(10)) cfile<<","<<endl<<"     Basic_Epsilonfunc(0,_BS)";
   if (sgen->UsesFunction(7)) cfile<<","<<endl<<"     Basic_MassTermfunc(0,_BS)";
+  if (sgen->UsesFunction(11)) cfile<<","<<endl<<"     Unitarityfunc(0,_BS)";
   cfile<<endl<<"{"<<endl;
   cfile<<"  f = new int["<<sgen->GetFlavours()->size()<<"];"<<endl;
   cfile<<"  c = new Complex["<<sgen->NumberOfCouplings()<<"];"<<endl;
@@ -441,6 +442,9 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
       case 10: 
  	(*pz)<<"EpsCalc<"<<arg[4]<<">("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<");"<<endl;
  	break;
+      case 11: 
+ 	(*pz)<<"Ucalc();"<<endl;
+ 	break;
       }
     }
     if (mvz && ((maxlines+tolerance)<lines) && (i!=sgen->ZXMaxNumber()-1)) {
@@ -489,6 +493,7 @@ void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
   if (sgen->UsesFunction(5)) header<<","<<endl<<"  public Basic_Pfunc"; 
   if (sgen->UsesFunction(10)) header<<","<<endl<<"  public Basic_Epsilonfunc";
   if (sgen->UsesFunction(7)) header<<","<<endl<<"  public Basic_MassTermfunc";
+  if (sgen->UsesFunction(11)) header<<","<<endl<<"  public Unitarityfunc";
   header<<" {"<<endl; 
 
   header<<"  Complex*  Z;"<<endl; 

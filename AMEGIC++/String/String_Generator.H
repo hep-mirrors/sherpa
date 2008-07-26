@@ -45,6 +45,7 @@ namespace AMEGIC {
     virtual ATOOLS::Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
     virtual ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
     virtual ATOOLS::Kabbala   GetEpsnumber(int*,int,Complex)               = 0;     
+    virtual ATOOLS::Kabbala   GetSFnumber(Complex,int)                     = 0;
     virtual void      Calculate(Values*)                           = 0;
     virtual int       Massless(int)                                = 0;
     virtual ATOOLS::Kabbala * GetKabbala(const std::string&)               = 0;
@@ -77,7 +78,8 @@ namespace AMEGIC {
 			   public Basic_Vfunc,
 			   public Basic_Pfunc,
 			   public Basic_MassTermfunc,
-			   public Basic_Epsilonfunc {
+			   public Basic_Epsilonfunc,
+			   public Unitarityfunc {
     std::vector<ZXlist>  * p_zxl,       * p_zxlsave;
     std::vector<Complex> * p_couplings, * p_couplingssave;
     std::vector<long int>* p_flavours,  * p_flavourssave;
@@ -118,6 +120,7 @@ namespace AMEGIC {
     ATOOLS::Kabbala     GetSnumber(int,int,Complex); 
     ATOOLS::Kabbala     GetScplxnumber(const int,const int,Complex); 
     ATOOLS::Kabbala     GetEpsnumber(int*,int,Complex);
+    ATOOLS::Kabbala     GetSFnumber(Complex,int);
     void        Calculate(Values*); 
     int         Massless(int); 
     ATOOLS::Kabbala   * GetKabbala(const std::string&);
@@ -161,6 +164,7 @@ namespace AMEGIC {
     ATOOLS::Kabbala   GetSnumber(int,int,Complex value)                 { return ATOOLS::Kabbala(std::string(""),value);}
     ATOOLS::Kabbala   GetScplxnumber(const int,const int,Complex value) { return ATOOLS::Kabbala(std::string(""),value);}
     ATOOLS::Kabbala   GetEpsnumber(int*,int,Complex value)              { return ATOOLS::Kabbala(std::string(""),value);}
+    ATOOLS::Kabbala   GetSFnumber(Complex value ,int)                   { return ATOOLS::Kabbala(std::string(""),value);}
     int       Massless(int)                                     { return 0; }  
     ATOOLS::Kabbala * GetKabbala(const std::string&)                    { return 0;}
     int       NumberOfzxl()                                     { return 0; }

@@ -26,10 +26,12 @@ void SM_AGC_Getter::PrintInfo(std::ostream &str,const size_t width) const
       <<std::setw(width+10)<<" "<<"- G1_GAMMA,KAPPA_GAMMA,LAMBDA_GAMMA,G4_GAMMA,G5_GAMMA\n"
       <<std::setw(width+10)<<" "<<"- KAPPAT_GAMMA,LAMBDAT_GAMMA,G1_Z,KAPPA_Z,LAMBDA_Z\n"
       <<std::setw(width+10)<<" "<<"- G4_Z,G5_Z,KAPPAT_Z,LAMBDAT_Z\n"
-      <<std::setw(width+10)<<" "<<"Z-Z/photon-Z/photon:"
+      <<std::setw(width+10)<<" "<<"Z-Z/photon-Z/photon:\n"
       <<std::setw(width+10)<<" "<<"- F4_GAMMA,F5_GAMMA,F4_Z,F5_Z\n"
       <<std::setw(width+10)<<" "<<"- H1_GAMMA,H2_GAMMA,H3_GAMMA,H4_GAMMA\n"
       <<std::setw(width+10)<<" "<<"- H1_Z,H2_Z,H3_Z,H4_Z\n"
+      <<std::setw(width+7)<<" "<<"- Parameters for unitarity form factor: UNITARIZATION_SCALE, UNITARIZATION_N\n"
+      <<std::setw(width+7)<<" "<<"  (see U. Baur, D. Zeppenfeld Nucl.Phys.B308:127,1988)\n"
       <<std::setw(width+4)<<" "<<"}\n";
 }
 
@@ -123,6 +125,10 @@ void SM_AGC::FillSpectrum() {
 				     p_dataread->GetValue<double>("H3_Z",0.)));
   p_constants->insert(std::make_pair(std::string("h4_Z"),
 				     p_dataread->GetValue<double>("H4_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_N"),
+				     p_dataread->GetValue<double>("UNITARIZATION_N",0.)));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE"),
+				     p_dataread->GetValue<double>("UNITARIZATION_SCALE",1000.)));
 }
 
 

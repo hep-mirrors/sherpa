@@ -8,6 +8,22 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+
+class AnomalousV4_Calc : public Zfunc_Calc, 
+			 public Basic_Zfunc,
+			 public Basic_Xfunc,
+			 public Basic_Mfunc,
+			 public Basic_Vfunc,
+                         public Unitarityfunc {
+public:
+  AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+  ~AnomalousV4_Calc() {}
+  ATOOLS::Kabbala Do();
+  void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+	       Point *const p,Point *const pf,Point *&pb,
+	       int *lfnumb,int *canumb);
+};
+
 DEFINE_ZFAGCCALC_GETTER(AnomalousV4_Calc,AnomalousV4Calc_Getter,"AV4","anomalous v4 calculator")
 
 AnomalousV4_Calc::AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
@@ -16,7 +32,8 @@ AnomalousV4_Calc::AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs*
   Basic_Zfunc(_sgen,_BS), 
   Basic_Xfunc(_sgen,_BS), 
   Basic_Mfunc(_sgen,_BS), 
-  Basic_Vfunc(_sgen,_BS) 
+  Basic_Vfunc(_sgen,_BS),
+  Unitarityfunc(_sgen,_BS) 
 { 
   type="AV4";
   ncoupl=10;narg=8;pn=4;
@@ -33,6 +50,7 @@ Kabbala AnomalousV4_Calc::Do()
 {
   Kabbala factor1 = sgen->GetEnumber(coupl[8]);
   Kabbala factor2 = sgen->GetEnumber(coupl[9]);
+  Kabbala uf = U();
  
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&
@@ -47,7 +65,7 @@ Kabbala AnomalousV4_Calc::Do()
     std::cerr<<"Error in AnomalousV4_Calc::Do(): not cutted massive vertex!"<<std::endl;
     abort();
   }
-  return 2*factor1*Z(0,1)*Z(2,3)-factor2*(Z(0,2)*Z(1,3)+Z(0,3)*Z(1,2));
+  return uf*(2*factor1*Z(0,1)*Z(2,3)-factor2*(Z(0,2)*Z(1,3)+Z(0,3)*Z(1,2)));
 
 }
 
