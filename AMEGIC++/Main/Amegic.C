@@ -490,12 +490,13 @@ void Amegic::ReadInProcessfile(string file)
 	      flavs              = new Flavour[nIS+nFS];
 	      plavs              = new Pol_Info[nIS+nFS];
 	      for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; }
-	      pcinfo->GetFlavList(&flavs[nIS]);
+	      pcinfo->GetTotalFlavList(&flavs[nIS]);
 	      pcinfo->GetPolList(&plavs[nIS]);
 	      bool single        = 1;
 	      for (int i=0;i<nIS+nFS;i++) {
 		if (flavs[i].Size()>1) { single = 0; break; }
 	      }
+	      pcinfo->GetFlavList(&flavs[nIS]);
 	      
 	      
 	      // for beam
