@@ -622,8 +622,11 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   if (prt.length()>1) {
     if (!CheckVariables(flag,prt+string("_min"),0)) CalcSmin(flag,"min",prt,sf,0);
     else if (flag>=0 && CheckVariables(flag,prt,0)) sf<<"  s"<< prt <<"_min = s"<< prt <<";"<<endl;
-    AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
+    if (p->zwf==0) {
+      AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
+		     string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
+    }
+    else CalcSmin(flag,"max",mummy,sf,0);
   }
   if (prt.length()==1) {
     AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
