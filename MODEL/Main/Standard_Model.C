@@ -197,13 +197,12 @@ void Standard_Model::FillSpectrum() {
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
 				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).PSMass())));
   // Extra coupling parameters for non-Standard tbW coupling
-  if (m_trivialextension==1) {
-    p_constants->insert(std::make_pair(std::string("tbW_relfactor"),
-				       p_dataread->GetValue<double>("KAPPA_{TBW}",1.)));
-    p_constants->insert(std::make_pair(std::string("tbW_angle"),
-				       p_dataread->GetValue<double>("THETA_{TBW}",0.)));
-  }
-
+  p_constants->insert(std::make_pair(std::string("tbW_relfactor"),
+				     m_trivialextension==1?
+				     p_dataread->GetValue<double>("KAPPA_{TBW}",1.):1.));
+  p_constants->insert(std::make_pair(std::string("tbW_angle"),
+				     m_trivialextension==1?
+				     p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
   double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
