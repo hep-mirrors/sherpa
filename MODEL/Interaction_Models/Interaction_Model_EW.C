@@ -29,19 +29,25 @@ Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
 					   std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("pure_EW",_model,_cplscheme,_yukscheme)
 { 
-  g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
-  PL    = Kabbala(string("P_L"),1.);
-  PR    = Kabbala(string("P_R"),1.);
-  M_I   = Kabbala(string("i"),Complex(0.,1.));
-  root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  g1       = Kabbala(string("g_1"),
+		     sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale())));
+  g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+  sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+  costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  tbW_f    = Kabbala(std::string("\\kappa_{tbW}"),
+		     ScalarConstant(std::string("tbW_RelFactor")));
+  tbW_cosa = Kabbala(std::string("\\cos\\theta_{tbW}"),
+		     cos(ScalarConstant(std::string("tbW_Angle"))));
+  tbW_sina = Kabbala(std::string("\\sin\\theta_{tbW}"),
+		     sin(ScalarConstant(std::string("tbW_Angle"))));
+  PL       = Kabbala(string("P_L"),1.);
+  PR       = Kabbala(string("P_R"),1.);
+  M_I      = Kabbala(string("i"),Complex(0.,1.));
+  root2    = Kabbala(string("\\sqrt{2}"),sqrt(2.));
+  vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
@@ -125,25 +131,31 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 	  }
 	  //W
 	  if (flWplus.IsOn()) {
-	    short int hit = 1;
+	    bool hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
 	    kcpl1 = Kabbala(string("1"),0.);
 
 	    if (!((flav1.IsDowntype() && flav2.IsUptype()) ||
-                  (flav2.IsDowntype() && flav1.IsUptype()))) hit = 0;
-	    if ((flav1.IsLepton() && !flav2.IsLepton()) ||
-		(flav1.IsQuark() && !flav2.IsQuark()) ) hit = 0;
-	    if (hit==1) {
-	      if (flav1.IsDowntype() && i>10 && j==i+1) 
-		kcpl1 = -M_I/root2*g2;
-	      if (i<7 && j<7) {
-		if (flav1.IsDowntype())
-		  kcpl1 = -M_I/root2*g2*K_CKM(j/2-1,(i-1)/2);
-		else
-		  kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);
+                  (flav2.IsDowntype() && flav1.IsUptype()))) hit = false;
+	    else if ((flav1.IsLepton() && !flav2.IsLepton()) ||
+		     (flav1.IsQuark() && !flav2.IsQuark()) ) hit = false;
+	    else if (flav1.IsDowntype() && i>10 && j==i+1) kcpl1 = -M_I/root2*g2;
+	    else if (i<7 && j<7) {
+	      if (flav1.IsDowntype())
+		kcpl1 = -M_I/root2*g2*K_CKM(j/2-1,(i-1)/2);
+	      else
+		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);
+	      if ((flav1==Flavour(kf_t) && flav2==Flavour(kf_b)) ||
+		  (flav1==Flavour(kf_b) && flav2==Flavour(kf_t))) {
+		if (tbW_f.Value()!=1. || tbW_cosa.Value()!=1.)
+		  kcpl0 = kcpl1*tbW_sina*tbW_f;
+		  kcpl1 = kcpl1*tbW_cosa*tbW_f;
 	      }
-	      if (!ATOOLS::IsZero(kcpl1.Value())) {
+	    }
+	    if (hit) {
+	      if (!ATOOLS::IsZero(kcpl0.Value()) &&
+		  !ATOOLS::IsZero(kcpl1.Value())) {
 		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;

@@ -5,6 +5,7 @@
 
 namespace MODEL {
   class Standard_Model : public Model_Base {
+    int  m_trivialextension;
   private :
     int  m_ewscheme,m_ckmorder;
     void ParticleInit();
@@ -12,7 +13,7 @@ namespace MODEL {
     void FixEWParameters();
     void FixCKM();
   public :
-    Standard_Model(std::string,std::string,bool);
+    Standard_Model(std::string,std::string,bool,const int =0);
     ~Standard_Model()                   {}
     bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
