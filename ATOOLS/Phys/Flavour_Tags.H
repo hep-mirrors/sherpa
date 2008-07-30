@@ -42,7 +42,8 @@
 #define      kf_string                  95
 #define      kf_cluster                 96
 #define      kf_bjet                    97
-#define      kf_seaquark                98
+#define      kf_cjet                    98
+#define      kf_seaquark                99
 // susy
 #define      kf_Chargino1               1000024
 #define      kf_Chargino2               1000037
