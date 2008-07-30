@@ -148,13 +148,14 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);
 	      if ((flav1==Flavour(kf_t) && flav2==Flavour(kf_b)) ||
 		  (flav1==Flavour(kf_b) && flav2==Flavour(kf_t))) {
-		if (tbW_f.Value()!=1. || tbW_cosa.Value()!=1.)
+		if (tbW_f.Value()!=1. || tbW_cosa.Value()!=1.) {
 		  kcpl0 = kcpl1*tbW_sina*tbW_f;
 		  kcpl1 = kcpl1*tbW_cosa*tbW_f;
+                }
 	      }
 	    }
 	    if (hit) {
-	      if (!ATOOLS::IsZero(kcpl0.Value()) &&
+	      if (!ATOOLS::IsZero(kcpl0.Value()) ||
 		  !ATOOLS::IsZero(kcpl1.Value())) {
 		vertex[vanz].in[1] = flWplus.Bar();
 		if (flav1.IsDowntype()) {
