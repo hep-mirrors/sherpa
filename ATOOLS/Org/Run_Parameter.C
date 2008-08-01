@@ -47,7 +47,7 @@ Run_Parameter ATOOLS::rpa;
 Run_Parameter::Run_Parameter() 
 {
   AnalyseEnvironment();
-  gen.m_output    = gen.m_analysis   = 0;
+  gen.m_analysis   = 0;
   gen.m_nevents   = 0;
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu        = 0.;
@@ -114,10 +114,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     termios testos;
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
   }
-  gen.m_output = dr.GetValue<int>("OUTPUT",2);
+  std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
-  msg->Init(gen.m_output,logfile);
-  if (msg->Level()>0) 
+  msg->Init(outputlevel,logfile);
+  if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice

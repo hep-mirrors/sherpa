@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <set>
+#include "STL_Tools.H"
 
 namespace ATOOLS {
 
@@ -91,6 +93,11 @@ namespace ATOOLS {
 
     int m_file, m_level;
 
+    std::set<std::string,String_Sort> m_contextevents;
+    std::set<std::string,String_Sort> m_contextinfo;
+    std::set<std::string,String_Sort> m_contexttracking;
+    std::set<std::string,String_Sort> m_contextdebugging;
+
     int m_modifiable;
 
     size_t m_indent;
@@ -111,7 +118,7 @@ namespace ATOOLS {
     ~Message(); 
 
     // member functions
-    void Init(const int level,const std::string &logfile="");
+    void Init(const std::string& level,const std::string &logfile="");
     void SetPrecision(const int precision);
     void SetStandard();
 
@@ -144,6 +151,23 @@ namespace ATOOLS {
     inline bool LevelIsTracking() const  { return (m_level & 4);  }
     inline bool LevelIsDebugging() const { return (m_level & 8);  }
 
+    bool LevelIsEvents(const std::string& context) const;
+    bool LevelIsInfo(const std::string& context) const;
+    bool LevelIsTracking(const std::string& context) const;
+    bool LevelIsDebugging(const std::string& context) const;
+
+    inline const std::set<std::string,String_Sort>& ContextEvents() {
+      return m_contextevents;
+    }
+    inline const std::set<std::string,String_Sort>& ContextInfo() {
+      return m_contextinfo;
+    }
+    inline const std::set<std::string,String_Sort>& ContextTracking() {
+      return m_contexttracking;
+    }
+    inline const std::set<std::string,String_Sort>& ContextDebugging() {
+      return m_contextdebugging;
+    }
   };// end of class Message
 
   extern Message *msg;
@@ -186,10 +210,18 @@ namespace ATOOLS {
   */
 }
 
-#define msg_LevelIsEvents() ATOOLS::msg->LevelIsEvents()
-#define msg_LevelIsInfo() ATOOLS::msg->LevelIsInfo()
-#define msg_LevelIsTracking() ATOOLS::msg->LevelIsTracking()
-#define msg_LevelIsDebugging() ATOOLS::msg->LevelIsDebugging()
+#define msg_LevelIsEvents() \
+  (ATOOLS::msg->LevelIsEvents() || \
+   (!ATOOLS::msg->ContextEvents().empty() && ATOOLS::msg->LevelIsEvents(__PRETTY_FUNCTION__)))
+#define msg_LevelIsInfo() \
+  (ATOOLS::msg->LevelIsInfo() || \
+   (!ATOOLS::msg->ContextInfo().empty() && ATOOLS::msg->LevelIsInfo(__PRETTY_FUNCTION__)))
+#define msg_LevelIsTracking() \
+  (ATOOLS::msg->LevelIsTracking() || \
+   (!ATOOLS::msg->ContextTracking().empty() && ATOOLS::msg->LevelIsTracking(__PRETTY_FUNCTION__)))
+#define msg_LevelIsDebugging() \
+  (ATOOLS::msg->LevelIsDebugging() || \
+   (!ATOOLS::msg->ContextDebugging().empty() && ATOOLS::msg->LevelIsDebugging(__PRETTY_FUNCTION__)))
 
 #define msg_Error() ATOOLS::msg->Error()
 #define msg_Out() ATOOLS::msg->Out()

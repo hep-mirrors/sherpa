@@ -23,7 +23,7 @@ namespace ATOOLS {
     static void AnalyseEnvironment();
     
     class Gen {  // general parameters
-      int                 m_output, m_analysis, m_cutscheme;
+      int                 m_analysis, m_cutscheme;
       //std::string         m_runtime;
       long int            m_nevents, m_ndicedevents;
       long int            m_seed;

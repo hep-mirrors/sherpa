@@ -4,6 +4,7 @@
 #include "MyStrStream.H"
 
 #include <sys/stat.h>
+#include <iterator>
 
 namespace ATOOLS {
   Message *msg(new Message());
@@ -113,9 +114,31 @@ Message::~Message()
   delete p_no;
 }
 
-void Message::Init(const int level,const std::string &logfile) 
+void Message::Init(const std::string& level,const std::string &logfile) 
 { 
-  m_level = level; 
+  Data_Reader dr("|","[","!");
+  dr.AddLineSeparator("]");
+  dr.AddComment("#");
+  dr.SetString(level);
+  std::vector<std::vector<std::string> > svv;
+  dr.MatrixFromString(svv);
+
+  m_level=2;
+  for (size_t i=0;i<svv.size();++i) {
+    if (svv[i].size()==1) m_level=ATOOLS::ToType<int>(svv[i][0]);
+    else if (svv[i].size()==2) {
+      int lev=ToType<int>(svv[i][1]);
+      if (lev&1) m_contextevents.insert(svv[i][0]);
+      if (lev&2) m_contextinfo.insert(svv[i][0]);
+      if (lev&4) m_contexttracking.insert(svv[i][0]);
+      if (lev&8) m_contextdebugging.insert(svv[i][0]);
+    }
+    else {
+      Out()<<METHOD<<": Do not understand output specification: "<<std::endl;
+      copy(svv[i].begin(), svv[i].end(),
+           std::ostream_iterator<std::string>(Out(), " "));
+    }
+  }
   if (m_level&16) {
     InitLogFile(logfile);
     Out()<<"Initialize output module Message. Level "<<m_level<<std::endl;
@@ -232,4 +255,40 @@ std::string Message::ExtractMethodName(std::string cmethod) const
     method=cmethod.substr(0,ATOOLS::Min(cmethod.length(),pos));
   }
   return cclass+"::"+cmethod;
+}
+
+bool Message::LevelIsEvents(const std::string& context) const
+{
+  for (std::set<std::string>::reverse_iterator rit=m_contextevents.rbegin();
+       rit!=m_contextevents.rend(); ++rit) {
+    if (context.find(*rit)!=std::string::npos) return true;
+  }
+  return false;
+}
+
+bool Message::LevelIsInfo(const std::string& context) const
+{
+  for (std::set<std::string>::reverse_iterator rit=m_contextinfo.rbegin();
+       rit!=m_contextinfo.rend(); ++rit) {
+    if (context.find(*rit)!=std::string::npos) return true;
+  }
+  return false;
+}
+
+bool Message::LevelIsTracking(const std::string& context) const
+{
+  for (std::set<std::string>::reverse_iterator rit=m_contexttracking.rbegin();
+       rit!=m_contexttracking.rend(); ++rit) {
+    if (context.find(*rit)!=std::string::npos) return true;
+  }
+  return false;
+}
+
+bool Message::LevelIsDebugging(const std::string& context) const
+{
+  for (std::set<std::string>::reverse_iterator rit=m_contextdebugging.rbegin();
+       rit!=m_contextdebugging.rend(); ++rit) {
+    if (context.find(*rit)!=std::string::npos) return true;
+  }
+  return false;
 }
