@@ -4,10 +4,6 @@
 
 using namespace ATOOLS;
 
-namespace ATOOLS {
-  INSTANTIATE_SMART_POINTER(Integration_Info)
-}
-
 Info_Key::Info_Key():
   p_info(NULL),
   m_valuekey(0),

@@ -411,7 +411,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   String_Vector &buffer(s_buffermap[file]);
   msg_Debugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
 		 <<file<<"' -> ("<<&buffer<<")\n";
-  My_In_File infile(InFile(i));
+  My_In_File &infile(InFile(i));
   if (mode&2 || buffer.empty()) {
     msg_Debugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
 		   <<"', mode = "<<infile.Mode()<<"\n";
@@ -495,7 +495,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   msg_Debugging()<<METHOD<<"(): ("<<this<<") closes file '"
 		 <<InputPath(i)+InputFile(i)<<"', mode = "
 		 <<InFileMode(i)<<"\n";
-  My_In_File infile(InFile(i));
+  My_In_File &infile(InFile(i));
   if (infile()==NULL) return;
   m_filecontent[i].clear();
   if (infile.Mode()==fom::permanent && !mode) return;
@@ -512,7 +512,7 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
 {  
   if (OutputFile(i)==nullstring) return false;
   if (OutFileMode(i)==fom::unknown) SetOutFileMode(fom::permanent);
-  My_Out_File outfile(OutFile(i));
+  My_Out_File &outfile(OutFile(i));
   if (outfile()==NULL) {
     outfile.Open();	
     if (m_filebegin.size()>0 && !outfile->bad()) {
@@ -524,7 +524,7 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
 
 void Read_Write_Base::CloseOutFile(const unsigned int i,const int mode)
 { 
-  My_Out_File outfile(OutFile(i));
+  My_Out_File &outfile(OutFile(i));
   if (outfile()==NULL) return;
   if (outfile.Mode()==fom::permanent && !mode) return;
   if (m_fileend.size()>0 && !outfile->bad()) {

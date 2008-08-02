@@ -24,9 +24,9 @@ namespace ATOOLS {
 
   protected:
 
-    inline My_In_File InFile(const unsigned int i=0)  
+    inline My_In_File &InFile(const unsigned int i=0)  
     { return AT(m_infiles,i);  }
-    inline My_Out_File OutFile(const unsigned int i=0)  
+    inline My_Out_File &OutFile(const unsigned int i=0)  
     { return AT(m_outfiles,i);  }
 
   public:

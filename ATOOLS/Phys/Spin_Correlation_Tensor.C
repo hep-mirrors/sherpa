@@ -10,8 +10,6 @@
 
 namespace ATOOLS{
 
-  INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
-
   // INITIALIZATION OF THE STATIC MEMBERS OF SPIN_CORRELATION_TENSOR
 
   int Spin_Correlation_Tensor::m_k0_n(-1);

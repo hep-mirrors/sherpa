@@ -7,11 +7,6 @@
 
 using namespace ATOOLS;
 
-namespace ATOOLS {
-  INSTANTIATE_SMART_POINTER(std::ifstream)
-  INSTANTIATE_SMART_POINTER(std::ofstream)
-}
-
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
 {
   switch (code) {
@@ -119,7 +114,7 @@ bool My_File<FileType>::Close()
 {
   if (p_file==NULL) return false;
   p_file->close();
-  p_file.Delete();
+  p_file=NULL;
   return true;
 }
 
