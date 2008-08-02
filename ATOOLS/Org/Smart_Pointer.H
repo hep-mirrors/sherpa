@@ -41,9 +41,8 @@ namespace ATOOLS {
 
     inline void Connect(const Smart_Pointer &ref) const
     {
-      p_owner=&ref;
-      p_this=ref.p_this;
-      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this;
+      if ((p_this=ref.p_this)==NULL) return; p_owner=&ref; 
+      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this; 
       ref.p_copy=this;
     }
     /*!
@@ -53,14 +52,11 @@ namespace ATOOLS {
     */
     inline void Deconnect() const
     {
-      if (p_owner) {
-	if ((p_owner->p_copy=p_copy)!=NULL) p_copy->p_owner=p_owner;
-      }
-      else {
-	if (p_copy) p_copy->p_owner=NULL;
-	else if (p_this!=NULL) delete p_this;
-      }
-      p_owner=p_copy=NULL;
+      if (p_owner) { 
+	if ((p_owner->p_copy=p_copy)!=NULL) p_copy->p_owner=p_owner; }
+      else { if (p_copy) p_copy->p_owner=NULL;
+	else if (p_this!=NULL) delete p_this; }
+      p_owner=p_copy=NULL; p_this=NULL;
     }
     /*!
       \fn inline void Deconnect()
@@ -86,8 +82,7 @@ namespace ATOOLS {
     inline Smart_Pointer(Type *const type): 
       p_this(type), p_owner(NULL), p_copy(NULL) { }
     inline Smart_Pointer(const Smart_Pointer &ref): 
-      p_this(NULL), p_owner(NULL), p_copy(NULL)
-    { if (ref.p_this!=NULL) Connect(ref); }
+      p_this(NULL), p_owner(NULL), p_copy(NULL) { Connect(ref); }
 
     // destructor
     inline ~Smart_Pointer() { Deconnect(); }
@@ -128,7 +123,7 @@ namespace ATOOLS {
     inline const Smart_Pointer &operator=(const Smart_Pointer &ref)
     {
       if (ref==p_this) return *this;
-      Deconnect(); if (ref.p_this!=NULL) Connect(ref); return *this;
+      Deconnect(); Connect(ref); return *this;
     }
     /*!
       \fn inline Type *const operator=(Smart_Pointer &ref) 
