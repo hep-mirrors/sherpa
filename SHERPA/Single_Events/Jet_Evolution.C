@@ -128,9 +128,11 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     if (blob->NInP()==2) shower = interface->PerformShowers();
     switch (shower) {
     case 1: 
+      Reset();
       AftermathOfSuccessfulShower(blob,bloblist,interface);    
       return Return_Value::Success;
     case -1:
+      Reset();
       p_showerhandler->CleanUp();
       if (blob->Type()==btp::Hadron_Decay) {
         Particle* inpart = blob->InParticle(0);
@@ -142,8 +144,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 	interface->CleanBlobList(bloblist,blob->Type());
       return Return_Value::Retry_Event;
     default:
-//       msg_Error()<<"ERROR in "<<METHOD<<":"<<endl
-// 		 <<"   Shower failure. Will try new event."<<endl;
+      Reset();
       p_showerhandler->CleanUp();
       interface->CleanUp();
       return Return_Value::New_Event;
