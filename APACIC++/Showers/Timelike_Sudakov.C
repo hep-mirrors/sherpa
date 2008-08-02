@@ -202,6 +202,13 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   case 3: // pseudo transverse momentum
     m_pt2=z*(1.0-z)*t-(1.0-z)*m_tb-z*m_tc;
     break;
+  case 4: {// durham scheme with light cone kinematics 
+    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc)); 
+    double f1(zlc/(1.0-zlc)), f2((1.0-zlc)/zlc); 
+    double kt2(p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc)); 
+    m_pt2=0.5*Min(f1,f2)*(f1*m_tc+f2*m_tb+kt2/(zlc*(1.0-zlc))); 
+    break; 
+  } 
   default:
     THROW(fatal_error,"No kt definition.");
   }
@@ -247,8 +254,7 @@ bool Timelike_Sudakov::MassVeto(double t, double E2,double z)
     // additional phasespace weight
     psw=m_oldt/m_t*sqrt(sql(m_t,m_tb,m_tc)/sql(m_oldt,m_tb,m_tc));
   }
-  double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
-  if (GetWeight(zlc,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
+  if (GetWeight(m_z,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;

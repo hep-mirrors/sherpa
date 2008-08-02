@@ -428,10 +428,10 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   }
   Knot *d1(mo->left), *d2(mo->right);
   msg_Debugging()<<"p_d1 = "<<d1->part->Momentum()
-		 <<", t_d1 = "<<d1->t<<", ("
+		 <<", m_d1 = "<<sqrt(d1->t)<<", ("
 		 <<d1->kn_no<<","<<d1->stat<<")"<<std::endl;
   msg_Debugging()<<"p_d2 = "<<d2->part->Momentum()
-		 <<", t_d2 = "<<d2->t<<", ("
+		 <<", m_d2 = "<<sqrt(d2->t)<<", ("
 		 <<d2->kn_no<<","<<d2->stat<<")"<<std::endl;
 #ifdef USING__Veto_Info
   p_sud->AddVeto();
@@ -1023,7 +1023,8 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   // set color connections (if not yet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
 
-  double t_mo(mo->part->Momentum().Abs2()), st_mo(mo->t);
+  double t_mo(mo->part->Momentum().Abs2()), st_mo(t_mo);
+  if (mo->prev==NULL) st_mo=mo->t; 
   double tb(d1->part->Momentum().Abs2()), tc(d2->part->Momentum().Abs2());
   double E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
   double th(p_kin->GetOpeningAngle(z_mo,sqr(E_mo),t_mo,tb,tc));
@@ -1031,6 +1032,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   if (IsEqual(th,M_PI)) maxpt2=mo->maxpt2;
   mo->sthcrit=th;
   double thcrit(mo->shower==2?th:mo->thcrit);
+  double st1(d1->t), st2(d2->t);
   if ((mo->part->Flav().IsQuark() || mo->part->Flav().IsSquark()) && 
       d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
     if (d1->part->Flav().IsQuark() || d1->part->Flav().IsSquark() ) {
@@ -1106,6 +1108,30 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
     d1->smaxpt2=d1->maxpt2;
     d2->sthcrit=d2->thcrit;
     d2->smaxpt2=d2->maxpt2;
+    int fd11(d1->part->GetFlow(1)), fd12(d1->part->GetFlow(2));
+    int fd21(d2->part->GetFlow(1)), fd22(d2->part->GetFlow(2));
+    if (fd11 || fd12) d1->t=d1->tout;
+    if (fd21 || fd22) d2->t=d2->tout;
+    int fm1(mo->part->GetFlow(1)), fm2(mo->part->GetFlow(2));
+    if ((fm1 && fm1==fd11) || (fm2 && fm2==fd12)) {
+      msg_Debugging()<<mo->kn_no<<" <-> "<<d1->kn_no
+		     <<" => rtt = max{ "<<sqrt(d1->t)<<" , "
+		     <<d2->part->Momentum().Abs2()<<"}\n";
+      d1->t=Max(d1->t,d2->part->Momentum().Abs2());
+    }
+    if ((fm1 && fm1==fd21) || (fm2 && fm2==fd22)) {
+      msg_Debugging()<<mo->kn_no<<" <-> "<<d2->kn_no
+		     <<" => rtt = max{ "<<sqrt(d2->t)<<" , "
+		     <<d1->part->Momentum().Abs2()<<" }\n";
+      d2->t=Max(d2->t,d1->part->Momentum().Abs2());
+    }
+    if ((fd11 && fd11==fd22) ||	(fd12 && fd12==fd21)) {
+      msg_Debugging()<<d1->kn_no<<" <-> "<<d2->kn_no
+		     <<" => rtt = max{ "<<sqrt(d1->t)<<" , "<<t_mo
+		     <<" } / max{ "<<sqrt(d2->t)<<" , "<<t_mo<<" }\n";
+      d1->t=Max(d1->t,t_mo);
+      d2->t=Max(d2->t,t_mo);
+    }
   }
   if (d1->decay!=mo->decay) {
     msg_Debugging()<<"restore saved info in "
@@ -1114,10 +1140,13 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
     d1->maxpt2=d1->smaxpt2;
     d2->thcrit=d2->sthcrit;
     d2->maxpt2=d2->smaxpt2;
+    d1->t=st1;
+    d2->t=st2;
   }
   msg_Debugging()<<METHOD<<"(): Set "<<mo->kn_no<<"->("<<mo->left->kn_no
 		 <<","<<mo->right->kn_no<<") {"<<mo->shower<<"} "<<mo->thcrit
-		 <<" -> "<<mo->left->thcrit<<","<<mo->right->thcrit<<"\n"; 
+		 <<" -> rtt = "<<sqrt(mo->left->t)<<","<<sqrt(mo->right->t)
+		 <<", th = "<<mo->left->thcrit<<","<<mo->right->thcrit<<"\n"; 
 }
 
 void Final_State_Shower::
