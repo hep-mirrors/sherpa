@@ -65,12 +65,11 @@ Gluon_Decayer::~Gluon_Decayer() {
   m_options.clear();
 }
 
-bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
+bool Gluon_Decayer::DecayList(SP(Proto_Particle_List) plin)
 {
   if (plin==NULL || plin->empty()) return true;
   if (!m_dipoles.empty()) {
     while (!m_dipoles.empty()) {
-      delete (*m_dipoles.begin());
       m_dipoles.pop_front();
     }
   }
@@ -108,12 +107,12 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
   return true;
 }
 
-bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
+bool Gluon_Decayer::FillDipoleList(SP(Proto_Particle_List) plin)
 {
   PPL_Iterator pit(plin->begin()), pit1(plin->begin());
   pit1++;
-  Proto_Particle * begin(*pit);
-  Dipole * dip;
+  SP(Proto_Particle) begin(*pit);
+  SP(Dipole) dip;
   do {
     dip = new Dipole(*pit,*pit1);
     m_dipoles.push_back(dip);
@@ -136,14 +135,13 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
   return true;
 }
 
-void Gluon_Decayer::UpdatePPList(Proto_Particle_List * plin)
+void Gluon_Decayer::UpdatePPList(SP(Proto_Particle_List) plin)
 {
-  if (!plin || plin->empty()) return;
+  if (plin==NULL || plin->empty()) return;
   plin->clear();
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
     plin->push_back((*dip)->Triplet());
     plin->push_back((*dip)->AntiTriplet());
-    delete (*dip);
   }
   m_dipoles.clear();
 }
@@ -336,8 +334,6 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   }
 
   (*dip1)->SetAntiTriplet((*dip2)->AntiTriplet());
-  delete (*dip2)->Triplet();
-  delete (*dip2);
 
   m_dipoles.erase(dip2);
   for (DipIter dipiter=m_dipoles.begin();dipiter!=m_dipoles.end();dipiter++) {
@@ -355,10 +351,6 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   }
   else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
-  delete save1.Triplet();
-  delete save1.AntiTriplet();
-  delete save2.Triplet();
-  delete save2.AntiTriplet();
 }
 
 void Gluon_Decayer::AfterSplit(DipIter dip) {
@@ -382,17 +374,17 @@ void Gluon_Decayer::AfterSplit(DipIter dip) {
 }
 
 void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
-  Proto_Particle * new1, * new2;
+  SP(Proto_Particle) new1, new2;
   p_splitter->GetNewParticles(new1,new2);
   if (msg->LevelIsDebugging())
     msg_Out()<<METHOD<<" for splitting "<<(*dipiter)<<" into :"<<std::endl
 	     <<(*new1)<<(*new2)<<std::endl;
   DipIter partner;
-  Dipole * dip((*dipiter));
+  SP(Dipole) dip((*dipiter));
 #ifdef AHAmomcheck
   Vec4D checkaft(0.,0.,0.,0.);
 #endif
-  if (m_dipoles.begin()==dipiter || !(*m_dipoles.begin())->Triplet() ||
+  if (m_dipoles.begin()==dipiter || (*m_dipoles.begin())->Triplet()==NULL ||
       (!(*m_dipoles.begin())->Triplet()->m_flav.IsQuark() &&
        !(*m_dipoles.begin())->Triplet()->m_flav.IsDiQuark())) {
     if (msg->LevelIsDebugging()) 

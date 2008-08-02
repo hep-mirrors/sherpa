@@ -15,9 +15,9 @@ Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
 { }
 
 
-bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
-  Dipole * dip1 = new Dipole(new Proto_Particle((*cluster->GetTrip())),
-			     new Proto_Particle((*cluster->GetAnti())));
+bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
+  SP(Dipole) dip1 = new Dipole(new Proto_Particle((*cluster->GetTrip())),
+			       new Proto_Particle((*cluster->GetAnti())));
 #ifdef memchecker
   msg_Out()<<"### Two new Proto_Particles ("
   	   <<dip1->Triplet()<<"/"<<dip1->AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
@@ -28,9 +28,9 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
     msg_Out()<<METHOD<<" : "<<cluster->Momentum()<<" ("<<cluster->Mass2()<<")."<<std::endl;
     p_dip->Output();
   }
-
-  Dipole * dip2 = EmitGluon(pt2max);
-  if (!dip2) {
+  
+  SP(Dipole) dip2 = EmitGluon(pt2max);
+  if (dip2==NULL) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
 		  <<"   Could not emit gluon, hence no dipole splitting."<<std::endl
 		  <<"   Return false, may lead to new event."<<std::endl;
@@ -38,13 +38,10 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
     msg_Out()<<"### Delete Proto_Particle ("<<dip1->Triplet()
     	     <<"/"<<dip1->Triplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
-    delete dip1->Triplet();
 #ifdef memchecker
     msg_Out()<<"### Delete Proto_Particle ("<<dip1->AntiTriplet()
     	     <<"/"<<dip1->AntiTriplet()->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
-    delete dip1->AntiTriplet();
-    delete dip1;
     return false;
   }
   dip1->SetAntiTriplet(dip2->Triplet());
@@ -58,7 +55,7 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
   }
 
 
-  Dipole * first(dip1), * second(dip2);
+  SP(Dipole) first(dip1), second(dip2);
   if (ran.Get()<(dip1->Mass2()-dip1->Triplet()->m_mom.Abs2())/
       (dip1->Mass2()-dip1->Triplet()->m_mom.Abs2()+
        dip2->Mass2()-dip2->AntiTriplet()->m_mom.Abs2())) {
@@ -69,8 +66,6 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
     msg_Tracking()<<"Error in "<<METHOD<<" :"<<std::endl
 		  <<"   Two unsplittable dipoles emerging from :"<<std::endl
 		  <<(*cluster)<<std::endl;
-    delete dip1;
-    delete dip2;
     return false;
   }
 
@@ -90,8 +85,8 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
 	     <<(dip1->Momentum()+dip2->Momentum()).Abs2()<<")."<<std::endl;
   }
 
-  Cluster * left  = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
-  Cluster * right = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
+  SP(Cluster) left  = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
+  SP(Cluster) right = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
 #ifdef memchecker
   msg_Out()<<"@@@ Two new clusters "<<left<<"/"<<right<<" from "<<METHOD<<"."<<std::endl;
 #endif
@@ -101,13 +96,10 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster,const double pt2max) {
   left->SetPrev(cluster);
   right->SetPrev(cluster);
 
-  delete dip1;
-  delete dip2;
-
   return true;
 }
 
-Dipole * Dipole_Splitter::EmitGluon(const double pt2max) {
+Dipole *Dipole_Splitter::EmitGluon(const double pt2max) {
   SetSpectatorAndSplitter();
 
   m_M2      = p_dip->Mass2();
@@ -136,7 +128,7 @@ Dipole * Dipole_Splitter::EmitGluon(const double pt2max) {
   return NULL;
 }
 
-bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
+bool Dipole_Splitter::SplitDipole(SP(Dipole) dip,const double pt2max) {
   p_dip = dip;
 
   SetSpectatorAndSplitter();
@@ -176,7 +168,6 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max) {
     msg_Out()<<"### Delete Proto_Particle ("<<p_split
     	     <<"/"<<p_split->m_flav<<") in "<<METHOD<<"."<<std::endl;
 #endif
-    delete p_split;
     return true;
   }
   msg_Tracking()<<"ERROR in "<<METHOD<<" FixKinematics did not work out!"<<std::endl;

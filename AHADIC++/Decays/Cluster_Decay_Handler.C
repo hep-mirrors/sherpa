@@ -24,7 +24,7 @@ Cluster_Decay_Handler::~Cluster_Decay_Handler()
 
 int Cluster_Decay_Handler::DecayClusters(Blob * blob)
 {
-  Cluster    * cluster;
+  SP(Cluster) cluster;
   Cluster_List clist;
   //std::cout<<METHOD<<" for "<<p_clulist->size()<<std::endl;
   while (!p_clulist->empty()) {
@@ -66,10 +66,10 @@ ATOOLS::Blob * Cluster_Decay_Handler::ClusterDecayBlob(Cluster * cluster,Cluster
 		   <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
   }
 #endif
-  if (cluster->GetLeft() && cluster->GetLeft()->GetFlav()==Flavour(kf_cluster)) {
+  if (cluster->GetLeft()!=NULL && cluster->GetLeft()->GetFlav()==Flavour(kf_cluster)) {
     p_clulist->push_back(cluster->GetLeft());
   }
-  if (cluster->GetRight() && cluster->GetRight()->GetFlav()==Flavour(kf_cluster)) {
+  if (cluster->GetRight()!=NULL && cluster->GetRight()->GetFlav()==Flavour(kf_cluster)) {
     p_clulist->push_back(cluster->GetRight());
   }
   if (cluster) {

@@ -21,7 +21,7 @@ namespace AHADIC {
   public:
     Cluster_Part(Dipole_Splitter * =NULL,bool=false);
     ~Cluster_Part();
-    bool TestDecay(Cluster * const);
+    bool TestDecay(SP(Cluster) const);
   };
 
   /*!

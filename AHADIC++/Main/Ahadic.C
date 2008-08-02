@@ -123,10 +123,12 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 		  <<"   Will retry event."<<std::endl;
+    p_cformhandler->Reset();
     return Return_Value::Retry_Event;
   case  0 :
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
 		  <<"   Will retry method."<<std::endl;
+    p_cformhandler->Reset();
     return Return_Value::Retry_Method;
   case 1 :
     if (retry>0) msg_Out()<<"   Passed cluster formation now ("<<retry<<"th trial)."<<std::endl;    
@@ -168,12 +170,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 
 void Ahadic::Reset() {
   assert(!Cluster::RemainingClusters());
-  if(control::s_AHAprotoparticles) {
-    assert(control::s_AHAprotoparticles==control::l_oflow.size());
-    //PRINT_INFO(control::s_AHAprotoparticles<<" vs "<<control::l_oflow.size());
-    while(!control::l_oflow.empty()) delete control::l_oflow.front();
-  }
-  assert(control::s_AHAprotoparticles==0);
   Cluster::ResetClusterNumber();
   control::s_AHAparticles=0;
 }

@@ -9,9 +9,9 @@ Cluster_Former::Cluster_Former() { }
 
 Cluster_Former::~Cluster_Former() { }
 
-void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List * clout)
+void Cluster_Former::ConstructClusters(SP(Proto_Particle_List) plin, Cluster_List * clout)
 {
-  Cluster * cluster(NULL);
+  SP(Cluster) cluster(NULL);
   int       lead(0);
   PPL_Iterator pit1,pit2;
   while (!plin->empty()) {

@@ -26,7 +26,7 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
   cit1 = cit2 = clin->begin(); cit2++;
   do {
     if (TestClusters((*cit1),(*cit2),gen)) {
-      Proto_Particle * help = (*cit1)->GetAnti();
+      SP(Proto_Particle) help = (*cit1)->GetAnti();
 
       (*cit1)->SetAnti((*cit2)->GetAnti());
       (*cit2)->SetAnti(help);
@@ -48,7 +48,7 @@ void Colour_Reconnections::Two_Singlet_CR(Cluster_List * cl1,Cluster_List * cl2)
   // To be filled.
 }
 
-bool Colour_Reconnections::TestClusters(Cluster * cl1,Cluster * cl2,int gen)
+bool Colour_Reconnections::TestClusters(SP(Cluster) cl1,SP(Cluster) cl2,int gen)
 {
   double kinweight = KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
 				     cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);

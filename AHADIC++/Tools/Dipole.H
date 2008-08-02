@@ -13,9 +13,9 @@ namespace AHADIC {
   private:
     bool   m_mustdecay,m_switched;
     double m_mass2,m_massbar2;
-    Proto_Particle * p_triplet, * p_antitriplet; 
+    SP(Proto_Particle) p_triplet, p_antitriplet; 
   public:
-    Dipole(Proto_Particle * trip,Proto_Particle * anti);
+    Dipole(SP(Proto_Particle) trip,SP(Proto_Particle) anti);
     ~Dipole() { --s_cnt;}
 
     void Update();
@@ -28,46 +28,11 @@ namespace AHADIC {
     ATOOLS::Vec4D    Momentum() const;
     double           Mass2() const;
     double           MassBar2() const;
-    Proto_Particle * Triplet();
-    Proto_Particle * AntiTriplet();
-    void             SetTriplet(Proto_Particle * pp);
-    void             SetAntiTriplet(Proto_Particle * pp);
+    SP(Proto_Particle) Triplet();
+    SP(Proto_Particle) AntiTriplet();
+    void             SetTriplet(SP(Proto_Particle) pp);
+    void             SetAntiTriplet(SP(Proto_Particle) pp);
   };
-
-  inline Dipole::Dipole(Proto_Particle * trip,Proto_Particle * anti) {
-    ++s_cnt;
-    p_triplet    =trip;
-    p_antitriplet=anti;
-    m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon()); 
-    m_mass2   =(p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-    m_massbar2=ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
-  }
-  inline void Dipole::Update() {
-    if (p_triplet && p_antitriplet) {
-      m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon());
-      m_mass2   =(p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-      m_massbar2= ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
-    }
-  }
-  inline void Dipole::Output() {
-    msg_Out()<<"--- Dipole ("<<p_triplet<<" "<<p_antitriplet<<" : ";
-    if (p_triplet) msg_Out()<<p_triplet->m_flav;
-    else msg_Out()<<" no flav ";
-    msg_Out()<<" ";
-    if (p_antitriplet) msg_Out()<<p_antitriplet->m_flav;
-    else msg_Out()<<" no flav ";
-    msg_Out()<<", "<<sqrt(m_mass2)<<") ---"<<std::endl<<"--- ";
-    if (p_triplet)	
-      msg_Out()<<p_triplet->m_mom<<" "
-	       <<sqrt(ATOOLS::Max(p_triplet->m_mom.Abs2(),0.));
-    else msg_Out()<<" XXX ";
-    msg_Out()<<" + "; 
-    if (p_antitriplet)	
-      msg_Out()<<p_antitriplet->m_mom<<" "
-	       <<sqrt(ATOOLS::Max(p_antitriplet->m_mom.Abs2(),0.));
-    else msg_Out()<<" XXX ";
-    msg_Out()<<" ---"<<std::endl; 
-  }
 
   inline bool   Dipole::MustDecay()  { return m_mustdecay; }
   inline bool   Dipole::IsSwitched() { return m_switched; }
@@ -77,11 +42,11 @@ namespace AHADIC {
   }
   inline double Dipole::Mass2() const           { return m_mass2; }
   inline double Dipole::MassBar2() const        { return m_massbar2; }
-  inline Proto_Particle * Dipole::Triplet()     { return p_triplet; }
-  inline Proto_Particle * Dipole::AntiTriplet() { return p_antitriplet; }
-  inline void   Dipole::SetTriplet(Proto_Particle * pp)     { p_triplet = pp; }
-  inline void   Dipole::SetAntiTriplet(Proto_Particle * pp) { p_antitriplet = pp; }
-  typedef std::list<Dipole *>  DipoleList;
+  inline SP(Proto_Particle) Dipole::Triplet()     { return p_triplet; }
+  inline SP(Proto_Particle) Dipole::AntiTriplet() { return p_antitriplet; }
+  inline void   Dipole::SetTriplet(SP(Proto_Particle) pp)     { p_triplet = pp; }
+  inline void   Dipole::SetAntiTriplet(SP(Proto_Particle) pp) { p_antitriplet = pp; }
+  typedef std::list<SP(Dipole)> DipoleList;
   typedef DipoleList::iterator DipIter;
 
 

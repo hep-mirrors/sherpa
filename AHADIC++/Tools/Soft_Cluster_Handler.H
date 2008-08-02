@@ -21,11 +21,11 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
 
-    int    CheckCluster(Cluster *,bool,bool=false);
-    int    EnforceDecay(Cluster *); 
-    double DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    double TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false);
-    void   FixHHDecay(Cluster *,ATOOLS::Blob *);
+    int    CheckCluster(SP(Cluster),bool,bool=false);
+    int    EnforceDecay(SP(Cluster)); 
+    double DecayWeight(SP(Cluster),ATOOLS::Flavour &,ATOOLS::Flavour &);
+    double TransformWeight(SP(Cluster),ATOOLS::Flavour &,bool=false);
+    void   FixHHDecay(SP(Cluster),ATOOLS::Blob *);
 
 
     bool   CheckIfAllowed(Cluster_List * clin,double & E);

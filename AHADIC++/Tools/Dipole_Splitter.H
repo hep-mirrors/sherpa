@@ -19,8 +19,8 @@ namespace AHADIC {
     Constituents    * p_constituents;
     FlavDecayMap    * p_options;
 
-    Dipole          * p_dip;
-    Proto_Particle  * p_spect, * p_split, * p_out1, * p_out2;
+    SP(Dipole)        p_dip;
+    SP(Proto_Particle)  p_spect, p_split, p_out1, p_out2;
 
     double            m_M2,m_m1,m_m2,m_m3,m_m12,m_m22,m_m32,m_2p3,m_2p3min;
     double            m_s12,m_s23,m_pt2veto,m_pt2,m_asmax;
@@ -30,7 +30,7 @@ namespace AHADIC {
 
     ATOOLS::Vec4D     m_mom1, m_mom2, m_mom3;
 
-    Dipole * EmitGluon(const double=-1.);
+    Dipole  *EmitGluon(const double=-1.);
     void     SetSpectatorAndSplitter();
     bool     DetermineSplitting(bool glusplit=true);
     bool     SelectPT_Y(bool glusplit=true);
@@ -41,18 +41,18 @@ namespace AHADIC {
     bool     FixKinematics(bool glusplit=true);
   public:
     Dipole_Splitter(Strong_Coupling *,const double ptmax);
-    bool SplitCluster(Cluster * clu,const double pt2max=-1.);
-    bool SplitDipole(Dipole * dip,const double pt2max=-1.);
+    bool SplitCluster(SP(Cluster) clu,const double pt2max=-1.);
+    bool SplitDipole(SP(Dipole) dip,const double pt2max=-1.);
     void UpdateSpectator();
-    void GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2);
+    void GetNewParticles(SP(Proto_Particle)& out1,SP(Proto_Particle)& out2);
     void SetOptions(FlavDecayMap *);
 
     double          PT2()  { return m_pt2; }
     ATOOLS::Flavour Flav() { return m_flav; }
   };
 
-  inline void Dipole_Splitter::GetNewParticles(Proto_Particle *& out1,
-					       Proto_Particle *& out2) {
+  inline void Dipole_Splitter::GetNewParticles(SP(Proto_Particle)& out1,
+					       SP(Proto_Particle)& out2) {
     out1 = p_out1; out2 = p_out2;
   }
 

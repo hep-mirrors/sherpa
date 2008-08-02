@@ -5,6 +5,7 @@
 #include "Particle.H"
 #include "Poincare.H"
 #include "Message.H"
+#include "Smart_Pointer.H"
 #include <list>
 #include <iostream>
 
@@ -27,10 +28,10 @@ namespace AHADIC {
 
   std::ostream & operator<<(std::ostream & s, const Proto_Particle &);
 
-  typedef std::list<Proto_Particle * >        Proto_Particle_List;   
+  typedef std::list<SP(Proto_Particle)>       Proto_Particle_List;   
   typedef Proto_Particle_List::iterator       PPL_Iterator; 
   typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
-  typedef std::list<Proto_Particle_List *>    ListOfPPLs;
+  typedef std::list<SP(Proto_Particle_List)>  ListOfPPLs;
   typedef ListOfPPLs::iterator                LPPL_Iterator;
 
   std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
@@ -40,20 +41,20 @@ namespace AHADIC {
     static long int s_AHAparticles;
     static long int s_AHAprotoparticles;
     static long int s_AHAblobs;
-    static Proto_Particle_List l_oflow;
   };
 
   class Cluster {
   private:
     bool                m_active;
-    Proto_Particle    * p_trip, * p_anti;
+    SP(Proto_Particle)  p_trip, p_anti;
     ATOOLS::Vec4D       m_momentum;
     ATOOLS::Flavour     m_flav;
 
     ATOOLS::Poincare    m_boost,m_rotate;
     bool                m_hasboost,m_hasrotate;
 
-    Cluster           * p_left, * p_right, * p_prev;
+    SP(Cluster)         p_left, p_right;
+    Cluster           * p_prev;
     long int            m_number;
 
     std::vector<ATOOLS::Flavour> m_decayproducts;
@@ -63,7 +64,7 @@ namespace AHADIC {
     Cluster(ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.),
 	    ATOOLS::Flavour=ATOOLS::Flavour(kf_cluster),
 	    bool active=true);
-    Cluster(Proto_Particle *,Proto_Particle *);
+    Cluster(SP(Proto_Particle),SP(Proto_Particle));
     ~Cluster();
 
     void               Update();
@@ -85,22 +86,20 @@ namespace AHADIC {
 
     bool               Active() const;
     ATOOLS::Flavour    GetFlav() const;
-    Cluster          * GetLeft()  const;
-    Cluster          * GetRight() const;
-    Cluster          * GetPrev()  const;
+    SP(Cluster)        GetLeft()  const;
+    SP(Cluster)        GetRight() const;
+    SP(Cluster)        GetPrev()  const;
     void               SetActive(bool);
     void               SetFlav(ATOOLS::Flavour);
-    void               SetLeft(Cluster *);
-    void               SetRight(Cluster *);
-    void               SetPrev(Cluster *);
-    void               DeleteLeft();
-    void               DeleteRight();
+    void               SetLeft(SP(Cluster));
+    void               SetRight(SP(Cluster));
+    void               SetPrev(SP(Cluster));
 
 
-    Proto_Particle   * GetTrip() const;
-    Proto_Particle   * GetAnti() const;
-    void               SetTrip(Proto_Particle *);
-    void               SetAnti(Proto_Particle *);
+    SP(Proto_Particle) GetTrip() const;
+    SP(Proto_Particle) GetAnti() const;
+    void               SetTrip(SP(Proto_Particle));
+    void               SetAnti(SP(Proto_Particle));
     ATOOLS::Vec4D      Momentum() const;
     void               SetMomentum(const ATOOLS::Vec4D);
     double             Mass2() const;
@@ -126,22 +125,20 @@ namespace AHADIC {
   
   inline bool              Cluster::Active() const            { return m_active; }
   inline ATOOLS::Flavour   Cluster::GetFlav() const           { return m_flav;   }
-  inline Cluster         * Cluster::GetLeft() const           { return p_left;   }
-  inline Cluster         * Cluster::GetRight() const          { return p_right;  }
-  inline Cluster         * Cluster::GetPrev() const           { return p_prev;   }
+  inline SP(Cluster)       Cluster::GetLeft() const           { return p_left;   }
+  inline SP(Cluster)       Cluster::GetRight() const          { return p_right;  }
+  inline SP(Cluster)       Cluster::GetPrev() const           { return p_prev;   }
   inline void              Cluster::SetActive(bool act)       { m_active = act;  }
   inline void              Cluster::SetFlav(ATOOLS::Flavour fl) { m_flav = fl; }
-  inline void              Cluster::SetLeft(Cluster * left)   { p_left  = left;  }
-  inline void              Cluster::SetRight(Cluster * right) { p_right = right; }
-  inline void              Cluster::SetPrev(Cluster * prev)   { p_prev  = prev;  }
-  inline void              Cluster::DeleteLeft()  { delete p_left;  p_left  = NULL; }
-  inline void              Cluster::DeleteRight() { delete p_right; p_right = NULL; }
+  inline void              Cluster::SetLeft(SP(Cluster) left)   { p_left  = left;  }
+  inline void              Cluster::SetRight(SP(Cluster) right) { p_right = right; }
+  inline void              Cluster::SetPrev(SP(Cluster) prev)   { p_prev  = &*prev;  }
 
 
-  inline Proto_Particle  * Cluster::GetTrip() const           { return p_trip; }
-  inline Proto_Particle  * Cluster::GetAnti() const           { return p_anti; }
-  inline void              Cluster::SetTrip(Proto_Particle * trip) { p_trip = trip; }
-  inline void              Cluster::SetAnti(Proto_Particle * anti) { p_anti = anti; }
+  inline SP(Proto_Particle) Cluster::GetTrip() const           { return p_trip; }
+  inline SP(Proto_Particle) Cluster::GetAnti() const           { return p_anti; }
+  inline void              Cluster::SetTrip(SP(Proto_Particle) trip) { p_trip = trip; }
+  inline void              Cluster::SetAnti(SP(Proto_Particle) anti) { p_anti = anti; }
   inline ATOOLS::Vec4D     Cluster::Momentum() const                   { return m_momentum; }
   inline void              Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
   inline double            Cluster::Mass2() const             { return m_momentum.Abs2(); }
@@ -153,7 +150,7 @@ namespace AHADIC {
 
 
 
-  typedef std::list<Cluster*>          Cluster_List;
+  typedef std::list<SP(Cluster)>       Cluster_List;
   typedef Cluster_List::iterator       Cluster_Iterator;
   typedef Cluster_List::const_iterator Cluster_Const_Iterator;
 

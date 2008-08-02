@@ -15,13 +15,11 @@ namespace AHADIC {
   long int control::s_AHAprotoparticles=0;
   long int control::s_AHAblobs=0;
 
-  Proto_Particle_List control::l_oflow=Proto_Particle_List();
 }
 
 Proto_Particle::Proto_Particle(const Proto_Particle & pp) :
   m_flav(pp.m_flav), m_mom(pp.m_mom), m_info(pp.m_info), m_mass(pp.m_mass)
 { 
-  control::l_oflow.push_back(this);
   control::s_AHAprotoparticles++; 
 }
 
@@ -29,15 +27,12 @@ Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info)
   m_flav(flav), m_mom(mom), m_info(info), 
   m_mass(hadpars.GetConstituents()->Mass(flav)) 
 { 
-  control::l_oflow.push_back(this);
   control::s_AHAprotoparticles++; 
 }
 
 
 Proto_Particle::~Proto_Particle()
 { 
-  PPL_Iterator hit=find(control::l_oflow.begin(),control::l_oflow.end(),this);
-  if(hit!=control::l_oflow.end()) control::l_oflow.erase(hit);
   control::s_AHAprotoparticles--; 
 }
 
@@ -64,7 +59,7 @@ Cluster::Cluster(Vec4D mom,Flavour flav,bool active) :
   s_cluster_count++;
 }
 
-Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
+Cluster::Cluster(SP(Proto_Particle) trip,SP(Proto_Particle) anti) :
   m_active(true), p_trip(trip), p_anti(anti), 
   m_momentum(p_trip->m_mom+p_anti->m_mom), m_flav(Flavour(kf_cluster)),
   m_hasboost(false), m_hasrotate(false), 
@@ -86,20 +81,6 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
 
 Cluster::~Cluster() 
 {
-  if (p_trip) { 
-#ifdef memchecker
-    std::cout<<"### Delete Proto_Particle ("<<p_trip
-    	     <<"/"<<p_trip->m_flav<<") in "<<METHOD<<"."<<std::endl;
-#endif
-    delete p_trip; p_trip=NULL; 
-  }
-  if (p_anti) { 
-#ifdef memchecker
-    std::cout<<"### Delete Proto_Particle ("<<p_anti
-    	     <<"/"<<p_anti->m_flav<<") in "<<METHOD<<"."<<std::endl;
-#endif
-    delete p_anti; p_anti=NULL; 
-  }
   s_cluster_count--;
 }
 
@@ -107,7 +88,7 @@ void Cluster::Update()
 {
   m_momentum = p_trip->m_mom + p_anti->m_mom;
   //PRINT_VAR(m_momentum);
-  if (!p_trip && !p_anti) return;
+  if (p_trip==NULL && p_anti==NULL) return;
   if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
       ((p_anti->m_flav.IsQuark() && p_anti->m_flav.IsAnti()) || 
@@ -142,12 +123,12 @@ Blob * Cluster::ConstructDecayBlob()
   part->SetStatus(part_status::decayed);
   part->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
 
-  if (p_left) {
+  if (p_left!=NULL) {
     part = p_left->GetSelf();
     blob->AddToOutParticles(part);
     if (part->Flav()!=Flavour(kf_cluster)) p_left->m_active=false;
   }
-  if (p_right) {
+  if (p_right!=NULL) {
     part = p_right->GetSelf();
     blob->AddToOutParticles(part);
     if (part->Flav()!=Flavour(kf_cluster)) p_right->m_active=false;
@@ -163,19 +144,19 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 
   Vec4D save[3+int(p_left!=NULL)+int(p_right!=NULL)];
   save[0] = m_momentum;
-  if (p_trip)  save[1] = p_trip->m_mom;
-  if (p_anti)  save[2] = p_anti->m_mom;
-  if (p_left)  save[3] = p_trip->m_mom;
-  if (p_right) save[4] = p_anti->m_mom;
+  if (p_trip!=NULL)  save[1] = p_trip->m_mom;
+  if (p_anti!=NULL)  save[2] = p_anti->m_mom;
+  if (p_left!=NULL)  save[3] = p_trip->m_mom;
+  if (p_right!=NULL) save[4] = p_anti->m_mom;
 
-  if (p_trip)  rest.Boost(p_trip->m_mom);
-  if (p_trip)  back.BoostBack(p_trip->m_mom);
-  if (p_anti)  rest.Boost(p_anti->m_mom);
-  if (p_anti)  back.BoostBack(p_anti->m_mom);
-  if (p_left)  p_left->Boost(rest);
-  if (p_left)  p_left->BoostBack(back);
-  if (p_right)  p_right->Boost(rest);
-  if (p_right)  p_right->BoostBack(back);
+  if (p_trip!=NULL)  rest.Boost(p_trip->m_mom);
+  if (p_trip!=NULL)  back.BoostBack(p_trip->m_mom);
+  if (p_anti!=NULL)  rest.Boost(p_anti->m_mom);
+  if (p_anti!=NULL)  back.BoostBack(p_anti->m_mom);
+  if (p_left!=NULL)  p_left->Boost(rest);
+  if (p_left!=NULL)  p_left->BoostBack(back);
+  if (p_right!=NULL)  p_right->Boost(rest);
+  if (p_right!=NULL)  p_right->BoostBack(back);
   m_momentum = newmom;
   //PRINT_VAR(m_momentum);
   //PRINT_VAR(newmom);
@@ -189,9 +170,9 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 	       <<save[1]<<" ("<<save[1].Abs2()<<") + "
 	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl
 	       <<" Is  : "<<m_momentum<<" ("<<m_momentum.Abs2()<<") -> ";
-    if (p_trip) msg_Error()<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
+    if (p_trip!=NULL) msg_Error()<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
            else msg_Error()<<"No triplet: "<<p_trip<<" ";
-    if (p_anti) msg_Error()<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
+    if (p_anti!=NULL) msg_Error()<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
            else msg_Error()<<"No antitriplet: "<<p_anti<<" ";
     msg_Error()<<"   diff: "<<testmom;
     rest.Boost(m_momentum); back.BoostBack(m_momentum);
@@ -206,7 +187,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 
 void Cluster::BoostInCMSAndRotateOnZ() {
   //PRINT_INFO(*this);
-  if (!p_trip) return;
+  if (p_trip==NULL) return;
   BoostInCMS();
   //PRINT_INFO(*this);
 
@@ -238,8 +219,8 @@ void Cluster::BoostInCMS() {
   m_boost = ATOOLS::Poincare(m_momentum);
   m_boost.Boost(m_momentum);
   //PRINT_INFO(this<<" "<<m_momentum);
-  if (p_trip) m_boost.Boost(p_trip->m_mom);
-  if (p_anti) m_boost.Boost(p_anti->m_mom);
+  if (p_trip!=NULL) m_boost.Boost(p_trip->m_mom);
+  if (p_anti!=NULL) m_boost.Boost(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Boost(m_boost);
   if (p_right!=NULL) p_right->Boost(m_boost);
 
@@ -249,8 +230,8 @@ void Cluster::BoostInCMS() {
 void Cluster::BoostBack() {
   if (!m_hasboost) return;
   m_boost.BoostBack(m_momentum);
-  if (p_trip) m_boost.BoostBack(p_trip->m_mom);
-  if (p_anti) m_boost.BoostBack(p_anti->m_mom);
+  if (p_trip!=NULL) m_boost.BoostBack(p_trip->m_mom);
+  if (p_anti!=NULL) m_boost.BoostBack(p_anti->m_mom);
   if (p_left!=NULL)  p_left->BoostBack(m_boost);
   if (p_right!=NULL) p_right->BoostBack(m_boost);
 
@@ -259,32 +240,32 @@ void Cluster::BoostBack() {
 
 void Cluster::Boost(Poincare & boost) {
   boost.Boost(m_momentum);
-  if (p_trip) boost.Boost(p_trip->m_mom);
-  if (p_anti) boost.Boost(p_anti->m_mom);
+  if (p_trip!=NULL) boost.Boost(p_trip->m_mom);
+  if (p_anti!=NULL) boost.Boost(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Boost(boost);
   if (p_right!=NULL) p_right->Boost(boost);
 }
 
 void Cluster::BoostBack(Poincare & boost) {
   boost.BoostBack(m_momentum);
-  if (p_trip) boost.BoostBack(p_trip->m_mom);
-  if (p_anti) boost.BoostBack(p_anti->m_mom);
+  if (p_trip!=NULL) boost.BoostBack(p_trip->m_mom);
+  if (p_anti!=NULL) boost.BoostBack(p_anti->m_mom);
   if (p_left!=NULL)  p_left->BoostBack(boost);
   if (p_right!=NULL) p_right->BoostBack(boost);
 }
 
 void Cluster::Rotate(Poincare & rotate) {
   rotate.Rotate(m_momentum);
-  if (p_trip) rotate.Rotate(p_trip->m_mom);
-  if (p_anti) rotate.Rotate(p_anti->m_mom);
+  if (p_trip!=NULL) rotate.Rotate(p_trip->m_mom);
+  if (p_anti!=NULL) rotate.Rotate(p_anti->m_mom);
   if (p_left!=NULL)  p_left->Rotate(rotate);
   if (p_right!=NULL) p_right->Rotate(rotate);
 }
 
 void Cluster::RotateBack(Poincare & rotate) {
   rotate.RotateBack(m_momentum);
-  if (p_trip) rotate.RotateBack(p_trip->m_mom);
-  if (p_anti) rotate.RotateBack(p_anti->m_mom);
+  if (p_trip!=NULL) rotate.RotateBack(p_trip->m_mom);
+  if (p_anti!=NULL) rotate.RotateBack(p_anti->m_mom);
   if (p_left!=NULL)  p_left->RotateBack(rotate);
   if (p_right!=NULL) p_right->RotateBack(rotate);
 }
@@ -303,28 +284,27 @@ void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
 void Cluster::Print() {
   msg_Out()<<"   Cluster ["<<m_active<<", "<<m_number<<", "<<size()<<"] "
 	   <<"("<<m_flav<<" with "<<m_momentum<<") ---> ";
-  if (p_left)  msg_Out()<<" (l) "<<p_left->m_number<<" ";
-  if (p_right) msg_Out()<<" (r) "<<p_right->m_number;
+  if (p_left!=NULL)  msg_Out()<<" (l) "<<p_left->m_number<<" ";
+  if (p_right!=NULL) msg_Out()<<" (r) "<<p_right->m_number;
   msg_Out()<<std::endl;
-  if (p_left) p_left->Print(); 
-  if (p_right) p_right->Print(); 
+  if (p_left!=NULL) p_left->Print(); 
+  if (p_right!=NULL) p_right->Print(); 
 }
 
 void Cluster::Delete() {
-  if (p_left)  p_left->Delete();
-  if (p_right) p_right->Delete();
+  if (p_left!=NULL)  p_left->Delete();
+  if (p_right!=NULL) p_right->Delete();
 
-  delete this;
 }
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
      <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "<<cluster.size()<<"] "
      <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ): "<<std::endl;
-  if (cluster.p_trip) str<<"  "<<(*cluster.p_trip);
-  if (cluster.p_anti) str<<"  "<<(*cluster.p_anti);
-  if (cluster.p_left)  str<<"  ---- Left  ----> "<<std::endl<<(*cluster.p_left);
-  if (cluster.p_right) str<<"  ---- Right ----> "<<std::endl<<(*cluster.p_right);
+  if (cluster.p_trip!=NULL) str<<"  "<<(*cluster.p_trip);
+  if (cluster.p_anti!=NULL) str<<"  "<<(*cluster.p_anti);
+  if (cluster.p_left!=NULL)  str<<"  ---- Left  ----> "<<std::endl<<(*cluster.p_left);
+  if (cluster.p_right!=NULL) str<<"  ---- Right ----> "<<std::endl<<(*cluster.p_right);
   return str;
 }
 

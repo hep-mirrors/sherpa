@@ -20,8 +20,8 @@ namespace AHADIC {
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool    FillDipoleList(Proto_Particle_List * plin=NULL);
-    void    UpdatePPList(Proto_Particle_List * plin=NULL);
+    bool    FillDipoleList(SP(Proto_Particle_List) plin=NULL);
+    void    UpdatePPList(SP(Proto_Particle_List) plin=NULL);
     void    PrintDipoleList();
 
     bool    DecayDipoles();
@@ -33,7 +33,7 @@ namespace AHADIC {
   public:
     Gluon_Decayer(Dipole_Splitter *,bool=false);
     ~Gluon_Decayer();
-    bool DecayList(Proto_Particle_List * plin=NULL);
+    bool DecayList(SP(Proto_Particle_List) plin=NULL);
   };
 }
 #endif

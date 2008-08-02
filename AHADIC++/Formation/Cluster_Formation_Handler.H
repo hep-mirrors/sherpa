@@ -28,10 +28,9 @@ namespace AHADIC {
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    void Reset();
     bool ShiftOnMassShells();
-    bool ShiftList(Proto_Particle_List *);
-    Proto_Particle_List * SelectFromList(ListOfPPLs * lppl,Proto_Particle_List * ppl=NULL);
+    bool ShiftList(SP(Proto_Particle_List));
+    SP(Proto_Particle_List) SelectFromList(ListOfPPLs * lppl,SP(Proto_Particle_List) ppl=NULL);
     bool ExtractSinglets(ATOOLS::Blob *);
     bool FormOriginalClusters();
     bool ApplyColourReconnections();
@@ -43,6 +42,7 @@ namespace AHADIC {
     ~Cluster_Formation_Handler();
 
     int FormClusters(ATOOLS::Blob *);
+    void Reset();
   };
   /*!
     \file Cluster_Formation_Handler.H

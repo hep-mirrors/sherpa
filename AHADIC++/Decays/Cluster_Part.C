@@ -32,7 +32,7 @@ Cluster_Part::~Cluster_Part()
   }
 }
 
-bool Cluster_Part::TestDecay(Cluster * const cluster)
+bool Cluster_Part::TestDecay(SP(Cluster) const cluster)
 {
   if (!cluster->Active()) return true;
 #ifdef AHAmomcheck

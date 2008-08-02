@@ -41,7 +41,7 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
 
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
-  Cluster * cluster;
+  SP(Cluster) cluster;
   if (clin->size()==1) {
     cluster = (*clin->begin());
     switch (CheckCluster(cluster,true)) {
@@ -159,7 +159,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
   return true;
 }
 
-int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,bool lighter)
+int Soft_Cluster_Handler::CheckCluster(SP(Cluster) cluster,bool mustdecay,bool lighter)
 {
   cluster->clear();
 
@@ -208,7 +208,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay,bool lig
 }
 
 
-int Soft_Cluster_Handler::EnforceDecay(Cluster * cluster) 
+int Soft_Cluster_Handler::EnforceDecay(SP(Cluster) cluster) 
 {
   Flavour had1,had2;
   double transitweight(DecayWeight(cluster,had1,had2));
@@ -238,7 +238,7 @@ int Soft_Cluster_Handler::EnforceDecay(Cluster * cluster)
 bool Soft_Cluster_Handler::CheckIfAllowed(Cluster_List * clin,double & E) {
   double totmass(0.);
   Vec4D  totmom(0.,0.,0.,0.);
-  Cluster * cluster;
+  SP(Cluster) cluster;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
     switch (cluster->size()) {
@@ -259,7 +259,7 @@ bool Soft_Cluster_Handler::CheckIfAllowed(Cluster_List * clin,double & E) {
 }
 
 bool Soft_Cluster_Handler::UpdateTransitions(Cluster_List * clin) {
-  Cluster * cluster;
+  SP(Cluster) cluster;
   Flavour hadron;
   bool    transform(false);
   double  tfwt;
@@ -287,7 +287,7 @@ bool Soft_Cluster_Handler::TryToEnforceTransition(Cluster_List * clin) {
   size_t size(0);
   std::vector<double> masses;
   std::vector<Vec4D>  momenta;
-  Cluster * cluster;
+  SP(Cluster) cluster;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
     switch (cluster->size()) {
@@ -373,7 +373,7 @@ bool Soft_Cluster_Handler::TryToEnforceTransition(Cluster_List * clin) {
 }
 
 
-double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
+double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flavour & had2)
 {
   had1 = had2 = Flavour(kf_none);
   Flavour_Pair flpair;
@@ -438,7 +438,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
-void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
+void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
 {
 #ifdef AHAmomcheck
   Vec4D  checkbef = cluster->Momentum();
@@ -463,7 +463,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
   }
 
   Particle * part;
-  Cluster * clus;
+  SP(Cluster) clus;
   clus = new Cluster(p1,had1,false);
   clus->SetPrev(cluster);
   cluster->SetLeft(clus);
@@ -498,7 +498,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob)
 }
 
 
-double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour & hadron,
+double Soft_Cluster_Handler::TransformWeight(SP(Cluster) cluster,ATOOLS::Flavour & hadron,
 					     const bool lighter)
 {
   Flavour_Pair fpair;
@@ -586,7 +586,7 @@ bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin)
   size_t size(clin->size());
   std::vector<double> masses;
   std::vector<Vec4D>  momenta;
-  Cluster * cluster;
+  SP(Cluster) cluster;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
     switch (cluster->size()) {

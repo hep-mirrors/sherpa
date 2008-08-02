@@ -66,7 +66,7 @@ Single_Transitions::~Single_Transitions()
   }
 }
 
-bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavour & had2)
+bool Single_Transitions::MustDesintegrate(SP(Cluster) cluster,Flavour & had1,Flavour & had2)
 {
   if (!(cluster->GetTrip()->m_flav.IsDiQuark() && 
 	cluster->GetAnti()->m_flav.IsDiQuark()))   return false;
