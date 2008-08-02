@@ -114,8 +114,6 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
-    ATOOLS::ran.SaveStatus();
-    Lund_Interface::SaveStatus();
 
     Blob *signal(new Blob());
     signal->SetType(btp::Signal_Process);
@@ -132,13 +130,13 @@ void Event_Handler::Reset(const bool sameevent)
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
-    ATOOLS::ran.SaveStatus();
-    Lund_Interface::SaveStatus();
   }
 } 
 
 bool Event_Handler::GenerateEvent(int mode, bool reset) 
 {
+  ATOOLS::ran.SaveStatus();
+  Lund_Interface::SaveStatus();
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
     msg_Error()<<ATOOLS::om::bold
