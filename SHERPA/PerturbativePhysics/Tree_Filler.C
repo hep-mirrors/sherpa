@@ -238,7 +238,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     if (knots[i]->part->Flav().IsMassive() &&
 	knots[i]->part->Momentum().Abs2()>rpa.gen.Accu()) 
       knots[i]->tout=knots[i]->part->Momentum().Abs2();
-    if (dabs(knots[i]->tout)>dabs(knots[i]->t)) knots[i]->t = knots[i]->tout;
+    if (dabs(knots[i]->tout)>dabs(knots[i]->t)) knots[i]->t = Sign(knots[i]->t)*knots[i]->tout;
     //std::cout<<METHOD<<" sets tout = "<<knots[i]->tout
     //	     <<" for "<<knots[i]->part->Flav()
     //	     <<" from "<<knots[i]->part->Momentum().Abs2()
@@ -397,7 +397,7 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   k->tout=sqr(flav.PSMass());
   if (k->part->Flav().IsMassive() && 
       mom.Abs2()>rpa.gen.Accu()) k->tout=mom.Abs2(); 
-  if (dabs(k->tout)>dabs(k->t)) k->t = k->tout;
+  if (dabs(k->tout)>dabs(k->t)) k->t = Sign(k->t)*k->tout;
   //std::cout<<METHOD<<" sets tout = "<<k->tout<<" mass = "<<k->tout
   //	   <<" ("<<mom.Abs2()<<")"<<" for "<<flav<<"."<<std::endl;
   k->E2        = sqr(mom[0]);
