@@ -15,6 +15,8 @@ namespace ATOOLS {
   std::vector<std::string> EnvironmentVariable(const std::string &name,
 					       std::string entry="");
 
+  bool FileExists(const std::string &file);
+
 }// end of namespace ATOOLS
 
 #endif

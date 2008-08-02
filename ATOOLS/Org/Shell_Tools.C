@@ -67,6 +67,7 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 
 bool ATOOLS::CopyFile(const std::string &oldname,const std::string &newname)
 {
+  if (!FileExists(oldname)) return false;
   My_In_File oldfile("",oldname);
   if (!oldfile.Open()) return false;
   My_Out_File newfile("",newname);
@@ -108,4 +109,12 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
   std::cout<<"}"<<std::endl;
 #endif
   return entries;
+}
+
+bool ATOOLS::FileExists(const std::string &file)
+{
+  struct stat fst;
+  if (stat(file.c_str(),&fst)!=-1)
+    return (fst.st_mode&S_IFMT)==S_IFREG;
+  return false;
 }
