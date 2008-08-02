@@ -236,29 +236,36 @@ void Initialization_Handler::ShowParameterSyntax() const
   }
 }
 
+std::string StripSectionTags(const std::string &name)
+{
+  if (name.find('|')!=std::string::npos)
+    return name.substr(0,name.find('|'));
+  return name;
+}
+
 void Initialization_Handler::PrepareTerminate()
 {
   std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
-  CopyFile(m_path+m_file,path+m_file);
-  CopyFile(m_path+m_modeldat,path+m_modeldat);
-  CopyFile(m_path+m_beamdat,path+m_beamdat);
-  CopyFile(m_path+m_isrdat[0],path+m_isrdat[0]);
-  CopyFile(m_path+m_isrdat[1],path+m_isrdat[1]);
-  CopyFile(m_path+m_medat,path+m_medat);
-  CopyFile(m_path+m_midat,path+m_midat);
-  CopyFile(m_path+m_decaydat,path+m_decaydat);
-  CopyFile(m_path+m_showerdat,path+m_showerdat);
-  CopyFile(m_path+m_beamremnantdat,path+m_beamremnantdat);
-  CopyFile(m_path+m_fragmentationdat,path+m_fragmentationdat);
-  CopyFile(m_path+m_hadrondecaysdat,path+m_hadrondecaysdat);
-  CopyFile(m_path+m_analysisdat,path+m_analysisdat);
-  CopyFile(m_path+rpa.gen.Variable("SELECTORFILE"),
-	   path+rpa.gen.Variable("SELECTORFILE"));
-  CopyFile(m_path+rpa.gen.Variable("PROCESSFILE"),
-	   path+rpa.gen.Variable("PROCESSFILE"));
-  CopyFile(m_path+rpa.gen.Variable("INTEGRATION_DATA_FILE"),
-	   path+rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  CopyFile(m_path+StripSectionTags(m_file),path+StripSectionTags(m_file));
+  CopyFile(m_path+StripSectionTags(m_modeldat),path+StripSectionTags(m_modeldat));
+  CopyFile(m_path+StripSectionTags(m_beamdat),path+StripSectionTags(m_beamdat));
+  CopyFile(m_path+StripSectionTags(m_isrdat[0]),path+StripSectionTags(m_isrdat[0]));
+  CopyFile(m_path+StripSectionTags(m_isrdat[1]),path+StripSectionTags(m_isrdat[1]));
+  CopyFile(m_path+StripSectionTags(m_medat),path+StripSectionTags(m_medat));
+  CopyFile(m_path+StripSectionTags(m_midat),path+StripSectionTags(m_midat));
+  CopyFile(m_path+StripSectionTags(m_decaydat),path+StripSectionTags(m_decaydat));
+  CopyFile(m_path+StripSectionTags(m_showerdat),path+StripSectionTags(m_showerdat));
+  CopyFile(m_path+StripSectionTags(m_beamremnantdat),path+StripSectionTags(m_beamremnantdat));
+  CopyFile(m_path+StripSectionTags(m_fragmentationdat),path+StripSectionTags(m_fragmentationdat));
+  CopyFile(m_path+StripSectionTags(m_hadrondecaysdat),path+StripSectionTags(m_hadrondecaysdat));
+  CopyFile(m_path+StripSectionTags(m_analysisdat),path+StripSectionTags(m_analysisdat));
+  CopyFile(m_path+StripSectionTags(rpa.gen.Variable("SELECTORFILE")),
+	   path+StripSectionTags(rpa.gen.Variable("SELECTORFILE")));
+  CopyFile(m_path+StripSectionTags(rpa.gen.Variable("PROCESSFILE")),
+	   path+StripSectionTags(rpa.gen.Variable("PROCESSFILE")));
+  CopyFile(m_path+StripSectionTags(rpa.gen.Variable("INTEGRATION_DATA_FILE")),
+	   path+StripSectionTags(rpa.gen.Variable("INTEGRATION_DATA_FILE")));
   Data_Writer writer;
   writer.SetOutputFile(path+"cmd");
   writer.SetVectorType(vtc::vertical);
