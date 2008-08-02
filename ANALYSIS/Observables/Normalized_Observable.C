@@ -37,6 +37,12 @@ Normalized_Observable::~Normalized_Observable()
   }
 }
 
+void Normalized_Observable::Reset()
+{
+  p_obs->Reset();
+  p_norm->Reset();
+}
+
 Primitive_Observable_Base &
 Normalized_Observable::operator+=(const Primitive_Observable_Base &obs)
 {
@@ -75,6 +81,6 @@ void Normalized_Observable::EndEvaluation(double scale)
 void Normalized_Observable::Restore(double scale)
 {
   double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
-  p_obs->Scale(n*(m_xmax-m_xmin)/m_nbins/scale);              
-  p_norm->Scale(n/scale);                                 
+  p_obs->Scale(scale*n*(m_xmax-m_xmin)/m_nbins);              
+  p_norm->Scale(scale*n);                                 
 }

@@ -25,6 +25,7 @@ namespace ANALYSIS {
     Primitive_Observable_Base &
     operator+=(const Primitive_Observable_Base &obs);
 
+    void Reset();
     void Restore(double scale=1.0);
     void EndEvaluation(double scale=1.0);
 
