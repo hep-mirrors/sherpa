@@ -124,6 +124,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_is->SetStatus(blob_status::needs_showers);
     p_psme_is->SetId();
     for (int i=0;i<p_hard->NInP();++i) {
+      p_hard->InParticle(i)->SetStatus(part_status::decayed);
       p_psme_is->AddToOutParticles(p_hard->InParticle(i));
     }
     blobs->push_back(p_psme_is);
