@@ -61,7 +61,7 @@ chmod -R ugo+rwX $DIRS
 SCR=$PWD"/"$JOBFILE
 echo -e "#!/bin/bash\n\nSLF=\$PWD\"/"$JOBFILE".log\"" > $SCR
 echo -e "submit(){\n  cd \$1\n  for I in *.jdl; do" >> $SCR
-echo "    edg-job-submit $EDGOPTS \$I >> \$SLF 2>&1" >> $SCR
+echo "    $EDGOPTS \$I >> \$SLF 2>&1" >> $SCR
 echo -e "  done\n  cd -\n}\n" >> $SCR
 for J in $DIRS ; do
   echo "======================"
