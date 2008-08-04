@@ -418,6 +418,8 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 
 void Simple_Chain::CalculateSigmaND()
 {
+  if(s_kftable.find(111)==s_kftable.end()) // if not initialized yet
+    s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,0,1,0,"pi","pi");
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
   double s=sqr(rpa.gen.Ecms());
@@ -781,6 +783,7 @@ bool Simple_Chain::DiceProcess()
 {
   PROFILE_HERE;
   if (m_differentials.size()==0) return false;
+  while (true) {
   if (!DiceOrderingParameter()) return false;
   if (m_dicedparameter) m_dicedparameter=false;
   else {
@@ -800,20 +803,28 @@ bool Simple_Chain::DiceProcess()
     sorter.insert(Sort_Map::value_type(cur,hit->first));
     norm+=cur;
   }
+  if (norm==0.0) {
+    msg_Error()<<METHOD<<"(): Warning. Zero cross section."<<std::endl;
+    continue;
+  }
   double rannr=ran.Get();
   cur=0.0;
+  m_selected="";
   for (Sort_Map::iterator sit=sorter.begin();
        sit!=sorter.end();++sit) {
     for (;sit!=sorter.upper_bound(sit->first);++sit) {
       if ((cur+=sit->first/norm)>rannr) {
 	m_selected=sit->second;
+	break;
+      }
+    }
+    if (m_selected!="") break;
+  }
 	SetISRRange();
-	CreateMomenta();
+	if (!CreateMomenta()) continue;
 	ResetISRRange();
 	m_dicedprocess=true;
 	return m_filledblob;
-      }
-    }
   }
   THROW(critical_error,"Internal Error. Could not select any process.");
   return false;

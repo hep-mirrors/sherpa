@@ -7,6 +7,7 @@ using namespace ATOOLS;
 using namespace std;
 
 void Hadron_Init::Init() {
+  if(s_kftable.find(111)==s_kftable.end()) // if not initialized in amisic
   s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,0,1,0,"pi","pi");
   s_kftable[211]=new Particle_Info(211,0.13957,2.5242e-17,3,0,0,1,1,"pi+","pi+");
   s_kftable[221]=new Particle_Info(221,0.5473,1.18e-06,0,0,0,1,0,"eta","eta");
