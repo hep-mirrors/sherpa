@@ -92,6 +92,7 @@ if [ "$ALLCLEAN" = "TRUE" ]; then
   make clean
 fi
 
+sed -i -e "s/chof/chf/g" Makefile
 make dist;
 mv "SHERPA-MC-$VERSION.tar.gz" "$DISTDIR.tar.gz"
 
