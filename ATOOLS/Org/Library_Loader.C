@@ -29,14 +29,14 @@ bool Library_Loader::CreateLockFile(const std::string &lockname)
     msg_Debugging()<<" found"<<std::endl;
     msg_Info()<<METHOD<<"(): Another process created '"<<lockname
 	      <<"'. Waiting for unlock ...          "<<std::flush;
-    size_t check(1);
-    for (size_t i(0);i<m_wait;i+=check) {
+    size_t check(1), i(0);
+    for (i=0;i<m_wait;i+=check) {
       sleep(check);
       msg_Info()<<mm(9,mm::left)<<std::setw(6)<<i<<" s "<<std::flush;
       if (stat(lockname.c_str(),&buffer)) break;
     }
     msg_Info()<<std::endl;
-    if (!stat(lockname.c_str(),&buffer)) {
+    if (i==m_wait && !stat(lockname.c_str(),&buffer)) {
       msg->Error()<<METHOD<<"(): '"<<lockname<<"' remains for "
 		  <<m_wait<<" s. Timeout."<<std::endl;
       THROW(critical_error,"Library locked");
