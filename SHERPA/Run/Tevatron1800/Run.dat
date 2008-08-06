@@ -152,8 +152,8 @@
   CREATE_GRID 93 93 -> 93 93		! processes to generate
   PS_ERROR	    = 1.0e-2 		! error for integration
   REGULATE_XS	    = 0			! regulate cross section
-  XS_REGULATION	    = 2.45		! regulation parameter
-  SCALE_MIN	    = 2.45 		! minimum scale
+  XS_REGULATION	    = 2.225		! regulation parameter
+  SCALE_MIN	    = 2.225 		! minimum scale
   RESCALE_EXPONENT    = 0.16		! rescaling exponent
   REFERENCE_SCALE	    = 1800.0		! reference energy scale
   PROFILE_FUNCTION    = Gaussian		! Gaussian / Double_Gaussian
