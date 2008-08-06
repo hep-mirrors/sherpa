@@ -72,7 +72,7 @@ dist-hook:
 	  mkdir -p $(distdir)/$$i; \
 	  if test -x $$(which svn); then \
 	    for j in $$(svn ls $$i); do \
-	      cp $$j $(distdir)/$$i/; \
+	      cp $$i/$$j $(distdir)/$$i/; \
 	    done; \
           else \
 	    for j in $$i/*.dat; do \
