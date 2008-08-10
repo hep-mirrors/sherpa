@@ -839,7 +839,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   dr.MatrixFromFile(helpsvv,"");
   std::vector<std::string> helpsv2(helpsvv.size());
   for (size_t i(0);i<helpsvv.size();++i) {
-    for (size_t j(0);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
+    for (size_t j(0);j<helpsvv[i].size();++j) helpsv2[i]+=helpsvv[i][j];
   }
   helpsv2.insert(helpsv2.end(),helpsv.begin(),helpsv.end());
   for (size_t i(0);i<helpsv2.size();++i) {
