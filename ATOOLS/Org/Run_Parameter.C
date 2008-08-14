@@ -8,6 +8,7 @@
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
 #include "Library_Loader.H"
+#include "CXXFLAGS_PACKAGES.H"
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -180,6 +181,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
   long int slim(getpmem());
+#ifdef USING__LHAPDF
+  slim-=400000000;
+#endif
   msg_Tracking()<<METHOD<<"(): Getting memory limit "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
