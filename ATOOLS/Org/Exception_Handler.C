@@ -134,7 +134,7 @@ void Exception_Handler::Terminate()
   bool modifiable=msg->Modifiable();
   SetExitCode();
   if ((m_signal!=SIGTERM && m_signal!=SIGINT &&
-       m_signal!=SIGXCPU) &&
+       m_signal!=SIGXCPU && m_signal!=SIGPIPE) &&
       (m_exception==NULL || 
        (m_exception->Type()!=ex::normal_exit &&
 	m_exception->Type()!=ex::missing_input))) {
@@ -287,6 +287,11 @@ void Exception_Handler::SignalHandler(int signal)
   case SIGFPE:
     msg_Error()<<"   Floating point exception."<<om::reset<<std::endl;
     m_exitcode=1;
+    Terminate();
+    break;
+  case SIGPIPE:
+    msg_Error()<<"   Pipe closed. Will stop writing."<<om::reset<<std::endl;
+    m_exitcode=0;
     Terminate();
     break;
   default:

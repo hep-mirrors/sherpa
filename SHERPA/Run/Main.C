@@ -28,6 +28,7 @@ int main(int argc,char* argv[])
   std::set_unexpected(ATOOLS::Terminate);
   signal(SIGSEGV,ATOOLS::SignalHandler);
   signal(SIGINT,ATOOLS::SignalHandler);
+  signal(SIGPIPE,ATOOLS::SignalHandler);
   signal(SIGBUS,ATOOLS::SignalHandler);
   signal(SIGFPE,ATOOLS::SignalHandler);
   signal(SIGABRT,ATOOLS::SignalHandler);
