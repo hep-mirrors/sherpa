@@ -53,7 +53,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   }
 #ifdef USING__Ahadic
   else if (m_fragmentationmodel==string("Ahadic")) {
-    m_sfile=dr.GetValue<string>("AHADIC_FILE",string("Cluster.dat"));
+    m_sfile=dr.GetValue<string>("AHADIC_FILE",m_file);
     Hadron_Init init;
     init.Init();
     init.OverWriteProperties(dr);
