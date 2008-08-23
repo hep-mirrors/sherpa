@@ -34,6 +34,7 @@ EXTRA_DIST    =	@SVNINCLUDE@
 
 install-data-local:
 	@echo "Installing Decaydata."; \
+	cd $(srcdir); \
 	for i in Decaydata/*; do \
 	  if test -d $$i; then \
 	    mkdir -p $(pkgdatadir)/$$i; \
@@ -45,7 +46,8 @@ install-data-local:
 	    fi; \
 	  fi; \
 	done; \
-	cp Decaydata/*.dat $(pkgdatadir)/Decaydata/;
+	cp Decaydata/*.dat $(pkgdatadir)/Decaydata/; \
+	cd -;
 
 uninstall-local:
 	@echo "Removing Decaydata."; \
@@ -55,6 +57,7 @@ uninstall-local:
 	fi;
 
 dist-hook:
+	cd $(srcdir); \
 	for i in Decaydata/*; do \
 	  if test -d $$i; then \
 	    mkdir -p $(distdir)/$$i; \
@@ -66,11 +69,11 @@ dist-hook:
 	    fi; \
 	  fi; \
 	done; \
-	cp Decaydata/*.dat $(distdir)/Decaydata/;
+	cp Decaydata/*.dat $(distdir)/Decaydata/; \
 	SAMPLERUNS="Tevatron1800 LHC EGamma LEP91"; \
 	for i in $$SAMPLERUNS ; do \
 	  mkdir -p $(distdir)/$$i; \
-	  if test -x $$(which svn); then \
+	  if test -x $$(which svn) -a -d $$i/.svn; then \
 	    for j in $$(svn ls $$i); do \
 	      cp $$i/$$j $(distdir)/$$i/; \
 	    done; \
@@ -79,4 +82,5 @@ dist-hook:
 	      cp $$j $(distdir)/$$i/; \
 	    done; \
 	  fi; \
-	done;
+	done; \
+	cd -;
