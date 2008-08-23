@@ -47,11 +47,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
         event.set_signal_process_vertex(vertex);
         if((*blit)->NInP()==2) {
           kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
-          if ((*blit)->InParticle(0)->Flav().IsAnti()) fl1=-fl1;
-          if ((*blit)->InParticle(0)->Flav().Kfcode()==kf_gluon) fl1=0;
           kf_code fl2=(*blit)->InParticle(1)->Flav().HepEvt();
-          if ((*blit)->InParticle(1)->Flav().IsAnti()) fl2=-fl2;
-          if ((*blit)->InParticle(1)->Flav().Kfcode()==kf_gluon) fl2=0;
           double x1=(*blit)->InParticle(0)->Momentum()[0]/rpa.gen.PBeam(0)[0];
           double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa.gen.PBeam(1)[0];
           double q(0.0), p1(0.0), p2(0.0);
