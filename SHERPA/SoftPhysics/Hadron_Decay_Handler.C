@@ -4,7 +4,10 @@
 #include "Blob.H"
 #include "Blob_List.H"
 #include "Particle.H"
+#include "CXXFLAGS.H"
+#ifdef USING__PYTHIA
 #include "Lund_Interface.H"
+#endif
 #include "Mass_Handler.H"
 #include "Run_Parameter.H"
 #include "Hadrons.H"
@@ -22,8 +25,10 @@ using namespace HADRONS;
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
   m_decmodel(string("Hadrons")), m_mode(1),
-  p_hadrons(_hadrons),
-  p_lund(NULL)
+  p_hadrons(_hadrons)
+#ifdef USING__PYTHIA
+  ,p_lund(NULL)
+#endif
 {
   p_cans = new set<kf_code>;
   FlDtVMap* decmap = p_hadrons->DecayMap();
@@ -31,7 +36,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
     p_cans->insert(decit->first.Kfcode());
 }
 
-
+#ifdef USING__PYTHIA
 Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   m_decmodel(string("Lund")), m_mode(0),
   p_hadrons(NULL), 
@@ -59,6 +64,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   }
   p_lund->SwitchOffMassSmearing();
 }
+#endif
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
@@ -98,11 +104,13 @@ bool Hadron_Decay_Handler::CreateDecayBlob(Blob* blob)
       blob->SetTypeSpec("Sherpa");
       returncode = p_hadrons->CreateDecayBlob(blob);
       break;
+#ifdef USING__PYTHIA
     case 0:
       DEBUG_INFO("with Pythia.");
       blob->SetTypeSpec("Pythia_v6.214");
       returncode = true;
       break;
+#endif
   }
   return true;
 }
@@ -116,9 +124,11 @@ bool Hadron_Decay_Handler::FillDecayBlob(Blob *blob, const Vec4D& labmom)
     case 1:
       DEBUG_INFO("with Sherpa.");
       return p_hadrons->FillDecayBlob(blob, labmom);
+#ifdef USING__PYTHIA
     case 0:
       DEBUG_INFO("with Pythia.");
       return p_lund->PerformDecay(blob);
+#endif
   }
   return false;
 }
@@ -128,9 +138,11 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
   DEBUG_FUNC(part->RefFlav()<<" "<<min<<" "<<max);
   double mass = 0.0;
   switch (m_mode) {
+#ifdef USING__PYTHIA
   case 0:
     mass = p_lund->DiceMass(part->RefFlav().Kfcode(),min,max);
     break;
+#endif
   case 1:
     Blob* decayblob=part->DecayBlob();
     kf_code kfc = part->RefFlav().Kfcode();

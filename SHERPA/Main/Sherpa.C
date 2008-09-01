@@ -1,3 +1,4 @@
+#include "CXXFLAGS.H"
 #include "Sherpa.H"
 #include "Initialization_Handler.H"
 #include "Event_Handler.H"
@@ -12,12 +13,13 @@
 #include "Beam_Remnants.H"
 #include "Hadronization.H"
 #include "Hadron_Decays.H"
+#ifdef USING__PYTHIA
 #include "MC_Interface.H"
+#endif
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Data_Reader.H"
 #include "Library_Loader.H"
-#include "CXXFLAGS.H"
 #include "CXXFLAGS_PACKAGES.H"
 #include <cstring>
 
@@ -122,9 +124,11 @@ bool Sherpa::InitializeTheEventHandler()
   
   std::string sme = std::string("SignalMEs");
   switch (mode) {
+#ifdef USING__PYTHIA
   case 9000:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
     break;
+#endif
   case 9999: 
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
     break;

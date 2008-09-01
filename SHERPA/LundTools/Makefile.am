@@ -1,17 +1,15 @@
 pkglib_LTLIBRARIES       =	libLundTools.la
 
-libLundTools_la_SOURCES       =	\
-				pythia6214.f \
-				pydata.f \
-				pyalps.f \
-				pypdfu.f \
-				pyplst.f \
-				pymult.f \
-				Lund_Interface.C 
+if PYTHIA_SUPPORT
+PYTHIASOURCES = pythia6214.f pydata.f pyalps.f pypdfu.f pyplst.f pymult.f \
+		Lund_Interface.C
+PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
+endif
 
-pkginclude_HEADERS        =	\
-		 	Lund_Wrapper.H \
-			Lund_Interface.H 
+
+libLundTools_la_SOURCES       =	$(PYTHIASOURCES)
+
+pkginclude_HEADERS        =	$(PYTHIAHEADERS) 
 
 EXTRA_DIST    = @SVNINCLUDE@
 

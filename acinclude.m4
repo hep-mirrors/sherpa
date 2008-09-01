@@ -476,6 +476,22 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(GZIP_SUPPORT, test "$zlib" = "true")
   AC_SUBST(CONDITIONAL_GZIPLIBS)
 
+  AC_ARG_ENABLE(
+    pythia,
+    AC_HELP_STRING([--enable-pythia], [Enable fragmentation/decay interface to
+    Pythia.]),
+    [ AC_MSG_CHECKING(whether to enable Pythia interface);
+      case "${enableval}" in
+        no)   AC_MSG_RESULT(no); pythia=false ;;
+        yes)  AC_MSG_RESULT(yes); pythia=true ;;
+      esac ],
+    [ pythia=false ]
+  )
+  if test "$pythia" = "true" ; then
+    AC_DEFINE([USING__PYTHIA], "1", [Pythia interface enabled])
+  fi
+  AM_CONDITIONAL(PYTHIA_SUPPORT, test "$pythia" = "true")
+
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
     [ AC_MSG_CHECKING(whether to include AMISIC headers);

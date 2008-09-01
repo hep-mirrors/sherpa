@@ -7,25 +7,32 @@
 #include "Return_Value.H"
 #include "Flavour.H"
 #include "Vector.H"
+#include "CXXFLAGS.H"
+
 
 namespace HADRONS { class Hadrons; }
 namespace ATOOLS { class Blob; class Particle; class Blob_List;}
 
 namespace SHERPA {
+#ifdef USING__PYTHIA
   class Lund_Interface;
+#endif
 
   class Hadron_Decay_Handler {
   protected :
     std::string                   m_decmodel;
     int                           m_mode;
     HADRONS::Hadrons            * p_hadrons;
+#ifdef USING__PYTHIA
     Lund_Interface              * p_lund; 
+#endif
     std::set<kf_code>  * p_cans;
 
   public :
     Hadron_Decay_Handler(HADRONS::Hadrons *);
+#ifdef USING__PYTHIA
     Hadron_Decay_Handler(Lund_Interface *);
-
+#endif
     ~Hadron_Decay_Handler();
     
     bool CreateDecayBlob(ATOOLS::Blob*);
@@ -34,7 +41,9 @@ namespace SHERPA {
     bool CanDealWith(kf_code);
 
     HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
+#ifdef USING__PYTHIA
     Lund_Interface   * GetLund()    { return p_lund; }
+#endif
     std::string        Name()       { return m_decmodel; }
     std::set<kf_code>  * GetCans() { return p_cans; }
     bool               DiceMass(ATOOLS::Particle*, double min, double max);

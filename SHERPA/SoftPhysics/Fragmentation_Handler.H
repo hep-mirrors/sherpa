@@ -1,10 +1,12 @@
 #ifndef Fragmentation_Handler_H
 #define Fragmentation_Handler_H
 
+#include "CXXFLAGS.H"
+#ifdef USING__PYTHIA
 #include "Lund_Interface.H"
+#endif
 #include "Particle_List.H"
 #include "Blob_List.H"
-#include "CXXFLAGS.H"
 #include "Return_Value.H"
 #include "Exception.H"
 #ifdef USING__Ahadic
@@ -23,7 +25,9 @@ namespace SHERPA {
 #ifdef USING__Ahadic
     AHADIC::Ahadic * p_ahadic;
 #endif
+#ifdef USING__PYTHIA
     Lund_Interface * p_lund;
+#endif
 
     ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
     void PrepareTerminate(); 
@@ -35,7 +39,9 @@ namespace SHERPA {
 						    ATOOLS::Particle_List * = NULL);
     
     const std::string &           FragmentationModel() const { return m_fragmentationmodel; }
+#ifdef USING__PYTHIA
     inline Lund_Interface * const GetLundInterface()   const { return p_lund; }
+#endif
 #ifdef USING__Ahadic
     inline AHADIC::Ahadic * const GetAhadic()          const { return p_ahadic; }
 #endif

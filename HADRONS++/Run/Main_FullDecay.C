@@ -101,7 +101,6 @@ void CleanUpEvent(Blob_List* blobs)
   Particle::Reset();
   Flow::ResetCounter();
   ATOOLS::ran.SaveStatus();
-  Lund_Interface::SaveStatus();
 }
 
 

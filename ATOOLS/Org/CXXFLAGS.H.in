@@ -34,6 +34,9 @@
 /* Sherpa version */
 #undef SHERPA_VERSION
 
+/* using Pythia */
+#undef USING__PYTHIA
+
 /* using AHADIC */
 #undef USING__Ahadic
 

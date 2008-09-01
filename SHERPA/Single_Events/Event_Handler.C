@@ -3,7 +3,10 @@
 #include "Run_Parameter.H"
 #include "My_Limits.H"
 #include "Signal_Processes.H"
+#include "CXXFLAGS.H"
+#ifdef USING__PYTHIA
 #include "Lund_Interface.H"
+#endif
 #include <unistd.h>
 #include <cassert>
 
@@ -136,7 +139,9 @@ void Event_Handler::Reset(const bool sameevent)
 bool Event_Handler::GenerateEvent(int mode, bool reset) 
 {
   ATOOLS::ran.SaveStatus();
+#ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
+#endif
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
     msg_Error()<<ATOOLS::om::bold

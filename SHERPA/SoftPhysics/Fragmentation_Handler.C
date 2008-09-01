@@ -1,5 +1,6 @@
 #include "Fragmentation_Handler.H"
 
+#include "CXXFLAGS.H"
 #include "Data_Reader.H"
 #include "Run_Parameter.H"
 #include "Shell_Tools.H"
@@ -25,11 +26,13 @@ using namespace AHADIC;
 #endif
 
 Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
-  m_dir(_dir), m_file(_file), m_mode(0), 
+  m_dir(_dir), m_file(_file), m_mode(0)
 #ifdef USING__Ahadic
-  p_ahadic(NULL),
+  ,p_ahadic(NULL)
 #endif
-  p_lund(NULL)
+#ifdef USING__PYTHIA
+  ,p_lund(NULL)
+#endif
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
@@ -39,6 +42,10 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   dr.SetInputFile(m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   if (m_fragmentationmodel==string("Lund")) {
+#ifndef USING__PYTHIA
+    THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
+          string("enabled during compilation (./configure --enable-pythia)."));
+#else
     m_sfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));
     Hadron_Init init;
     init.Init();
@@ -50,6 +57,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     // hack for particle initialization, because we don't want to replicate
     // this method in the obsolete Lund Interface.
     return;
+#endif
   }
 #ifdef USING__Ahadic
   else if (m_fragmentationmodel==string("Ahadic")) {
@@ -70,7 +78,9 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
    
 Fragmentation_Handler::~Fragmentation_Handler() 
 {
+#ifdef USING__PYTHIA
   if (p_lund!=NULL)   { delete p_lund;   p_lund   = NULL;   }
+#endif
 #ifdef USING__Ahadic
   if (p_ahadic!=NULL) { delete p_ahadic; p_ahadic = NULL;   }
 #endif
@@ -100,7 +110,9 @@ Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *blobli
       return Return_Value::Retry_Event;
   }
   switch (m_mode) {
+#ifdef USING__PYTHIA
     case 1  : return p_lund->Hadronize(bloblist);
+#endif
 #ifdef USING__Ahadic
     case 2  : return p_ahadic->Hadronize(bloblist);
 #endif
@@ -150,7 +162,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
     }
   }
   if (plist->empty()) {
-    msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
+    msg_Debugging()<<"WARNING in "<<METHOD<<endl
 		   <<"   No coloured particle found leaving shower blobs."<<endl;
     delete plist;
     return Return_Value::Nothing;

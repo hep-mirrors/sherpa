@@ -15,7 +15,10 @@
 #include "Shell_Tools.H"
 #include "Particle_Qualifier.H"
 #include "Variable.H"
+#include "CXXFLAGS.H"
+#ifdef USING__PYTHIA
 #include "Lund_Interface.H"
+#endif
 #include "Data_Writer.H"
 #include "Hadron_Decays.H"
 #include "Library_Loader.H"
@@ -379,9 +382,11 @@ bool Initialization_Handler::InitializeTheExternalMC()
 {
   std::string file;
   switch (m_mode) {
+#ifdef USING__PYTHIA
   case 9000: 
     p_pythia  = new Lund_Interface(m_path,m_evtfile,false);
     return true;
+#endif
   default: 
     m_mode = 9999;
     msg_Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
@@ -469,7 +474,9 @@ bool Initialization_Handler::InitializeThePDFs()
       abort();
     }
   }
+#ifdef USING__PYTHIA
   Lund_Interface::SetISRHandler(m_isrhandlers[isr::hard_process]);
+#endif
   return 1;
 }
 
@@ -609,7 +616,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="Off") return true;
-#ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
@@ -620,8 +626,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     hadrons_cans = hdhandler->GetCans();
     m_hdhandlers["Hadrons"] = hdhandler;
   }
-#endif
   if ((decmodel==string("Lund") || needextra) ) {
+#ifdef USING__PYTHIA
     Lund_Interface * lund(NULL);
     if (p_fragmentation->GetLundInterface()==NULL) {
       string lfile = dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
@@ -635,6 +641,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     }
     hdhandler      = new Hadron_Decay_Handler(lund);
     m_hdhandlers["Lund"]   = hdhandler;
+#else
+    THROW(fatal_error, string("Pythia not enabled during compilation. ")+
+          "Use the configure option --enable-pythia to enable it.");
+#endif
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
     THROW(fatal_error,"Hadron decay model not implemented.");
