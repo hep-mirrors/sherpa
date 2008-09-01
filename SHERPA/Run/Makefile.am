@@ -34,26 +34,26 @@ EXTRA_DIST    =	@SVNINCLUDE@
 
 install-data-local:
 	@echo "Installing Decaydata."; \
-	cd $(srcdir); \
+	cd "$(srcdir)"; \
 	for i in Decaydata/*; do \
-	  if test -d $$i; then \
-	    mkdir -p $(pkgdatadir)/$$i; \
+	  if test -d "$$i"; then \
+	    mkdir -p "$(DESTDIR)$(pkgdatadir)/$$i"; \
 	    for j in $$i/*.dat; do \
-	      cp $$j $(pkgdatadir)/$$i/; \
+	      cp "$$j" "$(DESTDIR)$(pkgdatadir)/$$i/"; \
 	    done; \
-	    if test -d $$i/PhaseSpaceFunctions; then \
-	      cp -rf $$i/PhaseSpaceFunctions $(pkgdatadir)/$$i/; \
+	    if test -d "$$i/PhaseSpaceFunctions"; then \
+	      cp -rf "$$i/PhaseSpaceFunctions" "$(DESTDIR)$(pkgdatadir)/$$i/"; \
 	    fi; \
 	  fi; \
 	done; \
-	cp Decaydata/*.dat $(pkgdatadir)/Decaydata/; \
+	cp Decaydata/*.dat "$(DESTDIR)$(pkgdatadir)/Decaydata/"; \
 	cd -;
 
 uninstall-local:
 	@echo "Removing Decaydata."; \
-	rm -rf "$(pkgdatadir)/Decaydata"; \
-	if test "$$(ls -A $(pkgdatadir))" = ""; then \
-	rm -rf "$(pkgdatadir)"; \
+	rm -rf "$(DESTDIR)$(pkgdatadir)/Decaydata"; \
+	if test "$$(ls -A $(DESTDIR)$(pkgdatadir))" = ""; then \
+	rm -rf "$(DESTDIR)$(pkgdatadir)"; \
 	fi;
 
 dist-hook:
