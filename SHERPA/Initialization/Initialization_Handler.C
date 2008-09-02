@@ -611,7 +611,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   }
   Hadron_Decays::SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
   
-  bool needextra = true; set<kf_code>* hadrons_cans=NULL;
+  set<kf_code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
@@ -626,7 +626,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     hadrons_cans = hdhandler->GetCans();
     m_hdhandlers["Hadrons"] = hdhandler;
   }
-  if ((decmodel==string("Lund") || needextra) ) {
+  if ((decmodel==string("Lund")) ) {
 #ifdef USING__PYTHIA
     Lund_Interface * lund(NULL);
     if (p_fragmentation->GetLundInterface()==NULL) {
