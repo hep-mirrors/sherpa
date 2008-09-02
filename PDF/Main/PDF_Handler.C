@@ -58,7 +58,11 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Reader * dataread,Flavour & bunch_particl
     if ((bunch_particle==Flavour(kf_p_plus) || (bunch_particle==Flavour(kf_p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
       std::string cont     = dataread->GetValue<std::string>("CONTINUE_PDF","Off");
+#ifdef USING__LHAPDF
+      std::string set       = dataread->GetValue<string>("PDF_SET",std::string("cteq6l.LHpdf"));
+#else
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("cteq6l"));
+#endif
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("CTEQ6Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
       grid_path=ATOOLS::rpa.gen.Variable("SHERPA_SHARE_PATH")+std::string("/")+grid_path;
