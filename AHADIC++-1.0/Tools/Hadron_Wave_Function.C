@@ -62,7 +62,8 @@ double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour first,ATOOLS::Flavour se
   return 0.;
 } 
 
-ostream & AHADIC::operator<<(ostream & s, Hadron_Wave_Function & wf) 
+namespace AHADIC {
+ostream & operator<<(ostream & s, Hadron_Wave_Function & wf) 
 {
   s<<" "<<wf.m_hadron<<" ("<<wf.m_kfcode<<"), spin = "<<(wf.m_spin-1)/2.<<endl;
   WFcomponent * waves = wf.GetWaves();
@@ -71,4 +72,4 @@ ostream & AHADIC::operator<<(ostream & s, Hadron_Wave_Function & wf)
   }
   return s;
 }
-
+}

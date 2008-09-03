@@ -4,13 +4,15 @@ using namespace ATOOLS;
 
 unsigned int Flow::s_qcd_counter=600;
 
-std::ostream& ATOOLS::operator<<(std::ostream &ostr,const Flow &flow)
+namespace ATOOLS {
+std::ostream& operator<<(std::ostream &ostr,const Flow &flow)
 {
   ostr<<"[";
   for (std::map<unsigned int,unsigned int>::const_iterator 
 	 fit=flow.m_code.begin();fit!=flow.m_code.end();++fit) 
     ostr<<"("<<fit->first<<"="<<fit->second<<")";
   return ostr<<"]";
+}
 }
 
 Flow::Flow(Particle *owner): 

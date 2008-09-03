@@ -43,7 +43,8 @@ Amplitude_Tensor::~Amplitude_Tensor()
   if(p_contracted) { delete p_contracted; p_contracted=NULL; }
 }
 
-Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
+namespace ATOOLS {
+Amplitude_Tensor Contraction(Particle* part1, Particle* part2,
                                      Amplitude_Tensor* const amps1,
                                      Amplitude_Tensor* const amps2
                                     )
@@ -130,6 +131,7 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
   }
   return newamps;
 }
+}
 
 void Amplitude_Tensor::Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 )
 {
@@ -205,7 +207,8 @@ const Particle_Vector& Amplitude_Tensor::Particles() const
   return m_particles;
 }
 
-std::ostream& ATOOLS::operator<<( std::ostream& ostr, const Amplitude_Tensor & amps) {
+namespace ATOOLS {
+std::ostream& operator<<( std::ostream& ostr, const Amplitude_Tensor & amps) {
   ostr<<"   Amplitude_Tensor with "<<amps.m_particles.size()<<" particles and "
     <<amps.size()<<" spin combinations:"<<endl;
   ostr<<"   ";
@@ -222,6 +225,7 @@ std::ostream& ATOOLS::operator<<( std::ostream& ostr, const Amplitude_Tensor & a
     ostr<<amps[i][0]<<endl;
   }
   return ostr;
+}
 }
 
 namespace ATOOLS {
