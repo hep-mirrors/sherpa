@@ -73,6 +73,27 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
       ;;
   esac
 
+  if test "x$VERSIONING" != "x"; then
+    echo "x$VERSIONING";
+    pkgdatadir="\${datadir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
+    AC_SUBST(pkgdatadir)
+    pkglibdir="\${libdir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
+    AC_SUBST(pkglibdir)
+    pkgincludedir="\${includedir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
+    AC_SUBST(pkgincludedir)
+    pkgbindir="\${bindir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
+    AC_SUBST(pkgbindir)
+  else
+    pkgdatadir="\${datadir}/\${PACKAGE_TARNAME}";
+    AC_SUBST(pkgdatadir)
+    pkglibdir="\${libdir}/\${PACKAGE_TARNAME}";
+    AC_SUBST(pkglibdir)
+    pkgincludedir="\${includedir}/\${PACKAGE_TARNAME}";
+    AC_SUBST(pkgincludedir)
+    pkgbindir="\${bindir}/\${PACKAGE_TARNAME}";
+    AC_SUBST(pkgbindir)
+  fi;
+
   AMEGICDIR="\${top_srcdir}/AMEGIC++"
   AMEGICBUILDDIR="\${top_builddir}/AMEGIC++"
   AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
@@ -250,16 +271,16 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
     exec_prefix=$prefix
   fi
 
-  AS_AC_EXPAND(LIBDIR, ${libdir})
-  AS_AC_EXPAND(INCLUDEDIR, ${includedir})
+  AS_AC_EXPAND(LIBDIR, ${pkglibdir})
+  AS_AC_EXPAND(INCLUDEDIR, ${pkgincludedir})
   AS_AC_EXPAND(BINDIR, ${bindir})
-  AS_AC_EXPAND(DATADIR, ${datadir})
+  AS_AC_EXPAND(DATADIR, ${pkgdatadir})
 
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
-  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR/SHERPA-MC", [Sherpa include directory])
-  AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR/SHERPA-MC", [Sherpa library directory])
-  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR", [Sherpa include directory])
+  AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR", [Sherpa library directory])
+  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])
 
@@ -269,6 +290,26 @@ dnl Conditional compiling and linking
 
 AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 [
+  AC_ARG_ENABLE(
+    versioning,
+    AC_HELP_STRING([--enable-versioning], [Add version tag to executables and library/header directories, such that multiple Sherpa versions can live in the same prefix.]),
+    [ AC_MSG_CHECKING(whether to enable versioning)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no);
+             VERSIONING="";;
+        yes) AC_MSG_RESULT(yes);
+             VERSIONING="AC_PACKAGE_VERSION";;
+        *)   if test "x${enableval}" != "x"; then
+               AC_MSG_RESULT(yes);
+               VERSIONING="${enableval}"
+             fi
+      esac ],
+    [ AC_MSG_CHECKING(whether to enable versioning);
+      AC_MSG_RESULT(no);
+      VERSIONING=""; ] 
+  )
+  AC_SUBST(VERSIONING)
+
   AC_ARG_ENABLE(
     svninclude,
     AC_HELP_STRING([--disable-svninclude], [Don't distribute SVN synchronization directories.]),

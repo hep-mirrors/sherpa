@@ -1,12 +1,12 @@
-bin_PROGRAMS  =	Sherpa
+bin_PROGRAMS  =	Sherpa@VERSIONING@
 
-Sherpa_SOURCES        =	Main.C 
+Sherpa@VERSIONING@_SOURCES        =	Main.C 
 
-Sherpa_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
+Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
 		@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ \
 		@CONDITIONAL_HEPMC2LIBS@
 
-Sherpa_LDFLAGS        =	@ldflags@
+Sherpa@VERSIONING@_LDFLAGS        =	@ldflags@
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@ ## $(MCATNLOFLAGS)
 
@@ -41,8 +41,11 @@ install-data-local:
 	    for j in $$i/*.dat; do \
 	      cp "$$j" "$(DESTDIR)$(pkgdatadir)/$$i/"; \
 	    done; \
-	    if test -d "$$i/PhaseSpaceFunctions"; then \
+	    if test -d "$$i/PhaseSpaceFunctions" ; then \
 	      cp -rf "$$i/PhaseSpaceFunctions" "$(DESTDIR)$(pkgdatadir)/$$i/"; \
+	      if test "x@SVNINCLUDE@" == "x"; then \
+		rm -rf "$(DESTDIR)$(pkgdatadir)/$$i/PhaseSpaceFunctions/.svn"; \
+	      fi; \
 	    fi; \
 	  fi; \
 	done; \
@@ -66,6 +69,9 @@ dist-hook:
 	    done; \
 	    if test -d $$i/PhaseSpaceFunctions; then \
 	      cp -rf $$i/PhaseSpaceFunctions $(distdir)/$$i/; \
+	      if test "x@SVNINCLUDE@" == "x"; then \
+		rm -rf "$(distdir)/$$i/PhaseSpaceFunctions/.svn"; \
+	      fi; \
 	    fi; \
 	  fi; \
 	done; \

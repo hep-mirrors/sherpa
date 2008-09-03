@@ -1,7 +1,6 @@
 MAKE  =	make
 
-pkgbindir     =	$(bindir)/SHERPA-MC
-bin_SCRIPTS = Sherpa-config
+bin_SCRIPTS = Sherpa@VERSIONING@-config
 
 dist_pkgbin_SCRIPTS   =	\
 			makeinstall \

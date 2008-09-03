@@ -7,11 +7,13 @@ case $1 in
     echo @prefix@;;
   --libs)
 	hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
-    echo -L@prefix@/lib/@PACKAGE_TARNAME@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ $hepmc2libs;;
+    echo -L@LIBDIR@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ $hepmc2libs;;
   --incdir)
-    echo @prefix@/include/@PACKAGE_TARNAME@;;
+    echo @INCLUDEDIR@;;
+  --libdir)
+    echo @LIBDIR@;;
   --datadir)
-    echo @prefix@/share/@PACKAGE_TARNAME@;;
+    echo @DATADIR@;;
   --ldflags)
     echo @ldflags@;;
   *)
