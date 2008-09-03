@@ -72,7 +72,7 @@ namespace SHERPA {
     void FixJetvetoPt2(double &);
     void JetvetoPt2(double &, double &,double &,double &);
     
-    virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *)=NULL;
+    virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *) = 0;
     virtual int                SetColours(EXTRAXS::XS_Base *,ATOOLS::Vec4D *,ATOOLS::Flavour *) = 0;
     virtual void               CalculateWeight(const double &meweight) = 0;
     void SetQMin(Combine_Table_Base *const ref=NULL);

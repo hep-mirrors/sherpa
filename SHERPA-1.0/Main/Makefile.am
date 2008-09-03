@@ -4,7 +4,7 @@ libSherpaMain_la_SOURCES      =	Sherpa.C
 
 pkginclude_HEADERS        =	Sherpa.H 
 
-SYSLIBS	      =	-lg2c -lm -ldl
+SYSLIBS	      =	$(FLIBS) -lm -ldl
 
 if LHAPDF_SUPPORT
 PDFEXTRALIBS   = @CONDITIONAL_LHAPDFLIBS@

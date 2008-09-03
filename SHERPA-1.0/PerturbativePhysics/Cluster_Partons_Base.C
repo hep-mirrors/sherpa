@@ -335,6 +335,10 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ct,
   ct->Up()->GetLeg(i).SetQMin(ptiji);
   ct->Up()->GetLeg(j).SetQMin(ptijj);
   SetQMin(ct->Up(),ref,decayjets,hardjets,hardqmin);
+  for (int i(0);i<ct->NLegs();++i)
+    if (ct->GetLeg(i).QMin()<0.0)
+      ct->GetLeg(i).SetQMin(hardjets==(size_t)m_maxqcdjets?hardqmin:
+			    Min(hardqmin,dabs(ct->GetLeg(i).QMin())));
   if (msg.LevelIsDebugging()) {
     msg_Debugging()<<"table "<<ct->Up()->Number()
 		   <<" ("<<i<<"&"<<j<<") -> qmin = {";
