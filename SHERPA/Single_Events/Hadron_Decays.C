@@ -58,11 +58,6 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
     Blob* blob=(*bloblist)[blit];
     if (blob->Has(blob_status::needs_hadrondecays)) {
       DEBUG_VAR(*blob);
-      if(blob->Type()!=btp::Fragmentation&&blob->Type()!=btp::Signal_Process) {
-        msg_Error()<<METHOD<<": Only fragmentation blobs are supposed to arrive"
-                   <<" here. Will retry event."<<endl;
-        return Return_Value::Retry_Event;
-      }
       if(!blob->MomentumConserved()) {
         msg_Error()<<METHOD<<" found blob with momentum violation: "<<endl
                    <<*blob<<endl
@@ -77,16 +72,6 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
       Particle_Vector daughters = blob->GetOutParticles();
       random_shuffle(daughters.begin(), daughters.end(), ran);
       
-      // fixme: temporary bugfix for AHADIC sometimes not setting the correct finalmass
-      for (Particle_Vector::iterator it=daughters.begin();it!=daughters.end();++it) {
-        if((*it)->FinalMass()!=0.0 &&
-           dabs((*it)->FinalMass()-(*it)->Momentum().Mass())>sqrt(1e-9)) {
-          PRINT_INFO("had to set finalmass of "<<(*it)->Flav());
-          PRINT_INFO(*blob);
-          (*it)->SetFinalMass((*it)->Momentum().Mass());
-        }
-      } // end
-
       // fragmentation blobs still contain on-shell particles, stretch them off-shell
       for (Particle_Vector::iterator it=daughters.begin(); it!=daughters.end(); ++it) {
         if((*it)->Status()==part_status::decayed || (*it)->DecayBlob()) {
