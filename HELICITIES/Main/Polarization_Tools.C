@@ -13,7 +13,7 @@ Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
                                          bool out) : std::vector<Vec4C>()
 {
   double pAbs2(p.Abs2()), pPSpat(p.PSpat());
-  if (pAbs2 < -Accu() || pAbs2 < m2-Accu()) {
+  if (pAbs2 < -sqrt(Accu()) || pAbs2 < m2-sqrt(Accu())) {
     msg_Error()<<METHOD<<": p^2 = "<<pAbs2<<" < 0 or < m2 ="<<m2<<". "
                <<"Please check definition of complex boson polarization vector "
                <<"for correctness (signs) and remove this warning."<<endl;
