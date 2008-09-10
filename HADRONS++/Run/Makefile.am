@@ -5,7 +5,7 @@ bin_PROGRAMS  = SingleDecay \
 	HadronFullDecayInclusiveAnalysis \
 	PhotonAnalysis
 
-FULL_LDADD = $(FLIBS) -lm -ldl -L$(pkglibdir) -lSherpaMain \
+FULL_LDADD = $(FCLIBS) -lm -ldl -L$(pkglibdir) -lSherpaMain \
   @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
 
 SingleDecay_SOURCES = Main_SingleDecay.C

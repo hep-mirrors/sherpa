@@ -112,7 +112,7 @@ void Cluster_Partons_Base::WriteOutWeights()
       asweight_sum_sqr.resize(events.size(),0.0); 
       sweight_sum.resize(events.size(),0.0);
       sweight_sum_sqr.resize(events.size(),0.0); 
-      jidmap[jid]=jidmap.size()-1;
+      jidmap.insert(make_pair(jid,jidmap.size()));
       iit=jidmap.find(jid);
     }
     events[iit->second]+=m_events[i];

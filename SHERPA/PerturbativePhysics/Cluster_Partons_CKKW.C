@@ -516,7 +516,7 @@ void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
     m_asweight_sum_sqr.resize(m_events.size(),0.0); 
     m_sweight_sum.resize(m_events.size(),0.0);
     m_sweight_sum_sqr.resize(m_events.size(),0.0); 
-    m_pidmap[pid]=m_pidmap.size()-1;
+    m_pidmap.insert(make_pair(pid,m_pidmap.size()));
     iit=m_pidmap.find(pid);
   }
   m_events[iit->second]+=1;

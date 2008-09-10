@@ -7,8 +7,12 @@
 /* Architecture identified as Unix */
 #undef ARCH_UNIX
 
-/* alternate entry point */
-#undef F77_MAIN
+/* Define to dummy `main' function (if any) required to link to the Fortran
+   libraries. */
+#undef FC_DUMMY_MAIN
+
+/* Define if F77 and FC dummy `main' functions are identical. */
+#undef FC_DUMMY_MAIN_EQ_F77
 
 /* multithread support */
 #undef USING__Threading

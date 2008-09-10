@@ -13,11 +13,11 @@
 
 using namespace SHERPA;
 
-#ifdef F77_MAIN
-extern "C" int F77_MAIN(int argc,char* argv[]) 
-#else
-int main(int argc,char* argv[]) 
+#ifdef FC_DUMMY_MAIN
+extern "C" int FC_DUMMY_MAIN() { return 1; }
 #endif
+
+int main(int argc,char* argv[])
 {
   ATOOLS::exh->Init();
 #ifdef USING__ROOT
