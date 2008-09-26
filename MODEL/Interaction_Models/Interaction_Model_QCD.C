@@ -20,7 +20,7 @@ operator()(const Interaction_Model_Arguments &args) const
 void Interaction_Model_QCD_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
-  str<<"The SM QCD interactions only"; 
+  str<<"The SM QCD+QCD interactions only"; 
 }
 
 Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
@@ -31,6 +31,10 @@ Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
   PL  = Kabbala(string("P_L"),1.);
   PR  = Kabbala(string("P_R"),1.);
   M_I = Kabbala(string("i"),Complex(0.,1.)); 
+
+  if (_model->GetScalarNumbers()->find("Extension")!=_model->GetScalarNumbers()->end()) {
+    m_extension = (*_model->GetScalarNumbers())["Extension"];
+  }
 }
 
 void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
@@ -38,7 +42,7 @@ void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
   Kabbala kcpl0 = -g3*M_I;
   Kabbala kcpl1 = kcpl0;
 
-  for (short int i=1;i<=6;i++) {
+  for (short int i=1;i<=(m_extension==2?8:6);i++) {
     Flavour flav = Flavour((kf_code)(i));
     if (flav.Strong() && flav.IsOn() && Flavour(kf_gluon).IsOn()) { 
       vertex[vanz].in[0]         = flav;

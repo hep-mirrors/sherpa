@@ -70,6 +70,42 @@ void Standard_Model_Top_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 
+DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4th generation",Model_Base,Model_Arguments);
+
+Model_Base *Standard_Model_Gen4_Getter::operator()(const Model_Arguments &args) const
+{
+  return new Standard_Model(args.m_path,args.m_file,args.m_elementary,2);
+}
+
+void Standard_Model_Gen4_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The Standard Model + 4th generation\n";
+  str<<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
+     <<std::setw(width+7)<<" "<<"- ALPHAS(MZ)          (strong coupling at MZ)\n"
+     <<std::setw(width+7)<<" "<<"- ALPHAS(default)     (fixed strong coupling)\n"
+     <<std::setw(width+7)<<" "<<"- ORDER_ALPHAS        (0,1,2 -> 1, 2, 3-loop running)\n"
+     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(0)       (alpha QED Thompson limit)\n"
+     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
+     <<std::setw(width+7)<<" "<<"- SIN2THETAW          (weak mixing angle)\n"
+     <<std::setw(width+7)<<" "<<"- VEV    (Higgs vev)\n"
+     <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<std::setw(width+7)<<" "<<"- CABIBBO  (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<std::setw(width+7)<<" "<<"- A        (Wolfenstein A)\n"
+     <<std::setw(width+7)<<" "<<"- RHO      (Wolfenstein Rho)\n"
+     <<std::setw(width+7)<<" "<<"- ETA      (Wolfenstein Eta)\n"
+     <<std::setw(width+7)<<" "<<"- A_34     (quark mixing angle 34)"
+     <<std::setw(width+7)<<" "<<"- THETA_L   (lepton mixing angle between 3rd and 4th generation)"
+     <<std::setw(width+7)<<" "<<"- MASS_U4   (mass of 4th generation up-type quark)"
+     <<std::setw(width+7)<<" "<<"- MASS_D4   (mass of 4th generation down-type quark)"
+     <<std::setw(width+7)<<" "<<"- MASS_L4   (mass of 4th generation lepton)"
+     <<std::setw(width+7)<<" "<<"- MASS_NU4  (mass of 4th generation neutrino)"
+     <<std::setw(width+4)<<" "<<"}";
+}
+
+
 Standard_Model::Standard_Model(std::string _dir,std::string _file,
 			       bool _elementary,int _trivialextension) :
   Model_Base(_dir,_file,_elementary), m_trivialextension(_trivialextension)
@@ -83,6 +119,8 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
   p_functions        = new ScalarFunctionsMap();
   p_matrices         = new ComplexMatricesMap();
   
+  (*p_numbers)["Extension"] = m_trivialextension;
+
   ParticleInit();
   FillSpectrum();
   if (m_elementary) {
@@ -99,7 +137,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[3] = new  Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
   s_kftable[4] = new  Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
   s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
-  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
+  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,0,1,"t","t");
   s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
   s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
@@ -111,6 +149,13 @@ void Standard_Model::ParticleInit() {
   s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
   s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
   s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
+  if (m_trivialextension==2) {
+    s_kftable[7]  = new Particle_Info(7,500.,10.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
+    s_kftable[8]  = new Particle_Info(8,500.,10.0,2,1,3,1,0,1,0,1,"U_4","U_4");
+    s_kftable[17] = new Particle_Info(17,500.,10.0,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
+    s_kftable[18] = new Particle_Info(18,500.,10.0,0,1,0,1,0,1,0,1,"Nu_4","\\Nu_4");
+  }
+
 
   ReadParticleData();
 
@@ -139,7 +184,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
-  for (int i=1;i<7;i++) {
+  for (int i=1;i<7+(m_trivialextension==2?2:0);i++) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0 || !addit.IsMassive()) {
       s_kftable[kf_jet]->Add(addit);
@@ -151,7 +196,7 @@ void Standard_Model::ParticleInit() {
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
-  for (int i=11;i<17;i+=2) {
+  for (int i=11;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0 || !addit.IsMassive()) {
       s_kftable[kf_lepton]->Add(addit);
@@ -160,7 +205,7 @@ void Standard_Model::ParticleInit() {
       s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
-  for (int i=12;i<18;i+=2) {
+  for (int i=12;i<18+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0) {
       s_kftable[kf_neutrino]->Add(addit);
@@ -197,12 +242,54 @@ void Standard_Model::FillSpectrum() {
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
 				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).PSMass())));
   // Extra coupling parameters for non-Standard tbW coupling
-  p_constants->insert(std::make_pair(std::string("tbW_RelFactor"),
-				     m_trivialextension==1?
-				     p_dataread->GetValue<double>("KAPPA_{TBW}",1.):1.));
-  p_constants->insert(std::make_pair(std::string("tbW_Angle"),
-				     m_trivialextension==1?
-				     p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
+  if (m_trivialextension==1) {
+    p_constants->insert(std::make_pair(std::string("tbW_RelFactor"),
+				       m_trivialextension==1?
+				       p_dataread->GetValue<double>("KAPPA_{TBW}",1.):1.));
+    p_constants->insert(std::make_pair(std::string("tbW_Angle"),
+				       m_trivialextension==1?
+				       p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
+  }
+  if (m_trivialextension==2) { 
+    p_constants->insert(std::make_pair(std::string("M_U4"),    
+				       p_dataread->GetValue<double>("M_U4",500.)));
+    p_constants->insert(std::make_pair(std::string("M_D4"),    
+				       p_dataread->GetValue<double>("M_D4",500.)));
+    p_constants->insert(std::make_pair(std::string("M_L4"),    
+				       p_dataread->GetValue<double>("M_L4",500.)));
+    p_constants->insert(std::make_pair(std::string("M_Nu4"),    
+				       p_dataread->GetValue<double>("M_Nu4",500.)));
+    Flavour flav;
+    flav = Flavour(kf_U4);
+    flav.SetMass(ScalarConstant(std::string("M_U4")));
+    flav.SetMassOn(true);
+    flav.SetStable(false);
+    flav.SetWidth(-1.);
+    flav = Flavour(kf_D4);
+    flav.SetMass(ScalarConstant(std::string("M_D4")));
+    flav.SetMassOn(true);
+    flav.SetStable(false);
+    flav.SetWidth(-1.);
+    flav = Flavour(kf_L4);
+    flav.SetMass(ScalarConstant(std::string("M_L4")));
+    flav.SetMassOn(true);
+    flav.SetStable(false);
+    flav.SetWidth(-1.);
+    flav = Flavour(kf_Nu4);
+    flav.SetMass(ScalarConstant(std::string("M_Nu4")));
+    flav.SetMassOn(true);
+    flav.SetStable(false);
+    flav.SetWidth(-1.);
+
+    p_constants->insert(std::make_pair(std::string("Yukawa_D4"), 
+				       p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).PSMass())));
+    p_constants->insert(std::make_pair(std::string("Yukawa_U4"), 
+				       p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).PSMass())));
+    p_constants->insert(std::make_pair(std::string("Yukawa_L4"), 
+				       p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).PSMass())));
+    p_constants->insert(std::make_pair(std::string("Yukawa_Nu4"), 
+				       p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).PSMass())));
+  }
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
   double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
@@ -228,11 +315,11 @@ void Standard_Model::FillSpectrum() {
   Running_Fermion_Mass * mt   = new Running_Fermion_Mass(Flavour(kf_t),
 							 ScalarConstant(std::string("Yukawa_t")),as);
   Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf_e),
-							 ScalarConstant(std::string("Yukawa_e")),as);
+   							 ScalarConstant(std::string("Yukawa_e")),as);
   Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf_mu),
-							 ScalarConstant(std::string("Yukawa_mu")),as);
+   							 ScalarConstant(std::string("Yukawa_mu")),as);
   Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf_tau),
-							 ScalarConstant(std::string("Yukawa_tau")),as);
+   							 ScalarConstant(std::string("Yukawa_tau")),as);
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_d).IDName()),md));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_u).IDName()),mu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_s).IDName()),ms));
@@ -242,7 +329,18 @@ void Standard_Model::FillSpectrum() {
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_e).IDName()),me));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_mu).IDName()),mmu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_tau).IDName()),mtau));
-  
+
+  if (m_trivialextension==2) {
+    Running_Fermion_Mass * mD4  = new Running_Fermion_Mass(Flavour(kf_D4),
+							   ScalarConstant(std::string("Yukawa_D4")),as);
+    Running_Fermion_Mass * mU4  = new Running_Fermion_Mass(Flavour(kf_U4),
+							   ScalarConstant(std::string("Yukawa_U4")),as);
+    Running_Fermion_Mass * mL4  = new Running_Fermion_Mass(Flavour(kf_L4),
+    							   ScalarConstant(std::string("Yukawa_L4")),as);
+    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_D4).IDName()),mD4));
+    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_U4).IDName()),mU4));
+    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_L4).IDName()),mL4));
+  }
 }
 
 void Standard_Model::FixEWParameters() {
@@ -344,6 +442,53 @@ void Standard_Model::FixCKM() {
     CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
     CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }
-  p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
-}
 
+  if (m_trivialextension!=2) {
+    p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
+
+    CMatrix L_CKM(3);   
+    for (int i=0;i<3;i++) {
+      for (int j=0;j<3;j++) {
+	if (i!=j) L_CKM[i][j] = Complex(0.,0.);
+	else      L_CKM[i][j] = Complex(1.,0.);
+      }
+    }
+    p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM));
+  }
+  else {
+    CMatrix CKM4(4);   
+    for (int i=0;i<3;i++) {
+      for (int j=0;j<3;j++) {
+	CKM4[i][j] = CKM[i][j];
+	CKM4[3][j] = Complex(0.,0.);
+      }
+      CKM4[i][3] = Complex(0.,0.); 
+    }
+    CKM4[3][3] = Complex(1.,0.);
+    double angle34  = p_dataread->GetValue<double>("A_34",0.);
+    if (angle34!=0.) {
+      CMatrix Phase34(4);
+      for (int i=0;i<4;i++) {
+	for (int j=i;j<4;j++) Phase34[i][j] = Phase34[j][i] = Complex(0.,0.);      
+      }
+      Phase34[2][2] = Phase34[3][3] = cos(angle34);
+      Phase34[2][3] = sin(angle34);
+      Phase34[3][2] = -sin(angle34);
+      CKM4 = CKM4*Phase34;
+    }
+    p_matrices->insert(std::make_pair(std::string("CKM"),CKM4));
+
+    double theta_L = p_dataread->GetValue<double>("THETA_L",0.);
+    CMatrix L_CKM4(4);   
+    for (int i=0;i<4;i++) {
+      for (int j=0;j<4;j++) {
+	if (i!=j) L_CKM4[i][j] = Complex(0.,0.);
+	else      L_CKM4[i][j] = Complex(1.,0.);
+      }
+    }
+    L_CKM4[2][2] = L_CKM4[3][3] = Complex(cos(theta_L),0.);
+    L_CKM4[2][3] = Complex(sin(theta_L),0.);
+    L_CKM4[3][2] = Complex(-sin(theta_L),0.);  
+    p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM4));
+  }
+}

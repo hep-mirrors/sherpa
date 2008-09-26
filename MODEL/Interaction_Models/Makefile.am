@@ -7,9 +7,11 @@ libModelInteractions_la_SOURCES = \
 				Single_Vertex.C Vertex.C \
 				Interaction_Model_Base.C \
 				Interaction_Model_QCD.C \
+				Interaction_Model_AxiQCD.C \
 				Interaction_Model_EW.C \
 				Interaction_Model_Higgs_SM.C \
 				Interaction_Model_SM.C \
+				Interaction_Model_AxiSM.C \
 				Interaction_Model_SM_EHC.C \
 				Interaction_Model_AEW.C \
 				Interaction_Model_SM_AGC.C \
@@ -33,9 +35,11 @@ pkginclude_HEADERS = \
 				Single_Vertex.H Vertex.H \
 				Interaction_Model_Base.H \
 				Interaction_Model_QCD.H \
+				Interaction_Model_AxiQCD.H \
 				Interaction_Model_EW.H \
 				Interaction_Model_Higgs_SM.H \
 				Interaction_Model_SM.H \
+				Interaction_Model_AxiSM.H \
 				Interaction_Model_SM_EHC.H \
 				Interaction_Model_AEW.H \
 				Interaction_Model_SM_AGC.H \

@@ -109,6 +109,7 @@ double Width_Calculator::Norm(Flavour in)
   else if (in.IsVector())             norm/=3.;
   if (abs(in.StrongCharge())==3)      norm/=3.;
   else if (abs(in.StrongCharge())==9) norm/=8.;
+  else if (abs(in.StrongCharge())==8) norm/=8.;
   return norm;
 }
 
@@ -183,6 +184,11 @@ double Width_Calculator::VFF(Decay_Channel * dec) {
      (std::norm(vertex->cpl[0].Value())+std::norm(vertex->cpl[1].Value()))) +
     6.*m_m[0]*m_m[1]*(2.*std::abs(vertex->cpl[0].Value()*vertex->cpl[1].Value()));
   double width = TwoBodyPref(m_M,m_m[0],m_m[1])*ME2*ColorFactor(vertex)*Norm(dec->GetDecaying());
+
+  std::cout<<"In "<<METHOD<<" for : "
+	   <<dec->GetDecaying()<<" -> "<<dec->GetDecayProduct(0)<<"+"<<dec->GetDecayProduct(1)<<std::endl
+	   <<"  = ME^2 = "<<ME2<<" * (colour = "<<ColorFactor(vertex)<<") * norm = "
+	   <<Norm(dec->GetDecaying())<<std::endl;
 
   return width;
 }

@@ -25,6 +25,22 @@ namespace MODEL {
     steered through m_ewscheme that can be read in. 
   */
   /*!
+    \var int Standard_Model::m_trivialextension
+    \brief To steer and select some trivial extensions of the SM.
+
+    In Sherpa, a number of trivial extensions of the Standard Model have been implemented,
+    labelled by m_trivialextension:
+    -0 : No extension
+    -1 : Non-standard top-bottom-W couplings with a left- and a right-handed part.
+         This includes two parameters:
+	 - \f$\kappa_{tbW}\f$, the relative strength of the \f$tbW\f$-coupling w.r.t.
+	   the SM value,
+	 - and \f$\theta_{tbW}\f$ an angle to steer the ratio of left-handed (\f$\cos\theta_{tbW}\f$)
+           and right-handed (\f$\sin\theta_{tbW}\f$) coupling. 
+    -2 : A fourth generation with a slightly enlarged coupling sector (due to new
+         quark and lepton mixing terms like in CKM.
+  */
+  /*!
     \var int Standard_Model::m_ewscheme
     This is used to define the way, the electroweak parameters are fixed by some input; the default
     value of m_ewscheme, if not specified differently in the input data, is 0:

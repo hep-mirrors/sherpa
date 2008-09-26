@@ -6,6 +6,7 @@
 
 namespace MODEL {  
   class Interaction_Model_QCD : public Interaction_Model_Base {
+    int  m_extension;
     ATOOLS::Kabbala g3,PL,PR,M_I;    
   public:
     Interaction_Model_QCD(MODEL::Model_Base *,std::string,std::string);
