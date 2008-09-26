@@ -3,6 +3,35 @@
 #include <iomanip>
 
 
+namespace ATOOLS {
+  CMatrix operator*(const Complex scal, const CMatrix& in) { 
+    CMatrix out(in.Rank());
+    for(short int i=0; i<in.Rank(); i++) {
+      for(short int j=0; j<in.Rank(); j++) {
+	out[i][j]=scal*in[i][j];
+      }
+    }
+    return out;
+  }		
+  
+  CMatrix operator*(const CMatrix& a,const CMatrix& b) {
+    if (a.Rank()!=b.Rank()) {
+      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		 <<"  Tried to multiply two matrices of different rank."<<std::endl
+		 <<"  Return 0 and hope for the best."<<std::endl;
+      return CMatrix(0);
+    }
+    CMatrix out(a.Rank());
+    for(short int i=0; i<a.Rank(); i++) {
+      for(short int j=0; j<a.Rank(); j++) {
+	out[i][j] = 0.;
+	for(short int k=0; k<a.Rank(); k++) out[i][j] += a[i][k]*b[k][j];
+      }
+    }
+    return out;
+  }
+}
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -355,6 +384,7 @@ CMatrix::~CMatrix() {
   for(short int i=0; i<m_rank; i++) delete[] p_m[i];
   delete[] p_m;
 }
+
 
 CMatrix CMatrix::Conjugate(){
   CMatrix conju = CMatrix(m_rank);

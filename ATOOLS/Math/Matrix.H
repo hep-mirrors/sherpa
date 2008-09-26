@@ -99,6 +99,8 @@ namespace ATOOLS {
     return out;
   }
 
+  CMatrix operator*(const Complex scal, const CMatrix& in);
+  CMatrix operator*(const CMatrix& a,const CMatrix& b);
 
   /*!
     \file 
