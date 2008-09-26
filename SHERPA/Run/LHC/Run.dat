@@ -3,14 +3,14 @@
   !-- Beam parameters ------------------------------------
   !-------------------------------------------------------
   BEAM_1          = 2212                 ! possible beam particles:  P+, P-, e+, e-
-  BEAM_ENERGY_1   = 7000.                ! in GeV
+  BEAM_ENERGY_1   = 1000.                ! in GeV
   BEAM_POL_1      = 0.                   ! Polarization degree -1 ... 1
   BEAM_SPECTRUM_1 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
   K_PERP_MEAN_1	= 0.2
   K_PERP_SIGMA_1	= 0.8
   !
-  BEAM_2          = 2212                 ! possible beam particles:  P+, P-, e+, e- 
-  BEAM_ENERGY_2   = 7000.                ! in GeV
+  BEAM_2          = -2212                 ! possible beam particles:  P+, P-, e+, e- 
+  BEAM_ENERGY_2   = 1000.                ! in GeV
   BEAM_POL_2      = 0.                   ! Polarization degree -1 ... 1
   BEAM_SPECTRUM_2 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
   K_PERP_MEAN_2	= 0.2
@@ -34,7 +34,7 @@
   BUNCH_1         = 2212      ! possible beam particles:  P+, P-, e+, e-
   ISR_1           = On        ! On/Off
   ! 
-  BUNCH_2         = 2212      ! possible beam particles:  P+, P-, e+, e- 
+  BUNCH_2         = -2212      ! possible beam particles:  P+, P-, e+, e- 
   ISR_2           = On        ! On/Off
   !
   ISR_SMIN        = 1.e-10    ! Minimal fraction of nominal s for parton after ISR
@@ -81,6 +81,7 @@
   A                     = 0.85     ! A (Wolfenstein parametrization)
   RHO                   = 0.50     ! rho (Wolfenstein parametrization)
   ETA                   = 0.50     ! eta (Wolfenstein parametrization)
+  MASS_AXIGLUON         = 500.
   !
   ! SUSY parameters
   !
@@ -114,7 +115,7 @@
                                       ! Running (higgs mass)
   YUKAWA_MASSES_FACTOR  = 1.          ! Additional prefactor for yukawas
   !
-  SCALE_SCHEME          = S_HAT       ! see 'http://www.sherpa-mc.de/scales.html' 
+  SCALE_SCHEME          = CKKW        ! see 'http://www.sherpa-mc.de/scales.html' 
   KFACTOR_SCHEME        = 1           ! 1=as(pt2)/as(ecms)^nstrong,default=1
   SUDAKOV_WEIGHT        = 0          ! apply sudakov weight on single events
   SCALE_FACTOR          = 1.          ! factor the scale is multiplied with
@@ -179,8 +180,8 @@
   !-------------------------------------------------------
   !-- Fragmentation parameters----------------------------
   !-------------------------------------------------------
-  FRAGMENTATION = Off          ! Off, Lund (Pythia string fragmentation) or Ahadic
-  DECAYMODEL    = Hadrons      ! Lund or Hadrons
+  FRAGMENTATION = Off      ! Off, Lund (Pythia string fragmentation) or Ahadic
+  DECAYMODEL    = Off      ! Lund or Hadrons
   
   !-------------------------------------------------------
   !-- Photons parameters ---------------------------------
@@ -200,7 +201,11 @@
   %
   % jet jet -> t tbar
   %
-  Process : 93 93 -> 6 -6
+  Process : 93 93 -> 6[a] -6[b]
+  Decay : 6[a] ->  24[c] 5
+  Decay : -6[b] -> -24[d] -5
+  Decay : 24[c] -> -11 12
+  Decay : -24[d] -> 13 -14
   Order electroweak : 0
   Order strong : 2
   End process

@@ -1,11 +1,18 @@
 BEGIN_ANALYSIS {
 
-LEVEL  Showers 
-PATH_PIECE _Analysis
+LEVEL  ME Showers 
+PATH_PIECE Analysis_1
 
-PT     11     0.   300. 100   LinErr
-PT     -11    0.   300. 100   LinErr
-PT2    11 -11 0.   400. 100   LinErr
-Eta2   11 -11 -5.  5.    50   LinErr
+Mass      5 -5  10.  1000.  60   LinErr
+Mass     13 -11 10.  1000.  60   LinErr
+PT      -11     0.    300. 100   LinErr
+PT       13     0.    300. 100   LinErr
+PT        5     0.    300. 100   LinErr
+PT       -5     0.    300. 100   LinErr
+PT2       5 -5  0.    400. 100   LinErr
+PT2      13 -11 0.    400. 100   LinErr
+Rapidity  5 -5 -5.      5.  50   LinErr
+Y         5    -3.      3.  30   LinErr
+Y        -5    -3.      3.  30   LinErr
 
 } END_ANALYSIS
