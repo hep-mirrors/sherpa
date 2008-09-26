@@ -63,7 +63,7 @@
   !-------------------------------------------------------
   !-- Model parameters -----------------------------------
   !-------------------------------------------------------
-  MODEL                 = SM       ! Model 
+  MODEL                 = SM+AxiGluon       ! Model 
   !
   ! SM parameters
   !
@@ -114,9 +114,9 @@
                                       ! Running (higgs mass)
   YUKAWA_MASSES_FACTOR  = 1.          ! Additional prefactor for yukawas
   !
-  SCALE_SCHEME          = CKKW        ! see 'http://www.sherpa-mc.de/scales.html' 
+  SCALE_SCHEME          = S_HAT       ! see 'http://www.sherpa-mc.de/scales.html' 
   KFACTOR_SCHEME        = 1           ! 1=as(pt2)/as(ecms)^nstrong,default=1
-  SUDAKOV_WEIGHT        = 1           ! apply sudakov weight on single events
+  SUDAKOV_WEIGHT        = 0          ! apply sudakov weight on single events
   SCALE_FACTOR          = 1.          ! factor the scale is multiplied with
 }(me)
 (integration){
@@ -171,12 +171,15 @@
   !
   IS_PT2MIN         = 4.       !  IS Shower cutoff
   FS_PT2MIN         = 1.       !  FS Shower cutoff
+  !	
+  !PS_MAX_EMISSIONS  = 1
+  !PS_SCALE2_FACTOR   = 1.	
 }(shower)
 (fragmentation){
   !-------------------------------------------------------
   !-- Fragmentation parameters----------------------------
   !-------------------------------------------------------
-  FRAGMENTATION = Ahadic       ! Off, Lund (Pythia string fragmentation) or Ahadic
+  FRAGMENTATION = Off          ! Off, Lund (Pythia string fragmentation) or Ahadic
   DECAYMODEL    = Hadrons      ! Lund or Hadrons
   
   !-------------------------------------------------------
@@ -195,10 +198,11 @@
   %-------------------------------------------------------
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
-  % jet jet -> electron positron + n-jets
+  % jet jet -> t tbar
   %
-  Process : 93 93 -> 11 -11 93{1}
-  Order electroweak : 2
+  Process : 93 93 -> 6 -6
+  Order electroweak : 0
+  Order strong : 2
   End process
   %
 }(processes)
@@ -207,5 +211,4 @@
   !-- Parton level selectors -----------------------------
   !-------------------------------------------------------
   JetFinder   sqr(20/E_CMS) 1.
-  Mass 11 -11 66 116
 }(selector)
