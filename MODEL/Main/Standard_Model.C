@@ -137,7 +137,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[3] = new  Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
   s_kftable[4] = new  Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
   s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
-  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,0,1,"t","t");
+  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
   s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
   s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
