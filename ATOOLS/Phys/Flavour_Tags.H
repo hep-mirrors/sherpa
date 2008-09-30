@@ -32,6 +32,7 @@
 #define      kf_Hplusplus               38
 #define      kf_graviton                39
 #define      kf_gscalar                 40
+#define      kf_axigluon                61
 // internal
 #define      kf_shgluon                 89
 #define      kf_lepton                  90
