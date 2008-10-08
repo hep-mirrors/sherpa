@@ -96,8 +96,35 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
   return str;
 }
 
-Message::Message() 
+
+indentbuf::indentbuf(std::streambuf* basebuf) :
+  m_basebuf(basebuf), m_indent(0), at_start(true)
+{
+}
+
+std::streambuf::int_type indentbuf::overflow(int_type ch)
+{
+  if (traits_type::eq_int_type(ch, traits_type::to_int_type('\r'))) {
+  }
+  if (ch == traits_type::eof())
+    return traits_type::not_eof(ch);
+
+  if (traits_type::not_eof(ch)) {
+    if (at_start)
+      for (size_t i = 0; i < m_indent; ++i)
+        m_basebuf->sputc(traits_type::to_char_type(' '));
+    m_basebuf->sputc(traits_type::to_char_type(ch));
+    if (traits_type::eq_int_type(ch, traits_type::to_int_type('\n')))
+      at_start = true;
+    else
+      at_start = false;
+  }
+  return ch; 
+}
+
+Message::Message() : m_buf(std::cout.rdbuf())
 {      
+  std::cout.rdbuf(&m_buf);
   p_output = &std::cout;
   p_error = &std::cerr;
   p_no = new std::ofstream("/dev/null",std::ios::app);
@@ -105,13 +132,14 @@ Message::Message()
   m_file = 0;
   m_level = 0;
   m_modifiable = false;
-  m_indent = 0;
 }
 
 Message::~Message() 
 {      
+  std::cout.rdbuf(m_buf.BaseBuf());
   if (p_logfile!=p_no) delete p_logfile;
   delete p_no;
+
 }
 
 void Message::Init(const std::string& level,const std::string &logfile) 
@@ -201,7 +229,7 @@ void Message::SetPrecision(const int precision)
 
 std::ostream &Message::Out() const 
 { 
-  return *p_output<<Indent(); 
+  return *p_output; 
 }
 
 std::ostream &Message::Error() const     
@@ -212,31 +240,31 @@ std::ostream &Message::Error() const
 
 std::ostream &Message::Events() const    
 { 
-  if (m_level & 1) return *p_output<<Indent(); 
+  if (m_level & 1) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::Info() const      
 { 
-  if (m_level & 2) return *p_output<<Indent(); 
+  if (m_level & 2) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::Tracking() const  
 { 
-  if (m_level & 4) return *p_output<<Indent(); 
+  if (m_level & 4) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::Debugging() const 
 { 
-  if (m_level & 8) return *p_output<<Indent(); 
+  if (m_level & 8) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::LogFile() const   
 { 
-  if (m_level & 16) return *p_logfile<<Indent(); 
+  if (m_level & 16) return *p_logfile; 
   return *p_no; 
 }
 

@@ -85,11 +85,29 @@ namespace ATOOLS {
 
   class Indentation;
 
+  class indentbuf : public std::streambuf {
+  public:
+    indentbuf(std::streambuf* basebuf);
+    inline void Indent(size_t i=2) { m_indent+=i; }
+    inline void DeIndent(size_t i=2) { if (m_indent>=i) m_indent-=i; }
+    inline void Reset() { m_indent=0; }
+    inline std::streambuf* BaseBuf() { return m_basebuf; }
+
+  protected:
+    std::streambuf* m_basebuf;
+    size_t m_indent;
+    bool at_start;
+
+    int_type overflow(int_type ch);
+    inline int sync() { return m_basebuf->pubsync(); }
+  };
+
   class Message {
   private:
 
     std::ofstream *p_no, *p_logfile; 
     std::ostream  *p_output, *p_error;
+    indentbuf m_buf;
 
     int m_file, m_level;
 
@@ -100,14 +118,7 @@ namespace ATOOLS {
 
     int m_modifiable;
 
-    size_t m_indent;
-
     void InitLogFile(const std::string &logfile); 
-
-    inline const std::string Indent() const 
-    { return std::string(m_indent,' '); }
-
-    friend class Indentation;
 
   public:
 
@@ -140,6 +151,8 @@ namespace ATOOLS {
 
     inline int  Level() const      { return m_level;      }
     inline bool Modifiable() const { return m_modifiable; }
+    inline void Indent(size_t col) { m_buf.Indent(col); }
+    inline void DeIndent(size_t col) { m_buf.DeIndent(col); }
 
     inline void SetNoStream(std::ostream *const no)      { p_no=(std::ofstream*)no; }
     inline void SetOutStream(std::ostream *const output) { p_output=output;         }
@@ -176,14 +189,26 @@ namespace ATOOLS {
   private:
 
     size_t m_col;
+    int m_mode;
 
   public:
 
     // constructor
-    inline Indentation(const size_t col=2) { msg->m_indent+=m_col=col; }
+    inline Indentation(const size_t col=2) : m_col(col), m_mode(0) {
+    }
+
+    inline void Activate(int mode) {
+      m_mode=mode;
+      if (m_mode & 2) msg->Out()<<om::red<<"{"<<om::reset<<std::endl;
+      if (m_mode & 1) msg->Indent(m_col);
+    }
+
 
     // destructor
-    inline ~Indentation() { msg->m_indent-=m_col; }
+    inline ~Indentation() {
+      if (m_mode & 1) msg->DeIndent(m_col);
+      if (m_mode & 2) msg->Out()<<om::red<<"}"<<om::reset<<std::endl;
+    }
 
   };//end of class Indentation
 
@@ -231,8 +256,8 @@ namespace ATOOLS {
 #define msg_Tracking() if (msg_LevelIsTracking()) ATOOLS::msg->Out()
 #define msg_Debugging() if (msg_LevelIsDebugging()) ATOOLS::msg->Out()
 
-#define msg_Indent() ATOOLS::Indentation indent
-#define msg_Indentation(COL) ATOOLS::Indentation indent(COL)
+#define msg_Indent() ATOOLS::Indentation indent; indent.Activate(1)
+#define msg_Indentation(COL) ATOOLS::Indentation indent(COL);indent.Activate(1);
 
 #define bm_back ATOOLS::bm::back
 #define bm_cr ATOOLS::bm::cr
@@ -257,13 +282,15 @@ namespace ATOOLS {
 #define VAR(ARG) #ARG<<"="<<ARG
 
 #define PRINT_VAR(VAR) \
-  msg_Out()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__<<" "   \
+  msg_Out()<<ATOOLS::om::blue<<__LINE__<<":"   \
   <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
   <<VAR<<ATOOLS::om::reset<<std::endl
 
 #define PRINT_FUNC(a1) \
   msg_Out()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
-  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl
+  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset; \
+  ATOOLS::Indentation indent; \
+  indent.Activate()
 
 #define DEBUG_INFO(INFO) \
   msg_Debugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__      \
@@ -271,14 +298,15 @@ namespace ATOOLS {
   <<ATOOLS::om::reset<<")"<<std::endl
 
 #define DEBUG_VAR(VAR) \
-  msg_Debugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__<<" " \
+  msg_Debugging()<<ATOOLS::om::blue<<__LINE__<<":" \
   <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
   <<VAR<<ATOOLS::om::reset<<std::endl
 
 #define DEBUG_FUNC(a1) \
   msg_Debugging()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
-  <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset<<std::endl; \
-  if (msg_LevelIsDebugging()) msg_Indent()
+  <<a1<<ATOOLS::om::red<<") "<<ATOOLS::om::reset; \
+  ATOOLS::Indentation indent; \
+  if (msg_LevelIsDebugging()) indent.Activate(3)
 
 #endif
 
