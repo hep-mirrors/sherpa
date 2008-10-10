@@ -31,7 +31,8 @@ std::ostream &APACIC::operator<<(std::ostream& s,const Knot &k)
      <<",thcrit="<<k.thcrit<<",sthcrit="<<k.sthcrit<<",minpt="<<sqrt(k.minpt2)
      <<",qjv="<<k.qjv<<",qljv="<<k.qljv<<",maxjets="<<k.maxjets<<",\n"
      <<k.part->Momentum()<<","<<(k.part->Momentum()).Abs2()
-     <<": ("<<k.part->GetFlow(1)<<", "<<k.part->GetFlow(2)<<") {"
+     <<": ("<<k.part->GetFlow(1)<<","<<k.part->GetFlow(2)
+     <<")/("<<k.oc[0]<<","<<k.oc[1]<<") {"
      <<(k.part->ProductionBlob()?k.part->ProductionBlob()->Id():0)<<","
      <<(k.part->DecayBlob()?k.part->DecayBlob()->Id():0)<<"} "
      <<k.cms<<", didkin="<<k.didkin<<", dir="<<k.dir<<", phi="<<k.phi
@@ -52,6 +53,7 @@ Knot::Knot():
   maxpt2(1.0e10), x(0.), pt2lcm(0.0), smaxpt2(1.0e10), sthcrit(M_PI),
   minpt2(0.0), qjv(1.0e10), qljv(0.0), tmo(0.0) 
 {
+  oc[0]=oc[1]=-1;
   for (int i(0);i<2;++i) lz[i]=lE2[i]=0.0; 
 }
 
@@ -69,6 +71,7 @@ Knot::Knot(Knot * k):
   part->SetProductionBlob(k->part->ProductionBlob());
   part->SetDecayBlob(k->part->DecayBlob());
   for (int i(0);i<2;++i) {
+    oc[i]=k->oc[i];
     lp[i]=k->lp[i];
     lz[i]=k->lz[i]; 
     lE2[i]=k->lE2[i];
@@ -83,6 +86,7 @@ void Knot::CopyData(const Knot *const k)
     part->Copy(k->part);
   }
   for (int i(0);i<2;++i) {
+    oc[i]=k->oc[i];
     lp[i]=k->lp[i];
     lz[i]=k->lz[i]; 
     lE2[i]=k->lE2[i];

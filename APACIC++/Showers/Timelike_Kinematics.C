@@ -69,6 +69,10 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
 
 int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
 {
+  if (mo->oc[0]<0) {
+    mo->oc[0]=mo->part->GetFlow(1);
+    mo->oc[1]=mo->part->GetFlow(2);
+  }
   if (mo->left==NULL) return 1;
   msg_Debugging()<<METHOD<<"(): knot "<<mo->kn_no<<"\n";
   mo->E2=sqr(mo->part->Momentum()[0]);

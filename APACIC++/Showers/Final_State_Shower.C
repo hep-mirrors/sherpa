@@ -855,6 +855,8 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *&jet,
     if (!kn->left) {
       if (bl||bl_meps) {
 	p = new Particle(*kn->part);
+	p->SetFlow(1,kn->oc[0]);
+	p->SetFlow(2,kn->oc[1]);
 	p->SetFinalMass(p->Momentum().Mass());
       }
       if (bl) {
@@ -890,8 +892,11 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *&jet,
       return;
     }
     else {
-      if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
+      if ((kn->left->part->Info() != 'H' || kn->right->part->Info() != 'H') &&
+	  kn->decay==NULL) {
 	p = new Particle(*kn->part);
+	p->SetFlow(1,kn->oc[0]);
+	p->SetFlow(2,kn->oc[1]);
 	p->SetFinalMass(p->Momentum().Mass());
       	p->SetStatus(part_status::decayed);
 	if (pl) {
