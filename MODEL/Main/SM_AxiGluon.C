@@ -18,7 +18,7 @@ Model_Base *SM_AxiGluon_Getter::operator()(const Model_Arguments &args) const
 
 void SM_AxiGluon_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"The Standard Model + U(1) phantom Higgs\n"
+  str<<"The Standard Model + axigluon\n"
      <<std::setw(width+4)<<" "<<"{\n"
      <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
      <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
