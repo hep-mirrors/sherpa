@@ -283,7 +283,7 @@ void Initialization_Handler::PrepareTerminate()
 
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
-  bool okay = InitializeTheIO();
+  bool okay = true;
   SetScaleFactors();
   okay = okay && InitializeTheModel();  
   
@@ -316,6 +316,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
+    okay = okay && InitializeTheIO();
   }
   return okay;
 }
