@@ -201,10 +201,9 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   // scales for alpha_s and correction weight for hard interaction
   // me is reweighted w/ Min(m_is_as_factor,m_fs_as_factor), including deltar
   // and ren. scale factor see Integrable_Base::KFactor and CalculateScale
-  m_as_jet[0]=(*p_runas)(m_me_as_factor*Min
-			 (m_is_as_factor,m_fs_as_factor)*m_q2_amegic);
-  if (m_kfac!=0.) m_as_jet[0]*=1.+m_as_jet[0]/(2.*M_PI)*m_kfac;
-  m_as_jet[1]=m_as_jet[0];
+  PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
+  const Info_Key &kc(proc->KFKey());
+  m_as_jet[1]=m_as_jet[0]=kc.Double(2);
   msg_Debugging()<<"scales {\n";
   msg_Debugging()<<"  is_as_fac = "<<m_is_as_factor
 		 <<", fs_as_fac = "<<m_fs_as_factor

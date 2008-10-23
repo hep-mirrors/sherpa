@@ -302,7 +302,7 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     std::string kfinfo("O(QCD)="+ToString(m_orderQCD));
     msg_Debugging()<<METHOD<<"(): Assign '"<<Name()
 		   <<"' to '"<<kfname<<"','"<<kfinfo<<"'\n";
-    m_kfkey.Assign(kfname,2,0,p_activepshandler->GetInfo());
+    m_kfkey.Assign(kfname,3,0,p_activepshandler->GetInfo());
     m_kfkey.SetInfo(kfinfo);
   }
   scl::scheme scheme(m_scalescheme);
@@ -455,7 +455,7 @@ double Integrable_Base::KFactor()
     std::string kfinfo("O(QCD)="+ToString(m_orderQCD));
     msg_Debugging()<<METHOD<<"(): Assign '"<<Name()
 		   <<"' to '"<<kfname<<"','"<<kfinfo<<"'\n";
-    m_kfkey.Assign(kfname,2,0,p_activepshandler->GetInfo());
+    m_kfkey.Assign(kfname,3,0,p_activepshandler->GetInfo());
     m_kfkey.SetInfo(kfinfo);
   }
   if (m_scalescheme&scl::ckkw) {
@@ -467,6 +467,7 @@ double Integrable_Base::KFactor()
     m_scale[stp::ren]=m_kfkey[0];
     m_scale[stp::fac]=m_kfkey[1];
     double asn(as->AlphaS(m_me_as_factor*m_ps_cpl_factor*m_scale[stp::ren]));
+    m_kfkey[2]=asn;
     if (m_ps_kfactor!=0.0) asn*=1.+asn/(2.0*M_PI)*m_ps_kfactor;
     m_kfkey<<m_rfactor*pow(asn/as->AlphaS(rpa.gen.CplScale()),m_orderQCD);
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
