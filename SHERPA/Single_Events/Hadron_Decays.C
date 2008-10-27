@@ -12,7 +12,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-bool Hadron_Decays::m_mass_smearing(true);
+int Hadron_Decays::m_mass_smearing(1);
 
 Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers, 
                              Soft_Photon_Handler * softphotons) :
@@ -209,7 +209,7 @@ bool Hadron_Decays::SetMasses(Blob * blob)
 {
   DEBUG_FUNC(blob->Id());
   Particle_Vector daughters = blob->GetOutParticles();
-  if(!m_mass_smearing || daughters.size()==1) return true;
+  if(m_mass_smearing==0 || daughters.size()==1) return true;
   sort(daughters.begin(), daughters.end(), SortByWidth);
   double max_mass;
   if(blob->NInP()==1) max_mass = blob->InParticle(0)->FinalMass();
@@ -224,6 +224,7 @@ bool Hadron_Decays::SetMasses(Blob * blob)
     success=true;
     double max = max_mass;
     for(Particle_Vector::iterator it=daughters.begin();it!=daughters.end();++it) {
+      if(m_mass_smearing==2 && (*it)->Flav().IsStable()) continue;
       if(!(*it)->Flav().IsHadron() || (*it)->Flav().IsStable()) {
         Mass_Handler masshandler((*it)->RefFlav());
         double mass = masshandler.GetMass(0.0, max);

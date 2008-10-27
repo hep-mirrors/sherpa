@@ -35,7 +35,7 @@ namespace SHERPA {
     Soft_Photon_Handler * p_softphotons;
     ATOOLS::Blob_List * p_bloblist;
     
-    static bool         m_mass_smearing;
+    static int          m_mass_smearing;
     
     bool Treat(ATOOLS::Blob * blob);
     bool CreateDecayBlob(ATOOLS::Particle* inpart);
@@ -55,8 +55,8 @@ namespace SHERPA {
     void                       CleanUp();
     void                       Finish(const std::string &);
 
-    static void SetMassSmearing(bool mode) { m_mass_smearing=mode; }
-    static bool MassSmearing()             { return m_mass_smearing; }
+    static void SetMassSmearing(int mode) { m_mass_smearing=mode; }
+    static int MassSmearing()             { return m_mass_smearing; }
   };
 
   /*!
@@ -77,7 +77,7 @@ namespace SHERPA {
     stretches the momenta to the lab CMS and their final masses.
     */
   /*!
-    \var double Hadron_Decays::m_mass_smearing
+    \var int Hadron_Decays::m_mass_smearing
     \brief Switch to turn mass smearing on and off.
 
     Can be set by the "MASS_SMEARING = [0,1]" variable in Fragmentation.dat
