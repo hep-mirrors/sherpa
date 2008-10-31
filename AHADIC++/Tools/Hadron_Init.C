@@ -23,7 +23,7 @@ void Hadron_Init::Init() {
   s_kftable[511]=new Particle_Info(511,5.2792,4.22e-13,0,0,0,1,0,"B","B");
   s_kftable[521]=new Particle_Info(521,5.2789,3.99e-13,3,0,0,1,0,"B+","B+");
   s_kftable[531]=new Particle_Info(531,5.3693,4.27e-13,0,0,0,1,0,"B(s)","B(s)");
-  s_kftable[541]=new Particle_Info(541,6.594,1.43e-12,3,0,0,1,0,"B(c)+","B(c)+");
+  s_kftable[541]=new Particle_Info(541,6.4,1.43e-12,3,0,0,1,0,"B(c)+","B(c)+");
   s_kftable[551]=new Particle_Info(551,9.4,0.050,0,0,0,1,0,"eta(b)(1S)","eta(b)(1S)");
   s_kftable[113]=new Particle_Info(113,0.77,0.1507,0,0,2,1,0,"rho(770)","rho(770)");
   s_kftable[213]=new Particle_Info(213,0.77,0.1507,3,0,2,1,0,"rho(770)+","rho(770)+");
@@ -52,7 +52,7 @@ void Hadron_Init::Init() {
   s_kftable[445]=new Particle_Info(445,3.55617,0.002,0,0,4,1,0,"chi(c2)(1P)","chi(c2)(1P)");
   s_kftable[515]=new Particle_Info(515,5.83,0.02,0,0,4,1,0,"B(2)*","B(2)*");
   s_kftable[525]=new Particle_Info(525,5.83,0.02,3,0,4,1,0,"B(2)*+","B(2)*+");
-  s_kftable[535]=new Particle_Info(535,6.07,0.02,0,0,4,1,0,"B(s2)*","B(s2)*");
+  s_kftable[535]=new Particle_Info(535,5.8397,0.02,0,0,4,1,0,"B(s2)*","B(s2)*");
   s_kftable[545]=new Particle_Info(545,7.35,0.02,3,0,4,1,0,"B(c2)*+","B(c2)*+");
   s_kftable[555]=new Particle_Info(555,9.9132,0.001,0,0,4,1,0,"chi(b2)(1P)","chi(b2)(1P)");
   s_kftable[117]=new Particle_Info(117,1.691,0.16,0,0,6,0,0,"rho(3)(1690)","rho(3)(1690)");
@@ -76,7 +76,7 @@ void Hadron_Init::Init() {
   s_kftable[10331]=new Particle_Info(10331,1.4,0.5,0,0,0,1,0,"f(0)(1370)","f(0)(1370)");
   s_kftable[10411]=new Particle_Info(10411,2.26511,0.05,3,0,0,1,0,"D(0)*(2400)+","D(0)*(2400)+");
   s_kftable[10421]=new Particle_Info(10421,2.272,0.05,0,0,0,1,0,"D(0)*(2400)","D(0)*(2400)");
-  s_kftable[10431]=new Particle_Info(10431,2.5,0.05,3,0,0,1,0,"D(s0)*(2317)+","D(s0)*(2317)+");
+  s_kftable[10431]=new Particle_Info(10431,2.3178,0.05,3,0,0,1,0,"D(s0)*(2317)+","D(s0)*(2317)+");
   s_kftable[10441]=new Particle_Info(10441,3.4173,0.014,0,0,0,1,0,"chi(c0)(1P)","chi(c0)(1P)");
   s_kftable[10511]=new Particle_Info(10511,5.68,0.05,0,0,0,1,0,"B(0)*","B(0)*");
   s_kftable[10521]=new Particle_Info(10521,5.68,0.05,3,0,0,1,0,"B(0)*+","B(0)*+");
@@ -113,7 +113,7 @@ void Hadron_Init::Init() {
   s_kftable[20333]=new Particle_Info(20333,1.4262,0.055,0,0,2,1,0,"f(1)(1420)","f(1)(1420)");
   s_kftable[20413]=new Particle_Info(20413,2.39155,0.003,3,0,2,1,0,"D(1)(H)+","D(1)(H)+");
   s_kftable[20423]=new Particle_Info(20423,2.43267,0.003,0,0,2,1,0,"D(1)(2430)","D(1)(2430)");
-  s_kftable[20433]=new Particle_Info(20433,2.56,0.003,3,0,2,1,0,"D(s1)(2460)+","D(s1)(2460)+");
+  s_kftable[20433]=new Particle_Info(20433,2.4596,0.003,3,0,2,1,0,"D(s1)(2460)+","D(s1)(2460)+");
   s_kftable[20443]=new Particle_Info(20443,3.51053,0.00088,0,0,2,1,0,"chi(c1)(1P)","chi(c1)(1P)");
   s_kftable[20513]=new Particle_Info(20513,5.78,0.05,0,0,2,1,0,"B(1)(H)","B(1)(H)");
   s_kftable[20523]=new Particle_Info(20523,5.78,0.05,3,0,2,1,0,"B(1)(H)+","B(1)(H)+");
