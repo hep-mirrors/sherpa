@@ -73,6 +73,13 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     m_regulation.push_back(param);
   }
   if (!construct) return true;
+  My_In_File dummy(m_path, processfile);
+  if (!dummy.Open()) {
+    THROW(critical_error,"Can't open file '"+m_path+processfile+"'");
+  }
+  m_path=dummy.Path();
+  processfile=dummy.File();
+  dummy.Close();
   ifstream from((m_path+processfile).c_str());
   if (!from) {
     THROW(critical_error,"Cannot open file '"+m_path+processfile+"'");
