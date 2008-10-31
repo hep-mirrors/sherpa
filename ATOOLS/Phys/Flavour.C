@@ -140,6 +140,8 @@ int Flavour::HepEvt()
   case kf_a_0_980:       return 9000111;
   case kf_a_0_980_plus:  return m_anti?-9000211:9000211;
   case kf_f_0_980:       return 9010221;
+  case 13122:            return 23122;
+  case 23122:            return 13122;
   }
   return (long int)*this;
 }
@@ -153,6 +155,8 @@ void Flavour::FromHepEvt(long int code)
   case 10211:   m_kfc=kf_a_0_1450_plus; break;
   case 10221:   m_kfc=kf_f_0_1370; break;
   case 10331:   m_kfc=kf_f_0_1710; break;
+  case 13122:   m_kfc=23122; break;
+  case 23122:   m_kfc=13122; break;
   case 9000111: m_kfc=kf_a_0_980; break;
   case 9000211: m_kfc=kf_a_0_980_plus; break;
   case 9010221: m_kfc=kf_f_0_980; break; 
