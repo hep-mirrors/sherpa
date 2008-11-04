@@ -271,10 +271,12 @@ void Blob_List::Clear(Blob * blob)
     if (blob->InParticle(i)->ProductionBlob()!=NULL)
       blob->InParticle(i)->ProductionBlob()->
 	RemoveOutParticle(blob->InParticle(i));
-  for (int i(0);i<blob->NOutP();++i) 
+  for (int i(0);i<blob->NOutP();++i) {
     if (blob->OutParticle(i)->DecayBlob()!=NULL)
       blob->OutParticle(i)->DecayBlob()->
 	RemoveInParticle(blob->OutParticle(i));
+    blob->OutParticle(i)->SetStatus(part_status::active);
+  }
   for (const_iterator bit(begin());bit!=end();++bit) 
     if (*bit!=blob) delete *bit;
   resize(1);

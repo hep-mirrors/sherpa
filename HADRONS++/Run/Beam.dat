@@ -1,4 +1,0 @@
-BEAM_1          = 11                 ! possible beam particles:  P+, P-, e+, e-
-BEAM_ENERGY_1   = 7000.                ! in GeV
-BEAM_2          = -11                 ! possible beam particles:  P+, P-, e+, e- 
-BEAM_ENERGY_2   = 7000.                ! in GeV

@@ -165,6 +165,7 @@ Blob_List* GenerateEvent()
 
   hadrons->CleanUp();
 
+  msg_Events()<<*blobs<<std::endl;
   return blobs;
 }
 

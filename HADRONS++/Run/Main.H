@@ -114,8 +114,6 @@ int main(int argc, char *argv[])
 
     for(int i=0; i<rpa.gen.NumberOfEvents(); i++) {
       Blob_List* blobs = GenerateEvent();
-      msg_Events()<<*blobs<<endl;
-      msg_Events()<<"------------------------------------------------------------"<<endl;
       if(rpa.gen.Analysis()) AnalyseEvent(blobs);
       CleanUpEvent(blobs);
 

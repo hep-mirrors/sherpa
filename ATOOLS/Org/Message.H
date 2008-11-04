@@ -290,7 +290,7 @@ namespace ATOOLS {
   msg_Out()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
   <<a1<<ATOOLS::om::red<<")"<<ATOOLS::om::reset; \
   ATOOLS::Indentation indent; \
-  indent.Activate()
+  indent.Activate(3)
 
 #define DEBUG_INFO(INFO) \
   msg_Debugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__      \

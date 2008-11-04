@@ -1,5 +1,0 @@
-ME_SIGNAL_GENERATOR   = Internal
-EVENT_GENERATION_MODE = Unweighted
-SCALE_SCHEME          = S_HAT
-KFACTOR_SCHEME        = 1
-SUDAKOV_WEIGHT        = 0
