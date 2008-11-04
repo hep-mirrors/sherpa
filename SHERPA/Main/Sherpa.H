@@ -25,7 +25,7 @@ namespace SHERPA {
     //    bool     InitializeTheRun(std::string _path = std::string("./"));
     bool     InitializeTheRun(int argc,char * argv[]);
     bool     InitializeTheEventHandler();
-    bool     GenerateOneEvent();
+    bool     GenerateOneEvent(bool reset=true);
     bool     SummarizeRun();
     long int NumberOfErrors() { return m_errors; } 
     

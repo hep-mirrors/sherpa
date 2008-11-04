@@ -97,52 +97,33 @@ void Event_Handler::PrintGenericEventStructure()
   msg_Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
-void Event_Handler::Reset(const bool sameevent)
+void Event_Handler::Reset()
 {
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
-    if (!sameevent || (*pit)->Type()!=eph::Perturbative ||
+    if ((*pit)->Type()!=eph::Perturbative ||
 	(*pit)->Name().find("Signal_Processes")==std::string::npos) 
       (*pit)->CleanUp();
-  if (!sameevent) {
-    m_blobs.Clear();
-    if (Particle::Counter()>m_lastparticlecounter || 
-	Blob::Counter()>m_lastblobcounter) {
-      msg_Error()<<METHOD<<"(): "<<Particle::Counter()
-		 <<" particles and "<<Blob::Counter()
-		 <<" blobs undeleted. Continuing."<<std::endl;
-      m_lastparticlecounter=Particle::Counter();
-      m_lastblobcounter=Blob::Counter();
-    }
-
-    Blob::Reset();
-    Particle::Reset();
-    Flow::ResetCounter();
-
-    Blob *signal(new Blob());
-    signal->SetType(btp::Signal_Process);
-    signal->SetId();
-    signal->SetStatus(blob_status::needs_signal);
-    m_blobs.push_back(signal);
+  m_blobs.Clear();
+  if (Particle::Counter()>m_lastparticlecounter || 
+      Blob::Counter()>m_lastblobcounter) {
+    msg_Error()<<METHOD<<"(): "<<Particle::Counter()
+               <<" particles and "<<Blob::Counter()
+               <<" blobs undeleted. Continuing."<<std::endl;
+    m_lastparticlecounter=Particle::Counter();
+    m_lastblobcounter=Blob::Counter();
   }
-  else {
-    if (p_mehandler && p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-    Blob *signal(m_blobs.FindFirst(btp::Signal_Process));
-    m_blobs.Clear(signal);
-    signal->SetStatus(blob_status::internal_flag |
-		      blob_status::needs_signal);
-    Blob::Reset();
-    Particle::Reset();
-    Flow::ResetCounter();
-  }
-} 
 
-bool Event_Handler::GenerateEvent(int mode, bool reset) 
+  Blob::Reset();
+  Particle::Reset();
+  Flow::ResetCounter();
+}
+
+bool Event_Handler::GenerateEvent(int mode) 
 {
   ATOOLS::ran.SaveStatus();
 #ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
 #endif
-  PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
     msg_Error()<<ATOOLS::om::bold
                      <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
@@ -154,7 +135,18 @@ bool Event_Handler::GenerateEvent(int mode, bool reset)
   double weight = 1.;
   switch (mode) {
   case 0:
-    if(reset) Reset();
+    if (m_blobs.size()==1) {
+      p_signal=m_blobs.back();
+      m_signalstatus=blob_status::code(p_signal->Status());
+    }
+    else {
+      p_signal=new Blob();
+      p_signal->SetType(btp::Signal_Process);
+      p_signal->SetId();
+      p_signal->SetStatus(blob_status::needs_signal);
+      m_signalstatus=blob_status::internal_flag | blob_status::needs_signal;
+      m_blobs.push_back(p_signal);
+    }
     do {
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {
 	if ((*pit)->Type()==eph::Analysis) {
@@ -182,13 +174,24 @@ bool Event_Handler::GenerateEvent(int mode, bool reset)
 	case Return_Value::Retry_Event : 
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryEvent((*pit)->Name());
-	  Reset(true);
+          if (p_mehandler && p_mehandler->Weight()!=1.0)
+            p_mehandler->SaveNumberOfTrials();
+          m_blobs.Clear(p_signal);
+          p_signal->SetStatus(m_signalstatus);
+          Blob::Reset();
+          Particle::Reset();
+          Flow::ResetCounter();
 	  pit=p_phases->begin();
 	  break;
 	case Return_Value::New_Event : 
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncNewEvent((*pit)->Name());
 	  Reset();
+          p_signal=new Blob();
+          p_signal->SetType(btp::Signal_Process);
+          p_signal->SetId();
+          p_signal->SetStatus(blob_status::needs_signal);
+          m_blobs.push_back(p_signal);
 	  weight=1.;
 	  pit=p_phases->begin();
 	  break;
@@ -198,8 +201,7 @@ bool Event_Handler::GenerateEvent(int mode, bool reset)
 	if (weight==0.0 && rpa.gen.NumberOfDicedEvents()==
 	    rpa.gen.NumberOfEvents()) return true;
       }
-    } while (m_blobs.empty() || 
-	     m_blobs.FindFirst(btp::Signal_Process)->NInP()==0);
+    } while (m_blobs.empty() || p_signal->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
     if(p_mehandler) p_mehandler->ResetNumberOfTrials();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -230,7 +232,7 @@ bool Event_Handler::GenerateEvent(int mode, bool reset)
   case 9000:
   case 9001:
   case 9002: {
-    if(reset) Reset();
+    Reset();
     m_blobs.Clear();
     bool flag = false;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -256,7 +258,7 @@ bool Event_Handler::GenerateEvent(int mode, bool reset)
     return true;
   }
   case 9999: {
-    if(reset) Reset();
+    Reset();
     bool flag(true);
     while (flag) {
       flag = false;

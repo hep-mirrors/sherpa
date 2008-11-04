@@ -108,6 +108,11 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   if (!p_reader->ReadFromFile(m_signalgenerator,"ME_SIGNAL_GENERATOR")) m_signalgenerator="Amegic";
   if (!p_reader->ReadFromFile(m_sudakovon,"SUDAKOV_WEIGHT")) m_sudakovon=1;
   if (!p_reader->ReadFromFile(m_apply_hhmf,"TEVATRON_WpWm")) m_apply_hhmf=0;
+  if (m_signalgenerator==string("None")) {
+    m_mode=0;
+    m_name="None";
+    return;
+  }
   if (m_signalgenerator==string("Amegic")) {
     if (_me) p_amegic = _me->GetAmegic(); 
     m_mode = InitializeAmegic(_model,_beam,_isr);
@@ -231,6 +236,9 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
 {
   if (!p_reader->ReadFromFile(m_readin,"RESULT_DIRECTORY")) m_readin="./Results";
   switch (m_mode) { 
+  case 0:
+    return 1;
+    break;
   case 1: 
     if (p_amegic->CalculateTotalXSec(m_readin,m_eventmode<0?-1:1)) {
       PrintTotalXSec();

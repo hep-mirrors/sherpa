@@ -20,10 +20,10 @@ namespace SHERPA {
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
+    ATOOLS::Blob      * p_signal;
+    ATOOLS::blob_status::code m_signalstatus;
 
     Matrix_Element_Handler * p_mehandler;
-
-    void Reset(const bool sameevent=false);
 
   public:
 
@@ -37,7 +37,8 @@ namespace SHERPA {
 
     void PrintGenericEventStructure();
 
-    bool GenerateEvent(int=0, bool reset=true);
+    bool GenerateEvent(int=0);
+    void Reset();
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }

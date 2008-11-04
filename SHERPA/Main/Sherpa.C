@@ -153,7 +153,7 @@ bool Sherpa::InitializeTheEventHandler()
 }
 
 
-bool Sherpa::GenerateOneEvent() 
+bool Sherpa::GenerateOneEvent(bool reset) 
 {
   ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
   for (int i=0;i<m_trials;i++) {
@@ -164,6 +164,7 @@ bool Sherpa::GenerateOneEvent()
     if (m_debugstep>0) {
       ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
+    if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if(m_debuginterval>0 && rpa.gen.NumberOfDicedEvents()%m_debuginterval==0){
         std::string fname=ToString(rpa.gen.NumberOfDicedEvents())+".dat";

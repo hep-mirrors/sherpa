@@ -38,7 +38,7 @@ Signal_Processes::~Signal_Processes()
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   PROFILE_HERE;
-  if (bloblist->empty()) {
+  if (bloblist->empty() && p_mehandler->Name()!="None") {
     msg_Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
 	       <<"   Incoming blob list contains no entries."<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
