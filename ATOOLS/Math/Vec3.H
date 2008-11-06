@@ -19,7 +19,7 @@ namespace ATOOLS {
       m_x[1]=vec.m_x[1];
       m_x[2]=vec.m_x[2];
     }
-    inline Vec3(Scalar x, Scalar y, Scalar z) {
+    inline Vec3(const Scalar& x, const Scalar& y, const Scalar& z) {
       m_x[0]=x;
       m_x[1]=y;
       m_x[2]=z;
@@ -68,13 +68,13 @@ namespace ATOOLS {
     }
 
     template<typename Scalar2> inline Vec3<PROMOTE(Scalar,Scalar2)>
-    operator* (const Scalar2 s) const {
+    operator* (const Scalar2& s) const {
       return Vec3<PROMOTE(Scalar,Scalar2)>
         (s*m_x[0],s*m_x[1],s*m_x[2]);
     }
 
     template<typename Scalar2> inline Vec3<PROMOTE(Scalar,Scalar2)>
-    operator/ (const Scalar2 scal) const {
+    operator/ (const Scalar2& scal) const {
       return Vec3<PROMOTE(Scalar,Scalar2)>(m_x[0]/scal,m_x[1]/scal,m_x[2]/scal);
     }
 
@@ -85,7 +85,7 @@ namespace ATOOLS {
   };
 
   template<typename Scalar,typename Scal2> inline Vec3<PROMOTE(Scalar,Scal2)>
-  operator* (const Scal2 s, const Vec3<Scalar>& v) {
+  operator* (const Scal2& s, const Vec3<Scalar>& v) {
     return v*s;
   }
 
