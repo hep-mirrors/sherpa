@@ -38,7 +38,6 @@ namespace PDF {
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
     double m_fac_scale_factor;
-    double m_pdffac;    //operator approach.
 
     void SingleExtract(const ATOOLS::Flavour flavour,const double x);
     void SingleReset();
@@ -57,8 +56,7 @@ namespace PDF {
     virtual bool   Collinear(const double kp2) const;
     virtual double Cut(const std::string &type);
     
-    void   Calculate(double x,double Q2);
-    virtual void   Calculate(double x,double z,double kp,double Q2) = 0;
+    virtual void   Calculate(double x,double Q2) = 0;
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
 
     virtual void      Output() = 0;

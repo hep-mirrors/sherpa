@@ -67,8 +67,9 @@ void PDF_MRST01LO::Output()
 {
 }
 
-void PDF_MRST01LO::Calculate(double x,double z,double kp2,double Q2) 
+void PDF_MRST01LO::Calculate(double x,double _Q2) 
 {
+  double Q2(_Q2*m_fac_scale_factor);
   m_overscaled=false;
   if (x/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;

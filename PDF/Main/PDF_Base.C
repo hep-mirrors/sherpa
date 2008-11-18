@@ -27,7 +27,7 @@ std::size_t PDF_Base::Box::TrueEntryNumber() const {
 
 
 PDF_Base::PDF_Base()
-  : m_type("none"), m_exponent(1.), m_rescale(1.), m_fac_scale_factor(1.), m_pdffac(1.0) {
+  : m_type("none"), m_exponent(1.), m_rescale(1.), m_fac_scale_factor(1.) {
 
   s_box.v_pdfp.push_back(this);
   if (rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
@@ -60,11 +60,6 @@ PDF_Base *PDF_Base::GetBasicPDF()
 double PDF_Base::Cut(const std::string &type)
 {
   return ATOOLS::UNDEFINED_LOWER;
-}
-
-void PDF_Base::Calculate(double x,double Q2)
-{
-  Calculate(x,0.,0.,Q2*m_fac_scale_factor);
 }
 
 void PDF_Base::SingleExtract(const ATOOLS::Flavour flavour,const double x) 

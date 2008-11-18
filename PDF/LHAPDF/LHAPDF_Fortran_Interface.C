@@ -90,8 +90,8 @@ void LHAPDF_Fortran_Interface::Output() {
 #endif
 }
 
-void LHAPDF_Fortran_Interface::Calculate(double x,double z,double kp2,double Q2) {
-  double Q = sqrt(Q2);
+void LHAPDF_Fortran_Interface::Calculate(double x,double Q2) {
+  double Q = sqrt(Q2*m_fac_scale_factor);
 #ifdef LHAPDF__NATIVE__WRAPPER
   m_fv=LHAPDF::xfx(x,Q);
 #else

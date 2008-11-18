@@ -21,7 +21,7 @@ namespace PDF {
     PDF_Base * GetCopy();
     void       Output();
 
-    void   Calculate(double,double,double,double);
+    void   Calculate(double,double);
     double AlphaSPDF(double);
     double GetXPDF(const ATOOLS::Flavour);
 

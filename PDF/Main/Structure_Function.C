@@ -25,7 +25,7 @@ bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2)
     return 0; 
   }
   
-  p_pdf->Calculate(x,z,kp2,q2);
+  p_pdf->Calculate(x,q2);
   m_weight = 1./x;
   return 1;
 }

@@ -42,8 +42,9 @@ void PDF_Electron::Output() {
 	   <<"          alpha(MZ) = "<<(*aqed)(sqr(91.2))<<std::endl;
 }
 
-void PDF_Electron::Calculate(double x,double z,double kp2,double Q2) 
+void PDF_Electron::Calculate(double x,double _Q2) 
 {
+  double Q2(_Q2*m_fac_scale_factor);
   m_xpdf  = 0.;
   m_alpha = (*aqed)(Q2);
   if (x>=0.999999) return;

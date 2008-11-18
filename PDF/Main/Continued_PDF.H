@@ -24,7 +24,7 @@ namespace PDF {
     
     bool m_continue;
 
-    double m_x, m_z, m_kperp2, m_mu2, m_epsilon;
+    double m_x, m_mu2, m_epsilon;
 
     double ContinueConstant(const ATOOLS::Flavour flavour);
     double ContinueLinear(const ATOOLS::Flavour flavour);
@@ -44,7 +44,7 @@ namespace PDF {
     void AssignKeys(ATOOLS::Integration_Info *const info);
     bool Collinear(const double kp2=0.0) const;
 
-    void   Calculate(double x,double z,double kperp2,double mu2);
+    void   Calculate(double x,double mu2);
     double GetXPDF(const ATOOLS::Flavour flavour);
 
     PDF_Base *GetCopy();

@@ -32,7 +32,7 @@ double Continued_PDF::ContinueLinear(const ATOOLS::Flavour flavour)
 {
   double x=ATOOLS::Max(p_pdf->XMin(),m_x);
   double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
-  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
+  p_pdf->Calculate(x,mu2);
   double xpdf=p_pdf->GetXPDF(flavour);
   return ATOOLS::Min(x/p_pdf->XMin(),mu2/p_pdf->Q2Min())*xpdf;
 }
@@ -41,21 +41,19 @@ double Continued_PDF::ContinueConstant(const ATOOLS::Flavour flavour)
 {
   double x=ATOOLS::Max(p_pdf->XMin(),m_x);
   double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
-  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
+  p_pdf->Calculate(x,mu2);
   return p_pdf->GetXPDF(flavour);
 }
 
-void Continued_PDF::Calculate(double x,double z,double kperp2,double mu2)
+void Continued_PDF::Calculate(double x,double mu2)
 {
   if (mu2>p_pdf->Q2Min() && x>p_pdf->XMin()) {
-    p_pdf->Calculate(x,z,kperp2,mu2);
+    p_pdf->Calculate(x,mu2);
     m_continue=false;
   }
   else {
     m_continue=true;
     m_x=x;
-    m_z=z;
-    m_kperp2=kperp2;
     m_mu2=mu2;
   }
 }

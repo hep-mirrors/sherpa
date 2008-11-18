@@ -14,7 +14,7 @@ namespace PDF {
     PDF_Base * GetCopy();
     void   Output();
 
-    void   Calculate(const double,const double,const double,const double);
+    void   Calculate(double,double);
     double GetXPDF(const ATOOLS::Flavour );
 
     double GetXMin()   { return 1.e-5; }

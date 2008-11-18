@@ -15,7 +15,7 @@ namespace PDF {
     PDF_Base * GetCopy();
 
     void   Output();
-    void   Calculate(double,double,double,double);
+    void   Calculate(double,double);
     double GetXPDF(const ATOOLS::Flavour );
 
     void AssignKeys(ATOOLS::Integration_Info *const info);

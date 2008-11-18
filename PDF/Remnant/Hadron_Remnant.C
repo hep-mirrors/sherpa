@@ -186,7 +186,7 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
     x = 1.;
   }
   if (x<p_pdfbase->XMin() || p_pdfbase->XMax()) return false;
-  p_pdfbase->Calculate(x,0.,0.,m_scale);
+  p_pdfbase->Calculate(x,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran.Get();
 }
@@ -275,7 +275,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       x=ran.Get(); 
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
-    p_pdfbase->Calculate(x,0.,0.,scale);
+    p_pdfbase->Calculate(x,scale);
     if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
     if (p_pdfbase->GetXPDF(flavour)/x>ran.Get()) return x;
   } 

@@ -39,9 +39,9 @@ PDF_Base * GRVph_Fortran_Interface::GetCopy()
 
 void GRVph_Fortran_Interface::Output() {}
 
-void GRVph_Fortran_Interface::Calculate(const double _x,const double z,const double kp2,const double _Q2) 
+void GRVph_Fortran_Interface::Calculate(double _x,double _Q2) 
 {
-  float x = _x, Q2 = _Q2;
+  float x = _x, Q2 = _Q2*m_fac_scale_factor;
   
   grvglo_(x,Q2,m_u,m_d,m_s,m_c,m_b,m_g);
 }
