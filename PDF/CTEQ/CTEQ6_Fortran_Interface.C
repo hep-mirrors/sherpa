@@ -47,7 +47,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   int stat=chdir(m_path.c_str());
   ctq6initset_(iset);
   if (stat==0) {
-    chdir(buffer);
+    stat=chdir(buffer);
   }
   else {
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
@@ -90,14 +90,11 @@ double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
 
 void CTEQ6_Fortran_Interface::Output() {}
 
-void CTEQ6_Fortran_Interface::Calculate(double x,double z,double kp2,double _Q2) 
+void CTEQ6_Fortran_Interface::Calculate(double x,double _Q2) 
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
   m_x=x/m_rescale;
-
-  std::cout<<" pdffac : "<<m_pdffac<<std::endl; 
-
-  m_Q=sqrt(_Q2*m_pdffac);
+  m_Q=sqrt(_Q2*m_fac_scale_factor);
   if(m_Q<m_q2min) {
     msg_Error()<<"CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<"). Continue with "<<m_q2min<<".\n";
     m_Q=m_q2min;
