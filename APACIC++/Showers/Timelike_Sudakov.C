@@ -244,7 +244,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
 double sql(const double &s,const double &s1,const double &s2)
 {
-  return sqr(s-s1-s2)-4.0*s1*s2;
+  return (sqr(s-s1-s2)-4.0*s1*s2)/(4.0*s);
 }
 
 bool Timelike_Sudakov::MassVeto(double t, double E2,double z) 
