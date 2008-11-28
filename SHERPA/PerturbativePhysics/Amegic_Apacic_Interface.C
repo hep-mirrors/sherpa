@@ -161,6 +161,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 	  blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	}
       }
+      p_shower->CleanUp();
       p_filler->FillTrees(blob,p_shower->GetIniTrees(),p_shower->GetFinTree());
       return Return_Value::Success;
     }
