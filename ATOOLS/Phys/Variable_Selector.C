@@ -79,7 +79,6 @@ void Variable_Selector::BuildCuts(Cut_Data *cuts)
 void Variable_Selector::SetRange
 (std::vector<Flavour> fl,std::vector<std::pair<double,double> > &bounds)
 {
-  if (fl.size()<2) THROW(fatal_error,"Wrong number of flavours");
   for (size_t i(0);i<fl.size();++i) {
     bool found(false);
     if (m_ffl.size()<=i)
