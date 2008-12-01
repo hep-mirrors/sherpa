@@ -121,7 +121,7 @@ std::string Primitive_Analysis::JetID
       max="";
     }
   }
-  for (size_t i(0);i<name.length();++i) {
+  for (size_t i(1);i<name.length();++i) {
     if (name[i]=='_' && name[i-1]=='_') ++jets;
     else if (name[i]=='[') {
       std::string cmax;
