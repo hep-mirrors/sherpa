@@ -156,6 +156,9 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 	// update me weight
 	Blob_Data_Base * message = (*blob)["ME_Weight"];
 	if (message) {
+	  //PRINT_INFO(m_nin<<" -> "<<m_nout);
+	  //PRINT_INFO(meweight<<" : "<<m_weight);
+	  //if(m_nout>3) m_weight*=0.65;//0.7;    //additional suppression
 	  meweight*=m_weight;
 	  blob->AddData("ME_Weight",new Blob_Data<double>(meweight));
 	  blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
@@ -204,7 +207,7 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
   if (p_blob_psme_IS) {
     p_blob_psme_IS->SetId();
     bl->push_back(p_blob_psme_IS);  
-    p_blob_psme_IS=0;
+    //p_blob_psme_IS=0;
   }
   if (p_blob_psme_FS) {
     p_blob_psme_FS->SetId();
@@ -213,9 +216,22 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 	p_blob_psme_FS->InParticle(i)->SetDecayBlob(p_blob_psme_FS);
     }
     bl->push_back(p_blob_psme_FS);  
-    p_blob_psme_FS=0;
+    //p_blob_psme_FS=0;
   }
-  p_shower->FillBlobs(bl); 
+  p_shower->FillBlobs(bl);
+  static size_t ic(0), oc(0);
+  if(p_blob_psme_IS) {
+    if(p_blob_psme_IS->NOutP()!=p_blob_psme_IS->NInP()) {
+      ++ic;
+      PRINT_INFO(ic<<". WARNING!!");
+      PRINT_INFO(*p_blob_psme_IS);}
+  }
+  if(p_blob_psme_FS) {
+    if(p_blob_psme_FS->NOutP()!=p_blob_psme_FS->NInP()) {
+      ++oc;
+      PRINT_INFO(oc<<".WARNING!!");
+      PRINT_INFO(*p_blob_psme_FS);}
+  }
   p_blob_psme_IS=NULL;
   p_blob_psme_FS=NULL;
   return true;

@@ -319,8 +319,8 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
     if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
       if ((*bit)->NInP()<2 || (*bit)->NOutP()!=(*bit)->NInP()) {
 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
-		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
-		   <<(*bit)<<endl;
+		   <<"   ME_PS_Interface_FS blob with other than n->n particles !"<<endl
+		   <<(**bit)<<endl;
 	abort();
       }
       else {

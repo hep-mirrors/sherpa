@@ -109,6 +109,21 @@ namespace ANALYSIS {
     
   };// end of class Two_PY_Selector
 
+  class Two_CY_Selector: public Two_Particle_Selector_Base {  
+  public:
+
+    Two_CY_Selector(const ATOOLS::Flavour flav,const size_t item,
+		      const ATOOLS::Flavour ref,const size_t refitem,
+		      const double min,const double max,
+		      const std::string &inlist,const std::string &reflist,
+		      const std::string &outlist);
+    
+    bool Select(const Particle *p1,const Particle *p2) const;
+
+    Analysis_Object *GetCopy() const;
+    
+  };// end of class Two_CY_Selector
+
   class Two_Mass_Selector: public Two_Particle_Selector_Base {  
   public:
 
@@ -123,6 +138,21 @@ namespace ANALYSIS {
     Analysis_Object *GetCopy() const;
     
   };// end of class Two_Mass_Selector
+
+  class Two_MT_Selector: public Two_Particle_Selector_Base {  
+  public:
+
+    Two_MT_Selector(const ATOOLS::Flavour flav,const size_t item,
+		    const ATOOLS::Flavour ref,const size_t refitem,
+		    const double min,const double max,
+		    const std::string &inlist,const std::string &reflist,
+		    const std::string &outlist);
+    
+    bool Select(const Particle *p1,const Particle *p2) const;
+
+    Analysis_Object *GetCopy() const;
+    
+  };// end of class Two_MT_Selector
 
   class Two_PT_Selector: public Two_Particle_Selector_Base {  
   public:
@@ -407,6 +437,31 @@ Analysis_Object *Two_PY_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_CY_Selector,
+				 Two_CY_Selector_Getter,"TwoCYSel")
+
+Two_CY_Selector::
+Two_CY_Selector(const ATOOLS::Flavour flav,const size_t item,
+		  const ATOOLS::Flavour refflav,const size_t refitem,
+		  const double min,const double max,
+		  const std::string &inlist,const std::string &reflist,
+		  const std::string &outlist):
+  Two_Particle_Selector_Base(flav,item,refflav,refitem,min,max,
+			     inlist,reflist,outlist) {}
+
+bool Two_CY_Selector::Select(const Particle *p1,const Particle *p2) const
+{
+  double cy=dabs((p1->Momentum()+p2->Momentum()).Y());
+  if (cy<m_xmin || cy>m_xmax) return false;
+  return true;
+}
+
+Analysis_Object *Two_CY_Selector::GetCopy() const
+{
+  return new Two_CY_Selector(m_flavour,m_item,m_refflavour,m_refitem,
+				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
+}
+
 DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_Mass_Selector,
 				 Two_Mass_Selector_Getter,"TwoMassSel")
 
@@ -430,6 +485,31 @@ Analysis_Object *Two_Mass_Selector::GetCopy() const
 {
   return new Two_Mass_Selector(m_flavour,m_item,m_refflavour,m_refitem,
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
+}
+
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT_Selector,
+				 Two_MT_Selector_Getter,"TwoMTSel")
+
+Two_MT_Selector::
+Two_MT_Selector(const ATOOLS::Flavour flav,const size_t item,
+		const ATOOLS::Flavour refflav,const size_t refitem,
+		const double min,const double max,
+		const std::string &inlist,const std::string &reflist,
+		const std::string &outlist):
+  Two_Particle_Selector_Base(flav,item,refflav,refitem,min,max,
+			     inlist,reflist,outlist) {}
+
+bool Two_MT_Selector::Select(const Particle *p1,const Particle *p2) const
+{
+  double mt=(p1->Momentum()+p2->Momentum()).MPerp();
+  if (mt<m_xmin || mt>m_xmax) return false;
+  return true;
+}
+
+Analysis_Object *Two_MT_Selector::GetCopy() const
+{
+  return new Two_MT_Selector(m_flavour,m_item,m_refflavour,m_refitem,
+			     m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
 DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PT_Selector,

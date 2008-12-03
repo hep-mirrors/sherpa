@@ -387,7 +387,7 @@ namespace PHASIC {
 
     inline std::string YcutTag() const { return m_cuttag; }
 
-    inline const ATOOLS::Info_Key &KFKey() const { return m_kfkey; }
+    inline const ATOOLS::Info_Key& KFKey() const { return m_kfkey; }
 
   };// end of class Integrable_Base
 

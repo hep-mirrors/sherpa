@@ -103,26 +103,47 @@ void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double
 DEFINE_OBSERVABLE_GETTER(Three_Particle_PT,
 			 Three_Particle_PT_Getter,"PT3")
 
-Three_Particle_PT::Three_Particle_PT(const Flavour & flav1,const Flavour & flav2,
-				       const Flavour & flav3,int type,double xmin,
-				       double xmax,int nbins,const std::string & listname) :
-  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"PT") 
-{ }
+Three_Particle_PT::Three_Particle_PT(const Flavour& flav1, const Flavour& flav2,
+				     const Flavour& flav3, int type,
+				     double xmin, double xmax, int nbins,
+				     const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,
+				 listname,"PT") {}
 
-
-void Three_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,
-				 double weight, int ncount) 
-{    
+void Three_Particle_PT::Evaluate(const Vec4D& mom1, const Vec4D& mom2,
+				 const Vec4D& mom3, double weight, int ncount) {
   double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]) + sqr(mom1[2]+mom2[2]+mom3[2]));
   p_histo->Insert(pt,weight,ncount);
-} 
-
-Primitive_Observable_Base* Three_Particle_PT::Copy() const
-{
-  return new Three_Particle_PT(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Primitive_Observable_Base* Three_Particle_PT::Copy() const {
+  return new Three_Particle_PT(m_flav1,m_flav2,m_flav3,m_type,
+			       m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_Y,Three_Particle_Y_Getter,"Y3")
+
+Three_Particle_Y::Three_Particle_Y(const Flavour& flav1, const Flavour& flav2,
+                                   const Flavour& flav3, int type, double xmin,
+                                   double xmax, int nbins,
+				   const std::string& listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,
+				 listname,"Y") {}
+
+void Three_Particle_Y::Evaluate(const Vec4D& mom1, const Vec4D& mom2,
+				const Vec4D & mom3, double weight, int ncount) {
+  double y = (mom1+mom2+mom3).Y();
+  p_histo->Insert(y,weight,ncount);
+}
+
+Primitive_Observable_Base * Three_Particle_Y::Copy() const {
+  return new Three_Particle_Y(m_flav1,m_flav2,m_flav3,m_type,
+			      m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_DEta,Three_Particle_DEta_Getter,"DEta3")
 

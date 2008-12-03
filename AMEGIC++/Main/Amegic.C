@@ -180,8 +180,10 @@ void Amegic::ReadInProcessfile(string file)
   p_dataread->SetTags(PHASIC::Integrable_Base::ScaleTags());
   PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",1));
   p_dataread->SetTags(std::map<std::string,std::string>());
-  std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
-  std::string _renscale   = p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
+  std::string _facscale = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
+  if(rpa.gen.Variable("SUDAKOV_WEIGHT","1")=="1")
+    _facscale = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","4.0*MU_F");
+  std::string _renscale = p_dataread->GetValue<std::string>("RENORMALIZATION_SCALE","");
   msg_Debugging()<<METHOD<<"(): Set scales {\n"
 		 <<"  fac scale: "<<_facscale<<"\n"
 		 <<"  ren scale: "<<_renscale<<"\n}\n";

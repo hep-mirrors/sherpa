@@ -83,6 +83,16 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
+  class Two_Particle_Y : public Two_Particle_Observable_Base {
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2,
+                  double weight, int ncount);
+  public:
+    Two_Particle_Y(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+		   int type, double xmin, double xmax, int nbins,
+		   const std::string & listname);
+    Primitive_Observable_Base * Copy() const;
+  };
+
   class Two_Particle_DY : public Two_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 		  double weight, int ncount); 
