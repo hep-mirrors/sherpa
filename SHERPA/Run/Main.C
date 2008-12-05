@@ -4,6 +4,7 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 #include "CXXFLAGS.H"
 #include "CXXFLAGS_PACKAGES.H"
 
@@ -58,6 +59,9 @@ int main(int argc,char* argv[])
       }
       msg_Info()<<std::endl;      
       Generator.SummarizeRun();
+//       std::string sigmas(ATOOLS::rpa.gen.Variable("TOTAL_CROSS_SECTION"));
+//       if (sigmas=="") msg_Error()<<"Error: xs info not available"<<std::endl;
+//       double sigma(ATOOLS::ToType<double>(sigmas));
     }
     msg_Events()<<"=========================================================================="<<std::endl
 		     <<"Sherpa finished its simulation run with "

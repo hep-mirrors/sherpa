@@ -2,6 +2,7 @@
 #define Statistics_Observable_H
 
 #include "Primitive_Observable_Base.H"
+#include "MyStrStream.H"
 #include <iostream>
 #include <iomanip>
 
@@ -184,6 +185,8 @@ void Statistics_Observable::Output(const std::string & pname)
       <<dsig<<" = "<<dsig/sig*100.0<<" % )\n";
   file<<"# Total XS (cut): "<<csig<<" +- ( "
       <<cdsig<<" = "<<cdsig/csig*100.0<<" % )\n\n";
+  if (m_listname=="FinalState")
+    rpa.gen.SetVariable("TOTAL_CROSS_SECTION",ToString(sig));
   file.close();
 }
 
