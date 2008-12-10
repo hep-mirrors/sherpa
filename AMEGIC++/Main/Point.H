@@ -42,6 +42,7 @@ public:
   void ResetFlag();
   Point* CopyList(Point* p);
   size_t Ncpl() const {return cpl.size();}
+  int CountKK();
 };
 
  // Format of a Point to transport via MPI:

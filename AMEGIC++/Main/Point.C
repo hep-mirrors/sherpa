@@ -131,6 +131,18 @@ void Point::Print()
   }
 }
 
+int Point::CountKK()
+{
+  int KKnum=0;
+  if (left) {
+    KKnum+=left->CountKK();
+    KKnum+=right->CountKK();
+    if (middle) KKnum+=middle->CountKK();
+  }
+  if (fl.IsKK()) KKnum++;
+  return KKnum;
+}
+
 std::ostream & AMEGIC::operator<<(std::ostream & s, const Point & p)
 {
 //   s<<p;

@@ -145,7 +145,7 @@ void Zfunc_Generator::Convert(Point* p)
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	  &&ph->left)
-	if(!(ph->left->fl.IsFermion())){
+	if(!(ph->left->fl.IsFermion())||ph->middle){
 	  ph->m=1;
 	  Convert(p); 
 	  return;
@@ -154,7 +154,7 @@ void Zfunc_Generator::Convert(Point* p)
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	  &&ph->left)
-	if(!(ph->left->fl.IsFermion())){
+	if(!(ph->left->fl.IsFermion())||ph->middle){
 	  ph->m=1;
 	  Convert(p); 
 	  return;
@@ -164,7 +164,7 @@ void Zfunc_Generator::Convert(Point* p)
 	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	       (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	    &&ph->left)
-	  if(!(ph->left->fl.IsFermion())){
+	  if(!(ph->left->fl.IsFermion())||ph->middle){
 	    ph->m=1;
 	    Convert(p); 
 	    return;

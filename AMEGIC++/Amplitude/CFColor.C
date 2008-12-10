@@ -632,6 +632,15 @@ void CFColor::ReplaceD(sknot* m, sknot* start)
       if (s2->Str().length()==6) {
 	if (s2->Str()[0]=='D') {
 	  if (s2->Str()[2]==s2->Str()[4]) s2->SetString(string("3"));
+	  else {
+	    // kill D's
+	    // replace s2->Str()[2] -> s2->Str()[4]
+	    char from = s2->Str()[2];
+	    char to   = s2->Str()[4];
+	    int hit=0;
+	    hit = SingleReplaceD(start,s2,from,to);
+	    s2->SetString(string("1"));
+	  }
 	}
       }
     }
