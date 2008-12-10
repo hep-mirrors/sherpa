@@ -212,7 +212,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     }
     else take=0;
 
-    if (overflow || take==0) {
+    if (overflow) {
       for (size_t i=0; i<m_nin+nout; ++i) plindex[i]=' ';
       for (size_t i=m_nin+nout-1;i>=0;--i) {
 	if (ofl[i].Size()-1>flindex[i]) {
