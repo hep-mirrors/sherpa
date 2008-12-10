@@ -340,7 +340,8 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 
 void HepEvt_Interface::FSBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
-    if ((*bit)->Type()==btp::FS_Shower && (*bit)->NInP()==1) {
+    if ((*bit)->Type()==btp::FS_Shower &&
+	((*bit)->NInP()==1 || (*bit)->NInP()==2)) {
       for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
       EstablishRelations((*bit));
     } 

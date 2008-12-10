@@ -149,8 +149,7 @@ int Timelike_Kinematics::ShuffleMomenta
   double t(mo->part->Momentum().Abs2());
   msg_Debugging()<<"t = "<<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<"\n";
   if (dabs((mo->t-t)/mo->t)>1.e-7 && mo->shower!=2) {
-    msg_Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
-	       <<", p^2 = "<<t<<std::endl;
+    //msg_Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t<<", p^2 = "<<t<<std::endl;
     mo->t=t;
   }
   if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
