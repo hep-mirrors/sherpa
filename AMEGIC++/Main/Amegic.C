@@ -265,6 +265,8 @@ void Amegic::ReadInProcessfile(string file)
 	    order_ew            = 99;
 	    order_strong        = 99;
 	    nex                 = 0;
+	    print_graphs        = false;
+	    enable_mhv          = 1; 
 
 	    vycut.clear();
 	    venhance_factor.clear();
@@ -547,7 +549,6 @@ void Amegic::ReadInProcessfile(string file)
 		  proc->SetRenormalizationScale(renormalization_scale);
 		  if (print_graphs) proc->SetPrintGraphs();
 		  p_procs->Add(proc);
-		  print_graphs=false;
 		}
 	      }
 	      else {

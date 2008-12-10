@@ -101,9 +101,11 @@ Single_Process_MHV2::Single_Process_MHV2(Process_Info* pinfo,int _nin,int _nout,
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVamp(0), p_momlist(0),  p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
-//   p_hcres=0;
-//   p_hcalpha=0;
-//   m_scnt=0;
+  if (m_neweak>2&&m_orderEW!=0) {
+    THROW(fatal_error,"Cannot generate process "+Name()
+	  +" including electroweak interactions from MHV recursions!\n"
+	  +"   please use 'Order electroweak : 0' or 'Disable_MHV' for the process setup.");
+  }
 
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
