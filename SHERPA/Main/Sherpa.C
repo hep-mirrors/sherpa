@@ -247,7 +247,7 @@ void Sherpa::DrawLogo()
 	    <<"     the various original publications.                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Users are kindly asked to refer to the documentation                    "<<std::endl
-	    <<"     published under JHEP 0402 (2004) 056.                                   "<<std::endl
+	    <<"     published under arXiv:0811.4622 [hep-ph].                               "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Please visit also our homepage                                          "<<std::endl
 	    <<"                                                                             "<<std::endl
