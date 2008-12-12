@@ -87,7 +87,7 @@ double shalps_(double *q2) {
 void shpdpr_(double *x,double *q2,double *xppr) {
   if (Lund_Interface::ExportPDF()) {
     for (int i=0;i<=10;++i) {
-      Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,0.,0.,*q2);
+      Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,*q2);
       if (i!=3 && i!=4) {
 	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((kf_code)(i-5)));
       }
