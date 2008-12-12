@@ -19,23 +19,32 @@
 #include <sys/sysctl.h>
 #include <limits>
 
-size_t getpmem()
+unsigned long int getpmem()
 {
 #if defined(ARCH_LINUX) || defined(ARCH_UNIX)
-  return sysconf(_SC_PHYS_PAGES)*getpagesize();
+  unsigned long int ps(getpagesize());
+  unsigned long int sc(sysconf(_SC_PHYS_PAGES));
+  unsigned long int ref(std::numeric_limits<unsigned long int>::max());
+  if (ps < ref/sc) return sc*ps;
 #endif
 #ifdef ARCH_DARWIN
   int mib[2]={CTL_HW,HW_PHYSMEM};
-  unsigned int miblen(2);
-  size_t pmem(0), len(sizeof(pmem));
+  unsigned long int miblen(2);
+  unsigned long int pmem(0), len(sizeof(pmem));
   if (sysctl(mib,miblen,&pmem,&len,NULL,0)!=0) {
     std::cerr<<"sysctl failed"<<std::endl;
     return 0;
   }
   return pmem;
 #endif
+#ifdef  USING__LHAPDF
   std::cerr<<"cannot determine physical memory"<<std::endl;
-  return std::numeric_limits<size_t>::max();
+  std::cout<<"memory size read is: "<<std::numeric_limits<unsigned long int>::max()-400000000<<std::endl;
+  return std::numeric_limits<unsigned long int>::max()-400000000;
+#endif
+  std::cerr<<"cannot determine physical memory"<<std::endl;
+  std::cout<<"memory size read is: "<<std::numeric_limits<unsigned long int>::max()<<std::endl;
+  return std::numeric_limits<unsigned long int>::max();
 }
 
 using namespace ATOOLS;
@@ -180,7 +189,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
-  long int slim(getpmem());
+  unsigned long int slim(getpmem());
 #ifdef USING__LHAPDF
   slim+=400000000;
 #endif
