@@ -43,6 +43,7 @@ install-data-local:
 	    done; \
 	    if test -d "$$i/PhaseSpaceFunctions" ; then \
 	      cp -rf "$$i/PhaseSpaceFunctions" "$(DESTDIR)$(pkgdatadir)/$$i/"; \
+	      chmod -R +w "$(DESTDIR)$(pkgdatadir)/$$i/"; \
 	      if test "x@SVNINCLUDE@" == "x"; then \
 		rm -rf "$(DESTDIR)$(pkgdatadir)/$$i/PhaseSpaceFunctions/.svn"; \
 	      fi; \
