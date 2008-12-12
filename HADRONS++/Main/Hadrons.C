@@ -242,6 +242,7 @@ void Hadrons::DiceUncorrelatedKinematics(
       msg_Tracking()<<METHOD<<"("<<hdc->ChannelName()<<") warning:"<<endl
                     <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max
                     <<std::endl;
+      hdc->GetPS()->SetMaximum(value);
       rvalue.IncRetryMethod(METHOD);
       break;
     }
