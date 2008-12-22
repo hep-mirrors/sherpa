@@ -6,20 +6,25 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Cluster_Handler::Soft_Cluster_Handler(Single_Transitions * singletransitions,
-					   Double_Transitions * doubletransitions,
-					   const double offset1,const double offset2,
-					   const double kappa,
-					   const double alpha,const double eta,
-					   const double photonenergy,bool ana) :
-  p_singletransitions(singletransitions), p_doubletransitions(doubletransitions),
-  m_offset1(offset1), m_offset2(offset2),
+Soft_Cluster_Handler::
+Soft_Cluster_Handler(Strong_Coupling * as,
+		     Single_Transitions * singletransitions,
+		     Double_Transitions * doubletransitions,
+		     const double offset1,const double offset2,
+		     const double kappa,
+		     const double alpha,const double eta,
+		     const double photonenergy,bool ana) :
+  p_as(as),
+  p_singletransitions(singletransitions), 
+  p_doubletransitions(doubletransitions),
+  m_ptmode(PTdist::alphadist),m_offset1(offset1), m_offset2(offset2),
   m_kappa(kappa), m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
   m_ana(ana)
 { 
   //std::cout<<METHOD<<":"<<m_kappa<<std::endl;exit(1);
   if (m_ana) {
-    m_histograms[string("PT_HH")]      = new Histogram(0,0.,1.5,150);
+    m_histograms[string("PT_HH")]  = new Histogram(0,0.,2.0,100);
+    m_histograms[string("PT2_HH")] = new Histogram(0,0.,4.0,200);
   }
 }
 
@@ -438,6 +443,20 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
+double Soft_Cluster_Handler::SelectPT(double pt2max) {
+  double pt(0.);
+  switch (m_ptmode) {
+  case (PTdist::sinthet):
+    pt = sqrt(pt2max)*pow(ran.Get(),m_eta);
+    break;
+  case (PTdist::alphadist):
+  default:
+    pt = sqrt(p_as->SelectPT(pt2max));
+    break;
+  }
+  return pt;
+}
+
 void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
 {
 #ifdef AHAmomcheck
@@ -450,8 +469,7 @@ void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
 
   cluster->BoostInCMSAndRotateOnZ();
   double E1      = (M2+m12-m22)/(2.*M);
-  double sinthet = pow(ran.Get(),m_eta);
-  double pt      = sqrt(sqr(E1)-m12)*sinthet;
+  double pt      = SelectPT(sqr(E1)-m12);
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
@@ -460,6 +478,8 @@ void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
   if (m_ana) {
     Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
     histo->Insert(pt);
+    Histogram* histo2((m_histograms.find(std::string("PT2_HH")))->second);
+    histo2->Insert(pt*pt);
   }
 
   Particle * part;

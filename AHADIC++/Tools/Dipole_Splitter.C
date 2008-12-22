@@ -6,12 +6,15 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 size_t Dipole::s_cnt=0;
+const Vec3D Dipole_Splitter::s_ex(Vec3D(1.,0.,0.));
+const Vec3D Dipole_Splitter::s_ey(Vec3D(0.,1.,0.));
+const Vec3D Dipole_Splitter::s_ez(Vec3D(0.,0.,1.));
+
 
 Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
-  p_as(as),p_constituents(hadpars.GetConstituents()), p_options(NULL),
+  p_as(as), p_constituents(hadpars.GetConstituents()), p_options(NULL),
   p_spect(0), p_split(0), p_out1(0), p_out2(0), 
-  m_pt2veto(sqr(ptmax)), m_asmax(p_as->MaxValue()), 
-  m_2p3min(2.*p_constituents->MinMass())
+  m_mmin_2(sqr(p_constituents->MinMass()))
 { }
 
 
@@ -24,10 +27,6 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
 #endif
 
   p_dip = dip1;
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<METHOD<<" : "<<cluster->Momentum()<<" ("<<cluster->Mass2()<<")."<<std::endl;
-    p_dip->Output();
-  }
   
   SP(Dipole) dip2 = EmitGluon(pt2max);
   if (dip2==NULL) {
@@ -47,13 +46,6 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
   dip1->SetAntiTriplet(dip2->Triplet());
   dip1->Update();
   dip2->Update();
-
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<"       after gluon emission: "<<std::endl;
-    dip1->Output();
-    dip2->Output();
-  }
-
 
   SP(Dipole) first(dip1), second(dip2);
   if (ran.Get()<(dip1->Mass2()-dip1->Triplet()->m_mom.Abs2())/
@@ -76,15 +68,6 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
   dip1->Update();
   dip2->Update();
 
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<"       after gluon splitting: "<<std::endl;
-    dip1->Output();
-    dip2->Output();
-    msg_Out()<<"       Total momentum : "
-	     <<(dip1->Momentum()+dip2->Momentum())<<" ("
-	     <<(dip1->Momentum()+dip2->Momentum()).Abs2()<<")."<<std::endl;
-  }
-
   SP(Cluster) left  = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
   SP(Cluster) right = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
 #ifdef memchecker
@@ -96,82 +79,194 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
   left->SetPrev(cluster);
   right->SetPrev(cluster);
 
+  Vec4D check = cluster->Momentum()-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum();
+  if (!IsZero(check.Abs2()) || !IsZero(check[0])) {
+    std::cout<<"Error in "<<METHOD<<":"<<std::endl
+	     <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
+	     <<"   "<<cluster->Momentum()<<"  ---> "<<std::endl
+	     <<"   "<<cluster->Momentum()<<" + "<<cluster->Momentum()<<"."<<std::endl;
+    abort();
+  }
   return true;
 }
 
-Dipole *Dipole_Splitter::EmitGluon(const double pt2max) {
+SP(Dipole) Dipole_Splitter::EmitGluon(const double pt2max) {
   SetSpectatorAndSplitter();
-
-  m_M2      = p_dip->Mass2();
-  m_flav    = Flavour(kf_gluon);
-  m_m1      = p_constituents->Mass(p_spect->m_flav);
-  m_m12     = sqr(m_m1);
-  m_m2      = p_constituents->Mass(m_flav);
-  m_m22     = sqr(m_m2);
-  m_m3      = p_constituents->Mass(p_split->m_flav);
-  m_m32     = sqr(m_m3);
-  m_2p3     = m_m3;
-  m_xt2min  = sqr(m_m1+m_2p3min/2.)*sqr(m_m3+m_2p3min/2.)/m_M2;
-  if (pt2max>0.) m_pt2veto = pt2max;
-  m_xt2     = m_xt2max = 1./4.;
-  m_y       = m_ybound = -1./2. * log(m_xt2min);  
-  m_pref    = 4./3.;
-
-  if (!DetermineSplitting(false)) {
-    msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
-		  <<"   Could not split dipole, must retry event."<<std::endl;
-    return NULL;
+  if (!PrepareKinematics(pt2max) || !DetermineSplitting(false)) {
+    //msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+    //	       <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
+    //(*p_dip).Output();
+    return false;
   }
-  if (FixKinematics(false)) {
-    return new Dipole(p_out1,p_dip->AntiTriplet());
-  }
-  return NULL;
+  p_spect->m_mom = m_mom1;
+  p_out1 = new Proto_Particle(m_flav2,m_mom2,'l');
+  p_split->m_mom = m_mom3;
+
+  return new Dipole(p_out1,p_dip->AntiTriplet());
 }
 
 bool Dipole_Splitter::SplitDipole(SP(Dipole) dip,const double pt2max) {
   p_dip = dip;
-
   SetSpectatorAndSplitter();
-  m_M2      = p_dip->Mass2();
-  m_m1      = p_constituents->Mass(p_spect->m_flav);
-  if (sqrt(m_M2)-m_m1-m_2p3min<=1.e-8) return false;
-  m_m12     = sqr(m_m1);
-  m_xt2min  = sqr((m_m1+m_2p3min/2.)*(m_2p3min)/m_M2);
-  if (pt2max>0.) m_pt2veto = pt2max;
-  m_xt2     = m_xt2max = 1./4.;
-  m_y       = m_ybound = -1./2. * log(m_xt2min);  
-  m_pref    = 0.;
-  m_flav    = Flavour(kf_none);
-  double maxwt(0.), wt;
-  for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
-    if (fdit->second->popweight<=0. || 
-	m_m1+fdit->second->massmin>sqrt(m_M2)) continue;
-    m_pref += wt = fdit->second->popweight;
-    if (wt>maxwt) maxwt = wt;
-  }
-  m_pref /= maxwt;
-  if (maxwt==0.) {
-    if (msg->LevelIsDebugging()) {
-      msg_Out()<<METHOD<<" : cannot decay this dipole: "<<std::endl;
-      p_dip->Output();
-    }
+  if (!PrepareKinematics(pt2max) || !DetermineSplitting(true)) {
+    //msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+    //	       <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
+    //(*p_dip).Output();
     return false;
+  }
+  p_spect->m_mom = m_mom1;
+  p_out1 = new Proto_Particle(m_flav2,m_mom2,'l');
+  p_out2 = new Proto_Particle(m_flav3,m_mom3,'l');
+  return true;
+}
+
+bool Dipole_Splitter::DetermineSplitting(const bool glusplit) {
+  double pt2test, ztest;
+  ATOOLS::Flavour flavtest;
+  int trials(0);
+  do {
+    m_kt2 = p_as->SelectPT(m_kt2_max);
+    m_z   = ran.Get();
+    m_phi = 2.*M_PI*ran.Get();
+    if (glusplit) SelectFlavour();
+    trials++;
+    if (trials>100) return false;
+  } while (!ConstructKinematics());
+  return true;
+}
+
+void Dipole_Splitter::SelectFlavour() {
+  double maxmass(sqrt((m_Q2-m_m1_2)/4.)),sumwt(0.);
+  m_flav3 = p_options->begin()->first;
+  m_flav2 = m_flav3.Bar();
+  for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
+    if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) 
+      sumwt += fdit->second->popweight;
+  }
+  sumwt *= ran.Get();
+  for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
+    if (fdit->second->popweight>0. && fdit->second->massmin<maxmass)
+      sumwt -= fdit->second->popweight;
+    if (sumwt<=0.) {
+      m_flav3 = fdit->first;
+      if (m_flav3.IsDiQuark()) m_flav3 = m_flav3.Bar(); 
+      m_flav2 = m_flav3.Bar();
+      break;
+    }
+  }
+  m_m2    = m_m3    = p_constituents->Mass(m_flav3);
+  m_m2_2  = m_m3_2  = sqr(m_m2); 
+}
+
+bool Dipole_Splitter::PrepareKinematics(const double pt2max) {
+  m_mom1    = p_spect->m_mom;
+  m_mom2    = p_split->m_mom;
+  m_mom0    = m_mom1+m_mom2;
+
+  m_Q2      = m_mom0.Abs2();
+  m_Q       = sqrt(m_Q2);
+  m_cms     = Poincare(m_mom0);
+  m_cms.Boost(m_mom0);
+  m_cms.Boost(m_mom1);
+  m_cms.Boost(m_mom2);
+
+  m_zrot   = Poincare(m_mom1,Vec4D::ZVEC);
+  m_zrot.Rotate(m_mom1);
+  m_zrot.Rotate(m_mom2);
+  
+  m_flav2          = Flavour(kf_gluon);
+  m_flav3          = p_split->m_flav;
+
+  m_m1             = p_constituents->Mass(p_spect->m_flav);
+  m_m3   = m_m23   = p_constituents->Mass(p_split->m_flav);
+  m_m1_2           = sqr(m_m1);
+  m_m3_2 = m_m23_2 = sqr(m_m23);
+  m_m2             = p_constituents->Mass(m_flav2);
+  m_m2_2           = sqr(m_m2);
+
+
+  if (m_Q-m_m1-2.*sqrt(m_mmin_2)<0.) return false;
+  
+  if (pt2max>0.) m_kt2_max = ATOOLS::Min((m_Q2-m_m1_2)/4.,pt2max);
+            else m_kt2_max = (m_Q2-m_m1_2)/4.;
+
+  if (m_kt2<0.) {
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   No physical splitting possible for pt2max = "<<pt2max<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool Dipole_Splitter::ConstructKinematics() {
+  Vec4D q1(0.,0.,0.,0.),q2(0.,0.,0.,0.),q3(0.,0.,0.,0.);
+  Vec4D nperp = Vec4D(0.,cos(m_phi)*s_ex + sin(m_phi)*s_ey);
+  if (m_m1_2==0.) {
+    double kt   = sqrt(m_kt2);
+    double fac1 = m_Q2 - ((1.-m_z)*m_m2_2+m_z*m_m3_2+m_kt2)/(m_z*(1.-m_z));
+    if (fac1<0.) return false;
+    double div  = m_Q2-m_m23_2;
+    fac1 /= div;
+    
+    q1 =                                                             fac1 * m_mom1;
+    q2 =      m_z * m_mom2 +    (m_kt2+m_m2_2-sqr(m_z)*m_m23_2)/(m_z*div) * m_mom1 + kt * nperp;
+  }
+  else {
+    double y   =
+      (m_kt2/(m_z*(1.-m_z))+(1.-m_z)/m_z*m_m2_2+m_z/(1.-m_z)*m_m3_2)/
+      (m_Q2-m_m1_2-m_m2_2-m_m3_2);
+    double s23 = y*(m_Q2-m_m1_2)+(1.-y)*(m_m2_2+m_m3_2);
+    double po  = sqr(m_Q2-m_m23_2-m_m1_2)-4.*m_m23_2*m_m1_2; 
+    double pn  = sqr(m_Q2-s23-m_m1_2)-4.0*s23*m_m1_2;
+    if (po<0.0 || pn<0.0) return false;
+
+    q1 = 
+      (m_Q2+m_m1_2-s23)/(2.*m_Q2)*m_mom0+
+      sqrt(pn/po) * (m_mom1 - (m_Q2+m_m1_2-m_m23_2)/(2.*m_Q2) * m_mom0);
+
+    Vec4D  q23 = m_mom0-q1;
+    double gam = q23*q1+sqrt(sqr(q23*q1)-s23*m_m1_2);
+    double a23 = s23/gam, a1=m_m1_2/gam, beta=1.0/(1.0-a23*a1);
+    Vec4D  l   = beta*(q23-a23*q1);
+    Vec4D  n   = beta*(q1-a1*q23);
+    double zt  =
+      (m_z/a1-y/(1.-y)-2.*m_m2_2/gam/(1.+a23*a1))/
+      ((1./a1-(m_m2_2+m_m3_2)/gam)/(1.0+a23*a1)-y/(1.0-y));
+    double lt2 = gam*y/(1.-y)*(1.+a23*a1)*zt*(1.-zt)-sqr(1.-zt)*m_m2_2-zt*zt*m_m3_2;
+    if (lt2<0.0) return false;
+
+    double lt  = sqrt(lt2);
+    q2 = zt*l + (m_m2_2+lt2)/(gam*zt)*n + lt*nperp;
+
+    q3 = m_mom0-q2-q1;
+    
+    if (q1[0]<0. || q2[0]<0. || q3[0]<0.) return false;
   }
 
-  if (!DetermineSplitting()) {
-    msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
-		  <<"   Could not split dipole, must retry event."<<std::endl;
-    return false;
+  
+  q3 = m_mom0-q2-q1;
+
+  m_zrot.RotateBack(q1);
+  m_zrot.RotateBack(q2);
+  m_zrot.RotateBack(q3);
+  m_cms.BoostBack(q1);
+  m_cms.BoostBack(q2);
+  m_cms.BoostBack(q3);
+
+  m_mom1 = q1;
+  m_mom2 = q2;
+  m_mom3 = q3;
+
+  m_cms.BoostBack(m_mom0);
+
+  Vec4D check = (m_mom0-m_mom1-m_mom2-m_mom3);
+  if (!IsZero(check.Abs2())) {
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   4 mom-check failed for kinematics: "
+	       <<check<<" ("<<check.Abs2()<<")."<<std::endl;
+    abort();
   }
-  if (FixKinematics()) {
-#ifdef memchecker
-    msg_Out()<<"### Delete Proto_Particle ("<<p_split
-    	     <<"/"<<p_split->m_flav<<") in "<<METHOD<<"."<<std::endl;
-#endif
-    return true;
-  }
-  msg_Tracking()<<"ERROR in "<<METHOD<<" FixKinematics did not work out!"<<std::endl;
-  return false;
+  return true;
 }
 
 void Dipole_Splitter::SetSpectatorAndSplitter() {
@@ -206,181 +301,4 @@ void Dipole_Splitter::SetSpectatorAndSplitter() {
   }
 }
 
-bool Dipole_Splitter::DetermineSplitting(bool glusplit) {
-  do { 
-    if (!SelectPT_Y(glusplit)) {
-      if (!MinimalDecay(glusplit)) return false;
-      break; 
-    } 
-  } while (Veto());
-  return true;
-}
 
-bool Dipole_Splitter::SelectPT_Y(bool glusplit) {
-  double expo = sqr(log(m_xt2))-log(ran.Get())/(m_asmax*m_pref);
-  if (expo<0.) {
-    return false;
-  }
-  m_xt2 = exp(-sqrt(expo));
-  if (m_xt2<m_xt2min) {
-    return false;
-  }
-  m_y   = m_ybound*(2.*ran.Get()-1.);
-  if (glusplit) {
-    FDIter fdit;
-    double disc = 0.9999999*m_pref*ran.Get();
-    for (fdit=p_options->begin();fdit!=p_options->end();fdit++) {
-      if (fdit->second->popweight<=0. || 
-	  m_m1+fdit->second->massmin>sqrt(m_M2)) continue;
-      disc -= fdit->second->popweight;
-      if (disc<0) { 
-	m_flav = fdit->first; 
-	m_2p3 = fdit->second->massmin; 
-	m_m2  = m_m3 = m_2p3/2.;
-	m_m22 = m_m32 = sqr(m_m2);
-	break; 
-      }
-    }
-    if (m_flav.IsDiQuark()) m_flav = m_flav.Bar();
-  }
-  return true;
-}
-
-bool Dipole_Splitter::Veto() {
-  if (m_flav==Flavour(kf_none))        return true;
-  double ytruebound(log(1./(2.*sqrt(m_xt2))*(1.+sqrt(1.-4.*m_xt2))));
-  if (dabs(m_y)>ytruebound)             return true;
-  CalculateInvariants();
-  if (!ConstructKinematics())           return true;
-  if (m_asmax*ran.Get()>(*p_as)(m_pt2)) return true;
-  if (m_pt2>m_pt2veto)                  return true;
-  return false;
-}
-
-bool Dipole_Splitter::MinimalDecay(bool glusplit) {
-  if (glusplit) {
-    double disc = 0.9999999*m_pref*ran.Get();
-    for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
-      if (fdit->second->popweight<=0. || 
-	  m_m1+fdit->second->massmin>sqrt(m_M2)) continue;
-      disc -= fdit->second->popweight;
-      if (disc<0) { m_flav = fdit->first; m_2p3 = fdit->second->massmin; break; }
-    }
-    if (m_flav.IsDiQuark()) m_flav = m_flav.Bar();
-    m_m2  = m_m3 = m_2p3/2.;
-    m_m22 = m_m32 = sqr(m_m2);
-  }
-  else {
-    m_2p3 = m_2p3min+m_m3;
-  }
-
-  m_s23 = sqr(m_2p3);
-  m_s12 = m_m12+m_m22+Max(m_m2,m_2p3min/2.)/m_2p3*(m_M2-m_m12-m_s23);
-
-  if (!ConstructKinematics()) {
-    if (msg->LevelIsTracking()) {
-      msg_Out()<<"ERROR in "<<METHOD<<" : "<<std::endl
-	       <<"   Could not construct any decay for dipole below."<<std::endl
-	       <<"   This will lead to a new event."<<std::endl;
-      p_dip->Output();
-    }
-    return false;
-  }
-  return true;
-}
-
-void Dipole_Splitter::CalculateInvariants() {
-  double Mp(sqrt(m_xt2)*m_M2);
-  m_s12 = Mp*exp(-m_y);
-  m_s23 = Mp*exp(+m_y);
-}
-
-bool Dipole_Splitter::ConstructKinematics() {
-  if (m_s12<sqr(m_m1+m_m2) || m_s23<sqr(m_m2+m_m3)) {
-    return false;
-  }
-  double Mred2 = m_M2-(m_s23+m_m12);     
-  if (sqr(Mred2)<4.*m_s23*m_m12 || Mred2<0.) {
-    return false;
-  }
-  double gamma = (Mred2+sqrt(sqr(Mred2)-4.*m_s23*m_m12))/2.;
-  double a1    = Max(m_m12,0.)/gamma;
-  double a23   = m_s23/gamma;
-  double lpm   = sqrt(gamma)/2.;
-  Vec4D lplus  = lpm*Vec4D(1.,0.,0.,1.);
-  Vec4D lminus = lpm*Vec4D(1.,0.,0.,-1.);
-  Vec4D mom23  = lplus+a23*lminus;
-  double z2    = (m_s12-(m_m12+m_m22)-a1*(m_s23-(m_m32-m_m22)))/(gamma-a1*m_s23);
-  double z3    = 1.-z2;
-  m_pt2        = z2*(1.-z2)*m_s23-(1.-z2)*m_m22-z2*m_m32;
-  if (ATOOLS::IsZero(m_pt2)) m_pt2 = 0.;
-  if (m_pt2<0. || m_pt2>m_pt2veto) {
-    return false;
-  }                                   
-  double phi   = 2.*M_PI*ran.Get();
-  Vec4D  kperp = sqrt(m_pt2)*Vec4D(0.,cos(phi),sin(phi),0.);
-  double y2    = (m_m22+m_pt2)/(z2*m_s23);
-  double y3    = (m_m32+m_pt2)/(z3*m_s23);
-
-  m_mom1       = lminus+a1*lplus;
-  m_mom2       = z2*lplus+y2*a23*lminus+kperp;
-  m_mom3       = z3*lplus+y3*a23*lminus-kperp;
-  return true;
-}
-
-bool Dipole_Splitter::FixKinematics(bool glusplit) {
-  Vec4D q1(p_split->m_mom),q2(p_spect->m_mom),q(q1+q2);
-  Vec4D k(m_mom1+m_mom2+m_mom3);
-
-#ifdef AHAmomcheck
-  Vec4D checkbef(q);
-#endif
-
-  Poincare boostk(k);
-  boostk.Boost(m_mom1);
-  boostk.Boost(m_mom2);
-  boostk.Boost(m_mom3);
-  
-  Poincare boost(q);
-  boost.Boost(q1);
-  boost.Boost(q2);
-  Poincare rotate(q1,Vec4D(1.,Vec3D::ZVEC));
-  rotate.Rotate(q1);
-  rotate.Rotate(q2);
-
-  rotate.RotateBack(m_mom1);
-  rotate.RotateBack(m_mom2);
-  rotate.RotateBack(m_mom3);
-  boost.BoostBack(m_mom1);
-  boost.BoostBack(m_mom2);
-  boost.BoostBack(m_mom3);
-
-#ifdef AHAmomcheck
-  Vec4D checkaft = m_mom1+m_mom2+m_mom3;
-
-  if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
-    msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
- 	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
-  }
-  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
-#endif
-
-  if (glusplit) {
-    p_out1 = new Proto_Particle(m_flav.Bar(),m_mom2,'l');
-    p_out2 = new Proto_Particle(m_flav,m_mom3,'l');
-#ifdef memchecker
-    msg_Out()<<"### Two new Proto_Particles ("<<p_out1<<"/"<<p_out2
-    	     <<" -- "<<m_flav.Bar()<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
-#endif
-  }
-  else {
-    p_out1 = new Proto_Particle(m_flav,m_mom2,'l');
-#ifdef memchecker
-    msg_Out()<<"### New Proto_Particle ("<<p_out1<<"/"<<m_flav<<") from "<<METHOD<<"."<<std::endl;
-#endif
-    p_out2 = NULL;
-    p_split->m_mom = m_mom3;
-  }
-  p_spect->m_mom = m_mom1;
-  return true;
-}

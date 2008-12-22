@@ -46,16 +46,17 @@ void Hadronisation_Parameters::Init(string dir,string file)
   p_doubletransitions = new Double_Transitions();
   if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
 
-  p_softclusters      = new Soft_Cluster_Handler(p_singletransitions,p_doubletransitions,
+  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::GDH_inspired;
+  p_coupling          = new Strong_Coupling(m_asform,dabs(m_parametermap[string("pt02")]));
+  p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
+
+  p_softclusters      = new Soft_Cluster_Handler(p_coupling,p_singletransitions,p_doubletransitions,
 						 m_parametermap[string("Offset_C->H")],
 						 m_parametermap[string("Offset_C->HH")],
 						 m_parametermap[string("C->H_Transition_Factor")],
 						 m_parametermap[string("C->HH_Decay_Exponent")],
 						 m_parametermap[string("C->HH_Decay_Angle")],
 						 m_parametermap[string("Photon_Energy")],true);
-  if (m_parametermap[string("pt02")]==0.) m_asform = asform::GDH_inspired;
-  p_coupling          = new Strong_Coupling(m_asform,m_parametermap[string("pt02")]);
-  p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
@@ -65,7 +66,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
   m_parametermap[string("pt02")]               = 
-    dataread.GetValue<double>("PT^2_0",0.);
+    dataread.GetValue<double>("PT^2_0",-0.36);
   m_parametermap[string("ptmax")]              = 
     dataread.GetValue<double>("PT_MAX",1.0);
   m_parametermap[string("asfix")]              = 

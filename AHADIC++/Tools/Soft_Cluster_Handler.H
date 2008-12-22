@@ -3,16 +3,26 @@
 
 #include "Transitions.H"
 #include "Hadronisation_Parameters.H"
+#include "Strong_Coupling.H"
 #include "Cluster.H"
 #include "Histogram.H"
 #include <map>
 
 namespace AHADIC {
+  struct PTdist {
+    enum code {
+      sinthet   = 1,
+      alphadist = 2
+    };
+  };
+
   class Soft_Cluster_Handler {
   private:
+    Strong_Coupling    * p_as;
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
+    PTdist::code         m_ptmode;
     double               m_offset1,m_offset2,m_kappa,m_alpha,m_eta,m_photonenergy;
     
     Cluster_List *       m_clin;
@@ -25,6 +35,7 @@ namespace AHADIC {
     int    EnforceDecay(SP(Cluster)); 
     double DecayWeight(SP(Cluster),ATOOLS::Flavour &,ATOOLS::Flavour &);
     double TransformWeight(SP(Cluster),ATOOLS::Flavour &,bool=false);
+    double SelectPT(double PTmax);
     void   FixHHDecay(SP(Cluster),ATOOLS::Blob *);
 
 
@@ -33,7 +44,8 @@ namespace AHADIC {
     bool   TryToEnforceTransition(Cluster_List * clin);
     bool   ShiftMomenta(Cluster_List *);
   public:
-    Soft_Cluster_Handler(Single_Transitions * singletransitions,
+    Soft_Cluster_Handler(Strong_Coupling * as,
+			 Single_Transitions * singletransitions,
 			 Double_Transitions * doubletransitions,
 			 const double offset1,const double offset2,
 			 const double kappa,const double alpha,const double eta,

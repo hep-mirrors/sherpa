@@ -30,6 +30,7 @@ namespace AHADIC {
 
     const double operator()(double q2) const;     
     const double MaxValue() const { return m_asmax; }
+    const double SelectPT(const double pt2max) const;
   };
 }
 

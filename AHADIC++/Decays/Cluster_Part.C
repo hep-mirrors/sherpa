@@ -41,7 +41,9 @@ bool Cluster_Part::TestDecay(SP(Cluster) const cluster)
   cluster->BoostInCMSAndRotateOnZ();
   if (!p_splitter->SplitCluster(cluster)) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
-		  <<"   Could not split cluster, may lead to new event."<<std::endl;
+		  <<"   Could not split cluster "<<std::endl
+		  <<(*cluster)<<std::endl
+		  <<"   may lead to new event."<<std::endl;
     return false;
   }
   if (m_ana) {

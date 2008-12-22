@@ -24,13 +24,14 @@ void Dipole::Update()
 
 void Dipole::Output() 
 {
-  msg_Out()<<"--- Dipole["<<this<<"] ("<<p_triplet<<" "<<p_antitriplet<<" : ";
+  //msg_Out()<<"--- Dipole["<<this<<"] ("<<p_triplet<<" "<<p_antitriplet<<" : ";
+  msg_Out()<<"--- Dipole[";
   if (p_triplet!=NULL) msg_Out()<<p_triplet->m_flav;
   else msg_Out()<<" no flav ";
-  msg_Out()<<" ";
+  msg_Out()<<", ";
   if (p_antitriplet!=NULL) msg_Out()<<p_antitriplet->m_flav;
   else msg_Out()<<" no flav ";
-  msg_Out()<<", "<<sqrt(m_mass2)<<") ---"<<std::endl<<"--- ";
+  msg_Out()<<"], "<<sqrt(m_mass2)<<", decay = "<<m_mustdecay<<") ---"<<std::endl<<"--- ";
   if (p_triplet!=NULL)	
     msg_Out()<<p_triplet->m_mom<<" "
 	     <<sqrt(ATOOLS::Max(p_triplet->m_mom.Abs2(),0.));

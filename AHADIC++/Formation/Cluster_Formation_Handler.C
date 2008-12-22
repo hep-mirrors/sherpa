@@ -66,15 +66,20 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (blob==NULL) return 1;
   assert(m_partlists.empty() && m_clulists.empty());
 
-  if (!ExtractSinglets(blob))      return -1;
-  if (!ShiftOnMassShells())        return -1;
-  if (!FormOriginalClusters())     return -1;
-  if (!ApplyColourReconnections()) return 0;
-  if (!MergeClusterListsIntoOne()) return 0;
-  if (!ClustersToHadrons(blob))    return -1;
+  msg_Debugging()<<"=================================================================="<<std::endl
+		 <<"=================================================================="<<std::endl
+		 <<"=================================================================="<<std::endl
+		 <<"In "<<METHOD<<": hadronize "<<blob->NOutP()<<" partons."<<std::endl
+		 <<(*blob)<<std::endl;
+  if (!ExtractSinglets(blob))      { return -1; }
+  if (!ShiftOnMassShells())        { return -1; }
+  if (!FormOriginalClusters())     { return -1; }
+  if (!ApplyColourReconnections()) { return 0; }
+  if (!MergeClusterListsIntoOne()) { return 0; }
+  if (!ClustersToHadrons(blob))    { return -1; }
 
+  msg_Debugging()<<"Formed clusters : "<<std::endl<<(*p_clulist)<<std::endl<<(*p_primaries)<<std::endl;
   return 1;
-
 }
 
 
@@ -294,10 +299,10 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
       pplit=m_partlists.erase(pplit);
     }
     else {
-      msg_Tracking()<<"WARNING in "<<METHOD<<":"<<std::endl
-		    <<"   Could not form a suitable list after gluon decays from :"<<std::endl
-		    <<(**pplit)
-		    <<"   Try a new event."<<std::endl;
+      msg_Debugging()<<"WARNING in "<<METHOD<<":"<<std::endl
+		     <<"   Could not form a suitable list after gluon decays from :"<<std::endl
+		     <<(**pplit)
+		     <<"   Try a new event."<<std::endl;
       Reset();
       return false;
     }

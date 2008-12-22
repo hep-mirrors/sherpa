@@ -1,6 +1,7 @@
 #include "Strong_Coupling.H"
 #include "Hadronisation_Parameters.H"
 #include "Running_AlphaS.H"
+#include "Random.H"
 #include "Model_Base.H"
 #include "Message.H"
 
@@ -21,7 +22,7 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
     //std::cout<<"Check this: gamma = "<<m_gamma<<" from beta = "<<m_beta0<<std::endl
     //	     <<"with further params {a,b,c,d} = {"<<m_a<<","<<m_b<<","<<m_c<<","<<m_d<<"}"
     //	     <<" and m, mg, n = "<<sqrt(m_m2)<<", "<<sqrt(mg2(0.))<<", "<<n(0.)<<std::endl;
-    m_asmax   = (*this)(m_pt02);
+    m_asmax   = (*this)(0.);
     break;
   case asform::constant:
   case asform::fall_off:
@@ -76,4 +77,13 @@ const double Strong_Coupling::n(const double Q) const {
 
 const double Strong_Coupling::mg2(const double Q) const {
   return m_m2/sqr(1.+pow(m_a*Q,m_d));
+}
+
+const double Strong_Coupling::SelectPT(const double pt2max) const {
+  double pt2;
+  while (true) {
+    pt2 = m_pt02*(pow(pt2max/m_pt02+1.,ran.Get())-1.);
+    if ((*this)(pt2)/m_asmax>ran.Get()) break;
+  }
+  return pt2;
 }

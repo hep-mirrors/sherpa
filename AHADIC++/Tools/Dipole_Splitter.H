@@ -15,40 +15,40 @@ namespace AHADIC {
   
   class Dipole_Splitter {
   private:
+    const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
+
     Strong_Coupling * p_as; 
     Constituents    * p_constituents;
     FlavDecayMap    * p_options;
 
-    SP(Dipole)        p_dip;
-    SP(Proto_Particle)  p_spect, p_split, p_out1, p_out2;
+    SP(Dipole)         p_dip;
+    SP(Proto_Particle) p_spect, p_split, p_out1, p_out2;
+    double             m_mmin_2;
 
-    double            m_M2,m_m1,m_m2,m_m3,m_m12,m_m22,m_m32,m_2p3,m_2p3min;
-    double            m_s12,m_s23,m_pt2veto,m_pt2,m_asmax;
-    double            m_xt2,m_xt2max,m_xt2min,m_y,m_ybound;
-    double            m_pref;
-    ATOOLS::Flavour   m_flav;
-
-    ATOOLS::Vec4D     m_mom1, m_mom2, m_mom3;
-
-    Dipole  *EmitGluon(const double=-1.);
-    void     SetSpectatorAndSplitter();
-    bool     DetermineSplitting(bool glusplit=true);
-    bool     SelectPT_Y(bool glusplit=true);
-    bool     Veto();
-    bool     MinimalDecay(bool glusplit=true);
-    void     CalculateInvariants();
-    bool     ConstructKinematics();
-    bool     FixKinematics(bool glusplit=true);
+    ATOOLS::Poincare   m_cms,m_zrot;
+    ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
+    double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
+    double             m_Q2,m_Q,m_kt2,m_z,m_phi,m_kt2_max;
+    
+    ATOOLS::Flavour    m_flav2,m_flav3;
+   
+    SP(Dipole)    EmitGluon(const double);
+    void          SetSpectatorAndSplitter();
+    bool          DetermineSplitting(const bool glusplit);
+    void          SelectFlavour();
+    bool          PrepareKinematics(const double pt2max);
+    bool          ConstructKinematics();
   public:
     Dipole_Splitter(Strong_Coupling *,const double ptmax);
+
     bool SplitCluster(SP(Cluster) clu,const double pt2max=-1.);
     bool SplitDipole(SP(Dipole) dip,const double pt2max=-1.);
+
     void UpdateSpectator();
     void GetNewParticles(SP(Proto_Particle)& out1,SP(Proto_Particle)& out2);
     void SetOptions(FlavDecayMap *);
 
-    double          PT2()  { return m_pt2; }
-    ATOOLS::Flavour Flav() { return m_flav; }
+    double PT2() { return m_kt2; }
   };
 
   inline void Dipole_Splitter::GetNewParticles(SP(Proto_Particle)& out1,
@@ -63,6 +63,7 @@ namespace AHADIC {
   inline void Dipole_Splitter::SetOptions(FlavDecayMap * options) {
     p_options = options;
   }
+
 
   /*! 
     \file
