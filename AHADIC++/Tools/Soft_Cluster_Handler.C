@@ -443,16 +443,26 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
-double Soft_Cluster_Handler::SelectPT(double pt2max) {
+double Soft_Cluster_Handler::SelectPT(double pt2max,bool peaked) {
   double pt(0.);
-  switch (m_ptmode) {
-  case (PTdist::sinthet):
-    pt = sqrt(pt2max)*pow(ran.Get(),m_eta);
-    break;
-  case (PTdist::alphadist):
-  default:
-    pt = sqrt(p_as->SelectPT(pt2max));
-    break;
+  if (int(m_ptmode)>10 && !peaked) {
+    //std::cout<<"   ... isotropic from "<<int(m_ptmode)<<"."<<std::endl;
+    double costheta = -1.+2.*ran.Get(), sintheta2 = 1.-sqr(costheta); 
+    pt = sqrt(pt2max*sintheta2);
+  }
+  else {
+    //std::cout<<"   ... peaked from "<<int(m_ptmode)<<"."<<std::endl;
+    switch (m_ptmode) {
+    case (PTdist::sinthet):
+    case (PTdist::sinthet_iso):
+      pt = sqrt(pt2max)*pow(ran.Get(),m_eta);
+      break;
+    case (PTdist::alphadist):
+    case (PTdist::alphadist_iso):
+    default:
+      pt = sqrt(p_as->SelectPT(pt2max));
+      break;
+    }
   }
   return pt;
 }
@@ -469,7 +479,13 @@ void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
 
   cluster->BoostInCMSAndRotateOnZ();
   double E1      = (M2+m12-m22)/(2.*M);
-  double pt      = SelectPT(sqr(E1)-m12);
+
+  bool peaked    = (cluster->GetTrip()->m_info=='L') || (cluster->GetAnti()->m_info=='L');
+
+  //std::cout<<"In "<<METHOD<<" for "<<cluster->GetTrip()->m_info
+  //	   <<" "<<cluster->GetAnti()->m_info<<" --> "<<peaked<<"."<<std::endl;
+
+  double pt      = SelectPT(sqr(E1)-m12,peaked);
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);

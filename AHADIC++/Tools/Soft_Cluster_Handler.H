@@ -11,8 +11,10 @@
 namespace AHADIC {
   struct PTdist {
     enum code {
-      sinthet   = 1,
-      alphadist = 2
+      sinthet       = 1,
+      alphadist     = 2,
+      sinthet_iso   = 11,
+      alphadist_iso = 12
     };
   };
 
@@ -35,7 +37,7 @@ namespace AHADIC {
     int    EnforceDecay(SP(Cluster)); 
     double DecayWeight(SP(Cluster),ATOOLS::Flavour &,ATOOLS::Flavour &);
     double TransformWeight(SP(Cluster),ATOOLS::Flavour &,bool=false);
-    double SelectPT(double PTmax);
+    double SelectPT(double PTmax,bool peaked=true);
     void   FixHHDecay(SP(Cluster),ATOOLS::Blob *);
 
 
