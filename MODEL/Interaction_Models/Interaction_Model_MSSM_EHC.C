@@ -85,18 +85,84 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
   
   for (int i=25;i<36;i+=10) {
     Flavour flh = Flavour((kf_code)(i));
-    if(!flh.IsOn()||!flg.IsOn())return;
+    if(flh.IsOn() && flg.IsOn()) {
+    
+      // 3 gluon higgs
+      vertex[vanz].nleg    = 4;
+      for (short int i=0;i<3;i++)
+	vertex[vanz].in[i] = flg;
+      vertex[vanz].in[3] = flh;
+      
+      ghgg  = Kabbala(string("g_{")+flh.TexName()+string("gg}"),ScalarConstant(flh.IDName()+string("_gg_fac"))*
+		      ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+      
+      kcpl0 = g3*ghgg; 
+      kcpl1 = kcpl0; 
+      
+      vertex[vanz].cpl[0]  = kcpl0;
+      vertex[vanz].cpl[1]  = kcpl1;
+      vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+      
+      vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+      vertex[vanz].Color.back().SetParticleArg(0,2,1);     
+      vertex[vanz].Color.back().SetStringArg('0','2','1');     
+      
+      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Box",LF_Key()));     
+      vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
+      
+      vertex[vanz].on      = 1;
+      vertex.push_back(Single_Vertex());vanz++;
+    }
+    Flavour flsh(kf_shgluon);
+    kcpl0 = M_I*g3*g3*ghgg; 
+    kcpl1 = kcpl0; 
+    
+    if(flsh.IsOn()) {
+      for (short int i=0;i<3;i++) vertex[vanz].in[i] = flg;
+      vertex[vanz].in[3] = flsh;
+      
+      vertex[vanz].nleg            = 4;
+      vertex[vanz].cpl[0]          = kcpl0;
+      vertex[vanz].cpl[1]          = kcpl1;
+      vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
+      
+      vertex[vanz].Color.resize(3);
+      vertex[vanz].Lorentz.resize(3); 
+      
+      vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4',
+						    new Color_Function(cf::F,1,3,4,'1','3','4'));
+      vertex[vanz].Lorentz[0]=LF_Getter::GetObject("Gluon4",LF_Key());
+      vertex[vanz].Lorentz[0]->SetParticleArg(0,1,2,3);     
+      
+      vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4',
+						    new Color_Function(cf::F,1,2,4,'1','2','4'));
+      vertex[vanz].Lorentz[1]=LF_Getter::GetObject("Gluon4",LF_Key());
+      vertex[vanz].Lorentz[1]->SetParticleArg(0,1,3,2);     
+      
+      vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4',
+						    new Color_Function(cf::F,3,2,4,'3','2','4')); 
+      vertex[vanz].Lorentz[2]=LF_Getter::GetObject("Gluon4",LF_Key());     
+      vertex[vanz].Lorentz[2]->SetParticleArg(0,3,1,2);     
+      
+      vertex[vanz].on              = 1;
+      vertex[vanz].t               = 1;
+      vertex.push_back(Single_Vertex());vanz++;
+    }
+  }
+  
+  Flavour flA = Flavour((kf_code)(kf_A0));
+  if(flA.IsOn() && flg.IsOn()) {
     
     // 3 gluon higgs
     vertex[vanz].nleg    = 4;
     for (short int i=0;i<3;i++)
       vertex[vanz].in[i] = flg;
-    vertex[vanz].in[3] = flh;
+    vertex[vanz].in[3] = flA;
     
-    ghgg  = Kabbala(string("g_{")+flh.TexName()+string("gg}"),ScalarConstant(flh.IDName()+string("_gg_fac"))*
-		    ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+    ghgg  = Kabbala(string("g_{")+flA.TexName()+std::string("gg}"),ScalarConstant(string("A0_gg_fac"))*
+		    ScalarFunction(string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/ScalarConstant(string("vev")));
     
-    kcpl0 = g3*ghgg; 
+    kcpl0 = -g3*ghgg; 
     kcpl1 = kcpl0; 
     
     vertex[vanz].cpl[0]  = kcpl0;
@@ -107,78 +173,13 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Color.back().SetParticleArg(0,2,1);     
     vertex[vanz].Color.back().SetStringArg('0','2','1');     
     
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Box",LF_Key()));     
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("PseudoBox",LF_Key()));     
     vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
     
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
-    
-    Flavour flsh(kf_shgluon);
-    kcpl0 = M_I*g3*g3*ghgg; 
-    kcpl1 = kcpl0; 
-    if(!flsh.IsOn()) return;
-    for (short int i=0;i<3;i++) vertex[vanz].in[i] = flg;
-    vertex[vanz].in[3] = flsh;
-    
-    vertex[vanz].nleg            = 4;
-    vertex[vanz].cpl[0]          = kcpl0;
-    vertex[vanz].cpl[1]          = kcpl1;
-    vertex[vanz].Str             = (kcpl0*PR+kcpl1*PL).String();
-    
-    vertex[vanz].Color.resize(3);
-    vertex[vanz].Lorentz.resize(3); 
-    
-    vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4',
-						  new Color_Function(cf::F,1,3,4,'1','3','4'));
-    vertex[vanz].Lorentz[0]=LF_Getter::GetObject("Gluon4",LF_Key());
-    vertex[vanz].Lorentz[0]->SetParticleArg(0,1,2,3);     
-    
-    vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4',
-						  new Color_Function(cf::F,1,2,4,'1','2','4'));
-    vertex[vanz].Lorentz[1]=LF_Getter::GetObject("Gluon4",LF_Key());
-    vertex[vanz].Lorentz[1]->SetParticleArg(0,1,3,2);     
-    
-    vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4',
-						  new Color_Function(cf::F,3,2,4,'3','2','4')); 
-    vertex[vanz].Lorentz[2]=LF_Getter::GetObject("Gluon4",LF_Key());     
-    vertex[vanz].Lorentz[2]->SetParticleArg(0,3,1,2);     
-    
-    vertex[vanz].on              = 1;
-    vertex[vanz].t               = 1;
-    vertex.push_back(Single_Vertex());vanz++;
   }
-
-  Flavour flA = Flavour((kf_code)(kf_A0));
-  if(!flA.IsOn()||!flg.IsOn())return;
-   
-  // 3 gluon higgs
-  vertex[vanz].nleg    = 4;
-  for (short int i=0;i<3;i++)
-    vertex[vanz].in[i] = flg;
-  vertex[vanz].in[3] = flA;
   
-  ghgg  = Kabbala(string("g_{")+flA.TexName()+std::string("gg}"),ScalarConstant(string("A0_gg_fac"))*
-		  ScalarFunction(string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/ScalarConstant(string("vev")));
-  
-  kcpl0 = Kabbala(string("0.5"),.5)*g3*ghgg; 
-//   kcpl0 = g3*ghgg; 
-  kcpl1 = kcpl0; 
-  
-  vertex[vanz].cpl[0]  = kcpl0;
-  vertex[vanz].cpl[1]  = kcpl1;
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  
-  vertex[vanz].Color.push_back(Color_Function(cf::F));;     
-  vertex[vanz].Color.back().SetParticleArg(0,2,1);     
-  vertex[vanz].Color.back().SetStringArg('0','2','1');     
-  
-  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("PseudoBox",LF_Key()));     
-  vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
-  
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
-    
-
 }
 
 void Interaction_Model_MSSM_EHC::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  
@@ -204,10 +205,8 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
   Flavour flg(kf_gluon);
   for (int i=25;i<36;i+=10) {
     Flavour flh = Flavour((kf_code)(i));
-    if (!flh.IsOn()) return;
-    
-    // Gluon h Gluon
-    if (flg.IsOn()) {
+    if (flh.IsOn() && flg.IsOn()) {
+      // Gluon h Gluon
       vertex[vanz].in[0] = flg;
       vertex[vanz].in[1] = flh;
       vertex[vanz].in[2] = flg;
@@ -260,18 +259,17 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
   } 
 
   Flavour flA((kf_code)(kf_A0));
-  if (!flA.IsOn()) return;
-  
-  // Gluon A0 Gluon
-  if (flg.IsOn()) {
+  if (flA.IsOn() && flg.IsOn()) {
+    
+    // Gluon A0 Gluon
     vertex[vanz].in[0] = flg;
     vertex[vanz].in[1] = flA;
     vertex[vanz].in[2] = flg;
     
     ghgg  = Kabbala(std::string("g_{")+flA.TexName()+std::string("gg}"),ScalarConstant(std::string("A0_gg_fac"))*
 		    ScalarFunction(std::string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
-      
-    kcpl0 = M_I*ghgg;
+    
+    kcpl0 = -M_I*ghgg;
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0;
@@ -281,7 +279,9 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Color.push_back(Color_Function(cf::G));;     
     vertex[vanz].Color.back().SetParticleArg(0,2);     
     vertex[vanz].Color.back().SetStringArg('0','2');     
-    
+    vertex[vanz].Color.back().SetParticleArg(2,0);     
+    vertex[vanz].Color.back().SetStringArg('2','0');     
+
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("PseudoTriangle",LF_Key()));     
     vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
       
