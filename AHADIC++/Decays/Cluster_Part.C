@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
-  m_ana(ana), p_splitter(splitter)
+  m_ana(ana), m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), p_splitter(splitter)
 { 
   if (m_ana) {
     m_histograms[string("Flavour_Cluster")] = new Histogram(0,0.,15.,15);
@@ -39,7 +39,7 @@ bool Cluster_Part::TestDecay(SP(Cluster) const cluster)
   Vec4D checkbef = cluster->Momentum();
 #endif
   cluster->BoostInCMSAndRotateOnZ();
-  if (!p_splitter->SplitCluster(cluster)) {
+  if (!p_splitter->SplitCluster(cluster,m_pt2max)) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
 		  <<"   Could not split cluster "<<std::endl
 		  <<(*cluster)<<std::endl

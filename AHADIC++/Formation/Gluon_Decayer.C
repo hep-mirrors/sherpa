@@ -8,7 +8,7 @@ using namespace ATOOLS;
 
 
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
-  p_splitter(splitter), m_analyse(ana)
+  p_splitter(splitter), m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), m_analyse(ana)
 { 
   double norm(0.);
   for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
@@ -180,7 +180,7 @@ bool Gluon_Decayer::DecayDipoles() {
       msg_Out()<<METHOD<<" splits the following dipole :"<<(*dipiter)<<std::endl;
       (*dipiter)->Output();
     }
-    if (!p_splitter->SplitDipole((*dipiter))) {
+    if (!p_splitter->SplitDipole((*dipiter),m_pt2max)) {
       switch (Rescue(dipiter)) {
       case -1:
 	msg_Debugging()<<"............... Rescue failed ..................."<<std::endl;
@@ -243,7 +243,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_splitter->SplitDipole((*partner))) {
+      if (p_splitter->SplitDipole((*partner),m_pt2max)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -252,7 +252,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_splitter->SplitDipole((*partner))) {
+      if (p_splitter->SplitDipole((*partner),m_pt2max)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -273,7 +273,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_splitter->SplitDipole((*partner))) {
+    if (p_splitter->SplitDipole((*partner),m_pt2max)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -283,7 +283,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_splitter->SplitDipole((*partner))) {
+    if (p_splitter->SplitDipole((*partner),m_pt2max)) {
       AfterSplit(partner);
       dip = partner;
       return 1;

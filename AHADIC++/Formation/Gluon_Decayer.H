@@ -11,7 +11,7 @@
 namespace AHADIC {
   class Gluon_Decayer {
   private:
-    double              m_pt2min;
+    double              m_pt2min, m_pt2max;
     Dipole_Splitter   * p_splitter;
 
     FlavDecayMap        m_options;

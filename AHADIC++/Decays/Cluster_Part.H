@@ -15,6 +15,7 @@ namespace AHADIC {
   class Cluster_Part {
   protected:
     bool              m_ana;
+    double            m_pt2max;
     Dipole_Splitter * p_splitter;
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
