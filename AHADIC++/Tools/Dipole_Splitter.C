@@ -80,11 +80,12 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
   right->SetPrev(cluster);
 
   Vec4D check = cluster->Momentum()-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum();
-  if (!IsZero(check.Abs2()) || !IsZero(check[0])) {
+  if (!IsZero(check.Abs2()) || !IsZero(check[0]/1.e6)) {
     std::cout<<"Error in "<<METHOD<<":"<<std::endl
 	     <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
 	     <<"   "<<cluster->Momentum()<<"  ---> "<<std::endl
-	     <<"   "<<cluster->Momentum()<<" + "<<cluster->Momentum()<<"."<<std::endl;
+	     <<"   "<<cluster->GetLeft()->Momentum()
+             <<" + "<<cluster->GetRight()->Momentum()<<"."<<std::endl;
     abort();
   }
   return true;
@@ -190,9 +191,9 @@ bool Dipole_Splitter::PrepareKinematics(const double pt2max) {
   if (pt2max>0.) m_kt2_max = ATOOLS::Min((m_Q2-m_m1_2)/4.,pt2max);
             else m_kt2_max = (m_Q2-m_m1_2)/4.;
 
-  if (m_kt2<0.) {
+  if (m_kt2_max<0.) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   No physical splitting possible for pt2max = "<<pt2max<<std::endl;
+	       <<"   No physical splitting possible for pt2max = "<<pt2max<<" m_kt2_max = "<<m_kt2_max<<std::endl;
     return false;
   }
   return true;
