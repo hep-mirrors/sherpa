@@ -31,7 +31,7 @@ Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
 void Output_HepMC2_Genevent::Output(Blob_List* blobs, const double weight) 
 {
 #ifdef USING__HEPMC2__IOGENEVENT
-  m_hepmc2.Sherpa2HepMC(blobs);
+  m_hepmc2.Sherpa2HepMC(blobs, weight);
   p_iogenevent->write_event(m_hepmc2.GenEvent());
 #endif
 }
