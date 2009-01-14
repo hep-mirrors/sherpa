@@ -96,10 +96,21 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
   else ConstructSignalAmplitudes(N,fl,b,pinfo,subgraphlist,BS);
 
   Single_Amplitude* n = firstgraph;
+  Single_Amplitude* prev = firstgraph;
   ntotal = 0;
   while (n){ 
-    ++ntotal;
-    n = n->Next;
+    if (TOrder(n)>1) {
+      Single_Amplitude* next = n->Next;
+      if (n==firstgraph) firstgraph = next;
+      else prev->Next = next;
+      delete n;
+      n = next;
+    }
+    else {
+      ++ntotal;
+      prev = n;
+      n = n->Next;
+    }
   }
   msg_Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
@@ -203,20 +214,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   // fill color groups
   int ncount = 0;
-  int maxorder = 1;
-  for(int i=0; i<N; i++) if (fl[i].IsKK()) maxorder--;
-  if (maxorder<0) {
-    msg_Error()<<"ERROR in Amplitude_Handler::CompleteAmplitudes :"<<std::endl
-	       <<"   Multiple external KK-particles not supported. Abort the run."<<std::endl;
-    abort();
-  }
   while (n) {
-    while(TOrder(n)>maxorder){
-      ncount++;	   
-      n=n->Next;
-      if (!n) break;
-    }
-    if (!n) break; 
     pointlist.push_back(n->GetPointlist()); 
     graphs[CFCol_Matrix->CFMap(ncount)]->Add(n,CFCol_Matrix->CFSign(ncount));
     n = n->Next;
@@ -328,15 +326,8 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
 
   // fill color groups
   int ncount = 0;
-  int maxorder = 1;
 
   while (n) {
-    while(TOrder(n)>maxorder){
-      ncount++;	   
-      n=n->Next;
-      if (!n) break;
-    }
-    if (!n) break; 
     pointlist.push_back(n->GetPointlist()); 
     n = n->Next;
     ncount++;	   
@@ -825,11 +816,7 @@ void Amplitude_Handler::FillAmplitudes(HELICITIES::Amplitude_Tensor *atensor,Hel
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  
   if(!MODEL::s_model->GetInteractionModel()->HasTensors()) return 0;
-  int cnt=0;
-  Pfunc_List* pl = a->GetPlist();
-  for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit)
-    if((*pit)->fl.IsKK())cnt++;
-  return cnt;
+  return a->GetPointlist()->CountKK();
 } 
 
 int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf, map<string,Complex> & cplmap)

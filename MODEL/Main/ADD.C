@@ -58,7 +58,7 @@ ADD::~ADD()
 void ADD::ParticleInit() {
   //add the graviton and the gravi-scalar
   s_kftable[39] = new Particle_Info(39,100.,0.,0,0,0,4,-1,1,1,1,"graviton","G");
-  s_kftable[40] = new Particle_Info(40,100.,0.,0,0,0,0,-1,1,1,1,"gscalar","G_s");
+  s_kftable[40] = new Particle_Info(40,100.,0.,0,0,0,0,-1,0,1,1,"gscalar","G_s");
 
   ReadParticleData();
 }
