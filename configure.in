@@ -98,6 +98,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  SHERPA/Single_Events/Makefile \
 	  SHERPA/Main/Makefile \
 	  SHERPA/Run/Makefile \
+          SHERPA/Run/makelibs \
 	  SHERPA/Run/CTEQ6Grid/Makefile \
 	  SHERPA/Run/MRST99Grid/Makefile \
 	  SHERPA/Makefile \

@@ -1,0 +1,168 @@
+#!/bin/bash
+# 
+# To successfully employ this script, make sure that your bash is in
+# the bin - directory or adjust accordingly.
+#
+
+DIRS=`find Process -name P?_?`" "`find Process -name P?_??`
+
+print_help(){
+  echo "makelibs version 1.0" && echo && \
+  echo "options: -c \"make clean\" before compiling" && \
+  echo "         -o install single module" && \
+  echo "         -h display this help and exit" && echo
+}
+
+while getopts :hco OPT
+do
+  case $OPT in
+  c) CLEAN=TRUE ;; 
+  o) ONE=TRUE ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    if [ "$1" = "--help" ]; then print_help && exit 0;
+    else 
+      echo -n "makelibs: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
+      else echo "'$1'. try '-h'"
+      fi
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
+done
+
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makelibs: select module ( q) to quit )"
+  select DIRS in $DIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      SINGLE="TRUE"
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
+fi
+
+for J in $DIRS ; do
+  echo "."
+  echo "======================"
+  echo "$J";
+  echo "======================"
+  cd $J 
+  if test -x "$(which libtoolize)"; then
+      libtoolize --force;
+  elif test -x "$(which glibtoolize)"; then
+      glibtoolize --force;
+  else
+    echo "Error: libtoolize not found."
+    exit 1
+  fi
+  aclocal
+  automake -a
+  autoconf
+  export CXX=$(echo "@CXX@" | grep -v "@");
+  export CXXFLAGS=$(echo "@CXXFLAGS@" | grep -v "@");
+  export LDFLAGS=$(echo "@LDFLAGS@" | grep -v "@");
+  export LIBS=$(echo "@LIBS@" | grep -v "@");
+  export CPPFLAGS=$(echo "@CPPFLAGS@" | grep -v "@");
+  export CC=$(echo "@CC@" | grep -v "@");
+  export CFLAGS=$(echo "@CFLAGS@" | grep -v "@");
+  export F77=$(echo "@F77@" | grep -v "@");
+  export FFLAGS=$(echo "@FFLAGS@" | grep -v "@");
+  export CPP=$(echo "@CPP@" | grep -v "@");
+  export CXXCPP=$(echo "@CXXCPP@" | grep -v "@");
+  ./configure
+  if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
+  if ! make install -j2; then
+    echo "makeinstall: error: \"make install\" in $I failed"
+    exit 1
+  fi
+  cd ../..
+done
+#!/bin/bash
+# 
+# To successfully employ this script, make sure that your bash is in
+# the bin - directory or adjust accordingly.
+#
+
+DIRS=`find Process -name P?_?`" "`find Process -name P?_??`
+
+print_help(){
+  echo "makelibs version 1.0" && echo && \
+  echo "options: -c \"make clean\" before compiling" && \
+  echo "         -o install single module" && \
+  echo "         -h display this help and exit" && echo
+}
+
+while getopts :hco OPT
+do
+  case $OPT in
+  c) CLEAN=TRUE ;; 
+  o) ONE=TRUE ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    if [ "$1" = "--help" ]; then print_help && exit 0;
+    else 
+      echo -n "makelibs: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
+      else echo "'$1'. try '-h'"
+      fi
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
+done
+
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makelibs: select module ( q) to quit )"
+  select DIRS in $DIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      SINGLE="TRUE"
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
+fi
+
+for J in $DIRS ; do
+  echo "."
+  echo "======================"
+  echo "$J";
+  echo "======================"
+  cd $J 
+  if test -x "$(which libtoolize)"; then
+      libtoolize --force;
+  elif test -x "$(which glibtoolize)"; then
+      glibtoolize --force;
+  else
+    echo "Error: libtoolize not found."
+    exit 1
+  fi
+  aclocal
+  automake -a
+  autoconf
+  export CXX=$(echo "@CXX@" | grep -v "@");
+  export CXXFLAGS=$(echo "@CXXFLAGS@" | grep -v "@");
+  export LDFLAGS=$(echo "@LDFLAGS@" | grep -v "@");
+  export LIBS=$(echo "@LIBS@" | grep -v "@");
+  export CPPFLAGS=$(echo "@CPPFLAGS@" | grep -v "@");
+  export CC=$(echo "@CC@" | grep -v "@");
+  export CFLAGS=$(echo "@CFLAGS@" | grep -v "@");
+  export F77=$(echo "@F77@" | grep -v "@");
+  export FFLAGS=$(echo "@FFLAGS@" | grep -v "@");
+  export CPP=$(echo "@CPP@" | grep -v "@");
+  export CXXCPP=$(echo "@CXXCPP@" | grep -v "@");
+  ./configure
+  if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
+  if ! make install -j2; then
+    echo "makeinstall: error: \"make install\" in $I failed"
+    exit 1
+  fi
+  cd ../..
+done
