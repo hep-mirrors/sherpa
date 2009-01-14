@@ -321,6 +321,7 @@ int Single_Process_MHV2::InitAmplitude(Model_Base * model,Topology* top,Vec4D *&
 	 }
        } 
      }
+     if (Result()==0.) return -3;
      if (p_partner==this) links.push_back(this);
     
 //     if (CheckLibraries()) return 1;

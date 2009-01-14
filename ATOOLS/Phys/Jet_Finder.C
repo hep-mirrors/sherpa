@@ -428,6 +428,12 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
   if (fl=="G") return Flavour(kf_gluon);
   if (fl=="P") return Flavour(kf_photon);
   if (fl.length()>1) {
+        if (fl[fl.length()-1]=='p') {
+      fl.erase(fl.length()-1,1);
+    }
+    if (fl[fl.length()-1]=='m') {
+      fl.erase(fl.length()-1,1);
+    }
     if (fl[fl.length()-1]=='b') {
       fl.erase(fl.length()-1,1);
       bar=true;

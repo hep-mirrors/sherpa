@@ -405,6 +405,7 @@ int Single_Process::InitAmplitude(Model_Base * model,Topology* top,Vec4D *& _tes
 	break;
       } 
     }
+    if (Result()==0.) return -3;
     if (p_partner==this) links.push_back(this);
     
     if (CheckLibraries()) return 1;
