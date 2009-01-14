@@ -38,10 +38,10 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   m_path(_m_path),m_file(_m_file), m_maxtrials(2),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
-  p_phep(new double[5*4000]),
-  p_vhep(new double[4*4000]),
-  p_jmohep(new int[2*4000]),
-  p_jdahep(new int[2*4000])
+  p_phep(new double[5*10000]),
+  p_vhep(new double[4*10000]),
+  p_jmohep(new int[2*10000]),
+  p_jdahep(new int[2*10000])
 {
   exh->AddTerminatorObject(this);
   double win;

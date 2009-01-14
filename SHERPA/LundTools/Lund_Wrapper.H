@@ -113,12 +113,12 @@ void ListLundParameters() {
   spplst_(); 
 }
 
-const int nmaxjets  = 4000;
+const int nmaxjets  = 10000;
 const int nmaxpart  = 500;
 const int nmaxdecay = 8000;
 const int nmaxpup   = 100;
 
-const int nmxhep    = 4000;
+const int nmxhep    = 10000;
 
 extern "C" {
 extern struct {
