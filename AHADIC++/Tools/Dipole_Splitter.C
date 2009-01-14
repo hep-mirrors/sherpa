@@ -86,7 +86,8 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
 	     <<"   "<<cluster->Momentum()<<"  ---> "<<std::endl
 	     <<"   "<<cluster->GetLeft()->Momentum()
              <<" + "<<cluster->GetRight()->Momentum()<<"."<<std::endl;
-    abort();
+    //abort();
+    return false;
   }
   return true;
 }
@@ -265,7 +266,8 @@ bool Dipole_Splitter::ConstructKinematics() {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"   4 mom-check failed for kinematics: "
 	       <<check<<" ("<<check.Abs2()<<")."<<std::endl;
-    abort();
+    //abort();
+    return false;
   }
   return true;
 }

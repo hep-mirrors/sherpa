@@ -21,7 +21,7 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   dr.SetInputFile(file);
 
   hadpars.Init(path,file);
-  ana=true;
+  ana=false;
 
   p_cformhandler = new Cluster_Formation_Handler(&m_clulist,&m_prilist,ana);
   p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,ana);
