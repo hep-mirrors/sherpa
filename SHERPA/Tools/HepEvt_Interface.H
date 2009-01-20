@@ -6,6 +6,8 @@
 #include "Particle.H"
 #include <map>
 
+#include "CXXFLAGS.H"
+
 namespace ATOOLS {
   class Blob;
   class Blob_List;
@@ -37,7 +39,7 @@ namespace SHERPA {
     long int m_filesize,m_evtcount;
     gtp::code m_generator;
 
-    static const int s_maxentries = 4000;
+    static const int s_maxentries = HEPEVT_CB_SIZE;
     double * p_phep,   * p_vhep;
     int    * p_jmohep, * p_jdahep,  * p_isthep, * p_idhep;
     double   m_weight, m_Q2, m_x1, m_x2;
