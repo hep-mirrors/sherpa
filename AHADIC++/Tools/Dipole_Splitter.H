@@ -17,6 +17,7 @@ namespace AHADIC {
   private:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
 
+    bool              m_massreweighting, m_leading, m_pole;
     Strong_Coupling * p_as; 
     Constituents    * p_constituents;
     FlavDecayMap    * p_options;
@@ -28,7 +29,7 @@ namespace AHADIC {
     ATOOLS::Poincare   m_cms,m_zrot;
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
     double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
-    double             m_Q2,m_Q,m_kt2,m_z,m_phi,m_kt2_max;
+    double             m_Q2,m_Q,m_kt2,m_z,m_phi,m_kt2_max,m_mass2;
     
     ATOOLS::Flavour    m_flav2,m_flav3;
    
@@ -37,18 +38,19 @@ namespace AHADIC {
     bool          DetermineSplitting(const bool glusplit);
     void          SelectFlavour();
     bool          PrepareKinematics(const double pt2max);
-    bool          ConstructKinematics();
+    bool          ConstructKinematics(const bool glusplit);
   public:
     Dipole_Splitter(Strong_Coupling *,const double ptmax);
 
-    bool SplitCluster(SP(Cluster) clu,const double pt2max=-1.);
-    bool SplitDipole(SP(Dipole) dip,const double pt2max=-1.);
+    bool SplitCluster(SP(Cluster) clu,const double pt2max=-1.,const bool m_pole=true);
+    bool SplitDipole(SP(Dipole) dip,const double pt2max=-1.,const bool m_pole=true);
 
     void UpdateSpectator();
     void GetNewParticles(SP(Proto_Particle)& out1,SP(Proto_Particle)& out2);
     void SetOptions(FlavDecayMap *);
 
-    double PT2() { return m_kt2; }
+    double PT2()   { return m_kt2; }
+    double Mass2() { return m_mass2; }
   };
 
   inline void Dipole_Splitter::GetNewParticles(SP(Proto_Particle)& out1,

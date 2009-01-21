@@ -12,13 +12,20 @@ const Vec3D Dipole_Splitter::s_ez(Vec3D(0.,0.,1.));
 
 
 Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
+  m_massreweighting(false), 
+  m_leading(hadpars.Get(std::string("leading_particles"))<2), m_pole(true),
   p_as(as), p_constituents(hadpars.GetConstituents()), p_options(NULL),
   p_spect(0), p_split(0), p_out1(0), p_out2(0), 
   m_mmin_2(sqr(p_constituents->MinMass()))
 { }
 
 
-bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
+bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max,
+				   const bool pole) {
+  //std::cout<<METHOD<<"("<<pt2max<<", "<<pole<<")."<<std::endl;
+  if (m_leading) m_pole = pole;
+  else m_pole = true;
+
   SP(Dipole) dip1 = new Dipole(new Proto_Particle((*cluster->GetTrip())),
 			       new Proto_Particle((*cluster->GetAnti())));
 #ifdef memchecker
@@ -27,7 +34,7 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
 #endif
 
   p_dip = dip1;
-  
+
   SP(Dipole) dip2 = EmitGluon(pt2max);
   if (dip2==NULL) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
@@ -54,7 +61,7 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
     first  = dip2;
     second = dip1;
   }
-  if (!SplitDipole(first,pt2max) && !SplitDipole(second,pt2max)) {
+  if (!SplitDipole(first,pt2max,m_pole) && !SplitDipole(second,pt2max,m_pole)) {
     msg_Tracking()<<"Error in "<<METHOD<<" :"<<std::endl
 		  <<"   Two unsplittable dipoles emerging from :"<<std::endl
 		  <<(*cluster)<<std::endl;
@@ -81,11 +88,11 @@ bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max) {
 
   Vec4D check = cluster->Momentum()-cluster->GetLeft()->Momentum()-cluster->GetRight()->Momentum();
   if (!IsZero(check.Abs2()) || !IsZero(check[0]/1.e6)) {
-    std::cout<<"Error in "<<METHOD<<":"<<std::endl
-	     <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
-	     <<"   "<<cluster->Momentum()<<"  ---> "<<std::endl
-	     <<"   "<<cluster->GetLeft()->Momentum()
-             <<" + "<<cluster->GetRight()->Momentum()<<"."<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
+	       <<"   "<<cluster->Momentum()<<"  ---> "<<std::endl
+	       <<"   "<<cluster->GetLeft()->Momentum()
+	       <<" + "<<cluster->GetRight()->Momentum()<<"."<<std::endl;
     //abort();
     return false;
   }
@@ -107,8 +114,11 @@ SP(Dipole) Dipole_Splitter::EmitGluon(const double pt2max) {
   return new Dipole(p_out1,p_dip->AntiTriplet());
 }
 
-bool Dipole_Splitter::SplitDipole(SP(Dipole) dip,const double pt2max) {
-  p_dip = dip;
+bool Dipole_Splitter::SplitDipole(SP(Dipole) dip,const double pt2max,
+				  const bool pole) {
+  //std::cout<<METHOD<<"("<<pt2max<<", "<<pole<<")."<<std::endl;
+  m_pole = pole;
+  p_dip  = dip;
   SetSpectatorAndSplitter();
   if (!PrepareKinematics(pt2max) || !DetermineSplitting(true)) {
     //msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
@@ -127,13 +137,19 @@ bool Dipole_Splitter::DetermineSplitting(const bool glusplit) {
   ATOOLS::Flavour flavtest;
   int trials(0);
   do {
-    m_kt2 = p_as->SelectPT(m_kt2_max);
+    //if (!m_pole) 
+    // std::cout<<METHOD<<": isotropic from glusplit "<<glusplit<<" & "<<m_pole
+    //	       <<" from "<<m_leading<<"."<<std::endl;
+    //else  
+    // std::cout<<METHOD<<": non-isotropic from glusplit "<<glusplit<<" & "<<m_pole
+    //	       <<" from "<<m_leading<<"."<<std::endl;
+    m_kt2 = p_as->SelectPT(m_kt2_max,m_pole);
     m_z   = ran.Get();
     m_phi = 2.*M_PI*ran.Get();
     if (glusplit) SelectFlavour();
     trials++;
     if (trials>100) return false;
-  } while (!ConstructKinematics());
+  } while (!ConstructKinematics(glusplit));
   return true;
 }
 
@@ -194,13 +210,14 @@ bool Dipole_Splitter::PrepareKinematics(const double pt2max) {
 
   if (m_kt2_max<0.) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   No physical splitting possible for pt2max = "<<pt2max<<" m_kt2_max = "<<m_kt2_max<<std::endl;
+	       <<"   No physical splitting possible for pt2max = "
+	       <<pt2max<<" m_kt2_max = "<<m_kt2_max<<std::endl;
     return false;
   }
   return true;
 }
 
-bool Dipole_Splitter::ConstructKinematics() {
+bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
   Vec4D q1(0.,0.,0.,0.),q2(0.,0.,0.,0.),q3(0.,0.,0.,0.);
   Vec4D nperp = Vec4D(0.,cos(m_phi)*s_ex + sin(m_phi)*s_ey);
   if (m_m1_2==0.) {
@@ -238,15 +255,20 @@ bool Dipole_Splitter::ConstructKinematics() {
     if (lt2<0.0) return false;
 
     double lt  = sqrt(lt2);
-    q2 = zt*l + (m_m2_2+lt2)/(gam*zt)*n + lt*nperp;
-
-    q3 = m_mom0-q2-q1;
-    
+    q2 = zt*l + (m_m2_2+lt2)/(gam*zt)*n + lt*nperp;    
     if (q1[0]<0. || q2[0]<0. || q3[0]<0.) return false;
   }
-
-  
   q3 = m_mom0-q2-q1;
+
+  if (m_massreweighting && glusplit) {
+    // Reweight with (pt2+pt02)/s23
+    m_mass2 = (q2+q3).Abs2();    
+    //std::cout<<"In "<<METHOD<<" for "<<p_as->GetPTArgument()<<" and "<<m_mass2<<std::endl;
+    if (p_as->GetPTArgument()<m_mass2*ran.Get()) {
+      return false;
+    }
+    //std::cout<<" ... passed."<<std::endl;
+  }
 
   m_zrot.RotateBack(q1);
   m_zrot.RotateBack(q2);

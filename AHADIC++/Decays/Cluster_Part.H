@@ -14,7 +14,7 @@
 namespace AHADIC {
   class Cluster_Part {
   protected:
-    bool              m_ana;
+    bool              m_ana, m_leading;
     double            m_pt2max;
     Dipole_Splitter * p_splitter;
 

@@ -13,11 +13,13 @@ Soft_Cluster_Handler(Strong_Coupling * as,
 		     const double offset1,const double offset2,
 		     const double kappa,
 		     const double alpha,const double eta,
-		     const double photonenergy,bool ana) :
+		     const double photonenergy,int isotropic,
+		     bool ana) :
   p_as(as),
   p_singletransitions(singletransitions), 
   p_doubletransitions(doubletransitions),
-  m_ptmode(PTdist::alphadist),m_offset1(offset1), m_offset2(offset2),
+  m_ptmode(PTdist::alphadist), m_isotropic(isotropic),
+  m_offset1(offset1), m_offset2(offset2),
   m_kappa(kappa), m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
   m_ana(ana)
 { 
@@ -53,7 +55,8 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
     case -1:
     case 1:
       msg_Tracking()<<"Potential problem in "<<METHOD<<" : "<<std::endl
-		    <<"   Clusterlist with one element that needs to transform to a hadron."<<std::endl
+		    <<"   Clusterlist with one element that needs to transform to a hadron."
+		    <<std::endl
 		    <<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     case 2:
@@ -445,20 +448,18 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
 
 double Soft_Cluster_Handler::SelectPT(double pt2max,bool peaked) {
   double pt(0.);
-  if (int(m_ptmode)>10 && !peaked) {
-    //std::cout<<"   ... isotropic from "<<int(m_ptmode)<<"."<<std::endl;
+  if (m_isotropic==0 || (m_isotropic==1 && !peaked)) {
+    //std::cout<<METHOD<<": isotropic from "<<int(m_ptmode)<<" & "<<m_isotropic<<"."<<std::endl;
     double costheta = -1.+2.*ran.Get(), sintheta2 = 1.-sqr(costheta); 
     pt = sqrt(pt2max*sintheta2);
   }
   else {
-    //std::cout<<"   ... peaked from "<<int(m_ptmode)<<"."<<std::endl;
+    //std::cout<<METHOD<<": non-isotropic from "<<int(m_ptmode)<<" & "<<m_isotropic<<"."<<std::endl;
     switch (m_ptmode) {
     case (PTdist::sinthet):
-    case (PTdist::sinthet_iso):
       pt = sqrt(pt2max)*pow(ran.Get(),m_eta);
       break;
     case (PTdist::alphadist):
-    case (PTdist::alphadist_iso):
     default:
       pt = sqrt(p_as->SelectPT(pt2max));
       break;

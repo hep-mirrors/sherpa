@@ -56,7 +56,9 @@ void Hadronisation_Parameters::Init(string dir,string file)
 						 m_parametermap[string("C->H_Transition_Factor")],
 						 m_parametermap[string("C->HH_Decay_Exponent")],
 						 m_parametermap[string("C->HH_Decay_Angle")],
-						 m_parametermap[string("Photon_Energy")],true);
+						 m_parametermap[string("Photon_Energy")],
+						 m_parametermap[string("leading_particles")],
+						 true);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
@@ -65,6 +67,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
+  m_parametermap[string("leading_particles")]  = 
+    dataread.GetValue<int>("LEADING",0);
   m_parametermap[string("pt02")]               = 
     dataread.GetValue<double>("PT^2_0",-0.36);
   m_parametermap[string("ptmax")]              = 

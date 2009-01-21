@@ -12,9 +12,7 @@ namespace AHADIC {
   struct PTdist {
     enum code {
       sinthet       = 1,
-      alphadist     = 2,
-      sinthet_iso   = 11,
-      alphadist_iso = 12
+      alphadist     = 2
     };
   };
 
@@ -25,6 +23,7 @@ namespace AHADIC {
     Double_Transitions * p_doubletransitions;
     
     PTdist::code         m_ptmode;
+    int                  m_isotropic;
     double               m_offset1,m_offset2,m_kappa,m_alpha,m_eta,m_photonenergy;
     
     Cluster_List *       m_clin;
@@ -51,7 +50,7 @@ namespace AHADIC {
 			 Double_Transitions * doubletransitions,
 			 const double offset1,const double offset2,
 			 const double kappa,const double alpha,const double eta,
-			 const double photonenergy,bool ana=false);
+			 const double photonenergy,int isotropic,bool ana=false);
     ~Soft_Cluster_Handler();
     bool   TreatClusterList(Cluster_List *,ATOOLS::Blob *);
 

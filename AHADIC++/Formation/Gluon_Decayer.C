@@ -8,7 +8,9 @@ using namespace ATOOLS;
 
 
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
-  p_splitter(splitter), m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), m_analyse(ana)
+  p_splitter(splitter), m_pole(hadpars.Get(std::string("leading_particles"))<1), 
+  m_pt2min(0.), m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), 
+  m_analyse(ana)
 { 
   double norm(0.);
   for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
@@ -27,7 +29,9 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
       msg_Debugging()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }
   }
+  m_analyse = true;
   if (m_analyse) {
+    m_histograms[std::string("Mass_Gluon")]      = new Histogram(0,0.,5.,50);
     m_histograms[std::string("PT_Gluon")]        = new Histogram(0,0.,2.,50);
     m_histograms[std::string("PT_Rescue")]       = new Histogram(0,0.,2.,50);
     m_histograms[std::string("Flavour_Gluon")]   = new Histogram(0,0.,15.,15);
@@ -180,7 +184,7 @@ bool Gluon_Decayer::DecayDipoles() {
       msg_Out()<<METHOD<<" splits the following dipole :"<<(*dipiter)<<std::endl;
       (*dipiter)->Output();
     }
-    if (!p_splitter->SplitDipole((*dipiter),m_pt2max)) {
+    if (!p_splitter->SplitDipole((*dipiter),m_pt2max,m_pole)) {
       switch (Rescue(dipiter)) {
       case -1:
 	msg_Debugging()<<"............... Rescue failed ..................."<<std::endl;
@@ -202,6 +206,8 @@ bool Gluon_Decayer::DecayDipoles() {
       if (m_analyse) {
 	Histogram* histo((m_histograms.find(std::string("PT_Gluon")))->second);
 	histo->Insert(sqrt(p_splitter->PT2()));
+	Histogram* histo2((m_histograms.find(std::string("Mass_Gluon")))->second);
+	histo2->Insert(sqrt(p_splitter->Mass2()));
       }
     }
 #ifdef AHAmomcheck
@@ -243,7 +249,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_splitter->SplitDipole((*partner),m_pt2max)) {
+      if (p_splitter->SplitDipole((*partner),m_pt2max,m_pole)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -252,7 +258,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_splitter->SplitDipole((*partner),m_pt2max)) {
+      if (p_splitter->SplitDipole((*partner),m_pt2max,m_pole)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -273,7 +279,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_splitter->SplitDipole((*partner),m_pt2max)) {
+    if (p_splitter->SplitDipole((*partner),m_pt2max,m_pole)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -283,7 +289,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_splitter->SplitDipole((*partner),m_pt2max)) {
+    if (p_splitter->SplitDipole((*partner),m_pt2max,m_pole)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
