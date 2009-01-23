@@ -39,7 +39,7 @@ namespace AHADIC {
 
   class All_Hadron_Multiplets {
   private:
-    double                  m_singletsuppression;
+    double                  m_singletsuppression, m_octetsuppression;
     Hadron_WF_Map         * p_wavefunctions;
     Hadron_Multiplet_Map  * p_multiplets;
 

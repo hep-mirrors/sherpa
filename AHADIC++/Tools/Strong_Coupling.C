@@ -18,14 +18,14 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
   MODEL::Running_AlphaS * as = static_cast<MODEL::Running_AlphaS *>
     (MODEL::s_model->GetScalarFunction(std::string("alpha_S")));
   switch (m_form) {
-  case asform::IR_regulated_GDH:
-    m_asmax = M_PI;
-    m_pt02  = as->Inverse(m_asmax);
-    m_beta0   = 12.*M_PI/(33.-2.*3.);
-    m_Lambda2 = m_pt02*exp(-1./(m_beta0*(*as)(m_pt02)));
-    m_kappa2  = m_pt02/exp(1.)*m_beta0*log(m_pt02/m_Lambda2);
-    m_asmax   = (*this)(m_pt02);
-    std::cout<<"IR regulated with pt0^2 = "<<m_pt02<<" --> "<<m_asmax<<"."<<std::endl;
+  case asform::IR_cutoff:
+    m_asmax   = (*this)(0.);
+    if (m_asmax<0.) {
+      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		 <<"   Maximal alphaS too small for pt_0^2 = "<<m_pt02<<": "<<m_asmax<<"."<<std::endl
+		 <<"   Will abort the run."<<std::endl;
+      abort();
+    }
     break;
   case asform::GDH_inspired:
     m_asmax   = (*this)(0.);
@@ -63,7 +63,7 @@ const double Strong_Coupling::operator()(double q2) const {
   double Q2(dabs(q2)), Q(sqrt(Q2));
 
   switch (m_form) {
-  case asform::IR_regulated_GDH:
+  case asform::IR_cutoff:
     return 1./(m_beta0*log((Q2+m_pt02)/m_Lambda2));
   case asform::GDH_inspired:
     return m_gamma*n(Q2)/(log((Q2+mg2(Q2))/m_Lambda2));

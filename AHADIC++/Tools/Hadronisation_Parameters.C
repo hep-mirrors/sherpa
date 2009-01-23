@@ -35,18 +35,24 @@ void Hadronisation_Parameters::Init(string dir,string file)
 {
   msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
+
   p_constituents      = new Constituents(false);
-  if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
+  if (msg_LevelIsTracking()) 
+    p_constituents->PrintConstituents();
+
   p_multiplets        = new All_Hadron_Multiplets();
-  if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
+  if (msg_LevelIsTracking()) 
+    p_multiplets->PrintWaveFunctions(); 
 
   p_singletransitions = new Single_Transitions();
-  if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
+  if (msg_LevelIsTracking()) 
+    p_singletransitions->PrintSingleTransitions(); 
 
   p_doubletransitions = new Double_Transitions();
-  if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
+  if (msg_LevelIsTracking()) 
+    p_doubletransitions->PrintDoubleTransitions(); 
 
-  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::GDH_inspired;
+  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::IR_cutoff;
   p_coupling          = new Strong_Coupling(m_asform,dabs(m_parametermap[string("pt02")]));
   p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 

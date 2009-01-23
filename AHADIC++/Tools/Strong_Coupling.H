@@ -13,7 +13,7 @@ namespace AHADIC {
       fixed              = 2,
       fall_off_times_fix = 3,
       GDH_inspired       = 10,
-      IR_regulated_GDH   = 11,
+      IR_cutoff          = 11,
       unknown            = 99
     };
   };

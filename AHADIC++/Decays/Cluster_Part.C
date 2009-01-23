@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
-  m_ana(ana), m_leading(true), 
+  m_ana(ana), m_leading(hadpars.Get(std::string("leading_particles"))<2), 
   m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), p_splitter(splitter)
 { 
   if (m_ana) {
@@ -44,8 +44,8 @@ bool Cluster_Part::TestDecay(SP(Cluster) const cluster)
   bool pole(m_leading?(cluster->GetTrip()->m_info=='L' || 
 	               cluster->GetAnti()->m_info=='L'):true);
 
-  //std::cout<<METHOD<<" for ("<<cluster->GetTrip()->m_info
-  //	   <<cluster->GetAnti()->m_info<<")  -->  pole = "<<pole<<"."<<std::endl;
+  std::cout<<METHOD<<" for ("<<cluster->GetTrip()->m_info
+  	   <<cluster->GetAnti()->m_info<<")  -->  pole = "<<pole<<"."<<std::endl;
   if (!p_splitter->SplitCluster(cluster,m_pt2max,pole)) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
 		  <<"   Could not split cluster "<<std::endl

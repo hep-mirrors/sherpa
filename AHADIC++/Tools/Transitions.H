@@ -51,7 +51,9 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) {
-      if ((flpair1.first.Mass()+flpair1.second.Mass())<
+      if (flpair1.first==flpair2.first &&
+	  flpair1.second==flpair2.second) return true;
+      if ((flpair1.first.Mass()+flpair1.second.Mass())<=
 	  (flpair2.first.Mass()+flpair2.second.Mass())) return false;
       return true;
     }

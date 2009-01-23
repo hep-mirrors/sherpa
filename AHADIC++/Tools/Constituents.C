@@ -13,18 +13,19 @@ Constituents::Constituents(bool no_diquarks) :
   ConstituentCharacteristic * cc;
   double flwt=0., spwt=0., sm = hadpars.Get("AngularSmearing");
 
-  // Gluon
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_glue"),2,flwt,spwt);
-  CCMap[Flavour(kf_gluon)] = cc;
+  // Gluon excluded
+  //cc = new ConstituentCharacteristic(hadpars.Get("Mass_glue"),2,flwt,spwt);
+  //CCMap[Flavour(kf_gluon)] = cc;
 
   // Light quarks
-  double sfrac(hadpars.Get("Strange_fraction")), bfrac(hadpars.Get("Baryon_fraction"));
+  double sfrac(hadpars.Get("Strange_fraction")), udfrac(1.); 
+  double bfrac(hadpars.Get("Baryon_fraction")), normq = 1./(2.*udfrac+sfrac)/(1.+bfrac);
   double wt(1.-bfrac);
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_down"),1,1.,sm);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_down"),1,udfrac*normq,sm);
   CCMap[Flavour(kf_d)] = cc;
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_up"),1,1.,sm);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_up"),1,udfrac*normq,sm);
   CCMap[Flavour(kf_u)] = cc;  
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,sfrac,sm);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,sfrac*normq,sm);
   CCMap[Flavour(kf_s)] = cc;
 
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_charm"),1,0.,sm);
@@ -34,29 +35,31 @@ Constituents::Constituents(bool no_diquarks) :
 
   if (!no_diquarks) {
     // Light Di-quarks, spin 0
+    double ud0(1.);
     double qssup(hadpars.Get("P_qs_by_P_qq"));
     double sssup(hadpars.Get("P_ss_by_P_qq"));
     double sp1sup(hadpars.Get("P_di_1_by_P_di_0"));
+    double normd = bfrac/(1.+2.*qssup+3.*sp1sup*(3.+2.*qssup+sssup))/(1.+bfrac);
 
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud0"),0,bfrac,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud0"),0,ud0*normd,sm);
     CCMap[Flavour(kf_ud_0)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd0"),0,bfrac*qssup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd0"),0,qssup*normd,sm);
     CCMap[Flavour(kf_sd_0)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_su0"),0,bfrac*qssup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_su0"),0,qssup*normd,sm);
     CCMap[Flavour(kf_su_0)] = cc;
     
     // Light Di-quarks, spin 1
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_dd1"),2,3.*bfrac*sp1sup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_dd1"),2,3.*sp1sup*normd,sm);
     CCMap[Flavour(kf_dd_1)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud1"),2,3.*bfrac*sp1sup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud1"),2,3.*sp1sup*normd,sm);
     CCMap[Flavour(kf_ud_1)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_uu1"),2,3.*bfrac*sp1sup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_uu1"),2,3.*sp1sup*normd,sm);
     CCMap[Flavour(kf_uu_1)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd1"),2,3.*bfrac*sp1sup*qssup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_sd1"),2,3.*sp1sup*qssup*normd,sm);
     CCMap[Flavour(kf_sd_1)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_su1"),2,3.*bfrac*sp1sup*qssup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_su1"),2,3.*sp1sup*qssup*normd,sm);
     CCMap[Flavour(kf_su_1)] = cc;
-    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ss1"),2,3.*bfrac*sp1sup*sssup,sm);
+    cc = new ConstituentCharacteristic(hadpars.Get("Mass_ss1"),2,3.*sp1sup*sssup*normd,sm);
     CCMap[Flavour(kf_ss_1)] = cc;
 
     if (!no_heavies) {
@@ -134,14 +137,16 @@ int Constituents::ISpin(Flavour & flav) {
 }
 
 void Constituents::PrintConstituents() {
-  double wt(0.);
+  double wt(0.),wtq(0.),wtd(0.);
   for (FlavCCMap_Iterator cmit=CCMap.begin();cmit!=CCMap.end();cmit++) {
     wt+=cmit->second->m_weight;
+    if (cmit->first.IsQuark()) wtq+=cmit->second->m_weight;
+    else wtd+=cmit->second->m_weight;
     msg_Out()<<cmit->first<<" : "<<cmit->second->m_mass<<" GeV, "
 	     <<"Spin = "<<double(cmit->second->m_ispin/2.)<<", "
 	     <<"Weight = "<<cmit->second->m_weight<<std::endl;
   }
-  msg_Out()<<"Total weight : "<<wt<<std::endl
+  msg_Out()<<"Total weight : "<<wt<<" (quarks = "<<wtq<<", diquarks = "<<wtd<<")."<<std::endl
 	   <<"------------- END OF CONSTITUENTS ---------------"<<std::endl;
 }
 

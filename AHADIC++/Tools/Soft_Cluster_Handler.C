@@ -21,12 +21,18 @@ Soft_Cluster_Handler(Strong_Coupling * as,
   m_ptmode(PTdist::alphadist), m_isotropic(isotropic),
   m_offset1(offset1), m_offset2(offset2),
   m_kappa(kappa), m_alpha(alpha), m_eta(eta), m_photonenergy(photonenergy),
+  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))),
   m_ana(ana)
 { 
   //std::cout<<METHOD<<":"<<m_kappa<<std::endl;exit(1);
   if (m_ana) {
     m_histograms[string("PT_HH")]  = new Histogram(0,0.,2.0,100);
     m_histograms[string("PT2_HH")] = new Histogram(0,0.,4.0,200);
+    m_histograms[string("RHO_DEC")] = new Histogram(0,0.6,2.6,20);
+    m_histograms[string("PIPI_DEC")] = new Histogram(0,0.6,2.6,20);
+    m_histograms[string("RHO_TRANS")] = new Histogram(0,0.6,9.6,90);
+    m_histograms[string("ETA_TRANS")] = new Histogram(0,0.6,9.6,90);
+    m_histograms[string("ETAP_TRANS")] = new Histogram(0,0.6,9.6,90);
   }
 }
 
@@ -179,6 +185,20 @@ int Soft_Cluster_Handler::CheckCluster(SP(Cluster) cluster,bool mustdecay,bool l
   if (decayweight==0. && transformweight==0.) return 0;
   if (decayweight<=0. && transformweight!=0.) {
     // no open decay, but open transition (may be forced)
+    if (m_ana) {
+      if (hadron==Flavour(kf_rho_770)) {
+	Histogram* histo((m_histograms.find(std::string("RHO_TRANS")))->second);
+	histo->Insert(cluster->Mass());
+      }
+      else if (hadron==Flavour(kf_eta)) {
+	Histogram* histo((m_histograms.find(std::string("ETA_TRANS")))->second);
+	histo->Insert(cluster->Mass());
+      }
+      else if (hadron==Flavour(kf_eta_prime_958)) {
+	Histogram* histo((m_histograms.find(std::string("ETAP_TRANS")))->second);
+	histo->Insert(cluster->Mass());
+      }
+    }
     cluster->push_back(hadron);
     return 1;
   }
@@ -186,6 +206,21 @@ int Soft_Cluster_Handler::CheckCluster(SP(Cluster) cluster,bool mustdecay,bool l
    // no open transition, but open decay
     cluster->push_back(had1);
     cluster->push_back(had2);
+    if (m_ana) {
+      if (had1==Flavour(kf_rho_770)) {
+	Histogram* histo((m_histograms.find(std::string("RHO_DEC")))->second);
+	histo->Insert(cluster->Mass());
+      }
+      if (had2==Flavour(kf_rho_770)) {
+	Histogram* histo((m_histograms.find(std::string("RHO_DEC")))->second);
+	histo->Insert(cluster->Mass());
+      }
+      if ((had1==Flavour(kf_pi_plus) || had1==Flavour(kf_pi_plus).Bar()) &&
+	  (had2==Flavour(kf_pi_plus) || had2==Flavour(kf_pi_plus).Bar())) {
+	Histogram* histo((m_histograms.find(std::string("PIPI_DEC")))->second);
+	histo->Insert(cluster->Mass());
+      }
+    }
     return 2;
   }
   if (decayweight>0. && transformweight>0.) {
@@ -194,6 +229,21 @@ int Soft_Cluster_Handler::CheckCluster(SP(Cluster) cluster,bool mustdecay,bool l
       //decay wins
       cluster->push_back(had1);
       cluster->push_back(had2);
+      if (m_ana) {
+	if (had1==Flavour(kf_rho_770)) {
+	  Histogram* histo((m_histograms.find(std::string("RHO_DEC")))->second);
+	  histo->Insert(cluster->Mass());
+	}
+	if (had2==Flavour(kf_rho_770)) {
+	  Histogram* histo((m_histograms.find(std::string("RHO_DEC")))->second);
+	  histo->Insert(cluster->Mass());
+	}
+	if ((had1==Flavour(kf_pi_plus) || had1==Flavour(kf_pi_plus).Bar()) &&
+	    (had2==Flavour(kf_pi_plus) || had2==Flavour(kf_pi_plus).Bar())) {
+	  Histogram* histo((m_histograms.find(std::string("PIPI_DEC")))->second);
+	  histo->Insert(cluster->Mass());
+	}
+      }
       return 2;
     }
     else {
@@ -201,6 +251,20 @@ int Soft_Cluster_Handler::CheckCluster(SP(Cluster) cluster,bool mustdecay,bool l
       if (hadron==Flavour(kf_none)) {
 	msg_Error()<<METHOD<<" 2 "<<std::endl;
 	abort();
+      }
+      if (m_ana) {
+	if (hadron==Flavour(kf_rho_770)) {
+	  Histogram* histo((m_histograms.find(std::string("RHO_TRANS")))->second);
+	  histo->Insert(cluster->Mass());
+	}
+	else if (hadron==Flavour(kf_eta)) {
+	  Histogram* histo((m_histograms.find(std::string("ETA_TRANS")))->second);
+	  histo->Insert(cluster->Mass());
+	}
+	else if (hadron==Flavour(kf_eta_prime_958)) {
+	  Histogram* histo((m_histograms.find(std::string("ETAP_TRANS")))->second);
+	  histo->Insert(cluster->Mass());
+	}
       }
       cluster->push_back(hadron);
       return 1;
@@ -397,7 +461,7 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
   }
 
   double MC(cluster->Mass());
-  if (p_doubletransitions->GetHeaviestMass(flpair)<MC+m_offset2) return 0.;
+  if (p_doubletransitions->GetHeaviestMass(flpair)<MC*(1.+m_offset2)) return 0.;
   if (p_doubletransitions->GetLightestMass(flpair)>MC) {
     if (p_singletransitions->MustDesintegrate(cluster,had1,had2)) return 1.;
     if (flpair.first.IsDiQuark() && flpair.second.IsDiQuark())
@@ -412,7 +476,7 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
     m1  = decit->first.first.Mass();
     m2  = decit->first.second.Mass();
     if (m1+m2<MC) {
-      wt  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow((m1+m2)/MC,m_alpha);
+      wt  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))); // * pow((m1+m2)/MC,m_alpha);
       wt *= decit->second;
       totweight += wt;
     }
@@ -433,7 +497,7 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
     m1    = decit->first.first.Mass();
     m2    = decit->first.second.Mass();
     if (m1+m2<MC) {
-      wt  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow((m1+m2)/MC,m_alpha);
+      wt  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))); // * pow((m1+m2)/MC,m_alpha);
       wt *= decit->second;
       disc -= wt;
       if (disc<0.) {
@@ -486,7 +550,7 @@ void Soft_Cluster_Handler::FixHHDecay(SP(Cluster) cluster,Blob * blob)
   //std::cout<<"In "<<METHOD<<" for "<<cluster->GetTrip()->m_info
   //	   <<" "<<cluster->GetAnti()->m_info<<" --> "<<peaked<<"."<<std::endl;
 
-  double pt      = SelectPT(sqr(E1)-m12,peaked);
+  double pt      = SelectPT(Min(sqr(E1)-m12,m_pt2max),peaked);
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
@@ -544,7 +608,7 @@ double Soft_Cluster_Handler::TransformWeight(SP(Cluster) cluster,ATOOLS::Flavour
   if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
 
   double MC(cluster->Mass());
-  if (p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC) {
+  if (p_singletransitions->GetHeaviestMass(fpair)<MC*(1.+m_offset1)) {
     if (!lighter && p_doubletransitions->GetLightestMass(fpair)<MC) return 0.;
   }
 
@@ -580,11 +644,11 @@ double Soft_Cluster_Handler::TransformWeight(SP(Cluster) cluster,ATOOLS::Flavour
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
       if (siter->first.IsStable())
-	wt = m_kappa*sqr(MC*minwidth)/
+	wt = m_kappa*sqr(sqr(minwidth))/
 	  //wt = sqr(siter->first.Mass()*minwidth)/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*minwidth));
       else 
-	wt = m_kappa*sqr(MC*siter->first.Width())/
+	wt = m_kappa*sqr(sqr(siter->first.Width()))/
 	  //wt = sqr(siter->first.Mass()*siter->first.Width())/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*siter->first.Width()));
       wt *= siter->second;
@@ -596,12 +660,10 @@ double Soft_Cluster_Handler::TransformWeight(SP(Cluster) cluster,ATOOLS::Flavour
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
       if (siter->first.IsStable())
-	wt = m_kappa*sqr(MC*minwidth)/
-	  //wt = sqr(siter->first.Mass()*minwidth)/
+	wt = m_kappa*sqr(sqr(minwidth))/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*minwidth));
       else 
-	wt = m_kappa*sqr(MC*siter->first.Width())/
-	  //wt = sqr(siter->first.Mass()*siter->first.Width())/
+	wt = m_kappa*sqr(sqr(siter->first.Width()))/
 	  (sqr(sqr(MC)-sqr(siter->first.Mass())) + sqr(siter->first.Mass()*siter->first.Width()));
       wt *= siter->second;
     }

@@ -25,7 +25,7 @@ namespace AHADIC {
     PTdist::code         m_ptmode;
     int                  m_isotropic;
     double               m_offset1,m_offset2,m_kappa,m_alpha,m_eta,m_photonenergy;
-    
+    double               m_pt2max;
     Cluster_List *       m_clin;
 
     bool                                      m_ana;
