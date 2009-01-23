@@ -24,7 +24,7 @@ Output_HepMC2_Ascii::~Output_HepMC2_Ascii()
 
 void Output_HepMC2_Ascii::Output(Blob_List* blobs, const double weight) 
 {
-  m_hepmc2.Sherpa2HepMC(blobs);
+  m_hepmc2.Sherpa2HepMC(blobs, weight);
   p_ioascii->write_event(m_hepmc2.GenEvent());
 }
 

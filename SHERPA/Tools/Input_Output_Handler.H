@@ -40,7 +40,7 @@ namespace SHERPA {
     // destructor
     ~Input_Output_Handler();
 
-    bool OutputToFormat(ATOOLS::Blob_List * const,const double=1.);
+    bool OutputToFormat(ATOOLS::Blob_List * const);
     bool InputFromFormat(ATOOLS::Blob_List * const) { return false; }
 
     void PrintEvent(ATOOLS::Blob_List *const);

@@ -163,10 +163,19 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
   }
 }
 
-bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,
-                                          const double weight) 
+bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
   ResetInterfaces();
+  
+  double weight=1.0;
+  for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
+    if ((*blit)->Type()==btp::Signal_Process) {
+      Blob_Data_Base *info((**blit)["ME_Weight"]);
+      if (info!=NULL) weight*=info->Get<double>();
+      info=(**blit)["Process_Weight"];
+      if (info!=NULL) weight/=info->Get<double>();
+    }
+  }
 
   for (map<string,Output_Base *>::iterator oit=m_outmap.begin();
        oit!=m_outmap.end();oit++) {
