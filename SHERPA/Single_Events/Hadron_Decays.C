@@ -141,6 +141,7 @@ bool Hadron_Decays::Treat(Blob * blob)
   }
   
   if(!BoostAndStretch(blob, labmom)) return false;
+  SetPosition(blob);
 
   // add extra QED radiation
   if(!AttachExtraQED(blob)) {
