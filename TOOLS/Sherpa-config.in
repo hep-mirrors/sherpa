@@ -6,7 +6,7 @@ case $1 in
   --prefix)
     echo @prefix@;;
   --libs)
-	hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
+    hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
     echo -L@LIBDIR@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ $hepmc2libs;;
   --incdir)
     echo @INCLUDEDIR@;;
@@ -15,7 +15,8 @@ case $1 in
   --datadir)
     echo @DATADIR@;;
   --ldflags)
-    echo @ldflags@;;
+    hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
+    echo -L@LIBDIR@ -lSherpaMain @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ $hepmc2libs @ldflags@;;
   --cppflags)
     echo -I@INCLUDEDIR@;;
   *)
@@ -27,7 +28,7 @@ case $1 in
     echo "  Sherpa-config --incdir  : returns the path of Sherpa headers";
     echo "  Sherpa-config --libs    : returns the linker line to link with Sherpa";
     echo "  Sherpa-config --datadir : returns the path of Sherpa data (like Decaydata, PDFs)";
-    echo "  Sherpa-config --ldflags : returns the LDFLAGS used for Sherpa";;
+    echo "  Sherpa-config --ldflags : returns the LDFLAGS used for Sherpa";
     echo "  Sherpa-config --cppflags : returns the preprocessor FLAGS needed for Sherpa headers";;
 esac
 
