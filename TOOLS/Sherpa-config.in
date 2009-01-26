@@ -16,6 +16,8 @@ case $1 in
     echo @DATADIR@;;
   --ldflags)
     echo @ldflags@;;
+  --cppflags)
+    echo -I@INCLUDEDIR@;;
   *)
     echo "Sherpa-config: configuration tool for the Monte Carlo";
     echo "               event generator Sherpa: http://sherpa-mc.de";
@@ -26,5 +28,6 @@ case $1 in
     echo "  Sherpa-config --libs    : returns the linker line to link with Sherpa";
     echo "  Sherpa-config --datadir : returns the path of Sherpa data (like Decaydata, PDFs)";
     echo "  Sherpa-config --ldflags : returns the LDFLAGS used for Sherpa";;
+    echo "  Sherpa-config --cppflags : returns the preprocessor FLAGS needed for Sherpa headers";;
 esac
 
