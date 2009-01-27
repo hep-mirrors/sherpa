@@ -1,80 +1,72 @@
-#ifndef MODEL_Main_Running_AlphaS_H
-#define MODEL_Main_Running_AlphaS_H
+#ifndef Running_Alphas_H
+#define Running_Alphas_H
 
-#include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Math/Function_Base.H"
+#include "Flavour.H"
+#include "Function_Base.H"
 
 namespace MODEL {
-  class AS_Data {
-  public:
-    int    nF;
-    double beta0,beta1,beta2,beta3;
-    double mass2_low,mass2_up,as_low,as_up;
+
+  //! Contains data for alpha_S running up to 3rd order
+  struct AsDataSet {
+    double low_scale,high_scale;
+    double as_low,as_high;
+    int nf;
     double lambda2;
+    double b[4];
+    double beta0;
   };
-
-  class AS_Sorting_Criterion {
-  public :
-    bool operator()(const AS_Data * data1,const AS_Data * data2) 
-    {
-      return (data1->mass2_up<data2->mass2_up);
-    }
-  };
-
-  typedef std::set<AS_Data *,AS_Sorting_Criterion> AS_Data_set; 
-  typedef AS_Data_set::iterator                    asdata_iterator; 
+  //! coefficients of the Beta functions for QCD
+  // cf. T. van Ritbergen, J. Vermaseren, S. Larin PLB 400 (1997) 379
+  // up to factor 4^(i+1)
 
   class Running_AlphaS : public ATOOLS::Function_Base {
   protected:
-    static double s_Nc, s_CA, s_CF, s_TF, s_zeta2, s_zeta3;
 
-    double        m_asMZ, m_M2Z;
-    int           m_order;
-    double        m_fac, m_ascut, m_cutq2;
+    int         m_order;
+    int         m_nth,m_mzset;
+    double      m_CF,m_CA;
+    double      m_as_MZ,m_m2_MZ;
+    double      m_fac;
+    double      m_cutq2;
 
-    AS_Data_set     m_asdata;
-    asdata_iterator m_asditer;
+    AsDataSet * p_thresh;
 
-    void FixASData();
-    void FixLambda(AS_Data * region,
-		   const double scale,const double asvalue) const;
-    void FixSoftEnd();
+    double Beta0(const int);
+    double Beta1(const int);
+    double Beta2(const int);
+    double Beta3(const int);
+    double Lambda2(const int);
+    double ZetaOS2(const double,const double,const double,const int);
+    double InvZetaOS2(const double,const double,const double,const int);
+    double AlphaSLam(const double,const int);
+    void   ContinueAlphaS(int &);
 
-    AS_Data *    FindRegion(const double q2) const;
-    const double Beta0(const int nF) const;
-    const double Beta1(const int nF) const;
-    const double Beta2(const int nF) const;
-    const double Beta3(const int nF) const;
-
-    const double LambdaForm(const double q2,const AS_Data * asregion,
-			    const int order) const;
-    const double MatchingFactorDown(const AS_Data * up,const AS_Data * down,
-				    const double refmass=-1.) const;
-    const double MatchingFactorUp(const AS_Data * down,const AS_Data * up,
-				  const double refmass=-1.) const;
   public:
-    Running_AlphaS(const double as_MZ,const double m2_MZ,
-		   const int order=0, const double fac=1.);
+
+    // constructor
+    Running_AlphaS(const double as_MZ,const double m2_MZ,const int order=0, const double fac=1.);
+    
+    // destructor
     ~Running_AlphaS();
 
-    const double operator()(const double q2) const; 
-    const double Inverse(const double as) const;
-    const double AlphaS(const double q2) const;
+    // member functions
+    double operator()(double q2); 
+    double AlphaS(const double q2);
+    void   SelfTest();
 
+    // inline functions
+    inline int    Order()                { return m_order;      }
+    inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
+    inline double Beta1(const double q2) { return Beta1(Nf(q2)); }
+    inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
+    inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
+    inline double AsMZ()                 { return m_as_MZ;      }
+    inline double AsFixed()              { return m_defval;     }
+    int    Nf(const double q2);
 
-    const int    Order() const { return m_order; }
-    const double Beta0(const double q2) const;
-    const double Beta1(const double q2) const;
-    const double Beta2(const double q2) const;
-    const double Beta3(const double q2) const;
-    const int    Nf(const double q2) const;
-
-    const double CutQ2() const;
-
-    void   SelfTest() const;
+    inline double CutQ2() { return m_cutq2; }    
+    inline double ScaleFactor() { return m_fac; }
   };
-
-
 
   extern Running_AlphaS * as;
 
@@ -84,32 +76,28 @@ namespace MODEL {
     \brief The class for the (running) strong coupling constant.
 
     This is an implementation of the
-    <A HREF="http://www-spires.dur.ac.uk/cgi-bin/spiface/find/hep/www?eprint=hep-ph/9706430">
-    strong coupling constant by K.~G.~Chetyrkin, B.~A.~Kniehl and M.~Steinhauser</A> with the
-    <A HREF="http://www-spires.dur.ac.uk/cgi-bin/spiface/hep/www?eprint=hep-ph/9701390">
-    coefficients of the \f$\beta\f$-function by T.~van Ritbergen, J.~A.~M.~Vermaseren and 
-    S.~A.~Larin </A>
+    <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?rawcmd=f+eprint+hep-ph%2F9706430">
+    strong coupling constant by K.~G.~Chetyrkin, B.~A.~Kniehl and M.~Steinhauser</A>
 
     The following points should be noted:
-    - In the two papers two different conventions are used for the coefficients of the 
-      \f$beta\f$-function, which result in a relative factor of 4.  We use the
-      definition of T.~van Ritbergen, J.~A.~M.~Vermaseren and S.~A.~Larin and adjust
-      this in the code (with a comment).
     - At the moment the running at up to three loops is tested, the four loop
       running remains to be checked. 
-    - Thresholds are fixed to the onshell masses of the corresponding quark.
+    - Thresholds are fixed to the onshell masses of the correspondig quark.
     - In order to avoid the Landau Pole, the running is stopped as soon as 
-      \f$alpha_s\f$ equals \f$4\pi\f$. (Below that scale \f$alpha_s\f$ is set 
-      to constant.)
+      \f$alpha_s\f$ equals one. (Below that scale \f$alpha_s\f$ is set linearly to zero.)
   */
   /*!
     \var int Running_AlphaS::m_order
     The order at which running \f$alpha_s\f$ is evaluated, e.g. m_order = 0 refers to one-loop,
-    m_order = 3 to four-loop running.
+    m_order = 3 then signifies four-loop running.
   */
-
-
-
+  /*!
+    \var int Running_AlphaS::m_nth
+    The number of thresholds, i.e. of quarks. Later on, other particles should be implmented as well,
+    at least at one-loop order. The only exception is the Z boson which is inserted as well -
+    this is due to the fact that in SHERPA \f$\alpha_s\f$ at the Z-pole is used as defining
+    parameter.
+  */
   /*!
     \var int Running_AlphaS::m_mzset
     The place of the Z-pole in the list of thresholds.
