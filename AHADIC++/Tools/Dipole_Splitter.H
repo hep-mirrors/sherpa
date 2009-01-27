@@ -5,6 +5,8 @@
 #include "Cluster.H"
 #include "Dipole.H"
 #include "Poincare.H"
+#include "Histogram.H"
+#include <map>
 
 namespace AHADIC {
   class Hadronisation_Parameters;
@@ -17,7 +19,7 @@ namespace AHADIC {
   private:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
 
-    bool              m_massreweighting, m_leading, m_pole;
+    bool              m_massreweighting, m_leading, m_flat, m_pole;
     Strong_Coupling * p_as; 
     Constituents    * p_constituents;
     FlavDecayMap    * p_options;
@@ -29,18 +31,22 @@ namespace AHADIC {
     ATOOLS::Poincare   m_cms,m_zrot;
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
     double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
-    double             m_Q2,m_Q,m_kt2,m_z,m_phi,m_kt2_max,m_mass2;
+    double             m_Q2,m_Q,m_Qt2,m_kt2,m_z,m_phi,m_kt2_max,m_mass2;
     
     ATOOLS::Flavour    m_flav2,m_flav3;
    
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
+
     SP(Dipole)    EmitGluon(const double);
     void          SetSpectatorAndSplitter();
     bool          DetermineSplitting(const bool glusplit);
+    double        SelectZ(const bool glusplit);
     void          SelectFlavour();
     bool          PrepareKinematics(const double pt2max);
     bool          ConstructKinematics(const bool glusplit);
   public:
     Dipole_Splitter(Strong_Coupling *,const double ptmax);
+    ~Dipole_Splitter();
 
     bool SplitCluster(SP(Cluster) clu,const double pt2max=-1.,const bool m_pole=true);
     bool SplitDipole(SP(Dipole) dip,const double pt2max=-1.,const bool m_pole=true);

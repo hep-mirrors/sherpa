@@ -302,12 +302,12 @@ Double_Transitions::Double_Transitions() :
   map<Flavour,double> checkit;
   for (Double_Transition_Miter dtiter=p_transitions->begin();
        dtiter!=p_transitions->end();dtiter++) {
-    msg_Out()<<"Transitions for <"
-	     <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
+    //msg_Out()<<"Transitions for <"
+    //	     <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
     for (Double_Transition_Siter dtit=dtiter->second->begin();
 	 dtit!=dtiter->second->end();dtit++) {
-      msg_Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
-	       <<" with "<<dtit->second<<endl;
+      //msg_Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
+      //	       <<" with "<<dtit->second<<endl;
       if (checkit.find(dtit->first.first)==checkit.end()) 
 	checkit[dtit->first.first] = dtit->second;
       else checkit[dtit->first.first] += dtit->second;

@@ -13,12 +13,32 @@ const Vec3D Dipole_Splitter::s_ez(Vec3D(0.,0.,1.));
 
 Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
   m_massreweighting(false), 
-  m_leading(hadpars.Get(std::string("leading_particles"))<2), m_pole(true),
+  m_leading(hadpars.Get(std::string("leading_particles"))<2), m_flat(false), m_pole(true),
   p_as(as), p_constituents(hadpars.GetConstituents()), p_options(NULL),
   p_spect(0), p_split(0), p_out1(0), p_out2(0), 
   m_mmin_2(sqr(p_constituents->MinMass()))
-{ }
+{ 
+  m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,5.,50);
+  m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,5.,50);
+  m_histograms[std::string("Z_Gluon_Splitting")]       = new Histogram(0,0.,1.,50);
+  m_histograms[std::string("Z_Gluon_Emission")]        = new Histogram(0,0.,1.,50);
+  m_histograms[std::string("ZWeight_Gluon_Splitting")] = new Histogram(0,0.,1.,50);
+  m_histograms[std::string("ZWeight_Gluon_Emission")]  = new Histogram(0,0.,1.,50);
+}
 
+
+Dipole_Splitter::~Dipole_Splitter() {
+  Histogram * histo;
+  std::string name;
+  for (std::map<std::string,Histogram *>::iterator hit=m_histograms.begin();
+       hit!=m_histograms.end();hit++) {
+    histo = hit->second;
+    name  = std::string("Fragmentation_Analysis/")+hit->first+std::string(".dat");
+    histo->Output(name);
+    delete histo;
+  }
+  m_histograms.clear();
+}
 
 bool Dipole_Splitter::SplitCluster(SP(Cluster) cluster,const double pt2max,
 				   const bool pole) {
@@ -133,8 +153,6 @@ bool Dipole_Splitter::SplitDipole(SP(Dipole) dip,const double pt2max,
 }
 
 bool Dipole_Splitter::DetermineSplitting(const bool glusplit) {
-  double pt2test, ztest;
-  ATOOLS::Flavour flavtest;
   int trials(0);
   do {
     //if (!m_pole) 
@@ -144,9 +162,10 @@ bool Dipole_Splitter::DetermineSplitting(const bool glusplit) {
     // std::cout<<METHOD<<": non-isotropic from glusplit "<<glusplit<<" & "<<m_pole
     //	       <<" from "<<m_leading<<"."<<std::endl;
     m_kt2 = p_as->SelectPT(m_kt2_max,m_pole);
-    m_z   = ran.Get();
-    m_phi = 2.*M_PI*ran.Get();
     if (glusplit) SelectFlavour();
+    if (4.*m_kt2*(m_Qt2+m_m3_2)>m_Qt2*m_Qt2) continue;
+    m_z   = SelectZ(glusplit); 
+    m_phi = 2.*M_PI*ran.Get();
     trials++;
     if (trials>100) return false;
   } while (!ConstructKinematics(glusplit));
@@ -174,6 +193,48 @@ void Dipole_Splitter::SelectFlavour() {
   }
   m_m2    = m_m3    = p_constituents->Mass(m_flav3);
   m_m2_2  = m_m3_2  = sqr(m_m2); 
+  m_Qt2   = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
+}
+
+double Dipole_Splitter::SelectZ(const bool glusplit) {
+  if (m_flat) return ran.Get();
+  Histogram* histo;
+  double weight(0.), mu2(0.), ztest(-1.);
+  if (glusplit) {
+    //std::cout<<"In g->QQ"<<std::endl;
+    while (ztest<0.) {
+      ztest  = ran.Get();
+      mu2    = 2.*m_m2_2*ztest*(1.-ztest)/(m_kt2+m_m2_2);
+      weight = (1.-2.*ztest*(1.-ztest))*(1.+mu2/(1.-2.*ztest*(1.-ztest)));
+      histo  = (m_histograms.find(std::string("ZWeight_Gluon_Splitting")))->second;
+      histo->Insert(weight);
+      if (weight>ran.Get()) {
+	histo  = (m_histograms.find(std::string("Z_Gluon_Splitting")))->second;
+	histo->Insert(ztest);
+	return ztest;
+      }
+      ztest = -1.;
+    }
+  }
+  else {
+    double deltaz = sqrt(1.-4.*m_kt2*(m_Qt2+m_m3_2)/(m_Qt2*m_Qt2));
+    double zmin   = (1.-deltaz)/2., zmax = (1.+deltaz)/2.; 
+    //std::cout<<"In q->qg : "<<zmin<<" ... "<<zmax<<"."<<std::endl;
+    while (ztest<0.) {
+      ztest  = 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran.Get());
+      mu2    = (ztest*(1.-ztest)*m_m3_2)/(m_kt2+sqr(1.-ztest)*m_m3_2);
+      weight = ((1.+sqr(ztest))/2.) * (1.-2.*(1.-ztest)*mu2/(1.+sqr(ztest)));
+      histo  = (m_histograms.find(std::string("ZWeight_Gluon_Emission")))->second;
+      histo->Insert(weight);
+      if (weight>ran.Get()) {
+	histo  = (m_histograms.find(std::string("Z_Gluon_Emission")))->second;
+	histo->Insert(ztest);
+	return ztest;
+      }
+      ztest = -1;
+    }
+  }
+  return ran.Get();
 }
 
 bool Dipole_Splitter::PrepareKinematics(const double pt2max) {
@@ -263,11 +324,7 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
   if (m_massreweighting && glusplit) {
     // Reweight with (pt2+pt02)/s23
     m_mass2 = (q2+q3).Abs2();    
-    //std::cout<<"In "<<METHOD<<" for "<<p_as->GetPTArgument()<<" and "<<m_mass2<<std::endl;
-    if (p_as->GetPTArgument()<m_mass2*ran.Get()) {
-      return false;
-    }
-    //std::cout<<" ... passed."<<std::endl;
+    if (p_as->GetPTArgument()<m_mass2*ran.Get()) return false;
   }
 
   m_zrot.RotateBack(q1);
@@ -288,7 +345,6 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"   4 mom-check failed for kinematics: "
 	       <<check<<" ("<<check.Abs2()<<")."<<std::endl;
-    //abort();
     return false;
   }
   return true;

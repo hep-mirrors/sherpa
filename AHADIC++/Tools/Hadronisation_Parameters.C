@@ -52,7 +52,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
   if (msg_LevelIsTracking()) 
     p_doubletransitions->PrintDoubleTransitions(); 
 
-  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::IR_cutoff;
+  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::IR_cutoff; //GDH_inspired; //
   p_coupling          = new Strong_Coupling(m_asform,dabs(m_parametermap[string("pt02")]));
   p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
 

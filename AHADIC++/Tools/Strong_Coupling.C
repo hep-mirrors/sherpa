@@ -55,18 +55,27 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
       was<<Q<<" "<<(*this)(sqr(Q))<<" "<<(*as)(sqr(Q))<<"\n";
     }
   }
+  for (double Q(10.);Q<100.;Q*=1.1) {
+    if (Q<1.) {
+      was<<Q<<" "<<(*this)(sqr(Q))<<"\n";
+    }
+    else {
+      was<<Q<<" "<<(*this)(sqr(Q))<<" "<<(*as)(sqr(Q))<<"\n";
+    }
+  }
   was.close();
   exit(1);
 }
 
 const double Strong_Coupling::operator()(double q2) const {
-  double Q2(dabs(q2)), Q(sqrt(Q2));
+  double Q2(dabs(q2)), Q; 
 
   switch (m_form) {
   case asform::IR_cutoff:
-    return 1./(m_beta0*log((Q2+m_pt02)/m_Lambda2));
+    return m_beta0/log((Q2+m_pt02)/m_Lambda2);
   case asform::GDH_inspired:
-    return m_gamma*n(Q2)/(log((Q2+mg2(Q2))/m_Lambda2));
+    Q = sqrt(Q2);
+    return m_gamma*n(Q)/(log((Q2+mg2(Q))/m_Lambda2));
   case asform::constant: 
     return m_asmax;
   case asform::fall_off:
