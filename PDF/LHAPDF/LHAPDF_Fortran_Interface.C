@@ -26,10 +26,6 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   bool & initlhapdf) :
   m_set(_set), m_member(_member), m_anti(1)
 {
-  m_xmin=0.;
-  m_xmax=1.;
-  m_q2min=1.;
-  m_q2max=1.e12;
   m_type="LHA["+m_set+"]";
 
   m_bunch = _bunch; 
@@ -47,6 +43,18 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 #endif
   }
 
+#ifdef LHAPDF__NATIVE__WRAPPER
+  m_xmin=LHAPDF::getXmin(m_member);
+  m_xmax=LHAPDF::getXmax(m_member);
+  m_q2min=LHAPDF::getQ2min(m_member);
+  m_q2max=LHAPDF::getQ2max(m_member);
+#else
+  m_xmin=0.;
+  m_xmax=1.;
+  m_q2min=1.;
+  m_q2max=1.e12;
+#endif
+  
   for (int i=1;i<6;i++) {
     m_partons.push_back(Flavour((kf_code)(i)));
     m_partons.push_back(Flavour((kf_code)(i)).Bar());
