@@ -7,17 +7,25 @@
 DIRS=`find Process -name P?_?`" "`find Process -name P?_??`
 
 print_help(){
-  echo "makelibs version 1.0" && echo && \
+  echo "makelibs version 1.1" && echo && \
   echo "options: -c \"make clean\" before compiling" && \
   echo "         -o install single module" && \
+  echo "         -j [N] allow N compilations at once" && \
   echo "         -h display this help and exit" && echo
 }
 
-while getopts :hco OPT
+defaults(){
+  JOBS=2
+}
+
+defaults;
+
+while getopts hcoj: OPT
 do
   case $OPT in
-  c) CLEAN=TRUE ;; 
+  c) CLEAN=TRUE ;;
   o) ONE=TRUE ;;
+  j) JOBS=$OPTARG ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -76,7 +84,7 @@ for J in $DIRS ; do
   if ! test -z "@CXXCPP@"; then export CXXCPP="@CXXCPP@"; fi
   ./configure
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
-  if ! make install -j2; then
+  if ! make install -j $JOBS; then
     echo "makeinstall: error: \"make install\" in $I failed"
     exit 1
   fi
