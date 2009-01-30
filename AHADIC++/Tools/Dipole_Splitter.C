@@ -15,8 +15,8 @@ Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
   m_massreweighting(false), 
   m_leading(hadpars.Get(std::string("leading_particles"))<2), m_flat(false), m_pole(true),
   p_as(as), p_constituents(hadpars.GetConstituents()), p_options(NULL),
-  p_spect(0), p_split(0), p_out1(0), p_out2(0), 
-  m_mmin_2(sqr(p_constituents->MinMass()))
+  p_spect(0), p_split(0), p_out1(0), p_out2(0),
+  m_mmin_2(sqr(p_constituents->MinMass())), m_failedkinematicscounter(0)
 { 
   m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,5.,50);
   m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,5.,50);
@@ -287,7 +287,7 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
     if (fac1<0.) return false;
     double div  = m_Q2-m_m23_2;
     fac1 /= div;
-    
+
     q1 =                                                             fac1 * m_mom1;
     q2 =      m_z * m_mom2 +    (m_kt2+m_m2_2-sqr(m_z)*m_m23_2)/(m_z*div) * m_mom1 + kt * nperp;
   }
@@ -316,14 +316,14 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
     if (lt2<0.0) return false;
 
     double lt  = sqrt(lt2);
-    q2 = zt*l + (m_m2_2+lt2)/(gam*zt)*n + lt*nperp;    
+    q2 = zt*l + (m_m2_2+lt2)/(gam*zt)*n + lt*nperp;
     if (q1[0]<0. || q2[0]<0. || q3[0]<0.) return false;
   }
   q3 = m_mom0-q2-q1;
 
   if (m_massreweighting && glusplit) {
     // Reweight with (pt2+pt02)/s23
-    m_mass2 = (q2+q3).Abs2();    
+    m_mass2 = (q2+q3).Abs2();
     if (p_as->GetPTArgument()<m_mass2*ran.Get()) return false;
   }
 
@@ -343,8 +343,10 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
   Vec4D check = (m_mom0-m_mom1-m_mom2-m_mom3);
   if (!IsZero(check.Abs2())) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   4 mom-check failed for kinematics: "
-	       <<check<<" ("<<check.Abs2()<<")."<<std::endl;
+               <<"   4 mom-check failed for kinematics: "
+               <<check<<" ("<<check.Abs2()<<") "<<std::endl;
+    if (m_failedkinematicscounter++ > 100)
+      THROW(fatal_error,"Constructing kinematics failed too often ... aborting ... ");
     return false;
   }
   return true;
