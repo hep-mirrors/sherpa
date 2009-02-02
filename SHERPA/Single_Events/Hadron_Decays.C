@@ -315,7 +315,12 @@ bool Hadron_Decays::RejectExclusiveChannelsFromFragmentation(Blob* fragmentation
 
           return true;
         }
-        DEBUG_INFO("did not find exclusive decay channel, continue.");
+        else {
+          DEBUG_INFO("did not find exclusive decay channel, continue.");
+          Vec4D vertex_position=decayblob->Position();
+          showerblob->SetPosition(vertex_position);
+          fragmentationblob->SetPosition(vertex_position);
+        }
       }
     }
   }
@@ -345,7 +350,10 @@ bool Hadron_Decays::AttachExtraQED(Blob* blob)
 void Hadron_Decays::SetPosition(ATOOLS::Blob* blob)
 {
   Particle* inpart = blob->InParticle(0);
-  if(inpart->Flav().Kfcode()==kf_K) return;
+  if(inpart->Flav().Kfcode()==kf_K) {
+    blob->SetPosition(inpart->XProd());
+    return;
+  }
   
   // boost lifetime into lab
   double gamma = 1./rpa.gen.Accu();

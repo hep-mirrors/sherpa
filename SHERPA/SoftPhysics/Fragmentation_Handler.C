@@ -128,9 +128,22 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 {
   Particle  * part(NULL);
   Blob      * blob(NULL);
-  Part_List * plist = new Part_List;
+  std::vector<Part_List*> plists;
+  plists.push_back(new Part_List);
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
+      // If not coming from hadron decays, fill default plists[0].
+      // If from hadron decays, create separate plist for each blob
+      // such that there is a one-to-one correspondence between
+      // fragmentation outcome and hadron decay. This is needed for setting
+      // the correct vertex position, and to reject exclusive final states
+      Part_List* plist(plists[0]);
+      Blob* upstream_blob=(*blit)->UpstreamBlob();
+      if (upstream_blob && upstream_blob->Type()==btp::Hadron_Decay) {
+        plist=new Part_List;
+        plists.push_back(plist);
+      }
+
       std::vector<Particle*> taus;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
@@ -161,14 +174,18 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       (*blit)->UnsetStatus(blob_status::needs_hadronization);
     }
   }
-  if (plist->empty()) {
-    msg_Debugging()<<"WARNING in "<<METHOD<<endl
+  if (plists[0]->empty() && plists.size()<2) {
+    msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
 		   <<"   No coloured particle found leaving shower blobs."<<endl;
-    delete plist;
+    delete plists[0];
     return Return_Value::Nothing;
   }
 
 
+  Return_Value::code ret(Return_Value::Success);
+  for (size_t i=0; i<plists.size(); ++i) {
+  if (plists[i]->empty()) continue;
+  Part_List* plist=plists[i];
   int  col1, col2;
   bool hit1, hit2;
   Part_List * pli(NULL);
@@ -245,12 +262,17 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       delete partlists[i];
     }
     delete plist;
-    return Return_Value::Success;
+    ret=Return_Value::Success;
   }
-  for(size_t i=0;i<partlists.size();i++) {
-    delete partlists[i];
+  else {
+    for(size_t i=0;i<partlists.size();i++) {
+      delete partlists[i];
+    }
+    delete plist;
+    ret=Return_Value::Error;
+    break;
   }
-  delete plist;
-  return Return_Value::Error;
+  }
+  return ret;
 }
 
