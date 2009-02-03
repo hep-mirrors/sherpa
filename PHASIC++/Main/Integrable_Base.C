@@ -309,7 +309,11 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   if (scheme==scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
   SetMomenta(momenta);
-  if (m_nin==1) return momenta[0].Abs2();
+  if (m_nin==1) {
+    m_scale[stp::ren]=momenta[0].Abs2();
+    m_kfkey[0]=m_scale[stp::ren];
+    return momenta[0].Abs2();
+  }
   if (m_nin!=2) THROW(fatal_error,"Too many incoming particles.");
   if (scheme==scl::ckkw) {
     double S(sqr(rpa.gen.Ecms()));
@@ -554,7 +558,8 @@ double Integrable_Base::KFactor()
       m_scale[stp::ren]=m_kfkey[0];
       m_kfkey<<m_rfactor*pow(as->AlphaS(m_scale[stp::ren])/
 			     as->AlphaS(rpa.gen.CplScale()),m_orderQCD);
-      return m_kfkey.Weight();
+      if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT)
+	return m_kfkey.Weight();
     } 
     else 
       return m_rfactor;

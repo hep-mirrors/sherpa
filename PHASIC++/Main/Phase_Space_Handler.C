@@ -266,6 +266,7 @@ double Phase_Space_Handler::Differential()
 void Phase_Space_Handler::CalculateME()
 {
   if (m_nin==1) {
+    p_active->CalculateScale(p_lab);
     m_result_1=p_active->Differential(p_lab);
   }
   else {
