@@ -16,7 +16,7 @@ Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const double ptmax) :
   m_leading(hadpars.Get(std::string("leading_particles"))<2), m_flat(false), m_pole(true),
   p_as(as), p_constituents(hadpars.GetConstituents()), p_options(NULL),
   p_spect(0), p_split(0), p_out1(0), p_out2(0),
-  m_mmin_2(sqr(p_constituents->MinMass())), m_failedkinematicscounter(0)
+  m_mmin_2(sqr(p_constituents->MinMass()))
 { 
   m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,5.,50);
   m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,5.,50);
@@ -344,9 +344,8 @@ bool Dipole_Splitter::ConstructKinematics(const bool glusplit) {
   if (!IsZero(check.Abs2())) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
                <<"   4 mom-check failed for kinematics: "
-               <<check<<" ("<<check.Abs2()<<") "<<std::endl;
-    if (m_failedkinematicscounter++ > 100)
-      THROW(fatal_error,"Constructing kinematics failed too often ... aborting ... ");
+               <<check<<" ("<<check.Abs2()<<"), m_mom0:"
+               <<m_mom0<<std::endl;
     return false;
   }
   return true;

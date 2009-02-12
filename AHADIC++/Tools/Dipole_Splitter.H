@@ -32,7 +32,6 @@ namespace AHADIC {
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
     double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
     double             m_Q2,m_Q,m_Qt2,m_kt2,m_z,m_phi,m_kt2_max,m_mass2;
-    unsigned short int m_failedkinematicscounter;
 
     ATOOLS::Flavour    m_flav2,m_flav3;
 
