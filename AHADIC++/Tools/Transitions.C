@@ -59,10 +59,8 @@ Single_Transitions::~Single_Transitions()
   if (p_transitions) {
     for (Single_Transition_Miter stiter=p_transitions->begin();
 	 stiter!=p_transitions->end();stiter++) {
-      stiter->second->clear();
       delete stiter->second;
     }
-    p_transitions->clear();
     delete p_transitions;
   }
 }
@@ -106,12 +104,8 @@ Flavour Single_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {
   Single_Transition_Miter stiter = p_transitions->find(fpair);
   if (stiter==p_transitions->end())  return had;
   Single_Transition_List * stl  = stiter->second;
-  Single_Transition_Siter siter=stl->begin();
-  while (siter!=stl->end()) {
-    had = siter->first;
-    if ((siter++)==stl->end()) break;
-  }
-  return had;
+  if (stl->empty()) return had;
+  return (--stl->end())->first;
 }
 
 Flavour Single_Transitions::GetHeaviestTransition(const Flavour_Pair & fpair) {
@@ -338,13 +332,8 @@ Flavour_Pair Double_Transitions::GetLightestTransition(const Flavour_Pair & fpai
   Double_Transition_Miter dtiter = p_transitions->find(fpair);
   if (dtiter==p_transitions->end())  return pair;
   Double_Transition_List * dtl  = dtiter->second;
-  Double_Transition_Siter diter=dtl->begin();
-  while (diter!=dtl->end()) {
-    pair.first = diter->first.first;
-    pair.second = diter->first.second;
-    if ((diter++)==dtl->end()) break;
-  }
-  return pair;
+  if (dtl->empty()) return pair;
+  return (--dtl->end())->first;
 }
 
 Flavour_Pair Double_Transitions::GetHeaviestTransition(const Flavour_Pair & fpair) {
