@@ -265,6 +265,8 @@ bool Dipole_Splitter::PrepareKinematics(const double pt2max) {
 
 
   if (m_Q-m_m1-2.*sqrt(m_mmin_2)<0.) return false;
+  m_Qt2            = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
+  if (m_Qt2<0.) return false;
   
   if (pt2max>0.) m_kt2_max = ATOOLS::Min((m_Q2-m_m1_2)/4.,pt2max);
             else m_kt2_max = (m_Q2-m_m1_2)/4.;

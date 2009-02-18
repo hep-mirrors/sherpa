@@ -102,7 +102,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
     if (!UpdateTransitions(clin)) {
       if (!TryToEnforceTransition(clin)) {
 	if (tried) {
-	  msg_Out()<<"Error in "<<METHOD<<" tried = "<<tried<<"."<<std::endl;
+	  if (tried>1) msg_Out()<<"Error in "<<METHOD<<" tried = "<<tried<<"."<<std::endl;
 	  return false;
 	}
 	for (cit=clin->begin();cit!=clin->end();cit++) {
@@ -487,6 +487,7 @@ double Soft_Cluster_Handler::DecayWeight(SP(Cluster) cluster,Flavour & had1,Flav
 	       <<flpair.second<<"} passed mass conditions,"<<std::endl
 	       <<"   but no viable transition found."<<std::endl
 	       <<"   Return 0 and hope for the best."<<std::endl;
+    throw Return_Value::Retry_Event;
     return 0.;
   }
 

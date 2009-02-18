@@ -59,7 +59,18 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       moveon = false;
       Reset();
       for (short int i=0;i<m_maxtrials;i++) {
-	result = Hadronize(blob,i);
+	try {
+	  result = Hadronize(blob,i);
+	} catch (Return_Value::code ret) {
+	  msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+		     <<"   Hadronization for blob "
+		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
+		     <<"did not work out,"<<std::endl
+		     <<"   will trigger retrying the event."<<std::endl;
+	  CleanUp(blob);
+	  return Return_Value::Retry_Event;
+	}
+
 	switch (result) {
 	case Return_Value::Success : 
 	  ++blit;
