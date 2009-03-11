@@ -30,6 +30,8 @@ namespace MODEL {
     double VVV(ATOOLS::Decay_Channel * dec);
     double FFS(ATOOLS::Decay_Channel * dec);
     double FFV(ATOOLS::Decay_Channel * dec);
+    double FSF(ATOOLS::Decay_Channel * dec);
+    double FVF(ATOOLS::Decay_Channel * dec);
   public:
     Width_Calculator(Vertex_Table * vertextable) : p_vertextable(vertextable) {}
 
