@@ -3,6 +3,7 @@
 #include "Running_AlphaS.H"
 #include "Running_Fermion_Mass.H"
 #include "Message.H"
+#include "Exception.H"
 #include "Data_Reader.H"
 #include <iomanip>
 
@@ -70,7 +71,7 @@ void Standard_Model_Top_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 
-DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4th generation",Model_Base,Model_Arguments);
+DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4thGen",Model_Base,Model_Arguments);
 
 Model_Base *Standard_Model_Gen4_Getter::operator()(const Model_Arguments &args) const
 {
@@ -91,17 +92,31 @@ void Standard_Model_Gen4_Getter::PrintInfo(std::ostream &str,const size_t width)
      <<std::setw(width+7)<<" "<<"- SIN2THETAW          (weak mixing angle)\n"
      <<std::setw(width+7)<<" "<<"- VEV    (Higgs vev)\n"
      <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<std::setw(width+7)<<" "<<"3x3 CKM matrix:\n"
      <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
      <<std::setw(width+7)<<" "<<"- CABIBBO  (Cabibbo angle in Wolfenstein parameterization)\n"
      <<std::setw(width+7)<<" "<<"- A        (Wolfenstein A)\n"
      <<std::setw(width+7)<<" "<<"- RHO      (Wolfenstein Rho)\n"
      <<std::setw(width+7)<<" "<<"- ETA      (Wolfenstein Eta)\n"
-     <<std::setw(width+7)<<" "<<"- A_34     (quark mixing angle 34)"
-     <<std::setw(width+7)<<" "<<"- THETA_L   (lepton mixing angle between 3rd and 4th generation)"
-     <<std::setw(width+7)<<" "<<"- MASS_U4   (mass of 4th generation up-type quark)"
-     <<std::setw(width+7)<<" "<<"- MASS_D4   (mass of 4th generation down-type quark)"
-     <<std::setw(width+7)<<" "<<"- MASS_L4   (mass of 4th generation lepton)"
-     <<std::setw(width+7)<<" "<<"- MASS_NU4  (mass of 4th generation neutrino)"
+     <<std::setw(width+7)<<" "<<"4th generation extension (Phys.Lett.B192:441,1987):\n"
+     <<std::setw(width+7)<<" "<<"- A_14     (quark mixing angle a_14)\n"
+     <<std::setw(width+7)<<" "<<"- A_24     (quark mixing angle a_24)\n"
+     <<std::setw(width+7)<<" "<<"- A_34     (quark mixing angle a_34)\n"
+     <<std::setw(width+7)<<" "<<"- PHI_2    (quark mixing angle phi_1)\n"
+     <<std::setw(width+7)<<" "<<"- PHI_3    (quark mixing angle phi_2)\n"
+     <<std::setw(width+7)<<" "<<"4th generation lepton mixing to 3rd generation:\n"
+     <<std::setw(width+7)<<" "<<"- THETA_L14   (lepton mixing angle theta_L,14)\n"
+     <<std::setw(width+7)<<" "<<"- THETA_L24   (lepton mixing angle theta_L,24)\n"
+     <<std::setw(width+7)<<" "<<"- THETA_L34   (lepton mixing angle theta_L,34)\n"
+     <<std::setw(width+7)<<" "<<"- PHI_L2    (quark mixing angle phi_L,1)\n"
+     <<std::setw(width+7)<<" "<<"- PHI_L3    (quark mixing angle phi_L,2)\n"
+     <<std::setw(width+7)<<" "<<"possibly different Yukawa couplings for 4th generation:\n"
+     <<std::setw(width+7)<<" "<<"- YUKAWA_U4   (Yukawa coupling of 4th generation up-type quark)\n"
+     <<std::setw(width+7)<<" "<<"- YUKAWA_D4   (Yukawa coupling of 4th generation down-type quark)\n"
+     <<std::setw(width+7)<<" "<<"- YUKAWA_L4   (Yukawa coupling of 4th generation lepton)\n"
+     <<std::setw(width+7)<<" "<<"- YUKAWA_Nu4  (Yukawa coupling of 4th generation neutrino)\n"
+     <<std::setw(width+7)<<" "<<"output of mixing matrices [1=on,0=off(default)]:\n"
+     <<std::setw(width+7)<<" "<<"- OUTPUT_MIXING  (Print the matrices for lepton and quark mixing)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
@@ -150,10 +165,10 @@ void Standard_Model::ParticleInit() {
   s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
   s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
   if (m_trivialextension==2) {
-    s_kftable[7]  = new Particle_Info(7,500.,10.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
-    s_kftable[8]  = new Particle_Info(8,500.,10.0,2,1,3,1,0,1,0,1,"U_4","U_4");
-    s_kftable[17] = new Particle_Info(17,500.,10.0,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
-    s_kftable[18] = new Particle_Info(18,500.,10.0,0,1,0,1,0,1,0,1,"Nu_4","\\Nu_4");
+    s_kftable[7]  = new Particle_Info(7,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
+    s_kftable[8]  = new Particle_Info(8,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
+    s_kftable[17] = new Particle_Info(17,500.,38.3,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
+    s_kftable[18] = new Particle_Info(18,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\Nu_4");
   }
 
 
@@ -205,7 +220,7 @@ void Standard_Model::ParticleInit() {
       s_kftable[kf_fermion]->Add(addit.Bar());
     }
   }
-  for (int i=12;i<18+(m_trivialextension==2?2:0);i+=2) {
+  for (int i=12;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0) {
       s_kftable[kf_neutrino]->Add(addit);
@@ -251,36 +266,6 @@ void Standard_Model::FillSpectrum() {
 				       p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
   }
   if (m_trivialextension==2) { 
-    p_constants->insert(std::make_pair(std::string("M_U4"),    
-				       p_dataread->GetValue<double>("M_U4",500.)));
-    p_constants->insert(std::make_pair(std::string("M_D4"),    
-				       p_dataread->GetValue<double>("M_D4",500.)));
-    p_constants->insert(std::make_pair(std::string("M_L4"),    
-				       p_dataread->GetValue<double>("M_L4",500.)));
-    p_constants->insert(std::make_pair(std::string("M_Nu4"),    
-				       p_dataread->GetValue<double>("M_Nu4",500.)));
-    Flavour flav;
-    flav = Flavour(kf_U4);
-    flav.SetMass(ScalarConstant(std::string("M_U4")));
-    flav.SetMassOn(true);
-    flav.SetStable(false);
-    flav.SetWidth(-1.);
-    flav = Flavour(kf_D4);
-    flav.SetMass(ScalarConstant(std::string("M_D4")));
-    flav.SetMassOn(true);
-    flav.SetStable(false);
-    flav.SetWidth(-1.);
-    flav = Flavour(kf_L4);
-    flav.SetMass(ScalarConstant(std::string("M_L4")));
-    flav.SetMassOn(true);
-    flav.SetStable(false);
-    flav.SetWidth(-1.);
-    flav = Flavour(kf_Nu4);
-    flav.SetMass(ScalarConstant(std::string("M_Nu4")));
-    flav.SetMassOn(true);
-    flav.SetStable(false);
-    flav.SetWidth(-1.);
-
     p_constants->insert(std::make_pair(std::string("Yukawa_D4"), 
 				       p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).PSMass())));
     p_constants->insert(std::make_pair(std::string("Yukawa_U4"), 
@@ -336,10 +321,13 @@ void Standard_Model::FillSpectrum() {
     Running_Fermion_Mass * mU4  = new Running_Fermion_Mass(Flavour(kf_U4),
 							   ScalarConstant(std::string("Yukawa_U4")),as);
     Running_Fermion_Mass * mL4  = new Running_Fermion_Mass(Flavour(kf_L4),
-    							   ScalarConstant(std::string("Yukawa_L4")),as);
+                     ScalarConstant(std::string("Yukawa_L4")),as);
+    Running_Fermion_Mass * mNu4  = new Running_Fermion_Mass(Flavour(kf_Nu4),
+                     ScalarConstant(std::string("Yukawa_Nu4")),as);
     p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_D4).IDName()),mD4));
     p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_U4).IDName()),mU4));
     p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_L4).IDName()),mL4));
+    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_Nu4).IDName()),mNu4));
   }
 }
 
@@ -456,39 +444,124 @@ void Standard_Model::FixCKM() {
     p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM));
   }
   else {
-    CMatrix CKM4(4);   
+    CMatrix V4(4);   
     for (int i=0;i<3;i++) {
       for (int j=0;j<3;j++) {
-	CKM4[i][j] = CKM[i][j];
-	CKM4[3][j] = Complex(0.,0.);
+        V4[i][j] = CKM[i][j];
+        V4[3][j] = Complex(0.,0.);
       }
-      CKM4[i][3] = Complex(0.,0.); 
+      V4[i][3] = Complex(0.,0.); 
     }
-    CKM4[3][3] = Complex(1.,0.);
-    double angle34  = p_dataread->GetValue<double>("A_34",0.);
-    if (angle34!=0.) {
-      CMatrix Phase34(4);
-      for (int i=0;i<4;i++) {
-	for (int j=i;j<4;j++) Phase34[i][j] = Phase34[j][i] = Complex(0.,0.);      
+    V4[3][3] = Complex(1.,0.);
+    double a14  = p_dataread->GetValue<double>("A_14",0.);
+    double a24  = p_dataread->GetValue<double>("A_24",0.);
+    double a34  = p_dataread->GetValue<double>("A_34",0.);
+    double phi2 = p_dataread->GetValue<double>("PHI_2",0.);
+    double phi3 = p_dataread->GetValue<double>("PHI_3",0.);
+    Complex I   = Complex(0.,1.);
+    CMatrix CKM4(4),Phase14(4),Phase24(4),Phase34(4);
+    for (int i=0;i<4;i++) {
+      Phase14[i][i] = Phase24[i][i] = Phase34[i][i] = Complex(1.,0.);
+      for (int j=i+1;j<4;j++) {
+        Phase14[i][j] = Phase14[j][i] =
+        Phase24[i][j] = Phase24[j][i] =
+        Phase34[i][j] = Phase34[j][i] = Complex(0.,0.);
       }
-      Phase34[2][2] = Phase34[3][3] = cos(angle34);
-      Phase34[2][3] = sin(angle34);
-      Phase34[3][2] = -sin(angle34);
-      CKM4 = CKM4*Phase34;
     }
-    p_matrices->insert(std::make_pair(std::string("CKM"),CKM4));
+    // build matrix Phase14
+    Phase14[0][0] = Phase14[3][3] = cos(a14);
+    Phase14[0][3] = sin(a14)*exp(-I*phi3);
+    Phase14[3][0] = -sin(a14)*exp(I*phi3);
+    // build matrix Phase24
+    Phase24[1][1] = Phase24[3][3] = cos(a24);
+    Phase24[1][3] = sin(a24)*exp(-I*phi2);
+    Phase24[3][1] = -sin(a24)*exp(I*phi2);
+    // build matrix Phase34
+    Phase34[2][2] = Phase34[3][3] = cos(a34);
+    Phase34[2][3] = sin(a34);
+    Phase34[3][2] = -sin(a34);
 
-    double theta_L = p_dataread->GetValue<double>("THETA_L",0.);
-    CMatrix L_CKM4(4);   
+    // build new CKM4 = CKM*P34*P24*P14
+    for (unsigned int i=0;i<4;++i) {
+      for (unsigned int j=0;j<4;++j) {
+        Complex sum(0.,0.);
+        for (unsigned int k=0;k<4;++k) {
+          for (unsigned int l=0;l<4;++l) {
+            for (unsigned int m=0;m<4;++m) {
+              sum += V4[i][k]*Phase34[k][l]*Phase24[l][m]*Phase14[m][j];
+            }
+          }
+        }
+        CKM4[i][j] = sum;
+      }
+    }
+
+    double t14   = p_dataread->GetValue<double>("THETA_L14",0.);
+    double t24   = p_dataread->GetValue<double>("THETA_L24",0.);
+    double t34   = p_dataread->GetValue<double>("THETA_L34",0.);
+    double phiL2 = p_dataread->GetValue<double>("PHI_L2",0.);
+    double phiL3 = p_dataread->GetValue<double>("PHI_L3",0.);
+    CMatrix L_V4(4),L_CKM4(4),L_Phase14(4),L_Phase24(4),L_Phase34(4);;   
     for (int i=0;i<4;i++) {
       for (int j=0;j<4;j++) {
-	if (i!=j) L_CKM4[i][j] = Complex(0.,0.);
-	else      L_CKM4[i][j] = Complex(1.,0.);
+        if (i!=j) L_V4[i][j] = Complex(0.,0.);
+        else      L_V4[i][j] = Complex(1.,0.);
       }
     }
-    L_CKM4[2][2] = L_CKM4[3][3] = Complex(cos(theta_L),0.);
-    L_CKM4[2][3] = Complex(sin(theta_L),0.);
-    L_CKM4[3][2] = Complex(-sin(theta_L),0.);  
+    for (int i=0;i<4;i++) {
+      L_Phase14[i][i] = L_Phase24[i][i] = L_Phase34[i][i] = Complex(1.,0.);
+      for (int j=i+1;j<4;j++) {
+        L_Phase14[i][j] = L_Phase14[j][i] =
+        L_Phase24[i][j] = L_Phase24[j][i] =
+        L_Phase34[i][j] = L_Phase34[j][i] = Complex(0.,0.);
+      }
+    }
+    // build matrix L_Phase14
+    L_Phase14[0][0] = L_Phase14[3][3] = cos(t14);
+    L_Phase14[0][3] = sin(t14)*exp(-I*phiL3);
+    L_Phase14[3][0] = -sin(t14)*exp(I*phiL3);
+    // build matrix L_Phase24
+    L_Phase24[1][1] = L_Phase24[3][3] = cos(t24);
+    L_Phase24[1][3] = sin(t24)*exp(-I*phiL2);
+    L_Phase24[3][1] = -sin(t24)*exp(I*phiL2);
+    // build matrix L_Phase34
+    L_Phase34[2][2] = L_Phase34[3][3] = cos(t34);
+    L_Phase34[2][3] = sin(t34);
+    L_Phase34[3][2] = -sin(t34);
+
+    // build new L_CKM4 = L_CKM*L_P34*L_P24*L_P14
+    for (unsigned int i=0;i<4;++i) {
+      for (unsigned int j=0;j<4;++j) {
+        Complex sum(0.,0.);
+        for (unsigned int k=0;k<4;++k) {
+          for (unsigned int l=0;l<4;++l) {
+            for (unsigned int m=0;m<4;++m) {
+              sum += L_V4[i][k]*L_Phase34[k][l]*L_Phase24[l][m]*L_Phase14[m][j];
+            }
+          }
+        }
+        L_CKM4[i][j] = sum;
+      }
+    }
+
+    p_matrices->insert(std::make_pair(std::string("CKM"),CKM4));
     p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM4));
+
+    bool output = p_dataread->GetValue<int>("OUTPUT_MIXING",0);
+    if (output) {
+      unsigned int os(25);
+      msg_Out()<<"quark mixing matrix:\n";
+      for (int i=0;i<4;++i)
+        msg_Out()<<std::setw(os)<<CKM4[i][0]<<std::setw(os)<<CKM4[i][1]
+                 <<std::setw(os)<<CKM4[i][2]<<std::setw(os)<<CKM4[i][3]
+                 <<"\n";
+      msg_Out()<<"\n";
+      msg_Out()<<"lepton mixing matrix:\n";
+      for (int i=0;i<4;++i)
+        msg_Out()<<std::setw(os)<<L_CKM4[i][0]<<std::setw(os)<<L_CKM4[i][1]
+                 <<std::setw(os)<<L_CKM4[i][2]<<std::setw(os)<<L_CKM4[i][3]
+                 <<"\n";
+      msg_Out()<<"\n";
+    }
   }
 }
