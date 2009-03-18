@@ -29,7 +29,7 @@ HepMC2_Interface::~HepMC2_Interface()
 }
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event)
+                                    HepMC::GenEvent& event, double weight)
 {
 #ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,
@@ -60,9 +60,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
           event.set_pdf_info(pdfinfo);
         }
-        Blob_Data_Base *info((**blit)["ME_Weight"]);
-        double weight=1.0;
-        if (info!=NULL) weight=info->Get<double>();
         std::vector<double> weights; weights.push_back(weight);
         event.weights()=weights;
       }
@@ -79,7 +76,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   return true;
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
+                                    double weight)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -89,7 +87,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
   }
   if (p_event!=NULL) delete p_event;
   p_event = new HepMC::GenEvent();
-  return Sherpa2HepMC(blobs, *p_event);
+  return Sherpa2HepMC(blobs, *p_event, weight);
 }
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)

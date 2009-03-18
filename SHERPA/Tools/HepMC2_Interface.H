@@ -39,8 +39,9 @@ namespace SHERPA {
     ~HepMC2_Interface();
 
     // member functions
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC::GenEvent& event,
+                      double weight=1.0);
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, double weight=1.0);
     bool Sherpa2HepMC(ATOOLS::Blob *,HepMC::GenVertex *&);
     bool Sherpa2HepMC(ATOOLS::Particle *,HepMC::GenParticle *&);
 
