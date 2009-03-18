@@ -104,7 +104,7 @@ void Standard_Model_Gen4_Getter::PrintInfo(std::ostream &str,const size_t width)
      <<std::setw(width+7)<<" "<<"- A_34     (quark mixing angle a_34)\n"
      <<std::setw(width+7)<<" "<<"- PHI_2    (quark mixing angle phi_1)\n"
      <<std::setw(width+7)<<" "<<"- PHI_3    (quark mixing angle phi_2)\n"
-     <<std::setw(width+7)<<" "<<"4th generation lepton mixing to 3rd generation:\n"
+     <<std::setw(width+7)<<" "<<"4th generation lepton mixing:\n"
      <<std::setw(width+7)<<" "<<"- THETA_L14   (lepton mixing angle theta_L,14)\n"
      <<std::setw(width+7)<<" "<<"- THETA_L24   (lepton mixing angle theta_L,24)\n"
      <<std::setw(width+7)<<" "<<"- THETA_L34   (lepton mixing angle theta_L,34)\n"
