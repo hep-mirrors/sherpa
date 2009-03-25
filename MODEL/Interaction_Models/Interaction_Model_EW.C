@@ -147,7 +147,7 @@ void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
                   (flav2.IsDowntype() && flav1.IsUptype()))) hit = false;
 	    else if ((flav1.IsLepton() && !flav2.IsLepton()) ||
 		     (flav1.IsQuark() && !flav2.IsQuark()) ) hit = false;
-	    else if (flav1.IsDowntype() && i>10 && j>10) {
+	    else if (i>10 && j>10) {
 	      if (flav1.IsDowntype())
 		kcpl1 = -M_I/root2*g2*K_L_CKM((j-10)/2-1,(i-11)/2);
 	      else
