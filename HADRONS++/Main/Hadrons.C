@@ -38,6 +38,7 @@ Hadrons::Hadrons( string path, string file, string constfile ) :
   p_decaymap->SetHadronProperties();
   p_decaymap->Read();
   p_decaymap->Initialise();
+  p_decaymap->ReadFixedTables();
   p_mixinghandler = new Mixing_Handler(p_decaymap);
   p_color_unitmatrix = new CMatrix(1);
   (*p_color_unitmatrix)[0][0] = Complex(1.0,0.0);

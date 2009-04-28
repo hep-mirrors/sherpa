@@ -14,12 +14,16 @@ namespace HADRONS {
   typedef std::map<std::string,std::pair<double,double> >   BRMapString;
   typedef std::pair<double,double> DoublePair;
   typedef std::map<ATOOLS::Flavour,std::vector<Hadron_Decay_Table *> > FlDtVMap;
+  typedef std::multimap<std::string, Hadron_Decay_Table*> SDtMMap;
+  typedef std::multimap<std::string, Hadron_Decay_Table*>::iterator SDtMMapIt;
 
   class Decay_Map : public FlDtVMap {
   private:
     std::map<ATOOLS::Flavour,int> m_counters;
     GeneralModel m_startmd;
     std::string m_decaypath, m_decayfile, m_constfile;
+    std::multimap<std::string, Hadron_Decay_Table*> m_fixed_tables;
+    std::vector<Hadron_Decay_Table*> m_fixed_next_tables;
 
     std::vector<BRPairFlavourSet> GetInclusives(
         Hadron_Decay_Table * dt,
@@ -36,11 +40,14 @@ namespace HADRONS {
     ~Decay_Map();
     void Read();
     void Initialise();
+    void ReadFixedTables();
     void ReadInConstants();
     void SetHadronProperties();
     GeneralModel& StartModel() { return m_startmd; }
     Hadron_Decay_Table* FindDecay( const ATOOLS::Flavour & );
     void ResetCounters();
+    void FixDecayTables(std::string table_id);
+    void ClearFixedDecayTables();
   }; // end of class Decay_Map
   
   /*!

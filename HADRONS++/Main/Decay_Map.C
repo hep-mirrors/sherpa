@@ -14,7 +14,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Decay_Map::Decay_Map(string path,string file,string constfile) :
-  m_decaypath(path), m_decayfile(file), m_constfile(constfile)
+  m_decaypath(path), m_decayfile(file), m_constfile(constfile),
+  m_fixed_next_tables(0)
 {
 }
 
@@ -24,6 +25,10 @@ Decay_Map::~Decay_Map()
     for(size_t i=0; i<pos->second.size(); i++) {
       delete pos->second[i];
     }
+  }
+  for (map<string, Hadron_Decay_Table*>::iterator it=m_fixed_tables.begin();
+       it!=m_fixed_tables.end(); ++it) {
+    delete it->second;
   }
 }
 
@@ -123,6 +128,67 @@ void Decay_Map::Read()
 }
 
 
+void Decay_Map::ReadFixedTables()
+{
+  Data_Reader reader = Data_Reader(" ",";","!","->");
+  reader.AddWordSeparator("\t");
+  reader.SetAddCommandLine(false);
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetInputPath(m_decaypath);
+  reader.SetInputFile("FixedDecays.dat");
+  
+  vector<vector<string> > Decayers;
+  if(!reader.MatrixFromFile(Decayers)) {
+    return;
+  }
+  
+  Flavour fl;
+  for (size_t i=0;i<Decayers.size();++i) {
+    vector<string> line = Decayers[i];
+    if (line.size()==4) {
+      std::string table_id = line[0];
+      int decayerkf = atoi((line[1]).c_str());
+      Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
+      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav);
+      dt->Read(m_decaypath+line[2], line[3]);
+      pair<SDtMMapIt, SDtMMapIt> found=m_fixed_tables.equal_range(table_id);
+      for (SDtMMapIt it=found.first; it!=found.second; ++it) {
+        if (it->second->Flav()==decayerflav) {
+          THROW(fatal_error, "Duplicate decayer "+ToString(decayerflav.HepEvt())
+                +" for fixed decay table ID="+table_id);
+        }
+      }
+      m_fixed_tables.insert(make_pair(table_id, dt));
+    }
+    else {
+      msg_Error()<<METHOD<<" Invalid line in FixedDecays.dat:"<<endl
+                 <<"  "<<line<<endl<<"Ignoring it."<<endl;
+      
+    }
+  }
+  for (map<string, Hadron_Decay_Table*>::iterator it=m_fixed_tables.begin();
+       it!=m_fixed_tables.end(); ++it) {
+    it->second->Initialise(m_startmd);
+  }
+}
+
+
+void Decay_Map::FixDecayTables(std::string table_id)
+{
+  pair<SDtMMapIt, SDtMMapIt> found=m_fixed_tables.equal_range(table_id);
+  for (SDtMMapIt it=found.first; it!=found.second; ++it) {
+    m_fixed_next_tables.push_back(it->second);
+  }
+}
+
+
+void Decay_Map::ClearFixedDecayTables()
+{
+  m_fixed_next_tables.clear();
+}
+
+
 void Decay_Map::Initialise()
 {
   for (FlDtVMap::iterator pos = this->begin(); pos != this->end(); ++pos) {
@@ -136,6 +202,13 @@ void Decay_Map::Initialise()
 
 Hadron_Decay_Table* Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
 {
+  // first check, whether a fixed decaytable has been requested for this decayer
+  for (size_t i=0; i<m_fixed_next_tables.size(); ++i) {
+    if (m_fixed_next_tables[i]->Flav().Kfcode()==decayer.Kfcode()) {
+      return m_fixed_next_tables[i];
+    }
+  }
+
   Flavour tempdecayer=decayer;
   FlDtVMap::iterator it = find(decayer);
   if(it==end()) {
