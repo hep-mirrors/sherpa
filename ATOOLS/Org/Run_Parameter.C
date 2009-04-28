@@ -19,13 +19,12 @@
 #include <sys/sysctl.h>
 #include <limits>
 
-unsigned long int getpmem()
+double getpmem()
 {
 #if defined(ARCH_LINUX) || defined(ARCH_UNIX)
   unsigned long int ps(getpagesize());
   unsigned long int sc(sysconf(_SC_PHYS_PAGES));
-  unsigned long int ref(std::numeric_limits<unsigned long int>::max());
-  if (ps < ref/sc) return sc*ps;
+  return double(sc)*double(ps);
 #endif
 #ifdef ARCH_DARWIN
   int mib[2]={CTL_HW,HW_PHYSMEM};
@@ -33,18 +32,12 @@ unsigned long int getpmem()
   unsigned long int pmem(0), len(sizeof(pmem));
   if (sysctl(mib,miblen,&pmem,&len,NULL,0)!=0) {
     std::cerr<<"sysctl failed"<<std::endl;
-    return 0;
+    return 0.0;
   }
-  return pmem;
-#endif
-#ifdef  USING__LHAPDF
-  std::cerr<<"cannot determine physical memory"<<std::endl;
-  std::cout<<"memory size read is: "<<std::numeric_limits<unsigned long int>::max()-400000000<<std::endl;
-  return std::numeric_limits<unsigned long int>::max()-400000000;
+  return double(pmem);
 #endif
   std::cerr<<"cannot determine physical memory"<<std::endl;
-  std::cout<<"memory size read is: "<<std::numeric_limits<unsigned long int>::max()<<std::endl;
-  return std::numeric_limits<unsigned long int>::max();
+  return 1.e15;
 }
 
 using namespace ATOOLS;
@@ -189,20 +182,22 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
-  unsigned long int slim(getpmem());
+  double slim(getpmem());
 #ifdef USING__LHAPDF
-  slim+=400000000;
+  if (slim+400000000.0 < double(1<<32)) {
+    slim+=400000000.0;
+  }
 #endif
   msg_Tracking()<<METHOD<<"(): Getting memory limit "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
   if (!dreader.VectorFromFile(aspars,"RLIMIT_AS")) {
-    lims.rlim_cur=(rlim_t)(slim-100*(1<<20));
+    lims.rlim_cur=(rlim_t)(slim-double(100*(1<<20)));
   }
   else {
     if (aspars.size()==1) {
       lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*double(slim));
+	(ToType<double>(aspars[0])*slim);
     }
     else if (aspars.size()==2) {
       if (aspars[1]=="MB") lims.rlim_cur=(rlim_t)
@@ -210,7 +205,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
       else if (aspars[1]=="GB") lims.rlim_cur=(rlim_t)
 	(ToType<double>(aspars[0])*(1<<30));
       else if (aspars[1]=="%") lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*double(slim/100.0));
+	(ToType<double>(aspars[0])*slim/100.0);
       else
 	THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
     }
