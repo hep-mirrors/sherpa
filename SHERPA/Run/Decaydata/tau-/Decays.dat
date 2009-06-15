@@ -53,5 +53,3 @@
 # modes with 6 pseudoscalars
 {16,-211,-211,211,111,111,111}	 | 0.002748	 | tau-_pi+pi-pi-pipipinu_tau.dat;
 {16,-211,-211,-211,211,211,111}	 | 0.000181	 | tau-_pi+pi+pi-pi-pi-pinu_tau.dat;
-
-# NO_ANTI        # use this option: anti-mother does not decay
