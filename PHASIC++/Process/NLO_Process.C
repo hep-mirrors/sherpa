@@ -24,6 +24,7 @@ NLO_Process::NLO_Process(ME_Generators& gens) :
   m_gens(gens),
   p_bproc(NULL), p_vproc(NULL), p_iproc(NULL), p_rproc(NULL), p_sproc(NULL)
 {
+  THROW(not_implemented, "Not implemented.");
 }
 
 void NLO_Process::Init(const Process_Info &pi,
