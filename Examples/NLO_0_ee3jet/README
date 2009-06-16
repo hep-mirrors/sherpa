@@ -1,3 +1,0 @@
-Still a bit awkward, because ee->jjj(V) has to initialise ee->jjj(B) and tries AMEGIC for that.
-AMEGIC initialises that fine, but the libraries have to be compiled before (V) can use them.
-So the first run will abort with an error, then you have to compile libraries, then run again, compile the remaining libraries, and then it should work.
