@@ -25,3 +25,5 @@ SUBDIRS       = \
 		Examples \
 		$(ANAEXTRADIR) \
 		TOOLS
+
+EXTRA_DIST = @SVNINCLUDE@ GUIDELINES

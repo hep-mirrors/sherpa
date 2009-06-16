@@ -44,4 +44,4 @@ PhotonAnalysis_LDFLAGS = @ldflags@
 PhotonAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 PhotonAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
-EXTRA_DIST    = @SVNINCLUDE@ Main_FullDecay.C Main.H
+EXTRA_DIST    = @SVNINCLUDE@ Main_FullDecay.C Main.H Run.dat Analysis.dat
