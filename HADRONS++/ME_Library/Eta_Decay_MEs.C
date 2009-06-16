@@ -1,8 +1,8 @@
-#include "Eta_Decay_MEs.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Polarization_Tools.H"
-#include "Model_Base.H"
+#include "HADRONS++/ME_Library/Eta_Decay_MEs.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -25,13 +25,13 @@ void Eta_PPV::SetModelParameters(GeneralModel md)
   else if (m_flavs[p_i[0]]==Flavour(kf_eta_prime_958)) 
     m_global *= (1./f8_by_fpi*sin(theta)+sqrt(2.)/f0_by_fpi*cos(theta));
 
-  m_VDM_mass  = md("M_Rho",Flavour(kf_rho_770).PSMass());
+  m_VDM_mass  = md("M_Rho",Flavour(kf_rho_770).HadMass());
   m_VDM_width = md("Gamma_Rho",Flavour(kf_rho_770).Width());
 
   switch (m_ff) {
   case 2:
     // Omnes-type formfactor
-    m_mpipi2 = sqr(m_flavs[p_i[1]].PSMass()+m_flavs[p_i[2]].PSMass());
+    m_mpipi2 = sqr(m_flavs[p_i[1]].HadMass()+m_flavs[p_i[2]].HadMass());
     m_mrho2  = sqr(m_VDM_mass);
     m_pref   = m_mpipi2/(96.*sqr(M_PI*m_fP));
     break;
@@ -45,7 +45,7 @@ void Eta_PPV::SetModelParameters(GeneralModel md)
 void Eta_PPV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
 {
   Complex ampl(0.,0.),pref(m_global*Formfactor((p[p_i[1]]+p[p_i[2]]).Abs2()));
-  Polarization_Vector pol(p[p_i[3]], sqr(m_flavs[p_i[3]].PSMass()));
+  Polarization_Vector pol(p[p_i[3]], sqr(m_flavs[p_i[3]].HadMass()));
   for (int hvector=0;hvector<m_npol;hvector++) {
     Vec4C eps = pol[hvector];
     ampl = pref*eps*cross(p[p_i[1]],p[p_i[2]],p[p_i[3]]);
@@ -61,8 +61,8 @@ void Eta_PPV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
 Complex Eta_PPV::Formfactor(const double s) {
   Complex i(Complex(0.,1.));
   double runwidth = 
-    (pow(lambdaNorm(sqrt(s),m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*m_mrho2)/
-    (pow(lambdaNorm(m_VDM_mass,m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*s)*m_VDM_width;
+    (pow(lambdaNorm(sqrt(s),m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*m_mrho2)/
+    (pow(lambdaNorm(m_VDM_mass,m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*s)*m_VDM_width;
   switch (m_ff) {
   case 2: // Omnes form
     return Omnes_Formfactor(s,runwidth);
@@ -118,9 +118,9 @@ void Eta_PVV::SetModelParameters(GeneralModel md)
   double f0_by_fpi = md("f_8/f_pi",1.04);
   double theta     = md("Theta",-20./180.*M_PI);
 
-  m_mrho           = md("M_Rho",Flavour(kf_rho_770).PSMass());
+  m_mrho           = md("M_Rho",Flavour(kf_rho_770).HadMass());
   m_Grho           = md("Gamma_Rho",Flavour(kf_rho_770).Width());
-  m_momega         = md("M_Rho",Flavour(kf_omega_782).PSMass());
+  m_momega         = md("M_Rho",Flavour(kf_omega_782).HadMass());
   m_Gomega         = md("Gamma_Rho",Flavour(kf_omega_782).Width());
   m_mrho2          = sqr(m_mrho);
   m_momega2        = sqr(m_momega);
@@ -148,8 +148,8 @@ void Eta_PVV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
   Complex FormD = D(p), FormE = E(p);
 
   //std::cout<<" pref,D,E = "<<m_global<<" "<<FormD<<" "<<FormE<<std::endl;
-  Polarization_Vector pol1(p[p_i[2]], sqr(m_flavs[p_i[2]].PSMass()));
-  Polarization_Vector pol2(p[p_i[3]], sqr(m_flavs[p_i[3]].PSMass()));
+  Polarization_Vector pol1(p[p_i[2]], sqr(m_flavs[p_i[2]].HadMass()));
+  Polarization_Vector pol2(p[p_i[3]], sqr(m_flavs[p_i[3]].HadMass()));
   for (int hvector1=0;hvector1<m_npol1;hvector1++) {
     Vec4C eps1 = pol1[hvector1];
     for (int hvector2=0;hvector2<m_npol2;hvector2++) {
@@ -176,11 +176,11 @@ Complex Eta_PVV::D(const Vec4D * p) {
   double meta2(p[p_i[0]].Abs2()),p02(p[p_i[0]]*p[p_i[2]]),p03(p[p_i[0]]*p[p_i[3]]),
     t((p[p_i[1]]+p[p_i[3]]).Abs2()),u((p[p_i[1]]+p[p_i[2]]).Abs2());
   double runwidth_rho_t = 
-    (pow(lambdaNorm(sqrt(t),m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*m_mrho2)/
-    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*t)*m_Grho;
+    (pow(lambdaNorm(sqrt(t),m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*m_mrho2)/
+    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*t)*m_Grho;
   double runwidth_rho_u = 
-    (pow(lambdaNorm(sqrt(u),m_flavs[p_i[1]].PSMass(),m_flavs[p_i[3]].PSMass()),3.)*m_mrho2)/
-    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].PSMass(),m_flavs[p_i[3]].PSMass()),3.)*u)*m_Grho;
+    (pow(lambdaNorm(sqrt(u),m_flavs[p_i[1]].HadMass(),m_flavs[p_i[3]].HadMass()),3.)*m_mrho2)/
+    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].HadMass(),m_flavs[p_i[3]].HadMass()),3.)*u)*m_Grho;
   switch (m_ff) {
   case 1: //VDM model
     help = 
@@ -200,11 +200,11 @@ Complex Eta_PVV::E(const Vec4D * p) {
   Complex i(Complex(0.,1.)),help(1.,0.);
   double  t((p[p_i[1]]+p[p_i[3]]).Abs2()),u((p[p_i[1]]+p[p_i[2]]).Abs2());
   double runwidth_rho_t = 
-    (pow(lambdaNorm(sqrt(t),m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*m_mrho2)/
-    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].PSMass(),m_flavs[p_i[2]].PSMass()),3.)*t)*m_Grho;
+    (pow(lambdaNorm(sqrt(t),m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*m_mrho2)/
+    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].HadMass(),m_flavs[p_i[2]].HadMass()),3.)*t)*m_Grho;
   double runwidth_rho_u = 
-    (pow(lambdaNorm(sqrt(u),m_flavs[p_i[1]].PSMass(),m_flavs[p_i[3]].PSMass()),3.)*m_mrho2)/
-    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].PSMass(),m_flavs[p_i[3]].PSMass()),3.)*u)*m_Grho;
+    (pow(lambdaNorm(sqrt(u),m_flavs[p_i[1]].HadMass(),m_flavs[p_i[3]].HadMass()),3.)*m_mrho2)/
+    (pow(lambdaNorm(m_mrho,m_flavs[p_i[1]].HadMass(),m_flavs[p_i[3]].HadMass()),3.)*u)*m_Grho;
   switch (m_ff) {
   case 1: //VDM model
     help = 

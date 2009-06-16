@@ -1,32 +1,20 @@
-#include "Multiple_Interactions.H"
+#include "SHERPA/Single_Events/Multiple_Interactions.H"
 
-#include "My_Limits.H"
-#include "Remnant_Base.H"
-#include "Beam_Base.H"
-#include "ISR_Handler.H"
-#include "Jet_Finder.H"
-#include "Kt_Algorithm.H"
-#include "Run_Parameter.H"
-#include "Exception.H"
-#include "Matrix_Element_Handler.H"
-#include "XS_Base.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "PHASIC++/Selectors/KT_Finder.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 #ifdef USING__Amisic
-#include "Amisic.H"
-#endif
-
-#ifdef PROFILE__all
-#define PROFILE__Multiple_Interactions
-#endif
-#ifdef PROFILE__Multiple_Interactions
-#include "prof.hh"
-#else 
-#define PROFILE_HERE 
+#include "AMISIC++/Main/Amisic.H"
 #endif
 
 using namespace SHERPA;
-using namespace EXTRAXS;
 using namespace ATOOLS;
 #ifdef USING__Amisic
 using namespace AMISIC;
@@ -73,132 +61,33 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     p_mihandler->ISRHandler()->Reset(i);
     p_remnants[i]->QuickClear();
   }
-  Blob_List isr=bloblist->Find(btp::IS_Shower);
+  Blob_List isr=bloblist->Find(btp::Shower);
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
-    if ((*iit)->InParticle(0)->Momentum().Nan()) {
-      msg_Error()<<METHOD<<"(): Nan momentum for "
-		 <<*(*iit)->InParticle(0)<<"\n  Kill subprocess."<<std::endl;
-      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
-	p_bloblist->DeleteConnected(*iit);
-      else return Return_Value::Retry_Event;
-      return Return_Value::Retry_Phase;
-    }
-    m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
-    p_mihandler->ISRHandler()->
-      Extract((*iit)->InParticle(0)->Flav(),
-	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
-    if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
-      msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
-		    <<*(*iit)->InParticle(0)<<std::endl;
-      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
-	p_bloblist->DeleteConnected(*iit);
-      else return Return_Value::Retry_Event;
-      return Return_Value::Retry_Phase;
+    for (int beam(0), i(0);i<(*iit)->NInP();++i) {
+      Particle *cp((*iit)->InParticle(i));
+      if (cp->ProductionBlob()) continue;
+      m_emax[beam]-=cp->Momentum()[0];
+      p_mihandler->ISRHandler()->
+	Extract(cp->Flav(),cp->Momentum()[0],beam);
+      if (!p_remnants[beam]->Extract(cp)) {
+	msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
+		      <<*cp<<std::endl;
+	if (!(*iit)->IsConnectedTo(btp::Signal_Process))
+	  p_bloblist->DeleteConnected(*iit);
+	else return Return_Value::Retry_Event;
+	return Return_Value::Retry_Phase;
+      }
+      ++beam;
     } 
   }
   if (m_diced) return Return_Value::Success;
-  Blob * signal=bloblist->FindFirst(btp::Hard_Collision);
-  if (signal==NULL) signal=bloblist->FindFirst(btp::Signal_Process);
+  Blob * signal=bloblist->FindFirst(btp::Signal_Process);
   if (signal->Has(blob_status::needs_signal)) return Return_Value::Nothing;
-  if (!m_diced) {
-    m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
-    if (VetoHardProcess(signal)) {
-      m_ptmax=0.0;
-      return Return_Value::Success;
-    }
-  }
-  switch (p_mihandler->ScaleScheme()) {
-    // min p_{T, out}
-  case 2: {
-    bool construct=false;
-    Blob_Data_Base *xsinfo=
-      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
-    if (xsinfo==NULL) {
-      construct=true;
-    }
-    else {
-      XS_Base *xs=xsinfo->Get<XS_Base*>();
-      if (xs==NULL) {
-	construct=true;
-      }
-      else {
-	bool one=false;
-	for (short unsigned int i=2;i<4;++i) 
-	  if (xs->Flavours()[i].Strong()) {
-	    m_ptmax=Min(m_ptmax,xs->Momenta()[i].PPerp());
-	    one=true;
-	  }
-	if (!one) construct=true;
-      }
-    }
-    if (construct) {
-      Blob_List shower=bloblist->
-	FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):signal);
-      Particle_List jets=shower.ExtractLooseParticles(1);
-      Is_Parton isparton;
-      jets.Keep(&isparton);
-      if (p_jetfinder==NULL) 
-	p_jetfinder = new Jet_Finder(ToString(p_mihandler->YCut()),4);
-      p_jetfinder->ConstructJets(&jets,1,true);
-      if (jets.size()>0) {
-	for (size_t i=0;i<jets.size();++i)
-	  m_ptmax=Min(m_ptmax,jets[i]->Momentum().PPerp());
-      }
-      jets.Clear();
-    }
-    break;
-  }
-  case 1: {
-    Blob_List shower=bloblist->
-      FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):signal);
-    int njets=2;
-    if (!m_diced) {
-      Blob_Data_Base *xsinfo=
-	(*bloblist->FindFirst(btp::ME_PS_Interface_FS))["Core_Process"];
-      if (xsinfo==NULL) {
-	njets=1;
-      }
-      else {
-	XS_Base *xs=xsinfo->Get<XS_Base*>();
-	if (xs!=NULL) if (xs->NStrong()<4) njets=1;
-      }
-    }
-    Particle_List jets=shower.ExtractLooseParticles(1);
-    if (p_jetfinder==NULL) 
-      p_jetfinder = new Jet_Finder(ToString(p_mihandler->YCut()),4);
-    p_jetfinder->ConstructJets(&jets,njets,true);
-    double ptmax=0.0;
-    for (Particle_List::const_iterator pit=jets.begin();
-	 pit!=jets.end();++pit)
-      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
-    jets.Clear();
-    m_ptmax=Min(m_ptmax,ptmax);
-    break;
-  }
-    // mean p_{T, out}
-  case 0: {
-    Blob_Data_Base *xsinfo=
-      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
-    if (xsinfo==NULL) THROW(critical_error,"No merging information.");
-    XS_Base *xs=xsinfo->Get<XS_Base*>();
-    if (xs==NULL) THROW(critical_error,"No merging information.");
-    m_ptmax=0.0;
-    double nstrong=0.0;
-    for (short unsigned int i=2;i<4;++i) 
-      if (xs->Flavours()[i].Strong()) {
-	m_ptmax+=xs->Momenta()[i].PPerp();
-	++nstrong;
-      }
-    m_ptmax/=nstrong;
-    break;
-  }
-    // abort
-  default: THROW(not_implemented,"Wrong mi scale scheme.");
-  }
-  if (!m_diced) {
-    signal->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
-  }
+  Blob_Data_Base *ptinfo=(*signal)["MI_Scale"];
+  if (ptinfo==NULL)
+    THROW(fatal_error,"No starting scale info in signal blob");
+  m_ptmax=ptinfo->Get<double>();
   if (m_ptmax!=std::numeric_limits<double>::max()) return Return_Value::Success;
   return Return_Value::Nothing;
 }
@@ -206,7 +95,6 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
 Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
 #ifdef USING__Amisic
-  PROFILE_HERE;
   if (p_mihandler->Type()==MI_Handler::None ||
       MI_Base::StopGeneration()) return Return_Value::Nothing;
   if (bloblist->empty()) {
@@ -232,13 +120,11 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
     }
     else {
       blob = new Blob();
-      blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
       success=p_mihandler->GenerateHardProcess(blob);
     }
   }
   else if (m_vetoed) {
     blob = new Blob();
-    blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
     success=p_mihandler->GenerateSoftProcess(blob);
     // dummy settings for analysis
     blob->SetType(btp::Soft_Collision);
@@ -266,8 +152,8 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   delete blob;
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
-#endif
   if (!MI_Base::StopGeneration()) return Return_Value::Retry_Phase;
+#endif
   return Return_Value::Nothing;
 }
 

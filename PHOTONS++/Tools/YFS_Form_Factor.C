@@ -1,12 +1,57 @@
-#include "YFS_Form_Factor.H"
-#include "Model_Base.H"
-#include "Message.H"
+#include "PHOTONS++/Tools/YFS_Form_Factor.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
+namespace PHOTONS {
+
+  class IG1: public ATOOLS::Function_Base {
+  private:
+
+    YFS_Form_Factor *p_ff;
+
+  public:
+    
+    inline IG1(YFS_Form_Factor *const ff): p_ff(ff) {}
+	       
+    double operator()(double x)
+    {
+      Vec4D px1 = 0.5*((p_ff->P1()+p_ff->P2())-x*(p_ff->P1()-p_ff->P2()));
+      Vec4D px2 = 0.5*((p_ff->P1()+p_ff->P2())+x*(p_ff->P1()-p_ff->P2()));
+      return p_ff->G(-x)/(px1*px1)+p_ff->G(x)/(px2*px2);
+    }
+    double operator()() { return m_defval; }
+
+  };// end of class IG1
+
+  class IG2: public ATOOLS::Function_Base {
+  private:
+
+    YFS_Form_Factor *p_ff;
+
+  public:
+    
+    inline IG2(YFS_Form_Factor *const ff): p_ff(ff) {}
+	       
+    double operator()(double x)
+    {
+      Vec4D px = 0.5*((p_ff->P1()+p_ff->P2())+x*(p_ff->P1()-p_ff->P2()));
+      return p_ff->G(x)/(px*px);
+    }
+    double operator()() { return m_defval; }
+
+  };// end of class IG2
+
+}// end of namespace PHOTONS
+
 YFS_Form_Factor::YFS_Form_Factor(Particle_Vector part, double ks) {
+  p_ig1 = new IG1(this);
+  p_ig2 = new IG2(this);
+  p_gi1 = new Gauss_Integrator(p_ig1);
+  p_gi2 = new Gauss_Integrator(p_ig2);
   double YSum = 0;
   for (unsigned int j=0; j<part.size(); j++) {
     for (unsigned int i=0; i<j; i++) {
@@ -18,6 +63,10 @@ YFS_Form_Factor::YFS_Form_Factor(Particle_Vector part, double ks) {
 }
 
 YFS_Form_Factor::YFS_Form_Factor(Particle * part1, Particle * part2, double ks) {
+  p_ig1 = new IG1(this);
+  p_ig2 = new IG2(this);
+  p_gi1 = new Gauss_Integrator(p_ig1);
+  p_gi2 = new Gauss_Integrator(p_ig2);
   m_ks = ks;
 
   // choose such that E_2 >= E_1
@@ -64,7 +113,12 @@ YFS_Form_Factor::YFS_Form_Factor(Particle * part1, Particle * part2, double ks) 
 }
 
 
-YFS_Form_Factor::~YFS_Form_Factor() {
+YFS_Form_Factor::~YFS_Form_Factor() 
+{
+  delete p_gi1;
+  delete p_gi2;
+  delete p_ig1;
+  delete p_ig2;
 }
 
 // private members
@@ -289,6 +343,15 @@ double YFS_Form_Factor::GFunc(double x) {
 
 // int dx G(x)/px²
 double YFS_Form_Factor::IntG() {
+  // needs speeding up
+  // Stefan:
+  // [11:02:50] … ok, dann schau z.b. mal in trunk/PDF/Sudakov/NLL_Single_Sudakov.[CH]
+  // [11:04:46] … dort wird ein gauss_integrator verwendet. im wesentlichen braucht 
+  //              man eine function_base (hier die NLL_Branching_Probability_Base) 
+  //              und muss deren oprator()(double) ueberladen
+  // [11:05:49] … danach ist es einfach ein gauss.Integrate(min,max,accurarcy) und die 
+  //              sache ist gegessen.
+
   // if dipole in its CMS
   if ((Vec3D(m_p1)+Vec3D(m_p2)).Abs() < 1E-3) {
     // same mass or both nearly massless or both of nearly same beta
@@ -316,23 +379,36 @@ double YFS_Form_Factor::IntG() {
 //     }
   }
 
-  unsigned int n1   = 500;
-  unsigned int n2   = 500;
-  double       sum  = 0;
+// #define USING__Explicit_Check
+#ifdef USING__Explicit_Check
+  unsigned int n1   = 5000;
+  unsigned int n2   = 5000;
+  double       sum1 = 0, sum2 = 0;
   for (unsigned int i=0; i<n1; i++) {
     double x1 = -1 + (0.1*i)/n1;
     double x2 =  1 - (0.1*i)/n1;
     Vec4D px1 = (1./2.)*((m_p1+m_p2)+x1*(m_p1-m_p2));
     Vec4D px2 = (1./2.)*((m_p1+m_p2)+x2*(m_p1-m_p2));
-    sum = sum + 0.1/n1*G(x1)/(px1*px1);
-    sum = sum + 0.1/n1*G(x2)/(px2*px2);
+    sum1 = sum1 + 0.1/n1*G(x1)/(px1*px1);
+    sum1 = sum1 + 0.1/n1*G(x2)/(px2*px2);
   }
+#endif
+  double csum=p_gi1->Integrate(0.9,1.0,1.0e-4);
+#ifdef USING__Explicit_Check
   for (unsigned int i=0; i<=n2; i++) {
     double x  = -1 + 0.1 + (1.8*i)/n2;
     Vec4D  px = (1./2.)*((m_p1+m_p2)+x*(m_p1-m_p2));
-    sum = sum + 1.8/n2*G(x)/(px*px);
+    sum2 = sum2 + 1.8/n2*G(x)/(px*px);
   }
-  return (sum);
+#endif
+  double ccsum=p_gi2->Integrate(-0.9,0.9,1.0e-4);
+#ifdef USING__Explicit_Check
+  msg_Debugging()<<"YFS FF: sum 1 = "<<sum1<<" vs. "<<csum
+		 <<", rel. diff. = "<<sum1/csum-1.0<<"\n";
+  msg_Debugging()<<"YFS FF: sum 2 = "<<sum2<<" vs. "<<ccsum
+		 <<", rel. diff. = "<<sum2/ccsum-1.0<<"\n";
+#endif
+  return csum+ccsum;
 }
 
 double YFS_Form_Factor::CalculateBeta(Vec4D p) {

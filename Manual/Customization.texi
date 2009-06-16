@@ -1,0 +1,17 @@
+@node Customization
+@chapter Customization
+
+Customizing Sherpa according to your needs.
+
+Sherpa can be easily extended with certain user defined tools.
+To this extent, a corresponding class must be written,
+equipped with a corresponding getter function and compiled into
+an external library which can be linked to Sherpa at runtime.
+Several specific examples are listed in the following sections.
+
+@menu
+* External RNG:: How to add an external random number generator.
+@end menu
+
+@include RNG.texi
+

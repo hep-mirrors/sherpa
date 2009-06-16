@@ -19,7 +19,7 @@ libHadronsCurrents_la_SOURCES = \
 	VA_B_B_hepph9409272.C \
         VA_F_F.C
 
-pkginclude_HEADERS = \
+localinc_HEADERS   = \
         Current_Base.H \
 	VA_P_P.H \
 	VA_P_V.H \
@@ -37,7 +37,6 @@ pkginclude_HEADERS = \
 	VA_B_B3.H \
         VA_F_F.H
 
-INCLUDES = @HADRONSINCS@ @ATOOLSINCS@ @MODELINCS@ @HELICITIESINCS@
 EXTRA_DIST    = @SVNINCLUDE@ \
 		VA_B_B3_HO.C \
 		VA_B_B3_ST.C \

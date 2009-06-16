@@ -1,0 +1,35 @@
+(run){
+  EVENTS = 10000
+  OUTPUT = 2
+}(run)
+(processes){
+  Process 93 93 -> 93 93
+  Order_EW 0
+  Order_QCD 2
+  End process
+}(processes)
+(selector){
+  PT 93 2.225 E_CMS
+}(selector)
+(me){
+  SCALE_SCHEME = MPI
+}(me);
+(model){
+  # set quark masses consistent with default PDF cteq6l
+  MASS[1] = 0
+  MASS[2] = 0
+  MASS[3] = 0
+  MASS[4] = 1.3
+  MASS[5] = 4.5
+}(model)
+(shower){
+  SHOWER_GENERATOR CSS
+}(shower)
+(beam){
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 980;
+  BEAM_2 = -2212; BEAM_ENERGY_2 = 980;
+}(beam)
+(mi){
+  MI_HANDLER = Amisic
+  SCALE_MIN = 2.225;
+}(mi);

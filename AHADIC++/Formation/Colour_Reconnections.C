@@ -1,6 +1,6 @@
-#include "Colour_Reconnections.H"
-#include "Message.H"
-#include "Random.H"
+#include "AHADIC++/Formation/Colour_Reconnections.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;

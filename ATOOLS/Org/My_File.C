@@ -1,6 +1,6 @@
-#include "My_File.H"
+#include "ATOOLS/Org/My_File.H"
 
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include <typeinfo>
 #include <cstdlib>
@@ -80,7 +80,7 @@ bool My_File<FileType>::Open()
   String_Map::const_iterator fit(s_filelocations.find(m_path+m_file));
   if (fit!=s_filelocations.end()) m_path=fit->second+"/"+m_path;
   if ((m_path+m_file)[0]=='/') {
-    msg_Debugging()<<METHOD<<"(): Relocated '"<<m_file<<"' at '"
+    msg_IODebugging()<<METHOD<<"(): Relocated '"<<m_file<<"' at '"
 		   <<m_path<<"'."<<std::endl;  
     p_file = new File_Type();
     p_file->open((m_path+m_file).c_str());
@@ -182,3 +182,4 @@ namespace ATOOLS {
   template class My_Out_File;
 
 }
+

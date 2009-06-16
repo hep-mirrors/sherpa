@@ -1,5 +1,5 @@
-#include "Tools.H"
-#include "Message.H"
+#include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Org/Message.H"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

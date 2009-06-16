@@ -1,8 +1,8 @@
-#include "Amplitude_Group.H"
-#include "Super_Amplitude.H"
-#include "Message.H"
-#include "Zfunc.H"
-#include "Basic_Sfuncs.H"
+#include "AMEGIC++/Amplitude/Amplitude_Group.H"
+#include "AMEGIC++/Amplitude/Super_Amplitude.H"
+#include "ATOOLS/Org/Message.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 
 #include <algorithm>
 

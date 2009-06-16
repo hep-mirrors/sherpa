@@ -1,7 +1,11 @@
-#include "Dipole.H"
+#include "AHADIC++/Tools/Dipole.H"
+
+#include "ATOOLS/Org/Smart_Pointer.C"
 
 using namespace AHADIC;
 using namespace ATOOLS;
+
+namespace ATOOLS { template class SP(Dipole); }
 
 Dipole::Dipole(SP(Proto_Particle) trip,SP(Proto_Particle) anti) 
 {

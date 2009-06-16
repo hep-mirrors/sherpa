@@ -1,7 +1,7 @@
-#ifndef Baryon_SimpleDecay_MEs_H
-#define Baryon_SimpleDecay_MEs_H
+#ifndef HADRONS_ME_Library_Baryon_SimpleDecay_MEs_H
+#define HADRONS_ME_Library_Baryon_SimpleDecay_MEs_H
 
-#include "HD_ME_Base.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
 
 namespace HADRONS {
   class D_Radiative_E1 : public HD_ME_Base {

@@ -1,12 +1,12 @@
-#ifndef Transitions_H
-#define Transitions_H
+#ifndef AHADIC_Tools_Transitions_H
+#define AHADIC_Tools_Transitions_H
 
-#include "Hadron_Multiplet.H"
-#include "Hadron_Wave_Function.H"
-#include "Constituents.H"
-#include "Cluster.H"
-#include "Flavour.H"
-#include "Return_Value.H"
+#include "AHADIC++/Tools/Hadron_Multiplet.H"
+#include "AHADIC++/Tools/Hadron_Wave_Function.H"
+#include "AHADIC++/Tools/Constituents.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Return_Value.H"
 #include <map>
 
 
@@ -14,7 +14,7 @@ namespace AHADIC {
   class Flavour_Sorting_Mass {
   public :
     bool operator() (const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2) {
-      if (fl1.Mass()>fl2.Mass()) return true;
+      if (fl1.HadMass()>fl2.HadMass()) return true;
       return false;
     }
   };
@@ -51,10 +51,8 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) {
-      if (flpair1.first==flpair2.first &&
-	  flpair1.second==flpair2.second) return true;
-      if ((flpair1.first.Mass()+flpair1.second.Mass())<=
-	  (flpair2.first.Mass()+flpair2.second.Mass())) return false;
+      if ((flpair1.first.HadMass()+flpair1.second.HadMass())<
+	  (flpair2.first.HadMass()+flpair2.second.HadMass())) return false;
       return true;
     }
   };

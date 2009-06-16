@@ -1,21 +1,22 @@
-#ifndef Standard_Model_h
-#define Standard_Model_h
+#ifndef MODEL_Main_Standard_Model_H
+#define MODEL_Main_Standard_Model_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class Standard_Model : public Model_Base {
     int  m_trivialextension;
-  private :
     int  m_ewscheme,m_ckmorder;
-    void ParticleInit();
-    void FillSpectrum();
     void FixEWParameters();
     void FixCKM();
+  protected:
+    void ParticleInit();
+    void FillSpectrum();
   public :
     Standard_Model(std::string,std::string,bool,const int =0);
     ~Standard_Model()                   {}
-    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
+
+    bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
   };
   /*!
     \class Standard_Model

@@ -23,8 +23,6 @@ libToolsOrg_la_SOURCES        = \
 				Run_Parameter.C \
 				MyTiming.C \
 				Message.C \
-		 		Sort.C \
-				prof.cc \
 				IO_Handler.C \
 				Info_Key.C \
 				Integration_Info.C \
@@ -32,11 +30,12 @@ libToolsOrg_la_SOURCES        = \
 				$(GZIPSTREAMSOURCES) \
 				My_Root.C
 
-pkginclude_HEADERS       =	\
+localinc_HEADERS         =	\
 			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
 			Return_Value.H \
 			Smart_Pointer.H \
+			Smart_Pointer.C \
 			Shell_Tools.H \
 			STL_Tools.H \
 			Getter_Function.H \
@@ -52,10 +51,7 @@ pkginclude_HEADERS       =	\
 			Run_Parameter.H \
 			Message.H \
 			List_Algorithms.H \
-			Sort.H \
 			MyTiming.H \
-			prof.hh \
-			prof_exampl.cc \
 			IO_Handler.H \
 			MyStrStream.H \
 			Info_Key.H \
@@ -70,9 +66,9 @@ pkginclude_HEADERS       =	\
 
 libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@
 
-AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
+libToolsOrg_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      = @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
+libToolsOrg_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@ $(GZIPEXTRADIST) CXXFLAGS.H.in
 

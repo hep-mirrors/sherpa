@@ -1,5 +1,5 @@
-#include "VA_0_P.H"
-#include "Run_Parameter.H"
+#include "HADRONS++/Current_Library/VA_0_P.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;

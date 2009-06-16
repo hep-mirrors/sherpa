@@ -1,7 +1,7 @@
-#ifndef Prop_Generator_h
-#define Prop_Generator_h
+#ifndef AMEGIC_Amplitude_Prop_Generator_H
+#define AMEGIC_Amplitude_Prop_Generator_H
 
-#include "Zfunc.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
 
 namespace AMEGIC {
   class Point;

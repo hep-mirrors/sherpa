@@ -1,7 +1,7 @@
-#include "Basic_Func.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

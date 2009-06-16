@@ -1,0 +1,52 @@
+.TH Sherpa 1 22.11.2008 Sherpa ""
+.SH NAME
+Sherpa \- Monte Carlo event generator
+.SH SYNOPSIS
+Sherpa
+.B "[\-v]"
+.br
+.B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
+.br
+.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ]"
+.SH DESCRIPTION
+Sherpa is a Monte Carlo event generation framework.
+.SH OPTIONS
+.IP "\fB-v\fP, \fB--version\fP" 
+Prints versioning information.
+.IP "\fBPARAMETER\fP=\fIVALUE\fP" 
+Sets the value of a parameter, see info file\fP. 
+.br
+.IP "\fBTAG:\fP=\fIVALUE\fP" 
+Sets the value of a tag, see info file\fP. 
+.SH EXAMPLE
+This is an example for the first invocation of Sherpa
+
+.RS 2
+.B Sherpa PATH=LHC/ RUNDATA=Run.dat
+.RE
+.RE
+
+The program uses run parameter specifications listed in the 
+base file \fIRun.dat\fP residing in the directory \fILHC\fP.
+.SH FILES
+Example files are found in the \fBshare\fP directory.
+.SH AUTHORS
+Sherpa was developed by the Sherpa Team, see http://www.sherpa-mc.de
+.SH COPYRIGHT
+Sherpa is free software.
+You can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation.
+You should have received a copy of the GNU General Public License
+along with the source for Sherpa; see the file COPYING.
+If not, write to the Free Software Foundation, 59 Temple Place,
+Suite 330, Boston, MA  02111-1307, USA.
+.PP
+Sherpa is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+.PP
+Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
+The MCnet Guidelines apply, see the file GUIDELINES and
+http://www.montecarlonet.org/index.php?p=Publications/Guidelines. 

@@ -14,11 +14,11 @@
 #define SORT_CRITERION std::less<std::string>
 #endif
 
-#include "Getter_Function.H"
-#include "STL_Tools.H"
-#include "Exception.H"
-#include "Message.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <typeinfo>
 #include <cstdlib>
 

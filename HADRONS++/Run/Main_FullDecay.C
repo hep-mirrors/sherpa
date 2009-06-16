@@ -1,13 +1,13 @@
-#include "Main.H"
+#include "HADRONS++/Run/Main.H"
 
-#include "MyStrStream.H"
-#include "Decay_Map.H"
-#include "Hadron_Decay_Table.H"
-#include "Hadron_Decay_Channel.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "HADRONS++/Main/Hadron_Decay_Map.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
 
-#include "Sherpa.H"
-#include "Event_Handler.H"
-#include "Random.H"
+#include "SHERPA/Main/Sherpa.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
+#include "ATOOLS/Math/Random.H"
 
 static Flavour mother_flav;
 static SHERPA::Sherpa* p_sherpa;
@@ -20,7 +20,6 @@ void InitialiseGenerator(int argc, char *argv[])
   p_sherpa->InitializeTheRun(argc,argv);
   p_sherpa->InitializeTheEventHandler();
 
-
   Data_Reader read(" ",";","!","=");
   int mother_kf(0);
   if (!read.ReadFromFile(mother_kf,"DECAYER")) {
@@ -29,7 +28,7 @@ void InitialiseGenerator(int argc, char *argv[])
   }
   mother_flav.FromHepEvt(mother_kf);
   mother_flav.SetStable(false);
-  rpa.gen.SetEcms(mother_flav.PSMass());
+  rpa.gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 
@@ -39,11 +38,11 @@ Blob_List* GenerateEvent()
   Blob_List* blobs=p_sherpa->GetEventHandler()->GetBlobs();
   if (!blobs->empty()) THROW(fatal_error, "Bloblist not empty.");
 
-  Vec4D mom(mother_flav.PSMass(), 0., 0., 0.);
+  Vec4D mom(mother_flav.HadMass(), 0., 0., 0.);
   Particle* mother_in_part=new Particle(1, mother_flav, mom);
   Particle* mother_part=new Particle(1, mother_flav, mom);
   mother_part->SetTime();
-  mother_part->SetFinalMass(mother_flav.PSMass());
+  mother_part->SetFinalMass(mother_flav.HadMass());
   mother_in_part->SetStatus(part_status::decayed);
   
   Blob* blob = blobs->AddBlob(btp::Hadron_Decay);

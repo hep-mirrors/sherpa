@@ -1,8 +1,8 @@
-#ifndef Backward_Splitting_Group_H
-#define Backward_Splitting_Group_H
+#ifndef APACIC_Showers_Backward_Splitting_Group_H
+#define APACIC_Showers_Backward_Splitting_Group_H
 
-#include "Splitting_Group.H"
-#include "PDF_Base.H"
+#include "APACIC++/Showers/Splitting_Group.H"
+#include "PDF/Main/PDF_Base.H"
 
 namespace APACIC {
 
@@ -14,7 +14,8 @@ namespace APACIC {
   public:
 
     // constructor
-    Backward_Splitting_Group(Splitting_Function *const spl, 
+    Backward_Splitting_Group(ATOOLS::Mass_Selector *&ms,
+			     Splitting_Function *const spl, 
 			     PDF::PDF_Base *const pdf);
 
     // member functions

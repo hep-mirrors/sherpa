@@ -1,5 +1,3 @@
-MAKE = make 
-
 SUBDIRS       =	\
 		Tools \
 		LundTools \
@@ -9,5 +7,3 @@ SUBDIRS       =	\
 		Single_Events \
 		Main \
 		Run
-
-EXTRA_DIST    =	@SVNINCLUDE@

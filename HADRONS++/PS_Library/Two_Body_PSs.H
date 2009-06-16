@@ -1,8 +1,8 @@
-#ifndef Two_Body_PSs_h
-#define Two_Body_PSs_h
+#ifndef HADRONS_PS_Library_Two_Body_PSs_H
+#define HADRONS_PS_Library_Two_Body_PSs_H
 
-#include "Single_Channel.H"
-#include "Vector.H"
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace HADRONS {
   class Iso2Channel : public PHASIC::Single_Channel {
@@ -10,9 +10,9 @@ namespace HADRONS {
     int           m_chnumber;
   public :
     Iso2Channel(const ATOOLS::Flavour *);
-    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
     void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
@@ -24,9 +24,9 @@ namespace HADRONS {
     int           m_chnumber;
   public :
     Iso1Channel(const ATOOLS::Flavour *);
-    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
     void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }

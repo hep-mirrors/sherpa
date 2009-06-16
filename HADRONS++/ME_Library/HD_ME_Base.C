@@ -1,10 +1,10 @@
-#include "HD_ME_Base.H"
-#include "Message.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "ATOOLS/Org/Message.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE HADRONS::HD_ME_Base
 #define PARAMETER_TYPE HADRONS::Flavour_Info
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -17,7 +17,7 @@ HD_ME_Base::HD_ME_Base(Flavour * flavs, int n, int* decayindices, string name) :
   p_masses2 = new double[n];
   
   for(int meindex=0; meindex<m_n; meindex++) {
-    p_masses[meindex]  = m_flavs[p_i[meindex]].PSMass();
+    p_masses[meindex]  = m_flavs[p_i[meindex]].HadMass();
     p_masses2[meindex] = p_masses[meindex]*p_masses[meindex];
   }
   msg_Tracking()<<"  Initialized "<<m_name<<" ME."<<endl;

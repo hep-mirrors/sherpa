@@ -1,5 +1,5 @@
-#include "Fast_Function.H"
-#include "MathTools.H"
+#include "ATOOLS/Math/Fast_Function.H"
+#include "ATOOLS/Math/MathTools.H"
 #include <list>
 #include <fstream>
 

@@ -1,5 +1,1 @@
-MAKE = make 
-
-SUBDIRS       = Main
-
-EXTRA_DIST = Doxyfile @SVNINCLUDE@
+SUBDIRS       = Main Channels Process Scales Selectors

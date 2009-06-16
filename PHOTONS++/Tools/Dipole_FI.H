@@ -1,7 +1,7 @@
-#ifndef Dipole_FI_H
-#define Dipole_FI_H
+#ifndef PHOTONS_Tools_Dipole_FI_H
+#define PHOTONS_Tools_Dipole_FI_H
 
-#include "Dress_Blob_Base.H"
+#include "PHOTONS++/Tools/Dress_Blob_Base.H"
 
 using namespace ATOOLS;
 using namespace std;

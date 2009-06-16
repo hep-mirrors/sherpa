@@ -1,8 +1,8 @@
-#include "Two_Body_MEs.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "XYZFuncs.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/ME_Library/Two_Body_MEs.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;

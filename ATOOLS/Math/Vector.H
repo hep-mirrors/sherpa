@@ -1,10 +1,11 @@
-#ifndef Vector_H
-#define Vector_H
+#ifndef ATOOLS_Math_Vector_H
+#define ATOOLS_Math_Vector_H
 
 #include <iostream>
-#include "Vec3.H"
-#include "Vec4.H"
-#include "MyComplex.H"
+#include <vector>
+#include "ATOOLS/Math/Vec3.H"
+#include "ATOOLS/Math/Vec4.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace ATOOLS {
 
@@ -13,6 +14,7 @@ namespace ATOOLS {
    */
   typedef Vec3<double> Vec3D;
   typedef Vec4<double> Vec4D;
+  typedef std::vector<Vec4D> Vec4D_Vector;
 
   template<> const double Vec4D::CosPhi() const;
   template<> const double Vec4D::SinPhi() const;

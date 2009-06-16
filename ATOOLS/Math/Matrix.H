@@ -1,11 +1,11 @@
+#ifndef ATOOLS_Math_Matrix_H
+#define ATOOLS_Math_Matrix_H
 
-#ifndef Matrix_h
-#define Matrix_h
 
 // (4x4) Matrix class...
 
-#include "Vector.H"
-#include "MyComplex.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace ATOOLS {
 

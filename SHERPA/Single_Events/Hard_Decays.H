@@ -1,14 +1,14 @@
-#ifndef Hard_Decays_h
-#define Hard_Decays_h
+#ifndef SHERPA_Single_Events_Hard_Decays_H
+#define SHERPA_Single_Events_Hard_Decays_H
 
-#include "Event_Phase_Handler.H"
-#include "Hard_Decay_Handler.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
 
 namespace SHERPA {
+  class Hard_Decay_Handler;
+
   class Hard_Decays : public Event_Phase_Handler {
   private :
     Hard_Decay_Handler * p_dechandler;
-    void FillBlob(ATOOLS::Particle *,ATOOLS::Blob *);
   public :
     Hard_Decays(Hard_Decay_Handler *);
     ~Hard_Decays();

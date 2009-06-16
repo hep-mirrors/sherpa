@@ -1,9 +1,9 @@
 #ifndef Interaction_Model_AxiQCD_h
 #define Interaction_Model_AxiQCD_h
 
-#include "Interaction_Model_Base.H"
-#include "Interaction_Model_QCD.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_QCD.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_AxiQCD : public Interaction_Model_Base {

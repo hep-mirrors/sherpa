@@ -1,16 +1,16 @@
-#ifndef Hadrons_H
-#define Hadrons_H
+#ifndef HADRONS_Main_Hadrons_H
+#define HADRONS_Main_Hadrons_H
 
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #ifndef USING__Hadrons
 #define USING__Hadrons
 #endif
 
 #include <string>
 #include <map>
-#include "Flavour.H"
-#include "Return_Value.H"
-#include "Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS {
   class Particle;
@@ -26,14 +26,14 @@ namespace ATOOLS {
 namespace HELICITIES { class Amplitude_Tensor; }
 
 namespace HADRONS {
-  class Decay_Map;
+  class Hadron_Decay_Map;
   class Hadron_Decay_Table;
   class Hadron_Decay_Channel;
   class Mixing_Handler;
 
   class Hadrons {
   private:
-    Decay_Map           * p_decaymap;
+    Hadron_Decay_Map    * p_decaymap;
     Mixing_Handler      * p_mixinghandler;
     bool                  m_spincorrelations;
     ATOOLS::CMatrix     * p_color_unitmatrix;
@@ -57,7 +57,7 @@ namespace HADRONS {
         std::string _constfile=std::string("HadronConstants.dat") );
     ~Hadrons();
 
-    Decay_Map* DecayMap() { return p_decaymap; }
+    Hadron_Decay_Map* DecayMap() { return p_decaymap; }
     Mixing_Handler* MixingHandler() { return p_mixinghandler; }
     
     void ChooseDecayKinematics( ATOOLS::Blob* blob,

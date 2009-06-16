@@ -1,12 +1,12 @@
+#ifndef ATOOLS_Org_Message_H
+#define ATOOLS_Org_Message_H
 //Message header
-#ifndef Message_h
-#define Message_h
 
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <set>
-#include "STL_Tools.H"
+#include "ATOOLS/Org/STL_Tools.H"
 
 namespace ATOOLS {
 
@@ -115,6 +115,7 @@ namespace ATOOLS {
     std::set<std::string,String_Sort> m_contextinfo;
     std::set<std::string,String_Sort> m_contexttracking;
     std::set<std::string,String_Sort> m_contextdebugging;
+    std::set<std::string,String_Sort> m_contextiodebugging;
 
     int m_modifiable;
 
@@ -140,6 +141,7 @@ namespace ATOOLS {
     std::ostream &Info() const;      
     std::ostream &Tracking() const;  
     std::ostream &Debugging() const; 
+    std::ostream &IODebugging() const;
 
     std::ostream &LogFile() const;   
 
@@ -163,11 +165,13 @@ namespace ATOOLS {
     inline bool LevelIsInfo() const      { return (m_level & 2);  }
     inline bool LevelIsTracking() const  { return (m_level & 4);  }
     inline bool LevelIsDebugging() const { return (m_level & 8);  }
+    inline bool LevelIsIODebugging() const { return (m_level & 32);  }
 
     bool LevelIsEvents(const std::string& context) const;
     bool LevelIsInfo(const std::string& context) const;
     bool LevelIsTracking(const std::string& context) const;
     bool LevelIsDebugging(const std::string& context) const;
+    bool LevelIsIODebugging(const std::string& context) const;
 
     inline const std::set<std::string,String_Sort>& ContextEvents() {
       return m_contextevents;
@@ -180,6 +184,9 @@ namespace ATOOLS {
     }
     inline const std::set<std::string,String_Sort>& ContextDebugging() {
       return m_contextdebugging;
+    }
+    inline const std::set<std::string,String_Sort>& ContextIODebugging() {
+      return m_contextiodebugging;
     }
   };// end of class Message
 
@@ -247,6 +254,9 @@ namespace ATOOLS {
 #define msg_LevelIsDebugging() \
   (ATOOLS::msg->LevelIsDebugging() || \
    (!ATOOLS::msg->ContextDebugging().empty() && ATOOLS::msg->LevelIsDebugging(__PRETTY_FUNCTION__)))
+#define msg_LevelIsIODebugging() \
+  (ATOOLS::msg->LevelIsIODebugging() || \
+   (!ATOOLS::msg->ContextIODebugging().empty() && ATOOLS::msg->LevelIsIODebugging(__PRETTY_FUNCTION__)))
 
 #define msg_Error() ATOOLS::msg->Error()
 #define msg_Out() ATOOLS::msg->Out()
@@ -255,6 +265,7 @@ namespace ATOOLS {
 #define msg_Info() if (msg_LevelIsInfo()) ATOOLS::msg->Out()
 #define msg_Tracking() if (msg_LevelIsTracking()) ATOOLS::msg->Out()
 #define msg_Debugging() if (msg_LevelIsDebugging()) ATOOLS::msg->Out()
+#define msg_IODebugging() if (msg_LevelIsIODebugging()) ATOOLS::msg->Out()
 
 #define msg_Indent() ATOOLS::Indentation indent; indent.Activate(1)
 #define msg_Indentation(COL) ATOOLS::Indentation indent(COL);indent.Activate(1);

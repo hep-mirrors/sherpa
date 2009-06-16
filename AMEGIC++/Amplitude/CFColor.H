@@ -1,9 +1,9 @@
-#ifndef CFColor_h
-#define CFColor_h
+#ifndef AMEGIC_Amplitude_CFColor_H
+#define AMEGIC_Amplitude_CFColor_H
 
-#include "Matrix.H"
-#include "String_Tree.H"
-#include "Single_Amplitude.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "AMEGIC++/String/String_Tree.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude.H"
 #include <map>
 
 namespace AMEGIC {
@@ -60,7 +60,8 @@ namespace AMEGIC {
       Furthermore, delta functions are eliminated.
 
     */
-    CFColor(int,Single_Amplitude*,bool,std::string& pID=noname,bool=false);
+    CFColor(int,Single_Amplitude*,std::string pID=noname,bool=false);
+    CFColor(int,Single_Amplitude*,char,char,std::string pID=noname,bool=false);
     ~CFColor();
     //! Outputs the colour matrix.
     void Output(std::string &);

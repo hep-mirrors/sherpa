@@ -1,6 +1,6 @@
 #include <cassert>
-#include "Cluster_Formation_Handler.H"
-#include "Hadronisation_Parameters.H"
+#include "AHADIC++/Formation/Cluster_Formation_Handler.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 
 namespace AHADIC {
   bool triplet(SP(Proto_Particle) pp) {

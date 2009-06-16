@@ -1,5 +1,1 @@
-MAKE = make 
-
-SUBDIRS = Main Amplitude Phasespace String
-
-EXTRA_DIST = @SVNINCLUDE@
+SUBDIRS = Main DipoleSubtraction Amplitude Phasespace String Cluster

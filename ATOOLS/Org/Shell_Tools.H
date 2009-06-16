@@ -1,5 +1,5 @@
-#ifndef Shell_Tools_H
-#define Shell_Tools_H
+#ifndef ATOOLS_Org_Shell_Tools_H
+#define ATOOLS_Org_Shell_Tools_H
 
 #include <string>
 #include <vector>

@@ -1,5 +1,5 @@
-#ifndef Polarization_Tools_h
-#define Polarization_Tools_h
+#ifndef HELICITIES_Main_Polarization_Tools_H
+#define HELICITIES_Main_Polarization_Tools_H
 
 #ifndef SQRT_05
 #define SQRT_05 0.70710678118654757
@@ -7,10 +7,10 @@
 
 #include <map>
 #include <iostream>
-#include "MyComplex.H"
-#include "Flavour.H"
-#include "Vector.H"
-#include "Matrix.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Matrix.H"
 
 namespace HELICITIES
 {

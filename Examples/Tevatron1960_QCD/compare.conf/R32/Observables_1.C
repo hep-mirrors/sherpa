@@ -1,0 +1,131 @@
+(observables1){
+  PIECE_SETUP Observables_1.C (rc0){ }(rc0);
+  PIECE_SETUP Observables_1.C (dc0){ }(dc0);
+  LEFT_MARGIN 0.15;
+  Y_TITLE_OFFSET 1.4;
+  X_TITLE_OFFSET 1.1;
+  @@ PATHPIECE NJet_Cone/output_C07/;
+  LEG_DELTAY 0.04;
+  LEG_TEXT_SIZE 0.03;
+}(observables1);
+
+(rc0){
+  PIECE_SETUP rc.C (djet){ }(djet);
+  PIECE_SETUP Observables_1.C (dr32){ }(dr32);
+  PIECE_SETUP Observables_1.C (sr32){ }(sr32);
+  X_MIN 100;
+  X_MAX 600;
+  Y_MIN 0.001;
+  Y_MAX 0.7;
+  DRAW YES;
+  Y_AXIS_TITLE R_{32}(H_{T});
+  X_AXIS_TITLE H_{T} #left[ GeV #right];
+  BOTTOM_MARGIN 0.3;
+  X_AXIS_LABEL_SIZE 0;
+  X_TITLE_SIZE 0;
+  HISTOGRAM_NAME DR32_DHT;
+  FIGURE_CAPTION $R_{32}(H_{T})$ Untriggered;
+  WEBPAGE_CAPTION R<sub>32</sub>(H<sub>T</sub>) Untriggered;
+  DRAW_LATEX SHERPA | LEFT 0.05 TOP 0.075 ALIGN 12 PRIORITY -20\;;
+  DRAW_LATEX Untriggered | COLOUR 2 LEFT 0.95 TOP 0.9 ALIGN 32 PRIORITY 20\;;
+}(rc0);
+(dc0){
+  PIECE_SETUP Observables_1.C (ddr32_1){ }(ddr32_1);
+  PIECE_SETUP Observables_1.C (ddr32_2){ }(ddr32_2);
+  PIECE_SETUP Observables_1.C (ddr32_3){ }(ddr32_3);
+  PIECE_SETUP Observables_1.C (ddr32_4){ }(ddr32_4);
+  PIECE_SETUP Observables_1.C (dsr32+){ }(dsr32+);
+  PIECE_SETUP Observables_1.C (dsr32-){ }(dsr32-);
+  DRAW YES;
+  DRAW_LEGEND NO;
+  DIFF_PLOT YES;
+  TOP_MARGIN 0.7;
+  Y_TITLE_SIZE 0;
+  Y_AXIS_TICK_LENGTH 0.08;
+  Y_AXIS_NDIVISIONS 505;
+  Y_AXIS_LABEL_DIVISIONS 1;
+  DRAW_LINE H 0 | STYLE 1 COLOUR 1 PRIORITY -10;
+  X_MIN 100;
+  X_MAX 600;
+  Y_MIN -0.25;
+  Y_MAX 0.25;
+  DRAW YES;
+  X_AXIS_TITLE H_{T} #left[ GeV #right];
+  HISTOGRAM_NAME DDR32_DHT;
+  FIGURE_CAPTION $R_{32 }(H_{T})$;
+  WEBPAGE_CAPTION R<sub>32</sub>(H<sub>T</sub>);
+}(dc0);
+
+(ddr32_1){ 
+  FILE_PIECE R32[0] D32[0];
+  LINE_COLOUR RED1;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  ## ALGEBRA_DATA 4; ## COLUMNS 2 3;
+}(ddr32_1);
+(ddr32_2){ 
+  FILE_PIECE R32[1] D32[0];
+  LINE_COLOUR GREEN1;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  ## ALGEBRA_DATA 4; ## COLUMNS 2 3;
+}(ddr32_2);
+(ddr32_3){ 
+  FILE_PIECE R32[2] D32[0];
+  LINE_COLOUR BLUE1;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  ## ALGEBRA_DATA 4; ## COLUMNS 2 3;
+}(ddr32_3);
+(ddr32_4){ 
+  FILE_PIECE R32[3] D32[0];
+  LINE_COLOUR BLUE1;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  ## ALGEBRA_DATA 4; ## COLUMNS 2 3;
+}(ddr32_4);
+(dsr32+){ 
+  FILE_PIECE D32[0] D32[0];
+  DATA_TYPE ALGEBRA(y[0]/y[1]);
+  ## ALGEBRA_DATA 4; ## COLUMNS 5 3;
+  LINE_COLOUR 5;
+  FILL_COLOUR 5;
+  FILL_STYLE 1000;
+  DRAW_PRIORITY -20;
+}(dsr32+);
+(dsr32-){ 
+  FILE_PIECE D32[0] D32[0];
+  DATA_TYPE ALGEBRA(-y[0]/y[1]);
+  ## ALGEBRA_DATA 4; ## COLUMNS 4 3;
+  LINE_COLOUR 5;
+  FILL_COLOUR 5;
+  FILL_STYLE 1000;
+  DRAW_PRIORITY -20;
+}(dsr32-);
+
+(sr32){
+  PIECE_SETUP Level_1.C (level1){ }(level1);
+  FILE_PIECE c0_three_jet_inc_HT.dat c0_two_jet_inc_HT.dat;
+  DATA_TYPE ALGEBRA(y[0]/y[1]);
+  ALIAS_NAME R32;
+  ## ADOPT_BINS D32[0];
+  LEG_LEFT 0.075;
+  LEG_RIGHT 0.325;
+  LEG_TOP 1.15;
+}(sr32);
+
+(dr32){
+  PATH_PIECE DATAPATH/
+  FILE_PIECE R32_Data.dat;
+  ALIAS_NAME D32;
+  LEGEND_TITLE D0 Data;
+  DATA_TYPE ASCII;
+  NODRAW YES;
+  DRAW_OPTION P;
+  X_VALUE 1;
+  Y_VALUE 3;
+  X_ERROR_PLUS 2;
+  X_ERROR_MINUS 2;
+  Y_ERROR_PLUS 5;
+  Y_ERROR_MINUS 4;
+  LEG_LEFT 0.725;
+  LEG_RIGHT 0.975;
+  LEG_TOP 0.35;
+}(dr32);
+

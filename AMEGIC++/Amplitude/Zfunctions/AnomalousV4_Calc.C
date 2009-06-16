@@ -1,8 +1,8 @@
-#include "Calculator.H"
-#include "String_Generator.H"
-#include "Zfunc_Generator.H"
-#include "Point.H"
-#include "Zfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Calculator.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "AMEGIC++/Amplitude/Zfunc_Generator.H"
+#include "AMEGIC++/Main/Point.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

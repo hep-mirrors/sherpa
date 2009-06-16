@@ -1,4 +1,4 @@
-# include "Generate_Dipole_Photon_Angle.H"
+# include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

@@ -1,23 +1,23 @@
-#include "Lund_Interface.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
 
-#include "Lund_Wrapper.H"
-#include "ISR_Handler.H"
-#include "Data_Reader.H"
-#include "Particle.H"
-#include "Blob.H"
-#include "Blob_List.H"
-#include "Run_Parameter.H"
-#include "Random.H"
-#include "Message.H"
-#include "Exception.H"
-#include "Running_AlphaS.H"
-#include "MyStrStream.H"
+#include "SHERPA/LundTools/Lund_Wrapper.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <list>
 #include <cassert>
-#include "Message.H"
-#include "HepEvt_Interface.H"
-#include "Mass_Handler.H"
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/Message.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
+#include "ATOOLS/Phys/Mass_Handler.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -49,29 +49,29 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa.gen.Bunch(i);
-  if (flav[0]==kf_e && flav[1]==kf_p_plus) {
+  if (flav[0]==Flavour(kf_e) && flav[1]==Flavour(kf_p_plus)) {
     beam[0]="e-";
     beam[1]="p+";
   }
-  else if (flav[0]==kf_p_plus && flav[1]==kf_e) {
+  else if (flav[0]==Flavour(kf_p_plus) && flav[1]==Flavour(kf_e)) {
     beam[0]="p+";
     beam[1]="e-";
   }
-  else if (flav[0]==kf_e && flav[1]==kf_photon) {
+  else if (flav[0]==Flavour(kf_e) && flav[1]==Flavour(kf_photon)) {
     if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
     beam[1]="gamma";
     spsubs.msub[33]=1;    
   }
-  else if (flav[0]==kf_photon && flav[1]==kf_e) {
+  else if (flav[0]==Flavour(kf_photon) && flav[1]==Flavour(kf_e)) {
     beam[0]="gamma";
     if (flav[1].IsAnti()) beam[1]="e+"; else beam[1]="e-";
     spsubs.msub[33]=1;    
   }
-  else if (flav[0]==kf_photon && flav[1]==kf_photon) {
+  else if (flav[0]==Flavour(kf_photon) && flav[1]==Flavour(kf_photon)) {
     for (size_t i=0;i<2;++i) beam[i]="gamma";
     spsubs.msub[57]=1;    
   }
-  else if (flav[0].Kfcode()==kf_e && flav[1].Kfcode()==kf_e) {
+  else if (flav[0].Kfcode()==Flavour(kf_e) && flav[1].Kfcode()==Flavour(kf_e)) {
     for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="e+"; else beam[i]="e-";
     spsubs.msub[0]=1;    
     sppars.mstp[47]=1;
@@ -235,7 +235,7 @@ void Lund_Interface::AdjustProperties(Flavour flav)
   if(kc>500) return;
   // adjust mass
   double pythiamass = spdat2.pmas[1-1][kc-1];
-  double sherpamass = flav.PSMass();
+  double sherpamass = flav.HadMass();
   flav.SetMass(pythiamass);
   if( !(abs(sherpamass-pythiamass)/sherpamass < 1.e-2) ) {
     msg_Info()<<METHOD<<" Adjusted mass of "<<flav<<" ("<<flav.Kfcode()

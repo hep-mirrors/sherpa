@@ -1,7 +1,7 @@
-#include "Laser_Backscattering.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Random.H"
+#include "BEAM/Main/Laser_Backscattering.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 #include <iomanip>
 
@@ -18,7 +18,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_energyL(_energyL), m_polarisationL(_polarisationL), m_mode(_mode), m_angles(_angles)
 {
   m_bunch        = Flavour(kf_photon);
-  double disc    = 1.-sqr(m_bunch.PSMass()/m_energy);
+  double disc    = 1.-sqr(m_bunch.Mass()/m_energy);
   m_vecout       = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
   m_Ebounds[0]   = 0.;  
   m_Ebounds[1]   = 5.e10;
@@ -46,7 +46,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_delta  = 1.387423/2.;
   if (_nonlin==1 && m_mode!=-1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
   else { m_nonlin1 = 0.;         m_nonlin2 = 0.;           }
-  m_xe     = 4.*m_energy*m_energyL/sqr(ATOOLS::Flavour(kf_e).PSMass());
+  m_xe     = 4.*m_energy*m_energyL/sqr(ATOOLS::Flavour(kf_e).Mass(true));
   m_xi     = m_nonlin1 + m_nonlin2 * m_energy;
   m_xe    /= (1+m_xi);
   m_xmax   = m_xe/(1.+m_xe);

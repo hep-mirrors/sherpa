@@ -1,7 +1,7 @@
-#ifndef Poincare_H
-#define Poincare_H
+#ifndef ATOOLS_Math_Poincare_H
+#define ATOOLS_Math_Poincare_H
 
-#include "Vector.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS {
 
@@ -19,11 +19,11 @@ namespace ATOOLS {
     Poincare(Vec4D v1, Vec4D v2);  // rotations constructor
     Poincare(Vec4D v);             // boost constructor 
  
-    void Boost(Vec4D& v);
-    void BoostBack(Vec4D& v);
+    void Boost(Vec4D& v) const;
+    void BoostBack(Vec4D& v) const;
 
-    void Rotate(Vec4D& v);
-    void RotateBack(Vec4D& v);
+    void Rotate(Vec4D& v) const;
+    void RotateBack(Vec4D& v) const;
 
     bool CheckBoost();
     bool CheckRotation();

@@ -1,5 +1,5 @@
-#include "Tree.H"
-#include "Message.H"
+#include "APACIC++/Main/Tree.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace APACIC;
 using namespace ATOOLS;
@@ -9,7 +9,7 @@ using std::endl;
 namespace APACIC {
 void StreamTree(std::ostream & s, Knot * mo)
 { 
-  s<<(*mo);
+  s<<(*mo)<<"\n";
   if (mo->left) StreamTree(s, mo->left);
   if (mo->right) StreamTree(s, mo->right);
 }

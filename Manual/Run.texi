@@ -1,0 +1,189 @@
+@node Run Parameters
+@section Run Parameters
+
+The following parameters describe general run information.
+
+@menu
+* EVENTS::            Number of events to generate.
+* OUTPUT::            Output level.
+* RANDOM_SEED::       Seed for random number generator.
+* ANALYSIS::          Switch internal analysis on or off.
+* ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
+* TIMEOUT::           Run time limitation.
+* SPIN_CORRELATIONS:: Switch spin correlations on/off.
+* NUM_ACCURACY::      Accuracy for gauge tests.
+* Event output formats:: Event output in different formats.
+
+* SHERPA_CPP_PATH::   The C++ code generation path.
+* SHERPA_LIB_PATH::   The runtime library path.
+@end menu
+
+
+@node EVENTS
+@subsection EVENTS
+@cindex EVENTS
+This parameter specifies the number of events to be generated.
+
+@node OUTPUT
+@subsection OUTPUT
+@cindex OUTPUT
+This parameter specifies the output level (verbosity) of the program.
+The value can be any sum of the following:
+@itemize @bullet
+@item
+0: Error messages (-> always displayed).
+@item
+1: Event display.
+@item
+2: Informational messages during the run.
+@item
+4: Tracking messages (lots of output).
+@item
+8: Debugging messages (even more output).
+@end itemize
+
+E.g. OUTPUT=3 would display information, events and errors.
+
+@node RANDOM_SEED
+@subsection RANDOM_SEED
+@cindex RANDOM_SEED
+SHERPA uses a random-number generator as described in
+[Florida State University Report FSU-SCRI-87-50].
+The two independent integer-valued seeds are speciﬁed by the option
+``RANDOM SEED=A B''. The seeds A and B may range from 0 to 31328 and from
+0 to 30081, respectively. If RANDOM SEED is not speciﬁed at all or only by one
+integer number, the old random-number generator (SHERPA 1.0.6 and older)
+will be used.
+
+@node ANALYSIS
+@subsection ANALYSIS
+@cindex ANALYSIS
+The internal analysis can be switched on or oﬀ by setting the ANALYSIS switch
+to 1 or 0, respectively. An output directory can be speciﬁed by
+setting ANALYSIS_OUTPUT. The new directory will be created w.r.t. the working directory.
+
+@node ANALYSIS_OUTPUT
+@subsection ANALYSIS_OUTPUT
+@cindex ANALYSIS_OUTPUT
+Directory for generated analysis histogram files.
+
+@node TIMEOUT
+@subsection TIMEOUT
+@cindex TIMEOUT
+A run time limitation can be given in user CPU seconds through TIMEOUT. This option is of
+some relevance when running SHERPA on a batch system. Since in many cases jobs are just
+terminated, this allows to interrupt a run, to store all relevant information and to restart
+it without any loss. This is particularly interesting when carrying out long integrations.
+Contrary, setting the TIMEOUT variable to -1, which is the default setting, translates into
+having no run time limitation at all.
+
+@node SPIN_CORRELATIONS
+@subsection SPIN_CORRELATIONS
+@cindex SPIN_CORRELATIONS
+The algorithm used to transfer spin-correlation information from AMEGIC++ to HADRONS++
+is switched off (=0) by default. It can be switched on via SPIN CORRELATIONS=1. Process
+libraries have to be re-created in this case.
+
+@node NUM_ACCURACY
+@subsection NUM_ACCURACY
+@cindex NUM_ACCURACY
+The targeted numerical accuracy can be speciﬁed through NUM ACCURACY, e.g. for comparing
+two numbers. This might have to be reduced if gauge tests fail for numerical reasons.
+
+@node SHERPA_CPP_PATH
+@subsection SHERPA_CPP_PATH
+@cindex SHERPA_CPP_PATH
+The path in which Sherpa will eventually store dynamically created C++ source code.
+If not specified otherwise, sets @option{SHERPA_LIB_PATH} to 
+@samp{$SHERPA_CPP_PATH/Process/lib}.
+
+@node SHERPA_LIB_PATH
+@subsection SHERPA_LIB_PATH
+@cindex SHERPA_LIB_PATH
+The path in which Sherpa looks for dynamically bound libraries from previously created
+C++ source code, cf. @ref{SHERPA_CPP_PATH}.
+
+
+@node Event output formats
+@subsection Event output formats
+
+Sherpa provides the possibility to output events -- either to
+file or to screen -- in its native and two other output formats:
+The HepEVT common block structure or the HepMC format.
+The authors of Sherpa assume
+that the user is sufficiently acquainted with these formats when
+selecting them.
+
+There are two ways to specify the event record. First of all
+the switch EVENT_MODE (@xref{EVENT_MODE}.) results in the corresponding
+structure being filled internally (and printed to screen, if the
+output-level is set accordingly).
+
+Second, if the events are to be written to file, the keywords
+listed below can be used. With these keywords the filename's root can be
+specified, i.e. HEPEVT_OUTPUT=filename will create files named
+filename.#.hepevt, where the hash mark stands for an increasing
+number.
+
+To write events directly to gzipped files instead of plain text, the
+option --enable-gzip has to be specified during the installation.
+
+@menu
+* EVENT_MODE::        Format for screen display of events.
+* SHERPA_OUTPUT::     Name of file to write event output in Sherpa format.
+* HEPMC2_GENEVENT_OUTPUT:: Name of file to write event output in HepMC::IO_GenEvent format.
+* HEPMC2_ASCII_OUTPUT:: Name of file to write event output in HepMC::IO_Ascii format (deprecated).
+* HEPMC2_OUTPUT:: Name of file to write event output in HepMC::GenEvent::print format (deprecated).
+* FILE_SIZE::         Number of events per file (default: 1000).
+* EVT_FILE_PATH::     Directory where the files will be stored.
+* OUTPUT_PRECISION::  Steers the precision of all numbers written to file.
+@end menu
+
+@node EVENT_MODE
+@subsubsection EVENT_MODE
+@cindex EVENT_MODE
+This parameter specifies the format for displaying events on screen when OUTPUT
+includes the ``1'' setting.
+Available values:
+@itemize @bullet
+@item
+EVENT_MODE=Sherpa (default, blob list output)
+@item
+EVENT_MODE=HepMC (GenEvent print method)
+@item
+EVENT_MODE=HepEvt (HepEvt common block)
+@end itemize
+
+@node SHERPA_OUTPUT
+@subsubsection SHERPA_OUTPUT
+@cindex SHERPA_OUTPUT
+Name of file to write event output in Sherpa format
+
+@node HEPMC2_GENEVENT_OUTPUT
+@subsubsection HEPMC2_GENEVENT_OUTPUT
+@cindex HEPMC2_GENEVENT_OUTPUT
+Name of file to write event output in HepMC::IO_GenEvent format.
+
+@node HEPMC2_ASCII_OUTPUT
+@subsubsection HEPMC2_ASCII_OUTPUT
+@cindex HEPMC2_ASCII_OUTPUT
+Name of file to write event output in HepMC::IO_Ascii format (deprecated).
+
+@node HEPMC2_OUTPUT
+@subsubsection HEPMC2_OUTPUT
+@cindex HEPMC2_OUTPUT
+Name of file to write event output in HepMC::GenEvent::print format (deprecated).
+@node FILE_SIZE
+@subsubsection FILE_SIZE
+@cindex FILE_SIZE
+Number of events per file (default: 1000).
+
+@node EVT_FILE_PATH
+@subsubsection EVT_FILE_PATH
+@cindex EVT_FILE_PATH
+Directory where the files will be stored.
+
+@node OUTPUT_PRECISION
+@subsubsection OUTPUT_PRECISION
+@cindex OUTPUT_PRECISION
+Steers the precision of all numbers written to file.

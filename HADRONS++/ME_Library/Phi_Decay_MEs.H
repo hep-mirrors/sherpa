@@ -1,7 +1,7 @@
-#ifndef Phi_Decay_MEs_H
-#define Phi_Decay_MEs_H
+#ifndef HADRONS_ME_Library_Phi_Decay_MEs_H
+#define HADRONS_ME_Library_Phi_Decay_MEs_H
 
-#include "HD_ME_Base.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
 
 namespace HADRONS {
   class Phi_PPGamma : public HD_ME_Base {

@@ -7,13 +7,9 @@ libHadronsPSs_la_SOURCES = \
 		Four_Body_PSs.C \
 		ResonanceFlavour.C
 
-pkginclude_HEADERS = \
+localinc_HEADERS   = \
 		HD_PS_Base.H \
 		Three_Body_PSs.H \
 		Two_Body_PSs.H  \
 		Four_Body_PSs.H \
 		ResonanceFlavour.H
-
-INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@ @HELICITIESINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

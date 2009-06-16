@@ -1,8 +1,8 @@
-#ifndef Super_Amplitude_h
-#define Super_Amplitude_h
+#ifndef AMEGIC_Amplitude_Super_Amplitude_H
+#define AMEGIC_Amplitude_Super_Amplitude_H
 
-#include "Amplitude_Group.H"
-#include "Single_Amplitude_Base.H"
+#include "AMEGIC++/Amplitude/Amplitude_Group.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude_Base.H"
 
 namespace AMEGIC {
   class Super_Amplitude: public Amplitude_Group, public Single_Amplitude_Base {

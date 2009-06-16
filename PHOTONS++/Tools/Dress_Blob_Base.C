@@ -1,11 +1,11 @@
-#include "Dress_Blob_Base.H"
-#include "Generate_One_Photon.H"
-#include "Weight_Dipole.H"
-#include "Weight_Jacobian.H"
-#include "Weight_YFS.H"
-#include "Weight_Higher_Order_Corrections.H"
-#include "Run_Parameter.H"
-#include "Photons.H"
+#include "PHOTONS++/Tools/Dress_Blob_Base.H"
+#include "PHOTONS++/Tools/Generate_One_Photon.H"
+#include "PHOTONS++/Tools/Weight_Dipole.H"
+#include "PHOTONS++/Tools/Weight_Jacobian.H"
+#include "PHOTONS++/Tools/Weight_YFS.H"
+#include "PHOTONS++/Tools/Weight_Higher_Order_Corrections.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "PHOTONS++/Main/Photons.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

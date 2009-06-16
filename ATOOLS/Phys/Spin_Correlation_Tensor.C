@@ -1,14 +1,16 @@
-#include "Spin_Correlation_Tensor.H"
-#include "Message.H"
-#include "Blob.H"
-#include "Smart_Pointer.H"
-#include "prof.hh"
+#include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
 #include <typeinfo>
 
 
   //#define SCT_Debug
 
 namespace ATOOLS{
+
+  template class SP(Spin_Correlation_Tensor);
 
   // INITIALIZATION OF THE STATIC MEMBERS OF SPIN_CORRELATION_TENSOR
 

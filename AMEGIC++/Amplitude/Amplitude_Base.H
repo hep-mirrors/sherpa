@@ -1,9 +1,9 @@
-#ifndef Amplitude_Base_h
-#define Amplitude_Base_h
+#ifndef AMEGIC_Amplitude_Amplitude_Base_H
+#define AMEGIC_Amplitude_Amplitude_Base_H
 
-#include "MyComplex.H"
-#include "Flavour.H"
-#include "Zfunc.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
 
 namespace AMEGIC {
 

@@ -1,9 +1,9 @@
-#include "Blob_List.H"
+#include "ATOOLS/Phys/Blob_List.H"
 
-#include "Blob.H"
-#include "Particle.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace ATOOLS;
 

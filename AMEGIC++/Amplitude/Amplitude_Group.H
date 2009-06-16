@@ -1,10 +1,10 @@
-#ifndef Amplitude_Group_h
-#define Amplitude_Group_h
+#ifndef AMEGIC_Amplitude_Amplitude_Group_H
+#define AMEGIC_Amplitude_Amplitude_Group_H
 
-#include "String_Handler.H"
-#include "Amplitude_Base.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "AMEGIC++/String/String_Handler.H"
+#include "AMEGIC++/Amplitude/Amplitude_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 #include <map>
 

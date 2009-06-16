@@ -1,9 +1,9 @@
-#ifndef VA_0_PiPiPiPi3Charged_H
-#define VA_0_PiPiPiPi3Charged_H
+#ifndef HADRONS_Current_Library_VA_0_PiPiPiPi3Charged_H
+#define HADRONS_Current_Library_VA_0_PiPiPiPi3Charged_H
 
-#include "Current_Base.H"
-#include "ResonanceFlavour.H"
-#include "Tools.H"
+#include "HADRONS++/Current_Library/Current_Base.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
+#include "HADRONS++/Main/Tools.H"
 
 namespace HADRONS {
   class VA_0_PiPiPiPi3Charged : public Current_Base {

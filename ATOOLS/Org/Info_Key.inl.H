@@ -1,8 +1,8 @@
-#ifndef Info_Key_inl_H
-#define Info_Key_inl_H
+#ifndef ATOOLS_Org_Info_Key_inl_H
+#define ATOOLS_Org_Info_Key_inl_H
 
-#include "Info_Key.H"
-#include "Integration_Info.H"
+#include "ATOOLS/Org/Info_Key.H"
+#include "ATOOLS/Org/Integration_Info.H"
 
 namespace ATOOLS {
 

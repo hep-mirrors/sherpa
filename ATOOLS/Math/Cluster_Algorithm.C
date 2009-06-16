@@ -1,7 +1,7 @@
-#include "Cluster_Algorithm.H"
+#include "ATOOLS/Math/Cluster_Algorithm.H"
 
-#include "MathTools.H"
-#include "My_Limits.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace ATOOLS;
 

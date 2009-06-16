@@ -1,5 +1,5 @@
-#ifndef Cluster_Algorithm_H
-#define Cluster_Algorithm_H
+#ifndef ATOOLS_Math_Cluster_Algorithm_H
+#define ATOOLS_Math_Cluster_Algorithm_H
 
 #include <vector>
 

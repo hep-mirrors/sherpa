@@ -7,8 +7,8 @@ started with the following specialities:
   - ./FullDecay DECAYER=<kfcode> EVENTS=100000 ANALYSIS=1
 */
 
-#include "Main_FullDecay.C"
-#include "Shell_Tools.H"
+#include "HADRONS++/Run/Main_FullDecay.C"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 #ifdef USING__ROOT
 static TFile* rootfile;
@@ -56,11 +56,11 @@ void InitialiseAnalysis()
                                       9, -0.5, 8.5,
                                       it->RootName()+" multiplicity","Events");
     energies[*it]       =    makeTH1D(it->ShellName()+"_energy", "",
-                                      25, 0.0, mother_flav.PSMass()/2.0,
+                                      25, 0.0, mother_flav.HadMass()/2.0,
                                       "E_{"+it->RootName()+"}",
                                       "#frac{1}{#Gamma} #frac{d#Gamma}{dE}");
     directenergies[*it] =    makeTH1D(it->ShellName()+"_directenergy", "",
-                                      25, 0.0, mother_flav.PSMass()/2.0,
+                                      25, 0.0, mother_flav.HadMass()/2.0,
                                       "E_{"+it->RootName()+"}",
                                       "#frac{1}{#Gamma} #frac{d#Gamma}{dE}");
     int_multiplicities[*it] = 0;

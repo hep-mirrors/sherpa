@@ -1,14 +1,8 @@
-pkglib_LTLIBRARIES       =	libGRV.la
+pkglib_LTLIBRARIES    =	libGRVSherpa.la
 
-libGRV_la_SOURCES     =	\
-			grvphoton.f \
-			GRVph_Fortran_Interface.C 
+libGRVSherpa_la_SOURCES       =	\
+				grvphoton.f \
+				GRVph_Fortran_Interface.C 
 
-pkginclude_HEADERS        =	\
+localinc_HEADERS      =	\
 			GRVph_Fortran_Interface.H 
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      =	@PDFINCS@ @MODELINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

@@ -1,13 +1,13 @@
-#include "Generic.H"
-#include "Exception.H"
-#include "MyStrStream.H"
+#include "HADRONS++/ME_Library/Generic.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace HELICITIES;
 using namespace std;
 
-#include "Partial_Amplitude_Base.H"
+#include "HELICITIES/Main/Partial_Amplitude_Base.H"
 
 Generic::Generic(ATOOLS::Flavour* flavs, int n, int* decayindices, 
                  std::string name):

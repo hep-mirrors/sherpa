@@ -1,4 +1,4 @@
-#include "Weight_Base.H"
+#include "PHOTONS++/Tools/Weight_Base.H"
 
 using namespace PHOTONS;
 using namespace std;

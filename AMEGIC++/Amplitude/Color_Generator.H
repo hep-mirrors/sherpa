@@ -1,7 +1,7 @@
-#ifndef Color_Generator_h
-#define Color_Generator_h
+#ifndef AMEGIC_Amplitude_Color_Generator_H
+#define AMEGIC_Amplitude_Color_Generator_H
 
-#include "Point.H"
+#include "AMEGIC++/Main/Point.H"
 
 namespace AMEGIC {
   struct Cfunc {

@@ -1,9 +1,10 @@
-#ifndef Zfunc_Generator_h
-#define Zfunc_Generator_h
+#ifndef AMEGIC_Amplitude_Zfunc_Generator_H
+#define AMEGIC_Amplitude_Zfunc_Generator_H
 
-#include "Point.H"
+#include "AMEGIC++/Main/Point.H"
 #include <vector>
-#include "Zfunc.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -11,10 +12,7 @@ namespace AMEGIC {
   class Basic_Sfuncs;
   class Virtual_String_Generator;
 
-  class ZF_Vector: public std::vector<Zfunc_Calc*> {
-  public:
-    ~ZF_Vector();
-  };
+  typedef std::vector<SP(Zfunc_Calc)> ZF_Vector;
 
   class Zfunc_Generator {
     Zfunc_List zlist;

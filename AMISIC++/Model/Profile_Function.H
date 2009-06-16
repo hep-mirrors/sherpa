@@ -1,12 +1,12 @@
-#ifndef Profile_Function_H
-#define Profile_Function_H
+#ifndef AMISIC_Model_Profile_Function_H
+#define AMISIC_Model_Profile_Function_H
 /*!
   \file Profile_Function.H
   \brief Declares the classes Flat_Profile, Exponential_Profile,
   Gaussian_Profile and Double_Gaussian_Profile    
 */
 
-#include "Profile_Function_Base.H"
+#include "AMISIC++/Model/Profile_Function_Base.H"
 
 namespace AMISIC {
 

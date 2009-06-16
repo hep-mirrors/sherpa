@@ -1,0 +1,59 @@
+(run){
+  ASET:=1; WRITE_MAPPING_FILE 3;
+  EVENTS 100000000; ANALYSIS_WRITEOUT_INTERVAL 25000;
+  ANALYSIS 1; ANALYSIS_OUTPUT c_ps_ASET/;
+  RESULT_DIRECTORY r_ps/; BATCH_MODE 0; OUTPUT 2;
+  GENERATE_RESULT_DIRECTORY 1;
+  MASS[1] 0; MASS[2] 0; MASS[3] 0; MASS[4] 1.3; MASS[5] 4.5;
+}(run);
+(processes){
+  Process 93 93 -> 11 -12;
+  Order_EW 2;
+  End process;
+}(processes);
+(selector){
+  Mass 11 -12 10 1000
+}(selector)
+(me){
+  ME_SIGNAL_GENERATOR Internal Comix;
+  EVENT_GENERATION_MODE Weighted;
+  FACTORIZATION_SCALE Abs2(p[2]+p[3]);
+}(me);
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 7000;
+  BEAM_2  2212; BEAM_ENERGY_2 7000;
+}(beam);
+(integration){
+  INTEGRATOR 4; ERROR 0.001;
+}(integration);
+(shower){
+  SHOWER_GENERATOR CSS;
+}(shower);
+(fragmentation){
+  FRAGMENTATION Off;
+}(fragmentation);
+
+
+
+(analysis){
+
+ BEGIN_ANALYSIS {
+
+   LEVEL Shower;
+
+   Trigger {
+     OutList AllJets;
+     Finder 93 0 -4.5 4.5 0.4 1
+   }
+   MomSel {
+     InList AllJets; OutList Cut;
+     // lepton cuts
+     Tags  11  0 Eta -2.5 2.5;
+     Tags  11  0  PT   20 E_CMS;
+     Tags -12  0  PT   20 E_CMS;
+   }
+   BFKL 4.5 40 Cut;
+
+ } END_ANALYSIS;
+
+}(analysis);

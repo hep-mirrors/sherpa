@@ -1,8 +1,8 @@
-#ifndef Blob_List_H
-#define Blob_List_H
+#ifndef ATOOLS_Phys_Blob_List_H
+#define ATOOLS_Phys_Blob_List_H
 
-#include "Blob.H"
-#include "Particle_List.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Particle_List.H"
 #include <deque>
 #include <set>
 #include <iostream>

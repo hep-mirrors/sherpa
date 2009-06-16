@@ -1,5 +1,5 @@
-#ifndef MyStrStream_H
-#define MyStrStream_H
+#ifndef ATOOLS_Org_MyStrStream_H
+#define ATOOLS_Org_MyStrStream_H
 
 // Note: new compilers name "stringstream" in <sstream>
 //       instead of "strstream" in <strstream>  !
@@ -40,7 +40,7 @@ typedef std::ios_base::fmtflags MyFmtFlags;
 namespace ATOOLS {
   
   template <class Value_Type>
-  std::string ToString(const Value_Type value,
+  std::string ToString(const Value_Type &value,
 		       const size_t precision=12) {
     MyStrStream converter;
     std::string converted;

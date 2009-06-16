@@ -1,15 +1,15 @@
-#ifndef Mom_H
-#define Mom_H
-#include "MHVCalculator.H"
+#ifndef AMEGIC_Amplitude_Zfunctions_Mom_H
+#define AMEGIC_Amplitude_Zfunctions_Mom_H
+#include "AMEGIC++/Amplitude/Zfunctions/MHVCalculator.H"
 
 #ifndef Basic_Sfuncs_In_MHV
 #include <vector>
-#include "Vector.H"
-#include "MyComplex.H"
-#include "Pfunc.H"
-#include "PermStore.H"
-#include "Permutation.H"
-#include "Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "ATOOLS/Math/PermStore.H"
+#include "ATOOLS/Math/Permutation.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 using namespace ATOOLS;
 

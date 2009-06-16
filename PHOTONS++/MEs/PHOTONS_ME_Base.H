@@ -1,14 +1,14 @@
-#ifndef PHOTONS_ME_Base_H
-#define PHOTONS_ME_Base_H
+#ifndef PHOTONS_MEs_PHOTONS_ME_Base_H
+#define PHOTONS_MEs_PHOTONS_ME_Base_H
 
-#include "Vector.H"
-#include "Poincare.H"
-#include "MyComplex.H"
-#include "C_Vector.H"
-#include "XYZFuncs.H"
-#include "Polarization_Tools.H"
-#include "Dipole_Type.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "HELICITIES/Main/C_Vector.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 
 namespace PHOTONS {

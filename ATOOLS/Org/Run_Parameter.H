@@ -1,21 +1,23 @@
-#ifndef Run_Parameter_H
-#define Run_Parameter_H
+#ifndef ATOOLS_Org_Run_Parameter_H
+#define ATOOLS_Org_Run_Parameter_H
 
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <string>
 #include <map>
-#include "Data_Reader.H"
-#include "Flavour.H"
-#include "Matrix.H"
-#include "Function_Base.H"
-#include "MyTiming.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Org/MyTiming.H"
 
 namespace ATOOLS {  
 
   class Run_Parameter {
     std::string         m_path, m_file;
     static bool s_initialized;
+    static size_t s_clevel;
     static std::map<std::string,std::string> s_variables;
+    static std::vector<std::string> s_cites;
   public:
     Run_Parameter();
     ~Run_Parameter();
@@ -69,6 +71,8 @@ namespace ATOOLS {
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 
       { s_variables[key]=value; }
+      inline static const std::vector<std::string> &Citations() { return s_cites; }
+      static void AddCitation(const size_t &level,const std::string &cite);
 
       inline double Accu()                                { return m_accu; }
       

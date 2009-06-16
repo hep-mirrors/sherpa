@@ -1,15 +1,14 @@
-#include "Timelike_Kinematics.H"
+#include "APACIC++/Showers/Timelike_Kinematics.H"
 
-#include "Knot.H"
-#include "Tree.H"
-#include "Poincare.H"
-#include "Exception.H"
+#include "APACIC++/Main/Knot.H"
+#include "APACIC++/Main/Tree.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace APACIC;
 using namespace ATOOLS;
 
-Timelike_Kinematics::Timelike_Kinematics(ATOOLS::Jet_Finder *const jf): 
-  p_jf(jf),
+Timelike_Kinematics::Timelike_Kinematics(): 
   m_zscheme(1) {}
 
 double Timelike_Kinematics::GetZ(const double &zp, const double &t, 
@@ -65,31 +64,6 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
     }
   }
   return 1;
-}
-
-int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
-{
-  if (mo->oc[0]<0) {
-    mo->oc[0]=mo->part->GetFlow(1);
-    mo->oc[1]=mo->part->GetFlow(2);
-  }
-  if (mo->left==NULL) return 1;
-  msg_Debugging()<<METHOD<<"(): knot "<<mo->kn_no<<"\n";
-  mo->E2=sqr(mo->part->Momentum()[0]);
-  msg_Indent();
-  int res(1);
-  if ((res=GeneratePSMasses(mo->left))!=1) return res;
-  if ((res=GeneratePSMasses(mo->right))!=1) return res;
-  mo->z=mo->left->part->Momentum()[0]/mo->part->Momentum()[0];
-  if (mo->left->left==NULL || mo->right->left==NULL) 
-    res=ShuffleMomenta(mo,true,true);
-  mo->CheckMomentumConservation(); 
-  if (!res) {
-    msg_Tracking()<<METHOD<<"(): Invalid kinematics in splitting "
-		  <<mo<<"->("<<mo->left<<","<<mo->right<<") {\n\n"
-		  <<*mo<<*mo->left<<*mo->right<<"}"<<std::endl;
-  }
-  return res;
 }
 
 int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
@@ -440,7 +414,7 @@ bool Timelike_Kinematics::BoostDaughter(Knot * const d) const
     Tree::BoRo(cmsp,d->left);
     Tree::BoRo(cmsp,d->right);
   }
-  d->CheckMomentumConservation(true);
+  // d->CheckMomentumConservation(true);
   return true;
 }
 
@@ -581,18 +555,13 @@ double Timelike_Kinematics::EnergyZ(const double &zlc,const double &E2,
   double z(((ta+tb-tc)-zlc*(ta-pph*pph*E2))/(2.0*E2*pph));
   return z;
 }
-
+#include "ATOOLS/Math/Random.H"
 bool Timelike_Kinematics::
 ArrangeColourPartners(Particle *const aup,Knot *const d1,Knot *const d2) const
 {
   if (!aup || !d1 || !d2)  return false;
-  int jfmode(p_jf->Type());
-  p_jf->SetType(1);
-  bool left(p_jf->MTij2(aup->Momentum(),d1->part->Momentum(),
-			aup->Flav().Mass(),d1->part->Flav().Mass())<
-	    p_jf->MTij2(aup->Momentum(),d2->part->Momentum(),
-			aup->Flav().Mass(),d2->part->Flav().Mass()));
-  p_jf->SetType(jfmode);
+  // crude fix: ignore colour partner
+  bool left(ran.Get());
   if (left) return false;
   return true;
 }

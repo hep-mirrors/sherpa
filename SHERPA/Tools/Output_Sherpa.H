@@ -1,7 +1,7 @@
-#ifndef Output_Sherpa_H
-#define Output_Sherpa_H
+#ifndef SHERPA_Tools_Output_Sherpa_H
+#define SHERPA_Tools_Output_Sherpa_H
 
-#include "Output_Base.H"
+#include "SHERPA/Tools/Output_Base.H"
 
 namespace SHERPA {
 

@@ -1,7 +1,7 @@
-#ifndef Pfunc_h
-#define Pfunc_h
+#ifndef AMEGIC_Amplitude_Pfunc_H
+#define AMEGIC_Amplitude_Pfunc_H
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include <list>
 
 namespace AMEGIC {
@@ -12,8 +12,8 @@ namespace AMEGIC {
     int     momnum;
     Complex value;
     int     on;
-    int     haspol;
     int     zerowidth;
+    int     haspol;
     ATOOLS::Flavour fl;
 
 

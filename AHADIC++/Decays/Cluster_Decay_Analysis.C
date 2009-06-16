@@ -1,6 +1,6 @@
-#include "Cluster_Decay_Analysis.H"
-#include "Run_Parameter.H"
-#include "Vector.H"
+#include "AHADIC++/Decays/Cluster_Decay_Analysis.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Vector.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;

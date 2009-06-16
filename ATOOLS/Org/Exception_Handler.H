@@ -1,7 +1,7 @@
-#ifndef Exception_Handler_H
-#define Exception_Handler_H
+#ifndef ATOOLS_Org_Exception_Handler_H
+#define ATOOLS_Org_Exception_Handler_H
 
-#ifndef Exception_H
+#ifndef ATOOLS_Org_Exception_H
 #error The header 'Exception_Handler.H' must not be included directly. \
 Please include the header 'Exception.H' instead.
 #else
@@ -42,6 +42,8 @@ namespace ATOOLS {
 
   public:
 
+    ~Exception_Handler();
+
     // member functions
     void Init();
     void Reset();
@@ -77,6 +79,7 @@ namespace ATOOLS {
 
     Exception    *LastException();
     unsigned int  LastSignal();
+    std::string   ProgramName();
 
   };// end of class Exception_Handler
 

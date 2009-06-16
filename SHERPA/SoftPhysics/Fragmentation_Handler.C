@@ -1,10 +1,10 @@
-#include "Fragmentation_Handler.H"
+#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
-#include "CXXFLAGS.H"
-#include "Data_Reader.H"
-#include "Run_Parameter.H"
-#include "Shell_Tools.H"
-#include "Return_Value.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Return_Value.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Fragmentation_Handler
@@ -20,7 +20,7 @@ using namespace ATOOLS;
 using namespace std;
 #ifdef USING__Ahadic
 using namespace AHADIC;
-#include "Hadron_Init.H"
+#include "AHADIC++/Tools/Hadron_Init.H"
 #else
 #error Ahadic must be enabled for filling the hadron tables.
 #endif
@@ -147,13 +147,13 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       std::vector<Particle*> taus;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
-	if (part->Status()==part_status::active) {
+	if (part->Status()==part_status::active && 
+	    part->Info()!='G' && part->Info()!='I') {
 	  if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	    plist->push_back(part);
 	    part->SetStatus(part_status::fragmented);
 	  }
-	  else if (part->Flav()==Flavour(kf_tau) ||
-		   part->Flav()==Flavour(kf_tau).Bar()) {
+	  else if (part->Flav().Kfcode()==kf_tau || part->Flav().IsHadron()) {
             taus.push_back(part);
 	  }
 	}

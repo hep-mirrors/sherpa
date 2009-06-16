@@ -1,8 +1,8 @@
-#ifndef PseudoScalar_Decay_MEs_H
-#define PseudoScalar_Decay_MEs_H
+#ifndef HADRONS_ME_Library_PseudoScalar_Decay_MEs_H
+#define HADRONS_ME_Library_PseudoScalar_Decay_MEs_H
 
-#include "HD_ME_Base.H"
-#include "MyComplex.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace HADRONS {
   class P_PP : public HD_ME_Base {

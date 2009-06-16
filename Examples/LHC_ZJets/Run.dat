@@ -1,0 +1,29 @@
+(run){
+  EVENTS = 10000
+  OUTPUT = 2
+}(run)
+(processes){
+  Process 93 93 -> 11 -11 93{1}
+  Order_EW 2
+  CKKW sqr(20/E_CMS)
+  End process
+}(processes)
+(selector){
+  Mass 11 -11 66 116
+  PT 93 1 E_CMS
+}(selector)
+(me){
+  ME_SIGNAL_GENERATOR = Internal Comix
+}(me);
+(model){
+  # set quark masses consistent with default PDF cteq6l
+  MASS[1] = 0
+  MASS[2] = 0
+  MASS[3] = 0
+  MASS[4] = 1.3
+  MASS[5] = 4.5
+}(model)
+(beam){
+  BEAM_1 = 2212;  BEAM_ENERGY_1 = 7000.;
+  BEAM_2 = 2212;  BEAM_ENERGY_2 = 7000.;
+}(beam)

@@ -1,10 +1,10 @@
-#include "Four_Body_PSs.H"
-#include "Channel_Elements.H"
-#include "Channel_Basics.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "Random.H"
-#include "Poincare.H"
+#include "HADRONS++/PS_Library/Four_Body_PSs.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/Channel_Basics.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Poincare.H"
 
 
 using namespace HADRONS; 
@@ -20,7 +20,7 @@ TwoResonances::TwoResonances(
 	const int _i,
 	const int _j )
 : Single_Channel(1,4,fl), 
-  m_P(Vec4D(fl[0].PSMass(),0.,0.,0.)), 
+  m_P(Vec4D(fl[0].HadMass(),0.,0.,0.)), 
   m_prop1 (prop1), m_prop2 (prop2),
   m_i (_i), m_j (_j), m_k (_k)
 {
@@ -33,7 +33,7 @@ TwoResonances::TwoResonances(
   p_fl = new Flavour[5];
   for (short int i=0;i<nin+nout;i++) {
 	p_fl[i] = fl[i];
-	ms[i] = sqr(fl[i].PSMass());
+	ms[i] = sqr(fl[i].HadMass());
   }
 											// set masses^2
   for (int i=1;i<5;i++) {
@@ -97,7 +97,7 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
   CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
 }
 
-void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double * _ran)
+void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
 {
   THROW(fatal_error, "not implemented.");
 }
@@ -148,7 +148,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
   weight = wt;
 }
 
-void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
+void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
 {
   THROW(fatal_error, "not implemented.");
 }
@@ -157,7 +157,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
 
 
 IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator) :
-  Single_Channel(1,4,fl), m_spectator(spectator), m_spectator_mass(fl[spectator].PSMass())
+  Single_Channel(1,4,fl), m_spectator(spectator), m_spectator_mass(fl[spectator].HadMass())
 {
   Flavour isotropicflavs[4];
   isotropicflavs[0] = Flavour(kf_none);
@@ -168,14 +168,14 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator
       j++;
     }
   }
-  double mass_saved = isotropicflavs[0].PSMass();
-  m_decayer_mass = fl[0].PSMass()-fl[spectator].PSMass();
+  double mass_saved = isotropicflavs[0].HadMass();
+  m_decayer_mass = fl[0].HadMass()-fl[spectator].HadMass();
   isotropicflavs[0].SetMass(m_decayer_mass);
   m_rambo = new Rambo(1,3,isotropicflavs,true);
   isotropicflavs[0].SetMass(mass_saved);
 }
 
-void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double * _ran)
+void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
 {
   THROW(fatal_error, "not implemented.");
 }
@@ -222,7 +222,7 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 }
 
 
-void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
+void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
 {
   THROW(fatal_error, "not implemented.");
 }

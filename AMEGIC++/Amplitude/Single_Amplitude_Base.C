@@ -1,9 +1,9 @@
-#include "Single_Amplitude_Base.H"
-#include "Pfunc.H"
-#include "Zfunc.H"
-#include "Zfunc_Calc.H"
-#include "String_Handler.H"
-#include "Message.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude_Base.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
+#include "AMEGIC++/String/String_Handler.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;

@@ -1,8 +1,8 @@
-#ifndef Scalar_To_Scalar_Scalar_H
-#define Scalar_To_Scalar_Scalar_H
+#ifndef PHOTONS_MEs_Scalar_To_Scalar_Scalar_H
+#define PHOTONS_MEs_Scalar_To_Scalar_Scalar_H
 
-#include "PHOTONS_ME_Base.H"
-#include "Dipole_FF.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
 
 using namespace ATOOLS;
 

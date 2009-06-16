@@ -1,5 +1,5 @@
-#ifndef Library_Loader_H
-#define Library_Loader_H
+#ifndef ATOOLS_Org_Library_Loader_H
+#define ATOOLS_Org_Library_Loader_H
 
 #include <vector>
 #include <map>

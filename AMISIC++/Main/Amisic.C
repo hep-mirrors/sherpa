@@ -1,8 +1,8 @@
-#include "Amisic.H"
+#include "AMISIC++/Main/Amisic.H"
 
-#include "Simple_Chain.H"
-#include "Simple_String.H"
-#include "Data_Reader.H"
+#include "AMISIC++/Model/Simple_Chain.H"
+#include "AMISIC++/Model/Simple_String.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;

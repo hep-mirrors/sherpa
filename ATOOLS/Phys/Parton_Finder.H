@@ -1,8 +1,8 @@
-#ifndef Parton_Finder_H
-#define Parton_Finder_H
+#ifndef ATOOLS_Phys_Parton_Finder_H
+#define ATOOLS_Phys_Parton_Finder_H
 
-#include "Particle_List.H"
-#include "Blob.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob.H"
 
 namespace ATOOLS {
 

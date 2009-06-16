@@ -1,9 +1,9 @@
-#ifndef QCD_Splitting_Function_H
-#define QCD_Splitting_Function_H
+#ifndef APACIC_Showers_QCD_Splitting_Functions_H
+#define APACIC_Showers_QCD_Splitting_Functions_H
 //----------------------------------------------------------------------
 //               QCD_Splitting_Functions.H
 //----------------------------------------------------------------------
-#include "Splitting_Function.H"
+#include "APACIC++/Showers/Splitting_Function.H"
 
 namespace APACIC {
   class Sudakov_Tools;
@@ -13,8 +13,9 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha, m_kfactor, m_fmed;
   public:
-    q_qg(ATOOLS::Flavour quarkflavour,double fmed=0.);
-    q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
+    q_qg(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour quarkflavour,double fmed=0.);
+    q_qg(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -33,8 +34,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha, m_kfactor, m_fmed;
   public:
-    g_gg(double fmed=0.);
-    g_gg(Sudakov_Tools * _tools,double fmed=0.);
+    g_gg(ATOOLS::Mass_Selector *&ms,double fmed=0.);
+    g_gg(ATOOLS::Mass_Selector *&ms,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -52,8 +53,9 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha, m_fmed;
   public:
-    g_qq(ATOOLS::Flavour quarkflavour,double fmed=0.);
-    g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
+    g_qq(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour quarkflavour,double fmed=0.);
+    g_qq(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -72,8 +74,9 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha, m_kfactor, m_fmed;
   public:
-    q_gq(ATOOLS::Flavour quarkflavour,double fmed=0.);
-    q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
+    q_gq(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour quarkflavour,double fmed=0.);
+    q_gq(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);

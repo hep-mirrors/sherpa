@@ -1,4 +1,4 @@
-#include "Tau_To_Lepton_Neutrinos.H"
+#include "PHOTONS++/MEs/Tau_To_Lepton_Neutrinos.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -169,7 +169,7 @@ double Tau_To_Lepton_Neutrinos::Smod(unsigned int kk) {
 Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4D  q  = m_moms[0]-m_moms[3];          // W propagator
-  double mW = Flavour(kf_Wplus).PSMass();
+  double mW = Flavour(kf_Wplus).HadMass();
   XYZFunc XYZ(4,m_moms,m_flavs,1,false);
   // Fermi-Theory
   if (m_fermi == true)
@@ -196,8 +196,8 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[4]).at(m_spins[4]));
   Vec4D qt     = m_moms[0]-m_moms[4];       // tau propagator momenta
   Vec4D ql     = m_moms[1]+m_moms[4];       // lepton propagator momenta
-  double mt    = m_flavs[0].PSMass();       // tau mass/propagator pole
-  double ml    = m_flavs[1].PSMass();       // lepton mass/propagator pole
+  double mt    = m_flavs[0].HadMass();       // tau mass/propagator pole
+  double ml    = m_flavs[1].HadMass();       // lepton mass/propagator pole
   m_moms[5]    = m_moms[6] = qt;            // enter those into m_moms
   m_moms[7]    = m_moms[8] = ql;
   m_flavs[5]   = m_flavs[0];                // set to corresponding particle/antiparticle
@@ -207,7 +207,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4D q1     = m_moms[1]+m_moms[2];       // W propagators
   Vec4D q2     = m_moms[0]-m_moms[3];
   Vec4D k      = m_moms[4];
-  double mW    = Flavour(kf_Wplus).PSMass();   // W mass/propagator pole
+  double mW    = Flavour(kf_Wplus).HadMass();   // W mass/propagator pole
   XYZFunc XYZ(9,m_moms,m_flavs,1,false);
   m_flavs[5] = m_flavs[6] = m_flavs[7] = m_flavs[8] = Flavour(kf_none);
   // Fermi-Theory

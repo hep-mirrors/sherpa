@@ -1,10 +1,10 @@
-#include "SM_MSSM_EHC.H"
-#include "Standard_Model.H"
-#include "THDM.H"
-#include "MSSM.H"
-#include "Effective_Higgs_Coupling.H"
-#include "Message.H"
-#include "Data_Reader.H"
+#include "MODEL/Main/SM_MSSM_EHC.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "MODEL/Main/THDM.H"
+#include "MODEL/Main/MSSM.H"
+#include "MODEL/Main/Effective_Higgs_Coupling.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include <iomanip>
 
 using namespace MODEL;

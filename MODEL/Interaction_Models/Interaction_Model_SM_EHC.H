@@ -1,7 +1,7 @@
-#ifndef Interaction_Model_SM_EHC_h
-#define Interaction_Model_SM_EHC_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_SM_EHC_H
+#define MODEL_Interaction_Models_Interaction_Model_SM_EHC_H
 
-#include "Interaction_Model_SM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_SM.H"
 
 namespace MODEL {  
   class Interaction_Model_SM_EHC : public Interaction_Model_Base {

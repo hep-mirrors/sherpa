@@ -1,7 +1,7 @@
 /*
 #ifndef __GNUC__
-#include "MyString.H"
-#include "MathTools.H"
+#include "AMEGIC++/String/MyString.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace AMEGIC;
 

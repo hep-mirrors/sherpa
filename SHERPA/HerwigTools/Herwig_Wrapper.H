@@ -1,5 +1,5 @@
-#ifndef HerwigWrapper_H
-#define HerwigWrapper_H
+#ifndef SHERPA_HerwigTools_Herwig_Wrapper_H
+#define SHERPA_HerwigTools_Herwig_Wrapper_H
 
 #include <ctype.h>
 #include <cstring>

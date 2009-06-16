@@ -1,6 +1,6 @@
-#include "AMEGIC_SCT.H"
-#include "Message.H"
-#include "MyComplex.H"
+#include "AMEGIC++/Main/AMEGIC_SCT.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace AMEGIC {
 

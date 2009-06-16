@@ -1,7 +1,7 @@
-#include "Mom.H"
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Color.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Mom.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/Color.H"
 #include <termios.h>
 #include <unistd.h>
 #include <fstream.h>

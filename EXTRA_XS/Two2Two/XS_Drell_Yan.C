@@ -1,11 +1,14 @@
-#include "XS_Drell_Yan.H"
-#include "Run_Parameter.H"
-#include "Running_AlphaQED.H"
-#include "Running_AlphaS.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Org/Message.H"
+
+#include "EXTRA_XS/Main/ME2_Base.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 
 
@@ -14,81 +17,39 @@ using namespace std;
    by the factor 4 Pi for each alpha. Hence one Pi remains in the game.
 */
 
-XS_qqbar_pg::XS_qqbar_pg(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl)
-  : Single_XS(nin,nout,fl) 
-{ 
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
-
-  barred = fl[0].IsAnti();
-
-  p_colours[0][barred]   = p_colours[2][barred]   = 500; 
-  p_colours[1][1-barred] = p_colours[2][1-barred] = 501;
-  m_name=" q qbar -> g  photon ";
-} 
-
-double XS_qqbar_pg::operator()(double s,double t,double u) {  
-  if (s<m_threshold) return 0.;
-  return 8. * (t*t + u*u + 2. * s * ( s + t + u)) / ( 9. * t*u);
-} 
-
-bool XS_qqbar_pg::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
-  return 1; 
-}
-
-//======================================================================
-
-XS_qg_qp::XS_qg_qp (const size_t nin,const size_t nout,const ATOOLS::Flavour *fl)
-  : Single_XS(nin,nout,fl) 
-{ 
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
-
-  barred = fl[0].IsAnti();
-
-  p_colours[0][barred] = p_colours[1][1-barred] = 500; 
-  p_colours[1][barred] = p_colours[2][barred] = 501; 
-  m_name=" q g -> q  photon ";
-}
- 
-double XS_qg_qp::operator()(double s,double t,double u) { 
-  if (s<m_threshold) return 0.;
-  return (-1.) * (t*t + u*u + 2. * s * ( s + t + u)) / ( 3. * s*u);
-} 
-
-bool XS_qg_qp::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
-  return 1; 
-}
-
-//======================================================================
-
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout,
-					      const ATOOLS::Flavour *flavours,
-					      const size_t nqed, const size_t nqcd)
-{
-  if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && flavours[0].IsQuark() && 
-       flavours[1]==flavours[0].Bar()) ||   
-      (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && flavours[2].IsQuark() && 
-       flavours[3]==flavours[2].Bar())) { 
-    if (nqcd==0 && nqed==2) {
-      return new XS_ee_ffbar(nin,nout,flavours);  
-    }
-  }
-  return NULL;
+  class XS_ee_ffbar : public ME2_Base {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
+  private:
+
+    bool   barred;
+    double qe,qf,ae,af,ve,vf,mass;
+    double kappa,sin2tw,MZ2,GZ2,alpha;
+    double chi1,chi2,term1,term2;
+    double colfac;
+    int    kswitch;
+    double fac,fin;
+
+  public:
+
+    XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl);
+
+    double operator()(const ATOOLS::Vec4D_Vector& mom);
+    bool   SetColours(double,double,double);
+  };
 }
 
-}
-
-XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl) 
-  : Single_XS(nin,nout,fl) 
+XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
+  : ME2_Base(pi, fl)
 {
+  DEBUG_INFO("now entered EXTRAXS::XS_ee_ffbar ...");
+  m_sintt=1;
+  m_oew=2;
+  m_oqcd=0;
   MZ2    = sqr(ATOOLS::Flavour(kf_Z).Mass());
   GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
  
-  alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
+  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()));
   sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
   if (ATOOLS::Flavour(kf_Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
@@ -123,8 +84,11 @@ XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavou
   }
 }
 
-double XS_ee_ffbar::operator()(double s,double t,double u) {
-  if (s<m_threshold) return 0.;
+double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
+  double s=(momenta[0]+momenta[1]).Abs2();
+  double t=(momenta[0]-momenta[2]).Abs2();
+
+  //if (s<m_threshold) return 0.;
   chi1  = kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
   chi2  = sqr(kappa * s)/(sqr(s-MZ2) + GZ2*MZ2);
 
@@ -138,17 +102,29 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) 
 { 
+  /*
   m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 
     m_scale[PHASIC::stp::sis] = 
     s+dabs(p_momenta[0].Abs2())+dabs(p_momenta[1].Abs2());
   m_scale[PHASIC::stp::sfs] = s;
+  */
   return 1; 
 }
 
 
-double XS_ee_ffbar::KFactor(double s) {
-  double alphaS = as->AlphaS(s);
-  if (kswitch==1) return exp(fac*alphaS) * (1. + fin*alphaS);
-  if (kswitch==2) return 1. + alphaS/M_PI + (1.986 - 0.115*5.) * sqr(alphaS/M_PI);
-  return 1.;
+DECLARE_ME2_GETTER(DY_Getter,"DY")
+ME2_Base *DY_Getter::operator()(const Process_Info &pi) const
+{
+  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+  if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
+       fl[1]==fl[0].Bar()) ||   
+      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
+       fl[3]==fl[2].Bar())) { 
+    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      return new XS_ee_ffbar(pi, fl);
+    }
+  }
+  return NULL;
 }

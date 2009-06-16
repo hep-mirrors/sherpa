@@ -1,4 +1,4 @@
-#include "Color_Function.H"
+#include "MODEL/Interaction_Models/Color_Function.H"
 
 
 using namespace MODEL;

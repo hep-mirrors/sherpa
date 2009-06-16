@@ -1,5 +1,5 @@
-#include "Full_Amplitude_Base.H"
-#include "Partial_Amplitude_Base.H"
+#include "HELICITIES/Main/Full_Amplitude_Base.H"
+#include "HELICITIES/Main/Partial_Amplitude_Base.H"
 
 using namespace HELICITIES;
 using namespace ATOOLS;

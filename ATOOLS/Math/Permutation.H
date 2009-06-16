@@ -1,5 +1,5 @@
-#ifndef Permutation_H
-#define Permutation_H
+#ifndef ATOOLS_Math_Permutation_H
+#define ATOOLS_Math_Permutation_H
 
 namespace ATOOLS {
 

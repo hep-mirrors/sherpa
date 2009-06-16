@@ -1,0 +1,39 @@
+(run){
+  EVENTS 0;
+  FRAGMENTATION Off;
+  EEG_OMODE 3; EEG_OSTEP 5; EEG_AMIN 1e-6;
+  EEG_FF_Y_DICING logarithmic; ! linear, quadratic, logarithmic
+  EEG_FF_Z_DICING linear; ! linear, power, exponential
+!  DIPOLE_ALPHA=0.1; ! dipole alpha for Amegic
+}(run);
+(processes){
+  Process 11 -11 -> 93 93 93;
+  Loop_Generator Internal;
+  NLO_QCD_Part BVIRS;
+  Order_EW 2;
+  End process;
+}(processes);
+(selector){
+  CKKW sqr(5/E_CMS) 1
+}(selector)
+(me){
+  ME_SIGNAL_GENERATOR Amegic Internal;
+  EVENT_GENERATION_MODE Weighted;
+  SCALE_SCHEME FIX_SCALE;
+  NLO_Mode 0;
+}(me);
+(model){
+  ORDER_ALPHAS 0;
+  ALPHAS(MZ) 0.1188;
+}(model)
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 45.625;
+  BEAM_2 -11; BEAM_ENERGY_2 45.625;
+}(beam);
+(shower){
+  SHOWER_GENERATOR CSS;
+}(shower);
+(integration){
+  INTEGRATOR 0; ERROR 0.001;
+  FINISH_OPTIMIZATION Off;
+}(integration);

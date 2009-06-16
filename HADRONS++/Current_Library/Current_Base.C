@@ -1,9 +1,9 @@
-#include "Current_Base.H"
+#include "HADRONS++/Current_Library/Current_Base.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE HADRONS::Current_Base
 #define PARAMETER_TYPE HADRONS::Flavour_Info
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 using namespace std;
 using namespace ATOOLS;
@@ -15,7 +15,7 @@ Current_Base::Current_Base(ATOOLS::Flavour* flavs, int n, int* decayindices, str
   p_i(decayindices)
 {
   p_masses = new double[n];
-  for(int i=0; i<m_n; ++i) p_masses[i]  = m_flavs[p_i[i]].PSMass();
+  for(int i=0; i<m_n; ++i) p_masses[i]  = m_flavs[p_i[i]].HadMass();
   msg_Tracking()<<"  Initialized "<<m_name<<" current with "
 		<<size()<<" spin combinations"<<endl;
   for(int i=0; i<m_n; i++) {

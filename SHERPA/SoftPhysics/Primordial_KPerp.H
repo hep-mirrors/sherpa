@@ -1,9 +1,9 @@
-#ifndef Primordial_KPerp_H
-#define Primordial_KPerp_H
+#ifndef SHERPA_SoftPhysics_Primordial_KPerp_H
+#define SHERPA_SoftPhysics_Primordial_KPerp_H
 
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "Poincare.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Math/Poincare.H"
 
 namespace PDF    { class Remnant_Base; }
 

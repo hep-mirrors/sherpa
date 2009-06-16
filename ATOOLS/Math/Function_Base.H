@@ -1,5 +1,5 @@
-#ifndef Function_Base_H
-#define Function_Base_H
+#ifndef ATOOLS_Math_Function_Base_H
+#define ATOOLS_Math_Function_Base_H
 
 #include <string>
 

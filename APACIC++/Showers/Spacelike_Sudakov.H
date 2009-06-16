@@ -1,9 +1,8 @@
-#ifndef Spacelike_Sudakov_H
-#define Spacelike_Sudakov_H
+#ifndef APACIC_Showers_Spacelike_Sudakov_H
+#define APACIC_Showers_Spacelike_Sudakov_H
 
-#include "Backward_Splitting_Group.H"
-#include "Random.H"
-#include "Veto_Info.H"
+#include "APACIC++/Showers/Backward_Splitting_Group.H"
+#include "ATOOLS/Math/Random.H"
 
 namespace ATOOLS { class Data_Reader; }
 
@@ -20,6 +19,7 @@ namespace APACIC {
   // dicing z and t for spacelike (initial state) shower evolution
   class Spacelike_Sudakov : public Backward_Splitting_Group {
     // global parameters
+    ATOOLS::Mass_Selector *p_rms;
     Sudakov_Tools        * p_tools;
     Spacelike_Kinematics * p_kin;
     PDF::PDF_Base        * p_pdfa;
@@ -29,9 +29,9 @@ namespace APACIC {
     int    m_cpl_scheme,m_pdf_scheme, m_ordering_scheme;
     static size_t s_nem, s_maxem;
 
-    double m_facscale, m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
+    double m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
     // mother
-    double m_E2, m_x, m_z, m_t, m_ta, m_tc, m_phi, m_pt2;
+    double m_E2, m_x, m_z, m_t, m_ta, m_tc, m_phi, m_pt2, m_rbmax;
     ATOOLS::Flavour m_inflav;
 
     std::vector<int> m_vetos;
@@ -41,10 +41,10 @@ namespace APACIC {
     inline void SelectOne() { p_selected->SelectOne(); }
 
     void ProduceT();  
-    bool Veto(Knot *,int & extra_pdf); 
+    bool Veto(Knot *); 
     bool CplVeto();
     bool OrderingVeto(Knot *);
-    bool MassVeto(int);
+    bool MassVeto();
     bool RemnantVeto(Knot *);
     void UniformPhi() { m_phi =  2.*M_PI*ATOOLS::ran.Get(); };
   public:
@@ -57,13 +57,12 @@ namespace APACIC {
     bool PTVeto(Knot *);
 
     static double Q02(ATOOLS::Flavour const & flav) { 
-      return ATOOLS::sqr(flav.PSMass()); 
+      return ATOOLS::sqr(flav.Mass()); 
     } // !!!
     static double MinE2(ATOOLS::Flavour const & flav) { 
-      return ATOOLS::sqr(flav.PSMass()); 
+      return ATOOLS::sqr(flav.Mass()); 
     } //!!!mass
 
-    inline void SetFactorisationScale(const double scale)    { m_facscale=scale; }
     inline void SetRemnant(PDF::Remnant_Base *const remnant) { p_remnant=remnant; }
 
     inline void SetMaxScale(const double &scale) { m_s_hadron=scale; }
@@ -78,20 +77,15 @@ namespace APACIC {
 
     inline double PT2() const { return m_pt2; }
 
+    inline void SetRBMax(const double &rb) { m_rbmax=rb; }
+
+    inline double RBMax() const { return m_rbmax; }
+
     inline static void SetMaxEmissions(const size_t &n) { s_maxem=n; }
     inline static void SetEmissions(const size_t &n)    { s_nem=n;   }
     inline static void AddEmission()                    { ++s_nem;   }
 
-#ifdef USING__Veto_Info
-    inline std::vector<int> &Vetos() { return m_vetos; }
-
-    inline void ClearVetos() 
-    { m_vetos.clear(); }
-    inline void AddVeto(const svc::code &veto=svc::no_veto) 
-    { m_vetos.push_back(veto); }
-    inline void SetVeto(const svc::code &veto)
-    { m_vetos.back()=veto; }
-#endif
+    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
 
   };
 

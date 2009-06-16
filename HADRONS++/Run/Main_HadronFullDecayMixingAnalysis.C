@@ -19,8 +19,8 @@ started with the following specialities:
     Bsignal/Decays.dat file appropriately).
 */
 
-#include "Main_FullDecay.C"
-#include "Shell_Tools.H"
+#include "HADRONS++/Run/Main_FullDecay.C"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 static Hadron_Decay_Channel* signal_hdc;
 #ifdef USING__ROOT
@@ -36,9 +36,9 @@ static TH1D* mixed_Bbar_events;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  Decay_Map* decaymap = p_inithandler->GetHadronDecayHandler("Hadrons")->GetHadrons()->DecayMap();
-  Hadron_Decay_Table* decaytable = (*decaymap)[Flavour(kf_B)][1];
-  signal_hdc = (Hadron_Decay_Channel*) decaytable->GetDecayChannel(0);
+  Hadron_Decay_Map* decaymap = p_inithandler->GetHadronDecayHandler("Hadrons")->GetHadrons()->DecayMap();
+  Hadron_Decay_Table* decaytable = decaymap->FindDecay(Flavour(kf_B));
+  signal_hdc = decaytable->at(0);
 
   std::string adir = p_inithandler->GetSampleAnalysis()->OutputPath();
   ATOOLS::MakeDir(adir,493);

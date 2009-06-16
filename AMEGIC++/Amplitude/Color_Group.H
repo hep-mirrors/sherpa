@@ -1,7 +1,7 @@
-#ifndef Color_Group_h
-#define Color_Group_h
+#ifndef AMEGIC_Amplitude_Color_Group_H
+#define AMEGIC_Amplitude_Color_Group_H
 
-#include "Amplitude_Group.H"
+#include "AMEGIC++/Amplitude/Amplitude_Group.H"
 
 namespace AMEGIC {
   class Color_Group: public Amplitude_Group {

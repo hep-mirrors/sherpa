@@ -1,7 +1,7 @@
-#ifndef Data_Reader_H
-#define Data_Reader_H
+#ifndef ATOOLS_Org_Data_Reader_H
+#define ATOOLS_Org_Data_Reader_H
 
-#include "Read_Write_Base.H"
+#include "ATOOLS/Org/Read_Write_Base.H"
 
 namespace ATOOLS {
 

@@ -1,11 +1,11 @@
-#ifndef XS_SQCD_H
-#define XS_SQCD_H
+#ifndef EXTRA_XS_Two2Two_XS_SQCD_H
+#define EXTRA_XS_Two2Two_XS_SQCD_H
 
-#include "Single_XS.H"
+#include "EXTRA_XS/Main/Single_Process.H"
 
 namespace EXTRAXS {
 
-  class XS_q1q2_sQ1sQ2 : public Single_XS {
+  class XS_q1q2_sQ1sQ2 : public Single_Process {
   private:
 
     int    m_a, m_p;
@@ -21,7 +21,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1q2_sQ1LsQ2R : public Single_XS {
+  class XS_q1q2_sQ1LsQ2R : public Single_Process {
   private:
 
     int    m_a, m_p;
@@ -37,7 +37,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1qbar2_sQ1sQbar2 : public Single_XS {
+  class XS_q1qbar2_sQ1sQbar2 : public Single_Process {
   private:
 
     int    m_a, m_p;
@@ -53,7 +53,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1qbar1_sQ2sQbar2 : public Single_XS {
+  class XS_q1qbar1_sQ2sQbar2 : public Single_Process {
   private:
 
     int    m_a, m_p;
@@ -69,7 +69,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1q1_sQ1sQ1 : public Single_XS {
+  class XS_q1q1_sQ1sQ1 : public Single_Process {
   private:
 
     int    m_a;
@@ -85,7 +85,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1q1_sQ1LsQ1R : public Single_XS {
+  class XS_q1q1_sQ1LsQ1R : public Single_Process {
   private:
 
     int    m_a;
@@ -101,7 +101,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1qbar1_sQ1sQbar1 : public Single_XS {
+  class XS_q1qbar1_sQ1sQbar1 : public Single_Process {
   private:
 
     int    m_a, m_p, m_r;
@@ -117,7 +117,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1qbar1_GluinoGluino : public Single_XS {
+  class XS_q1qbar1_GluinoGluino : public Single_Process {
   private:
 
     int    m_a, m_p;
@@ -134,7 +134,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
   
-  class XS_gg_sQ1sQbar1 : public Single_XS {
+  class XS_gg_sQ1sQbar1 : public Single_Process {
   private:
 
     int    m_r;
@@ -150,7 +150,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_q1g_sQ1Gluino : public Single_XS {
+  class XS_q1g_sQ1Gluino : public Single_Process {
   private:
   
     int    m_a, m_p, m_finq, m_iniq, m_swaput;
@@ -166,7 +166,7 @@ namespace EXTRAXS {
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
 
-  class XS_gg_GluinoGluino : public Single_XS {
+  class XS_gg_GluinoGluino : public Single_Process {
   private:
   
     double m_g3;

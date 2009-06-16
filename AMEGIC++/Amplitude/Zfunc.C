@@ -1,7 +1,7 @@
-#include "Zfunc.H"
-#include "Pfunc.H"
-#include "Zfunc_Calc.H"
-#include "Message.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

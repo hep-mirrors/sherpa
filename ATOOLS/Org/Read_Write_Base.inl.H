@@ -1,8 +1,8 @@
-#ifndef Read_Write_Base_inl_H
-#define Read_Write_Base_inl_H
+#ifndef ATOOLS_Org_Read_Write_Base_inl_H
+#define ATOOLS_Org_Read_Write_Base_inl_H
 
-#include "Read_Write_Base.H"
-#include "My_Limits.H"
+#include "ATOOLS/Org/Read_Write_Base.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 namespace ATOOLS {
 

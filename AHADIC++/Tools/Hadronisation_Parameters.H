@@ -1,12 +1,12 @@
-#ifndef Hadronisation_Parameters_H
-#define Hadronisation_Parameters_H
+#ifndef AHADIC_Tools_Hadronisation_Parameters_H
+#define AHADIC_Tools_Hadronisation_Parameters_H
 
-#include "Constituents.H"
-#include "Hadron_Multiplet.H"
-#include "Transitions.H"
-#include "Strong_Coupling.H"
-#include "Dipole_Splitter.H"
-#include "Vector.H"
+#include "AHADIC++/Tools/Constituents.H"
+#include "AHADIC++/Tools/Hadron_Multiplet.H"
+#include "AHADIC++/Tools/Transitions.H"
+#include "AHADIC++/Tools/Strong_Coupling.H"
+#include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "ATOOLS/Math/Vector.H"
 
 #include <map>
 #include <string>

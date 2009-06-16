@@ -1,5 +1,5 @@
-#ifndef List_Algorithms_H
-#define List_Algorithms_H
+#ifndef ATOOLS_Org_List_Algorithms_H
+#define ATOOLS_Org_List_Algorithms_H
 
 namespace ATOOLS {
 

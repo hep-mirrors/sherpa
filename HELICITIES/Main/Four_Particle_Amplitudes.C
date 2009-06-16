@@ -1,4 +1,4 @@
-#include "Four_Particle_Amplitudes.H"
+#include "HELICITIES/Main/Four_Particle_Amplitudes.H"
 
 using namespace HELICITIES;
 using namespace ATOOLS;
@@ -24,8 +24,8 @@ void VSSS::operator()(const Vec4D * moms,const bool anti)
   Vec4D pS3(moms[p_i[3]]);
   Vec4D pV(moms[p_i[0]]);
   Flavour flV(p_flavs[p_i[0]]);
-  Polarization_Vector eps(pV,sqr(flV.PSMass()),flV.IsAnti()^anti,p_out[0]);
-  int npol=IsZero(flV.PSMass())?2:3;
+  Polarization_Vector eps(pV,sqr(flV.HadMass()),flV.IsAnti()^anti,p_out[0]);
+  int npol=IsZero(flV.HadMass())?2:3;
   for (int Vpol(0);Vpol<npol;Vpol++) {
     Insert(eps[Vpol]*cross(pS1,pS2,pS3),Vpol);
   }

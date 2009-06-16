@@ -9,7 +9,7 @@ libRemnant_la_SOURCES =	\
 			Electron_Remnant.C \
 			Photon_Remnant.C 
 
-pkginclude_HEADERS        =	\
+localinc_HEADERS          =	\
 			Remnant_Base.H \
 			No_Remnant.H \
 			Color_Dipole.H \
@@ -17,9 +17,3 @@ pkginclude_HEADERS        =	\
 			Hadron_Remnant.H \
 			Electron_Remnant.H \
 			Photon_Remnant.H 
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@ $(LHAPDFFLAGS)
-
-INCLUDES      =	@PDFINCS@ @CTEQINCS@ @MODELINCS@ @BEAMINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

@@ -1,11 +1,11 @@
+#ifndef ATOOLS_Org_Gzip_Stream_H
+#define ATOOLS_Org_Gzip_Stream_H
 // adapted for Sherpa by Frank Siegert from: ==================================
 // gzstream, C++ iostream classes wrapping the zlib compression library.
 // Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
 // (http://www.cs.unc.edu/Research/compgeom/gzstream)
 // ============================================================================
 
-#ifndef Gzip_Stream_H
-#define Gzip_Stream_H
 
 #include <iostream>
 #include <fstream>

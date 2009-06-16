@@ -1,9 +1,9 @@
-#ifndef QED_Splitting_Function_H
-#define QED_Splitting_Function_H
+#ifndef APACIC_Showers_QED_Splitting_Functions_H
+#define APACIC_Showers_QED_Splitting_Functions_H
 //----------------------------------------------------------------------
 //               QED_Splitting_Functions.H
 //----------------------------------------------------------------------
-#include "Splitting_Function.H"
+#include "APACIC++/Showers/Splitting_Function.H"
 
 namespace APACIC {
   class Sudakov_Tools;
@@ -14,8 +14,10 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    f_fp(ATOOLS::Flavour fermionflavour);
-    f_fp(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    f_fp(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour);
+    f_fp(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -31,8 +33,10 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    f_pf(ATOOLS::Flavour fermionflavour);
-    f_pf(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    f_pf(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour);
+    f_pf(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -47,8 +51,10 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    p_ff(ATOOLS::Flavour fermionflavour);
-    p_ff(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    p_ff(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour);
+    p_ff(ATOOLS::Mass_Selector *&ms,
+	 ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();

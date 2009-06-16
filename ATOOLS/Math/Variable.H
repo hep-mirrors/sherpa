@@ -1,8 +1,8 @@
-#ifndef Variable_H
-#define Variable_H
+#ifndef ATOOLS_Math_Variable_H
+#define ATOOLS_Math_Variable_H
 
-#include "Getter_Function.H"
-#include "Vector.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Math/Vector.H"
 #include <string>
 
 namespace ATOOLS {
@@ -17,9 +17,7 @@ namespace ATOOLS {
 
   protected:
     
-    std::string m_name, m_idname;
-
-    int m_selectorid;
+    std::string m_name, m_idname, m_selectorid;
 
   public:
 
@@ -36,7 +34,7 @@ namespace ATOOLS {
     const std::string &Name() const;
     const std::string &IDName() const;
 
-    int SelectorID() const;
+    std::string SelectorID() const;
 
     Value_Type operator()(const Vec3D *vectors,const int &n=1) const;
     Value_Type operator()(const Vec4D *vectors,const int &n=1) const;

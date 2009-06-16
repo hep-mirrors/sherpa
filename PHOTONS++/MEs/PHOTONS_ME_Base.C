@@ -1,5 +1,5 @@
-#include "PHOTONS_ME_Base.H"
-#include "Model_Base.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

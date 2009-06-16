@@ -11,7 +11,8 @@ libPhotonsTools_la_SOURCES = 	\
 				Weight_Jacobian.C \
 				Weight_YFS.C \
 				YFS_Form_Factor.C
-pkginclude_HEADERS = 	\
+
+localinc_HEADERS   = 	\
 			Dipole_FF.H \
 			Dipole_FI.H \
 			Dress_Blob_Base.H \
@@ -22,9 +23,3 @@ pkginclude_HEADERS = 	\
 			Weight_Jacobian.H \
 			Weight_YFS.H \
 			YFS_Form_Factor.H
-
-AM_CXXFLAGS = @SHERPAFLAGS@
-
-INCLUDES = @ATOOLSINCS@ @PHOTONSINCS@ @MODELINCS@ @HELICITIESINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

@@ -1,9 +1,9 @@
-#ifndef Values_h
-#define Values_h
+#ifndef AMEGIC_String_Values_H
+#define AMEGIC_String_Values_H
 
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 #include <vector>
-#include "Basic_Func.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
 
 namespace AMEGIC {
   class Values {

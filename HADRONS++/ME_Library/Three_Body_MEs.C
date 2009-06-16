@@ -1,7 +1,7 @@
-#include "Three_Body_MEs.H"
-#include "XYZFuncs.H"
-#include "Message.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/ME_Library/Three_Body_MEs.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -153,7 +153,7 @@ void B_Bphoton_M1::operator()(
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
 
-  Polarization_Vector eps(q,m_flavs[p_i[2]].PSMass());
+  Polarization_Vector eps(q,m_flavs[p_i[2]].HadMass());
   for(int h0=0; h0<2; ++h0) {
     spins[0] = make_pair(p_i[0],h0);
     for(int h1=0; h1<2; ++h1) {
@@ -190,7 +190,7 @@ void B3_Bphoton_M1::operator()(
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
 
-  Polarization_Vector eps(q,m_flavs[p_i[2]].PSMass());
+  Polarization_Vector eps(q,m_flavs[p_i[2]].HadMass());
   for(int h0=0; h0<4; ++h0) {
     spins[0] = make_pair(p_i[0],h0);
     for(int h1=0; h1<2; ++h1) {
@@ -228,7 +228,7 @@ void B3_Bphoton_M1_2::operator()(
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
 
-  Polarization_Vector eps(q,m_flavs[p_i[2]].PSMass());
+  Polarization_Vector eps(q,m_flavs[p_i[2]].HadMass());
   for(int h0=0; h0<4; ++h0) {
     spins[0] = make_pair(p_i[0],h0);
     for(int h1=0; h1<2; ++h1) {
@@ -269,7 +269,7 @@ void B_Bphoton_E1::operator()(
 
   double p0q=p[p_i[0]]*q;
 
-  Polarization_Vector eps(q,m_flavs[p_i[2]].PSMass());
+  Polarization_Vector eps(q,m_flavs[p_i[2]].HadMass());
   for(int h2=0; h2<2; ++h2) {
     spins[2] = make_pair(p_i[2],h2);
     Vec4C epsstar=conj(eps[h2]);
@@ -312,7 +312,7 @@ void B3_Bphoton_E1::operator()(
 
   double p0p2=p[p_i[0]]*p2;
 
-  Polarization_Vector eps(p2,m_flavs[p_i[2]].PSMass());
+  Polarization_Vector eps(p2,m_flavs[p_i[2]].HadMass());
   for(int h2=0; h2<2; ++h2) {
     spins[2] = make_pair(p_i[2],h2);
     Vec4C epsstar=conj(eps[h2]);

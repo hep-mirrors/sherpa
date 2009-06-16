@@ -1,11 +1,11 @@
-#include "Color.H"
+#include "ATOOLS/Phys/Color.H"
 
 #ifndef USING__Color_only
-#include "Exception.H"
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #else
-#include "Tools.H"
+#include "HADRONS++/Main/Tools.H"
 #endif
 #include <algorithm>
 

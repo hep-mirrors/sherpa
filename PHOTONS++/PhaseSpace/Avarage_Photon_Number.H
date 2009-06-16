@@ -1,11 +1,11 @@
-#ifndef Avarage_Photon_Number_H
-#define Avarage_Photon_Number_H
+#ifndef PHOTONS_PhaseSpace_Avarage_Photon_Number_H
+#define PHOTONS_PhaseSpace_Avarage_Photon_Number_H
 
-#include "Dipole_Type.H"
-#include "Vector.H"
-#include "Particle.H"
-#include "Random.H"
-#include "Message.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
 
 
 using namespace ATOOLS;

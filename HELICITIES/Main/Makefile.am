@@ -1,6 +1,7 @@
 pkglib_LTLIBRARIES       =	libHelicitiesMain.la
 
 libHelicitiesMain_la_SOURCES       =	\
+			C_Scalar.C \
 			C_Tensor.C \
 			C_Spinor.C \
 			C_Vector.C \
@@ -12,7 +13,8 @@ libHelicitiesMain_la_SOURCES       =	\
 			Three_Particle_Amplitudes.C \
 			Four_Particle_Amplitudes.C
 
-pkginclude_HEADERS    =	\
+localinc_HEADERS      =	\
+			C_Scalar.H \
 			C_Tensor.H \
 			C_Spinor.H \
 			C_Vector.H \
@@ -23,10 +25,3 @@ pkginclude_HEADERS    =	\
 			Full_Amplitude_Base.H \
 			Three_Particle_Amplitudes.H \
 			Four_Particle_Amplitudes.H
-
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      = @HELICITIESINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

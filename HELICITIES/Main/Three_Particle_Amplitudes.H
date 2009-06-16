@@ -1,9 +1,9 @@
-#ifndef Three_Particle_Amplitudes_h
-#define Three_Particle_Amplitudes_h
+#ifndef HELICITIES_Main_Three_Particle_Amplitudes_H
+#define HELICITIES_Main_Three_Particle_Amplitudes_H
 
-#include "Partial_Amplitude_Base.H"
-#include "Polarization_Tools.H"
-#include "XYZFuncs.H"
+#include "HELICITIES/Main/Partial_Amplitude_Base.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
+#include "HELICITIES/Main/XYZFuncs.H"
 
 namespace HELICITIES {
 

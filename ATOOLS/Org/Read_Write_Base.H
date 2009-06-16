@@ -1,8 +1,8 @@
-#ifndef Read_Write_Base_H
-#define Read_Write_Base_H
+#ifndef ATOOLS_Org_Read_Write_Base_H
+#define ATOOLS_Org_Read_Write_Base_H
 
-#include "File_IO_Base.H"
-#include "Algebra_Interpreter.H"
+#include "ATOOLS/Org/File_IO_Base.H"
+#include "ATOOLS/Math/Algebra_Interpreter.H"
 
 #include <map>
 

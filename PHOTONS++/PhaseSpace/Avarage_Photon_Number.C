@@ -1,5 +1,5 @@
-#include "Avarage_Photon_Number.H"
-#include "Model_Base.H"
+#include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

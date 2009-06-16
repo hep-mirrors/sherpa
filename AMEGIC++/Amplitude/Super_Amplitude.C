@@ -1,6 +1,6 @@
-#include "Super_Amplitude.H"
-#include "Zfunc.H"
-#include "Message.H"
+#include "AMEGIC++/Amplitude/Super_Amplitude.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -15,7 +15,8 @@ Super_Amplitude::Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
 
 Super_Amplitude::~Super_Amplitude()                   
 {
-  for (size_t i=0;i<graphs.size();i++) if (graphs[i]->IsGroup()) delete graphs[i];
+  for (size_t i=0;i<graphs.size();i++)
+    if (graphs[i]->IsGroup()) delete graphs[i];
   graphs.clear();  
 }
 

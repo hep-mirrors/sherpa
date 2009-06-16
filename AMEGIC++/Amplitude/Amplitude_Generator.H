@@ -1,14 +1,14 @@
-#ifndef Amplitude_Generator_h
-#define Amplitude_Generator_h
+#ifndef AMEGIC_Amplitude_Amplitude_Generator_H
+#define AMEGIC_Amplitude_Amplitude_Generator_H
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 
-#include "Model_Base.H"
-#include "Vertex.H"
-#include "Topology.H"
-#include "Single_Amplitude.H"
-#include "Basic_Sfuncs.H"
-#include "String_Handler.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Interaction_Models/Vertex.H"
+#include "AMEGIC++/Main/Topology.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/String/String_Handler.H"
 
 //#define _USE_MPI_
 //#ifdef _USE_MPI_
@@ -62,8 +62,7 @@ namespace AMEGIC {
     int                      N,nEW,nQCD;
 
     Single_Topology        * single_top;
-    int                      prenum;
-    Pre_Amplitude          * prea;
+    std::vector<Pre_Amplitude> prea;
     Basic_Sfuncs           * BS;
     String_Handler         * shand;
 

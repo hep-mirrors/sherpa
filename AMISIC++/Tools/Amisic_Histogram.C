@@ -1,12 +1,12 @@
-#include "Amisic_Histogram.H"
+#include "AMISIC++/Tools/Amisic_Histogram.H"
 
-#include "Data_Writer.H"
-#include "MathTools.H"
-#include "My_Limits.H"
-#include "Data_Reader.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "Random.H"
+#include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace AMISIC;
   

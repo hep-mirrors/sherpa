@@ -1,7 +1,7 @@
-#ifndef Color_Comparator_H
-#define Color_Comparator_H
+#ifndef ATOOLS_Phys_Color_Tester_H
+#define ATOOLS_Phys_Color_Tester_H
 
-#include "Parton_Finder.H"
+#include "ATOOLS/Phys/Parton_Finder.H"
 
 namespace ATOOLS {
   

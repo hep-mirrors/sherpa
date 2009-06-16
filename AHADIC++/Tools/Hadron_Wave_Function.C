@@ -1,5 +1,5 @@
-#include "Hadron_Wave_Function.H"
-#include "Message.H"
+#include "AHADIC++/Tools/Hadron_Wave_Function.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -65,12 +65,8 @@ double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour first,ATOOLS::Flavour se
 namespace AHADIC {
 ostream & operator<<(ostream & s, Hadron_Wave_Function & wf) 
 {
+  s<<" "<<wf.m_hadron<<" ("<<wf.m_kfcode<<"), spin = "<<(wf.m_spin-1)/2.<<endl;
   WFcomponent * waves = wf.GetWaves();
-  double wf2(0.);
-  for (WFcompiter wfc=waves->begin();wfc!=waves->end();wfc++) 
-    wf2 += wfc->second*wfc->second;
-  s<<" "<<wf.m_hadron<<" ("<<wf.m_kfcode<<"), spin = "<<(wf.m_spin-1)/2.
-   <<", weight = "<<wf2<<"."<<endl;
   for (WFcompiter wfc=waves->begin();wfc!=waves->end();wfc++) {
     s<<"     "<<wfc->first->first<<" "<<wfc->first->second
      <<" : "<<wfc->second<<" ---> "<<(1./(wfc->second*wfc->second))<<endl;

@@ -1,9 +1,9 @@
-#include "Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 
-#include "Hadron_Remnant.H"
-#include "Data_Reader.H"
-#include "Run_Parameter.H"
-#include "Exception.H"
+#include "PDF/Remnant/Hadron_Remnant.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Beam_Remnant_Handler
@@ -61,7 +61,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Has(blob_status::needs_beams) && 
-	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::IS_Shower)) {
+	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
       bloblist->push_front
 	(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
@@ -81,7 +81,6 @@ Return_Value::code Beam_Remnant_Handler::
 FillBeamBlobs(Blob_List *const bloblist,
 	      Particle_List *const particlelist)
 { 
-  PROFILE_HERE;
   if (!m_fill) return Return_Value::Nothing;
   for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
@@ -95,29 +94,32 @@ FillBeamBlobs(Blob_List *const bloblist,
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Has(blob_status::needs_beams) && 
-	(*bit)->Type()==btp::IS_Shower) { 
-      Particle *isr_init((*bit)->InParticle(0));
-      int beam((*bit)->Beam());
-      if (isr_init->Flav().Strong() && 
-	  isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
-	delete p_beamblob[beam]; 
-	p_beamblob[beam]=NULL; 
-	(*bit)->UnsetStatus(blob_status::needs_beams);
-	continue;
-      }
-      else {
-	(*bit)->UnsetStatus(blob_status::needs_beams);
-	(*bit)->AddStatus(blob_status::internal_flag);
-	if (!p_beampart[beam]->Extract(isr_init)) {
-	  msg_Debugging()<<METHOD<<"(): Cannot extract "
-			 <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
-			 <<*isr_init<<"\n  retry event "<<std::endl;
-	  msg_Debugging()<<*bloblist<<std::endl;
-	  for (short unsigned int i(0);i<2;++i) 
-	    bloblist->push_front(p_beamblob[i]);
-	  return Return_Value::Retry_Event;
+	(*bit)->Type()==btp::Shower) {
+      for (int i(0);i<(*bit)->NInP();++i) {
+	Particle *isr_init((*bit)->InParticle(i));
+	if (isr_init->ProductionBlob()!=NULL) continue;
+	int beam((*bit)->Beam());
+	if (beam<0) beam=isr_init->Momentum()[3]>0.0?0:1;
+	if (isr_init->Flav().Strong() && 
+	    isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
+	  delete p_beamblob[beam]; 
+	  p_beamblob[beam]=NULL; 
+	  continue;
+	}
+	else {
+	  (*bit)->AddStatus(blob_status::internal_flag);
+	  if (!p_beampart[beam]->Extract(isr_init)) {
+	    msg_Debugging()<<METHOD<<"(): Cannot extract "
+			   <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
+			   <<*isr_init<<"\n  retry event "<<std::endl;
+	    msg_Debugging()<<*bloblist<<std::endl;
+	    for (short unsigned int i(0);i<2;++i) 
+	      bloblist->push_front(p_beamblob[i]);
+	    return Return_Value::Retry_Event;
+	  }
 	}
       }
+      (*bit)->UnsetStatus(blob_status::needs_beams);
     }
   }
   for (short unsigned int i=0;i<2;++i) 
@@ -146,7 +148,7 @@ FillBeamBlobs(Blob_List *const bloblist,
     for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
       if ((*bit)->Has(blob_status::internal_flag) && 
-	  (*bit)->Type()==btp::IS_Shower) { 
+	  (*bit)->Type()==btp::Shower) { 
 	(*bit)->UnsetStatus(blob_status::internal_flag);
       }
     }

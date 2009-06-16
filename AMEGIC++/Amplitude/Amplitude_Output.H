@@ -1,10 +1,10 @@
-#ifndef Amplitude_Output_H
-#define Amplitude_Output_H
+#ifndef AMEGIC_Amplitude_Amplitude_Output_H
+#define AMEGIC_Amplitude_Amplitude_Output_H
 
 #include <fstream>
 #include <string> 
-#include "Point.H"
-#include "Topology.H"
+#include "AMEGIC++/Main/Point.H"
+#include "AMEGIC++/Main/Topology.H"
 
 namespace AMEGIC {
 

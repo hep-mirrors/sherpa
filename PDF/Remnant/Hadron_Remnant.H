@@ -1,7 +1,7 @@
-#ifndef Hadron_Remnant_H
-#define Hadron_Remnant_H
+#ifndef PDF_Remnant_Hadron_Remnant_H
+#define PDF_Remnant_Hadron_Remnant_H
 
-#include "QCD_Remnant_Base.H"
+#include "PDF/Remnant/QCD_Remnant_Base.H"
 
 namespace PDF {
 
@@ -10,6 +10,7 @@ namespace PDF {
 
     ATOOLS::Vec4D m_hardpt;
 
+    double m_xrem;
     size_t m_last;
 
     bool   DiceKinematics();

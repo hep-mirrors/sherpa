@@ -1,7 +1,7 @@
-#ifndef Point_h
-#define Point_h
+#ifndef AMEGIC_Main_Point_H
+#define AMEGIC_Main_Point_H
 
-#include "Vertex.H"
+#include "MODEL/Interaction_Models/Vertex.H"
 
 namespace AMEGIC {
 

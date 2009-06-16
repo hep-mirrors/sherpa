@@ -1,8 +1,8 @@
-#ifndef PermStore_H
-#define PermStore_H
+#ifndef ATOOLS_Math_PermStore_H
+#define ATOOLS_Math_PermStore_H
 
 #include <vector>
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 
 

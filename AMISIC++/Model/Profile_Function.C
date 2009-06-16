@@ -1,7 +1,7 @@
-#include "Profile_Function.H"
+#include "AMISIC++/Model/Profile_Function.H"
 
-#include "MathTools.H"
-#include "Exception.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 

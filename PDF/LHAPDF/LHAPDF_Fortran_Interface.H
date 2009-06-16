@@ -1,8 +1,8 @@
-#ifndef LHAPDF_Fortran_Interface_H
-#define LHAPDF_Fortran_Interface_H
+#ifndef PDF_LHAPDF_LHAPDF_Fortran_Interface_H
+#define PDF_LHAPDF_LHAPDF_Fortran_Interface_H
 
-#include "PDF_Base.H"
-#include "Flavour.H"
+#include "PDF/Main/PDF_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace PDF {
   class LHAPDF_Fortran_Interface : public PDF_Base {
@@ -13,15 +13,12 @@ namespace PDF {
     double      m_f[13];
     std::vector<double> m_fv;
   public:
-    LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int,bool &);
+    LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int);
     PDF_Base * GetCopy();
-    void   Output();
 
     void   Calculate(double,double);
     double AlphaSPDF(double);
     double GetXPDF(const ATOOLS::Flavour);
-
-    void AssignKeys(ATOOLS::Integration_Info *const info);
 
   };
 

@@ -1,10 +1,10 @@
-#ifndef Interaction_Model_ADD_h
-#define Interaction_Model_ADD_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_ADD_H
+#define MODEL_Interaction_Models_Interaction_Model_ADD_H
 
-#include "Interaction_Model_QCD.H"
-#include "Interaction_Model_EW.H"
-#include "Interaction_Model_QCD_Grav.H"
-#include "Interaction_Model_EW_Grav.H"
+#include "MODEL/Interaction_Models/Interaction_Model_QCD.H"
+#include "MODEL/Interaction_Models/Interaction_Model_EW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_QCD_Grav.H"
+#include "MODEL/Interaction_Models/Interaction_Model_EW_Grav.H"
 
 namespace MODEL {  
   class Interaction_Model_ADD : public Interaction_Model_Base {

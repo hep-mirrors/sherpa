@@ -1,8 +1,8 @@
-#ifndef Soft_Photon_Handler_H
-#define Soft_Photon_Handler_H
+#ifndef SHERPA_SoftPhysics_Soft_Photon_Handler_H
+#define SHERPA_SoftPhysics_Soft_Photon_Handler_H
 
-#include "Photons.H"
-#include "Blob.H"
+#include "PHOTONS++/Main/Photons.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <string>
 
 namespace SHERPA {

@@ -1,5 +1,5 @@
-#include "Output_Base.H"
-#include "Exception.H"
+#include "SHERPA/Tools/Output_Base.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

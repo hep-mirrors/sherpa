@@ -1,9 +1,9 @@
-#ifndef Lund_Interface_H
-#define Lund_Interface_H
+#ifndef SHERPA_LundTools_Lund_Interface_H
+#define SHERPA_LundTools_Lund_Interface_H
 
-#include "Flavour.H"
-#include "Return_Value.H"
-#include "Exception.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Exception.H"
 #include <list>
 #include <map>
 

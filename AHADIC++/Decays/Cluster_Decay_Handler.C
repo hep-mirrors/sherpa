@@ -1,6 +1,6 @@
-#include "Cluster_Decay_Handler.H"
-#include "Cluster_Part.H"
-#include "Hadronisation_Parameters.H"
+#include "AHADIC++/Decays/Cluster_Decay_Handler.H"
+#include "AHADIC++/Decays/Cluster_Part.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 
 
 using namespace AHADIC;

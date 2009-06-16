@@ -1,7 +1,7 @@
-#ifndef Full_Amplitude_Base_H
-#define Full_Amplitude_Base_H
+#ifndef HELICITIES_Main_Full_Amplitude_Base_H
+#define HELICITIES_Main_Full_Amplitude_Base_H
 
-#include "Spin_Structure.H"
+#include "HELICITIES/Main/Spin_Structure.H"
 
 namespace HELICITIES {
   class Partial_Amplitude_Base;

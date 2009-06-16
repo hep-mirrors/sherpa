@@ -1,7 +1,7 @@
-#include "Interaction_Model_QCD.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "MODEL/Interaction_Models/Interaction_Model_QCD.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

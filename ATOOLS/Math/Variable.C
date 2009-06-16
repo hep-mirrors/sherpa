@@ -1,28 +1,17 @@
-#include "Variable.H"
+#include "ATOOLS/Math/Variable.H"
 
-#include "Message.H"
-#include "Vector.H"
-#include "Algebra_Interpreter.H"
-#include "MyStrStream.H"
-#include "Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Algebra_Interpreter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
   
-struct TDouble: public Term {
-  double m_value;
-  TDouble(const double &value): m_value(value) {}
-};// end of struct Double
-
-struct TVec4D: public Term {
-  Vec4D m_value;
-  TVec4D(const Vec4D &value): m_value(value) {}
-};// end of struct Vec4D
-
 template <class ValueType>
 Variable_Base<ValueType>::Variable_Base(const std::string &name,
 					const std::string &idname):
-  m_name(name), m_idname(idname),
-  m_selectorid(-1) 
+  m_name(name), m_idname(idname)
 {
   if (m_idname=="") m_idname=m_name;
 }
@@ -82,7 +71,7 @@ const std::string &Variable_Base<ValueType>::IDName() const
 }
 
 template <class ValueType>
-int Variable_Base<ValueType>::SelectorID() const 
+std::string Variable_Base<ValueType>::SelectorID() const 
 {
   return m_selectorid; 
 }
@@ -108,6 +97,12 @@ public:
 };// end of class No_Variable
 template <class ValueType>
 No_Variable<ValueType>::No_Variable(): Variable_Base<ValueType>("") {}
+
+double Get(Algebra_Interpreter *const inter)
+{
+  Term *res(inter->Calculate());
+  return res->Get<double>();
+}
   
 template <class ValueType>
 class Calc_Variable: public Variable_Base<ValueType>,
@@ -124,13 +119,13 @@ public:
   { 
     m_p.resize(n);
     for (int i(0);i<n;++i) m_p[i]=Vec4D(0.0,vectors[i]);
-    return ((TDouble*)p_interpreter->Calculate())->m_value;
+    return Get(p_interpreter);
   }
   ValueType Value(const Vec4D *vectors,const int &n) const 
   { 
     m_p.resize(n);
     for (int i(0);i<n;++i) m_p[i]=vectors[i];
-    return ((TDouble*)p_interpreter->Calculate())->m_value;
+    return Get(p_interpreter);
   }
   Algebra_Interpreter *GetInterpreter() const
   {
@@ -170,12 +165,14 @@ Calc_Variable<ValueType>::Init(const std::string &name)
   if ((bpos=m_formula.rfind(")"))==std::string::npos) return false;
   m_formula=m_formula.substr(1,bpos-1);
   if (m_formula.length()==0) return false;
-  size_t pos(m_formula.find("p["));
+  size_t pos(m_formula.find("p[")), nmf(0);
   while (pos!=std::string::npos) {
     std::string ex(m_formula.substr(pos+2,m_formula.find("]",pos)-pos-2));
     p_interpreter->AddTag("p["+ex+"]","(1.0,0.0,0.0,1.0)");
     pos=m_formula.find("p[",pos+ex.length()+1);
+    nmf=Max(nmf,ToType<size_t>(ex));
   }
+  m_p.resize(nmf+1);
   p_interpreter->Interprete(m_formula);
   if (msg_LevelIsTracking()) p_interpreter->PrintEquation();
   return true;
@@ -193,10 +190,10 @@ std::string Calc_Variable<ValueType>::ReplaceTags(std::string &expr) const
 template <class ValueType>
 ATOOLS::Term *Calc_Variable<ValueType>::ReplaceTags(ATOOLS::Term *term) const
 {
-  if (term->m_tag.find("p[")==0) {
-    size_t i(ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3)));
+  if (term->Tag().find("p[")==0) {
+    size_t i(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (i>=m_p.size()) THROW(fatal_error,"Invalid tag.");
-    ((TVec4D*)term)->m_value=m_p[i];
+    term->Set(m_p[i]);
   }
   else if (p_replacer!=NULL) return p_replacer->ReplaceTags(term);
   else THROW(fatal_error,"Invalid tag.");
@@ -233,7 +230,7 @@ public:
 template <class ValueType>
 PPerp<ValueType>::PPerp(): Variable_Base<ValueType>("p_\\perp","PT") 
 {
-  this->m_selectorid=12; 
+  this->m_selectorid="PT"; 
 }
   
 template <class ValueType>
@@ -250,7 +247,7 @@ public:
 template <class ValueType>
 EPerp<ValueType>::EPerp(): Variable_Base<ValueType>("E_\\perp","ET") 
 {
-  this->m_selectorid=15; 
+  this->m_selectorid="ET"; 
 }
   
 template <class ValueType>
@@ -314,7 +311,7 @@ public:
 template <class ValueType>
 Energy<ValueType>::Energy(): Variable_Base<ValueType>("E") 
 {
-  this->m_selectorid=11; 
+  this->m_selectorid="Energy"; 
 }
   
 template <class ValueType>
@@ -331,7 +328,7 @@ public:
 template <class ValueType>
 Mass<ValueType>::Mass(): Variable_Base<ValueType>("m") 
 {
-  this->m_selectorid=21; 
+  this->m_selectorid="Mass"; 
 }
   
 template <class ValueType>
@@ -348,7 +345,7 @@ public:
 template <class ValueType>
 Rapidity<ValueType>::Rapidity(): Variable_Base<ValueType>("y") 
 {
-  this->m_selectorid=13; 
+  this->m_selectorid="Rapidity"; 
 }
   
 template <class ValueType>
@@ -371,7 +368,7 @@ public:
 template <class ValueType>
 Eta<ValueType>::Eta(): Variable_Base<ValueType>("\\eta","Eta") 
 {
-  this->m_selectorid=16; 
+  this->m_selectorid="PseudoRapidity"; 
 }
   
 template <class ValueType>
@@ -394,7 +391,7 @@ public:
 template <class ValueType>
 Theta<ValueType>::Theta(): Variable_Base<ValueType>("\\theta","Theta") 
 {
-  this->m_selectorid=14; 
+  this->m_selectorid="BeamAngle"; 
 }
   
 template <class ValueType>
@@ -468,7 +465,7 @@ public:
 template <class ValueType>
 Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}","Theta2") 
 {
-  this->m_selectorid=22; 
+  this->m_selectorid="Angle"; 
 }
 
 template <class ValueType>
@@ -493,7 +490,7 @@ template class Variable_Base<double>;
 #define OBJECT_TYPE Variable_Base<double>
 #define PARAMETER_TYPE std::string
 #define EXACTMATCH false
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 template <class Class>
 Variable_Base<double> *GetVariable(const std::string &parameter) 

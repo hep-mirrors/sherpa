@@ -1,5 +1,5 @@
-#include "VA_F_F.H"
-#include "XYZFuncs.H"
+#include "HADRONS++/Current_Library/VA_F_F.H"
+#include "HELICITIES/Main/XYZFuncs.H"
 
 using namespace std;
 using namespace HADRONS;

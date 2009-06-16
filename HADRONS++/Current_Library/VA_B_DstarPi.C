@@ -1,5 +1,5 @@
-#include "VA_B_DstarPi.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/Current_Library/VA_B_DstarPi.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;

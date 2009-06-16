@@ -1,8 +1,8 @@
-#ifndef Info_Key_H
-#define Info_Key_H
+#ifndef ATOOLS_Org_Info_Key_H
+#define ATOOLS_Org_Info_Key_H
 
-#include "Smart_Pointer.H"
-#include "Vector.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
+#include "ATOOLS/Math/Vector.H"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -124,6 +124,6 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
-#include "Info_Key.inl.H"
+#include "ATOOLS/Org/Info_Key.inl.H"
 
 #endif

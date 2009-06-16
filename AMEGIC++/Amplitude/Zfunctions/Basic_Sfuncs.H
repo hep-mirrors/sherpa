@@ -1,12 +1,12 @@
+#ifndef AMEGIC_Amplitude_Zfunctions_Basic_Sfuncs_H
+#define AMEGIC_Amplitude_Zfunctions_Basic_Sfuncs_H
 
-#ifndef Basic_Sfuncs_h
-#define Basic_Sfuncs_h
 
-#include "Flavour.H"
-#include "Vector.H"
-#include "MyComplex.H"
-#include "Pol_Info.H"
-#include "Pfunc.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Main/Pol_Info.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
 #include <list>
 
 #define masslessskip 30
@@ -83,6 +83,7 @@ namespace AMEGIC {
     ATOOLS::Flavour* fl;
     int  nmom,nvec;
     ATOOLS::Vec4D* p;
+    std::vector<ATOOLS::Vec4D>* p_epol;
     int* b;
     Complex* _eta;
     Complex* _mu;
@@ -119,6 +120,7 @@ namespace AMEGIC {
     void   Initialize();
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
+    void   SetEPol(std::vector<ATOOLS::Vec4D>* epol) {p_epol=epol;}
 
     inline Complex Mu(int i)  { return (i>0) ? _mu[i] : -_mu[-i]; }
     inline Complex Eta(int i) { return _eta[ATOOLS::iabs(i)]; }
@@ -134,6 +136,7 @@ namespace AMEGIC {
       if (!calc_st[i][j] && !m_precalc) CalcS(i,j); 
       return _S1[i][j];
     }
+    Complex CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1);
     std::pair<Complex, Complex> GetS(ATOOLS::Vec4D v, int i);
 
     double Norm(int,int);//N

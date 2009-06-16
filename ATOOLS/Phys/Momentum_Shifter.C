@@ -1,8 +1,8 @@
-#include "Momentum_Shifter.H"
+#include "ATOOLS/Phys/Momentum_Shifter.H"
 
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Blob.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Blob.H"
 
 using namespace ATOOLS;
 
@@ -122,6 +122,7 @@ bool Momentum_Shifter::ConstructMomenta()
   for (double sign=1.0;sign>=-1.0;sign-=2.0) {
     E1=0.5/m_sp[0]*((m_sp[0]+m_sp[1]-m_sp[2])*m_pnew[0][0]+sign*lambda2*plong);
     E2=m_pnew[0][0]-E1;
+    if (E1<0.0 || E2<0.0) continue;
     plong1=-Sign(m_pold[1]*m_direction)*sqrt(E1*E1-m_sp[1]);
     plong2=-Sign(m_pold[2]*m_direction)*sqrt(E2*E2-m_sp[2]);
     double spn1=sqr(m_pnew[0][0])-sqr(plong1+plong2);
@@ -138,6 +139,11 @@ bool Momentum_Shifter::ConstructMomenta()
     else { 
       if (Sign(plong2)==-Sign(m_pold[2]*m_direction)) break; 
     }
+  }
+  if (E1<0.0 || E2<0.0) {
+    m_pnew[1]=m_pold[1];
+    m_pnew[2]=m_pold[2];
+    return false;
   }
   m_pnew[1]=Vec4D(E1,plong1*Vec3D(m_direction))+m_pperp[1];
   m_pnew[2]=Vec4D(E2,plong2*Vec3D(m_direction))+m_pperp[2];

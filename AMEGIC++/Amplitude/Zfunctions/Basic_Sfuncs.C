@@ -1,12 +1,11 @@
-#include "Basic_Sfuncs.H"
-#include "MathTools.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "MathTools.H"
-#include "prof.hh"
-#include "IO_Handler.H"
-#include "Exception.H"
-#include "MyStrStream.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/IO_Handler.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -61,6 +60,7 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b)
   _eta=_mu=0;
   _S0=_S1=0;
   k0_n=0;m_precalc=0;
+  p_epol=NULL;
 }
 
 Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name,string name2) 
@@ -282,10 +282,11 @@ void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs
 
 int Basic_Sfuncs::GetPolNumber(int momindex, int sign,double mass,int check)
 {
-  for(size_t k=nmom;k<Momlist.size();k++) 
+  for(size_t k=nmom;k<Momlist.size();k++) {
     if (Momlist[k].type==sign) 
       if (Momlist[k].arg[1]==momindex && (sign!=mt::p_s || Momlist[k].mass==mass)) return k;
-
+    if (Momlist[k].type==mt::p_spec && Momlist[k].arg[1]==momindex && Momlist[k].arg[0]==sign) return k;
+  }
   if (check==0){
     msg_Error()<<"******Get_Pol_Number: Not Found! "<<momindex<<" "<<sign<<" Mass:"<<mass<<endl;
     abort();
@@ -350,6 +351,19 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   }
   Momfunc mom_func;
 
+  if (type=='e'){
+    mom_func.type = mt::p_spec;
+    mom_func.kfc  = Momlist[momindex].kfc;
+    mom_func.argnum = 2;
+    mom_func.arg    = new int[mom_func.argnum];
+    mom_func.arg[1]=momindex;
+    mom_func.arg[0]=90;
+    Momlist.push_back(mom_func);
+    mom_func.arg[0]=91;
+    Momlist.push_back(mom_func);
+    momcount+=2;
+    return momcount;
+  }
   //Polarisation -1
   mom_func.argnum = 3;
   mom_func.arg    = new int[mom_func.argnum];
@@ -484,7 +498,8 @@ void Basic_Sfuncs::CalcMomlist()
       }
       break;
     case mt::cmprop :
-      Momlist[j].mom = Vec4D(p[0][0]+p[1][0],0.,0.,0.);
+      Momlist[j].mom = p[0]+p[1]; 
+      if (ATOOLS::IsZero(Momlist[j].mom[3]/Momlist[j].mom[0])) Momlist[j].mom[3]=0.;
       break;
     case mt::p_m :
       mom=Momlist[Momlist[j].arg[1]].mom;
@@ -568,6 +583,10 @@ void Basic_Sfuncs::CalcMomlist()
       help               = csqrt(-1./mom.Abs2());
       Momlist[j].mom     = real(help)*mom;
       Momlist[j].mom_img = imag(help)*mom;
+      break;
+    case mt::p_spec:
+      if (p_epol) Momlist[j].mom = (*p_epol)[Momlist[j].arg[0]-90];
+      else msg_Error()<<"Error in Basic_Sfuncs::CalcMomlist(): no external polarization array!!!"<<endl;
       break;
     default : break;
     }
@@ -801,6 +820,29 @@ void Basic_Sfuncs::CalcS(int i, int j)
     _S1[j][i] = Complex(0.,0.);
   }
   calc_st[i][j]=calc_st[j][i]=1;
+}
+
+Complex Basic_Sfuncs::CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1)
+{
+  Complex A,S;
+
+  switch(k0_n){
+  case 1:
+    A = csqrt((m1[0]-(m1[2]+m1[3])*SQRT_05)/(m[0]-(m[2]+m[3])*SQRT_05));
+    S = Complex(m[1],(m[2]-m[3])*SQRT_05)*A; 
+    S -= Complex(m1[1],(m1[2]-m1[3])*SQRT_05)/A;
+    break;
+  case 2:
+    A = csqrt((m1[0]-(m1[1]+m1[2])*SQRT_05)/(m[0]-(m[1]+m[2])*SQRT_05));
+    S = Complex(m[3],(m[1]-m[2])*SQRT_05)*A; 
+    S -= Complex(m1[3],(m1[1]-m1[2])*SQRT_05)/A;
+    break;
+  default:
+    A = csqrt((m1[0]-(m1[1]+m1[3])*SQRT_05)/(m[0]-(m[1]+m[3])*SQRT_05));
+    S = Complex(m[2],(m[3]-m[1])*SQRT_05)*A; 
+    S -= Complex(m1[2],(m1[3]-m1[1])*SQRT_05)/A;
+  }
+  return S;
 }
 
  

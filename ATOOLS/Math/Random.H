@@ -1,10 +1,10 @@
-#ifndef Random_H
-#define Random_H
+#ifndef ATOOLS_Math_Random_H
+#define ATOOLS_Math_Random_H
 
 #include <fstream>
-#include "MathTools.H"
-#include "Exception.H"
-#include "Getter_Function.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Getter_Function.H"
 
 namespace ATOOLS {
 
@@ -27,11 +27,10 @@ namespace ATOOLS {
 
     int      activeGenerator;
 
-    long int m_id, m_ma[56], m_written;
+    long int m_id, m_ma[56];
     long int m_sid, m_sma[56];
     int      m_inext,m_inextp;
     int      m_sinext,m_sinextp;
-    char     m_outname[150];
 
     External_RNG *p_external;
 
@@ -41,8 +40,6 @@ namespace ATOOLS {
       int i97,j97;
       double u[97],c,cd,cm; } status;
     Ran4Status backupStat;   // Backup data for Save-/RestoreStatus()
-
-    std::fstream *p_outstream;
 
     double Ran1(long *idum);
     double Ran2(long *idum);
@@ -56,7 +53,7 @@ namespace ATOOLS {
 
     // temporary methods for Ran4()
     int  WriteOutStatus4(const char *outfile); 
-    void ReadInStatus4(const char * filename, long int index);
+    void ReadInStatus4(const char * filename);
     void SaveStatus4();
     void RestoreStatus4();
 
@@ -76,7 +73,7 @@ namespace ATOOLS {
     inline long int GetSeed() { return m_id; }
 
     int  WriteOutStatus(const char *outfile);
-    void ReadInStatus(const char *infile,long int index=0);
+    void ReadInStatus(const char *infile);
     void SaveStatus();
     void RestoreStatus();
 

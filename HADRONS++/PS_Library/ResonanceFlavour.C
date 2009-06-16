@@ -1,7 +1,7 @@
-#include "Flavour.H"
-#include "ResonanceFlavour.H"
-#include "Message.H"
-#include "My_File.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_File.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -56,7 +56,7 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
   // create file name
   char fn[512];
   sprintf(fn, "GQ2_Mres=%.3f_Gres=%.3f_MresP=%.3f_GresP=%.3f_beta=%.3f_Mout=%.3f.dat",
-      res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).PSMass() );
+      res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).HadMass() );
 
   // look if file already exists
   My_In_File f("",m_path+"/PhaseSpaceFunctions/"+fn);
@@ -101,7 +101,7 @@ double ResonanceFlavour::IntegralG( double Q2, ResonanceFlavour res1, ResonanceF
 {
   int Ns=500, Nt=500;                   // number of subintervals
   double sum (0.);
-  double mpi2 = sqr( Flavour(out).PSMass() );
+  double mpi2 = sqr( Flavour(out).HadMass() );
   double s_max = Q2 + mpi2 - 2.*sqrt(Q2*mpi2);
   double s_min = 4.*mpi2;
   double ds = (s_max-s_min)/Ns;
@@ -139,26 +139,26 @@ double ResonanceFlavour::OffShellMassWidth( double s )
   // 2-body resonances
   switch( m_kfc ) {
     case kf_f_0_600:
-      return TwoBodyResonanceMassWidth_12(s,Flavour(kf_pi_plus).PSMass());
+      return TwoBodyResonanceMassWidth_12(s,Flavour(kf_pi_plus).HadMass());
     case kf_rho_770:
     case kf_rho_1450:
     case kf_rho_1700:
     case kf_f_0_980:
-      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi_plus).PSMass());
+      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi_plus).HadMass());
     case kf_rho_770_plus:
     case kf_rho_1450_plus:
     case kf_rho_1700_plus:
-      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi).PSMass(), Flavour(kf_pi_plus).PSMass());
+      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi).HadMass(), Flavour(kf_pi_plus).HadMass());
     case kf_K_star_892:
     case kf_K_star_1410:
     case kf_K_star_1680:
     case kf_K_0_star_1430:
-      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi_plus).PSMass(), Flavour(kf_K_plus).PSMass());
+      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi_plus).HadMass(), Flavour(kf_K_plus).HadMass());
     case kf_K_star_892_plus:
     case kf_K_star_1410_plus:
     case kf_K_star_1680_plus:
     case kf_K_0_star_1430_plus:
-      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi).PSMass(), Flavour(kf_K_plus).PSMass());
+      return TwoBodyResonanceMassWidth(s,Flavour(kf_pi).HadMass(), Flavour(kf_K_plus).HadMass());
   }
   msg_Error()<<"WARNING in ResonanceFlavour::OffShellMassWidth(double s) : "<<endl
     <<"     OffShellWidth of "<<m_name<<" hasn't been implemented yet."<<endl

@@ -1,7 +1,7 @@
+#ifndef AMEGIC_String_MyString_H
+#define AMEGIC_String_MyString_H
 //String header
 
-#ifndef MyString_h
-#define MyString_h
 
 //#ifdef __GNUC__
 #include <string> 

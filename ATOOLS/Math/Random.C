@@ -1,16 +1,17 @@
-#include "Random.H"
-#include "Message.H"
-#include "MathTools.H"
-#include "MyStrStream.H"
-#include "Run_Parameter.H"
-#include "Data_Reader.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include <iostream>
 #include <cstring>
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ATOOLS::External_RNG
 #define PARAMETER_TYPE ATOOLS::RNG_Key
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 using namespace std;
 using namespace ATOOLS;
@@ -36,7 +37,7 @@ ATOOLS::Random ATOOLS::ran(1234, 4321);
 
 
 ATOOLS::Random::Random(long nid): 
-  p_external(NULL), p_outstream(NULL)
+  p_external(NULL)
 { 
   SetSeed(nid); 
   ATOOLS::exh->AddTerminatorObject(this);
@@ -47,10 +48,6 @@ ATOOLS::Random::Random(long nid):
 ATOOLS::Random::~Random() 
 { 
   if (p_external) delete p_external;
-  if (p_outstream!=NULL) {
-    p_outstream->close();
-    delete p_outstream;
-  }
 } 
 
 static long idum2=123456789;
@@ -200,56 +197,32 @@ double ATOOLS::Random::Ran3()
 /* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
 
 
-int ATOOLS::Random::WriteOutStatus(const char * filename){
+int ATOOLS::Random::WriteOutStatus(const char * filename)
+{
   if (p_external!=NULL) return 1;
   // if Ran4 is the active Random Generator, then use its method
   if (activeGenerator==4) {return WriteOutStatus4(filename);}
   // write out every Statusregister of Random Number generator
 
-
-  //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
-  if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
-    p_outstream->close();
-    delete p_outstream;
-    p_outstream = 0;
-  }
-  if (p_outstream == 0){
-    msg_Tracking()<<"Random::WriteOutStatus : Saving Random Number Generator Status to "<<filename<<endl;
-    long int count=0;
-    std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
-    if (myinstream->good()) {
-      std::string buffer;
-      while (!myinstream->eof()) {
-	(*myinstream)>>count;
-	getline(*myinstream,buffer);
-      }
-      ++count;
-      myinstream->close();
-    }
-    delete myinstream;
-#ifdef _IOS_BAD
-    p_outstream = new std::fstream(filename,ios::app | ios::out);
-#else
-    p_outstream = new std::fstream(filename,std::ios_base::app | std::ios_base::out);
-#endif
-    std::strcpy(m_outname,filename);
-    m_written=count;
-  } 
-  (*p_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
-  for (int i=0;i<56;++i) (*p_outstream)<<m_ma[i]<<"\t";
-  (*p_outstream)<<iy<<"\t"<<idum2<<"\t";
-  for (int i=0;i<NTAB;++i) (*p_outstream)<<iv[i]<<"\t";
-  (*p_outstream)<<endl;
-  return m_written++;
+  // remove old random file
+  if (FileExists(filename)) remove(filename);
+  std::ofstream outstream(filename);
+  outstream<<0<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
+  for (int i=0;i<56;++i) outstream<<m_ma[i]<<"\t";
+  outstream<<iy<<"\t"<<idum2<<"\t";
+  for (int i=0;i<NTAB;++i) outstream<<iv[i]<<"\t";
+  outstream<<endl;
+  return 1;
 }
 
 bool ATOOLS::Random::ReadInStatus(const std::string &path) 
 {
-  ReadInStatus((path+"random.dat").c_str(),0);
+  ReadInStatus((path+"random.dat").c_str());
   return true;
 }
 
-void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
+void ATOOLS::Random::ReadInStatus(const char * filename)
+{
   if (p_external!=NULL) return;
   // check what type of data is in target file
   ifstream file(filename);
@@ -261,27 +234,20 @@ void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
   file.close();
   
   // use readin method for the Generator identified Generator
-  if (activeGenerator==4) { ReadInStatus4(filename, index);} 
+  if (activeGenerator==4) { ReadInStatus4(filename);} 
   else {  
     // read in every Statusregister of Random Number generator
     msg_Info()<<METHOD<<"(): Reading status from '"
-	      <<filename<<"', index "<<index<<"."<<endl;
+	      <<filename<<"'."<<endl;
     std::ifstream myinstream(filename);
     long int count;
     if (myinstream.good()) {
       (myinstream)>>count;
       std::string buffer;
-      while (count!=index && !myinstream.eof()) {
-	getline(myinstream,buffer);
-	(myinstream)>>count;    
-      }
-      if (count==index) {
 	(myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
 	for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
 	(myinstream)>>iy>>idum2;
 	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
-      } 
-      else msg_Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
       myinstream.close();
     } 
     else msg_Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
@@ -301,14 +267,6 @@ void ATOOLS::Random::SetSeed(long int nid)
 {
   m_id = nid<0 ? nid : -nid;
   InitRan3(&m_id);
-  m_written=0;    
-
-  if (p_outstream!=NULL) {
-    p_outstream->close();
-    delete p_outstream;
-    p_outstream=0;
-  }
-  std::strcpy(m_outname,"");
   activeGenerator = 2;
 }
 
@@ -387,7 +345,7 @@ bool Random::InitExternal(const std::string &path,const std::string &file)
   return true;
 }
 
-ATOOLS::Random::Random(int ij,int kl) : p_external(NULL), p_outstream(NULL)
+ATOOLS::Random::Random(int ij,int kl) : p_external(NULL)
 {  
    SetSeed(ij, kl); 
    ATOOLS::exh->AddTerminatorObject(this);
@@ -400,14 +358,6 @@ void ATOOLS::Random::SetSeed(int ij, int kl)
    // mark Generator 4 as used one and set idTag for file output
    activeGenerator = 4;
    strcpy(status.idTag, "Rnd4_G_Marsaglia");
-
-   m_written=0;    
-   if (p_outstream!=NULL) {
-     p_outstream->close();
-     delete p_outstream;
-     p_outstream=0;
-   }
-   std::strcpy(m_outname,"");
 
    // Init routine of the Random Generator Rnd4
    double s,t;
@@ -477,48 +427,31 @@ double ATOOLS::Random::Ran4()
 
 int ATOOLS::Random::WriteOutStatus4(const char * filename)
 {
-  // dunno what this is good for - kept from old routine
-  if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
-    p_outstream->close();
-    delete p_outstream;
-    p_outstream = 0;
-  }
-  if (p_outstream == 0){
-    msg_Tracking()<<"Random::WriteOutStatus4 : Saving Random Number Generator Status to "
-		  <<filename<<endl;
-
-    // open file and append status of Random Generator at the end if possible
-    std::ofstream file(filename, ios::binary | ios::app);
-    // ** possibly check if file is really a RandGen Writeout-file
-
-    // if file is ok, append data at EoF and return
-    if (file.good()) { file.write((char*) (&status), sizeof(Ran4Status));
-                       return file.tellp()/sizeof(Ran4Status); }    
-    else {
-    // file not ok for some reason: Warn user and return 0 
-       msg_Tracking()<< "Random::WriteOutStatus4 : WARNING: Output file was not OK";
-       return 0; }   
-  }
-  return 0;
+  // remove old random file
+  if (FileExists(filename)) remove(filename);
+  // open file and append status of Random Generator at the end if possible
+  std::ofstream file(filename,ios::binary);
+  // if file is ok, append data at EoF and return
+  file.write((char*) (&status), sizeof(Ran4Status));
+  return file.tellp()/sizeof(Ran4Status); 
 }
 
 
-void ATOOLS::Random::ReadInStatus4(const char * filename, long int index)
+void ATOOLS::Random::ReadInStatus4(const char * filename)
 {
-  msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
+  msg_Info()<<"Random::ReadInStatus from "<<filename<<endl;
 
   std::ifstream file(filename, ios::binary);
   if (file.good()) {
     // if the infile is ok, try to read in Status
-    file.seekg(index*sizeof(Ran4Status));
     file.read((char*) (&status), sizeof(Ran4Status));
 
     char temp[16];
     strncpy(temp,status.idTag,16);
     if (strcmp(temp, "Rnd4_G_Marsaglia")) {
       // Data read in was not from a RndGen of the same type
-      msg_Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
-      msg_Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
+      msg_Error()<<"WARNING in Random::ReadInStatus4: Data read from "
+		 <<filename<<" is not of the expected type."<<endl;
     }
   }  
   else 

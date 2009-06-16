@@ -1,12 +1,17 @@
-#ifndef Structure_Function_H
-#define Structure_Function_H
+#ifndef PDF_Main_Structure_Function_H
+#define PDF_Main_Structure_Function_H
 
-#include "ISR_Base.H"
-#include "PDF_Base.H"
+#include "PDF/Main/ISR_Base.H"
+#include "PDF/Main/PDF_Base.H"
 
 namespace PDF {  
 
   class Structure_Function : public ISR_Base {
+  private:
+
+    double m_lastx, m_lastq2;
+    bool   m_lastres;
+
   public:
 
     // constructor

@@ -1,7 +1,7 @@
-#ifndef String_Library_h
-#define String_Library_h
+#ifndef AMEGIC_String_String_Library_H
+#define AMEGIC_String_String_Library_H
 
-#include "MyString.H"
+#include "AMEGIC++/String/MyString.H"
 
 namespace AMEGIC {
   class String_Library {

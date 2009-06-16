@@ -1,7 +1,7 @@
-#ifndef Color_Function_h
-#define Color_Function_h
+#ifndef MODEL_Interaction_Models_Color_Function_H
+#define MODEL_Interaction_Models_Color_Function_H
 
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 #include <string>
 
 namespace MODEL {

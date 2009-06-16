@@ -1,5 +1,5 @@
-#ifndef Flow_h
-#define Flow_h
+#ifndef ATOOLS_Phys_Flow_H
+#define ATOOLS_Phys_Flow_H
 
 #include <iostream>
 #include <map>

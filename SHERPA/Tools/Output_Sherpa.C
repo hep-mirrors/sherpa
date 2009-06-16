@@ -1,6 +1,6 @@
-#include "Output_Sherpa.H"
-#include "CXXFLAGS.H"
-#include "Run_Parameter.H"
+#include "SHERPA/Tools/Output_Sherpa.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

@@ -1,7 +1,7 @@
-#ifndef Fast_Function_H
-#define Fast_Function_H
+#ifndef ATOOLS_Math_Fast_Function_H
+#define ATOOLS_Math_Fast_Function_H
 
-#include "Function_Base.H"
+#include "ATOOLS/Math/Function_Base.H"
 #include <vector>
 #include <iostream>
 

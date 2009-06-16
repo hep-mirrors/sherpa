@@ -1,7 +1,7 @@
-#ifndef ISR_Base_h
-#define ISR_Base_h
+#ifndef PDF_Main_ISR_Base_H
+#define PDF_Main_ISR_Base_H
 
-#include "PDF_Base.H"
+#include "PDF/Main/PDF_Base.H"
 
 namespace PDF {
 
@@ -14,7 +14,7 @@ namespace PDF {
     ATOOLS::Flavour m_bunch;
 
     double m_weight, m_exponent, m_xmax;
-    bool   m_on, m_kmr;
+    bool   m_on, m_ewon;
 
   public:
 
@@ -25,8 +25,8 @@ namespace PDF {
     virtual ~ISR_Base();
 
     // member functions
-    bool On() const  { return m_on;  }
-    bool KMR() const { return m_kmr; }
+    bool On() const   { return m_on;   }
+    bool EWOn() const { return m_ewon; }
 
     void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
 

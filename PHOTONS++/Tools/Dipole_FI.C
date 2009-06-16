@@ -1,6 +1,6 @@
-#include "Dipole_FI.H"
-#include "Generate_One_Photon.H"
-#include "Model_Base.H"
+#include "PHOTONS++/Tools/Dipole_FI.H"
+#include "PHOTONS++/Tools/Generate_One_Photon.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

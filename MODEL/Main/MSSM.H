@@ -1,7 +1,7 @@
-#ifndef MSSM_h
-#define MSSM_h
+#ifndef MODEL_Main_MSSM_H
+#define MODEL_Main_MSSM_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class MSSM : public Model_Base {
@@ -12,7 +12,6 @@ namespace MODEL {
   public :
     MSSM(std::string,std::string,bool);
     ~MSSM();
-    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
   /*!
     \class MSSM

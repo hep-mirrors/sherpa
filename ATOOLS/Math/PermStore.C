@@ -1,4 +1,4 @@
-#include "PermStore.H"
+#include "ATOOLS/Math/PermStore.H"
 
 using namespace ATOOLS;
 

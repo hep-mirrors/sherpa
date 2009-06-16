@@ -1,7 +1,7 @@
-#include "Event_Reader.H"
-#include "MyStrStream.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "SHERPA/Tools/Event_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 #include <iostream>
 
 using namespace SHERPA;
@@ -24,7 +24,8 @@ Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
   if(pst!=std::string::npos) {
     if(pst==lng-3) {
       f_gz=true;
-      system((std::string("gunzip ")+filename).c_str());
+      int stat=0;
+      stat=system((std::string("gunzip ")+filename).c_str());
       filename.resize(pst);
       m_file.resize(m_file.length()-3);
     } else {
@@ -143,7 +144,8 @@ void Event_Reader::CloseFile() {
     p_instream->close();
     delete p_instream;
     p_instream=NULL;
-    if(f_gz) system((std::string("gzip ")+m_path+m_add+m_file).c_str());
+    int stat=0;
+    if(f_gz) stat=system((std::string("gzip ")+m_path+m_add+m_file).c_str());
   } else {
     msg_Error()<<__PRETTY_FUNCTION__<<":\n   Warning: File already closed."<<std::endl;
   }
@@ -208,7 +210,8 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	  }
 	  if (new_file) {
 	    std::string filename=m_path+m_add+m_file;
-	    if(f_gz) system((std::string("gunzip ")+filename+std::string(".gz")).c_str());
+	    int stat=0;
+	    if(f_gz) stat=system((std::string("gunzip ")+filename+std::string(".gz")).c_str());
 	    msg_Info()<<" => "<<filename<<"\n";
 	    p_instream=new std::ifstream(filename.c_str());
 	    if(!p_instream->good()) {
@@ -299,7 +302,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hardblob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
 
   showerblob         = new Blob();
-  showerblob->SetType(btp::FS_Shower);
+//   showerblob->SetType(btp::FS_Shower);
   showerblob->SetTypeSpec(m_generator);
   showerblob->SetId();
   showerblob->SetPosition(Vec4D(0.,0.,0.,0.));

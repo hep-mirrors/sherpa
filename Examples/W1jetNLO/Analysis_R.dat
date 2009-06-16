@@ -1,0 +1,27 @@
+BEGIN_ANALYSIS {
+  LEVEL MENLO
+  PATH_PIECE W1jreal
+
+  PartSel {
+    InList FinalState;
+    OutList partons;
+    Qual Parton;
+  }
+
+  Trigger {
+     InList partons
+     OutList jets
+     Finder 93  10. -4. 4. 1. 1
+  }
+
+  JetPT     0.   400.  40   1  1  1 LinErr  jets
+  JetPT     0.5   400.  40   1  1  1 LogErr  jets
+  JetEta   -3.     3.   60   1  1  1 LinErr  jets
+  HT        0.  1000.  20          LinErr  FinalState
+  PT        11  0. 1000. 100 LinErr FinalState
+  PT        -12  0. 1000. 100 LinErr FinalState
+  DR        11 -12 0. 10. 100 LinErr
+  Eta       11  -10. 10. 1 LinErr FinalState
+
+} END_ANALYSIS;
+

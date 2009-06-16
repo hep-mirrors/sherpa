@@ -1,12 +1,12 @@
-#ifndef Profile_Function_Base_H
-#define Profile_Function_Base_H
+#ifndef AMISIC_Model_Profile_Function_Base_H
+#define AMISIC_Model_Profile_Function_Base_H
 /*!
   \file Profile_Function_Base.H
   \brief Declares the class Profile_Function_Base
 */
 
-#include "Function_Base.H"
-#include "Message.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Org/Message.H"
 #include <vector>
 
 namespace AMISIC {

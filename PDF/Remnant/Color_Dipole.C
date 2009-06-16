@@ -1,8 +1,8 @@
-#include "Color_Dipole.H"
+#include "PDF/Remnant/Color_Dipole.H"
 
-#include "Color_Tester.H"
-#include "Exception.H"
-#include "Message.H"
+#include "ATOOLS/Phys/Color_Tester.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -103,7 +103,7 @@ void Color_Dipole::SelectCompanion(ATOOLS::Particle *const begin)
     p_begin[ANTI(anti)] = 
       new ATOOLS::Particle(-1,p_begin[anti]->Flav().Bar());
     p_begin[ANTI(anti)]->SetStatus(ATOOLS::part_status::active);
-    p_begin[ANTI(anti)]->SetFinalMass(p_begin[ANTI(anti)]->Flav().PSMass());
+    p_begin[ANTI(anti)]->SetFinalMass(p_begin[ANTI(anti)]->Flav().Mass());
     p_begin[ANTI(anti)]->SetNumber(0);
     p_begin[ANTI(anti)]->SetInfo('F');
     ATOOLS::Flow *flow=p_begin[ANTI(anti)]->GetFlow();

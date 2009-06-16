@@ -1,8 +1,8 @@
-#include "Profile_Function_Base.H"
+#include "AMISIC++/Model/Profile_Function_Base.H"
 
-#include "Profile_Function.H"
-#include "Gauss_Integrator.H"
-#include "Random.H"
+#include "AMISIC++/Model/Profile_Function.H"
+#include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace AMISIC;
 

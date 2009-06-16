@@ -1,7 +1,7 @@
-#include "Interaction_Model_4GenLep.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "MODEL/Interaction_Models/Interaction_Model_4GenLep.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <stdio.h>
 
 
@@ -199,7 +199,7 @@ void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& va
     Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
-      M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.PSMass());
+      M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.Mass(true));
 
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;

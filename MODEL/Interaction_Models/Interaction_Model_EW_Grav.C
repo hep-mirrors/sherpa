@@ -1,8 +1,8 @@
-#include "Interaction_Model_EW_Grav.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
-//#include "Vector.H"
+#include "MODEL/Interaction_Models/Interaction_Model_EW_Grav.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+//#include "ATOOLS/Math/Vector.H"
 #include <stdio.h>
 
 using namespace MODEL;

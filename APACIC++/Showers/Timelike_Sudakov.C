@@ -1,12 +1,12 @@
-#include "Timelike_Sudakov.H"
+#include "APACIC++/Showers/Timelike_Sudakov.H"
 
-#include "QCD_Splitting_Functions.H"
-#include "QED_Splitting_Functions.H"
-#include "SUSY_QCD_Splitting_Functions.H"
-#include "Timelike_Kinematics.H"
-#include "Sudakov_Tools.H"
-#include "Knot.H"
-#include "Random.H"
+#include "APACIC++/Showers/QCD_Splitting_Functions.H"
+#include "APACIC++/Showers/QED_Splitting_Functions.H"
+#include "APACIC++/Showers/SUSY_QCD_Splitting_Functions.H"
+#include "APACIC++/Showers/Timelike_Kinematics.H"
+#include "APACIC++/Showers/Sudakov_Tools.H"
+#include "APACIC++/Main/Knot.H"
+#include "ATOOLS/Math/Random.H"
 
 #include <iomanip>
 
@@ -15,10 +15,10 @@ using namespace ATOOLS;
 
 Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *const kin,
 				   MODEL::Model_Base *const model) :
-  p_tools(new Sudakov_Tools(model)), 
-  p_kin(kin), 
+  Splitting_Group(p_rms), p_tools(new Sudakov_Tools(model)), 
+  p_kin(kin), p_rms(NULL),
   m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0),
-  m_pt2min_qed(0.0025), m_t0_qed(0.01) {}
+  m_pt2min_qed(0.0025), m_t0_qed(0.01), m_rbmax(1.0), m_fcs(0.0) {}
 
 Timelike_Sudakov::~Timelike_Sudakov()
 {
@@ -36,18 +36,18 @@ void Timelike_Sudakov::Init(const double fmed)
     Flavour fl = Flavour((kf_code)(i));
     if (fl.IsOn()) {
       if (fl.Strong()) {
-	Add(new q_qg(fl,p_tools,fmed));
-	Add(new q_qg(fl.Bar(),p_tools,fmed));
-	if (fl.PSMass()<100.) Add(new g_qq(fl,p_tools,fmed));
+	Add(new q_qg(p_rms,fl,p_tools,fmed));
+	Add(new q_qg(p_rms,fl.Bar(),p_tools,fmed));
+	if (fl.Mass()<100.) Add(new g_qq(p_rms,fl,p_tools,fmed));
       }
       if (!(fl.Charge()==0) && (m_direct_photons)) {
-	Add(new f_fp(fl,p_tools));
-	Add(new f_fp(fl.Bar(),p_tools));
-	if (fl.PSMass()<100.) Add(new p_ff(fl,p_tools));
+	Add(new f_fp(p_rms,fl,p_tools));
+	Add(new f_fp(p_rms,fl.Bar(),p_tools));
+	if (fl.Mass()<100.) Add(new p_ff(p_rms,fl,p_tools));
       }
     }
   }
-  Add(new g_gg(p_tools,fmed));
+  Add(new g_gg(p_rms,p_tools,fmed));
   
   //susy splitting functions
   if (MODEL::s_model->Name()==std::string("MSSM")) {
@@ -55,9 +55,9 @@ void Timelike_Sudakov::Init(const double fmed)
       for (short int j=1;j<7;j++) {
 	Flavour fl = Flavour((kf_code)(i*1000000 + j));
 	if (fl.IsOn()) {
-	  Add(new SQuark__SQuark_Gluon(fl,p_tools));
-	  Add(new SQuark__SQuark_Gluon(fl.Bar(),p_tools));
-	  Add(new Gluino__Gluino_Gluon(p_tools));
+	  Add(new SQuark__SQuark_Gluon(p_rms,fl,p_tools));
+	  Add(new SQuark__SQuark_Gluon(p_rms,fl.Bar(),p_tools));
+	  Add(new Gluino__Gluino_Gluon(p_rms,p_tools));
         }
       }
     }
@@ -74,7 +74,7 @@ void Timelike_Sudakov::Add(Splitting_Function *spl)
       return;
     }
   }
-  m_splittings.push_back(new Splitting_Group(spl));
+  m_splittings.push_back(new Splitting_Group(p_rms,spl));
   p_selected=spl;
 }
 
@@ -87,12 +87,18 @@ double Timelike_Sudakov::CrudeInt(double zmin, double zmax)
       break;
     }
   if (sit==m_splittings.end()) return m_lastint=-1.0;
-  return m_lastint=p_selected->CrudeInt(zmin,zmax);
+  return m_lastint=p_selected->CrudeInt(zmin,zmax)*m_rbmax;
 }        
 
 void Timelike_Sudakov::SelectOne() 
 { 
   p_selected->SelectOne(); 
+}
+
+void Timelike_Sudakov::AcceptEmission(const Knot *const d) 
+{
+  ++m_nem;
+  p_lemkn=d;
 }
 
 void Timelike_Sudakov::AcceptBranch(const Knot *const mo) 
@@ -125,6 +131,9 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
 
 bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny) 
 {
+  msg_Debugging()<<METHOD<<"(): m_nem = "<<m_nem
+		 <<" vs. m_maxem = "<<m_maxem<<"\n";
+  if (m_nem>=m_maxem) return false;
   m_inflav=mother->part->Flav(); 
   double t0=m_inflav.Strong()?m_t0:m_t0_qed;
   m_oldt=m_t=mother->t;                  
@@ -145,7 +154,7 @@ bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny)
     if (m_t<m_E2) {
       SelectOne();
       m_z=GetZ();
-      if (!Veto(mother,m_t,m_E2)) {
+      if (!Veto(mother,m_t)) {
 	if (m_azimuthal_correlation) m_phi=p_selected->GetPhi(m_z);
 	else m_phi=UniformPhi();
 	mother->zs=mother->z=m_z;
@@ -163,17 +172,71 @@ void Timelike_Sudakov::ProduceT(double ta, double m2)
   m_t*=exp(2.0*M_PI*log(ran.Get())/m_lastint);
 }
 
-bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2) 
+bool Timelike_Sudakov::MEWeight(Knot *const me)
+{
+  msg_Debugging()<<METHOD<<"(): "<<*me;
+  if (me->left==NULL || me->decay==NULL || 
+      me->decay->kn_no!=me->kn_no) return true;
+  if (!(me->part->Flav().Strong() &&
+	me->left->part->Flav().Strong() &&
+	me->right->part->Flav().Strong())) return true;
+  double t(m_t=me->part->Momentum().Abs2());
+  double z(me->left->part->Momentum()[0]/me->part->Momentum()[0]);
+  Flavour flb(me->left->part->Flav()), flc(me->right->part->Flav());
+  m_E2=sqr(me->part->Momentum()[0]); 
+  if (me->prev) m_E2=0.25*sqr(t+me->prev->E2)/me->prev->E2;
+  m_tb=me->left->tout; m_tc=me->right->tout;
+  switch (m_kt_scheme) {
+  case 0: // durham scheme
+    m_pt2=0.5*Min(z*z*m_E2-m_tb,(1.0-z)*(1.0-z)*m_E2-m_tc)*
+      (1.0-cos(p_kin->GetOpeningAngle(z,m_E2,t,m_tb,m_tc)));
+    break;
+  case 1: // relative transverse momentum in lc kinematics
+    m_pt2=p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc);
+    break;
+  case 2: { // case 1 w/ zero daughter masses
+    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
+    m_pt2=zlc*(1.0-zlc)*t;
+    break;
+  }
+  case 3: // pseudo transverse momentum
+    m_pt2=z*(1.0-z)*t-(1.0-z)*m_tb-z*m_tc;
+    break;
+  case 4: {// durham scheme with light cone kinematics
+    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
+    double f1(zlc/(1.0-zlc)), f2((1.0-zlc)/zlc);
+    double kt2(p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc));
+    double c1(flb.IsQuark()?1.0:f1);
+    double c2(flc.IsQuark()?1.0:f2);
+    m_pt2=0.5*Min(c1,c2)*(f1*m_tc+f2*m_tb+kt2/(zlc*(1.0-zlc)));
+    break;
+  }
+  default:
+    THROW(fatal_error,"No kt definition.");
+  }
+  msg_Debugging()<<" -> pt = "<<sqrt(m_pt2)<<", as = "
+		 <<GetCoupling(m_rscalefac*m_pt2)
+		 <<" vs. "<<me->asme<<"\n";
+  double asc(0.0);
+  switch (m_cpl_scheme) {
+  case 2 : asc=GetCoupling(m_rscalefac*0.25*t); break;
+  default: asc=GetCoupling(m_rscalefac*m_pt2); break;
+  }
+  if (/*4.0*m_pt2<sqr(me->qjv) ||*/ asc>me->asme) return false;
+  return asc/me->asme>ran.Get();
+}
+
+bool Timelike_Sudakov::Veto(Knot *const mo,double t) 
 {
   // branch okay and mother timelike
   m_last_veto=0;
   // kincheck for first timelike from spacelike
-  if (mo->tmax!=0 && m_t>mo->tmax) return true;
-  if (E2<t) return true;
+//   if (mo->tmax!=0 && m_t>mo->tmax) return true;
+  if (m_E2<t) return true;
  
  //  sum m1 + m2 < sqrt(ta)
-  m_tb=sqr(GetFlB().PSMass());
-  m_tc=sqr(GetFlC().PSMass());
+  m_tb=sqr(p_ms->Mass(GetFlB()));
+  m_tc=sqr(p_ms->Mass(GetFlC()));
 
   if (mo->shower==3) {
     m_tb=t;
@@ -189,7 +252,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   switch (m_kt_scheme) {
   case 0: // durham scheme
     m_pt2=0.5*Min(z*z*m_E2-m_tb,(1.0-z)*(1.0-z)*m_E2-m_tc)*
-      (1.0-p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
+      (1.0-cos(p_kin->GetOpeningAngle(z,m_E2,t,m_tb,m_tc)));
     break;
   case 1: // relative transverse momentum in lc kinematics
     m_pt2=p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc);
@@ -202,13 +265,15 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   case 3: // pseudo transverse momentum
     m_pt2=z*(1.0-z)*t-(1.0-z)*m_tb-z*m_tc;
     break;
-  case 4: {// durham scheme with light cone kinematics 
-    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc)); 
-    double f1(zlc/(1.0-zlc)), f2((1.0-zlc)/zlc); 
-    double kt2(p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc)); 
-    m_pt2=0.5*Min(f1,f2)*(f1*m_tc+f2*m_tb+kt2/(zlc*(1.0-zlc))); 
-    break; 
-  } 
+  case 4: {// durham scheme with light cone kinematics
+    double zlc(p_kin->LightConeZ(z,m_E2,t,m_tb,m_tc));
+    double f1(zlc/(1.0-zlc)), f2((1.0-zlc)/zlc);
+    double kt2(p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc));
+    double c1(GetFlB().IsQuark()?1.0:f1);
+    double c2(GetFlC().IsQuark()?1.0:f2);
+    m_pt2=0.5*Min(c1,c2)*(f1*m_tc+f2*m_tb+kt2/(zlc*(1.0-zlc)));
+    break;
+  }
   default:
     THROW(fatal_error,"No kt definition.");
   }
@@ -220,12 +285,12 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   }
   // timelike daughters
   m_last_veto=2;
-  double wb(z*z*E2), wc((1.-z)*(1.-z)*E2);
+  double wb(z*z*m_E2), wc((1.-z)*(1.-z)*m_E2);
   if (m_tb>wb || m_tc>wc) return true;
 
   // z-range and splitting function
   m_last_veto=3;
-  if (MassVeto(t,E2,z)) return true;
+  if (MassVeto(t,m_E2,z)) return true;
 
   // 2. alphaS
   m_last_veto=4;
@@ -233,7 +298,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
   // 3. angular ordering
   m_last_veto=5;
-  if (OrderingVeto(mo,t,E2,z)) return true; 
+  if (OrderingVeto(mo,t,m_E2,z)) return true; 
 
   // 5. ME
   m_last_veto=7;
@@ -265,14 +330,16 @@ bool Timelike_Sudakov::MassVeto(double t, double E2,double z)
 
 bool Timelike_Sudakov::CplVeto(double t) 
 {
+  if (m_fcs>0.0) return 
+    GetCoupling(m_rscalefac*m_fcs)/GetCoupling()<ran.Get();   
   switch (m_cpl_scheme) {
   case 0 : return false;
   case 2 : 
-    return GetCoupling(m_rscalefac*0.25*t)/
-      GetCoupling()>ran.Get()?false:true;   
+    return GetCoupling(m_rscalefac*0.25*t)/GetCoupling()<ran.Get();   
   default : 
-    return GetCoupling(m_rscalefac*m_pt2)/GetCoupling()>ran.Get()?false:true;   
+    return GetCoupling(m_rscalefac*m_pt2)/GetCoupling()<ran.Get();   
   }
+  return true;
 }
 
 bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z) 
@@ -287,23 +354,14 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   case 0 : return false;
   case 2 : 
     if (m_pt2<mo->maxpt2) return false;
-#ifdef USING__Veto_Info
-    m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::kt_veto;
-#endif
     return true;
   case 1 :
   default :
     if (mo->shower==3) {
       if (th>mo->thcrit || 3.14>mo->thcrit) return false; 
-#ifdef USING__Veto_Info
-      m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
-#endif
       return true;
     }
     if (th<mo->thcrit || 3.14<mo->thcrit) return false; 
-#ifdef USING__Veto_Info
-    m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
-#endif
     return true;
   }
   return true;
@@ -439,8 +497,8 @@ void Timelike_Sudakov::CheckSplittings()
 	double z=data[0].values[j];
 	int masses=data[i].masses;
 	double ta=data[i].ta;
-	m_tb=sqr(sf->GetFlB().PSMass());
-	m_tc=sqr(sf->GetFlC().PSMass());
+	m_tb=sqr(p_ms->Mass(sf->GetFlB()));
+	m_tc=sqr(p_ms->Mass(sf->GetFlC()));
 	data[i].values[j]=sf->GetWeight(m_z,m_pt2,masses);
       }
     }

@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+from optparse import OptionParser, OptionGroup
+
+## Description / usage message
+usage="""Convert Sherpa analysis histogram files into a format that
+       Rivet's make-plots can read.
+
+Examples:
+  %prog sherpa.dat [sherpa1.dat ...] > plot.dat
+"""
+
+## Parse command line options
+parser = OptionParser(usage=usage)
+opts, args = parser.parse_args()
+
+for sherpafile in args:
+    f=open(sherpafile, 'r')
+    print "# BEGIN PLOT"
+    title=""
+    tmp=sherpafile.split(".")
+    if len(tmp)>1:
+        tmp=tmp[len(tmp)-2].split("/")
+        title=tmp[len(tmp)-1]
+    print "Title=%s" % title
+    print "LogY=1"
+    if len(args)>1:
+        print "Legend=1"
+    print "# END PLOT\n"
+    header = f.readline()
+    nbins = int(header.split()[1])-2
+    min = float(header.split()[2])
+    max = float(header.split()[3])
+    binwidth = (max-min)/float(nbins)
+    previousline = "# BEGIN HISTOGRAM %s" % sherpafile
+    for line in f:
+        sline = line.split()
+        xlow = float(sline[0])
+        xup  = xlow+binwidth
+        y    = float(sline[1])
+        dy   = 0.0
+        if len(sline)>2:
+            dy = float(sline[2])
+        print previousline
+        previousline = "%e\t%e\t%e\t%e" % (xlow, xup, y, dy)
+    # don't print last line, because it contains overflow
+    print "Title=%s" % sherpafile
+    print "# END HISTOGRAM"
+    f.close()
+

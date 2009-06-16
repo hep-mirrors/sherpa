@@ -1,11 +1,11 @@
-#ifndef Amisic_Histogram_H
-#define Amisic_Histogram_H
+#ifndef AMISIC_Tools_Amisic_Histogram_H
+#define AMISIC_Tools_Amisic_Histogram_H
 /*!
   \file Amisic_Histogram.H
   \brief Declares the class Amisic_Histogram
 */
 
-#include "Axis.H"
+#include "ATOOLS/Math/Axis.H"
 
 namespace AMISIC {
 

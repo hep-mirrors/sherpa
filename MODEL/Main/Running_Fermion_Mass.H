@@ -1,9 +1,9 @@
-#ifndef running_fermion_mass_h
-#define running_fermion_mass_h
+#ifndef MODEL_Main_Running_Fermion_Mass_H
+#define MODEL_Main_Running_Fermion_Mass_H
 
-#include "Flavour.H"
-#include "Running_AlphaS.H"
-#include "Function_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Math/Function_Base.H"
 
 namespace MODEL {
   class Running_Fermion_Mass : public ATOOLS::Function_Base {

@@ -1,9 +1,9 @@
-#include "EPA.H"
+#include "BEAM/Main/EPA.H"
 
-#include "Message.H"
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Data_Reader.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace BEAM;
 using namespace ATOOLS;

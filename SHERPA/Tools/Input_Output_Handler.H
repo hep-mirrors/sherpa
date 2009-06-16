@@ -1,8 +1,9 @@
-#ifndef Input_Output_Handler_H
-#define Input_Output_Handler_H
+#ifndef SHERPA_Tools_Input_Output_Handler_H
+#define SHERPA_Tools_Input_Output_Handler_H
 
-#include "CXXFLAGS_PACKAGES.H"
-#include "Message.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Message.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
 
 #include <map>
 #include <vector>
@@ -29,9 +30,9 @@ namespace SHERPA {
 #endif
     HepEvt_Interface         * p_hepevt;
     std::string m_outmode;
+    const Event_Handler      * p_eventhandler;
 
     bool InitialiseOutput(ATOOLS::Data_Reader* dr);
-    void ResetInterfaces();
   public :
 
     // constructors
@@ -44,6 +45,8 @@ namespace SHERPA {
     bool InputFromFormat(ATOOLS::Blob_List * const) { return false; }
 
     void PrintEvent(ATOOLS::Blob_List *const);
+    
+    void SetEventHandler(const Event_Handler* eh) { p_eventhandler=eh; }
 
 #ifdef USING__HEPMC2
     inline HepMC2_Interface *const GetHepMC2Interface() const { 

@@ -1,7 +1,7 @@
-#ifndef Vec4_H
-#define Vec4_H
+#ifndef ATOOLS_Math_Vec4_H
+#define ATOOLS_Math_Vec4_H
 
-#include "MathTools.H"
+#include "ATOOLS/Math/MathTools.H"
 
 namespace ATOOLS {
   template<typename Scalar> class Vec4;
@@ -10,6 +10,7 @@ namespace ATOOLS {
   template<typename Scalar>
   class Vec4 {
     Scalar m_x[4];
+    template <typename Scalar2> friend class Vec4;
   public:
     inline Vec4() {
       m_x[0]=m_x[1]=m_x[2]=m_x[3]=Scalar(0.0);
@@ -141,11 +142,11 @@ namespace ATOOLS {
       return Vec4<Scalar>(0.,m_x[1],m_x[2],0.);
     }
     inline Vec4<Scalar> Plus() const {
-      Scalar pplus=PPlus();
+      Scalar pplus=0.5*PPlus();
       return Vec4<Scalar>(pplus,0.0,0.0,pplus);
     }
     inline Vec4<Scalar> Minus() const {
-      Scalar pminus=PMinus();
+      Scalar pminus=0.5*PMinus();
       return Vec4<Scalar>(pminus,0.0,0.0,-pminus);
     }
     

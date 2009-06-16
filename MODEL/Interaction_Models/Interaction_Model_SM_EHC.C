@@ -1,7 +1,7 @@
-#include "Interaction_Model_SM_EHC.H"
-#include "MathTools.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "MODEL/Interaction_Models/Interaction_Model_SM_EHC.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

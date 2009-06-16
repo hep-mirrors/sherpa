@@ -1,12 +1,12 @@
-#ifndef Spin_Correlation_Tensor_h
-#define Spin_Correlation_Tensor_h
+#ifndef ATOOLS_Phys_Spin_Correlation_Tensor_H
+#define ATOOLS_Phys_Spin_Correlation_Tensor_H
 
 #include <vector>
 #include <set>
-#include <MyComplex.H>
+#include "ATOOLS/Math/MyComplex.H"
 #include <utility>
-#include "Node.H"
-#include "Spin_Density_Matrix.H"
+#include "ATOOLS/Org/Node.H"
+#include "ATOOLS/Phys/Spin_Density_Matrix.H"
 
 
 namespace ATOOLS {

@@ -1,10 +1,9 @@
-#include "Main.H"
+#include "HADRONS++/Run/Main.H"
 
-#include "MyStrStream.H"
-#include "Decay_Map.H"
-#include "Hadron_Decay_Table.H"
-#include "Hadron_Decay_Channel.H"
-#include "Decay_Map.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/Decay_Map.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
 
 #ifdef USING__ROOT
 static map<Hadron_Decay_Channel*, TFile*> rootfiles;
@@ -40,10 +39,10 @@ void InitialiseGenerator(int argc, char *argv[])
   // set all decay channel BR's equal, such that we generate the same amount of
   // each decay channel to be tested
   Hadron_Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
-  for(int i(0);i<table->NumberOfDecayChannels();++i)
-    table->UpdateWidth((Hadron_Decay_Channel*)table->GetDecayChannel(i), 1.0);
+  for(size_t i(0);i<table->size();++i)
+    table->UpdateWidth(table->at(i), 1.0);
 
-  rpa.gen.SetEcms(mother_flav.PSMass());
+  rpa.gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 
@@ -57,15 +56,15 @@ void InitialiseAnalysis()
   if(it!=tags.end())
     filepiece="."+it->second;
   Hadron_Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
-  for(int i(0);i<table->NumberOfDecayChannels();++i) {
-    Hadron_Decay_Channel* hdc=(Hadron_Decay_Channel*) table->GetDecayChannel(i);
+  for(int i(0);i<table->size();++i) {
+    Hadron_Decay_Channel* hdc=table->at(i);
     string fname = hdc->FileName();
     rootfiles[hdc]=
       new TFile(("Analysis/"+fname.erase(fname.length()-4)+filepiece+".root").c_str(),"RECREATE");
 
     TH1D* hist;
     int currenthist=0;
-    int noutp(hdc->NumberOfDecayProducts());
+    int noutp(hdc->NOut());
     for(int i=0; i<noutp; i++) {
       Flavour flav = hdc->GetDecayProduct(i);
       string name = "costheta_"+flav.IDName()+"_"+ToString(i);
@@ -82,13 +81,13 @@ void InitialiseAnalysis()
       string name = "E_"+flav.IDName()+"_"+ToString(i);
       string xtitle = "E of "+flav.RootName()+" [GeV]";
       string ytitle = "#frac{1}{#Gamma} #frac{d#Gamma}{dE} [GeV^{-1}]";
-      double M = mother_flav.PSMass();
+      double M = mother_flav.HadMass();
       double othermass = 0.0;
       for(int k=0; k<noutp; k++) {
-	if(k!=i) othermass+=hdc->GetDecayProduct(k).PSMass();
+	if(k!=i) othermass+=hdc->GetDecayProduct(k).HadMass();
       }
-      double Emin = 0.9*flav.PSMass();
-      double Emax = 1.1/2.0/M*(sqr(M)+sqr(flav.PSMass())-othermass);
+      double Emin = 0.9*flav.HadMass();
+      double Emax = 1.1/2.0/M*(sqr(M)+sqr(flav.HadMass())-othermass);
       hist = makeTH1D(name, "", 50, Emin, Emax, xtitle, ytitle);
       EnergyHists[hdc].push_back(hist);
       currenthist++;
@@ -107,10 +106,10 @@ void InitialiseAnalysis()
 	double othermass = 0.0;
 	for(int k=0; k<noutp; k++) {
 	  if(k==i || k==j) continue;
-	  othermass+=hdc->GetDecayProduct(k).PSMass();
+	  othermass+=hdc->GetDecayProduct(k).HadMass();
 	}
 	double q2min = 0.0;
-	double q2max = 1.1*sqr(hdc->GetDecaying().PSMass()-othermass);
+	double q2max = 1.1*sqr(hdc->GetDecaying().HadMass()-othermass);
 	hist = makeTH1D(name.c_str(), "", 50, q2min, q2max, xtitle, ytitle);
 	TwoInvMassHists[hdc].push_back(hist);
 	currenthist++;
@@ -133,10 +132,10 @@ void InitialiseAnalysis()
 	  double othermass = 0.0;
 	  for(int l=0; l<noutp; l++) {
 	    if(l==i || l==j || l==k) continue;
-	    othermass+=hdc->GetDecayProduct(k).PSMass();
+	    othermass+=hdc->GetDecayProduct(k).HadMass();
 	  }
 	  double q2min = 0.0;
-	  double q2max = 1.1*sqr(hdc->GetDecaying().PSMass());
+	  double q2max = 1.1*sqr(hdc->GetDecaying().HadMass());
 	  hist = makeTH1D(name.c_str(), "", 50, q2min, q2max, xtitle, ytitle);
 	  ThreeInvMassHists[hdc].push_back(hist);
 	  currenthist++;
@@ -151,9 +150,9 @@ void InitialiseAnalysis()
 Blob_List* GenerateEvent()
 {
   Blob_List* blobs = new Blob_List();
-  Particle* mother_part = new Particle( 1,mother_flav,Vec4D(mother_flav.PSMass(),0.,0.,0.) );
+  Particle* mother_part = new Particle( 1,mother_flav,Vec4D(mother_flav.HadMass(),0.,0.,0.) );
   mother_part->SetTime();
-  mother_part->SetFinalMass(mother_flav.PSMass());
+  mother_part->SetFinalMass(mother_flav.HadMass());
   
   Blob* blob = blobs->AddBlob(btp::Hadron_Decay);
   blob->SetStatus(blob_status::needs_hadrondecays);

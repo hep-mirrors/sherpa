@@ -1,4 +1,4 @@
-#include "Z_To_Lepton_Lepton.H"
+#include "PHOTONS++/MEs/Z_To_Lepton_Lepton.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -144,7 +144,7 @@ Complex Z_To_Lepton_Lepton::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3]).at(m_spins[3]));
   Vec4D pa     = m_moms[1]+m_moms[3];       // fermion propagator momenta
   Vec4D pb     = m_moms[2]+m_moms[3];
-  double m     = m_flavs[1].PSMass();       // fermion mass/propagator pole
+  double m     = m_flavs[1].HadMass();       // fermion mass/propagator pole
   m_moms[4]    = m_moms[5] = pa;            // enter those into m_moms
   m_moms[6]    = m_moms[7] = pb;
   m_flavs[4]   = m_flavs[6] = m_flavs[1];   // set to corresponding particle/antiparticle
@@ -201,11 +201,11 @@ double Z_To_Lepton_Lepton::GetBeta_0_0() {
 }
 
 double Z_To_Lepton_Lepton::GetBeta_0_1() {
-  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].PSMass())+3./2.) * GetBeta_0_0();
+  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].HadMass())+3./2.) * GetBeta_0_0();
 }
 
 double Z_To_Lepton_Lepton::GetBeta_0_2() {
-  return 1./2.*pow(m_alpha/M_PI*2*log(m_M/m_flavs[1].PSMass()),2) * GetBeta_0_0();
+  return 1./2.*pow(m_alpha/M_PI*2*log(m_M/m_flavs[1].HadMass()),2) * GetBeta_0_0();
 }
 
 double Z_To_Lepton_Lepton::GetBeta_1_1(unsigned int a) {

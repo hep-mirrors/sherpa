@@ -1,13 +1,12 @@
-#ifndef Hadron_Decay_Channel_H
-#define Hadron_Decay_Channel_H
+#ifndef HADRONS_Main_Hadron_Decay_Channel_H
+#define HADRONS_Main_Hadron_Decay_Channel_H
 
-#include "Integrable_Base.H"
 #include <string>
 #include <utility>
-#include "Data_Reader.H"
-#include "Tools.H"
-#include "Decay_Table.H"
-#include "Vector.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Phys/Decay_Table.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS {
   class Particle;
@@ -34,8 +33,8 @@ namespace HADRONS {
     HD_PS_Base            * p_ps;
     std::string             m_path;
     std::string             m_filename;
+    std::string             m_origin;
     bool                    m_always_integrate;
-    std::string             m_channelname, m_chnamenumbers;
     double                  m_symmetry;
     // CP asymmetry coefficients as used in PDG B0 listings
     double                  m_cp_asymmetry_C;
@@ -62,7 +61,6 @@ namespace HADRONS {
     Hadron_Decay_Channel( ATOOLS::Flavour flin, std::string _path );
     ~Hadron_Decay_Channel();
     void   Initialise(GeneralModel startmd);
-    void   WriteModelOnScreen( GeneralModel _locmd );
     double Differential();
     double Differential( ATOOLS::Vec4D * mom, bool anti );
 
@@ -74,6 +72,8 @@ namespace HADRONS {
     void   SetOriginalWidth(double origwidth) { m_original_width = origwidth; }
     std::string FileName() { return m_filename; }
     void   SetFileName(std::string filename="");
+    inline const std::string& Origin() { return m_origin; }
+    inline void SetOrigin(const std::string& origin) { m_origin=origin; }
     
     HD_ME_Base            * SelectME(std::string me_string);
     Current_Base          * SelectCurrent(std::string current_string);
@@ -82,11 +82,8 @@ namespace HADRONS {
     std::vector<CurrentsPair> GetCurrents() { return m_currents; }
     HD_PS_Base            * GetPS() { return p_ps; }
     ATOOLS::Flavour       * Flavours() { return p_flavours; }
-    int                     GetN() { return 1+NumberOfDecayProducts(); }
+    int                     GetN() { return 1+NOut(); }
 
-    std::string                ChannelName()     { return m_channelname; }
-    std::string                ChannelNameNumbers() { return m_chnamenumbers; }
-    
     void   CalculateAmplitudes(ATOOLS::Vec4D* moms, HELICITIES::Spin_Amplitudes* amps, bool anti);
     void   CalculateAmplitudes(ATOOLS::Vec4D* moms, HELICITIES::Amplitude_Tensor* amps, bool anti);
     bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g);
@@ -127,13 +124,6 @@ namespace HADRONS {
     At the end the parameters that were written in the DC file are passed to the corresponding
     ME class (that's where the pointer <var>p_me</var> points to) by calling 
     the virtual method HD_ME_Base::SetModelParameters.
-    */
-  /*!
-    \fn Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
-    \brief Output for all parameters written in DC file
-
-    This methods writes the values of the parameters that are written in the Decay Channel File
-    in the screen.
     */
   /*!
     \fn Hadron_Decay_Channel::CreateTrivial( ATOOLS::Spin_Density_Matrix * sigma )

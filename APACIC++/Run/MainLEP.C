@@ -1,15 +1,15 @@
 #include <iostream>
 #include <algorithm>
-#include "Run_Parameter.H"
-#include "Standard_Model.H"
-#include "ISR_Handler.H"
-#include "Intact.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/Intact.H"
 
-#include "Apacic.H"
-#include "Tree.H"
-#include "Random.H"
-#include "Final_State_Shower.H"
-#include "Histogram.H"
+#include "APACIC++/Main/Apacic.H"
+#include "APACIC++/Main/Tree.H"
+#include "ATOOLS/Math/Random.H"
+#include "APACIC++/Showers/Final_State_Shower.H"
+#include "ATOOLS/Math/Histogram.H"
 
 using namespace ATOOLS;
 using namespace MODEL;

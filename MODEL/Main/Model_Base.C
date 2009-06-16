@@ -1,19 +1,17 @@
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE MODEL::Model_Base
 #define PARAMETER_TYPE MODEL::Model_Arguments
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
-#include "Spectrum_Generator_Base.H"
-#include "Interaction_Model_Base.H"
-#include "Data_Reader.H"
-#include "Run_Parameter.H"
-#include "All_Decays.H"
-#include "Decay_Table.H"
-#include "Message.H"
-#include "Vertex.H"
-#include "Exception.H"
+#include "MODEL/Main/Spectrum_Generator_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "MODEL/Interaction_Models/Vertex.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -27,7 +25,7 @@ Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
   p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
   p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
-  p_vertextable(NULL), p_decays(NULL)
+  p_vertextable(NULL)
 {
 }
 
@@ -49,7 +47,6 @@ Model_Base::~Model_Base()
   if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
   if (p_vertex!=NULL)            delete p_vertex;
   if (p_vertextable!=NULL)       delete p_vertextable;
-  if (p_decays!=NULL)            delete p_decays;
 }
 
 void Model_Base::ShowSyntax(const size_t i)
@@ -189,23 +186,6 @@ void Model_Base::InitializeInteractionModel()
   }
 }
 
-void Model_Base::FillDecayTables() {
-  p_decays = new All_Decays(this);
-  Flavour flav;
-  for (std::map<ATOOLS::Flavour, Vertex_List>::iterator vit=p_vertextable->begin();
-       vit!=p_vertextable->end();vit++) {
-    flav = vit->first;
-    //std::cout<<"Check for potential decays of "<<flav<<" "
-    //	     <<flav.IsOn()<<" "<<flav.IsStable()<<" "<<flav.Width()<<std::endl;
-    if (flav.IsOn() && !flav.IsStable() && flav.Width()<0.) {
-      //std::cout<<METHOD<<" : "<<flav<<" : "<<flav.Width()<<std::endl;
-      p_decays->AddToDecays(flav); 
-    }
-  }
-  p_decays->InitializeDecayTables();
-  p_decays->CalculateWidths();
-}
-
 int Model_Base::ScalarNumber(const std::string _name) {
   if (p_numbers->empty()) {
     msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
@@ -320,13 +300,7 @@ Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,co
   return 0;
 }
 
-MODEL::DecayMap * const Model_Base::GetDecayMap() const
-{ 
-  return p_decays->GetDecayMap(); 
-}
-
-ATOOLS::Decay_Table * const Model_Base::GetDecayTable(const ATOOLS::Flavour & flav) const
+bool Model_Base::CheckFlavours(int nin, int nout, Flavour* flavs)
 {
-  return p_decays->GetDecayTable(flav);
+  return true;
 }
-

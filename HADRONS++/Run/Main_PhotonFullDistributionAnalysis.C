@@ -7,8 +7,8 @@ started with the following specialities:
   - ./PhotonAnalysis DECAYER=<kfcode> EVENTS=100000 ANALYSIS=1
 */
 
-#include "Main_FullDecay.C"
-#include "Shell_Tools.H"
+#include "HADRONS++/Run/Main_FullDecay.C"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 #ifdef USING__ROOT
 static TFile* rootfile;
@@ -30,7 +30,7 @@ void InitialiseAnalysis()
                                   10, -0.5, 10.5,
                                   Flavour(kf_photon).RootName()+" multiplicity","Events");
   decayframeenergy     = makeTH1D("decayframeenergy","",
-                                  1000, 0., mother_flav.PSMass(),
+                                  1000, 0., mother_flav.HadMass(),
                                   "total energy radiated in decay frame","Events");
   multipoleframeangles = makeTH1D("multipoleframeangles","",
                                   1000, 0., M_PI,

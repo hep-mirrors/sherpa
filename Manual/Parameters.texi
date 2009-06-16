@@ -1,0 +1,19 @@
+@node Parameters
+@chapter Parameters
+
+A Sherpa setup is steered by various parameters, associated with the
+different components of event generation. Tag replacements may be
+performed in all inputs, see @ref{Tags}.
+
+@menu
+* Run Parameters::    List of general parameters
+* Beam Parameters::   List of beam parameters
+* ISR Parameters::    List of initial state radiation parameters
+* Selectors::         Syntax of parton level cuts
+@end menu
+
+@include Run.texi
+@include Beam.texi
+@include ISR.texi
+@include Selector.texi
+

@@ -1,12 +1,12 @@
-#include "Primordial_KPerp.H"
+#include "SHERPA/SoftPhysics/Primordial_KPerp.H"
 
-#include "Remnant_Base.H"
-#include "Beam_Base.H"
-#include "Run_Parameter.H"
-#include "Data_Reader.H"
-#include "Random.H"
-#include "Vector.H"
-#include "Message.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Message.H"
 
 //#define ANALYSE__Primordial_KPerp
 
@@ -14,7 +14,7 @@
 #ifndef USING__ROOT
 #undef ANALYSE__Primordial_KPerp
 #else
-#include "My_Root.H"
+#include "ATOOLS/Org/My_Root.H"
 #include "TH1D.h"
 #endif
 #endif
@@ -38,13 +38,15 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   // defaults from Z peak
   double defaultmean1(0.0), defaultmean2(0.0),
     defaultsigma1(0.0), defaultsigma2(0.0);
+  if (rpa.gen.Beam1().IsHadron() && rpa.gen.Beam2().IsHadron()) {
   if (rpa.gen.Beam1().Kfcode()==kf_p_plus) {
-    defaultmean1=0.33;
+    defaultmean1=0.8;
     defaultsigma1=0.8;
   }
   if (rpa.gen.Beam2().Kfcode()==kf_p_plus) {
-    defaultmean2=0.33;
+    defaultmean2=0.8;
     defaultsigma2=0.8;
+  }
   }
   m_kperpmean[0]  = dataread.GetValue<double>("K_PERP_MEAN_1",defaultmean1);
   m_kperpmean[1]  = dataread.GetValue<double>("K_PERP_MEAN_2",defaultmean2);
@@ -85,6 +87,8 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	double ran1, ran2, r12, kperp[2], minimum[2];
 	min[1]=min[0]=0; minimum[1]=minimum[0]=1.0e37; sum[1]=sum[0]=Vec3D();
 	int pairs=ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;
+	if (blob1->OutParticle(0)->Flav().IsLepton() ||
+	    blob2->OutParticle(0)->Flav().IsLepton()) --pairs;
 	for (int i=0;i<pairs;++i) {
 	  // dice gaussian numbers
 	  do {
@@ -241,11 +245,15 @@ bool Primordial_KPerp::BoostConnected(ATOOLS::Blob *blob,unsigned int catcher)
   p_boosted->insert(blob);
   for (int i=0;i<blob->NOutP();++i) {
     Particle *cur=blob->OutParticle(i);
-    Vec4D mom=cur->Momentum();
-    m_oldcms.Boost(mom);
-    m_rotate.Rotate(mom);
-    m_newcms.BoostBack(mom);
-    cur->SetMomentum(mom);
+    if (blob->Type()!=btp::Signal_Process && blob->Type()!=btp::Hard_Collision &&
+	(cur->DecayBlob()==NULL || cur->DecayBlob()->Type()!=btp::Signal_Process) &&
+	(cur->DecayBlob()==NULL || cur->DecayBlob()->Type()!=btp::Hard_Collision)) {
+      Vec4D mom=cur->Momentum();
+      m_oldcms.Boost(mom);
+      m_rotate.Rotate(mom);
+      m_newcms.BoostBack(mom);
+      cur->SetMomentum(mom);
+    }
     if (!BoostConnected(cur->DecayBlob(),catcher)) return false;
   }
   return true;
@@ -279,12 +287,13 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
     Blob *decy=particle->DecayBlob();
     if (decy!=NULL) {
       for (int i=0;i<decy->NInP();++i) {
-        Particle *next=decy->InParticle(i);
-        if (next!=particle) if (FindConnected(next,connected,false,catcher)) return true;
+	Particle *next=decy->InParticle(i);
+        if (next!=particle && 
+	    next->ProductionBlob()->Type()!=btp::Signal_Process &&
+	    next->ProductionBlob()->Type()!=btp::Hard_Collision) 
+	  if (FindConnected(next,connected,false,catcher)) return true;
       }
-      for (int i=0;i<decy->NOutP();++i) {
-        if (FindConnected(decy->OutParticle(i),connected,true,catcher)) return true;
-      }
+      THROW(fatal_error,"Inconsistent blob structure");
     }
   }
   return false;
@@ -329,6 +338,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
     p_filled->insert(cur1);
     return;
   }
+  if (cur1->Flav().IsLepton() || cur2->Flav().IsLepton()) return;
   ++m_current[1-beam];
   Vec4D mom2, old2=cur2->Momentum(), oldcms=old1+old2;
   Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]]+Vec3D(old2[1],old2[2],0.0);

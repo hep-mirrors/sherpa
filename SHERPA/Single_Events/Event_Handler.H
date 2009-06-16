@@ -1,14 +1,12 @@
-#ifndef Event_Handler_h
-#define Event_Handler_h
+#ifndef SHERPA_Single_Events_Event_Handler_H
+#define SHERPA_Single_Events_Event_Handler_H
 
 #include <vector>
 #include <iostream>
 
-#include "Event_Phase_Handler.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
 
 namespace SHERPA {
-
-  class Matrix_Element_Handler;
 
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
@@ -17,13 +15,12 @@ namespace SHERPA {
   private:
 
     long int m_lastparticlecounter, m_lastblobcounter;
+    double m_n, m_addn, m_sum, m_sumsqr;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
     ATOOLS::Blob      * p_signal;
     ATOOLS::blob_status::code m_signalstatus;
-
-    Matrix_Element_Handler * p_mehandler;
 
   public:
 
@@ -42,6 +39,12 @@ namespace SHERPA {
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
+
+    inline double TotalXS() const { return m_sum/m_n; }
+    inline double TotalVar() const
+    { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
+    inline double TotalErr() const 
+    { return sqrt(TotalVar()/m_n); }
 
   };
 

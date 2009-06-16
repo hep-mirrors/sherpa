@@ -1,14 +1,14 @@
-#ifndef Four_Body_PSs_h
-#define Four_Body_PSs_h
+#ifndef HADRONS_PS_Library_Four_Body_PSs_H
+#define HADRONS_PS_Library_Four_Body_PSs_H
 
-#include "Single_Channel.H"
-#include "Vector.H"
-#include "Single_Channel.H"
-#include "Run_Parameter.H"
-#include "Channel_Elements.H"
-#include "Vegas.H"
-#include "ResonanceFlavour.H"
-#include "Rambo.H"
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Math/Vector.H"
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/Vegas.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
+#include "PHASIC++/Channels/Rambo.H"
 
 namespace HADRONS {
   class TwoResonances : public PHASIC::Single_Channel {
@@ -31,9 +31,9 @@ namespace HADRONS {
 		const int _i,
 		const int _j );
     ~TwoResonances();
-    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
     void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
@@ -55,9 +55,9 @@ namespace HADRONS {
   public :
     IsotropicSpectator(const ATOOLS::Flavour *, int spectator);
     ~IsotropicSpectator() { delete m_rambo; }
-    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
     void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     void GenerateWeight(ATOOLS::Vec4D * p);
     std::string ChID()              { return std::string("IsotropicSpectator");}
   }; // end of class

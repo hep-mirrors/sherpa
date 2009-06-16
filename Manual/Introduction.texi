@@ -1,0 +1,14 @@
+@node Introduction
+@chapter Introduction
+
+Sherpa is a Monte Carlo event generator for the Simulation 
+of High-Energy Reactions of PArticles in lepton-lepton, 
+lepton-photon, photon-photon and hadron-hadron collisions. 
+This document provides information, which helps users understand 
+and apply SHERPA for their physics studies. The various options
+and parameters specifying the program are compiled, and their 
+meaning is explained. This document does not aim at giving a
+complete description of the physics content of Sherpa.
+To this end, the authors refer the reader to the original publication, 
+@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=arXiv:0811.4622,,
+arXiv:0811.4622 [hep-ph]}

@@ -1,7 +1,7 @@
-#ifndef File_IO_Base_H
-#define File_IO_Base_H
+#ifndef ATOOLS_Org_File_IO_Base_H
+#define ATOOLS_Org_File_IO_Base_H
 
-#include "My_File.H"
+#include "ATOOLS/Org/My_File.H"
 #include <vector>
 
 #ifdef __GNUC__

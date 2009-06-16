@@ -1,11 +1,11 @@
-#include "Interaction_Model_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE MODEL::Interaction_Model_Base
 #define PARAMETER_TYPE MODEL::Interaction_Model_Arguments
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace MODEL;
 

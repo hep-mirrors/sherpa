@@ -1,5 +1,5 @@
-#ifndef Getter_Function_H
-#define Getter_Function_H
+#ifndef ATOOLS_Org_Getter_Function_H
+#define ATOOLS_Org_Getter_Function_H
 
 #include <map>
 #include <vector>

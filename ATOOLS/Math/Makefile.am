@@ -2,6 +2,8 @@ pkglib_LTLIBRARIES       =	libToolsMath.la
 
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
+				Term.C \
+				Algebra_Interpreter.C \
 				Random.C \
 				Function_Base.C \
 				Poincare.C \
@@ -11,16 +13,19 @@ libToolsMath_la_SOURCES       =	\
 				Gauss_Integrator.C \
 				Scaling.C \
 				Axis.C \
-				Histogram.C \
+			        Histogram.C \
+				Histogram_2D.C \
 				Variable.C \
 				Permutation.C \
 				PermStore.C \
 				Primitive_Integrator.C \
-				Algebra_Interpreter.C \
-				Kabbala.C
+				Kabbala.C \
+				Tensor.C
 
-pkginclude_HEADERS        =	\
+localinc_HEADERS          =	\
 			MathTools.H \
+			Term.H \
+			Algebra_Interpreter.H \
 			Random.H \
 			Function_Base.H \
 			Poincare.H \
@@ -36,16 +41,17 @@ pkginclude_HEADERS        =	\
 			Scaling.H \
 			Axis.H \
 			Histogram.H \
+			Histogram_2D.H \
 			Permutation.H \
 			PermStore.H \
 			Primitive_Integrator.H \
-			Algebra_Interpreter.H \
 			Cluster_Algorithm.H \
 			Cluster_Algorithm.C \
-			Kabbala.H
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      = @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@
+			Kabbala.H \
+			Lorentz_Ten2.H \
+			Lorentz_Ten3.H \
+			Lorentz_Ten4.H \
+			Tensor.H \
+			Tensor_Build.H \
+			Tensor_Contractions.H \
+			Tensor_Contractions_Epsilon.H

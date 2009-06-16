@@ -1,11 +1,12 @@
-#include "Splitting_Group.H"
-#include "Random.H"
-#include "Message.H"
+#include "APACIC++/Showers/Splitting_Group.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace APACIC;
 
-Splitting_Group::Splitting_Group(Splitting_Function *const spl):
-  m_partsums(0) 
+Splitting_Group::Splitting_Group(ATOOLS::Mass_Selector *&ms,
+				 Splitting_Function *const spl):
+  Splitting_Function(ms), m_partsums(0) 
 {
   if (spl!=NULL) m_splittings.push_back(spl);
   p_selected = spl;

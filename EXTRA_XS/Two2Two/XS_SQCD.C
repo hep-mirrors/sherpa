@@ -1,8 +1,8 @@
-#include "XS_SQCD.H"
-#include "Random.H"
-#include "Run_Parameter.H"
-#include "Running_AlphaS.H"
-#include "Flow.H"
+#include "EXTRA_XS/Two2Two/XS_SQCD.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Phys/Flow.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -11,7 +11,7 @@ using namespace ATOOLS;
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1q2_sQ1sQ2>
+  Single_Process *Single_Process::GetProcess<XS_q1q2_sQ1sQ2>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -39,7 +39,7 @@ namespace EXTRAXS {
 XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const size_t nin,const size_t nout, 
 			       const ATOOLS::Flavour *fl,
 			       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -101,7 +101,7 @@ bool XS_q1q2_sQ1sQ2::SetColours(double s,double t,double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1q2_sQ1LsQ2R>
+  Single_Process *Single_Process::GetProcess<XS_q1q2_sQ1LsQ2R>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -127,7 +127,7 @@ namespace EXTRAXS {
 XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const size_t nin,const size_t nout, 
 			       const ATOOLS::Flavour *fl,
 			       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -194,7 +194,7 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(double s,double t,double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1qbar2_sQ1sQbar2>
+  Single_Process *Single_Process::GetProcess<XS_q1qbar2_sQ1sQbar2>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -223,7 +223,7 @@ namespace EXTRAXS {
 XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const size_t nin,const size_t nout, 
 			       const ATOOLS::Flavour *fl,
 			       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -272,7 +272,7 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(double s,double t,double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1qbar1_sQ2sQbar2>
+  Single_Process *Single_Process::GetProcess<XS_q1qbar1_sQ2sQbar2>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model,
    const size_t nqed, const size_t nqcd)
@@ -292,7 +292,7 @@ namespace EXTRAXS {
 XS_q1qbar1_sQ2sQbar2::XS_q1qbar1_sQ2sQbar2(const size_t nin,const size_t nout, 
 				       const ATOOLS::Flavour *fl,
 				       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -337,7 +337,7 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(double s,double t,double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1q1_sQ1sQ1>
+  Single_Process *Single_Process::GetProcess<XS_q1q1_sQ1sQ1>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -357,7 +357,7 @@ namespace EXTRAXS {
 XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const size_t nin,const size_t nout, 
 			       const ATOOLS::Flavour *fl,
 			       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -420,7 +420,7 @@ bool XS_q1q1_sQ1sQ1::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1q1_sQ1LsQ1R>
+  Single_Process *Single_Process::GetProcess<XS_q1q1_sQ1LsQ1R>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -443,7 +443,7 @@ namespace EXTRAXS {
 XS_q1q1_sQ1LsQ1R::XS_q1q1_sQ1LsQ1R(const size_t nin,const size_t nout, 
 			       const ATOOLS::Flavour *fl,
 			       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -509,7 +509,7 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1qbar1_sQ1sQbar1>
+  Single_Process *Single_Process::GetProcess<XS_q1qbar1_sQ1sQbar1>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -532,7 +532,7 @@ namespace EXTRAXS {
 XS_q1qbar1_sQ1sQbar1::XS_q1qbar1_sQ1sQbar1(const size_t nin,const size_t nout, 
 					   const ATOOLS::Flavour *fl,
 					   XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -598,7 +598,7 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1qbar1_GluinoGluino>
+  Single_Process *Single_Process::GetProcess<XS_q1qbar1_GluinoGluino>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -617,7 +617,7 @@ namespace EXTRAXS {
 XS_q1qbar1_GluinoGluino::XS_q1qbar1_GluinoGluino(const size_t nin,const size_t nout, 
 				       const ATOOLS::Flavour *fl,
 				       XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
@@ -701,7 +701,7 @@ bool XS_q1qbar1_GluinoGluino::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_gg_sQ1sQbar1>
+  Single_Process *Single_Process::GetProcess<XS_gg_sQ1sQbar1>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -720,7 +720,7 @@ namespace EXTRAXS {
 XS_gg_sQ1sQbar1::XS_gg_sQ1sQbar1(const size_t nin,const size_t nout, 
 				 const ATOOLS::Flavour *fl,
 				 XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
@@ -791,7 +791,7 @@ bool XS_gg_sQ1sQbar1::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_q1g_sQ1Gluino>
+  Single_Process *Single_Process::GetProcess<XS_q1g_sQ1Gluino>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -814,7 +814,7 @@ namespace EXTRAXS {
 XS_q1g_sQ1Gluino::XS_q1g_sQ1Gluino(const size_t nin,const size_t nout, 
 				   const ATOOLS::Flavour *fl,
 				   XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_iniq=0;
@@ -916,7 +916,7 @@ bool XS_q1g_sQ1Gluino::SetColours(double s, double t, double u)
 namespace EXTRAXS {
 
   template <> 
-  Single_XS *Single_XS::GetProcess<XS_gg_GluinoGluino>
+  Single_Process *Single_Process::GetProcess<XS_gg_GluinoGluino>
   (const size_t nin,const size_t nout,
    const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
@@ -935,7 +935,7 @@ namespace EXTRAXS {
 XS_gg_GluinoGluino::XS_gg_GluinoGluino(const size_t nin,const size_t nout, 
 				 const ATOOLS::Flavour *fl,
 				 XS_Model_Base *const model): 
-  Single_XS(nin,nout,fl,model) 
+  Single_Process(nin,nout,fl,model) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_g3=std::abs(p_model->Constant("g_3"));

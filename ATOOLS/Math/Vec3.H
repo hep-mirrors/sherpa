@@ -1,7 +1,7 @@
-#ifndef Vec3_H
-#define Vec3_H
+#ifndef ATOOLS_Math_Vec3_H
+#define ATOOLS_Math_Vec3_H
 
-#include "MathTools.H"
+#include "ATOOLS/Math/MathTools.H"
  
 namespace ATOOLS {
   template<typename Scalar> class Vec4;

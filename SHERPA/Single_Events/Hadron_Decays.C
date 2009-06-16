@@ -1,9 +1,9 @@
-#include "Hadron_Decays.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Mass_Handler.H"
-#include "Momenta_Stretcher.H"
-#include "Soft_Photon_Handler.H"
+#include "SHERPA/Single_Events/Hadron_Decays.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Mass_Handler.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 
 #include <utility>
 #include <algorithm>
@@ -26,9 +26,9 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers,
   for (it=s_kftable.begin();it!=s_kftable.end();it++) {
     Flavour flav(it->first);
     if (flav.IsOn() && (flav.IsHadron() || flav.IsLepton())) {
-      double limit = flav.Width()==0.0?0.01*flav.PSMass():flav.Width();
-      double min = flav.PSMass()-3.0*limit;
-      double max = flav.PSMass()+3.0*limit;
+      double limit = flav.Width()==0.0?0.01*flav.HadMass():flav.Width();
+      double min = flav.HadMass()-3.0*limit;
+      double max = flav.HadMass()+3.0*limit;
       TH1D* myhist = new TH1D(flav.ShellName().c_str(),flav.IDName().c_str(),100,min,max);
       myhist->SetDirectory(p_file);
       mass_hists.insert(make_pair(flav.Kfcode(),myhist));
@@ -123,7 +123,7 @@ bool Hadron_Decays::Treat(Blob * blob)
   Vec4D labmom = inpart->Momentum();
   
   // fill decay blob in CMS and all on-shell
-  inpart->SetMomentum(Vec4D(inpart->Flav().PSMass(), 0.0, 0.0, 0.0));
+  inpart->SetMomentum(Vec4D(inpart->Flav().HadMass(), 0.0, 0.0, 0.0));
   Hadron_Decay_Handler * hdhandler = ChooseDecayHandler(inpart);
   if(hdhandler==NULL || !hdhandler->FillDecayBlob(blob, labmom)) return false;
   inpart->SetStatus(part_status::decayed);
@@ -253,7 +253,7 @@ bool Hadron_Decays::BoostAndStretch(Blob* blob, const Vec4D& labmom)
   DEBUG_FUNC(blob->Id()<<", "<<labmom);
   // 1.
   Particle* inpart = blob->InParticle(0);
-  double factor = inpart->FinalMass()/inpart->Flav().PSMass();
+  double factor = inpart->FinalMass()/inpart->Flav().HadMass();
   inpart->SetMomentum(Vec4D(inpart->FinalMass(), 0., 0., 0.));
   Particle_Vector daughters = blob->GetOutParticles();
   for(Particle_Vector::iterator it=daughters.begin();it!=daughters.end();++it) {
@@ -289,13 +289,14 @@ Hadron_Decay_Handler* Hadron_Decays::ChooseDecayHandler(Particle* part)
 
 bool Hadron_Decays::RejectExclusiveChannelsFromFragmentation(Blob* fragmentationblob)
 {
+  static std::string mname(METHOD);
   if(fragmentationblob->Type()==btp::Fragmentation) {
     Blob* showerblob = fragmentationblob->UpstreamBlob();
-    if(showerblob && showerblob->Type()==btp::FS_Shower) {
+    if(showerblob && showerblob->Type()==btp::Shower) {
       Blob* decayblob = showerblob->UpstreamBlob();
       if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
         DEBUG_FUNC(fragmentationblob->Id());
-        rvalue.IncCall(METHOD);
+        rvalue.IncCall(mname);
         FlavourSet decayresults;
         for(int i=0;i<fragmentationblob->NOutP();i++) {
           decayresults.insert(fragmentationblob->OutParticle(i)->Flav());
@@ -304,7 +305,7 @@ bool Hadron_Decays::RejectExclusiveChannelsFromFragmentation(Blob* fragmentation
             ChooseDecayHandler(decayblob->InParticle(0));
         if(hdhandler->IsExclusiveDecaychannel(decayblob,decayresults)) {
           DEBUG_INFO("found exclusive decay channel, retrying.");
-          rvalue.IncRetryPhase(METHOD);
+          rvalue.IncRetryPhase(mname);
           p_bloblist->Delete(fragmentationblob);
           p_bloblist->Delete(showerblob);
           decayblob->SetStatus(blob_status::needs_hadrondecays);
@@ -357,8 +358,8 @@ void Hadron_Decays::SetPosition(ATOOLS::Blob* blob)
   
   // boost lifetime into lab
   double gamma = 1./rpa.gen.Accu();
-  if (inpart->Flav().PSMass()>rpa.gen.Accu()) {
-    gamma = inpart->E()/inpart->Flav().PSMass();
+  if (inpart->Flav().HadMass()>rpa.gen.Accu()) {
+    gamma = inpart->E()/inpart->Flav().HadMass();
   }
   else {
     double q2    = dabs(inpart->Momentum().Abs2());

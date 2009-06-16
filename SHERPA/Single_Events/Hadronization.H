@@ -1,8 +1,8 @@
-#ifndef Hadronization_h
-#define Hadronization_h
+#ifndef SHERPA_Single_Events_Hadronization_H
+#define SHERPA_Single_Events_Hadronization_H
 
-#include "Event_Phase_Handler.H"
-#include "Fragmentation_Handler.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 namespace SHERPA {
   class Hadronization : public Event_Phase_Handler {

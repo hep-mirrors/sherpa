@@ -1,4 +1,4 @@
-#include "W_To_Lepton_Neutrino.H"
+#include "PHOTONS++/MEs/W_To_Lepton_Neutrino.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -140,8 +140,8 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3]).at(m_spins[3]));
   Vec4D q      = m_moms[1]+m_moms[3];       // fermion propagator momenta
   Vec4D Q      = m_moms[0]+m_moms[3];       // boson propagator momenta
-  double m     = m_flavs[1].PSMass();       // fermion mass/propagator pole
-  double M     = m_flavs[0].PSMass();       // boson mass/propagator pole
+  double m     = m_flavs[1].HadMass();       // fermion mass/propagator pole
+  double M     = m_flavs[0].HadMass();       // boson mass/propagator pole
   m_moms[4]    = m_moms[5] = q;             // enter those into m_moms
   m_flavs[4]   = m_flavs[1];                // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[1].Bar();
@@ -204,7 +204,7 @@ double W_To_Lepton_Neutrino::GetBeta_0_0() {
 }
 
 double W_To_Lepton_Neutrino::GetBeta_0_1() {
-  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].PSMass())-1) * GetBeta_0_0();
+  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].HadMass())-1) * GetBeta_0_0();
 }
 
 double W_To_Lepton_Neutrino::GetBeta_0_2() {

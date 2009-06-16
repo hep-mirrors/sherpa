@@ -1,11 +1,11 @@
-#ifndef Weight_Dipole_H
-#define Weight_Dipole_H
+#ifndef PHOTONS_Tools_Weight_Dipole_H
+#define PHOTONS_Tools_Weight_Dipole_H
 
-#include "Weight_Base.H"
-#include "Vector.H"
-#include "Particle.H"
-#include "Poincare.H"
-#include "Message.H"
+#include "PHOTONS++/Tools/Weight_Base.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Message.H"
 
 
 using namespace ATOOLS;

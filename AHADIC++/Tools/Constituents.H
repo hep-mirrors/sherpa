@@ -1,7 +1,7 @@
-#ifndef Constituents_H
-#define Constituents_H
+#ifndef AHADIC_Tools_Constituents_H
+#define AHADIC_Tools_Constituents_H
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include <map>
 #include <string>
 

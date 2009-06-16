@@ -1,15 +1,17 @@
-#ifndef Simple_Chain_H
-#define Simple_Chain_H
+#ifndef AMISIC_Model_Simple_Chain_H
+#define AMISIC_Model_Simple_Chain_H
 /*!
   \file Simple_Chain.H
   \brief Declares the class Simple_Chain
 */
 
-#include "MI_Base.H"
-#include "Grid_Creator.H"
-#include "Profile_Function_Base.H"
-#include "Fixed_Variable_Channel.H"
-#include "Simple_XS.H"
+#include "AMISIC++/Main/MI_Base.H"
+#include "AMISIC++/Model/Grid_Creator.H"
+#include "AMISIC++/Model/Profile_Function_Base.H"
+#include "AMISIC++/Tools/Fixed_Variable_Channel.H"
+#include "AMISIC++/Tools/Semihard_QCD.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace PDF    { class Remnant_Base; }
 
@@ -23,7 +25,7 @@ namespace AMISIC {
 
     typedef PHASIC::Fixed_Variable_Channel FSR_Channel;
 
-    typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
+    typedef std::map<std::string,PHASIC::Process_Base*> Process_Map;
     typedef std::multimap<double,std::string,
 			  std::greater<double> >    Sort_Map;
 
@@ -39,8 +41,8 @@ namespace AMISIC {
 
     std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
 
-    EXTRAXS::Simple_XS *p_processes;
-    FSR_Channel        *p_fsrinterface;
+    Semihard_QCD *p_processes;
+    FSR_Channel  *p_fsrinterface;
 
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
@@ -50,9 +52,7 @@ namespace AMISIC {
 
     std::string m_selected;
 
-    unsigned int m_nflavour, m_maxtrials, m_check;
-    PHASIC::scl::scheme m_scalescheme;
-    unsigned int m_kfactorscheme, m_vegas, m_pi;
+    unsigned int m_maxtrials, m_check, m_vegas, m_pi;
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
 
@@ -66,13 +66,7 @@ namespace AMISIC {
     void Init();
     void CleanUp();
 
-    EXTRAXS::XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
-				    const ATOOLS::Flavour *flavours);
-
     bool GeneratePathName();
-    void OrderFlavours(ATOOLS::Flavour *flavours);
-    bool AddProcess(EXTRAXS::XS_Group *const group,
-		    const ATOOLS::Flavour *flavours);
     bool ReadInData();
 
     bool CreateGrid();
@@ -94,18 +88,6 @@ namespace AMISIC {
     /*!
       \fn bool SetUpInterface()
       \brief Sets up the phasespace integrators for event generation.
-    */
-
-    bool CheckConsistency(EXTRAXS::XS_Group *const group,
-			  Amisic_Histogram_Type *const grid,
-			  const double min,const double max,
-			  const double integral);
-    /*!
-      \fn bool CheckConsistency(EXTRAXS::XS_Group *const group,
-      Amisic_Histogram_Type *const grid,const double min,const double max,
-      const double integral)
-      \brief Checks for the given process group whether the 
-      grid integral and the standard phasespace integral coincide.
     */
 
     void SetISRRange();

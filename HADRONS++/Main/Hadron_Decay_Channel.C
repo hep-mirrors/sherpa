@@ -1,13 +1,13 @@
-#include "Hadron_Decay_Channel.H"
-#include "HD_ME_Base.H"
-#include "Generic.H"
-#include "Current_Base.H"
-#include "HD_PS_Base.H"
-#include "Decay_Table.H"
-#include "MyStrStream.H"
-#include "Vector.H"
-#include "Shell_Tools.H"
-#include "Blob.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "HADRONS++/ME_Library/Generic.H"
+#include "HADRONS++/Current_Library/Current_Base.H"
+#include "HADRONS++/PS_Library/HD_PS_Base.H"
+#include "ATOOLS/Phys/Decay_Table.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Phys/Blob.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -39,7 +39,7 @@ void Hadron_Decay_Channel::SetFileName(std::string filename)
 {
   if(filename=="") {
     filename += GetDecaying().ShellName() + string("_");
-    for ( int i=0; i<NumberOfDecayProducts(); i++ ) {
+    for ( int i=0; i<NOut(); i++ ) {
       filename += GetDecayProduct(i).ShellName();
     }
     filename += string(".dat");
@@ -53,23 +53,15 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   p_flavours = new Flavour[GetN()];
   p_momenta  = new Vec4D[GetN()];
   p_flavours[0] = GetDecaying();
-  m_channelname     = string("");
-  m_chnamenumbers   = string("0");
-  m_channelname     = m_flin.IDName() + string(" --> ");
-  m_chnamenumbers.append( m_flin.IDName().length()-1, ' ' );
-  m_chnamenumbers.append(" --> ");
   int i=0;
   double totalmass=0.0;
   for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
     p_flavours[i+1] = (*flit);
-    totalmass+=p_flavours[i+1].PSMass();
-    m_channelname  += flit->IDName() + string(" ");
-    m_chnamenumbers.append(ToString(i+1));
-    m_chnamenumbers.append( flit->IDName().length(), ' ' );
+    totalmass+=p_flavours[i+1].HadMass();
     i++;
   }
-  if(totalmass>p_flavours[0].PSMass()) {
-    msg_Error()<<"Error in "<<METHOD<<" for "<<m_channelname<<endl;
+  if(totalmass>p_flavours[0].HadMass()) {
+    msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<endl;
     msg_Error()<<"  Total outgoing mass heavier than incoming particle. Will abort."<<endl;
     abort();
   }
@@ -79,11 +71,11 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   Flavour refflav;
   double symfactor (1);         
   int l(0), lfac (1);              
-  for( int i=0; i<NumberOfDecayProducts(); ++i ) {
+  for( int i=0; i<NOut(); ++i ) {
     refflav = p_flavours[i+1];
     l = 0;
     lfac = 1;
-    for( int j=0; j<NumberOfDecayProducts(); ++j ) {
+    for( int j=0; j<NOut(); ++j ) {
       if( p_flavours[j+1]==refflav ) {
         l++;
         lfac *= l;
@@ -151,11 +143,11 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     ProcessResult(result_svv);
   }
   else { // if DC file does not exist yet
-    int* decayindices = new int[NumberOfDecayProducts()+1];
-    for(int i=0;i<NumberOfDecayProducts()+1;i++) {
+    int* decayindices = new int[NOut()+1];
+    for(int i=0;i<NOut()+1;i++) {
       decayindices[i]=i;
     }
-    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NumberOfDecayProducts()+1,
+    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NOut()+1,
                                            decayindices,"Generic")));
     delete [] decayindices;
     p_ps->AddChannel( string("Isotropic"), 1., m_startmd );
@@ -215,7 +207,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
   ip.AddTag("GF", "8.24748e-6");
   for (size_t i=0;i<me_svv.size();i++) {
     if(me_svv[i].size()==3) {
-      msg_Tracking()<<"Selecting ME for "<<m_channelname<<endl;
+      msg_Tracking()<<"Selecting ME for "<<Name()<<endl;
       HD_ME_Base* me = SelectME( me_svv[i][2] );
       me->SetPath(m_path);
       msg_Tracking()<<"  "<<me->Name()<<endl;
@@ -231,7 +223,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       nr_of_mes++;
     }
     if(me_svv[i].size()==4) {
-      msg_Tracking()<<"Selecting currents for "<<m_channelname<<endl;
+      msg_Tracking()<<"Selecting currents for "<<Name()<<endl;
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       vector<vector<string> > parameter1_svv;
@@ -256,7 +248,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       // Sanity checks for current selection
       if( int(GetN()) != current1->GetN() + current2->GetN() ) {
         msg_Error()<<"Error in "<<METHOD<<": Current selection does not look sane "
-            <<"for "<<m_channelname<<". Check decaychannelfile."<<std::endl;
+                   <<"for "<<Name()<<". Check decaychannelfile."<<std::endl;
         abort();
       }
 
@@ -270,11 +262,11 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
   if(nr_of_mes == 0) {
   msg_Error()<<METHOD<<": Warning. No valid matrix element found in "
       <<m_path<<m_filename<<". Using Generic."<<endl;
-    int* decayindices = new int[NumberOfDecayProducts()+1];
-    for(int i=0;i<NumberOfDecayProducts()+1;i++) {
+    int* decayindices = new int[NOut()+1];
+    for(int i=0;i<NOut()+1;i++) {
       decayindices[i]=i;
     }
-    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NumberOfDecayProducts()+1,
+    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NOut()+1,
                                            decayindices,"Generic")));
     delete [] decayindices;
   }
@@ -354,21 +346,6 @@ GeneralModel Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > help
   return model;
 }
 
-void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
-{
-  if( msg_LevelIsDebugging() ) {
-  msg_Out()
-    <<"-----------------------------------------------------\n"
-    <<"Modelparameters for channel: "<<m_channelname<<"\n"<<endl;
-  GeneralModel::iterator md_it;
-  for ( md_it = _locmd.begin(); md_it != _locmd.end(); ++md_it ) {
-    msg_Out()<<"   "<<md_it->first<<":\t"<<md_it->second<<endl;
-  }
-  msg_Out()
-    <<"-----------------------------------------------------"<<endl;
-  }
-}
-
 bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
 
   if ( newfile ) {                // if DC file doesn't exist yet
@@ -376,8 +353,14 @@ bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
     to.open((m_path+m_filename).c_str(),ios::out);
 
     // write header
-    to<<"# Decay: "<<ChannelName()<<endl;
-    to<<"#        "<<ChannelNameNumbers()<<endl<<endl;
+    to<<"# Decay: "<<Name()<<endl;
+    to<<"#        "<<setw(m_flin.IDName().length())<<left<<"0"<<" --> ";
+    int i=0;
+    for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
+      to<<setw(flit->IDName().length()+1)<<left<<i+1;
+      i++;
+    }
+    to<<endl<<endl;
 
     // write out options
     to<<"<Options>"<<endl;
@@ -515,7 +498,7 @@ bool Hadron_Decay_Channel::SetColorFlow(Particle_Vector outparts,int n_q, int n_
 // differential with random PS points; just for weight
 double Hadron_Decay_Channel::Differential()
 {
-  p_momenta[0] = Vec4D(p_flavours[0].PSMass(),0.,0.,0.);        // decay from rest
+  p_momenta[0] = Vec4D(p_flavours[0].HadMass(),0.,0.,0.);        // decay from rest
   p_ps->GeneratePoint(p_momenta);                               // generate a PS point
   p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
   double weight = p_ps->Weight();                               // get weight factor
@@ -576,18 +559,18 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
   reader.SetString(me_string);
   reader.VectorFromString(resultstrings);
   if(resultstrings.size()==1 && resultstrings[0]=="Generic") {
-    for(int i=0;i<NumberOfDecayProducts()+1;i++) 
+    for(int i=0;i<NOut()+1;i++) 
       resultstrings.push_back( ToString<size_t>(i) );
   }
-  if(int(resultstrings.size())!=NumberOfDecayProducts()+2) {
+  if(int(resultstrings.size())!=NOut()+2) {
     msg_Error()<<METHOD<<" Error: Number of indices in \""<<me_string<<"\" ("
       <<int(resultstrings.size())-1<<") in "<<m_path<<m_filename<<" doesn't "
-      <<"equal number of particles ("<<NumberOfDecayProducts()+1<<"). Will abort."<<endl;
+      <<"equal number of particles ("<<NOut()+1<<"). Will abort."<<endl;
     abort();
   }
 
   Flavour_Info fi;
-  fi.n=NumberOfDecayProducts()+1;
+  fi.n=NOut()+1;
   int* indices = new int[fi.n]; // will get deleted by HD_ME_Base
   for(int i=0; i<fi.n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
   fi.flavs=p_flavours; fi.indices=indices;

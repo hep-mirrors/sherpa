@@ -1,10 +1,10 @@
-#ifndef Herwig_Interface_H
-#define Herwig_Interface_H
+#ifndef SHERPA_HerwigTools_Herwig_Interface_H
+#define SHERPA_HerwigTools_Herwig_Interface_H
 
-#include "HepEvt_Interface.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "ISR_Handler.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "PDF/Main/ISR_Handler.H"
 #include <map>
 
 namespace SHERPA {

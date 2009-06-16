@@ -1,15 +1,14 @@
 #ifndef SM_AxiGluon_h
 #define SM_AxiGluon_h
 
-#include "Model_Base.H"
-#include "MyComplex.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace MODEL {
   class SM_AxiGluon : public Model_Base {
   private :
     void ParticleInit();
     void FillSpectrum();
-    bool SanityChecks();
   public :
     SM_AxiGluon(std::string,std::string,bool);
     ~SM_AxiGluon();

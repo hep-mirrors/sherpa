@@ -1,14 +1,19 @@
-#ifndef Spinor_H
-#define Spinor_H
+#ifndef ATOOLS_Phys_Spinor_H
+#define ATOOLS_Phys_Spinor_H
 
-#include "MyComplex.H"
-#include "Vector.H"
+#include "ATOOLS/Math/Vec4.H"
 
+#include <complex>
 #include <vector>
 
 namespace ATOOLS {
 
+  template <class Scalar>
   class Spinor {
+  public:
+
+    typedef std::complex<Scalar> SComplex;
+
   protected:
     
     static double s_accu;
@@ -16,34 +21,35 @@ namespace ATOOLS {
 
     int m_r;
 
-    Complex m_u1, m_u2;
+    SComplex m_u1, m_u2;
 
-    friend std::ostream &operator<<(std::ostream &ostr,const Spinor &s); 
+    template <class _Scalar> friend std::ostream &operator<<
+      (std::ostream &ostr,const Spinor<_Scalar> &s); 
 
   public:
 
     // constructor
     inline Spinor(const int &r=1): 
       m_r(r), m_u1(0.0), m_u2(0.0) {}
-    inline Spinor(const int &r,const Complex &u1,const Complex &u2):
+    inline Spinor(const int &r,const SComplex &u1,const SComplex &u2):
       m_r(r), m_u1(u1), m_u2(u2) {}
-    inline Spinor(const int &r,const ATOOLS::Vec4D &p):
+    inline Spinor(const int &r,const Vec4<Scalar> &p):
       m_r(r) { Construct(p); }
     
     // member functions
-    void Construct(const ATOOLS::Vec4D &p);
+    void Construct(const Vec4<Scalar> &p);
 
-    Complex operator*(const Spinor &s) const;
+    SComplex operator*(const Spinor &s) const;
 
-    Spinor operator*(const double &d) const;
-    Spinor operator*(const Complex &c) const;
-    Spinor operator/(const double &d) const;
-    Spinor operator/(const Complex &c) const;
+    Spinor operator*(const Scalar &d) const;
+    Spinor operator*(const SComplex &c) const;
+    Spinor operator/(const Scalar &d) const;
+    Spinor operator/(const SComplex &c) const;
 
-    Spinor operator*=(const double &d); 
-    Spinor operator*=(const Complex &c); 
-    Spinor operator/=(const double &d);
-    Spinor operator/=(const Complex &c); 
+    Spinor operator*=(const Scalar &d); 
+    Spinor operator*=(const SComplex &c); 
+    Spinor operator/=(const Scalar &d);
+    Spinor operator/=(const SComplex &c); 
 
     Spinor operator+(const Spinor &s) const;
     Spinor operator-(const Spinor &s) const;
@@ -56,25 +62,25 @@ namespace ATOOLS {
     static void SetGauge(const int gauge);
 
     // inline functions
-    inline Complex &operator[](const size_t &i) 
+    inline SComplex &operator[](const size_t &i) 
     { return i==0?m_u1:m_u2; }
-    inline Complex operator()(const size_t &i) const 
+    inline SComplex operator()(const size_t &i) const 
     { return i==0?m_u1:m_u2; }
 
-    inline Complex U1() const { return m_u1; }
-    inline Complex U2() const { return m_u2; }
+    inline SComplex U1() const { return m_u1; }
+    inline SComplex U2() const { return m_u2; }
 
     inline int R() const { return m_r; }
 
-    inline double PPlus(const ATOOLS::Vec4D &p) const  
+    inline Scalar PPlus(const Vec4<Scalar> &p) const  
     { return p[0]+p[s_r3]; }
-    inline double PMinus(const ATOOLS::Vec4D &p) const 
+    inline Scalar PMinus(const Vec4<Scalar> &p) const 
     { return p[0]-p[s_r3]; }
 
-    inline Complex PT(const ATOOLS::Vec4D &p) const  
-    { return Complex(p[s_r1],p[s_r2]); }
-    inline Complex PTC(const ATOOLS::Vec4D &p) const  
-    { return Complex(p[s_r1],-p[s_r2]); }
+    inline SComplex PT(const Vec4<Scalar> &p) const  
+    { return SComplex(p[s_r1],p[s_r2]); }
+    inline SComplex PTC(const Vec4<Scalar> &p) const  
+    { return SComplex(p[s_r1],-p[s_r2]); }
 
     inline Spinor operator-() const
     { return Spinor(m_r,-m_u1,-m_u2); }
@@ -88,10 +94,12 @@ namespace ATOOLS {
 
   };// end of class Spinor
 
-  std::ostream &operator<<(std::ostream &ostr,const Spinor &s); 
-  std::ostream &operator<<(std::ostream &ostr,
-			   const std::vector<Spinor> &v); 
+  template <class Scalar> std::ostream &operator<<
+    (std::ostream &ostr,const Spinor<Scalar> &s); 
 
 }// end of namespace ATOOLS
+
+#define DWSpinor ATOOLS::Spinor<double>
+#define QWSpinor ATOOLS::Spinor<long double>
 
 #endif

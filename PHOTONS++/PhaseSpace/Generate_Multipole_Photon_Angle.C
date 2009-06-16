@@ -1,4 +1,4 @@
-#include "Generate_Multipole_Photon_Angle.H"
+#include "PHOTONS++/PhaseSpace/Generate_Multipole_Photon_Angle.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

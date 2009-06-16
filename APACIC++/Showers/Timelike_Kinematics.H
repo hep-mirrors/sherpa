@@ -1,11 +1,11 @@
-#ifndef Timelike_Kinematics_H
-#define Timelike_Kinematics_H
+#ifndef APACIC_Showers_Timelike_Kinematics_H
+#define APACIC_Showers_Timelike_Kinematics_H
 /*!
   \file Timelike_Kinematics.H
   \brief Declares the class Timelike_Kinematics
 */
 
-#include "Jet_Finder.H"
+#include "ATOOLS/Phys/Blob.H"
 
 namespace APACIC {
 
@@ -14,7 +14,7 @@ namespace APACIC {
   class Timelike_Kinematics {
   private:
 
-    ATOOLS::Jet_Finder *p_jf;
+    ATOOLS::Mass_Selector *p_ms;
 
     int m_zscheme;
 
@@ -38,7 +38,7 @@ namespace APACIC {
   public:
 
     // constructor
-    Timelike_Kinematics(ATOOLS::Jet_Finder *const jf);
+    Timelike_Kinematics();
 
     // member functions
     double GetZ(const double &zp,const double &ta, 
@@ -57,7 +57,6 @@ namespace APACIC {
 			      const double &ta,
 			      const double &tb,const double &tc) const;
 
-    int  GeneratePSMasses(Knot *const mo) const;
     int  Shuffle(Knot * const mo,const int first) const;
 
     bool DoSingleKinematics(Knot * const mo,const bool force=false) const;
@@ -84,6 +83,10 @@ namespace APACIC {
     inline void SetZScheme(const int &scheme) { m_zscheme=scheme; }
 
     inline int ZScheme() const { return m_zscheme; }
+
+    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
+    inline ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
   };// end of class Timelike_Kinematics
   /*!

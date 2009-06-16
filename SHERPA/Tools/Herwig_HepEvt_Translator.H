@@ -1,10 +1,10 @@
-#ifndef Herwig_HepEvt_Translator_h
-#define Herwig_HepEvt_Translator_h
+#ifndef SHERPA_Tools_Herwig_HepEvt_Translator_H
+#define SHERPA_Tools_Herwig_HepEvt_Translator_H
 
-#include "Blob.H"
-#include "Blob_List.H"
-#include "Particle.H"
-#include "Message.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
 #include <map>
 
 namespace SHERPA {

@@ -1,8 +1,8 @@
-#include "B_K_Semileptonic.H"
-#include "Message.H"
-#include "XYZFuncs.H"
-#include "Histogram.H"
-#include "Model_Base.H"
+#include "HADRONS++/ME_Library/B_K_Semileptonic.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -184,7 +184,7 @@ Complex B_K_Semileptonic::gSD(double mhat, double shat)
           2./9.*(2.+y)*sqrt(fabs(1.-y))*theta;
 }
 
-DEFINE_ME_GETTER(B_K_Semileptonic,B_K_Semileptonic_Getter,"B_K_Semileptonic");
+DEFINE_ME_GETTER(B_K_Semileptonic,B_K_Semileptonic_Getter,"B_K_Semileptonic")
 
 void B_K_Semileptonic_Getter::PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow K \\; l^- \\; l^+ $ \n \n"

@@ -1,7 +1,7 @@
-#include "XYZFuncs.H"
-#include "Exception.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Org/Exception.H"
 
-#include "Current_Base.H"
+#include "HADRONS++/Current_Library/Current_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;

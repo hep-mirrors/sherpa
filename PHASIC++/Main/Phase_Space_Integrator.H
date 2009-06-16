@@ -1,13 +1,11 @@
-#ifndef Phase_Space_Integrator_h
-#define Phase_Space_Integrator_h
-
-#include "Algebra_Interpreter.H"
+#ifndef PHASIC_Main_Phase_Space_Integrator_H
+#define PHASIC_Main_Phase_Space_Integrator_H
 
 namespace PHASIC {class Phase_Space_Handler;}
 
 namespace PHASIC {
 
-  class Phase_Space_Integrator: public ATOOLS::Tag_Replacer {
+  class Phase_Space_Integrator {
   private:
 
     double          result, max, error;
@@ -19,12 +17,6 @@ namespace PHASIC {
     double value, maxerror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
 
-#ifdef _USE_MPI_
-    long int alln;
-    int iterall;
-    double allsum;
-    double allsum2;
-#endif
     struct {
       int    id;
       int    n;
@@ -35,8 +27,6 @@ namespace PHASIC {
 
     Phase_Space_Handler *psh;
 
-    ATOOLS::Algebra_Interpreter *p_interpreter;
- 
   public:
 
     Phase_Space_Integrator();
@@ -44,7 +34,7 @@ namespace PHASIC {
     ~Phase_Space_Integrator();
 
     double Calculate(Phase_Space_Handler*,double,int); 
-    double CalculateDecay(Phase_Space_Handler*,double,double); 
+    double CalculateDecay(Phase_Space_Handler*,double); 
 
     //! Simple access methods.
     inline double GetMax()            { return max;  };
@@ -54,9 +44,6 @@ namespace PHASIC {
     static void     SetMaxPoints(long int _nmax);
 
     bool AddPoint(const double value);
-
-    std::string   ReplaceTags(std::string &expr) const;    
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
 
   };
   /*!

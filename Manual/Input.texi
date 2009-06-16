@@ -1,0 +1,161 @@
+@node Input structure
+@chapter Input structure
+
+A Sherpa setup is steered by various parameters, associated with the
+different components of event generation.
+
+These have to be specified in a
+run-card which by default is named ``Run.dat'' in the current working directory.
+If you want to use a different setup directory for your Sherpa run, you have to
+specify it on the command line as @samp{PATH=<dir>}. To read parameters from a
+run-card with a different name, you may specify @samp{RUNDATA=<file>}.
+
+Sherpa's parameters are grouped according to the different aspects
+of event generation, e.g. the beam parameters in the group @samp{(beam)} and
+the fragmentation parameters in the group @samp{(fragmentation)}.
+In the run-card this looks like:
+@verbatim
+  (beam){
+    BEAM_ENERGY_1 = 7000.
+    ...
+  }(beam)
+@end verbatim
+
+Each of these groups is described in detail in another chapter of this
+manual, see @ref{Parameters}.
+
+If such a section or file does not exist in the setup directory,
+a Sherpa-wide fallback mechanism is employed, searching the file
+in various locations in the following order (where $SHERPA_DAT_PATH is an
+optionally set environment variable):
+@itemize @bullet
+
+@item
+@samp{$SHERPA_DAT_PATH/<PATH>/}
+
+@item
+@samp{$SHERPA_DAT_PATH/}
+
+@item
+@samp{$prefix/share/SHERPA-MC/<PATH>/}
+
+@item
+@samp{$prefix/share/SHERPA-MC/}
+
+@end itemize
+
+All parameters can be overwritten on the command line, i.e.
+command-line input has the highest priority.
+The syntax is
+@verbatim
+  <prefix>/bin/Sherpa  KEYWORD1=value1 KEYWORD2=value2 ...
+@end verbatim
+
+@noindent To change, e.g., the default number of events, the corresponding
+command line reads
+@verbatim
+  <prefix>/bin/Sherpa  EVENTS=10000
+@end verbatim
+
+All over Sherpa, particles are defined by the particle code proposed by the
+PDG. These codes and the particle properties will be listed during each run with
+@samp{OUTPUT=2} for the elementary particles and @samp{OUTPUT=4} for the hadrons.
+In both cases, antiparticles are characterized by a minus sign in front of their
+code, e.g. a mu- has code @samp{13}, while a mu+ has @samp{-13}.
+
+There are a few extra features for an easier handling of the parameter
+file(s), namely global tag replacement, see @ref{Tags}, and algebra
+interpretation, see @ref{Interpreter}.
+
+
+@menu
+* Interpreter::      How to use the internal interpreter
+* Tags::             How to use tags
+@end menu
+
+@node Interpreter
+@section Interpreter
+
+Sherpa has a built-in interpreter for algebraic expressions, like @samp{cos(5/180*M_PI)}.
+This interpreter is employed when reading integer and floating point numbers from
+input files, such that certain parameters can be written in a more convenient fashion.
+For example it is possible to specify the factorisation scale as @samp{sqr(91.188)}.
+@*
+There are predefined tags to alleviate the handling
+
+@table @samp
+
+@item M_PI
+Ludolph's Number to a precision of 12 digits.
+@item M_C
+The speed of light in the vacuum.
+@item E_CMS
+The total centre of mass energy of the collision.
+
+@end table
+The expression syntax is in general C-like, except for the extra function @samp{sqr},
+which gives the square of its argument. Operator precedence is the same as in C.
+The interpreter can handle functions with an arbitrary list of parameters, such as
+@samp{min} and @samp{max}.
+@*
+The interpreter can be employed to construct arbitrary variables from four momenta,
+like e.g. in the context of a parton level selector, see @ref{Selectors}.
+The corresponding functions are
+
+@table @samp
+
+@item Mass(@var{v})
+The invariant mass of @var{v} in GeV.
+@item Abs2(@var{v})
+The invariant mass squared of @var{v} in GeV^2.
+@item PPerp(@var{v})
+The transverse momentum of @var{v} in GeV.
+@item PPerp2(@var{v})
+The transverse momentum squared of @var{v} in GeV^2.
+@item MPerp(@var{v})
+The transverse mass of @var{v} in GeV.
+@item MPerp2(@var{v})
+The transverse mass squared of @var{v} in GeV^2.
+@item Theta(@var{v})
+The polar angle of @var{v} in radians.
+@item Eta(@var{v})
+The pseudorapidity of @var{v}.
+@item Phi(@var{v})
+The azimuthal angle of @var{v} in radians.
+
+@item Comp(@var{v},@var{i})
+The @var{i}'th component of the vector @var{v}.
+@item PPerpR(@var{v1},@var{v2})
+The relative transverse momentum between @var{v1} and @var{v2} in GeV.
+@item ThetaR(@var{v1},@var{v2})
+The relative angle between @var{v1} and @var{v2} in radians.
+@item DEta(@var{v1},@var{v2})
+The rapidity difference between @var{v1} and @var{v2}.
+@item DPhi(@var{v1},@var{v2})
+The relative polar angle between @var{v1} and @var{v2} in radians.
+
+@end table
+
+
+@node Tags
+@section Tags
+
+Tag replacement in Sherpa is performed through the data
+reading routines, which means that it can be performed for
+virtually all inputs.
+Specifying a tag on the command line using the syntax
+@samp{<Tag>:=<Value>} will replace every occurrence of @samp{<Tag>} in all files
+during read-in. An example tag definition could read
+@verbatim
+  <prefix>/bin/Sherpa YCUT:=20
+@end verbatim
+
+@noindent and then be used in the (me) and (selector) sections like
+@verbatim
+  (me){
+    RESULT_DIRECTORY = Result_YCUT/
+  }(me)
+  (selector){
+    JetFinder   sqr(YCUT/E_CMS) 1.
+  }(selector)
+@end verbatim

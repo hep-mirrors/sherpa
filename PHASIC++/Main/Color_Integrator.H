@@ -1,10 +1,27 @@
-#ifndef Color_Integrator_H
-#define Color_Integrator_H
+#ifndef PHASIC_Main_Color_Integrator_H
+#define PHASIC_Main_Color_Integrator_H
 
 #include <vector>
 #include <iostream>
+#include <map>
+
+namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace PHASIC {
+
+  struct cls {
+
+    enum scheme {
+      unknown   = 0,
+      sum       = 1,
+      sample    = 2
+    };
+
+    static std::map<std::string,std::string> ColorSchemeTags();
+
+  };// end of struct cls
+
+  std::ostream &operator<<(std::ostream &str,const cls::scheme &s);
 
   class Representation {
   protected:
@@ -47,13 +64,13 @@ namespace PHASIC {
 
     std::vector<Representation*> m_ids;
 
-    Idx_Matrix m_orders, m_confs;
+    Idx_Matrix m_orders;
     Idx_Vector m_lastids, m_lastperm, m_nexti;
 
-    Double_Vector m_weights, m_cweights, m_asum, m_alpha;
+    Double_Vector m_weights, m_cweights, m_alpha;
 
-    size_t m_pairs, m_lastconf, m_alphamode;
-    bool   m_check, m_iterate, m_on, m_otfcc, m_fincc, m_valid;
+    size_t m_pairs, m_lastconf, m_alphamode, m_csmode;
+    bool   m_check, m_on, m_otfcc, m_fincc, m_valid, m_nogen;
 
     double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight;
 
@@ -62,7 +79,6 @@ namespace PHASIC {
     size_t GenerateIndex();
 
     bool DiceColours();
-    void DicePoint();
     int  Dice();
     bool LookUp();
     
@@ -77,6 +93,7 @@ namespace PHASIC {
     bool CheckPermutation(const Idx_Vector &perm);
 
     bool AddConfiguration(const size_t &i);
+    bool RInitialize();
 
   public:
 
@@ -93,7 +110,7 @@ namespace PHASIC {
 
     bool NextOrder();
     bool GenerateOrders();
-    bool GeneratePoint(const bool orders=false);
+    bool GeneratePoint();
     bool GenerateType(const size_t &type,const bool orders=false);
     bool Initialize();
 
@@ -109,17 +126,21 @@ namespace PHASIC {
 
     void SetAlpha(const Double_Vector &alpha);
 
+    void SetPoint(const ATOOLS::Cluster_Amplitude *const ampl);
+
     // inline functions
+    inline void SetNoGen(const bool nogen)     { m_nogen=nogen;     }
     inline void SetCheck(const bool check)     { m_check=check;     }
-    inline void SetIterate(const bool iterate) { m_iterate=iterate; }
     inline void SetOTFCC(const bool otf)       { m_otfcc=otf;       }
 
     inline void SetOn(const bool on)           { m_on=on;           }
     inline void SetAlphaMode(const size_t am)  { m_alphamode=am;    }
 
+    inline bool NoGen() const   { return m_nogen;   }
     inline bool Check() const   { return m_check;   }
-    inline bool Iterate() const { return m_iterate; }
     inline bool OTFCC() const   { return m_otfcc;   }
+
+    inline bool On() const { return m_on; }
 
     inline bool ValidPoint() const   { return m_valid; }
 
@@ -129,8 +150,6 @@ namespace PHASIC {
 
     inline const Idx_Matrix    &Orders() const  { return m_orders; }
     inline const Double_Vector &Weights() const { return m_weights; }
-
-    inline const Idx_Matrix &Configurations() const { return m_confs; }
 
   };// end of class Color_Integrator
 

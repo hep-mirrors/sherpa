@@ -1,8 +1,8 @@
-#ifndef ResonanceFlavour_h
-#define ResonanceFlavour_h
+#ifndef HADRONS_PS_Library_ResonanceFlavour_H
+#define HADRONS_PS_Library_ResonanceFlavour_H
 
-#include "MathTools.H"
-#include "Histogram.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Histogram.H"
 
 namespace HADRONS {
    

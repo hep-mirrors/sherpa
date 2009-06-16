@@ -1,8 +1,8 @@
-#ifndef Color_Dipole_H
-#define Color_Dipole_H
+#ifndef PDF_Remnant_Color_Dipole_H
+#define PDF_Remnant_Color_Dipole_H
 
-#include "Particle_List.H"
-#include "Blob.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <map>
 
 namespace PDF {

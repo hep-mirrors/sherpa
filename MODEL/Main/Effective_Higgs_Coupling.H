@@ -1,7 +1,7 @@
-#ifndef Effective_Higgs_Coupling_H
-#define Effective_Higgs_Coupling_H
+#ifndef MODEL_Main_Effective_Higgs_Coupling_H
+#define MODEL_Main_Effective_Higgs_Coupling_H
 
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace MODEL {
 

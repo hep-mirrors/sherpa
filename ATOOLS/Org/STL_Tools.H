@@ -1,5 +1,5 @@
-#ifndef STL_Tools_H
-#define STL_Tools_H
+#ifndef ATOOLS_Org_STL_Tools_H
+#define ATOOLS_Org_STL_Tools_H
 
 #include <iostream>
 #include <vector>
@@ -23,6 +23,10 @@ namespace ATOOLS {
     bool operator()(const std::string &a,const std::string &b) const;
     
   };// end of class String_Sort
+
+  std::vector<int> ID(size_t id);
+
+  size_t IDCount(size_t id);
 
 }
 

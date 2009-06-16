@@ -1,12 +1,12 @@
-#include "VA_P_T.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/Current_Library/VA_P_T.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace HELICITIES;
 
-#include "VA_P_T_ISGW.C"
-#include "VA_P_T_ISGW2.C"
+#include "HADRONS++/Current_Library/VA_P_T_ISGW.C"
+#include "HADRONS++/Current_Library/VA_P_T_ISGW2.C"
 
 namespace HADRONS { namespace VA_P_T_FFs {
   class NoFF : public FormFactor_Base {

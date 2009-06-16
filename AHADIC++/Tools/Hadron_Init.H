@@ -1,7 +1,7 @@
-#ifndef Hadron_Init_H
-#define Hadron_Init_H
+#ifndef AHADIC_Tools_Hadron_Init_H
+#define AHADIC_Tools_Hadron_Init_H
 
-#include "Data_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 namespace AHADIC {
 

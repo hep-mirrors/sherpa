@@ -1,7 +1,9 @@
-#include "MyTiming.H"
-#include "Message.H"
+#include "ATOOLS/Org/MyTiming.H"
+#include "ATOOLS/Org/Message.H"
 #include <iostream>
 #include <unistd.h>
+#include <time.h>
+
 using std::endl;
 using namespace ATOOLS;
 
@@ -87,4 +89,19 @@ std::string MyTiming::TimeString(const int format)
     if ((format&2) && (tstring[i]==':')) tstring[i]='-';
   }
   return tstring;
+}
+
+std::string MyTiming::StrFTime
+(const std::string &format,const time_t &offset)
+{
+  time_t t(time(NULL));
+  t+=offset;
+  std::string rv(100,' ');
+  if (strftime(&rv[0],rv.length(),format.c_str(),localtime(&t))==0) {
+    msg_Error()<<METHOD<<"(): Error converting time string."<<std::endl;
+    return "";
+  }
+  while (rv[0]==' ') rv.erase(0,1);
+  while (rv[rv.length()-1]==' ') rv.erase(rv.length()-1,1);
+  return rv;
 }

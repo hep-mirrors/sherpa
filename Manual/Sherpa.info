@@ -1,0 +1,1190 @@
+This is Sherpa.info, produced by makeinfo version 4.11 from Sherpa.texi.
+
+
+File: Sherpa.info,  Node: Top,  Next: Introduction,  Up: (dir)
+
+Sherpa 1.2.0 Manual
+*******************
+
+* Menu:
+
+* Introduction::     What is Sherpa
+
+* Command line::     Command line options
+* Input structure::  How to specify parameters for a Sherpa run.
+* Parameters::       List of parameters
+
+* Cross section::    How to obtain the total cross section
+
+* Tips and Tricks::  Advanced usage tips
+* Customization::    Extending Sherpa
+
+* Authors::          Authors of Sherpa
+* Copying::          Your rights and freedoms
+* Index::            Index
+
+
+File: Sherpa.info,  Node: Introduction,  Next: Command line,  Prev: Top,  Up: Top
+
+1 Introduction
+**************
+
+Sherpa is a Monte Carlo event generator for the Simulation of
+High-Energy Reactions of PArticles in lepton-lepton, lepton-photon,
+photon-photon and hadron-hadron collisions.  This document provides
+information, which helps users understand and apply SHERPA for their
+physics studies. The various options and parameters specifying the
+program are compiled, and their meaning is explained. This document
+does not aim at giving a complete description of the physics content of
+Sherpa.  To this end, the authors refer the reader to the original
+publication, arXiv:0811.4622 [hep-ph]
+
+
+File: Sherpa.info,  Node: Command line,  Next: Input structure,  Prev: Introduction,  Up: Top
+
+2 Command line options
+**********************
+
+The available command line options for Sherpa.
+
+`-v, --version'
+     Print versioning information.
+
+`PARAMETER=VALUE'
+     Sets the value of a parameter, see *note Parameters::.
+
+`TAG:=VALUE'
+     Sets the value of a tag, see *note Tags::.
+
+
+
+File: Sherpa.info,  Node: Input structure,  Next: Parameters,  Prev: Command line,  Up: Top
+
+3 Input structure
+*****************
+
+A Sherpa setup is steered by various parameters, associated with the
+different components of event generation.
+
+   These have to be specified in a run-card which by default is named
+"Run.dat" in the current working directory.  If you want to use a
+different setup directory for your Sherpa run, you have to specify it
+on the command line as `PATH=<dir>'. To read parameters from a run-card
+with a different name, you may specify `RUNDATA=<file>'.
+
+   Sherpa's parameters are grouped according to the different aspects
+of event generation, e.g. the beam parameters in the group `(beam)' and
+the fragmentation parameters in the group `(fragmentation)'.  In the
+run-card this looks like:
+
+  (beam){
+    BEAM_ENERGY_1 = 7000.
+    ...
+  }(beam)
+
+   Each of these groups is described in detail in another chapter of
+this manual, see *note Parameters::.
+
+   If such a section or file does not exist in the setup directory, a
+Sherpa-wide fallback mechanism is employed, searching the file in
+various locations in the following order (where $SHERPA_DAT_PATH is an
+optionally set environment variable):
+   * `$SHERPA_DAT_PATH/<PATH>/'
+
+   * `$SHERPA_DAT_PATH/'
+
+   * `$prefix/share/SHERPA-MC/<PATH>/'
+
+   * `$prefix/share/SHERPA-MC/'
+
+
+   All parameters can be overwritten on the command line, i.e.
+command-line input has the highest priority.  The syntax is
+
+  <prefix>/bin/Sherpa  KEYWORD1=value1 KEYWORD2=value2 ...
+
+To change, e.g., the default number of events, the corresponding
+command line reads
+
+  <prefix>/bin/Sherpa  EVENTS=10000
+
+   All over Sherpa, particles are defined by the particle code proposed
+by the PDG. These codes and the particle properties will be listed
+during each run with `OUTPUT=2' for the elementary particles and
+`OUTPUT=4' for the hadrons.  In both cases, antiparticles are
+characterized by a minus sign in front of their code, e.g. a mu- has
+code `13', while a mu+ has `-13'.
+
+   There are a few extra features for an easier handling of the
+parameter file(s), namely global tag replacement, see *note Tags::, and
+algebra interpretation, see *note Interpreter::.
+
+* Menu:
+
+* Interpreter::      How to use the internal interpreter
+* Tags::             How to use tags
+
+
+File: Sherpa.info,  Node: Interpreter,  Next: Tags,  Up: Input structure
+
+3.1 Interpreter
+===============
+
+Sherpa has a built-in interpreter for algebraic expressions, like
+`cos(5/180*M_PI)'.  This interpreter is employed when reading integer
+and floating point numbers from input files, such that certain
+parameters can be written in a more convenient fashion.  For example it
+is possible to specify the factorisation scale as `sqr(91.188)'.
+There are predefined tags to alleviate the handling
+
+`M_PI'
+     Ludolph's Number to a precision of 12 digits.
+
+`M_C'
+     The speed of light in the vacuum.
+
+`E_CMS'
+     The total centre of mass energy of the collision.
+
+   The expression syntax is in general C-like, except for the extra
+function `sqr', which gives the square of its argument. Operator
+precedence is the same as in C.  The interpreter can handle functions
+with an arbitrary list of parameters, such as `min' and `max'.
+The interpreter can be employed to construct arbitrary variables from
+four momenta, like e.g. in the context of a parton level selector, see
+*note Selectors::.  The corresponding functions are
+
+`Mass(V)'
+     The invariant mass of V in GeV.
+
+`Abs2(V)'
+     The invariant mass squared of V in GeV^2.
+
+`PPerp(V)'
+     The transverse momentum of V in GeV.
+
+`PPerp2(V)'
+     The transverse momentum squared of V in GeV^2.
+
+`MPerp(V)'
+     The transverse mass of V in GeV.
+
+`MPerp2(V)'
+     The transverse mass squared of V in GeV^2.
+
+`Theta(V)'
+     The polar angle of V in radians.
+
+`Eta(V)'
+     The pseudorapidity of V.
+
+`Phi(V)'
+     The azimuthal angle of V in radians.
+
+`Comp(V,I)'
+     The I'th component of the vector V.
+
+`PPerpR(V1,V2)'
+     The relative transverse momentum between V1 and V2 in GeV.
+
+`ThetaR(V1,V2)'
+     The relative angle between V1 and V2 in radians.
+
+`DEta(V1,V2)'
+     The rapidity difference between V1 and V2.
+
+`DPhi(V1,V2)'
+     The relative polar angle between V1 and V2 in radians.
+
+
+
+File: Sherpa.info,  Node: Tags,  Prev: Interpreter,  Up: Input structure
+
+3.2 Tags
+========
+
+Tag replacement in Sherpa is performed through the data reading
+routines, which means that it can be performed for virtually all inputs.
+Specifying a tag on the command line using the syntax `<Tag>:=<Value>'
+will replace every occurrence of `<Tag>' in all files during read-in.
+An example tag definition could read
+
+  <prefix>/bin/Sherpa YCUT:=20
+
+and then be used in the (me) and (selector) sections like
+
+  (me){
+    RESULT_DIRECTORY = Result_YCUT/
+  }(me)
+  (selector){
+    JetFinder   sqr(YCUT/E_CMS) 1.
+  }(selector)
+
+
+File: Sherpa.info,  Node: Parameters,  Next: Cross section,  Prev: Input structure,  Up: Top
+
+4 Parameters
+************
+
+A Sherpa setup is steered by various parameters, associated with the
+different components of event generation. Tag replacements may be
+performed in all inputs, see *note Tags::.
+
+* Menu:
+
+* Run Parameters::    List of general parameters
+* Beam Parameters::   List of beam parameters
+* ISR Parameters::    List of initial state radiation parameters
+* Selectors::         Syntax of parton level cuts
+
+
+File: Sherpa.info,  Node: Run Parameters,  Next: Beam Parameters,  Up: Parameters
+
+4.1 Run Parameters
+==================
+
+The following parameters describe general run information.
+
+* Menu:
+
+* EVENTS::            Number of events to generate.
+* OUTPUT::            Output level.
+* RANDOM_SEED::       Seed for random number generator.
+* ANALYSIS::          Switch internal analysis on or off.
+* ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
+* TIMEOUT::           Run time limitation.
+* SPIN_CORRELATIONS:: Switch spin correlations on/off.
+* NUM_ACCURACY::      Accuracy for gauge tests.
+* Event output formats:: Event output in different formats.
+
+* SHERPA_CPP_PATH::   The C++ code generation path.
+* SHERPA_LIB_PATH::   The runtime library path.
+
+
+File: Sherpa.info,  Node: EVENTS,  Next: OUTPUT,  Up: Run Parameters
+
+4.1.1 EVENTS
+------------
+
+This parameter specifies the number of events to be generated.
+
+
+File: Sherpa.info,  Node: OUTPUT,  Next: RANDOM_SEED,  Prev: EVENTS,  Up: Run Parameters
+
+4.1.2 OUTPUT
+------------
+
+This parameter specifies the output level (verbosity) of the program.
+The value can be any sum of the following:
+   * 0: Error messages (-> always displayed).
+
+   * 1: Event display.
+
+   * 2: Informational messages during the run.
+
+   * 4: Tracking messages (lots of output).
+
+   * 8: Debugging messages (even more output).
+
+   E.g. OUTPUT=3 would display information, events and errors.
+
+
+File: Sherpa.info,  Node: RANDOM_SEED,  Next: ANALYSIS,  Prev: OUTPUT,  Up: Run Parameters
+
+4.1.3 RANDOM_SEED
+-----------------
+
+SHERPA uses a random-number generator as described in [Florida State
+University Report FSU-SCRI-87-50].  The two independent integer-valued
+seeds are speciﬁed by the option "RANDOM SEED=A B". The seeds A and B
+may range from 0 to 31328 and from 0 to 30081, respectively. If RANDOM
+SEED is not speciﬁed at all or only by one integer number, the old
+random-number generator (SHERPA 1.0.6 and older) will be used.
+
+
+File: Sherpa.info,  Node: ANALYSIS,  Next: ANALYSIS_OUTPUT,  Prev: RANDOM_SEED,  Up: Run Parameters
+
+4.1.4 ANALYSIS
+--------------
+
+The internal analysis can be switched on or oﬀ by setting the ANALYSIS
+switch to 1 or 0, respectively. An output directory can be speciﬁed by
+setting ANALYSIS_OUTPUT. The new directory will be created w.r.t. the
+working directory.
+
+
+File: Sherpa.info,  Node: ANALYSIS_OUTPUT,  Next: TIMEOUT,  Prev: ANALYSIS,  Up: Run Parameters
+
+4.1.5 ANALYSIS_OUTPUT
+---------------------
+
+Directory for generated analysis histogram files.
+
+
+File: Sherpa.info,  Node: TIMEOUT,  Next: SPIN_CORRELATIONS,  Prev: ANALYSIS_OUTPUT,  Up: Run Parameters
+
+4.1.6 TIMEOUT
+-------------
+
+A run time limitation can be given in user CPU seconds through TIMEOUT.
+This option is of some relevance when running SHERPA on a batch system.
+Since in many cases jobs are just terminated, this allows to interrupt
+a run, to store all relevant information and to restart it without any
+loss. This is particularly interesting when carrying out long
+integrations.  Contrary, setting the TIMEOUT variable to -1, which is
+the default setting, translates into having no run time limitation at
+all.
+
+
+File: Sherpa.info,  Node: SPIN_CORRELATIONS,  Next: NUM_ACCURACY,  Prev: TIMEOUT,  Up: Run Parameters
+
+4.1.7 SPIN_CORRELATIONS
+-----------------------
+
+The algorithm used to transfer spin-correlation information from
+AMEGIC++ to HADRONS++ is switched off (=0) by default. It can be
+switched on via SPIN CORRELATIONS=1. Process libraries have to be
+re-created in this case.
+
+
+File: Sherpa.info,  Node: NUM_ACCURACY,  Next: Event output formats,  Prev: SPIN_CORRELATIONS,  Up: Run Parameters
+
+4.1.8 NUM_ACCURACY
+------------------
+
+The targeted numerical accuracy can be speciﬁed through NUM ACCURACY,
+e.g. for comparing two numbers. This might have to be reduced if gauge
+tests fail for numerical reasons.
+
+
+File: Sherpa.info,  Node: SHERPA_CPP_PATH,  Next: SHERPA_LIB_PATH,  Prev: Event output formats,  Up: Run Parameters
+
+4.1.9 SHERPA_CPP_PATH
+---------------------
+
+The path in which Sherpa will eventually store dynamically created C++
+source code.  If not specified otherwise, sets `SHERPA_LIB_PATH' to
+`$SHERPA_CPP_PATH/Process/lib'.
+
+
+File: Sherpa.info,  Node: SHERPA_LIB_PATH,  Prev: SHERPA_CPP_PATH,  Up: Run Parameters
+
+4.1.10 SHERPA_LIB_PATH
+----------------------
+
+The path in which Sherpa looks for dynamically bound libraries from
+previously created C++ source code, cf. *note SHERPA_CPP_PATH::.
+
+
+File: Sherpa.info,  Node: Event output formats,  Next: SHERPA_CPP_PATH,  Prev: NUM_ACCURACY,  Up: Run Parameters
+
+4.1.11 Event output formats
+---------------------------
+
+Sherpa provides the possibility to output events - either to file or to
+screen - in its native and two other output formats: The HepEVT common
+block structure or the HepMC format.  The authors of Sherpa assume that
+the user is sufficiently acquainted with these formats when selecting
+them.
+
+   There are two ways to specify the event record. First of all the
+switch EVENT_MODE (*Note EVENT_MODE::.) results in the corresponding
+structure being filled internally (and printed to screen, if the
+output-level is set accordingly).
+
+   Second, if the events are to be written to file, the keywords listed
+below can be used. With these keywords the filename's root can be
+specified, i.e. HEPEVT_OUTPUT=filename will create files named
+filename.#.hepevt, where the hash mark stands for an increasing number.
+
+   To write events directly to gzipped files instead of plain text, the
+option -enable-gzip has to be specified during the installation.
+
+* Menu:
+
+* EVENT_MODE::        Format for screen display of events.
+* SHERPA_OUTPUT::     Name of file to write event output in Sherpa format.
+* HEPMC2_GENEVENT_OUTPUT:: Name of file to write event output in HepMC::IO_GenEvent format.
+* HEPMC2_ASCII_OUTPUT:: Name of file to write event output in HepMC::IO_Ascii format (deprecated).
+* HEPMC2_OUTPUT:: Name of file to write event output in HepMC::GenEvent::print format (deprecated).
+* FILE_SIZE::         Number of events per file (default: 1000).
+* EVT_FILE_PATH::     Directory where the files will be stored.
+* OUTPUT_PRECISION::  Steers the precision of all numbers written to file.
+
+
+File: Sherpa.info,  Node: EVENT_MODE,  Next: SHERPA_OUTPUT,  Up: Event output formats
+
+4.1.11.1 EVENT_MODE
+...................
+
+This parameter specifies the format for displaying events on screen
+when OUTPUT includes the "1" setting.  Available values:
+   * EVENT_MODE=Sherpa (default, blob list output)
+
+   * EVENT_MODE=HepMC (GenEvent print method)
+
+   * EVENT_MODE=HepEvt (HepEvt common block)
+
+
+File: Sherpa.info,  Node: SHERPA_OUTPUT,  Next: HEPMC2_GENEVENT_OUTPUT,  Prev: EVENT_MODE,  Up: Event output formats
+
+4.1.11.2 SHERPA_OUTPUT
+......................
+
+Name of file to write event output in Sherpa format
+
+
+File: Sherpa.info,  Node: HEPMC2_GENEVENT_OUTPUT,  Next: HEPMC2_ASCII_OUTPUT,  Prev: SHERPA_OUTPUT,  Up: Event output formats
+
+4.1.11.3 HEPMC2_GENEVENT_OUTPUT
+...............................
+
+Name of file to write event output in HepMC::IO_GenEvent format.
+
+
+File: Sherpa.info,  Node: HEPMC2_ASCII_OUTPUT,  Next: HEPMC2_OUTPUT,  Prev: HEPMC2_GENEVENT_OUTPUT,  Up: Event output formats
+
+4.1.11.4 HEPMC2_ASCII_OUTPUT
+............................
+
+Name of file to write event output in HepMC::IO_Ascii format
+(deprecated).
+
+
+File: Sherpa.info,  Node: HEPMC2_OUTPUT,  Next: FILE_SIZE,  Prev: HEPMC2_ASCII_OUTPUT,  Up: Event output formats
+
+4.1.11.5 HEPMC2_OUTPUT
+......................
+
+Name of file to write event output in HepMC::GenEvent::print format
+(deprecated).
+
+
+File: Sherpa.info,  Node: FILE_SIZE,  Next: EVT_FILE_PATH,  Prev: HEPMC2_OUTPUT,  Up: Event output formats
+
+4.1.11.6 FILE_SIZE
+..................
+
+Number of events per file (default: 1000).
+
+
+File: Sherpa.info,  Node: EVT_FILE_PATH,  Next: OUTPUT_PRECISION,  Prev: FILE_SIZE,  Up: Event output formats
+
+4.1.11.7 EVT_FILE_PATH
+......................
+
+Directory where the files will be stored.
+
+
+File: Sherpa.info,  Node: OUTPUT_PRECISION,  Prev: EVT_FILE_PATH,  Up: Event output formats
+
+4.1.11.8 OUTPUT_PRECISION
+.........................
+
+Steers the precision of all numbers written to file.
+
+
+File: Sherpa.info,  Node: Beam Parameters,  Next: ISR Parameters,  Prev: Run Parameters,  Up: Parameters
+
+4.2 Beam Parameters
+===================
+
+The setup of the colliding beams is covered by the `(beam)' section of
+the steering file or the beam data file `Beam.dat', respectively. The
+_mandatory settings_ to be made are
+
+   * The initial beam particles specified through `BEAM_1' and
+     `BEAM_2', given by their PDG particle number. For (anti)protons
+     and (positrons) electrons, e.g., these are given by (-)2212 or
+     (-)11, respectively.  The code for photons is 22.
+
+   * The energies of both incoming beams, defined through
+     `BEAM_ENERGY_1' and `BEAM_ENERGY_2', given in units of GeV.
+
+   A List of available Beam spectra is given in section *note Beam
+Spectra::.
+
+* Menu:
+
+* Beam Spectra::  List of available beam spectra
+
+   The following parameters are used to steer the beam setup.
+
+* Menu:
+
+* BEAM_1::            PDG ID of the first beam particle.
+* BEAM_2::            PDG ID of the second beam particle.
+* BEAM_ENERGY_1::     Energy of the first beam particle.
+* BEAM_ENERGY_2::     Energy of the second beam particle.
+* BEAM_SPECTRUM_1::   The Beamstrahlung spectrum for the first beam.
+* BEAM_SPECTRUM_2::   The Beamstrahlung spectrum for the second beam.
+* SPECTRUM_FILE_1::   Spectrum file name for the first beam.
+* SPECTRUM_FILE_2::   Spectrum file name for the second beam.
+* BEAM_SMIN::         Minimum fraction of cms energy after Beamstrahlung.
+* BEAM_SMAX::         Maximum fraction of cms energy after Beamstrahlung.
+* K_PERP_MEAN_1::     Mean primordial transverse momentum of first beam.
+* K_PERP_MEAN_2::     Mean primordial transverse momentum of second beam.
+* K_PERP_SIGMA_1::    Width of primordial transverse momentum distribution of first beam.
+* K_PERP_SIGMA_2::    Width of primordial transverse momentum distribution of second beam.
+
+
+File: Sherpa.info,  Node: Beam Spectra,  Next: BEAM_1,  Up: Beam Parameters
+
+4.2.1 Beam Spectra
+------------------
+
+Possible values are
+`Monochromatic'
+     The beam energy is unaltered and the beam particles remain
+     unchanged.  That is the default and corresponds to ordinary
+     hadron-hadron or lepton-lepton collisions.
+
+`Laser_Backscattering'
+     This can be used to describe the backscattering of a laser beam
+     off initial leptons. The energy distribution of the emerging
+     photon beams is modelled by the CompAZ parametrization, see Acta
+     Phys.Polon. B34 (2003) 2741-2758 [hep-ex/0207021].  Note that this
+     parametrization is valid only for the proposed TESLA photon
+     collider, as various assumptions about the laser parameters and
+     the initial lepton beam energy have been made.
+
+`Simple_Compton'
+     This corresponds to a simple light backscattering off the initial
+     lepton beam and produces initial-state photons with a
+     corresponding energy spectrum.
+
+`EPA'
+     This enables the equivalent photon approximation for colliding
+     protons. The resulting beam particles are photons that follow a
+     dipole form factor parametrization, see Phys. Rept. 15 (1974) 181.
+
+`Spectrum_Reader'
+     A user defined spectrum is used to describe the energy spectrum of
+     the assumed new beam particles. The name of the corresponding
+     spectrum file needs to be given through the keywords *note
+     SPECTRUM_FILE_1:: and *note SPECTRUM_FILE_2::.
+
+
+File: Sherpa.info,  Node: BEAM_1,  Next: BEAM_2,  Prev: Beam Spectra,  Up: Beam Parameters
+
+4.2.2 BEAM_1
+------------
+
+This parameter specifies the PDG ID of the first (left) beam particle
+before eventual Beamstrahlung.
+
+
+File: Sherpa.info,  Node: BEAM_2,  Next: BEAM_ENERGY_1,  Prev: BEAM_1,  Up: Beam Parameters
+
+4.2.3 BEAM_2
+------------
+
+This parameter specifies the PDG ID of the second (right) beam particle
+before eventual Beamstrahlung.
+
+
+File: Sherpa.info,  Node: BEAM_ENERGY_1,  Next: BEAM_ENERGY_2,  Prev: BEAM_2,  Up: Beam Parameters
+
+4.2.4 BEAM_ENERGY_1
+-------------------
+
+This parameter specifies the energy of the first (left) beam particle
+in GeV.
+
+
+File: Sherpa.info,  Node: BEAM_ENERGY_2,  Next: BEAM_SPECTRUM_1,  Prev: BEAM_ENERGY_1,  Up: Beam Parameters
+
+4.2.5 BEAM_ENERGY_2
+-------------------
+
+This parameter specifies the energy of the second (right) beam particle
+in GeV.
+
+
+File: Sherpa.info,  Node: BEAM_SPECTRUM_1,  Next: BEAM_SPECTRUM_2,  Prev: BEAM_ENERGY_2,  Up: Beam Parameters
+
+4.2.6 BEAM_SPECTRUM_1
+---------------------
+
+This parameter specifies the Beamstrahlung spectrum for the first beam,
+see *note Beam Spectra::.
+
+
+File: Sherpa.info,  Node: BEAM_SPECTRUM_2,  Next: SPECTRUM_FILE_1,  Prev: BEAM_SPECTRUM_1,  Up: Beam Parameters
+
+4.2.7 BEAM_SPECTRUM_2
+---------------------
+
+This parameter specifies the Beamstrahlung spectrum for the second beam,
+see *note Beam Spectra::.
+
+
+File: Sherpa.info,  Node: SPECTRUM_FILE_1,  Next: SPECTRUM_FILE_2,  Prev: BEAM_SPECTRUM_2,  Up: Beam Parameters
+
+4.2.8 SPECTRUM_FILE_1
+---------------------
+
+This parameter specifies the spectrum file for the first beam, see
+*note Beam Spectra::.
+
+
+File: Sherpa.info,  Node: SPECTRUM_FILE_2,  Next: BEAM_SMIN,  Prev: SPECTRUM_FILE_1,  Up: Beam Parameters
+
+4.2.9 SPECTRUM_FILE_2
+---------------------
+
+This parameter specifies the spectrum file for the first beam, see
+*note Beam Spectra::.
+
+
+File: Sherpa.info,  Node: BEAM_SMIN,  Next: BEAM_SMAX,  Prev: SPECTRUM_FILE_2,  Up: Beam Parameters
+
+4.2.10 BEAM_SMIN
+----------------
+
+This parameter specifies the minimum fraction of cms energy squared
+after Beamstrahlung. The reference value is the total centre of mass
+energy squared of the collision, _not_ the centre of mass energy after
+eventual Beamstrahlung.
+The parameter can be specified using the internal interpreter, see
+*note Interpreter::, e.g. as `BEAM_SMIN sqr(20/E_CMS)'.
+
+
+File: Sherpa.info,  Node: BEAM_SMAX,  Next: K_PERP_MEAN_1,  Prev: BEAM_SMIN,  Up: Beam Parameters
+
+4.2.11 BEAM_SMAX
+----------------
+
+This parameter specifies the minimum fraction of cms energy squared
+after Beamstrahlung. The reference value is the total centre of mass
+energy squared of the collision, _not_ the centre of mass energy after
+eventual Beamstrahlung.
+The parameter can be specified using the internal interpreter, see
+*note Interpreter::, e.g. as `BEAM_SMIN sqr(0.99)'.
+
+
+File: Sherpa.info,  Node: K_PERP_MEAN_1,  Next: K_PERP_MEAN_2,  Prev: BEAM_SMAX,  Up: Beam Parameters
+
+4.2.12 K_PERP_MEAN_1
+--------------------
+
+This parameter specifies the mean intrinsic transverse momentum for the
+first (left) beam in case of hadronic beams, such as protons.
+The default value for protons is 0.33 GeV.
+
+
+File: Sherpa.info,  Node: K_PERP_MEAN_2,  Next: K_PERP_SIGMA_1,  Prev: K_PERP_MEAN_1,  Up: Beam Parameters
+
+4.2.13 K_PERP_MEAN_2
+--------------------
+
+This parameter specifies the mean intrinsic transverse momentum for the
+second (right) beam in case of hadronic beams, such as protons.
+The default value for protons is 0.33 GeV.
+
+
+File: Sherpa.info,  Node: K_PERP_SIGMA_1,  Next: K_PERP_SIGMA_2,  Prev: K_PERP_MEAN_2,  Up: Beam Parameters
+
+4.2.14 K_PERP_SIGMA_1
+---------------------
+
+This parameter specifies the width of the Gaussian distribution of
+intrinsic transverse momentum for the first (left) beam in case of
+hadronic beams, such as protons.
+The default value for protons is 0.8 GeV.
+
+
+File: Sherpa.info,  Node: K_PERP_SIGMA_2,  Prev: K_PERP_SIGMA_1,  Up: Beam Parameters
+
+4.2.15 K_PERP_SIGMA_2
+---------------------
+
+This parameter specifies the width of the Gaussian distribution of
+intrinsic transverse momentum for the first (left) beam in case of
+hadronic beams, such as protons.
+The default value for protons is 0.8 GeV.
+
+
+File: Sherpa.info,  Node: ISR Parameters,  Next: Selectors,  Prev: Beam Parameters,  Up: Parameters
+
+4.3 ISR Parameters
+==================
+
+The following parameters are used to steer the beam setup.
+
+* Menu:
+
+* BUNCH_1::           PDG ID of the first bunch particle.
+* BUNCH_2::           PDG ID of the second bunch particle.
+* ISR_1::             Whether to enable ISR for the first bunch.
+* ISR_2::             Whether to enable ISR for the second bunch.
+* ISR_SMIN::          Minimum fraction of cms energy after ISR.
+* ISR_SMAX::          Maximum fraction of cms energy after ISR.
+* ISR_E_ORDER::       The perturbative order of the electron PDF.
+* ISR_E_SCHEME::      The beta scheme of the electron PDF.
+* PDF_SET::           The name of the PDF set.
+* PDF_SET_VERSION::   The additional version number of the pdf set.
+* PDF_GRID_PATH::     The location of the PDF parameter/grid files.
+* PDF_LIBRARY::       The name of the PDF library.
+* SHOW_PDF_SETS::     Display available PDF sets.
+
+
+File: Sherpa.info,  Node: BUNCH_1,  Next: BUNCH_2,  Up: ISR Parameters
+
+4.3.1 BUNCH_1
+-------------
+
+This parameter specifies the PDG ID of the first (left) bunch particle,
+i.e. the particle after eventual Beamstrahlung specified through the
+beam parameters, see *note Beam Parameters::.
+
+
+File: Sherpa.info,  Node: BUNCH_2,  Next: ISR_1,  Prev: BUNCH_1,  Up: ISR Parameters
+
+4.3.2 BUNCH_2
+-------------
+
+This parameter specifies the PDG ID of the second (right) bunch
+particle, i.e. the particle after eventual Beamstrahlung specified
+through the beam parameters, see *note Beam Parameters::.
+
+
+File: Sherpa.info,  Node: ISR_1,  Next: ISR_2,  Prev: BUNCH_2,  Up: ISR Parameters
+
+4.3.3 ISR_1
+-----------
+
+This parameter specifies whether ISR is enabled for the first (left)
+bunch particle, i.e. the particle after eventual Beamstrahlung
+specified through the beam parameters, see *note Beam Parameters::.
+Possible values are `On' and `Off'.
+For bunch particles with hadronic substructure, i.e.  hadrons and
+photons, this amounts to employing a PDF to extract partons.
+
+
+File: Sherpa.info,  Node: ISR_2,  Next: ISR_SMIN,  Prev: ISR_1,  Up: ISR Parameters
+
+4.3.4 ISR_2
+-----------
+
+This parameter specifies whether ISR is enabled for the second (right)
+bunch particle, i.e. the particle after eventual Beamstrahlung
+specified through the beam parameters, see *note Beam Parameters::.
+Possible values are `On' and `Off'.
+For bunch particles with hadronic substructure, i.e.  hadrons and
+photons, this amounts to employing a PDF to extract partons.
+
+
+File: Sherpa.info,  Node: ISR_SMIN,  Next: ISR_SMAX,  Prev: ISR_2,  Up: ISR Parameters
+
+4.3.5 ISR_SMIN
+--------------
+
+This parameter specifies the minimum fraction of cms energy squared
+after ISR. The reference value is the total centre of mass energy
+squared of the collision, _not_ the centre of mass energy after
+eventual Beamstrahlung.
+The parameter can be specified using the internal interpreter, see
+*note Interpreter::, e.g. as `ISR_SMIN sqr(20/E_CMS)'.
+
+
+File: Sherpa.info,  Node: ISR_SMAX,  Next: ISR_E_ORDER,  Prev: ISR_SMIN,  Up: ISR Parameters
+
+4.3.6 ISR_SMAX
+--------------
+
+This parameter specifies the minimum fraction of cms energy squared
+after ISR. The reference value is the total centre of mass energy
+squared of the collision, _not_ the centre of mass energy after
+eventual Beamstrahlung.
+The parameter can be specified using the internal interpreter, see
+*note Interpreter::, e.g. as `ISR_SMIN sqr(0.99)'.
+
+
+File: Sherpa.info,  Node: ISR_E_ORDER,  Next: ISR_E_SCHEME,  Prev: ISR_SMAX,  Up: ISR Parameters
+
+4.3.7 ISR_E_ORDER
+-----------------
+
+This parameter sets the perturbative order of the electron structure
+function.
+
+
+File: Sherpa.info,  Node: ISR_E_SCHEME,  Next: PDF_SET,  Prev: ISR_E_ORDER,  Up: ISR Parameters
+
+4.3.8 ISR_E_SCHEME
+------------------
+
+This parameter sets the beta-scheme of the electron structure function.
+
+
+File: Sherpa.info,  Node: PDF_SET,  Next: PDF_SET_VERSION,  Prev: ISR_E_SCHEME,  Up: ISR Parameters
+
+4.3.9 PDF_SET
+-------------
+
+This parameter allows to specifiy the PDF set for hadronic bunch
+particles.
+
+
+File: Sherpa.info,  Node: PDF_SET_VERSION,  Next: PDF_GRID_PATH,  Prev: PDF_SET,  Up: ISR Parameters
+
+4.3.10 PDF_SET_VERSION
+----------------------
+
+This parameter allows to eventually select a specific version within
+the chosen PDF set, see *note PDF_SET::.
+
+
+File: Sherpa.info,  Node: PDF_GRID_PATH,  Next: PDF_LIBRARY,  Prev: PDF_SET_VERSION,  Up: ISR Parameters
+
+4.3.11 PDF_GRID_PATH
+--------------------
+
+This parameter specifies the path to the PDF parameter or grid file.
+
+
+File: Sherpa.info,  Node: PDF_LIBRARY,  Next: SHOW_PDF_SETS,  Prev: PDF_GRID_PATH,  Up: ISR Parameters
+
+4.3.12 PDF_LIBRARY
+------------------
+
+This parameter specifies the name of the PDF library.  Assuming
+`PDF_LIBRARY=CTEQ6Sherpa', the dynamically bound PDF library will be
+`libCTEQ6Sherpa.so'.  This file must be located in the library path of
+the Sherpa installation or in the runtime library path given by *note
+SHERPA_LIB_PATH::. If LHAPDF is used, Sherpa searches for the LHAPDF
+library in the corresponding installation path.
+
+
+File: Sherpa.info,  Node: SHOW_PDF_SETS,  Prev: PDF_LIBRARY,  Up: ISR Parameters
+
+4.3.13 SHOW_PDF_SETS
+--------------------
+
+Specifying `SHOW_PDF_SETS=1' on the command line instructs Sherpa to
+print all available PDF sets contained in the library loaded by *note
+PDF_LIBRARY::.
+
+
+File: Sherpa.info,  Node: Selectors,  Prev: ISR Parameters,  Up: Parameters
+
+4.4 Selectors
+=============
+
+
+File: Sherpa.info,  Node: Cross section,  Next: Tips and Tricks,  Prev: Parameters,  Up: Top
+
+5 Cross section
+***************
+
+To determine the total cross section, in particular in the context of
+running CKKW merging with Sherpa, the internal analysis package
+provided within Sherpa can be employed. A file `Analysis.dat' needs to
+be created containing the lines
+
+BEGIN_ANALYSIS {
+  LEVEL Hadron;
+  PATH_PIECE Norm/;
+  Statistics FinalState;
+} END_ANALYSIS;
+ and added to the directory where `Run.dat' resides.  Doing SHERPA
+internal analyses has to be enabled using `ANALYSIS=1', either in the
+`(run)' section of `Run.dat' or on the command line. After program
+termination, a file `Statistics_Observable_FinalState' can be found in
+the `Norm' subdirectory of the analysis-result path that was specified
+for the run by `ANALYSIS OUTPUT'. As an example a file for pp->e+e- is
+listed below:
+
+# Process Name      # evts       <w>   <sigma>   <Delta>
+2_2__b__bb__e-__e+       1   0.36933  0.399068   0.92548
+2_2__c__cb__e-__e+       2  0.566878  0.595396  0.952103
+2_2__d__db__e-__e+     271    58.455   62.8626  0.929885
+2_2__s__sb__e-__e+      28   4.78567   5.14493  0.930172
+2_2__u__ub__e-__e+     443   97.4499   104.727  0.930514
+...
+
+# Total XS : 177.015 +- ( 3.64851 = 2.06113 % )
+
+ The first column contains the process name, the second the number of
+generated events for that process. The third column gives the mean
+weight for the process, which is composed of matrix-element and Sudakov
+weight. The respective averages of the latter two are given in the last
+two columns. Finally, the total cross section is listed at the end of
+the file.  Note that the Monte Carlo error quoted for the total cross
+section is determined during event generation. Therefore, it differs
+substantially from the error quoted during the integration step.
+
+
+File: Sherpa.info,  Node: Tips and Tricks,  Next: Customization,  Prev: Cross section,  Up: Top
+
+6 Tips and Tricks
+*****************
+
+Sherpa can be easily extended with certain user defined tools.  To this
+extent, a corresponding class must be written, equipped with a
+corresponding getter function and compiled into an external library
+which can be linked to Sherpa at runtime.  Several specific examples
+are listed in the following sections.
+
+* Menu:
+
+* Bash completion:: How to add bash completion for Sherpa parameters
+* Versioned installation:: How to install multiple Sherpa versions in the same prefix.
+
+
+File: Sherpa.info,  Node: Bash completion,  Next: Versioned installation,  Up: Tips and Tricks
+
+6.1 Bash completion
+===================
+
+Sherpa will install a file named
+`$prefix/share/SHERPA-MC/sherpa-completion' which contains tab
+completion functionality for the bash shell. You simply have to source
+it in your active shell session by running
+
+  .  $prefix/share/SHERPA-MC/sherpa-completion
+
+and you will be able to tab-complete any parameters on a Sherpa command
+line.
+
+   To permanently enable this feature in your bash shell, you'll have
+to add the source command above to your ~/.bashrc.
+
+
+File: Sherpa.info,  Node: Versioned installation,  Prev: Bash completion,  Up: Tips and Tricks
+
+6.2 Versioned installation
+==========================
+
+If you want to install different Sherpa versions into the same prefix
+(e.g. /usr/local), you have to enable versioning of the installed
+directories by using the configure option `--enable-versioning'.
+Optionally you can even pass an argument to this parameter of what you
+want the version tag to look like.
+
+
+File: Sherpa.info,  Node: Customization,  Next: Authors,  Prev: Tips and Tricks,  Up: Top
+
+7 Customization
+***************
+
+Customizing Sherpa according to your needs.
+
+   Sherpa can be easily extended with certain user defined tools.  To
+this extent, a corresponding class must be written, equipped with a
+corresponding getter function and compiled into an external library
+which can be linked to Sherpa at runtime.  Several specific examples
+are listed in the following sections.
+
+* Menu:
+
+* External RNG:: How to add an external random number generator.
+
+
+File: Sherpa.info,  Node: External RNG,  Up: Customization
+
+7.1 External RNG
+================
+
+To use an external Random Number Generator (RNG) in Sherpa, you need to
+provide an interface to your RNG in an external dynamic library. This
+library is then loaded at runtime and Sherpa replaces the internal RNG
+with the one provided.
+
+   _In this case Sherpa will not attempt to set, save, read or restore
+the RNG_
+
+   The corresponding code for the RNG interface is
+
+#include "ATOOLS/Math/Random.H"
+
+using namespace ATOOLS;
+
+class Example_RNG: public External_RNG {
+public:
+  double Get()
+  {
+    // your code goes here ...
+  }
+};// end of class Example_RNG
+
+// this makes Example_RNG loadable in Sherpa
+DECLARE_GETTER(Example_RNG_Getter,"Example_RNG",External_RNG,RNG_Key);
+External_RNG *Example_RNG_Getter::operator()(const RNG_Key &arg) const
+{ return new Example_RNG(); }
+// this eventually prints a help message
+void Example_RNG_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"example RNG interface"; }
+
+   If the code is compiled into a library called libExampleRNG.so, then
+this library is loaded dynamically in Sherpa using the command
+`SHERPA_LDADD=ExampleRNG' either on the command line or in `Run.dat'.
+If the library is bound at compile time, like e.g.  in cmt, you may
+skip this step.
+
+   Finally Sherpa is instructed to retrieve the external RNG by
+specifying `EXTERNAL_RNG=Example_RNG' on the command line or in
+`Run.dat'.
+
+
+File: Sherpa.info,  Node: Authors,  Next: Copying,  Prev: Customization,  Up: Top
+
+8 Authors
+*********
+
+Sherpa was written by the Sherpa Team, see http://www.sherpa-mc.de.
+
+
+File: Sherpa.info,  Node: Copying,  Next: Index,  Prev: Authors,  Up: Top
+
+9 Copying
+*********
+
+Sherpa is free  software.  You can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation. You should have received a copy of the GNU
+General Public License along with the source for Sherpa; see the file
+COPYING. If not, write to the Free Software Foundation, 59 Temple
+Place, Suite 330, Boston, MA  02111-1307, USA.
+
+   Sherpa is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+   Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
+The MCnet Guidelines apply, see the file GUIDELINES and
+http://www.montecarlonet.org/index.php?p=Publications/Guidelines.
+
+   Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU General Public License.
+
+
+File: Sherpa.info,  Node: Index,  Prev: Copying,  Up: Top
+
+Appendix A Index
+****************
+
+ [index ]
+* Menu:
+
+* ANALYSIS:                              ANALYSIS.              (line 6)
+* ANALYSIS_OUTPUT:                       ANALYSIS_OUTPUT.       (line 6)
+* BEAM_1:                                BEAM_1.                (line 6)
+* BEAM_2:                                BEAM_2.                (line 6)
+* BEAM_ENERGY_1:                         BEAM_ENERGY_1.         (line 6)
+* BEAM_ENERGY_2:                         BEAM_ENERGY_2.         (line 6)
+* BEAM_SMAX:                             BEAM_SMAX.             (line 6)
+* BEAM_SMIN:                             BEAM_SMIN.             (line 6)
+* BEAM_SPECTRUM_1:                       BEAM_SPECTRUM_1.       (line 6)
+* BEAM_SPECTRUM_2:                       BEAM_SPECTRUM_2.       (line 6)
+* BUNCH_1:                               BUNCH_1.               (line 6)
+* BUNCH_2:                               BUNCH_2.               (line 6)
+* EVENT_MODE:                            EVENT_MODE.            (line 6)
+* EVENTS:                                EVENTS.                (line 6)
+* EVT_FILE_PATH:                         EVT_FILE_PATH.         (line 6)
+* FILE_SIZE:                             FILE_SIZE.             (line 6)
+* HEPMC2_ASCII_OUTPUT:                   HEPMC2_ASCII_OUTPUT.   (line 6)
+* HEPMC2_GENEVENT_OUTPUT:                HEPMC2_GENEVENT_OUTPUT.
+                                                                (line 6)
+* HEPMC2_OUTPUT:                         HEPMC2_OUTPUT.         (line 6)
+* ISR_1:                                 ISR_1.                 (line 6)
+* ISR_2:                                 ISR_2.                 (line 6)
+* ISR_E_ORDER:                           ISR_E_ORDER.           (line 6)
+* ISR_E_SCHEME:                          ISR_E_SCHEME.          (line 6)
+* ISR_SMAX:                              ISR_SMAX.              (line 6)
+* ISR_SMIN:                              ISR_SMIN.              (line 6)
+* K_PERP_MEAN_1:                         K_PERP_MEAN_1.         (line 6)
+* K_PERP_MEAN_2:                         K_PERP_MEAN_2.         (line 6)
+* K_PERP_SIGMA_1:                        K_PERP_SIGMA_1.        (line 6)
+* K_PERP_SIGMA_2:                        K_PERP_SIGMA_2.        (line 6)
+* NUM_ACCURACY:                          NUM_ACCURACY.          (line 6)
+* OUTPUT:                                OUTPUT.                (line 6)
+* OUTPUT_PRECISION:                      OUTPUT_PRECISION.      (line 6)
+* PDF_GRID_PATH:                         PDF_GRID_PATH.         (line 6)
+* PDF_LIBRARY:                           PDF_LIBRARY.           (line 6)
+* PDF_SET:                               PDF_SET.               (line 6)
+* PDF_SET_VERSION:                       PDF_SET_VERSION.       (line 6)
+* RANDOM_SEED:                           RANDOM_SEED.           (line 6)
+* SHERPA_CPP_PATH:                       SHERPA_CPP_PATH.       (line 6)
+* SHERPA_LIB_PATH:                       SHERPA_LIB_PATH.       (line 6)
+* SHERPA_OUTPUT:                         SHERPA_OUTPUT.         (line 6)
+* SHOW_PDF_SETS:                         SHOW_PDF_SETS.         (line 6)
+* SPECTRUM_FILE_1:                       SPECTRUM_FILE_1.       (line 6)
+* SPECTRUM_FILE_2:                       SPECTRUM_FILE_2.       (line 6)
+* SPIN_CORRELATIONS:                     SPIN_CORRELATIONS.     (line 6)
+* TIMEOUT:                               TIMEOUT.               (line 6)
+
+
+
+Tag Table:
+Node: Top0
+Node: Introduction628
+Node: Command line1324
+Node: Input structure1710
+Node: Interpreter4034
+Node: Tags5984
+Node: Parameters6602
+Node: Run Parameters7124
+Node: EVENTS7899
+Node: OUTPUT8062
+Node: RANDOM_SEED8570
+Node: ANALYSIS9117
+Node: ANALYSIS_OUTPUT9487
+Node: TIMEOUT9682
+Node: SPIN_CORRELATIONS10313
+Node: NUM_ACCURACY10689
+Node: SHERPA_CPP_PATH11024
+Node: SHERPA_LIB_PATH11360
+Node: Event output formats11631
+Node: EVENT_MODE13384
+Node: SHERPA_OUTPUT13784
+Node: HEPMC2_GENEVENT_OUTPUT14004
+Node: HEPMC2_ASCII_OUTPUT14264
+Node: HEPMC2_OUTPUT14528
+Node: FILE_SIZE14774
+Node: EVT_FILE_PATH14967
+Node: OUTPUT_PRECISION15170
+Node: Beam Parameters15372
+Node: Beam Spectra17258
+Node: BEAM_118751
+Node: BEAM_218974
+Node: BEAM_ENERGY_119200
+Node: BEAM_ENERGY_219422
+Node: BEAM_SPECTRUM_119655
+Node: BEAM_SPECTRUM_219912
+Node: SPECTRUM_FILE_120172
+Node: SPECTRUM_FILE_220422
+Node: BEAM_SMIN20666
+Node: BEAM_SMAX21160
+Node: K_PERP_MEAN_121648
+Node: K_PERP_MEAN_221974
+Node: K_PERP_SIGMA_122307
+Node: K_PERP_SIGMA_222673
+Node: ISR Parameters23017
+Node: BUNCH_124014
+Node: BUNCH_224305
+Node: ISR_124612
+Node: ISR_225087
+Node: ISR_SMIN25565
+Node: ISR_SMAX26031
+Node: ISR_E_ORDER26499
+Node: ISR_E_SCHEME26716
+Node: PDF_SET26927
+Node: PDF_SET_VERSION27136
+Node: PDF_GRID_PATH27398
+Node: PDF_LIBRARY27619
+Node: SHOW_PDF_SETS28156
+Node: Selectors28438
+Node: Cross section28546
+Node: Tips and Tricks30391
+Node: Bash completion31004
+Node: Versioned installation31603
+Node: Customization32064
+Node: External RNG32624
+Node: Authors34085
+Node: Copying34260
+Node: Index35300
+
+End Tag Table

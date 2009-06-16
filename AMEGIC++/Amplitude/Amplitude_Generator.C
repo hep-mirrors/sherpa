@@ -1,11 +1,11 @@
 //#include <iomanip>
-#include "Amplitude_Generator.H"
-#include "Amplitude_Manipulator.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "MathTools.H"
-#include "Permutation.H"
-#include "Interaction_Model_Base.H"
+#include "AMEGIC++/Amplitude/Amplitude_Generator.H"
+#include "AMEGIC++/Amplitude/Amplitude_Manipulator.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Permutation.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 //Do not use this here !!! 
 //This is only for test purposes !!!
@@ -50,10 +50,8 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
   single_top = top->Get(N-2);
   
   // 2 incoming
-  prenum  = 1000;
-  prea    = new Pre_Amplitude[prenum];
-  short int i;
-  for(i=0;i<prenum;i++) prea[i].p = new Point[single_top->depth];
+  prea.push_back(Pre_Amplitude());
+  prea.back().p = new Point[single_top->depth];
 
   // fill hash table
   
@@ -100,8 +98,7 @@ Amplitude_Generator::~Amplitude_Generator()
   }
 #endif
 
-  for(int i=0;i<prenum;i++) delete[] prea[i].p;
-  delete[] prea;
+  for(size_t i=0;i<prea.size();++i) delete [] prea[i].p;
 
   for(unsigned int i=0;i<prea_table.size();i++) delete[] prea_table[i].p;
   prea_table.clear();
@@ -241,7 +238,6 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 	if (p->Lorentz) delete p->Lorentz;
 	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
 	p->t = vl[j]->t;
-	  
 	return 1;
       }
     }
@@ -261,6 +257,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
   Point* p;
 
   int help = 0;
+
   top->Copy(pl,prea[0].p,help);
 
   prea[0].on = 1;
@@ -273,6 +270,10 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
   int first_try = 1;
   
   for (;;) {    
+    for (int k(prea.size());k<=ap;++k) {
+      prea.push_back(Pre_Amplitude());
+      prea.back().p = new Point[single_top->depth];
+    }
     sw1 = 1;
     if (prea[ap].on) {
       p = 0;
@@ -353,6 +354,10 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  }
 	}
 	if (sw1) {
+	  for (int k(prea.size());k<=lanz;++k) {
+	    prea.push_back(Pre_Amplitude());
+	    prea.back().p = new Point[single_top->depth];
+	  }
 	  //match
 	  int ll = 0;
 	  top->Copy(prea[ap].p,preah,ll);
@@ -1575,23 +1580,23 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
     if (sw1) { 
       if (fl[0].IsQuark() && !fl[0].IsAnti()) {
-	if (!(fl[perm[N-1]].IsQuark() && 
-	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
+	if (!((fl[perm[N-1]].IsQuark() && 
+	       (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana()))) ||
 	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
       }
       if (fl[0].IsQuark() && fl[0].IsAnti()) {
-	if (!(fl[perm[1]].IsQuark() && 
-	      (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
+	if (!((fl[perm[1]].IsQuark() && 
+	       (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana()))) ||
 	      (b[perm[1]]==1  && ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) )) sw1 = 0;
       }
       if (fl[0].IsLepton() && !fl[0].IsAnti()) {
-	if (!(fl[perm[N-1]].IsLepton() && 
-	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
+	if (!((fl[perm[N-1]].IsLepton() && 
+	       (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana()))) ||
 	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
       }
       if (fl[0].IsLepton() && fl[0].IsAnti()) {
-   	if (!(fl[perm[1]].IsLepton() && 
-   	      (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
+   	if (!((fl[perm[1]].IsLepton() && 
+	       (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana()))) ||
    	      (b[perm[1]]==1  && ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) )) sw1 = 0;
       }
     }

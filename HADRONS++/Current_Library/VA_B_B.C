@@ -1,6 +1,6 @@
-#include "VA_B_B.H"
-#include "XYZFuncs.H"
-#include "Exception.H"
+#include "HADRONS++/Current_Library/VA_B_B.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Org/Exception.H"
 
 
 using namespace HADRONS;
@@ -8,8 +8,8 @@ using namespace ATOOLS;
 using namespace HELICITIES;
 using namespace std;
 
-#include "VA_B_B_HO.C"
-#include "VA_B_B_ST.C"
+#include "HADRONS++/Current_Library/VA_B_B_HO.C"
+#include "HADRONS++/Current_Library/VA_B_B_ST.C"
 
 void VA_B_B::SetModelParameters( struct GeneralModel model )
 {

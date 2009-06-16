@@ -1,11 +1,11 @@
-#ifndef Simple_String_H
-#define Simple_String_H
+#ifndef AMISIC_Model_Simple_String_H
+#define AMISIC_Model_Simple_String_H
 /*!
   \file Simple_String.H
   \brief Declares the class Simple_String
 */
 
-#include "MI_Base.H"
+#include "AMISIC++/Main/MI_Base.H"
 
 namespace PDF    { 
 

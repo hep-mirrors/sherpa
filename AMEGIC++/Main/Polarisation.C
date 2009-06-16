@@ -1,7 +1,8 @@
-#include "Polarisation.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Random.H"
+#include "AMEGIC++/Main/Polarisation.H"
+#include "AMEGIC++/Main/ColorSC.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -30,11 +31,12 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
   //including colours
   //unpolarized
   double Norm = 1.;
-  for (short int i=0;i<nin;i++) {
-    if (flin[i].IsQuark())   Norm *= 3.;    
-    if (flin[i].IsSquark())  Norm *= 3.;// sQuark is boson !!    
-    if (flin[i].IsGluon())   Norm *= 8.;
-    if (flin[i].IsGluino())  Norm *= 8.;// Gluino is fermion !!
+  CSC.Init();
+  for (int i=0;i<nin;i++) {
+    if (flin[i].IsQuark())   Norm *= CSC.Nc;    
+    if (flin[i].IsSquark())  Norm *= CSC.Nc;// sQuark is boson !!    
+    if (flin[i].IsGluon())   Norm *= CSC.Nc*CSC.Nc-1.;
+    if (flin[i].IsGluino())  Norm *= CSC.Nc*CSC.Nc-1.;// Gluino is fermion !!
 
     if (flin[i].IsFermion()) Norm *= 2.;
     if (flin[i].IsVector()) {

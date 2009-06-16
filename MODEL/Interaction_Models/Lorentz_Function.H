@@ -1,8 +1,8 @@
-#ifndef Lorentz_Function_h
-#define Lorentz_Function_h
+#ifndef MODEL_Interaction_Models_Lorentz_Function_H
+#define MODEL_Interaction_Models_Lorentz_Function_H
 
-#include "MyStrStream.H"
-#include "Getter_Function.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Getter_Function.H"
 #include <vector>
 
 namespace MODEL {
@@ -38,7 +38,9 @@ namespace MODEL {
 
     virtual void InitPermutation();
 
-    virtual bool CutVectors() { return false; }
+    virtual bool CutVectors();
+
+    virtual Lorentz_Function *GetCopy() const = 0;
 
     void SetParticleArg(int a=-1,int b=-1,int c=-1,int d=-1);
     void AddPermutation(int sign,int a,int b=-1,int c=-1,int d=-1);
@@ -48,9 +50,9 @@ namespace MODEL {
     int  NextPermutation();
 
     Lorentz_Function &operator=(const Lorentz_Function &l);
-    Lorentz_Function *GetCopy() const;
 
     inline int ParticleArg(int i) const { return m_partarg[i]; }
+    inline const int* ParticleArg() const { return m_partarg; }
 
     inline std::string Type() const { return m_type; }
 

@@ -1,9 +1,9 @@
-#ifndef Dipole_H
-#define Dipole_H
+#ifndef AHADIC_Tools_Dipole_H
+#define AHADIC_Tools_Dipole_H
 
 #include <cassert>
-#include "Cluster.H"
-#include "Constituents.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "AHADIC++/Tools/Constituents.H"
 
 namespace AHADIC {
   class Hadronisation_Parameters;

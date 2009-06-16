@@ -1,10 +1,9 @@
-#include "String_Output.H"
+#include "AMEGIC++/String/String_Output.H"
 
 #include <stdio.h>  
 #include <iostream>
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "prof.hh"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -480,7 +479,7 @@ void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
   header<<"//Header file for process "<<pID.c_str()<<endl<<endl;
   header<<"#ifndef "<<pID<<"_on"<<endl;
   header<<"#define "<<pID<<"_on"<<endl;  
-  header<<"#include "<<'"'<<"Values.H"<<'"'<<endl<<endl;
+  header<<"#include "<<'"'<<"AMEGIC++/String/Values.H"<<'"'<<endl<<endl;
 
   header<<"extern "<<'"'<<"C"<<'"'<<" AMEGIC::Values* Getter_"<<pID<<"(AMEGIC::Basic_Sfuncs* bs);"<<endl<<endl;
 

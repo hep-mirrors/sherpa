@@ -1,5 +1,5 @@
-#include "VA_0_PP.H"
-#include "Run_Parameter.H"
+#include "HADRONS++/Current_Library/VA_0_PP.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -25,8 +25,8 @@ void VA_0_PP::SetModelParameters( struct GeneralModel _md )
   m_RR  = ResonanceFlavour( kf_rho_1450_plus, MRR, GRR, running );
   m_RRR = ResonanceFlavour( kf_rho_1700_plus, MRRR, GRRR, running );
 
-  m_m2_pi    = sqr( Flavour(kf_pi_plus).PSMass() );
-  m_m2_K     = sqr( Flavour(kf_K_plus).PSMass() );
+  m_m2_pi    = sqr( Flavour(kf_pi_plus).HadMass() );
+  m_m2_K     = sqr( Flavour(kf_K_plus).HadMass() );
    
   // coefficients for KS model
   m_beta     = _md("beta", -0.167 );

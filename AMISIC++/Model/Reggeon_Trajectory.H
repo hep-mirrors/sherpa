@@ -1,5 +1,5 @@
-#ifndef Reggeon_Trajectory_H
-#define Reggeon_Trajectory_H
+#ifndef AMISIC_Model_Reggeon_Trajectory_H
+#define AMISIC_Model_Reggeon_Trajectory_H
 /*!
   \file Reggeon_Trajectory.H
   \brief Declares the class Reggeon_Trajectory

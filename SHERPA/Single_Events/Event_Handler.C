@@ -1,16 +1,16 @@
-#include "Event_Handler.H"
-#include "Message.H"
-#include "Run_Parameter.H"
-#include "My_Limits.H"
-#include "Signal_Processes.H"
-#include "CXXFLAGS.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
-#include "Lund_Interface.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
 #endif
 #include <unistd.h>
 #include <cassert>
 
-#include "Random.H"
+#include "ATOOLS/Math/Random.H"
 
 #ifdef PROFILE__Event_Handler
 #include "prof.hh"
@@ -24,9 +24,8 @@ using namespace ATOOLS;
 
 
 Event_Handler::Event_Handler():
-  m_lastparticlecounter(0),
-  m_lastblobcounter(0),
-  p_mehandler(NULL)
+  m_lastparticlecounter(0), m_lastblobcounter(0), 
+  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0)
 {
   p_phases  = new Phase_List;
 }
@@ -44,8 +43,6 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
 {
   eph::code type   = phase->Type();
   std::string name = phase->Name();
-  if (name.find("Signal_Processes:")!=std::string::npos) 
-    p_mehandler=static_cast<Signal_Processes*>(phase)->GetMEHandler();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
       msg_Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
@@ -161,6 +158,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	case Return_Value::Success : 
 	  rvalue.IncCall((*pit)->Name());
 	  pit=p_phases->begin();
+	  msg_Debugging()<<m_blobs;
 	  break;
 	case Return_Value::Error :
 	  rvalue.IncCall((*pit)->Name());
@@ -174,8 +172,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	case Return_Value::Retry_Event : 
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryEvent((*pit)->Name());
-          if (p_mehandler && p_mehandler->Weight()!=1.0)
-            p_mehandler->SaveNumberOfTrials();
           m_blobs.Clear(p_signal);
           p_signal->SetStatus(m_signalstatus);
           Blob::Reset();
@@ -184,6 +180,10 @@ bool Event_Handler::GenerateEvent(int mode)
 	  pit=p_phases->begin();
 	  break;
 	case Return_Value::New_Event : 
+	  {
+	    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
+	    m_addn+=(*sp)["Trials"]->Get<double>();
+	  }
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncNewEvent((*pit)->Name());
 	  Reset();
@@ -203,7 +203,17 @@ bool Event_Handler::GenerateEvent(int mode)
       }
     } while (m_blobs.empty() || p_signal->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
-    if(p_mehandler) p_mehandler->ResetNumberOfTrials();
+    {
+      Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
+      double trials((*sp)["Trials"]->Get<double>());
+      sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
+      double cxs((*sp)["Weight"]->Get<double>());
+      double enh((*sp)["Enhance"]->Get<double>());
+      m_n+=trials+m_addn;
+      m_sum+=cxs;
+      m_sumsqr+=enh*sqr(cxs);
+      m_addn=0.0;
+    }
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) {
 	switch ((*pit)->Treat(&m_blobs,weight)) {
@@ -279,6 +289,7 @@ bool Event_Handler::GenerateEvent(int mode)
 } 
 
 void Event_Handler::Finish() {
+  if (this==NULL) return;
   msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
@@ -297,4 +308,18 @@ void Event_Handler::Finish() {
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();
+  double xs(TotalXS()), err(TotalErr());
+  std::string res;
+  MyStrStream conv;
+  conv<<om::bold<<"Total XS"<<om::reset<<" is "
+      <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
+      <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
+      <<" %"<<om::reset<<" )";
+  getline(conv,res);
+  int md(msg->Modifiable()?26:-4);
+  msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n";
+  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
+  msg_Out()<<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n";
+  msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
+  msg_Out()<<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
 }

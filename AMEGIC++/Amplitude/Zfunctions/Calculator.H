@@ -1,7 +1,7 @@
-#ifndef Calculator_h
-#define Calculator_h
+#ifndef AMEGIC_Amplitude_Zfunctions_Calculator_H
+#define AMEGIC_Amplitude_Zfunctions_Calculator_H
 
-#include "Zfunc_Calc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
 
 namespace AMEGIC {
   

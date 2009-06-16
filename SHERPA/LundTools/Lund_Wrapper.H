@@ -1,11 +1,11 @@
-#ifndef Lund_Wrapper_H
-#define Lund_Wrapper_H
+#ifndef SHERPA_LundTools_Lund_Wrapper_H
+#define SHERPA_LundTools_Lund_Wrapper_H
 
-#include "Running_AlphaS.H"
-#include "Lund_Interface.H"
-#include "ISR_Handler.H"
-#include "Exception.H"
-#include "CXXFLAGS.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <cstring>
 
 using namespace SHERPA;

@@ -1,0 +1,468 @@
+\documentclass[a4paper,10pt]{scrartcl}
+
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{eepic}
+
+\newcommand{\done}{{\rm d}}
+\newcommand{\nnb}{\nonumber}
+
+%opening
+\title{Generating events at NLO}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\vspace{2mm}
+\hrule
+\vspace{5mm}
+
+\section{The total cross section with contrained real emission}
+
+The unconstrained NLO cross section reads
+\begin{eqnarray}
+ \sigma_{NLO}
+& = & \sigma_B + \sigma_V + \sigma_R \nnb\\
+& = & \int_N\done\sigma_B
+	+ \int_N\done\sigma_V
+	+ \int_{N+1}\done\sigma_R \,.
+\end{eqnarray}
+To render each integral seperately convergent the Catani-Seymour
+Dipole Subtraction method is used, thus,
+\begin{eqnarray}
+ \sigma_{NLO}
+& = & \int_N\done\sigma_B
+	+ \int_N\left[\done\sigma_V+\int_1\done\sigma_A\right]
+	+ \int_{N+1}\left[\done\sigma_R-\done\sigma_A\right] \,.
+\end{eqnarray}
+If now the real emission is constrained to be within a jet measure $J$,
+it is useful to constrain the phase space of the subtraction terms as well.
+However, since their integrated version is only available for very simple
+phase space constrains $\alpha$, in general not coinciding with the jet
+measure $J$, the cross-section can be written as 
+\begin{eqnarray}
+ \sigma_{NLO,constr.}
+& = & \int_N\done\sigma_B
+	+ \int_N\left[\done\sigma_V+\int\limits_0^\alpha\done\sigma_A\right] \nnb\\
+&&	+ \int_N\int\limits_0^J\left[\done\sigma_R-\done\sigma_A\right]
+	+ \int_N\int\limits_\alpha^J\done\sigma_A \,.
+\end{eqnarray}
+Obviously, the potentially numerically troublesome integration is the last
+one over the dipole subtraction terms only. This is due to potentially large
+logarithms encountered at both sides of the integration region. Furthermore,
+the integrand is strongly peaked towards $\alpha$, if $\alpha < J$.
+
+\subsection{The choice of $\alpha$ for a given jet measure $J$}
+
+The cut-off $\alpha$ used for the dipole splitting functions (presently 
+available only for massless splitting functions) is a cut-off in
+\begin{eqnarray}
+ y = \frac{(p_i\cdot p_j)}{(p_i\cdot p_j)+(p_i\cdot p_k)+(p_j\cdot p_k)} \,.
+\end{eqnarray}
+where $k$ refers to a spectator (colour partners of combined mother
+$\tilde{ij}$ only). The jet measure reads
+\begin{eqnarray}
+ Q_{ij}^2
+& = & 2(p_i\cdot p_j) \min\limits_{k\neq i,j}\frac{1}{C_{i,j}^k+C_{j,i}^k} \,,
+\end{eqnarray}
+with
+\begin{eqnarray}
+ C_{i,j}^k
+& = & \left\{\begin{array}{cc}
+              \frac{(p_i\cdot p_k)}{(p_i+p_k)p_j}-\frac{m_i^2}{2(p_i\cdot p_j)}
+		& \mbox{if } j=g \\ 
+              1 & \mbox{else}\,.
+             \end{array}\right.
+\end{eqnarray}
+
+\subsubsection{FF-Dipoles}
+
+\subsubsection*{Massless Case}
+
+With the massless dipole kinematics
+\begin{eqnarray}
+ y_{ijk}
+& = & \frac{(p_i\cdot p_j)}{(p_i\cdot p_j)+(p_i\cdot p_k)+(p_j\cdot p_k)} \\
+ z_{i}
+& = & \frac{(p_i\cdot p_k)}{(p_i\cdot p_k)+(p_j\cdot p_k)}
+\end{eqnarray}
+the momenta can be written as (with $(k_\perp\cdot\tilde{p}_{ij,k})$)
+\begin{eqnarray}
+ p_i
+& = & z_i \tilde{p}_{ij} + \frac{\mathbf{k}_\perp^2}{z_i Q^2} \tilde{p}_k + k_\perp \\
+ p_j
+& = & (1-z_i) \tilde{p}_{ij} + \frac{\mathbf{k}_\perp^2}{(1-z_i) Q^2} \tilde{p}_k - k_\perp \\
+ p_k
+& = & (1-y_{ijk}) \tilde{p}_k \,.
+\end{eqnarray}
+The $\tilde{p}_{ij}$ and $\tilde{p}_k$ are the momenta of the leading
+order configuration, and
+\begin{eqnarray}
+ \mathbf{k}_\perp^2
+& = & Q^2 y_{ijk} z_i(1-z_i) \\
+ k_\perp
+& = & (0,\mathbf{k}_\perp) \\
+ Q^2
+& = & 2(\tilde{p}_{ij}\cdot \tilde{p}_k) \,.
+\end{eqnarray}
+This gives for the scalar products
+\begin{eqnarray}
+ (p_i\cdot p_j)
+& = & \tfrac{1}{2} y_{ijk} Q^2 \\
+ (p_i\cdot p_k)
+& = & \tfrac{1}{2} z_i(1-y_{ijk}) Q^2 \\
+ (p_j\cdot p_k)
+& = & \tfrac{1}{2} (1-z_i)(1-y_{ijk}) Q^2 \,,
+\end{eqnarray}
+and, hence, for the jet measure
+\begin{eqnarray}
+ Q_{ij}^2
+& = & y_{ijk} Q^2 \min\limits_{k\neq i,j}\frac{1}{C_{i,j}^k+C_{j,i}^k} \,,
+\end{eqnarray}
+with
+\begin{eqnarray}
+ C_{i,j}^k
+& = & \left\{\begin{array}{cc}
+              \frac{z_i(1-y_{ijk})}{1-z_i(1-y_{ijk})} & \mbox{if } j=g \\ 
+              1 & \mbox{else}\,.
+             \end{array}\right.
+\end{eqnarray}
+Thus, the optimal value for $\alpha$ for $Q_{ij}^2 < J$ is
+\begin{eqnarray}\label{Eq:alpha_opt}
+ \alpha_{opt} & = & J/Q^2 \,.
+\end{eqnarray}
+The last integral above thus comprises the least amount of phase space.
+This choice of $\alpha$, however, is dependent on $Q^2$,
+\begin{eqnarray}
+ \alpha_{opt} \; = \; \alpha(Q^2) \; = \; \alpha(\tilde{p}_{ij},\tilde{p}_k) \,,
+\end{eqnarray}
+but not on $p_i$, $p_j$ or $p_k$ and, hence, $y_{ijk}$ or $\mathbf{k}_\perp^2$. 
+Thus, the integration of the dipole terms proceeds unaffected.
+
+\subsubsection*{Massive Case}
+
+With the massive dipole kinematics
+\begin{eqnarray}
+ y_{ijk}
+& = & \frac{(p_i\cdot p_j)}{(p_i\cdot p_j)+(p_i\cdot p_k)+(p_j\cdot p_k)} \\
+ z_{i}
+& = & \frac{(p_i\cdot p_k)}{(p_i\cdot p_k)+(p_j\cdot p_k)}
+\end{eqnarray}
+the scalar products can be written as
+\begin{eqnarray}
+ (p_i\cdot p_j)
+& = & \tfrac{1}{2} y_{ijk} (Q^2 - m_i^2 - m_j^2 - m_k^2) \\
+ (p_i\cdot p_k)
+& = & \tfrac{1}{2} z_i(1-y_{ijk}) (Q^2 - m_i^2 - m_j^2 - m_k^2) \\
+ (p_j\cdot p_k)
+& = & \tfrac{1}{2} (1-z_i)(1-y_{ijk}) (Q^2 - m_i^2 - m_j^2 - m_k^2) \,.
+\end{eqnarray}
+Therefore, the jet measure is
+\begin{eqnarray}
+ Q_{ij}^2
+& = & y_{ijk} (Q^2 - m_i^2 - m_j^2 - m_k^2) \min\limits_{k\neq i,j}\frac{1}{C_{i,j}^k+C_{j,i}^k} \,,
+\end{eqnarray}
+with
+\begin{eqnarray}
+ C_{i,j}^k
+& = & \left\{\begin{array}{cc}
+              \frac{z_i(1-y_{ijk})}{1-z_i(1-y_{ijk})} 
+               - \frac{\mu_i^2}{y_{ijk}} & \mbox{if } j=g \\ 
+               1 & \mbox{else}\,,
+              \end{array}\right.
+\end{eqnarray}
+with $\mu_i^2=\frac{m_i^2}{Q^2-m_i^2-m_j^2-m_k^2}$.
+Since $C_{(i,g);massless} \ge C_{(i,g);massive}$ relation (\ref{Eq:alpha_opt})
+holds and an optimal choice for $\alpha$ will be
+\begin{eqnarray}
+ \alpha_{opt} & = & \frac{J}{Q^2-m_i^2-m_j^2-m_k^2} \,.
+\end{eqnarray}
+Thus, the massless case can be recovered trivially.
+
+\subsubsection{IF-Dipoles}
+\subsubsection*{Massless Case}
+\subsubsection*{Massive Case}
+\subsubsection{FI-Dipoles}
+\subsubsection*{Massless Case}
+\subsubsection*{Massive Case}
+
+\subsubsection{II-Dipoles}
+\subsubsection*{Massless Case}
+The transverse momentum is defined as
+\begin{eqnarray}
+ \mathbf{k}_\perp^2
+& = & 2(\tilde p_{ai}\cdot p_b) v_i\frac{1-X_{iab}-v_i}{x_{iab}} \\
+ k_\perp
+& = & \left(0,\mathbf{k}_\perp\right)
+\end{eqnarray}
+with
+\begin{eqnarray}
+ (k_\perp\cdot \tilde p_{ai})
+ (k_\perp\cdot \tilde p_b) = 0 \,.
+\end{eqnarray}
+The kinematic variables read
+\begin{eqnarray}
+ x_{iab}
+& = & \frac{p_ap_b-p_ip_a-p_ip_b}{p_ap_b} \\
+ v_i
+& = & \frac{p_ip_a}{p_ap_b} \,.
+\end{eqnarray}
+Thus, the momenta can be written as
+\begin{eqnarray}
+ p_a
+& = & \frac{1}{x_{iab}}\tilde p_{ai} \\
+ p_i
+& = & \frac{1-x_{iab}-v_i}{x_{iab}}\tilde p_{ai}+v_i p_b +k_\perp \\
+ k_j
+& = & \Lambda\left(\tilde p_{ai}+p_b,p_a+p_b-p_i\right)\tilde k_j \,,
+\end{eqnarray}
+and the spectator $p_b$ remains unchanged while the final state $k_j$
+takes the recoil.
+The relevant kinematic invariants read
+\begin{eqnarray}
+ p_i^2 = p_a^2 = p_b^2 = \tilde p_{ai}^2 = 0
+\end{eqnarray}
+and
+\begin{eqnarray}
+ (p_i\cdot p_a)
+& = & \frac{v_i}{x_iab}(\tilde p_{ai}\cdot p_b) \\
+ (p_i\cdot p_b)
+& = & \frac{1-x_{iab}-v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b) \\
+ (p_a\cdot p_b)
+& = & \frac{1}{x_{iab}}(\tilde p_{ai}\cdot p_b) \,.
+\end{eqnarray}
+Thus, the jet measure of radiation off an II-dipole reads
+\begin{eqnarray}
+ Q_{ia}^2
+& = & 2(p_i\cdot p_a)\frac{2}{C_{i,a}^b+C_{a,i}^b} \nnb\\
+& = & 2\frac{v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b)
+	\frac{2}{C_{i,a}^b+C_{a,i}^b} \nnb\\
+& = & \left\{\begin{array}{ll}
+		2\frac{v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b) & \mbox{if }i,a=q \\
+		& \\
+		2\frac{v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b)\cdot
+			2\frac{1-x_{iab}}{2-x_{iab}} & \mbox{if }i=g, a=q \\
+		& \\
+		2\frac{v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b)\cdot
+			2\frac{1+v_i}{2-x_{iab}} & \mbox{if }a=g, i=q \\
+		& \\
+		2\frac{v_i}{x_{iab}}(\tilde p_{ai}\cdot p_b)\cdot
+			\frac{2(1+v_i)(1-x_{iab})}{2(1-x_{iab})+x_{iab}(1-v_i)} & \mbox{if }i,a=g\,.
+             \end{array}\right.
+\end{eqnarray}
+Thus, with the further relation $x_{iab} < 1-v_i$ a suitable $\alpha$
+as an integration cut-off in the integral over $\done v_i$ can be found.(?)
+
+Three cases have to be differentiated
+\begin{itemize}
+ \item $qq$ dipole: In this case the phase space measure reads
+	\begin{eqnarray}
+	 Q_{ij}^2
+	& = & y_{ijk} Q^2 \,,
+	\end{eqnarray}
+ 	thus the unresolved real emission phase space comprises
+	$y_{ijk} \in [0,\alpha]$, 
+	$z_i \in [0,1]$.
+ \item $qg$ dipole: In this case the phase space measure reads
+	\begin{eqnarray}
+	 Q_{ij}^2
+	& = & y_{ijk} Q^2 
+		\min\left\{\frac{1-z_i(1-y_{ijk})}
+				{z_i(1-y_{ijk})},1\right\} \,,
+	\end{eqnarray}
+	thus the unresolved real emission phase space comprises
+	two regions: $y_{ijk} \in [0,\alpha]$, $z_i \in [0,1]$ 
+	and $ y_{ijk} \in [\alpha,\frac{J}{2Q^2}\left(-1+
+					\sqrt{1+4\frac{Q^2}{J}}\right)]$, 
+	$z_i \in [0,1-\frac{1}{2(1-y_{ijk})}]$.
+ \item $gg$ dipole: In this case the phase space measure reads
+	\begin{eqnarray}
+	 Q_{ij}^2
+	& = & y_{ijk} Q^2 
+		\min\left\{\frac{1-z_i(1-y_{ijk})}
+				{z_i(1-y_{ijk})},\right\} \,,
+	\end{eqnarray}
+\end{itemize}
+
+\subsubsection*{Massive Case}
+ There is no massive case here.
+
+
+
+
+
+\section{Event generation with constrained real emission}
+
+For POWHEG style event generation the leading order kinematic obtains an NLO
+weight according to
+\begin{eqnarray}
+ w_{NLO}
+& = & w_{born} + w_{virtual} + w_{constr. real} \nnb\\
+& = & w_B + w_{V+\int_\alpha A} + w_{\int_J[R-A]+\int_\alpha^JA} \,.
+\end{eqnarray}
+It needs to be seen whether it suffices to sample one extra emission point
+per event or the whole constrained extra emission phase space needs to be
+integrated per event.
+
+
+
+
+\section{Problems to be resolved}
+
+As Mike pointed out, the projection inherent in $\tilde\Phi_N$ ($N+1\to N$)
+may lead to a configuration that will not pass the $N$-parton phase space jet
+definition. Thus, although the integrand of
+\begin{eqnarray}
+ \int_{N+1}\Big[\done\sigma_R-\done\sigma_A\Big]
+& = & \int\done\Phi_{N+1} \left|\mathcal{M}_R\right|^2\;F_J(\Phi_{N+1})
+	- \int\done\Phi_{N+1} \left|\mathcal{M}_B\right|^2\;
+	  \sum\mathcal{D}(\tilde\Phi_N)\;F_J(\tilde\Phi_N)
+\end{eqnarray}
+exactly vanishes in the singular limit, both terms approach this limit differently.
+Hence, the integrand may still contain integrable divergences.
+
+This behaviour is caused by the fact that there exist configurations where the LO
+kinematics just pass the jet criterion, but, due to the momentum transfer in
+accomodating the extra emission, the NLO configuration, after recombination of the
+two unresolved partons, does not. Figure \ref{Fig:malclustering} exemplifies this.
+\begin{figure}
+ \begin{center}
+  \begin{picture}(100,80)(0,0)
+   \put(50,35){\vector(0,1){30}}
+   \put(50,25){\vector(0,-1){30}}
+   \put(47.8,27.5){$\bullet$}
+   \dottedline{3}(30,-2)(70,-2)
+   \dottedline{3}(30,62)(70,62)
+  \end{picture}
+  \begin{picture}(10,80)(0,0)
+   \put(0,27.8){$\to$}
+  \end{picture}
+  \begin{picture}(100,80)(0,0)
+   \put(50,35){\vector(-1,4){4.5}}
+   \put(50,35){\vector(1,4){4.5}}
+   \put(50,25){\vector(0,-4){26}}
+   \put(47.8,27.5){$\bullet$}
+   \dottedline{3}(30,-2)(70,-2)
+   \dottedline{3}(30,62)(70,62)
+  \end{picture}
+  \begin{picture}(10,80)(0,0)
+   \put(0,27.8){$\to$}
+  \end{picture}
+  \begin{picture}(100,80)(0,0)
+   \put(50,35){\vector(0,1){34}}
+   \put(50,25){\vector(0,-1){26}}
+   \put(47.8,27.5){$\bullet$}
+   \dottedline{3}(30,-2)(70,-2)
+   \dottedline{3}(30,62)(70,62)
+  \end{picture}
+ \end{center}
+ \caption{When creating an extra emission from an $N$ parton state which just
+	  barely fulfils the $N$-parton jet criterion there is a possibility
+	  that upon creating an extra emission in Catani-Seymour kinematics,
+	  affecting also a spectator, and clustering the new pair back into a
+	  jet of the $N$-parton phase space the affected spectator no longer
+	  fulfils the $N$-parton phase space jet criterion.\label{Fig:malclustering}}
+\end{figure}
+However, due to first splitting the $N\to N+1$ parton configuration and, then,
+evaluating the $N+1$ configuration directly, the (not performed) recombination
+is an exact inversion of the splitting, leading to exactly the same $N$ parton
+configuration. Thus, the above case can never occur and the cancelation and
+subtraction is exact. Nonetheless, this needs to be shown rigorously.
+
+For this point also see S.~Catani, M.~Seymour; Nucl.Phys.B485(1997)291-419,
+section 7.1, esp.~the last section: This cancellation mechanism is completely
+independent of the axtual form of the jet defining function but it is essential
+that $\done\sigma_R$ and $\done\sigma_A$ are proportional to $F_J(\Phi_{N+1})$
+and $F_J(\tilde\Phi_N)$, respectively. Nonetheless, both $\done\sigma_R$ and
+$\done\sigma_A$ live on the same $N+1$ parton phase space $\done\Phi_{N+1}$.
+Thus the numerical integration in $D=4$ dimensions is straightforward. One
+generates an $N+1$-parton configuration and gives it a positive weight
+($+|\mathcal{M}_R|^2$) or negative weight ($-\sum\mathcal{D}(\tilde\Phi_N)$)
+and fills it with the help of the different jet functions $F_J(\Phi_{N+1})$ and
+$F_J(\tilde\Phi_N)$ in their respective bin. The large positive and negative
+weights then exactly cancel in the singular regions as there both binnings
+coincide.
+
+However, when always working in the region of the $N+1$ particle phase space
+where $F_J(\Phi_{N+1})$ exhibits its mandatory property,
+\begin{eqnarray}
+ F_J(p_1,\ldots,p_j=\lambda q,\ldots,p_{N+1})
+&\to& F_J(p_1,\ldots,p_{j-1},p_{j+1},\ldots,p_{N+1})\qquad\mbox{ if }\lambda\to 0 \\
+ F_J(p_1,\ldots,p_i,\ldots,p_j,\ldots,p_{N+1})
+&\to& F_J(p_1,\ldots,p,\ldots,p_{N+1})\qquad\mbox{ if }p_i\to zp,p_j\to(1-z)p \nnb\,,
+\end{eqnarray}
+then all events are filled in $N$-parton phase space bins and no such distinction
+is necessary.
+
+
+
+\newpage
+\section{CKKW}
+
+LO $N$-parton ME/LO $N+1$-parton ME kernel:
+\begin{eqnarray}
+ \mathcal{K}_{ab}^{ME(0)}(z,t)
+& = & \frac{1}{\sigma_a^{ME(0)}(\Phi_N)}
+	\frac{\done^2\sigma_b^{ME(0)}(z,t,\Phi_N)}{\done\log\frac{\mu^2}{t}\;\done z}
+\end{eqnarray}
+NLO $N$-parton ME/NLO $N$+1-parton ME kernel:
+\begin{eqnarray}
+ \mathcal{K}_{ab}^{ME(1)}(z,t)
+& = & \frac{1}{\sigma_a^{ME(1)}(\Phi_N)}
+	\frac{\done^2\sigma_b^{ME(1)}(z,t,\Phi_N)}{\done\log\frac{\mu^2}{t}\;\done z}
+\end{eqnarray}
+where
+\begin{eqnarray}
+ \done\sigma_a^{ME(0)}(\Phi_N)
+& = & B(\Phi_N) \\
+ \done\sigma_a^{ME(1)}(\Phi_N)
+& = & B(\Phi_N) + V(\Phi_N) + I(\Phi_N,J)
+	+ \int\limits_0^J \done z\done t \Big[R(z,t,\Phi_N)-C(z,t,\Phi_N)\Big]
+\end{eqnarray}
+It has to be kept in mind, that the normalisation always needs to be at the
+same order in $\alpha_s$ as the differential real emission cross-section in
+order not to introduce any $K$-factors. It remains to be seen whether the
+assumed here implicitely (really?) factorisation of the NLO-kernel really holds.
+
+Regarding the scale choices for $\alpha_s$ for the extra emission, this has to 
+be determined in $R(z,t,\Phi_N)$ and, correspondingly, in $C(z,t,\Phi_N)$.
+Subsequently, one power of $\alpha_s$ needs to be replaced in $V(\Phi_N)$ and
+$I(\Phi_N,J)$ accordingly. To see this consider
+\begin{eqnarray}
+\lefteqn{
+ C_0^{ME}\left[1+\alpha_s
+		\left[\tilde V+\tilde I
+			+\int\limits_0^J\done z\done t(\tilde R-\tilde C)
+		\right]
+	\right]
+	\Delta(\rho_0,\rho_c)} \nnb\\
+& = & C_0^{ME}\left[1+\alpha_s^{ME}
+		\left[\tilde V+\tilde I
+			+\int\limits_0^J\done z\done t(\tilde R-\tilde C)
+		\right]
+	\right]
+	\left[1-\alpha_s^{PS}\int\limits_{\rho_0}^{\rho_c}\done z\done t\bar R + \ldots\right] \\
+& = & C_0^{ME}\left[1+\alpha_s^{PS}
+		\left[\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde V
+			+\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde I
+			+\int\limits_0^J\done z\done t
+				\left(\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde R
+					-\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde C
+					-\bar R \Theta(z,t,\rho_0,\rho_c)
+				\right)
+		\right]
+	\right]
+	\tilde\Delta(\rho_0,\rho_c)
+\end{eqnarray}
+The singularities in $\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde R$ are
+still cancelled by $\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde C$, those
+in $\bar R$ are excluded from the integration by the $\Theta$-function.
+Also, $\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\tilde I - 
+\frac{\alpha_s^{ME}}{\alpha_s^{PS}}\int_0^J\tilde C$ still gives exactly zero.
+
+
+
+\end{document}

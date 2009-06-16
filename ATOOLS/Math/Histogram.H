@@ -1,5 +1,5 @@
-#ifndef Histogram_H
-#define Histogram_H
+#ifndef ATOOLS_Math_Histogram_H
+#define ATOOLS_Math_Histogram_H
 
 #include <string>
 
@@ -13,11 +13,12 @@ namespace ATOOLS {
     double   * m_yvalues;
     double   * m_y2values;
     double   * m_psvalues;
-    long int   m_fills,m_psfills;
-    double     m_binsize, m_logbase;
+    double   * m_tmp;
+    double     m_fills,m_psfills;
+    double     m_binsize, m_logbase,m_mcb;
     int        m_depth;
     bool       m_active, m_finished, m_initialized;
-    int        m_logarithmic;
+    int        m_logarithmic,m_fuzzyexp;
   public :
     Histogram(int type,double xmin, double xmax, int nbins);
     Histogram(const Histogram *);
@@ -25,8 +26,11 @@ namespace ATOOLS {
     ~Histogram();
     void Reset();
     void Insert(double x);
-    void Insert(int i, double weight, int =1);
-    void Insert(double x, double weight, int =1);
+    void Insert(int i, double weight, double n=1.0);
+    void Insert(double x, double weight, double n=1.0);
+    void InsertMCB(double x, double weight, double =1.);
+    void InsertMCBIM(double coordinate,double value);
+    void FinishMCB();
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
     void Output();
@@ -38,7 +42,7 @@ namespace ATOOLS {
     double Bin(int i);
     double Bin(double x);
     void Extrapolate(double x, double * ys,int mode);
-    inline void SetFills(long int fills) {  m_fills=fills; }
+    inline void SetFills(double fills) {  m_fills=fills; }
 
     // basic access methods
     int Type() { return m_type; }
@@ -47,6 +51,7 @@ namespace ATOOLS {
     double Xmin() const { return m_lower; }
     double Xmax() const { return m_upper; }
     double Value(int i) const { return m_yvalues[i]; }
+    double Value2(int i) const { return m_y2values[i]; }
     double Fills() const { return m_fills; }
     double BinSize() const { return m_binsize; }
 
@@ -57,6 +62,7 @@ namespace ATOOLS {
 
 
     Histogram & operator+=(const Histogram & histo);
+    void Addopt(const Histogram & histo);
   };
 
 

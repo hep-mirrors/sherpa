@@ -1,0 +1,88 @@
+@setfilename Sherpa.info
+@include version.texi
+
+@settitle Sherpa @value{VERSION}
+
+
+@ifnottex
+@node Top
+@top Sherpa @value{VERSION} Manual
+
+@end ifnottex
+
+@titlepage
+@title Sherpa Manual Version @value{VERSION}
+@author The Sherpa Team, see @uref{http://www.sherpa-mc.de}
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@menu
+* Introduction::     What is Sherpa
+@sp 1
+* Command line::     Command line options
+* Input structure::  How to specify parameters for a Sherpa run.
+* Parameters::       List of parameters
+@sp 1
+* Cross section::    How to obtain the total cross section
+@sp 1
+* Tips and Tricks::  Advanced usage tips
+* Customization::    Extending Sherpa 
+@sp 1
+* Authors::          Authors of Sherpa 
+* Copying::          Your rights and freedoms
+* Index::            Index
+@end menu
+
+@include Introduction.texi
+@include Commands.texi
+@include Input.texi
+@include Parameters.texi
+@include CrossSection.texi
+@include Tips.texi
+@include Customization.texi
+
+@node Authors
+@chapter Authors
+
+Sherpa was written by the Sherpa Team, see 
+@uref{http://www.sherpa-mc.de,,http://www.sherpa-mc.de}.
+
+
+@node Copying
+@chapter Copying
+
+Sherpa is free  software.   
+You can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the  
+Free Software Foundation. You should have received a copy 
+of the GNU General Public License along with the source  
+for Sherpa; see the file COPYING. If not, write
+to the Free Software Foundation, 59 Temple Place, Suite 330, 
+Boston, MA  02111-1307, USA.
+
+Sherpa is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty  
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   
+See the GNU General Public License for more details.
+
+Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
+The MCnet Guidelines apply, see the file GUIDELINES and
+@uref{http://www.montecarlonet.org/index.php?p=Publications/Guidelines,,
+http://www.montecarlonet.org/index.php?p=Publications/Guidelines}.
+
+@copying
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU General Public License.
+@end copying
+
+@node Index
+@appendix Index
+
+@printindex cp
+
+@bye

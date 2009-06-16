@@ -1,14 +1,15 @@
-#include "QED_Splitting_Functions.H"
-#include "MathTools.H"
-#include "Random.H"
-#include "Sudakov_Tools.H"
+#include "APACIC++/Showers/QED_Splitting_Functions.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Random.H"
+#include "APACIC++/Showers/Sudakov_Tools.H"
 
 using namespace APACIC;
 
 // --------- class f_fp -----------------------------
 // * fermion to fermion + photon  splitting function
 // --------------------------------------------------
-f_fp::f_fp(ATOOLS::Flavour fermionflavour) 
+f_fp::f_fp(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour fermionflavour):
+  Splitting_Function(ms)
 {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = fermionflavour; // b
@@ -17,8 +18,9 @@ f_fp::f_fp(ATOOLS::Flavour fermionflavour)
   m_alpha    = 1.;
 }
 
-f_fp::f_fp(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  p_tools (_tools) {
+f_fp::f_fp(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
+  Splitting_Function(ms), p_tools (_tools) {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = fermionflavour; // b
   m_flavs[2] = ATOOLS::Flavour(kf_photon); // c
@@ -41,8 +43,8 @@ double f_fp::GetWeight(double z,double pt2,bool massterm)
 { 
   if (!massterm) return 0.5*(1.+z*z);
   return ( (1.+z*z)/2. - 
-	   z*ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
-	   (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
+	   z*ATOOLS::sqr((1.-z)*p_ms->Mass(m_flavs[0]))/
+	   (pt2+ATOOLS::sqr((1.-z)*p_ms->Mass(m_flavs[0]))) );
 }
 
 double f_fp::CrudeInt(double _zmin, double _zmax) 
@@ -59,7 +61,8 @@ double f_fp::CrudeInt(double _zmin, double _zmax)
 //   (only used in Initial State Shower)
 // --------------------------------------------------
 
-f_pf::f_pf(ATOOLS::Flavour fermionflavour) 
+f_pf::f_pf(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour fermionflavour) :
+  Splitting_Function(ms)
 {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = ATOOLS::Flavour(kf_photon); // b
@@ -68,8 +71,9 @@ f_pf::f_pf(ATOOLS::Flavour fermionflavour)
   m_alpha    = 1.;
 }
 
-f_pf::f_pf(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  p_tools (_tools) 
+f_pf::f_pf(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
+  Splitting_Function(ms), p_tools (_tools) 
 {
   m_flavs[0] = fermionflavour; // a
   m_flavs[1] = ATOOLS::Flavour(kf_photon); // b
@@ -92,8 +96,8 @@ double f_pf::GetWeight(double z,double pt2,bool massterm)
 { 
   if (!massterm) return 0.5*(1.+ATOOLS::sqr(1.-z));
   return ( (1.+ATOOLS::sqr(1.-z))/2. - 
-	   (1.-z)*ATOOLS::sqr(z*m_flavs[0].PSMass())/
-	   (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())) );
+	   (1.-z)*ATOOLS::sqr(z*p_ms->Mass(m_flavs[0]))/
+	   (pt2+ATOOLS::sqr(z*p_ms->Mass(m_flavs[0]))) );
 }
 
 double f_pf::CrudeInt(double _zmin, double _zmax) {
@@ -107,7 +111,8 @@ double f_pf::CrudeInt(double _zmin, double _zmax) {
 // * photon to fermion + anti-fermion splitting function
 // --------------------------------------------------
 
-p_ff::p_ff(ATOOLS::Flavour fermionflavour) 
+p_ff::p_ff(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour fermionflavour) :
+  Splitting_Function(ms)
 {
   m_flavs[0] = ATOOLS::Flavour(kf_photon); // a
   m_flavs[1] = fermionflavour; // b
@@ -116,8 +121,9 @@ p_ff::p_ff(ATOOLS::Flavour fermionflavour)
   m_alpha    = 1.;
 }
 
-p_ff::p_ff(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  p_tools (_tools) 
+p_ff::p_ff(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
+  Splitting_Function(ms), p_tools (_tools) 
 {
   m_flavs[0] = ATOOLS::Flavour(kf_photon); // a
   m_flavs[1] = fermionflavour; // b
@@ -142,7 +148,7 @@ double p_ff::GetCoupling(double t) { return p_tools->Alpha(t);}
 double p_ff::GetWeight(double z,double pt2,bool masses) 
 { 
   if (masses) return (*this)(z)/m_qsqr;
-  return (1. - 2.*z*(1.-z)*pt2/(pt2+ATOOLS::sqr(m_flavs[1].PSMass())));
+  return (1. - 2.*z*(1.-z)*pt2/(pt2+ATOOLS::sqr(p_ms->Mass(m_flavs[1]))));
 }                 
 
 double p_ff::CrudeInt(double _zmin, double _zmax) 

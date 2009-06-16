@@ -1,13 +1,13 @@
-#include "Mass_Handler.H"
-#include "Flavour.H"
-#include "Random.H"
+#include "ATOOLS/Phys/Mass_Handler.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace ATOOLS;
 using namespace std;
 
 Mass_Handler::Mass_Handler(Flavour flav)
 {
-  double peak = flav.PSMass();
+  double peak = flav.HadMass();
   double width = flav.Width();
   switch(flav.Kfcode()) {
   default: p_mass = new Relativistic_Breit_Wigner(peak, width);

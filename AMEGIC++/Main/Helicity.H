@@ -1,11 +1,11 @@
-#ifndef Helicity_h
-#define Helicity_h
+#ifndef AMEGIC_Main_Helicity_H
+#define AMEGIC_Main_Helicity_H
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include <iostream>
-#include "MyComplex.H"
-#include "Basic_Sfuncs.H"
-#include "Matrix.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "ATOOLS/Math/Matrix.H"
 
 namespace AMEGIC {
 
@@ -52,6 +52,8 @@ class Helicity {
     std::vector<int> m_trafoList; // list of the flavours that are polarized spinors
     std::vector<ATOOLS::CMatrix> m_trafoMatrices; // trafo matrices for pol->hel
 
+    int m_spos;
+
   public:
     //! The constructor determines all helicity combinations
     /*!
@@ -78,7 +80,7 @@ class Helicity {
     //! Returns the status of a certain helicity combination.
     int  On(int i) {return p_slist[i].on;}
     //! Increases the multiplicity of a combination by one.
-    void IncMultiplicity(int i) {if (m_trafoList.size()==0) (p_slist[i].multi)++;}  
+    void IncMultiplicity(int i,int add=1) {if (m_trafoList.size()==0) (p_slist[i].multi)+=add;}  
     //! Returns the multiplicity of a certain helicity combination.
     int  Multiplicity(int i) {return p_slist[i].multi;}  
     //! Polarization factors
@@ -106,6 +108,8 @@ class Helicity {
     ATOOLS::Flavour GetFlav(size_t i) { return m_flavours[i]; }
     ~Helicity();
 
+    int GetEPol(int hNumber) { if (m_spos<0) return 90; return GetPol(m_spos,hNumber); }
+    int GetSPos() { return m_spos; }
   };
 }
 #endif

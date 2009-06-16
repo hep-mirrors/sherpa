@@ -1,7 +1,7 @@
-#ifndef Laser_Backscattering_H
-#define Laser_Backscattering_H
+#ifndef BEAM_Main_Laser_Backscattering_H
+#define BEAM_Main_Laser_Backscattering_H
 
-#include "Beam_Base.H"
+#include "BEAM/Main/Beam_Base.H"
 
 namespace BEAM {  
   class Laser_Backscattering : public Beam_Base {

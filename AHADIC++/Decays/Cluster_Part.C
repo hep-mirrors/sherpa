@@ -1,6 +1,6 @@
-#include "Cluster_Part.H"
-#include "Message.H"
-#include "Random.H"
+#include "AHADIC++/Decays/Cluster_Part.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 
 using namespace AHADIC;
@@ -8,8 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
-  m_ana(ana), m_leading(hadpars.Get(std::string("leading_particles"))<2), 
-  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), p_splitter(splitter)
+  m_ana(ana), m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), p_splitter(splitter)
 { 
   if (m_ana) {
     m_histograms[string("Flavour_Cluster")] = new Histogram(0,0.,15.,15);
@@ -40,13 +39,7 @@ bool Cluster_Part::TestDecay(SP(Cluster) const cluster)
   Vec4D checkbef = cluster->Momentum();
 #endif
   cluster->BoostInCMSAndRotateOnZ();
-
-  bool pole(m_leading?(cluster->GetTrip()->m_info=='L' || 
-	               cluster->GetAnti()->m_info=='L'):true);
-
-  //std::cout<<METHOD<<" for ("<<cluster->GetTrip()->m_info
-  //	   <<cluster->GetAnti()->m_info<<")  -->  pole = "<<pole<<"."<<std::endl;
-  if (!p_splitter->SplitCluster(cluster,m_pt2max,pole)) {
+  if (!p_splitter->SplitCluster(cluster,m_pt2max)) {
     msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
 		  <<"   Could not split cluster "<<std::endl
 		  <<(*cluster)<<std::endl

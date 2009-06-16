@@ -1,16 +1,16 @@
-#ifndef Initial_State_Shower_H
-#define Initial_State_Shower_H
+#ifndef APACIC_Showers_Initial_State_Shower_H
+#define APACIC_Showers_Initial_State_Shower_H
 
-#include "ISR_Handler.H"
-#include "Model_Base.H"
-#include "Spacelike_Kinematics.H"
-#include "Spacelike_Sudakov.H"
-#include "Final_State_Shower.H"
-#include "Timelike_Kinematics.H"
-#include "Sudakov_Tools.H"
-#include "Particle_List.H"
-#include "Tree.H"
-#include "Run_Parameter.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "MODEL/Main/Model_Base.H"
+#include "APACIC++/Showers/Spacelike_Kinematics.H"
+#include "APACIC++/Showers/Spacelike_Sudakov.H"
+#include "APACIC++/Showers/Final_State_Shower.H"
+#include "APACIC++/Showers/Timelike_Kinematics.H"
+#include "APACIC++/Showers/Sudakov_Tools.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "APACIC++/Main/Tree.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace APACIC {
 
@@ -36,9 +36,6 @@ namespace APACIC {
     void SetDirection(Knot *const k);
     void SetVetoScales(Knot *const d);
 
-    void SingleExtract(Knot *const knot,const int &beam,ATOOLS::Blob *jet,
-		       ATOOLS::Blob_List *const list,int &nr);
-
     void ChooseMother(int &ntree1,Knot *&k1,Knot *&k2,bool init=false);
 
     bool InitializeSystem(Tree **const trees,int tree1,Knot *k1,Knot *k2);
@@ -54,7 +51,6 @@ namespace APACIC {
 
     // constructor
     Initial_State_Shower(PDF::ISR_Handler *const isr, 
-			 ATOOLS::Jet_Finder *const jf,
 			 Final_State_Shower *const fin,
 			 MODEL::Model_Base *const model,
 			 ATOOLS::Data_Reader *const read);
@@ -63,19 +59,17 @@ namespace APACIC {
     ~Initial_State_Shower();
 
     // member functions
+    void SingleExtract(ATOOLS::Blob *jet,Knot *const knot);
+
     int  DoKinematics();
 
     int  PerformShower(Tree **const initrees,Tree *const fintree);
 
-    void ExtractPartons(Knot *const kn,const int &beam,
-			ATOOLS::Blob *const jet,ATOOLS::Blob_List *const bl,
-			ATOOLS::Particle_List *const pl=NULL);
-
-    bool TestShower(Tree **trees) ;
-
     ATOOLS::Vec4D GetMomentum(Knot *const mo,int &number);
 
     void OutputTree(Tree * tree);
+
+    void SetMS(ATOOLS::Mass_Selector *const ms);
 
     static void SetColours(Knot * k);
 
@@ -88,12 +82,6 @@ namespace APACIC {
     {
       m_pt2_1=m_pt2_2=pt2max;
       m_th_1=m_th_2=M_PI;
-    }
-
-    inline void SetFactorisationScale(const double &scale) 
-    {
-      p_suds[0]->SetFactorisationScale(scale);
-      p_suds[1]->SetFactorisationScale(scale);
     }
 
   };

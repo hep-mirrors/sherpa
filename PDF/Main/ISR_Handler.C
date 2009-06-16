@@ -1,16 +1,16 @@
-#include "ISR_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
 
-#include "Beam_Base.H"
-#include "ISR_Base.H"
-#include "Run_Parameter.H" 
-#include "Hadron_Remnant.H"
-#include "Electron_Remnant.H"
-#include "Photon_Remnant.H"
-#include "No_Remnant.H"
-#include "Info_Key.H"
-#include "Exception.H"
-#include "Random.H"
-#include "Blob.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "PDF/Main/ISR_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H" 
+#include "PDF/Remnant/Hadron_Remnant.H"
+#include "PDF/Remnant/Electron_Remnant.H"
+#include "PDF/Remnant/Photon_Remnant.H"
+#include "PDF/Remnant/No_Remnant.H"
+#include "ATOOLS/Org/Info_Key.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
@@ -31,11 +31,12 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_cms(8)
 {
   p_remnants[1]=p_remnants[0]=NULL;
-  m_mode=0;
+  m_ewmode=m_mode=0;
   for (short int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) {
       p_isrbase[i]->AssignKeys(p_info);
       m_mode += i+1;
+      if (p_isrbase[i]->EWOn()) m_ewmode += i+1;
     }
   }
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
@@ -55,10 +56,16 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     else p_remnants[i] = new No_Remnant(i);
   }
   for (size_t i=0;i<2;++i) p_remnants[i]->SetPartner(p_remnants[1-i]);
+#ifdef USING__Threading
+  pthread_mutex_init(&m_mtx,NULL);
+#endif
 }
 
 ISR_Handler::~ISR_Handler() 
 {
+#ifdef USING__Threading
+  pthread_mutex_destroy(&m_mtx);
+#endif
   if (p_isrbase) {
     for (int i=0;i<2;i++) {
       if (p_isrbase[i]) delete p_isrbase[i];  
@@ -222,17 +229,46 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
 		       <<", "<<m_ykey[1]<<" vs. "<<m_ykey[2]<<std::endl;
     return false;
   }
-  double Q=sqrt(m_splimits[2]), E=sqrt(m_spkey[3]);
-  double E1=(m_spkey[3]+sqr(flavs[0].Mass())-sqr(flavs[1].Mass()))/(2.0*E);
-  p_cms[0]=p[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-sqr(flavs[0].Mass())));
-  p_cms[1]=p[1]=Vec4D(E-E1,(-1.)*Vec3D(p[0]));
-  Vec4D plab[2]; plab[0]=p[0]; plab[1]=p[1];
-  m_cmsboost=Poincare(Vec4D(cosh(m_ykey[2]),0.,0.,sinh(m_ykey[2])));
-  m_cmsboost.BoostBack(p_cms[0]);
-  m_cmsboost.BoostBack(p_cms[1]);
-  m_x[0]=p_cms[0].PPlus()/Q;
-  m_x[1]=p_cms[1].PMinus()/Q;
+  Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
+  double papb(pa*pb), sa(pa.Abs2()), sb(pb.Abs2());
+  double gam(papb+sqrt(sqr(papb)-sa*sb));
+  double aa(sa/gam), ab(sb/gam), bet(1.0/(1.0-aa*ab));
+  Vec4D pp(bet*(pa-aa*pb)), pm(bet*(pb-ab*pa));
+  double s1(sqr(flavs[0].Mass())), s2(sqr(flavs[1].Mass()));
+  double st(2.0*pp*pm), tau(0.5/st*(m_spkey[3]-s1-s2));
+  if (tau*tau<s1*s2/(st*st)) {
+    msg_Error()<<METHOD<<"(): s' out of range."<<std::endl;
+    return false;
+  }
+  tau+=sqrt(tau*tau-s1*s2/(st*st));
+  if (m_mode==1) {
+    m_x[1]=pb.PMinus()/pm.PMinus();
+    m_x[0]=tau/m_x[1];
+  }
+  else if (m_mode==2) {
+    m_x[0]=pa.PPlus()/pp.PPlus();
+    m_x[1]=tau/m_x[0];
+  }
+  else if (m_mode==3) {
+    double yt(m_ykey[2]-0.5*log((tau+s2/st)/(tau+s1/st)));
+    tau=sqrt(tau);
+    yt=exp(yt);
+    m_x[0]=tau*yt;
+    m_x[1]=tau/yt;
+  }
+  else {
+    THROW(fatal_error,"Invalid ISR mode");
+  }
+  p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
+  p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
+  m_cmsboost=Poincare(p_cms[0]+p_cms[1]);
+  m_cmsboost.Boost(p[0]);
+  m_cmsboost.Boost(p[1]);
   m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+  // m_x[0]=p_cms[0].PPlus()/pa.PPlus();
+  // m_x[1]=p_cms[1].PMinus()/pb.PMinus();
+  if (m_x[0]>=1.0) m_x[0]=1.0-1.0e-12;
+  if (m_x[1]>=1.0) m_x[1]=1.0-1.0e-12;
   return true;
 }
 
@@ -293,6 +329,7 @@ bool ISR_Handler::CalculateWeight(const double scale)
   case 1 :
     if (p_isrbase[0]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0])) return 1;
     break;
+  case 0 : return 1; 
   }
   return 0;
 }
@@ -386,3 +423,16 @@ ATOOLS::Blob_Data_Base *const ISR_Handler::Info(const int frame) const
   return new ATOOLS::Blob_Data<std::vector<double> >(m_info_lab);
 }
 
+void ISR_Handler::MtxLock()
+{
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_mtx);
+#endif
+}
+
+void ISR_Handler::MtxUnLock()
+{
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_mtx);
+#endif
+}

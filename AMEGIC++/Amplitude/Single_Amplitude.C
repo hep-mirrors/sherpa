@@ -1,10 +1,10 @@
-#include "Message.H"
-#include "Single_Amplitude.H"
-#include "Prop_Generator.H"
-#include "Color_Generator.H"
-#include "Kabbala.H"
-#include "Zfunc_Generator.H"
-#include "Process_Info.H"
+#include "ATOOLS/Org/Message.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude.H"
+#include "AMEGIC++/Amplitude/Prop_Generator.H"
+#include "AMEGIC++/Amplitude/Color_Generator.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "AMEGIC++/Amplitude/Zfunc_Generator.H"
+#include "AMEGIC++/Main/Process_Tags.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -74,7 +74,7 @@ Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
   amplnumber = ampltotalnumber;
 }
 
-Single_Amplitude::Single_Amplitude(int* _b,int _no,Process_Info* pinfo,Single_Amplitude** sglist,
+Single_Amplitude::Single_Amplitude(int* _b,int _no,Process_Tags* pinfo,Single_Amplitude** sglist,
 				   Basic_Sfuncs* _BS,ATOOLS::Flavour* _fl,String_Handler* _shand) : 
   Single_Amplitude_Base(_b,_no,_BS,_fl,_shand)
 {

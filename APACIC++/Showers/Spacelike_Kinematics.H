@@ -1,16 +1,17 @@
-#ifndef Spacelike_Kinematics_H
-#define Spacelike_Kinematics_H
+#ifndef APACIC_Showers_Spacelike_Kinematics_H
+#define APACIC_Showers_Spacelike_Kinematics_H
 
-#include "Timelike_Kinematics.H"
-#include "Tree.H"
+#include "APACIC++/Showers/Timelike_Kinematics.H"
+#include "APACIC++/Main/Tree.H"
 
 namespace APACIC {
 
   class Spacelike_Kinematics {
   private:
 
-    ATOOLS::Jet_Finder  *p_jf;
     Timelike_Kinematics *p_kin;
+
+    ATOOLS::Mass_Selector *p_ms;
 
     ATOOLS::Poincare m_boost, m_rot;
 
@@ -26,7 +27,7 @@ namespace APACIC {
   public:
 
     // constructor
-    Spacelike_Kinematics(ATOOLS::Jet_Finder *const jf);
+    Spacelike_Kinematics();
     
     // destructor
     ~Spacelike_Kinematics();
@@ -48,6 +49,10 @@ namespace APACIC {
     static double CalculateMaxT(Knot *const k1,Knot *const k2,bool diced=true);
 
     inline Timelike_Kinematics *Kinematics() const { return p_kin; }
+
+    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
+    inline ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
   };// end of class Spacelike_Kinematics
 

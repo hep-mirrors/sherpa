@@ -1,8 +1,8 @@
-#include "Basic_Func.H"
-#include "Basic_Sfuncs.H"
-#include "String_Generator.H"
-#include "Model_Base.H"
-#include "MathTools.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

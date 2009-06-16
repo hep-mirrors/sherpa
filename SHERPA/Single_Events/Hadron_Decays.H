@@ -1,10 +1,10 @@
-#ifndef Hadron_Decays_H
-#define Hadron_Decays_H
+#ifndef SHERPA_Single_Events_Hadron_Decays_H
+#define SHERPA_Single_Events_Hadron_Decays_H
 
-#include "Event_Phase_Handler.H"
-#include "Hadron_Decay_Handler.H"
-#include "Return_Value.H"
-#include "CXXFLAGS_PACKAGES.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 namespace ATOOLS {
   class Blob;

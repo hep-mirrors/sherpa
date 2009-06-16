@@ -1,5 +1,5 @@
-#include "Topology.H"
-#include "Message.H"
+#include "AMEGIC++/Main/Topology.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

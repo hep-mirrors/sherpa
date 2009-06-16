@@ -1,13 +1,13 @@
 #include <iostream>
-#include "Run_Parameter.H"
-#include "Standard_Model.H"
-#include "ISR_Handler.H"
-#include "Structure_Function.H"
-#include "CTEQ6_Fortran_Interface.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/Structure_Function.H"
+#include "PDF/CTEQ/CTEQ6_Fortran_Interface.H"
 
-#include "Apacic.H"
-#include "Tree.H"
-#include "Random.H"
+#include "APACIC++/Main/Apacic.H"
+#include "APACIC++/Main/Tree.H"
+#include "ATOOLS/Math/Random.H"
 #include "XS_Drell_Yan.H"
 
 using namespace ATOOLS;

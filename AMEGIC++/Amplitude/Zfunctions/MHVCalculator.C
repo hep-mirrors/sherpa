@@ -1,7 +1,7 @@
-#include "MHVCalculator.H"
-#include "Pfunc.H"
-#include "Exception.H"
-#include "MyStrStream.H"
+#include "AMEGIC++/Amplitude/Zfunctions/MHVCalculator.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -15,8 +15,8 @@ using namespace std;
 
 // constructor
 
-MHVCalculator::MHVCalculator(int part, MomentumList* BS,int* plist) :
-    n_part(part), m_dummyarg(0), m_ndummyarg(0), m_dummysl(0), m_ndummysl(0), m_plist(0), m_signlist(0), p_BS(BS) 
+MHVCalculator::MHVCalculator(int part,int* plist) :
+    n_part(part), m_dummyarg(0), m_ndummyarg(0), m_dummysl(0), m_ndummysl(0), m_plist(0), m_signlist(0), p_BS(0) 
 {
     m_dummyarg = new int[2*part];
     m_dummysl = new int[2*part];
@@ -30,29 +30,6 @@ MHVCalculator::MHVCalculator(int part, MomentumList* BS,int* plist) :
     m_ndummysl = new int[2*part];
     for (int i=0;i<part;i++) 	m_ndummyarg[part+i]=m_ndummyarg[i]=i;
     Make_Qlist(m_dummyarg,m_plist,m_qlist,n_part); 
-
-#ifdef Basic_Sfuncs_In_MHV
-    if (part>5) {
-      Pfunc_List pl;
-      int tt = (1<<(part))-1;
-      for (int i=3;i<tt;i++) {
-	int kk = 0;
-	for (int j=0;j<part;j++) if (i&(1<<j)) kk++;
-	if (kk>1) {
-	  int n=1;
-	  Pfunc* pf = new Pfunc(kk+1);
-	  for (int j=0;j<part;j++) if (i&(1<<j)) {
-	    pf->arg[n]=j;
-	    n++;
-	  }
-	  pl.push_back(pf);
-	}
-      }
-      p_BS->BuildMomlist(pl);
-      for (Pfunc_Iterator it=pl.begin();it!=pl.end();it++) delete (*it);
-    }
-#endif
- 
 }
 
 

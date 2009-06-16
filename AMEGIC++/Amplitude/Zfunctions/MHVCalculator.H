@@ -1,14 +1,14 @@
-#ifndef MHVCalculator_h
-#define MHVCalculator_h
+#ifndef AMEGIC_Amplitude_Zfunctions_MHVCalculator_H
+#define AMEGIC_Amplitude_Zfunctions_MHVCalculator_H
 
 #define Basic_Sfuncs_In_MHV
 #ifdef Basic_Sfuncs_In_MHV
-#include "Basic_Sfuncs.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 #else
-#include "Mom.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Mom.H"
 #endif
 
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 
 namespace AMEGIC {
@@ -58,7 +58,7 @@ namespace AMEGIC {
   public:
     
     inline MHVCalculator() {}
-    MHVCalculator(int part,MomentumList *BS,int* plist);
+    MHVCalculator(int part,int* plist);
     
     ~MHVCalculator();
     
@@ -66,6 +66,7 @@ namespace AMEGIC {
     
     inline const int * GetQlist() { return m_qlist;}
     inline const int * GetPlist() { return m_plist;}
+    void SetMomentumList(MomentumList* BS) { p_BS=BS; }
   };
   
 

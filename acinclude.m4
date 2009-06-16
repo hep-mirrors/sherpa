@@ -32,6 +32,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
   AC_SUBST(ldflags)
+  
+  if test "x$CXXFLAGS" == "x"; then CXXFLAGS=""; fi
 ])
 
 
@@ -82,173 +84,143 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   AMEGICDIR="\${top_srcdir}/AMEGIC++"
   AMEGICBUILDDIR="\${top_builddir}/AMEGIC++"
-  AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
-              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Amplitude/Zfunctions"
-  AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
-              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions \        
-              -lAmegic -lAmplitude -lAmegicPSGen -lZfunctions -lString"
+  AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/DipoleSubtraction \ 
+	      -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
+              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions -L\${AMEGICBUILDDIR}/Cluster \
+              -lAmegic -lDipoleSubtraction -lAmplitude -lAmegicPSGen -lZfunctions -lString -lAmegicCluster"
   AC_SUBST(AMEGICDIR)
   AC_SUBST(AMEGICBUILDDIR)
-  AC_SUBST(AMEGICINCS)
   AC_SUBST(AMEGICLIBS)
 
   AMISICDIR="\${top_srcdir}/AMISIC++"
   AMISICBUILDDIR="\${top_builddir}/AMISIC++"
-  AMISICINCS="-I\${AMISICDIR}/Main -I\${AMISICDIR}/Tools -I\${AMISICDIR}/Model"
   AMISICLIBS="-L\${AMISICBUILDDIR}/Main -L\${AMISICBUILDDIR}/Tools -L\${AMISICBUILDDIR}/Model \
               -lAmisic -lAmisicModel -lAmisicTools"
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICBUILDDIR)
-  AC_SUBST(AMISICINCS)
   AC_SUBST(AMISICLIBS)
 
   AHADICDIR="\${top_srcdir}/AHADIC++"
   AHADICBUILDDIR="\${top_builddir}/AHADIC++"
-  AHADICINCS="-I\${AHADICDIR}/Main -I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
-	      -I\${AHADICDIR}/Decays"
   AHADICLIBS="-L\${AHADICBUILDDIR}/Main -L\${AHADICBUILDDIR}/Tools -L\${AHADICBUILDDIR}/Formation -L\${AHADICBUILDDIR}/Decays \
               -lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
   AC_SUBST(AHADICDIR)
   AC_SUBST(AHADICBUILDDIR)
-  AC_SUBST(AHADICINCS)
   AC_SUBST(AHADICLIBS)
-  
-  ANALYSISDIR="\${top_srcdir}/ANALYSIS"
-  ANALYSISBUILDDIR="\${top_builddir}/ANALYSIS"
-  ANALYSISINCS="-I\${ANALYSISDIR}/Tools -I\${ANALYSISDIR}/Detector -I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Triggers -I\${ANALYSISDIR}/Observables"
-  ANALYSISLIBS="-L\${ANALYSISBUILDDIR}/Tools -L\${ANALYSISBUILDDIR}/Main -L\${ANALYSISBUILDDIR}/Triggers -L\${ANALYSISBUILDDIR}/Detector -L\${ANALYSISBUILDDIR}/Observables -lAnalysis -lAnalysisTools -lAnalysisTriggers -lAnalysisDetector -lObservables"
-  AC_SUBST(ANALYSISDIR)
-  AC_SUBST(ANALYSISBUILDDIR)
-  AC_SUBST(ANALYSISINCS)
-  AC_SUBST(ANALYSISLIBS)
   
   APACICDIR="\${top_srcdir}/APACIC++"
   APACICBUILDDIR="\${top_builddir}/APACIC++"
-  APACICINCS="-I\${APACICDIR}/Main -I\${APACICDIR}/Showers"
   APACICLIBS="-L\${APACICBUILDDIR}/Main -L\${APACICBUILDDIR}/Showers -lApacicShowers -lApacicMain"
   AC_SUBST(APACICDIR)
   AC_SUBST(APACICBUILDDIR)
-  AC_SUBST(APACICINCS)
   AC_SUBST(APACICLIBS)
   
   ATOOLSDIR="\${top_srcdir}/ATOOLS"
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
-  ATOOLSINCS="-I\${ATOOLSDIR}/Phys -I\${ATOOLSDIR}/Math -I\${ATOOLSDIR}/Org"
   ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math \
               -L\${ATOOLSBUILDDIR}/Org \
               -lToolsPhys -lToolsMath -lToolsOrg"
   AC_SUBST(ATOOLSDIR)
   AC_SUBST(ATOOLSBUILDDIR)
-  AC_SUBST(ATOOLSINCS)
   AC_SUBST(ATOOLSLIBS)
   
   BEAMDIR="\${top_srcdir}/BEAM"
   BEAMBUILDDIR="\${top_builddir}/BEAM"
-  BEAMINCS="-I\${BEAMDIR}/Main"
   BEAMLIBS="-L\${BEAMBUILDDIR}/Main -lBeam"
   AC_SUBST(BEAMDIR)
   AC_SUBST(BEAMBUILDDIR)
-  AC_SUBST(BEAMINCS)
   AC_SUBST(BEAMLIBS)
 
   HELICITIESDIR="\${top_srcdir}/HELICITIES"
   HELICITIESBUILDDIR="\${top_builddir}/HELICITIES"
-  HELICITIESINCS="-I\${HELICITIESDIR}/Main"
-  HELICITIESLIBS="-L\${HELICITIESBUILDDIR}/Main -lHelicitiesMain"
+  HELICITIESLIBS="-L\${HELICITIESBUILDDIR}/Main -lHelicitiesMain \
+                  -L\${HELICITIESBUILDDIR}/Loops -lHelicitiesLoops"
   AC_SUBST(HELICITIESDIR)
   AC_SUBST(HELICITIESBUILDDIR)
-  AC_SUBST(HELICITIESINCS)
   AC_SUBST(HELICITIESLIBS)
   
   EXTRAXSDIR="\${top_srcdir}/EXTRA_XS"
   EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS"
-  EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main -I\${EXTRAXSDIR}/Model"
-  EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Two2Two -L\${EXTRAXSBUILDDIR}/Main -L\${EXTRAXSBUILDDIR}/Model -lExtraXSModel -lExtraXS -lExtraXS2_2"
+  EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Main -lExtraXS \
+               -L\${EXTRAXSBUILDDIR}/Two2Two -lExtraXS2_2 \
+               -L\${EXTRAXSBUILDDIR}/Cluster -lExtraXSCluster \
+               -L\${EXTRAXSBUILDDIR}/NLO -lExtraXSNLO"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
-  AC_SUBST(EXTRAXSINCS)
   AC_SUBST(EXTRAXSLIBS)
+  
+  CSSDIR="\${top_srcdir}/CSSHOWER++"
+  CSSBUILDDIR="\${top_builddir}/CSSHOWER++"
+  CSSLIBS="-L\${CSSBUILDDIR}/Main -L\${CSSBUILDDIR}/Calculators -L\${CSSBUILDDIR}/Showers -L\${CSSBUILDDIR}/Tools \
+		-lCSTools -lCSCalculators -lCSShowers -lCSMain"
+  AC_SUBST(CSSDIR)
+  AC_SUBST(CSSBUILDDIR)
+  AC_SUBST(CSSLIBS)
+  
+
+  COMIXDIR="\${top_srcdir}/COMIX"
+  COMIXBUILDDIR="\${top_builddir}/COMIX"
+  COMIXLIBS="-L\${COMIXBUILDDIR}/Amplitude -L\${COMIXBUILDDIR}/Phasespace -L\${COMIXBUILDDIR}/Main -L\${COMIXBUILDDIR}/Models -L\${COMIXBUILDDIR}/Currents -L\${COMIXBUILDDIR}/Vertices -L\${COMIXBUILDDIR}/Cluster -lComixAmplitude -lComixPhasespace -lComix -lComixModels -lComixCurrents -lComixVertices -lComixCluster"
+  AC_SUBST(COMIXDIR)
+  AC_SUBST(COMIXBUILDDIR)
+  AC_SUBST(COMIXLIBS)
   
   HADRONSDIR="\${top_srcdir}/HADRONS++"
   HADRONSBUILDDIR="\${top_builddir}/HADRONS++"
-  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library \
-               -I\${HADRONSDIR}/Current_Library -I\${HADRONSDIR}/PS_Library"
   HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library \
                -L\${HADRONSBUILDDIR}/Current_Library -L\${HADRONSBUILDDIR}/PS_Library \
                -lHadronsMain -lHadronsMEs -lHadronsCurrents -lHadronsPSs"
   AC_SUBST(HADRONSDIR)
   AC_SUBST(HADRONSBUILDDIR)
-  AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)
   
   PHOTONSDIR="\${top_srcdir}/PHOTONS++"
   PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++"
-  PHOTONSINCS="-I\${PHOTONSDIR}/Main -I\${PHOTONSDIR}/Tools -I\${PHOTONSDIR}/PhaseSpace \
-               -I\${PHOTONSDIR}/MEs"
   PHOTONSLIBS="-L\${PHOTONSBUILDDIR}/Main -L\${PHOTONSBUILDDIR}/Tools \
                -L\${PHOTONSBUILDDIR}/PhaseSpace -L\${PHOTONSBUILDDIR}/MEs \
                -lPhotonsMain -lPhotonsTools -lPhotonsPhaseSpace -lPhotonsMEs"
   AC_SUBST(PHOTONSDIR)
   AC_SUBST(PHOTONSBUILDDIR)
-  AC_SUBST(PHOTONSINCS)
   AC_SUBST(PHOTONSLIBS)
   
   MODELDIR="\${top_srcdir}/MODEL"
   MODELBUILDDIR="\${top_builddir}/MODEL"
-  MODELINCS="-I\${MODELDIR}/Main -I\${MODELDIR}/Interaction_Models -I\${MODELDIR}/Decays"
-  MODELLIBS="-L\${MODELBUILDDIR}/Main -L\${MODELBUILDDIR}/Interaction_Models \
-	     -L\${MODELBUILDDIR}/Decays \	
-             -lModelMain -lModelInteractions -lModelDecays"
+  MODELLIBS="-L\${MODELBUILDDIR}/Main -L\${MODELBUILDDIR}/Interaction_Models \	
+             -lModelMain -lModelInteractions"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
-  AC_SUBST(MODELINCS)
   AC_SUBST(MODELLIBS)
   
   PDFDIR="\${top_srcdir}/PDF"
   PDFBUILDDIR="\${top_builddir}/PDF"
-  PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
-           -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/Remnant"
-  PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant -L\${PDFBUILDDIR}/LHAPDF \
-           -L\${PDFBUILDDIR}/GRV -L\${PDFBUILDDIR}/Sudakov -L\${PDFBUILDDIR}/Remnant \
-           -lPDF -lSudakov -lGRV -lRemnant"
+  PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant"
+  PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant \
+           -lPDF -lRemnant"
   AC_SUBST(PDFDIR)
   AC_SUBST(PDFBUILDDIR)
-  AC_SUBST(PDFINCS)
   AC_SUBST(PDFLIBS)
-  
-  CTEQINCS="-I\${PDFDIR}/CTEQ"
-  CTEQLIBS="-L\${PDFBUILDDIR}/CTEQ -lCTEQ"
-  AC_SUBST(CTEQINCS)
-  AC_SUBST(CTEQLIBS)
-
-  MRSTLIBS="-L\${PDFBUILDDIR}/MRST -lMRST"
-  AC_SUBST(MRSTLIBS)
   
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
-  PHASICINCS="-I\${PHASICDIR}/Main"
-  PHASICLIBS="-L\${PHASICBUILDDIR}/Main -lPhasespace"
+  PHASICLIBS="-L\${PHASICBUILDDIR}/Main -L\${PHASICBUILDDIR}/Channels \
+	-L\${PHASICBUILDDIR}/Process -L\${PHASICBUILDDIR}/Scales \
+	-L\${PHASICBUILDDIR}/Selectors \
+	-lPhasicChannels -lPhasicMain -lPhasicProcess -lPhasicScales \
+	-lPhasicSelectors"
   AC_SUBST(PHASICDIR)
   AC_SUBST(PHASICBUILDDIR)
-  AC_SUBST(PHASICINCS)
   AC_SUBST(PHASICLIBS)
   
   SHERPADIR="\${top_srcdir}/SHERPA"
   SHERPABUILDDIR="\${top_builddir}/SHERPA"
-  SHERPAINCS="-I\${SHERPADIR}/Single_Events -I\${SHERPADIR}/PerturbativePhysics \
-              -I\${SHERPADIR}/LundTools -I\${SHERPADIR}/Tools -I\${SHERPADIR}/Main \
-              -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
   SHERPALIBS="-L\${SHERPABUILDDIR}/Single_Events -L\${SHERPABUILDDIR}/PerturbativePhysics \
               -L\${SHERPABUILDDIR}/LundTools -L\${SHERPABUILDDIR}/Tools -L\${SHERPABUILDDIR}/Main \
               -L\${SHERPABUILDDIR}/Initialization -L\${SHERPABUILDDIR}/SoftPhysics -L\${SHERPABUILDDIR}/HerwigTools \
               -lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
               -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
-  SHERPAFLAGS="-pedantic -Wall"
   AC_SUBST(SHERPADIR)
   AC_SUBST(SHERPABUILDDIR)
-  AC_SUBST(SHERPAINCS)
   AC_SUBST(SHERPALIBS)
-  AC_SUBST(SHERPAFLAGS)
 
   if test "x$prefix" = "xNONE"; then
     prefix=$ac_default_prefix
@@ -268,6 +240,18 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR", [Sherpa library directory])
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
+  
+  AM_CPPFLAGS="-I\$(top_srcdir)"
+  AC_SUBST(AM_CPPFLAGS)
+
+  AM_CXXFLAGS="-g -O2 -pedantic -Wall"
+  AC_SUBST(AM_CXXFLAGS)
+
+  EXTRA_DIST="\$(SVNINCLUDE)"
+  AC_SUBST(EXTRA_DIST)
+
+  localincdir="\$(pkgincludedir)/\$(subdir)"
+  AC_SUBST(localincdir)
 ])
 
 
@@ -298,7 +282,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     svninclude,
-    AC_HELP_STRING([--disable-svninclude], [Don't distribute SVN synchronization directories.]),
+    AC_HELP_STRING([--enable-svninclude], [Add .svn directories to dist tarball.]),
     [ AC_MSG_CHECKING(whether to enable SVN synchronization)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no);
@@ -306,7 +290,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes) AC_MSG_RESULT(yes);
               SVNINCLUDE=".svn";;
       esac ],
-    [ AC_MSG_CHECKING(whether to enable SVN synchronization); AC_MSG_RESULT(yes); SVNINCLUDE=".svn" ] 
+    [ AC_MSG_CHECKING(whether to enable SVN synchronization); AC_MSG_RESULT(no); SVNINCLUDE="" ] 
   )
   AC_SUBST(SVNINCLUDE)
 
@@ -327,6 +311,18 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_THREADLIBS)
   AM_CONDITIONAL(USING__Threading, test "$multithread" = "true" )
   
+  AC_ARG_ENABLE(
+    analysis,
+    AC_HELP_STRING([--enable-analysis], [Enable analysis]),
+    [ AC_MSG_CHECKING(for analysis)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); analysis=false ;;
+        yes) AC_MSG_RESULT(yes); analysis=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for analysis); AC_MSG_RESULT(no); analysis=false ]
+  )
+  AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
+
   AC_ARG_ENABLE(
     mcatnloinclude,
     AC_HELP_STRING([--enable-mcatnloinclude], [Enable MC@NLO support]),
@@ -370,6 +366,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -f "$CONDITIONAL_HEPMC2DIR/include/HepMC/IO_GenEvent.h"; then
         hepmciogenevent=true;
       fi;
+      if test -f "$CONDITIONAL_HEPMC2DIR/include/HepMC/HepMCDefs.h"; then
+        hepmcdefs=true;
+      fi;
       if test -f "$CONDITIONAL_HEPMC2DIR/include/HepMC/Units.h"; then
         hepmcunits=true;
       fi;
@@ -384,11 +383,48 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     if test "$hepmcunits" = "true"; then
       AC_DEFINE([USING__HEPMC2__UNITS], "1", [HepMC::Units available])
     fi
+    if test "$hepmcdefs" = "true"; then
+      AC_DEFINE([USING__HEPMC2__DEFS], "1", [HepMCDefs.h available])
+    fi
   fi
   AC_SUBST(CONDITIONAL_HEPMC2DIR)
   AC_SUBST(CONDITIONAL_HEPMC2INCS)
   AC_SUBST(CONDITIONAL_HEPMC2LIBS)
   AM_CONDITIONAL(HEPMC2_SUPPORT, test "$hepmc2" = "true")
+
+  AC_ARG_ENABLE(
+    fastjet,
+    AC_HELP_STRING([--enable-fastjet=/path/to/fastjet], [Enable FASTJET.]),
+    [ AC_MSG_CHECKING(for FASTJET installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(FASTJET not enabled); fastjet=false ;;
+        yes)  if test -d "$FASTJETDIR"; then
+                CONDITIONAL_FASTJETDIR="${enableval}"
+                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
+                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs)"
+              else
+                AC_MSG_ERROR(\$FASTJETDIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_FASTJETDIR="${enableval}"
+                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
+                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs)"
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
+      esac
+      ],
+    [ fastjet=false ]
+  )
+  if test "$fastjet" = "true" ; then
+    AC_DEFINE([USING__FASTJET], "1", [Using FASTJET])
+  fi
+  AC_SUBST(CONDITIONAL_FASTJETDIR)
+  AC_SUBST(CONDITIONAL_FASTJETINCS)
+  AC_SUBST(CONDITIONAL_FASTJETLIBS)
+  AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
 
   AC_ARG_ENABLE(
     root,
@@ -470,6 +506,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ lhapdf=false ]
   )
   if test "$lhapdf" = "true" ; then
+    AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
     AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
     if test "$lhapdfnativewrapper" = "true"; then
       AC_DEFINE([LHAPDF__NATIVE__WRAPPER], "1", [using native C++ wrapper])
@@ -480,6 +517,93 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
   AM_CONDITIONAL(LHAPDF_NATIVE_WRAPPER, test "$lhapdfnativewrapper" = "true")
+
+  AC_ARG_ENABLE(
+    golem95,
+    AC_HELP_STRING([--enable-golem95=/path/to/golem95], [Enable golem95 for calculating loop matrix elements.]),
+    [ AC_MSG_CHECKING(for golem95 installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(golem95 not enabled); golem95=false;;
+        *)  if test -d "${enableval}"; then
+              if test -f "${enableval}/libgolem.a"; then
+                CONDITIONAL_GOLEM95LIBS="${enableval}/libgolem.a";
+                CONDITIONAL_GOLEM95DIR="${enableval}";
+                golem95=true;
+                AC_MSG_RESULT(${enableval});
+              else
+                AC_MSG_ERROR(Did not find '${enableval}/libgolem.a'.); 
+              fi;
+            else
+              AC_MSG_ERROR(Did not find golem95 directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ golem95=false ]
+  )
+  if test "$golem95" = "true" ; then
+    AC_DEFINE([USING__GOLEM95], "1", [golem95 found and linked])
+  fi
+  AC_SUBST(CONDITIONAL_GOLEM95DIR)
+  AC_SUBST(CONDITIONAL_GOLEM95LIBS)
+  AM_CONDITIONAL(GOLEM95_SUPPORT, test "$golem95" = "true")
+
+  AC_ARG_ENABLE(
+    hztool,
+    AC_HELP_STRING([--enable-hztool=/path/to/hztool], [Enable hztool for analysis.]),
+    [ AC_MSG_CHECKING(for hztool installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(hztool not enabled); hztool=false;;
+        *)  if test -d "${enableval}"; then
+              if test -f "${enableval}/lib/libhztool.a"; then
+                CONDITIONAL_HZTOOLLIBS="${enableval}/lib/libhztool.a";
+	        CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLDIR="${enableval}";
+                hztool=true;
+                AC_MSG_RESULT(${enableval});
+              else
+                AC_MSG_ERROR(Did not find '${enableval}/libhztool.a'.); 
+              fi;
+            else
+              AC_MSG_ERROR(Did not find hztool directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ hztool=false ]
+  )
+  if test "$hztool" = "true" ; then
+    AC_DEFINE([USING__HZTOOL], "1", [hztool found])
+  fi
+  AC_SUBST(CONDITIONAL_HZTOOLDIR)
+  AC_SUBST(CONDITIONAL_HZTOOLINCS)
+  AC_SUBST(CONDITIONAL_HZTOOLLIBS)
+  AM_CONDITIONAL(HZTOOL_SUPPORT, test "$hztool" = "true")
+
+  AC_ARG_ENABLE(
+    cernlib,
+    AC_HELP_STRING([--enable-cernlib=/path/to/cernlib], [Enable cernlib.]),
+    [ AC_MSG_CHECKING(for cernlib installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
+        *)  if test -d "${enableval}"; then
+              if test -f "${enableval}/lib/libkernlib.a"; then
+                CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib.a"
+                cernlib=true;
+                AC_MSG_RESULT(${enableval});
+              else
+                AC_MSG_ERROR(Did not find '${enableval}/lib/libkernlib.a'.); 
+              fi;
+            else
+              AC_MSG_ERROR(Did not find cernlib directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ cernlib=false ]
+  )
+  if test "$cernlib" = "true" ; then
+    AC_DEFINE([USING__CERNLIB], "1", [cernlib found])
+  fi
+  AC_SUBST(CONDITIONAL_CERNLIBLIBS)
+  AM_CONDITIONAL(CERNLIB_SUPPORT, test "$cernlib" = "true")
 
   AC_ARG_ENABLE(
     gzip,
@@ -550,10 +674,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$amisicinclude" = "true" ; then
     AC_DEFINE([USING__Amisic], "1", [using AMISIC])
     CONDITIONAL_AMISICLIBS="\${AMISICLIBS}"
-    CONDITIONAL_AMISICINCS="\${AMISICINCS}"
   fi
   AC_SUBST(CONDITIONAL_AMISICLIBS)
-  AC_SUBST(CONDITIONAL_AMISICINCS)
   AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
   
   AC_ARG_ENABLE(ahadicinclude,
@@ -568,10 +690,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$ahadicinclude" = "true" ; then
     AC_DEFINE([USING__Ahadic], "1", [using AHADIC])
     CONDITIONAL_AHADICLIBS="\${AHADICLIBS}"
-    CONDITIONAL_AHADICINCS="\${AHADICINCS}"
   fi
   AC_SUBST(CONDITIONAL_AHADICLIBS)
-  AC_SUBST(CONDITIONAL_AHADICINCS)
   AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
   
   AC_ARG_ENABLE(hadronsinclude,
@@ -586,10 +706,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$hadronsinclude" = "true" ; then
     AC_DEFINE([USING__Hadrons], "1", [using HADRONS])
     CONDITIONAL_HADRONSLIBS="\${HADRONSLIBS}"
-    CONDITIONAL_HADRONSINCS="\${HADRONSINCS}"
   fi
   AC_SUBST(CONDITIONAL_HADRONSLIBS)
-  AC_SUBST(CONDITIONAL_HADRONSINCS)
   AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
   
   AC_ARG_ENABLE(photonsinclude,
@@ -604,9 +722,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$photonsinclude" = "true" ; then
     AC_DEFINE([USING__Photons], "1", [using PHOTONS])
     CONDITIONAL_PHOTONSLIBS="\${PHOTONSLIBS}"
-    CONDITIONAL_PHOTONSINCS="\${PHOTONSINCS}"
   fi
   AC_SUBST(CONDITIONAL_PHOTONSLIBS)
-  AC_SUBST(CONDITIONAL_PHOTONSINCS)
   AM_CONDITIONAL(PHOTONS_SUPPORT, test "$photonsinclude" = "true" )
 ])

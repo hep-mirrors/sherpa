@@ -1,8 +1,8 @@
-#include "SM_AxiGluon.H"
-#include "Standard_Model.H"
-#include "Data_Reader.H"
-#include "Effective_Higgs_Coupling.H"
-#include "Message.H"
+#include "MODEL/Main/SM_AxiGluon.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "MODEL/Main/Effective_Higgs_Coupling.H"
+#include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
 using namespace MODEL;
@@ -51,11 +51,6 @@ SM_AxiGluon::SM_AxiGluon(std::string _dir,std::string _file,bool _elementary) :
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }
-  if (!SanityChecks()) {
-    msg_Error()<<"Potential Error in "<<METHOD<<":"<<endl
-	       <<"   Sanity checks not passed."<<endl
-	       <<"   Continue and hope for the best."<<endl;
-  }
 }
 
 SM_AxiGluon::~SM_AxiGluon() 
@@ -64,7 +59,7 @@ SM_AxiGluon::~SM_AxiGluon()
 void SM_AxiGluon::ParticleInit() {
   //add axigluon
   //kf_code,mass,width,3*charge,icharge,strong,2*spin,majorana,take,stable,massive,idname,tex_name
-  s_kftable[kf_axigluon] = new Particle_Info(kf_axigluon,1000.,10.0,0,0,8,2,-1,1,0,1,"axigluon","\\chi_g");
+  s_kftable[61] = new Particle_Info(61,1000.,10.0,0,0,8,2,-1,1,0,1,"axigluon","\\chi_g");
 
   ReadParticleData();
 }
@@ -76,16 +71,9 @@ void SM_AxiGluon::FillSpectrum() {
   p_dataread->SetInputFile(m_file);
   p_constants->insert(make_pair(string("MASS_AXI"),    
 				p_dataread->GetValue<double>("MASS_AXIGLUON",1000.)));
-  Flavour flav = Flavour(kf_axigluon);
+  Flavour flav = Flavour(61);
   flav.SetMass(ScalarConstant(string("MASS_AXI")));
   flav.SetMassOn(true);
   flav.SetStable(false);
   flav.SetWidth(-1.);
 }
-
-bool SM_AxiGluon::SanityChecks() {
-  return true;
-}
-
-
-

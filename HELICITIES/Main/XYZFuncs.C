@@ -1,9 +1,9 @@
-#include "XYZFuncs.H"
-#include "Vector.H"
-#include "Flavour.H"
-#include "Polarization_Tools.H"
-#include "Message.H"
-#include "Exception.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 
 #ifndef SQRT_05
@@ -70,7 +70,7 @@ void XYZFunc::CalcEtaMu()
       default : _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[3])*SQRT_05) );
     }
     m_eta.push_back( _m_eta );
-    Complex help( p_flav[i].PSMass(), 0. );
+    Complex help( p_flav[i].HadMass(), 0. );
     m_mu.push_back( help/m_eta[i] );
     if((p_flav[i].IsAnti() && m_anti==false) ||
        (!p_flav[i].IsAnti() && m_anti==true)) m_mu[i] *= -1.;
@@ -354,7 +354,7 @@ Complex XYZFunc::G(
   Complex cL(1.0,0.0);
   Complex cR(1.0,0.0);
   return i*((p2*(p_mom[t1]+p_mom[t3]))*Y(t1,l1,t3,l3,cL,cR)-
-            (p_flav[t1].PSMass()+p_flav[t3].PSMass())*X(t1,l1,p2,t3,l3,cL,cR));
+            (p_flav[t1].HadMass()+p_flav[t3].HadMass())*X(t1,l1,p2,t3,l3,cL,cR));
 }
  
 Vec4C XYZFunc::L(
@@ -392,38 +392,38 @@ int XYZFunc::MToL(int m)
   case 0:\
     m   = -1;\
     CG  = 1.0;\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 1:\
     m   = -1;\
     CG  = sqrt(1.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     m   = 0;\
     CG  = sqrt(2.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 2:\
     m   = 0;\
     CG  = sqrt(2.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     m   = 1;\
     CG  = sqrt(1.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 3:\
     m   = 1;\
     CG  = 1.0;\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].PSMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\

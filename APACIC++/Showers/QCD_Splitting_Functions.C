@@ -1,16 +1,17 @@
-#include "QCD_Splitting_Functions.H"
-#include "Sudakov_Tools.H"
-#include "MathTools.H"
-#include "Random.H"
+#include "APACIC++/Showers/QCD_Splitting_Functions.H"
+#include "APACIC++/Showers/Sudakov_Tools.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Random.H"
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace APACIC;
 using namespace std;
 
 // quark to quark + gluon  splitting function
-q_qg::q_qg(ATOOLS::Flavour quarkflavour,double fmed) : 
-  p_tools(0), m_kfactor(1.0), m_fmed(fmed) 
+q_qg::q_qg(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour quarkflavour,double fmed) : 
+  Splitting_Function(ms), p_tools(0), m_kfactor(1.0), m_fmed(fmed) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
@@ -18,8 +19,9 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour,double fmed) :
   m_alpha    = 1.;
 }
 
-q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
-  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
+q_qg::q_qg(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
+  Splitting_Function(ms), p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
@@ -69,8 +71,8 @@ double q_qg::GetWeight(double z,double pt2,bool massterm)
 { 
   double weight(1.-(1.-z*z)/(2.*(1.+m_fmed)));
   if (massterm) {
-    double mu(z*(1.-z)*ATOOLS::sqr(m_flavs[0].PSMass())/
-	      (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())));
+    double mu(z*(1.-z)*ATOOLS::sqr(p_ms->Mass(m_flavs[0]))/
+	      (pt2+ATOOLS::sqr((1.-z)*p_ms->Mass(m_flavs[0]))));
     weight *= 1.-(1.-z)*2.*mu/(2.*(1.+m_fmed)-(1.-z*z));
   }
   if (s_kfactorscheme==1) {
@@ -93,8 +95,8 @@ double q_qg::Integral(double zmin, double zmax)
 }
 
 // gluon to gluon + gluon splitting function (needed twice for initial state shower)
-g_gg::g_gg(double fmed) : 
-  p_tools(0), m_kfactor(1.0), m_fmed(fmed)  
+g_gg::g_gg(ATOOLS::Mass_Selector *&ms,double fmed) : 
+  Splitting_Function(ms), p_tools(0), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
@@ -102,8 +104,8 @@ g_gg::g_gg(double fmed) :
   m_alpha    = 1.;
 }
 
-g_gg::g_gg(Sudakov_Tools * _tools,double fmed) : 
-  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
+g_gg::g_gg(ATOOLS::Mass_Selector *&ms,Sudakov_Tools * _tools,double fmed) : 
+  Splitting_Function(ms), p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 { 
   m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
@@ -214,8 +216,8 @@ double g_gg::Integral(double zmin, double zmax)
 }
 
 //! gluon to quark + anti-quark splitting function
-g_qq::g_qq(ATOOLS::Flavour quarkflavour,double fmed) : 
-  p_tools(0), m_fmed(fmed)  
+g_qq::g_qq(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour quarkflavour,double fmed) : 
+  Splitting_Function(ms), p_tools(0), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = quarkflavour; 
@@ -223,8 +225,9 @@ g_qq::g_qq(ATOOLS::Flavour quarkflavour,double fmed) :
   m_alpha    = 1.;
 }
 
-g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
-  p_tools (_tools), m_fmed(fmed)  
+g_qq::g_qq(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
+  Splitting_Function(ms), p_tools (_tools), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(kf_gluon); 
   m_flavs[1] = quarkflavour; 
@@ -271,7 +274,7 @@ double g_qq::GetWeight(double z,double pt2,bool massterm)
 { 
   double weight((*this)(z)/s_TR);
   if (massterm) {
-    double m2(ATOOLS::sqr(m_flavs[1].PSMass()));
+    double m2(ATOOLS::sqr(p_ms->Mass(m_flavs[1])));
     double mu(2.*m2*z*(1.-z)/(pt2+m2));
     weight *= 1.+mu/(1.-2.*z*(1.-z));
   }
@@ -292,8 +295,8 @@ double g_qq::Integral(double zmin, double zmax)
 }
 
 // quark to qluon + quark splitting function (only used in Initial State Shower)
-q_gq::q_gq(ATOOLS::Flavour quarkflavour,double fmed) :
-  m_kfactor(1.0), m_fmed(fmed) 
+q_gq::q_gq(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour quarkflavour,double fmed) :
+  Splitting_Function(ms), m_kfactor(1.0), m_fmed(fmed) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
@@ -301,8 +304,9 @@ q_gq::q_gq(ATOOLS::Flavour quarkflavour,double fmed) :
   m_alpha    = 1.;
 }
 
-q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) : 
-  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
+q_gq::q_gq(ATOOLS::Mass_Selector *&ms,
+	   ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) : 
+  Splitting_Function(ms), p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = ATOOLS::Flavour(kf_gluon); 
@@ -348,8 +352,8 @@ double q_gq::GetWeight(double z,double pt2,bool massterm)
 { 
   double weight(1.-(2.-z)*z/(2.*(1.+m_fmed)));
   if (massterm) {
-    double mu(z*(1.-z)*ATOOLS::sqr(m_flavs[0].PSMass())/
-	      (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())));
+    double mu(z*(1.-z)*ATOOLS::sqr(p_ms->Mass(m_flavs[0]))/
+	      (pt2+ATOOLS::sqr(z*p_ms->Mass(m_flavs[0]))));
     weight *= 1.-z*mu/(2.*(1.+m_fmed)-z*(2.-z));
   }
   if (s_kfactorscheme==1) {

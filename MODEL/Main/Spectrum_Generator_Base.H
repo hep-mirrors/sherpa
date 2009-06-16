@@ -1,10 +1,11 @@
-#ifndef Spectrum_Generator_Base_h
-#define Spectrum_Generator_Base_h
+#ifndef MODEL_Main_Spectrum_Generator_Base_H
+#define MODEL_Main_Spectrum_Generator_Base_H
 
-#include "Model_Base.H"
-#include "MathTools.H"
-#include "Data_Reader.H"
-#include "Decay_Table.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Data_Reader.H"
+
+namespace ATOOLS { class Decay_Table; }
 
 namespace MODEL {
   class Spectrum_Generator_Base {
@@ -20,8 +21,6 @@ namespace MODEL {
     Spectrum_Generator_Base(ATOOLS::Data_Reader *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
     virtual void Run()                            = 0;
-    virtual void FillDecays()                     = 0;
-    virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
   };
 
   /*!
@@ -80,10 +79,6 @@ namespace MODEL {
   */
   /*!
     virtual void Spectrum_Generator_Base::FillMasses()
-    Empty method, to be filled by the corresponding explicit wrapper.
-  */
-  /*!
-    virtual void Spectrum_Generator_Base::FillDecays()
     Empty method, to be filled by the corresponding explicit wrapper.
   */
 }

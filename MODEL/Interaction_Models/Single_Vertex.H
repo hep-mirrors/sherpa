@@ -1,11 +1,11 @@
-#ifndef Single_Vertex_h
-#define Single_Vertex_h
+#ifndef MODEL_Interaction_Models_Single_Vertex_H
+#define MODEL_Interaction_Models_Single_Vertex_H
 
-#include "MyComplex.H"
-#include "Kabbala.H"
-#include "Flavour.H"
-#include "Color_Function.H"
-#include "Lorentz_Function.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "MODEL/Interaction_Models/Color_Function.H"
+#include "MODEL/Interaction_Models/Lorentz_Function.H"
 #include <vector>
 
 

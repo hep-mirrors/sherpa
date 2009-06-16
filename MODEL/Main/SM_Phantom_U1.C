@@ -1,8 +1,8 @@
-#include "SM_Phantom_U1.H"
-#include "Standard_Model.H"
-#include "Data_Reader.H"
-#include "Effective_Higgs_Coupling.H"
-#include "Message.H"
+#include "MODEL/Main/SM_Phantom_U1.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "MODEL/Main/Effective_Higgs_Coupling.H"
+#include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
 using namespace MODEL;

@@ -1,6 +1,6 @@
-#include "Pol_Info.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "AMEGIC++/Main/Pol_Info.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 
@@ -18,11 +18,17 @@ Pol_Info::Pol_Info(const Pol_Info & p)
   num=p.num;
   pol_type=p.pol_type;
   angle=p.angle;
-  type=new int[num];
-  factor=new double[num];
-  for(int i=0;i<num;i++){
-    type[i]=p.type[i];
-    factor[i]=p.factor[i];
+  if (num>0) {
+    type=new int[num];
+    factor=new double[num];
+    for(int i=0;i<num;i++){
+      type[i]=p.type[i];
+      factor[i]=p.factor[i];
+    }
+  }
+  else {
+    type = 0;
+    factor= 0;
   }
 }
 
@@ -34,11 +40,17 @@ Pol_Info& Pol_Info::operator=(const Pol_Info& p)
     angle  = p.angle;
     if(type)   delete[] type;
     if(factor) delete[] factor;
-    type   = new int[num];
-    factor = new double[num];
-    for(int i=0;i<num;i++){
-      type[i]   = p.type[i];
-      factor[i] = p.factor[i];
+    if (num>0) {
+      type   = new int[num];
+      factor = new double[num];
+      for(int i=0;i<num;i++){
+	type[i]   = p.type[i];
+	factor[i] = p.factor[i];
+      }
+    }
+    else {
+      type = 0;
+      factor= 0;
     }
   }
   return *this;

@@ -6,16 +6,8 @@ PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
 
 if PYTHIA_SUPPORT
 libLundTools_la_SOURCES       =	$(PYTHIASOURCES)
-
-pkginclude_HEADERS        =	$(PYTHIAHEADERS) Dummy.C 
+localinc_HEADERS        =	$(PYTHIAHEADERS) Dummy.C
 else
-libLundTools_la_SOURCES       = Dummy.C	
-
-pkginclude_HEADERS        =	$(PYTHIASOURCES) $(PYTHIAHEADERS) 
+libLundTools_la_SOURCES       = Dummy.C
+localinc_HEADERS        =       $(PYTHIASOURCES) $(PYTHIAHEADERS)
 endif
-
-EXTRA_DIST    = @SVNINCLUDE@
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      =	@MODELINCS@ @ATOOLSINCS@ @PDFINCS@ @SHERPAINCS@

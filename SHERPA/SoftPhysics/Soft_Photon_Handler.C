@@ -1,5 +1,5 @@
-#include "Soft_Photon_Handler.H"
-#include "Data_Reader.H"
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

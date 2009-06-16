@@ -1,9 +1,9 @@
-#include "Read_Write_Base.H"
+#include "ATOOLS/Org/Read_Write_Base.H"
 
-#include "MyStrStream.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "My_Limits.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace ATOOLS;
 
@@ -67,7 +67,7 @@ void Read_Write_Base::SplitInFileName(const size_t &i)
   SetInputFile(name.substr(0,sb),i);
   m_filebegin.push_back(name.substr(sb+1,se-sb-1));
   m_fileend.push_back(name.substr(se+1));
-  msg_Debugging()<<METHOD<<"(): Set '"<<m_filebegin.back()
+  msg_IODebugging()<<METHOD<<"(): Set '"<<m_filebegin.back()
 		 <<"'->'"<<m_fileend.back()<<"'.\n"; 
 }
 
@@ -409,11 +409,11 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   SplitInFileName(i);
   std::string lastline, file(InputPath(i)+InputFile(i));
   String_Vector &buffer(s_buffermap[file]);
-  msg_Debugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
+  msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
 		 <<file<<"' -> ("<<&buffer<<")\n";
   My_In_File &infile(InFile(i));
   if (mode&2 || buffer.empty()) {
-    msg_Debugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
+    msg_IODebugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
 		   <<"', mode = "<<infile.Mode()<<"\n";
     infile.Open();	
     buffer.clear();
@@ -477,22 +477,22 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
     for (size_t j(0);j<CommandLine().size();++j)
       AddFileContent(CommandLine()[j],i);
   }
-  msg_Debugging()<<METHOD<<"(): Read file content '"<<InputPath()
+  msg_IODebugging()<<METHOD<<"(): Read file content '"<<InputPath()
 		 <<InputFile()<<"' {\n";
   for (size_t j(0);j<m_filecontent[i].size();++j) {
-    msg_Debugging()<<"  ";
+    msg_IODebugging()<<"  ";
     for (size_t k(0);k<m_filecontent[i][j].size();++k)
-      msg_Debugging()<<"'"<<m_filecontent[i][j][k]<<"' ";
-    msg_Debugging()<<"\n";
+      msg_IODebugging()<<"'"<<m_filecontent[i][j][k]<<"' ";
+    msg_IODebugging()<<"\n";
   }
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<"}\n";
   if (buffer.empty()) infile.SetMode(fom::error);
   return m_filecontent[i].size();
 }
 
 void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
 { 
-  msg_Debugging()<<METHOD<<"(): ("<<this<<") closes file '"
+  msg_IODebugging()<<METHOD<<"(): ("<<this<<") closes file '"
 		 <<InputPath(i)+InputFile(i)<<"', mode = "
 		 <<InFileMode(i)<<"\n";
   My_In_File &infile(InFile(i));
@@ -501,7 +501,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   if (infile.Mode()==fom::permanent && !mode) return;
   std::string file(InputPath(i)+InputFile(i));
   if (s_buffermap.find(file)!=s_buffermap.end()) {
-    msg_Debugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
+    msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
                    <<file<<"' -> ("<<&s_buffermap[file]<<")\n";
     s_buffermap.erase(s_buffermap.find(file));
   }

@@ -1,12 +1,12 @@
-#ifndef Model_Base_h
-#define Model_Base_h
+#ifndef MODEL_Main_Model_Base_H
+#define MODEL_Main_Model_Base_H
 
-#include "Flavour.H"
-#include "Matrix.H"
-#include "Function_Base.H"
-#include "MathTools.H"
-#include "MyComplex.H"
-#include "Getter_Function.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Org/Getter_Function.H"
 #include <map>
 
 namespace ATOOLS { 
@@ -17,16 +17,12 @@ namespace ATOOLS {
 namespace MODEL {
 
   class Spectrum_Generator_Base;
-  class All_Decays;
   class Vertex;
   class Single_Vertex;
 
   typedef  std::vector<Single_Vertex *>  Vertex_List;
   typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
 
-  typedef std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *> DecayMap;
-  typedef DecayMap::iterator                              DMIterator;
-  
   typedef std::map<std::string,int>                     ScalarNumbersMap; 
   typedef std::map<std::string,double>                  ScalarConstantsMap; 
   typedef std::map<std::string,Complex>                 ComplexConstantsMap; 
@@ -65,7 +61,6 @@ namespace MODEL {
     Spectrum_Generator_Base * p_spectrumgenerator;
     Vertex                  * p_vertex;
     Vertex_Table            * p_vertextable;
-    All_Decays              * p_decays;
 
     virtual void ParticleInit() = 0;
     virtual void FillSpectrum() = 0;
@@ -75,8 +70,6 @@ namespace MODEL {
     virtual ~Model_Base();
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
-    void FillDecayTables();
-    virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
 
     virtual std::string           Name()                { return m_name; } 
     virtual ScalarNumbersMap    * GetScalarNumbers()    { return p_numbers; }
@@ -124,11 +117,8 @@ namespace MODEL {
 
     inline  Vertex       * GetVertex()            { return p_vertex; }
     inline  Vertex_Table * GetVertexTable() const { return p_vertextable; }
-    virtual All_Decays   * GetDecays()            { return p_decays; }    
 
-    DecayMap             * const  GetDecayMap() const;
-    ATOOLS::Decay_Table  * const  GetDecayTable(const ATOOLS::Flavour & flav) const;
-    
+    virtual bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
   };
 
   extern Model_Base *s_model;

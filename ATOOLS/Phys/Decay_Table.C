@@ -1,213 +1,79 @@
-#include "Decay_Table.H"
-#include "Random.H"
-#include "Message.H"
-#include "Mass_Handler.H"
+#include "ATOOLS/Phys/Decay_Table.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;
 
-Decay_Channel::Decay_Channel(const Flavour & _flin) :
-  m_metype(string("")), m_psfile(string("")), 
-  m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_origin(""), m_flin(_flin)
- { }
-
-Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
-  m_processname(_dec.m_processname),
-  m_metype(_dec.m_metype), m_psfile(_dec.m_psfile),
-  m_width(_dec.m_width), m_deltawidth(_dec.m_deltawidth), 
-  m_minmass(_dec.m_minmass), m_origin(_dec.m_origin),
-  m_flin(_dec.m_flin), m_flouts(_dec.m_flouts) { }
-
-void Decay_Channel::SetProcessName(const std::string _name) 
-{ 
-  if (_name!=string("")) {
-    m_processname = _name;
-    return;
-  }
-  m_processname = m_flin.IDName()+string("->");
-  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) 
-    m_processname += fl->IDName()+string("_");
-  m_processname = m_processname.substr(0,m_processname.size()-1);
-}
-
-void Decay_Channel::Output() const
-{
-  msg_Out()<<m_flin<<" -> ";
-  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg_Out()<<(*fl)<<" ";
-  msg_Out()<<" : "<<m_width;
-  if (m_deltawidth>=0.) msg_Out()<<" (+/-"<<m_deltawidth<<")";
-  msg_Out()<<" GeV";
-  if (m_metype!=string("")) msg_Out()<<", ME : "<<m_metype;
-  if (m_psfile!=string("")) msg_Out()<<", PS : "<<m_psfile;
-  msg_Out()<<"."<<endl;
-}
-
-double DCLambda(double a, double b, double c)
-{
-  double L = (sqr(a-b-c)-4.*b*c);
-  if (L>0.0) return sqrt(L)/2/sqrt(a);
-  if (L>-Accu()) return 0.0;
-  msg_Error()<<"passed impossible mass combination:"<<std::endl;
-  msg_Error()<<"m_a="<<sqrt(a)<<" m_b="<<sqrt(b)<<" m_c="<<sqrt(c)<<endl;
-  msg_Error()<<"L="<<L<<endl;
-  return 0.;
-}
-
-double DCWeight(double s, double sp, double b, double c)
-{
-  return DCLambda(sp,b,c)/DCLambda(s,b,c)*s/sp;
-}
-
-double Decay_Channel::DiceMass(double min, double max) const
-{
-  double mass=-1.0;
-  double decaymin = MinimalMass();
-  DEBUG_VAR(decaymin);
-  Mass_Handler masshandler(GetDecaying());
-  if(decaymin>max) mass=-1.0;
-  else if (decaymin==0.0) mass = masshandler.GetMass(decaymin, max);
-  else {
-    double s=sqr(GetDecaying().PSMass());
-    double mb(0.0), mc(0.0);
-    for (int i=0; i<NumberOfDecayProducts(); ++i) {
-      mc+=GetDecayProduct(i).PSMass();
-      if(GetDecayProduct(i).PSMass()>mb)
-        mb=GetDecayProduct(i).PSMass();
-    }
-    mc-=mb;
-    double b=sqr(mb);
-    double c=sqr(mc);
-    double spmax=2.0*b+2.0*c+sqrt(sqr(b)+14.0*b*c+sqr(c));
-    double wmax=DCWeight(s,spmax,b,c);
-    double w=0.0;
-    int trials(0);
-    do {
-      mass = masshandler.GetMass(decaymin, max);
-      double sp=sqr(mass);
-      w=DCWeight(s,sp,b,c);
-      ++trials;
-      if (w>wmax+Accu())
-        msg_Error()<<METHOD<<" w="<<w<<" > wmax="<<wmax<<std::endl;
-    } while (w<ran.Get()*wmax && trials<1000);
-  }
-  return mass;
-}
-
-
-
-
-
-
 Decay_Table::Decay_Table(const Flavour _flin) :
-  m_overwrite(0), m_smearing(0), m_fixdecay(0), m_width(0.), m_flin(_flin)
+  vector<Decay_Channel*>(0),
+  m_width(0.), m_flin(_flin)
 { }
+
+Decay_Table::~Decay_Table()
+{
+  for (size_t i=0; i<size(); i++) {
+    delete at(i); at(i)=NULL;
+  }
+}
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
-  for(size_t i=0;i<m_channels.size();i++) {
-    if(m_channels[i]->GetDecayProducts()==_dc->GetDecayProducts() &&
+  for(size_t i=0;i<size();i++) {
+    if(at(i)->GetDecayProducts()==_dc->GetDecayProducts() &&
        _dc->Width()!=0.0) {
       msg_Error()<<METHOD<<" Warning: Duplicate decaychannel: ";
       _dc->Output();
     }
   }
-  m_channels.push_back(_dc);
+  push_back(_dc);
   m_width += _dc->Width();
 }
 
-void Decay_Table::SetSelectedChannel(const FlavourSet & _flouts,const bool bar)
-{
-  m_fixdecay         = true;
-  Decay_Channel * dc = new Decay_Channel(m_flin);
-  dc->SetWidth(0.);
-  for (FlSetConstIter flit=_flouts.begin();flit!=_flouts.end();++flit) {
-    if (bar) dc->AddDecayProduct((*flit).Bar());
-        else dc->AddDecayProduct((*flit));
-  }
-  if (bar) {
-    m_selectedchannelsbar.push_back(dc);
-  }
-  else {
-    m_selectedchannels.push_back(dc);
-  }
-  m_channels.push_back(dc);
-}
-
-void Decay_Table::Select(const int flag) {
-  if ((flag==1 && !m_selectedchannels.empty()) ||
-      (flag==-1 && !m_selectedchannelsbar.empty())) {
-    if (m_fixdecay) {
-      if (flag==1) {
-	p_selected  = (*m_seliter);
-	m_seliter++;
-	if (m_seliter==m_selectedchannels.end()) 
-	  m_seliter = m_selectedchannels.begin();
-      }
-      if (flag==-1) {
-	p_selected  = (*m_seliterbar);
-	m_seliterbar++;
-	if (m_seliterbar==m_selectedchannelsbar.end()) 
-	  m_seliterbar = m_selectedchannelsbar.begin();
-      }
-      return;
-    }
-  }
-  p_selected = NULL;
-  if (m_channels.size()==1) {
-    p_selected = m_channels[0];
-    return;
-  }
-  double disc = m_width*ran.Get();
-  for (size_t i=0;i<m_channels.size();++i) {
-    disc -= m_channels[i]->Width();
-    if (disc<0) {
-      p_selected = m_channels[i];
-      break;
-    }
-  }
-}
-
-void Decay_Table::Reset() {
-  if (!m_selectedchannels.empty())    m_seliter    = m_selectedchannels.begin();
-  if (!m_selectedchannelsbar.empty()) m_seliterbar = m_selectedchannelsbar.begin(); 
-}
-
 void Decay_Table::Output() {
-  msg_Out()<<"Decay table for : "<<m_flin<<", total width is now "<<m_width<<" GeV,"<<endl
-	   <<"   (instead of "<<m_flin.Width()<<" GeV), calculated by "<<m_generator<<endl
-	   <<"----------------------------------------------------------------"<<endl;
-  for (size_t i=0;i<m_channels.size();i++) {
-    m_channels[i]->Output();
-    if( m_channels[i]->DeltaWidth() >= 0. ) {
-      double wanted_br = m_channels[i]->Width()/m_flin.Width()*100.;
-      double upper_br  = (m_channels[i]->Width()+m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
-      double lower_br  = (m_channels[i]->Width()-m_channels[i]->DeltaWidth())/m_flin.Width()*100.;
-      double exp_br    = m_channels[i]->Width()/m_width*100.;
+  msg_Out()<<(*this);
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &os,const Decay_Table &dt)
+{
+  os<<"Decay table for : "<<dt.m_flin<<", total width is now "
+    <<dt.m_width<<" GeV,"<<endl
+    <<"   (instead of "<<dt.m_flin.Width()<<" GeV)"<<endl
+    <<"----------------------------------------"<<endl;
+  for (size_t i=0;i<dt.size();i++) {
+    os<<*(dt.at(i));
+    if( dt.at(i)->DeltaWidth() >= 0. ) {
+      double wanted_br=dt.at(i)->Width()/dt.m_flin.Width()*100.;
+      double upper_br=(dt.at(i)->Width()+dt.at(i)->DeltaWidth())/
+        dt.m_flin.Width()*100.;
+      double lower_br=(dt.at(i)->Width()-dt.at(i)->DeltaWidth())/
+        dt.m_flin.Width()*100.;
+      double exp_br=dt.at(i)->Width()/dt.m_width*100.;
       if( exp_br > upper_br+Accu() || exp_br < lower_br-Accu() ) {  
         msg_Out()<<om::red<<"     WARNING: branching ratio "
-          <<exp_br<<"% is out of bounds ("<<wanted_br <<" +/- "<<(upper_br-lower_br)/2.<<" %)."<<om::reset<<endl;
+                 <<exp_br<<"% is out of bounds ("<<wanted_br <<" +/- "
+                 <<(upper_br-lower_br)/2.<<" %)."<<om::reset<<endl;
       }
     }
   }
-  if (m_overwrite) msg_Out()<<" Intrinsic value has been overwritten by "
-			    <<m_generator<<"."<<endl;
-  msg_Out()<<"----------------------------------------------------------------"<<endl;
+  os<<"----------------------------------------"<<endl;
+  return os;
 }
 
 void Decay_Table::UpdateWidth() {
   m_width = 0.;
-  for (size_t i=0;i<m_channels.size();i++) m_width+= m_channels[i]->Width();
+  for (size_t i=0;i<size();i++) m_width+= at(i)->Width();
 }
 
 void Decay_Table::ScaleToWidth() {
   if(m_flin.Width()/m_width!=1.0) {
     double delta_tot(0.0);
-    for (size_t i=0;i<m_channels.size();i++)
-      delta_tot+=m_channels[i]->DeltaWidth();
+    for (size_t i=0;i<size();i++)
+      delta_tot+=at(i)->DeltaWidth();
     if (delta_tot>0.0) {
-      for (size_t i=0;i<m_channels.size();i++) {
-        double scale_fac=m_channels[i]->DeltaWidth()/delta_tot;
-        m_channels[i]->SetWidth(m_channels[i]->Width()+
+      for (size_t i=0;i<size();i++) {
+        double scale_fac=at(i)->DeltaWidth()/delta_tot;
+        at(i)->SetWidth(at(i)->Width()+
                                 scale_fac*(m_flin.Width()-m_width));
       }
       UpdateWidth();
@@ -215,46 +81,31 @@ void Decay_Table::ScaleToWidth() {
   }
 }
 
-double Decay_Table::Width(const int i)
-{
-  if (i<0 || i>= (int)m_channels.size()) {
-    msg_Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
-	       <<"   Out of bounds : 0 ... "<<m_channels.size()<<" ."<<endl
-	       <<"   Return 0."<<endl;
-    return 0.;
-  }
-  return m_channels[i]->Width();
-}
-
-Decay_Channel * Decay_Table::GetDecayChannel(const int i)
-{
-  if (i<0 || i>= (int)m_channels.size()) {
-    msg_Error()<<"Error in Decay_Table::Width("<<i<<")."<<endl
-	       <<"   Out of bounds : 0 ... "<<m_channels.size()<<" ."<<endl
-	       <<"   Return NULL"<<endl;
-    return NULL;
-  }
-  return m_channels[i];
-}
-
-Decay_Channel * Decay_Table::GetOneDecayChannel()     
-{ 
-  if (p_selected) return p_selected; 
-  return NULL;
-}
-
-double Decay_Table::Width(const FlavourSet) { return 0.; }
-
 Decay_Channel * Decay_Table::GetDecayChannel(const FlavourSet decayproducts)
 {
-  for(size_t i=0;i<m_channels.size();i++) {
-    if(m_channels[i]->GetDecayProducts() == decayproducts) return m_channels[i];
+  for(size_t i=0;i<size();i++) {
+    if(at(i)->GetDecayProducts() == decayproducts) return at(i);
   }
   return NULL;
 }
 
 void Decay_Table::EraseDecayChannel(const int i) {
-  delete m_channels[i];
-  for (size_t j=i;j<m_channels.size()-1;j++) m_channels[j] = m_channels[j+1];
-  m_channels.pop_back();
+  delete at(i);
+  for (size_t j=i;j<size()-1;j++) at(j) = at(j+1);
+  pop_back();
+}
+
+Decay_Channel * Decay_Table::Select()
+{
+  Decay_Channel* selected(NULL);
+  if (size()==1) selected=at(0);
+  double disc = m_width*ran.Get();
+  for (size_t i=0;i<size();++i) {
+    disc -= at(i)->Width();
+    if (disc<0) {
+      selected=at(i);
+      break;
+    }
+  }
+  return selected;
 }

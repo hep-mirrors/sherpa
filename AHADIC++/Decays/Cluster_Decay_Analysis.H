@@ -1,9 +1,9 @@
-#ifndef Cluster_Decay_Analysis_H
-#define Cluster_Decay_Analysis_H
+#ifndef AHADIC_Decays_Cluster_Decay_Analysis_H
+#define AHADIC_Decays_Cluster_Decay_Analysis_H
 
-#include "Blob.H"
-#include "Cluster.H"
-#include "Histogram.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <map>
 
 

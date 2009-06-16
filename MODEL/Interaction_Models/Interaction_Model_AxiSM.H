@@ -1,11 +1,11 @@
 #ifndef Interaction_Model_AxiSM_h
 #define Interaction_Model_AxiSM_h
 
-#include "Interaction_Model_AxiQCD.H"
-#include "Interaction_Model_EW.H"
-#include "Interaction_Model_Higgs_SM.H"
-#include "Interaction_Model_Base.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_AxiQCD.H"
+#include "MODEL/Interaction_Models/Interaction_Model_EW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Higgs_SM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_AxiSM : public Interaction_Model_Base {

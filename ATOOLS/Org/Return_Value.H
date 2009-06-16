@@ -1,5 +1,5 @@
-#ifndef Return_Value_H
-#define Return_Value_H
+#ifndef ATOOLS_Org_Return_Value_H
+#define ATOOLS_Org_Return_Value_H
 
 #include <string>
 #include <map>

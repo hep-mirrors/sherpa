@@ -1,7 +1,7 @@
-#ifndef Channel_Generator_Base_h
-#define Channel_Generator_Base_h
+#ifndef AMEGIC_Phasespace_Channel_Generator_Base_H
+#define AMEGIC_Phasespace_Channel_Generator_Base_H
 
-#include "Single_Channel.H"
+#include "PHASIC++/Channels/Single_Channel.H"
 #include <string>
 #include <vector>
 #include <map>

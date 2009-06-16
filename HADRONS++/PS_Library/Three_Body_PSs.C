@@ -1,9 +1,9 @@
-#include "Three_Body_PSs.H"
-#include "Channel_Elements.H"
-#include "Channel_Basics.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "ResonanceFlavour.H"
+#include "HADRONS++/PS_Library/Three_Body_PSs.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/Channel_Basics.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
 
 using namespace HADRONS; 
 using namespace PHASIC; 
@@ -16,14 +16,14 @@ Dalitz::Dalitz(
 	const int p1, 
 	const int p2 ) :
   Single_Channel(1,3,fl),
-  m_decvec(Vec4D(fl[0].PSMass(),0.,0.,0.)),
+  m_decvec(Vec4D(fl[0].HadMass(),0.,0.,0.)),
   m_pmass(res.Mass()), m_pwidth(res.Width()), 
   m_p1(p1), m_p2(p2), m_mode(0),
   m_sexp(.5)
 {
   name = string("Dalitz_")+res.Name()+string("_")+ToString(m_p1)+ToString(m_p2);
 											// generate channel name
-  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].PSMass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].HadMass());
 											// set masses^2
   msg_Tracking()<<"Init Dalitz("<<name<<" : "
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<", "
@@ -31,8 +31,8 @@ Dalitz::Dalitz(
   for (int i=1;i<4;i++) {
     if (m_p1!=i && m_p2!=i) { m_dir=i; break; }
   }				// get the one with no resonance
-  m_smin = ATOOLS::sqr(fl[m_p1].PSMass()+fl[m_p2].PSMass());
-  m_smax = ATOOLS::sqr(fl[0].PSMass()-fl[m_dir].PSMass());
+  m_smin = ATOOLS::sqr(fl[m_p1].HadMass()+fl[m_p2].HadMass());
+  m_smax = ATOOLS::sqr(fl[0].HadMass()-fl[m_dir].HadMass());
   if (sqrt(m_smin)<m_pmass*10.) m_mode = 1;
 
   rannum = 5;
@@ -40,7 +40,7 @@ Dalitz::Dalitz(
 }
 
 
-void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran)
+void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _ran)
 {
   /*
   double sprop;
@@ -67,7 +67,7 @@ void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 }
 
 
-void Dalitz::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)
+void Dalitz::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
 {
   /*
   weight = 1.;

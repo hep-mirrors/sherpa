@@ -7,17 +7,11 @@ libAmisicModel_la_SOURCES     = \
 				Simple_Chain.C \
 				Reggeon_Trajectory.C \
 				Simple_String.C 
-pkginclude_HEADERS        = \
+
+localinc_HEADERS          = \
 			Grid_Creator.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \
 			Simple_Chain.H \
 			Reggeon_Trajectory.H \
 			Simple_String.H 
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      =	@AMISICINCS@ @EXTRAXSINCS@ @PHASICINCS@ \
-		@PDFINCS@ @BEAMINCS@ @MODELINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

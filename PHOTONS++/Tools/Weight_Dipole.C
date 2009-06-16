@@ -1,4 +1,4 @@
-#include "Weight_Dipole.H"
+#include "PHOTONS++/Tools/Weight_Dipole.H"
 
 using namespace ATOOLS;
 using namespace PHOTONS;

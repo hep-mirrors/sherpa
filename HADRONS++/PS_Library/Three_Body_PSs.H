@@ -1,9 +1,9 @@
-#ifndef Three_Body_PSs_h
-#define Three_Body_PSs_h
+#ifndef HADRONS_PS_Library_Three_Body_PSs_H
+#define HADRONS_PS_Library_Three_Body_PSs_H
 
-#include "Single_Channel.H"
-#include "Vector.H"
-#include "ResonanceFlavour.H"
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Math/Vector.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
 
 namespace HADRONS {
   class Dalitz : public PHASIC::Single_Channel {
@@ -20,9 +20,9 @@ namespace HADRONS {
           SimpleResonanceFlavour res,
           const int p1, 
           const int p2 );
-      void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+      void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
       void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-      void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+      void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
       void GenerateWeight(ATOOLS::Vec4D * p);
       int  ChNumber()                 { return m_chnumber;       }
       void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }

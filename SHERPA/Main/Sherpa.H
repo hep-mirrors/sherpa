@@ -1,14 +1,14 @@
-#ifndef Sherpa_h
-#define Sherpa_h
+#ifndef SHERPA_Main_Sherpa_H
+#define SHERPA_Main_Sherpa_H
 
-#include <string>
+#include "ATOOLS/Org/Exception.H"
 
 namespace SHERPA {
   class Initialization_Handler;
   class Event_Handler;
   class Input_Output_Handler;
 
-  class Sherpa {
+  class Sherpa: public ATOOLS::Terminator_Object {
   private:
     std::string   m_path;
     long int      m_errors,m_trials, m_debugstep, m_debuginterval;
@@ -18,6 +18,10 @@ namespace SHERPA {
     Input_Output_Handler   * p_iohandler;
 
     void DrawLogo();  
+
+    void WriteCitationInfo();
+    void PrepareTerminate();
+
   public:
     Sherpa();
     ~Sherpa();

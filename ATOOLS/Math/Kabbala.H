@@ -1,9 +1,9 @@
-#ifndef Kabbala_h
-#define Kabbala_h
+#ifndef ATOOLS_Math_Kabbala_H
+#define ATOOLS_Math_Kabbala_H
 
-#include "MyComplex.H"
-#include "MathTools.H" 
-#include "MyStrStream.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/MathTools.H" 
+#include "ATOOLS/Org/MyStrStream.H"
 
 namespace ATOOLS {
   class Kabbala {

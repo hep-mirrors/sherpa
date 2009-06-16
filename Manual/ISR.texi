@@ -1,0 +1,134 @@
+@node ISR Parameters
+@section ISR Parameters
+
+The following parameters are used to steer the beam setup.
+
+@menu
+* BUNCH_1::           PDG ID of the first bunch particle.
+* BUNCH_2::           PDG ID of the second bunch particle.
+* ISR_1::             Whether to enable ISR for the first bunch.
+* ISR_2::             Whether to enable ISR for the second bunch.
+* ISR_SMIN::          Minimum fraction of cms energy after ISR.
+* ISR_SMAX::          Maximum fraction of cms energy after ISR.
+* ISR_E_ORDER::       The perturbative order of the electron PDF.
+* ISR_E_SCHEME::      The beta scheme of the electron PDF.
+* PDF_SET::           The name of the PDF set.
+* PDF_SET_VERSION::   The additional version number of the pdf set.
+* PDF_GRID_PATH::     The location of the PDF parameter/grid files.
+* PDF_LIBRARY::       The name of the PDF library.
+* SHOW_PDF_SETS::     Display available PDF sets.
+@end menu
+
+
+@node BUNCH_1
+@subsection BUNCH_1
+@cindex BUNCH_1
+This parameter specifies the PDG ID of the first (left) 
+bunch particle, i.e. the particle after eventual 
+Beamstrahlung specified through the beam parameters, 
+see @ref{Beam Parameters}.
+
+@node BUNCH_2
+@subsection BUNCH_2
+@cindex BUNCH_2
+This parameter specifies the PDG ID of the second (right) 
+bunch particle, i.e. the particle after eventual 
+Beamstrahlung specified through the beam parameters,
+see @ref{Beam Parameters}.
+
+@node ISR_1
+@subsection ISR_1
+@cindex ISR_1
+This parameter specifies whether ISR is enabled for the
+first (left) bunch particle, i.e. the particle after eventual 
+Beamstrahlung specified through the beam parameters, 
+see @ref{Beam Parameters}.
+Possible values are @option{On} and @option{Off}.
+@*
+For bunch particles with hadronic substructure, i.e.
+hadrons and photons, this amounts to employing a PDF 
+to extract partons.
+
+@node ISR_2
+@subsection ISR_2
+@cindex ISR_2
+This parameter specifies whether ISR is enabled for the
+second (right) bunch particle, i.e. the particle after eventual 
+Beamstrahlung specified through the beam parameters,
+see @ref{Beam Parameters}.
+Possible values are @option{On} and @option{Off}.
+@*
+For bunch particles with hadronic substructure, i.e.
+hadrons and photons, this amounts to employing a PDF 
+to extract partons.
+
+@node ISR_SMIN
+@subsection ISR_SMIN
+@cindex ISR_SMIN
+This parameter specifies the minimum fraction of cms energy
+squared after ISR. The reference value is the total centre
+of mass energy squared of the collision, @emph{not} the 
+centre of mass energy after eventual Beamstrahlung.
+@*
+The parameter can be specified using the internal interpreter,
+see @ref{Interpreter}, e.g. as @samp{ISR_SMIN sqr(20/E_CMS)}.
+
+@node ISR_SMAX
+@subsection ISR_SMAX
+@cindex ISR_SMAX
+This parameter specifies the minimum fraction of cms energy
+squared after ISR. The reference value is the total centre
+of mass energy squared of the collision, @emph{not} the 
+centre of mass energy after eventual Beamstrahlung.
+@*
+The parameter can be specified using the internal interpreter,
+see @ref{Interpreter}, e.g. as @samp{ISR_SMIN sqr(0.99)}.
+
+@node ISR_E_ORDER
+@subsection ISR_E_ORDER
+@cindex ISR_E_ORDER
+This parameter sets the perturbative order of the electron
+structure function.
+
+@node ISR_E_SCHEME
+@subsection ISR_E_SCHEME
+@cindex ISR_E_SCHEME
+This parameter sets the beta-scheme of the electron structure
+function.
+
+@node PDF_SET
+@subsection PDF_SET
+@cindex PDF_SET
+This parameter allows to specifiy the PDF set for hadronic
+bunch particles.
+
+@node PDF_SET_VERSION
+@subsection PDF_SET_VERSION
+@cindex PDF_SET_VERSION
+This parameter allows to eventually select a specific version
+within the chosen PDF set, see @ref{PDF_SET}.
+
+@node PDF_GRID_PATH
+@subsection PDF_GRID_PATH
+@cindex PDF_GRID_PATH
+This parameter specifies the path to the PDF parameter
+or grid file.
+
+@node PDF_LIBRARY
+@subsection PDF_LIBRARY
+@cindex PDF_LIBRARY
+This parameter specifies the name of the PDF library.
+Assuming @samp{PDF_LIBRARY=CTEQ6Sherpa}, the dynamically
+bound PDF library will be @samp{libCTEQ6Sherpa.so}.
+This file must be located in the library path of the Sherpa
+installation or in the runtime library path given by
+@ref{SHERPA_LIB_PATH}. If @uref{http://projects.hepforge.org/lhapdf/,,LHAPDF} 
+is used, Sherpa searches for the LHAPDF library in the
+corresponding installation path.
+
+@node SHOW_PDF_SETS
+@subsection SHOW_PDF_SETS
+@cindex SHOW_PDF_SETS
+Specifying @samp{SHOW_PDF_SETS=1} on the command line instructs
+Sherpa to print all available PDF sets contained in the library
+loaded by @ref{PDF_LIBRARY}.

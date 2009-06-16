@@ -1,5 +1,5 @@
-#include "VA_0_PP_strange.H"
-#include "Run_Parameter.H"
+#include "HADRONS++/Current_Library/VA_0_PP_strange.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -10,7 +10,7 @@ void VA_0_PP_strange::SetModelParameters( struct GeneralModel _md )
   m_chpionmode = (m_flavs[p_i[0]].Kfcode() == kf_pi_plus) ? 1 : 0;
   
   for( int i=0; i<2; i++ ) {
-    m_ms[i] = sqr(m_flavs[p_i[i]].PSMass());
+    m_ms[i] = sqr(m_flavs[p_i[i]].HadMass());
   }
   double Vus  =_md("Vus", Tools::Vus);
   m_global   = Vus;
@@ -22,7 +22,7 @@ void VA_0_PP_strange::SetModelParameters( struct GeneralModel _md )
     case 1 : p_ff = new KS(_md);
     break;
   }
-  p_ff->SetMasses2( m_ms[0], m_ms[1], sqr(Flavour(kf_eta).PSMass()) );
+  p_ff->SetMasses2( m_ms[0], m_ms[1], sqr(Flavour(kf_eta).HadMass()) );
   
 }
 
@@ -75,7 +75,7 @@ VA_0_PP_strange::RChT::RChT( GeneralModel _md )
   m_GK       = m_R.Width();
   m_MK02     = m_R0.Mass2();
   m_GK0      = m_R0.Width();
-  m_renorm2  = sqr( _md("renorm",_md("Mass_rho(770)+",Flavour(kf_rho_770_plus).PSMass())));
+  m_renorm2  = sqr( _md("renorm",_md("Mass_rho(770)+",Flavour(kf_rho_770_plus).HadMass())));
   m_cd       = _md("const_cd", 0.014);
   m_cm       = m_fpi2/4./m_cd;
 }

@@ -1,9 +1,9 @@
-#include "Hadron_Decay_Table.H"
-#include "Hadron_Decay_Channel.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
-#include "Run_Parameter.H"
-#include "Shell_Tools.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -16,10 +16,6 @@ Hadron_Decay_Table::Hadron_Decay_Table(Flavour decayer) :
 
 Hadron_Decay_Table::~Hadron_Decay_Table()
 {
-  for (int i=0; i<NumberOfDecayChannels(); i++) {
-    Hadron_Decay_Channel* hdc = (Hadron_Decay_Channel*) GetDecayChannel(i);
-    delete hdc; hdc=NULL;
-  }
 }
 
 
@@ -53,13 +49,13 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       ExtractBRInfo( helpsvv[i][1], BR, dBR, origin );
       hdc = new Hadron_Decay_Channel(Flav(),path);
       int charge = Flav().IntCharge();
-      double mass = Flav().PSMass();
+      double mass = Flav().HadMass();
       for (size_t j=0;j<helpkfc.size();++j) {
         flav = Flavour(abs(helpkfc[j]));
         if (helpkfc[j]<0) flav = flav.Bar();
         hdc->AddDecayProduct(flav);
 	charge-=flav.IntCharge();
-	mass-=flav.PSMass();
+	mass-=flav.HadMass();
       }
       hdc->SetWidth(BR*Flav().Width());
       hdc->SetOriginalWidth(hdc->Width());
@@ -92,21 +88,21 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 
 void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
 {
-  if(NumberOfDecayChannels()==0) {
+  if(size()==0) {
     msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
       <<"   No decay channels found for "<<Flav()<<endl
       <<"   Will continue and hope for the best."<<endl;
   }
   else {
-    msg_Tracking()<<"Initialising "<<NumberOfDecayChannels()
+    msg_Tracking()<<"Initialising "<<size()
       <<" decay channels for "<<Flav()
       <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<endl;
     if(msg_LevelIsDebugging()) Output();
   }
 
   Hadron_Decay_Channel* hdc;
-  for (int i=0; i<NumberOfDecayChannels(); i++) {
-    hdc = (Hadron_Decay_Channel*) GetDecayChannel(i);
+  for (size_t i=0; i<size(); i++) {
+    hdc = at(i);
     hdc->Initialise(startmd);
   }
 }
@@ -115,8 +111,8 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
 void Hadron_Decay_Table::Write(std::ostream& ostr)
 {
   ostr<<"# outgoing part. \t | BR(Delta BR) \t [Origin] \t | DC-file\n"<<endl;
-  for (int j=0; j<NumberOfDecayChannels();j++) {
-    Hadron_Decay_Channel* hdc = (Hadron_Decay_Channel*) GetDecayChannel(j);
+  for (size_t j=0; j<size();j++) {
+    Hadron_Decay_Channel* hdc = at(j);
     double dBR=hdc->DeltaWidth()/Flav().Width();
     FlavourSet decprods=hdc->GetDecayProducts();
     FlSetConstIter flit=decprods.begin();
@@ -138,7 +134,7 @@ bool Hadron_Decay_Table::ExtractFlavours(vector<int> & helpkfc,string help)
   bool             hit;
   if (pos!=string::npos) help = help.substr(pos+1);
   else {
-    msg_Error()<<"WARNING in Decay_Map:: : "<<endl
+    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
            <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
            <<"   Will skip it."<<endl;
     return false;
@@ -146,7 +142,7 @@ bool Hadron_Decay_Table::ExtractFlavours(vector<int> & helpkfc,string help)
   pos    = help.find("}");
   if (pos!=string::npos) help = help.substr(0,pos);
   else {
-    msg_Error()<<"WARNING in Decay_Map:: : "<<endl
+    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
            <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
            <<"   Will skip it."<<endl;
     return false;
@@ -171,7 +167,7 @@ bool Hadron_Decay_Table::ExtractFlavours(vector<int> & helpkfc,string help)
 //    return false;
 //  } 
   if (helpkfc.size()<1) {
-    msg_Error()<<"WARNING in Decay_Map:: : "<<endl
+    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
            <<"   Something wrong with final state of decay. (no particles?)"<<endl
            <<"   Will skip it and hope for the best."<<endl;
     return false;

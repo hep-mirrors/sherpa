@@ -1,10 +1,10 @@
-#include "Standard_Model.H"
-#include "Running_AlphaQED.H"
-#include "Running_AlphaS.H"
-#include "Running_Fermion_Mass.H"
-#include "Message.H"
-#include "Exception.H"
-#include "Data_Reader.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Running_Fermion_Mass.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 #include <iomanip>
 
 using namespace MODEL;
@@ -157,13 +157,13 @@ void Standard_Model::ParticleInit() {
   s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
   s_kftable[14] = new Particle_Info(14,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
-  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,1,0,"tau-","\\tau^-");
+  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,0,0,"tau-","\\tau^-");
   s_kftable[16] = new Particle_Info(16,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
   s_kftable[21] = new Particle_Info(21,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
   s_kftable[22] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
-  s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
-  s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
-  s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,0,1,"h0","h_0");
+  s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,1,1,"Z","Z");
+  s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,1,1,"W+","W^+");
+  s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,1,1,"h0","h_0");
   if (m_trivialextension==2) {
     s_kftable[7]  = new Particle_Info(7,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
     s_kftable[8]  = new Particle_Info(8,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
@@ -171,6 +171,11 @@ void Standard_Model::ParticleInit() {
     s_kftable[18] = new Particle_Info(18,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\Nu_4");
   }
 
+  // pseudoparticles for comix
+  s_kftable[921] = new Particle_Info(921,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4");
+  s_kftable[923] = new Particle_Info(923,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4");
+  s_kftable[924] = new Particle_Info(924,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4");
+  s_kftable[925] = new Particle_Info(925,120.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}");
 
   ReadParticleData();
 
@@ -187,7 +192,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_fermion] = new
     Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion");
   s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0,0,1, 2,0,1,1,0,"j","jet");
+    Particle_Info(kf_jet,0.,0.,0,0,1, 2,1,1,1,0,"j","jet");
   s_kftable[kf_quark] = new
     Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark");
   s_kftable[kf_lepton] = new
@@ -201,7 +206,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_neutrino]->Clear();
   for (int i=1;i<7+(m_trivialextension==2?2:0);i++) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0 || !addit.IsMassive()) {
+    if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
       s_kftable[kf_quark]->Add(addit);
@@ -213,7 +218,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
   for (int i=11;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0 || !addit.IsMassive()) {
+    if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_lepton]->Add(addit);
       s_kftable[kf_lepton]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
@@ -222,7 +227,7 @@ void Standard_Model::ParticleInit() {
   }
   for (int i=12;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0) {
+    if ((addit.Mass()==0.0) && addit.IsOn()) {
       s_kftable[kf_neutrino]->Add(addit);
       s_kftable[kf_neutrino]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
@@ -243,7 +248,7 @@ void Standard_Model::FillSpectrum() {
   p_constants->insert(std::make_pair(std::string("Yukawa_mu"), 
 				     p_dataread->GetValue<double>("YUKAWA_MU",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_tau"), 
-				     p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).Mass(true))));
   p_constants->insert(std::make_pair(std::string("Yukawa_d"), 
 				     p_dataread->GetValue<double>("YUKAWA_D",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_u"), 
@@ -253,9 +258,9 @@ void Standard_Model::FillSpectrum() {
   p_constants->insert(std::make_pair(std::string("Yukawa_c"), 
 				     p_dataread->GetValue<double>("YUKAWA_C",0.)));
   p_constants->insert(std::make_pair(std::string("Yukawa_b"), 
-				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).Mass(true))));
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
-				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).PSMass())));
+				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).Mass(true))));
   // Extra coupling parameters for non-Standard tbW coupling
   if (m_trivialextension==1) {
     p_constants->insert(std::make_pair(std::string("tbW_RelFactor"),
@@ -267,13 +272,13 @@ void Standard_Model::FillSpectrum() {
   }
   if (m_trivialextension==2) { 
     p_constants->insert(std::make_pair(std::string("Yukawa_D4"), 
-				       p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).PSMass())));
+				       p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).Mass(true))));
     p_constants->insert(std::make_pair(std::string("Yukawa_U4"), 
-				       p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).PSMass())));
+				       p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).Mass(true))));
     p_constants->insert(std::make_pair(std::string("Yukawa_L4"), 
-				       p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).PSMass())));
+				       p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).Mass(true))));
     p_constants->insert(std::make_pair(std::string("Yukawa_Nu4"), 
-				       p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).PSMass())));
+				       p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).Mass(true))));
   }
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
@@ -283,7 +288,6 @@ void Standard_Model::FillSpectrum() {
 
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS);
   as->SetDefault(alphaS_default);
-
   p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));
   p_functions->insert(std::make_pair(std::string("alpha_S"),as));
 
@@ -387,7 +391,7 @@ void Standard_Model::FixEWParameters() {
 
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
   
-  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
+  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).Mass(true)))*M_PI/(2.*sin2thetaW*sqr(MW));
   
   p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
@@ -564,4 +568,21 @@ void Standard_Model::FixCKM() {
       msg_Out()<<"\n";
     }
   }
+}
+
+bool Standard_Model::CheckFlavours(int nin, int nout, Flavour* flavs)
+{
+  // baryon number
+  double bnum(0.);
+  for (int i=0;i<nin;i++) bnum-=flavs[i].BaryonNumber();
+  for (int i=nin;i<nin+nout;i++) bnum+=flavs[i].BaryonNumber();
+  if (!IsZero(bnum)) return false;
+  // lepton numbers
+  int lnum[3]={0,0,0};
+  for (int i=0;i<nin;i++) if (flavs[i].IsLepton()) 
+    lnum[flavs[i].LeptonFamily()-1]-=flavs[i].LeptonNumber();
+  for (int i=nin;i<nin+nout;i++) if (flavs[i].IsLepton()) 
+    lnum[flavs[i].LeptonFamily()-1]+=flavs[i].LeptonNumber();
+  for (int i=0;i<3;i++) if (lnum[i]!=0) return false;
+  return true;
 }

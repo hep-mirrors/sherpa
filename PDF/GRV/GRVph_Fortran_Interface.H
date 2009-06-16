@@ -1,8 +1,8 @@
-#ifndef GRVph_Fortran_Interface_H
-#define GRVph_Fortran_Interface_H
+#ifndef PDF_GRV_GRVph_Fortran_Interface_H
+#define PDF_GRV_GRVph_Fortran_Interface_H
 
-#include "PDF_Base.H"
-#include "Flavour.H"
+#include "PDF/Main/PDF_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace PDF {
   class GRVph_Fortran_Interface : public PDF_Base {
@@ -12,7 +12,6 @@ namespace PDF {
   public:
     GRVph_Fortran_Interface(const ATOOLS::Flavour);
     PDF_Base * GetCopy();
-    void   Output();
 
     void   Calculate(double,double);
     double GetXPDF(const ATOOLS::Flavour );
@@ -23,7 +22,6 @@ namespace PDF {
     double GetQ2Max()  { return 1.e6; }
     ATOOLS::Flavour Bunch()                { return m_bunch; }
     std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
-    void AssignKeys(ATOOLS::Integration_Info *const info);
   };
 
 

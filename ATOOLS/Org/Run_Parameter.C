@@ -1,16 +1,15 @@
 #include <iostream> 
-#include "Run_Parameter.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Exception.H"
-#include "Random.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
-#include "Shell_Tools.H"
-#include "Library_Loader.H"
-#include "CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <stdlib.h>
-#include <termios.h>
 #include <unistd.h>
 #include <pwd.h>
 #include <sys/time.h>
@@ -44,7 +43,9 @@ using namespace ATOOLS;
 using namespace std;
 
 bool ATOOLS::Run_Parameter::s_initialized=false;
+size_t ATOOLS::Run_Parameter::s_clevel=100;
 std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
+std::vector<std::string> ATOOLS::Run_Parameter::s_cites;
 Run_Parameter ATOOLS::rpa;
 
 Run_Parameter::Run_Parameter() 
@@ -113,15 +114,12 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dr.SetInputPath(m_path);
   dr.SetInputFile(file);
   std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
-  if (color=="On") {
-    termios testos;
-    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg->SetModifiable(true);
-  }
+  if (color=="Off") msg->SetModifiable(false);
   std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg->Init(outputlevel,logfile);
   if (msg->LevelIsInfo()) 
-    msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
+    msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
@@ -179,12 +177,13 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa.gen.m_timer.Start();
   gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",1);
+  s_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
   double slim(getpmem());
 #ifdef USING__LHAPDF
-  if (slim+400000000.0 < double(1<<32)) {
+  if (slim+400000000.0 < double((1<<32)-1)) {
     slim+=400000000.0;
   }
 #endif
@@ -221,8 +220,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #endif
   int stacktrace = dr.GetValue<int>("STACK_TRACE",1);
   exh->SetStackTrace(stacktrace);
-  std::string ycut=dr.GetValue<std::string>("YCUT","");
-  if (ycut!="") gen.SetVariable("Y_CUT",ycut);
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
@@ -249,6 +246,15 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
     return m_timer.UserTime()<limit;
   }
   return false;
+}
+
+void Run_Parameter::Gen::AddCitation(const size_t &level,
+                                     const std::string &cite)
+{
+  if (level<=s_clevel) {
+    for (size_t i=0; i<s_cites.size(); ++i) if (s_cites[i]==cite) return;
+    s_cites.push_back(cite);
+  }
 }
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 

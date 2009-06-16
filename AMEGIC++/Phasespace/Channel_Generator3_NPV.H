@@ -1,7 +1,7 @@
-#ifndef Channel_Generator3_NPV_h
-#define Channel_Generator3_NPV_h
+#ifndef AMEGIC_Phasespace_Channel_Generator3_NPV_H
+#define AMEGIC_Phasespace_Channel_Generator3_NPV_H
 
-#include "Channel_Generator_Base.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_Base.H"
 
 
 namespace AMEGIC {

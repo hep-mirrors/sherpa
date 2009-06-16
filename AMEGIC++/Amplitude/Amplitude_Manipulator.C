@@ -1,6 +1,6 @@
-#include "Amplitude_Manipulator.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "AMEGIC++/Amplitude/Amplitude_Manipulator.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

@@ -7,11 +7,26 @@
 /* HepMC::Units available */
 #undef USING__HEPMC2__UNITS
 
+/* HepMCDefs.h available */
+#undef USING__HEPMC2__DEFS
+
 /* using gzip */
 #undef USING__GZIP
 
 /* using LHAPDF */
 #undef USING__LHAPDF
+
+/* golem95 found and linked */
+#undef USING__GOLEM95
+
+/* hztool found */
+#undef USING__HZTOOL
+
+/* cernlib found */
+#undef USING__CERNLIB
+
+/* using LHAPDF */
+#undef LHAPDF_PATH
 
 /* using native C++ wrapper */
 #undef LHAPDF__NATIVE__WRAPPER
@@ -21,3 +36,6 @@
 
 /* using ROOT */
 #undef USING__ROOT
+
+/* using FASTJET */
+#undef USING__FASTJET

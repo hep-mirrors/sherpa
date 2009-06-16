@@ -1,9 +1,9 @@
-#ifndef Interaction_Model_4GenLep_h
-#define Interaction_Model_4GenLep_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_4GenLep_H
+#define MODEL_Interaction_Models_Interaction_Model_4GenLep_H
 
-#include "Interaction_Model_SM.H"
-#include "Interaction_Model_Base.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_SM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_4GenLep : public Interaction_Model_Base {

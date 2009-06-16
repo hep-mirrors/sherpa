@@ -1,8 +1,8 @@
-#ifndef Remnant_Base_H
-#define Remnant_Base_H
+#ifndef PDF_Remnant_Remnant_Base_H
+#define PDF_Remnant_Remnant_Base_H
 
-#include "Particle_List.H"
-#include "Blob.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <vector>
 
 namespace BEAM { class Beam_Base; }

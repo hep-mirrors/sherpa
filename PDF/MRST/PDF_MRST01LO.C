@@ -1,30 +1,29 @@
-#include "PDF_MRST01LO.H"
-
-#include "Message.H"
-#include "Scaling.H"
+#include "PDF/MRST/PDF_MRST01LO.H"
 
 using namespace PDF;
 using namespace ATOOLS;
 
 extern "C" {
-  void mrstlo_(double *x,double *q,int *mode,
+  void mrstlo_(double *x,double *q2,int *mode,
 	       double *upv,double *dnv,double *usea,
 	       double *dsea,double *str,double *chm,
 	       double *bot,double *glu);
 }
 
-void mrstlo(double x,double q,int mode,
+void mrstlo(double x,double q2,int mode,
 	    double &upv,double &dnv,double &usea,
 	    double &dsea,double &str,double &chm,
 	    double &bot,double &glu)
 {
-  mrstlo_(&x,&q,&mode,&upv,&dnv,&usea,&dsea,&str,&chm,&bot,&glu);
+  mrstlo_(&x,&q2,&mode,&upv,&dnv,&usea,&dsea,&str,&chm,&bot,&glu);
 }
 
+extern "C" {
 extern struct {
   char mfile[128];
 } mrinput_;
 #define input mrinput_
+}
 
 inline void MakeFortranString(char *output,std::string input,unsigned int length)
 {
@@ -63,10 +62,6 @@ PDF_Base *PDF_MRST01LO::GetCopy()
   return copy;
 }
 
-void PDF_MRST01LO::Output() 
-{
-}
-
 void PDF_MRST01LO::Calculate(double x,double _Q2) 
 {
   double Q2(_Q2*m_fac_scale_factor);
@@ -101,6 +96,30 @@ double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl)
   }
 }
 
-void PDF_MRST01LO::AssignKeys(ATOOLS::Integration_Info *const info)
+DECLARE_PDF_GETTER(MRST01LO_Getter);
+
+PDF_Base *MRST01LO_Getter::operator()
+  (const Parameter_Type &args) const
 {
+  if (!args.m_bunch.IsHadron()) return NULL;
+  return new PDF_MRST01LO(args.m_bunch,args.m_path);
+}
+
+void MRST01LO_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"MRST 2001 LO fit\n"
+     <<std::string(width+4,' ')<<"see hep-ph/0201127";
+}
+
+MRST01LO_Getter *p_get;
+
+extern "C" void InitPDFLib(const std::string &path)
+{
+  p_get = new MRST01LO_Getter("MRST01LO");
+}
+
+extern "C" void ExitPDFLib()
+{
+  delete p_get;
 }

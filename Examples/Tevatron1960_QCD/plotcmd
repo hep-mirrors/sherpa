@@ -1,0 +1,2 @@
+Compare -O1 -pcompare.conf/ -fJetPT.C -Pout/ -B JetPT -b -T"BPATH1 c_2j_20gev_1/hep-ex_0701051/; BPATH2 c_ps_20_1/hep-ex_0701051/;"
+Compare -O1 -p compare.conf/R32/ -f R32.C -Pout/ -B R32 -b -T"PATH1 c_2j_20gev_1/; PATH2 c_ps_20_1/; TITLE1 2jet; TITLE2 CSS; DATAPATH R32data/;"

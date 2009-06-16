@@ -1,5 +1,5 @@
-#ifndef My_Limits_H
-#define My_Limits_H
+#ifndef ATOOLS_Org_My_Limits_H
+#define ATOOLS_Org_My_Limits_H
 
 #ifdef __GNUC__
 #if __GNUC__ < 3

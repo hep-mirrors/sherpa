@@ -1,6 +1,6 @@
-#include "Interaction_Model_ADD.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "MODEL/Interaction_Models/Interaction_Model_ADD.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

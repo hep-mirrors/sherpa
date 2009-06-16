@@ -1,0 +1,18 @@
+@node Command line
+@chapter Command line options 
+
+The available command line options for Sherpa.
+
+@table @option
+
+@item -v, --version
+Print versioning information.
+
+@item PARAMETER=VALUE
+Sets the value of a parameter, see @ref{Parameters}.
+
+@item TAG:=VALUE
+Sets the value of a tag, see @ref{Tags}.
+
+@end table
+

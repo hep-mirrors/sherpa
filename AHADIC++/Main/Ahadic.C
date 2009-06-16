@@ -1,10 +1,10 @@
 #include <cassert>
-#include "Ahadic.H"
-#include "Soft_Cluster_Handler.H"
-#include "Cluster.H"
-#include "Message.H"
-#include "Run_Parameter.H"
-#include "Hadron_Init.H"
+#include "AHADIC++/Main/Ahadic.H"
+#include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "AHADIC++/Tools/Hadron_Init.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -36,7 +36,8 @@ Ahadic::~Ahadic()
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
-  rvalue.IncCall(METHOD);
+  static std::string mname(METHOD);
+  rvalue.IncCall(mname);
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"##########################################################################"<<endl
 	     <<"###################################### IN ################################"<<endl;
@@ -90,7 +91,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 			<<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
 			<<"did not work out properly in the "<<(i+1)<<"th attempt,"<<std::endl
 			<<"   retry it "<<m_maxtrials<<" times."<<std::endl;
-	  rvalue.IncRetryMethod(METHOD);
+	  rvalue.IncRetryMethod(mname);
 	  CleanUp(blob);
 	  break;
 	case Return_Value::Nothing :

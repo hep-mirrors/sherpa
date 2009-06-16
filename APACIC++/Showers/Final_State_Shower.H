@@ -1,15 +1,18 @@
-#ifndef Final_State_Shower_H
-#define Final_State_Shower_H
+#ifndef APACIC_Showers_Final_State_Shower_H
+#define APACIC_Showers_Final_State_Shower_H
 
-#include "Timelike_Sudakov.H"
+#include "APACIC++/Showers/Timelike_Sudakov.H"
 
-#include "Simple_Polarisation_Info.H"
-#include "Model_Base.H"
-#include "Blob_List.H"
-#include "Particle_List.H"
-#include "Jet_Veto.H"
+#include "ATOOLS/Phys/Simple_Polarisation_Info.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "APACIC++/Showers/Jet_Veto.H"
 
-namespace ATOOLS { class Data_Reader; }
+namespace ATOOLS { 
+  class Data_Reader; 
+  class Cluster_Amplitude;
+}
 
 namespace APACIC {
 
@@ -23,7 +26,7 @@ namespace APACIC {
     Jet_Veto            *p_jv;
 
     double m_pt2min;
-    int    m_showermode;
+    int    m_showermode, m_wmode;
 
     int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
     bool SmearDaughters(Knot *mo);
@@ -57,7 +60,6 @@ namespace APACIC {
 
     //constructor
     Final_State_Shower(MODEL::Model_Base *const model,
-		       ATOOLS::Jet_Finder *const jf,
 		       ATOOLS::Data_Reader *const dataread);
     // destructor
     ~Final_State_Shower();
@@ -73,10 +75,8 @@ namespace APACIC {
 
     void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
-    void ExtractPartons(Knot *knot,ATOOLS::Blob *&blob,
-			ATOOLS::Blob_List *blist,
-			ATOOLS::Particle_List *plist=NULL);
     void ExtractFinalState(ATOOLS::Blob *,Knot * =NULL);
+    void ExtractFinalState(ATOOLS::Cluster_Amplitude *ampl,Knot *kn);
  
     bool TestShower(Tree *tree);
 
@@ -84,11 +84,14 @@ namespace APACIC {
 
     void OutputTree(Tree *tree);
 
+    void SetMS(ATOOLS::Mass_Selector *const ms);
+
     // inline functions
     inline Timelike_Kinematics *Kinematics() const { return p_kin; }
     inline Timelike_Sudakov    *Sudakov() const    { return p_sud; }
 
     inline void SetJetVeto(Jet_Veto *const jv) { p_jv=jv; }
+    inline void SetWMode(const int wmode) { m_wmode=wmode; }
 
   };// end of class Final_State_Shower
 

@@ -1,13 +1,13 @@
-#ifndef HD_ME_Base_H
-#define HD_ME_Base_H
+#ifndef HADRONS_ME_Library_HD_ME_Base_H
+#define HADRONS_ME_Library_HD_ME_Base_H
 
-#include "Flavour.H"
-#include "Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 #include <string>
 #include <utility>
-#include "Spin_Structure.H"
-#include "Tools.H"
-#include "Getter_Function.H"
+#include "HELICITIES/Main/Spin_Structure.H"
+#include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Org/Getter_Function.H"
 
 #define DEFINE_ME_GETTER(CLASS,NAME,TAG)                              \
 DECLARE_GETTER(NAME,TAG,HD_ME_Base,Flavour_Info);                     \

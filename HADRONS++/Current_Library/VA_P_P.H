@@ -1,7 +1,7 @@
-#ifndef VA_P_P_H
-#define VA_P_P_H
+#ifndef HADRONS_Current_Library_VA_P_P_H
+#define HADRONS_Current_Library_VA_P_P_H
 
-#include "Current_Base.H"
+#include "HADRONS++/Current_Library/Current_Base.H"
 
 namespace HADRONS
 {

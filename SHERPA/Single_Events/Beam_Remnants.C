@@ -1,4 +1,4 @@
-#include "Beam_Remnants.H"
+#include "SHERPA/Single_Events/Beam_Remnants.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

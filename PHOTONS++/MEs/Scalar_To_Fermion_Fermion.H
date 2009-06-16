@@ -1,8 +1,8 @@
-#ifndef Scalar_To_Fermion_Fermion_H
-#define Scalar_To_Fermion_Fermion_H
+#ifndef PHOTONS_MEs_Scalar_To_Fermion_Fermion_H
+#define PHOTONS_MEs_Scalar_To_Fermion_Fermion_H
 
-#include "PHOTONS_ME_Base.H"
-#include "Dipole_FF.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
 
 using namespace ATOOLS;
 

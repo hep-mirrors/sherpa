@@ -1,5 +1,5 @@
-#ifndef MCatNLO_Wrapper_H
-#define MCatNLO_Wrapper_H
+#ifndef SHERPA_HerwigTools_MCatNLO_Wrapper_H
+#define SHERPA_HerwigTools_MCatNLO_Wrapper_H
 
 #include <ctype.h>
 #include <cstring>

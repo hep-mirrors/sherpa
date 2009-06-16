@@ -1,11 +1,11 @@
-#include "Channel_Generator_Decays.H"
-#include "Topology.H"
-#include "Flavour.H"
-#include "Point.H"
-#include "Message.H"
-#include "MathTools.H"
-#include "MyStrStream.H"
-#include "Run_Parameter.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_Decays.H"
+#include "AMEGIC++/Main/Topology.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "AMEGIC++/Main/Point.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <algorithm>
 #include <stdio.h>
@@ -48,10 +48,10 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
   ofstream chf;
   chf.open((filename).c_str());
 
-  chf<<"#include "<<'"'<<"Single_Channel.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"Run_Parameter.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl;  
-  chf<<"#include "<<'"'<<"Vegas.H"<<'"'<<endl<<endl;  
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  
   chf<<"using namespace ATOOLS;"<<endl<<endl;

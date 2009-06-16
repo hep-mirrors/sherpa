@@ -1,8 +1,8 @@
 #include <iostream>
-#include "String_Generator.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "Exception.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

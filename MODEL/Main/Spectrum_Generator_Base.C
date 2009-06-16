@@ -1,4 +1,4 @@
-#include "Spectrum_Generator_Base.H"
+#include "MODEL/Main/Spectrum_Generator_Base.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

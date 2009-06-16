@@ -1,13 +1,13 @@
-#ifndef Blob_H
-#define Blob_H
+#ifndef ATOOLS_Phys_Blob_H
+#define ATOOLS_Phys_Blob_H
 
 #include <string>
 #include <vector>
 #include <map>
 
-#include "Poincare.H"
-#include "Particle.H"
-#include "STL_Tools.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/STL_Tools.H"
 
 namespace ATOOLS {
 
@@ -65,12 +65,7 @@ namespace ATOOLS {
       Hard_Decay          =     2,
       Hard_Collision      =     4,
       Soft_Collision      =     8,
-      ME_PS_Interface_IS  =    16,
-      ME_PS_Interface_FS  =    32,
-      ME_PS_Interface     =    48,
-      FS_Shower           =    64,
-      IS_Shower           =   128,
-      Shower              =   192,
+      Shower              =    16,
       Beam                =   256,
       Bunch               =   512,
       Fragmentation       =  1024,

@@ -1,6 +1,6 @@
-#include "VA_0_PiPiPiPi1Charged.H"
-#include "Run_Parameter.H"
-#include "My_File.H"
+#include "HADRONS++/Current_Library/VA_0_PiPiPiPi1Charged.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_File.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -27,7 +27,7 @@ void VA_0_PiPiPiPi1Charged::LorenzBase::SetPrivates(
     m_r[i] = m_q-p_p[p_i[i]];
     m_s[i] = (p_p[p_i[0]]+p_p[p_i[i]]).Abs2();
   }
-};
+}
  
 // Novosibirsk parameterisation
 // see hep-ph/0201149 for details and
@@ -36,7 +36,7 @@ void VA_0_PiPiPiPi1Charged::LorenzBase::SetPrivates(
 VA_0_PiPiPiPi1Charged::Novo::Novo( GeneralModel _md, string path )
  : LorenzBase()
 {
-  m_mpi2 = sqr( Flavour(kf_pi_plus).PSMass() );
+  m_mpi2 = sqr( Flavour(kf_pi_plus).HadMass() );
   m_rho = SimpleResonanceFlavour(	  
 	  string("kf_rho_770_plus"),
       _md("Mass_rho(770)+", _md("Mass_rho(770)", 0.7761 )),
@@ -246,12 +246,12 @@ VA_0_PiPiPiPi1Charged::KS::KS( GeneralModel _md )
   : LorenzBase()
 {
   m_fpi2    = sqr(_md("fpi",0.1307));        
-  m_mpi2    = sqr( Flavour(kf_pi_plus).PSMass() );
-  m_mpi02   = sqr( Flavour(kf_pi).PSMass() );
+  m_mpi2    = sqr( Flavour(kf_pi_plus).HadMass() );
+  m_mpi02   = sqr( Flavour(kf_pi).HadMass() );
 
-  double MR      = _md("Mass_rho(770)+",  Flavour(kf_rho_770_plus).PSMass()  );
-  double MRR     = _md("Mass_rho(1450)+", Flavour(kf_rho_1450_plus).PSMass() );
-  double MRRR    = _md("Mass_rho(1700)+", Flavour(kf_rho_1700_plus).PSMass() );
+  double MR      = _md("Mass_rho(770)+",  Flavour(kf_rho_770_plus).HadMass()  );
+  double MRR     = _md("Mass_rho(1450)+", Flavour(kf_rho_1450_plus).HadMass() );
+  double MRRR    = _md("Mass_rho(1700)+", Flavour(kf_rho_1700_plus).HadMass() );
   double GR      = _md("Width_rho(770)+",  Flavour(kf_rho_770_plus).Width()  );
   double GRR     = _md("Width_rho(1450)+", Flavour(kf_rho_1450_plus).Width() );
   double GRRR    = _md("Width_rho(1700)+", Flavour(kf_rho_1700_plus).Width() );

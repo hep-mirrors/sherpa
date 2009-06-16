@@ -1,13 +1,13 @@
-#ifndef HD_PS_Base_H
-#define HD_PS_Base_H
+#ifndef HADRONS_PS_Library_HD_PS_Base_H
+#define HADRONS_PS_Library_HD_PS_Base_H
 
-#include "Single_Channel.H"
-#include "Multi_Channel.H"
-#include "Flavour.H"
-#include "Vector.H"
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 #include <string>
-#include "Vegas.H"
-#include "Tools.H"
+#include "PHASIC++/Channels/Vegas.H"
+#include "HADRONS++/Main/Tools.H"
 
 namespace HADRONS {
 

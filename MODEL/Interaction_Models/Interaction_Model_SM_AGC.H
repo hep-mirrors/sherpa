@@ -1,11 +1,11 @@
-#ifndef Interaction_Model_SM_AGC_h
-#define Interaction_Model_SM_AGC_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_SM_AGC_H
+#define MODEL_Interaction_Models_Interaction_Model_SM_AGC_H
 
-#include "Interaction_Model_QCD.H"
-#include "Interaction_Model_Higgs_SM.H"
-#include "Interaction_Model_AEW.H"
-#include "Interaction_Model_Base.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_QCD.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Higgs_SM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_AEW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_SM_AGC : public Interaction_Model_Base {

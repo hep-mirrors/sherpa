@@ -1,18 +1,18 @@
-#ifndef MI_Base_H
-#define MI_Base_H
+#ifndef AMISIC_Main_MI_Base_H
+#define AMISIC_Main_MI_Base_H
 /*!
   \file MI_Base.H
   \brief Declares the class MI_Base
 */
 
-#include "CXXFLAGS.H"
-#include "File_IO_Base.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/File_IO_Base.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/Exception.H"
 #include <map>
 
-namespace EXTRAXS { class XS_Base; }
+namespace PHASIC { class Process_Base; }
 
 namespace AMISIC {
 
@@ -45,8 +45,8 @@ namespace AMISIC {
 
     ATOOLS::Particle_List m_inparticles, m_outparticles;
 
-    EXTRAXS::XS_Base *p_xs;
-    static MI_Base   *s_hard, *s_soft;
+    PHASIC::Process_Base *p_xs;
+    static MI_Base       *s_hard, *s_soft;
 
     static bool s_stophard, s_stopsoft, s_cleaned;
 
@@ -154,7 +154,7 @@ namespace AMISIC {
 
     inline bool JetVeto() const { return m_jetveto; }
 
-    inline EXTRAXS::XS_Base *XS() const { return p_xs; }
+    inline PHASIC::Process_Base *XS() const { return p_xs; }
 
   }; // end of class MI_Base
   /*!

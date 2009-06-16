@@ -1,8 +1,8 @@
-#ifndef Z_To_Lepton_Lepton_H
-#define Z_To_Lepton_Lepton_H
+#ifndef PHOTONS_MEs_Z_To_Lepton_Lepton_H
+#define PHOTONS_MEs_Z_To_Lepton_Lepton_H
 
-#include "PHOTONS_ME_Base.H"
-#include "Dipole_FF.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
 
 using namespace ATOOLS;
 

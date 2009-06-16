@@ -1,0 +1,64 @@
+(run){
+  EVENTS 1000000; ANALYSIS_WRITEOUT_INTERVAL 0.1;
+  ANALYSIS 1; ANALYSIS_OUTPUT Wjet/;
+  ANALYSIS_DATA_FILE Analysis_R.dat
+  RESULT_DIRECTORY r_0/; BATCH_MODE 0; OUTPUT 2;
+}(run);
+(processes){
+  Process 93 93 -> 11 -12 93;
+  NLO_QCD_Part : RS;
+  Order_EW 2;
+  End process;
+}(processes);
+(selector){
+  NJetFinder sqr(50/E_CMS) 1. 1
+}(selector);
+(me){
+  ME_SIGNAL_GENERATOR Amegic;
+  EVENT_GENERATION_MODE Weighted;
+  NLO_Mode 1;
+  SCALE_SCHEME NLO;
+  FACTORIZATION_SCALE PPerp2(p[2]+p[3])+sqr(80.419);
+  RENORMALIZATION_SCALE PPerp2(p[2]+p[3])+sqr(80.419);
+}(me);
+(model){
+  ORDER_ALPHAS 1; ALPHAS(MZ) 0.118;
+}()model;
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 7000;
+  BEAM_2  2212; BEAM_ENERGY_2 7000;
+  K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
+  K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
+}(beam);
+(isr){
+!-------------------------------------------------------
+!-- ISR parameters ------------------------------------
+!-------------------------------------------------------
+BUNCH_1         = 2212      ! possible beam particles:  P+, P-, e+, e-
+ISR_1           = On        ! On/Off
+!
+BUNCH_2         = 2212      ! possible beam particles:  P+, P-, e+, e-
+ISR_2           = On        ! On/Off
+!
+ISR_SMIN        = 1.e-10    ! Minimal fraction of nominal s for parton after ISR
+ISR_SMAX        = 1.0       ! Maximal fraction of nominal s for parton after ISR
+!
+ISR_E_ORDER     = 1         ! Perturbative order of electron structure function
+ISR_E_SCHEME    = 2         ! Beta-scheme : 0,1,2 , default = 2
+!
+PDF_SET         = cteq6m    ! the CTEQ6 PDFs cteq6m,cteq6d,cteq6l,cteq6l1
+PDF_SET_VERSION = 1
+PDF_GRID_PATH   = CTEQ6Grid ! CTEQ6Grid,PDFsets,MRST99Grid
+}(isr);
+(integration){
+  INTEGRATOR 7; ERROR 0.1;
+  FINISH_OPTIMIZATION On;
+}(integration);
+(shower){
+  SHOWER_GENERATOR None;
+  FSR_SHOWER 0; ISR_SHOWER 0;
+  SHOWER_SCALE sqr(1800);
+}(shower);
+(fragmentation){
+  FRAGMENTATION Off;
+}(fragmentation);

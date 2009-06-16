@@ -1,5 +1,5 @@
-#include "Monochromatic.H"
-#include "Message.H"
+#include "BEAM/Main/Monochromatic.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace BEAM;

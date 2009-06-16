@@ -1,7 +1,7 @@
-#ifndef Integration_Info_inl_H
-#define Integration_Info_inl_H
+#ifndef ATOOLS_Org_Integration_Info_inl_H
+#define ATOOLS_Org_Integration_Info_inl_H
 
-#include "Integration_Info.H"
+#include "ATOOLS/Org/Integration_Info.H"
 
 namespace ATOOLS {
 

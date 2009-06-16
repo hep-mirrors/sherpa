@@ -1,6 +1,6 @@
-#include "Photons.H"
-#include "Data_Reader.H"
-#include "Run_Parameter.H"
+#include "PHOTONS++/Main/Photons.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 
 using namespace PHOTONS;
@@ -18,6 +18,8 @@ double PHOTONS::Photons::s_accu     = 1E-6;
 Photons::Photons(Data_Reader* reader, bool ana) :
   m_analyse(ana)
 {
+  rpa.gen.AddCitation
+    (1,"Photons is published under \\cite{Schonherr:2008av}.");
   s_mode          = reader->GetValue<int>("YFS_MODE",2);
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
@@ -29,6 +31,8 @@ Photons::Photons(Data_Reader* reader, bool ana) :
 Photons::Photons(bool ana) :
   m_analyse(ana)
 {
+  rpa.gen.AddCitation
+    (1,"Photons is published under \\cite{Schonherr:2008av}.");
   s_mode          = 2;
   s_useme         = true;
   s_ircutoff      = 1E-1;
@@ -41,7 +45,7 @@ Photons::~Photons() {
 }
 
 bool Photons::AddRadiation(Blob * blob) {
-  
+
   if ((blob->Status() == blob_status::needs_extraQED) && (m_analyse == true)) {
 
     Define_Dipole dress(blob);

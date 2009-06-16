@@ -1,9 +1,8 @@
-#include "String_Handler.H"
-#include "String_Output.H"
-#include "Library_Loader.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "prof.hh"
+#include "AMEGIC++/String/String_Handler.H"
+#include "AMEGIC++/String/String_Output.H"
+#include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -63,7 +62,7 @@ bool String_Handler::SearchValues(const int _gen_str,string & pID,Basic_Sfuncs* 
     val = Set_Values(vpID,_BS);
   }
   if (val!=0) {
-    msg_Info()<<vpID<<" loaded."<<endl;
+    msg_Info()<<"."<<std::flush;
     val->SetCouplFlav(*sgen->GetCouplList());
     if (sgen->NumberOfCouplings()!=val->NumberOfCouplings()) {
       msg_Error()<<" Number of Coupling constants does not fit with Process Library "<<pID<<"!"<<endl;

@@ -1,7 +1,7 @@
-#ifndef Hadron_Wave_Function_H
-#define Hadron_Wave_Function_H
+#ifndef AHADIC_Tools_Hadron_Wave_Function_H
+#define AHADIC_Tools_Hadron_Wave_Function_H
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include <map>
 #include <string>
 

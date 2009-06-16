@@ -1,7 +1,7 @@
-#include "Vector.H"
-#include "MyComplex.H"
-#include "Exception.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
 

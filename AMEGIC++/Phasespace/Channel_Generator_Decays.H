@@ -1,7 +1,7 @@
-#ifndef Channel_Generator_Decays_h
-#define Channel_Generator_Decays_h
+#ifndef AMEGIC_Phasespace_Channel_Generator_Decays_H
+#define AMEGIC_Phasespace_Channel_Generator_Decays_H
 
-#include "Channel_Generator_Base.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_Base.H"
 
 
 namespace AMEGIC {

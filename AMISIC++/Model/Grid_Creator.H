@@ -1,13 +1,13 @@
-#ifndef Grid_Creator_H
-#define Grid_Creator_H
+#ifndef AMISIC_Model_Grid_Creator_H
+#define AMISIC_Model_Grid_Creator_H
 /*!
   \file Grid_Creator.H
   \brief Declares the class Grid_Creator
 */
 
-#include "XS_Group.H"
-#include "Amisic_Histogram.H"
-#include "File_IO_Base.H"
+#include "EXTRA_XS/Main/Process_Group.H"
+#include "AMISIC++/Tools/Amisic_Histogram.H"
+#include "ATOOLS/Org/File_IO_Base.H"
 
 namespace AMISIC {
 
@@ -22,7 +22,7 @@ namespace AMISIC {
   private:
     
     Amisic_Histogram_Map *p_histograms;
-    EXTRAXS::XS_Group    *p_processes;
+    EXTRAXS::Process_Group    *p_processes;
     ATOOLS::Axis<double> *p_xaxis, *p_yaxis;
 
     const ATOOLS::Variable_Base<double> *p_variable;
@@ -32,36 +32,36 @@ namespace AMISIC {
     std::string m_gridxvariable, m_gridxscaling;
     std::string m_gridyvariable, m_gridyscaling;
     
-    std::string m_xsextension, m_mcextension, m_datatag;
+    std::string m_xsextension, m_mcextension, m_datatag, m_criterion;
     
-    int m_criterion, m_outputlevel;
+    int m_outputlevel;
 
     long unsigned int m_initevents, m_maxevents, m_events;
     
     std::string MakeString(std::vector<std::string> input) const;
     
-    bool CollectProcesses(EXTRAXS::XS_Base *const process);
+    bool CollectProcesses(PHASIC::Process_Base *const process);
     /*!
       \fn bool CollectProcesses(EXTRAXS::XS_Base *const process)
-      \brief Examines the given XS_Base and extracts Single_XS'.
-      Creates a histogram for each Single_XS and stores the histogram 
+      \brief Examines the given XS_Base and extracts Single_Process'.
+      Creates a histogram for each Single_Process and stores the histogram 
       pointer to the histogram map under the respective process name.
     */
 
-    bool UpdateHistogram(EXTRAXS::XS_Base *const process);
+    bool UpdateHistogram(PHASIC::Process_Base *const process);
     /*!
       \fn bool UpdateHistogram(EXTRAXS::XS_Base *const process)
-      \brief Iterates over the Single_XS' contained in the given 
+      \brief Iterates over the Single_Process' contained in the given 
       process, determines their differential cross sections and 
       fills the respective histograms.
     */
 
-    bool InitializeCalculation(EXTRAXS::XS_Group *const process);
+    bool InitializeCalculation(PHASIC::Process_Group *const process);
     /*!
       \fn bool InitializeCalculation()
       \brief Initializes the calculation.
     */
-    bool CreateGrid(EXTRAXS::XS_Group *const process);
+    bool CreateGrid(PHASIC::Process_Group *const process);
     /*!
       \fn bool CreateInitialGrid()
       \brief Creates the grid.
@@ -73,10 +73,10 @@ namespace AMISIC {
     
     // constructor
     Grid_Creator(Amisic_Histogram_Map *histograms,
-		 EXTRAXS::XS_Group *const processes);
+		 EXTRAXS::Process_Group *const processes);
     /*!
       \fn Grid_Creator(Amisic_Histogram_Map *histograms,
-      EXTRAXS::XS_Group *const processes)
+      EXTRAXS::Process_Group *const processes)
       \brief The standard constructor. For each of the processes
       contained in the given group Grid_Creator creates a histogram.
       The respective pointer is stored in the given map 

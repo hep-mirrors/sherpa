@@ -1,6 +1,6 @@
-#include "Interaction_Model_THDM.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "MODEL/Interaction_Models/Interaction_Model_THDM.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 #include <stdio.h>
 
 

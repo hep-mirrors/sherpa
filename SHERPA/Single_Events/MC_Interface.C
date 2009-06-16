@@ -1,5 +1,5 @@
-#include "MC_Interface.H"
-#include "Message.H"
+#include "SHERPA/Single_Events/MC_Interface.H"
+#include "ATOOLS/Org/Message.H"
 
 #ifdef PROFILE__Jet_Evolution
 #include "prof.hh"

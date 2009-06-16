@@ -1,8 +1,8 @@
-#ifndef Splitting_Function_H
-#define Splitting_Function_H
+#ifndef APACIC_Showers_Splitting_Function_H
+#define APACIC_Showers_Splitting_Function_H
 
-#include "Flavour.H"
-#include "Simple_Polarisation_Info.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Simple_Polarisation_Info.H"
 #include <iostream>
 
 namespace APACIC {
@@ -24,10 +24,12 @@ namespace APACIC {
     ATOOLS::Flavour m_flavs[3];
     double m_zmin, m_zmax, m_lastint;
 
+    ATOOLS::Mass_Selector *&p_ms;
+
   public:
 
     // constructor
-    Splitting_Function();
+    Splitting_Function(ATOOLS::Mass_Selector *&ms);
 
     // destructor
     virtual ~Splitting_Function();

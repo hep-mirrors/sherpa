@@ -1,8 +1,8 @@
-#ifndef PDF_MRST01LO_H
-#define PDF_MRST01LO_H
+#ifndef PDF_MRST_PDF_MRST01LO_H
+#define PDF_MRST_PDF_MRST01LO_H
 
 #include <iostream>
-#include "PDF_Base.H"
+#include "PDF/Main/PDF_Base.H"
 
 namespace PDF {
 
@@ -21,12 +21,9 @@ namespace PDF {
     PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path); 
 
     PDF_Base * GetCopy();
-    void       Output();
 
     void   Calculate(double,double);
     double GetXPDF(const ATOOLS::Flavour); 
-
-    void AssignKeys(ATOOLS::Integration_Info *const info);
 
   };// end of class PDF_MRST01LO
 

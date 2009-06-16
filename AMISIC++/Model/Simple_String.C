@@ -1,12 +1,12 @@
-#include "Simple_String.H"
+#include "AMISIC++/Model/Simple_String.H"
 
-#include "Data_Reader.H"
-#include "Hadron_Remnant.H"
-#include "Reggeon_Trajectory.H"
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
-#include "Beam_Base.H"
-#include "Random.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "PDF/Remnant/Hadron_Remnant.H"
+#include "AMISIC++/Model/Reggeon_Trajectory.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Math/Random.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String

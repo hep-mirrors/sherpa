@@ -1,12 +1,12 @@
-#ifndef Beam_Remnant_Handler_H
-#define Beam_Remnant_Handler_H
+#ifndef SHERPA_SoftPhysics_Beam_Remnant_Handler_H
+#define SHERPA_SoftPhysics_Beam_Remnant_Handler_H
 
-#include "Remnant_Base.H"
-#include "Beam_Spectra_Handler.H"
-#include "ISR_Handler.H"
-#include "Blob_List.H"
-#include "Primordial_KPerp.H"
-#include "Return_Value.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "SHERPA/SoftPhysics/Primordial_KPerp.H"
+#include "ATOOLS/Org/Return_Value.H"
 
 namespace SHERPA {
 

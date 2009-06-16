@@ -1,6 +1,6 @@
-#include "VA_0_V.H"
-#include "Run_Parameter.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/Current_Library/VA_0_V.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -36,9 +36,9 @@ void VA_0_V::SetModelParameters( struct GeneralModel _md )
 void VA_0_V::Calc(const ATOOLS::Vec4D * moms)
 {
   // 0 is Vector
-  double M = m_flavs[p_i[0]].PSMass();
+  double M = m_flavs[p_i[0]].HadMass();
   double factor = m_fV*M;
-  Polarization_Vector eps(moms[p_i[0]], sqr(m_flavs[p_i[0]].PSMass()));
+  Polarization_Vector eps(moms[p_i[0]], sqr(m_flavs[p_i[0]].HadMass()));
   for(int h=0;h<3;h++) {
     Insert(factor*eps[h], h);
   }

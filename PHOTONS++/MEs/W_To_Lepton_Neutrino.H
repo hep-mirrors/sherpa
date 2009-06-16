@@ -1,8 +1,8 @@
-#ifndef W_To_Lepton_Neutrino_H
-#define W_To_Lepton_Neutrino_H
+#ifndef PHOTONS_MEs_W_To_Lepton_Neutrino_H
+#define PHOTONS_MEs_W_To_Lepton_Neutrino_H
 
-#include "PHOTONS_ME_Base.H"
-#include "Dipole_FI.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "PHOTONS++/Tools/Dipole_FI.H"
 
 using namespace ATOOLS;
 

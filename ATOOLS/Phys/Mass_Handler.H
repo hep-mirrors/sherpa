@@ -1,7 +1,7 @@
-#ifndef Mass_Handler_H
-#define Mass_Handler_H
+#ifndef ATOOLS_Phys_Mass_Handler_H
+#define ATOOLS_Phys_Mass_Handler_H
 
-#include "My_Limits.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 #define MYINF std::numeric_limits<double>::max()
 

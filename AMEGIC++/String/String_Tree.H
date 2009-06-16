@@ -1,9 +1,9 @@
-#ifndef String_Tree_h
-#define String_Tree_h
+#ifndef AMEGIC_String_String_Tree_H
+#define AMEGIC_String_String_Tree_H
 
-#include "MyString.H"
-#include "Kabbala.H"
-#include "MyComplex.H"
+#include "AMEGIC++/String/MyString.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "ATOOLS/Math/MyComplex.H"
 #include <list>
 #include <vector>
 
@@ -80,6 +80,7 @@ namespace AMEGIC {
     void    popsk(); 
     sknot*  String2Tree(std::string,int fixed = 0); 
     Complex eval(sknot*);
+    Complex evalcolor(sknot*);
     Complex Evaluate(sknot*);
     std::string  Tree2String(sknot*,sknot*);
     std::string  Tree2Tex(sknot*,sknot*);

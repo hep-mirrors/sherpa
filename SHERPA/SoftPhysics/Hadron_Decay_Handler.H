@@ -1,24 +1,24 @@
-#ifndef Hadron_Decay_Handler_h
-#define Hadron_Decay_Handler_h
+#ifndef SHERPA_SoftPhysics_Hadron_Decay_Handler_H
+#define SHERPA_SoftPhysics_Hadron_Decay_Handler_H
 
 #include <set>
 #include <iterator>
 
-#include "Return_Value.H"
-#include "Flavour.H"
-#include "Vector.H"
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 
 namespace HADRONS { class Hadrons; }
-namespace ATOOLS { class Blob; class Particle; class Blob_List;}
+namespace ATOOLS { class Blob; class Particle; class Blob_List; class Cluster_Amplitude; }
 
 namespace SHERPA {
 #ifdef USING__PYTHIA
   class Lund_Interface;
 #endif
 
-  class Hadron_Decay_Handler {
+  class Hadron_Decay_Handler: public ATOOLS::Mass_Selector {
   protected :
     std::string                   m_decmodel;
     int                           m_mode;
@@ -27,6 +27,7 @@ namespace SHERPA {
     Lund_Interface              * p_lund; 
 #endif
     std::set<kf_code>  * p_cans;
+    ATOOLS::Cluster_Amplitude   * p_ampl;
 
   public :
     Hadron_Decay_Handler(HADRONS::Hadrons *);
@@ -40,6 +41,8 @@ namespace SHERPA {
     
     bool CanDealWith(kf_code);
 
+    ATOOLS::Cluster_Amplitude *ClusterConfiguration(ATOOLS::Blob *const bl);
+
     HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
 #ifdef USING__PYTHIA
     Lund_Interface   * GetLund()    { return p_lund; }
@@ -51,6 +54,9 @@ namespace SHERPA {
     bool               PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist);
     void               CleanUp();
     bool               IsExclusiveDecaychannel(ATOOLS::Blob* blob, ATOOLS::FlavourSet results);
+
+    double Mass(const ATOOLS::Flavour &fl) const;
+
   };
 
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;

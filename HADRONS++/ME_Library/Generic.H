@@ -1,7 +1,7 @@
-#ifndef Generic_H
-#define Generic_H
+#ifndef HADRONS_ME_Library_Generic_H
+#define HADRONS_ME_Library_Generic_H
  
-#include "HD_ME_Base.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
 
 namespace HELICITIES {
   class Partial_Amplitude_Base;

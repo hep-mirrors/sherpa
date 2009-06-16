@@ -1,6 +1,6 @@
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
-#include "MathTools.H"
+#include "ATOOLS/Math/MathTools.H"
 #include <iostream>
 #include <typeinfo>
 
@@ -16,6 +16,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const ex::type &type)
   case ex::critical_error      : return str<<"critical error";
   case ex::fatal_error         : return str<<"fatal error";
   case ex::missing_input       : return str<<"missing input";
+  case ex::missing_module      : return str<<"missing module";
   case ex::unknown             : return str<<"unknown exception";
   }
   return str;

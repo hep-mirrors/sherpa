@@ -1,13 +1,13 @@
-#include "Beam_Spectra_Handler.H"
-#include "Monochromatic.H"
-#include "Spectrum_Reader.H"
-#include "Laser_Backscattering.H"
-#include "EPA.H"
-#include "Run_Parameter.H" 
-#include "Data_Reader.H"
-#include "Message.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "BEAM/Main/Monochromatic.H"
+#include "BEAM/Main/Spectrum_Reader.H"
+#include "BEAM/Main/Laser_Backscattering.H"
+#include "BEAM/Main/EPA.H"
+#include "ATOOLS/Org/Run_Parameter.H" 
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Message.H"
 #include <stdio.h>
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
 
 using namespace ATOOLS;
@@ -183,7 +183,7 @@ bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num)
   
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
-  double  beam_mass         = beam_particle.PSMass();
+  double  beam_mass         = beam_particle.Mass(true);
   double  beam_charge       = beam_particle.Charge();
   p_BeamBase[num]           = new EPA(beam_particle,beam_mass,beam_charge,
 				      beam_energy,beam_polarization,1-2*num,dataread);
@@ -206,14 +206,13 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
   m_ylimits[1]  = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent());
-  m_mass12      = sqr(p_BeamBase[0]->Bunch().PSMass());
-  m_mass22      = sqr(p_BeamBase[1]->Bunch().PSMass());
+  m_mass12      = sqr(p_BeamBase[0]->Bunch().Mass());
+  m_mass22      = sqr(p_BeamBase[1]->Bunch().Mass());
   double x      = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
   double E1     = x*E;
   double E2     = E-E1;
   m_fiXVECs[0]  = Vec4D(E1,0.,0., sqrt(sqr(E1)-m_mass12));
   m_fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-m_mass12));
-
   m_asymmetric  = 0;
   if ((dabs((m_fiXVECs[0]+(-1.)*p_BeamBase[0]->InMomentum()).Abs2())>0.0000001) ||
       (dabs((m_fiXVECs[1]+(-1.)*p_BeamBase[1]->InMomentum()).Abs2())>0.0000001) ) m_asymmetric = 1;
@@ -372,31 +371,31 @@ void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
       
 
     if (initialize_diquarks) {
-      s_kftable[1103]=new Particle_Info(1103,0.77133,0,-2,0,1,0,1,"dd_1","dd_1");
-      s_kftable[2101]=new Particle_Info(2101,0.57933,0,1,0,1,0,1,"ud_0","ud_0");
-      s_kftable[2103]=new Particle_Info(2103,0.77133,0,1,0,1,0,1,"ud_1","ud_1");
-      s_kftable[2203]=new Particle_Info(2203,0.77133,0,4,0,1,0,1,"uu_1","uu_1");
-      s_kftable[3101]=new Particle_Info(3101,0.80473,0,-2,0,1,0,1,"sd_0","sd_0");
-      s_kftable[3103]=new Particle_Info(3103,0.92953,0,-2,0,1,0,1,"sd_1","sd_1");
-      s_kftable[3201]=new Particle_Info(3201,0.80473,0,1,0,1,0,1,"su_0","su_0");
-      s_kftable[3203]=new Particle_Info(3203,0.92953,0,1,0,1,0,1,"su_1","su_1");
-      s_kftable[3303]=new Particle_Info(3303,1.09361,0,-2,0,1,0,1,"ss_1","ss_1");
-      s_kftable[4101]=new Particle_Info(4101,1.96908,0,1,0,1,0,1,"cd_0","cd_0");
-      s_kftable[4103]=new Particle_Info(4103,2.00808,0,1,0,1,0,1,"cd_1","cd_1");
-      s_kftable[4201]=new Particle_Info(4201,1.96908,0,4,0,1,0,1,"cu_0","cu_0");
-      s_kftable[4203]=new Particle_Info(4203,2.00808,0,4,0,1,0,1,"cu_1","cu_1");
-      s_kftable[4301]=new Particle_Info(4301,2.15432,0,1,0,1,0,1,"cs_0","cs_0");
-      s_kftable[4303]=new Particle_Info(4303,2.17967,0,1,0,1,0,1,"cs_1","cs_1");
-      s_kftable[4403]=new Particle_Info(4403,3.27531,0,4,0,1,0,1,"cc_1","cc_1");
-      s_kftable[5101]=new Particle_Info(5101,5.38897,0,-2,0,1,0,1,"bd_0","bd_0");
-      s_kftable[5103]=new Particle_Info(5103,5.40145,0,-2,0,1,0,1,"bd_1","bd_1");
-      s_kftable[5201]=new Particle_Info(5201,5.38897,0,1,0,1,0,1,"bu_0","bu_0");
-      s_kftable[5203]=new Particle_Info(5203,5.40145,0,1,0,1,0,1,"bu_1","bu_1");
-      s_kftable[5301]=new Particle_Info(5301,5.56725,0,-2,0,1,0,1,"bs_0","bs_0");
-      s_kftable[5303]=new Particle_Info(5303,5.57536,0,-2,0,1,0,1,"bs_1","bs_1");
-      s_kftable[5401]=new Particle_Info(5401,6.67143,0,1,0,1,0,1,"bc_0","bc_0");
-      s_kftable[5403]=new Particle_Info(5403,6.67397,0,1,0,1,0,1,"bc_1","bc_1");
-      s_kftable[5503]=new Particle_Info(5503,10.07354,0,-2,0,1,0,1,"bb_1","bb_1");
+      s_kftable[1103]=new Particle_Info(1103,0.77133,0,-2,0,-3,2,0,0,1,0,"dd_1","dd_1");
+      s_kftable[2101]=new Particle_Info(2101,0.57933,0,1,0,-3,0,0,0,1,0,"ud_0","ud_0");
+      s_kftable[2103]=new Particle_Info(2103,0.77133,0,1,0,-3,2,0,0,1,0,"ud_1","ud_1");
+      s_kftable[2203]=new Particle_Info(2203,0.77133,0,4,0,-3,2,0,0,1,0,"uu_1","uu_1");
+      s_kftable[3101]=new Particle_Info(3101,0.80473,0,-2,0,-3,0,0,0,1,0,"sd_0","sd_0");
+      s_kftable[3103]=new Particle_Info(3103,0.92953,0,-2,0,-3,2,0,0,1,0,"sd_1","sd_1");
+      s_kftable[3201]=new Particle_Info(3201,0.80473,0,1,0,-3,0,0,0,1,0,"su_0","su_0");
+      s_kftable[3203]=new Particle_Info(3203,0.92953,0,1,0,-3,2,0,0,1,0,"su_1","su_1");
+      s_kftable[3303]=new Particle_Info(3303,1.09361,0,-2,0,-3,2,0,0,1,0,"ss_1","ss_1");
+      s_kftable[4101]=new Particle_Info(4101,1.96908,0,1,0,-3,0,0,0,1,0,"cd_0","cd_0");
+      s_kftable[4103]=new Particle_Info(4103,2.00808,0,1,0,-3,2,0,0,1,0,"cd_1","cd_1");
+      s_kftable[4201]=new Particle_Info(4201,1.96908,0,4,0,-3,0,0,0,1,0,"cu_0","cu_0");
+      s_kftable[4203]=new Particle_Info(4203,2.00808,0,4,0,-3,2,0,0,1,0,"cu_1","cu_1");
+      s_kftable[4301]=new Particle_Info(4301,2.15432,0,1,0,-3,0,0,0,1,0,"cs_0","cs_0");
+      s_kftable[4303]=new Particle_Info(4303,2.17967,0,1,0,-3,2,0,0,1,0,"cs_1","cs_1");
+      s_kftable[4403]=new Particle_Info(4403,3.27531,0,4,0,-3,2,0,0,1,0,"cc_1","cc_1");
+      s_kftable[5101]=new Particle_Info(5101,5.38897,0,-2,0,-3,0,0,0,1,0,"bd_0","bd_0");
+      s_kftable[5103]=new Particle_Info(5103,5.40145,0,-2,0,-3,2,0,0,1,0,"bd_1","bd_1");
+      s_kftable[5201]=new Particle_Info(5201,5.38897,0,1,0,-3,0,0,0,1,0,"bu_0","bu_0");
+      s_kftable[5203]=new Particle_Info(5203,5.40145,0,1,0,-3,2,0,0,1,0,"bu_1","bu_1");
+      s_kftable[5301]=new Particle_Info(5301,5.56725,0,-2,0,-3,0,0,0,1,0,"bs_0","bs_0");
+      s_kftable[5303]=new Particle_Info(5303,5.57536,0,-2,0,-3,2,0,0,1,0,"bs_1","bs_1");
+      s_kftable[5401]=new Particle_Info(5401,6.67143,0,1,0,-3,0,0,0,1,0,"bc_0","bc_0");
+      s_kftable[5403]=new Particle_Info(5403,6.67397,0,1,0,-3,2,0,0,1,0,"bc_1","bc_1");
+      s_kftable[5503]=new Particle_Info(5503,10.07354,0,-2,0,-3,2,0,0,1,0,"bb_1","bb_1");
     }
   }
 }

@@ -1,5 +1,5 @@
-#ifndef MyTiming_H
-#define MyTiming_H
+#ifndef ATOOLS_Org_MyTiming_H
+#define ATOOLS_Org_MyTiming_H
 #include <sys/times.h>
 #include <time.h>
 #include <string>
@@ -24,6 +24,8 @@ namespace ATOOLS {
     double UserTime();
     double RealTime();
     std::string TimeString(const int format=0);
+    std::string StrFTime(const std::string &format,
+			 const time_t &offset=0);
   };
 
   /*!

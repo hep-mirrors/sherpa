@@ -1,11 +1,11 @@
-#ifndef Define_Dipole_H
-#define Define_Dipole_H
+#ifndef PHOTONS_Main_Define_Dipole_H
+#define PHOTONS_Main_Define_Dipole_H
 
-#include "Blob.H"
-#include "Particle.H"
-#include "Dipole_Type.H"
-#include "Dipole_FF.H"
-#include "Dipole_FI.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
+#include "PHOTONS++/Tools/Dipole_FI.H"
 
 using namespace ATOOLS;
 

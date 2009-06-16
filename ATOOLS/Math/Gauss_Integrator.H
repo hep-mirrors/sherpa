@@ -1,7 +1,7 @@
-#ifndef Gauss_Integrator_h
-#define Gauss_Integrator_h
+#ifndef ATOOLS_Math_Gauss_Integrator_H
+#define ATOOLS_Math_Gauss_Integrator_H
 
-#include "Function_Base.H"    
+#include "ATOOLS/Math/Function_Base.H"    
 
 namespace ATOOLS {
 

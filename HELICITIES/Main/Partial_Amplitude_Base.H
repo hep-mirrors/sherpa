@@ -1,9 +1,12 @@
-#ifndef Partial_Amplitude_Base_H
-#define Partial_Amplitude_Base_H
+#ifndef HELICITIES_Main_Partial_Amplitude_Base_H
+#define HELICITIES_Main_Partial_Amplitude_Base_H
 
-#include "Spin_Structure.H"
+#include "HELICITIES/Main/Spin_Structure.H"
 
 namespace HELICITIES {
+
+  std::string GetName(ATOOLS::Flavour* flavs, int n);
+
   class  Partial_Amplitude_Base : public Spin_Structure<Complex> {
   protected:
     ATOOLS::Flavour         * p_flavs;

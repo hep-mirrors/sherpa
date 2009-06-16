@@ -1,9 +1,9 @@
-#include "HepEvt_Interface.H"
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
-#include "Exception.H"
-#include "Blob_List.H"
-#include "Blob.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Blob.H"
 
 #include <iomanip>
 #include <stdio.h>
@@ -264,44 +264,44 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
 	  EstablishRelations((*bit));
 	}
       }
-      if ((*bit)->Type()==btp::IS_Shower && (*bit)->Beam()==beam) {
-	if ((*bit)->NInP()!=1) {
-	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
-		     <<"   IS blob with more than one incoming particle !"<<endl
-		     <<(*bit)<<endl;
-	  abort();
-	}
-	Particle2HepEvt((*bit)->InParticle(0),_nhep);
-	for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
-	EstablishRelations((*bit));
-      }
+//       if ((*bit)->Type()==btp::IS_Shower && (*bit)->Beam()==beam) {
+// 	if ((*bit)->NInP()!=1) {
+// 	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
+// 		     <<"   IS blob with more than one incoming particle !"<<endl
+// 		     <<(*bit)<<endl;
+// 	  abort();
+// 	}
+// 	Particle2HepEvt((*bit)->InParticle(0),_nhep);
+// 	for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+// 	EstablishRelations((*bit));
+//       }
     }
   }
 }
 
 
 void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
-  int mo,da;
+//   int mo,da;
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
-    if ((*bit)->Type()==btp::ME_PS_Interface_IS) {
-      if ((*bit)->NInP()!=2 || (*bit)->NOutP()!=2) {
-	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
-		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
-		   <<(*bit)<<endl;
-	abort();
-      }
-      else {
-	for (int i=0;i<2;i++) {
-	  Particle2HepEvt((*bit)->InParticle(i),_nhep);
-	  Particle2HepEvt((*bit)->OutParticle(i),_nhep);
-	  mo = m_convertS2H[(*bit)->InParticle(i)];
-	  da = m_convertS2H[(*bit)->OutParticle(i)];
-	  for (int j=0;j<2;j++) {
-	    p_jmohep[2*da+j] = mo+1; p_jdahep[2*mo+j] = da+1;
-	  } 
-	}
-      }
-    }
+//     if ((*bit)->Type()==btp::ME_PS_Interface_IS) {
+//       if ((*bit)->NInP()!=2 || (*bit)->NOutP()!=2) {
+// 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
+// 		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
+// 		   <<(*bit)<<endl;
+// 	abort();
+//       }
+//       else {
+// 	for (int i=0;i<2;i++) {
+// 	  Particle2HepEvt((*bit)->InParticle(i),_nhep);
+// 	  Particle2HepEvt((*bit)->OutParticle(i),_nhep);
+// 	  mo = m_convertS2H[(*bit)->InParticle(i)];
+// 	  da = m_convertS2H[(*bit)->OutParticle(i)];
+// 	  for (int j=0;j<2;j++) {
+// 	    p_jmohep[2*da+j] = mo+1; p_jdahep[2*mo+j] = da+1;
+// 	  } 
+// 	}
+//       }
+//     }
     if ((*bit)->Type()==btp::Signal_Process) {
       if ((*bit)->NInP()!=2) {
 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
@@ -316,35 +316,35 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 	EstablishRelations((*bit));
       }
     }
-    if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
-      if ((*bit)->NInP()<2 || (*bit)->NOutP()!=(*bit)->NInP()) {
-	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
-		   <<"   ME_PS_Interface_FS blob with other than n->n particles !"<<endl
-		   <<(**bit)<<endl;
-	abort();
-      }
-      else {
-	for (int i=0;i<(*bit)->NOutP();i++) {
-	  Particle2HepEvt((*bit)->InParticle(i),_nhep);
-	  Particle2HepEvt((*bit)->OutParticle(i),_nhep);
-	  mo = m_convertS2H[(*bit)->InParticle(i)];
-	  da = m_convertS2H[(*bit)->OutParticle(i)];
-	  for (int j=0;j<2;j++) {
-	    p_jmohep[2*da+j] = mo+1; p_jdahep[2*mo+j] = da+1;
-	  } 
-	}
-      }
-    }
+//     if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
+//       if ((*bit)->NInP()<2 || (*bit)->NOutP()!=(*bit)->NInP()) {
+// 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
+// 		   <<"   ME_PS_Interface_IS blob with other than n->n particles !"<<endl
+// 		   <<(*bit)<<endl;
+// 	abort();
+//       }
+//       else {
+// 	for (int i=0;i<(*bit)->NOutP();i++) {
+// 	  Particle2HepEvt((*bit)->InParticle(i),_nhep);
+// 	  Particle2HepEvt((*bit)->OutParticle(i),_nhep);
+// 	  mo = m_convertS2H[(*bit)->InParticle(i)];
+// 	  da = m_convertS2H[(*bit)->OutParticle(i)];
+// 	  for (int j=0;j<2;j++) {
+// 	    p_jmohep[2*da+j] = mo+1; p_jdahep[2*mo+j] = da+1;
+// 	  } 
+// 	}
+//       }
+//     }
   }
 }
 
 void HepEvt_Interface::FSBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
-    if ((*bit)->Type()==btp::FS_Shower &&
-	((*bit)->NInP()==1 || (*bit)->NInP()==2)) {
-      for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
-      EstablishRelations((*bit));
-    } 
+//     if ((*bit)->Type()==btp::FS_Shower &&
+//        ((*bit)->NInP()==1 || (*bit)->NInP()==2)) {
+//       for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+//       EstablishRelations((*bit));
+//     } 
   }
 }
 

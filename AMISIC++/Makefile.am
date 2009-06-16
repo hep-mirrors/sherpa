@@ -1,5 +1,3 @@
-MAKE  =	make
-
 SUBDIRS       =	\
 		Tools \
 		Model \

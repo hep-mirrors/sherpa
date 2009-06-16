@@ -1,11 +1,11 @@
-#ifndef Weight_YFS_H
-#define Weight_YFS_H
+#ifndef PHOTONS_Tools_Weight_YFS_H
+#define PHOTONS_Tools_Weight_YFS_H
 
-#include "Weight_Base.H"
-#include "YFS_Form_Factor.H"
-#include "Vector.H"
-#include "Particle.H"
-#include "Message.H"
+#include "PHOTONS++/Tools/Weight_Base.H"
+#include "PHOTONS++/Tools/YFS_Form_Factor.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 

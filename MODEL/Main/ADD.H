@@ -1,7 +1,7 @@
-#ifndef ADD_h
-#define ADD_h
+#ifndef MODEL_Main_ADD_H
+#define MODEL_Main_ADD_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class ADD : public Model_Base {
@@ -11,7 +11,6 @@ namespace MODEL {
   public :
     ADD(std::string,std::string,bool);
     ~ADD();
-    bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
     \class ADD

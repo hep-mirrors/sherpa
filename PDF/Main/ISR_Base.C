@@ -1,4 +1,4 @@
-#include "ISR_Base.H"
+#include "PDF/Main/ISR_Base.H"
 
 using namespace PDF;
 
@@ -9,7 +9,7 @@ ISR_Base::ISR_Base(PDF_Base *pdf):
   m_on((bool)pdf)
 {
   if (pdf!=NULL) {
-    m_kmr=pdf->Type().find("DUPDF")!=std::string::npos;
+    m_ewon=pdf->EWOn();
     m_exponent=p_pdf->Exponent(); 
     m_xmax=p_pdf->XMax();
   }

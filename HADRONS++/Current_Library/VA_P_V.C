@@ -1,17 +1,17 @@
-#include "VA_P_V.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/Current_Library/VA_P_V.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace HELICITIES;
 
-#include "VA_P_V_ISGW.C"
-#include "VA_P_V_ISGW2.C"
-#include "VA_P_V_HQET.C"
-#include "VA_P_V_HQET2.C"
-#include "VA_P_V_SumRules3.C"
-#include "VA_P_V_PoleFit.C"
-#include "VA_P_V_hepph0007169.C"
+#include "HADRONS++/Current_Library/VA_P_V_ISGW.C"
+#include "HADRONS++/Current_Library/VA_P_V_ISGW2.C"
+#include "HADRONS++/Current_Library/VA_P_V_HQET.C"
+#include "HADRONS++/Current_Library/VA_P_V_HQET2.C"
+#include "HADRONS++/Current_Library/VA_P_V_SumRules3.C"
+#include "HADRONS++/Current_Library/VA_P_V_PoleFit.C"
+#include "HADRONS++/Current_Library/VA_P_V_hepph0007169.C"
 
 namespace HADRONS { namespace VA_P_V_FFs {
   class NoFF : public FormFactor_Base {

@@ -1,7 +1,6 @@
-#include "Spin_Density_Matrix.H"
-#include "Blob.H"
-#include "Message.H"
-#include "prof.hh"
+#include "ATOOLS/Phys/Spin_Density_Matrix.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -9,7 +8,6 @@ using namespace std;
 Spin_Density_Matrix::Spin_Density_Matrix( size_t size ) :
     m_size (size)
 {
-  PROFILE_HERE;
   m_entries.clear();
   size_t nentr = size * size;
   for( size_t i=0; i<nentr; i++ ) m_entries.push_back( 0. );
@@ -17,7 +15,6 @@ Spin_Density_Matrix::Spin_Density_Matrix( size_t size ) :
  
 Spin_Density_Matrix::Spin_Density_Matrix( std::vector<Complex> entr )
 {
-  PROFILE_HERE;
   m_entries.clear();
   for( size_t i=0; i<entr.size(); i++ ) m_entries.push_back( entr[i] );
   switch( entr.size() ) {
@@ -51,7 +48,6 @@ void Spin_Density_Matrix::SetUnitMatrix()
 
 Complex Spin_Density_Matrix::Trace()
 {
-  PROFILE_HERE;
   Complex sum(0.,0.);
   for( size_t i=0; i<m_size; i++ ) 
     sum += m_entries[ (m_size+1) * i ];
@@ -68,7 +64,6 @@ void Spin_Density_Matrix::Normalise()
 
 Spin_Density_Matrix& Spin_Density_Matrix::operator+=(Spin_Density_Matrix SDM)
 {
-  PROFILE_HERE;
   if (m_entries.size() != SDM.m_entries.size()) {
     msg_Error()<<"ERROR in Spin_Density_Matrix::operator+=:"<<endl
 	       <<"SDMs with unequal numbers ("<<m_entries.size()<<","<<SDM.m_entries.size()<<") of entries passed over."<<endl
@@ -82,14 +77,12 @@ Spin_Density_Matrix& Spin_Density_Matrix::operator+=(Spin_Density_Matrix SDM)
  
 Spin_Density_Matrix& Spin_Density_Matrix::operator*=(Complex factor)
 {
-  PROFILE_HERE;
   for (size_t i=0; i<m_entries.size(); ++i) m_entries[i]*=factor;
   return *this;
 }
 
 Complex& Spin_Density_Matrix::operator[](size_t entry)
 {
-  PROFILE_HERE;
   if (entry<m_entries.size()) {
     return m_entries[entry];
   } else {

@@ -7,8 +7,8 @@
 // *      + Gauss-Hermite   W(x)=e^(-x^2) * P(x)
 // *      + Gauss-Jacobi    W(x)=(1-x)^alf (1+x)^bet * P(x)
 // ************************************************************************
-#include "Gauss_Integrator.H"
-#include "MathTools.H"
+#include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/MathTools.H"
 #include <iostream>
 #include <fstream>
 

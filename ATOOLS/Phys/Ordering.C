@@ -1,12 +1,12 @@
-#include "Ordering.H"
+#include "ATOOLS/Phys/Ordering.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ATOOLS::Order_Base
 #define PARAMETER_TYPE std::string
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
-#include "Message.H"
-#include "Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
 

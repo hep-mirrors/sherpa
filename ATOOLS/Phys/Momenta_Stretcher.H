@@ -1,9 +1,9 @@
-#ifndef Momenta_Stretcher_H
-#define Momenta_Stretcher_H
+#ifndef ATOOLS_Phys_Momenta_Stretcher_H
+#define ATOOLS_Phys_Momenta_Stretcher_H
 
 #include <vector>
-#include "Blob.H"
-#include "Vector.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS {
   

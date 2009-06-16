@@ -1,9 +1,7 @@
-#include "Initial_State_Shower.H"
+#include "APACIC++/Showers/Initial_State_Shower.H"
 
-#include "PDF_Handler.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
-#include "Veto_Info.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -17,13 +15,12 @@ using namespace APACIC;
 using namespace ATOOLS;
 
 Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr, 
-					   ATOOLS::Jet_Finder *const jf,
 					   Final_State_Shower *const fin,
 					   MODEL::Model_Base *const model,
 					   Data_Reader *const dataread) : 
   p_fin(fin),
   p_tools(new Sudakov_Tools(model)),
-  p_kin(new Spacelike_Kinematics(jf)),
+  p_kin(new Spacelike_Kinematics()),
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(100)
 {
@@ -33,7 +30,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
-  int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",3));
+  int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
@@ -85,11 +82,8 @@ int Initial_State_Shower::PerformShower
   PROFILE_HERE;
   p_fstree=fintree;
   p_istrees=trees;
-#ifdef USING__Veto_Info
-  p_suds[0]->ClearVetos();
-  p_suds[1]->ClearVetos();
-#endif
   for (int i(0);i<m_allowed;++i) {
+    m_extra_pdf[0]=m_extra_pdf[1]=1;
     if (InitializeSystem(trees,0,trees[0]->GetRoot(),trees[1]->GetRoot())) {
       p_kin->BoostInCMS(trees,p_fstree,0,trees[0]->GetInitiator(),
 			trees[1]->GetInitiator());
@@ -97,7 +91,7 @@ int Initial_State_Shower::PerformShower
       return 1;
     }
   }
-  return 0;
+  return 1;
 }
 
 void Initial_State_Shower::SetDirection(Knot *const k)
@@ -113,11 +107,9 @@ void Initial_State_Shower::SetVetoScales(Knot *const d)
   if (d==NULL || d->prev==NULL) return;
   if (d->prev->qjv==1.0e10) {
     d->prev->qjv=d->qjv;
-    d->prev->qljv=d->qljv;
   }
   if (d->prev->left->qjv==1.0e10) {
     d->prev->left->qjv=d->qjv;
-    d->prev->left->qljv=d->qljv;
   }
 }
 
@@ -183,6 +175,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
 {
   msg_Debugging()<<METHOD<<"("<<tree1<<";"<<k3->kn_no<<","<<k5->kn_no
 		 <<"): { m_sprime = "<<m_sprime<<"\n";
+  m_extra_pdf[tree1]=0;
   msg_Indent();
   k3->tmo=k3->t;
   k5->tmo=k5->t;
@@ -261,9 +254,6 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
       case -1:
 	return -1;
       case 0: 
-#ifdef USING__Veto_Info
-	p_suds[tree1]->SetVeto(svc::jet_veto);
-#endif
 	msg_Debugging()<<"caught jetveto\n";
 	return 0;
       case 1:
@@ -299,12 +289,10 @@ int Initial_State_Shower::FillBranch(Tree **const trees,const int tree1,
  		 <<tree1<<"): {\n";
   msg_Indent();
   Flavour flavs[2];
-#ifdef USING__Veto_Info
-  p_suds[tree1]->AddVeto();
-#endif
   SetVetoScales(active->right);
+  if (active->prev && active->prev->part->Info()=='H') return true;
   if (p_suds[tree1]->Dice(active,m_sprime,
-			  sqr(partner->part->Flav().PSMass()),
+			  sqr(p_kin->MS()->Mass(partner->part->Flav())),
 			  m_extra_pdf[tree1])) {
     flavs[0] = p_suds[tree1]->GetFlA();
     flavs[1] = p_suds[tree1]->GetFlC();    
@@ -381,14 +369,12 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->part->SetInfo('I');
   mother->part->SetStatus(part_status::active);
   mother->t      = k->t;
-  mother->tout   = sqr(k_flavs[0].PSMass()); 
+  mother->tout   = sqr(p_kin->MS()->Mass(k_flavs[0])); 
   mother->x      = k->x/k->z;
   mother->stat   = 1;
   mother->E2     = 0.;
   mother->thcrit = th;
   mother->qjv    = k->qjv;
-  mother->qljv   = k->qljv;
-  mother->maxjets= k->maxjets;
   mother->dir    = k->dir;
 
   Knot * sister = 0;
@@ -414,14 +400,12 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   sister->part->SetInfo('F');
   sister->part->SetStatus(part_status::active);
   sister->t      = 0.;
-  sister->tout   = sqr(k_flavs[1].PSMass());
+  sister->tout   = sqr(p_kin->MS()->Mass(k_flavs[1]));
   sister->x      = (mother->x)*(1.-k->z);
   sister->stat   = 1;
   sister->E2     = 0.;
   sister->thcrit = th; 
   sister->qjv    = k->qjv;
-  sister->qljv   = k->qljv;
-  sister->maxjets= k->maxjets;
 
   if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
   k->part->SetStatus(part_status::decayed);
@@ -645,7 +629,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2)
   d1->part->SetFlow(1,500);
   d1->part->SetFlow(2,501);
   d1->t       = -scale;
-  d1->tout    = sqr(Flavour(kf_u).PSMass()); 
+  d1->tout    = sqr(p_kin->MS()->Mass(Flavour(kf_u))); 
   d1->x       = x1;
   d1->E2      = sqr(x1*E);
   d1->maxpt2  = scale;
@@ -685,137 +669,19 @@ void Initial_State_Shower::SetStartingConditions(double k1,double k2,int flag)
   }
 }
 
-void Initial_State_Shower::ExtractPartons(Knot *const kn,const int &beam,
-					  Blob *const jet,Blob_List *const bl,
-					  Particle_List *const pl) 
+void Initial_State_Shower::SingleExtract(Blob *jet,Knot *const kn) 
 {
   if (kn==NULL) return;
-  // fetch last PSME blobs
-  m_bl_meps_is=0;
-  m_bl_meps_fs=0;
-  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if ((*blit)->Type()==btp::ME_PS_Interface_IS) {
-      m_bl_meps_is=(*blit);
-    }
-    if ((*blit)->Type()==btp::ME_PS_Interface_FS) {
-      m_bl_meps_fs=(*blit);
-    }
-  }
-  if (m_bl_meps_is==NULL) {
-    msg_Error()<<METHOD<<"(..): No Interface found. Abort."<<std::endl;
-    abort();
-  }
-  m_bl_meps_is->SetStatus(blob_status::inactive);
-  int nr(1000);
-  SingleExtract(kn,beam,jet,bl,nr);
-}
-
-
-void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
-					 Blob *jet,Blob_List *const bl,
-					 int &nr) 
-{
-  if (kn==NULL) {
-    return;
-  }
-  Particle *p(NULL);
-  bool newblob(false), lastknot(false), is_is(true), ignore(false);
-
   if (kn->prev==NULL) {
-    newblob=true;
-  }
-  else {
-    for (Knot * k=kn;is_is && k->prev; k=k->prev) {
-      if (k==k->prev->left) is_is=false;
-    }
-    if (is_is && (kn->prev->part->Info()=='G' || kn->prev->part->Info()=='H'))
-      ignore = true;
-  }
-  if (kn->left==NULL) lastknot=true;
-
-  if (!is_is && !lastknot) {
-    if (kn->left->part->Info()=='H') ignore=true;
-  }
-  if (!ignore && !is_is && kn->part->Info()=='H') newblob=true;
-
-  // --- create new blob ---
-  if (newblob) {
-    jet = new Blob();
-    jet->SetStatus(blob_status::needs_harddecays |
-		   blob_status::needs_beams |
-		   blob_status::needs_hadronization);
-    jet->SetId();
-#ifdef USING__Veto_Info
-    jet->AddData("IS_VS",new Blob_Data<std::vector<int> >
-		 (p_suds[beam]->Vetos()));
-#endif
-    if (is_is) {
-      jet->SetType(btp::IS_Shower);
-      jet->SetTypeSpec("APACIC++2.0");
-    }
-    else {
-      jet->SetType(btp::FS_Shower);
-      jet->SetTypeSpec("APACIC++-2.0");
-    }
-    bl->insert(bl->begin(),jet);
-
-    if (!kn->prev) jet->SetBeam(beam);
-    p = new Particle(*kn->part);
-    p->SetFinalMass(sqrt(kn->tout));
-    p->SetStatus(part_status::decayed);
-    jet->AddToInParticles(p);
-  }
-
-  // --- add to MEPS blob ---
-  if (!ignore && (kn->part->Info()=='H' || kn->part->Info()=='G')) {
-    if  (is_is && m_bl_meps_is) {
-      p = new Particle(*kn->part);
-      p->SetFinalMass(sqrt(kn->tout));
-      jet->AddToOutParticles(p);
-      p->SetStatus(part_status::decayed);
-      m_bl_meps_is->AddToInParticles(p);
-    }
-    else if (!is_is && m_bl_meps_fs) {
-      if (!p) {
-	p = new Particle(*kn->part);
-	p->SetFinalMass(sqrt(kn->tout));
-	p->SetStatus(part_status::decayed);
-	jet->AddToInParticles(p);
-      }
-      else {
-      }
-      p->SetStatus(part_status::decayed); 
-      m_bl_meps_fs->AddToOutParticles(p); 
-    }
-  }
-
-  // --- add final state particle ---
-  if (lastknot && !is_is) {
-    p = new Particle(*kn->part);
+    Particle *p(new Particle(*kn->part));
+    p->SetInfo('I');
     p->SetFinalMass(sqrt(kn->tout));
     p->SetStatus(part_status::active);
-    jet->AddToOutParticles(p);
+    p->SetNumber();
+    jet->AddToInParticles(p);
   }
-
-  SingleExtract(kn->left,beam,jet,bl,nr); 
-  SingleExtract(kn->right,beam,jet,bl,nr); 
-}
-
-bool Initial_State_Shower::TestShower(Tree ** trees) 
-{
-  double E2(sqr(rpa.gen.Ecms()));
-
-  msg_Out()<<" Starting Test IS Shower :"<<std::endl;
-  for (long int n=1;n<=rpa.gen.NumberOfEvents();n++) { 
-    if (n%2500==0) msg_Out()<<" "<<n<<" events"<<std::endl;
-
-    for (int i=0;i<2;i++) trees[i]->Reset();
-    InitTwoTrees(trees,E2);
-    if (!PerformShower(trees,NULL)) return 0;
-  }
-  msg_Events()<<"Initial_State_Shower::TestShower : "
-	      <<"Terminated loops over events successfully."<<std::endl;
-  return 1;
+  p_fin->ExtractFinalState(jet,kn->left); 
+  SingleExtract(jet,kn->right); 
 }
 
 void Initial_State_Shower::OutputTree(Tree * tree) 
@@ -831,3 +697,9 @@ void Initial_State_Shower::OutputTree(Tree * tree)
   }
 }
 
+void Initial_State_Shower::SetMS(ATOOLS::Mass_Selector *const ms)
+{
+  p_suds[0]->SetMS(ms);
+  p_suds[1]->SetMS(ms);
+  p_kin->SetMS(ms);
+}

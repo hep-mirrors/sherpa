@@ -1,12 +1,12 @@
-#ifndef Cluster_Decay_Handler_H
-#define Cluster_Decay_Handler_H
+#ifndef AHADIC_Decays_Cluster_Decay_Handler_H
+#define AHADIC_Decays_Cluster_Decay_Handler_H
 
-#include "Cluster_Part.H"
-#include "Dipole_Splitter.H"
-#include "Soft_Cluster_Handler.H"
-#include "Blob_List.H"
-#include "Cluster.H"
-#include "Cluster_Decay_Analysis.H"
+#include "AHADIC++/Decays/Cluster_Part.H"
+#include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "AHADIC++/Decays/Cluster_Decay_Analysis.H"
 
 
 namespace AHADIC {

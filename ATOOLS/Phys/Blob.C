@@ -1,7 +1,7 @@
-#include "Blob.H"
-#include "Particle.H"
-#include "Poincare.H"
-#include "Message.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -13,10 +13,6 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::Hard_Decay:         return ostr<<"Hard Decay        ";
   case btp::Hard_Collision:     return ostr<<"Hard Collision    ";
   case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
-  case btp::ME_PS_Interface_IS: return ostr<<"ME PS Interface IS";
-  case btp::ME_PS_Interface_FS: return ostr<<"ME PS Interface FS";
-  case btp::FS_Shower:          return ostr<<"FS Shower         ";
-  case btp::IS_Shower:          return ostr<<"IS Shower         ";
   case btp::Shower:             return ostr<<"Shower            ";
   case btp::Beam:               return ostr<<"Beam              ";
   case btp::Bunch:              return ostr<<"Bunch             ";
@@ -340,11 +336,13 @@ Vec4D Blob::CheckMomentumConservation() const {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
-    sump = sump + (*part)->Momentum();
+    if ((*part)->Info()=='F' && m_type==btp::Shower) sump = sump + (-1.) * (*part)->Momentum();
+                                                else sump = sump + (*part)->Momentum();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
-    sump = sump + (-1.)*((*part)->Momentum());
+    if ((*part)->Info()=='I' && m_type==btp::Shower) sump = sump + (*part)->Momentum();
+                         else sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
 }

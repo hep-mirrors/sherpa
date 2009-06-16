@@ -1,7 +1,7 @@
-#ifndef Two_Body_MEs_H
-#define Two_Body_MEs_H
+#ifndef HADRONS_ME_Library_Two_Body_MEs_H
+#define HADRONS_ME_Library_Two_Body_MEs_H
 
-#include "HD_ME_Base.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
 
 namespace HADRONS {
 

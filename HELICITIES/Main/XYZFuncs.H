@@ -1,10 +1,10 @@
-#ifndef XYZFuncs_h
-#define XYZFuncs_h
+#ifndef HELICITIES_Main_XYZFuncs_H
+#define HELICITIES_Main_XYZFuncs_H
 
 #include <vector>
-#include "MyComplex.H"
-#include "Vector.H"
-#include "Flavour.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace HELICITIES {
   class XYZFunc {

@@ -1,11 +1,11 @@
-#ifndef String_Generator_h
-#define String_Generator_h
+#ifndef AMEGIC_String_String_Generator_H
+#define AMEGIC_String_String_Generator_H
 
-#include "Kabbala.H"
-#include "MyComplex.H"
-#include "Pfunc.H"
-#include "String_Tree.H"
-#include "Basic_Func.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "AMEGIC++/String/String_Tree.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
 #include <vector>
 
 namespace AMEGIC {
@@ -187,7 +187,7 @@ namespace AMEGIC {
   };
 
 }
-#include "Values.H"
+#include "AMEGIC++/String/Values.H"
 
 #endif
 

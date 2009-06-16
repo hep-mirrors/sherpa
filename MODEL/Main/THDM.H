@@ -1,7 +1,7 @@
-#ifndef THDM_h
-#define THDM_h
+#ifndef MODEL_Main_THDM_H
+#define MODEL_Main_THDM_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class THDM : public Model_Base {
@@ -11,7 +11,6 @@ namespace MODEL {
   public :
     THDM(std::string,std::string,bool);
     ~THDM();
-    bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
     \class THDM

@@ -1,5 +1,5 @@
-#include "Intact.H"
-#include "Message.H"
+#include "PDF/Main/Intact.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace PDF;
 

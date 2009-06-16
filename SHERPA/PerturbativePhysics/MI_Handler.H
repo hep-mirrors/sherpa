@@ -1,10 +1,11 @@
-#ifndef MI_Handler_H
-#define MI_Handler_H
+#ifndef SHERPA_PerturbativePhysics_MI_Handler_H
+#define SHERPA_PerturbativePhysics_MI_Handler_H
 
-#include "Run_Parameter.H"
-#include "Blob_List.H"
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
+namespace ATOOLS { class Cluster_Amplitude;    }
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }
 namespace MODEL  { class Model_Base;           }
@@ -16,7 +17,7 @@ namespace SHERPA {
 
   class Matrix_Element_Handler;
 
-  class MI_Handler {
+  class MI_Handler: public ATOOLS::Mass_Selector {
   public:
     
     enum TypeID { None    =  0,
@@ -29,12 +30,12 @@ namespace SHERPA {
 #ifdef USING__Amisic
     AMISIC::Amisic             *p_amisic;
 #endif
-    Matrix_Element_Handler     *p_hardmehandler, *p_softmehandler;
+
+    ATOOLS::Cluster_Amplitude *p_ampl;
 
     TypeID      m_type;
     std::string m_name;
 
-    int    m_scalescheme;
     double m_ycut; 
 
   public:
@@ -52,11 +53,6 @@ namespace SHERPA {
 
     std::string MIGenerator();
     
-    Matrix_Element_Handler *HardMEHandler() const 
-    { return p_hardmehandler; }
-    Matrix_Element_Handler *SoftMEHandler() const 
-    { return p_softmehandler; }
-
     PDF::ISR_Handler *ISRHandler();
 
     // member functions
@@ -66,9 +62,6 @@ namespace SHERPA {
     void SetScaleMin(double scalemax,unsigned int i);
     void SetScaleMax(double scalemin,unsigned int i);
 
-    unsigned int NIn();
-    unsigned int NOut();
-
     double ScaleMin(unsigned int i);
     double ScaleMax(unsigned int i);
 
@@ -77,10 +70,12 @@ namespace SHERPA {
     bool GenerateEvent(ATOOLS::Blob_List *bloblist);
 
     bool VetoHardProcess(ATOOLS::Blob *blob);
-    
-    // inline functions
-    inline int ScaleScheme() const { return m_scalescheme; }
 
+    ATOOLS::Cluster_Amplitude *ClusterConfiguration();
+
+    double Mass(const ATOOLS::Flavour &fl) const;
+
+    // inline functions
     inline double YCut() const { return m_ycut; }
 
   }; // end of class MI_Handler

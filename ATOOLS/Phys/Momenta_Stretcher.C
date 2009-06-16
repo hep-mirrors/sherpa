@@ -1,9 +1,9 @@
-#include "Momenta_Stretcher.H"
-#include "Vector.H"
-#include "Flavour.H"
-#include "MathTools.H"
-#include "Poincare.H"
-#include "Message.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;

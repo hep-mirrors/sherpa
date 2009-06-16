@@ -1,13 +1,13 @@
-#ifndef Fixed_Variable_Channel_H
-#define Fixed_Variable_Channel_H
+#ifndef AMISIC_Tools_Fixed_Variable_Channel_H
+#define AMISIC_Tools_Fixed_Variable_Channel_H
 /*!
   \file Fixed_Variable_Channel.H
   \brief Declares the class Fixed_Variable_Channel
 */
 
 
-#include "Variable.H"
-#include "Channel_Interface.H"
+#include "ATOOLS/Math/Variable.H"
+#include "PHASIC++/Channels/Channel_Interface.H"
 
 namespace PHASIC {
 

@@ -1,10 +1,14 @@
-#ifndef ISR_Handler_H
-#define ISR_Handler_H
+#ifndef PDF_Main_ISR_Handler_H
+#define PDF_Main_ISR_Handler_H
 
-#include "Vector.H"
-#include "Poincare.H"
-#include "ISR_Base.H"
-#include "Info_Key.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "PDF/Main/ISR_Base.H"
+#include "ATOOLS/Org/Info_Key.H"
+
+#ifdef USING__Threading
+#include <pthread.h> 
+#endif 
 
 namespace ATOOLS { class Blob_Data_Base; }
 namespace BEAM   { class Beam_Base;      }
@@ -24,7 +28,7 @@ namespace PDF {
 
     std::string m_name, m_type;
 
-    int m_mode, m_rmode; 
+    int m_mode, m_ewmode, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2];
@@ -39,6 +43,10 @@ namespace PDF {
     Remnant_Base    *p_remnants[2];
 
     double m_xf1[2], m_xf2[2];
+
+#ifdef USING__Threading
+    pthread_mutex_t m_mtx;
+#endif
 
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
@@ -70,6 +78,7 @@ namespace PDF {
 
     bool BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
+    ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
     void SetSprimeMin(const double spmin);
     void SetSprimeMax(const double spmax);
@@ -87,6 +96,9 @@ namespace PDF {
 
     ATOOLS::Blob_Data_Base *const Info(const int frame) const;
 
+    void MtxLock();
+    void MtxUnLock();
+
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
@@ -102,6 +114,7 @@ namespace PDF {
     { return p_isrbase[beam]->Flavour(); }
 
     inline int On()    { return m_mode;    }
+    inline int EWOn()  { return m_ewmode;  }
 
     inline double *SprimeRange()         { return m_splimits;    }
     inline double *YRange()              { return m_ylimits;     }

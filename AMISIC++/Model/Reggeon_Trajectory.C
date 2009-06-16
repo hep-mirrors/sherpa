@@ -1,6 +1,6 @@
-#include "Reggeon_Trajectory.H"
+#include "AMISIC++/Model/Reggeon_Trajectory.H"
 
-#include "MathTools.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace AMISIC;
 

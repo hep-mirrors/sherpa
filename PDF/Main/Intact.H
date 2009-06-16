@@ -1,7 +1,7 @@
-#ifndef Intact_h
-#define Intact_h
+#ifndef PDF_Main_Intact_H
+#define PDF_Main_Intact_H
 
-#include "ISR_Base.H"
+#include "PDF/Main/ISR_Base.H"
 
 namespace PDF {
 

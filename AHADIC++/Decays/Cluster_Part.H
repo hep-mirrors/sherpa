@@ -1,20 +1,20 @@
-#ifndef Cluster_Part_H
-#define Cluster_Part_H
+#ifndef AHADIC_Decays_Cluster_Part_H
+#define AHADIC_Decays_Cluster_Part_H
 
 
-#include "Cluster.H"
-#include "Dipole_Splitter.H"
-#include "Histogram.H"
-#include "Hadronisation_Parameters.H"
-#include "Return_Value.H"
-#include "Histogram.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <map>
 
 
 namespace AHADIC {
   class Cluster_Part {
   protected:
-    bool              m_ana, m_leading;
+    bool              m_ana;
     double            m_pt2max;
     Dipole_Splitter * p_splitter;
 

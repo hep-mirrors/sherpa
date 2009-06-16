@@ -1,12 +1,12 @@
-#ifndef HepEvt_Interface_H
-#define HepEvt_Interface_H
+#ifndef SHERPA_Tools_HepEvt_Interface_H
+#define SHERPA_Tools_HepEvt_Interface_H
 
-#include "Pythia_HepEvt_Translator.H"
-#include "Message.H"
-#include "Particle.H"
+#include "SHERPA/Tools/Pythia_HepEvt_Translator.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Particle.H"
 #include <map>
 
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace ATOOLS {
   class Blob;

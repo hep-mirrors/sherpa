@@ -1,11 +1,12 @@
-#ifndef Zfunc_Calc_h
-#define Zfunc_Calc_h
+#ifndef AMEGIC_Amplitude_Zfunctions_Zfunc_Calc_H
+#define AMEGIC_Amplitude_Zfunctions_Zfunc_Calc_H
 
 #include <vector>
-#include "Basic_Func.H"
-#include "Lorentz_Function.H"
-#include "Getter_Function.H"
-#include "Interaction_Model_Base.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
+#include "MODEL/Interaction_Models/Lorentz_Function.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
 
 #define Scalar_Args
 

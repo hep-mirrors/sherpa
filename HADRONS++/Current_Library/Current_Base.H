@@ -1,15 +1,15 @@
-#ifndef Current_Base_H
-#define Current_Base_H
+#ifndef HADRONS_Current_Library_Current_Base_H
+#define HADRONS_Current_Library_Current_Base_H
 
 #include <iostream>
 #include <string>
 #include <iomanip>
-#include "MathTools.H"
-#include "Vector.H"
-#include "Flavour.H"
-#include "Getter_Function.H"
-#include "Tools.H"
-#include "Spin_Structure.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "HADRONS++/Main/Tools.H"
+#include "HELICITIES/Main/Spin_Structure.H"
 
 #define DEFINE_CURRENT_GETTER(CLASS,NAME,TAG)                                   \
 DECLARE_GETTER(NAME,TAG,Current_Base,Flavour_Info);                             \

@@ -1,5 +1,5 @@
-#ifndef Node_H
-#define Node_H
+#ifndef ATOOLS_Org_Node_H
+#define ATOOLS_Org_Node_H
 
 #include <vector>
 
@@ -35,6 +35,6 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
-#include "Node.C"
+#include "ATOOLS/Org/Node.C"
 
 #endif

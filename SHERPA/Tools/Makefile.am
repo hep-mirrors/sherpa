@@ -1,19 +1,14 @@
 pkglib_LTLIBRARIES       =	libSherpaTools.la
 
 if HEPMC2_SUPPORT
-HEPMC2SOURCES=HepMC2_Interface.C Output_HepMC2.C Output_HepMC2_Ascii.C \
-              Output_HepMC2_Genevent.C
-HEPMC2HEADERS=HepMC2_Interface.H Output_HepMC2.H Output_HepMC2_Ascii.H \
-              Output_HepMC2_Genevent.H
+HEPMC2SOURCES=HepMC2_Interface.C Output_HepMC2_Genevent.C
+HEPMC2HEADERS=HepMC2_Interface.H Output_HepMC2_Genevent.H
 else
 HEPMC2EXTRADIST=HepMC2_Interface.H HepMC2_Interface.C \
-Output_HepMC2.H Output_HepMC2.C \
-Output_HepMC2_Ascii.H Output_HepMC2_Ascii.C \
 Output_HepMC2_Genevent.H Output_HepMC2_Genevent.C
 endif
 
 libSherpaTools_la_SOURCES     =	\
-				Kinematics.C \
 				Input_Output_Handler.C \
 				Output_Base.C \
 				Output_Sherpa.C \
@@ -22,10 +17,10 @@ libSherpaTools_la_SOURCES     =	\
 			    	$(HEPMC2SOURCES) \
 			    	HepEvt_Interface.C \
 				Pythia_HepEvt_Translator.C \
-                                Event_Reader.C
+                                Event_Reader.C \
+				Analysis_Interface.C
 
-pkginclude_HEADERS    =	\
-			Kinematics.H \
+localinc_HEADERS      =	\
 			Input_Output_Handler.H \
 			Output_Base.H \
 			Output_Sherpa.H \
@@ -34,12 +29,11 @@ pkginclude_HEADERS    =	\
 		 	$(HEPMC2HEADERS) \
 			HepEvt_Interface.H \
 			Pythia_HepEvt_Translator.H \
-			Event_Reader.H
+			Event_Reader.H \
+			Analysis_Interface.H
 
-AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
+libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      =	@SHERPAINCS@ @AMISICINCS@ @APACICINCS@ @MODELINCS@ \
-		@PDFINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@ \
-		@CONDITIONAL_HEPMC2INCS@
+libSherpaTools_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@ @CONDITIONAL_HEPMC2INCS@
 
-EXTRA_DIST    =	@SVNINCLUDE@ $(HEPMC2EXTRADIST)
+EXTRA_DIST    = @SVNINCLUDE@ $(HEPMC2EXTRADIST)

@@ -1,10 +1,10 @@
-#ifndef QCD_Remnant_Base_H
-#define QCD_Remnant_Base_H
+#ifndef PDF_Remnant_QCD_Remnant_Base_H
+#define PDF_Remnant_QCD_Remnant_Base_H
 
-#include "Remnant_Base.H"
-#include "Color_Dipole.H"
-#include "Parton_Finder.H"
-#include "ISR_Handler.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "PDF/Remnant/Color_Dipole.H"
+#include "ATOOLS/Phys/Parton_Finder.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace PDF {
 

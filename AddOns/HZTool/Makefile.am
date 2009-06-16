@@ -1,0 +1,24 @@
+HZTOOL_SOURCES        =	\
+			hztool_sherpa.f \
+			HZTool_Interface.C
+HZTOOL_ADDS           = \
+			HZTool_Wrapper.H \
+			HZTool_Analyses.H
+
+AM_FFLAGS     =	-fno-automatic @CONDITIONAL_HZTOOLINCS@
+
+if HZTOOL_SUPPORT
+if CERNLIB_SUPPORT
+pkglib_LTLIBRARIES    =	libHZToolSherpa.la
+
+libHZToolSherpa_la_SOURCES    =	$(HZTOOL_SOURCES)
+
+HZTOOL_EXTRA_DIST    = $(HZTOOL_ADDS)
+else
+HZTOOL_EXTRA_DIST    = $(HZTOOL_ADDS) $(HZTOOL_SOURCES)
+endif
+else
+HZTOOL_EXTRA_DIST    = $(HZTOOL_ADDS) $(HZTOOL_SOURCES)
+endif
+
+EXTRA_DIST = @SVNINCLUDE@ $(HZTOOL_EXTRA_DIST)

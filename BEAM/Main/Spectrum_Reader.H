@@ -1,8 +1,8 @@
-#ifndef Spectrum_Reader_H
-#define Spectrum_Reader_H
+#ifndef BEAM_Main_Spectrum_Reader_H
+#define BEAM_Main_Spectrum_Reader_H
 
-#include "Beam_Base.H"
-#include "MyStrStream.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 namespace ATOOLS {
   class Function_Base;

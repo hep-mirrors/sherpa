@@ -1,5 +1,5 @@
-#include "Dipole_FF.H"
-#include "Model_Base.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

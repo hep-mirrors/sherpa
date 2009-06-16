@@ -1,4 +1,4 @@
-# include "Generate_One_Photon.H"
+# include "PHOTONS++/Tools/Generate_One_Photon.H"
 
 using namespace PHOTONS;
 using namespace std;

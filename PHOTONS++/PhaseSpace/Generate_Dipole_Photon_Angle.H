@@ -1,11 +1,11 @@
-#ifndef Generate_Dipole_Photon_Angle_H
-#define Generate_Dipole_Photon_Angle_H
+#ifndef PHOTONS_PhaseSpace_Generate_Dipole_Photon_Angle_H
+#define PHOTONS_PhaseSpace_Generate_Dipole_Photon_Angle_H
 
-#include "Vector.H"
-#include "Poincare.H"
-#include "Particle.H"
-#include "Random.H"
-#include "Message.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;

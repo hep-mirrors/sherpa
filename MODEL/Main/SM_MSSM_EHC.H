@@ -1,7 +1,7 @@
-#ifndef SM_MSSM_EHC_h
-#define SM_MSSM_EHC_h
+#ifndef MODEL_Main_SM_MSSM_EHC_H
+#define MODEL_Main_SM_MSSM_EHC_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class SM_EHC : public Model_Base {
@@ -11,7 +11,6 @@ namespace MODEL {
   public :
     SM_EHC(std::string,std::string,bool);
     ~SM_EHC()                   {}
-    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
 
   class MSSM_EHC : public Model_Base {
@@ -21,7 +20,6 @@ namespace MODEL {
   public :
     MSSM_EHC(std::string,std::string,bool);
     ~MSSM_EHC()                   {}
-    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
 
   /*!

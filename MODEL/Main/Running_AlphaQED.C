@@ -1,7 +1,7 @@
-#include "Running_AlphaQED.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "MathTools.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
 
 #include <iostream>
 
@@ -58,7 +58,7 @@ double Running_AlphaQED::operator()(double t)
 }  
 
 double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
-  double mass2  = sqr(fl.PSMass()); // onshell mass
+  double mass2  = sqr(fl.Mass(true)); // onshell mass
   double mqs    = mass2/scale;
   if (scale==0.) return 0.;
   if (4.*mqs<1.e-3) return (-5./3.-log(mqs));

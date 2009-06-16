@@ -1,13 +1,13 @@
-#include "Mom.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Mom.H"
 
 #ifndef Basic_Sfuncs_In_MHV
-#include "Color.H"
-#include "Exception.H"
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Phys/Color.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <fstream.h>
 #include <iostream.h>
-#include "MathTools.H"
+#include "ATOOLS/Math/MathTools.H"
 
 
 using namespace ATOOLS;

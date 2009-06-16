@@ -1,10 +1,10 @@
-#ifndef Beam_Spectra_Handler_h
-#define Beam_Spectra_Handler_h
+#ifndef BEAM_Main_Beam_Spectra_Handler_H
+#define BEAM_Main_Beam_Spectra_Handler_H
 
-#include "Beam_Base.H"
-#include "Vector.H"
-#include "Poincare.H"
-#include "Info_Key.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Info_Key.H"
 
 namespace ATOOLS { class Data_Reader; }
 

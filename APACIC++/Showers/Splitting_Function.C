@@ -1,6 +1,6 @@
-#include "Splitting_Function.H"
-#include "Message.H"
-#include "Random.H"
+#include "APACIC++/Showers/Splitting_Function.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace APACIC;
 
@@ -19,7 +19,8 @@ int Splitting_Function::s_kfactorscheme = 0;
 
 // some virtual functions
 
-Splitting_Function::Splitting_Function() 
+Splitting_Function::Splitting_Function(ATOOLS::Mass_Selector *&ms):
+  p_ms(ms)
 {
 }
 

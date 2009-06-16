@@ -1,8 +1,8 @@
-#ifndef Output_HepEvt_H
-#define Output_HepEvt_H
+#ifndef SHERPA_Tools_Output_HepEvt_H
+#define SHERPA_Tools_Output_HepEvt_H
 
-#include "Output_Base.H"
-#include "HepEvt_Interface.H"
+#include "SHERPA/Tools/Output_Base.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
 
 namespace SHERPA {
 

@@ -1,7 +1,7 @@
-#ifndef My_Root_H
-#define My_Root_H
+#ifndef ATOOLS_Org_My_Root_H
+#define ATOOLS_Org_My_Root_H
 
-#include "CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 #ifdef USING__ROOT
 
@@ -13,8 +13,8 @@
 #define USING__ATOOLS_Exception
 
 #ifndef USING__My_Root_only
-#include "Data_Reader.H"
-#include "Exception.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 #endif
 
 namespace MYROOT {

@@ -1,0 +1,64 @@
+#include "EXTRA_XS/Cluster/Cluster_Algorithm.H"
+
+#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "EXTRA_XS/Main/Single_Process.H"
+#include "EXTRA_XS/Main/ME2_Base.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
+#include "ATOOLS/Phys/Flow.H"
+#include "ATOOLS/Org/Message.H"
+
+using namespace EXTRAXS;
+using namespace PHASIC;
+using namespace ATOOLS;
+
+Cluster_Algorithm::Cluster_Algorithm():
+  p_ampl(NULL), p_clus(NULL) {}
+
+Cluster_Algorithm::~Cluster_Algorithm()
+{
+  if (p_ampl) delete p_ampl;
+}
+
+bool Cluster_Algorithm::Cluster(Single_Process *const xs)
+{
+  Selector_Base *jf=xs->Selector()
+    ->GetSelector("Jetfinder");
+  ME2_Base *me(xs->GetME());
+  bool swap(xs->Integrator()->InSwaped());
+  if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Indent();
+  if (p_ampl) delete p_ampl;
+  p_ampl = new Cluster_Amplitude();
+  p_ampl->SetJF(jf);
+  const Vec4D_Vector &moms(xs->Integrator()->Momenta());
+  me->SetColours(moms);
+  double muf2(xs->ScaleSetter()->Scale(stp::fac));
+  double mur2(xs->ScaleSetter()->Scale(stp::ren));
+  for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
+    size_t id(1<<p_ampl->Legs().size());
+    size_t idx(i<2?(swap?1-i:i):i);
+    ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
+    if (i<2) col=col.Conj();
+    Flavour flav(i<2?xs->Flavours()[i].Bar():
+		 xs->Flavours()[i]);
+    Vec4D mom(i<2?-moms[i]:moms[i]);
+    p_ampl->CreateLeg(mom,flav,col,id);
+    p_ampl->Legs().back()->SetStat(1);
+    p_ampl->Legs().back()->SetNMax(xs->Info().m_fi.m_nmax);
+  }
+  // set colour partners
+  p_ampl->SetNIn(xs->NIn());
+  p_ampl->SetMuR2(mur2);
+  p_ampl->SetMuF2(muf2);
+  p_ampl->SetX1(xs->Integrator()->ISR()->X1());
+  p_ampl->SetX2(xs->Integrator()->ISR()->X2());
+  p_ampl->SetOrderEW(xs->OrderEW());
+  p_ampl->SetOrderQCD(xs->OrderQCD());
+  if (msg_LevelIsDebugging()) p_ampl->Print();
+  return true;
+}
+

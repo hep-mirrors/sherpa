@@ -1,4 +1,4 @@
-#include "Weight_YFS.H"
+#include "PHOTONS++/Tools/Weight_YFS.H"
 
 using namespace ATOOLS;
 using namespace PHOTONS;

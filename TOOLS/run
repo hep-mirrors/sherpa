@@ -66,8 +66,8 @@ print_help() {
   echo "         -O <option>    define batch system option <option>" && \
   echo "         -H <host>      run job locally on <host>" && \
   echo "         -N <level>     set nice level for nohup" && \
-  echo "         -E <events>    generate <events> testevents" && \
-  echo "         -T <time>      generate jobs with expected runtime <time>" && \
+  echo "         -T <events>    generate <events> testevents" && \
+  echo "         -E <time>      generate jobs with expected runtime <time>" && \
   echo "         -Q <option>    define batch option <option> for split jobs" && \
   echo "         -S             submit job to batch system" && \
   echo "         -R             run job via nohup" && \
@@ -161,7 +161,7 @@ if ! test -d $LIBPATH ; then
   echo "grid_run: library path not found. abort."
   exit 4
 fi
-cp -u $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
+cp -pu $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
 if [ "$RESULTS" != "" ]; then mkdir $SETUPPATH/$RESULTS; fi
 
 echo "" > $FILE
@@ -278,9 +278,9 @@ if [ "$ETIME" != "" ]; then
   SANALYSIS=`echo $ANALYSIS | sed 's/\///g'`
   echo -n "\"ANALYSIS_OUTPUT=$SANALYSIS" >> $FILE
   echo "_\$I/ RANDOM_SEED=\$I EVENTS=\$EEVENTS \"\\" >> $FILE
-  echo "\"$CMDR 2>&1 > job_\$I.log\" > job_\$I" >> $FILE
-  echo "  chmod 777 job_\$I" >> $FILE
-  echo "  qsub $EBOPT job_\$I 2>&1 >> \$LOGFILE.split" >> $FILE
+  echo "\"$CMDR 2>&1 > "$BASENAME"_"$COUNTER"_\$I.log\" > "$BASENAME"_"$COUNTER"_\$I" >> $FILE
+  echo "  chmod 777 "$BASENAME"_"$COUNTER"_\$I" >> $FILE
+  echo "  qsub $EBOPT "$BASENAME"_"$COUNTER"_\$I 2>&1 >> \$LOGFILE.split" >> $FILE
   echo "done" >> $FILE
   echo "anasum -pl4 -i\""$SANALYSIS"_*/\" -o"$SANALYSIS"_sum/" > sum_jobs
   chmod 777 sum_jobs
@@ -333,9 +333,9 @@ list(){\\
   echo -e \"===> \`echo \$1 | awk '{ n=split(\$1,a,\"/\"); print a[n]; }'\` <===\"\\
   if test -d \$1; then\\
     echo \"master: \`print \$1/\$2\`\"\\
-    for I in \$1/job_*.log; do if test -f \$I; then\\
+    for I in \$1/"$BASENAME"_"$COUNTER"_*.log; do if test -f \$I; then\\
       echo \"\`echo \$I | awk '{\\
-        split(\$1,a,\"job_\"); split(a[2],b,\".log\");\\
+        split(\$1,a,\""$BASENAME"_"$COUNTER"_\"); split(a[2],b,\".log\");\\
         print b[1]; }'\`: \`print \$I\`\"\\
     fi; done\\
   fi\\

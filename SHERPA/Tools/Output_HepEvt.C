@@ -1,4 +1,4 @@
-#include "Output_HepEvt.H"
+#include "SHERPA/Tools/Output_HepEvt.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

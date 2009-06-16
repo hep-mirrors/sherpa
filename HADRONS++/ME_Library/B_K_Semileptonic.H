@@ -1,13 +1,13 @@
-#ifndef B_K_Semileptonic_h
-#define B_K_Semileptonic_h
+#ifndef HADRONS_ME_Library_B_K_Semileptonic_H
+#define HADRONS_ME_Library_B_K_Semileptonic_H
  
-#include "HD_ME_Base.H"
-#include "Flavour.H"
-#include "Vector.H"
-#include "MathTools.H"
-#include "Histogram.H"
-#include "Message.H"
-#include "Tools.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Org/Message.H"
+#include "HADRONS++/Main/Tools.H"
 
 namespace HADRONS { 
 

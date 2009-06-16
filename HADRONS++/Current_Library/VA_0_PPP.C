@@ -1,5 +1,5 @@
-#include "VA_0_PPP.H"
-#include "Run_Parameter.H"
+#include "HADRONS++/Current_Library/VA_0_PPP.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -17,7 +17,7 @@ VA_0_PPP::VA_0_PPP(ATOOLS::Flavour* flavs, int n, int* indices, std::string name
     if( m_flavs[p_i[i]].Kfcode() == kf_K )         nKaon_0++;
     if( m_flavs[p_i[i]].Kfcode() == kf_K_L )	   nKaon_L++;
     if( m_flavs[p_i[i]].Kfcode() == kf_K_S )       nKaon_S++;
-    m_ms[i] = sqr( m_flavs[p_i[i]].PSMass() );
+    m_ms[i] = sqr( m_flavs[p_i[i]].HadMass() );
   }
   // sanity check
   if (nPion_ch+nPion_0+nKaon_ch+nKaon_L+nKaon_S+nKaon_0 != 3) {
@@ -266,9 +266,9 @@ VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, std::string path, GeneralMod
 	  m_Beta[i]   = _md("beta_"+Flavour(resVV[i]).IDName(),  -0.135 );                            // weight factor for Vij'
 	}
 	else {
-	  mV[i]       = _md("Mass_"+Flavour(resV[i]).IDName(),  Flavour(resV[i]).PSMass());       // mass^2 of vector resonance ij
+	  mV[i]       = _md("Mass_"+Flavour(resV[i]).IDName(),  Flavour(resV[i]).HadMass());       // mass^2 of vector resonance ij
 	  wV[i]       = _md("Width_"+Flavour(resV[i]).IDName(), Flavour(resV[i]).Width());        // width^2 of vector resonance ij
-	  mVV[i]      = _md("Mass_"+Flavour(resVV[i]).IDName(), Flavour(resVV[i]).PSMass());      // mass^2 of vector resonance' ij
+	  mVV[i]      = _md("Mass_"+Flavour(resVV[i]).IDName(), Flavour(resVV[i]).HadMass());      // mass^2 of vector resonance' ij
 	  wVV[i]      = _md("Width_"+Flavour(resVV[i]).IDName(),Flavour(resVV[i]).Width());       // width^2 of vector resonance' ij
 	  m_Beta[i]   = _md("beta_"+Flavour(resVV[i]).IDName(),  0. );                            // weight factor for Vij'
 	}
@@ -293,15 +293,15 @@ VA_0_PPP::RChT::RChT(int mode, int kaon_mode, string path, GeneralModel _md, dou
     abort();
       }
    
-      m_MO     = _md("Mass_omega(782)", Flavour(kf_omega_782).PSMass());
+      m_MO     = _md("Mass_omega(782)", Flavour(kf_omega_782).HadMass());
       m_MO2    = sqr(m_MO);
       m_GO     = _md("Width_omega(782)", Flavour(kf_omega_782).Width());
       
       m_l0     = _md("lambda0", 1.);                    // fit parameter lambda0
       m_gammaR = _md("gamma_rho(770)", 1.);              // global factor for rho width
-      m_m      = Flavour( kf_pi_plus ).PSMass();         // pion mass
+      m_m      = Flavour( kf_pi_plus ).HadMass();         // pion mass
       m_m2     = sqr(m_m);                              // pion mass^2
-      m_mK2    = sqr( Flavour( kf_K_plus ).PSMass() );   // Kaon mass^2
+      m_mK2    = sqr( Flavour( kf_K_plus ).HadMass() );   // Kaon mass^2
       m_exp_alpha = _md("exp_alpha", 2.45);             // exponent in off-shell GA
       m_l1     = _md("lambda1", 0.5);                   // fit parameter        
       m_l2     = _md("lambda2", 0.);                    // fit parameter
@@ -522,9 +522,9 @@ VA_0_PPP::KS::KS(int mode, int kaon_mode, string path, GeneralModel _md, double 
 
   if( anomaly ) {
 	int running    = int( _md("RUNNING_WIDTH", 3 ) );     // running width
-    double MV   = _md("Mass_anomaly_"+Flavour(resAnoV).IDName(),   Flavour(resAnoV).PSMass()   );   // mass V
-    double MVV  = _md("Mass_anomaly_"+Flavour(resAnoVV).IDName(),  Flavour(resAnoVV).PSMass()   );  // mass V'
-    double MVVV = _md("Mass_anomaly_"+Flavour(resAnoVVV).IDName(), Flavour(resAnoVVV).PSMass()   ); // mass V'
+    double MV   = _md("Mass_anomaly_"+Flavour(resAnoV).IDName(),   Flavour(resAnoV).HadMass()   );   // mass V
+    double MVV  = _md("Mass_anomaly_"+Flavour(resAnoVV).IDName(),  Flavour(resAnoVV).HadMass()   );  // mass V'
+    double MVVV = _md("Mass_anomaly_"+Flavour(resAnoVVV).IDName(), Flavour(resAnoVVV).HadMass()   ); // mass V'
     double GV   = _md("Width_anomaly_"+Flavour(resAnoV).IDName(),   Flavour(resAnoV).Width()   );   // width V
     double GVV  = _md("Width_anomaly_"+Flavour(resAnoVV).IDName(),  Flavour(resAnoVV).Width()   );  // width V'
     double GVVV = _md("Width_anomaly_"+Flavour(resAnoVVV).IDName(), Flavour(resAnoVVV).Width()   ); // width V'

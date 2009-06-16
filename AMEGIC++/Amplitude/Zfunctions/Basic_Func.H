@@ -1,8 +1,8 @@
-#ifndef Basic_Func_h
-#define Basic_Func_h
+#ifndef AMEGIC_Amplitude_Zfunctions_Basic_Func_H
+#define AMEGIC_Amplitude_Zfunctions_Basic_Func_H
 
-#include "Kabbala.H"
-#include "Basic_Sfuncs.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
  
 namespace AMEGIC {
 
@@ -436,7 +436,7 @@ namespace AMEGIC {
 }
 
 #include "Basic_Func.icc"
-//#include "String_Generator.H"
+//#include "AMEGIC++/String/String_Generator.H"
 
 
 #endif

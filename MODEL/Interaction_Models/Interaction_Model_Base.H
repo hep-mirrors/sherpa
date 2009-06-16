@@ -1,8 +1,8 @@
-#ifndef Interaction_Model_Base_h
-#define Interaction_Model_Base_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_Base_H
+#define MODEL_Interaction_Models_Interaction_Model_Base_H
 
-#include "Model_Base.H"
-#include "Vertex.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Interaction_Models/Vertex.H"
 #include <vector>
 
 namespace MODEL {

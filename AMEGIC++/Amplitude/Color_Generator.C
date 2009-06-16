@@ -1,4 +1,4 @@
-#include "Color_Generator.H"
+#include "AMEGIC++/Amplitude/Color_Generator.H"
 
 using namespace AMEGIC;
 using namespace MODEL;

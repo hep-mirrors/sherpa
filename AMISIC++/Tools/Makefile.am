@@ -5,14 +5,7 @@ libAmisicTools_la_SOURCES     = \
 				Fixed_Variable_Channel.C \
 				Semihard_QCD.C 
 
-pkginclude_HEADERS        = \
+localinc_HEADERS          = \
 			Amisic_Histogram.H \
 			Fixed_Variable_Channel.H \
 			Semihard_QCD.H 
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      =	@EXTRAXSINCS@ @PHASICINCS@ @PDFINCS@ \
-		@BEAMINCS@ @MODELINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

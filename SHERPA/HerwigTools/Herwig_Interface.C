@@ -1,14 +1,14 @@
-#include "Herwig_Interface.H"
+#include "SHERPA/HerwigTools/Herwig_Interface.H"
 
-#include "Herwig_Wrapper.H"
-#include "ISR_Handler.H"
-#include "Data_Reader.H"
-#include "Particle.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Exception.H"
-#include "Running_AlphaS.H"
-#include "MyStrStream.H"
+#include "SHERPA/HerwigTools/Herwig_Wrapper.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace SHERPA;
 

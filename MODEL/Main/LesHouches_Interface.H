@@ -1,10 +1,10 @@
-#ifndef LesHouches_Interface_h
-#define LesHouches_Interface_h
+#ifndef MODEL_Main_LesHouches_Interface_H
+#define MODEL_Main_LesHouches_Interface_H
 
-#include "Spectrum_Generator_Base.H"
-#include "Data_Reader.H"
-#include "Matrix.H"
-#include "Exception.H"
+#include "MODEL/Main/Spectrum_Generator_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace MODEL {
   class LesHouches_Interface : public Spectrum_Generator_Base, 
@@ -28,8 +28,6 @@ namespace MODEL {
     ~LesHouches_Interface();
     void Run();
     void FillMasses();
-    void FillDecays() {}
-    bool FillDecay(ATOOLS::Decay_Table *) {return true;}
   };
 }
 #endif

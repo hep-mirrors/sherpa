@@ -1,22 +1,13 @@
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 #include <sys/stat.h>
 #include <iterator>
 
 namespace ATOOLS {
   Message *msg(new Message());
-}
-
-template <class Value_Type>
-std::string ToString(const Value_Type value) {
-  MyStrStream converter;
-  std::string converted;
-  converter<<value;
-  converter>>converted;
-  return converted;
 }
 
 using namespace ATOOLS;
@@ -131,7 +122,7 @@ Message::Message() : m_buf(std::cout.rdbuf())
   p_logfile = p_no;
   m_file = 0;
   m_level = 0;
-  m_modifiable = false;
+  m_modifiable = true;
 }
 
 Message::~Message() 
@@ -160,6 +151,7 @@ void Message::Init(const std::string& level,const std::string &logfile)
       if (lev&2) m_contextinfo.insert(svv[i][0]);
       if (lev&4) m_contexttracking.insert(svv[i][0]);
       if (lev&8) m_contextdebugging.insert(svv[i][0]);
+      if (lev&32) m_contextiodebugging.insert(svv[i][0]);
     }
     else {
       Out()<<METHOD<<": Do not understand output specification: "<<std::endl;
@@ -192,15 +184,19 @@ void Message::InitLogFile(const std::string &logfile)
   pclose(pout);
   if (gccv.find('\n')!=std::string::npos) 
     gccv=gccv.substr(0,gccv.find('\n'));
-  char *var=NULL;
+  const char *hostname=getenv("HOSTNAME");
+  if (hostname==NULL) hostname="";
+  const char *hosttype=getenv("HOSTTYPE");
+  if (hosttype==NULL) hosttype="";
   p_logfile = new std::ofstream(name.c_str(),std::ios::app);
   (*p_logfile)<<"! ****************************************\n"
 	      <<"! *           Sherpa Log File            *\n"
 	      <<"! ****************************************\n";
-  (*p_logfile)<<"! starting Sherpa 1.0.6 at '"
-	      <<std::string(((var=getenv("HOSTNAME"))==NULL?"":var))
+  (*p_logfile)<<"! starting Sherpa "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
+              <<" at '"
+	      <<hostname
 	      <<"' (architecture "
-	      <<std::string(((var=getenv("HOSTTYPE"))==NULL?"":var))
+	      <<hosttype
 	      <<") \n! on "<<rpa.gen.Timer().TimeString()<<"\n";
   (*p_logfile)<<"! +--------------------------------------+\n"
 	      <<"! |            shell settings            |\n"
@@ -268,6 +264,12 @@ std::ostream &Message::LogFile() const
   return *p_no; 
 }
 
+std::ostream &Message::IODebugging() const
+{
+  if (m_level & 32) return *p_output;
+  return *p_no;
+}
+
 std::string Message::ExtractMethodName(std::string cmethod) const   
 { 
   std::string cclass("<no class>"), method("<no method>");
@@ -282,6 +284,7 @@ std::string Message::ExtractMethodName(std::string cmethod) const
     pos=cmethod.find("::");
     method=cmethod.substr(0,ATOOLS::Min(cmethod.length(),pos));
   }
+  if (cclass=="<no class>") return cmethod;
   return cclass+"::"+cmethod;
 }
 
@@ -316,6 +319,15 @@ bool Message::LevelIsDebugging(const std::string& context) const
 {
   for (std::set<std::string>::reverse_iterator rit=m_contextdebugging.rbegin();
        rit!=m_contextdebugging.rend(); ++rit) {
+    if (context.find(*rit)!=std::string::npos) return true;
+  }
+  return false;
+}
+
+bool Message::LevelIsIODebugging(const std::string& context) const
+{
+  for (std::set<std::string>::reverse_iterator rit=m_contextiodebugging.rbegin();
+       rit!=m_contextiodebugging.rend(); ++rit) {
     if (context.find(*rit)!=std::string::npos) return true;
   }
   return false;

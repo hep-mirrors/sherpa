@@ -1,6 +1,6 @@
-#include "Hadron_Multiplet.H"
-#include "Hadronisation_Parameters.H"
-#include "Message.H"
+#include "AHADIC++/Tools/Hadron_Multiplet.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -126,7 +126,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	  wavefunction->AddToWaves(pair,weight);
 	}
 	else {
-	  weight         = sinth/sqrt(6.)+costh/sqrt(3.)*m_singletsuppression;
+	  weight         = (-costh/sqrt(6.)-sinth/sqrt(3.))
+	    *((1.-m_singletsuppression)+costh*m_singletsuppression);
 	  if (dabs(weight)>1.e-3) {
 	    wavefunction = new Hadron_Wave_Function;
 	    wavefunction->AddToWaves(pair,weight);
@@ -136,7 +137,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	    pair->second = flavs[0].Bar();
 	    wavefunction->AddToWaves(pair,weight);
 	  }
-	  weight         = -2.*sinth/sqrt(6.)+costh/sqrt(3.)*m_singletsuppression;
+	  weight         = (2.*costh/sqrt(6.)-sinth/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
 	  if (dabs(weight)>1.e-3) {
 	    flavs[0]     = Flavour((kf_code)(3));
 	    pair         = new Flavour_Pair;
@@ -149,12 +151,14 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       } 
       else if (fl1==3) {
 	//std::cout<<METHOD<<" : "<<m_singletsuppression<<" for sin(theta) = "<<sinth<<std::endl;
-	weight         = -2.*costh/sqrt(6.)-sinth/sqrt(3.)*m_singletsuppression;
+	weight         = (2.*sinth/sqrt(6.)+costh/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
 	if (dabs(weight)>1.e-3) {
 	  wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
 	}
-	weight         = costh/sqrt(6.)-sinth/sqrt(3.)*m_singletsuppression;
+	weight         = (-sinth/sqrt(6.)+costh/sqrt(3.))
+	    *((1.-m_singletsuppression)+sinth*m_singletsuppression);
 	if (dabs(weight)>1.e-3) {
 	  flavs[0]     = Flavour((kf_code)(1));
 	  pair         = new Flavour_Pair;
@@ -246,7 +250,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
   }
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
-  Flavour_Pair         * pair;
+  Flavour_Pair             * pair;
 
   switch (wf) {
   case 1020:

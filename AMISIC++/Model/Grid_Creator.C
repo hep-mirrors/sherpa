@@ -1,26 +1,20 @@
-#include "Grid_Creator.H"
+#include "AMISIC++/Model/Grid_Creator.H"
 
-#include "Phase_Space_Handler.H"
-#include "ISR_Handler.H"
-#include "Data_Reader.H"
-#include "Data_Writer.H"
-#include "Blob.H"
-#include "Run_Parameter.H"
-
-#ifdef PROFILE__all
-#define PROFILE__Grid_Creator
-#endif
-#ifdef PROFILE__Grid_Creator
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 
 Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
-			   EXTRAXS::XS_Group *const processes):
+			   EXTRAXS::Process_Group *const processes):
   p_histograms(histograms),
   p_processes(processes),
   m_xsextension("_xs.dat"),
@@ -40,7 +34,7 @@ Grid_Creator::~Grid_Creator()
 {
 }
 
-bool Grid_Creator::CollectProcesses(EXTRAXS::XS_Base *const process)
+bool Grid_Creator::CollectProcesses(PHASIC::Process_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
@@ -76,8 +70,9 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
   else m_gridyvariable=MakeString(helps);
   if (m_gridxmin==0.0) 
-    m_gridxmin=sqrt(ATOOLS::Max(p_processes->ISR()->PDF(0)->Q2Min(),
-				p_processes->ISR()->PDF(1)->Q2Min()));
+    m_gridxmin=sqrt
+      (ATOOLS::Max(p_processes->Integrator()->ISR()->PDF(0)->Q2Min(),
+		   p_processes->Integrator()->ISR()->PDF(1)->Q2Min()));
   m_gridxmin=ATOOLS::Max(m_gridxmin,1.e-3);
   if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
     m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/250.;
@@ -88,7 +83,7 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   m_maxevents=(long unsigned)helpd;
   if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
   if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) 
-    m_outputlevel=0;
+    m_outputlevel=2;
   if (!reader->ReadFromFile(m_gridxscaling,"HISTO_X_SCALING")) 
     m_gridxscaling="Log_B_10";
   if (!reader->ReadFromFile(m_gridyscaling,"HISTO_Y_SCALING")) 
@@ -126,7 +121,11 @@ void Grid_Creator::Clear()
 
 bool Grid_Creator::ReadInGrid()
 {
-  PROFILE_HERE;
+  double sum=0.0;
+  int formerlevel=msg->Level();
+  msg->SetLevel(m_outputlevel);
+  msg_Info()<<METHOD<<"(): Reading grid ";
+  msg_Tracking()<<"{\n";
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
     if (hit->second->ReadIn(OutputPath()+hit->first+m_xsextension,
@@ -135,61 +134,64 @@ bool Grid_Creator::ReadInGrid()
 	  m_gridxmax-hit->second->XMax()>m_gridxmax*1.0e-7 ||
 	  hit->second->Entries()<m_initevents) {
 	Clear();
+	msg->SetLevel(formerlevel);
 	return false;
       }
+      double cur=hit->second->Norm()*rpa.Picobarn();
+      msg_Info()<<'.'<<std::flush;
+      msg_Tracking()<<"  '"<<hit->first<<"' -> "<<cur<<" pb\n";
+      sum+=cur;
     }
     else {
       Clear();
+      msg->SetLevel(formerlevel);
       return false;
     }
   }
+  msg_Info()<<" done."<<std::endl;
+  msg_Tracking()<<"} -> sum = "<<sum<<" pb\n";
+  msg->SetLevel(formerlevel);
   return true;
 }
 
-bool Grid_Creator::InitializeCalculation(EXTRAXS::XS_Group *const processes)
+bool Grid_Creator::InitializeCalculation(PHASIC::Process_Group *const processes)
 {
-  int helpi=0;
   m_criterion=p_xaxis->Variable()->SelectorID();
-  std::vector<ATOOLS::Flavour> flavours(1,(kf_jet));
-  std::vector<std::pair<double,double> > bounds
-    (1,std::pair<double,double>(m_gridxmin,m_gridxmax));
-  processes->SelectorData()->
-    SetData(m_criterion,flavours,bounds,helpi);
-  processes->ResetSelector(processes->SelectorData());
-  processes->Reset();
+  std::vector<std::string> bounds(3);
+  bounds[0]=ToString(kf_jet);
+  bounds[1]=ToString(m_gridxmin);
+  bounds[2]=ToString(m_gridxmax);
+  Data_Reader read;
+  PHASIC::Selector_Key skey(processes->Integrator(),&read);
+  skey.SetData(m_criterion,bounds);
+  processes->SetSelector(skey);
   processes->CalculateTotalXSec(OutputPath()+OutputFile()
 				+MCExtension(),true);
   return true;
 }
 
-bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
+bool Grid_Creator::UpdateHistogram(PHASIC::Process_Base *const process)
 {
-  if (process->Size()==0) return false;
-  if ((*process)[0]==process) {
-    Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
-    if (process->Max()==0.0) {
-      histo->Add(0.0,0.0); 
-      return true;
-    }
-    process->Parent()->SetSelected(process);
-    ATOOLS::Blob_Data_Base *xsdata=process->Parent()->SameWeightedEvent();
-    if (xsdata==NULL) return false;
-    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
-    delete xsdata;
-    const ATOOLS::Vec4D *p=process->Momenta();
-    double value=(*p_variable)(&p[0]);
-    for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,(*p_variable)(&p[i]));
-    histo->Add(value,info.weight);
-    for (size_t i=1;i<info.ntrial;++i) histo->Add(value,0.0); 
+  if (process->IsGroup()) {
+    for (size_t i=0;i<process->Size();++i)
+      if (!UpdateHistogram((*process)[i])) return false;
     return true;
   }
-  for (size_t i=0;i<process->Size();++i) {
-    if (!UpdateHistogram((*process)[i])) return false;
+  Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
+  PHASIC::Weight_Info *info=process->WeightedEvent();
+  const ATOOLS::Vec4D_Vector &p=process->Integrator()->Momenta();
+  double value=(*p_variable)(&p[0]);
+  for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,(*p_variable)(&p[i]));
+  if (info==NULL) {
+    histo->Add(value,0.0); 
+    return true;
   }
+  histo->Add(value,info->m_weight);
+  delete info;
   return true;
 }
 
-bool Grid_Creator::CreateGrid(EXTRAXS::XS_Group *const processes)
+bool Grid_Creator::CreateGrid(PHASIC::Process_Group *const processes)
 {
   msg_Info()<<"Grid_Creator::CreateGrid("<<processes<<"): "
 	    <<"Initializing grid for MI.\n";
@@ -213,7 +215,6 @@ bool Grid_Creator::CreateGrid(EXTRAXS::XS_Group *const processes)
 bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
 				const std::string &path) 
 {
-  PROFILE_HERE;
   bool success=true;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {

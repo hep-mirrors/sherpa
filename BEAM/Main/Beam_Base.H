@@ -1,8 +1,8 @@
-#ifndef Beam_Base_H
-#define Beam_Base_H
+#ifndef BEAM_Main_Beam_Base_H
+#define BEAM_Main_Beam_Base_H
 
-#include "Flavour.H"
-#include "Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace BEAM {
 

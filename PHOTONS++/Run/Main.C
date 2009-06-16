@@ -1,18 +1,18 @@
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Run_Parameter.H"
-#include "Particle.H"
-#include "Model_Base.H"
-#include "Standard_Model.H"
-#include "Blob.H"
-#include "Rambo.H"
-#include "Photons.H"
-#include "Dipole_Type.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "PHASIC++/Channels/Rambo.H"
+#include "PHOTONS++/Main/Photons.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
 // #define NEW__RANDOM
 // #undef USING__ROOT
 
-#include "CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__ROOT
 #include "TFile.h"
 #include "TCanvas.h"
@@ -22,7 +22,7 @@
 #include "TF1.h"
 #endif
 
-#include "Data_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace std;
 using namespace PHOTONS;
@@ -84,9 +84,9 @@ int main(int argc, char *argv[])
 
     Vec4D mom[10];
     double p = 1; 
-    double M    = myflav[0].PSMass();
+    double M    = myflav[0].HadMass();
     double sum  = 0;
-    for (int i=nin; i<nout+nin-1; i++)  sum = sum + myflav[i].PSMass();
+    for (int i=nin; i<nout+nin-1; i++)  sum = sum + myflav[i].HadMass();
     double kmax = (M/2) * ( M/sum - sum/M ); 
     int count   = 0;
     mom[0] = Vec4D( sqrt(M*M + p*p), 0., 0., p );

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 1.1.3, support@sherpa-mc.de, SHERPA-MC)
+AC_INIT(SHERPA MC, 1.2.0, support@sherpa-mc.de, SHERPA-MC)
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
 AM_INIT_AUTOMAKE
 AM_DISABLE_STATIC
@@ -45,36 +45,57 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Org/Makefile \
 	  ATOOLS/Makefile \
           HELICITIES/Main/Makefile \
+          HELICITIES/Loops/Makefile \
           HELICITIES/Makefile \
 	  BEAM/Main/Makefile \
 	  BEAM/Makefile \
 	  PDF/Main/Makefile \
+	  PDF/Electron/Makefile \
 	  PDF/LHAPDF/Makefile \
 	  PDF/MRST/Makefile \
 	  PDF/CTEQ/Makefile \
 	  PDF/GRV/Makefile \
-	  PDF/Sudakov/Makefile \
 	  PDF/Remnant/Makefile \
 	  PDF/Makefile \
-	  MODEL/Decays/Makefile \
 	  MODEL/Interaction_Models/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/Makefile \
 	  PHASIC++/Main/Makefile \
+	  PHASIC++/Channels/Makefile \
+	  PHASIC++/Process/Makefile \
+	  PHASIC++/Scales/Makefile \
+	  PHASIC++/Selectors/Makefile \
 	  PHASIC++/Makefile \
- 	  EXTRA_XS/Model/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
+	  EXTRA_XS/NLO/Makefile \
+	  EXTRA_XS/Cluster/Makefile \
 	  EXTRA_XS/Makefile \
 	  AMEGIC++/Main/Makefile \
-	  AMEGIC++/Amplitude/Makefile \
-	  AMEGIC++/Amplitude/Zfunctions/Makefile \
-	  AMEGIC++/Phasespace/Makefile \
-	  AMEGIC++/String/Makefile \
-	  AMEGIC++/Makefile \
+          AMEGIC++/Main/makelibs \
+	  AMEGIC++/DipoleSubtraction/Makefile \
+          AMEGIC++/Amplitude/Makefile \
+          AMEGIC++/Amplitude/Zfunctions/Makefile \
+          AMEGIC++/Phasespace/Makefile \
+          AMEGIC++/String/Makefile \
+          AMEGIC++/Cluster/Makefile \
+          AMEGIC++/Makefile \
+	  COMIX/Amplitude/Makefile \
+	  COMIX/Phasespace/Makefile \
+	  COMIX/Main/Makefile \
+	  COMIX/Models/Makefile \
+	  COMIX/Currents/Makefile \
+	  COMIX/Vertices/Makefile \
+	  COMIX/Cluster/Makefile \
+	  COMIX/Makefile \
 	  APACIC++/Main/Makefile \
 	  APACIC++/Showers/Makefile \
 	  APACIC++/Makefile \
+	  CSSHOWER++/Tools/Makefile \
+	  CSSHOWER++/Calculators/Makefile \
+	  CSSHOWER++/Showers/Makefile \
+	  CSSHOWER++/Main/Makefile \
+	  CSSHOWER++/Makefile \
 	  AMISIC++/Tools/Makefile \
 	  AMISIC++/Model/Makefile \
 	  AMISIC++/Main/Makefile \
@@ -95,12 +116,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           PHOTONS++/PhaseSpace/Makefile \
           PHOTONS++/MEs/Makefile \
 	  PHOTONS++/Makefile \
-	  ANALYSIS/Makefile \
-	  ANALYSIS/Tools/Makefile \
-	  ANALYSIS/Main/Makefile \
-	  ANALYSIS/Triggers/Makefile \
-	  ANALYSIS/Detector/Makefile \
-	  ANALYSIS/Observables/Makefile \
 	  SHERPA/Tools/Makefile \
 	  SHERPA/LundTools/pythia6214.f \
 	  SHERPA/LundTools/Makefile \
@@ -110,10 +125,18 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  SHERPA/Single_Events/Makefile \
 	  SHERPA/Main/Makefile \
 	  SHERPA/Run/Makefile \
-          SHERPA/Run/makelibs \
-	  SHERPA/Run/CTEQ6Grid/Makefile \
-	  SHERPA/Run/MRST99Grid/Makefile \
 	  SHERPA/Makefile \
+	  Manual/Makefile \
+          Manual/sherpa-completion \
+	  Examples/Makefile \
+	  AddOns/Analysis/Tools/Makefile \
+	  AddOns/Analysis/Main/Makefile \
+	  AddOns/Analysis/Triggers/Makefile \
+	  AddOns/Analysis/Observables/Makefile \
+	  AddOns/Analysis/Makefile \
+          AddOns/ExampleModel/Makefile \
+	  AddOns/HZTool/Makefile \
+	  AddOns/Makefile \
 	  TOOLS/Makefile \
           TOOLS/Sherpa-config \
 	  Makefile )

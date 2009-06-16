@@ -1,8 +1,8 @@
-#ifndef HepMC2_Interface_H
-#define HepMC2_Interface_H
+#ifndef SHERPA_Tools_HepMC2_Interface_H
+#define SHERPA_Tools_HepMC2_Interface_H
 
-#include "CXXFLAGS.H"
-#include "Message.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Message.H"
 
 
 #include <map>

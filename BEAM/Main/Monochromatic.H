@@ -1,7 +1,7 @@
-#ifndef Monochromatic_h
-#define Monochromatic_h
+#ifndef BEAM_Main_Monochromatic_H
+#define BEAM_Main_Monochromatic_H
 
-#include "Beam_Base.H"
+#include "BEAM/Main/Beam_Base.H"
 
 
 namespace BEAM {

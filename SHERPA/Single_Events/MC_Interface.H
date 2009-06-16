@@ -1,10 +1,10 @@
-#ifndef MC_Interface_h
-#define MC_Interface_h
+#ifndef SHERPA_Single_Events_MC_Interface_H
+#define SHERPA_Single_Events_MC_Interface_H
 
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
-#include "Event_Phase_Handler.H"
-#include "Lund_Interface.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
 
 namespace SHERPA {
   class MC_Interface : public Event_Phase_Handler {

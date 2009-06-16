@@ -1,8 +1,9 @@
-#ifndef Zfunc_h
-#define Zfunc_h
+#ifndef AMEGIC_Amplitude_Zfunc_H
+#define AMEGIC_Amplitude_Zfunc_H
 
-#include "Basic_Func.H"
-#include "Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -49,7 +50,7 @@ namespace AMEGIC {
     Calc_List m_calclist;
     
     Zfunc*            p_equal;    
-    Zfunc_Calc*       p_calculator;
+    SP(Zfunc_Calc)    p_calculator;
 
     Zfunc();
     Zfunc(const Zfunc& z);

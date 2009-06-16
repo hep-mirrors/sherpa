@@ -1,4 +1,4 @@
-#include "Lorentz_Function.H"
+#include "MODEL/Interaction_Models/Lorentz_Function.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -9,6 +9,12 @@ public:
   int NofIndex() const { return 0; }
   std::string String(int shortversion) const 
   { return "0"; }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_None());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_None,LFNone_Getter,"None","")
 
@@ -20,6 +26,12 @@ public:
   { 
     // Gam[0]
     return "Gam["+Str(0)+"]"; 
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Gamma());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Gamma,LFGamma_Getter,"Gamma","")
@@ -37,6 +49,12 @@ public:
   { 
     // G[0,1]
     return "G["+Str(0)+","+Str(1)+"]"; 
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Gab());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Gab,LFGab_Getter,"Gab","")
@@ -57,6 +75,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Gauge3());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Gauge3,LFGauge3_Getter,"Gauge3","")
@@ -87,6 +111,12 @@ public:
     help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
     help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("])");
     return help;
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Gauge4());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Gauge4,LFGauge4_Getter,"Gauge4","")
@@ -124,6 +154,12 @@ public:
     }
     return help;
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Gluon4());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_Gluon4,LFGluon4_Getter,"Gluon4","")
 class LF_SSV: public Lorentz_Function {
@@ -142,6 +178,12 @@ public:
     std::string help = std::string("P[") + Str(0) + std::string(",") + Str(2) +std::string("]-"); 
     return help + std::string("P[") + Str(1) + std::string(",") + Str(2) +std::string("]");
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSV());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_SSV,LFSSV_Getter,"SSV","")
 class LF_SSS: public Lorentz_Function {
@@ -151,6 +193,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSS());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_SSS,LFSSS_Getter,"SSS","")
@@ -162,6 +210,12 @@ public:
   {
     return "1";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_FFS());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_FFS,LFFFS_Getter,"FFS","")
 class LF_Pol: public Lorentz_Function {
@@ -172,6 +226,12 @@ public:
   {
     // Eps[0]
     return "Eps["+Str(0)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Pol());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Pol,LFPol_Getter,"Pol","")
@@ -190,6 +250,12 @@ public:
     // G(2V2S)[0,1]
     return "G(2V2S)["+Str(0)+","+Str(1)+"]"; 
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_VVSS());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_VVSS,LFVVSS_Getter,"VVSS","")
 class LF_SSSS: public Lorentz_Function {
@@ -199,6 +265,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSSS());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_SSSS,LFSSSS_Getter,"SSSS","")
@@ -221,6 +293,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_AGauge4());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_AGauge4,LFAGauge4_Getter,"AGauge4","")
@@ -267,6 +345,12 @@ public:
     }
     return help;
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_AGauge3());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_AGauge3,LFAGauge3_Getter,"AGauge3","")
 
@@ -293,6 +377,12 @@ public:
       Str(2) + std::string("]");
     return help;
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_AZZZ());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_AZZZ,LFAZZZ_Getter,"AZZZ","")
 
@@ -315,6 +405,12 @@ public:
       Str(1) + std::string(",") + 
       Str(2) + std::string("]");
     return help;
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_AZZG());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_AZZG,LFAZZG_Getter,"AZZG","")
@@ -339,6 +435,12 @@ public:
       Str(2) + std::string("]");
     return help;
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_AZGG());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_AZGG,LFAZGG_Getter,"AZGG","")
 
@@ -349,6 +451,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "FFT["+Str(0)+","+Str(1)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_FFT());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_FFT,LFFFT_Getter,"FFT","")
@@ -366,6 +474,12 @@ public:
   {
     return "VVT["+Str(0)+","+Str(1)+","+Str(2)+"]";    
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_VVT());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_VVT,LFVVT_Getter,"VVT","")
 class LF_SST: public Lorentz_Function {
@@ -382,6 +496,12 @@ public:
   {
     return "1";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SST());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_SST,LFSST_Getter,"SST","")
 class LF_FFVT: public Lorentz_Function {
@@ -391,6 +511,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "FFVT["+Str(0)+","+Str(1)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_FFVT());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_FFVT,LFFFVT_Getter,"FFVT","")
@@ -412,6 +538,12 @@ public:
   {
     return "1";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_VVVT());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_VVVT,LFVVVT_Getter,"VVVT","")
 class LF_SSST: public Lorentz_Function {
@@ -422,6 +554,12 @@ public:
   {
     return "1";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSST());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_SSST,LFSSST_Getter,"SSST","")
 class LF_FFGS: public Lorentz_Function {
@@ -431,6 +569,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_FFGS());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_FFGS,LFFFGS_Getter,"FFGS","")
@@ -448,6 +592,12 @@ public:
   {
     return "VVGS["+Str(0)+","+Str(1)+","+Str(2)+"]";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_VVGS());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_VVGS,LFVVGS_Getter,"VVGS","")
 class LF_SSGS: public Lorentz_Function {
@@ -464,6 +614,12 @@ public:
   {
     return "1";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSGS());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_SSGS,LFSSGS_Getter,"SSGS","")
 class LF_FFVGS: public Lorentz_Function {
@@ -473,6 +629,12 @@ public:
   std::string String(int shortversion) const 
   {
     return "FFVGS["+Str(0)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_FFVGS());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_FFVGS,LFFFVGS_Getter,"FFVGS","")
@@ -490,6 +652,12 @@ public:
   {
     // G[0,1]
     return "T["+Str(0)+","+Str(1)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Triangle());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_Triangle,LFTriangle_Getter,"Triangle","")
@@ -512,6 +680,12 @@ public:
     // G[0,1]
     return "B["+Str(0)+","+Str(1)+","+Str(2)+"]";
   }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_Box());
+    *copy=*this;
+    return copy;
+  }
 };
 DEFINE_LF_GETTER(LF_Box,LFBox_Getter,"Box","")
 class LF_C4GS: public Lorentz_Function {
@@ -528,6 +702,12 @@ public:
   {
     // G[0,1]
     return "AddOn5Vertex["+Str(0)+","+Str(1)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_C4GS());
+    *copy=*this;
+    return copy;
   }
 }; 
 DEFINE_LF_GETTER(LF_C4GS,LFC4GS_Getter,"C4GS","")
@@ -547,6 +727,12 @@ public:
   {
     // G[0,1]
     return "PsT["+Str(0)+","+Str(1)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_PseudoTriangle());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_PseudoTriangle,LFPseudoTriangle_Getter,"PseudoTriangle","")
@@ -569,6 +755,12 @@ public:
   {
     // G[0,1]
     return "PsB["+Str(0)+","+Str(1)+","+Str(2)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_PseudoBox());
+    *copy=*this;
+    return copy;
   }
 };
 DEFINE_LF_GETTER(LF_PseudoBox,LFPseudoBox_Getter,"PseudoBox","")

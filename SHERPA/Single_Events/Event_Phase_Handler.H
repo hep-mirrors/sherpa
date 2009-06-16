@@ -1,10 +1,10 @@
-#ifndef Event_Phase_Handler_H
-#define Event_Phase_Handler_H
+#ifndef SHERPA_Single_Events_Event_Phase_Handler_H
+#define SHERPA_Single_Events_Event_Phase_Handler_H
 
-#include "Blob_List.H"
-#include "Blob.H"
-#include "CXXFLAGS.H"
-#include "Return_Value.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Return_Value.H"
 
 namespace SHERPA {
   struct eph {

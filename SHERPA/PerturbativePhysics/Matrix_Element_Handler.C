@@ -1,737 +1,739 @@
-#include "Matrix_Element_Handler.H"
-#include "Message.H"
-#include "Amegic.H"
-#include "Simple_XS.H"
-#include "Random.H"
-#include "Exception.H"
-#include "Spin_Structure.H"
-#include "Decay_Table.H"
-#include <iomanip>
+#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
+#include "HELICITIES/Main/Spin_Structure.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "PDF/Main/Shower_Base.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "PHASIC++/Process/NLO_Process.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+
+#include <unistd.h>
 
 using namespace SHERPA;
-using namespace MODEL;
-using namespace BEAM;
+using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
-using namespace std;
 
-// ============================================================
-//                Particle_Map
-// ============================================================
-
-Particle_Map::Particle_Map():
-  m_flip_anti(false), m_change_flavs(false)
+Matrix_Element_Handler::Matrix_Element_Handler
+(const std::string &dir,const std::string &file,
+ const std::string &processfile,const std::string &selectorfile):
+  m_gens(dir, file),
+  p_proc(NULL), p_beam(NULL), p_isr(NULL),
+  m_path(dir), m_file(file), m_processfile(processfile),
+  m_selectorfile(selectorfile), m_eventmode(0),
+  p_shower(NULL), m_totalxs(0.0)
 {
-}
-
-bool Particle_Map::Unity() 
-{
-  return !(m_flip_anti || m_change_flavs);
-}
-
-void Particle_Map::SetFlipAnti() 
-{
-  m_flip_anti=true;
-}
-
-void Particle_Map::Add(const ATOOLS::Flavour & a,const ATOOLS::Flavour & b)
-{
-  m_flmap[a]=b;
-}
-
-bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
-{
-  for (int i=0; i<n; ++i) {
-    Flavour_Map::iterator it = m_flmap.find(flavs[i]);
-    if (it!=m_flmap.end()) {
-      flavs[i] = it->second;
-    }
-  }
-
-  if (m_flip_anti) {
-    for (int i=0; i<n; ++i) {
-      flavs[i] = flavs[i].Bar();
-      moms[i]  = Vec4D(moms[i][0],-1.*Vec3D(moms[i]));
-      // check that momenta in lab system !!
-      
-    }
-    Flavour help = flavs[0];
-    flavs[0] = flavs[1];
-    flavs[1] = help;
-    Vec4D mom = moms[0];
-    moms[0] = moms[1];
-    moms[1] = mom;
-  }
-  return m_flip_anti;
-}
-
-
-
-// ============================================================
-//               Matrix_Element_Handler
-// ============================================================
-
-Matrix_Element_Handler::Matrix_Element_Handler() :
-  m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), p_model(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_name(""), m_eventmode(1), 
-  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_reader(NULL), p_flavs(NULL), p_moms(NULL) {}
-
-Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
-					       MODEL::Model_Base * _model,
-					       Matrix_Element_Handler * _me) :
-  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), p_model(_model), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
-  m_sntrial(0), m_name(""), m_eventmode(1),
-  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_reader(NULL), p_flavs(NULL), p_moms(NULL) 
-{
-  if (_me) p_amegic = _me->GetAmegic(); 
-  m_mode      = InitializeAmegic(_model,NULL,NULL);
-  if (m_mode>0) return;
-  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
-	+" for hard interactions.");
-}
-
-Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
-					       MODEL::Model_Base * _model,
-					       BEAM::Beam_Spectra_Handler * _beam,
-					       PDF::ISR_Handler * _isr,
-					       Matrix_Element_Handler * _me) :
-  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(_isr), p_model(_model), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
-  m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
-{
-  p_reader = new Data_Reader(" ",";","!","=");
-  p_reader->SetInputPath(m_dir);
-  p_reader->SetInputFile(m_file);
-  if (!p_reader->ReadFromFile(m_signalgenerator,"ME_SIGNAL_GENERATOR")) m_signalgenerator="Amegic";
-  if (!p_reader->ReadFromFile(m_sudakovon,"SUDAKOV_WEIGHT")) m_sudakovon=1;
-  if (!p_reader->ReadFromFile(m_apply_hhmf,"TEVATRON_WpWm")) m_apply_hhmf=0;
-  if (m_signalgenerator==string("None")) {
-    m_mode=0;
-    m_name="None";
-    return;
-  }
-  if (m_signalgenerator==string("Amegic")) {
-    if (_me) p_amegic = _me->GetAmegic(); 
-    m_mode = InitializeAmegic(_model,_beam,_isr);
-  }
-  if (m_signalgenerator==string("Internal")) m_mode = InitializeSimpleXS(_model,_beam,_isr);
-
-  string evtm;
-  if (!p_reader->ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
-  if (evtm==string("Unweighted"))
-    m_eventmode=1;
-  else {
-    if (evtm==string("WeightedNS"))
-      m_eventmode=-31;
-    else m_eventmode=0;
-  }
-  m_nmoms = MaxJets();
-  p_flavs = new Flavour[MaxJets()+2];
-  p_moms  = new Vec4D[MaxJets()+2];
-  if (m_apply_hhmf) SetupHHMF();
-  if (m_mode>0) return;
-  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
-	+" for hard interactions.");
+  Data_Reader read(" ",";","!","=");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_file);
+  if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
+  std::string evtm;
+  if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
+  if (evtm=="Unweighted") m_eventmode=1;
+  else m_eventmode=0;
+  if (!read.ReadFromFile(m_nlomode,"NLO_Mode")) m_nlomode=0;
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
 {
-  if (p_moms)  delete [] p_moms;
-  if (p_flavs) delete [] p_flavs;
-  if (p_reader) delete p_reader;
-  if (p_amegic)   { delete p_amegic;   p_amegic   = NULL; }
-  if (p_simplexs) { delete p_simplexs; p_simplexs = NULL; }
 }
 
-
-int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base * _model,
-					     BEAM::Beam_Spectra_Handler * _beam,
-					     PDF::ISR_Handler * _isr) 
+bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
-  m_name    = string("Amegic");
-  if (!p_amegic) p_amegic = new AMEGIC::Amegic(m_dir,m_file,_model);
-  if (_beam!=NULL || _isr!=NULL) {
-    if (p_amegic->InitializeProcesses(_beam,_isr)) return 1;
+  for (ME_Generators::const_iterator it=m_gens.begin();it!=m_gens.end();++it) {
+    MakeDir(m_respath+"/"+(*it)->Name(),false);
   }
-  else {
-    if (p_amegic->InitializeDecays(0)) return 1;
+
+  m_totalxs=0.0;
+  bool okay(true);
+  for (size_t i=0;i<m_procs.size();++i) {
+    m_procs[i]->SetUpThreading();
+    m_procs[i]->SetLookUp(true);
+    std::string name=m_procs[i]->Generator()?m_procs[i]->Generator()->Name():"";
+    if (!m_procs[i]->CalculateTotalXSec(m_respath+"/"+name,false)) okay=false;
+    m_procs[i]->SetLookUp(false);
+    m_totalxs+=m_procs[i]->Integrator()->TotalXS();
+    m_procs[i]->Integrator()->SetUpEnhance();
   }
-  return 0;
+  return okay;
 }
-
-int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
-					       BEAM::Beam_Spectra_Handler * _beam,
-					       PDF::ISR_Handler * _isr) 
-{
-  m_name     = string("SimpleXS");
-  p_simplexs = new EXTRAXS::Simple_XS(m_dir,m_file,_model);
-  if (p_simplexs->InitializeProcesses(_beam,_isr)) return 2;
-  return 0;
-}
-
-bool Matrix_Element_Handler::AddToDecays(const ATOOLS::Flavour & _flav) 
-{
-  switch (m_mode) {
-    //case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
-	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-}
-
-bool Matrix_Element_Handler::AddToDecays(ATOOLS::Decay_Channel * _dec)
-{
-  switch (m_mode) {
-    //case 1 : return p_amegic->GetAllDecays()->AddToDecays(_dec);
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::AddToDecays(";_dec->Output();
-  msg_Error()<<"   m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-
-}
-
-
-bool Matrix_Element_Handler::InitializeDecayTables()
-{
-  switch (m_mode) {
-    //  case 1 : 
-    //return p_amegic->GetAllDecays()->InitializeDecayTables();
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
-	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-}
-
-bool Matrix_Element_Handler::CalculateWidths() 
-{
-  switch (m_mode) {
-    //case 1: 
-    //return p_amegic->GetAllDecays()->CalculateWidths();
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::CalculateWidths() : "<<endl
-	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-}
-
-bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow) 
-{
-  switch (m_mode) {
-    //case 1: 
-    //AMEGIC::Full_Decay_Table * fdt;
-    //fdt = p_amegic->GetAllDecays()->GetFullDecayTable(_dt->Flav());
-    //for (int i=0;i<fdt->NumberOfChannels();i++) _dt->AddDecayChannel(fdt->GetChannel(i));
-    //if (_ow) _dt->Flav().SetWidth(fdt->Width());
-    //return 1;
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::FillDecayTable() : "<<endl
-	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-}
-
-
-bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
-{
-  if (!p_reader->ReadFromFile(m_readin,"RESULT_DIRECTORY")) m_readin="./Results";
-  switch (m_mode) { 
-  case 0:
-    return 1;
-    break;
-  case 1: 
-    if (p_amegic->CalculateTotalXSec(m_readin,m_eventmode<0?-1:1)) {
-      PrintTotalXSec();
-      return 1;
-    }
-    msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
-	       <<"   Failed to Calculate total XSec through Amegic. Abort."<<endl;
-    abort();
-  case 2:
-    if (p_simplexs->CalculateTotalXSec(m_readin)) return 1;
-    msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
-	       <<"   Failed to Calculate total XSec through SimpleXS. Abort."<<endl;
-    abort();
-  }
-  msg_Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
-	     <<"   Failed to Calculate total XSec. m_mode = "<<m_mode<<" Abort."<<endl;
-  abort();
-}
-
-double Matrix_Element_Handler::ExpectedEvents() const
-{
-  switch (m_mode) { 
-  case 1: 
-    return p_amegic->Processes()->ExpectedEvents();
-  case 2:
-    return p_simplexs->ExpectedEvents();
-  }
-  return 0.0;
-}
-
-bool Matrix_Element_Handler::PrintTotalXSec() 
-{
-  // processes not rescaled at the moment only status printed
-  AMEGIC::Process_Base * procs = p_amegic->Processes();
-
-  double errsum=0;
-  for (size_t i=0; i<procs->Size();++i) {
-    errsum+= (*procs)[i]->TotalError();
-  }
-  if (errsum!=0.) {
-    MyStrStream sstr;
-    int ecms = int(rpa.gen.Ecms()*10.);
-    sstr<<"xsections_"<<ecms<<".dat"<<endl;
-    std::string filename;
-    sstr>>filename;
-    std::ofstream  rfile(filename.c_str(),std::ios::app);
-    rfile<<"# ";
-    for (size_t i=0; i<procs->Size();++i) {
-      rfile<<(*procs)[i]->Name()<<" ";
-    }
-    rfile<<endl;
-    
-
-    rfile.precision(6);
-    rfile<<setw(30)<<rpa.gen.Variable("Y_CUT")<<" ";
-
-    for (size_t i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->TotalXS()/((*procs)[i]->EnhanceFactor())*rpa.Picobarn();
-      double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
-      //      double njet  = (*procs)[i]->Nout();
-      rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
-    }
-    rfile<<endl;
-    rfile.close();
-  }
-  return true;
-}
-
-bool Matrix_Element_Handler::PrepareXSecTables() { return true; }
-bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; }
-
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
-  if (m_eventmode==1) {
-    Blob_Data_Base * message = UnweightedEvent();
-    if (message) {
-      PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
-      m_xf1=winfo.xf1;
-      m_xf2=winfo.xf2;
-      m_weight =  winfo.weight;
-      m_procweight = winfo.procweight;
-      m_xsecweight = winfo.xsecweight;
-      m_xsecntrial = winfo.xsecntrial;
-      m_ntrial =  winfo.ntrial;
-      msg_Debugging()<<"MEH::GOE: "<<m_procweight<<" "
-		     <<m_weight<<" "<<m_ntrial<<"\n";
-      delete message;
-    }
-    else THROW(fatal_error,"No weight information.");
-    GetMomentaNFlavours();
-    ApplyHHMF();
-    return m_weight>0.0;
-  }
-  Blob_Data_Base * message = WeightedEvent();
-  if (GetMomentaNFlavours()) {
-    ApplyHHMF();
-  }
-  if (message) {
-    PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
-    m_xf1=winfo.xf1;
-    m_xf2=winfo.xf2;
-    m_weight =  winfo.weight * rpa.Picobarn();
-    m_procweight = winfo.procweight;
-    m_xsecweight = winfo.xsecweight;
-    m_xsecntrial = winfo.xsecntrial;
-    m_ntrial =  winfo.ntrial;
-    //PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
-    delete message;
-  }
-  else {
-    m_weight=0.;
-    if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
-  }
-  return (m_weight>0.);
+  if (m_eventmode==1) return GenerateUnweightedEvent(); 
+  return GenerateWeightedEvent();
 }
 
-bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double _mass) 
+bool Matrix_Element_Handler::GenerateUnweightedEvent() 
 {
-  switch (m_mode) {
-    //case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
+  p_proc=NULL;
+  double sum(0.0);
+  for (size_t i(0);i<m_procs.size();++i)
+    sum+=m_procs[i]->Integrator()->SelectionWeight();
+  double disc(sum*ran.Get());
+  sum=0.0;
+  Process_Base *proc(NULL);
+  for (size_t i(0);i<m_procs.size();++i) {
+    if ((sum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
+      proc=m_procs[i];
+      break;
+    }
+  }
+  if (proc==NULL) THROW(fatal_error,"No process selected");
+  PHASIC::Weight_Info *info=proc->OneEvent();
+  if (info==NULL) THROW(fatal_error,"No weight information.");
+  m_evtinfo=*info;
+  delete info;
+  p_proc=proc->Selected();
+  m_evtinfo.m_ntrial=1.0/p_proc->Integrator()->EnhanceFactor();
+  double wf(m_totalxs*rpa.Picobarn()/
+	    p_proc->Integrator()->EnhanceFactor());
+  if (p_proc->GetSubevtList()) 
+    (*p_proc->GetSubevtList())*=wf/m_evtinfo.m_weight;
+  m_evtinfo.m_weight=wf;
+  return m_evtinfo.m_weight!=0.0;
+}
+
+bool Matrix_Element_Handler::GenerateWeightedEvent() 
+{
+  double addn(0.0);
+  while (true) {
+    double sum(0.0);
+    for (size_t i(0);i<m_procs.size();++i)
+      sum+=m_procs[i]->Integrator()->SelectionWeight();
+    double disc(sum*ran.Get());
+    sum=0.0;
+    Process_Base *proc(NULL);
+    for (size_t i(0);i<m_procs.size();++i) {
+      if ((sum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
+	proc=m_procs[i];
+	break;
+      }
+    }
+    if (proc==NULL) THROW(fatal_error,"No process selected");
+    PHASIC::Weight_Info *info=proc->WeightedEvent();
+    p_proc=proc->Selected();
+    double sw(p_proc->Integrator()->SelectionWeight());
+    addn+=1.0/sw;
+    if (info) {
+      m_evtinfo=*info;
+      delete info;
+      double wf(m_np/sw*rpa.Picobarn());
+      m_evtinfo.m_weight*=wf;
+      if (p_proc->GetSubevtList()) 
+	(*p_proc->GetSubevtList())*=wf;
+      m_evtinfo.m_ntrial=addn;
+      return true;
+    }
   }
   return false;
 }
 
-double Matrix_Element_Handler::FactorisationScale()
+void Matrix_Element_Handler::CountProcesses(PHASIC::Process_Base *const proc)
 {
-  switch (m_mode) {
-  case 1: return p_amegic->GetProcess()->Scale(PHASIC::stp::fac);
-  case 2: return p_simplexs->Selected()->Scale(PHASIC::stp::fac);
-  }
-  return 0.;
+  if (!proc->IsGroup()) ++m_np;
+  else for (size_t i(0);i<proc->Size();++i) CountProcesses((*proc)[i]);
 }
 
-bool Matrix_Element_Handler::GenerateSameEvent() 
+Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
 {
-  if (m_eventmode==1) {
-    Blob_Data_Base * message = UnweightedSameEvent();
-    if (message) {
-      PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
-      m_xf1=winfo.xf1;
-      m_xf2=winfo.xf2;
-      m_weight     =  winfo.weight;
-      m_procweight = winfo.procweight;
-      m_xsecweight = winfo.xsecweight;
-      m_xsecntrial = winfo.xsecntrial;
-      m_ntrial     =  winfo.ntrial;
-      delete message;
+  DEBUG_FUNC(pi);
+  if (pi.m_fi.NLOType()==nlo_type::lo) {
+    Process_Base *proc(m_gens.InitializeProcess(pi, true));
+    if (proc) {
+      m_procs.push_back(proc);
+      CountProcesses(proc);
     }
-    else THROW(fatal_error,"No weight information.");
-    GetMomentaNFlavours();
-    ApplyHHMF();
-    return m_weight>0.0;
-  }
-  Blob_Data_Base * message = WeightedSameEvent();
-  if (GetMomentaNFlavours()) {
-    ApplyHHMF();
-  }
-  if (message) {
-    PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
-    m_xf1=winfo.xf1;
-    m_xf2=winfo.xf2;
-    m_weight =  winfo.weight * rpa.Picobarn();
-    m_ntrial =  winfo.ntrial;
-    delete message;
+    return proc;
   }
   else {
-    m_weight=0.;
-    if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
-  }
-  return (m_weight>0.);
-}
-
-bool Matrix_Element_Handler::GetMomentaNFlavours() {    
-  switch (m_mode) {
-  case 1: 
-    m_nmoms = p_amegic->NIn()+p_amegic->NOut();
-    if (p_amegic->Flavours() && p_amegic->Momenta()) {
-      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_amegic->Flavours()[i];
-      for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_amegic->Momenta()[i];
-      return true;
+    if (m_nlomode==0) {
+      Process_Base *proc=new NLO_Process(m_gens);
+      proc->Init(pi, p_beam, p_isr);
+      proc->Integrator()->InitEEG();
+      proc->SetShower(p_shower->GetShower());
+      m_procs.push_back(proc);
+      CountProcesses(proc);
+      return proc;
     }
-    break;
-  case 2: 
-    int nmoms(m_nmoms);
-    m_nmoms = p_simplexs->NIn()+p_simplexs->NOut();
-    if (m_nmoms>nmoms) {
-      delete [] p_flavs;
-      delete [] p_moms;
-      p_flavs = new Flavour[m_nmoms];
-      p_moms = new Vec4D[m_nmoms];
+    else if (m_nlomode==1) {
+      Process_Base *proc(NULL);
+      if (pi.m_fi.NLOType()&nlo_type::real || pi.m_fi.NLOType()&nlo_type::rsub){
+        // if real or rsub is requested, the extra jet is not yet contained
+        // in the process info, but has to be added here
+        Process_Info rpi(pi);
+        if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
+          rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
+        }
+        else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
+          rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+        }
+        proc=m_gens.InitializeProcess(rpi,true);
+      }
+      else {
+        proc=m_gens.InitializeProcess(pi,true);
+      }
+      if (proc!=NULL) {
+        m_procs.push_back(proc);
+        if (!(pi.m_fi.NLOType()&nlo_type::real)) {
+          proc->Integrator()->InitEEG();
+        }
+        CountProcesses(proc);
+        return proc;
+      }
     }
-    if (p_simplexs->Flavours() && p_simplexs->Momenta()) {
-      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavours()[i];
-      for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_simplexs->Momenta()[i];
-      return true;
+  }
+  return NULL;
+}
+
+bool Matrix_Element_Handler::InitializeProcesses
+(MODEL::Model_Base *model,
+ BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr)
+{
+  /*
+    This is the basis for all CKKW and process interplay.
+    Don't even try to think about modifying 
+    either this routine or any of its dependencies !!!
+  */
+  p_beam=beam; p_isr=isr;
+  if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
+#ifdef USING__Threading
+  double rbtime(ATOOLS::rpa.gen.Timer().RealTime());
+#endif
+  double btime(ATOOLS::rpa.gen.Timer().UserTime());
+  BuildProcesses();
+  if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
+#ifdef USING__Threading
+  double retime(ATOOLS::rpa.gen.Timer().RealTime());
+#endif
+  double etime(ATOOLS::rpa.gen.Timer().UserTime());
+  Data_Reader psread;
+  psread.SetAddCommandLine(false);
+  psread.AddWordSeparator("\t");
+  psread.SetInputPath("/proc/"+ToString(getpid())+"/");
+  psread.SetInputFile("status");
+  std::vector<std::string> musage;
+  if (psread.VectorFromFile(musage,"VmSize:"))
+    for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
+#ifdef USING__Threading
+  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+	    <<int((retime-rbtime)*100)/100.0<<" / "
+	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+#else
+  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+#endif
+  if (m_procs.empty()) THROW(normal_exit,"No hard process found");
+  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+#ifdef USING__Threading
+  rbtime=retime;
+#endif
+  btime=etime;
+  bool res(m_gens.PerformTests());
+#ifdef USING__Threading
+  retime=ATOOLS::rpa.gen.Timer().RealTime();
+#endif
+  etime=ATOOLS::rpa.gen.Timer().UserTime();
+  psread.RereadInFile();
+  if (psread.VectorFromFile(musage,"VmSize:"))
+    for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
+#ifdef USING__Threading
+  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+	    <<int((retime-rbtime)*100)/100.0<<" / "
+	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+#else
+  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+#endif
+  msg_Debugging()<<METHOD<<"(): Processes {\n";
+  msg_Debugging()<<"  m_procs:\n";
+  for (size_t i(0);i<m_procs.size();++i) 
+    msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
+  msg_Debugging()<<"}\n";
+  return res;
+}
+
+void Matrix_Element_Handler::BuildProcesses()
+{
+  Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_file);
+  // set color scheme
+  read.SetTags(cls::ColorSchemeTags());
+  cls::scheme cls((cls::scheme)read.GetValue<int>("COLOUR_SCHEME",1));
+  read.SetTags(std::map<std::string,std::string>());
+  // set helicity scheme
+  read.SetTags(hls::HelicitySchemeTags());
+  hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));
+  read.SetTags(std::map<std::string,std::string>());
+  // set kfactor scheme
+  std::string kfactor=read.GetValue<std::string>("K_FACTOR_SCHEME","QCD");
+  // set scale scheme
+  std::string scale=read.GetValue<std::string>("SCALE_SCHEME","VAR");
+  std::string muf2tag=read.GetValue<std::string>
+    ("FACTORIZATION_SCALE",(scale=="QCD"||scale=="METS")?"MU_F":
+     ToString(sqr(Flavour(kf_Z).Mass())));
+  std::string mur2tag=read.GetValue<std::string>
+    ("RENORMALIZATION_SCALE",(scale=="QCD"||scale=="METS")?"MU_R":
+     ToString(sqr(Flavour(kf_Z).Mass())));
+  if (scale=="FIX_SCALE") {
+    std::string fixscale=read.GetValue<std::string>
+      ("FIXED_SCALE",ToString(sqr(Flavour(kf_Z).Mass())));
+    muf2tag=fixscale;
+    mur2tag=fixscale;
+    scale="VAR";
+    kfactor="NO";
+  }
+  // init processes
+  m_np=0;
+  msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
+  if (msg_LevelIsTracking()) msg_Info()<<"\n";
+  std::vector<std::vector<std::string> > procdata;
+  Data_Reader pread(" ",";","%",":");
+  pread.AddWordSeparator("\t");
+  pread.SetAddCommandLine(false);
+  pread.SetInputPath(m_path);
+  pread.SetInputFile(m_processfile);
+  if (!pread.MatrixFromFile(procdata,""))
+    THROW(missing_input,"No data in"+m_path+m_processfile+"'.");
+  for (size_t nf(0);nf<procdata.size();++nf) {
+    std::vector<std::string> &cur(procdata[nf]);
+    if (cur.size()<2) continue;
+    if (cur[0]=="Process") {
+      Process_Info pi;
+      pi.m_scale=scale;
+      pi.m_kfactor=kfactor;
+      pi.m_muf2tag=muf2tag;
+      pi.m_mur2tag=mur2tag;
+      pi.m_cls=cls;
+      pi.m_hls=hls;
+      pi.m_nlomode=m_nlomode;
+      std::string selfile(m_selectorfile);
+      std::string proc(MakeString(cur,1));
+      size_t pos(proc.find("->"));
+      if (pos==std::string::npos) continue;
+      std::string gycut;
+      MPSV_Map vefunc, vycut, vrscale, vfscale;
+      MPDV_Map vmaxerr, vmaxeps, vefac;
+      std::string ini(proc.substr(0,pos));
+      std::string fin(proc.substr(pos+2));
+      std::vector<std::string> dectags;
+      for (size_t ng(nf);ng<procdata.size();++ng) {
+	std::vector<std::string> &cur(procdata[ng]);
+	if (cur.size()<2) continue;
+	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
+	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
+	if (cur[0]=="Renormalization_Scale") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vrscale,nf);
+	}
+	if (cur[0]=="Factorization_Scale") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vfscale,nf);
+	}
+	if (cur[0]=="Fixed_scale") {
+	  pi.m_scale="VAR";
+	  pi.m_mur2tag=pi.m_muf2tag=cur[1];
+	}
+	if (cur[0]=="CKKW") {
+	  if (p_shower==NULL || p_shower->GetShower()==NULL)
+	    THROW(fatal_error,"Invalid shower generator");
+	  pi.m_ckkw=1;
+	  gycut=cur[1];
+	}
+	if (cur[0]=="Y_Cut") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vycut,nf);
+	}
+	if (cur[0]=="Selector_File") selfile=cur[1];
+        pi.m_selectorfile=selfile;
+	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
+	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
+	if (cur[0]=="Max_N_Quarks") pi.m_nmaxq=ToType<int>(cur[1]);
+	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
+	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
+	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);	
+	if (cur[0]=="Integration_Error") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vmaxerr,nf);
+	}
+	if (cur[0]=="Max_Epsilon") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vmaxeps,nf);
+	}
+	if (cur[0]=="Enhance_Factor") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vefac,nf);
+	}
+	if (cur[0]=="Enhance_Function") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vefunc,nf);
+	}
+	if (cur[0]=="NLO_QCD_Part")
+	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(cur[1]);
+	if (cur[0]=="NLO_EW_Part")
+	  pi.m_fi.m_nloewtype=ToType<nlo_type::code>(cur[1]);
+	if (cur[0]=="Loop_Generator") pi.m_loopgenerator=cur[1];
+        pi.p_gens=&m_gens;
+	if (cur[0]=="End" && cur[1]=="process") break;
+      }
+      BuildSingleProcessList
+	(pi,ini,fin,dectags,vmaxerr,vmaxeps,
+	 vefac,vefunc,vycut,vrscale,vfscale,gycut,selfile);
+      if (msg_LevelIsDebugging()) {
+        msg_Indentation(4);
+        msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
+        for (unsigned int i=0; i<m_procs.size(); ++i) {
+          msg_Out()<<m_procs[i]->Name();
+          if (m_procs[i]->IsGroup())
+            msg_Out()<<" has subprocesses ...";
+          msg_Out()<<std::endl;
+        }
+      }
     }
   }
-  if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return false;
-  msg_Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
-	     <<"   No ME generator available to get momenta from."<<endl
-	     <<"   Continue run and hope for the best."<<endl;
-  return false;
 }
 
-
-ATOOLS::Blob_Data_Base *Matrix_Element_Handler::UnweightedSameEvent() 
+void Matrix_Element_Handler::BuildDecays
+(Subprocess_Info &ACFS,const std::vector<std::string> &dectags)
 {
-  switch (m_mode) {
-  case 1: return p_amegic->SameEvent();
-  case 2: return p_simplexs->OneEvent();
+  for (size_t i(0);i<dectags.size();++i) {
+    std::string dec(dectags[i]);
+    int osf=0;
+    if (dec[0]=='Z') {
+      dec=dec.substr(1);
+      osf=1;
+    }
+    size_t pos(dec.find("->"));
+    if (pos==std::string::npos) continue;
+    Subprocess_Info ACDIS, ACDFS;
+    std::string ini(dec.substr(0,pos));
+    std::string fin(dec.substr(pos+2));
+    ExtractFlavours(ACDIS,ini);
+    ExtractFlavours(ACDFS,fin);
+    if (ACDIS.m_ps.empty() || ACDFS.m_ps.empty())
+      THROW(fatal_error,"Wrong decay specification");
+    Subprocess_Info &CIS(ACDIS.m_ps.front());
+    size_t oldsize(ACFS.m_ps.size()), cdsize(ACDFS.m_ps.size());
+    ACFS.m_ps.resize(oldsize*cdsize);
+    for (size_t cfss(1);cfss<cdsize;++cfss)
+      for (size_t acfsi(0);acfsi<oldsize;++acfsi)
+	ACFS.m_ps[cfss*oldsize+acfsi]=
+	  ACFS.m_ps[(cfss-1)*oldsize+acfsi];
+    for (size_t acfsi(0);acfsi<oldsize;++acfsi) {
+      for (size_t cfss(0);cfss<cdsize;++cfss) {
+	Subprocess_Info &CFS(ACDFS.m_ps[cfss]);
+	msg_Debugging()<<METHOD<<"(): Init decay {\n"<<CIS<<CFS<<"}\n";
+	if (CIS.NExternal()!=1 || CFS.NExternal()<2)
+	  THROW(fatal_error,"Wrong number of particles in decay");
+	if (!ACFS.m_ps[cfss*oldsize+acfsi].AddDecay(CIS,CFS,osf))
+	  THROW(fatal_error,"No match for decay "+dec);
+      }
+    }
   }
-  return 0;
 }
 
-  
-Blob_Data_Base * Matrix_Element_Handler::WeightedSameEvent() 
+void Matrix_Element_Handler::BuildSingleProcessList
+(Process_Info &pi,const std::string &ini,
+ const std::string &fin,const std::vector<std::string> &dectags,
+ MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
+ MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,
+ const std::string &gycut,const std::string &selfile)
 {
-  switch (m_mode) {
-  case 1: return p_amegic->SameWeightedEvent();
-  case 2: return p_simplexs->WeightedEvent();
+  Subprocess_Info AIS, AFS;
+  ExtractFlavours(AIS,ini);
+  ExtractFlavours(AFS,fin);
+  std::vector<Process_Base*> procs;
+  for (size_t fss(0);fss<AFS.m_ps.size();++fss) {
+    Subprocess_Info ACFS;
+    ACFS.m_ps.push_back(AFS.m_ps[fss]);
+    BuildDecays(ACFS,dectags);
+    for (size_t afsi(0);afsi<ACFS.m_ps.size();++afsi) {
+      msg_Debugging()<<METHOD<<"(): Check N_max ("
+		     <<fss<<"): {\n"<<ACFS.m_ps[afsi]<<"}\n";
+      pi.m_fi.GetNMax(ACFS.m_ps[afsi]);
+    }
   }
-  return 0;
+  for (size_t iss(0);iss<AIS.m_ps.size();++iss) {
+    Subprocess_Info &IS(AIS.m_ps[iss]);
+    for (size_t fss(0);fss<AFS.m_ps.size();++fss) {
+      Subprocess_Info &FS(AFS.m_ps[fss]);
+      msg_Debugging()<<METHOD<<"(): Init core ("<<iss<<","
+		     <<fss<<"): {\n"<<IS<<FS<<"}\n";
+      std::vector<Flavour> flavs;
+      IS.GetExternal(flavs);
+      if (flavs.size()>1) {
+        if (!p_isr->CheckConsistency(&flavs.front())) {
+          msg_Error()<<METHOD<<"(): Error in initialising isr ("
+                     <<p_isr->Flav(0)<<" -> "<<flavs[0]<<") x ("
+                     <<p_isr->Flav(1)<<" -> "<<flavs[1]
+                     <<"). Ignoring process."<<std::endl;
+          continue;
+        }
+      }
+      Subprocess_Info ACFS;
+      ACFS.m_ps.push_back(FS);
+      BuildDecays(ACFS,dectags);
+      for (size_t afsi(0);afsi<ACFS.m_ps.size();++afsi) {
+	Subprocess_Info &CFS(ACFS.m_ps[afsi]);
+	msg_Debugging()<<METHOD<<"(): Init process ("<<iss<<","
+		       <<fss<<"): {\n"<<IS<<CFS<<"}\n";
+	std::vector<Flavour> flavs;
+	IS.GetExternal(flavs);
+	CFS.GetExternal(flavs);
+	size_t nis(IS.NExternal()), nfs(CFS.NExternal());
+	double inisum=0.0, finsum=0.0, dd(0.0);
+	for (size_t i(0);i<nis;++i) inisum+=flavs[i].Mass();
+	for (size_t i(0);i<nfs;++i) finsum+=flavs[i+nis].Mass();
+	if (inisum>=rpa.gen.Ecms() || finsum>=rpa.gen.Ecms()) continue;
+	std::string pnid(CFS.MultiplicityTag()), ds;
+	Process_Info cpi(pi);
+	cpi.m_ii=IS;
+	cpi.m_fi=CFS;
+        cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
+        cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
+	cpi.m_fi.SetNMax(pi.m_fi);
+	if (GetMPvalue(vrscale,nfs,pnid,ds)) cpi.m_mur2tag=ds;
+	if (GetMPvalue(vfscale,nfs,pnid,ds)) cpi.m_muf2tag=ds;
+	Process_Base *proc(InitializeProcess(cpi));
+	if (proc==NULL) continue;
+	procs.push_back(proc);
+	proc->Integrator()->
+	  SetISRThreshold(ATOOLS::Max(inisum,finsum));
+	if (GetMPvalue(vefunc,nfs,pnid,ds))
+	  proc->Integrator()->SetEnhanceFunction(ds);
+	if (GetMPvalue(vefac,nfs,pnid,dd))
+	  proc->Integrator()->SetEnhanceFactor(dd);
+	if (GetMPvalue(vmaxeps,nfs,pnid,dd))
+	  proc->Integrator()->SetMaxEpsilon(dd);
+	double maxerr(-1.0);
+	if (GetMPvalue(vmaxerr,nfs,pnid,dd)) maxerr=dd;
+	proc->Integrator()->SetPSHandler
+	  (new Phase_Space_Handler
+	   (proc->Integrator(),p_isr,p_beam,maxerr));
+      }
+    }
+  }
+  if (pi.m_ckkw && rpa.gen.NumberOfEvents()==0)
+    THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
+  Selector_Key skey(NULL,new Data_Reader(),true);
+  skey.ReadData(m_path,selfile);
+  for (size_t i(0);i<procs.size();++i) {
+    Process_Info &cpi(procs[i]->Info());
+    if (pi.m_ckkw&1) {
+      std::vector<std::string> jfargs(2,gycut);
+      GetMPvalue(vycut,cpi.m_fi.NExternal(),
+		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
+      cpi.m_mur2tag=jfargs[1];
+      skey.SetData("METS",jfargs);
+    }
+    procs[i]->SetSelector(skey);
+    if (pi.m_ckkw&1) {
+      cpi.m_kfactor="QCD";
+      cpi.m_mur2tag=
+	p_shower->GetShower()->GetKT2("Q2_CUT");
+    }
+    procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);
+    procs[i]->SetKFactor(cpi.m_kfactor,pi.m_oqcd,pi.m_oew);
+    procs[i]->SetShower(p_shower->GetShower());
+  }
 }
 
-Blob_Data_Base *Matrix_Element_Handler::UnweightedEvent() 
+size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string buffer)
 {
-  switch (m_mode) {
-  case 1: return p_amegic->UnweightedEvent();
-  case 2: return p_simplexs->OneEvent();
-  }
-  return 0;
-}
-
-
-
-Blob_Data_Base * Matrix_Element_Handler::WeightedEvent() 
-{
-  switch (m_mode) {
-  case 1: return p_amegic->WeightedEvent();
-  case 2: return p_simplexs->WeightedEvent();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::MaxJets() {
-  switch (m_mode) {
-  case 1: return p_amegic->MaxJets();
-  case 2: return p_simplexs->MaxJets();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::MinQCDJets() {
-  switch (m_mode) {
-  case 1: return p_amegic->MinQCDJets();
-  case 2: return p_simplexs->MinQCDJets();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::MaxQCDJets() {
-  switch (m_mode) {
-  case 1: return p_amegic->MaxQCDJets();
-  case 2: return p_simplexs->MaxQCDJets();
-  }
-  return 0;
-}
-
-
-std::string Matrix_Element_Handler::Name() { return m_name; }
-
-unsigned int Matrix_Element_Handler::NIn() {
-  switch (m_mode) {
-  case 1: return p_amegic->NIn();
-  case 2: return p_simplexs->NIn();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::NOut() {
-  switch (m_mode) {
-  case 1: return p_amegic->NOut();
-  case 2: return p_simplexs->NOut();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::NDecOut() {
-  switch (m_mode) {
-    //case 1: return p_amegic->GetAllDecays()->NOut();
-  }
-  return 0;
-}
-
-std::string Matrix_Element_Handler::SignalGenerator() { return m_signalgenerator; }
-
-std::string Matrix_Element_Handler::ProcessName() 
-{
-  switch (m_mode) {
-  case 1: return p_amegic->ProcessName();
-  case 2: return p_simplexs->ProcessName();
-  }
-  return string("Error - no process name!");
-}
-
-const ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
-  switch (m_mode) {
-  case 1: return p_amegic->Momenta();
-  case 2: return p_simplexs->Momenta();
-  }
-  return NULL;
-}
-
-const ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
-  switch (m_mode) {
-    //case 1: return p_amegic->GetAllDecays()->Momenta();
-  }
-  return NULL;
-}
-
-const ATOOLS::Flavour * Matrix_Element_Handler::Flavours() {
-  switch (m_mode) {
-  case 1: return p_amegic->Flavours();
-  case 2: return p_simplexs->Flavours();
-  }
-  return NULL;
-}
-
-void  Matrix_Element_Handler::SetupHHMF() 
-{
-  // Tevatron :
-  //   starting with   W- -> e- neb
-  //   generate  W- -> e- nueb
-  //             W+ -> e+ nue
-  //             W- -> mu- nmub
-  //             W+ -> mu+ nmu
-
-  Particle_Map  unity;
-  m_particle_maps.push_back(unity);
-
-  Particle_Map  chargeconj;
-  chargeconj.SetFlipAnti();
-  m_particle_maps.push_back(chargeconj);
-
-  Particle_Map  muon;
-  muon.Add(Flavour(kf_e),Flavour(kf_mu));
-  muon.Add(Flavour(kf_nue).Bar(),Flavour(kf_numu).Bar());
-  m_particle_maps.push_back(muon);
-
-  muon.SetFlipAnti();
-  m_particle_maps.push_back(muon);
-}
-
-bool  Matrix_Element_Handler::ApplyHHMF()
-{
-  if (!m_apply_hhmf || m_particle_maps.size()==0) return 1;
-
-  size_t no=(size_t)(m_particle_maps.size()*ATOOLS::ran.Get());
-  if (no==m_particle_maps.size()) no=0;
-
-  m_ini_swaped=m_particle_maps[no].Apply(m_nmoms,p_flavs,p_moms);
-
-  return 1;
-}
-
-
-int Matrix_Element_Handler::InSwaped() {
-  switch (m_mode) {
-  case 1: return m_ini_swaped^p_amegic->InSwaped();
-  case 2: return m_ini_swaped^p_simplexs->InSwaped();
-  }
-  return 0;
-}
-
-unsigned int Matrix_Element_Handler::NumberOfDiagrams() 
-{
-  if (m_mode==1) return p_amegic->NumberOfDiagrams();
-  msg_Error()<<"Error in Matrix_Element_Handler::NumberOfDiagrams()."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  abort();
-}
-
-AMEGIC::Amegic * Matrix_Element_Handler::GetAmegic() 
-{
-  if (m_mode==1) return p_amegic;
-  return NULL;
-}
-
-AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag) 
-{
-  if (m_mode==1) return p_amegic->Diagram(_diag);
-  msg_Error()<<"Error in Matrix_Element_Handler::GetDiagram("<<_diag<<")."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  abort();
-}
-
-// ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations() 
-// {
-//   if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
-//   if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
-//   msg_Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
-// 	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
-//   abort();
-// }
-
-void Matrix_Element_Handler::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor) 
-{
-  p_amegic->GetProcess()->FillAmplitudes(atensor);
-}
-
-bool Matrix_Element_Handler::SpinCorrelations()
-{
-  return m_spincorrelations;
-}
-
-void Matrix_Element_Handler::SetSpinCorrelations(bool sc)
-{
-  m_spincorrelations = sc;
-}
-
-EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 
-{
-  if (m_mode==2) {
-    if (p_simplexs->Selected()!=NULL) {
-      return static_cast<EXTRAXS::XS_Base*>(p_simplexs->Selected());
+  info.m_ps.resize(1);
+  info.m_ps.front().m_ps.clear();
+  while(true) {
+    while (buffer.length()>0 && 
+	   (buffer[0]==' ' || buffer[0]=='\t')) buffer.erase(0,1);
+    if (buffer.length()==0) break;
+    size_t pos(Min(buffer.find(' '),buffer.length()));
+    std::string cur(buffer.substr(0,pos));
+    buffer=buffer.substr(pos);
+    pos=cur.find('(');
+    std::string polid;
+    if (pos!=std::string::npos) {
+      polid=cur.substr(pos);
+      cur=cur.substr(0,pos);
+      polid=polid.substr(1,polid.find(')')-1);
+    }
+    pos=cur.find('[');
+    std::string decid;
+    if (pos!=std::string::npos) {
+      decid=cur.substr(pos);
+      cur=cur.substr(0,pos);
+      decid=decid.substr(1,decid.find(']')-1);
+    }
+    size_t n(0);
+    pos=cur.find('{');
+    if (pos!=std::string::npos) {
+      std::string nid(cur.substr(pos));
+      cur=cur.substr(0,pos);
+      n=ToType<size_t>(nid.substr(1,nid.find('}')-1));
+    }
+    int kfc(ToType<int>(cur));
+    Flavour cfl((kf_code)abs(kfc));
+    if (kfc<0) cfl=cfl.Bar();
+    if (n==0) {
+      for (size_t i(0);i<info.m_ps.size();++i)
+	info.m_ps[i].m_ps.push_back(Subprocess_Info(cfl,decid,polid));
     }
     else {
-      return p_simplexs;
+      size_t oldsize(info.m_ps.size());
+      info.m_ps.resize(oldsize*(n+1));
+      for (size_t j(1);j<=n;++j) {
+	for (size_t i(0);i<oldsize;++i) {
+	  info.m_ps[j*oldsize+i]=info.m_ps[(j-1)*oldsize+i];
+	  info.m_ps[j*oldsize+i].m_ps.push_back(Subprocess_Info(cfl,"",polid));
+	}
+      }
     }
   }
-  if (mode>0) return NULL;
-  msg_Error()<<"Error in Matrix_Element_Handler::GetXS("<<mode<<")."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  abort();
+  return info.m_ps.back().m_ps.size();
 }
 
-double  Matrix_Element_Handler::Weight() 
-{
-  return m_weight;
+namespace SHERPA {
+
+  template <> double Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  {
+    Algebra_Interpreter inter;
+    inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
+    return ToType<double>(inter.Interprete(str));
+  }
+
+  template <> std::string Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  {
+    return str;
+  }
+
+  template <typename Type>
+  void Matrix_Element_Handler::AddMPvalue(std::string lstr,std::string rstr,const Type &val,
+			  std::map<std::string,std::pair<int,Type> >& dv,
+			  const int nfs,const int &priority)
+  {
+    if (rstr.length()==0) {
+      if (nfs==0 && 
+	  (dv.find(lstr)==dv.end() || dv[lstr].first>priority)) {
+	msg_Debugging()<<METHOD<<"(): adding '"<<val
+		       <<"' {"<<lstr<<"}("<<priority<<")\n";
+	dv[lstr]=std::pair<int,Type>(priority,val);
+      }
+      return;
+    }
+    size_t pos(rstr.find('-')), ltp(rstr.find('['));
+    if (pos==std::string::npos || ltp<pos-1) {
+      if (ltp!=std::string::npos) {
+	size_t rtp(rstr.find(']',ltp));
+	AddMPvalue(lstr+rstr.substr(0,rtp+1),rstr.substr(rtp+1),val,dv,
+		   nfs-ToType<int>(rstr.substr(ltp+1,rtp-ltp-1)),priority);
+	return;
+      }
+      AddMPvalue(lstr+rstr,"",val,dv,nfs-ToType<int>(rstr),priority);
+      return;
+    }
+    std::string rlstr(rstr.substr(0,pos)), rrstr(rstr.substr(pos+1)), rmstr;
+    if (pos>0 && ltp==pos-1) {
+      rmstr="]";
+      rrstr=rrstr.substr(1);
+    }
+    for (int i(0);i<=nfs;++i)
+      AddMPvalue(lstr+rlstr+ToString(i)+rmstr,rrstr,val,dv,nfs-i,priority);
+  }
+
+  template void Matrix_Element_Handler::AddMPvalue
+  (std::string lstr,std::string rstr,const double &val,
+   std::map<std::string,std::pair<int,double> >& dv,
+   const int nfs,const int &priority);
+  template void Matrix_Element_Handler::AddMPvalue
+  (std::string lstr,std::string rstr,const std::string &val,
+   std::map<std::string,std::pair<int,std::string> >& dv,
+   const int nfs,const int &priority);
+
+  template <typename Type>
+  bool Matrix_Element_Handler::GetMPvalue
+  (std::map<std::string,std::pair<int,Type> >& dv,
+   const int nfs,const std::string &pnid,Type &rv)
+  {
+    std::map<std::string,std::pair<int,Type> > cdv(dv);
+    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator 
+	   dit(dv.begin());dit!=dv.end();++dit) { 
+      AddMPvalue<Type>("",dit->first,dit->second.second,
+		       dv,nfs,dit->second.first);
+    }
+    if (dv.find(pnid)!=dv.end()) {
+      rv=dv[pnid].second;
+      return true;
+    }
+    std::string nfstag(ToString(nfs));
+    if (dv.find(nfstag)!=dv.end()) {
+      rv=dv[nfstag].second;
+      return true;
+    }
+    return false;
+  }
+
+  template bool Matrix_Element_Handler::GetMPvalue
+  (std::map<std::string,std::pair<int,double> >& dv,
+   const int nfs,const std::string &pnid,double &rv);
+  template bool Matrix_Element_Handler::GetMPvalue
+  (std::map<std::string,std::pair<int,std::string> >& dv,
+   const int nfs,const std::string &pnid,std::string &rv);
+
+  template <typename Type>
+  void Matrix_Element_Handler::ExtractMPvalues(std::string& str,std::map
+			       <std::string,std::pair<int,Type> >& dv,
+			       const int &priority)
+  {
+    int position;
+    position = str.find("{");
+    if (position==-1) {
+      msg_Debugging()<<METHOD<<"(): adding '"<<str
+		     <<"' {-}("<<priority<<")\n";
+      dv["-"]=std::pair<int,Type>(priority,ExtractMPvalue<Type>(str));
+      return;
+    }
+    std::string hstr = str.substr(0,position);
+    Type value = ExtractMPvalue<Type>(hstr);
+    str = str.substr(position+1,str.length()-position-2);
+    do {
+      position = str.find(",");
+      if (position>-1) {
+	hstr = str.substr(0,position);
+	str = str.substr(position+1);
+      }
+      else hstr=str;
+      if (hstr.length()>0) {
+	msg_Debugging()<<METHOD<<"(): adding '"<<value
+		       <<"' {"<<hstr<<"}("<<priority<<")\n";
+	dv[hstr]=std::pair<int,Type>(priority,value);
+      }
+    } while (position>-1);
+  }
+
+  template void Matrix_Element_Handler::ExtractMPvalues
+  (std::string& str,std::map<std::string,std::pair<int,double> >& dv,
+   const int &priority);
+  template void Matrix_Element_Handler::ExtractMPvalues
+  (std::string& str,std::map<std::string,std::pair<int,std::string> >& dv,
+   const int &priority);
+
 }
 
-double  Matrix_Element_Handler::ProcessWeight() 
+std::string Matrix_Element_Handler::MakeString(const std::vector<std::string> &in,
+			      const size_t &first)
 {
-  return m_procweight;
+  std::string out(in.size()>first?in[first]:"");
+  for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
+  return out;
 }
 
-double  Matrix_Element_Handler::XSecWeight() 
-{
-  return m_xsecweight;
-}
-
-unsigned long Matrix_Element_Handler::NumberOfTrials()
-{
-  return m_ntrial+m_sntrial;
-}
-
-unsigned long Matrix_Element_Handler::NumberOfXSecTrials()
-{
-  return m_xsecntrial;
-}
-
-int Matrix_Element_Handler::OrderStrong()
-{
-  if (m_mode==1) return p_amegic->OrderStrong();
-  msg_Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  abort();
-}
-
-int Matrix_Element_Handler::OrderEWeak()
-{
-  if (m_mode==1) return p_amegic->OrderEWeak();
-  msg_Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  abort();
-}
-
-void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
-{
-  if (p_amegic!=NULL || p_simplexs!=NULL || amegic==NULL) return;
-  p_amegic=amegic;
-  p_isr=p_amegic->Processes()->ISR();
-  m_name=string("Amegic");
-  m_mode=1;
-}
-
-void Matrix_Element_Handler::SetXS(EXTRAXS::Simple_XS *simplexs)
-{
-  if (p_amegic!=NULL || p_simplexs!=NULL || simplexs==NULL) return;
-  p_simplexs=simplexs;
-  p_isr=p_simplexs->ISR();
-  m_name=string("SimpleXS");
-  m_mode=2;
-}
 

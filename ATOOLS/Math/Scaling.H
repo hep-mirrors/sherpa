@@ -1,7 +1,7 @@
-#ifndef Scaling_H
-#define Scaling_H
+#ifndef ATOOLS_Math_Scaling_H
+#define ATOOLS_Math_Scaling_H
 
-#include "Getter_Function.H"
+#include "ATOOLS/Org/Getter_Function.H"
 #include <vector>
 
 namespace ATOOLS {

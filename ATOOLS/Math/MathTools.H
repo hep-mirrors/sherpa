@@ -1,6 +1,6 @@
+#ifndef ATOOLS_Math_MathTools_H
+#define ATOOLS_Math_MathTools_H
 /*  Declarations for discrete functions  */
-#ifndef mathtools1_h
-#define mathtools1_h
 
 #ifdef __GNUC__
 // GNU C++ Compiler       
@@ -29,7 +29,7 @@
 #endif
 
 
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace ATOOLS {
 
@@ -48,12 +48,20 @@ namespace ATOOLS {
   inline int    Sign(const int& a)    { return a<0?-1:1;       }
   inline double Sign(const double& a) { return a<0.0?-1.0:1.0; }
 
-  inline int    iabs(const int& a)    { return a>0?a:-a;   } 
-  inline double dabs(const double& a) { return a>0.0?a:-a; } 
+  inline int    iabs(const int& a)    { return a<0?-a:a;   } 
+  inline double dabs(const double& a) { return a<0.0?-a:a; } 
+  inline double cabs(const Complex& a){ return real(a*conj(a)); }
 
-  inline double  sqr(const double &x)   { return x*x; } 
-  inline Complex csqr(const Complex &x) { return x*x; } 
+  template <typename Scalar>
+  inline Scalar sqr(const Scalar &x)   { return x*x; } 
+  template <typename Scalar> inline std::complex<Scalar> 
+  csqr(const std::complex<Scalar> &x) { return x*x; } 
 
+
+  inline int IsZero(const double &a,const double &crit) 
+  { return dabs(a)<crit?1:0; }
+  inline int IsZero(const Complex &a,const double &crit) 
+  { return std::abs(a)<crit?1:0; }
 
   inline int IsEqual(const double &a,const double &b) 
   {
@@ -82,17 +90,23 @@ namespace ATOOLS {
 
   double ReIncompleteGamma0(double x,double prec=1.e-6);
 
-  double DiLog(double x);
+  double  DiLog(double x);
+  Complex DiLog(const Complex& x);
+
+  int Factorial(const int n);
 
 
-
-  template<typename Scalar> inline bool IsNan(const Scalar& x) { abort(); }
-  template<typename Scalar> inline bool IsZero(const Scalar& x) { abort(); }
-  template<typename Scalar> inline double Abs(const Scalar& x) { abort(); }
-
+  template<typename Scalar> inline bool IsNan(const Scalar& x);
+  template<typename Scalar> inline bool IsBad(const Scalar& x);
+  template<typename Scalar> inline bool IsZero(const Scalar& x);
+  template<typename Scalar> inline Scalar Abs(const Scalar& x);
+  template<typename Scalar> inline Scalar Abs(const std::complex<Scalar>& x);
 
   template<> inline bool IsNan<double>(const double& x) { 
     return std::isnan(x);
+  }
+  template<> inline bool IsBad<double>(const double& x) { 
+    return std::isnan(x)||std::isinf(x)||std::isinf(-x);
   }
   template<> inline bool IsZero<double>(const double& x) {
     return dabs(x)<Accu()?1:0;
@@ -101,14 +115,49 @@ namespace ATOOLS {
     return x>0.0?x:-x;
   }
 
+  template<> inline bool IsNan<long double>(const long double& x) { 
+    return std::isnan(x);
+  }
+  template<> inline bool IsBad<long double>(const long double& x) { 
+    return std::isnan(x)||std::isinf(x)||std::isinf(-x);
+  }
+  template<> inline bool IsZero<long double>(const long double& x) {
+    return dabs(x)<Accu()?1:0;
+  }
+  template<> inline long double Abs<long double>(const long double& x) {
+    return x>0.0?x:-x;
+  }
+
 
   template<> inline bool IsNan<Complex>(const Complex& x) {
     return (std::isnan(real(x)) || std::isnan(imag(x))); 
   }
+  template<> inline bool IsBad<Complex>(const Complex& x) { 
+    return IsNan(x)||std::isinf(real(x))||std::isinf(imag(x))
+      ||std::isinf(-real(x))||std::isinf(-imag(x));
+  }
   template<> inline bool IsZero<Complex>(const Complex& x) {
     return std::abs(x)<Accu()?1:0;
   }
-  template<> inline double Abs<Complex>(const Complex& x) {
+  template<> inline double Abs<double>(const Complex& x) {
+    return std::abs(x);
+  }
+
+  template<> inline bool IsNan<std::complex<long double> >
+  (const std::complex<long double>& x) {
+    return (std::isnan(real(x)) || std::isnan(imag(x))); 
+  }
+  template<> inline bool IsBad<std::complex<long double> >
+  (const std::complex<long double>& x) { 
+    return IsNan(x)||std::isinf(real(x))||std::isinf(imag(x))
+      ||std::isinf(-real(x))||std::isinf(-imag(x));
+  }
+  template<> inline bool IsZero<std::complex<long double> >
+  (const std::complex<long double>& x) {
+    return std::abs(x)<Accu()?1:0;
+  }
+  template<> inline long double Abs<long double>
+  (const std::complex<long double>& x) {
     return std::abs(x);
   }
 
@@ -132,6 +181,19 @@ namespace ATOOLS {
   
   DECLARE_PROMOTE(double,double,double);
   DECLARE_PROMOTE(Complex,Complex,Complex);
+
+  DECLARE_PROMOTE(long double,std::complex<long double>,
+		  std::complex<long double>);
+  DECLARE_PROMOTE(std::complex<long double>,long double,
+		  std::complex<long double>);
+  DECLARE_PROMOTE(int,long double,long double);
+  DECLARE_PROMOTE(long double,int,long double);
+  DECLARE_PROMOTE(int,std::complex<long double>,std::complex<long double>);
+  DECLARE_PROMOTE(std::complex<long double>,int,std::complex<long double>);
+  
+  DECLARE_PROMOTE(long double,long double,long double);
+  DECLARE_PROMOTE(std::complex<long double>,std::complex<long double>,
+		  std::complex<long double>);
 
 #define PROMOTE(TYPE1,TYPE2) typename promote_trait<TYPE1,TYPE2>::T_promote
 

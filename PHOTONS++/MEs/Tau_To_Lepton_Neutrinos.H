@@ -1,8 +1,8 @@
-#ifndef Tau_To_Lepton_Neutrinos_H
-#define Tau_To_Lepton_Neutrinos_H
+#ifndef PHOTONS_MEs_Tau_To_Lepton_Neutrinos_H
+#define PHOTONS_MEs_Tau_To_Lepton_Neutrinos_H
 
-#include "PHOTONS_ME_Base.H"
-#include "Dipole_FI.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
+#include "PHOTONS++/Tools/Dipole_FI.H"
 
 using namespace ATOOLS;
 

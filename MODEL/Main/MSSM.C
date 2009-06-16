@@ -1,8 +1,8 @@
-#include "MSSM.H"
-#include "Message.H"
-#include "Standard_Model.H"
-#include "LesHouches_Interface.H"
-#include "Spectrum_Generator_Base.H"
+#include "MODEL/Main/MSSM.H"
+#include "ATOOLS/Org/Message.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "MODEL/Main/LesHouches_Interface.H"
+#include "MODEL/Main/Spectrum_Generator_Base.H"
 #include <iomanip>
 
 using namespace MODEL;

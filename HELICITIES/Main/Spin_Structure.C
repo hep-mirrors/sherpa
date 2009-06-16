@@ -1,6 +1,6 @@
-#include "Spin_Structure.H"
-#include "Message.H"
-#include "Blob.H"
+#include "HELICITIES/Main/Spin_Structure.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <iomanip>
 
 using namespace HELICITIES;
@@ -13,7 +13,7 @@ bool SortByFirst(const pair<int,int> p1, const pair<int,int> p2) {
 }
 }
 
-
+Spin_Amplitudes::~Spin_Amplitudes() {}
 
 Spin_Amplitudes::Spin_Amplitudes(const std::vector<int>& spins,
                                  const Complex& value) :
@@ -26,9 +26,15 @@ Spin_Amplitudes::Spin_Amplitudes(const Particle_Vector& particles) :
 {
 }
 
-Spin_Amplitudes::Spin_Amplitudes(Flavour* flavs, size_t size,
+Spin_Amplitudes::Spin_Amplitudes(const Flavour* flavs, size_t size,
                                  const Complex& value) :
   Spin_Structure<Complex>(flavs,size,value)
+{
+}
+
+Spin_Amplitudes::Spin_Amplitudes(const Flavour_Vector& flavs,
+                                 const Complex& value) :
+  Spin_Structure<Complex>(flavs,value)
 {
 }
 
@@ -40,6 +46,9 @@ double Spin_Amplitudes::SumSquare() const {
   return value;
 }
 
+void Spin_Amplitudes::Calculate(const ATOOLS::Vec4D* momenta, bool anti) {
+  THROW(fatal_error, "Virtual function called.");
+}
 
 
 

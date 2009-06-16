@@ -1,6 +1,13 @@
-#include "STL_Tools.H"
+#include "ATOOLS/Org/STL_Tools.H"
 
+#include "ATOOLS/Org/Smart_Pointer.C"
+#include <fstream>
 #include <string>
+
+namespace ATOOLS {
+ template class SP(std::ifstream);
+ template class SP(std::ofstream);
+}
 
 namespace std {
 
@@ -66,4 +73,30 @@ namespace ATOOLS {
     return m_less(a,b);
   }
 
+  std::vector<int> ID(size_t id)
+  {
+    std::vector<int> ids;
+    for (size_t n(0);id>0;++n) {
+      if (id&(1<<n)) {
+	ids.push_back(n);
+	id-=1<<n;
+      }
+    }
+    return ids;
+  }
+  
+  size_t IDCount(size_t id)
+  {
+    size_t idc(0);
+    for (size_t n(0);id>0;++n) {
+      if (id&(1<<n)) {
+	++idc;
+	id-=1<<n;
+      }
+    }
+    return idc;
+  }
+
 }
+
+

@@ -1,0 +1,652 @@
+#include "PHASIC++/Channels/Single_Channel.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include <algorithm>
+
+using namespace PHASIC;
+using namespace ATOOLS;
+using namespace std;
+
+//#define _USE_MPI_
+#ifdef _USE_MPI_
+#include <mpi++.h>
+#endif
+
+Multi_Channel::Multi_Channel(string _name,int id) : 
+  fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
+{
+  string help;
+  int    pos;
+  for (;;) {
+    pos  = _name.find(" ");
+    if (pos==-1) break;
+    help   = _name;
+    _name  = help.substr(0,pos) + help.substr(pos+1); 
+  }
+  name     = _name;
+  n_points = n_contrib = 0;
+  m_lastdice = -1;
+  m_optcnt = 0;
+  m_pol = 250.;
+  m_sum2 = 0.;
+  m_sum  = 0.;
+  m_p    = 0;
+  m_otype = 0;
+}
+
+Multi_Channel::~Multi_Channel() 
+{
+  DropAllChannels();
+  if (s1) { delete[] s1; s1 = 0; }
+  if (s2) { delete[] s2; s2 = 0; }
+}
+
+void Multi_Channel::Add(Single_Channel * Ch) { 
+  channels.push_back(Ch);
+  m_otype = m_otype|Ch->OType();
+} 
+
+Single_Channel * Multi_Channel::Channel(int i) { 
+  if ((i<0) || (i>=(int)channels.size())) {
+    msg_Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :"
+	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
+    return 0;
+  }
+  return channels[i]; 
+}
+
+void Multi_Channel::DropChannel(int i) 
+{
+  if ((i<0) || (i>(int)channels.size())) {
+    msg_Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :"
+	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
+    return;
+  }
+  if (channels[i]) delete channels[i];
+  for (size_t j=i;j<channels.size()-1;j++) channels[j] = channels[j+1];
+  channels.pop_back();
+}
+
+void Multi_Channel::DropAllChannels(const bool del)
+{
+  while (channels.size()) {
+    if (del) delete channels.back();
+    channels.pop_back();
+  }
+}
+
+void Multi_Channel::Reset() 
+{
+  if (channels.size()==0) return;
+  if (s1==0) s1 =  new double[channels.size()];
+  if (s2==0) s2 =  new double[channels.size()];
+  if (!m_readin) {
+    s1xmin     = 1.e32;
+    n_points   = 0;  
+    n_contrib  = 0;
+    m_sum2     = 0.;
+    m_sum      = 0.;
+    m_p        = 0;
+  }
+  msg_Tracking()<<"Channels for "<<name<<endl
+		<<"----------------- "<<n_points<<" --------------------"<<endl;
+  for(size_t i=0;i<channels.size();i++) {
+    if (!m_readin) channels[i]->Reset(1./channels.size());
+    msg_Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
+  }
+  msg_Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
+  m_readin=false;
+}
+
+void Multi_Channel::ResetOpt() 
+{
+  n_points = 0;
+  m_sum  = 0.;
+  m_sum2 = 0.;
+  m_p    = 0;
+}        
+
+void Multi_Channel::ResetCnt() 
+{
+  m_sum  = 0.;
+  m_sum2 = 0.;
+  m_p    = 0;
+}        
+
+void Multi_Channel::MPIOptimize(double error)
+{
+#ifdef _USE_MPI_
+  int rank = MPI::COMM_WORLD.Get_rank();
+  int size = MPI::COMM_WORLD.Get_size();
+
+  double * messageblock = new double[1+3*channels.size()];
+  double * alp = new double[channels.size()];
+  //tag 9 for communication
+  if (rank==0) {
+    int count = 0;
+    while (count<size-1) {
+      MPI::COMM_WORLD.Recv(messageblock, 1+3*channels.size(), MPI::DOUBLE, MPI::ANY_SOURCE, 9);
+      count++;
+      for (short int i=0;i<channels.size();i++) {
+	channels[i]->SetRes1(channels[i]->Res1() + messageblock[1+channels.size()+i]);
+	channels[i]->SetRes2(channels[i]->Res2() + messageblock[1+2*channels.size()+i]);
+	channels[i]->SetRes3(sqr(channels[i]->Res1()) - channels[i]->Res2());
+	channels[i]->SetN(channels[i]->N() + int(messageblock[1+i]));
+      }
+    }
+    Optimize(error);
+    //broadcast alphai
+    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();
+    
+    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
+  }
+  else {
+    messageblock[0] = rank;
+    for (int i=0;i<channels.size();i++) messageblock[1+i]                   = channels[i]->N();
+    for (int i=0;i<channels.size();i++) messageblock[1+channels.size()+i]   = channels[i]->Res1();
+    for (int i=0;i<channels.size();i++) messageblock[1+2*channels.size()+i] = channels[i]->Res2();
+    MPI::COMM_WORLD.Send(messageblock, 1+3*channels.size(), MPI::DOUBLE, 0, 9);   
+    //Waiting for new alpha's
+    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
+
+    for (short int i=0;i<channels.size();i++) {
+      channels[i]->SetAlpha(alp[i]);
+      channels[i]->ResetOpt();
+      channels[i]->SetWeight(0.);
+    }
+  }
+  delete[] alp;
+  delete[] messageblock;
+#else
+#endif
+
+}
+
+class Order_Weight {
+public:
+  bool operator()(Single_Channel* c1,Single_Channel* c2)
+  { 
+    return c1->Alpha()>c2->Alpha();
+  }
+};
+
+void Multi_Channel::Optimize(double error)
+{
+  if (m_fixalpha) return;
+  msg_Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
+
+  double aptot = 0.;
+  size_t i;
+  for (i=0;i<channels.size();i++) {
+    s1[i]  = channels[i]->Res1()/channels[i]->N();
+    s2[i]  = sqrt(channels[i]->Res2()-
+		  channels[i]->Res3()/(channels[i]->N()-1. ))/channels[i]->N();
+    aptot += channels[i]->Alpha()*sqrt(s1[i]);
+  }
+  
+  double s1x = 0.;  
+  for (i=0;i<channels.size();i++) {
+    if (channels[i]->Alpha()>0.) {
+      if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
+      channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
+      if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
+    }
+  }
+  double norm = 0;
+  for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
+  for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+
+    if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
+      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
+    if (m_optcnt==20){
+      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+      s1xmin     = 1.e32;
+    }
+
+  if (s1x<s1xmin) {
+    s1xmin = s1x;
+    for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
+  }  
+
+  for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
+  msg_Tracking()<<"New weights for : "<<name<<endl
+		<<"----------------- "<<n_points<<" ----------------"<<endl;
+  for (i=0;i<channels.size();i++) {
+    if (channels[i]->Alpha() > 0) {
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : "
+		    <<channels[i]->Alpha()<<" -> "<<channels[i]->AlphaSave()<<endl;
+    }
+  }
+  msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
+ 		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
+		<<"-----------------------------------------------"<<endl;
+  m_optcnt++;
+  m_best=channels;
+  std::sort(m_best.begin(),m_best.end(),Order_Weight());
+  m_best.resize(2);
+}
+
+void Multi_Channel::EndOptimize(double error)
+{
+  size_t i;
+
+#ifndef _USE_MPI_
+
+  for (i=0;i<channels.size();i++) {
+    channels[i]->SetAlpha(channels[i]->AlphaSave());
+    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(0.);
+  }
+  double norm = 0;
+  for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
+  for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+  for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+
+  msg_Tracking()<<"Best weights:-------------------------------"<<endl;
+  for (i=0;i<channels.size();i++) {
+    if (channels[i]->Alpha() > 0) {
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()
+		    <<" : "<<channels[i]->Alpha()<<endl;
+    }
+  }
+  msg_Tracking()<<"S1X: "<<s1xmin<<endl
+ 		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
+		<<"-------------------------------------------"<<endl;
+
+#else
+
+  //bcast them to all
+  int rank = MPI::COMM_WORLD.Get_rank();
+  int size = MPI::COMM_WORLD.Get_size();
+
+  double* alp = new double[channels.size()];
+  //tag 9 for communication
+  if (rank==0) {
+    short int i;
+    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->AlphaSave());
+    double norm = 0;
+    for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
+    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+
+    msg_Tracking()<<"Best weights:-------------------------------"<<endl;
+    for (i=0;i<channels.size();i++)
+      if (channels[i]->Alpha() > 0) {
+	msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl
+		      <<"S1X: "<<s1xmin<<endl
+		      <<"-------------------------------------------"<<endl;
+      }
+    //broadcast alphai
+    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();    
+    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
+  }
+  else {
+    //Waiting for new alpha's
+    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
+    for (short int i=0;i<channels.size();i++) channels[i]->SetAlpha(alp[i]);
+  }
+  delete[] alp;
+#endif
+}
+
+bool Multi_Channel::OptimizationFinished()
+{
+  for (size_t i=0;i<channels.size();i++) if (!channels[i]->OptimizationFinished()) return false;
+  return true;
+}
+
+
+void Multi_Channel::AddPoint(double value)
+{
+  //if (!ATOOLS::IsZero(value)) n_contrib++;
+  if (value!=0.) n_contrib++;
+//   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
+  n_points++;
+  m_p++;
+  m_sum+=value;
+  m_sum2+=sqr(value);
+  double var;
+  for (size_t i=0;i<channels.size();i++) {
+    if (value!=0.) {
+      if (channels[i]->Weight()!=0) 
+	var = sqr(value)*m_weight/channels[i]->Weight();
+      else var = 0.;
+      channels[i]->SetRes1(channels[i]->Res1() + var);
+      channels[i]->SetRes2(channels[i]->Res2() + sqr(var));
+      channels[i]->SetRes3(sqr(channels[i]->Res1())-channels[i]->Res2());
+    }
+    channels[i]->IncrementN();
+  }
+  if (m_lastdice>=0) Channel(m_lastdice)->AddPoint(value);
+}
+
+
+
+void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts) 
+{
+  if (channels[n]->Alpha() > 0.) {
+    channels[n]->GenerateWeight(p,cuts);
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+    else m_weight = 1./channels[n]->Weight();
+  }
+  else m_weight = 0.;
+}
+
+void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
+{
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(p,cuts);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
+  m_weight = 0.;
+  for (size_t i=0; i<channels.size(); ++i) {
+    if (channels[i]->Alpha() > 0.) {
+      channels[i]->GenerateWeight(p,cuts);
+      if (!(channels[i]->Weight()>0) && 
+	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
+	msg_Error()<<"Multi_Channel::GenerateWeight(..): ("<<this->name
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0) 
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (m_weight!=0) m_weight = 1./m_weight;
+}
+
+
+void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
+{
+  channels[n]->GeneratePoint(p,cuts,ran);
+}
+
+void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
+{
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  if(channels.size()==1) {
+    channels[0]->GeneratePoint(p,cuts);
+    m_lastdice = 0;
+    return;
+  }  
+  double rn  = ran.Get();
+  double sum = 0;
+  for (size_t i=0;;++i) {
+    if (i==channels.size()) {
+      rn  = ran.Get();
+      i   = 0;
+      sum = 0.;
+    }
+    sum += channels[i]->Alpha();
+    if (sum>rn) {
+      channels[i]->GeneratePoint(p,cuts);
+      m_lastdice = i;
+      break;
+    }
+  }  
+}
+
+void Multi_Channel::GenerateWeight(int n,Vec4D* p) 
+{
+  if (channels[n]->Alpha() > 0.) {
+    channels[n]->GenerateWeight(p);
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+                              else m_weight = 1./channels[n]->Weight();
+  }
+  else m_weight = 0.;
+}
+
+void Multi_Channel::GenerateWeight(Vec4D * p)
+{
+  m_weight = 0.;
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(p);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
+  for (size_t i=0; i<channels.size(); ++i) {
+    if (channels[i]->Alpha() > 0.) {
+      channels[i]->GenerateWeight(p);
+      if (!(channels[i]->Weight()>0) && 
+	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
+	msg_Error()<<"Multi_Channel::GenerateWeight(.): ("<<this->name
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0) 
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
+}
+
+
+void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
+{
+  channels[n]->GeneratePoint(p,rn);
+}
+
+void Multi_Channel::GeneratePoint(Vec4D * p)
+{
+  if (channels.size()==1) {
+    channels[0]->GeneratePoint(p);
+    return;
+  }
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  double rn  = ran.Get();
+  double sum = 0;
+  for (size_t i=0;i<channels.size();i++) {
+    sum += channels[i]->Alpha();
+    if (sum>rn) {
+      channels[i]->GeneratePoint(p);
+      m_lastdice = i;
+      return;
+    }
+  }  
+  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
+  channels[0]->GeneratePoint(p);
+}
+
+void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
+  m_weight = 0.;
+  for (size_t i=0; i<channels.size(); ++i) {
+    if (channels[i]->Alpha() > 0.) {
+      channels[i]->GenerateWeight(sprime,y,mode);
+      if (!(channels[i]->Weight()>0) && 
+	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
+	msg_Error()<<"Multi_Channel::GenerateWeight(...): ("<<this->name
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0.) 
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
+}
+
+void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
+  if (channels[n]->Alpha() > 0.) {
+    channels[n]->GenerateWeight(sprime,y,mode);
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+                              else m_weight = 1./channels[n]->Weight();
+  }
+  else m_weight = 0.;
+}
+
+void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  double disc = ran.Get();
+  double sum  = 0;
+  for (size_t n=0;n<channels.size();n++) {
+    sum += channels[n]->Alpha();
+    if (sum>disc) {
+      for (int i=0;i<2;i++) rans[i] = ran.Get();
+      channels[n]->GeneratePoint(sprime,y,mode,rans);
+      m_lastdice = n;
+      return;
+    }
+  }  
+  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
+  channels[0]->GeneratePoint(sprime,y,mode,rans);
+}
+
+void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {
+  for (int i=0;i<2;i++) rans[i] = ran.Get();
+  channels[n]->GeneratePoint(sprime,y,mode,rans);
+}
+
+void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
+{
+  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
+  double disc=ran.Get();
+  double sum=0.;
+  for (size_t n=0;n<channels.size();++n) {
+    sum+=channels[n]->Alpha();
+    if (sum>disc) {
+      for (size_t i=0;i<2;++i) rans[i]=ran.Get();
+      channels[n]->GeneratePoint(spkey,ykey,rans,mode);
+      m_lastdice = n;
+      return;
+    }
+  }  
+  msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
+	     <<") No channel selected. \n"
+	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
+}
+
+void Multi_Channel::GenerateWeight(int mode=0)
+{
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(mode);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
+  m_weight = 0.;
+  for (size_t i=0;i<channels.size();++i) {
+    if (channels[i]->Alpha()>0.) {
+      channels[i]->GenerateWeight(mode);
+      if (!(channels[i]->Weight()>0)&&
+	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
+	msg_Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0) 
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (m_weight!=0) m_weight=1./m_weight;
+}
+
+void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width) 
+{
+  channels[i]->ISRInfo(type,mass,width);
+  return;
+}
+
+void Multi_Channel::ISRInfo
+(std::vector<int> &ts,std::vector<double> &ms,std::vector<double> &ws) const
+{
+  for (size_t i=0;i<channels.size();++i) channels[i]->ISRInfo(ts,ms,ws);
+}
+
+void Multi_Channel::Print() {
+  if (!msg_LevelIsTracking()) return;
+  msg_Out()<<"----------------------------------------------"<<endl
+		      <<"Multi_Channel with "<<channels.size()<<" channels."<<endl;
+  for (size_t i=0;i<channels.size();i++) 
+    msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
+  msg_Out()<<"----------------------------------------------"<<endl;
+}                 
+
+
+void Multi_Channel::WriteOut(std::string pID) 
+{
+  ofstream ofile;
+  ofile.open(pID.c_str());
+  ofile.precision(12);
+  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
+       <<s1xmin<<" "<<m_optcnt<<endl;
+//        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
+//        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
+  for (size_t i=0;i<channels.size();i++) 
+    ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
+	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
+	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
+	 <<channels[i]->Res2()<<" "<<channels[i]->Res3()<<std::endl;
+  ofile.close();
+  for (size_t i=0;i<channels.size();i++) channels[i]->WriteOut(pID);
+}
+
+bool Multi_Channel::ReadIn(std::string pID) {
+  ifstream ifile;
+  ifile.open(pID.c_str());
+  if (ifile.bad()) return false;
+  size_t      size;
+  std::string name;
+  long int    points;
+  double      alpha, alphasave, weight, res1, res2, res3;
+  ifile>>size>>name;
+  if (( size != channels.size()) || ( name != name) ) {
+    msg_Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
+	       <<"  Multi_Channel file did not coincide with actual Multi_Channel: "<<endl
+	       <<"  "<<size<<" vs. "<<channels.size()<<" and "
+	       <<"  "<<name<<" vs. "<<name<<endl;
+    return 0;
+  }
+  m_readin=true;
+  //   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult
+  // >>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
+  ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
+
+  double sum=0;
+  for (size_t i=0;i<channels.size();i++) {
+    ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
+    sum+= alpha;
+    if (name != channels[i]->Name()) {
+      msg_Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
+		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
+		 <<"  "<<name<<" vs. "<<channels[i]->Name()<<endl;
+      return 0;
+      if (name.substr(0,name.length()-1)!=
+	  channels[i]->Name().substr(0,name.length()-1)) {
+	msg_Error()<<"   return 0."<<std::endl;
+	return 0;
+      }
+    }
+    channels[i]->SetN(points);
+    channels[i]->SetAlpha(alpha);
+    channels[i]->SetAlphaSave(alphasave);
+    channels[i]->SetWeight(weight);
+    channels[i]->SetRes1(res1);
+    channels[i]->SetRes2(res2);
+    channels[i]->SetRes3(res3);
+  }
+  ifile.close();
+  for (size_t i=0;i<channels.size();i++) channels[i]->ReadIn(pID);
+  return 1;
+}
+
+std::string Multi_Channel::ChID(int n)
+{
+  return channels[n]->ChID();
+}
+
+void Multi_Channel::SetRange(double *_sprimerange,double *_yrange) 
+{
+  for (size_t i=0;i<channels.size();++i) channels[i]->SetRange(_sprimerange,_yrange);
+}
+
+void Multi_Channel::GetRange() 
+{
+  for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
+}
+
+void Multi_Channel::GeneratePoint(int& sv,ATOOLS::Vec4D *p,Cut_Data *cuts) 
+{ 
+  sv=0;
+  GeneratePoint(p,cuts);
+}
+
+bool Multi_Channel::Initialize()
+{ 
+  return true;
+}

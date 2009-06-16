@@ -1,8 +1,8 @@
-#ifndef SM_PHANTOM_U1_h
-#define SM_PHANTOM_U1_h
+#ifndef MODEL_Main_SM_Phantom_U1_H
+#define MODEL_Main_SM_Phantom_U1_H
 
-#include "Model_Base.H"
-#include "MyComplex.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace MODEL {
   class SM_Phantom_U1 : public Model_Base {
@@ -13,7 +13,6 @@ namespace MODEL {
   public :
     SM_Phantom_U1(std::string,std::string,bool);
     ~SM_Phantom_U1();
-    bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
     \class SM_Phantom_U1

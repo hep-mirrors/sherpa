@@ -1,13 +1,14 @@
-#ifndef Amisic_H
-#define Amisic_H
+#ifndef AMISIC_Main_Amisic_H
+#define AMISIC_Main_Amisic_H
 /*!
   \file Amisic.H
   \brief Declares the class Amisic
 */
 
-#include "MI_Base.H"
-#include "Model_Base.H"
-#include "XS_Base.H"
+#include "AMISIC++/Main/MI_Base.H"
+#include "MODEL/Main/Model_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace AMISIC {
   /*!
@@ -146,8 +147,8 @@ namespace AMISIC {
     inline MI_Base *const HardBase() const { return p_hardbase; }
     inline MI_Base *const SoftBase() const { return p_softbase; }
 
-    inline EXTRAXS::XS_Base *const HardXS() { return p_hardbase->XS(); }
-    inline EXTRAXS::XS_Base *const SoftXS() { return p_softbase->XS(); }
+    inline PHASIC::Process_Base *const HardXS() { return p_hardbase->XS(); }
+    inline PHASIC::Process_Base *const SoftXS() { return p_softbase->XS(); }
 
   }; // end of class Amisic
   /*!

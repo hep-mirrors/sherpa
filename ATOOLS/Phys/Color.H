@@ -1,5 +1,5 @@
-#ifndef Color_H
-#define Color_H
+#ifndef ATOOLS_Phys_Color_H
+#define ATOOLS_Phys_Color_H
 /*!
   \file Color.H
   \brief Declares the classes Color_Term,
@@ -9,12 +9,12 @@
 #include <iostream>
 #include <string>
 #ifndef USING__Color_only
-#include "MyComplex.H"
+#include "ATOOLS/Math/MyComplex.H"
 #else
 #include <complex>
 typedef std::complex<double> Complex;
 #endif
-#include "Node.H"
+#include "ATOOLS/Org/Node.H"
 
 namespace ATOOLS {
 

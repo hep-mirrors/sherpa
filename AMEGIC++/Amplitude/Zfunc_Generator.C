@@ -1,12 +1,12 @@
-#include "Zfunc_Generator.H"
-#include "String_Generator.H"
-#include "Basic_Sfuncs.H"
-#include "Zfunc_Calc.H"
-#include "Zfunc.H"
-#include "Vector.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Interaction_Model_Base.H"
+#include "AMEGIC++/Amplitude/Zfunc_Generator.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -17,14 +17,6 @@ using namespace std;
 
 extern int iabs(int&);
 
-ZF_Vector::~ZF_Vector()
-{
-  while (size()) {
-    delete back();
-    pop_back();
-  }
-}
-
 Zfunc_Generator::~Zfunc_Generator() 
 {
 }
@@ -34,7 +26,6 @@ ZF_Vector Zfunc_Generator::zcalc;
 void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS, int ngraph)
 {
   if (ngraph!=1) return;
-  for (size_t i=0;i<zcalc.size();i++) delete zcalc[i];
   zcalc.clear();
   ZFCalc_Key key(_sgen,_BS,MODEL::s_model->GetInteractionModel());
   ZFCalc_Getter::Getter_List zfclist(ZFCalc_Getter::GetGetters());

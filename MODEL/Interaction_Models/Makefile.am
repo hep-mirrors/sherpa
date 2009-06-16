@@ -30,7 +30,7 @@ libModelInteractions_la_SOURCES = \
 		      		Interaction_Model_MSSM.C \
 		      		Interaction_Model_MSSM_EHC.C 
 
-pkginclude_HEADERS = \
+localinc_HEADERS   = \
 				Lorentz_Function.H Color_Function.H \
 				Single_Vertex.H Vertex.H \
 				Interaction_Model_Base.H \
@@ -58,9 +58,4 @@ pkginclude_HEADERS = \
 		      		Interaction_Model_MSSM.H \
 		      		Interaction_Model_MSSM_EHC.H 
 
-
-CXXFLAGS   =-g @SHERPAFLAGS@
-
-INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@
+libModelInteractions_la_CXXFLAGS = -g -pedantic -Wall

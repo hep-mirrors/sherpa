@@ -1,16 +1,16 @@
-#include "Partial_Amplitude_Base.H"
-#include "Exception.H"
-#include "MyStrStream.H"
+#include "HELICITIES/Main/Partial_Amplitude_Base.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <stdarg.h>
 
-#include "Three_Particle_Amplitudes.H"
-#include "Four_Particle_Amplitudes.H"
+#include "HELICITIES/Main/Three_Particle_Amplitudes.H"
+#include "HELICITIES/Main/Four_Particle_Amplitudes.H"
 
 using namespace HELICITIES;
 using namespace ATOOLS;
 using namespace std;
 
-string GetName(Flavour* flavs, int n)
+string HELICITIES::GetName(Flavour* flavs, int n)
 {
   string name=ToString(flavs[0])+" --> ";
   for(int i=1; i<n; ++i)

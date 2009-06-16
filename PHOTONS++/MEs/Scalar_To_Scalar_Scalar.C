@@ -1,4 +1,4 @@
-#include "Scalar_To_Scalar_Scalar.H"
+#include "PHOTONS++/MEs/Scalar_To_Scalar_Scalar.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -144,8 +144,8 @@ Complex Scalar_To_Scalar_Scalar::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4D k1      = m_moms[1];
   Vec4D k2      = m_moms[2];
   Vec4D k       = m_moms[3];
-  double m12    = m_flavs[1].PSMass();
-  double m22    = m_flavs[2].PSMass();
+  double m12    = m_flavs[1].HadMass();
+  double m22    = m_flavs[2].HadMass();
   Complex rA    = Complex(0.,0.);
   Complex rB    = Complex(0.,0.);
   // radiation of A

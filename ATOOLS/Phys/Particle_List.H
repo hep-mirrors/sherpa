@@ -1,14 +1,13 @@
-#ifndef Particle_List_H
-#define Particle_List_H
+#ifndef ATOOLS_Phys_Particle_List_H
+#define ATOOLS_Phys_Particle_List_H
 
-#include "Particle.H"
-#include "List_Algorithms.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/List_Algorithms.H"
 #include <deque>
 #include <iostream>
 
 namespace ATOOLS {
 
-  class Particle_Qualifier_Base;
   class Poincare;
 
   class Particle_List: public std::deque<Particle*> {
@@ -41,14 +40,13 @@ namespace ATOOLS {
     // member functions
     void Clear();
 
-    void Keep(Particle_Qualifier_Base *const qual);
-    void Erase(Particle_Qualifier_Base *const qual);
-    
     void Boost(Poincare *const boost) const;
     void BoostBack(Poincare *const boost) const;
 
     void Rotate(Poincare *const rot) const;
     void RotateBack(Poincare *const rot) const;
+    
+    void Flip() const;
 
   };// end of class Particle_List
 

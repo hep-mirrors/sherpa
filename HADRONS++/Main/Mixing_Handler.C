@@ -1,18 +1,18 @@
-#include "Mixing_Handler.H"
-#include "Particle.H"
-#include "Blob.H"
-#include "Blob_List.H"
-#include "Hadron_Decay_Table.H"
-#include "Hadron_Decay_Channel.H"
-#include "Decay_Map.H"
-#include "Run_Parameter.H"
-#include "Random.H"
+#include "HADRONS++/Main/Mixing_Handler.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/Main/Hadron_Decay_Map.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-Mixing_Handler::Mixing_Handler(Decay_Map* decaymap) : p_decaymap(decaymap)
+Mixing_Handler::Mixing_Handler(Hadron_Decay_Map* decaymap) : p_decaymap(decaymap)
 {
 }
 
@@ -30,7 +30,10 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer, bool checkforparts
     motherblob = decayer->ProductionBlob();
   }
   Particle* sister = NULL;
-  if(motherblob->Type()!=btp::Fragmentation) {
+  if(motherblob->Type()!=btp::Fragmentation ||
+     (motherblob->NInP()==2 && motherblob->NOutP()==2 &&
+      motherblob->InParticle(0)->Flav()==motherblob->OutParticle(0)->Flav() &&
+      motherblob->InParticle(1)->Flav()==motherblob->OutParticle(1)->Flav())) {
     // check if particle was produced coherently
     Particle_Vector sisters = motherblob->GetOutParticles();
     for(Particle_Vector::const_iterator it=sisters.begin(); it!=sisters.end(); it++) {
@@ -102,8 +105,8 @@ bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* tab
       double cos_term = cos(flav.DeltaM()/rpa.hBar()*lifetime);
       double sin_term = sin(flav.DeltaM()/rpa.hBar()*lifetime);
       double GX, GR, asymmetry, a;
-      for(int i=0; i<table->NumberOfDecayChannels(); i++) {
-        Hadron_Decay_Channel* hdc = (Hadron_Decay_Channel*) table->GetDecayChannel(i);
+      for(size_t i=0; i<table->size(); i++) {
+        Hadron_Decay_Channel* hdc = table->at(i);
         if(hdc->CPAsymmetryS()==0.0 && hdc->CPAsymmetryC()==0.0) continue;
         if(flav.DeltaGamma()==0.0) {
           asymmetry = hdc->CPAsymmetryS()*sin_term - hdc->CPAsymmetryC()*cos_term;
@@ -135,9 +138,9 @@ bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* tab
 
 void Mixing_Handler::ResetCPAsymmetries(Hadron_Decay_Table* table)
 {
-  for(int i=0; i<table->NumberOfDecayChannels(); i++)
+  for(size_t i=0; i<table->size(); i++)
   {
-    Hadron_Decay_Channel* hdc = (Hadron_Decay_Channel*) table->GetDecayChannel(i);
+    Hadron_Decay_Channel* hdc = table->at(i);
     table->UpdateWidth(hdc, hdc->OriginalWidth());
   }
 }

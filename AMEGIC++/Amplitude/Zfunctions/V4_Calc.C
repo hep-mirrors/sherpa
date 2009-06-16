@@ -1,5 +1,5 @@
-#include "Calculator.H"
-#include "String_Generator.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Calculator.H"
+#include "AMEGIC++/String/String_Generator.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

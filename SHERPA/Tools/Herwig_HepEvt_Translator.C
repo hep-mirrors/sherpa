@@ -1,6 +1,6 @@
-#include "Herwig_HepEvt_Translator.H"
-#include "HepEvt_Interface.H"
-#include "Blob_List.H"
+#include "SHERPA/Tools/Herwig_HepEvt_Translator.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
+#include "ATOOLS/Phys/Blob_List.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

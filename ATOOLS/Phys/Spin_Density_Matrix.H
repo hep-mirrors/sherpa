@@ -1,10 +1,10 @@
-#ifndef Spin_Density_Matrix_H
-#define Spin_Density_Matrix_H
+#ifndef ATOOLS_Phys_Spin_Density_Matrix_H
+#define ATOOLS_Phys_Spin_Density_Matrix_H
 #include <iostream>
 #include <vector>
-#include <MyComplex.H>
-#include <Vector.H>
-#include "Flavour.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace ATOOLS {
   class Spin_Density_Matrix {

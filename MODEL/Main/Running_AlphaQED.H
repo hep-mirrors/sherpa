@@ -1,8 +1,8 @@
-#ifndef Running_AlphaQED_H
-#define Running_AlphaQED_H
+#ifndef MODEL_Main_Running_AlphaQED_H
+#define MODEL_Main_Running_AlphaQED_H
 
-#include "Flavour.H"
-#include "Function_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Function_Base.H"
 
 namespace MODEL {
   class Running_AlphaQED : public ATOOLS::Function_Base {

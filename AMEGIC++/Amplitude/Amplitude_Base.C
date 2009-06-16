@@ -1,4 +1,4 @@
-#include "Amplitude_Base.H"
+#include "AMEGIC++/Amplitude/Amplitude_Base.H"
 
 using namespace AMEGIC;
 

@@ -1,26 +1,25 @@
-#include "Amplitude_Handler.H"
-#include "Amplitude_Output.H"
-#include "Zfunc_Calc.H"
-#include "Random.H"
-#include "Run_Parameter.H"
-#include "Amplitude_Generator.H"
-#include "Amplitude_Manipulator.H"
-#include "Color_Group.H"
+#include "AMEGIC++/Amplitude/Amplitude_Handler.H"
+#include "AMEGIC++/Amplitude/Amplitude_Output.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "AMEGIC++/Amplitude/Amplitude_Generator.H"
+#include "AMEGIC++/Amplitude/Amplitude_Manipulator.H"
+#include "AMEGIC++/Amplitude/Color_Group.H"
 #include <iostream>
 #include <stdio.h>
-#include "prof.hh"
-#include "MyStrStream.H"
-#include "Process_Info.H"
-#include "IO_Handler.H"
-#include "Spin_Structure.H"
-#include "Interaction_Model_Base.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "AMEGIC++/Main/Process_Tags.H"
+#include "ATOOLS/Org/IO_Handler.H"
+#include "HELICITIES/Main/Spin_Structure.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 using namespace std;
 
-Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinfo,
+Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph,bool create_4V) 
@@ -56,7 +55,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
   //decay processes
   for (int i=1;i<=ndecays;i++) {
     int j=i;
-    Process_Info *pi=pinfo->GetDecay(j);
+    Process_Tags *pi=pinfo->GetDecay(j);
 //     pi->Print();cout<<endl;
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
@@ -119,7 +118,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 }
 
 void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
-						  Process_Info* pinfo,Single_Amplitude** sglist,
+						  Process_Tags* pinfo,Single_Amplitude** sglist,
 						  Basic_Sfuncs* BS)
 {
   int ndecays=pinfo->Ndecays();
@@ -157,22 +156,14 @@ void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
 }
 
 void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
-					   Topology* top,Basic_Sfuncs* BS,std::string pID)
+					   Topology* top,Basic_Sfuncs* BS,std::string pID,
+					   char emit,char spect)
 {
-  bool gen_colors=true;
-  // look for file
-  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
-  fstream test;
-  test.open(name.c_str(),ios::in); 
-  if (test) { 
-    test.close();
-    gen_colors=false;
-  }
   Single_Amplitude* n = firstgraph;
   ngraph = 0;
   while (n) { 
     ++ngraph;
-    n->Zprojecting(fl,ngraph,gen_colors);
+    n->Zprojecting(fl,ngraph,true);
     //n->FillCoupling(shand); 
 
     if (n->on) {
@@ -199,8 +190,33 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
 
   //Colors
-  CFCol_Matrix   = new CFColor(N,firstgraph,gen_colors,pID);
-
+  if (emit!=spect && emit!=127) {
+    char cemit=emit,cspect=spect;
+    if (fl[(int)emit].IsGluon()) cemit+='A';
+    else cemit+='i';
+    if (fl[(int)spect].IsGluon()) cspect+='A';
+    else cspect+='i';
+    CFCol_Matrix   = new CFColor(N,firstgraph,cemit,cspect,pID);
+  }
+  else {
+    CFCol_Matrix   = new CFColor(N,firstgraph,pID);
+    if (emit==127) {
+      for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
+	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
+	  char cemit=i,cspect=j;
+	  if (fl[i].IsGluon()) cemit+='A';
+	  else cemit+='i';
+	  if (fl[j].IsGluon()) cspect+='A';
+	  else cspect+='i';
+	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
+	  
+	  CFColor* mcfc = new CFColor(N,firstgraph,cemit,cspect,sij);
+	  CFCol_MMatrixMap[i*100+j] = mcfc;
+	}
+      }
+    }
+  }
+  
 
 
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
@@ -303,7 +319,8 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   namplitude = cnt;
 }
 
-void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib)
+void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib,
+					      char emit,char spect,Flavour* fl)
 {
   std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".map";
   ifstream from;
@@ -319,7 +336,33 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
   }
 
   //Colors
-  CFCol_Matrix   = new CFColor(N,firstgraph,false,pID,true);
+  //Colors
+  if (emit!=spect && emit!=127) {
+    char cemit=emit,cspect=spect;
+    if (fl[(int)emit].IsGluon()) cemit+='A';
+    else cemit+='i';
+    if (fl[(int)spect].IsGluon()) cspect+='A';
+    else cspect+='i';
+    CFCol_Matrix   = new CFColor(N,firstgraph,cemit,cspect,pID,true);
+  }
+  else {
+    CFCol_Matrix   = new CFColor(N,firstgraph,pID,true);
+    if (emit==127) {
+      for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
+	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
+	  char cemit=i,cspect=j;
+	  if (fl[i].IsGluon()) cemit+='A';
+	  else cemit+='i';
+	  if (fl[j].IsGluon()) cspect+='A';
+	  else cspect+='i';
+	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
+	  
+	  CFColor* mcfc = new CFColor(N,firstgraph,cemit,cspect,sij,true);
+	  CFCol_MMatrixMap[i*100+j] = mcfc;
+	}
+      }
+    }
+  }
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
 
   n = firstgraph;
@@ -358,6 +401,9 @@ Amplitude_Handler::~Amplitude_Handler()
       firstgraph = n;
     }
   }
+
+  for(CFC_iterator it=CFCol_MMatrixMap.begin();it!=CFCol_MMatrixMap.end();++it)
+    delete it->second;
 //   if (p_SCT!=NULL) delete p_SCT;
 }
 
@@ -731,6 +777,35 @@ Complex Amplitude_Handler::Zvalue(int ihel)
   return M;
 }
 
+Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
+{// Called for actual calculation of the CS
+  
+  int cid = 100*ci+cj;
+  if (cj<ci) cid = 100*cj+ci;
+  CFColor *col = CFCol_Matrix; 
+  if (cid!=0) {
+    CFC_iterator cit = CFCol_MMatrixMap.find(cid);
+    if (cit==CFCol_MMatrixMap.end()) {
+      msg_Error()<<"ERROR in Amplitude_Handler::Zvalue :"<<std::endl
+		 <<"   Color matrix ("<<ci<<"/"<<cj<<") not found! Abort the run."<<std::endl;
+      abort();
+    }
+    col = cit->second;
+  }
+  
+  for (size_t i=0;i<graphs.size();i++) {
+    Mi[i] = graphs[i]->Zvalue(ihel);
+  }
+  
+  Complex M(0.,0.);
+  for (size_t i=0;i<graphs.size();i++) {
+    for (size_t j=0;j<graphs.size();j++) {
+      M+= Mi[i]*conj(Mi[j])*col->Mij(i,j);  //colfactors[i][j];
+    }
+  }
+  return M;
+}
+
 double Amplitude_Handler::Zvalue(Helicity* hel)
 { 
   // 2D array for the amplitudes.
@@ -827,7 +902,7 @@ int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf,
   Single_Amplitude * n = firstgraph;
   Single_Amplitude * n_cmp = c_ampl->GetFirstGraph();
   for (int i=0;i<GetTotalGraphNumber();i++) {
-    double factor = 1.;
+   double factor = 1.;
     if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor,cplmap)) return 0;
     if (i==0) sf = factor;
     else if(!ATOOLS::IsEqual(sf,factor)) return 0;

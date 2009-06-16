@@ -1,8 +1,8 @@
-#include "PseudoScalar_Decay_MEs.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "XYZFuncs.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/ME_Library/PseudoScalar_Decay_MEs.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -39,7 +39,7 @@ void P_PP_Getter::PrintInfo(std::ostream &st,const size_t width) const {
 void P_LNu::SetModelParameters( GeneralModel md )
 {  
   m_global   = SQRT_05*md("GF",rpa.gen.ScalarConstant(std::string("GF")))*
-    md("f_P", 1.)*md("V_CKM", 1.)*(m_flavs[p_i[1]].PSMass());
+    md("f_P", 1.)*md("V_CKM", 1.)*(m_flavs[p_i[1]].HadMass());
 }
  
 void P_LNu::operator()(const Vec4D * p,Spin_Amplitudes * amps,int k0_n)
@@ -278,7 +278,7 @@ void P_VFF::SetModelParameters( GeneralModel md )
   m_global   = md("g", 1.);
   if (md("VDM",false)) {
     m_VDM       = true;
-    m_VDM_mass  = md("mass",Flavour(kf_rho_770).PSMass());
+    m_VDM_mass  = md("mass",Flavour(kf_rho_770).HadMass());
     m_VDM_width = md("width",Flavour(kf_rho_770).Width());
   }
   if (m_flavs[p_i[1]]==Flavour(kf_photon)) m_npol = 2;
@@ -338,7 +338,7 @@ void P_PLNu::SetModelParameters( GeneralModel md )
     m_aplus1  = md("a_+^1", 0.);
     m_azero0  = md("a_0^0", 0.);
     m_azero1  = md("a_0^1", 0.);
-    m_masssqr_diff = sqr(m_flavs[p_i[0]].PSMass())-sqr(m_flavs[p_i[1]].PSMass());
+    m_masssqr_diff = sqr(m_flavs[p_i[0]].HadMass())-sqr(m_flavs[p_i[1]].HadMass());
     break;
   case 0:
   default:

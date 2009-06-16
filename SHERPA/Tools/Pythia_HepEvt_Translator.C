@@ -1,8 +1,8 @@
-#include "Pythia_HepEvt_Translator.H"
-#include "HepEvt_Interface.H"
-#include "Blob_List.H"
-#include "Flavour.H"
-#include "Run_Parameter.H"
+#include "SHERPA/Tools/Pythia_HepEvt_Translator.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

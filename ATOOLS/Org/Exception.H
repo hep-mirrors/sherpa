@@ -1,7 +1,7 @@
-#ifndef Exception_H
-#define Exception_H
+#ifndef ATOOLS_Org_Exception_H
+#define ATOOLS_Org_Exception_H
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 #include <exception>
 #include <signal.h>
 
@@ -17,6 +17,7 @@ namespace ATOOLS {
       critical_error      = 5,
       fatal_error         = 6,
       missing_input       = 7,
+      missing_module      = 8,
       unknown             = 0 
     };
     
@@ -131,6 +132,6 @@ namespace ATOOLS {
 			  "<unknown class>::<unknown function>"));
 #endif
 
-#include "Exception_Handler.H"
+#include "ATOOLS/Org/Exception_Handler.H"
 
 #endif

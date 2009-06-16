@@ -1,9 +1,9 @@
-#ifndef EventReader_H
-#define EventReader_H
+#ifndef SHERPA_Tools_Event_Reader_H
+#define SHERPA_Tools_Event_Reader_H
 
 #include <fstream>
-#include "Blob_List.H"
-#include "Particle.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle.H"
 
 
 namespace SHERPA {

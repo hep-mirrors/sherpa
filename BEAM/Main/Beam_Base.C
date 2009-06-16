@@ -1,6 +1,6 @@
-#include "Beam_Base.H"
+#include "BEAM/Main/Beam_Base.H"
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace BEAM;
 
@@ -11,7 +11,7 @@ Beam_Base::Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
   m_energy(_energy), m_polarisation(_polarisation),
   m_x(1.), m_Q2(0.), m_weight(1.)
 {
-  double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
+  double disc      =  1.-ATOOLS::sqr(m_beam.Mass()/m_energy);
   if (disc<0) {
     msg_Error()<<"Error in Beam_Base :"<<m_type<<std::endl
 		       <<"   Mismatch of energy and mass of beam particle : "

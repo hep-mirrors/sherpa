@@ -1,8 +1,8 @@
-#include "Four_Body_MEs.H"
-#include "Message.H"
-#include "Tools.H"
-#include "XYZFuncs.H"
-#include "Random.H"
+#include "HADRONS++/ME_Library/Four_Body_MEs.H"
+#include "ATOOLS/Org/Message.H"
+#include "HADRONS++/Main/Tools.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;

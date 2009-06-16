@@ -1,0 +1,39 @@
+@node Tips and Tricks
+@chapter Tips and Tricks
+
+Sherpa can be easily extended with certain user defined tools.
+To this extent, a corresponding class must be written,
+equipped with a corresponding getter function and compiled into
+an external library which can be linked to Sherpa at runtime.
+Several specific examples are listed in the following sections.
+
+@menu
+* Bash completion:: How to add bash completion for Sherpa parameters
+* Versioned installation:: How to install multiple Sherpa versions in the same prefix.
+@end menu
+
+@node Bash completion
+@section Bash completion
+
+Sherpa will install a file named
+@samp{$prefix/share/SHERPA-MC/sherpa-completion} which contains tab completion
+functionality for the bash shell. You simply have to source it in your active
+shell session by running
+@verbatim
+  .  $prefix/share/SHERPA-MC/sherpa-completion
+@end verbatim
+
+@noindent and you will be able to tab-complete any parameters on a Sherpa
+command line.
+
+To permanently enable this feature in your bash shell, you'll have to add the
+source command above to your ~/.bashrc.
+
+@node Versioned installation
+@section Versioned installation
+
+If you want to install different Sherpa versions into the same prefix
+(e.g. /usr/local), you have to enable versioning of the installed directories
+by using the configure option @samp{--enable-versioning}.
+Optionally you can even pass an argument to this parameter of what you want the
+version tag to look like.

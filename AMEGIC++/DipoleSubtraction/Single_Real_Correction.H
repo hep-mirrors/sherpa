@@ -1,0 +1,121 @@
+#ifndef AMEGIC_DipoleSubtraction_Single_Real_Correction_H
+#define AMEGIC_DipoleSubtraction_Single_Real_Correction_H
+
+#include "AMEGIC++/Main/Process_Base.H"
+
+#include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
+
+#include "AMEGIC++/Amplitude/Amplitude_Handler.H"
+#include <vector>
+
+namespace AMEGIC {
+  class Single_DipoleTerm;
+  class Helicity;
+  class Single_Real_Correction : public Process_Base {
+  private:
+    bool                    m_newlib;
+    double                  m_iresult;
+    int                     m_libnumb;
+    bool                    m_valid;
+    double                  m_dalphamax;
+
+    Single_Real_Correction     * p_partner;
+
+    Process_Base          * p_tree_process;
+    std::vector<Single_DipoleTerm*> m_subtermlist;
+    PHASIC::NLO_subevtlist          m_subevtlist;
+    PHASIC::NLO_subevt              m_realevt;
+
+    /*------------------------------------------------------------------------------
+
+      Constructors
+
+      ------------------------------------------------------------------------------*/
+  public:
+
+    Single_Real_Correction();
+    ~Single_Real_Correction();
+ 
+    bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+
+    /*------------------------------------------------------------------------------
+
+      Initializing libraries, amplitudes, etc.
+
+      ------------------------------------------------------------------------------*/
+  public:
+    void                AddChannels(std::list<std::string>*);
+    bool                NewLibs() {return m_newlib;}
+    int                 InitAmplitude(MODEL::Model_Base *,Topology *,
+				      std::vector<Process_Base *> &,
+				      std::vector<Process_Base *> &);
+    bool                SetUpIntegrator();
+    Amplitude_Handler * GetAmplitudeHandler()          { return p_tree_process->GetAmplitudeHandler();}
+    Helicity *          GetHelicity()                  { return p_tree_process->GetHelicity(); }    
+    double              Result()                       { return m_iresult; } 
+    bool                IsValid()                      { return m_valid; }
+
+    /*------------------------------------------------------------------------------
+
+      Process management
+
+      ------------------------------------------------------------------------------*/
+  public:
+    void             SetLookUp(const bool lookup);
+    std::string      LibName()                          { return p_tree_process->LibName();     }
+    std::string      PSLibName()                        { return p_tree_process->PSLibName();   }
+    Process_Base   * Partner()                          { return p_partner;     }
+    void             Minimize();
+
+    void SetSelector(const PHASIC::Selector_Key &key);
+
+    inline PHASIC::NLO_subevtlist*             GetSubevtList()
+    { return &m_subevtlist; }
+    inline Single_DipoleTerm*                  GetSubTerm(size_t i)
+    { return m_subtermlist[i]; }
+    inline size_t                              GetSubTermNumber()
+    { return m_subtermlist.size(); }
+
+    int Type() { return 100; }
+    
+    /*------------------------------------------------------------------------------
+
+      Calculating total cross sections
+
+      ------------------------------------------------------------------------------*/
+  public:
+    double         Differential(const ATOOLS::Vec4D_Vector &);
+    double         Differential2();
+    double         DSigma(const ATOOLS::Vec4D_Vector &);
+    double         DSigma2();
+    double         operator()(const ATOOLS::Vec4D_Vector &);
+
+    void SetScale(const std::string &scale,
+		  const std::string &rentag,
+		  const std::string &factag);
+    void SetKFactor(const std::string &kfactor,
+		    const size_t &oqcdlo,const size_t &oewlo);
+
+    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    int            NumberOfDiagrams();
+    Point        * Diagram(int i);
+
+    bool PerformTests() { return true; }
+
+   /*------------------------------------------------------------------------------
+
+      Helpers
+      
+      ------------------------------------------------------------------------------*/
+  public:
+    void           PrintProcessSummary(int=0); 
+    void           PrintSubevtSummary();
+    size_t         NumberOfDipoles() {return m_subtermlist.size();} 
+    void FillAlphaHistogram(ATOOLS::Histogram*,double);
+  };
+}
+
+
+
+#endif
+

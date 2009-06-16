@@ -1,9 +1,9 @@
-#ifndef Weight_Jacobian_H
-#define Weight_Jacobian_H
+#ifndef PHOTONS_Tools_Weight_Jacobian_H
+#define PHOTONS_Tools_Weight_Jacobian_H
 
-#include "Weight_Base.H"
-#include "Particle.H"
-#include "Message.H"
+#include "PHOTONS++/Tools/Weight_Base.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
 
 namespace PHOTONS {
   class Weight_Jacobian: public Weight_Base {

@@ -1,0 +1,227 @@
+#ifndef AMEGIC_Cluster_Combine_Table_H
+#define AMEGIC_Cluster_Combine_Table_H
+
+#include <vector>
+#include <map>
+#include "AMEGIC++/Main/Point.H" 
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+
+namespace ATOOLS { 
+  class Cluster_Definitions_Base; 
+  class Jet_Finder;
+}
+
+namespace AMEGIC {
+
+  std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
+
+  class Leg {
+  private:
+    AMEGIC::Point *p_point;
+    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets;
+    long unsigned int m_id;
+    double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
+    double *p_qmin;
+    std::string m_type;
+    ATOOLS::Flavour m_mapfl;
+    friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
+  public:
+    // constructors
+    Leg(AMEGIC::Point *const point=NULL,const int anti=1);
+    Leg(const Leg &leg);
+    // member functions
+    void DetermineCouplings(const int type);
+    // inline functions
+    inline void SetAnti(int a)                       { m_anti=a;      }
+    inline void SetExternal(int ext)                 { m_ext=ext;     }
+    inline void SetPoint(AMEGIC::Point *const point) { p_point=point; }
+    inline int                  Anti() const      { return m_anti;  }
+    inline int                  External() const  { return m_ext;   }
+    inline const AMEGIC::Point *Point() const     { return p_point; }
+    inline void SetQCDJets(const int qcdjets) { m_qcdjets=qcdjets; }
+    inline int  QCDJets() const               { return m_qcdjets;  }
+    inline void   SetID(const size_t &id) { m_id=id;     }
+    inline size_t ID() const              { return m_id; }
+    inline void   SetKT2(const double &kt2)    
+    { m_kt2=kt2; SetMinKT2(m_kt2); }
+    inline void   SetKT2QCD(const double &kt2) 
+    { m_kt2qcd=kt2; SetMinKT2QCD(m_kt2qcd); }
+    inline void   SetKT2QED(const double &kt2) 
+    { m_kt2qed=kt2; SetMinKT2QED(m_kt2qed); }
+    inline void   SetMinKT2(const double &kt2) 
+    { m_minkt2=ATOOLS::Min(m_minkt2,kt2); }
+    inline void   SetMinKT2QCD(const double &kt2) 
+    { m_minkt2qcd=ATOOLS::Min(m_minkt2qcd,kt2); }
+    inline void   SetMinKT2QED(const double &kt2) 
+    { m_minkt2qed=ATOOLS::Min(m_minkt2qed,kt2); }
+    inline double KT2() const       { return m_kt2;       }
+    inline double KT2QCD() const    { return m_kt2qcd;    }
+    inline double KT2QED() const    { return m_kt2qed;    }
+    inline double MinKT2() const    { return m_minkt2;    }
+    inline double MinKT2QCD() const { return m_minkt2qcd; }
+    inline double MinKT2QED() const { return m_minkt2qed; }
+    inline void    SetPQMin(double *const qmin) { p_qmin=qmin;   }
+    inline double *PQMin() const                { return p_qmin; }
+    inline void   SetQMin(const double qmin) { *p_qmin=qmin; }
+    inline double QMin() const { return p_qmin!=NULL?*p_qmin:-1.0; }
+    inline ATOOLS::Flavour Flav() 
+    { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
+    inline const int OrderQCD() const { return m_nqcd; }
+    inline const int OrderQED() const { return m_nqed; }
+    inline const int NQCD() const { return m_pqcd; }
+    inline const int NQED() const { return m_pqed; }
+    inline const std::string Type() const { return m_type; }
+    inline void SetMapFlavour(const ATOOLS::Flavour &fl) { m_mapfl=fl; }
+    inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }
+  };// end of class Leg
+
+  std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
+
+  class Combine_Data;
+  class Combine_Table;
+
+  class Combine_Key {
+  public:
+    int m_i, m_j, m_k;
+    ATOOLS::Flavour m_flav;
+  public:
+    // constructors
+    Combine_Key();
+    Combine_Key(const int i,const int j,const int k,
+		const ATOOLS::Flavour &flav=ATOOLS::Flavour(kf_none));
+  };// end of class Combine_Key
+
+  bool operator<(const Combine_Key &a,const Combine_Key &b);
+
+  std::ostream& operator<<(std::ostream &ostr,const Combine_Key &ck);
+
+  class Combine_Data {
+  public:
+    ATOOLS::CParam m_pt2ij;
+    double m_sij, m_prop, m_coupling, m_weight;
+    int    m_strong;
+    Combine_Table *p_down;
+    ATOOLS::Flavour m_mo;
+    std::vector<int>    m_graphs;
+    friend std::ostream &operator<< (std::ostream&,const Combine_Table &);
+  public:
+    // constructors
+    Combine_Data();
+    Combine_Data(const Combine_Data &cd);
+    Combine_Data(const double pt2ij,const int ngraph);
+    // destructor
+    ~Combine_Data();
+  };
+
+  std::ostream &operator<<(std::ostream &ostr,const Combine_Data &cd);
+
+  typedef std::map<Combine_Key,Combine_Data> CD_List;
+
+  class Combine_Table {
+  protected:
+    static int s_all;
+  
+    ATOOLS::Mass_Selector *p_ms;
+
+    int        m_no, m_nstrong;
+    int        m_nlegs, m_nampl, m_graph_winner;
+    double     m_x1, m_x2;
+
+    CD_List               m_combinations;
+    CD_List::iterator     m_cdata_winner;
+
+    Combine_Table  * p_up;
+    Leg                ** p_legs;
+    ATOOLS::Cluster_Definitions_Base *p_clus;
+    ATOOLS::Vec4D       * p_moms;
+
+    Leg **p_hard;
+    int **p_hardc;
+
+    ATOOLS::Vec4D *p_save_moms;
+    size_t         m_nl;
+
+    std::set<Combine_Key> m_rejected;
+    
+    Leg  CombinedLeg(Leg *legs,const int i,const int j);
+    Leg *CombineLegs(Leg *legs,const int i,const int j,
+		     const int nlegs,const double pt2ij);
+    void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
+		     const int maxl);
+    void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
+		     const int maxl,ATOOLS::Vec4D *&omoms);
+    void AddPossibility(const int i,const int j,const int k,
+			const int ngraph,const ATOOLS::Flavour &mo);
+    bool InitStep(ATOOLS::Vec4D *moms,const int nl);
+    bool SelectWinner(const bool did_boost);
+    Combine_Table *CreateNext(bool did_boost);
+    Combine_Table *NextTable(Combine_Table *tab,
+			     const double x1,const double x2);
+    bool TestMomenta(const int i,const int j);
+
+    double Sprime() const;
+
+    void SetLegScales(Leg &leg,Leg &legi,Leg &legj,
+		      const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+		      const double &pt2ij);
+    ATOOLS::Flavour IsoFlip(const ATOOLS::Flavour &fl) const;
+    ATOOLS::Flavour MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const;
+    friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
+    friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
+  public:
+    // constructors
+    Combine_Table(ATOOLS::Mass_Selector *const ms,
+		  ATOOLS::Cluster_Definitions_Base *clus, 
+		  ATOOLS::Vec4D * moms,Combine_Table * up);
+    // destructor
+    ~Combine_Table();
+    // member functions
+    CD_List::iterator    CalcPropagator(CD_List::iterator &cit);
+    Combine_Table * CalcJet(int nl,const double x1,const double x2,
+			    ATOOLS::Vec4D *moms=NULL,const size_t mode=0);
+    void                 FillTable(Leg **legs,const int nlegs,const int nampl);
+    double               GetWinner(int &i, int &j,int &k);
+    bool                 IdentifyHardProcess();
+    int                  IdentifyHardPropagator() const;
+
+    bool Combinable(const Leg &a,const Leg &b,ATOOLS::Flavour &mo) const ;
+
+    int    AddCouplings(int &nqed,int &nqcd) const;
+    double MinKt2() const;
+    double MinKt2QCD(const int cpl=0) const;
+    double MinKt2QED(const int cpl=0) const;
+    double Kt2() const;
+    double Kt2QCD(const int cpl=0) const;
+    double Kt2QED(const int cpl=0) const;
+    double Kt2Hard() const;
+    double Kt2QCDHard(const int cpl=0) const;
+    double Kt2QEDHard(const int cpl=0) const;
+    // inline functions
+    inline const int                  Number()                             const { return m_no; }
+    inline const int                  NLegs()                              const { return m_nlegs; }
+    inline const int                  OrderStrong()                        const { return m_nstrong; }
+    inline const int                  NAmplitudes()                        const { return m_nampl; }
+    inline Combine_Table * const Up()                                 const { return p_up; }
+    inline Combine_Table * const Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
+    inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
+    inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
+    inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }
+    inline Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
+    inline ATOOLS::Vec4D      * const Momenta()                            const { return p_moms; }
+    inline Leg               ** const GetLegs()                            const { return p_legs; }
+    inline Leg               ** const GetHardLegs()                        const { return p_hard; }
+    inline int               ** const GetHardInfo()                        const { return p_hardc; }
+    inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
+    inline static void                ResetCounter()                             { s_all=0; }
+
+  };// end of class Combine_Table
+
+}// end of namespace AMEGIC
+
+#endif
+
+
+

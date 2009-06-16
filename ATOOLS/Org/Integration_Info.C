@@ -1,6 +1,9 @@
-#include "Info_Key.H"
+#include "ATOOLS/Org/Info_Key.H"
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
+
+namespace ATOOLS { template class SP(Integration_Info); }
 
 using namespace ATOOLS;
 
@@ -55,8 +58,10 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
       msg_Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
 		 <<key.p_info<<"'."<<std::endl;
     else
+#ifdef DEBUG__Integration_Info
       msg_Debugging()<<METHOD<<"(): Key '"<<&key
 		     <<"' already assigned."<<std::endl;
+#endif
 #ifdef USING__Threading
     pthread_mutex_unlock(&m_mtx);
 #endif

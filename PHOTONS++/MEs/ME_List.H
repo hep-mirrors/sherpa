@@ -1,16 +1,16 @@
-#ifndef ME_List_H
-#define ME_List_H
+#ifndef PHOTONS_MEs_ME_List_H
+#define PHOTONS_MEs_ME_List_H
 
-#include "Dipole_Type.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
-#include "PHOTONS_ME_Base.H"
+#include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 
-#include "Vector_To_Fermion_Fermion.H"
-#include "Scalar_To_Fermion_Fermion.H"
-#include "Scalar_To_Scalar_Scalar.H"
-#include "Z_To_Lepton_Lepton.H"
-#include "W_To_Lepton_Neutrino.H"
-#include "Tau_To_Lepton_Neutrinos.H"
+#include "PHOTONS++/MEs/Vector_To_Fermion_Fermion.H"
+#include "PHOTONS++/MEs/Scalar_To_Fermion_Fermion.H"
+#include "PHOTONS++/MEs/Scalar_To_Scalar_Scalar.H"
+#include "PHOTONS++/MEs/Z_To_Lepton_Lepton.H"
+#include "PHOTONS++/MEs/W_To_Lepton_Neutrino.H"
+#include "PHOTONS++/MEs/Tau_To_Lepton_Neutrinos.H"
 
 namespace PHOTONS {
   class ME_List {

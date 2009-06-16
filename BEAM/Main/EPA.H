@@ -1,7 +1,7 @@
-#ifndef EPA_H
-#define EPA_H
+#ifndef BEAM_Main_EPA_H
+#define BEAM_Main_EPA_H
 
-#include "Beam_Base.H"
+#include "BEAM/Main/Beam_Base.H"
 
 namespace ATOOLS { class Data_Reader; }
 

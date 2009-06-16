@@ -1,27 +1,27 @@
-#include "Hadrons.H"
-#include "Data_Reader.H"
-#include "Flavour.H"
-#include "Message.H"
-#include "Random.H"
+#include "HADRONS++/Main/Hadrons.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 #include <time.h>
-#include "Decay_Map.H"
-#include "Hadron_Decay_Channel.H"
-#include "Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Map.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include <fstream>
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <utility>
 #include <algorithm>
-#include "Decay_Table.H"
-#include "Vector.H"
-#include "Particle.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "Matrix.H"
-#include "Poincare.H"
-#include "HD_PS_Base.H"
-#include "Mixing_Handler.H"
-#include "Spin_Structure.H"
+#include "ATOOLS/Phys/Decay_Table.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "HADRONS++/PS_Library/HD_PS_Base.H"
+#include "HADRONS++/Main/Mixing_Handler.H"
+#include "HELICITIES/Main/Spin_Structure.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -33,7 +33,7 @@ Hadrons::Hadrons( string path, string file, string constfile ) :
 {
   msg_Tracking()<<"In Hadrons: ("<<path<<") "<<file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<path<<") "<<constfile<<std::endl;
-  p_decaymap = new Decay_Map(path, file, constfile);
+  p_decaymap = new Hadron_Decay_Map(path, file, constfile);
   p_decaymap->ReadInConstants();
   p_decaymap->SetHadronProperties();
   p_decaymap->Read();
@@ -183,8 +183,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Tabl
       bool partonic_finalstate(false);
       Hadron_Decay_Channel* hdc;
       do {
-        table->Select();
-        hdc = (Hadron_Decay_Channel*) table->GetOneDecayChannel();
+        hdc = table->Select();
         FlavourSet flavs=hdc->GetDecayProducts();
         for (FlSetIter fl=flavs.begin(); fl!=flavs.end(); fl++) {
           if(fl->Strong()) {
@@ -193,7 +192,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Tabl
           }
         }
       } while (!partonic_finalstate);
-      DEBUG_INFO("retrying with "<<hdc->ChannelName());
+      DEBUG_INFO("retrying with "<<hdc->Name());
       blob->UnsetStatus(blob_status::internal_flag);
       blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>(hdc));
       return hdc;
@@ -206,8 +205,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Tabl
 
   // dice decay channel acc. to BR
   // fixme : treat K0 special
-  table->Select();
-  Hadron_Decay_Channel* dec_channel = (Hadron_Decay_Channel*) table->GetOneDecayChannel();
+  Hadron_Decay_Channel* dec_channel = table->Select();
 
   if(setasymmetries) p_mixinghandler->ResetCPAsymmetries(table);
 
@@ -220,7 +218,8 @@ void Hadrons::DiceUncorrelatedKinematics(
                                           Hadron_Decay_Channel       * hdc,
                                           bool                         anti)
 {
-  rvalue.IncCall(METHOD);
+  static std::string mname(METHOD);
+  rvalue.IncCall(mname);
   if(moms.size()==2) {
     moms[1]=moms[0];
     return;
@@ -230,21 +229,21 @@ void Hadrons::DiceUncorrelatedKinematics(
   int trials(0);
   do {
     if(trials>10000) {
-      msg_Error()<<METHOD<<"("<<hdc->ChannelName()<<"): "
+      msg_Error()<<METHOD<<"("<<hdc->Name()<<"): "
                  <<"Rejected hadron decay kinematics 10000 times. "
                  <<"This indicates a wrong maximum. "
                  <<"Will accept kinematics."
                  <<endl;
-      rvalue.IncRetryMethod(METHOD);
+      rvalue.IncRetryMethod(mname);
       break;
     }
     value = hdc->Differential(&moms.front(),anti);
     if(value/max>1.05 && max>1e-30) {
-      msg_Tracking()<<METHOD<<"("<<hdc->ChannelName()<<") warning:"<<endl
+      msg_Tracking()<<METHOD<<"("<<hdc->Name()<<") warning:"<<endl
                     <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max
                     <<std::endl;
       hdc->GetPS()->SetMaximum(value);
-      rvalue.IncRetryMethod(METHOD);
+      rvalue.IncRetryMethod(mname);
       break;
     }
     trials++;

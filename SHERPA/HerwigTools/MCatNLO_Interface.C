@@ -1,14 +1,14 @@
-#include "MCatNLO_Interface.H"
+#include "SHERPA/HerwigTools/MCatNLO_Interface.H"
 
-#include "MCatNLO_Wrapper.H"
-#include "Herwig_Wrapper.H"
-#include "Data_Reader.H"
-#include "Particle.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Exception.H"
-#include "Running_AlphaS.H"
-#include "Scaling.H"
+#include "SHERPA/HerwigTools/MCatNLO_Wrapper.H"
+#include "SHERPA/HerwigTools/Herwig_Wrapper.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Math/Scaling.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

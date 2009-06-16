@@ -1,9 +1,9 @@
-#include "Prop_Generator.H"
-#include "Pfunc.H"
-#include "Zfunc.H"
-#include "Point.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "AMEGIC++/Amplitude/Prop_Generator.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "AMEGIC++/Main/Point.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

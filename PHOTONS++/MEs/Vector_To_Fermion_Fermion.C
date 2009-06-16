@@ -1,4 +1,4 @@
-#include "Vector_To_Fermion_Fermion.H"
+#include "PHOTONS++/MEs/Vector_To_Fermion_Fermion.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -158,7 +158,7 @@ Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3]).at(m_spins[3]));
   Vec4D pa     = m_moms[1]+m_moms[3];       // fermion propagator momenta
   Vec4D pb     = m_moms[2]+m_moms[3];
-  double m     = m_flavs[1].PSMass();       // fermion mass/propagator pole
+  double m     = m_flavs[1].HadMass();       // fermion mass/propagator pole
   m_moms[4]    = m_moms[5] = pa;            // enter those into m_moms
   m_moms[6]    = m_moms[7] = pb;
   m_flavs[4]   = m_flavs[6] = m_flavs[1];   // set to corresponding particle/antiparticle
@@ -215,7 +215,7 @@ double Vector_To_Fermion_Fermion::GetBeta_0_0() {
 }
 
 double Vector_To_Fermion_Fermion::GetBeta_0_1() {
-  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].PSMass())+3./2.) * GetBeta_0_0();
+  return m_alpha/M_PI * (2*log(m_M/m_flavs[1].HadMass())+3./2.) * GetBeta_0_0();
 }
 
 double Vector_To_Fermion_Fermion::GetBeta_0_2() {

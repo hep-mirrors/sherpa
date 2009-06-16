@@ -1,0 +1,73 @@
+#!/bin/bash
+
+print_help(){
+  echo "get_bibtex version 1.0" && echo && \
+  echo "options: -a <url>   use base url <url>" && \
+  echo "         -d         use existing download" && \
+  echo "         -h         display this help and exit" && echo
+}
+
+dnl=1
+sad='http://www.slac.stanford.edu/spires/find/hep/www'
+
+while getopts :ha:d OPT
+do
+  case $OPT in
+  a) sad=$OPTARG ;; 
+  d) dnl=0 ;; 
+  h) print_help && exit 0 ;;
+  \?)
+    if [ "$1" = "--help" ]; then print_help && exit 0;
+    else 
+      echo -n "get_bibtex: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
+      else echo "'$1'. try '-h'"
+      fi
+      print_help && exit 1
+    fi
+  esac
+  shift $((OPTIND-1)); 
+  OPTIND=1
+done
+if test -z $1; then
+  echo "get_bibtex: error: input file not specified.";
+  exit 1;
+fi;
+fnm=$1;
+
+get_cites() {
+  depls=$(grep -e'\\cite{' $1);
+  for i in $depls; do
+    sdep=$(echo $i | awk '{ split($$1,l,"%"); \
+	if (split(l[1],a,"\\\\cite{")<2) exit; \
+        split(a[2],b,"}"); n=split(b[1],c,",");
+        for (i=1;i<=n;++i) print c[i]; }');
+    echo $sdep;
+  done;
+}
+
+if ! test -f $fnm; then
+  echo "get_bibtex: error: file '"$fnm"' not found.";
+  exit 1;
+fi;
+cts=$(get_cites $fnm);
+if test -z "$cts"; then
+  echo "get_bibtex: error: no citations in '"$fnm"'.";
+  exit 1;
+fi;
+qst=$sad'?rawcmd=f'; cnt=0;
+for i in $cts; do 
+  if (( $cnt > 0 )); then qst=$qst'+or'; fi
+  qst=$qst'+texkey+'$i;
+  (( ++cnt ));
+done;
+qst=$qst'&FORMAT=wwwbriefbibtex';
+if (( $dnl )); then wget -O $fnm'.wget' $qst; fi;
+if ! test -f $fnm.wget; then
+  echo "get_bibtex: error: file '"$fnm".wget' not found.";
+  exit 1;
+fi;
+sed '0,/<!-- START RESULTS -->/ d
+/<!-- END RESULTS -->/,$ d
+/<pre>/ d
+/<\/pre>/ d' < $fnm.wget;

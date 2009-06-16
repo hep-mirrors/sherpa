@@ -1,17 +1,17 @@
-#ifndef Single_Amplitude_h
-#define Single_Amplitude_h
+#ifndef AMEGIC_Amplitude_Single_Amplitude_H
+#define AMEGIC_Amplitude_Single_Amplitude_H
 
-#include "Flavour.H"
-#include "Point.H"
-#include "Topology.H"
-#include "Basic_Sfuncs.H"
-#include "Zfunc.H"
-#include "String_Handler.H"
-#include "Color_Function.H"
-#include "Single_Amplitude_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "AMEGIC++/Main/Point.H"
+#include "AMEGIC++/Main/Topology.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/Amplitude/Zfunc.H"
+#include "AMEGIC++/String/String_Handler.H"
+#include "MODEL/Interaction_Models/Color_Function.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude_Base.H"
 
 namespace AMEGIC {
-  class Process_Info;
+  class Process_Tags;
   class Single_Amplitude: public Single_Amplitude_Base {
 
     Point* Pointlist;
@@ -29,7 +29,7 @@ namespace AMEGIC {
     Single_Amplitude* Next;
     Single_Amplitude(Point*,int,int,int*,int,int,Topology*,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
     Single_Amplitude(Point*,int*,int,int,Topology*,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
-    Single_Amplitude(int*,int,Process_Info*,Single_Amplitude**,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
+    Single_Amplitude(int*,int,Process_Tags*,Single_Amplitude**,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
     ~Single_Amplitude(); 
     void PrintGraph(); 
     void Zprojecting(ATOOLS::Flavour*,int,bool);

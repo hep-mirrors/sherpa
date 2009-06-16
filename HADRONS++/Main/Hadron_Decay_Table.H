@@ -1,8 +1,8 @@
-#ifndef Hadron_Decay_Table_H
-#define Hadron_Decay_Table_H
+#ifndef HADRONS_Main_Hadron_Decay_Table_H
+#define HADRONS_Main_Hadron_Decay_Table_H
 
-#include "Decay_Table.H"
-#include "Tools.H"
+#include "ATOOLS/Phys/Decay_Table.H"
+#include "HADRONS++/Main/Tools.H"
 
 namespace HADRONS {
 
@@ -15,6 +15,12 @@ private:
 public:
   Hadron_Decay_Table(ATOOLS::Flavour decayer);
   ~Hadron_Decay_Table();
+  inline Hadron_Decay_Channel* Select() {
+    return (Hadron_Decay_Channel*) Decay_Table::Select();
+  }
+  inline Hadron_Decay_Channel* at(const size_t i) {
+    return (Hadron_Decay_Channel*) Decay_Table::at(i);
+  }
   void Read(std::string path, std::string file);
   void Write(std::ostream& ostr);
   void Initialise(GeneralModel& startmd);

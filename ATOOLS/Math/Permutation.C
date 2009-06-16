@@ -1,6 +1,6 @@
-#include "Permutation.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "ATOOLS/Math/Permutation.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 

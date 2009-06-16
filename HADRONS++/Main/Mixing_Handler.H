@@ -1,5 +1,5 @@
-#ifndef Mixing_Handler_H
-#define Mixing_Handler_H
+#ifndef HADRONS_Main_Mixing_Handler_H
+#define HADRONS_Main_Mixing_Handler_H
 
 namespace ATOOLS {
   class Blob;
@@ -8,16 +8,16 @@ namespace ATOOLS {
 }
 
 namespace HADRONS {
-  class Decay_Map;
+  class Hadron_Decay_Map;
   class Hadron_Decay_Table;
 
   class Mixing_Handler {
     private:
-      Decay_Map* p_decaymap;
+      Hadron_Decay_Map* p_decaymap;
       double DetermineMixingTime(ATOOLS::Particle* decayer, bool checkforpartstatus);
 
     public:
-      Mixing_Handler(Decay_Map* decaymap);
+      Mixing_Handler(Hadron_Decay_Map* decaymap);
       ~Mixing_Handler();
       bool PerformMixing(ATOOLS::Particle* decayer, ATOOLS::Blob_List* bloblist);
       bool SetCPAsymmetries(ATOOLS::Particle* decayer, Hadron_Decay_Table* table);

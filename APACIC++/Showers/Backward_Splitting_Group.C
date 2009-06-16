@@ -1,11 +1,14 @@
-#include "Backward_Splitting_Group.H"
+#include "APACIC++/Showers/Backward_Splitting_Group.H"
 
 using namespace APACIC;
 
 Backward_Splitting_Group::
-Backward_Splitting_Group(Splitting_Function *const spl,
+Backward_Splitting_Group(ATOOLS::Mass_Selector *&ms,
+			 Splitting_Function *const spl,
 			 PDF::PDF_Base *const pdf): 
-  Splitting_Group(spl), p_pdf(pdf) {}
+  Splitting_Group(ms,spl), p_pdf(pdf) {
+  if (spl) m_flavs[1]=spl->GetFlB();
+}
 
 double Backward_Splitting_Group::CrudeInt(double zmin, double zmax) 
 {

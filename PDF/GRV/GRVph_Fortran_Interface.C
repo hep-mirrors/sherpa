@@ -1,7 +1,7 @@
-#include "GRVph_Fortran_Interface.H"
-#include "Run_Parameter.H"
-#include "Model_Base.H"
-#include "Message.H"
+#include "PDF/GRV/GRVph_Fortran_Interface.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Message.H"
 #include <unistd.h> 
 
 using namespace PDF;
@@ -37,8 +37,6 @@ PDF_Base * GRVph_Fortran_Interface::GetCopy()
   return new GRVph_Fortran_Interface(m_bunch);
 }
 
-void GRVph_Fortran_Interface::Output() {}
-
 void GRVph_Fortran_Interface::Calculate(double _x,double _Q2) 
 {
   float x = _x, Q2 = _Q2*m_fac_scale_factor;
@@ -62,6 +60,29 @@ double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   return value;
 }
 
-void GRVph_Fortran_Interface::AssignKeys(ATOOLS::Integration_Info *const info)
+DECLARE_PDF_GETTER(GRVph_Getter);
+
+PDF_Base *GRVph_Getter::operator()
+  (const Parameter_Type &args) const
 {
+  if (!args.m_bunch.IsPhoton()) return NULL;
+  return new GRVph_Fortran_Interface(args.m_bunch);
+}
+
+void GRVph_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"GRV photon PDF, see PRD45(1992)3986 and PRD46(1992)1973";
+}
+
+GRVph_Getter *p_get;
+
+extern "C" void InitPDFLib(const std::string &path)
+{
+  p_get = new GRVph_Getter("GRV");
+}
+
+extern "C" void ExitPDFLib()
+{
+  delete p_get;
 }

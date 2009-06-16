@@ -1,0 +1,77 @@
+#ifndef PHASIC_Scales_Scale_Setter_Base_H
+#define PHASIC_Scales_Scale_Setter_Base_H
+
+#include "ATOOLS/Org/Info_Key.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Math/Vector.H"
+
+namespace PHASIC {
+
+  class Process_Base;
+
+  struct stp {
+
+    enum id {
+      unknown =  0,
+      ren     =  1,
+      fac     =  2
+    };
+
+  };// end of struct stp
+
+  std::ostream &operator<<(std::ostream &ostr,const stp::id &scl);
+
+  class Integrable_Base;
+
+  struct Scale_Setter_Arguments {
+    Process_Base *p_proc;
+    std::string m_ren, m_fac;
+    Scale_Setter_Arguments(Process_Base *const proc,
+			   const std::string &ren="",const std::string &fac=""):
+      p_proc(proc), m_ren(ren), m_fac(fac) {}
+  };// end of class Scale_Setter_Arguments
+
+  class Scale_Setter_Base {
+  public:
+
+    typedef ATOOLS::Getter_Function
+    <Scale_Setter_Base,Scale_Setter_Arguments> Scale_Getter_Function;
+
+  protected:
+
+    Process_Base *p_proc;
+
+    std::map<stp::id,double> m_scale;
+
+    ATOOLS::Info_Key m_kfkey;
+
+    bool m_scale2;
+
+  public:
+
+    inline Scale_Setter_Base(Process_Base *const proc,
+			     const bool scale2=false):
+      p_proc(proc), m_scale2(scale2) {}
+
+    virtual ~Scale_Setter_Base();
+
+    virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p) = 0;
+    virtual double CalculateScale2(const std::vector<ATOOLS::Vec4D> &p);
+
+    virtual ATOOLS::Vec4D Momentum(const size_t &i) const;
+
+    virtual double HT() const;
+
+    inline const double Scale(const stp::id type) { return m_scale[type]; }
+
+    inline Process_Base *Process() const { return p_proc; }
+
+    inline bool Scale2() { return m_scale2; }
+
+    static void ShowSyntax(const size_t i);
+
+  };// end of class Scale_Setter_Base
+
+}// end of namespace PHASIC
+
+#endif

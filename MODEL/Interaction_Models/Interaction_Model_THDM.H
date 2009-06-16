@@ -1,10 +1,10 @@
-#ifndef Interaction_Model_THDM_h
-#define Interaction_Model_THDM_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_THDM_H
+#define MODEL_Interaction_Models_Interaction_Model_THDM_H
 
-#include "Interaction_Model_Higgs_THDM.H"
-#include "Interaction_Model_SM.H"
-#include "Interaction_Model_Base.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Higgs_THDM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_SM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_THDM : public Interaction_Model_Base {

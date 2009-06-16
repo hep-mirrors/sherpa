@@ -1,14 +1,14 @@
-#ifndef Dress_Blob_Base_H
-#define Dress_Blob_Base_H
+#ifndef PHOTONS_Tools_Dress_Blob_Base_H
+#define PHOTONS_Tools_Dress_Blob_Base_H
 
-#include "Vector.H"
-#include "Particle.H"
-#include "Blob.H"
-#include "Random.H"
-#include "Poincare.H"
-#include "Dipole_Type.H"
-#include "Generate_One_Photon.H"
-#include "Avarage_Photon_Number.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
+#include "PHOTONS++/Tools/Generate_One_Photon.H"
+#include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
 
 using namespace ATOOLS;
 using namespace std;

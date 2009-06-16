@@ -1,15 +1,15 @@
-#ifndef Generate_One_Photon_H
-#define Generate_One_Photon_H
+#ifndef PHOTONS_Tools_Generate_One_Photon_H
+#define PHOTONS_Tools_Generate_One_Photon_H
 
-#include "Vector.H"
-#include "Particle.H"
-#include "Message.H"
-#include "Random.H"
-#include "Dipole_Type.H"
-#include "Poincare.H"
-#include "Vector.H"
-#include "Generate_Dipole_Photon_Angle.H"
-#include "Generate_Multipole_Photon_Angle.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Vector.H"
+#include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
+#include "PHOTONS++/PhaseSpace/Generate_Multipole_Photon_Angle.H"
 
 using namespace ATOOLS;
 

@@ -1,7 +1,8 @@
-#include "PDF_MRST99.H"
+#include "PDF/MRST/PDF_MRST99.H"
 
-#include "Message.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace std;
 using namespace PDF;
@@ -48,25 +49,6 @@ PDF_Base *PDF_MRST99::GetCopy()
   return copy;
 }
 
-void PDF_MRST99::Output() {
-  msg_Out()<<" internal PDF_MRST99 : "<<endl;
-  switch(m_set) {
-  case 1:  msg_Out()<<"          central gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 2:  msg_Out()<<"          higher gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 3:  msg_Out()<<"          lower gluon, central alpha_s = "<<0.1175<<endl;break;
-  case 4:  msg_Out()<<"          lower alpha_s = "<<0.1125<<endl;break;
-  case 5:  msg_Out()<<"          higher alpha_s = "<<0.1225<<endl;break;
-  case 6:  msg_Out()<<"          quarks up, alpha_s = "<<0.1178<<endl;break;
-  case 7:  msg_Out()<<"          quarks down, alpha_s = "<<0.1171<<endl;break;
-  case 8:  msg_Out()<<"          strange up, central alpha_s = "<<0.1175<<endl;break;
-  case 9:  msg_Out()<<"          strange down, central alpha_s = "<<0.1175<<endl;break;
-  case 10: msg_Out()<<"          charm up, central alpha_s = "<<0.1175<<endl;break;
-  case 11: msg_Out()<<"          charm down, central alpha_s = "<<0.1175<<endl;break;
-  case 12: msg_Out()<<"          larger d/u, central alpha_s = "<<0.1175<<endl;break;
-  default : msg_Out()<<"Error in  PDF_MRST99::Output() : Set = "<<m_set<<endl;
-  }
-}
-
 void PDF_MRST99::Calculate(double x,double _Q2) 
 {
   double Q2(_Q2*m_fac_scale_factor);
@@ -102,6 +84,31 @@ double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl)
   }
 }
 
-void PDF_MRST99::AssignKeys(ATOOLS::Integration_Info *const info)
+DECLARE_PDF_GETTER(MRST99_Getter);
+
+PDF_Base *MRST99_Getter::operator()
+  (const Parameter_Type &args) const
 {
+  if (!args.m_bunch.IsHadron()) return NULL;
+  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
+  return new PDF_MRST99(args.m_bunch,mode,args.m_path);
+}
+
+void MRST99_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"MRST 1999 fit\n"
+     <<std::string(width+4,' ')<<"see hep-ph/9907231";
+}
+
+MRST99_Getter *p_get;
+
+extern "C" void InitPDFLib(const std::string &path)
+{
+  p_get = new MRST99_Getter("MRST99");
+}
+
+extern "C" void ExitPDFLib()
+{
+  delete p_get;
 }

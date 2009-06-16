@@ -1,7 +1,7 @@
-#ifndef Colour_Reconnections_H
-#define Colour_Reconnections_H
+#ifndef AHADIC_Formation_Colour_Reconnections_H
+#define AHADIC_Formation_Colour_Reconnections_H
 
-#include "Cluster.H"
+#include "AHADIC++/Tools/Cluster.H"
 
 namespace AHADIC {
   class Colour_Reconnections {

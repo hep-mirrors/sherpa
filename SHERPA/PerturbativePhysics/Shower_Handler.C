@@ -1,117 +1,50 @@
-#include "Shower_Handler.H"
-#include "Tree.H"
-#include "ISR_Handler.H"
-#include "Message.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+
+#include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Shower_Handler::Shower_Handler(std::string dir,std::string file,
-			       MODEL::Model_Base * _model,
-			       PDF::ISR_Handler * _isr,int _maxjet) :
-  m_maxjetnumber(_maxjet), m_showermi(true), m_ps_scale2_factor(1.), 
-  p_apacic(NULL), 
-  p_jf(NULL), p_isr_handler(_isr)
+Shower_Handler::Shower_Handler
+(const std::string &dir,const std::string &file,
+ MODEL::Model_Base *const model,PDF::ISR_Handler *const isr):
+  p_shower(NULL), p_isr(isr)
 {
   Data_Reader dataread(" ",";","!","=");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
-  m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
-  m_isrshowerswitch = 0;
-  if (_isr) {
-    if (_isr->On()>0) m_isrshowerswitch = dataread.GetValue<int>("ISR_SHOWER",1);
-  }
-  m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
-  if (m_isrshowerswitch && !m_fsrshowerswitch) {
-    msg_Out()<<"WARNING in Shower_Handler : "<<std::endl
-	     <<"   final state shower is switched on, "
-	     <<"since initial state shower is turned on as well."<<std::endl;
-    m_fsrshowerswitch=true;
-  }
-  m_showermi        = dataread.GetValue<int>("SHOWER_MI",1);
-  m_ps_scale2_factor = dataread.GetValue<double>("PS_SCALE2_FACTOR",1.); 
-  rpa.gen.SetVariable("SHOWER_MODE",dataread.GetValue<std::string>("SHOWER_MODE","0"));
-  int type(4);
-  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton())          type = 1;
-  else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) type = 4;
-  else type = 4;
-
-  p_jf = new Jet_Finder(rpa.gen.Variable("Y_CUT"),type);
-  p_jf->SetDeltaR(ToType<double>(rpa.gen.Variable("DELTA_R")));
-
-  if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Apacic(_isr,_model,p_jf,&dataread);
-  }
-  else {
-    msg_Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
-	       <<"   Showers needed, but no valid shower generator found !"<<std::endl
-	       <<"   Don't know, how to deal with SHOWER_GENERATOR = "<<m_showergenerator<<std::endl
-	       <<"   Abort."<<std::endl;
-    abort();
-  }
+  m_name=dataread.GetValue<std::string>("SHOWER_GENERATOR","CSS");
+  p_shower = PDF::Shower_Getter::GetObject
+    (m_name,PDF::Shower_Key(model,p_isr,&dataread));
+  if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
 }
 
 
 Shower_Handler::~Shower_Handler() 
 {
-  if (p_apacic) { delete p_apacic; p_apacic = NULL; }
-  if (p_jf) delete p_jf;
+  if (p_shower) delete p_shower;
 }
 
-
-int Shower_Handler::PerformShowers(double _x1,double _x2) {
-  if (p_apacic) return p_apacic->PerformShowers(_x1,_x2);
-  return 0;
-}
-
-int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(1.,1.);
-  return 0;
-}
 
 void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist) 
 {
-  if (p_apacic) {
-    if (!(p_apacic->ExtractPartons(m_isrshowerswitch,m_fsrshowerswitch,_bloblist))) {
-      msg_Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
-		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
-    }
-//     std::cout<<"------------------------------------------------------------------------------"<<std::endl
-// 	     <<(*_bloblist)
-// 	     <<"------------------------------------------------------------------------------"<<std::endl;
-  }
+  if (p_shower && p_shower->ExtractPartons(_bloblist)) return;
+  THROW(fatal_error,"Internal error");
 }
 
 void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist) 
 {
-  if (p_apacic) {
-    if (!(p_apacic->ExtractPartons(0,m_fsrshowerswitch,_bloblist))) {
-      msg_Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
-		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
-    }
-  }
+  if (p_shower && p_shower->ExtractPartons(_bloblist)) return;
+  THROW(fatal_error,"Internal error");
 }
 
-void Shower_Handler::CleanUp() {
-  if (p_apacic) p_apacic->PrepareTrees();
-}
-
-APACIC::Tree * Shower_Handler::GetFinTree() { 
-  if (p_apacic) return p_apacic->FinTree();
-  msg_Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
-	     <<"   Apacic is not the shower handler."<<std::endl
-	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
-  abort();
-}
-
-APACIC::Tree ** Shower_Handler::GetIniTrees() { 
-  if (p_apacic) return p_apacic->IniTrees();
-  msg_Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
-	     <<"   Apacic is not the shower handler."<<std::endl
-	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
-  abort();
+void Shower_Handler::CleanUp() 
+{
+  if (p_shower) p_shower->CleanUp();
 }
 

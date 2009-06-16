@@ -1,8 +1,8 @@
-#ifndef Running_Alphas_H
-#define Running_Alphas_H
+#ifndef MODEL_Main_Running_AlphaS_H
+#define MODEL_Main_Running_AlphaS_H
 
-#include "Flavour.H"
-#include "Function_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Function_Base.H"
 
 namespace MODEL {
 

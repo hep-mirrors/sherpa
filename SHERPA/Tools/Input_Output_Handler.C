@@ -1,21 +1,19 @@
-#include "Input_Output_Handler.H"
+#include "SHERPA/Tools/Input_Output_Handler.H"
 
-#include "Blob_List.H"
-#include "Message.H"
-#include "Run_Parameter.H"
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Output_Base.H"
-#include "Output_Sherpa.H"
-#include "Output_HepEvt.H"
-#include "Output_D0_HepEvt.H"
-#include "HepEvt_Interface.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "SHERPA/Tools/Output_Base.H"
+#include "SHERPA/Tools/Output_Sherpa.H"
+#include "SHERPA/Tools/Output_HepEvt.H"
+#include "SHERPA/Tools/Output_D0_HepEvt.H"
+#include "SHERPA/Tools/HepEvt_Interface.H"
 #ifdef USING__HEPMC2
-#include "HepMC2_Interface.H"
+#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "HepMC/GenEvent.h"
-#include "Output_HepMC2.H"
-#include "Output_HepMC2_Ascii.H"
-#include "Output_HepMC2_Genevent.H"
+#include "SHERPA/Tools/Output_HepMC2_Genevent.H"
 #endif
 
 #include <stdio.h>
@@ -56,8 +54,6 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string sherpaoutput=dr->GetValue<string>("SHERPA_OUTPUT",string(""));
   string hepevtoutput=dr->GetValue<string>("HEPEVT_OUTPUT",string(""));
   string d0hepevtoutput=dr->GetValue<string>("D0_HEPEVT_OUTPUT",string(""));
-  string hepmc2output=dr->GetValue<string>("HEPMC2_OUTPUT",string(""));
-  string hepmc2asciiout=dr->GetValue<string>("HEPMC2_ASCII_OUTPUT",string(""));
   string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
     ("EVT_FILE_PATH",rpa.gen.Variable("SHERPA_RUN_PATH"));
@@ -76,24 +72,6 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   if (!d0hepevtoutput.empty()) {
     m_outmap["D0_HEPEVT"]=
       new Output_D0_HepEvt(evtpath+"/"+d0hepevtoutput,".d0.hepevt", precision);
-  }
-  if (!hepmc2output.empty()) {
-#ifdef USING__HEPMC2
-    m_outmap["HEPMC2"]=
-      new Output_HepMC2(evtpath+"/"+hepmc2output,".hepmc2", precision);
-#else
-    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
-          +string("with HepMC2, please read our Howto for more information."));
-#endif
-  }
-  if (!hepmc2asciiout.empty()) {
-#ifdef USING__HEPMC2
-    m_outmap["HEPMC2_ASCII"]=
-      new Output_HepMC2_Ascii(evtpath+"/"+hepmc2asciiout,".hepmc2a",precision);
-#else
-    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
-          +string("with HepMC2, please read our Howto for more information."));
-#endif
   }
   if (!hepmc2genevent.empty()) {
 #ifdef USING__HEPMC2
@@ -165,20 +143,18 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
-  ResetInterfaces();
-  
   double weight=1.0;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==btp::Signal_Process) {
-      Blob_Data_Base *info((**blit)["ME_Weight"]);
+      Blob_Data_Base *info((**blit)["Weight"]);
       if (info!=NULL) weight*=info->Get<double>();
-      info=(**blit)["Process_Weight"];
-      if (info!=NULL) weight/=info->Get<double>();
     }
   }
 
+  double xs(p_eventhandler->TotalXS()), xserr(p_eventhandler->TotalErr());
   for (map<string,Output_Base *>::iterator oit=m_outmap.begin();
        oit!=m_outmap.end();oit++) {
+    oit->second->SetXS(xs, xserr);
     oit->second->Output(blobs, weight);
   }
   
@@ -196,7 +172,4 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
     }
   }
   return true;
-}
-
-void Input_Output_Handler::ResetInterfaces() {
 }

@@ -1,6 +1,6 @@
-#include "Main.H"
+#include "HADRONS++/Run/Main.H"
 
-#include "Photons.H"
+#include "PHOTONS++/Main/Photons.H"
 
 static Flavour mother_flav;
 static Blob* ref_blob;
@@ -28,13 +28,13 @@ void InitialiseGenerator(int argc, char *argv[])
   mother_flav.SetStable(false);
   if(ToType<int>(argv[1])<0) mother_flav=mother_flav.Bar();
 
-  rpa.gen.SetEcms(mother_flav.PSMass());
+  rpa.gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 
   Particle* mother_part = new Particle( 1,mother_flav,
-                                        Vec4D(mother_flav.PSMass(),0.,0.,0.) );
+                                        Vec4D(mother_flav.HadMass(),0.,0.,0.) );
   mother_part->SetTime();
-  mother_part->SetFinalMass(mother_flav.PSMass());
+  mother_part->SetFinalMass(mother_flav.HadMass());
   
   ref_blob = new Blob();
   ref_blob->SetType(btp::Hadron_Decay);

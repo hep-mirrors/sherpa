@@ -1,9 +1,8 @@
-#ifndef Timelike_Sudakov_H
-#define Timelike_Sudakov_H
+#ifndef APACIC_Showers_Timelike_Sudakov_H
+#define APACIC_Showers_Timelike_Sudakov_H
 
-#include "Splitting_Group.H"
-#include "Model_Base.H"
-#include "Veto_Info.H"
+#include "APACIC++/Showers/Splitting_Group.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace APACIC {
 
@@ -17,6 +16,8 @@ namespace APACIC {
     Sudakov_Tools       *p_tools;
     Timelike_Kinematics *p_kin;
 
+    ATOOLS::Mass_Selector *p_rms;
+
     double m_pt2min, m_pt2max, m_t0; 
     double m_alphasmax, m_alphasfix; 
     double m_pt2min_qed, m_t0_qed, m_alpha_qed;
@@ -27,9 +28,11 @@ namespace APACIC {
     int m_last_veto, m_mode, m_shower, m_kt_scheme;
   
     double m_E2, m_t, m_tb, m_tc, m_z, m_phi, m_pt2;
-    double m_maxpt, m_rscalefac, m_oldt;
+    double m_maxpt, m_rscalefac, m_oldt, m_rbmax, m_fcs;
 
-    std::vector<int> m_vetos[2];
+    size_t m_nem, m_maxem;
+
+    const Knot *p_lemkn;
 
     ATOOLS::Simple_Polarisation_Info m_pol_b, m_pol_c;
 
@@ -42,7 +45,7 @@ namespace APACIC {
 
     void ProduceT(double ta, double m2);  
 
-    bool Veto(Knot *const mo, double ta, double wa); 
+    bool Veto(Knot *const mo, double ta); 
 
     bool CplVeto(double t);
     bool OrderingVeto(Knot *const mo,double ta,double wa,double z);
@@ -70,6 +73,9 @@ namespace APACIC {
     void Init(const double fmed=0.0);
     bool Dice(Knot *const mother,Knot *const granny=NULL);
     void AcceptBranch(const Knot *const mo);
+    void AcceptEmission(const Knot *const mo);
+
+    bool MEWeight(Knot *const me);
 
     const ATOOLS::Simple_Polarisation_Info &GetPolB();
     const ATOOLS::Simple_Polarisation_Info &GetPolC();
@@ -107,19 +113,21 @@ namespace APACIC {
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }
 
-#ifdef USING__Veto_Info
-    inline std::vector<int> &Vetos(const int &mode=-1) 
-    { return m_vetos[mode>=0?mode:m_mode];   }
+    inline void ResetN() { m_nem=0; }
 
-    inline void ClearVetos() 
-    { m_vetos[0].clear(); m_vetos[1].clear(); }
-    inline void AddVeto(const svc::code &veto=svc::no_veto)
-    { m_vetos[m_mode].push_back(veto); }
-    inline void SetVeto(const svc::code &veto)
-    { m_vetos[m_mode].back()=m_vetos[m_mode].back()|veto; }
+    inline void SetNMax(const size_t &n) { m_maxem=n; }
 
-    inline void SetMode(const int &mode) { m_mode=mode; }
-#endif
+    inline size_t GetN()    { return m_nem;   }
+    inline size_t GetNMax() { return m_maxem; }
+
+    inline const Knot *LastEmission() const { return p_lemkn; }
+
+    inline void SetRBMax(const double &rb) { m_rbmax=rb; }
+    inline void SetFCS(const double &fcs)  { m_fcs=fcs;  }
+
+    inline double RBMax() const { return m_rbmax; }
+
+    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
 
   };// end of class Timelike_Sudakov
 

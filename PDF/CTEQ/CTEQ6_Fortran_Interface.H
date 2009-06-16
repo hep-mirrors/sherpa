@@ -1,8 +1,8 @@
-#ifndef CTEQ6_Fortran_Interface_H
-#define CTEQ6_Fortran_Interface_H
+#ifndef PDF_CTEQ_CTEQ6_Fortran_Interface_H
+#define PDF_CTEQ_CTEQ6_Fortran_Interface_H
 
-#include "PDF_Base.H"
-#include "Flavour.H"
+#include "PDF/Main/PDF_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace PDF {
 
@@ -19,13 +19,10 @@ namespace PDF {
     CTEQ6_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string);
 
     PDF_Base * GetCopy();
-    void       Output();
 
     void   Calculate(double,double);
     double AlphaSPDF(double);
     double GetXPDF(const ATOOLS::Flavour);
-
-    void AssignKeys(ATOOLS::Integration_Info *const info);
 
     static void Error();
 

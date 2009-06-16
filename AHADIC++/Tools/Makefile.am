@@ -13,7 +13,7 @@ libAhadicTools_la_SOURCES = \
 			    Hadron_Init.C \
                             Hadronisation_Parameters.C
 
-pkginclude_HEADERS = \
+localinc_HEADERS   = \
                      Cluster.H \
                      Constituents.H \
 		     Strong_Coupling.H \
@@ -25,7 +25,3 @@ pkginclude_HEADERS = \
 		     Soft_Cluster_Handler.H \
 		     Hadron_Init.H \
                      Hadronisation_Parameters.H
-
-INCLUDES = @ATOOLSINCS@ @MODELINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

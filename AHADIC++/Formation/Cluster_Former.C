@@ -1,5 +1,5 @@
-#include "Cluster_Former.H"
-#include "Message.H"
+#include "AHADIC++/Formation/Cluster_Former.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;

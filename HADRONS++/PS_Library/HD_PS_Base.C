@@ -1,19 +1,19 @@
-#include "HD_PS_Base.H"
-#include "Hadron_Decay_Channel.H"
-#include "Two_Body_PSs.H"
-#include "Three_Body_PSs.H"
-#include "Four_Body_PSs.H"
-#include "Rambo.H"
-#include "Message.H"
-#include "ResonanceFlavour.H"
-#include "HD_ME_Base.H"
+#include "HADRONS++/PS_Library/HD_PS_Base.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/PS_Library/Two_Body_PSs.H"
+#include "HADRONS++/PS_Library/Three_Body_PSs.H"
+#include "HADRONS++/PS_Library/Four_Body_PSs.H"
+#include "PHASIC++/Channels/Rambo.H"
+#include "ATOOLS/Org/Message.H"
+#include "HADRONS++/PS_Library/ResonanceFlavour.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
 
 using namespace HADRONS;
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-#include "MyStrStream.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 ////////// class HD_Channel_Selector /////////
  
@@ -96,7 +96,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       if( ci.res1==string("W") ) kfres = kf_Wplus;
       SimpleResonanceFlavour res(
           Flavour(kfres).IDName(),
-          md("Mass_"+Flavour(kfres).IDName(), Flavour(kfres).PSMass() ),
+          md("Mass_"+Flavour(kfres).IDName(), Flavour(kfres).HadMass() ),
           md("Width_"+Flavour(kfres).IDName(), Flavour(kfres).Width() ) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
@@ -105,13 +105,13 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     if( ci.name==string("TwoResonances") ) {
       SimpleResonanceFlavour res_a( 
           ci.res1, 
-          md("Mass_"+ci.res1, Flavour(kf_a_1_1260_plus).PSMass()),
+          md("Mass_"+ci.res1, Flavour(kf_a_1_1260_plus).HadMass()),
           md("Width_"+ci.res1,Flavour(kf_a_1_1260_plus).Width())); 
       string helpname;                      // name of vector resonanance as it appears in md
       helpname = ci.res2;                   // take name unchanged
       SimpleResonanceFlavour res_v( 
           ci.res2,
-          md("Mass_"+helpname, Flavour(kf_rho_770_plus).PSMass()),
+          md("Mass_"+helpname, Flavour(kf_rho_770_plus).HadMass()),
           md("Width_"+helpname,Flavour(kf_rho_770_plus).Width()) ); 
       return new TwoResonances( flavs, res_a, ci.a, res_v, ci.b, ci.c );
     }
@@ -131,7 +131,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
 HD_PS_Base::HD_PS_Base( Hadron_Decay_Channel * hdc ) :
   Multi_Channel("hadron decay channel"), p_hdc(hdc),
   p_channelselector(new HD_Channel_Selector),
-  m_res(-1.), m_error(1.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].PSMass()))
+  m_res(-1.), m_error(1.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].HadMass()))
 {
 }
 
@@ -144,7 +144,7 @@ HD_PS_Base::~HD_PS_Base()
 bool HD_PS_Base::IsChannel( string name )
 {
   GeneralModel ghost_md;
-  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NumberOfDecayProducts(),
+  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(),
                                                        p_hdc->Flavours(),
                                                        name, ghost_md );
   if (sc==NULL) return 0;
@@ -154,7 +154,7 @@ bool HD_PS_Base::IsChannel( string name )
 
 bool HD_PS_Base::AddChannel(string name,double weight, GeneralModel const & md)
 {
-  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NumberOfDecayProducts(),
+  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(),
                                                        p_hdc->Flavours(),
                                                        name, md );
   if (sc==NULL) return 0;
@@ -164,10 +164,10 @@ bool HD_PS_Base::AddChannel(string name,double weight, GeneralModel const & md)
 }
 
 vector<double> HD_PS_Base::CalculateNormalisedWidth() {
-  msg_Info()<<METHOD<<" for "<<p_hdc->ChannelName()<<endl;
+  msg_Info()<<METHOD<<" for "<<p_hdc->Name()<<endl;
   Reset();
-  long int iter = Number()*5000*int(pow(2.,int(p_hdc->NumberOfDecayProducts())-2));
-  int maxopt    = Number()*int(pow(2.,2*(int(p_hdc->NumberOfDecayProducts())-2)));
+  long int iter = Number()*5000*int(pow(2.,int(p_hdc->NOut())-2));
+  int maxopt    = Number()*int(pow(2.,2*(int(p_hdc->NOut())-2)));
 
   long int n;
   int      opt=0;

@@ -1,19 +1,8 @@
-#include "Particle_List.H"
+#include "ATOOLS/Phys/Particle_List.H"
 
-#include "Particle_Qualifier.H"
-#include "Poincare.H"
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace ATOOLS;
-
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
-			std::back_insert_iterator<Particle_List>,
-			const Is_KF &);
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
-			std::back_insert_iterator<Particle_List>,
-			const Is_Final_State &);
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
-			std::back_insert_iterator<Particle_List>,
-			const Is_Charged &);
 
 std::ostream &ATOOLS::operator<<(std::ostream &s,const Particle_List &pl) 
 {
@@ -37,20 +26,6 @@ void Particle_List::Clear()
     delete back();
     pop_back();
   }
-}
-
-void Particle_List::Keep(Particle_Qualifier_Base *const qual)
-{
-  for (iterator pit=begin();pit!=end();) 
-    if (!(*qual)(*pit)) pit=erase(pit);
-    else ++pit;
-}
-
-void Particle_List::Erase(Particle_Qualifier_Base *const qual)
-{
-  for (iterator pit=begin();pit!=end();) 
-    if ((*qual)(*pit)) pit=erase(pit);
-    else ++pit;
 }
 
 void Particle_List::Boost(Poincare *const boost) const
@@ -89,3 +64,10 @@ void Particle_List::RotateBack(Poincare *const rot) const
   }
 }
 
+void Particle_List::Flip() const
+{
+  for (const_iterator pit=begin();pit!=end();++pit) {
+    Vec4D mom((*pit)->Momentum());
+    (*pit)->SetMomentum(Vec4D(mom[0],(-1.)*Vec3D(mom)));
+  }
+}

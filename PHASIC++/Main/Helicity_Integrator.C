@@ -1,16 +1,39 @@
-#include "Helicity_Integrator.H"
+#include "PHASIC++/Main/Helicity_Integrator.H"
 
-#include "Random.H"
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Blob.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Phys/Blob.H"
 #include <fstream>
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
+namespace ATOOLS { template class SP(Helicity_Integrator); }
+
+std::ostream &PHASIC::operator<<(std::ostream &str,const hls::scheme &s)
+{
+  switch (s) {
+  case hls::unknown: return str<<"<unknown>";
+  case hls::sum: return str<<"sum";
+  case hls::sample: return str<<"sample";
+  }
+  return str<<"<error>";
+}
+
+std::map<std::string,std::string> hls::HelicitySchemeTags()
+{
+  std::map<std::string,std::string> tags;
+  tags["UNKNOWN"]=ToString((int)hls::unknown);
+  tags["SUM"]=ToString((int)hls::sum);
+  tags["SAMPLE"]=ToString((int)hls::sample);
+  return tags;
+}
+ 
 Helicity_Integrator::Helicity_Integrator():
-  m_iter(1) {}
+  m_iter(1), m_on(1) {}
 
 Helicity_Integrator::~Helicity_Integrator() 
 {
@@ -104,6 +127,7 @@ void Helicity_Integrator::ReadIn(const std::string &pid)
 
 bool Helicity_Integrator::GeneratePoint()
 {
+  if (!m_on) return true;
   size_t l(0), r(m_asum.size()-1), i((l+r)/2);
   double disc(ran.Get()), a(m_asum[i]);
   while (r-l>1) {
@@ -122,6 +146,7 @@ bool Helicity_Integrator::GeneratePoint()
 
 double Helicity_Integrator::Weight()
 {
+  if (!m_on) return 1.0;
   if (m_id>m_weights.size()) THROW(fatal_error,"Invalid identifier");
   return 1.0/(m_valid*m_weights[m_id])*m_weight;
 }

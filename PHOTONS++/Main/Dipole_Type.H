@@ -1,9 +1,9 @@
-#ifndef Dipole_Type_H
-#define Dipole_Type_H
+#ifndef PHOTONS_Main_Dipole_Type_H
+#define PHOTONS_Main_Dipole_Type_H
 
 // #define PHOTONS_DEBUG
 
-#include "Particle.H"
+#include "ATOOLS/Phys/Particle.H"
 
 using namespace ATOOLS;
 

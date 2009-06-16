@@ -1,8 +1,8 @@
-#ifndef Momentum_Shifter_H
-#define Momentum_Shifter_H
+#ifndef ATOOLS_Phys_Momentum_Shifter_H
+#define ATOOLS_Phys_Momentum_Shifter_H
 
-#include "Particle.H"
-#include "Poincare.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Poincare.H"
 
 #include <set>
 

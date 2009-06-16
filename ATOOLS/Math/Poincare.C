@@ -1,7 +1,7 @@
-#include "Poincare.H"
+#include "ATOOLS/Math/Poincare.H"
 
-#include "MathTools.H"
-#include "Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 
@@ -56,7 +56,7 @@ Poincare::Poincare(Vec4D v):
   if (IsZero(m_rsq) || IsEqual(m_rsq,-m_beta[0])) m_status=0;
 }
    
-void Poincare::Boost(Vec4D& v)
+void Poincare::Boost(Vec4D& v) const
 {
   if (m_status==0) return;
   double v0((m_beta[0]*v[0]-Vec3D(m_beta)*Vec3D(v))/m_rsq);
@@ -64,7 +64,7 @@ void Poincare::Boost(Vec4D& v)
   v=Vec4D(v0,Vec3D(v)-c1*Vec3D(m_beta)); 
 }
   
-void Poincare::BoostBack(Vec4D& v)
+void Poincare::BoostBack(Vec4D& v) const
 {
   if (m_status==0) return;
   double v0((m_beta[0]*v[0]+Vec3D(m_beta)*Vec3D(v))/m_rsq);
@@ -73,7 +73,7 @@ void Poincare::BoostBack(Vec4D& v)
 }
   
   
-void Poincare::Rotate(Vec4D& v)
+void Poincare::Rotate(Vec4D& v) const
 {
   if (m_usen) {
     Vec3D n(m_n), a(v), at(n*(n*a)/m_nsq), ap(a-at);
@@ -81,7 +81,7 @@ void Poincare::Rotate(Vec4D& v)
   }
 }
   
-void Poincare::RotateBack(Vec4D& v)
+void Poincare::RotateBack(Vec4D& v) const
 {
   if (m_usen) {
     Vec3D n(-1.0*m_n), a(v), at(n*(n*a)/m_nsq), ap(a-at);

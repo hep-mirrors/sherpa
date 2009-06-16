@@ -1,8 +1,8 @@
-#ifndef Polarisation_h
-#define Polarisation_h
+#ifndef AMEGIC_Main_Polarisation_H
+#define AMEGIC_Main_Polarisation_H
 
-#include "Basic_Sfuncs.H"
-#include "Single_Amplitude.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude.H"
 
 namespace AMEGIC {
   //! Contains everything with massless and massive polarisations.

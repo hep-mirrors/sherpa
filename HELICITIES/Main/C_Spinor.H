@@ -1,61 +1,68 @@
-#ifndef CSpinor_H
-#define CSpinor_H
+#ifndef HELICITIES_Main_C_Spinor_H
+#define HELICITIES_Main_C_Spinor_H
 
-#include "MyComplex.H"
-#include "Vector.H"
-#include "C_Vector.H"
+#include "HELICITIES/Main/C_Vector.H"
 
 #include <vector>
 
-namespace HELICITIES {
+namespace ATOOLS {
 
+  template <class Scalar>
   class CSpinor {
+  public:
+
+    typedef std::complex<Scalar> SComplex;
+
   protected:
     
     static double s_accu;
     static unsigned int s_r1, s_r2, s_r3;
 
-    int m_r, m_b, m_c;
+    int m_r, m_b, m_c, m_on;
 
     long unsigned int m_h[2];
 
-    Complex m_u[4];
+    SComplex m_u[4];
 
-    friend std::ostream &operator<<(std::ostream &ostr,const CSpinor &s); 
+    template <class _Scalar> friend std::ostream &
+    operator<<(std::ostream &ostr,const CSpinor<_Scalar> &s); 
 
   public:
 
     // constructor
     inline CSpinor(const int r=1,const int b=1,const int c=0,
 		   const long unsigned int &hm=0,
-		   const long unsigned int &hp=0): m_r(r), m_b(b), m_c(c) 
-    { m_u[0]=m_u[1]=m_u[2]=m_u[3]=0.0; m_h[0]=hm; m_h[1]=hp; }
+		   const long unsigned int &hp=0,const int on=3): 
+      m_r(r), m_b(b), m_c(c), m_on(on)
+    { m_u[0]=m_u[1]=m_u[2]=m_u[3]=Scalar(0.0); m_h[0]=hm; m_h[1]=hp; }
     inline CSpinor(const int &r,const int &b,
-		   const Complex &u1,const Complex &u2,
-		   const Complex &u3,const Complex &u4,const int c=0,
+		   const SComplex &u1,const SComplex &u2,
+		   const SComplex &u3,const SComplex &u4,const int c=0,
 		   const long unsigned int &hm=0,
-		   const long unsigned int &hp=0): m_r(r), m_b(b), m_c(c)
+		   const long unsigned int &hp=0,const int on=3): 
+      m_r(r), m_b(b), m_c(c), m_on(on)
     { m_u[0]=u1; m_u[1]=u2; m_u[2]=u3; m_u[3]=u4; m_h[0]=hm; m_h[1]=hp; }
     inline CSpinor(const int &r,const int &b,const int &h,
-		   const ATOOLS::Vec4D &p,const int c=0,
+		   const Vec4<Scalar> &p,const int c=0,
 		   const long unsigned int &hm=0,
-		   const long unsigned int &hp=0,const double &m2=-1.0): 
+		   const long unsigned int &hp=0,const Scalar &m2=-1.0): 
       m_r(r), m_b(b), m_c(c) { m_h[0]=hm; m_h[1]=hp; Construct(h,p,m2); }
     
     // member functions
-    void Construct(const int h,const ATOOLS::Vec4D &p,double m2=-1.0);
+    void Construct(const int h,const Vec4<Scalar> &p,Scalar m2=-1.0);
+    bool SetOn();
 
-    Complex operator*(const CSpinor &s) const;
+    SComplex operator*(const CSpinor &s) const;
 
-    CSpinor operator*(const double &d) const;
-    CSpinor operator*(const Complex &c) const;
-    CSpinor operator/(const double &d) const;
-    CSpinor operator/(const Complex &c) const;
+    CSpinor operator*(const Scalar &d) const;
+    CSpinor operator*(const SComplex &c) const;
+    CSpinor operator/(const Scalar &d) const;
+    CSpinor operator/(const SComplex &c) const;
 
-    CSpinor operator*=(const double &d); 
-    CSpinor operator*=(const Complex &c); 
-    CSpinor operator/=(const double &d);
-    CSpinor operator/=(const Complex &c); 
+    CSpinor operator*=(const Scalar &d); 
+    CSpinor operator*=(const SComplex &c); 
+    CSpinor operator/=(const Scalar &d);
+    CSpinor operator/=(const SComplex &c); 
 
     CSpinor operator+(const CSpinor &s) const;
     CSpinor operator-(const CSpinor &s) const;
@@ -68,9 +75,9 @@ namespace HELICITIES {
     static void SetGauge(const int gauge);
 
     // inline functions
-    inline Complex &operator[](const size_t &i) 
+    inline SComplex &operator[](const size_t &i) 
     { return m_u[i]; }
-    inline const Complex &operator[](const size_t &i) const 
+    inline const SComplex &operator[](const size_t &i) const 
     { return m_u[i]; }
     inline int &operator()(const int i=0) 
     { return m_c; }
@@ -80,35 +87,38 @@ namespace HELICITIES {
     inline int R() const { return m_r; }
     inline int B() const { return m_b; }
 
+    inline int On() const { return m_on; }
+
     inline void SetH(const long unsigned int &h,const int i) { m_h[i]=h; }
 
     inline long unsigned int H(const int i) const { return m_h[i]; }
 
-    inline double PPlus(const ATOOLS::Vec4D &p) const  
+    inline Scalar PPlus(const Vec4<Scalar> &p) const  
     { return p[0]+p[s_r3]; }
-    inline Complex PPlus(const CVec4D &p) const  
+    inline SComplex PPlus(const CVec4<Scalar> &p) const  
     { return p[0]+p[s_r3]; }
-    inline double PMinus(const ATOOLS::Vec4D &p) const 
+    inline Scalar PMinus(const Vec4<Scalar> &p) const 
     { return p[0]-p[s_r3]; }
-    inline Complex PMinus(const CVec4D &p) const 
+    inline SComplex PMinus(const CVec4<Scalar> &p) const 
     { return p[0]-p[s_r3]; }
 
-    inline Complex PT(const ATOOLS::Vec4D &p) const  
-    { return Complex(p[s_r1],p[s_r2]); }
-    inline Complex PT(const CVec4D &p) const  
-    { return p[s_r1]+Complex(0.0,1.0)*p[s_r2]; }
-    inline Complex PTC(const ATOOLS::Vec4D &p) const  
-    { return Complex(p[s_r1],-p[s_r2]); }
-    inline Complex PTC(const CVec4D &p) const  
-    { return p[s_r1]-Complex(0.0,1.0)*p[s_r2]; }
+    inline SComplex PT(const Vec4<Scalar> &p) const  
+    { return SComplex(p[s_r1],p[s_r2]); }
+    inline SComplex PT(const CVec4<Scalar> &p) const  
+    { return p[s_r1]+SComplex(0.0,1.0)*p[s_r2]; }
+    inline SComplex PTC(const Vec4<Scalar> &p) const  
+    { return SComplex(p[s_r1],-p[s_r2]); }
+    inline SComplex PTC(const CVec4<Scalar> &p) const  
+    { return p[s_r1]-SComplex(0.0,1.0)*p[s_r2]; }
 
     inline CSpinor operator-() const
     { return CSpinor(m_r,m_b,-m_u[0],-m_u[1],-m_u[2],-m_u[3],
-		     m_c,m_h[0],m_h[1]); }
+		     m_c,m_h[0],m_h[1],m_on); }
 
     inline CSpinor Bar() const
     { return CSpinor(m_r,-m_b,std::conj(m_u[2]),std::conj(m_u[3]),
-		     std::conj(m_u[0]),std::conj(m_u[1]),m_c,m_h[0],m_h[1]); }
+		     std::conj(m_u[0]),std::conj(m_u[1]),m_c,m_h[0],m_h[1],
+		     (m_on&1)<<1|(m_on&2)>>1); }
     
     inline static void SetAccuracy(const double &accu) 
     { s_accu=accu; }
@@ -233,10 +243,12 @@ namespace HELICITIES {
     \f]
   */
     
-  std::ostream &operator<<(std::ostream &ostr,const CSpinor &s); 
-  std::ostream &operator<<(std::ostream &ostr,
-    			   const std::vector<CSpinor> &v); 
+  template <class Scalar>
+  std::ostream &operator<<(std::ostream &ostr,const CSpinor<Scalar> &s); 
 
 }// end of namespace BCF
+
+#define DDSpinor ATOOLS::CSpinor<double>
+#define QDSpinor ATOOLS::CSpinor<long double>
 
 #endif

@@ -1,20 +1,20 @@
-#include "Hadron_Decay_Handler.H"
-#include "Message.H"
-#include "Random.H"
-#include "Blob.H"
-#include "Blob_List.H"
-#include "Particle.H"
-#include "CXXFLAGS.H"
+#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle.H"
 #ifdef USING__PYTHIA
-#include "Lund_Interface.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
 #endif
-#include "Mass_Handler.H"
-#include "Run_Parameter.H"
-#include "Hadrons.H"
-#include "Decay_Map.H"
-#include "Hadron_Decay_Table.H"
-#include "Hadron_Decay_Channel.H"
-#include "Mixing_Handler.H"
+#include "ATOOLS/Phys/Mass_Handler.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "HADRONS++/Main/Hadrons.H"
+#include "HADRONS++/Main/Hadron_Decay_Map.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
+#include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/Main/Mixing_Handler.H"
 
 
 using namespace SHERPA;
@@ -29,10 +29,11 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
 #ifdef USING__PYTHIA
   ,p_lund(NULL)
 #endif
+  ,p_ampl(NULL)
 {
   p_cans = new set<kf_code>;
-  FlDtVMap* decmap = p_hadrons->DecayMap();
-  for (FlDtVMap::iterator decit=decmap->begin(); decit!=decmap->end(); decit++)
+  Decay_Map* decmap = p_hadrons->DecayMap();
+  for (Decay_Map::iterator decit=decmap->begin(); decit!=decmap->end(); decit++)
     p_cans->insert(decit->first.Kfcode());
 }
 
@@ -40,7 +41,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
 Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   m_decmodel(string("Lund")), m_mode(0),
   p_hadrons(NULL), 
-  p_lund(_lund)
+  p_lund(_lund), p_ampl(NULL)
 { 
   p_cans = new set<kf_code>;
   Flavour flav(kf_tau);
@@ -188,11 +189,91 @@ bool Hadron_Decay_Handler::IsExclusiveDecaychannel(Blob* blob, FlavourSet decayp
 {
   if(m_mode==1) {
     if(blob->TypeSpec()=="Sherpa") {
-      Decay_Map* decaymap = p_hadrons->DecayMap();
-      Hadron_Decay_Table* dt = decaymap->FindDecay(blob->InParticle(0)->Flav());
+      Hadron_Decay_Map* decaymap = p_hadrons->DecayMap();
+      Decay_Table* dt = decaymap->FindDecay(blob->InParticle(0)->Flav());
       if(dt->GetDecayChannel(decayproducts)) return true;
       else                                   return false;
     }
   }
   return false;
+}
+
+Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
+{
+  msg_Debugging()<<METHOD<<"() {\n";
+  msg_Indent();
+  if (p_ampl!=NULL) delete p_ampl;
+  p_ampl = new Cluster_Amplitude();
+  p_ampl->SetMS(this);
+  for (int i(0);i<bl->NInP();++i) {
+    Particle *p(bl->InParticle(i));
+    ColorID col(p->GetFlow(2),p->GetFlow(1));
+    p_ampl->CreateLeg(-p->Momentum(),p->Flav().Bar(),col,1<<i);
+  }
+  p_ampl->SetNIn(bl->NInP());
+  for (int i(0);i<bl->NOutP();++i) {
+    Particle *p(bl->OutParticle(i));
+    ColorID col(p->GetFlow(1),p->GetFlow(2));
+    p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
+  }
+  while (p_ampl->Legs().size()>p_ampl->NIn()+2) {
+    if (msg_LevelIsDebugging()) p_ampl->Print();
+    Cluster_Amplitude *ampl(p_ampl);
+    p_ampl = p_ampl->InitNext();
+    p_ampl->SetMS(this);
+    for (size_t i(0);i<ampl->NIn();++i) {
+      Cluster_Leg *cl(ampl->Leg(i));
+      p_ampl->CreateLeg(cl->Mom(),cl->Flav(),cl->Col(),cl->Id());
+    }
+    p_ampl->SetNIn(ampl->NIn());
+    Cluster_Leg *lij(NULL);
+    for (size_t i(ampl->NIn());i<ampl->Legs().size()-1;++i) {
+      Cluster_Leg *li(ampl->Leg(i));
+      for (size_t j(i+1);j<ampl->Legs().size();++j) {
+	Cluster_Leg *lj(ampl->Leg(j));
+	ColorID nc;
+	if (li->Col().m_i==0 && li->Col().m_j==0) {
+	  nc=lj->Col();
+	}
+	else if (lj->Col().m_i==0 && lj->Col().m_j==0) {
+	  nc=li->Col();
+	}
+	else if (li->Col().m_i && li->Col().m_i==lj->Col().m_j) {
+	  nc.m_i=lj->Col().m_i;
+	  nc.m_j=li->Col().m_j;
+	}
+	else if (li->Col().m_j && li->Col().m_j==lj->Col().m_i) {
+	  nc.m_i=li->Col().m_i;
+	  nc.m_j=lj->Col().m_j;
+	}
+	if (nc.m_i>=0 && nc.m_j>=0) {
+	  Flavour fl(kf_photon);
+	  if (nc.m_i && nc.m_j) fl=Flavour(kf_gluon);
+	  else if (nc.m_i) fl=Flavour(kf_d);
+	  else if (nc.m_j) fl=Flavour(kf_d).Bar();
+	  p_ampl->CreateLeg(li->Mom()+lj->Mom(),fl,nc,li->Id()+lj->Id());
+	  lij=p_ampl->Legs().back();
+	  break;
+	}
+      }
+      if (lij) break;
+    }
+    if (lij==NULL) THROW(fatal_error,"Internal eror");
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      Cluster_Leg *cl(ampl->Leg(i));
+      if (cl->Id()&lij->Id()) continue;
+      p_ampl->CreateLeg(cl->Mom(),cl->Flav(),cl->Col(),cl->Id());
+    }    
+  }
+  if (msg_LevelIsDebugging()) p_ampl->Print();
+  while (p_ampl->Prev()) {
+    p_ampl=p_ampl->Prev();
+  }
+  msg_Debugging()<<"}\n";
+  return p_ampl;
+}
+
+double Hadron_Decay_Handler::Mass(const ATOOLS::Flavour &fl) const
+{
+  return fl.HadMass();
 }

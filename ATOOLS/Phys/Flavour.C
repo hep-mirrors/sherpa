@@ -1,12 +1,12 @@
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 
-#include "MathTools.H"
-#include "Exception.H"
-#include "MyStrStream.H"
-#include "Data_Reader.H"
-#include "Run_Parameter.H"
-#include "Run_Parameter.H"
-#include "Random.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
 
 namespace ATOOLS 
 {
@@ -16,8 +16,8 @@ namespace ATOOLS
 using namespace ATOOLS;
 
 Particle_Info::Particle_Info(const Particle_Info &info):
-  m_kfc(info.m_kfc), m_mass(info.m_mass), m_yuk(info.m_yuk), 
-  m_width(info.m_width),
+  m_kfc(info.m_kfc), m_mass(info.m_mass), m_hmass(info.m_hmass),
+  m_yuk(info.m_yuk), m_width(info.m_width),
   m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2), 
   m_icharge(info.m_icharge), m_isoweak(info.m_isoweak), 
   m_strong(info.m_strong), m_spin(info.m_spin), m_stable(info.m_stable), 
@@ -36,26 +36,26 @@ Particle_Info::Particle_Info
  const int spin,const int majorana,const bool on,
  const bool stable,bool massive,const std::string &idname,
  const std::string &texname,const bool dummy):
-  m_kfc(kfc), m_mass(mass), m_yuk(mass), m_width(width),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(mass), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(strong), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_on(on), m_massive(massive), m_hadron(0), m_idname(idname), 
   m_texname(texname)
 {
-  m_content.push_back(new Flavour(m_kfc));
+  m_content.push_back(new Flavour(*this));
 }
 
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
  const int icharge,const int isoweak,const int spin,const bool on,
  const bool stable,const std::string &idname,const std::string &texname):
-  m_kfc(kfc), m_mass(mass), m_yuk(0.0), m_width(width),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(0.0), m_width(width),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), m_on(on), 
   m_massive(1), m_hadron(1), m_idname(idname), m_texname(texname) 
 {
-  m_content.push_back(new Flavour(m_kfc));
+  m_content.push_back(new Flavour(*this));
 }
 
 Particle_Info::~Particle_Info()
@@ -126,13 +126,13 @@ int Flavour::Ctq() const
 void Flavour::FromCtq(const int code)
 {
   m_anti=code<6;
-  m_kfc=(kf_code)abs(code-6);
-  if (code==6) m_kfc=kf_gluon;
+  if (code==6) p_info=s_kftable[kf_gluon];
+  else p_info=s_kftable[(kf_code)abs(code-6)];
 }
 
 int Flavour::HepEvt() 
 {
-  switch (m_kfc) {
+  switch (Kfcode()) {
   case kf_a_0_1450:      return 10111;
   case kf_a_0_1450_plus: return m_anti?-10211:10211;
   case kf_f_0_1370:      return 10221;
@@ -149,19 +149,20 @@ int Flavour::HepEvt()
 void Flavour::FromHepEvt(long int code) 
 {
   m_anti=code<0;
-  m_kfc=code=(kf_code)abs(code);
+  code=(kf_code)abs(code);
+  p_info=s_kftable[code];
   switch (code) {
-  case 10111:   m_kfc=kf_a_0_1450; break;
-  case 10211:   m_kfc=kf_a_0_1450_plus; break;
-  case 10221:   m_kfc=kf_f_0_1370; break;
-  case 10331:   m_kfc=kf_f_0_1710; break;
-  case 13122:   m_kfc=23122; break;
-  case 23122:   m_kfc=13122; break;
-  case 9000111: m_kfc=kf_a_0_980; break;
-  case 9000211: m_kfc=kf_a_0_980_plus; break;
-  case 9010221: m_kfc=kf_f_0_980; break; 
-  case 91:      m_kfc=kf_cluster; break;
-  case 92:      m_kfc=kf_string; break;
+  case 10111:   p_info=s_kftable[kf_a_0_1450]; break;
+  case 10211:   p_info=s_kftable[kf_a_0_1450_plus]; break;
+  case 10221:   p_info=s_kftable[kf_f_0_1370]; break;
+  case 10331:   p_info=s_kftable[kf_f_0_1710]; break;
+  case 13122:   p_info=s_kftable[23122]; break;
+  case 23122:   p_info=s_kftable[13122]; break;
+  case 9000111: p_info=s_kftable[kf_a_0_980]; break;
+  case 9000211: p_info=s_kftable[kf_a_0_980_plus]; break;
+  case 9010221: p_info=s_kftable[kf_f_0_980]; break; 
+  case 91:      p_info=s_kftable[kf_cluster]; break;
+  case 92:      p_info=s_kftable[kf_string]; break;
   }
 }
 
@@ -169,7 +170,7 @@ std::string Flavour::TexName() const
 {
   std::string name;
   if (m_anti && (!SelfAnti())) name="\\overline{";
-  switch (m_kfc) {
+  switch (Kfcode()) {
   case kf_pi : {name+=std::string("\\pi^{0}");break;}
   case kf_K : {name+=std::string("K^{0}");break;}
   case kf_K_L : {name+=std::string("K_{L}");break;}
@@ -198,13 +199,13 @@ std::string Flavour::TexName() const
       name=StringReplace(name, "Omega", "\\Omega ");
     }
     else {
-      name+=s_kftable[m_kfc]->m_texname;
+      name+=p_info->m_texname;
     }
     break;
   }
   if (m_anti && (!SelfAnti())) {
     name+="}";
-    switch (m_kfc) {
+    switch (Kfcode()) {
     case kf_pi : {name=std::string("\\pi^{0}");break;}
     case kf_pi_plus : {name=std::string("\\pi^{-}");break;}
     case kf_K : {name=std::string("\\bar K^{0}");break;}
@@ -242,14 +243,14 @@ std::string Flavour::ShellName() const
 
 std::string Flavour::IDName() const 
 {
-  std::string name(s_kftable[m_kfc]->m_idname);
-  if (m_kfc==kf_e || m_kfc==kf_mu || m_kfc==kf_tau) {
+  std::string name(p_info->m_idname);
+  if (Kfcode()==kf_e || Kfcode()==kf_mu || Kfcode()==kf_tau) {
     name.erase(name.length()-1,1);
     if (IsAnti()) name+="+";
     else name+="-";      
   }
   else {
-    if (m_kfc==kf_Hplus || m_kfc==kf_Wplus ||
+    if (Kfcode()==kf_Hplus || Kfcode()==kf_Wplus ||
         (IsHadron() && !IsBaryon() && name[name.length()-1]=='+')) {
       name.erase(name.length()-1,1);
       if (IsAnti()) name+="-";
@@ -262,8 +263,8 @@ std::string Flavour::IDName() const
 
 bool Flavour::IsDiQuark() const 
 {
-  if(abs(m_kfc)>=1103&&abs(m_kfc)<=5505) {
-    double help=abs(m_kfc)/100.0-int(abs(m_kfc)/100.0); 
+  if(abs(Kfcode())>=1103&&abs(Kfcode())<=5505) {
+    double help=abs(Kfcode())/100.0-int(abs(Kfcode())/100.0); 
     if(help<0.031) return true;
   }
   return false;
@@ -271,27 +272,27 @@ bool Flavour::IsDiQuark() const
 
 bool Flavour::IsBaryon() const 
 {
-  if (abs(m_kfc)%10000<1000) return false;
+  if (abs(Kfcode())%10000<1000) return false;
   return !IsDiQuark();
 }
 
 bool Flavour::IsB_Hadron() const 
 {
-  if (abs(m_kfc)<100)                            return 0;
-  if (m_kfc-100*int(m_kfc/100)<10)                 return 0;
-  if (abs((m_kfc-100*int(m_kfc/100))/10)==5)       return 1;
-  if (abs((m_kfc-1000*int(m_kfc/1000))/100)==5)    return 1;
-  if (abs((m_kfc-10000*int(m_kfc/10000))/1000)==5) return 1;
+  if (abs(Kfcode())<100)                            return 0;
+  if (Kfcode()-100*int(Kfcode()/100)<10)                 return 0;
+  if (abs((Kfcode()-100*int(Kfcode()/100))/10)==5)       return 1;
+  if (abs((Kfcode()-1000*int(Kfcode()/1000))/100)==5)    return 1;
+  if (abs((Kfcode()-10000*int(Kfcode()/10000))/1000)==5) return 1;
   return 0;
 }
 
 bool Flavour::IsC_Hadron() const 
 {
-  if (abs(m_kfc)<100)                            return 0;
-  if (m_kfc-100*int(m_kfc/100)<10)                 return 0;
-  if (abs((m_kfc-100*int(m_kfc/100))/10)==4)       return 1;
-  if (abs((m_kfc-1000*int(m_kfc/1000))/100)==4)    return 1;
-  if (abs((m_kfc-10000*int(m_kfc/10000))/1000)==4) return 1;
+  if (abs(Kfcode())<100)                            return 0;
+  if (Kfcode()-100*int(Kfcode()/100)<10)                 return 0;
+  if (abs((Kfcode()-100*int(Kfcode()/100))/10)==4)       return 1;
+  if (abs((Kfcode()-1000*int(Kfcode()/1000))/100)==4)    return 1;
+  if (abs((Kfcode()-10000*int(Kfcode()/10000))/1000)==4) return 1;
   return 0;
 }
 
@@ -324,7 +325,7 @@ void ATOOLS::OutputHadrons(std::ostream &str) {
 	&& flav.Size()==1 && flav.Kfcode()!=0) {
       str<<std::setw(16)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
-      str<<std::setw(14)<<flav.PSMass();
+      str<<std::setw(14)<<flav.HadMass();
       str<<std::setw(16)<<flav.Width();
       str<<std::setw(16)<<flav.IsStable();
       str<<std::setw(16)<<flav.IsOn();
@@ -349,10 +350,14 @@ void ATOOLS::OutputParticles(std::ostream &str) {
   
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
-    if (!flav.IsHadron() && flav.Size()==1 && flav.Kfcode()!=0) {
+    kf_code fd(flav.Kfcode());
+    // suppress pseudoparticle output
+    while (fd/10) fd/=10;
+    if (!flav.IsHadron() && flav.Size()==1 && 
+	flav.Kfcode()!=0 && fd!=9) {
       str<<std::setw(12)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
-      str<<std::setw(14)<<flav.PSMass();
+      str<<std::setw(14)<<flav.Mass(true);
       str<<std::setw(16)<<flav.Width();
       str<<std::setw(16)<<flav.IsStable();
       str<<std::setw(16)<<flav.IsMassive();
@@ -374,7 +379,7 @@ void ATOOLS::OutputContainers(std::ostream &str) {
   
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
-    if (!flav.IsHadron() && flav.Size()!=1 && flav.Kfcode()!=0) {
+    if (!flav.IsHadron() && flav.Size()>1 && flav.Kfcode()!=0) {
       str<<std::setw(10)<<flav.IDName();
       str<<std::setw(8)<<flav.Kfcode();
       str<<std::setw(6)<<"{";
@@ -388,3 +393,6 @@ void ATOOLS::OutputContainers(std::ostream &str) {
   str<<"\n";
 }
 
+Mass_Selector::~Mass_Selector()
+{
+}

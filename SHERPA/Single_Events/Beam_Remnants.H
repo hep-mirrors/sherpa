@@ -1,9 +1,9 @@
-#ifndef Beam_Remnants_h
-#define Beam_Remnants_h
+#ifndef SHERPA_Single_Events_Beam_Remnants_H
+#define SHERPA_Single_Events_Beam_Remnants_H
 
-#include "Event_Phase_Handler.H"
-#include "Beam_Remnant_Handler.H"
-#include "Fragmentation_Handler.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 namespace SHERPA {
   class Beam_Remnants : public Event_Phase_Handler {

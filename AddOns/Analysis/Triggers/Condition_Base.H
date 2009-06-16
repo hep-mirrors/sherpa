@@ -1,0 +1,3 @@
+#ifndef Analysis_Triggers_Condition_Base_H
+#define Analysis_Triggers_Condition_Base_H
+#endif

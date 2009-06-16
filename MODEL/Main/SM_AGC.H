@@ -1,7 +1,7 @@
-#ifndef SM_AGC_h
-#define SM_AGC_h
+#ifndef MODEL_Main_SM_AGC_H
+#define MODEL_Main_SM_AGC_H
 
-#include "Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class SM_AGC : public Model_Base {
@@ -11,7 +11,6 @@ namespace MODEL {
   public :
     SM_AGC(std::string,std::string,bool);
     ~SM_AGC()                   {}
-    bool FillDecay(ATOOLS::Decay_Table *) { return false; }
   };
   /*!
     \class SM_AGC

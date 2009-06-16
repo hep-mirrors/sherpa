@@ -1,10 +1,13 @@
-#include "Color_Integrator.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 
-#include "Random.H"
-#include "Exception.H"
-#include "Message.H"
-#include "Data_Reader.H"
-#include "STL_Tools.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
 #include <iomanip>
 #include <limits>
 
@@ -13,6 +16,27 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+namespace ATOOLS { template class SP(Color_Integrator); }
+
+std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
+{
+  switch (s) {
+  case cls::unknown: return str<<"<unknown>";
+  case cls::sum: return str<<"sum";
+  case cls::sample: return str<<"sample";
+  }
+  return str<<"<error>";
+}
+
+std::map<std::string,std::string> cls::ColorSchemeTags()
+{
+  std::map<std::string,std::string> tags;
+  tags["UNKNOWN"]=ToString((int)cls::unknown);
+  tags["SUM"]=ToString((int)cls::sum);
+  tags["SAMPLE"]=ToString((int)cls::sample);
+  return tags;
+}
+ 
 std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
 {
   if (v.Act())
@@ -32,8 +56,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
 
 Color_Integrator::Color_Integrator():
   m_lastconf(0), m_alphamode(0), 
-  m_check(false), m_iterate(false), m_on(true), 
-  m_otfcc(false), m_fincc(true),
+  m_check(false), m_on(true), 
+  m_otfcc(false), m_fincc(true), m_nogen(true),
   m_n(0), m_nv(0), m_over(0.0) {}
 
 Color_Integrator::~Color_Integrator()
@@ -54,9 +78,6 @@ bool Color_Integrator::ConstructRepresentations
 (const Idx_Vector &ids,const Int_Vector &types,const Int_Vector &acts)
 {
   m_weight=1.0;
-  m_confs.clear();
-  m_cweights.clear();
-  m_asum.clear();
   m_otfcc=ids.size()>10;
   if (ids.size()!=types.size()) THROW(fatal_error,"Internal error.");
   m_pairs=0;
@@ -69,7 +90,9 @@ bool Color_Integrator::ConstructRepresentations
     fermions+=types[i];
   }
   if (fermions!=0) THROW(fatal_error,"Invalid number of fermions.");
+#ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): Weight = "<<m_weight<<"\n";
+#endif
   m_weight*=m_weight;
   return true;
 }
@@ -84,24 +107,86 @@ size_t Color_Integrator::GenerateIndex()
 
 bool Color_Integrator::DiceColours()
 {
-  for (size_t i(0);i<m_ids.size();++i) {
-    if (!m_ids[i]->Act()) continue;
-    switch (m_ids[i]->Type()) {
-    case -1:
-      m_ids[i]->SetJ(GenerateIndex());
-      break;
-    case 0:
-      m_ids[i]->SetI(GenerateIndex());
-      m_ids[i]->SetJ(GenerateIndex());
-      break;
-    case 1:
-      m_ids[i]->SetI(GenerateIndex());
-      break;
+  Idx_Vector iids, jids;
+  for (size_t i(0);i<m_ids.size();++i)
+    // collect indices
+    if (m_ids[i]->Act()) { 
+      if (m_ids[i]->Type()>=0) iids.push_back(i);
+      if (m_ids[i]->Type()<=0) jids.push_back(i);
     }
-    if (m_ids[i]->I()==std::string::npos ||
-	m_ids[i]->J()==std::string::npos) return false;
+  size_t nr(0), ng(0), nb(0);
+  for (size_t i(0);i<iids.size();++i) {
+    // select partner
+    size_t j(Min(jids.size()-1,(size_t)(ran.Get()*jids.size())));
+    // set colours
+    size_t idx(GenerateIndex());
+    m_ids[iids[i]]->SetI(idx);
+    m_ids[jids[j]]->SetJ(idx);
+    if (idx==1) ++nr;
+    else if (idx==2) ++ng;
+    else if (idx==3) ++nb;
+    else THROW(fatal_error,"Internal error");
+    // remove partner from list
+    for (Idx_Vector::iterator jit(jids.begin());
+	 jit!=jids.end();++jit) if (*jit==jids[j]) {
+	jids.erase(jit);
+	break;
+      }
   }
+  m_weight=pow(3.0,iids.size())*Factorial(iids.size())/
+    (Factorial(nr)*Factorial(ng)*Factorial(nb));
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";
+#endif
   return true;
+}
+
+void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
+{
+  if (ampl->Legs().size()!=m_ids.size()) 
+    THROW(fatal_error,"Invalid number of colours");
+  CI_Map cmap(ampl->Prev()->ColorMap());
+  cmap[0]=0;
+  size_t iidx(0), jidx(0);
+  for (size_t i(0);i<m_ids.size();++i) {
+    ColorID cc(ampl->Leg(i)->Col());
+    CI_Map::iterator iit(cmap.find(cc.m_i)), jit(cmap.find(cc.m_j));
+    if (iit!=cmap.end()) m_ids[i]->SetI(iit->second);
+    else iidx=i;
+    if (jit!=cmap.end()) m_ids[i]->SetJ(jit->second);
+    else jidx=i;
+  }
+  int nc(Min(3,1+(int)(3.0*ran.Get())));
+  m_ids[iidx]->SetI(nc);
+  m_ids[jidx]->SetJ(nc);
+  Int_Vector jids;
+  for (size_t i(0);i<m_ids.size();++i) 
+    if (m_ids[i]->J()!=0) jids.push_back(i);
+  size_t j(Min(jids.size()-1,(size_t)(ran.Get()*jids.size())));
+  int oc(m_ids[jids[j]]->J());
+  m_ids[jids[j]]->SetJ(m_ids[jidx]->J());
+  m_ids[jidx]->SetJ(oc);
+  size_t nr(0), ng(0), nb(0);
+  for (size_t k(0);k<m_ids.size();++k) {
+    int idx(m_ids[k]->I());
+    if (idx==1) ++nr;
+    else if (idx==2) ++ng;
+    else if (idx==3) ++nb;
+  }
+  if (nr==0) ++nr;
+  if (ng==0) ++ng;
+  if (nb==0) ++nb;
+  size_t niids(0);
+  for (size_t i(0);i<m_ids.size();++i)
+    if (m_ids[i]->Act() && m_ids[i]->Type()>=0) ++niids;
+  m_weight=pow(3.0,niids)*Factorial(niids)/
+    (Factorial(nr)*Factorial(ng)*Factorial(nb));
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";
+#endif
+  m_fincc=true;
+  m_cweight=m_weight;
+  m_valid=m_nogen?true:GenerateOrders();
 }
 
 int Color_Integrator::ConstructConfigurations
@@ -136,11 +221,13 @@ int Color_Integrator::ConstructConfigurations
     m_orders.push_back(perm);
     if (sing) weight/=-3.0;
     m_weights.push_back(weight);
+#ifdef DEBUG__BG
     if (msg_LevelIsDebugging()) {
       msg_Out()<<"permutation "<<m_orders.size()<<" -> "<<perm<<" -> ";
       for (size_t i(0);i<perm.size();++i) msg_Out()<<*m_ids[perm[i]];
       msg_Out()<<" ("<<weight<<")\n";
     }
+#endif
     return 1;
   }
   bool newstr(false);
@@ -206,23 +293,25 @@ int Color_Integrator::ConstructConfigurations
 	}
       }
     }
+    Idx_Type &i(nexti[depth+1]);
     if (newstr && ids.size()==1) {
       // last parton has been used to end the string
       // permutation is finished
       // correct for last 1/NC weight -> added in last step
       weight*=-3.0;
       Idx_Vector nids;
-      int cnc(ConstructConfigurations
-	      (nids,perm,sing,weight,nexti,one,depth+1));
-      if (cnc<0) return -1;
-      nc+=cnc;
-      if (one && nc>0) return nc;
+      if (i==0) {
+	int cnc(ConstructConfigurations
+		(nids,perm,sing,weight,nexti,one,depth+1));
+	if (cnc<0) return -1;
+	nc+=cnc;
+	if (one && nc>0) return nc;
+      }
     }
     else {
       // partons left
       perm.push_back(0);
       Idx_Vector nids(newstr?ids.size()-2:ids.size()-1);
-      Idx_Type &i(nexti[depth+1]);
       while (i<pids.size()) {
 	// loop over all possible next partons
 	size_t shift(0);
@@ -240,9 +329,9 @@ int Color_Integrator::ConstructConfigurations
 	nc+=cnc;
 	if (one && nc>0) return nc;
       }  
-      i=0;
-      perm.pop_back();
     }
+    i=0;
+    perm.pop_back();
     ++nexti[depth];
   }
   return nc;
@@ -318,8 +407,10 @@ bool Color_Integrator::TrivialCheck()
     sumg+=(m_ids[i]->I()==2)-(m_ids[i]->J()==2);
     sumb+=(m_ids[i]->I()==3)-(m_ids[i]->J()==3);
   }
+#ifdef DEBUG__BG
   msg_Debugging()<<"sum red = "<<sumr<<", sum green = "
 		 <<sumg<<", sum blue = "<<sumb<<"\n";
+#endif
   return sumr==0 && sumg==0 && sumb==0;
 }
 
@@ -352,19 +443,25 @@ bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
 	       <<" does not contain all indices. Abort."<<std::endl;
     return false;      
   }
+#ifdef DEBUG__BG
   msg_Debugging()<<"checked "<<perm<<" -> ok\n";
+#endif
   return true;
 }
 
 bool Color_Integrator::GenerateOrders()
 {
+#ifdef DEBUG__BG
   if (msg_LevelIsDebugging()) {
     msg_Debugging()<<" --- colors --- \n";
     for (size_t i(0);i<m_ids.size();++i)
       msg_Debugging()<<i<<" -> "<<*m_ids[i]<<"\n";
   }
+#endif
   if (!TrivialCheck()) return false;
+#ifdef DEBUG__BG
   msg_Debugging()<<"color sums agree\n";
+#endif
   if (ConstructConfigurations()==0) return false;
   if (m_check)
     for (size_t i(0);i<m_orders.size();++i)
@@ -380,11 +477,14 @@ bool Color_Integrator::GenerateType(const size_t &type,
   for (size_t i(0);i<perm.size();++i) perm[i]=i;
   for (size_t i(1);i<=type;++i) 
     std::swap<Idx_Type>(perm[i],perm[i+1]);
+  m_weight=1.0;
   for (size_t i(0);i<m_ids.size();++i) {
+    m_weight*=3.0;
     m_ids[perm[i]]->SetI(i);
     m_ids[perm[i]]->SetJ(i+1);
   }
   m_ids[perm.front()]->SetI(m_ids[perm.back()]->J());
+  m_cweight=m_weight*=m_weight;
   if (orders) return GenerateOrders();
   return true;
 }
@@ -435,7 +535,7 @@ int Color_Integrator::Dice()
     }
   }
   double rn(ran.Get());
-  double cmax(m_alphamode>1?m_max:m_cmax);
+  double cmax(m_alphamode>1?m_max:m_mean/m_weight*m_cmax);
   m_over=Max(0.0,weight/cmax-1.0);
   msg_Debugging()<<METHOD<<"(): amode = "<<m_alphamode<<", rn = "
 		 <<rn<<", w = "<<weight<<"/"<<cmax<<" = "<<(weight/cmax)
@@ -451,21 +551,19 @@ int Color_Integrator::Dice()
   return 1;
 }
 
-bool Color_Integrator::GeneratePoint(const bool orders)
+bool Color_Integrator::GeneratePoint()
 {
   if (!m_on) return m_valid=true;
   m_fincc=true;
   m_valid=false;
   if (m_alpha.empty() || m_alphamode==0) {
-    DicePoint();
+    DiceColours();
     m_cweight=m_weight;
-    if (m_confs.empty() || orders) 
-      return m_valid=GenerateOrders();
-    return m_valid=true;
+    return m_valid=m_nogen?true:GenerateOrders();
   }
   if (LookUp()) return m_valid=true;
   while (true) {
-    DicePoint();
+    DiceColours();
     if (!GenerateOrders()) {
       if (m_alphamode>1) return false;
       continue;
@@ -479,139 +577,8 @@ bool Color_Integrator::GeneratePoint(const bool orders)
   return false;
 }
 
-void Color_Integrator::DicePoint()
-{
-  if (m_confs.empty()) {
-    if (!DiceColours()) THROW(fatal_error,"Cannot dice colors");
-    return;
-  }
-  Idx_Vector conf;
-  if (m_iterate) {
-    if (m_lastconf>=m_confs.size()) 
-      THROW(fatal_error,"Index outy of bounds");
-    conf=m_confs[m_lastconf++];      
-    msg_Debugging()<<"selected "<<m_lastconf-1<<" "
-		   <<" => "<<conf<<"\n";
-  }
-  else {
-    size_t l(0), r(m_asum.size()-1), i((l+r)/2);
-    double disc(ran.Get()), a(m_asum[i]);
-    while (r-l>1) {
-      if (disc<a) r=i;
-      else l=i;
-      i=(l+r)/2;
-      a=m_asum[i];
-    }
-    if (disc<m_asum[l]) r=l;
-    conf=m_confs[r];
-    msg_Debugging()<<"selected "<<r<<" from l="<<m_asum[l]
-		   <<"("<<l<<") < d="<<disc<<" < r="<<m_asum[r]
-		   <<"("<<r<<") => "<<conf<<"\n";
-  }
-  if (m_confs.empty()) THROW(fatal_error,"Internal error");
-  for (size_t i(0);i<m_ids.size();++i) {
-    m_ids[i]->SetI(conf[2*i]);
-    m_ids[i]->SetJ(conf[2*i+1]);
-  }
-}
-
-bool Color_Integrator::SetConfiguration(const size_t &id)
-{
-  if (id>=m_confs.size()) THROW(fatal_error,"Index out of bounds");
-  Idx_Vector &conf(m_confs[id]);
-  msg_Debugging()<<"selected "<<id<<" => "<<conf<<"\n";
-  for (size_t i(0);i<m_ids.size();++i) {
-    m_ids[i]->SetI(conf[2*i]);
-    m_ids[i]->SetJ(conf[2*i+1]);
-  }
-  return GenerateOrders();
-}
-
-bool Color_Integrator::AddConfiguration(const size_t &l)
-{
-  if (l==m_ids.size()) {
-    m_orders.clear();
-    m_weights.clear();
-    msg_Debugging()<<" --- colors --- \n";
-    if (msg_LevelIsDebugging()) {
-      for (size_t i(0);i<m_ids.size();++i)
-	msg_Debugging()<<i<<" -> "<<*m_ids[i]<<"\n";
-    }
-    ++m_n;
-    if (!TrivialCheck()) return true;
-    msg_Debugging()<<"color sums agree\n";
-    m_fincc=true;
-    if (!NextOrder()) return true;
-    if (m_check)
-      for (size_t i(0);i<m_orders.size();++i) {
-	if (!CheckPermutation(m_orders[i])) return false;
-      }
-    m_confs.push_back(Idx_Vector(2*m_ids.size()));
-    for (size_t i(0);i<m_ids.size();++i) {
-      m_confs.back()[2*i]=m_ids[i]->I();
-      m_confs.back()[2*i+1]=m_ids[i]->J();
-    }
-    m_cweights.push_back(1.0);
-    m_asum.push_back(1.0);
-    msg_Debugging()<<"adding "<<m_confs.back()<<"\n";
-    ++m_nv;
-    if (int(m_nv)%100==0 && msg->Modifiable())
-      msg_Info()<<std::setw(12)<<m_nv<<" ("<<std::setw(12)<<m_n<<")"
-		<<mm_left(27)<<std::flush;
-    return true;
-  }
-  if (!m_ids[l]->Act()) {
-    m_ids[l]->SetI(0);
-    m_ids[l]->SetJ(0);
-    AddConfiguration(l+1);
-  }
-  else {
-    switch (m_ids[l]->Type()) {
-    case -1: {
-      for (size_t cj(1);cj<=3;++cj) {
-	m_ids[l]->SetJ(cj);
-	AddConfiguration(l+1);
-      }
-      return true;
-    }
-    case 0: {
-      for (size_t ci(1);ci<=3;++ci) {
-	m_ids[l]->SetI(ci);
-	for (size_t cj(1);cj<=3;++cj) {
-	  m_ids[l]->SetJ(cj);
-	  AddConfiguration(l+1);
-	}
-      }
-      return true;
-    }
-    case 1: {
-      for (size_t ci(1);ci<=3;++ci) {
-	m_ids[l]->SetI(ci);
-	AddConfiguration(l+1);
-      }
-      return true;
-    }
-    }
-  }
-  return false;
-}
-
 bool Color_Integrator::Initialize()
 {
-  m_lastconf=0;
-  if (!m_confs.empty() || m_otfcc) return true;
-  m_nv=m_n=0;
-  msg_Info()<<METHOD<<"(): Determining configurations ... "<<std::flush;
-  if (!AddConfiguration(0)) return false;
-  msg_Info()<<m_nv<<" of "<<m_n<<" ( "
-	    <<((size_t)(m_nv*1000)/(size_t)(m_n))/10.0<<"% ) "
-	    <<"done                           "<<std::endl;
-  double sum(0.0), psum(0.0);
-  for (size_t i(0);i<m_asum.size();++i)
-    sum+=m_asum[i];
-  for (size_t i(0);i<m_asum.size();++i)
-    m_asum[i]=(psum+=m_asum[i])/sum;
-  m_cweight=m_weight*=m_nv/m_n;
   return true;
 }
 
@@ -648,9 +615,11 @@ void Color_Integrator::SetAlpha(const Double_Vector &alpha)
   m_alpha=alpha;
   double sum(0.0);
   double min(std::numeric_limits<double>::max());
+  double max(0.0);
   for (size_t i(0);i<m_alpha.size();++i) {
     sum+=m_alpha[i];
     min=Min(min,m_alpha[i]);
+    max=Max(max,m_alpha[i]);
   }
   m_max=sum*Factorial(m_ids.size()-2);
   m_mean=m_max*pow(3.0,m_ids.size());
@@ -658,7 +627,7 @@ void Color_Integrator::SetAlpha(const Double_Vector &alpha)
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(aexp,"CI_ALPHA_EXP")) aexp=0.0;
   else msg_Info()<<METHOD<<"(): Set \\alpha exp "<<aexp<<".\n";
-  m_cmax=pow(min,aexp)*pow(m_max,1.0-aexp);
+  m_cmax=pow(max/min,aexp);
   msg_Tracking()<<METHOD<<"(): m_max = "<<sum<<"*"
 		<<Factorial(m_ids.size()-2)<<" = "<<m_max
 		<<", m_cmax = "<<m_cmax<<"\n";

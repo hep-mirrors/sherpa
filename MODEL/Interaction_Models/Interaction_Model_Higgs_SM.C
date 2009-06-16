@@ -1,7 +1,7 @@
-#include "Interaction_Model_Higgs_SM.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Higgs_SM.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <stdio.h>
 
 
@@ -40,7 +40,7 @@ void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& v
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
       M_h = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
-		    ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.PSMass())));
+		    ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.Mass(true))));
 
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;

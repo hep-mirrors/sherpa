@@ -1,8 +1,8 @@
-#include "Particle.H"
-#include "Blob.H"
-#include "Random.H"
-#include "Run_Parameter.H"
-#include "Message.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -282,7 +282,7 @@ void Particle::SetNumber(const int n)
 
 void   Particle::SetFinalMass(const double _lower,const double _upper) {
   if (_lower==-1. &&_upper==-1.) {
-    m_finalmass = m_fl.PSMass();
+    m_finalmass = m_fl.HadMass();
     return;
   }
   if (_upper<0.) {

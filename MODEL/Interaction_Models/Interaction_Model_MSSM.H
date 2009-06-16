@@ -1,14 +1,14 @@
-#ifndef Interaction_Model_MSSM_h
-#define Interaction_Model_MSSM_h
+#ifndef MODEL_Interaction_Models_Interaction_Model_MSSM_H
+#define MODEL_Interaction_Models_Interaction_Model_MSSM_H
 
-#include "Interaction_Model_THDM.H"
-#include "Interaction_Model_Inos.H"
-#include "Interaction_Model_sLepton_EW.H"
-#include "Interaction_Model_sQCD.H"
-#include "Interaction_Model_sQuark_EW.H"
-#include "Interaction_Model_sLepton_sQuark.H"
-#include "Interaction_Model_Base.H"
-#include "Kabbala.H"
+#include "MODEL/Interaction_Models/Interaction_Model_THDM.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Inos.H"
+#include "MODEL/Interaction_Models/Interaction_Model_sLepton_EW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_sQCD.H"
+#include "MODEL/Interaction_Models/Interaction_Model_sQuark_EW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_sLepton_sQuark.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace MODEL {  
   class Interaction_Model_MSSM : public Interaction_Model_Base {

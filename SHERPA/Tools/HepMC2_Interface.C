@@ -1,16 +1,16 @@
-#include "HepMC2_Interface.H"
+#include "SHERPA/Tools/HepMC2_Interface.H"
 
-#include "Blob_List.H"
-#include "Particle.H"
-#include "Vector.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
 #include "HepMC/GenParticle.h"
 #include "HepMC/SimpleVector.h"
 #include "HepMC/PdfInfo.h"
-#include "CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__HEPMC2__UNITS
 #include "HepMC/Units.h"
 #endif

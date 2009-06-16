@@ -1,9 +1,9 @@
-#ifndef Particle_H
-#define Particle_H
+#ifndef ATOOLS_Phys_Particle_H
+#define ATOOLS_Phys_Particle_H
 
-#include "Vector.H"
-#include "Flavour.H"
-#include "Flow.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Flow.H"
 
 #include <iostream>
 #include <list>

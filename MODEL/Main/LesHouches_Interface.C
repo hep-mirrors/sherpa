@@ -1,12 +1,12 @@
-#include "LesHouches_Interface.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "MathTools.H"
-#include "Running_AlphaQED.H"
-#include "Running_AlphaS.H"
-#include "Exception.H"
-#include "Shell_Tools.H"
+#include "MODEL/Main/LesHouches_Interface.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

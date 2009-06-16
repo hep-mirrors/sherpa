@@ -1,0 +1,28 @@
+_Sherpa() 
+{
+    local cur prev opts ret
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    opts="--help --version"
+
+    if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+    if [[ ${cur} == *=* ]] ; then
+       COMPREPLY=()
+       return 0
+    fi
+
+    ret="$(compgen -W "$(cat @DATADIR@/completion.index)" -- ${cur})"
+    if [[ ${ret} == "" ]] ; then
+      COMPREPLY=()
+      return 0
+    else
+      COMPREPLY=(${ret}=)
+      return 0
+    fi
+}
+complete -o nospace -F _Sherpa Sherpa@VERSIONING@

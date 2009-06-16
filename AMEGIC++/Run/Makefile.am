@@ -9,5 +9,3 @@ Amegic_LDADD = $(pkglibdir)/libProcess.la \
 
 Amegic_LDFLAGS = @ldflags@
 
-INCLUDES = @AMEGICINCS@ @PHASICINCS@ @MODELINCS@ @BEAMINCS@ \
-	   @PDFINCS@ @EXTRAXSINCS@ @ATOOLSINCS@

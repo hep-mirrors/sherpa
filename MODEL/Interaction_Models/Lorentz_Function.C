@@ -1,13 +1,13 @@
-#include "Lorentz_Function.H"
-#include "Message.H"
+#include "MODEL/Interaction_Models/Lorentz_Function.H"
+#include "ATOOLS/Org/Message.H"
 
 #define COMPILE__Getter_Function
 #define PARAMETER_TYPE MODEL::LF_Key
 #define OBJECT_TYPE MODEL::Lorentz_Function
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 using namespace MODEL;
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 Lorentz_Function::Lorentz_Function(const std::string &type): 
   m_type(type), p_next(NULL) 
 {
@@ -18,13 +18,6 @@ Lorentz_Function::~Lorentz_Function()
 {
   for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
   if (p_next) delete p_next;
-}
-
-Lorentz_Function *Lorentz_Function::GetCopy() const 
-{
-  Lorentz_Function *copy(LF_Getter::GetObject(m_type,LF_Key()));
-  *copy=*this;
-  return copy;
 }
 
 void Lorentz_Function::SetParticleArg(int a,int b,int c,int d) 
@@ -138,3 +131,7 @@ Lorentz_Function & Lorentz_Function::operator=(const Lorentz_Function & l)
   return *this;
 }
 
+bool Lorentz_Function::CutVectors() 
+{ 
+  return false; 
+}

@@ -1,12 +1,12 @@
-#ifndef String_Handler_h
-#define String_Handler_h
+#ifndef AMEGIC_String_String_Handler_H
+#define AMEGIC_String_String_Handler_H
 
-#include "Kabbala.H"
-#include "MyComplex.H"
-#include "String_Generator.H"
-#include "String_Tree.H"
-#include "Values.H"
-#include "Helicity.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "AMEGIC++/String/String_Tree.H"
+#include "AMEGIC++/String/Values.H"
+#include "AMEGIC++/Main/Helicity.H"
 
 namespace AMEGIC {
   class String_Handler {

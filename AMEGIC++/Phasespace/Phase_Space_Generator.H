@@ -1,9 +1,9 @@
-#ifndef Phase_Space_Generator_h
-#define Phase_Space_Generator_h
+#ifndef AMEGIC_Phasespace_Phase_Space_Generator_H
+#define AMEGIC_Phasespace_Phase_Space_Generator_H
 
-//#include "Multi_Channel.H"
-#include "MyString.H"
-#include "Point.H"
+//#include "PHASIC++/Channels/Multi_Channel.H"
+#include "AMEGIC++/String/MyString.H"
+#include "AMEGIC++/Main/Point.H"
 #include <list>
 
 namespace AMEGIC {

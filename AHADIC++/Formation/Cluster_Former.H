@@ -1,7 +1,7 @@
-#ifndef Cluster_Former_H
-#define Cluster_Former_H
+#ifndef AHADIC_Formation_Cluster_Former_H
+#define AHADIC_Formation_Cluster_Former_H
 
-#include "Cluster.H"
+#include "AHADIC++/Tools/Cluster.H"
 
 namespace AHADIC {
   class Cluster_Former {

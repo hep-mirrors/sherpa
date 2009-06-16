@@ -1,7 +1,7 @@
-#ifndef Splitting_Group_H
-#define Splitting_Group_H
+#ifndef APACIC_Showers_Splitting_Group_H
+#define APACIC_Showers_Splitting_Group_H
 
-#include "Splitting_Function.H"
+#include "APACIC++/Showers/Splitting_Function.H"
 
 namespace APACIC {
 
@@ -19,7 +19,8 @@ namespace APACIC {
   public:
 
     // constructor
-    Splitting_Group(Splitting_Function *const spl=NULL);
+    Splitting_Group(ATOOLS::Mass_Selector *&ms,
+		    Splitting_Function *const spl=NULL);
 
     // destructor
     virtual ~Splitting_Group();

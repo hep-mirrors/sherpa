@@ -1,11 +1,11 @@
-#include "CXXFLAGS.H"
+#ifndef PHOTONS_Main_Photons_H
+#define PHOTONS_Main_Photons_H
+#include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifndef Photons_H
-#define Photons_H
 
-#include "Blob.H"
-#include "Message.H"
-#include "Define_Dipole.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Message.H"
+#include "PHOTONS++/Main/Define_Dipole.H"
 
 using namespace ATOOLS;
 

@@ -1,8 +1,8 @@
-#ifndef Electron_Remnant_H
-#define Electron_Remnant_H
+#ifndef PDF_Remnant_Electron_Remnant_H
+#define PDF_Remnant_Electron_Remnant_H
 
-#include "Remnant_Base.H"
-#include "ISR_Handler.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace PDF {
 

@@ -1,11 +1,11 @@
-#ifndef String_Output_h
-#define String_Output_h
+#ifndef AMEGIC_String_String_Output_H
+#define AMEGIC_String_String_Output_H
 
 
-#include "String_Generator.H"
-#include "String_Tree.H"
-#include "Helicity.H"
-#include "String_Library.H"
+#include "AMEGIC++/String/String_Generator.H"
+#include "AMEGIC++/String/String_Tree.H"
+#include "AMEGIC++/Main/Helicity.H"
+#include "AMEGIC++/String/String_Library.H"
 
 namespace AMEGIC {
 class String_Output {

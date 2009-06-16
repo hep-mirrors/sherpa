@@ -1,10 +1,10 @@
-#include "Hadron_Remnant.H"
+#include "PDF/Remnant/Hadron_Remnant.H"
 
-#include "Running_AlphaS.H"
-#include "Run_Parameter.H"
-#include "Exception.H"
-#include "Beam_Base.H"
-#include "Random.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Math/Random.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Hadron_Remnant
@@ -108,11 +108,10 @@ bool Hadron_Remnant::DiceKinematics()
     m_xtot-=m_extracted[i]->Momentum()[0]/ptot[0];
   trials=0;
   m_xscheme=1;
-  double xtot;
   std::map<Particle*,double> xmap;
   do {
     ++trials;
-    xtot=m_xtot;
+    m_xrem=m_xtot;
     p_pdfbase->Reset();
     for(unsigned int i=0;i<m_extracted.size();++i) {
       p_pdfbase->Extract(m_extracted[i]->Flav(),
@@ -121,27 +120,27 @@ bool Hadron_Remnant::DiceKinematics()
     for (unsigned int i=0;i<m_companions.size();++i) {
       if (!m_companions[i]->Flav().IsDiQuark()) {
 	double value=1.0;
-	for (unsigned int j=0;xtot-value<m_deltax && j<m_maxtrials/10;++j) { 
+	for (unsigned int j=0;m_xrem-value<m_deltax && j<m_maxtrials/10;++j) { 
 	  value=GetXPDF(m_companions[i]->Flav(),m_scale);
       	}
 	p_pdfbase->Extract(m_companions[i]->Flav(),value);
 	xmap[m_companions[i]]=value;
- 	xtot-=value;
+ 	m_xrem-=value;
       }
       else {
 	p_last[0]=m_companions[i];
       }
     }
-    xmap[p_last[0]]=xtot;
+    xmap[p_last[0]]=m_xrem;
     if (trials>m_maxtrials) m_xscheme=0;
-  } while (xtot<m_deltax && m_xscheme!=0 &&
-	   xmap[p_last[0]]*m_pbeam[0]<=p_last[0]->Flav().PSMass());
+  } while (m_xrem<m_deltax && m_xscheme!=0 &&
+	   xmap[p_last[0]]*m_pbeam[0]<=p_last[0]->Flav().Mass());
   p_pdfbase->Reset();
   if (m_xscheme==0) {
-    xtot=0.;
+    double xtot=0.;
     for (std::map<Particle*,double>::iterator it=xmap.begin();
 	 it!=xmap.end(); ++it) {
-      double x=1.1*it->first->Flav().PSMass()/m_pbeam[0];
+      double x=1.1*it->first->Flav().Mass()/m_pbeam[0];
       if (x==0.0) x=10.*rpa.gen.Accu();
       xtot+=it->second=x;
     }
@@ -155,7 +154,7 @@ bool Hadron_Remnant::DiceKinematics()
     ptot-=m_extracted[i]->Momentum();
   for (unsigned int j=0;j<m_companions.size();++j) {
     double E=xmap[m_companions[j]]*m_pbeam[0];
-    double m=m_companions[j]->Flav().PSMass();
+    double m=m_companions[j]->Flav().Mass();
     double pmax=(1.0-1.0e-12)*sqrt(E*E-m*m);
     double xperp=Min(xperptot,pmax/ptot.PPerp());
     xperptot-=xperp;
@@ -169,7 +168,7 @@ bool Hadron_Remnant::DiceKinematics()
 			 <<" has non-positive momentum: p = "
 			 <<m_companions[j]->Momentum()<<" m_{"
 			 <<m_companions[j]->Flav()<<"} = "
-			 <<m_companions[j]->Flav().PSMass()<<" <- "
+			 <<m_companions[j]->Flav().Mass()<<" <- "
 			 <<m_xscheme<<std::endl;
       return false;
     }
@@ -185,7 +184,7 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
 	     <<" (x-1)="<<x-1<<std::endl;
     x = 1.;
   }
-  if (x<p_pdfbase->XMin() || p_pdfbase->XMax()) return false;
+  if (x<p_pdfbase->XMin() || x>p_pdfbase->XMax()) return false;
   p_pdfbase->Calculate(x,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran.Get();
@@ -241,7 +240,7 @@ bool Hadron_Remnant::DecomposeHadron()
   Flavour    flav = m_constit[(size_t)(ran.Get()*3.)];
   Particle * part = new Particle(-1,flav); 
   part->SetStatus(part_status::active);
-  part->SetFinalMass(flav.PSMass());
+  part->SetFinalMass(flav.Mass());
   part->SetFlow(COLOR((qri::type)(flav.IsAnti())),Flow::Counter());
   //std::cout<<METHOD<<":"<<flav<<std::endl
   //	   <<"  "<<(*part)<<std::endl;
@@ -255,11 +254,11 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
 {
   PROFILE_HERE;
   double cut, x;
-  cut=2.0*(flavour.PSMass()+m_hardpt.PPerp()/
+  cut=2.0*(flavour.Mass()+m_hardpt.PPerp()/
 	   sqr(m_companions.size()))/p_beam->OutMomentum()[0];
   // assume heavy flavours have been pair-produced
   // => scale should be approximately (2m)^2
-  scale=Max(scale,4.0*sqr(flavour.PSMass()));
+  scale=Max(scale,4.0*sqr(flavour.Mass()));
   if (scale<p_pdfbase->Q2Min()) {
     msg_Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
@@ -272,7 +271,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     xtrials=0;
     do { 
       ++xtrials;
-      x=ran.Get(); 
+      x=m_xrem*ran.Get();
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
     p_pdfbase->Calculate(x,scale);
@@ -315,16 +314,16 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
       else if (di[1]>di[0]) difl=Flavour((kf_code)(di[1]*1000+di[0]*100+1));
       else difl=Flavour((kf_code)(di[0]*1100+3));
       if (m_constit[single].IsAnti()) difl=difl.Bar();
-      return difl.PSMass()+fl.PSMass()+flavour.Bar().PSMass();
+      return difl.Mass()+fl.Mass()+flavour.Bar().Mass();
     }
     if (di[0]>di[1]) difl=Flavour((kf_code)(di[0]*1000+di[1]*100+1));
     else if (di[1]>di[0]) difl=Flavour((kf_code)(di[1]*1000+di[0]*100+1));
     else difl=Flavour((kf_code)(di[0]*1100+3));
     if (m_constit[0].IsAnti()) difl=difl.Bar();
-    return difl.PSMass();
+    return difl.Mass();
   }
   else {
-    if (flavour.IsQuark()) return flavour.Bar().PSMass();
+    if (flavour.IsQuark()) return flavour.Bar().Mass();
   }
   return 0.;
 }

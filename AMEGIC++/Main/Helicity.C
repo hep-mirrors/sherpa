@@ -1,11 +1,10 @@
-#include "Helicity.H"
-#include "MyComplex.H"
-#include "Vector.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Pol_Info.H"
-#include "Run_Parameter.H"
-#include "prof.hh"
+#include "AMEGIC++/Main/Helicity.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "AMEGIC++/Main/Pol_Info.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
 
 using namespace ATOOLS;
@@ -14,7 +13,7 @@ using namespace std;
 
 Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) : 
   m_flavours(Nin+Nout, kf_none), m_nPols(Nin+Nout),
-  m_allowTrafo(true), m_needsTrafo(false)  
+  m_allowTrafo(true), m_needsTrafo(false), m_spos(-1)  
 {
  
   int N=Nin+Nout;
@@ -27,6 +26,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
     p_pol_types[i] = pl[i].pol_type;
     p_angles[i]    = pl[i].angle;
     m_nPols[i]     = pl[i].num;
+    if (p_pol_types[i]=='e') m_spos=i;
     
     // Treatment for massive polarized spinors
     if ( (m_flavours[i].IsMassive() && m_flavours[i].IsFermion())
@@ -127,7 +127,7 @@ int Helicity::Compare(Helicity* h_cmp, int N)
 
 void Helicity::InitializeSpinorTransformation(Basic_Sfuncs * BS)  
 {
-  if (m_needsTrafo = m_trafoList.size() > 0) {
+  if ((m_needsTrafo = m_trafoList.size()) > 0) {
 
     std::vector<int>::const_iterator flNum(m_trafoList.begin());
     for (int i=0; flNum != m_trafoList.end(); flNum++, ++i) {

@@ -1,9 +1,9 @@
-#ifndef SUSY_QCD_Splitting_Function_H
-#define SUSY_QCD_Splitting_Function_H
+#ifndef APACIC_Showers_SUSY_QCD_Splitting_Functions_H
+#define APACIC_Showers_SUSY_QCD_Splitting_Functions_H
 //----------------------------------------------------------------------
 //               QCD_Splitting_Functions.H
 //----------------------------------------------------------------------
-#include "Splitting_Function.H"
+#include "APACIC++/Showers/Splitting_Function.H"
 
 namespace APACIC {
   class Sudakov_Tools;
@@ -13,8 +13,9 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    SQuark__SQuark_Gluon(ATOOLS::Flavour squarkflavour);
-    SQuark__SQuark_Gluon(ATOOLS::Flavour squarkflavour,Sudakov_Tools * tools);
+    SQuark__SQuark_Gluon(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour squarkflavour);
+    SQuark__SQuark_Gluon(ATOOLS::Mass_Selector *&ms,
+			 ATOOLS::Flavour squarkflavour,Sudakov_Tools * tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -29,8 +30,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    Gluon__Gluino_Gluino();
-    Gluon__Gluino_Gluino(Sudakov_Tools * tools);
+    Gluon__Gluino_Gluino(ATOOLS::Mass_Selector *&ms);
+    Gluon__Gluino_Gluino(ATOOLS::Mass_Selector *&ms,Sudakov_Tools * tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -45,8 +46,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    Gluino__Gluino_Gluon();
-    Gluino__Gluino_Gluon(Sudakov_Tools * tools);
+    Gluino__Gluino_Gluon(ATOOLS::Mass_Selector *&ms);
+    Gluino__Gluino_Gluon(ATOOLS::Mass_Selector *&ms,Sudakov_Tools * tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -61,8 +62,9 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    Gluon__SQuark_SQuark(ATOOLS::Flavour squarkflavour);
-    Gluon__SQuark_SQuark(ATOOLS::Flavour squarkflavour,Sudakov_Tools * tools);
+    Gluon__SQuark_SQuark(ATOOLS::Mass_Selector *&ms,ATOOLS::Flavour squarkflavour);
+    Gluon__SQuark_SQuark(ATOOLS::Mass_Selector *&ms,
+			 ATOOLS::Flavour squarkflavour,Sudakov_Tools * tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();

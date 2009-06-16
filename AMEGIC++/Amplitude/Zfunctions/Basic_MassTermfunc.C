@@ -1,7 +1,7 @@
-#include "Basic_Func.H"
-#include "Basic_Sfuncs.H"
-#include "String_Generator.H"
-//#include "Run_Parameter.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
+#include "AMEGIC++/String/String_Generator.H"
+//#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

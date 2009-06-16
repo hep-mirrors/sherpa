@@ -1,7 +1,7 @@
-#include "Interaction_Model_sQuark_EW.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "MODEL/Interaction_Models/Interaction_Model_sQuark_EW.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <stdio.h>
 
 

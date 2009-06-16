@@ -1,8 +1,8 @@
-#ifndef Axis_H
-#define Axis_H
+#ifndef ATOOLS_Math_Axis_H
+#define ATOOLS_Math_Axis_H
 
-#include "Variable.H"
-#include "Scaling.H"
+#include "ATOOLS/Math/Variable.H"
+#include "ATOOLS/Math/Scaling.H"
 
 namespace ATOOLS {
 

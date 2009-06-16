@@ -1,7 +1,7 @@
+#ifndef ATOOLS_Math_MyComplex_H
+#define ATOOLS_Math_MyComplex_H
 //Complex header
 
-#ifndef mycomplex_h
-#define mycomplex_h
 
 #include <complex>
 

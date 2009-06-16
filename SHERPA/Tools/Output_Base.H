@@ -1,12 +1,12 @@
-#ifndef Output_Base_H
-#define Output_Base_H
+#ifndef SHERPA_Tools_Output_Base_H
+#define SHERPA_Tools_Output_Base_H
 
-#include "Blob_List.H"
-#include "CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <string>
 #include <fstream>
 #ifdef USING__GZIP
-#include "Gzip_Stream.H"
+#include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
 namespace SHERPA {
@@ -31,6 +31,7 @@ namespace SHERPA {
 
     virtual void Header() {}
     virtual void Footer(std::string nr) {}
+    virtual void SetXS(const double& xs, const double& xserr) {}
     virtual void Output(ATOOLS::Blob_List* blobs, double weight) = 0;
   };
 }

@@ -1,6 +1,6 @@
-#include "Parton_Finder.H"
+#include "ATOOLS/Phys/Parton_Finder.H"
 
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Parton_Finder
@@ -41,7 +41,10 @@ void Parton_Finder::Turn()
 }
 
 Parton_Finder::Parton_Finder(Parton_Tester &criterion):
-  p_criterion(&criterion), m_forward(true) {}
+  p_criterion(&criterion), m_forward(true) 
+{
+  m_excludeblobs.insert(btp::Signal_Process);
+}
 
 const Particle *Parton_Finder::
 FindConstConnectedForward(const Particle *start)
@@ -57,16 +60,16 @@ FindConstConnectedForward(const Particle *start)
   Blob *decay=start->DecayBlob();
   if (decay==NULL) return m_end=start;
   if (m_excludeblobs.find(decay->Type())!=m_excludeblobs.end())
-    return start;
+    return NULL;
   const Particle *stop=NULL;
-  for (size_t i=0;i<(size_t)decay->NOutP();++i) {
+  for (int i=decay->NOutP()-1;i>=0;--i) {
     const Particle *next=decay->ConstOutParticle(i);
     if (m_forward && next==m_track.front()) continue;
     if ((stop=FindConstConnectedForward(next))!=NULL) break;
   }
   if (stop==NULL) {
     Turn();
-    for (size_t i=0;i<(size_t)decay->NInP();++i) {
+    for (int i=decay->NInP()-1;i>=0;--i) {
       const Particle *next=decay->ConstInParticle(i);
       if (next==start) continue;
       if (!m_forward && next==m_track.front()) continue;
@@ -91,16 +94,16 @@ FindConstConnectedBackward(const Particle *start)
   Blob *production=start->ProductionBlob();
   if (production==NULL) return m_end=start;
   if (m_excludeblobs.find(production->Type())!=m_excludeblobs.end())
-    return start;
+    return NULL;
   const Particle *stop=NULL;
-  for (size_t i=0;i<(size_t)production->NInP();++i) {
+  for (int i=production->NInP()-1;i>=0;--i) {
     const Particle *previous=production->ConstInParticle(i);
     if (!m_forward && previous==m_track.front()) continue;
     if ((stop=FindConstConnectedBackward(previous))!=NULL) break;
   }
   if (stop==NULL) {
     Turn();
-    for (size_t i=0;i<(size_t)production->NOutP();++i) {
+    for (int i=production->NOutP()-1;i>=0;--i) {
       const Particle *previous=production->ConstOutParticle(i);
       if (previous==start) continue;
       if (m_forward && previous==m_track.front()) continue;
@@ -139,6 +142,7 @@ FindConstConnected(const Particle *start,bool forward)
 void Parton_Finder::Clear()
 {
   m_excludeblobs.clear();
+  m_excludeblobs.insert(btp::Signal_Process);
   m_excludeflavours.clear();
   m_start=NULL;
   m_end=NULL;

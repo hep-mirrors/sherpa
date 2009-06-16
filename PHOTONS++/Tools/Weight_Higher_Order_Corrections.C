@@ -1,5 +1,5 @@
-#include "Weight_Higher_Order_Corrections.H"
-#include "Model_Base.H"
+#include "PHOTONS++/Tools/Weight_Higher_Order_Corrections.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace PHOTONS;
 using namespace std;

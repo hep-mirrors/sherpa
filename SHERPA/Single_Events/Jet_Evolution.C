@@ -1,24 +1,15 @@
-#include "Jet_Evolution.H"
-#include "HadronDecays_Apacic_Interface.H"
-#include "SimpleXS_Apacic_Interface.H"
-#include "Amegic_Apacic_Interface.H"
+#include "SHERPA/Single_Events/Jet_Evolution.H"
 
-#ifdef PROFILE__all
-#define PROFILE__Jet_Evolution
-#endif
-#ifdef PROFILE__Jet_Evolution
-#include "prof.hh"
-#else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
-#endif
-
+#include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
+Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,HDHandlersMap *_hdhandlers,
+			     MI_Handler *_mihandler,Shower_Handler *_showerhandler) :
   p_showerhandler(_showerhandler)
 {
   m_name      = string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
@@ -27,17 +18,19 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
   Perturbative_Interface * interface;
   MEHandlerIter            meIter;
   for (meIter=_mehandlers->begin();meIter!=_mehandlers->end();++meIter) {
-    interface=NULL;
-    if (meIter->second->Name()==string("Amegic") &&
-	p_showerhandler->ShowerGenerator()==string("Apacic")) 
-      interface = new Amegic_Apacic_Interface(meIter->second,p_showerhandler);
-    if (meIter->second->Name()==string("SimpleXS") &&
-	p_showerhandler->ShowerGenerator()==string("Apacic")) 
-      interface = new SimpleXS_Apacic_Interface(meIter->second,p_showerhandler);
+    interface = new Perturbative_Interface(meIter->second,p_showerhandler);
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
-  interface = new HadronDecays_Apacic_Interface(NULL,p_showerhandler);
-  if (interface!=NULL) m_interfaces["HadronDecays"]=interface;
+  HDHandlersIter            hditer;
+  for (hditer=_hdhandlers->begin();hditer!=_hdhandlers->end();++hditer) {
+    interface = new Perturbative_Interface(hditer->second,p_showerhandler);
+    if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
+    break;
+  }
+  if (_mihandler) {
+    interface = new Perturbative_Interface(_mihandler,p_showerhandler);
+    if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
+  }
 }
 
 Jet_Evolution::~Jet_Evolution() 
@@ -51,7 +44,6 @@ Jet_Evolution::~Jet_Evolution()
 
 Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 {
-  PROFILE_LOCAL("Jet_Evolution::Treat");
   if (bloblist->empty()) {
     msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
 	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
@@ -72,7 +64,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	FillDecayBlobMap(blob,bloblist);
 	switch (int(blob->Type())) {
 	  case (int(btp::Signal_Process)) : break;
-	  case (int(btp::Hard_Collision)) : tag = string("MIMEs"); break;
+	  case (int(btp::Hard_Collision)) : tag = string("MPIs"); break;
 	  case (int(btp::Hard_Decay))     : tag = string("HardDecays"); break;
 	  case (int(btp::Hadron_Decay))   : tag = string("HadronDecays"); break;
 	  default:
@@ -92,10 +84,11 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	switch (AttachShowers(blob,bloblist,piIter->second)) {
 	case Return_Value::Success:
 	  found = hit = true;
-	  weight *= piIter->second->Weight();
+	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
 	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
+	case Return_Value::Nothing    : return Return_Value::Nothing;
 	case Return_Value::Error      : return Return_Value::Error;
 	default:
 	  msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
@@ -115,15 +108,28 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist,
 						Perturbative_Interface * interface) 
 {
-  if (blob->Type()==btp::Hard_Collision && !p_showerhandler->ShowerMI() && 
-      blob->Has(blob_status::needs_showers)) {
+  if (!p_showerhandler->On()) {
     AftermathOfNoShower(blob,bloblist);
-    return Return_Value::Success;
+    return Return_Value::Nothing;
   }
   int shower(0);
-  switch (interface->DefineInitialConditions(blob)) {
+  Return_Value::code stat(interface->DefineInitialConditions(blob));
+  if (blob->Type()!=::btp::Hadron_Decay) {
+    msg_Debugging()<<METHOD<<"(): Setting scale for MI {\n";
+    double scale(0.0);
+    Cluster_Amplitude *ampl(interface->Amplitude());
+    while (ampl->Next()) ampl=ampl->Next();
+    if (msg_LevelIsDebugging()) ampl->Print();
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+      if (ampl->Leg(i)->Flav().Strong()) 
+	scale=Max(scale,ampl->Leg(i)->Mom().PPerp());
+    if (scale==0.0) scale=(ampl->Leg(0)->Mom()+ampl->Leg(1)->Mom()).Mass();
+    blob->AddData("MI_Scale",new Blob_Data<double>(scale));
+    msg_Debugging()<<"} -> p_T = "<<scale<<"\n";
+  }
+  switch (stat) {
   case Return_Value::Success:
-    DefineInitialConditions(blob,bloblist);
+    if (blob->Type()!=::btp::Hadron_Decay) DefineInitialConditions(blob,bloblist);
     if (blob->NInP()==1) shower = interface->PerformDecayShowers();
     if (blob->NInP()==2) shower = interface->PerformShowers();
     switch (shower) {
@@ -140,8 +146,6 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
         inpart->ProductionBlob()->SetStatus(blob_status::needs_hadrondecays);
 	return Return_Value::Success;
       }
-      else if (blob->Type()!=btp::Signal_Process) 
-	interface->CleanBlobList(bloblist,blob->Type());
       return Return_Value::Retry_Event;
     default:
       Reset();
@@ -185,7 +189,7 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
   Blob * myblob;
   for (int i=0;i<2;i++) {
     myblob = new Blob();
-    myblob->SetType(btp::IS_Shower);
+    myblob->SetType(btp::Shower);
     if (Sign(blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
     else myblob->SetBeam(1-i);
     myblob->SetStatus(blob_status::needs_beams);
@@ -199,7 +203,7 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
   }
   for (int i=0;i<blob->NOutP();i++) {
     myblob = new Blob();
-    myblob->SetType(btp::FS_Shower);
+    myblob->SetType(btp::Shower);
     myblob->SetStatus(blob_status::needs_hadronization);
     Particle * p = new Particle(*blob->OutParticle(i));
     myblob->AddToInParticles(blob->OutParticle(i));
@@ -221,14 +225,13 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
   interface->FillBlobs(bloblist);
   //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
   blob->SetStatus(blob_status::inactive);
-  if (blob->NInP()!=1 && !p_showerhandler->ISROn()) {
+  if (!p_showerhandler->On()) {
+    if (blob->NInP()!=1)
     for (int i=0;i<2;i++) {
       // new ISR Blob
       myblob = new Blob();
-      myblob->SetType(btp::IS_Shower);
-      myblob->SetStatus(blob_status::needs_harddecays |
-			blob_status::needs_beams |
-			blob_status::needs_hadronization);
+      myblob->SetType(btp::Shower);
+      myblob->SetStatus(blob_status::needs_beams);
       myblob->SetBeam( int( blob->InParticle(1-i)->Momentum()[3] 
 			    > blob->InParticle(i)->Momentum()[3]) );
       Particle * p = new Particle(*blob->InParticle(i));
@@ -239,11 +242,9 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
       myblob->SetId();
       bloblist->insert(bloblist->begin(),myblob);
     }
-  }
-  if (!(p_showerhandler->FSROn())) {
     for (int i=0;i<blob->NOutP();i++) {
       myblob = new Blob();
-      myblob->SetType(btp::FS_Shower);
+      myblob->SetType(btp::Shower);
       myblob->SetBeam(i);
       myblob->SetStatus(blob_status::needs_harddecays |
 			blob_status::needs_hadronization);
@@ -346,28 +347,29 @@ bool Jet_Evolution::DefineInitialConditions(const Blob *blob,
 					    const Blob_List *bloblist) 
 { 
   Reset();
+  msg_Debugging()<<METHOD<<"(): {\n";
   for (::Blob_List::const_iterator blit=bloblist->begin();
-       blit!=bloblist->end();++blit) {
-    if (((*blit)->Type()==::btp::Signal_Process ||
-	 (*blit)->Type()==::btp::Hard_Collision) && *blit!=blob) {
+       blit!=bloblist->end();++blit) 
+    if ((*blit)->Type()==::btp::Shower) {
       Update(*blit,0);
       Update(*blit,1);
     }
-  }
+  msg_Debugging()<<"}\n";
   return true;
 }
 
 void Jet_Evolution::Update(const Blob *blob,const size_t beam) 
 { 
-  for (size_t i=0;i<(size_t)blob->NInP();++i) {
+  size_t cbeam=0;
+  for (int i=0;i<=blob->NInP();++i) {
     const Particle *cur=blob->ConstInParticle(i);
-    if (i==beam || blob->NInP()<=1) {
-      if (cur->ProductionBlob()!=NULL) Update(cur->ProductionBlob(),beam);
-      else {
-	p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
-	return;
-      }
+    if (cur->ProductionBlob()) continue;
+    if (cbeam==beam) {
+      msg_Debugging()<<"  "<<*cur<<"\n";
+      p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
+      return;
     }
+    ++cbeam;
   }
 }
 

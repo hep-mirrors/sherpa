@@ -1,15 +1,15 @@
-#include "VA_P_P.H"
+#include "HADRONS++/Current_Library/VA_P_P.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 
-#include "VA_P_P_ISGW.C"
-#include "VA_P_P_ISGW2.C"
-#include "VA_P_P_HQET.C"
-#include "VA_P_P_HQET2.C"
-#include "VA_P_P_PoleFit.C"
-#include "VA_P_P_Polynomial.C"
-#include "VA_P_P_BallZwicky.C"
+#include "HADRONS++/Current_Library/VA_P_P_ISGW.C"
+#include "HADRONS++/Current_Library/VA_P_P_ISGW2.C"
+#include "HADRONS++/Current_Library/VA_P_P_HQET.C"
+#include "HADRONS++/Current_Library/VA_P_P_HQET2.C"
+#include "HADRONS++/Current_Library/VA_P_P_PoleFit.C"
+#include "HADRONS++/Current_Library/VA_P_P_Polynomial.C"
+#include "HADRONS++/Current_Library/VA_P_P_BallZwicky.C"
 
 namespace HADRONS { namespace VA_P_P_FFs {
 class NoFF : public FormFactor_Base {

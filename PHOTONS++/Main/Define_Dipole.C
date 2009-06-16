@@ -1,5 +1,5 @@
-#include "Define_Dipole.H"
-#include "Message.H"
+#include "PHOTONS++/Main/Define_Dipole.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;

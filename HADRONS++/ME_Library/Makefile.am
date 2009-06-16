@@ -10,7 +10,7 @@ libHadronsMEs_la_SOURCES = \
 		B_K_Semileptonic.C \
 		B_KStar_Semileptonic.C
 
-pkginclude_HEADERS = \
+localinc_HEADERS   = \
 		HD_ME_Base.H \
 		Generic.H \
 		PseudoScalar_Decay_MEs.H \
@@ -25,7 +25,3 @@ pkginclude_HEADERS = \
 		Two_Body_MEs.H \
 		B_K_Semileptonic.H \
 		B_KStar_Semileptonic.H
-
-INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@ @HELICITIESINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

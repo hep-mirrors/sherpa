@@ -1,7 +1,7 @@
-#ifndef My_File_H
-#define My_File_H
+#ifndef ATOOLS_Org_My_File_H
+#define ATOOLS_Org_My_File_H
 
-#include "Smart_Pointer.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
 
 #include <fstream>
 #include <vector>

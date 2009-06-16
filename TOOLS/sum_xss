@@ -38,7 +38,7 @@ done
 
 if test $EMODE -eq 0; then
 SN=`echo $SPATH/Run\.*\.dat | wc -w`
-RN=`echo $SPATH/$RPATH/$SNAME\.xs* | awk '{ \
+RN=`echo $SPATH/$RPATH*/$SNAME\.xs* | awk '{ \
   if (match($1,"*")==0) print $0; }' | wc -w`
 MR=`expr $SN - $RN`
 
@@ -105,7 +105,7 @@ END{
     sqrt(err)/xs*100" %\033[0m ), eff = \033[32m"\
     eff/xs"\033[0m";
 }
-' $SPATH/r_1/$SNAME\.xs*
+' $SPATH/$RPATH*/$SNAME\.xs*
 else
 SN=`echo $SPATH/Run\.*\.dat | wc -w`
 RN=`echo $SPATH/run\.log\.$SNAME | awk '{ \
@@ -142,6 +142,7 @@ BEGIN{
   ofn=FILENAME;
   cxs=0; cerr=0; ceff=0;
   cpn=FILENAME; sub(".*run.log.","",cpn);
+  if (match(cpn,"_")>0) nextfile;
   while (ofn==FILENAME) {
     if ($3=="+-") 
       if ($1!="nan") { cxs=$1; cerr=$5; ceff=0; }

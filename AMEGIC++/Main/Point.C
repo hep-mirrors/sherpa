@@ -1,4 +1,4 @@
-#include "Point.H"
+#include "AMEGIC++/Main/Point.H"
 
 #include <iostream>
 
@@ -11,7 +11,6 @@ Point::Point(const Point& copy) {
   Color   = new Color_Function;
   Lorentz = NULL;
   middle  = 0;
-  cpl.clear();
   nextra = 0;
 
   *this = copy;
@@ -24,7 +23,6 @@ Point::Point(int extra) : nextra(extra)  {
   Color   = new Color_Function;
   Lorentz = NULL;
   middle  = 0;
-  cpl.clear();
   if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
 }
 

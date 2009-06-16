@@ -1,6 +1,6 @@
-#include "VA_0_PiPiPiPi3Charged.H"
-#include "Run_Parameter.H"
-#include "My_File.H"
+#include "HADRONS++/Current_Library/VA_0_PiPiPiPi3Charged.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_File.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -30,7 +30,7 @@ void VA_0_PiPiPiPi3Charged::LorenzBase::SetPrivates(
 VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   : LorenzBase()
 {
-  m_mpi2 = sqr( Flavour(kf_pi_plus).PSMass() );
+  m_mpi2 = sqr( Flavour(kf_pi_plus).HadMass() );
   m_rho = SimpleResonanceFlavour(	  
 	  string("kf_rho_770_plus"),
       _md("Mass_rho(770)+", _md("Mass_rho(770)", 0.7761 )),
@@ -317,16 +317,16 @@ VA_0_PiPiPiPi3Charged::KS::KS( string path, GeneralModel _md )
   m_grop    = _md("grop", 12.924);
   m_Go3p    = _md("Go3p", 1476.);
 
-  m_mpi2    = sqr( Flavour(kf_pi_plus).PSMass() );
-  m_mpi02   = sqr( Flavour(kf_pi).PSMass() );
+  m_mpi2    = sqr( Flavour(kf_pi_plus).HadMass() );
+  m_mpi02   = sqr( Flavour(kf_pi).HadMass() );
 
-  double MR      = _md("Mass_rho(770)+",  Flavour(kf_rho_770_plus).PSMass()  );
-  double MRR     = _md("Mass_rho(1450)+", Flavour(kf_rho_1450_plus).PSMass() );
-  double MRRR    = _md("Mass_rho(1700)+", Flavour(kf_rho_1700_plus).PSMass() );
-  double MO      = _md("Mass_omega(782)", Flavour(kf_omega_782).PSMass() );
-  double MF      = _md("Mass_f(0)(980)",    Flavour(kf_f_0_980).PSMass() );
-  double MS      = _md("Mass_sigma",      Flavour(kf_f_0_980).PSMass()  );
-  double MA      = _md("Mass_a(1)(1260)+",  Flavour(kf_a_1_1260_plus).PSMass());
+  double MR      = _md("Mass_rho(770)+",  Flavour(kf_rho_770_plus).HadMass()  );
+  double MRR     = _md("Mass_rho(1450)+", Flavour(kf_rho_1450_plus).HadMass() );
+  double MRRR    = _md("Mass_rho(1700)+", Flavour(kf_rho_1700_plus).HadMass() );
+  double MO      = _md("Mass_omega(782)", Flavour(kf_omega_782).HadMass() );
+  double MF      = _md("Mass_f(0)(980)",    Flavour(kf_f_0_980).HadMass() );
+  double MS      = _md("Mass_sigma",      Flavour(kf_f_0_980).HadMass()  );
+  double MA      = _md("Mass_a(1)(1260)+",  Flavour(kf_a_1_1260_plus).HadMass());
   double GR      = _md("Width_rho(770)+",  Flavour(kf_rho_770_plus).Width()  );
   double GRR     = _md("Width_rho(1450)+", Flavour(kf_rho_1450_plus).Width() );
   double GRRR    = _md("Width_rho(1700)+", Flavour(kf_rho_1700_plus).Width() );

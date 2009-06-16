@@ -1,8 +1,8 @@
-#ifndef Ordering_H
-#define Ordering_H
+#ifndef ATOOLS_Phys_Ordering_H
+#define ATOOLS_Phys_Ordering_H
 
-#include "Particle.H"
-#include "Getter_Function.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Getter_Function.H"
 
 namespace ATOOLS {
 

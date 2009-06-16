@@ -1,6 +1,6 @@
-#include "Fixed_Variable_Channel.H"
+#include "AMISIC++/Tools/Fixed_Variable_Channel.H"
 
-#include "Channel_Elements.H"
+#include "PHASIC++/Channels/Channel_Elements.H"
 
 using namespace PHASIC;
 
@@ -13,8 +13,7 @@ Fixed_Variable_Channel(int nin,int nout,ATOOLS::Flavour *fl,
 void Fixed_Variable_Channel::
 GeneratePoint(ATOOLS::Vec4D *p,double *ran)
 {
-  switch (p_variable->SelectorID()) {
-  case 12: {
+  if (p_variable->SelectorID()=="PT") {
     Ehat=sqrt((p[0]+p[1]).Abs2());
     pt=m_value;
     if (Ehat/2.0>pt) {
@@ -31,14 +30,12 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
 			 Ehat/2.0*sin(2.0*M_PI*ran[1]),0.0);
     }
     p[3]=ATOOLS::Vec4D(Ehat/2.0,ATOOLS::Vec3D()-ATOOLS::Vec3D(p[2]));
-    break;
+    return;
   }
-  default:
-    msg_Error()<<"Fixed_Variable_Channel::GeneratePoint(..): "
-		       <<"Cannot handle "<<p_variable->Name()
-		       <<"! Setting weight to 0."<<std::endl;
-    weight=0.0;
-  }
+  msg_Error()<<"Fixed_Variable_Channel::GeneratePoint(..): "
+	     <<"Cannot handle "<<p_variable->Name()
+	     <<"! Setting weight to 0."<<std::endl;
+  weight=0.0;
 }
   
 void Fixed_Variable_Channel::GenerateWeight(ATOOLS::Vec4D *_p)

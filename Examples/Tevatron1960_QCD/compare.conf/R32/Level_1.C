@@ -1,0 +1,28 @@
+(level1){
+  PIECE_SETUP Level_1.C ([1[+1]4]){ }([1[+1]4]);
+}(level1);
+
+(1){
+  PIECE_SETUP Final.C (final){ }(final);
+  PATH_PIECE PATH1PATHPIECE;
+  LEGEND_TITLE TITLE1;
+  LINE_COLOUR RED1;
+}(1);
+(2){
+  PIECE_SETUP Final.C (final){ }(final);
+  PATH_PIECE PATH2PATHPIECE;
+  LEGEND_TITLE TITLE2;
+  LINE_COLOUR GREEN1;
+}(2);
+(3){
+  PIECE_SETUP Final.C (final){ }(final);
+  PATH_PIECE PATH3PATHPIECE;
+  LEGEND_TITLE TITLE3;
+  LINE_COLOUR BLUE1;
+}(3);
+(4){
+  PIECE_SETUP Final.C (final){ }(final);
+  PATH_PIECE PATH4PATHPIECE;
+  LEGEND_TITLE TITLE4;
+  LINE_COLOUR YELLOW1;
+}(4);

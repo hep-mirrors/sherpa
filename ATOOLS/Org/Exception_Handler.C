@@ -1,9 +1,9 @@
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
-#include "Run_Parameter.H"
-#include "MyStrStream.H"
-#include "CXXFLAGS.H"
-#include "Shell_Tools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -34,6 +34,11 @@ Exception_Handler::Exception_Handler():
   m_print(true), m_noremove(false),
   m_signal(0), m_exitcode(0), m_exception(0), m_nbus(0), m_nsegv(0),
   m_progname("Sherpa") {}
+
+Exception_Handler::~Exception_Handler()
+{
+  exh=NULL;
+}
 
 void Exception_Handler::Init()
 {
@@ -137,7 +142,8 @@ void Exception_Handler::Terminate()
        m_signal!=SIGXCPU && m_signal!=SIGPIPE) &&
       (m_exception==NULL || 
        (m_exception->Type()!=ex::normal_exit &&
-	m_exception->Type()!=ex::missing_input))) {
+	m_exception->Type()!=ex::missing_input &&
+	m_exception->Type()!=ex::missing_module))) {
     if (m_print) {
       msg->SetModifiable(false);
       GenerateStackTrace(msg->LogFile(),true,"! ");
@@ -375,5 +381,11 @@ unsigned int Exception_Handler::LastSignal()
 { 
   Init(); 
   return exh->m_signal;    
+}
+
+std::string Exception_Handler::ProgramName()    
+{ 
+  Init(); 
+  return exh->m_progname;    
 }
 

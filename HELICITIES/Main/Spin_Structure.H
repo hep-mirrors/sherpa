@@ -1,13 +1,13 @@
-#ifndef Spin_Structure_H
-#define Spin_Structure_H
+#ifndef HELICITIES_Main_Spin_Structure_H
+#define HELICITIES_Main_Spin_Structure_H
 
-#include "MyComplex.H"
-#include "Particle.H"
-#include "Matrix.H"
-#include "Message.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Matrix.H"
+#include "ATOOLS/Org/Message.H"
 #include <algorithm>
 #include <iomanip>
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace HELICITIES
 {
@@ -69,25 +69,37 @@ namespace HELICITIES
       this->resize(n, value);
     }
     
-    Spin_Structure(ATOOLS::Flavour* flavs, size_t size, const Value& value) :
+    Spin_Structure(const ATOOLS::Flavour* flavs, size_t size, const Value& value) :
       m_spins(std::vector<int>(size)) 
     {
       size_t n=1;
       for(size_t i=0;i<size;i++) {
-        if(flavs[i].IsVector() && flavs[i].PSMass()==0) m_spins[i] = 2;
+        if(flavs[i].IsVector() && flavs[i].HadMass()==0) m_spins[i] = 2;
         else m_spins[i] = flavs[i].IntSpin()+1;
 	n*=m_spins[i];
       }
       this->resize(n,value);
     }
     
-    Spin_Structure(ATOOLS::Flavour* flavs, size_t size, int* indices)
+    Spin_Structure(const ATOOLS::Flavour_Vector& flavs, const Value& value) :
+      m_spins(std::vector<int>(flavs.size())) 
+    {
+      size_t n=1;
+      for(size_t i=0;i<flavs.size();i++) {
+        if(flavs[i].IsVector() && flavs[i].HadMass()==0) m_spins[i] = 2;
+        else m_spins[i] = flavs[i].IntSpin()+1;
+        n*=m_spins[i];
+      }
+      this->resize(n,value);
+    }
+    
+    Spin_Structure(const ATOOLS::Flavour* flavs, size_t size, int* indices)
     {
       m_spins = std::vector<int>(size);
 
       size_t n=1;
       for(size_t i=0;i<size;i++) {
-        if(flavs[indices[i]].IsVector() && flavs[indices[i]].PSMass()==0)
+        if(flavs[indices[i]].IsVector() && flavs[indices[i]].HadMass()==0)
           m_spins[i] = 2;
         else m_spins[i] = flavs[indices[i]].IntSpin()+1;
 	n*=m_spins[i];
@@ -101,7 +113,7 @@ namespace HELICITIES
 
       size_t n=1;
       for(size_t i=0;i<particles.size();i++) {
-        if(particles[i]->Flav().IsVector() && particles[i]->Flav().PSMass()==0) m_spins[i] = 2;
+        if(particles[i]->Flav().IsVector() && particles[i]->Flav().HadMass()==0) m_spins[i] = 2;
         else m_spins[i] = particles[i]->Flav().IntSpin()+1;
 	n*=m_spins[i];
       }
@@ -111,6 +123,11 @@ namespace HELICITIES
     ~Spin_Structure() {}
 
     void    Insert(Value value, std::vector<std::pair<int,int> >& spins)
+    {
+      (*this)[GetNumber(spins)]=value;
+    }
+
+    void    Insert(Value value, const std::vector<int>& spins)
     {
       (*this)[GetNumber(spins)]=value;
     }
@@ -183,9 +200,12 @@ namespace HELICITIES
   class Spin_Amplitudes : public Spin_Structure<Complex> {
   public:
     Spin_Amplitudes(const std::vector<int>& spins, const Complex& value);
-    Spin_Amplitudes(ATOOLS::Flavour* flavs, size_t size, const Complex& value);
+    Spin_Amplitudes(const ATOOLS::Flavour* flavs, size_t size, const Complex& value);
+    Spin_Amplitudes(const ATOOLS::Flavour_Vector& flavs, const Complex& value);
     Spin_Amplitudes(const ATOOLS::Particle_Vector& particles);
+    virtual ~Spin_Amplitudes();
     double  SumSquare() const;
+    virtual void Calculate(const ATOOLS::Vec4D* momenta, bool anti=false);
   };
 
   class Amplitude_Tensor : public Spin_Structure<std::vector<Complex> > {

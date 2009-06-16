@@ -1,23 +1,23 @@
-#ifndef Initialization_Handler_h
-#define Initialization_Handler_h
+#ifndef SHERPA_Initialization_Initialization_Handler_H
+#define SHERPA_Initialization_Initialization_Handler_H
 
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
-#include "Model_Base.H"
-#include "Beam_Spectra_Handler.H"
-#include "ISR_Handler.H"
-#include "Matrix_Element_Handler.H"
-#include "Hard_Decay_Handler.H"
-#include "Shower_Handler.H"
-#include "Beam_Remnant_Handler.H"
-#include "Fragmentation_Handler.H"
-#include "Hadron_Decay_Handler.H"
-#include "MI_Handler.H"
-#include "Soft_Photon_Handler.H"
-#include "Analysis_Handler.H"
-#include "Lund_Interface.H"
-#include "Event_Reader.H"
-#include "Data_Reader.H"
+#include "MODEL/Main/Model_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+#include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/PerturbativePhysics/MI_Handler.H"
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
+#include "SHERPA/Tools/Event_Reader.H"
+#include "SHERPA/Tools/Analysis_Interface.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 #include <map>
 #include <string>
@@ -42,10 +42,12 @@ namespace SHERPA {
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
-    std::string m_path,m_file,m_evtfile;
-    std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_decaydat, m_showerdat;
+    std::string m_path,m_file,m_evtfile,m_pdflib;
+    std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
     std::string m_softphotonsdat;
+    std::string m_processesdat;
+    std::string m_selectordat;
 
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
@@ -69,8 +71,8 @@ namespace SHERPA {
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
-    ANALYSIS::Analysis_Handler * p_analysis;
-    void ShowParameterSyntax() const;
+    Analysis_Interface         * p_analysis;
+    void ShowParameterSyntax();
     void LoadLibraries() const;
   private :
     bool InitializeTheIO();
@@ -89,7 +91,6 @@ namespace SHERPA {
     bool InitializeTheAnalyses();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
-    void CheckFlagConsistency();
     bool CheckBeamISRConsistency();
     void SetScaleFactors();
     void PrepareTerminate();
@@ -109,10 +110,9 @@ namespace SHERPA {
 
     Matrix_Element_Handler      * const GetMatrixElementHandler(std::string);
     Hadron_Decay_Handler        * const GetHadronDecayHandler(std::string);
-    //ANALYSIS::Analysis_Handler  * const GetAnalysisHandler(std::string);
     inline PDF::ISR_Handler     * const GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
     MEHandlersMap               * const GetMatrixElementHandlers()       { return &m_mehandlers;     }
-    ANALYSIS::Analysis_Handler  * const GetSampleAnalysis()        const { return p_analysis;        }
+    Analysis_Interface          * const GetAnalysis()              const { return p_analysis;        }
     MODEL::Model_Base           * const GetModel()                 const { return p_model;           }
     ISR_Handler_Map             * const GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler  * const GetBeamSpectraHandler()    const { return p_beamspectra;     }

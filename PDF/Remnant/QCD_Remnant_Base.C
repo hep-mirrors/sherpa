@@ -1,8 +1,8 @@
-#include "QCD_Remnant_Base.H"
+#include "PDF/Remnant/QCD_Remnant_Base.H"
 
-#include "Exception.H"
-#include "Random.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
 #include <iomanip>
 
@@ -56,7 +56,8 @@ void QCD_Remnant_Base::AssignRemnants()
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     if (*pit==startreal || *pit==startanti) continue;
-    m_connected.push_back(new Color_Dipole(*pit,&m_companions));
+    if ((*pit)->Flav().Strong())
+      m_connected.push_back(new Color_Dipole(*pit,&m_companions));
   }
 }
 
@@ -155,9 +156,28 @@ bool QCD_Remnant_Base::AdjustColors()
   PROFILE_HERE;
   if (!m_active) return true;
   QCD_Remnant_Base *partner=dynamic_cast<QCD_Remnant_Base*>(p_partner);
-  if (partner==NULL) 
-    THROW(not_implemented,
-	  "QCD <-> non-QCD remnant combination not available.");
+  if (partner==NULL) {
+    for (size_t i(1);i<m_maxtrials;++i) {
+      for (Dipole_Vector::iterator dit=m_connected.begin();
+	   dit!=m_connected.end();++dit) {
+	(*dit)->CollectStrings();
+	(*dit)->DetectLoops();
+      }
+      p_start->CollectStrings();
+      p_start->DetectLoops();
+      if (Connect(i==1)) {
+	Color_Dipole::SetAllColors();
+	for (Dipole_Vector::iterator rit=m_connected.begin();
+	     rit!=m_connected.end();++rit) {
+	  if ((*rit)->Singlet(qri::real) || (*rit)->Singlet(qri::anti)) 
+	    msg_Error()<<"QCD_Remnant_Base::AdjustColors(): "
+		       <<"Colour singlet."<<std::endl;
+	}
+	return true;
+      }
+    }
+    return false;
+  }
   QCD_Remnant_Base *self=this;
   size_t i=0;
   while (++i<m_maxtrials) {

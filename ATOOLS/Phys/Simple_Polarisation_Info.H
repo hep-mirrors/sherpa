@@ -1,5 +1,5 @@
-#ifndef Simple_Polarisation_Info_H
-#define Simple_Polarisation_Info_H
+#ifndef ATOOLS_Phys_Simple_Polarisation_Info_H
+#define ATOOLS_Phys_Simple_Polarisation_Info_H
 
 #include <iostream>
 

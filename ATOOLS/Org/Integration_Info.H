@@ -1,14 +1,14 @@
-#ifndef Integration_Info_H
-#define Integration_Info_H
+#ifndef ATOOLS_Org_Integration_Info_H
+#define ATOOLS_Org_Integration_Info_H
 
-#ifndef Info_Key_H
+#ifndef ATOOLS_Org_Info_Key_H
 #error The header 'Integration_Info.H' must not be included directly. \
 Please include the header 'Info_Key.H' instead.
 #else
 
-#include "Info_Key.H"
-#include "My_Limits.H"
-#include "CXXFLAGS.H"
+#include "ATOOLS/Org/Info_Key.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <map>
 #include <vector>
 #ifdef USING__Threading
@@ -126,7 +126,7 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
-#include "Integration_Info.inl.H"
+#include "ATOOLS/Org/Integration_Info.inl.H"
 
 #endif
 

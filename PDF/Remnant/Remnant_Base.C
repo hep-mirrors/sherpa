@@ -1,10 +1,10 @@
-#include "Remnant_Base.H"
+#include "PDF/Remnant/Remnant_Base.H"
 
-#include "Run_Parameter.H"
-#include "Exception.H"
-#include "Momentum_Shifter.H"
-#include "MyStrStream.H"
-#include "Beam_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Phys/Momentum_Shifter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "BEAM/Main/Beam_Base.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Remnant_Base
@@ -16,6 +16,7 @@
 #endif
 
 using namespace PDF;
+using namespace ATOOLS;
 
 std::set<ATOOLS::Particle*> PDF::Remnant_Base::s_last[2];
 
@@ -69,26 +70,40 @@ bool Remnant_Base::AdjustKinematics()
     THROW(critical_error,"No partner remnant found.");
   }
   p_last[1]=p_partner->Last();
-  if ((p_last[0]==NULL)||(p_last[1]==NULL)) {
-    THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
-  }
-  m_erem=ATOOLS::rpa.gen.Ecms();
-  m_pzrem=0.0;
+  m_erem=(p_beam->OutMomentum()+
+	  p_partner->p_beam->OutMomentum())[0];
+  m_pzrem=(p_beam->OutMomentum()+
+	   p_partner->p_beam->OutMomentum())[3];
   for (size_t i=0;i<2;++i) {
     ATOOLS::Blob *cur=p_beamblob;
     if (i==1) cur=p_partner->p_beamblob;
     for (int j=0;j<cur->NOutP();++j) {
       if (cur->OutParticle(j)!=p_last[i]) {
+	if (cur->OutParticle(j)->DecayBlob()==NULL) {
+	  if (p_last[0]==NULL) {
+	    p_last[0]=cur->OutParticle(j);
+	    continue;
+	  }
+	  else if (p_last[1]==NULL) {
+	    p_last[1]=cur->OutParticle(j);
+	    continue;
+	  }
+	}
 	const ATOOLS::Vec4D &p=cur->OutParticle(j)->Momentum();
 	m_erem-=p[0];
 	m_pzrem-=p[3];
       }
     }
   }
+  if (p_last[1]==NULL && p_last[0]==NULL) {
+    THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
+  }
+  if ((p_last[1]==NULL || p_last[0]==NULL) &&
+      (Type()==rtp::electron || p_partner->Type()==rtp::electron)) return true;
   ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
   ATOOLS::Momentum_Shifter shift(p_last[0],p_last[1]);
-  shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().PSMass())+pr1.PPerp2(),1);
-  shift.SetSPerp(ATOOLS::sqr(p_last[1]->Flav().PSMass())+pr2.PPerp2(),2);
+  shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().Mass())+pr1.PPerp2(),1);
+  shift.SetSPerp(ATOOLS::sqr(p_last[1]->Flav().Mass())+pr2.PPerp2(),2);
   if (!ATOOLS::IsZero(m_pzrem-(pr1+pr2)[3])) {
     shift.SetShift(ATOOLS::Vec4D(m_erem-(pr1+pr2)[0],0.,0.,
 				 m_pzrem-(pr1+pr2)[3]));

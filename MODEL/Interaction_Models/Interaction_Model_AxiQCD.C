@@ -1,7 +1,7 @@
-#include "Interaction_Model_AxiQCD.H"
-#include "MathTools.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "MODEL/Interaction_Models/Interaction_Model_AxiQCD.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -44,9 +44,9 @@ void Interaction_Model_AxiQCD::c_FFV(std::vector<Single_Vertex>& vertex,int & va
 
   for (short int i=1;i<=6;i++) {
     Flavour flav = Flavour((kf_code)(i));
-    if (flav.Strong() && flav.IsOn() && Flavour(kf_axigluon).IsOn()) { 
+    if (flav.Strong() && flav.IsOn() && Flavour(61).IsOn()) { 
       vertex[vanz].in[0]         = flav;
-      vertex[vanz].in[1]         = Flavour(kf_axigluon);
+      vertex[vanz].in[1]         = Flavour(61);
       vertex[vanz].in[2]         = flav;
 
       vertex[vanz].cpl[0]        = kcpl0;
@@ -72,11 +72,11 @@ void Interaction_Model_AxiQCD::c_VVV(std::vector<Single_Vertex>& vertex,int& van
   Kabbala kcpl0 = -g3;
   Kabbala kcpl1 = kcpl0; 
   
-  if (Flavour(kf_gluon).IsOn() && Flavour(kf_axigluon).IsOn()) {
+  if (Flavour(kf_gluon).IsOn() && Flavour(61).IsOn()) {
 
     vertex[vanz].in[0] = Flavour(kf_gluon);
-    vertex[vanz].in[1] = Flavour(kf_axigluon);
-    vertex[vanz].in[2] = Flavour(kf_axigluon);
+    vertex[vanz].in[1] = Flavour(61);
+    vertex[vanz].in[2] = Flavour(61);
 
     vertex[vanz].cpl[0]        = kcpl0;
     vertex[vanz].cpl[1]        = kcpl1;
@@ -102,12 +102,12 @@ void Interaction_Model_AxiQCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   Kabbala kcpl0 = -M_I*g3*g3; 
   Kabbala kcpl1 = kcpl0; 
   
-  if (Flavour(kf_gluon).IsOn() && Flavour(kf_axigluon).IsOn()) {
+  if (Flavour(kf_gluon).IsOn() && Flavour(61).IsOn()) {
 
     vertex[vanz].in[0] = Flavour(kf_gluon);
     vertex[vanz].in[1] = Flavour(kf_gluon);
-    vertex[vanz].in[2] = Flavour(kf_axigluon);
-    vertex[vanz].in[3] = Flavour(kf_axigluon);
+    vertex[vanz].in[2] = Flavour(61);
+    vertex[vanz].in[3] = Flavour(61);
 
     vertex[vanz].nleg            = 4;
     vertex[vanz].cpl[0]          = kcpl0;
@@ -138,10 +138,10 @@ void Interaction_Model_AxiQCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
 
 
 
-    vertex[vanz].in[0] = Flavour(kf_axigluon);
-    vertex[vanz].in[1] = Flavour(kf_axigluon);
-    vertex[vanz].in[2] = Flavour(kf_axigluon);
-    vertex[vanz].in[3] = Flavour(kf_axigluon);
+    vertex[vanz].in[0] = Flavour(61);
+    vertex[vanz].in[1] = Flavour(61);
+    vertex[vanz].in[2] = Flavour(61);
+    vertex[vanz].in[3] = Flavour(61);
 
     vertex[vanz].nleg            = 4;
     vertex[vanz].cpl[0]          = kcpl0;

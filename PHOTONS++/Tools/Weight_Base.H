@@ -1,7 +1,7 @@
-#ifndef Weight_Base_H
-#define Weight_Base_H
+#ifndef PHOTONS_Tools_Weight_Base_H
+#define PHOTONS_Tools_Weight_Base_H
 
-#include "Dipole_Type.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
 namespace PHOTONS {
   class Weight_Base {

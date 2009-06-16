@@ -1,9 +1,9 @@
-#ifndef Pol_Info_h
-#define Pol_Info_h
+#ifndef AMEGIC_Main_Pol_Info_H
+#define AMEGIC_Main_Pol_Info_H
 
 #define Explicit_Pols
 
-#include "Flavour.H"
+#include "ATOOLS/Phys/Flavour.H"
 //syntax for polarised particles: (in processes.dat)
 //
 //    degree of polarisation (0.=unpolarized,1.=fully polarized) (only 1 or 0 for outgoing)
@@ -37,6 +37,7 @@ namespace AMEGIC {
 		   p_lh   = 5,   //             horizontaly (linear)
 		   p_lp   = 6,    //             perpendicular (linear)
 		   p_none = 8,
+		   p_spec = 9,
 		   
 		   p_t1   = 101,  //dummies for graviton polarization tensors
 		   p_t2   = 102,

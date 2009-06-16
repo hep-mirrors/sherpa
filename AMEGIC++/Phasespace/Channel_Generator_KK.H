@@ -1,7 +1,7 @@
-#ifndef Channel_Generator_KK_h
-#define Channel_Generator_KK_h
+#ifndef AMEGIC_Phasespace_Channel_Generator_KK_H
+#define AMEGIC_Phasespace_Channel_Generator_KK_H
 
-#include "Channel_Generator_Base.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_Base.H"
 
 
 namespace AMEGIC {

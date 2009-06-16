@@ -1,8 +1,8 @@
-#include "Histogram.H"
-#include "Message.H"
-#include "MyStrStream.H"
-#include "MathTools.H"
-#include "Data_Reader.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
@@ -22,9 +22,19 @@ Type Get(const std::string & in)
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
-  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_psfills(0), 
-  m_finished(false), m_initialized(false)
+  m_yvalues(0),m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_psfills(0), 
+  m_finished(false), m_initialized(false), m_fuzzyexp(-1)
 {
+  m_mcb = 0.;
+  if (m_type>1000) {
+    m_type-=1000;
+    m_fuzzyexp = int(m_type/100);
+    m_type-=100*m_fuzzyexp;
+  }
+  if (m_type>=100) {
+    m_mcb = 1.;
+    m_type-=100;
+  }
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
   m_logbase = 1;
@@ -64,18 +74,26 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
     }
   }
 
+  if (m_mcb!=0.) {
+    m_tmp   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_tmp[i]=0.;
+    }
+  }
+
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i]=0.;
   }
 }
 
-Histogram::Histogram(const Histogram * histo) : 
-  m_yvalues(0), m_y2values(0), m_psvalues(0) {
+Histogram::Histogram(const Histogram * histo)
+: m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0) {
   m_lower   = histo->m_lower;
   m_upper   = histo->m_upper;
   m_logbase = histo->m_logbase;
   m_logarithmic = histo->m_logarithmic;
-  m_nbin   = histo->m_nbin;
+  m_mcb     = histo->m_mcb;
+  m_nbin    = histo->m_nbin;
   m_depth   = histo->m_depth;
   m_type    = histo->m_type;
   m_fills   = histo->m_fills;
@@ -101,12 +119,18 @@ Histogram::Histogram(const Histogram * histo) :
       m_psvalues[i]=histo->m_psvalues[i];
     }
   }
+  if (m_mcb!=0.) {
+    m_tmp   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_tmp[i]=0.;
+    }
+  }
 }
 
 
 Histogram::Histogram(const std::string & pID)
-  :  m_yvalues(0), m_y2values(0), m_psvalues(0)  {
-  m_finished=false;
+  :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
+  m_finished=true;
   std::ifstream ifile(pID.c_str());
 
   std::string dummy;
@@ -156,7 +180,7 @@ Histogram::Histogram(const std::string & pID)
     m_yvalues[0]  = Get<double>(conf[k++]);
     if (m_depth>1) {
       m_y2values   = new double[m_nbin];
-      m_y2values[0] = Get<double>(conf[k++]);
+      m_y2values[0] = sqr(Get<double>(conf[k++]));
     }    
     if (m_depth>2) {
       m_psvalues   = new double[m_nbin];
@@ -170,7 +194,7 @@ Histogram::Histogram(const std::string & pID)
 
     m_yvalues[m_nbin-1]  = Get<double>(conf[k++]);
     if (m_depth>1) {
-      m_y2values[m_nbin-1] = Get<double>(conf[k++]);
+      m_y2values[m_nbin-1] = sqr(Get<double>(conf[k++]));
     }    
     if (m_depth>2) {
       m_psvalues[m_nbin-1] = Get<double>(conf[k++]);
@@ -180,7 +204,7 @@ Histogram::Histogram(const std::string & pID)
       m_active = 0;
       return;
     }
-    m_fills = Get<long int>(conf[k++]);
+    m_fills = Get<double>(conf[k++]);
   }
   else {
     msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
@@ -221,6 +245,9 @@ Histogram::~Histogram() {
   }
   if (m_psvalues!=0) { 
     delete [] m_psvalues; m_psvalues = 0; 
+  }
+  if (m_tmp!=0) { 
+    delete [] m_tmp; m_tmp = 0; 
   }
 }
 
@@ -319,17 +346,20 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
+  if (!m_active) return;
   msg_LogFile()<<"! Histogram::Output(..): "
 	       <<"Writing ("<<this<<") to '"<<name<<"'\n";
   std::ofstream ofile;
   ofile.open(name.c_str());
 
-  ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
-  ofile<<m_yvalues[0]<<"  ";
-  if (m_depth>1) ofile<<m_y2values[0]<<"  ";
-  ofile<<m_yvalues[m_nbin-1]<<"  ";
-  if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
-  ofile<<m_fills<<"\n";
+  if (m_fills>=0) {
+    ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
+    ofile<<m_yvalues[0]<<"  ";
+    if (m_depth>1) ofile<<m_y2values[0]<<"  ";
+    ofile<<m_yvalues[m_nbin-1]<<"  ";
+    if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
+    ofile<<m_fills<<"\n";
+  }
   for (int i=0;i<m_nbin-1;i++) {
     ofile<<m_lower+i*m_binsize<<"  ";
     ofile<<m_yvalues[i+1]<<"  ";
@@ -367,7 +397,7 @@ void Histogram::Insert(double coordinate) {
   }
 }
 
-void Histogram::Insert(int i,double value,int ncount) {
+void Histogram::Insert(int i,double value,double ncount) {
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -402,7 +432,71 @@ void Histogram::Insert(int i,double value,int ncount) {
   }
 }
 
-void Histogram::Insert(double coordinate,double value,int ncount) {
+void Histogram::InsertMCB(double coordinate,double value,double ncount) {
+  if (!m_tmp) {
+    m_tmp   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_tmp[i]=0.;
+    }
+  }
+  m_mcb = ncount;
+
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+
+  int bin = int((coordinate-m_lower)/m_binsize+1.);
+  if (bin<0) bin=0;
+  if (bin>=m_nbin) bin=m_nbin-1;
+  if (bin==0||bin==m_nbin-1) {
+    m_tmp[bin] += value;
+    return;
+  }
+
+  double x = (coordinate-m_lower)/m_binsize-double(bin)+0.5;
+  if ((bin==1&&x<0.)||(bin==m_nbin-2&&x>0.)) {
+    m_tmp[bin] += value;
+    return;
+  }
+  double ff=1.;
+  if (m_fuzzyexp==0) ff=0.5;
+  if (m_fuzzyexp>0) ff=1.-0.5*pow(2.*dabs(x),m_fuzzyexp);
+  if (m_fuzzyexp==9) ff=1.-0.5*sqrt(2.*dabs(x));
+
+  m_tmp[bin] += ff*value; 
+  if (x>0.) m_tmp[bin+1] += (1.-ff)*value;
+  if (x<0.) m_tmp[bin-1] += (1.-ff)*value;
+}
+
+void Histogram::InsertMCBIM(double coordinate,double value) {
+  if (!m_tmp) {
+    m_tmp   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_tmp[i]=0.;
+    }
+  }
+  m_mcb = 1.;
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+
+  int bin = int((coordinate-m_lower)/m_binsize+1.);
+  if (bin<0) bin=0;
+  if (bin>=m_nbin) bin=m_nbin-1;
+  for (int i=bin+1;i<m_nbin;i++) m_tmp[i] += value;
+}
+
+void Histogram::FinishMCB()
+{
+  m_fills+=m_mcb;
+
+  for (int i=0;i<m_nbin;i++) {
+    m_yvalues[i] += m_tmp[i];
+    if (m_depth>1) {
+      m_y2values[i] += m_tmp[i]*m_tmp[i];
+      if (m_depth>2) m_psvalues[i] += 1.;
+    }
+    m_tmp[i] = 0.;
+  }
+}
+
+void Histogram::Insert(double coordinate,double value,double ncount) {
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -414,38 +508,53 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
 
   if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-
-  if (coordinate<m_lower) { 
-    m_yvalues[0] += value;
+  int bin = int((coordinate-m_lower)/m_binsize+1.);
+  if (bin<0) bin=0;
+  if (bin>=m_nbin) bin=m_nbin-1;
+  if (bin==0||bin==m_nbin-1) {
+    m_yvalues[bin] += value;
     if (m_depth>1) {
-      if (value>m_y2values[0]) m_y2values[0] = value;
-      if (m_depth>2) m_psvalues[0] += 1.;
+      if (value>m_y2values[bin]) m_y2values[bin] = value;
+      if (m_depth>2) m_psvalues[bin] += 1.;
     }
-    return; 
+    return;
   }
 
-  if (coordinate>m_upper) { 
-    m_yvalues[m_nbin-1] += value; 
-    if (m_depth>1) {
-      if (value>m_y2values[m_nbin-1]) m_y2values[m_nbin-1] = value;
-      if (m_depth>2) m_psvalues[m_nbin-1] += 1.;
-    }
-    return; 
+  m_yvalues[bin] += value; 
+  if (m_depth>1) {
+    m_y2values[bin] += sqr(value);
+    if (m_depth>2) m_psvalues[bin] += 1.;
+  }
+ 
+  if (m_fuzzyexp<0) return;
+
+  double x = (coordinate-m_lower)/m_binsize-double(bin)+0.5;
+  if (bin==1&&x<0.) return;
+  if (bin==m_nbin-2&&x>0.) return;
+  double ff=1.;
+  if (m_fuzzyexp==0) ff=0.5;
+  if (m_fuzzyexp>0) ff=0.5*pow(2.*dabs(x),m_fuzzyexp);
+  if (m_fuzzyexp==9) ff=0.5*sqrt(2.*dabs(x));
+
+  m_yvalues[bin] -= ff*value; 
+  if (m_depth>1) {
+    m_y2values[bin] += sqr(ff*(value))-sqr(value);
+    if (m_depth>2) m_psvalues[bin] -= ff;
   }
 
-  double low,up;
-  low = m_lower; up = m_lower+m_binsize;
-  for (int i=1;i<m_nbin-1;i++) {
-    if ( (coordinate >= low) && (coordinate < up) ) {
-      m_yvalues[i] += value;
-      if (m_depth>1) {
-	m_y2values[i] += value*value;
-	if (m_depth>2) m_psvalues[i] += 1.;
-      }
-      return; 
+  if (x>0.) {
+    m_yvalues[bin+1] += ff*value;
+    if (m_depth>1) {
+      m_y2values[bin+1] += sqr(ff*value);
+      if (m_depth>2) m_psvalues[bin+1] += ff;
     }
-    low = up;
-    up += m_binsize;
+  }
+  if (x<0.) {
+    m_yvalues[bin-1] += ff*value;
+    if (m_depth>1) {
+      m_y2values[bin-1] += sqr(ff*value);
+      if (m_depth>2) m_psvalues[bin-1] += ff;
+    }
   }
 }
 
@@ -695,4 +804,32 @@ Histogram & Histogram::operator+=(const Histogram & histo)
   m_fills+=histo.m_fills;
   m_psfills+=histo.m_psfills;
   return *this;
+}
+
+
+void Histogram::Addopt(const Histogram & histo)
+{
+  
+  if (m_depth<=1) {
+    msg_Error()<<"Error in Histogram : can not Addopt histograms without statistical errors"<<std::endl;
+    return;
+  }
+  if (histo.m_nbin!=m_nbin) {
+    msg_Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
+    return;
+  }
+  for (int i=0;i<m_nbin;i++) { 
+    double w1=sqr(m_yvalues[i])/m_y2values[i];
+    double w2=sqr(histo.m_yvalues[i])/histo.m_y2values[i];
+    if (!(w1>0. && w2>0.)) w1=w2=1.;
+    m_yvalues[i]=(m_yvalues[i]*w1+histo.m_yvalues[i]*w2)/(w1+w2); 
+    m_y2values[i]=sqr(m_yvalues[i])/(w1+w2); 
+
+    if (m_depth>2) {
+      m_psvalues[i]+= histo.m_psvalues[i];       
+    }
+  }  
+  m_fills+=histo.m_fills;
+  m_psfills+=histo.m_psfills;
+  return;
 }

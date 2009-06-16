@@ -1,13 +1,7 @@
-#include "MI_Base.H"
+#include "AMISIC++/Main/MI_Base.H"
 
-#include "Particle.H"
-#include "Message.H"
-
-#ifdef PROFILE__MI_Base
-#include "prof.hh"
-#else 
-#define PROFILE_HERE
-#endif
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
 
@@ -79,7 +73,6 @@ MI_Base::~MI_Base()
 
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
-  PROFILE_HERE;
   for (String_MI_Base_Map::iterator nbit=s_bases->begin();
        nbit!=s_bases->end();++nbit) {
     nbit->second->Update(mibase);
@@ -135,7 +128,6 @@ bool MI_Base::DiceProcess()
 
 void MI_Base::ResetAll()
 {
-  PROFILE_HERE;
   for (String_MI_Base_Map::iterator nbit=s_bases->begin();
        nbit!=s_bases->end();++nbit) {
     nbit->second->Reset();
@@ -144,7 +136,6 @@ void MI_Base::ResetAll()
 
 bool MI_Base::FillBlob(ATOOLS::Blob *blob)
 {
-  PROFILE_HERE;
   if (blob==NULL) {
     msg_Error()<<"MI_Base::FillBlob(..): "
 		       <<"Blob is not initialized!"<<std::endl

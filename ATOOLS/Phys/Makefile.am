@@ -4,24 +4,14 @@ libToolsPhys_la_SOURCES       =	\
 				Flavour.C \
 				Ordering.C \
 				Particle.C \
-				Particle_Qualifier.C \
 			        Simple_Polarisation_Info.C \
+				Decay_Channel.C \
 				Decay_Table.C \
-				Flavour_List.C \
+				Decay_Map.C \
 				Particle_List.C \
-				Cut_Data.C \
-				Selector.C \
-				Variable_Selector.C \
-				Combined_Selector.C \
-				Jet_Finder_Base.C \
-				Jet_Finder.C \
-				Dipole_Jet_Finder.C \
-				Cone_Finder.C \
-				Durham_Algorithm.C \
-				Cambridge_Algorithm.C \
-				Kt_Algorithm.C \
-				Standard_Selector.C \
-				Selector_Bias.C \
+				Cluster_Definitions_Base.C \
+				Cluster_Leg.C \
+				Cluster_Amplitude.C \
 				Blob.C \
 				Blob_List.C \
 				Parton_Finder.C \
@@ -35,29 +25,19 @@ libToolsPhys_la_SOURCES       =	\
 				Momenta_Stretcher.C \
 				Mass_Handler.C
 
-pkginclude_HEADERS    =	\
+localinc_HEADERS      =	\
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
 			Particle.H \
-			Particle_Qualifier.H \
 			Simple_Polarisation_Info.H \
-			Flavour_List.H \
 			Particle_List.H \
+			Decay_Channel.H \
 			Decay_Table.H \
-			Cut_Data.H \
-			Selector.H \
-			Variable_Selector.H \
-			Jet_Finder_Base.H \
-			Jet_Finder.H \
-			Dipole_Jet_Finder.H \
-			Cone_Finder.H \
-			Durham_Algorithm.H \
-			Cambridge_Algorithm.H \
-			Kt_Algorithm.H \
-			Combined_Selector.H \
-			Standard_Selector.H \
-			Selector_Bias.H \
+			Decay_Map.H \
+			Cluster_Definitions_Base.H \
+			Cluster_Leg.H \
+			Cluster_Amplitude.H \
 			Flow.H \
 			Blob.H \
 			Blob_List.H \
@@ -70,9 +50,3 @@ pkginclude_HEADERS    =	\
 			Spinor.H \
 			Momenta_Stretcher.H \
 			Mass_Handler.H
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@
-
-INCLUDES      = @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

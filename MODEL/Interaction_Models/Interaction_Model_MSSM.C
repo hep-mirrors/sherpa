@@ -1,6 +1,6 @@
-#include "Interaction_Model_MSSM.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "MODEL/Interaction_Models/Interaction_Model_MSSM.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 #include <stdio.h>
 
 

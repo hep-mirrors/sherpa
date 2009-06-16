@@ -1,19 +1,21 @@
-#ifndef Algebra_Interpreter_H
-#define Algebra_Interpreter_H
+#ifndef ATOOLS_Math_Algebra_Interpreter_H
+#define ATOOLS_Math_Algebra_Interpreter_H
 
+#ifdef USING__Calc_only
+#include "Tools.H"
 #include "Node.H"
+#include "Term.H"
+#else
+#include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Org/Node.H"
+#include "ATOOLS/Math/Term.H"
+#endif
 
 #include <string>
 #include <set>
 #include <map>
 
 namespace ATOOLS {
-
-  struct Term {
-
-    std::string m_tag;
-
-  };// end of struct Term
 
   class Algebra_Interpreter;
 
@@ -33,8 +35,7 @@ namespace ATOOLS {
     virtual ~Function();
 
     // member functions
-    virtual std::string  Evaluate(const std::vector<std::string> &args) const;
-    virtual Term        *Evaluate(const std::vector<Term*> &args) const;
+    virtual Term *Evaluate(const std::vector<Term*> &args) const;
 
     // inline functions
     inline const std::string &Tag() const { return m_tag; }
@@ -105,7 +106,7 @@ namespace ATOOLS {
   class Algebra_Interpreter: public Tag_Replacer {
   public:
 
-    typedef std::map<std::string,std::string> String_Map;
+    typedef std::map<std::string,std::string,String_Sort> String_Map;
     
     typedef std::pair<std::string,Function*> Function_Pair;
     typedef std::map<std::string,Function*>  Function_Map;
@@ -186,31 +187,25 @@ namespace ATOOLS {
   namespace ATOOLS { class NAME: public Function {                      \
   public:								\
     NAME();								\
-    std::string Evaluate(const std::vector<std::string> &args) const;	\
-    Term        *Evaluate(const std::vector<Term*> &args) const;	\
+    Term *Evaluate(const std::vector<Term*> &args) const;		\
   }; }									\
-  NAME::NAME(): Function(TAG) {}					\
-  std::string NAME::Evaluate(const std::vector<std::string> &args) const
+  NAME::NAME(): Function(TAG) {}
 
 #define DEFINE_UNARY_OPERATOR(NAME,TAG,PRIORITY)			\
   namespace ATOOLS { class NAME: public Operator {			\
   public:								\
     NAME();								\
-    std::string Evaluate(const std::vector<std::string> &args) const;	\
-    Term        *Evaluate(const std::vector<Term*> &args) const;	\
+    Term *Evaluate(const std::vector<Term*> &args) const;		\
   }; }									\
-  NAME::NAME(): Operator(TAG,PRIORITY,false) {}				\
-  std::string NAME::Evaluate(const std::vector<std::string> &args) const
+  NAME::NAME(): Operator(TAG,PRIORITY,false) {}
 
 #define DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)			\
   namespace ATOOLS { class NAME: public Operator {			\
   public:								\
     NAME();								\
-    std::string  Evaluate(const std::vector<std::string> &args) const;	\
-    Term        *Evaluate(const std::vector<Term*> &args) const;	\
+    Term *Evaluate(const std::vector<Term*> &args) const;		\
   }; }									\
-  NAME::NAME(): Operator(TAG,PRIORITY,true) {}				\
-  std::string NAME::Evaluate(const std::vector<std::string> &args) const
+  NAME::NAME(): Operator(TAG,PRIORITY,true) {}
 
 #define DEFINE_INTERPRETER_FUNCTION(NAME)				\
   namespace ATOOLS { class NAME: public Interpreter_Function {		\

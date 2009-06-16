@@ -1,10 +1,10 @@
-#ifndef AMEGIC_SCT_H
-#define AMEGIC_SCT_H
+#ifndef AMEGIC_Main_AMEGIC_SCT_H
+#define AMEGIC_Main_AMEGIC_SCT_H
 
-#include "Spin_Correlation_Tensor.H"
-#include "MyComplex.H"
-#include "CFColor.H"
-#include "Amplitude_Base.H"
+#include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Amplitude/CFColor.H"
+#include "AMEGIC++/Amplitude/Amplitude_Base.H"
 
 using namespace ATOOLS;
 using namespace std;

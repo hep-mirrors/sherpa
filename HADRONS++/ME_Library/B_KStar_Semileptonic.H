@@ -1,11 +1,11 @@
-#ifndef B_KStar_Semileptonic_H
-#define B_KStar_Semileptonic_H
+#ifndef HADRONS_ME_Library_B_KStar_Semileptonic_H
+#define HADRONS_ME_Library_B_KStar_Semileptonic_H
 
-#include "HD_ME_Base.H"
-#include "Flavour.H"
-#include "Vector.H"
-#include "Tools.H"
-#include "MyComplex.H"
+#include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
+#include "HADRONS++/Main/Tools.H"
+#include "ATOOLS/Math/MyComplex.H"
 
 namespace HADRONS {
 

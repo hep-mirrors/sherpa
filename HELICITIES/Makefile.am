@@ -1,3 +1,1 @@
-SUBDIRS = Main
-
-EXTRA_DIST    = @SVNINCLUDE@
+SUBDIRS = Main Loops

@@ -1,13 +1,13 @@
-#ifndef Weight_Higher_Order_Corrections_H
-#define Weight_Higher_Order_Corrections_H
+#ifndef PHOTONS_Tools_Weight_Higher_Order_Corrections_H
+#define PHOTONS_Tools_Weight_Higher_Order_Corrections_H
 
-#include "Weight_Base.H"
-#include "Vector.H"
-#include "Particle.H"
-#include "Message.H"
-#include "Run_Parameter.H"
-#include "ME_List.H"
-#include "Photons.H"
+#include "PHOTONS++/Tools/Weight_Base.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "PHOTONS++/MEs/ME_List.H"
+#include "PHOTONS++/Main/Photons.H"
 
 
 namespace PHOTONS {

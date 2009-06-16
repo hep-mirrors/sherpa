@@ -16,7 +16,7 @@ libApacicShowers_la_SOURCES   = \
 			      	Final_State_Shower.C \
 				Initial_State_Shower.C
 
-pkginclude_HEADERS        = \
+localinc_HEADERS          = \
 			Sudakov_Tools.H \
 			Splitting_Function.H \
 			Splitting_Group.H \
@@ -31,9 +31,3 @@ pkginclude_HEADERS        = \
 			Jet_Veto.H \
 			Final_State_Shower.H \
 			Initial_State_Shower.H 
-
-AM_CXXFLAGS   = @SHERPAFLAGS@
-
-INCLUDES      = @APACICINCS@ @MODELINCS@ @PDFINCS@ @BEAMINCS@ @ATOOLSINCS@
-
-EXTRA_DIST    = @SVNINCLUDE@

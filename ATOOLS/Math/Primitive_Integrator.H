@@ -1,13 +1,13 @@
-#ifndef Primitive_Integrator_H
-#define Primitive_Integrator_H
+#ifndef ATOOLS_Math_Primitive_Integrator_H
+#define ATOOLS_Math_Primitive_Integrator_H
 /*!
   \file Primitive_Integrator.H
   \brief Declares the classes Primitive_Integrand,
   Primitive_Channel and Primitive_Integrator
 */
 
-#include "MathTools.H"
-#include "My_Limits.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include <fstream>
 #include <string>
 #include <vector>

@@ -1,8 +1,8 @@
-#include "Data_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
-#include "My_Limits.H"
-#include "Message.H"
-#include "MyStrStream.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <typeinfo>
 #include <ctype.h>
 
@@ -32,14 +32,16 @@ void Data_Reader::SetString(const std::string string)
   m_string=string; 
   FileContent(1).clear();
   AddFileContent(m_string,1);
-  msg_Debugging()<<METHOD<<"(): Read string content '"<<m_string<<"' {\n";
+#ifdef DEBUG__Data_Reader
+  msg_IODebugging()<<METHOD<<"(): Read string content '"<<m_string<<"' {\n";
   for (size_t j(0);j<FileContent(1).size();++j) {
-    msg_Debugging()<<"  ";
+    msg_IODebugging()<<"  ";
     for (size_t k(0);k<FileContent(1)[j].size();++k)
-      msg_Debugging()<<"'"<<FileContent(1)[j][k]<<"' ";
-    msg_Debugging()<<"\n";
+      msg_IODebugging()<<"'"<<FileContent(1)[j][k]<<"' ";
+    msg_IODebugging()<<"\n";
   }
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<"}\n";
+#endif
 }
 
 template <class Read_Type>

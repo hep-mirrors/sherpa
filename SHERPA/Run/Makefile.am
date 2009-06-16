@@ -2,23 +2,26 @@ bin_PROGRAMS  =	Sherpa@VERSIONING@
 
 Sherpa@VERSIONING@_SOURCES        =	Main.C 
 
+if HZTOOL_SUPPORT
+if CERNLIB_SUPPORT
+HZTOOLLIBS    = -L../../AddOns/HZTool -lHZToolSherpa \
+		@CONDITIONAL_HZTOOLLIBS@ @CONDITIONAL_CERNLIBLIBS@
+else
+HZTOOLLIBS    =
+endif
+else
+HZTOOLLIBS    =
+endif
+
 Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
-		@CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ \
-		@CONDITIONAL_HEPMC2LIBS@
+		@CONDITIONAL_ROOTLIBS@ $(HZTOOLLIBS) \
+		@CONDITIONAL_HEPMC2LIBS@ @CONDITIONAL_GOLEM95LIBS@
 
 Sherpa@VERSIONING@_LDFLAGS        =	@ldflags@
 
-AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@ ## $(MCATNLOFLAGS)
+Sherpa@VERSIONING@_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      = @SHERPAINCS@ @ANALYSISINCS@ @CONDITIONAL_HADRONSINCS@ \
-		@APACICINCS@ @CONDITIONAL_AMISICINCS@ @AMEGICINCS@ \
-		@AHADICINCS@ @EXTRAXSINCS@ @PHASICINCS@ @MODELINCS@ \
-		@CONDITIONAL_PHOTONSINCS@ @PDFINCS@ @BEAMINCS@ @ATOOLSINCS@ \
-		@CONDITIONAL_ROOTINCS@
-
-dist_pkgdata_SCRIPTS  =	makelibs grid_makelibs
-
-SUBDIRS       =	CTEQ6Grid MRST99Grid
+Sherpa@VERSIONING@_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 dist_pkgdata_DATA         = \
 			Analysis.dat \
@@ -29,8 +32,6 @@ dist_pkgdata_DATA         = \
 			MI.dat \
 			Run.dat \
 			Shower.dat
-
-EXTRA_DIST    =	@SVNINCLUDE@
 
 install-data-local:
 	@echo "Installing Decaydata."; \
@@ -77,17 +78,4 @@ dist-hook:
 	  fi; \
 	done; \
 	cp Decaydata/*.dat $(distdir)/Decaydata/; \
-	SAMPLERUNS="Tevatron1800 LHC EGamma LEP91"; \
-	for i in $$SAMPLERUNS ; do \
-	  mkdir -p $(distdir)/$$i; \
-	  if test -x $$(which svn) -a -d $$i/.svn; then \
-	    for j in $$(svn ls $$i); do \
-	      cp $$i/$$j $(distdir)/$$i/; \
-	    done; \
-          else \
-	    for j in $$i/*.dat; do \
-	      cp $$j $(distdir)/$$i/; \
-	    done; \
-	  fi; \
-	done; \
 	cd -;

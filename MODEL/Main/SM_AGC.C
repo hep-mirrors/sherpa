@@ -1,7 +1,7 @@
-#include "SM_AGC.H"
-#include "Standard_Model.H"
-#include "Message.H"
-#include "Data_Reader.H"
+#include "MODEL/Main/SM_AGC.H"
+#include "MODEL/Main/Standard_Model.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include <iomanip>
 
 using namespace MODEL;

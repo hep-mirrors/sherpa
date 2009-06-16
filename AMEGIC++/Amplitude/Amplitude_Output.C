@@ -1,7 +1,7 @@
-#include "Amplitude_Output.H"
-#include "MyStrStream.H"
-#include "Message.H"
-#include "Run_Parameter.H"
+#include "AMEGIC++/Amplitude/Amplitude_Output.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

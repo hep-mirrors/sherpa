@@ -1,7 +1,7 @@
-#ifndef Topology_h
-#define Topology_h
+#ifndef AMEGIC_Main_Topology_H
+#define AMEGIC_Main_Topology_H
 
-#include "Point.H"
+#include "AMEGIC++/Main/Point.H"
 
 namespace AMEGIC {
   //! A list of topologies with the same number of legs.

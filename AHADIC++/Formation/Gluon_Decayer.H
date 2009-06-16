@@ -1,19 +1,18 @@
-#ifndef Gluon_Decayer_H
-#define Gluon_Decayer_H
+#ifndef AHADIC_Formation_Gluon_Decayer_H
+#define AHADIC_Formation_Gluon_Decayer_H
 
-#include "Dipole_Splitter.H"
-#include "Strong_Coupling.H"
-#include "Cluster.H"
-#include "Blob.H"
-#include "Histogram.H"
+#include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "AHADIC++/Tools/Strong_Coupling.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <map>
 
 namespace AHADIC {
   class Gluon_Decayer {
   private:
-    Dipole_Splitter   * p_splitter;
-    bool                m_pole;
     double              m_pt2min, m_pt2max;
+    Dipole_Splitter   * p_splitter;
 
     FlavDecayMap        m_options;
     DipoleList          m_dipoles;

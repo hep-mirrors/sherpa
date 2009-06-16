@@ -1,29 +1,20 @@
-#include "Simple_Chain.H"
+#include "AMISIC++/Model/Simple_Chain.H"
 
-#include "Phase_Space_Handler.H"
-#include "Running_AlphaS.H"
-#include "Single_XS.H"
-#include "XS_Selector.H"
-#include "Semihard_QCD.H"
-#include "Particle.H"
-#include "Random.H"
-#include "My_Limits.H"
-#include "Vegas.H"
-#include "Run_Parameter.H"
-#include "Shell_Tools.H"
-#include "Remnant_Base.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
-#include "ISR_Handler.H"
-
-#ifdef PROFILE__all
-#define PROFILE__Simple_Chain
-#endif
-#ifdef PROFILE__Simple_Chain
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "EXTRA_XS/Main/Single_Process.H"
+#include "AMISIC++/Tools/Semihard_QCD.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "PHASIC++/Channels/Vegas.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "PDF/Remnant/Remnant_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "PDF/Main/ISR_Handler.H"
 
 // #define DEBUG__Simple_Chain
 
@@ -43,8 +34,7 @@ Simple_Chain::Simple_Chain():
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_model(NULL),
-  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
-  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
+  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
 {
   Init();
@@ -57,8 +47,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_model(model), 
-  p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
-  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
+  p_beam(beam), p_isr(isr), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
@@ -98,11 +87,8 @@ void Simple_Chain::CleanUp()
     p_gridcreator=NULL;
   }
   if (p_fsrinterface!=NULL) {
-    for (size_t i=0;i<p_processes->Size();++i) {
-      Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
-      group->SetFSRMode(3);
-      group->CreateFSRChannels();
-    }
+    p_processes->SetFSRMode(3);
+    p_processes->CreateFSRChannels();
     delete p_fsrinterface;
     p_fsrinterface=NULL;
   }
@@ -146,98 +132,14 @@ bool Simple_Chain::GeneratePathName()
   }
   outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+
     ToString(static_cast<MODEL::Running_AlphaS*>
-		     (p_model->GetScalarFunction("alpha_S"))->Order())+
-    std::string("_")+ToString(m_scalescheme)+
-    std::string("_")+ToString(m_kfactorscheme)+std::string("/");
+		     (p_model->GetScalarFunction("alpha_S"))->Order())+"/";
   SetOutputPath(OutputPath()+m_pathextra+outputpath);
   m_pathextra=outputpath;
   return true;
 }
 
-void Simple_Chain::OrderFlavours(ATOOLS::Flavour *flavs)
-{
-  if ((int)flavs[0].Kfcode()>(int)flavs[1].Kfcode()) 
-    std::swap<Flavour>(flavs[0],flavs[1]);
-  if ((int)flavs[2].Kfcode()>(int)flavs[3].Kfcode()) 
-    std::swap<Flavour>(flavs[2],flavs[3]);
-  if (flavs[0].IsAnti()) 
-    std::swap<Flavour>(flavs[0],flavs[1]);
-  if (flavs[2].IsAnti()) 
-    std::swap<Flavour>(flavs[2],flavs[3]);
-}
-
-EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout,
-					      const ATOOLS::Flavour *flavours)
-{
-  if (p_remnants[0]==NULL || p_remnants[1]==NULL) return p_processes;
-  for (size_t i=0;i<p_processes->Size();++i) {
-    if (nin==2 && nout==(*p_processes)[i]->NOut()) {
-      Flavour ref[2], test[2];
-      for (size_t j=0;j<2;++j) {
-	ref[j]=p_remnants[j]->ConstituentType((*p_processes)[i]->Flavours()[j]);
-	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
-      }
-      if (ref[0]==test[0] && ref[1]==test[1])
-	return dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[i]);
-    }
-  }
-  Flavour *copy = new Flavour[nin+nout];
-  for (short unsigned int i=0;i<nin;++i) 
-    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=kf_jet;
-  Semihard_QCD *newgroup = 
-    new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
-		     copy,m_scalescheme,m_kfactorscheme);
-  newgroup->PSHandler(false)->SetError(m_error);
-  newgroup->SetScaleScheme(m_scalescheme);
-  newgroup->SetKFactorScheme(m_kfactorscheme);
-  p_processes->Add(newgroup);
-  p_processes->SetAtoms(1);
-  delete [] copy;
-  return newgroup;
-}
-
-bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
-			      const ATOOLS::Flavour *flavs)
-{
-  bool success=false;
-  Flavour help[4];
-  for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
-    for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
-      for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
-	for (size_t l=0;l<(size_t)flavs[3].Size();++l) {
-	  help[0]=flavs[0][i];
-	  help[1]=flavs[1][j];
-	  help[2]=flavs[2][k];
-	  help[3]=flavs[3][l];
-	  OrderFlavours(help);
-	  EXTRAXS::XS_Base *newxs = p_processes->XSSelector()->
-	    GetXS(2,2,help,false,0,2,false);
-	  if (newxs==NULL) continue;
-	  EXTRAXS::XS_Base *testxs=NULL;
-	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);
-          EXTRAXS::XS_Selector::FindInGroup(pdfgroup,testxs,2,2,help);
-          if (testxs==NULL) {
-	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
-	    newxs->SetScaleScheme(m_scalescheme);
-	    newxs->SetKFactorScheme(m_kfactorscheme);
-	    pdfgroup->Add(newxs);
-	    pdfgroup->CreateISRChannels();
-	    m_processmap[newxs->Name()]=newxs;
-	    success=true;
-	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
-			   <<"New process '"<<newxs->Name()<<"'.\n";
-	  }
-	}
-      }
-    }
-  }
-  return success;
-}
-
 bool Simple_Chain::ReadInData()
 {
-  PROFILE_HERE;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
   reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
@@ -249,22 +151,14 @@ bool Simple_Chain::ReadInData()
     if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) 
       m_regulator="QCD_Trivial";
     if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
-      m_regulation=std::vector<double>(2.225);
+      m_regulation=std::vector<double>(1,2.225);
     double exponent;
     if (reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) {
       double scale;
-      if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+      if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
       m_regulation[0]*=pow(m_ecms/scale,exponent);
     }
   }
-  int helpssc;
-  reader->SetTags(PHASIC::Integrable_Base::ScaleTags());
-  if (reader->ReadFromFile(helpssc,"MI_SCALE_SCHEME")) 
-    m_scalescheme=(PHASIC::scl::scheme)helpssc;
-  else m_scalescheme=PHASIC::scl::gmeanpt;
-  if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
-    m_kfactorscheme=1;
-  if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
   GeneratePathName();
@@ -274,7 +168,6 @@ bool Simple_Chain::ReadInData()
 
 bool Simple_Chain::CreateGrid()
 {
-  PROFILE_HERE;
   bool vegas=PHASIC::Vegas::OnExternal();
   PHASIC::Vegas::SetOnExternal(m_vegas);
   double min=Min(m_stop[0],m_stop[4]);
@@ -286,49 +179,29 @@ bool Simple_Chain::CreateGrid()
   reader->SetInputFile(InputFile(2));
   if (!reader->ReadFromFile(m_selectorfile,"MI_SELECTOR_FILE")) 
     m_selectorfile="MICuts.dat";
-  p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
-  if (p_processes->Size()>0) p_processes->Clear();
-  p_processes->InitializeProcesses(p_beam,p_isr,false);  
-  delete p_processes->SelectorData();
-  p_processes->SetSelectorData
-    (new ATOOLS::Selector_Data(InputPath(),m_selectorfile));
-  p_processes->SetScaleScheme(m_scalescheme);
-  p_processes->SetKFactorScheme(m_kfactorscheme);
-  reader->SetInputFile(InputFile());
-  reader->AddIgnore("->");
-  reader->AddIgnore("to");
-  reader->AddIgnore("for");
-  reader->RescanInFile();
-  std::vector<std::vector<std::string> > temp;
-  reader->MatrixFromFile(temp,"CREATE_GRID");
-  bool found=false;
-  for (unsigned int i=0;i<temp.size();++i) {
-    if (temp[i].size()>3) {
-      Flavour flavour[4];
-      int current;
-      bool success=true;
-      for (unsigned int j=0;j<4;++j) {
-	flavour[j]=Flavour(s_kftable.KFFromIDName(temp[i][j]));
-	if (flavour[j].Kfcode()==kf_none) {
-	  reader->SetString(temp[i][j]);
-	  reader->ReadFromString(current);
-	  flavour[j]=Flavour((kf_code)abs(current));
-	  if (current<0) flavour[j]=flavour[j].Bar();
-	  if (flavour[j].Kfcode()==kf_none) success=false;
-	}
-      }
-      if (!success) continue;
-      if (AddProcess(p_processes,flavour)) found=true;
-    }
-  }
   delete reader;
-  if (!found) {
-    msg_Error()<<"Simple_Chain::CreateGrid(): "
-	       <<"Did not find any process in '"
-	       <<InputFile()<<"'."<<std::endl;
-    PHASIC::Vegas::SetOnExternal(vegas);
-    return false;
+  PHASIC::Process_Info pi;
+  for (size_t i(0);i<2;++i) {
+    pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(kf_jet,"",""));
+    pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(kf_jet,"",""));
   }
+  pi.m_oew=0;
+  pi.m_oqcd=2;
+  pi.m_scale="MPI";
+  pi.m_kfactor="QCD";
+  p_processes = new Semihard_QCD();
+  p_processes->Init(pi,p_beam,p_isr);
+  msg_Info()<<METHOD<<"(): Init processes ";
+  if (!p_processes->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
+    THROW(fatal_error,"Cannot initialize MPI simulation.");
+  msg_Info()<<" done."<<std::endl;
+  p_processes->SetScale(pi.m_scale,"","");
+  p_processes->SetKFactor(pi.m_kfactor,0,2);
+  p_processes->Integrator()->SetPSHandler
+    (new PHASIC::Phase_Space_Handler
+     (p_processes->Integrator(),p_isr,p_beam,m_error));
+  for (size_t i(0);i<p_processes->Size();++i)
+    m_processmap[(*p_processes)[i]->Name()]=(*p_processes)[i];
   p_gridcreator = new Grid_Creator(&m_differentials,p_processes);
   p_gridcreator->SetGridXMin(min);
   p_gridcreator->SetGridXMax(m_ecms/2.0);
@@ -336,12 +209,6 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
-  if (msg_LevelIsTracking()) {
-    msg_Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
-    msg_Indentation(3);
-    p_processes->Print();
-  }
-  msg_Tracking()<<"}"<<std::endl;
   if (!p_gridcreator->ReadInGrid()) {
     if (MakeDir(OutputPath())==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
@@ -358,61 +225,15 @@ bool Simple_Chain::CreateGrid()
 
 bool Simple_Chain::SetUpInterface()
 {
-  p_processes->Reset();
   Flavour flavour[4]={kf_jet,kf_jet,kf_jet,kf_jet};
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
   p_fsrinterface = new FSR_Channel(2,2,flavour,
 				   p_total->XAxis()->Variable()->Name());
-  for (size_t i=0;i<p_processes->Size();++i) {
-    Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
-    group->InitIntegrators();
-    group->CreateISRChannels();
-    group->SetFSRInterface(p_fsrinterface);
-    group->SetFSRMode(2);
-    group->CreateFSRChannels();
-  }
-  p_xs=p_processes;
-  return true;
-}
-
-bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
-				    Amisic_Histogram_Type *const grid,
-				    const double min,const double max,
-				    const double integral)
-{  
-  int helpi=0, criterion=grid->XAxis()->Variable()->SelectorID();
-  std::vector<Flavour> flavours(1,(kf_jet));
-  std::vector<std::pair<double,double> > bounds
-    (1,std::pair<double,double>(min,max));
-  group->SelectorData()->AddData(criterion,flavours,bounds,helpi);
-  double emin=Min(m_stop[0],m_stop[4]);
-  p_isr->SetFixedSprimeMin(4.0*emin*emin);
-  p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
-  group->ResetSelector(group->SelectorData());
-  int level=msg->Level();
-  msg->SetLevel(0);
-  double error=group->PSHandler(false)->Error();
-  group->PSHandler(false)->SetError(m_error);
-  group->CalculateTotalXSec("");
-  group->PSHandler(false)->SetError(error);
-  msg->SetLevel(level);
-  double total=group->TotalXS();
-  msg_Info()<<"Simple_Chain::CheckConsistency(): {\n"
-	    <<"   \\sigma_{hard xs}   = "
-	    <<(total*rpa.Picobarn()/1.e9)<<" mb\n"
-	    <<"   \\sigma_{hard grid} = "
-	    <<(integral*rpa.Picobarn()/1.e9)<<" mb\n"
-	    <<"   relative error     = "
-	    <<dabs((total-integral)/(total))*100.0
-	    <<" %\n}"<<std::endl;
-  if (dabs((total-integral)/total)>m_error) {
-    msg_Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
-	       <<"   \\Delta_{rel}\\sigma / m_error = "
-	       <<dabs((total-integral)/
-		      (total*m_error))<<std::endl;
-    if (dabs((total-integral)/total)>2.*m_error) 
-      THROW(fatal_error,"Grid integral and \\sigma_{tot} do not coincide.");
-  }
+  p_processes->InitIntegrators();
+  p_processes->CreateISRChannels();
+  p_processes->SetFSRInterface(p_fsrinterface);
+  p_processes->SetFSRMode(2);
+  p_processes->CreateFSRChannels();
   return true;
 }
 
@@ -464,7 +285,6 @@ void Simple_Chain::CalculateSigmaND()
 
 bool Simple_Chain::CalculateTotal()
 {
-  PROFILE_HERE;
   if (m_differentials.size()==0) return false;
   Amisic_Histogram_Type *ref=m_differentials.begin()->second;
   p_differential = new Amisic_Histogram_Type();
@@ -521,43 +341,12 @@ bool Simple_Chain::CalculateTotal()
 	       <<(m_norm*rpa.Picobarn()/1.e9)
 	       <<" mb !"<<om::reset<<std::endl;
   }
-  if (m_check) {
-    Flavour help[4]={kf_jet,kf_jet,kf_jet,kf_jet};
-    Semihard_QCD *group;
-    group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),help,
-			     p_processes->ScaleScheme(),
-			     p_processes->KFactorScheme());
-    std::map<EXTRAXS::XS_Base*,EXTRAXS::XS_Group*> parents;
-    for (Process_Map::iterator pit=m_processmap.begin();
-	 pit!=m_processmap.end();++pit) {
-      EXTRAXS::XS_Group *parent=
-	dynamic_cast<EXTRAXS::XS_Group*>(pit->second->Parent());
-      parents[pit->second]=parent;
-      parent->Remove(pit->second);
-      group->Add(pit->second);
-    }
-    CheckConsistency(group,p_total,m_stop[4],m_start[4],m_sigmahard);
-    for (Process_Map::iterator pit=m_processmap.begin();
-	 pit!=m_processmap.end();++pit) {
-      group->Remove(pit->second);
-      parents[pit->second]->Add(pit->second);
-    }
-    delete group;
-  }
-  msg_Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
-		<<"\n   \\sigma_{tot} = "
-		<<(m_sigmahard*rpa.Picobarn()/1.e9)
-		<<" mb @ p_\\perp = "<<m_stop[4]
-		<<" GeV\n   \\sigma_{cut} = "
-		<<((*p_total)(m_stop[0])*rpa.Picobarn()/1.e9)
-		<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
   p_total->Scale(1.0/m_norm);
   return true;
 }
 
 bool Simple_Chain::Initialize()
 {
-  PROFILE_HERE;
   if (InputPath()=="" && InputFile()=="") return false;
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
@@ -575,7 +364,7 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.225;
   if (reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) {
     double scale;
-    if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+    if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
     stop*=pow(m_ecms/scale,exponent);
   }
   SetStop(stop,0);
@@ -590,12 +379,14 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
     m_maxreduction=10.0;
   std::string function;
-  if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
-    std::vector<double> parameters;
-    if (reader->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
-      p_profile = Profile_Function_Base::SelectProfile(function,parameters);
-    }
+  std::vector<double> parameters(1,1.0);
+  if (!reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
+    function="Double_Gaussian";
+    parameters.push_back(0.5);
+    parameters.push_back(0.5);
   }
+  if (function!="None")
+    p_profile = Profile_Function_Base::SelectProfile(function,parameters);
   int jetveto(1);
   if (!reader->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
   delete reader;
@@ -643,7 +434,6 @@ void Simple_Chain::ResetISRRange()
 
 bool Simple_Chain::CreateMomenta()
 {
-  PROFILE_HERE;
   m_filledblob=false;
   if (p_processes==NULL) {
     THROW(fatal_error,"Multiple interactions are not initialized");
@@ -651,20 +441,18 @@ bool Simple_Chain::CreateMomenta()
   m_inparticles.Clear();
   m_outparticles.Clear();
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
-    EXTRAXS::XS_Base *selected=m_processmap[m_selected];
-    selected->Parent()->SetSelected(selected);
-    p_processes->SetSelected(selected->Parent());
+    p_xs=m_processmap[m_selected];
     double weight=1.;
     size_t pstrials=0, trials=0;
     Amisic_Histogram<double> *cur=m_differentials[m_selected];
     double max=cur->BinMax(m_last[0]);
     p_fsrinterface->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
-      Blob_Data_Base *data=selected->
+      PHASIC::Weight_Info *data=p_xs->
 	WeightedEvent(PHASIC::psm::no_lim_isr);
       if (data!=NULL) {
-	weight=data->Get<PHASIC::Weight_Info>().weight;
-	trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	weight=data->m_weight;
+	trials=data->m_ntrial;
 	delete data;
 	if (weight>max) {
 	  msg_Tracking()<<"Simple_Chain::CreateMomenta(): "
@@ -676,19 +464,22 @@ bool Simple_Chain::CreateMomenta()
 	bool take(true);
 	double mass(0.0);
 	Vec4D sum;
-	for (size_t j=0;j<selected->NIn();++j) {
-	  sum+=selected->Momenta()[j];
-	  mass+=selected->Flavours()[j].PSMass();
-	  if (selected->Momenta()[j][0]<=selected->Flavours()[j].PSMass()) {
+	for (size_t j=0;j<p_xs->NIn();++j) {
+	  sum+=p_xs->Integrator()->Momenta()[j];
+	  mass+=p_xs->Flavours()[j].Mass();
+	  if (p_xs->Integrator()->Momenta()[j][0]
+	      <=p_xs->Flavours()[j].Mass()) {
 	    take=false;
 	    break;
 	  }
 	}
 	if (!take || sum.Mass()<mass) continue;
 	mass=0.0;
-	for (size_t j=selected->NIn();j<selected->NVector();++j) {
-	  mass+=selected->Flavours()[j].PSMass();
-	  if (selected->Momenta()[j][0]<=selected->Flavours()[j].PSMass()) {
+	for (size_t j=p_xs->NIn();
+	     j<p_xs->NIn()+p_xs->NOut();++j) {
+	  mass+=p_xs->Flavours()[j].Mass();
+	  if (p_xs->Integrator()->Momenta()[j][0]
+	      <=p_xs->Flavours()[j].Mass()) {
 	    take=false;
 	    break;
 	  }
@@ -714,8 +505,10 @@ bool Simple_Chain::CreateMomenta()
 			       <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
 		SetISRRange();
 		p_isr->SetLimits();
-		selected->WeightedEvent(PHASIC::psm::no_lim_isr|
-					PHASIC::psm::no_dice_isr);
+		PHASIC::Weight_Info *info=
+		  p_xs->WeightedEvent(PHASIC::psm::no_lim_isr|
+				      PHASIC::psm::no_dice_isr);
+		if (info) delete info;
 		ResetISRRange();
 		cur->AddBinExtra(m_last[0],1.0,3);
 	      }
@@ -751,23 +544,19 @@ bool Simple_Chain::CreateMomenta()
 	}
       }
     }
-    for (size_t j=0;j<selected->NIn();++j) 
-      m_last[2+j]-=2.0*selected->Momenta()[j][0]/m_ecms;
-    selected->SetColours(selected->Momenta());
+    for (size_t j=0;j<p_xs->NIn();++j) 
+      m_last[2+j]-=2.0*p_xs->Integrator()->
+	Momenta()[j][0]/m_ecms;
     Particle *particle;
-    for (size_t j=0;j<selected->NIn();++j) {
-      particle = new Particle(0,selected->Flavours()[j]);
-      particle->SetMomentum(selected->Momenta()[j]);
-      particle->SetFlow(1,selected->Colours()[j][0]);
-      particle->SetFlow(2,selected->Colours()[j][1]);
+    for (size_t j=0;j<p_xs->NIn();++j) {
+      particle = new Particle(0,p_xs->Flavours()[j]);
+      particle->SetMomentum(p_xs->Integrator()->Momenta()[j]);
       particle->SetStatus(part_status::active);
       m_inparticles.push_back(particle);
     }
-    for (size_t j=selected->NIn();j<selected->NIn()+selected->NOut();++j) {
-      particle = new Particle(0,selected->Flavours()[j]);
-      particle->SetMomentum(selected->Momenta()[j]);
-      particle->SetFlow(1,selected->Colours()[j][0]);
-      particle->SetFlow(2,selected->Colours()[j][1]);
+    for (size_t j=p_xs->NIn();j<p_xs->NIn()+p_xs->NOut();++j) {
+      particle = new Particle(0,p_xs->Flavours()[j]);
+      particle->SetMomentum(p_xs->Integrator()->Momenta()[j]);
       particle->SetStatus(part_status::active);
       m_outparticles.push_back(particle);
     }
@@ -781,7 +570,6 @@ bool Simple_Chain::CreateMomenta()
 
 bool Simple_Chain::DiceProcess()
 {
-  PROFILE_HERE;
   if (m_differentials.size()==0) return false;
   while (true) {
   if (!DiceOrderingParameter()) return false;
@@ -851,7 +639,6 @@ bool Simple_Chain::DiceEnhanceFactor()
 
 bool Simple_Chain::DiceOrderingParameter()
 { 
-  PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
     msg_Error()<<"Simple_Chain::DiceOrderingParameter(): "
 	       <<"Value exceeded minimum: last = "<<m_last[0]
@@ -863,9 +650,10 @@ bool Simple_Chain::DiceOrderingParameter()
     s_stophard=true;
     return false;
   }
+  msg_Debugging()<<METHOD<<"(): old p_T = "<<m_last[0]<<", ";
   m_last[0]=(*p_total)[(*p_total)
  		       (m_last[0])-log(ran.Get())/m_enhance]; 
-  msg_Debugging()<<METHOD<<"(): new p_T = "<<m_last[0]<<"\n";
+  msg_Debugging()<<"new p_T = "<<m_last[0]<<"\n";
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;

@@ -1,11 +1,10 @@
-#include "Running_AlphaS.H"
-#include "Sort.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "MathTools.H"
-#include "MyStrStream.H"
-// #include "Model.H"
-// #include "Distribution_Functions.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/MyStrStream.H"
+
+#include <algorithm>
 
 namespace MODEL {
   Running_AlphaS * as =0;
@@ -58,12 +57,15 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
       kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
     Flavour flav(kfit->first);
     if (flav.Strong()) {
-      masses[count] = sqr(flav.PSMass());
+      masses[count] = sqr(flav.Mass(true));
       count++;
     }
   }
 
-  Bubble_Sort::Down<double>(masses,m_nth);
+
+  std::vector<double> sortmass(&masses[0],&masses[m_nth]);
+  std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
+  for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
 
   int j   = 0; 
   m_mzset = 0;

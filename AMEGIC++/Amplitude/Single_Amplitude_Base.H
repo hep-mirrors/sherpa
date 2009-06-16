@@ -1,8 +1,8 @@
-#ifndef Single_Amplitude_Base_h
-#define Single_Amplitude_Base_h
+#ifndef AMEGIC_Amplitude_Single_Amplitude_Base_H
+#define AMEGIC_Amplitude_Single_Amplitude_Base_H
 
-#include "Amplitude_Base.H"
-#include "Kabbala.H"
+#include "AMEGIC++/Amplitude/Amplitude_Base.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace AMEGIC {
 

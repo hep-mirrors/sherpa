@@ -1,5 +1,5 @@
-#ifndef Flavour_Tags_H
-#define Flavour_Tags_H
+#ifndef ATOOLS_Phys_Flavour_Tags_H
+#define ATOOLS_Phys_Flavour_Tags_H
 
 // standard model
 #define      kf_d                       1
@@ -32,7 +32,6 @@
 #define      kf_Hplusplus               38
 #define      kf_graviton                39
 #define      kf_gscalar                 40
-#define      kf_axigluon                61
 // internal
 #define      kf_shgluon                 89
 #define      kf_lepton                  90
@@ -45,6 +44,10 @@
 #define      kf_bjet                    97
 #define      kf_cjet                    98
 #define      kf_seaquark                99
+#define      kf_gluon_qgc               921
+#define      kf_h0_qsc                  925
+#define      kf_Z_qgc                   923
+#define      kf_Wplus_qgc               924
 // susy
 #define      kf_Chargino1               1000024
 #define      kf_Chargino2               1000037

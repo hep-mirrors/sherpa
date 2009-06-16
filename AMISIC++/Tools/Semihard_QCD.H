@@ -1,16 +1,16 @@
-#ifndef Semihard_QCD_H
-#define Semihard_QCD_H
+#ifndef AMISIC_Tools_Semihard_QCD_H
+#define AMISIC_Tools_Semihard_QCD_H
 /*!
   \file Semihard_QCD.H
   \brief Declares the class Semihard_QCD
 */
 
-#include "XS_Group.H"
-#include "Channel_Interface.H"
+#include "EXTRA_XS/Main/Process_Group.H"
+#include "PHASIC++/Channels/Channel_Interface.H"
 
 namespace AMISIC {
 
-  class Semihard_QCD: public EXTRAXS::XS_Group {
+  class Semihard_QCD: public EXTRAXS::Process_Group {
   private:
 
     int m_fsrmode;
@@ -20,12 +20,7 @@ namespace AMISIC {
   public:
 
     // constructor
-    Semihard_QCD(BEAM::Beam_Spectra_Handler *const beam,
-		 PDF::ISR_Handler *const isr,
-		 ATOOLS::Selector_Data *const seldata,
-		 const ATOOLS::Flavour *flavours,
-		 const int scalescheme,
-		 const int kfactorscheme);
+    Semihard_QCD();
 
     // destructor 
     ~Semihard_QCD();
@@ -50,7 +45,7 @@ namespace AMISIC {
     \brief Container class for processes used in multiple 
     interaction simulations
 
-    This container is derived from EXTRAXS::XS_Group. It stores 
+    This container is derived from EXTRAXS::Process_Group. It stores 
     the processes used during multiple interaction simulations.
     Semihard_QCD implements a special setup for the phasespace, 
     i.e. it generates only one isr channel, which is suitably 

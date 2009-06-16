@@ -1,8 +1,8 @@
-#include "Spectrum_Reader.H"
-#include "MyStrStream.H"
-#include "Function_Base.H"
-#include "MathTools.H"
-#include "Message.H"
+#include "BEAM/Main/Spectrum_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace BEAM;
 using namespace ATOOLS;
@@ -109,7 +109,7 @@ Spectrum_Reader::Spectrum_Reader(const Flavour beam, const double energy,
   ReadFromFile();
 
   m_x=1.;
-  double disc    = 1.-sqr(m_bunch.PSMass()/m_energy);
+  double disc    = 1.-sqr(m_bunch.Mass()/m_energy);
   //  m_lab          = Vec4D(m_energy,0.,0.,dir*m_energy*sqrt(disc));
   m_vecout       = Vec4D(m_energy,0.,0.,dir*m_energy*sqrt(disc));
 }

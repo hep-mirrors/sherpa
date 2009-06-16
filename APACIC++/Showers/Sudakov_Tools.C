@@ -1,9 +1,9 @@
-#include "Sudakov_Tools.H"
-#include "Run_Parameter.H"
-#include "Running_AlphaS.H"
-#include "Running_AlphaQED.H"
+#include "APACIC++/Showers/Sudakov_Tools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace APACIC;
 using namespace MODEL;
@@ -34,7 +34,7 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
       was.close();
       abort();
     */
-    FixLambda2(sqr((Flavour(kf_Z)).Mass())); 
+    FixLambda2(sqr((Flavour(kf_Z)).Mass(true))); 
   }
   else {
     m_alphaQEDmax       = 1./128.;     
@@ -48,8 +48,8 @@ void Sudakov_Tools::Output() {
   msg_Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
 		<<"   beta0        = "<<m_beta0<<std::endl
 		<<"   lambda2      = "<<m_lambda2<<std::endl	
-		<<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf_Z)).Mass()))<<"  (exact)"<<std::endl
-		<<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf_Z)).Mass()))<<"  (exact)"<<std::endl
+		<<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf_Z)).Mass(true)))<<"  (exact)"<<std::endl
+		<<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf_Z)).Mass(true)))<<"  (exact)"<<std::endl
 		<<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl;
 }
 

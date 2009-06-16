@@ -1,9 +1,9 @@
-#include "B_KStar_Semileptonic.H"
-#include "Message.H"
-#include "XYZFuncs.H"
-#include "Model_Base.H"
-#include "MathTools.H"
-#include "Polarization_Tools.H"
+#include "HADRONS++/ME_Library/B_KStar_Semileptonic.H"
+#include "ATOOLS/Org/Message.H"
+#include "HELICITIES/Main/XYZFuncs.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "HELICITIES/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -95,7 +95,7 @@ void B_KStar_Semileptonic::operator()(
 
   // calculate coefficients
   Flavour cquark(kf_c); Flavour squark(kf_s);
-  double mchat = cquark.PSMass()/m_mB; double mshat = squark.PSMass()/m_mB;
+  double mchat = cquark.HadMass()/m_mB; double mshat = squark.HadMass()/m_mB;
   Complex C9eff;
   if(m_LD==true) C9eff = C9sehgal(shat) + sehgalld(shat);
   else C9eff = m_C9 + gSD(m_mc/p_masses[0],shat) * (3.*m_C1+m_C2+3.*m_C3+m_C4+3.*m_C5+m_C6)
@@ -115,7 +115,7 @@ void B_KStar_Semileptonic::operator()(
 
   XYZFunc Func(m_n,_p,m_flavs,Tools::k0,m_anti,p_i);
   Complex i(0.0,1.0);
-  Polarization_Vector pol(_p[p_i[1]], sqr(m_flavs[p_i[1]].PSMass()));
+  Polarization_Vector pol(_p[p_i[1]], sqr(m_flavs[p_i[1]].HadMass()));
   for(int hhad = 0; hhad <3; hhad++) {
     Vec4C eps = conj(pol[hhad]);
     Vec4C T1vec = A*cross(eps,pBhat,pKhat)
@@ -237,7 +237,7 @@ Complex B_KStar_Semileptonic::gSD(double mhat, double shat)
           2./9.*(2.+y)*sqrt(fabs(1.-y))*theta;
 }
 
-DEFINE_ME_GETTER(B_KStar_Semileptonic,B_KStar_Semileptonic_Getter,"B_KStar_Semileptonic");
+DEFINE_ME_GETTER(B_KStar_Semileptonic,B_KStar_Semileptonic_Getter,"B_KStar_Semileptonic")
 
 void B_KStar_Semileptonic_Getter::PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow K^* \\; l^- \\; l^+ $ \n \n"

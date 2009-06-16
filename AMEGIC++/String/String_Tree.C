@@ -1,7 +1,7 @@
-#include "String_Tree.H"
-#include "Message.H"
-#include "Vector.H"
-#include "prof.hh"
+#include "AMEGIC++/String/String_Tree.H"
+#include "AMEGIC++/Main/ColorSC.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Vector.H"
 #include <cstring>
 
 using namespace AMEGIC;
@@ -15,6 +15,7 @@ const int String_Tree::block_size = 256;
 
 String_Tree::String_Tree() 
 {
+  CSC.Init();
   zero.op    = 0;
   zero.SetString(string("0"));
   zero.left  = 0;
@@ -225,6 +226,27 @@ Complex String_Tree::eval(sknot* m)
     if (m->Str()==string("1/3")) return Complex(1./3.,0.);
     if (m->Str()==string("0.5")) return Complex(1./2.,0.);
     if (m->Str()==string("0.33")) return Complex(1./3.,0.);
+    return 0.;
+  }
+}
+
+
+Complex String_Tree::evalcolor(sknot* m)
+{
+  switch (m->op) {
+  case '+': return evalcolor(m->left)+evalcolor(m->right);
+  case '-': return evalcolor(m->left)-evalcolor(m->right);
+  case '*': return evalcolor(m->left)*evalcolor(m->right);
+  default: 
+    if (m->Str()==string("CF"))  return Complex(CSC.CF,0.);
+    if (m->Str()==string("i"))   return Complex(0.,1.);
+    if (m->Str()==string("2"))   return Complex(2.,0.);
+    if (m->Str()==string("1"))   return Complex(1.,0.);
+    if (m->Str()==string("1/2")) return Complex(1./2.,0.);
+    if (m->Str()==string("0.5")) return Complex(1./2.,0.);
+    if (m->Str()==string("Nc"))  return Complex(CSC.Nc,0.);
+    if (m->Str()==string("iNc")) return Complex(1./CSC.Nc,0.);
+    if (m->Str()!="0") cout<<METHOD<<" : possible evaluation error! "<<m->Str()<<endl;
     return 0.;
   }
 }

@@ -1,8 +1,8 @@
 #include <algorithm>
-#include "IO_Handler.H"
-#include "MyStrStream.H"
-#include "MyComplex.H"
-#include "Message.H"
+#include "ATOOLS/Org/IO_Handler.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;

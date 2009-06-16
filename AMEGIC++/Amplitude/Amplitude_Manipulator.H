@@ -1,9 +1,9 @@
-#ifndef Amplitude_Manipulator_h
-#define Amplitude_Manipulator_h
+#ifndef AMEGIC_Amplitude_Amplitude_Manipulator_H
+#define AMEGIC_Amplitude_Amplitude_Manipulator_H
 
-#include "Flavour.H"
-#include "Topology.H"
-#include "Single_Amplitude.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "AMEGIC++/Main/Topology.H"
+#include "AMEGIC++/Amplitude/Single_Amplitude.H"
 
 namespace AMEGIC {
 

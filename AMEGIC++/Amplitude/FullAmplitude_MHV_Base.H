@@ -1,19 +1,21 @@
-#ifndef FullAmplitude_MHV_Base_H
-#define FullAmplitude_MHV_Base_H
+#ifndef AMEGIC_Amplitude_FullAmplitude_MHV_Base_H
+#define AMEGIC_Amplitude_FullAmplitude_MHV_Base_H
 
 #include <vector>
-#include "Vector.H"
-#include "MyComplex.H"
-#include "Pfunc.H"
-#include "MHVCalculator.H"
-#include "PermStore.H"
-#include "Permutation.H"
-#include "Flavour.H"
-#include "Model_Base.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
+#include "AMEGIC++/Amplitude/Pfunc.H"
+#include "AMEGIC++/Amplitude/Zfunctions/MHVCalculator.H"
+#include "ATOOLS/Math/PermStore.H"
+#include "ATOOLS/Math/Permutation.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "MODEL/Main/Model_Base.H"
 
 using namespace ATOOLS;
 
 namespace AMEGIC {
+
+  typedef std::map<int,Complex**> ColorStoreMap;
 
   class MHVCalculator;
 
@@ -26,10 +28,11 @@ namespace AMEGIC {
     PermStore* p_permstore;	
     Permutation* p_permutation;
     MHVCalculator *p_calc;
-    MomentumList* p_BS;
 
+    ColorStoreMap m_colormap;
     Complex** m_colorstore;
     Complex* m_ampstore;
+    Complex* m_ampstore2;
 	
     double m_cpl, p_norm; 
     bool colorflag;
@@ -39,23 +42,32 @@ namespace AMEGIC {
     int *m_plist, *m_hlist;
     std::vector<Flavour*> m_flist;
     int *m_perm, *m_permgl;
+    int m_emit,m_spect;
+    bool m_dptgluon;
+    double m_A,m_conv;
+    Complex m_phase2;
 
     virtual void InitAmplitude();
-    virtual bool AmpStore();
-    virtual double Result(); 
+    virtual bool AmpStore(MomentumList*);
+    virtual bool AmpStoreDPT(MomentumList*);
+    virtual double Result(Complex**); 
+    virtual double ResultDPT(); 
 
 
   public:
 	
     // constructor
-    FullAmplitude_MHV_Base(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Base(MODEL::Model_Base *model,int part,int* plist); 
 
     //destructor
     virtual ~FullAmplitude_MHV_Base(); 
 
-    virtual double MSquare(int* hlist);   
-    double MSquareHel();    
+    double MSquare(int* hlist,MomentumList* BS);   
+    double MSquare(int,int);   
+    double MSquareHel(MomentumList* BS);    
+    void   CalculateAmps(int* hlist,MomentumList* BS);
     inline double ParticlesNorm() {return p_norm;}
+    void SetSqMatrix(double A,Complex phase)  {m_A=A; m_phase2=phase*phase;}
   };
     
 
@@ -68,13 +80,16 @@ namespace AMEGIC {
     void InitAmplitude();
     void PermutationStoreColor(int,int**);
     void ColorStore();
-    bool AmpStore();   
+    void ColorStoreDPT(int, int,Complex**);
+    bool AmpStore(MomentumList*);   
+    bool AmpStoreDPT(MomentumList*);   
 	
 
   public:
 	
     // constructor
-    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist,MomentumList *BS); 
+    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist); 
+    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_PureG();
@@ -87,17 +102,21 @@ namespace AMEGIC {
 
   class FullAmplitude_MHV_Q2: public FullAmplitude_MHV_Base {
   private:
+    ATOOLS::Flavour m_efl,m_sfl;
     
     void InitAmplitude();
     void PermutationStoreColor(int,int** p_adr);
     void ColorStore();
-    bool AmpStore();		
+    void ColorStoreDPT(int,int,Complex**);
+    bool AmpStore(MomentumList *BS);		
+    bool AmpStoreDPT(MomentumList *BS);		
     
     
   public:
     
     // constructor
-    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist); 
+    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_Q2();
@@ -110,19 +129,24 @@ namespace AMEGIC {
   
   class FullAmplitude_MHV_Q4: public FullAmplitude_MHV_Base {
   private:
+    ATOOLS::Flavour m_efl,m_sfl;
     
     MHVCalculator* p_calc_partner;
 
     void InitAmplitude();	
     void ColorStore();
-    bool AmpStore();
-    double Result();
+    void ColorStore(int,int,Complex**);
+    bool AmpStore(MomentumList* BS);
+    bool AmpStoreDPT(MomentumList* BS);
+    double Result(Complex**);
+    double ResultDPT();
 
 
   public:
     
     // constructor
-    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist); 
+    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_Q4();
@@ -140,13 +164,13 @@ namespace AMEGIC {
 
     void InitAmplitude();
     void ColorStore();
-    bool AmpStore();
+    bool AmpStore(MomentumList* BS);
 
 
     public:
 	
     // constructor
-    FullAmplitude_MHV_Q2L2(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+    FullAmplitude_MHV_Q2L2(MODEL::Model_Base *model,int part,int* plist); 
 
     //destructor
     ~FullAmplitude_MHV_Q2L2();
@@ -156,7 +180,9 @@ namespace AMEGIC {
 
 
 
-  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+//   FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
+  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,
+						    MomentumList* BS,bool &newamp,int emit=-1,int spec=-1); 
   
 
 }// end of namespace AMEGIC

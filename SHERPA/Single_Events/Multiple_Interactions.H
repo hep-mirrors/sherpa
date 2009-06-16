@@ -1,10 +1,10 @@
-#ifndef Multiple_Interactions_H
-#define Multiple_Interactions_H
+#ifndef SHERPA_Single_Events_Multiple_Interactions_H
+#define SHERPA_Single_Events_Multiple_Interactions_H
 
-#include "Event_Phase_Handler.H"
-#include "MI_Handler.H"
+#include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
-namespace ATOOLS { class Jet_Finder;   }
+namespace PHASIC { class KT_Finder;    }
 namespace PDF    { class Remnant_Base; }
 
 namespace SHERPA {
@@ -16,7 +16,7 @@ namespace SHERPA {
     double m_weight, m_ntrials;
 
     MI_Handler         *p_mihandler;
-    ATOOLS::Jet_Finder *p_jetfinder;
+    PHASIC::KT_Finder  *p_jetfinder;
     PDF::Remnant_Base  *p_remnants[2];
 
     ATOOLS::Blob_List *p_bloblist;

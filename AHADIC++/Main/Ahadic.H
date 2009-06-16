@@ -1,17 +1,17 @@
-#include "CXXFLAGS.H"
+#ifndef AHADIC_Main_Ahadic_H
+#define AHADIC_Main_Ahadic_H
+#include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifndef Ahadic_H
-#define Ahadic_H
 
 
-#include "Hadronisation_Parameters.H"
-#include "Cluster_Formation_Handler.H"
-#include "Cluster_Decay_Handler.H"
-#include "Cluster.H"
-#include "Blob_List.H"
-#include "Particle_List.H"
-#include "Return_Value.H"
-#include "Data_Reader.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "AHADIC++/Formation/Cluster_Formation_Handler.H"
+#include "AHADIC++/Decays/Cluster_Decay_Handler.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 
 namespace AHADIC {

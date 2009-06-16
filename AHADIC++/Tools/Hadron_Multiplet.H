@@ -1,8 +1,8 @@
-#ifndef Hadron_Multiplet_H
-#define Hadron_Multiplet_H
+#ifndef AHADIC_Tools_Hadron_Multiplet_H
+#define AHADIC_Tools_Hadron_Multiplet_H
 
-#include "Hadron_Wave_Function.H"
-#include "Flavour.H"
+#include "AHADIC++/Tools/Hadron_Wave_Function.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include <map>
 #include <string>
 
@@ -39,7 +39,7 @@ namespace AHADIC {
 
   class All_Hadron_Multiplets {
   private:
-    double                  m_singletsuppression, m_octetsuppression;
+    double                  m_singletsuppression;
     Hadron_WF_Map         * p_wavefunctions;
     Hadron_Multiplet_Map  * p_multiplets;
 

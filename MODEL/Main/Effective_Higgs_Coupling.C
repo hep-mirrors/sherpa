@@ -1,6 +1,6 @@
-#include "Effective_Higgs_Coupling.H"
-#include "Message.H"
-#include "MathTools.H"
+#include "MODEL/Main/Effective_Higgs_Coupling.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace MODEL;
 using namespace ATOOLS;

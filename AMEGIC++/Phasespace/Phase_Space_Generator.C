@@ -1,19 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Phase_Space_Generator.H"
-#include "Channel_Generator.H"
-#include "Channel_Generator_NPV.H"
-#include "Channel_Generator3V.H"
-#include "Channel_Generator3_NPV.H"
-#include "Channel_Generator_KK.H"
-#include "Channel_Generator_Decays.H"
-#include "Process_Base.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include "Shell_Tools.H"
-#include "String_Library.H"
+#include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
+#include "AMEGIC++/Phasespace/Channel_Generator.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_NPV.H"
+#include "AMEGIC++/Phasespace/Channel_Generator3V.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_UniV.H"
+#include "AMEGIC++/Phasespace/Channel_Generator3_NPV.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_KK.H"
+#include "AMEGIC++/Phasespace/Channel_Generator_Decays.H"
+#include "AMEGIC++/Main/Process_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "AMEGIC++/String/String_Library.H"
 
-#include "Running_AlphaQED.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
 
 using namespace AMEGIC;
@@ -48,8 +49,10 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",6);
   if (nin==1&&nout==2) return 0;
-  if (inttype<4 && !(inttype==2 && nout==2)) return 0;
+  if (inttype<4 && !(inttype>1 && nout==2)) return 0;
   if (inttype==2) inttype=6;
+  if (inttype==3) inttype=7;
+  if (inttype>20) return 0;
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
@@ -90,79 +93,84 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
     if (fl[i+nin].IsKK()) kk_fs=true;
   }
   int ng = 2;
-  if (inttype==4 || kk_fs) ng=1;
+  if (inttype==4 || kk_fs || inttype==7) ng=1;
   if (proc->OSDecays()>0) ng=1;
 
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
-    for(int j=0;j<ng;j++){
-      Channel_Generator_Base *cg;
-      if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,proc->Diagram(i),0);
-      else {
-	if (kk_fs){
-	  cg = new Channel_Generator_KK(nin,nout,proc->Diagram(i),0);
-	}
+      for(int j=0;j<ng;j++){
+	Channel_Generator_Base *cg;
+	if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,proc->Diagram(i),0);
 	else {
-	  if (inttype==6) {
-	    if (j==0) cg = new Channel_Generator3V(nin,nout,proc->Diagram(i),0);
-	    else cg = new Channel_Generator3_NPV(nin,nout,proc->Diagram(i),0);
+	  if (kk_fs){
+	    cg = new Channel_Generator_KK(nin,nout,proc->Diagram(i),0);
 	  }
 	  else {
-	    if (j==0) cg = new Channel_Generator(nin,nout,proc->Diagram(i),0);
-	    else cg = new Channel_Generator_NPV(nin,nout,proc->Diagram(i),0);
-	  }
-	}
-      }
-      for (int k=0;k<cg->NumberOfChannels();k++) {
-	string chID = cg->CreateChannelID(k);
-	lmf<<chID<<endl;
-	if (!RSearch(mapname,chID)) {
-	  bool hit;
-	  do {
-	    if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
-	    else sprintf(procname,"CD%i_%i",nout,cnt);
-	    string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
-	    hit = IsFile(help);
-	    if (hit) cnt++;
-	  } while (hit);
-	  
-	  // making directory
-	  if (cnt%maxchannels==0) {
-	    if (cnt>0) {
-	      sprintf(hlp,"_%i",cnt/maxchannels);
-	      fsrpath = fsrpath0 + string(hlp);
-	      fsrp = path+string("/")+fsrpath;
+	    if (inttype==6) {
+	      if (j==0) cg = new Channel_Generator3V(nin,nout,proc->Diagram(i),0);
+	      else cg = new Channel_Generator3_NPV(nin,nout,proc->Diagram(i),0);
 	    }
-	    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
-	    String_Library slib(1);
-	    slib.InitMakefile(fsrp);
-	  }
-	  
-	  int  rannumber;
-	  //cg->SetName(string(procname));
-	  rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
-	  if (rannumber>0) {
-	    string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
-	    AddToMakefileAM(makefilename,fsrp,procname);
-	    cnt++;
-	    newchannels = 1;
-	  }
-	  mf.open(mapname.c_str(),ios::out|ios::app);
-	  mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
-	  mf.close();
-	}
-	else {
-	  if (!newchannels) {
-	    if (chID[0]!='%') {
-	      int pos = chID.find(string(": "));
-	      chID = chID.substr(pos+2);
-	      liblist->push_back(chID);
-	    }	
+	    else {
+	      if (inttype==7) {
+		cg = new Channel_Generator_UniV(nin,nout,proc->Diagram(i),0);
+	      }
+	      else {
+		if (j==0) cg = new Channel_Generator(nin,nout,proc->Diagram(i),0);
+		else cg = new Channel_Generator_NPV(nin,nout,proc->Diagram(i),0);
+	      }
+	    }
 	  }
 	}
+	for (int k=0;k<cg->NumberOfChannels();k++) {
+	  string chID = cg->CreateChannelID(k);
+	  lmf<<chID<<endl;
+	  if (!RSearch(mapname,chID)) {
+	    bool hit;
+	    do {
+	      if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
+	      else sprintf(procname,"CD%i_%i",nout,cnt);
+	      string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
+	      hit = IsFile(help);
+	      if (hit) cnt++;
+	    } while (hit);
+	    
+	  // making directory
+	    if (cnt%maxchannels==0) {
+	      if (cnt>0) {
+		sprintf(hlp,"_%i",cnt/maxchannels);
+		fsrpath = fsrpath0 + string(hlp);
+		fsrp = path+string("/")+fsrpath;
+	      }
+	      ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
+	      String_Library slib(1);
+	      slib.InitMakefile(fsrp);
+	    }
+	    
+	    int  rannumber;
+	    //cg->SetName(string(procname));
+	    rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
+	    if (rannumber>0) {
+	      string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
+	      AddToMakefileAM(makefilename,fsrp,procname);
+	      cnt++;
+	      newchannels = 1;
+	    }
+	    mf.open(mapname.c_str(),ios::out|ios::app);
+	    mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
+	    mf.close();
+	  }
+	  else {
+	    if (!newchannels) {
+	      if (chID[0]!='%') {
+		int pos = chID.find(string(": "));
+		chID = chID.substr(pos+2);
+		liblist->push_back(chID);
+	      }	
+	    }
+	  }
+	}
+	delete cg;
       }
-      delete cg;
-    }
     }
   }
   lmf.close();

@@ -1,9 +1,9 @@
-#include "Scaling.H"
+#include "ATOOLS/Math/Scaling.H"
 
-#include "Message.H"
-#include "Data_Reader.H"
-#include "MyStrStream.H"
-#include "MathTools.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace ATOOLS; 
 
@@ -172,7 +172,7 @@ template class Scaling_Base<double>;
 #define OBJECT_TYPE Scaling_Base<double>
 #define PARAMETER_TYPE std::string
 #define EXACTMATCH false
-#include "Getter_Function.C"
+#include "ATOOLS/Org/Getter_Function.C"
 
 template <class Class>
 Scaling_Base<double> *GetVariable(const std::string &parameter) 

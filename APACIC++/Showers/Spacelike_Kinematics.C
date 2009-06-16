@@ -1,14 +1,14 @@
-#include "Spacelike_Kinematics.H"
-#include "Run_Parameter.H"
-#include "Exception.H"
+#include "APACIC++/Showers/Spacelike_Kinematics.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include <iomanip>
 
 using namespace APACIC;
 using namespace ATOOLS;
 using namespace std;
 
-Spacelike_Kinematics::Spacelike_Kinematics(ATOOLS::Jet_Finder *const jf): 
-  p_jf(jf), p_kin(new Timelike_Kinematics(p_jf)) {}
+Spacelike_Kinematics::Spacelike_Kinematics(): 
+  p_kin(new Timelike_Kinematics()) {}
 
 Spacelike_Kinematics::~Spacelike_Kinematics() 
 { 

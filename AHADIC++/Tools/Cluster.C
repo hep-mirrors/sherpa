@@ -1,11 +1,18 @@
-#include "Cluster.H"
-#include "Hadronisation_Parameters.H"
-#include "Message.H"
-#include "Poincare.H"
+#include "AHADIC++/Tools/Cluster.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
 #include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;
+
+namespace ATOOLS { 
+  template class SP(Proto_Particle);
+  template class SP(Proto_Particle_List);
+  template class SP(Cluster);
+}
 
 namespace AHADIC {
   long int Cluster::s_cluster_count=0;
@@ -105,7 +112,7 @@ Particle * Cluster::GetSelf() const {
   part->SetNumber();
   part->SetInfo('P');
   part->SetStatus(part_status::active);
-  part->SetFinalMass(m_flav.PSMass());
+  part->SetFinalMass(m_flav.HadMass());
   control::s_AHAparticles++;
   return part;
 }
@@ -142,7 +149,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
-  Vec4D save[3+int(p_left!=NULL)+int(p_right!=NULL)];
+  std::vector<Vec4D> save(3+int(p_left!=NULL)+int(p_right!=NULL));
   save[0] = m_momentum;
   if (p_trip!=NULL)  save[1] = p_trip->m_mom;
   if (p_anti!=NULL)  save[2] = p_anti->m_mom;

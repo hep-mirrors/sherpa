@@ -1,65 +1,83 @@
-#include "XS_4F.H"
-#include "Run_Parameter.H"
-#include "Running_AlphaQED.H"
-#include "Flow.H"
-#include "Random.H"
-#include "Model_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/Flow.H"
+#include "ATOOLS/Math/Random.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "EXTRA_XS/Main/ME2_Base.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 
 
 namespace EXTRAXS {
-
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours,
-					       XS_Model_Base *const model,
-					       const size_t nqed, const size_t nqcd)
-{
-  //  std::cout<<"XS_f1f1_f1f1 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  if (flavours[0]!=flavours[1] || 
-      flavours[0]!=flavours[2] || flavours[0]!=flavours[3])  return NULL;
-  
-  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
-	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  class XS_f1f1_f1f1: public ME2_Base {  
+  private:
+    bool   m_Z_on, m_P_on;
+    int    m_anti;
+    double m_mz2, m_wz2;
+    double m_sin2tw, m_cos2tw, m_eq, m_y3f, m_v, m_a;
+    double m_aqed, m_pref_qed, m_pref_Z, m_kappa, m_colfac;
+    double M_t, M_u, M_mix;
+  public:
+    // constructor
+    XS_f1f1_f1f1(const Process_Info& pi, const Flavour_Vector& fl);
     
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
+
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f1_f1f1_Getter,"0XS_f1f1_f1f1")
+ME2_Base *XS_f1f1_f1f1_Getter::operator()(const Process_Info &pi) const
+{
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  if (fl[0]!=fl[1] || fl[0]!=fl[2] || fl[0]!=fl[3]) return NULL;
+
+  if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
+	fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
+
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
-	ATOOLS::Flavour(kf_photon).IsOn()))         return NULL;
-  if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
-      ATOOLS::Flavour(kf_Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours);
+	ATOOLS::Flavour(kf_photon).IsOn())) return NULL;
+  if ((fl[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
+      ATOOLS::Flavour(kf_Z).IsOn()) return new XS_f1f1_f1f1(pi,fl);
   return NULL;
 }
 
-}
 
-XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours),
+XS_f1f1_f1f1::XS_f1f1_f1f1(const Process_Info& pi, const Flavour_Vector& fl):
+  ME2_Base(pi, fl),
   m_Z_on(ATOOLS::Flavour(kf_Z).IsOn()), m_P_on(ATOOLS::Flavour(kf_photon).IsOn()),
-  m_anti(int(flavours[0].IsAnti())),
+  m_anti(int(fl[0].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq(flavours[0].Charge()),
-  m_y3f((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_eq(fl[0].Charge()),
+  m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  //   std::cout<<"Init f1f1 -> f1f1 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 }
 
-double XS_f1f1_f1f1::operator()(double s,double t,double u) 
+double XS_f1f1_f1f1::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   M_t = 0., M_u = 0., M_mix = 0.;
   if (m_P_on) {
     M_t   +=     sqr(m_pref_qed*m_eq*m_eq)    * (s*s+u*u)/(t*t);
@@ -92,14 +110,13 @@ double XS_f1f1_f1f1::operator()(double s,double t,double u)
   return M_t + M_u + M_mix;
 }
 
-bool XS_f1f1_f1f1::SetColours(double s, double t, double u) 
+bool XS_f1f1_f1f1::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  (*this)(s,t,u);
-  if (SetColours()) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-               else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
-  if (swap) SwapInOrder();
+  (*this)(mom);
+  if (SetColours()) {}
+  //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+  //else
+  //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   return true;
 }
 
@@ -128,55 +145,70 @@ double XS_f1f1_f1f1::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f1b_f1f1b: public ME2_Base {  
+  private:
+    bool   m_Z_on, m_P_on;
+    int    m_anti1, m_anti2;
+    double m_mz2, m_wz2;
+    double m_sin2tw, m_cos2tw, m_eq, m_y3f, m_v, m_a;
+    double m_aqed, m_pref_qed, m_pref_Z, m_kappa, m_colfac;
+    double M_t, M_s, M_mix;
+  public:
+    XS_f1f1b_f1f1b(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t nout,
-						 const ATOOLS::Flavour *flavours,
-						 XS_Model_Base *const model,
-						 const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f1b_f1f1b_Getter,"0XS_f1f1b_f1f1b")
+ME2_Base *XS_f1f1b_f1f1b_Getter::operator()(const Process_Info &pi) const
 {
-  //  std::cout<<"XS_f1f1b_f1f1b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  if (flavours[0]!=flavours[1].Bar() || 
-      flavours[0]!=flavours[2] || flavours[1]!=flavours[3])  return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  if (fl[0]!=fl[1].Bar() || 
+      fl[0]!=fl[2] || fl[1]!=fl[3]) return NULL;
   
-  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
-	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
+	fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
   
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
-	ATOOLS::Flavour(kf_photon).IsOn()))         return NULL;
-  if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
-      ATOOLS::Flavour(kf_Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours);
+	ATOOLS::Flavour(kf_photon).IsOn())) return NULL;
+  if ((fl[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
+      ATOOLS::Flavour(kf_Z).IsOn()) return new XS_f1f1b_f1f1b(pi,fl);
   return NULL;
 }
 
-}
-
-XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours), 
+XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const Process_Info& pi, const Flavour_Vector& fl):
+  ME2_Base(pi, fl), 
   m_Z_on(ATOOLS::Flavour(kf_Z).IsOn()), m_P_on(ATOOLS::Flavour(kf_photon).IsOn()),
-  m_anti1(int(flavours[0].IsAnti())),m_anti2(int(flavours[2].IsAnti())),
+  m_anti1(int(fl[0].IsAnti())),m_anti2(int(fl[2].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq(flavours[0].Charge()),
-  m_y3f((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_eq(fl[0].Charge()),
+  m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  // std::cout<<"Init f1f1b -> f1f1b : anti = "<<m_anti1<<m_anti2
-  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 }
 
-double XS_f1f1b_f1f1b::operator()(double s,double t,double u) 
+double XS_f1f1b_f1f1b::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) { double help = u; u = t; t = help; }
   M_t = 0., M_s = 0., M_mix = 0.;
   if (m_P_on) {
@@ -210,19 +242,17 @@ double XS_f1f1b_f1f1b::operator()(double s,double t,double u)
   return 2.*(M_t + M_s + M_mix);
 }
 
-bool XS_f1f1b_f1f1b::SetColours(double s, double t, double u) 
+bool XS_f1f1b_f1f1b::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  (*this)(s,t,u);
+  (*this)(mom);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {}
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
-  if (swap) SwapInOrder();
   return true;
 }
 
@@ -257,80 +287,99 @@ double XS_f1f1b_f1f1b::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f1b_f2f2b: public ME2_Base {  
+  private:
+    bool   m_Z_on, m_P_on, m_W_on;
+    int    m_anti1, m_anti2;
+    double m_mz2, m_wz2, m_mw2, m_ww2;
+    double m_sin2tw, m_cos2tw, m_eq1, m_eq2, m_y3f1, m_y3f2, m_v1, m_a1, m_v2, m_a2;
+    Complex m_ckm;
+    double m_aqed, m_pref_qed, m_pref_Z, m_pref_W, m_kappa, m_colfac;
+    double M_t, M_s, M_mix;
+  public:
+    // constructor
+    XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t nout,
-						 const ATOOLS::Flavour *flavours,
-						 XS_Model_Base *const model,
-						 const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f1b_f2f2b_Getter,"0XS_f1f1b_f2f2b")
+ME2_Base *XS_f1f1b_f2f2b_Getter::operator()(const Process_Info &pi) const
 {
-  //  std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<"\n";
-  kf_code  kfc1  = flavours[0].Kfcode(), kfc2  = flavours[2].Kfcode();
-  if (flavours[0]!=flavours[1].Bar() || 
-      flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
-      flavours[2]!=flavours[3].Bar())                        return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  kf_code  kfc1  = fl[0].Kfcode(), kfc2  = fl[2].Kfcode();
+  if (fl[0]!=fl[1].Bar() || 
+      fl[0]==fl[2] || fl[0]==fl[3] || 
+      fl[2]!=fl[3].Bar()) return NULL;
   
-  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
-	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
+        fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
   
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
-  if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if ((fl[0].Charge()!=0. && fl[2].Charge()!=0. &&
        ATOOLS::Flavour(kf_photon).IsOn()) ||
       (ATOOLS::Flavour(kf_Wplus).IsOn() && 
-       flavours[0].IsQuark() && flavours[2].IsQuark() && 
+       fl[0].IsQuark() && fl[2].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	(kfc1%2!=0 && kfc2%2==0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(kf_Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours);
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
+        (kfc1%2!=0 && kfc2%2==0 && 
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
+      ATOOLS::Flavour(kf_Z).IsOn() )
+    return new XS_f1f1b_f2f2b(pi,fl);
   return NULL;
 }
 
-}
 
-XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours) :
-  Single_XS(nin,nout,flavours), 
+XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl) :
+  ME2_Base(pi, fl), 
   m_Z_on(ATOOLS::Flavour(kf_Z).IsOn()), m_P_on(ATOOLS::Flavour(kf_photon).IsOn()),
   m_W_on(ATOOLS::Flavour(kf_Wplus).IsOn()),
-  m_anti1(int(flavours[0].IsAnti())),m_anti2(int(flavours[2].IsAnti())),
+  m_anti1(int(fl[0].IsAnti())),m_anti2(int(fl[2].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
   m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq1(flavours[0].Charge()),
-  m_eq2(flavours[2].Charge()),
-  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
-  m_y3f2((2.*int(flavours[2].IsUptype())-1)/2.),
+  m_eq1(fl[0].Charge()),
+  m_eq2(fl[2].Charge()),
+  m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(fl[2].IsUptype())-1)/2.),
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (m_W_on) {
-    kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[2].Kfcode();
-    if (flavours[0].IsQuark() && flavours[2].IsQuark()) { 
+    kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[2].Kfcode();
+    if (fl[0].IsQuark() && fl[2].IsQuark()) { 
       if (kfc1%2==0 && kfc2%2!=0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       if (kfc1%2!=0 && kfc2%2==0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  // std::cout<<"Init f1f1b -> f2f2b : anti = "<<m_anti1<<m_anti2
-  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
-double XS_f1f1b_f2f2b::operator()(double s,double t,double u) 
+double XS_f1f1b_f2f2b::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) { double help = u; u = t; t = help; }
   M_s = M_t = M_mix = 0.;
   if (m_P_on) {
@@ -363,18 +412,16 @@ double XS_f1f1b_f2f2b::operator()(double s,double t,double u)
   return 2.*(M_s+M_t+M_mix);
 }
 
-bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u) 
+bool XS_f1f1b_f2f2b::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  (*this)(s,t,u);
+  (*this)(mom);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) 
-      m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {}
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
-  else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
-  if (swap) SwapInOrder();
+  else {} 
+  //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   return true;
 }
 
@@ -409,88 +456,102 @@ double XS_f1f1b_f2f2b::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f2_f1f2: public ME2_Base {  
+  private:
+    bool   m_Z_on, m_P_on, m_W_on;
+    int    m_anti, m_rev;
+    double m_mz2, m_wz2, m_mw2, m_ww2;
+    double m_sin2tw, m_cos2tw, m_eq1, m_eq2, m_y3f1, m_y3f2, m_v1, m_a1, m_v2, m_a2;
+    Complex m_ckm;
+    double m_aqed, m_pref_qed, m_pref_Z, m_pref_W, m_kappa, m_colfac;
+    double M_t, M_u, M_mix;
+  public:
+    // constructor
+    XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours,
-					       XS_Model_Base *const model,
-					       const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f2_f1f2_Getter,"0XS_f1f2_f1f2")
+ME2_Base *XS_f1f2_f1f2_Getter::operator()(const Process_Info &pi) const
 {
-  //  std::cout<<"XS_f1f2_f1f2 Test this : "<<flavours[0]<<" "
-  //<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  if (!((flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
-	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
-      (flavours[0].IsAnti() && !flavours[1].IsAnti()) ||
-      (!flavours[0].IsAnti() && flavours[1].IsAnti()))       return NULL;
-  
-  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
-	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
 
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  if (!((fl[0]==fl[2] && fl[1]==fl[3]) || 
+        (fl[0]==fl[3] && fl[1]==fl[2])) || 
+      (fl[0].IsAnti() && !fl[1].IsAnti()) ||
+      (!fl[0].IsAnti() && fl[1].IsAnti())) return NULL;
+
+  if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
+        fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
+
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
-	ATOOLS::Flavour(kf_photon).IsOn() ||
-	ATOOLS::Flavour(kf_Wplus).IsOn()))          return NULL;
-  if ((flavours[0].Charge()!=0. && flavours[1].Charge()!=0. &&
+        ATOOLS::Flavour(kf_photon).IsOn() ||
+        ATOOLS::Flavour(kf_Wplus).IsOn())) return NULL;
+  if ((fl[0].Charge()!=0. && fl[1].Charge()!=0. &&
        ATOOLS::Flavour(kf_photon).IsOn()) ||
       (ATOOLS::Flavour(kf_Wplus).IsOn() && 
-       flavours[0].IsQuark() && flavours[1].IsQuark() && 
+       fl[0].IsQuark() && fl[1].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	(kfc1%2!=0 && kfc2%2==0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(kf_Z).IsOn() )               return new XS_f1f2_f1f2(nin,nout,flavours); 
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
+        (kfc1%2!=0 && kfc2%2==0 && 
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
+      ATOOLS::Flavour(kf_Z).IsOn()) return new XS_f1f2_f1f2(pi,fl);
   return NULL;
 }
 
-}
 
-XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours) :
-  Single_XS(nin,nout,flavours), 
+XS_f1f2_f1f2::XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl) :
+  ME2_Base(pi, fl), 
   m_Z_on(ATOOLS::Flavour(kf_Z).IsOn()), m_P_on(ATOOLS::Flavour(kf_photon).IsOn()),
   m_W_on(ATOOLS::Flavour(kf_Wplus).IsOn()),
-  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
+  m_anti(int(fl[0].IsAnti())),m_rev(int(fl[0]!=fl[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
   m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq1(std::pow(-1.,m_anti) * flavours[0].Charge()),
-  m_eq2(std::pow(-1.,m_anti) * flavours[1].Charge()),
-  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
-  m_y3f2((2.*int(flavours[1].IsUptype())-1)/2.),
+  m_eq1(std::pow(-1.,m_anti) * fl[0].Charge()),
+  m_eq2(std::pow(-1.,m_anti) * fl[1].Charge()),
+  m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(fl[1].IsUptype())-1)/2.),
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (m_W_on) {
-    kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-    if (flavours[0].IsQuark() && flavours[1].IsQuark()) { 
+    kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+    if (fl[0].IsQuark() && fl[1].IsQuark()) { 
       if (kfc1%2==0 && kfc2%2!=0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       if (kfc1%2!=0 && kfc2%2==0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  // std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
-  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
-  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
-  // 	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
-  // 	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
-  // 	   <<", CKM = "<<m_ckm<<std::endl;
 }
 
-double XS_f1f2_f1f2::operator()(double s,double t,double u) 
+double XS_f1f2_f1f2::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
   M_t = M_u = M_mix = 0.;
   if (m_P_on) {
@@ -523,20 +584,21 @@ double XS_f1f2_f1f2::operator()(double s,double t,double u)
   return 2.*(M_t+M_u+M_mix);
 }
 
-bool XS_f1f2_f1f2::SetColours(double s, double t, double u) 
+bool XS_f1f2_f1f2::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  (*this)(s,t,u);
+  (*this)(mom);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) {
+      //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    }
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    if (m_rev) {
+      //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    }
   }
-  if (swap) SwapInOrder();
   return true;
 }
 
@@ -577,88 +639,101 @@ double XS_f1f2_f1f2::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f2b_f1f2b: public ME2_Base {  
+  private:
+    bool   m_Z_on, m_P_on, m_W_on;
+    int    m_anti, m_rev;
+    double m_mz2, m_wz2, m_mw2, m_ww2;
+    double m_sin2tw, m_cos2tw, m_eq1, m_eq2, m_y3f1, m_y3f2, m_v1, m_a1, m_v2, m_a2;
+    Complex m_ckm;
+    double m_aqed, m_pref_qed, m_pref_Z, m_pref_W, m_kappa, m_colfac;
+    double M_t, M_s, M_mix;
+  public:
+    // constructor
+    XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t nout,
-						 const ATOOLS::Flavour *flavours,
-						 XS_Model_Base *const model,
-						 const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f2b_f1f2b_Getter,"0XS_f1f2b_f1f2b")
+ME2_Base *XS_f1f2b_f1f2b_Getter::operator()(const Process_Info &pi) const
 {
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  //  std::cout<<"XS_f1f2b_f1f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  if (!((flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
-	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
-      (flavours[0].IsAnti() && flavours[1].IsAnti()) ||
-      (!flavours[0].IsAnti() && !flavours[1].IsAnti()))      return NULL;
-  
-  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
-	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
-  
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  if (!((fl[0]==fl[2] && fl[1]==fl[3]) || 
+        (fl[0]==fl[3] && fl[1]==fl[2])) || 
+      (fl[0].IsAnti() && fl[1].IsAnti()) ||
+      (!fl[0].IsAnti() && !fl[1].IsAnti())) return NULL;
+
+  if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
+        fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
+
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
-	ATOOLS::Flavour(kf_photon).IsOn() ||
-	ATOOLS::Flavour(kf_Wplus).IsOn()))              return NULL;
-  if ((flavours[0].Charge()!=0. && flavours[1].Charge()!=0. &&
+        ATOOLS::Flavour(kf_photon).IsOn() ||
+        ATOOLS::Flavour(kf_Wplus).IsOn())) return NULL;
+  if ((fl[0].Charge()!=0. && fl[1].Charge()!=0. &&
        ATOOLS::Flavour(kf_photon).IsOn()) ||
       (ATOOLS::Flavour(kf_Wplus).IsOn() && 
-       flavours[0].IsQuark() && flavours[1].IsQuark() && 
+       fl[0].IsQuark() && fl[1].IsQuark() && 
        ((kfc1%2==0 && kfc2%2!=0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	(kfc1%2!=0 && kfc2%2==0 && 
-	 abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(kf_Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours);
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
+        (kfc1%2!=0 && kfc2%2==0 && 
+         abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
+      ATOOLS::Flavour(kf_Z).IsOn()) return new XS_f1f2b_f1f2b(pi,fl);
   return NULL;
 }
 
-}
-
-XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
-			       const ATOOLS::Flavour *flavours) :
-  Single_XS(nin,nout,flavours), 
+XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl) :
+  ME2_Base(pi, fl), 
   m_Z_on(ATOOLS::Flavour(kf_Z).IsOn()), m_P_on(ATOOLS::Flavour(kf_photon).IsOn()),
   m_W_on(ATOOLS::Flavour(kf_Wplus).IsOn()),
-  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
+  m_anti(int(fl[0].IsAnti())),m_rev(int(fl[0]!=fl[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
   m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq1(flavours[0].Charge()),
-  m_eq2(flavours[1].Charge()),
-  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
-  m_y3f2((2.*int(flavours[1].IsUptype())-1)/2.),
+  m_eq1(fl[0].Charge()),
+  m_eq2(fl[1].Charge()),
+  m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(fl[1].IsUptype())-1)/2.),
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (m_W_on) {
-    kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-    if (flavours[0].IsQuark() && flavours[1].IsQuark()) { 
+    kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+    if (fl[0].IsQuark() && fl[1].IsQuark()) { 
       if (kfc1%2==0 && kfc2%2!=0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       if (kfc1%2!=0 && kfc2%2==0)
-	m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
+        m_ckm = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  //   for (short int i=0;i<4;i++) std::cout<<flavours[i]<<" ";
-  //   std::cout<<"\nInit f1f2 -> f1f2 : anti = "<<m_anti<<" rev="<<m_rev
-  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
-  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
-  // 	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
-  // 	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
-  // 	   <<", CKM = "<<m_ckm<<std::endl;
 }
 
-double XS_f1f2b_f1f2b::operator()(double s,double t,double u) 
+double XS_f1f2b_f1f2b::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
   M_t = M_s = M_mix = 0.;
   if (m_P_on) {
@@ -691,19 +766,18 @@ double XS_f1f2b_f1f2b::operator()(double s,double t,double u)
   return 2.*(M_t+M_s+M_mix);
 }
 
-bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u) 
+bool XS_f1f2b_f1f2b::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  (*this)(s,t,u);
+  (*this)(mom);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) {
+      //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    }
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
-  if (swap) SwapInOrder();
   return true;
 }
 
@@ -738,98 +812,120 @@ double XS_f1f2b_f1f2b::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f2_f3f4: public ME2_Base {  
+  private:
+    int    m_anti, m_rev;
+    double m_mw2, m_ww2, m_pref_W;
+    Complex m_ckm1, m_ckm2;
+    double m_kappa, m_colfac;
+    double M_t, M_u, M_mix;
+  public:
+    // constructor
+    XS_f1f2_f3f4(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours,
-					       XS_Model_Base *const model,
-					       const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f2_f3f4_Getter,"0XS_f1f2_f3f4")
+ME2_Base *XS_f1f2_f3f4_Getter::operator()(const Process_Info &pi) const
 {
-  //  std::cout<<"XS_f1f2_f1f2 : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  kf_code kfc3 = flavours[2].Kfcode(), kfc4 = flavours[3].Kfcode();
-  if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
-	flavours[2].IsQuark() &&flavours[3].IsQuark()))                           return NULL;
-  if (!(((flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
-	 (flavours[0].IsDowntype() && flavours[1].IsUptype())) &&
-	((flavours[2].IsUptype() && flavours[3].IsDowntype()) ||
-	 (flavours[2].IsDowntype() && flavours[3].IsUptype())))  ||
-      (!(!flavours[0].IsAnti() && !flavours[1].IsAnti() && 
-	 !flavours[2].IsAnti() && !flavours[3].IsAnti()) &&
-       !(flavours[0].IsAnti() && flavours[1].IsAnti() && 
-	 flavours[2].IsAnti() && flavours[3].IsAnti())) )                       return NULL;
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                                       return NULL;
-  if (!ATOOLS::Flavour(kf_Wplus).IsOn())                                   return NULL;
-  if (flavours[0].IsUptype()) {
-    if (flavours[2].IsDowntype() && 
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)))  return NULL;
-    if (flavours[2].IsUptype() &&
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))  return NULL;    
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
+  if (!(fl[0].IsQuark() &&fl[1].IsQuark() &&
+        fl[2].IsQuark() &&fl[3].IsQuark())) return NULL;
+  if (!(((fl[0].IsUptype() && fl[1].IsDowntype()) ||
+         (fl[0].IsDowntype() && fl[1].IsUptype())) &&
+        ((fl[2].IsUptype() && fl[3].IsDowntype()) ||
+         (fl[2].IsDowntype() && fl[3].IsUptype())))  ||
+      (!(!fl[0].IsAnti() && !fl[1].IsAnti() && 
+         !fl[2].IsAnti() && !fl[3].IsAnti()) &&
+       !(fl[0].IsAnti() && fl[1].IsAnti() && 
+         fl[2].IsAnti() && fl[3].IsAnti()))) return NULL;
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
+  if (fl[0].IsUptype()) {
+    if (fl[2].IsDowntype() && 
+        (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
+         !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)))
+      return NULL;
+    if (fl[2].IsUptype() &&
+        (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
+         !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))
+      return NULL;
   }
   else {
-    if (flavours[2].IsDowntype() && 
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)))  return NULL;
-    if (flavours[2].IsUptype() &&
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)))  return NULL;    
+    if (fl[2].IsDowntype() && 
+        (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
+         !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)))
+      return NULL;
+    if (fl[2].IsUptype() &&
+        (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
+         !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)))
+      return NULL;
   }
-  return new XS_f1f2_f3f4(nin,nout,flavours); 
+  return new XS_f1f2_f3f4(pi,fl);
 }
 
-}
-
-XS_f1f2_f3f4::XS_f1f2_f3f4(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours) :
-  Single_XS(nin,nout,flavours), 
-  m_anti(int(flavours[0].IsAnti())), m_rev(false),
+XS_f1f2_f3f4::XS_f1f2_f3f4(const Process_Info& pi, const Flavour_Vector& fl) :
+  ME2_Base(pi,fl), 
+  m_anti(int(fl[0].IsAnti())), m_rev(false),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
-	   (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
+  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())))/
+           (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  kf_code kfc3 = flavours[2].Kfcode(), kfc4 = flavours[3].Kfcode();
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
 
-  if (flavours[0].IsUptype()) {
-    if (flavours[2].IsDowntype()) {
+  if (fl[0].IsUptype()) {
+    if (fl[2].IsDowntype()) {
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2);
     } 
-    if (flavours[2].IsUptype()) {
+    if (fl[2].IsUptype()) {
       m_rev  = true;
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2);
     }
   }
   else {
-    if (flavours[2].IsDowntype()) {
+    if (fl[2].IsDowntype()) {
       m_rev  = true;
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2);
     }
-    if (flavours[2].IsUptype()) {
+    if (fl[2].IsUptype()) {
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2);
     }
   }
 }
 
-double XS_f1f2_f3f4::operator()(double s,double t,double u) 
+double XS_f1f2_f3f4::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
   return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (s*s);
 }
 
-bool XS_f1f2_f3f4::SetColours(double s, double t, double u) 
+bool XS_f1f2_f3f4::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
   if (m_rev) {
     p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
     p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
@@ -838,9 +934,12 @@ bool XS_f1f2_f3f4::SetColours(double s, double t, double u)
     p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
     p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
   }
-  if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
-        else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
-  if (swap) SwapInOrder();
+  if (m_rev) {
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+  }
+  else {
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+  }
   return true;
 }
 
@@ -863,97 +962,115 @@ double XS_f1f2_f3f4::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 namespace EXTRAXS {
+  class XS_f1f2b_f3f4b: public ME2_Base {  
+  private:
+    int    m_anti, m_rev, m_schannel;
+    double m_mw2, m_ww2, m_pref_W;
+    Complex m_ckm1, m_ckm2;
+    double m_kappa, m_colfac;
+    double M_t, M_u, M_mix;
+  public:
+    // constructor
+    XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl);
+    
+    // member functions
+    double operator()(const Vec4D_Vector& mom);
+    bool   SetColours(const Vec4D_Vector& mom);
+    bool   SetColours();
 
-template <> 
-Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t nout,
-						 const ATOOLS::Flavour *flavours,
-						 XS_Model_Base *const model,
-						 const size_t nqed, const size_t nqcd)
+    double KFactor(const double scale);
+  };
+}
+
+DECLARE_ME2_GETTER(XS_f1f2b_f3f4b_Getter,"0XS_f1f2b_f3f4b")
+ME2_Base *XS_f1f2b_f3f4b_Getter::operator()(const Process_Info &pi) const
 {
-  if (model->Name()=="QCD") return NULL;
-  if (nqcd!=0 || nqed!=2)                                                         return NULL;
-  if (!ATOOLS::Flavour(kf_Wplus).IsOn())                                     return NULL;
-  if (flavours[0].IntCharge()+flavours[1].IntCharge()!=
-      flavours[2].IntCharge()+flavours[3].IntCharge()) return NULL;
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  kf_code kfc3 = flavours[2].Kfcode(), kfc4 = flavours[3].Kfcode();
-  if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
-	flavours[2].IsQuark() &&flavours[3].IsQuark()))                           return NULL;
-  if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
-    if ((flavours[2].IsUptype() && 
-	(!flavours[3].IsDowntype() ||
-	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
-	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
-    if ((flavours[3].IsUptype() && 
-	(!flavours[2].IsDowntype() ||
-	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
-	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
+    return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+
+  if (MODEL::s_model->Name()=="QCD") return NULL;
+  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
+  if (fl[0].IntCharge()+fl[1].IntCharge()!= fl[2].IntCharge()+fl[3].IntCharge())
+    return NULL;
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
+  if (!(fl[0].IsQuark() &&fl[1].IsQuark() &&
+        fl[2].IsQuark() &&fl[3].IsQuark())) return NULL;
+  if (fl[0].IsUptype() && fl[1].IsDowntype()) {
+    if ((fl[2].IsUptype() && 
+         (!fl[3].IsDowntype() ||
+          (fl[0].IsAnti()^fl[2].IsAnti()) || 
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
+        abs(fl[0].IntCharge()+fl[1].IntCharge())!=3) return NULL;
+    if ((fl[3].IsUptype() && 
+         (!fl[2].IsDowntype() ||
+          (fl[0].IsAnti()^fl[3].IsAnti()) || 
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
+        abs(fl[0].IntCharge()+fl[1].IntCharge())!=3) return NULL;
   }
-  if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
-    if ((flavours[2].IsDowntype() && 
-	(!flavours[3].IsUptype() ||
-	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
-	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
-    if ((flavours[3].IsDowntype() && 
-	(!flavours[2].IsUptype() ||
-	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
-	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
+  if (fl[0].IsDowntype() && fl[1].IsUptype()) {
+    if ((fl[2].IsDowntype() && 
+         (!fl[3].IsUptype() ||
+          (fl[0].IsAnti()^fl[2].IsAnti()) || 
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0))) ||
+        abs(fl[0].IntCharge()+fl[1].IntCharge())!=3) return NULL;
+    if ((fl[3].IsDowntype() && 
+         (!fl[2].IsUptype() ||
+          (fl[0].IsAnti()^fl[3].IsAnti()) || 
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0))) ||
+        abs(fl[0].IntCharge()+fl[1].IntCharge())!=3) return NULL;
   }
-  if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
-    if (!flavours[2].IsDowntype() || !flavours[3].IsDowntype() ||
-	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
-	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
-    if ((!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0))) ||
-	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
-    if ((!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0))) ||
-	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
-  }    
-  if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
-    if (!flavours[2].IsUptype() || !flavours[3].IsUptype() ||
-	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
-	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
-    if ((!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0))) ||
-	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
-    if ((!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
-	(!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
-	 !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0))) ||
-	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
-  }    
-  return new XS_f1f2b_f3f4b(nin,nout,flavours); 
+  if (fl[0].IsUptype() && fl[1].IsUptype()) {
+    if (!fl[2].IsDowntype() || !fl[3].IsDowntype() ||
+        !(fl[0].IsAnti()^fl[1].IsAnti()) ||
+        !(fl[2].IsAnti()^fl[3].IsAnti())) return NULL;
+    if ((!(fl[0].IsAnti()^fl[2].IsAnti()) &&
+         (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0))) ||
+        abs(fl[0].IntCharge()-fl[2].IntCharge())!=3) return NULL;
+    if ((!(fl[0].IsAnti()^fl[3].IsAnti()) &&
+         (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0))) ||
+        abs(fl[0].IntCharge()-fl[3].IntCharge())!=3) return NULL;
+  }
+  if (fl[0].IsDowntype() && fl[1].IsDowntype()) {
+    if (!fl[2].IsUptype() || !fl[3].IsUptype() ||
+        !(fl[0].IsAnti()^fl[1].IsAnti()) ||
+        !(fl[2].IsAnti()^fl[3].IsAnti())) return NULL;
+    if ((!(fl[0].IsAnti()^fl[2].IsAnti()) &&
+         (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0))) ||
+        abs(fl[0].IntCharge()-fl[2].IntCharge())!=3) return NULL;
+    if ((!(fl[0].IsAnti()^fl[3].IsAnti()) &&
+         (!(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
+          !(abs(MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0))) ||
+        abs(fl[0].IntCharge()-fl[3].IntCharge())!=3) return NULL;
+  }
+  return new XS_f1f2b_f3f4b(pi,fl); 
 }
 
-}
-
-XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours) :
-  Single_XS(nin,nout,flavours), 
-  m_anti(int(flavours[0].IsAnti())), m_rev(false), m_schannel(true),
+XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl) :
+  ME2_Base(pi,fl), 
+  m_anti(int(fl[0].IsAnti())), m_rev(false), m_schannel(true),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
-	   (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
+  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())))/
+           (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  kf_code kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  kf_code kfc3 = flavours[2].Kfcode(), kfc4 = flavours[3].Kfcode();
+  //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  kf_code kfc1 = fl[0].Kfcode(), kfc2 = fl[1].Kfcode();
+  kf_code kfc3 = fl[2].Kfcode(), kfc4 = fl[3].Kfcode();
 
-  if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
-    if (flavours[2].IsUptype()) {
+  if (fl[0].IsUptype() && fl[1].IsDowntype()) {
+    if (fl[2].IsUptype()) {
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2);
     }
@@ -962,11 +1079,11 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2);
     }
-    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
-    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
+    //p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
+    //p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
   }
-  else if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
-    if (flavours[2].IsDowntype()) {
+  else if (fl[0].IsDowntype() && fl[1].IsUptype()) {
+    if (fl[2].IsDowntype()) {
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2);
     }
@@ -975,56 +1092,62 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2);
     }
-    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
-    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
+    //p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
+    //p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
   }
-  else if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
+  else if (fl[0].IsUptype() && fl[1].IsUptype()) {
     m_schannel = false;
-    if (!(flavours[0].IsAnti()^flavours[2].IsAnti())) {  
+    if (!(fl[0].IsAnti()^fl[2].IsAnti())) {  
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2);
     }
-    if (!(flavours[0].IsAnti()^flavours[3].IsAnti())) {
+    if (!(fl[0].IsAnti()^fl[3].IsAnti())) {
       m_rev  = true;
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2);
     }    
-    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
-    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
+    //p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
+    //p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
   }
-  else if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
+  else if (fl[0].IsDowntype() && fl[1].IsDowntype()) {
     m_schannel = false;
-    if (!(flavours[0].IsAnti()^flavours[2].IsAnti())) {  
+    if (!(fl[0].IsAnti()^fl[2].IsAnti())) {  
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2);
     }
-    if (!(flavours[0].IsAnti()^flavours[3].IsAnti())) {
+    if (!(fl[0].IsAnti()^fl[3].IsAnti())) {
       m_rev  = true;
       m_ckm1 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
       m_ckm2 = MODEL::s_model->ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2);
     }    
-    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
-    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
+    //p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
+    //p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
   }
 }
 
-double XS_f1f2b_f3f4b::operator()(double s,double t,double u) 
+double XS_f1f2b_f3f4b::operator()(const Vec4D_Vector& mom) 
 {
+  double s=(mom[0]+mom[1]).Abs2();
+  double t=(mom[0]-mom[2]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
   if (m_schannel) return sqr(m_pref_W)/((sqr(s-m_mw2)+m_mw2*m_ww2)) * (u*u);
   return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (u*u);
 }
 
-bool XS_f1f2b_f3f4b::SetColours(double s, double t, double u) 
+bool XS_f1f2b_f3f4b::SetColours(const Vec4D_Vector& mom) 
 {
-  bool swap  = m_swaped;
-  RestoreInOrder();
-  if (m_schannel) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
-  else {
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
-          else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+  if (m_schannel) {
+    //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
   }
-  if (swap) SwapInOrder();
+  else {
+    if (m_rev) {
+      //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    }
+    else {
+      //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    }
+  }
   return true;
 }
 
@@ -1038,6 +1161,3 @@ double XS_f1f2b_f3f4b::KFactor(double scale)
 { 
   return 1.; 
 }
-
-
-

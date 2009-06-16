@@ -1,6 +1,6 @@
-#include "Photon_Remnant.H"
+#include "PDF/Remnant/Photon_Remnant.H"
 
-#include "Exception.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace PDF;
 

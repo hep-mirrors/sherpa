@@ -1,9 +1,9 @@
-#ifndef PDF_MRST99_H
-#define PDF_MRST99_H
+#ifndef PDF_MRST_PDF_MRST99_H
+#define PDF_MRST_PDF_MRST99_H
 
 #include <iostream>
-#include "PDF_Base.H"
-#include "mrst99.h"
+#include "PDF/Main/PDF_Base.H"
+#include "PDF/MRST/mrst99.h"
 
 namespace PDF {
 
@@ -22,12 +22,9 @@ namespace PDF {
     PDF_MRST99(const ATOOLS::Flavour,const int,const std::string); 
 
     PDF_Base * GetCopy();
-    void       Output();
 
     void   Calculate(double,double);
     double GetXPDF(const ATOOLS::Flavour); 
-
-    void AssignKeys(ATOOLS::Integration_Info *const info);
 
   };
 
