@@ -93,12 +93,24 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_k0sq=k0sq;
   m_as_is_fac=isfac;
   m_as_fs_fac=fsfac;
-  for (std::list<Splitting_Function_Base*>::const_iterator
-	 sit(m_splittings.begin());sit!=m_splittings.end();++sit)
-    (*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac);
-  for (size_t i(0);i<m_addsplittings.size();++i)
-    m_addsplittings[i]->Coupling()->
-      SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac);
+  for (std::list<Splitting_Function_Base*>::iterator
+	 sit(m_splittings.begin());sit!=m_splittings.end();)
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac)) {
+      delete *sit;
+      sit=m_splittings.erase(sit);
+    }
+    else {
+      ++sit;
+    }
+  for (std::vector<Splitting_Function_Base*>::iterator
+	 sit(m_addsplittings.begin());sit!=m_addsplittings.end();)
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac)) {
+      delete *sit;
+      sit=m_addsplittings.erase(sit);
+    }
+    else {
+      ++sit;
+    }
 }
 
 void Sudakov::Add(Splitting_Function_Base * split) 

@@ -22,7 +22,7 @@ namespace CSSHOWER {
       m_q=ATOOLS::dabs(m_cfl.IntCharge()?m_cfl.Charge():key.p_v->in[1].Charge());
     }
 
-    void SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int mode);
     bool AllowSpec(const ATOOLS::Flavour &fl);
@@ -34,13 +34,14 @@ namespace CSSHOWER {
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-void CF_QED::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_QED::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			 const double &isfac,const double &fsfac)
 {
   m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplmax.push_back((*p_cpl)(m_cplfac*rpa.gen.CplScale())*m_q);
   m_cplmax.push_back(0.0);
+  return true;
 }
 
 double CF_QED::Coupling(const double &scale,const int mode)

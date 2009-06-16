@@ -108,7 +108,7 @@ namespace CSSHOWER {
 
     virtual ~SF_Coupling();
 
-    virtual void SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    virtual bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			     const double &isfac,const double &fsfac) = 0;
     virtual double Coupling(const double &scale,const int mode) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
