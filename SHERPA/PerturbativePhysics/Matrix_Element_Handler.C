@@ -104,16 +104,14 @@ bool Matrix_Element_Handler::GenerateUnweightedEvent()
 
 bool Matrix_Element_Handler::GenerateWeightedEvent() 
 {
-  double addn(0.0);
+  double addn(0.0), sum(0.0);
+  for (size_t i(0);i<m_procs.size();++i)
+    sum+=m_procs[i]->Integrator()->SelectionWeight();
   while (true) {
-    double sum(0.0);
-    for (size_t i(0);i<m_procs.size();++i)
-      sum+=m_procs[i]->Integrator()->SelectionWeight();
-    double disc(sum*ran.Get());
-    sum=0.0;
+    double disc(sum*ran.Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
-      if ((sum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
+      if ((csum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
 	proc=m_procs[i];
 	break;
       }
@@ -121,12 +119,12 @@ bool Matrix_Element_Handler::GenerateWeightedEvent()
     if (proc==NULL) THROW(fatal_error,"No process selected");
     PHASIC::Weight_Info *info=proc->WeightedEvent();
     p_proc=proc->Selected();
-    double sw(p_proc->Integrator()->SelectionWeight());
-    addn+=1.0/sw;
+    double sw(p_proc->Integrator()->SelectionWeight()/sum);
+    addn+=1.0;
     if (info) {
       m_evtinfo=*info;
       delete info;
-      double wf(m_np/sw*rpa.Picobarn());
+      double wf(rpa.Picobarn()/sw);
       m_evtinfo.m_weight*=wf;
       if (p_proc->GetSubevtList()) 
 	(*p_proc->GetSubevtList())*=wf;
@@ -137,21 +135,12 @@ bool Matrix_Element_Handler::GenerateWeightedEvent()
   return false;
 }
 
-void Matrix_Element_Handler::CountProcesses(PHASIC::Process_Base *const proc)
-{
-  if (!proc->IsGroup()) ++m_np;
-  else for (size_t i(0);i<proc->Size();++i) CountProcesses((*proc)[i]);
-}
-
 Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
 {
   DEBUG_FUNC(pi);
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
-    if (proc) {
-      m_procs.push_back(proc);
-      CountProcesses(proc);
-    }
+    if (proc) m_procs.push_back(proc);
     return proc;
   }
   else {
@@ -161,7 +150,6 @@ Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
       proc->Integrator()->InitEEG();
       proc->SetShower(p_shower->GetShower());
       m_procs.push_back(proc);
-      CountProcesses(proc);
       return proc;
     }
     else if (m_nlomode==1) {
@@ -186,7 +174,6 @@ Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
         if (!(pi.m_fi.NLOType()&nlo_type::real)) {
           proc->Integrator()->InitEEG();
         }
-        CountProcesses(proc);
         return proc;
       }
     }
@@ -294,7 +281,6 @@ void Matrix_Element_Handler::BuildProcesses()
     kfactor="NO";
   }
   // init processes
-  m_np=0;
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   std::vector<std::vector<std::string> > procdata;

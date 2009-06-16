@@ -55,9 +55,7 @@ namespace SHERPA {
     Shower_Handler *p_shower;
 
     double m_totalxs;
-    size_t m_nlomode, m_np;
-
-    void CountProcesses(PHASIC::Process_Base *const proc);
+    size_t m_nlomode;
 
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);

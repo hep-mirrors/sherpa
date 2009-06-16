@@ -208,10 +208,9 @@ bool Event_Handler::GenerateEvent(int mode)
       double trials((*sp)["Trials"]->Get<double>());
       sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
       double cxs((*sp)["Weight"]->Get<double>());
-      double enh((*sp)["Enhance"]->Get<double>());
       m_n+=trials+m_addn;
       m_sum+=cxs;
-      m_sumsqr+=enh*sqr(cxs);
+      m_sumsqr+=sqr(cxs);
       m_addn=0.0;
     }
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
