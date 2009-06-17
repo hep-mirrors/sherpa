@@ -9,7 +9,7 @@ namespace AHADIC {
     int    m_kinmode, m_colmode;
     double m_t0,m_w12,m_w34,m_w14,m_w23;
 
-    bool   TestClusters(SP(Cluster) cl1,SP(Cluster) cl2,int gen=1);
+    bool   TestClusters(Cluster * cl1,Cluster * cl2,int gen=1);
     double KinematicWeight(const ATOOLS::Vec4D & mom1,const ATOOLS::Vec4D & mom2,
 			   const ATOOLS::Vec4D & mom3,const ATOOLS::Vec4D & mom4);
     double ColourWeight(int gen=1);

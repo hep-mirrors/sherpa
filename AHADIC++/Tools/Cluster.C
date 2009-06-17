@@ -1,18 +1,10 @@
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { 
-  template class SP(Proto_Particle);
-  template class SP(Proto_Particle_List);
-  template class SP(Cluster);
-}
 
 namespace AHADIC {
   long int Cluster::s_cluster_count=0;
@@ -22,31 +14,58 @@ namespace AHADIC {
   long int control::s_AHAprotoparticles=0;
   long int control::s_AHAblobs=0;
 
+  std::list<Proto_Particle *>      Proto_Particle::s_actives;
+  std::list<Proto_Particle_List *> Proto_Particle_List::s_actives;
+  std::list<ListOfPPLs *>          ListOfPPLs::s_actives;
+  std::list<Cluster *>             Cluster::s_actives;
+  std::list<Cluster_List *>        Cluster_List::s_actives;
 }
 
 Proto_Particle::Proto_Particle(const Proto_Particle & pp) :
-  m_flav(pp.m_flav), m_mom(pp.m_mom), m_info(pp.m_info), m_mass(pp.m_mass)
+  m_flav(pp.m_flav), m_mom(pp.m_mom), m_info(pp.m_info), 
+  m_mass(pp.m_mass), m_kt2max(pp.m_kt2max),
+  p_partner(pp.p_partner)
 { 
   control::s_AHAprotoparticles++; 
+  s_actives.push_back(this);
 }
 
 Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
   m_flav(flav), m_mom(mom), m_info(info), 
-  m_mass(hadpars.GetConstituents()->Mass(flav)) 
+  m_mass(hadpars.GetConstituents()->Mass(flav)), m_kt2max(0.), 
+  p_partner(NULL)
 { 
   control::s_AHAprotoparticles++; 
+  s_actives.push_back(this);
 }
 
 
 Proto_Particle::~Proto_Particle()
 { 
+#ifdef memchecker
+  std::cout<<"### delete Proto_Particle: ("<<m_flav<<"/"<<this<<")."<<std::endl;
+#endif
   control::s_AHAprotoparticles--; 
+  s_actives.remove(this);
 }
 
+bool Proto_Particle::CheckConsistency(std::ostream & s,std::string method) {
+  if (dabs(m_mass-hadpars.GetConstituents()->Mass(m_flav))>1.e-6 ||
+      dabs(m_mass-sqrt(m_mom.Abs2()))>1.e-6 ||
+      dabs(sqrt(m_mom.Abs2())-hadpars.GetConstituents()->Mass(m_flav))>1.e-6) {
+    s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
+	 <<"   Masses and momenta not consistent for "<<m_flav<<"("<<m_mass<<"),"
+     <<" sqrt(mom^2) = "<<sqrt(m_mom.Abs2())
+     <<" & constituent mass = "<<hadpars.GetConstituents()->Mass(m_flav)<<"."<<std::endl;
+    return false;
+  }
+  return true;
+}
 
 std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle& proto) {
   s<<"   "<<proto.m_info<<" : "<<proto.m_flav<<" "<<proto.m_mom
-   <<" "<<sqrt(ATOOLS::Max(0.,proto.m_mom.Abs2()))<<std::endl;
+   <<" "<<sqrt(ATOOLS::Max(0.,proto.m_mom.Abs2()))
+   <<", kt2max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<std::endl;
   return s;
 }
 
@@ -60,21 +79,23 @@ Cluster::Cluster(Vec4D mom,Flavour flav,bool active) :
   m_active(active), p_trip(NULL), p_anti(NULL), 
   m_momentum(mom), m_flav(flav),
   m_hasboost(false), m_hasrotate(false), 
-  p_left(NULL), p_right(NULL), p_prev(NULL),
+  p_left(NULL), p_right(NULL), p_prev(NULL), p_nbtrip(NULL), p_nbanti(NULL),
   m_number(++s_cluster_number)
 {
   s_cluster_count++;
+  s_actives.push_back(this);
 }
 
-Cluster::Cluster(SP(Proto_Particle) trip,SP(Proto_Particle) anti) :
+Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   m_active(true), p_trip(trip), p_anti(anti), 
   m_momentum(p_trip->m_mom+p_anti->m_mom), m_flav(Flavour(kf_cluster)),
   m_hasboost(false), m_hasrotate(false), 
-  p_left(NULL), p_right(NULL), p_prev(NULL),
+  p_left(NULL), p_right(NULL), p_prev(NULL), p_nbtrip(NULL), p_nbanti(NULL),
   m_number(++s_cluster_number)
 {
   ////PRINT_VAR(m_momentum);
   s_cluster_count++;
+  s_actives.push_back(this);
   if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
       ((p_anti->m_flav.IsQuark() && p_anti->m_flav.IsAnti()) || 
@@ -88,13 +109,17 @@ Cluster::Cluster(SP(Proto_Particle) trip,SP(Proto_Particle) anti) :
 
 Cluster::~Cluster() 
 {
+#ifdef memchecker
+  std::cout<<"*** delete Cluster: "<<m_number<<" with "
+	   <<" pps: ("<<p_trip<<"/"<<p_anti<<")."<<std::endl;
+#endif
   s_cluster_count--;
+  s_actives.remove(this);
 }
 
 void Cluster::Update()
 {
   m_momentum = p_trip->m_mom + p_anti->m_mom;
-  //PRINT_VAR(m_momentum);
   if (p_trip==NULL && p_anti==NULL) return;
   if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
@@ -107,8 +132,31 @@ void Cluster::Update()
   exit(0);
 }
 
+bool Cluster::CheckConsistency(std::ostream & s,std::string method) {
+  bool passed(dabs(Mass2()-Momentum().Abs2())<1.e-8);
+  if (p_trip)  passed = passed && p_trip->CheckConsistency(s,method);
+  if (p_anti)  passed = passed && p_anti->CheckConsistency(s,method);
+  if (!passed) {
+    s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
+     <<"   Masses and momenta not consistent for cluster "<<m_number<<": "
+     <<Mass2()<<" vs. "<<Momentum()<<" ("<<Momentum().Abs2()<<")"<<std::endl;
+  }
+  if (p_left)  passed = passed && p_left->CheckConsistency(s,method);
+  if (p_right) passed = passed && p_right->CheckConsistency(s,method);
+  if (p_left && p_right) {
+    Vec4D check(Momentum()-p_left->Momentum()-p_right->Momentum());
+    if (!IsZero(check.Abs2()) || !IsZero(check[0]/1.e6)) {
+      s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
+       <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
+       <<"   "<<Momentum()<<"  ---> "<<std::endl
+       <<"   "<<p_left->Momentum()<<" + "<<p_right->Momentum()<<"."<<std::endl;
+    }
+  }
+  return passed;   
+}
+
 Particle * Cluster::GetSelf() const { 
-  Particle * part(new Particle(-1,m_flav,m_momentum));
+  Particle * part(new Particle(-1,size()==1?m_decayproducts[0]:m_flav,m_momentum));
   part->SetNumber();
   part->SetInfo('P');
   part->SetStatus(part_status::active);
@@ -149,7 +197,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
-  std::vector<Vec4D> save(3+int(p_left!=NULL)+int(p_right!=NULL));
+  Vec4D_Vector save(3+int(p_left!=NULL)+int(p_right!=NULL));
   save[0] = m_momentum;
   if (p_trip!=NULL)  save[1] = p_trip->m_mom;
   if (p_anti!=NULL)  save[2] = p_anti->m_mom;
@@ -172,11 +220,10 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 
   Vec4D testmom = m_momentum-p_trip->m_mom-p_anti->m_mom;
   if (dabs(testmom.Abs2()/save[0][0])>1.e-6 || testmom[0]/save[0][0]>1.e-6) {
-    msg_Error()<<"Maybe error in "<<METHOD<<"("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
-	       <<" Was : "<<save[0]<<" ("<<save[0].Abs2()<<")"<<" -> "
-	       <<save[1]<<" ("<<save[1].Abs2()<<") + "
-	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl
-	       <<" Is  : "<<m_momentum<<" ("<<m_momentum.Abs2()<<") -> ";
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   From "<<save[0]<<"("<<sqrt(Max(0.,save[0].Abs2()))<<") to "<<m_momentum<<" with "<<std::endl
+	       <<"   "<<save[1]<<" ("<<save[1].Abs2()<<") + "
+	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl;
     if (p_trip!=NULL) msg_Error()<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
            else msg_Error()<<"No triplet: "<<p_trip<<" ";
     if (p_anti!=NULL) msg_Error()<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
@@ -185,6 +232,7 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
     rest.Boost(m_momentum); back.BoostBack(m_momentum);
     //PRINT_VAR(m_momentum);
     msg_Error()<<" from "<<newmom<<" = "<<m_momentum<<"."<<std::endl;
+    exit(1);
   }
   if (p_left!=NULL) {
     msg_Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
@@ -289,8 +337,15 @@ void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
 }
 
 void Cluster::Print() {
-  msg_Out()<<"   Cluster ["<<m_active<<", "<<m_number<<", "<<size()<<"] "
-	   <<"("<<m_flav<<" with "<<m_momentum<<") ---> ";
+  msg_Out()<<"   Cluster [active = "<<m_active<<", number = "<<m_number<<", size = "<<size()<<"], "
+	   <<"constituents = "<<p_trip->m_flav<<" & "<<p_anti->m_flav<<std::endl
+	   <<"      flavour = "<<m_flav<<" with "<<m_momentum<<"), "<<m_momentum.Abs2()<<" ---> ";
+  if (m_decayproducts.size()>0) {
+    for (size_t i=0;i<m_decayproducts.size();i++) 
+      msg_Out()<<m_decayproducts[i]<<" ";
+    msg_Out()<<"."<<std::endl;
+    return;
+  }
   if (p_left!=NULL)  msg_Out()<<" (l) "<<p_left->m_number<<" ";
   if (p_right!=NULL) msg_Out()<<" (r) "<<p_right->m_number;
   msg_Out()<<std::endl;
@@ -304,10 +359,14 @@ void Cluster::Delete() {
 
 }
 
+
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
      <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "<<cluster.size()<<"] "
-     <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ): "<<std::endl;
+     <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ) ";
+  if (cluster.p_nbtrip!=NULL) str<<" [> "<<cluster.p_nbtrip->Number()<<"] ";
+  if (cluster.p_nbanti!=NULL) str<<" [< "<<cluster.p_nbanti->Number()<<"] ";
+  str<<":"<<std::endl;
   if (cluster.p_trip!=NULL) str<<"  "<<(*cluster.p_trip);
   if (cluster.p_anti!=NULL) str<<"  "<<(*cluster.p_anti);
   if (cluster.p_left!=NULL)  str<<"  ---- Left  ----> "<<std::endl<<(*cluster.p_left);

@@ -5,7 +5,6 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include <list>
 #include <iostream>
 
@@ -15,26 +14,124 @@
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
 
-  struct Proto_Particle {
+  class Proto_Particle;
+  class Proto_Particle {
+    static std::list<Proto_Particle * > s_actives;
   public:
-    ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom;
-    char            m_info;
-    double          m_mass;
+    Proto_Particle * p_partner;
+    ATOOLS::Flavour  m_flav;
+    ATOOLS::Vec4D    m_mom;
+    char             m_info;
+    double           m_mass, m_kt2max;
+  public:
     Proto_Particle(const Proto_Particle &);  
     Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info);  
     ~Proto_Particle();
-  };
 
+    bool CheckConsistency(std::ostream & s,std::string method);
+
+    static void PrintActives(std::ostream & s) {
+      s<<"   ----- Active Proto_Particles -----"<<std::endl;
+      for (std::list<Proto_Particle * >::iterator sit=s_actives.begin();
+	   sit!=s_actives.end(); sit++) {
+	s<<"   ("<<(*sit)->m_flav<<"/"<<(*sit)<<")"<<std::endl;
+      }
+      s<<"   ----- Total: "<<s_actives.size()<<" -----"<<std::endl;
+    };
+    
+    static long int RemainingActives() {
+      return s_actives.size();
+    };
+    
+    static void DeleteActives() {
+      if (s_actives.empty()) return;
+      while (!s_actives.empty()) delete s_actives.front();
+      s_actives.clear();
+    };
+  };
   std::ostream & operator<<(std::ostream & s, const Proto_Particle &);
 
-  typedef std::list<SP(Proto_Particle)>       Proto_Particle_List;   
+
+
+  class Proto_Particle_List;
+  class Proto_Particle_List : public std::list<Proto_Particle * > {
+  private:
+    static std::list<Proto_Particle_List * > s_actives;
+  public:
+    Proto_Particle_List() {
+      s_actives.push_back(this);
+    }
+
+    Proto_Particle_List(const Proto_Particle_List & pl) {
+      s_actives.push_back(this);
+      for (std::list<Proto_Particle * >::const_iterator piter=pl.begin();
+	   piter!=pl.end();piter++)
+	push_back((*piter));
+    }
+
+    ~Proto_Particle_List() {
+      s_actives.remove(this);
+    }
+
+    static void PrintActives(std::ostream & s) {
+      s<<"   ----- Active Proto_Particle_Lists -----"<<std::endl;
+      for (std::list<Proto_Particle_List * >::iterator sit=s_actives.begin();
+	   sit!=s_actives.end(); sit++) {
+	s<<"   ("<<(*sit)->size()<<"/"<<(*sit)<<")"<<std::endl;
+      }
+      s<<"   ----- Total: "<<s_actives.size()<<" -----"<<std::endl;
+    };
+    
+    static long int RemainingActives() {
+      return s_actives.size();
+    };
+    
+    static void DeleteActives() {
+      if (s_actives.empty()) return;
+      while (!s_actives.empty()) delete s_actives.front();
+      s_actives.clear();
+    };
+  };
+
   typedef Proto_Particle_List::iterator       PPL_Iterator; 
   typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
-  typedef std::list<SP(Proto_Particle_List)>  ListOfPPLs;
-  typedef ListOfPPLs::iterator                LPPL_Iterator;
-
   std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
+
+
+  class ListOfPPLs;
+  class ListOfPPLs : public std::list<Proto_Particle_List * > {
+  private:
+    static std::list<ListOfPPLs * > s_actives;
+  public:
+    ListOfPPLs() {
+      s_actives.push_back(this);
+    }
+
+    ~ListOfPPLs() {
+      s_actives.remove(this);
+    }
+
+    static void PrintActives(std::ostream & s) {
+      s<<"   ----- Active ListOfPPLss -----"<<std::endl;
+      for (std::list<ListOfPPLs * >::iterator sit=s_actives.begin();
+	   sit!=s_actives.end(); sit++) {
+	s<<"   ("<<(*sit)->size()<<"/"<<(*sit)<<")"<<std::endl;
+      }
+      s<<"   ----- Total: "<<s_actives.size()<<" -----"<<std::endl;
+    };
+    
+    static long int RemainingActives() {
+      return s_actives.size();
+    };
+    
+    static void DeleteActives() {
+      if (s_actives.empty()) return;
+      while (!s_actives.empty()) delete s_actives.front();
+      s_actives.clear();
+    };
+  };
+
+  typedef ListOfPPLs::iterator                LPPL_Iterator;
 
   struct control {
   public:
@@ -43,31 +140,39 @@ namespace AHADIC {
     static long int s_AHAblobs;
   };
 
+  class Cluster;
+
   class Cluster {
   private:
     bool                m_active;
-    SP(Proto_Particle)  p_trip, p_anti;
+    Proto_Particle    * p_trip, * p_anti;
     ATOOLS::Vec4D       m_momentum;
     ATOOLS::Flavour     m_flav;
+    double              m_kt, m_z;
 
     ATOOLS::Poincare    m_boost,m_rotate;
     bool                m_hasboost,m_hasrotate;
 
-    SP(Cluster)         p_left, p_right;
+    Cluster           * p_left, * p_right;
     Cluster           * p_prev;
+    Cluster           * p_nbtrip, * p_nbanti;
     long int            m_number;
 
     std::vector<ATOOLS::Flavour> m_decayproducts;
 
     static long int     s_cluster_count, s_cluster_number;
+    static std::list<Cluster *> s_actives;
+
+    void               EnsureMomentum();
   public:
     Cluster(ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.),
 	    ATOOLS::Flavour=ATOOLS::Flavour(kf_cluster),
 	    bool active=true);
-    Cluster(SP(Proto_Particle),SP(Proto_Particle));
+    Cluster(Proto_Particle *,Proto_Particle *);
     ~Cluster();
 
     void               Update();
+    bool               CheckConsistency(std::ostream & s,std::string method);
     ATOOLS::Blob     * ConstructDecayBlob();
 
     ATOOLS::Particle * GetSelf() const;
@@ -86,24 +191,32 @@ namespace AHADIC {
 
     bool               Active() const;
     ATOOLS::Flavour    GetFlav() const;
-    SP(Cluster)        GetLeft()  const;
-    SP(Cluster)        GetRight() const;
-    SP(Cluster)        GetPrev()  const;
+    Cluster *          GetLeft()  const;
+    Cluster *          GetRight() const;
+    Cluster *          GetPrev()  const;
+    Cluster *          GetNBTrip()  const;
+    Cluster *          GetNBAnti() const;
     void               SetActive(bool);
     void               SetFlav(ATOOLS::Flavour);
-    void               SetLeft(SP(Cluster));
-    void               SetRight(SP(Cluster));
-    void               SetPrev(SP(Cluster));
+    void               SetLeft(Cluster *);
+    void               SetRight(Cluster *);
+    void               SetPrev(Cluster *);
+    void               SetNBTrip(Cluster *);
+    void               SetNBAnti(Cluster *);
 
 
-    SP(Proto_Particle) GetTrip() const;
-    SP(Proto_Particle) GetAnti() const;
-    void               SetTrip(SP(Proto_Particle));
-    void               SetAnti(SP(Proto_Particle));
+    Proto_Particle *   GetTrip() const;
+    Proto_Particle *   GetAnti() const;
+    void               SetTrip(Proto_Particle *);
+    void               SetAnti(Proto_Particle *);
     ATOOLS::Vec4D      Momentum() const;
     void               SetMomentum(const ATOOLS::Vec4D);
     double             Mass2() const;
     double             Mass() const;
+    double             KT() const;
+    double             Z() const;
+    void               SetKT(const double);
+    void               SetZ(const double);
 
     void               push_back(ATOOLS::Flavour);
     void               clear();
@@ -119,38 +232,96 @@ namespace AHADIC {
     inline long int    Number()             { return m_number; }
     static long int    RemainingClusters()  { return s_cluster_count; }
     static void        ResetClusterNumber() { s_cluster_number = 0; }
+
+    static void PrintActives(std::ostream & s) {
+      s<<"   ----- Active Clusters -----"<<std::endl;
+      for (std::list<Cluster * >::iterator sit=s_actives.begin();
+	   sit!=s_actives.end(); sit++) {
+	s<<"   ("<<(*sit)->m_number<<"/"<<(*sit)<<")"<<std::endl;
+      }
+      s<<"   ----- Total: "<<s_actives.size()<<" -----"<<std::endl;
+    };
+    
+    static long int RemainingActives() {
+      return s_actives.size();
+    };
+    
+    static void DeleteActives() {
+      if (s_actives.empty()) return;
+      while (!s_actives.empty()) delete s_actives.front();
+      s_actives.clear();
+    };
   };
 
 
   
-  inline bool              Cluster::Active() const            { return m_active; }
-  inline ATOOLS::Flavour   Cluster::GetFlav() const           { return m_flav;   }
-  inline SP(Cluster)       Cluster::GetLeft() const           { return p_left;   }
-  inline SP(Cluster)       Cluster::GetRight() const          { return p_right;  }
-  inline SP(Cluster)       Cluster::GetPrev() const           { return p_prev;   }
-  inline void              Cluster::SetActive(bool act)       { m_active = act;  }
-  inline void              Cluster::SetFlav(ATOOLS::Flavour fl) { m_flav = fl; }
-  inline void              Cluster::SetLeft(SP(Cluster) left)   { p_left  = left;  }
-  inline void              Cluster::SetRight(SP(Cluster) right) { p_right = right; }
-  inline void              Cluster::SetPrev(SP(Cluster) prev)   { p_prev  = &*prev;  }
+  inline bool            Cluster::Active() const              { return m_active;  }
+  inline ATOOLS::Flavour Cluster::GetFlav() const             { return m_flav;    }
+  inline Cluster *       Cluster::GetLeft() const             { return p_left;    }
+  inline Cluster *       Cluster::GetRight() const            { return p_right;   }
+  inline Cluster *       Cluster::GetPrev() const             { return p_prev;    }
+  inline Cluster *       Cluster::GetNBTrip() const           { return p_nbtrip;  }
+  inline Cluster *       Cluster::GetNBAnti() const           { return p_nbanti;  }
+  inline void            Cluster::SetActive(bool act)         { m_active = act;   }
+  inline void            Cluster::SetFlav(ATOOLS::Flavour fl) { m_flav   = fl;    }
+  inline void            Cluster::SetLeft(Cluster * left)     { p_left   = left;  }
+  inline void            Cluster::SetRight(Cluster * right)   { p_right  = right; }
+  inline void            Cluster::SetPrev(Cluster * prev)     { p_prev   = &*prev;}
+  inline void            Cluster::SetNBTrip(Cluster * clu)    { p_nbtrip = clu;   }
+  inline void            Cluster::SetNBAnti(Cluster * clu)    { p_nbanti = clu;   }
 
 
-  inline SP(Proto_Particle) Cluster::GetTrip() const           { return p_trip; }
-  inline SP(Proto_Particle) Cluster::GetAnti() const           { return p_anti; }
-  inline void              Cluster::SetTrip(SP(Proto_Particle) trip) { p_trip = trip; }
-  inline void              Cluster::SetAnti(SP(Proto_Particle) anti) { p_anti = anti; }
-  inline ATOOLS::Vec4D     Cluster::Momentum() const                   { return m_momentum; }
-  inline void              Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
-  inline double            Cluster::Mass2() const             { return m_momentum.Abs2(); }
-  inline double            Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
-  inline void              Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
-  inline void              Cluster::clear()                         { m_decayproducts.clear(); }
-  inline const size_t      Cluster::size() const                    { return m_decayproducts.size(); }
-  inline ATOOLS::Flavour   Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
+  inline Proto_Particle * Cluster::GetTrip() const                { return p_trip; }
+  inline Proto_Particle * Cluster::GetAnti() const                { return p_anti; }
+  inline void             Cluster::SetTrip(Proto_Particle * trip) { p_trip = trip; }
+  inline void             Cluster::SetAnti(Proto_Particle * anti) { p_anti = anti; }
+  inline ATOOLS::Vec4D    Cluster::Momentum() const                   { return m_momentum; }
+  inline void             Cluster::SetMomentum(const ATOOLS::Vec4D p) { m_momentum = p; }
+  inline double           Cluster::Mass2() const             { return m_momentum.Abs2(); }
+  inline double           Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
+  inline void             Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
+  inline void             Cluster::clear()                         { m_decayproducts.clear(); }
+  inline const size_t     Cluster::size() const                    { return m_decayproducts.size(); }
+  inline ATOOLS::Flavour  Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
+  inline double           Cluster::KT() const                      { return m_kt; }
+  inline double           Cluster::Z() const                       { return m_z; }
+  inline void             Cluster::SetKT(const double kt)          { m_kt = kt; }
+  inline void             Cluster::SetZ(const double z)            { m_z = z; }
 
 
+  class Cluster_List;
+  class Cluster_List : public std::list<Cluster * > {
+  private:
+    static std::list<Cluster_List * > s_actives;
+  public:
+    Cluster_List() {
+      s_actives.push_back(this);
+    }
 
-  typedef std::list<SP(Cluster)>       Cluster_List;
+    ~Cluster_List() {
+      s_actives.remove(this);
+    }
+
+    static void PrintActives(std::ostream & s) {
+      s<<"   ----- Active Cluster_Lists -----"<<std::endl;
+      for (std::list<Cluster_List * >::iterator sit=s_actives.begin();
+	   sit!=s_actives.end(); sit++) {
+	s<<"   ("<<(*sit)->size()<<"/"<<(*sit)<<")"<<std::endl;
+      }
+      s<<"   ----- Total: "<<s_actives.size()<<" -----"<<std::endl;
+    };
+    
+    static long int RemainingActives() {
+      return s_actives.size();
+    };
+    
+    static void DeleteActives() {
+      if (s_actives.empty()) return;
+      while (!s_actives.empty()) delete s_actives.front();
+      s_actives.clear();
+    };
+  };
+
   typedef Cluster_List::iterator       Cluster_Iterator;
   typedef Cluster_List::const_iterator Cluster_Const_Iterator;
 

@@ -31,11 +31,16 @@ namespace AHADIC {
     void CleanUp(ATOOLS::Blob * blob=NULL);
   public:
     Ahadic(std::string path=std::string("./"),
-	   std::string file=std::string("Cluster.dat"),bool=false);
+	   std::string file=std::string("Cluster.dat"),bool ana=false);
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
   };
+  /*!
+    \namespace AHADIC
+    \brief SHERPA's version of the cluster fragmentation.
+  */
+  
   /*!
     \file Ahadic.H
     \brief Contains the class AHADIC::Ahadic.
@@ -61,7 +66,7 @@ namespace AHADIC {
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
     \fn Ahadic::Ahadic(std::string path=std::string("./"),
-	               std::string file=std::string("Cluster.dat"),bool=false)
+	               std::string file=std::string("Cluster.dat"),bool ana=false)
     \brief Initialises the main objects responsible for the fragmentation.
 
     In particular, these are the

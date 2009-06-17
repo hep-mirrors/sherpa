@@ -12,7 +12,7 @@ using namespace std;
 
 
 Ahadic::Ahadic(string path,string file,bool ana)  :
-  m_fullinfo(false), m_maxtrials(3), m_clulist(), m_prilist()
+  m_fullinfo(false), m_maxtrials(3), m_clulist()
 {
   
   Data_Reader dr(" ",";","!","=");
@@ -23,13 +23,14 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   hadpars.Init(path,file);
   ana=false;
 
-  p_cformhandler = new Cluster_Formation_Handler(&m_clulist,&m_prilist,ana);
+  p_cformhandler = new Cluster_Formation_Handler(&m_clulist,ana);
   p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,ana);
   msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
 Ahadic::~Ahadic() 
 {
+  CleanUp();
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
 }
@@ -126,11 +127,13 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 
 Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
-  assert(m_clulist.empty() && m_prilist.empty());
+  assert(m_clulist.empty());
   blob->SetType(btp::Cluster_Formation);
   blob->SetTypeSpec("AHADIC-1.0");
 
-  msg_Debugging()<<"In "<<METHOD<<" with "<<std::endl<<(*blob)<<std::endl;
+
+  //msg_Out()<<endl<<"######################## "<<METHOD<<" for "<<blob->NInP()<<" partons."<<std::endl;
+
   switch (p_cformhandler->FormClusters(blob)) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
@@ -143,11 +146,9 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
     p_cformhandler->Reset();
     return Return_Value::Retry_Method;
   case 1 :
-    if (retry>0) msg_Out()<<"   Passed cluster formation now ("<<retry<<"th trial)."<<std::endl;    
+    if (retry>=0) msg_Tracking()<<"   Passed cluster formation now ("<<retry<<"th trial)."<<std::endl;    
     break;
   }
-  
-  msg_Debugging()<<METHOD<<": finally the cluster list :"<<std::endl<<(m_clulist)<<std::endl;
   
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 
@@ -159,28 +160,41 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 		  <<"   Will retry method."<<std::endl;
     return Return_Value::Retry_Method;
   case  1 :
-    if (retry) msg_Out()<<"   Passed cluster decays now ("<<retry<<"th trial)."<<std::endl;
+    if (retry>=0) msg_Tracking()<<"   Passed cluster decays now ("<<retry<<"th trial)."<<std::endl;
     break;
   }
 
 
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<"Momentum conservation at the end : "
-#ifdef AHAmomcheck
-	     <<blob->CheckMomentumConservation()
-#endif
-	     <<endl<<(*blob)<<endl
-	     <<"##########################  OUT : No Error ###############################"<<endl
-	     <<"##########################################################################"<<endl;
+  
+  if (!m_clulist.empty()) {
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   "<<m_clulist.size()<<" clusters undeleted:"<<std::endl
+	       <<m_clulist<<std::endl;
   }
-
   assert(m_clulist.empty());
-  return Return_Value::Success;
 
+#ifdef AHAmomcheck
+  Vec4D blobvecout(0.,0.,0.,0.), blobvecin(0.,0.,0.,0.);
+  for (int i=0;i<blob->NOutP();i++) blobvecout += blob->OutParticle(i)->Momentum();
+  for (int i=0;i<blob->NInP();i++)  blobvecin  += blob->InParticle(i)->Momentum();
+  msg_Out()<<"#### Momentum conservation at the end : "
+	   <<blob->CheckMomentumConservation()<<endl
+	   <<"#### from "<<blobvecin<<" --> "<<blobvecout<<"."<<endl;
+  msg_Out()<<(*blob)<<endl;
+  if (blob->CheckMomentumConservation().Abs2()<1.e-6)
+    msg_Out()<<"##########################  OUT : Okay ################################"<<endl<<endl;
+  else
+    msg_Out()<<"##########################  OUT : Error ###############################"<<endl<<endl;
+#endif
+  return Return_Value::Success;
 }
 
 
 void Ahadic::Reset() {
+  if (Cluster::RemainingClusters()) {
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   "<<Cluster::RemainingClusters()<<" clusters undeleted."<<std::endl;
+  }
   assert(!Cluster::RemainingClusters());
   Cluster::ResetClusterNumber();
   control::s_AHAparticles=0;
@@ -192,14 +206,13 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
       Cluster::RemainingClusters()!=0 ||
       control::s_AHAparticles!=blob->NOutP()/* ||
 					       control::s_AHAprotoparticles!=0*/) {
-    msg_Out()<<"ERROR in "<<METHOD<<" : "<<endl
-	     <<"   Momentum/particle-blob number violation for "<<(Cluster::RemainingClusters())
-	     <<" remaining clusters (norm2 = "<<norm2<<")."<<endl
-	     <<"   Protoparticles = "<<control::s_AHAprotoparticles
-	     <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-	     <<"   : "<<blob->CheckMomentumConservation()<<endl
-	     <<(*blob)<<endl;
-    abort();
+    msg_Error()<<"ERROR in "<<METHOD<<" : "<<endl
+	       <<"   Momentum/particle-blob number violation for "<<(Cluster::RemainingClusters())
+	       <<" remaining clusters (norm2 = "<<norm2<<")."<<endl
+	       <<"   Protoparticles = "<<control::s_AHAprotoparticles
+	       <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+	       <<"   : "<<blob->CheckMomentumConservation()<<endl
+	       <<(*blob)<<endl;
     return false;
   }
   msg_Debugging()<<"Passed "<<METHOD<<" with "
@@ -211,11 +224,35 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 }
 
 void Ahadic::CleanUp(Blob * blob) {
-  m_clulist.clear();
-  while(!m_prilist.empty()) {
-    if(msg_LevelIsDebugging()) m_prilist.front()->Print();
-    m_prilist.front()->Delete();
-    m_prilist.pop_front();
+  if (Cluster::RemainingActives()>0) {
+    msg_Tracking()<<METHOD<<": "<<Cluster::RemainingActives()
+		  <<" remaining Clusters found:"<<std::endl;
+    //Cluster::PrintActives(msg_Tracking());
+    Cluster::DeleteActives();
   }
+  if (!m_clulist.empty()) m_clulist.clear();
+  
+  if (Dipole::RemainingActives()>0) {
+    msg_Tracking()<<METHOD<<": "<<Dipole::RemainingActives()
+		  <<" remaining Dipoles found:"<<std::endl;
+    //Dipole::PrintActives(msg_Tracking());
+    Dipole::DeleteActives();
+  }
+
+  if (Proto_Particle::RemainingActives()>0) {
+    msg_Tracking()<<METHOD<<": "<<Proto_Particle::RemainingActives()
+		  <<" remaining Proto_Particles found:"<<std::endl;
+    //Proto_Particle::PrintActives(msg_Tracking());
+    Proto_Particle::DeleteActives();
+  }
+
+  if (Proto_Particle_List::RemainingActives()>0) {
+    msg_Tracking()<<METHOD<<": "<<Proto_Particle_List::RemainingActives()
+		  <<" remaining Proto_Particle_Lists found:"<<std::endl;
+    //Proto_Particle_List::PrintActives(msg_Tracking());
+    Proto_Particle_List::DeleteActives();
+  }
+
+
   if(blob) blob->DeleteOutParticles(0);
 }

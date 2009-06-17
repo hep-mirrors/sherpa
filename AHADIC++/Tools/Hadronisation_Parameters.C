@@ -34,34 +34,51 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
 void Hadronisation_Parameters::Init(string dir,string file)
 {
   msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
+  bool ana(true);
   ReadParameters(dir,file);
-  for (StringDoubleMap::iterator it=m_parametermap.begin();
-       it!=m_parametermap.end(); it++) {
-    msg_Tracking()<<it->first<<" = "<<it->second<<std::endl;
-  }
 
   p_constituents      = new Constituents(false);
-  if (msg_LevelIsTracking()) p_constituents->PrintConstituents();
+
+  if (msg_LevelIsTracking()) 
+    p_constituents->PrintConstituents();
+
   p_multiplets        = new All_Hadron_Multiplets();
-  if (msg_LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
+  if (msg_LevelIsTracking()) {
+    p_multiplets->PrintWaveFunctions(); 
+    p_multiplets->PrintMultiplets();
+  }
 
   p_singletransitions = new Single_Transitions();
-  if (msg_LevelIsTracking()) p_singletransitions->PrintSingleTransitions(); 
+  if (msg_LevelIsTracking()) 
+    p_singletransitions->PrintSingleTransitions(); 
 
   p_doubletransitions = new Double_Transitions();
-  if (msg_LevelIsTracking()) p_doubletransitions->PrintDoubleTransitions(); 
+  if (msg_LevelIsTracking()) 
+    p_doubletransitions->PrintDoubleTransitions(); 
+  //abort();
 
-  if (m_parametermap[string("pt02")]<=0.) m_asform = asform::GDH_inspired;
+  switch (int(m_parametermap[string("asform")])) {
+  case 64:
+    m_asform = asform::Exponential;
+    break;
+  case 8:
+    m_asform = asform::GDH_inspired;
+    break;
+  case 2:
+    m_asform = asform::IRregularised_IR0; 
+    break;
+  case 1:
+    m_asform = asform::IRregularised; 
+    break;
+  case 0:
+  default:
+    m_asform = asform::constant; 
+    break;
+  }
   p_coupling          = new Strong_Coupling(m_asform,dabs(m_parametermap[string("pt02")]));
-  p_splitter          = new Dipole_Splitter(p_coupling,m_parametermap[string("ptmax")]);
+  p_splitter          = new Dipole_Splitter(p_coupling,ana);
 
-  p_softclusters      = new Soft_Cluster_Handler(p_coupling,p_singletransitions,p_doubletransitions,
-						 m_parametermap[string("Offset_C->H")],
-						 m_parametermap[string("Offset_C->HH")],
-						 m_parametermap[string("C->H_Transition_Factor")],
-						 m_parametermap[string("C->HH_Decay_Exponent")],
-						 m_parametermap[string("C->HH_Decay_Angle")],
-						 m_parametermap[string("Photon_Energy")],true);
+  p_softclusters      = new Soft_Cluster_Handler(ana);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
@@ -70,150 +87,130 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
-  m_parametermap[string("pt02")]               = 
-    dataread.GetValue<double>("PT^2_0",-0.36);
-  m_parametermap[string("ptmax")]              = 
-    dataread.GetValue<double>("PT_MAX",1.0);
+  // General switches for operational modes
+  m_parametermap[string("asform")]             = 
+    dataread.GetValue<int>("ALPHAS_FORM",1);
+  m_parametermap[string("Mass_treatment")]     = 
+    dataread.GetValue<int>("MASS_TREATMENT",0);
+  m_parametermap[string("Selection_C->H")]     = 
+    dataread.GetValue<int>("TRANSITION_SELECTION",1);
+  m_parametermap[string("Selection_C->HH")]    = 
+    dataread.GetValue<int>("DECAY_SELECTION",3);
+  m_parametermap[string("PT_Ordering")]        = 
+    dataread.GetValue<int>("PT_ORDERING",3);
+  m_parametermap[string("Z_Form")]        = 
+    dataread.GetValue<int>("Z_FORM",2);
+  // Parameters
   m_parametermap[string("asfix")]              = 
     dataread.GetValue<double>("AS_FIX",1.0);
-  m_parametermap[string("Offset_C->H")] =
-    dataread.GetValue<double>("TRANSITION_OFFSET",-1.0);      
-  m_parametermap[string("Offset_C->HH")] =
-    dataread.GetValue<double>("DECAY_OFFSET",0.2);      
-  m_parametermap[string("C->H_Transition_Factor")]       = 
-    dataread.GetValue<double>("C->H_TRANSITION_FACTOR",1.);
-  m_parametermap[string("C->HH_Decay_Exponent")]       = 
-    dataread.GetValue<double>("C->HH_DECAY_EXPONENT",8.);
-  m_parametermap[string("C->HH_Decay_Angle")]              = 
-    dataread.GetValue<double>("C->HH_DECAY_THETA_EXPONENT",2.);
-  m_parametermap[string("Photon_Energy")] =
-    dataread.GetValue<double>("PHOTON_ENERGY",0.005);      
+
+  m_parametermap[string("pt02")]               = 
+    dataread.GetValue<double>("PT^2_0",9.7738e-01);
+  m_parametermap[string("ptmax_factor")]       = 
+    dataread.GetValue<double>("PT_MAX_FACTOR",8.3145e-01);
+  m_parametermap[string("pt_exponent")]        = 
+    dataread.GetValue<double>("PT_EXPONENT",1.);
+  m_parametermap[string("P_qg_Exponent")] =
+    dataread.GetValue<double>("P_Q2QG_EXPONENT",1.);      
+  m_parametermap[string("Offset_C->H")]        =
+    dataread.GetValue<double>("TRANSITION_OFFSET",-1.4258e-03);      
+  m_parametermap[string("Offset_C->HH")]       =
+    dataread.GetValue<double>("DECAY_OFFSET",-1.9844e+00);      
+  m_parametermap[string("MassExponent_C->H")] =
+    dataread.GetValue<double>("TRANSITION_EXPONENT",5.0236e-01);      
+  m_parametermap[string("WidthExponent_C->H")] =
+    dataread.GetValue<double>("TRANSITION_EXPONENT2",1.3163e-02);      
+  m_parametermap[string("MassExponent_C->HH")] =
+    dataread.GetValue<double>("DECAY_EXPONENT",3.7959e+00);      
   m_parametermap[string("Strange_fraction")] =
-    dataread.GetValue<double>("STRANGE_FRACTION",0.37);      
+    dataread.GetValue<double>("STRANGE_FRACTION",1.0);      
   m_parametermap[string("Baryon_fraction")]  = 
-    dataread.GetValue<double>("BARYON_FRACTION",0.2);
+    dataread.GetValue<double>("BARYON_FRACTION",1.0);
   m_parametermap[string("P_qs_by_P_qq")]       = 
-    dataread.GetValue<double>("P_{QS}/P_{QQ}",0.40);
+    dataread.GetValue<double>("P_{QS}/P_{QQ}",1.0);
   m_parametermap[string("P_ss_by_P_qq")]       = 
-    dataread.GetValue<double>("P_{SS}/P_{QQ}",0.05);    
+    dataread.GetValue<double>("P_{SS}/P_{QQ}",1.0);    
   m_parametermap[string("P_di_1_by_P_di_0")]   = 
-    dataread.GetValue<double>("P_{QQ_1}/P_{QQ_0}",0.25);
+    dataread.GetValue<double>("P_{QQ_1}/P_{QQ_0}",1.0);
   m_parametermap[string("Singlet_Suppression")]   = 
-    dataread.GetValue<double>("SINGLET_SUPPRESSION",0.4);
+    dataread.GetValue<double>("SINGLET_SUPPRESSION",1.);
   m_parametermap[string("Multiplet_Meson_L0R0S0")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_PSEUDOSCALARS",1.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_PSEUDOSCALARS",1.0);
   m_parametermap[string("Multiplet_Meson_L0R0S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_VECTORS",0.55);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_VECTORS",1.0);
   m_parametermap[string("Multiplet_Meson_L0R0S2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS2",0.12);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS2",1.0);
   m_parametermap[string("Multiplet_Meson_L0R0S3")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS3",0.05);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS3",1.0);
   m_parametermap[string("Multiplet_Meson_L0R0S4")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS4",0.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_TENSORS4",1.0);
   m_parametermap[string("Multiplet_Meson_L1R0S0")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_SCALARS",0.1);
+    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_SCALARS",1.0);
   m_parametermap[string("Multiplet_Meson_L1R0S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_AXIALVECTORS",0.05);
+    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_AXIALVECTORS",1.0);
   m_parametermap[string("Multiplet_Meson_L1R0S2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_TENSORS2",0.01);
+    dataread.GetValue<double>("MULTI_WEIGHT_L1R0_TENSORS2",1.0);
   m_parametermap[string("Multiplet_Meson_L2R0S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L2R0_VECTORS",0.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L2R0_VECTORS",0.0);
   m_parametermap[string("Multiplet_Meson_L3R0S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L3R0_VECTORS",0.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L3R0_VECTORS",0.0);
   m_parametermap[string("Multiplet_Meson_L0R1S0")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R1_SCALARS",0.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R1_SCALARS",0.0);
   m_parametermap[string("Multiplet_Meson_L0R1S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R1_AXIALVECTORS",0.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R1_AXIALVECTORS",0.0);
   m_parametermap[string("Multiplet_Nucleon_L0R0S1/2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_N_1/2",1.);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_N_1/2",1.0);
   m_parametermap[string("Multiplet_exc_Nucleon_L0R0S1/2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_N*_1/2",0.05);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_N*_1/2",1.0);
   m_parametermap[string("Multiplet_exc_Nucleon_L1R0S1/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_N*_1/2",0.);
   m_parametermap[string("Multiplet_exc_Nucleon_L1R0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_N*_3/2",0.);
   m_parametermap[string("Multiplet_Delta_L0R0S3/2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_DELTA_3/2",0.15);
+    dataread.GetValue<double>("MULTI_WEIGHT_L0R0_DELTA_3/2",1.0);
   m_parametermap[string("Multiplet_exc_Delta_L1R0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_DELTA*_3/2",0.0);
-  m_parametermap[string("Mass_glue")]          = 
-    dataread.GetValue<double>("M_GLUE",0.);
-  Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
-  m_parametermap[string("Mass_down")]          = 
-    dataread.GetValue<double>("M_DOWN",0.3);
-  Flavour(kf_d).SetHadMass(m_parametermap["Mass_down"]);
-  m_parametermap[string("Mass_up")]            = 
-    dataread.GetValue<double>("M_UP",0.3);
-  Flavour(kf_u).SetHadMass(m_parametermap["Mass_up"]);
-  m_parametermap[string("Mass_strange")]       = 
-    dataread.GetValue<double>("M_STRANGE",0.5);
-  Flavour(kf_s).SetHadMass(m_parametermap["Mass_strange"]);
-  m_parametermap[string("Mass_charm")]         = 
-    dataread.GetValue<double>("M_CHARM",1.8);
-  Flavour(kf_c).SetHadMass(m_parametermap["Mass_charm"]);
-  m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",5.2);
-  Flavour(kf_b).SetHadMass(m_parametermap["Mass_bottom"]);
-  m_parametermap[string("Mass_dd1")]           = 
-    dataread.GetValue<double>("M_DD_1",2.*Get("Mass_down"));
-  m_parametermap[string("Mass_ud0")]           = 
-    dataread.GetValue<double>("M_UD_0",Get("Mass_up")+Get("Mass_down"));
-  m_parametermap[string("Mass_ud1")]           = 
-    dataread.GetValue<double>("M_UD_1",Get("Mass_up")+Get("Mass_down"));
-  m_parametermap[string("Mass_uu1")]           = 
-    dataread.GetValue<double>("M_UU_1",2.*Get("Mass_up"));
-  m_parametermap[string("Mass_sd0")]           = 
-    dataread.GetValue<double>("M_SD_0",Get("Mass_strange")+Get("Mass_down"));
-  m_parametermap[string("Mass_sd1")]           = 
-    dataread.GetValue<double>("M_SD_1",Get("Mass_strange")+Get("Mass_down"));
-  m_parametermap[string("Mass_su0")]           = 
-    dataread.GetValue<double>("M_SU_0",Get("Mass_strange")+Get("Mass_up"));
-  m_parametermap[string("Mass_su1")]           = 
-    dataread.GetValue<double>("M_SU_1",Get("Mass_strange")+Get("Mass_up"));
-  m_parametermap[string("Mass_ss1")]           = 
-    dataread.GetValue<double>("M_SS_1",2.*Get("Mass_strange"));
-  m_parametermap[string("Mass_cd0")]           = 
-    dataread.GetValue<double>("M_CD_0",Get("Mass_charm")+Get("Mass_down"));
-  m_parametermap[string("Mass_cd1")]           = 
-    dataread.GetValue<double>("M_CD_1",Get("Mass_charm")+Get("Mass_down"));
-  m_parametermap[string("Mass_cu0")]           = 
-    dataread.GetValue<double>("M_CU_0",Get("Mass_charm")+Get("Mass_up"));
-  m_parametermap[string("Mass_cu1")]           = 
-    dataread.GetValue<double>("M_CU_1",Get("Mass_charm")+Get("Mass_up"));
-  m_parametermap[string("Mass_cs0")]           = 
-    dataread.GetValue<double>("M_CS_0",Get("Mass_charm")+Get("Mass_strange"));
-  m_parametermap[string("Mass_cs1")]           = 
-    dataread.GetValue<double>("M_CS_1",Get("Mass_charm")+Get("Mass_strange"));
-  m_parametermap[string("Mass_cc1")]           = 
-    dataread.GetValue<double>("M_CC_1",2.*Get("Mass_charm"));
-  m_parametermap[string("Mass_bd0")]           = 
-    dataread.GetValue<double>("M_BD_0",Get("Mass_bottom")+Get("Mass_down"));
-  m_parametermap[string("Mass_bd1")]           = 
-    dataread.GetValue<double>("M_BD_1",Get("Mass_bottom")+Get("Mass_down"));
-  m_parametermap[string("Mass_bu0")]           = 
-    dataread.GetValue<double>("M_BU_0",Get("Mass_bottom")+Get("Mass_up"));
-  m_parametermap[string("Mass_bu1")]           = 
-    dataread.GetValue<double>("M_BU_1",Get("Mass_bottom")+Get("Mass_up"));
-  m_parametermap[string("Mass_bs0")]           = 
-    dataread.GetValue<double>("M_BS_0",Get("Mass_bottom")+Get("Mass_strange"));
-  m_parametermap[string("Mass_bs1")]           = 
-    dataread.GetValue<double>("M_BS_1",Get("Mass_bottom")+Get("Mass_strange"));
-  m_parametermap[string("Mass_bc0")]           = 
-    dataread.GetValue<double>("M_BC_0",Get("Mass_bottom")+Get("Mass_charm"));
-  m_parametermap[string("Mass_bc1")]           = 
-    dataread.GetValue<double>("M_BC_1",Get("Mass_bottom")+Get("Mass_charm"));
-  m_parametermap[string("Mass_bb1")]           = 
-    dataread.GetValue<double>("M_BB_1",2.*Get("Mass_bottom"));
   m_parametermap[string("Mixing_Angle_0+")]    = 
-    dataread.GetValue<double>("Mixing_0+",-0.301885);
+    dataread.GetValue<double>("Mixing_0+",1.2686);
   m_parametermap[string("Mixing_Angle_1-")]    = 
-    dataread.GetValue<double>("Mixing_1-",0.95531);
+    dataread.GetValue<double>("Mixing_1-",0.61075);
   m_parametermap[string("Mixing_Angle_2+")]    = 
     dataread.GetValue<double>("Mixing_2+",0.4887);
   m_parametermap[string("Mixing_Angle_3-")]    = 
     dataread.GetValue<double>("Mixing_3-",0.5411);
   m_parametermap[string("Mixing_Angle_4+")]    = 
     dataread.GetValue<double>("Mixing_4+",0.6283);
+  m_parametermap[string("Mass_glue")]          = 
+    dataread.GetValue<double>("M_GLUE",0.);
+  Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
+  double mud = m_parametermap[string("Mass_down")] = 
+    dataread.GetValue<double>("M_UP_DOWN",0.01);
+  double ms = m_parametermap[string("Mass_strange")] = 
+    dataread.GetValue<double>("M_STRANGE",0.2);
+  double mc = m_parametermap[string("Mass_charm")]         = 
+    dataread.GetValue<double>("M_CHARM",1.8);
+  double mb = m_parametermap[string("Mass_bottom")]        = 
+    dataread.GetValue<double>("M_BOTTOM",5.0);
+  double mdiq = m_parametermap[string("Mass_diquark")]           = 
+    dataread.GetValue<double>("M_DIQUARK_OFFSET",0.3);
+  double bind0 = m_parametermap[string("Mass_bind0")]           = 
+    dataread.GetValue<double>("M_BIND_0",0.3);
+  double bind1 = m_parametermap[string("Mass_bind1")]           = 
+    dataread.GetValue<double>("M_BIND_1",0.4);
+  Flavour(kf_d).SetHadMass(mud);
+  Flavour(kf_u).SetHadMass(mud);
+  Flavour(kf_s).SetHadMass(ms);
+  Flavour(kf_c).SetHadMass(mc);
+  Flavour(kf_b).SetHadMass(mb);
+  Flavour(kf_ud_0).SetHadMass((2.*mud+mdiq)*(1.+bind0));
+  Flavour(kf_uu_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
+  Flavour(kf_ud_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
+  Flavour(kf_dd_1).SetHadMass((2.*mud+mdiq)*(1.+bind1));
+  Flavour(kf_su_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
+  Flavour(kf_sd_0).SetHadMass((ms+mud+mdiq)*(1.+bind0));
+  Flavour(kf_su_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
+  Flavour(kf_sd_1).SetHadMass((ms+mud+mdiq)*(1.+bind1));
+  Flavour(kf_ss_1).SetHadMass((2.*ms+mdiq)*(1.+bind1));
 }
 
 double Hadronisation_Parameters::Get(string keyword) 
@@ -246,12 +243,12 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       for (int i=0;i<n;i++) rest.Boost(moms[i]);
     }
     if (mass>sqrt(cms.Abs2())) {
-      msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 		    <<"   Total mass = "<<mass<<", total E = "<<sqrt(cms.Abs2())<<std::endl;
       for (int i=0;i<n;i++) {
-	msg_Tracking()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
       }
-      msg_Tracking()<<"   Will possibly lead to retrying the event."<<std::endl;
+      msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
@@ -259,17 +256,17 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
-  } 
+  }
   else {
     success = stretcher.MassThem(0,n,moms,masses,1.e-10);
   }
-  if (!success) {
-    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
+  if (!success && msg->LevelIsDebugging()) {
+    msg_Debugging()<<"Error in "<<METHOD<<" : "<<std::endl
 		  <<"   Could not shift particles on new shells."<<std::endl;
     for (int i=0;i<n;i++) {
-      msg_Tracking()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
+      msg_Debugging()<<"   "<<i<<"th mass = "<<masses[i]<<std::endl;
     }
-    msg_Tracking()<<"   Will lead to retrying the event."<<std::endl;
+    msg_Debugging()<<"   Will lead to retrying the event."<<std::endl;
   }
   return success;
 }

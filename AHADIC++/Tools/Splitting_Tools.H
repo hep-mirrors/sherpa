@@ -1,7 +1,6 @@
-#ifndef AHADIC_Tools_Dipole_Splitter_H
-#define AHADIC_Tools_Dipole_Splitter_H
+#ifndef AHADIC_Tools_Splitting_Tools_H
+#define AHADIC_Tools_Splitting_Tools_H
 
-#include "AHADIC++/Tools/Splitting_Tools.H"
 #include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Dipole.H"
@@ -10,69 +9,158 @@
 #include <map>
 
 namespace AHADIC {
-  class Dipole_Splitter {
+  class Hadronisation_Parameters;
+
+  struct DecaySpecs { double weight,massmin,popweight; };
+  typedef std::map<ATOOLS::Flavour,DecaySpecs *> FlavDecayMap;
+  typedef FlavDecayMap::iterator                 FDIter;
+  
+  struct PTOrder {
+    enum code {
+      total       = 3,
+      gluon_split = 2,
+      gluon_emit  = 1,
+      none        = 0
+    };
+  };
+  PTOrder::code DefinePTOrder(const int & ptorder);
+
+  struct ZForm {
+    enum code {
+      fragmentation    = 30,
+      splitkernel_frag = 3,
+      splitkernel_flat = 2,
+      splitkernel      = 1,
+      flat             = 0
+    };
+  };
+  ZForm::code DefineZForm(const int & zform);
+
+
+  class Splitting_Functions {
   private:
-    Splitting_Tools  * p_tools;
-    PTOrder::code      m_ptorder;
-    ZForm::code        m_zform;
-    bool               m_analyse;
-    double             m_mmin_2;
+    int    m_masstreatment;
+    double m_alpha,m_beta,m_sigma,m_kappa;
+
+    double m_m1_2,m_m2_2,m_m3_2,m_Q2,m_y,m_viji,m_vijk,m_zp,m_zm,m_pipj;
+
+    double SelectZFromG2QQSplittingFunction(const double & zmin,const double & zmax);
+    double SelectZFromQ2QGSplittingFunction(const double & zmin,const double & zmax);
+    double SelectZFromQ2QGFragmentationFunction(const double & zmin,const double & zmax);
+
+    double WeightForG2QQSplittingFunction(const double & z,const double & kt2);
+    double WeightForQ2QGSplittingFunction(const double & z,const double & kt2);
+    double WeightForQ2QGFragmentationFunction(const double & z,const double & kt2);
+
+    double J(const double & z,const bool & glusplit);
+
+    double IntegratedFromQ2QGSplittingFunction(const double & zmin,const double & zmax);
+    double lambda(const double & x,const double & y,const double & z);
+  public:
+    Splitting_Functions(const int & masstreatment);
+    ~Splitting_Functions() {};
+    double SelectZ(const double & zmin,const double & zmax,
+		   const ZForm::code & zform,const bool & glusplit,const bool & leading=true);
+    double Weight(const double & kt2,const double & z,
+		  const ZForm::code & zform,const bool & glusplit,const bool & leading=true);
+    double Integrated(const double & zmin,const double & zmax,
+		      const ZForm::code & zform,const bool & glusplit);
+    void   SetScales(const double & m1_2,const double & m2_2,const double & m3_2,
+		     const double & Q2,const double & y,
+		     const double & viji,const double & vijk,
+		     const double & zp,const double & zm,const double & pipj) {
+      m_m1_2 = m1_2; m_m2_2 = m2_2; m_m3_2 = m3_2;
+      m_Q2 = Q2; m_y = y; m_viji = viji; m_vijk = vijk; 
+      m_zp = zp; m_zm = zm; m_pipj = pipj;
+    }
+
+  };
+
+  class Splitting_Tools {
+  private:
+    const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
+    bool                  m_fourquarks, m_analyse;
+    int                   m_masstreatment;
+    double                m_lastpt2;
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool EmitGluon(Dipole * dip1,Dipole *& dip2,const double pt2max);
-    bool SelectOrder(Dipole *& dip1,Dipole *& dip2);
-    bool Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2);
-    
+    Strong_Coupling     * p_as; 
+    Splitting_Functions * p_kernels;
+    FlavDecayMap        * p_options;
 
-    bool DetermineSplitting(const bool glusplit);
+    Proto_Particle   * p_spect, * p_split, * p_out1, * p_out2;
+    double             m_mmin_2, m_pt02;
 
-    void AnalyseClusterSplitting(Cluster * cluster);
-    void AnalyseKinematics(const ATOOLS::Vec4D,const ATOOLS::Vec4D,
-			   const ATOOLS::Vec4D,const bool=true);
-  public:
-    Dipole_Splitter(Strong_Coupling *,const bool & analyse);
-    ~Dipole_Splitter();
+    ATOOLS::Poincare   m_cms,m_zrot;
+    ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
+    double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
+    double             m_Q2,m_Q,m_Qt2,m_scale2_max,m_mass2;
+    double             m_scale2,m_z,m_phi,m_y,m_kt,m_kt2,m_s23;
+ 
+    ATOOLS::Flavour    m_flav;
 
-    bool SplitCluster(Cluster * clu,const double pt2max=-1.);
-    bool EnforceSplit(Cluster * clu);
-    bool SplitDipole(Dipole * dip,const double & pt2max=-1.,
-		     const bool & vetodiquark=false);
+
+    bool   ProduceKinematics(double & kt2,double & z,double & phi,
+			     ATOOLS::Flavour & flav,
+			     const ZForm::code & zform,
+			     const bool & vetodiquark);
+    void   SelectFlavour(const double & maxmass,const bool & vetodiquark);
+    bool   KinCheck(const double & kt2,const double & z);
+    bool   ConstructKinematics(const bool glusplit);
+    double Scale2Max(const double & pt2max,const PTOrder::code & ptorder);
+    void   AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
+			     const ATOOLS::Vec4D & q3);
+   public:
+    Splitting_Tools(Strong_Coupling *,const bool &);
+    ~Splitting_Tools();
+
+    void SetSpectatorAndSplitter(Dipole * dip);
+    bool PrepareKinematics(Dipole * dip1,const double & pt2max,
+			   const PTOrder::code & ptorder);
+    bool DetermineSplitting(Dipole * dip1,
+			    const ZForm::code & zform,
+			    const bool & vetodiquark);
+    void AftermathOfSplitting(Dipole * dip1);
 
     void SetOptions(FlavDecayMap *);
     void UpdateSpectator();
     void GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2) const;
 
-    const double & PT2() const;
-    const double & Mass2() const;
+    const double & PT2() const   { return m_kt2; }
+    const double & PT() const    { return m_kt; }
+    const double & Z() const     { return m_z; }
+    const double & Phi() const   { return m_phi; }
+    const double & Mass2() const { return m_mass2; }
+
+    Proto_Particle * Spectator() { return p_spect; }
+    Proto_Particle * Splitter()  { return p_split; }
   };
 
-  inline void Dipole_Splitter::SetOptions(FlavDecayMap * options) {
-    p_tools->SetOptions(options);
+  inline void Splitting_Tools::SetOptions(FlavDecayMap * options) {
+    p_options = options;
   }
 
-  inline void Dipole_Splitter::UpdateSpectator() {
-    p_tools->UpdateSpectator();
+  inline void Splitting_Tools::UpdateSpectator() {
+    p_spect->m_mom = m_mom1;
   }
 
-  inline void Dipole_Splitter::GetNewParticles(Proto_Particle *& out1,
+  inline void Splitting_Tools::GetNewParticles(Proto_Particle *& out1,
 					       Proto_Particle *& out2) const {
-    p_tools->GetNewParticles(out1,out2);
+    out1 = p_out1; out2 = p_out2;
   }
 
-  inline const double & Dipole_Splitter::PT2() const   { return p_tools->PT2();  }
-  inline const double & Dipole_Splitter::Mass2() const { return p_tools->Mass2(); }
 
   /*! 
     \file
-    \brief Contains the class AHADIC::Dipole_Splitter and the struct AHADIC::DecaySpecs.
+    \brief Contains the class AHADIC::Splitting_Tools and the struct AHADIC::DecaySpecs.
   */
   /*!
-    \class Dipole_Splitter
+    \class Splitting_Tools
     \brief This class is repsonsible for all initial gluon splittings into constituent (di-)quarks
     and for the test decays of clusters.
 
-    In the splittings, the Dipole_Splitter invokes a picture borrowed from perturbation theory:
+    In the splittings, the Splitting_Tools invokes a picture borrowed from perturbation theory:
     It splits a dipole with mass $M$ into two according to a distribution 
     \f$\mbox{\rm d}p_\perp^2/p_\perp^2\,\mbox{\rm d}y N\alpha_s(p_\perp)\f$, 
     where \f$p_\perp\f$ is an analogon of transverse momentum and is given by
@@ -87,51 +175,51 @@ namespace AHADIC {
     \todo: Set the correct \f$p_\perp^{\rm max}\f$ arguments.  
   */
   /*!
-    \var Strong_Coupling * Dipole_Splitter::p_as
+    \var Strong_Coupling * Splitting_Tools::p_as
     \brief A pointer to the non-pertubative strong coupling constant \f$\alpha_S\f$, 
     given by AHADIC::Strong_Coupling.  
   */
   /*!
-    \var Constituents * Dipole_Splitter::p_constituents
+    \var Constituents * Splitting_Tools::p_constituents
     \brief A pointer to all constituent characteristics, made available through
     AHADIC::Constituents.
   */
   /*!
-    \var FlavDecayMap * Dipole_Splitter::p_options
+    \var FlavDecayMap * Splitting_Tools::p_options
     \brief A list of all (kinematically) available options (flavours) in gluon splitting 
     processes, including their popping weights \f$w_q\f$.
   */
   /*!
-    \var Dipole * Dipole_Splitter::p_dip
+    \var Dipole * Splitting_Tools::p_dip
     \brief A pointer to the dipole to be split.  
 
     While for direct dipole decays, this is just a pointer to the dipole, this dipole
     is explicitly constructed in cluster decays.  
   */
   /*!
-    \var Proto_Particle * Dipole_Splitter::p_spect
+    \var Proto_Particle * Splitting_Tools::p_spect
     \brief The spectator particle in the dipole decay.
 
     In constructing the kinematics of the decay it will retain its direction and the recoil 
     just amounts to a compression of its momentum.
   */
   /*!
-    \var Proto_Particle * Dipole_Splitter::p_split
+    \var Proto_Particle * Splitting_Tools::p_split
     \brief The splittnig particle in the dipole decay.  
 
     In gluon splitting this particle will ultimately be deleted, namely in the corresponding
-    method Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max).  In gluon
+    method Splitting_Tools::SplitDipole(Dipole * dip,const double pt2max).  In gluon
     emission this particle will essentially take the transverse part of the recoil.  
 
-    \todo:  Update the strategy for the selection of Dipole_Splitter::p_split and 
-    Dipole_Splitter::p_spect in case leading particles are present.  
+    \todo:  Update the strategy for the selection of Splitting_Tools::p_split and 
+    Splitting_Tools::p_spect in case leading particles are present.  
   */
   /*!
-    \var Proto_Particle * Dipole_Splitter::p_out1
+    \var Proto_Particle * Splitting_Tools::p_out1
     \brief A newly constructed outgoing particle, emerging in all dipole splitting processes.
   */
   /*!
-    \var Proto_Particle * Dipole_Splitter::p_out2
+    \var Proto_Particle * Splitting_Tools::p_out2
     \brief A newly constructed outgoing particle, emerging in dipole splitting through gluon
     splitting only.
   */
@@ -148,7 +236,7 @@ namespace AHADIC {
     \brief
   */
   /*!
-    \var double Dipole_Splitter::m_pref
+    \var double Splitting_Tools::m_pref
     \brief The prefactor \f$N_{\rm split}\f$ in the Sudakov form factor.  
 
     It is given by either \f$N=C_F\f$ in the case of gluon emission or \f$N=\Sigma_q w_q\f$, 
@@ -156,44 +244,44 @@ namespace AHADIC {
     splitting.
   */
   /*!
-    \var ATOOLS::Flavour Dipole_Splitter::m_flav
+    \var ATOOLS::Flavour Splitting_Tools::m_flav
     \brief The flavour of the quark-antiquark (antidiquark-diquark) pair in gluon splitting.
   */
   /*!
-    \var ATOOLS::Vec4D Dipole_Splitter::m_mom1
+    \var ATOOLS::Vec4D Splitting_Tools::m_mom1
     \brief The momenta of the first of the three outgoing particles after the dipole has decayed,
     typically this is the spectator momentum, retaining its original direction.
   */
   /*!
-    \var ATOOLS::Vec4D Dipole_Splitter::m_mom2
+    \var ATOOLS::Vec4D Splitting_Tools::m_mom2
     \brief The momenta of the second of the three outgoing particles after the dipole has decayed.
   */
   /*!
-    \var ATOOLS::Vec4D Dipole_Splitter::m_mom3
+    \var ATOOLS::Vec4D Splitting_Tools::m_mom3
     \brief The momenta of the third of the three outgoing particles after the dipole has decayed.
   */
 
   /*!
-    \fn Dipole_Splitter::Dipole_Splitter(Strong_Coupling *)
+    \fn Splitting_Tools::Splitting_Tools(Strong_Coupling *)
     \brief Explicit constructor. 
 
-    It sets pointers to Dipole_Splitter::p_as, Dipole_Splitter::p_constituents and it initialises 
-    the maximal value of \f$\alpha_S\f$, Dipole_Splitter::m_asmax, for the hit-or-miss algorithm, 
-    and the minimal mass in any splitting, Dipole_Splitter::m_2p3.
+    It sets pointers to Splitting_Tools::p_as, Splitting_Tools::p_constituents and it initialises 
+    the maximal value of \f$\alpha_S\f$, Splitting_Tools::m_asmax, for the hit-or-miss algorithm, 
+    and the minimal mass in any splitting, Splitting_Tools::m_2p3.
   */
   /*!
-    \fn bool Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max)
+    \fn bool Splitting_Tools::SplitCluster(Cluster * clu,const double pt2max)
     \brief Method to split a cluster in the sequence of firstly emitting a gluon off the original
     dipole and the splitting one of the two emerging (di-)quark-gluon dipoles.  
 
     First of all, this method initialises a dipole dip1 from the cluster, which first plays
-    the role of the active dipole, Dipole_Splitter::p_dip.  For this dipole then the method 
-    Dipole_Splitter::EmitGluon(const double) is called with the maximally allowed \f$p_\perp\f$ 
+    the role of the active dipole, Splitting_Tools::p_dip.  For this dipole then the method 
+    Splitting_Tools::EmitGluon(const double) is called with the maximally allowed \f$p_\perp\f$ 
     (pt2max) as argument.  Having emitted the gluon, it is set as antitriplet in the
     original dipole dip1 and as triplet in the merging dipole dip2.  To proceed one of those
     two dipoles must be selected for the gluon splitting - the selection proceeds according
     to the mass of the two dipoles.  The winner is then treated by the dipole splitting
-    method Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max), where the gluon
+    method Splitting_Tools::SplitDipole(Dipole * dip,const double pt2max), where the gluon
     is decayed.  Finally, the emerging two dipoles are translated back into clusters,
     with all connections (left, right, previous) established.
 
@@ -201,14 +289,14 @@ namespace AHADIC {
     triggering a new attempt on the full hadronization process.
   */
   /*!
-    \fn bool Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max)
+    \fn bool Splitting_Tools::SplitDipole(Dipole * dip,const double pt2max)
     \brief Method to split any dipole.  
 
     This method is employed directly in the initial gluon splitting at the beginning of the
     hadronisation phase.  Then it is called by the AHADIC::Gluon_Decayer.  It is also
     needed in the emission of a gluon in cluster splitting and the subsequent splitting of
-    the gluon.  Then its actions are steered by Dipole_Splitter::EmitGluon(const double) and
-    Dipole_Splitter::SplitCluster(Cluster * clu,const double pt2max), respectively. 
+    the gluon.  Then its actions are steered by Splitting_Tools::EmitGluon(const double) and
+    Splitting_Tools::SplitCluster(Cluster * clu,const double pt2max), respectively. 
 
     The central idea is that first all relevant parameters for the dipole splitting are set.  In
     particular, this involves the squared masses \f$M^2\f$ and \f$m_1^2\f$ of the dipole
@@ -217,43 +305,43 @@ namespace AHADIC {
     where \f$m_{\rm min}\f$ is the minimally allowed amss (\f$2m_u\f$ or similar) in
     gluon splitting.  The rapidity bounds are given by
     \f[y_\pm = \mp \frac12\log(x^2_{\perp,{\rm min}})\,,\f]
-    and the prefactor \f$N\f$, Dipole_Splitter::m_pref, is determined dynamically from the 
+    and the prefactor \f$N\f$, Splitting_Tools::m_pref, is determined dynamically from the 
     allowed (di-)quark species as \f$N=\Sigma_q w_q\f$.
 
     Then, the actual splitting is fixed, through the corresponding method
-    Dipole_Splitter::DetermineSplitting(bool glusplit=true).  The flag there refers to the 
+    Splitting_Tools::DetermineSplitting(bool glusplit=true).  The flag there refers to the 
     specific process: gluon emission (false) or splitting (true).   If a viable splitting
     has been found, the kinematics is completely determined, this is done in
-    Dipole_Splitter::FixKinematics(bool glusplit=true) with the same assignemt for the flag.
+    Splitting_Tools::FixKinematics(bool glusplit=true) with the same assignemt for the flag.
 
     If either the preparation of the dipole for the splitting, the determination of a viable 
     splitting or of its kinematics fails, the method returns false.  In this case the
     full hadronization process should be repeated.
   */
   /*!
-    \fn void Dipole_Splitter::UpdateSpectator()
-    \brief Sets the momentum of the spectator Proto_Particle, Dipole_Splitter::p_spect,
-    to the internal momentum \f$p_1\f$, Dipole_Splitter::m_mom1, calculated and boosted in
-    Dipole_Splitter::ConstructKinematics() and Dipole_Splitter::FixKinematics().
+    \fn void Splitting_Tools::UpdateSpectator()
+    \brief Sets the momentum of the spectator Proto_Particle, Splitting_Tools::p_spect,
+    to the internal momentum \f$p_1\f$, Splitting_Tools::m_mom1, calculated and boosted in
+    Splitting_Tools::ConstructKinematics() and Splitting_Tools::FixKinematics().
   */
   /*!
-    \fn void Dipole_Splitter::GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2)
+    \fn void Splitting_Tools::GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2)
     \brief Returns the two new particles.
 
     \todo Maybe better: Return a dipole.
   */
   /*!
-    \fn void Dipole_Splitter::SetOptions(FlavDecayMap *)
+    \fn void Splitting_Tools::SetOptions(FlavDecayMap *)
     \brief Sets the options allowed for gluon splitting, as defined in AHADIC::Gluon_Decayer.
   */
   /*!
-    \fn Dipole * Dipole_Splitter::EmitGluon(const double)
+    \fn Dipole * Splitting_Tools::EmitGluon(const double)
     \brief Method to emit a gluon from a cluster-dipole.
 
     This method is somewhat the gluon emission version of the full dipole splitting method
-    Dipole_Splitter::SplitDipole(Dipole * dip,const double pt2max).  Similarly to there,
+    Splitting_Tools::SplitDipole(Dipole * dip,const double pt2max).  Similarly to there,
     first, splitter and spectator are determined, before all relevant invariants, including
-    the new flavour, Dipole_Splitter::m_flav, are fixed.  They are given by the masses of 
+    the new flavour, Splitting_Tools::m_flav, are fixed.  They are given by the masses of 
     the dipole and the involved particles, \f$ M^2, m_{1,2,3}, m_{1,2,3}^2\f$, the
     minimal mass of the 23-system, given by \f$m_3\f$, the minimal normalised
     transverse momentum
@@ -262,34 +350,34 @@ namespace AHADIC {
     equal proportion over the 12 and the 23 system, in anticipation of the subsequent
     gluon splitting.  The rapidity bounds are given by
     \f[y_\pm = \mp \frac12\log(x^2_{\perp,{\rm min}})\,,\f]
-    and the prefactor in the Sudakov form factor, Dipole_Splitter::m_pref, is given by 
+    and the prefactor in the Sudakov form factor, Splitting_Tools::m_pref, is given by 
     \f$C_F = 4/3\f$.
 
-    Then Dipole_Splitter::DetermineSplitting(bool glusplit=true) is invoked to emit the
-    gluon, before Dipole_Splitter::FixKinematics(bool glusplit=true) fixes the kinematics.
+    Then Splitting_Tools::DetermineSplitting(bool glusplit=true) is invoked to emit the
+    gluon, before Splitting_Tools::FixKinematics(bool glusplit=true) fixes the kinematics.
     Note that in this case of gluon emission the flag is set to "false" in both methods.  If
     any of both method fails, NULL is returned, otherwise, in the case of success, the 
     emerging 23 dipole is returned.  
   */
   /*!
-    \fn void Dipole_Splitter::SetSpectatorAndSplitter()
+    \fn void Splitting_Tools::SetSpectatorAndSplitter()
     \brief This method fixes splitter and spectator in dipole decays.
   */
   /*!
-    \fn bool Dipole_Splitter::DetermineSplitting(bool glusplit=true)
+    \fn bool Splitting_Tools::DetermineSplitting(bool glusplit=true)
     \brief Determines the actual splitting of a dipole, either a gluon emission (flag is set to
     "false"), or a gluon splitting ("true").
 
-    In an infinite loop Dipole_Splitter::SelectPT_Y(bool glusplit=true) is called.  This method 
+    In an infinite loop Splitting_Tools::SelectPT_Y(bool glusplit=true) is called.  This method 
     will return true as long as a \f$p_\perp > p_{\perp,{\rm min}}\f$ can be found.  If this 
     is not the case, the class will try a minimal splitting with minimal transverse momentum,
-    as coded in Dipole_Splitter::MinimalDecay(bool glusplit=true).  Only if this also fails,
+    as coded in Splitting_Tools::MinimalDecay(bool glusplit=true).  Only if this also fails,
     the method returns "false", which leads to a repetition of the hadronization step.  
     While the loop delivers viable transverse momenta, the hit-or-miss algorithm corrects
-    on physically correct splittings through Dipole_Splitter::Verto().
+    on physically correct splittings through Splitting_Tools::Verto().
   */
   /*!
-    \fn bool Dipole_Splitter::SelectPT_Y(bool glusplit=true)
+    \fn bool Splitting_Tools::SelectPT_Y(bool glusplit=true)
     \brief Determines a naive estimate for a pair of transverse momentum and rapidity.
 
     The normalised transverse momentum is given by the previous transverse momentum
@@ -299,12 +387,12 @@ namespace AHADIC {
     \frac{2\log(\#)}{N\alpha_{s, {\rm max}}}}\right\}\f]\,.
     If either argument of the root in the exponent of the above expression is negative or if
     this yields a \f$p_\perp<p_{\perp,{\rm min}}\f$ the method returns false, ultimately
-    invoking the forced decay coded in Dipole_Splitter::MinimalDecay(bool glusplit=true).
+    invoking the forced decay coded in Splitting_Tools::MinimalDecay(bool glusplit=true).
     Otherwise a rapidity \f$y\f$ is selected uniformly in the boundaries and a flavour
     is selected according to its relative "popping" weight.
   */
   /*!
-    \fn bool Dipole_Splitter::Veto()
+    \fn bool Splitting_Tools::Veto()
     \brief This organises the correction weight in the hit-or-miss algorithm and yields "true"
     for a vetoed emission.
 
@@ -313,7 +401,7 @@ namespace AHADIC {
     \f[y_\pm^{\rm true} = -log(2\sqrt{x^2_\perp})\cdot\left(1+\sqrt{1-4*x^2_\perp}\right)\,.\f]
 
     If the kinematics does not work out.  This is determined in 
-    Dipole_Splitter::ConstructKinematics().
+    Splitting_Tools::ConstructKinematics().
 
     A veto is performed on the ratio \f$\alpha_s(p_\perp^{\rm phys})/\alpha_s^{\rm max}\f$.
 
@@ -321,7 +409,7 @@ namespace AHADIC {
     \f$p_\perp^{\rm phys}>p_\perp^{\rm veto}\f$ are vetoed.
   */
   /*!
-    \fn void Dipole_Splitter::MinimalDecay(bool glusplit=true)
+    \fn void Splitting_Tools::MinimalDecay(bool glusplit=true)
     \brief The back-up solution of a dipole decay with minimal \f$p_\perp\f$, in case
     the Sudakov form factor fails.  This is some sort of an "enforced" splitting.
     The flag indicates, whether this method is invoked for gluon splitting ("true") or
@@ -336,7 +424,7 @@ namespace AHADIC {
                = m_1^2+m_2^2+\frac{1}{2}(M^2-m_1^2-m_2^2-m_3^2-2m_2m_3)\,.\f]
   */
   /*!
-    \fn void Dipole_Splitter::CalculateInvariants()
+    \fn void Splitting_Tools::CalculateInvariants()
     \brief Calculates \f$s_{12}\f$ and \f$s_{23}\f$ from the (evolution) transverse momentum 
     and the rapidity. 
 
@@ -344,7 +432,7 @@ namespace AHADIC {
     \f[s_{12,23} = M^2\sqrt{x^2_\perp}\exp(\mp y)\,.\f]
   */
   /*!
-    \fn bool Dipole_Splitter::ConstructKinematics()
+    \fn bool Splitting_Tools::ConstructKinematics()
     \brief Constructs the decay kinematics.
 
     After some checks whether the \f$s_{ij}\f$ related to the splitting are feasible, the momenta
@@ -370,10 +458,10 @@ namespace AHADIC {
     With a random azimuthal angle \f$\phi\f$ this defines the transverse momentum vector.
   */
   /*!
-    \fn bool Dipole_Splitter::FixKinematics(bool glusplit=true)
-    \brief This boosts and rotates the three momenta \f$p_{1,2,3}\f$, Dipole_Splitter::m_mom1, 
-    Dipole_Splitter::m_mom2, and Dipole_Splitter::m_mom3, which have previously been constructed 
-    in Dipole_Splitter::ConstructKinematics() into the correct frame.
+    \fn bool Splitting_Tools::FixKinematics(bool glusplit=true)
+    \brief This boosts and rotates the three momenta \f$p_{1,2,3}\f$, Splitting_Tools::m_mom1, 
+    Splitting_Tools::m_mom2, and Splitting_Tools::m_mom3, which have previously been constructed 
+    in Splitting_Tools::ConstructKinematics() into the correct frame.
 
     The trick here is that the system of the momenta \f$q_{1,2}\f$ and \f$p_{1,2,3}\f$
     before and after the splitting live in different systems, to overcome this problem,

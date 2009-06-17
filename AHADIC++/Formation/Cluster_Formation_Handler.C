@@ -3,12 +3,12 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 
 namespace AHADIC {
-  bool triplet(SP(Proto_Particle) pp) {
+  bool triplet(Proto_Particle * pp) {
     return ((pp->m_flav.IsQuark() && !pp->m_flav.IsAnti()) ||
 	    (pp->m_flav.IsDiQuark() && pp->m_flav.IsAnti()) );
   }
   
-  bool antitriplet(SP(Proto_Particle) pp) {
+  bool antitriplet(Proto_Particle * pp) {
     return ((pp->m_flav.IsQuark() && pp->m_flav.IsAnti()) ||
 	    (pp->m_flav.IsDiQuark() && !pp->m_flav.IsAnti()) );
   }
@@ -19,15 +19,13 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
-						     Cluster_List* prilist,
 						     bool ana) :
   m_single_cr(true), m_double_cr(false),
   p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter(),ana)), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
   p_softclusters(hadpars.GetSoftClusterHandler()),
-  p_clulist(clulist), p_primaries(prilist),
-  m_analyse(ana)
+  p_clulist(clulist), m_analyse(ana)
 { 
   if (m_analyse) {
     m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,100.,200);
@@ -35,6 +33,9 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,100.,200);
     m_histograms[string("Cluster_Number_Formation")]   = new Histogram(0,0.,20.,20);
     m_histograms[string("Cluster_Number_Transformed")] = new Histogram(0,0.,20.,20);
+    m_histograms[string("XB_bquark_before_shift")]     = new Histogram(0,0.,1.,100);
+    m_histograms[string("XB_bquark_after_shift")]      = new Histogram(0,0.,1.,100);
+    m_histograms[string("XB_bquark_in_cluster")]       = new Histogram(0,0.,1.,100);
   }
 }
 
@@ -66,25 +67,60 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (blob==NULL) return 1;
   assert(m_partlists.empty() && m_clulists.empty());
 
-  msg_Debugging()<<"=================================================================="<<std::endl
+  msg_Debugging()<<std::endl<<std::endl<<std::endl<<std::endl
 		 <<"=================================================================="<<std::endl
 		 <<"=================================================================="<<std::endl
-		 <<"In "<<METHOD<<": hadronize "<<blob->NOutP()<<" partons."<<std::endl
+		 <<"=================================================================="<<std::endl
+		 <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons."<<std::endl
 		 <<(*blob)<<std::endl;
   if (!ExtractSinglets(blob))      { return -1; }
+  Histogram   * histoxb;
+  LPPL_Iterator pplit;
+  PPL_Iterator  pit;
+  for(pplit=m_partlists.begin(); pplit!=m_partlists.end(); ++pplit) {
+    for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
+      if (m_analyse && (*pit)->m_flav.Kfcode()==5) {
+	histoxb = (m_histograms.find(string("XB_bquark_before_shift")))->second;
+	histoxb->Insert((*pit)->m_mom[0]/45.625);
+      }
+    }
+  }
   if (!ShiftOnMassShells())        { return -1; }
+  for(pplit=m_partlists.begin(); pplit!=m_partlists.end(); ++pplit) {
+    for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
+      if (m_analyse && (*pit)->m_flav.Kfcode()==5) { 
+	histoxb = (m_histograms.find(string("XB_bquark_after_shift")))->second;
+	histoxb->Insert((*pit)->m_mom[0]/45.625);
+      }
+    }
+  }
   if (!FormOriginalClusters())     { return -1; }
   if (!ApplyColourReconnections()) { return 0; }
   if (!MergeClusterListsIntoOne()) { return 0; }
+  for(Cluster_Iterator cit=p_clulist->begin(); cit!=p_clulist->end(); cit++) {
+    if (m_analyse && (*cit)->GetTrip()->m_flav.Kfcode()==5) { 
+      histoxb = (m_histograms.find(string("XB_bquark_in_cluster")))->second;
+      histoxb->Insert((*cit)->GetTrip()->m_mom[0]/45.625);
+      msg_Debugging()<<"Clusters (b)    : "<<(*cit)->GetTrip()->m_mom<<"."<<std::endl;
+    }
+    if (m_analyse && (*cit)->GetAnti()->m_flav.Kfcode()==5) {
+      histoxb = (m_histograms.find(string("XB_bquark_in_cluster")))->second;
+      histoxb->Insert((*cit)->GetAnti()->m_mom[0]/45.625);
+      msg_Debugging()<<"Clusters (bbar) : "<<(*cit)->GetAnti()->m_mom<<"."<<std::endl;
+    }
+  }
   if (!ClustersToHadrons(blob))    { return -1; }
 
-  msg_Debugging()<<"Formed clusters : "<<std::endl<<(*p_clulist)<<std::endl<<(*p_primaries)<<std::endl;
   return 1;
 }
 
 
 void Cluster_Formation_Handler::Reset() {
   if(!m_partlists.empty()) {
+    while (!m_partlists.empty()) {
+      delete m_partlists.front();
+      m_partlists.pop_front();
+    }
     m_partlists.clear();
   }
   if(!m_clulists.empty()) {
@@ -93,7 +129,7 @@ void Cluster_Formation_Handler::Reset() {
       Cluster_List& clist=*m_clulists[j];
       while(!clist.empty()) {
 #ifdef memchecker
-	std::cout<<"@@@ Delete cluster "<<clist.back()<<" in "<<METHOD<<"."<<std::endl;
+	msg_Debugging()<<"@@@ Delete cluster "<<clist.back()<<" in "<<METHOD<<"."<<std::endl;
 #endif
         clist.pop_back();
       }
@@ -106,7 +142,7 @@ void Cluster_Formation_Handler::Reset() {
 
 bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 {
-  SP(Proto_Particle_List) pli(NULL);
+  Proto_Particle_List * pli(NULL);
   bool       construct(false);
   int        col1, col2;
   Particle * part;
@@ -116,7 +152,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 	(part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
     if (construct) {
       if (part->GetFlow(2)==col1) {
-	SP(Proto_Particle) copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
 #ifdef memchecker
 	std::cout<<"### New Proto_Particle ("
 		 <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
@@ -138,7 +174,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       col1 = part->GetFlow(1);
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
-      SP(Proto_Particle) copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+      Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
 #ifdef memchecker
       std::cout<<"### New Proto_Particle ("
 	       <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
@@ -162,16 +198,17 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
       mom  += (*pit)->m_mom;
       mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
     }
-    SP(Proto_Particle_List) copy=new Proto_Particle_List(**pplit);
-    if(mom.Abs2()>sqr(mass)) shiftables.push_back(copy);
-    else nonshiftables.push_back(copy);
+    
+    if(mom.Abs2()>sqr(mass)) shiftables.push_back(new Proto_Particle_List(**pplit));
+    else nonshiftables.push_back(new Proto_Particle_List(**pplit));
   }
-  SP(Proto_Particle_List) pplin;
+  Proto_Particle_List * pplin;
   while(!nonshiftables.empty()) {
     bool takefromshift(false);
     if(nonshiftables.size()==1) {
       if(shiftables.empty()) {
 	Reset();
+	delete nonshiftables.front();
 	return false;
       }
       pplin=SelectFromList(&shiftables);
@@ -209,11 +246,12 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
   assert(nonshiftables.empty());
 
   while(!shiftables.empty()) {
-    SP(Proto_Particle_List) pplist=shiftables.front();
+    Proto_Particle_List * pplist=shiftables.front();
     if(!ShiftList(pplist)) {
-      shiftables.pop_front();
       while(!shiftables.empty()) {
-	shiftables.pop_front();}
+	delete shiftables.front();
+	shiftables.pop_front();
+      }
       Reset();
       return false;
     }
@@ -223,11 +261,11 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
   return true;
 }
 
-SP(Proto_Particle_List) Cluster_Formation_Handler::SelectFromList(ListOfPPLs * lppl,
-								  SP(Proto_Particle_List) ppl)
+Proto_Particle_List * Cluster_Formation_Handler::SelectFromList(ListOfPPLs * lppl,
+								Proto_Particle_List * ppl)
 {
   double maxmass(0.0);
-  SP(Proto_Particle_List) winner(NULL);
+  Proto_Particle_List * winner(NULL);
   for (LPPL_Iterator pplit=lppl->begin();pplit!=lppl->end();pplit++) {
     if (ppl!=NULL && (*pplit)==ppl) continue;
     Vec4D mom(0.,0.,0.,0.);
@@ -242,7 +280,7 @@ SP(Proto_Particle_List) Cluster_Formation_Handler::SelectFromList(ListOfPPLs * l
   return winner;
 }
 
-bool Cluster_Formation_Handler::ShiftList(SP(Proto_Particle_List) pl)
+bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
 {
   size_t number(pl->size());
   if (number<2) return true;
@@ -276,10 +314,10 @@ bool Cluster_Formation_Handler::ShiftList(SP(Proto_Particle_List) pl)
 
 #ifdef AHAmomcheck
   if (dabs((checkbef-checkaft).Abs2())>1.e-12) {
-    msg_Out()<<METHOD<<" yields momentum violation : "<<std::endl
-	     <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
+    msg_Error()<<METHOD<<" yields momentum violation : "<<std::endl
+	       <<checkbef<<" - "<<checkaft<<" --> "<<(checkbef-checkaft).Abs2()<<std::endl;
   }
-  else msg_Debugging()<<METHOD<<" conserves momentum."<<std::endl;
+  else msg_Tracking()<<METHOD<<" conserves momentum."<<std::endl;
 #endif
 
   return true;
@@ -292,6 +330,8 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
 
   while (!m_partlists.empty()) {
     pplit=m_partlists.begin();
+    msg_Tracking()<<"======= "<<METHOD<<" for :"<<std::endl
+		  <<(**pplit)<<std::endl;
     if(p_gludecayer->DecayList(*pplit)) {
       clist = new Cluster_List;
       p_cformer->ConstructClusters(*pplit,clist);
@@ -299,11 +339,12 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
       pplit=m_partlists.erase(pplit);
     }
     else {
-      msg_Debugging()<<"WARNING in "<<METHOD<<":"<<std::endl
-		     <<"   Could not form a suitable list after gluon decays from :"<<std::endl
-		     <<(**pplit)
-		     <<"   Try a new event."<<std::endl;
+      msg_Error()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   Could not form a suitable list after gluon decays from :"<<std::endl
+		 <<(**pplit)
+		 <<"   Try a new event."<<std::endl;
       Reset();
+      exit(1);
       return false;
     }
   }
@@ -357,18 +398,12 @@ bool Cluster_Formation_Handler::ApplyColourReconnections()
 }
 
 bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
-
-  assert(p_clulist->empty() && p_primaries->empty());
-
+  assert(p_clulist->empty());
   for(size_t j=0; j<m_clulists.size(); ++j)
     p_clulist->splice(p_clulist->end(),*m_clulists[j]);
   for(size_t j=0; j<m_clulists.size(); ++j)
     delete m_clulists[j];
   m_clulists.clear();
-
-  //Additional book-keeping to have the memory under control.
-  for(Cluster_Iterator cit=p_clulist->begin(); cit!=p_clulist->end(); cit++)
-    p_primaries->push_back(*cit);
 
   return true;
 
@@ -385,15 +420,29 @@ bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 #endif
 
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
-    msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
-		  <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
-		  <<"   Will trigger a new event."<<std::endl;
+    msg_Debugging()<<"Error in "<<METHOD<<" : "<<std::endl
+	       <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
+	       <<"   Will trigger a new event."<<std::endl;
     return false;
   }
-  if (msg->LevelIsDebugging()) {
-    msg_Out()<<"         remaining cluster list with size "<<p_clulist->size()<<std::endl
-	     <<"======================================================="<<std::endl;
+
+#ifdef AHAmomcheck
+  Vec4D checkaft(0.,0.,0.,0.);
+  for (Cluster_Iterator cit=p_clulist->begin();cit!=p_clulist->end();cit++) {
+    checkaft += (*cit)->Momentum();
   }
+  for (short int i=0;i<blob->NOutP();i++) {
+    checkaft += blob->OutParticle(i)->Momentum();
+  }
+  double Q2(dabs((checkbef-checkaft).Abs2()));
+  if (Q2>1.e-12 || IsNan(Q2)) {
+    msg_Error()<<METHOD<<" yields a momentum violation : "<<std::endl
+	       <<"   "<<checkbef<<" - "<<checkaft<<" --> "
+	       <<(checkbef-checkaft).Abs2()<<"."<<std::endl;
+  }
+  else msg_Tracking()<<METHOD<<" conserves momentum:"
+		     <<checkbef<<" --> "<<checkaft<<"."<<std::endl;
+#endif
 
   Histogram * histomass, * histonumb;
   if (m_analyse) {

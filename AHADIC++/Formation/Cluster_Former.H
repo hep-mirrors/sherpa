@@ -6,10 +6,11 @@
 namespace AHADIC {
   class Cluster_Former {
   private:
+    void EstablishRelations(Cluster_List *);
   public:
     Cluster_Former();
     ~Cluster_Former();
-    void ConstructClusters(SP(Proto_Particle_List),Cluster_List *);
+    void ConstructClusters(Proto_Particle_List *,Cluster_List *);
   };
   /*!
     \file Cluster_Former.H

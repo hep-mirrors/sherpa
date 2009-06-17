@@ -24,29 +24,52 @@ Cluster_Decay_Handler::~Cluster_Decay_Handler()
 
 int Cluster_Decay_Handler::DecayClusters(Blob * blob)
 {
-  SP(Cluster) cluster;
+  Cluster * cluster;
   Cluster_List clist;
-  //std::cout<<METHOD<<" for "<<p_clulist->size()<<std::endl;
+  msg_Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl
+		<<"+++ "<<METHOD<<" for "<<p_clulist->size()<<" clusters."<<std::endl;
+  Cluster_Iterator cit(p_clulist->begin());
   while (!p_clulist->empty()) {
     cluster = p_clulist->front();
-    if (cluster->Active()) {
-      if (!p_clus->TestDecay(cluster)) return -1;
+    if (!cluster->Active()) {
+      msg_Error()<<"Error in "<<METHOD<<" inactive cluster:"<<std::endl;
+      cluster->Print();
+      msg_Error()<<"   Will continue and hope for the best."<<std::endl;
+      return -1;
+    }
+   if (p_clus->TestDecay(cluster)) {
+      clist.empty();
       clist.push_back(cluster->GetLeft());
       clist.push_back(cluster->GetRight());
-      if (!p_softclusters->TreatClusterList(&clist,blob)) {
-	msg_Tracking()<<"Error in "<<METHOD<<" : "<<std::endl
-		      <<"   Did not find a kinematically allowed "
-		      <<"solution for the cluster list."<<std::endl
-		      <<"   Will trigger retrying the event."<<std::endl;
+      msg_Tracking()<<"++++ From "<<cluster->Number()<<": "
+		    <<cluster->GetLeft()->Number()<<" ("<<cluster->GetLeft()->Mass()<<") "
+		    <<cluster->GetRight()->Number()<<" ("<<cluster->GetRight()->Mass()<<"), "
+		    <<"popped "<<cluster->GetLeft()->GetAnti()->m_flav<<"."<<std::endl;
+      if (!p_softclusters->TreatClusterDecay(&clist,blob)) {
+	msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		   <<"   Did not find a kinematically allowed "
+		   <<"solution for the cluster list."<<std::endl
+		   <<"   Will trigger retrying the event."<<std::endl;
 	return -1;
       }
       while (!clist.empty()) {
-	p_clulist->push_back(clist.back());
-	clist.pop_back();
+	p_clulist->push_back(clist.front());
+	clist.pop_front();
       }
-      cluster->SetActive(false);
     }
+    else {
+      if (!p_softclusters->EnforcedDecay(cluster,blob)) {
+	msg_Tracking()<<"  no decay."<<std::endl
+		      <<"++++ TestDecay did not work out, will return -1."<<std::endl;
+	return -1;
+      }
+    }
+    delete (p_clulist->front()->GetTrip());
+    delete (p_clulist->front()->GetAnti());
+    delete (p_clulist->front());
     p_clulist->pop_front();
+    msg_Tracking()<<"++++ After popping front cluster list has now size = "
+		  <<p_clulist->size()<<"."<<std::endl;
   }
   if (p_analysis) p_analysis->AnalyseThis(blob);  
 
@@ -55,29 +78,13 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
 
 ATOOLS::Blob * Cluster_Decay_Handler::ClusterDecayBlob(Cluster * cluster,Cluster_List * p_clulist) {
   Blob * decblob(cluster->ConstructDecayBlob());
-#ifdef AHAmomcheck
-  if (dabs(decblob->CheckMomentumConservation().Abs2())>1.e-12) {
-    msg_Out()<<METHOD<<" : Momentum violation at cluster decay blob : "
-	     <<decblob->CheckMomentumConservation()<<std::endl
-	     <<(*decblob)<<std::endl;
-  }
-  else {
-    msg_Debugging()<<METHOD<<" : Momentum conservation at cluster decay blob : "
-		   <<decblob->CheckMomentumConservation().Abs2()<<std::endl;
-  }
-#endif
   if (cluster->GetLeft()!=NULL && cluster->GetLeft()->GetFlav()==Flavour(kf_cluster)) {
     p_clulist->push_back(cluster->GetLeft());
   }
   if (cluster->GetRight()!=NULL && cluster->GetRight()->GetFlav()==Flavour(kf_cluster)) {
     p_clulist->push_back(cluster->GetRight());
   }
-  if (cluster) {
-#ifdef memchecker
-    std::cout<<"@@@ Delete cluster "<<cluster<<" in "<<METHOD<<"."<<std::endl;
-#endif
-    cluster->SetActive(false);
-  }
+  if (cluster) cluster->SetActive(false);
   return decblob;
 }
 

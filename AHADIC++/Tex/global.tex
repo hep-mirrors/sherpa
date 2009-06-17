@@ -1,0 +1,142 @@
+%= math ===========================================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[a4paper,pdfborder={0 0 0}]{hyperref}
+\usepackage[all]{hypcap}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{longtable}
+\usepackage{multirow}
+%= graphics =======================================
+\usepackage{axodraw}
+\usepackage{pstricks}
+\usepackage{graphicx}
+\usepackage{xspace}
+%\usepackage{graphpap}
+%= citations ======================================
+\usepackage{cite}
+\usepackage{mcite}
+%= layout =========================================
+\usepackage[format=hang,labelfont=bf]{caption}
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+\subsubsectionfont{\mdseries\itshape\large}
+\setlength{\parindent}{0mm}
+%\setlength{\voffset}{-1cm}
+\setlength{\hoffset}{-1.75cm}
+\setlength{\textwidth}{16.5truecm}
+\setlength{\textheight}{24cm}
+\setlength{\topmargin}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\headsep}{0mm}
+\setlength{\parskip}{1mm}
+\setlength{\mathindent}{2ex}
+\let\spreprint\empty
+\newcommand{\preprint}[1]{\def\spreprint{\protect#1}}
+\let\sinstitute\empty
+\newcommand{\institute}[1]{\def\sinstitute{\protect#1}}
+\makeatletter
+\renewcommand{\maketitle}{\begingroup
+  \null\thispagestyle{empty}%
+    \ifx\spreprint\empty
+      \vskip 5ex
+    \else
+      \flushright\large\spreprint\vskip 2ex
+    \fi
+    \vskip 5ex
+    \flushleft
+      {\sffamily\bfseries\huge\@title}\vskip 2ex
+      \@author\vskip 2ex
+      \ifx\sinstitute\empty
+      \else
+        {\small\sinstitute}
+      \fi
+    \vskip 5ex
+  \endgroup
+}
+\makeatother
+\renewenvironment{abstract}{\begin{center}
+  {\large\sffamily\bfseries Abstract: }
+  \begin{minipage}[t]{0.75\textwidth}
+}{\end{minipage}\end{center}\vskip 10ex}
+\newenvironment{stress}{\vskip 2ex
+  \hspace*{2ex}\begin{minipage}{\textwidth-4ex}
+  \em}{\end{minipage}\vskip 2ex}
+\newcommand{\myfigure}[3]{
+  \begin{figure}[#1]
+    \begin{center}
+      #2\\
+      \parbox[t]{\widthof{#2}}{\caption{#3}}
+    \end{center}
+  \end{figure}
+}
+\newcommand{\mytable}[3]{
+  \begin{table}[#1]
+    \begin{center}
+      #2\\
+      \parbox[t]{\widthof{#2}}{\caption{#3}}
+    \end{center}
+  \end{table}
+}
+%= abbreviations ==================================
+\newcommand{\MCatNLO}{M\protect\scalebox{0.8}{C}@N\protect\scalebox{0.8}{LO}\xspace}
+\newcommand{\HERWIG}{H\protect\scalebox{0.8}{ERWIG}\xspace}
+\newcommand{\HERWIGpp}{H\protect\scalebox{0.8}{ERWIG++}\xspace}
+\newcommand{\Ariadne}{A\protect\scalebox{0.8}{RIADNE}\xspace}
+\newcommand{\POWHEG}{P\protect\scalebox{0.8}{OWHEG}\xspace}
+\newcommand{\Sherpa}{S\protect\scalebox{0.8}{HERPA}\xspace}
+\newcommand{\Comix}{C\protect\scalebox{0.8}{OMIX}\xspace}
+\newcommand{\Apacic}{A\protect\scalebox{0.8}{PACIC++}\xspace}
+\newcommand{\Amegic}{A\protect\scalebox{0.8}{MEGIC++}\xspace}
+\newcommand{\Rivet}{R\protect\scalebox{0.8}{ivet}\xspace}
+\newcommand{\Professor}{P\protect\scalebox{0.8}{rofessor}\xspace}
+\newcommand{\FeynRules}{F\protect\scalebox{0.8}{EYN}R\protect\scalebox{0.8}{ULES}\xspace}
+\newcommand{\CSS}{C\protect\scalebox{0.8}{SS}\xspace}
+\newcommand{\Ahadic}{A\protect\scalebox{0.8}{HADIC++}\xspace}
+\newcommand{\Hadrons}{H\protect\scalebox{0.8}{ADRONS++}\xspace}
+\newcommand{\Photons}{P\protect\scalebox{0.8}{HOTONS++}\xspace}
+\newcommand{\Pythia}{P\protect\scalebox{0.8}{YTHIA}\xspace}
+\newcommand{\Jetset}{J\protect\scalebox{0.8}{ETSET}\xspace}
+%= definitions ====================================
+\long\def\symbolfootnote[#1]#2{\begingroup%
+\def\thefootnote{\fnsymbol{footnote}}\footnote[#1]{#2}\endgroup}
+\newcommand{\abs}[1]{\left| #1\right|}
+\newcommand{\rbr}[1]{\left( #1\right)}
+\newcommand{\abr}[1]{\langle #1\rangle}
+\newcommand{\cbr}[1]{\left\{ #1\right\}}
+\newcommand{\sbr}[1]{\left[ #1\right]}
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bal}{\begin{align}}
+\newcommand{\eal}{\end{align}}
+\newcommand{\done}{{\rm d}}
+\newcommand{\dtwo}{{\rm d}^2}
+\newcommand{\dthree}{{\rm d}^3}
+\newcommand{\dfour}{{\rm d}^4}
+\newcommand{\order}{\mathcal{O}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\DO}{D$0\!\!\!/$ }
+\newcommand{\dst}{\displaystyle}
+\newcommand{\sst}{\scriptstyle}
+\newcommand{\qcut}{Q_{\mathrm{cut}}}
+\newcommand{\Nmax}{N_{\mathrm{max}}}
+\newcommand{\GeV}{\mathrm{GeV}}
+\newcommand{\bV}{{\bf V}}
+\newcommand{\bT}{{\bf T}}
+\newcommand{\CF}{C_{\mathrm{F}}}
+\newcommand{\Nc}{N_{\mathrm{c}}}
+\newcommand{\CA}{C_{\mathrm{A}}}
+\newcommand{\TR}{T_{\mathrm{R}}}                                               
+\newcommand{\q}{\mathrm{q}}
+\newcommand{\Q}{\mathrm{Q}}
+\newcommand{\qbar}{\mathrm{\overline{q}}}
+\newcommand{\Qbar}{\mathrm{\overline{Q}}}
+\newcommand{\g}{\mathrm{g}}
+\newcommand{\kperp}{k_\perp}
+\newcommand{\kperpbf}{{\bf{k}}_\perp}
+\newcommand{\kperpbfsq}{{\bf{k}}_{\perp}^{\,\!2}}
+\newcommand{\kperpzero}{{\bf{k}}_{\perp,0}}
+\newcommand{\kperpzerosq}{{\bf{k}}_{\perp,0}^{\,\!2}}
+\newcommand{\kperpmax}{{\bf{k}}_{\perp,{\rm max}}}
+\newcommand{\logyc}{\log_{10} (\qcut^{2}/s)}
+%==================================================

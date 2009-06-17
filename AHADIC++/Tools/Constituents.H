@@ -14,13 +14,11 @@ namespace AHADIC {
     double m_mass;
     int    m_ispin;
     double m_weight, m_smearing;
-    ConstituentCharacteristic(double _m=0., int _is=-1, 
-			      double _wt=0., double _sm=0) : 
-      m_mass(_m), m_ispin(_is), m_weight(_wt), m_smearing(_sm/_m) {}
+    ConstituentCharacteristic(double _m=0., int _is=-1, double _wt=0.) : 
+      m_mass(_m), m_ispin(_is), m_weight(_wt) {}
 
     double Mass()      { return m_mass;     }
     double TotWeight() { return m_weight;   }
-    double Smearing()  { return m_smearing; }
     int    ISpin()     { return m_ispin;    }
   };
 
@@ -40,7 +38,6 @@ namespace AHADIC {
     double Mass(const ATOOLS::Flavour & flav);
     double MinMass();
     double TotWeight(const ATOOLS::Flavour & flav);
-    double Smearing(ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);
 
     void   PrintConstituents();

@@ -11,8 +11,8 @@
 namespace AHADIC {
   class Gluon_Decayer {
   private:
-    double              m_pt2min, m_pt2max;
     Dipole_Splitter   * p_splitter;
+    double              m_pt2max_factor;
 
     FlavDecayMap        m_options;
     DipoleList          m_dipoles;
@@ -20,8 +20,8 @@ namespace AHADIC {
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool    FillDipoleList(SP(Proto_Particle_List) plin=NULL);
-    void    UpdatePPList(SP(Proto_Particle_List) plin=NULL);
+    bool    FillDipoleList(Proto_Particle_List * plin=NULL);
+    void    UpdatePPList(Proto_Particle_List * plin=NULL);
     void    PrintDipoleList();
 
     bool    DecayDipoles();
@@ -30,10 +30,11 @@ namespace AHADIC {
     void    AfterSplit(DipIter dip);
     void    MergeDipoles(DipIter & dip1,DipIter & dip2);
     void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
+    double  PT2Max(Dipole * dip) const;
   public:
     Gluon_Decayer(Dipole_Splitter *,bool=false);
     ~Gluon_Decayer();
-    bool DecayList(SP(Proto_Particle_List) plin=NULL);
+    bool DecayList(Proto_Particle_List * plin=NULL);
   };
 }
 #endif

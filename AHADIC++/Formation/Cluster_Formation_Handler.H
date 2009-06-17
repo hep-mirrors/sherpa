@@ -21,7 +21,7 @@ namespace AHADIC {
     Colour_Reconnections              * p_recons;
     Soft_Cluster_Handler              * p_softclusters;
 
-    Cluster_List                      * p_clulist, * p_primaries;
+    Cluster_List                      * p_clulist;
     ListOfPPLs                          m_partlists;
     std::vector<Cluster_List*>          m_clulists;
 
@@ -29,8 +29,8 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     bool ShiftOnMassShells();
-    bool ShiftList(SP(Proto_Particle_List));
-    SP(Proto_Particle_List) SelectFromList(ListOfPPLs * lppl,SP(Proto_Particle_List) ppl=NULL);
+    bool ShiftList(Proto_Particle_List *);
+    Proto_Particle_List * SelectFromList(ListOfPPLs * lppl,Proto_Particle_List * ppl=NULL);
     bool ExtractSinglets(ATOOLS::Blob *);
     bool FormOriginalClusters();
     bool ApplyColourReconnections();
@@ -38,7 +38,7 @@ namespace AHADIC {
     bool MergeClusterListsIntoOne();
 
   public:
-    Cluster_Formation_Handler(Cluster_List*, Cluster_List*, bool=false);
+    Cluster_Formation_Handler(Cluster_List*, bool=false);
     ~Cluster_Formation_Handler();
 
     int FormClusters(ATOOLS::Blob *);

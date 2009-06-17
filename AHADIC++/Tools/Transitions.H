@@ -36,7 +36,7 @@ namespace AHADIC {
   public:
     Single_Transitions();
     ~Single_Transitions();
-    bool                    MustDesintegrate(SP(Cluster),ATOOLS::Flavour &,ATOOLS::Flavour &);
+    bool                    MustDesintegrate(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     ATOOLS::Flavour         GetLightestConstituent() { return m_lightest_constituent; }
     ATOOLS::Flavour         GetLightestTransition(const Flavour_Pair &);
     ATOOLS::Flavour         GetHeaviestTransition(const Flavour_Pair &);
@@ -51,7 +51,9 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) {
-      if ((flpair1.first.HadMass()+flpair1.second.HadMass())<
+      if (flpair1.first==flpair2.first &&
+	  flpair1.second==flpair2.second) return true;
+      if ((flpair1.first.HadMass()+flpair1.second.HadMass())<=
 	  (flpair2.first.HadMass()+flpair2.second.HadMass())) return false;
       return true;
     }

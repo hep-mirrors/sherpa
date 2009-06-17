@@ -1,60 +1,82 @@
 #ifndef AHADIC_Tools_Soft_Cluster_Handler_H
 #define AHADIC_Tools_Soft_Cluster_Handler_H
 
-#include "AHADIC++/Tools/Transitions.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Strong_Coupling.H"
+#include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "AHADIC++/Tools/Transitions.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 
 namespace AHADIC {
-  struct PTdist {
+  struct TransWeight {
     enum code {
-      sinthet       = 1,
-      alphadist     = 2,
-      sinthet_iso   = 11,
-      alphadist_iso = 12
+      waveonly         = 3,
+      nonrelativistic  = 2,
+      relativistic     = 1
+    };
+  };
+
+  struct DecayWeight {
+    enum code {
+      waves                   = 4,
+      phasespace_masses_waves = 3,
+      phasespace_waves        = 2,
+      phasespace              = 1,
+      off                     = 0
     };
   };
 
   class Soft_Cluster_Handler {
   private:
     Strong_Coupling    * p_as;
+    Dipole_Splitter    * p_splitter;
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
-    PTdist::code         m_ptmode;
-    double               m_offset1,m_offset2,m_kappa,m_alpha,m_eta,m_photonenergy;
-    
+    TransWeight::code    m_tweightmode;
+    DecayWeight::code    m_dweightmode;
+    double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi,m_pt2max;
     Cluster_List *       m_clin;
 
+    long int             m_transitions, m_dtransitions, m_decays, m_forceddecays, m_lists;
     bool                                      m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
 
-    int    CheckCluster(SP(Cluster),bool,bool=false);
-    int    EnforceDecay(SP(Cluster)); 
-    double DecayWeight(SP(Cluster),ATOOLS::Flavour &,ATOOLS::Flavour &);
-    double TransformWeight(SP(Cluster),ATOOLS::Flavour &,bool=false);
-    double SelectPT(double PTmax,bool peaked=true);
-    void   FixHHDecay(SP(Cluster),ATOOLS::Blob *);
+    bool          TreatSingleCluster(Cluster *,ATOOLS::Blob *);
+    bool          CheckListForTreatment(Cluster_List *);
+    int           CheckCluster(Cluster *,bool);
+
+    double        TransformWeight(Cluster *,ATOOLS::Flavour &,
+				  const bool & lighter=false,
+				  const bool & enforce=false);
+    double        TransformKin(const double MC,const ATOOLS::Flavour & flav,
+			       const bool & enforce=false);
+
+    double        DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
+			      const bool enforce=false);
+    bool          ClusterAnnihilation(Cluster * cluster,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    void          FixHHDecay(Cluster * cluster,ATOOLS::Blob * blob,
+			     const ATOOLS::Flavour had1,const ATOOLS::Flavour had2);
 
 
-    bool   CheckIfAllowed(Cluster_List * clin,double & E);
-    bool   UpdateTransitions(Cluster_List * clin);
-    bool   TryToEnforceTransition(Cluster_List * clin);
-    bool   ShiftMomenta(Cluster_List *);
+    bool          CheckIfAllowed(Cluster_List * clin,double & E);
+    bool          UpdateTransitions(Cluster_List * clin);  
+    bool          EnforcedTransition(Cluster_List * clin);
+    bool          ShiftMomenta(Cluster_List *);
+    bool          TryLocalCompensation(Cluster_List *);
+    bool          ForceMomenta(Cluster_List *);
+    bool          UpdateClusterDecayKinematics(Cluster * cluster);
+    bool          AttachHadronsToBlob(Cluster_List * clin,ATOOLS::Blob * blob);
+    ATOOLS::Vec4D SumMomentum(Cluster_List * clin);
   public:
-    Soft_Cluster_Handler(Strong_Coupling * as,
-			 Single_Transitions * singletransitions,
-			 Double_Transitions * doubletransitions,
-			 const double offset1,const double offset2,
-			 const double kappa,const double alpha,const double eta,
-			 const double photonenergy,bool ana=false);
+    Soft_Cluster_Handler(bool ana=false);
     ~Soft_Cluster_Handler();
-    bool   TreatClusterList(Cluster_List *,ATOOLS::Blob *);
-
+    bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *,bool cludec=false);
+    bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
+    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,Cluster_List * clin=0);
   };
 
   /*!
