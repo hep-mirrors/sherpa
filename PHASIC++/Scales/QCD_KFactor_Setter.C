@@ -68,6 +68,7 @@ double QCD_KFactor_Setter::KFactor()
   if (p_proc->OrderQCD()<0 || p_proc->OrderEW()<0) {
     THROW(fatal_error,"Couplings not set for process '"+p_proc->Name()+"'");
   }
+  m_kfkey<<1.0;
   if (m_kfkey.Doubles().size()>2) {
     if (p_proc->OrderQCD()>0) {
       double cw=pow(MODEL::as->AlphaS(m_kfkey[2])/
@@ -85,21 +86,20 @@ double QCD_KFactor_Setter::KFactor()
 		     <<" / "<<MODEL::as->AlphaS(m_kfkey[0])
 		     <<" => K = "<<cw<<" / "<<m_kfkey.Weight()/cw
 		     <<" -> "<<m_kfkey.Weight()<<"\n";
-      return m_kfkey.Weight();
     }
-    return 1.0;
   }
-  if (p_proc->OrderQCD()>0) {
-    m_kfkey<<pow(MODEL::as->AlphaS(m_kfkey[0])/
-		 MODEL::as->AlphaS(rpa.gen.CplScale()),p_proc->OrderQCD());
-    msg_Debugging()<<METHOD<<"(): "<<p_proc->Name()<<" ("<<p_proc->NQCD()<<","
-		   <<p_proc->OrderQCD()<<") {\n"
-		   <<"  \\mu_{fac}   = "<<sqrt(m_kfkey[1])<<"\n"
-		   <<"  \\mu_{ren}   = "<<sqrt(m_kfkey[0])<<"\n"
-		   <<"} -> as = "<<MODEL::as->AlphaS(m_kfkey[0])
-		   <<" => K = "<<m_kfkey.Weight()<<"\n";
-    return m_kfkey.Weight();
-  } 
-  return 1.0;
+  else {
+    if (p_proc->OrderQCD()>0) {
+      m_kfkey<<pow(MODEL::as->AlphaS(m_kfkey[0])/
+		   MODEL::as->AlphaS(rpa.gen.CplScale()),p_proc->OrderQCD());
+      msg_Debugging()<<METHOD<<"(): "<<p_proc->Name()<<" ("<<p_proc->NQCD()<<","
+		     <<p_proc->OrderQCD()<<") {\n"
+		     <<"  \\mu_{fac}   = "<<sqrt(m_kfkey[1])<<"\n"
+		     <<"  \\mu_{ren}   = "<<sqrt(m_kfkey[0])<<"\n"
+		     <<"} -> as = "<<MODEL::as->AlphaS(m_kfkey[0])
+		     <<" => K = "<<m_kfkey.Weight()<<"\n";
+    } 
+  }
+  return m_kfkey.Weight();
 }
 
