@@ -28,7 +28,6 @@
 (me){
   ME_SIGNAL_GENERATOR Comix;
   EVENT_GENERATION_MODE Weighted;
-  FACTORIZATION_SCALE max(1.69,PPerp2(p[2]));
   SCALE_SCHEME QCD;
 }(me);
 (model){
