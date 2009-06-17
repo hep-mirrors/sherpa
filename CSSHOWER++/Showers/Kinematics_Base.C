@@ -177,7 +177,7 @@ int Kinematics_FI::MakeKinematics
   double sij=-((1.0-x)*(Q2-ma2)-(mi2+mj2))/x;
   double xi=x*(tt-sqrt(tt*tt-4.*ma2*mij2))/
     (t-sqrt(t*t-4.*ma2*sij*x*x));
-  double gamt=p1*p2+sqrt(sqr(p1*p2)-ma2*mij2);
+  double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-ma2*mij2);
   double bet=1.0-ma2*mij2/(gamt*gamt), gam=gamt/xi;
   Vec4D l=(p1-mij2/gamt*p2)/bet;
   Vec4D n=(p2-ma2/gamt*p1)/bet;
@@ -284,7 +284,7 @@ int Kinematics_IF::MakeKinematics
   double sik=-((1.0-z)*(Q2-ma2)-(mi2+mk2))/z;
   double xi=z*(tt-sqrt(tt*tt-4.*mai2*mk2))/
     (t-sqrt(t*t-4.*ma2*sik*z*z));
-  double gamt=p1*p2+sqrt(sqr(p1*p2)-mai2*mk2);
+  double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-mai2*mk2);
   double bet=1.0-mai2*mk2/(gamt*gamt), gam=gamt/xi;
   Vec4D l=(p1-mai2/gamt*p2)/bet;
   Vec4D n=(p2-mk2/gamt*p1)/bet;
