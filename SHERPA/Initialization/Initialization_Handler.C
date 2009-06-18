@@ -251,7 +251,8 @@ void Initialization_Handler::ShowParameterSyntax()
   if (helpi>0) {
     msg->SetLevel(2);
     InitializeTheAnalyses();
-    p_analysis->ShowSyntax(helpi);
+    if (p_analysis) p_analysis->ShowSyntax(helpi);
+    else msg_Out()<<"No analysis available."<<std::endl;
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_VARIABLE_SYNTAX")) helpi=0;
