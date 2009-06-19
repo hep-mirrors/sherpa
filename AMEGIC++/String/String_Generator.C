@@ -542,6 +542,7 @@ void String_Generator::Calculate(Values* val)
       break;
       case 10: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),EpsCalc(arg[0],arg[1],arg[2],arg[3],arg[4]));
+      break;
       case 11: (*p_zxl)[i].value = 
  		Kabbala((*p_zxl)[i].value.String(),Ucalc());
       break;
