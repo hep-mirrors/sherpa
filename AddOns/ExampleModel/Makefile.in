@@ -11,7 +11,7 @@ LDFLAGS=$(shell $(SHERPA_INSTALL)/bin/Sherpa-config --ldflags)
 OBJECTS=$(SOURCES:.C=.o)
 
 all: $(SOURCES) $(OBJECTS) 
-	$(CC) -shared -o libSMZprime.so $(OBJECTS) $(LIB)
+	$(CC) -shared -o libSMZprime.so $(OBJECTS) $(LDFLAGS)
 
 .C.o:
 	$(CC) $(CXXFLAGS) -c $< -o $@
