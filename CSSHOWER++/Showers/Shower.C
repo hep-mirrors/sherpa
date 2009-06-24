@@ -246,7 +246,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinFI.JF()<<"\n";
 	int stat(m_kinFI.MakeKinematics((*splitter),m_flavB,m_flavC,newpC));
-	if (stat>0) stat=RemnantTest((*splitter)->GetSpect());
+	if (stat>0) {
+	  stat=RemnantTest((*splitter)->GetSpect());
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
@@ -298,7 +301,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinIF.JF()<<"\n";
 	int stat(m_kinIF.MakeKinematics((*splitter),m_flavA,m_flavC,newpC));
-	if (stat>0) stat=RemnantTest(*splitter);
+	if (stat>0) {
+	  stat=RemnantTest(*splitter);
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
@@ -353,7 +359,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinII.JF()<<"\n";
 	int stat(m_kinII.MakeKinematics((*splitter),m_flavA,m_flavC,newpC));
-	if (stat>0) stat=RemnantTest(*splitter);
+	if (stat>0) {
+	  stat=RemnantTest(*splitter);
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
