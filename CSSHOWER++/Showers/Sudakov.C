@@ -93,7 +93,7 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_k0sq=k0sq;
   m_as_is_fac=isfac;
   m_as_fs_fac=fsfac;
-  for (std::list<Splitting_Function_Base*>::iterator
+  for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
     if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac)) {
       delete *sit;
@@ -223,6 +223,13 @@ bool Sudakov::Dice(Parton * split)
   }
   }  
   if (m_lastint<=0.0 || IsBad(m_lastint)) return false;
+  double last=0.0;
+  for (size_t i(0);i<m_splittings.size();++i)
+    m_partint[i]=last+=m_splittings[i]->Last();
+  if (!IsEqual(m_partint.back(),m_lastint))
+    msg_Error()<<METHOD<<"(): Error, last = "<<m_lastint
+	       <<" vs. "<<m_partint.back()<<"."<<std::endl;
+  m_lastint=m_partint.back();
 
   m_kperp2       = split->KtStart();
   double x(0.); 

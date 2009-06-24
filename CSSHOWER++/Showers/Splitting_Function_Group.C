@@ -7,7 +7,7 @@ using namespace std;
 
 ostream& CSSHOWER::operator<<(std::ostream& str, Splitting_Function_Group &group) {
   str<<"Splitting_Function_Group : "<<group.m_lastint<<endl;
-  for (std::list<Splitting_Function_Base *>::iterator splitter=group.m_splittings.begin();
+  for (std::vector<Splitting_Function_Base *>::iterator splitter=group.m_splittings.begin();
        splitter!=group.m_splittings.end();splitter++) {
     str<<(**splitter);
   }
@@ -27,36 +27,32 @@ Splitting_Function_Group::~Splitting_Function_Group() {
 
 void Splitting_Function_Group::Add(Splitting_Function_Base * split) {
   m_splittings.push_back(split);
+  m_partint.push_back(0.0);
 }
 
 
-void Splitting_Function_Group::SelectOne() {
-  double disc = m_lastint;
-  double random;
-  bool valid=false;
-  while (!valid) {
-    random = ran.Get();
-    if (random!=0.0) valid=true;
+void Splitting_Function_Group::SelectOne()
+{
+  double disc(ran.Get()*m_lastint);
+  size_t l(0), r(m_splittings.size()-1), c((l+r)/2);
+  double a(m_partint[c]);
+  while (r-l>1) {
+    if (disc<a) r=c;
+    else l=c;
+    c=(l+r)/2;
+    a=m_partint[c];
   }
-  disc *= random;
-  m_splitter  = m_splittings.begin();
-  do {
-    disc -= (*m_splitter)->Last();
-    if (disc<=0.) break;
-    m_splitter++;
-  } while (m_splitter!=m_splittings.end());
-  if (m_splitter!=m_splittings.end()) p_selected = (*m_splitter);
-  else {
-    msg_Error()<<"Error in Splitting_Function_Group::SelectOne() : "<<endl
-	       <<"   Try to select a splitting with "<<m_lastint<<" "<<disc<<endl;
-    abort();
-  }
+  if (disc<m_partint[l]) r=l;
+  if (r>m_splittings.size()) THROW(fatal_error,"Internal error");
+  m_splitter = m_splittings.begin();
+  for (size_t i(0);i<r;++i) ++m_splitter;
+  p_selected=*m_splitter;
 }
 
 double Splitting_Function_Group::OverIntegrated(const double zmin,const double zmax,
 						const double scale,const double xbj) {
-  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
-    m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj); 
+  for (size_t i(0);i<m_splittings.size();++i)
+    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj); 
   return m_lastint;
 }
 

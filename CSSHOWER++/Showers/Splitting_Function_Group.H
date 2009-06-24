@@ -7,9 +7,10 @@
 namespace CSSHOWER {
   class Splitting_Function_Group : public Splitting_Function_Base {
   protected:
-    std::list<Splitting_Function_Base *>           m_splittings;
-    std::list<Splitting_Function_Base *>::iterator m_splitter;
+    std::vector<Splitting_Function_Base *>           m_splittings;
+    std::vector<Splitting_Function_Base *>::iterator m_splitter;
     Splitting_Function_Base *            p_selected;
+    std::vector<double> m_partint;
   public:
     Splitting_Function_Group(): p_selected(NULL) {}
 
