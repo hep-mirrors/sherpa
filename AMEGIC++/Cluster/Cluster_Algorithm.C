@@ -22,7 +22,7 @@ Cluster_Algorithm::~Cluster_Algorithm()
 {
   for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
        xsit!=m_xsmap.end();++xsit) delete xsit->second;
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
   if (p_combi) delete p_combi;
 }
 
@@ -434,8 +434,8 @@ void Cluster_Algorithm::Convert()
     ->GetSelector("Jetfinder");
   Combine_Table *ct_tmp(p_ct);
   while (ct_tmp->Up()) ct_tmp=ct_tmp->Up();
-  if (p_ampl) delete p_ampl;
-  p_ampl = new Cluster_Amplitude();
+  if (p_ampl) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
   p_ampl->SetNIn(p_proc->NIn());
@@ -475,7 +475,7 @@ void Cluster_Algorithm::Convert()
       }
       else if (i==iwin) {
 	p_ampl->Legs().back()->SetK(ampl->Leg(kwin)->Id());
-	p_ampl->SetNew(p_ampl->Legs().back()->Id());
+	p_ampl->SetIdNew(p_ampl->Legs().back()->Id());
 	if (win.Point()->t>10) {
 	  p_ampl->Legs().back()->SetStat(3);
 	  SetNMax(p_ampl->Prev(),id,win.Point()->t-10);

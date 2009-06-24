@@ -569,7 +569,7 @@ double Apacic::PseudoShowerWeight(Cluster_Amplitude *const ampl)
   msg_Indent();
   if (p_ampl) {
     while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
-    delete p_ampl;
+    p_ampl->Delete();
     p_ampl=NULL;
   }
   // calculate splitting weight
@@ -646,7 +646,7 @@ int Apacic::TrialEmission(const int mode)
   if (res!=1) return -1;
   if (p_ampl) {
     while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
-    delete p_ampl;
+    p_ampl->Delete();
   }
   p_ampl = p_rampl->Copy();
   p_ampl=p_ampl->InitNext();

@@ -19,7 +19,7 @@ Cluster_Algorithm::Cluster_Algorithm():
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
 }
 
 bool Cluster_Algorithm::Cluster(Single_Process *const xs)
@@ -31,8 +31,8 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
-  if (p_ampl) delete p_ampl;
-  p_ampl = new Cluster_Amplitude();
+  if (p_ampl) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
   p_ampl->SetJF(jf);
   const Vec4D_Vector &moms(xs->Integrator()->Momenta());
   me->SetColours(moms);

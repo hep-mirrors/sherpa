@@ -114,38 +114,41 @@ double METS_Scale_Setter::CalculateScale
   }
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
   m_p.resize(ampl->Legs().size());
-  for (size_t i(0);i<m_p.size();++i) m_p[i]=ampl->Leg(i)->Mom();
-  double sum(0.0), norm(0.0);
   ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
 		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
-  if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
-      (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
-      (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
-    sum+=1.0/(m_p[0]+m_p[1]).Abs2();
-    norm+=1.0;
+  size_t qcd(0);
+  for (size_t i(0);i<m_p.size();++i) {
+    m_p[i]=ampl->Leg(i)->Mom();
+    if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
-  if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
-      (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
-      (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
-    sum+=1.0/dabs((m_p[0]+m_p[2]).Abs2());
-    norm+=1.0;
+  double kt2cmin(std::numeric_limits<double>::max());
+  if (qcd!=15) {
+    if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
+	(c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
+	(c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
+      kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+    }
+    if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
+	(c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
+	(c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
+      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+    }
+    if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
+	(c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
+	(c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
+      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+    }
   }
-  if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
-      (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
-      (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
-    sum+=1.0/dabs((m_p[0]+m_p[3]).Abs2());
-    norm+=1.0;
+  if (kt2cmin==std::numeric_limits<double>::max()) {
+    kt2cmin=1.0/(m_p[0]+m_p[1]).Abs2();
+    kt2cmin+=1.0/(m_p[0]+m_p[2]).Abs2();
+    kt2cmin+=1.0/(m_p[0]+m_p[3]).Abs2();
+    kt2cmin=-1.0/kt2cmin;
   }
-  if (norm==0.0) {
-    sum+=1.0/(m_p[0]+m_p[1]).Abs2();
-    sum+=1.0/dabs((m_p[0]+m_p[2]).Abs2());
-    sum+=1.0/dabs((m_p[0]+m_p[3]).Abs2());
-    norm+=3.0;
-  }
-  m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,norm/sum);
+  m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,kt2cmin);
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
   m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
   m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();

@@ -27,7 +27,7 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
 }
 
 template <class SType> ColorID
@@ -436,8 +436,8 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
   Current_Base *fcur(ccurs[0]=p_bg->Currents().back().front());
-  if (p_ampl) delete p_ampl;
-  p_ampl = new Cluster_Amplitude();
+  if (p_ampl) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
   p_ampl->SetNIn(xs->NIn());

@@ -101,7 +101,7 @@ double FF_Dipole::GenerateWeight(const Cluster_Amplitude *ampl)
   Calculate(ampl->IdLeg(m_li.Id()),
 	    ampl->IdLeg(m_lj.Id()),wampl->IdLeg(m_lk.Id()),
 	    m_rn[0],m_rn[1],m_rn[2],pijt,pkt);
-  delete wampl;
+  wampl->Delete();
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]

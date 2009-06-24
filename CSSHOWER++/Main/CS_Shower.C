@@ -132,7 +132,7 @@ CS_Shower::~CS_Shower()
   CleanUp();
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
   delete p_next;
 }
 
@@ -665,7 +665,7 @@ double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,
 
 ATOOLS::Cluster_Amplitude *CS_Shower::GetRealEmissionAmplitude()
 {
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
   Cluster_Amplitude *ampl(p_rampl);
   while (ampl->Next()) ampl=ampl->Next();
   p_ampl=ampl->Copy();
@@ -705,7 +705,7 @@ ATOOLS::Cluster_Amplitude *CS_Shower::GetRealEmissionAmplitude()
 	p_ampl->IdLeg(cl->Id())->SetQ2Shower(split[i]->KtStart());
       }
     }
-  ampl->SetNew(1<<p_ampl->Legs().size());
+  ampl->SetIdNew(1<<p_ampl->Legs().size());
   return p_ampl;
 }
 
@@ -725,7 +725,7 @@ double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
   p_ms=ampl->MS();
   p_shower->SetMS(p_ms);
   Cluster_Amplitude *next(ampl->Next());
-  Cluster_Leg *lj(next->IdLeg(next->New()));
+  Cluster_Leg *lj(next->IdLeg(next->IdNew()));
   msg_Debugging()<<*ampl<<"\n"<<*next<<"\nnew = "<<*lj<<"\n";
   double wgt(0.0);
   for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -781,7 +781,7 @@ double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
 double CS_Shower::CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl)
 {
   double kt2(ampl->KT2QCD());
-  size_t idi(ampl->Next()->IdLeg(ampl->Next()->New())->Id());
+  size_t idi(ampl->Next()->IdLeg(ampl->Next()->IdNew())->Id());
   double cf((idi&((1<<ampl->NIn())-1))?
 	    p_shower->GetSudakov()->ISCplFac():
 	    p_shower->GetSudakov()->FSCplFac());

@@ -18,6 +18,14 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &ostr,const ColorID &col);
 
   class Cluster_Amplitude;
+  class Cluster_Leg;
+
+  class ClusterLeg_PVector: public std::vector<Cluster_Leg*> {
+  public:
+
+    ~ClusterLeg_PVector();
+
+  };// end of class ClusterLeg_PVector
 
   class Cluster_Leg {
   private:
@@ -31,15 +39,28 @@ namespace ATOOLS {
 
     double m_q2s;
 
+    static ClusterLeg_PVector s_legs;
+
   public:
 
-    inline Cluster_Leg(Cluster_Amplitude *const ampl,const Cluster_Leg &ref)
+    inline Cluster_Leg(Cluster_Amplitude *const ampl,
+		       const Cluster_Leg &ref)
     { *this=ref; p_ampl=ampl; }
     inline Cluster_Leg(Cluster_Amplitude *const ampl,
 		       const Vec4D &p,const Flavour &fl,
 		       const ColorID &c=ColorID()):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_k(0),
       m_p(p), m_fl(fl), m_c(c), m_q2s(-1.0) {}
+
+    inline ~Cluster_Leg() {}
+
+    static Cluster_Leg *New(Cluster_Amplitude *const ampl,
+			    const Cluster_Leg &ref);
+    static Cluster_Leg *New(Cluster_Amplitude *const ampl,
+			    const Vec4D &p,const Flavour &fl,
+			    const ColorID &c=ColorID());
+
+    void Delete();
 
     // inline functions
     inline void SetId(const size_t &id)   { m_id=id; }

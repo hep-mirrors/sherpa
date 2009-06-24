@@ -18,7 +18,7 @@
 }(selector)
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
-  FACTORIZATION_SCALE = Abs2(p[2]+p[3])
+  FACTORIZATION_SCALE = max(1.7,Abs2(p[2]+p[3]))
 }(me)
 (model){
   # set quark masses consistent with default PDF cteq6l

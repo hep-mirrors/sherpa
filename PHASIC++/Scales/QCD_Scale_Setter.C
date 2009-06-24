@@ -145,7 +145,7 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
   }
   m_p=momenta;
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  Cluster_Amplitude *ampl(new Cluster_Amplitude());
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
   if (p_ci==NULL) {
     for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
@@ -206,6 +206,7 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
   m_p.resize(ampl->Legs().size());
   Vec4D psum;
   int csum[4]={0,0,0,0};
+  size_t qcd(0);
   ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
 		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
   for (size_t i(0);i<m_p.size();++i) {
@@ -213,42 +214,42 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     psum+=m_p[i]=li->Mom();
     ++csum[c[i].m_i];
     --csum[c[i].m_j];
+    if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
   while (ampl->Prev()) ampl=ampl->Prev();
-  delete ampl;
+  ampl->Delete();
   if (!IsEqual(psum,Vec4D(),1.0e-6))
     msg_Error()<<METHOD<<"(): Momentum not conserved. "<<*ampl<<std::endl;
   if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0)
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
-  double sum(0.0), norm(0.0);
-  if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
-      (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
-      (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
-    sum+=1.0/(m_p[0]+m_p[1]).Abs2();
-    norm+=1.0;
+  double kt2cmin(std::numeric_limits<double>::max());
+  if (qcd!=15) {
+    if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
+	(c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
+	(c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
+      kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+    }
+    if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
+	(c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
+	(c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
+      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+    }
+    if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
+	(c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
+	(c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
+	(c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
+      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+    }
   }
-  if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
-      (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
-      (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
-    sum+=1.0/dabs((m_p[0]+m_p[2]).Abs2());
-    norm+=1.0;
+  if (kt2cmin==std::numeric_limits<double>::max()) {
+    kt2cmin=1.0/(m_p[0]+m_p[1]).Abs2();
+    kt2cmin+=1.0/(m_p[0]+m_p[2]).Abs2();
+    kt2cmin+=1.0/(m_p[0]+m_p[3]).Abs2();
+    kt2cmin=-1.0/kt2cmin;
   }
-  if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
-      (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
-      (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
-      (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
-    sum+=1.0/dabs((m_p[0]+m_p[3]).Abs2());
-    norm+=1.0;
-  }
-  if (norm==0.0) {
-    sum+=1.0/(m_p[0]+m_p[1]).Abs2();
-    sum+=1.0/dabs((m_p[0]+m_p[2]).Abs2());
-    sum+=1.0/dabs((m_p[0]+m_p[3]).Abs2());
-    norm+=3.0;
-  }
-  m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,norm/sum);
+  m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,kt2cmin);
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
   m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
   m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();
@@ -380,7 +381,7 @@ void QCD_Setter_CS_CD::Combine
   li->SetId(li->Id()+lj->Id());
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
-  delete *lit;
+  (*lit)->Delete();
   ampl.Legs().erase(lit);
 }
 

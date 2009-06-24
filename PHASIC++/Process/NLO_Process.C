@@ -181,14 +181,14 @@ double NLO_Process::Differential(const Vec4D_Vector &p)
       while (true) {
         ampl=CreateAmplitude(this,p);
         if (!p_int->EEG()->GeneratePoint(ampl)) {
-          delete ampl;
+          ampl->Delete();
           msg_Error()<<METHOD<<"(): EEG failure. Discard point."<<std::endl;
           return m_last=0.0;
         }
         next=ampl->Next();
         p_int->EEG()->GenerateWeight(next);
         if (p_int->EEG()->Weight()>0.0) break;
-        delete ampl;
+        ampl->Delete();
       }
       // calculate dsigma(R-S) for N+1 phase space
       if (p_rproc->IsGroup() && p_sproc->IsGroup()) {
@@ -271,7 +271,7 @@ double NLO_Process::Differential(const Vec4D_Vector &p)
         if (rs_sum!=0.0) rs_sum+=p_rproc->Differential(*next);
       }
 //       THROW(normal_exit,"manual exit");
-      delete ampl;
+      ampl->Delete();
       if (rs_sum==0.0) AddPoint(0.0);
     }
     m_last+=rs_sum*p_int->EEG()->Weight();
@@ -404,7 +404,7 @@ Process_Base * NLO_Process::FindReal(const Cluster_Amplitude * real)
 Cluster_Amplitude *NLO_Process::CreateAmplitude(const Process_Base * proc,
                                                 const Vec4D_Vector &p)
 {
-  Cluster_Amplitude *ampl = new Cluster_Amplitude();
+  Cluster_Amplitude *ampl = Cluster_Amplitude::New();
   ampl->SetMS(proc->Generator());
   ampl->SetNIn(proc->NIn());
   Int_Vector ci(p.size(),0), cj(p.size(),0);
@@ -432,7 +432,7 @@ void NLO_Process::SetIds(ATOOLS::Cluster_Amplitude *bam,
   // set IDs for em/spec
   bam->Leg(sdt->Lijt())->SetId((1<<sdt->Li())|(1<<sdt->Lj()));
   bam->Leg(sdt->Lkt())->SetId(1<<sdt->Lk());
-  ram->SetNew((1<<sdt->Lj()));
+  ram->SetIdNew((1<<sdt->Lj()));
   // reset IDs for uninvolved partons
   // -> ordering unchanged, but possibly moved backwards
   // careful: exclusion for uninvolved partons of same

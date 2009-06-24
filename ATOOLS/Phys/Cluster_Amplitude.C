@@ -5,6 +5,17 @@
 
 using namespace ATOOLS;
 
+ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
+{
+  while (!empty()) {
+    Cluster_Amplitude *ampl(back());
+    pop_back();
+    delete ampl;
+  }
+}
+
+ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
+
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   p_prev(prev), p_next(NULL), 
   m_oew(0), m_oqcd(0), m_swap(0), m_nin(0), m_new(0),
@@ -17,23 +28,53 @@ Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
 
 Cluster_Amplitude::~Cluster_Amplitude()
 {
-  if (p_next) delete p_next;
-  for (size_t i(0);i<m_legs.size();++i) delete m_legs[i];
+  if (p_next) p_next->Delete();
+  for (size_t i(0);i<m_legs.size();++i) m_legs[i]->Delete();
   if (p_prev) p_prev->p_next=NULL;
+}
+
+Cluster_Amplitude *Cluster_Amplitude::New
+(Cluster_Amplitude *const prev)
+{
+  if (s_ampls.empty()) return new Cluster_Amplitude(prev);
+  Cluster_Amplitude *ca(s_ampls.back());
+  s_ampls.pop_back();
+  ca->p_prev=prev;
+  ca->p_next=NULL;
+  ca->m_oew=ca->m_oqcd=0;
+  ca->m_swap=0;
+  ca->m_nin=ca->m_new=0;
+  ca->m_mur2=ca->m_muf2=ca->m_kt2qcd=0.0; 
+  ca->m_x1=ca->m_x2=1.0;
+  ca->m_rbmax=1.0;
+  ca->p_jf=NULL;
+  if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
+  return ca;
+}
+
+void Cluster_Amplitude::Delete()
+{
+  if (p_next) p_next->Delete();
+  for (size_t i(0);i<m_legs.size();++i) m_legs[i]->Delete();
+  m_legs.clear();
+  m_cmap.clear();
+  if (p_prev) p_prev->p_next=NULL;
+  p_prev=p_next=NULL;
+  s_ampls.push_back(this);
 }
 
 void Cluster_Amplitude::CreateLeg
 (const Vec4D &p,const Flavour &fl,
  const ColorID &col,const size_t &id)
 {
-  m_legs.push_back(new Cluster_Leg(this,p,fl,col));
+  m_legs.push_back(Cluster_Leg::New(this,p,fl,col));
   if (id!=std::string::npos) m_legs.back()->SetId(id);
   else m_legs.back()->SetId(1<<(m_legs.size()-1));
 }
 
 Cluster_Amplitude *Cluster_Amplitude::Copy() const
 {
-  Cluster_Amplitude *copy(new Cluster_Amplitude());
+  Cluster_Amplitude *copy(Cluster_Amplitude::New());
   copy->CopyFrom(this);
   return copy;
 }
@@ -46,7 +87,7 @@ void Cluster_Amplitude::CopyFrom
   p_prev=sprev;
   p_next=snext;
   for (size_t i(0);i<m_legs.size();++i)
-    m_legs[i] = new Cluster_Leg(this,*master->m_legs[i]);
+    m_legs[i] = Cluster_Leg::New(this,*master->m_legs[i]);
 }
 
 Cluster_Amplitude *Cluster_Amplitude::CopyNext() const
@@ -87,9 +128,9 @@ void Cluster_Amplitude::CombineLegs
   for (ClusterLeg_Vector::iterator clit(m_legs.begin());
        clit!=m_legs.end();++clit) {
     if (*clit==i || *clit==j) {
-      *clit = new Cluster_Leg(this,i->Mom()+j->Mom(),fl,col);
-      delete i;
-      delete j;
+      *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col);
+      i->Delete();
+      j->Delete();
       for (++clit;clit!=m_legs.end();++clit)
 	if (*clit==i || *clit==j) {
 	  clit=m_legs.erase(clit);
@@ -102,14 +143,14 @@ void Cluster_Amplitude::CombineLegs
 
 Cluster_Amplitude *Cluster_Amplitude::InitNext()
 {
-  if (p_next!=NULL) delete p_next;
-  p_next = new Cluster_Amplitude(this);
+  if (p_next!=NULL) p_next->Delete();
+  p_next = Cluster_Amplitude::New(this);
   return p_next;
 }
 
 void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next) 
 {
-  if (p_next!=NULL) delete p_next;
+  if (p_next!=NULL) p_next->Delete();
   if (next->p_prev) next->p_prev->p_next=NULL;
   (p_next=next)->p_prev=this;
 }
@@ -119,13 +160,13 @@ void Cluster_Amplitude::DeletePrev()
   if (p_prev==NULL) return;
   p_prev->p_next=NULL;
   while (p_prev->Prev()) p_prev=p_prev->Prev();
-  delete p_prev;
+  p_prev->Delete();
   p_prev=NULL;
 }
 
 void Cluster_Amplitude::DeleteNext()
 {
-  if (p_next!=NULL) delete p_next;
+  if (p_next!=NULL) p_next->Delete();
   p_next=NULL;
 }
 
@@ -206,7 +247,7 @@ namespace ATOOLS {
     ostr<<"  oew = "<<ampl.OrderEW()
 	<<", oqcd = "<<ampl.OrderQCD()<<"\n";
     msg_Out()<<"  swap = "<<ampl.InSwaped()
-	     <<", new = "<<ID(ampl.New())<<"\n";
+	     <<", new = "<<ID(ampl.IdNew())<<"\n";
     if (ampl.ColorMap().size()) {
       std::string cs;
       for (CI_Map::const_iterator cit(ampl.ColorMap().begin());

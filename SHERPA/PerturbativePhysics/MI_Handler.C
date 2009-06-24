@@ -64,7 +64,7 @@ MI_Handler::~MI_Handler()
 #ifdef USING__Amisic
   if (p_amisic!=NULL) delete p_amisic;
 #endif
-  if (p_ampl) delete p_ampl;
+  if (p_ampl) p_ampl->Delete();
 }
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
@@ -220,8 +220,8 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
-  if (p_ampl) delete p_ampl;
-  p_ampl = new Cluster_Amplitude();
+  if (p_ampl) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
   const Vec4D_Vector &moms(xs->Integrator()->Momenta());
   me->SetColours(moms);
   double muf2(xs->ScaleSetter()->Scale(PHASIC::stp::fac));

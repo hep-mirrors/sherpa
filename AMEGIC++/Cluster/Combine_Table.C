@@ -410,28 +410,30 @@ Leg * Combine_Table::CombineLegs
 
 void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int maxl) 
 {
-  Cluster_Amplitude ampl;
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i=0;i<=maxl;++i)
-    ampl.CreateLeg(i<2?-moms[i]:moms[i],p_legs[0][i].Flav(),
-		   ColorID(),p_legs[0][i].ID());
+    ampl->CreateLeg(i<2?-moms[i]:moms[i],p_legs[0][i].Flav(),
+		    ColorID(),p_legs[0][i].ID());
   Vec4D_Vector after=p_clus->Combine
-    (ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
+    (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms);
   for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
+  ampl->Delete();
 }
 
 void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
 				     const int maxl,Vec4D *&omoms) 
 {
   omoms = new Vec4D[maxl];
-  Cluster_Amplitude ampl;
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i=0;i<=maxl;++i)
-    ampl.CreateLeg(i<2?-moms[i]:moms[i],p_legs[0][i].Flav(),
+    ampl->CreateLeg(i<2?-moms[i]:moms[i],p_legs[0][i].Flav(),
 		   ColorID(),p_legs[0][i].ID());
   Vec4D_Vector after=p_clus->Combine
-    (ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
+    (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms);
   for (size_t l=0; l<after.size(); ++l) omoms[l] = l<2?-after[l]:after[l];
+  ampl->Delete();
 }
 
 double Combine_Table::MinKt2() const
@@ -680,17 +682,18 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 {
   if (cit->first.m_flav.Kfcode()==kf_none) {
     cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
-    Cluster_Amplitude ampl;
+    Cluster_Amplitude *ampl(Cluster_Amplitude::New());
     for (int i=0;i<m_nlegs;++i)
-      ampl.CreateLeg(i<2?-p_moms[i]:p_moms[i],p_legs[0][i].Flav(),
+      ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],p_legs[0][i].Flav(),
 		     ColorID(),p_legs[0][i].ID());
     cit->second.m_pt2ij=p_clus->KPerp2
-      (ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,cit->second.m_mo,p_ms);
+      (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,cit->second.m_mo,p_ms);
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"
 		   <<cit->first.m_k<<"["<<p_legs[0][cit->first.m_k].Flav()
 		   <<"],"<<cit->second.m_mo<<") -> "<<cit->second.m_pt2ij<<std::endl;
+    ampl->Delete();
     return cit;
   }
   else {

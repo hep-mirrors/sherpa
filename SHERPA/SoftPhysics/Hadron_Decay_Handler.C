@@ -69,6 +69,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
+  if (p_ampl!=NULL) p_ampl->Delete();
   delete p_cans;
   if (p_hadrons) delete p_hadrons; p_hadrons=NULL;
 }
@@ -202,8 +203,8 @@ Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
 {
   msg_Debugging()<<METHOD<<"() {\n";
   msg_Indent();
-  if (p_ampl!=NULL) delete p_ampl;
-  p_ampl = new Cluster_Amplitude();
+  if (p_ampl!=NULL) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(this);
   for (int i(0);i<bl->NInP();++i) {
     Particle *p(bl->InParticle(i));

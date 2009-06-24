@@ -38,6 +38,9 @@
   MASS[4] = 1.3
   MASS[5] = 4.5
 }(model)
+(isr){
+  PDF_LIBRARY CTEQ6Sherpa;
+}(isr)
 (beam){
   BEAM_1  2212; BEAM_ENERGY_1 980;
   BEAM_2 -2212; BEAM_ENERGY_2 980;

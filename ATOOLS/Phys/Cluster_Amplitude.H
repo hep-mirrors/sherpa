@@ -10,6 +10,14 @@ namespace ATOOLS {
 
   typedef std::map<int,int> CI_Map;
 
+  class ClusterAmplitude_PVector: 
+    public std::vector<Cluster_Amplitude*> {
+  public:
+
+    ~ClusterAmplitude_PVector();
+
+  };// end of class ClusterAmplitude_PVector
+
   class Cluster_Amplitude {
   private:
 
@@ -25,11 +33,21 @@ namespace ATOOLS {
 
     Mass_Selector *p_ms;
 
-  public:
+    static ClusterAmplitude_PVector s_ampls;
+
+    friend class ClusterAmplitude_PVector;
+
+  protected:
 
     Cluster_Amplitude(Cluster_Amplitude *const prev=NULL);
 
     ~Cluster_Amplitude();
+
+  public:
+
+    static Cluster_Amplitude* New(Cluster_Amplitude *const prev=NULL);
+
+    void Delete();
 
     void CopyFrom(const Cluster_Amplitude *const master);
 
@@ -68,8 +86,8 @@ namespace ATOOLS {
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }
 
-    inline void SetNIn(const size_t &nin) { m_nin=nin; }
-    inline void SetNew(const size_t &id)  { m_new=id;  }
+    inline void SetNIn(const size_t &nin)  { m_nin=nin; }
+    inline void SetIdNew(const size_t &id) { m_new=id;  }
 
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
@@ -87,8 +105,8 @@ namespace ATOOLS {
 
     inline void SetMS(Mass_Selector *const ms) { p_ms=ms; }
 
-    inline size_t NIn() const { return m_nin; }
-    inline size_t New() const { return m_new; }
+    inline size_t NIn() const   { return m_nin; }
+    inline size_t IdNew() const { return m_new; }
 
     inline size_t OrderEW() const  { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }

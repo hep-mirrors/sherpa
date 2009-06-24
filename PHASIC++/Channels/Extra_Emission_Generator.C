@@ -196,7 +196,7 @@ bool Extra_Emission_Generator::GeneratePoint(Cluster_Amplitude *const ampl)
 		  ColorID(),1<<next->Legs().size());
   }
   next->Legs().back()->SetStat(1);
-  next->SetNew(next->Legs().back()->Id());
+  next->SetIdNew(next->Legs().back()->Id());
   msg_Debugging()<<*ampl<<"\n";
   active->GeneratePoint(next,&rns[1]);
   msg_Debugging()<<*next<<"\n";
