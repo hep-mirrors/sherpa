@@ -43,7 +43,7 @@ void Splitting_Function_Group::SelectOne()
     a=m_partint[c];
   }
   if (disc<m_partint[l]) r=l;
-  if (r>m_splittings.size()) THROW(fatal_error,"Internal error");
+  if (r>=m_splittings.size()) THROW(fatal_error,"Internal error");
   m_splitter = m_splittings.begin();
   for (size_t i(0);i<r;++i) ++m_splitter;
   p_selected=*m_splitter;
