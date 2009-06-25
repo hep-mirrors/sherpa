@@ -7,11 +7,6 @@
 namespace PDF {  
 
   class Structure_Function : public ISR_Base {
-  private:
-
-    double m_lastx, m_lastq2;
-    bool   m_lastres;
-
   public:
 
     // constructor
