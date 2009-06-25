@@ -28,6 +28,8 @@ namespace PHASIC {
     ATOOLS::Vec4D_Vector   m_p;
     ATOOLS::Flavour_Vector m_f;
 
+    SP(Color_Integrator) p_ci;
+
   public:
 
     METS_Scale_Setter(Process_Base *const proc,
@@ -101,6 +103,7 @@ double METS_Scale_Setter::CalculateScale
     m_kfkey.Assign(p_proc->Name(),3,0,p_proc->
 		   Integrator()->PSHandler()->GetInfo());
     m_kfkey.SetInfo(kfinfo);
+    p_ci=p_proc->Integrator()->ColorIntegrator();
   }
   p_proc->Integrator()->SetMomenta(momenta);
   p_proc->Generator()->SetClusterDefinitions
@@ -123,23 +126,40 @@ double METS_Scale_Setter::CalculateScale
   }
   double kt2cmin(std::numeric_limits<double>::max());
   if (qcd!=15) {
-    if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
-	(c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
-	(c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
-	(c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
-      kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+    if (p_ci==NULL) {
+      bool s[4]={ampl->Leg(0)->Flav().Strong(),
+		 ampl->Leg(1)->Flav().Strong(),
+		 ampl->Leg(2)->Flav().Strong(),
+		 ampl->Leg(3)->Flav().Strong()};
+      if ((s[0] && s[1]) || (s[2] && s[3])) {
+	kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+      }
+      if ((s[0] && s[2]) || (s[1] && s[3])) {
+	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+      }
+      if ((s[0] && s[3]) || (s[1] && s[2])) {
+	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+      }
     }
-    if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
-	(c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
-	(c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
-	(c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
-      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
-    }
-    if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
-	(c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
-	(c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
-	(c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
-      kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+    else {
+      if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
+	  (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
+	  (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
+	kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+      }
+      if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
+	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
+	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
+	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+      }
+      if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
+	  (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
+	  (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
+	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+      }
     }
   }
   if (kt2cmin==std::numeric_limits<double>::max()) {

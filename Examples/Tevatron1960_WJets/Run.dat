@@ -15,10 +15,11 @@
 }(processes)
 (selector){
   PT 93 1 E_CMS
+  Mass -11 12 1.7 E_CMS
 }(selector)
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
-  FACTORIZATION_SCALE = max(1.7,Abs2(p[2]+p[3]))
+  SCALE_SCHEME = QCD
 }(me)
 (model){
   # set quark masses consistent with default PDF cteq6l
