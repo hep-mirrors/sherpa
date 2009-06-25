@@ -412,19 +412,20 @@ bool Process_Group::CheckFlavours
   std::vector<Flavour> cfl;
   ii.GetExternal(cfl);
   fi.GetExternal(cfl);
-  int charge(0);
+  int charge(0), strong(0);
   size_t quarks(0);
   for (size_t i(0);i<cfl.size();++i) {
     charge+=i<2?-cfl[i].IntCharge():cfl[i].IntCharge();
+    if (abs(cfl[i].StrongCharge())!=8)
+      strong+=i<2?-cfl[i].StrongCharge():cfl[i].StrongCharge();
     quarks+=cfl[i].IsQuark();
     if (quarks>m_pinfo.m_nmaxq) {
-      std::string name(GenerateName(ii,fi));
-      msg_Debugging()<<METHOD<<"(): '"<<name<<"': n_q > "
+      msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
       return false;
     }
   }
-  if (charge!=0) return false;
+  if (charge!=0 || strong!=0) return false;
   return true;
 }
 
