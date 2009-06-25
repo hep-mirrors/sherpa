@@ -872,6 +872,183 @@ File: Sherpa.info,  Node: Selectors,  Prev: ISR Parameters,  Up: Parameters
 4.4 Selectors
 =============
 
+Sherpa provides the following selectors
+
+* Menu:
+
+* One particle selectors::    one particle selectors
+* Two particle selectors::    two particle selectors
+* Jet finders::               cuts on QCD partons
+* Universal selector::        user-defined cuts
+
+
+File: Sherpa.info,  Node: One particle selectors,  Next: Two particle selectors,  Up: Selectors
+
+4.4.1
+-----
+
+The selectors listed here implement cuts on the matrix element level,
+based on single particle kinematics.  The corresponding  syntax in
+`Selector.dat' is
+
+<keyword> <flavour code> <min value> <max value>
+
+   `<min value>' and `<max value>' are floating point numbers, which
+can also be given in a form that is understood by the internal algebra
+interpreter, see *note Interpreter::.  The selectors act on _all_
+possible particles with the given flavour. Their respective keywords are
+
+   * Energy          energy cut
+
+   * ET              transverse energy cut
+
+   * PT              transverse momentum cut
+
+   * Rapidity        rapidity cut
+
+   * PseudoRapidity  pseudorapidity cut
+
+
+File: Sherpa.info,  Node: Two particle selectors,  Next: Jet finders,  Prev: One particle selectors,  Up: Selectors
+
+4.4.2
+-----
+
+The selectors listed here implement cuts on the matrix element level,
+based on two particle kinematics.  The corresponding  syntax in
+`Selector.dat' is
+
+<keyword> <flavour1 code> <flavour2 code> <min value> <max value>
+
+   `<min value>' and `<max value>' are floating point numbers, which
+can also be given in a form that is understood by the internal algebra
+interpreter, see *note Interpreter::.  The selectors act on _all_
+possible particles with the given flavour. Their respective keywords are
+
+   * Mass            invariant mass
+
+   * Angle           angular separation (rad)
+
+   * BeamAngle       angular separation w.r.t. beam   (`<flavour2
+     code>' is 0 or 1 here,     referring to either beam 1 or 2)
+
+   * DeltaEta        pseudorapidity separation
+
+   * DeltaPhi        azimuthal angle separation (rad)
+
+   * DeltaR          R separation
+
+
+File: Sherpa.info,  Node: Jet finders,  Next: Universal selector,  Prev: Two particle selectors,  Up: Selectors
+
+4.4.3
+-----
+
+There are two different types of jet finders
+
+   * JetFinder   k_T-algorithm
+
+   * ConeFinder  cone-algorithm
+
+   Their respective syntax is
+
+JetFinder  <ycut>[<ycut decay 1>[<ycut decay 11>...]...]... <D parameter>
+ConeFinder <min R>
+
+   For `JetFinder', it is possible to give different values of ycut in
+individual subprocesses of a production-decay chain.  The square
+brackets are then used to denote the decays.  In case only one uniform
+set of ycut is to be used, the square brackets are left out.
+
+   `<ycut>', `<min R>' and `<D parameter>' are floating point numbers,
+which can also be given in a form that is understood by the internal
+algebra interpreter, see *note Interpreter::.
+
+
+File: Sherpa.info,  Node: Universal selector,  Prev: Jet finders,  Up: Selectors
+
+4.4.4
+-----
+
+The universal selector is intended to implement non-stnadard cuts on
+the matrix element level. Its syntax is
+
+"<variable>"  <kf1>,..,<kfn>   <min1>,<max1>;..;<minn>,<maxn>   [<order1>,...,<orderm>]
+
+   _No additional white spaces are allowed_
+
+   The first word has to be double-quoted, and contains the name of the
+variable to cut on. The keywords for available predefined <variable>s
+can be figured by running Sherpa `SHOW_VARIABLE_SYNTAX=1'.  Or
+alternatively, an arbitrary cut variable can be constructed using the
+internal interpreter, see *note Interpreter::. This is invoked with the
+command `Calc(...)'. In the formula specified there you have to use
+place holders for the momenta of the particles: `p[0]' ... `p[n]' hold
+the momenta of the respective particles `kf1' ... `kfn'. A list of
+available vector functions and operators can be found here *note
+Interpreter::.
+
+   `<kf1>,..,<kfn>' specify the PDG codes of the particles the variable
+has to be calculated from. In case this choice is not unique in the
+final state, you have to specify multiple cut ranges
+(`<min1>,<max1>;..;<minn>,<maxn>') for all (combinations of) particles
+you want to cut on, separated by semicolons.
+
+   If no fourth argument is given, the order of cuts is determined
+internally, according to Sherpa's process classification scheme.  This
+then has to be matched if you want to have different cuts on certain
+different particles in the matrix element. To do this, you should put
+enough (for the possible number of combinations of your particles)
+arbitrary ranges at first and run Sherpa with debugging output for the
+universal selector: `Sherpa OUTPUT=2[Variable_Selector::Trigger|15]'.
+This will start to produce lots of output during integration, at which
+point you can interrupt the run (Ctrl-c). In the
+`Variable_Selector::Trigger(): {...}' output you can see, which
+particle combinations have been found and which cut range your selector
+has held for them (vs. the arbitrary range you specified). From that
+you should get an idea, in which order the cuts have to be specified.
+
+   If the fourth argument is given, particles are ordered before the
+cut is applied. Possible orderings are `PT_UP', `ET_UP', `E_UP' and
+`ETA_UP', (increasing p_T, E_T, E, eta). They have to be specified for
+each of the particles, separated by commas.
+
+   Examples
+
+   * Two-body transverse mass
+
+     "mT" 11,-12 50,E_CMS
+
+   * Cut on the pT of only the hardest lepton in the event
+
+     "PT"   90   50.0,E_CMS   [PT_UP]
+
+   * Using bool operations to restrict eta of the electron to |eta| <
+     1.1 or 1.5 < |eta| < 2.5
+
+     "Calc(abs(Eta(p[0]))<1.1||(abs(Eta(p[0]))>1.5&&abs(Eta(p[0]))<2.5))"
+     11 1,1
+
+     Note the range 1,1 meaning true for bool operations.
+
+   * Requesting opposite side tag jets in VBF would for example need a
+     setup like this
+
+     "Calc(Eta(p[0])*Eta(p[1]))" 93,93 -100,0 [PT_UP,PT_UP]
+
+   * Restricting electron+photon mass to be outside of [87.0,97.0]:
+
+     "Calc(Mass(p[0]+p[1])<87.0||Mass(p[0]+p[1])>97.0)" 11,22 1,1
+
+   * In `Z[lepton lepton] Z[lepton lepton]', cut on mass of
+     lepton-pairs produced from Z's:
+
+     "m"   90,90   80,100;0,E_CMS;0,E_CMS;0,E_CMS;0,E_CMS;80,100;
+
+     Here we use knowledge about the internal ordering to cut only on
+     the correct lepton pairs.
+
+
 
 File: Sherpa.info,  Node: Cross section,  Next: Tips and Tricks,  Prev: Parameters,  Up: Top
 
@@ -980,9 +1157,10 @@ are listed in the following sections.
 * Menu:
 
 * External RNG:: How to add an external random number generator.
+* External PDF:: How to add an external PDF.
 
 
-File: Sherpa.info,  Node: External RNG,  Up: Customization
+File: Sherpa.info,  Node: External RNG,  Next: External PDF,  Up: Customization
 
 7.1 External RNG
 ================
@@ -1026,6 +1204,64 @@ skip this step.
    Finally Sherpa is instructed to retrieve the external RNG by
 specifying `EXTERNAL_RNG=Example_RNG' on the command line or in
 `Run.dat'.
+
+
+File: Sherpa.info,  Node: External PDF,  Prev: External RNG,  Up: Customization
+
+7.2 External PDF
+================
+
+To use an external PDF (not included in LHAPDF) in Sherpa, you need to
+provide an interface to your PDF in an external dynamic library. This
+library is then loaded at runtime and it is possible within Sherpa to
+access all PDFs included.
+
+   The simplest C++ code to implement your interface looks as follows
+
+#include "PDF/Main/PDF_Base.H"
+
+using namespace PDF;
+
+class Example_PDF: public PDF_Base {
+public:
+  void Calculate(double x,double Q2)
+  {
+    // calculate values x f_a(x,Q2) for all a
+  }
+  double GetXPDF(const ATOOLS::Flavour a)
+  {
+    // return x f_a(x,Q2)
+  }
+  virtual PDF_Base *GetCopy()
+  {
+    return new Example_PDF();
+  }
+};// end of class Example_PDF
+
+// this makes Example_PDF loadable in Sherpa
+DECLARE_PDF_GETTER(Example_PDF_Getter);
+PDF_Base *Example_PDF_Getter::operator()(const Parameter_Type &args) const
+{ return new Example_PDF(); }
+// this eventually prints a help message
+void Example_PDF_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ str<<"example PDF"; }
+// this lets Sherpa initialize and unload the library
+Example_PDF_Getter *p_get=NULL;
+extern "C" void InitPDFLib(const std::string &path)
+{ p_get = new Example_PDF_Getter("ExamplePDF"); }
+extern "C" void ExitPDFLib() { delete p_get; }
+
+   If the code is compiled into a library called libExamplePDFSherpa.so,
+then this library is loaded dynamically in Sherpa using
+`PDF_LIBRARY=ExamplePDFSherpa' either on the command line, in `Run.dat'
+or in `ISR.dat'. If the library is bound at compile time, like e.g. in
+cmt, you may skip this step.  It is now possible to list all accessible
+PDF sets by specifying `SHOW_PDF_SETS=1' on the command line.
+
+   Finally Sherpa is instructed to retrieve the external PDF by
+specifying `PDF_SET=ExamplePDF' on the command line, in `Run.dat' or in
+`ISR.dat'.
 
 
 File: Sherpa.info,  Node: Authors,  Next: Copying,  Prev: Customization,  Up: Top
@@ -1177,14 +1413,19 @@ Node: PDF_GRID_PATH27398
 Node: PDF_LIBRARY27619
 Node: SHOW_PDF_SETS28156
 Node: Selectors28438
-Node: Cross section28546
-Node: Tips and Tricks30391
-Node: Bash completion31004
-Node: Versioned installation31603
-Node: Customization32064
-Node: External RNG32624
-Node: Authors34085
-Node: Copying34260
-Node: Index35300
+Node: One particle selectors28801
+Node: Two particle selectors29598
+Node: Jet finders30584
+Node: Universal selector31404
+Node: Cross section34798
+Node: Tips and Tricks36643
+Node: Bash completion37256
+Node: Versioned installation37855
+Node: Customization38316
+Node: External RNG38921
+Node: External PDF40403
+Node: Authors42321
+Node: Copying42496
+Node: Index43536
 
 End Tag Table

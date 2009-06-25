@@ -11,7 +11,9 @@ Several specific examples are listed in the following sections.
 
 @menu
 * External RNG:: How to add an external random number generator.
+* External PDF:: How to add an external PDF.
 @end menu
 
 @include RNG.texi
+@include PDF.texi
 
