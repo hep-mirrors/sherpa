@@ -297,7 +297,12 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
 std::string Process_Base::GenerateName
 (const Subprocess_Info &ii,const Subprocess_Info &fi) 
 {
-  std::string name(ToString(ii.NExternal())+"_"+ToString(fi.NExternal()));
+  char nii[3], nfi[3];
+  if (sprintf(nii,"%i",(int)ii.NExternal())<=0)
+    THROW(fatal_error,"Conversion error");
+  if (sprintf(nfi,"%i",(int)fi.NExternal())<=0)
+    THROW(fatal_error,"Conversion error");
+  std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
   if (fi.m_nloqcdtype!=nlo_type::lo) 
@@ -362,8 +367,12 @@ void Process_Base::SortFlavours(Cluster_Amplitude *const ampl)
 
 std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
 {
-  std::string name(ToString(ampl->NIn())+"_"+
-		   ToString(ampl->Legs().size()-ampl->NIn()));
+  char nii[3], nfi[3];
+  if (sprintf(nii,"%i",(int)ampl->NIn())<=0)
+    THROW(fatal_error,"Conversion error");
+  if (sprintf(nfi,"%i",(int)(ampl->Legs().size()-ampl->NIn()))<=0)
+    THROW(fatal_error,"Conversion error");
+  std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ampl->NIn();++i) 
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) 
