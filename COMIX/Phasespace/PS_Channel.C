@@ -139,6 +139,13 @@ PS_Channel::~PS_Channel()
        vit!=m_vmap.end();++vit) delete vit->second;
 }
 
+std::string PS_Channel::GetPSId(const size_t &id) const
+{
+  PSId_Map::const_iterator iit(m_psid.find(id));
+  if (iit!=m_psid.end()) return iit->second;
+  return m_psid[id]=PSId(id);
+}
+
 size_t PS_Channel::SId(const size_t &id) const
 {
   return (id&3)==3?(1<<m_n)-1-id:id;
@@ -179,8 +186,8 @@ bool PS_Channel::Zero(Vertex_Base *const vtx) const
 
 double PS_Channel::SCut(const size_t &id) const
 {
-  if (id&3) return p_cuts->Getscut(PSId((1<<m_n)-1-id));
-  return p_cuts->Getscut(PSId(id));
+  if (id&3) return p_cuts->Getscut(GetPSId((1<<m_n)-1-id));
+  return p_cuts->Getscut(GetPSId(id));
 }
 
 double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
@@ -195,7 +202,7 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
       m_rns.push_back(cr[0]);
     }
     else {
-      m_vgs.push_back(GetVegas("P_"+PSId(id)));
+      m_vgs.push_back(GetVegas("P_"+GetPSId(id)));
       cr=m_vgs.back()->GeneratePoint(rn);
       m_rns.push_back(cr[0]);
     }
@@ -228,7 +235,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
   else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
   if (m_vmode&1) {
     Vegas *cvgs(cur!=NULL?GetVegas("P_"+cur->PSInfo()):
-		GetVegas("P_"+PSId(id)));
+		GetVegas("P_"+GetPSId(id)));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -284,7 +291,7 @@ void PS_Channel::TChannelMomenta
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetVegas("T_"+PSId(id)+"_"+cur->PSInfo()));
+    m_vgs.push_back(GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()));
     cr=m_vgs.back()->GeneratePoint(rns);
     m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
@@ -306,7 +313,7 @@ double PS_Channel::TChannelWeight
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
 			       m_texp,ctmax,ctmin,1.0,0,rns[0],rns[1]));
   if (m_vmode&1) {
-    Vegas *cvgs(GetVegas("T_"+PSId(id)+"_"+cur->PSInfo()));
+    Vegas *cvgs(GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -344,7 +351,7 @@ void PS_Channel::SChannelMomenta
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetVegas("S_"+PSId(id)+"_"+cur->PSInfo()));
+    m_vgs.push_back(GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo()));
     cr=m_vgs.back()->GeneratePoint(rns);
     m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
@@ -363,7 +370,7 @@ double PS_Channel::SChannelWeight
   SChannelBounds(cur->CId(),id,ctmin,ctmax);
   double wgt(CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax));
   if (m_vmode&1) {
-    Vegas *cvgs(GetVegas("S_"+PSId(id)+"_"+cur->PSInfo()));
+    Vegas *cvgs(GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo()));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif

@@ -20,6 +20,8 @@ namespace COMIX {
   typedef std::vector<PHASIC::Vegas*>          Vegas_Vector;
   typedef std::map<std::string,PHASIC::Vegas*> Vegas_Map;
 
+  typedef std::map<size_t,std::string> PSId_Map;
+
   std::string PSId(const size_t &id);
 
   size_t IdCount(const size_t &id);
@@ -61,6 +63,8 @@ namespace COMIX {
 
     int    m_bmode, m_omode, m_vmode, m_zmode, m_czmode, m_ismode;
     size_t m_nvints, m_vsopt;
+
+    mutable PSId_Map m_psid;
     
 #ifdef USING__Threading 
     CDBG_PS_TID_Vector m_cts;
@@ -68,6 +72,8 @@ namespace COMIX {
 
     static void *TGenerateWeight(void *arg);
 #endif 
+
+    std::string GetPSId(const size_t &id) const;
 
     size_t SId(const size_t &id) const;
     double SCut(const size_t &id) const;
