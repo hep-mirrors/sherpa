@@ -14,7 +14,9 @@ namespace PHASIC {
   class QCD_KFactor_Setter: public KFactor_Setter_Base {
   private:
 
-    int m_oqcdlo;
+    size_t m_oqcdlo;
+
+    double m_asref;
 
   public:
 
@@ -63,6 +65,7 @@ double QCD_KFactor_Setter::KFactor()
     m_kfkey.Assign(p_proc->Name(),3,0,p_proc->
 		   Integrator()->PSHandler()->GetInfo());
     m_kfkey.SetInfo(kfinfo);
+    m_asref=MODEL::as->AlphaS(rpa.gen.CplScale());
   }
   if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
   if (p_proc->OrderQCD()<0 || p_proc->OrderEW()<0) {
@@ -71,11 +74,10 @@ double QCD_KFactor_Setter::KFactor()
   m_kfkey<<1.0;
   if (m_kfkey.Doubles().size()>2) {
     if (p_proc->OrderQCD()>0) {
-      double cw=pow(MODEL::as->AlphaS(m_kfkey[2])/
-		    MODEL::as->AlphaS(rpa.gen.CplScale()),m_oqcdlo);
-      m_kfkey<<cw*pow(MODEL::as->AlphaS(m_kfkey[0])/
-		      MODEL::as->AlphaS(rpa.gen.CplScale()),
-		      p_proc->OrderQCD()-m_oqcdlo);
+      double cw=pow(MODEL::as->AlphaS(m_kfkey[2])/m_asref,m_oqcdlo);
+      if (p_proc->OrderQCD()<=m_oqcdlo) m_kfkey<<cw;
+      else m_kfkey<<cw*pow(MODEL::as->AlphaS(m_kfkey[0])/
+			   m_asref,p_proc->OrderQCD()-m_oqcdlo);
       msg_Debugging()<<METHOD<<"(): "<<p_proc->Name()
 		     <<"["<<m_oqcdlo<<"] ("<<p_proc->NQCD()<<","
 		     <<p_proc->OrderQCD()<<") {\n"
@@ -90,8 +92,7 @@ double QCD_KFactor_Setter::KFactor()
   }
   else {
     if (p_proc->OrderQCD()>0) {
-      m_kfkey<<pow(MODEL::as->AlphaS(m_kfkey[0])/
-		   MODEL::as->AlphaS(rpa.gen.CplScale()),p_proc->OrderQCD());
+      m_kfkey<<pow(MODEL::as->AlphaS(m_kfkey[0])/m_asref,p_proc->OrderQCD());
       msg_Debugging()<<METHOD<<"(): "<<p_proc->Name()<<" ("<<p_proc->NQCD()<<","
 		     <<p_proc->OrderQCD()<<") {\n"
 		     <<"  \\mu_{fac}   = "<<sqrt(m_kfkey[1])<<"\n"
