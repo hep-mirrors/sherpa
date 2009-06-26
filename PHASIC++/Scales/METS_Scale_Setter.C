@@ -95,7 +95,6 @@ double METS_Scale_Setter::CalculateScale2(const std::vector<ATOOLS::Vec4D> &mome
 double METS_Scale_Setter::CalculateScale
 (const std::vector<ATOOLS::Vec4D> &momenta)
 {
-  DEBUG_FUNC("");
   if (!m_kfkey.Assigned()) {
     std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
     msg_Debugging()<<"Assign '"<<p_proc->Name()

@@ -12,9 +12,9 @@ namespace PHASIC {
   struct stp {
 
     enum id {
-      unknown =  0,
-      ren     =  1,
-      fac     =  2
+      ren     =  0,
+      fac     =  1,
+      size    =  2
     };
 
   };// end of struct stp
@@ -41,7 +41,7 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    std::map<stp::id,double> m_scale;
+    std::vector<double> m_scale;
 
     ATOOLS::Info_Key m_kfkey;
 
@@ -51,7 +51,7 @@ namespace PHASIC {
 
     inline Scale_Setter_Base(Process_Base *const proc,
 			     const bool scale2=false):
-      p_proc(proc), m_scale2(scale2) {}
+      p_proc(proc), m_scale(stp::size), m_scale2(scale2) {}
 
     virtual ~Scale_Setter_Base();
 
