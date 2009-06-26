@@ -1,0 +1,232 @@
+@node Processes
+@section Processes
+
+The process setup is covered by the `(processes)' section of
+the steering file or the process data file `Processes.dat', respectively.
+
+The following parameters are used to steer the process setup.
+
+@menu
+* Process::                 The process setup start tag.
+* Decay::                   Tag to add an exclusive decay.
+* DecayOS::                 Tag to add an exclusive on-shell decay.
+* Renormalization_Scale::   Tag to set a process-specific scale.
+* Factorization_Scale::     Tag to set a process-specific scale.
+* Fixed_scale::             Tag to set a process-specific fixed scale.
+* CKKW::                    Tag to setup multijet merging.
+* Selector_File::           Tag to specify a specific selector file.
+* Order_EW::                Tag to fix the electroweak order.
+* Order_QCD::               Tag to fix the QCD order.
+* Max_N_Quarks::            Tag to set the maximum number of quarks.
+* Print_Graphs::            Tag to enable writeout of feynman graphs.
+* Integration_Error::       Tag to set a specific integration error.
+* Max_Epsilon::             Tag to set a specific epsilon for overweighting.
+* Enhance_Factor::          Tag to set an enhance factor.
+* Enhance_Function::        Tag to set an enhance function.
+* NLO_QCD_Part::            Tag to setup QCD NLO processes.
+* NLO_EW_Part::             Tag to setup electroweak NLO processes.
+* Loop_Generator::          Tag to specifiy the loop ME generator.
+* End process::             The process setup end tag.
+@end menu
+
+
+@node Process
+@subsection Process
+This tag starts the setup of a process or a set of processes 
+with common properties. It must be followed by the specification 
+of the (core) process itself. The setup is completed by the
+@option{End process} tag, see @ref{End process}. Examples are
+
+@table @asis
+@item Process 93 93 -> 11 -11
+Sets up a Drell-Yan process group with light quarks
+in the initial state.
+@item Process 11 -11 -> 93 93 93@{3@}
+Sets up jet production in e+e- collisions with up to three
+additional jets.
+@end table
+
+
+@node Decay
+@subsection Decay
+Specifies the exclusive decay of a particle produced in the
+matrix element. The virtuality of the decaying particle is sampled
+according to a Breit-Wigner distribution.
+An example would be
+@verbatim
+Process 11 -11 -> 6[a] -6[b]
+Decay 6[a] -> 5 24[c]
+Decay -6[b] -> -5 -24[d]
+Decay 24[c] -> -13 14
+Decay -24[d] -> 94 94
+@end verbatim
+
+
+@node DecayOS
+@subsection DecayOS
+Specifies the exclusive decay of a particle produced in the
+matrix element. The decaying particle is on mass-shell, i.e.
+a strict narrow-width approximation is used.
+An example would be
+@verbatim
+Process 11 -11 -> 6[a] -6[b]
+DecayOS 6[a] -> 5 24[c]
+DecayOS -6[b] -> -5 -24[d]
+DecayOS 24[c] -> -13 14
+DecayOS -24[d] -> 94 94
+@end verbatim
+
+
+@node Renormalization_Scale
+@subsection Renormalization_Scale
+Sets a process-specific renormalization scale.
+The corresponding tag must be given in a form,
+which is understood by the internal interpreter,
+see @ref{Interpreter}.
+
+
+@node Factorization_Scale
+@subsection Factorization_Scale
+Sets a process-specific factorization scale.
+The corresponding tag must be given in a form,
+which is understood by the internal interpreter,
+see @ref{Interpreter}.
+
+
+@node Fixed_scale
+@subsection Fixed_scale
+Sets a process-specific renormalization
+and factorization scale.
+The corresponding tag must be given in a form,
+which is understood by the internal interpreter,
+see @ref{Interpreter}.
+
+
+@node CKKW
+@subsection CKKW
+Sets up multijet merging according to
+@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=arXiv:0903.1219,,
+JHEP05(2009)053}. The additional argument specifies the separation cut
+in the form (Q_@{cut@}/E_@{cms@})^2.
+It can be given in any form which is understood by the internal
+interpreter, see @ref{Interpreter}.
+Examples are
+
+@itemize
+@item CKKW pow(10,-2.5)
+@item CKKW sqr(20/E_CMS)
+@end itemize
+
+
+@node Selector_File
+@subsection Selector_File
+Sets a process-specific selector file name.
+
+
+@node Order_EW
+@subsection Order_EW
+Sets a process-specific electroweak order.
+The given number is exclusive, i.e. only matrix elements
+with exactly the given electroweak order are generated.
+
+
+@node Order_QCD
+@subsection Order_QCD
+Sets a process-specific QCD order.
+The given number is exclusive, i.e. only matrix elements
+with exactly the given QCD order are generated.
+
+
+@node Max_N_Quarks
+@subsection Max_N_Quarks
+Limits the maximum number of quarks in the process to the
+given value.
+
+
+@node Print_Graphs
+@subsection Print_Graphs
+Writes out Feynman graphs in LaTeX format. The parameter
+specifies the directory name in which the diagram 
+information is stored.
+
+
+@node Integration_Error
+@subsection Integration_Error
+Sets a process-specific relative integration error target.
+
+For multijet processes, this parameter can be specified
+per final state multiplicity. An example would be
+@verbatim
+Process 93 93 -> 93 93 93{2}
+Integration_Error 0.02 {3,4}
+@end verbatim
+
+Here, the integration error target is set to 2% for
+2->3 and 2->4 processes.
+
+
+@node Max_Epsilon
+@subsection Max_Epsilon
+Sets epsilon for maximum weight reduction.
+The key idea is to allow weights larger than
+the maximum during event generation,
+as long as the fraction of the cross section
+represented by the corresponding events is
+at most the epsilon factor times the total
+cross section. In other words, the relative
+contribution of overweighted events to the
+inclusive cross section is at most epsilon.
+
+
+@node Enhance_Factor
+@subsection Enhance_Factor
+Sets a process specific enhance factor.
+
+For multijet processes, this parameter can be specified
+per final state multiplicity. An example would be
+@verbatim
+Process 93 93 -> 93 93 93{2}
+Enhance_Factor 4 {3}
+Enhance_Factor 16 {4}
+@end verbatim
+
+Here, 3-jet processes are enhanced by a factor of 4,
+4-jet processes by a factor of 16.
+
+
+@node Enhance_Function
+@subsection Enhance_Function
+Sets a process specific enhance function.
+
+@emph{This feature can only be used when generating weighted events.}
+
+For multijet processes, the parameter can be specified
+per final state multiplicity. An example would be
+@verbatim
+Process 93 93 -> 11 -11 93{1}
+Enhance_Function PPerp2(p[4]) {3}
+@end verbatim
+
+Here, the 1-jet process is enhanced with the
+transverse momentum squared of the jet.
+
+
+@node NLO_QCD_Part
+@subsection NLO_QCD_Part
+
+
+@node NLO_EW_Part
+@subsection NLO_EW_Part
+
+
+@node Loop_Generator
+@subsection Loop_Generator
+Set a process specific nametag for the desired
+loop-ME generator.
+
+
+@node End process
+@subsection End process
+Completes the setup of a process or a list of processes
+with common properties.
+

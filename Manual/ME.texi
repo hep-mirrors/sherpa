@@ -34,9 +34,8 @@ The following parameters are used to steer the matrix element setup.
 Sherpa provides several built-in scale schemes.
 The options which are currently available are
 
-@itemize
-@item @option{VAR}
-
+@table @option
+@item VAR
 Scales are specified by the parameters @option{RENORMALIZATION_SCALE}
 and @option{FACTORIZATION_SCALE} in a form which is understood by the
 internal interpreter, see @ref{Interpreter}. If, for example the invariant 
@@ -48,13 +47,12 @@ FACTORIZATION_SCALE Abs2(p[2]+p[3])
 RENORMALIZATION_SCALE Abs2(p[2]+p[3])
 @end verbatim
 
-@item @option{QCD}
-
+@item QCD
 The matrix element is clustered onto a core 2->2 configuration using a
 k_T-type algorithm with recombination into on-shell partons.
 Scales are defined as the minimum of the largest transverse momentum
 during clustering and the lowest invariant mass in the core process.
-@end itemize
+@end table
 
 
 @node RESULT_DIRECTORY
@@ -104,10 +102,12 @@ renormalization scale set by the specified scale setter
 @ref{Scale schemes}, the corresponding value
 is @option{QCD}. The available options are
 
-@itemize
-@item NO   No reweighting
-@item QCD  reweighting of QCD couplings only
-@end itemize
+@table @option
+@item NO   
+No reweighting
+@item QCD  
+reweighting of QCD couplings only
+@end table
 
 It is possible to implement a dedicated K-factor
 scheme within Sherpa. For advice on this topic

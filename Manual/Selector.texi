@@ -15,7 +15,7 @@ Sherpa provides the following selectors
 @end menu
 
 @node One particle selectors
-@subsection
+@subsection One particle selectors
 
 The selectors listed here implement cuts on the
 matrix element level, based on single particle kinematics.
@@ -30,17 +30,22 @@ by the internal algebra interpreter, see @ref{Interpreter}.
 The selectors act on @emph{all} possible particles with 
 the given flavour. Their respective keywords are
 
-@itemize
-@item Energy          energy cut
-@item ET              transverse energy cut
-@item PT              transverse momentum cut
-@item Rapidity        rapidity cut
-@item PseudoRapidity  pseudorapidity cut
-@end itemize
+@table @option
+@item Energy
+energy cut
+@item ET
+transverse energy cut
+@item PT
+transverse momentum cut
+@item Rapidity
+rapidity cut
+@item PseudoRapidity
+pseudorapidity cut
+@end table
 
 
 @node Two particle selectors
-@subsection
+@subsection Two particle selectors
 
 The selectors listed here implement cuts on the
 matrix element level, based on two particle kinematics.
@@ -55,27 +60,35 @@ by the internal algebra interpreter, see @ref{Interpreter}.
 The selectors act on @emph{all} possible particles with 
 the given flavour. Their respective keywords are
 
-@itemize
-@item Mass            invariant mass
-@item Angle           angular separation (rad)
-@item BeamAngle       angular separation w.r.t. beam
+@table @option
+@item Mass
+invariant mass
+@item Angle
+angular separation (rad)
+@item BeamAngle
+angular separation w.r.t. beam
 
 (@samp{<flavour2 code>} is 0 or 1, referring to beam 1 or 2)
-@item DeltaEta        pseudorapidity separation
-@item DeltaPhi        azimuthal angle separation (rad)
-@item DeltaR          R separation
-@end itemize
+@item DeltaEta
+pseudorapidity separation
+@item DeltaPhi
+azimuthal angle separation (rad)
+@item DeltaR
+R separation
+@end table
 
 
 @node Jet finders
-@subsection
+@subsection Jet finders
 
 There are two different types of jet finders
 
-@itemize
-@item JetFinder   k_T-algorithm
-@item ConeFinder  cone-algorithm
-@end itemize
+@table @option
+@item JetFinder   
+k_T-algorithm
+@item ConeFinder  
+cone-algorithm
+@end table
 
 Their respective syntax is 
 @verbatim
@@ -95,7 +108,7 @@ understood by the internal algebra interpreter, see @ref{Interpreter}.
 
 
 @node Universal selector
-@subsection
+@subsection Universal selector
 
 The universal selector is intended to implement non-stnadard cuts
 on the matrix element level. Its syntax is
@@ -147,7 +160,7 @@ for each of the particles, separated by commas.
 
 Examples
 
-@itemize
+@table @asis
 @item Two-body transverse mass
 
       "mT" 11,-12 50,E_CMS
@@ -176,4 +189,4 @@ Examples
 
       Here we use knowledge about the internal ordering to cut only on the correct lepton pairs.
 
-@end itemize
+@end table

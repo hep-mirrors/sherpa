@@ -10,8 +10,9 @@ Sherpa_TEXINFOS = \
 	Parameters.texi \
 	Beam.texi \
 	ISR.texi \
+	ME.texi \
+	Processes.texi \
 	Selector.texi \
-	CrossSection.texi \
 	Tips.texi \
 	Customization.texi \
 	Run.texi \

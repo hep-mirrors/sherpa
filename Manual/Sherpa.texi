@@ -28,8 +28,6 @@
 * Input structure::  How to specify parameters for a Sherpa run.
 * Parameters::       List of parameters
 @sp 1
-* Cross section::    How to obtain the total cross section
-@sp 1
 * Tips and Tricks::  Advanced usage tips
 * Customization::    Extending Sherpa 
 @sp 1
@@ -42,7 +40,6 @@
 @include Commands.texi
 @include Input.texi
 @include Parameters.texi
-@include CrossSection.texi
 @include Tips.texi
 @include Customization.texi
 
