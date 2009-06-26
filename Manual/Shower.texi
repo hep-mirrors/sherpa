@@ -1,0 +1,7 @@
+@node Shower Parameters
+@section Shower Parameters
+
+The shower setup is covered by the `(shower)' section of
+the steering file or the shower data file `Shower.dat',
+respectively.
+

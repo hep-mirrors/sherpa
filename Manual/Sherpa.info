@@ -233,9 +233,13 @@ performed in all inputs, see *note Tags::.
 * Run Parameters::    List of general parameters
 * Beam Parameters::   List of beam parameters
 * ISR Parameters::    List of initial state radiation parameters
+* Model Parameters::  List of interaction model parameters
 * Matrix Elements::   Matrix element related settings
 * Processes::         Syntax of the process setup
 * Selectors::         Syntax of parton level cuts
+* Integration::       List of integration parameters
+* Shower Parameters:: List of shower parameters
+* MPI Parameters::    List of multiple parton interaction parameters
 
 
 File: Sherpa.info,  Node: Run Parameters,  Next: Beam Parameters,  Up: Parameters
@@ -705,7 +709,7 @@ hadronic beams, such as protons.
 The default value for protons is 0.8 GeV.
 
 
-File: Sherpa.info,  Node: ISR Parameters,  Next: Matrix Elements,  Prev: Beam Parameters,  Up: Parameters
+File: Sherpa.info,  Node: ISR Parameters,  Next: Model Parameters,  Prev: Beam Parameters,  Up: Parameters
 
 4.3 ISR Parameters
 ==================
@@ -867,9 +871,18 @@ print all available PDF sets contained in the library loaded by *note
 PDF_LIBRARY::.
 
 
-File: Sherpa.info,  Node: Matrix Elements,  Next: Processes,  Prev: ISR Parameters,  Up: Parameters
+File: Sherpa.info,  Node: Model Parameters,  Next: Matrix Elements,  Prev: ISR Parameters,  Up: Parameters
 
-4.4 Matrix Elements
+4.4 Model Parameters
+====================
+
+The interaction model setup is covered by the `(model)' section of the
+steering file or the model data file `Model.dat', respectively.
+
+
+File: Sherpa.info,  Node: Matrix Elements,  Next: Processes,  Prev: Model Parameters,  Up: Parameters
+
+4.5 Matrix Elements
 ===================
 
 The setup of matrix elements is covered by the `(me)' section of the
@@ -900,7 +913,7 @@ _mandatory settings_ to be made are
 
 File: Sherpa.info,  Node: Scale schemes,  Next: RESULT_DIRECTORY,  Up: Matrix Elements
 
-4.4.1 Scale schemes
+4.5.1 Scale schemes
 -------------------
 
 Sherpa provides several built-in scale schemes.  The options which are
@@ -927,7 +940,7 @@ currently available are
 
 File: Sherpa.info,  Node: RESULT_DIRECTORY,  Next: EVENT_GENERATION_MODE,  Prev: Scale schemes,  Up: Matrix Elements
 
-4.4.2 RESULT_DIRECTORY
+4.5.2 RESULT_DIRECTORY
 ----------------------
 
 This parameter specifies the name of the directory which is used by
@@ -937,7 +950,7 @@ default is `Results/'.
 
 File: Sherpa.info,  Node: EVENT_GENERATION_MODE,  Next: COLOUR_SCHEME,  Prev: RESULT_DIRECTORY,  Up: Matrix Elements
 
-4.4.3 EVENT_GENERATION_MODE
+4.5.3 EVENT_GENERATION_MODE
 ---------------------------
 
 This parameter specifies the event generation mode.  The two possible
@@ -946,7 +959,7 @@ modes are `Weighted' and `Unweighted'.
 
 File: Sherpa.info,  Node: COLOUR_SCHEME,  Next: HELICITY_SCHEME,  Prev: EVENT_GENERATION_MODE,  Up: Matrix Elements
 
-4.4.4 COLOUR_SCHEME
+4.5.4 COLOUR_SCHEME
 -------------------
 
 This parameter secifies whether colours are sampled or summed over in
@@ -956,7 +969,7 @@ the matrix element simulation.  The two corresponding options are
 
 File: Sherpa.info,  Node: HELICITY_SCHEME,  Next: K_FACTOR_SCHEME,  Prev: COLOUR_SCHEME,  Up: Matrix Elements
 
-4.4.5 HELICITY_SCHEME
+4.5.5 HELICITY_SCHEME
 ---------------------
 
 This parameter secifies whether helicities are sampled or summed over
@@ -966,7 +979,7 @@ in the matrix element simulation.  The two corresponding options are
 
 File: Sherpa.info,  Node: K_FACTOR_SCHEME,  Next: SCALE_SCHEME,  Prev: HELICITY_SCHEME,  Up: Matrix Elements
 
-4.4.6 K_FACTOR_SCHEME
+4.5.6 K_FACTOR_SCHEME
 ---------------------
 
 This parameter specifies the K-factor scheme.  Within Sherpa, this
@@ -990,7 +1003,7 @@ Authors::.
 
 File: Sherpa.info,  Node: SCALE_SCHEME,  Next: FACTORIZATION_SCALE,  Prev: K_FACTOR_SCHEME,  Up: Matrix Elements
 
-4.4.7 SCALE_SCHEME
+4.5.7 SCALE_SCHEME
 ------------------
 
 This parameter specifies the scale scheme.  Within Sherpa, this means
@@ -1003,7 +1016,7 @@ For advice on this topic please contact the authors, *note Authors::.
 
 File: Sherpa.info,  Node: FACTORIZATION_SCALE,  Next: RENORMALIZATION_SCALE,  Prev: SCALE_SCHEME,  Up: Matrix Elements
 
-4.4.8 FACTORIZATION_SCALE
+4.5.8 FACTORIZATION_SCALE
 -------------------------
 
 This parameter sepecifies how to potentially modify the factorization
@@ -1018,7 +1031,7 @@ Interpreter::. Examples are
 
 File: Sherpa.info,  Node: RENORMALIZATION_SCALE,  Prev: FACTORIZATION_SCALE,  Up: Matrix Elements
 
-4.4.9 RENORMALIZATION_SCALE
+4.5.9 RENORMALIZATION_SCALE
 ---------------------------
 
 This parameter sepecifies how to potentially modify the renormalization
@@ -1033,7 +1046,7 @@ Interpreter::. Examples are
 
 File: Sherpa.info,  Node: Processes,  Next: Selectors,  Prev: Matrix Elements,  Up: Parameters
 
-4.5 Processes
+4.6 Processes
 =============
 
 The process setup is covered by the `(processes)' section of the
@@ -1067,7 +1080,7 @@ steering file or the process data file `Processes.dat', respectively.
 
 File: Sherpa.info,  Node: Process,  Next: Decay,  Up: Processes
 
-4.5.1 Process
+4.6.1 Process
 -------------
 
 This tag starts the setup of a process or a set of processes with
@@ -1086,7 +1099,7 @@ Process 11 -11 -> 93 93 93{3}
 
 File: Sherpa.info,  Node: Decay,  Next: DecayOS,  Prev: Process,  Up: Processes
 
-4.5.2 Decay
+4.6.2 Decay
 -----------
 
 Specifies the exclusive decay of a particle produced in the matrix
@@ -1102,7 +1115,7 @@ Decay -24[d] -> 94 94
 
 File: Sherpa.info,  Node: DecayOS,  Next: Renormalization_Scale,  Prev: Decay,  Up: Processes
 
-4.5.3 DecayOS
+4.6.3 DecayOS
 -------------
 
 Specifies the exclusive decay of a particle produced in the matrix
@@ -1118,7 +1131,7 @@ DecayOS -24[d] -> 94 94
 
 File: Sherpa.info,  Node: Renormalization_Scale,  Next: Factorization_Scale,  Prev: DecayOS,  Up: Processes
 
-4.5.4 Renormalization_Scale
+4.6.4 Renormalization_Scale
 ---------------------------
 
 Sets a process-specific renormalization scale.  The corresponding tag
@@ -1128,7 +1141,7 @@ interpreter, see *note Interpreter::.
 
 File: Sherpa.info,  Node: Factorization_Scale,  Next: Fixed_scale,  Prev: Renormalization_Scale,  Up: Processes
 
-4.5.5 Factorization_Scale
+4.6.5 Factorization_Scale
 -------------------------
 
 Sets a process-specific factorization scale.  The corresponding tag
@@ -1138,7 +1151,7 @@ interpreter, see *note Interpreter::.
 
 File: Sherpa.info,  Node: Fixed_scale,  Next: CKKW,  Prev: Factorization_Scale,  Up: Processes
 
-4.5.6 Fixed_scale
+4.6.6 Fixed_scale
 -----------------
 
 Sets a process-specific renormalization and factorization scale.  The
@@ -1148,7 +1161,7 @@ internal interpreter, see *note Interpreter::.
 
 File: Sherpa.info,  Node: CKKW,  Next: Selector_File,  Prev: Fixed_scale,  Up: Processes
 
-4.5.7 CKKW
+4.6.7 CKKW
 ----------
 
 Sets up multijet merging according to JHEP05(2009)053. The additional
@@ -1163,7 +1176,7 @@ interpreter, see *note Interpreter::.  Examples are
 
 File: Sherpa.info,  Node: Selector_File,  Next: Order_EW,  Prev: CKKW,  Up: Processes
 
-4.5.8 Selector_File
+4.6.8 Selector_File
 -------------------
 
 Sets a process-specific selector file name.
@@ -1171,7 +1184,7 @@ Sets a process-specific selector file name.
 
 File: Sherpa.info,  Node: Order_EW,  Next: Order_QCD,  Prev: Selector_File,  Up: Processes
 
-4.5.9 Order_EW
+4.6.9 Order_EW
 --------------
 
 Sets a process-specific electroweak order.  The given number is
@@ -1181,7 +1194,7 @@ order are generated.
 
 File: Sherpa.info,  Node: Order_QCD,  Next: Max_N_Quarks,  Prev: Order_EW,  Up: Processes
 
-4.5.10 Order_QCD
+4.6.10 Order_QCD
 ----------------
 
 Sets a process-specific QCD order.  The given number is exclusive, i.e.
@@ -1190,7 +1203,7 @@ only matrix elements with exactly the given QCD order are generated.
 
 File: Sherpa.info,  Node: Max_N_Quarks,  Next: Print_Graphs,  Prev: Order_QCD,  Up: Processes
 
-4.5.11 Max_N_Quarks
+4.6.11 Max_N_Quarks
 -------------------
 
 Limits the maximum number of quarks in the process to the given value.
@@ -1198,7 +1211,7 @@ Limits the maximum number of quarks in the process to the given value.
 
 File: Sherpa.info,  Node: Print_Graphs,  Next: Integration_Error,  Prev: Max_N_Quarks,  Up: Processes
 
-4.5.12 Print_Graphs
+4.6.12 Print_Graphs
 -------------------
 
 Writes out Feynman graphs in LaTeX format. The parameter specifies the
@@ -1207,7 +1220,7 @@ directory name in which the diagram information is stored.
 
 File: Sherpa.info,  Node: Integration_Error,  Next: Max_Epsilon,  Prev: Print_Graphs,  Up: Processes
 
-4.5.13 Integration_Error
+4.6.13 Integration_Error
 ------------------------
 
 Sets a process-specific relative integration error target.
@@ -1224,20 +1237,20 @@ processes.
 
 File: Sherpa.info,  Node: Max_Epsilon,  Next: Enhance_Factor,  Prev: Integration_Error,  Up: Processes
 
-4.5.14 Max_Epsilon
+4.6.14 Max_Epsilon
 ------------------
 
 Sets epsilon for maximum weight reduction.  The key idea is to allow
-weights larger than the maximum weights during event generation, as
-long as the fraction of the cross section represented by the
-corresponding events is at most the epsilon factor times the total
-cross section. In other words, the relative contribution of
-overweighted events to the inclusive cross section is at most epsilon.
+weights larger than the maximum during event generation, as long as the
+fraction of the cross section represented by the corresponding events is
+at most the epsilon factor times the total cross section. In other
+words, the relative contribution of overweighted events to the
+inclusive cross section is at most epsilon.
 
 
 File: Sherpa.info,  Node: Enhance_Factor,  Next: Enhance_Function,  Prev: Max_Epsilon,  Up: Processes
 
-4.5.15 Enhance_Factor
+4.6.15 Enhance_Factor
 ---------------------
 
 Sets a process specific enhance factor.
@@ -1255,7 +1268,7 @@ by a factor of 16.
 
 File: Sherpa.info,  Node: Enhance_Function,  Next: NLO_QCD_Part,  Prev: Enhance_Factor,  Up: Processes
 
-4.5.16 Enhance_Function
+4.6.16 Enhance_Function
 -----------------------
 
 Sets a process specific enhance function.
@@ -1274,19 +1287,19 @@ squared of the jet.
 
 File: Sherpa.info,  Node: NLO_QCD_Part,  Next: NLO_EW_Part,  Prev: Enhance_Function,  Up: Processes
 
-4.5.17 NLO_QCD_Part
+4.6.17 NLO_QCD_Part
 -------------------
 
 
 File: Sherpa.info,  Node: NLO_EW_Part,  Next: Loop_Generator,  Prev: NLO_QCD_Part,  Up: Processes
 
-4.5.18 NLO_EW_Part
+4.6.18 NLO_EW_Part
 ------------------
 
 
 File: Sherpa.info,  Node: Loop_Generator,  Next: End process,  Prev: NLO_EW_Part,  Up: Processes
 
-4.5.19 Loop_Generator
+4.6.19 Loop_Generator
 ---------------------
 
 Set a process specific nametag for the desired loop-ME generator.
@@ -1294,16 +1307,16 @@ Set a process specific nametag for the desired loop-ME generator.
 
 File: Sherpa.info,  Node: End process,  Prev: Loop_Generator,  Up: Processes
 
-4.5.20 End process
+4.6.20 End process
 ------------------
 
 Completes the setup of a process or a list of processes with common
 properties.
 
 
-File: Sherpa.info,  Node: Selectors,  Prev: Processes,  Up: Parameters
+File: Sherpa.info,  Node: Selectors,  Next: Integration,  Prev: Processes,  Up: Parameters
 
-4.6 Selectors
+4.7 Selectors
 =============
 
 The setup of cuts at the matrix element level is covered by the
@@ -1322,7 +1335,7 @@ The setup of cuts at the matrix element level is covered by the
 
 File: Sherpa.info,  Node: One particle selectors,  Next: Two particle selectors,  Up: Selectors
 
-4.6.1 One particle selectors
+4.7.1 One particle selectors
 ----------------------------
 
 The selectors listed here implement cuts on the matrix element level,
@@ -1354,7 +1367,7 @@ possible particles with the given flavour. Their respective keywords are
 
 File: Sherpa.info,  Node: Two particle selectors,  Next: Jet finders,  Prev: One particle selectors,  Up: Selectors
 
-4.6.2 Two particle selectors
+4.7.2 Two particle selectors
 ----------------------------
 
 The selectors listed here implement cuts on the matrix element level,
@@ -1391,7 +1404,7 @@ possible particles with the given flavour. Their respective keywords are
 
 File: Sherpa.info,  Node: Jet finders,  Next: Universal selector,  Prev: Two particle selectors,  Up: Selectors
 
-4.6.3 Jet finders
+4.7.3 Jet finders
 -----------------
 
 There are two different types of jet finders
@@ -1419,7 +1432,7 @@ algebra interpreter, see *note Interpreter::.
 
 File: Sherpa.info,  Node: Universal selector,  Prev: Jet finders,  Up: Selectors
 
-4.6.4 Universal selector
+4.7.4 Universal selector
 ------------------------
 
 The universal selector is intended to implement non-stnadard cuts on
@@ -1491,6 +1504,137 @@ In `Z[lepton lepton] Z[lepton lepton]', cut on mass of lepton-pairs produced fro
      Here we use knowledge about the internal ordering to cut only on
      the correct lepton pairs.
 
+
+
+File: Sherpa.info,  Node: Integration,  Next: Shower Parameters,  Prev: Selectors,  Up: Parameters
+
+4.8 Integration
+===============
+
+The integration setup is covered by the `(integration)' section of the
+steering file or the integration data file `Integration.dat',
+respectively.
+
+   The following parameters are used to steer the integration.
+
+* Menu:
+
+* ERROR::                The realtice integration error target
+* INTEGRATOR::           The integrator type
+* VEGAS::                Whether to enable Vegas
+* FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
+
+
+File: Sherpa.info,  Node: ERROR,  Next: INTEGRATOR,  Up: Integration
+
+4.8.1 ERROR
+-----------
+
+Specifies the relative integration error target.
+
+
+File: Sherpa.info,  Node: INTEGRATOR,  Next: VEGAS,  Prev: ERROR,  Up: Integration
+
+4.8.2 INTEGRATOR
+----------------
+
+Specifies the integrator. The possible integrator types depend on the
+matrix element generator. Users should rely on the default value and
+otherwise seek the help of the authors, see *note Authors::.
+
+
+File: Sherpa.info,  Node: VEGAS,  Next: FINISH_OPTIMIZATION,  Prev: INTEGRATOR,  Up: Integration
+
+4.8.3 VEGAS
+-----------
+
+Specifies whether or not to employ Vegas for adaptive integration.  The
+two possible values are `On' and `Off', the default being `On'.
+
+
+File: Sherpa.info,  Node: FINISH_OPTIMIZATION,  Prev: VEGAS,  Up: Integration
+
+4.8.4 FINISH_OPTIMIZATION
+-------------------------
+
+Specifies whether the full Vegas optimization is to be carried out.
+The two possible options are `On' and `Off', the default being `On'.
+
+
+File: Sherpa.info,  Node: Shower Parameters,  Next: MPI Parameters,  Prev: Integration,  Up: Parameters
+
+4.9 Shower Parameters
+=====================
+
+The shower setup is covered by the `(shower)' section of the steering
+file or the shower data file `Shower.dat', respectively.
+
+
+File: Sherpa.info,  Node: MPI Parameters,  Prev: Shower Parameters,  Up: Parameters
+
+4.10 MPI Parameters
+===================
+
+The multiple parton interaction (MPI) setup is covered by the `(mi)'
+section of the steering file or the MPI data file `MI.dat',
+respectively.
+
+   The following parameters are used to steer the MPI setup.
+
+* Menu:
+
+* MI_HANDLER::        The MPI handler
+* SCALE_MIN::         The p_T cutoff
+* PROFILE_FUNCTION::  The hadron profile function
+* REFERENCE_SCALE::   The reference scale
+* RESCALE_EXPONENT::  The rescaling exponent
+
+
+File: Sherpa.info,  Node: MI_HANDLER,  Next: SCALE_MIN,  Up: MPI Parameters
+
+4.10.1 MI_HANDLER
+-----------------
+
+Specifies the MPI handler. The two possible values at the moment are
+`None' and `Amisic'.
+
+
+File: Sherpa.info,  Node: SCALE_MIN,  Next: PROFILE_FUNCTION,  Prev: MI_HANDLER,  Up: MPI Parameters
+
+4.10.2 SCALE_MIN
+----------------
+
+Specifies the transverse momentum integration cutoff in GeV.
+
+
+File: Sherpa.info,  Node: PROFILE_FUNCTION,  Next: REFERENCE_SCALE,  Prev: SCALE_MIN,  Up: MPI Parameters
+
+4.10.3 PROFILE_FUNCTION
+-----------------------
+
+Specifies the hadron profile function. The possible values are
+`Exponential', `Gaussian' and `Double_Gaussian'.
+
+
+File: Sherpa.info,  Node: REFERENCE_SCALE,  Next: RESCALE_EXPONENT,  Prev: PROFILE_FUNCTION,  Up: MPI Parameters
+
+4.10.4 REFERENCE_SCALE
+----------------------
+
+Specifies the centre-of-mass energy at which the transverse momentum
+integration cutoff is used as is, see *note SCALE_MIN::.  This
+parameter should not be changed by the user. The default is `1800',
+corresponding to Tevatron Run I energies.
+
+
+File: Sherpa.info,  Node: RESCALE_EXPONENT,  Prev: REFERENCE_SCALE,  Up: MPI Parameters
+
+4.10.5 RESCALE_EXPONENT
+-----------------------
+
+Specifies the rescaling exponent for fixing the transverse momentum
+integration cutoff at centre-of-mass energies different from the
+reference scale, see *note SCALE_MIN::, *note REFERENCE_SCALE::.
 
 
 File: Sherpa.info,  Node: Tips and Tricks,  Next: Customization,  Prev: Parameters,  Up: Top
@@ -1718,17 +1862,20 @@ Appendix A Index
 * BUNCH_1:                               BUNCH_1.               (line 6)
 * BUNCH_2:                               BUNCH_2.               (line 6)
 * COLOUR_SCHEME:                         COLOUR_SCHEME.         (line 6)
+* ERROR:                                 ERROR.                 (line 6)
 * EVENT_GENERATION_MODE:                 EVENT_GENERATION_MODE. (line 6)
 * EVENT_MODE:                            EVENT_MODE.            (line 6)
 * EVENTS:                                EVENTS.                (line 6)
 * EVT_FILE_PATH:                         EVT_FILE_PATH.         (line 6)
 * FACTORIZATION_SCALE:                   FACTORIZATION_SCALE.   (line 6)
 * FILE_SIZE:                             FILE_SIZE.             (line 6)
+* FINISH_OPTIMIZATION:                   FINISH_OPTIMIZATION.   (line 6)
 * HELICITY_SCHEME:                       HELICITY_SCHEME.       (line 6)
 * HEPMC2_ASCII_OUTPUT:                   HEPMC2_ASCII_OUTPUT.   (line 6)
 * HEPMC2_GENEVENT_OUTPUT:                HEPMC2_GENEVENT_OUTPUT.
                                                                 (line 6)
 * HEPMC2_OUTPUT:                         HEPMC2_OUTPUT.         (line 6)
+* INTEGRATOR:                            INTEGRATOR.            (line 6)
 * ISR_1:                                 ISR_1.                 (line 6)
 * ISR_2:                                 ISR_2.                 (line 6)
 * ISR_E_ORDER:                           ISR_E_ORDER.           (line 6)
@@ -1740,6 +1887,7 @@ Appendix A Index
 * K_PERP_MEAN_2:                         K_PERP_MEAN_2.         (line 6)
 * K_PERP_SIGMA_1:                        K_PERP_SIGMA_1.        (line 6)
 * K_PERP_SIGMA_2:                        K_PERP_SIGMA_2.        (line 6)
+* MI_HANDLER:                            MI_HANDLER.            (line 6)
 * NUM_ACCURACY:                          NUM_ACCURACY.          (line 6)
 * OUTPUT:                                OUTPUT.                (line 6)
 * OUTPUT_PRECISION:                      OUTPUT_PRECISION.      (line 6)
@@ -1747,9 +1895,13 @@ Appendix A Index
 * PDF_LIBRARY:                           PDF_LIBRARY.           (line 6)
 * PDF_SET:                               PDF_SET.               (line 6)
 * PDF_SET_VERSION:                       PDF_SET_VERSION.       (line 6)
+* PROFILE_FUNCTION:                      PROFILE_FUNCTION.      (line 6)
 * RANDOM_SEED:                           RANDOM_SEED.           (line 6)
+* REFERENCE_SCALE:                       REFERENCE_SCALE.       (line 6)
 * RENORMALIZATION_SCALE:                 RENORMALIZATION_SCALE. (line 6)
+* RESCALE_EXPONENT:                      RESCALE_EXPONENT.      (line 6)
 * RESULT_DIRECTORY:                      RESULT_DIRECTORY.      (line 6)
+* SCALE_MIN:                             SCALE_MIN.             (line 6)
 * SCALE_SCHEME:                          SCALE_SCHEME.          (line 6)
 * SHERPA_CPP_PATH:                       SHERPA_CPP_PATH.       (line 6)
 * SHERPA_LIB_PATH:                       SHERPA_LIB_PATH.       (line 6)
@@ -1759,6 +1911,7 @@ Appendix A Index
 * SPECTRUM_FILE_2:                       SPECTRUM_FILE_2.       (line 6)
 * SPIN_CORRELATIONS:                     SPIN_CORRELATIONS.     (line 6)
 * TIMEOUT:                               TIMEOUT.               (line 6)
+* VEGAS:                                 VEGAS.                 (line 6)
 
 
 
@@ -1770,100 +1923,113 @@ Node: Input structure1641
 Node: Interpreter3965
 Node: Tags5915
 Node: Parameters6533
-Node: Run Parameters7161
-Node: EVENTS7936
-Node: OUTPUT8099
-Node: RANDOM_SEED8607
-Node: ANALYSIS9154
-Node: ANALYSIS_OUTPUT9524
-Node: TIMEOUT9719
-Node: SPIN_CORRELATIONS10350
-Node: NUM_ACCURACY10726
-Node: SHERPA_CPP_PATH11061
-Node: SHERPA_LIB_PATH11397
-Node: Event output formats11668
-Node: EVENT_MODE13421
-Node: SHERPA_OUTPUT13821
-Node: HEPMC2_GENEVENT_OUTPUT14041
-Node: HEPMC2_ASCII_OUTPUT14301
-Node: HEPMC2_OUTPUT14565
-Node: FILE_SIZE14811
-Node: EVT_FILE_PATH15004
-Node: OUTPUT_PRECISION15207
-Node: Beam Parameters15409
-Node: Beam Spectra17295
-Node: BEAM_118788
-Node: BEAM_219011
-Node: BEAM_ENERGY_119237
-Node: BEAM_ENERGY_219459
-Node: BEAM_SPECTRUM_119692
-Node: BEAM_SPECTRUM_219949
-Node: SPECTRUM_FILE_120209
-Node: SPECTRUM_FILE_220459
-Node: BEAM_SMIN20703
-Node: BEAM_SMAX21197
-Node: K_PERP_MEAN_121685
-Node: K_PERP_MEAN_222011
-Node: K_PERP_SIGMA_122344
-Node: K_PERP_SIGMA_222710
-Node: ISR Parameters23054
-Node: BUNCH_124057
-Node: BUNCH_224348
-Node: ISR_124655
-Node: ISR_225130
-Node: ISR_SMIN25608
-Node: ISR_SMAX26074
-Node: ISR_E_ORDER26542
-Node: ISR_E_SCHEME26759
-Node: PDF_SET26970
-Node: PDF_SET_VERSION27179
-Node: PDF_GRID_PATH27441
-Node: PDF_LIBRARY27662
-Node: SHOW_PDF_SETS28199
-Node: Matrix Elements28481
-Node: Scale schemes29464
-Node: RESULT_DIRECTORY30415
-Node: EVENT_GENERATION_MODE30743
-Node: COLOUR_SCHEME31030
-Node: HELICITY_SCHEME31361
-Node: K_FACTOR_SCHEME31693
-Node: SCALE_SCHEME32498
-Node: FACTORIZATION_SCALE33000
-Node: RENORMALIZATION_SCALE33481
-Node: Processes33951
-Node: Process35572
-Node: Decay36138
-Node: DecayOS36558
-Node: Renormalization_Scale37002
-Node: Factorization_Scale37340
-Node: Fixed_scale37676
-Node: CKKW37999
-Node: Selector_File38421
-Node: Order_EW38596
-Node: Order_QCD38879
-Node: Max_N_Quarks39149
-Node: Print_Graphs39359
-Node: Integration_Error39636
-Node: Max_Epsilon40101
-Node: Enhance_Factor40643
-Node: Enhance_Function41109
-Node: NLO_QCD_Part41639
-Node: NLO_EW_Part41783
-Node: Loop_Generator41923
-Node: End process42135
-Node: Selectors42335
-Node: One particle selectors42859
-Node: Two particle selectors43669
-Node: Jet finders44646
-Node: Universal selector45491
-Node: Tips and Tricks48867
-Node: Bash completion49477
-Node: Versioned installation50076
-Node: Customization50537
-Node: External RNG51142
-Node: External PDF52624
-Node: Authors54542
-Node: Copying54717
-Node: Index55757
+Node: Run Parameters7390
+Node: EVENTS8165
+Node: OUTPUT8328
+Node: RANDOM_SEED8836
+Node: ANALYSIS9383
+Node: ANALYSIS_OUTPUT9753
+Node: TIMEOUT9948
+Node: SPIN_CORRELATIONS10579
+Node: NUM_ACCURACY10955
+Node: SHERPA_CPP_PATH11290
+Node: SHERPA_LIB_PATH11626
+Node: Event output formats11897
+Node: EVENT_MODE13650
+Node: SHERPA_OUTPUT14050
+Node: HEPMC2_GENEVENT_OUTPUT14270
+Node: HEPMC2_ASCII_OUTPUT14530
+Node: HEPMC2_OUTPUT14794
+Node: FILE_SIZE15040
+Node: EVT_FILE_PATH15233
+Node: OUTPUT_PRECISION15436
+Node: Beam Parameters15638
+Node: Beam Spectra17524
+Node: BEAM_119017
+Node: BEAM_219240
+Node: BEAM_ENERGY_119466
+Node: BEAM_ENERGY_219688
+Node: BEAM_SPECTRUM_119921
+Node: BEAM_SPECTRUM_220178
+Node: SPECTRUM_FILE_120438
+Node: SPECTRUM_FILE_220688
+Node: BEAM_SMIN20932
+Node: BEAM_SMAX21426
+Node: K_PERP_MEAN_121914
+Node: K_PERP_MEAN_222240
+Node: K_PERP_SIGMA_122573
+Node: K_PERP_SIGMA_222939
+Node: ISR Parameters23283
+Node: BUNCH_124287
+Node: BUNCH_224578
+Node: ISR_124885
+Node: ISR_225360
+Node: ISR_SMIN25838
+Node: ISR_SMAX26304
+Node: ISR_E_ORDER26772
+Node: ISR_E_SCHEME26989
+Node: PDF_SET27200
+Node: PDF_SET_VERSION27409
+Node: PDF_GRID_PATH27671
+Node: PDF_LIBRARY27892
+Node: SHOW_PDF_SETS28429
+Node: Model Parameters28711
+Node: Matrix Elements29000
+Node: Scale schemes29985
+Node: RESULT_DIRECTORY30936
+Node: EVENT_GENERATION_MODE31264
+Node: COLOUR_SCHEME31551
+Node: HELICITY_SCHEME31882
+Node: K_FACTOR_SCHEME32214
+Node: SCALE_SCHEME33019
+Node: FACTORIZATION_SCALE33521
+Node: RENORMALIZATION_SCALE34002
+Node: Processes34472
+Node: Process36093
+Node: Decay36659
+Node: DecayOS37079
+Node: Renormalization_Scale37523
+Node: Factorization_Scale37861
+Node: Fixed_scale38197
+Node: CKKW38520
+Node: Selector_File38942
+Node: Order_EW39117
+Node: Order_QCD39400
+Node: Max_N_Quarks39670
+Node: Print_Graphs39880
+Node: Integration_Error40157
+Node: Max_Epsilon40622
+Node: Enhance_Factor41156
+Node: Enhance_Function41622
+Node: NLO_QCD_Part42152
+Node: NLO_EW_Part42296
+Node: Loop_Generator42436
+Node: End process42648
+Node: Selectors42848
+Node: One particle selectors43392
+Node: Two particle selectors44202
+Node: Jet finders45179
+Node: Universal selector46024
+Node: Integration49400
+Node: ERROR49980
+Node: INTEGRATOR50127
+Node: VEGAS50449
+Node: FINISH_OPTIMIZATION50711
+Node: Shower Parameters50983
+Node: MPI Parameters51263
+Node: MI_HANDLER51819
+Node: SCALE_MIN52026
+Node: PROFILE_FUNCTION52227
+Node: REFERENCE_SCALE52498
+Node: RESCALE_EXPONENT52904
+Node: Tips and Tricks53243
+Node: Bash completion53853
+Node: Versioned installation54452
+Node: Customization54913
+Node: External RNG55518
+Node: External PDF57000
+Node: Authors58918
+Node: Copying59093
+Node: Index60133
 
 End Tag Table

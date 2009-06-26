@@ -1,0 +1,54 @@
+@node MPI Parameters
+@section MPI Parameters
+
+The multiple parton interaction (MPI) setup is covered by
+the `(mi)' section of the steering file or the 
+MPI data file `MI.dat', respectively.
+
+The following parameters are used to steer the MPI setup.
+
+@menu
+* MI_HANDLER::        The MPI handler
+* SCALE_MIN::         The p_T cutoff
+* PROFILE_FUNCTION::  The hadron profile function
+* REFERENCE_SCALE::   The reference scale
+* RESCALE_EXPONENT::  The rescaling exponent
+@end menu
+
+
+@node MI_HANDLER
+@subsection MI_HANDLER
+@cindex MI_HANDLER
+Specifies the MPI handler. The two possible values
+at the moment are @option{None} and @option{Amisic}.
+
+
+@node SCALE_MIN
+@subsection SCALE_MIN
+@cindex SCALE_MIN
+Specifies the transverse momentum integration cutoff in GeV.
+
+
+@node PROFILE_FUNCTION
+@subsection PROFILE_FUNCTION
+@cindex PROFILE_FUNCTION
+Specifies the hadron profile function. The possible values are
+@option{Exponential}, @option{Gaussian} and @option{Double_Gaussian}.
+
+
+@node REFERENCE_SCALE
+@subsection REFERENCE_SCALE
+@cindex REFERENCE_SCALE
+Specifies the centre-of-mass energy at which the transverse momentum
+integration cutoff is used as is, see @ref{SCALE_MIN}. 
+This parameter should not be changed by the user. The default is
+@samp{1800}, corresponding to Tevatron Run I energies.
+
+
+@node RESCALE_EXPONENT
+@subsection RESCALE_EXPONENT
+@cindex RESCALE_EXPONENT
+Specifies the rescaling exponent for fixing the transverse momentum
+integration cutoff at centre-of-mass energies different from the
+reference scale, see @ref{SCALE_MIN}, @ref{REFERENCE_SCALE}.
+

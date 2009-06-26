@@ -1,0 +1,6 @@
+@node Model Parameters
+@section Model Parameters
+
+The interaction model setup is covered by the `(model)' section of
+the steering file or the model data file `Model.dat', respectively.
+

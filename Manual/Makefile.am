@@ -9,10 +9,14 @@ Sherpa_TEXINFOS = \
 	Input.texi \
 	Parameters.texi \
 	Beam.texi \
+	Model.texi \
 	ISR.texi \
 	ME.texi \
 	Processes.texi \
 	Selector.texi \
+	Integration.texi \
+	Shower.texi \
+	MI.texi \
 	Tips.texi \
 	Customization.texi \
 	Run.texi \
