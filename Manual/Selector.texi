@@ -1,6 +1,10 @@
 @node Selectors
 @section Selectors
 
+The setup of cuts at the matrix element level is covered
+by the `(selector)' section of the steering file or the 
+selector data file `Selector.dat', respectively.
+
 Sherpa provides the following selectors
 
 @menu
@@ -55,8 +59,8 @@ the given flavour. Their respective keywords are
 @item Mass            invariant mass
 @item Angle           angular separation (rad)
 @item BeamAngle       angular separation w.r.t. beam
-  (@samp{<flavour2 code>} is 0 or 1 here,
-    referring to either beam 1 or 2)
+
+(@samp{<flavour2 code>} is 0 or 1, referring to beam 1 or 2)
 @item DeltaEta        pseudorapidity separation
 @item DeltaPhi        azimuthal angle separation (rad)
 @item DeltaR          R separation
@@ -96,7 +100,7 @@ understood by the internal algebra interpreter, see @ref{Interpreter}.
 The universal selector is intended to implement non-stnadard cuts
 on the matrix element level. Its syntax is
 @verbatim
-"<variable>"  <kf1>,..,<kfn>   <min1>,<max1>;..;<minn>,<maxn>   [<order1>,...,<orderm>]
+"<variable>" <kf1>,..,<kfn> <min1>,<max1>;..;<minn>,<maxn> [<order1>,...,<orderm>]
 @end verbatim
 
 @emph{No additional white spaces are allowed}

@@ -9,11 +9,13 @@ performed in all inputs, see @ref{Tags}.
 * Run Parameters::    List of general parameters
 * Beam Parameters::   List of beam parameters
 * ISR Parameters::    List of initial state radiation parameters
+* Matrix Elements::   List of matrix element related parameters
 * Selectors::         Syntax of parton level cuts
 @end menu
 
 @include Run.texi
 @include Beam.texi
 @include ISR.texi
+@include ME.texi
 @include Selector.texi
 

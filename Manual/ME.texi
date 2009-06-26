@@ -1,0 +1,159 @@
+@node Matrix Elements
+@section Matrix Elements
+
+The setup of matrix elements is covered by the `(me)' section of
+the steering file or the ME data file `ME.dat', respectively.
+The @emph{mandatory settings} to be made are
+
+@itemize
+@item The scale scheme
+@end itemize
+
+A List of available scale schemes is given in section
+
+@menu
+* Scale schemes::  List of available scale schemes.
+@end menu
+
+The following parameters are used to steer the matrix element setup.
+
+@menu
+* RESULT_DIRECTORY::        The directory to store integration results.
+* EVENT_GENERATION_MODE::   The event generation mode.
+* COLOUR_SCHEME::           The colour handling scheme.
+* HELICITY_SCHEME::         The helicity handling scheme.
+* K_FACTOR_SCHEME::         The K-factor scheme.
+* SCALE_SCHEME::            The scale scheme. 
+* FACTORIZATION_SCALE::     The factorization scale.
+* RENORMALIZATION_SCALE::   The renormalization scale.
+@end menu
+
+
+@node Scale schemes
+@subsection Scale schemes
+Sherpa provides several built-in scale schemes.
+The options which are currently available are
+
+@itemize
+@item @option{VAR}
+
+Scales are specified by the parameters @option{RENORMALIZATION_SCALE}
+and @option{FACTORIZATION_SCALE} in a form which is understood by the
+internal interpreter, see @ref{Interpreter}. If, for example the invariant 
+mass of the lepton pair in Drell-Yan production is the desired scale,
+the corresponding setup reads
+
+@verbatim
+FACTORIZATION_SCALE Abs2(p[2]+p[3])
+RENORMALIZATION_SCALE Abs2(p[2]+p[3])
+@end verbatim
+
+@item @option{QCD}
+
+The matrix element is clustered onto a core 2->2 configuration using a
+k_T-type algorithm with recombination into on-shell partons.
+Scales are defined as the minimum of the largest transverse momentum
+during clustering and the lowest invariant mass in the core process.
+@end itemize
+
+
+@node RESULT_DIRECTORY
+@subsection RESULT_DIRECTORY
+@cindex RESULT_DIRECTORY
+This parameter specifies the name of the directory
+which is used by Sherpa to store the integration results
+and phasespace mappings. The default is @samp{Results/}.
+
+
+@node EVENT_GENERATION_MODE
+@subsection EVENT_GENERATION_MODE
+@cindex EVENT_GENERATION_MODE
+This parameter specifies the event generation mode.
+The two possible modes are @option{Weighted} and
+@option{Unweighted}.
+
+
+@node COLOUR_SCHEME
+@subsection COLOUR_SCHEME
+@cindex COLOUR_SCHEME
+This parameter secifies whether colours are sampled
+or summed over in the matrix element simulation.
+The two corresponding options are @option{SAMPLE}
+and @option{SUM}, respectively.
+
+
+@node HELICITY_SCHEME
+@subsection HELICITY_SCHEME
+@cindex HELICITY_SCHEME
+This parameter secifies whether helicities are sampled
+or summed over in the matrix element simulation.
+The two corresponding options are @option{SAMPLE}
+and @option{SUM}, respectively.
+
+
+@node K_FACTOR_SCHEME
+@subsection K_FACTOR_SCHEME
+@cindex K_FACTOR_SCHEME
+This parameter specifies the K-factor scheme.
+Within Sherpa, this means the scheme to employ
+the renormalization scale for reweighting matrix elements,
+which are initially computed with a fixed value 
+for the coupling constants. If, for example 
+the strong coupling is to be evaluated at the
+renormalization scale set by the specified scale setter 
+@ref{Scale schemes}, the corresponding value
+is @option{QCD}. The available options are
+
+@itemize
+@item NO   No reweighting
+@item QCD  reweighting of QCD couplings only
+@end itemize
+
+It is possible to implement a dedicated K-factor
+scheme within Sherpa. For advice on this topic
+please contact the authors, @ref{Authors}.
+
+
+@node SCALE_SCHEME
+@subsection SCALE_SCHEME
+@cindex SCALE_SCHEME
+This parameter specifies the scale scheme.
+Within Sherpa, this means the scheme to compute
+the renormalization and factorization scales.
+For a list of available scale schemes, see
+@ref{Scale schemes}.
+
+It is possible to implement a dedicated scale
+scheme within Sherpa. For advice on this topic
+please contact the authors, @ref{Authors}.
+
+
+@node FACTORIZATION_SCALE
+@subsection FACTORIZATION_SCALE
+@cindex FACTORIZATION_SCALE
+This parameter sepecifies how to potentially modify 
+the factorization scale computed by the scale scheme
+@ref{Scale schemes}. The syntax must be in a form
+which is understood by the internal interpreter
+@ref{Interpreter}. Examples are
+
+@itemize
+@item FACTORIZATION_SCALE 2*MU_F
+@item FACTORIZATION_SCALE MU_F/2
+@end itemize
+
+
+@node RENORMALIZATION_SCALE
+@subsection RENORMALIZATION_SCALE
+@cindex RENORMALIZATION_SCALE
+This parameter sepecifies how to potentially modify 
+the renormalization scale computed by the scale scheme
+@ref{Scale schemes}. The syntax must be in a form 
+which is understood by the internal interpreter
+@ref{Interpreter}. Examples are
+
+@itemize
+@item RENORMALIZATION_SCALE 2*MU_F
+@item RENORMALIZATION_SCALE MU_F/2
+@end itemize
+

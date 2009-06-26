@@ -235,6 +235,7 @@ performed in all inputs, see *note Tags::.
 * Run Parameters::    List of general parameters
 * Beam Parameters::   List of beam parameters
 * ISR Parameters::    List of initial state radiation parameters
+* Matrix Elements::   List of matrix element related parameters
 * Selectors::         Syntax of parton level cuts
 
 
@@ -705,7 +706,7 @@ hadronic beams, such as protons.
 The default value for protons is 0.8 GeV.
 
 
-File: Sherpa.info,  Node: ISR Parameters,  Next: Selectors,  Prev: Beam Parameters,  Up: Parameters
+File: Sherpa.info,  Node: ISR Parameters,  Next: Matrix Elements,  Prev: Beam Parameters,  Up: Parameters
 
 4.3 ISR Parameters
 ==================
@@ -867,12 +868,180 @@ print all available PDF sets contained in the library loaded by *note
 PDF_LIBRARY::.
 
 
-File: Sherpa.info,  Node: Selectors,  Prev: ISR Parameters,  Up: Parameters
+File: Sherpa.info,  Node: Matrix Elements,  Next: Selectors,  Prev: ISR Parameters,  Up: Parameters
 
-4.4 Selectors
+4.4 Matrix Elements
+===================
+
+The setup of matrix elements is covered by the `(me)' section of the
+steering file or the ME data file `ME.dat', respectively.  The
+_mandatory settings_ to be made are
+
+   * The scale scheme
+
+   A List of available scale schemes is given in section
+
+* Menu:
+
+* Scale schemes::  List of available scale schemes.
+
+   The following parameters are used to steer the matrix element setup.
+
+* Menu:
+
+* RESULT_DIRECTORY::        The directory to store integration results.
+* EVENT_GENERATION_MODE::   The event generation mode.
+* COLOUR_SCHEME::           The colour handling scheme.
+* HELICITY_SCHEME::         The helicity handling scheme.
+* K_FACTOR_SCHEME::         The K-factor scheme.
+* SCALE_SCHEME::            The scale scheme.
+* FACTORIZATION_SCALE::     The factorization scale.
+* RENORMALIZATION_SCALE::   The renormalization scale.
+
+
+File: Sherpa.info,  Node: Scale schemes,  Next: RESULT_DIRECTORY,  Up: Matrix Elements
+
+4.4.1 Scale schemes
+-------------------
+
+Sherpa provides several built-in scale schemes.  The options which are
+currently available are
+
+   * `VAR'
+
+     Scales are specified by the parameters `RENORMALIZATION_SCALE' and
+     `FACTORIZATION_SCALE' in a form which is understood by the
+     internal interpreter, see *note Interpreter::. If, for example the
+     invariant mass of the lepton pair in Drell-Yan production is the
+     desired scale, the corresponding setup reads
+
+
+     FACTORIZATION_SCALE Abs2(p[2]+p[3])
+     RENORMALIZATION_SCALE Abs2(p[2]+p[3])
+
+   * `QCD'
+
+     The matrix element is clustered onto a core 2->2 configuration
+     using a k_T-type algorithm with recombination into on-shell
+     partons.  Scales are defined as the minimum of the largest
+     transverse momentum during clustering and the lowest invariant
+     mass in the core process.
+
+
+File: Sherpa.info,  Node: RESULT_DIRECTORY,  Next: EVENT_GENERATION_MODE,  Prev: Scale schemes,  Up: Matrix Elements
+
+4.4.2 RESULT_DIRECTORY
+----------------------
+
+This parameter specifies the name of the directory which is used by
+Sherpa to store the integration results and phasespace mappings. The
+default is `Results/'.
+
+
+File: Sherpa.info,  Node: EVENT_GENERATION_MODE,  Next: COLOUR_SCHEME,  Prev: RESULT_DIRECTORY,  Up: Matrix Elements
+
+4.4.3 EVENT_GENERATION_MODE
+---------------------------
+
+This parameter specifies the event generation mode.  The two possible
+modes are `Weighted' and `Unweighted'.
+
+
+File: Sherpa.info,  Node: COLOUR_SCHEME,  Next: HELICITY_SCHEME,  Prev: EVENT_GENERATION_MODE,  Up: Matrix Elements
+
+4.4.4 COLOUR_SCHEME
+-------------------
+
+This parameter secifies whether colours are sampled or summed over in
+the matrix element simulation.  The two corresponding options are
+`SAMPLE' and `SUM', respectively.
+
+
+File: Sherpa.info,  Node: HELICITY_SCHEME,  Next: K_FACTOR_SCHEME,  Prev: COLOUR_SCHEME,  Up: Matrix Elements
+
+4.4.5 HELICITY_SCHEME
+---------------------
+
+This parameter secifies whether helicities are sampled or summed over
+in the matrix element simulation.  The two corresponding options are
+`SAMPLE' and `SUM', respectively.
+
+
+File: Sherpa.info,  Node: K_FACTOR_SCHEME,  Next: SCALE_SCHEME,  Prev: HELICITY_SCHEME,  Up: Matrix Elements
+
+4.4.6 K_FACTOR_SCHEME
+---------------------
+
+This parameter specifies the K-factor scheme.  Within Sherpa, this
+means the scheme to employ the renormalization scale for reweighting
+matrix elements, which are initially computed with a fixed value for
+the coupling constants. If, for example the strong coupling is to be
+evaluated at the renormalization scale set by the specified scale setter
+*note Scale schemes::, the corresponding value is `QCD'. The available
+options are
+
+   * NO   No reweighting
+
+   * QCD  reweighting of QCD couplings only
+
+   It is possible to implement a dedicated K-factor scheme within
+Sherpa. For advice on this topic please contact the authors, *note
+Authors::.
+
+
+File: Sherpa.info,  Node: SCALE_SCHEME,  Next: FACTORIZATION_SCALE,  Prev: K_FACTOR_SCHEME,  Up: Matrix Elements
+
+4.4.7 SCALE_SCHEME
+------------------
+
+This parameter specifies the scale scheme.  Within Sherpa, this means
+the scheme to compute the renormalization and factorization scales.
+For a list of available scale schemes, see *note Scale schemes::.
+
+   It is possible to implement a dedicated scale scheme within Sherpa.
+For advice on this topic please contact the authors, *note Authors::.
+
+
+File: Sherpa.info,  Node: FACTORIZATION_SCALE,  Next: RENORMALIZATION_SCALE,  Prev: SCALE_SCHEME,  Up: Matrix Elements
+
+4.4.8 FACTORIZATION_SCALE
+-------------------------
+
+This parameter sepecifies how to potentially modify the factorization
+scale computed by the scale scheme *note Scale schemes::. The syntax
+must be in a form which is understood by the internal interpreter *note
+Interpreter::. Examples are
+
+   * FACTORIZATION_SCALE 2*MU_F
+
+   * FACTORIZATION_SCALE MU_F/2
+
+
+File: Sherpa.info,  Node: RENORMALIZATION_SCALE,  Prev: FACTORIZATION_SCALE,  Up: Matrix Elements
+
+4.4.9 RENORMALIZATION_SCALE
+---------------------------
+
+This parameter sepecifies how to potentially modify the renormalization
+scale computed by the scale scheme *note Scale schemes::. The syntax
+must be in a form which is understood by the internal interpreter *note
+Interpreter::. Examples are
+
+   * RENORMALIZATION_SCALE 2*MU_F
+
+   * RENORMALIZATION_SCALE MU_F/2
+
+
+File: Sherpa.info,  Node: Selectors,  Prev: Matrix Elements,  Up: Parameters
+
+4.5 Selectors
 =============
 
-Sherpa provides the following selectors
+The setup of cuts at the matrix element level is covered by the
+`(selector)' section of the steering file or the selector data file
+`Selector.dat', respectively.
+
+   Sherpa provides the following selectors
 
 * Menu:
 
@@ -884,7 +1053,7 @@ Sherpa provides the following selectors
 
 File: Sherpa.info,  Node: One particle selectors,  Next: Two particle selectors,  Up: Selectors
 
-4.4.1
+4.5.1
 -----
 
 The selectors listed here implement cuts on the matrix element level,
@@ -911,7 +1080,7 @@ possible particles with the given flavour. Their respective keywords are
 
 File: Sherpa.info,  Node: Two particle selectors,  Next: Jet finders,  Prev: One particle selectors,  Up: Selectors
 
-4.4.2
+4.5.2
 -----
 
 The selectors listed here implement cuts on the matrix element level,
@@ -929,8 +1098,9 @@ possible particles with the given flavour. Their respective keywords are
 
    * Angle           angular separation (rad)
 
-   * BeamAngle       angular separation w.r.t. beam   (`<flavour2
-     code>' is 0 or 1 here,     referring to either beam 1 or 2)
+   * BeamAngle       angular separation w.r.t. beam
+
+     (`<flavour2 code>' is 0 or 1, referring to beam 1 or 2)
 
    * DeltaEta        pseudorapidity separation
 
@@ -941,7 +1111,7 @@ possible particles with the given flavour. Their respective keywords are
 
 File: Sherpa.info,  Node: Jet finders,  Next: Universal selector,  Prev: Two particle selectors,  Up: Selectors
 
-4.4.3
+4.5.3
 -----
 
 There are two different types of jet finders
@@ -967,13 +1137,13 @@ algebra interpreter, see *note Interpreter::.
 
 File: Sherpa.info,  Node: Universal selector,  Prev: Jet finders,  Up: Selectors
 
-4.4.4
+4.5.4
 -----
 
 The universal selector is intended to implement non-stnadard cuts on
 the matrix element level. Its syntax is
 
-"<variable>"  <kf1>,..,<kfn>   <min1>,<max1>;..;<minn>,<maxn>   [<order1>,...,<orderm>]
+"<variable>" <kf1>,..,<kfn> <min1>,<max1>;..;<minn>,<maxn> [<order1>,...,<orderm>]
 
    _No additional white spaces are allowed_
 
@@ -1317,10 +1487,14 @@ Appendix A Index
 * BEAM_SPECTRUM_2:                       BEAM_SPECTRUM_2.       (line 6)
 * BUNCH_1:                               BUNCH_1.               (line 6)
 * BUNCH_2:                               BUNCH_2.               (line 6)
+* COLOUR_SCHEME:                         COLOUR_SCHEME.         (line 6)
+* EVENT_GENERATION_MODE:                 EVENT_GENERATION_MODE. (line 6)
 * EVENT_MODE:                            EVENT_MODE.            (line 6)
 * EVENTS:                                EVENTS.                (line 6)
 * EVT_FILE_PATH:                         EVT_FILE_PATH.         (line 6)
+* FACTORIZATION_SCALE:                   FACTORIZATION_SCALE.   (line 6)
 * FILE_SIZE:                             FILE_SIZE.             (line 6)
+* HELICITY_SCHEME:                       HELICITY_SCHEME.       (line 6)
 * HEPMC2_ASCII_OUTPUT:                   HEPMC2_ASCII_OUTPUT.   (line 6)
 * HEPMC2_GENEVENT_OUTPUT:                HEPMC2_GENEVENT_OUTPUT.
                                                                 (line 6)
@@ -1331,6 +1505,7 @@ Appendix A Index
 * ISR_E_SCHEME:                          ISR_E_SCHEME.          (line 6)
 * ISR_SMAX:                              ISR_SMAX.              (line 6)
 * ISR_SMIN:                              ISR_SMIN.              (line 6)
+* K_FACTOR_SCHEME:                       K_FACTOR_SCHEME.       (line 6)
 * K_PERP_MEAN_1:                         K_PERP_MEAN_1.         (line 6)
 * K_PERP_MEAN_2:                         K_PERP_MEAN_2.         (line 6)
 * K_PERP_SIGMA_1:                        K_PERP_SIGMA_1.        (line 6)
@@ -1343,6 +1518,9 @@ Appendix A Index
 * PDF_SET:                               PDF_SET.               (line 6)
 * PDF_SET_VERSION:                       PDF_SET_VERSION.       (line 6)
 * RANDOM_SEED:                           RANDOM_SEED.           (line 6)
+* RENORMALIZATION_SCALE:                 RENORMALIZATION_SCALE. (line 6)
+* RESULT_DIRECTORY:                      RESULT_DIRECTORY.      (line 6)
+* SCALE_SCHEME:                          SCALE_SCHEME.          (line 6)
 * SHERPA_CPP_PATH:                       SHERPA_CPP_PATH.       (line 6)
 * SHERPA_LIB_PATH:                       SHERPA_LIB_PATH.       (line 6)
 * SHERPA_OUTPUT:                         SHERPA_OUTPUT.         (line 6)
@@ -1362,70 +1540,80 @@ Node: Input structure1710
 Node: Interpreter4034
 Node: Tags5984
 Node: Parameters6602
-Node: Run Parameters7124
-Node: EVENTS7899
-Node: OUTPUT8062
-Node: RANDOM_SEED8570
-Node: ANALYSIS9117
-Node: ANALYSIS_OUTPUT9487
-Node: TIMEOUT9682
-Node: SPIN_CORRELATIONS10313
-Node: NUM_ACCURACY10689
-Node: SHERPA_CPP_PATH11024
-Node: SHERPA_LIB_PATH11360
-Node: Event output formats11631
-Node: EVENT_MODE13384
-Node: SHERPA_OUTPUT13784
-Node: HEPMC2_GENEVENT_OUTPUT14004
-Node: HEPMC2_ASCII_OUTPUT14264
-Node: HEPMC2_OUTPUT14528
-Node: FILE_SIZE14774
-Node: EVT_FILE_PATH14967
-Node: OUTPUT_PRECISION15170
-Node: Beam Parameters15372
-Node: Beam Spectra17258
-Node: BEAM_118751
-Node: BEAM_218974
-Node: BEAM_ENERGY_119200
-Node: BEAM_ENERGY_219422
-Node: BEAM_SPECTRUM_119655
-Node: BEAM_SPECTRUM_219912
-Node: SPECTRUM_FILE_120172
-Node: SPECTRUM_FILE_220422
-Node: BEAM_SMIN20666
-Node: BEAM_SMAX21160
-Node: K_PERP_MEAN_121648
-Node: K_PERP_MEAN_221974
-Node: K_PERP_SIGMA_122307
-Node: K_PERP_SIGMA_222673
-Node: ISR Parameters23017
-Node: BUNCH_124014
-Node: BUNCH_224305
-Node: ISR_124612
-Node: ISR_225087
-Node: ISR_SMIN25565
-Node: ISR_SMAX26031
-Node: ISR_E_ORDER26499
-Node: ISR_E_SCHEME26716
-Node: PDF_SET26927
-Node: PDF_SET_VERSION27136
-Node: PDF_GRID_PATH27398
-Node: PDF_LIBRARY27619
-Node: SHOW_PDF_SETS28156
-Node: Selectors28438
-Node: One particle selectors28801
-Node: Two particle selectors29598
-Node: Jet finders30584
-Node: Universal selector31404
-Node: Cross section34798
-Node: Tips and Tricks36643
-Node: Bash completion37256
-Node: Versioned installation37855
-Node: Customization38316
-Node: External RNG38921
-Node: External PDF40403
-Node: Authors42321
-Node: Copying42496
-Node: Index43536
+Node: Run Parameters7188
+Node: EVENTS7963
+Node: OUTPUT8126
+Node: RANDOM_SEED8634
+Node: ANALYSIS9181
+Node: ANALYSIS_OUTPUT9551
+Node: TIMEOUT9746
+Node: SPIN_CORRELATIONS10377
+Node: NUM_ACCURACY10753
+Node: SHERPA_CPP_PATH11088
+Node: SHERPA_LIB_PATH11424
+Node: Event output formats11695
+Node: EVENT_MODE13448
+Node: SHERPA_OUTPUT13848
+Node: HEPMC2_GENEVENT_OUTPUT14068
+Node: HEPMC2_ASCII_OUTPUT14328
+Node: HEPMC2_OUTPUT14592
+Node: FILE_SIZE14838
+Node: EVT_FILE_PATH15031
+Node: OUTPUT_PRECISION15234
+Node: Beam Parameters15436
+Node: Beam Spectra17322
+Node: BEAM_118815
+Node: BEAM_219038
+Node: BEAM_ENERGY_119264
+Node: BEAM_ENERGY_219486
+Node: BEAM_SPECTRUM_119719
+Node: BEAM_SPECTRUM_219976
+Node: SPECTRUM_FILE_120236
+Node: SPECTRUM_FILE_220486
+Node: BEAM_SMIN20730
+Node: BEAM_SMAX21224
+Node: K_PERP_MEAN_121712
+Node: K_PERP_MEAN_222038
+Node: K_PERP_SIGMA_122371
+Node: K_PERP_SIGMA_222737
+Node: ISR Parameters23081
+Node: BUNCH_124084
+Node: BUNCH_224375
+Node: ISR_124682
+Node: ISR_225157
+Node: ISR_SMIN25635
+Node: ISR_SMAX26101
+Node: ISR_E_ORDER26569
+Node: ISR_E_SCHEME26786
+Node: PDF_SET26997
+Node: PDF_SET_VERSION27206
+Node: PDF_GRID_PATH27468
+Node: PDF_LIBRARY27689
+Node: SHOW_PDF_SETS28226
+Node: Matrix Elements28508
+Node: Scale schemes29491
+Node: RESULT_DIRECTORY30454
+Node: EVENT_GENERATION_MODE30782
+Node: COLOUR_SCHEME31069
+Node: HELICITY_SCHEME31400
+Node: K_FACTOR_SCHEME31732
+Node: SCALE_SCHEME32536
+Node: FACTORIZATION_SCALE33038
+Node: RENORMALIZATION_SCALE33519
+Node: Selectors33989
+Node: One particle selectors34519
+Node: Two particle selectors35316
+Node: Jet finders36285
+Node: Universal selector37105
+Node: Cross section40494
+Node: Tips and Tricks42339
+Node: Bash completion42952
+Node: Versioned installation43551
+Node: Customization44012
+Node: External RNG44617
+Node: External PDF46099
+Node: Authors48017
+Node: Copying48192
+Node: Index49232
 
 End Tag Table
