@@ -46,7 +46,7 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
     term->Set(sqr(p_setter->HT()));
     return term;
   }
-  size_t i(ToType<size_t>(term->Tag().substr(2,term->Tag().length()-3)));
+  size_t i(atoi(term->Tag().substr(2,term->Tag().length()-3).c_str()));
   term->Set(p_setter->Momentum(i));
   return term;
 }

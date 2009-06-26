@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"

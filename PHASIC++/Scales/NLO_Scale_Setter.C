@@ -127,7 +127,7 @@ Term *NLO_Tag_Setter::ReplaceTags(Term *term) const
     term->Set(sqr(ht));
     return term;
   }
-  size_t i(ToType<size_t>(term->Tag().substr(2,term->Tag().length()-3)));
+  size_t i(atoi(term->Tag().substr(2,term->Tag().length()-3).c_str()));
   if (i>p_setter->Process()->ActiveMom().size()) THROW(fatal_error,"Momentum index too large");
   term->Set(p_setter->Process()->ActiveMom()[i]);
   return term;

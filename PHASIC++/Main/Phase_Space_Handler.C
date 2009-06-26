@@ -258,7 +258,7 @@ std::string Phase_Space_Handler::ReplaceTags(std::string &expr) const
 
 Term *Phase_Space_Handler::ReplaceTags(Term *term) const
 {
-  int i=ATOOLS::ToType<int>(term->Tag().substr(2,term->Tag().length()-3));
+  int i=atoi(term->Tag().substr(2,term->Tag().length()-3).c_str());
   term->Set(p_lab[i]);
   return term;
 }
