@@ -270,6 +270,7 @@ void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)
 {
   if (p_map!=NULL) {
     p_psgen=p_map->p_psgen;
+    if (p_psgen==NULL) p_psgen = new PS_Generator(p_map);
   }
   else {
     p_psgen = new PS_Generator(this);
