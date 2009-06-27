@@ -467,6 +467,8 @@ bool Initialization_Handler::InitializeThePDFs()
 #else
   std::string defaultlib("CTEQ6Sherpa");
 #endif  
+  if (rpa.gen.Beam1().IsLepton() &&
+      rpa.gen.Beam2().IsLepton()) defaultlib="PDFESherpa";
   m_pdflib=dataread.GetValue<std::string>("PDF_LIBRARY", defaultlib);
   void *init(s_loader->GetLibraryFunction(m_pdflib,"InitPDFLib"));
   if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
