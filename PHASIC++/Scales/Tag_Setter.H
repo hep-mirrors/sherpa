@@ -29,6 +29,8 @@ namespace PHASIC {
     std::string   ReplaceTags(std::string &expr) const;    
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
     
+    void AssignId(ATOOLS::Term *term);
+
     // inline functions
     void SetCalculator(ATOOLS::Algebra_Interpreter *const calc) { p_calc=calc; }
 

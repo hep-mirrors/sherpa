@@ -158,6 +158,8 @@ namespace PHASIC {
     std::string   ReplaceTags(std::string &expr) const;
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
 
+    void AssignId(ATOOLS::Term *term);
+
     // inline functions
     inline const ATOOLS::Vec4D_Vector &LabPoint() const { return p_lab; }
     inline const ATOOLS::Vec4D_Vector &CMSPoint() const { return p_cms; }

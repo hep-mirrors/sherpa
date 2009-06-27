@@ -59,6 +59,7 @@ Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer):
   if (stag!=value) m_replace=true;
   p_value = Term::New(value);
   p_value->SetTag(stag);
+  if (m_replace) p_replacer->AssignId(p_value);
 }
 
 Single_Term::~Single_Term()
@@ -69,7 +70,6 @@ Single_Term::~Single_Term()
 Term *Single_Term::Evaluate(const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Single_Term requires no argument.");
-  std::string tag=m_tag;
   if (m_replace) p_replacer->ReplaceTags(p_value);
   if (m_sign) *p_value=-*p_value;
   return p_value;
@@ -619,8 +619,8 @@ Algebra_Interpreter::~Algebra_Interpreter()
     m_leafs.erase(m_leafs.begin());
   }
   while (m_terms.size()>0) {
-    delete *m_terms.begin();
-    m_terms.erase(m_terms.begin());
+    delete m_terms.back();
+    m_terms.pop_back();
   }
   while (m_interpreters.size()>0) {
     delete m_interpreters.begin()->second;
@@ -648,6 +648,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
     p_root = p_leaf = new Node<Function*>(NULL,false);
     (*p_leaf)[0] = new Single_Term(result,p_replacer);
     AddLeaf((*p_leaf)[0]);
+    AddArgs(p_root);
     result=p_replacer->ReplaceTags(result);
 #ifdef DEBUG__Interpreter
     msg_IODebugging()<<"} -> "<<result<<std::endl;
@@ -658,6 +659,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
   msg_IODebugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
 #endif
   p_root = p_leaf;
+  AddArgs(p_root);
   result=ToString(*Calculate());
   msg_IODebugging()<<"} -> "<<result<<std::endl;
   return result;
@@ -665,28 +667,38 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 
 Term *Algebra_Interpreter::Calculate()
 {
-  while (m_terms.size()>0) {
-    delete *m_terms.begin();
-    m_terms.erase(m_terms.begin());
-  }
+  for (Term_Vector::const_iterator
+	 tit(m_terms.begin());tit!=m_terms.end();++tit)
+    (*tit)->Delete();
+  m_terms.clear();
   if (p_root==NULL) {
     Term *res(Term::New(std::string("0.0")));
-    m_terms.insert(res);
+    m_terms.push_back(res);
     return res;
   }
-  return Iterate(p_root);
+  size_t n(0);
+  return Iterate(p_root,n);
 }
 
-Term *Algebra_Interpreter::Iterate(Node<Function*> *const node)
+void Algebra_Interpreter::AddArgs(Node<Function*> *const node)
 {
   if (node->operator->()==NULL) {
-    std::vector<Term*> args;
+    m_argvs.push_back(Term_Vector(0));
+    return;
+  }
+  m_argvs.push_back(Term_Vector((*node)->size()));
+  for (size_t i=0;i<(*node)->size();++i)
+    AddArgs((*node)()[i]);
+}
+
+Term *Algebra_Interpreter::Iterate
+(Node<Function*> *const node,size_t &n)
+{
+  Term_Vector &args(m_argvs[n++]);
+  if (node->operator->()==NULL)
     return (*node)[0]->Evaluate(args);
-  }
-  std::vector<Term*> args((*node)->size());
-  for (size_t i=0;i<(*node)->size();++i) {
-    args[i]=Iterate((*node)()[i]);
-  }
+  for (size_t i=0;i<(*node)->size();++i)
+    args[i]=Iterate((*node)()[i],n);
   return (*node)[0]->Evaluate(args);
 }
 
@@ -709,7 +721,7 @@ void Algebra_Interpreter::AddLeaf(Function *const f)
 
 void Algebra_Interpreter::AddTerm(Term *const t)
 {
-  m_terms.insert(t); 
+  m_terms.push_back(t); 
 }
 
 std::string Algebra_Interpreter::Iterate(const std::string &expr)
@@ -784,4 +796,8 @@ std::string Tag_Replacer::ReplaceTags(std::string &expr) const
 Term *Tag_Replacer::ReplaceTags(Term *term) const
 {
   return term;
+}
+
+void Tag_Replacer::AssignId(Term *term)
+{
 }

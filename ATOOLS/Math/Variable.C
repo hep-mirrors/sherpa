@@ -110,7 +110,7 @@ class Calc_Variable: public Variable_Base<ValueType>,
 private:
   std::string m_formula;
   Algebra_Interpreter *p_interpreter;
-  const Tag_Replacer *p_replacer;
+  Tag_Replacer *p_replacer;
   mutable std::vector<Vec4D> m_p;
 public:
   Calc_Variable(const std::string &tag);
@@ -134,6 +134,7 @@ public:
   bool Init(const std::string &name);
   std::string ReplaceTags(std::string &expr) const;
   ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+  void AssignId(ATOOLS::Term *term);
 };// end of class Calc_Variable
 template <class ValueType>
 Calc_Variable<ValueType>::Calc_Variable(const std::string &tag): 
@@ -155,8 +156,8 @@ Calc_Variable<ValueType>::Init(const std::string &name)
     if ((cbpos=reps.rfind("}"))==std::string::npos) 
       THROW(fatal_error,"Invalid syntax");
     reps=reps.substr(0,cbpos);
-    p_replacer=dynamic_cast<const Tag_Replacer*>
-      ((const Tag_Replacer*)ToType<long unsigned int>(reps));
+    p_replacer=dynamic_cast<Tag_Replacer*>
+      ((Tag_Replacer*)ToType<long unsigned int>(reps));
     if (p_replacer==NULL) THROW(fatal_error,"Invalid pointer");
   }
   size_t bpos(m_formula.find("("));
@@ -190,14 +191,21 @@ std::string Calc_Variable<ValueType>::ReplaceTags(std::string &expr) const
 template <class ValueType>
 ATOOLS::Term *Calc_Variable<ValueType>::ReplaceTags(ATOOLS::Term *term) const
 {
-  if (term->Tag().find("p[")==0) {
-    size_t i(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
-    if (i>=m_p.size()) THROW(fatal_error,"Invalid tag.");
-    term->Set(m_p[i]);
-  }
+  if (term->Id()>=100) term->Set(m_p[term->Id()-100]);
   else if (p_replacer!=NULL) return p_replacer->ReplaceTags(term);
   else THROW(fatal_error,"Invalid tag.");
   return term;
+}
+template <class ValueType>
+void Calc_Variable<ValueType>::AssignId(ATOOLS::Term *term)
+{
+  if (term->Tag().find("p[")==0) {
+    size_t i(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
+    if (i>=m_p.size()) THROW(fatal_error,"Invalid tag.");
+    term->SetId(100+i);
+  }
+  else if (p_replacer!=NULL) p_replacer->AssignId(term);
+  else THROW(fatal_error,"Invalid tag.");
 }
   
 template <class ValueType>

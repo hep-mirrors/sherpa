@@ -258,9 +258,15 @@ std::string Phase_Space_Handler::ReplaceTags(std::string &expr) const
 
 Term *Phase_Space_Handler::ReplaceTags(Term *term) const
 {
-  int i=atoi(term->Tag().substr(2,term->Tag().length()-3).c_str());
-  term->Set(p_lab[i]);
+  term->Set(p_lab[term->Id()]);
   return term;
+}
+
+void Phase_Space_Handler::AssignId(Term *term)
+{
+  term->SetId(ToType<int>
+	      (term->Tag().substr
+	       (2,term->Tag().length()-3)));
 }
 
 double Phase_Space_Handler::EnhanceFactor()

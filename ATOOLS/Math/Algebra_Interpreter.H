@@ -101,6 +101,8 @@ namespace ATOOLS {
     virtual std::string  ReplaceTags(std::string &expr) const;    
     virtual Term        *ReplaceTags(Term *term) const;    
 
+    virtual void AssignId(Term *term);
+
   };// end of class Tag_Replacer
 
   class Algebra_Interpreter: public Tag_Replacer {
@@ -115,7 +117,7 @@ namespace ATOOLS {
 
     typedef std::map<size_t,Interpreter_Function*> Interpreter_Map;
 
-    typedef std::set<Term*> Term_Set;
+    typedef std::vector<Term*> Term_Vector;
 
   private:
 
@@ -127,12 +129,18 @@ namespace ATOOLS {
 
     Tag_Replacer *p_replacer;
 
-    String_Map m_tags;
-    Term_Set   m_terms;
+    String_Map  m_tags;
+    Term_Vector m_terms;
 
     Node<Function*> *p_root, *p_leaf;
 
+    std::vector<Term_Vector> m_argvs;
+
     void PrintNode(Node<Function*> *const node) const;
+
+    void AddArgs(Node<Function*> *const node);
+
+    Term *Iterate(Node<Function*> *const node,size_t &n);
 
   public:
 
@@ -147,7 +155,6 @@ namespace ATOOLS {
     std::string Iterate(const std::string &expr);
 
     Term *Calculate();
-    Term *Iterate(Node<Function*> *const node);
 
     void AddFunction(Function *const f);
     void AddOperator(Operator *const b);

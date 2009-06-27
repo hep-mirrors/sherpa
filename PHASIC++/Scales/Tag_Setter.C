@@ -26,28 +26,39 @@ std::string Tag_Setter::ReplaceTags(std::string &expr) const
 
 Term *Tag_Setter::ReplaceTags(Term *term) const
 {
-  if (term->Tag()=="MU_F") {
+  switch (term->Id()) {
+  case 1:
     term->Set(p_setter->Scale(stp::fac));
     return term;
-  }
-  if (term->Tag()=="MU_R") {
+  case 2:
     term->Set(p_setter->Scale(stp::ren));
     return term;
-  }
-  if (term->Tag()=="Q2_CUT") {
+  case 3:
     term->Set(JF()->Ycut()*sqr(rpa.gen.Ecms()));
     return term;
-  }
-  if (term->Tag()=="Q2_MIN") {
+  case 4:
     term->Set(JF()->ActualValue()*sqr(rpa.gen.Ecms()));
     return term;
-  }
-  if (term->Tag()=="H_T") {
+  case 5:
     term->Set(sqr(p_setter->HT()));
     return term;
+  default:
+    term->Set(p_setter->Momentum(term->Id()-100));
+    return term;
   }
-  size_t i(atoi(term->Tag().substr(2,term->Tag().length()-3).c_str()));
-  term->Set(p_setter->Momentum(i));
   return term;
 }
 
+void Tag_Setter::AssignId(Term *term)
+{
+  if (term->Tag()=="MU_F") term->SetId(1);
+  else if (term->Tag()=="MU_R") term->SetId(2);
+  else if (term->Tag()=="Q2_CUT") term->SetId(3);
+  else if (term->Tag()=="Q2_MIN") term->SetId(4);
+  else if (term->Tag()=="H_T") term->SetId(5);
+  else {
+    term->SetId(100+ToType<int>
+		(term->Tag().substr
+		 (2,term->Tag().length()-3)));
+  }
+}

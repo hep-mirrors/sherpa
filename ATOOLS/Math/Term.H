@@ -11,14 +11,19 @@ namespace ATOOLS {
     char m_type;
 
     std::string m_tag;
+    size_t      m_id;
 
   public:
 
     inline Term(const char type): m_type(type) {}
 
+    virtual ~Term();
+
     template <class TType> static Term *New(const TType &val);
 
     static Term *New(const std::string &tag);
+
+    virtual void Delete() = 0;
 
     inline char Type() const { return m_type; }
 
@@ -79,8 +84,10 @@ namespace ATOOLS {
     Term *DPhi(const Term &ref) const;
 
     inline void SetTag(const std::string &tag) { m_tag=tag; }
+    inline void SetId(const size_t &id)        { m_id=id;   }
 
     inline const std::string &Tag() const { return m_tag; }
+    inline const size_t      &Id() const  { return m_id;  }
 
   };// end of class Term
 
