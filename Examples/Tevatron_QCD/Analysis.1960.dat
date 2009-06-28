@@ -1,0 +1,36 @@
+(analysis){
+
+  BEGIN_ANALYSIS {
+  
+    LEVEL Shower;
+
+    PATH_PIECE hep-ex_0701051/;
+
+    PTSel 0.1 1000 FinalState MinPT;
+    AbsYSel 0 3.6 MinPT MinPTMaxY;
+
+    Trigger {
+      Finder 93 54 -2.1 2.1 0.7 1;
+      InList MinPTMaxY; OutList KTJets;
+    }
+  
+    AbsYSel 0.0 2.1 KTJets KTJets_0.0-2.1;
+
+    AbsYSel 0.0 0.1 KTJets KTJets_0.0-0.1;
+    AbsYSel 0.1 0.7 KTJets KTJets_0.1-0.7;
+    AbsYSel 0.7 1.1 KTJets KTJets_0.7-1.1;
+    AbsYSel 1.1 1.6 KTJets KTJets_1.1-1.6;
+    AbsYSel 1.6 2.1 KTJets KTJets_1.6-2.1;
+
+    JetPT 0 800 400 1 1 3 LinErr KTJets_0.0-2.1;
+
+    JetPT 0 800 400 1 1 3 LinErr KTJets_0.0-0.1;
+    JetPT 0 800 400 1 1 3 LinErr KTJets_0.1-0.7;
+    JetPT 0 800 400 1 1 3 LinErr KTJets_0.7-1.1;
+    JetPT 0 800 400 1 1 3 LinErr KTJets_1.1-1.6;
+    JetPT 0 800 400 1 1 3 LinErr KTJets_1.6-2.1;
+
+  } END_ANALYSIS
+
+}(analysis);
+
