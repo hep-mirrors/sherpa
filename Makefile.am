@@ -1,9 +1,5 @@
 MAKE = make 
 
-if USING__Analysis
-ANAEXTRADIR=AddOns
-endif
-
 SUBDIRS       = \
 		ATOOLS \
 		HELICITIES \
@@ -20,10 +16,10 @@ SUBDIRS       = \
 		AHADIC++ \
 		HADRONS++ \
 		PHOTONS++ \
+		AddOns \
 		SHERPA \
 		Manual \
 		Examples \
-		$(ANAEXTRADIR) \
 		TOOLS
 
 EXTRA_DIST = @SVNINCLUDE@ GUIDELINES
