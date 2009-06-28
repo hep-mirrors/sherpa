@@ -280,8 +280,10 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
+#ifdef DEBUG__Interpreter
   msg_IODebugging()<<"Resolve_Bracket -> '"
 		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
+#endif
   std::string mid(p_interpreter->Iterate(expr.substr(l+1,r-l-1)));
   std::string res=p_interpreter->Iterate(left+mid+right);
   --cnt;
@@ -347,13 +349,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   }
   std::string left=expr.substr(0,pos);
   std::string right=expr.substr(i+1);
-  if (msg_LevelIsDebugging()) {
+#ifdef DEBUG__Interpreter
+  if (msg_LevelIsIODebugging()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
     msg_IODebugging()<<"Interprete_Function -> '"<<left
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
+#endif
   Node<Function*> *leaf = new Node<Function*>(func,true);
   for (size_t j=0;j<args.size();++j) {
     (*leaf)->push_back(new Node<Function*>(NULL,true));
@@ -470,9 +474,11 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[1]=p_interpreter->Extractor()->Interprete(args[1]);
   p_interpreter->SetLeaf(leaf);
+#ifdef DEBUG__Interpreter
   msg_IODebugging()<<"Interprete_Binary -> '"
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
+#endif
   return p_interpreter->
     Iterate(lrstr+"{"+ToString(PT(leaf))+"}"+rrstr);
 }
@@ -527,8 +533,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[0]=p_interpreter->Extractor()->Interprete(args[0]);
   p_interpreter->SetLeaf(leaf);
+#ifdef DEBUG__Interpreter
   msg_IODebugging()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
+#endif
   return p_interpreter->
     Iterate(lrstr+"{"+ToString(PT(leaf))+"}"+rrstr);
 }
@@ -634,6 +642,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 #ifdef DEBUG__Interpreter
   msg_IODebugging()<<METHOD<<"("<<expr<<") {\n";
 #endif
+  m_argvs.clear();
   if (p_root!=NULL) delete p_root;
   p_root=p_leaf=NULL;
   while (m_leafs.size()>0) {
@@ -656,12 +665,19 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
     return result;
   }
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
+  msg_IODebugging()<<"} -> "<<result<<std::endl;
 #endif
   p_root = p_leaf;
   AddArgs(p_root);
   result=ToString(*Calculate());
-  msg_IODebugging()<<"} -> "<<result<<std::endl;
+  if (msg_LevelIsIODebugging()) {
+    msg_IODebugging()<<METHOD<<"("<<expr<<"): {\n";
+    {
+      msg_Indent();
+      PrintEquation();
+    }
+    msg_IODebugging()<<"} -> "<<result<<"\n";
+  }
   return result;
 }
 
