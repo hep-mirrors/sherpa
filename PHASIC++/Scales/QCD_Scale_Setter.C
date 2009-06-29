@@ -196,7 +196,8 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     msg_Debugging()<<"Cluster "<<ID(ampl->Leg(iw)->Id())
 		   <<" & "<<ID(ampl->Leg(jw)->Id())
-		   <<" <-> "<<ID(ampl->Leg(kw)->Id())<<"\n";
+		   <<" <-> "<<ID(ampl->Leg(kw)->Id())
+		   <<" => "<<sqrt(kt2w)<<"\n";
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
     cd.Combine(*ampl,iw,jw,kw);
@@ -329,13 +330,13 @@ CS_Params QCD_Setter_CS_CD::KT2
       if ((lk->Id()&3)==0) {
 	double pjpa=lj->Mom()*li->Mom(), pkpa=lk->Mom()*li->Mom();
 	double pjpk=lj->Mom()*lk->Mom(), xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
-	double uj=pjpa/(pjpa+pkpa), kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj*(1.0-uj); 
+	double uj=pjpa/(pjpa+pkpa), kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj; 
 	return CS_Params(kt2,xjka,uj,1);
       }
       else {
 	double papb=li->Mom()*lk->Mom(), pjpa=lj->Mom()*lk->Mom();
 	double pjpb=lj->Mom()*lk->Mom(), xjab=(papb+pjpa+pjpb)/papb;
-	double vj=-pjpa/papb, kt2=2.*papb*vj*(1.-xjab-vj);
+	double vj=-pjpa/papb, kt2=2.*papb*vj*(1.-xjab);
 	return CS_Params(kt2,xjab,vj,3);
       }
     }
