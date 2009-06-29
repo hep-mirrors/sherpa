@@ -381,13 +381,16 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetNIn(ampl->NIn());
   p_ampl->SetMuR2(ampl->MuR2());
   p_ampl->SetMuF2(ampl->MuF2());
-  if (wkey.first==0) {
-    p_ampl->SetX1(ampl->X1()/winfo.m_kt2.m_x);
-    p_ampl->SetX2(ampl->X2());
+  p_ampl->SetX1(ampl->X1());
+  p_ampl->SetX2(ampl->X2());
+  size_t nid(m_id[wkey.first]+m_id[wkey.second]);
+  if (nid&3) {
+    if (nid&1) p_ampl->SetX1(ampl->X1()*winfo.m_kt2.m_x);
+    else p_ampl->SetX2(ampl->X2()*winfo.m_kt2.m_x);
   }
-  else {
-    p_ampl->SetX1(ampl->X1());
-    p_ampl->SetX2(ampl->X2()/winfo.m_kt2.m_x);
+  else if (winfo.m_k&3) {
+    if (winfo.m_k&1) p_ampl->SetX1(ampl->X1()*winfo.m_kt2.m_x);
+    else p_ampl->SetX2(ampl->X2()*winfo.m_kt2.m_x);
   }
   p_ampl->SetJF(ampl->JF<Selector_Base>());
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
