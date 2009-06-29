@@ -374,6 +374,7 @@ double LF_FFV_FI::Z()
 
 double LF_FFV_FI::J(const double y,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flspec)) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/(1.-y)>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/(1.-y),scale);
@@ -424,6 +425,7 @@ double LF_FFV_IF::Z()
 
 double LF_FFV_IF::J(const double z,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flavs[0])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
@@ -464,6 +466,7 @@ double LF_FFV_II::Z()
 
 double LF_FFV_II::J(const double z,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flavs[0])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
@@ -577,6 +580,7 @@ double LF_FVF_FI::Z()
 
 double LF_FVF_FI::J(const double y,const double eta,const double scale)
 {   
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flspec)) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/(1.-y)>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/(1.-y),scale);
@@ -640,6 +644,7 @@ double LF_FVF_IF::Z()
 
 double LF_FVF_IF::J(const double z,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flavs[0])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
@@ -685,6 +690,7 @@ double LF_FVF_II::Z()
 
 double LF_FVF_II::J(const double z,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<sqr(p_ms->Mass(m_flavs[0])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
@@ -822,6 +828,7 @@ double LF_VFF_FI::Z()
 
 double LF_VFF_FI::J(const double y,const double eta,const double scale)
 { 
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<4.0*sqr(p_ms->Mass(m_flspec)) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/(1.-y)>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/(1.-y),scale);
@@ -879,6 +886,7 @@ double LF_VFF_IF::Z()
 
 double LF_VFF_IF::J(const double z,const double eta,const double scale)
 {   
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<4.0*sqr(p_ms->Mass(m_flavs[1])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
@@ -926,6 +934,7 @@ double LF_VFF_II::Z()
 
 double LF_VFF_II::J(const double z,const double eta,const double scale)
 {   
+  if (p_pdf[m_beam]==NULL) return 0.;
   if (scale<4.0*sqr(p_ms->Mass(m_flavs[1])) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
   p_pdf[m_beam]->Calculate(eta/z,scale);
