@@ -131,7 +131,7 @@ namespace CSSHOWER {
     SF_Coupling *p_cf;
     cstp::code m_type;
     double m_lastint;
-    int m_on;
+    int m_on, m_qcd;
     std::vector<Parton*> m_specs;
   public:
 

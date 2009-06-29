@@ -46,12 +46,12 @@ double SF_Lorentz::Lambda
 SF_Coupling::~SF_Coupling() {}
 
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_on(1)
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_on(1), m_qcd(-1)
 {
 }
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
-  p_lf(NULL), p_cf(NULL), m_type(key.m_type), m_on(1)
+  p_lf(NULL), p_cf(NULL), m_type(key.m_type), m_on(1), m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -68,6 +68,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
     return;
   }
   p_cf->SetLF(p_lf);
+  m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
   msg_Debugging()<<"Init("<<m_on<<") "<<key<<"  "<<typeid(*p_lf).name()
 		 <<"  "<<typeid(*p_cf).name()<<"\n";
@@ -155,7 +156,8 @@ const Flavour & Splitting_Function_Base::GetFlavourSpec() const
 
 bool Splitting_Function_Base::PureQCD() const
 { 
-  return p_lf->FlA().Strong() && p_lf->FlB().Strong() && p_lf->FlC().Strong(); 
+  if (m_qcd<0) THROW(fatal_error,"Invalid request");
+  return m_qcd;
 }
 
 std::string SF_Key::ID(const int mode) const
