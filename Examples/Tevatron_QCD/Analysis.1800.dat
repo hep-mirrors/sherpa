@@ -4,7 +4,61 @@
 
     LEVEL Shower;
   
-    PATH_PIECE hep-ex_0009012/output_C07/
+    PATH_PIECE hep-ex_0109041/
+
+    Detector {
+       InList  FinalState; OutList Detected
+       HadCal  -4.1 4.1 82 64
+    }
+  
+    Trigger {
+       InList Detected; OutList KTJets
+       Finder 93 1.0 -4.1 4.1 1 1
+    }
+
+    AbsYSel 0.0 0.5 KTJets KTJets_0.0-0.5;
+
+    JetPT 0 600 300 1 1 3 LinErr KTJets_0.0-0.5;
+
+  } END_ANALYSIS;
+
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+  
+    PATH_PIECE hep-ex_0011036/
+
+    Detector {
+       InList  FinalState; OutList Detected
+       HadCal  -4.1 4.1 82 64
+    }
+  
+    Trigger {
+       InList Detected; OutList ConeJets
+       Finder 93 1.0 -4.1 4.1 0.7 1 0.5
+       JetMode 10
+    }
+
+    AbsYSel 0.0 0.5 ConeJets ConeJets_0.0-0.5;
+    AbsYSel 0.5 1.0 ConeJets ConeJets_0.5-1.0;
+    AbsYSel 1.0 1.5 ConeJets ConeJets_1.0-1.5;
+    AbsYSel 1.5 2.0 ConeJets ConeJets_1.5-2.0;
+    AbsYSel 2.0 3.0 ConeJets ConeJets_2.0-3.0;
+
+    JetPT 0 500 250 1 1 3 LinErr ConeJets_0.0-0.5;
+    JetPT 0 500 250 1 1 3 LinErr ConeJets_0.5-1.0;
+    JetPT 0 500 250 1 1 3 LinErr ConeJets_1.0-1.5;
+    JetPT 0 500 250 1 1 3 LinErr ConeJets_1.5-2.0;
+    JetPT 0 500 250 1 1 3 LinErr ConeJets_2.0-3.0;
+
+  } END_ANALYSIS;
+
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+  
+    PATH_PIECE hep-ex_0009012/
+
     Detector {
        InList  FinalState
        OutList hcal_detected
@@ -33,38 +87,47 @@
       OutList c0_three_jet_inc
       Counts 93 3 -1
     }
-  
-    Trigger {
-       InList hcal_detected
-       OutList cone1_jets
-       Finder 93 1.0 -4.0 4.0 0.7 1
-       JetMode 2
-       Keep 93
-    }
-  
-    ETOrder cone1_jets cone0_jets_et
-  
-    OneETSel 93 0 0 20 10000 cone0_jets_et jet20
-    OneETSel 93 0 0 30 10000 cone0_jets_et jet30
-    OneETSel 93 0 0 50 10000 cone0_jets_et jet50
-    OneETSel 93 0 0 85 10000 cone0_jets_et jet85
-    OneETSel 93 0 0 115 10000 cone0_jets_et jet115
-  
+
     HT 0. 600 60 LinErr c0_two_jet_inc
     HT 0. 600 60 LinErr c0_three_jet_inc
   
-    HT 0. 170 34 LinErr c0_two_jet_inc jet20
-    HT 0. 170 34 LinErr c0_three_jet_inc jet20
-    HT 170. 240 14 LinErr c0_two_jet_inc jet30
-    HT 170. 240 14 LinErr c0_three_jet_inc jet30
-    HT 240. 330 18 LinErr c0_two_jet_inc jet50
-    HT 240. 330 18 LinErr c0_three_jet_inc jet50
-    HT 330. 430 20 LinErr c0_two_jet_inc jet85
-    HT 330. 430 20 LinErr c0_three_jet_inc jet85
-    HT 430. 600 34 LinErr c0_two_jet_inc jet115
-    HT 430. 600 34 LinErr c0_three_jet_inc jet115
-  
   } END_ANALYSIS;
+
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+
+    PATH_PIECE hep-ex_9603010/;
+
+    Detector {
+      InList FinalState; OutList Detected;
+      HadCal -4.2 4.2 84 64;
+    }
+
+    DBCone {
+      InList Detected; OutList ConeJets;
+      ETMin 1; DeltaRMin 0.001;
+      DeltaRPre 0.3; DeltaR 0.7;
+    }
+
+    ETOrder ConeJets ConeJetsET;
+
+    YSel -3 3 ConeJetsET ConeJetsETY;
+    ETSel 20 10000 ConeJetsETY ConeJetsPTY;
+
+    JetET 0 800 400 1 1 3 LinErr ConeJetsPTY;
+    JetEta -5 5 200 1 1 3 LinErr ConeJetsPTY;
+
+    CosDPhivsDEta 50 0 6 150 LinErr ConeJetsPTY;
+
+    BFKLDEta 50 0 6 150 LinErr ConeJetsPTY;
+    BFKLDPhi 50 0.5 1.5 -1.01 1.01 101 LinErr ConeJetsPTY;
+    BFKLDPhi 50 2.5 3.5 -1.01 1.01 101 LinErr ConeJetsPTY;
+    BFKLDPhi 50 4.5 5.5 -1.01 1.01 101 LinErr ConeJetsPTY;
+
+    BFKLTwoEta 50 -5 5 100 LinErr ConeJetsPTY;
+
+  } END_ANALYSIS
 
 }(analysis);
 

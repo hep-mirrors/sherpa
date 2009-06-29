@@ -1,8 +1,8 @@
 (initial){
-  PIECE_SETUP JetPT.C (ptall){ }(ptall);
-  PIECE_SETUP JetPT.C (dptall){ }(dptall);
-  PIECE_SETUP JetPT.C (logptall){ }(logptall);
-  PIECE_SETUP JetPT.C (dlogptall){ }(dlogptall);
+  PIECE_SETUP hep-ex_0701051.C (ptall){ }(ptall);
+  PIECE_SETUP hep-ex_0701051.C (dptall){ }(dptall);
+  PIECE_SETUP hep-ex_0701051.C (logptall){ }(logptall);
+  PIECE_SETUP hep-ex_0701051.C (dlogptall){ }(dlogptall);
   TOP_AXIS YES; RIGHT_AXIS YES;
   DEFINE_COLOURS VIOLET1 195 0 185,;
   DEFINE_COLOURS BLUE1 25 25 205,;
@@ -18,7 +18,7 @@
 // standard plots
 
 (ptall){
-  PIECE_SETUP JetPT.C (yranges){ }(yranges);
+  PIECE_SETUP hep-ex_0701051.C (yranges){ }(yranges);
   DRAW YES;
   X_TITLE_OFFSET 1.1; BOTTOM_MARGIN 0.11;
   Y_TITLE_OFFSET 1.6; LEFT_MARGIN 0.14;
@@ -42,7 +42,7 @@
 }(ptall);
 
 (logptall){
-  PIECE_SETUP JetPT.C (yranges){ }(yranges);
+  PIECE_SETUP hep-ex_0701051.C (yranges){ }(yranges);
   DRAW YES;
   X_TITLE_OFFSET 1.1; BOTTOM_MARGIN 0.11;
   Y_TITLE_OFFSET 1.6; LEFT_MARGIN 0.14;
@@ -66,43 +66,43 @@
 }(logptall);
 
 (yranges){ 
-  PIECE_SETUP JetPT.C (0.0-0.1){ }(0.0-0.1);
-  PIECE_SETUP JetPT.C (0.1-0.7){ }(0.1-0.7);
-  PIECE_SETUP JetPT.C (0.7-1.1){ }(0.7-1.1);
-  PIECE_SETUP JetPT.C (1.1-1.6){ }(1.1-1.6);
-  PIECE_SETUP JetPT.C (1.6-2.1){ }(1.6-2.1);
+  PIECE_SETUP hep-ex_0701051.C (0.0-0.1){ }(0.0-0.1);
+  PIECE_SETUP hep-ex_0701051.C (0.1-0.7){ }(0.1-0.7);
+  PIECE_SETUP hep-ex_0701051.C (0.7-1.1){ }(0.7-1.1);
+  PIECE_SETUP hep-ex_0701051.C (1.1-1.6){ }(1.1-1.6);
+  PIECE_SETUP hep-ex_0701051.C (1.6-2.1){ }(1.6-2.1);
 }(yranges);
 
 (0.0-0.1){ 
-  PIECE_SETUP JetPT.C (samples){ }(samples);
+  PIECE_SETUP hep-ex_0701051.C (samples){ }(samples);
   FILE_PIECE KTJets_0.0-0.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e6; @@ YRANGE (0.1-0.0)
   LEGEND_ENABLED YES;
 }(0.0-0.1);
 (0.1-0.7){ 
-  PIECE_SETUP JetPT.C (samples){ }(samples);
+  PIECE_SETUP hep-ex_0701051.C (samples){ }(samples);
   FILE_PIECE KTJets_0.1-0.7_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e3; @@ YRANGE (0.7-0.1)
 }(0.1-0.7);
 (0.7-1.1){ 
-  PIECE_SETUP JetPT.C (samples){ }(samples);
+  PIECE_SETUP hep-ex_0701051.C (samples){ }(samples);
   FILE_PIECE KTJets_0.7-1.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1; @@ YRANGE (1.1-0.7)
 }(0.7-1.1);
 (1.1-1.6){ 
-  PIECE_SETUP JetPT.C (samples){ }(samples);
+  PIECE_SETUP hep-ex_0701051.C (samples){ }(samples);
   FILE_PIECE KTJets_1.1-1.6_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e-3; @@ YRANGE (1.6-1.1)
 }(1.1-1.6);
 (1.6-2.1){ 
-  PIECE_SETUP JetPT.C (samples){ }(samples);
+  PIECE_SETUP hep-ex_0701051.C (samples){ }(samples);
   FILE_PIECE KTJets_1.6-2.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e-6; @@ YRANGE (2.1-1.6)
 }(1.6-2.1);
 
 (samples){
-  PIECE_SETUP JetPT.C (data){ }(data);
-  PIECE_SETUP JetPT.C (bfkl){ }(bfkl);
+  PIECE_SETUP hep-ex_0701051.C (data){ }(data);
+  PIECE_SETUP hep-ex_0701051.C (bfkl){ }(bfkl);
   LEGEND_ENABLED NO;
 }(samples);
 
@@ -117,29 +117,29 @@
   LEGEND_TITLE CDF Data;
 }(data);
 (bfkl){
-  PIECE_SETUP JetPT.C (paths){ }(paths);
+  PIECE_SETUP hep-ex_0701051.C (paths){ }(paths);
   READER_PARAMETERS ADOPT_BINS ./CDF_Data/CURRENT_FILE_PIECE;
 }(bfkl);
 
 (paths){
-  PIECE_SETUP JetPT.C (path1){ }(path1);
-  PIECE_SETUP JetPT.C (path2){ }(path2);
+  PIECE_SETUP hep-ex_0701051.C (path1){ }(path1);
+  PIECE_SETUP hep-ex_0701051.C (path2){ }(path2);
 }(paths);
 
 (path1){
-  PIECE_SETUP JetPT.C (jets){ }(jets);
+  PIECE_SETUP hep-ex_0701051.C (jets){ }(jets);
   PATH_PIECE BPATH1; LINE_STYLE 1; @@ SUBJ 1;
   @@ LTITLE Comix #otimes CSS; @@ KFAC 1;
 }(path1);
 (path2){
-  PIECE_SETUP JetPT.C (jets){ }(jets);
+  PIECE_SETUP hep-ex_0701051.C (jets){ }(jets);
   PATH_PIECE BPATH2; LINE_STYLE 3; @@ SUBJ 0;
   @@ LTITLE CSS only; @@ KFAC 1;
 }(path2);
 
 (jets){ 
-  if (SUBJ) PIECE_SETUP JetPT.C (j[2[+1]5]){ }(j[2[+1]5]);
-  PIECE_SETUP JetPT.C (sum){ }(sum);
+  if (SUBJ) PIECE_SETUP hep-ex_0701051.C (j[2[+1]5]){ }(j[2[+1]5]);
+  PIECE_SETUP hep-ex_0701051.C (sum){ }(sum);
   Y_FUNCTION y*DATSFAC/YSFAC/YRANGE*KFAC;
   DRAW_OPTION L;
 }(jets);
@@ -180,7 +180,7 @@
 // diff plots
 
 (dptall){
-  PIECE_SETUP JetPT.C (dyranges){ }(dyranges);
+  PIECE_SETUP hep-ex_0701051.C (dyranges){ }(dyranges);
   X_MIN 0.001; X_MAX 799.999;
   X_AXIS_TITLE k_{#perp }^{jet} #left[ GeV #right]
   Y_MIN -0.999; Y_MAX 0.999; Y_SCALING Id;
@@ -197,7 +197,7 @@
 }(dptall);
 
 (dlogptall){
-  PIECE_SETUP JetPT.C (dyranges){ }(dyranges);
+  PIECE_SETUP hep-ex_0701051.C (dyranges){ }(dyranges);
   X_MIN 45; X_MAX 1500; X_SCALING Log_B_10;
   X_AXIS_TITLE k_{#perp }^{jet} #left[ GeV #right]
   Y_MIN -0.999; Y_MAX 0.999; Y_SCALING Id;
@@ -214,15 +214,15 @@
 }(dlogptall);
 
 (dyranges){
-  PIECE_SETUP JetPT.C (d0.0-0.1){ }(d0.0-0.1);
-  PIECE_SETUP JetPT.C (d0.1-0.7){ }(d0.1-0.7);
-  PIECE_SETUP JetPT.C (d0.7-1.1){ }(d0.7-1.1);
-  PIECE_SETUP JetPT.C (d1.1-1.6){ }(d1.1-1.6);
-  PIECE_SETUP JetPT.C (d1.6-2.1){ }(d1.6-2.1);
+  PIECE_SETUP hep-ex_0701051.C (d0.0-0.1){ }(d0.0-0.1);
+  PIECE_SETUP hep-ex_0701051.C (d0.1-0.7){ }(d0.1-0.7);
+  PIECE_SETUP hep-ex_0701051.C (d0.7-1.1){ }(d0.7-1.1);
+  PIECE_SETUP hep-ex_0701051.C (d1.1-1.6){ }(d1.1-1.6);
+  PIECE_SETUP hep-ex_0701051.C (d1.6-2.1){ }(d1.6-2.1);
 }(dyranges);
 
 (d0.0-0.1){ 
-  PIECE_SETUP JetPT.C (dsamples){ }(dsamples);
+  PIECE_SETUP hep-ex_0701051.C (dsamples){ }(dsamples);
   FILE_PIECE KTJets_0.0-0.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e6; @@ YRANGE (0.1-0.0)
   DRAW YES; TOP_MARGIN GTM;
@@ -231,7 +231,7 @@
   WATERMARK \\\|y^{jet }\\\|<0.1 | COLOUR 1 SIZE 0.025 LEFT 0.85 TOP 0.65 ALIGN 22 PRIORITY 20\;;
 }(d0.0-0.1);
 (d0.1-0.7){ 
-  PIECE_SETUP JetPT.C (dsamples){ }(dsamples);
+  PIECE_SETUP hep-ex_0701051.C (dsamples){ }(dsamples);
   FILE_PIECE KTJets_0.1-0.7_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e3; @@ YRANGE (0.7-0.1)
   DRAW YES; DIFF_PLOT YES; TOP_MARGIN GTM+SDIV;
@@ -240,7 +240,7 @@
   WATERMARK 0.1<\\\|y^{jet }\\\|<0.7 | COLOUR 1 SIZE 0.025 LEFT 0.85 TOP 0.65 ALIGN 22 PRIORITY 20\;;
 }(d0.1-0.7);
 (d0.7-1.1){ 
-  PIECE_SETUP JetPT.C (dsamples){ }(dsamples);
+  PIECE_SETUP hep-ex_0701051.C (dsamples){ }(dsamples);
   FILE_PIECE KTJets_0.7-1.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1; @@ YRANGE (1.1-0.7)
   DRAW YES; DIFF_PLOT YES; TOP_MARGIN GTM+2*SDIV;
@@ -249,7 +249,7 @@
   WATERMARK 0.7<\\\|y^{jet }\\\|<1.1 | COLOUR 1 SIZE 0.025 LEFT 0.85 TOP 0.65 ALIGN 22 PRIORITY 20\;;
 }(d0.7-1.1);
 (d1.1-1.6){ 
-  PIECE_SETUP JetPT.C (dsamples){ }(dsamples);
+  PIECE_SETUP hep-ex_0701051.C (dsamples){ }(dsamples);
   FILE_PIECE KTJets_1.1-1.6_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e-3; @@ YRANGE (1.6-1.1)
   DRAW YES; DIFF_PLOT YES;
@@ -259,7 +259,7 @@
   WATERMARK 1.1<\\\|y^{jet }\\\|<1.6 | COLOUR 1 SIZE 0.025 LEFT 0.85 TOP 0.65 ALIGN 22 PRIORITY 20\;;
 }(d1.1-1.6);
 (d1.6-2.1){ 
-  PIECE_SETUP JetPT.C (dsamples){ }(dsamples);
+  PIECE_SETUP hep-ex_0701051.C (dsamples){ }(dsamples);
   FILE_PIECE KTJets_1.6-2.1_jet_1_1_pt_0.dat;
   @@ DATSFAC 1e-6; @@ YRANGE (2.1-1.6)
   DRAW YES; DIFF_PLOT YES;
@@ -273,9 +273,9 @@
 
 
 (dsamples){
-  PIECE_SETUP JetPT.C (ddata){ }(ddata);
-  PIECE_SETUP JetPT.C (ddatap){ }(ddatap);
-  PIECE_SETUP JetPT.C (dbfkl){ }(dbfkl);
+  PIECE_SETUP hep-ex_0701051.C (ddata){ }(ddata);
+  PIECE_SETUP hep-ex_0701051.C (ddatap){ }(ddatap);
+  PIECE_SETUP hep-ex_0701051.C (dbfkl){ }(dbfkl);
   LEGEND_ENABLED NO;
 }(dsamples);
 
@@ -304,28 +304,28 @@
   DRAW_LINES H 0 | STYLE 1 COLOUR 1\;;
 }(ddatap);
 (dbfkl){
-  PIECE_SETUP JetPT.C (dpaths){ }(dpaths);
+  PIECE_SETUP hep-ex_0701051.C (dpaths){ }(dpaths);
   READER_PARAMETERS ADOPT_BINS ./CDF_Data/CURRENT_FILE_PIECE;
   DATA_TYPE ALGEBRA(y[1]/y[0]-1);
   DRAW_PRIORITY 10;
 }(dbfkl);
 
 (dpaths){
-  PIECE_SETUP JetPT.C (dpath1){ }(dpath1);
-  PIECE_SETUP JetPT.C (dpath2){ }(dpath2);
+  PIECE_SETUP hep-ex_0701051.C (dpath1){ }(dpath1);
+  PIECE_SETUP hep-ex_0701051.C (dpath2){ }(dpath2);
 }(dpaths);
 
 (dpath1){
-  PIECE_SETUP JetPT.C (djets){ }(djets);
+  PIECE_SETUP hep-ex_0701051.C (djets){ }(djets);
   @@ BPPIECE BPATH1; LINE_STYLE 1;
 }(dpath1);
 (dpath2){
-  PIECE_SETUP JetPT.C (djets){ }(djets);
+  PIECE_SETUP hep-ex_0701051.C (djets){ }(djets);
   @@ BPPIECE BPATH2; LINE_STYLE 3;
 }(dpath2);
 
 (djets){ 
-  PIECE_SETUP JetPT.C (dsum){ }(dsum);
+  PIECE_SETUP hep-ex_0701051.C (dsum){ }(dsum);
 }(djets);
 (dsum){ 
   PATH_PIECE CDF_Data/ BPPIECE;
