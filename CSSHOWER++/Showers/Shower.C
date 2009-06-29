@@ -69,6 +69,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	if (stat<=0) split->BoostBackAllFS
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),2);
       }
+      s->SetXbj(s->GetPrev()->Xbj()/(1.0-l->YTest()));
     }
   }
   else {
@@ -109,8 +110,6 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
     (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),
      s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
      (c->GetType()==pst::IS?1:0));
-  if (s->GetType()==pst::IS)
-    if (nres>0) s->SetXbj(s->Xbj()/(1.0-l->YTest()));
   msg_Debugging()<<"}\n";
   return nres;
 }

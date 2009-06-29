@@ -18,7 +18,7 @@ namespace CSSHOWER {
     str<<"  k_T start : "<<sqrt(part.m_kt_start);
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto);
-    str<<std::endl;
+    str<<"  x_B : "<<part.m_xBj<<std::endl;
     if (part.p_prev || part.p_next || 
 	part.m_kt_prev!=0.0 || part.m_kt_next!=0.0) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
