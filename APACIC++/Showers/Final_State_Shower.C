@@ -723,44 +723,7 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 	  }
 	  else if ((d1->part->Flav().IsGluon() || d1->part->Flav().IsGluino()) && 
 		   (d2->part->Flav().IsGluon() || d2->part->Flav().IsGluino())) {
-	    Particle *aup(FindAuntParton(mo));
-	    partner = d1; 
-	    nopart = d2;
-	    if (aup->Flav().Strong() && kin) {
-	      if (kin->ArrangeColourPartners(aup,d1,d2)) { 
-		partner = d2; 
-		nopart = d1; 
-	      }
-	      int cset=0;
-	      for (int i=1;i<3;i++) {
-		if (aup->GetFlow(i) == mo->part->GetFlow(3-i)) {
-		  partner->part->SetFlow(3-i,mo->part->GetFlow(3-i));
-		  partner->part->SetFlow(i,-1);
-		  nopart->part->SetFlow(3-i,partner->part->GetFlow(i));
-		  nopart->part->SetFlow(i,mo->part->GetFlow(i));
-		  break;
-		}
-	      }
-	      if (!cset) {
-		for (int i=1;i<3;i++) {
-		  if (aup->GetFlow(i) == mo->part->GetFlow(i)) {
-		    partner->part->SetFlow(i,mo->part->GetFlow(i));
-		    partner->part->SetFlow(3-i,-1);
-		    nopart->part->SetFlow(i,partner->part->GetFlow(3-i));
-		    nopart->part->SetFlow(3-i,mo->part->GetFlow(3-i));
-		    break;
-		  }
-		}
-	      }
-	      if (aup->GetFlow(1)==aup->GetFlow(2)) {
-		int nc(Flow::Counter());
-		partner->part->SetFlow(1,mo->part->GetFlow(1));
-		partner->part->SetFlow(2,nc);
-		nopart->part->SetFlow(1,nc);
-		nopart->part->SetFlow(2,mo->part->GetFlow(2));		
-	      }
-	    }
-	    else {  // ie. single gluon (from hard event - connected to initial states)
+	    {
 	      if (ran.Get()<0.5) {
 		partner=d1;
 		nopart=d2;
@@ -769,9 +732,8 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 		partner=d2;
 		nopart=d1;
 	      }
-	      
 	      partner->part->SetFlow(1,mo->part->GetFlow(1));
-	      partner->part->SetFlow(2,-1);
+	      partner->part->SetFlow(2,Flow::Counter());
 	      nopart->part->SetFlow(1,partner->part->GetFlow(2));
 	      nopart->part->SetFlow(2,mo->part->GetFlow(2));
 	    }
@@ -1328,42 +1290,6 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
   }
   number++;
   return mo->part->Momentum();
-}
-
-
-Particle * Final_State_Shower::FindAuntParton(Knot * mo) 
-{
-  Knot * au(mo->prev->left);
-  if (au==mo) au = mo->prev->right;
-  for (int k1=1;k1<=2;++k1) {
-    for (int k2=1;k2<=2;++k2) {
-      if ((mo->part->GetFlow(k1)>0) &&
-	  (au->part->GetFlow(3-k1)==mo->part->GetFlow(k1))) return au->part;  
-    }
-  }
-  Blob * bl(mo->part->ProductionBlob());
-  if (bl) {
-    Particle * aup(NULL);
-    for (int i=0; i<bl->NInP();++i) {
-      aup=bl->InParticle(i);
-      for (int k1=1;k1<=2;++k1) {
-	for (int k2=1;k2<=2;++k2) {
-	  if ((mo->part->GetFlow(k1)>0) &&
-	      (aup->GetFlow(k2)==mo->part->GetFlow(k1))) return aup;
-	}
-      }
-    }
-    for (int i=0; i<bl->NOutP();++i) {
-      aup=bl->OutParticle(i);
-      for (int k1=1;k1<=2;++k1)
-	for (int k2=1;k2<=2;++k2)
-	  if ((mo->part->GetFlow(k1) > 0 ) &&
-	    (aup->GetFlow(3-k1)==mo->part->GetFlow(k1))) return aup;
-    }
-  }
-  msg_Tracking()<<METHOD<<"(..): No blob for mother "<<mo->kn_no
-		<<"\n   Return normal aunt."<<std::endl;
-  return au->part;
 }
 
 void Final_State_Shower::SetMS(ATOOLS::Mass_Selector *const ms)

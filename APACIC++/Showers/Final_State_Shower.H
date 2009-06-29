@@ -50,8 +50,6 @@ namespace APACIC {
     bool ResetDaughters(Knot *mo);
     void Reset(Knot *knot);
 
-    static ATOOLS::Particle * FindAuntParton(Knot *);
-
     static bool SetColours(Knot *mo,Timelike_Kinematics *kin);
     static bool SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
 			  unsigned int olda,unsigned int newa);

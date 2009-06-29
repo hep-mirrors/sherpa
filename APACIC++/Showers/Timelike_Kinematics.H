@@ -67,10 +67,6 @@ namespace APACIC {
 
     int UpdateDaughters(Knot *const mo,const bool force=false) const;
 
-
-    bool ArrangeColourPartners(ATOOLS::Particle *const aup, 
-			       Knot *const d1,Knot *const d2) const;
-
     double LightConeZ(Knot *const knot) const;
     double LightConeZ(const double &z,const double &E2,
 		      const double &ta,const double &tb,
