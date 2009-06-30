@@ -358,7 +358,7 @@ double LF_FFV_FI::OverIntegrated
 {
   if (scale<sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=5.;
+  m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
@@ -564,7 +564,7 @@ double LF_FVF_FI::OverIntegrated
 {
   if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=2.;
+  m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (2.*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
@@ -812,7 +812,7 @@ double LF_VFF_FI::OverIntegrated
 {
   if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=2.;
+  m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;
 }
 

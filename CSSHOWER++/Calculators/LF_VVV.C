@@ -154,7 +154,7 @@ double LF_VVV_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=2.;
+  m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return 2.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
 }
 
