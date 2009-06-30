@@ -538,7 +538,7 @@ double LF_FVF_FI::operator() (const double z,const double y,
 			    const double eta, const double scale,const double Q2,int mode) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = (2./(z-y) - 2.+z);
+  double massless = (2./(z+y) - 2.+z);
   if (mj2==0.) {
     double longpol = 0.5 * z;
     double value = p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
