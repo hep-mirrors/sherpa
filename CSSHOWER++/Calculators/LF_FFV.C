@@ -381,7 +381,7 @@ double LF_FFV_FI::J(const double y,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flspec);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flspec);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.;
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.;
   return (1.-y) * fresh/old;
 }
 
@@ -409,7 +409,7 @@ double LF_FFV_IF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax = 5.; 
+  m_Jmax = m_flavs[0].Kfcode()<3?5.:1.; 
   return (p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
@@ -432,7 +432,7 @@ double LF_FFV_IF::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
@@ -450,7 +450,7 @@ double LF_FFV_II::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax; 
-  m_Jmax = 5.;
+  m_Jmax = m_flavs[0].Kfcode()<3?5.:1.;
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
@@ -473,7 +473,7 @@ double LF_FFV_II::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
@@ -587,7 +587,7 @@ double LF_FVF_FI::J(const double y,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flspec);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flspec);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return (1.-y) * fresh/old;
 }
 
@@ -627,7 +627,7 @@ double LF_FVF_IF::OverIntegrated
   p_pdf[m_beam]->Calculate(xbj,scale);
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   double old   = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.;
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.;
   m_Jmax = 5.*fresh/old;
   return (2.*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
@@ -651,7 +651,7 @@ double LF_FVF_IF::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
@@ -673,7 +673,7 @@ double LF_FVF_II::OverIntegrated
   p_pdf[m_beam]->Calculate(xbj,scale);
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   double old   = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   m_Jmax = 5.*fresh/old;
   return (2.*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* log(zmax/zmin) * m_Jmax;
 }
@@ -697,7 +697,7 @@ double LF_FVF_II::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
@@ -835,7 +835,7 @@ double LF_VFF_FI::J(const double y,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flspec);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flspec);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return (1.-y) * fresh/old;
 }
 
@@ -869,7 +869,7 @@ double LF_VFF_IF::OverIntegrated
   p_pdf[m_beam]->Calculate(xbj,scale);
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   double old   = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   m_Jmax = 5.*fresh/old; 
   return (p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
@@ -893,7 +893,7 @@ double LF_VFF_IF::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
@@ -917,7 +917,7 @@ double LF_VFF_II::OverIntegrated
   p_pdf[m_beam]->Calculate(xbj,scale);
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   double old   = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   m_Jmax = 5.*fresh/old;
   return (p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
@@ -941,7 +941,7 @@ double LF_VFF_II::J(const double z,const double eta,const double scale)
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
   p_pdf[m_beam]->Calculate(eta,scale);
   double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
-  if (fresh<0.0 || old<0.0 || IsZero(old) || IsZero(fresh)) return 0.; 
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 

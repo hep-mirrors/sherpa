@@ -59,6 +59,8 @@ namespace CSSHOWER {
     double m_zmin, m_zmax;
     int m_beam;
 
+    static double s_pdfcut;
+
     double Lambda(const double &a,const double &b,const double &c);
 
   public:

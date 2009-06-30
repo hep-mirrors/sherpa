@@ -21,6 +21,8 @@ using namespace CSSHOWER;
 using namespace MODEL;
 using namespace ATOOLS;
 
+double SF_Lorentz::s_pdfcut=1.0e-6;
+
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(key.p_ms), p_cf(key.p_cf) 
 {
