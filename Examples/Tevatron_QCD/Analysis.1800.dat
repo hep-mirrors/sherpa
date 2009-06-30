@@ -35,6 +35,66 @@
 
     LEVEL Shower;
 
+    PATH_PIECE hep-ex_0009012/;
+  
+    Detector {  
+      InList FinalState; OutList hcal_detected;
+      HadCal -4.0 4.0 80 64;
+    }
+
+    Trigger {
+      InList hcal_detected; OutList cone0_jets;
+      Finder 93 1.0 -4.0 4.0 0.7 1 0.5;
+      JetMode 10;
+    }
+ 
+    ETSel 40.0 10000.0 cone0_jets cone0_jet_1;
+    YSel -3.0 3.0 cone0_jet_1 cone0_jet_inc;
+
+    Trigger {
+      InList cone0_jet_inc; OutList c0_two_jet_inc;
+      Counts 93 2 -1;
+    }
+  
+    Trigger {
+      InList c0_two_jet_inc; OutList c0_three_jet_inc;
+      Counts 93 3 -1;
+    }
+
+    Trigger {
+      InList hcal_detected; OutList cone1_jets;
+      Finder 93 1.0 -4.0 4.0 0.7 1;
+      JetMode 2;
+    }
+ 
+    ETOrder cone1_jets cone0_jets_et;
+
+    OneETSel 93 0 0 20 10000 cone0_jets_et jet20;
+    OneETSel 93 0 0 30 10000 cone0_jets_et jet30;
+    OneETSel 93 0 0 50 10000 cone0_jets_et jet50;
+    OneETSel 93 0 0 85 10000 cone0_jets_et jet85;
+    OneETSel 93 0 0 115 10000 cone0_jets_et jet115;
+
+    HT 0. 600 60 LinErr c0_two_jet_inc;
+    HT 0. 600 60 LinErr c0_three_jet_inc;
+
+    HT 0. 170 34 LinErr c0_two_jet_inc jet20;
+    HT 0. 170 34 LinErr c0_three_jet_inc jet20;
+    HT 170. 240 14 LinErr c0_two_jet_inc jet30;
+    HT 170. 240 14 LinErr c0_three_jet_inc jet30;
+    HT 240. 330 18 LinErr c0_two_jet_inc jet50;
+    HT 240. 330 18 LinErr c0_three_jet_inc jet50;
+    HT 330. 430 20 LinErr c0_two_jet_inc jet85;
+    HT 330. 430 20 LinErr c0_three_jet_inc jet85;
+    HT 430. 600 34 LinErr c0_two_jet_inc jet115;
+    HT 430. 600 34 LinErr c0_three_jet_inc jet115;
+
+  } END_ANALYSIS;
+
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+
     PATH_PIECE hep-ex_9603010/;
 
     Detector {

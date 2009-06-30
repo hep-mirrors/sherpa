@@ -1,2 +1,4 @@
-Compare -O1 -pcompare.conf/ -f1960.C -Pout/ -bB1960 -T"BPATH1 c_2j_20gev_1; BPATH2 c_ps_1;"
-Compare -O1 -pcompare.conf/ -f1800.C -Pout/ -bB1800 -T"BPATH1 c_2j_20gev_1; BPATH2 c_ps_1;"
+##
+## please use the latest version of compare from svn or launchpad
+##
+Compare -O1 -BAll -T"BPATH1 c_2j_20gev_1; BPATH2 c_ps_1;"

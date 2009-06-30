@@ -1,5 +1,5 @@
 (initial){
-  PIECE_SETUP hep-ex_9603010.C (DEtaCone){ }(DEtaCone);
+  // PIECE_SETUP hep-ex_9603010.C (DEtaCone){ }(DEtaCone);
   PIECE_SETUP hep-ex_9603010.C (CosDPhiCone){ }(CosDPhiCone);
   RIGHT_AXIS YES; TOP_AXIS YES;
   DEFINE_COLOURS VIOLET1 195 0 185,;

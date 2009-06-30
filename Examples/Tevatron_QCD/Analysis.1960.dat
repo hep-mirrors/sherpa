@@ -49,12 +49,13 @@
       JetMode 10;
     }
 
-    OnePTSel 93 1 40 1000 ConeJets ConeJets_40;
+    AbsYSel 0.0 0.5 ConeJets ConeJets_0.5;
+    OnePTSel 93 1 0 40 1000 ConeJets_0.5 ConeJets_0.5_40;
 
-    OnePTSel 93 0 0  75 100  ConeJets ConeJets_75-100;
-    OnePTSel 93 0 0 100 130  ConeJets ConeJets_100-130;
-    OnePTSel 93 0 0 130 180  ConeJets ConeJets_130-180;
-    OnePTSel 93 0 0 180 1000 ConeJets ConeJets_180;
+    OnePTSel 93 0 0  75 100  ConeJets_0.5_40 ConeJets_75-100;
+    OnePTSel 93 0 0 100 130  ConeJets_0.5_40 ConeJets_100-130;
+    OnePTSel 93 0 0 130 180  ConeJets_0.5_40 ConeJets_130-180;
+    OnePTSel 93 0 0 180 1000 ConeJets_0.5_40 ConeJets_180;
 
     TwoDPhi 93 0 93 1 1.570 3.142 252 LinErr ConeJets_75-100;
     TwoDPhi 93 0 93 1 1.570 3.142 252 LinErr ConeJets_100-130;
