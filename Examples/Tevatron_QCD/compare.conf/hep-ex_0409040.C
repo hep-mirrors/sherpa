@@ -250,11 +250,13 @@
 
 (dpath1){
   PIECE_SETUP hep-ex_0409040.C (djets){ }(djets);
-  @@ BPPIECE BPATH1/hep-ex_0409040/; LINE_COLOUR RED1;
+  @@ BPPIECE BPATH1/hep-ex_0409040/;
+  LINE_COLOUR RED1;
 }(dpath1);
 (dpath2){
   PIECE_SETUP hep-ex_0409040.C (djets){ }(djets);
-  @@ BPPIECE BPATH2/hep-ex_0409040/; LINE_COLOUR BLUE1;
+  @@ BPPIECE BPATH2/hep-ex_0409040/; LINE_STYLE 2;
+  LINE_COLOUR BLUE1;
 }(dpath2);
 
 (djets){ 

@@ -4,28 +4,6 @@
 
     LEVEL Shower;
   
-    PATH_PIECE hep-ex_0109041/
-
-    Detector {
-       InList  FinalState; OutList Detected
-       HadCal  -4.1 4.1 82 64
-    }
-  
-    Trigger {
-       InList Detected; OutList KTJets
-       Finder 93 1.0 -4.1 4.1 1 1
-    }
-
-    AbsYSel 0.0 0.5 KTJets KTJets_0.0-0.5;
-
-    JetPT 0 600 300 1 1 3 LinErr KTJets_0.0-0.5;
-
-  } END_ANALYSIS;
-
-  BEGIN_ANALYSIS {
-
-    LEVEL Shower;
-  
     PATH_PIECE hep-ex_0011036/
 
     Detector {
@@ -35,8 +13,8 @@
   
     Trigger {
        InList Detected; OutList ConeJets
-       Finder 93 1.0 -4.1 4.1 0.7 1 0.5
-       JetMode 10
+       Finder 93 1.0 -4.1 4.1 0.7 1
+       JetMode 2
     }
 
     AbsEtaSel 0.0 0.5 ConeJets ConeJets_0.0-0.5;
@@ -51,46 +29,6 @@
     JetET 0 500 250 1 1 3 LinErr ConeJets_1.5-2.0;
     JetET 0 500 250 1 1 3 LinErr ConeJets_2.0-3.0;
 
-  } END_ANALYSIS;
-
-  BEGIN_ANALYSIS {
-
-    LEVEL Shower;
-  
-    PATH_PIECE hep-ex_0009012/
-
-    Detector {
-       InList  FinalState
-       OutList hcal_detected
-       HadCal  -4.0 4.0 80 64
-    }
-  
-    Trigger {
-       InList hcal_detected
-       OutList cone0_jets
-       Finder 93 1.0 -4.0 4.0 0.7 1 0.5
-       JetMode 10
-       Keep 93
-    }
-  
-    ETSel 40.0 10000.0 cone0_jets cone0_jet_1
-    YSel -3.0 3.0 cone0_jet_1 cone0_jet_inc
-  
-    Trigger {
-      InList cone0_jet_inc
-      OutList c0_two_jet_inc
-      Counts 93 2 -1
-    }
-  
-    Trigger {
-      InList c0_two_jet_inc
-      OutList c0_three_jet_inc
-      Counts 93 3 -1
-    }
-
-    HT 0. 600 60 LinErr c0_two_jet_inc
-    HT 0. 600 60 LinErr c0_three_jet_inc
-  
   } END_ANALYSIS;
 
   BEGIN_ANALYSIS {

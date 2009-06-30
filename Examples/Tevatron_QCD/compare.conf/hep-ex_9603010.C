@@ -9,7 +9,6 @@
   DEFINE_COLOURS RED1 195 15 15,;
   DEFINE_COLOURS BLUE2 15 20 180,;
   DEFINE_COLOURS GREEN2 15 125 25,;
-  DEFINE_COLOURS YELLOW2 214 173 9,;
   DEFINE_COLOURS RED2 175 5 5,;
   Y_TITLE_OFFSET 1.4;
   LEFT_MARGIN 0.15;
@@ -34,7 +33,7 @@
   @@ YMIN 0.601; @@ YMAX 1.0; @@ DYMIN -0.099; @@ DYMAX 0.099;
   CANVAS_HEIGHT 400; LEG_DELTA_Y 0.05;  @@ SFAC 25;
   X_AXIS_TITLE #Delta#eta; Y_AXIS_TITLE <cos(#pi-#Delta#phi)>;
-  // @@ RPARAM ADOPT_BINS ./data/hep-ex_9603010/CosDPhi_vs_DEta_ConeJetsPTY.dat;
+  @@ RPARAM ADOPT_BINS ./data/hep-ex_9603010/CosDPhi_vs_DEta_ConeJetsPTY.dat;
   HISTOGRAM_NAME CosDPhi_vs_DEta_ConeJets;
   WEBPAGE_CAPTION &lt\;cos(&pi\;-&Delta\;&phi\;)&gt\; vs. &Delta\;&eta\;;
 }(CosDPhiCone);

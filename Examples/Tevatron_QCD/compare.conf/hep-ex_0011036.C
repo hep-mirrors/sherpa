@@ -7,11 +7,10 @@
   DEFINE_COLOURS VIOLET1 195 0 185,;
   DEFINE_COLOURS BLUE1 25 25 205,;
   DEFINE_COLOURS GREEN1 30 145 35,;
-  DEFINE_COLOURS YELLOW1 200 105 0,;
+  DEFINE_COLOURS YELLOW1 240 215 10,;
   DEFINE_COLOURS RED1 195 15 15,;
   DEFINE_COLOURS BLUE2 15 20 180,;
   DEFINE_COLOURS GREEN2 15 125 25,;
-  DEFINE_COLOURS YELLOW2 180 85 0,;
   DEFINE_COLOURS RED2 175 5 5,;
 }(initial);
 
@@ -75,29 +74,29 @@
 
 (0.0-0.1){ 
   PIECE_SETUP hep-ex_0011036.C (samples){ }(samples);
-  FILE_PIECE ConeJets_0.0-0.5_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e6; @@ YRANGE (0.1-0.0)
+  FILE_PIECE ConeJets_0.0-0.5_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e6; @@ YRANGE (0.5-0.0)
   LEGEND_ENABLED YES;
 }(0.0-0.1);
 (0.1-0.7){ 
   PIECE_SETUP hep-ex_0011036.C (samples){ }(samples);
-  FILE_PIECE ConeJets_0.5-1.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e3; @@ YRANGE (0.7-0.1)
+  FILE_PIECE ConeJets_0.5-1.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e3; @@ YRANGE (1.0-0.5)
 }(0.1-0.7);
 (0.7-1.1){ 
   PIECE_SETUP hep-ex_0011036.C (samples){ }(samples);
-  FILE_PIECE ConeJets_1.0-1.5_jet_1_1_et_0.dat;
-  @@ DATSFAC 1; @@ YRANGE (1.1-0.7)
+  FILE_PIECE ConeJets_1.0-1.5_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1; @@ YRANGE (1.5-1.0)
 }(0.7-1.1);
 (1.1-1.6){ 
   PIECE_SETUP hep-ex_0011036.C (samples){ }(samples);
-  FILE_PIECE ConeJets_1.5-2.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e-3; @@ YRANGE (1.6-1.1)
+  FILE_PIECE ConeJets_1.5-2.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e-3; @@ YRANGE (2.0-1.5)
 }(1.1-1.6);
 (1.6-2.1){ 
   PIECE_SETUP hep-ex_0011036.C (samples){ }(samples);
-  FILE_PIECE ConeJets_2.0-3.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e-6; @@ YRANGE (2.1-1.6)
+  FILE_PIECE ConeJets_2.0-3.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e-6; @@ YRANGE (3.0-2.0)
 }(1.6-2.1);
 
 (samples){
@@ -223,8 +222,8 @@
 
 (d0.0-0.1){ 
   PIECE_SETUP hep-ex_0011036.C (dsamples){ }(dsamples);
-  FILE_PIECE ConeJets_0.0-0.5_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e6; @@ YRANGE (0.1-0.0)
+  FILE_PIECE ConeJets_0.0-0.5_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e6; @@ YRANGE (0.5-0.0)
   DRAW YES; TOP_MARGIN GTM;
   BOTTOM_MARGIN GBM+(JMAX-1)*SDIV;
   Y_TITLE_SIZE 0.04; X_TITLE_SIZE 0; X_AXIS_LABEL_SIZE 0;
@@ -232,8 +231,8 @@
 }(d0.0-0.1);
 (d0.1-0.7){ 
   PIECE_SETUP hep-ex_0011036.C (dsamples){ }(dsamples);
-  FILE_PIECE ConeJets_0.5-1.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e3; @@ YRANGE (0.7-0.1)
+  FILE_PIECE ConeJets_0.5-1.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e3; @@ YRANGE (1.0-0.5)
   DRAW YES; DIFF_PLOT YES; TOP_MARGIN GTM+SDIV;
   BOTTOM_MARGIN GBM+(JMAX-2)*SDIV;
   Y_TITLE_SIZE 0; X_TITLE_SIZE 0; X_AXIS_LABEL_SIZE 0;
@@ -241,8 +240,8 @@
 }(d0.1-0.7);
 (d0.7-1.1){ 
   PIECE_SETUP hep-ex_0011036.C (dsamples){ }(dsamples);
-  FILE_PIECE ConeJets_1.0-1.5_jet_1_1_et_0.dat;
-  @@ DATSFAC 1; @@ YRANGE (1.1-0.7)
+  FILE_PIECE ConeJets_1.0-1.5_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1; @@ YRANGE (1.5-1.0)
   DRAW YES; DIFF_PLOT YES; TOP_MARGIN GTM+2*SDIV;
   BOTTOM_MARGIN GBM+(JMAX-3)*SDIV;
   Y_TITLE_SIZE 0; X_TITLE_SIZE 0; X_AXIS_LABEL_SIZE 0;
@@ -250,8 +249,8 @@
 }(d0.7-1.1);
 (d1.1-1.6){ 
   PIECE_SETUP hep-ex_0011036.C (dsamples){ }(dsamples);
-  FILE_PIECE ConeJets_1.5-2.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e-3; @@ YRANGE (1.6-1.1)
+  FILE_PIECE ConeJets_1.5-2.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e-3; @@ YRANGE (2.0-1.5)
   DRAW YES; DIFF_PLOT YES;
   TOP_MARGIN GTM+3*SDIV;
   BOTTOM_MARGIN GBM+(JMAX-4)*SDIV;
@@ -260,8 +259,8 @@
 }(d1.1-1.6);
 (d1.6-2.1){ 
   PIECE_SETUP hep-ex_0011036.C (dsamples){ }(dsamples);
-  FILE_PIECE ConeJets_2.0-3.0_jet_1_1_et_0.dat;
-  @@ DATSFAC 1e-6; @@ YRANGE (2.1-1.6)
+  FILE_PIECE ConeJets_2.0-3.0_jet_1_1_Et_0.dat;
+  @@ DATSFAC 1e-6; @@ YRANGE (3.0-2.0)
   DRAW YES; DIFF_PLOT YES;
   TOP_MARGIN GTM+4*SDIV;
   BOTTOM_MARGIN GBM+(JMAX-5)*SDIV;
