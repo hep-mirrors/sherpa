@@ -1,10 +1,7 @@
 (initial){
-  PIECE_SETUP hep-ex_0009012.C (observables3){ }(observables3);
-  PIECE_SETUP hep-ex_0009012.C (observables2){ }(observables2);
-  PIECE_SETUP hep-ex_0009012.C (observables1){ }(observables1);
+  PIECE_SETUP hep-ex_0009012.C (r32_40){ }(r32_40);
 
-  RIGHT_AXIS YES;
-  TOP_AXIS YES;
+  RIGHT_AXIS YES; TOP_AXIS YES;
 
   DEFINE_COLOURS VIOLET1 195 0 185;
   DEFINE_COLOURS BLUE1 25 25 205;
@@ -16,137 +13,107 @@
   DEFINE_COLOURS RED2 175 5 5;
 }(initial);
 
-(observables1){
-  PIECE_SETUP hep-ex_0009012.C (yrc0){ }(yrc0);
-  PIECE_SETUP hep-ex_0009012.C (ydc0){ }(ydc0);
-  LEFT_MARGIN 0.15;
-  Y_TITLE_OFFSET 1.4;
-  X_TITLE_OFFSET 1.1;
-  @@ PATHPIECE hep-ex_0009012/;
-  LEG_DELTAY 0.04;
-  LEG_TEXT_SIZE 0.03;
-}(observables1);
-
-(yrc0){
-  PIECE_SETUP hep-ex_0009012.C (ydr32){ }(ydr32);
-  PIECE_SETUP hep-ex_0009012.C (ysr32){ }(ysr32);
-  X_MIN 100;
-  X_MAX 600;
-  Y_MIN 0.001;
-  Y_MAX 0.7;
-  DRAW YES;
-  LEG_LEFT 0.725; LEG_RIGHT 0.975; LEG_TOP 0.35;
+(r32_40){
+  PIECE_SETUP hep-ex_0009012.C (r32){ }(r32);
+  PIECE_SETUP hep-ex_0009012.C (d_r32){ }(d_r32);
+  LEFT_MARGIN 0.15; @@ FNAME R32_40.dat
+  Y_TITLE_OFFSET 1.4; X_TITLE_OFFSET 1.1;
+  LEG_DELTA_Y 0.05; LEG_TEXT_SIZE 0.03;
+  LEG_LEFT 0.625; LEG_RIGHT 0.875; LEG_TOP 0.45;
+  X_MIN 100; X_MAX 600;
   Y_AXIS_TITLE R_{32}(H_{T});
   X_AXIS_TITLE H_{T} #left[ GeV #right];
-  BOTTOM_MARGIN 0.3;
-  X_AXIS_LABEL_SIZE 0;
-  X_TITLE_SIZE 0;
-  HISTOGRAM_NAME DR32_DHT;
-  FIGURE_CAPTION $R_{32}(H_{T})$;
-  WEBPAGE_CAPTION R<sub>32</sub>(H<sub>T</sub>) Untriggered;
-  DRAW_LATEX SHERPA | LEFT 0.05 TOP 0.075 ALIGN 12 PRIORITY -20\;;
-}(yrc0);
-(ydc0){
-  PIECE_SETUP hep-ex_0009012.C (yddr32){ }(yddr32);
-  PIECE_SETUP hep-ex_0009012.C (ydsr32+){ }(ydsr32+);
-  PIECE_SETUP hep-ex_0009012.C (ydsr32-){ }(ydsr32-);
-  DRAW YES;
-  DRAW_LEGEND NO;
-  DIFF_PLOT YES;
-  TOP_MARGIN 0.7;
-  Y_TITLE_SIZE 0;
-  Y_AXIS_TICK_LENGTH 0.08;
-  Y_AXIS_NDIVISIONS 505;
-  Y_AXIS_LABEL_DIVISIONS 1;
-  DRAW_LINE H 0 | STYLE 1 COLOUR 1 PRIORITY -10;
-  X_MIN 100;
-  X_MAX 600;
-  Y_MIN -0.25;
-  Y_MAX 0.25;
-  DRAW YES;
-  X_AXIS_TITLE H_{T} #left[ GeV #right];
-  HISTOGRAM_NAME DDR32_DHT;
-  FIGURE_CAPTION $R_{32 }(H_{T})$;
-  WEBPAGE_CAPTION R<sub>32</sub>(H<sub>T</sub>);
-}(ydc0);
+}(r32_40);
 
-(yddr32){ 
-  FILE_PIECE R32[0] D32[0];
-  LINE_COLOUR RED1;
-  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
-  ## ALGEBRA_DATA 4; ## COLUMNS 2 3;
-}(yddr32);
-(ydsr32+){ 
-  FILE_PIECE D32[0] D32[0];
-  DATA_TYPE ALGEBRA(y[0]/y[1]);
-  ## ALGEBRA_DATA 4; ## COLUMNS 5 3;
-  LINE_COLOUR 5;
-  FILL_COLOUR 5;
-  FILL_STYLE 1000;
-  DRAW_PRIORITY -20;
-}(ydsr32+);
-(ydsr32-){ 
-  FILE_PIECE D32[0] D32[0];
-  DATA_TYPE ALGEBRA(-y[0]/y[1]);
-  ## ALGEBRA_DATA 4; ## COLUMNS 4 3;
-  LINE_COLOUR 5;
-  FILL_COLOUR 5;
-  FILL_STYLE 1000;
-  DRAW_PRIORITY -20;
-}(ydsr32-);
+(r32){
+  PIECE_SETUP hep-ex_0009012.C (data){ }(data);
+  PIECE_SETUP hep-ex_0009012.C (mc){ }(mc);
+  Y_MIN 0.001; Y_MAX 0.7; DRAW YES; BOTTOM_MARGIN 0.3;
+  X_TITLE_SIZE 0; X_AXIS_LABEL_SIZE 0;
+  DRAW_LATEX parton level | COLOUR 2 SIZE 0.04 LEFT 0.95 TOP 0.125 ALIGN 31\;;
+  DRAW_LATEX SHERPA | SIZE .04 COLOUR 19 LEFT .95 TOP .05 ALIGN 31 PRIORITY -10\;;
+}(r32);
+(d_r32){
+  PIECE_SETUP hep-ex_0009012.C (d_data){ }(d_data);
+  PIECE_SETUP hep-ex_0009012.C (d_mc32){ }(d_mc32);
+  Y_MIN -0.5; Y_MAX 0.5; DRAW YES; LEGEND_ENABLED NO;
+  TOP_MARGIN 0.7; DIFF_PLOT YES; Y_TITLE_SIZE 0;
+  Y_AXIS_TICK_LENGTH 0.08; Y_AXIS_NDIVISIONS 000505;
+  DRAW_LATEX Theory/Data-1 | COLOUR 1 SIZE 0.03 LEFT 0.05 TOP 0.85 ALIGN 13\;;
+}(d_r32);
 
-(ysr32){
-  PIECE_SETUP hep-ex_0009012.C (level1){ }(level1);
+(mc){
+  PIECE_SETUP hep-ex_0009012.C (mc2){ }(mc2);
+  PIECE_SETUP hep-ex_0009012.C (mc3){ }(mc3);
+  PIECE_SETUP hep-ex_0009012.C (mc32){ }(mc32);
+}(mc);
+(mc2){
+  PIECE_SETUP hep-ex_0009012.C (paths){ }(paths);
+  FILE_PIECE c0_two_jet_inc_HT.dat; NODRAW YES;
+}(mc2);
+(mc3){
+  PIECE_SETUP hep-ex_0009012.C (paths){ }(paths);
+  FILE_PIECE c0_three_jet_inc_HT.dat; NODRAW YES;
+}(mc3);
+(mc32){
+  PIECE_SETUP hep-ex_0009012.C (paths){ }(paths);
   FILE_PIECE c0_three_jet_inc_HT.dat c0_two_jet_inc_HT.dat;
   DATA_TYPE ALGEBRA(y[0]/y[1]);
-  ALIAS_NAME R32;
-  ## ADOPT_BINS D32[0];
-}(ysr32);
-
-(ydr32){
-  PATH_PIECE data/hep-ex_0009012/
-  FILE_PIECE R32_Data.dat;
-  ALIAS_NAME D32; LEGEND_TITLE D0 Data;
+  ## ADOPT_BINS ./data/hep-ex_0009012/FNAME;
+}(mc32);
+(data){
+  PATH_PIECE data/hep-ex_0009012/;
+  FILE_PIECE FNAME; LEGEND_TITLE DO Data;
   DATA_TYPE ASCII; DRAW_OPTION P;
   X_VALUE 1; Y_VALUE 3;
   X_ERROR_PLUS 2; X_ERROR_MINUS 2;
   Y_ERROR_PLUS 5; Y_ERROR_MINUS 4;
-}(ydr32);
+}(data);
 
+(d_mc32){
+  PIECE_SETUP hep-ex_0009012.C (d_paths){ }(d_paths);
+}(d_mc32);
+(d_data){
+  PATH_PIECE data/hep-ex_0009012/;
+  FILE_PIECE FNAME; Y_FUNCTION 0|dy/y;
+  DATA_TYPE ASCII; DRAW_OPTION P2;
+  X_VALUE 1; Y_VALUE 3;
+  X_ERROR_PLUS 2; X_ERROR_MINUS 2;
+  Y_ERROR_PLUS 5; Y_ERROR_MINUS 4;
+  FILL_COLOUR 5;
+  MARKER_COLOUR 5;
+  DRAW_PRIORITY -5;
+  DRAW_LINES H 0 | STYLE 1 COLOUR 1\;;
+}(d_data);
 
-(observables3){
-  PIECE_SETUP hep-ex_0009012.C (uc0_three){ }(uc0_three);
-  PIECE_SETUP hep-ex_0009012.C (uc0_two){ }(uc0_two);
-  @@ PATHPIECE hep-ex_0009012/;
-}(observables3);
-
-(uc0_three){
-  PIECE_SETUP hep-ex_0009012.C (level1){ }(level1);
-  FILE_PIECE c0_three_jet_inc_HT.dat;
-}(uc0_three);
-
-(uc0_two){
-  PIECE_SETUP hep-ex_0009012.C (level1){ }(level1);
-  FILE_PIECE c0_two_jet_inc_HT.dat;
-}(uc0_two);
-
-(level1){
-  PIECE_SETUP hep-ex_0009012.C ([1[+1]2]){ }([1[+1]2]);
-}(level1);
-
-(1){
+(paths){
+  PIECE_SETUP hep-ex_0009012.C (P[1[+1]2]){ }(P[1[+1]2]);
+}(paths);
+(P1){
   PIECE_SETUP hep-ex_0009012.C (final){ }(final);
-  PATH_PIECE BPATH1PATHPIECE;
-  LEGEND_TITLE TITLE1;
+  PATH_PIECE BPATH1/hep-ex_0009012/; ALIAS_NAME BPATH1FNAME;
+  LEGEND_TITLE Comix #otimes CSS; DATA_TYPE ATOOLS; 
   LINE_COLOUR RED1;
-}(1);
-(2){
+}(P1);
+(P2){
   PIECE_SETUP hep-ex_0009012.C (final){ }(final);
-  PATH_PIECE BPATH2PATHPIECE;
-  LEGEND_TITLE TITLE2;
+  PATH_PIECE BPATH2/hep-ex_0009012/; ALIAS_NAME BPATH2FNAME;
+  LEGEND_TITLE CSS only; DATA_TYPE ATOOLS;
   LINE_COLOUR BLUE1; LINE_STYLE 2;
-}(2);
+}(P2);
 
-(final){ 
-  DATA_TYPE ATOOLS; 
-}(final);
+(d_paths){
+  PIECE_SETUP hep-ex_0009012.C (P[1[+1]2]R){ }(P[1[+1]2]R);
+}(d_paths);
+(P1R){
+  PIECE_SETUP hep-ex_0009012.C (final){ }(final);
+  FILE_PIECE BPATH1FNAME[2] data/hep-ex_0009012/FNAME;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  LINE_COLOUR RED1;
+}(P1R);
+(P2R){
+  PIECE_SETUP hep-ex_0009012.C (final){ }(final);
+  FILE_PIECE BPATH2FNAME[2] data/hep-ex_0009012/FNAME;
+  DATA_TYPE ALGEBRA(y[0]/y[1]-1);
+  LINE_COLOUR BLUE1; LINE_STYLE 2;
+}(P2R);
