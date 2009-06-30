@@ -308,7 +308,7 @@ void Matrix_Element_Handler::BuildProcesses()
       size_t pos(proc.find("->"));
       if (pos==std::string::npos) continue;
       std::string gycut;
-      MPSV_Map vefunc, vycut, vrscale, vfscale;
+      MPSV_Map vefunc, vycut, vrscale, vfscale, vsfile;
       MPDV_Map vmaxerr, vmaxeps, vefac;
       std::string ini(proc.substr(0,pos));
       std::string fin(proc.substr(pos+2));
@@ -340,8 +340,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,vycut,nf);
 	}
-	if (cur[0]=="Selector_File") selfile=cur[1];
-        pi.m_selectorfile=selfile;
+	if (cur[0]=="Selector_File") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vsfile,nf);
+	}
 	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
 	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
 	if (cur[0]=="Max_N_Quarks") pi.m_nmaxq=ToType<int>(cur[1]);
@@ -374,7 +376,7 @@ void Matrix_Element_Handler::BuildProcesses()
       }
       BuildSingleProcessList
 	(pi,ini,fin,dectags,vmaxerr,vmaxeps,
-	 vefac,vefunc,vycut,vrscale,vfscale,gycut,selfile);
+	 vefac,vefunc,vycut,vrscale,vfscale,vsfile,gycut,selfile);
       if (msg_LevelIsDebugging()) {
         msg_Indentation(4);
         msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -432,7 +434,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 (Process_Info &pi,const std::string &ini,
  const std::string &fin,const std::vector<std::string> &dectags,
  MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
- MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,
+ MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,MPSV_Map &vsfile,
  const std::string &gycut,const std::string &selfile)
 {
   Subprocess_Info AIS, AFS;
@@ -490,6 +492,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	cpi.m_fi.SetNMax(pi.m_fi);
 	if (GetMPvalue(vrscale,nfs,pnid,ds)) cpi.m_mur2tag=ds;
 	if (GetMPvalue(vfscale,nfs,pnid,ds)) cpi.m_muf2tag=ds;
+	if (GetMPvalue(vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
 	Process_Base *proc(InitializeProcess(cpi));
 	if (proc==NULL) continue;
 	procs.push_back(proc);
@@ -511,11 +514,13 @@ void Matrix_Element_Handler::BuildSingleProcessList
   }
   if (pi.m_ckkw && rpa.gen.NumberOfEvents()==0)
     THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
-  Selector_Key skey(NULL,new Data_Reader(),true);
-  skey.ReadData(m_path,selfile);
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
-    if (pi.m_ckkw&1) {
+    Selector_Key skey(NULL,new Data_Reader(),true);
+    std::string sfile(cpi.m_selectorfile!=""?cpi.m_selectorfile:selfile);
+    while (sfile[sfile.length()-1]==' ') sfile.erase(sfile.length()-1,1);
+    skey.ReadData(m_path,sfile);
+    if (pi.m_ckkw&1 && i>0) {
       std::vector<std::string> jfargs(2,gycut);
       GetMPvalue(vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
@@ -525,7 +530,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
       cpi.m_kfactor="QCD";
-      cpi.m_mur2tag=
+      if (i>0) cpi.m_mur2tag=
 	p_shower->GetShower()->GetKT2("Q2_CUT");
     }
     procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);

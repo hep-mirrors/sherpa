@@ -63,7 +63,7 @@ namespace SHERPA {
     (PHASIC::Process_Info &pi, const std::string &ini,
      const std::string &fin,const std::vector<std::string> &dectags,
      MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
-     MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,
+     MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,MPSV_Map &vsfile,
      const std::string &gycut,const std::string &selfile);
 
     std::string MakeString(const std::vector<std::string> &in,
