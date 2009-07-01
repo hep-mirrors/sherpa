@@ -11,7 +11,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ME2_Base::ME2_Base(const Process_Info& pi, const Flavour_Vector& flavs) : 
-  m_pinfo(pi), m_flavs(flavs), m_oew(99), m_oqcd(99)
+  m_pinfo(pi), m_flavs(flavs), m_oew(99), m_oqcd(99), m_sintt(7)
 {
   p_colours = new int*[m_flavs.size()];
   for (size_t i(0);i<m_flavs.size();++i) {

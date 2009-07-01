@@ -73,6 +73,8 @@ bool Single_Process::Initialize()
     p_born_me2=ME2_Base::GetME2(m_pinfo);
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
+      m_oqcd=p_born_me2->OrderQCD();
+      m_oew=p_born_me2->OrderEW();
       return true;
     }
     else {
