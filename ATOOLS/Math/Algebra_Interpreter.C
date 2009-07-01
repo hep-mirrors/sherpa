@@ -198,7 +198,7 @@ DEFINE_UNARY_TERM_FUNCTION(Arc_Tangent,"atan",TATan)
 
 DEFINE_ONE_TERM_FUNCTION(Real,"Real",Real)
 DEFINE_ONE_TERM_FUNCTION(Imag,"Imag",Imag)
-DEFINE_ONE_TERM_FUNCTION(Conjugate,"Conjugate",Conjugate)
+DEFINE_ONE_TERM_FUNCTION(Conj,"Conj",Conj)
 
 DEFINE_FUNCTION(Vec4D_Vec4D,"Vec4D")
 Term *Vec4D_Vec4D::Evaluate(const std::vector<Term*> &args) const
@@ -555,7 +555,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   m_tags["M_E"]=ToString(exp(1.0));
   AddFunction(new Real());
   AddFunction(new Imag());
-  AddFunction(new Conjugate());
+  AddFunction(new Conj());
   AddOperator(new Binary_Plus());
   AddOperator(new Binary_Minus());
   AddOperator(new Binary_Times());
