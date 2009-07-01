@@ -28,7 +28,8 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_sQuark_EW.C \
 		      		Interaction_Model_sLepton_sQuark.C \
 		      		Interaction_Model_MSSM.C \
-		      		Interaction_Model_MSSM_EHC.C 
+		      		Interaction_Model_MSSM_EHC.C \
+		      		Interaction_Model_FeynRules.C 
 
 localinc_HEADERS   = \
 				Lorentz_Function.H Color_Function.H \
@@ -56,6 +57,7 @@ localinc_HEADERS   = \
 				Interaction_Model_sQuark_EW.H \
 		      		Interaction_Model_sLepton_sQuark.H \
 		      		Interaction_Model_MSSM.H \
-		      		Interaction_Model_MSSM_EHC.H 
+		      		Interaction_Model_MSSM_EHC.H \
+		      		Interaction_Model_FeynRules.H 
 
 libModelInteractions_la_CXXFLAGS = -g -pedantic -Wall

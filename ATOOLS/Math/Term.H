@@ -60,6 +60,7 @@ namespace ATOOLS {
 
     Term *Real() const;
     Term *Imag() const;
+    Term *Conjugate() const;
     Term *Comp(const Term &i) const;
 
     Term *Perp() const;

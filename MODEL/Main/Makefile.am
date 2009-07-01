@@ -5,11 +5,13 @@ libModelMain_la_SOURCES = Model_Base.C \
 			  ADD.C SM_Phantom_U1.C SM_AxiGluon.C \
 			  Running_AlphaS.C Running_AlphaQED.C Running_Fermion_Mass.C \
 			  Effective_Higgs_Coupling.C LesHouches_Interface.C \
-			  Spectrum_Generator_Base.C	
+			  Spectrum_Generator_Base.C \
+			  FeynRules_Model.C FeynRules_Spectrum.C 	
 
 localinc_HEADERS   = Model_Base.H \
 		     Standard_Model.H SM_AGC.H MSSM.H SM_MSSM_EHC.H THDM.H \
 		     ADD.H SM_Phantom_U1.H SM_AxiGluon.H \
 		     Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \
 	             Effective_Higgs_Coupling.H LesHouches_Interface.H \
-		     Spectrum_Generator_Base.H
+		     Spectrum_Generator_Base.H \
+		     FeynRules_Model.H FeynRules_Spectrum.H 

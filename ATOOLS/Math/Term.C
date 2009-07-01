@@ -401,6 +401,13 @@ namespace ATOOLS {
     return DTerm::New(Get<Complex>().imag());
   }
 
+  Term *Term::Conjugate() const
+  {
+    if (m_type=='V' || m_type=='D')
+      THROW(fatal_error,"Invalid syntax");
+    return new CTerm(Complex(Get<Complex>().real(),(-1.)*Get<Complex>().imag()));
+  }
+  
   Term *Term::Comp(const Term &i) const
   {
     if (m_type=='V' && i.m_type=='D') return 

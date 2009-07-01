@@ -252,7 +252,8 @@ namespace ATOOLS {
     inline int LeptonNumber() 
     { if (IsLepton()||IsSlepton()||IsSneutrino()) return m_anti?-1:1; return 0; }
     inline double BaryonNumber() 
-    { if (IsQuark()||IsSquark()) return m_anti?-1./3.:1./3.; return 0.; }
+    { if (IsQuark()||IsSquark()) return m_anti?-1./3.:1./3.; return 0.; 
+    if (abs(StrongCharge())==3) return 1./double(StrongCharge()); }
 
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
     inline bool IsLepton() const { return Kfcode()>10&&Kfcode()<19; }
@@ -263,18 +264,18 @@ namespace ATOOLS {
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
 
     inline bool IsChargino() const 
-    { return Kfcode()==kf_Chargino1||Kfcode()==kf_Chargino2; }
+    { return (Kfcode()==kf_Chargino1||Kfcode()==kf_Chargino2) && IntSpin()==1; }
     inline bool IsNeutralino() const 
-    { return Kfcode()==kf_Neutralino1||Kfcode()==kf_Neutralino2||
-	Kfcode()==kf_Neutralino3||Kfcode()==kf_Neutralino4; }
+    { return (Kfcode()==kf_Neutralino1||Kfcode()==kf_Neutralino2||
+	      Kfcode()==kf_Neutralino3||Kfcode()==kf_Neutralino4) && IntSpin()==1; }
     inline bool IsSlepton() const 
     { return (Kfcode()>1000010&&Kfcode()<1000017)||
-	(Kfcode()>2000010&&Kfcode()<2000017); }
+	(Kfcode()>2000010&&Kfcode()<2000017) && IntSpin()==0; }
     inline bool IsSneutrino() const 
-    { return Kfcode()>1000010&&Kfcode()<1000017&&Kfcode()%2==0; }
+    { return Kfcode()>1000010&&Kfcode()<1000017&&Kfcode()%2==0&&IntSpin()==0; }
 
     inline bool IsSquark() const 
-    { return Strong()&&IntSpin()==0&&!Majorana(); }
+    { return Strong()&&(StrongCharge()==3 || StrongCharge()==-3)&&IntSpin()==0&&!Majorana(); }
     inline bool IsGluino() const 
     { return Kfcode()==kf_Gluino; }
 
@@ -289,7 +290,7 @@ namespace ATOOLS {
 
     inline const bool IsKK() const 
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
-      return 5000000<Kfcode() && Kfcode()<7000000; }
+      return 0; }
     inline const int KKGeneration() const 
     { if (!IsKK()) return 0; 
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
