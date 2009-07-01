@@ -154,14 +154,14 @@ bool Analysis_Handler::Init()
       }
     }
     success=true;
-    msg_Info()<<"   new Primitive_Analysis(\""<<helpsv[0];
+    std::string outpath;
+    if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
+    msg_Info()<<"   new Primitive_Analysis(\""<<outpath<<"\") -> "<<helpsv[0];
     for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
-    msg_Info()<<"\")\n";
+    msg_Info()<<"\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
     mode=mode|m_weighted;
     m_analyses.push_back(new Primitive_Analysis(ToString(i),mode));
-    std::string outpath;
-    if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
     m_analyses.back()->SetOutputPath(outpath);
     std::string maxjettag;
     if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
