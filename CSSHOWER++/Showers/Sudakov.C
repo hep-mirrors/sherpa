@@ -68,20 +68,29 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md)
       if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))!=sfs.end()) continue;
       sfs.insert(FTrip(v->in[0],v->in[1],v->in[2]));
       sfs.insert(FTrip(v->in[0],v->in[2],v->in[1]));
-      Add(new Splitting_Function_Base(SF_Key(p_rms,v,0,cstp::FF)));
-      Add(new Splitting_Function_Base(SF_Key(p_rms,v,0,cstp::FI)));
-      if (v->in[0].Mass()<100.0) {
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,0,cstp::IF)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,0,cstp::II)));
-      }
-      if (v->in[1]!=v->in[2]) {
-	AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1,cstp::FF)));
-	AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1,cstp::FI)));
+      msg_Debugging()<<"Add "<<v->in[0]<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
+      {
+	msg_Indent();
+	int dmode(0);
+	if (v->in[2]==v->in[0]) dmode=1;
+	else if (v->in[1]!=v->in[0] && 
+		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI)));
 	if (v->in[0].Mass()<100.0) {
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,1,cstp::IF)));
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,1,cstp::II)));
+  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF)));
+ 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II)));
+	}
+	if (v->in[1]!=v->in[2]) {
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI)));
+	  if (v->in[0].Mass()<100.0) {
+  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF)));
+ 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II)));
+	  }
 	}
       }
+      msg_Debugging()<<"}\n";
     }
   }
   msg_Debugging()<<"}\n";
@@ -119,6 +128,7 @@ void Sudakov::Add(Splitting_Function_Base * split)
     delete split;
     return;
   }
+  msg_Debugging()<<" -> add\n";
   if (split->On()) Splitting_Function_Group::Add(split);
   AddToMaps(split,!split->On());
 }
@@ -129,6 +139,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     delete split;
     return;
   }
+  if (mode) msg_Debugging()<<"\n";
   split->Lorentz()->SetPDF(p_pdf);
   if (mode) m_addsplittings.push_back(split);
   switch(split->GetType()) {

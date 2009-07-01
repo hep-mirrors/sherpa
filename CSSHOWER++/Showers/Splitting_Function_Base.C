@@ -73,7 +73,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
   msg_Debugging()<<"Init("<<m_on<<") "<<key<<"  "<<typeid(*p_lf).name()
-		 <<"  "<<typeid(*p_cf).name()<<"\n";
+		 <<"  "<<typeid(*p_cf).name();
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
