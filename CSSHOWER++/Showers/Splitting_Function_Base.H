@@ -100,6 +100,7 @@ namespace CSSHOWER {
     SF_Lorentz *p_lf;
 
     cstp::code m_type;
+    double     m_cplfac;
 
     std::vector<double> m_cplmax;
 
@@ -118,6 +119,8 @@ namespace CSSHOWER {
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
+
+    inline double CplFac() const { return m_cplfac; }
 
   };
 

@@ -173,9 +173,9 @@ double LF_VVV_FI::J(const double y,const double eta,const double scale)
 { 
   if (scale<sqr(p_ms->Mass(m_flspec)) ||
       scale<p_pdf[m_beam]->Q2Min() || eta/(1.-y)>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/(1.-y),scale);
+  p_pdf[m_beam]->Calculate(eta/(1.-y),scale*p_cf->CplFac());
   double fresh = p_pdf[m_beam]->GetXPDF(m_flspec);
-  p_pdf[m_beam]->Calculate(eta,scale);
+  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
   double old = p_pdf[m_beam]->GetXPDF(m_flspec);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return (1.-y) * fresh/old;
@@ -226,10 +226,10 @@ double LF_VVV_IF::Z()
 
 double LF_VVV_IF::J(const double z,const double eta,const double scale) { 
   if (scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/z,scale);
+  p_pdf[m_beam]->Calculate(eta/z,scale*p_cf->CplFac());
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  p_pdf[m_beam]->Calculate(eta,scale);
-  double old = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
+  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
+  double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
@@ -265,10 +265,10 @@ double LF_VVV_II::Z()
 double LF_VVV_II::J(const double z,const double eta,const double scale)
 { 
   if (scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/z,scale);
+  p_pdf[m_beam]->Calculate(eta/z,scale*p_cf->CplFac());
   double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  p_pdf[m_beam]->Calculate(eta,scale);
-  double old = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
+  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
+  double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }

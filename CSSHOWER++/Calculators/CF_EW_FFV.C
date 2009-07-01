@@ -13,7 +13,7 @@ namespace CSSHOWER {
     ATOOLS::Function_Base *p_cpl;
     ATOOLS::Flavour m_cfl, m_ffl;
 
-    double m_cplfac, m_q[2];
+    double m_q[2];
 
   public:
 
@@ -36,7 +36,7 @@ namespace CSSHOWER {
     ATOOLS::Function_Base *p_cpl;
     ATOOLS::Flavour m_cfl, m_ffl;
 
-    double m_cplfac, m_q[2];
+    double m_q[2];
 
   public:
 
