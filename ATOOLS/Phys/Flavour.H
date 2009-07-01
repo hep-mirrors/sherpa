@@ -5,6 +5,7 @@
 #define kf_none 0
 
 #include "ATOOLS/Phys/Flavour_Tags.H"
+#include "ATOOLS/Math/MathTools.H"
 
 #include <string> 
 #include <vector>
@@ -269,8 +270,8 @@ namespace ATOOLS {
     { return (Kfcode()==kf_Neutralino1||Kfcode()==kf_Neutralino2||
 	      Kfcode()==kf_Neutralino3||Kfcode()==kf_Neutralino4) && IntSpin()==1; }
     inline bool IsSlepton() const 
-    { return (Kfcode()>1000010&&Kfcode()<1000017)||
-	(Kfcode()>2000010&&Kfcode()<2000017) && IntSpin()==0; }
+    { return ((Kfcode()>1000010&&Kfcode()<1000017)||
+	(Kfcode()>2000010&&Kfcode()<2000017)) && IntSpin()==0; }
     inline bool IsSneutrino() const 
     { return Kfcode()>1000010&&Kfcode()<1000017&&Kfcode()%2==0&&IntSpin()==0; }
 
