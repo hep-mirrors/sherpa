@@ -2,6 +2,7 @@
 
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace CSSHOWER {
   
@@ -15,7 +16,7 @@ namespace CSSHOWER {
 
     ATOOLS::Function_Base *p_cpl;
 
-    double m_cplfac, m_q;
+    double m_q;
 
   public:
 
@@ -45,7 +46,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 {
   m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_S");
-  m_cplmax.push_back((*p_cpl)(m_cplfac*k0sq)*m_q);
+  m_cplmax.push_back((*p_cpl)(m_cplfac*k0sq/m_cplfac)*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }
@@ -53,7 +54,9 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 double CF_QCD::Coupling(const double &scale,const int mode)
 {
   if (mode!=0) return 0.0;
-  return (*p_cpl)(m_cplfac*scale)*m_q;
+  double cpl=(*p_cpl)(m_cplfac*scale)*m_q;
+  if (cpl>m_cplmax.front()) THROW(fatal_error,"CS shower cutoff too low");
+  return cpl;
 }
 
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
