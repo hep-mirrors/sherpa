@@ -17,6 +17,8 @@ namespace CSSHOWER {
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
 			       const ATOOLS::Flavour &,Parton *&) = 0;
+    virtual double GetY(const double &Q2,const double &kt2,const double &z,
+			const double &s1,const double &s2,const double &s3) const = 0;
     inline PHASIC::Jet_Finder *SetJF(PHASIC::Jet_Finder *const jf) 
     { PHASIC::Jet_Finder *ojf(p_jf); p_jf=jf; return ojf; }
     inline PHASIC::Jet_Finder *JF() const { return p_jf; }
@@ -28,6 +30,8 @@ namespace CSSHOWER {
     Kinematics_FF() {}
     virtual ~Kinematics_FF() {}
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    double GetY(const double &Q2,const double &kt2,const double &z,
+		const double &s1,const double &s2,const double &s3) const;
   };
   
   class Kinematics_FI : public Kinematics_Base {
@@ -35,6 +39,8 @@ namespace CSSHOWER {
     Kinematics_FI() {}
     virtual ~Kinematics_FI() {}
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    double GetY(const double &Q2,const double &kt2,const double &z,
+		const double &s1,const double &s2,const double &s3) const;
   };
 
   class Kinematics_IF : public Kinematics_Base {
@@ -42,6 +48,8 @@ namespace CSSHOWER {
     Kinematics_IF() {}
     virtual ~Kinematics_IF() {}
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    double GetY(const double &Q2,const double &kt2,const double &z,
+		const double &s1,const double &s2,const double &s3) const;
   };
 
   class Kinematics_II : public Kinematics_Base {
@@ -49,6 +57,8 @@ namespace CSSHOWER {
     Kinematics_II() {}
     virtual ~Kinematics_II() {}
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    double GetY(const double &Q2,const double &kt2,const double &z,
+		const double &s1,const double &s2,const double &s3) const;
   };
 }
 

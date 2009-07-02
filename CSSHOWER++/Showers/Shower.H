@@ -39,6 +39,11 @@ namespace CSSHOWER {
     void SetRBMax(const double &rbmax);
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline Parton *const *GetLast() const { return m_last; }
+
+    inline const Kinematics_FF *KinFF() const { return &m_kinFF; }
+    inline const Kinematics_FI *KinFI() const { return &m_kinFI; }
+    inline const Kinematics_IF *KinIF() const { return &m_kinIF; }
+    inline const Kinematics_II *KinII() const { return &m_kinII; }
   };
 }
 

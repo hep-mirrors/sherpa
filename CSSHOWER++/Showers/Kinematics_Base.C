@@ -13,6 +13,12 @@ const Vec3D Kinematics_Base::s_ex(Vec3D(1.,0.,0.));
 const Vec3D Kinematics_Base::s_ey(Vec3D(0.,1.,0.));
 const Vec3D Kinematics_Base::s_ez(Vec3D(0.,0.,1.));
 
+double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
+			   const double &mi2,const double &mj2,const double &mk2) const
+{
+  return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
+}
+
 int Kinematics_FF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
  const ATOOLS::Flavour & flj,Parton *&pc)
@@ -72,7 +78,7 @@ int Kinematics_FF::MakeKinematics
     //the general massive case, including massive spectator
     Vec4D  Q=p1+p2;
     double Q2=Q.Abs2();
-    y=(kt*kt/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
+    y=GetY(Q2,kt*kt,z,mi2,mj2,mk2);
     double sij=y*(Q2-mk2)+(1.0-y)*(mi2+mj2);
     double po=sqr(Q2-mij2-mk2)-4.0*mij2*mk2, pn=sqr(Q2-sij-mk2)-4.0*sij*mk2;
     if (po<0.0 || pn<0.0) {
@@ -148,6 +154,12 @@ int Kinematics_FF::MakeKinematics
   return 1;
 }
 
+double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
+			   const double &mi2,const double &mj2,const double &ma2) const
+{
+  return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
+}
+
 int Kinematics_FI::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
  const ATOOLS::Flavour & flj,Parton *&pc)
@@ -172,7 +184,7 @@ int Kinematics_FI::MakeKinematics
   double mi2=sqr(p_ms->Mass(fli)), mj2=sqr(p_ms->Mass(flj));
   double mij2 = sqr(p_ms->Mass(split->GetFlavour())); 
   
-  x=1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
+  x=GetY(Q2,kt2,z,mi2,mj2,ma2);
   double tt=Q2-ma2-mij2, t=Q2-ma2-mi2-mj2;
   double sij=-((1.0-x)*(Q2-ma2)-(mi2+mj2))/x;
   double xi=x*(tt-sqrt(tt*tt-4.*ma2*mij2))/
@@ -252,6 +264,12 @@ int Kinematics_FI::MakeKinematics
 }
 
 
+double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
+			   const double &ma2,const double &mi2,const double &mk2) const
+{
+  return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
+}
+
 int Kinematics_IF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fla,
  const ATOOLS::Flavour & fli,Parton *&pc)
@@ -279,7 +297,7 @@ int Kinematics_IF::MakeKinematics
   //the massless & massive cases
   //fix the initial state parton momentum
 
-  y=-z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
+  y=GetY(Q2,kt2,z,ma2,mi2,mk2);
   double tt=Q2-mai2-mk2, t=Q2-ma2-mi2-mk2;
   double sik=-((1.0-z)*(Q2-ma2)-(mi2+mk2))/z;
   double xi=z*(tt-sqrt(tt*tt-4.*mai2*mk2))/
@@ -353,6 +371,12 @@ int Kinematics_IF::MakeKinematics
   return 1;
 }
 
+double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
+			   const double &ma2,const double &mi2,const double &mb2) const
+{
+  return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
+}
+
 int Kinematics_II::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
  const ATOOLS::Flavour & newfl,Parton *&pc)
@@ -408,7 +432,7 @@ int Kinematics_II::MakeKinematics
     Vec4D  Q=p1+p2;
     double Q2=Q.Abs2(), tt=Q2-mai2-mb2, t=Q2-ma2-mi2-mb2;
     double xi=z*(tt+sqrt(tt*tt-4.*mai2*mb2))/(t+sqrt(t*t-4.*ma2*mb2*z*z));
-    y=z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
+    y=GetY(Q2,kt2,z,ma2,mi2,mb2);
     double gamt=p1*p2+sqrt(sqr(p1*p2)-mai2*mb2), gam=gamt/xi;
     q1=(1.0-ma2*mb2/sqr(gam))/(1.0-mai2*mb2/sqr(xi*gam))/xi*
       (p1-mai2/(xi*gam)*p2)+p2*ma2/gam;

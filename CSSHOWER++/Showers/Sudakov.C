@@ -2,6 +2,7 @@
 
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "CSSHOWER++/Tools/Singlet.H"
+#include "CSSHOWER++/Showers/Shower.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
@@ -263,37 +264,36 @@ bool Sudakov::Dice(Parton * split)
       double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
       double mk2 = sqr(p_rms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      if (mi2==0. && mj2==0. && mk2==0.) {
-	//massless case
-	m_y = m_kperp2/(Q2*m_z*(1.-m_z));
-      }
-      else {
-	//massive case
-	double div = Q2-mi2-mj2-mk2;
-	if (div<=0.) return false;
-        m_y = 2. * (m_kperp2/(2.*m_z*(1.-m_z))+(1.-m_z)*mi2/(2.*m_z)+m_z*mj2/(2.*(1.-m_z)))/div;
-      }
+      if (Q2<=mi2+mj2+mk2) return false;
+      m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2);
       x   = 0.;
     }    
       break; 
     case (cstp::FI) : {
+      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
+      double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
+      double ma2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      m_y = m_kperp2/(m_kperp2+Q2*m_z);
+      m_y = 1.0-p_shower->KinFI()->GetY(-Q2,m_kperp2,m_z,mi2,mj2,ma2);
       x   = split->GetSpect()->Xbj();
     }
       break; 
     case (cstp::IF) : {
+      double ma2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourA())));
+      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
+      double mk2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      if (m_z>Q2/(Q2+m_kperp2)) continue;
-      m_y = m_kperp2/Q2*m_z/(1.-m_z);
+      m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2);
       x   = split->Xbj();
     }
       break;
     case (cstp::II) : {
+      double ma2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourA())));
+      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
+      double mb2 = sqr(p_rms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
+      m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2);
       x   = split->Xbj();
-      if (m_z>Q2/(Q2+m_kperp2)) continue;
-      m_y = m_kperp2/Q2*m_z/(1.-m_z);
     }
       break;
   default:
@@ -404,47 +404,27 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
 
 double Sudakov::OverIntegrated(const double zmin,const double zmax,
 			       const double scale,const double xbj,int beam) {
-  bool match=false;
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
     if ((*m_splitter)->GetType()==m_type && 
 	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
       if ((*m_splitter)->PureQCD() &&
 	  !(p_split->GetLeft()==p_spec || p_split->GetRight()==p_spec)) continue;
       (*m_splitter)->AddSpec(p_spec);
-      match=false;
+      bool match=false;
       switch (m_type) {
       case cstp::FF: 
-	if ((*m_splitter)->GetFlavourA()==m_cfl) {
-	  //set the spectator flavour needed for SF
-	  (*m_splitter)->SetFlavourSpec(m_flspec);
-	  match=true; 
-	}
-	break;
       case cstp::FI: 
-	if ((*m_splitter)->GetFlavourA()==m_cfl) {
-	  //std::cout<<" m_splitter "<<(*m_splitter)->GetFlavourA()<<" spec : "<<m_flspec<<std::endl;  
-	  //set the spectator flavour needed SF and PDF reweighting
-	  (*m_splitter)->SetFlavourSpec(m_flspec);
-	  match=true; 
-	}
+	if ((*m_splitter)->GetFlavourA()==m_cfl) match=true; 
 	break;
       case cstp::IF: 
-	if ((*m_splitter)->GetFlavourB()==m_cfl) {
-	  //set the spectator flavour needed for SF
-	  (*m_splitter)->SetFlavourSpec(m_flspec);
-	  match=true; 
-	}
-	break;
       case cstp::II: 
-	if ((*m_splitter)->GetFlavourB()==m_cfl) {
-	  match=true; 
-	}
+	if ((*m_splitter)->GetFlavourB()==m_cfl) match=true; 
 	break;
       case cstp::none: 
-	msg_Error()<<" Error in Sudakov::OverIntegrated: No m_type for splitter."<<std::endl;
-	abort();
+	THROW(fatal_error,"Internal error");
       }
       if (match) {
+	(*m_splitter)->SetFlavourSpec(m_flspec);
 	if (beam!=-1) (*m_splitter)->Lorentz()->SetBeam(beam);
 	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
 	if (m_lastint>0. && m_lastint <0.) cout<<(*this);    

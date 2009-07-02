@@ -13,6 +13,8 @@ namespace CSSHOWER {
   typedef std::map<ATOOLS::Flavour,SF_E_Map> SF_EE_Map;
   typedef std::map<ATOOLS::Flavour,SF_EE_Map> SF_EEE_Map;
 
+  class Shower;
+
   class Sudakov : public Splitting_Function_Group {
     double m_k0sq, m_nspect, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
@@ -23,6 +25,7 @@ namespace CSSHOWER {
     Parton * p_split, * p_spec;
     SF_EEE_Map m_ffmap, m_fimap, m_ifmap, m_iimap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
+    Shower *p_shower;
     void ProduceT();
     bool Veto(double,double);
     bool KinCheck(double,double);
@@ -60,6 +63,8 @@ namespace CSSHOWER {
     inline const SF_EEE_Map &IIMap() const { return m_iimap; }
 
     inline double PT2Min() const { return m_k0sq; }
+
+    inline void SetShower(Shower *const shower) { p_shower=shower; }
   };
   
   void Sudakov::GetSplittingParameters
