@@ -27,6 +27,8 @@ Term *Function::Evaluate(const std::vector<Term*> &args) const
   THROW(fatal_error,"No evaluation rule.");
 }
 
+namespace ATOOLS {
+
 class Single_Term: public Function {
 private:
 
@@ -45,6 +47,8 @@ public:
   Term *Evaluate(const std::vector<Term*> &args) const;
 
 };// end of class Single_Term
+
+}
 
 Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer): 
   Function(tag), p_replacer(replacer), m_replace(false), 

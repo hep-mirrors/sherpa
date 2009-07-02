@@ -97,7 +97,7 @@ double LF_VVV_FF::operator()
   double massless = 2. * ( 1./(1.-z+z*y) + 1./(z+y-z*y) -2. + z*(1.-z) );
   if (muk2==0.) {
     double value = p_cf->Coupling(scale,0) * massless;
-    if (mode&1) return value/2.0;
+    if (mode&1) return value;
     return value * J(y);
   }
   else {
@@ -113,7 +113,7 @@ double LF_VVV_FF::operator()
     }
     massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = p_cf->Coupling(scale,0) * massive;
-    if (mode&1) return value/2.0;
+    if (mode&1) return value;
     return value * J(y);
   }
 }
@@ -146,7 +146,7 @@ double LF_VVV_FI::operator()
    const double scale,const double Q2,int mode)
 {
   double value = 2.0*p_cf->Coupling(scale,0) * ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
-  if (mode&1) return value/2.0;
+  if (mode&1) return value;
   return value * J(y,eta,scale);
 }
 
@@ -190,7 +190,7 @@ double LF_VVV_IF::operator()
   if (muk2==0.) {
     //the massless case
     double value = p_cf->Coupling(scale,0) * massless;
-    if (mode&1) return value/2.0;
+    if (mode&1) return value;
     return value * J(z,eta,scale);
   }
   else {
@@ -200,7 +200,7 @@ double LF_VVV_IF::operator()
       return 0.;
   }
     double value = p_cf->Coupling(scale,0) * massive;
-    if (mode&1) return value/2.0;
+    if (mode&1) return value;
     return value * J(z,eta,scale);
   }
 }
@@ -239,7 +239,7 @@ double LF_VVV_II::operator()
    const double scale,const double Q2,int mode)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( 1./(1.-z) + 1./z -2. +z*(1.-z));
-  if (mode&1) return value/2.0;
+  if (mode&1) return value;
   return value * J(z,eta,scale);
 }
 
