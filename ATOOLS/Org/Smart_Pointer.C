@@ -1,5 +1,7 @@
 #include "ATOOLS/Org/Smart_Pointer.H"
 
+#include "ATOOLS/Org/Shell_Tools.H"
+
 template <class Class_Type> void ATOOLS::Smart_Pointer<Class_Type>::
 Connect(const Smart_Pointer &ref) const
 {
@@ -30,7 +32,7 @@ void ATOOLS::Smart_Pointer<Class_Type>::PrintForward
 (std::ostream &str,const bool all) const
 {
   if (all) {
-    str<<"("<<this<<")["<<typeid(p_this).name()
+    str<<"("<<this<<")["<<Demangle(typeid(p_this).name())
        <<"]: p_this = "<<p_this<<" {\n";
     FindOwner()->PrintForward(str,false); str<<"}";
     return;

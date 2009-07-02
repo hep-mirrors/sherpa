@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MyComplex.H"
 #endif
@@ -786,7 +787,7 @@ Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
 
 void Algebra_Interpreter::PrintNode(Node<Function*> *const node) const
 {
-  msg_Info()<<"("<<node<<") ["<<typeid(*(*node)[0]).name()<<"] '"
+  msg_Info()<<"("<<node<<") ["<<Demangle(typeid(*(*node)[0]).name())<<"] '"
 	    <<((*node)[0]!=NULL?(*node)[0]->Tag():"<NULL>")<<"' {\n";
   {
     msg_Indent();
