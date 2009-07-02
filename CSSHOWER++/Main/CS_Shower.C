@@ -382,180 +382,70 @@ Singlet *CS_Shower::TranslateAmplitude
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap,
  const double &kt2max,const double &kt2min)
 {
-  std::map<Particle*,Cluster_Leg*> clmap;
-  std::vector<std::pair<Particle*,pst::code> > particles;
-  std::vector<std::pair<Particle*,pst::code> >::iterator pit,pit1;
+  PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
+  double ktveto2(jf?jf->GlobalYcut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
+  Singlet *singlet(new Singlet());
+  singlet->SetMS(p_ms);
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
     bool is(cl->Id()&((1<<ampl->NIn())-1));
-    Flavour fl(is?cl->Flav().Bar():cl->Flav());
-    Vec4D mom(is?-cl->Mom():cl->Mom());
-    Particle * p(new Particle(1,fl,mom));
+    Particle p(1,is?cl->Flav().Bar():cl->Flav(),is?-cl->Mom():cl->Mom());
     if (is) {
-      p->SetFlow(2,cl->Col().m_i);
-      p->SetFlow(1,cl->Col().m_j);
-      particles.push_back(std::pair<Particle*,pst::code>(p,pst::IS));
+      p.SetFlow(2,cl->Col().m_i);
+      p.SetFlow(1,cl->Col().m_j);
     }
     else {
-      p->SetFlow(1,cl->Col().m_i);
-      p->SetFlow(2,cl->Col().m_j);
-      particles.push_back(std::pair<Particle*,pst::code>(p,pst::FS));
+      p.SetFlow(1,cl->Col().m_i);
+      p.SetFlow(2,cl->Col().m_j);
     }
-    clmap[p]=cl;
+    Parton *parton(new Parton(&p,is?pst::IS:pst::FS));
+    pmap[cl]=parton;
+    lmap[parton]=cl;
+    parton->SetRFlow();
+    if (is) {
+      if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
+	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
+	parton->SetBeam(0);
+      }
+      else { 
+	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(1)[0]);
+	parton->SetBeam(1);
+      }
+    }
+    if (cl->Q2Shower()<0.0) parton->SetStart(kt2max);
+    else parton->SetStart(cl->Q2Shower());
+    parton->SetKtMax(kt2min);
+    parton->SetVeto(ktveto2);
+    singlet->push_back(parton);
+    parton->SetSing(singlet);
   }
-  
-  if (particles.empty()) THROW(fatal_error,"No particles to shower found");
-
-  PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf?jf->GlobalYcut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
-  bool notcomplete(true), initsinglet(false), afresh(false);
-  unsigned int flowrun(0), flowend(0);
-  stype::code stype(stype::neutral);
-  Singlet *singlet(new Singlet(stype::neutral,true));
-  singlet->SetMS(p_ms);
-  while (!particles.empty()) {
-    initsinglet = false;
-    for (pit=particles.begin();pit!=particles.end();afresh?pit=pit:pit++) {
-      afresh=false;
-      // neutral singlet
-      if (pit->first->GetFlow(1)==0 && pit->first->GetFlow(2)==0) {
-	Parton  * parton  = new Parton(pit->first,pit->second);
-	pmap[clmap[pit->first]]=parton;
-	lmap[parton]=clmap[pit->first];
-	parton->SetRFlow();
-	parton->SetStart(kt2max);
-	parton->SetVeto(kt2max);
-	singlet->push_back(parton);
-	parton->SetSing(singlet);
-	delete pit->first;
-	particles.erase(pit);
-	pit=particles.begin();
-	afresh=true;
-	continue;
-      }
-      // triplet FS start
-      else if (pit->first->GetFlow(1)>0 && pit->first->GetFlow(2)==0 &&
-	       pit->second==pst::FS) {
-	flowrun = pit->first->GetFlow(1);
-	flowend = 0;
-	stype = stype::TA;
-	initsinglet = true;
-	break;
-      }
-      // antitriplet IS start
-      else if (pit->first->GetFlow(1)==0 && pit->first->GetFlow(2)>0 &&
-	       pit->second==pst::IS) {
-	flowrun = pit->first->GetFlow(2);
-	flowend = 0;
-	stype = stype::TA;
-	initsinglet = true;
-	break;
-      }
-    }    
-    // ring made of gluons/gluinos
-    if (!initsinglet) {
-      for (pit=particles.begin();pit!=particles.end();pit++) {
-	if (pit->first->GetFlow(1)>0 && pit->first->GetFlow(2)>0) {
-	  flowrun = pit->first->GetFlow(1);
-	  flowend = pit->first->GetFlow(2);
-	  stype = stype::ring;
-	  initsinglet = true;
+  for (Singlet::const_iterator sit(singlet->begin());
+       sit!=singlet->end();++sit) {
+    if (!(*sit)->GetFlavour().Strong() ||
+	(*sit)->GetLeft() || (*sit)->GetRight()) continue;
+    int flow[2]={(*sit)->GetFlow(1),(*sit)->GetFlow(2)};
+    if (flow[0]) {
+      for (Singlet::const_iterator tit(singlet->begin());
+	   tit!=singlet->end();++tit)
+	if (tit!=sit && (*tit)->GetFlow(2)==flow[0]) {
+	  (*sit)->SetLeft(*tit);
+	  (*tit)->SetRight(*sit);
 	  break;
 	}
-      }
     }
-    if (initsinglet) {
-      Parton  * parton  = new Parton(pit->first,pit->second);
-      pmap[clmap[pit->first]]=parton;
-      Cluster_Leg *cl(clmap[pit->first]);
-      lmap[parton]=cl;
-      parton->SetRFlow();
-      if (pit->second==pst::IS) {
-	if (Vec3D(pit->first->Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-	  parton->SetXbj(pit->first->Momentum()[0]/rpa.gen.PBeam(0)[0]);
-	  parton->SetBeam(0);
+    if (flow[1]) {
+      for (Singlet::const_iterator tit(singlet->begin());
+	   tit!=singlet->end();++tit)
+	if (tit!=sit && (*tit)->GetFlow(1)==flow[1]) {
+	  (*sit)->SetRight(*tit);
+	  (*tit)->SetLeft(*sit);
+	  break;
 	}
-	else { 
-	  parton->SetXbj(pit->first->Momentum()[0]/rpa.gen.PBeam(1)[0]);
-	  parton->SetBeam(1);
-	}
-      }
-      if (cl->Q2Shower()<0.0) parton->SetStart(kt2max);
-      else parton->SetStart(cl->Q2Shower());
-      parton->SetKtMax(kt2min);
-      parton->SetVeto(ktveto2);
-      singlet->push_back(parton);
-      parton->SetSing(singlet);
-      pit1  = pit;
-      delete pit->first;
-      particles.erase(pit);
-      notcomplete = true;
-      do {
-	for (pit1=particles.begin();pit1!=particles.end();pit1++) {
-	  if (pit1->first->GetFlow(1)==flowrun) {
-	    flowrun = pit1->first->GetFlow(2);
-	    if (flowrun==flowend) notcomplete=false;
-	    Parton  * parton  = new Parton(pit1->first,pit1->second);
-	    pmap[clmap[pit1->first]]=parton;
-	    Cluster_Leg *cl(clmap[pit1->first]);
-	    lmap[parton]=cl;
-	    parton->SetRFlow();
-	    if (pit1->second==pst::IS) {
-	      if (Vec3D(pit1->first->Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-		parton->SetXbj(pit1->first->Momentum()[0]/rpa.gen.PBeam(0)[0]);
-		parton->SetBeam(0);
-	      }
-	      else {
-		parton->SetXbj(pit1->first->Momentum()[0]/rpa.gen.PBeam(1)[0]);
-		parton->SetBeam(1);
-	      }
-	    }
-	    if (cl->Q2Shower()<0.0) parton->SetStart(kt2max);
-	    else parton->SetStart(cl->Q2Shower());
-	    parton->SetKtMax(kt2min);
-	    parton->SetVeto(ktveto2);
-	    singlet->back()->SetLeft(parton);
-	    parton->SetRight(singlet->back());
-	    singlet->push_back(parton);
-	    parton->SetSing(singlet);
-	    delete pit1->first;
-	    particles.erase(pit1);
-	    break;
-	  }
-	  else if (unsigned(pit1->first->GetFlow(2))==flowrun) {
-	    flowrun = pit1->first->GetFlow(1);
-	    if (flowrun==flowend) notcomplete=false;
-	    Parton  * parton  = new Parton(pit1->first,pit1->second);
-	    pmap[clmap[pit1->first]]=parton;
-	    Cluster_Leg *cl(clmap[pit1->first]);
-	    lmap[parton]=cl;
-	    parton->SetRFlow();
-	    if (pit1->second==pst::IS) {
-	      if (Vec3D(pit1->first->Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-		parton->SetXbj(pit1->first->Momentum()[0]/rpa.gen.PBeam(0)[0]);
-		parton->SetBeam(0);
-	      }
-	      else {
-		parton->SetXbj(pit1->first->Momentum()[0]/rpa.gen.PBeam(1)[0]);
-		parton->SetBeam(1);
-	      }
-	    }
-	    if (cl->Q2Shower()<0.0) parton->SetStart(kt2max);
-	    else parton->SetStart(cl->Q2Shower());
-	    parton->SetKtMax(kt2min);
-	    parton->SetVeto(ktveto2);
-	    singlet->back()->SetLeft(parton);
-	    parton->SetRight(singlet->back());
-	    singlet->push_back(parton);
-	    parton->SetSing(singlet);
-	    delete pit1->first;
-	    particles.erase(pit1);
-	    break;
-	  }
-	}
-      } while (notcomplete);
     }
+    if ((flow[0] && (*sit)->GetLeft()==NULL) ||
+	(flow[0] && (*sit)->GetLeft()==NULL))
+      THROW(fatal_error,"Missing colour partner");
   }
   for (size_t i(0);i<ampl->Legs().size();++i)
     if (ampl->Leg(i)->K()) {

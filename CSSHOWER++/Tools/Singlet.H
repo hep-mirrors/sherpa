@@ -10,14 +10,6 @@ namespace ATOOLS { class Mass_Selector; }
 namespace PHASIC { class Jet_Finder; }
 
 namespace CSSHOWER {
-  struct stype {
-    enum code {
-      TA      = 1,
-      ring    = 2,
-      neutral = 3,
-      none = 0
-    };
-  };
 
   class Singlet;
 
@@ -25,8 +17,6 @@ namespace CSSHOWER {
   typedef All_Singlets::iterator ASiter;
 
   class Singlet : public Parton_List {
-    bool m_active;
-    stype::code       m_stype;
     Parton *p_split, *p_left, *p_right, *p_spec;
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
@@ -37,8 +27,7 @@ namespace CSSHOWER {
     void SetColours(Parton *const pa,
 		    const int oldc[2],const int newc[2]);
   public :
-    Singlet(stype::code stype=stype::none,bool act=true) : 
-      m_active(act), m_stype(stype),
+    Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
       p_jf(NULL), p_all(NULL) {}
     ~Singlet();
@@ -46,18 +35,12 @@ namespace CSSHOWER {
     int       SplitParton(PLiter &, Parton *, Parton *);
     void      ExtractPartons(ATOOLS::Blob *,ATOOLS::Mass_Selector *const ms);
 
-    bool        CheckColours();
     void        UpdateDaughters();
     void        BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			   const ATOOLS::Flavour &mo,const int mode);
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			       const ATOOLS::Flavour &mo,const int mode);
 
-    inline bool const IsActive()  const;
-    inline void SetActive();
-    inline void SetPassive();
-    inline stype::code   GetType()     const;
-    inline void          SetType(stype::code);
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 
     inline void SetSplit(Parton *const part) { p_split=part; }
@@ -80,13 +63,6 @@ namespace CSSHOWER {
 
   };
 
-  bool const Singlet::IsActive() const { return m_active; }
-  void Singlet::SetActive()      { m_active = true;  }
-  void Singlet::SetPassive()     { m_active = false; }
-
-  stype::code   Singlet::GetType()             const { return m_stype; }
-  void          Singlet::SetType(stype::code _stype) { m_stype=_stype; }
-  
   std::ostream& operator<<(std::ostream &,All_Singlets &); 
 }
 

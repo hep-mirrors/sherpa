@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
-  str<<"Singlet parton list from CS_Shower : "<<&singlet<<" Type "<<singlet.GetType()<<endl;
+  str<<"Singlet parton list from CS_Shower : "<<&singlet<<endl;
   Parton * part;
   for (PLiter plit=singlet.begin();plit!=singlet.end();plit++) {
     part = (*plit);
@@ -506,23 +506,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   }
   return false;
 } 
-
-bool Singlet::CheckColours() {
-  if (m_stype==stype::neutral) return true;
-  int flow1((*begin())->GetFlow(1)), flow2((*begin())->GetFlow(2));
-  for (PLiter plit=begin();plit!=end();plit++) { 
-    if (plit==begin()) plit++;
-    if ((*plit)->GetFlow(2)!=flow1) {
-      if (m_stype!=stype::ring) return false;
-      else {
-	if ((*plit)->GetFlow(1)!=flow2) return false;
-	else flow2=(*plit)->GetFlow(2);
-      }
-    }
-    else flow1=(*plit)->GetFlow(1);
-  }
-  return true;
-}
 
 void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			 const Flavour &mo,const int mode)
