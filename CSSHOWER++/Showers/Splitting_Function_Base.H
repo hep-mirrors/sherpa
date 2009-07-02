@@ -135,7 +135,7 @@ namespace CSSHOWER {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint;
+    double m_lastint, m_symf;
     int m_on, m_qcd;
     std::vector<Parton*> m_specs;
   public:

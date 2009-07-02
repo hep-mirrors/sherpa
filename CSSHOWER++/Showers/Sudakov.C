@@ -129,8 +129,10 @@ void Sudakov::Add(Splitting_Function_Base * split)
     delete split;
     return;
   }
-  msg_Debugging()<<" -> add\n";
-  if (split->On()) Splitting_Function_Group::Add(split);
+  if (split->On()) {
+    Splitting_Function_Group::Add(split);
+    msg_Debugging()<<" -> add\n";
+  }
   AddToMaps(split,!split->On());
 }
 
@@ -140,9 +142,11 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     delete split;
     return;
   }
-  if (mode) msg_Debugging()<<"\n";
   split->Lorentz()->SetPDF(p_pdf);
-  if (mode) m_addsplittings.push_back(split);
+  if (mode) {
+    m_addsplittings.push_back(split);
+    msg_Debugging()<<"\n";
+  }
   switch(split->GetType()) {
   case cstp::FF:
     m_ffmap[split->GetFlavourB()]

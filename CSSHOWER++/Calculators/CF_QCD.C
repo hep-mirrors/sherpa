@@ -55,7 +55,7 @@ double CF_QCD::Coupling(const double &scale,const int mode)
 {
   if (mode!=0) return 0.0;
   double cpl=(*p_cpl)(m_cplfac*scale)*m_q;
-  if (cpl>m_cplmax.front()) THROW(fatal_error,"CS shower cutoff too low");
+  if (cpl>m_cplmax.front()) return m_cplmax.front();
   return cpl;
 }
 

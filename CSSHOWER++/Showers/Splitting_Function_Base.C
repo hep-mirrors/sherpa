@@ -16,6 +16,7 @@ template class Getter_Function
 #include "MODEL/Interaction_Models/Color_Function.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -53,7 +54,8 @@ Splitting_Function_Base::Splitting_Function_Base():
 }
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
-  p_lf(NULL), p_cf(NULL), m_type(key.m_type), m_on(1), m_qcd(-1)
+  p_lf(NULL), p_cf(NULL), m_type(key.m_type),
+  m_symf(1.0), m_on(1), m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -72,8 +74,12 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_cf->SetLF(p_lf);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
-  msg_Debugging()<<"Init("<<m_on<<") "<<key<<"  "<<typeid(*p_lf).name()
-		 <<"  "<<typeid(*p_cf).name();
+  if (key.p_v->in[1]==key.p_v->in[2] &&
+      (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
+  msg_Debugging()<<"Init("<<m_on<<") "<<key
+		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
+		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
+		 <<"), sf="<<m_symf;
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -86,20 +92,20 @@ double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
-  return (*p_lf)(z,y,eta,scale,Q2,mode);
+  return (*p_lf)(z,y,eta,scale,Q2,mode)/m_symf;
 }
 
 double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj);
+  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf;
   m_lastint+=lastint;
   return lastint;
 }
 
 double Splitting_Function_Base::Overestimated(const double z,const double y)
 {
-  return p_lf->OverEstimated(z,y);
+  return p_lf->OverEstimated(z,y)/m_symf;
 }
 
 double Splitting_Function_Base::Z()
