@@ -405,7 +405,6 @@ namespace ATOOLS {
   {
     if (m_type=='V' || m_type=='D')
       THROW(fatal_error,"Invalid syntax");
-    //return new CTerm(Complex(Get<Complex>().real(),(-1.)*Get<Complex>().imag()));
     return new CTerm(std::conj(Get<Complex>()));
   }
   
