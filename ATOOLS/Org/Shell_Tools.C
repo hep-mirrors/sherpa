@@ -127,7 +127,8 @@ std::string ATOOLS::Demangle(const std::string &name)
 #if __GNUC__
   int s;
   size_t len(name.length());
-  return abi::__cxa_demangle(name.c_str(),0,&len,&s);
+  char *res(abi::__cxa_demangle(name.c_str(),0,&len,&s));
+  return s==0?std::string(res):name;
 #else
   return name;
 #endif
