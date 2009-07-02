@@ -162,10 +162,7 @@ double METS_Scale_Setter::CalculateScale
     }
   }
   if (kt2cmin==std::numeric_limits<double>::max()) {
-    kt2cmin=1.0/(m_p[0]+m_p[1]).Abs2();
-    kt2cmin+=1.0/(m_p[0]+m_p[2]).Abs2();
-    kt2cmin+=1.0/(m_p[0]+m_p[3]).Abs2();
-    kt2cmin=-1.0/kt2cmin;
+    kt2cmin=m_p[2].PPerp2();
   }
   m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,kt2cmin);
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";

@@ -259,10 +259,7 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     }
   }
   if (kt2cmin==std::numeric_limits<double>::max()) {
-    kt2cmin=1.0/(m_p[0]+m_p[1]).Abs2();
-    kt2cmin+=1.0/(m_p[0]+m_p[2]).Abs2();
-    kt2cmin+=1.0/(m_p[0]+m_p[3]).Abs2();
-    kt2cmin=-1.0/kt2cmin;
+    kt2cmin=m_p[2].PPerp2();
   }
   while (ampl->Prev()) ampl=ampl->Prev();
   ampl->Delete();
