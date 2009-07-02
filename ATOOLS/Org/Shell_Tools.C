@@ -6,6 +6,9 @@
 #include <errno.h>
 #include <dirent.h>
 #include <cstdlib>
+#if __GNUC__
+#include <cxxabi.h>
+#endif
 
 #ifdef DEBUG__Shell_Tools
 #include <iostream>
@@ -117,4 +120,15 @@ bool ATOOLS::FileExists(const std::string &file)
   if (stat(file.c_str(),&fst)!=-1)
     return (fst.st_mode&S_IFMT)==S_IFREG;
   return false;
+}
+
+std::string ATOOLS::Demangle(const std::string &name)
+{
+#if __GNUC__
+  int s;
+  size_t len(name.length());
+  return abi::__cxa_demangle(name.c_str(),0,&len,&s);
+#else
+  return name;
+#endif
 }

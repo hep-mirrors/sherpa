@@ -328,7 +328,7 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
       if (!info.dli_sname || !info.dli_sname[0]) symname="<unknown>";
       ostr<<comment<<om::bold<<"   0x"<<std::setiosflags(std::ios::left)
 	  <<std::setw(8)<<std::hex<<symaddr<<std::dec<<om::reset
-	  <<" in   '"<<om::red<<symname<<om::reset
+	  <<" in '"<<om::red<<Demangle(symname)<<om::reset
 	  <<"'\n                from '"<<om::brown<<info.dli_fname
 	  <<om::reset<<"'"<<std::endl;
     } 

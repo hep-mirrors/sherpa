@@ -17,6 +17,8 @@ namespace ATOOLS {
 
   bool FileExists(const std::string &file);
 
+  std::string Demangle(const std::string &name);
+
 }// end of namespace ATOOLS
 
 #endif
