@@ -128,12 +128,12 @@
 (path1){
   PIECE_SETUP hep-ex_0701051.C (jets){ }(jets);
   PATH_PIECE BPATH1/hep-ex_0701051/; LINE_STYLE 1; @@ SUBJ 1;
-  @@ LTITLE Comix #otimes CSS; @@ KFAC 1;
+  @@ LTITLE BTITLE1; @@ KFAC 1;
 }(path1);
 (path2){
   PIECE_SETUP hep-ex_0701051.C (jets){ }(jets);
   PATH_PIECE BPATH2/hep-ex_0701051/; LINE_STYLE 3; @@ SUBJ 0;
-  @@ LTITLE CSS only; @@ KFAC 1;
+  @@ LTITLE BTITLE2; @@ KFAC 1;
 }(path2);
 
 (jets){ 

@@ -102,5 +102,30 @@
 
   } END_ANALYSIS
 
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+
+    PATH_PIECE PHRVA_D50_5562/;
+
+    Trigger {
+      OutList jets; JetMode 10;
+      Finder 93  10. -4. 4. 0.7;
+    }
+   
+    OneEtaSel 93 0 0 -0.7  0.7  jets eta1;
+    OneEtaSel 93 1 0  -0.7  0.7  eta1 jets_eta;
+  
+    OnePTSel 93 0 0 110. 1000.  jets_eta pt1;
+    OnePTSel 93 1 0 10.  1000.  pt1 pt2;
+    OnePTSel 93 2 0 10.  1000.  pt2 pt3;
+
+    TwoDPhiSel 93 0 93 1 160 180 jets pt3 full_cuts;
+
+    JetEta  -4.0 4.0     40  1  1  3  LinErr  full_cuts;
+    JetDR    0. 5.       50  1  1  3  LinErr  full_cuts;
+
+  } END_ANALYSIS;
+
 }(analysis);
 
