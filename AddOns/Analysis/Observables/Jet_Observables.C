@@ -1158,3 +1158,45 @@ double CosPhi_3_Prime::Calc(const Particle * p1,const Particle * p2,
   return cosphi;
 }
 
+DEFINE_OBSERVABLE_GETTER(Jet_Alpha_Distribution,
+                         Jet_Alpha_Distribution_Getter,"JetAlpha")
+
+Jet_Alpha_Distribution::Jet_Alpha_Distribution(unsigned int type,double
+xmin,
+                                               double xmax,int nbins,
+                                               unsigned int mode,
+                                               unsigned int minn,
+                                               unsigned int maxn,
+                                               const std::string & lname)
+  : Two_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) {
+  m_name+="Alpha_";
+}
+
+Primitive_Observable_Base * Jet_Alpha_Distribution::Copy() const
+{
+  Jet_Alpha_Distribution * ja =
+    new 
+    Jet_Alpha_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  for (unsigned int i=0;i<m_maxn;i++) 
+    ja->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
+  return ja;
+}
+
+double Jet_Alpha_Distribution::Calc(const Particle* p1, const Particle* p2,
+                                    const int jet1, const int jet2) {
+  Vec4D mom1=p1->Momentum();
+  Vec4D mom2=p2->Momentum(); 
+
+  double dH = mom1.Eta()/fabs(mom1.Eta())*(mom2.Eta()-mom1.Eta());
+
+  double pt1  = mom1.PPerp();
+  double pt2  = mom2.PPerp();
+  if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
+      pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
+  double dphi = acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+
+  double deta = mom1.Eta()-mom2.Eta();
+  double R = sqrt(sqr(deta) + sqr(dphi));
+  if (R>1.1 && R<M_PI) return atan(dH/dphi)/M_PI*180.;
+  else return -500.;
+}
