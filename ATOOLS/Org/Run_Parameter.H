@@ -37,7 +37,7 @@ namespace ATOOLS {
       Vec4D m_pbeam[2];
       MyTiming m_timer;
       double m_timeout;
-      bool m_batchmode;
+      int m_batchmode;
       std::string m_username;
       bool m_spincorrelations;
     public:
@@ -64,7 +64,7 @@ namespace ATOOLS {
       inline void      SetTimeOut(const long int timeout) { m_timeout=timeout;  }
       inline double    TimeOut()                          { return m_timeout;   }
       inline MyTiming &Timer()                            { return m_timer;     }
-      inline bool   BatchMode()                           { return m_batchmode; }
+      inline int    BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
       inline const std::string &UserName() { return m_username; }
