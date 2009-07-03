@@ -30,12 +30,12 @@
 (alpha3){
   PIECE_SETUP PHRVA_D50_5562.C (dpaths){ }(dpaths);
   PIECE_SETUP PHRVA_D50_5562.C (dpathsd){ }(dpathsd);
-  FILE_PIECE full_cuts_jet_1_1_Alpha_3.dat;
+  FILE_PIECE full_cuts_alpha_jet_1_1_Alpha_3.dat;
   X_MIN -90; X_MAX 90;
   @@ YMIN 0.00001; @@ YMAX 0.06; @@ DYMIN -0.25; @@ DYMAX 0.25;
   LEG_DELTA_Y 0.05;
   X_AXIS_TITLE #alpha_{3}; Y_AXIS_TITLE 1/#sigma d#sigma/d#alpha_{3};
-  @@ RPARAM ADOPT_BINS ./data/PHRVA_D50_5562/full_cuts_jet_1_1_Alpha_3.dat;
+  @@ RPARAM ADOPT_BINS ./data/PHRVA_D50_5562/full_cuts_alpha_jet_1_1_Alpha_3.dat;
   HISTOGRAM_NAME Alpha_3; @@ BINSIZE 2*2.25
   WEBPAGE_CAPTION &alpha\;<sub>3</sub>;
 }(alpha3);
