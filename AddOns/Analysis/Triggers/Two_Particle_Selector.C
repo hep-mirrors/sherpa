@@ -551,7 +551,7 @@ Two_DR_Selector(const ATOOLS::Flavour flav,const size_t item,
 
 bool Two_DR_Selector::Select(const Particle *p1,const Particle *p2) const
 {
-  double dr=(sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
+  double dr=sqrt(sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
 	     sqr(p1->Momentum().DPhi(p2->Momentum())));
   if (dr<m_xmin || dr>m_xmax) return false;
   return true;

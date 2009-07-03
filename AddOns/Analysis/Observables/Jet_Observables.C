@@ -1195,8 +1195,5 @@ double Jet_Alpha_Distribution::Calc(const Particle* p1, const Particle* p2,
       pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
   double dphi = acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
 
-  double deta = mom1.Eta()-mom2.Eta();
-  double R = sqrt(sqr(deta) + sqr(dphi));
-  if (R>1.1 && R<M_PI) return atan(dH/dphi)/M_PI*180.;
-  else return -500.;
+  return atan(dH/dphi)/M_PI*180.;
 }
