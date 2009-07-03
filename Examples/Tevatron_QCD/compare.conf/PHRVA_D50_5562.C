@@ -25,7 +25,7 @@
   X_AXIS_TITLE #eta_{3}; Y_AXIS_TITLE 1/#sigma d#sigma/d#eta_{3};
   @@ RPARAM ADOPT_BINS ./data/PHRVA_D50_5562/full_cuts_jet_1_1_eta_3.dat;
   HISTOGRAM_NAME Eta_3; @@ BINSIZE 2*0.095;
-  WEBPAGE_CAPTION &eta\;<sub>3</sub>\;;
+  WEBPAGE_CAPTION &eta\;<sub>3</sub>;
 }(eta3);
 (alpha3){
   PIECE_SETUP PHRVA_D50_5562.C (dpaths){ }(dpaths);
@@ -37,7 +37,7 @@
   X_AXIS_TITLE #alpha_{3}; Y_AXIS_TITLE 1/#sigma d#sigma/d#alpha_{3};
   @@ RPARAM ADOPT_BINS ./data/PHRVA_D50_5562/full_cuts_jet_1_1_Alpha_3.dat;
   HISTOGRAM_NAME Alpha_3; @@ BINSIZE 2*2.25
-  WEBPAGE_CAPTION &alpha\;<sub>3</sub>\;;
+  WEBPAGE_CAPTION &alpha\;<sub>3</sub>;
 }(alpha3);
 (dr3){
   PIECE_SETUP PHRVA_D50_5562.C (dpaths){ }(dpaths);
@@ -49,7 +49,7 @@
   X_AXIS_TITLE R; Y_AXIS_TITLE 1/#sigma d#sigma/dR;
   @@ RPARAM ADOPT_BINS ./data/PHRVA_D50_5562/full_cuts_jet_1_1_dR2_3.dat;
   HISTOGRAM_NAME DR_23; @@ BINSIZE 2*0.0625;
-  WEBPAGE_CAPTION &Delta\;R<sub>23</sub>\;;
+  WEBPAGE_CAPTION &Delta\;R<sub>23</sub>;
 }(dr3);
 
 (dpaths){

@@ -28,9 +28,9 @@
   @@ YSFAC 0.001;
   Y_AXIS_TITLE d#sigma / dE_{#perp }^{jet}d#eta^{jet} #left[ fb/GeV #right]
   HISTOGRAM_NAME Jet_ET;
-  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION Jet E<sub>T</sub>;
+  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION E<sub>T,jet</sub>;
   LEG_LEFT 0.65; LEG_RIGHT 0.85; LEG_TOP 0.925; LEG_TEXT_SIZE 0.03;
-  WATERMARK K_{T }\, D = 0.7 | COLOUR 1 SIZE 0.03 LEFT 0.25 TOP 0.9 ALIGN 13\;;
+  WATERMARK Cone\, D = 0.7 | COLOUR 1 SIZE 0.03 LEFT 0.25 TOP 0.9 ALIGN 13\;;
   WATERMARK \\\|y^{jet }\\\|<0.5 (x10^{6 }) | COLOUR 1 SIZE 0.025 LEFT 0.8 TOP 0.55 ALIGN 22\;;
   WATERMARK 0.5<\\\|y^{jet }\\\|<1.0 (x10^{3 }) | COLOUR 1 SIZE 0.025 LEFT 0.775 TOP 0.425 ALIGN 22\;;
   WATERMARK 1.0<\\\|y^{jet }\\\|<1.5 | COLOUR 1 SIZE 0.025 LEFT 0.625 TOP 0.3 ALIGN 22\;;
@@ -52,9 +52,9 @@
   @@ YSFAC 0.001;
   Y_AXIS_TITLE d#sigma / dE_{#perp }^{jet}d#eta^{jet} #left[ fb/GeV #right]
   HISTOGRAM_NAME Jet_ET;
-  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION Jet E<sub>T</sub>;
+  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION log(E<sub>T,jet</sub>);
   LEG_LEFT 0.65; LEG_RIGHT 0.85; LEG_TOP 0.95; LEG_TEXT_SIZE 0.03;
-  WATERMARK K_{T }\, D = 0.7 | COLOUR 1 SIZE 0.03 LEFT 0.35 TOP 0.925 ALIGN 13\;;
+  WATERMARK Cone\, D = 0.7 | COLOUR 1 SIZE 0.03 LEFT 0.35 TOP 0.925 ALIGN 13\;;
   WATERMARK \\\|y^{jet }\\\|<0.5 (x10^{6 }) | COLOUR 1 SIZE 0.025 LEFT 0.825 TOP 0.55 ALIGN 22\;;
   WATERMARK 0.5<\\\|y^{jet }\\\|<1.0 (x10^{3 }) | COLOUR 1 SIZE 0.025 LEFT 0.825 TOP 0.4375 ALIGN 22\;;
   WATERMARK 1.0<\\\|y^{jet }\\\|<1.5 | COLOUR 1 SIZE 0.025 LEFT 0.79 TOP 0.325 ALIGN 22\;;
@@ -128,12 +128,16 @@
 (path1){
   PIECE_SETUP hep-ex_0011036.C (jets){ }(jets);
   PATH_PIECE BPATH1/hep-ex_0011036/; LINE_STYLE 1; @@ SUBJ 1;
-  @@ LTITLE BTITLE1; @@ KFAC 1;
+  @@ KFAC BKF1;
+  if (BKF1!=1) @@ LTITLE BTITLE1 (x KFAC);
+  else @@ LTITLE BTITLE1;
 }(path1);
 (path2){
   PIECE_SETUP hep-ex_0011036.C (jets){ }(jets);
   PATH_PIECE BPATH2/hep-ex_0011036/; LINE_STYLE 3; @@ SUBJ 0;
-  @@ LTITLE BTITLE2; @@ KFAC 1;
+  @@ KFAC BKF2;
+  if (BKF2!=1) @@ LTITLE BTITLE2 (x KFAC);
+  else @@ LTITLE BTITLE2;
 }(path2);
 
 (jets){ 
@@ -181,12 +185,12 @@
 (dptall){
   PIECE_SETUP hep-ex_0011036.C (dyranges){ }(dyranges);
   X_MIN 0.001; X_MAX 799.999;
-  X_AXIS_TITLE k_{#perp }^{jet} #left[ GeV #right]
+  X_AXIS_TITLE E_{#perp }^{jet} #left[ GeV #right]
   Y_MIN -0.999; Y_MAX 0.999; Y_SCALING Id;
   @@ YSFAC 1000;
   Y_AXIS_TITLE d#sigma_{th} / d#sigma_{exp} - 1;
   HISTOGRAM_NAME Jet_ET_D;
-  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION Jet E<sub>T</sub>;
+  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION E<sub>T,jet</sub> (diff);
   LEG_LEFT 0.65; LEG_RIGHT 0.85; LEG_TOP 0.95; LEG_TEXT_SIZE 0.03;
   Y_AXIS_NDIVISIONS 305; Y_AXIS_LABEL_SIZE 0.04;
   X_TITLE_OFFSET 1.1; Y_TITLE_OFFSET 1.6; 
@@ -198,12 +202,12 @@
 (dlogptall){
   PIECE_SETUP hep-ex_0011036.C (dyranges){ }(dyranges);
   X_MIN 45; X_MAX 1500; X_SCALING Log_B_10;
-  X_AXIS_TITLE k_{#perp }^{jet} #left[ GeV #right]
+  X_AXIS_TITLE E_{#perp }^{jet} #left[ GeV #right]
   Y_MIN -0.999; Y_MAX 0.999; Y_SCALING Id;
   @@ YSFAC 1000;
   Y_AXIS_TITLE d#sigma_{th} / d#sigma_{exp} - 1;
   HISTOGRAM_NAME Jet_ET_D;
-  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION Jet E<sub>T</sub>;
+  FIGURE_CAPTION Jet $E_T$; WEBPAGE_CAPTION log(E<sub>T,jet</sub>) (diff);
   LEG_LEFT 0.65; LEG_RIGHT 0.85; LEG_TOP 0.95; LEG_TEXT_SIZE 0.03;
   Y_AXIS_NDIVISIONS 305; Y_AXIS_LABEL_SIZE 0.04;
   X_TITLE_OFFSET 1.1; Y_TITLE_OFFSET 1.6; 

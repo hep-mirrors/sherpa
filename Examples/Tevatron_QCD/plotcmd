@@ -4,5 +4,5 @@
 ## to initialize the data sets run
 ##   for i in data/*; do if test -f $i/mod_data; then cd $i; chmod 755 mod_data; ./mod_data; cd -; fi; done
 
-Compare -O1 -BAll -T"BPATH1 c_2j_20gev_1; BPATH2 c_ps_1;" \
+Compare -O1 -BAll -T"BPATH1 c_2j_20gev_1; BKF1 1; BPATH2 c_ps_1; BKF2 1;" \
   -T"BTITLE1 Comix \#otimes CSS; BTITLE2 CSS only;"
