@@ -142,7 +142,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     delete split;
     return;
   }
-  split->Lorentz()->SetPDF(p_pdf);
+  split->SetPDF(p_pdf);
   if (mode) {
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";

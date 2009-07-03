@@ -81,7 +81,6 @@ namespace CSSHOWER {
 }
 
 #include "ATOOLS/Math/Random.H"
-#include "PDF/Main/PDF_Base.H"
 
 using namespace CSSHOWER;
 using namespace PDF;
@@ -171,12 +170,8 @@ double LF_VVV_FI::Z()
 
 double LF_VVV_FI::J(const double y,const double eta,const double scale)
 { 
-  if (scale<sqr(p_ms->Mass(m_flspec)) ||
-      scale<p_pdf[m_beam]->Q2Min() || eta/(1.-y)>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/(1.-y),scale*p_cf->CplFac());
-  double fresh = p_pdf[m_beam]->GetXPDF(m_flspec);
-  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
-  double old = p_pdf[m_beam]->GetXPDF(m_flspec);
+  double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return (1.-y) * fresh/old;
 }
@@ -224,12 +219,10 @@ double LF_VVV_IF::Z()
 	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
 }
 
-double LF_VVV_IF::J(const double z,const double eta,const double scale) { 
-  if (scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/z,scale*p_cf->CplFac());
-  double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
-  double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
+double LF_VVV_IF::J(const double z,const double eta,const double scale)
+{ 
+  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
@@ -264,11 +257,8 @@ double LF_VVV_II::Z()
 
 double LF_VVV_II::J(const double z,const double eta,const double scale)
 { 
-  if (scale<p_pdf[m_beam]->Q2Min() || eta/z>1.)   return 0.;
-  p_pdf[m_beam]->Calculate(eta/z,scale*p_cf->CplFac());
-  double fresh = p_pdf[m_beam]->GetXPDF(m_flavs[0]);
-  p_pdf[m_beam]->Calculate(eta,scale*p_cf->CplFac());
-  double old = p_pdf[m_beam]->GetXPDF(m_flavs[1]);
+  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }

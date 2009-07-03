@@ -47,6 +47,8 @@ namespace CSSHOWER {
 
   std::ostream &operator<<(std::ostream &str,const SF_Key &k);
 
+  class Splitting_Function_Base;
+
   class SF_Lorentz {
   protected:
 
@@ -54,7 +56,8 @@ namespace CSSHOWER {
     ATOOLS::Mass_Selector *&p_ms;
 
     SF_Coupling *p_cf;
-    PDF::PDF_Base **p_pdf;
+
+    Splitting_Function_Base *p_sf;
 
     double m_zmin, m_zmax;
     int m_beam;
@@ -85,9 +88,11 @@ namespace CSSHOWER {
 
     inline void SetFlSpec(const ATOOLS::Flavour &s) { m_flspec=s; }
 
-    inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
-
     inline void SetBeam(const int beam) { m_beam=beam; }
+
+    inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
+
+    inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
   };
 
@@ -135,9 +140,10 @@ namespace CSSHOWER {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint, m_symf;
+    double m_lastint, m_symf, m_lpdf;
     int m_on, m_qcd;
     std::vector<Parton*> m_specs;
+    PDF::PDF_Base **p_pdf;
   public:
 
     Splitting_Function_Base();
@@ -164,6 +170,10 @@ namespace CSSHOWER {
     virtual void ResetLastInt();
     virtual void ClearSpecs();
 
+    double GetXPDF(const double &scale,const double &x,
+		   const ATOOLS::Flavour &a,const int beam,
+		   const int mode=0);
+
     Parton *SelectSpec() const;
     bool PureQCD() const;
 
@@ -178,6 +188,8 @@ namespace CSSHOWER {
 
     inline SF_Lorentz  *Lorentz() const  { return p_lf; }
     inline SF_Coupling *Coupling() const { return p_cf; }
+
+    inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

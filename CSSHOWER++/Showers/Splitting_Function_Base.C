@@ -15,6 +15,7 @@ template class Getter_Function
 #include "MODEL/Interaction_Models/Lorentz_Function.H"
 #include "MODEL/Interaction_Models/Color_Function.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
@@ -72,6 +73,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
     return;
   }
   p_cf->SetLF(p_lf);
+  p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
   if (key.p_v->in[1]==key.p_v->in[2] &&
@@ -130,6 +132,21 @@ Parton *Splitting_Function_Base::SelectSpec() const
 void Splitting_Function_Base::ClearSpecs()
 {
   m_specs.clear();
+}
+
+double Splitting_Function_Base::GetXPDF
+(const double &scale,const double &x,const ATOOLS::Flavour &a,
+ const int beam,const int mode)
+{
+  if (p_pdf[beam]==NULL) return 0.0;
+  if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
+  double Q2(scale*p_cf->CplFac());
+  if (Q2<p_lf->MS()->Mass2(a) ||
+      x<p_pdf[beam]->XMin() || x>p_pdf[beam]->XMax() ||
+      Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())
+    return m_lpdf=-1.0;
+  p_pdf[beam]->Calculate(x,Q2);
+  return m_lpdf=p_pdf[beam]->GetXPDF(a);
 }
 
 void Splitting_Function_Base::ResetLastInt()
