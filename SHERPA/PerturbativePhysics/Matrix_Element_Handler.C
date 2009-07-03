@@ -520,7 +520,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
     std::string sfile(cpi.m_selectorfile!=""?cpi.m_selectorfile:selfile);
     while (sfile[sfile.length()-1]==' ') sfile.erase(sfile.length()-1,1);
     skey.ReadData(m_path,sfile);
-    if (pi.m_ckkw&1 && i>0) {
+    if (pi.m_ckkw&1) {
       std::vector<std::string> jfargs(2,gycut);
       GetMPvalue(vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
@@ -530,7 +530,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
       cpi.m_kfactor="QCD";
-      if (i>0) cpi.m_mur2tag=
+      cpi.m_mur2tag=
 	p_shower->GetShower()->GetKT2("Q2_CUT");
     }
     procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);
