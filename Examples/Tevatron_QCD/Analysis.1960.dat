@@ -1,6 +1,39 @@
 (analysis){
 
   BEGIN_ANALYSIS {
+
+    LEVEL Shower;
+  
+    PATH_PIECE arXiv_08022400/
+
+    Detector {
+      InList  FinalState; OutList Detected
+      HadCal  -4.1 4.1 82 64
+    }
+  
+    Trigger {
+      InList Detected; OutList ConeJets
+      Finder 93 1.0 -4.0 4.0 0.7 1 0.5;
+      JetMode 10;
+    }
+
+    AbsYSel 0.0 0.4 ConeJets ConeJets_0.0-0.4;
+    AbsYSel 0.4 0.8 ConeJets ConeJets_0.4-0.8;
+    AbsYSel 0.8 1.2 ConeJets ConeJets_0.8-1.2;
+    AbsYSel 1.2 1.6 ConeJets ConeJets_1.2-1.6;
+    AbsYSel 1.6 2.0 ConeJets ConeJets_1.6-2.0;
+    AbsYSel 2.0 2.4 ConeJets ConeJets_2.0-2.4;
+
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_0.0-0.4;
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_0.4-0.8;
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_0.8-1.2;
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_1.2-1.6;
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_1.6-2.0;
+    JetPT 0 600 300 1 1 3 LinErr ConeJets_2.0-2.4;
+
+  } END_ANALYSIS;
+
+  BEGIN_ANALYSIS {
   
     LEVEL Shower;
 
