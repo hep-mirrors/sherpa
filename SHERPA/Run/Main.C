@@ -54,8 +54,8 @@ int main(int argc,char* argv[])
 		    <<int((nevt-i)/(double)i*diff)
 		    <<" s left ) -> ETA: "<<ATOOLS::rpa.gen.Timer().
 	    StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-	  if (ATOOLS::rpa.gen.BatchMode()&2) msg_Info()<<std::endl;
-	  else msg_Info()<<ATOOLS::bm::cr<<std::flush;
+	  if (ATOOLS::rpa.gen.BatchMode()&2) { msg_Info()<<std::endl; }
+	  else { msg_Info()<<ATOOLS::bm::cr<<std::flush; }
 	}
 	if (Generator->GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
