@@ -111,3 +111,14 @@ void Single_Process::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;
 }
+
+bool Single_Process::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  return true;
+}
+
+Flavour Single_Process::CombinedFlavour(const size_t &idij)
+{
+  return Flavour(kf_none);
+}

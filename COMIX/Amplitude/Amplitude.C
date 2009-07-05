@@ -120,6 +120,8 @@ void Amplitude::CleanUp()
   m_ress=QComplex_Vector();
   m_dirs=Int_Vector();
   m_cchirs=LongUIntMap_Matrix();
+  m_combs.clear();
+  m_flavs.clear();
 }
 
 bool Amplitude::MatchIndices(const Int_Vector &ids,const size_t &n,
@@ -327,6 +329,7 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
       }
+  FillCombinations();
   msg_Debugging()<<METHOD<<"(): Amplitude statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
   size_t csum(0), vsum(0);
@@ -341,6 +344,41 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
   msg_Debugging()<<std::left<<"} -> "<<csum<<" currents, "
 		 <<vsum<<" vertices"<<std::endl;
   return true;
+}
+
+void Amplitude::FillCombinations()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<"  flavours {\n";
+  for (size_t i(2);i<m_n-1;++i)
+    for (size_t j(0);j<m_cur[i].size();++j) {
+      size_t id(m_cur[i][j]->CId());
+      m_flavs[id]=m_cur[i][j]->Flav();
+      m_flavs[(1<<m_n)-1-id]=m_cur[i][j]->Flav().Bar();
+      msg_Debugging()<<"    "<<ID(id)<<" / "<<ID((1<<m_n)-1-id)
+		     <<" -> "<<m_cur[i][j]->Flav()<<"\n";
+    }
+  msg_Debugging()<<"  } -> "<<m_flavs.size()<<"\n";
+  msg_Debugging()<<"  combinations {\n";
+  for (size_t i(2);i<m_n;++i)
+    for (size_t j(0);j<m_cur[i].size();++j) {
+      Vertex_Vector ins(m_cur[i][j]->In());
+      for (size_t k(0);k<ins.size();++k) {
+	size_t ida(ins[k]->JA()->CId());
+	size_t idb(ins[k]->JB()->CId());
+	size_t idc((1<<m_n)-1-ins[k]->JC()->CId());
+	msg_Debugging()<<"    "<<ID(ida)
+		       <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+	m_combs.insert(std::pair<size_t,size_t>(ida,idb));
+	m_combs.insert(std::pair<size_t,size_t>(idb,ida));
+	m_combs.insert(std::pair<size_t,size_t>(idb,idc));
+	m_combs.insert(std::pair<size_t,size_t>(idc,idb));
+	m_combs.insert(std::pair<size_t,size_t>(idc,ida));
+	m_combs.insert(std::pair<size_t,size_t>(ida,idc));
+      }
+    }
+  msg_Debugging()<<"  } -> "<<m_combs.size()<<"\n";
+  msg_Debugging()<<"}\n";
 }
 
 bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
@@ -659,6 +697,20 @@ bool Amplitude::Construct(const Int_Vector &incs,
 #endif
   }
   return true;
+}
+
+bool Amplitude::Combinable(const size_t &idi,const size_t &idj) const
+{
+  Comb_Set::const_iterator 
+    cit(m_combs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_combs.end();
+}
+
+ATOOLS::Flavour Amplitude::CombinedFlavour(const size_t &idij) const
+{
+  Flav_Map::const_iterator fit(m_flavs.find(idij));
+  if (fit==m_flavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
 }
 
 void Amplitude::SetGauge(const size_t &n)

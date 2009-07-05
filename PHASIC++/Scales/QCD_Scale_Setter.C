@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Scales/Tag_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -55,6 +56,8 @@ namespace PHASIC {
   class QCD_Setter_CS_CD {
   private:
 
+    Single_Process *p_proc;
+
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
 		     const ATOOLS::Cluster_Leg *lk);
@@ -63,7 +66,10 @@ namespace PHASIC {
 				  const ATOOLS::Cluster_Leg *lk);
 
   public:
-    
+
+    inline QCD_Setter_CS_CD(Single_Process *const proc):
+      p_proc(proc) {}
+
     CS_Params KT2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k);
 
@@ -155,7 +161,7 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
   double kt2max(0.0);
-  QCD_Setter_CS_CD cd;
+  QCD_Setter_CS_CD cd(p_proc->Get<Single_Process>());
   std::set<CKey> trials;
   while (ampl->Legs().size()>4) {
     double kt2w(std::numeric_limits<double>::max());
@@ -301,8 +307,7 @@ CS_Params QCD_Setter_CS_CD::KT2
 {
   static const CS_Params nd(std::numeric_limits<double>::max(),0.0,0.0,-1);
   const Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
-  if (!(li->Flav().IsGluon() || lj->Flav().IsGluon() ||
-	li->Flav()==lj->Flav().Bar())) return nd;
+  if (!p_proc->Combinable(li->Id(),lj->Id())) return nd;
   if (!CheckColors(li,lj,lk)) return nd;
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
   if ((li->Id()&3)==0) {
@@ -384,15 +389,8 @@ void QCD_Setter_CS_CD::Combine
     lk->SetMom(pb);
   }
   li->SetCol(CombineColors(li,lj,lk));
-  if (li->Flav().IsQuark()) {
-    if (lj->Flav()==li->Flav().Bar()) 
-      li->SetFlav(Flavour(kf_gluon));
-  }
-  else {
-    if (lj->Flav().IsQuark())
-      li->SetFlav(lj->Flav());
-  }
   li->SetId(li->Id()+lj->Id());
+  li->SetFlav(p_proc->CombinedFlavour(li->Id()));
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();
@@ -406,35 +404,42 @@ bool QCD_Setter_CS_CD::CheckColors
   if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
   if (li->Flav().StrongCharge()==3) {
     if (lj->Flav().StrongCharge()==-3) {
+      if (lk->Flav().StrongCharge()==0) return true;
       if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
     }
     else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
       if (ci.m_i==cj.m_j && 
 	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
       if ((ci.m_i==ck.m_j || ck.Singlet()) && 
 	  cj.Singlet()) return true;
     }
     else {
-      return false;
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
     }
   }
   else if (li->Flav().StrongCharge()==-3) {
     if (lj->Flav().StrongCharge()==3) {
+      if (lk->Flav().StrongCharge()==0) return true;
       if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
 	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
     }
     else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
       if (ci.m_j==cj.m_i && 
 	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
       if ((ci.m_j==ck.m_i || ck.Singlet()) && 
 	  cj.Singlet()) return true;
     }
     else {
-      return false;
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
     }
   }
   else if (li->Flav().StrongCharge()==8) {
+    if (lk->Flav().StrongCharge()==0) return false;
     if (lj->Flav().StrongCharge()==8) {
       if (ci.m_i==cj.m_j && 
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
@@ -461,6 +466,13 @@ bool QCD_Setter_CS_CD::CheckColors
       return false;
     }
   }
+  else {
+    if (lj->Flav().StrongCharge()==8 ||
+	lk->Flav().StrongCharge()==8) {
+      return false;
+    }
+    return true;
+  }
   return false;
 }
 
@@ -477,7 +489,7 @@ ColorID QCD_Setter_CS_CD::CombineColors
       return ColorID(cj.m_i,0);
     }
     else {
-      THROW(fatal_error,"Invalid combination");
+      return ColorID(ci.m_i,0);
     }
   }
   else if (li->Flav().StrongCharge()==-3) {
@@ -489,7 +501,7 @@ ColorID QCD_Setter_CS_CD::CombineColors
       return ColorID(0,cj.m_j);
     }
     else {
-      THROW(fatal_error,"Invalid combination");
+      return ColorID(0,ci.m_j);
     }
   }
   else if (li->Flav().StrongCharge()==8) {
@@ -514,6 +526,17 @@ ColorID QCD_Setter_CS_CD::CombineColors
     }
     else {
       THROW(fatal_error,"Invalid combination");
+    }
+  }
+  else {
+    if (lj->Flav().StrongCharge()==3) {
+      return ColorID(cj.m_i,0);
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      return ColorID(0,cj.m_j);
+    }
+    else {
+      return ColorID(0,0);
     }
   }
   return ColorID();

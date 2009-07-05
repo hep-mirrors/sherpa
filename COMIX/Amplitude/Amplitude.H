@@ -26,6 +26,9 @@ namespace COMIX {
 
   typedef std::vector<long unsigned int> LongInt_Vector;
 
+  typedef std::set<std::pair<size_t,size_t> > Comb_Set;
+  typedef std::map<size_t,ATOOLS::Flavour>    Flav_Map;
+
 #ifdef USING__Threading
   class Amplitude;
 
@@ -74,6 +77,9 @@ namespace COMIX {
 
     LongUIntMap_Matrix m_cchirs;
 
+    Comb_Set m_combs;
+    Flav_Map m_flavs;
+
 #ifdef USING__Threading 
     CDBG_ME_TID_Vector m_cts;
 
@@ -84,6 +90,7 @@ namespace COMIX {
     static Int_Vector MakeId(const size_t &id,const size_t &n);
 
     void CleanUp();
+    void FillCombinations();
 
     int  CheckDecay(const ATOOLS::Flavour &fl,const Int_Vector &ids) const;
     bool MatchIndices(const Int_Vector &ids,const size_t &n,
@@ -127,6 +134,10 @@ namespace COMIX {
     void SetMomenta(const Vec4D_Vector &moms);
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const bool set=false);
+
+    bool Combinable(const size_t &idi,const size_t &idj) const;
+
+    ATOOLS::Flavour CombinedFlavour(const size_t &idij) const;
 
     void WriteOutGraphs(const std::string &file) const;
 

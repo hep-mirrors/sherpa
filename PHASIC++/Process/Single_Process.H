@@ -25,7 +25,12 @@ namespace PHASIC {
 
     bool CalculateTotalXSec(const std::string &resultpath,
 			    const bool create);
-    virtual void SetLookUp(const bool lookup);
+    void SetLookUp(const bool lookup);
+
+    virtual bool Combinable(const size_t &idi,
+			    const size_t &idj);
+    virtual ATOOLS::Flavour 
+    CombinedFlavour(const size_t &idij);
 
   };// end of class Single_Process
 

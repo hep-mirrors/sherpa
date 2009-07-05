@@ -320,3 +320,17 @@ void COMIX::Single_Process::SetKFactorOn(const bool on)
   PHASIC::Single_Process::SetKFactorOn(on);
   if (p_map) p_map->SetKFactorOn(on);
 }
+
+bool COMIX::Single_Process::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  if (p_map) return p_map->Combinable(idi,idj);
+  return p_bg->GetAmplitude()->Combinable(idi,idj);
+}
+
+Flavour COMIX::Single_Process::
+CombinedFlavour(const size_t &idij)
+{
+  if (p_map) return ReMap(p_map->CombinedFlavour(idij));
+  return p_bg->GetAmplitude()->CombinedFlavour(idij);
+}

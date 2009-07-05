@@ -51,6 +51,10 @@ namespace COMIX {
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void UpdateIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
+    bool Combinable(const size_t &idi,const size_t &idj);
+
+    ATOOLS::Flavour CombinedFlavour(const size_t &idij);
+
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl) const;
 
   };// end of class Single_Process
