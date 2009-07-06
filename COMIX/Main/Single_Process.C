@@ -1,7 +1,6 @@
 #include "COMIX/Main/Single_Process.H"
 
 #include "COMIX/Main/Process_Group.H"
-#include "COMIX/Amplitude/Matrix_Element.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -328,9 +327,16 @@ bool COMIX::Single_Process::Combinable
   return p_bg->GetAmplitude()->Combinable(idi,idj);
 }
 
-Flavour COMIX::Single_Process::
+const Flavour_Vector &COMIX::Single_Process::
 CombinedFlavour(const size_t &idij)
 {
-  if (p_map) return ReMap(p_map->CombinedFlavour(idij));
+  if (p_map) {
+    CFlavVector_Map::const_iterator fit(m_cfmap.find(idij));
+    if (fit!=m_cfmap.end()) return fit->second;
+    Flavour_Vector cf(p_map->CombinedFlavour(idij));
+    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i]);
+    m_cfmap[idij]=cf;
+    return m_cfmap[idij];
+  }
   return p_bg->GetAmplitude()->CombinedFlavour(idij);
 }

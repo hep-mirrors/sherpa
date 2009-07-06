@@ -118,7 +118,9 @@ bool Single_Process::Combinable
   return true;
 }
 
-Flavour Single_Process::CombinedFlavour(const size_t &idij)
+const Flavour_Vector &Single_Process::
+CombinedFlavour(const size_t &idij)
 {
-  return Flavour(kf_none);
+  static Flavour_Vector fls(1,kf_none);
+  return fls;
 }

@@ -29,7 +29,7 @@ namespace PHASIC {
 
     virtual bool Combinable(const size_t &idi,
 			    const size_t &idj);
-    virtual ATOOLS::Flavour 
+    virtual const ATOOLS::Flavour_Vector &
     CombinedFlavour(const size_t &idij);
 
   };// end of class Single_Process

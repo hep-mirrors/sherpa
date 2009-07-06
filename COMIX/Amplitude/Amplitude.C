@@ -353,8 +353,8 @@ void Amplitude::FillCombinations()
   for (size_t i(2);i<m_n-1;++i)
     for (size_t j(0);j<m_cur[i].size();++j) {
       size_t id(m_cur[i][j]->CId());
-      m_flavs[id]=m_cur[i][j]->Flav();
-      m_flavs[(1<<m_n)-1-id]=m_cur[i][j]->Flav().Bar();
+      m_flavs[id].push_back(m_cur[i][j]->Flav());
+      m_flavs[(1<<m_n)-1-id].push_back(m_cur[i][j]->Flav().Bar());
       msg_Debugging()<<"    "<<ID(id)<<" / "<<ID((1<<m_n)-1-id)
 		     <<" -> "<<m_cur[i][j]->Flav()<<"\n";
     }
@@ -701,14 +701,15 @@ bool Amplitude::Construct(const Int_Vector &incs,
 
 bool Amplitude::Combinable(const size_t &idi,const size_t &idj) const
 {
-  Comb_Set::const_iterator 
+  Combination_Set::const_iterator 
     cit(m_combs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_combs.end();
 }
 
-ATOOLS::Flavour Amplitude::CombinedFlavour(const size_t &idij) const
+const ATOOLS::Flavour_Vector &
+Amplitude::CombinedFlavour(const size_t &idij) const
 {
-  Flav_Map::const_iterator fit(m_flavs.find(idij));
+  CFlavVector_Map::const_iterator fit(m_flavs.find(idij));
   if (fit==m_flavs.end()) THROW(fatal_error,"Invalid request");
   return fit->second;
 }

@@ -390,7 +390,13 @@ void QCD_Setter_CS_CD::Combine
   }
   li->SetCol(CombineColors(li,lj,lk));
   li->SetId(li->Id()+lj->Id());
-  li->SetFlav(p_proc->CombinedFlavour(li->Id()));
+  const Flavour_Vector &cf(p_proc->CombinedFlavour(li->Id()));
+  li->SetFlav(cf.front());
+  for (size_t i(0);i<cf.size();++i)
+    if (cf[i].Strong()) {
+      li->SetFlav(cf[i]);
+      break;
+    }
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();

@@ -3,6 +3,7 @@
 
 #include "COMIX/Main/Process_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "COMIX/Amplitude/Matrix_Element.H"
 
 namespace COMIX {
 
@@ -17,6 +18,8 @@ namespace COMIX {
 
     ATOOLS::Vec4D_Vector m_p;
     ATOOLS::Flavour_Map  m_fmap;
+
+    CFlavVector_Map m_cfmap;
 
     double m_etime, m_en;
 
@@ -53,7 +56,7 @@ namespace COMIX {
 
     bool Combinable(const size_t &idi,const size_t &idj);
 
-    ATOOLS::Flavour CombinedFlavour(const size_t &idij);
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl) const;
 

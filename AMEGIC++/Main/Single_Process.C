@@ -922,3 +922,76 @@ void AMEGIC::Single_Process::SetKFactorOn(const bool on)
   PHASIC::Single_Process::SetKFactorOn(on);
   if (p_partner!=this) p_partner->SetKFactorOn(on);
 }
+
+void AMEGIC::Single_Process::FillCombinations
+(Point *const p,size_t &id)
+{
+  if (p->middle) return;
+  if (p->left==NULL || p->right==NULL) {
+    id=1<<p->number;
+    return;
+  }
+  size_t ida(id), idb(id);
+  FillCombinations(p->left,ida);
+  FillCombinations(p->right,idb);
+  id=ida+idb;
+  size_t idc((1<<(m_nin+m_nout))-1-id);
+  msg_Debugging()<<"  comb "<<ID(ida)
+		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
+  if (idc!=1) {
+    bool in(false);
+    Flavour_Vector cf(m_cflavs[idc]);
+    for (size_t i(0);i<cf.size();++i)
+      if (cf[i]==p->fl) {
+	in=true;
+	break;
+      }
+    if (!in) {
+      m_cflavs[idc].push_back(p->fl);
+      m_cflavs[id].push_back(p->fl.Bar());
+      msg_Debugging()<<"  flav "<<ID(idc)<<" / "
+		     <<ID(id)<<" -> "<<p->fl<<"\n";
+    }
+  }
+}
+
+void AMEGIC::Single_Process::FillCombinations()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  size_t nd(NumberOfDiagrams());
+  for (size_t i(0);i<nd;++i) {
+    Point *p(Diagram(i));
+    size_t id(1<<p->number);
+    FillCombinations(p,id);
+  }
+  msg_Debugging()<<"  } -> "<<m_cflavs.size()
+		 <<" flavours, "<<m_ccombs.size()
+		 <<" combinations\n";
+  msg_Debugging()<<"}\n";
+}
+
+bool AMEGIC::Single_Process::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  if (p_partner!=this) return p_partner->Combinable(idi,idj);
+  if (m_ccombs.empty()) FillCombinations();
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
+}
+
+const Flavour_Vector &AMEGIC::Single_Process::
+CombinedFlavour(const size_t &idij)
+{
+  if (p_partner!=this) return p_partner->CombinedFlavour(idij);
+  if (m_cflavs.empty()) FillCombinations();
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
+}

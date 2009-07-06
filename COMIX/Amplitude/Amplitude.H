@@ -21,13 +21,12 @@ namespace COMIX {
   typedef std::vector<Current_Base*>  Current_Vector;
   typedef std::vector<Current_Vector> Current_Matrix;
 
-  typedef std::vector<ATOOLS::Vec4D>   Vec4D_Vector;
-  typedef std::vector<ATOOLS::Flavour> Flavour_Vector;
+  typedef std::vector<ATOOLS::Vec4D> Vec4D_Vector;
 
   typedef std::vector<long unsigned int> LongInt_Vector;
 
-  typedef std::set<std::pair<size_t,size_t> > Comb_Set;
-  typedef std::map<size_t,ATOOLS::Flavour>    Flav_Map;
+  typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
+  typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
 
 #ifdef USING__Threading
   class Amplitude;
@@ -58,7 +57,7 @@ namespace COMIX {
 
     Model *p_model;
 
-    Flavour_Vector m_fl;
+    ATOOLS::Flavour_Vector m_fl;
 
     PHASIC::Decay_Info_Vector m_decid;
 
@@ -77,8 +76,8 @@ namespace COMIX {
 
     LongUIntMap_Matrix m_cchirs;
 
-    Comb_Set m_combs;
-    Flav_Map m_flavs;
+    Combination_Set m_combs;
+    CFlavVector_Map m_flavs;
 
 #ifdef USING__Threading 
     CDBG_ME_TID_Vector m_cts;
@@ -98,8 +97,9 @@ namespace COMIX {
     void AddCurrent(const Int_Vector &ids,const size_t &n,
 		    const ATOOLS::Flavour &fl,const int dir);
 
-    bool Construct(Flavour_Vector &fls,Int_Vector ids,const size_t &n);
-    bool Construct(const Flavour_Vector &flavs);
+    bool Construct(ATOOLS::Flavour_Vector &fls,
+		   Int_Vector ids,const size_t &n);
+    bool Construct(const ATOOLS::Flavour_Vector &flavs);
 
     bool CheckChirs(const Int_Vector &chirs);
     bool ConstructChirs(Int_Vector chirs,const size_t &i);
@@ -126,7 +126,7 @@ namespace COMIX {
     void ResetZero();
 
     bool Construct(const Int_Vector &incs,
-		   const Flavour_Vector &flavs,
+		   const ATOOLS::Flavour_Vector &flavs,
 		   Model *const model);
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);
     bool GaugeTest(const Vec4D_Vector &moms);
@@ -137,7 +137,8 @@ namespace COMIX {
 
     bool Combinable(const size_t &idi,const size_t &idj) const;
 
-    ATOOLS::Flavour CombinedFlavour(const size_t &idij) const;
+    const ATOOLS::Flavour_Vector &
+    CombinedFlavour(const size_t &idij) const;
 
     void WriteOutGraphs(const std::string &file) const;
 
@@ -154,8 +155,8 @@ namespace COMIX {
 
     inline double Result() const { return m_res; }
 
-    inline const Vec4D_Vector   &Momenta() const  { return m_p;  }
-    inline const Flavour_Vector &Flavours() const { return m_fl; }
+    inline const Vec4D_Vector           &Momenta() const  { return m_p;  }
+    inline const ATOOLS::Flavour_Vector &Flavours() const { return m_fl; }
 
     inline const Current_Matrix &Currents() const { return m_cur; }
 
