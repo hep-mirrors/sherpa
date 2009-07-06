@@ -392,6 +392,38 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HEPMC2LIBS)
   AM_CONDITIONAL(HEPMC2_SUPPORT, test "$hepmc2" = "true")
 
+
+  AC_ARG_ENABLE(
+    rivet,
+    AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
+    [ AC_MSG_CHECKING(for Rivet installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Rivet not enabled); rivet=false ;;
+        yes) if test -x "`which rivet-config`"; then
+               CONDITIONAL_RIVETDIR=`rivet-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_RIVETDIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
+        CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
+        CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
+        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
+      else
+        AC_MSG_ERROR(Unable to use Rivet from specified path.);
+      fi;
+    ],
+    [ rivet=false ]
+  )
+  if test "$rivet" = "true" ; then
+    AC_DEFINE([USING__RIVET], "1", [using Rivet])
+  fi
+  AC_SUBST(CONDITIONAL_RIVETLDADD)
+  AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
+  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
+  
+
   AC_ARG_ENABLE(
     fastjet,
     AC_HELP_STRING([--enable-fastjet=/path/to/fastjet], [Enable FASTJET.]),

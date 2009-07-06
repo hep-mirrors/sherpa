@@ -125,6 +125,7 @@ bool Sherpa::InitializeTheEventHandler()
   int mode        = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
   p_iohandler->SetEventHandler(p_eventhandler);
+  p_inithandler->GetAnalysis()->SetEventHandler(p_eventhandler);
   
   std::string sme = std::string("SignalMEs");
   switch (mode) {

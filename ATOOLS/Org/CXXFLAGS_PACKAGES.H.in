@@ -37,5 +37,8 @@
 /* using ROOT */
 #undef USING__ROOT
 
+/* using Rivet */
+#undef USING__RIVET
+
 /* using FASTJET */
 #undef USING__FASTJET

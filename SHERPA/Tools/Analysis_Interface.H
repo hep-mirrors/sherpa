@@ -5,6 +5,8 @@
 #include "ATOOLS/Org/Getter_Function.H"
 
 namespace SHERPA {
+  
+  class Event_Handler;
 
   struct Analysis_Arguments {
     std::string m_inpath, m_infile, m_outpath;
@@ -16,6 +18,8 @@ namespace SHERPA {
   };// end of struct Analysis_Arguments
 
   class Analysis_Interface {
+  protected:
+    const Event_Handler* p_eventhandler;
   public:
 
     typedef ATOOLS::Getter_Function
@@ -34,6 +38,8 @@ namespace SHERPA {
     virtual bool WriteOut();
 
     virtual void ShowSyntax(const int mode);
+    
+    void SetEventHandler(const Event_Handler* eh) { p_eventhandler = eh; }
 
   };// end of class Analysis_Interface
 
