@@ -344,7 +344,6 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
 		 <<(**pplit)
 		 <<"   Try a new event."<<std::endl;
       Reset();
-      exit(1);
       return false;
     }
   }
