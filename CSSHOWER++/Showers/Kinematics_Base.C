@@ -16,6 +16,7 @@ const Vec3D Kinematics_Base::s_ez(Vec3D(0.,0.,1.));
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &mk2) const
 {
+  if (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2) return -1.0;
   return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
 }
 
@@ -48,35 +49,7 @@ int Kinematics_FF::MakeKinematics
   double mk2 = sqr(p_ms->Mass(spect->GetFlavour()));
   Vec4D q1,q2,q3,Q=p1+p2;
 
-  //the massless case
-  if (mi2==0. && mj2==0. && mij2==0. && mk2==0.) {
-    q1 = z*p1      + y*(1.-z)*p2 
-      + kt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
-      + kt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
-    q2 =               (1.-y)*p2;
-    //q3 = (1.-z)*p1 +      y*z*p2 - kt*n_perp;
-    q3 = Q-q1-q2;
-
-    //std::cout<<"FF :  y is "<<y<<" kt (calc) : "<<z*(1.-z)*y*2.*p1*p2<<" vs. "<<kt*kt<<" kt-test "<<2.*q1*q3<<" vs. "<<kt*kt/(z*(1.-z))<<std::endl;    
-  }
-  else if (mk2==0.) {
-    //the massive case, spectator assumed to be massless
-    Vec4D  Q    = p1+p2;
-    double Q2   = Q*Q;
-    double fac1 = Q2 - ((1.-z)*mi2+z*mj2+kt*kt)/(z*(1.-z));
-    double div  = (Q2-mij2);
-    fac1 /= div;
-    
-    q1 =      z*p1 +            (kt*kt+mi2-z*z*mij2)/(z*div)*p2
-      + kt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
-      + kt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
-    q2 =                                                fac1*p2;
-    //q3 = (1.-z)*p1 + (kt*kt+mj2-sqr(1.-z)*mij2)/((1.-z)*div)*p2 - kt*n_perp;
-    q3 = Q-q1-q2;
-  }
-  else {
     //the general massive case, including massive spectator
-    Vec4D  Q=p1+p2;
     double Q2=Q.Abs2();
     y=GetY(Q2,kt*kt,z,mi2,mj2,mk2);
     double sij=y*(Q2-mk2)+(1.0-y)*(mi2+mj2);
@@ -101,8 +74,7 @@ int Kinematics_FF::MakeKinematics
       + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
       + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
     q3 = Q-q2-q1;
-  }
-  
+
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
     msg_Tracking()<<"Error in  Kinematics_FF::MakeKinematics (before boost) "<<endl
 		  <<" negative energy "<<q1<<"\n"
@@ -157,6 +129,7 @@ int Kinematics_FF::MakeKinematics
 double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &ma2) const
 {
+  if (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2) return -1.0;
   return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
@@ -267,6 +240,7 @@ int Kinematics_FI::MakeKinematics
 double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &ma2,const double &mi2,const double &mk2) const
 {
+  if (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2) return -1.0;
   return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
@@ -374,6 +348,7 @@ int Kinematics_IF::MakeKinematics
 double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &ma2,const double &mi2,const double &mb2) const
 {
+  if (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2) return -1.0;
   return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
@@ -410,23 +385,7 @@ int Kinematics_II::MakeKinematics
   double mb2 = sqr(p_ms->Mass(spect->GetFlavour()));
   double mi2 = sqr(p_ms->Mass(newfl)), phi = split->Phi();
   Vec4D q1,q2,q3;
-  double Q2 = 2.*p1*p2;
   
-  if (mi2==0. && ma2==0. && mai2==0. && mb2==0.) { 
-    //the massless case
-    y = kt2/Q2*z/(1.0-z);
-    if (y>=1.0-z) {
-      msg_Debugging()<<METHOD<<"(): Kinematics does not fit\n";
-      return -1;
-    }
-    double kt=sqrt(kt2*(1.0-z-y)/(1.0-z));
-    q1 =       1./z*p1;
-    q2 =                   p2; 
-    q3 = (1.-z-y)/z*p1 + y*p2 
-      + kt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0)
-      + kt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0);
-  }
-  else {
     //the general massive case
     std::cout.precision(12);
     Vec4D  Q=p1+p2;
@@ -449,7 +408,6 @@ int Kinematics_II::MakeKinematics
     q3 = zt*l + (mi2+ktt*ktt)/(gam*zt)*n +
       + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
       + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
-  }
 
   xrot.RotateBack(q1);
   xrot.RotateBack(q2);

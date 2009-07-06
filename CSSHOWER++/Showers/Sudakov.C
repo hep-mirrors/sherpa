@@ -270,6 +270,7 @@ bool Sudakov::Dice(Parton * split)
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       if (Q2<=mi2+mj2+mk2) return false;
       m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2);
+      if (m_y<0.0) continue;
       x   = 0.;
     }    
       break; 
@@ -279,6 +280,7 @@ bool Sudakov::Dice(Parton * split)
       double ma2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = 1.0-p_shower->KinFI()->GetY(-Q2,m_kperp2,m_z,mi2,mj2,ma2);
+      if (m_y>1.0) continue;
       x   = split->GetSpect()->Xbj();
     }
       break; 
@@ -288,6 +290,7 @@ bool Sudakov::Dice(Parton * split)
       double mk2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2);
+      if (m_y<0.0) continue;
       x   = split->Xbj();
     }
       break;
@@ -297,6 +300,7 @@ bool Sudakov::Dice(Parton * split)
       double mb2 = sqr(p_rms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2);
+      if (m_y<0.0) continue;
       x   = split->Xbj();
     }
       break;
