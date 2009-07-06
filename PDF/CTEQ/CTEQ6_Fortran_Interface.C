@@ -55,13 +55,14 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   }
   
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour((kf_code)(i)));
-    m_partons.push_back(Flavour((kf_code)(i)).Bar());
+    m_partons.insert(Flavour((kf_code)(i)));
+    m_partons.insert(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf_gluon));
-  m_partons.push_back(Flavour(kf_jet));
-  m_partons.push_back(Flavour(kf_quark));
-  m_partons.push_back(Flavour(kf_quark).Bar());                               
+  m_partons.insert(Flavour(kf_gluon));
+  m_partons.insert(Flavour(kf_jet));
+  m_partons.insert(Flavour(kf_jet));
+  m_partons.insert(Flavour(kf_quark));
+  m_partons.insert(Flavour(kf_quark).Bar());                               
 }
 
 PDF_Base *CTEQ6_Fortran_Interface::GetCopy()

@@ -34,8 +34,8 @@ namespace PDF {
 
     std::vector<PDF_Base*> m_copies;
 
-    std::vector<ATOOLS::Flavour> m_partons;    
-    ATOOLS::Flavour              m_bunch;
+    ATOOLS::Flavour_Set m_partons;    
+    ATOOLS::Flavour     m_bunch;
 
     std::string m_type;    
 
@@ -79,8 +79,8 @@ namespace PDF {
     inline double Q2Min() const { return m_q2min; }
     inline double Q2Max() const { return m_q2max; }
 
-    inline const std::vector<ATOOLS::Flavour> &Partons() const { return m_partons; }
-    inline const ATOOLS::Flavour               Bunch() const   { return m_bunch;   }
+    inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
+    inline const ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
 
     inline const std::string &Type() const { return m_type;     }  
     inline double         Exponent() const { return m_exponent; }
@@ -91,6 +91,9 @@ namespace PDF {
     { GetBasicPDF()->SingleExtract(flavour,x); }
     inline void Reset()
     { GetBasicPDF()->SingleReset(); }
+
+    inline bool Contains(const ATOOLS::Flavour &a) const
+    { return m_partons.find(a)!=m_partons.end(); }
 
   };
   

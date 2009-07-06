@@ -138,8 +138,9 @@ double Splitting_Function_Base::GetXPDF
 (const double &scale,const double &x,const ATOOLS::Flavour &a,
  const int beam,const int mode)
 {
-  if (p_pdf[beam]==NULL) return 0.0;
+  if (p_pdf[beam]==NULL || !p_pdf[beam]->Contains(a)) return 0.0;
   if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
+  if (IsNan(scale) || IsNan(x)) return 0.0;
   double Q2(scale*p_cf->CplFac());
   if (Q2<p_lf->MS()->Mass2(a) ||
       x<p_pdf[beam]->XMin() || x>p_pdf[beam]->XMax() ||

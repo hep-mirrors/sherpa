@@ -42,13 +42,14 @@ PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch,const std::string path)
   m_bunch=bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour((kf_code)(i)));
-    m_partons.push_back(Flavour((kf_code)(i)).Bar());
+    m_partons.insert(Flavour((kf_code)(i)));
+    m_partons.insert(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf_gluon));
-  m_partons.push_back(Flavour(kf_jet));
-  m_partons.push_back(Flavour(kf_quark));
-  m_partons.push_back(Flavour(kf_quark).Bar());
+  m_partons.insert(Flavour(kf_gluon));
+  m_partons.insert(Flavour(kf_jet));
+  m_partons.insert(Flavour(kf_quark));
+  m_partons.insert(Flavour(kf_quark).Bar());
+  m_partons.insert(Flavour(kf_photon));
   m_xmin=1.e-5;
   m_xmax=1.;
   m_q2min=1.25;

@@ -27,13 +27,13 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   if (p_proton==NULL) p_proton = new c_mrst(m_path);
 
   for (int i=1;i<6;i++) {
-    m_partons.push_back(Flavour((kf_code)(i)));
-    m_partons.push_back(Flavour((kf_code)(i)).Bar());
+    m_partons.insert(Flavour((kf_code)(i)));
+    m_partons.insert(Flavour((kf_code)(i)).Bar());
   }
-  m_partons.push_back(Flavour(kf_gluon));
-  m_partons.push_back(Flavour(kf_jet));
-  m_partons.push_back(Flavour(kf_quark));
-  m_partons.push_back(Flavour(kf_quark).Bar());
+  m_partons.insert(Flavour(kf_gluon));
+  m_partons.insert(Flavour(kf_jet));
+  m_partons.insert(Flavour(kf_quark));
+  m_partons.insert(Flavour(kf_quark).Bar());
 
   m_xmin=MRST99::xmin;
   m_xmax=MRST99::xmax;

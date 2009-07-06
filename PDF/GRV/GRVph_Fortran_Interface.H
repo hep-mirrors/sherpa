@@ -20,8 +20,6 @@ namespace PDF {
     double GetXMax()   { return 1.; }
     double GetQ2Min()  { return 0.25; }
     double GetQ2Max()  { return 1.e6; }
-    ATOOLS::Flavour Bunch()                { return m_bunch; }
-    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
   };
 
 

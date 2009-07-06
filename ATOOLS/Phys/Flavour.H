@@ -298,11 +298,20 @@ namespace ATOOLS {
     inline bool Is5VDummy() const 
     { return Kfcode()==kf_shgluon; }   
 
+    inline bool operator<(const Flavour &f) const 
+    {
+      if (Kfcode()<f.Kfcode()) return true;
+      if (Kfcode()>f.Kfcode()) return false;
+      return m_anti<f.m_anti;
+    }
+
   };// end of class Flavour
 
   class Flavour_Sorting_Criterion {
   public :
-    bool operator()(const Flavour &fl1,const Flavour &fl2) 
+    // something is wrong with this criterion
+    // if you need a flavour set, use Flavour_Set, not FlavourSet !!!
+    inline bool operator()(const Flavour &fl1,const Flavour &fl2) const
     {
       kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode());
       if (kf1>kf2) return true;
@@ -316,6 +325,7 @@ namespace ATOOLS {
   typedef FlavourSet::const_iterator FlSetConstIter;
   typedef std::vector<Flavour> Flavour_Vector;
   typedef std::map<Flavour,Flavour> Flavour_Map;
+  typedef std::set<Flavour> Flavour_Set;
 
   class Mass_Selector {
   public:

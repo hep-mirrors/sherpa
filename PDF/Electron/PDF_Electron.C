@@ -19,7 +19,7 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
   m_q2max=1.e14;
 
   m_bunch  = _bunch;
-  m_partons.push_back(m_bunch);
+  m_partons.insert(m_bunch);
   m_type   = std::string("PDF_")+std::string(m_bunch.IDName());
   
   m_mass   = m_bunch.Mass(true);
@@ -98,8 +98,8 @@ PDF_Base *PDFE_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.Kfcode()==kf_e) return NULL;
-  double izetta=args.p_read->GetValue<int>("ISR_E_ORDER",1);
-  double order=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
+  int izetta=args.p_read->GetValue<int>("ISR_E_ORDER",1);
+  int order=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
   return new PDF_Electron(args.m_bunch,izetta,order);
 }
 
