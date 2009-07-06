@@ -193,7 +193,7 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
 Combine_Table::Combine_Table(ATOOLS::Mass_Selector *const ms,
 			     Cluster_Definitions_Base *clus,
 			     Vec4D *moms, Combine_Table *up):
-  p_ms(ms), m_nstrong(0),
+  p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms), p_hard(NULL), p_hardc(NULL)
 {
@@ -668,8 +668,9 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 	    for (int l=0;l<m_nlegs;++l)
 	      if (l!=i && l!=j) {
 		int sc(p_legs[k][l].Flav().StrongCharge());
-		if (((sci==8 || scj==8) && sc!=0) ||
-		    sc==8 || sc==-sci || sc==-scj) AddPossibility(i,j,l,k,mo);
+		if (((sci==8 || scj==8 || sc==8) && 
+		     (sci!=0 && scj!=0 && sc!=0)) ||
+		    (sci!=8 && scj!=8 && sc!=8)) AddPossibility(i,j,l,k,mo);
 	      }
 	  }
 	}
