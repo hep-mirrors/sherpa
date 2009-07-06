@@ -174,9 +174,10 @@ CS_Parameters CS_Cluster_Definitions::KT2_FF
   
   double kt2 = (Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)-(1.-zi)*(1.-zi)*mi2 - zi*zi*mj2;
 
-  Vec4D pkt(sqrt(Lambda(Q2,mij2,mk2)/Lambda(Q2,pipj2,mk2))*
-	    (k->Mom()-(Q*k->Mom())/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
-  if (pkt[0]<0.0) {
+  double lrat = Lambda(Q2,mij2,mk2)/Lambda(Q2,pipj2,mk2);
+  Vec4D pkt(sqrt(lrat)*(k->Mom()-(Q*k->Mom())/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
+
+  if (lrat<0.0 || pkt[0]<0.0) {
     CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,2);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
