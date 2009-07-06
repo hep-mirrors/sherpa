@@ -222,10 +222,12 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     --csum[c[i].m_j];
     if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
+  /*
   if (!IsEqual(psum,Vec4D(),1.0e-6))
     msg_Error()<<METHOD<<"(): Momentum not conserved. "<<*ampl<<std::endl;
   if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0)
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
+  */
   double kt2cmin(std::numeric_limits<double>::max());
   if (qcd!=15) {
     if (p_ci==NULL) {
