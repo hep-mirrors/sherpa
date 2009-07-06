@@ -562,7 +562,7 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
     msg_Tracking()<<"."<<std::endl;
     msg_Error()<<"Potential error in  All_Single_Transitions::MustTransit :"<<endl
 	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second
-	       <<", mass = "<<cluster->Mass()<<";"<<endl<<(*cluster->GetPrev())
+	       <<", mass = "<<cluster->Mass()<<"\n"
 	       <<"   will continue and hope for the best."<<endl;
     hadron = Flavour(kf_none);
     return 0.;
