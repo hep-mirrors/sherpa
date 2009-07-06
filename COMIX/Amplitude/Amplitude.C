@@ -290,7 +290,7 @@ bool Amplitude::Construct(Flavour_Vector &fls,
     if (!Construct(fls,ids,n)) return false;
     return m_cur.back().size();
   }
-  for (size_t i(last+1);i<=m_n;++i) {
+  for (size_t i(last+1);i<m_n;++i) {
     // fill currents 0..n-1 for external partons
     // currents 0..n-2 each index for internal partons
     ids.back()=i;
