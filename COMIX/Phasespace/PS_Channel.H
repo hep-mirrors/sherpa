@@ -22,6 +22,8 @@ namespace COMIX {
 
   typedef std::map<size_t,std::string> PSId_Map;
 
+  typedef std::map<size_t,const Current_Base*> STCC_Map;
+
   size_t IdCount(const size_t &id);
 
 #ifdef USING__Threading
@@ -59,10 +61,12 @@ namespace COMIX {
     size_t m_n, m_nr, m_cpr, m_ccr, m_num, m_nopt, m_lid, m_rid;
     double m_texp, m_sexp, m_thexp, m_mfac;
 
-    int    m_bmode, m_omode, m_vmode, m_zmode, m_czmode, m_ismode;
+    int    m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode, m_ismode;
     size_t m_nvints, m_vsopt;
 
     SP(PS_Generator) p_gen;
+
+    STCC_Map m_stccs;
 
     mutable PSId_Map m_psid;
     
@@ -127,7 +131,7 @@ namespace COMIX {
 
     bool Zero(Vertex_Base *const vtx) const;
 
-    PHASIC::Vegas *GetVegas(const std::string &tag);
+    PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
 
   public :
 

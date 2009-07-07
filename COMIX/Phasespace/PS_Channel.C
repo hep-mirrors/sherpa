@@ -57,6 +57,8 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set optimization mode "<<m_omode<<".\n";
   if (!read.ReadFromFile(m_vmode,"CDXS_VMODE")) m_vmode=1;
   else msg_Info()<<METHOD<<"(): Set Vegas mode "<<m_vmode<<".\n";
+  if (!read.ReadFromFile(m_tmode,"CDXS_TMODE")) m_tmode=1;
+  else msg_Info()<<METHOD<<"(): Set t-channel mode "<<m_tmode<<".\n";
   if (!read.ReadFromFile(m_vsopt,"CDXS_VSOPT")) m_vsopt=0;
   else msg_Info()<<METHOD<<"(): Set Vegas opt start "<<m_vsopt<<".\n";
   if (!read.ReadFromFile(m_nvints,"CDXS_VINTS")) m_nvints=100;
@@ -137,16 +139,18 @@ size_t PS_Channel::SId(const size_t &id) const
   return (id&3)==3?(1<<m_n)-1-id:id;
 }
 
-Vegas *PS_Channel::GetVegas(const std::string &tag)
+Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
 {
   Vegas_Map::iterator vit(m_vmap.find(tag));
   if (vit!=m_vmap.end()) return vit->second;
-  int ni(m_nvints);
+  bool ibi(ni>0);
+  if (!ibi) ni=m_nvints;
 #ifdef USING__Threading
   pthread_mutex_lock(&m_vgs_mtx);
 #endif
   Vegas *vegas(new Vegas(1,ni,"CDBG_"+tag,0));
   m_vmap[tag] = vegas;
+  if (ibi) vegas->InitBinInfo();
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
@@ -180,15 +184,26 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 			       const double &smin,const double &smax,
 			       const double *rn)
 {
+  const double *cr(rn);
   if (cur==NULL) {
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
       if (cs->size()==1) cur=cs->front();
+      else if ((m_tmode&1) && (m_vmode&1)) {
+	m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
+				 ToString(cs->size()),cs->size()));
+	double rn(ran.Get());
+	cr=m_vgs.back()->GeneratePoint(&rn);
+	m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
+	m_rns.push_back(cr[0]);
+#ifdef DEBUG__BG
+	msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
+#endif
+      }
     }
   }
   if (cur!=NULL && cur->OnShell())
     return sqr(cur->Flav().Mass());
-  const double *cr(rn);
   if (m_vmode&1) {
     if (cur!=NULL) {
       m_vgs.push_back(GetVegas("P_"+cur->PSInfo()));
@@ -218,13 +233,33 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 			      const double &smin,const double &smax,
 			      const double &s)
 {
+  double wgt(1.0), rn;
   if (cur==NULL) {
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
       if (cs->size()==1) cur=cs->front();
+      else if ((m_tmode&1) && (m_vmode&1)) {
+	STCC_Map::const_iterator it(m_stccs.find(id));
+	if (it==m_stccs.end()) {
+	  m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
+				   ToString(cs->size()),cs->size()));
+	  rn=ran.Get();
+	  const double *cr(m_vgs.back()->GeneratePoint(&rn));
+	  m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
+	  m_rns.push_back(cr[0]);
+#ifdef DEBUG__BG
+	  msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
+#endif
+	}
+	it=m_stccs.find(id);
+	for (size_t i(0);i<cs->size();++i)
+	  if ((*cs)[i]==it->second) {
+	    cur=(*cs)[i];
+	    break;
+	  }
+      }
     }
   }
-  double wgt(1.0), rn;
   if (cur!=NULL) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>0.0) 
@@ -626,6 +661,7 @@ void PS_Channel::GeneratePoint
   m_rns.clear();
   m_wvgs.clear();
   m_wrns.clear();
+  m_stccs.clear();
   if (!GeneratePoint(v)) return;
   Vec4D sum(-p[0]-p[1]);
   for (size_t i(2);i<m_n;++i) sum+=p[i]=m_p[1<<i];
@@ -1111,6 +1147,7 @@ void PS_Channel::ReadIn(std::string pid)
       }
   }
   if (m_vmode>0) {
+    m_tmode=0;
     Data_Reader reader;
     reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
@@ -1119,7 +1156,16 @@ void PS_Channel::ReadIn(std::string pid)
     if (reader.VectorFromFile(vids)) {
       for (size_t i(0);i<vids.size();++i) {
 	msg_Debugging()<<"read in vegas '"<<vids[i]<<"'\n";
-	Vegas *vegas(GetVegas(vids[i]));
+	Vegas *vegas(NULL);
+	if (vids[i].find("C_")!=0) {
+	  vegas=GetVegas(vids[i]);
+	}
+	else {
+	  size_t pos(vids[i].rfind('_'));
+	  vegas=GetVegas(vids[i],ToType<int>
+			 (vids[i].substr(pos+1)));
+	  m_tmode=1;
+	}
 	vegas->ReadIn(pid);
       }
     }
