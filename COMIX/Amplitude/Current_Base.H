@@ -52,7 +52,7 @@ namespace COMIX {
 
     double m_mass, m_width;
     bool   m_msv, m_zero;
-    int    m_dir, m_cut;
+    int    m_dir, m_cut, m_osd;
 
     mutable std::string m_psinfo;
 
@@ -113,6 +113,7 @@ namespace COMIX {
 
     inline void SetDirection(const int &dir) { m_dir=dir; }
     inline void SetCut(const int &cut)       { m_cut=cut; }
+    inline void SetOnShell(const int &osd)   { m_osd=osd; }
 
     inline ATOOLS::Flavour Flav() const { return m_fl; }
 
@@ -132,6 +133,7 @@ namespace COMIX {
 
     inline int Direction() const { return m_dir; }
     inline int Cut() const       { return m_cut; }
+    inline int OnShell() const   { return m_osd; }
 
     inline void AttachIn(Vertex_Base *const v)  { m_in.push_back(v);  }
     inline void AttachOut(Vertex_Base *const v) { m_out.push_back(v); }

@@ -36,6 +36,8 @@ namespace COMIX {
     typedef std::multimap<Current_Base*,Current_Base*> CB_MMap;
     typedef std::pair<Current_Base*,Current_Base*>     CB_Pair;
 
+    typedef std::map<size_t,Current_Vector> TCC_Map;
+
   private:
 
     Process_Base *p_xs;
@@ -55,6 +57,8 @@ namespace COMIX {
 
     CB_MMap m_cmap;
     CB_Map  m_cbmap;
+
+    TCC_Map m_tccs;
 
 #ifdef USING__Threading 
     CDBG_PG_TID_Vector m_cts;
@@ -93,6 +97,12 @@ namespace COMIX {
 
     inline const Double_Vector &ISRMasses() const { return m_smasses; }
     inline const Double_Vector &ISRWidths() const { return m_swidths; }
+
+    inline const Current_Vector *TCC(const size_t &id) const
+    {
+      TCC_Map::const_iterator it(m_tccs.find(id));
+      return it!=m_tccs.end()?&it->second:NULL;
+    }
 
   };// end of class PS_Generator
 

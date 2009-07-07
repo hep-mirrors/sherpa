@@ -396,6 +396,13 @@ void Process_Base::SetUpThreading()
 
 void Process_Base::FillOnshellConditions()
 {
+  if (!Selector()) return;
+  Subprocess_Info info(m_pinfo.m_ii);
+  info.Add(m_pinfo.m_fi);
+  Decay_Info_Vector ids(info.GetDecayInfos());
+  for(size_t i=0;i<ids.size();i++)
+    if (ids[i].m_osd) Selector()->AddOnshellCondition
+      (PSId(ids[i].m_id),sqr(ids[i].m_fl.Mass()));  
 }
 
 const ATOOLS::Vec4D_Vector &Process_Base::ActiveMom() const

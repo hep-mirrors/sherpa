@@ -218,7 +218,9 @@ bool PS_Generator::AddCurrent
   cur->SetId(ref->Id());
   cur->SetKey(m_cur[n].size());
   cur->SetDirection(ref->Direction());
+  cur->SetOnShell(ref->OnShell());
   m_cur[n].push_back(cur);
+  m_tccs[cur->CId()].push_back(cur);
   m_cmap.insert(CB_Pair(ref,cur));
   m_cbmap.insert(CB_Pair(cur,ref));
   bool found(false);

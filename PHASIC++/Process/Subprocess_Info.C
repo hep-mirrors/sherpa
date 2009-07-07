@@ -8,6 +8,23 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+std::string PHASIC::PSId(const size_t &id)
+{
+  size_t ic(id);
+  std::string idt;
+  for (size_t i(0);ic>0;++i) {
+    size_t c(1<<i);
+    if (ic&c) {
+      char nic[3];
+      if (sprintf(nic,"%i",(int)i)<=0)
+	THROW(fatal_error,"Conversion error");
+      idt+=nic;
+      ic-=c;
+    }
+  }
+  return idt;
+}
+
 std::ostream &PHASIC::operator<<(std::ostream &ostr,const Subprocess_Info &info)
 {
   info.Print(ostr);
@@ -117,7 +134,8 @@ void Subprocess_Info::Add(const Subprocess_Info &info)
   m_ps.insert(m_ps.end(),info.m_ps.begin(),info.m_ps.end());
 }
 
-bool Subprocess_Info::AddDecay(const Subprocess_Info &ii,const Subprocess_Info &fi, int osf)
+bool Subprocess_Info::AddDecay
+(const Subprocess_Info &ii,const Subprocess_Info &fi, int osf)
 {
   if (m_ps.empty()) {
     if (m_fl==ii.m_ps.front().m_fl &&
@@ -141,7 +159,7 @@ size_t Subprocess_Info::GetDecayInfos
   size_t cont(0);
   for (size_t j(0);j<m_ps.size();++j) 
     cont+=m_ps[j].GetDecayInfos(ids,n);
-  ids.push_back(Decay_Info(cont,m_fl,m_nmax));
+  ids.push_back(Decay_Info(cont,m_fl,m_nmax,m_osf));
   return cont;
 }
 
@@ -201,6 +219,7 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
 {
   ostr<<std::string(ni,' ')<<m_fl;
   if (m_id!="") ostr<<"["<<m_id<<"]";
+  if (m_osf) ostr<<" OS";
   if (m_ps.size()>0) {
     ostr<<" ("<<m_ps.size()<<")";
     ostr<<", NLO{"<<m_nloqcdtype<<","<<m_nloewtype<<"}";

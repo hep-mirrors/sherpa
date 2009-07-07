@@ -120,7 +120,6 @@ namespace PHASIC {
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetUpThreading();
 
-    virtual void FillOnshellConditions();
     virtual void BuildCuts(Cut_Data *const cuts);
     virtual void UpdateCuts(const double &sp,const double &y,
 			    Cut_Data *const cuts);
@@ -136,6 +135,8 @@ namespace PHASIC {
     virtual const ATOOLS::Vec4D_Vector &ActiveMom() const;
 
     virtual void FillAlphaHistogram(ATOOLS::Histogram*,double) {}
+
+    void FillOnshellConditions();
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl);
 

@@ -22,8 +22,6 @@ namespace COMIX {
 
   typedef std::map<size_t,std::string> PSId_Map;
 
-  std::string PSId(const size_t &id);
-
   size_t IdCount(const size_t &id);
 
 #ifdef USING__Threading
@@ -63,6 +61,8 @@ namespace COMIX {
 
     int    m_bmode, m_omode, m_vmode, m_zmode, m_czmode, m_ismode;
     size_t m_nvints, m_vsopt;
+
+    SP(PS_Generator) p_gen;
 
     mutable PSId_Map m_psid;
     

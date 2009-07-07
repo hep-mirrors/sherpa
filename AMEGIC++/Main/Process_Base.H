@@ -89,7 +89,6 @@ namespace AMEGIC {
     
     bool           CheckMapping(const Process_Base * proc);
 
-    void FillOnshellConditions();
   };
 
 }

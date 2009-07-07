@@ -178,11 +178,3 @@ void AMEGIC::Process_Base::PrintProcessSummary(int it)
   std::cout<<Name()<<std::endl;
 }
 
-void AMEGIC::Process_Base::FillOnshellConditions()
-{
-  if (!Selector()) return;
-  int cnt=m_nin;
-  std::vector<std::pair<std::string,double> > osc;
-  p_pinfo->GetOSConditions(osc,cnt);
-  for(size_t i=0;i<osc.size();i++) Selector()->AddOnshellCondition(osc[i].first,osc[i].second);  
-}

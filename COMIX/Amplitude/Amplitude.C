@@ -182,7 +182,10 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		    (std::string(1,m_pmode)+ckey.Type(),ckey));
   if (cur==NULL) return;
   cur->SetDirection(dir);
-  cur->SetCut(dec==0?0:m_decid[dec-1].m_nmax);
+  if (dec!=0) {
+    cur->SetCut(m_decid[dec-1].m_nmax);
+    cur->SetOnShell(m_decid[dec-1].m_osd);
+  }
   std::set<Vertex_Key> v3;
   // compose current from all possible subcurrents
   for (size_t i(1);i<n;++i) {
@@ -222,7 +225,10 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		cur=Current_Getter::GetObject
 		  (std::string(1,m_pmode)+ckey.Type(),ckey);
 	      if (n<m_n-1) {
-		cur->SetCut(dec==0?0:m_decid[dec-1].m_nmax);
+		if (dec!=0) {
+		  cur->SetCut(m_decid[dec-1].m_nmax);
+		  cur->SetOnShell(m_decid[dec-1].m_osd);
+		}
 		cur->SetOrderEW(oew);
 		cur->SetOrderQCD(oqcd);
 		curs[okey]=cur;

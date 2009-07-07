@@ -290,7 +290,7 @@ void Jet_Finder::PrepareMomList(const Vec4D_Vector &vec)
   }
 }
 
-void Jet_Finder::PrepareColList(const std::vector<int> &ci,
+bool Jet_Finder::PrepareColList(const std::vector<int> &ci,
 				const std::vector<int> &cj)
 {
   for (int i(m_nin+m_nout-1);i>=0;--i) {
@@ -306,11 +306,14 @@ void Jet_Finder::PrepareColList(const std::vector<int> &ci,
       ++c[m_cols[m_mcomb[n][i]].m_i];
       --c[m_cols[m_mcomb[n][i]].m_j];
     }
-    ColorID cc(-1,-1);
+    ColorID cc(0,0);
     for (int i(1);i<4;++i) {
-      if (c[i]==1 && cc.m_i<0) cc.m_i=i;
-      else if (c[i]==-1 && cc.m_j<0) cc.m_j=i;
-      else THROW(fatal_error,"Color not conserved");
+      if (c[i]==1 && cc.m_i==0) cc.m_i=i;
+      else if (c[i]==-1 && cc.m_j==0) cc.m_j=i;
+      else if (c[i]!=0) {
+	msg_Debugging()<<METHOD<<"(): Rejecting invalid intermediate color.\n";
+	return false;
+      }
     }
     m_cols[m_mcomb[n].back()]=cc;
 #ifdef DEBUG__Prepare_Cols
@@ -319,6 +322,7 @@ void Jet_Finder::PrepareColList(const std::vector<int> &ci,
   		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"] "<<cc<<"\n";
 #endif
   }
+  return true;
 }
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
@@ -338,7 +342,7 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   if (ci!=NULL && ci->On()) {
     uc=true;
     std::vector<int> ic(ci->I()), jc(ci->J());
-    PrepareColList(ic,jc);
+    if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
   }
   m_value=2.0;
   msg_Debugging()<<METHOD<<"(): '"

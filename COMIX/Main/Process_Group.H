@@ -16,7 +16,6 @@ namespace COMIX {
 
   public :
 
-
     // constructors
     Process_Group(); 
     Process_Group(Model *const model);

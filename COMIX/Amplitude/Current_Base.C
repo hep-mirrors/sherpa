@@ -30,7 +30,8 @@ char COMIX::ParticleType(const Flavour &fl)
 Current_Base::Current_Base(const Current_Key &key):
   m_fl(key.m_fl), m_key(0), m_oew(0), m_oqcd(0),
   m_mass(m_fl.Mass()), m_width(m_fl.Width()), 
-  m_msv(!IsZero(m_mass)), m_zero(true), m_dir(0), m_cut(0) {}
+  m_msv(!IsZero(m_mass)), m_zero(true), m_dir(0),
+  m_cut(0), m_osd(0) {}
 
 Current_Base::~Current_Base()
 {

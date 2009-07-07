@@ -41,7 +41,7 @@ namespace PHASIC {
 			    const std::string &gycut,size_t &cp,const int fl);
 
     void PrepareMomList(const ATOOLS::Vec4D_Vector &vec);
-    void PrepareColList(const std::vector<int> &ci,
+    bool PrepareColList(const std::vector<int> &ci,
 			const std::vector<int> &cj);
 
     bool ColorConnected(const size_t &i,const size_t &j) const;

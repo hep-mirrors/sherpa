@@ -226,6 +226,7 @@ void CS<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
   SComplex prop(m_pseudo?M_I:M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<" <- p^2 = "
 		 <<this->m_p.Abs2()<<", m = "<<sqrt(m_cmass2)<<"\n";
@@ -379,6 +380,7 @@ void CF<SType>::AddPropagator()
   const CSpinorType hs;
   // add propagator for off-shell leg
   SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  if (this->m_osd) prop=SComplex(M_I);
   SComplex pp(hs.PPlus(this->m_p)), pm(hs.PMinus(this->m_p));
   SComplex pt(hs.PT(this->m_p)), ptc(hs.PTC(this->m_p));
 #ifdef DEBUG__BG
@@ -630,6 +632,7 @@ void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
   SComplex prop(-M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";
 #endif

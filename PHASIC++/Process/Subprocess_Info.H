@@ -8,13 +8,17 @@
 
 namespace PHASIC {
 
+  std::string PSId(const size_t &id);
+
   struct Decay_Info {
     long unsigned int m_id;
     ATOOLS::Flavour m_fl;
     size_t m_nmax;
+    int m_osd;
     Decay_Info(const long unsigned int &id,
-	       const ATOOLS::Flavour &fl,const size_t &nmax):
-      m_id(id), m_fl(fl), m_nmax(nmax) {}
+	       const ATOOLS::Flavour &fl,
+	       const size_t &nmax,const int osd):
+      m_id(id), m_fl(fl), m_nmax(nmax), m_osd(osd) {}
   };// end of struct Decay_Info
 
   typedef std::vector<Decay_Info> Decay_Info_Vector;

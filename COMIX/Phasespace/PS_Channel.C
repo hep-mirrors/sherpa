@@ -20,20 +20,6 @@ using namespace ATOOLS;
 
 const double s_alphamin(1.0e-12);
 
-std::string COMIX::PSId(const size_t &id)
-{
-  size_t ic(id);
-  std::string idt;
-  for (size_t i(0);ic>0;++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      idt+=ToString(i);
-      ic-=c;
-    }
-  }
-  return idt;
-}
-
 size_t COMIX::IdCount(const size_t &id)
 {
   size_t ic(id), cn(0);
@@ -194,6 +180,14 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 			       const double &smin,const double &smax,
 			       const double *rn)
 {
+  if (cur==NULL) {
+    const Current_Vector *cs(p_gen->TCC(id));
+    if (cs!=NULL) {
+      if (cs->size()==1) cur=cs->front();
+    }
+  }
+  if (cur!=NULL && cur->OnShell())
+    return sqr(cur->Flav().Mass());
   const double *cr(rn);
   if (m_vmode&1) {
     if (cur!=NULL) {
@@ -224,8 +218,15 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 			      const double &smin,const double &smax,
 			      const double &s)
 {
+  if (cur==NULL) {
+    const Current_Vector *cs(p_gen->TCC(id));
+    if (cs!=NULL) {
+      if (cs->size()==1) cur=cs->front();
+    }
+  }
   double wgt(1.0), rn;
   if (cur!=NULL) {
+    if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>0.0) 
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
     else if (cur->Mass()>0.0) 
@@ -598,12 +599,12 @@ bool PS_Channel::GenerateChannels()
 	  break;
 	}
     }
-  SP(PS_Generator) ps(cur->Get<Process_Base>()->PSGenerator());
-  if (ps==NULL) 
+  p_gen=cur->Get<Process_Base>()->PSGenerator();
+  if (p_gen==NULL) 
     THROW(fatal_error,"No phasespace generator for "+cur->Name());
-  ps->SetZMode(m_zmode);
-  if (!ps->Evaluate()) return false;
-  p_cur = (Current_Matrix*)(&ps->Graphs());
+  p_gen->SetZMode(m_zmode);
+  if (!p_gen->Evaluate()) return false;
+  p_cur = (Current_Matrix*)(&p_gen->Graphs());
   return true;
 }
 
