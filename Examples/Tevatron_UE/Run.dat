@@ -26,8 +26,8 @@
   SHOWER_GENERATOR CSS
 }(shower)
 (beam){
-  BEAM_1 = 2212; BEAM_ENERGY_1 = 980;
-  BEAM_2 = -2212; BEAM_ENERGY_2 = 980;
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 900;
+  BEAM_2 = -2212; BEAM_ENERGY_2 = 900;
 }(beam)
 (mi){
   MI_HANDLER = Amisic
