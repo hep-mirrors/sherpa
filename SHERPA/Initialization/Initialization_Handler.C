@@ -726,6 +726,9 @@ bool Initialization_Handler::InitializeTheAnalyses()
   if (handler=="Internal")
     if (!s_loader->LoadLibrary("SherpaAnalysis")) 
       THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
+  if (handler=="Rivet")
+    if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
+      THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
   p_analysis=Analysis_Interface::Analysis_Getter_Function::GetObject
     (handler,Analysis_Arguments(m_path,m_analysisdat,outpath));
