@@ -526,6 +526,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
       GetMPvalue(vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
       cpi.m_mur2tag=jfargs[1];
+      if (i==0) jfargs.push_back("LO");
       skey.SetData("METS",jfargs);
     }
     procs[i]->SetSelector(skey);

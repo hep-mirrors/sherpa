@@ -15,7 +15,7 @@ Jet_Finder::Jet_Finder
 (const int nin,const int nout,Flavour *fl,
  const std::string &ycut,const std::string &gycut):
   Selector_Base("Jetfinder"), m_value(0.0), 
-  m_cuttag(ycut), m_gcuttag(gycut)
+  m_cuttag(ycut), m_gcuttag(gycut), m_on(true)
 {
   m_gycut=m_ycut=2.0;
   /*
@@ -327,6 +327,7 @@ bool Jet_Finder::PrepareColList(const std::vector<int> &ci,
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 {
+  if (!m_on) return true;
   if (p_proc->Process()->IsGroup()) {
     bool trigger(false);
     for (size_t i(0);i<p_proc->Process()->Size();++i)
@@ -533,6 +534,7 @@ Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
 				(Flavour*)&key.p_proc->Process()->
 				Flavours().front(),key[0][0],key[0][1]));
   jf->SetProcess(key.p_proc);
+  if (key.front().size()>2 && key[0][2]=="LO") jf->SetOn(false);
   return jf;
 }
 

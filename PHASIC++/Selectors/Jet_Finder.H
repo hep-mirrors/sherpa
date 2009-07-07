@@ -33,7 +33,7 @@ namespace PHASIC {
 
     std::vector<std::vector<Comb_Key> > m_fills;
 
-    bool m_sok;
+    bool m_sok, m_on;
 
     ATOOLS::Flavour GetFlavour(std::string fl);
 
@@ -77,6 +77,8 @@ namespace PHASIC {
     inline double GlobalYcut() const     { return m_gycut;  }
     inline double CoreYcut() const       { return m_cycut;  }
     inline double GlobalCoreYcut() const { return m_gcycut; }
+
+    inline void SetOn(const bool on) { m_on=on; }
 
   };
 
