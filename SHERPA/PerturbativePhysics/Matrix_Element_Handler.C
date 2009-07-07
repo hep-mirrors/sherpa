@@ -514,6 +514,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
   }
   if (pi.m_ckkw && rpa.gen.NumberOfEvents()==0)
     THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
+  size_t oqcdlo(0), oewlo(0);
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
     Selector_Key skey(NULL,new Data_Reader(),true);
@@ -533,10 +534,20 @@ void Matrix_Element_Handler::BuildSingleProcessList
       cpi.m_mur2tag=
 	p_shower->GetShower()->GetKT2("Q2_CUT");
     }
+    if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);
     procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);
-    procs[i]->SetKFactor(cpi.m_kfactor,pi.m_oqcd,pi.m_oew);
+    procs[i]->SetKFactor(cpi.m_kfactor,oqcdlo,oewlo);
     procs[i]->SetShower(p_shower->GetShower());
   }
+}
+
+void Matrix_Element_Handler::GetMaxCouplings
+(PHASIC::Process_Base *const proc,size_t &oqcd,size_t &oew)
+{
+  if (proc->IsGroup())
+    for (size_t i(0);i<proc->Size();++i) GetMaxCouplings((*proc)[i],oqcd,oew);
+  oqcd=Max(oqcd,proc->OrderQCD());
+  oew=Max(oew,proc->OrderEW());
 }
 
 size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string buffer)

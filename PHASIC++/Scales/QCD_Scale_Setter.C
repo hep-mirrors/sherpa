@@ -267,7 +267,22 @@ double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     }
   }
   if (kt2cmin==std::numeric_limits<double>::max()) {
-    kt2cmin=m_p[2].PPerp2();
+    if (ampl->Leg(2)->Flav().IsMassive()) {
+      if (ampl->Leg(3)->Flav().IsMassive()) {
+	kt2cmin=sqrt(m_p[2].MPerp2()*m_p[3].MPerp2());
+      }
+      else {
+	kt2cmin=m_p[2].MPerp2();
+      }
+    }
+    else {
+      if (ampl->Leg(3)->Flav().IsMassive()) {
+	kt2cmin=m_p[3].MPerp2();
+      }
+      else {
+	kt2cmin=m_p[3].PPerp2();
+      }
+    }
   }
   while (ampl->Prev()) ampl=ampl->Prev();
   ampl->Delete();

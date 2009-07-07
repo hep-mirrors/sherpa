@@ -69,6 +69,9 @@ namespace SHERPA {
     std::string MakeString(const std::vector<std::string> &in,
 			   const size_t &first);
 
+    void GetMaxCouplings(PHASIC::Process_Base *const proc,
+			 size_t &oqcd,size_t &oew);
+
     size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
     template <typename Type> Type ExtractMPvalue(const std::string& str);

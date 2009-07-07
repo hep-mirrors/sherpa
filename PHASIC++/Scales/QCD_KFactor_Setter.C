@@ -52,7 +52,6 @@ QCD_KFactor_Setter::QCD_KFactor_Setter
 (Process_Base *const proc,const size_t &oqcdlo,const size_t &oewlo):
   KFactor_Setter_Base(proc), m_oqcdlo(oqcdlo)
 {
-  if (oewlo!=99) m_oqcdlo=2-oewlo;
 }
 
 double QCD_KFactor_Setter::KFactor() 
