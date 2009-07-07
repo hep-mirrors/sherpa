@@ -1228,7 +1228,7 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
     if (s2!=0) {
       if (s1->Str().length()==6) {
 	if (s1->Str()[0]=='G') {
-	  if (s1->Str()[2]==s1->Str()[4]) s1->SetString(string("8"));
+	  if (s1->Str()[2]==s1->Str()[4]) s1->SetString(string("Ng"));
 	  else {
 	    // kill G's
 	    // replace s1->Str()[2] -> s1->Str()[4]
@@ -1296,7 +1296,7 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
       }
       if (s2->Str().length()==6) {
 	if (s2->Str()[0]=='G') {
-	  if (s2->Str()[2]==s2->Str()[4]) s2->SetString(string("8"));
+	  if (s2->Str()[2]==s2->Str()[4]) s2->SetString(string("Ng"));
 	  else {
 	    // kill G's
 	    // replace s2->Str()[2] -> s2->Str()[4]

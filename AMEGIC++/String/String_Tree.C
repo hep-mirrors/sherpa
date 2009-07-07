@@ -246,6 +246,7 @@ Complex String_Tree::evalcolor(sknot* m)
     if (m->Str()==string("0.5")) return Complex(1./2.,0.);
     if (m->Str()==string("Nc"))  return Complex(CSC.Nc,0.);
     if (m->Str()==string("iNc")) return Complex(1./CSC.Nc,0.);
+    if (m->Str()==string("Ng"))  return Complex(CSC.Nc*CSC.Nc-1.,0.);
     if (m->Str()!="0") cout<<METHOD<<" : possible evaluation error! "<<m->Str()<<endl;
     return 0.;
   }
