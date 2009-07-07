@@ -419,7 +419,6 @@ bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 			const Flavour &fi,const Flavour &fj)
 {
-  if (fi.IsQuark() && fj.IsQuark() && fi!=fj.Bar()) return -1.0;
   Vec4D npi(pi), npj(pj);
   Flavour nfi(fi), nfj(fj);
   if (npi[0]<0.0) {
