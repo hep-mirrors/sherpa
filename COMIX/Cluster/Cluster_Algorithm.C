@@ -21,7 +21,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
-  m_cs(this), p_ms(ms), p_ampl(NULL), p_clus(NULL)
+  m_cs(this), p_ms(ms), p_ampl(NULL), p_clus(NULL),
+  m_cnt(0), m_rej(0), m_lfrac(0.0)
 {
 }
 
@@ -365,6 +366,7 @@ bool Cluster_Algorithm::ClusterStep
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
 		      winfo.m_mofl,p_ms);
     if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
+    if (p.empty()) return false;
   }
   else if (p_ampl->Legs().size()==4) {
     p.push_back(p_ampl->Leg(0)->Mom());
@@ -465,8 +467,19 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetX2(xs->Process()->Integrator()->ISR()->X2());
   m_nosol=!m_cs.SetColors(xs);
   ClusterInfo_Map cinfo;
-  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo)) 
-    THROW(fatal_error,"Invalid amplitude");
+  ++m_cnt;
+  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo)) {
+    ++m_rej;
+    double frac(m_rej/(double)m_cnt);
+    if (frac>1.25*m_lfrac && m_cnt>1000) {
+      m_lfrac=frac;
+      msg_Error()<<METHOD<<"(): No valid PS history in >"
+		 <<(int(m_lfrac*1000)/10.0)<<"% of calls.\n";
+    }
+    p_ampl->Delete();
+    p_ampl=NULL;
+    return false;
+  }
   msg_Debugging()<<"}\n";
   SetNMax(p_ampl,(1<<ccurs.size())-1,
 	  xs->Process()->Info().m_fi.m_nmax);

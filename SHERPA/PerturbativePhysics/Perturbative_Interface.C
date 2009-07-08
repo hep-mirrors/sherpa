@@ -83,6 +83,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_me->Process()->Generator()->SetClusterDefinitions
     (p_shower->GetShower()->GetClusterDefinitions());
   p_ampl=p_me->Process()->Generator()->ClusterConfiguration(p_me->Process());
+  if (p_ampl==NULL) return Return_Value::New_Event;
   if (p_me->Process()->Parent()->Info().m_fi.NLOType()&nlo_type::born) 
     p_ampl->SetRBMax(p_me->Process()->Integrator()->RBMax());
   if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;

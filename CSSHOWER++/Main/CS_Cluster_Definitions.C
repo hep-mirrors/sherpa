@@ -347,7 +347,9 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FF
   double Q2   = Q*Q;
   
   //new momenta
-  Vec4D pkt  = sqrt(Lambda(Q2,mij2,mk2)/Lambda(Q2,(pi+pj)*(pi+pj),mk2))*(pk-(Q*pk/Q2)*Q)+ (Q2+mk2-mij2)/(2.*Q2)*Q;
+  double lrat = Lambda(Q2,mij2,mk2)/Lambda(Q2,(pi+pj)*(pi+pj),mk2);
+  Vec4D pkt  = sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+ (Q2+mk2-mij2)/(2.*Q2)*Q;
+  if (lrat<0.0 || pkt[0]<0.0) return Vec4D_Vector();
   Vec4D pijt = Q-pkt; 
 
   //setting the new momenta
@@ -384,6 +386,9 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
   double pjpa = pj*pa;
   double pipj = pi*pj;
   double xija = (pipa+pjpa+pipj)/(pipa+pjpa);
+  double zi   = pipa/(pipa+pjpa);
+  double kt2 = -2.*(pipa+pjpa)*(1.-xija)*zi*(1.0-zi)-sqr(1.0-zi)*mi2-zi*zi*mj2;
+  if (kt2<0.0) return Vec4D_Vector();
   
   Vec4D Q(pa+pi+pj);
 
@@ -440,12 +445,16 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   double pipk = pi*pk;
   
   double xika = (pipa+pkpa+pipk)/(pipa+pkpa);
+  double ui   = pipa/(pipa+pkpa);
   
   double mi2  = p_ms->Mass2(ampl.Leg(i)->Flav());
   double mk2  = p_ms->Mass2(ampl.Leg(k)->Flav());
   double ma2  = p_ms->Mass2(ampl.Leg(a)->Flav());
   double mai2 = p_ms->Mass2(mo);
   double mb2  = p_ms->Mass2(ampl.Leg(1-a)->Flav());
+
+  double kt2  = -2.*(pipa+pkpa)*(1.-xika)*ui-mi2-sqr(1.0-xika)*ma2; 
+  if (kt2<0.0) return Vec4D_Vector();
 
   Vec4D Q(pa+pi+pk);
 
@@ -501,6 +510,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   double pipa = pi*pa;
   double pipb = pi*pb;
   double xiab = (papb+pipa+pipb)/papb;
+  if (xiab<0.0) return Vec4D_Vector();
 
   double mi2  = sqr(p_ms->Mass(ampl.Leg(i)->Flav()));
   double ma2  = sqr(p_ms->Mass(ampl.Leg(a)->Flav()));

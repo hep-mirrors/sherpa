@@ -114,6 +114,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
   }
   int shower(0);
   Return_Value::code stat(interface->DefineInitialConditions(blob));
+  if (stat==Return_Value::New_Event) return stat;
   if (blob->Type()!=::btp::Hadron_Decay) {
     msg_Debugging()<<METHOD<<"(): Setting scale for MI {\n";
     double scale(0.0);

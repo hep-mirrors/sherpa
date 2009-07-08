@@ -56,7 +56,9 @@ namespace COMIX {
 
     SizeT_Map m_id;
 
-    bool m_nosol, m_swap;
+    bool   m_nosol, m_swap;
+    size_t m_cnt, m_rej;
+    double m_lfrac;
 
     template <class SType>
     ATOOLS::ColorID GetPColor(Current_Base *const j,
