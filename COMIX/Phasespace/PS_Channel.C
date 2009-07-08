@@ -80,6 +80,8 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   int helpi(2);
   if (!read.ReadFromFile(helpi,"COMIX_PS_THREADS")) helpi=2;
   else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
+  if (nout<=4) helpi=0;
+  else if (nout<=6) helpi=Min(helpi,2);
   if (helpi>0) {
     m_cts.resize(helpi);
     for (size_t i(0);i<m_cts.size();++i) {
