@@ -8,6 +8,11 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#endif
+
+#ifdef USING__Threading
+#include <pthread.h>
 #endif
 
 namespace ATOOLS {
@@ -15,14 +20,44 @@ namespace ATOOLS {
   template <class _Type>
   class TermDelete_Vector:
     public std::vector<_Type*> {
+  private:
+
+#ifdef USING__Threading
+    pthread_mutex_t m_mtx;
+#endif
+
   public:
+
+    TermDelete_Vector()
+    {
+#ifdef USING__Threading
+      pthread_mutex_init(&m_mtx,NULL);
+#endif
+    }
 
     ~TermDelete_Vector()
     {
+#ifdef USING__Threading
+      pthread_mutex_destroy(&m_mtx);
+#endif
       while (!this->empty()) {
 	delete this->back();
 	this->pop_back();
       }
+    }
+
+    inline void MtxLock()
+    {
+#ifdef USING__Threading
+      pthread_mutex_lock(&m_mtx);
+#endif
+    }
+
+    inline void MtxUnLock()
+    {
+#ifdef USING__Threading
+      pthread_mutex_unlock(&m_mtx);
+#endif
     }
 
   };// end of class TermDelete_Vector
@@ -40,16 +75,26 @@ namespace ATOOLS {
 
   public:
 
-    inline static DTerm *New(const double &val=0.0)
+    static DTerm *New(const double &val=0.0)
     {
-      if (s_terms.empty()) return new DTerm(val);
+      s_terms.MtxLock();
+      if (s_terms.empty()) {
+	s_terms.MtxUnLock();
+	return new DTerm(val);
+      }
       DTerm *term(s_terms.back());
       s_terms.pop_back();
+      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
-    void Delete() { s_terms.push_back(this); }
+    void Delete()
+    {
+      s_terms.MtxLock();
+      s_terms.push_back(this);
+      s_terms.MtxUnLock();
+    }
 
   };// end of class DTerm
 
@@ -66,16 +111,26 @@ namespace ATOOLS {
 
   public:
 
-    inline static CTerm *New(const Complex &val=Complex(0.0,0.0))
+    static CTerm *New(const Complex &val=Complex(0.0,0.0))
     {
-      if (s_terms.empty()) return new CTerm(val);
+      s_terms.MtxLock();
+      if (s_terms.empty()) {
+	s_terms.MtxUnLock();
+	return new CTerm(val);
+      }
       CTerm *term(s_terms.back());
       s_terms.pop_back();
+      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
-    void Delete() { s_terms.push_back(this); }
+    void Delete()
+    {
+      s_terms.MtxLock();
+      s_terms.push_back(this);
+      s_terms.MtxUnLock();
+    }
 
   };// end of class CTerm
 
@@ -92,16 +147,26 @@ namespace ATOOLS {
 
   public:
 
-    inline static DV4Term *New(const Vec4D &val)
+    static DV4Term *New(const Vec4D &val)
     {
-      if (s_terms.empty()) return new DV4Term(val);
+      s_terms.MtxLock();
+      if (s_terms.empty()) {
+	s_terms.MtxUnLock();
+	return new DV4Term(val);
+      }
       DV4Term *term(s_terms.back());
       s_terms.pop_back();
+      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
-    void Delete() { s_terms.push_back(this); }
+    void Delete()
+    {
+      s_terms.MtxLock();
+      s_terms.push_back(this);
+      s_terms.MtxUnLock();
+    }
 
   };// end of class DV4Term
 
