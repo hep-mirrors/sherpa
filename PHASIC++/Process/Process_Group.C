@@ -344,9 +344,9 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(helpi,"PG_THREADS")) helpi=4;
   else msg_Info()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-  if (m_nout<=3) helpi=0;
-  else if (m_nout==4) helpi=Min(helpi,2);
-  else if (m_nout==5) helpi=Min(helpi,3);
+  if (m_nout<=4) helpi=0;
+  else if (m_nout==5) helpi=Min(helpi,2);
+  else if (m_nout==6) helpi=Min(helpi,3);
   if (m_mprocs.size()) m_cts.resize(helpi);
   for (size_t i(0);i<m_cts.size();++i) {
     PG_TID *tid(new PG_TID(this));
