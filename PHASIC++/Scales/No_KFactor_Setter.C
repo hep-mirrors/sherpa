@@ -45,6 +45,15 @@ No_KFactor_Setter::No_KFactor_Setter
 
 double No_KFactor_Setter::KFactor() 
 {
+  if (!m_kfkey.Assigned()) {
+     std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
+    msg_Debugging()<<"Assign '"<<p_proc->Name()
+		   <<"' '"<<kfinfo<<"'\n";
+    m_kfkey.Assign(p_proc->Name(),2,0,p_proc->
+		   Integrator()->PSHandler()->GetInfo());
+    m_kfkey.SetInfo(kfinfo);
+  }
+  m_kfkey<<1.0;
   return 1.0;
 }
 
