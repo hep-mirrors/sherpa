@@ -6,7 +6,6 @@
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
-#include "APACIC++/Showers/Initial_State_Shower.H"
 #ifdef USING__Amisic
 #include "AMISIC++/Main/MI_Base.H"
 #endif

@@ -108,13 +108,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AHADICBUILDDIR)
   AC_SUBST(AHADICLIBS)
   
-  APACICDIR="\${top_srcdir}/APACIC++"
-  APACICBUILDDIR="\${top_builddir}/APACIC++"
-  APACICLIBS="-L\${APACICBUILDDIR}/Main -L\${APACICBUILDDIR}/Showers -lApacicShowers -lApacicMain"
-  AC_SUBST(APACICDIR)
-  AC_SUBST(APACICBUILDDIR)
-  AC_SUBST(APACICLIBS)
-  
   ATOOLSDIR="\${top_srcdir}/ATOOLS"
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
   ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math \
@@ -322,6 +315,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for analysis); AC_MSG_RESULT(no); analysis=false ]
   )
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
+
+  AC_ARG_ENABLE(
+    apacic,
+    AC_HELP_STRING([--enable-apacic], [Enable APACIC++.]),
+    [ AC_MSG_CHECKING(for APACIC++);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); apacic=false ;;
+        yes)  APACICDIR="\${top_srcdir}/AddOns/Apacic++"
+              APACICBUILDDIR="\${top_builddir}/AddOns/Apacic++"
+              APACICLIBS="-L\${APACICBUILDDIR}/Main -lApacicMain"
+              AC_MSG_RESULT(yes); apacic=true;;
+      esac
+      ],
+    [ apacic=false ]
+  )
+  if test "$apacic" = "true" ; then
+    AC_DEFINE([USING__Apacic], "1", [using APACIC++])
+    fi
+  AC_SUBST(APACICDIR)
+  AC_SUBST(APACICBUILDDIR)
+  AC_SUBST(APACICLIBS)
+  AM_CONDITIONAL(USING__Apacic, test "$apacic" = "true" )
 
   AC_ARG_ENABLE(
     mcatnloinclude,

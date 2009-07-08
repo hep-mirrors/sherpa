@@ -10,7 +10,6 @@ SUBDIRS       = \
 		EXTRA_XS \
 		AMEGIC++ \
 		COMIX \
-		APACIC++ \
 		CSSHOWER++ \
 		AMISIC++ \
 		AHADIC++ \
