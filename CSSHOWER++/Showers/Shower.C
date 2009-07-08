@@ -19,6 +19,10 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
   m_sudakov.SetCoupling(MODEL::s_model,k0sq,is_fac,fs_fac);
   m_sudakov.SetShower(this);
+  m_kinFF.SetSudakov(&m_sudakov);
+  m_kinFI.SetSudakov(&m_sudakov);
+  m_kinIF.SetSudakov(&m_sudakov);
+  m_kinII.SetSudakov(&m_sudakov);
 }
 
 Shower::~Shower() 

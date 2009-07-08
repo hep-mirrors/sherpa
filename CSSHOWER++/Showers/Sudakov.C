@@ -152,21 +152,37 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     m_ffmap[split->GetFlavourB()]
       [split->GetFlavourC()]
       [split->GetFlavourA()]=split;
+    if (split->On())
+      m_sffmap[split->GetFlavourB()]
+	[split->GetFlavourC()]
+	[split->GetFlavourA()]=split;
     break;
   case cstp::FI:
     m_fimap[split->GetFlavourB()]
       [split->GetFlavourC()]
       [split->GetFlavourA()]=split;
+    if (split->On())
+      m_sfimap[split->GetFlavourB()]
+	[split->GetFlavourC()]
+	[split->GetFlavourA()]=split;
     break;
   case cstp::IF:
     m_ifmap[split->GetFlavourA().Bar()]
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
+    if (split->On())
+      m_sifmap[split->GetFlavourB()]
+	[split->GetFlavourC()]
+	[split->GetFlavourA()]=split;
     break;
   case cstp::II:
     m_iimap[split->GetFlavourA().Bar()]
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
+    if (split->On())
+      m_siimap[split->GetFlavourB()]
+	[split->GetFlavourC()]
+	[split->GetFlavourA()]=split;
     break;
   case cstp::none: break;
   }
@@ -525,3 +541,17 @@ bool Sudakov::Splitting(double Q2,double x) {
   return true;
 }
 
+bool Sudakov::HasKernel(const ATOOLS::Flavour &fli,
+			const ATOOLS::Flavour &flj,
+			const cstp::code type) const
+{
+  const SF_EEE_Map *cmap(&m_sffmap);
+  if (type==cstp::FI) cmap=&m_sfimap;
+  else if (type==cstp::IF) cmap=&m_sifmap;
+  else if (type==cstp::II) cmap=&m_siimap;
+  SF_EEE_Map::const_iterator eees(cmap->find(fli));
+  if (eees==cmap->end()) return false;
+  SF_EE_Map::const_iterator ees(eees->second.find(flj));
+  if (ees==eees->second.end()) return false;
+  return true;
+}

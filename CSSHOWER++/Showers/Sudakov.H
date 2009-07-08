@@ -24,6 +24,7 @@ namespace CSSHOWER {
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spec;
     SF_EEE_Map m_ffmap, m_fimap, m_ifmap, m_iimap;
+    SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     void ProduceT();
@@ -61,6 +62,10 @@ namespace CSSHOWER {
     inline const SF_EEE_Map &FIMap() const { return m_fimap; }
     inline const SF_EEE_Map &IFMap() const { return m_ifmap; }
     inline const SF_EEE_Map &IIMap() const { return m_iimap; }
+
+    bool HasKernel(const ATOOLS::Flavour &fli,
+		   const ATOOLS::Flavour &flj,
+		   const cstp::code type) const;
 
     inline double PT2Min() const { return m_k0sq; }
 

@@ -7,11 +7,13 @@
 namespace PHASIC { class Jet_Finder; }
 
 namespace CSSHOWER {
+  class Sudakov;
   class Kinematics_Base {
   public:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
     PHASIC::Jet_Finder *p_jf;
     ATOOLS::Mass_Selector *p_ms;
+    Sudakov *p_sud;
   public:
     Kinematics_Base(): p_jf(NULL), p_ms(NULL) {}
     virtual ~Kinematics_Base() {}
@@ -23,6 +25,7 @@ namespace CSSHOWER {
     { PHASIC::Jet_Finder *ojf(p_jf); p_jf=jf; return ojf; }
     inline PHASIC::Jet_Finder *JF() const { return p_jf; }
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+    inline void SetSudakov(Sudakov *const sud) { p_sud=sud; }
   };
 
   class Kinematics_FF : public Kinematics_Base {

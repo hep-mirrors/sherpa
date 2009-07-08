@@ -1,5 +1,6 @@
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 #include "CSSHOWER++/Tools/Singlet.H"
+#include "CSSHOWER++/Showers/Sudakov.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -111,8 +112,10 @@ int Kinematics_FF::MakeKinematics
   if (p_jf) {
     bool jet(true);
     jet&=p_jf->Qij2(q1,q3,q2,fli,flj)>=split->KtVeto();
-    jet&=p_jf->Qij2(q2,q3,q1,spect->GetFlavour(),flj)>=split->KtVeto();
-    jet&=p_jf->Qij2(q1,q2,q3,fli,spect->GetFlavour())>=split->KtVeto();
+    if (p_sud->HasKernel(spect->GetFlavour(),flj,cstp::FF))
+      jet&=p_jf->Qij2(q2,q3,q1,spect->GetFlavour(),flj)>=split->KtVeto();
+    if (p_sud->HasKernel(fli,spect->GetFlavour(),cstp::FF))
+      jet&=p_jf->Qij2(q1,q2,q3,fli,spect->GetFlavour())>=split->KtVeto();
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -221,8 +224,10 @@ int Kinematics_FI::MakeKinematics
   if (p_jf) {
     bool jet(true);
     jet&=p_jf->Qij2(q1,q3,-q2,fli,flj)>=split->KtVeto();
-    jet&=p_jf->Qij2(-q2,q3,q1,spect->GetFlavour().Bar(),flj)>=split->KtVeto();
-    jet&=p_jf->Qij2(q1,-q2,q3,fli,spect->GetFlavour().Bar())>=split->KtVeto();
+    if (p_sud->HasKernel(flj,spect->GetFlavour(),cstp::IF))
+      jet&=p_jf->Qij2(-q2,q3,q1,spect->GetFlavour(),flj)>=split->KtVeto();
+    if (p_sud->HasKernel(fli,spect->GetFlavour(),cstp::IF))
+      jet&=p_jf->Qij2(q1,-q2,q3,fli,spect->GetFlavour())>=split->KtVeto();
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -329,9 +334,11 @@ int Kinematics_IF::MakeKinematics
   
   if (p_jf) {
     bool jet(true);
-    jet&=p_jf->Qij2(-q1,q3,q2,fla.Bar(),fli)>=split->KtVeto();
-    jet&=p_jf->Qij2(q2,q3,-q1,spect->GetFlavour(),fli)>=split->KtVeto();
-    jet&=p_jf->Qij2(-q1,q2,q3,fla.Bar(),spect->GetFlavour())>=split->KtVeto();
+    jet&=p_jf->Qij2(-q1,q3,q2,split->GetFlavour(),fli)>=split->KtVeto();
+    if (p_sud->HasKernel(spect->GetFlavour(),fli,cstp::FI))
+      jet&=p_jf->Qij2(q2,q3,-q1,spect->GetFlavour(),fli)>=split->KtVeto();
+    if (p_sud->HasKernel(split->GetFlavour(),spect->GetFlavour(),cstp::IF))
+      jet&=p_jf->Qij2(-q1,q2,q3,split->GetFlavour(),spect->GetFlavour())>=split->KtVeto();
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -425,9 +432,9 @@ int Kinematics_II::MakeKinematics
 
   if (p_jf) {
     bool jet(true);
-    jet&=p_jf->Qij2(-q1,q3,-q2,fli.Bar(),newfl)>=split->KtVeto();
-    jet&=p_jf->Qij2(-q2,q3,-q1,spect->GetFlavour().Bar(),newfl)>=split->KtVeto();
-    jet&=p_jf->Qij2(-q1,-q2,q3,fli.Bar(),spect->GetFlavour().Bar())>=split->KtVeto();
+    jet&=p_jf->Qij2(-q1,q3,-q2,split->GetFlavour(),newfl)>=split->KtVeto();
+    if (p_sud->HasKernel(spect->GetFlavour(),newfl,cstp::II))
+      jet&=p_jf->Qij2(-q2,q3,-q1,spect->GetFlavour(),newfl)>=split->KtVeto();
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
