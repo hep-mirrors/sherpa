@@ -43,8 +43,10 @@ namespace SHERPA {
     inline double TotalXS() const { return m_sum/m_n; }
     inline double TotalVar() const
     { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
-    inline double TotalErr() const 
-    { return sqrt(TotalVar()/m_n); }
+    inline double TotalErr() const {
+      if (m_n==1) return TotalXS();
+      else return sqrt(TotalVar()/m_n);
+    }
 
   };
 
