@@ -9,6 +9,8 @@ namespace COMIX {
 
   class Matrix_Element;
 
+  typedef std::set<PS_Generator*> PSGenerator_Set;
+
   class Single_Process: 
     public PHASIC::Single_Process, public Process_Base {
   protected:
@@ -20,6 +22,7 @@ namespace COMIX {
     ATOOLS::Flavour_Map  m_fmap;
 
     CFlavVector_Map m_cfmap;
+    PSGenerator_Set m_psset;
 
     double m_etime, m_en;
 
