@@ -414,6 +414,16 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	  flmap.clear();
 	  return false;
 	}
+	if (ampl.m_cur[n][i]->Flav().Mass()!=
+	    m_cur[n][i]->Flav().Mass() ||
+	    ampl.m_cur[n][i]->Flav().Width()!=
+	    m_cur[n][i]->Flav().Width()) {
+	  msg_Debugging()<<"    mass or width differs\n  }\n";
+	  msg_Debugging()<<"} no match\n";
+          Vertex_Base::SetVLMode(svlmode);
+	  flmap.clear();
+	  return false;
+	}
 	if (ampl.m_cur[n][i]->Flav().StrongCharge()!=
 	    m_cur[n][i]->Flav().StrongCharge()) {
 	  msg_Debugging()<<"    color structure differs\n  }\n";
