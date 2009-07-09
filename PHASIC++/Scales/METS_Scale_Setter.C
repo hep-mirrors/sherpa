@@ -51,7 +51,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(METS_Scale_Setter_Getter,"METS",
+DECLARE_GETTER(METS_Scale_Setter_Getter,"STRICT_METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *METS_Scale_Setter_Getter::
@@ -63,7 +63,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void METS_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"mets scale scheme\n";
+  str<<"strict mets scale scheme\n";
 }
 
 METS_Scale_Setter::METS_Scale_Setter
@@ -162,7 +162,22 @@ double METS_Scale_Setter::CalculateScale
     }
   }
   if (kt2cmin==std::numeric_limits<double>::max()) {
-    kt2cmin=m_p[2].PPerp2();
+    if (ampl->Leg(2)->Flav().IsMassive()) {
+      if (ampl->Leg(3)->Flav().IsMassive()) {
+	kt2cmin=sqrt(m_p[2].MPerp2()*m_p[3].MPerp2());
+      }
+      else {
+	kt2cmin=m_p[2].MPerp2();
+      }
+    }
+    else {
+      if (ampl->Leg(3)->Flav().IsMassive()) {
+	kt2cmin=m_p[3].MPerp2();
+      }
+      else {
+	kt2cmin=m_p[3].PPerp2();
+      }
+    }
   }
   m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,kt2cmin);
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";

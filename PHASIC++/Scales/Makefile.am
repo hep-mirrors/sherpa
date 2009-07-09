@@ -9,6 +9,7 @@ libPhasicScales_la_SOURCES    =	\
 				NLO_Scale_Setter.C \
 				MPI_Scale_Setter.C \
 				QCD_Scale_Setter.C \
+				MQCD_Scale_Setter.C \
 				METS_Scale_Setter.C \
 				QCD_KFactor_Setter.C \
 				No_KFactor_Setter.C
