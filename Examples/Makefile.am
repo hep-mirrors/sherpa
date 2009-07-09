@@ -9,4 +9,4 @@ nobase_dist_examples_DATA         =	\
 			Tevatron_QCD/Run.dat \
 			Tevatron_UE/Run.dat \
 			Tevatron_WJets/Run.dat \
-			Tevatron_Z6Jets/Run.dat
+			Tevatron_ZJets/Run.dat
