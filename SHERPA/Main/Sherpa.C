@@ -125,8 +125,10 @@ bool Sherpa::InitializeTheEventHandler()
   int mode        = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
   p_iohandler->SetEventHandler(p_eventhandler);
-  Analysis_Interface *ana(p_inithandler->GetAnalysis());
-  if (ana) p_inithandler->GetAnalysis()->SetEventHandler(p_eventhandler);
+  Analysis_Map *anas(p_inithandler->GetAnalyses());
+  for (Analysis_Map::iterator it=anas->begin(); it!=anas->end(); ++it) {
+    it->second->SetEventHandler(p_eventhandler);
+  }
   
   std::string sme = std::string("SignalMEs");
   switch (mode) {
@@ -153,7 +155,7 @@ bool Sherpa::InitializeTheEventHandler()
 
     break;
   }
-  if (ana) p_eventhandler->AddEventPhase(new Analysis_Phase(ana));
+  if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   p_eventhandler->PrintGenericEventStructure();
   return 1;
 }

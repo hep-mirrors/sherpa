@@ -12,11 +12,14 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Analysis_Phase::Analysis_Phase(Analysis_Interface *const analysis):
-  Event_Phase_Handler(std::string("Analysis")), 
-  p_analysis(analysis), m_wit(std::numeric_limits<size_t>::max()), m_init(0)
+Analysis_Phase::Analysis_Phase(Analysis_Map *const analyses):
+  Event_Phase_Handler(""), 
+  p_analyses(analyses), m_wit(std::numeric_limits<size_t>::max()), m_init(0)
 {
   m_type=eph::Analysis;
+  for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+    m_name+=it->first+"+";
+  if (m_name.length()>0) m_name.erase(m_name.length()-1);
   Data_Reader read(" ",";","!","=");
   double wit;
   if (read.ReadFromFile(wit,"ANALYSIS_WRITEOUT_INTERVAL")) {
@@ -31,20 +34,29 @@ Analysis_Phase::Analysis_Phase(Analysis_Interface *const analysis):
 
 Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight) 
 {
-  if (!m_init) m_init=p_analysis->Init();
-  if (!bloblist->empty()) p_analysis->Run(bloblist);
+  if (!m_init) {
+    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+      it->second->Init();
+    m_init=true;
+  }
+  if (!bloblist->empty())
+    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+      it->second->Run(bloblist);
   if (rpa.gen.NumberOfDicedEvents()%m_wit==0 &&
       rpa.gen.NumberOfDicedEvents()<rpa.gen.NumberOfEvents()) 
-    p_analysis->WriteOut();
+    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+      it->second->WriteOut();
   return Return_Value::Nothing;
 }
 
 void Analysis_Phase::CleanUp() 
 {
-  p_analysis->CleanUp();
+  for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+    it->second->CleanUp();
 }
 
 void Analysis_Phase::Finish(const std::string &path)
 {
-  p_analysis->Finish();
+  for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+    it->second->Finish();
 }

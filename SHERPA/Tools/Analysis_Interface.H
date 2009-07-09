@@ -43,6 +43,8 @@ namespace SHERPA {
 
   };// end of class Analysis_Interface
 
+  typedef std::map<std::string,Analysis_Interface *> Analysis_Map;
+
 }// end of namespace SHERPA
 
 #endif

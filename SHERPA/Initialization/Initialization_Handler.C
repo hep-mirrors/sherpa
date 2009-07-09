@@ -50,7 +50,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_mihandler(NULL), p_softphotons(NULL),
-  p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), p_analysis(NULL)
+  p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -179,7 +179,10 @@ Initialization_Handler::~Initialization_Handler()
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
-  if (p_analysis) delete p_analysis;
+  while (m_analyses.size()>0) {
+    delete m_analyses.begin()->second;
+    m_analyses.erase(m_analyses.begin());
+  }
   std::set<Matrix_Element_Handler*> deletedme;
   while (m_mehandlers.size()>0) {
     if (deletedme.find(m_mehandlers.begin()->second)==deletedme.end()) {
@@ -250,8 +253,8 @@ void Initialization_Handler::ShowParameterSyntax()
   if (helpi>0) {
     msg->SetLevel(2);
     InitializeTheAnalyses();
-    if (p_analysis) p_analysis->ShowSyntax(helpi);
-    else msg_Out()<<"No analysis available."<<std::endl;
+    for (Analysis_Map::iterator it=m_analyses.begin(); it!=m_analyses.end(); ++it)
+      it->second->ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_VARIABLE_SYNTAX")) helpi=0;
@@ -719,19 +722,26 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  std::string handler=p_dataread->GetValue<std::string>("ANALYSIS","0");
-  if (handler=="0") return true;
-  if (handler=="1") handler="Internal";
-  if (handler=="Internal")
-    if (!s_loader->LoadLibrary("SherpaAnalysis")) 
-      THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
-  if (handler=="Rivet")
-    if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
-      THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
-  p_analysis=Analysis_Interface::Analysis_Getter_Function::GetObject
-    (handler,Analysis_Arguments(m_path,m_analysisdat,outpath));
-  if (p_analysis==NULL) THROW(fatal_error,"Cannot initialize Analysis.");
+  std::string analysis=p_dataread->GetValue<std::string>("ANALYSIS","0");
+  std::vector<std::string> analyses;
+  Data_Reader readline(",",";","#","");
+  readline.SetString(analysis);
+  readline.VectorFromString(analyses);
+  for (size_t i=0; i<analyses.size(); ++i) {
+    if (analyses[i]=="0") continue;
+    if (analyses[i]=="1") analyses[i]="Internal";
+    if (analyses[i]=="Internal")
+      if (!s_loader->LoadLibrary("SherpaAnalysis")) 
+        THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
+    if (analyses[i]=="Rivet")
+      if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
+        THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
+    Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
+                            (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
+    if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);
+    m_analyses.insert(make_pair(analyses[i],ana));
+  }
   return true;
 }
 
