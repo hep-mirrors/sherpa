@@ -454,16 +454,16 @@ bool MQCD_Setter_CS_CD::Combine
     double mb2=sqr(ampl.Leg(1-k)->Flav().Mass());
     double Q2=Q.Abs2(), ttau=Q2-ma2-mij2, tau=Q2-ma2-mi2-mj2;
     double sij=-((1.0-xija)*(Q2-ma2)-(mi2+mj2))/xija;
-    if (ttau*ttau<4.*ma2*mij2 ||
-	tau*tau<4.*ma2*sij*sqr(xija)) return false;
+    if (ttau*ttau<4.*ma2*mij2 || ttau>0.0 ||
+	tau*tau<4.*ma2*sij*sqr(xija) || tau>0.0) return false;
     double xiija=xija*(ttau-sqrt(ttau*ttau-4.*ma2*mij2))/
       (tau-sqrt(tau*tau-4.*ma2*sij*sqr(xija)));
     double pijpa=pipa+pjpa, gam=-pijpa+sqrt(pijpa*pijpa-ma2*sij);
+    if (IsZero(xiija,1.0e-6) || IsZero(gam,1.0e-6)) return false;
     double bet=1.0-ma2*sij/(gam*gam), gamt=gam*xiija;
     Vec4D l(((pi+pj)+sij/gam*pa)/bet), n((-pa-ma2/gam*(pi+pj))/bet);
     l*=(1.0-ma2/gam)/(1.0-ma2/gamt);
     n*=(1.0-sij/gam)/(1.0-mij2/gamt);
-    if (IsZero(xiija,1.0e-6)) return false;
     Vec4D pat(-n-ma2/gamt*l), pijt(l+mij2/gamt*n), pb(ampl.Leg(1-k)->Mom());
     double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
     double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
@@ -497,16 +497,16 @@ bool MQCD_Setter_CS_CD::Combine
     double mb2=sqr(ampl.Leg(1-i)->Flav().Mass());
     double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;
     double sjk=-((1.0-xjka)*(Q2-ma2)-(mj2+mk2))/xjka;
-    if (ttau*ttau<4.*maj2*mk2 ||
-	tau*tau<4.*ma2*sjk*sqr(xjka)) return false;
+    if (ttau*ttau<4.*maj2*mk2 || ttau>0.0 ||
+	tau*tau<4.*ma2*sjk*sqr(xjka) || tau>0.0) return false;
     double xijka=xjka*(ttau-sqrt(ttau*ttau-4.*maj2*mk2))/
       (tau-sqrt(tau*tau-4.*ma2*sjk*sqr(xjka)));
     double pjkpa=pjpa+pkpa, gam=-pjkpa+sqrt(pjkpa*pjkpa-ma2*sjk);
+    if (IsZero(xijka,1.0e-6) || IsZero(gam,1.0e-6)) return false;
     double bet=1.0-ma2*sjk/(gam*gam), gamt=gam*xijka;
     Vec4D l((-pa-ma2/gam*(pj+pk))/bet), n(((pj+pk)+sjk/gam*pa)/bet);
     l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
     n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
-    if (IsZero(xijka,1.0e-6)) return false;
     Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l), pb(ampl.Leg(1-i)->Mom());
     double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
     double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
@@ -543,8 +543,8 @@ bool MQCD_Setter_CS_CD::Combine
 	tau*tau<4.0*ma2*mb2*xjab*xjab) return false;
     double xijab=xjab*(ttau+sqrt(ttau*ttau-4.0*maj2*mb2))
       /(tau+sqrt(tau*tau-4.0*ma2*mb2*xjab*xjab));
-    if (IsZero(xijab,1.0e-6)) return false;
     double gam=papb+sqrt(papb*papb-ma2*mb2);
+    if (IsZero(xijab,1.0e-6) || IsZero(gam,1.0e-6)) return false;
     Vec4D pajt=xijab
       *(1.0-maj2*mb2/sqr(gam*xijab))/(1.0-ma2*mb2/sqr(gam))
       *(pa-ma2/gam*pb)+maj2/(xijab*gam)*pb;
