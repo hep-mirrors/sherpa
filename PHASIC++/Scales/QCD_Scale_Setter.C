@@ -353,7 +353,7 @@ CS_Params QCD_Setter_CS_CD::KT2
 	return CS_Params(kt2,xjka,uj,1);
       }
       else {
-	double papb=li->Mom()*lk->Mom(), pjpa=lj->Mom()*lk->Mom();
+	double papb=li->Mom()*lk->Mom(), pjpa=lj->Mom()*li->Mom();
 	double pjpb=lj->Mom()*lk->Mom(), xjab=(papb+pjpa+pjpb)/papb;
 	double vj=-pjpa/papb, kt2=2.*papb*vj*(1.-xjab);
 	return CS_Params(kt2,xjab,vj,3);
