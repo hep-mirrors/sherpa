@@ -778,29 +778,6 @@ void Initialization_Handler::SetScaleFactors()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  Data_Reader reader(" ",";","!","=");
-  reader.AddWordSeparator("\t");
-  reader.SetInputPath(rpa.gen.Variable("SHERPA_DAT_PATH")+m_path+"/");
-  reader.SetInputFile(m_showerdat);
-  bool changed(false);
-  double fac(1.0);
-  if (!reader.ReadFromFile(fac,"IS_CPL_SCALE_FACTOR")) fac=1.0;
-  else changed=true;
-  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(fac));
-  if (!reader.ReadFromFile(fac,"FS_CPL_SCALE_FACTOR")) fac=1.0;
-  else changed=true;
-  rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(fac));
-  int scheme(0);
-  if (!reader.ReadFromFile(scheme,"S_KFACTOR_SCHEME")) scheme=0;
-  else changed=true;
-  rpa.gen.SetVariable("S_KFACTOR_SCHEME",ToString(scheme));
-  if (changed)
-    msg_Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
-	       <<"  Scale- and K-factors for Matrix Element weighting\n"
-	       <<"  are set to account for Parton Shower settings.\n"
-	       <<"  If re-using integration results, please make sure\n"
-	       <<"  that the integration was performed this way.\n"
-	       <<om::reset<<om::bold<<"}"<<om::reset<<std::endl;
 }
 
 int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
