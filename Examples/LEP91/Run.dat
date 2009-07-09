@@ -1,7 +1,12 @@
 (run){
-  OUTPUT = 2;
-  EVENTS = 10000;
-}(run);
+  EVENTS = 10000
+}(run)
+
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 45.625;
+  BEAM_2 -11; BEAM_ENERGY_2 45.625;
+}(beam)
+
 (processes){
   Process 11 -11 -> 93 93 93{1};
   CKKW pow(10,-2.25);
@@ -12,20 +17,14 @@
   CKKW pow(10,-2.25);
   Order_EW 2;
   End process;
-}(processes);
-(me){
-  ME_SIGNAL_GENERATOR Internal Comix;
-}(me);
+}(processes)
+
 (model){
   ORDER_ALPHAS 0;
   ALPHAS(MZ) 0.127;
-  STABLE[15] 0;
   MASSIVE[5] 1;
 }(model)
-(beam){
-  BEAM_1  11; BEAM_ENERGY_1 45.625;
-  BEAM_2 -11; BEAM_ENERGY_2 45.625;
-}(beam);
-(shower){
-  SHOWER_GENERATOR CSS;
-}(shower);
+
+(me){
+  ME_SIGNAL_GENERATOR Internal Comix;
+}(me)

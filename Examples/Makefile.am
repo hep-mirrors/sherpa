@@ -8,5 +8,5 @@ nobase_dist_examples_DATA         =	\
 			PEPII_BaBar/Run.dat \
 			Tevatron_QCD/Run.dat \
 			Tevatron_UE/Run.dat \
-			Tevatron1960_WJets/Run.dat \
-			Tevatron1960_Z6Jets/Run.dat
+			Tevatron_WJets/Run.dat \
+			Tevatron_Z6Jets/Run.dat
