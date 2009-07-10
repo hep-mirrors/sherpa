@@ -16,6 +16,16 @@
 
 namespace PHASIC {
 
+  struct CS_Params {
+    double m_kt2, m_z, m_y;
+    ATOOLS::Flavour m_fl;
+    int m_mode;
+    CS_Params(const double &kt2,const double &z,
+	      const double &y,const ATOOLS::Flavour &fl,
+	      const int mode=-1):
+      m_kt2(kt2), m_z(z), m_y(y), m_fl(fl), m_mode(mode) {}
+  };// end of struct CS_Params
+
   class MQCD_Scale_Setter: public Scale_Setter_Base {
   private:
 
@@ -30,6 +40,30 @@ namespace PHASIC {
 
     SP(Color_Integrator) p_ci;
 
+    size_t m_cnt, m_rej;
+    double m_lfrac;
+
+    static double s_eps, s_kt2max;
+
+    bool CheckColors(const ATOOLS::Cluster_Leg *li,
+		     const ATOOLS::Cluster_Leg *lj,
+		     const ATOOLS::Cluster_Leg *lk,
+		     const ATOOLS::Flavour &mo) const;
+    ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
+				  const ATOOLS::Cluster_Leg *lj,
+				  const ATOOLS::Cluster_Leg *lk) const;
+
+    double Lam(const double &s,
+	       const double &sb,const double &sc) const;
+
+    CS_Params KT2(const ATOOLS::Cluster_Leg *li,
+		  const ATOOLS::Cluster_Leg *lj,
+		  const ATOOLS::Cluster_Leg *lk,
+		  const ATOOLS::Flavour &mo) const;
+
+    bool Combine(ATOOLS::Cluster_Amplitude &ampl,
+		 int i,int j,int k,const ATOOLS::Flavour &mo) const;
+
   public:
 
     MQCD_Scale_Setter(Process_Base *const proc,
@@ -43,42 +77,7 @@ namespace PHASIC {
     void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-  };// end of class Scale_Setter_Base
-
-  struct CS_Params {
-    double m_kt2, m_z, m_y;
-    ATOOLS::Flavour m_fl;
-    int m_mode;
-    CS_Params(const double &kt2,const double &z,
-	      const double &y,const ATOOLS::Flavour &fl,
-	      const int mode=-1):
-      m_kt2(kt2), m_z(z), m_y(y), m_fl(fl), m_mode(mode) {}
-  };// end of struct CS_Params
-
-  class MQCD_Setter_CS_CD {
-  private:
-
-    double Lam(const double &s,
-	       const double &sb,const double &sc) const;
-
-    bool CheckColors(const ATOOLS::Cluster_Leg *li,
-		     const ATOOLS::Cluster_Leg *lj,
-		     const ATOOLS::Cluster_Leg *lk);
-    ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
-				  const ATOOLS::Cluster_Leg *lj,
-				  const ATOOLS::Cluster_Leg *lk);
-
-  public:
-
-    CS_Params KT2(const ATOOLS::Cluster_Leg *li,
-		  const ATOOLS::Cluster_Leg *lj,
-		  const ATOOLS::Cluster_Leg *lk,
-		  const ATOOLS::Flavour &mo);
-
-    bool Combine(ATOOLS::Cluster_Amplitude &ampl,
-		 int i,int j,int k,const ATOOLS::Flavour &mo);
-    
-  };// end of class MQCD_Setter_CS_CD
+  };// end of class MQCD_Scale_Setter
 
 }// end of namespace PHASIC
 
@@ -100,10 +99,15 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"mets scale scheme\n";
 }
 
+double MQCD_Scale_Setter::s_eps=1.0e-6;
+double MQCD_Scale_Setter::s_kt2max=
+       sqrt(std::numeric_limits<double>::max());
+
 MQCD_Scale_Setter::MQCD_Scale_Setter
 (Process_Base *const proc,
  const std::string &mur2tag,const std::string &muf2tag): 
-  Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this)
+  Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this),
+  m_cnt(0), m_rej(0), m_lfrac(0.0)
 {
   m_p.resize(4);
   SetScale(muf2tag,m_muf2tagset,m_muf2calc);
@@ -154,6 +158,7 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       p_proc->MapProc()->ScaleSetter()->Scale(stp::fac);
     return m_scale[stp::fac];
   }
+  ++m_cnt;
   m_p=momenta;
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
@@ -167,11 +172,9 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
   Single_Process *proc(p_proc->Get<Single_Process>());
-  double kt2max(0.0);
-  MQCD_Setter_CS_CD cd;
   std::set<CKey> trials;
   while (ampl->Legs().size()>4) {
-    double kt2w(sqrt(std::numeric_limits<double>::max()));
+    double kt2w(s_kt2max);
     size_t iw(0), jw(0), kw(0);
     CKey ckw(0,0,0,kf_none);
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -191,7 +194,13 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 			       <<" <-> "<<ID(ck.m_k)<<"\n";
 		continue;
 	      }
-	      CS_Params cs(cd.KT2(li,lj,lk,cf[f]));
+	      if (!CheckColors(li,lj,lk,cf[f])) {
+		trials.insert(ck);
+		continue;
+	      }
+	      CS_Params cs(KT2(li,lj,lk,cf[f]));
+	      if (cf[f].Strong() &&
+		  cs.m_kt2<s_kt2max) cs.m_kt2*=1.0-s_eps;
 	      if (cs.m_kt2<kt2w) {
 		kt2w=cs.m_kt2;
 		ckw=ck;
@@ -207,7 +216,14 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     trials.insert(ckw);
     if (iw==0 && jw==0 && kw==0) {
       if (ampl->Prev()==NULL) {
-	msg_Error()<<METHOD<<"(): No CSS history. Set \\hat{s}."<<std::endl;
+	++m_rej;
+	double frac(m_rej/(double)m_cnt);
+	if (frac>1.25*m_lfrac && m_cnt>5000) {
+	  m_lfrac=frac;
+	  msg_Error()<<METHOD<<"(): No CSS history in >"
+		     <<(int(m_lfrac*10000)/100.0)
+		     <<"% of calls. Set \\hat{s}."<<std::endl;
+	}
 	ampl->Delete();
 	m_scale[stp::ren]=m_scale[stp::fac]=(m_p[0]+m_p[1]).Abs2();
 	msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
@@ -224,7 +240,6 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       ampl->DeleteNext();
       continue;
     }
-    kt2max=Max(kt2max,kt2w);
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     msg_Debugging()<<"Cluster "<<ckw.m_fl<<" "
 		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
@@ -232,10 +247,23 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		   <<" => "<<sqrt(kt2w)<<"\n";
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
-    if (!cd.Combine(*ampl,iw,jw,kw,ckw.m_fl)) {
+    if (!Combine(*ampl,iw,jw,kw,ckw.m_fl)) {
       ampl=ampl->Prev();
       ampl->DeleteNext();
       continue;
+    }
+    if (ampl->Legs().size()==4) {
+      size_t qcd(0), qc(0);
+      for (size_t i(0);i<4;++i) {
+	int cc(ampl->Leg(i)->Flav().StrongCharge());
+	qc+=abs(cc)==3;
+	qcd+=cc;
+      }
+      if (qcd%8!=0 || (qc==0 && qcd!=64)) {
+	ampl=ampl->Prev();
+	ampl->DeleteNext();
+	continue;
+      }
     }
   }
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
@@ -252,13 +280,11 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     --csum[c[i].m_j];
     if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
-  /*
-  if (!IsEqual(psum,Vec4D(),1.0e-6))
+  if (!IsEqual(psum,Vec4D(),1.0e-3))
     msg_Error()<<METHOD<<"(): Momentum not conserved. "<<*ampl<<std::endl;
   if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0)
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
-  */
-  double kt2cmin(std::numeric_limits<double>::max());
+  double kt2cmin(s_kt2max);
   if (qcd!=15) {
     if (p_ci==NULL) {
       bool s[4]={ampl->Leg(0)->Flav().Strong(),
@@ -266,13 +292,13 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		 ampl->Leg(2)->Flav().Strong(),
 		 ampl->Leg(3)->Flav().Strong()};
       if ((s[0] && s[1]) || (s[2] && s[3])) {
-	kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+	kt2cmin=Min(kt2cmin,2.0*(m_p[0]*m_p[1]));
       }
       if ((s[0] && s[2]) || (s[1] && s[3])) {
-	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[2])));
       }
       if ((s[0] && s[3]) || (s[1] && s[2])) {
-	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[3])));
       }
     }
     else {
@@ -280,23 +306,27 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 	  (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
 	  (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
 	  (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
-	kt2cmin=Min(kt2cmin,(m_p[0]+m_p[1]).Abs2());
+	kt2cmin=Min(kt2cmin,2.0*(m_p[0]*m_p[1]));
       }
       if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
 	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
 	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
-	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[2]).Abs2()));
+	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[2])));
       }
       if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
 	  (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
 	  (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
-	kt2cmin=Min(kt2cmin,dabs((m_p[0]+m_p[3]).Abs2()));
+	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[3])));
       }
     }
+    double m2max(0.0);
+    for (size_t i(0);i<4;++i) m2max=Max
+      (m2max,sqr(ampl->Leg(i)->Flav().Mass()));
+    kt2cmin+=m2max;
   }
-  if (kt2cmin==std::numeric_limits<double>::max()) {
+  if (kt2cmin==s_kt2max) {
     if (ampl->Leg(2)->Flav().IsMassive()) {
       if (ampl->Leg(3)->Flav().IsMassive()) {
 	kt2cmin=sqrt(m_p[2].MPerp2()*m_p[3].MPerp2());
@@ -316,7 +346,7 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
   }
   while (ampl->Prev()) ampl=ampl->Prev();
   ampl->Delete();
-  m_scale[stp::ren]=m_scale[stp::fac]=Max(kt2max,kt2cmin);
+  m_scale[stp::ren]=m_scale[stp::fac]=kt2cmin;
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
   m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
   m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();
@@ -349,17 +379,17 @@ void MQCD_Scale_Setter::SetScale
   msg_Debugging()<<"}\n";
 }
 
-double MQCD_Setter_CS_CD::Lam
+double MQCD_Scale_Setter::Lam
 (const double &s,const double &sb,const double &sc) const
 {
   return sqr(s-sb-sc)-4.0*sb*sc;
 }
 
-CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
-				 const Cluster_Leg *lk,const Flavour &mo)
+CS_Params MQCD_Scale_Setter::KT2
+(const Cluster_Leg *li,const Cluster_Leg *lj,
+ const Cluster_Leg *lk,const Flavour &mo) const
 {
-  static const CS_Params nd(sqrt(std::numeric_limits<double>::max()),0.0,0.0,-1);
-  if (!CheckColors(li,lj,lk)) return nd;
+  static const CS_Params nd(s_kt2max,0.0,0.0,-1);
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
@@ -376,7 +406,7 @@ CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
 	Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
 	if (lrat<0.0 || IsZero(lrat,1.0e-6) ||
 	    pkt[0]<0.0 || IsZero(pkt[0],1.0e-6))
-	  kt2=sqrt(std::numeric_limits<double>::max());
+	  kt2=s_kt2max;
 	return CS_Params(kt2,zi,yijk,mo,0);
       }
       else {
@@ -391,7 +421,7 @@ CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
 	  -sqr(1.0-zi)*mi2-zi*zi*mj2;
 	if (kt2<0.0 || IsZero(kt2,1.0e-6) ||
 	    xija<0.0 || IsZero(xija,1.0e-6) || arg<0.0)
-	  kt2=sqrt(std::numeric_limits<double>::max());
+	  kt2=s_kt2max;
 	return CS_Params(kt2,zi,1.0-xija,mo,2);
       }
     }
@@ -409,7 +439,7 @@ CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
 	double kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj-mj2-sqr(1.0-xjka)*ma2;
 	if (kt2<0.0 || IsZero(kt2,1.0e-6) ||
 	    xjka<0.0 || IsZero(xjka,1.0e-6) || arg<0.0)
-	  kt2=sqrt(std::numeric_limits<double>::max());
+	  kt2=s_kt2max;
 	return CS_Params(kt2,xjka,uj,mo,1);
       }
       else {
@@ -423,7 +453,7 @@ CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
 	if (xjab<0.0 || IsZero(xjab,1.0e-6) ||
 	    ttau<0.0 || IsZero(ttau,1.0e-6) ||
 	    tau<0.0 || IsZero(tau,1.0e-6))
-	  kt2=sqrt(std::numeric_limits<double>::max());
+	  kt2=s_kt2max;
 	return CS_Params(kt2,xjab,vj,mo,3);
       }
     }
@@ -431,8 +461,8 @@ CS_Params MQCD_Setter_CS_CD::KT2(const Cluster_Leg *li,const Cluster_Leg *lj,
   THROW(fatal_error,"Unknown CS dipole configuration");  
 }
 
-bool MQCD_Setter_CS_CD::Combine
-  (Cluster_Amplitude &ampl,int i,int j,int k,const Flavour &mo)
+bool MQCD_Scale_Setter::Combine
+  (Cluster_Amplitude &ampl,int i,int j,int k,const Flavour &mo) const
 {
   if (i>j) std::swap<int>(i,j);
   Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
@@ -465,19 +495,20 @@ bool MQCD_Setter_CS_CD::Combine
     l*=(1.0-ma2/gam)/(1.0-ma2/gamt);
     n*=(1.0-sij/gam)/(1.0-mij2/gamt);
     Vec4D pat(-n-ma2/gamt*l), pijt(l+mij2/gamt*n), pb(ampl.Leg(1-k)->Mom());
-    double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
-    double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
-    Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-    Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-    if (pbm>0.0 || IsZero(pbm,1.0e-6) ||
-	pap>0.0 || IsZero(pap,1.0e-6)) return false;
-    Poincare cmso(-pat-pb), cmsn(-pan-pbn);
+    if (pat[3]*pb[3]>0.0) return false;
+    double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+    if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
+    else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
+    Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+    if (ea>0.0 || IsZero(ea,1.0e-6) ||
+	patpb*patpb<ma2*mb2) return false;
+    Poincare cmso(-pat-pb), cmsn(-pan-pb);
     cmso.Boost(pat);
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
       if (m==(size_t)k) ampl.Leg(m)->SetMom(pan);
-      else if (m==(size_t)1-k) ampl.Leg(m)->SetMom(pbn);
+      else if (m==(size_t)1-k) ampl.Leg(m)->SetMom(pb);
       else {
 	Vec4D cm(ampl.Leg(m)->Mom());
 	if (m==(size_t)i) cm=pijt;
@@ -508,19 +539,20 @@ bool MQCD_Setter_CS_CD::Combine
     l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
     n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
     Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l), pb(ampl.Leg(1-i)->Mom());
-    double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
-    double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
-    Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-    Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-    if (pbm>0.0 || IsZero(pbm,1.0e-6) ||
-	pap>0.0 || IsZero(pap,1.0e-6)) return false;
-    Poincare cmso(-pat-pb), cmsn(-pan-pbn);
+    if (pat[3]*pb[3]>0.0) return false;
+    double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+    if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
+    else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
+    Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2));
+    if (ea>0.0 || IsZero(ea,1.0e-6) ||
+	patpb*patpb<maj2*mb2) return false;
+    Poincare cmso(-pat-pb), cmsn(-pan-pb);
     cmso.Boost(pat);
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
       if (m==(size_t)i) ampl.Leg(m)->SetMom(pan);
-      else if (m==(size_t)1-i) ampl.Leg(m)->SetMom(pbn);
+      else if (m==(size_t)1-i) ampl.Leg(m)->SetMom(pb);
       else {
 	Vec4D cm(ampl.Leg(m)->Mom());
 	if (m==(size_t)k) cm=pjkt;
@@ -551,14 +583,19 @@ bool MQCD_Setter_CS_CD::Combine
     Vec4D K(-pa-pb-pj), Kt(-pajt-pb), KpKt(K+Kt);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
-      Vec4D km = ampl.Leg(m)->Mom();
-      km=km-2.*km*KpKt/(KpKt*KpKt)*KpKt+2.*km*K/(K*K)*Kt;
-      ampl.Leg(m)->SetMom(km);
+      if (m==(size_t)i) ampl.Leg(m)->SetMom(pajt);
+      else if (m==(size_t)k) ampl.Leg(m)->SetMom(pb);
+      else {
+	Vec4D km = ampl.Leg(m)->Mom();
+	km=km-2.*km*KpKt/(KpKt*KpKt)*KpKt+2.*km*K/(K*K)*Kt;
+	ampl.Leg(m)->SetMom(km);
+      }
     }
   }
   li->SetCol(CombineColors(li,lj,lk));
   li->SetId(li->Id()+lj->Id());
   li->SetFlav(mo);
+  if (!mo.Strong()) li->SetCol(ColorID(0,0));
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();
@@ -566,9 +603,17 @@ bool MQCD_Setter_CS_CD::Combine
   return true;
 }
 
-bool MQCD_Setter_CS_CD::CheckColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk)
+bool MQCD_Scale_Setter::CheckColors
+(const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
+ const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
 {
+  if (!mo.Strong()) {
+    if (lk->Flav().StrongCharge()==8) return false;
+    ColorID ci(li->Col()), cj(lj->Col());
+    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
+    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
+    return false;
+  }
   ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
   if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
   if (li->Flav().StrongCharge()==3) {
@@ -645,8 +690,8 @@ bool MQCD_Setter_CS_CD::CheckColors
   return false;
 }
 
-ColorID MQCD_Setter_CS_CD::CombineColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk)
+ColorID MQCD_Scale_Setter::CombineColors
+(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk) const
 {
   ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
   if (li->Flav().StrongCharge()==3) {
