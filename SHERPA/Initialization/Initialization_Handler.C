@@ -886,6 +886,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   // (this makes it possible to overwrite particle properties in Run.dat)
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_file);
+  dr.RereadInFile();
   if (dr.MatrixFromFile(helpsvv,"")) {
     size_t oldsize(helpsv2.size());
     helpsv2.resize(oldsize+helpsvv.size());
