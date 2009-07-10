@@ -1,5 +1,12 @@
 (run){
-  EVENTS = 10000
+  EVENTS = 1000000
+
+  MPISCALE:=2.225;
+
+  RESULT_DIRECTORY = Results.MPISCALE
+  GENERATE_RESULT_DIRECTORY = 1
+
+  ANALYSIS = Rivet
 }(run)
 
 (beam){
@@ -11,11 +18,12 @@
   Process 93 93 -> 93 93
   Order_EW 0
   Order_QCD 2
+  Enhance_Function sqr(PPerp2(p[2]))+sqr(PPerp2(p[3]))
   End process
 }(processes)
 
 (selector){
-  PT 93 2.225 E_CMS
+  PT 93 MPISCALE E_CMS
 }(selector)
 
 (model){
@@ -26,9 +34,17 @@
 
 (me){
   SCALE_SCHEME = MPI
+  EVENT_GENERATION_MODE = Weighted
 }(me)
 
 (mi){
   MI_HANDLER = Amisic
-  SCALE_MIN = 2.225;
+  SCALE_MIN = MPISCALE;
 }(mi)
+
+(analysis){
+  BEGIN_RIVET {
+    -H mpi.MPISCALE
+    -a CDF_1990_S2089246 CDF_2001_S4751469 CDF_2002_S4796047 # CDF_2004_55839831
+  } END_RIVET
+}(analysis)

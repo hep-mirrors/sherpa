@@ -3,8 +3,8 @@
 }(run)
 
 (beam){
-  BEAM_1  11; BEAM_ENERGY_1 45.625;
-  BEAM_2 -11; BEAM_ENERGY_2 45.625;
+  BEAM_1 =  11; BEAM_ENERGY_1 = 45.625;
+  BEAM_2 = -11; BEAM_ENERGY_2 = 45.625;
 }(beam)
 
 (processes){
@@ -20,11 +20,11 @@
 }(processes)
 
 (model){
-  ORDER_ALPHAS 0;
-  ALPHAS(MZ) 0.127;
-  MASSIVE[5] 1;
+  ORDER_ALPHAS = 0
+  ALPHAS(MZ) = 0.127
+  MASSIVE[5] = 1
 }(model)
 
 (me){
-  ME_SIGNAL_GENERATOR Internal Comix;
+  ME_SIGNAL_GENERATOR = Internal Comix
 }(me)
