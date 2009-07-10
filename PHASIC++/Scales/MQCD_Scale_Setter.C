@@ -247,6 +247,7 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
 		   <<" <-> "<<ID(ckw.m_k)
 		   <<" => "<<sqrt(kt2w)<<"\n";
+    ampl->SetKT2QCD(kt2w);
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
     if (!Combine(*ampl,iw,jw,kw,ckw.m_fl)) {
@@ -350,7 +351,10 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       }
     }
   }
-  while (ampl->Prev()) ampl=ampl->Prev();
+  while (ampl->Prev()) {
+    ampl=ampl->Prev();
+    kt2cmin=Max(kt2cmin,ampl->KT2QCD());
+  }
   ampl->Delete();
   m_scale[stp::ren]=m_scale[stp::fac]=kt2cmin;
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
