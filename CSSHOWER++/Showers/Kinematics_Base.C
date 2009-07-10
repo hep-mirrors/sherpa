@@ -165,7 +165,10 @@ int Kinematics_FI::MakeKinematics
   double sij=-((1.0-x)*(Q2-ma2)-(mi2+mj2))/x;
   double xi=x*(tt-sqrt(tt*tt-4.*ma2*mij2))/
     (t-sqrt(t*t-4.*ma2*sij*x*x));
+  if (tt*tt<4.*ma2*mij2 || tt>0.0 ||
+      t*t<4.*ma2*sij*x*x || t>0.0) return -1;
   double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-ma2*mij2);
+  if (sqr(p1p2)<ma2*mij2 || IsZero(gamt,1.0e-6)) return -1;
   double bet=1.0-ma2*mij2/(gamt*gamt), gam=gamt/xi;
   Vec4D l=(p1-mij2/gamt*p2)/bet;
   Vec4D n=(p2-ma2/gamt*p1)/bet;
@@ -281,7 +284,10 @@ int Kinematics_IF::MakeKinematics
   double sik=-((1.0-z)*(Q2-ma2)-(mi2+mk2))/z;
   double xi=z*(tt-sqrt(tt*tt-4.*mai2*mk2))/
     (t-sqrt(t*t-4.*ma2*sik*z*z));
+  if (tt*tt<4.*mai2*mk2 || tt>0.0 ||
+      t*t<4.*ma2*sik*z*z || t>0.0) return -1;
   double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-mai2*mk2);
+  if (sqr(p1p2)<mai2*mk2 || IsZero(gamt,1.0e-6)) return -1;
   double bet=1.0-mai2*mk2/(gamt*gamt), gam=gamt/xi;
   Vec4D l=(p1-mai2/gamt*p2)/bet;
   Vec4D n=(p2-mk2/gamt*p1)/bet;
@@ -397,6 +403,8 @@ int Kinematics_II::MakeKinematics
     std::cout.precision(12);
     Vec4D  Q=p1+p2;
     double Q2=Q.Abs2(), tt=Q2-mai2-mb2, t=Q2-ma2-mi2-mb2;
+    if (tt*tt<4.*mai2*mb2 || tt<0.0 ||
+	t*t<4.*ma2*mb2*z*z || t<0.0) return -1;
     double xi=z*(tt+sqrt(tt*tt-4.*mai2*mb2))/(t+sqrt(t*t-4.*ma2*mb2*z*z));
     y=GetY(Q2,kt2,z,ma2,mi2,mb2);
     double gamt=p1*p2+sqrt(sqr(p1*p2)-mai2*mb2), gam=gamt/xi;

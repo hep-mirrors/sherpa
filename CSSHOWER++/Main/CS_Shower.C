@@ -304,10 +304,10 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
 		     <<", mode = "<<cp.m_mode<<"\n";
       sing->SetAll(p_next);
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
 #ifdef USING__reco_check
       std::cout.precision(12);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
       p_shower->ReconstructDaughters(sing,true);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
@@ -333,8 +333,11 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 	msg_Error()<<"  "<<l->Momentum()<<" "<<r->Momentum()
 		   <<" "<<s->Momentum()<<"\n";
       }
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
+      l->SetMomentum(oldl);
+      r->SetMomentum(oldr);
+      s->SetMomentum(olds);
 #endif
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
     }
     double kt2prev(campl->Next()?campl->KT2QCD():kt2max);
     double kt2next(campl->Prev()?campl->Prev()->KT2QCD():0.0);

@@ -34,6 +34,16 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
   return EvolveSinglet(actual,maxem,nem);
 }
 
+int Shower::SetXBj(Parton *const p) const
+{
+  double x=0.0;
+  if (p->Beam()==0) x=p->Momentum().PPlus()/rpa.gen.PBeam(0).PPlus();
+  else x=p->Momentum().PMinus()/rpa.gen.PBeam(0).PMinus();
+  if (x>1.0) return -1;
+  p->SetXbj(x);
+  return 1;
+}
+
 int Shower::RemnantTest(Parton *const p)
 {
   if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0]) return -1;
@@ -63,10 +73,12 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
     if (s->GetPrev()->GetType()==pst::FS) {
       m_kinFF.SetJF(NULL);
       stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r);
+      l->SetFlavour(fli);
     }
     else {
       m_kinFI.SetJF(NULL);
       stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r);
+      l->SetFlavour(fli);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),2);
@@ -74,13 +86,14 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	if (stat<=0) split->BoostBackAllFS
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),2);
       }
-      s->SetXbj(s->GetPrev()->Xbj()/(1.0-l->YTest()));
+      SetXBj(s);
     }
   }
   else {
     if (s->GetPrev()->GetType()==pst::FS) {
       m_kinIF.SetJF(NULL);
       stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r);
+      l->SetFlavour(fli);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),1);
@@ -92,6 +105,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
     else {
       m_kinII.SetJF(NULL);
       stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r);
+      l->SetFlavour(fli);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),3);
@@ -100,9 +114,8 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),3);
       }
     }
-    l->SetXbj(c->Xbj()/l->ZTest());
+    SetXBj(l);
   }
-  l->SetFlavour(fli);
   msg_Debugging()<<"after: l: "<<*l<<"       r: "<<*r<<"       s: "<<*s<<"\n";
   if (stat<0) return false;
   l->GetSing()->UpdateDaughters();
@@ -290,7 +303,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  stat=-1;
 	}
 	if (stat>0) {
-	  spect->SetXbj(spect->Xbj()/(1.0-(*splitter)->YTest()));
+	  SetXBj(spect);
 	  mustsplit = p_actual->SplitParton(splitter,newpB,newpC);
 	  m_last[0]=newpB;
 	  m_last[1]=newpC;
@@ -318,7 +331,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	mom       = (*splitter)->Momentum();
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
-	newpA->SetXbj((*splitter)->Xbj()/(*splitter)->ZTest());
+	SetXBj(newpA);
 	newpA->SetBeam((*splitter)->Beam());
 	newpA->SetSing((*splitter)->GetSing());
 	spect     = (*splitter)->GetSpect();
@@ -376,7 +389,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	mom       = (*splitter)->Momentum();
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
-	newpA->SetXbj((*splitter)->Xbj()/(*splitter)->ZTest());
+	SetXBj(newpA);
 	newpA->SetBeam((*splitter)->Beam());
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame

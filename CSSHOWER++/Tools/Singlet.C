@@ -521,7 +521,9 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      Vec4D pait(xiiab*(Q2*Q2-mai2*mb2)/(Q2*Q2-ma2*mb2)*(pl-ma2/Q2*ps)+mai2/Q2*ps);
+      double gam(papb+sqrt(papb*papb-ma2*mb2));
+      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
+		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
       Vec4D K(pl+ps-pr), Kt(pait+ps), KKt(K+Kt);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit)
@@ -544,30 +546,22 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       Vec4D pb(-b->Momentum()), ps(-s->Momentum());
       double ma2(p_ms->Mass2(s->GetFlavour()));
       double mb2(p_ms->Mass2(b->GetFlavour())), pspb(ps*pb);
-      double del(pspb+sqrt(pspb*pspb-ma2*mb2));
-      double pbm(0.5*(pb[0]-dabs(pb[3]))), sb(Sign(pb[3])), pap(0.25*del/pbm);
-      Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-      Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-      Poincare cmso(-ps+b->Momentum());
+      double sb(Sign(pb[3])), ea(0.0);
+      if (IsZero(mb2)) ea=0.5*(pspb+ma2*sqr(pb[3])/pspb)/pb[0];
+      else ea=(pb[0]*pspb+dabs(pb[3])*sqrt(pspb*pspb-ma2*mb2))/mb2;
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Poincare cmso(-ps-pb), cmsn(-pan-pb);
       cmso.Boost(ps);
       Poincare zrot(ps,-sb*Vec4D::ZVEC);
-      Poincare cmsn(-pan-pbn);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
-	Vec4D bsum, asum;
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  Vec4D p((*plit)->Momentum());
-	  bsum+=(*plit)->GetType()==pst::IS?-p:p;
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
-	  asum+=(*plit)->GetType()==pst::IS?-p:p;
 	}
-	if (!IsEqual(bsum,asum,1.0e-6))
-	  msg_Error()<<METHOD<<"(): Momentum not conserved FI:\n"
-		     <<"  before "<<bsum<<"\n"
-		     <<"  after  "<<asum<<"\n"<<**asit;
       }
     }
   }
@@ -583,30 +577,22 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       Vec4D pb(-b->Momentum()), pl(-l->Momentum());
       double ma2(p_ms->Mass2(l->GetFlavour()));
       double mb2(p_ms->Mass2(b->GetFlavour())), plpb(pl*pb);
-      double del(plpb+sqrt(plpb*plpb-ma2*mb2));
-      double pbm(0.5*(pb[0]-dabs(pb[3]))), sb(Sign(pb[3])), pap(0.25*del/pbm);
-      Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-      Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-      Poincare cmso(-pl+b->Momentum());
+      double sb(Sign(pb[3])), ea(0.0);
+      if (IsZero(mb2)) ea=0.5*(plpb+ma2*sqr(pb[3])/plpb)/pb[0];
+      else ea=(pb[0]*plpb+dabs(pb[3])*sqrt(plpb*plpb-ma2*mb2))/mb2;
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Poincare cmso(-pl-pb), cmsn(-pan-pb);
       cmso.Boost(pl);
       Poincare zrot(pl,-sb*Vec4D::ZVEC);
-      Poincare cmsn(-pan-pbn);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
-	Vec4D bsum, asum;
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  Vec4D p((*plit)->Momentum());
-	  bsum+=(*plit)->GetType()==pst::IS?-p:p;
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
-	  asum+=(*plit)->GetType()==pst::IS?-p:p;
 	}
-	if (!IsEqual(bsum,asum,1.0e-6))
-	  msg_Error()<<METHOD<<"(): Momentum not conserved IF:\n"
-		     <<"  before "<<bsum<<"\n"
-		     <<"  after  "<<asum<<"\n"<<**asit;
       }
     }
   }
@@ -626,7 +612,9 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      Vec4D pait(xiiab*(Q2*Q2-mai2*mb2)/(Q2*Q2-ma2*mb2)*(pl-ma2/Q2*ps)+mai2/Q2*ps);
+      double gam(papb+sqrt(papb*papb-ma2*mb2));
+      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
+		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
       Vec4D K(pl+ps-pr), Kt(pait+ps), KKt(K+Kt);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit)
@@ -646,33 +634,40 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  break;
 	}
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), ps(-s->Momentum());
+      Vec4D pb(-b->Momentum()), pa(-s->Momentum());
+      Vec4D pi(l->Momentum()), pj(r->Momentum()), Q(pi+pj+pa);
+      double mi2(p_ms->Mass2(l->GetFlavour())), mij2(p_ms->Mass2(mo));
+      double mj2(p_ms->Mass2(r->GetFlavour()));
       double ma2(p_ms->Mass2(s->GetFlavour()));
-      double mb2(p_ms->Mass2(b->GetFlavour())), pspb(ps*pb);
-      double del(pspb+sqrt(pspb*pspb-ma2*mb2));
-      double pbm(0.5*(pb[0]-dabs(pb[3]))), sb(Sign(pb[3])), pap(0.25*del/pbm);
-      Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-      Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-      Poincare cmso(-ps+b->Momentum());
-      cmso.Boost(ps);
-      Poincare zrot(ps,-sb*Vec4D::ZVEC);
-      Poincare cmsn(-pan-pbn);
+      double mb2(p_ms->Mass2(b->GetFlavour()));
+      double pipa=pi*pa, pjpa=pj*pa, pipj=pi*pj;
+      double xija=(pipa+pjpa+pipj)/(pipa+pjpa);
+      double Q2=Q.Abs2(), ttau=Q2-ma2-mij2, tau=Q2-ma2-mi2-mj2;
+      double sij=-((1.0-xija)*(Q2-ma2)-(mi2+mj2))/xija;
+      double xiija=xija*(ttau-sqrt(ttau*ttau-4.*ma2*mij2))/
+	(tau-sqrt(tau*tau-4.*ma2*sij*sqr(xija)));
+      double pijpa=pipa+pjpa, gam=-pijpa+sqrt(pijpa*pijpa-ma2*sij);
+      double bet=1.0-ma2*sij/(gam*gam), gamt=gam*xiija;
+      Vec4D l(((pi+pj)+sij/gam*pa)/bet), n((-pa-ma2/gam*(pi+pj))/bet);
+      l*=(1.0-ma2/gam)/(1.0-ma2/gamt);
+      n*=(1.0-sij/gam)/(1.0-mij2/gamt);
+      Vec4D pat(-n-ma2/gamt*l), pijt(l+mij2/gamt*n);
+      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+      if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
+      else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Poincare cmso(-pat-pb), cmsn(-pan-pb);
+      cmso.Boost(pat);
+      Poincare zrot(pat,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
-	Vec4D bsum, asum;
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  Vec4D p((*plit)->Momentum());
-	  bsum+=(*plit)->GetType()==pst::IS?-p:p;
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
 	  cmsn.BoostBack(p);
  	  (*plit)->SetMomentum(p);
-	  asum+=(*plit)->GetType()==pst::IS?-p:p;
 	}
-	if (!IsEqual(bsum,asum,1.0e-6))
-	  msg_Error()<<METHOD<<"(): Momentum not conserved FI:\n"
-		     <<"  before "<<bsum<<"\n"
-		     <<"  after  "<<asum<<"\n"<<**asit;
       }
     }
   }
@@ -685,33 +680,40 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  break;
 	}
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pl(-l->Momentum());
-      double ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(b->GetFlavour())), plpb(pl*pb);
-      double del(plpb+sqrt(plpb*plpb-ma2*mb2));
-      double pbm(0.5*(pb[0]-dabs(pb[3]))), sb(Sign(pb[3])), pap(0.25*del/pbm);
-      Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-      Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
-      Poincare cmso(-pl+b->Momentum());
-      cmso.Boost(pl);
-      Poincare zrot(pl,-sb*Vec4D::ZVEC);
-      Poincare cmsn(-pan-pbn);
+      Vec4D pb(-b->Momentum()), pa(-l->Momentum());
+      Vec4D pj(r->Momentum()), pk(s->Momentum()), Q(pa+pj+pk);
+      double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
+      double mb2(p_ms->Mass2(b->GetFlavour()));
+      double mj2(p_ms->Mass2(r->GetFlavour()));
+      double mk2(p_ms->Mass2(s->GetFlavour()));
+      double pjpa=pj*pa, pkpa=pk*pa, pjpk=pj*pk;
+      double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
+      double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;
+      double sjk=-((1.0-xjka)*(Q2-ma2)-(mj2+mk2))/xjka;
+      double xijka=xjka*(ttau-sqrt(ttau*ttau-4.*maj2*mk2))/
+	(tau-sqrt(tau*tau-4.*ma2*sjk*sqr(xjka)));
+      double pjkpa=pjpa+pkpa, gam=-pjkpa+sqrt(pjkpa*pjkpa-ma2*sjk);
+      double bet=1.0-ma2*sjk/(gam*gam), gamt=gam*xijka;
+      Vec4D l((-pa-ma2/gam*(pj+pk))/bet), n(((pj+pk)+sjk/gam*pa)/bet);
+      l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
+      n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
+      Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l);
+      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+      if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
+      else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2));
+      Poincare cmso(-pat-pb), cmsn(-pan-pb);
+      cmso.Boost(pat);
+      Poincare zrot(pat,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
-	Vec4D bsum, asum;
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  Vec4D p((*plit)->Momentum());
-	  bsum+=(*plit)->GetType()==pst::IS?-p:p;
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
-	  asum+=(*plit)->GetType()==pst::IS?-p:p;
 	}
-	if (!IsEqual(bsum,asum,1.0e-6))
-	  msg_Error()<<METHOD<<"(): Momentum not conserved IF:\n"
-		     <<"  before "<<bsum<<"\n"
-		     <<"  after  "<<asum<<"\n"<<**asit;
       }
     }
   }

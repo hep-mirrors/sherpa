@@ -19,7 +19,8 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[3];
-    
+
+    int    SetXBj(Parton *const p) const;
     PLiter SelectSplitting(double &,const double &);
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);
     bool   PerformSplitting();

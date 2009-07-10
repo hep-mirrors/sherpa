@@ -394,9 +394,12 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
 
   double Q2=Q.Abs2(), ttau=Q2-ma2-mij2, tau=Q2-ma2-mi2-mj2;
   double sij=-((1.0-xija)*(Q2-ma2)-(mi2+mj2))/xija;
+  if (ttau*ttau<4.*ma2*mij2 || ttau>0.0 ||
+      tau*tau<4.*ma2*sij*sqr(xija) || tau>0.0) return Vec4D_Vector();
   double xiija=xija*(ttau-sqrt(ttau*ttau-4.*ma2*mij2))/
     (tau-sqrt(tau*tau-4.*ma2*sij*sqr(xija)));
   double pijpa=pipa+pjpa, gam=-pijpa+sqrt(pijpa*pijpa-ma2*sij);
+  if (IsZero(xija,1.0e-6) || pijpa*pijpa<ma2*sij) return Vec4D_Vector();
   double bet=1.0-ma2*sij/(gam*gam), gamt=gam*xiija;
   Vec4D l=((pi+pj)+sij/gam*pa)/bet;
   Vec4D n=(-pa-ma2/gam*(pi+pj))/bet;
@@ -405,18 +408,22 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
   Vec4D pat=-n-ma2/gamt*l, pijt=l+mij2/gamt*n;
 
   Vec4D pb=ampl.Leg(1-a)->Mom();
-  double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
-  double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
-  Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-  Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
+  if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
+  double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+  if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
+  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
+  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+  if (ea>0.0 || IsZero(ea,1.0e-6) ||
+      patpb*patpb<ma2*mb2) return Vec4D_Vector();
+  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
   Poincare cmso(-pat-pb);
   cmso.Boost(pat);
   Poincare zrot(pat,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pbn);
+  Poincare cmsn(-pan-pb);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)j) continue;
     if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pbn;
+    else if (m==(size_t)1-a) after[l]=pb;
     else {
       after[l]=ampl.Leg(m)->Mom();
       if (m==(size_t)i) after[l]=pijt;
@@ -460,9 +467,12 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
 
   double Q2=Q.Abs2(), ttau=Q2-mai2-mk2, tau=Q2-ma2-mi2-mk2;
   double sik=-((1.0-xika)*(Q2-ma2)-(mi2+mk2))/xika;
+  if (ttau*ttau<4.*mai2*mk2 || ttau>0.0 ||
+      tau*tau<4.*ma2*sik*sqr(xika) || tau>0.0) return Vec4D_Vector();
   double xiika=xika*(ttau-sqrt(ttau*ttau-4.*mai2*mk2))/
     (tau-sqrt(tau*tau-4.*ma2*sik*sqr(xika)));
   double pikpa=pipa+pkpa, gam=-pikpa+sqrt(pikpa*pikpa-ma2*sik);
+  if (IsZero(xiika) || pikpa*pikpa<ma2*sik) return Vec4D_Vector();
   double bet=1.0-ma2*sik/(gam*gam), gamt=gam*xiika;
   Vec4D l=(-pa-ma2/gam*(pi+pk))/bet;
   Vec4D n=((pi+pk)+sik/gam*pa)/bet;
@@ -471,18 +481,22 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   Vec4D pat=-l-mai2/gamt*n, pikt=n+mk2/gamt*l;
 
   Vec4D pb=ampl.Leg(1-a)->Mom();
-  double patpb=pat*pb, del=patpb+sqrt(patpb*patpb-ma2*mb2);
-  double pbm=0.5*(pb[0]-dabs(pb[3])), sb=Sign(pb[3]), pap=0.25*del/pbm;
-  Vec4D pm(pbm,0.,0.,-sb*pbm), pp(pap,0.,0.,sb*pap);
-  Vec4D pan(pp+ma2/del*pm), pbn(pm+mb2/del*pp);
+  if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
+  double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+  if (IsZero(mb2)) ea=0.5*(patpb+mai2*sqr(pb[3])/patpb)/pb[0];
+  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-mai2*mb2))/mb2;
+  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-mai2));
+  if (ea>0.0 || IsZero(ea,1.0e-6) ||
+      patpb*patpb<mai2*mb2) return Vec4D_Vector();
+  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
   Poincare cmso(-pat-pb);
   cmso.Boost(pat);
   Poincare zrot(pat,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pbn);
+  Poincare cmsn(-pan-pb);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pbn;
+    else if (m==(size_t)1-a) after[l]=pb;
     else {
       after[l]=ampl.Leg(m)->Mom();
       if (m==(size_t)k) after[l]=pikt;
@@ -521,12 +535,14 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
   double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.0*mai2*mb2))
     /(tau+sqrt(tau*tau-4.0*ma2*mb2*xiab*xiab));
+  if (ttau*ttau<4.0*mai2*mb2 || ttau<0.0 ||
+      tau*tau<4.0*ma2*mb2*xiab*xiab || tau<0.0) return Vec4D_Vector();
   double gam   = papb+sqrt(papb*papb-ma2*mb2);
 
   Vec4D pait = xiiab
     *(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
     *(pa-ma2/gam*pb)+mai2/(xiiab*gam)*pb;
-
+  if (pait[3]*pb[3]>0.0) return Vec4D_Vector();
   Vec4D K    = -pa-pb-pi;
   Vec4D Kt   = -pait-pb;
   Vec4D KpKt = K+Kt;
