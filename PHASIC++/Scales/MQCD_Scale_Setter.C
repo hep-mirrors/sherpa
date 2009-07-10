@@ -45,6 +45,8 @@ namespace PHASIC {
 
     static double s_eps, s_kt2max;
 
+    bool CheckX(const ATOOLS::Vec4D &p,const size_t &isid) const;
+
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
 		     const ATOOLS::Cluster_Leg *lk,
@@ -280,10 +282,14 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     --csum[c[i].m_j];
     if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
-  if (!IsEqual(psum,Vec4D(),1.0e-3))
+  if (!IsEqual(psum,Vec4D(),1.0e-3)) {
     msg_Error()<<METHOD<<"(): Momentum not conserved. "<<*ampl<<std::endl;
-  if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0)
+    abort();
+  }
+  if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0) {
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
+    abort();
+  }
   double kt2cmin(s_kt2max);
   if (qcd!=15) {
     if (p_ci==NULL) {
@@ -502,6 +508,9 @@ bool MQCD_Scale_Setter::Combine
     Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
     if (ea>0.0 || IsZero(ea,1.0e-6) ||
 	patpb*patpb<ma2*mb2) return false;
+#ifdef CHECK__x
+    if (!CheckX(pan,lk->Id()&3)) return false;
+#endif
     Poincare cmso(-pat-pb), cmsn(-pan-pb);
     cmso.Boost(pat);
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
@@ -546,6 +555,9 @@ bool MQCD_Scale_Setter::Combine
     Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2));
     if (ea>0.0 || IsZero(ea,1.0e-6) ||
 	patpb*patpb<maj2*mb2) return false;
+#ifdef CHECK__x
+    if (!CheckX(pan,li->Id()&3)) return false;
+#endif
     Poincare cmso(-pat-pb), cmsn(-pan-pb);
     cmso.Boost(pat);
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
@@ -580,6 +592,10 @@ bool MQCD_Scale_Setter::Combine
     Vec4D pajt=xijab
       *(1.0-maj2*mb2/sqr(gam*xijab))/(1.0-ma2*mb2/sqr(gam))
       *(pa-ma2/gam*pb)+maj2/(xijab*gam)*pb;
+    if (pajt[3]*pb[3]>0.0) return false;
+#ifdef CHECK__x
+    if (!CheckX(pajt,li->Id()&3)) return false;
+#endif
     Vec4D K(-pa-pb-pj), Kt(-pajt-pb), KpKt(K+Kt);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
@@ -601,6 +617,16 @@ bool MQCD_Scale_Setter::Combine
   (*lit)->Delete();
   ampl.Legs().erase(lit);
   return true;
+}
+
+bool MQCD_Scale_Setter::CheckX
+(const ATOOLS::Vec4D &p,const size_t &isid) const
+{
+  double x=0.0;
+  if (isid==1) x=-p.PPlus()/rpa.gen.PBeam(0).PPlus();
+  else if (isid==2) x=-p.PMinus()/rpa.gen.PBeam(1).PMinus();
+  else THROW(fatal_error,"Invalid index");
+  return x>0.0 && x<1.0;
 }
 
 bool MQCD_Scale_Setter::CheckColors
