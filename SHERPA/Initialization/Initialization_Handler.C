@@ -865,19 +865,35 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     if (cf.OpenInFile()) m_file+="|(run){|}(run)";
   }
 
-  // Add parameters from Run.dat to command line
-  // (this makes it possible to overwrite particle properties in Run.dat)
+  std::vector<std::string> helpsv2;
+  // Add parameters from possible global.dat to command line
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.AddComment("#");
+  dr.SetInputPath(rpa.gen.Variable("HOME")+"/.sherpa/");
+  dr.SetInputFile("global.dat");
+  std::vector<std::vector<std::string> > helpsvv;
+  if (dr.MatrixFromFile(helpsvv,"")) {
+    msg_Out()<<METHOD<<"(): Reading parameters from '"
+	     <<rpa.gen.Variable("HOME")<<"/.sherpa/global.dat'."<<std::endl;
+    helpsv2.resize(helpsvv.size());
+    for (size_t i(0);i<helpsvv.size();++i) {
+      helpsv2[i]=helpsvv[i][0];
+      for (size_t j(1);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
+    }
+  }
+  // Add parameters from Run.dat to command line
+  // (this makes it possible to overwrite particle properties in Run.dat)
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_file);
-  std::vector<std::vector<std::string> > helpsvv;
-  dr.MatrixFromFile(helpsvv,"");
-  std::vector<std::string> helpsv2(helpsvv.size());
-  for (size_t i(0);i<helpsvv.size();++i) {
-    helpsv2[i]=helpsvv[i][0];
-    for (size_t j(1);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
+  if (dr.MatrixFromFile(helpsvv,"")) {
+    size_t oldsize(helpsv2.size());
+    helpsv2.resize(oldsize+helpsvv.size());
+    for (size_t i(0);i<helpsvv.size();++i) {
+      helpsv2[oldsize+i]=helpsvv[i][0];
+      for (size_t j(1);j<helpsvv[i].size();++j)
+	helpsv2[oldsize+i]+=" "+helpsvv[i][j];
+    }
   }
   helpsv2.insert(helpsv2.end(),helpsv.begin(),helpsv.end());
   for (size_t i(0);i<helpsv2.size();++i) {
