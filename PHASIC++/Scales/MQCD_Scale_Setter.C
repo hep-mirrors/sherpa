@@ -222,7 +222,8 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 	double frac(m_rej/(double)m_cnt);
 	if (frac>1.25*m_lfrac && m_cnt>5000) {
 	  m_lfrac=frac;
-	  msg_Error()<<METHOD<<"(): No CSS history in >"
+	  msg_Error()<<METHOD<<"(): No CSS history for '"
+		     <<p_proc->Name()<<"' in >"
 		     <<(int(m_lfrac*10000)/100.0)
 		     <<"% of calls. Set \\hat{s}."<<std::endl;
 	}
@@ -262,7 +263,7 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 	qc+=abs(cc)==3;
 	qcd+=cc;
       }
-      if (qcd%8!=0 || (qc==0 && qcd!=64)) {
+      if (qcd%8!=0 || (qc==0 && qcd<32)) {
 	ampl=ampl->Prev();
 	ampl->DeleteNext();
 	continue;
