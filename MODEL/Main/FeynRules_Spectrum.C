@@ -210,7 +210,7 @@ void FeynRules_Spectrum::SetExternalParameters() {
   if (vw.size()>0) vw.front().insert(vw.front().begin(),"DECAY");
   
   for (size_t k=0;k<vw.size();++k) {
-    if (vw[k].size()>0) {
+    if (vw[k].size()==3) {
       if (vw[k][0]=="DECAY") {
        Flavour flav;    
        flav.FromHepEvt(ATOOLS::ToType<int>(vw[k][1]));
