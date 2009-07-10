@@ -308,13 +308,17 @@ bool ISR_Handler::CalculateWeight(const double scale)
   }
   switch (m_mode) {
   case 3 :
+    if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor() ||
+	m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) return 0;
     if (p_isrbase[0]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0]) && 
 	p_isrbase[1]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1])) return 1;
     break;
   case 2 :
+    if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) return 0;
     if (p_isrbase[1]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1])) return 1;
     break;
   case 1 :
+    if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) return 0;
     if (p_isrbase[0]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0])) return 1;
     break;
   case 0 : return 1; 
@@ -334,6 +338,8 @@ bool ISR_Handler::CalculateWeight2(const double scale)
     m_mu2[0]=m_mu2key[0][0];
     m_mu2[1]=m_mu2key[1][0];
   }
+  if (m_x[0]>p_isrbase[1]->PDF()->RescaleFactor() ||
+      m_x[1]>p_isrbase[0]->PDF()->RescaleFactor()) return 0;
   if (p_isrbase[0]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1]) && 
       p_isrbase[1]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0])) { 
     return 1;
@@ -382,6 +388,7 @@ bool ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
 					 double &x,int beam,bool swaped)
 {
+  if (x>p_isrbase[beam]->PDF()->RescaleFactor()) return false;
   if (m_rmode==0) return true;
   p_remnants[beam]->QuickClear();
   double pp(beam==0?x*p_beam[0]->OutMomentum().PPlus():

@@ -21,6 +21,7 @@ KFactor_Setter_Base::~KFactor_Setter_Base()
 
 double KFactor_Setter_Base::KFactor2(const bool diff)
 {
+  if (!m_kfkey.Assigned()) return KFactor();
   if (diff) {
     m_kfkey<<ATOOLS::UNDEFINED_WEIGHT;
     return KFactor();

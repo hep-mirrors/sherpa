@@ -11,8 +11,8 @@ namespace AMISIC {
   Profile_Function_Base::CreateProfile<Flat_Profile>(const std::string &type,
 						     const std::vector<double> &parameters)
   {
-    if (type==std::string("Flat") && parameters.size()>0) {
-      return new Flat_Profile(parameters[0]);
+    if (type==std::string("Flat")) {
+      return new Flat_Profile(1.0);
     }
     return NULL;
   }
@@ -56,8 +56,8 @@ namespace AMISIC {
   Profile_Function_Base::CreateProfile<Exponential_Profile>(const std::string &type,
 							    const std::vector<double> &parameters)
   {
-    if (type==std::string("Exponential") && parameters.size()>0) {
-      return new Exponential_Profile(parameters[0]);
+    if (type==std::string("Exponential")) {
+      return new Exponential_Profile(1.0);
     }
     return NULL;
   }
@@ -99,8 +99,8 @@ namespace AMISIC {
   Profile_Function_Base::CreateProfile<Gaussian_Profile>(const std::string &type,
 							 const std::vector<double> &parameters)
   {
-    if (type==std::string("Gaussian") && parameters.size()>0) {
-      return new Gaussian_Profile(parameters[0]);
+    if (type==std::string("Gaussian")) {
+      return new Gaussian_Profile(1.0);
     }
     return NULL;
   }
@@ -145,8 +145,8 @@ namespace AMISIC {
   Profile_Function_Base::CreateProfile<Double_Gaussian_Profile>(const std::string &type,
 								const std::vector<double> &parameters)
   {
-    if (type==std::string("Double_Gaussian") && parameters.size()>2) {
-      return new Double_Gaussian_Profile(parameters[0],parameters[1],parameters[2]);
+    if (type==std::string("Double_Gaussian") && parameters.size()>1) {
+      return new Double_Gaussian_Profile(1.0,parameters[0],parameters[1]);
     }
     return NULL;
   }

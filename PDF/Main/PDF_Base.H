@@ -95,6 +95,8 @@ namespace PDF {
     inline bool Contains(const ATOOLS::Flavour &a) const
     { return m_partons.find(a)!=m_partons.end(); }
 
+    inline double RescaleFactor() const { return m_rescale; }
+
   };
   
   /*!
