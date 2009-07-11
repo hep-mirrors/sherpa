@@ -78,6 +78,20 @@ namespace PHASIC {
     
   };// end of class QCD_Setter_CS_CD
 
+  struct CKey {
+    size_t m_i, m_j, m_k;
+    CKey(const size_t &i,const size_t &j,const size_t &k):
+      m_i(i),m_j(j), m_k(k) {}
+    bool operator<(const CKey &ck) const
+    { 
+      if (m_i<ck.m_i) return true;
+      if (m_i>ck.m_i) return false;
+      if (m_j<ck.m_j) return true;
+      if (m_j>ck.m_j) return false;
+      return m_k<ck.m_k;
+    }
+  };// end of struct CKey
+
 }// end of namespace PHASIC
 
 using namespace PHASIC;
@@ -115,20 +129,6 @@ Vec4D QCD_Scale_Setter::Momentum(const size_t &i) const
   if (i>m_p.size()) THROW(fatal_error,"Momentum index too large");
   return m_p[i];
 }
-
-struct CKey {
-  size_t m_i, m_j, m_k;
-  CKey(const size_t &i,const size_t &j,const size_t &k):
-    m_i(i),m_j(j), m_k(k) {}
-  bool operator<(const CKey &ck) const
-  { 
-    if (m_i<ck.m_i) return true;
-    if (m_i>ck.m_i) return false;
-    if (m_j<ck.m_j) return true;
-    if (m_j>ck.m_j) return false;
-    return m_k<ck.m_k;
-  }
-};// end of struct CKey
 
 double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
 {

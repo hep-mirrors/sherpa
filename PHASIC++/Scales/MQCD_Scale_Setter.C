@@ -81,6 +81,24 @@ namespace PHASIC {
 
   };// end of class MQCD_Scale_Setter
 
+  struct MCKey {
+    size_t m_i, m_j, m_k;
+    ATOOLS::Flavour m_fl;
+    MCKey(const size_t &i,const size_t &j,const size_t &k,
+	  const ATOOLS::Flavour &fl):
+      m_i(i),m_j(j), m_k(k), m_fl(fl) {}
+    bool operator<(const MCKey &ck) const
+    { 
+      if (m_i<ck.m_i) return true;
+      if (m_i>ck.m_i) return false;
+      if (m_j<ck.m_j) return true;
+      if (m_j>ck.m_j) return false;
+      if (m_k<ck.m_k) return true;
+      if (m_k>ck.m_k) return false;
+      return m_fl<ck.m_fl;
+    }
+  };// end of struct MCKey
+
 }// end of namespace PHASIC
 
 using namespace PHASIC;
@@ -124,24 +142,6 @@ Vec4D MQCD_Scale_Setter::Momentum(const size_t &i) const
   return m_p[i];
 }
 
-struct CKey {
-  size_t m_i, m_j, m_k;
-  ATOOLS::Flavour m_fl;
-  CKey(const size_t &i,const size_t &j,const size_t &k,
-       const ATOOLS::Flavour &fl):
-    m_i(i),m_j(j), m_k(k), m_fl(fl) {}
-  bool operator<(const CKey &ck) const
-  { 
-    if (m_i<ck.m_i) return true;
-    if (m_i>ck.m_i) return false;
-    if (m_j<ck.m_j) return true;
-    if (m_j>ck.m_j) return false;
-    if (m_k<ck.m_k) return true;
-    if (m_k>ck.m_k) return false;
-    return m_fl<ck.m_fl;
-  }
-};// end of struct CKey
-
 double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
 {
   if (!m_kfkey.Assigned()) {
@@ -174,11 +174,11 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
   Single_Process *proc(p_proc->Get<Single_Process>());
-  std::set<CKey> trials;
+  std::set<MCKey> trials;
   while (ampl->Legs().size()>4) {
     double kt2w(s_kt2max);
     size_t iw(0), jw(0), kw(0);
-    CKey ckw(0,0,0,kf_none);
+    MCKey ckw(0,0,0,kf_none);
     for (size_t i(0);i<ampl->Legs().size();++i) {
       Cluster_Leg *li(ampl->Leg(i));
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
@@ -189,7 +189,7 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k!=i && k!=j) {
 	    for (size_t f(0);f<cf.size();++f) {
-	      CKey ck(li->Id(),lj->Id(),lk->Id(),cf[f]);
+	      MCKey ck(li->Id(),lj->Id(),lk->Id(),cf[f]);
 	      if (trials.find(ck)!=trials.end()) {
 		msg_Debugging()<<"Vetoed "<<cf[f]<<" = "
 			       <<ID(ck.m_i)<<" & "<<ID(ck.m_j)
