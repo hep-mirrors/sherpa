@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
 from optparse import OptionParser, OptionGroup
-import commands, os, fnmatch
-from subprocess import Popen
+import os, fnmatch
+from subprocess import Popen, PIPE
 
 
 usage = """Webpages from histogram files written out by Rivet.
@@ -19,17 +19,16 @@ parser.add_option("-o", "--outputdir", dest="OUTPUTDIR",
 
 opts, aidafiles = parser.parse_args()
 
-datadir = commands.getoutput("rivet-config --datadir")
+datadir = Popen(["rivet-config", "--datadir"], stdout=PIPE).communicate()[0].split()[0]
 
 
 
 ## get set of analyses involved in the runs
 analyses = set()
 for aidafile in aidafiles:
-    anas = commands.getoutput('if test -f %s; then cat %s | grep path= | cut -d \\" -f 4 | uniq; fi' % (aidafile, aidafile)).split()
+    anas = Popen('if test -f %s; then cat %s | grep path= | cut -d \\" -f 4 | uniq; fi' % (aidafile, aidafile), shell=True, stdout=PIPE).communicate()[0].split()
     for ana in anas:
         analyses.add(ana[1:])
-
 
 index = open("index.html", "w")
 
@@ -58,4 +57,6 @@ for analysis in sorted(analyses):
         anaindex.write('<a href="%s" style="font-size:small;text-decoration:none;font-weight:bold;">' % psfile)
         anaindex.write('%s:<br><img border="0" src="%s"></a></div>\n' % (psfile, pngfile))
     anaindex.write("</html>\n")
-    index.write('<li><a href="%s/index.html">%s</a></li>\n' %(analysis, analysis))
+    index.write('<h1><a href="%s/index.html" style="text-decoration:none;">%s</a></h1>\n' %(analysis, analysis))
+    description = Popen(["rivet", "--show-analysis", analysis], stdout=PIPE).communicate()[0]
+    index.write('<pre>%s</pre></li>\n' % description)
