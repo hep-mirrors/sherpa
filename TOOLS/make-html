@@ -32,14 +32,14 @@ for aidafile in aidafiles:
 
 
 index = open("index.html", "w")
-index.write("<html><ol>\n");
 
 for analysis in sorted(analyses):
     anapath = os.path.join(opts.OUTPUTDIR, analysis)
     os.mkdir(anapath)
     anaindex = open(os.path.join(anapath, "index.html"), 'w')
-    anaindex.write("<html>\n");
+    anaindex.write("<html>\n")
     cmdargs = ["compare-histos"]
+    cmdargs.append("--mc-errs")
     cmdargs.append("%s/%s.aida" % (datadir, analysis))
     for aidafile in aidafiles:
         cmdargs.append("../%s" % aidafile)
@@ -59,5 +59,3 @@ for analysis in sorted(analyses):
         anaindex.write('%s:<br><img border="0" src="%s"></a></div>\n' % (psfile, pngfile))
     anaindex.write("</html>\n")
     index.write('<li><a href="%s/index.html">%s</a></li>\n' %(analysis, analysis))
-
-index.write('</ol></body></html>\n')
