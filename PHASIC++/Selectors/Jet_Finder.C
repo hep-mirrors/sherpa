@@ -40,6 +40,7 @@ Jet_Finder::Jet_Finder
   */
   m_smax=m_s=sqr(rpa.gen.Ecms());
   // m_smin=m_ycut*m_s;
+  m_pt2min=1.0;
   m_sel_log = new Selector_Log(m_name);
   rpa.gen.AddCitation(1,"Matrix element merging with truncated showers\
  is published under \\cite{Hoeche:2009rj}.");
@@ -167,6 +168,16 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
     m_ycuts[pos[i]][pos[i]]=m_cycut;
     m_gycuts[pos[i]][pos[i]]=m_gcycut;
     sc[0]=m_flavs[pos[i]].StrongCharge();
+    if ((pos[i]&3)==0 && sc[0]!=0 &&
+	(m_fl[0].Strong() || m_fl[1].Strong())) {
+      bool found(false);
+      for (size_t l(0);l<m_pcs.size();++l)
+	if (m_pcs[l]==pos[i]) {
+	  found=true;
+	  break;
+	}
+      if (!found) m_pcs.push_back(pos[i]);
+    }
     for (size_t j(i+1);j<pos.size();++j) {
       if (pos[i]>2 || pos[j]>2) {
 	m_ycuts[pos[i]][pos[j]]=m_cycut;
@@ -348,6 +359,11 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   m_value=2.0;
   msg_Debugging()<<METHOD<<"(): '"
 		 <<p_proc->Process()->Name()<<"' {\n";
+  for (size_t i(0);i<m_pcs.size();++i) {
+    msg_Debugging()<<"  "<<ID(m_pcs[i])<<"["<<m_flavs[m_pcs[i]]
+		   <<"] -> "<<m_moms[m_pcs[i]].PPerp()<<"\n";
+    if (m_moms[m_pcs[i]].PPerp2()<m_pt2min) return 1-m_sel_log->Hit(true);
+  }
   for (size_t cl(1);cl<m_fills.size();++cl) {
     if (m_fills[cl].empty()) continue;
     msg_Indent();

@@ -16,7 +16,7 @@ namespace PHASIC {
   class Jet_Finder: public Selector_Base {
 
     double m_ycut, m_gycut, m_cycut, m_gcycut;
-    double m_s, m_sprime, m_value;
+    double m_s, m_sprime, m_value, m_pt2min;
 
     std::string m_cuttag, m_gcuttag, m_procname;
 
@@ -32,6 +32,8 @@ namespace PHASIC {
     std::vector<std::vector<int> > m_mcomb;
 
     std::vector<std::vector<Comb_Key> > m_fills;
+
+    std::vector<size_t> m_pcs;
 
     bool m_sok, m_on;
 
