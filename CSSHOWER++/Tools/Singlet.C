@@ -546,6 +546,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       Vec4D pb(-b->Momentum()), ps(-s->Momentum());
       double ma2(p_ms->Mass2(s->GetFlavour()));
       double mb2(p_ms->Mass2(b->GetFlavour())), pspb(ps*pb);
+      if (ma2==0.0) return;
       double sb(Sign(pb[3])), ea(0.0);
       if (IsZero(mb2)) ea=0.5*(pspb+ma2*sqr(pb[3])/pspb)/pb[0];
       else ea=(pb[0]*pspb+dabs(pb[3])*sqrt(pspb*pspb-ma2*mb2))/mb2;
@@ -575,8 +576,9 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	}
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
       Vec4D pb(-b->Momentum()), pl(-l->Momentum());
-      double ma2(p_ms->Mass2(l->GetFlavour()));
+      double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
       double mb2(p_ms->Mass2(b->GetFlavour())), plpb(pl*pb);
+      if (ma2==0.0 && maj2==0.0) return;
       double sb(Sign(pb[3])), ea(0.0);
       if (IsZero(mb2)) ea=0.5*(plpb+ma2*sqr(pb[3])/plpb)/pb[0];
       else ea=(pb[0]*plpb+dabs(pb[3])*sqrt(plpb*plpb-ma2*mb2))/mb2;
@@ -640,6 +642,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double mj2(p_ms->Mass2(r->GetFlavour()));
       double ma2(p_ms->Mass2(s->GetFlavour()));
       double mb2(p_ms->Mass2(b->GetFlavour()));
+      if (ma2==0.0) return;
       double pipa=pi*pa, pjpa=pj*pa, pipj=pi*pj;
       double xija=(pipa+pjpa+pipj)/(pipa+pjpa);
       double Q2=Q.Abs2(), ttau=Q2-ma2-mij2, tau=Q2-ma2-mi2-mj2;
@@ -686,6 +689,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double mb2(p_ms->Mass2(b->GetFlavour()));
       double mj2(p_ms->Mass2(r->GetFlavour()));
       double mk2(p_ms->Mass2(s->GetFlavour()));
+      if (ma2==0.0 && maj2==0.0) return;
       double pjpa=pj*pa, pkpa=pk*pa, pjpk=pj*pk;
       double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
       double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;

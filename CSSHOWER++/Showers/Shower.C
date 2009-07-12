@@ -46,6 +46,7 @@ int Shower::SetXBj(Parton *const p) const
 
 int Shower::RemnantTest(Parton *const p)
 {
+  if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
   if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0]) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
@@ -128,7 +129,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
     (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),
      s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
      (c->GetType()==pst::IS?1:0));
-  msg_Debugging()<<"}\n";
+  msg_Debugging()<<"} -> "<<nres<<"\n";
   return nres;
 }
 

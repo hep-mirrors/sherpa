@@ -285,8 +285,8 @@ double MQCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
   }
   if (!IsEqual(psum,Vec4D(),1.0e-3)) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved. "<<*ampl<<std::endl;
-    abort();
+    msg_Error()<<METHOD<<"(): Momentum not conserved.\n"
+	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
   if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0) {
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
