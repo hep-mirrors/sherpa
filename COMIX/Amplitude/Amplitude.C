@@ -153,9 +153,13 @@ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
   for (size_t i(0);i<ids.size();++i) cid+=1<<ids[i];
   for (size_t i(0);i<m_decid.size();++i) {
     size_t did(m_decid[i].m_id);
-    if (did&(1<<0)) did=(1<<m_n)-1-did;
+    Flavour dfl(m_decid[i].m_fl);
+    if (did&(1<<0)) {
+      did=(1<<m_n)-1-did;
+      dfl=dfl.Bar();
+    }
     if (did==cid) {
-      if (fl==m_decid[i].m_fl || fl.Bar()==m_decid[i].m_fl) return i+1;
+      if (fl==dfl) return i+1;
 //       msg_Debugging()<<"delete prop "<<fl<<" "<<ids<<" "<<cid
 //  		     <<", requested "<<m_decid[i].m_fl<<" "<<did<<"\n";
       return -1;
