@@ -346,6 +346,8 @@ void Matrix_Element_Handler::BuildProcesses()
 	}
 	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
 	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
 	if (cur[0]=="Max_N_Quarks") pi.m_nmaxq=ToType<int>(cur[1]);
 	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
 	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);

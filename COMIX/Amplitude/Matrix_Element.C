@@ -20,15 +20,17 @@ Matrix_Element::~Matrix_Element()
 {
 }
 
-bool Matrix_Element::Initialize(const size_t &nin,const size_t &nout,
-				     const std::vector<Flavour> &flavs,
-				     Model *const model,
-				     const size_t &oew,const size_t &oqcd)
+bool Matrix_Element::Initialize
+(const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
+ Model *const model,const size_t &oew,const size_t &oqcd,
+ const size_t &maxoew,const size_t &maxoqcd)
 {
   m_nin=nin;
   m_nout=nout;
-  m_ampl.SetMaxOrderEW(oew);
-  m_ampl.SetMaxOrderQCD(oqcd);
+  m_ampl.SetOrderEW(oew);
+  m_ampl.SetOrderQCD(oqcd);
+  m_ampl.SetMaxOrderEW(Min(oew,maxoew));
+  m_ampl.SetMaxOrderQCD(Min(oqcd,maxoqcd));
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
   if (!m_ampl.Construct(incs,flavs,model)) return false;

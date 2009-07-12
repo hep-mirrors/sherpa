@@ -65,7 +65,8 @@ namespace COMIX {
     Int_Vector   m_ch, m_dirs; 
     Int_Matrix   m_cl, m_chirs;
 
-    size_t m_n, m_nf, m_oew, m_oqcd, m_pgmode, m_ngpl;
+    size_t m_n, m_nf, m_pgmode, m_ngpl;
+    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd;
     char   m_pmode;
 
     QComplex_Vector m_ress;
@@ -145,11 +146,14 @@ namespace COMIX {
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 
     // inline functions
-    inline void SetMaxOrderEW(const size_t &oew)   { m_oew=oew;   }
-    inline void SetMaxOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
+    inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
+    inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
 
-    inline size_t MaxOrderEW() const  { return m_oew;  }
-    inline size_t MaxOrderQCD() const { return m_oqcd; }
+    inline void SetMaxOrderEW(const size_t &oew)   { m_maxoew=oew;   }
+    inline void SetMaxOrderQCD(const size_t &oqcd) { m_maxoqcd=oqcd; }
+
+    inline size_t MaxOrderEW() const  { return m_maxoew;  }
+    inline size_t MaxOrderQCD() const { return m_maxoqcd; }
 
     inline const Int_Matrix &Chiralities() const { return m_chirs; }
 

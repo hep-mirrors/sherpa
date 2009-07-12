@@ -40,7 +40,8 @@ namespace COMIX {
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
 		    Model *const model,
-		    const size_t &oew=0,const size_t &oqcd=99);
+		    const size_t &oew=99,const size_t &oqcd=99,
+		    const size_t &maxoew=99,const size_t &maxoqcd=99);
     bool Map(const Matrix_Element *me,ATOOLS::Flavour_Map &fmap);
 
     double Differential(const std::vector<ATOOLS::Vec4D> &momenta);

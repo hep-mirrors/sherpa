@@ -14,7 +14,8 @@ using namespace ATOOLS;
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
-  p_model(NULL), m_n(0), m_nf(6), m_oew(99), m_oqcd(99), m_ngpl(3),
+  p_model(NULL), m_n(0), m_nf(6), m_ngpl(3),
+  m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
   m_pmode('D')
 {
   Data_Reader read(" ",";","!","=");
@@ -205,7 +206,10 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		     vkey.p_b->OrderEW()+v->OrderEW());
 	  size_t oqcd(vkey.p_a->OrderQCD()+
 		      vkey.p_b->OrderQCD()+v->OrderQCD());
-	  if (!v->Active() || oew>m_oew || oqcd>m_oqcd) {
+	  if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||
+	      oew>m_maxoew || oqcd>m_maxoqcd ||
+	      (n==m_n-1 && ((m_oew<99 && oew!=m_oew) ||
+			    (m_oqcd<99 && oqcd!=m_oqcd)))) {
 #ifdef DEBUG__BG
 	    msg_Debugging()<<"delete vertex {"<<vkey.p_a->Flav()<<",("
 			   <<vkey.p_a->OrderEW()<<","<<vkey.p_a->OrderQCD()
@@ -213,8 +217,9 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 			   <<vkey.p_b->OrderEW()<<","<<vkey.p_b->OrderQCD()
 			   <<")}-"<<v->Tag()<<"("<<v->OrderEW()<<","
 			   <<v->OrderQCD()<<")->{"<<cur->Flav()<<"} => ("
-			   <<oew<<","<<oqcd<<") vs. max = ("<<m_oew<<","
-			   <<m_oqcd<<"), act = "<<v->Active()<<"\n";
+			   <<oew<<","<<oqcd<<") vs. ("<<m_oew<<","
+			   <<m_oqcd<<") / max = ("<<m_maxoew<<","
+			   <<m_maxoqcd<<"), act = "<<v->Active()<<"\n";
 #endif
 	    delete v;
 	    continue;
@@ -257,8 +262,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   }
   if (n==1 || n==m_n-1) curs[""]=cur;
   if (n==m_n-1) {
-    m_oew=oewmax;
-    m_oqcd=oqcdmax;
+    m_maxoew=oewmax;
+    m_maxoqcd=oqcdmax;
   }
   Int_Vector isfs(ids.size());
   for (size_t i(0);i<ids.size();++i)
@@ -334,7 +339,8 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 #ifdef DEBUG__BG
 	msg_Debugging()<<"delete current "<<**cit<<", "<<(*cit)->Dangling()
 		       <<", O("<<(*cit)->OrderEW()<<","<<(*cit)->OrderQCD()
-		       <<") vs. O_{max}("<<m_oew<<","<<m_oqcd<<")\n";
+		       <<") vs. O("<<m_oew<<","<<m_oqcd<<") / O_{max}("
+		       <<m_maxoew<<","<<m_maxoqcd<<")\n";
 #endif
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
@@ -644,7 +650,7 @@ bool Amplitude::CheckChirs(const Int_Vector &chirs)
 {
   Int_Vector q(m_nf+1,0);
   size_t p(0), m(0), mp(0);
-  if (m_oew>0) return true;
+  if (m_maxoew>0) return true;
   for (size_t i(0);i<chirs.size();++i) {
     if (m_fl[i].IsMassive()) ++mp;
     if (m_fl[i].IsQuark() && !m_fl[i].IsMassive()) 
@@ -766,7 +772,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms)
   mean/=m_ress.size();
   msg_Debugging()<<METHOD<<"(): {\n";
 #ifdef USE__Strict_QCD_Gauge_Test
-  if (m_oew>0) {
+  if (m_maxoew>0) {
 #else
   if (true) {
 #endif
