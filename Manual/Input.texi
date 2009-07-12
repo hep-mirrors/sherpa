@@ -51,7 +51,7 @@ The syntax is
   <prefix>/bin/Sherpa  KEYWORD1=value1 KEYWORD2=value2 ...
 @end verbatim
 
-@noindent To change, e.g., the default number of events, the corresponding
+To change, e.g., the default number of events, the corresponding
 command line reads
 @verbatim
   <prefix>/bin/Sherpa  EVENTS=10000
@@ -150,7 +150,7 @@ during read-in. An example tag definition could read
   <prefix>/bin/Sherpa YCUT:=20
 @end verbatim
 
-@noindent and then be used in the (me) and (selector) sections like
+and then be used in the (me) and (selector) sections like
 @verbatim
   (me){
     RESULT_DIRECTORY = Result_YCUT/

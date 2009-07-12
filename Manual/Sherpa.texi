@@ -9,6 +9,7 @@
 @top Sherpa @value{VERSION} Manual
 
 @end ifnottex
+@paragraphindent 0
 
 @titlepage
 @title Sherpa Manual Version @value{VERSION}

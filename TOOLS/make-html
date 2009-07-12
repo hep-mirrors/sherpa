@@ -1,8 +1,21 @@
 #! /usr/bin/env python
 
 from optparse import OptionParser, OptionGroup
-import os, fnmatch
+import sys, os, fnmatch
 from subprocess import Popen, PIPE
+
+## Try to load faster but non-standard cElementTree module
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    try:
+        import cElementTree as ET
+    except ImportError:
+        try:
+            import xml.etree.ElementTree as ET
+        except:
+            sys.stderr.write("Can't load the ElementTree XML parser: please install it!\n")
+            sys.exit(1)
 
 
 usage = """Webpages from histogram files written out by Rivet.
@@ -20,17 +33,22 @@ parser.add_option("-o", "--outputdir", dest="OUTPUTDIR",
 opts, aidafiles = parser.parse_args()
 
 datadir = Popen(["rivet-config", "--datadir"], stdout=PIPE).communicate()[0].split()[0]
-
+if opts.OUTPUTDIR is not None:
+    os.makedirs(opts.OUTPUTDIR)
 
 
 ## get set of analyses involved in the runs
 analyses = set()
 for aidafile in aidafiles:
-    anas = Popen('if test -f %s; then cat %s | grep path= | cut -d \\" -f 4 | uniq; fi' % (aidafile, aidafile), shell=True, stdout=PIPE).communicate()[0].split()
-    for ana in anas:
-        analyses.add(ana[1:])
+    aidafilepath = os.path.abspath(aidafile)
+    if not os.access(aidafilepath, os.R_OK):
+        print "Error: cannot read from %s" % aidafile
+        exit(2)
+    tree = ET.parse(aidafilepath)
+    for dps in tree.findall("dataPointSet"):
+        analyses.add(dps.get("path")[1:])
 
-index = open("index.html", "w")
+index = open(os.path.join(opts.OUTPUTDIR, "index.html"), "w")
 
 for analysis in sorted(analyses):
     anapath = os.path.join(opts.OUTPUTDIR, analysis)
@@ -41,7 +59,7 @@ for analysis in sorted(analyses):
     cmdargs.append("--mc-errs")
     cmdargs.append("%s/%s.aida" % (datadir, analysis))
     for aidafile in aidafiles:
-        cmdargs.append("../%s" % aidafile)
+        cmdargs.append("%s" % os.path.abspath(aidafile))
     Popen(cmdargs, cwd=anapath).wait()
     for datfile in os.listdir(anapath):
         if datfile=="index.html":
@@ -51,7 +69,7 @@ for analysis in sorted(analyses):
             continue
         psfile = datfile.replace(".dat", ".ps")
         pngfile = datfile.replace(".dat", ".png")
-        Popen(["make-plots", datfile], cwd=anapath).wait()
+        Popen(["make-plots", "--full-range", datfile], cwd=anapath).wait()
         Popen(["convert", "-density", "100", psfile, pngfile], cwd=anapath)
         anaindex.write('<div style="float:left;">')
         anaindex.write('<a href="%s" style="font-size:small;text-decoration:none;font-weight:bold;">' % psfile)

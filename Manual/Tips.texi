@@ -1,14 +1,9 @@
 @node Tips and Tricks
 @chapter Tips and Tricks
 
-Sherpa can be easily extended with certain user defined tools.
-To this extent, a corresponding class must be written,
-equipped with a corresponding getter function and compiled into
-an external library which can be linked to Sherpa at runtime.
-Several specific examples are listed in the following sections.
-
 @menu
 * Bash completion:: How to add bash completion for Sherpa parameters
+* Rivet analyses:: How to analyse Sherpa events using Rivet
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
 @end menu
 
@@ -23,11 +18,54 @@ shell session by running
   .  $prefix/share/SHERPA-MC/sherpa-completion
 @end verbatim
 
-@noindent and you will be able to tab-complete any parameters on a Sherpa
+and you will be able to tab-complete any parameters on a Sherpa
 command line.
 
 To permanently enable this feature in your bash shell, you'll have to add the
 source command above to your ~/.bashrc.
+
+
+@node Rivet analyses
+@section Rivet analyses
+
+Sherpa is equipped with an interface to the analysis tool Rivet. To enable it,
+Rivet and HepMC have to be installed (e.g. using the Rivet bootstrap script)
+and your Sherpa compilation has to be configured with the following options:
+@verbatim
+  ./configure --enable-hepmc2=/path/to/hepmc2 --enable-rivet=/path/to/rivet
+@end verbatim
+
+(Note: Both paths are equal if you used the Rivet bootstrap script.)
+
+To use the interface, specify the switch
+@verbatim
+  Sherpa ANALYSIS=Rivet
+@end verbatim
+
+and create an analysis section in ``Run.dat'' that reads as follows:
+@verbatim
+  (analysis){
+    BEGIN_RIVET {
+      -H outputfile
+      -a D0_2008_S7662670 CDF_2007_S7057202 D0_2004_S5992206 CDF_2008_S7828950
+    } END_RIVET
+  }(analysis)
+@end verbatim
+
+The line starting with ``-a'' specifies which Rivet analyses to run and the
+``-H'' switch sets the output file that the histograms are written to.
+
+You can also use ``TOOLS/make-html'' to create webpages from Rivet's output
+files:
+@verbatim
+  (source /path/to/rivetenv.sh)   # see below
+  TOOLS/make-html -o output/ file1.aida [file2.aida, ...]
+  firefox output/index.html &
+@end verbatim
+
+If your Rivet installation is not in a standard location, the bootstrap script
+should have created a ``rivetenv.sh'' which you have to source before running
+the ``make-html'' script.
 
 @node Versioned installation
 @section Versioned installation

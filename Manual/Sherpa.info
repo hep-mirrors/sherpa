@@ -64,14 +64,14 @@ File: Sherpa.info,  Node: Input structure,  Next: Parameters,  Prev: Command lin
 A Sherpa setup is steered by various parameters, associated with the
 different components of event generation.
 
-   These have to be specified in a run-card which by default is named
+These have to be specified in a run-card which by default is named
 "Run.dat" in the current working directory.  If you want to use a
 different setup directory for your Sherpa run, you have to specify it
 on the command line as `PATH=<dir>'. To read parameters from a run-card
 with a different name, you may specify `RUNDATA=<file>'.
 
-   Sherpa's parameters are grouped according to the different aspects
-of event generation, e.g. the beam parameters in the group `(beam)' and
+Sherpa's parameters are grouped according to the different aspects of
+event generation, e.g. the beam parameters in the group `(beam)' and
 the fragmentation parameters in the group `(fragmentation)'.  In the
 run-card this looks like:
 
@@ -80,10 +80,10 @@ run-card this looks like:
     ...
   }(beam)
 
-   Each of these groups is described in detail in another chapter of
-this manual, see *note Parameters::.
+Each of these groups is described in detail in another chapter of this
+manual, see *note Parameters::.
 
-   If such a section or file does not exist in the setup directory, a
+If such a section or file does not exist in the setup directory, a
 Sherpa-wide fallback mechanism is employed, searching the file in
 various locations in the following order (where $SHERPA_DAT_PATH is an
 optionally set environment variable):
@@ -96,7 +96,7 @@ optionally set environment variable):
    * `$prefix/share/SHERPA-MC/'
 
 
-   All parameters can be overwritten on the command line, i.e.
+All parameters can be overwritten on the command line, i.e.
 command-line input has the highest priority.  The syntax is
 
   <prefix>/bin/Sherpa  KEYWORD1=value1 KEYWORD2=value2 ...
@@ -106,16 +106,16 @@ command line reads
 
   <prefix>/bin/Sherpa  EVENTS=10000
 
-   All over Sherpa, particles are defined by the particle code proposed
-by the PDG. These codes and the particle properties will be listed
-during each run with `OUTPUT=2' for the elementary particles and
-`OUTPUT=4' for the hadrons.  In both cases, antiparticles are
-characterized by a minus sign in front of their code, e.g. a mu- has
-code `13', while a mu+ has `-13'.
+All over Sherpa, particles are defined by the particle code proposed by
+the PDG. These codes and the particle properties will be listed during
+each run with `OUTPUT=2' for the elementary particles and `OUTPUT=4'
+for the hadrons.  In both cases, antiparticles are characterized by a
+minus sign in front of their code, e.g. a mu- has code `13', while a
+mu+ has `-13'.
 
-   There are a few extra features for an easier handling of the
-parameter file(s), namely global tag replacement, see *note Tags::, and
-algebra interpretation, see *note Interpreter::.
+There are a few extra features for an easier handling of the parameter
+file(s), namely global tag replacement, see *note Tags::, and algebra
+interpretation, see *note Interpreter::.
 
 * Menu:
 
@@ -144,7 +144,7 @@ There are predefined tags to alleviate the handling
 `E_CMS'
      The total centre of mass energy of the collision.
 
-   The expression syntax is in general C-like, except for the extra
+The expression syntax is in general C-like, except for the extra
 function `sqr', which gives the square of its argument. Operator
 precedence is the same as in C.  The interpreter can handle functions
 with an arbitrary list of parameters, such as `min' and `max'.
@@ -290,7 +290,7 @@ The value can be any sum of the following:
 
    * 8: Debugging messages (even more output).
 
-   E.g. OUTPUT=3 would display information, events and errors.
+E.g. OUTPUT=3 would display information, events and errors.
 
 
 File: Sherpa.info,  Node: RANDOM_SEED,  Next: ANALYSIS,  Prev: OUTPUT,  Up: Run Parameters
@@ -391,17 +391,17 @@ block structure or the HepMC format.  The authors of Sherpa assume that
 the user is sufficiently acquainted with these formats when selecting
 them.
 
-   There are two ways to specify the event record. First of all the
-switch EVENT_MODE (*Note EVENT_MODE::.) results in the corresponding
-structure being filled internally (and printed to screen, if the
-output-level is set accordingly).
+There are two ways to specify the event record. First of all the switch
+EVENT_MODE (*Note EVENT_MODE::.) results in the corresponding structure
+being filled internally (and printed to screen, if the output-level is
+set accordingly).
 
-   Second, if the events are to be written to file, the keywords listed
+Second, if the events are to be written to file, the keywords listed
 below can be used. With these keywords the filename's root can be
 specified, i.e. HEPEVT_OUTPUT=filename will create files named
 filename.#.hepevt, where the hash mark stands for an increasing number.
 
-   To write events directly to gzipped files instead of plain text, the
+To write events directly to gzipped files instead of plain text, the
 option -enable-gzip has to be specified during the installation.
 
 * Menu:
@@ -505,14 +505,14 @@ _mandatory settings_ to be made are
    * The energies of both incoming beams, defined through
      `BEAM_ENERGY_1' and `BEAM_ENERGY_2', given in units of GeV.
 
-   A List of available Beam spectra is given in section *note Beam
+A List of available Beam spectra is given in section *note Beam
 Spectra::.
 
 * Menu:
 
 * Beam Spectra::  List of available beam spectra
 
-   The following parameters are used to steer the beam setup.
+The following parameters are used to steer the beam setup.
 
 * Menu:
 
@@ -891,13 +891,13 @@ _mandatory settings_ to be made are
 
    * The scale scheme
 
-   A List of available scale schemes is given in section
+A List of available scale schemes is given in section
 
 * Menu:
 
 * Scale schemes::  List of available scale schemes.
 
-   The following parameters are used to steer the matrix element setup.
+The following parameters are used to steer the matrix element setup.
 
 * Menu:
 
@@ -996,9 +996,8 @@ options are
 `QCD'
      reweighting of QCD couplings only
 
-   It is possible to implement a dedicated K-factor scheme within
-Sherpa. For advice on this topic please contact the authors, *note
-Authors::.
+It is possible to implement a dedicated K-factor scheme within Sherpa.
+For advice on this topic please contact the authors, *note Authors::.
 
 
 File: Sherpa.info,  Node: SCALE_SCHEME,  Next: FACTORIZATION_SCALE,  Prev: K_FACTOR_SCHEME,  Up: Matrix Elements
@@ -1010,8 +1009,8 @@ This parameter specifies the scale scheme.  Within Sherpa, this means
 the scheme to compute the renormalization and factorization scales.
 For a list of available scale schemes, see *note Scale schemes::.
 
-   It is possible to implement a dedicated scale scheme within Sherpa.
-For advice on this topic please contact the authors, *note Authors::.
+It is possible to implement a dedicated scale scheme within Sherpa. For
+advice on this topic please contact the authors, *note Authors::.
 
 
 File: Sherpa.info,  Node: FACTORIZATION_SCALE,  Next: RENORMALIZATION_SCALE,  Prev: SCALE_SCHEME,  Up: Matrix Elements
@@ -1052,7 +1051,7 @@ File: Sherpa.info,  Node: Processes,  Next: Selectors,  Prev: Matrix Elements,  
 The process setup is covered by the `(processes)' section of the
 steering file or the process data file `Processes.dat', respectively.
 
-   The following parameters are used to steer the process setup.
+The following parameters are used to steer the process setup.
 
 * Menu:
 
@@ -1225,13 +1224,13 @@ File: Sherpa.info,  Node: Integration_Error,  Next: Max_Epsilon,  Prev: Print_Gr
 
 Sets a process-specific relative integration error target.
 
-   For multijet processes, this parameter can be specified per final
-state multiplicity. An example would be
+For multijet processes, this parameter can be specified per final state
+multiplicity. An example would be
 
 Process 93 93 -> 93 93 93{2}
 Integration_Error 0.02 {3,4}
 
-   Here, the integration error target is set to 2% for 2->3 and 2->4
+Here, the integration error target is set to 2% for 2->3 and 2->4
 processes.
 
 
@@ -1255,15 +1254,15 @@ File: Sherpa.info,  Node: Enhance_Factor,  Next: Enhance_Function,  Prev: Max_Ep
 
 Sets a process specific enhance factor.
 
-   For multijet processes, this parameter can be specified per final
-state multiplicity. An example would be
+For multijet processes, this parameter can be specified per final state
+multiplicity. An example would be
 
 Process 93 93 -> 93 93 93{2}
 Enhance_Factor 4 {3}
 Enhance_Factor 16 {4}
 
-   Here, 3-jet processes are enhanced by a factor of 4, 4-jet processes
-by a factor of 16.
+Here, 3-jet processes are enhanced by a factor of 4, 4-jet processes by
+a factor of 16.
 
 
 File: Sherpa.info,  Node: Enhance_Function,  Next: NLO_QCD_Part,  Prev: Enhance_Factor,  Up: Processes
@@ -1273,15 +1272,15 @@ File: Sherpa.info,  Node: Enhance_Function,  Next: NLO_QCD_Part,  Prev: Enhance_
 
 Sets a process specific enhance function.
 
-   _This feature can only be used when generating weighted events._
+_This feature can only be used when generating weighted events._
 
-   For multijet processes, the parameter can be specified per final
-state multiplicity. An example would be
+For multijet processes, the parameter can be specified per final state
+multiplicity. An example would be
 
 Process 93 93 -> 11 -11 93{1}
 Enhance_Function PPerp2(p[4]) {3}
 
-   Here, the 1-jet process is enhanced with the transverse momentum
+Here, the 1-jet process is enhanced with the transverse momentum
 squared of the jet.
 
 
@@ -1323,7 +1322,7 @@ The setup of cuts at the matrix element level is covered by the
 `(selector)' section of the steering file or the selector data file
 `Selector.dat', respectively.
 
-   Sherpa provides the following selectors
+Sherpa provides the following selectors
 
 * Menu:
 
@@ -1344,8 +1343,8 @@ based on single particle kinematics.  The corresponding  syntax in
 
 <keyword> <flavour code> <min value> <max value>
 
-   `<min value>' and `<max value>' are floating point numbers, which
-can also be given in a form that is understood by the internal algebra
+`<min value>' and `<max value>' are floating point numbers, which can
+also be given in a form that is understood by the internal algebra
 interpreter, see *note Interpreter::.  The selectors act on _all_
 possible particles with the given flavour. Their respective keywords are
 
@@ -1376,8 +1375,8 @@ based on two particle kinematics.  The corresponding  syntax in
 
 <keyword> <flavour1 code> <flavour2 code> <min value> <max value>
 
-   `<min value>' and `<max value>' are floating point numbers, which
-can also be given in a form that is understood by the internal algebra
+`<min value>' and `<max value>' are floating point numbers, which can
+also be given in a form that is understood by the internal algebra
 interpreter, see *note Interpreter::.  The selectors act on _all_
 possible particles with the given flavour. Their respective keywords are
 
@@ -1415,17 +1414,17 @@ There are two different types of jet finders
 `ConeFinder'
      cone-algorithm
 
-   Their respective syntax is
+Their respective syntax is
 
 JetFinder  <ycut>[<ycut decay 1>[<ycut decay 11>...]...]... <D parameter>
 ConeFinder <min R>
 
-   For `JetFinder', it is possible to give different values of ycut in
+For `JetFinder', it is possible to give different values of ycut in
 individual subprocesses of a production-decay chain.  The square
 brackets are then used to denote the decays.  In case only one uniform
 set of ycut is to be used, the square brackets are left out.
 
-   `<ycut>', `<min R>' and `<D parameter>' are floating point numbers,
+`<ycut>', `<min R>' and `<D parameter>' are floating point numbers,
 which can also be given in a form that is understood by the internal
 algebra interpreter, see *note Interpreter::.
 
@@ -1440,9 +1439,9 @@ the matrix element level. Its syntax is
 
 "<variable>" <kf1>,..,<kfn> <min1>,<max1>;..;<minn>,<maxn> [<order1>,...,<orderm>]
 
-   _No additional white spaces are allowed_
+_No additional white spaces are allowed_
 
-   The first word has to be double-quoted, and contains the name of the
+The first word has to be double-quoted, and contains the name of the
 variable to cut on. The keywords for available predefined <variable>s
 can be figured by running Sherpa `SHOW_VARIABLE_SYNTAX=1'.  Or
 alternatively, an arbitrary cut variable can be constructed using the
@@ -1453,13 +1452,13 @@ the momenta of the respective particles `kf1' ... `kfn'. A list of
 available vector functions and operators can be found here *note
 Interpreter::.
 
-   `<kf1>,..,<kfn>' specify the PDG codes of the particles the variable
+`<kf1>,..,<kfn>' specify the PDG codes of the particles the variable
 has to be calculated from. In case this choice is not unique in the
 final state, you have to specify multiple cut ranges
 (`<min1>,<max1>;..;<minn>,<maxn>') for all (combinations of) particles
 you want to cut on, separated by semicolons.
 
-   If no fourth argument is given, the order of cuts is determined
+If no fourth argument is given, the order of cuts is determined
 internally, according to Sherpa's process classification scheme.  This
 then has to be matched if you want to have different cuts on certain
 different particles in the matrix element. To do this, you should put
@@ -1473,12 +1472,12 @@ particle combinations have been found and which cut range your selector
 has held for them (vs. the arbitrary range you specified). From that
 you should get an idea, in which order the cuts have to be specified.
 
-   If the fourth argument is given, particles are ordered before the
-cut is applied. Possible orderings are `PT_UP', `ET_UP', `E_UP' and
+If the fourth argument is given, particles are ordered before the cut
+is applied. Possible orderings are `PT_UP', `ET_UP', `E_UP' and
 `ETA_UP', (increasing p_T, E_T, E, eta). They have to be specified for
 each of the particles, separated by commas.
 
-   Examples
+Examples
 
 Two-body transverse mass
      "mT" 11,-12 50,E_CMS
@@ -1515,7 +1514,7 @@ The integration setup is covered by the `(integration)' section of the
 steering file or the integration data file `Integration.dat',
 respectively.
 
-   The following parameters are used to steer the integration.
+The following parameters are used to steer the integration.
 
 * Menu:
 
@@ -1579,7 +1578,7 @@ The multiple parton interaction (MPI) setup is covered by the `(mi)'
 section of the steering file or the MPI data file `MI.dat',
 respectively.
 
-   The following parameters are used to steer the MPI setup.
+The following parameters are used to steer the MPI setup.
 
 * Menu:
 
@@ -1642,19 +1641,14 @@ File: Sherpa.info,  Node: Tips and Tricks,  Next: Customization,  Prev: Paramete
 5 Tips and Tricks
 *****************
 
-Sherpa can be easily extended with certain user defined tools.  To this
-extent, a corresponding class must be written, equipped with a
-corresponding getter function and compiled into an external library
-which can be linked to Sherpa at runtime.  Several specific examples
-are listed in the following sections.
-
 * Menu:
 
 * Bash completion:: How to add bash completion for Sherpa parameters
+* Rivet analyses:: How to analyse Sherpa events using Rivet
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
 
 
-File: Sherpa.info,  Node: Bash completion,  Next: Versioned installation,  Up: Tips and Tricks
+File: Sherpa.info,  Node: Bash completion,  Next: Rivet analyses,  Up: Tips and Tricks
 
 5.1 Bash completion
 ===================
@@ -1669,13 +1663,51 @@ it in your active shell session by running
 and you will be able to tab-complete any parameters on a Sherpa command
 line.
 
-   To permanently enable this feature in your bash shell, you'll have
-to add the source command above to your ~/.bashrc.
+To permanently enable this feature in your bash shell, you'll have to
+add the source command above to your ~/.bashrc.
 
 
-File: Sherpa.info,  Node: Versioned installation,  Prev: Bash completion,  Up: Tips and Tricks
+File: Sherpa.info,  Node: Rivet analyses,  Next: Versioned installation,  Prev: Bash completion,  Up: Tips and Tricks
 
-5.2 Versioned installation
+5.2 Rivet analyses
+==================
+
+Sherpa is equipped with an interface to the analysis tool Rivet. To
+enable it, Rivet and HepMC have to be installed (e.g. using the Rivet
+bootstrap script) and your Sherpa compilation has to be configured with
+the following options:
+
+  ./configure --enable-hepmc2=/path/to/hepmc2 --enable-rivet=/path/to/rivet
+
+(Note: Both paths are equal if you used the Rivet bootstrap script.)
+
+To use the interface, specify the switch
+
+  Sherpa ANALYSIS=Rivet
+
+and create an analysis section in "Run.dat" that reads as follows:
+
+  (analysis){
+    BEGIN_RIVET {
+      -H outputfile
+      -a D0_2008_S7662670 CDF_2007_S7057202 D0_2004_S5992206 CDF_2008_S7828950
+    } END_RIVET
+  }(analysis)
+
+The line starting with "-a" specifies which Rivet analyses to run and
+the "-H" switch sets the output file that the histograms are written to.
+
+You can also use "TOOLS/make-html" to create webpages from Rivet's
+output files:
+
+  source /path/to/rivetenv.sh
+  TOOLS/make-html -o output/ file1.aida [file2.aida, ...]
+  firefox output/index.html &
+
+
+File: Sherpa.info,  Node: Versioned installation,  Prev: Rivet analyses,  Up: Tips and Tricks
+
+5.3 Versioned installation
 ==========================
 
 If you want to install different Sherpa versions into the same prefix
@@ -1692,8 +1724,8 @@ File: Sherpa.info,  Node: Customization,  Next: Authors,  Prev: Tips and Tricks,
 
 Customizing Sherpa according to your needs.
 
-   Sherpa can be easily extended with certain user defined tools.  To
-this extent, a corresponding class must be written, equipped with a
+Sherpa can be easily extended with certain user defined tools.  To this
+extent, a corresponding class must be written, equipped with a
 corresponding getter function and compiled into an external library
 which can be linked to Sherpa at runtime.  Several specific examples
 are listed in the following sections.
@@ -1714,10 +1746,10 @@ provide an interface to your RNG in an external dynamic library. This
 library is then loaded at runtime and Sherpa replaces the internal RNG
 with the one provided.
 
-   _In this case Sherpa will not attempt to set, save, read or restore
-the RNG_
+_In this case Sherpa will not attempt to set, save, read or restore the
+RNG_
 
-   The corresponding code for the RNG interface is
+The corresponding code for the RNG interface is
 
 #include "ATOOLS/Math/Random.H"
 
@@ -1739,15 +1771,14 @@ External_RNG *Example_RNG_Getter::operator()(const RNG_Key &arg) const
 void Example_RNG_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { str<<"example RNG interface"; }
 
-   If the code is compiled into a library called libExampleRNG.so, then
+If the code is compiled into a library called libExampleRNG.so, then
 this library is loaded dynamically in Sherpa using the command
 `SHERPA_LDADD=ExampleRNG' either on the command line or in `Run.dat'.
 If the library is bound at compile time, like e.g.  in cmt, you may
 skip this step.
 
-   Finally Sherpa is instructed to retrieve the external RNG by
-specifying `EXTERNAL_RNG=Example_RNG' on the command line or in
-`Run.dat'.
+Finally Sherpa is instructed to retrieve the external RNG by specifying
+`EXTERNAL_RNG=Example_RNG' on the command line or in `Run.dat'.
 
 
 File: Sherpa.info,  Node: External PDF,  Prev: External RNG,  Up: Customization
@@ -1760,7 +1791,7 @@ provide an interface to your PDF in an external dynamic library. This
 library is then loaded at runtime and it is possible within Sherpa to
 access all PDFs included.
 
-   The simplest C++ code to implement your interface looks as follows
+The simplest C++ code to implement your interface looks as follows
 
 #include "PDF/Main/PDF_Base.H"
 
@@ -1796,16 +1827,15 @@ extern "C" void InitPDFLib(const std::string &path)
 { p_get = new Example_PDF_Getter("ExamplePDF"); }
 extern "C" void ExitPDFLib() { delete p_get; }
 
-   If the code is compiled into a library called libExamplePDFSherpa.so,
+If the code is compiled into a library called libExamplePDFSherpa.so,
 then this library is loaded dynamically in Sherpa using
 `PDF_LIBRARY=ExamplePDFSherpa' either on the command line, in `Run.dat'
 or in `ISR.dat'. If the library is bound at compile time, like e.g. in
 cmt, you may skip this step.  It is now possible to list all accessible
 PDF sets by specifying `SHOW_PDF_SETS=1' on the command line.
 
-   Finally Sherpa is instructed to retrieve the external PDF by
-specifying `PDF_SET=ExamplePDF' on the command line, in `Run.dat' or in
-`ISR.dat'.
+Finally Sherpa is instructed to retrieve the external PDF by specifying
+`PDF_SET=ExamplePDF' on the command line, in `Run.dat' or in `ISR.dat'.
 
 
 File: Sherpa.info,  Node: Authors,  Next: Copying,  Prev: Customization,  Up: Top
@@ -1828,17 +1858,17 @@ General Public License along with the source for Sherpa; see the file
 COPYING. If not, write to the Free Software Foundation, 59 Temple
 Place, Suite 330, Boston, MA  02111-1307, USA.
 
-   Sherpa is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+Sherpa is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-   Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
+Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
 The MCnet Guidelines apply, see the file GUIDELINES and
 http://www.montecarlonet.org/index.php?p=Publications/Guidelines.
 
-   Permission is granted to copy, distribute and/or modify this
-document under the terms of the GNU General Public License.
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU General Public License.
 
 
 File: Sherpa.info,  Node: Index,  Prev: Copying,  Up: Top
@@ -1920,116 +1950,117 @@ Node: Top0
 Node: Introduction568
 Node: Command line1255
 Node: Input structure1641
-Node: Interpreter3965
-Node: Tags5915
-Node: Parameters6533
-Node: Run Parameters7390
-Node: EVENTS8165
-Node: OUTPUT8328
-Node: RANDOM_SEED8836
-Node: ANALYSIS9383
-Node: ANALYSIS_OUTPUT9753
-Node: TIMEOUT9948
-Node: SPIN_CORRELATIONS10579
-Node: NUM_ACCURACY10955
-Node: SHERPA_CPP_PATH11290
-Node: SHERPA_LIB_PATH11626
-Node: Event output formats11897
-Node: EVENT_MODE13650
-Node: SHERPA_OUTPUT14050
-Node: HEPMC2_GENEVENT_OUTPUT14270
-Node: HEPMC2_ASCII_OUTPUT14530
-Node: HEPMC2_OUTPUT14794
-Node: FILE_SIZE15040
-Node: EVT_FILE_PATH15233
-Node: OUTPUT_PRECISION15436
-Node: Beam Parameters15638
-Node: Beam Spectra17524
-Node: BEAM_119017
-Node: BEAM_219240
-Node: BEAM_ENERGY_119466
-Node: BEAM_ENERGY_219688
-Node: BEAM_SPECTRUM_119921
-Node: BEAM_SPECTRUM_220178
-Node: SPECTRUM_FILE_120438
-Node: SPECTRUM_FILE_220688
-Node: BEAM_SMIN20932
-Node: BEAM_SMAX21426
-Node: K_PERP_MEAN_121914
-Node: K_PERP_MEAN_222240
-Node: K_PERP_SIGMA_122573
-Node: K_PERP_SIGMA_222939
-Node: ISR Parameters23283
-Node: BUNCH_124287
-Node: BUNCH_224578
-Node: ISR_124885
-Node: ISR_225360
-Node: ISR_SMIN25838
-Node: ISR_SMAX26304
-Node: ISR_E_ORDER26772
-Node: ISR_E_SCHEME26989
-Node: PDF_SET27200
-Node: PDF_SET_VERSION27409
-Node: PDF_GRID_PATH27671
-Node: PDF_LIBRARY27892
-Node: SHOW_PDF_SETS28429
-Node: Model Parameters28711
-Node: Matrix Elements29000
-Node: Scale schemes29985
-Node: RESULT_DIRECTORY30936
-Node: EVENT_GENERATION_MODE31264
-Node: COLOUR_SCHEME31551
-Node: HELICITY_SCHEME31882
-Node: K_FACTOR_SCHEME32214
-Node: SCALE_SCHEME33019
-Node: FACTORIZATION_SCALE33521
-Node: RENORMALIZATION_SCALE34002
-Node: Processes34472
-Node: Process36093
-Node: Decay36659
-Node: DecayOS37079
-Node: Renormalization_Scale37523
-Node: Factorization_Scale37861
-Node: Fixed_scale38197
-Node: CKKW38520
-Node: Selector_File38942
-Node: Order_EW39117
-Node: Order_QCD39400
-Node: Max_N_Quarks39670
-Node: Print_Graphs39880
-Node: Integration_Error40157
-Node: Max_Epsilon40622
-Node: Enhance_Factor41156
-Node: Enhance_Function41622
-Node: NLO_QCD_Part42152
-Node: NLO_EW_Part42296
-Node: Loop_Generator42436
-Node: End process42648
-Node: Selectors42848
-Node: One particle selectors43392
-Node: Two particle selectors44202
-Node: Jet finders45179
-Node: Universal selector46024
-Node: Integration49400
-Node: ERROR49980
-Node: INTEGRATOR50127
-Node: VEGAS50449
-Node: FINISH_OPTIMIZATION50711
-Node: Shower Parameters50983
-Node: MPI Parameters51263
-Node: MI_HANDLER51819
-Node: SCALE_MIN52026
-Node: PROFILE_FUNCTION52227
-Node: REFERENCE_SCALE52498
-Node: RESCALE_EXPONENT52904
-Node: Tips and Tricks53243
-Node: Bash completion53853
-Node: Versioned installation54452
-Node: Customization54913
-Node: External RNG55518
-Node: External PDF57000
-Node: Authors58918
-Node: Copying59093
-Node: Index60133
+Node: Interpreter3944
+Node: Tags5891
+Node: Parameters6509
+Node: Run Parameters7366
+Node: EVENTS8141
+Node: OUTPUT8304
+Node: RANDOM_SEED8809
+Node: ANALYSIS9356
+Node: ANALYSIS_OUTPUT9726
+Node: TIMEOUT9921
+Node: SPIN_CORRELATIONS10552
+Node: NUM_ACCURACY10928
+Node: SHERPA_CPP_PATH11263
+Node: SHERPA_LIB_PATH11599
+Node: Event output formats11870
+Node: EVENT_MODE13614
+Node: SHERPA_OUTPUT14014
+Node: HEPMC2_GENEVENT_OUTPUT14234
+Node: HEPMC2_ASCII_OUTPUT14494
+Node: HEPMC2_OUTPUT14758
+Node: FILE_SIZE15004
+Node: EVT_FILE_PATH15197
+Node: OUTPUT_PRECISION15400
+Node: Beam Parameters15602
+Node: Beam Spectra17482
+Node: BEAM_118975
+Node: BEAM_219198
+Node: BEAM_ENERGY_119424
+Node: BEAM_ENERGY_219646
+Node: BEAM_SPECTRUM_119879
+Node: BEAM_SPECTRUM_220136
+Node: SPECTRUM_FILE_120396
+Node: SPECTRUM_FILE_220646
+Node: BEAM_SMIN20890
+Node: BEAM_SMAX21384
+Node: K_PERP_MEAN_121872
+Node: K_PERP_MEAN_222198
+Node: K_PERP_SIGMA_122531
+Node: K_PERP_SIGMA_222897
+Node: ISR Parameters23241
+Node: BUNCH_124245
+Node: BUNCH_224536
+Node: ISR_124843
+Node: ISR_225318
+Node: ISR_SMIN25796
+Node: ISR_SMAX26262
+Node: ISR_E_ORDER26730
+Node: ISR_E_SCHEME26947
+Node: PDF_SET27158
+Node: PDF_SET_VERSION27367
+Node: PDF_GRID_PATH27629
+Node: PDF_LIBRARY27850
+Node: SHOW_PDF_SETS28387
+Node: Model Parameters28669
+Node: Matrix Elements28958
+Node: Scale schemes29937
+Node: RESULT_DIRECTORY30888
+Node: EVENT_GENERATION_MODE31216
+Node: COLOUR_SCHEME31503
+Node: HELICITY_SCHEME31834
+Node: K_FACTOR_SCHEME32166
+Node: SCALE_SCHEME32968
+Node: FACTORIZATION_SCALE33467
+Node: RENORMALIZATION_SCALE33948
+Node: Processes34418
+Node: Process36036
+Node: Decay36602
+Node: DecayOS37022
+Node: Renormalization_Scale37466
+Node: Factorization_Scale37804
+Node: Fixed_scale38140
+Node: CKKW38463
+Node: Selector_File38885
+Node: Order_EW39060
+Node: Order_QCD39343
+Node: Max_N_Quarks39613
+Node: Print_Graphs39823
+Node: Integration_Error40100
+Node: Max_Epsilon40559
+Node: Enhance_Factor41093
+Node: Enhance_Function41553
+Node: NLO_QCD_Part42074
+Node: NLO_EW_Part42218
+Node: Loop_Generator42358
+Node: End process42570
+Node: Selectors42770
+Node: One particle selectors43311
+Node: Two particle selectors44118
+Node: Jet finders45092
+Node: Universal selector45928
+Node: Integration49286
+Node: ERROR49863
+Node: INTEGRATOR50010
+Node: VEGAS50332
+Node: FINISH_OPTIMIZATION50594
+Node: Shower Parameters50866
+Node: MPI Parameters51146
+Node: MI_HANDLER51699
+Node: SCALE_MIN51906
+Node: PROFILE_FUNCTION52107
+Node: REFERENCE_SCALE52378
+Node: RESCALE_EXPONENT52784
+Node: Tips and Tricks53123
+Node: Bash completion53482
+Node: Rivet analyses54070
+Node: Versioned installation55253
+Node: Customization55713
+Node: External RNG56315
+Node: External PDF57785
+Node: Authors59694
+Node: Copying59869
+Node: Index60900
 
 End Tag Table
