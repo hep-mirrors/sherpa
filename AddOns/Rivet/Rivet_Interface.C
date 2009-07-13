@@ -14,8 +14,7 @@
 
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#ifdef HEPMC_HAS_CROSS_SECTION
-
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -82,10 +81,11 @@ public:
     double weight((*sp)["Weight"]->Get<double>());
     HepMC::GenEvent event;
     m_hepmc2.Sherpa2HepMC(bl, event, weight);
+#ifdef HEPMC_HAS_CROSS_SECTION
     HepMC::GenCrossSection xs;
     xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
     event.set_cross_section(xs);
- 
+#endif
     p_rivet->analyze(event);
     ++m_nevt;
     
