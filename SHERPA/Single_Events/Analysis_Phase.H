@@ -11,7 +11,9 @@ namespace SHERPA {
     
     Analysis_Map *p_analyses;
 
-    size_t m_wit, m_init;
+    size_t m_wit;
+
+    std::map<Analysis_Interface*,bool> m_inits;
 
   public:
     

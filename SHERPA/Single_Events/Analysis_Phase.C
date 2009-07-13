@@ -14,11 +14,13 @@ using namespace ATOOLS;
 
 Analysis_Phase::Analysis_Phase(Analysis_Map *const analyses):
   Event_Phase_Handler(""), 
-  p_analyses(analyses), m_wit(std::numeric_limits<size_t>::max()), m_init(0)
+  p_analyses(analyses), m_wit(std::numeric_limits<size_t>::max())
 {
   m_type=eph::Analysis;
-  for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+  for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it) {
     m_name+=it->first+"+";
+    m_inits[it->second]=false;
+  }
   if (m_name.length()>0) m_name.erase(m_name.length()-1);
   Data_Reader read(" ",";","!","=");
   double wit;
@@ -34,14 +36,11 @@ Analysis_Phase::Analysis_Phase(Analysis_Map *const analyses):
 
 Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight) 
 {
-  if (!m_init) {
-    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
-      it->second->Init();
-    m_init=true;
-  }
   if (!bloblist->empty())
-    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+    for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it) {
+      if (!m_inits[it->second]) m_inits[it->second]=it->second->Init();
       it->second->Run(bloblist);
+    }
   if (rpa.gen.NumberOfDicedEvents()%m_wit==0 &&
       rpa.gen.NumberOfDicedEvents()<rpa.gen.NumberOfEvents()) 
     for (Analysis_Map::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
