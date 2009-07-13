@@ -54,7 +54,8 @@
 
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
-  SCALE_SCHEME = QCD  
+  EVENT_GENERATION_MODE = Weighted
+  SCALE_SCHEME = QCD
 }(me)
 
 (mi){
