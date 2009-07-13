@@ -6,7 +6,8 @@ libModelMain_la_SOURCES = Model_Base.C \
 			  Running_AlphaS.C Running_AlphaQED.C Running_Fermion_Mass.C \
 			  Effective_Higgs_Coupling.C LesHouches_Interface.C \
 			  Spectrum_Generator_Base.C \
-			  FeynRules_Model.C FeynRules_Spectrum.C 	
+			  FeynRules_Model.C FeynRules_Spectrum.C \
+	                  Hidden_Valley.C Running_Alpha_HV.C 	
 
 localinc_HEADERS   = Model_Base.H \
 		     Standard_Model.H SM_AGC.H MSSM.H SM_MSSM_EHC.H THDM.H \
@@ -14,4 +15,5 @@ localinc_HEADERS   = Model_Base.H \
 		     Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \
 	             Effective_Higgs_Coupling.H LesHouches_Interface.H \
 		     Spectrum_Generator_Base.H \
-		     FeynRules_Model.H FeynRules_Spectrum.H 
+		     FeynRules_Model.H FeynRules_Spectrum.H \
+                     Hidden_Valley.H Running_Alpha_HV.H 	

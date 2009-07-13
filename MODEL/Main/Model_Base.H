@@ -71,12 +71,12 @@ namespace MODEL {
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
 
-    virtual std::string           Name()                { return m_name; } 
-    virtual ScalarNumbersMap    * GetScalarNumbers()    { return p_numbers; }
-    virtual ScalarFunctionsMap  * GetScalarFunctions()  { return p_functions; }
-    virtual ScalarConstantsMap  * GetScalarConstants()  { return p_constants; }
-    virtual ComplexConstantsMap * GetComplexConstants() { return p_complexconstants; }
-    virtual ComplexMatricesMap  * GetComplexMatrices()  { return p_matrices; }
+    std::string           Name() const          { return m_name; } 
+    ScalarNumbersMap    * GetScalarNumbers()    { return p_numbers; }
+    ScalarFunctionsMap  * GetScalarFunctions()  { return p_functions; }
+    ScalarConstantsMap  * GetScalarConstants()  { return p_constants; }
+    ComplexConstantsMap * GetComplexConstants() { return p_complexconstants; }
+    ComplexMatricesMap  * GetComplexMatrices()  { return p_matrices; }
 
     inline Interaction_Model_Base *GetInteractionModel() { return p_model; }
 
