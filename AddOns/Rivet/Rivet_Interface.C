@@ -133,5 +133,3 @@ void Rivet_Interface_Getter::PrintInfo
 }
 
 #endif
-#endif
-#endif
