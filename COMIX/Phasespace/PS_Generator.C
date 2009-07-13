@@ -267,8 +267,9 @@ bool PS_Generator::Construct(Amplitude *const ampl)
       bool found(false);
       for (size_t i(0);i<m_cur[n].size();++i)
 	if (m_cur[n][i]->Id()==curs[n][j]->Id() &&
-	    m_cur[n][i]->Flav().Mass()==curs[n][j]->Flav().Mass() &&
-	    m_cur[n][i]->Flav().Width()==curs[n][j]->Flav().Width()) {
+	    (n==1 ||
+	     (m_cur[n][i]->Flav().Mass()==curs[n][j]->Flav().Mass() &&
+	      m_cur[n][i]->Flav().Width()==curs[n][j]->Flav().Width()))) {
 	  Current_Base *ref(m_cbmap[m_cur[n][i]]);
 	  for (CB_MMap::const_iterator cit(m_cmap.lower_bound(ref));
 	       cit!=m_cmap.upper_bound(ref);++cit) {
