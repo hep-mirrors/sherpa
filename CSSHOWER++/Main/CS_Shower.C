@@ -25,6 +25,8 @@ namespace CSSHOWER {
 
 namespace CSSHOWER {
 
+  typedef std::map<size_t,std::pair<double,double> > KT2X_Map;
+
   class CS_Shower : public PDF::Shower_Base {
   
   private:
@@ -43,6 +45,11 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Amplitude *p_ampl, *p_rampl;
     ATOOLS::Particle_List      m_psp;
 
+    size_t IdCount(const size_t &id);
+    void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,const size_t &id,
+		     KT2X_Map &kt2xmap,std::set<size_t> &aset);
+    void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap);
+
     double HardScale(const ATOOLS::Cluster_Amplitude *const ampl);
 
     double CouplingWeight(const size_t &oqcd,const double &kt2,
@@ -51,7 +58,7 @@ namespace CSSHOWER {
     Singlet *TranslateAmplitude(ATOOLS::Cluster_Amplitude *const ampl,
 				std::map<ATOOLS::Cluster_Leg*,Parton*> &pmap,
 				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap,
-				const double &scale,const double &kt2min);
+				const KT2X_Map &kt2xmap);
 
     int PerformShowers(const size_t &maxem,size_t &nem);
 
@@ -215,6 +222,103 @@ ATOOLS::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions()
   return p_cluster;
 }
 
+size_t CS_Shower::IdCount(const size_t &id)
+{
+  size_t ic(id), cn(0);
+  for (size_t i(0);ic>0;++i) {
+    size_t c(1<<i);
+    if (ic&c) {
+      ++cn;
+      ic-=c;
+    }
+  }
+  return cn;
+}
+
+void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
+			  KT2X_Map &kt2xmap,std::set<size_t> &aset)
+{
+  msg_Indent();
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    Cluster_Leg *cl(ampl->Leg(i));
+    if ((cl->Id()&id)==0) continue;
+    if (IdCount(cl->Id())>1) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
+    else kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
+    if (cl->K()) {
+      std::vector<size_t> cns;
+      double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
+      kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl->Prev());
+      for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+	if (kit->first!=cl->Id() && kit->first&cl->Id() &&
+	    aset.find(kit->first)==aset.end()) {
+	  ckt2min=Min(ckt2min,kit->second.first);
+	  ckt2max=Max(ckt2max,kit->second.second);
+	  if (cl->Stat()==3) {
+	    bool ins(true);
+	    for (size_t j(0);j<cns.size();++j)
+	      if (cns[j]&kit->first) {
+		ins=false;
+		break;
+	      }
+	    if (ins) cns.push_back(kit->first);
+	  }
+	}
+      bool smin(true);
+      if (cl->Stat()==3 && cns.size()<cl->DMax()) smin=false;
+      for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+	if (kit->first!=cl->Id() && kit->first&cl->Id() &&
+	    aset.find(kit->first)==aset.end()) {
+	  if (smin) kit->second.first=ckt2min;
+	  else kit->second.first=0.0;
+	  kit->second.second=ckt2max;
+	  if (cl->Stat()==3) aset.insert(kit->first);
+	}
+    }
+    if (cl->Stat()==3) {
+      kt2xmap[cl->Id()].first=std::numeric_limits<double>::max();
+      kt2xmap[cl->Id()].second=0.0;
+    }
+  }
+}
+
+void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
+{
+  std::set<size_t> aset;
+  Cluster_Amplitude *campl(ampl);
+  while (campl->Next()) campl=campl->Next();
+  GetKT2Min(campl,(1<<ampl->Legs().size())-1,kt2xmap,aset);
+
+  std::vector<size_t> cns;
+  double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
+  for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+    if (aset.find(kit->first)==aset.end()) {
+      ckt2min=Min(ckt2min,kit->second.first);
+      ckt2max=Max(ckt2max,kit->second.second);
+      bool ins(true);
+      for (size_t j(0);j<cns.size();++j)
+	if (cns[j]&kit->first) {
+	  ins=false;
+	  break;
+	}
+      if (ins) cns.push_back(kit->first);
+    }
+  bool smin(cns.size()-ampl->NIn()==campl->Leg(2)->NMax());
+  for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+    if (aset.find(kit->first)==aset.end()) {
+      if (smin) kit->second.first=ckt2min;
+      else kit->second.first=0.0;
+      kit->second.second=ckt2max;
+    }
+
+  msg_Debugging()<<"k_{T,min} / k_{T,max} = {\n";
+  for (KT2X_Map::const_iterator
+	 kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+    msg_Debugging()<<"  "<<ID(kit->first)
+		   <<" -> "<<sqrt(kit->second.first)
+		   <<" / "<<sqrt(kit->second.second)<<"\n";
+  msg_Debugging()<<"}\n";
+}
+
 bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 {
   CleanUp();
@@ -222,17 +326,8 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
   msg_Indent();
   p_rampl=ampl;
   p_ms=ampl->MS();
-  double kt2max(0.0), kt2min(0.0);
-  for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next()) 
-    kt2max=Max(kt2max,HardScale(campl));
-  if (ampl->Leg(2)->NMax()+ampl->NIn()==ampl->Legs().size()) {
-    kt2min=kt2max;
-    for (Cluster_Amplitude *campl(ampl)
-	   ;campl->Next();campl=campl->Next()) 
-      kt2min=Min(kt2min,campl->KT2QCD());
-  }
-  msg_Debugging()<<"kt_max = "<<sqrt(kt2max)
-		 <<", kt_min = "<<sqrt(kt2min)<<"\n";
+  KT2X_Map kt2xmap;
+  GetKT2Min(ampl,kt2xmap);
   p_next->clear();
   All_Singlets allsinglets;
   std::map<size_t,Parton*> kmap;
@@ -243,7 +338,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
     Parton *split(NULL);
     std::map<Parton*,Cluster_Leg*> lmap;
     std::map<Cluster_Leg*,Parton*> pmap;
-    Singlet *sing(TranslateAmplitude(campl,pmap,lmap,kt2max,kt2min));
+    Singlet *sing(TranslateAmplitude(campl,pmap,lmap,kt2xmap));
     allsinglets.push_back(sing);
     for (size_t i(0);i<campl->Legs().size();++i) {
       Cluster_Leg *cl(campl->Leg(i));
@@ -339,7 +434,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 #endif
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
     }
-    double kt2prev(campl->Next()?campl->KT2QCD():kt2max);
+    double kt2prev(campl->Next()?campl->KT2QCD():kt2xmap[1].second);
     double kt2next(campl->Prev()?campl->Prev()->KT2QCD():0.0);
     for (size_t i(0);i<campl->Legs().size();++i) {
       std::map<Cluster_Leg*,Parton*>::const_iterator 
@@ -383,7 +478,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 Singlet *CS_Shower::TranslateAmplitude
 (Cluster_Amplitude *const ampl,
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap,
- const double &kt2max,const double &kt2min)
+ const KT2X_Map &kt2xmap)
 {
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double ktveto2(jf?jf->GlobalYcut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
@@ -416,9 +511,10 @@ Singlet *CS_Shower::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    if (cl->Q2Shower()<0.0) parton->SetStart(kt2max);
+    KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
+    if (cl->Q2Shower()<0.0) parton->SetStart(xit->second.second);
     else parton->SetStart(cl->Q2Shower());
-    parton->SetKtMax(kt2min);
+    parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
     parton->SetSing(singlet);

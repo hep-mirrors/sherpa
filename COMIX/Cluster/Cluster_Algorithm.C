@@ -418,6 +418,7 @@ bool Cluster_Algorithm::ClusterStep
     else if (col.m_i<0 && ccurs[i]->Cut()) {
       p_ampl->Legs().back()->SetStat(3);
       SetNMax(p_ampl->Prev(),cid,ccurs[i]->Cut());
+      p_ampl->Legs().back()->SetDMax(ccurs[i]->Cut());
     }
     if (col.m_i<0) {
       p_ampl->Legs().back()->SetCol(GetColor(ccurs[i],fcur));

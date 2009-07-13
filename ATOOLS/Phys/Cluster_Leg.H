@@ -59,7 +59,7 @@ namespace ATOOLS {
 
     Cluster_Amplitude *p_ampl;
 
-    size_t  m_id, m_st, m_n, m_k;
+    size_t  m_id, m_st, m_n, m_d, m_k;
     Vec4D   m_p;
     Flavour m_fl;
     ColorID m_c;
@@ -76,7 +76,7 @@ namespace ATOOLS {
     inline Cluster_Leg(Cluster_Amplitude *const ampl,
 		       const Vec4D &p,const Flavour &fl,
 		       const ColorID &c=ColorID()):
-      p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_k(0),
+      p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
       m_p(p), m_fl(fl), m_c(c), m_q2s(-1.0) {}
 
     inline ~Cluster_Leg() {}
@@ -93,6 +93,7 @@ namespace ATOOLS {
     inline void SetId(const size_t &id)   { m_id=id; }
     inline void SetStat(const size_t &st) { m_st=st; }
     inline void SetNMax(const size_t &n)  { m_n=n;   }
+    inline void SetDMax(const size_t &d)  { m_d=d;   }
     inline void SetK(const size_t &k)     { m_k=k;   }
       
     inline void SetCol(const ColorID &c)   { m_c=c; }
@@ -110,6 +111,7 @@ namespace ATOOLS {
     inline size_t Id() const   { return m_id; }
     inline size_t Stat() const { return m_st; }
     inline size_t NMax() const { return m_n;  }
+    inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
 
     inline double Q2Shower() const { return m_q2s;   }
