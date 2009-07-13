@@ -5,14 +5,26 @@ The available command line options for Sherpa.
 
 @table @option
 
+@item -f <file>
+Read input from file @samp{<file>}.
+
+@item -p <path>
+Read input file from path @samp{<path>}.
+
+@item -e <events>
+Set number of events to generate @samp{<events>}.
+
+@item -O <level>
+Set output level @samp{<level>}.
+
 @item -v, --version
 Print versioning information.
 
 @item PARAMETER=VALUE
-Sets the value of a parameter, see @ref{Parameters}.
+Set the value of a parameter, see @ref{Parameters}.
 
 @item TAG:=VALUE
-Sets the value of a tag, see @ref{Tags}.
+Set the value of a tag, see @ref{Tags}.
 
 @end table
 

@@ -840,21 +840,79 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	++oit;
       }
     }
+    else if (par.find("-f")==0) {
+      std::string file=par.substr(2);
+      if (file=="") {
+	if (oit+1!=helpsv.end()) {
+	  oit=helpsv.erase(oit);
+	  file=*oit;
+	}
+      }
+      if (file!="") m_file=file;
+      else {
+	msg_Error()<<METHOD<<"(): No argument to '-f'. Abort."<<std::endl;
+	exit(1);
+      }
+      oit=helpsv.erase(oit);
+    }
+    else if (par.find("-p")==0) {
+      std::string path=par.substr(2);
+      if (path=="") {
+	if (oit+1!=helpsv.end()) {
+	  oit=helpsv.erase(oit);
+	  path=*oit;
+	}
+      }
+      if (path!="") m_path=path;
+      else {
+	msg_Error()<<METHOD<<"(): No argument to '-p'. Abort."<<std::endl;
+	exit(1);
+      }
+      oit=helpsv.erase(oit);
+    }
+    else if (par.find("-e")==0) {
+      std::string events=par.substr(2);
+      if (events=="") {
+	if (oit+1!=helpsv.end()) {
+	  oit=helpsv.erase(oit);
+	  events=*oit;
+	}
+      }
+      if (events=="") {
+	msg_Error()<<METHOD<<"(): No argument to '-e'. Abort."<<std::endl;
+	exit(1);
+      }
+      *oit="EVENTS="+events;
+    }
+    else if (par.find("-O")==0) {
+      std::string out=par.substr(2);
+      if (out=="") {
+	if (oit+1!=helpsv.end()) {
+	  oit=helpsv.erase(oit);
+	  out=*oit;
+	}
+      }
+      if (out=="") {
+	msg_Error()<<METHOD<<"(): No argument to '-O'. Abort."<<std::endl;
+	exit(1);
+      }
+      *oit="OUTPUT="+out;
+    }
     else if (par=="--version" || par=="-v"){
       msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
-      msg_Out()<<"   employing: "<<endl;
-      msg_Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
-      msg_Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
-      msg_Out()<<"    * Pythia Version 6.214"<<endl;
       exit(0);
     }
     else {
       msg_Out()<<" Usage: "<<endl;
-      msg_Out()<<" Sherpa [<variable>=<value>] "<<endl;
+      msg_Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
       msg_Out()<<endl;
       msg_Out()<<" Possible options: "<<endl;
+      msg_Out()<<"  -f <file>      read input from file <file>"<<endl;
+      msg_Out()<<"  -p <path>      read input from path <path>"<<endl;
+      msg_Out()<<"  -e <events>    set number of events <events>"<<endl;
+      msg_Out()<<"  -O <level>     set output level <level>"<<endl;
       msg_Out()<<"  -v,--version   prints the Version number"<<endl;
-      msg_Out()<<"  -?,--help      prints this help message"<<endl;
+      msg_Out()<<"  -h,--help      prints this help message"<<endl;
       exit(0);
     }
   }

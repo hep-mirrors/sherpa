@@ -1,4 +1,4 @@
-This is Sherpa.info, produced by makeinfo version 4.11 from Sherpa.texi.
+This is Sherpa.info, produced by makeinfo version 4.8 from Sherpa.texi.
 
 
 File: Sherpa.info,  Node: Top,  Next: Introduction,  Up: (dir)
@@ -45,14 +45,26 @@ File: Sherpa.info,  Node: Command line,  Next: Input structure,  Prev: Introduct
 
 The available command line options for Sherpa.
 
+`-f <file>'
+     Read input from file `<file>'.
+
+`-p <path>'
+     Read input file from path `<path>'.
+
+`-e <events>'
+     Set number of events to generate `<events>'.
+
+`-O <level>'
+     Set output level `<level>'.
+
 `-v, --version'
      Print versioning information.
 
 `PARAMETER=VALUE'
-     Sets the value of a parameter, see *note Parameters::.
+     Set the value of a parameter, see *Note Parameters::.
 
 `TAG:=VALUE'
-     Sets the value of a tag, see *note Tags::.
+     Set the value of a tag, see *Note Tags::.
 
 
 
@@ -81,7 +93,7 @@ run-card this looks like:
   }(beam)
 
 Each of these groups is described in detail in another chapter of this
-manual, see *note Parameters::.
+manual, see *Note Parameters::.
 
 If such a section or file does not exist in the setup directory, a
 Sherpa-wide fallback mechanism is employed, searching the file in
@@ -114,8 +126,8 @@ minus sign in front of their code, e.g. a mu- has code `13', while a
 mu+ has `-13'.
 
 There are a few extra features for an easier handling of the parameter
-file(s), namely global tag replacement, see *note Tags::, and algebra
-interpretation, see *note Interpreter::.
+file(s), namely global tag replacement, see *Note Tags::, and algebra
+interpretation, see *Note Interpreter::.
 
 * Menu:
 
@@ -150,7 +162,7 @@ precedence is the same as in C.  The interpreter can handle functions
 with an arbitrary list of parameters, such as `min' and `max'.
 The interpreter can be employed to construct arbitrary variables from
 four momenta, like e.g. in the context of a parton level selector, see
-*note Selectors::.  The corresponding functions are
+*Note Selectors::.  The corresponding functions are
 
 `Mass(V)'
      The invariant mass of V in GeV.
@@ -226,7 +238,7 @@ File: Sherpa.info,  Node: Parameters,  Next: Tips and Tricks,  Prev: Input struc
 
 A Sherpa setup is steered by various parameters, associated with the
 different components of event generation. Tag replacements may be
-performed in all inputs, see *note Tags::.
+performed in all inputs, see *Note Tags::.
 
 * Menu:
 
@@ -311,10 +323,10 @@ File: Sherpa.info,  Node: ANALYSIS,  Next: ANALYSIS_OUTPUT,  Prev: RANDOM_SEED, 
 4.1.4 ANALYSIS
 --------------
 
-The internal analysis can be switched on or oﬀ by setting the ANALYSIS
-switch to 1 or 0, respectively. An output directory can be speciﬁed by
-setting ANALYSIS_OUTPUT. The new directory will be created w.r.t. the
-working directory.
+The internal analysis can be switched on or oﬀ by setting the
+ANALYSIS switch to 1 or 0, respectively. An output directory can be
+speciﬁed by setting ANALYSIS_OUTPUT. The new directory will be
+created w.r.t. the working directory.
 
 
 File: Sherpa.info,  Node: ANALYSIS_OUTPUT,  Next: TIMEOUT,  Prev: ANALYSIS,  Up: Run Parameters
@@ -377,7 +389,7 @@ File: Sherpa.info,  Node: SHERPA_LIB_PATH,  Prev: SHERPA_CPP_PATH,  Up: Run Para
 ----------------------
 
 The path in which Sherpa looks for dynamically bound libraries from
-previously created C++ source code, cf. *note SHERPA_CPP_PATH::.
+previously created C++ source code, cf. *Note SHERPA_CPP_PATH::.
 
 
 File: Sherpa.info,  Node: Event output formats,  Next: SHERPA_CPP_PATH,  Prev: NUM_ACCURACY,  Up: Run Parameters
@@ -505,7 +517,7 @@ _mandatory settings_ to be made are
    * The energies of both incoming beams, defined through
      `BEAM_ENERGY_1' and `BEAM_ENERGY_2', given in units of GeV.
 
-A List of available Beam spectra is given in section *note Beam
+A List of available Beam spectra is given in section *Note Beam
 Spectra::.
 
 * Menu:
@@ -565,8 +577,8 @@ Possible values are
 `Spectrum_Reader'
      A user defined spectrum is used to describe the energy spectrum of
      the assumed new beam particles. The name of the corresponding
-     spectrum file needs to be given through the keywords *note
-     SPECTRUM_FILE_1:: and *note SPECTRUM_FILE_2::.
+     spectrum file needs to be given through the keywords *Note
+     SPECTRUM_FILE_1:: and *Note SPECTRUM_FILE_2::.
 
 
 File: Sherpa.info,  Node: BEAM_1,  Next: BEAM_2,  Prev: Beam Spectra,  Up: Beam Parameters
@@ -611,7 +623,7 @@ File: Sherpa.info,  Node: BEAM_SPECTRUM_1,  Next: BEAM_SPECTRUM_2,  Prev: BEAM_E
 ---------------------
 
 This parameter specifies the Beamstrahlung spectrum for the first beam,
-see *note Beam Spectra::.
+see *Note Beam Spectra::.
 
 
 File: Sherpa.info,  Node: BEAM_SPECTRUM_2,  Next: SPECTRUM_FILE_1,  Prev: BEAM_SPECTRUM_1,  Up: Beam Parameters
@@ -620,7 +632,7 @@ File: Sherpa.info,  Node: BEAM_SPECTRUM_2,  Next: SPECTRUM_FILE_1,  Prev: BEAM_S
 ---------------------
 
 This parameter specifies the Beamstrahlung spectrum for the second beam,
-see *note Beam Spectra::.
+see *Note Beam Spectra::.
 
 
 File: Sherpa.info,  Node: SPECTRUM_FILE_1,  Next: SPECTRUM_FILE_2,  Prev: BEAM_SPECTRUM_2,  Up: Beam Parameters
@@ -629,7 +641,7 @@ File: Sherpa.info,  Node: SPECTRUM_FILE_1,  Next: SPECTRUM_FILE_2,  Prev: BEAM_S
 ---------------------
 
 This parameter specifies the spectrum file for the first beam, see
-*note Beam Spectra::.
+*Note Beam Spectra::.
 
 
 File: Sherpa.info,  Node: SPECTRUM_FILE_2,  Next: BEAM_SMIN,  Prev: SPECTRUM_FILE_1,  Up: Beam Parameters
@@ -638,7 +650,7 @@ File: Sherpa.info,  Node: SPECTRUM_FILE_2,  Next: BEAM_SMIN,  Prev: SPECTRUM_FIL
 ---------------------
 
 This parameter specifies the spectrum file for the first beam, see
-*note Beam Spectra::.
+*Note Beam Spectra::.
 
 
 File: Sherpa.info,  Node: BEAM_SMIN,  Next: BEAM_SMAX,  Prev: SPECTRUM_FILE_2,  Up: Beam Parameters
@@ -651,7 +663,7 @@ after Beamstrahlung. The reference value is the total centre of mass
 energy squared of the collision, _not_ the centre of mass energy after
 eventual Beamstrahlung.
 The parameter can be specified using the internal interpreter, see
-*note Interpreter::, e.g. as `BEAM_SMIN sqr(20/E_CMS)'.
+*Note Interpreter::, e.g. as `BEAM_SMIN sqr(20/E_CMS)'.
 
 
 File: Sherpa.info,  Node: BEAM_SMAX,  Next: K_PERP_MEAN_1,  Prev: BEAM_SMIN,  Up: Beam Parameters
@@ -664,7 +676,7 @@ after Beamstrahlung. The reference value is the total centre of mass
 energy squared of the collision, _not_ the centre of mass energy after
 eventual Beamstrahlung.
 The parameter can be specified using the internal interpreter, see
-*note Interpreter::, e.g. as `BEAM_SMIN sqr(0.99)'.
+*Note Interpreter::, e.g. as `BEAM_SMIN sqr(0.99)'.
 
 
 File: Sherpa.info,  Node: K_PERP_MEAN_1,  Next: K_PERP_MEAN_2,  Prev: BEAM_SMAX,  Up: Beam Parameters
@@ -740,7 +752,7 @@ File: Sherpa.info,  Node: BUNCH_1,  Next: BUNCH_2,  Up: ISR Parameters
 
 This parameter specifies the PDG ID of the first (left) bunch particle,
 i.e. the particle after eventual Beamstrahlung specified through the
-beam parameters, see *note Beam Parameters::.
+beam parameters, see *Note Beam Parameters::.
 
 
 File: Sherpa.info,  Node: BUNCH_2,  Next: ISR_1,  Prev: BUNCH_1,  Up: ISR Parameters
@@ -750,7 +762,7 @@ File: Sherpa.info,  Node: BUNCH_2,  Next: ISR_1,  Prev: BUNCH_1,  Up: ISR Parame
 
 This parameter specifies the PDG ID of the second (right) bunch
 particle, i.e. the particle after eventual Beamstrahlung specified
-through the beam parameters, see *note Beam Parameters::.
+through the beam parameters, see *Note Beam Parameters::.
 
 
 File: Sherpa.info,  Node: ISR_1,  Next: ISR_2,  Prev: BUNCH_2,  Up: ISR Parameters
@@ -760,7 +772,7 @@ File: Sherpa.info,  Node: ISR_1,  Next: ISR_2,  Prev: BUNCH_2,  Up: ISR Paramete
 
 This parameter specifies whether ISR is enabled for the first (left)
 bunch particle, i.e. the particle after eventual Beamstrahlung
-specified through the beam parameters, see *note Beam Parameters::.
+specified through the beam parameters, see *Note Beam Parameters::.
 Possible values are `On' and `Off'.
 For bunch particles with hadronic substructure, i.e.  hadrons and
 photons, this amounts to employing a PDF to extract partons.
@@ -773,7 +785,7 @@ File: Sherpa.info,  Node: ISR_2,  Next: ISR_SMIN,  Prev: ISR_1,  Up: ISR Paramet
 
 This parameter specifies whether ISR is enabled for the second (right)
 bunch particle, i.e. the particle after eventual Beamstrahlung
-specified through the beam parameters, see *note Beam Parameters::.
+specified through the beam parameters, see *Note Beam Parameters::.
 Possible values are `On' and `Off'.
 For bunch particles with hadronic substructure, i.e.  hadrons and
 photons, this amounts to employing a PDF to extract partons.
@@ -789,7 +801,7 @@ after ISR. The reference value is the total centre of mass energy
 squared of the collision, _not_ the centre of mass energy after
 eventual Beamstrahlung.
 The parameter can be specified using the internal interpreter, see
-*note Interpreter::, e.g. as `ISR_SMIN sqr(20/E_CMS)'.
+*Note Interpreter::, e.g. as `ISR_SMIN sqr(20/E_CMS)'.
 
 
 File: Sherpa.info,  Node: ISR_SMAX,  Next: ISR_E_ORDER,  Prev: ISR_SMIN,  Up: ISR Parameters
@@ -802,7 +814,7 @@ after ISR. The reference value is the total centre of mass energy
 squared of the collision, _not_ the centre of mass energy after
 eventual Beamstrahlung.
 The parameter can be specified using the internal interpreter, see
-*note Interpreter::, e.g. as `ISR_SMIN sqr(0.99)'.
+*Note Interpreter::, e.g. as `ISR_SMIN sqr(0.99)'.
 
 
 File: Sherpa.info,  Node: ISR_E_ORDER,  Next: ISR_E_SCHEME,  Prev: ISR_SMAX,  Up: ISR Parameters
@@ -837,7 +849,7 @@ File: Sherpa.info,  Node: PDF_SET_VERSION,  Next: PDF_GRID_PATH,  Prev: PDF_SET,
 ----------------------
 
 This parameter allows to eventually select a specific version within
-the chosen PDF set, see *note PDF_SET::.
+the chosen PDF set, see *Note PDF_SET::.
 
 
 File: Sherpa.info,  Node: PDF_GRID_PATH,  Next: PDF_LIBRARY,  Prev: PDF_SET_VERSION,  Up: ISR Parameters
@@ -856,7 +868,7 @@ File: Sherpa.info,  Node: PDF_LIBRARY,  Next: SHOW_PDF_SETS,  Prev: PDF_GRID_PAT
 This parameter specifies the name of the PDF library.  Assuming
 `PDF_LIBRARY=CTEQ6Sherpa', the dynamically bound PDF library will be
 `libCTEQ6Sherpa.so'.  This file must be located in the library path of
-the Sherpa installation or in the runtime library path given by *note
+the Sherpa installation or in the runtime library path given by *Note
 SHERPA_LIB_PATH::. If LHAPDF is used, Sherpa searches for the LHAPDF
 library in the corresponding installation path.
 
@@ -867,7 +879,7 @@ File: Sherpa.info,  Node: SHOW_PDF_SETS,  Prev: PDF_LIBRARY,  Up: ISR Parameters
 --------------------
 
 Specifying `SHOW_PDF_SETS=1' on the command line instructs Sherpa to
-print all available PDF sets contained in the library loaded by *note
+print all available PDF sets contained in the library loaded by *Note
 PDF_LIBRARY::.
 
 
@@ -922,7 +934,7 @@ currently available are
 `VAR'
      Scales are specified by the parameters `RENORMALIZATION_SCALE' and
      `FACTORIZATION_SCALE' in a form which is understood by the
-     internal interpreter, see *note Interpreter::. If, for example the
+     internal interpreter, see *Note Interpreter::. If, for example the
      invariant mass of the lepton pair in Drell-Yan production is the
      desired scale, the corresponding setup reads
 
@@ -987,7 +999,7 @@ means the scheme to employ the renormalization scale for reweighting
 matrix elements, which are initially computed with a fixed value for
 the coupling constants. If, for example the strong coupling is to be
 evaluated at the renormalization scale set by the specified scale setter
-*note Scale schemes::, the corresponding value is `QCD'. The available
+*Note Scale schemes::, the corresponding value is `QCD'. The available
 options are
 
 `NO'
@@ -997,7 +1009,7 @@ options are
      reweighting of QCD couplings only
 
 It is possible to implement a dedicated K-factor scheme within Sherpa.
-For advice on this topic please contact the authors, *note Authors::.
+For advice on this topic please contact the authors, *Note Authors::.
 
 
 File: Sherpa.info,  Node: SCALE_SCHEME,  Next: FACTORIZATION_SCALE,  Prev: K_FACTOR_SCHEME,  Up: Matrix Elements
@@ -1007,10 +1019,10 @@ File: Sherpa.info,  Node: SCALE_SCHEME,  Next: FACTORIZATION_SCALE,  Prev: K_FAC
 
 This parameter specifies the scale scheme.  Within Sherpa, this means
 the scheme to compute the renormalization and factorization scales.
-For a list of available scale schemes, see *note Scale schemes::.
+For a list of available scale schemes, see *Note Scale schemes::.
 
 It is possible to implement a dedicated scale scheme within Sherpa. For
-advice on this topic please contact the authors, *note Authors::.
+advice on this topic please contact the authors, *Note Authors::.
 
 
 File: Sherpa.info,  Node: FACTORIZATION_SCALE,  Next: RENORMALIZATION_SCALE,  Prev: SCALE_SCHEME,  Up: Matrix Elements
@@ -1019,8 +1031,8 @@ File: Sherpa.info,  Node: FACTORIZATION_SCALE,  Next: RENORMALIZATION_SCALE,  Pr
 -------------------------
 
 This parameter sepecifies how to potentially modify the factorization
-scale computed by the scale scheme *note Scale schemes::. The syntax
-must be in a form which is understood by the internal interpreter *note
+scale computed by the scale scheme *Note Scale schemes::. The syntax
+must be in a form which is understood by the internal interpreter *Note
 Interpreter::. Examples are
 
    * FACTORIZATION_SCALE 2*MU_F
@@ -1034,8 +1046,8 @@ File: Sherpa.info,  Node: RENORMALIZATION_SCALE,  Prev: FACTORIZATION_SCALE,  Up
 ---------------------------
 
 This parameter sepecifies how to potentially modify the renormalization
-scale computed by the scale scheme *note Scale schemes::. The syntax
-must be in a form which is understood by the internal interpreter *note
+scale computed by the scale scheme *Note Scale schemes::. The syntax
+must be in a form which is understood by the internal interpreter *Note
 Interpreter::. Examples are
 
    * RENORMALIZATION_SCALE 2*MU_F
@@ -1085,7 +1097,7 @@ File: Sherpa.info,  Node: Process,  Next: Decay,  Up: Processes
 This tag starts the setup of a process or a set of processes with
 common properties. It must be followed by the specification of the
 (core) process itself. The setup is completed by the `End process' tag,
-see *note End process::. Examples are
+see *Note End process::. Examples are
 
 Process 93 93 -> 11 -11
      Sets up a Drell-Yan process group with light quarks in the initial
@@ -1135,7 +1147,7 @@ File: Sherpa.info,  Node: Renormalization_Scale,  Next: Factorization_Scale,  Pr
 
 Sets a process-specific renormalization scale.  The corresponding tag
 must be given in a form, which is understood by the internal
-interpreter, see *note Interpreter::.
+interpreter, see *Note Interpreter::.
 
 
 File: Sherpa.info,  Node: Factorization_Scale,  Next: Fixed_scale,  Prev: Renormalization_Scale,  Up: Processes
@@ -1145,7 +1157,7 @@ File: Sherpa.info,  Node: Factorization_Scale,  Next: Fixed_scale,  Prev: Renorm
 
 Sets a process-specific factorization scale.  The corresponding tag
 must be given in a form, which is understood by the internal
-interpreter, see *note Interpreter::.
+interpreter, see *Note Interpreter::.
 
 
 File: Sherpa.info,  Node: Fixed_scale,  Next: CKKW,  Prev: Factorization_Scale,  Up: Processes
@@ -1155,7 +1167,7 @@ File: Sherpa.info,  Node: Fixed_scale,  Next: CKKW,  Prev: Factorization_Scale, 
 
 Sets a process-specific renormalization and factorization scale.  The
 corresponding tag must be given in a form, which is understood by the
-internal interpreter, see *note Interpreter::.
+internal interpreter, see *Note Interpreter::.
 
 
 File: Sherpa.info,  Node: CKKW,  Next: Selector_File,  Prev: Fixed_scale,  Up: Processes
@@ -1166,7 +1178,7 @@ File: Sherpa.info,  Node: CKKW,  Next: Selector_File,  Prev: Fixed_scale,  Up: P
 Sets up multijet merging according to JHEP05(2009)053. The additional
 argument specifies the separation cut in the form (Q_{cut}/E_{cms})^2.
 It can be given in any form which is understood by the internal
-interpreter, see *note Interpreter::.  Examples are
+interpreter, see *Note Interpreter::.  Examples are
 
    * CKKW pow(10,-2.5)
 
@@ -1345,7 +1357,7 @@ based on single particle kinematics.  The corresponding  syntax in
 
 `<min value>' and `<max value>' are floating point numbers, which can
 also be given in a form that is understood by the internal algebra
-interpreter, see *note Interpreter::.  The selectors act on _all_
+interpreter, see *Note Interpreter::.  The selectors act on _all_
 possible particles with the given flavour. Their respective keywords are
 
 `Energy'
@@ -1377,7 +1389,7 @@ based on two particle kinematics.  The corresponding  syntax in
 
 `<min value>' and `<max value>' are floating point numbers, which can
 also be given in a form that is understood by the internal algebra
-interpreter, see *note Interpreter::.  The selectors act on _all_
+interpreter, see *Note Interpreter::.  The selectors act on _all_
 possible particles with the given flavour. Their respective keywords are
 
 `Mass'
@@ -1426,7 +1438,7 @@ set of ycut is to be used, the square brackets are left out.
 
 `<ycut>', `<min R>' and `<D parameter>' are floating point numbers,
 which can also be given in a form that is understood by the internal
-algebra interpreter, see *note Interpreter::.
+algebra interpreter, see *Note Interpreter::.
 
 
 File: Sherpa.info,  Node: Universal selector,  Prev: Jet finders,  Up: Selectors
@@ -1445,11 +1457,11 @@ The first word has to be double-quoted, and contains the name of the
 variable to cut on. The keywords for available predefined <variable>s
 can be figured by running Sherpa `SHOW_VARIABLE_SYNTAX=1'.  Or
 alternatively, an arbitrary cut variable can be constructed using the
-internal interpreter, see *note Interpreter::. This is invoked with the
+internal interpreter, see *Note Interpreter::. This is invoked with the
 command `Calc(...)'. In the formula specified there you have to use
 place holders for the momenta of the particles: `p[0]' ... `p[n]' hold
 the momenta of the respective particles `kf1' ... `kfn'. A list of
-available vector functions and operators can be found here *note
+available vector functions and operators can be found here *Note
 Interpreter::.
 
 `<kf1>,..,<kfn>' specify the PDG codes of the particles the variable
@@ -1539,7 +1551,7 @@ File: Sherpa.info,  Node: INTEGRATOR,  Next: VEGAS,  Prev: ERROR,  Up: Integrati
 
 Specifies the integrator. The possible integrator types depend on the
 matrix element generator. Users should rely on the default value and
-otherwise seek the help of the authors, see *note Authors::.
+otherwise seek the help of the authors, see *Note Authors::.
 
 
 File: Sherpa.info,  Node: VEGAS,  Next: FINISH_OPTIMIZATION,  Prev: INTEGRATOR,  Up: Integration
@@ -1621,7 +1633,7 @@ File: Sherpa.info,  Node: REFERENCE_SCALE,  Next: RESCALE_EXPONENT,  Prev: PROFI
 ----------------------
 
 Specifies the centre-of-mass energy at which the transverse momentum
-integration cutoff is used as is, see *note SCALE_MIN::.  This
+integration cutoff is used as is, see *Note SCALE_MIN::.  This
 parameter should not be changed by the user. The default is `1800',
 corresponding to Tevatron Run I energies.
 
@@ -1633,7 +1645,7 @@ File: Sherpa.info,  Node: RESCALE_EXPONENT,  Prev: REFERENCE_SCALE,  Up: MPI Par
 
 Specifies the rescaling exponent for fixing the transverse momentum
 integration cutoff at centre-of-mass energies different from the
-reference scale, see *note SCALE_MIN::, *note REFERENCE_SCALE::.
+reference scale, see *Note SCALE_MIN::, *Note REFERENCE_SCALE::.
 
 
 File: Sherpa.info,  Node: Tips and Tricks,  Next: Customization,  Prev: Parameters,  Up: Top
@@ -1700,9 +1712,13 @@ the "-H" switch sets the output file that the histograms are written to.
 You can also use "TOOLS/make-html" to create webpages from Rivet's
 output files:
 
-  source /path/to/rivetenv.sh
+  (source /path/to/rivetenv.sh)   # see below
   TOOLS/make-html -o output/ file1.aida [file2.aida, ...]
   firefox output/index.html &
+
+If your Rivet installation is not in a standard location, the bootstrap
+script should have created a "rivetenv.sh" which you have to source
+before running the "make-html" script.
 
 
 File: Sherpa.info,  Node: Versioned installation,  Prev: Rivet analyses,  Up: Tips and Tricks
@@ -1946,121 +1962,121 @@ Appendix A Index
 
 
 Tag Table:
-Node: Top0
-Node: Introduction568
-Node: Command line1255
-Node: Input structure1641
-Node: Interpreter3944
-Node: Tags5891
-Node: Parameters6509
-Node: Run Parameters7366
-Node: EVENTS8141
-Node: OUTPUT8304
-Node: RANDOM_SEED8809
-Node: ANALYSIS9356
-Node: ANALYSIS_OUTPUT9726
-Node: TIMEOUT9921
-Node: SPIN_CORRELATIONS10552
-Node: NUM_ACCURACY10928
-Node: SHERPA_CPP_PATH11263
-Node: SHERPA_LIB_PATH11599
-Node: Event output formats11870
-Node: EVENT_MODE13614
-Node: SHERPA_OUTPUT14014
-Node: HEPMC2_GENEVENT_OUTPUT14234
-Node: HEPMC2_ASCII_OUTPUT14494
-Node: HEPMC2_OUTPUT14758
-Node: FILE_SIZE15004
-Node: EVT_FILE_PATH15197
-Node: OUTPUT_PRECISION15400
-Node: Beam Parameters15602
-Node: Beam Spectra17482
-Node: BEAM_118975
-Node: BEAM_219198
-Node: BEAM_ENERGY_119424
-Node: BEAM_ENERGY_219646
-Node: BEAM_SPECTRUM_119879
-Node: BEAM_SPECTRUM_220136
-Node: SPECTRUM_FILE_120396
-Node: SPECTRUM_FILE_220646
-Node: BEAM_SMIN20890
-Node: BEAM_SMAX21384
-Node: K_PERP_MEAN_121872
-Node: K_PERP_MEAN_222198
-Node: K_PERP_SIGMA_122531
-Node: K_PERP_SIGMA_222897
-Node: ISR Parameters23241
-Node: BUNCH_124245
-Node: BUNCH_224536
-Node: ISR_124843
-Node: ISR_225318
-Node: ISR_SMIN25796
-Node: ISR_SMAX26262
-Node: ISR_E_ORDER26730
-Node: ISR_E_SCHEME26947
-Node: PDF_SET27158
-Node: PDF_SET_VERSION27367
-Node: PDF_GRID_PATH27629
-Node: PDF_LIBRARY27850
-Node: SHOW_PDF_SETS28387
-Node: Model Parameters28669
-Node: Matrix Elements28958
-Node: Scale schemes29937
-Node: RESULT_DIRECTORY30888
-Node: EVENT_GENERATION_MODE31216
-Node: COLOUR_SCHEME31503
-Node: HELICITY_SCHEME31834
-Node: K_FACTOR_SCHEME32166
-Node: SCALE_SCHEME32968
-Node: FACTORIZATION_SCALE33467
-Node: RENORMALIZATION_SCALE33948
-Node: Processes34418
-Node: Process36036
-Node: Decay36602
-Node: DecayOS37022
-Node: Renormalization_Scale37466
-Node: Factorization_Scale37804
-Node: Fixed_scale38140
-Node: CKKW38463
-Node: Selector_File38885
-Node: Order_EW39060
-Node: Order_QCD39343
-Node: Max_N_Quarks39613
-Node: Print_Graphs39823
-Node: Integration_Error40100
-Node: Max_Epsilon40559
-Node: Enhance_Factor41093
-Node: Enhance_Function41553
-Node: NLO_QCD_Part42074
-Node: NLO_EW_Part42218
-Node: Loop_Generator42358
-Node: End process42570
-Node: Selectors42770
-Node: One particle selectors43311
-Node: Two particle selectors44118
-Node: Jet finders45092
-Node: Universal selector45928
-Node: Integration49286
-Node: ERROR49863
-Node: INTEGRATOR50010
-Node: VEGAS50332
-Node: FINISH_OPTIMIZATION50594
-Node: Shower Parameters50866
-Node: MPI Parameters51146
-Node: MI_HANDLER51699
-Node: SCALE_MIN51906
-Node: PROFILE_FUNCTION52107
-Node: REFERENCE_SCALE52378
-Node: RESCALE_EXPONENT52784
-Node: Tips and Tricks53123
-Node: Bash completion53482
-Node: Rivet analyses54070
-Node: Versioned installation55253
-Node: Customization55713
-Node: External RNG56315
-Node: External PDF57785
-Node: Authors59694
-Node: Copying59869
-Node: Index60900
+Node: Top73
+Node: Introduction567
+Node: Command line1254
+Node: Input structure1853
+Node: Interpreter4156
+Node: Tags6103
+Node: Parameters6721
+Node: Run Parameters7578
+Node: EVENTS8353
+Node: OUTPUT8516
+Node: RANDOM_SEED9021
+Node: ANALYSIS9568
+Node: ANALYSIS_OUTPUT9938
+Node: TIMEOUT10133
+Node: SPIN_CORRELATIONS10764
+Node: NUM_ACCURACY11140
+Node: SHERPA_CPP_PATH11475
+Node: SHERPA_LIB_PATH11811
+Node: Event output formats12082
+Node: EVENT_MODE13826
+Node: SHERPA_OUTPUT14226
+Node: HEPMC2_GENEVENT_OUTPUT14446
+Node: HEPMC2_ASCII_OUTPUT14706
+Node: HEPMC2_OUTPUT14970
+Node: FILE_SIZE15216
+Node: EVT_FILE_PATH15409
+Node: OUTPUT_PRECISION15612
+Node: Beam Parameters15814
+Node: Beam Spectra17694
+Node: BEAM_119187
+Node: BEAM_219410
+Node: BEAM_ENERGY_119636
+Node: BEAM_ENERGY_219858
+Node: BEAM_SPECTRUM_120091
+Node: BEAM_SPECTRUM_220348
+Node: SPECTRUM_FILE_120608
+Node: SPECTRUM_FILE_220858
+Node: BEAM_SMIN21102
+Node: BEAM_SMAX21596
+Node: K_PERP_MEAN_122084
+Node: K_PERP_MEAN_222410
+Node: K_PERP_SIGMA_122743
+Node: K_PERP_SIGMA_223109
+Node: ISR Parameters23453
+Node: BUNCH_124457
+Node: BUNCH_224748
+Node: ISR_125055
+Node: ISR_225530
+Node: ISR_SMIN26008
+Node: ISR_SMAX26474
+Node: ISR_E_ORDER26942
+Node: ISR_E_SCHEME27159
+Node: PDF_SET27370
+Node: PDF_SET_VERSION27579
+Node: PDF_GRID_PATH27841
+Node: PDF_LIBRARY28062
+Node: SHOW_PDF_SETS28599
+Node: Model Parameters28881
+Node: Matrix Elements29170
+Node: Scale schemes30149
+Node: RESULT_DIRECTORY31100
+Node: EVENT_GENERATION_MODE31428
+Node: COLOUR_SCHEME31715
+Node: HELICITY_SCHEME32046
+Node: K_FACTOR_SCHEME32378
+Node: SCALE_SCHEME33180
+Node: FACTORIZATION_SCALE33679
+Node: RENORMALIZATION_SCALE34160
+Node: Processes34630
+Node: Process36248
+Node: Decay36814
+Node: DecayOS37234
+Node: Renormalization_Scale37678
+Node: Factorization_Scale38016
+Node: Fixed_scale38352
+Node: CKKW38675
+Node: Selector_File39097
+Node: Order_EW39272
+Node: Order_QCD39555
+Node: Max_N_Quarks39825
+Node: Print_Graphs40035
+Node: Integration_Error40312
+Node: Max_Epsilon40771
+Node: Enhance_Factor41305
+Node: Enhance_Function41765
+Node: NLO_QCD_Part42286
+Node: NLO_EW_Part42430
+Node: Loop_Generator42570
+Node: End process42782
+Node: Selectors42982
+Node: One particle selectors43523
+Node: Two particle selectors44330
+Node: Jet finders45304
+Node: Universal selector46140
+Node: Integration49498
+Node: ERROR50075
+Node: INTEGRATOR50222
+Node: VEGAS50544
+Node: FINISH_OPTIMIZATION50806
+Node: Shower Parameters51078
+Node: MPI Parameters51358
+Node: MI_HANDLER51911
+Node: SCALE_MIN52118
+Node: PROFILE_FUNCTION52319
+Node: REFERENCE_SCALE52590
+Node: RESCALE_EXPONENT52996
+Node: Tips and Tricks53335
+Node: Bash completion53694
+Node: Rivet analyses54282
+Node: Versioned installation55661
+Node: Customization56121
+Node: External RNG56723
+Node: External PDF58193
+Node: Authors60102
+Node: Copying60277
+Node: Index61308
 
 End Tag Table
