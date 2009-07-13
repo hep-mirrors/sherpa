@@ -445,7 +445,8 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	flmap[ampl.m_cur[n][i]->Flav()]=m_cur[n][i]->Flav();
       }
       else {
-	if (ampl.m_cur[n][i]->Flav()!=ampl.m_cur[n][i]->Flav()) {
+	if (m_cur[n][i]->Flav()!=
+	    flmap[ampl.m_cur[n][i]->Flav()]) {
 	  msg_Debugging()<<"    current differs\n  }\n";
 	  msg_Debugging()<<"} no match\n";
 	  Vertex_Base::SetVLMode(svlmode);
