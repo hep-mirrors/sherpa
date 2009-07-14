@@ -20,15 +20,18 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
 (MEHandlersMap *_mehandlers, Soft_Photon_Handler *_sphotons) :
   p_mehandlers(_mehandlers), p_sphotons(_sphotons)
 {
-  m_name      = string("Lepton_FS_QED_Corrections:")
-                  +p_sphotons->SoftQEDGenerator();
+  m_name      = string("Lepton_FS_QED_Corrections:");
   m_type      = eph::Perturbative;
-  // TODO: extract the resonance information from process infos known to MEHs
-
   // general switch
   Data_Reader reader(" ",";","!","=");
   std::string on = reader.GetValue<std::string>("ME_QED","off");
   m_on = (on=="on")?true:false;
+  if (m_on)
+    m_name += p_sphotons->SoftQEDGenerator();
+  else
+    m_name += "None";
+
+  // TODO: extract the resonance information from process infos known to MEHs
 }
 
 Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
@@ -44,23 +47,35 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
                <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
-  // look for hard process
-  Blob_List sigblobs(bloblist->Find(btp::Signal_Process));
-  Blob * sigblob(NULL);
-  if (sigblobs.size()==1) sigblob=sigblobs[0];
-  else {
-    msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
-               <<"  Blob list contains "<<sigblobs.size()<<" signal blobs."<<endl
-               <<"  Continue and hope for the best."<<endl;
-    return Return_Value::Error;
-  }
+  // look for QCD corrected hard process
+//   Blob_List sigblobs(bloblist->Find(btp::Shower));
+//   Blob * sigblob(NULL);
+//   if (sigblobs.size()==1) sigblob=sigblobs[0];
+//   else {
+//     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
+//                <<"  Blob list contains "<<sigblobs.size()<<" signal blobs."<<endl
+//                <<"  Continue and hope for the best."<<endl;
+//     return Return_Value::Error;
+//   }
+  Blob * sigblob(bloblist->FindLast(btp::Shower));
+  if (!sigblob->Has(blob_status::needs_extraQED)) return Return_Value::Nothing;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep;
-  for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
-    if (!((*it)->Flav().IsLepton())) fslep.erase(it);
-    else mfslep.push_back(new Particle(**it));
+  for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
+    if ((*it)->Flav().Strong() || (*it)->DecayBlob()!=NULL) {
+      fslep.erase(it);
+    }
+    else {
+      mfslep.push_back(new Particle(**it));
+      ++it;
+    }
+  }
+  // if no leptons, nothing to do
+  if (fslep.size()==0) {
+    sigblob->UnsetStatus(blob_status::needs_extraQED);
+    return Return_Value::Nothing;
   }
   // put them on-shell (spoils consistency of pertubative calculation,
   // but necessary for YFS)
@@ -78,14 +93,16 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
     effblob->AddToOutParticles(new Particle(**it));
   }
-  effblob->SetStatus(blob_status::needs_extraQED);
   // add radiation
+  effblob->SetStatus(blob_status::needs_extraQED);
   if (!p_sphotons->AddRadiation(effblob)) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"  Higher order QED corrections failed."<<endl
                <<"  Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
+  effblob->UnsetStatus(blob_status::needs_extraQED);
+  sigblob->UnsetStatus(blob_status::needs_extraQED);
   // build new QED radiation blob
   Blob * QEDblob = bloblist->AddBlob(btp::Shower);
   QEDblob->SetTypeSpec("YFS-type QED Corrections to ME");
@@ -95,9 +112,10 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   for (size_t i=0;i<effblob->GetOutParticles().size();++i) {
     QEDblob->AddToOutParticles(effblob->GetOutParticles()[i]);
   }
-//   msg_Out()<<*bloblist<<endl;
+  effblob->RemoveOwnedParticles(false);
+  delete effblob;
   delete resonance;
-  return Return_Value::Nothing;
+  return Return_Value::Success;
 }
 
 bool Signal_Process_FS_QED_Correction::PutOnMassShell(const Particle_Vector& partvec)

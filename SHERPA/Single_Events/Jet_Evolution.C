@@ -101,7 +101,12 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     if (found) hit = true;
     Reset();
   }
-  if (hit) return Return_Value::Success;
+  if (hit) {
+    // enable shower generator independent FS QED correction to ME
+    // TODO: check first, whether shower did FS QED
+    bloblist->FindLast(btp::Shower)->AddStatus(blob_status::needs_extraQED);
+    return Return_Value::Success;
+  }
   return Return_Value::Nothing;
 }
 
