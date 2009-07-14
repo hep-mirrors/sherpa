@@ -4,3 +4,6 @@
 The interaction model setup is covered by the `(model)' section of
 the steering file or the model data file `Model.dat', respectively.
 
+Many of the corresponding parameters are model specific and are therefore
+not described here. To obtain a list of all possible options, please run
+@kbd{Sherpa SHOW_MODEL_SYNTAX=1} and scan the output of the program.

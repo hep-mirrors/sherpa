@@ -1,0 +1,6 @@
+@node Fragmentation
+@section Fragmentation
+
+The hadronization setup is covered by the `(fragmentation)' section of
+the steering file or the fragmentation data file `Fragmentation.dat', respectively.
+

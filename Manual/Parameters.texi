@@ -16,6 +16,7 @@ performed in all inputs, see @ref{Tags}.
 * Integration::       List of integration parameters
 * Shower Parameters:: List of shower parameters
 * MPI Parameters::    List of multiple parton interaction parameters
+* Fragmentation::     List of hadronization parameters
 @end menu
 
 @include Run.texi
@@ -28,4 +29,5 @@ performed in all inputs, see @ref{Tags}.
 @include Integration.texi
 @include Shower.texi
 @include MI.texi
+@include Fragmentation.texi
 
