@@ -168,8 +168,6 @@ option --enable-gzip has to be specified during the installation.
 * EVENT_MODE::        Format for screen display of events.
 * SHERPA_OUTPUT::     Name of file to write event output in Sherpa format.
 * HEPMC2_GENEVENT_OUTPUT:: Name of file to write event output in HepMC::IO_GenEvent format.
-* HEPMC2_ASCII_OUTPUT:: Name of file to write event output in HepMC::IO_Ascii format (deprecated).
-* HEPMC2_OUTPUT:: Name of file to write event output in HepMC::GenEvent::print format (deprecated).
 * FILE_SIZE::         Number of events per file (default: 1000).
 * EVT_FILE_PATH::     Directory where the files will be stored.
 * OUTPUT_PRECISION::  Steers the precision of all numbers written to file.
@@ -200,15 +198,6 @@ Name of file to write event output in Sherpa format
 @cindex HEPMC2_GENEVENT_OUTPUT
 Name of file to write event output in HepMC::IO_GenEvent format.
 
-@node HEPMC2_ASCII_OUTPUT
-@subsubsection HEPMC2_ASCII_OUTPUT
-@cindex HEPMC2_ASCII_OUTPUT
-Name of file to write event output in HepMC::IO_Ascii format (deprecated).
-
-@node HEPMC2_OUTPUT
-@subsubsection HEPMC2_OUTPUT
-@cindex HEPMC2_OUTPUT
-Name of file to write event output in HepMC::GenEvent::print format (deprecated).
 @node FILE_SIZE
 @subsubsection FILE_SIZE
 @cindex FILE_SIZE
