@@ -12,6 +12,7 @@ The following parameters are used to steer the integration.
 * INTEGRATOR::           The integrator type
 * VEGAS::                Whether to enable Vegas
 * FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
+* PSI_NMAX::             Maximum number of points per process
 @end menu
 
 
@@ -45,3 +46,8 @@ Specifies whether the full Vegas optimization is to be carried out.
 The two possible options are @option{On} and @option{Off}, the
 default being @option{On}.
 
+@node PSI_NMAX
+@subsection PSI_NMAX
+@cindex PSI_NMAX
+The maximum number of points before cuts to be generated during integration.
+This parameter acts on a process-by-process basis.

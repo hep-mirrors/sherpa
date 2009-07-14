@@ -10,6 +10,7 @@ The following parameters describe general run information.
 * ANALYSIS::          Switch internal analysis on or off.
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
 * TIMEOUT::           Run time limitation.
+* BATCH_MODE::        Batch mode settings.
 * SPIN_CORRELATIONS:: Switch spin correlations on/off.
 * NUM_ACCURACY::      Accuracy for gauge tests.
 * Event output formats:: Event output in different formats.
@@ -23,11 +24,18 @@ The following parameters describe general run information.
 @subsection EVENTS
 @cindex EVENTS
 This parameter specifies the number of events to be generated.
+@*
+It can alternatively be set on the command line through option
+@option{-e}, see @ref{Command line}.
 
 @node OUTPUT
 @subsection OUTPUT
 @cindex OUTPUT
 This parameter specifies the output level (verbosity) of the program.
+@*
+It can alternatively be set on the command line through option
+@option{-O}, see @ref{Command line}.
+
 The value can be any sum of the following:
 @itemize @bullet
 @item
@@ -58,14 +66,31 @@ will be used.
 @node ANALYSIS
 @subsection ANALYSIS
 @cindex ANALYSIS
-The internal analysis can be switched on or oﬀ by setting the ANALYSIS switch
-to 1 or 0, respectively. An output directory can be speciﬁed by
-setting ANALYSIS_OUTPUT. The new directory will be created w.r.t. the working directory.
+Analysis routines can be switched on or oﬀ by setting the ANALYSIS flag.
+The default is no analysis, corresponding to option @option{0}.
+
+The following analysis handlers are currently available
+@table @option
+@item Internal
+Sherpa's internal analysis handler.
+@*
+To use this option, the package must be configured with option @option{--enable-analysis}.
+@*
+An output directory can be speciﬁed using @ref{ANALYSIS_OUTPUT}.
+@item Rivet
+The Rivet package, see @uref{http://projects.hepforge.org/rivet/,,Rivet Website}.
+@*
+To enable it, Rivet and HepMC have to be installed and Sherpa must be configured
+as described in @ref{Rivet analyses}.
+@end table
+
+Multiple options can be combined using a comma, e.g. @samp{ANALYSIS=Internal,Rivet}.
 
 @node ANALYSIS_OUTPUT
 @subsection ANALYSIS_OUTPUT
 @cindex ANALYSIS_OUTPUT
-Directory for generated analysis histogram files.
+Name of the directory for generated histogram files when using the Internal analysis,
+see @ref{ANALYSIS}. This directory will be created w.r.t. the working directory.
 
 @node TIMEOUT
 @subsection TIMEOUT
@@ -76,6 +101,17 @@ terminated, this allows to interrupt a run, to store all relevant information an
 it without any loss. This is particularly interesting when carrying out long integrations.
 Contrary, setting the TIMEOUT variable to -1, which is the default setting, translates into
 having no run time limitation at all.
+
+@node BATCH_MODE
+@subsection BATCH_MODE
+@cindex BATCH_MODE
+Whether or not to run Sherpa in batch mode. The default is @option{1}, meaning Sherpa
+does not attempt to save runtime information when catching a signal or an exception.
+On the contrary, if option @option{0} is used, Sherpa will store potential integration
+information and analysis results, once the run is terminated abnormally.
+
+@emph{Note that when running the code on a cluster or in a grid environment, BATCH_MODE
+should never be different from 1.}
 
 @node SPIN_CORRELATIONS
 @subsection SPIN_CORRELATIONS

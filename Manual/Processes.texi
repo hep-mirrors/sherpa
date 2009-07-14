@@ -16,7 +16,9 @@ The following parameters are used to steer the process setup.
 * CKKW::                    Tag to setup multijet merging.
 * Selector_File::           Tag to specify a specific selector file.
 * Order_EW::                Tag to fix the electroweak order.
+* Max_Order_EW::            Tag to fix the maximum electroweak order.
 * Order_QCD::               Tag to fix the QCD order.
+* Max_Order_QCD::           Tag to fix the maximum QCD order.
 * Max_N_Quarks::            Tag to set the maximum number of quarks.
 * Print_Graphs::            Tag to enable writeout of feynman graphs.
 * Integration_Error::       Tag to set a specific integration error.
@@ -105,7 +107,7 @@ see @ref{Interpreter}.
 @node CKKW
 @subsection CKKW
 Sets up multijet merging according to
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=arXiv:0903.1219,,
+@uref{http://www-spires.dur.ac.uk/spires/find/hep/www?eprint=arXiv:0903.1219,,
 JHEP05(2009)053}. The additional argument specifies the separation cut
 in the form (Q_@{cut@}/E_@{cms@})^2.
 It can be given in any form which is understood by the internal
@@ -127,14 +129,30 @@ Sets a process-specific selector file name.
 @subsection Order_EW
 Sets a process-specific electroweak order.
 The given number is exclusive, i.e. only matrix elements
-with exactly the given electroweak order are generated.
+with exactly the given order in the electroweak coupling
+are generated.
+
+
+@node Max_Order_EW
+@subsection Max_Order_EW
+Sets a process-specific maximum electroweak order.
+The given number is inclusive, i.e. matrix elements
+with up to the given order in the electroweak coupling
+are generated.
 
 
 @node Order_QCD
 @subsection Order_QCD
 Sets a process-specific QCD order.
 The given number is exclusive, i.e. only matrix elements
-with exactly the given QCD order are generated.
+with exactly the given order in the strong coupling are generated.
+
+
+@node Max_Order_QCD
+@subsection Max_Order_QCD
+Sets a process-specific maximum QCD order.
+The given number is inclusive, i.e. matrix elements
+with up to the given order in the strong coupling are generated.
 
 
 @node Max_N_Quarks
@@ -147,7 +165,8 @@ given value.
 @subsection Print_Graphs
 Writes out Feynman graphs in LaTeX format. The parameter
 specifies the directory name in which the diagram 
-information is stored.
+information is stored. This directory is created automatically
+by Sherpa.
 
 
 @node Integration_Error
@@ -171,7 +190,7 @@ Sets epsilon for maximum weight reduction.
 The key idea is to allow weights larger than
 the maximum during event generation,
 as long as the fraction of the cross section
-represented by the corresponding events is
+represented by corresponding events is
 at most the epsilon factor times the total
 cross section. In other words, the relative
 contribution of overweighted events to the

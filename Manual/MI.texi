@@ -3,16 +3,21 @@
 
 The multiple parton interaction (MPI) setup is covered by
 the `(mi)' section of the steering file or the 
-MPI data file `MI.dat', respectively.
+MPI data file `MI.dat', respectively. The basic MPI model is described in 
+@uref{http://www-spires.dur.ac.uk/cgi-bin/spiface/hep/www?j=PR%2CD36%2C2019,,
+PR D36(1987)2019} while Sherpa's implementation details are discussed in
+@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=hep-ph/0601012,,
+hep-ph/0601012}
 
 The following parameters are used to steer the MPI setup.
 
 @menu
-* MI_HANDLER::        The MPI handler
-* SCALE_MIN::         The p_T cutoff
-* PROFILE_FUNCTION::  The hadron profile function
-* REFERENCE_SCALE::   The reference scale
-* RESCALE_EXPONENT::  The rescaling exponent
+* MI_HANDLER::          The MPI handler
+* SCALE_MIN::           The p_T cutoff
+* PROFILE_FUNCTION::    The hadron profile function
+* PROFILE_PARAMETERS::  The hadron profile function
+* REFERENCE_SCALE::     The reference scale
+* RESCALE_EXPONENT::    The rescaling exponent
 @end menu
 
 
@@ -34,7 +39,16 @@ Specifies the transverse momentum integration cutoff in GeV.
 @cindex PROFILE_FUNCTION
 Specifies the hadron profile function. The possible values are
 @option{Exponential}, @option{Gaussian} and @option{Double_Gaussian}.
+For the double gaussian profile, the relative core size and relative
+matter fraction can be set using @ref{PROFILE_PARAMETERS}.
 
+@node PROFILE_PARAMETERS
+@subsection PROFILE_PARAMETERS
+@cindex PROFILE_PARAMETERS
+The potential parameters for hadron profile functions, see 
+@ref{PROFILE_FUNCTION}. For double gaussian profiles there are
+two parameters, corresponding to the relative core size and relative
+matter fraction.
 
 @node REFERENCE_SCALE
 @subsection REFERENCE_SCALE

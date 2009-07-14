@@ -3,25 +3,14 @@
 
 The setup of matrix elements is covered by the `(me)' section of
 the steering file or the ME data file `ME.dat', respectively.
-The @emph{mandatory settings} to be made are
-
-@itemize
-@item The scale scheme
-@end itemize
-
-A List of available scale schemes is given in section
-
-@menu
-* Scale schemes::  List of available scale schemes.
-@end menu
+There are no mandatory settings to be made.
 
 The following parameters are used to steer the matrix element setup.
 
 @menu
+* ME_SIGNAL_GENERATOR::     The matrix element generator(s).
 * RESULT_DIRECTORY::        The directory to store integration results.
 * EVENT_GENERATION_MODE::   The event generation mode.
-* COLOUR_SCHEME::           The colour handling scheme.
-* HELICITY_SCHEME::         The helicity handling scheme.
 * K_FACTOR_SCHEME::         The K-factor scheme.
 * SCALE_SCHEME::            The scale scheme. 
 * FACTORIZATION_SCALE::     The factorization scale.
@@ -29,8 +18,83 @@ The following parameters are used to steer the matrix element setup.
 @end menu
 
 
-@node Scale schemes
-@subsection Scale schemes
+@node ME_SIGNAL_GENERATOR
+@subsection ME_SIGNAL_GENERATOR
+@cindex ME_SIGNAL_GENERATOR
+The list of matrix element generators to be employed during the run.
+When setting up hard processes from the @option{(processes)} section of the 
+input file (see @ref{Processes}), Sherpa calls these generators in order
+to check whether either one is capable of generating the corresponding
+matrix element.
+
+The built-in generators are
+
+@table @option
+@item Internal
+Simple matrix element library, implementing a variety of 2->2 processes.
+@item Amegic
+The AMEGIC++ generator published under
+@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=hep-ph/0109036,,
+JHEP 02(2002)044}
+@item Comix
+The @uref{http://comix.freacafe.de,,Comix} generator published under
+@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=arXiv:0808.3674,,
+JHEP 12(2008)039}
+@end table
+
+It is possible to employ an external matrix element generator within Sherpa.
+For advice on this topic please contact the authors, @ref{Authors}.
+
+
+@node RESULT_DIRECTORY
+@subsection RESULT_DIRECTORY
+@cindex RESULT_DIRECTORY
+This parameter specifies the name of the directory
+which is used by Sherpa to store the integration results
+and phasespace mappings. The default is @samp{Results/}.
+This directory will not be created automatically by Sherpa.
+
+
+@node EVENT_GENERATION_MODE
+@subsection EVENT_GENERATION_MODE
+@cindex EVENT_GENERATION_MODE
+This parameter specifies the event generation mode.
+The two possible modes are @option{Weighted} and
+@option{Unweighted}.
+
+
+@node K_FACTOR_SCHEME
+@subsection K_FACTOR_SCHEME
+@cindex K_FACTOR_SCHEME
+This parameter specifies the K-factor scheme.
+Within Sherpa, this means the scheme to employ
+the renormalization scale for reweighting matrix elements,
+which are initially computed with a fixed value 
+for the coupling constants. If, for example 
+the strong coupling is to be evaluated at the
+renormalization scale set by the specified scale setter
+(cf. @ref{SCALE_SCHEME}), the corresponding value
+is @option{QCD}. The available options are
+
+@table @option
+@item NO   
+No reweighting
+@item QCD  
+reweighting of QCD couplings only
+@end table
+
+It is possible to implement a dedicated K-factor
+scheme within Sherpa. For advice on this topic
+please contact the authors, @ref{Authors}.
+
+
+@node SCALE_SCHEME
+@subsection SCALE_SCHEME
+@cindex SCALE_SCHEME
+This parameter specifies the scale scheme.
+Within Sherpa, this means the scheme to compute
+the renormalization and factorization scales.
+
 Sherpa provides several built-in scale schemes.
 The options which are currently available are
 
@@ -52,76 +116,15 @@ The matrix element is clustered onto a core 2->2 configuration using a
 k_T-type algorithm with recombination into on-shell partons.
 Scales are defined as the minimum of the largest transverse momentum
 during clustering and the lowest invariant mass in the core process.
+
+@item METS
+The matrix element is clustered onto a core 2->2 configuration using a
+k_T-type algorithm with recombination into on-shell particles, which
+are determined according to run-time information from the matrix element
+generator. QCD clusterings are preferred over electroweak ones.
+Scales are defined as the minimum of the largest transverse momentum
+during clustering and the lowest invariant mass in the core process.
 @end table
-
-
-@node RESULT_DIRECTORY
-@subsection RESULT_DIRECTORY
-@cindex RESULT_DIRECTORY
-This parameter specifies the name of the directory
-which is used by Sherpa to store the integration results
-and phasespace mappings. The default is @samp{Results/}.
-
-
-@node EVENT_GENERATION_MODE
-@subsection EVENT_GENERATION_MODE
-@cindex EVENT_GENERATION_MODE
-This parameter specifies the event generation mode.
-The two possible modes are @option{Weighted} and
-@option{Unweighted}.
-
-
-@node COLOUR_SCHEME
-@subsection COLOUR_SCHEME
-@cindex COLOUR_SCHEME
-This parameter secifies whether colours are sampled
-or summed over in the matrix element simulation.
-The two corresponding options are @option{SAMPLE}
-and @option{SUM}, respectively.
-
-
-@node HELICITY_SCHEME
-@subsection HELICITY_SCHEME
-@cindex HELICITY_SCHEME
-This parameter secifies whether helicities are sampled
-or summed over in the matrix element simulation.
-The two corresponding options are @option{SAMPLE}
-and @option{SUM}, respectively.
-
-
-@node K_FACTOR_SCHEME
-@subsection K_FACTOR_SCHEME
-@cindex K_FACTOR_SCHEME
-This parameter specifies the K-factor scheme.
-Within Sherpa, this means the scheme to employ
-the renormalization scale for reweighting matrix elements,
-which are initially computed with a fixed value 
-for the coupling constants. If, for example 
-the strong coupling is to be evaluated at the
-renormalization scale set by the specified scale setter 
-@ref{Scale schemes}, the corresponding value
-is @option{QCD}. The available options are
-
-@table @option
-@item NO   
-No reweighting
-@item QCD  
-reweighting of QCD couplings only
-@end table
-
-It is possible to implement a dedicated K-factor
-scheme within Sherpa. For advice on this topic
-please contact the authors, @ref{Authors}.
-
-
-@node SCALE_SCHEME
-@subsection SCALE_SCHEME
-@cindex SCALE_SCHEME
-This parameter specifies the scale scheme.
-Within Sherpa, this means the scheme to compute
-the renormalization and factorization scales.
-For a list of available scale schemes, see
-@ref{Scale schemes}.
 
 It is possible to implement a dedicated scale
 scheme within Sherpa. For advice on this topic
@@ -132,8 +135,8 @@ please contact the authors, @ref{Authors}.
 @subsection FACTORIZATION_SCALE
 @cindex FACTORIZATION_SCALE
 This parameter sepecifies how to potentially modify 
-the factorization scale computed by the scale scheme
-@ref{Scale schemes}. The syntax must be in a form
+the factorization scale computed by the scale scheme, see
+@ref{SCALE_SCHEME}. The syntax must be in a form
 which is understood by the internal interpreter
 @ref{Interpreter}. Examples are
 
@@ -147,8 +150,8 @@ which is understood by the internal interpreter
 @subsection RENORMALIZATION_SCALE
 @cindex RENORMALIZATION_SCALE
 This parameter sepecifies how to potentially modify 
-the renormalization scale computed by the scale scheme
-@ref{Scale schemes}. The syntax must be in a form 
+the renormalization scale computed by the scale scheme, see
+@ref{SCALE_SCHEME}. The syntax must be in a form 
 which is understood by the internal interpreter
 @ref{Interpreter}. Examples are
 

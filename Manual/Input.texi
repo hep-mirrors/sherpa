@@ -7,8 +7,9 @@ different components of event generation.
 These have to be specified in a
 run-card which by default is named ``Run.dat'' in the current working directory.
 If you want to use a different setup directory for your Sherpa run, you have to
-specify it on the command line as @samp{PATH=<dir>}. To read parameters from a
-run-card with a different name, you may specify @samp{RUNDATA=<file>}.
+specify it on the command line as @samp{-p <dir>} or @samp{PATH=<dir>}.
+To read parameters from a run-card with a different name, you may specify
+@samp{-f <file>} or @samp{RUNDATA=<file>}.
 
 Sherpa's parameters are grouped according to the different aspects
 of event generation, e.g. the beam parameters in the group @samp{(beam)} and
