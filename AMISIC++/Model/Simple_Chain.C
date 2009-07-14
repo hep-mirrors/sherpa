@@ -381,6 +381,9 @@ bool Simple_Chain::Initialize()
     parameters.push_back(0.5);
     parameters.push_back(0.5);
   }
+  else {
+    reader->VectorFromFile(parameters,"PROFILE_PARAMETERS");
+  }
   if (function!="None")
     p_profile = Profile_Function_Base::SelectProfile(function,parameters);
   int jetveto(1);

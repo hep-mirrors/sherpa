@@ -20,6 +20,9 @@ long unsigned int Phase_Space_Integrator::nmax=
 Phase_Space_Integrator::Phase_Space_Integrator()
 {
   Data_Reader read(" ",";","!","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(rpa.GetPath());
+  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
