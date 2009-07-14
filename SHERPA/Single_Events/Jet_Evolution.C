@@ -367,9 +367,9 @@ bool Jet_Evolution::DefineInitialConditions(const Blob *blob,
 void Jet_Evolution::Update(const Blob *blob,const size_t beam) 
 { 
   size_t cbeam=0;
-  for (int i=0;i<=blob->NInP();++i) {
+  for (int i=0;i<blob->NInP();++i) {
     const Particle *cur=blob->ConstInParticle(i);
-    if (cur->ProductionBlob()) continue;
+    if (!cur->Flav().Strong() || cur->ProductionBlob()) continue;
     if (cbeam==beam) {
       msg_Debugging()<<"  "<<*cur<<"\n";
       p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
