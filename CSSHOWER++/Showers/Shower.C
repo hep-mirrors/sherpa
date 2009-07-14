@@ -38,7 +38,7 @@ int Shower::SetXBj(Parton *const p) const
 {
   double x=0.0;
   if (p->Beam()==0) x=p->Momentum().PPlus()/rpa.gen.PBeam(0).PPlus();
-  else x=p->Momentum().PMinus()/rpa.gen.PBeam(0).PMinus();
+  else x=p->Momentum().PMinus()/rpa.gen.PBeam(1).PMinus();
   if (x>1.0) return -1;
   p->SetXbj(x);
   return 1;
@@ -246,7 +246,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  spect->UpdateDaughters();
 	  (*splitter)->SetStart(kt2win);
 	  if (!ReconstructDaughters((*splitter)->GetSing())) {
-	    msg_Error()<<METHOD<<"(): Invalid history."<<std::endl;
+	    msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	    return false;
 	  }
 	  continue;
@@ -298,7 +298,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  spect->UpdateDaughters();
 	  (*splitter)->SetStart(kt2win);
 	  if (!ReconstructDaughters((*splitter)->GetSing())) {
-	    msg_Error()<<METHOD<<"(): Invalid history."<<std::endl;
+	    msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	    return false;
 	  }
 	  stat=-1;
@@ -332,8 +332,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	mom       = (*splitter)->Momentum();
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
-	SetXBj(newpA);
 	newpA->SetBeam((*splitter)->Beam());
+	SetXBj(newpA);
 	newpA->SetSing((*splitter)->GetSing());
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
@@ -355,7 +355,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  spect->UpdateDaughters();
 	  (*splitter)->SetStart(kt2win);
 	  if (!ReconstructDaughters((*splitter)->GetSing())) {
-	    msg_Error()<<METHOD<<"(): Invalid history."<<std::endl;
+	    msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	    return false;
 	  }
 	  stat=-1;
@@ -390,8 +390,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	mom       = (*splitter)->Momentum();
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
-	SetXBj(newpA);
 	newpA->SetBeam((*splitter)->Beam());
+	SetXBj(newpA);
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
  	p_actual->BoostAllFS(newpA,newpC,spect,*splitter,
@@ -412,7 +412,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  spect->UpdateDaughters();
 	  (*splitter)->SetStart(kt2win);
 	  if (!ReconstructDaughters((*splitter)->GetSing())) {
-	    msg_Error()<<METHOD<<"(): Invalid history."<<std::endl;
+	    msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	    return false;
 	  }
 	  stat=-1;
