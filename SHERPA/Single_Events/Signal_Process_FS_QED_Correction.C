@@ -29,7 +29,6 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   Data_Reader reader(" ",";","!","=");
   std::string on = reader.GetValue<std::string>("ME_QED","off");
   m_on = (on=="on")?true:false;
-  PRINT_VAR(m_on);
 }
 
 Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
