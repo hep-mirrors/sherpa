@@ -47,7 +47,8 @@ int Shower::SetXBj(Parton *const p) const
 int Shower::RemnantTest(Parton *const p)
 {
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
-  if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0]) return -1;
+  if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0] &&
+      !IsEqual(p->Momentum()[0],rpa.gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
 }
