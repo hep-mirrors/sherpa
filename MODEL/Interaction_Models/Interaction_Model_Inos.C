@@ -258,7 +258,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   
 	   
 	   vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-	   vertex[vanz].Lorentz.back()->SetParticleArg(2);     
+	   vertex[vanz].Lorentz.back()->SetParticleArg(1);     
 	   
 	   vertex[vanz].on      = 1;
 	   vertex.push_back(Single_Vertex());vanz++;
@@ -289,7 +289,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   
 	   
 	   vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-	   vertex[vanz].Lorentz.back()->SetParticleArg(2);     
+	   vertex[vanz].Lorentz.back()->SetParticleArg(1);     
 	   
 	   vertex[vanz].on     = 1;
 	   vertex.push_back(Single_Vertex());vanz++;
@@ -328,7 +328,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 
 	 
 	 vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-	 vertex[vanz].Lorentz.back()->SetParticleArg(2);     
+	 vertex[vanz].Lorentz.back()->SetParticleArg(1);     
 	 
 	 vertex[vanz].on     = 1;
 	 vertex.push_back(Single_Vertex());vanz++;
