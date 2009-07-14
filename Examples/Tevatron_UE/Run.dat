@@ -10,12 +10,11 @@
 (processes){
   Process 93 93 -> 93 93
   Order_EW 0
-  Order_QCD 2
   End process
 }(processes)
 
 (selector){
-  PT 93 2.225 E_CMS
+  NJetFinder sqr(2.25/E_CMS) 1 2
 }(selector)
 
 (model){
@@ -25,10 +24,11 @@
 }(model)
 
 (me){
-  SCALE_SCHEME = MPI
+  SCALE_SCHEME = METS
+  ME_SIGNAL_GENERATOR = Comix
 }(me)
 
 (mi){
   MI_HANDLER = Amisic
-  SCALE_MIN = 2.225;
+  SCALE_MIN = 2.25;
 }(mi)

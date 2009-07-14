@@ -1,7 +1,7 @@
 (run){
   EVENTS = 1000000
 
-  MPISCALE:=2.225;
+  MPISCALE:=2.25;
 
   RESULT_DIRECTORY = Results.MPISCALE
   GENERATE_RESULT_DIRECTORY = 1
@@ -17,13 +17,12 @@
 (processes){
   Process 93 93 -> 93 93
   Order_EW 0
-  Order_QCD 2
   Enhance_Function sqr(PPerp2(p[2]))+sqr(PPerp2(p[3]))
   End process
 }(processes)
 
 (selector){
-  PT 93 MPISCALE E_CMS
+  NJetFinder sqr(MPISCALE/E_CMS) 1 2
 }(selector)
 
 (model){
@@ -33,7 +32,8 @@
 }(model)
 
 (me){
-  SCALE_SCHEME = MPI
+  SCALE_SCHEME = METS
+  ME_SIGNAL_GENERATOR = Comix
   EVENT_GENERATION_MODE = Weighted
 }(me)
 
