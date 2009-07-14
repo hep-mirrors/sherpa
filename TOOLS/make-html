@@ -57,7 +57,11 @@ for analysis in sorted(analyses):
     anaindex.write("<html>\n")
     cmdargs = ["compare-histos"]
     cmdargs.append("--mc-errs")
-    cmdargs.append("%s/%s.aida" % (datadir, analysis))
+    if os.access(os.path.join(datadir, analysis+".aida"), os.R_OK):
+        cmdargs.append("%s/%s.aida" % (datadir, analysis))
+    elif len(aidafiles)<2:
+        cmdargs.append("--show-ref-only")
+        cmdargs.append(" --no-ratio")
     for aidafile in aidafiles:
         cmdargs.append("%s" % os.path.abspath(aidafile))
     Popen(cmdargs, cwd=anapath).wait()
@@ -70,11 +74,12 @@ for analysis in sorted(analyses):
         psfile = datfile.replace(".dat", ".ps")
         pngfile = datfile.replace(".dat", ".png")
         Popen(["make-plots", "--full-range", datfile], cwd=anapath).wait()
-        Popen(["convert", "-density", "100", psfile, pngfile], cwd=anapath)
-        anaindex.write('<div style="float:left;">')
-        anaindex.write('<a href="%s" style="font-size:small;text-decoration:none;font-weight:bold;">' % psfile)
-        anaindex.write('%s:<br><img border="0" src="%s"></a></div>\n' % (psfile, pngfile))
+        if os.access(os.path.join(anapath, psfile), os.R_OK):
+            Popen(["convert", "-density", "100", psfile, pngfile], cwd=anapath)
+            anaindex.write('<div style="float:left;">')
+            anaindex.write('<a href="%s" style="font-size:small;text-decoration:none;font-weight:bold;">' % psfile)
+            anaindex.write('%s:<br><img border="0" src="%s"></a></div>\n' % (psfile, pngfile))
     anaindex.write("</html>\n")
     index.write('<h1><a href="%s/index.html" style="text-decoration:none;">%s</a></h1>\n' %(analysis, analysis))
     description = Popen(["rivet", "--show-analysis", analysis], stdout=PIPE).communicate()[0]
-    index.write('<pre>%s</pre></li>\n' % description)
+    index.write('<pre>%s</pre>\n' % description)
