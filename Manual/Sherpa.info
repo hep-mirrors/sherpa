@@ -253,6 +253,7 @@ performed in all inputs, see *Note Tags::.
 * Integration::       List of integration parameters
 * Shower Parameters:: List of shower parameters
 * MPI Parameters::    List of multiple parton interaction parameters
+* Fragmentation::     List of hadronization parameters
 
 
 File: Sherpa.info,  Node: Run Parameters,  Next: Beam Parameters,  Up: Parameters
@@ -928,6 +929,69 @@ File: Sherpa.info,  Node: Model Parameters,  Next: Matrix Elements,  Prev: ISR P
 
 The interaction model setup is covered by the `(model)' section of the
 steering file or the model data file `Model.dat', respectively.
+
+Many of the corresponding parameters are model specific and are
+therefore not described here. To obtain a list of all possible options,
+please run `Sherpa SHOW_MODEL_SYNTAX=1' and scan the output of the
+program.
+
+There are a number of parameters, defining the properties of particles
+in the matrix elements.
+
+* Menu:
+
+* MASS[<id>]::     Set the mass of particle with PDG id <id>.
+* MASSIVE[<id>]::  Set the particle with PDG id <id> massive.
+* WIDTH[<id>]::    Set the width of particle with PDG id <id>.
+* ACTIVE[<id>]::   Set the particle with PDG id <id> active.
+* STABLE[<id>]::   Set the particle with PDG id <id> stable.
+
+
+File: Sherpa.info,  Node: MASS[<id>],  Next: MASSIVE[<id>],  Up: Model Parameters
+
+4.4.1 MASS[<id>]
+----------------
+
+Sets the mass (in GeV) of the particle with PDG id `<id>'.
+Masses of particles and corresponding anti-particles are always set
+simultaneously.
+
+
+File: Sherpa.info,  Node: MASSIVE[<id>],  Next: WIDTH[<id>],  Prev: MASS[<id>],  Up: Model Parameters
+
+4.4.2 MASSIVE[<id>]
+-------------------
+
+Specifies whether the finite mass of particle with PDG id `<id>' is to
+be considered in matrix-element calculations or not.
+
+
+File: Sherpa.info,  Node: WIDTH[<id>],  Next: ACTIVE[<id>],  Prev: MASSIVE[<id>],  Up: Model Parameters
+
+4.4.3 WIDTH[<id>]
+-----------------
+
+Sets the width (in GeV) of the particle with PDG id `<id>'.
+
+
+File: Sherpa.info,  Node: ACTIVE[<id>],  Next: STABLE[<id>],  Prev: WIDTH[<id>],  Up: Model Parameters
+
+4.4.4 ACTIVE[<id>]
+------------------
+
+Enables / disables the particle with PDG id `<id>'.
+
+
+File: Sherpa.info,  Node: STABLE[<id>],  Prev: ACTIVE[<id>],  Up: Model Parameters
+
+4.4.5 STABLE[<id>]
+------------------
+
+Sets the particle with PDG id `<id>' either stable or unstable. At
+present this affects only the simulation of lepton decays, dealt with
+by the HADRONS++ package.  Decays of other particles have to be
+specified in the process setup (see *Note Processes::) and are not
+treated automatically.
 
 
 File: Sherpa.info,  Node: Matrix Elements,  Next: Processes,  Prev: Model Parameters,  Up: Parameters
@@ -1655,7 +1719,7 @@ The shower setup is covered by the `(shower)' section of the steering
 file or the shower data file `Shower.dat', respectively.
 
 
-File: Sherpa.info,  Node: MPI Parameters,  Prev: Shower Parameters,  Up: Parameters
+File: Sherpa.info,  Node: MPI Parameters,  Next: Fragmentation,  Prev: Shower Parameters,  Up: Parameters
 
 4.10 MPI Parameters
 ===================
@@ -1735,6 +1799,16 @@ File: Sherpa.info,  Node: RESCALE_EXPONENT,  Prev: REFERENCE_SCALE,  Up: MPI Par
 Specifies the rescaling exponent for fixing the transverse momentum
 integration cutoff at centre-of-mass energies different from the
 reference scale, see *Note SCALE_MIN::, *Note REFERENCE_SCALE::.
+
+
+File: Sherpa.info,  Node: Fragmentation,  Prev: MPI Parameters,  Up: Parameters
+
+4.11 Fragmentation
+==================
+
+The hadronization setup is covered by the `(fragmentation)' section of
+the steering file or the fragmentation data file `Fragmentation.dat',
+respectively.
 
 
 File: Sherpa.info,  Node: Tips and Tricks,  Next: Customization,  Prev: Parameters,  Up: Top
@@ -1984,6 +2058,7 @@ Appendix A Index
  [index ]
 * Menu:
 
+* ACTIVE[<id>]:                          ACTIVE[<id>].          (line 6)
 * ANALYSIS:                              ANALYSIS.              (line 6)
 * ANALYSIS_OUTPUT:                       ANALYSIS_OUTPUT.       (line 6)
 * BATCH_MODE:                            BATCH_MODE.            (line 6)
@@ -2021,6 +2096,8 @@ Appendix A Index
 * K_PERP_MEAN_2:                         K_PERP_MEAN_2.         (line 6)
 * K_PERP_SIGMA_1:                        K_PERP_SIGMA_1.        (line 6)
 * K_PERP_SIGMA_2:                        K_PERP_SIGMA_2.        (line 6)
+* MASS[<id>]:                            MASS[<id>].            (line 6)
+* MASSIVE[<id>]:                         MASSIVE[<id>].         (line 6)
 * ME_SIGNAL_GENERATOR:                   ME_SIGNAL_GENERATOR.   (line 6)
 * MI_HANDLER:                            MI_HANDLER.            (line 6)
 * NUM_ACCURACY:                          NUM_ACCURACY.          (line 6)
@@ -2047,8 +2124,10 @@ Appendix A Index
 * SPECTRUM_FILE_1:                       SPECTRUM_FILE_1.       (line 6)
 * SPECTRUM_FILE_2:                       SPECTRUM_FILE_2.       (line 6)
 * SPIN_CORRELATIONS:                     SPIN_CORRELATIONS.     (line 6)
+* STABLE[<id>]:                          STABLE[<id>].          (line 6)
 * TIMEOUT:                               TIMEOUT.               (line 6)
 * VEGAS:                                 VEGAS.                 (line 6)
+* WIDTH[<id>]:                           WIDTH[<id>].           (line 6)
 
 
 
@@ -2060,117 +2139,123 @@ Node: Input structure1855
 Node: Interpreter4188
 Node: Tags6135
 Node: Parameters6753
-Node: Run Parameters7610
-Node: EVENTS8428
-Node: OUTPUT8686
-Node: RANDOM_SEED9287
-Node: ANALYSIS9834
-Node: ANALYSIS_OUTPUT10648
-Node: TIMEOUT10962
-Node: BATCH_MODE11586
-Node: SPIN_CORRELATIONS12162
-Node: NUM_ACCURACY12541
-Node: SHERPA_CPP_PATH12876
-Node: SHERPA_LIB_PATH13214
-Node: Event output formats13485
-Node: EVENT_MODE15229
-Node: SHERPA_OUTPUT15629
-Node: HEPMC2_GENEVENT_OUTPUT15849
-Node: HEPMC2_ASCII_OUTPUT16109
-Node: HEPMC2_OUTPUT16373
-Node: FILE_SIZE16619
-Node: EVT_FILE_PATH16812
-Node: OUTPUT_PRECISION17015
-Node: Beam Parameters17217
-Node: Beam Spectra19097
-Node: BEAM_120590
-Node: BEAM_220813
-Node: BEAM_ENERGY_121039
-Node: BEAM_ENERGY_221261
-Node: BEAM_SPECTRUM_121494
-Node: BEAM_SPECTRUM_221751
-Node: SPECTRUM_FILE_122011
-Node: SPECTRUM_FILE_222261
-Node: BEAM_SMIN22505
-Node: BEAM_SMAX22999
-Node: K_PERP_MEAN_123487
-Node: K_PERP_MEAN_223813
-Node: K_PERP_SIGMA_124146
-Node: K_PERP_SIGMA_224512
-Node: ISR Parameters24856
-Node: BUNCH_125860
-Node: BUNCH_226151
-Node: ISR_126458
-Node: ISR_226933
-Node: ISR_SMIN27411
-Node: ISR_SMAX27877
-Node: ISR_E_ORDER28345
-Node: ISR_E_SCHEME28562
-Node: PDF_SET28773
-Node: PDF_SET_VERSION28982
-Node: PDF_GRID_PATH29244
-Node: PDF_LIBRARY29465
-Node: SHOW_PDF_SETS30002
-Node: Model Parameters30284
-Node: Matrix Elements30573
-Node: ME_SIGNAL_GENERATOR31363
-Node: RESULT_DIRECTORY32224
-Node: EVENT_GENERATION_MODE32619
-Node: K_FACTOR_SCHEME32908
-Node: SCALE_SCHEME33721
-Node: FACTORIZATION_SCALE35433
-Node: RENORMALIZATION_SCALE35918
-Node: Processes36392
-Node: Process38142
-Node: Decay38708
-Node: DecayOS39128
-Node: Renormalization_Scale39572
-Node: Factorization_Scale39910
-Node: Fixed_scale40246
-Node: CKKW40569
-Node: Selector_File40991
-Node: Order_EW41166
-Node: Max_Order_EW41468
-Node: Order_QCD41777
-Node: Max_Order_QCD42071
-Node: Max_N_Quarks42374
-Node: Print_Graphs42588
-Node: Integration_Error42916
-Node: Max_Epsilon43375
-Node: Enhance_Factor43905
-Node: Enhance_Function44365
-Node: NLO_QCD_Part44886
-Node: NLO_EW_Part45030
-Node: Loop_Generator45170
-Node: End process45382
-Node: Selectors45582
-Node: One particle selectors46123
-Node: Two particle selectors46930
-Node: Jet finders47904
-Node: Universal selector48740
-Node: Integration52098
-Node: ERROR52737
-Node: INTEGRATOR52884
-Node: VEGAS53206
-Node: FINISH_OPTIMIZATION53468
-Node: PSI_NMAX53757
-Node: Shower Parameters54002
-Node: MPI Parameters54282
-Node: MI_HANDLER55020
-Node: SCALE_MIN55227
-Node: PROFILE_FUNCTION55428
-Node: PROFILE_PARAMETERS55833
-Node: REFERENCE_SCALE56215
-Node: RESCALE_EXPONENT56623
-Node: Tips and Tricks56962
-Node: Bash completion57321
-Node: Rivet analyses57909
-Node: Versioned installation59288
-Node: Customization59748
-Node: External RNG60350
-Node: External PDF61820
-Node: Authors63729
-Node: Copying63904
-Node: Index64935
+Node: Run Parameters7665
+Node: EVENTS8483
+Node: OUTPUT8741
+Node: RANDOM_SEED9342
+Node: ANALYSIS9889
+Node: ANALYSIS_OUTPUT10703
+Node: TIMEOUT11017
+Node: BATCH_MODE11641
+Node: SPIN_CORRELATIONS12217
+Node: NUM_ACCURACY12596
+Node: SHERPA_CPP_PATH12931
+Node: SHERPA_LIB_PATH13269
+Node: Event output formats13540
+Node: EVENT_MODE15284
+Node: SHERPA_OUTPUT15684
+Node: HEPMC2_GENEVENT_OUTPUT15904
+Node: HEPMC2_ASCII_OUTPUT16164
+Node: HEPMC2_OUTPUT16428
+Node: FILE_SIZE16674
+Node: EVT_FILE_PATH16867
+Node: OUTPUT_PRECISION17070
+Node: Beam Parameters17272
+Node: Beam Spectra19152
+Node: BEAM_120645
+Node: BEAM_220868
+Node: BEAM_ENERGY_121094
+Node: BEAM_ENERGY_221316
+Node: BEAM_SPECTRUM_121549
+Node: BEAM_SPECTRUM_221806
+Node: SPECTRUM_FILE_122066
+Node: SPECTRUM_FILE_222316
+Node: BEAM_SMIN22560
+Node: BEAM_SMAX23054
+Node: K_PERP_MEAN_123542
+Node: K_PERP_MEAN_223868
+Node: K_PERP_SIGMA_124201
+Node: K_PERP_SIGMA_224567
+Node: ISR Parameters24911
+Node: BUNCH_125915
+Node: BUNCH_226206
+Node: ISR_126513
+Node: ISR_226988
+Node: ISR_SMIN27466
+Node: ISR_SMAX27932
+Node: ISR_E_ORDER28400
+Node: ISR_E_SCHEME28617
+Node: PDF_SET28828
+Node: PDF_SET_VERSION29037
+Node: PDF_GRID_PATH29299
+Node: PDF_LIBRARY29520
+Node: SHOW_PDF_SETS30057
+Node: Model Parameters30339
+Node: MASS[<id>]31256
+Node: MASSIVE[<id>]31520
+Node: WIDTH[<id>]31791
+Node: ACTIVE[<id>]31996
+Node: STABLE[<id>]32194
+Node: Matrix Elements32611
+Node: ME_SIGNAL_GENERATOR33401
+Node: RESULT_DIRECTORY34262
+Node: EVENT_GENERATION_MODE34657
+Node: K_FACTOR_SCHEME34946
+Node: SCALE_SCHEME35759
+Node: FACTORIZATION_SCALE37471
+Node: RENORMALIZATION_SCALE37956
+Node: Processes38430
+Node: Process40180
+Node: Decay40746
+Node: DecayOS41166
+Node: Renormalization_Scale41610
+Node: Factorization_Scale41948
+Node: Fixed_scale42284
+Node: CKKW42607
+Node: Selector_File43029
+Node: Order_EW43204
+Node: Max_Order_EW43506
+Node: Order_QCD43815
+Node: Max_Order_QCD44109
+Node: Max_N_Quarks44412
+Node: Print_Graphs44626
+Node: Integration_Error44954
+Node: Max_Epsilon45413
+Node: Enhance_Factor45943
+Node: Enhance_Function46403
+Node: NLO_QCD_Part46924
+Node: NLO_EW_Part47068
+Node: Loop_Generator47208
+Node: End process47420
+Node: Selectors47620
+Node: One particle selectors48161
+Node: Two particle selectors48968
+Node: Jet finders49942
+Node: Universal selector50778
+Node: Integration54136
+Node: ERROR54775
+Node: INTEGRATOR54922
+Node: VEGAS55244
+Node: FINISH_OPTIMIZATION55506
+Node: PSI_NMAX55795
+Node: Shower Parameters56040
+Node: MPI Parameters56320
+Node: MI_HANDLER57080
+Node: SCALE_MIN57287
+Node: PROFILE_FUNCTION57488
+Node: PROFILE_PARAMETERS57893
+Node: REFERENCE_SCALE58275
+Node: RESCALE_EXPONENT58683
+Node: Fragmentation59022
+Node: Tips and Tricks59300
+Node: Bash completion59659
+Node: Rivet analyses60247
+Node: Versioned installation61626
+Node: Customization62086
+Node: External RNG62688
+Node: External PDF64158
+Node: Authors66067
+Node: Copying66242
+Node: Index67273
 
 End Tag Table
