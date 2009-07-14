@@ -3,16 +3,29 @@
 Sherpa \- Monte Carlo event generator
 .SH SYNOPSIS
 Sherpa
-.B "[\-v]"
+.B "[\-f \fIfile\fP] [\-p \fIpath\fP] [\-e \fIevents\fP] [\-O \fIlevel\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
-.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ]"
+.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ] [\-vh]"
 .SH DESCRIPTION
 Sherpa is a Monte Carlo event generation framework.
+.br
+This manual page contains only the very basic information on the
+synopsis of Sherpa. The full description is maintained as a TeXinfo manual.
 .SH OPTIONS
+.IP "\fB-f\fP \fIfile\fP" 
+Sets the run data file to \fIfile\fP. 
+.IP "\fB-p\fP \fIpath\fP"
+Sets the run path to \fIpath\fP.
+.IP "\fB-e\fP \fIevents\fP"
+Sets the number of events to \fIevents\fP.
+.IP "\fB-O\fP \fIlevel\fP"
+Sets the output level \fIlevel\fP, see info file.
 .IP "\fB-v\fP, \fB--version\fP" 
 Prints versioning information.
+.IP "\fB-h\fP, \fB--help\fP" 
+Prints a short help message.
 .IP "\fBPARAMETER\fP=\fIVALUE\fP" 
 Sets the value of a parameter, see info file\fP. 
 .br
@@ -22,7 +35,7 @@ Sets the value of a tag, see info file\fP.
 This is an example for the first invocation of Sherpa
 
 .RS 2
-.B Sherpa PATH=LHC/ RUNDATA=Run.dat
+.B Sherpa -p LHC/ -f Run.dat
 .RE
 .RE
 

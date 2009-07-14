@@ -6,16 +6,33 @@ NNAAMMEE
        Sherpa - Monte Carlo event generator
 
 SSYYNNOOPPSSIISS
-       Sherpa [[--vv]]
+       Sherpa [[--ff _f_i_l_e]] [[--pp _p_a_t_h]] [[--ee _e_v_e_n_t_s]] [[--OO _l_e_v_e_l]]
               [[_P_A_R_A_M_E_T_E_R_1_=_V_A_L_U_E_1 [[_P_A_R_A_M_E_T_E_R_2_=_V_A_L_U_E_2 ...... ]] ]]
-              [[_T_A_G_1_:_=_V_A_L_U_E_1 [[_T_A_G_2_:_=_V_A_L_U_E_2 ...... ]] ]]
+              [[_T_A_G_1_:_=_V_A_L_U_E_1 [[_T_A_G_2_:_=_V_A_L_U_E_2 ...... ]] ]] [[--vvhh]]
 
 DDEESSCCRRIIPPTTIIOONN
        Sherpa is a Monte Carlo event generation framework.
+       This manual page contains only the very basic information on the synop-
+       sis of Sherpa. The full description is maintained as a TeXinfo  manual.
 
 OOPPTTIIOONNSS
+       --ff _f_i_l_e
+              Sets the run data file to _f_i_l_e.
+
+       --pp _p_a_t_h
+              Sets the run path to _p_a_t_h.
+
+       --ee _e_v_e_n_t_s
+              Sets the number of events to _e_v_e_n_t_s.
+
+       --OO _l_e_v_e_l
+              Sets the output level _l_e_v_e_l, see info file.
+
        --vv, ----vveerrssiioonn
               Prints versioning information.
+
+       --hh, ----hheellpp
+              Prints a short help message.
 
        PPAARRAAMMEETTEERR=_V_A_L_U_E
               Sets the value of a parameter, see info file.
@@ -26,7 +43,7 @@ OOPPTTIIOONNSS
 EEXXAAMMPPLLEE
        This is an example for the first invocation of Sherpa
 
-         SShheerrppaa PPAATTHH==LLHHCC// RRUUNNDDAATTAA==RRuunn..ddaatt
+         SShheerrppaa --pp LLHHCC// --ff RRuunn..ddaatt
 
        The  program  uses run parameter specifications listed in the base file
        _R_u_n_._d_a_t residing in the directory _L_H_C.
