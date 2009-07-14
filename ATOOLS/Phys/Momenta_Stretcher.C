@@ -270,7 +270,7 @@ bool Momenta_Stretcher::StretchBlob(Blob* blob, vector<double> masses)
   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
     momenta.push_back( (*pit)->Momentum() );
-    //msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
+//     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
   }
   if(!ZeroThem(0,momenta)) return false;
   if(!MassThem(0,momenta,masses)) return false;;
@@ -301,6 +301,32 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts, std::ve
   boost.Invert();
   for(size_t i=0; i<moms.size(); i++) {
     moms[i] = boost*moms[i];
+  }
+  return true;
+}
+
+bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts,
+                                        std::vector<double>& masses )
+{
+  if(outparts.size() != masses.size()) return false;
+  if(outparts.size()==1 && abs(outparts[0]->FinalMass()-masses[0])<Accu() ) return true;
+
+  Vec4D cms;
+  vector<Vec4D> moms;
+  for(size_t i=0; i<masses.size(); i++) {
+    moms.push_back(outparts[i]->Momentum());
+    cms += moms[i];
+  }
+  Poincare boost(cms);
+  for(size_t i=0; i<masses.size(); i++) {
+    boost.Boost(moms[i]);
+  }
+  if(!ZeroThem(0,moms)) return false;
+  if(! MassThem(0,moms,masses)) return false;
+  for(size_t i=0; i<moms.size(); i++) {
+    boost.BoostBack(moms[i]);
+    outparts[i]->SetMomentum(moms[i]);
+    outparts[i]->SetFinalMass();
   }
   return true;
 }

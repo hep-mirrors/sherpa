@@ -8,7 +8,7 @@ using namespace std;
 
 
 Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile) :
-  m_mode(softphotons::off), p_yfs(NULL)
+  m_name(""), m_mode(softphotons::off), p_yfs(NULL)
 {
   Data_Reader * dataread = new Data_Reader(" ",";","!","=");
   dataread->AddWordSeparator("\t");
@@ -20,7 +20,7 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile) :
     p_yfs  = new Photons(dataread,true);
   else
     p_yfs  = new Photons(dataread,false);
-  
+  if (p_yfs) m_name=p_yfs->Name();
   delete dataread;
 }
 
@@ -37,5 +37,5 @@ bool Soft_Photon_Handler::AddRadiation(Blob * blob)
   }
   p_yfs->AddRadiation(blob);
   blob->UnsetStatus(blob_status::needs_extraQED);
-  return true;
+  return p_yfs->DoneSuccessfully();
 }

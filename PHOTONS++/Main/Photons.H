@@ -14,6 +14,7 @@ namespace ATOOLS { class Data_Reader; }
 namespace PHOTONS {
   class Photons {
   private:
+    std::string                 m_name;
     bool                        m_analyse;
     bool                        m_photonsadded;
     bool                        m_success;
@@ -22,7 +23,9 @@ namespace PHOTONS {
     Photons(bool=false);
     ~Photons();
     bool AddRadiation(Blob *);
-    bool DoneSuccessfully() { return m_success; }
+
+    inline bool        DoneSuccessfully() { return m_success; }
+    inline std::string Name()             { return m_name; }
 
     static int                  s_mode;
     static bool                 s_useme;

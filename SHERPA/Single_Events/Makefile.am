@@ -11,6 +11,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 				   	Signal_Processes.C \
 					Multiple_Interactions.C \
 					Jet_Evolution.C \
+					Signal_Process_FS_QED_Correction.C \
 					Hard_Decays.C \
 					Beam_Remnants.C \
 					Hadronization.C \
@@ -25,6 +26,7 @@ localinc_HEADERS      =	\
 		 	Signal_Processes.H \
 			Multiple_Interactions.H \
 			Jet_Evolution.H \
+			Signal_Process_FS_QED_Correction.H \
 			Hard_Decays.H \
 			Beam_Remnants.H \
 		 	Hadronization.H \

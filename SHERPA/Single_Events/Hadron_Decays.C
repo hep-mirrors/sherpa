@@ -37,6 +37,7 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers,
 #endif
 #endif
   m_name      = std::string("Hadron_Decays");
+  if (p_softphotons->IsOn()) m_name+=(","+p_softphotons->SoftQEDGenerator());
   m_type      = eph::Hadronization;
 }
 

@@ -8,6 +8,7 @@
 #include "SHERPA/Single_Events/Hard_Decays.H"
 #include "SHERPA/Single_Events/Multiple_Interactions.H"
 #include "SHERPA/Single_Events/Jet_Evolution.H"
+#include "SHERPA/Single_Events/Signal_Process_FS_QED_Correction.H"
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
@@ -143,6 +144,8 @@ bool Sherpa::InitializeTheEventHandler()
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme)));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(p_inithandler->GetMatrixElementHandlers(),
+                                                                       p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						    p_inithandler->GetHadronDecayHandlers(),
 						    p_inithandler->GetMIHandler(),

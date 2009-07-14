@@ -16,6 +16,7 @@ namespace ATOOLS {
     bool ZeroThem(const int n0, std::vector<Vec4D>& moms,const double=1.e-14);
     bool StretchBlob( Blob* blob, std::vector<double> masses = std::vector<double>());
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
+    bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
   };
 }
   ////////////////////////////////////////////////////////////////////////////////////////////////////

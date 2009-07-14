@@ -16,7 +16,7 @@ double PHOTONS::Photons::s_accu     = 1E-6;
 // member functions of class Photons
 
 Photons::Photons(Data_Reader* reader, bool ana) :
-  m_analyse(ana)
+  m_name("Photons"), m_analyse(ana)
 {
   rpa.gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
@@ -24,12 +24,12 @@ Photons::Photons(Data_Reader* reader, bool ana) :
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
   s_accu          = sqrt(rpa.gen.Accu());
-  m_success       = false;
+  m_success       = true;
   m_photonsadded  = false;
 }
 
 Photons::Photons(bool ana) :
-  m_analyse(ana)
+  m_name("Photons"), m_analyse(ana)
 {
   rpa.gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
@@ -37,7 +37,7 @@ Photons::Photons(bool ana) :
   s_useme         = true;
   s_ircutoff      = 1E-1;
   s_accu          = sqrt(rpa.gen.Accu());
-  m_success       = false;
+  m_success       = true;
   m_photonsadded  = false;
 }
 
@@ -61,7 +61,6 @@ bool Photons::AddRadiation(Blob * blob) {
 #endif
 
   }
-  blob->SetStatus(blob_status::needs_hadrondecays);
   return m_photonsadded;
 }
 

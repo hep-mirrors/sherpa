@@ -16,6 +16,7 @@ namespace SHERPA {
 
   class Soft_Photon_Handler {
   private:
+    std::string         m_name;
     softphotons::code   m_mode;
     PHOTONS::Photons  * p_yfs;
   public :
@@ -25,6 +26,9 @@ namespace SHERPA {
     // destructor
     ~Soft_Photon_Handler();
     bool AddRadiation(ATOOLS::Blob *);
+
+    inline bool        IsOn()             { return m_mode; }
+    inline std::string SoftQEDGenerator() { return m_name; }
   };// end of class Soft_Photon_Handler
 
 }// end of namespace SHERPA

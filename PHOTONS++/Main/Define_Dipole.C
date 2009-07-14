@@ -5,7 +5,8 @@ using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
-Define_Dipole::Define_Dipole(Blob * blob) {
+Define_Dipole::Define_Dipole(Blob * blob) :
+m_success(true), m_photonsadded(false) {
   p_blob = blob;
   for (unsigned int i=0; i<(blob->GetInParticles().size()); i++) {
     if (blob->InParticle(i)->Flav().Charge() == 0) {
