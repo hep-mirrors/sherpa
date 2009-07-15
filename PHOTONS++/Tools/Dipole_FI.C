@@ -77,6 +77,7 @@ void Dipole_FI::AddRadiation() {
     m_nbar = avnum.GetNBar();
     nbars  = avnum.GetNBars();
   }
+  CheckAvaragePhotonNumberForNumericalErrors();
 #ifdef PHOTONS_DEBUG
   msg_Info()<<"nbar: "<<m_nbar<<endl;
 #endif

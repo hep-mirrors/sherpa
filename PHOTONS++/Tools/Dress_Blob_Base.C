@@ -123,6 +123,12 @@ void Dress_Blob_Base::CalculateWeights() {
 #endif
 }
 
+void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
+  // numerical values slightly < 0. do not lead to fail
+  if ((m_nbar<0.) && IsZero(m_nbar,1E-5)) m_success=true;
+}
+
+
 void Dress_Blob_Base::DeleteAll(Particle_Vector pv) {
   while (pv.size() != 0) {
     delete pv.at(pv.size()-1);

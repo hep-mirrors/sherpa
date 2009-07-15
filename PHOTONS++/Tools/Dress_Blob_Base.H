@@ -55,6 +55,7 @@ namespace PHOTONS {
       double              CalculateBeta(const Vec4D);
       Vec4D               CalculateMomentumSum(Particle_Vector);
       void                CalculateWeights();
+      void                CheckAvaragePhotonNumberForNumericalErrors();
       void                DeleteAll(Particle_Vector);
       void                DeleteAllPhotons();
       void                DetermineU();
