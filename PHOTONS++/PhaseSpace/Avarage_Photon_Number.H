@@ -23,7 +23,6 @@ namespace PHOTONS {
       void    CalculateAvaragePhotonNumber();
       double  CalculateBeta(Vec4D);
       double  InterferenceTerm(double, double, double, double);
-      double  InterferenceTermAlternative(double, double, double, double);
 
     public:
       Avarage_Photon_Number(Particle_Vector, double, double);
