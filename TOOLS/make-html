@@ -61,7 +61,7 @@ for analysis in sorted(analyses):
         cmdargs.append("%s/%s.aida" % (datadir, analysis))
     elif len(aidafiles)<2:
         cmdargs.append("--show-ref-only")
-        cmdargs.append(" --no-ratio")
+        cmdargs.append("--no-ratio")
     for aidafile in aidafiles:
         cmdargs.append("%s" % os.path.abspath(aidafile))
     Popen(cmdargs, cwd=anapath).wait()
