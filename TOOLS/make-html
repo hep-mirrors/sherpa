@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from optparse import OptionParser, OptionGroup
-import sys, os, fnmatch
+import sys, os, glob, shutil
 from subprocess import Popen, PIPE
 
 ## Try to load faster but non-standard cElementTree module
@@ -28,17 +28,26 @@ Examples:
 
 parser = OptionParser(usage=usage)
 parser.add_option("-o", "--outputdir", dest="OUTPUTDIR",
-                  default="./", help="directory for webpage output.")
+                  default="./plots", help="directory for webpage output.")
 
 opts, aidafiles = parser.parse_args()
 
-datadir = Popen(["rivet-config", "--datadir"], stdout=PIPE).communicate()[0].split()[0]
-if opts.OUTPUTDIR is not None:
+try:
+    datadir = Popen(["rivet-config", "--datadir"], stdout=PIPE).communicate()[0].split()[0]
+except:
+    print "Error: Didn't find rivet-config. Have you sourced rivetenv.sh?"
+    exit(1)
+
+try:
     os.makedirs(opts.OUTPUTDIR)
+except:
+    print "Error: Directory '%s' already exists. Set -o to something else." % opts.OUTPUTDIR
+    exit(1)
 
 
-## get set of analyses involved in the runs
+## get set of analyses/reffiles involved in the runs
 analyses = set()
+reffiles = list()
 for aidafile in aidafiles:
     aidafilepath = os.path.abspath(aidafile)
     if not os.access(aidafilepath, os.R_OK):
@@ -46,39 +55,53 @@ for aidafile in aidafiles:
         exit(2)
     tree = ET.parse(aidafilepath)
     for dps in tree.findall("dataPointSet"):
-        analyses.add(dps.get("path")[1:])
+        analysis = dps.get("path")[1:]
+        analyses.add(analysis)
+        if os.access(os.path.join(datadir, analysis+".aida"), os.R_OK):
+            reffiles.append("%s/%s.aida" % (datadir, analysis))
+
+
+## run compare-histos to get plain .dat files from .aida
+ch_cmd = ["compare-histos"]
+ch_cmd.append("--mc-errs")
+if len(aidafiles)+len(reffiles)<2:
+    ch_cmd.append("--show-ref-only")
+    ch_cmd.append("--no-ratio")
+for file in aidafiles+reffiles:
+    ch_cmd.append("%s" % os.path.abspath(file))
+Popen(ch_cmd, cwd=opts.OUTPUTDIR).wait()
+
 
 index = open(os.path.join(opts.OUTPUTDIR, "index.html"), "w")
-
 for analysis in sorted(analyses):
     anapath = os.path.join(opts.OUTPUTDIR, analysis)
     os.mkdir(anapath)
     anaindex = open(os.path.join(anapath, "index.html"), 'w')
     anaindex.write("<html>\n")
-    cmdargs = ["compare-histos"]
-    cmdargs.append("--mc-errs")
-    if os.access(os.path.join(datadir, analysis+".aida"), os.R_OK):
-        cmdargs.append("%s/%s.aida" % (datadir, analysis))
-    elif len(aidafiles)<2:
-        cmdargs.append("--show-ref-only")
-        cmdargs.append("--no-ratio")
-    for aidafile in aidafiles:
-        cmdargs.append("%s" % os.path.abspath(aidafile))
-    Popen(cmdargs, cwd=anapath).wait()
-    for datfile in os.listdir(anapath):
-        if datfile=="index.html":
-            continue
-        if not fnmatch.fnmatch(datfile, analysis+"*.dat"):
-            os.unlink(os.path.join(anapath, datfile))
-            continue
+    
+    datfiles = glob.glob("%s/%s_*.dat" % (opts.OUTPUTDIR, analysis))
+    for fulldatfile in datfiles:
+        shutil.move(fulldatfile, anapath)
+        datfile = os.path.basename(fulldatfile)
+
+        ## make-plots run for each .dat file
+        mp_cmd = ["make-plots"]
+        mp_cmd.append("--full-range")
+        if os.access(os.path.expanduser("~/.make-plots"), os.R_OK):
+            mp_cmd.append("-c")
+            mp_cmd.append(os.path.expanduser("~/.make-plots"))
+        mp_cmd.append(datfile)
+        Popen(mp_cmd, cwd=anapath).wait()
+
         psfile = datfile.replace(".dat", ".ps")
-        pngfile = datfile.replace(".dat", ".png")
-        Popen(["make-plots", "--full-range", datfile], cwd=anapath).wait()
         if os.access(os.path.join(anapath, psfile), os.R_OK):
+            # convert to png and add to webpage
+            pngfile = datfile.replace(".dat", ".png")
             Popen(["convert", "-density", "100", psfile, pngfile], cwd=anapath)
             anaindex.write('<div style="float:left;">')
             anaindex.write('<a href="%s" style="font-size:small;text-decoration:none;font-weight:bold;">' % psfile)
             anaindex.write('%s:<br><img border="0" src="%s"></a></div>\n' % (psfile, pngfile))
+
     anaindex.write("</html>\n")
     index.write('<h1><a href="%s/index.html" style="text-decoration:none;">%s</a></h1>\n' %(analysis, analysis))
     description = Popen(["rivet", "--show-analysis", analysis], stdout=PIPE).communicate()[0]
