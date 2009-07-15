@@ -125,7 +125,15 @@ void Dress_Blob_Base::CalculateWeights() {
 
 void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
   // numerical values slightly < 0. do not lead to fail
-  if ((m_nbar<0.) && IsZero(m_nbar,1E-5)) m_success=true;
+  if ((m_nbar<0.) && IsZero(m_nbar,1E-5)) {
+    m_nbar    = 0.;
+    m_success = true;
+  }
+  else if (m_nbar<0.) {
+    msg_Error()<<METHOD<<"(): {\n"
+                       <<"  Avarage photon number is "<<m_nbar<<" < 0 !!\n"
+                       <<"}"<<endl;
+  }
 }
 
 

@@ -95,6 +95,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   // add radiation
   effblob->SetStatus(blob_status::needs_extraQED);
+  msg_Out()<<*effblob<<endl;
   if (!p_sphotons->AddRadiation(effblob)) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"  Higher order QED corrections failed."<<endl
@@ -144,7 +145,7 @@ Flavour Signal_Process_FS_QED_Correction::DetermineResonanceFlavour
   // if lepton and corresponding neutrino, take W for now
   else if ((partvec.size()==2) &&
           (partvec[0]->Flav().LeptonFamily()==partvec[1]->Flav().LeptonFamily())) {
-    if (partvec[0]->Flav().Charge()+partvec[1]->Flav().Charge())
+    if ((partvec[0]->Flav().Charge()+partvec[1]->Flav().Charge())==1.)
       return Flavour(kf_Wplus);
     else
       return Flavour(kf_Wplus).Bar();
