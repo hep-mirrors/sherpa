@@ -578,7 +578,7 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
       cur=cur.substr(0,pos);
       decid=decid.substr(1,decid.find(']')-1);
     }
-    size_t n(0);
+    int n(-1);
     pos=cur.find('{');
     if (pos!=std::string::npos) {
       std::string nid(cur.substr(pos));
@@ -588,14 +588,14 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
     int kfc(ToType<int>(cur));
     Flavour cfl((kf_code)abs(kfc));
     if (kfc<0) cfl=cfl.Bar();
-    if (n==0) {
+    if (n==-1) {
       for (size_t i(0);i<info.m_ps.size();++i)
 	info.m_ps[i].m_ps.push_back(Subprocess_Info(cfl,decid,polid));
     }
     else {
       size_t oldsize(info.m_ps.size());
       info.m_ps.resize(oldsize*(n+1));
-      for (size_t j(1);j<=n;++j) {
+      for (int j(1);j<=n;++j) {
 	for (size_t i(0);i<oldsize;++i) {
 	  info.m_ps[j*oldsize+i]=info.m_ps[(j-1)*oldsize+i];
 	  info.m_ps[j*oldsize+i].m_ps.push_back(Subprocess_Info(cfl,"",polid));
