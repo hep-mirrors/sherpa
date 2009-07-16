@@ -7,10 +7,19 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 
 namespace ATOOLS {
+  class Blob;
   class Flavour;
 }
 
+namespace PHASIC {
+  struct Process_Info;
+  struct Subprocess_Info;
+}
+
 namespace SHERPA {
+
+  typedef std::vector<ATOOLS::Blob *> Blob_Vector;
+  typedef std::vector<const PHASIC::Subprocess_Info *> SubInfoVector;
 
   class Signal_Process_FS_QED_Correction: public Event_Phase_Handler {
   private :
@@ -18,9 +27,26 @@ namespace SHERPA {
     MEHandlersMap           * p_mehandlers;
     Soft_Photon_Handler     * p_sphotons;
 
+    std::map<std::string,SubInfoVector> m_proc_lep_map;
+
     bool    PutOnMassShell(const Particle_Vector&);
     Flavour DetermineResonanceFlavour(const Particle_Vector&);
     Vec4D   MomentumSum(const Particle_Vector&);
+
+    void FindSubProcessInfosContainingLeptons(const PHASIC::Process_Info&,
+                                              SubInfoVector&);
+    void FindSubProcessInfosContainingLeptons(const PHASIC::Subprocess_Info&,
+                                              SubInfoVector&);
+
+    Blob_Vector BuildResonantBlobs(Particle_Vector&);
+
+    bool    ContainsNoAmbiguities(const Particle_Vector&);
+    void    FillBlob(ATOOLS::Blob *,
+                     const PHASIC::Subprocess_Info&,
+                     Particle_Vector&);
+    void    FillBlob(ATOOLS::Blob *,
+                     const ATOOLS::Flavour&,
+                     Particle_Vector&);
   public :
 
     // constructor

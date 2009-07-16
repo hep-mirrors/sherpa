@@ -27,12 +27,13 @@ namespace PHASIC {
 
 namespace SHERPA {
 
+  typedef std::vector<PHASIC::Process_Base*> Process_Vector;
+
   class Shower_Handler;
 
   class Matrix_Element_Handler {
   public:
 
-    typedef std::vector<PHASIC::Process_Base*>      Process_Vector;
 
     typedef std::map<std::string,std::pair<int,double> >      MPDV_Map;
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
@@ -111,6 +112,7 @@ namespace SHERPA {
 
     // inline functions
     inline PHASIC::Process_Base *Process() const { return p_proc; }
+    inline Process_Vector        AllProcesses() const { return m_procs; }
 
     inline int EventGenerationMode() const { return m_eventmode; }
 
