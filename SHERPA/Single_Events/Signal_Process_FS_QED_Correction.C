@@ -17,6 +17,14 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
+////////////////////////////////////////////////////////////////////////////////
+////                                                                        ////
+////     in the documentation LEPTON is synonymous                          ////
+////     to EVERYTHING NOT STRONGLY CHARGED                                 ////
+////                                                                        ////
+////////////////////////////////////////////////////////////////////////////////
+
+
 Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
 (MEHandlersMap *_mehandlers, Soft_Photon_Handler *_sphotons) :
   p_mehandlers(_mehandlers), p_sphotons(_sphotons)
@@ -87,7 +95,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     }
   }
   // if no leptons, nothing to do
-  if (fslep.size()==0) {
+  // if only one lepton, cannot do anything
+  if (fslep.size()<2) {
     sigblob->UnsetStatus(blob_status::needs_extraQED);
     return Return_Value::Nothing;
   }
@@ -130,7 +139,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     QEDblob->AddToInParticles(*it);
   }
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
-    for (size_t i=0;i<(*it)->NOutP();++i) {
+    for (int i=0;i<(*it)->NOutP();++i) {
       QEDblob->AddToOutParticles((*it)->OutParticle(i));
     }
   }
