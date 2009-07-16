@@ -145,6 +145,13 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   QEDblob->SetStatus(blob_status::needs_hadronization);
   // TODO: delete everything (resonant production blobs & their initial states)
+  for (size_t i=0;i<blobs.size();++i) {
+    blobs[i]->DeleteInParticles();
+    for (int j=0;j<blobs[i]->NOutP();)
+      blobs[i]->RemoveOutParticle(j,false);
+    delete blobs[i];
+    blobs[i]=NULL;
+  }
   return Return_Value::Success;
 }
 
