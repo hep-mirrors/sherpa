@@ -130,10 +130,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       QEDblob->AddToOutParticles((*it)->OutParticle(i));
     }
   }
-  for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
-    (*it)->RemoveOutParticles(0);
-    delete *it;
-  }
+  // TODO: delete everything (resonant production blobs & their initial states)
   return Return_Value::Success;
 }
 
