@@ -126,6 +126,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     msg_Debugging()<<**it<<endl;
+    (*it)->DeleteInParticles();
   }
   sigblob->UnsetStatus(blob_status::needs_extraQED);
   // build new QED radiation blob
@@ -139,16 +140,13 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     QEDblob->AddToInParticles(*it);
   }
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
-    for (int i=0;i<(*it)->NOutP();++i) {
-      QEDblob->AddToOutParticles((*it)->OutParticle(i));
+    while ((*it)->NOutP()) {
+      Particle * part((*it)->RemoveOutParticle((*it)->NOutP()-1,true));
+      QEDblob->AddToOutParticles(part);
     }
   }
   QEDblob->SetStatus(blob_status::needs_hadronization);
-  // TODO: delete everything (resonant production blobs & their initial states)
   for (size_t i=0;i<blobs.size();++i) {
-    blobs[i]->DeleteInParticles();
-    for (int j=0;j<blobs[i]->NOutP();)
-      blobs[i]->RemoveOutParticle(j,false);
     delete blobs[i];
     blobs[i]=NULL;
   }
