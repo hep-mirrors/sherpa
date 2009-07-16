@@ -24,6 +24,8 @@
 
 @contents
 
+@image{SherpaLogo,,,,jpg}
+
 @menu
 * Introduction::     What is Sherpa
 @sp 1
@@ -38,7 +40,7 @@
 * Copying::          Your rights and freedoms
 * Index::            Index
 * @mybibnode{}::
-@end menu
+@end menu 
 
 @include Introduction.texi
 @include Commands.texi
