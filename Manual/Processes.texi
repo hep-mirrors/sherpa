@@ -106,9 +106,8 @@ see @ref{Interpreter}.
 
 @node CKKW
 @subsection CKKW
-Sets up multijet merging according to
-@uref{http://www-spires.dur.ac.uk/spires/find/hep/www?eprint=arXiv:0903.1219,,
-JHEP05(2009)053}. The additional argument specifies the separation cut
+Sets up multijet merging according to @mycite{Hoeche2009rj}.
+The additional argument specifies the separation cut
 in the form (Q_@{cut@}/E_@{cms@})^2.
 It can be given in any form which is understood by the internal
 interpreter, see @ref{Interpreter}.

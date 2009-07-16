@@ -4,10 +4,8 @@
 The multiple parton interaction (MPI) setup is covered by
 the `(mi)' section of the steering file or the 
 MPI data file `MI.dat', respectively. The basic MPI model is described in 
-@uref{http://www-spires.dur.ac.uk/cgi-bin/spiface/hep/www?j=PR%2CD36%2C2019,,
-PR D36(1987)2019} while Sherpa's implementation details are discussed in
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=hep-ph/0601012,,
-hep-ph/0601012}
+@mycite{Sjostrand1987su} while Sherpa's implementation details are discussed in
+@mycite{Alekhin2005dx}.
 
 The following parameters are used to steer the MPI setup.
 

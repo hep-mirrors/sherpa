@@ -33,13 +33,10 @@ The built-in generators are
 @item Internal
 Simple matrix element library, implementing a variety of 2->2 processes.
 @item Amegic
-The AMEGIC++ generator published under
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=hep-ph/0109036,,
-JHEP 02(2002)044}
+The AMEGIC++ generator published under @mycite{Krauss2001iv}
 @item Comix
 The @uref{http://comix.freacafe.de,,Comix} generator published under
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=arXiv:0808.3674,,
-JHEP 12(2008)039}
+@mycite{Gleisberg2008fv}
 @end table
 
 It is possible to employ an external matrix element generator within Sherpa.

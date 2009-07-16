@@ -55,8 +55,7 @@ lepton-lepton collisions.
 This can be used to describe the backscattering of a laser beam
 off initial leptons. The energy distribution of the emerging 
 photon beams is modelled by the CompAZ parametrization, see
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?eprint=hep-ex/0207021,,
-Acta Phys.Polon. B34 (2003) 2741-2758 [hep-ex/0207021]}.
+@mycite{Zarnecki2002qr}.
 Note that this parametrization is valid only for the proposed 
 TESLA photon collider, as various assumptions about the laser 
 parameters and the initial lepton beam energy have been made.
@@ -67,9 +66,7 @@ photons with a corresponding energy spectrum.
 @item EPA
 This enables the equivalent photon approximation for
 colliding protons. The resulting beam particles are photons that 
-follow a dipole form factor parametrization, see
-@uref{http://www.slac.stanford.edu/spires/find/hep/www?rawcmd=FIND+KEY+3272451&FORMAT=www,,
-Phys. Rept. 15 (1974) 181}.
+follow a dipole form factor parametrization, see @mycite{Budnev1974de}.
 @item Spectrum_Reader
 A user defined spectrum is used to describe the energy spectrum
 of the assumed new beam particles. The name of the corresponding
