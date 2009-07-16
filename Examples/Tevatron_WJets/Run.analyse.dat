@@ -1,7 +1,7 @@
 (run){
   EVENTS = 1000000
 
-  NJET:=4; QCUT:=30
+  NJET:=4; QCUT:=30; ANATAG:=trunk
 
   RESULT_DIRECTORY = Results.QCUT
   GENERATE_RESULT_DIRECTORY = 1
@@ -55,7 +55,7 @@
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
   EVENT_GENERATION_MODE = Weighted
-  SCALE_SCHEME = QCD
+  SCALE_SCHEME = METS
 }(me)
 
 (mi){
@@ -64,7 +64,7 @@
 
 (analysis){
   BEGIN_RIVET {
-    -H NJETjet.QCUTGeV
+    -H NJETjet.QCUTGeV.ANATAG
     -a CDF_2008_S7541902
   } END_RIVET
 }(analysis)

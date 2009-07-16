@@ -31,7 +31,7 @@
 
 (me){
   ME_SIGNAL_GENERATOR = Comix
-  SCALE_SCHEME = QCD
+  SCALE_SCHEME = METS
 }(me)
 
 (mi){

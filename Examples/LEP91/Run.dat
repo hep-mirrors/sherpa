@@ -27,4 +27,5 @@
 
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
+  SCALE_SCHEME = METS
 }(me)

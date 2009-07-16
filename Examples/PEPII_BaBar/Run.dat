@@ -4,6 +4,7 @@
   End process;
 }(processes);
 (me){
+  SCALE_SCHEME = VAR;
   FACTORIZATION_SCALE Abs2(p[2]+p[3]);
 }(me);
 (beam){
