@@ -98,6 +98,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   // if only one lepton, cannot do anything
   if (fslep.size()<2) {
     sigblob->UnsetStatus(blob_status::needs_extraQED);
+    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
+      delete *it;
     return Return_Value::Nothing;
   }
   // put them on-shell (spoils consistency of pertubative calculation,
@@ -106,6 +108,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"  Leptons could not be put on their mass shell."<<endl
                <<"  Continue and hope for the best."<<endl;
+    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
+      delete *it;
     return Return_Value::Error;
   }
   // build effective verteces for resonant production
@@ -120,6 +124,10 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
         msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                    <<"  Higher order QED corrections failed."<<endl
                    <<"  Continue and hope for the best."<<endl;
+        for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
+          delete *it;
+        for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it)
+          delete *it;
         return Return_Value::Error;
       }
     }
