@@ -1,5 +1,7 @@
 @setfilename Sherpa.info
 @include version.texi
+@include my-bib-macros.texi
+@mybibuselist{References}
 
 @settitle Sherpa @value{VERSION}
 
@@ -35,6 +37,7 @@
 * Authors::          Authors of Sherpa 
 * Copying::          Your rights and freedoms
 * Index::            Index
+* @mybibnode{}::
 @end menu
 
 @include Introduction.texi
@@ -82,5 +85,7 @@ document under the terms of the GNU General Public License.
 @appendix Index
 
 @printindex cp
+
+@include Bibliography.texi
 
 @bye

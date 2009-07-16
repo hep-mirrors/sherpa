@@ -1,0 +1,7 @@
+@node @mybibnode{}
+@chapter References
+@itemize @asis
+@mybibitem{Gleisberg:2008ta} Gleisberg et. al, Event generation with SHERPA 1.1, @uref{http://www-spires.dur.ac.uk/spires/find/hep/www?eprint=arXiv:0811.4622,,
+JHEP02(2009)007}.
+@end itemize
+
