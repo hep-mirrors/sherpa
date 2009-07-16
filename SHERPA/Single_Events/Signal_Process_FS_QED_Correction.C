@@ -123,6 +123,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   Blob * QEDblob = bloblist->AddBlob(btp::Shower);
   QEDblob->SetTypeSpec("YFS-type QED Corrections to ME");
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
+    // set info back to hard process, otherwise
+    // check for momentum conservation does not work
+    (*it)->SetInfo('H');
     QEDblob->AddToInParticles(*it);
   }
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
@@ -130,6 +133,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       QEDblob->AddToOutParticles((*it)->OutParticle(i));
     }
   }
+  msg_Out()<<QEDblob->CheckMomentumConservation()
+           <<" : "<<QEDblob->MomentumConserved()<<endl;
+  msg_Out()<<*bloblist<<endl;
   // TODO: delete everything (resonant production blobs & their initial states)
   return Return_Value::Success;
 }
