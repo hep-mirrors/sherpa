@@ -126,6 +126,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     // set info back to hard process, otherwise
     // check for momentum conservation does not work
     (*it)->SetInfo('H');
+    (*it)->SetStatus(part_status::decayed);
     QEDblob->AddToInParticles(*it);
   }
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
@@ -133,9 +134,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       QEDblob->AddToOutParticles((*it)->OutParticle(i));
     }
   }
-  msg_Out()<<QEDblob->CheckMomentumConservation()
-           <<" : "<<QEDblob->MomentumConserved()<<endl;
-  msg_Out()<<*bloblist<<endl;
+  QEDblob->SetStatus(blob_status::needs_hadronization);
   // TODO: delete everything (resonant production blobs & their initial states)
   return Return_Value::Success;
 }
