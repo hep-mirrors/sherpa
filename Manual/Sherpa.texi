@@ -1,9 +1,6 @@
 @setfilename Sherpa.info
 @include version.texi
 
-@include my-bib-macros.texi
-@mybibbegin Bibliography.texi
-
 @settitle Sherpa @value{VERSION}
 
 
@@ -43,6 +40,9 @@
 * Index::            Index
 * References::       Bibliography
 @end menu
+
+@include Macros.texi
+@mybibbegin{Bibliography.texi}
 
 @include Introduction.texi
 @include Commands.texi

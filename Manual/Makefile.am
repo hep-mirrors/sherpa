@@ -4,6 +4,8 @@
 info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
+	Macros.texi \
+	Bibliography.texi \
 	Introduction.texi \
 	Commands.texi \
 	Input.texi \

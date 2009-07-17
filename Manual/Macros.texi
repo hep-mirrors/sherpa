@@ -20,16 +20,15 @@
 @end ifclear
 @end macro
 
-@macro mybibitem{ref,key,author,title,journal,vol,year,pages,eprint}
+@macro mybibitem{ref,key,author,title,journal,vol,year,pages,eprint,slink}
 @ifclear mybibout
 @set K\ref\ \key\
 @clear U\ref\
 @end ifclear
 @ifset U\ref\
 @item
-@anchor{\ref\}[\key\] \author\, @emph{\title\},
-\journal\ @b{\vol\}\year\\pages\
-[@uref{@value{spires}\eprint\,\eprint\}].
+@anchor{\ref\}[@uref{@value{spires}\slink\,\key\}] 
+\author\, @emph{\title\}, \journal\ @b{\vol\}\year\\pages\ \eprint\.
 @sp 2
 @end ifset
 @end macro
