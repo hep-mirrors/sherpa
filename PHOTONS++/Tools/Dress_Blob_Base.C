@@ -125,7 +125,7 @@ void Dress_Blob_Base::CalculateWeights() {
 
 void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
   // numerical values slightly < 0. do not lead to fail
-  if ((m_nbar<0.) && IsZero(m_nbar,1E-5)) {
+  if ((m_nbar<0.) && IsZero(m_nbar,1E-4)) {
     m_nbar    = 0.;
     m_success = true;
   }

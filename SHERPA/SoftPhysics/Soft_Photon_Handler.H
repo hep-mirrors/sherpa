@@ -10,7 +10,8 @@ namespace SHERPA {
     enum code {
       off        = 0,
       exp        = 1,
-      exp_order1 = 2
+      exp_order1 = 2,
+      exp_order2 = 3
     };
   };
 

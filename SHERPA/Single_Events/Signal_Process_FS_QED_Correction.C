@@ -110,7 +110,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
                <<"  Continue and hope for the best."<<endl;
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
       delete *it;
-    return Return_Value::Error;
+    return Return_Value::New_Event;
   }
   // build effective verteces for resonant production
   // use subprocess infos if possible
@@ -128,7 +128,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
           delete *it;
         for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it)
           delete *it;
-        return Return_Value::Error;
+        return Return_Value::Retry_Event;
       }
     }
   }
@@ -316,9 +316,8 @@ void Signal_Process_FS_QED_Correction::FillBlob
 void Signal_Process_FS_QED_Correction::FillBlob
 (Blob * blob, const Flavour& resflav, Particle_Vector& pv)
 {
-  Vec4D sum(0.,0.,0.,0.);
+  Vec4D sum(MomentumSum(pv));
   for (Particle_Vector::iterator it=pv.begin();it!=pv.end();) {
-    sum+=(*it)->Momentum();
     blob->AddToOutParticles(*it);
     pv.erase(it);
   }
