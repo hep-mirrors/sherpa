@@ -1,23 +1,17 @@
 @set spires http://www-spires.dur.ac.uk/cgi-bin/spiface/hep/www?rawcmd=
 
-@macro mycite{ref}
-@set U\ref\ true
-[@ref{\ref\, @value{K\ref\}}]
+@macro mybibmake{llink,lref}
 @end macro
 
-@macro mybibformatjvle
-@ifset journal
-@b{@value{journal}}
-@ifset eprint
-@value{eprint}
-@end ifset
-@end ifset
-@ifclear journal
-@ifset eprint
-[@value{eprint}]
-@end ifset
-@end ifset
-@end ifclear
+@macro mycite{ref}
+@ifinfo
+[@value{K\ref\}] in @ref{References}.
+@set U\ref\ true
+@end ifinfo
+@ifnotinfo
+@set U\ref\ true
+[@ref{\ref\, @value{K\ref\}}].
+@end ifnotinfo
 @end macro
 
 @macro mybibitem{ref,key,author,title,journal,vol,year,pages,eprint,slink}
@@ -27,9 +21,19 @@
 @end ifclear
 @ifset U\ref\
 @item
+@ifinfo
+@anchor{\ref\}[\key\] 
+@end ifinfo
+@ifnotinfo
 @anchor{\ref\}[@uref{@value{spires}\slink\,\key\}] 
+@end ifnotinfo
 \author\, @emph{\title\}, \journal\ @b{\vol\}\year\\pages\ \eprint\.
+@ifinfo
+@sp 1
+@end ifinfo
+@ifnotinfo
 @sp 2
+@end ifnotinfo
 @end ifset
 @end macro
 
@@ -37,9 +41,9 @@
 @include \filename\
 @end macro
 
-@macro mybibend{filename,refname}
-@node \refname\
-@chapter \refname\
+@macro mybibend{filename}
+@node References
+@chapter References
 @itemize @asis
 @set mybibout true
 @include \filename\

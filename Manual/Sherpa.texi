@@ -90,6 +90,6 @@ document under the terms of the GNU General Public License.
 
 @printindex cp
 
-@mybibend{Bibliography.texi,References}
+@mybibend{Bibliography.texi}
 
 @bye
