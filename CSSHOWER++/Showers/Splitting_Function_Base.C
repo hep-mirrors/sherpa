@@ -76,6 +76,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
+  if (key.p_v->in[1].Mass()>10.0 &&
+      key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
   msg_Debugging()<<"Init("<<m_on<<") "<<key
