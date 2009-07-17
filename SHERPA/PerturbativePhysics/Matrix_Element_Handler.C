@@ -529,13 +529,12 @@ void Matrix_Element_Handler::BuildSingleProcessList
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
       cpi.m_mur2tag=jfargs[1];
       if (i==0) jfargs.push_back("LO");
-      skey.SetData("METS",jfargs);
+      if (procs.size()>1) skey.SetData("METS",jfargs);
     }
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
       cpi.m_kfactor="QCD";
-      cpi.m_mur2tag=
-	p_shower->GetShower()->GetKT2("Q2_CUT");
+      if (procs.size()>1) cpi.m_mur2tag=p_shower->GetShower()->GetKT2("Q2_CUT");
     }
     if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);
     procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);
