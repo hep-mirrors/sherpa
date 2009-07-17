@@ -32,11 +32,11 @@ namespace AHADIC {
     bool ShiftList(Proto_Particle_List *);
     Proto_Particle_List * SelectFromList(ListOfPPLs * lppl,Proto_Particle_List * ppl=NULL);
     bool ExtractSinglets(ATOOLS::Blob *);
+    void SetInfoTagForPrimaryParticle(Proto_Particle * proto,leading::code lead) const;
     bool FormOriginalClusters();
     bool ApplyColourReconnections();
     bool ClustersToHadrons(ATOOLS::Blob *);
     bool MergeClusterListsIntoOne();
-
   public:
     Cluster_Formation_Handler(Cluster_List*, bool=false);
     ~Cluster_Formation_Handler();

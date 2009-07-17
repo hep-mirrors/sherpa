@@ -10,7 +10,7 @@ using namespace ATOOLS;
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
   p_splitter(splitter), 
   m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
-  m_analyse(ana)
+  m_analyse(ana),m_tot(0),m_s(0),m_u(0),m_d(0)
 { 
   double norm(0.);
   for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
@@ -63,6 +63,10 @@ Gluon_Decayer::~Gluon_Decayer() {
     }
     m_histograms.clear();
   }
+  msg_Out()<<"Flavour production in "<<m_tot<<" gluon splittings: "
+	   <<"s_rate = "<<double(m_s)/double(m_tot)<<", "
+	   <<"u_rate = "<<double(m_u)/double(m_tot)<<", "
+	   <<"d_rate = "<<double(m_d)/double(m_tot)<<"."<<std::endl;
 
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();++fdit) {
     if (fdit->second!=NULL) { delete fdit->second; fdit->second=NULL; }
@@ -189,7 +193,7 @@ bool Gluon_Decayer::DecayDipoles() {
       msg_Out()<<"--- "<<METHOD<<" splits the following dipole :"<<(*dipiter)<<std::endl;
       (*dipiter)->Output();
     }
-    if (!p_splitter->SplitDipole((*dipiter),PT2Max((*dipiter)),true)) {
+    if (!p_splitter->SplitDipole((*dipiter),PT2Max((*dipiter)),false)) {
       switch (Rescue(dipiter)) {
       case -1:
 	msg_Tracking()<<"--- Rescue failed."<<std::endl;
@@ -254,7 +258,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),true)) {
+      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -263,7 +267,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),true)) {
+      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -284,7 +288,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),true)) {
+    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -294,7 +298,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),true)) {
+    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -406,11 +410,16 @@ void Gluon_Decayer::AfterSplit(DipIter dip) {
 }
 
 void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
-  msg_Tracking()<<"--- "<<METHOD<<"(in): two new proto_particles:"<<std::endl;
+  //msg_Out()<<"--- "<<METHOD<<"(in): two new proto_particles:"<<std::endl;
   Proto_Particle * new1, * new2;
   p_splitter->GetNewParticles(new1,new2);
-  msg_Tracking()<<"   "<<(*new1)<<std::endl
-		<<"   "<<(*new2)<<std::endl;
+  //msg_Out()<<" new1: "<<(*new1)<<std::endl<<" new2: "<<(*new2)<<std::endl;
+
+  if (new2->m_flav==Flavour(kf_d)) m_d++;
+  else if (new2->m_flav==Flavour(kf_u)) m_u++;
+  else if (new2->m_flav==Flavour(kf_s)) m_s++;
+  m_tot++; 
+
   DipIter partner;
   Dipole * dip((*dipiter));
 #ifdef AHAmomcheck

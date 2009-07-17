@@ -27,11 +27,11 @@ namespace AHADIC {
 		   Single_Transition_List *>     Single_Transition_Map;
   typedef Single_Transition_Map::iterator        Single_Transition_Miter;
 
+
+
   class Single_Transitions {
   private:
     Single_Transition_Map * p_transitions;
-    double                  m_offset;
-
     ATOOLS::Flavour         m_lightest_constituent;
   public:
     Single_Transitions();
@@ -45,6 +45,8 @@ namespace AHADIC {
     Single_Transition_Map * GetTransitions() { return p_transitions; }
     void                    PrintSingleTransitions();
   };
+
+
 
 
   class Flavour_Pair_Sorting_Mass {
@@ -67,11 +69,11 @@ namespace AHADIC {
 		   Double_Transition_List *>          Double_Transition_Map;
   typedef Double_Transition_Map::iterator             Double_Transition_Miter;
   
+
+
   class Double_Transitions {
   private:
     Double_Transition_Map * p_transitions;
-    double                  m_offset;
-
   public:
     Double_Transitions();
     ~Double_Transitions();

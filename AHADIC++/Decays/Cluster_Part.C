@@ -8,9 +8,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
+  m_ana(ana),
   m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
-  p_splitter(splitter),
-  m_ana(ana)
+  p_splitter(splitter) 
 { 
   if (m_ana) {
     m_histograms[string("PT_Cluster")]      = new Histogram(0,0.,1.5,150);

@@ -8,13 +8,14 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Strong_Coupling::Strong_Coupling(const asform::code form,
-				 const double pt02) :
-  m_form(form), m_pt02(pt02),
-  m_beta0(12.*M_PI/(33.-2.*4.)), m_gamma(m_beta0/M_PI),
-  m_Lambda(0.349), m_Lambda2(sqr(m_Lambda)),
+
+Strong_Coupling::Strong_Coupling(const asform::code form) :
+  m_form(form), 
+  m_beta0(12.*M_PI/(33.-2.*4.)), m_Lambda(0.349), m_Lambda2(sqr(m_Lambda)),
+  m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
+  m_pt2max(10000.), m_lastpt2(0.), m_asmax(1.), 
   m_eta(hadpars.Get(std::string("pt_exponent"))),
-  m_a(3.008), m_b(1.425), m_c(0.908), m_d(0.84), m_m2(sqr(1.204))
+  m_gamma(m_beta0/M_PI), m_a(3.008), m_b(1.425), m_c(0.908), m_d(0.84), m_m2(sqr(1.204))
 {
   MODEL::Running_AlphaS * as = static_cast<MODEL::Running_AlphaS *>
     (MODEL::s_model->GetScalarFunction(std::string("alpha_S")));
@@ -49,20 +50,20 @@ Strong_Coupling::Strong_Coupling(const asform::code form,
   was<<"asmax for pt_0^2 = "<<m_pt02<<": "<<m_asmax
      <<" for Lambda^2 = "<<m_Lambda2<<"."<<std::endl;
   for (double Q(0.0);Q<0.1;Q+=.001) {
-    was<<Q<<" "<<(*this)(sqr(Q))<<"\n";
+    was<<Q<<" "<<(*this)(sqr(Q),true)<<"\n";
   }
   for (double Q(0.1);Q<10.;Q*=1.001) {
     if (Q<1.) {
-      was<<Q<<" "<<(*this)(sqr(Q))<<"\n";
+      was<<Q<<" "<<(*this)(sqr(Q),true)<<"\n";
     }
     else {
       //m_beta0 = 12.*M_PI/(33.-2.*4.);
-      was<<Q<<" "<<(*this)(sqr(Q))<<" "<<(*as)(sqr(Q))<<"\n";
+      was<<Q<<" "<<(*this)(sqr(Q),true)<<" "<<(*as)(sqr(Q))<<"\n";
     }
   }
   for (double Q(10.);Q<100.;Q*=1.1) {
     //m_beta0 = 12.*M_PI/(33.-2.*5.);
-    was<<Q<<" "<<(*this)(sqr(Q))<<" "<<(*as)(sqr(Q))<<"\n";
+    was<<Q<<" "<<(*this)(sqr(Q),true)<<" "<<(*as)(sqr(Q))<<"\n";
   }
   was.close();
   exit(1);
@@ -86,38 +87,50 @@ const double Strong_Coupling::operator()(double q2,bool reweight) const {
 }
 
 const double Strong_Coupling::SelectPT(const double & scale2max,const double & scale2min) {
-  double pt2(0.);
-  double mini(m_pt02+scale2min),maxi(m_pt02+scale2max),expo(m_eta==1.?0.:1./1.-m_eta);;
+  double pt2(0.), pt2max(Min(scale2max,m_pt2max)), ran1;
+  double mini(m_pt02+scale2min),maxi(m_pt02+pt2max),expo(m_eta==1.?0.:1./1.-m_eta);;
   bool   runit(true);
   while (runit) {
+    ran1 = ran.Get();
     switch (m_form) {
-    case asform::Exponential:
-      pt2 = -m_pt02*log(exp(-scale2min/m_pt02)+ran.Get()*(exp(-scale2max/m_pt02)-exp(-scale2min/m_pt02)));
-      runit=false;
-      break;
     case asform::IRregularised_IR0: 
-      if (scale2max<=m_pt02) {
-	pt2 = scale2min+(scale2max-scale2min)*sqrt(ran.Get());
-	if ((*this)(pt2,false)/m_asmax* sqr(m_pt02/(m_pt02+pt2))>ran.Get()) runit = false;
+      if (m_eta==1.) {
+	if (pt2max<=m_pt02) {
+	  pt2 = scale2min+(pt2max-scale2min)*sqrt(ran1);
+	  if ((*this)(pt2,false)/m_asmax* sqr(m_pt02/(m_pt02+pt2))>ran.Get()) runit = false;
+	}
+	else {
+	  pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
+	  if ((*this)(pt2,false)/m_asmax * pt2/(m_pt02+pt2) > ran.Get()) runit = false;
+	}
       }
       else {
-	pt2 = -m_pt02+mini*pow(maxi/mini,ran.Get());
-	if ((*this)(pt2,false)/m_asmax>ran.Get()) runit = false;
+	if (pt2max<=m_pt02) {
+	  pt2 = pow(pow(scale2min,1.+m_eta)*(1.-ran1)+pow(pt2max,1.+m_eta)*ran1,1./(1.+m_eta));
+	  //std::cout<<"Try this for pt2max = "<<pt2max<<", pt2min = "<<scale2min
+	  //	   <<" --> "<<pt2<<"."<<std::endl;
+	  if ((*this)(pt2,false)/m_asmax* pow(m_pt02/(m_pt02+pt2),1.+m_eta)>ran.Get()) runit = false;
+	}
+	else {
+	  pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
+	  //std::cout<<"Try this for pt2max = "<<pt2max<<", pt2min = "<<scale2min
+	  //	   <<" --> "<<pt2<<"."<<std::endl;
+	  if ((*this)(pt2,false)/m_asmax * pow(pt2/(m_pt02+pt2),m_eta) > ran.Get()) runit = false;
+	}
       }
       break;
     case asform::IRregularised: 
     case asform::GDH_inspired:
     case asform::constant: 
     default:
-      if (m_eta==1.) pt2 = -m_pt02+mini*pow(maxi/mini,ran.Get());
-      else {
-	double rn(ran.Get());
-	pt2 = -m_pt02+pow(mini*(1.-rn)+maxi*rn,expo);
-      }
+      if (m_eta==1.) pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
+                else pt2 = -m_pt02+pow(mini*(1.-ran1)+maxi*ran1,expo);
       if ((*this)(pt2)/m_asmax>ran.Get()) runit = false;
       break;
     }
   }
+  //std::cout<<"In "<<METHOD<<" with "<<scale2max<<" --> "<<pt2max
+  //	   <<" leads to pt2 = "<<pt2<<"."<<std::endl;
   return m_lastpt2 = pt2;
 }
 

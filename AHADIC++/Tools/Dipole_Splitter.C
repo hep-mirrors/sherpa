@@ -8,13 +8,18 @@ using namespace ATOOLS;
 
 
 
-Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const bool & analyse) :
-  p_tools(new Splitting_Tools(as,analyse)),
-  m_zform(DefineZForm(int(hadpars.Get(std::string("Z_Form"))))),
+Dipole_Splitter::Dipole_Splitter(Strong_Coupling * as,const leading::code & lead,
+				 const bool & analyse) :
+  p_tools(new Splitting_Tools(as,lead,analyse)),
   m_ptorder(DefinePTOrder(int(hadpars.Get(std::string("PT_Order"))))),
+  m_zform(DefineZForm(int(hadpars.Get(std::string("Z_Form"))))),
   m_analyse(analyse)
 { 
   if (m_analyse) {
+    m_histograms[std::string("PT_G")]                    = new Histogram(0,0.,25.,50);
+    m_histograms[std::string("PT_Q")]                    = new Histogram(0,0.,25.,50);
+    m_histograms[std::string("PT_primary")]              = new Histogram(0,0.,25.,50);
+    m_histograms[std::string("ZQ")]                      = new Histogram(0,0.,2.,50);
     m_histograms[std::string("ZQ")]                      = new Histogram(0,0.,2.,50);
     m_histograms[std::string("XQ")]                      = new Histogram(0,0.,1.,50);
     m_histograms[std::string("EQ")]                      = new Histogram(0,0.,10.,50);
@@ -196,7 +201,7 @@ void Dipole_Splitter::AnalyseClusterSplitting(Cluster * cluster) {
 
 void Dipole_Splitter::AnalyseKinematics(const ATOOLS::Vec4D q1,const ATOOLS::Vec4D q2,
 					const ATOOLS::Vec4D q3,const bool glusplit) {
-  double Ebeam = rpa.gen.Ecms()/2.;
+  //double Ebeam = rpa.gen.Ecms()/2.;
   Histogram * histo;
   double kt2(p_tools->PT2()), kt(sqrt(kt2)), z(p_tools->Z());
   if (glusplit) {

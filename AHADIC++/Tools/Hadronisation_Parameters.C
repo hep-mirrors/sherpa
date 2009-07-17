@@ -18,7 +18,8 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
   p_constituents(NULL),p_multiplets(NULL),
   p_singletransitions(NULL),p_doubletransitions(NULL),
   p_softclusters(NULL), 
-  m_asform(asform::constant), p_coupling(NULL), p_splitter(NULL)
+  m_leading(leading::none),m_asform(asform::constant), 
+  p_coupling(NULL), p_splitter(NULL)
 { }
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
@@ -55,12 +56,24 @@ void Hadronisation_Parameters::Init(string dir,string file)
   p_doubletransitions = new Double_Transitions();
   if (msg_LevelIsTracking()) 
     p_doubletransitions->PrintDoubleTransitions(); 
-  //abort();
+    //exit(1);
 
-  switch (int(m_parametermap[string("asform")])) {
-  case 64:
-    m_asform = asform::Exponential;
+  switch (int(m_parametermap[string("leading")])) {
+  case 3:
+    m_leading = leading::quarks_and_gluons2;
     break;
+  case 2:
+    m_leading = leading::quarks_and_gluons;
+    break;
+  case 1:
+    m_leading = leading::only_quarks;
+    break;
+  case 0:
+  default:
+    m_leading = leading::none;
+    break;
+  }
+  switch (int(m_parametermap[string("asform")])) {
   case 8:
     m_asform = asform::GDH_inspired;
     break;
@@ -75,8 +88,8 @@ void Hadronisation_Parameters::Init(string dir,string file)
     m_asform = asform::constant; 
     break;
   }
-  p_coupling          = new Strong_Coupling(m_asform,dabs(m_parametermap[string("pt02")]));
-  p_splitter          = new Dipole_Splitter(p_coupling,ana);
+  p_coupling          = new Strong_Coupling(m_asform);
+  p_splitter          = new Dipole_Splitter(p_coupling,m_leading,ana);
 
   p_softclusters      = new Soft_Cluster_Handler(ana);
 }
@@ -88,6 +101,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
   // General switches for operational modes
+  m_parametermap[string("leading")]            = 
+    dataread.GetValue<int>("LEADING",1);
   m_parametermap[string("asform")]             = 
     dataread.GetValue<int>("ALPHAS_FORM",1);
   m_parametermap[string("Mass_treatment")]     = 
@@ -98,12 +113,13 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<int>("DECAY_SELECTION",3);
   m_parametermap[string("PT_Ordering")]        = 
     dataread.GetValue<int>("PT_ORDERING",3);
-  m_parametermap[string("Z_Form")]        = 
+  m_parametermap[string("Z_Form")]             = 
     dataread.GetValue<int>("Z_FORM",2);
   // Parameters
   m_parametermap[string("asfix")]              = 
     dataread.GetValue<double>("AS_FIX",1.0);
-
+  m_parametermap[string("pt2min")]             = 
+    dataread.GetValue<double>("PT^2_MIN",0.09);
   m_parametermap[string("pt02")]               = 
     dataread.GetValue<double>("PT^2_0",9.7738e-01);
   m_parametermap[string("ptmax_factor")]       = 
@@ -116,15 +132,15 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("TRANSITION_OFFSET",-1.4258e-03);      
   m_parametermap[string("Offset_C->HH")]       =
     dataread.GetValue<double>("DECAY_OFFSET",-1.9844e+00);      
-  m_parametermap[string("MassExponent_C->H")] =
+  m_parametermap[string("MassExponent_C->H")]  =
     dataread.GetValue<double>("TRANSITION_EXPONENT",5.0236e-01);      
   m_parametermap[string("WidthExponent_C->H")] =
     dataread.GetValue<double>("TRANSITION_EXPONENT2",1.3163e-02);      
   m_parametermap[string("MassExponent_C->HH")] =
     dataread.GetValue<double>("DECAY_EXPONENT",3.7959e+00);      
-  m_parametermap[string("Strange_fraction")] =
+  m_parametermap[string("Strange_fraction")]   =
     dataread.GetValue<double>("STRANGE_FRACTION",1.0);      
-  m_parametermap[string("Baryon_fraction")]  = 
+  m_parametermap[string("Baryon_fraction")]    = 
     dataread.GetValue<double>("BARYON_FRACTION",1.0);
   m_parametermap[string("P_qs_by_P_qq")]       = 
     dataread.GetValue<double>("P_{QS}/P_{QQ}",1.0);
@@ -183,7 +199,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Mass_glue")]          = 
     dataread.GetValue<double>("M_GLUE",0.);
   Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
-  double mud = m_parametermap[string("Mass_down")] = 
+  double mud = m_parametermap[string("Mass_updown")] = 
     dataread.GetValue<double>("M_UP_DOWN",0.01);
   double ms = m_parametermap[string("Mass_strange")] = 
     dataread.GetValue<double>("M_STRANGE",0.2);

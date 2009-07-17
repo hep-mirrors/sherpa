@@ -33,9 +33,6 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,100.,200);
     m_histograms[string("Cluster_Number_Formation")]   = new Histogram(0,0.,20.,20);
     m_histograms[string("Cluster_Number_Transformed")] = new Histogram(0,0.,20.,20);
-    m_histograms[string("XB_bquark_before_shift")]     = new Histogram(0,0.,1.,100);
-    m_histograms[string("XB_bquark_after_shift")]      = new Histogram(0,0.,1.,100);
-    m_histograms[string("XB_bquark_in_cluster")]       = new Histogram(0,0.,1.,100);
   }
 }
 
@@ -74,41 +71,10 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 		 <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons."<<std::endl
 		 <<(*blob)<<std::endl;
   if (!ExtractSinglets(blob))      { return -1; }
-  Histogram   * histoxb;
-  LPPL_Iterator pplit;
-  PPL_Iterator  pit;
-  for(pplit=m_partlists.begin(); pplit!=m_partlists.end(); ++pplit) {
-    for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
-      if (m_analyse && (*pit)->m_flav.Kfcode()==5) {
-	histoxb = (m_histograms.find(string("XB_bquark_before_shift")))->second;
-	histoxb->Insert((*pit)->m_mom[0]/45.625);
-      }
-    }
-  }
   if (!ShiftOnMassShells())        { return -1; }
-  for(pplit=m_partlists.begin(); pplit!=m_partlists.end(); ++pplit) {
-    for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
-      if (m_analyse && (*pit)->m_flav.Kfcode()==5) { 
-	histoxb = (m_histograms.find(string("XB_bquark_after_shift")))->second;
-	histoxb->Insert((*pit)->m_mom[0]/45.625);
-      }
-    }
-  }
   if (!FormOriginalClusters())     { return -1; }
   if (!ApplyColourReconnections()) { return 0; }
   if (!MergeClusterListsIntoOne()) { return 0; }
-  for(Cluster_Iterator cit=p_clulist->begin(); cit!=p_clulist->end(); cit++) {
-    if (m_analyse && (*cit)->GetTrip()->m_flav.Kfcode()==5) { 
-      histoxb = (m_histograms.find(string("XB_bquark_in_cluster")))->second;
-      histoxb->Insert((*cit)->GetTrip()->m_mom[0]/45.625);
-      msg_Debugging()<<"Clusters (b)    : "<<(*cit)->GetTrip()->m_mom<<"."<<std::endl;
-    }
-    if (m_analyse && (*cit)->GetAnti()->m_flav.Kfcode()==5) {
-      histoxb = (m_histograms.find(string("XB_bquark_in_cluster")))->second;
-      histoxb->Insert((*cit)->GetAnti()->m_mom[0]/45.625);
-      msg_Debugging()<<"Clusters (bbar) : "<<(*cit)->GetAnti()->m_mom<<"."<<std::endl;
-    }
-  }
   if (!ClustersToHadrons(blob))    { return -1; }
 
   return 1;
@@ -143,9 +109,10 @@ void Cluster_Formation_Handler::Reset() {
 bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 {
   Proto_Particle_List * pli(NULL);
-  bool       construct(false);
-  int        col1, col2;
-  Particle * part;
+  bool          construct(false);
+  unsigned int  col1(0), col2(0);
+  leading::code leading(hadpars.GetSplitter()->Leading());
+  Particle   * part(NULL);
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i); 
     if ((part->Status()!=part_status::active && part->Status()!=part_status::fragmented) || 
@@ -153,6 +120,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
     if (construct) {
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+	SetInfoTagForPrimaryParticle(copy,leading);
 #ifdef memchecker
 	std::cout<<"### New Proto_Particle ("
 		 <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
@@ -175,6 +143,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
       Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+      SetInfoTagForPrimaryParticle(copy,leading);
 #ifdef memchecker
       std::cout<<"### New Proto_Particle ("
 	       <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
@@ -185,6 +154,25 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
     }
   }
   return true;
+}
+
+void Cluster_Formation_Handler::SetInfoTagForPrimaryParticle(Proto_Particle * proto,
+							     leading::code lead) const {
+  switch (lead) {
+  case leading::quarks_and_gluons:
+  case leading::quarks_and_gluons2:
+    break;
+  case leading::only_quarks:
+    if (proto->m_flav.IsQuark() || proto->m_flav.IsDiQuark()) 
+      proto->m_info='L';
+    else 
+      proto->m_info='l';
+    break;
+  case leading::none:
+  default:
+    proto->m_info='l';
+    break;
+  }
 }
 
 bool Cluster_Formation_Handler::ShiftOnMassShells() {
@@ -330,8 +318,7 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
 
   while (!m_partlists.empty()) {
     pplit=m_partlists.begin();
-    msg_Tracking()<<"======= "<<METHOD<<" for :"<<std::endl
-		  <<(**pplit)<<std::endl;
+    msg_Tracking()<<"======= "<<METHOD<<" for :"<<std::endl<<(**pplit)<<std::endl;
     if(p_gludecayer->DecayList(*pplit)) {
       clist = new Cluster_List;
       p_cformer->ConstructClusters(*pplit,clist);
@@ -443,8 +430,8 @@ bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 		     <<checkbef<<" --> "<<checkaft<<"."<<std::endl;
 #endif
 
-  Histogram * histomass, * histonumb;
   if (m_analyse) {
+    Histogram * histomass, * histonumb;
     histomass = (m_histograms.find(string("Cluster_Mass_Transformed")))->second;
     histonumb = (m_histograms.find(string("Cluster_Number_Transformed")))->second;
     int numb  = p_clulist->size();

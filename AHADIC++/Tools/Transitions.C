@@ -9,8 +9,7 @@ using namespace std;
 
 
 Single_Transitions::Single_Transitions() :
-  p_transitions(new Single_Transition_Map),
-  m_offset(hadpars.Get(string("Offset_C->H")))
+  p_transitions(new Single_Transition_Map)
 {
   Constituents * constituents = hadpars.GetConstituents();
 
@@ -169,17 +168,15 @@ void Single_Transitions::PrintSingleTransitions()
 
 
 Double_Transitions::Double_Transitions() :
-  p_transitions(new Double_Transition_Map),
-  m_offset(hadpars.Get(string("Offset_C->HH")))
+  p_transitions(new Double_Transition_Map)
 {
   FlavCCMap constituents          = hadpars.GetConstituents()->CCMap;
   Single_Transition_Map * singles = hadpars.GetSingleTransitions()->GetTransitions();
-  double bfrac(hadpars.Get("Baryon_fraction"));
-  double meswt = 1./(1.+bfrac), barwt = bfrac/(1.+bfrac);
   Single_Transition_List * hads1, * hads2;
   Flavour trip,anti,popped;
   Flavour_Pair flpair,hadpair,wf1,wf2;
-  double popwt,weight,qwt,dwt;
+  double popwt,weight,norm;
+  bool   found;
   Double_Transition_List * dtl;
   Double_Transition_Miter dtiter;
   for (FlavCCMap_Iterator iter1=constituents.begin();
@@ -194,12 +191,13 @@ Double_Transitions::Double_Transitions() :
       flpair.second = wf2.second = anti;
       //std::cout<<"  "<<trip<<" / "<<anti<<std::endl;
 
-      qwt = dwt = 0.;
       for (FlavCCMap_Iterator iter3=constituents.begin();
 	   iter3!=constituents.end();iter3++) {
+	norm = 0.;
 	popwt = iter3->second->TotWeight();
+	//std::cout<<"  pop "<<iter3->first<<" ( wt = "<<popwt<<") "
+	//	 <<" between "<<trip<<" and "<<anti<<"."<<std::endl;
 	if (popwt==0.) continue;
-	//std::cout<<"   "<<iter3->first<<" --> "<<popwt<<"."<<std::endl;
 	popped = iter3->first;
 	if (popped.IsQuark()) popped = popped.Bar();
 	wf1.second = popped;
@@ -212,44 +210,17 @@ Double_Transitions::Double_Transitions() :
 	       haditer1!=hads1->end();haditer1++) {
 	    for (Single_Transition_Siter haditer2=hads2->begin();
 		 haditer2!=hads2->end();haditer2++) {
-	      //std::cout<<"  --> "<<wf1.first<<" + "<<wf1.second<<" -> "
-	      //	       <<haditer1->first<<" ("<<haditer1->second<<")"
-	      //	       <<"  --> "<<wf2.first<<" + "<<wf2.second<<" -> "
-	      //	       <<haditer2->first<<" ("<<haditer2->second<<")"
-	      //	       <<"."<<std::endl;
-	      weight = haditer1->second * haditer2->second * popwt;
-	      if (popped.IsQuark()) qwt += weight;
-	      else dwt += weight;
+	      norm += haditer1->second * haditer2->second;
 	    }
 	  }
-	}
-	//std::cout<<"   after "<<popped<<" : Quarks vs. Diquarks = "
-	//	 <<qwt<<" vs. "<<dwt<<"."<<std::endl;
-      }
-      //std::cout<<"After first iteration : Quarks vs. Diquarks = "
-      //	       <<qwt<<" vs. "<<dwt<<"."<<std::endl;
-      double qwt1(0.),dwt1(0.);
-      bool found;
-      for (FlavCCMap_Iterator iter3=constituents.begin();
-	   iter3!=constituents.end();iter3++) {
-	popwt = iter3->second->TotWeight();
-	if (popwt==0.) continue;
-	popped = iter3->first;
-	if (popped.IsQuark()) popped = popped.Bar();
-	wf1.second = popped;
-	wf2.first  = popped.Bar();
-	if (singles->find(wf1)!=singles->end() &&
-	    singles->find(wf2)!=singles->end()) {
-	  hads1 = (*singles)[wf1];
-	  hads2 = (*singles)[wf2];
 	  for (Single_Transition_Siter haditer1=hads1->begin();
 	       haditer1!=hads1->end();haditer1++) {
 	    for (Single_Transition_Siter haditer2=hads2->begin();
 		 haditer2!=hads2->end();haditer2++) {
-	      weight = haditer1->second * haditer2->second * popwt;
-	      if (popped.IsQuark()) { weight *= meswt/qwt; qwt1 += weight; }
-	      else { weight *= barwt/dwt; dwt1 += weight; }
-	
+	      weight = haditer1->second * haditer2->second/norm * popwt;
+	      //std::cout<<"   add : "<<weight/popwt<<" for "
+	      //	       <<haditer1->first<<"("<<haditer1->second<<") * "
+	      //	       <<haditer2->first<<"("<<haditer2->second<<")."<<std::endl;
 	      hadpair.first  = haditer1->first;
 	      hadpair.second = haditer2->first;
 	      if (weight>0.) {
@@ -261,38 +232,24 @@ Double_Transitions::Double_Transitions() :
 		       dit!=dtl->end();dit++) {
 		    if (hadpair.first==dit->first.first &&
 			hadpair.second==dit->first.second) {
-		      //std::cout<<"   Found "<<hadpair.first<<" "
-		      //	       <<hadpair.second<<" in list!"<<std::endl;
 		      dit->second += weight;
 		      found = true;
 		      break;
 		    }
 		  }
-		  if (!found) {
-		    (*dtl)[hadpair] = weight;
-		    //std::cout<<"Insert new hadron pair "<<hadpair.first<<" "
-		    //	     <<hadpair.second<<std::endl;
-		  }
+		  if (!found) (*dtl)[hadpair] = weight;
 		}
 		else {
 		  dtl                      = new Double_Transition_List;
 		  (*dtl)[hadpair]          = weight;
 		  (*p_transitions)[flpair] = dtl;
-		  //std::cout<<"Initialise list with hadron pair "<<hadpair.first<<" "
-		  //	   <<hadpair.second<<std::endl;
 		}
 	      }
 	    }
 	  }
 	}
-	//std::cout<<"   after "<<popped<<" : Quarks vs. Diquarks = "
-	//	 <<qwt1<<" vs. "<<dwt1<<"."<<std::endl;
       }
-      //std::cout<<"After second iteration : Quarks vs. Diquarks = "
-      //	       <<qwt1<<" vs. "<<dwt1<<"."<<std::endl;
-      //break;
     }
-    //break;
   }
 
   map<Flavour,double> checkit;

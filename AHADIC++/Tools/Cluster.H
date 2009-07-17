@@ -18,11 +18,11 @@ namespace AHADIC {
   class Proto_Particle {
     static std::list<Proto_Particle * > s_actives;
   public:
-    Proto_Particle * p_partner;
     ATOOLS::Flavour  m_flav;
     ATOOLS::Vec4D    m_mom;
     char             m_info;
     double           m_mass, m_kt2max;
+    Proto_Particle * p_partner;
   public:
     Proto_Particle(const Proto_Particle &);  
     Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info);  

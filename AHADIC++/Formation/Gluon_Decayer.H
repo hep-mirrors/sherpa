@@ -31,6 +31,8 @@ namespace AHADIC {
     void    MergeDipoles(DipIter & dip1,DipIter & dip2);
     void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
     double  PT2Max(Dipole * dip) const;
+
+    long int m_tot, m_s, m_u, m_d, m_di0, m_di1;
   public:
     Gluon_Decayer(Dipole_Splitter *,bool=false);
     ~Gluon_Decayer();

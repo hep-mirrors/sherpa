@@ -37,7 +37,8 @@ namespace AHADIC {
     
     TransWeight::code    m_tweightmode;
     DecayWeight::code    m_dweightmode;
-    double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi,m_pt2max;
+    double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi;
+    double               m_pt2min,m_pt2maxfac;
     Cluster_List *       m_clin;
 
     long int             m_transitions, m_dtransitions, m_decays, m_forceddecays, m_lists;

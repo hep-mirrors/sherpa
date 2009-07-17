@@ -31,7 +31,8 @@ namespace AHADIC {
     void AnalyseKinematics(const ATOOLS::Vec4D,const ATOOLS::Vec4D,
 			   const ATOOLS::Vec4D,const bool=true);
   public:
-    Dipole_Splitter(Strong_Coupling *,const bool & analyse);
+    Dipole_Splitter(Strong_Coupling *,const leading::code & lead,
+		    const bool & analyse);
     ~Dipole_Splitter();
 
     bool SplitCluster(Cluster * clu,const double pt2max=-1.);
@@ -45,6 +46,8 @@ namespace AHADIC {
 
     const double & PT2() const;
     const double & Mass2() const;
+
+    const leading::code & Leading() const { return p_tools->Leading(); }
   };
 
   inline void Dipole_Splitter::SetOptions(FlavDecayMap * options) {

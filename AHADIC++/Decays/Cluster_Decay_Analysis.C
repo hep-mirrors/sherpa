@@ -63,9 +63,9 @@ Cluster_Decay_Analysis::~Cluster_Decay_Analysis()
 void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
 {
   return;
-  int Npiplus=0,Npiminus=0,Npi0=0,NKplus=0,NKminus=0,NK0=0,NK0b=0,Neta=0,Netaprime=0,NPS=0;
-  int Nrhoplus=0,Nrhominus=0,Nrho0=0,NKstarplus=0,NKstarminus=0,NKstar0=0,NKstar0b=0,
-    Nomega=0,Nphi=0,NV=0;
+  int Npiplus(0),Npiminus(0),Npi0(0),NKplus(0),NKminus(0),NK0(0),NK0b(0),Neta(0),Netaprime(0),
+    Nrhoplus(0),Nrhominus(0),Nrho0(0),NKstarplus(0),NKstarminus(0),NKstar0(0),NKstar0b(0),
+    Nomega(0),Nphi(0);
   Particle * part;
   int kfc, LambdaCount(0), LambdaP(0), LambdaM(0);
   Vec4D QLambda(0.,0.,0.,0.);
@@ -83,7 +83,7 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
       break;
     }
   }
-  if (max_x=max_xB) m_histograms[string("x_E_B-Quarks_L")]->Insert(max_x);
+  if (max_x==max_xB) m_histograms[string("x_E_B-Quarks_L")]->Insert(max_x);
 
   max_x  = max_xB = 0.;
 
@@ -202,7 +202,7 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
   }    
   if (LambdaCount==2 && LambdaP==1 && LambdaM==1) 
     m_histograms[string("Q(Lambda_Lambda)")]->Insert(sqrt(-QLambda.Abs2()));
-  if (max_x=max_xB)   m_histograms[string("x_E_B-Mesons_L")]->Insert(max_x);
+  if (max_x==max_xB)   m_histograms[string("x_E_B-Mesons_L")]->Insert(max_x);
 
   m_histograms[string("pi+_Number")]->Insert(Npiplus);
   m_histograms[string("pi-_Number")]->Insert(Npiminus);

@@ -16,7 +16,8 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
   m_kappa(hadpars.Get(std::string("MassExponent_C->H"))), 
   m_lambda(hadpars.Get(std::string("WidthExponent_C->H"))), 
   m_chi(hadpars.Get(std::string("MassExponent_C->HH"))), 
-  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))),
+  m_pt2min(dabs(hadpars.Get(string("pt2min")))),
+  m_pt2maxfac(sqr(hadpars.Get(std::string("ptmax_factor")))),
   m_transitions(0), m_dtransitions(0), m_decays(0), m_forceddecays(0), m_lists(0),  
   m_ana(ana)
 {
@@ -60,7 +61,7 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
 {
-  msg_Debugging()<<"@@@ "<<METHOD<<": "
+  msg_Out()<<"@@@ "<<METHOD<<": "
 	   <<m_transitions<<" transitions, "<<m_dtransitions<<" double transitions, "
 	   <<m_decays<<" decays and "<<m_forceddecays<<" forced decays."<<std::endl
 	   <<"@@@ "<<METHOD<<": "<<m_lists<<" transitions from original dipole list."<<std::endl;
@@ -80,7 +81,7 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
 
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,bool cludec)
 {
-  msg_Tracking()<<"@@@@ "<<METHOD<<" with "<<clin->size()<<" clusters:"<<std::endl
+  msg_Tracking()<<std::endl<<"@@@@ "<<METHOD<<" with "<<clin->size()<<" clusters:"<<std::endl
 		<<(*clin)<<std::endl;
   if (clin->size()==1)              return TreatSingleCluster(*clin->begin(),blob);
   if (cludec && clin->size()==2)    return TreatClusterDecay(clin,blob);
@@ -89,7 +90,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,boo
   m_lists++;
   double E(-1.);
 
-  //std::cout<<"@@@@ "<<METHOD<<":"<<std::endl<<(*clin)<<std::endl;
+  msg_Tracking()<<"@@@@ "<<METHOD<<" for "<<clin->size()<<" clusters to deal with."<<std::endl;
   while (!CheckIfAllowed(clin,E)) {
     if (UpdateTransitions(clin)) continue;
     if (EnforcedTransition(clin)) break;
@@ -112,6 +113,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,boo
 
 bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster, Blob * blob)
 {
+  msg_Tracking()<<std::endl<<"############# "<<METHOD<<" for "<<cluster->Number()<<"."<<std::endl;
   switch (CheckCluster(cluster,true)) {
   case -1:
   case 1:
@@ -130,7 +132,7 @@ bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster, Blob * blob)
 
 bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
 {
-  msg_Tracking()<<"@@@@@@ "<<METHOD<<" for "<<clin->size()<<" clusters."<<std::endl;
+  msg_Tracking()<<std::endl<<"@@@@@@ "<<METHOD<<" for "<<clin->size()<<" clusters."<<std::endl;
   if (!CheckListForTreatment(clin)) return true;
 
   double E(-1.);
@@ -139,21 +141,12 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
     Cluster_Iterator cit=clin->begin();
     Cluster * left((*cit++)), * right((*cit));
     msg_Tracking()<<"@@@@@@ "<<METHOD<<": check this "<<left<<"/"<<right<<"."<<std::endl;
-    //msg_Tracking()<<
-    //msg_Tracking()<<"@@@@@@ catch: "<<left->GetAnti()->m_flav<<" --> "
-    //	     <<(*left)[0]<<" and "<<(*right)[0]<<std::endl; 
     if (left->GetPrev()!=right->GetPrev()) {
       msg_Error()<<"Error in "<<METHOD<<" ("<<clin->size()<<" clusters) : "<<std::endl
 		 <<"   No common previous cluster."<<std::endl;
       return false;
     }
     Cluster * cluster(left->GetPrev());
-    //delete left->GetTrip();
-    //delete left->GetAnti();
-    //delete left;
-    //delete right->GetTrip();
-    //delete right->GetAnti();
-    //delete right;
     msg_Tracking()<<"@@@@@ clear cluster list: "<<clin->size()<<" elements."<<std::endl;
     clin->clear();
     msg_Tracking()<<"@@@@@ now in cluster list: "<<clin->size()<<" elements."<<std::endl;
@@ -172,6 +165,7 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
 
 bool Soft_Cluster_Handler::AttachHadronsToBlob(Cluster_List * clin,ATOOLS::Blob * blob)
 {
+  msg_Tracking()<<"$$$$$$ "<<METHOD<<" for "<<clin->size()<<" clusters."<<std::endl;
   Cluster_Iterator cit(clin->begin());
   Particle * part;
   Cluster * cluster;
@@ -182,12 +176,21 @@ bool Soft_Cluster_Handler::AttachHadronsToBlob(Cluster_List * clin,ATOOLS::Blob 
       part = cluster->GetSelf();
       part->SetFinalMass();
       blob->AddToOutParticles(part);
+      msg_Tracking()<<"$$ attach one hadron ("<<part->Flav()<<") from cluster "<<cluster->Number()<<"."<<std::endl;
       delete cluster->GetTrip();
       delete cluster->GetAnti();
       delete cluster;
       cit = clin->erase(cit);
       break;
     case 2:
+      msg_Tracking()<<"$$ will attach two hadrons ("<<(*cluster)[0]<<" + "<<(*cluster)[1]<<") "
+		    <<"from cluster "<<cluster->Number()<<"."<<std::endl;
+      FixHHDecay(cluster,blob,(*cluster)[0],(*cluster)[1]);
+      delete cluster->GetTrip();
+      delete cluster->GetAnti();
+      delete cluster;
+      cit = clin->erase(cit);
+      break;      
     case 0:
     default:
       cit++;
@@ -242,6 +245,7 @@ bool Soft_Cluster_Handler::UpdateClusterDecayKinematics(Cluster * cluster)
 }
 
 bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
+  msg_Tracking()<<"############# "<<METHOD<<" for "<<clin->size()<<" clusters."<<std::endl;
   Cluster_Iterator cit;
   Cluster * cluster;
   int    size(0),count(0);
@@ -265,31 +269,31 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
 {
   cluster->clear();
 
-  Flavour had1(Flavour(kf_none)), had2(Flavour(kf_none));
-  //msg_Out()<<"@@@@ "<<METHOD<<" for cluster ("<<cluster->Number()<<":"
-  //		<<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
-  //		<<"m = "<<cluster->Mass()<<")"<<std::endl;
-  double decayweight(DecayWeight(cluster,had1,had2,false));
-  //if (decayweight>0.) 
-  // msg_Out()<<"@@@@  --> "<<had1<<" + "<<had2<<" with weight = "<<decayweight<<"."<<std::endl;
-  double transformweight(TransformWeight(cluster,had1,lighter,false));
-  //if (transformweight>0.) 
-  //  msg_Out()<<"@@@@  --> "<<had1<<" with weight = "<<transformweight<<"."<<std::endl;
+  Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none)), hadtrans(Flavour(kf_none));
+  msg_Tracking()<<"@@@@ "<<METHOD<<" for cluster ("<<cluster->Number()<<":"
+  		<<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
+  		<<"m = "<<cluster->Mass()<<")"<<std::endl;
+  double decayweight(DecayWeight(cluster,haddec1,haddec2,false));
+  if (decayweight>0.) 
+    msg_Tracking()<<"@@@@  --> "<<haddec1<<" + "<<haddec2<<" with weight = "<<decayweight<<"."<<std::endl;
+  double transformweight(TransformWeight(cluster,hadtrans,lighter,false));
+  if (transformweight>0.) 
+    msg_Tracking()<<"@@@@  --> "<<hadtrans<<" with weight = "<<transformweight<<"."<<std::endl;
   if (decayweight>0. || transformweight>0.) {
     double totweight((decayweight+transformweight)*0.9999999);
-    if (decayweight/totweight>ran.Get()) {
+    if (totweight<=0. || decayweight/totweight>ran.Get()) {
       m_decays      += 1;
-      cluster->push_back(had1);
-      cluster->push_back(had2);
+      cluster->push_back(haddec1);
+      cluster->push_back(haddec2);
       return 2;
     }
     if (transformweight>0.) {
       m_transitions += 1;
-      cluster->push_back(had1);
+      cluster->push_back(hadtrans);
       return 1;
     }
   }
-  //msg_Out()<<"@@@@  --> NONE with weight = "<<transformweight<<"."<<std::endl;  
+  msg_Tracking()<<"@@@@  --> NONE with weight = "<<transformweight<<"."<<std::endl;  
   return 0;
 }
 
@@ -317,9 +321,9 @@ bool Soft_Cluster_Handler::CheckIfAllowed(Cluster_List * clin,double & E) {
   if (E<0) E = sqrt(totmom.Abs2());
   if (clin->size()==2) {
     if (totmass<E) 
-      msg_Tracking()<<"@@ transitions to "<<flavs[0]<<" & "<<flavs[1]<<" allowed."<<std::endl;
+      msg_Tracking()<<"++ "<<METHOD<<" : transitions to "<<flavs[0]<<" & "<<flavs[1]<<" allowed."<<std::endl;
     else
-      msg_Tracking()<<"@@ transitions to "<<flavs[0]<<" & "<<flavs[1]<<" not allowed."<<std::endl;
+      msg_Tracking()<<"++ "<<METHOD<<" : transitions to "<<flavs[0]<<" & "<<flavs[1]<<" not allowed."<<std::endl;
   }
   return (totmass<E);
 }
@@ -407,8 +411,8 @@ bool Soft_Cluster_Handler::ClusterAnnihilation(Cluster * cluster,Flavour & had1,
 bool Soft_Cluster_Handler::EnforcedDecay(Cluster * cluster, Blob * blob,
 					 Cluster_List * clin) {
   msg_Tracking()<<"@@@ "<<METHOD<<" for cluster "
-	   <<"("<<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
-	   <<"mass = "<<cluster->Mass()<<")."<<std::endl;
+		<<"("<<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
+		<<"mass = "<<cluster->Mass()<<")."<<std::endl;
   Flavour had1,had2;
   double weight(DecayWeight(cluster,had1,had2,true)), weight1(-1.);
   if (weight<=0.) {
@@ -437,8 +441,8 @@ bool Soft_Cluster_Handler::EnforcedDecay(Cluster * cluster, Blob * blob,
     }
     m_forceddecays++;m_decays--;
   }
-  //std::cout<<"@@@ "<<METHOD<<" enforced decay to "<<had1<<"/"<<had2<<" (weights = "
-  //   <<weight<<", "<<weight1<<")."<<std::endl;
+  msg_Tracking()<<"@@@ "<<METHOD<<" enforced decay to "<<had1<<"/"<<had2<<" (weights = "
+		<<weight<<", "<<weight1<<")."<<std::endl;
   FixHHDecay(cluster,blob,had1,had2);
   m_decays++;
   return true;
@@ -544,16 +548,16 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   fpair.second = cluster->GetAnti()->m_flav;
   if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
 
-  double MC(cluster->Mass()),MC2(MC*MC);
+  double MC(cluster->Mass());
   msg_Tracking()<<"@@ "<<METHOD<<" for cluster "<<cluster->Number()
 		<<" ("<<fpair.first<<", "<<fpair.second<<", "<<"mass = "<<MC<<"): "<<endl
 		<<"@@ Heavy = "<<p_singletransitions->GetHeaviestTransition(fpair)
 		<<" ("<<p_singletransitions->GetHeaviestTransition(fpair).HadMass()<<"), "
 		<<"light = "<<p_singletransitions->GetLightestTransition(fpair)
 		<<" ("<<p_singletransitions->GetLightestTransition(fpair).HadMass()<<"), "
-		<<"enforce = "<<enforce<<", lighter = "<<lighter;
-  if (!enforce && p_singletransitions->GetHeaviestMass(fpair)<(MC+m_transitionoffset)) {
-    msg_Tracking()<<" (too heavy)."<<std::endl;
+		<<"enforce = "<<enforce<<", lighter = "<<lighter<<std::endl;
+  if (!enforce && p_singletransitions->GetHeaviestMass(fpair)<MC+m_transitionoffset) {
+    msg_Tracking()<<"@@      --> too heavy, no transformation."<<std::endl;
     hadron = Flavour(kf_none);
     return 0.;
   }
@@ -567,7 +571,6 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
     hadron = Flavour(kf_none);
     return 0.;
   }
-  msg_Tracking()<<"."<<std::endl;
   Single_Transition_List * stl(stiter->second);
   Single_Transition_Siter  start(stl->begin()),siter;
   if (lighter && hadron!=Flavour(kf_none)) {
@@ -582,7 +585,7 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
     } while (start!=stl->end());
   }
 
-  double wt,totweight(0.),massXwidth,mass2,width2;
+  double wt(0.),totweight(0.);
   
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
@@ -647,14 +650,14 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   msg_Tracking()<<"@@ "<<METHOD<<" for cluster "<<cluster->Number()
 		<<" ("<<flpair.first<<", "<<flpair.second<<", "<<"mass = "<<MC<<"): "<<endl
 		<<"@@ Heavy = "<<p_doubletransitions->GetHeaviestTransition(flpair).first
-		<<"+"<<p_doubletransitions->GetHeaviestTransition(flpair).second
+		<<" + "<<p_doubletransitions->GetHeaviestTransition(flpair).second
 		<<" ("<<(p_doubletransitions->GetHeaviestTransition(flpair).first.HadMass()+
 			 p_doubletransitions->GetHeaviestTransition(flpair).second.HadMass())<<"), "
 		<<"light = "<<p_doubletransitions->GetLightestTransition(flpair).first
-		<<"+"<<p_doubletransitions->GetLightestTransition(flpair).second
+		<<" + "<<p_doubletransitions->GetLightestTransition(flpair).second
 		<<" ("<<(p_doubletransitions->GetLightestTransition(flpair).first.HadMass()+
 			 p_doubletransitions->GetLightestTransition(flpair).second.HadMass())<<"), "
-		<<"enforce = "<<enforce<<".";
+		<<"enforce = "<<enforce<<"."<<std::endl;
   if (dtliter==p_doubletransitions->GetTransitions()->end()) {
     msg_Error()<<"Potential Error in "<<METHOD<<" : "<<endl
 	       <<"   No viable transition found for "<<flpair.first<<"/"<<flpair.second
@@ -662,20 +665,22 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 	       <<"   Return 'false' and hope for the best."<<std::endl;
     return 0.;
   }
-  if (enforce && p_doubletransitions->GetLightestMass(flpair)>MC) {
-    msg_Tracking()<<"Warning in "<<METHOD<<" : "<<endl
-		  <<"   No viable transition found for "<<flpair.first<<"/"<<flpair.second
-		  <<" (mass = "<<MC<<")."<<endl
-		  <<"   Return 'false' and hope for the best."<<std::endl;
+  if (p_doubletransitions->GetLightestMass(flpair)>MC) {
+    if (enforce) {
+      msg_Tracking()<<"Warning in "<<METHOD<<" : "<<endl
+		    <<"   No viable transition found for "<<flpair.first<<"/"<<flpair.second
+		    <<" (mass = "<<MC<<")."<<endl
+		    <<"   Return 'false' and hope for the best."<<std::endl;
+    }
     return 0.;
   }
-  if (!enforce && p_doubletransitions->GetHeaviestMass(flpair)<MC+m_transitionoffset) {
-    msg_Tracking()<<" (too heavy)."<<std::endl;
+  if (!enforce && p_doubletransitions->GetHeaviestMass(flpair)<MC+m_decayoffset) {
+    msg_Tracking()<<"@@      --> too heavy, no decay."<<std::endl;
     had1 = had2 = Flavour(kf_none);
     return 0.;
   }
 
-  double totweight(0.),MC2(MC*MC),m1,m2,wt;
+  double totweight(0.),MC2(MC*MC),m1,m2,wt(1.);
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
     m1  = decit->first.first.HadMass();
@@ -736,15 +741,25 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 				      const Flavour had1,const Flavour had2)
 {
+  msg_Tracking()<<"## "<<METHOD<<" for "<<cluster->Number()<<" --> "<<had1<<" + "<<had2<<"."<<std::endl;
   double M       = cluster->Mass(), M2 = M*M;
   double m12     = sqr(had1.HadMass()), m22 = sqr(had2.HadMass());
 
   cluster->BoostInCMSAndRotateOnZ();
   int sign(cluster->GetTrip()->m_mom[3]<0?-1:1);
 
-  double E1      = (M2+m12-m22)/(2.*M);
+  double E1((M2+m12-m22)/(2.*M)), p2max(sqr(E1)-m12), pt2min(0.), pt(0.);
+  if (cluster->GetTrip()->m_info=='L' || cluster->GetAnti()->m_info=='L') {
+    pt2min       = Min(p2max*m_pt2maxfac/4.,m_pt2min/m12*m_pt2min/m22*m_pt2min);
+    pt           = sqrt(p_as->SelectPT(p2max*m_pt2maxfac,pt2min));
+  }
+  else {
+    // isotropic decay
+    pt           = sqrt(p2max*m_pt2maxfac*(1.-sqr(1.-2.*ran.Get())));
+  }
+  //std::cout<<"Check this : pt = "<<pt<<" from p2_max =  "<<p2max<<" "
+  //	   <<"and pt2_min = "<<pt2min<<"."<<std::endl<<(*cluster)<<std::endl;
 
-  double pt      = sqrt(p_as->SelectPT(sqr(E1)-m12))/2.;
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,sign*pl1);

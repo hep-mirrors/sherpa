@@ -11,21 +11,20 @@ namespace AHADIC {
       constant           = 0,
       IRregularised      = 1,
       IRregularised_IR0  = 2,
-      GDH_inspired       = 8,
-      Exponential        = 64
+      GDH_inspired       = 8
     };
   };
 
   class Strong_Coupling : public ATOOLS::Function_Base {
   private:
     asform::code m_form;
-    double       m_beta0, m_Lambda, m_Lambda2, m_kappa2, m_pt02, m_lastpt2, m_asmax, m_eta;
-
-    double m_gamma, m_a, m_b, m_c, m_d, m_m2;
+    double       m_beta0, m_Lambda, m_Lambda2, m_kappa2, m_pt02, m_pt2max;
+    double       m_lastpt2, m_asmax, m_eta;
+    double       m_gamma, m_a, m_b, m_c, m_d, m_m2;
     const double mg2(const double) const;
     const double n(const double)   const;
   public:
-    Strong_Coupling(const asform::code,const double);
+    Strong_Coupling(const asform::code);
 
     const double operator()(double q2,bool reweight=false) const;     
     const double Inverse(const double as) const;

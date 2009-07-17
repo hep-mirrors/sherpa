@@ -22,7 +22,6 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
   bool direction = (ran.Get()>0.5);
   if (direction) clin->reverse();
 
-  int lead1,lead2;
   cit1 = cit2 = clin->begin(); cit2++;
   do {
     if (TestClusters((*cit1),(*cit2),gen)) {

@@ -278,14 +278,12 @@ void Hadron_Init::Init() {
   s_kftable[3324]=new Particle_Info(3324,1.5318,0.0091,0,0,3,1,0,"Xi(1530)","Xi(1530)");
   s_kftable[3334]=new Particle_Info(3334,1.67245,8.01e-15,-3,0,3,1,0,"Omega-","Omega-");
   s_kftable[4114]=new Particle_Info(4114,2.5175,0.0150,0,0,3,1,0,"Sigma(c)(2520)","Sigma(c)(2520)");
-  s_kftable[4124]=new Particle_Info(4124,2.625,0.002,3,0,3,1,0,"Lambda(c)(2625)+","Lambda(c)(2625)+");
   s_kftable[4214]=new Particle_Info(4214,2.5159,0.0150,3,0,3,1,0,"Sigma(c)(2520)+","Sigma(c)(2520)+");
   s_kftable[4224]=new Particle_Info(4224,2.5194,0.0150,6,0,3,1,0,"Sigma(c)(2520)++","Sigma(c)(2520)++");
   s_kftable[4314]=new Particle_Info(4314,2.63,0.003,0,0,3,1,0,"Xi(c)*","Xi(c)*");
   s_kftable[4324]=new Particle_Info(4324,2.63,0.003,3,0,3,1,0,"Xi(c)*+","Xi(c)*+");
   s_kftable[4334]=new Particle_Info(4334,2.8,0.001,0,0,3,1,0,"Omega(c)*","Omega(c)*");
   s_kftable[5114]=new Particle_Info(5114,5.81,0.01,-3,0,3,1,0,"Sigma(b)*-","Sigma(b)*-");
-  s_kftable[5124]=new Particle_Info(5124,5.91,0.002,0,0,3,1,0,"Lambda(b)(5910)","Lambda(b)(5910)");
   s_kftable[5214]=new Particle_Info(5214,5.81,0.01,0,0,3,1,0,"Sigma(b)*","Sigma(b)*");
   s_kftable[5224]=new Particle_Info(5224,5.81,0.01,3,0,3,1,0,"Sigma(b)*+","Sigma(b)*+");
   s_kftable[5314]=new Particle_Info(5314,5.98,0.001,-3,0,3,1,0,"Xi(b)*-","Xi(b)*-");
@@ -322,6 +320,8 @@ void Hadron_Init::Init() {
   s_kftable[1214]=new Particle_Info(1214,1.52,0.12,0,0,3,0,0,"N(1520)","N(1520)");
   s_kftable[2124]=new Particle_Info(2124,1.52,0.12,3,0,3,0,0,"N(1520)+","N(1520)+");
   s_kftable[3124]=new Particle_Info(3124,1.5195,0.0156,0,0,3,0,0,"Lambda(1520)","Lambda(1520)");
+  s_kftable[4124]=new Particle_Info(4124,2.625,0.002,3,0,3,1,0,"Lambda(c)(2625)+","Lambda(c)(2625)+");
+  s_kftable[5124]=new Particle_Info(5124,5.91,0.002,0,0,3,1,0,"Lambda(b)(5910)","Lambda(b)(5910)");
   s_kftable[31214]=new Particle_Info(31214,1.72,0.2,0,0,3,0,0,"N(1720)","N(1720)");
   s_kftable[32124]=new Particle_Info(32124,1.72,0.2,3,0,3,0,0,"N(1720)+","N(1720)+");
   s_kftable[33122]=new Particle_Info(33122,1.67,0.06,0,0,1,0,0,"Lambda(1670)","Lambda(1670)");

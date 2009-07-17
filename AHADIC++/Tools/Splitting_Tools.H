@@ -15,6 +15,16 @@ namespace AHADIC {
   typedef std::map<ATOOLS::Flavour,DecaySpecs *> FlavDecayMap;
   typedef FlavDecayMap::iterator                 FDIter;
   
+  struct leading {
+    enum code {
+      none               = 0,
+      only_quarks        = 1,
+      quarks_and_gluons  = 2,
+      quarks_and_gluons2 = 3
+    };
+  };
+
+
   struct PTOrder {
     enum code {
       total       = 3,
@@ -24,6 +34,7 @@ namespace AHADIC {
     };
   };
   PTOrder::code DefinePTOrder(const int & ptorder);
+
 
   struct ZForm {
     enum code {
@@ -37,10 +48,12 @@ namespace AHADIC {
   ZForm::code DefineZForm(const int & zform);
 
 
+
+
   class Splitting_Functions {
   private:
     int    m_masstreatment;
-    double m_alpha,m_beta,m_sigma,m_kappa;
+    double m_alpha,m_sigma,m_kappa;
 
     double m_m1_2,m_m2_2,m_m3_2,m_Q2,m_y,m_viji,m_vijk,m_zp,m_zm,m_pipj;
 
@@ -78,6 +91,7 @@ namespace AHADIC {
 
   class Splitting_Tools {
   private:
+    leading::code         m_leading;
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
     bool                  m_fourquarks, m_analyse;
     int                   m_masstreatment;
@@ -90,7 +104,7 @@ namespace AHADIC {
     FlavDecayMap        * p_options;
 
     Proto_Particle   * p_spect, * p_split, * p_out1, * p_out2;
-    double             m_mmin_2, m_pt02;
+    double             m_mmin_2, m_pt02, m_pt2min;
 
     ATOOLS::Poincare   m_cms,m_zrot;
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
@@ -99,7 +113,7 @@ namespace AHADIC {
     double             m_scale2,m_z,m_phi,m_y,m_kt,m_kt2,m_s23;
  
     ATOOLS::Flavour    m_flav;
-
+    long int           m_tot,m_d,m_s,m_u;
 
     bool   ProduceKinematics(double & kt2,double & z,double & phi,
 			     ATOOLS::Flavour & flav,
@@ -109,10 +123,11 @@ namespace AHADIC {
     bool   KinCheck(const double & kt2,const double & z);
     bool   ConstructKinematics(const bool glusplit);
     double Scale2Max(const double & pt2max,const PTOrder::code & ptorder);
+    void   SetInfoTagsForOutgoings() const;
     void   AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
 			     const ATOOLS::Vec4D & q3);
    public:
-    Splitting_Tools(Strong_Coupling *,const bool &);
+    Splitting_Tools(Strong_Coupling *,const leading::code &,const bool &);
     ~Splitting_Tools();
 
     void SetSpectatorAndSplitter(Dipole * dip);
@@ -135,6 +150,8 @@ namespace AHADIC {
 
     Proto_Particle * Spectator() { return p_spect; }
     Proto_Particle * Splitter()  { return p_split; }
+
+    const leading::code & Leading() const { return m_leading; }
   };
 
   inline void Splitting_Tools::SetOptions(FlavDecayMap * options) {

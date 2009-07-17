@@ -55,6 +55,8 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
     fl2 = int(kfcode/100)-int(kfcode/1000)*10;
     fl3 = int(kfcode/1000)-int(kfcode/10000)*10;
 
+    //std::cout<<"Construct wave function for "<<hadron<<" --> "
+    //	     <<fl1<<" "<<fl2<<" "<<fl3<<" spin = "<<kfcode-10*int(kfcode/10)<<"."<<std::endl;
     if (fl3==0) {
       if (int(fl2/2.)!=fl2/2.) { help = fl1; fl1 = fl2; fl2 = help; }
       wavefunction = ConstructMesonWaveFunction(int(kfcode/9000000),
@@ -190,8 +192,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
   // Baryon wave functions according to Lichtenberg, Namgung, Wills & Predazzi
   if (spin==0) return NULL;
 
-  int wf=-1;
-  int pos1,pos2,pos3,di;
+  int wf(-1),pos1(-1),pos2(-1),pos3(-1),di(-1);
 
   if ((spin==2 || lp!=0) && (fl1<fl2 || fl2<fl3)) {
     // Octet
@@ -243,6 +244,15 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
             else wf = 103;
       pos1 = fl3; pos2 = fl2; pos3 = fl1;
     }
+  }
+
+  if (pos1<0 || pos2<0 || pos3<0 || wf<0) {
+    msg_Tracking()<<"Warning in "<<METHOD<<"("<<lp<<","<<spin<<","<<fl1<<","<<fl2<<","<<fl3<<"):"
+		  <<std::endl
+		  <<"   leads to unknown combination of wf type and positions."<<std::endl
+		  <<"   wf = "<<wf<<", pos123 = "<<pos1<<" "<<pos2<<" "<<pos3<<";"
+		  <<" will ignore this hadron."<<std::endl;
+    return NULL;
   }
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
@@ -406,7 +416,7 @@ void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double
 void All_Hadron_Multiplets::CreateMultiplets()
 {
   p_multiplets           = new Hadron_Multiplet_Map;
-  int                      kfcode,dkfc,spin,orbital,radial,iso0;
+  int                      kfcode,spin,orbital,radial,iso0;
   Hadron_Multiplet_Miter   mpletiter;
   Hadron_Multiplet       * multiplet;
   std::string              prefix;
@@ -627,7 +637,6 @@ Hadron_Wave_Function * All_Hadron_Multiplets::GetWaveFunction(ATOOLS::Flavour fl
 void All_Hadron_Multiplets::PrintWaveFunctions() 
 {
   Hadron_WF_Miter        wfm;
-  Hadron_Wave_Function * wf;
   map<Flavour,double> checkit;
   for (Hadron_Multiplet_Miter mplet=p_multiplets->begin();mplet!=p_multiplets->end();mplet++) {
     if (mplet->second->Weight()<=0.) continue;
@@ -636,10 +645,9 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
     for (FlSetIter fl=mplet->second->GetElements()->begin();
 	 fl!=mplet->second->GetElements()->end();fl++) {
       wfm = p_wavefunctions->find((*fl));
-      if (wfm!=p_wavefunctions->end()) { wf = wfm->second; msg_Out()<<(*wf); }
-      
+      if (wfm!=p_wavefunctions->end()) msg_Out()<<(*wfm->second); 
       if (mplet->second->Name()==string("Nucleons        (1/2)")) {
-       	WFcomponent * wfc = wf->GetWaves();
+       	WFcomponent * wfc = wfm->second->GetWaves();
        	for (WFcompiter cit = wfc->begin();cit!=wfc->end();cit++) {
        	  if (checkit.find(cit->first->first)==checkit.end()) 
        	    checkit[cit->first->first] = sqr(cit->second);
