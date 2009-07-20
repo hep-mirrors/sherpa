@@ -16,7 +16,7 @@
 }(beam)
 
 (processes){
-  Process 93 93 -> 6[a] -6[b] 93{1};
+  Process 93 93 -> 6[a] -6[b] 93{NJET};
     DecayOS 6[a] -> 5 24[c];
       DecayOS 24[c] -> 90 91;
     DecayOS -6[b] -> -5 -24[d];
@@ -24,7 +24,7 @@
   CKKW sqr(20/E_CMS);
   End process;
 
-  Process 93 93 -> 6[a] -6[b] 93{1};
+  Process 93 93 -> 6[a] -6[b] 93{NJET};
     DecayOS 6[a] -> 5 24[c];
       DecayOS 24[c] -> 94 94;
     DecayOS -6[b] -> -5 -24[d];
