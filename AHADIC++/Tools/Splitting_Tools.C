@@ -674,8 +674,8 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
     
     Vec4D  q23 = m_mom0-q1;
     if (sqr(q23*q1)-m_s23*m_m1_2<0.) {
-      msg_Error()<<"Warning in "<<METHOD<<": gamma explodes: "<<(sqr(q23*q1)-m_s23*m_m1_2)
-		 <<" for kt^2 = "<<m_kt2<<"."<<std::endl;
+      //msg_Error()<<"Warning in "<<METHOD<<": gamma explodes: "<<(sqr(q23*q1)-m_s23*m_m1_2)
+      //		 <<" for kt^2 = "<<m_kt2<<"."<<std::endl;
       return false;
     }
     double gam = q23*q1+sqrt(sqr(q23*q1)-m_s23*m_m1_2);
