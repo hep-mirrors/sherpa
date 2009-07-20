@@ -3,8 +3,8 @@
 }(run)
 
 (beam){
-  BEAM_1 = 2212; BEAM_ENERGY_1 = 7000;
-  BEAM_2 = 2212; BEAM_ENERGY_2 = 7000;
+  BEAM_1 2212; BEAM_ENERGY_1 980;
+  BEAM_2 -2212; BEAM_ENERGY_2 980;
 }(beam)
 
 (processes){
@@ -13,6 +13,14 @@
       DecayOS 24[c] -> 90 91;
     DecayOS -6[b] -> -5 -24[d];
       DecayOS -24[d] -> 94 94;
+  CKKW sqr(20/E_CMS);
+  End process;
+
+  Process 93 93 -> 6[a] -6[b] 93{1};
+    DecayOS 6[a] -> 5 24[c];
+      DecayOS 24[c] -> 94 94;
+    DecayOS -6[b] -> -5 -24[d];
+      DecayOS -24[d] -> 90 91;
   CKKW sqr(20/E_CMS);
   End process;
 }(processes)
