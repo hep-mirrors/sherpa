@@ -11,6 +11,7 @@
 
 #ifdef USING__RIVET
 #include "Rivet/AnalysisHandler.hh"
+#include "Rivet/Tools/Logging.hh"
 
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
@@ -63,7 +64,9 @@ public:
       reader.SetFileBegin("BEGIN_RIVET");
       reader.SetFileEnd("END_RIVET");
       std::string fname=reader.GetValue<std::string>("-H", "Rivet");
+      int loglevel=reader.GetValue<int>("-l", 20);
       
+      Rivet::Log::setLevel("Rivet", loglevel);
       p_rivet = new Rivet::AnalysisHandler(fname, "", Rivet::AIDAML);
       std::vector<std::string> analyses;
       if (reader.VectorFromFile(analyses,"-a")) {
