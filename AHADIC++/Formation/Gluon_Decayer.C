@@ -63,10 +63,10 @@ Gluon_Decayer::~Gluon_Decayer() {
     }
     m_histograms.clear();
   }
-  msg_Out()<<"Flavour production in "<<m_tot<<" gluon splittings: "
-	   <<"s_rate = "<<double(m_s)/double(m_tot)<<", "
-	   <<"u_rate = "<<double(m_u)/double(m_tot)<<", "
-	   <<"d_rate = "<<double(m_d)/double(m_tot)<<"."<<std::endl;
+  //msg_Out()<<"Flavour production in "<<m_tot<<" gluon splittings: "
+  //	   <<"s_rate = "<<double(m_s)/double(m_tot)<<", "
+  //	   <<"u_rate = "<<double(m_u)/double(m_tot)<<", "
+  //	   <<"d_rate = "<<double(m_d)/double(m_tot)<<"."<<std::endl;
 
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();++fdit) {
     if (fdit->second!=NULL) { delete fdit->second; fdit->second=NULL; }
