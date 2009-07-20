@@ -94,7 +94,7 @@
   DECAY_OFFSET                    = -1.50         ! TUNE THIS: -1.0 ... 1.0
   TRANSITION_EXPONENT             = 0.0           ! probably leave it - maybe later
   TRANSITION_EXPONENT2            = 0.0           ! probably leave it - maybe later
-  DECAY_EXPONENT                  = 4.0           ! TUNE THIS: 0.0 ... 10.0
+  DECAY_EXPONENT                  = 6.0           ! TUNE THIS: 0.0 ... 10.0
   !-- Flavour content in popping -------------------------
   STRANGE_FRACTION                = 0.50          ! TUNE THIS: 0.0  ... 1.0 
   BARYON_FRACTION                 = 0.20          ! TUNE THIS: 0.0  ... 1.0 
@@ -105,8 +105,8 @@
   M_GLUE                          = 0.00          ! leave it
   M_UP_DOWN                       = 0.30          ! leave it
   M_STRANGE                       = 0.50          ! leave it
-  M_CHARM                         = 1.8           ! leave it
-  M_BOTTOM                        = 5.0           ! leave it
+  M_CHARM                         = 1.9           ! leave it
+  M_BOTTOM                        = 5.2           ! leave it
   M_DIQUARK_OFFSET                = 0.30          ! leave it
   M_BIND_0                        = 0.00          ! leave it
   M_BIND_1                        = 0.20          ! leave it
@@ -134,7 +134,7 @@
   MULTI_WEIGHT_L0R0_DELTA_3/2     = 1.            ! probably leave it
   MULTI_WEIGHT_L1R0_DELTA*_3/2    = 0.            ! probably leave it
   ! -- Singlet-Octet Mixing Angles etc. -------------------
-  SINGLET_SUPPRESSION             =  1.           ! TUNE THIS: 0.0  ... 1.0 
+  SINGLET_SUPPRESSION             =  0.00         ! TUNE THIS: 0.0  ... 1.0 
   				     		  ! (regulates eta' vs. eta vs. pi^0 and similar)
   Mixing_0+                       =  1.2686       ! leave it
   Mixing_1-                       =  0.61075      ! leave it
