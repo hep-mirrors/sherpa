@@ -471,8 +471,8 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
     case 2:
     case 0:
       //std::cout<<"."<<std::endl;
-      masses.push_back(sqrt(cluster->GetTrip()->m_mom.Abs2()));
-      masses.push_back(sqrt(cluster->GetAnti()->m_mom.Abs2()));
+      masses.push_back(sqrt(Max(cluster->GetTrip()->m_mom.Abs2(),0.)));
+      masses.push_back(sqrt(Max(cluster->GetAnti()->m_mom.Abs2(),0.)));
       momenta.push_back(cluster->GetTrip()->m_mom);
       momenta.push_back(cluster->GetAnti()->m_mom);
       size+=2;
@@ -481,17 +481,19 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
     }
   }
   if (!hadpars.AdjustMomenta(size,&momenta.front(),&masses.front())) {
-    if (size>1 && msg->LevelIsDebugging()) {
+    if (size>1 /*&& msg->LevelIsDebugging()*/) {
       msg_Error()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : "<<std::endl
 		    <<"   Could not adjust momenta for : "<<std::endl;
       int i(0);
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-	msg_Debugging()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
-	if ((*cit)->size()==1) msg_Debugging()<<" ("<<((**cit)[0])<<" )";
-	msg_Debugging()<<" for "<<std::endl<<(**cit)<<std::endl;
+	msg_Error()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Error()<<" ("<<((**cit)[0])<<" )";
+	msg_Error()<<" for "<<std::endl<<(**cit)<<std::endl;
+	i++;
       }
       msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
     }
+    exit(1);
     return false;
   }
   int pos(0);
@@ -923,9 +925,10 @@ bool Soft_Cluster_Handler::ForceMomenta(Cluster_List * clin)
 		 <<"   Could not adjust momenta for : "<<std::endl;
       int i(0);
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-	msg_Debugging()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
-	if ((*cit)->size()==1) msg_Debugging()<<" ("<<((**cit)[0])<<" )";
-	msg_Debugging()<<" for "<<std::endl<<(**cit)<<std::endl;
+	msg_Error()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Error()<<" ("<<((**cit)[0])<<" )";
+	msg_Error()<<" for "<<std::endl<<(**cit)<<std::endl;
+	i++;
       }
       msg_Error()<<"   Will possibly lead to retrying the event."<<std::endl;
     }

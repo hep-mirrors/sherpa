@@ -290,6 +290,11 @@ bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
   if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front()))  {
+    msg_Error()<<"ERROR in "<<METHOD<<".  Could not adjust momenta for:"<<std::endl;
+    for (pit=pl->begin();pit!=pl->end();++pit,++k) {
+      msg_Error()<<"   "<<(*pit)->m_flav<<" "<<(*pit)->m_mom<<" ("<<(*pit)->m_mom.Abs2()<<") vs. "
+		 <<hadpars.GetConstituents()->Mass((*pit)->m_flav)<<"."<<std::endl;
+    }
     return false;
   }
   k = 0;

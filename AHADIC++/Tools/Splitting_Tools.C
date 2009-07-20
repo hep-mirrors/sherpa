@@ -370,7 +370,7 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const double & pt2max,
     std::cout<<"___ "<<METHOD<<" : pt2(max) = "<<m_scale2_max
 	     <<" from "<<m_mom1.PPerp2(m_mom3)<<","<<std::endl
 	     <<"___ "<<m_mom1<<" "<<m_mom3<<"."<<std::endl;
-    exit(1);
+    return false;
   }
 
   if (m_scale2_max<0.) {
@@ -379,7 +379,8 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const double & pt2max,
 		  <<pt2max<<" m_scale2_max = "<<m_scale2_max<<std::endl;
     return false;
   }
-  msg_Tracking()<<"___ "<<METHOD<<": set up dipole for splitting."<<std::endl;
+  msg_Tracking()<<"___ "<<METHOD<<": set up dipole for splitting, "
+		<<"splitter = "<<p_split->m_flav<<"."<<std::endl;
 
   m_cms  = Poincare(m_mom0);
   m_cms.Boost(m_mom0);
@@ -499,24 +500,24 @@ bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
     return false;
   }
   double deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
-  //double IntSplit(p_kernels->Integrated(zmin,zmax,zform,p_split->m_flav.IsGluon()));
 
   scale2 = -1.;
   int  trials(0);
   while ((scale2<0. || z<0.) && trials<1000) {
     trials++;
     scale2 = p_as->SelectPT(m_scale2_max,pt2min);
-    if (4.*scale2*(m_Qt2+m_m3_2)>m_Qt2*m_Qt2) {
-      scale2 = -1.;
-      continue;
-    }
     if (p_split->m_flav.IsGluon()) {
-      SelectFlavour(m_masstreatment==3?scale2:m_Qt2/4.,vetodiquark);
-      disc = 4.*m_m2_2/m_Qt2;
-      if (disc<0. || disc>1.) continue;
-      deltaz = sqrt(1.-disc);
-      zmin = (1.-deltaz)/2.;
-      zmax = (1.+deltaz)/2.;
+      if (m_masstreatment==3) {
+	SelectFlavour(scale2,vetodiquark);
+	disc = 4.*m_m2_2/m_Qt2;
+	if (disc<0. || disc>1.) continue;
+	deltaz = sqrt(1.-disc);
+	zmin = (1.-deltaz)/2.;
+	zmax = (1.+deltaz)/2.;
+      }
+      else {
+	SelectFlavour(m_Qt2/4.,vetodiquark);
+      }
     }
     z = p_kernels->SelectZ(zmin,zmax,zform,p_split->m_flav.IsGluon(),p_split->m_info=='L');
     if (z<0.) continue;

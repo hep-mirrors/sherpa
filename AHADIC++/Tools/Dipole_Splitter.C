@@ -164,8 +164,10 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const double & pt2max,
   p_tools->SetSpectatorAndSplitter(dip);
 
   if (!p_tools->PrepareKinematics(dip,pt2max,m_ptorder) || 
-      !p_tools->DetermineSplitting(dip,m_zform,vetodiquark)) return false;
-  
+      !p_tools->DetermineSplitting(dip,m_zform,vetodiquark)) {
+    msg_Tracking()<<"=== "<<METHOD<<"(out): could not split dipole."<<std::endl;
+    return false;
+  }  
   p_tools->AftermathOfSplitting(dip);
 
   msg_Tracking()<<"=== "<<METHOD<<"(out): succeded to split dipole."<<std::endl;

@@ -121,8 +121,7 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
   Dipole * dip;
   do {
     dip = new Dipole(*pit,*pit1);
-    (*pit)->m_kt2max  = ATOOLS::Max((*pit)->m_kt2max,PT2Max(dip));
-    (*pit1)->m_kt2max = ATOOLS::Max((*pit1)->m_kt2max,PT2Max(dip));
+    (*pit)->m_kt2max  = (*pit1)->m_kt2max = PT2Max(dip); 
 
     m_dipoles.push_back(dip);
     pit = pit1;
@@ -131,8 +130,7 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
   if ((*pit)->m_flav.IsGluon()) {
     if (begin->m_flav.IsGluon()) {
       dip = new Dipole(*pit,begin);
-      (*pit)->m_kt2max = ATOOLS::Max((*pit)->m_kt2max,PT2Max(dip));
-      begin->m_kt2max  = ATOOLS::Max(begin->m_kt2max,PT2Max(dip));
+      (*pit)->m_kt2max  = begin->m_kt2max = PT2Max(dip); 
       m_dipoles.push_back(dip);
     }
     else {
@@ -348,19 +346,40 @@ void Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Q += pj = (*dip2)->Triplet()->m_mom;
   Q += pk = (*dip2)->AntiTriplet()->m_mom;
   double Q2   = Q.Abs2();
-  double mij2 = sqr(hadpars.GetConstituents()->Mass((*dip1)->Triplet()->m_flav));
-  double mk2  = sqr(hadpars.GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav));
-  double pij2 = (pi+pj).Abs2();
+  double pij2 = (pi+pj).Abs2(), pjk2 = (pj+pk).Abs2();
+  double mij2 = sqr(hadpars.GetConstituents()->Mass((*dip1)->Triplet()->m_flav)), mi2(mij2);
+  double mk2  = sqr(hadpars.GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav)), mjk2(mk2);
   double aij  = (sqr(Q2-mij2-mk2)-4.*mij2*mk2), bij = (sqr(Q2-pij2-mk2)-4.*pij2*mk2);
-  Vec4D  pkt  = sqrt(aij/bij) * (pk - (Q*pk)/Q2*Q) + (Q2 + mk2-mij2)/(2.*Q2)*Q;  
-  Vec4D  pijt = Q-pkt;
-  msg_Tracking()<<"--- "<<METHOD<<" merge "<<pi<<", "<<pi.Abs2()<<" + "<<pj<<", "<<pj.Abs2()<<std::endl
-		<<"        + "<<pk<<", "<<pk.Abs2()<<" = "<<Q<<", "<<Q.Abs2()<<std::endl
-		<<"     into "<<pijt<<" + "<<pkt<<" from "<<aij<<"/"<<bij
-		<<" and mij = "<<sqrt(mij2)<<" and mk = "<<sqrt(mk2)<<std::endl;
-
-  (*dip1)->Triplet()->m_mom      = pijt;
-  (*dip2)->AntiTriplet()->m_mom  = pkt;
+  double ajk  = (sqr(Q2-mjk2-mi2)-4.*mjk2*mi2), bjk = (sqr(Q2-pjk2-mi2)-4.*pjk2*mi2);
+  if (aij/bij<0. && ajk/bjk<0.) {
+    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
+	       <<"   Cannot merge dipoles, kinematics does not work out."<<std::endl;
+    exit(1);
+  }
+  if (ajk/bjk<0. || (pij2>pjk2 && aij/bij>0.)) {
+    Vec4D  pkt  = sqrt(aij/bij) * (pk - (Q*pk)/Q2*Q) + (Q2 + mk2-mij2)/(2.*Q2)*Q;  
+    Vec4D  pijt = Q-pkt;
+    msg_Tracking()<<"--- "<<METHOD<<" merge :"<<std::endl
+		  <<"   pi = "<<pi<<", "<<pi.Abs2()<<" + pj = "<<pj<<", "<<pj.Abs2()<<std::endl
+		  <<"   + pk = "<<pk<<", "<<pk.Abs2()<<" --> Q = "<<Q<<", "<<Q.Abs2()<<std::endl
+		  <<"     into "<<pijt<<" + "<<pkt<<" from "<<aij<<"/"<<bij
+		  <<" and mij = "<<sqrt(mij2)<<" and mk = "<<sqrt(mk2)<<std::endl;
+    
+    (*dip1)->Triplet()->m_mom      = pijt;
+    (*dip2)->AntiTriplet()->m_mom  = pkt;
+  }
+  else {
+    Vec4D  pit  = sqrt(ajk/bjk) * (pi - (Q*pi)/Q2*Q) + (Q2 + mi2-mjk2)/(2.*Q2)*Q;  
+    Vec4D  pjkt = Q-pit;
+    msg_Tracking()<<"--- "<<METHOD<<" merge :"<<std::endl
+		  <<"   pi = "<<pi<<", "<<pi.Abs2()<<" + pj = "<<pj<<", "<<pj.Abs2()<<std::endl
+		  <<"   + pk = "<<pk<<", "<<pk.Abs2()<<" --> Q = "<<Q<<", "<<Q.Abs2()<<std::endl
+		  <<"     into "<<pjkt<<" + "<<pit<<" from "<<ajk<<"/"<<bjk
+		  <<" and mjk = "<<sqrt(mjk2)<<" and mi = "<<sqrt(mi2)<<std::endl;
+    
+    (*dip1)->Triplet()->m_mom      = pit;
+    (*dip2)->AntiTriplet()->m_mom  = pjkt;
+  }
   (*dip1)->SetAntiTriplet((*dip2)->AntiTriplet());
 
   m_dipoles.erase(dip2);
@@ -516,11 +535,11 @@ void Gluon_Decayer::PrintDipoleList()
 		  <<"  "<<(*dip)->Triplet()->m_flav<<"("<<(*dip)->Triplet()->m_mom<<"), "
 		  <<" "<<hadpars.GetConstituents()->Mass((*dip)->Triplet()->m_flav)
 		  <<" vs. "<<sqrt(Max((*dip)->Triplet()->m_mom.Abs2(),0.0))
-		  <<" --> "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
+		  <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
 		  <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("<<(*dip)->AntiTriplet()->m_mom<<"),"
 		  <<" "<<hadpars.GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
 		  <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
-		  <<" --> "<<(*dip)->Triplet()->m_kt2max<<"."<<std::endl;
+		  <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<"."<<std::endl;
   }
 }
 
