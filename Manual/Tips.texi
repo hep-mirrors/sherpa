@@ -4,6 +4,7 @@
 @menu
 * Bash completion:: How to add bash completion for Sherpa parameters
 * Rivet analyses:: How to analyse Sherpa events using Rivet
+* Debugging a crashing/stalled event::  How to recover the random seed for an event that is hanging or crashing
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
 @end menu
 
@@ -66,6 +67,62 @@ files:
 If your Rivet installation is not in a standard location, the bootstrap script
 should have created a ``rivetenv.sh'' which you have to source before running
 the ``make-html'' script.
+
+@node Debugging a crashing/stalled event
+@section Debugging a crashing/stalled event
+
+@subsection Crashing events
+If an event crashes, Sherpa tries to obtain all the information needed to
+reproduce that event and writes it out into a directory named
+@verbatim
+  Status__<date>_<time>
+@end verbatim
+
+If you are a Sherpa user and want to report this crash to the Sherpa team,
+please attach a tarball of this directory to your email. This allows us to
+reproduce your crashed event and debug it.
+
+To debug it yourself, you can follow these steps
+(Only do this if you are a Sherpa developer, or want to debug a problem
+in an addon library created by yourself):
+@itemize
+
+@item Copy the random seed out of the status directory into your run path:
+@verbatim
+  cp  Status__<date>_<time>/random.dat  ./
+@end verbatim
+
+@item Run your normal Sherpa commandline with an additional parameter:
+@verbatim
+  Sherpa [...] STATUS_PATH=./
+@end verbatim
+
+Sherpa will then read in your random seed from ``./random.dat'' and
+generate events from it.
+
+@item Ideally, the first event will lead to the crash you saw earlier, and
+you can now turn on debugging output to find out more about the details
+of that event and test code changes to fix it:
+@verbatim
+  Sherpa [...] OUTPUT=15 STATUS_PATH=./
+@end verbatim
+@end itemize
+
+@subsection Stalled events
+If event generation seems to stall, you first have to find out
+the number of the current event. For that you would terminate the stalled
+Sherpa process (using Ctrl-c) and check in its final output for the number
+of generated events.
+Now you can request Sherpa to write out the random seed for the event before the
+stalled one:
+@verbatim
+  Sherpa [...] EVENTS=[#events - 1] SAVE_STATUS=Status/
+@end verbatim
+
+(Replace [#events - 1] using the number you figured out earlier)
+
+The created status directory can either be sent to the Sherpa developers,
+or be used in the same steps as above to reproduce that event and debug it.
 
 @node Versioned installation
 @section Versioned installation
