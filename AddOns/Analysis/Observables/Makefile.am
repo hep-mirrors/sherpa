@@ -23,6 +23,7 @@ ANAOBS_SOURCES        =	\
 			Four_Particle_Observables.C \
 			Four_Particle_Observables_2.C \
 			Six_Particle_Observables.C \
+			Soft_Photon_Observables.C \
 			Jet_Cone_Distribution.C \
 			Jet_Observables.C \
 			Jet_X_Observables.C \
@@ -51,6 +52,7 @@ ANAOBS_ADDS           =	\
 			Three_Particle_Observables.H \
 			Four_Particle_Observables.H \
 			Six_Particle_Observables.H \
+			Soft_Photon_Observables.H \
 			Jet_Cone_Distribution.H \
 			Jet_Observables.H \
 			Momentum_Tensor.H \
