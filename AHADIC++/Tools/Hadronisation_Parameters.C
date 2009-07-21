@@ -200,19 +200,19 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("M_GLUE",0.);
   Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
   double mud = m_parametermap[string("Mass_updown")] = 
-    dataread.GetValue<double>("M_UP_DOWN",0.01);
+    dataread.GetValue<double>("M_UP_DOWN",0.30);
   double ms = m_parametermap[string("Mass_strange")] = 
-    dataread.GetValue<double>("M_STRANGE",0.2);
+    dataread.GetValue<double>("M_STRANGE",0.45);
   double mc = m_parametermap[string("Mass_charm")]         = 
-    dataread.GetValue<double>("M_CHARM",1.8);
+    dataread.GetValue<double>("M_CHARM",1.9);
   double mb = m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",5.0);
+    dataread.GetValue<double>("M_BOTTOM",5.2);
   double mdiq = m_parametermap[string("Mass_diquark")]           = 
-    dataread.GetValue<double>("M_DIQUARK_OFFSET",0.3);
+    dataread.GetValue<double>("M_DIQUARK_OFFSET",0.35);
   double bind0 = m_parametermap[string("Mass_bind0")]           = 
-    dataread.GetValue<double>("M_BIND_0",0.3);
+    dataread.GetValue<double>("M_BIND_0",0.0);
   double bind1 = m_parametermap[string("Mass_bind1")]           = 
-    dataread.GetValue<double>("M_BIND_1",0.4);
+    dataread.GetValue<double>("M_BIND_1",0.2);
   Flavour(kf_d).SetHadMass(mud);
   Flavour(kf_u).SetHadMass(mud);
   Flavour(kf_s).SetHadMass(ms);

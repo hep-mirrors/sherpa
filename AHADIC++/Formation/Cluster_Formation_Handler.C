@@ -93,12 +93,7 @@ void Cluster_Formation_Handler::Reset() {
     for(size_t j=0; j<m_clulists.size(); ++j) {
       assert(m_clulists[j]);
       Cluster_List& clist=*m_clulists[j];
-      while(!clist.empty()) {
-#ifdef memchecker
-	msg_Debugging()<<"@@@ Delete cluster "<<clist.back()<<" in "<<METHOD<<"."<<std::endl;
-#endif
-        clist.pop_back();
-      }
+      while(!clist.empty()) clist.pop_back();
       delete &clist;
     }
     m_clulists.clear();
@@ -121,19 +116,16 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
 	SetInfoTagForPrimaryParticle(copy,leading);
-#ifdef memchecker
-	std::cout<<"### New Proto_Particle ("
-		 <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
-#endif
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
 	if (col1==col2) construct = false;
       }
       else {
-	msg_Tracking()<<"ERROR in "<<METHOD<<":"<<std::endl
-		      <<"   Assumed everything okay with blob."
-		      <<std::endl<<(*blob)<<std::endl
-		      <<"   will try new event."<<std::endl;
+	// cannot find a matching colour/particle
+	msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		   <<"   Cannot deal with this fragmentation blob: "<<std::endl
+		   <<(*blob)<<std::endl
+		   <<"   Will try new event."<<std::endl;
 	Reset();
 	return false;
       }
@@ -144,10 +136,6 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       pli  = new Proto_Particle_List;
       Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
       SetInfoTagForPrimaryParticle(copy,leading);
-#ifdef memchecker
-      std::cout<<"### New Proto_Particle ("
-	       <<copy<<"/"<<part->Flav()<<") from "<<METHOD<<"."<<std::endl;
-#endif
       pli->push_back(copy);
       m_partlists.push_back(pli);
       construct = true;
@@ -160,6 +148,7 @@ void Cluster_Formation_Handler::SetInfoTagForPrimaryParticle(Proto_Particle * pr
 							     leading::code lead) const {
   switch (lead) {
   case leading::quarks_and_gluons:
+    break;
   case leading::quarks_and_gluons2:
     break;
   case leading::only_quarks:
@@ -187,14 +176,20 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
       mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
     }
     
-    if(mom.Abs2()>sqr(mass)) shiftables.push_back(new Proto_Particle_List(**pplit));
-    else nonshiftables.push_back(new Proto_Particle_List(**pplit));
+    if(mom.Abs2()>sqr(mass)) 
+      shiftables.push_back(new Proto_Particle_List(**pplit));
+    else 
+      nonshiftables.push_back(new Proto_Particle_List(**pplit));
   }
   Proto_Particle_List * pplin;
   while(!nonshiftables.empty()) {
     bool takefromshift(false);
     if(nonshiftables.size()==1) {
       if(shiftables.empty()) {
+	msg_Error()<<"Error in "<<METHOD<<": "<<std::endl
+		   <<"   Cannot shift single particle on its mass shells:"<<std::endl
+		   <<"   "<<(*nonshiftables.front())<<"."<<std::endl
+		   <<"   Will trigger new event."<<std::endl;
 	Reset();
 	delete nonshiftables.front();
 	return false;
@@ -223,19 +218,15 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
     else { if(!takefromshift) shiftables.push_back(pplin);}
   }
 
-  /*
-    for(pplit=m_partlists.begin();pplit!=m_partlists.end();++pplit)
-    std::cout<<**pplit<<std::endl;
-    PRINT_INFO("--------------");
-    for(pplit=shiftables.begin();pplit!=shiftables.end();++pplit)
-    std::cout<<**pplit<<std::endl;
-  */
-
   assert(nonshiftables.empty());
 
   while(!shiftables.empty()) {
     Proto_Particle_List * pplist=shiftables.front();
     if(!ShiftList(pplist)) {
+      msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		 <<"   Cannot shift particle list collectively."<<std::endl
+		 <<(*pplist)<<std::endl
+		 <<"   Will trigger new event."<<std::endl;
       while(!shiftables.empty()) {
 	delete shiftables.front();
 	shiftables.pop_front();
@@ -331,10 +322,6 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
       pplit=m_partlists.erase(pplit);
     }
     else {
-      msg_Error()<<"WARNING in "<<METHOD<<":"<<std::endl
-		 <<"   Could not form a suitable list after gluon decays from :"<<std::endl
-		 <<(**pplit)
-		 <<"   Try a new event."<<std::endl;
       Reset();
       return false;
     }
@@ -411,7 +398,7 @@ bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 #endif
 
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
-    msg_Debugging()<<"Error in "<<METHOD<<" : "<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
 	       <<"   Did not find a kinematically allowed solution for the cluster list."<<std::endl
 	       <<"   Will trigger a new event."<<std::endl;
     return false;

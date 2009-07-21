@@ -28,7 +28,7 @@ namespace AHADIC {
     DipIter SelectDipole();
     int     Rescue(DipIter & dip);
     void    AfterSplit(DipIter dip);
-    void    MergeDipoles(DipIter & dip1,DipIter & dip2);
+    bool    MergeDipoles(DipIter & dip1,DipIter & dip2);
     void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
     double  PT2Max(Dipole * dip) const;
 

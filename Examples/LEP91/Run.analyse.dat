@@ -6,8 +6,10 @@
   GENERATE_RESULT_DIRECTORY = 1
 
   ANALYSIS = Rivet
-  OUTPUT=2;
-  ! [Gluon_Decayer|15][Dipole_Splitter|15][Splitting_Tools|15]; 
+  OUTPUT= 2;
+  ![Gluon_Decayer|7][Dipole_Splitter|15][Splitting_Tools|15][Soft_Cluster_Handler|15][Ahadic|15][Cluster_Formation_Handler|15][Cluster_Decay_Handler|15][Cluster_Part|15];
+  ! [Gluon_Decayer|15];
+  ! [Dipole_Splitter|15][Splitting_Tools|15]; 
   ! [Soft_Cluster_Handler|15]
   ! [Ahadic|15][Cluster_Formation_Handler|15]
   ! [Cluster_Decay_Handler|15][Cluster_Part|15];

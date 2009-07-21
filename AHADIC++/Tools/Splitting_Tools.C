@@ -398,6 +398,8 @@ bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const ZForm::code & zform
 					 const bool & vetodiquark) {
   msg_Tracking()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_scale2_max<<"."<<std::endl;
   int  trials(0);
+  m_z = -1.;
+  m_flav = Flavour(kf_none);
   do {
     if (trials>1000 || 
 	!ProduceKinematics(m_scale2,m_z,m_phi,m_flav,zform,vetodiquark)) {
@@ -461,6 +463,8 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
 	}
       }
     }
+    msg_Tracking()<<"___ "<<METHOD<<" yields new particles : "<<std::endl
+		  <<(*p_out1)<<(*p_out2)<<std::endl;
   }
   else {
     p_split->m_mom = m_mom3;
@@ -491,7 +495,7 @@ bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
   double pt2min(m_pt2min);
   if (m_m3_2>0.) pt2min *= m_pt2min/m_m3_2;
   if (m_m1_2>0.) pt2min *= m_pt2min/m_m1_2;
-  pt2min = Min(pt2min,m_Qt2/4.);
+  if ((pt2min>m_scale2_max) && (pt2min<m_Qt2/4.)) m_scale2_max = m_Qt2/4.;
   if (m_masstreatment==3) { pt2min = (m_Qt2>4.*m_mmin_2)?m_mmin_2+4.*pt2min:pt2min; }
   double disc(4.*pt2min/m_Qt2); 
   if (disc<0. || disc>1.) {
@@ -503,13 +507,16 @@ bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
 
   scale2 = -1.;
   int  trials(0);
+  msg_Tracking()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<pt2min<<", "<<m_scale2_max<<"] "
+  		<<"and z = "<<z<<" for "<<m_flav<<". "
+  		<<"Glusplit = "<<p_split->m_flav.IsGluon()<<"."<<std::endl;
   while ((scale2<0. || z<0.) && trials<1000) {
     trials++;
     scale2 = p_as->SelectPT(m_scale2_max,pt2min);
     if (p_split->m_flav.IsGluon()) {
       if (m_masstreatment==3) {
 	SelectFlavour(scale2,vetodiquark);
-	disc = 4.*m_m2_2/m_Qt2;
+	disc = m_m2_2/m_Qt2;
 	if (disc<0. || disc>1.) continue;
 	deltaz = sqrt(1.-disc);
 	zmin = (1.-deltaz)/2.;
@@ -520,6 +527,7 @@ bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
       }
     }
     z = p_kernels->SelectZ(zmin,zmax,zform,p_split->m_flav.IsGluon(),p_split->m_info=='L');
+    //msg_Tracking()<<"___ Test emission with kt2 = "<<scale2<<", z = "<<z<<"."<<std::endl;
     if (z<0.) continue;
 
     if (!KinCheck(scale2,z)) {
@@ -532,6 +540,8 @@ bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
       continue;
     }
   }
+  msg_Tracking()<<"___ "<<METHOD<<" : exit inner loop with scale2 = "<<scale2<<" "
+		<<"and z = "<<z<<" for "<<m_flav<<"."<<std::endl;
 
   //if (p_split->m_flav.IsGluon()) {
   // msg_Out()<<"Out of "<<METHOD<<"(veto = "<<vetodiquark<<", mass = "<<m_masstreatment<<"): "
@@ -595,6 +605,9 @@ void Splitting_Tools::SelectFlavour(const double & maxmass,const bool & vetodiqu
       m_flav=(ran.Get()<0.5)?Flavour(kf_d):Flavour(kf_u);
       if (m_flav==Flavour(kf_d)) m_d++;
       else if (m_flav==Flavour(kf_u)) m_u++;
+      m_m2    = m_m3    = m_flav.HadMass();
+      m_m2_2  = m_m3_2  = sqr(m_m2); 
+      m_Qt2   = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
       return;
     }
     sumwt *= ran.Get();
@@ -709,6 +722,12 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
     q3 = m_z*l + (m_m3_2+m_kt2)/(gam*m_z)*n + m_kt*nperp;
   }
   q2 = m_mom0-q3-q1;
+
+  if (m_m1_2==0.) {
+    msg_Tracking()<<"___ "<<METHOD<<" summary: "<<std::endl
+		  <<"     Masses: m_m2 = m_m3 = "<<m_m2<<" = "<<m_m3<<" --> s23 = "<<m_m23_2<<"."<<std::endl;
+  }
+
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
     msg_Tracking()<<"      ----> (fail3) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
     return false;
@@ -734,8 +753,8 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
   m_cms.BoostBack(m_mom0);
 
   msg_Tracking()<<"___ "<<METHOD<<"(out): succeeded to build kinematics "
-		<<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<"."<<std::endl;
-  
+		<<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
+
   return true;
 }
 

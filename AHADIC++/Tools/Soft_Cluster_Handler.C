@@ -564,10 +564,14 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   }
   if ((enforce || lighter) && p_singletransitions->GetLightestMass(fpair)>MC) {
     msg_Error()<<"Error in "<<METHOD<<"("<<lighter<<", "<<enforce<<") :"<<std::endl
-	       <<"   Cluster too heavy, no transformation possible."<<std::endl
-	       <<"   Cluster = "<<cluster->Number()<<" ("<<fpair.first<<", "<<fpair.second<<", "<<"mass = "<<MC<<") vs. "
+	       <<"   Cluster too light, no transformation possible."<<std::endl
+	       <<"   Cluster = "<<cluster->Number()<<" ["
+	       <<fpair.first<<"("<<fpair.first.HadMass()<<"), "
+	       <<fpair.second<<"("<<fpair.second.HadMass()<<"), "
+	       <<"mass = "<<MC<<"] vs. "
 	       <<"lightest mass = "<<p_singletransitions->GetLightestMass(fpair)<<" for "
-	       <<p_singletransitions->GetLightestTransition(fpair)<<"."<<std::endl;
+	       <<p_singletransitions->GetLightestTransition(fpair)<<"."<<std::endl
+	       <<(*cluster)<<std::endl;
     return 0.;
   }
   Single_Transition_Miter stiter = p_singletransitions->GetTransitions()->find(fpair);
