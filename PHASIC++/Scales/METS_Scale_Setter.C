@@ -10,6 +10,7 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
@@ -17,13 +18,13 @@
 namespace PHASIC {
 
   struct CS_Params {
-    double m_kt2, m_z, m_y;
+    double m_kt2, m_op2, m_z, m_y;
     ATOOLS::Flavour m_fl;
     int m_mode;
     CS_Params(const double &kt2,const double &z,
 	      const double &y,const ATOOLS::Flavour &fl,
 	      const int mode=-1):
-      m_kt2(kt2), m_z(z), m_y(y), m_fl(fl), m_mode(mode) {}
+      m_kt2(kt2), m_op2(0.0), m_z(z), m_y(y), m_fl(fl), m_mode(mode) {}
   };// end of struct CS_Params
 
   class METS_Scale_Setter: public Scale_Setter_Base {
@@ -41,7 +42,7 @@ namespace PHASIC {
     SP(Color_Integrator) p_ci;
 
     size_t m_cnt, m_rej;
-    double m_lfrac;
+    double m_lfrac, m_aqed;
 
     static double s_eps, s_kt2max;
 
@@ -133,6 +134,7 @@ METS_Scale_Setter::METS_Scale_Setter
   SetScale(muf2tag,m_muf2tagset,m_muf2calc);
   SetScale(mur2tag,m_mur2tagset,m_mur2calc);
   m_f=p_proc->Flavours();
+  m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
 }
 
@@ -176,7 +178,7 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
   Single_Process *proc(p_proc->Get<Single_Process>());
   std::set<MCKey> trials;
   while (ampl->Legs().size()>4) {
-    double kt2w(s_kt2max);
+    double op2w(0.0), kt2w(0.0);
     size_t iw(0), jw(0), kw(0);
     MCKey ckw(0,0,0,kf_none);
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -201,9 +203,37 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		continue;
 	      }
 	      CS_Params cs(KT2(li,lj,lk,cf[f]));
+	      cs.m_op2=1.0/cs.m_kt2;
 	      if (cf[f].Strong() &&
-		  cs.m_kt2<s_kt2max) cs.m_kt2*=1.0-s_eps;
-	      if (cs.m_kt2<kt2w) {
+		  li->Flav().Strong() &&
+		  lj->Flav().Strong()) {
+		// strong clustering, reweight with as
+		cs.m_op2*=(*MODEL::as)(cs.m_kt2);
+	      }
+	      else {
+		// crude: reweight with em coupling
+		cs.m_op2*=m_aqed;
+		if (cf[f].IsPhoton() ||
+		    li->Flav().IsPhoton() ||
+		    lj->Flav().IsPhoton()) {
+		  // if photon, reweight with charge
+		  if (li->Flav().IsPhoton() ||
+		      lj->Flav().IsPhoton()) {
+		    cs.m_op2*=dabs(cf[f].Charge());}
+		  else {
+		    cs.m_op2*=dabs(li->Flav().Charge());
+		  }
+		}
+		else {
+		  // if massive, reweight with breit-wigner
+		  double s((li->Mom()+lj->Mom()).Abs2());
+		  double m2(sqr(cf[f].Mass()));
+		  cs.m_op2*=cs.m_kt2/
+		    sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
+		}
+	      }
+	      if (cs.m_op2>op2w) {
+		op2w=cs.m_op2;
 		kt2w=cs.m_kt2;
 		ckw=ck;
 		iw=i;
@@ -247,7 +277,8 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     msg_Debugging()<<"Cluster "<<ckw.m_fl<<" "
 		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
 		   <<" <-> "<<ID(ckw.m_k)
-		   <<" => "<<sqrt(kt2w)<<"\n";
+		   <<" => "<<sqrt(kt2w)
+		   <<" ("<<sqrt(op2w)<<")\n";
     ampl->SetKT2QCD(kt2w);
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
