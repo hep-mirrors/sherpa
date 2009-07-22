@@ -8,7 +8,10 @@ libExtraXSNLO_la_SOURCES      =	Virtual_ME2_Base.C \
 				ee3jet_QCD_Virtual.C \
                                 PPPP_QED_Virtual.C \
 				PPPP_QED_Loop.C \
-				DY_QCD_Loop.C
+				DY_QCD_Loop.C \
+				LH_OLE_Communicator.C \
+				LH_OLE_Interface.C
 
 localinc_HEADERS          =	Virtual_ME2_Base.H \
-				Loop_ME_Base.H
+				Loop_ME_Base.H \
+				LH_OLE_Communicator.H

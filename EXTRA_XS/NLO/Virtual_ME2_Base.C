@@ -13,7 +13,8 @@ using namespace ATOOLS;
 Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
                              const Flavour_Vector& flavs) :
   m_pinfo(pi), m_flavs(flavs),
-  m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), m_needsborn(false), m_mur2(1.0)
+  m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), m_needsborn(false), 
+  m_newlibs(false), m_mur2(1.0)
 {
 }
 

@@ -11,7 +11,7 @@ namespace EXTRAXS {
     const PHASIC::Process_Info& m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
     HELICITIES::DivArrD m_res;
-    bool m_needsborn;
+    bool m_needsborn,m_newlibs;
     double m_born;
     double m_mur2;
   public:
@@ -32,6 +32,7 @@ namespace EXTRAXS {
     inline bool NeedsBorn() const { return m_needsborn; }
     inline void SetBorn(const double& born) { m_born=born; }
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
+    inline bool NewLibs() const { return m_newlibs; }
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,
