@@ -14,8 +14,6 @@ namespace CSSHOWER {
     double OverEstimated(const double,const double);
     double Z();
 
-    double J(const double);
-
   };
 
   class LF_VVV_FI: public SF_Lorentz {
@@ -33,8 +31,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-
-    double J(const double,const double,const double);
 
   };
 
@@ -54,8 +50,6 @@ namespace CSSHOWER {
     double OverEstimated(const double,const double);
     double Z();
 
-    double J(const double,const double,const double);
-
   };
 
   class LF_VVV_II: public SF_Lorentz {
@@ -73,8 +67,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-
-    double J(const double,const double,const double);
 
   };
 
@@ -97,7 +89,7 @@ double LF_VVV_FF::operator()
   if (muk2==0.) {
     double value = p_cf->Coupling(scale,0) * massless;
     if (mode&1) return value;
-    return value * J(y);
+    return value * JFF(y);
   }
   else {
     //the massive case
@@ -113,7 +105,7 @@ double LF_VVV_FF::operator()
     massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = p_cf->Coupling(scale,0) * massive;
     if (mode&1) return value;
-    return value * J(y);
+    return value * JFF(y);
   }
 }
 
@@ -135,18 +127,13 @@ double LF_VVV_FF::Z()
 	     pow(m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax),ATOOLS::ran.Get()));
 }
 
-double LF_VVV_FF::J(const double y)
-{ 
-  return (1.-y);
-}
-
 double LF_VVV_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
   double value = 2.0*p_cf->Coupling(scale,0) * ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
   if (mode&1) return value;
-  return value * J(y,eta,scale);
+  return value * JFI(y,eta,scale);
 }
 
 double LF_VVV_FI::OverIntegrated
@@ -168,14 +155,6 @@ double LF_VVV_FI::Z()
 	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
 }
 
-double LF_VVV_FI::J(const double y,const double eta,const double scale)
-{ 
-  double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return (1.-y) * fresh/old;
-}
-
 double LF_VVV_IF::operator() 
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
@@ -186,7 +165,7 @@ double LF_VVV_IF::operator()
     //the massless case
     double value = p_cf->Coupling(scale,0) * massless;
     if (mode&1) return value;
-    return value * J(z,eta,scale);
+    return value * JIF(z,y,eta,scale);
   }
   else {
     //the massive case
@@ -196,7 +175,7 @@ double LF_VVV_IF::operator()
   }
     double value = p_cf->Coupling(scale,0) * massive;
     if (mode&1) return value;
-    return value * J(z,eta,scale);
+    return value * JIF(z,y,eta,scale);
   }
 }
 
@@ -219,21 +198,13 @@ double LF_VVV_IF::Z()
 	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
 }
 
-double LF_VVV_IF::J(const double z,const double eta,const double scale)
-{ 
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old;
-}
-
 double LF_VVV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( 1./(1.-z) + 1./z -2. +z*(1.-z));
   if (mode&1) return value;
-  return value * J(z,eta,scale);
+  return value * JII(z,y,eta,scale);
 }
 
 double LF_VVV_II::OverIntegrated
@@ -253,14 +224,6 @@ double LF_VVV_II::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
 	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
-}
-
-double LF_VVV_II::J(const double z,const double eta,const double scale)
-{ 
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old;
 }
 
 DECLARE_GETTER(LF_VVV_Getter,"Gauge3",SF_Lorentz,SF_Key);

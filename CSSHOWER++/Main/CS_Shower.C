@@ -391,7 +391,8 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters cp(p_cluster->KT2
-		       (almap[l],almap[r],almap[s],split->GetFlavour(),p_ms));
+		       (almap[l],almap[r],almap[s],
+			split->GetFlavour(),p_ms));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       l->SetStart(cp.m_kt2);
       r->SetStart(cp.m_kt2);
@@ -408,7 +409,8 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters ncp(p_cluster->KT2
-			(almap[l],almap[r],almap[s],split->GetFlavour(),p_ms));
+			(almap[l],almap[r],almap[s],
+			 split->GetFlavour(),p_ms));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi<<"\n";
       msg_Debugging()<<"            vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
@@ -558,6 +560,7 @@ Singlet *CS_Shower::TranslateAmplitude
 
 double CS_Shower::CalculateWeight(Cluster_Amplitude *const ampl)
 {
+  if (ampl->JF<PHASIC::Jet_Finder>()==NULL) return 1.0;
   switch (m_weightmode) {
   case 1 : return CalculateAnalyticWeight(ampl);
   default : THROW(fatal_error,"Invalid reweighting mode"); 
@@ -590,6 +593,19 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
     msg_Debugging()<<"largest ps scale "<<sqrt(kt2max)<<"\n";
     for (size_t i(0);i<ref->Legs().size();++i) {
       legs[ref->Leg(i)->Id()]=ref->Leg(i);
+    }
+    if (ref->OrderQCD()) {
+      double cf((ref->Leg(0)->Flav().Strong()||
+		 ref->Leg(ref->NIn()-1)->Flav().Strong())?
+		p_shower->GetSudakov()->ISCplFac():
+		p_shower->GetSudakov()->FSCplFac());
+      msg_Debugging()<<"core => mu = "<<sqrt(cf)
+		     <<"*"<<sqrt(ref->MuF2())<<" {\n";
+      {
+	msg_Indent();
+	wgt*=CouplingWeight(ref->OrderQCD(),cf*ref->MuF2(),ref->MuR2());
+      }
+      msg_Debugging()<<"}\n";
     }
     while (ref->Prev()) {
       ref=ref->Prev();

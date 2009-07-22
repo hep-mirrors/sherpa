@@ -66,6 +66,14 @@ namespace CSSHOWER {
 
     double Lambda(const double &a,const double &b,const double &c);
 
+    double JFF(const double &y) const;
+    double JFI(const double &y,
+	       const double &eta,const double &scale) const;
+    double JIF(const double &z,const double &y,
+	       const double &eta,const double &scale) const;
+    double JII(const double &z,const double &y,
+	       const double &eta,const double &scale) const;
+
   public:
 
     SF_Lorentz(const SF_Key &key);

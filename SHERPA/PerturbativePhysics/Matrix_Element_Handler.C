@@ -263,14 +263,14 @@ void Matrix_Element_Handler::BuildProcesses()
   hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));
   read.SetTags(std::map<std::string,std::string>());
   // set kfactor scheme
-  std::string kfactor=read.GetValue<std::string>("K_FACTOR_SCHEME","QCD");
+  std::string kfactor=read.GetValue<std::string>("K_FACTOR_SCHEME","METS");
   // set scale scheme
-  std::string scale=read.GetValue<std::string>("SCALE_SCHEME","VAR");
+  std::string scale=read.GetValue<std::string>("SCALE_SCHEME","METS");
   std::string muf2tag=read.GetValue<std::string>
-    ("FACTORIZATION_SCALE",(scale=="QCD"||scale=="METS")?"MU_F":
+    ("FACTORIZATION_SCALE",scale=="METS"?"MU_F":
      ToString(sqr(Flavour(kf_Z).Mass())));
   std::string mur2tag=read.GetValue<std::string>
-    ("RENORMALIZATION_SCALE",(scale=="QCD"||scale=="METS")?"MU_R":
+    ("RENORMALIZATION_SCALE",scale=="METS"?"MU_R":
      ToString(sqr(Flavour(kf_Z).Mass())));
   if (scale=="FIX_SCALE") {
     std::string fixscale=read.GetValue<std::string>
@@ -527,14 +527,14 @@ void Matrix_Element_Handler::BuildSingleProcessList
       std::vector<std::string> jfargs(2,gycut);
       GetMPvalue(vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
-      cpi.m_mur2tag=jfargs[1];
       if (i==0) jfargs.push_back("LO");
       if (procs.size()>1) skey.SetData("METS",jfargs);
     }
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
-      cpi.m_kfactor="QCD";
-      if (procs.size()>1) cpi.m_mur2tag=p_shower->GetShower()->GetKT2("Q2_CUT");
+      cpi.m_kfactor="METS";
+      if (procs.size()>1)
+	cpi.m_mur2tag=p_shower->GetShower()->GetKT2("Q2_CUT");
     }
     if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);
     procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);

@@ -152,6 +152,38 @@ double Splitting_Function_Base::GetXPDF
   return m_lpdf=p_pdf[beam]->GetXPDF(a);
 }
 
+double SF_Lorentz::JFF(const double &y) const
+{ 
+  return (1.-y);
+}
+
+double SF_Lorentz::JFI(const double &y,const double &eta,
+		       const double &scale) const
+{ 
+  double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  return (1.0-y) * fresh/old;
+}
+
+double SF_Lorentz::JIF(const double &z,const double &y,
+		       const double &eta,const double &scale) const
+{ 
+  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  return fresh/old;
+}
+
+double SF_Lorentz::JII(const double &z,const double &y,
+		       const double &eta,const double &scale) const
+{ 
+  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  return fresh/old;
+}
+
 void Splitting_Function_Base::ResetLastInt()
 {
   m_lastint=0.0;

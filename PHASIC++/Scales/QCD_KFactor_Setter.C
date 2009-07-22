@@ -45,7 +45,7 @@ operator()(const KFactor_Setter_Arguments &args) const
 void QCD_KFactor_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"variable scale scheme\n";
+  str<<"QCD kfactor scheme\n";
 }
 
 QCD_KFactor_Setter::QCD_KFactor_Setter

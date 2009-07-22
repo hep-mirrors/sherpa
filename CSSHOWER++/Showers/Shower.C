@@ -193,7 +193,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     //no shower anymore 
     if (splitter==p_actual->end()) return true;
     else {
-      msg_Debugging()<<"Emission "<<m_flavB<<" -> "<<m_flavB<<" "<<m_flavC
+      msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt((*splitter)->KtTest())
 		     <<"( "<<sqrt((*splitter)->KtNext())<<" .. "
 		     <<sqrt((*splitter)->KtPrev())<<" ), z = "<<(*splitter)->ZTest()<<", y = "
@@ -281,9 +281,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpB->SetSing((*splitter)->GetSing());
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
+	p_actual->push_back(newpC);
  	p_actual->BoostAllFS(newpB,newpC,spect,*splitter,
 			     (*splitter)->GetFlavour(),2);
-	p_actual->push_back(newpC);
 	bool ustat(UpdateDaughters(*splitter,newpB,newpC,false));
 	p_actual->erase(--p_actual->end());
 	if (!ustat) {
@@ -338,9 +338,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpA->SetSing((*splitter)->GetSing());
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
+	p_actual->push_back(newpC);
  	p_actual->BoostAllFS(newpA,newpC,spect,*splitter,
 			     (*splitter)->GetFlavour(),1);
-	p_actual->push_back(newpC);
 	bool ustat(UpdateDaughters(*splitter,newpA,newpC,false));
 	p_actual->erase(--p_actual->end());
 	if (!ustat) {

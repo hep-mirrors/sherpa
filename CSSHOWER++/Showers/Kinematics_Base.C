@@ -161,19 +161,17 @@ int Kinematics_FI::MakeKinematics
   double mij2 = sqr(p_ms->Mass(split->GetFlavour())); 
   
   x=GetY(Q2,kt2,z,mi2,mj2,ma2);
-  double tt=Q2-ma2-mij2, t=Q2-ma2-mi2-mj2;
   double sij=-((1.0-x)*(Q2-ma2)-(mi2+mj2))/x;
-  double xi=x*(tt-sqrt(tt*tt-4.*ma2*mij2))/
-    (t-sqrt(t*t-4.*ma2*sij*x*x));
-  if (tt*tt<4.*ma2*mij2 || tt>0.0 ||
-      t*t<4.*ma2*sij*x*x || t>0.0) return -1;
-  double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-ma2*mij2);
-  if (sqr(p1p2)<ma2*mij2 || IsZero(gamt,1.0e-6)) return -1;
-  double bet=1.0-ma2*mij2/(gamt*gamt), gam=gamt/xi;
-  Vec4D l=(p1-mij2/gamt*p2)/bet;
-  Vec4D n=(p2-ma2/gamt*p1)/bet;
-  l*=(1.0-ma2/gamt)/(1.0-ma2/gam);
-  n*=(1.0-mij2/gamt)/(1.0-sij/gam);
+  double po=sqr(Q2-mij2-ma2)-4.0*mij2*ma2, pn=sqr(Q2-sij-ma2)-4.0*sij*ma2;
+  if (po<0.0^pn<0.0) {
+    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
+    return -1;
+  }
+  q2=(Q2+ma2-sij)/(2.0*Q2)*Q+(p2-(Q2+ma2-mij2)/(2.0*Q2)*Q)*sqrt(pn/po);
+  Vec4D q13=Q+q2;
+  double q13q2=q13*q2, gam=q13q2+Sign(q13q2)*sqrt(sqr(q13q2)-sij*ma2);
+  double bet=1.0-ma2*sij/(gam*gam);
+  Vec4D l=(q13-sij/gam*q2)/bet, n=(q2-ma2/gam*q13)/bet;
   double zt=(gam*gam+ma2*sij)/(gam*gam-ma2*sij)*
     (z-ma2/gam*(1.0-x+2.0*mi2/(gam+ma2*sij/gam)));
   double ktt=(gam+ma2*sij/gam)*(1.0-x)*
@@ -183,13 +181,9 @@ int Kinematics_FI::MakeKinematics
     return -1;
   }
   ktt=sqrt(ktt);
-  q2 = n + ma2/gam*l;
   q1 = zt*l + (mi2+ktt*ktt)/(gam*zt)*n
     + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
     + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
-  q3 = (1.0-zt)*l + (mj2+ktt*ktt)/(gam*(1.0-zt))*n
-    - ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
-    - ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
   q3 = Q-q1+q2;
 
   split->SetYTest(1.0-x);
@@ -399,30 +393,28 @@ int Kinematics_II::MakeKinematics
   double mi2 = sqr(p_ms->Mass(newfl)), phi = split->Phi();
   Vec4D q1,q2,q3;
   
-    //the general massive case
-    std::cout.precision(12);
-    Vec4D  Q=p1+p2;
-    double Q2=Q.Abs2(), tt=Q2-mai2-mb2, t=Q2-ma2-mi2-mb2;
-    if (tt*tt<4.*mai2*mb2 || tt<0.0 ||
-	t*t<4.*ma2*mb2*z*z || t<0.0) return -1;
-    double xi=z*(tt+sqrt(tt*tt-4.*mai2*mb2))/(t+sqrt(t*t-4.*ma2*mb2*z*z));
-    y=GetY(Q2,kt2,z,ma2,mi2,mb2);
-    double gamt=p1*p2+sqrt(sqr(p1*p2)-mai2*mb2), gam=gamt/xi;
-    q1=(1.0-ma2*mb2/sqr(gam))/(1.0-mai2*mb2/sqr(xi*gam))/xi*
-      (p1-mai2/(xi*gam)*p2)+p2*ma2/gam;
-    q2=p2;
-    double a1=ma2/gam, a2=mb2/gam, bet=1.0/(1.0-a1*a2);
-    Vec4D l=bet*(q1-a1*q2), n=bet*(q2-a2*q1);
-    double zt=(1.0+a1*a2)/(1.0-a1*a2)*((1.0-z)-y*(1.0+a2));
-    double ktt=gam*y*(1.0+a1*a2)*zt-mi2-zt*zt*ma2;
-    if (ktt<0.0) {
-      msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-      return -1;
-    }
-    ktt=sqrt(ktt);
-    q3 = zt*l + (mi2+ktt*ktt)/(gam*zt)*n +
-      + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
-      + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
+  Vec4D  Q=p1+p2;
+  double Q2=Q.Abs2(), tt=Q2-mai2-mb2, t=Q2-ma2-mi2-mb2;
+  if (tt*tt<4.*mai2*mb2 || tt<0.0 ||
+      t*t<4.*ma2*mb2*z*z || t<0.0) return -1;
+  double xi=z*(tt+sqrt(tt*tt-4.*mai2*mb2))/(t+sqrt(t*t-4.*ma2*mb2*z*z));
+  y=GetY(Q2,kt2,z,ma2,mi2,mb2);
+  double gamt=p1*p2+sqrt(sqr(p1*p2)-mai2*mb2), gam=gamt/xi;
+  q1=(1.0-ma2*mb2/sqr(gam))/(1.0-mai2*mb2/sqr(xi*gam))/xi*
+    (p1-mai2/(xi*gam)*p2)+p2*ma2/gam;
+  q2=p2;
+  double a1=ma2/gam, a2=mb2/gam, bet=1.0/(1.0-a1*a2);
+  Vec4D l=bet*(q1-a1*q2), n=bet*(q2-a2*q1);
+  double zt=(1.0+a1*a2)/(1.0-a1*a2)*((1.0-z)-y*(1.0+a2));
+  double ktt=gam*y*(1.0+a1*a2)*zt-mi2-zt*zt*ma2;
+  if (ktt<0.0) {
+    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
+    return -1;
+  }
+  ktt=sqrt(ktt);
+  q3 = zt*l + (mi2+ktt*ktt)/(gam*zt)*n +
+    + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
+    + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
 
   xrot.RotateBack(q1);
   xrot.RotateBack(q2);

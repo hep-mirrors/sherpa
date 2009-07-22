@@ -521,19 +521,23 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2));
+      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
       Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
 		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Vec4D K(pl+ps-pr), Kt(pait+ps), KKt(K+Kt);
+      Poincare cmso(pait+ps), cmsn(pl+ps-pr);
+      cmsn.Boost(pait);
+      Poincare zrot(pait,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit)
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit)
-	  if ((*plit)->GetType()!=pst::IS) {
-	    Vec4D p((*plit)->Momentum());
-	    p=p-2.0*(p*KKt)/KKt.Abs2()*KKt+2.0*(p*Kt)/K.Abs2()*K;
-	    (*plit)->SetMomentum(p);
-	  }
-      r->SetMomentum(pr);
+	   asit!=p_all->end();++asit) {
+	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+	  if ((*plit)==l || (*plit)==r || (*plit)==s) continue;
+	  Vec4D p((*plit)->Momentum());
+	  cmso.Boost(p);
+	  zrot.RotateBack(p);
+	  cmsn.BoostBack(p);
+	  (*plit)->SetMomentum(p);
+	}
+      }
     }
     else {
       Parton *b(NULL);
@@ -547,10 +551,11 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ma2(p_ms->Mass2(s->GetFlavour()));
       double mb2(p_ms->Mass2(b->GetFlavour())), pspb(ps*pb);
       if (ma2==0.0) return;
-      double sb(Sign(pb[3])), ea(0.0);
+      double sb(Sign(pb[3])), ea(0.0), s((ps+pb).Abs2());
       if (IsZero(mb2)) ea=0.5*(pspb+ma2*sqr(pb[3])/pspb)/pb[0];
       else ea=(pb[0]*pspb+dabs(pb[3])*sqrt(pspb*pspb-ma2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
+      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
       Poincare cmso(-ps-pb), cmsn(-pan-pb);
       cmso.Boost(ps);
       Poincare zrot(ps,-sb*Vec4D::ZVEC);
@@ -579,16 +584,23 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
       double mb2(p_ms->Mass2(b->GetFlavour())), plpb(pl*pb);
       if (ma2==0.0 && maj2==0.0) return;
-      double sb(Sign(pb[3])), ea(0.0);
+      double sb(Sign(pb[3])), ea(0.0), s((pl+pb).Abs2());
       if (IsZero(mb2)) ea=0.5*(plpb+ma2*sqr(pb[3])/plpb)/pb[0];
       else ea=(pb[0]*plpb+dabs(pb[3])*sqrt(plpb*plpb-ma2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
+      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
       Poincare cmso(-pl-pb), cmsn(-pan-pb);
       cmso.Boost(pl);
       Poincare zrot(pl,-sb*Vec4D::ZVEC);
+      pl=l->Momentum();
+      cmso.Boost(pl);
+      zrot.Rotate(pl);
+      cmsn.BoostBack(pl);
+      l->SetMomentum(pl);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+	  if (*plit==l) continue;
 	  Vec4D p((*plit)->Momentum());
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
@@ -614,18 +626,22 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2));
+      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
       Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
 		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Vec4D K(pl+ps-pr), Kt(pait+ps), KKt(K+Kt);
+      Poincare cmso(pl+ps-pr), cmsn(pait+ps);
+      cmso.Boost(pait);
+      Poincare zrot(pait,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit)
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit)
-	  if ((*plit)->GetType()!=pst::IS) {
-	    Vec4D p((*plit)->Momentum());
-	    p=p-2.0*(p*KKt)/KKt.Abs2()*KKt+2.0*(p*K)/K.Abs2()*Kt;
-	    (*plit)->SetMomentum(p);
-	  }
+	   asit!=p_all->end();++asit) {
+	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+	  Vec4D p((*plit)->Momentum());
+	  cmso.Boost(p);
+	  zrot.Rotate(p);
+	  cmsn.BoostBack(p);
+ 	  (*plit)->SetMomentum(p);
+	}
+      }
       r->SetMomentum(pr);
     }
     else {
@@ -638,27 +654,19 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
       Vec4D pb(-b->Momentum()), pa(-s->Momentum());
       Vec4D pi(l->Momentum()), pj(r->Momentum()), Q(pi+pj+pa);
-      double mi2(p_ms->Mass2(l->GetFlavour())), mij2(p_ms->Mass2(mo));
-      double mj2(p_ms->Mass2(r->GetFlavour()));
-      double ma2(p_ms->Mass2(s->GetFlavour()));
+      double ma2(p_ms->Mass2(s->GetFlavour())), mij2(p_ms->Mass2(mo));
       double mb2(p_ms->Mass2(b->GetFlavour()));
       if (ma2==0.0) return;
-      double pipa=pi*pa, pjpa=pj*pa, pipj=pi*pj;
-      double xija=(pipa+pjpa+pipj)/(pipa+pjpa);
-      double Q2=Q.Abs2(), ttau=Q2-ma2-mij2, tau=Q2-ma2-mi2-mj2;
-      double sij=-((1.0-xija)*(Q2-ma2)-(mi2+mj2))/xija;
-      double xiija=xija*(ttau-sqrt(ttau*ttau-4.*ma2*mij2))/
-	(tau-sqrt(tau*tau-4.*ma2*sij*sqr(xija)));
-      double pijpa=pipa+pjpa, gam=-pijpa+sqrt(pijpa*pijpa-ma2*sij);
-      double bet=1.0-ma2*sij/(gam*gam), gamt=gam*xiija;
-      Vec4D l(((pi+pj)+sij/gam*pa)/bet), n((-pa-ma2/gam*(pi+pj))/bet);
-      l*=(1.0-ma2/gam)/(1.0-ma2/gamt);
-      n*=(1.0-sij/gam)/(1.0-mij2/gamt);
-      Vec4D pat(-n-ma2/gamt*l), pijt(l+mij2/gamt*n);
-      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+      double sij((pi+pj).Abs2()), Q2(Q.Abs2());
+      double lrat((sqr(Q2-mij2-ma2)-4.0*mij2*ma2)/
+		  (sqr(Q2-sij-ma2)-4.0*sij*ma2));
+      Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
+      Vec4D pijt(Q-pat);
+      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
       if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
       else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2));
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
+      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
       Poincare cmso(-pat-pb), cmsn(-pan-pb);
       cmso.Boost(pat);
       Poincare zrot(pat,-sb*Vec4D::ZVEC);
@@ -691,9 +699,8 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double mk2(p_ms->Mass2(s->GetFlavour()));
       if (ma2==0.0 && maj2==0.0) return;
       double pjpa=pj*pa, pkpa=pk*pa, pjpk=pj*pk;
-      double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
+      double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa), sjk=(pj+pk).Abs2();
       double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;
-      double sjk=-((1.0-xjka)*(Q2-ma2)-(mj2+mk2))/xjka;
       double xijka=xjka*(ttau-sqrt(ttau*ttau-4.*maj2*mk2))/
 	(tau-sqrt(tau*tau-4.*ma2*sjk*sqr(xjka)));
       double pjkpa=pjpa+pkpa, gam=-pjkpa+sqrt(pjkpa*pjkpa-ma2*sjk);
@@ -702,10 +709,11 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
       n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
       Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l);
-      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0;
+      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
       if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
       else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2));
+      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2)), pam(ea,0.0,0.0,-pan[3]);
+      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
       Poincare cmso(-pat-pb), cmsn(-pan-pb);
       cmso.Boost(pat);
       Poincare zrot(pat,-sb*Vec4D::ZVEC);
