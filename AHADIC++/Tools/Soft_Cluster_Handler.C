@@ -61,7 +61,7 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
 {
-  msg_Out()<<"@@@ "<<METHOD<<": "
+  msg_Tracking()<<"@@@ "<<METHOD<<": "
 	   <<m_transitions<<" transitions, "<<m_dtransitions<<" double transitions, "
 	   <<m_decays<<" decays and "<<m_forceddecays<<" forced decays."<<std::endl
 	   <<"@@@ "<<METHOD<<": "<<m_lists<<" transitions from original dipole list."<<std::endl;
