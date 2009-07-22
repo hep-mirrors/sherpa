@@ -1,9 +1,9 @@
 #include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "Exception.H"
-#include "ATOOLS/Org/LH_OLE_Communicator.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "EXTRA_XS/NLO/LH_OLE_Communicator.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
