@@ -503,8 +503,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
       m_beamykey[2]  = xinfo[1];
       m_isrspkey[3]  = xinfo[2];
       m_isrykey[2]   = xinfo[3];
-      p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&cur->Process()->
-			    Flavours().front(),m_nin+m_nout);
+      if (!p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&cur->Process()->
+                                 Flavours().front(),m_nin+m_nout)) {
+        return new Weight_Info(1, 0.0, 0.0, 1.0, 0.0, 0.0);
+      }
       p_lab=cur->Momenta();
       if (value > max) {
 	cur->SetOverflow(value-max);

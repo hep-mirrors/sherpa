@@ -247,6 +247,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   else {
     THROW(fatal_error,"Invalid ISR mode");
   }
+  if (PDF(0) && (m_x[0]<PDF(0)->XMin() || m_x[0]>PDF(0)->XMax())) return false;
+  if (PDF(1) && (m_x[1]<PDF(1)->XMin() || m_x[1]>PDF(1)->XMax())) return false;
   p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
   p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
   m_cmsboost=Poincare(p_cms[0]+p_cms[1]);
@@ -306,6 +308,10 @@ bool ISR_Handler::CalculateWeight(const double scale)
     m_mu2[0]=m_mu2key[0][0];
     m_mu2[1]=m_mu2key[1][0];
   }
+  if (PDF(0) && (m_mu2[0]<PDF(0)->Q2Min() || m_mu2[0]>PDF(0)->Q2Max()))
+    return 0.;
+  if (PDF(1) && (m_mu2[1]<PDF(1)->Q2Min() || m_mu2[1]>PDF(1)->Q2Max()))
+    return 0.;
   switch (m_mode) {
   case 3 :
     if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor() ||
@@ -338,6 +344,10 @@ bool ISR_Handler::CalculateWeight2(const double scale)
     m_mu2[0]=m_mu2key[0][0];
     m_mu2[1]=m_mu2key[1][0];
   }
+  if (PDF(0) && (m_mu2[1]<PDF(0)->Q2Min() || m_mu2[1]>PDF(0)->Q2Max()))
+    return 0.;
+  if (PDF(1) && (m_mu2[0]<PDF(1)->Q2Min() || m_mu2[0]>PDF(1)->Q2Max()))
+    return 0.;
   if (m_x[0]>p_isrbase[1]->PDF()->RescaleFactor() ||
       m_x[1]>p_isrbase[0]->PDF()->RescaleFactor()) return 0;
   if (p_isrbase[0]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1]) && 
