@@ -123,7 +123,10 @@ void Soft_Photon_Observable_Base::Evaluate(const ATOOLS::Blob_List& blobs,
       break;
     }
   }
-  if (!QEDblob) Evaluate(0.,weight,ncount);
+  if (!QEDblob) {
+    Evaluate(0.,weight,ncount);
+    return;
+  }
   Particle_Vector parts;
   for (int i=0;i<QEDblob->NOutP();++i) {
     for (size_t j=0;j<m_flavs.size();++j) {
