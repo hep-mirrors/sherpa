@@ -130,6 +130,7 @@ void Soft_Photon_Observable_Base::Evaluate(const ATOOLS::Blob_List& blobs,
       if (QEDblob->OutParticle(i)->Flav()==m_flavs[j] ||
           QEDblob->OutParticle(i)->Info()=='S') {
         parts.push_back(QEDblob->OutParticle(i));
+        j=m_flavs.size();
       }
     }
   }
