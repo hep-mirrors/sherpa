@@ -1,0 +1,246 @@
+#! /usr/bin/env python
+
+import sys, os, copy
+from math import sqrt
+from subprocess import Popen
+try:
+    sorted([])
+except:
+    def sorted(coll):
+        coll.sort()
+        return coll
+
+
+class Histo:
+    def __init__(self):
+        self._bins = []
+        self.path = None
+        self.name = None
+        self.title = None
+
+    def __cmp__(self, other):
+        """Sort by $path/$name string"""
+        return self.fullPath() > other.fullPath()
+
+    def __str__(self):
+        out = "Histogram '%s' with %d bins\n" % (self.fullPath(), self.numBins())
+        out += "Title: %s\n" % self.title
+        out += "\n".join([str(b) for b in self.getBins()])
+        return out
+
+    def fullPath(self):
+        return os.path.join(self.path, self.name)
+
+    def asFlat(self):
+        global headerprefix
+        global opts
+        out = "# BEGIN HISTOGRAM %s\n" % self.fullPath()
+        out += headerprefix + "AidaPath=%s\n" % self.fullPath()
+        out += headerprefix + "Title=%s\n" % self.title
+        out += "## Area: %s\n" % self.area()
+        out += "## Num bins: %d\n" % self.numBins()
+#         if opts.GNUPLOT:
+#             out += "## xval  \tyval    \txlow    \txhigh    \tylow     \tyhigh\n"
+#         else:
+        out += "## xlow  \txhigh   \tyval    \tyerrminus\tyerrplus\n"
+        out += "\n".join([b.asFlat() for b in self.getBins()])
+	out += "\n# END HISTOGRAM"
+        return out
+
+    def numBins(self):
+        return len(self._bins)
+
+    def getBins(self):
+        return sorted(self._bins)
+
+    def setBins(self, bins):
+        self._bins = bins
+        return self
+
+    def addBin(self, bin):
+        self._bins.append(bin)
+        return self
+
+    def getBin(self, index):
+        self._bins.sort()
+        return self.getBins()[index]
+
+    bins = property(getBins, setBins)
+
+    def area(self):
+        return sum([bin.area() for bin in self.bins])
+
+    def __iter__(self):
+        return iter(self.getBins())
+
+    def __len__(self):
+        return len(self._bins)
+
+    def __getitem__(self, index):
+        return self.getBin(index)
+
+
+class Bin:
+    """A simple container for a binned value with an error."""
+    def __init__(self, xlow=None, xhigh=None, yval=0, yerrplus=0, yerrminus=0, focus=None):
+        self.xlow = xlow
+        self.xhigh= xhigh
+        self.yval = yval
+        self.yerrplus = yerrplus
+        self.yerrminus = yerrminus
+        self.focus= focus
+
+    def __str__(self):
+        out = "%f to %f: %f +- %f" % (self._xlow, self._xhigh, self._yval, self._yerr)
+        return out
+
+    def asFlat(self):
+        global opts
+#         if opts.GNUPLOT:
+#             out = "%f\t%f\t%f\t%f\t%f\t%f" % (self.getBinCenter(), self.yval,
+#                                               self.xlow, self.xhigh, 
+#                                               self.yval-self.yerrminus, self.yval+self.yerrplus)
+#         else:
+        out = "%f\t%f\t%f\t%f\t%f" % (self.xlow, self.xhigh, self.yval, self.yerrminus, self.yerrplus)
+        return out
+
+    def __cmp__(self, other):
+        """Sort by mean x value (yeah, I know...)"""
+        return (self.xlow + self.xhigh) > (other.xlow + other.xhigh)
+
+    def getXRange(self):
+        return (self.xlow, self.xhigh)
+
+    def setXRange(self, xlow, xhigh):
+        self.xlow = xlow
+        self.xhigh = xhigh
+        return self
+
+    def getBinCenter(self):
+        """Geometric middle of the bin range."""
+        return self.xlow + .5*(self.xhigh - self.xlow)
+
+    def getFocus(self):
+        """Mean x-value of the bin."""
+        if self.focus is not None:
+            return (self.xlow + self.xhigh)/2.0
+        else:
+            return self.focus
+
+    def area(self):
+        return self.yval * (self.xhigh - self.xlow)
+
+    def getYErr(self):
+        """Get mean of +ve and -ve y-errors."""
+        return (self.yerrplus + self.yerrminus)/2.0
+
+    def setYErr(self, yerr):
+        """Set both +ve and -ve y-errors simultaneously."""
+        self.yerrplus = yerr
+        self.yerrminus = yerr
+        return self
+
+
+
+## Try to load faster but non-standard cElementTree module
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    try:
+        import cElementTree as ET
+    except ImportError:
+        try:
+            import xml.etree.ElementTree as ET
+        except:
+            sys.stderr.write("Can't load the ElementTree XML parser: please install it!\n")
+            sys.exit(1)
+
+
+
+def mkHistoFromDPS(dps):
+    """Make a mini histo representation from an AIDA dataPointSet tag."""
+    myhist = Histo()
+    myhist.name = dps.get("name")
+    myhist.title = dps.get("title")
+    myhist.path = dps.get("path")
+    points = dps.findall("dataPoint")
+    numbins = len(points)
+    for binnum, point in enumerate(points):
+        bin = Bin()
+        for d, m in enumerate(point.findall("measurement")):
+            val  = float(m.get("value"))
+            down = float(m.get("errorMinus"))
+            up = float(m.get("errorPlus"))
+            if d == 0:
+                low  = val - down
+                high = val + up
+                bin.setXRange(low, high)
+            elif d == 1:
+                bin.yval = val
+                bin.yerrplus = up
+                bin.yerrminus = down
+        myhist.addBin(bin)
+    return myhist
+
+
+from optparse import OptionParser
+parser = OptionParser(usage="%prog aidafile [aidafile2 ...]")
+parser.add_option("-o", "--outfile", dest="OUTFILE",
+                  default="merged.aida", help="file for merged aida output.")
+opts, args = parser.parse_args()
+headerprefix = ""
+
+if len(args) < 1:
+    sys.stderr.write("Must specify at least one AIDA histogram file\n")
+    sys.exit(1)
+
+
+try:
+    outaida = open(opts.OUTFILE, "w")
+except:
+    sys.stderr.write("Couldn't open outfile %s for writing." % opts.OUTFILE)
+
+try:
+    outdat = open(opts.OUTFILE.replace(".aida", ".dat"), "w")
+except:
+    sys.stderr.write("Couldn't open outfile %s for writing." % opts.OUTFILE.replace(".aida", ".dat"))
+
+## Get histos
+inhistos = {}
+weights = {}
+for aidafile in args:
+    tree = ET.parse(aidafile)
+    for dps in tree.findall("dataPointSet"):
+        h = mkHistoFromDPS(dps)
+        if not inhistos.has_key(h.fullPath()):
+            inhistos[h.fullPath()] = {}
+        inhistos[h.fullPath()][aidafile] = h
+
+## Merge histos
+outhistos = {}
+for path, hs in inhistos.iteritems():
+    #print path, hs
+    outhistos[path] = copy.deepcopy(hs.values()[0])
+    for i, b in enumerate(outhistos[path].getBins()):
+        sum_val_err2 = 0.0;
+        sum_1_err2 = 0.0;
+        for infile, h in hs.iteritems():
+            err = h.getBin(i).getYErr()
+            val = h.getBin(i).yval
+
+            if err!=0.0:
+                sum_val_err2 += val/(err**2);
+                sum_1_err2 += 1.0/(err**2);
+        if sum_1_err2!=0.0:
+            outhistos[path].getBin(i).yval = sum_val_err2 / sum_1_err2
+            outhistos[path].getBin(i).setYErr(sqrt(1.0/sum_1_err2))
+
+## Write out merged histos
+#print sorted(outhistos.values())
+outdat.write("\n\n".join([h.asFlat() for h in sorted(outhistos.values())]))
+outdat.write("\n")
+outdat.close()
+
+Popen(["flat2aida", opts.OUTFILE.replace(".aida", ".dat")], stdout=outaida).wait()
+
+os.unlink(opts.OUTFILE.replace(".aida", ".dat"))

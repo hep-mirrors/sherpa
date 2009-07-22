@@ -19,10 +19,12 @@ except ImportError:
 
 
 usage = """Webpages from histogram files written out by Rivet.
+You can specify multiple aida files to be compared and/or have some of them
+merged before plotting.
 
 Examples:
   source /path/to/rivetenv.sh
-  %prog [options] <aidafile> [<aidafile> ...]
+  %prog [options] <aidafile> [<aidafile>  <file1>,<file2>,<file3>,<merged>  ...]
 """
 
 
@@ -30,7 +32,7 @@ parser = OptionParser(usage=usage)
 parser.add_option("-o", "--outputdir", dest="OUTPUTDIR",
                   default="./plots", help="directory for webpage output.")
 
-opts, aidafiles = parser.parse_args()
+opts, args = parser.parse_args()
 
 try:
     datadir = Popen(["rivet-config", "--datadir"], stdout=PIPE).communicate()[0].split()[0]
@@ -44,6 +46,26 @@ except:
     print "Error: Directory '%s' already exists. Set -o to something else." % opts.OUTPUTDIR
     exit(1)
 
+## potentially merge aida files (if they have been listed with ",")
+aidafiles = list()
+for aidafile in args:
+    subruns = [subrun.strip() for subrun in aidafile.split(",")]
+    if len(subruns) > 2:
+        ## merge aida files separated by ","
+        newfilename = subruns[-1]
+        if os.path.exists(newfilename):
+            newfilename = "merged."+newfilename
+        else:
+            subruns.pop()
+        cmd = [os.path.join(sys.path[0], "aidamerge")]
+        cmd.extend(subruns)
+        cmd.append("-o")
+        cmd.append(newfilename)
+        Popen(cmd).wait();
+        print "Merged %s aida files into %s." % (subruns, newfilename)
+        aidafiles.append(newfilename)
+    else:
+        aidafiles.append(aidafile)
 
 ## get set of analyses/reffiles involved in the runs
 analyses = set()
