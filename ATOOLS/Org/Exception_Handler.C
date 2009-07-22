@@ -313,9 +313,8 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
 {
 #ifdef USING_Stack_Trace
   ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace(..): "
-      <<om::reset<<om::blue<<"Generating stack trace "<<om::reset
-      <<"(adapted from ROOT version 3.10) "<<om::bold<<"\n{"
-      <<om::reset<<std::endl;
+      <<om::reset<<om::blue<<"Generating stack trace "
+      <<om::reset<<om::bold<<"\n{"<<om::reset<<std::endl;
   // adapted from root version 3.10 TUnixSystem.cxx
   void *trace[MAX_BACKTRACE_DEPTH];
   int depth=backtrace(trace,MAX_BACKTRACE_DEPTH);
