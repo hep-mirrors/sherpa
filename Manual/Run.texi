@@ -113,6 +113,9 @@ information and analysis results, once the run is terminated abnormally.
 @emph{Note that when running the code on a cluster or in a grid environment, BATCH_MODE
 should never be different from 1.}
 
+The command line option @option{-b} should therefore not be used in this case, see
+@ref{Command line}.
+
 @node SPIN_CORRELATIONS
 @subsection SPIN_CORRELATIONS
 @cindex SPIN_CORRELATIONS

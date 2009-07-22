@@ -15,7 +15,10 @@ Read input file from path @samp{<path>}.
 Set number of events to generate @samp{<events>}.
 
 @item -O <level>
-Set output level @samp{<level>}.
+Set output level @samp{<level>}, see @ref{OUTPUT}.
+
+@item -b
+Switch to non-batch mode, see @ref{BATCH_MODE}.
 
 @item -v, --version
 Print versioning information.

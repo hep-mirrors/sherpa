@@ -7,7 +7,7 @@ Sherpa
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
-.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ] [\-vh]"
+.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ] [\-vbh]"
 .SH DESCRIPTION
 Sherpa is a Monte Carlo event generation framework.
 .br
@@ -22,6 +22,8 @@ Sets the run path to \fIpath\fP.
 Sets the number of events to \fIevents\fP.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP, see info file.
+.IP "\fB-b\fP"
+Switches to non-batch mode, see info file.
 .IP "\fB-v\fP, \fB--version\fP" 
 Prints versioning information.
 .IP "\fB-h\fP, \fB--help\fP" 

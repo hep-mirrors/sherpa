@@ -884,6 +884,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       }
       *oit="EVENTS="+events;
     }
+    else if (par.find("-b")==0) {
+      std::string batch=par.substr(2);
+      if (batch!="") *oit="-"+batch;
+      else oit=helpsv.erase(oit);
+      oit=helpsv.insert(oit,"BATCH_MODE=0");
+    }
     else if (par.find("-O")==0) {
       std::string out=par.substr(2);
       if (out=="") {
