@@ -25,8 +25,7 @@ Signal_Processes::~Signal_Processes()
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   Blob *blob(bloblist->FindFirst(btp::Signal_Process));
-  if (blob==NULL) THROW(fatal_error,"Internal error");
-  if (blob->Has(blob_status::needs_signal))
+  if (blob && blob->Has(blob_status::needs_signal))
     while (true) {
       if (p_mehandler->GenerateOneEvent() &&
 	  FillBlob(bloblist,blob)) {

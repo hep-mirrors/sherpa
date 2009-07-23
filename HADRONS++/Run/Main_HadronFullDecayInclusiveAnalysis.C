@@ -23,8 +23,6 @@ typedef map<Flavour,int>::iterator FIMapIt;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-//   std::string adir = p_sherpa->GetInitHandler()
-//                       ->GetAnalysis()->OutputPath();
   std::string adir = "";
   ATOOLS::MakeDir(adir,493);
   rootfile = new TFile(string(adir+"/Multiplicities_"+

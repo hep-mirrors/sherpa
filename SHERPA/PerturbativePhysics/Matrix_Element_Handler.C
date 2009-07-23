@@ -218,7 +218,8 @@ bool Matrix_Element_Handler::InitializeProcesses
   msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
 	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
 #endif
-  if (m_procs.empty()) THROW(normal_exit,"No hard process found");
+  if (m_procs.empty() && m_gens.size()>0)
+    THROW(normal_exit,"No hard process found");
   msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
 #ifdef USING__Threading
   rbtime=retime;
@@ -289,7 +290,7 @@ void Matrix_Element_Handler::BuildProcesses()
   pread.SetAddCommandLine(false);
   pread.SetInputPath(m_path);
   pread.SetInputFile(m_processfile);
-  if (!pread.MatrixFromFile(procdata,""))
+  if (m_gens.size()>0 && !pread.MatrixFromFile(procdata,""))
     THROW(missing_input,"No data in"+m_path+m_processfile+"'.");
   for (size_t nf(0);nf<procdata.size();++nf) {
     std::vector<std::string> &cur(procdata[nf]);

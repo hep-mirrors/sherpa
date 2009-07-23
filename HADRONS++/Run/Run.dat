@@ -1,10 +1,6 @@
 (me){
-  ME_SIGNAL_GENERATOR=Internal
+  ME_SIGNAL_GENERATOR=None
 }(me)
-(processes){
-  Process 93 93 -> 11 -11
-  End_process
-}(processes)
 (beam){
   BEAM_1=2212
   BEAM_ENERGY_1=7000.

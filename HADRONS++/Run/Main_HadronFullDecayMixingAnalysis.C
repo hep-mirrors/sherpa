@@ -20,7 +20,7 @@ started with the following specialities:
 */
 
 #include "Main_FullDecay.C"
-#include "Shell_Tools.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
 
 static Hadron_Decay_Channel* signal_hdc;
@@ -37,14 +37,12 @@ static TH1D* mixed_Bbar_events;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  Decay_Map* decaymap = p_sherpa->GetInitHandler()
-                                ->GetHadronDecayHandler("Hadrons")
-                                ->GetHadrons()->DecayMap();
+  Hadron_Decay_Map* decaymap = p_sherpa->GetInitHandler()
+                               ->GetHadronDecayHandler("Hadrons")
+                               ->GetHadrons()->DecayMap();
   Hadron_Decay_Table* decaytable = (*decaymap)[Flavour(kf_B)][1];
   signal_hdc = (Hadron_Decay_Channel*) decaytable->GetDecayChannel(0);
 
-//   std::string adir = p_sherpa->GetInitHandler()
-//                              ->GetSampleAnalysis()->OutputPath();
   std::string adir = "";
   ATOOLS::MakeDir(adir,493);
   rootfile = new TFile(string(adir+"/CPasymmetry_"+

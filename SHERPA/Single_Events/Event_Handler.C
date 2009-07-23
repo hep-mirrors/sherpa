@@ -182,7 +182,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	case Return_Value::New_Event : 
 	  {
 	    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
-	    m_addn+=(*sp)["Trials"]->Get<double>();
+            if (sp) m_addn+=(*sp)["Trials"]->Get<double>();
 	  }
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncNewEvent((*pit)->Name());
@@ -205,13 +205,15 @@ bool Event_Handler::GenerateEvent(int mode)
     if (!m_blobs.FourMomentumConservation()) return false;
     {
       Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
-      double trials((*sp)["Trials"]->Get<double>());
-      sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
-      double cxs((*sp)["Weight"]->Get<double>());
-      m_n+=trials+m_addn;
-      m_sum+=cxs;
-      m_sumsqr+=sqr(cxs);
-      m_addn=0.0;
+      if (sp) {
+        double trials((*sp)["Trials"]->Get<double>());
+        sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
+        double cxs((*sp)["Weight"]->Get<double>());
+        m_n+=trials+m_addn;
+        m_sum+=cxs;
+        m_sumsqr+=sqr(cxs);
+        m_addn=0.0;
+      }
     }
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) {

@@ -23,6 +23,7 @@ ME_Generators::ME_Generators(const std::string &path,
     megens.push_back("Comix");
   }
   for (size_t i(0);i<megens.size();++i) {
+    if (megens[i]=="None") continue;
     push_back(ME_Generator_Getter::GetObject(megens[i],ME_Generator_Key()));
     if (back()==NULL) {
       msg_Error()<<METHOD<<"(): ME generator '"<<megens[i]
