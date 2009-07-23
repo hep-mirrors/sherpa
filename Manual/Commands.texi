@@ -14,12 +14,20 @@ Read input file from path @samp{<path>}.
 @item -e <events>
 Set number of events to generate @samp{<events>}.
 
-@item -r <events>
+@item -r <results>
 Set the result directory to @samp{<results>},
 see @ref{RESULT_DIRECTORY}.
 
-@item -a <analysis>
-Set the analysis handler to @samp{<analysis>},
+@item -m <generators>
+Set the matrix element generator list to @samp{<generators>},
+see @ref{ME_SIGNAL_GENERATOR}.
+
+@item -F <module>
+Set the fragmentation module to @samp{<module>},
+see @ref{FRAGMENTATION}.
+
+@item -a <analyses>
+Set the analysis handler list to @samp{<analyses>},
 see @ref{ANALYSIS}.
 
 @item -O <level>

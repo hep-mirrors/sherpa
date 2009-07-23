@@ -872,6 +872,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-p","PATH"));
     else if (ExtractValArg(helpsv,oit,"-e","EVENTS"));
     else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
+    else if (ExtractValArg(helpsv,oit,"-m","ME_SIGNAL_GENERATOR"));
+    else if (ExtractValArg(helpsv,oit,"-F","FRAGMENTATION"));
     else if (ExtractValArg(helpsv,oit,"-a","ANALYSIS"));
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
     else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
@@ -884,17 +886,19 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       if (par!="-h" && par!="--help")
 	msg_Out()<<"Unrecognized option '"<<par<<"'.\n"<<endl;
       msg_Out()<<"Usage:\n"<<endl;
-      msg_Out()<<"  Sherpa [options] [<option>=<value>] [<tag>:=<value>]\n"<<endl;
-      msg_Out()<<"Options:\t-f <file>      read input from file <file>"<<endl;
-      msg_Out()<<"\t\t-p <path>      read input from path <path>"<<endl;
-      msg_Out()<<"\t\t-e <events>    set number of events <events>"<<endl;
-      msg_Out()<<"\t\t-r <results>   set result directory <results>"<<endl;
-      msg_Out()<<"\t\t-a <analysis>  set analysis handler <analysis>"<<endl;
-      msg_Out()<<"\t\t-O <level>     set output level <level>"<<endl;
-      msg_Out()<<"\t\t-g             create result directory automatically"<<endl;
-      msg_Out()<<"\t\t-b             run in non-batch mode"<<endl;
-      msg_Out()<<"\t\t-v,--version   print the version number"<<endl;
-      msg_Out()<<"\t\t-h,--help      print this help message\n"<<endl;
+      msg_Out()<<"  Sherpa [options] [<parameter>=<value>] [<tag>:=<value>]\n"<<endl;
+      msg_Out()<<"Options:\t-f <file>         read input from file <file>"<<endl;
+      msg_Out()<<"\t\t-p <path>         read input from path <path>"<<endl;
+      msg_Out()<<"\t\t-e <events>       set number of events <events>"<<endl;
+      msg_Out()<<"\t\t-r <results>      set result directory <results>"<<endl;
+      msg_Out()<<"\t\t-m <generator>    set me generator <generator>"<<endl;
+      msg_Out()<<"\t\t-F <module>       set fragmentation module <module>"<<endl;
+      msg_Out()<<"\t\t-a <analysis>     set analysis handler <analysis>"<<endl;
+      msg_Out()<<"\t\t-O <level>        set output level <level>"<<endl;
+      msg_Out()<<"\t\t-g                create result directory automatically"<<endl;
+      msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
+      msg_Out()<<"\t\t-v,--version      print the version number"<<endl;
+      msg_Out()<<"\t\t-h,--help         print this help message\n"<<endl;
       exit(0);
     }
   }

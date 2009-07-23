@@ -5,7 +5,9 @@ Sherpa \- Monte Carlo event generator
 Sherpa
 .B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP]"
 .br
-.B "       [\-e \fIevents\fP] [\-r \fIresults\fP] [\-a \fIanalysis\fP] [\-O \fIlevel\fP]"
+.B "       [\-e \fIevents\fP] [\-a \fIanalyses\fP] [\-O \fIlevel\fP]"
+.br
+.B "       [\-r \fIresults\fP] [\-m \fIgenerators\fP] [\-F \fImodule\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
@@ -17,19 +19,23 @@ This manual page contains only the very basic information on the
 synopsis of Sherpa. The full description is maintained as a TeXinfo manual.
 .SH OPTIONS
 .IP "\fB-f\fP \fIfile\fP" 
-Sets the run data file to \fIfile\fP. 
+Sets the runcard name to \fIfile\fP. 
 .IP "\fB-p\fP \fIpath\fP"
-Sets the run path to \fIpath\fP.
+Sets the run path name to \fIpath\fP.
 .IP "\fB-e\fP \fIevents\fP"
 Sets the number of events to \fIevents\fP.
 .IP "\fB-r\fP \fIresults\fP"
-Sets the result directory to \fIresults\fP.
-.IP "\fB-a\fP \fIanalysis\fP"
-Sets the analysis handler \fIanalysis\fP, see info file.
+Sets the result directory name to \fIresults\fP.
+.IP "\fB-m\fP \fIgenerators\fP"
+Sets the ME generator list to \fIgenerators\fP.
+.IP "\fB-F\fP \fImodule\fP"
+Sets the fragmentation module \fImodule\fP.
+.IP "\fB-a\fP \fIanalyses\fP"
+Sets the analysis handler list to \fIanalyses\fP.
 .IP "\fB-O\fP \fIlevel\fP"
-Sets the output level \fIlevel\fP, see info file.
+Sets the output level \fIlevel\fP.
 .IP "\fB-g\fP"
-Creates result directory automatically, see info file.
+Creates the result directory automatically.
 .IP "\fB-b\fP"
 Switches to non-batch mode, see info file.
 .IP "\fB-v\fP, \fB--version\fP" 

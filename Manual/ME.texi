@@ -25,7 +25,8 @@ The list of matrix element generators to be employed during the run.
 When setting up hard processes from the @option{(processes)} section of the 
 input file (see @ref{Processes}), Sherpa calls these generators in order
 to check whether either one is capable of generating the corresponding
-matrix element.
+matrix element. This parameter can also be set on the command line using
+option @option{-m}, see @ref{Command line}.
 
 The built-in generators are
 
