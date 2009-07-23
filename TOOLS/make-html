@@ -102,7 +102,7 @@ for analysis in sorted(analyses):
     anaindex.write("<html>\n")
     
     datfiles = glob.glob("%s/%s_*.dat" % (opts.OUTPUTDIR, analysis))
-    for fulldatfile in datfiles:
+    for fulldatfile in sorted(datfiles):
         shutil.move(fulldatfile, anapath)
         datfile = os.path.basename(fulldatfile)
 
