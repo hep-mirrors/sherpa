@@ -19,6 +19,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 const double s_alphamin(1.0e-12);
+const double s_pwmin(1.0e-6), s_pmmin(1.0e-6);
 
 size_t COMIX::IdCount(const size_t &id)
 {
@@ -222,9 +223,9 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 #endif
   }
   if (cur!=NULL) {
-    if (cur->Width()>0.0)
+    if (cur->Width()>s_pwmin)
       return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
-    if (cur->Mass()>0.0) 
+    if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
     return CE.MasslessPropMomenta(m_sexp,smin,smax,*cr);
   }
@@ -264,9 +265,9 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
   }
   if (cur!=NULL) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
-    if (cur->Width()>0.0) 
+    if (cur->Width()>s_pwmin) 
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
-    else if (cur->Mass()>0.0) 
+    else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
     else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
   }
