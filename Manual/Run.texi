@@ -68,6 +68,8 @@ will be used.
 @cindex ANALYSIS
 Analysis routines can be switched on or oﬀ by setting the ANALYSIS flag.
 The default is no analysis, corresponding to option @option{0}.
+This parameter can also be specified on the command line using option
+@option{-a}, see @ref{Command line}.
 
 The following analysis handlers are currently available
 @table @option

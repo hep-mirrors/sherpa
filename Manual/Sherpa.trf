@@ -5,7 +5,7 @@ Sherpa \- Monte Carlo event generator
 Sherpa
 .B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP]"
 .br
-.B "       [\-e \fIevents\fP] [\-r \fIresults\fP] [\-O \fIlevel\fP]"
+.B "       [\-e \fIevents\fP] [\-r \fIresults\fP] [\-a \fIanalysis\fP] [\-O \fIlevel\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
@@ -24,6 +24,8 @@ Sets the run path to \fIpath\fP.
 Sets the number of events to \fIevents\fP.
 .IP "\fB-r\fP \fIresults\fP"
 Sets the result directory to \fIresults\fP.
+.IP "\fB-a\fP \fIanalysis\fP"
+Sets the analysis handler \fIanalysis\fP, see info file.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP, see info file.
 .IP "\fB-g\fP"

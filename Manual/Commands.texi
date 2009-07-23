@@ -18,6 +18,10 @@ Set number of events to generate @samp{<events>}.
 Set the result directory to @samp{<results>},
 see @ref{RESULT_DIRECTORY}.
 
+@item -a <analysis>
+Set the analysis handler to @samp{<analysis>},
+see @ref{ANALYSIS}.
+
 @item -O <level>
 Set output level @samp{<level>}, see @ref{OUTPUT}.
 
@@ -30,6 +34,9 @@ see @ref{RESULT_DIRECTORY}.
 
 @item -v, --version
 Print versioning information.
+
+@item -h, --help
+Print a help message.
 
 @item PARAMETER=VALUE
 Set the value of a parameter, see @ref{Parameters}.
