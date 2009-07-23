@@ -15,6 +15,8 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
 
+#define CHECK__x
+
 namespace PHASIC {
 
   struct CS_Params {
@@ -224,12 +226,18 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		    cs.m_op2*=dabs(li->Flav().Charge());
 		  }
 		}
-		else {
-		  // if massive, reweight with breit-wigner
-		  double s((li->Mom()+lj->Mom()).Abs2());
-		  double m2(sqr(cf[f].Mass()));
-		  cs.m_op2*=cs.m_kt2/
-		    sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
+		else if (cf[f].Mass()) {
+		  if (cf[f].Width()) {
+		    // if resonance, reweight with breit-wigner
+		    double s((li->Mom()+lj->Mom()).Abs2());
+		    double m2(sqr(cf[f].Mass()));
+		    cs.m_op2*=cs.m_kt2/
+		      sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
+		  }
+		  else {
+		    // if non-resonant, reweight with massive prop
+		    cs.m_op2*=cs.m_kt2/(cs.m_kt2+sqr(cf[f].Mass()));
+		  }
 		}
 	      }
 	      if (cs.m_op2>op2w) {
@@ -654,6 +662,8 @@ bool METS_Scale_Setter::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
 {
+  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+      lk->Col().m_i==-1) return true;
   if (!mo.Strong()) {
     if (lk->Flav().StrongCharge()==8) return false;
     ColorID ci(li->Col()), cj(lj->Col());
