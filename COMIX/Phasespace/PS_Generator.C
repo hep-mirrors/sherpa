@@ -354,6 +354,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
       }
   msg_Debugging()<<METHOD<<"(): Phase space statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
+  double ismass(0.0);
   size_t csum(0), vsum(0), itmin(1);
   std::map<size_t,double> mmin;
   for (size_t i(1);i<m_n;++i) {
@@ -362,21 +363,24 @@ bool PS_Generator::Construct(Amplitude *const ampl)
     for (size_t j(0);j<m_cur[i].size();++j) {
       size_t cid(m_cur[i][j]->CId());
       double mass(i==1?m_cur[i][j]->Flav().Mass():m_cur[i][j]->Mass());
-      if ((cid&3)==1 || (cid&3)==2) mass=0.0;
+      if ((cid&3)==1 || (cid&3)==2) {
+	if (i==1) ismass+=mass;
+	mass=0.0;
+      }
       for (size_t k(0);k<m_cur[i][j]->In().size();++k)
 	mass=Max(mass,mmin[m_cur[i][j]->In()[k]->JA()->CId()]+
 		 mmin[m_cur[i][j]->In()[k]->JB()->CId()]);
       if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
       else mmin[cid]=Max(mmin[cid],mass);
       if (i==m_n-1) {
-	mass+=m_cur[i][j]->Flav().Mass();
-	m_thmass=Max(m_thmass,mass);
+	m_thmass=Max(m_thmass,Max(mass,ismass));
       }
 #ifdef DEBUG__BG
       msg_Debugging()<<"  set min mass "
 		     <<m_cur[i][j]->PSInfo()<<" -> "<<mass<<"\n";
 #endif
-      if (cid==3 && m_cur[i][j]->Mass()>0.0) {
+      if ((cid==3 || cid==(1<<m_n)-1-3) &&
+	  m_cur[i][j]->Mass()>0.0) {
 	bool found(false);
 	for (size_t k(0);k<m_smasses.size();++k)
 	  if (m_smasses[k]==m_cur[i][j]->Mass()&&
