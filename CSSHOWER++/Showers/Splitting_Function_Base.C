@@ -56,7 +56,7 @@ Splitting_Function_Base::Splitting_Function_Base():
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
-  m_symf(1.0), m_on(1), m_qcd(-1)
+  m_symf(1.0), m_polfac(1.0), m_on(1), m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -80,10 +80,12 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
+  m_polfac=key.p_v->in[0].IntSpin()+1;
+  if (key.p_v->in[0].IntSpin()==2 && IsZero(key.p_v->in[0].Mass())) m_polfac=2.0;
   msg_Debugging()<<"Init("<<m_on<<") "<<key
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
-		 <<"), sf="<<m_symf;
+		 <<"), sf="<<m_symf<<", polfac="<<m_polfac;
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -96,20 +98,20 @@ double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
-  return (*p_lf)(z,y,eta,scale,Q2,mode)/m_symf;
+  return (*p_lf)(z,y,eta,scale,Q2,mode)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf;
+  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
   m_lastint+=lastint;
   return lastint;
 }
 
 double Splitting_Function_Base::Overestimated(const double z,const double y)
 {
-  return p_lf->OverEstimated(z,y)/m_symf;
+  return p_lf->OverEstimated(z,y)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::Z()

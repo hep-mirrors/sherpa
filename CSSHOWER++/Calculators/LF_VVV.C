@@ -87,7 +87,7 @@ double LF_VVV_FF::operator()
   //the massless case
   double massless = 2. * ( 1./(1.-z+z*y) + 1./(z+y-z*y) -2. + z*(1.-z) );
   if (muk2==0.) {
-    double value = p_cf->Coupling(scale,0) * massless;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless;
     if (mode&1) return value;
     return value * JFF(y);
   }
@@ -103,7 +103,7 @@ double LF_VVV_FF::operator()
       return 0.;
     }
     massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
-    double value = p_cf->Coupling(scale,0) * massive;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive;
     if (mode&1) return value;
     return value * JFF(y);
   }
@@ -113,12 +113,12 @@ double LF_VVV_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  return 2.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));
+  return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));
 }
 
 double LF_VVV_FF::OverEstimated(const double z,const double y)
 {
-  return 2.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) );
+  return 4.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) );
 }
 
 double LF_VVV_FF::Z()
@@ -131,7 +131,7 @@ double LF_VVV_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
-  double value = 2.0*p_cf->Coupling(scale,0) * ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
+  double value = 4.0*p_cf->Coupling(scale,0) * ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
   if (mode&1) return value;
   return value * JFI(y,eta,scale);
 }
@@ -141,12 +141,12 @@ double LF_VVV_FI::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=m_flspec.Kfcode()<3?5.:1.;
-  return 2.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
 }
 
 double LF_VVV_FI::OverEstimated(const double z,const double y)
 {
-  return 2.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
 }
 
 double LF_VVV_FI::Z()
@@ -163,7 +163,7 @@ double LF_VVV_IF::operator()
   double massless = 2. * ( 1./(1.-z+y) + 1./z - 2. +z*(1.-z));
   if (muk2==0.) {
     //the massless case
-    double value = p_cf->Coupling(scale,0) * massless;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless;
     if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
@@ -173,7 +173,7 @@ double LF_VVV_IF::operator()
     if (massive < 0.) {
       return 0.;
   }
-    double value = p_cf->Coupling(scale,0) * massive;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive;
     if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
@@ -184,12 +184,12 @@ double LF_VVV_IF::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.; 
-  return 2.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
 }
 
 double LF_VVV_IF::OverEstimated(const double z,const double y)
 {
-  return 2.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
 }
 
 double LF_VVV_IF::Z()
@@ -202,7 +202,7 @@ double LF_VVV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 1./(1.-z) + 1./z -2. +z*(1.-z));
+  double value = 4.0 * p_cf->Coupling(scale,0) * ( 1./(1.-z) + 1./z -2. +z*(1.-z));
   if (mode&1) return value;
   return value * JII(z,y,eta,scale);
 }
@@ -212,12 +212,12 @@ double LF_VVV_II::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.;
-  return 2.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
 }
 
 double LF_VVV_II::OverEstimated(const double z,const double y)
 {
-  return 2.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
 }
 
 double LF_VVV_II::Z()

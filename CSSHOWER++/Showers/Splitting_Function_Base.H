@@ -83,9 +83,18 @@ namespace CSSHOWER {
     virtual double operator()
       (const double z,const double y,const double eta,
        const double scale,const double Q2,int mode=0) = 0;
+    /**
+      * Overestimate integrated over [zmin, zmax]
+      */
     virtual double OverIntegrated(const double zmin,const double zmax,
 				  const double scale,const double xbj) = 0;
+    /**
+      * Overestimate of operator
+      */
     virtual double OverEstimated(const double z,const double y) = 0;
+    /**
+      * Dice z according to OverEstimated (solve OverIntegrated for new z)
+      */
     virtual double Z() = 0;
 
     inline const ATOOLS::Flavour &FlA() const { return m_flavs[0]; }
@@ -115,6 +124,9 @@ namespace CSSHOWER {
     cstp::code m_type;
     double     m_cplfac;
 
+    /**
+      * m_cplmax[i] = max_{scale} Coupling(scale, i)
+      */
     std::vector<double> m_cplmax;
 
   public:
@@ -148,7 +160,7 @@ namespace CSSHOWER {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint, m_symf, m_lpdf;
+    double m_lastint, m_symf, m_polfac, m_lpdf;
     int m_on, m_qcd;
     std::vector<Parton*> m_specs;
     PDF::PDF_Base **p_pdf;
