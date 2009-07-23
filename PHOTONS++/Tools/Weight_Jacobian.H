@@ -2,13 +2,11 @@
 #define PHOTONS_Tools_Weight_Jacobian_H
 
 #include "PHOTONS++/Tools/Weight_Base.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/Message.H"
 
 namespace PHOTONS {
   class Weight_Jacobian: public Weight_Base {
     protected:
-      Vec4D   CalculateMomentumSum(Particle_Vector);
+      Vec4D   CalculateMomentumSum(const Particle_Vector&);
 
       virtual void CalculateWeight() = 0;
       virtual void CalculateMax() = 0;
@@ -34,7 +32,9 @@ namespace PHOTONS {
       virtual void CalculateMax();
 
     public:
-      Weight_Jacobian_Lorentz(Particle_Vector, Particle_Vector, Particle_Vector, Particle_Vector, Particle_Vector, Dipole_Type::code);
+      Weight_Jacobian_Lorentz(const Particle_Vector&, const Particle_Vector&,
+                              const Particle_Vector&, const Particle_Vector&,
+                              const Particle_Vector&, Dipole_Type::code);
       virtual ~Weight_Jacobian_Lorentz();
   };
 
@@ -53,12 +53,14 @@ namespace PHOTONS {
       virtual void CalculateMax();
 
     public:
-      Weight_Jacobian_Mapping(Particle_Vector, Particle_Vector, Particle_Vector, Particle_Vector, Vec4D, double, double, Dipole_Type::code);
+      Weight_Jacobian_Mapping(const Particle_Vector&, const Particle_Vector&,
+                              const Particle_Vector&, const Particle_Vector&,
+                              const Vec4D&, double, double, Dipole_Type::code);
       virtual ~Weight_Jacobian_Mapping();
   };
 
 
-  
+
 
   /*!
     \file Weight_Jacobian.H

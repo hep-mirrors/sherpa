@@ -15,10 +15,10 @@ using namespace HELICITIES;
 */
 
 HELICITIES::DivArrC
-HELICITIES::Master_Bubble(const double& s, 
-                          const Complex& m02, const Complex& m12,
-                          const double& mu2=0.) {
-//   if (mu2 == 0)   mu2 = GLOBAL_RENORMALIZATION_SCALE;
+HELICITIES::Master_Bubble(const double& s,
+                       const Complex& m02, const Complex& m12,
+                       double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
   Complex m2 = 0.5*(m02+m12);
   //! two massless internal lines
   if (IsZero(m02) && IsZero(m12)) {

@@ -1,5 +1,5 @@
-#ifndef PHOTONS_MEs_Vector_To_Fermion_Fermion_H
-#define PHOTONS_MEs_Vector_To_Fermion_Fermion_H
+#ifndef PHOTONS_MEs_Scalar_To_Scalar_Lepton_Neutrino_H
+#define PHOTONS_MEs_Scalar_To_Scalar_Lepton_Neutrino_H
 
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Tools/Dipole_FF.H"
@@ -7,13 +7,17 @@
 using namespace ATOOLS;
 
 namespace PHOTONS {
-  class Vector_To_Fermion_Fermion: public PHOTONS_ME_Base, public Dipole_FF {
+  class Scalar_To_Scalar_Lepton_Neutrino: public PHOTONS_ME_Base, public Dipole_FF {
     private:
       bool      m_switch;
+      bool      m_ffmodel;
+
+      std::pair<bool,Complex> m_M00results[1][1][2][2];
+
+      double    m_fplusprimezero;
+      double    m_fpluszero;
 
       virtual void    BoostOriginalPVVToMultipoleCMS();
-      virtual void    FillMomentumArrays(const Particle_Vector_Vector&);
-
 
       virtual Complex InfraredSubtractedME_0_0();
       virtual Complex InfraredSubtractedME_0_1();
@@ -24,9 +28,12 @@ namespace PHOTONS {
 
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
+      double Fplus(double);
+      double Fminus(double);
+
     public:
-      Vector_To_Fermion_Fermion(const Particle_Vector_Vector&);
-      virtual ~Vector_To_Fermion_Fermion();
+      Scalar_To_Scalar_Lepton_Neutrino(const Particle_Vector_Vector&);
+      virtual ~Scalar_To_Scalar_Lepton_Neutrino();
 
       virtual double GetBeta_0_0();
       virtual double GetBeta_0_1();
@@ -37,6 +44,7 @@ namespace PHOTONS {
 
       virtual double GetBeta_2_2(unsigned int, unsigned int);
 
+      virtual void   FillMomentumArrays(const Particle_Vector_Vector&);
       virtual double Smod(unsigned int);
   };
 }

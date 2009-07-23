@@ -11,17 +11,20 @@ namespace PHOTONS {
     protected:
       double DetermineMaximumPhotonEnergy();
 
-      virtual void    CalculateAvaragePhotonNumber(const double, const double);
-      virtual bool    CheckIfExceedingPhotonEnergyLimits();
-      virtual void    CheckMomentumConservationInQCMS();
-      virtual void    CorrectMomenta();
-      virtual void    DefineDipole();
-      virtual double  Func(double, std::vector<double>, std::vector<double>, std::vector<Vec3D>, double);
-      virtual void    ResetVariables();
-      virtual void    ReturnMomenta();
+      virtual void   CalculateAvaragePhotonNumber(const double&, const double&);
+      virtual bool   CheckIfExceedingPhotonEnergyLimits();
+      virtual void   CheckMomentumConservationInQCMS(const Poincare&,
+                                                     const Poincare&);
+      virtual void   CorrectMomenta();
+      virtual void   DefineDipole();
+      virtual double Func(const double&, const std::vector<double>&,
+                          const std::vector<double>&, const std::vector<Vec3D>&,
+                          const double&);
+      virtual void   ResetVariables();
+      virtual void   ReturnMomenta();
 
     public:
-      Dipole_FI(Particle_Vector_Vector);
+      Dipole_FI(const Particle_Vector_Vector&);
       virtual ~Dipole_FI();
 
       virtual void AddRadiation();

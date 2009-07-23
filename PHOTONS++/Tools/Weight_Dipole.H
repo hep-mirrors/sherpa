@@ -2,10 +2,6 @@
 #define PHOTONS_Tools_Weight_Dipole_H
 
 #include "PHOTONS++/Tools/Weight_Base.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Message.H"
 
 
 using namespace ATOOLS;
@@ -19,10 +15,11 @@ namespace PHOTONS {
 
       virtual void CalculateWeight();
       virtual void CalculateMax();
-      double SMod(const Vec4D, const Vec4D, const Vec4D);
+      double SMod(const Vec4D&, const Vec4D&, const Vec4D&);
 
     public:
-      Weight_Dipole(const Particle_Vector, const Particle_Vector, const Particle_Vector, Dipole_Type::code);
+      Weight_Dipole(const Particle_Vector&, const Particle_Vector&,
+                    const Particle_Vector&, Dipole_Type::code);
       virtual ~Weight_Dipole();
   };
 

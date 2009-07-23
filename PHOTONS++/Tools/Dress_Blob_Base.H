@@ -1,14 +1,9 @@
 #ifndef PHOTONS_Tools_Dress_Blob_Base_H
 #define PHOTONS_Tools_Dress_Blob_Base_H
 
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Poincare.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
-#include "PHOTONS++/Tools/Generate_One_Photon.H"
-#include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
+
+namespace ATOOLS { class Poincare; }
 
 using namespace ATOOLS;
 using namespace std;
@@ -31,7 +26,7 @@ namespace PHOTONS {
       Particle_Vector         m_newdipole;
       Particle_Vector         m_oldspectator;
       Particle_Vector         m_newspectator;
-      Particle *              m_newinitialstate;
+      Particle *              p_newinitialstate;
       Vec4D                   m_K;
       Vec4D                   m_p;
       Vec4D                   m_pN;
@@ -42,36 +37,41 @@ namespace PHOTONS {
       double                  m_accu;
       double                  m_genweight;
       double                  m_genmaxweight;
-      double                  m_omegaMax;
-      double                  m_omegaMin;
       double                  m_nbar;
       double                  m_n;
+      double                  m_omegaMax;
+      double                  m_omegaMin;
       double                  m_M;
       std::vector<double>     m_mC;
       std::vector<double>     m_mN;
       double                  m_u;
 
       void                BuildNewParticleVectorVector();
-      double              CalculateBeta(const Vec4D);
-      Vec4D               CalculateMomentumSum(Particle_Vector);
+      double              CalculateBeta(const Vec4D&);
+      Vec4D               CalculateMomentumSum(const Particle_Vector&);
       void                CalculateWeights();
       void                CheckAvaragePhotonNumberForNumericalErrors();
       void                DeleteAll(Particle_Vector);
       void                DeleteAllPhotons();
       void                DetermineU();
       std::vector<double> GenerateNumberAndEnergies();
-      void                GeneratePhotons(const double, const double);
-      void                GeneratePhotons(std::vector<double>);
-      double              KallenFunction(double, double, double);
+      void                GeneratePhotons(const double&, const double&);
+      void                GeneratePhotons(const std::vector<double>&);
+      double              KallenFunction(const double&, const double&,
+                                         const double&);
 
-      virtual void    CalculateAvaragePhotonNumber(const double, const double) = 0;
-      virtual bool    CheckIfExceedingPhotonEnergyLimits() = 0;
-      virtual void    CheckMomentumConservationInQCMS() = 0;
-      virtual void    CorrectMomenta() = 0;
-      virtual void    DefineDipole() = 0;
-      virtual double  Func(double, std::vector<double>, std::vector<double>, std::vector<Vec3D>, double) = 0;
-      virtual void    ResetVariables() = 0;
-      virtual void    ReturnMomenta() = 0;
+      virtual void   CalculateAvaragePhotonNumber(const double&,
+                                                  const double&) = 0;
+      virtual bool   CheckIfExceedingPhotonEnergyLimits() = 0;
+      virtual void   CheckMomentumConservationInQCMS(const Poincare&,
+                                                     const Poincare&) = 0;
+      virtual void   CorrectMomenta() = 0;
+      virtual void   DefineDipole() = 0;
+      virtual double Func(const double&, const std::vector<double>&,
+                          const std::vector<double>&, const std::vector<Vec3D>&,
+                          const double&) = 0;
+      virtual void   ResetVariables() = 0;
+      virtual void   ReturnMomenta() = 0;
 
     public:
       Dress_Blob_Base();

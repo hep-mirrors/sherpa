@@ -1,4 +1,9 @@
 # include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Particle.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -23,40 +28,42 @@ Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(Vec4D p1, Vec4D p2) {
   m_phi   = acos(m_dir[1]/(m_dir[0]*sin(m_theta)));
 }
 
-Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(double b1, double b2) {
+Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle
+(const double& b1, const double& b2) : m_b1(b1), m_b2(b2) {
   // assume p1 and p2 are in their CMS and aligned along z-axis
-  m_b1 = b1;
-  m_b2 = b2;
   GenerateDipoleAngle();
 }
 
 Generate_Dipole_Photon_Angle::~Generate_Dipole_Photon_Angle() {
 }
 
-double Generate_Dipole_Photon_Angle::CalculateBeta(Vec4D p) {
+double Generate_Dipole_Photon_Angle::CalculateBeta(const Vec4D& p) {
   return Vec3D(p).Abs()/p[0];
 }
 
 void Generate_Dipole_Photon_Angle::GenerateDipoleAngle() {
   // Generation of theta for two massive particles
-  double P  = log((1+m_b1)/(1-m_b1))/(log((1+m_b1)/(1-m_b1))+log((1+m_b2)/(1-m_b2)));
-  while (1) {
-    m_c = 0;
+  double P  = log((1.+m_b1)/(1.-m_b1))
+                /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
+  while (true) {
+    m_c = 0.;
     if (ran.Get() < P) {
       double rnd = ran.Get();
-      double a   = 1/m_b1*log((1+m_b1)/(1-m_b1));
-      m_c        = 1/m_b1*(1-(1+m_b1)*exp(-a*m_b1*rnd));
+      double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
+      m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
     }
     else {
       double rnd = ran.Get();
-      double a   = 1/m_b2*log((1+m_b2)/(1-m_b2));
-      m_c        = 1/m_b2*((1-m_b2)*exp(a*m_b2*rnd)-1);
+      double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
+      m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
     }
-    double weight = 1-((1-m_b1*m_b1)/((1-m_b1*m_c)*(1-m_b1*m_c))+(1-m_b2*m_b2)/((1+m_b2*m_c)*(1+m_b2*m_c)))/(2*(1+m_b1*m_b2)/((1-m_b1*m_c)*(1+m_b2*m_c)));
+    double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
+                        +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
+                       /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
     if (ran.Get() < weight) break;
   }
   m_theta = acos(m_c);
-  m_phi   = 2*M_PI*ran.Get();
+  m_phi   = 2.*M_PI*ran.Get();
 }
 
 void Generate_Dipole_Photon_Angle::GenerateNullVector() {

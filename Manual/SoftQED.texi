@@ -1,0 +1,7 @@
+@node Higher Order QED Corrections Parameters
+@section Higher Order QED Corrections Parameters
+
+The relevant switches to steer the higher order QED
+corrections reside in the `(fragmentation)' section
+of the steering file or the fragmentation data file
+`Fragmentation.dat', respectively.

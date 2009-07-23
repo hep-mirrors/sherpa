@@ -1,18 +1,24 @@
 pkglib_LTLIBRARIES = libPhotonsMEs.la
 
-libPhotonsMEs_la_SOURCES = 	PHOTONS_ME_Base.C \
-				Vector_To_Fermion_Fermion.C \
-				Scalar_To_Fermion_Fermion.C \
+libPhotonsMEs_la_SOURCES =	PHOTONS_ME_Base.C \
 				Scalar_To_Scalar_Scalar.C \
-				Z_To_Lepton_Lepton.C \
+				Scalar_To_Fermion_Fermion.C \
+				Scalar_To_Scalar_Lepton_Neutrino.C \
+				Scalar_To_Vector_Lepton_Neutrino.C \
+				Tau_To_Lepton_Neutrinos.C \
 				W_To_Lepton_Neutrino.C \
-				Tau_To_Lepton_Neutrinos.C
+				Z_To_Fermion_Fermion.C \
+				Vector_To_Fermion_Fermion.C \
+				Vector_To_Scalar_Scalar.C
 
-localinc_HEADERS   = 	ME_List.H \
-			PHOTONS_ME_Base.H \
-			Vector_To_Fermion_Fermion.H \
-			Scalar_To_Fermion_Fermion.H \
+
+localinc_HEADERS =	PHOTONS_ME_Base.H \
 			Scalar_To_Scalar_Scalar.H \
-			Z_To_Lepton_Lepton.H \
+			Scalar_To_Fermion_Fermion.H \
+			Scalar_To_Scalar_Lepton_Neutrino.H \
+			Scalar_To_Vector_Lepton_Neutrino.H \
+			Tau_To_Lepton_Neutrinos.H \
 			W_To_Lepton_Neutrino.H \
-			Tau_To_Lepton_Neutrinos.H
+			Z_To_Fermion_Fermion.H \
+			Vector_To_Fermion_Fermion.H \
+			Vector_To_Scalar_Scalar.H

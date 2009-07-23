@@ -47,6 +47,7 @@ void small_sherpa_init(int argc, char *argv[])
   // use this for small programs, which don't use the full Sherpa framework,
   // but only Hadrons
 
+  PRINT_INFO("using small_sherpa_init");
   std::vector<std::string> searchpaths;
   searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
   My_Out_File::SetSearchPaths(searchpaths);
@@ -94,6 +95,7 @@ void small_sherpa_init(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+  PRINT_INFO("starting main");
   ATOOLS::exh->Init();
   set_terminate(ATOOLS::Terminate);
   set_unexpected(ATOOLS::Terminate);
@@ -109,7 +111,9 @@ int main(int argc, char *argv[])
     TApplication myapp(string("HadronsApp").c_str(),&argc,&(*argv));
     gROOT->SetStyle("Plain");
 #endif
+    PRINT_INFO("starting generator");
     InitialiseGenerator(argc, argv);
+    PRINT_INFO("starting analysis");
     if(rpa.gen.Analysis()) InitialiseAnalysis();
 
     for(int i=0; i<rpa.gen.NumberOfEvents(); i++) {

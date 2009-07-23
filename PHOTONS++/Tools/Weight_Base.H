@@ -14,14 +14,15 @@ namespace PHOTONS {
       virtual void CalculateMax() = 0;
 
     public:
-      Weight_Base();
-      virtual ~Weight_Base();
+      Weight_Base() : m_weight(1.), m_maxweight(1.),
+                      m_dtype(Dipole_Type::unknown) {}
+      virtual ~Weight_Base() {}
 
       inline double Get()       { return m_weight; }
       inline double GetMax()    { return m_maxweight; }
   };
 
-  
+
 
   /*!
     \file Weight_Base.H

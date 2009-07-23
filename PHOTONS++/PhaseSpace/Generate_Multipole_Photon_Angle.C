@@ -1,26 +1,28 @@
 #include "PHOTONS++/PhaseSpace/Generate_Multipole_Photon_Angle.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
+
 
 using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
-Generate_Multipole_Photon_Angle::Generate_Multipole_Photon_Angle(Particle_Vector dip, std::vector<double> nbars) {
-  m_dipole  = dip;
-  m_nbars   = nbars;
-  m_nbar    = 0;
-  for (unsigned int i=0; i<nbars.size(); i++) {
-    m_nbar = m_nbar + abs(nbars.at(i));
-  }
-  m_theta   = 0;
-  m_phi     = 0;
-
+Generate_Multipole_Photon_Angle::Generate_Multipole_Photon_Angle
+(const Particle_Vector& dip, const std::vector<double>& nbars) :
+  m_dipole(dip), m_nbar(0.), m_nbars(nbars), m_theta(0.), m_phi(0.)
+{
+  for (unsigned int i=0; i<nbars.size(); i++) m_nbar = m_nbar + abs(nbars[i]);
   GenerateMultipoleAngle();
 }
 
 Generate_Multipole_Photon_Angle::~Generate_Multipole_Photon_Angle() {
 }
 
-double Generate_Multipole_Photon_Angle::CalculateBeta(Vec4D p) {
+double Generate_Multipole_Photon_Angle::CalculateBeta(const Vec4D& p) {
   return Vec3D(p).Abs()/p[0];
 }
 
@@ -28,15 +30,12 @@ void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle() {
   // choose according to which eikonal factor angle should be generated
   // p_i and p_j
 
-  double rdm      = ran.Get();
-  double s        = 0;
-  unsigned int k  = 0;
+  double rdm     = ran.Get();
+  double s       = 0.;
+  unsigned int k = 0;
   for (unsigned int i=0; i<m_nbars.size(); i++) {
-    s = s + abs(m_nbars.at(i))/m_nbar;
-    if (rdm < s)  {
-      k = i;
-      break;
-    }
+    s = s + abs(m_nbars[i])/m_nbar;
+    if (rdm < s) { k = i; break; }
   }
   IndexLookup(k);
 
@@ -44,8 +43,8 @@ void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle() {
   // generate massless unit vector in p_i-p_j rest frame then transform back
   // can be later streched to be massless vector of energy E
 
-  Vec4D p1 = m_dipole.at(m_i)->Momentum();
-  Vec4D p2 = m_dipole.at(m_j)->Momentum();
+  Vec4D p1 = m_dipole[m_i]->Momentum();
+  Vec4D p2 = m_dipole[m_j]->Momentum();
 
   Generate_Dipole_Photon_Angle gdpa(p1,p2);
   m_theta = gdpa.GetTheta();

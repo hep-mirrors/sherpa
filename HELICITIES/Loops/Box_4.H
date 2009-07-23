@@ -1,5 +1,5 @@
-#ifndef BOX_4_H
-#define BOX_4_H
+#ifndef HELICITIES_Loops_BOX_4_H
+#define HELICITIES_Loops_BOX_4_H
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__GOLEM95

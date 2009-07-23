@@ -1,15 +1,7 @@
 #ifndef PHOTONS_Tools_Generate_One_Photon_H
 #define PHOTONS_Tools_Generate_One_Photon_H
 
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Math/Random.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/Vector.H"
-#include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
-#include "PHOTONS++/PhaseSpace/Generate_Multipole_Photon_Angle.H"
 
 using namespace ATOOLS;
 
@@ -29,13 +21,15 @@ namespace PHOTONS {
       void GeneratePhoton();
 
     public:
-      Generate_One_Photon(const double, const double, const double, Dipole_Type::code);
-      Generate_One_Photon(Particle_Vector, std::vector<double>, double, Dipole_Type::code);
+      Generate_One_Photon(const double&, const double&,
+                          const double&, Dipole_Type::code);
+      Generate_One_Photon(const Particle_Vector&, const std::vector<double>&,
+                          double, Dipole_Type::code);
       ~Generate_One_Photon();
 
       inline Particle * GetPhoton()                   { return p_photon; }
 
-      void SetMinimalPhotonAngle(double);
+      void SetMinimalPhotonAngle(const double&);
   };
 
 

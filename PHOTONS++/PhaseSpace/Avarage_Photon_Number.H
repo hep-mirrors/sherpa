@@ -2,10 +2,6 @@
 #define PHOTONS_PhaseSpace_Avarage_Photon_Number_H
 
 #include "PHOTONS++/Main/Dipole_Type.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
 
 
 using namespace ATOOLS;
@@ -21,11 +17,13 @@ namespace PHOTONS {
       std::vector<double> m_nbars;
 
       void    CalculateAvaragePhotonNumber();
-      double  CalculateBeta(Vec4D);
-      double  InterferenceTerm(double, double, double, double);
+      double  CalculateBeta(const Vec4D&);
+      double  InterferenceTerm(const double&, const double&,
+                               const double&, const double&);
 
     public:
-      Avarage_Photon_Number(Particle_Vector, double, double);
+      Avarage_Photon_Number(const Particle_Vector&,
+                            const double&, const double&);
       ~Avarage_Photon_Number();
 
       double              GetNBar()                     { return m_nbar; }

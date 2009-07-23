@@ -15,6 +15,7 @@
 #ifdef USING__PYTHIA
 #include "SHERPA/Single_Events/MC_Interface.H"
 #endif
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"

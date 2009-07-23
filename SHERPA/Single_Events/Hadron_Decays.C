@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Hadron_Decays.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Mass_Handler.H"

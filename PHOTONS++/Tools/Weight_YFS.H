@@ -2,12 +2,6 @@
 #define PHOTONS_Tools_Weight_YFS_H
 
 #include "PHOTONS++/Tools/Weight_Base.H"
-#include "PHOTONS++/Tools/YFS_Form_Factor.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/Message.H"
-
-using namespace ATOOLS;
 
 namespace PHOTONS {
   class Weight_YFS: public Weight_Base {
@@ -20,7 +14,8 @@ namespace PHOTONS {
       virtual void CalculateMax();
 
     public:
-      Weight_YFS(const Particle_Vector, const Particle_Vector, const double, const double);
+      Weight_YFS(const Particle_Vector&, const Particle_Vector&,
+                 const double&, const double&);
       virtual ~Weight_YFS();
   };
 

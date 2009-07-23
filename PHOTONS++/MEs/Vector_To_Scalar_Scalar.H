@@ -1,5 +1,5 @@
-#ifndef PHOTONS_MEs_Z_To_Lepton_Lepton_H
-#define PHOTONS_MEs_Z_To_Lepton_Lepton_H
+#ifndef PHOTONS_MEs_Vector_To_Scalar_Scalar_H
+#define PHOTONS_MEs_Vector_To_Scalar_Scalar_H
 
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Tools/Dipole_FF.H"
@@ -7,12 +7,13 @@
 using namespace ATOOLS;
 
 namespace PHOTONS {
-  class Z_To_Lepton_Lepton: public PHOTONS_ME_Base, public Dipole_FF {
+  class Vector_To_Scalar_Scalar: public PHOTONS_ME_Base, public Dipole_FF {
     private:
       bool      m_switch;
+      double    m_Gamma;
 
       virtual void    BoostOriginalPVVToMultipoleCMS();
-      virtual void    FillMomentumArrays();
+      virtual void    FillMomentumArrays(const Particle_Vector_Vector&);
 
 
       virtual Complex InfraredSubtractedME_0_0();
@@ -25,8 +26,8 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
     public:
-      Z_To_Lepton_Lepton(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
-      virtual ~Z_To_Lepton_Lepton();
+      Vector_To_Scalar_Scalar(const Particle_Vector_Vector&);
+      virtual ~Vector_To_Scalar_Scalar();
 
       virtual double GetBeta_0_0();
       virtual double GetBeta_0_1();

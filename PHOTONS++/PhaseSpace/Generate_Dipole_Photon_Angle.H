@@ -2,10 +2,6 @@
 #define PHOTONS_PhaseSpace_Generate_Dipole_Photon_Angle_H
 
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -20,13 +16,13 @@ namespace PHOTONS {
       double              m_phi;
       Vec4D               m_dir;
 
-      double  CalculateBeta(Vec4D);
+      double  CalculateBeta(const Vec4D&);
       void    GenerateDipoleAngle();
       void    GenerateNullVector();
 
     public:
       Generate_Dipole_Photon_Angle(Vec4D, Vec4D);
-      Generate_Dipole_Photon_Angle(double, double);
+      Generate_Dipole_Photon_Angle(const double&, const double&);
       ~Generate_Dipole_Photon_Angle();
 
       inline double               GetCosTheta()   { return m_c; }

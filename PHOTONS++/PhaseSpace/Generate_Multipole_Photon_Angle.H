@@ -2,11 +2,10 @@
 #define PHOTONS_PhaseSpace_Generate_Multipole_Photon_Angle_H
 
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
+namespace ATOOLS {
+  class Particle;
+  typedef std::vector<Particle*> Particle_Vector;
+}
 
 using namespace ATOOLS;
 using namespace std;
@@ -22,12 +21,13 @@ namespace PHOTONS {
       double              m_theta;
       double              m_phi;
 
-      double  CalculateBeta(Vec4D);
+      double  CalculateBeta(const Vec4D&);
       void    GenerateMultipoleAngle();
       void    IndexLookup(unsigned int);
 
     public:
-      Generate_Multipole_Photon_Angle(Particle_Vector, std::vector<double>);
+      Generate_Multipole_Photon_Angle(const Particle_Vector&,
+                                      const std::vector<double>&);
       ~Generate_Multipole_Photon_Angle();
 
       inline double  GetTheta()      { return m_theta; }

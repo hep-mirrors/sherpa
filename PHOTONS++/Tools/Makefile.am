@@ -5,7 +5,6 @@ libPhotonsTools_la_SOURCES = 	\
 				Dipole_FI.C \
 				Dress_Blob_Base.C \
 				Generate_One_Photon.C \
-				Weight_Base.C \
 				Weight_Dipole.C \
 				Weight_Higher_Order_Corrections.C \
 				Weight_Jacobian.C \

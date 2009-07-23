@@ -25,6 +25,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Random.H"
 
 #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
 

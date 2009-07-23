@@ -2,10 +2,9 @@
 #define PHOTONS_Main_Photons_H
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Org/Message.H"
-#include "PHOTONS++/Main/Define_Dipole.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
 using namespace ATOOLS;
 
@@ -27,9 +26,17 @@ namespace PHOTONS {
     inline bool        DoneSuccessfully() { return m_success; }
     inline std::string Name()             { return m_name; }
 
+    static double               s_alpha;
+    static bool                 s_userunningparameters;
+    static inline void ResetAlphaQED()
+    { s_alpha=MODEL::aqed->AqedThomson(); }
+    static inline void SetAlphaQED(const double& scale)
+    { if (s_userunningparameters) s_alpha=MODEL::aqed->Aqed(scale); }
+
     static int                  s_mode;
     static bool                 s_useme;
     static double               s_ircutoff;
+    static int                  s_ircutoffframe;
     static double               s_accu;
   };
 

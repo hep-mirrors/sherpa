@@ -107,7 +107,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   if (!PutOnMassShell(mfslep)) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"  Leptons could not be put on their mass shell."<<endl
-               <<"  Continue and hope for the best."<<endl;
+               <<"  Trying new event."<<endl;
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
       delete *it;
     return Return_Value::New_Event;
@@ -123,7 +123,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       if (!p_sphotons->AddRadiation(*it)) {
         msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                    <<"  Higher order QED corrections failed."<<endl
-                   <<"  Continue and hope for the best."<<endl;
+                   <<"  Retrying event."<<endl;
         for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
           delete *it;
         for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it)
@@ -322,6 +322,7 @@ void Signal_Process_FS_QED_Correction::FillBlob
     pv.erase(it);
   }
   blob->AddToInParticles(new Particle(-1,resflav,sum,'R'));
+  msg_Debugging()<<"resonance is:\n"<<*blob->InParticle(0)<<endl;
   blob->InParticle(0)->SetFinalMass(blob->InParticle(0)->Momentum().Mass());
 }
 

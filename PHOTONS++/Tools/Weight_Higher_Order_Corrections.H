@@ -2,29 +2,24 @@
 #define PHOTONS_Tools_Weight_Higher_Order_Corrections_H
 
 #include "PHOTONS++/Tools/Weight_Base.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "PHOTONS++/MEs/ME_List.H"
-#include "PHOTONS++/Main/Photons.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
 
 namespace PHOTONS {
+  class PHOTONS_ME_Base;
+
   class Weight_Higher_Order_Corrections: public Weight_Base {
     private:
       Particle_Vector m_olddipole;
       Particle_Vector m_newdipole;
       Particle_Vector m_softphotons;
       double          m_M;
+      unsigned int    m_n;
 
-      bool            m_ME;
-      ME_List::code   m_which;
+      PHOTONS_ME_Base * p_pme;
 
       double RealCorrectionsOrder(int);
       double VirtualCorrectionsOrder(int);
-
-      PHOTONS_ME_Base * MESelector(Particle_Vector_Vector,Particle_Vector_Vector);
 
       double Dmod(unsigned int, unsigned int, unsigned int);
       double Smod(unsigned int);
@@ -33,10 +28,12 @@ namespace PHOTONS {
       virtual void CalculateWeight();
       virtual void CalculateMax();
 
-      void CalculateWeightAndMax(Particle_Vector_Vector, Particle_Vector_Vector);
+      void CalculateWeightAndMaxWithME();
 
     public:
-      Weight_Higher_Order_Corrections(Particle_Vector_Vector, Particle_Vector_Vector, Dipole_Type::code);
+      Weight_Higher_Order_Corrections(const Particle_Vector_Vector&,
+                                      const Particle_Vector_Vector&,
+                                      Dipole_Type::code);
       virtual ~Weight_Higher_Order_Corrections();
   };
 

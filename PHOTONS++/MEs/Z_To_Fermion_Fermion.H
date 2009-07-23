@@ -1,5 +1,5 @@
-#ifndef PHOTONS_MEs_Vector_To_Fermion_Fermion_H
-#define PHOTONS_MEs_Vector_To_Fermion_Fermion_H
+#ifndef PHOTONS_MEs_Z_To_Fermion_Fermion_H
+#define PHOTONS_MEs_Z_To_Fermion_Fermion_H
 
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Tools/Dipole_FF.H"
@@ -7,7 +7,7 @@
 using namespace ATOOLS;
 
 namespace PHOTONS {
-  class Vector_To_Fermion_Fermion: public PHOTONS_ME_Base, public Dipole_FF {
+  class Z_To_Fermion_Fermion: public PHOTONS_ME_Base, public Dipole_FF {
     private:
       bool      m_switch;
 
@@ -25,8 +25,8 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
     public:
-      Vector_To_Fermion_Fermion(const Particle_Vector_Vector&);
-      virtual ~Vector_To_Fermion_Fermion();
+      Z_To_Fermion_Fermion(const Particle_Vector_Vector&);
+      virtual ~Z_To_Fermion_Fermion();
 
       virtual double GetBeta_0_0();
       virtual double GetBeta_0_1();

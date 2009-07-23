@@ -16,9 +16,14 @@ using namespace SHERPA;
 
 void InitialiseGenerator(int argc, char *argv[])
 {
+  PRINT_INFO("Welcome. now initialising the generator ... ");
   p_sherpa = new Sherpa();
+  PRINT_INFO(" ... created object ... ");
   p_sherpa->InitializeTheRun(argc,argv);
+  PRINT_INFO(" ... initialised the run ... ");
   p_sherpa->InitializeTheEventHandler();
+  PRINT_INFO(" ... initialised the event handler ... ");
+  PRINT_INFO(" ... finished ... ");
 
   Data_Reader read(" ",";","!","=");
   int mother_kf(0);

@@ -166,6 +166,17 @@ namespace HELICITIES {
                                              s*m_result[5]);
     }
 
+    inline Divergence_Array<T>&
+    operator*=(const T& s) {
+      m_result[0]*=s;
+      m_result[1]*=s;
+      m_result[2]*=s;
+      m_result[3]*=s;
+      m_result[4]*=s;
+      m_result[5]*=s;
+      return *this;
+    }
+
     template<typename T1>
     inline Divergence_Array<PROMOTE(T,T1)>
     operator/ (const T1& s) const {
@@ -177,12 +188,11 @@ namespace HELICITIES {
                                              m_result[5]/s);
     }
 
-  };
+  }; // end of class Divergence_Array
 
   // typedefs
   typedef Divergence_Array<double>  DivArrD;
   typedef Divergence_Array<Complex> DivArrC;
-
 
   template<typename T1, typename T2>
   inline Divergence_Array<PROMOTE(T1,T2)>
@@ -200,6 +210,27 @@ namespace HELICITIES {
   inline Divergence_Array<PROMOTE(T1,T2)>
   operator* (const T1& s, const Divergence_Array<T2>& a) {
     return a*s;
+  }
+
+  template<typename T1, typename T2>
+  inline Divergence_Array<PROMOTE(T1,T2)>
+  operator/ (const T1& s, const Divergence_Array<T2>& a) {
+    // only implemented for DivArrs with zero 1/eps parts
+    // 1/(a+b*eps+c*eps^2)
+    // = 1/a - b/a^2 * eps + (2b^2-ca)/(2a^3) * eps^2
+    return s*Divergence_Array<PROMOTE(T1,T2)>(0.,
+                                              0.,
+                                              0.,
+                                              1./a[3],
+                                              -a[4]/sqr(a[3]),
+                                              (2.*sqr(a[4])-a[5]*a[3])
+                                                /(2.*a[3]*a[3]*a[3]));
+  }
+
+  template<typename T1, typename T2>
+  inline Divergence_Array<PROMOTE(T1,T2)>
+  operator/ (const Divergence_Array<T1>& a1, const Divergence_Array<T2>& a2) {
+    return a1*(1./a2);
   }
 
   inline DivArrC conj(DivArrC divarr) {
@@ -229,34 +260,51 @@ namespace HELICITIES {
                    std::imag(divarr[5]));
   }
   
-}
+} // end of namespace HELICITIES
+
+#define RED(ARG) om::red<<ARG<<om::reset
+#define GREEN(ARG) om::green<<ARG<<om::reset
+#define BLUE(ARG) om::blue<<ARG<<om::reset
+#define YELLOW(ARG) om::brown<<ARG<<om::reset
+#define BLACK(ARG) ARG
+#define BOLD(ARG) om::bold<<ARG<<om::reset
 
 namespace ATOOLS {
 
-template<>
-inline bool IsNan<HELICITIES::DivArrD>(const HELICITIES::DivArrD& x) {
-  for (size_t i=0; i<x.GetResult().size(); ++i)
-    if (ATOOLS::IsNan(x[i])) return true;
-  return false;
-}
-template<>
-inline bool IsZero<HELICITIES::DivArrD>(const HELICITIES::DivArrD& x) {
-  for (size_t i=0; i<x.GetResult().size(); ++i)
-    if (ATOOLS::IsZero(x[i])) return true;
-  return false;
-}
+  template<typename T>
+  std::ostream& operator<<(std::ostream& s, const HELICITIES::Divergence_Array<T>& divarr) {
+    return s<<BOLD('(')<<BLUE(divarr[0])<<BOLD(',')<<RED(divarr[1])<<BOLD(',')
+		       <<YELLOW(divarr[2])<<BOLD(',')<<BOLD(divarr[3])<<BOLD(',')
+		       <<GREEN(divarr[4])<<BOLD(',')<<GREEN(divarr[5])<<BOLD(')');
+  }
 
-template<typename T>
-std::ostream& operator<<(std::ostream& s,
-                         const HELICITIES::Divergence_Array<T>& x) {
-  return s<<"1/eps_UV*("<<x.GetUV()<<")"
-  <<" + 1/eps_IR*("<<x.GetIR()<<")"
-  <<" + 1/eps^2_IR*("<<x.GetIR2()<<")"
-  <<" + ("<<x.GetFinite()<<")"
-  <<" + eps*("<<x.GetEpsilon()<<")"
-  <<" + eps^2*("<<x.GetEpsilon2()<<")";
-}
+  template<>
+  inline bool IsNan<HELICITIES::DivArrD>(const HELICITIES::DivArrD& x) {
+    for (size_t i=0; i<x.GetResult().size(); ++i)
+      if (ATOOLS::IsNan(x[i])) return true;
+    return false;
+  }
 
+  template<>
+  inline bool IsNan<HELICITIES::DivArrC>(const HELICITIES::DivArrC& x) {
+    for (size_t i=0; i<x.GetResult().size(); ++i)
+      if (ATOOLS::IsNan(x[i])) return true;
+    return false;
+  }
+
+  template<>
+  inline bool IsZero<HELICITIES::DivArrD>(const HELICITIES::DivArrD& x) {
+    for (size_t i=0; i<x.GetResult().size(); ++i)
+      if (!ATOOLS::IsZero(x[i])) return false;
+    return true;
+  }
+
+  template<>
+  inline bool IsZero<HELICITIES::DivArrC>(const HELICITIES::DivArrC& x) {
+    for (size_t i=0; i<x.GetResult().size(); ++i)
+      if (!ATOOLS::IsZero(x[i])) return false;
+    return true;
+  }
 }
 
 

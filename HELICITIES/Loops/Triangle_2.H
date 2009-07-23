@@ -1,5 +1,5 @@
-#ifndef TRIANGLE_2_H
-#define TRIANGLE_2_H
+#ifndef HELICITIES_Loops_TRIANGLE_2_H
+#define HELICITIES_Loops_TRIANGLE_2_H
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__GOLEM95

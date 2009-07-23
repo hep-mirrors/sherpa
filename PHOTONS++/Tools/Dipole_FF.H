@@ -9,17 +9,21 @@ using namespace std;
 namespace PHOTONS {
   class Dipole_FF: public Dress_Blob_Base {
     protected:
-      virtual void    CalculateAvaragePhotonNumber(const double, const double);
-      virtual bool    CheckIfExceedingPhotonEnergyLimits();
-      virtual void    CheckMomentumConservationInQCMS();
-      virtual void    CorrectMomenta();
-      virtual void    DefineDipole();
-      virtual double  Func(double, std::vector<double>, std::vector<double>, std::vector<Vec3D>, double);
-      virtual void    ResetVariables();
-      virtual void    ReturnMomenta();
+
+      virtual void   CalculateAvaragePhotonNumber(const double&, const double&);
+      virtual bool   CheckIfExceedingPhotonEnergyLimits();
+      virtual void   CheckMomentumConservationInQCMS(const Poincare&,
+                                                     const Poincare&);
+      virtual void   CorrectMomenta();
+      virtual void   DefineDipole();
+      virtual double Func(const double&, const std::vector<double>&,
+                          const std::vector<double>&, const std::vector<Vec3D>&,
+                          const double&);
+      virtual void   ResetVariables();
+      virtual void   ReturnMomenta();
 
     public:
-      Dipole_FF(Particle_Vector_Vector);
+      Dipole_FF(const Particle_Vector_Vector&);
       virtual ~Dipole_FF();
 
       virtual void AddRadiation();

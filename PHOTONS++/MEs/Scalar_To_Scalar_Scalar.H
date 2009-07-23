@@ -13,8 +13,6 @@ namespace PHOTONS {
       Complex   m_Gamma;
 
       virtual void    BoostOriginalPVVToMultipoleCMS();
-      virtual void    FillMomentumArrays();
-
 
       virtual Complex InfraredSubtractedME_0_0();
       virtual Complex InfraredSubtractedME_0_1();
@@ -26,7 +24,7 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
     public:
-      Scalar_To_Scalar_Scalar(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
+      Scalar_To_Scalar_Scalar(const Particle_Vector_Vector&);
       virtual ~Scalar_To_Scalar_Scalar();
 
       virtual double GetBeta_0_0();
@@ -38,6 +36,7 @@ namespace PHOTONS {
 
       virtual double GetBeta_2_2(unsigned int, unsigned int);
 
+      virtual void   FillMomentumArrays(const Particle_Vector_Vector&);
       virtual double Smod(unsigned int);
   };
 }

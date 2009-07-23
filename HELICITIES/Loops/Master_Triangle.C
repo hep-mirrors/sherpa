@@ -22,9 +22,9 @@ using namespace HELICITIES;
 */
 HELICITIES::DivArrC
 HELICITIES::Master_Triangle(const double&  p12, const double&  p22, const double&  p32,
-                            const Complex& m12, const Complex& m22, const Complex& m32,
-                            const double&  mu2=0.) {
-//   if (mu2 == 0)   mu2 = GLOBAL_RENORMALIZATION_SCALE;
+                         const Complex& m12, const Complex& m22, const Complex& m32,
+                         double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
   //! three massless internal lines
   if (IsZero(m12) && IsZero(m22) && IsZero(m32)) {
     //! C_0(0,0,0;0,0,0) = ?

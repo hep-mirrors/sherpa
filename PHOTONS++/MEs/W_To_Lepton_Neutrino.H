@@ -12,7 +12,7 @@ namespace PHOTONS {
       bool      m_switch;
 
       virtual void    BoostOriginalPVVToMultipoleCMS();
-      virtual void    FillMomentumArrays();
+      virtual void    FillMomentumArrays(const Particle_Vector_Vector&);
 
 
       virtual Complex InfraredSubtractedME_0_0();
@@ -25,7 +25,7 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
     public:
-      W_To_Lepton_Neutrino(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
+      W_To_Lepton_Neutrino(const Particle_Vector_Vector&);
       virtual ~W_To_Lepton_Neutrino();
 
       virtual double GetBeta_0_0();

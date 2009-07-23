@@ -1,9 +1,9 @@
 bin_PROGRAMS  = SingleDecay \
 	SingleDecayPhotons \
 	HadronFullDecayNoAnalysis \
-	HadronFullDecayMixingAnalysis \
-	HadronFullDecayInclusiveAnalysis \
 	PhotonAnalysis
+# 	HadronFullDecayMixingAnalysis
+# 	HadronFullDecayInclusiveAnalysis
 
 FULL_LDADD = $(FCLIBS) -lm -ldl -L$(pkglibdir) -lSherpaMain \
   @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@ @CONDITIONAL_HEPMC2LIBS@
@@ -26,17 +26,17 @@ HadronFullDecayNoAnalysis_LDFLAGS = @ldflags@
 HadronFullDecayNoAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 HadronFullDecayNoAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
-HadronFullDecayMixingAnalysis_SOURCES = Main_HadronFullDecayMixingAnalysis.C
-HadronFullDecayMixingAnalysis_LDADD   = $(FULL_LDADD)
-HadronFullDecayMixingAnalysis_LDFLAGS = @ldflags@
-HadronFullDecayMixingAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
-HadronFullDecayMixingAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+# HadronFullDecayMixingAnalysis_SOURCES = Main_HadronFullDecayMixingAnalysis.C
+# HadronFullDecayMixingAnalysis_LDADD   = $(FULL_LDADD)
+# HadronFullDecayMixingAnalysis_LDFLAGS = @ldflags@
+# HadronFullDecayMixingAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+# HadronFullDecayMixingAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
-HadronFullDecayInclusiveAnalysis_SOURCES = Main_HadronFullDecayInclusiveAnalysis.C
-HadronFullDecayInclusiveAnalysis_LDADD   = $(FULL_LDADD)
-HadronFullDecayInclusiveAnalysis_LDFLAGS = @ldflags@
-HadronFullDecayInclusiveAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
-HadronFullDecayInclusiveAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+# HadronFullDecayInclusiveAnalysis_SOURCES = Main_HadronFullDecayInclusiveAnalysis.C
+# HadronFullDecayInclusiveAnalysis_LDADD   = $(FULL_LDADD)
+# HadronFullDecayInclusiveAnalysis_LDFLAGS = @ldflags@
+# HadronFullDecayInclusiveAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+# HadronFullDecayInclusiveAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 PhotonAnalysis_SOURCES = Main_PhotonFullDistributionAnalysis.C
 PhotonAnalysis_LDADD   = $(FULL_LDADD)

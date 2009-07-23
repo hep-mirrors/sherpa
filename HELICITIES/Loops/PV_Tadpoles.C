@@ -1,11 +1,12 @@
 #include "HELICITIES/Loops/Master_Integrals.H"
+#include "HELICITIES/Loops/PV_Integrals.H"
 #include "ATOOLS/Math/MathTools.H"
 
 using namespace std;
 using namespace ATOOLS;
 using namespace HELICITIES;
 
-//! A_0(m2)
+//! A_2(m2) in Passarino-Veltman reduction
 /*!
             -------
           /        \    q = 0
@@ -14,21 +15,17 @@ using namespace HELICITIES;
           -------
 */
 HELICITIES::DivArrC
-HELICITIES::Master_Tadpole(const Complex& m2, double mu2=0.) {
-
-  DivArrC da(1.,1.,1.,1.,1.,1.);
-  da*=Complex(0.,2.);
-
+HELICITIES::PV_Tadpole_2(const Complex& m2, double mu2=0.) {
   if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
   //! massless internal line
-  //! A_0(0) = 0
+  //! A_2(0) = 0
   if (IsZero(m2)) {
     return DivArrC(0.,0.,0.,0.,0.,0.);
   }
   //! massive internal line
-  //! A_0(m^2) = m^2(1/epsUV + ln(mu^2/m^2) + 1)
+  //! A_2(m^2) = m^4(1/epsUV + ln(mu^2/m^2) + 3/2)
   else {
-    return DivArrC(m2,0.,0.,m2*(log(mu2/m2) + 1.),0.,0.);
+    return DivArrC(m2*m2,0.,0.,m2*m2*(log(mu2/m2) + 3./2.),0.,0.);
   }
   return DivArrC(0.,0.,0.,0.,0.,0.);
 }

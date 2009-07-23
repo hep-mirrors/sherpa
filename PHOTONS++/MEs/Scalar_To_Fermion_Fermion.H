@@ -11,8 +11,9 @@ namespace PHOTONS {
     private:
       bool      m_switch;
 
+      std::pair<bool,Complex> m_M00results[1][2][2];
+
       virtual void    BoostOriginalPVVToMultipoleCMS();
-      virtual void    FillMomentumArrays();
 
 
       virtual Complex InfraredSubtractedME_0_0();
@@ -25,7 +26,7 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
     public:
-      Scalar_To_Fermion_Fermion(Particle_Vector_Vector pvv_zero, Particle_Vector_Vector pvv_one);
+      Scalar_To_Fermion_Fermion(const Particle_Vector_Vector&);
       virtual ~Scalar_To_Fermion_Fermion();
 
       virtual double GetBeta_0_0();
@@ -37,6 +38,7 @@ namespace PHOTONS {
 
       virtual double GetBeta_2_2(unsigned int, unsigned int);
 
+      virtual void   FillMomentumArrays(const Particle_Vector_Vector&);
       virtual double Smod(unsigned int);
   };
 }

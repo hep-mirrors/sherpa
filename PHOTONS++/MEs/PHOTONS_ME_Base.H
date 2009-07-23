@@ -2,25 +2,30 @@
 #define PHOTONS_MEs_PHOTONS_ME_Base_H
 
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/MyComplex.H"
-#include "HELICITIES/Main/C_Vector.H"
-#include "HELICITIES/Main/XYZFuncs.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "ATOOLS/Org/Getter_Function.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 
+namespace ATOOLS {
+  class Flavour;
+  class Poincare;
+}
+
+using namespace ATOOLS;
 
 namespace PHOTONS {
 
   class PHOTONS_ME_Base {
     protected:
+      std::string   m_name;
+
       unsigned int  m_nV;
       unsigned int  m_nR;
-      double        m_e;
       double        m_alpha;
+      double        m_e;
       double        m_sW;
       double        m_cW;
+      double        m_GF;
+      double        m_sqrt2;
       Complex       m_i;
 
       Complex  m_cL;
@@ -36,12 +41,9 @@ namespace PHOTONS {
       Vec4D    m_moms2[9][9];
       int      m_spins[9];
 
-      Particle_Vector_Vector m_pvv_zero;
-      Particle_Vector_Vector m_pvv_one;
+      const Particle_Vector_Vector& m_pvv_zero;
 
       virtual void    BoostOriginalPVVToMultipoleCMS() = 0;
-      virtual void    FillMomentumArrays() = 0;
-
 
       virtual Complex InfraredSubtractedME_0_0() = 0;
       virtual Complex InfraredSubtractedME_0_1() = 0;
@@ -50,10 +52,11 @@ namespace PHOTONS {
       virtual Complex InfraredSubtractedME_1_05(unsigned int) = 0;
       virtual Complex InfraredSubtractedME_1_15(unsigned int) = 0;
 
-      virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int) = 0;
+      virtual Complex InfraredSubtractedME_2_1(unsigned int,
+                                               unsigned int) = 0;
 
     public:
-      PHOTONS_ME_Base();
+      PHOTONS_ME_Base(const Particle_Vector_Vector&);
       virtual ~PHOTONS_ME_Base();
 
 
@@ -66,8 +69,27 @@ namespace PHOTONS {
 
       virtual double GetBeta_2_2(unsigned int, unsigned int) = 0;
 
+      virtual void   FillMomentumArrays(const Particle_Vector_Vector&) = 0;
       virtual double Smod(unsigned int) = 0;
-  };
 
+      inline std::string Name() { return m_name; }
+
+      static PHOTONS_ME_Base * GetIRsubtractedME
+                               (const Particle_Vector_Vector& pvv);
+      static PHOTONS_ME_Base * GetIRsubtractedME
+                               (const std::string& tag,
+                                const Particle_Vector_Vector& pvv);
+  };
 }
+
+#define DECLARE_PHOTONS_ME_GETTER(NAME,TAG)                        \
+  DECLARE_GETTER(NAME,TAG,PHOTONS::PHOTONS_ME_Base,PHOTONS::Particle_Vector_Vector); \
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const \
+  {                                                                \
+    str<<#TAG;                                                     \
+  }
+
+typedef ATOOLS::Getter_Function<PHOTONS::PHOTONS_ME_Base,PHOTONS::Particle_Vector_Vector>
+        PHOTONS_ME_Getter;
+
 #endif

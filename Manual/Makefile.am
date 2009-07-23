@@ -18,6 +18,7 @@ Sherpa_TEXINFOS = \
 	Selector.texi \
 	Integration.texi \
 	Shower.texi \
+	SoftQED.texi \
 	MI.texi \
 	Tips.texi \
 	Customization.texi \

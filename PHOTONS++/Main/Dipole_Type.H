@@ -10,7 +10,6 @@ using namespace ATOOLS;
 namespace PHOTONS {
 
   typedef std::vector<Particle_Vector>    Particle_Vector_Vector;
-  typedef std::vector<Particle_Int_Map>   Particle_Int_Map_Vector;
 
   class Dipole_Type {
     public:

@@ -20,7 +20,9 @@ static TH1D * multipoleframeangles;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  std::string adir = p_inithandler->GetSampleAnalysis()->OutputPath();
+//   std::string adir = p_sherpa->GetInitHandler()
+//                       ->GetAnalysis()->OutputPath();
+  std::string adir = "";
   ATOOLS::MakeDir("PhotonAnalysisDirectory/"+mother_flav.ShellName()+"_decays",true,493);
   rootfile = new TFile(string("PhotonAnalysisDirectory/"+
                               mother_flav.ShellName()+"_decays/"+
@@ -81,6 +83,7 @@ void AnalyseEvent(Blob_List* blobs)
   Poincare boost(multipolesum);
   Poincare rotate;
   // charged initial state: rotate such that initial state at theta = 0
+  std::list<Vec4D>::iterator heaviest = multipole.begin();
   if (mother_flav.Charge() != 0.) {
     Vec4D inmom = *multipole.begin();
     boost.Boost(inmom);
@@ -88,12 +91,12 @@ void AnalyseEvent(Blob_List* blobs)
   }
   // neutral initial state: rotate such that heaviest charged final state at theta = 0
   else {
-    std::list<Vec4D>::iterator heaviest = multipole.begin();
     for (std::list<Vec4D>::iterator iter=multipole.begin(); iter!=multipole.end(); iter++) {
       if (abs((iter->Abs2() - heaviest->Abs2())/(iter->Abs2() + heaviest->Abs2())) > 1E-6) {
         heaviest = iter;
       }
     }
+    boost.Boost(*heaviest);
     rotate = Poincare(*heaviest,axis);
   }
   for (int i=0; i<primarydecayblob->NOutP(); i++) {

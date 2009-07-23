@@ -13,8 +13,6 @@ using namespace ATOOLS;
 namespace PHOTONS {
   class YFS_Form_Factor {
     private:
-      Particle *  p_part1;
-      Particle *  p_part2;
       Vec4D       m_p1;
       Vec4D       m_p2;
       double      m_ks;
@@ -27,7 +25,7 @@ namespace PHOTONS {
       double      m_xx1;
       double      m_xx2;
       double      m_Y;
-      short int   m_t1t2;
+      double      m_t1t2;
 
       ATOOLS::Function_Base *p_ig1, *p_ig2;
       ATOOLS::Gauss_Integrator *p_gi1, *p_gi2;
@@ -38,19 +36,19 @@ namespace PHOTONS {
       double IntP2();
       double GFunc(double);
       double IntG();
-      double CalculateBeta(Vec4D);
+      double CalculateBeta(const Vec4D&);
 
     public:
-      YFS_Form_Factor(Particle_Vector, double);
-      YFS_Form_Factor(Particle*, Particle*, double);
+      YFS_Form_Factor(const Particle_Vector&, const double&);
+      YFS_Form_Factor(const Particle*, const Particle*, const double&);
       ~YFS_Form_Factor();
 
       double G(double);
 
-      inline double Get()                             { return m_Y; }
+      inline const double Get() const { return m_Y; }
 
-      inline const Vec4D &P1() const { return m_p1; }
-      inline const Vec4D &P2() const { return m_p2; }
+      inline const Vec4D &P1() const  { return m_p1; }
+      inline const Vec4D &P2() const  { return m_p2; }
   };
 
 

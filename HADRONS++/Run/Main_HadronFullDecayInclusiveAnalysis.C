@@ -23,7 +23,9 @@ typedef map<Flavour,int>::iterator FIMapIt;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  std::string adir = p_inithandler->GetSampleAnalysis()->OutputPath();
+//   std::string adir = p_sherpa->GetInitHandler()
+//                       ->GetAnalysis()->OutputPath();
+  std::string adir = "";
   ATOOLS::MakeDir(adir,493);
   rootfile = new TFile(string(adir+"/Multiplicities_"+
                               mother_flav.ShellName()+".root").c_str(), "RECREATE");

@@ -20,10 +20,10 @@ using namespace HELICITIES;
 */
 HELICITIES::DivArrC
 HELICITIES::Master_Box(const double&  p12, const double&  p22, const double&  p32, const double&  p42,
-                       const double&  s12, const double&  s23,
-                       const Complex& m12, const Complex& m22, const Complex& m32, const Complex& m42,
-                       const double&  mu2=0.) {
-//   if (mu2 == 0)   mu2 = GLOBAL_RENORMALIZATION_SCALE;
+                    const double&  s12, const double&  s23,
+                    const Complex& m12, const Complex& m22, const Complex& m32, const Complex& m42,
+                    double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
   //! *******************************************************************************************
   //! four massless internal lines
   if (IsZero(m12) && IsZero(m22) && IsZero(m32) && IsZero(m42)) {
