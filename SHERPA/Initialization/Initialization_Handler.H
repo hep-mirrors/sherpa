@@ -90,6 +90,11 @@ namespace SHERPA {
     bool InitializeTheSoftPhotons();
     bool InitializeTheAnalyses();
 
+    bool ExtractValArg
+    (std::vector<std::string> &args,
+     std::vector<std::string>::iterator &it,
+     const std::string &arg,const std::string &tag,
+     const std::string &def=std::string("")) const;
     int  ExtractCommandLineParameters(int argc,char * argv[]);
     bool CheckBeamISRConsistency();
     void SetScaleFactors();

@@ -47,9 +47,11 @@ For advice on this topic please contact the authors, @ref{Authors}.
 @subsection RESULT_DIRECTORY
 @cindex RESULT_DIRECTORY
 This parameter specifies the name of the directory
-which is used by Sherpa to store the integration results
+which is used by Sherpa to store integration results
 and phasespace mappings. The default is @samp{Results/}.
-This directory will not be created automatically by Sherpa.
+It can also be set using the command line parameter @option{-r},
+see @ref{Command line}. The directory will not be created automatically
+by Sherpa, unless the command line parameter @option{-g} is set.
 
 
 @node EVENT_GENERATION_MODE

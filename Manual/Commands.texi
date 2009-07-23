@@ -14,11 +14,19 @@ Read input file from path @samp{<path>}.
 @item -e <events>
 Set number of events to generate @samp{<events>}.
 
+@item -r <events>
+Set the result directory to @samp{<results>},
+see @ref{RESULT_DIRECTORY}.
+
 @item -O <level>
 Set output level @samp{<level>}, see @ref{OUTPUT}.
 
 @item -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
+
+@item -g
+Create result directory automatically,
+see @ref{RESULT_DIRECTORY}.
 
 @item -v, --version
 Print versioning information.

@@ -790,6 +790,33 @@ void Initialization_Handler::SetScaleFactors()
 		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
 }
 
+bool Initialization_Handler::ExtractValArg
+(std::vector<std::string> &args,std::vector<std::string>::iterator &it,
+ const std::string &arg,const std::string &tag,const std::string &def) const
+{
+  if (it->find(arg)!=0) return false;
+  std::string val=it->substr(2);
+  if (def!="") {
+    if (val!="") *it="-"+val;
+    else it=args.erase(it);
+    it=args.insert(it,tag+"="+def);
+    return true;
+  }
+  if (val=="") {
+    if (it+1!=args.end()) {
+      it=args.erase(it);
+      val=*it;
+    }
+  }
+  if (val=="") {
+    msg_Error()<<METHOD<<"(): No argument to '"
+	       <<arg<<"'. Abort."<<std::endl;
+    exit(1);
+  }
+  *it=tag+"="+val;
+  return true;
+}
+
 int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
   std::string datpath;
@@ -840,85 +867,31 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	++oit;
       }
     }
-    else if (par.find("-f")==0) {
-      std::string file=par.substr(2);
-      if (file=="") {
-	if (oit+1!=helpsv.end()) {
-	  oit=helpsv.erase(oit);
-	  file=*oit;
-	}
-      }
-      if (file!="") m_file=file;
-      else {
-	msg_Error()<<METHOD<<"(): No argument to '-f'. Abort."<<std::endl;
-	exit(1);
-      }
-      oit=helpsv.erase(oit);
-    }
-    else if (par.find("-p")==0) {
-      std::string path=par.substr(2);
-      if (path=="") {
-	if (oit+1!=helpsv.end()) {
-	  oit=helpsv.erase(oit);
-	  path=*oit;
-	}
-      }
-      if (path!="") m_path=path;
-      else {
-	msg_Error()<<METHOD<<"(): No argument to '-p'. Abort."<<std::endl;
-	exit(1);
-      }
-      oit=helpsv.erase(oit);
-    }
-    else if (par.find("-e")==0) {
-      std::string events=par.substr(2);
-      if (events=="") {
-	if (oit+1!=helpsv.end()) {
-	  oit=helpsv.erase(oit);
-	  events=*oit;
-	}
-      }
-      if (events=="") {
-	msg_Error()<<METHOD<<"(): No argument to '-e'. Abort."<<std::endl;
-	exit(1);
-      }
-      *oit="EVENTS="+events;
-    }
-    else if (par.find("-b")==0) {
-      std::string batch=par.substr(2);
-      if (batch!="") *oit="-"+batch;
-      else oit=helpsv.erase(oit);
-      oit=helpsv.insert(oit,"BATCH_MODE=0");
-    }
-    else if (par.find("-O")==0) {
-      std::string out=par.substr(2);
-      if (out=="") {
-	if (oit+1!=helpsv.end()) {
-	  oit=helpsv.erase(oit);
-	  out=*oit;
-	}
-      }
-      if (out=="") {
-	msg_Error()<<METHOD<<"(): No argument to '-O'. Abort."<<std::endl;
-	exit(1);
-      }
-      *oit="OUTPUT="+out;
-    }
+    else if (ExtractValArg(helpsv,oit,"-f","RUNDATA"));
+    else if (ExtractValArg(helpsv,oit,"-p","PATH"));
+    else if (ExtractValArg(helpsv,oit,"-e","EVENTS"));
+    else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
+    else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
+    else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
+    else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
     else if (par=="--version" || par=="-v"){
-      msg_Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
+      msg_Out()<<"Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
       exit(0);
     }
     else {
-      msg_Out()<<" Usage: "<<endl;
-      msg_Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
-      msg_Out()<<endl;
-      msg_Out()<<" Possible options: "<<endl;
-      msg_Out()<<"  -f <file>      read input from file <file>"<<endl;
-      msg_Out()<<"  -p <path>      read input from path <path>"<<endl;
-      msg_Out()<<"  -e <events>    set number of events <events>"<<endl;
-      msg_Out()<<"  -O <level>     set output level <level>"<<endl;
-      msg_Out()<<"  -v,--version   prints the Version number"<<endl;
-      msg_Out()<<"  -h,--help      prints this help message"<<endl;
+      if (par!="-h" && par!="--help")
+	msg_Out()<<"Unrecognized option '"<<par<<"'.\n"<<endl;
+      msg_Out()<<"Usage:\n"<<endl;
+      msg_Out()<<"  Sherpa [options] [<option>=<value>] [<tag>:=<value>]\n"<<endl;
+      msg_Out()<<"Options:\t-f <file>      read input from file <file>"<<endl;
+      msg_Out()<<"\t\t-p <path>      read input from path <path>"<<endl;
+      msg_Out()<<"\t\t-e <events>    set number of events <events>"<<endl;
+      msg_Out()<<"\t\t-r <results>   set result directory <results>"<<endl;
+      msg_Out()<<"\t\t-O <level>     set output level <level>"<<endl;
+      msg_Out()<<"\t\t-g             create result directory automatically"<<endl;
+      msg_Out()<<"\t\t-b             run in non-batch mode"<<endl;
+      msg_Out()<<"\t\t-v,--version   print the version number"<<endl;
+      msg_Out()<<"\t\t-h,--help      print this help message\n"<<endl;
       exit(0);
     }
   }

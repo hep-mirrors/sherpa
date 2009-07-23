@@ -3,11 +3,13 @@
 Sherpa \- Monte Carlo event generator
 .SH SYNOPSIS
 Sherpa
-.B "[\-f \fIfile\fP] [\-p \fIpath\fP] [\-e \fIevents\fP] [\-O \fIlevel\fP]"
+.B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP]"
+.br
+.B "       [\-e \fIevents\fP] [\-r \fIresults\fP] [\-O \fIlevel\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
-.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ] [\-vbh]"
+.B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ]"
 .SH DESCRIPTION
 Sherpa is a Monte Carlo event generation framework.
 .br
@@ -20,8 +22,12 @@ Sets the run data file to \fIfile\fP.
 Sets the run path to \fIpath\fP.
 .IP "\fB-e\fP \fIevents\fP"
 Sets the number of events to \fIevents\fP.
+.IP "\fB-r\fP \fIresults\fP"
+Sets the result directory to \fIresults\fP.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP, see info file.
+.IP "\fB-g\fP"
+Creates result directory automatically, see info file.
 .IP "\fB-b\fP"
 Switches to non-batch mode, see info file.
 .IP "\fB-v\fP, \fB--version\fP" 
