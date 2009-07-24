@@ -516,9 +516,9 @@ void Matrix_Element_Handler::BuildSingleProcessList
     if (pi.m_ckkw&1) {
       cpi.m_kfactor="METS";
       if (procs.size()>1) {
-	if (cpi.m_scale.rfind(']')==std::string::npos)
-	  cpi.m_scale+="[MU_F2]";
-	cpi.m_scale+="["+p_shower->GetShower()->GetKT2("Q2_CUT")+"]";
+	if (cpi.m_scale.rfind('}')==std::string::npos)
+	  cpi.m_scale+="{MU_F2}";
+	cpi.m_scale+="{"+p_shower->GetShower()->GetKT2("Q2_CUT")+"}";
       }
     }
     if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);

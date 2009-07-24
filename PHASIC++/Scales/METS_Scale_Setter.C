@@ -131,15 +131,15 @@ METS_Scale_Setter::METS_Scale_Setter
   m_cnt(0), m_rej(0), m_lfrac(0.0)
 {
   m_p.resize(4);
-  size_t pos(scale.find('['));
+  size_t pos(scale.find('{'));
   std::string mur2tag("MU_R2"), muf2tag("MU_F2");
   if (pos!=std::string::npos) {
     muf2tag=scale.substr(pos+1);
-    pos=muf2tag.rfind(']');
+    pos=muf2tag.rfind('}');
     if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+scale+"'");
     muf2tag=muf2tag.substr(0,pos);
-    pos=muf2tag.find("][");
+    pos=muf2tag.find("}{");
     if (pos==std::string::npos) {
       mur2tag=muf2tag;
     }

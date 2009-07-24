@@ -67,11 +67,11 @@ Variable_KFactor_Setter::Variable_KFactor_Setter
  const size_t &oqcdlo,const size_t &oewlo):
   KFactor_Setter_Base(proc)
 {
-  size_t pos(kfac.find('['));
+  size_t pos(kfac.find('{'));
   if (pos==std::string::npos)
     THROW(fatal_error,"Invalid coupling '"+kfac+"'");
   m_kftag=kfac.substr(pos+1);
-  pos=m_kftag.rfind(']');
+  pos=m_kftag.rfind('}');
   if (pos==std::string::npos)
     THROW(fatal_error,"Invalid coupling '"+kfac+"'");
   m_kftag=m_kftag.substr(0,pos);
@@ -122,6 +122,9 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
   case 3:
     term->Set(rpa.gen.Ecms());
     return term;
+  case 4:
+    term->Set(sqr(rpa.gen.Ecms()));
+    return term;
   default:
     term->Set(m_kfkey.Doubles()[term->Id()-100]);
     return term;
@@ -134,10 +137,11 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="E_CMS") term->SetId(3);
+  else if (term->Tag()=="S_CMS") term->SetId(4);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
-		 (2,term->Tag().length()-3)));
+		 (3,term->Tag().length()-4)));
   }
 }
 
@@ -150,6 +154,7 @@ void Variable_KFactor_Setter::SetCoupling(const std::string &kftag)
   p_calc->AddTag("MU_F2","1.0");
   p_calc->AddTag("MU_R2","1.0");
   p_calc->AddTag("E_CMS","1.0");
+  p_calc->AddTag("S_CMS","1.0");
   for (size_t i(0);i<m_kfkey.Doubles().size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
   std::string res=p_calc->Interprete(kftag);

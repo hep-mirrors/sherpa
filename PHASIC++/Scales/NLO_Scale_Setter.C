@@ -91,13 +91,13 @@ NLO_Scale_Setter::NLO_Scale_Setter
   Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this),
   p_jf(NULL), m_singlescale(0)
 {
-  size_t pos(scale.find('['));
+  size_t pos(scale.find('{'));
   if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
   std::string mur2tag, muf2tag(scale.substr(pos+1));
-  pos=muf2tag.rfind(']');
+  pos=muf2tag.rfind('}');
   if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
   muf2tag=muf2tag.substr(0,pos);
-  pos=muf2tag.find("][");
+  pos=muf2tag.find("}{");
   if (pos==std::string::npos) {
     mur2tag=muf2tag;
   }

@@ -80,17 +80,19 @@ mass of the lepton pair in Drell-Yan production is the desired scale,
 the corresponding setup reads
 
 @verbatim
-SCALES VAR[Abs2(p[2]+p[3])]
+SCALES VAR{Abs2(p[2]+p[3])}
 @end verbatim
 
 Renormalization and factorization scales can be chosen differently.
-For example in Drell-Yan + jet production one could choose.
+For example in Drell-Yan + jet production one could set
 
 @verbatim
-SCALES VAR[Abs2(p[2]+p[3])][MPerp2(p[2]+p[3])]
+SCALES VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 @end verbatim
 
 In this case the factorization scale must be specified first.
+More than two scales can be set as well to be subsequently used, e.g.
+by the @option{VAR} coupling scheme, see @ref{COUPLINGS}.
 
 @item QCD
 The matrix element is clustered onto a core 2->2 configuration using a
@@ -158,8 +160,19 @@ and one power at the transverse momentum squared of the gluon.
 Assuming the Higgs mass to be 120 GeV, the corresponding reweighting factor would read
 
 @verbatim
-SCALES    VAR[...][PPerp(p[2])]
-COUPLINGS VAR[sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(sqr(E_CMS)),3)]
+SCALES    VAR{...}{PPerp(p[3])}
+COUPLINGS VAR{sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_CMS),3)}
+@end verbatim
+
+If more than two scales are to be used, the subsequent scales are referred to
+as @kbd{MU_<i>2}, where @kbd{<i>} is replaced with the appropriate number,
+including an offset of one.
+Their values can be computed e.g. using the @option{VAR} scale setter, see
+@ref{SCALES}. A fictious example would be
+
+@verbatim
+SCALES    VAR{...}{PPerp(p[4])}{Abs2(p[2]+p[3])}
+COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_CMS)*Alpha_QED(S_CMS))}
 @end verbatim
 @end table
 
