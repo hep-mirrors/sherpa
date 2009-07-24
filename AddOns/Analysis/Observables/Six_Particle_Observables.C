@@ -202,24 +202,21 @@ Primitive_Observable_Base* Six_Particle_PT::Copy() const
 //=============================================================================
 
 DEFINE_OBSERVABLE_GETTER(Six_Particle_Mass,
-       Six_Particle_Mass_Getter,"M6")
+       Six_Particle_Mass_Getter,"6Mass")
 
 void Six_Particle_Mass::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
                                  const Vec4D& mom3,const Vec4D& mom4,
                                  const Vec4D& mom5,const Vec4D& mom6,
                                  double weight, double ncount)
 {
-  double m = sqrt(sqr(mom1[0]+mom2[0]+mom3[0]+mom4[0]+mom5[0]+mom6[0]) -
-                  sqr(mom1[1]+mom2[1]+mom3[1]+mom4[1]+mom5[1]+mom6[1]) -
-                  sqr(mom1[2]+mom2[2]+mom3[2]+mom4[2]+mom5[2]+mom6[2]) -
-                  sqr(mom1[3]+mom2[3]+mom3[3]+mom4[3]+mom5[3]+mom6[3]));
-  p_histo->Insert(m,weight,ncount);
+  Vec4D  p = mom1+mom2+mom3+mom4+mom5+mom6;
+  p_histo->Insert(p.Mass(),weight,ncount);
 }
 
 Six_Particle_Mass::Six_Particle_Mass(const std::vector<Flavour>& flavs,
                             int type,double xmin,double xmax,int nbins,
                             const std::string & listname)
-  : Six_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"M") {}
+  : Six_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"6Mass") {}
 
 Primitive_Observable_Base* Six_Particle_Mass::Copy() const
 {

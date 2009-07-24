@@ -1,0 +1,66 @@
+(run){
+  EVENTS = 2000;
+  ANALYSIS = 0;
+}(run)
+
+(beam){
+  BEAM_1          = 2212
+  BEAM_ENERGY_1   = 7000.
+
+  BEAM_2          = 2212
+  BEAM_ENERGY_2   = 7000.
+}(beam)
+
+(processes){
+  %
+  % jet jet -> tau'[-> nutau tau- nutaub] nutaub'[-> tau+ tau- nutaub]
+  %
+  Process 93 93 -> 17[a] -18[b]
+    Decay   17[a] ->  16 11 -12
+    Decay  -18[b] -> -15 13 -14
+  Print_Graphs
+  End process
+}(processes)
+
+(selector){
+}(selector)
+
+(model){
+  MODEL         = SM+4thGen
+
+  ## full description of all parameters with
+  ## Sherpa SHOW_MODEL_SYNTAX=1
+
+  ## masses and widths of 4th gen leptons
+  MASS[17] = 200;  WIDTH[17] = 3.0;
+  MASS[18] = 150;  WIDTH[18] = 2.0;
+
+  ## mixing angle to other generations
+  THETA_L14 = 0; PHI_L2 = 0.;
+  THETA_L24 = 0; PHI_L3 = 0.;
+  THETA_L34 = 0.1;
+
+  OUTPUT_MIXING = 1
+}(model)
+
+(me){
+  ME_SIGNAL_GENERATOR = Amegic
+}(me)
+
+(fragmentation){
+  FRAGMENTATION=Off;
+}(fragmentation)
+
+(analysis){
+  BEGIN_ANALYSIS {
+    LEVEL  MEs Showers
+
+    PT3    16  11 -12    0. 300.  75  LinErr FinalState
+    PT3   -15  13 -14    0. 300.  75  LinErr FinalState
+    3Mass  16  11 -12  150. 250.  50  LinErr FinalState
+    3Mass -15  13 -14  100. 200.  50  LinErr FinalState
+
+    6Mass  11 -12 13 -14 -15 16  0. 1000. 100 LinErr FinalState
+
+  } END_ANALYSIS
+}(analysis)
