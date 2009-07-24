@@ -1,7 +1,7 @@
 @node ISR Parameters
 @section ISR Parameters
 
-The following parameters are used to steer the beam setup.
+The following parameters are used to steer the beam setup and may be set in the @code{(isr)} section of the run-card, see @ref{Input structure}.
 
 @menu
 * BUNCH_1::           PDG ID of the first bunch particle.

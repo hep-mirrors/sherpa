@@ -27,12 +27,16 @@
 @menu
 * Introduction::     What is Sherpa
 @sp 1
+* Getting started::  A guide to getting started with Sherpa: installation, and a example run
+@sp 1
 * Command line::     Command line options
 * Input structure::  How to specify parameters for a Sherpa run.
 * Parameters::       List of parameters
 @sp 1
 * Tips and Tricks::  Advanced usage tips
 * Customization::    Extending Sherpa 
+@sp 1
+* Examples::         A collection of example set-ups designed to illustrate some of Sherpa's features
 @sp 1
 * Authors::          Authors of Sherpa 
 * Copying::          Your rights and freedoms
@@ -45,10 +49,12 @@
 @mybibbegin{Bibliography.texi}
 
 @include Introduction.texi
+@include Starting.texi
 @include Commands.texi
 @include Input.texi
 @include Parameters.texi
 @include Tips.texi
+@include Examples.texi
 @include Customization.texi
 
 @node Authors
@@ -61,7 +67,7 @@ Sherpa was written by the Sherpa Team, see
 @node Copying
 @chapter Copying
 
-Sherpa is free  software.   
+Sherpa is free software.   
 You can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the  
 Free Software Foundation. You should have received a copy 

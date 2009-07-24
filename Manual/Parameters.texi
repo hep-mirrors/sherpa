@@ -2,7 +2,13 @@
 @chapter Parameters
 
 A Sherpa setup is steered by various parameters, associated with the
-different components of event generation. Tag replacements may be
+different components of event generation. These are set in 
+@iftex 
+S\scalebox{0.8}{HERPA}\xspace's 
+@end iftex 
+@ifnottex Sherpa's
+@end ifnottex 
+run-card, see @ref{Input structure} for more details. Tag replacements may be
 performed in all inputs, see @ref{Tags}.
 
 @menu

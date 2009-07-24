@@ -1,0 +1,39 @@
+@node Examples
+@chapter Examples
+
+Some example set-ups are included in Sherpa, in the 
+@code{<prefix>/Examples/} directory. These may be useful to 
+new users to practice with, or as templates for creating your 
+own Sherpa run-cards. In this section, we will look at some 
+of the main features of these examples.
+
+@menu
+* LHC_ZJets::                 
+* Tevatron_ZJets::            
+* Tevatron_WJets::            
+* Tevatron_QCD::              
+* LEP91::                     
+* LHC_TopPair::               
+* Tevatron_TopPair::          
+@c * Tevatron_UE::               
+@c * LHC_4thGen::                
+@c * LHC_AGC::                   
+@c * EGamma::                    
+@c * PEPII_BaBar::               
+@c * BFKL::                      
+@end menu
+
+@include LHC_ZJets.texi
+@include Tevatron_ZJets.texi
+@include Tevatron_WJets.texi
+@include Tevatron_QCD.texi
+@include LEP91.texi
+@include LHC_TopPair.texi
+@include Tevatron_TopPair.texi
+@c @include Tevatron_UE.texi
+@c @include LHC_4thGen.texi
+@c @include LHC_AGC.texi
+@c @include EGamma
+@c @include PEPII_BaBar
+@c @include BFKL
+

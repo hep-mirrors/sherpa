@@ -1,0 +1,104 @@
+@node Tevatron_TopPair
+@section Tevatron_TopPair
+
+@subsection Run.dat
+
+This set-up is very similar to the @ref{LHC_TopPair} example above.
+There are two notable differences. Firstly, obviously this is a Tevatron
+set-up with proton anti-proton collisions at Tevatron energies. 
+Secondly, there are two allowed decay channels.
+
+This is the @code{(processes)} section of the run card:
+@verbatim
+(processes){
+  Process 93 93 -> 6[a] -6[b] 93{1};
+    DecayOS 6[a] -> 5 24[c];
+      DecayOS 24[c] -> 90 91;
+    DecayOS -6[b] -> -5 -24[d];
+      DecayOS -24[d] -> 94 94;
+  CKKW sqr(20/E_CMS);
+  End process;
+
+  Process 93 93 -> 6[a] -6[b] 93{1};
+    DecayOS 6[a] -> 5 24[c];
+      DecayOS 24[c] -> 94 94;
+    DecayOS -6[b] -> -5 -24[d];
+      DecayOS -24[d] -> 90 91;
+  CKKW sqr(20/E_CMS);
+  End process;
+}(processes)
+@end verbatim
+
+The process generated is the production of a top pair from two light quarks, with 
+possibly an extra final-state parton. Each top then decays into (anti-)bottom
+quark and W+(-) boson. One of the W-bosons then decays leptonically, and 
+the other decays to quarks. This time we include processes with either of 
+the two W-bosons decaying leptonically, not just the W-, as in the
+@ref{LHC_TopPair} example above.
+
+Things to notice:
+@itemize @bullet
+@item there are two separate processes defined. Every different decay route
+must have it's own process. It is not possible to group the different W-
+decays into one top-production process. 
+
+@end itemize
+
+
+
+@subsection Run.analyse.dat
+
+This set-up is very similar to the @ref{Tevatron_TopPair} one above, with exactly the same 
+processes being generated. There are three main differences. Firstly, 
+tags have been used when setting up the run-card. Secondly, a results 
+directory has been set up. Thirdly, a Rivet 
+analysis has been set up.
+
+To see these differences, look at the @code{(run)} section of the 
+run-card:
+@verbatim
+(run){
+  EVENTS = 1000000
+
+  NJET:=1; QCUT:=20
+
+  RESULT_DIRECTORY = Results.QCUT
+  GENERATE_RESULT_DIRECTORY = 1
+  FRAGMENTATION = Off
+
+  ANALYSIS = Rivet
+}(run)
+@end verbatim
+
+and the @code{(analysis)} section:
+@verbatim
+(analysis){
+  BEGIN_RIVET {
+    -H NJETjet.QCUTGeV.ANATAG.aida
+    -a CDF_2009_S8210160
+  } END_RIVET
+}(analysis)
+@end verbatim
+
+
+Things to notice:
+@itemize @bullet
+
+@item the results of the integration will be stored in the directory
+specified by @code{RESULT_DIRECTORY}, see @ref{RESULT_DIRECTORY}. If 
+Sherpa is run again with the parameters changed in such a way that you
+would expect a different integration result (e.g. by varying @code{QCUT} in 
+this example), then a new directory must be specified. This is automatically
+done here by using the @code{QCUT} tag in the directory name.
+
+@item if the result directory specified by @code{RESULT_DIRECTORY} has 
+not already been created, the switch @code{GENERATE_RESULT_DIRECTORY} 
+must be set to @option{1}.
+
+@item to perform a Rivet analysis, the @ref{ANALYSIS} parameter must be 
+set to Rivet, and an @code{(analysis)} section specifying the output aida files 
+and the analyses to be performed must be included in the run-card.
+
+@end itemize
+
+

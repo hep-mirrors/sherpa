@@ -1,0 +1,40 @@
+@node LHC_TopPair
+@section LHC_TopPair
+
+This set-up illustrates the possibility of specifying a
+particular decay chain for the particles in the signal process.
+
+This is the @code{(processes)} section of the run card:
+@verbatim
+(processes){
+  Process 93 93 -> 6[a] -6[b] 93{1};
+    DecayOS 6[a] -> 5 24[c];
+      DecayOS 24[c] -> 90 91;
+    DecayOS -6[b] -> -5 -24[d];
+      DecayOS -24[d] -> 94 94;
+  CKKW sqr(20/E_CMS);
+  End process;
+}(processes)
+@end verbatim
+
+The process generated is the production of a top pair from two light quarks, with 
+possibly an extra final-state parton. Each top then decays into (anti-)bottom
+quark and W-boson. The W+ boson then decays leptonically, and 
+the W- boson decays to quarks. 
+
+Things to notice:
+@itemize @bullet
+@item the tag @code{DecayOS} is used to specify the decays. See @ref{DecayOS}.
+
+@item the decaying particles have labels. In order to specify a decay, the 
+decaying particle must be given an identifier, eg @option{6[a]}, @option{24[c]} etc. Each
+identifier must be unique within any given process, and must be included 
+when specifying the particle's production, and it's decay.
+
+@item the particle containers for charged leptons (@option{90}), neutrinos 
+(@option{91}), quarks (@option{94}) and massless partons (@option{93}) are
+all used in this example. See @ref{Particle containers}.
+@end itemize
+
+
+

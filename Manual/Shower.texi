@@ -5,3 +5,27 @@ The shower setup is covered by the `(shower)' section of
 the steering file or the shower data file `Shower.dat',
 respectively.
 
+
+The following parameters are used to steer the process setup.
+
+@menu
+* SHOWER_GENERATOR::      Tag to set Sherpa's shower generator.
+@end menu
+
+
+@node SHOWER_GENERATOR
+@subsection SHOWER_GENERATOR
+
+The only shower option available in the default Sherpa set-up is 
+@option{CSS}, and this is the default for this tag. See the 
+module summaries in @ref{Basic structure}
+for more details on this shower.
+
+APACIC++, Sherpa's previous shower module is included in 
+@code{<prefix>/AddOns/Apacic++}, but is not linked to Sherpa 
+in the default installation.
+
+To see the available shower options, the tag 
+@code{SHOW_SHOWER_GENERATORS=1} can be specified on the
+command line. 
+

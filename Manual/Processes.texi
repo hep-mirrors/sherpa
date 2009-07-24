@@ -35,7 +35,9 @@ The following parameters are used to steer the process setup.
 This tag starts the setup of a process or a set of processes 
 with common properties. It must be followed by the specification 
 of the (core) process itself. The setup is completed by the
-@option{End process} tag, see @ref{End process}. Examples are
+@option{End process} tag, see @ref{End process}. The initial and
+final state particles are specified by their PDG codes, or by 
+particle containers, see @ref{Particle containers}. Examples are
 
 @table @asis
 @item Process 93 93 -> 11 -11
@@ -44,6 +46,57 @@ in the initial state.
 @item Process 11 -11 -> 93 93 93@{3@}
 Sets up jet production in e+e- collisions with up to three
 additional jets.
+@end table
+
+The syntax for specifying processes is explained in the following 
+sections:
+
+@menu
+* PDG codes::
+* Particle containers::
+* Curly brackets::
+@end menu
+
+@node PDG codes
+@subsubsection PDG codes
+
+Initial and final state particles are specified using their 
+PDG codes. A list of particles with their codes, and some of their properties,
+is printed at the start of each Sherpa run, when the @ref{OUTPUT} is set 
+at level @option{2}.
+
+@node Particle containers
+@subsubsection Particle containers
+
+Sherpa contains a set of containers that collect
+particles with similar properties, namely
+
+@itemize @bullet
+  @item  lepton (carrying number @code{90}), 
+  @item  neutrino (carrying number @code{91}),
+  @item  fermion (carrying number @code{92}),
+  @item  jet (carrying number @code{93}),
+  @item  quark (carrying number @code{94}).
+@end itemize
+
+These containers hold all massless particles and anti-particles 
+of the denoted type and allow for a more efficient definition of 
+initial and final states to be considered. The jet container consists 
+of the gluon and all massless quarks (as set by @code{MASS[..]=0.0} or
+@code{MASSIVE[..]=0}). A list of particle containers
+is printed at the start of each Sherpa run, when the @ref{OUTPUT} is set 
+at level @option{2}.
+
+@node Curly brackets
+@subsubsection Curly brackets
+
+The curly bracket notation when specifying a process allows up to 
+a certain number of jets to be included in the final state. This
+is easily seen from an example, 
+@table @asis
+@item Process 11 -11 -> 93 93 93@{3@}
+Sets up jet production in e+e- collisions. The matix element final state may be
+2, 3, 4 or 5 light partons or gluons.
 @end table
 
 

@@ -1,7 +1,7 @@
 @node Run Parameters
 @section Run Parameters
 
-The following parameters describe general run information.
+The following parameters describe general run information. They may be set in the @code{(run)} section of the run-card, see @ref{Input structure}.
 
 @menu
 * EVENTS::            Number of events to generate.
@@ -92,7 +92,8 @@ Multiple options can be combined using a comma, e.g. @samp{ANALYSIS=Internal,Riv
 @subsection ANALYSIS_OUTPUT
 @cindex ANALYSIS_OUTPUT
 Name of the directory for generated histogram files when using the Internal analysis,
-see @ref{ANALYSIS}. This directory will be created w.r.t. the working directory.
+see @ref{ANALYSIS}. This directory will be created w.r.t. the working directory. The default
+for this tag is @option{Analysis/}.
 
 @node TIMEOUT
 @subsection TIMEOUT
@@ -100,8 +101,8 @@ see @ref{ANALYSIS}. This directory will be created w.r.t. the working directory.
 A run time limitation can be given in user CPU seconds through TIMEOUT. This option is of
 some relevance when running SHERPA on a batch system. Since in many cases jobs are just
 terminated, this allows to interrupt a run, to store all relevant information and to restart
-it without any loss. This is particularly interesting when carrying out long integrations.
-Contrary, setting the TIMEOUT variable to -1, which is the default setting, translates into
+it without any loss. This is particularly useful when carrying out long integrations.
+Alternatively, setting the TIMEOUT variable to -1, which is the default setting, translates into
 having no run time limitation at all.
 
 @node BATCH_MODE
@@ -156,7 +157,7 @@ that the user is sufficiently acquainted with these formats when
 selecting them.
 
 There are two ways to specify the event record. First of all
-the switch EVENT_MODE (@xref{EVENT_MODE}.) results in the corresponding
+the switch EVENT_MODE @pxref{EVENT_MODE} results in the corresponding
 structure being filled internally (and printed to screen, if the
 output-level is set accordingly).
 
@@ -167,7 +168,7 @@ filename.#.hepevt, where the hash mark stands for an increasing
 number.
 
 To write events directly to gzipped files instead of plain text, the
-option --enable-gzip has to be specified during the installation.
+option @option{--enable-gzip} has to be specified during the installation.
 
 @menu
 * EVENT_MODE::        Format for screen display of events.

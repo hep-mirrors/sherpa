@@ -1,0 +1,47 @@
+@node LEP91
+@section LEP91
+
+@verbatim
+(processes){
+  Process 11 -11 -> 93 93 93{1};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 -5 93{1};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  End process;
+}(processes)
+(model){
+  ORDER_ALPHAS = 0
+  ALPHAS(MZ) = 0.127
+  MASSIVE[5] = 1
+}(model)
+(me){
+  ME_SIGNAL_GENERATOR = Internal Comix
+  SCALE_SCHEME = METS
+}(me)
+@end verbatim
+
+This example shows a LEP set up, with electrons and positrons colliding 
+at a centre of mass energy of 91.25GeV. Two processes have been specified, 
+one final state with two or three light quarks and gluons being produced,
+and one with a b b-bar pair and possibly an extra light parton. 
+
+Things to notice:
+@itemize @bullet
+@item the b b-bar process is specified separately. The 
+@option{93} particle container contains only light quarks 
+and anti-quarks, and gluons, see @ref{Particle containers}. 
+If the required final state also contains b-quarks, a 
+separate process must be specified. 
+
+@item some model parameters have been set. In the 
+@code{(model)} section of the run-card, parameters relating
+to the model can be set. In this example, the running of alpha_s 
+is set to leading order, the value of alpha_s at the Z-mass is set,
+and the b-quark mass is turned on.
+@end itemize
+
+
