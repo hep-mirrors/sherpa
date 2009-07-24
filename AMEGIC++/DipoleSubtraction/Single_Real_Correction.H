@@ -64,7 +64,7 @@ namespace AMEGIC {
     void             SetLookUp(const bool lookup);
     std::string      LibName()                          { return p_tree_process->LibName();     }
     std::string      PSLibName()                        { return p_tree_process->PSLibName();   }
-    Process_Base   * Partner()                          { return p_partner;     }
+    Process_Base   * Partner() const                    { return p_partner;     }
     void             Minimize();
 
     void SetSelector(const PHASIC::Selector_Key &key);

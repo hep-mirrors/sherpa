@@ -896,16 +896,23 @@ int Amplitude_Handler::TOrder(Single_Amplitude* a)
 
 int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf, map<string,Complex> & cplmap)
 {
+  m_flavourmap.clear();
   if (GetTotalGraphNumber()!=c_ampl->GetTotalGraphNumber()) return 0;
   sf = 1.;
 
   Single_Amplitude * n = firstgraph;
   Single_Amplitude * n_cmp = c_ampl->GetFirstGraph();
   for (int i=0;i<GetTotalGraphNumber();i++) {
-   double factor = 1.;
-    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor,cplmap)) return 0;
+    double factor = 1.;
+    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor,cplmap)) {
+      m_flavourmap.clear();
+      return 0;
+    }
     if (i==0) sf = factor;
-    else if(!ATOOLS::IsEqual(sf,factor)) return 0;
+    else if(!ATOOLS::IsEqual(sf,factor)) {
+      m_flavourmap.clear();
+      return 0;
+    }
     n     = n->Next;
     n_cmp = n_cmp->Next;
   }
@@ -951,6 +958,13 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   }
   sf *= abs(ratio);
   // return 1 if equal and 0 if different
+
+  if (m_flavourmap.find(p2->fl)==m_flavourmap.end()) {
+    m_flavourmap[p2->fl]=p1->fl;
+    if (p2->fl!=p2->fl.Bar()) m_flavourmap[p2->fl.Bar()]=p1->fl.Bar();
+  }
+  else if (m_flavourmap[p2->fl]!=p1->fl) THROW(critical_error,"Flavour mapping not unique!");
+  
   
   if (SingleCompare(p1->middle,p2->middle,sf,cplmap)) {
     int sw1 = SingleCompare(p1->left,p2->left,sf,cplmap);

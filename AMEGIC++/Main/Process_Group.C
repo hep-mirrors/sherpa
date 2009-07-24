@@ -182,7 +182,7 @@ bool AMEGIC::Process_Group::FillIntegrator
   return false;
 }
 
-AMEGIC::Process_Base *AMEGIC::Process_Group::Partner()   
+AMEGIC::Process_Base *AMEGIC::Process_Group::Partner() const  
 { 
   return 0; 
 }

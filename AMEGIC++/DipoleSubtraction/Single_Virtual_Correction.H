@@ -93,7 +93,7 @@ namespace AMEGIC {
     void             SetLookUp(const bool lookup);
     std::string      LibName()                          { return p_partner->GetLOProcess()->LibName();     }
     std::string      PSLibName()                        { return p_partner->GetLOProcess()->PSLibName();   }
-    Process_Base   * Partner()                          { return p_partner;     }
+    Process_Base   * Partner()       const              { return p_partner;     }
     void             Minimize();
 
     int Type() { return 200; }

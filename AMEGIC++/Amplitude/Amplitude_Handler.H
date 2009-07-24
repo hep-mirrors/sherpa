@@ -36,6 +36,8 @@ namespace AMEGIC {
     bool m_print_graph;
     std::vector<Amplitude_Base*> m_ramplist;
 
+    std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_flavourmap;
+
 //     AMEGIC_SCT* p_SCT;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
@@ -83,6 +85,7 @@ namespace AMEGIC {
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
     bool   ExistFourVertex(Point *);
     int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
+    std::map<ATOOLS::Flavour,ATOOLS::Flavour>& GetFlavourmap() { return m_flavourmap; }
   };
 
     //! The alternative color matrix, for more details see CFColor.

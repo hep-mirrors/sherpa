@@ -41,7 +41,7 @@ namespace AMEGIC {
     PHASIC::Process_Base *GetProcess(const PHASIC::Process_Info &pi) const;
     bool Initialize(PHASIC::Process_Base *const proc);
 
-    AMEGIC::Process_Base *Partner();
+    AMEGIC::Process_Base *Partner() const;
 
     bool SetUpIntegrator();
     int  InitAmplitude(MODEL::Model_Base *model,Topology *top);

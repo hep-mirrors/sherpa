@@ -60,6 +60,9 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
   std::ofstream to;
   to.open(altname.c_str(),ios::out);
   to<<aname<<" "<<m_sfactor<<endl;
+  for (Flavour_Map::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++) {
+    to<<(long int)fit->first<<" "<<(long int)fit->second<<endl;
+  }
   to.close();
 }
 
@@ -68,11 +71,10 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
   std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
-    string name; 
+    string name,dummy; 
     ifstream from;
     from.open(altname.c_str(),ios::in);
     from>>name>>factor;
-    from.close();
     m_sfactor *= factor;
     for (size_t j=0;j<links.size();j++) {
       if (links[j]->Name()==name) {
@@ -82,9 +84,23 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
 	m_oew=p_partner->OrderEW();
 	p_kfactor=p_partner->KFactorSetter();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
+
+	InitFlavmap(p_partner);
+	while (from) {
+	  long int f1,f2;
+	  getline(from,dummy);
+	  if (dummy!="") {
+	    MyStrStream str;
+	    str<<dummy;
+	    str>>f1>>f2;
+	    AddtoFlavmap(Flavour(abs(f1),f1>0),Flavour(abs(f2),f2>0));
+	  }
+	}
+	from.close();
 	return true;
       }
     }
+    from.close();
     if (CheckAlternatives(links,name)) return true;
   }
   m_sfactor = 1.;
@@ -188,6 +204,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			<<"   Map processes."<<std::endl;
 	  p_mapproc = p_partner = (Single_Process*)links[j];
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 
@@ -213,6 +230,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			<<"   Map processes."<<std::endl;
 	  p_mapproc = p_partner = (Single_Process*)links[j];
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 

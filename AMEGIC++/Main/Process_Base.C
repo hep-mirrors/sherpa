@@ -172,9 +172,42 @@ bool AMEGIC::Process_Base::CheckMapping(const Process_Base * proc)
   return true;
 }
 
+void AMEGIC::Process_Base::InitFlavmap(const Process_Base * proc)
+{
+  const ATOOLS::Flavour_Vector &flavs(Flavours());
+  const ATOOLS::Flavour_Vector &partner_flavs(proc->Flavours());
+
+  for (size_t i=0;i<NIn()+NOut();++i) {
+    if (m_flavourmap.find(partner_flavs[i])==m_flavourmap.end()) {
+      m_flavourmap[partner_flavs[i]]=flavs[i];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	m_flavourmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();
+      }
+    }
+  }
+}
+
+void AMEGIC::Process_Base::AddtoFlavmap(const Flavour& f0,const Flavour&f1)
+{
+  if (m_flavourmap.find(f0)==m_flavourmap.end()) {
+    m_flavourmap[f0]=f1;
+    if (f0!=f0.Bar()) m_flavourmap[f0.Bar()]=f1.Bar();
+  }
+  else if (m_flavourmap[f0]!=f1) THROW(critical_error,"Flavour mapping not unique!");
+}
+
 void AMEGIC::Process_Base::PrintProcessSummary(int it)
 {
  for(int i=0;i<it;i++) std::cout<<"  ";
   std::cout<<Name()<<std::endl;
 }
 
+
+ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0) const
+{
+  if ((Partner()==NULL)||(Partner()==this)) return f0;
+  Flavour_Map::const_iterator fit(m_flavourmap.find(f0));
+  if (fit!=m_flavourmap.end()) return fit->second;
+  else THROW(critical_error,"Flavour map incomplete!");
+  return f0;
+}

@@ -97,7 +97,7 @@ namespace AMEGIC {
   public:
     std::string      LibName()                          { return m_libname;     }
     std::string      PSLibName()                        { return m_pslibname;   }
-    Process_Base   * Partner()                          { return p_partner;     }
+    Process_Base   * Partner()   const                  { return p_partner;     }
     void             Minimize();
     int  Type() { return m_type; }
     inline const std::vector<int>& PartonList() const { return m_partonlist; }

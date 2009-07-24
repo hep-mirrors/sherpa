@@ -32,6 +32,8 @@ namespace AMEGIC {
     double         m_Norm;
     double         m_sfactor;
 
+    std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_flavourmap;
+
   public:
 
     // constructor
@@ -50,7 +52,7 @@ namespace AMEGIC {
     virtual void AddChannels(std::list<std::string>*) = 0;
     virtual Amplitude_Handler *GetAmplitudeHandler() = 0;   
     virtual Helicity *GetHelicity() = 0;
-    virtual Process_Base *Partner() = 0;
+    virtual Process_Base *Partner() const = 0;
     virtual std::string PSLibName() = 0;
 
     virtual double Result();
@@ -82,12 +84,15 @@ namespace AMEGIC {
     double Norm()       { return m_Norm; }
     double GetSFactor() { return m_sfactor; }
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
-    virtual void               PrintProcessSummary(int=0); 
+    virtual void               PrintProcessSummary(int=0);
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour&) const;
   protected:
     double         SymmetryFactors();
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);
     
     bool           CheckMapping(const Process_Base * proc);
+    void           InitFlavmap(const Process_Base * proc);
+    void           AddtoFlavmap(const ATOOLS::Flavour&,const ATOOLS::Flavour&);
 
   };
 

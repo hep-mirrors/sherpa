@@ -184,7 +184,9 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
 bool AMEGIC::Single_Virtual_Correction::NewLibs() 
 {
-  return p_partner->GetLOProcess()->NewLibs();
+  bool newloops(0);
+  if (p_loopme) newloops=p_loopme->NewLibs();
+  return newloops||(p_partner->GetLOProcess()->NewLibs());
 }
 /*------------------------------------------------------------------------------
   
