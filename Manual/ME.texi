@@ -159,7 +159,7 @@ Assuming the Higgs mass to be 120 GeV, the corresponding reweighting factor woul
 
 @verbatim
 SCALES    VAR[...][PPerp(p[2])]
-COUPLINGS VAR[sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(sqr(E_CMS)))]
+COUPLINGS VAR[sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(sqr(E_CMS)),3)]
 @end verbatim
 @end table
 
