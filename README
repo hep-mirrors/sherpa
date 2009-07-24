@@ -5,5 +5,10 @@ Contact : info@sherpa-mc.de
 
 --------------------------------------------
 
-SHERPA is an event-generation framework for high-energy
-particle collisions. For installation instructions see the INSTALL file.
+Sherpa is an event-generation framework for high-energy
+particle collisions.
+
+For generic installation instructions see the INSTALL file. There are
+some optional features which can be compiled into Sherpa, please read the
+info page ('info Manual/Sherpa.info') or run './configure --help' to find
+out more about the available options.
