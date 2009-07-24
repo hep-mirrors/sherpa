@@ -43,7 +43,6 @@
 (me){
   ME_SIGNAL_GENERATOR = Comix
   EVENT_GENERATION_MODE = Weighted
-  SCALE_SCHEME = METS
 }(me)
 
 (mi){

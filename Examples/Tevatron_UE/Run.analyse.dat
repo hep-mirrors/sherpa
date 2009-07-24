@@ -32,7 +32,6 @@
 }(model)
 
 (me){
-  SCALE_SCHEME = METS
   ME_SIGNAL_GENERATOR = Comix
   EVENT_GENERATION_MODE = Weighted
 }(me)

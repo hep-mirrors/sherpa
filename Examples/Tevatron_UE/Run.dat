@@ -24,7 +24,6 @@
 }(model)
 
 (me){
-  SCALE_SCHEME = METS
   ME_SIGNAL_GENERATOR = Comix
 }(me)
 

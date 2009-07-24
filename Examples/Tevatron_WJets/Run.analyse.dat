@@ -41,7 +41,6 @@
 }(processes)
 
 (selector){
-  PT 93 1 E_CMS
   Mass -11 12 1.7 E_CMS
   Mass 11 -12 1.7 E_CMS
 }(selector)
@@ -55,7 +54,6 @@
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
   EVENT_GENERATION_MODE = Weighted
-  SCALE_SCHEME = METS
 }(me)
 
 (mi){
