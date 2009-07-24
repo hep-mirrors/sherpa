@@ -111,6 +111,23 @@ It is possible to implement a dedicated scale
 scheme within Sherpa. For advice on this topic
 please contact the authors, @ref{Authors}.
 
+@cindex FACTORIZATION_SCALE_FACTOR
+@cindex RENORMALIZATION_SCALE_FACTOR
+
+Simple scale variations can be done using the following parameters:
+@itemize
+@item `FACTORIZATION_SCALE_FACTOR' specifies a global factor which the squared
+factorisation scale (as specified above) is to be multiplied with when
+evaluating PDFs.
+
+Note: Shower starting scales are not affected by this factor, change the
+`SCALES' parameter to achieve that.
+@item `RENORMALIZATION_SCALE_FACTOR' specifies a global factor which the
+squared renormalisation scale (as specified above) is to be multiplied with
+when evaluating running couplings.
+
+Note: This affects also the running coupling used in the parton shower evolution.
+@end itemize
 
 @node COUPLINGS
 @subsection COUPLINGS
