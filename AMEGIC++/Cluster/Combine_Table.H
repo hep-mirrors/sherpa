@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include "AMEGIC++/Main/Point.H" 
+#include "AMEGIC++/Main/Process_Base.H" 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -145,6 +146,8 @@ namespace AMEGIC {
     size_t         m_nl;
 
     std::set<Combine_Key> m_rejected;
+
+    AMEGIC::Process_Base *p_proc;
     
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
@@ -173,7 +176,8 @@ namespace AMEGIC {
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
   public:
     // constructors
-    Combine_Table(ATOOLS::Mass_Selector *const ms,
+    Combine_Table(AMEGIC::Process_Base *const proc,
+		  ATOOLS::Mass_Selector *const ms,
 		  ATOOLS::Cluster_Definitions_Base *clus, 
 		  ATOOLS::Vec4D * moms,Combine_Table * up);
     // destructor

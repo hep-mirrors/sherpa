@@ -127,7 +127,7 @@ void Cluster_Algorithm::CreateTables
       - initialise Combine_Table
       - determine best combination sheme
     */ 
-    p_combi = new Combine_Table(p_ms,p_clus,amoms,0);
+    p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0);
     p_combi->FillTable(legs,nlegs,nampl);   
     p_ct = p_combi->CalcJet(nlegs,x1,x2); 
   }

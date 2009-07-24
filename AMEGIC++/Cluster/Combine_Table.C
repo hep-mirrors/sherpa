@@ -190,13 +190,15 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
   return s;
 }
 
-Combine_Table::Combine_Table(ATOOLS::Mass_Selector *const ms,
+Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
+			     ATOOLS::Mass_Selector *const ms,
 			     Cluster_Definitions_Base *clus,
 			     Vec4D *moms, Combine_Table *up):
   p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms), p_hard(NULL), p_hardc(NULL)
 {
+  p_proc=proc;
   m_no=++s_all;
 }
 
@@ -254,30 +256,7 @@ ATOOLS::Flavour Combine_Table::IsoFlip(const ATOOLS::Flavour &fl) const
 
 Flavour Combine_Table::MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const
 {
-  Flavour fla(a.Point()->fl), flb(b.Point()->fl), flc(c.Point()->fl);
-  /*
-  msg_Debugging()<<"have bm="<<b.MapFlavour()<<", cm="<<c.MapFlavour()
-		 <<" mode "<<mode<<" -> ";
-  */
-  Flavour fl(fla);
-  if (fla.IsQuark() && !(flb.Strong() && flc.Strong())) {
-    if (flb.Kfcode()==kf_Wplus || flc.Kfcode()==kf_Wplus) 
-      fl=IsoFlip((flb.IsQuark()?b:c).MapFlavour());
-    else fl=Flavour((flb.IsQuark()?b:c).MapFlavour());
-  }
-  else if (fla.Kfcode()==flb.Kfcode()) {
-    fl=b.MapFlavour();
-    if (fla.IsAnti()^flb.IsAnti()) fl=fl.Bar();
-  }
-  else if (fla.Kfcode()==flc.Kfcode()) {
-    fl=c.MapFlavour();
-    if (fla.IsAnti()^flc.IsAnti()) fl=fl.Bar();
-  }
-  /*
-  msg_Debugging()<<"match "<<fla<<" "<<flb<<" "
-		 <<flc<<" -> "<<fl<<"\n";
-  */
-  return fl;
+  return p_proc->ReMap(a.Point()->fl);
 }
 
 Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
@@ -838,7 +817,7 @@ Combine_Table *Combine_Table::CreateNext(bool did_boost)
     CombineMoms(p_moms,m_cdata_winner->first.m_i,
 		m_cdata_winner->first.m_j,m_nl,amoms);
     m_cdata_winner->second.p_down = 
-      new Combine_Table(p_ms,p_clus,amoms,this);
+      new Combine_Table(p_proc,p_ms,p_clus,amoms,this);
     // initialise Combine_Table
     m_cdata_winner->second.p_down->FillTable(alegs,m_nl,m_cdata_winner->second.m_graphs.size());
   } 
