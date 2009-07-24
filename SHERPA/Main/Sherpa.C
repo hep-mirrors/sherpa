@@ -221,7 +221,7 @@ void Sherpa::WriteCitationInfo()
   msg_Out()<<METHOD<<"(): {\n";
   msg_Out()<<"  "<<om::bold<<"Please cite the publications listed in '"
 	   <<om::red<<refname<<om::reset<<om::bold<<"'."<<om::reset
-	   <<"\n  Extract the bibtex list by running 'bin/SHERPA-MC/get_bibtex "
+	   <<"\n  Extract the bibtex list by running 'get_bibtex "
 	   <<refname<<"'\n  or email the file to 'slaclib2@slac.stanford.edu'"
 	   <<", subject 'generate'.\n";
   msg_Out()<<"}"<<std::endl;

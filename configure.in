@@ -122,6 +122,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  SHERPA/Single_Events/Makefile \
 	  SHERPA/Main/Makefile \
 	  SHERPA/Run/Makefile \
+          SHERPA/Run/Sherpa-config \
 	  SHERPA/Makefile \
 	  Manual/Makefile \
           Manual/sherpa-completion \
@@ -138,10 +139,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/HZTool/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/Makefile \
-	  TOOLS/Makefile \
-          TOOLS/Sherpa-config \
 	  Makefile )
 
 if test "x$VERSIONING" != "x"; then
-  mv "TOOLS/Sherpa-config" "TOOLS/Sherpa$VERSIONING-config"
+  mv "SHERPA/Run/Sherpa-config" "SHERPA/Run/Sherpa$VERSIONING-config"
 fi

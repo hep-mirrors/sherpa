@@ -18,7 +18,6 @@ SUBDIRS       = \
 		AddOns \
 		SHERPA \
 		Manual \
-		Examples \
-		TOOLS
+		Examples
 
 EXTRA_DIST = @SVNINCLUDE@ GUIDELINES

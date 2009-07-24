@@ -33,6 +33,8 @@ dist_pkgdata_DATA         = \
 			Run.dat \
 			Shower.dat
 
+bin_SCRIPTS = Sherpa@VERSIONING@-config get_bibtex
+
 install-data-local:
 	@echo "Installing Decaydata."; \
 	cd "$(srcdir)"; \
