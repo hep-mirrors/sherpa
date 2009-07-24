@@ -13,7 +13,7 @@ namespace PDF {
     GRVph_Fortran_Interface(const ATOOLS::Flavour);
     PDF_Base * GetCopy();
 
-    void   Calculate(double,double);
+    void   CalculateSpec(double,double);
     double GetXPDF(const ATOOLS::Flavour );
 
     double GetXMin()   { return 1.e-5; }

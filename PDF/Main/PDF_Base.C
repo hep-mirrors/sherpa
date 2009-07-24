@@ -42,6 +42,11 @@ double PDF_Base::Cut(const std::string &type)
   return ATOOLS::UNDEFINED_LOWER;
 }
 
+void PDF_Base::Calculate(double x,double _Q2) 
+{
+  return CalculateSpec(x, _Q2*m_fac_scale_factor);
+}
+
 void PDF_Base::SingleExtract(const ATOOLS::Flavour flavour,const double x) 
 {
   m_rescale-=x;

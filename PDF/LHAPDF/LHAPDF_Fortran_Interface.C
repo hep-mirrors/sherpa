@@ -94,9 +94,9 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
   return as;
 }
 
-void LHAPDF_Fortran_Interface::Calculate(double x,double Q2) {
+void LHAPDF_Fortran_Interface::CalculateSpec(double x,double Q2) {
   x/=m_rescale;
-  double Q = sqrt(Q2*m_fac_scale_factor);
+  double Q = sqrt(Q2);
   if(Q*Q<m_q2min) {
     msg_Error()<<METHOD<<"(): Q-range violation Q = "<<Q
 	       <<" < "<<sqrt(m_q2min)<<". Set Q -> "

@@ -89,11 +89,11 @@ double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
   return asmz;
 }
 
-void CTEQ6_Fortran_Interface::Calculate(double x,double _Q2) 
+void CTEQ6_Fortran_Interface::CalculateSpec(double x,double _Q2) 
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
   m_x=x/m_rescale;
-  m_Q=sqrt(_Q2*m_fac_scale_factor);
+  m_Q=sqrt(_Q2);
   if(m_Q*m_Q<m_q2min) {
     msg_Error()<<METHOD<<"(): Q-range violation Q = "<<m_Q
 	       <<" < "<<sqrt(m_q2min)<<". Set Q -> "

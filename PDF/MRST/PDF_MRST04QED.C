@@ -66,9 +66,8 @@ PDF_Base *PDF_MRST04QED::GetCopy()
   return copy;
 }
 
-void PDF_MRST04QED::Calculate(double x,double _Q2) 
+void PDF_MRST04QED::CalculateSpec(double x,double Q2)
 {
-  double Q2(_Q2*m_fac_scale_factor);
   m_overscaled=false;
   if(x<m_xmin) x=m_xmin;
   if (x/m_rescale>m_xmax || m_rescale<0.) {

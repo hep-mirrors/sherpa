@@ -36,9 +36,8 @@ double PDF_Electron::GetXPDF(const ATOOLS::Flavour  fl) {
 
 PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_order,m_izetta); }
 
-void PDF_Electron::Calculate(double x,double _Q2) 
+void PDF_Electron::CalculateSpec(double x,double Q2)
 {
-  double Q2(_Q2*m_fac_scale_factor);
   m_xpdf  = 0.;
   m_alpha = (*aqed)(Q2);
   if (x>=0.999999) return;

@@ -48,6 +48,7 @@ namespace PDF {
 
     void SingleExtract(const ATOOLS::Flavour flavour,const double x);
     void SingleReset();
+    virtual void CalculateSpec(double x,double Q2) = 0;
 
   public:
 
@@ -63,7 +64,7 @@ namespace PDF {
     virtual bool   Collinear(const double kp2) const;
     virtual double Cut(const std::string &type);
     
-    virtual void   Calculate(double x,double Q2) = 0;
+    void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
 
     virtual PDF_Base *GetCopy() = 0;
