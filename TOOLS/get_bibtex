@@ -67,7 +67,12 @@ if ! test -f $fnm.wget; then
   echo "get_bibtex: error: file '"$fnm".wget' not found.";
   exit 1;
 fi;
-sed '0,/<!-- START RESULTS -->/ d
+sed -r '0,/<!-- START RESULTS -->/ d
 /<!-- END RESULTS -->/,$ d
 /<pre>/ d
-/<\/pre>/ d' < $fnm.wget;
+/<\/pre>/ d
+s/H(o|oe)che([^:]|$)/H{\\"o}che\2/g
+s/Sch(o|oe)nherr([^:]|$)/Sch{\\"o}nherr\2/g
+s/Sch(a|ae)licke([^:]|$)/Sch{\\"a}licke\2/g
+s/(\s|^|\{)SHERPA(\s|$|\})/\1Sherpa\2/g
+s/(\s|^|\{)sherpa(\s|$|\})/\1Sherpa\2/g' < $fnm.wget;
