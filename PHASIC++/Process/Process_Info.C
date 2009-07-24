@@ -13,9 +13,7 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
 	<<", maxoew = "<<info.m_maxoew<<", maxoqcd = "<<info.m_maxoqcd<<"\n";
     ostr<<"  psmc = "<<info.m_psmc<<", ckkw = "<<info.m_ckkw
 	<<", nlo = "<<info.m_nlomode<<", mhv = "<<info.m_amegicmhv<<"\n";
-    ostr<<"  scale = '"<<info.m_scale<<"', muf2tag = '"
-	<<info.m_muf2tag<<"', mur2tag = '"<<info.m_mur2tag<<"'\n";
-    ostr<<"  kfactor = '"<<info.m_kfactor<<"'\n";
+    ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
     ostr<<"  gpath = '"<<info.m_gpath<<"'\n";
     ostr<<"  loopgenerator = '"<<info.m_loopgenerator<<"', selectorfile = '"
         <<info.m_selectorfile<<"'\n";

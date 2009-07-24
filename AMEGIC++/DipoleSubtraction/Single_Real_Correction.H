@@ -90,9 +90,7 @@ namespace AMEGIC {
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D_Vector &);
 
-    void SetScale(const std::string &scale,
-		  const std::string &rentag,
-		  const std::string &factag);
+    void SetScale(const std::string &scale);
     void SetKFactor(const std::string &kfactor,
 		    const size_t &oqcdlo,const size_t &oewlo);
 

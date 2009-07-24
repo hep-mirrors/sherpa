@@ -74,9 +74,7 @@ namespace PHASIC {
     Process_Base *Parent();
     Process_Base *Selected();
 
-    virtual void SetScale(const std::string &scale,
-			  const std::string &mur2tag,
-			  const std::string &muf2tag);
+    virtual void SetScale(const std::string &scale);
     virtual void SetKFactor(const std::string &kfactor,
 			    const size_t &oqcdlo,
 			    const size_t &oewlo);

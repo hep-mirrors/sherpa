@@ -230,12 +230,10 @@ double Process_Group::Differential2()
   return tmp;
 }
 
-void Process_Group::SetScale(const std::string &scale,
-			     const std::string &mur2tag,
-			     const std::string &muf2tag)
+void Process_Group::SetScale(const std::string &scale)
 {
   for (size_t i(0);i<m_procs.size();++i) 
-    m_procs[i]->SetScale(scale,mur2tag,muf2tag);
+    m_procs[i]->SetScale(scale);
 }
   
 void Process_Group::SetKFactor(const std::string &kfactor,

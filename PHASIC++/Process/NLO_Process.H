@@ -69,9 +69,7 @@ namespace PHASIC {
     bool CalculateTotalXSec(const std::string &resultpath,
                             const bool create=false);
     void SetLookUp(const bool lookup);
-    void SetScale(const std::string &scale,
-		  const std::string &mur2tag,
-		  const std::string &muf2tag);
+    void SetScale(const std::string &scale);
     void SetKFactor(const std::string &kfactor,
 		    const size_t &oqcdlo,const size_t &oewlo);
     void SetKFactorOn(const bool on);

@@ -25,10 +25,10 @@ namespace PHASIC {
 
   struct Scale_Setter_Arguments {
     Process_Base *p_proc;
-    std::string m_ren, m_fac;
+    std::string m_scale;
     Scale_Setter_Arguments(Process_Base *const proc,
-			   const std::string &ren="",const std::string &fac=""):
-      p_proc(proc), m_ren(ren), m_fac(fac) {}
+			   const std::string &scale=""):
+      p_proc(proc), m_scale(scale) {}
   };// end of class Scale_Setter_Arguments
 
   class Scale_Setter_Base {

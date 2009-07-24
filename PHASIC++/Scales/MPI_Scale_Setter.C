@@ -16,8 +16,7 @@ namespace PHASIC {
   public:
 
     MPI_Scale_Setter(Process_Base *const proc,
-		     const std::string &mur2tag,
-		     const std::string &muf2tag);
+		     const std::string &scale);
 
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
 
@@ -34,7 +33,7 @@ DECLARE_GETTER(MPI_Scale_Setter_Getter,"MPI",
 Scale_Setter_Base *MPI_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new MPI_Scale_Setter(args.p_proc,args.m_ren,args.m_fac);
+  return new MPI_Scale_Setter(args.p_proc,args.m_scale);
 }
 
 void MPI_Scale_Setter_Getter::
@@ -44,8 +43,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 MPI_Scale_Setter::MPI_Scale_Setter
-(Process_Base *const proc,
- const std::string &mur2tag,const std::string &muf2tag): 
+(Process_Base *const proc,const std::string &scale): 
   Scale_Setter_Base(proc) {}
 
 double MPI_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 

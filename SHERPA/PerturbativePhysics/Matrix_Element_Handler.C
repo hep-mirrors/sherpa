@@ -264,21 +264,13 @@ void Matrix_Element_Handler::BuildProcesses()
   hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));
   read.SetTags(std::map<std::string,std::string>());
   // set kfactor scheme
-  std::string kfactor=read.GetValue<std::string>("K_FACTOR_SCHEME","METS");
+  std::string kfactor=read.GetValue<std::string>("COUPLINGS","METS");
   // set scale scheme
-  std::string scale=read.GetValue<std::string>("SCALE_SCHEME","METS");
-  std::string muf2tag=read.GetValue<std::string>
-    ("FACTORIZATION_SCALE",scale=="METS"?"MU_F":
-     ToString(sqr(Flavour(kf_Z).Mass())));
-  std::string mur2tag=read.GetValue<std::string>
-    ("RENORMALIZATION_SCALE",scale=="METS"?"MU_R":
-     ToString(sqr(Flavour(kf_Z).Mass())));
-  if (scale=="FIX_SCALE") {
-    std::string fixscale=read.GetValue<std::string>
-      ("FIXED_SCALE",ToString(sqr(Flavour(kf_Z).Mass())));
-    muf2tag=fixscale;
-    mur2tag=fixscale;
-    scale="VAR";
+  std::string scale=read.GetValue<std::string>("SCALES","METS");
+  // check for fixed scale
+  std::string fixscale;
+  if (read.ReadFromFile(fixscale,"FIXED_SCALE")) {
+    scale="VAR["+fixscale+"]";
     kfactor="NO";
   }
   // init processes
@@ -299,8 +291,6 @@ void Matrix_Element_Handler::BuildProcesses()
       Process_Info pi;
       pi.m_scale=scale;
       pi.m_kfactor=kfactor;
-      pi.m_muf2tag=muf2tag;
-      pi.m_mur2tag=mur2tag;
       pi.m_cls=cls;
       pi.m_hls=hls;
       pi.m_nlomode=m_nlomode;
@@ -309,7 +299,7 @@ void Matrix_Element_Handler::BuildProcesses()
       size_t pos(proc.find("->"));
       if (pos==std::string::npos) continue;
       std::string gycut;
-      MPSV_Map vefunc, vycut, vrscale, vfscale, vsfile;
+      MPSV_Map vefunc, vycut, vscale, vsfile;
       MPDV_Map vmaxerr, vmaxeps, vefac;
       std::string ini(proc.substr(0,pos));
       std::string fin(proc.substr(pos+2));
@@ -319,17 +309,9 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur.size()<2) continue;
 	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
 	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
-	if (cur[0]=="Renormalization_Scale") {
+	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vrscale,nf);
-	}
-	if (cur[0]=="Factorization_Scale") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vfscale,nf);
-	}
-	if (cur[0]=="Fixed_scale") {
-	  pi.m_scale="VAR";
-	  pi.m_mur2tag=pi.m_muf2tag=cur[1];
+	  ExtractMPvalues(cb,vscale,nf);
 	}
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
@@ -379,7 +361,7 @@ void Matrix_Element_Handler::BuildProcesses()
       }
       BuildSingleProcessList
 	(pi,ini,fin,dectags,vmaxerr,vmaxeps,
-	 vefac,vefunc,vycut,vrscale,vfscale,vsfile,gycut,selfile);
+	 vefac,vefunc,vycut,vscale,vsfile,gycut,selfile);
       if (msg_LevelIsDebugging()) {
         msg_Indentation(4);
         msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -437,7 +419,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 (Process_Info &pi,const std::string &ini,
  const std::string &fin,const std::vector<std::string> &dectags,
  MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
- MPSV_Map &vycut,MPSV_Map &vrscale,MPSV_Map &vfscale,MPSV_Map &vsfile,
+ MPSV_Map &vycut,MPSV_Map &vscale,MPSV_Map &vsfile,
  const std::string &gycut,const std::string &selfile)
 {
   Subprocess_Info AIS, AFS;
@@ -493,8 +475,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
         cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
         cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
-	if (GetMPvalue(vrscale,nfs,pnid,ds)) cpi.m_mur2tag=ds;
-	if (GetMPvalue(vfscale,nfs,pnid,ds)) cpi.m_muf2tag=ds;
+	if (GetMPvalue(vscale,nfs,pnid,ds)) cpi.m_scale=ds;
 	if (GetMPvalue(vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
 	Process_Base *proc(InitializeProcess(cpi));
 	if (proc==NULL) continue;
@@ -534,11 +515,14 @@ void Matrix_Element_Handler::BuildSingleProcessList
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
       cpi.m_kfactor="METS";
-      if (procs.size()>1)
-	cpi.m_mur2tag=p_shower->GetShower()->GetKT2("Q2_CUT");
+      if (procs.size()>1) {
+	if (cpi.m_scale.rfind(']')==std::string::npos)
+	  cpi.m_scale+="[MU_F2]";
+	cpi.m_scale+="["+p_shower->GetShower()->GetKT2("Q2_CUT")+"]";
+      }
     }
     if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);
-    procs[i]->SetScale(cpi.m_scale,cpi.m_mur2tag,cpi.m_muf2tag);
+    procs[i]->SetScale(cpi.m_scale);
     procs[i]->SetKFactor(cpi.m_kfactor,oqcdlo,oewlo);
     procs[i]->SetShower(p_shower->GetShower());
   }

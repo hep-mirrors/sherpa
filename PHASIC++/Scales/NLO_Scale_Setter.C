@@ -54,8 +54,7 @@ namespace PHASIC {
   public:
 
     NLO_Scale_Setter(Process_Base *const proc,
-			  const std::string &mur2tag,
-			  const std::string &muf2tag);
+		     const std::string &scale);
 
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
     double KFactor();
@@ -78,7 +77,7 @@ DECLARE_GETTER(NLO_Scale_Setter_Getter,"NLO",
 Scale_Setter_Base *NLO_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new NLO_Scale_Setter(args.p_proc,args.m_ren,args.m_fac);
+  return new NLO_Scale_Setter(args.p_proc,args.m_scale);
 }
 
 void NLO_Scale_Setter_Getter::
@@ -88,11 +87,24 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 NLO_Scale_Setter::NLO_Scale_Setter
-(Process_Base *const proc,
- const std::string &mur2tag,const std::string &muf2tag): 
+(Process_Base *const proc,const std::string &scale): 
   Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this),
   p_jf(NULL), m_singlescale(0)
 {
+  size_t pos(scale.find('['));
+  if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
+  std::string mur2tag, muf2tag(scale.substr(pos+1));
+  pos=muf2tag.rfind(']');
+  if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
+  muf2tag=muf2tag.substr(0,pos);
+  pos=muf2tag.find("][");
+  if (pos==std::string::npos) {
+    mur2tag=muf2tag;
+  }
+  else {
+    mur2tag=muf2tag.substr(pos+2);
+    muf2tag=muf2tag.substr(0,pos);
+  }
   if (muf2tag==mur2tag) m_singlescale=1;
   SetScale(muf2tag,m_muf2tagset,m_muf2calc);
   SetScale(mur2tag,m_mur2tagset,m_mur2calc);
@@ -135,11 +147,11 @@ Term *NLO_Tag_Setter::ReplaceTags(Term *term) const
 
 void NLO_Tag_Setter::AssignId(Term *term)
 {
-  if (term->Tag()=="MU_F") term->SetId(1);
-  else if (term->Tag()=="MU_R") term->SetId(2);
+  if (term->Tag()=="MU_F2") term->SetId(1);
+  else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="Q2_CUT") term->SetId(3);
   else if (term->Tag()=="Q2_MIN") term->SetId(4);
-  else if (term->Tag()=="H_T") term->SetId(5);
+  else if (term->Tag()=="H_T2") term->SetId(5);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -194,9 +206,9 @@ void NLO_Scale_Setter::SetScale
   msg_Indent();
   mu2tagset.SetCalculator(&mu2calc);
   mu2calc.SetTagReplacer(&mu2tagset);
-  mu2calc.AddTag("MU_F","1.0");
-  mu2calc.AddTag("MU_R","1.0");
-  mu2calc.AddTag("H_T","1.0");
+  mu2calc.AddTag("MU_F2","1.0");
+  mu2calc.AddTag("MU_R2","1.0");
+  mu2calc.AddTag("H_T2","1.0");
   mu2calc.AddTag("Q_CUT","1.0");
   mu2calc.AddTag("Q_MIN","1.0");
   if ((mu2tag.find("Q_CUT")!=std::string::npos ||

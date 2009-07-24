@@ -21,8 +21,7 @@ namespace PHASIC {
   public:
 
     Variable_Scale_Setter(Process_Base *const proc,
-			  const std::string &mur2tag,
-			  const std::string &muf2tag);
+			  const std::string &scale);
 
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
 
@@ -42,7 +41,7 @@ DECLARE_GETTER(Variable_Scale_Setter_Getter,"VAR",
 Scale_Setter_Base *Variable_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new Variable_Scale_Setter(args.p_proc,args.m_ren,args.m_fac);
+  return new Variable_Scale_Setter(args.p_proc,args.m_scale);
 }
 
 void Variable_Scale_Setter_Getter::
@@ -52,10 +51,23 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 Variable_Scale_Setter::Variable_Scale_Setter
-(Process_Base *const proc,
- const std::string &mur2tag,const std::string &muf2tag): 
+(Process_Base *const proc,const std::string &scale): 
   Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this)
 {
+  size_t pos(scale.find('['));
+  if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
+  std::string mur2tag, muf2tag(scale.substr(pos+1));
+  pos=muf2tag.rfind(']');
+  if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
+  muf2tag=muf2tag.substr(0,pos);
+  pos=muf2tag.find("][");
+  if (pos==std::string::npos) {
+    mur2tag=muf2tag;
+  }
+  else {
+    mur2tag=muf2tag.substr(pos+2);
+    muf2tag=muf2tag.substr(0,pos);
+  }
   SetScale(muf2tag,m_muf2tagset,m_muf2calc);
   SetScale(mur2tag,m_mur2tagset,m_mur2calc);
 }
@@ -89,9 +101,9 @@ void Variable_Scale_Setter::SetScale
   msg_Indent();
   mu2tagset.SetCalculator(&mu2calc);
   mu2calc.SetTagReplacer(&mu2tagset);
-  mu2calc.AddTag("MU_F","1.0");
-  mu2calc.AddTag("MU_R","1.0");
-  mu2calc.AddTag("H_T","1.0");
+  mu2calc.AddTag("MU_F2","1.0");
+  mu2calc.AddTag("MU_R2","1.0");
+  mu2calc.AddTag("H_T2","1.0");
   mu2calc.AddTag("Q2_CUT","1.0");
   mu2calc.AddTag("Q2_MIN","1.0");
   Process_Integrator *ib(p_proc->Integrator());

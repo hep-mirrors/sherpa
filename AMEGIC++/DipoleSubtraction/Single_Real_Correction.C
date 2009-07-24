@@ -317,13 +317,11 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   return m_lastxs;
 }
 
-void Single_Real_Correction::SetScale(const std::string &scale,
-				      const std::string &mur2tag,
-				      const std::string &muf2tag)
+void Single_Real_Correction::SetScale(const std::string &scale)
 {
-  Process_Base::SetScale(scale,mur2tag,muf2tag);
+  Process_Base::SetScale(scale);
   for (size_t i(0);i<m_subtermlist.size();++i) {
-    m_subtermlist[i]->SetScale(scale,mur2tag,muf2tag);
+    m_subtermlist[i]->SetScale(scale);
   }
 }
  

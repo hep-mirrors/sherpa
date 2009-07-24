@@ -193,7 +193,7 @@ bool Simple_Chain::CreateGrid()
   if (!p_processes->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
     THROW(fatal_error,"Cannot initialize MPI simulation.");
   msg_Info()<<" done."<<std::endl;
-  p_processes->SetScale(pi.m_scale,"","");
+  p_processes->SetScale(pi.m_scale);
   p_processes->SetKFactor(pi.m_kfactor,0,2);
   p_processes->Integrator()->SetPSHandler
     (new PHASIC::Phase_Space_Handler

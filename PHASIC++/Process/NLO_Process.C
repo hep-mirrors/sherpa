@@ -559,15 +559,13 @@ void NLO_Process::SetLookUp(const bool lookup)
   if (p_sproc) p_sproc->SetLookUp(lookup);
 }
 
-void NLO_Process::SetScale(const std::string &scale,
-                           const std::string &mur2tag,
-                           const std::string &muf2tag)
+void NLO_Process::SetScale(const std::string &scale)
 {
-  if (p_bproc) p_bproc->SetScale(scale, mur2tag, muf2tag);
-  if (p_vproc) p_vproc->SetScale(scale, mur2tag, muf2tag);
-  if (p_iproc) p_iproc->SetScale(scale, mur2tag, muf2tag);
-  if (p_rproc) p_rproc->SetScale(scale, mur2tag, muf2tag);
-  if (p_sproc) p_sproc->SetScale(scale, mur2tag, muf2tag);
+  if (p_bproc) p_bproc->SetScale(scale);
+  if (p_vproc) p_vproc->SetScale(scale);
+  if (p_iproc) p_iproc->SetScale(scale);
+  if (p_rproc) p_rproc->SetScale(scale);
+  if (p_sproc) p_sproc->SetScale(scale);
 }
 
 void NLO_Process::SetKFactor(const std::string &kfactor,

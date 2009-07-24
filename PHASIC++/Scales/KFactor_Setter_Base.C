@@ -3,6 +3,7 @@
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::KFactor_Setter_Base
 #define PARAMETER_TYPE PHASIC::KFactor_Setter_Arguments
+#define EXACTMATCH false
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace PHASIC;

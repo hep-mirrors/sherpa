@@ -21,7 +21,7 @@ namespace PHASIC {
     size_t m_nmaxq, m_psmc, m_ckkw, m_nmax;
     size_t m_nlomode, m_amegicmhv;
 
-    std::string m_scale, m_muf2tag, m_mur2tag, m_kfactor, m_gpath;
+    std::string m_scale, m_kfactor, m_gpath;
     std::string m_loopgenerator;
 
     std::string m_selectorfile;
@@ -36,8 +36,8 @@ namespace PHASIC {
       m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
       m_nmaxq(99), m_psmc(0),
       m_ckkw(0), m_nmax(0), m_nlomode(0), m_amegicmhv(1),
-      m_scale("VAR"), m_muf2tag("0"), m_mur2tag("0"),
-      m_loopgenerator("Internal"), m_selectorfile(""), p_gens(NULL) {}
+      m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
+      m_selectorfile(""), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
 

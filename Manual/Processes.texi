@@ -10,9 +10,7 @@ The following parameters are used to steer the process setup.
 * Process::                 The process setup start tag.
 * Decay::                   Tag to add an exclusive decay.
 * DecayOS::                 Tag to add an exclusive on-shell decay.
-* Renormalization_Scale::   Tag to set a process-specific scale.
-* Factorization_Scale::     Tag to set a process-specific scale.
-* Fixed_scale::             Tag to set a process-specific fixed scale.
+* Scales::                  Tag to set a process-specific scale.
 * CKKW::                    Tag to setup multijet merging.
 * Selector_File::           Tag to specify a specific selector file.
 * Order_EW::                Tag to fix the electroweak order.
@@ -79,30 +77,10 @@ DecayOS -24[d] -> 94 94
 @end verbatim
 
 
-@node Renormalization_Scale
-@subsection Renormalization_Scale
-Sets a process-specific renormalization scale.
-The corresponding tag must be given in a form,
-which is understood by the internal interpreter,
-see @ref{Interpreter}.
-
-
-@node Factorization_Scale
-@subsection Factorization_Scale
-Sets a process-specific factorization scale.
-The corresponding tag must be given in a form,
-which is understood by the internal interpreter,
-see @ref{Interpreter}.
-
-
-@node Fixed_scale
-@subsection Fixed_scale
-Sets a process-specific renormalization
-and factorization scale.
-The corresponding tag must be given in a form,
-which is understood by the internal interpreter,
-see @ref{Interpreter}.
-
+@node Scales
+@subsection Scales
+Sets a process-specific scale.
+For the corresponding syntax see @ref{SCALES}.
 
 @node CKKW
 @subsection CKKW

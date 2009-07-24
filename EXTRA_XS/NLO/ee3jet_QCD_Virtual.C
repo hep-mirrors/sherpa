@@ -125,7 +125,7 @@ Virtual_ME2_Base *ee3jet_QCD_Virtual_Getter::operator()(const Process_Info &pi) 
           return NULL;
         }
         std::string scale=ToString(sqr(rpa.gen.Ecms()));
-        tree->SetScale("VAR", scale, scale);
+        tree->SetScale("VAR["+scale+"]");
         tree->SetKFactor("QCD",1,2);
         return new ee3jet_QCD_Virtual(pi, fl, tree);
       }

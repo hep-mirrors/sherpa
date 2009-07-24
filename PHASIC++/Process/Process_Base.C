@@ -64,13 +64,10 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl)
   return res;
 }
 
-void Process_Base::SetScale(const std::string &scale,
-			    const std::string &mur2tag,
-			    const std::string &muf2tag)
+void Process_Base::SetScale(const std::string &scale)
 {
   p_scale = Scale_Setter_Base::Scale_Getter_Function::GetObject
-    (scale,Scale_Setter_Arguments
-     (this,m_pinfo.m_mur2tag=mur2tag,m_pinfo.m_muf2tag=muf2tag));
+    (scale,Scale_Setter_Arguments(this,m_pinfo.m_scale=scale));
   if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
   SetScaleSetter(p_scale);
 }
