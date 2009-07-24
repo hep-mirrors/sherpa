@@ -130,7 +130,6 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       delete newxs;
       return NULL;
     }
-    newxs->Get<AMEGIC::Process_Group>()->SetPrintGraphs(pi.m_gpath!="");
     newxs->Get<AMEGIC::Process_Group>()->WriteMappingFile();
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
     if (msg_LevelIsTracking()) newxs->Get<AMEGIC::Process_Group>()->PrintProcessSummary();
@@ -144,6 +143,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     if (p_pinfo->OSDecays()) TestPoint(p_testmoms);
     else Phase_Space_Handler::TestPoint(p_testmoms,newxs->NIn(),newxs->NOut(),newxs->Flavours());
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
+    newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath!="");
     if (!newxs->Get<AMEGIC::Process_Base>()->
 	InitAmplitude(p_model,&top,m_umprocs,m_errprocs)) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
@@ -151,7 +151,6 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       delete newxs;
       return NULL;
     }
-    newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath!="");
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);

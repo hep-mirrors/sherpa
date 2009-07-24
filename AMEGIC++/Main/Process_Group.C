@@ -74,6 +74,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     else Phase_Space_Handler::TestPoint(p_testmoms,m_nin,m_nout,m_flavs);
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
+  apb->SetPrintGraphs(m_pinfo.m_gpath!="");
   apb->SetTestMoms(p_testmoms);
   if (!apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs)) return false;
   proc->SetParent((PHASIC::Process_Base*)this);
