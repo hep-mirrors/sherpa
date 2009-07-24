@@ -2,6 +2,7 @@ bin_PROGRAMS  = SingleDecay \
 	SingleDecayPhotons \
 	HadronFullDecayNoAnalysis \
 	PhotonAnalysis \
+	PhotonAnalysisBR \
 	HadronFullDecayMixingAnalysis \
 	HadronFullDecayInclusiveAnalysis
 
@@ -43,5 +44,11 @@ PhotonAnalysis_LDADD   = $(FULL_LDADD)
 PhotonAnalysis_LDFLAGS = @ldflags@
 PhotonAnalysis_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 PhotonAnalysis_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+
+PhotonAnalysisBR_SOURCES = Main_PhotonFullDistributionBRAnalysis.C
+PhotonAnalysisBR_LDADD   = $(FULL_LDADD)
+PhotonAnalysisBR_LDFLAGS = @ldflags@
+PhotonAnalysisBR_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+PhotonAnalysisBR_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@ Main_FullDecay.C Main.H Run.dat Analysis.dat

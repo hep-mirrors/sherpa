@@ -20,8 +20,6 @@ static TH1D * multipoleframeangles;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-//   std::string adir = p_sherpa->GetInitHandler()
-//                       ->GetAnalysis()->OutputPath();
   std::string adir = "";
   ATOOLS::MakeDir("PhotonAnalysisDirectory/"+mother_flav.ShellName()+"_decays",true,493);
   rootfile = new TFile(string("PhotonAnalysisDirectory/"+

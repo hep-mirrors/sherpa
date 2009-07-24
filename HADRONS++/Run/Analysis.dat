@@ -1,9 +1,10 @@
 BEGIN_ANALYSIS {
 
   LEVEL  Hadrons
-  PATH_PIECE Sherpa/
+  PATH_PIECE Photons/
 
-   SoftPhotonEnergy 11 -11 0 3.0969 100 LinErr FinalState
-   SoftPhotonAngle  11 -11 0 3.0969 100 LinErr FinalState
+    PT 22 0. 10. 200 LinErr FinalState
+    SoftPhotonEnergy 11 -11 0 3.0969 100 LinErr FinalState
+    SoftPhotonAngle  11 -11 0 3.0969 100 LinErr FinalState
 
 } END_ANALYSIS

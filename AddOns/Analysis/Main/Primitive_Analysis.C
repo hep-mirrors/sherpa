@@ -165,11 +165,15 @@ std::string Primitive_Analysis::JetID
 void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double value) 
 {
   Blob *sp(bl->FindFirst(btp::Signal_Process));
+  std::string name("no_signal_process");
   if (sp==NULL) {
-    msg_Out()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
-    return;
+    msg_Debugging()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
+    // if no signal process (i.e. hadrons execs etc.), proceed anyways
+    // do not split jetseeds
+    if (m_mode&ANALYSIS::splitt_jetseeds)
+      m_mode=m_mode^ANALYSIS::splitt_jetseeds;
   }
-  std::string name(sp->TypeSpec());
+  else name = sp->TypeSpec();
 
   Blob_Data_Base * extra_info=operator[]("OrderEWeak");
 
@@ -287,8 +291,13 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if ((m_mode&ANALYSIS::splitt_all)==0) m_mode=m_mode|ANALYSIS::fill_histos;
   Init();
   Blob *sp(bl->FindFirst(btp::Signal_Process));
-  double weight=(*sp)["Weight"]->Get<double>();
-  double ncount=(*sp)["Trials"]->Get<double>();
+  // if no signal process present (i.e. hadrons execs etc.),
+  // assume weight=1, ncount=1
+  double weight(1.), ncount(1.);
+  if (sp) {
+    weight=(*sp)["Weight"]->Get<double>();
+    ncount=(*sp)["Trials"]->Get<double>();
+  }
   if (!IsEqual(value,weight)) {
     if (p_partner==this) {
       msg_Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl

@@ -276,6 +276,11 @@ bool Analysis_Handler::Finish()
 bool Analysis_Handler::Run(ATOOLS::Blob_List *const bl)
 {
   Blob *sp(bl->FindFirst(btp::Signal_Process));
+  // if no signal process (i.e. hadrons execs etc.), assume weight to be one
+  if (!sp) {
+    DoAnalysis(bl,1.);
+    return true;
+  }
   Blob_Data_Base *xs((*sp)["Weight"]);
   if (xs==NULL) THROW(fatal_error,"No weight information");
   double wgt(xs->Get<double>());
