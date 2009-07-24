@@ -35,6 +35,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
   }
   if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   m_type  = std::string("Running Coupling");
+  m_name  = "Alpha_QCD";
   p_thresh  = NULL;
 
   m_CF    = 4./3.;        

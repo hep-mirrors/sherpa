@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/Function_Base.H"
 
+#include "ATOOLS/Math/Algebra_Interpreter.H"
 #include <math.h>
 
 using namespace ATOOLS;
@@ -86,3 +87,36 @@ bool Function_Base::IterateBisection(double& root, double& x_lower, double& x_up
   return false; // keep searching!!!
 
 }
+
+namespace ATOOLS {
+
+  class Function_Wrapper: public Function {
+  private:
+
+    Function_Base *p_f;
+
+    Term *p_res;
+
+  public:
+
+    inline Function_Wrapper(Function_Base *const f):
+      Function(f->Name()), p_f(f),
+      p_res(Term::New(std::string("1.0"))) {}
+
+    ~Function_Wrapper() { p_res->Delete(); }
+
+    Term *Evaluate(const std::vector<Term*> &args) const
+    {
+      p_res->Set((*p_f)(args[0]->Get<double>()));
+      return p_res;
+    }
+
+  };// end of class Function_Wrapper
+
+}// end of namespace ATOOLS
+
+Function *Function_Base::GetAIFunction()
+{
+  return new Function_Wrapper(this);
+}
+

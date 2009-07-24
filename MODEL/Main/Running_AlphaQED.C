@@ -23,6 +23,7 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const 
   m_alpha0(_alpha0),m_MZ2(_MZ2),m_split_scale(_split_scale)
 {
   m_type = std::string("Running Coupling");
+  m_name  = "Alpha_QED";
   m_split_scale = sqr(m_split_scale);
   m_alpha_MZ    = Aqed(m_MZ2);
   m_defval      = Aqed(m_MZ2);

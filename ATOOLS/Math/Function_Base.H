@@ -5,12 +5,14 @@
 
 namespace ATOOLS {
 
+  class Function;
+
   class Function_Base {
   protected :
 
     double      m_defval;
 
-    std::string m_type;
+    std::string m_type, m_name;
 
   public:
 
@@ -22,6 +24,8 @@ namespace ATOOLS {
     virtual void SetType(std::string _m_type);
     virtual void SetParameters(double *parameters);
 
+    Function *GetAIFunction();
+
     // getters
     virtual std::string Type();
 
@@ -32,6 +36,8 @@ namespace ATOOLS {
 
     virtual double FindZero(double, double, int MAX_ITR=150, double precision=2.2e-16);
     virtual bool IterateBisection(double &,double &,double &,double);
+
+    inline std::string Name() const { return m_name; }
     
   };
 
