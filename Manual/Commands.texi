@@ -22,6 +22,10 @@ see @ref{RESULT_DIRECTORY}.
 Set the matrix element generator list to @samp{<generators>},
 see @ref{ME_SIGNAL_GENERATOR}.
 
+@item -w <mode>
+Set the event generation mode to @samp{<mode>},
+see @ref{EVENT_GENERATION_MODE}.
+
 @item -F <module>
 Set the fragmentation module to @samp{<module>},
 see @ref{FRAGMENTATION}.

@@ -59,8 +59,10 @@ by Sherpa, unless the command line parameter @option{-g} is set.
 @subsection EVENT_GENERATION_MODE
 @cindex EVENT_GENERATION_MODE
 This parameter specifies the event generation mode.
-The two possible modes are @option{Weighted} and
-@option{Unweighted}.
+The two possible options are @option{Weighted} (shortcut
+@option{W}) and @option{Unweighted} (shortcut @option{U}).
+It can also be set on the command line
+using option @option{-w}, see @ref{Command line}.
 
 
 @node K_FACTOR_SCHEME

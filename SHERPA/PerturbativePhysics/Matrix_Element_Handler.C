@@ -37,7 +37,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
   std::string evtm;
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
-  if (evtm=="Unweighted") m_eventmode=1;
+  if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else m_eventmode=0;
   if (!read.ReadFromFile(m_nlomode,"NLO_Mode")) m_nlomode=0;
 }

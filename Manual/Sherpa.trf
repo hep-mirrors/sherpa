@@ -7,7 +7,7 @@ Sherpa
 .br
 .B "       [\-e \fIevents\fP] [\-a \fIanalyses\fP] [\-O \fIlevel\fP]"
 .br
-.B "       [\-r \fIresults\fP] [\-m \fIgenerators\fP] [\-F \fImodule\fP]"
+.B "       [\-r \fIresults\fP] [\-m \fIgenerators\fP] [\-w \fImode\fP] [\-F \fImodule\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
@@ -28,6 +28,8 @@ Sets the number of events to \fIevents\fP.
 Sets the result directory name to \fIresults\fP.
 .IP "\fB-m\fP \fIgenerators\fP"
 Sets the ME generator list to \fIgenerators\fP.
+.IP "\fB-w\fP \fImode\fP"
+Sets the event generation mode to \fImode\fP.
 .IP "\fB-F\fP \fImodule\fP"
 Sets the fragmentation module \fImodule\fP.
 .IP "\fB-a\fP \fIanalyses\fP"
@@ -37,16 +39,16 @@ Sets the output level \fIlevel\fP.
 .IP "\fB-g\fP"
 Creates the result directory automatically.
 .IP "\fB-b\fP"
-Switches to non-batch mode, see info file.
+Switches to non-batch mode.
 .IP "\fB-v\fP, \fB--version\fP" 
 Prints versioning information.
 .IP "\fB-h\fP, \fB--help\fP" 
 Prints a short help message.
 .IP "\fBPARAMETER\fP=\fIVALUE\fP" 
-Sets the value of a parameter, see info file\fP. 
+Sets the value of a parameter\fP. 
 .br
 .IP "\fBTAG:\fP=\fIVALUE\fP" 
-Sets the value of a tag, see info file\fP. 
+Sets the value of a tag\fP. 
 .SH EXAMPLE
 This is an example for the first invocation of Sherpa
 
