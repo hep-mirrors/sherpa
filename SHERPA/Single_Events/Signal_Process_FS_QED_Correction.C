@@ -53,6 +53,8 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
       FindSubProcessInfosContainingLeptons((*pvec[i])[j]->Info(),siv);
       msg_Debugging()<<"  found process: "<<(*pvec[i])[j]->Name()<<" with "
                      <<siv.size()<<" defined lepton production blobs...\n";
+      for (size_t k=0;k<siv.size();++k)
+        msg_Debugging()<<*siv[k]<<endl;
       m_proc_lep_map.insert(make_pair((*pvec[i])[j]->Name(),siv));
     }
   }
@@ -79,6 +81,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   // look for QCD corrected hard process in need for QED
   Blob * sigblob(bloblist->FindLast(btp::Shower));
+  if (!sigblob) return Return_Value::Nothing;
   if (!sigblob->Has(blob_status::needs_extraQED)) return Return_Value::Nothing;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
