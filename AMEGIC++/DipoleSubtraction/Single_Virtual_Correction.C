@@ -304,7 +304,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
   }
   else  m_lastlumi = 1.;
-  return m_last = m_Norm * (m_lastxs+kpterm) * m_lastlumi * p_partner->KFactor();
+  return m_last = m_Norm * (m_lastxs+kpterm) * m_lastlumi * KFactor();
 }
 
 double Single_Virtual_Correction::DSigma2() 
@@ -316,7 +316,7 @@ double Single_Virtual_Correction::DSigma2()
   double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
   if (!p_int->ISR()->CalculateWeight2(p_scale->Scale(stp::fac))) return 0.0;
-  double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* p_partner->KFactor2(); 
+  double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* KFactor2(); 
   m_last    += tmp;
   return tmp;
 }

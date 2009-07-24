@@ -101,7 +101,6 @@ namespace AMEGIC {
     std::string      PSLibName()       { return m_pslibname;   }
     AMEGIC::Process_Base   * Partner() const { return p_partner;     }
     void             Minimize();
-    void             SetKFactorOn(const bool on);
 
     /*------------------------------------------------------------------------------
 

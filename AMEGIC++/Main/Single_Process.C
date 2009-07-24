@@ -38,7 +38,6 @@ AMEGIC::Single_Process::~Single_Process()
   if (p_shand)    {delete p_shand;p_shand=0;}
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
   if (p_psgen)    {delete p_psgen; p_psgen=0;}
-  if (p_partner!=this) p_kfactor=NULL;
 }
 
 /*------------------------------------------------------------------------------
@@ -82,7 +81,6 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
 	m_iresult = p_partner->Result()*m_sfactor;
 	m_oqcd=p_partner->OrderQCD();
 	m_oew=p_partner->OrderEW();
-	p_kfactor=p_partner->KFactorSetter();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
 	InitFlavmap(p_partner);
@@ -775,7 +773,6 @@ void AMEGIC::Single_Process::Minimize()
 
   m_oqcd      = p_partner->OrderQCD();
   m_oew       = p_partner->OrderEW();
-  p_kfactor   = p_partner->KFactorSetter();
 }
 
 double AMEGIC::Single_Process::Differential(const Vec4D_Vector &_moms) 
@@ -933,12 +930,6 @@ void AMEGIC::Single_Process::AddChannels(std::list<std::string>* tlist)
       if (!hit) tlist->push_back((*it));
     }
   }
-}
-
-void AMEGIC::Single_Process::SetKFactorOn(const bool on)
-{
-  PHASIC::Single_Process::SetKFactorOn(on);
-  if (p_partner!=this) p_partner->SetKFactorOn(on);
 }
 
 void AMEGIC::Single_Process::FillCombinations

@@ -43,7 +43,6 @@ AMEGIC::Single_Process_MHV::~Single_Process_MHV()
 #ifndef Basic_Sfuncs_In_MHV 
   if (p_momlist)    {delete p_momlist; p_momlist=0;}
 #endif
-  if (p_partner!=this) p_kfactor=NULL;
 }
 
 /*------------------------------------------------------------------------------
@@ -315,7 +314,6 @@ void AMEGIC::Single_Process_MHV::Minimize()
 
   m_oqcd      = p_partner->OrderQCD();
   m_oew       = p_partner->OrderEW();
-  p_kfactor   = p_partner->KFactorSetter();
 }
 
 double AMEGIC::Single_Process_MHV::Differential(const Vec4D_Vector &_moms) 
@@ -373,7 +371,7 @@ double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool
   }
   else  m_lastlumi = 1.;
 
-  return m_last = m_Norm * m_lastxs * m_lastlumi*p_partner->KFactor();
+  return m_last = m_Norm * m_lastxs * m_lastlumi*KFactor();
 }
 
 double AMEGIC::Single_Process_MHV::DSigma2() 
@@ -388,7 +386,7 @@ double AMEGIC::Single_Process_MHV::DSigma2()
   }
   double tmp = m_Norm * m_lastxs * p_int->ISR()->Weight2(&m_flavs.front()); 
   p_int->ISR()->MtxUnLock();
-  m_last    += tmp*=p_partner->KFactor2();
+  m_last    += tmp*=KFactor2();
   return tmp;
 }
 
@@ -447,8 +445,3 @@ void AMEGIC::Single_Process_MHV::AddChannels(std::list<std::string>* tlist)
   }
 }
 
-void AMEGIC::Single_Process_MHV::SetKFactorOn(const bool on)
-{
-  Single_Process::SetKFactorOn(on);
-  if (p_partner!=this) p_partner->SetKFactorOn(on);
-}
