@@ -120,6 +120,8 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
 	p_mapproc = p_partner = (Single_Process_MHV*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
 
+	InitFlavmap(p_partner);
+	
 	Minimize();
 	return 1;
       }
@@ -139,6 +141,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	p_mapproc = p_partner   = (Single_Process_MHV*)links[j];
 	m_pslibname = links[j]->PSLibName();
+	InitFlavmap(p_partner);
 	break;
       } 
     }
