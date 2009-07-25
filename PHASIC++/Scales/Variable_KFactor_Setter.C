@@ -137,7 +137,7 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="E_CMS") term->SetId(3);
-  else if (term->Tag()=="S_CMS") term->SetId(4);
+  else if (term->Tag()=="S_TOT") term->SetId(4);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -154,7 +154,7 @@ void Variable_KFactor_Setter::SetCoupling(const std::string &kftag)
   p_calc->AddTag("MU_F2","1.0");
   p_calc->AddTag("MU_R2","1.0");
   p_calc->AddTag("E_CMS","1.0");
-  p_calc->AddTag("S_CMS","1.0");
+  p_calc->AddTag("S_TOT","1.0");
   for (size_t i(0);i<m_kfkey.Doubles().size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
   std::string res=p_calc->Interprete(kftag);

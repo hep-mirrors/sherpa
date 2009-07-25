@@ -6,7 +6,7 @@ the steering file or the shower data file `Shower.dat',
 respectively.
 
 
-The following parameters are used to steer the process setup.
+The following parameters are used to steer the shower setup.
 
 @menu
 * SHOWER_GENERATOR::      Tag to set Sherpa's shower generator.

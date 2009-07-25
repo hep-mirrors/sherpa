@@ -161,7 +161,7 @@ Assuming the Higgs mass to be 120 GeV, the corresponding reweighting factor woul
 
 @verbatim
 SCALES    VAR{...}{PPerp(p[3])}
-COUPLINGS VAR{sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_CMS),3)}
+COUPLINGS VAR{sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_TOT),3)}
 @end verbatim
 
 If more than two scales are to be used, the subsequent scales are referred to
@@ -172,7 +172,7 @@ Their values can be computed e.g. using the @option{VAR} scale setter, see
 
 @verbatim
 SCALES    VAR{...}{PPerp(p[4])}{Abs2(p[2]+p[3])}
-COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_CMS)*Alpha_QED(S_CMS))}
+COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_TOT)*Alpha_QED(S_TOT))}
 @end verbatim
 @end table
 
