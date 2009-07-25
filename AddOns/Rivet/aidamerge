@@ -241,6 +241,6 @@ outdat.write("\n\n".join([h.asFlat() for h in sorted(outhistos.values())]))
 outdat.write("\n")
 outdat.close()
 
-Popen(["flat2aida", opts.OUTFILE.replace(".aida", ".dat")], stdout=outaida).wait()
+Popen([os.path.join(sys.path[0], "flat2aida"), opts.OUTFILE.replace(".aida", ".dat")], stdout=outaida).wait()
 
 os.unlink(opts.OUTFILE.replace(".aida", ".dat"))

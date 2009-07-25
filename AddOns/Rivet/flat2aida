@@ -1,0 +1,130 @@
+#! /usr/bin/env python
+
+import os, sys
+
+from htmlentitydefs import codepoint2name
+unichr2entity = dict((unichr(code), u'&%s;' % name) \
+                         for code,name in codepoint2name.iteritems() \
+                         if code != 38) # exclude "&"
+def htmlescape(text, d=unichr2entity):
+    if u"&" in text:
+        text = text.replace(u"&", u"&amp;")
+    for key, value in d.iteritems():
+        if key in text:
+            text = text.replace(key, value)
+    return text
+
+
+
+class Inputdata:
+    def __init__(self, filename):
+        self.histos = {}
+        self.description = {}
+        self.description['DrawOnly'] = []
+        f = open(filename+'.dat', 'r')
+        for line in f:
+            if (line.count('#',0,1)):
+                if (line.count('BEGIN HISTOGRAM')):
+                    title = line.split('BEGIN HISTOGRAM', 1)[1].strip()
+                    self.description['DrawOnly'].append(title)
+                    self.histos[title] = Histogram(f)
+        f.close()
+
+class Histogram:
+    def __init__(self, f):
+        self.read_input(f)
+    def read_input(self, f):
+        self.description = {}
+        self.data = []
+        for line in f:
+            if (line.count('#',0,1)):
+                if (line.count('END HISTOGRAM')):
+                    break
+            else:
+                line = line.rstrip()
+                if (line.count('=')):
+                    linearray = line.split('=', 1)
+                    key = linearray[0].strip()
+                    val = linearray[1].strip()
+                    #print "@", key, val
+                    self.description[key] = val
+                else:
+                    linearray = line.split('\t')
+                    if len(linearray)==4:
+                        self.data.append({'LowEdge': float(linearray[0]),
+                                          'UpEdge':  float(linearray[1]),
+                                          'Content': float(linearray[2]),
+                                          'Error':   [float(linearray[3]),float(linearray[3])]})
+                    elif len(linearray)==5:
+                        self.data.append({'LowEdge': float(linearray[0]),
+                                          'UpEdge':  float(linearray[1]),
+                                          'Content': float(linearray[2]),
+                                          'Error':   [float(linearray[3]),float(linearray[4])]})
+    def write_datapoint(self, f, xval, xerr, yval, yerr):
+            f.write('    <dataPoint>\n')
+            f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(xerr, xval, xerr))
+            f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(yerr[1], yval, yerr[0]))
+            f.write('    </dataPoint>\n')
+    def write_datapointset_header(self, f, count, bin):
+            path = '/REF/%s/d%02d-x01-y%02d' %(filename.split('/')[-1], count, bin+1)
+            if self.description.has_key("AidaPath"):
+                path = self.description["AidaPath"]
+            f.write('  <dataPointSet name="%s" dimension="2"\n' % (os.path.basename(path)))
+            f.write('    path="%s" title="%s">\n' % (os.path.dirname(path), htmlescape(self.description['Title'])))
+            if self.description.has_key("XLabel") and self.description["XLabel"] is not None:
+                f.write('    <dimension dim="0" title="%s" />\n' % htmlescape(self.description['XLabel']))
+            if self.description.has_key("YLabel") and self.description["YLabel"] is not None:
+                f.write('    <dimension dim="1" title="%s" />\n' % htmlescape(self.description['YLabel']))
+            f.write('    <annotation>\n')
+            f.write('      <item key="Title" value="%s" sticky="true"/>\n' %(htmlescape(self.description['Title'])))
+            f.write('      <item key="AidaPath" value="%s" sticky="true"/>\n' %(path))
+            f.write('      <item key="FullPath" value="/%s.aida%s" sticky="true"/>\n' %(filename.split('/')[-1], path))
+            f.write('    </annotation>\n')
+    def write_datapointset_footer(self, f):
+            f.write('  </dataPointSet>\n')
+    def write_datapointset(self, f, count):
+        if not opts.SPLITHISTOS:
+            self.write_datapointset_header(f, count, 0)
+        for bin, bindata in enumerate(self.data):
+            xval = 0.5*(bindata['UpEdge'] + bindata['LowEdge'])
+            if bindata['UpEdge'] == bindata['LowEdge']:
+                xerr = 0.5
+            else:
+                xerr = 0.5*(bindata['UpEdge'] - bindata['LowEdge'])
+            yval = bindata['Content']
+            yerr = bindata['Error']
+            if opts.SPLITHISTOS:
+                self.write_datapointset_header(f, count, bin)
+            self.write_datapoint(f, xval, xerr, yval, yerr)
+            if opts.SPLITHISTOS:
+                self.write_datapointset_footer(f)
+        if not opts.SPLITHISTOS:
+            self.write_datapointset_footer(f)
+
+
+from optparse import OptionParser
+parser = OptionParser(usage="%prog flatfile [flatfile2 ...]")
+parser.add_option("-s", "--split-histos", action="store_true", default=False,
+                  help="Split histograms into individual bins", dest="SPLITHISTOS")
+opts, args = parser.parse_args()
+
+if len(args) < 1:
+    sys.stderr.write("Must specity at least one histogram file\n")
+    sys.exit(1)
+
+for flatfile in args:
+    filename = flatfile.replace(".dat", "")
+    
+    inputdata = Inputdata(filename)
+    
+    f = open(filename+'.aida', 'w')
+    f.write('<?xml version="1.0" encoding="ISO-8859-1" ?>\n')
+    f.write('<!DOCTYPE aida SYSTEM "http://aida.freehep.org/schemas/3.3/aida.dtd">\n')
+    f.write('<aida version="3.3">\n')
+    f.write('  <implementation version="1.1" package="FreeHEP"/>\n')
+    
+    for i, d in enumerate(inputdata.description['DrawOnly']):
+        inputdata.histos[d].write_datapointset(f, i+1)
+    
+    f.write('</aida>\n')
+    f.close
