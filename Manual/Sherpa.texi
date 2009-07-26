@@ -27,22 +27,22 @@
 @menu
 * Introduction::     What is Sherpa
 @sp 1
-* Getting started::  A guide to getting started with Sherpa: installation, and a example run
+* Getting started::  A guide to getting started with Sherpa
 @sp 1
-* Command line::     Command line options
-* Input structure::  How to specify parameters for a Sherpa run.
-* Parameters::       List of parameters
+* Command line::     Sherpa's command line options
+* Input structure::  How to specify parameters for a Sherpa run
+* Parameters::       The complete list of parameters
 @sp 1
 * Tips and Tricks::  Advanced usage tips
 * Customization::    Extending Sherpa 
 @sp 1
-* Examples::         A collection of example set-ups designed to illustrate some of Sherpa's features
+* Examples::         Examples to illustrate some of Sherpa's features
 @sp 1
 * Authors::          Authors of Sherpa 
 * Copying::          Your rights and freedoms
 @sp 1
-* Index::            Index
 * References::       Bibliography
+* Index::            Index
 @end menu
 
 @include Macros.texi
@@ -91,11 +91,11 @@ Permission is granted to copy, distribute and/or modify this
 document under the terms of the GNU General Public License.
 @end copying
 
+@mybibend{Bibliography.texi}
+
 @node Index
 @appendix Index
 
 @printindex cp
-
-@mybibend{Bibliography.texi}
 
 @bye

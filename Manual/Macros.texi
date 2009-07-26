@@ -5,12 +5,11 @@
 
 @macro mycite{ref}
 @ifinfo
-[@value{K\ref\}] in @ref{References}.
-@set U\ref\ true
+[@value{K\ref\}] in @ref{References} @set U\ref\ true
 @end ifinfo
 @ifnotinfo
 @set U\ref\ true
-[@ref{\ref\, @value{K\ref\}}].
+[@ref{\ref\, @value{K\ref\}}]
 @end ifnotinfo
 @end macro
 

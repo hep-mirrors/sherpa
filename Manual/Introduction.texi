@@ -4,7 +4,8 @@
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 is a Monte Carlo event generator for the Simulation 
 of High-Energy Reactions of PArticles in lepton-lepton, 
@@ -14,7 +15,8 @@ and apply
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 for their physics studies. The event generator 
 is introduced, in broad terms, and the installation and running 
@@ -25,11 +27,12 @@ complete description of the physics content of
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 .
 To this end, the authors refer the reader to the original publication, 
-@mycite{Gleisberg2008ta}
+@mycite{Gleisberg2008ta}.
 
 
 @menu
@@ -44,29 +47,21 @@ To this end, the authors refer the reader to the original publication,
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 @mycite{Gleisberg2008ta} is a Monte Carlo event generator that
 provides complete hadronic final states in simulations of high-energy
-particle collisions.
-The produced events may be passed into detector simulations 
-used by the various experiments.  In the older versions, series 1.0.x, some 
-physics aspects such as fragmentation and hadron decays have been treated by 
-interfacing other codes, notably Fortran versions of Pythia
-@mycite{Sjostrand1993yb},@mycite{Sjostrand2006za}. Sherpa
-no longer relies on such interfaces.  It can thus be 
-considered as a truly independent, full-fledged Monte Carlo generator.
-@{Up to version 1.0.11, the hadronization and most of the hadron decays 
-  were handled by interfacing to the corresponding Pythia routines; in 
-  the new versions these interfaces have been kept for backward compatibility
-  and can still be used as an option.@}
+particle collisions. The produced events may be passed into detector
+simulations used by the various experiments.
 The entire code has been written in C++, like its competitors 
-Herwigpp@mycite{Bahr2008pv} and PythiaEight@mycite{Sjostrand2007gs}.
+Herwig++ @mycite{Bahr2008pv} and Pythia 8 @mycite{Sjostrand2007gs}.
 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 simulations can be achieved for the following types of
 collisions:
@@ -86,7 +81,8 @@ The list of physics processes that come with
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 covers particle production at 
 tree level in the Standard Model and in models beyond the Standard Model: 
@@ -95,15 +91,17 @@ according to @mycite{Rosiek1989rs} @mycite{Rosiek1995kg} has been implemented, i
 general mixing matrices for inter-generational squark and slepton mixing. 
 Among other interaction models the ADD model of Large Extra Dimensions has been 
 made available, too @mycite{Gleisberg2003ue}.  Furthermore, anomalous gauge couplings 
-@mycite{Hagiwara1986vm}, a model with an extended Higgs sector @mycite{Dedes}, and a 
+@mycite{Hagiwara1986vm}, a model with an extended Higgs sector @mycite{Dedes2008bf}, and a 
 version of the Two-Higgs Doublet Model are available.  
 The 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
-program owes this versatility to the inbuilt matrix-element generators, AMEDIC++ and Comix,
+program owes this versatility to the inbuilt matrix-element generators, AMEGIC++ and 
+@uref{http://comix.freacafe.de,,Comix},
 and to it's phase-space generator Phasic @mycite{Krauss2001iv}, which automatically 
 calculate and integrate tree-level amplitudes for the implemented models.  This 
 feature enables Sherpa 
@@ -119,12 +117,13 @@ S\scalebox{0.8}{HERPA}\xspace
 @ifnottex 
 Sherpa 
 @end ifnottex 
-the program provides an implementation of the 
-merging approach of @mycite{Catani2001cc},@mycite{Krauss2002up},@mycite{Schalicke2005nv}, known by 
-now as CKKW merging. This finally yields improved descriptions of multijet 
+is that the program provides an implementation of the 
+merging approach of @mycite{Hoeche2009rj}. This yields improved descriptions of multijet 
 production processes, which copiously appear at the Tevatron and the LHC, see for 
-instance @mycite{Krauss2004bs},@mycite{Krauss2005nu},@mycite{Gleisberg2005qq}.  This approach has
-been compared in great detail in @mycite{Alwall2007fs} with other approaches, such 
+instance @mycite{Krauss2004bs},@mycite{Krauss2005nu},@mycite{Gleisberg2005qq}. 
+An older approach, implemented in previous versions of Sherpa and known
+as the CKKW technique @mycite{Catani2001cc},@mycite{Krauss2002up},
+has been compared in great detail in @mycite{Alwall2007fs} with other approaches, such 
 as the MLM merging prescription @mycite{Mangano2001xp} as implemented in 
 Alpgen @mycite{Mangano2002ea}, Madevent @mycite{Stelzer1994ta},@mycite{Maltoni2002qb}, 
 or Helac @mycite{Kanaki2000ey},@mycite{Papadopoulos2005ky} and the CKKW-L prescription 
@@ -135,7 +134,8 @@ This manual contains all information necessary to get started with
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 as quickly as possible.  By reading it, users should be enabled to setup the program according 
 to their needs for studying various physics aspects.  Therefore, all switches plus 
@@ -143,13 +143,15 @@ options that have been provided are listed. It is explained how to use them, how
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 can be run in different modes and how the results and output of 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 can be interpreted.  For external code that can be linked, corresponding references are 
 given and users are encouraged to cite them accordingly. 
@@ -159,7 +161,8 @@ On the other hand, the physics of
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 and its underlying structure and coding
 principles are not detailed in this manual. For this, readers are encouraged to refer to 
@@ -167,14 +170,16 @@ original work of the authors. Also, whenever justified,
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 users are kindly asked 
 to cite 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa
+@ifnottex
+Sherpa
 @end ifnottex
 's original publication @mycite{Gleisberg2008ta}. Moreover the authors 
 strongly recommend the study of the manuals and/or many excellent publications on 
@@ -187,7 +192,8 @@ the modular structure intrinsic to
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 is introduced. @ref{Getting started} contains information about and
 instructions for the installation of the package. There is also
@@ -196,7 +202,8 @@ needed to run
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 and generate events. 
 The @ref{Input structure} is then discussed, and the ways in which 
@@ -231,7 +238,8 @@ The construction of the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 program has been pursued in a modular
 way. It fully reflects the paradigm of Monte Carlo event generation of
@@ -247,7 +255,8 @@ exist. Altogether, the following modules are currently distributed with the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 framework:
 
@@ -259,7 +268,8 @@ This is the toolbox for all other modules. Since the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 framework does not rely on CLHEP etc., the ATOOLS contain classes 
 with mathematical tools like vectors and matrices, organization tools 
@@ -273,7 +283,8 @@ amplitudes have been accumulated.  They are used in
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
-@ifnottex AMEGIC++ 
+@ifnottex
+AMEGIC++ 
 @end ifnottex
 , the
 EXTRA_XS module, and the new matrix-element generator Comix.
@@ -330,7 +341,8 @@ The required model inputs either are directly read from
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 's parameter file or input through a SLHA-conform file
 @mycite{Skands2003cj} for the case of the MSSM.
@@ -343,7 +355,8 @@ together with classes embedding them into the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 framework. This also includes methods used for the definition
 of the parton-shower evolution, such as colour connections and
@@ -353,29 +366,27 @@ module Phasic, since they are needed by
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
-@ifnottex AMEGIC++ 
+@ifnottex
+AMEGIC++ 
 @end ifnottex 
 as well.
 
-@item 
+@item AMEGIC++
+
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
-@ifnottex AMEGIC++ 
-@end ifnottex
-@* @*
-@iftex 
-A\scalebox{0.8}{MEGIC++}\xspace 
-@end iftex 
-@ifnottex AMEGIC++ 
+@ifnottex
+AMEGIC++ 
 @end ifnottex 
 @mycite{Krauss2001iv} is 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa
+@ifnottex
+Sherpa
 @end ifnottex
-'s matrix-element
+'s original matrix-element
 generator, which employs the method of helicity amplitudes
 @mycite{Kleiss1985yh},@mycite{Ballestrero1992dv}. It works as
 a generator, which generates generators:
@@ -386,7 +397,8 @@ specific phase-space mappings are created by
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
-@ifnottex AMEGIC++ 
+@ifnottex
+AMEGIC++ 
 @end ifnottex 
 and stored in 
 library files. Before the first production run, these libraries have
@@ -401,7 +413,8 @@ generation runs.
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
-@ifnottex AMEGIC++ 
+@ifnottex
+AMEGIC++ 
 @end ifnottex 
 has been tested for multi-particle production in the Standard 
 Model @mycite{Gleisberg2003bi}. Its MSSM implementation has been
@@ -409,7 +422,17 @@ tested in @mycite{Hagiwara2005wg}.
 
 @item COMIX
 
+Comix is a multi-leg tree-level matrix element generator, based on 
+the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}. 
+It is designed to cope with especially large numbers of external legs. To this end
+it employs a new algorithm to recursively compute phase-space weights and can
+be run in multithreaded mode to make better use of multicore processors
+and multiprocessor machines @mycite{Gleisberg2008fv}, see also @mycite{Gleisberg2008ft}.
 
+Comix is a useful supplement to older matrix element generators like AMEGIC++
+in the high multiplicity regime. Due to the usage of colour sampling it is 
+easy to interface with parton shower simulations and can hence be
+easily employed for the ME-PS merging within Sherpa.
 
 
 @item PHASIC++
@@ -458,7 +481,8 @@ interactions according to @mycite{Sjostrand1987su}. In
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 the
 treatment of multiple interactions has been extended by allowing for
@@ -475,7 +499,8 @@ AHADIC++ is
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa
+@ifnottex
+Sherpa
 @end ifnottex
 's hadronization package, for translating
 the partons (quarks and gluons) into primordial hadrons, to be
@@ -487,7 +512,8 @@ noted, though, that the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 version, based on
 @mycite{Winter2003tt}, indeed differs from the original versions.
@@ -521,7 +547,8 @@ This package provides all the ingredients necessary to
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 . During generation events can be analyzed at different
 stages of their evolution, namely at the level of the hard matrix
@@ -548,7 +575,8 @@ The actual executable of the
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex 
 generator can be found in the
 subdirectory @code{<prefix>/bin/} or @code{<prefix>/SHERPA/Run/} and is
@@ -556,7 +584,8 @@ called @code{
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 }. To run the program, input files have to be
 provided in the current working directory or elsewhere by specifying

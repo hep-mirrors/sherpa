@@ -408,7 +408,8 @@ parton-level event generation with
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
-@ifnottex Sherpa 
+@ifnottex
+Sherpa 
 @end ifnottex
 . These changes read
 @code{SHOWER_GENERATOR=None}, to switch off parton
