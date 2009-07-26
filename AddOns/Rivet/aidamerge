@@ -222,17 +222,17 @@ for path, hs in inhistos.iteritems():
     #print path, hs
     outhistos[path] = copy.deepcopy(hs.values()[0])
     for i, b in enumerate(outhistos[path].getBins()):
-        sum_val_err2 = 0.0;
-        sum_1_err2 = 0.0;
+        sum_val = 0.0
+        sum_1_err2 = 0.0
+        n = 0
         for infile, h in hs.iteritems():
             err = h.getBin(i).getYErr()
-            val = h.getBin(i).yval
-
             if err!=0.0:
-                sum_val_err2 += val/(err**2);
-                sum_1_err2 += 1.0/(err**2);
+                sum_val += h.getBin(i).yval
+                sum_1_err2 += 1.0/(err**2)
+                n += 1
         if sum_1_err2!=0.0:
-            outhistos[path].getBin(i).yval = sum_val_err2 / sum_1_err2
+            outhistos[path].getBin(i).yval = sum_val / n
             outhistos[path].getBin(i).setYErr(sqrt(1.0/sum_1_err2))
 
 ## Write out merged histos
