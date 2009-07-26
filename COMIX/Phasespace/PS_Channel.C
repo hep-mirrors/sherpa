@@ -244,14 +244,21 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
       else if ((m_tmode&1) && (m_vmode&1)) {
 	STCC_Map::const_iterator it(m_stccs.find(id));
 	if (it==m_stccs.end()) {
-	  m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
-				   ToString(cs->size()),cs->size()));
+	  Vegas *cvgs(GetVegas("C_"+GetPSId(id)+"_"+
+			       ToString(cs->size()),cs->size()));
 	  rn=ran.Get();
-	  const double *cr(m_vgs.back()->GeneratePoint(&rn));
-	  m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
-	  m_rns.push_back(cr[0]);
+	  const double *cr(cvgs->GeneratePoint(&rn));
+#ifdef USING__Threading
+	  pthread_mutex_lock(&m_wvgs_mtx);
+#endif
+	  m_wvgs.push_back(cvgs);
+	  m_wrns.push_back(cr[0]);
+	  m_stccs[id]=cur=(*cs)[cvgs->GetPointBins()[0]];
+#ifdef USING__Threading
+	  pthread_mutex_unlock(&m_wvgs_mtx);
+#endif
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
+	  msg_Debugging()<<"    generate point "<<m_wvgs.back()->Name()<<"\n";
 #endif
 	}
 	it=m_stccs.find(id);
