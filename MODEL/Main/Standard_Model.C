@@ -170,7 +170,7 @@ void Standard_Model::ParticleInit() {
     s_kftable[7]  = new Particle_Info(7,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
     s_kftable[8]  = new Particle_Info(8,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
     s_kftable[17] = new Particle_Info(17,500.,38.3,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
-    s_kftable[18] = new Particle_Info(18,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\Nu_4");
+    s_kftable[18] = new Particle_Info(18,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\nu_4");
   }
 
   // pseudoparticles for comix
