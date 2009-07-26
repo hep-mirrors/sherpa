@@ -33,6 +33,7 @@ bool Color_Setter::SetRandomColors()
   for (size_t i(0);i<ampl->Legs().size();++i)
     oc[i]=ampl->Leg(i)->Col();
   for (;trials<s_clmaxtrials;++trials) {
+    bool sing(false);
     std::set<size_t> cs;
     Int_Vector ci(ampl->Legs().size()), cj(ampl->Legs().size());
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -43,8 +44,11 @@ bool Color_Setter::SetRandomColors()
       for (size_t j(0);j<ampl->Legs().size();++j)
 	if (i!=j && oc[j].m_j==col && cs.find(j)==cs.end()) 
 	  js.push_back(j);
-      if (js.empty() && oc[i].m_j==col) js.push_back(i);
-      if (js.empty()) THROW(fatal_error,"Missing colour partner");
+      if (js.empty()) {
+	msg_Debugging()<<"color singlet "<<*cl<<"\n";
+	sing=true;
+	break;
+      }
       size_t j(js[Min((size_t)(ran.Get()*js.size()),js.size()-1)]);
       cs.insert(j);
       Cluster_Leg *cp(ampl->Leg(j));
@@ -55,6 +59,7 @@ bool Color_Setter::SetRandomColors()
       msg_Debugging()<<"  "<<*cl<<"\n";
       msg_Debugging()<<"  "<<*cp<<"\n";
     }
+    if (!sing) {
     double csum(p_xs->GetME()->Differential
 		(p_xs->Integrator()->PSHandler()->CMSPoint(),ci,cj,true));
     msg_Debugging()<<"sc: csum = "<<csum<<"\n";
@@ -64,7 +69,8 @@ bool Color_Setter::SetRandomColors()
 	if (oc[i].m_i!=0) cmap[ci[i]]=oc[i].m_i;
       break;
     }
-    if (trials%9==0 && trials>0) {
+    }
+    if ((trials%9==0 && trials>0) || sing) {
       // select new color configuration
       SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
       while (!colint->GeneratePoint());
@@ -94,6 +100,7 @@ bool Color_Setter::SetLargeNCColors()
   colint->SetOTFCC(true);
   Double_Vector psum;
   std::map<size_t,size_t> cmap;
+  size_t ntrials(0);
   while (true) {
     size_t cc(0);
     psum.clear();
@@ -103,8 +110,9 @@ bool Color_Setter::SetLargeNCColors()
       Idx_Vector perm(colint->Orders().front());
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
       for (size_t i(0);i<perm.size();++i) {
-	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:0);
-	if (p_xs->Flavours()[cur].StrongCharge()>0)
+	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
+	if (p_xs->Flavours()[cur].Strong() &&
+	    p_xs->Flavours()[next].Strong())
 	  cj[next]=ci[cur]=Flow::Counter();
       }
       double part(p_xs->GetME()->Differential
@@ -124,6 +132,7 @@ bool Color_Setter::SetLargeNCColors()
     Int_Vector ni(colint->I()), nj(colint->J());
     for (size_t i(0);i<ampl->Legs().size();++i)
       oc[i]=ColorID(ni[i],nj[i]);
+    if ((ntrials+=10)>=s_clmaxtrials) return false; 
   }
   msg_Debugging()<<"sum = "<<psum.back()<<"\n";
   size_t l(0), r(psum.size()-1), c((l+r)/2);
@@ -143,15 +152,16 @@ bool Color_Setter::SetLargeNCColors()
       Idx_Vector perm(colint->Orders().front());
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
       for (size_t i(0);i<perm.size();++i) {
-	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:0);
-	if (p_xs->Flavours()[cur].StrongCharge()>0)
+	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
+	if (p_xs->Flavours()[cur].Strong() &&
+	    p_xs->Flavours()[next].Strong())
 	  cj[next]=ci[cur]=Flow::Counter();
       }
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
-      if (IsZero(p_xs->GetME()->Differential
-		 (p_xs->Integrator()->PSHandler()->
-		  CMSPoint(),ci,cj,true)))
+      if (p_xs->GetME()->Differential
+	  (p_xs->Integrator()->PSHandler()->
+	   CMSPoint(),ci,cj,true)==0.0)
 	THROW(fatal_error,"Internal error");
       CI_Map &cmap(ampl->ColorMap());
       for (size_t i(0);i<ampl->Legs().size();++i)
@@ -174,6 +184,7 @@ bool Color_Setter::SetColors(Single_Process *const xs)
     break;
   case 2: 
     sol=SetLargeNCColors();
+    sol=SetRandomColors();
     break;
   default:
     THROW(fatal_error,"Invalid colour setting mode");
