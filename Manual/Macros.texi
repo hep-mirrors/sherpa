@@ -26,7 +26,7 @@
 @ifnotinfo
 @anchor{\ref\}[@uref{@value{spires}\slink\,\key\}] 
 @end ifnotinfo
-\author\, @emph{\title\}, \journal\ @b{\vol\}\year\\pages\ \eprint\.
+\author\, @emph{\title\}, \journal\ @b{\vol\} \year\ \pages\ \eprint\.
 @ifinfo
 @sp 1
 @end ifinfo
@@ -42,7 +42,7 @@
 
 @macro mybibend{filename}
 @node References
-@chapter References
+@appendix References
 @itemize @asis
 @set mybibout true
 @include \filename\
