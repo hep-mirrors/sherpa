@@ -18,7 +18,7 @@
   Process 93 93 -> 17[a] -18[b]
     Decay   17[a] ->  16 11 -12
     Decay  -18[b] -> -15 13 -14
-  Print_Graphs
+  Print_Graphs 1;
   End process
 }(processes)
 
