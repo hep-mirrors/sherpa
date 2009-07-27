@@ -270,7 +270,7 @@ void Matrix_Element_Handler::BuildProcesses()
   // check for fixed scale
   std::string fixscale;
   if (read.ReadFromFile(fixscale,"FIXED_SCALE")) {
-    scale="VAR["+fixscale+"]";
+    scale="VAR{"+fixscale+"}";
     kfactor="NO";
   }
   // init processes
