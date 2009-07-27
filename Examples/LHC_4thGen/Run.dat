@@ -45,6 +45,7 @@
 
 (me){
   ME_SIGNAL_GENERATOR = Amegic
+  SCALES = VAR{Abs2(p[0]+p[1])}
 }(me)
 
 (fragmentation){
