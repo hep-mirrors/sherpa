@@ -262,7 +262,6 @@ double Scalar_To_Vector_Lepton_Neutrino::GetBeta_0_0() {
 }
 
 double Scalar_To_Vector_Lepton_Neutrino::GetBeta_0_1() {
-  msg_Out()<<InfraredSubtractedME_0_1()<<endl;
   return 0;
 //   double sum = 0;
 //   for (unsigned int i=0; i<=1; i++) {           // spin neutrino
