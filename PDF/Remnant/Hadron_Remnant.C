@@ -88,7 +88,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   }
   for (size_t j=0;j<m_companions.size();++j) {
     m_companions[j]->SetNumber(1);
-    m_companions[j]->SetInfo('F');
+    m_companions[j]->SetInfo('B');
     if (particlelist!=NULL) {
       m_companions[j]->SetNumber(-particlelist->size());
       particlelist->push_back(m_companions[j]);

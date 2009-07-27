@@ -35,7 +35,7 @@ bool Electron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
     ATOOLS::Particle *rem = 
       new ATOOLS::Particle(-1,ATOOLS::Flavour(kf_photon),ptot);
     rem->SetNumber((long int)rem);
-    rem->SetInfo('F');
+    rem->SetInfo('B');
     rem->SetStatus(ATOOLS::part_status::active);
     beamblob->AddToOutParticles(rem);
     p_last[0]=rem;

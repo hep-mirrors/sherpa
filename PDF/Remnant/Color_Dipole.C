@@ -105,7 +105,7 @@ void Color_Dipole::SelectCompanion(ATOOLS::Particle *const begin)
     p_begin[ANTI(anti)]->SetStatus(ATOOLS::part_status::active);
     p_begin[ANTI(anti)]->SetFinalMass(p_begin[ANTI(anti)]->Flav().Mass());
     p_begin[ANTI(anti)]->SetNumber(0);
-    p_begin[ANTI(anti)]->SetInfo('F');
+    p_begin[ANTI(anti)]->SetInfo('B');
     ATOOLS::Flow *flow=p_begin[ANTI(anti)]->GetFlow();
     flow->SetCode(COLOR(ANTI(anti)),
 		  p_begin[anti]->GetFlow()->Code(COLOR(anti)));
