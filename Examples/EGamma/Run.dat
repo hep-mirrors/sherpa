@@ -1,21 +1,7 @@
 (run){
-  !!!!! NOT WORKING YET !!!!!!
   EVENTS = 10000
-  OUTPUT = 2
 }(run)
-(processes){
-  Process : 22 11 -> 11 1 -1
-  End process
-}(processes)
-(selector){
-  JetFinder   4.e-3  1.
-  ET         11       1.   10000.
-  ET          1       1.   10000.
-  ET         -1       1.   10000.
-  BeamAngle   1  0   -0.9      0.9
-  BeamAngle  -1  0   -0.9      0.9
-  BeamAngle  11  0   -0.9      0.9
-}(selector)
+
 (beam){
   BEAM_1          = 11;
   BEAM_ENERGY_1   = 250.
@@ -30,12 +16,26 @@
 
   E_LASER_1          = 1.17e-9      ! Laser energy in GeV
   P_LASER_1          = 0.           ! Laser polarization +-1
-  E_LASER_2          = 1.17e-9      ! Laser energy in GeV
-  P_LASER_2          = 0.           ! Laser polarization +-1
   LASER_MODE         = 0            ! 0 = all, 1,2,3 = individual components
   LASER_ANGLES       = Off          ! On/Off
   LASER_NONLINEARITY = On           ! On/Off
 }(beam)
+
+(processes){
+  Process : 22 11 -> 11 1 -1
+  End process
+}(processes)
+
+(selector){
+  JetFinder   4.e-3  1.
+  ET         11       1.   10000.
+  ET          1       1.   10000.
+  ET         -1       1.   10000.
+  BeamAngle   1  0   -0.9      0.9
+  BeamAngle  -1  0   -0.9      0.9
+  BeamAngle  11  0   -0.9      0.9
+}(selector)
+
 (isr){
   BUNCH_1         = 22
   ISR_1           = Off

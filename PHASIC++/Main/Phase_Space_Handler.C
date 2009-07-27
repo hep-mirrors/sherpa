@@ -9,6 +9,7 @@
 #include "PHASIC++/Channels/ISR_Channels.H"
 #include "PHASIC++/Channels/Beam_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -294,13 +295,12 @@ void Phase_Space_Handler::CalculateME()
       m_result_2=p_active->Process()->Differential2();
     }
     if (p_beamhandler->On()>0) {
-      THROW(not_implemented,"re-implement me");
-// 	double Q2(p_active->Process()->CalculateScale(p_lab));
-// 	p_beamhandler->CalculateWeight(Q2);
-// 	m_result_1*=p_beamhandler->Weight();
-// 	m_result_2*=p_beamhandler->Weight();
-// 	PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-// 	if (nlos) (*nlos)*=p_beamhandler->Weight();	
+      double Q2(p_active->Process()->ScaleSetter()->CalculateScale(p_lab));
+      p_beamhandler->CalculateWeight(Q2);
+      m_result_1*=p_beamhandler->Weight();
+      m_result_2*=p_beamhandler->Weight();
+      PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+      if (nlos) (*nlos)*=p_beamhandler->Weight();	
     }
   }
 }
