@@ -595,10 +595,11 @@ double LF_VFF_FF::operator()
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5, bwfac = 1.;
-  if ((mode&1) && m_flavs[0].Width()>0.0) {
-    double muij2  = sqr(p_ms->Mass(m_flavs[0]))/Q2;
-    bwfac = Q2*(1.0-mui2-muj2-muk2)/
-      sqrt(sqr(Q2*(1.0-muk2-muij2))+Q2*muij2*sqr(m_flavs[0].Width()));
+  if ((mode&1)==0 && m_flavs[0].Width()>0.0) {
+    double mij2  = sqr(p_ms->Mass(m_flavs[0]));
+    bwfac = scale/
+      sqrt(sqr(Q2*(y*(1.0-muk2)+(1.0-y)*(mui2+muj2))-mij2)
+	   +mij2*sqr(m_flavs[0].Width()));
   }
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = ( 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol ) * bwfac;
@@ -659,13 +660,14 @@ double LF_VFF_FI::operator()
   //the massless case 
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/y*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5, bwfac = 1.;
-  if ((mode&1) && m_flavs[0].Width()>0.0) {
-    double muij2  = sqr(p_ms->Mass(m_flavs[0]))/Q2;
+  if ((mode&1)==0 && m_flavs[0].Width()>0.0) {
+    double mij2 = sqr(p_ms->Mass(m_flavs[0]));
     double mui2 = sqr(p_ms->Mass(m_flavs[2]))/Q2;
     double muj2 = sqr(p_ms->Mass(m_flavs[3]))/Q2;
     double muk2 = sqr(p_ms->Mass(m_flspec))/Q2;
-    bwfac = Q2*(1.0-mui2-muj2-muk2)/
-      sqrt(sqr(Q2*(1.0-muk2-muij2))+Q2*muij2*sqr(m_flavs[0].Width()));
+    bwfac = scale/
+      sqrt(sqr(Q2*(y*(1.0+muk2)+(mui2+muj2))/(1.0-y)-mij2)
+	   +mij2*sqr(m_flavs[0].Width()));
   }
   if (muQ2==0.) {
     double value = ( 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol ) * bwfac;
