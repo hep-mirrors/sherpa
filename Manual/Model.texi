@@ -21,6 +21,8 @@ in the matrix elements.
 * STABLE[<id>]::   Set the particle with PDG id <id> stable.
 @end menu
 
+Note: To set properties of hadrons, you can use the same switches (except for
+@code{MASSIVE}) in the fragmentation section, see @ref{Fragmentation}.
 
 @node MODEL
 @subsection MODEL
@@ -62,7 +64,21 @@ Enables / disables the particle with PDG id @option{<id>}.
 @node STABLE[<id>]
 @subsection STABLE[<id>]
 @cindex STABLE[<id>]
-Sets the particle with PDG id @option{<id>} either stable or unstable. At present this
+Sets the particle with PDG id @option{<id>} either stable or unstable according
+to the following options:
+
+@table @option
+@item 0
+Particle and anti-particle are unstable
+@item 1
+Particle and anti-particle are stable
+@item 2
+Particle is stable, anti-particle is unstable
+@item 3
+Particle is unstable, anti-particle is stable
+@end table
+
+At present this
 affects only the simulation of lepton decays, dealt with by the HADRONS++ package.
 Decays of other particles have to be specified in the process setup
 (see @ref{Processes}) and are not treated automatically.
