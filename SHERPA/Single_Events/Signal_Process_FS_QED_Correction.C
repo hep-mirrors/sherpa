@@ -84,11 +84,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   if (!sigblob) return Return_Value::Nothing;
   if (!sigblob->Has(blob_status::needs_extraQED)) return Return_Value::Nothing;
   Blob * tt(bloblist->FindLast(btp::Signal_Process));
-  msg_Out()<<*tt<<endl;
   Vec4D in(0.,0.,0.,0.), out(0.,0.,0.,0.);
   for (size_t i=0;i<tt->NInP();++i) in+=tt->InParticle(i)->Momentum();
   for (size_t i=0;i<tt->NOutP();++i) out+=tt->OutParticle(i)->Momentum();
-  msg_Out()<<in<<" -> "<<in.Mass()<<endl<<out<<" -> "<<out.Mass()<<endl;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
   Particle_Vector fslep(sigblob->GetOutParticles());
