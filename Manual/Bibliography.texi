@@ -428,7 +428,7 @@
 @mybibitem{Ryskin1999yq,Rys99, M. G. Ryskin and A. G. Shuvaev and Y. . M. Shabelski,Charm Hadroproduction within k_T-Factorization Approach,Phys. Atom. Nucl.,64,(2001),120-131,[hep-ph/9907507],hep-ph/9907507}
 @mybibitem{Schalicke2005nv,Sch05, A. Schalicke and F. Krauss,Implementing the ME+PS merging algorithm,JHEP,07,(2005),018,[hep-ph/0503281],hep-ph/0503281}
 @mybibitem{Schumann2007mg,Sch07, S. Schumann and F. Krauss,A parton shower algorithm based on Catani-Seymour dipole factorisation,JHEP,03,(2008),038,[arXiv:0709.1027],arXiv:0709.1027}
-@mybibitem{Schoenherr2008av,Sch08,M. Schonherr and F. Krauss,Soft photon radiation in particle decays in Sherpa,JHEP,12,(2008),018,[arXiv:0810.5071],arXiv:0810.5071}
+@mybibitem{Schonherr2008av,Sch08,M. Schonherr and F. Krauss,Soft photon radiation in particle decays in Sherpa,JHEP,12,(2008),018,[arXiv:0810.5071],arXiv:0810.5071}
 @mybibitem{Schmidt1996fg,Sch96,C. R. Schmidt,Monte Carlo Solution to the Balitsky-Fadin-Kuraev-Lipatov Equation for Resummation in Perturbative QCD,Phys. Rev. Lett.,78,(1997),4531-4535,[hep-ph/9612454],hep-ph/9612454}
 @mybibitem{ScotGrid2008aa,Sco08,,ScotGrid Scottish Grid service homepage,,,,,,}
 @mybibitem{Scora1995ty,Sco95, D. Scora and N. Isgur,Semileptonic meson decays in the quark model: An update,Phys. Rev.,D52,(1995),2783-2812,[hep-ph/9503486],hep-ph/9503486}

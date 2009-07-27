@@ -533,7 +533,7 @@ implementation of the YFS algorithm @mycite{Yennie1961ad};
 in contrast to the implementation in @mycite{Hamilton2006xz}, the
 structure of PHOTONS++ is such that the formalism can be extended to
 scattering processes and to a systematic improvement to higher
-orders of perturbation theory @mycite{Schoenherr2008av}.  The application
+orders of perturbation theory @mycite{Schonherr2008av}.  The application
 of PHOTONS++ therefore accounts for corrections that usually are
 added by the application of PHOTOS @mycite{Barberio1993qi} to the
 final state.

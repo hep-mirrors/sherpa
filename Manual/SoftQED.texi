@@ -1,7 +1,97 @@
-@node Higher Order QED Corrections Parameters
+@node Higher Order QED
 @section Higher Order QED Corrections Parameters
+
+Higher order QED corrections are effected both on hard interaction and, upon
+their formation, on each hadron's subsequent decay. The Photons
+@mycite{Schonherr2008av} module is called in both cases for this task. It
+employes a YFS-type resummation of all infrared singular terms to all orders and
+is augmented with a complete first order correction in the most relevant cases
+(all other ones receive approximate real emission corrections built up by
+Catani-Seymour splitting kernels).
+
+@menu
+* General Switches::
+* Higher Order QED Corrections to the Hard Interaction::
+* Higher Order QED Corrections to Hadron Decays::
+@end menu
+
+@node General Switches
+@subsection General Switches
 
 The relevant switches to steer the higher order QED
 corrections reside in the `(fragmentation)' section
 of the steering file or the fragmentation data file
 `Fragmentation.dat', respectively.
+
+@menu
+* YFS_MODE::           Mode of operation.
+* YFS_USE_ME::         Use ME-corrections if possible.
+* YFS_IR_CUTOFF::      Infrared threshold for real photon generation.
+@end menu
+
+@node YFS_MODE
+@subsubsection YFS_MODE
+@cindex YFS_MODE
+The keyword YFS_MODE=[0,1,2] determines the
+mode of operation of Photons. YFS_MODE=0 switches Photons off.
+Consequently, neither the hard interaction nor any hadron decay will be
+corrected for soft or hard photon emission. YFS_MODE=1 sets
+the mode to "soft only", meaning soft emissions will be treated
+correctly to all orders but no hard emission corrections will be
+included. With YFS_MODE=2 these hard emission corrections will
+also be included up to first order in alpha_QED. This is the default setting.
+
+@node YFS_USE_ME
+@subsubsection YFS_USE_ME
+@cindex YFS_USE_ME
+The switch YFS_USE_ME=[0,1] tells Photons how to correct hard
+emissions to first order in $\alpha_QED$. If YFS_USE_ME=0, then
+Photons will use collinearly approximated real emission matrix elements. Virtual
+emission matrix elements of order $\alpha_QED$ are ignored. If, however,
+YFS_USE_ME=1, then exact real and/or virtual emission matrix elements
+are used wherever possible. These are presently available for V->FF, V->SS,
+S->FF, S->SS, S->Slnu, S->Vlnu type decays, leptonic tau-decays, W->lnu and 
+Z->FF decays. For all other decay types general collinearly approximated matrix
+elements are used. In both approaches all hadrons are treated as point-like
+objects. The default setting is YFS_USE_ME=1. This switch is only
+effective if YFS_MODE=2.
+
+@node YFS_IR_CUTOFF
+@subsubsection YFS_IR_CUTOFF
+@cindex YFS_IR_CUTOFF
+YFS_IR_CUTOFF sets the infrared cut-off dividing the real emission in two
+regions, one containing the infrared divergence, the other the "hard" emissions.
+This cut-off is currently applied in the rest frame of the multipole of the
+respective decay. It also serves as a minimum photon energy in this frame for
+explicit photon generation for the event record. In contrast, all photons below
+with energy less than this cut-off will be assumed to have negligible impact on
+the final-state momentum distributions. The default is YFS_IR_CUTOFF=1E-3 (GeV).
+Of course, this switch is only effective if Photons is switched on, i.e.
+YFS_MODE=[1,2].
+
+
+@node Higher Order QED Corrections to the Hard Interaction
+@subsection Higher Order QED Corrections to the Hard Interaction
+
+@menu
+* ME_QED::           Mode of operation.
+@end menu
+
+@node ME_QED
+@subsubsection ME_QED
+@cindex ME_QED
+ME_QED=@option{On}/@option{Off} turns the higher order QED corrections to the
+matrix element on or off, respectively.
+These corrections will only be effected on final state not strongly interacting
+particles. If a resonant production subprocess for an unambiguous subset of all
+such particles is specified via the process declaration @ref{Processes} this
+can be taken into account and dedicated higher order matrix elements can be
+taken into account (if YFS_MODE=@option{2} and YFS_USE_ME=@option{1}).
+
+
+@node Higher Order QED Corrections to Hadron Decays
+@subsection Higher Order QED Corrections to Hadron Decays
+
+If the Photons module is switched on, all hadron decays are corrected for higher
+order QED effects.
+
