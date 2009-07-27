@@ -109,6 +109,7 @@ understood by the internal algebra interpreter, see @ref{Interpreter}.
 
 @node Universal selector
 @subsection Universal selector
+@cindex SHOW_VARIABLE_SYNTAX
 
 The universal selector is intended to implement non-stnadard cuts
 on the matrix element level. Its syntax is

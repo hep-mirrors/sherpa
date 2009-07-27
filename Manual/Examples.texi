@@ -2,7 +2,7 @@
 @chapter Examples
 
 Some example set-ups are included in Sherpa, in the 
-@code{<prefix>/Examples/} directory. These may be useful to 
+@code{<prefix>/share/SHERPA-MC/Examples/} directory. These may be useful to 
 new users to practice with, or as templates for creating your 
 own Sherpa run-cards. In this section, we will look at some 
 of the main features of these examples.
@@ -15,9 +15,9 @@ of the main features of these examples.
 * LEP91::                     
 * LHC_TopPair::               
 * Tevatron_TopPair::          
-@c * Tevatron_UE::               
-@c * LHC_4thGen::                
-@c * LHC_AGC::                   
+* Tevatron_UE::               
+* LHC_4thGen::                
+* LHC_AGC::                   
 @c * EGamma::                    
 @c * PEPII_BaBar::               
 @c * BFKL::                      
@@ -30,10 +30,10 @@ of the main features of these examples.
 @include LEP91.texi
 @include LHC_TopPair.texi
 @include Tevatron_TopPair.texi
-@c @include Tevatron_UE.texi
-@c @include LHC_4thGen.texi
-@c @include LHC_AGC.texi
-@c @include EGamma
-@c @include PEPII_BaBar
-@c @include BFKL
+@include Tevatron_UE.texi
+@include LHC_4thGen.texi
+@include LHC_AGC.texi
+@c @include EGamma.texi
+@c @include PEPII_BaBar.texi
+@c @include BFKL.texi
 

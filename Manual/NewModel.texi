@@ -14,7 +14,9 @@ The important features of this example include:
       This file contains the definition of the Z-prime boson's interactions. 
       The right- and left-handed couplings to each of the fermions are set here.
 
-@item An example @code{Makefile} showing how to compile the sources above into a shared library.
+@item An example @code{Makefile}.
+
+      This shows how to compile the sources above into a shared library.
       
 @item The line @code{SHERPA_LDADD = SMZprime} in the @code{(run)} section of the run-card.
 

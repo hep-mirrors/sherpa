@@ -1,5 +1,6 @@
 @node Model Parameters
 @section Model Parameters
+@cindex SHOW_MODEL_SYNTAX
 
 The interaction model setup is covered by the `(model)' section of
 the steering file or the model data file `Model.dat', respectively.
@@ -12,6 +13,7 @@ There are a number of parameters, defining the properties of particles
 in the matrix elements.
 
 @menu
+* MODEL::          Set the model that Sherpa uses.
 * MASS[<id>]::     Set the mass of particle with PDG id <id>.
 * MASSIVE[<id>]::  Set the particle with PDG id <id> massive.
 * WIDTH[<id>]::    Set the width of particle with PDG id <id>.
@@ -19,6 +21,15 @@ in the matrix elements.
 * STABLE[<id>]::   Set the particle with PDG id <id> stable.
 @end menu
 
+
+@node MODEL
+@subsection MODEL
+@cindex MODEL
+Sets the model that Sherpa uses. The default is @option{SM}, for 
+the Standard Model. For a complete list of available models, 
+run Sherpa with @kbd{SHOW_MODEL_SYNTAX=1} on the command line.
+This will display not only the available models, but also the
+parameters for those models. 
 
 @node MASS[<id>]
 @subsection MASS[<id>]

@@ -1,0 +1,42 @@
+@node LHC_AGC
+@section LHC_AGC
+
+Another built-in BSM model in Sherpa allows the inclusion of 
+anomalous gauge couplings. An example with an anomalous 
+Z-gamma-gamma coupling is given here. 
+
+@example
+@smallformat
+@verbatiminclude ../Examples/LHC_AGC/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item the AGC model is chosen using the @ref{MODEL}
+parameter. 
+
+@item parameters from the model are set in the 
+@code{(model)} section. For more information on available 
+parameters, and their meanings, run Sherpa with 
+@code{SHOW_MODEL_SYNTAX=1} on the command line, or see 
+@ref{Model Parameters}.
+
+@item @ref{Print_Graphs} is included in the 
+@code{(processes)} section. When Sherpa is run with this
+option enabled, the 
+valid Feynman graphs for the process are drawn, and 
+they are stored in 
+@iftex
+\tex
+@end iftex
+@ifnottex
+tex
+@end ifnottex
+format, in the specified directory. In this example, the
+graphs will be found in the Process directory, after Sherpa 
+is run.
+
+@end itemize
+
+

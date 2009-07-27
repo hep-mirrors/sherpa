@@ -1,0 +1,44 @@
+@node LHC_4thGen
+@section LHC_4thGen
+
+This example shows a beyond the Standard Model set-up. In 
+this example, a 4th generation of particles is included, as 
+well as the Standard Model particles. This is one of Sherpa's
+built-in BSM options. For more information
+on using your own BSM models with Sherpa, see 
+@ref{Exotic physics}.
+
+@example
+@smallformat
+@verbatiminclude ../Examples/LHC_4thGen/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item the model is chosen in the @code{(model)} section of
+the run card, using the parameter @ref{MODEL}. The default
+is the SM. 
+
+@item for a full description of all parameters in any 
+chosen model, use the tag @code{SHOW_MODEL_SYNTAX=1} 
+on the command line when running Sherpa.
+
+@item the properties of the 4th generation leptons, 
+such as @ref{MASS[<id>]} and @ref{WIDTH[<id>]},
+may be set in the runcard, or on the command line, 
+in exactly the same way as the SM particle
+properties. 
+
+@item the analysis has been switched off, but
+to use it, switch @ref{ANALYSIS} to @option{1}.
+
+@item the analysis in this example uses Sherpa's
+in-built analysis package. To use this Analysis 
+package, when Sherpa is installed, the option
+@kbd{--enable-analysis} must be include on the 
+command line when Sherpa is configured, see 
+@ref{ANALYSIS}. To display the Analysis
+package syntax, run Sherpa with 
+@code{SHOW_ANALYSIS_SYNTAX=1} on the command line.
+@end itemize
