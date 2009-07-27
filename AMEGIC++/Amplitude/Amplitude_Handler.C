@@ -963,8 +963,7 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
     m_flavourmap[p2->fl]=p1->fl;
     if (p2->fl!=p2->fl.Bar()) m_flavourmap[p2->fl.Bar()]=p1->fl.Bar();
   }
-  else if (m_flavourmap[p2->fl]!=p1->fl) THROW(critical_error,"Flavour mapping not unique!");
-  
+  else if (m_flavourmap[p2->fl]!=p1->fl) return 0;  
   
   if (SingleCompare(p1->middle,p2->middle,sf,cplmap)) {
     int sw1 = SingleCompare(p1->left,p2->left,sf,cplmap);

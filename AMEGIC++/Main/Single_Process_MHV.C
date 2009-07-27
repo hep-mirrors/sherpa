@@ -289,6 +289,7 @@ bool AMEGIC::Single_Process_MHV::SetUpIntegrator()
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
+  m_newlib=true;
   return 0;
 }
 
