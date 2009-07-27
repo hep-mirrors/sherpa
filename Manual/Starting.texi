@@ -22,6 +22,7 @@ All modules, briefly introduced in @ref{Basic structure}, have
 their own subdirectories in Sherpa's top-level directory. To guarantee successful
 installation, the following tools should have been made available on
 the system: @code{make}, @code{autoconf}, @code{automake} and
+@c update
 @code{libtool}. Furthermore, a C++ and FORTRAN compiler must have been
 provided. The authors recommend to use the following commands
 
@@ -54,9 +55,9 @@ to pass the appropriate commands to the configure step. This is achieved
 as shown below:
 
 @example
-@code{./configure --copt --enable-hepmc2=/path/to/hepmc2}
+@code{./configure --enable-hepmc2=/path/to/hepmc2}
 
-            @code{--copt --enable-lhapdf=/path/to/lhapdf} .
+            @code{--enable-lhapdf=/path/to/lhapdf} .
 @end example
 
 If you want to use the built-in interface to Lund fragmentation and hadron
@@ -64,7 +65,7 @@ decays, you have to compile with Pythia support by specifying the
 @code{--enable-pythia} option without any argument.
 The Sherpa package has successfully been compiled, installed and
 tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux systems 
-using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1 and 4.2 as
+using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1, 4.2 and 4.3 as
 well as on Mac OS X 10 using the GNU C++ compiler version 4.0. In all cases the 
 GNU FORTRAN compiler g77 or gfortran has been employed. Note that GCC
 version 2.96 is @strong{not} supported.
@@ -89,7 +90,7 @@ alternatively specified on the command line; more details are given
 in @ref{Input structure}). 
 This steering file is called @code{Run.dat} and some example setups
 (i.e. @code{Run.dat} files) are distributed with the current version
-of Sherpa. They can be found in the directory @code{<prefix>/Examples/}, 
+of Sherpa. They can be found in the directory @code{<prefix>/share/SHERPA-MC/Examples/}, 
 and descriptions of some of their key features can be found in the section
 @ref{Examples}.
  
@@ -125,7 +126,7 @@ more usual way is to employ one of Sherpa's internal tree-level
 matrix-element generators: AMEGIC++ or COMIX. 
 For a description of these different modules, see @ref{Basic structure}.
 If no matrix-element generator is selected, using the @ref{ME_SIGNAL_GENERATOR}
-tag, then Sherpa will whichever generator is capable of calculating the 
+tag, then Sherpa will use whichever generator is capable of calculating the 
 process, checking EXTRA_XS first, then AMEGIC++ and then COMIX. Therefore, 
 for some processes, such as the example here, a couple, or even all, of the 
 options are used. In this example, EXTRA_XS calculates the 2->2 part of the 
@@ -141,7 +142,7 @@ The selection of the processes (or the process) happens in the @code{(processes)
 part of the steering file, where particles or groups of particles
 are defined by means of the PDG numbering scheme. To get, for example, the
 @code{Tevatron_SimpleExample} setup working, the initialization run has to be
-started by changing into the @code{<prefix>/Examples/Tevatron_SimpleExample/}
+started by changing into the @code{<prefix>/share/SHERPA-MC/Examples/Tevatron_SimpleExample/}
 directory and executing
 
 @example
@@ -150,7 +151,7 @@ directory and executing
 
 for the first time. (The user may also run from an
 arbitrary directory, employing
-@code{<prefix>/bin/Sherpa PATH=<prefix>/Examples/Tevatron_SimpleExample}. In the example, the
+@code{<prefix>/bin/Sherpa PATH=<prefix>/share/SHERPA-MC/Examples/Tevatron_SimpleExample}. In the example, the
 keyword @code{PATH} is specified by an absolute path. It may also be 
 specified relative to the current working directory. If it is
 not specified at all or it is omitted, the current working directory

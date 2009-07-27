@@ -5,17 +5,12 @@ This set-up illustrates the possibility of specifying a
 particular decay chain for the particles in the signal process.
 
 This is the @code{(processes)} section of the run card:
-@verbatim
-(processes){
-  Process 93 93 -> 6[a] -6[b] 93{1};
-    DecayOS 6[a] -> 5 24[c];
-      DecayOS 24[c] -> 90 91;
-    DecayOS -6[b] -> -5 -24[d];
-      DecayOS -24[d] -> 94 94;
-  CKKW sqr(20/E_CMS);
-  End process;
-}(processes)
-@end verbatim
+
+@example
+@smallformat
+@verbatiminclude ../Examples/LHC_TopPair/Run.dat
+@end smallformat
+@end example
 
 The process generated is the production of a top pair from two light quarks, with 
 possibly an extra final-state parton. Each top then decays into (anti-)bottom

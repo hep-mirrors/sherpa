@@ -2,7 +2,7 @@
 @section Tevatron_WJets
 
 The Tevatron W+jets set-up is very similar to the 
-Z+jets example. The only differnces are in the 
+Z+jets example. The only differences are in the 
 final state leptons, and the invariant mass cuts on 
 the lepton pairs. However, an analysis example has also
 been included in this folder, providing examples
@@ -10,46 +10,31 @@ of Rivet analyses valid for W+jet production.
 
 @subsection Run.dat
 
-@verbatim
-(processes){
-  Process 93 93 -> 11 -12 93{3}
-  Order_EW 2; Max_N_Quarks 6
-  CKKW sqr(30/E_CMS)
-  Integration_Error 0.1 {2};
-  Integration_Error 0.2 {3};
-  Integration_Error 0.3 {4};
-  Integration_Error 0.4 {5};
-  End process;
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_WJets/Run.dat
+@end smallformat
+@end example
 
-  Process 93 93 -> -11 12 93{3}
-  Order_EW 2; Max_N_Quarks 6
-  CKKW sqr(30/E_CMS)
-  Integration_Error 0.1 {2};
-  Integration_Error 0.2 {3};
-  Integration_Error 0.3 {4};
-  Integration_Error 0.4 {5};
-  End process;
-}(processes)
+Things to notice:
+@itemize @bullet
+@item the invariant mass cut is necessary to avoid evaluating the PDF outside
+its valid range of the factorisation scale @math{Q^2} (which in this process is
+typically given by the boson mass).
 
-(selector){
-  Mass -11 12 1.7 E_CMS
-  Mass 11 -12 1.7 E_CMS
-}(selector)
-@end verbatim
+@end itemize
+
 
 @subsection Run.analyse.dat
 
-@verbatim
-(analysis){
-  BEGIN_RIVET {
-    -H NJETjet.QCUTGeV.ANATAG
-    -a CDF_2008_S7541902
-  } END_RIVET
-}(analysis)
-@end verbatim
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_WJets/Run.analyse.dat
+@end smallformat
+@end example
 
 Things to notice:
-@itemize
+@itemize @bullet
 @item the analysis used in this example is valid 
 for W+jet production at the Tevatron, see the
 @uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.

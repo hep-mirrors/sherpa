@@ -13,6 +13,8 @@ The important features of this example include:
 
       This file contains the definition of the Z-prime boson's interactions. 
       The right- and left-handed couplings to each of the fermions are set here.
+
+@item An example @code{Makefile} showing how to compile the sources above into a shared library.
       
 @item The line @code{SHERPA_LDADD = SMZprime} in the @code{(run)} section of the run-card.
 
@@ -40,4 +42,9 @@ in this directory. Then run Sherpa as normal:
 ../../bin/Sherpa
 @end example 
 
+To implement your own model, copy these example files anywhere and modify them
+according to your needs.
 
+Note: You don't have to modify or recompile any part of Sherpa to use your
+model. As long as the @code{SHERPA_LDADD} parameter is specified as above,
+Sherpa will pick up your model automatically.

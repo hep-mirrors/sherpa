@@ -57,16 +57,16 @@ E.g. OUTPUT=3 would display information, events and errors.
 @cindex RANDOM_SEED
 SHERPA uses a random-number generator as described in
 [Florida State University Report FSU-SCRI-87-50].
-The two independent integer-valued seeds are speciﬁed by the option
+The two independent integer-valued seeds are specified by the option
 ``RANDOM SEED=A B''. The seeds A and B may range from 0 to 31328 and from
-0 to 30081, respectively. If RANDOM SEED is not speciﬁed at all or only by one
+0 to 30081, respectively. If RANDOM SEED is not specified at all or only by one
 integer number, the old random-number generator (SHERPA 1.0.6 and older)
 will be used.
 
 @node ANALYSIS
 @subsection ANALYSIS
 @cindex ANALYSIS
-Analysis routines can be switched on or oﬀ by setting the ANALYSIS flag.
+Analysis routines can be switched on or off by setting the ANALYSIS flag.
 The default is no analysis, corresponding to option @option{0}.
 This parameter can also be specified on the command line using option
 @option{-a}, see @ref{Command line}.
@@ -78,7 +78,7 @@ Sherpa's internal analysis handler.
 @*
 To use this option, the package must be configured with option @option{--enable-analysis}.
 @*
-An output directory can be speciﬁed using @ref{ANALYSIS_OUTPUT}.
+An output directory can be specified using @ref{ANALYSIS_OUTPUT}.
 @item Rivet
 The Rivet package, see @uref{http://projects.hepforge.org/rivet/,,Rivet Website}.
 @*
@@ -129,7 +129,7 @@ libraries have to be re-created in this case.
 @node NUM_ACCURACY
 @subsection NUM_ACCURACY
 @cindex NUM_ACCURACY
-The targeted numerical accuracy can be speciﬁed through NUM ACCURACY, e.g. for comparing
+The targeted numerical accuracy can be specified through NUM ACCURACY, e.g. for comparing
 two numbers. This might have to be reduced if gauge tests fail for numerical reasons.
 
 @node SHERPA_CPP_PATH

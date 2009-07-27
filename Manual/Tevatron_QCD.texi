@@ -5,22 +5,11 @@ This example generates QCD events at the Tevatron,
 with 2, 3 or 4 final state partons in the matrix
 element.
 
-@verbatim
-(processes){
-  Process 93 93 -> 93 93 93{2};
-  Order_EW 0; Max_N_Quarks 4;
-  CKKW sqr(20/E_CMS);
-  Integration_Error 0.02 {2};
-  Integration_Error 0.03 {3};
-  Integration_Error 0.04 {4};
-  Integration_Error 0.05 {5};
-  End process;
-}(processes)
-
-(selector){
-  NJetFinder sqr(10/E_CMS) 1 2
-}(selector)
-@end verbatim
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_QCD/Run.dat
+@end smallformat
+@end example
 
 Things to notice:
 @itemize @bullet
@@ -28,5 +17,7 @@ Things to notice:
 ensures that all final state jets are produced via 
 the strong interaction.
 @item an @code{NJetFinder} selector is used to 
-distinguish jets, see @ref{Jet finders}.
+set a resolution criterion for the two jets of the core process.
+This is necessary, because the `CKKW' tag does not apply any cut to the core
+process, but only to the extra-jet matrix elements.
 @end itemize

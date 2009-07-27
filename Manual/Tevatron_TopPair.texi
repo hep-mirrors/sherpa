@@ -8,26 +8,11 @@ There are two notable differences. Firstly, obviously this is a Tevatron
 set-up with proton anti-proton collisions at Tevatron energies. 
 Secondly, there are two allowed decay channels.
 
-This is the @code{(processes)} section of the run card:
-@verbatim
-(processes){
-  Process 93 93 -> 6[a] -6[b] 93{1};
-    DecayOS 6[a] -> 5 24[c];
-      DecayOS 24[c] -> 90 91;
-    DecayOS -6[b] -> -5 -24[d];
-      DecayOS -24[d] -> 94 94;
-  CKKW sqr(20/E_CMS);
-  End process;
-
-  Process 93 93 -> 6[a] -6[b] 93{1};
-    DecayOS 6[a] -> 5 24[c];
-      DecayOS 24[c] -> 94 94;
-    DecayOS -6[b] -> -5 -24[d];
-      DecayOS -24[d] -> 90 91;
-  CKKW sqr(20/E_CMS);
-  End process;
-}(processes)
-@end verbatim
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_TopPair/Run.dat
+@end smallformat
+@end example
 
 The process generated is the production of a top pair from two light quarks, with 
 possibly an extra final-state parton. Each top then decays into (anti-)bottom
@@ -54,32 +39,13 @@ tags have been used when setting up the run-card. Secondly, a results
 directory has been set up. Thirdly, a Rivet 
 analysis has been set up.
 
-To see these differences, look at the @code{(run)} section of the 
-run-card:
-@verbatim
-(run){
-  EVENTS = 1000000
-
-  NJET:=1; QCUT:=20
-
-  RESULT_DIRECTORY = Results.QCUT
-  GENERATE_RESULT_DIRECTORY = 1
-  FRAGMENTATION = Off
-
-  ANALYSIS = Rivet
-}(run)
-@end verbatim
-
-and the @code{(analysis)} section:
-@verbatim
-(analysis){
-  BEGIN_RIVET {
-    -H NJETjet.QCUTGeV.ANATAG.aida
-    -a CDF_2009_S8210160
-  } END_RIVET
-}(analysis)
-@end verbatim
-
+To see these differences, look at the @code{(run)} and the @code{(analysis)}
+section of the run-card:
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_TopPair/Run.analyse.dat
+@end smallformat
+@end example
 
 Things to notice:
 @itemize @bullet

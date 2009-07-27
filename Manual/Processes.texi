@@ -61,7 +61,9 @@ sections:
 @subsubsection PDG codes
 
 Initial and final state particles are specified using their 
-PDG codes. A list of particles with their codes, and some of their properties,
+PDG codes
+(cf. @uref{http://pdg.lbl.gov/2009/mcdata/mc_particle_id_contents.html,,PDG}).
+A list of particles with their codes, and some of their properties,
 is printed at the start of each Sherpa run, when the @ref{OUTPUT} is set 
 at level @option{2}.
 

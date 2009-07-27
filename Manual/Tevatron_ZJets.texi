@@ -5,18 +5,16 @@ This set-up is very similar to the one above, for @ref{LHC_ZJets}, but with
 proton--anti-proton collisions at Tevatron energies. A run card with 
 analysis enabled is also included in this folder, and called 
 @code{Run.analyse.dat}. To use this run card, as it is not named @option{Run.dat}, 
-the parameter @option{PATH} must be specified on the command line,
+the parameter @option{RUNDATA} must be specified on the command line,
 see @ref{Input structure}.
 
 @subsection Run.dat
 
-The altered parts of the run card are:
-@verbatim
-(beam){
-  BEAM_1 =  2212; BEAM_ENERGY_1 = 980;
-  BEAM_2 = -2212; BEAM_ENERGY_2 = 980;
-}(beam)
-@end verbatim
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_ZJets/Run.dat
+@end smallformat
+@end example
 
 Things to notice:
 @itemize @bullet
@@ -30,48 +28,16 @@ This run card also generates Z+jets events at the Tevatron,
 but it also has some Rivet analyses enabled. For more information 
 on using Rivet with Sherpa, see @ref{Rivet analyses}.
 To use this run card, as it is not named @option{Run.dat}, 
-the @option{PATH} must be specified on the command line,
+the @option{RUNDATA} parameter must be specified on the command line,
 see @ref{Input structure}.
 
 The relevant parts of the run card are:
-@verbatim
-(run){
-  EVENTS = 1000000
 
-  NJET:=4; QCUT:=30; ANATAG:=trunk
-
-  RESULT_DIRECTORY = Results.QCUT
-  GENERATE_RESULT_DIRECTORY = 1
-
-  ANALYSIS = Rivet
-}(run)
-
-(processes){
-  Process 93 93 -> 11 -11 93{NJET}
-  Order_EW 2; Max_N_Quarks 6
-  CKKW sqr(QCUT/E_CMS)
-  Integration_Error 0.005 {3}; Enhance_Factor 4 {3};
-  Integration_Error 0.01 {4}; Enhance_Factor 32 {4};
-  Integration_Error 0.02 {5}; Enhance_Factor 240 {5};
-  Integration_Error 0.04 {6}; Enhance_Factor 2000 {6};
-  Integration_Error 0.05 {7}; Enhance_Factor 16000 {7};
-  Integration_Error 0.05 {8}; Enhance_Factor 124000 {8};
-  Enhance_Function PPerp2(p[2]+p[3]) {3,4,5,6,7,8};
-  End process;
-}(processes)
-
-(me){
-  ME_SIGNAL_GENERATOR = Internal Comix
-  EVENT_GENERATION_MODE = Weighted
-}(me)
-
-(analysis){
-  BEGIN_RIVET {
-    -H NJETjet.QCUTGeV.ANATAG
-    -a CDF_2006_S6653332 CDF_2008_S7540469 D0_2007_S7075677 D0_2008_S6879055 D0_2008_S7554427 D0_2008_S7863608 D0_2009_S8202443 MC_TVT1960_ZJETS # CDF_2008_S8095620
-  } END_RIVET
-}(analysis)
-@end verbatim
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_ZJets/Run.analyse.dat
+@end smallformat
+@end example
 
 Things to notice:
 @itemize @bullet
@@ -79,8 +45,8 @@ Things to notice:
 in the runcard, including naming directories (e.g. @code{RESULT_DIRECTORY = 
 Results.QCUT} will save the integration results in a directory called 
 @code{Results.20/} in this example), naming files (e.g. the rivet histograms 
-will be in aida file @code{1jet.20GeV.trunk.aida}), specifying the process (e.g. 
-@code{93@{NJET@}} will produce up to 1 jet in this example) and setting 
+will be in aida file @code{4jet.20GeV.trunk.aida}), specifying the process (e.g. 
+@code{93@{NJET@}} will produce up to 4 jets in this example) and setting 
 parameters (e.g. @code{CKKW sqr(QCUT/E_CMS);}). For more information
 on when to clear the Results directory see @ref{Results directory}
 
