@@ -310,6 +310,17 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       ampl->DeleteNext();
       continue;
     }
+#ifdef CHECK__stepwise
+    Vec4D psum;
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      psum+=ampl->Leg(i)->Mom();
+    }
+    if (!IsEqual(psum,Vec4D(),1.0e-3)) {
+      msg_Error()<<METHOD<<"(): Momentum not conserved\n  in process '"
+		 <<p_proc->Name()<<"'\n  \\sum p = "<<psum
+		 <<" in step \n"<<*ampl->Prev()<<"\n"<<*ampl<<std::endl;
+    }
+#endif
     if (ampl->Legs().size()==4) {
       size_t qcd(0), qc(0);
       for (size_t i(0);i<4;++i) {
@@ -533,6 +544,7 @@ bool METS_Scale_Setter::Combine
     double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj)*(pi+pj),mk2);
     Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
     Vec4D pijt(Q-pkt); 
+    if (pkt[0]<0.0 || pijt[0]<0.0) return false;
     li->SetMom(pijt);
     lk->SetMom(pkt);
   }
@@ -543,7 +555,8 @@ bool METS_Scale_Setter::Combine
     double lrat=Lam(Q2,mij2,ma2)/Lam(Q2,(pi+pj).Abs2(),ma2);
     if (lrat<0.0) return false;
     Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-    Vec4D pijt(Q-pat), pb(ampl.Leg(1-k)->Mom());
+    Vec4D pijt(Q-pat), pb(ampl.Leg(1-k)->Mom()), path(pat);
+    if (pijt[0]<0.0) return false;
     double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
     if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
     else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
@@ -559,11 +572,10 @@ bool METS_Scale_Setter::Combine
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
-      if (m==(size_t)k) ampl.Leg(m)->SetMom(pan);
-      else if (m==(size_t)1-k) ampl.Leg(m)->SetMom(pb);
-      else {
+      {
 	Vec4D cm(ampl.Leg(m)->Mom());
 	if (m==(size_t)i) cm=pijt;
+	else if (m==(size_t)k) cm=path;
 	cmso.Boost(cm);
 	zrot.Rotate(cm);
 	cmsn.BoostBack(cm);
@@ -591,7 +603,7 @@ bool METS_Scale_Setter::Combine
     l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
     n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
     Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l), pb(ampl.Leg(1-i)->Mom());
-    if (pat[3]*pb[3]>0.0) return false;
+    if (pat[3]*pb[3]>0.0 || pjkt[0]<0.0) return false;
     double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
     if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
     else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
@@ -602,16 +614,16 @@ bool METS_Scale_Setter::Combine
 #ifdef CHECK__x
     if (!CheckX(pan,li->Id()&3)) return false;
 #endif
+    Vec4D path(pat);
     Poincare cmso(-pat-pb), cmsn(-pan-pb);
     cmso.Boost(pat);
     Poincare zrot(pat,-sb*Vec4D::ZVEC);
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if (m==(size_t)j) continue;
-      if (m==(size_t)i) ampl.Leg(m)->SetMom(pan);
-      else if (m==(size_t)1-i) ampl.Leg(m)->SetMom(pb);
-      else {
+      {
 	Vec4D cm(ampl.Leg(m)->Mom());
-	if (m==(size_t)k) cm=pjkt;
+	if (m==(size_t)i) cm=path;
+	else if (m==(size_t)k) cm=pjkt;
 	cmso.Boost(cm);
 	zrot.Rotate(cm);
 	cmsn.BoostBack(cm);
@@ -670,7 +682,7 @@ bool METS_Scale_Setter::CheckX
   if (isid==1) x=-p.PPlus()/rpa.gen.PBeam(0).PPlus();
   else if (isid==2) x=-p.PMinus()/rpa.gen.PBeam(1).PMinus();
   else THROW(fatal_error,"Invalid index");
-  return x>0.0 && x<1.0;
+  return x>1.0e-6 && x<1.0;
 }
 
 bool METS_Scale_Setter::CheckColors
