@@ -33,8 +33,8 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   m_type      = eph::Perturbative;
   // general switch
   Data_Reader reader(" ",";","!","=");
-  std::string on = reader.GetValue<std::string>("ME_QED","off");
-  m_on = (on=="on")?true:false;
+  std::string on = reader.GetValue<std::string>("ME_QED","On");
+  m_on = (on=="On")?true:false;
 
   if (p_mehandlers->size()>1) {
     m_on = false;
@@ -83,6 +83,12 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   Blob * sigblob(bloblist->FindLast(btp::Shower));
   if (!sigblob) return Return_Value::Nothing;
   if (!sigblob->Has(blob_status::needs_extraQED)) return Return_Value::Nothing;
+  Blob * tt(bloblist->FindLast(btp::Signal_Process));
+  msg_Out()<<*tt<<endl;
+  Vec4D in(0.,0.,0.,0.), out(0.,0.,0.,0.);
+  for (size_t i=0;i<tt->NInP();++i) in+=tt->InParticle(i)->Momentum();
+  for (size_t i=0;i<tt->NOutP();++i) out+=tt->OutParticle(i)->Momentum();
+  msg_Out()<<in<<" -> "<<in.Mass()<<endl<<out<<" -> "<<out.Mass()<<endl;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
   Particle_Vector fslep(sigblob->GetOutParticles());
