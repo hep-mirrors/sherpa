@@ -1,10 +1,10 @@
-#include "EXTRA_XS/NLO/LH_OLE_Communicator.H"
+#include "LH_OLE_Communicator.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include <fstream>
 
-using namespace EXTRAXS;
+using namespace OLE;
 using namespace ATOOLS;
 using namespace std;
 

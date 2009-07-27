@@ -1,11 +1,11 @@
-#ifndef EXTRA_XS_NLO_LH_OLE_Communicator_H
-#define EXTRA_XS_NLO_LH_OLE_Communicator_H
+#ifndef LH_OLE_Communicator_H
+#define LH_OLE_Communicator_H
 
 #include <vector>
 #include <string>
 #include "ATOOLS/Phys/Flavour.H"
 
-namespace EXTRAXS {
+namespace OLE {
 
   class LH_OLE_Communicator {
     int m_filestatus;
@@ -25,6 +25,6 @@ namespace EXTRAXS {
 
   }; // end of class LH_OLE_Communicator
 
-}// end of namespace EXTRAXS
+}// end of namespace OLE
 
 #endif

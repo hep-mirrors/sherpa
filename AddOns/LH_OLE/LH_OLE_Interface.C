@@ -1,10 +1,12 @@
+#include "LH_OLE_Communicator.H"
+
 #include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "EXTRA_XS/NLO/LH_OLE_Communicator.H"
 
+using namespace OLE;
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -13,9 +15,7 @@ using namespace std;
 namespace OLE {
   void Init(const char * filename) {}
   void EvalSubprocess(int,double*,double,double,double,double*) {}
-}
 
-namespace EXTRAXS {
   class LH_OLE_Interface : public Virtual_ME2_Base {
     double m_bf;
     size_t m_pn;
@@ -40,7 +40,7 @@ namespace EXTRAXS {
   };
 }
 
-int EXTRAXS::LH_OLE_Interface::s_bhinit=0;
+int LH_OLE_Interface::s_bhinit=0;
 
 LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector& flavs,bool active) :
   Virtual_ME2_Base(pi, flavs), m_OLE_id(-1), p_momenta(0)
