@@ -48,11 +48,11 @@ namespace ATOOLS {
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
 		  const int icharge,const int isoweak,const int strong,
 		  const int spin,const int majorana,const bool on,
-		  const bool stable,bool massive,const std::string &idname,
+		  const int stable,bool massive,const std::string &idname,
 		  const std::string &texname,const bool dummy=0);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
 		  const int icharge,const int isoweak,const int spin,
-		  const bool on,const bool stable,const std::string &idname,
+		  const bool on,const int stable,const std::string &idname,
 		  const std::string &texname);
 
     ~Particle_Info();
@@ -190,7 +190,7 @@ namespace ATOOLS {
     { p_info->m_stable=stable; }
 
     inline int  Stable() const   { return p_info->m_stable;   }
-    inline bool IsStable() const { return p_info->m_stable&1; }
+    bool IsStable() const;
 
     inline void SetMassOn(const bool on) const    
     { p_info->m_massive=on; }

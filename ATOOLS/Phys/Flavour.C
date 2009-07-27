@@ -34,7 +34,7 @@ Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
  const int icharge,const int isoweak,const int strong,
  const int spin,const int majorana,const bool on,
- const bool stable,bool massive,const std::string &idname,
+ const int stable,bool massive,const std::string &idname,
  const std::string &texname,const bool dummy):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(mass), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
@@ -49,7 +49,7 @@ Particle_Info::Particle_Info
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
  const int icharge,const int isoweak,const int spin,const bool on,
- const bool stable,const std::string &idname,const std::string &texname):
+ const int stable,const std::string &idname,const std::string &texname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(0.0), m_width(width),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), m_on(on), 
@@ -302,6 +302,15 @@ double Flavour::DiceLifeTime() const
   return -proper_time*log(1.-ran.Get());
 }
 
+bool Flavour::IsStable() const
+{
+  if (p_info->m_stable==0) return false;
+  if (p_info->m_stable==1) return true;
+  if (p_info->m_stable==2 && !IsAnti()) return true;
+  if (p_info->m_stable==3 && IsAnti()) return true;
+  return false;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 {
   return os<<fl.IDName();
@@ -327,7 +336,7 @@ void ATOOLS::OutputHadrons(std::ostream &str) {
       str<<std::setw(10)<<flav.Kfcode();
       str<<std::setw(14)<<flav.HadMass();
       str<<std::setw(16)<<flav.Width();
-      str<<std::setw(16)<<flav.IsStable();
+      str<<std::setw(16)<<flav.Stable();
       str<<std::setw(16)<<flav.IsOn();
       str<<"\n";
     }
@@ -359,7 +368,7 @@ void ATOOLS::OutputParticles(std::ostream &str) {
       str<<std::setw(10)<<flav.Kfcode();
       str<<std::setw(14)<<flav.Mass(true);
       str<<std::setw(16)<<flav.Width();
-      str<<std::setw(16)<<flav.IsStable();
+      str<<std::setw(16)<<flav.Stable();
       str<<std::setw(16)<<flav.IsMassive();
       str<<std::setw(15)<<flav.IsOn();
       str<<"\n";    
