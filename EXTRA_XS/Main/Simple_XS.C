@@ -72,13 +72,6 @@ using namespace std;
 
 void Simple_XS::DrawLogo(std::ostream &ostr)
 {
-  ostr<<"+--------------------------------------------+\n";
-  ostr<<"| XXX X   X XXXXX XXXX XXX  X   X   X   X    |\n";
-  ostr<<"|  X  XX  X   X   X    X  X XX  X  X X  X    |\n";
-  ostr<<"|  X  X X X   X   XXX  XXX  X X X X   X X    |\n";
-  ostr<<"|  X  X  XX   X   X    X X  X  XX XXXXX X    |\n";
-  ostr<<"| XXX X   X   X   XXXX X  X X   X X   X XXXX |\n";
-  ostr<<"+--------------------------------------------+\n";
 }
 
 Simple_XS::Simple_XS(): 
