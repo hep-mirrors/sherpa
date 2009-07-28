@@ -46,9 +46,9 @@ completion.index: $(srcdir)/*.texi $(srcdir)/Sherpa.info
 
 html-local: $(srcdir)/*.texi
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
-          rm -rf Sherpa.html; texi2html Sherpa.texi; \
+          rm -rf Sherpa.html; texi2html --nosec-nav --css-include=Sherpa.css Sherpa.texi; \
         fi
-        
+
 dvi:
 
-EXTRA_DIST    = @SVNINCLUDE@ Sherpa.1
+EXTRA_DIST    = @SVNINCLUDE@ Sherpa.1 Sherpa.css
