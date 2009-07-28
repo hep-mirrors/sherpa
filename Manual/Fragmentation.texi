@@ -5,14 +5,314 @@ The hadronization setup is covered by the `(fragmentation)' section of
 the steering file or the fragmentation data file `Fragmentation.dat', respectively.
 
 @menu
-* FRAGMENTATION::           The fragmentation module.
+* FRAGMENTATION::           Sets fragmentation module.
+* HADRONS++::               The hadron decay module, and its parameters.
 @end menu
 
 
 @node FRAGMENTATION
 @subsection FRAGMENTATION
 @cindex FRAGMENTATION
-The fragmentation module to be employed during event generation.
+This parameter sets the fragmentation module to be employed during event generation.
 This parameter can also be set on the command line using option @option{-F},
 see @ref{Command line}. The default is @option{Ahadic}.
+
+
+@node HADRONS++
+@subsection HADRONS++
+@cindex DECAYPATH
+@cindex MASS_SMEARING
+@cindex MAX_PROPER_LIFETIME
+
+
+HADRONS++ is the module within the Sherpa framework which is responsible for
+treating hadron and tau decays.  It contains decay tables with branching 
+ratios for approximately 2500 decay channels, of which many have their kinematics 
+modelled according to a matrix element with corresponding form factors.
+Especially decays of the tau lepton and heavy mesons have form factor models
+similar to dedicated codes like Tauola @mycite{Jadach1993hs} and
+EvtGen @mycite{Lange2001uf}.
+
+Some general switches which relate to hadron decays can be adjusted in the
+@code{(fragmentation)} section:
+
+@itemize @bullet
+@item @anchor{DECAYPATH} @code{DECAYPATH} 
+  The path to the parameter files for the hadron and tau decays
+  (default: @code{Decaydata/}). It is important to note that the path 
+  has to be given relative to the current working directory.
+  If it doesn't exist, the default Decaydata
+  directory (@code{\$prefix/share/SHERPA-MC/Decaydata}) will be used.
+@item  Hadron properties like mass, width, stable/unstable and active can be set
+  in the @code{(fragmentation)} section in full analogy to the settings for fundamental particles
+  in the @code{(model)} section (cf. @ref{Model Parameters}).
+@item @anchor{MASS_SMEARING} @code{MASS_SMEARING = [0,1,2]} (default: 1) 
+  Determines whether particles entering the hadron decay event
+  phase should be put off-shell according to their mass
+  distribution. It is taken care that no decay mode is suppressed
+  by a potentially too low mass. While HADRONS++ determines this dynamically
+  from the chosen decay channel, for @code{Pythia} as hadron decay handler
+  its @code{w-cut} parameter is employed. Choosing option 2 instead of 1 will
+  only set unstable (decayed) particles off-shell, but leave stable particles
+  on-shell.
+@item @anchor{MAX_PROPER_LIFETIME} @code{MAX_PROPER_LIFETIME = [mm]} 
+  Parameter for maximum proper lifetime (in mm) up to which particles
+  are considered unstable. If specified, this will make long-living particles
+  stable, even if they are set unstable by default or by the user.
+@end itemize
+
+Many aspects of the above mentioned ``Decaydata'' can be adjusted.
+There exist three levels of data files, which are explained in the following
+sections.
+As with all other setup files, the user can either employ the default
+``Decaydata'' in @code{<prefix>/share/SHERPA-MC/Decaydata}, or
+overwrite it (also selectively) by creating the appropriate files in the
+directory specified by @code{DECAYPATH}.
+
+
+@subsubsection HadronDecays.dat
+
+@code{HadronDecays.dat} consists of a table of particles that are to be decayed
+by HADRONS++. Note: Even if decay tables exist for the other particles, only those
+particles decay that are set unstable, either by default, or in the
+model/fragmentation settings. It has the following structure, where each line
+adds one decaying particle:
+
+@iftex
+\begin{center}
+  \begin{tabular}{|cccc|}
+    \hline
+    \verb!<kf-code>! &\verb!->! &\verb!<subdirectory>/!&\verb!<filename>.dat! \\
+    \hline
+    \hline
+    $\downarrow$     &          &$\downarrow$           &$\downarrow$ \\
+    decaying particle&      & path to decay table   & decay table file\\
+    \hline
+    default names:   && \verb!<particle>/!&\verb!Decays.dat!\\
+    \hline
+  \end{tabular}
+\end{center}
+@end iftex
+
+@ifnottex
+@multitable @columnfractions .33 .33 .33 
+@item <kf-code>@ @ @ @ @ @ @ ->  
+@tab <subdirectory>/
+@tab @center <filename>.dat
+@item decaying particle @ @ @  
+@tab path to decay table @ @ @  
+@tab decay table file    
+@item default names:
+@tab <particle>/
+@tab Decays.dat
+@end multitable
+@end ifnottex
+
+It is possible to specify different decay tables for the particle (positive
+kf-code) and anti-particle (negative kf-code). If only one is specified, it
+will be used for both particle and anti-particle.
+
+If more than one decay table is specified for the same kf-code, these tables
+will be used in the specified sequence during one event. The first matching
+particle appearing in the event is decayed according to the first table, and
+so on until the last table is reached, which will be used for the remaining
+particles of this kf-code.
+
+Additionally, this file may contain the keyword @code{CREATE_BOOKLET} on a separate
+line, which will cause HADRONS++ to write a LaTeX document containing all decay
+tables.
+
+@subsubsection Decay table files  
+
+The decay table contains information about outgoing particles for each channel,
+its branching ratio and eventually the name of the file that stores parameters
+for a specific channel. If the latter is not specified HADRONS++ will produce it and
+modify the decay table file accordingly.
+
+Additionally to the branching ratio, one may specify the error associated with
+it, and its source. Every hadron is supposed to have its own decay table in
+its own subdirectory. The structure of a decay table is
+@iftex
+\begin{center}
+  \begin{tabular}{|ccccc|}
+    \hline
+    \verb!{kf1,kf2,kf3,...}!  &\verb!|! &\verb!BR(!$\Delta$\verb!BR)[Origin]!
+    &\verb!|! &\verb!<filename>.dat! \\
+    \hline
+    $\downarrow$     &&$\downarrow$     &&$\downarrow$ \\
+    outgoing particles&&branching ratio && decay channel file\\
+    \hline
+  \end{tabular}
+\end{center}
+@end iftex
+@ifnottex
+@multitable @columnfractions .33 .33 .33 
+@item @{kf1,kf2,kf3,...@} 
+@tab BR(delta BR)[Origin] @ @ @ @ @ @ 
+@tab <filename>.dat
+@item outgoing particles @ @ @ @ @ @ 
+@tab branching ratio @ @ @ @ @ @ 
+@tab decay channel file
+@end multitable
+@end ifnottex
+It should be stressed here that the branching ratio which is explicitly given for any
+individual channel in this file is @strong{always used} regardless of any
+matrix-element value.
+
+@anchor{Decay channel files}
+@subsubsection Decay channel files
+
+A decay channel file contains various information about that specific decay
+channel. There are different sections, some of which are optional:
+
+@itemize @bullet
+@item 
+@verbatim
+<Options>
+    AlwaysIntegrate = 0
+    CPAsymmetryC = 0.0
+    CPAsymmetryS = 0.0
+</Options>
+@end verbatim
+
+  @itemize @bullet
+  @item  @code{AlwaysIntegrate = [0,1]} For each decay channel, one needs an
+    integration result for unweighting the kinematics (see below). This
+    result is stored in the decay channel file, such that the
+    integration is not needed for each run. The AlwaysIntegrate option
+    allows to bypass the stored integration result, and do the integration
+    nonetheless (same effect as deleting the integration result).
+  @item  @code{CPAsymmetryC/CPAsymmetryS} If one wants to include time dependent
+    CP asymmetries through interference between mixing and decay one can
+    set the coefficients of the cos and sin terms respectively.
+    HADRONS++ will then respect these asymmetries between particle and
+    anti-particle in the choice of decay channels.
+  @end itemize
+
+@item 
+@verbatim
+<Phasespace>
+  1.0 MyIntegrator1
+  0.5 MyIntegrator2
+</Phasespace>
+@end verbatim
+  Specifies the phase-space mappings and their weight.
+
+@item 
+@verbatim
+<ME>
+  1.0 0.0 my_matrix_element[X,X,X,X,X,...]
+  1.0 0.0 my_current1[X,X,...] my_current2[X,X,X,...]
+</ME>
+@end verbatim
+  Specifies the matrix elements or currents used for the kinematics,
+  their respective weights, and the
+  order in which the  particles (momenta) enter them. For more details, the
+  reader is referred to @mycite{hadrons}.
+
+@item 
+@verbatim
+<my_matrix_element[X,X,X,X,X,...]>
+  parameter1 = value1
+  parameter2 = value2
+  ...
+</my_matrix_element[X,X,X,X,X,...]>
+@end verbatim
+  Each matrix element or current may have an additional section where one
+  can specify needed parameters, e.g. which form factor model to choose.
+  Each parameter has to be specified on a new line as shown above. Available
+  parameters are listed in @mycite{hadrons}.
+  Parameters not specified get a default value,
+  which might not make sense in specific decay channels. One may also specify
+  often needed parameters in @code{HadronConstants.dat}, but they will get
+  overwritten by channel specific parameters, should these exist.
+
+@item 
+@verbatim
+<Result>
+  3.554e-11 6.956e-14 1.388e-09;
+</Result>
+@end verbatim
+  These last three lines have quite an important meaning. If they
+  are missing, HADRONS++ integrates this channel during the initialization
+  and adds the result lines.
+  If this section exists though, and @code{AlwaysIntegrate} is off
+  (the  default value, see above) then HADRONS++ reads in the maximum for
+  the kinematics unweighting.
+  
+  Consequently, if some parameters are changed (also masses of incoming and
+  outgoing particles) the maximum might change such that a new integration is
+  needed in order to obtain correct kinematical distributions. There are two
+  ways to enforce the integration: either by deleting the last three lines or
+  by setting @code{AlwaysIntegrate} to 1. When a channel is re-integrated, HADRONS++
+  copies the old decay channel file into @code{.<filename>.dat.old}.
+@end itemize
+
+@subsubsection HadronConstants.dat 
+
+@code{HadronConstants.dat} may contain some globally needed parameters (e.g.
+for neutral meson mixing, see @mycite{hadrons}) and also fall-back
+values for all matrix-element parameters which one specifies in decay channel
+files. Here, the @code{Interference_X = 1} switch would enable rate asymmetries
+due to CP violation in the interference between mixing and decay
+(cf. @ref{Decay channel files}), and setting @code{Mixing_X = 1}
+enables explicit mixing in the event record according to the time evolution of
+the flavour states. By default, all mixing effects are turned off.
+@itemize @bullet
+@item  Mixing parameters 
+@iftex
+($x = \frac{\Delta m}{\Gamma}$,
+  $y = \frac{\Delta \Gamma}{2\Gamma}$) 
+@end iftex
+  with some example values
+@verbatim
+x_K = 0.946
+y_K = -0.9965
+qoverp2_K = 1.0
+Interference_K = 0
+Mixing_K = 0
+
+x_D = 0.0
+y_D = 0.0
+qoverp2_D = 1.0
+Interference_D = 0
+Mixing_D = 0
+
+x_B = 0.776
+y_B = 0.0
+qoverp2_B = 1.0
+Interference_B = 1
+Mixing_B = 0
+
+x_Bs = 30.0
+y_Bs = 0.155
+qoverp2_Bs = 1.0
+Interference_Bs = 0
+Mixing_Bs = 0
+@end verbatim
+
+@end itemize
+
+
+@subsubsection Further remarks
+
+@strong{Spin correlations:}
+the spin correlation algorithm is implemented, also for decays of tau's
+produced in the signal process. It can be switched on through the keyword
+@code{SPIN_CORRELATIONS} in the @code{(run)} section, see @ref{Run Parameters} for more
+details.
+
+@strong{Adding new channels:}
+if new channels are added to HADRONS++ (choosing isotropic decay kinematics) a new 
+decay table must be defined and the corresponding hadron must be added to @code{HadronDecays.dat}. 
+The decay table merely needs to consist of the outgoing particles and branching ratios, i.e. the 
+last column (the one with the decay channel file name) can safely be dropped. By running Sherpa
+it will automatically produce the decay channel files and write their names in the decay table. 
+
+@strong{Some details on tau decays:}
+$\tau$ decays are treated within the HADRONS++ framework, even though the
+$\tau$ is not a hadron. As for many hadron decays, the hadronic tau decays
+have form factor models implemented, for details the reader is referred to
+@mycite{hadrons}.
+
 

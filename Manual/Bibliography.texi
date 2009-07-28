@@ -81,9 +81,8 @@
 @mybibitem{Badger2005zh,Bad05, S. D. Badger and E. W. N. Glover and V. V. Khoze and  P. Svrvcek,Recursion relations for gauge theory amplitudes with massive particles,JHEP,07,(2005),025,[hep-th/0504159],hep-th/0504159}
 @mybibitem{Bagger1987fz,Bag87, J. Bagger and C. Schmidt and S. King,Axigluon Production in Hadronic Collisions,Phys. Rev.,D37,(1988),1188,,F+J+Phys. Rev.%2CD37%2C1188}
 @mybibitem{Bahr2008pv,Bah08, M. Bahr and others,Herwig++ Physics and Manual,Eur. Phys. J.,C58,(2008),639-707,[arXiv:0803.0883],arXiv:0803.0883}
-@mybibitem{Bahr2008tf,Bah08a, M. Bahr and others,Herwig++ 2.3 Release Note,,,,,arXiv:0812.0529,arXiv:0812.0529}
-@mybibitem{Bahr2008wk,Bah08b, M. Bahr and J. M. Butterworth and M. H. Seymour,The Underlying Event and the Total Cross Section from Tevatron to the LHC,JHEP,01,(2009),065,[arXiv:0806.2949],arXiv:0806.2949}
-@mybibitem{Bahr2008dy,Bah08c, M. Bahr and S. Gieseke and M. H. Seymour,Simulation of multiple partonic interactions in Herwig++,JHEP,07,(2008),076,[arXiv:0803.3633],arXiv:0803.3633}
+@mybibitem{Bahr2008wk,Bah08a, M. Bahr and J. M. Butterworth and M. H. Seymour,The Underlying Event and the Total Cross Section from Tevatron to the LHC,JHEP,01,(2009),065,[arXiv:0806.2949],arXiv:0806.2949}
+@mybibitem{Bahr2008dy,Bah08b, M. Bahr and S. Gieseke and M. H. Seymour,Simulation of multiple partonic interactions in Herwig++,JHEP,07,(2008),076,[arXiv:0803.3633],arXiv:0803.3633}
 @mybibitem{Ball2004rg,Bal04, P. Ball and R. Zwicky,B_d s to rho omega K^* Phi decay form factors from light-cone sum rules reexamined,Phys. Rev.,D71,(2005),014029,[hep-ph/0412079],hep-ph/0412079}
 @mybibitem{Ball2004ye,Bal04a, P. Ball and R. Zwicky,New results on B to pi K eta decay form factors from light-cone sum rules,Phys. Rev.,D71,(2005),014015,[hep-ph/0406232],hep-ph/0406232}
 @mybibitem{Ball2007hb,Bal07, P. Ball and G. W. Jones,B to eta^(') form factors in QCD,JHEP,08,(2007),025,[arXiv:0706.3628],arXiv:0706.3628}
@@ -300,6 +299,7 @@
 @mybibitem{Jadach2000kw,Jad00, S. Jadach and W. Placzek and M. Skrzypek and B. F. L. Ward and Z. Wc as,Precision predictions for (un)stable W^+ W^- pair production at and beyond LEP2 energies,Phys. Rev.,D65,(2002),093010,[hep-ph/0007012],hep-ph/0007012}
 @mybibitem{Jadach2000ir,Jad00a, S. Jadach and B. F. L. Ward and Z. Wc as,Coherent exclusive exponentiation for precision Monte Carlo calculations,Phys. Rev.,D63,(2001),113009,[hep-ph/0006359],hep-ph/0006359}
 @mybibitem{Jadach2001mp,Jad01, S. Jadach and W. Placzek and M. Skrzypek and B. F. L. Ward and Z. Wc as,The Monte Carlo program KoralW version 1.51 and the concurrent Monte Carlo KoralW&YFSWW3 with all background graphs and first order corrections to W pair production,Comput. Phys. Commun.,140,(2001),475-512,[hep-ph/0104049],hep-ph/0104049}
+@mybibitem{Jadach1993hs,Jad93, S. Jadach and Z. Was and R. Decker and J. H. Kuhn,The tau decay library TAUOLA: Version 2.4,Comput. Phys. Commun.,76,(1993),361-380,,F+J+Comput. Phys. Commun.%2C76%2C361}
 @mybibitem{Jadach1999sf,Jad99, S. Jadach,Foam: Multi-dimensional general purpose Monte Carlo generator with self-adapting simplical grid,Comput. Phys. Commun.,130,(2000),244-259,[arXiv:physics/9910004],arXiv:physics/9910004}
 @mybibitem{Jadach1999vf,Jad99a, S. Jadach and B. F. L. Ward and Z. Wc as,The precision Monte Carlo event generator mathcalKK for two- fermion final states in e^+ e^- collisions,Comput. Phys. Commun.,130,(2000),260-325,[hep-ph/9912214],hep-ph/9912214}
 @mybibitem{James1968gu,Jam68, F. James,Monte-Carlo phase space,,,,,,}
@@ -466,6 +466,7 @@
 @mybibitem{Winter2007ye,Win07, J. C. Winter and F. Krauss,Initial-state showering based on colour dipoles connected to incoming parton lines,JHEP,07,(2008),040,[arXiv:0712.3913],arXiv:0712.3913}
 @mybibitem{Witten2003nn,Wit03, E. Witten,Perturbative Gauge Theory as a String Theory in Twistor Space,Commun. Math. Phys.,252,(2004),189-258,[hep-th/0312171],hep-th/0312171}
 @mybibitem{Wobisch1998ti,Wob98, M. Wobisch,Progress in the Understanding of Dijet Production in Deep-Inelastic Scattering,,,,,hep-ph/9806481,hep-ph/9806481}
+@mybibitem{Wolfenstein1983yz,Wol83, L. Wolfenstein,Parametrization of the Kobayashi-Maskawa Matrix,Phys. Rev. Lett.,51,(1983),1945,,F+J+Phys. Rev. Lett.%2C51%2C1945}
 @mybibitem{Yennie1961ad,Yen61, D. R. Yennie and S. C. Frautschi and H. Suura,The Infrared Divergence Phenomena and High-Energy Processes,Ann. Phys.,13,(1961),379-452,,F+J+Ann. Phys.%2C13%2C379}
 @mybibitem{Zarnecki2002qr,Zar02, A. F. Zarnecki,CompAZ: Parametrization of the luminosity spectra for the photon collider,Acta Phys. Polon.,B34,(2003),2741-2758,[hep-ex/0207021],hep-ex/0207021}
 @mybibitem{hadrons,a, F. Krauss and T. Laubrich and F. Siegert,Simulation of hadron decays in Sherpa,,,,,,}
