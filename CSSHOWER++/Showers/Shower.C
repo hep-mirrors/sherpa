@@ -209,7 +209,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       if (kt2win<(*splitter)->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
-	return true;
+	continue;
       }
       if (kt2win>(*splitter)->KtPrev()) {
 	(*splitter)->SetStart(kt2win);
@@ -446,10 +446,12 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
 			   Parton * split) 
 {
   double kt2(0.),z(0.),y(0.),phi(0.);
+  if (split->KtTest()!=0.0 &&
+      split->KtTest()<split->KtNext()) return false;
   if (m_sudakov.Dice(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
     if (kt2>kt2old) {
-      split->SetStart(kt2);
+      if (kt2>split->KtNext()) split->SetStart(kt2);
       return false;
     }
     if (kt2>kt2win) {

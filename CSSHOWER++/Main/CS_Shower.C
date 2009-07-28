@@ -646,7 +646,19 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
 
 double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
-  if (ampl->Next()) return ampl->KT2QCD();
+  if (ampl->Next()) {
+    Cluster_Amplitude *next(ampl->Next());
+    if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2QCD();
+    for (size_t i(0);i<next->Legs().size();++i)
+      if (next->Leg(i)->K()) {
+	Vec4D sum;
+	size_t cid(next->Leg(i)->Id());
+	for (size_t j(0);j<ampl->Legs().size();++j)
+	  if (ampl->Leg(j)->Id()&cid) sum+=ampl->Leg(j)->Mom();
+	return sum.Abs2();
+      }
+    THROW(fatal_error,"Invalid amplitude");
+  }
   double q2cut(0.0);
   if (ampl->JF<PHASIC::Jet_Finder>()) {
     q2cut=ampl->JF<PHASIC::Jet_Finder>()->GlobalYcut();
