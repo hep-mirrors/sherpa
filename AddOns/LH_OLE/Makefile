@@ -1,6 +1,6 @@
 # If Sherpa-config is not in your $PATH, change this variable to point to your
 # Sherpa installation directory manually
-SHERPA_PREFIX=$(Sherpa-config --prefix)
+SHERPA_PREFIX=$(shell Sherpa-config --prefix)
 
 
 SOURCES=LH_OLE_Interface.C LH_OLE_Communicator.C
