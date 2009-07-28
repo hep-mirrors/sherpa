@@ -28,7 +28,20 @@ on the command line when running Sherpa.
 such as @ref{MASS[<id>]} and @ref{WIDTH[<id>]},
 may be set in the runcard, or on the command line, 
 in exactly the same way as the SM particle
-properties. 
+properties.
+
+@item the 3x3 mixing matrices for quarks (CKM matrix)
+and leptons (unit matrix) are supplemented with three
+additional mixing angles and two additional phases
+according to @mycite{Hou1987vd}. Note that in the
+above example only small mixing of the 4th and the 3rd
+generation of leptons is allowed. For all relevant
+switches and their defaults see @ref{4thGen}.
+
+@item the switch OUTPUT_MIXING is used to print the 4x4
+mixing matrices for leptons and quarks on screen at the
+beginning of each run, just before the particle content
+of the model.
 
 @item the analysis has been switched off, but
 to use it, switch @ref{ANALYSIS} to @option{1}.

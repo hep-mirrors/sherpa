@@ -24,6 +24,19 @@ in the matrix elements.
 Note: To set properties of hadrons, you can use the same switches (except for
 @code{MASSIVE}) in the fragmentation section, see @ref{Fragmentation}.
 
+There are more specialised switches for all built-in models that are available
+in Sherpa:
+@menu
+* SM::		   Standard Model
+* MSSM::	   Minimal Supersymmetric Standard Model
+* ADD::		   ADD Model of Large Extra Dimensions
+* AGC::		   Anomalous Gauge Couplings
+* THDM::	   Two Higgs Doublet Model
+* EHC::		   Effective Higgs Couplings
+* 4thGen::	   Fourth Generation
+@end menu
+
+
 @node MODEL
 @subsection MODEL
 @cindex MODEL
@@ -82,3 +95,12 @@ At present this
 affects only the simulation of lepton decays, dealt with by the HADRONS++ package.
 Decays of other particles have to be specified in the process setup
 (see @ref{Processes}) and are not treated automatically.
+
+
+@include SM.texi
+@include MSSM.texi
+@include ADD.texi
+@include AGC.texi
+@include THDM.texi
+@include EHC.texi
+@include 4thGen.texi
