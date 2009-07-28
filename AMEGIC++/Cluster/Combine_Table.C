@@ -387,7 +387,7 @@ Leg * Combine_Table::CombineLegs
 }
 
 
-void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int maxl) 
+bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int maxl) 
 {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i=0;i<=maxl;++i)
@@ -396,14 +396,15 @@ void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms);
-  for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
   ampl->Delete();
+  if (after.empty()) return false;
+  for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
+  return true;
 }
 
-void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
+bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
 				     const int maxl,Vec4D *&omoms) 
 {
-  omoms = new Vec4D[maxl];
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i=0;i<=maxl;++i)
     ampl->CreateLeg(i<2?-moms[i]:moms[i],p_legs[0][i].Flav(),
@@ -411,8 +412,11 @@ void Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms);
-  for (size_t l=0; l<after.size(); ++l) omoms[l] = l<2?-after[l]:after[l];
   ampl->Delete();
+  if (after.empty()) return false;
+  omoms = new Vec4D[maxl];
+  for (size_t l=0; l<after.size(); ++l) omoms[l] = l<2?-after[l]:after[l];
+  return true;
 }
 
 double Combine_Table::MinKt2() const
@@ -714,8 +718,11 @@ CalcJet(int nl,const double x1,const double x2,
     // if number of legs is still greater 4 Cluster once more
     // if number of legs equals 4, determine end situation
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
-    Combine_Table *next(NextTable(CreateNext(did_boost),x1,x2));
-    if (next!=NULL) return next;
+    Combine_Table *tab(CreateNext(did_boost));
+    if (tab!=NULL) {
+      Combine_Table *next(NextTable(tab,x1,x2));
+      if (next!=NULL) return next;
+    }
     m_rejected.insert(m_cdata_winner->first);
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";
@@ -805,6 +812,10 @@ Combine_Table *Combine_Table::CreateNext(bool did_boost)
   delete [] p_save_moms;
   --m_nl;
   if (!m_cdata_winner->second.p_down) {
+    Vec4D * amoms;
+    // generate new momenta
+    if (!CombineMoms(p_moms,m_cdata_winner->first.m_i,
+		     m_cdata_winner->first.m_j,m_nl,amoms)) return NULL;
     Leg ** alegs = new Leg*[m_cdata_winner->second.m_graphs.size()];
     for (size_t k=0;k<m_cdata_winner->second.m_graphs.size();++k) {
       alegs[k] = CombineLegs
@@ -812,18 +823,14 @@ Combine_Table *Combine_Table::CreateNext(bool did_boost)
 	 m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl,
 	 m_cdata_winner->second.m_pt2ij.m_kt2);
     }
-    Vec4D * amoms;
-    // generate new momenta
-    CombineMoms(p_moms,m_cdata_winner->first.m_i,
-		m_cdata_winner->first.m_j,m_nl,amoms);
     m_cdata_winner->second.p_down = 
       new Combine_Table(p_proc,p_ms,p_clus,amoms,this);
     // initialise Combine_Table
     m_cdata_winner->second.p_down->FillTable(alegs,m_nl,m_cdata_winner->second.m_graphs.size());
   } 
   else {
-    ((Combine_Table*)m_cdata_winner->second.p_down)->
-      CombineMoms(p_moms,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl);
+    if (!((Combine_Table*)m_cdata_winner->second.p_down)->
+	CombineMoms(p_moms,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl)) return NULL;
   }
 
   // update x1,2 (before calling CalcJet again
