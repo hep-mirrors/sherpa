@@ -11,10 +11,7 @@
   Process 93 93 -> 93 93 93{2};
   Order_EW 0; Max_N_Quarks 4;
   CKKW sqr(20/E_CMS);
-  Integration_Error 0.02 {2};
-  Integration_Error 0.03 {3};
-  Integration_Error 0.04 {4};
-  Integration_Error 0.05 {5};
+  Integration_Error 0.02 {4};
   End process;
 }(processes)
 
