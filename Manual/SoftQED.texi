@@ -1,5 +1,5 @@
-@node Higher Order QED
-@section Higher Order QED Corrections Parameters
+@node QED Corrections
+@section QED Corrections
 
 Higher order QED corrections are effected both on hard interaction and, upon
 their formation, on each hadron's subsequent decay. The Photons
@@ -11,8 +11,8 @@ corrections built up by Catani-Seymour splitting kernels).
 
 @menu
 * General Switches::
-* Higher Order QED Corrections to the Hard Interaction::
-* Higher Order QED Corrections to Hadron Decays::
+* QED Corrections to the Hard Interaction::
+* QED Corrections to Hadron Decays::
 @end menu
 
 @node General Switches
@@ -70,8 +70,8 @@ Of course, this switch is only effective if Photons is switched on, i.e.
 YFS_MODE=[1,2].
 
 
-@node Higher Order QED Corrections to the Hard Interaction
-@subsection Higher Order QED Corrections to the Hard Interaction
+@node QED Corrections to the Hard Interaction
+@subsection QED Corrections to the Hard Interaction
 
 @menu
 * ME_QED::           Mode of operation.
@@ -81,7 +81,7 @@ YFS_MODE=[1,2].
 @subsubsection ME_QED
 @cindex ME_QED
 ME_QED=@option{On}/@option{Off} turns the higher order QED corrections to the
-matrix element on or off, respectively.
+matrix element on or off, respectively. The default is @option{On}.
 These corrections will only be effected on final state not strongly interacting
 particles. If a resonant production subprocess for an unambiguous subset of all
 such particles is specified via the process declaration (cf. @ref{Processes})
@@ -89,8 +89,8 @@ this can be taken into account and dedicated higher order matrix elements can be
 used (if YFS_MODE=2 and YFS_USE_ME=1).
 
 
-@node Higher Order QED Corrections to Hadron Decays
-@subsection Higher Order QED Corrections to Hadron Decays
+@node QED Corrections to Hadron Decays
+@subsection QED Corrections to Hadron Decays
 
 If the Photons module is switched on, all hadron decays are corrected for higher
 order QED effects.

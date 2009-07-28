@@ -24,7 +24,7 @@ performed in all inputs, see @ref{Tags}.
 * Shower Parameters:: List of shower parameters
 * MPI Parameters::    List of multiple parton interaction parameters
 * Fragmentation::     List of hadronization parameters
-* Higher Order QED::  List of higher order QED correction parameters
+* QED Corrections::   List of Q	ED correction parameters
 @end menu
 
 @include Run.texi

@@ -18,6 +18,7 @@ of the main features of these examples.
 * Tevatron_UE::               
 * LHC_4thGen::                
 * LHC_AGC::                   
+@c * LHC_ADD::                   
 @c * EGamma::                    
 @c * PEPII_BaBar::               
 @c * BFKL::                      
@@ -33,6 +34,7 @@ of the main features of these examples.
 @include Tevatron_UE.texi
 @include LHC_4thGen.texi
 @include LHC_AGC.texi
+@c @include LHC_ADD.texi
 @c @include EGamma.texi
 @c @include PEPII_BaBar.texi
 @c @include BFKL.texi
