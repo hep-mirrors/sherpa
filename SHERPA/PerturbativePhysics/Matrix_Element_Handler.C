@@ -293,7 +293,6 @@ void Matrix_Element_Handler::BuildProcesses()
       pi.m_kfactor=kfactor;
       pi.m_cls=cls;
       pi.m_hls=hls;
-      pi.m_nlomode=m_nlomode;
       std::string selfile(m_selectorfile);
       std::string proc(MakeString(cur,1));
       size_t pos(proc.find("->"));
@@ -351,10 +350,14 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,vefunc,nf);
 	}
-	if (cur[0]=="NLO_QCD_Part")
+	if (cur[0]=="NLO_QCD_Part") {
 	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(cur[1]);
-	if (cur[0]=="NLO_EW_Part")
+	  pi.m_nlomode=m_nlomode;
+	}
+	if (cur[0]=="NLO_EW_Part") {
 	  pi.m_fi.m_nloewtype=ToType<nlo_type::code>(cur[1]);
+	  pi.m_nlomode=m_nlomode;
+	}
 	if (cur[0]=="Loop_Generator") pi.m_loopgenerator=cur[1];
         pi.p_gens=&m_gens;
 	if (cur[0]=="End" && cur[1]=="process") break;
