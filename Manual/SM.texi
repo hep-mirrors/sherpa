@@ -43,12 +43,11 @@ parameter, whose default is @option{0}. The following options are provided:
     @code{SIN2THETAW}, @code{VEV} and the Higgs mass.
   @item  Case @code{3}:
   
-    this choice corresponds to the $G_\mu$-scheme. The EW parameters are 
-    calculated out of the weak gauge boson masses $M_W$, $M_Z$, the Higgs
-    boson mass $M_H$ and the Fermi constant @code{GF}.
+    this choice corresponds to the G_mu-scheme. The EW parameters are 
+    calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
+    boson mass M_H and the Fermi constant @code{GF}.
   @end itemize
 
-\noindent
 To account for quark mixing the CKM matrix elements have to be assigned. 
 For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz}
 is employed. The order of expansion in the lambda parameter is defined

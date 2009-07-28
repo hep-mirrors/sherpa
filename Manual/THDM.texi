@@ -1,5 +1,7 @@
 @node THDM
 @subsection Two Higgs Doublet Model
+@cindex TAN(BETA)
+@cindex ALPHA
 
 The THDM is incorporated as a subset of the MSSM Lagrangian. It is
 defined as the extension of the SM by a second SU(2) doublet of
