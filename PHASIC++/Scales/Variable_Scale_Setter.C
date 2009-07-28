@@ -21,6 +21,8 @@ namespace PHASIC {
     Variable_Scale_Setter(Process_Base *const proc,
 			  const std::string &scale);
 
+    ~Variable_Scale_Setter();
+
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
 
     void SetScale(const std::string &mu2tag,
@@ -69,6 +71,11 @@ Variable_Scale_Setter::Variable_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
+}
+
+Variable_Scale_Setter::~Variable_Scale_Setter()
+{
+  for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
 }
 
 double Variable_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
