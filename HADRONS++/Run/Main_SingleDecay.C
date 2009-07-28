@@ -1,4 +1,4 @@
-#include "HADRONS++/Run/Main.H"
+#include "Main.H"
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Decay_Map.H"

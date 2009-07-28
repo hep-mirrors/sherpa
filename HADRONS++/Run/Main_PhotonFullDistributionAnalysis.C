@@ -7,7 +7,7 @@ started with the following specialities:
   - ./PhotonAnalysis DECAYER=<kfcode> EVENTS=100000 ANALYSIS=1
 */
 
-#include "HADRONS++/Run/Main_FullDecay.C"
+#include "Main_FullDecay.C"
 #include "ATOOLS/Org/Shell_Tools.H"
 
 #ifdef USING__ROOT

@@ -1,4 +1,4 @@
-#include "HADRONS++/Run/Main_FullDecay.C"
+#include "Main_FullDecay.C"
 
 void InitialiseAnalysis() {}
 void AnalyseEvent(Blob_List* blobs) {}
