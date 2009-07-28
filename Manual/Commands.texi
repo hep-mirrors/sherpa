@@ -12,7 +12,8 @@ Read input from file @samp{<file>}.
 Read input file from path @samp{<path>}.
 
 @item -e <events>
-Set number of events to generate @samp{<events>}.
+Set number of events to generate @samp{<events>},
+see @ref{EVENTS}.
 
 @item -r <results>
 Set the result directory to @samp{<results>},
