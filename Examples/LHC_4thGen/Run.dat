@@ -61,7 +61,8 @@
     3Mass  16  11 -12  150. 250.  50  LinErr FinalState
     3Mass -15  13 -14  100. 200.  50  LinErr FinalState
 
-    6Mass  11 -12 13 -14 -15 16  0. 1000. 100 LinErr FinalState
+    PT6    11 -12 13 -14 -15 16  0. 2000. 100 LinErr FinalState
+    6Mass  11 -12 13 -14 -15 16  0. 2000. 100 LinErr FinalState
 
   } END_ANALYSIS
 }(analysis)
