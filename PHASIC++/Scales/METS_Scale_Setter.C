@@ -56,7 +56,8 @@ namespace PHASIC {
 		     const ATOOLS::Flavour &mo) const;
     ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
 				  const ATOOLS::Cluster_Leg *lj,
-				  const ATOOLS::Cluster_Leg *lk) const;
+				  const ATOOLS::Cluster_Leg *lk,
+				  const ATOOLS::Flavour &mo) const;
 
     double Lam(const double &s,
 	       const double &sb,const double &sc) const;
@@ -664,10 +665,9 @@ bool METS_Scale_Setter::Combine
       }
     }
   }
-  li->SetCol(CombineColors(li,lj,lk));
+  li->SetCol(CombineColors(li,lj,lk,mo));
   li->SetId(li->Id()+lj->Id());
   li->SetFlav(mo);
-  if (!mo.Strong()) li->SetCol(ColorID(0,0));
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();
@@ -775,9 +775,12 @@ bool METS_Scale_Setter::CheckColors
 }
 
 ColorID METS_Scale_Setter::CombineColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk) const
+(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk,
+ const ATOOLS::Flavour &mo) const
 {
   ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
+  if (ci.m_i==-1 && cj.m_i==-1 && ck.m_i==-1) return ColorID();
+  if (!mo.Strong()) return ColorID(0,0);
   if (li->Flav().StrongCharge()==3) {
     if (lj->Flav().StrongCharge()==-3) {
       return ColorID(ci.m_i,cj.m_j);
