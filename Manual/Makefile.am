@@ -48,5 +48,7 @@ html-local: $(srcdir)/*.texi
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
           rm -rf Sherpa.html; texi2html Sherpa.texi; \
         fi
+        
+dvi:
 
 EXTRA_DIST    = @SVNINCLUDE@ Sherpa.1
