@@ -1,2 +1,177 @@
 @node AGC
 @subsection Anomalous Gauge Couplings
+@cindex G1_GAMMA
+@cindex KAPPA_GAMMA
+@cindex LAMBDA_GAMMA
+@cindex G4_GAMMA
+@cindex G5_GAMMA
+@cindex KAPPAT_GAMMA
+@cindex G1_Z
+@cindex LAMBDAT_GAMMA
+@cindex KAPPA_Z
+@cindex LAMBDA_Z
+@cindex G4_Z
+@cindex G5_Z
+@cindex KAPPAT_Z
+@cindex LAMBDAT_Z
+@cindex ALPHA_4_G_4
+@cindex ALPHA_5
+@cindex UNITARIZATION_SCALE
+@cindex UNITARIZATION_N
+@cindex F4_GAMMA
+@cindex F5_GAMMA
+@cindex H1_GAMMA
+@cindex H2_GAMMA
+@cindex H3_GAMMA
+@cindex H4_GAMMA
+@cindex F4_Z
+@cindex F5_Z
+@cindex H1_Z
+@cindex H2_Z
+@cindex H3_Z
+@cindex H4_Z
+
+@c *** What to do about equations? This section makes much more sense with them!
+
+  Sherpa includes a number of effective Lagrangians describing anomalous 
+  gauge interactions:
+  @itemize @bullet
+  @item @strong{WWV interactions:}
+    The general coupling between two charged vector bosons and a
+    neutral one is given by @mycite{Hagiwara1986vm} 
+    @iftex
+    \bean
+        {\cal L}_{WWV}/g_{WWV}&=& 
+	i g_1^V( W^\dagger_{\mu\nu}W^\mu V^\nu-W^\dagger_{\mu}V_\nu W^{\mu\nu})
+	+i\kappa_V W^\dagger_{\mu}V_\nu W^{\mu\nu}\nnb\ 
+	&&+\frac{i \lambda_V}{m_W^2} W^\dagger_{\lambda\mu}W^\mu_\nu V^{\nu\lambda}
+	-g_4^V W^\dagger_{\mu}W_\nu(\partial^\mu V^\nu+\partial^\nu V^\mu)\nnb\\
+	&&+ g_5^V \epsilon^{\mu\nu\rho\sigma}(W^\dagger_{\mu}
+	\overleftrightarrow{\vphantom !}\!\!\!\!\!\partial_\rho W_\nu)V_\sigma
+	+\frac{i \tilde\kappa_V}{2}\epsilon^{\mu\nu\rho\sigma}W^\dagger_{\mu} W_\nu V_{\rho\sigma}\nnb\\
+	&&+\frac{i\tilde\lambda_V}{2m_W^2}\epsilon^{\mu\nu\rho\sigma}W^\dagger_{\mu\lambda} W^\lambda_\nu V_{\rho\sigma}\;,
+	\label{anomalousL}
+    \eean
+    where $V^\mu$ stands for either the photon or the $Z$ field, $W^\mu$ is the $W^-$ field,
+    $W_{\mu\nu}=\partial_\mu W_\nu-\partial_\nu W_\mu$, $V_{\mu\nu}=\partial_\mu V_\nu-\partial_\nu V_\mu$,
+    $\tilde{V}_{\mu\nu}=\frac12 \epsilon_{\mu\nu\rho\sigma}V^{\rho\sigma}$ and
+    $(A\overleftrightarrow{\partial_\mu} B)=A(\partial_\mu B)-(\partial_\mu A)B$.
+    The overall coupling constants are 
+    \bean
+      g_{WW\gamma}&=&-e\;,\\
+      g_{WWZ}&=&-e\cot\theta_W\;.
+    \eean
+    @end iftex
+    The parameters for the individual coupling terms can be specified
+    through the
+    switches @code{G1_GAMMA}, @code{KAPPA_GAMMA}, @code{LAMBDA_GAMMA}, 
+    @code{G4_GAMMA}, @code{G5_GAMMA}, @code{KAPPAT_GAMMA}, @code{LAMBDAT_GAMMA},
+    @code{G1_Z}, @code{KAPPA_Z}, @code{LAMBDA_Z}, 
+    @code{G4_Z}, @code{G5_Z}, @code{KAPPAT_Z} and @code{LAMBDAT_Z}. 
+    As a default the Standard Model limit is used
+    (@code{G1_GAMMA/Z}=@code{KAPPA_GAMMA/Z=1}, all other
+    @code{=0}).
+  @item @strong{Quadrupole interactions:}
+    The SU(2) custodial symmetry conserving interactions are
+    implemented as in @mycite{Gangemi1999gt}
+@iftex
+    \bean
+	{\cal L}_4&=&\alpha_4e^4\left(\frac12 W^\dagger_{\mu}W^{\dagger\mu}W_{\nu}W^{\nu}
+	+\frac12(W^\dagger_{\mu}W^\mu)^2+\frac1{c_W^2}W^\dagger_{\mu}Z^{\mu}W_{\nu}Z^{\nu}
+	+\frac1{4c_W^4}(Z^{\mu}Z^\mu)^2\right)\;,\\
+	{\cal L}_5&=&\alpha_5\left((W^\dagger_{\mu}W^\mu)^2
+	+\frac1{c_W^2}W^\dagger_{\mu}Z^{\mu}W_{\nu}Z^{\nu}
+	+\frac1{4c_W^4}(Z^{\mu}Z^\mu)^2\right)\;.
+    \eean
+@end iftex
+    Here, the parameters can be specified through @code{ALPHA_4_G_4}
+@iftex
+(=$\alpha_4e^4$)
+@end iftex 
+    and @code{ALPHA_5}.
+  @item @strong{Anomalous interactions between photons and
+    Z bosons:}
+    The general anomalous coupling of two on-shell neutral gauge bosons 
+@iftex
+($V_1$ and $V_2$)
+@end iftex
+    to an off-shell boson 
+@iftex
+($V_3$)
+@end iftex
+ has been given in @mycite{Hagiwara1986vm}. 
+@iftex
+    The corresponding 
+    Feynman rule is displayed in Fig.~\ref{nagcv}, where the vertex functions are given by
+    ($V=Z/\gamma$)
+    \bean
+      \Gamma_{ZZV}^{\alpha\beta\mu}(q_1,q_2,P)&=&\frac{i\left(P^2-m_V^2\right)}{m_Z^2}
+      \left[f_4^V(P^\alpha g^{\mu\beta}+P^\beta g^{\mu\alpha})
+	+f_5^V\epsilon^{\mu\alpha\beta\rho}(q_1-q_2)_\rho\right],\\
+      \Gamma_{Z\gamma V}^{\alpha\beta\mu}(q_1,q_2,P)&=&\frac{i\left(P^2-m_V^2\right)}{m_Z^2}
+      \left@{h_1^V(q_2^\mu g^{\alpha\beta}-q_2^\alpha g^{\mu\beta})
+      +\frac{h_2^V}{m_Z^2}P^\alpha\left[(Pq_2)g^{\mu\beta}-q_2^\mu P^\beta\right]\right.\nnb\\
+      &&\left.+h_3^V\epsilon^{\mu\alpha\beta\rho}q_{2\rho}
+      +\frac{h_4^V}{m_Z^2}P^\alpha\epsilon^{\mu\beta\rho\sigma}P_\rho q_{2\sigma}
+      \right@}.
+    \eean
+@end iftex
+
+    The coupling parameters are specified through @code{F4_GAMMA}, @code{F5_GAMMA},
+    @code{H1_GAMMA}, @code{H2_GAMMA}, @code{H3_GAMMA}, @code{H4_GAMMA},
+    @code{F4_Z}, @code{F5_Z}, @code{H1_Z}, @code{H2_Z}, @code{H3_Z} and @code{H4_Z}, 
+    all equal zero by default.
+@iftex
+    \begin{figure}[!t]
+      \begin{center}
+        {
+          \SetScale{1.}
+          \begin{picture}(300,100)
+            \Vertex(100,50){3}
+            \Photon(60,50)(100,50){2}{5}
+            \Photon(100,50)(130,20){2}{5}
+            \Photon(100,50)(130,80){2}{5}
+            \ArrowLine(85,55)(86,55)\Line(75,55)(85,55)
+            \ArrowLine(114,71)(115,72)\Line(107,64)(114,71)
+            \ArrowLine(114,29)(115,28)\Line(107,36)(114,29)
+            \Text(20,50)[l]{$V_{3\mu}(P)$}
+            \Text(120,90)[l]{$V_{1\alpha}(q_1)$}
+            \Text(120,10)[l]{$V_{2\beta}(q_2)$}
+            \Text(150,50)[l]{$=ie\Gamma_{V_1V_2V_3}^{\alpha\beta\mu}(q_1,q_2,P)$}
+          \end{picture}
+	}
+	\caption{\label{nagcv}Feynman rule for the anomalous triple neutral gauge boson vertex.}
+      \end{center}
+    \end{figure}
+@end iftex
+    It should be noted that the most general anomalous coupling between three off-shell
+    neutral gauge bosons allows for more coupling terms @mycite{Gounaris2000dn} which are
+    not implemented in the current version. 
+    Outside the on-shell limit of two of the vector bosons a symmetrized version
+    of the above vertex is used.
+@iftex
+    (e.g. $\Gamma_{ZZZ}=\Gamma_{Z_1Z_2Z_3}+\Gamma_{Z_2Z_3Z_1}+\Gamma_{Z_3Z_1Z_2}$).
+@end iftex
+  @end itemize
+
+  Due to the effective nature of the anomalous couplings unitarity 
+  might be violated for coupling parameters other than the SM values.
+  For very large momentum transfers, such as probed at the LHC, this
+  will lead to unphysical results. As discussed in Ref. @mycite{Baur1988qt} 
+  this can be avoided introducing form factors to be applied on the deviation
+  of coupling parameters from their Standard Model values,
+@iftex
+  \bea
+	a(\hat s)=\frac{a_0}{(1+\hat s/\Lambda^2)^n}\;,
+  \eea
+  where $\hat s$ is the collision energy of the partonic process,
+  $\Lambda$ represents a scale at which new physics become important 
+  and an exponent, typically to be chosen as $n=2$. 
+@end iftex
+  The corresponding 
+  switches are @code{UNITARIZATION_SCALE} and @code{UNITARIZATION_N}. 
+  By default the form factor is switched off 
+@iftex
+setting $n=0$.
+@end iftex
+
