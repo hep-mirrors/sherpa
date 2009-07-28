@@ -1,14 +1,15 @@
 @node MSSM
 @subsection Minimal Supersymmetric Standard Model
+@cindex SLHA_INPUT
 
-  To input MSSM spectra to Sherpa, files that conform to the
-  SUSY-Les-Houches-Accord @mycite{Skands2003cj} are used. The actual
-  SLHA file name has to be specified by @code{SLHA_INPUT} and has to
-  reside in the current run directory, i.e. @code{PATH}. 
-  From this file the full low-scale 
-  MSSM spectrum is read, including sparticle masses, mixing angles etc.
-  In addition information provided on the total particles widths is read 
-  from the input file. Note that the setting of masses and widths through
-  the SLHA input is superior to setting through @ref{MASS[<id>]} and 
-  @ref{WIDTH[<id>]}.
+To use the MSSM within Sherpa the MODEL switch has to be set to @option{MSSM}
+and @ref{ME_SIGNAL_GENERATOR} has to be set to @option{Amegic}. Further, the
+parameter spectrum has to be fed in. To achieve this files that conform to the
+SUSY-Les-Houches-Accord @mycite{Skands2003cj} are used. The actual SLHA file
+name has to be specified by @code{SLHA_INPUT} and has to reside in the current
+run directory, i.e. @code{PATH}. From this file the full low-scale MSSM spectrum
+is read, including sparticle masses, mixing angles etc. In addition information
+provided on the total particle's widths is read from the input file. Note that
+the setting of masses and widths through the SLHA input is superior to setting
+through @ref{MASS[<id>]} and @ref{WIDTH[<id>]}.
 

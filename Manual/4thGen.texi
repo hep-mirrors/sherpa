@@ -1,24 +1,37 @@
 @node 4thGen
 @subsection Fourth Generation
+@cindex A_14
+@cindex A_24
+@cindex A_34
+@cindex PHI_2
+@cindex PHI_3
+@cindex THETA_L14
+@cindex THETA_L24
+@cindex THETA_L34
+@cindex PHI_L2
+@cindex PHI_L3
+@cindex OUTPUT_MIXING
 
 The 4thGen model adds a fourth family of quarks and leptons to the
-Standard Model. It is invoked by specifying MODEL = SM+4thGen in the
+Standard Model. It is invoked by specifying @code{MODEL = SM+4thGen} in the
 '(model)' section of the steering file or the model data file
 `Model.dat', respectively. Additionally, the matrix element generator
-Amegic++ has to be specified via ME_SIGNAL_GENERATOR = Amegic (cf. 
+Amegic++ has to be specified via @code{ME_SIGNAL_GENERATOR = Amegic} (cf. 
 @ref{ME_SIGNAL_GENERATOR}).
 
 The masses and widths of the additional particles are defined via the
-usual MASS[PDG] and WIDTH[PDG] switches, where PDG = [7,8,17,18] for
-d_4, u_4, l_4 and nu_4. A general mixing is implemented for both
+usual @code{MASS[PDG]} and @code{WIDTH[PDG]} switches, where @code{PDG = [7,8,17,18]}
+for the fourth generation down and up quarks, the charged lepton and the
+neutrino, respectively. A general mixing is implemented for both
 leptons and quarks, parametrised through three additional mixing
 angles and two additional phases, as described in @mycite{Hou1987vd}:
-A_14, A_24, A_34, PHI_2 and PHI_3 for quarks, THETA_L14, THETA_L24,
-THETA_L34, PHI_L2 and PHI_L3 for leptons.
+@code{A_14}, @code{A_24}, @code{A_34}, @code{PHI_2} and @code{PHI_3} for quarks,
+@code{THETA_L14}, @code{THETA_L24}, @code{THETA_L34}, @code{PHI_L2} and
+@code{PHI_L3} for leptons.
 Both 4x4 mixing matrices expand upon their 3x3 Standard Model counter
 parts: the CKM matrix for quarks and the unit matrix for leptons. Both
-mixing matrices can be printed on screen with OUTPUT_MIXING = 1.
+mixing matrices can be printed on screen with @code{OUTPUT_MIXING = 1}.
 
 Per default, all particles are set unstable and have to be decayed into
 Standard Model particles within the matrix element or set stable via
-STABLE[PDG] = 1.
+@code{STABLE[PDG] = 1}.
