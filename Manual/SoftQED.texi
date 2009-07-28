@@ -4,10 +4,10 @@
 Higher order QED corrections are effected both on hard interaction and, upon
 their formation, on each hadron's subsequent decay. The Photons
 @mycite{Schonherr2008av} module is called in both cases for this task. It
-employes a YFS-type resummation of all infrared singular terms to all orders and
-is augmented with a complete first order correction in the most relevant cases
-(all other ones receive approximate real emission corrections built up by
-Catani-Seymour splitting kernels).
+employes a YFS-type resummation @mycite{Yennie1961ad} of all infrared singular
+terms to all orders and is augmented with a complete first order correction in
+the most relevant cases (all other ones receive approximate real emission
+corrections built up by Catani-Seymour splitting kernels).
 
 @menu
 * General Switches::
@@ -45,9 +45,9 @@ also be included up to first order in alpha_QED. This is the default setting.
 @subsubsection YFS_USE_ME
 @cindex YFS_USE_ME
 The switch YFS_USE_ME=[0,1] tells Photons how to correct hard
-emissions to first order in $\alpha_QED$. If YFS_USE_ME=0, then
+emissions to first order in alpha_QED. If YFS_USE_ME=0, then
 Photons will use collinearly approximated real emission matrix elements. Virtual
-emission matrix elements of order $\alpha_QED$ are ignored. If, however,
+emission matrix elements of order alpha_QED are ignored. If, however,
 YFS_USE_ME=1, then exact real and/or virtual emission matrix elements
 are used wherever possible. These are presently available for V->FF, V->SS,
 S->FF, S->SS, S->Slnu, S->Vlnu type decays, leptonic tau-decays, W->lnu and 
@@ -84,9 +84,9 @@ ME_QED=@option{On}/@option{Off} turns the higher order QED corrections to the
 matrix element on or off, respectively.
 These corrections will only be effected on final state not strongly interacting
 particles. If a resonant production subprocess for an unambiguous subset of all
-such particles is specified via the process declaration @ref{Processes} this
-can be taken into account and dedicated higher order matrix elements can be
-taken into account (if YFS_MODE=@option{2} and YFS_USE_ME=@option{1}).
+such particles is specified via the process declaration (cf. @ref{Processes})
+this can be taken into account and dedicated higher order matrix elements can be
+used (if YFS_MODE=2 and YFS_USE_ME=1).
 
 
 @node Higher Order QED Corrections to Hadron Decays
