@@ -4,7 +4,6 @@
 @menu
 * Installation::                           How to install Sherpa
 * Running Sherpa::                         How to run the event generator
-* Example set-up::                         An example of a Sherpa set-up: W+Jets at the Tevatron
 @end menu
 
 @node Installation
@@ -15,16 +14,15 @@ Sherpa is distributed as a tarred and gzipped file named
 working directory with
 
 @example
-@code{ tar -zxvf Sherpa-<version>.tar.gz} .
+@code{ tar -zxf Sherpa-<version>.tar.gz} .
 @end example
 
-All modules, briefly introduced in @ref{Basic structure}, have
-their own subdirectories in Sherpa's top-level directory. To guarantee successful
+To guarantee successful
 installation, the following tools should have been made available on
 the system: @code{make}, @code{autoconf}, @code{automake} and
 @c update
-@code{libtool}. Furthermore, a C++ and FORTRAN compiler must have been
-provided. The authors recommend to use the following commands
+@code{libtool}. Furthermore, a C++ and FORTRAN compiler must be
+provided. Compilation and installation proceed through the following commands
 
 @example
 @code{ ./configure}
@@ -32,12 +30,6 @@ provided. The authors recommend to use the following commands
 @code{ make install}
 @end example
 
-in order to run the installation. While processing the installation
-a log-file called @code{sherpa_install.log} is created, which records
-the entire installation procedure. This is useful in cases where the
-automatic compilation process fails. Then, users are invited to send
-the log-file as a bug report to the authors.
-  
 If Sherpa has to be moved to a different directory after the installation,
 one has to set the following environment variables for each run:
 @example
@@ -55,14 +47,16 @@ to pass the appropriate commands to the configure step. This is achieved
 as shown below:
 
 @example
-@code{./configure --enable-hepmc2=/path/to/hepmc2}
-
-            @code{--enable-lhapdf=/path/to/lhapdf} .
+@code{./configure --enable-hepmc2=/path/to/hepmc2 --enable-lhapdf=/path/to/lhapdf}
 @end example
 
-If you want to use the built-in interface to Lund fragmentation and hadron
-decays, you have to compile with Pythia support by specifying the
-@code{--enable-pythia} option without any argument.
+For a complete list of possible configuration options run
+@samp{./configure --help}.
+
+@c If you want to use the built-in interface to Lund fragmentation and hadron
+@c decays, you have to compile with Pythia support by specifying the
+@c @code{--enable-pythia} option without any argument.
+
 The Sherpa package has successfully been compiled, installed and
 tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux systems 
 using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1, 4.2 and 4.3 as
@@ -113,35 +107,28 @@ examples see the @ref{Examples} section.
 
 Central to any Monte Carlo simulation is the choice of the hard
 processes that initiate the events. These hard processes are
-described by matrix elements. In Sherpa only a few 
+described by matrix elements. In Sherpa,
+the selection of processes happens in the @code{(processes)}
+part of the steering file.
+Only a few 
 @iftex 
 $2\to2$ 
 @end iftex
 @ifnottex 
 2->2 
 @end ifnottex 
-processes
-have been hard-coded and are available in EXTRA_XS. The
-more usual way is to employ one of Sherpa's internal tree-level
-matrix-element generators: AMEGIC++ or COMIX. 
-For a description of these different modules, see @ref{Basic structure}.
+reactions have been hard-coded. They are available in the EXTRA_XS module.
+The more usual way to compute matrix elements is to employ one of Sherpa's
+automatic tree-level generators, AMEGIC++ and Comix, see @ref{Basic structure}.
 If no matrix-element generator is selected, using the @ref{ME_SIGNAL_GENERATOR}
 tag, then Sherpa will use whichever generator is capable of calculating the 
-process, checking EXTRA_XS first, then AMEGIC++ and then COMIX. Therefore, 
+process, checking EXTRA_XS first, then AMEGIC++ and then Comix. Therefore, 
 for some processes, such as the example here, a couple, or even all, of the 
 options are used. In this example, EXTRA_XS calculates the 2->2 part of the 
-process, AMEGIC++ calculates the 2->3,4 parts, and COMIX calculates the 
+process, AMEGIC++ calculates the 2->3,4 parts, and Comix calculates the 
 2->5,6 parts.
 
-When AMEGIC++ is used, Sherpa is required
-to run twice: first, in the initialization run the matrix elements are
-generated and next, in the generation run the cross sections are
-calculated and/or events are generated.
-
-The selection of the processes (or the process) happens in the @code{(processes)}
-part of the steering file, where particles or groups of particles
-are defined by means of the PDG numbering scheme. To get, for example, the
-@code{Tevatron_SimpleExample} setup working, the initialization run has to be
+To begin with the example, the initialization run has to be
 started by changing into the @code{<prefix>/share/SHERPA-MC/Examples/Tevatron_SimpleExample/}
 directory and executing
 
@@ -160,34 +147,33 @@ For good book-keeping, it is highly recommended to reserve different
 subdirectories for different simulations as it is demonstrated with
 the example setups. 
 
-If AMEGIC++ is used, during the initialization run the Feynman
-diagrams for the processes are constructed and translated into
-helicity amplitudes. Furthermore suitable phase-space mappings are
-produced. The amplitudes and the integration channels are stored
-in library files that still need to be compiled and linked to the
-Sherpa main program. The library files are placed in a directory
-called @code{Process}, which sits in the @code{Tevatron_SimpleExample} directory
-together with the steering file. The initialization run apparently
+In this example AMEGIC++ is invoked by Sherpa, meaning that during the first run 
+(the initialization run) Feynman diagrams for the hard processes are constructed
+and translated into helicity amplitudes. Furthermore suitable phase-space mappings are
+produced. The amplitudes and corresponding integration channels are written to disk as
+C++ sourcecode, placed in a subdirectory of @code{Tevatron_SimpleExample},
+which is called @code{Process}. The initialization run apparently
 stops with an error message, which is nothing but the request to carry
 out the compilation and linking procedure for the generated
-matrix-element libraries: the @code{makelibs} script, provided for this
-purpose and created in the working directory, has to be
-executed according to
+matrix-element libraries. The @code{makelibs} script, provided for this
+purpose and created in the working directory, must be invoked by the user:
 
 @example
-@code{./makelibs} .
+cd Tevatron_SimpleExample/
+./makelibs
+cd ..
 @end example
 
-Afterwards Sherpa can be restarted using the same command line as
-before. In this (generation) run the cross sections of the hard
-processes are evaluated (and the
-integration over phase space is being optimized to arrive at an
-efficient event generation),
-and, subsequently events are generated if @code{EVENTS} was specified
+Afterwards Sherpa can be restarted using the same command as
+before. In this run (te generation run) the cross sections of the hard
+processes are evaluated. Simultaneously the
+integration over phase space is optimized to arrive at an
+efficient event generation.
+Subsequently events are generated if @code{EVENTS} was specified
 either at the command line or added to the @code{Run.dat} file in the
 @code{(run)} section. 
 
-If the Internal hard-coded cross sections or COMIX are used,
+If the Internal hard-coded cross sections or Comix are used,
 and AMEGIC++ is not, an initialization run is not needed, and Sherpa will 
 calculate the cross sections and generate events during the first run.
 
@@ -212,7 +198,9 @@ it is advantageous to store the cross sections obtained during the
 generation run for later use. This saves CPU time especially for large
 final-state multiplicities of the matrix elements. To store the
 integration results, a @code{<result>} directory has to be created in
-@code{Tevatron_SimpleExample}. Then utilizing an extended command line reading
+@code{Tevatron_SimpleExample} (Alternativley, the command line option 
+@option{-g} can be invoked, see @ref{Command line}). Then utilizing an
+extended command line reading
 
 @example
 @code{<prefix>/bin/Sherpa RESULT_DIRECTORY=<result>/}
@@ -258,9 +246,7 @@ procedure to prepare for the generation of events again.
 
 
 
-
-@node Example set-up
-@section Example set-up: W+Jets at Tevatron
+@subsection The example set-up: W+Jets at Tevatron
 
 The setup (or the @code{Run.dat} file) provided in
 @code{./Examples/Tevatron_SimpleExample/} can be considered as a standard
@@ -269,12 +255,7 @@ Such events will include effects from parton showering,
 hadronization into primary hadrons and their subsequent decays into
 stable hadrons. Moreover, the example chosen here nicely demonstrates
 how Sherpa is used in the context of merging matrix elements and
-parton showers @mycite{Catani2001cc},@mycite{Krauss2002up}. 
-@ignore
-For more information on the combination of matrix elements
-and parton showers as implemented in Sherpa, cf.\
-Sec.~\ref@{SHERPA_selectproc@}.
-@end ignore
+parton showers @mycite{Hoeche2009rj}.
 In addition to the aforementioned corrections, this simulation of
 inclusive 
 @iftex 
@@ -325,11 +306,7 @@ included in the setup are the following:
 @end iftex
 @ifnottex
 @example
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino,
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino parton,
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino parton parton,
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino parton parton parton,
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino parton parton parton parton.
+  proton anti-proton -> parton parton -> electron anti-electron-neutrino + up to four partons
 @end example
 @end ifnottex
 
@@ -338,10 +315,7 @@ In the @code{(processes)} part of the steering file this translates into
   Process 93 93 -> 11 -12 93{4}
   Order_EW 2; Max_N_Quarks 6
   CKKW sqr(30/E_CMS)
-  Integration_Error 0.02 {5};
-  Integration_Error 0.04 {6};
-  Integration_Error 0.05 {7};
-  Integration_Error 0.05 {8};
+  Integration_Error 0.02 {8};
   End process;
 @end verbatim
 The physics model for
@@ -358,18 +332,17 @@ W
 @end ifnottex 
 production without any and with up to four extra QCD
 parton emissions will be generated.
-Various other parameters define the magnitude of
-these cross sections. Proton--antiproton collisions are considered at
+Proton--antiproton collisions are considered at
 beam energies of 900 GeV; under part @code{(beam)} of the @code{Run.dat}
 file, one therefore has @code{BEAM_1=2212}, @code{BEAM_2=-2212} and
 @code{BEAM_ENERGY_@{1,2@}=900.0}. The default PDF used by Sherpa is 
-cteq6l. Model parameters and couplings can be set in the
+CTEQ6L. Model parameters and couplings can be set in the
 @code{Run.dat} section @code{(model)}, and the way couplings are treated
 can be defined under the @code{(me)} category. The matrix elements have to be
 regularized to obtain meaningful cross sections. This is achieved by
-specifying ``@code{CKKW sqr(30/E_CMS)}'' in the @code{(processes)} part of
-@code{Run.dat}. To
-eventually obtain fully hadronized events, the @code{FRAGMENTATION} tag
+specifying @samp{CKKW sqr(30/E_CMS)} in the @code{(processes)} part of
+@code{Run.dat}. Simultaneously, this tag initiates the ME-PS merging procedure.
+To eventually obtain fully hadronized events, the @code{FRAGMENTATION} tag
 has been left on it's default setting @option{Ahadic},
 which will run Sherpa's cluster hadronization, and the tag
 @code{DECAYMODEL} has it's default setting 
@@ -378,7 +351,7 @@ Additionally corrections owing to photon emissions are taken into
 account.
 
 
-@subsection Calculation of tree-level cross sections and parton-level event generation with Sherpa
+@subsection Parton-level event generation with Sherpa
 
 Sherpa has its own tree-level matrix-element generators called AMEGIC++ and Comix. 
 Furthermore, with the module PHASIC++, sophisticated and

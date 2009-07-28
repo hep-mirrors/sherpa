@@ -299,18 +299,18 @@ available for the beams.
 @item They can either be monochromatic, and therefore
 require no extra treatment.
 @item Photon emission in the Equivalent Photon
-Approximation (EPA) for protons has also been added. @footnote{
-The authors would like to thank T.~Pierzchala for his help in
-implementing and testing the corresponding code.}
+Approximation (EPA) for protons has also been added.
+The authors would like to thank T. Pierzchala for his help in
+implementing and testing the corresponding code.
 @item For the case of an electron collider, laser
 backscattering off the electrons is supported.  This leads
-to photonic initial states. @footnote{
+to photonic initial states.
 It should be stressed, however, that the parametrization 
 @mycite{Zarnecki2002qr}, which has been implemented among 
 others, is valid for the proposed TESLA photon collider 
 only. This is because various assumptions concerning the 
 laser parameters and especially the initial energy of 
-the electrons have been made.}
+the electrons have been made.
 @end enumerate
 @*
 
@@ -357,7 +357,7 @@ S\scalebox{0.8}{HERPA}\xspace
 Sherpa 
 @end ifnottex
 framework. This also includes methods used for the definition
-of the parton-shower evolution, such as colour connections and
+of the starting conditions for parton-shower evolution, such as colour connections and
 the hard scale of the process. The classes for phase-space
 integration are not included here, they are located in the
 module Phasic, since they are needed by 
@@ -390,21 +390,22 @@ generator, which employs the method of helicity amplitudes
 a generator, which generates generators:
   
 During the initialization run the matrix elements for a given set of
-processes within the SM, the MSSM or the ADD model, as well as their 
+processes, as well as their 
 specific phase-space mappings are created by 
 @iftex 
-A\scalebox{0.8}{MEGIC++}\xspace 
+A\scalebox{0.8}{MEGIC++}.
 @end iftex 
 @ifnottex
-AMEGIC++ 
+AMEGIC++.
 @end ifnottex 
-and stored in 
-library files. Before the first production run, these libraries have
-to be linked to the program. They are used to calculate cross
-sections and to generate single weighted or unweighted events
-accordingly. A directory may be specified to store these cross
-sections, the status of the phase-space integrators, and the maximal
-weights of the processes. This information may be used to accelerate
+Corresponding C++ sourcecode is written to disk and compiled
+by the user using the @kbd{makelibs} script.
+The produced libraries are linked to the main program
+automatically in the next run and used to calculate cross
+sections and to generate weighted or unweighted events.
+A directory may be specified to store these cross sections,
+the status of the phase-space integrators, and the maximal
+weights of the processes. This information may be used to skip
 the potentially lengthy calculation phase in further event
 generation runs.
   
@@ -421,16 +422,15 @@ tested in @mycite{Hagiwara2005wg}.
 @item COMIX
 
 Comix is a multi-leg tree-level matrix element generator, based on 
-the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}. 
-It is designed to cope with especially large numbers of external legs. To this end
-it employs a new algorithm to recursively compute phase-space weights and can
+the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}.
+It employs a new algorithm to recursively compute phase-space weights and can
 be run in multithreaded mode to make better use of multicore processors
 and multiprocessor machines @mycite{Gleisberg2008fv}, see also @mycite{Gleisberg2008ft}.
-
-Comix is a useful supplement to older matrix element generators like AMEGIC++
+The module is a useful supplement to older matrix element generators like AMEGIC++
 in the high multiplicity regime. Due to the usage of colour sampling it is 
-easy to interface with parton shower simulations and can hence be
-easily employed for the ME-PS merging within Sherpa.
+particularly suited for an interface with parton shower simulations and can hence be
+easily employed for the ME-PS merging within Sherpa. It is Sherpa's default
+large multiplicity matrix element generator for the Standard Model.
 
 
 @item PHASIC++
@@ -442,36 +442,24 @@ and final-state integrals, the adaptive multi-channel method
 of @mycite{Kleiss1994qy},@mycite{Berends1994pv} is used by default together
 with a Vegas optimization @mycite{Lepage1980dq} of the single
 channels. In addition, final-state integration accomplished
-by Rambo @mycite{Kleiss1985gy} and Sarge
-@mycite{Draggiotis2000gm} is supported.
+by Rambo @mycite{Kleiss1985gy}, Sarge
+@mycite{Draggiotis2000gm} and HAAG @mycite{vanHameren2002tc} is supported.
         
 @item CSSHOWER++ 
 
+This is the module hosting Sherpa's default parton shower,
+which was published in @mycite{Schumann2007mg}. 
+The corresponding shower model was originally proposed in 
+@mycite{Nagy2005aa}, @mycite{Nagy2006kb}.
+It relies on the factorisation of real-emission matrix elements in the 
+CS subtraction framework @mycite{Catani1996vz}, @mycite{Catani2002hc}. 
+There exist four general types of CS dipole terms that capture the complete
+infrared singularity structure of next-to-leading order QCD amplitudes.
+In the large-N_C limit, the corresponding splitter and spectator partons
+are always adjacent in colour space. The dipole functions for the
+various cases, taken in four dimensions and averaged over spins,
+are used as shower splitting kernels.
 
-
-
-
-@c @item APACIC++
-@c
-@c          APACIC++ @mycite{Kuhn2000dk},@mycite{Krauss2005re} contains classes for
-@c  the simulation of both the initial- and the final-state parton
-@c  shower. @footnote{
-@c    From version 1.0.9. final-state QED radiation off quarks and leptons 
-@c    can optionally be included.}
-@c  The shower evolution is organized through an ordering in the parton
-@c  virtual mass. Coherence effects are accounted for by explicit
-@c  ordering of the opening angles in subsequent branchings@footnote{
-@c    This is similar to the way Pythia @mycite{Sjostrand1993yb},@mycite{Sjostrand2003wg} 
-@c    handles the parton shower. Herwig@mycite{Corcella2000bw},@mycite{Corcella2002jc} 
-@c    in  contrast ensures coherence by taking angles as ordering parameter
-@c    @mycite{Marchesini1983bm},@mycite{Webber1983if},@mycite{Marchesini1987cf},
-@c    a similar algorithm @mycite{Gieseke2003rz} is also employed in Herwigpp 
-@c    @mycite{Bahr2008pv},@mycite{Bahr2008tx}.}.
-@c  All features needed for a consistent merging with matrix elements
-@c  @mycite{Catani2001cc},@mycite{Krauss2002up} are included, however the main
-@c  part of the merging procedure is implemented in the @code{SHERPA}
-@c  module itself.
-  
 @item AMISIC++ 
 
 AMISIC++ contains classes for the simulation of multiple parton
@@ -489,7 +477,7 @@ of the subsequent (semi-)hard collisions.
 The beam--beam remnants
 are organized such that partons which are adjacent in colour space
 are also adjacent in momentum space. The corresponding classes for
-beam remnant handling reside in the SHERPA module.
+beam remnant handling reside in the PDF and SHERPA modules.
   
 @item AHADIC++
 
@@ -548,7 +536,7 @@ S\scalebox{0.8}{HERPA}\xspace
 @ifnottex
 Sherpa 
 @end ifnottex
-. During generation events can be analyzed at different
+. During generation events can be analysed at different
 stages of their evolution, namely at the level of the hard matrix
 element, after parton-shower evolution and after full hadronization.
 Apart from numerous observables, a comprehensive list of selectors,
