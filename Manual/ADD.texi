@@ -1,2 +1,21 @@
 @node ADD
 @subsection ADD Model of Large Extra Dimensions
+@cindex N_ED
+@cindex G_NEWTON
+@cindex KK_CONVENTION
+@cindex M_S
+@cindex M_CUT
+
+  The variable @code{N_ED} specifies the number of extra dimensions.
+  The value of the Newtonian constant can be specified in units of 
+  $\hbar c (GeV/c^2)^(-2)$ using the keyword @code{G_NEWTON}.
+  The size of the string scale M_S can be defined by the parameter @code{M_S}.
+  Setting the value of @code{KK_CONVENTION} allows to change between three 
+  widely used conventions for the definition of $M_S$ and the way of 
+  summing internal Kaluza-Klein propagators.
+  The switch @code{M_CUT} one restricts the c.m. energy of
+  the hard process to be below this specified scale. 
+
+  For details of the implementation, the reader 
+  is referred to @mycite{Gleisberg2003ue}.
+
