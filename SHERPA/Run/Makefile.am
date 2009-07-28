@@ -33,4 +33,5 @@ dist_pkgdata_DATA         = \
 			Run.dat \
 			Shower.dat
 
-bin_SCRIPTS = Sherpa@VERSIONING@-config get_bibtex
+bin_SCRIPTS = Sherpa@VERSIONING@-config
+dist_bin_SCRIPTS = get_bibtex
