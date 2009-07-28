@@ -51,15 +51,21 @@ Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
   return value;
 }
 
-double Basic_Pfunc::Ifunc(double x,int ed)
+Complex Basic_Pfunc::Ifunc(double x,int ed)
 {
   double a=0.;
   if((ed%2)==0){
     for(int k=2;k<ed;k+=2)a-=pow(x,k)/k;
-    return a-0.5*log(sqr(x)-1);
+    double larg=sqr(x)-1;
+    if (larg>0.) return Complex(a-0.5*log(larg),0.);
+    if (larg<0.) return Complex(a-0.5*log(-larg),-0.5*M_PI);
+    return Complex(0.,0.);
   }
   for(int k=1;k<ed;k+=2)a-=pow(x,k)/k;
-  return a+0.5*log((x+1.)/(x-1.));
+  double larg=(x+1.)/(x-1.);
+  if (larg>0.) return Complex(a+0.5*log(larg),0.);
+  if (larg<0.) return Complex(a+0.5*log(-larg),0.5*M_PI);
+  return Complex(0.,0.);
 } 
 
 double Basic_Pfunc::IEfunc(double x,int ed)
@@ -102,7 +108,7 @@ Complex Basic_Pfunc::KKProp(double p2)
     if(p2>0){
       vr=ms/sqrt(p2);
       vv= 1./(pow(vr,ed+2)*sqr(p2)*gn);
-      return Complex(Ifunc(vr,ed)*vv,-0.5*M_PI*vv);
+      return (Ifunc(vr,ed)+Complex(0.,-0.5*M_PI))*vv;
     }
     vr=ms/sqrt(-p2);
     vv= 1./(pow(vr,ed+2)*sqr(p2)*gn);

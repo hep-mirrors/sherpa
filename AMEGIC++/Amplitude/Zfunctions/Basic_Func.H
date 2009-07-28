@@ -152,7 +152,7 @@ namespace AMEGIC {
   };
 
   class Basic_Pfunc : public virtual Basic_Func {
-    double Ifunc(double,int);
+    Complex Ifunc(double,int);
     double IEfunc(double,int);
     Complex KKProp(double);
   public:
