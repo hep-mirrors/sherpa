@@ -26,28 +26,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
          ATOOLS::ToType<double>(parameters[0][parameters[0].size()-4]),
          ATOOLS::ToType<int>(parameters[0][parameters[0].size()-3]),list);
   }
-  else return NULL;
-//   else if (parameters.size()<10) return NULL;
-//   double min=0.0, max=1.0;
-//   size_t bins=100;
-//   std::vector<ATOOLS::Flavour> f(10);
-//   std::string list=finalstate_list, scale="Lin";
-//   for (size_t i=0;i<parameters.size();++i) {
-//     if (parameters[i].size()<2) continue;
-//     for (short unsigned int j=0;j<6;++j) {
-//       if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
-//         int kf=ATOOLS::ToType<int>(parameters[i][1]);
-//         f[j]=ATOOLS::Flavour((kf_code)abs(kf));
-//         if (kf<0) f[j]=f[j].Bar();
-//       }
-//     }
-//     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-//     else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-//     else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-//     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-//     else if (parameters[i][0]=="LIST") list=parameters[i][1];
-//   }
-//   return new Class(f,HistogramType(scale),min,max,bins,list);
+  return NULL;
 }
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)        \

@@ -17,6 +17,7 @@ ANAOBS_SOURCES        =	\
 			MI_Observables.C \
 			One_Particle_Observables.C \
 			One_Particle_Observables_2.C \
+			Conditional_One_Particle_Observables.C \
 			Two_Particle_Observables.C \
 			Two_Particle_Observables_2.C \
                         Three_Particle_Observables.C \
