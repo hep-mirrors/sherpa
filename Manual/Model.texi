@@ -34,6 +34,7 @@ in Sherpa:
 * THDM::	   Two Higgs Doublet Model
 * EHC::		   Effective Higgs Couplings
 * 4thGen::	   Fourth Generation
+* FeynRules::	   FeynRules model 
 @end menu
 
 
@@ -104,3 +105,4 @@ Decays of other particles have to be specified in the process setup
 @include THDM.texi
 @include EHC.texi
 @include 4thGen.texi
+@include FeynRules.texi

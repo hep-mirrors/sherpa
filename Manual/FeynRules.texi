@@ -1,0 +1,12 @@
+@node FeynRules
+@subsection FeynRules model
+@cindex FeynRules
+
+To use a model generated using the FeynRules package, see @mycite{Christensen2008py}and @mycite{Christensen2009jx}, 
+the MODEL switch has to be set to @option{FeynRules} and @ref{ME_SIGNAL_GENERATOR} has to be set to 
+@option{Amegic}. Note, in order to obtain FeynRules model outputs in a format readable by Sherpa the FeynRules
+subroutine 'WriteSHOutput[ L ]' needs to be called for the desired model Lagrangian 'L'. This results in a
+set of ASCII files that represent the considered model through its particle data, model parameters and interaction 
+vertices. Note also that Sherpa/Amegic can only deal with Feynman rules in unitary gauge. 
+
+... more to come ...
