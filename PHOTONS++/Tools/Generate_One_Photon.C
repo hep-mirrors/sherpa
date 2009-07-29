@@ -59,8 +59,8 @@ void Generate_One_Photon::GeneratePhotonAngleMassless() {
 }
 
 void Generate_One_Photon::GeneratePhoton() {
-  p_photon = new Particle(ATOOLS::Particle::Counter()+1,kf_photon,
-                          Vec4D(0.,0.,0.,0.),'S');
+  p_photon = new Particle(0,kf_photon,Vec4D(0.,0.,0.,0.),'S');
+  p_photon->SetNumber(0);
   p_photon->SetMomentum(Vec4D(  m_w ,
                                 m_w * sin(m_theta) * cos(m_phi) ,
                                 m_w * sin(m_theta) * sin(m_phi) ,

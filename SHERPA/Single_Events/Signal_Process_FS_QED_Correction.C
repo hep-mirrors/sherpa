@@ -95,8 +95,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       fslep.erase(it);
     }
     else {
-      mfslep.push_back(new Particle(**it));
-      (*mfslep.rbegin())->SetNumber(-Particle::Counter());
+      mfslep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'F'));
+      (*mfslep.rbegin())->SetNumber(0);
       ++it;
     }
   }
