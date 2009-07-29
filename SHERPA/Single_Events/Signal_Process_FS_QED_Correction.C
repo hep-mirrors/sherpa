@@ -46,22 +46,22 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   }
 
   Process_Vector pvec(p_mehandlers->begin()->second->AllProcesses());
-  msg_Debugging()<<METHOD<<"(){\n";
-  for (size_t i=0;i<pvec.size();++i) {
-    for (size_t j=0;j<pvec[i]->Size();++j) {
-      SubInfoVector siv;
-      FindSubProcessInfosContainingLeptons((*pvec[i])[j]->Info(),siv);
-      msg_Debugging()<<"  found process: "<<(*pvec[i])[j]->Name()<<" with "
-                     <<siv.size()<<" defined lepton production blobs...\n";
-      for (size_t k=0;k<siv.size();++k)
-        msg_Debugging()<<*siv[k]<<endl;
-      m_proc_lep_map.insert(make_pair((*pvec[i])[j]->Name(),siv));
-    }
-  }
-  msg_Debugging()<<"}\n";
-
-  if (m_on)
+  if (m_on) {
     m_name += p_sphotons->SoftQEDGenerator();
+    msg_Debugging()<<METHOD<<"(){\n";
+    for (size_t i=0;i<pvec.size();++i) {
+      for (size_t j=0;j<pvec[i]->Size();++j) {
+        SubInfoVector siv;
+        FindSubProcessInfosContainingLeptons((*pvec[i])[j]->Info(),siv);
+        msg_Debugging()<<"  found process: "<<(*pvec[i])[j]->Name()<<" with "
+                       <<siv.size()<<" defined lepton production blobs...\n";
+        for (size_t k=0;k<siv.size();++k)
+          msg_Debugging()<<*siv[k]<<endl;
+        m_proc_lep_map.insert(make_pair((*pvec[i])[j]->Name(),siv));
+      }
+    }
+    msg_Debugging()<<"}\n";
+  }
   else
     m_name += "None";
 }
@@ -72,7 +72,6 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
 Return_Value::code Signal_Process_FS_QED_Correction::Treat
 (Blob_List * bloblist, double & weight)
 {
-  if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
@@ -82,11 +81,11 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   // look for QCD corrected hard process in need for QED
   Blob * sigblob(bloblist->FindLast(btp::Shower));
   if (!sigblob) return Return_Value::Nothing;
-  if (!sigblob->Has(blob_status::needs_extraQED)) return Return_Value::Nothing;
-  Blob * tt(bloblist->FindLast(btp::Signal_Process));
-  Vec4D in(0.,0.,0.,0.), out(0.,0.,0.,0.);
-  for (size_t i=0;i<tt->NInP();++i) in+=tt->InParticle(i)->Momentum();
-  for (size_t i=0;i<tt->NOutP();++i) out+=tt->OutParticle(i)->Momentum();
+  // if already treated -> nothing to do
+  if (sigblob->TypeSpec()=="YFS-type QED Corrections to ME")
+    return Return_Value::Nothing;
+  if (sigblob->TypeSpec()=="setting leptons on-shell")
+    return Return_Value::Nothing;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
   Particle_Vector fslep(sigblob->GetOutParticles());
@@ -118,6 +117,23 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
       delete *it;
     return Return_Value::New_Event;
+  }
+  // if switched off or no need for QED stop here and build a blob
+  if (!m_on || !sigblob->Has(blob_status::needs_extraQED)) {
+    Blob * onshellblob = bloblist->AddBlob(btp::Shower);
+    onshellblob->SetTypeSpec("setting leptons on-shell");
+    if (sigblob->Has(blob_status::needs_extraQED))
+      sigblob->UnsetStatus(blob_status::needs_extraQED);
+    for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
+      (*it)->SetInfo('H');
+      (*it)->SetStatus(part_status::decayed);
+      onshellblob->AddToInParticles(*it);
+    }
+    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
+      onshellblob->AddToOutParticles(*it);
+    }
+    onshellblob->SetStatus(blob_status::needs_hadronization);
+    return Return_Value::Success;
   }
   // build effective verteces for resonant production
   // use subprocess infos if possible
