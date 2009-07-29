@@ -94,12 +94,12 @@ desired simulation. The details for properly doing this are given in
 @ref{Parameters}. In this section, the focus is on the main
 issues for a successful operation of Sherpa. This is illustrated by
 discussing and referring to the parameter settings that come in the run card 
-@code{./Examples/Tevatron_SimpleExample/Run.dat}. This is a simple run card
+@code{./Examples/Tevatron_WJets/Run.dat}. This is a simple run card
 created to show the basics of how to operate Sherpa. @strong{It should be 
 stressed that this run-card relies on many of Sherpa's default settings,
-and, as such, before using it to look at physics, the user should understand
-those settings.} For more information on the settings and parameters in 
-Sherpa, see @ref{Parameters}, and for more involved 
+and, as such, the user should understand those settings before using it to 
+look at physics.} For more information on the settings and parameters in 
+Sherpa, see @ref{Parameters}, and for more 
 examples see the @ref{Examples} section.
 
 @anchor{Process selection and initialization}
@@ -122,60 +122,48 @@ The more usual way to compute matrix elements is to employ one of Sherpa's
 automatic tree-level generators, AMEGIC++ and Comix, see @ref{Basic structure}.
 If no matrix-element generator is selected, using the @ref{ME_SIGNAL_GENERATOR}
 tag, then Sherpa will use whichever generator is capable of calculating the 
-process, checking EXTRA_XS first, then AMEGIC++ and then Comix. Therefore, 
-for some processes, such as the example here, a couple, or even all, of the 
+process, checking EXTRA_XS first, then Comix and then AMEGIC++. Therefore, 
+for some processes, several of the 
 options are used. In this example, EXTRA_XS calculates the 2->2 part of the 
-process, AMEGIC++ calculates the 2->3,4 parts, and Comix calculates the 
-2->5,6 parts.
+process, and Comix calculates the 
+2->3,4 parts.
 
-To begin with the example, the initialization run has to be
-started by changing into the @code{<prefix>/share/SHERPA-MC/Examples/Tevatron_SimpleExample/}
+To begin with the example, the Sherpa run has to be
+started by changing into the @code{<prefix>/share/SHERPA-MC/Examples/Tevatron_WJets/}
 directory and executing
 
 @example
-@code{<prefix>/bin/Sherpa}
+@code{<prefix>/bin/Sherpa} 
 @end example
 
-for the first time. (The user may also run from an
+The user may also run from an
 arbitrary directory, employing
-@code{<prefix>/bin/Sherpa PATH=<prefix>/share/SHERPA-MC/Examples/Tevatron_SimpleExample}. In the example, the
+@code{<prefix>/bin/Sherpa PATH=<prefix>/share/SHERPA-MC/Examples/Tevatron_WJets}. In the example, the
 keyword @code{PATH} is specified by an absolute path. It may also be 
 specified relative to the current working directory. If it is
 not specified at all or it is omitted, the current working directory
-is understood.)
+is understood.
+
 For good book-keeping, it is highly recommended to reserve different
-subdirectories for different simulations as it is demonstrated with
+subdirectories for different simulations as is demonstrated with
 the example setups. 
 
-In this example AMEGIC++ is invoked by Sherpa, meaning that during the first run 
-(the initialization run) Feynman diagrams for the hard processes are constructed
-and translated into helicity amplitudes. Furthermore suitable phase-space mappings are
-produced. The amplitudes and corresponding integration channels are written to disk as
-C++ sourcecode, placed in a subdirectory of @code{Tevatron_SimpleExample},
-which is called @code{Process}. The initialization run apparently
-stops with an error message, which is nothing but the request to carry
-out the compilation and linking procedure for the generated
-matrix-element libraries. The @code{makelibs} script, provided for this
-purpose and created in the working directory, must be invoked by the user:
+If AMEGIC++ is used, Sherpa requires an initialization run, where 
+libraries are written out, then the libraries must be linked by running
+a @code{makelibs} script in the working directory, and then Sherpa is 
+run again for the actual cross section integrations and event generation.
+For an example of how to run Sherpa using AMEGIC++, see @ref{Running Sherpa with AMEGIC++}.
 
-@example
-cd Tevatron_SimpleExample/
-./makelibs
-cd ..
-@end example
+If the Internal hard-coded cross sections or Comix are used,
+and AMEGIC++ is not, an initialization run is not needed, and Sherpa will 
+calculate the cross sections and generate events during the first run.
 
-Afterwards Sherpa can be restarted using the same command as
-before. In this run (te generation run) the cross sections of the hard
-processes are evaluated. Simultaneously the
+As the cross sections are integrated, the
 integration over phase space is optimized to arrive at an
 efficient event generation.
 Subsequently events are generated if @code{EVENTS} was specified
 either at the command line or added to the @code{Run.dat} file in the
 @code{(run)} section. 
-
-If the Internal hard-coded cross sections or Comix are used,
-and AMEGIC++ is not, an initialization run is not needed, and Sherpa will 
-calculate the cross sections and generate events during the first run.
 
 The generated events are not stored into a file by
 default; for details on how to store the events see 
@@ -198,7 +186,7 @@ it is advantageous to store the cross sections obtained during the
 generation run for later use. This saves CPU time especially for large
 final-state multiplicities of the matrix elements. To store the
 integration results, a @code{<result>} directory has to be created in
-@code{Tevatron_SimpleExample} (Alternativley, the command line option 
+@code{Tevatron_WJets} (Alternatively, the command line option 
 @option{-g} can be invoked, see @ref{Command line}). Then utilizing an
 extended command line reading
 
@@ -249,7 +237,7 @@ procedure to prepare for the generation of events again.
 @subsection The example set-up: W+Jets at Tevatron
 
 The setup (or the @code{Run.dat} file) provided in
-@code{./Examples/Tevatron_SimpleExample/} can be considered as a standard
+@code{./Examples/Tevatron_WJets/} can be considered as a standard
 example to illustrate the generation of fully hadronized events in Sherpa.
 Such events will include effects from parton showering,
 hadronization into primary hadrons and their subsequent decays into
@@ -299,23 +287,20 @@ included in the setup are the following:
   p\bar{p}\;&\to\;{\rm parton parton}\;\to\;e^-\bar{\nu}_e\,,\\
   p\bar{p}\;&\to\;{\rm parton parton}\;\to\;e^-\bar{\nu}_e\;+\;{\rm parton}\,.%,\\
   p\bar{p}\;&\to\;{\rm parton parton}\;\to\;e^-\bar{\nu}_e\;+\;{\rm parton}\;+\;{\rm parton}\,.%,\\
-  p\bar{p}\;&\to\;{\rm parton parton}\;\to\;e^-\bar{\nu}_e\;+\;{\rm parton}\;+\;{\rm parton}\;+\;{\rm parton}\,.%,\\
-  p\bar{p}\;&\to\;{\rm parton parton}\;\to\;e^-\bar{\nu}_e\;+\;{\rm parton}\;+\;{\rm parton}\;+\;{\rm parton}\;+\;{\rm parton}\,.%,\\
   %p\bar{p}&\to jet \, jet \to  e^- \bar{\nu}_e + jet \, jet \,.
 \end{align*}
 @end iftex
 @ifnottex
 @example
-  proton anti-proton -> parton parton -> electron anti-electron-neutrino + up to four partons
+  proton anti-proton -> parton parton -> electron anti-electron-neutrino + up to two partons
 @end example
 @end ifnottex
 
 In the @code{(processes)} part of the steering file this translates into
 @verbatim
-  Process 93 93 -> 11 -12 93{4}
-  Order_EW 2; Max_N_Quarks 6
+  Process 93 93 -> 11 -12 93{2}
+  Order_EW 2; Max_N_Quarks 4
   CKKW sqr(30/E_CMS)
-  Integration_Error 0.02 {8};
   End process;
 @end verbatim
 The physics model for
@@ -330,10 +315,10 @@ $W$\/
 @ifnottex 
 W 
 @end ifnottex 
-production without any and with up to four extra QCD
+production without any and with up to two extra QCD
 parton emissions will be generated.
 Proton--antiproton collisions are considered at
-beam energies of 900 GeV; under part @code{(beam)} of the @code{Run.dat}
+beam energies of 900 GeV; under the @code{(beam)} part of the @code{Run.dat}
 file, one therefore has @code{BEAM_1=2212}, @code{BEAM_2=-2212} and
 @code{BEAM_ENERGY_@{1,2@}=900.0}. The default PDF used by Sherpa is 
 CTEQ6L. Model parameters and couplings can be set in the
@@ -350,6 +335,111 @@ which will run Sherpa's cluster hadronization, and the tag
 Additionally corrections owing to photon emissions are taken into
 account.
 
+To run this example set-up, use the 
+@example
+@code{<prefix>/bin/Sherpa} 
+@end example
+command as descibed in @ref{Running Sherpa}. Sherpa displays some output as it
+runs. At the start of the run, Sherpa initializes the relevant model, and displays 
+a table of particles, with their @ref{PDG codes} and some properties. It also displays
+the @ref{Particle containers}, and their contents. The other relevant parts of 
+Sherpa are initialized, including the matrix element generator(s). The Sherpa output will look like:
+
+@smallformat
+@verbatim
+Initialized the beams Monochromatic*Monochromatic
+PDF set 'cteq6l' loaded from 'libCTEQ6Sherpa'.
+PDF set 'cteq6l' loaded from 'libCTEQ6Sherpa'.
+Initialized the ISR: (SF)*(SF)
+Initialized the Beam_Remnant_Handler.
+Initialized the Shower_Handler.
+Initialized the Fragmentation_Handler.
++----------------------------------+
+|                                  |
+|      CCC  OOO  M   M I X   X     |
+|     C    O   O MM MM I  X X      |
+|     C    O   O M M M I   X       |
+|     C    O   O M   M I  X X      |
+|      CCC  OOO  M   M I X   X     |
+|                                  |
++==================================+
+|  Color dressed  Matrix Elements  |
+|     http://comix.freacafe.de     |
+|   please cite  JHEP12(2008)039   |
++----------------------------------+
+Matrix_Element_Handler::BuildProcesses(): Looking for processes ...................... done ( 25856 kB, 0.34 s ).
+Matrix_Element_Handler::InitializeProcesses(): Performing tests ...................... done ( 25856 kB, 0 s ).
+Initialized the Matrix_Element_Handler for the hard processes.
+Hadron_Decay_Map::Read:
+   Initializing hadron decay tables. This may take some time.
+Initialized the Hadron_Decay_Handler, Decay model = Hadrons
+Initialized the Soft_Photon_Handler.
+@end verbatim
+@end smallformat
+
+Then Sherpa will start to integrate the cross sections. The output will look like:
+@smallformat
+@verbatim
+Process_Group::CalculateTotalXSec(): Calculate xs for '2_2__j__j__e-__nu_eb' (Comix)
+Starting the calculation. Lean back and enjoy ... .
+1049.87 pb +- ( 41.8506 pb = 3.98626 % ) 5000 ( 5003 -> 99.9 % )
+full optimization:  ( 0 s elapsed / 13 s left / 13 s total )   
+...
+@end verbatim
+@end smallformat
+The first line here displays the process which is being calculated. In this example,
+the integration is for the 2->2 process, parton, parton -> electron, neutrino. The
+matrix element generator used is displayed after the process. 
+As the integration progresses, summary lines are displayed, like the one 
+shown above. The current estimate of the cross section is displayed, 
+along with its statistical error estimate. The number of phase space points
+calculated is displayed after this (@option{5000} in this example), and the 
+efficiency is displayed after that. On the line below, the time elapsed is
+shown, and an estimate of the total time till the optimization is complete. 
+
+When the integration is complete, the output will look like:
+
+@smallformat
+@verbatim
+...
+985.27 pb +- ( 0.363629 pb = 0.0369065 % ) 300000 ( 300009 -> 99.9 % )
+integration time:  ( 11 s elapsed / 0 s left / 11 s total )   
+985.206 pb +- ( 0.356621 pb = 0.0361976 % ) 310000 ( 310010 -> 99.9 % )
+integration time:  ( 11 s elapsed / 0 s left / 11 s total )   
+2_2__j__j__e-__nu_eb : 985.206 pb +- ( 0.356621 pb = 0.0361976 % )  exp. eff: 6.13927 %
+@end verbatim
+@end smallformat
+with the final cross section result and its statistical error displayed.
+
+Sherpa will then move on to integrate the other processes specified in the
+run card.
+
+When the integration is complete, the event generation will start. 
+As the events are being generated, Sherpa will display a summary line stating
+how many events have been generated, and an estimate of how long it will take.
+When the event generation is complete, Sherpa's 
+output looks like:
+
+@smallformat
+@verbatim
+...
+  Event 10000 ( 158 s elapsed / 0 s left ) -> ETA: Tue Jul 28 19:41  
+In Event_Handler::Finish : Summarizing the run may take some time.
++--------------------------------------------------+
+|                                                  |
+|  Total XS is 1956 pb +- ( 8.71129 pb = 0.44 % )  |
+|                                                  |
++--------------------------------------------------+
+@end verbatim
+@end smallformat
+
+A summary of the number of events generated is displayed, with the 
+total cross section for the processes. 
+
+The generated events are not stored into a file by
+default; for details on how to store the events see 
+@ref{Event output formats}.
+
 
 @subsection Parton-level event generation with Sherpa
 
@@ -358,7 +448,7 @@ Furthermore, with the module PHASIC++, sophisticated and
 robust tools for phase-space integration are provided. Therefore
 Sherpa obviously can be used as a cross-section integrator. Because
 of the way Monte Carlo integration is accomplished, this immediately
-allows for parton-level event generation. Taking the @code{Tevatron1800}
+allows for parton-level event generation. Taking the @code{Tevatron_WJets}
 setup, users have to modify just a few settings in @code{Run.dat} and
 would arrive at a parton-level generation for the process gluon down-quark to electron 
 antineutrino and up-quark, to name an example. When, for instance, the
