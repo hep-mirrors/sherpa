@@ -657,6 +657,8 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 	  if (ampl->Leg(j)->Id()&cid) sum+=ampl->Leg(j)->Mom();
 	return sum.Abs2();
       }
+    // this should catch the partonic hadron decays
+    if (ampl->NIn()==1) return (ampl->Leg(0)->Mom()).Abs2();
     THROW(fatal_error,"Invalid amplitude");
   }
   double q2cut(0.0);
