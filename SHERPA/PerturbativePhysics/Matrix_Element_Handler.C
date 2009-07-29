@@ -283,7 +283,7 @@ void Matrix_Element_Handler::BuildProcesses()
   pread.SetInputPath(m_path);
   pread.SetInputFile(m_processfile);
   if (m_gens.size()>0 && !pread.MatrixFromFile(procdata,""))
-    THROW(missing_input,"No data in"+m_path+m_processfile+"'.");
+    THROW(missing_input,"No data in "+m_path+m_processfile+"'.");
   for (size_t nf(0);nf<procdata.size();++nf) {
     std::vector<std::string> &cur(procdata[nf]);
     if (cur.size()<2) continue;
