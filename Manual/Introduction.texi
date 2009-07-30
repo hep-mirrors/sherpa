@@ -288,8 +288,23 @@ AMEGIC++
 EXTRA_XS module, and the new matrix-element generator Comix.
 This module also contains
 helicity amplitudes for some generic matrix elements, that are, e.g.,
-used by HADRONS++. 
-	
+used by
+@iftex 
+H\scalebox{0.8}{ADRONS++}\xspace
+@end iftex 
+@ifnottex
+HADRONS++
+@end ifnottex
+. Further, HELICITIES also contains a simple library of tensor integrals
+which are used in the
+@iftex
+P\scalebox{0.8}{HOTONS++}\xspace
+@end iftex 
+@ifnottex
+PHOTONS++
+@end ifnottex
+matrix element corrections.
+
 @item BEAM
 
 This module manages the treatment of the initial beam spectra for 
@@ -515,14 +530,34 @@ heavy	quark effective theory or light cone sum rules for hadron decays.
 
 @item PHOTONS++ 
 
-The PHOTONS++ module holds routines to add QED radiation to
+The
+@iftex 
+P\scalebox{0.8}{HOTONS++}\xspace
+@end iftex 
+@ifnottex
+PHOTONS++
+@end ifnottex
+module holds routines to add QED radiation to
 hadron and tau-lepton decays. This has been achieved by an
-implementation of the YFS algorithm @mycite{Yennie1961ad};
-in contrast to the implementation in @mycite{Hamilton2006xz}, the
-structure of PHOTONS++ is such that the formalism can be extended to
+implementation of the YFS algorithm @mycite{Yennie1961ad}. The
+structure of
+@iftex 
+P\scalebox{0.8}{HOTONS++}\xspace
+@end iftex 
+@ifnottex
+PHOTONS++
+@end ifnottex
+is such that the formalism can be extended to
 scattering processes and to a systematic improvement to higher
 orders of perturbation theory @mycite{Schonherr2008av}.  The application
-of PHOTONS++ therefore accounts for corrections that usually are
+of
+@iftex 
+P\scalebox{0.8}{HOTONS++}\xspace
+@end iftex 
+@ifnottex
+PHOTONS++
+@end ifnottex
+therefore accounts for corrections that usually are
 added by the application of PHOTOS @mycite{Barberio1993qi} to the
 final state.
  
