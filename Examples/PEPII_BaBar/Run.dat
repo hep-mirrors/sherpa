@@ -1,5 +1,6 @@
 (run){
-  EVENTS = 10000
+  EVENTS = 10000;
+  ANALYSIS = 0;
 }(run)
 
 (beam){
@@ -10,8 +11,17 @@
 }(beam)
 
 (processes){
+  %
+  % electron positron -> Y(4S) -> B+ B-
+  %
   Process 11 -11 -> 300553[a];
   Decay 300553[a] -> 521 -521;
+  End process;
+  %
+  % electron positron -> Y(4S) -> B0 B0bar
+  %
+  Process 11 -11 -> 300553[a];
+  Decay 300553[a] -> 511 -511;
   End process;
 }(processes)
 
@@ -31,3 +41,16 @@
   ISR_E_ORDER     = 1   ! Perturbative order of electron structure function
   ISR_E_SCHEME    = 2   ! Beta-scheme : 0,1,2 , default = 2
 }(isr)
+
+(analysis){
+  BEGIN_ANALYSIS {
+    LEVEL  Hadrons
+
+      Multi -0.5 50.5 51 LinErr FinalState
+
+      MultiEmin  22 0.01 -0.5 20.5 21 LinErr FinalState
+      MultiEmin 211 0.   -0.5 10.5 11 LinErr FinalState
+      MultiEmin 321 0.   -0.5 10.5 11 LinErr FinalState
+
+  } END_ANALYSIS
+}(analysis)

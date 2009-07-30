@@ -12,6 +12,8 @@ using namespace std;
 namespace EXTRAXS {
 
   class ee_Y4S_BB : public ME2_Base {
+  private:
+    double m_mY2, m_mY2GY2;
   public:
 
     ee_Y4S_BB(const Process_Info& pi, const Flavour_Vector& fl);
@@ -25,6 +27,11 @@ namespace EXTRAXS {
     m_sintt=1;
     m_oew=0;
     m_oqcd=0;
+
+    Flavour flY(kf_Upsilon_4S);
+    m_mY2    = sqr(flY.HadMass());
+    m_mY2GY2 = m_mY2*sqr(flY.Width());
+
   }
   
   double ee_Y4S_BB::operator()(const ATOOLS::Vec4D_Vector& momenta)
@@ -34,7 +41,11 @@ namespace EXTRAXS {
     // Nobody cares about the production process of B Bbar, so distribute it
     // flat according to phase space, only with a factor to get the
     // cross section cited in the BaBar physics book, page 75 (3.39nb)
-    return 1.29;
+//     return 1.29;
+    // better approximation with propagator
+    // still norm to xsec
+    double p2((momenta[0]+momenta[1]).Abs2());
+    return 0.007955/(sqr(p2-m_mY2)+m_mY2GY2);
   }
 }
 
