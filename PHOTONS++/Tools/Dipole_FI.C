@@ -187,12 +187,10 @@ bool Dipole_FI::CheckIfExceedingPhotonEnergyLimits() {
   double nC  = m_mC.size();
   double nN  = m_mN.size();
   double kappa2 = (1./(2.*nC+nN)*Vec3D(m_K)).Sqr();
-  for (unsigned int i=0; i<m_mC.size(); i++)
-    sum = sum + sqrt(m_mC[i]*m_mC[i]+kappa2);
-  for (unsigned int i=0; i<m_mN.size(); i++)
-    sum = sum + sqrt(m_mN[i]*m_mN[i]+kappa2);
+  for (unsigned int i=0; i<m_mC.size(); i++) sum+=sqrt(m_mC[i]*m_mC[i]+kappa2);
+  for (unsigned int i=0; i<m_mN.size(); i++) sum+=sqrt(m_mN[i]*m_mN[i]+kappa2);
   if (m_K[0] < sqrt(m_M*m_M + nC*nC*kappa2) - sum) return true;
-  else                                            return false;
+  else                                             return false;
 }
 
 void Dipole_FI::CheckMomentumConservationInQCMS
@@ -289,11 +287,11 @@ double Dipole_FI::DetermineMaximumPhotonEnergy() {
   unsigned int nC(m_mC.size()), nN(m_mN.size()), n(nC+nN);
   std::vector<double> mCN2;
   for (unsigned int i=0; i<nC; ++i) {
-    sum = sum + m_mC[i];
+    sum+=m_mC[i];
     mCN2.push_back(sqr(m_mC[i]));
   }
   for (unsigned int i=0; i<nN; ++i) {
-    sum = sum + m_mN[i];
+    sum+=m_mN[i];
     mCN2.push_back(sqr(m_mN[i]));
   }
   if (n != m_mC.size()+m_mN.size()) {
@@ -330,9 +328,9 @@ double Dipole_FI::Func(const double& M2, const std::vector<double>& mC2,
   Vec3D kappa  = 1./(2.*nC+nN)*Vec3D(m_K);
   // first entry in q belongs to initial state dipole constituent
   for (unsigned int i=0; i<mC2.size(); i++)
-    sum = sum + sqrt(mC2[i] + (u*q[1+i]-kappa).Sqr());
+    sum+=sqrt(mC2[i]+(u*q[1+i]-kappa).Sqr());
   for (unsigned int i=0; i<mN2.size(); i++)
-    sum = sum + sqrt(mN2[i] + (u*q[1+nC+i]-kappa).Sqr());
+    sum+=sqrt(mN2[i]+(u*q[1+nC+i]-kappa).Sqr());
   return sqrt(M2+(u*Vec3D(m_Q)-nC*kappa).Sqr()) - sum - m_K[0];
 }
 

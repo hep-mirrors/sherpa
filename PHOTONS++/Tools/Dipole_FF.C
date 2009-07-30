@@ -200,10 +200,8 @@ void Dipole_FF::CalculateAvaragePhotonNumber(const double& b1,
 
 bool Dipole_FF::CheckIfExceedingPhotonEnergyLimits() {
   double sum = 0.;
-  for (unsigned int i=0; i<m_mC.size(); i++)
-    sum = sum + m_mC[i];
-  for (unsigned int i=0; i<m_mN.size(); i++)
-    sum = sum + m_mN[i];
+  for (unsigned int i=0; i<m_mC.size(); i++) sum+=m_mC[i];
+  for (unsigned int i=0; i<m_mN.size(); i++) sum+=m_mN[i];
   if (m_K[0] < (sqrt(m_M*m_M + (Vec3D(m_K)).Sqr()) - sum)) return true;
   else                                                     return false;
 }
@@ -301,11 +299,10 @@ double Dipole_FF::Func(const double& M2, const std::vector<double>& mC2,
                        const std::vector<Vec3D>& q, const double& u) {
   double sum = 0.;
   for (unsigned int i=0; i<mC2.size(); i++)
-    sum = sum + sqrt(mC2[i] + u*u*(q[i]*q[i]));
+    sum+=sqrt(mC2[i]+u*u*(q[i]*q[i]));
   for (unsigned int i=0; i<mN2.size(); i++)
-    sum = sum + sqrt(mN2[i] + u*u*(q[i+mC2.size()]*q[i+mC2.size()]));
-  return sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)).Sqr())
-          - m_K[0] - sum;
+    sum+=sqrt(mN2[i]+u*u*(q[i+mC2.size()]*q[i+mC2.size()]));
+  return sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)).Sqr()) - m_K[0] - sum;
 }
 
 void Dipole_FF::ResetVariables() {
