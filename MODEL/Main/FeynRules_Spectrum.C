@@ -25,7 +25,7 @@ FeynRules_Spectrum::FeynRules_Spectrum(Data_Reader * _dataread,
   m_identfile    = p_dataread->GetValue<string>("FR_IDENTFILE",string("ident_card.dat"));
   m_paramdeffile = p_dataread->GetValue<string>("FR_PARAMDEF",string("param_definition.dat"));
   m_paramfile    = p_dataread->GetValue<string>("FR_PARAMCARD",string("param_card.dat"));
-  string intfile = p_dataread->GetValue<string>("FR_INTERACTIONS",string("interactions.dat"));
+  string intfile = p_dataread->GetValue<string>("FR_INTERACTIONS",string("Interactions.dat"));
   rpa.gen.SetVariable("INTERACTION_DATA_FILE",intfile);
 }
 
