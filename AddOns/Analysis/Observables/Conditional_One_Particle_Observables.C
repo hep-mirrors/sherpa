@@ -33,6 +33,7 @@ namespace ANALYSIS {
   class Conditional_One_Particle_Multi_Emin :
     public Conditional_One_Particle_Observable_Base {
   private:
+    bool m_on;
     void Evaluate(const Particle_Vector& pvec,
                   double weight=1., double ncount=1.);
   public:
@@ -123,14 +124,31 @@ Conditional_One_Particle_Multi_Emin
  const int type, const double min, const double max, const int bins,
  const std::string& inlist) :
   Conditional_One_Particle_Observable_Base(flav,cutoff,type,min,max,bins,
-                                           inlist,"MultiEmin") {}
+                                           inlist,"MultiEmin"), m_on(true)
+{
+  if (m_flavour.HadMass()==0. && m_cutoff==0.) {
+    msg_Error()<<METHOD<<"() {\n"
+               <<"  MultiEmin "<<flav.Kfcode()<<" "<<cutoff<<" "<<min<<" "<<max
+               <<" "<<bins<<" Lin|LinErr|Log|LogErr "<<inlist<<"\n"
+               <<"  Analysis: Multiplicity of "<<flav<<" with E > "<<cutoff
+               <<".\n"
+               <<"  The energy cut-off for massless particles must not be zero"
+               <<" for this analysis to be sensible.\n"
+               <<"  Switching it off ...\n"
+               <<"}\n";
+    m_name+=".meaningless_analysis";
+    m_on=false;
+  }
+}
 
 void Conditional_One_Particle_Multi_Emin::Evaluate
 (const Particle_Vector& pvec, double weight, double ncount)
 {
-  size_t n(0);
-  for (size_t i=0;i<pvec.size();++i) if (pvec[i]->Momentum()[0]>m_cutoff) ++n;
-  p_histo->Insert((double)n,weight,ncount);
+  if (m_on) {
+    size_t n(0);
+    for (size_t i=0;i<pvec.size();++i) if (pvec[i]->Momentum()[0]>m_cutoff) ++n;
+    p_histo->Insert((double)n,weight,ncount);
+  }
 }
 
 Primitive_Observable_Base * Conditional_One_Particle_Multi_Emin::Copy() const
