@@ -1,12 +1,29 @@
 @node FeynRules
 @subsection FeynRules model
 @cindex FeynRules
+@cindex FR_PARTICLES
+@cindex FR_IDENTFILE
+@cindex FR_PARAMCARD
+@cindex FR_PARAMDEF
+@cindex FR_INTERACTIONS
 
-To use a model generated using the FeynRules package, see @mycite{Christensen2008py}and @mycite{Christensen2009jx}, 
+
+To use a model generated using the FeynRules package, cf. Refs. @mycite{Christensen2008py}and @mycite{Christensen2009jx}, 
 the MODEL switch has to be set to @option{FeynRules} and @ref{ME_SIGNAL_GENERATOR} has to be set to 
-@option{Amegic}. Note, in order to obtain FeynRules model outputs in a format readable by Sherpa the FeynRules
+@option{Amegic}. Note, in order to obtain the FeynRules model output in a format readable by Sherpa the FeynRules
 subroutine 'WriteSHOutput[ L ]' needs to be called for the desired model Lagrangian 'L'. This results in a
 set of ASCII files that represent the considered model through its particle data, model parameters and interaction 
 vertices. Note also that Sherpa/Amegic can only deal with Feynman rules in unitary gauge. 
 
-... more to come ...
+The FeynRules output files need to be copied to the current working directory or have tto reside in the directory referred to by the @code{PATH} variable, cf. @ref{Input structure}. There exists an agreed default naming convention for the FeynRules output files to be read by Sherpa. However, the explicite names of the input files can be changed. They are referred to by the variables
+
+@itemize @bullet
+@item @code{FR_PARTICLES = <file name>}:    File containing the particle data, default value @code{Particle.dat}.
+@item @code{FR_IDENTFILE = <file name>}:    File hosting declaration of all external model parameters, default value @code{ident_card.dat}. 
+
+@item @code{FR_PARAMCARD = <file name>}:    List of numerical values of all elementary parameters, masses and decay widths, default @code{param_card}.
+@item @code{FR_PARAMDEF = <file name>}:     Input file where all derived parameters get defined, default value @code{param_definition.dat}.
+@item @code{FR_INTERACTIONS = <file name>}: File where all interaction vertices are defined, default value @code{Interactions.dat}.
+@end itemize
+
+For more details on the Sherpa interface to FeynRules please consult @mycite{Christensen2009jx}.
