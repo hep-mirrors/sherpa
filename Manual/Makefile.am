@@ -34,21 +34,27 @@ dist_pkgdata_DATA         = \
 	sherpa-completion \
 	completion.index
 
+dist_html_DATA = \
+        Sherpa.html
+
 update-manpage:
-	groff -Tascii -mandoc Sherpa.trf > Sherpa.1
+	groff -Tascii -mandoc $(srcdir)/Sherpa.trf > Sherpa.1
 
 completion.index: $(srcdir)/*.texi $(srcdir)/Sherpa.info
 	@echo "Creating index for tab completion."
 	@rm -f Sherpa.txt* Sherpa.index
-	-@makeinfo --plaintext -o Sherpa.txt Sherpa.texi && \
+	-@makeinfo --plaintext -o Sherpa.txt $(srcdir)/Sherpa.texi && \
         awk 'BEGIN{ m=0; }{ if (match($$0,"Appendix B Index")>0) { m=m+1; getline; getline; getline;} if (m==2) { print $$0 } }' Sherpa.txt | cut -d ":" -f 1 > completion.index || touch completion.index
 	@rm -f Sherpa.txt*
 
-html-local: $(srcdir)/*.texi
+Sherpa.html: $(srcdir)/*.texi $(srcdir)/*.css
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
-          rm -rf Sherpa.html; texi2html --nosec-nav --css-include=Sherpa.css Sherpa.texi; \
+          rm -rf Sherpa.html; texi2html --nosec-nav --css-include=$(srcdir)/Sherpa.css $(srcdir)/Sherpa.texi; \
+        elif test -x "$$(which makeinfo 2>/dev/null)"; then \
+          makeinfo --html --no-split --css-include=$(srcdir)/Sherpa.css -o Sherpa.html $(srcdir)/Sherpa.texi; \
+        else \
+          touch Sherpa.html; \
         fi
-
 dvi:
 
 EXTRA_DIST    = @SVNINCLUDE@ Sherpa.1 Sherpa.css

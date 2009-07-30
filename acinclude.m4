@@ -69,8 +69,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
     AC_SUBST(pkglibdir)
     pkgincludedir="\${includedir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
     AC_SUBST(pkgincludedir)
-    pkgbindir="\${bindir}/\${PACKAGE_TARNAME}-\${VERSIONING}";
-    AC_SUBST(pkgbindir)
   else
     pkgdatadir="\${datadir}/\${PACKAGE_TARNAME}";
     AC_SUBST(pkgdatadir)
@@ -78,8 +76,11 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
     AC_SUBST(pkglibdir)
     pkgincludedir="\${includedir}/\${PACKAGE_TARNAME}";
     AC_SUBST(pkgincludedir)
-    pkgbindir="\${bindir}/\${PACKAGE_TARNAME}";
-    AC_SUBST(pkgbindir)
+  fi;
+  
+  if test "x$htmldir" = "x"; then
+    htmldir="\${docdir}";
+    AC_SUBST(htmldir)
   fi;
 
   AMEGICDIR="\${top_srcdir}/AMEGIC++"
