@@ -1,31 +1,67 @@
 @node Model Parameters
 @section Model Parameters
 @cindex SHOW_MODEL_SYNTAX
+@cindex MODEL
+@cindex MASS[<id>]
+@cindex MASSIVE[<id>]
+@cindex WIDTH[<id>]
+@cindex ACTIVE[<id>]
+@cindex STABLE[<id>]
 
-The interaction model setup is covered by the `(model)' section of
-the steering file or the model data file `Model.dat', respectively.
+The interaction model setup is covered by the @code{(model)} section of
+the steering file or the model data file @code{Model.dat}, respectively.
 
-Many of the corresponding parameters are model specific and are therefore
-not described here. To obtain a list of all possible options, please run
-@kbd{Sherpa SHOW_MODEL_SYNTAX=1} and scan the output of the program.
+The main switch here is called @code{MODEL} and sets the model that Sherpa uses
+throughout the simulation run. The default is @option{SM}, for
+the Standard Model. For a complete list of available models, 
+run Sherpa with @kbd{SHOW_MODEL_SYNTAX=1} on the command line.
+This will display not only the available models, but also the
+parameters for those models. 
 
-There are a number of parameters, defining the properties of particles
-in the matrix elements.
+The chosen model also defines the list of particles and their default
+properties. With the following switches it is possible to change 
+the properties of all fundamental particles:
 
-@menu
-* MODEL::          Set the model that Sherpa uses.
-* MASS[<id>]::     Set the mass of particle with PDG id <id>.
-* MASSIVE[<id>]::  Set the particle with PDG id <id> massive.
-* WIDTH[<id>]::    Set the width of particle with PDG id <id>.
-* ACTIVE[<id>]::   Set the particle with PDG id <id> active.
-* STABLE[<id>]::   Set the particle with PDG id <id> stable.
-@end menu
+@table @code
+@item MASS[<id>]
+Sets the mass (in GeV) of the particle with PDG id @option{<id>}.
+@*
+Masses of particles and corresponding anti-particles are always set
+simultaneously.
+
+@item MASSIVE[<id>]
+Specifies whether the finite mass of particle with PDG id @option{<id>}
+is to be considered in matrix-element calculations or not.
+
+@item WIDTH[<id>]
+Sets the width (in GeV) of the particle with PDG id @option{<id>}.
+
+@item ACTIVE[<id>]
+Enables/disables the particle with PDG id @option{<id>}.
+
+@item STABLE[<id>]
+Sets the particle with PDG id @option{<id>} either stable or unstable according
+to the following options:
+@table @option
+@item 0
+Particle and anti-particle are unstable
+@item 1
+Particle and anti-particle are stable
+@item 2
+Particle is stable, anti-particle is unstable
+@item 3
+Particle is unstable, anti-particle is stable
+@end table
+At present this
+affects only the simulation of tau decays, dealt with by the HADRONS++ package.
+Decays of other particles have to be specified in the process setup
+(see @ref{Processes}) and are not treated automatically.
+
+@end table
 
 Note: To set properties of hadrons, you can use the same switches (except for
 @code{MASSIVE}) in the fragmentation section, see @ref{Fragmentation}.
 
-There are more specialised switches for all built-in models that are available
-in Sherpa:
 @menu
 * SM::		   Standard Model
 * MSSM::	   Minimal Supersymmetric Standard Model
@@ -37,65 +73,6 @@ in Sherpa:
 * FeynRules::	   FeynRules model 
 @end menu
 
-
-@node MODEL
-@subsection MODEL
-@cindex MODEL
-Sets the model that Sherpa uses. The default is @option{SM}, for 
-the Standard Model. For a complete list of available models, 
-run Sherpa with @kbd{SHOW_MODEL_SYNTAX=1} on the command line.
-This will display not only the available models, but also the
-parameters for those models. 
-
-@node MASS[<id>]
-@subsection MASS[<id>]
-@cindex MASS[<id>]
-Sets the mass (in GeV) of the particle with PDG id @option{<id>}.
-@*
-Masses of particles and corresponding anti-particles are always set
-simultaneously.
-
-
-@node MASSIVE[<id>]
-@subsection MASSIVE[<id>]
-@cindex MASSIVE[<id>]
-Specifies whether the finite mass of particle with PDG id @option{<id>}
-is to be considered in matrix-element calculations or not.
-
-
-@node WIDTH[<id>]
-@subsection WIDTH[<id>]
-@cindex WIDTH[<id>]
-Sets the width (in GeV) of the particle with PDG id @option{<id>}.
-
-
-@node ACTIVE[<id>]
-@subsection ACTIVE[<id>]
-@cindex ACTIVE[<id>]
-Enables / disables the particle with PDG id @option{<id>}.
-
-
-@node STABLE[<id>]
-@subsection STABLE[<id>]
-@cindex STABLE[<id>]
-Sets the particle with PDG id @option{<id>} either stable or unstable according
-to the following options:
-
-@table @option
-@item 0
-Particle and anti-particle are unstable
-@item 1
-Particle and anti-particle are stable
-@item 2
-Particle is stable, anti-particle is unstable
-@item 3
-Particle is unstable, anti-particle is stable
-@end table
-
-At present this
-affects only the simulation of lepton decays, dealt with by the HADRONS++ package.
-Decays of other particles have to be specified in the process setup
-(see @ref{Processes}) and are not treated automatically.
 
 
 @include SM.texi

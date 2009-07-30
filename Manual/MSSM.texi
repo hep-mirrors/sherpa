@@ -11,5 +11,5 @@ run directory, i.e. @code{PATH}. From this file the full low-scale MSSM spectrum
 is read, including sparticle masses, mixing angles etc. In addition information
 provided on the total particle's widths is read from the input file. Note that
 the setting of masses and widths through the SLHA input is superior to setting
-through @ref{MASS[<id>]} and @ref{WIDTH[<id>]}.
+through @code{MASS[<id>]} and @code{WIDTH[<id>]}.
 

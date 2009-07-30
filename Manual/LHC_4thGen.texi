@@ -21,15 +21,15 @@ for this set-up. @ref{Running Sherpa with AMEGIC++} is decribed
 below.
 
 @item the model is chosen in the @code{(model)} section of
-the run card, using the parameter @ref{MODEL}. The default
-is the SM. 
+the run card, using the parameter @code{MODEL}, see
+@ref{Model Parameters}. The default is the SM. 
 
 @item for a full description of all parameters in any 
 chosen model, use the tag @code{SHOW_MODEL_SYNTAX=1} 
 on the command line when running Sherpa.
 
 @item the properties of the 4th generation leptons, 
-such as @ref{MASS[<id>]} and @ref{WIDTH[<id>]},
+such as @code{MASS[<id>]} and @code{WIDTH[<id>]},
 may be set in the runcard, or on the command line, 
 in exactly the same way as the SM particle
 properties.

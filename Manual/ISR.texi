@@ -90,6 +90,7 @@ parameter @code{ISR_E_ORDER} (default: 1). The switch @code{ISR_E_SCHEME} allows
 to set the scheme of respecting non-leading terms. Possible options are 0
 ("mixed choice"), 1 ("eta choice"), or 2 ("beta choice", default).
 @end table
+@*
 Furthermore it is simple to built an external interface to an arbitrary PDF
 and load that dynamically in the Sherpa run. See @ref{External PDF} for
 instructions.
