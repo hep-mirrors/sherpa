@@ -20,7 +20,7 @@ of the main features of these examples.
 * LHC_AGC::                   
 @c * LHC_ADD::                   
 @c * EGamma::                    
-@c * PEPII_BaBar::               
+* PEPII_BaBar::               
 @c * BFKL::                      
 @end menu
 
@@ -36,6 +36,6 @@ of the main features of these examples.
 @include LHC_AGC.texi
 @c @include LHC_ADD.texi
 @c @include EGamma.texi
-@c @include PEPII_BaBar.texi
+@include PEPII_BaBar.texi
 @c @include BFKL.texi
 
