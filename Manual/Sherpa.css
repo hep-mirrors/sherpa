@@ -50,11 +50,6 @@ pre.verbatim, pre.example {
     border-right: none;
 }
 
-pre.smallformat {
-    font-size: 50%;
-    font-family: monospace;
-}
-
 p code, p samp, p kbd {
     background-color: #eeffcc;
     color: #333333;
