@@ -284,11 +284,11 @@ qoverp2_B = 1.0
 Interference_B = 1
 Mixing_B = 0
 
-x_Bs = 30.0
-y_Bs = 0.155
-qoverp2_Bs = 1.0
-Interference_Bs = 0
-Mixing_Bs = 0
+x_B(s) = 30.0
+y_B(s) = 0.155
+qoverp2_B(s) = 1.0
+Interference_B(s) = 0
+Mixing_B(s) = 0
 @end verbatim
 
 @end itemize

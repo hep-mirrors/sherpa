@@ -49,8 +49,8 @@ parameter, whose default is @option{0}. The following options are provided:
   @end itemize
 
 To account for quark mixing the CKM matrix elements have to be assigned. 
-For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz}
-is employed. The order of expansion in the lambda parameter is defined
+For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz} is
+employed. The order of expansion in the lambda parameter is defined
 through @code{CKMORDER}, with default @option{0} corresponding to a unit matrix.
 The parameter convention for higher expansion terms reads:
 

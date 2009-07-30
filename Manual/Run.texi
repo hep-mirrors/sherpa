@@ -142,79 +142,66 @@ If not specified otherwise, sets @option{SHERPA_LIB_PATH} to
 @node SHERPA_LIB_PATH
 @subsection SHERPA_LIB_PATH
 @cindex SHERPA_LIB_PATH
-The path in which Sherpa looks for dynamically bound libraries from previously created
+The path in which Sherpa looks for dynamically linked libraries from previously created
 C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 
 
 @node Event output formats
 @subsection Event output formats
+@cindex SHERPA_OUTPUT
+@cindex HEPMC2_GENEVENT_OUTPUT
+@cindex HEPEVT_OUTPUT
+@cindex FILE_SIZE
+@cindex EVT_FILE_PATH
+@cindex OUTPUT_PRECISION
+@cindex EVENT_MODE
 
-Sherpa provides the possibility to output events -- either to
-file or to screen -- in its native and two other output formats:
+Sherpa provides the possibility to output events in its native and two other
+output formats:
 The HepEVT common block structure or the HepMC format.
 The authors of Sherpa assume
 that the user is sufficiently acquainted with these formats when
 selecting them.
 
-There are two ways to specify the event record. First of all
-the switch EVENT_MODE @pxref{EVENT_MODE} results in the corresponding
-structure being filled internally (and printed to screen, if the
-output-level is set accordingly).
+If the events are to be written to file, the following parameters have to be
+specified:
 
-Second, if the events are to be written to file, the keywords
-listed below can be used. With these keywords the filename's root can be
-specified, i.e. HEPEVT_OUTPUT=filename will create files named
-filename.#.hepevt, where the hash mark stands for an increasing
-number.
+@table @option
+@item SHERPA_OUTPUT=<filename>
+Filename for output in Sherpa format
+@item HEPMC2_GENEVENT_OUTPUT=<filename>
+Filename for output in HepMC::IO_GenEvent format.
+@item HEPEVT_OUTPUT=<filename>
+Filename for output in HepEvt format.
+@end table
+
+With these keywords the filename's root can be
+specified, i.e. @code{HEPEVT_OUTPUT=<filename>} will create files named
+@code{<filename>.#.hepevt}, where the hash mark numerates the files if events are
+split into multiple files.
+The output can be further steered with the following options:
+
+@table @option
+@item FILE_SIZE
+Number of events per file (default: 1000).
+@item EVT_FILE_PATH
+Directory where the files will be stored.
+@item OUTPUT_PRECISION
+Steers the precision of all numbers written to file.
+@end table
 
 To write events directly to gzipped files instead of plain text, the
 option @option{--enable-gzip} has to be specified during the installation.
 
-@menu
-* EVENT_MODE::        Format for screen display of events.
-* SHERPA_OUTPUT::     Name of file to write event output in Sherpa format.
-* HEPMC2_GENEVENT_OUTPUT:: Name of file to write event output in HepMC::IO_GenEvent format.
-* FILE_SIZE::         Number of events per file (default: 1000).
-* EVT_FILE_PATH::     Directory where the files will be stored.
-* OUTPUT_PRECISION::  Steers the precision of all numbers written to file.
-@end menu
+There is also the option to change the format of the event output printed to
+screen (if any) with the switch @code{EVENT_MODE}:
 
-@node EVENT_MODE
-@subsubsection EVENT_MODE
-@cindex EVENT_MODE
-This parameter specifies the format for displaying events on screen when OUTPUT
-includes the ``1'' setting.
-Available values:
-@itemize @bullet
-@item
-EVENT_MODE=Sherpa (default, blob list output)
-@item
-EVENT_MODE=HepMC (GenEvent print method)
-@item
-EVENT_MODE=HepEvt (HepEvt common block)
-@end itemize
+@table @option
+@item EVENT_MODE=Sherpa
+Blob list output (default)
+@item EVENT_MODE=HepMC
+GenEvent print method
+@item EVENT_MODE=HepEvt
+HepEvt common block
+@end table
 
-@node SHERPA_OUTPUT
-@subsubsection SHERPA_OUTPUT
-@cindex SHERPA_OUTPUT
-Name of file to write event output in Sherpa format
-
-@node HEPMC2_GENEVENT_OUTPUT
-@subsubsection HEPMC2_GENEVENT_OUTPUT
-@cindex HEPMC2_GENEVENT_OUTPUT
-Name of file to write event output in HepMC::IO_GenEvent format.
-
-@node FILE_SIZE
-@subsubsection FILE_SIZE
-@cindex FILE_SIZE
-Number of events per file (default: 1000).
-
-@node EVT_FILE_PATH
-@subsubsection EVT_FILE_PATH
-@cindex EVT_FILE_PATH
-Directory where the files will be stored.
-
-@node OUTPUT_PRECISION
-@subsubsection OUTPUT_PRECISION
-@cindex OUTPUT_PRECISION
-Steers the precision of all numbers written to file.

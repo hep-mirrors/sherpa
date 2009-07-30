@@ -32,14 +32,12 @@ provided. Compilation and installation proceed through the following commands
 
 If Sherpa has to be moved to a different directory after the installation,
 one has to set the following environment variables for each run:
-@example
 @itemize @bullet
   @item @code{SHERPA_INCLUDE_PATH=$newprefix/include/SHERPA-MC}
   @item @code{SHERPA_SHARE_PATH=$newprefix/share/SHERPA-MC}
   @item @code{SHERPA_LIBRARY_PATH=$newprefix/lib/SHERPA-MC}
   @item @code{LD_LIBRARY_PATH=$SHERPA_LIBRARY_PATH:$LD_LIBRARY_PATH}
 @end itemize
-@end example
 
 Sherpa can be interfaced with various external packages, e.g. HepMC,
 for event output, or LHAPDF, for PDFs. For this to work, the user has
@@ -226,7 +224,7 @@ setup directory. Otherwise the @code{Process} and @code{Result}
 directories have to be erased:
 
 @example
-@code{rm -rf Process/}     and     @code{rm -rf Result/} .
+@code{rm -rf Process/}     and     @code{rm -rf Result/}
 @end example
 
 In either case one has to start over with the whole initialization 
@@ -299,7 +297,7 @@ included in the setup are the following:
 In the @code{(processes)} part of the steering file this translates into
 @verbatim
   Process 93 93 -> 11 -12 93{2}
-  Order_EW 2; Max_N_Quarks 4
+  Order_EW 2;
   CKKW sqr(30/E_CMS)
   End process;
 @end verbatim
@@ -320,10 +318,10 @@ parton emissions will be generated.
 Proton--antiproton collisions are considered at
 beam energies of 900 GeV; under the @code{(beam)} part of the @code{Run.dat}
 file, one therefore has @code{BEAM_1=2212}, @code{BEAM_2=-2212} and
-@code{BEAM_ENERGY_@{1,2@}=900.0}. The default PDF used by Sherpa is 
+@code{BEAM_ENERGY_@{1,2@}=980.0}. The default PDF used by Sherpa is 
 CTEQ6L. Model parameters and couplings can be set in the
 @code{Run.dat} section @code{(model)}, and the way couplings are treated
-can be defined under the @code{(me)} category. The matrix elements have to be
+can be defined under the @code{(me)} category. The QCD radiation matrix elements have to be
 regularized to obtain meaningful cross sections. This is achieved by
 specifying @samp{CKKW sqr(30/E_CMS)} in the @code{(processes)} part of
 @code{Run.dat}. Simultaneously, this tag initiates the ME-PS merging procedure.

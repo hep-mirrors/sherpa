@@ -1,8 +1,12 @@
 @node Beam Parameters
 @section Beam Parameters
+@cindex BEAM_1
+@cindex BEAM_2
+@cindex BEAM_ENERGY_1
+@cindex BEAM_ENERGY_2
 
-The setup of the colliding beams is covered by the @file{(beam)}
-section of the steering file or the beam data file @file{Beam.dat},
+The setup of the colliding beams is covered by the @code{(beam)}
+section of the steering file or the beam data file @code{Beam.dat},
 respectively, see @ref{Input structure}. The @emph{mandatory settings} to be made are
 
 @itemize @bullet
@@ -16,35 +20,25 @@ The code for photons is 22.
 given in units of GeV.
 @end itemize
 
-A List of available Beam spectra is given in section
-@ref{Beam Spectra}.
+More options related to beamstrahlung and intrinsic transverse momentum can
+be found in the following subsections.
 
 @menu
-* Beam Spectra::  List of available beam spectra
+* Beam Spectra::  Options related to beamstrahlung
+* Intrinsic Transverse Momentum:: Options related to primordial transverse momentum
 @end menu
-
-The following parameters are used to steer the beam setup.
-
-@menu
-* BEAM_1::            PDG ID of the first beam particle.
-* BEAM_2::            PDG ID of the second beam particle.
-* BEAM_ENERGY_1::     Energy of the first beam particle.
-* BEAM_ENERGY_2::     Energy of the second beam particle.
-* BEAM_SPECTRUM_1::   The Beamstrahlung spectrum for the first beam. 
-* BEAM_SPECTRUM_2::   The Beamstrahlung spectrum for the second beam. 
-* SPECTRUM_FILE_1::   Spectrum file name for the first beam.
-* SPECTRUM_FILE_2::   Spectrum file name for the second beam.
-* BEAM_SMIN::         Minimum fraction of cms energy after Beamstrahlung.
-* BEAM_SMAX::         Maximum fraction of cms energy after Beamstrahlung.
-* K_PERP_MEAN_1::     Mean primordial transverse momentum of first beam.
-* K_PERP_MEAN_2::     Mean primordial transverse momentum of second beam.
-* K_PERP_SIGMA_1::    Width of primordial transverse momentum distribution of first beam.
-* K_PERP_SIGMA_2::    Width of primordial transverse momentum distribution of second beam.
-@end menu
-
 
 @node Beam Spectra
 @subsection Beam Spectra
+@cindex BEAM_SPECTRUM_1
+@cindex BEAM_SPECTRUM_2
+@cindex SPECTRUM_FILE_1
+@cindex SPECTRUM_FILE_2
+@cindex BEAM_SMIN
+@cindex BEAM_SMAX
+
+If desired, you can also specify spectra for beamstrahlung through
+@code{BEAM_SPECTRUM_1} and @code{BEAM_SPECTRUM_2}. The possible values are
 Possible values are
 @table @option
 @item Monochromatic
@@ -71,65 +65,11 @@ follow a dipole form factor parametrization, see @mycite{Budnev1974de}
 A user defined spectrum is used to describe the energy spectrum
 of the assumed new beam particles. The name of the corresponding
 spectrum file needs to be given through the keywords
-@ref{SPECTRUM_FILE_1} and @ref{SPECTRUM_FILE_2}.
+@code{SPECTRUM_FILE_1} and @code{SPECTRUM_FILE_2}.
 @end table
 
-
-@node BEAM_1
-@subsection BEAM_1
-@cindex BEAM_1
-This parameter specifies the PDG ID of the first (left) 
-beam particle before eventual Beamstrahlung.
-
-
-@node BEAM_2
-@subsection BEAM_2
-@cindex BEAM_2
-This parameter specifies the PDG ID of the second (right) 
-beam particle before eventual Beamstrahlung.
-
-
-@node BEAM_ENERGY_1
-@subsection BEAM_ENERGY_1
-@cindex BEAM_ENERGY_1
-This parameter specifies the energy of the first (left) 
-beam particle in GeV.
-
-
-@node BEAM_ENERGY_2
-@subsection BEAM_ENERGY_2
-@cindex BEAM_ENERGY_2
-This parameter specifies the energy of the second (right) 
-beam particle in GeV.
-
-@node BEAM_SPECTRUM_1
-@subsection BEAM_SPECTRUM_1
-@cindex BEAM_SPECTRUM_1
-This parameter specifies the Beamstrahlung spectrum for the first beam,
-see @ref{Beam Spectra}.
-
-@node BEAM_SPECTRUM_2
-@subsection BEAM_SPECTRUM_2
-@cindex BEAM_SPECTRUM_2
-This parameter specifies the Beamstrahlung spectrum for the second beam,
-see @ref{Beam Spectra}.
-
-@node SPECTRUM_FILE_1
-@subsection SPECTRUM_FILE_1
-@cindex SPECTRUM_FILE_1
-This parameter specifies the spectrum file for the first beam,
-see @ref{Beam Spectra}.
-
-@node SPECTRUM_FILE_2
-@subsection SPECTRUM_FILE_2
-@cindex SPECTRUM_FILE_2
-This parameter specifies the spectrum file for the first beam,
-see @ref{Beam Spectra}.
-
-@node BEAM_SMIN
-@subsection BEAM_SMIN
-@cindex BEAM_SMIN
-This parameter specifies the minimum fraction of cms energy
+The @code{BEAM_SMIN} and @code{BEAM_SMAX} parameters may be used to specify the
+minimum/maximum fraction of cms energy
 squared after Beamstrahlung. The reference value is the total centre
 of mass energy squared of the collision, @emph{not} the 
 centre of mass energy after eventual Beamstrahlung.
@@ -137,50 +77,40 @@ centre of mass energy after eventual Beamstrahlung.
 The parameter can be specified using the internal interpreter, see
 @ref{Interpreter}, e.g. as @samp{BEAM_SMIN sqr(20/E_CMS)}.
 
-@node BEAM_SMAX
-@subsection BEAM_SMAX
-@cindex BEAM_SMAX
-This parameter specifies the minimum fraction of cms energy
-squared after Beamstrahlung. The reference value is the total centre
-of mass energy squared of the collision, @emph{not} the 
-centre of mass energy after eventual Beamstrahlung.
-@*
-The parameter can be specified using the internal interpreter, see
-@ref{Interpreter}, e.g. as @samp{BEAM_SMIN sqr(0.99)}.
-
-@node K_PERP_MEAN_1
-@subsection K_PERP_MEAN_1
+@node Intrinsic Transverse Momentum
+@subsection Intrinsic Transverse Momentum
 @cindex K_PERP_MEAN_1
+@cindex K_PERP_MEAN_2
+@cindex K_PERP_SIGMA_1
+@cindex K_PERP_SIGMA_2
+
+@table @option
+@item K_PERP_MEAN_1
 This parameter specifies the mean intrinsic transverse
 momentum for the first (left) beam in case of hadronic 
 beams, such as protons.
 @*
 The default value for protons is 0.33 GeV.
 
-@node K_PERP_MEAN_2
-@subsection K_PERP_MEAN_2
-@cindex K_PERP_MEAN_2
+@item K_PERP_MEAN_2
 This parameter specifies the mean intrinsic transverse
 momentum for the second (right) beam in case of hadronic 
 beams, such as protons.
 @*
 The default value for protons is 0.33 GeV.
 
-@node K_PERP_SIGMA_1
-@subsection K_PERP_SIGMA_1
-@cindex K_PERP_SIGMA_1
+@item K_PERP_SIGMA_1
 This parameter specifies the width of the Gaussian distribution
 of intrinsic transverse momentum for the first (left) beam in 
 case of hadronic beams, such as protons.
 @*
 The default value for protons is 0.8 GeV.
 
-@node K_PERP_SIGMA_2
-@subsection K_PERP_SIGMA_2
-@cindex K_PERP_SIGMA_2
+@item K_PERP_SIGMA_2
 This parameter specifies the width of the Gaussian distribution
 of intrinsic transverse momentum for the first (left) beam in 
 case of hadronic beams, such as protons.
 @*
 The default value for protons is 0.8 GeV.
 
+@end table

@@ -50,7 +50,7 @@ pre.verbatim, pre.example {
     border-right: none;
 }
 
-p code, p samp, p kbd {
+code, samp, kbd {
     background-color: #eeffcc;
     color: #333333;
     border: none;
