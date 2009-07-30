@@ -8,16 +8,14 @@
 }(beam)
 
 (processes){
-  Process 93 93 -> 11 -12 93{4}
-  Order_EW 2; Max_N_Quarks 6
+  Process 93 93 -> 11 -12 93{2}
+  Order_EW 2
   CKKW sqr(30/E_CMS)
-  Integration_Error 0.02 {8};
   End process;
 
-  Process 93 93 -> -11 12 93{4}
-  Order_EW 2; Max_N_Quarks 6
+  Process 93 93 -> -11 12 93{2}
+  Order_EW 2
   CKKW sqr(30/E_CMS)
-  Integration_Error 0.02 {8};
   End process;
 }(processes)
 
