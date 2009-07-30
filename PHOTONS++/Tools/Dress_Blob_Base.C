@@ -65,8 +65,7 @@ double Dress_Blob_Base::CalculateBeta(const Vec4D& p) {
 
 Vec4D Dress_Blob_Base::CalculateMomentumSum(const Particle_Vector& partvec) {
   Vec4D sum = Vec4D(0.,0.,0.,0.);
-  for (unsigned int i=0; i<partvec.size(); i++)
-    sum = sum + partvec[i]->Momentum();
+  for (unsigned int i=0; i<partvec.size(); i++) sum+=partvec[i]->Momentum();
   return sum;
 }
 
@@ -107,7 +106,8 @@ void Dress_Blob_Base::CalculateWeights() {
   sprintf(s3w,"%f",wjacobianL);
   sprintf(s4w,"%f",whigher);
   sprintf(s5w,"%f",wyfs);
-  msg_Info()<<"weights:    "<<s1w<<" "<<s2w<<" "<<s3w<<" "<<s4w<<" "<<s5w<<" : "<<m_genweight<<endl;
+  msg_Info()<<"weights:    "<<s1w<<" "<<s2w<<" "<<s3w<<" "<<s4w<<" "<<s5w<<" : "
+                            <<m_genweight<<endl;
   char s1m[10],s2m[10],s3m[10],s4m[10],s5m[10];
   sprintf(s1m,"%f",mwdipole);
   sprintf(s2m,"%f",mwjacobianM);
@@ -173,7 +173,7 @@ void Dress_Blob_Base::DetermineU() {
     double i = 0.;
     while ((c*Func(M2,mC2,mN2,q,1.-i) > 0.) && (i<=1))    i = i + 1E-2;
 /*    if (i>1)  m_u = -1;
-    else */if (abs(Func(M2,mC2,mN2,q,1.-i)) < 1E-14)    m_u = 1-i;
+    else */if (abs(Func(M2,mC2,mN2,q,1.-i)) < 1E-14)    m_u = 1.-i;
     else {
       i = i - 1E-2;
       double j = 0.;

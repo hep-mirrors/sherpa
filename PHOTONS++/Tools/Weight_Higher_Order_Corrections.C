@@ -168,7 +168,7 @@ double Weight_Higher_Order_Corrections::Smod(unsigned int kk) {
       else if (m_newdipole[i]->DecayBlob() == m_newdipole[j]->DecayBlob())
         t1t2 = +1.;
       else
-        t1t2 = 0;
+        t1t2 = 0.;
       sum = sum + Z1*Z2*t1t2*((pi/(pi*k)-pj/(pj*k))*(pi/(pi*k)-pj/(pj*k)));
     }
   }
@@ -176,7 +176,7 @@ double Weight_Higher_Order_Corrections::Smod(unsigned int kk) {
 }
 
 double Weight_Higher_Order_Corrections::Kallen(double x, double y, double z) {
-  return ( x*x + y*y + z*z - 2*x*y - 2*x*z - 2*y*z );
+  return ( x*x + y*y + z*z - 2.*x*y - 2.*x*z - 2.*y*z );
 }
 
 void Weight_Higher_Order_Corrections::CalculateWeight() {

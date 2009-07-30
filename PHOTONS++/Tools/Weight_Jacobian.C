@@ -17,7 +17,7 @@ Weight_Jacobian::~Weight_Jacobian() {
 
 Vec4D Weight_Jacobian::CalculateMomentumSum(const Particle_Vector& pv) {
   Vec4D sum = Vec4D(0.,0.,0.,0.);
-  for (unsigned int i=0; i<pv.size(); i++) sum = sum+pv[i]->Momentum();
+  for (unsigned int i=0; i<pv.size(); i++) sum+=pv[i]->Momentum();
   return sum;
 }
 
@@ -127,7 +127,7 @@ void Weight_Jacobian_Mapping::CalculateWeight() {
     sumq = sumq + (Q*Q)/sqrt(m_M*m_M + Q*Q);
     sump = sump + (P*Q)/sqrt(m_M*m_M + P*P);
     // subtract initial state particle (position 0 in old/newdipole)
-    N = N-1.;
+    N = N-1;
   }
   else {
     prod = 0.;

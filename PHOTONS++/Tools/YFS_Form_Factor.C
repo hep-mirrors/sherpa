@@ -55,13 +55,12 @@ YFS_Form_Factor::YFS_Form_Factor(const Particle_Vector& part,
   p_ig2 = new IG2(this);
   p_gi1 = new Gauss_Integrator(p_ig1);
   p_gi2 = new Gauss_Integrator(p_ig2);
+
   double YSum = 0.;
-  for (unsigned int j=0; j<part.size(); j++) {
-    for (unsigned int i=0; i<j; i++) {
-      YFS_Form_Factor YFS(part[i],part[j],ks);
-      YSum = YSum + YFS.Get();
-    }
-  }
+  for (unsigned int j=0; j<part.size(); j++)
+    for (unsigned int i=0; i<j; i++)
+      YSum+=YFS_Form_Factor(part[i],part[j],ks).Get();
+
   m_Y = YSum;
 }
 
