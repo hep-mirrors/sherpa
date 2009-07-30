@@ -35,6 +35,7 @@ namespace PHOTONS {
       Poincare * p_rot;
 
       Flavour  m_flavs[9];
+      double   m_masses[9];
       Vec4D *  m_moms;
       Vec4D    m_moms0[9];
       Vec4D    m_moms1[9][9];

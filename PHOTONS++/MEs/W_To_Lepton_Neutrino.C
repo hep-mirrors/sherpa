@@ -26,11 +26,15 @@ using namespace std;
 W_To_Lepton_Neutrino::W_To_Lepton_Neutrino
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FI(pvv) {
   m_name = "W_To_Lepton_Neutrino";
-  m_flavs[0] = pvv[0][0]->Flav();
-  m_flavs[1] = pvv[2][0]->Flav();
-  m_flavs[2] = pvv[3][0]->Flav();
+  m_flavs[0]  = pvv[0][0]->Flav();
+  m_masses[0] = pvv[1][0]->FinalMass();
+  m_flavs[1]  = pvv[2][0]->Flav();
+  m_masses[1] = pvv[2][0]->FinalMass();
+  m_flavs[2]  = pvv[3][0]->Flav();
+  m_masses[2] = pvv[3][0]->FinalMass();
   for (unsigned int i=3; i<9; i++) {
-    m_flavs[i] = Flavour(kf_photon);
+    m_flavs[i]  = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   m_cL = Complex(1.,0.);
@@ -46,7 +50,7 @@ void W_To_Lepton_Neutrino::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole.at(0) into +z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -139,8 +143,8 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3])[m_spins[3]]);
   Vec4D q      = m_moms[1]+m_moms[3];       // fermion propagator momenta
   Vec4D Q      = m_moms[0]+m_moms[3];       // boson propagator momenta
-  double m     = m_flavs[1].HadMass();      // fermion mass/propagator pole
-  double M     = m_flavs[0].HadMass();      // boson mass/propagator pole
+  double m     = m_masses[1];               // fermion mass/propagator pole
+  double M     = m_masses[0];               // boson mass/propagator pole
   m_moms[4]    = m_moms[5] = q;             // enter those into m_moms
   m_flavs[4]   = m_flavs[1];                // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[1].Bar();
@@ -206,7 +210,7 @@ double W_To_Lepton_Neutrino::GetBeta_0_0() {
 
 double W_To_Lepton_Neutrino::GetBeta_0_1() {
   // limit mW > ml
-  return m_alpha/M_PI * (log(m_M/m_flavs[1].HadMass())+1.) * GetBeta_0_0();
+  return m_alpha/M_PI * (log(m_M/m_masses[1])+1.) * GetBeta_0_0();
 }
 
 double W_To_Lepton_Neutrino::GetBeta_0_2() {

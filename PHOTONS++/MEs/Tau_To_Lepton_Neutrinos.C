@@ -26,8 +26,10 @@ using namespace std;
 Tau_To_Lepton_Neutrinos::Tau_To_Lepton_Neutrinos
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FI(pvv) {
   m_name = "Tau_To_Lepton_Neutrinos";
-  m_flavs[0] = pvv[0][0]->Flav();    // tau
-  m_flavs[1] = pvv[2][0]->Flav();    // lepton
+  m_flavs[0]  = pvv[0][0]->Flav();    // tau
+  m_masses[0] = pvv[0][0]->FinalMass();
+  m_flavs[1]  = pvv[2][0]->Flav();    // lepton
+  m_masses[1] = pvv[2][0]->FinalMass();
   // switch ordering if necessary
   m_switch = (pvv[3][0]->Flav().Kfcode() == kf_nutau);
   // m_switch == true if first neutral final state particle is tau-neutrino
@@ -39,8 +41,11 @@ Tau_To_Lepton_Neutrinos::Tau_To_Lepton_Neutrinos
     m_flavs[2] = pvv[3][1]->Flav();  // lepton-neutrino
     m_flavs[3] = pvv[3][0]->Flav();  // tau-neutrino
   }
+  // calcs for massless neutrinos
+  m_masses[2] = m_masses[3] = 0.;
   for (unsigned int i=4; i<9; i++) {
-    m_flavs[i] = Flavour(kf_photon);
+    m_flavs[i]  = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   m_cL = m_i*m_e/(m_sW*sqrt(2.));
@@ -59,7 +64,7 @@ void Tau_To_Lepton_Neutrinos::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole.at(0) into -z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -197,8 +202,8 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[4])[m_spins[4]]);
   Vec4D qt     = m_moms[0]-m_moms[4];       // tau propagator momenta
   Vec4D ql     = m_moms[1]+m_moms[4];       // lepton propagator momenta
-  double mt    = m_flavs[0].HadMass();       // tau mass/propagator pole
-  double ml    = m_flavs[1].HadMass();       // lepton mass/propagator pole
+  double mt    = m_masses[0];               // tau mass/propagator pole
+  double ml    = m_masses[1];               // lepton mass/propagator pole
   m_moms[5]    = m_moms[6] = qt;            // enter those into m_moms
   m_moms[7]    = m_moms[8] = ql;
   m_flavs[5]   = m_flavs[0];                // set to corresponding particle/antiparticle

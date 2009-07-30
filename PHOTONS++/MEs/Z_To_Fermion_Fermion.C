@@ -11,20 +11,22 @@ using namespace std;
 Z_To_Fermion_Fermion::Z_To_Fermion_Fermion
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Z_To_Fermion_Fermion";
-  m_flavs[0] = pvv[1][0]->Flav();
+  m_flavs[0]  = pvv[1][0]->Flav();
+  m_masses[0] = pvv[1][0]->FinalMass();
   // switch ordering if necessary
   m_switch = pvv[2][0]->Flav().IsAnti();
   // m_switch == true if first multipole particle is anti
   if (m_switch == false) {
-    m_flavs[1] = pvv[2][0]->Flav();
-    m_flavs[2] = pvv[2][1]->Flav();
+    m_flavs[1] = pvv[2][0]->Flav(); m_masses[1] = pvv[2][0]->FinalMass();
+    m_flavs[2] = pvv[2][1]->Flav(); m_masses[2] = pvv[2][1]->FinalMass();
   }
   else {
-    m_flavs[2] = pvv[2][0]->Flav();
-    m_flavs[1] = pvv[2][1]->Flav();
+    m_flavs[2] = pvv[2][0]->Flav(); m_masses[2] = pvv[2][0]->FinalMass();
+    m_flavs[1] = pvv[2][1]->Flav(); m_masses[1] = pvv[2][1]->FinalMass();
   }
   for (unsigned int i=3; i<9; i++) {
-    m_flavs[i] = Flavour(kf_photon);
+    m_flavs[i]  = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   // v = I3 - 2Q sW2 ;  a = I3
@@ -46,7 +48,7 @@ void Z_To_Fermion_Fermion::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole.at(0) into +z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -149,7 +151,7 @@ Complex Z_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3])[m_spins[3]]);
   Vec4D pa     = m_moms[1]+m_moms[3];       // fermion propagator momenta
   Vec4D pb     = m_moms[2]+m_moms[3];
-  double m     = m_flavs[1].HadMass();       // fermion mass/propagator pole
+  double m     = 0.5*(m_masses[1]+m_masses[2]); // fermion mass/propagator pole
   m_moms[4]    = m_moms[5] = pa;            // enter those into m_moms
   m_moms[6]    = m_moms[7] = pb;
   m_flavs[4]   = m_flavs[6] = m_flavs[1];   // set to corresponding particle/antiparticle
@@ -208,12 +210,14 @@ double Z_To_Fermion_Fermion::GetBeta_0_0() {
 
 double Z_To_Fermion_Fermion::GetBeta_0_1() {
   // in limit mZ >> ml
-  return m_alpha/M_PI*(2.*log(m_M/m_flavs[1].HadMass())+3./2.)*GetBeta_0_0();
+  return m_alpha/M_PI*(2.*log(m_M/(0.5*(m_masses[1]+m_masses[2])))+3./2.)
+           *GetBeta_0_0();
 }
 
 double Z_To_Fermion_Fermion::GetBeta_0_2() {
   // in limit mZ >> ml
-  return 1./2.*sqr(m_alpha/M_PI*2.*log(m_M/m_flavs[1].HadMass()))*GetBeta_0_0();
+  return 1./2.*sqr(m_alpha/M_PI*2.*log(m_M/(0.5*(m_masses[1]+m_masses[2]))))
+            *GetBeta_0_0();
 }
 
 double Z_To_Fermion_Fermion::GetBeta_1_1(unsigned int a) {

@@ -24,20 +24,22 @@ Vector_To_Scalar_Scalar::Vector_To_Scalar_Scalar
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Vector_To_Scalar_Scalar";
   m_flavs[0] = pvv[1][0]->Flav();
+  m_masses[0] = pvv[1][0]->FinalMass();
   // switch ordering if necessary
   m_switch = pvv[2][0]->Flav().IsAnti();
   // m_switch == true if first multipole particle is anti
   // such that m_flavs[1] is particle, m_flavs[2] is anti
   if (m_switch == false) {
-    m_flavs[1] = pvv[2][0]->Flav();
-    m_flavs[2] = pvv[2][1]->Flav();
+    m_flavs[1] = pvv[2][0]->Flav(); m_masses[1] = pvv[2][0]->FinalMass();
+    m_flavs[2] = pvv[2][1]->Flav(); m_masses[2] = pvv[2][1]->FinalMass();
   }
   else {
-    m_flavs[2] = pvv[2][0]->Flav();
-    m_flavs[1] = pvv[2][1]->Flav();
+    m_flavs[2] = pvv[2][0]->Flav(); m_masses[2] = pvv[2][0]->FinalMass();
+    m_flavs[1] = pvv[2][1]->Flav(); m_masses[1] = pvv[2][1]->FinalMass();
   }
   for (unsigned int i=3; i<9; i++) {
     m_flavs[i] = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
   m_Gamma = 1.;
 }
@@ -51,7 +53,7 @@ void Vector_To_Scalar_Scalar::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole.at(0) into +z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -142,8 +144,8 @@ Complex Vector_To_Scalar_Scalar::InfraredSubtractedME_0_0() {
 Complex Vector_To_Scalar_Scalar::InfraredSubtractedME_0_1() {
   return 0.;
   m_moms = m_moms0;
-  double s(m_moms[0].Abs2());
-  double m(0.5*(m_flavs[1].HadMass()+m_flavs[2].HadMass()));
+  double s(sqr(m_masses[0]));
+  double m(0.5*(m_masses[1]+m_masses[2]));
   double m2(sqr(m));
   double mu2(s);
   return m_alpha/M_PI * InfraredSubtractedME_0_0()
@@ -164,7 +166,7 @@ Complex Vector_To_Scalar_Scalar::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3])[m_spins[3]]);
   double pa2   = (m_moms[1]+m_moms[3])*(m_moms[1]+m_moms[3]);
   double pb2   = (m_moms[2]+m_moms[3])*(m_moms[2]+m_moms[3]);
-  double m2    = sqr(m_flavs[1].HadMass()); // fermion mass/propagator pole
+  double m2    = sqr(0.5*(m_masses[1]+m_masses[2])); // fermion mass/propagator pole
   // diagrams A and B
   Complex r1 = -m_Gamma*m_e/(pa2-m2)
                 *(epsV*(m_moms[1]-m_moms[2]+m_moms[3]))
@@ -203,7 +205,8 @@ double Vector_To_Scalar_Scalar::GetBeta_0_0() {
 
 double Vector_To_Scalar_Scalar::GetBeta_0_1() {
   // limit mV >> mS
-  return m_alpha/M_PI*(3.*log(m_M/m_flavs[1].HadMass())+5./2.)*GetBeta_0_0();
+  return m_alpha/M_PI*(3.*log(m_M/(0.5*(m_masses[1]+m_masses[2])))+5./2.)
+           *GetBeta_0_0();
 }
 
 double Vector_To_Scalar_Scalar::GetBeta_0_2() {

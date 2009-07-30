@@ -14,20 +14,22 @@ using namespace std;
 Scalar_To_Scalar_Scalar::Scalar_To_Scalar_Scalar
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv)  {
   m_name = "Scalar_To_Scalar_Scalar";
-  m_flavs[0] = pvv[1][0]->Flav();
+  m_flavs[0]  = pvv[1][0]->Flav();
+  m_masses[0] = pvv[1][0]->FinalMass();
   // switch ordering if necessary
   m_switch = pvv[2][0]->Flav().IsAnti();
   // m_switch == true if first multipole particle is anti
   if (m_switch == false) {
-    m_flavs[1] = pvv[2][0]->Flav();
-    m_flavs[2] = pvv[2][1]->Flav();
+    m_flavs[1] = pvv[2][0]->Flav(); m_masses[1] = pvv[2][0]->FinalMass();
+    m_flavs[2] = pvv[2][1]->Flav(); m_masses[2] = pvv[2][1]->FinalMass();
   }
   else {
-    m_flavs[2] = pvv[2][0]->Flav();
-    m_flavs[1] = pvv[2][1]->Flav();
+    m_flavs[2] = pvv[2][0]->Flav(); m_masses[2] = pvv[2][0]->FinalMass();
+    m_flavs[1] = pvv[2][1]->Flav(); m_masses[1] = pvv[2][1]->FinalMass();
   }
   for (unsigned int i=3; i<9; i++) {
-    m_flavs[i] = Flavour(kf_photon);
+    m_flavs[i]  = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   // Hadrons' form factors for basic process
@@ -45,7 +47,7 @@ void Scalar_To_Scalar_Scalar::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole.at(0) into +z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -136,8 +138,8 @@ Complex Scalar_To_Scalar_Scalar::InfraredSubtractedME_0_0() {
 
 Complex Scalar_To_Scalar_Scalar::InfraredSubtractedME_0_1() {
   m_moms = m_moms0;
-  double mu2 = sqr(m_flavs[0].HadMass());
-  double m2  = sqr(0.5*(m_flavs[1].HadMass()+m_flavs[2].HadMass()));
+  double mu2 = sqr(m_masses[0]);
+  double m2  = sqr(0.5*(m_masses[1]+m_masses[2]));
   return m_alpha/M_PI*m_Gamma*(0.5*B_0(m2,0.,m2,mu2)
                                +0.25*B_0(0.,m2,m2,mu2)).Finite();
 }
@@ -152,8 +154,8 @@ Complex Scalar_To_Scalar_Scalar::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4D k1      = m_moms[1];
   Vec4D k2      = m_moms[2];
   Vec4D k       = m_moms[3];
-  double m12    = m_flavs[1].HadMass();
-  double m22    = m_flavs[2].HadMass();
+  double m12    = m_masses[1];
+  double m22    = m_masses[2];
   Complex rA    = Complex(0.,0.);
   Complex rB    = Complex(0.,0.);
   // radiation off A

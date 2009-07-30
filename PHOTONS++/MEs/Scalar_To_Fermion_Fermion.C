@@ -27,19 +27,21 @@ Scalar_To_Fermion_Fermion::Scalar_To_Fermion_Fermion
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Scalar_To_Fermion_Fermion";
   m_flavs[0] = pvv[1][0]->Flav();
+  m_masses[0] = pvv[1][0]->FinalMass();
   // switch ordering if necessary
   m_switch = pvv[2][0]->Flav().IsAnti();
   // m_switch == true if first multipole particle is anti
   if (!m_switch) {
-    m_flavs[1] = pvv[2][0]->Flav();
-    m_flavs[2] = pvv[2][1]->Flav();
+    m_flavs[1] = pvv[2][0]->Flav(); m_masses[1] = pvv[2][0]->FinalMass();
+    m_flavs[2] = pvv[2][1]->Flav(); m_masses[2] = pvv[2][1]->FinalMass();
   }
   else {
-    m_flavs[2] = pvv[2][0]->Flav();
-    m_flavs[1] = pvv[2][1]->Flav();
+    m_flavs[2] = pvv[2][0]->Flav(); m_masses[2] = pvv[2][0]->FinalMass();
+    m_flavs[1] = pvv[2][1]->Flav(); m_masses[1] = pvv[2][1]->FinalMass();
   }
   for (unsigned int i=3; i<9; i++) {
-    m_flavs[i] = Flavour(kf_photon);
+    m_flavs[i]  = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   // Hadrons' form factors for basic process
@@ -64,7 +66,7 @@ void Scalar_To_Fermion_Fermion::BoostOriginalPVVToMultipoleCMS() {
   // and rotate m_olddipole[0] into +z direction
   Vec4D sum(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sum = sum + m_olddipole[i]->Momentum();
+    sum += m_olddipole[i]->Momentum();
   }
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
@@ -161,8 +163,8 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
 
 Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
   m_moms = m_moms0;
-  double m2   = 0.5*(m_moms[1].Abs2()+m_moms[2].Abs2());
-  double s    = m_moms[0].Abs2();
+  double m2   = sqr(0.5*(m_masses[1]+m_masses[2]));
+  double s    = sqr(m_masses[0]);
   double mu2  = s;
   double p1p2 = m_moms[1]*m_moms[2];
   XYZFunc XYZ(3,m_moms,m_flavs,1,false);

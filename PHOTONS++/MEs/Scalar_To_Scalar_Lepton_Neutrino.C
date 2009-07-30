@@ -23,21 +23,28 @@ using namespace std;
 Scalar_To_Scalar_Lepton_Neutrino::Scalar_To_Scalar_Lepton_Neutrino
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Scalar_To_Scalar_Lepton_Neutrino";
-  m_flavs[0] = pvv[1][0]->Flav();    // IS scalar (neutral)
-  m_flavs[3] = pvv[3][0]->Flav();    // neutrino
+  m_flavs[0]  = pvv[1][0]->Flav();    // IS scalar (neutral)
+  m_masses[0] = pvv[1][0]->FinalMass();
+  m_flavs[3]  = pvv[3][0]->Flav();    // neutrino (calcs with m_nu = 0)
+  m_masses[3] = 0.;
   // switch ordering if necessary (FS charged scalar at pos 1)
   m_switch = pvv[2][0]->Flav().IsLepton();
   // m_switch == true if first charged final state particle is lepton
   if (m_switch == false) {
-    m_flavs[1] = pvv[2][0]->Flav();  // charged FS scalar
-    m_flavs[2] = pvv[2][1]->Flav();  // lepton
+    m_flavs[1]  = pvv[2][0]->Flav();  // charged FS scalar
+    m_masses[1] = pvv[2][0]->FinalMass();
+    m_flavs[2]  = pvv[2][1]->Flav();  // lepton
+    m_masses[2] = pvv[2][1]->FinalMass();
   }
   else {
-    m_flavs[1] = pvv[2][1]->Flav();  // lepton
-    m_flavs[2] = pvv[2][0]->Flav();  // charged FS scalar
+    m_flavs[1]  = pvv[2][1]->Flav();  // charged FS scalar
+    m_masses[1] = pvv[2][1]->FinalMass();
+    m_flavs[2]  = pvv[2][0]->Flav();  // lepton
+    m_masses[2] = pvv[2][0]->FinalMass();
   }
   for (unsigned int i=4; i<9; i++) {
     m_flavs[i] = Flavour(kf_photon);
+    m_masses[i] = 0.;
   }
 
   m_cL = 1.;
@@ -203,7 +210,7 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_1() {
   double t((m_moms[0]-m_moms[1]).Abs2());
   double mu2(t);
   Vec4D p(m_moms[0]),p1(m_moms[1]),p2(m_moms[2]),p3(m_moms[3]);
-  double m12(sqr(m_flavs[1].HadMass())),m22(sqr(m_flavs[1].HadMass()));
+  double m12(sqr(m_masses[1])),m22(sqr(m_masses[2]));
   double m2(sqrt(m22));
   double p1p2(p1*p2), pp((p1+p2).Abs());
   DivArrC term1(0.,0.,0.,0.,0.,0.),term2(0.,0.,0.,0.,0.,0.),
@@ -250,8 +257,8 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_2() {
 Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   m_moms       = m_moms1[i];                // set to set of momenta to be used
   Vec4C epsP   = conj(Polarization_Vector(m_moms[4]).at(m_spins[4]));
-  double mS    = m_flavs[1].HadMass();      // charged FS scalar mass/propagator pole
-  double ml    = m_flavs[2].HadMass();      // lepton mass/propagator pole
+  double mS    = m_masses[1];      // charged FS scalar mass/propagator pole
+  double ml    = m_masses[2];      // lepton mass/propagator pole
   Vec4D ql     = m_moms[2]+m_moms[4];       // lepton propagator momenta
   m_moms[5]    = m_moms[6] = ql;            // enter those into m_moms
   m_flavs[5]   = m_flavs[2];                // set to corresponding particle/antiparticle
