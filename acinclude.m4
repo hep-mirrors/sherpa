@@ -78,6 +78,11 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
     AC_SUBST(pkgincludedir)
   fi;
   
+  if test "x$docdir" = "x"; then
+    docdir="\${datadir}/doc/\${PACKAGE_TARNAME}";
+    AC_SUBST(docdir)
+  fi;
+
   if test "x$htmldir" = "x"; then
     htmldir="\${docdir}";
     AC_SUBST(htmldir)
