@@ -3,6 +3,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/FeynRules_Spectrum.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Spectrum_Generator_Base.H"
@@ -57,6 +58,8 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }
+  rpa.gen.AddCitation
+    (1,"The Sherpa interface to FeynRules is published under \\cite{Christensen:2009jx}.");
 }
 
 void FeynRules_Model::ParticleInit() {
