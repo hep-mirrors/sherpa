@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include <iomanip>
+#include "Message.H"
 
 using namespace ATOOLS;
 
@@ -60,7 +61,7 @@ GetObservable(const Argument_Matrix &parameters)
     int kf=ATOOLS::ToType<int>(parameters[0][0]);
     ATOOLS::Flavour flav((kf_code)abs(kf));
     if (kf<0) flav=flav.Bar();
-    return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
+    return new Class(flav,ATOOLS::ToType<double>(parameters[0][1]),
                      HistogramType(parameters[0][5]),
                      ATOOLS::ToType<double>(parameters[0][2]),
                      ATOOLS::ToType<double>(parameters[0][3]),
