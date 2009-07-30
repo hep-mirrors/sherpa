@@ -35,7 +35,8 @@ dist_pkgdata_DATA         = \
 	completion.index
 
 dist_html_DATA = \
-        Sherpa.html
+        Sherpa.html \
+        SherpaLogo.jpg
 
 update-manpage:
 	groff -Tascii -mandoc $(srcdir)/Sherpa.trf > Sherpa.1
