@@ -9,13 +9,13 @@ Higgs fields. Besides the particle content of the SM it contains
 interactions of five physical Higgs bosons: a light and a heavy
 scalar, a pseudo-scalar and two charged ones. Besides the SM inputs
 the model is defined through the masses and widths of the Higgs
-particles, MASS[PDG] and WIDTH[PDG], where PDG = [25,35,36,37] for
+particles, @code{MASS[PDG]} and @code{WIDTH[PDG]}, where PDG = [25,35,36,37] for
 h^0, H^0, A^0 and H^+, respectively. The inputs are complete, when
 TAN(BETA), the ratio of the two Higgs vacuum expectation values,
 and ALPHA, the Higgs mixing angle, are specified.
 
-The model is invoked by specifying MODEL = THDM in the '(model)'
-section of the steering file or the model data file `Model.dat',
+The model is invoked by specifying @code{MODEL = THDM} in the @code{(model)}
+section of the steering file or the model data file @code{Model.dat},
 respectively. Additionally, the matrix element generator Amegic++
-has to be specified via ME_SIGNAL_GENERATOR = Amegic (cf. 
+has to be specified via @code{ME_SIGNAL_GENERATOR = Amegic} (cf. 
 @ref{ME_SIGNAL_GENERATOR}).

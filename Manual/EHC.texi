@@ -5,16 +5,16 @@
 
 The EHC describes the effective coupling of gluons to Higgs bosons
 via a top-quark loop. This supplement to the Standard Model can be
-invoked by specifying MODEL = SM+EHC in the '(model)' section of the
-steering file or the model data file `Model.dat', respectively.
+invoked by specifying @code{MODEL = SM+EHC} in the @code{(model)} section of the
+steering file or the model data file @code{Model.dat}, respectively.
 Additionally, the matrix element generator Amegic++ has to be
-specified via ME_SIGNAL_GENERATOR = Amegic (cf. @ref{ME_SIGNAL_GENERATOR}).
+specified via @code{ME_SIGNAL_GENERATOR = Amegic} (cf. @ref{ME_SIGNAL_GENERATOR}).
 
 The effective coupling of gluons to the Higgs boson g_ggH can be
 calculated either for a finite top-quark mass or in the limit of
-an infinitely heavy top using the switch FINITE_TOP_MASS=[1,0].
+an infinitely heavy top using the switch @code{FINITE_TOP_MASS=[1,0]}.
 The default choice is the latter.
 
 Similarily, the effective coupling of photons to Higgs bosons is
-included. Its strength can be set via the HIGGS_PP_EFF switch.
-However, its default is HIGGS_PP_EFF = 0. .
+included. Its strength can be set via the @code{HIGGS_PP_EFF} switch.
+However, its default is @code{HIGGS_PP_EFF = 0}.
