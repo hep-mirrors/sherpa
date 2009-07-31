@@ -1,0 +1,50 @@
+@node LHC_ADD
+@section LHC_ADD
+
+This example shows a set-up for the ADD model. This is one of Sherpa's
+built-in BSM options. For more information on using your own BSM models
+with Sherpa, see @ref{Exotic physics}.
+
+@example
+@smallformat
+@verbatiminclude ../Examples/LHC_ADD/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item the matrix element generator AMEGIC++ is used
+for this set-up.
+
+@item the model is chosen in the @code{(model)} section of
+the run card, using the parameter @code{MODEL}, see
+@ref{Model Parameters}. The default is the SM. 
+
+@item for a full description of all parameters in any 
+chosen model, use the tag @code{SHOW_MODEL_SYNTAX=1} 
+on the command line when running Sherpa.
+
+@item the properties of the graviton (@code{<id> = 39}) and
+graviscalar (@code{<id> = 40}),
+such as e.g. @code{MASS[<id>]} and @code{WIDTH[<id>]},
+may be set in the runcard, or on the command line, 
+in exactly the same way as the SM particle properties.
+
+@item the number of extra dimensions is fixed to @code{N_ED = 2}.
+Further the cut-off scale and the ADD scale M_S have been set equal
+to a rather low value (2 TeV).
+
+@item the analysis has been switched off, but
+to use it, switch @ref{ANALYSIS} to @option{1}.
+
+@item the analysis in this example uses Sherpa's
+in-built analysis package. To use this Analysis 
+package, when Sherpa is installed, the option
+@kbd{--enable-analysis} must be include on the 
+command line when Sherpa is configured, see 
+@ref{ANALYSIS}. To display the Analysis
+package syntax, run Sherpa with 
+@code{SHOW_ANALYSIS_SYNTAX=1} on the command line.
+@end itemize
+
+
