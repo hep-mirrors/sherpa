@@ -107,6 +107,38 @@ are determined according to run-time information from the matrix element
 generator.
 Scales are defined as the minimum of the largest transverse momentum
 during clustering and the lowest invariant mass in the core process.
+
+@item NLO
+This scale scheme has a similar functionality and syntax as the 
+@option{VAR} scheme. It is currently the only scheme to be used with
+next-to-leading order calculations. It makes sure that the scale is 
+calculated separately for the real correction and the subtraction terms,
+such that within the subtraction procedure the same amount is subtracted
+and added back.
+
+The definition of the scale must be infrared safe wrt to the radiation
+of an extra parton. Infrared safe (for QCD-NLO calculations) are:
+
+@itemize
+@item any function of momenta of NOT strongly interacting particles
+@item sum of transverse quantities of all partons (e.g. H_T2)
+@item any quantity refering to jets, constructed by an IR safe
+jet algorithm (not implemented yet)
+@end itemize
+
+Not infrared safe are
+
+@itemize
+@item any function of momenta of specific partons
+@item for processes with hadrons in the initial state: 
+any quantity that depends on parton momenta along the beam axis, 
+including the initial state partons itself 
+@end itemize
+
+Since the total number of partons is different for different pieces
+of the NLO calculation any explicit reference to a parton momentum
+will lead to an inconsistent result.
+
 @end table
 
 It is possible to implement a dedicated scale
