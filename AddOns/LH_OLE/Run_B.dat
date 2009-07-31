@@ -1,12 +1,9 @@
 (run){
   EVENTS 100000; ANALYSIS_WRITEOUT_INTERVAL 0.1;
   ANALYSIS 1; ANALYSIS_OUTPUT Wjets/;
-  SHERPA_LDADD = LHOLE;
 }(run);
 (processes){
   Process 93 93 -> 11 -12 93;
-  NLO_QCD_Part VI;
-  Loop_Generator LHOLE;
   Order_EW 2;
   End process;
 }(processes);
@@ -44,7 +41,7 @@
 (analysis){
     BEGIN_ANALYSIS {
         LEVEL ME
-        PATH_PIECE W1jvirt
+        PATH_PIECE W1jborn
 
         PartSel {
             InList FinalState;
