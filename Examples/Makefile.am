@@ -5,6 +5,7 @@ nobase_dist_examples_DATA         =	\
 			LEP91/Run.dat \
 			LHC_4thGen/Run.dat \
 			LHC_AGC/Run.dat \
+                        LHC_ADD/Run.dat \
 			LHC_TopPair/Run.dat \
 			LHC_ZJets/Run.dat \
 			PEPII_BaBar/Run.dat \

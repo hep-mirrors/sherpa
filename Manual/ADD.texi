@@ -18,6 +18,11 @@ between three widely used conventions for the definition of M_S and the way of
 summing internal Kaluza-Klein propagators. The switch @code{M_CUT} one restricts
 the c.m. energy of the hard process to be below this specified scale.
 
+The masses, widths, etc. of both additional particles can set in the same way as
+for the Standard Model particles using the @code{MASS[<id>]} and
+@code{WIDTH[<id>]} keywords. The ids of the graviton and graviscalar are
+@code{39} and @code{40}.
+
 For details of the implementation, the reader is referred to
 @mycite{Gleisberg2003ue}.
 
