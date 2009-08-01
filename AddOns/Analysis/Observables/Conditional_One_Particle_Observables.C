@@ -2,7 +2,7 @@
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include <iomanip>
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 
