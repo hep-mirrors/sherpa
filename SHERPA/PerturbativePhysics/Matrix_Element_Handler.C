@@ -278,6 +278,7 @@ void Matrix_Element_Handler::BuildProcesses()
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   std::vector<std::vector<std::string> > procdata;
   Data_Reader pread(" ",";","%",":");
+  pread.AddComment("#");
   pread.AddWordSeparator("\t");
   pread.SetAddCommandLine(false);
   pread.SetInputPath(m_path);
