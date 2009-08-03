@@ -331,6 +331,7 @@
 @mybibitem{Krauss2004bs,Kra04, F. Krauss and A. Schalicke and S. Schumann and G.  Soff,Simulating W / Z + jets production at the Tevatron,Phys. Rev.,D70,(2004),114009,[hep-ph/0409106],hep-ph/0409106}
 @mybibitem{Krauss2005nu,Kra05, F. Krauss and A. Schalicke and S. Schumann and G.  Soff,Simulating W/Z + jets production at the CERN LHC,Phys. Rev.,D72,(2005),054017,[hep-ph/0503280],hep-ph/0503280}
 @mybibitem{Krauss2005re,Kra05a, F. Krauss and A. Schalicke and G. Soff,APACIC++ 2.0: A PArton Cascade In C++,Comput. Phys. Commun.,174,(2006),876-902,[hep-ph/0503087],hep-ph/0503087}
+@mybibitem{Krauss2010xx,Kra10, F. Krauss and T. Laubrich and F. Siegert,Simulation of hadron decays in Sherpa,,,,,,}
 @mybibitem{Kramer1993jn,Kra93, M. Kramer and J. H. Kuhn and M. L. Stong and  P. M. Zerwas,Prospects of measuring the parity of Higgs particles,Z. Phys.,C64,(1994),21-30,[hep-ph/9404280],hep-ph/9404280}
 @mybibitem{Kramer1998bc,Kra98, G. Kramer and B. Potter,Low Q^2 Jet Production at HERA in Next-to-Leading Order QCD,Eur. Phys. J.,C5,(1998),665-679,[hep-ph/9804352],hep-ph/9804352}
 @mybibitem{Kuhn2000dk,Kuh00, R. Kuhn and F. Krauss and B. Ivanyi and G. Soff,APACIC++ 1.0: A PArton Cascade In C++,Comput. Phys. Commun.,134,(2001),223-266,[hep-ph/0004270],hep-ph/0004270}
@@ -469,6 +470,5 @@
 @mybibitem{Wolfenstein1983yz,Wol83, L. Wolfenstein,Parametrization of the Kobayashi-Maskawa Matrix,Phys. Rev. Lett.,51,(1983),1945,,F+J+Phys. Rev. Lett.%2C51%2C1945}
 @mybibitem{Yennie1961ad,Yen61, D. R. Yennie and S. C. Frautschi and H. Suura,The Infrared Divergence Phenomena and High-Energy Processes,Ann. Phys.,13,(1961),379-452,,F+J+Ann. Phys.%2C13%2C379}
 @mybibitem{Zarnecki2002qr,Zar02, A. F. Zarnecki,CompAZ: Parametrization of the luminosity spectra for the photon collider,Acta Phys. Polon.,B34,(2003),2741-2758,[hep-ex/0207021],hep-ex/0207021}
-@mybibitem{hadrons,a, F. Krauss and T. Laubrich and F. Siegert,Simulation of hadron decays in Sherpa,,,,,,}
-@mybibitem{ktclus,b, M. H. Seymour,,,,,,,}
-@mybibitem{ahadicprep,c,,,,,,,,}
+@mybibitem{ktclus,a, M. H. Seymour,,,,,,,}
+@mybibitem{ahadicprep,b,,,,,,,,}

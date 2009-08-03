@@ -308,26 +308,11 @@ matrix element corrections.
 @item BEAM
 
 This module manages the treatment of the initial beam spectra for 
-different colliders. Currently, three options have been made
-available for the beams.
-@enumerate a
-@item They can either be monochromatic, and therefore
-require no extra treatment.
-@item Photon emission in the Equivalent Photon
-Approximation (EPA) for protons has also been added.
-The authors would like to thank T. Pierzchala for his help in
-implementing and testing the corresponding code.
-@item For the case of an electron collider, laser
-backscattering off the electrons is supported.  This leads
-to photonic initial states.
-It should be stressed, however, that the parametrization 
-@mycite{Zarnecki2002qr}, which has been implemented among 
-others, is valid for the proposed TESLA photon collider 
-only. This is because various assumptions concerning the 
-laser parameters and especially the initial energy of 
-the electrons have been made.
-@end enumerate
-@*
+different colliders. The three options which are currently available
+include a monochromatic beam, which requires no extra treatment,
+photon emission in the Equivalent Photon Approximation (EPA)
+and - for the case of an electron collider - laser
+backscattering off the electrons, leading to photonic initial states.
 
 @item PDF 
 
@@ -350,16 +335,6 @@ Standard Model (SM), its Minimal Supersymmetric extension (MSSM)
 anomalous triple and quartic electroweak gauge boson couplings 
 @mycite{Hagiwara1986vm}.
 
-The required model inputs either are directly read from
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
-'s parameter file or input through a SLHA-conform file
-@mycite{Skands2003cj} for the case of the MSSM.
-        
 @item EXTRA_XS
 
 In this module a (limited) collection of analytic expressions
@@ -400,10 +375,9 @@ S\scalebox{0.8}{HERPA}\xspace
 Sherpa
 @end ifnottex
 's original matrix-element
-generator, which employs the method of helicity amplitudes
-@mycite{Kleiss1985yh},@mycite{Ballestrero1992dv}. It works as
-a generator, which generates generators:
-  
+generator. It employs the method of helicity amplitudes
+@mycite{Kleiss1985yh},@mycite{Ballestrero1992dv} and works as
+a generator, which generates generators:  
 During the initialization run the matrix elements for a given set of
 processes, as well as their 
 specific phase-space mappings are created by 
@@ -418,12 +392,6 @@ by the user using the @kbd{makelibs} script.
 The produced libraries are linked to the main program
 automatically in the next run and used to calculate cross
 sections and to generate weighted or unweighted events.
-A directory may be specified to store these cross sections,
-the status of the phase-space integrators, and the maximal
-weights of the processes. This information may be used to skip
-the potentially lengthy calculation phase in further event
-generation runs.
-  
 @iftex 
 A\scalebox{0.8}{MEGIC++}\xspace 
 @end iftex 
@@ -436,7 +404,7 @@ tested in @mycite{Hagiwara2005wg}.
 
 @item COMIX
 
-Comix is a multi-leg tree-level matrix element generator, based on 
+@uref{http://comix.freacafe.de,,Comix} is a multi-leg tree-level matrix element generator, based on 
 the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}.
 It employs a new algorithm to recursively compute phase-space weights and can
 be run in multithreaded mode to make better use of multicore processors
@@ -450,8 +418,8 @@ large multiplicity matrix element generator for the Standard Model.
 
 @item PHASIC++
 
-Here all classes dealing with the Monte Carlo phase-space
-integration are located. For the evaluation of the
+All base classes dealing with the Monte Carlo phase-space
+integration are located in this module. For the evaluation of the
 initial-state (laser backscattering, initial-state radiation)
 and final-state integrals, the adaptive multi-channel method
 of @mycite{Kleiss1994qy},@mycite{Berends1994pv} is used by default together
@@ -583,13 +551,9 @@ pass certain criteria.
 Finally, SHERPA is the steering module that initializes,
 controls and evaluates the different phases during the entire
 process of event generation.
-Furthermore, all routines for the combination of parton showers and 
-matrix elements, which are independent of the specific parton shower
-are found in this module. For details concerning the implementation
-of these routines, see @mycite{Schalicke2005nv}. 
-In addition, this sub-package provides
-an interface to the Lund String Fragmentation of Pythia 6.214
-including its hadron decay routines.
+All routines for the combination of truncated showers and 
+matrix elements, which are independent of the specific 
+matrix element and parton shower generator are found in this module. 
 @end itemize
 
 The actual executable of the 

@@ -208,7 +208,7 @@ channel. There are different sections, some of which are optional:
   Specifies the matrix elements or currents used for the kinematics,
   their respective weights, and the
   order in which the  particles (momenta) enter them. For more details, the
-  reader is referred to @mycite{hadrons}.
+  reader is referred to @mycite{Krauss2010xx}.
 
 @item 
 @verbatim
@@ -221,7 +221,7 @@ channel. There are different sections, some of which are optional:
   Each matrix element or current may have an additional section where one
   can specify needed parameters, e.g. which form factor model to choose.
   Each parameter has to be specified on a new line as shown above. Available
-  parameters are listed in @mycite{hadrons}.
+  parameters are listed in @mycite{Krauss2010xx}.
   Parameters not specified get a default value,
   which might not make sense in specific decay channels. One may also specify
   often needed parameters in @code{HadronConstants.dat}, but they will get
@@ -251,7 +251,7 @@ channel. There are different sections, some of which are optional:
 @subsubsection HadronConstants.dat 
 
 @code{HadronConstants.dat} may contain some globally needed parameters (e.g.
-for neutral meson mixing, see @mycite{hadrons}) and also fall-back
+for neutral meson mixing, see @mycite{Krauss2010xx}) and also fall-back
 values for all matrix-element parameters which one specifies in decay channel
 files. Here, the @code{Interference_X = 1} switch would enable rate asymmetries
 due to CP violation in the interference between mixing and decay
@@ -313,6 +313,6 @@ it will automatically produce the decay channel files and write their names in t
 $\tau$ decays are treated within the HADRONS++ framework, even though the
 $\tau$ is not a hadron. As for many hadron decays, the hadronic tau decays
 have form factor models implemented, for details the reader is referred to
-@mycite{hadrons}.
+@mycite{Krauss2010xx}.
 
 

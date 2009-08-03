@@ -60,7 +60,9 @@ photons with a corresponding energy spectrum.
 @item EPA
 This enables the equivalent photon approximation for
 colliding protons. The resulting beam particles are photons that 
-follow a dipole form factor parametrization, see @mycite{Budnev1974de}
+follow a dipole form factor parametrization, see @mycite{Budnev1974de}.
+The authors would like to thank T. Pierzchala for his help in
+implementing and testing the corresponding code.
 @item Spectrum_Reader
 A user defined spectrum is used to describe the energy spectrum
 of the assumed new beam particles. The name of the corresponding
