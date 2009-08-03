@@ -594,15 +594,9 @@ double LF_VFF_FF::operator()
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
-  double longpol = 0.5, bwfac = 1.;
-  if ((mode&1)==0 && m_flavs[0].Width()>0.0) {
-    double mij2  = sqr(p_ms->Mass(m_flavs[0]));
-    bwfac = scale/
-      sqrt(sqr(Q2*(y*(1.0-muk2)+(1.0-y)*(mui2+muj2))-mij2)
-	   +mij2*sqr(m_flavs[0].Width()));
-  }
+  double longpol = 0.5;
   if (mui2==0. && muj2==0. && muk2==0.) {
-    double value = ( 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol ) * bwfac;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     if (mode&1) return value;
     return value * JFF(y);
   }
@@ -616,7 +610,7 @@ double LF_VFF_FF::operator()
     double zp = frac*(1.+ viji*vijk);
     double massive = vijk * (1.- 2.*(z*(1.-z) - 2.* zp*zm));
     massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2))*sqr(1.-mui2-muj2-muk2)/sqrt(Lambda(1.,0.,muk2));
-    double value = ( 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol ) * bwfac;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     if (mode&1) return value;
     return value * JFF(y);
   }
@@ -659,18 +653,9 @@ double LF_VFF_FI::operator()
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/y*CDIS(y,z)) + CDIS(z,y) );
-  double longpol = 0.5, bwfac = 1.;
-  if ((mode&1)==0 && m_flavs[0].Width()>0.0) {
-    double mij2 = sqr(p_ms->Mass(m_flavs[0]));
-    double mui2 = sqr(p_ms->Mass(m_flavs[2]))/Q2;
-    double muj2 = sqr(p_ms->Mass(m_flavs[3]))/Q2;
-    double muk2 = sqr(p_ms->Mass(m_flspec))/Q2;
-    bwfac = scale/
-      sqrt(sqr(Q2*(y*(1.0+muk2)+(mui2+muj2))/(1.0-y)-mij2)
-	   +mij2*sqr(m_flavs[0].Width()));
-  }
+  double longpol = 0.5;
   if (muQ2==0.) {
-    double value = ( 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol ) * bwfac;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
@@ -681,7 +666,7 @@ double LF_VFF_FI::operator()
     double zm      = 0.5 * (1  - delta); 
     double massive = (1.-2.*(zp-z)*(z-zm));
     if (massive < 0.) std::cout<<" massive V_FF FI < 0. "<<massive<<std::endl; 
-    double value = ( 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol ) * bwfac;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }

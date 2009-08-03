@@ -56,7 +56,7 @@ Splitting_Function_Base::Splitting_Function_Base():
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
-  m_symf(1.0), m_polfac(1.0), m_on(1), m_qcd(-1)
+  m_symf(1.0), m_polfac(1.0), m_on(1), m_bwon(0), m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -76,6 +76,10 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
+  m_bwon=((key.m_type==cstp::FF || key.m_type==cstp::FI)
+	  && key.p_v->in[0].Width()) ||
+    ((key.m_type==cstp::IF || key.m_type==cstp::II)
+     && key.p_v->in[1].Width());
   if (key.p_v->in[1].Mass()>10.0 &&
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&
@@ -94,11 +98,59 @@ Splitting_Function_Base::~Splitting_Function_Base()
   if (p_cf) delete p_cf;
 }
 
+double Splitting_Function_Base::BWFactor
+(const double &z,const double &y,const double &eta,
+ const double &scale,const double &Q2,int mode) const
+{
+  if (!m_bwon) return 1.0;
+  switch (m_type) {
+  case cstp::FF: {
+    double mij2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
+    double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
+    double mj2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
+    double mk2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
+    return scale/
+      sqrt(sqr(y*(Q2-mk2)+(1.0-y)*(mi2+mj2)-mij2)
+	   +mij2*sqr(p_lf->FlA().Width()));
+  }
+  case cstp::FI: {
+    double mij2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
+    double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
+    double mj2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
+    double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
+    return scale/
+      sqrt(sqr((y*(Q2+ma2)+(mi2+mj2))/(1.0-y)-mij2)
+	   +mij2*sqr(p_lf->FlA().Width()));
+  }
+  case cstp::IF: {
+    double mai2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
+    double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
+    double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
+    double mk2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
+    return scale/
+      sqrt(sqr((-y*(Q2+mk2)+(z-y)*(mi2+ma2))/z-mai2)
+	   +mai2*sqr(p_lf->FlB().Width()));
+  }
+  case cstp::II: {
+    double mai2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
+    double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
+    double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
+    double mb2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
+    return scale/
+      sqrt(sqr((-y*(Q2-mb2)+(z+y)*(mi2+ma2))/z-mai2)
+	   +mai2*sqr(p_lf->FlB().Width()));
+  }
+  case cstp::none: break;
+  }
+  return 0.0;
+}
+
 double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,int mode)
 {
-  return (*p_lf)(z,y,eta,scale,Q2,mode)/m_symf/m_polfac;
+  return (*p_lf)(z,y,eta,scale,Q2,mode)
+    *BWFactor(z,y,eta,scale,Q2,mode)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::OverIntegrated

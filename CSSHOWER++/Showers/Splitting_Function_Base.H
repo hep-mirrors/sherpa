@@ -161,9 +161,12 @@ namespace CSSHOWER {
     SF_Coupling *p_cf;
     cstp::code m_type;
     double m_lastint, m_symf, m_polfac, m_lpdf;
-    int m_on, m_qcd;
+    int m_on, m_bwon, m_qcd;
     std::vector<Parton*> m_specs;
     PDF::PDF_Base **p_pdf;
+    double BWFactor(const double&,const double&,
+		    const double&,const double&,
+		    const double&,int mode=0) const;
   public:
 
     Splitting_Function_Base();
