@@ -25,24 +25,26 @@
 @image{SherpaLogo,,,,jpg}
 
 @menu
-* Introduction::     What is Sherpa
+* Introduction::       What is Sherpa
 @sp 1
-* Getting started::  A guide to getting started with Sherpa
+* Getting started::    A guide to getting started with Sherpa
 @sp 1
-* Command line::     Sherpa's command line options
-* Input structure::  How to specify parameters for a Sherpa run
-* Parameters::       The complete list of parameters
+* Command line::       Sherpa's command line options
+* Input structure::    How to specify parameters for a Sherpa run
+* Parameters::         The complete list of parameters
 @sp 1
-* Tips and Tricks::  Advanced usage tips
-* Customization::    Extending Sherpa 
+* Merging ME and PS::  The Sherpa method of merging matrix elements and parton showers
 @sp 1
-* Examples::         Examples to illustrate some of Sherpa's features
+* Tips and Tricks::    Advanced usage tips
+* Customization::      Extending Sherpa 
 @sp 1
-* Authors::          Authors of Sherpa 
-* Copying::          Your rights and freedoms
+* Examples::           Examples to illustrate some of Sherpa's features
 @sp 1
-* References::       Bibliography
-* Index::            Index
+* Authors::            Authors of Sherpa 
+* Copying::            Your rights and freedoms
+@sp 1
+* References::         Bibliography
+* Index::              Index
 @end menu
 @sp 1
 
@@ -54,6 +56,7 @@
 @include Commands.texi
 @include Input.texi
 @include Parameters.texi
+@include CKKW.texi
 @include Tips.texi
 @include Customization.texi
 @include Examples.texi

@@ -1,0 +1,333 @@
+@node Merging ME and PS
+@chapter CKKW 
+@strong{The Sherpa method of merging matrix elements and parton showers}
+
+
+@subsection Improved multijet final-state predictions
+For a large fraction of LHC final states, the application of
+reconstruction algorithms will lead to the identification of several
+hard jets. A major task is to distinguish whether such events are
+signals for new physics or just manifestations of SM physics. Related
+calculations therefore need to describe as accurately as possible both
+the full matrix element for the underlying hard processes as well as
+the subsequent evolution and conversion of the hard partons into jets
+of hadrons. Several scales therefore determine the thorough
+development of the event. This makes it difficult to unambiguously
+disentangle the components, which belong to the hard process from
+those of the hard-parton evolution. Given an n jet event of well
+separated partons, its jet structure is retained when emitting a
+further collinear or soft parton only. An additional hard, large-angle
+emission however gives rise to an extra jet changing the n to an
+n+1 final state. The merging scheme has to define, on an
+event-by-event basis, which possibility has to be followed. Its
+primary goals are therefore to avoid double counting by preventing
+events to appear twice, i.e. once for each possibility, as well as
+dead regions by generating each configuration only once and using the
+appropriate path.
+
+Different schemes have been proposed and exist. The MLM scheme, has
+been developed using a geometric analysis of the unconstrained
+radiation pattern in terms of cone jets to generate the inclusive
+samples @mycite{Mangano2001xp},@mycite{Mangano2006rw}. The CKKW scheme or CKKW
+merging algorithm has been introduced first for electron--positron
+annihilation into jets in @mycite{Catani2001cc}. Its extension to
+hadronic processes has been discussed in @mycite{Krauss2002up} and the
+approach has been validated for several cases, for e+e- collisions
+into hadrons @mycite{Schalicke2005nv}, @mycite{Krauss2005re}, for the production
+of single vector bosons at the Fermilab Tevatron @mycite{Krauss2004bs}
+and the CERN LHC @mycite{Krauss2005nu} and for W+W- production at
+hadron colliders, see @mycite{Gleisberg2005qq}. A reformulation of CKKW
+to a merging procedure in conjunction with a dipole shower (CKKW-L) has
+been presented in @mycite{Lonnblad2001iq}. In a number of works, all
+these different algorithms have been implemented in different
+variations on different levels of sophistication in conjunction with
+various matrix-element generators or already in full-fledged event
+generators. Again, common to all schemes is that sequences of
+tree-level multileg matrix elements with increasing final-state
+multiplicity are merged with parton showers to yield a fully inclusive
+sample with no double counting and correct at leading logarithmic
+accuracy.
+
+Given this introduction, the facts about the Sherpa merging algorithm
+can be summarised as follows: Sherpa provides a fully general (i.e.
+largely process-independent) implementation @mycite{Schalicke2005nv} of 
+the CKKW merging approach @mycite{Catani2001cc},@mycite{Krauss2002up}.
+Supplemented by a multiple-interactions description, which respects
+the jet-production scales of the primary, leading, process, this
+implementation guarantees an improved treatment of multijet
+production leading to more realistic predictions of jet observables.
+This is one of the key features of Sherpa. The idea underlying CKKW
+is to divide the phase space of partonic emissions according to a
+k_T measure @mycite{Catani1991hj},@mycite{Catani1993hr},@mycite{Catani1992zp} into a
+regime of jet production, described by appropriate matrix elements,
+and a regime of jet evolution, described by parton showering. The
+separation is defined by the merging scale, denoted by Q_cut.
+The matrix elements are reweighted by alpha_s coupling factors and
+terms that arise from analytic Sudakov form factors. The
+acceptance/rejection of jet configurations is realised according to
+this reweighting. Then, each hard parton of the reweighted
+matrix-element final state undergoes vetoed parton showering, i.e. any new
+emission that would give rise to an extra jet is vetoed. In this way,
+the ``unphysical'' dependence on the, in principle, ``arbitrary''
+separation scale Q_cut regularising the matrix elements is
+almost eliminated and the accuracy of the parton shower is
+preserved. The cancellation of the dependence on the
+separation scale Q_cut has been proven analytically in the
+e+e- case up to next-to-leading logarithmic accuracy
+@mycite{Catani2001cc}.
+Any unavoidable residual dependence can be used to tune less singular
+terms to obtain optimal agreement with data.
+
+An improved prescription for merging was presented in @mycite{Hoeche2009rj}, 
+extending the CKKW approach with truncated showers. For a more complete
+description of CKKW as implemented in Sherpa, readers are 
+referred to this paper.
+
+
+@anchor{The algorithm implemented in Sherpa}
+@subsection The algorithm implemented in Sherpa
+In Sherpa the CKKW merging of matrix elements and parton showers
+is accomplished as follows:
+@enumerate
+@item  All cross sections sigma_k for processes with
+  k=0,1,...,N extra partons are calculated with the constraint
+  that the matrix-element final states pass the jet criteria. They
+  are determined by the jet measure shown below, and the minimal distance is set by
+  the actual merging scale Q_cut. Beyond that, Q_cut
+  also acts as a regulator setting the factorization (PDF) as well as
+  the renormalization (alpha_s) scales of the matrix-element
+  calculations. The measure used for jet identification
+  can be written as
+@example
+  Q_ij^2 = 2p_i.p_j min@{2/(Cijk+Cjik)@}
+@end example
+  where the minimum is taken over other partons k, where k is not 
+  equivalent to i or j, and where, for final state partons i and j,
+@example
+  Cijk = p_i.p_k/((p_i+p_k).p_j) - m_i^2/(2p_i.p_j)@ @ @ @ @ @ if j=g,
+
+  Cijk = 1 @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ else.
+@end example
+
+
+@item  Processes of fixed parton multiplicity are chosen with
+  probability sigma_k/(sum of all sigma_k). The event's hard
+  process is picked from the list of partonic processes having the
+  desired multiplicity and according to their particular cross-section
+  contributions. All particle momenta are distributed respecting the
+  correlations encoded in the matrix elements. Merged samples
+  therefore fully include lepton-jet and jet--jet correlations
+  correlations up to N extra jets.
+@item  The parton configuration of the matrix element has to be
+  analysed to eventually accomplish the reweighting. Matrix elements are
+  interpreted in the large Nc limit. The partons are
+  clustered backwards according to the same jet clustering
+  algorithm used for the regularization of the final-state phase space
+  of the matrix elements (cf. first item). 
+  The clustering is guided
+  by physically allowed parton combinations, restricting the 
+  shower histories to those which correspond to a Feynman diagram. It
+  is stopped after a 2->2 configuration (a core process) has been
+  identified. 
+@item  The reweighting proceeds according to the reconstructed shower
+  history. The event is accepted or rejected according to a 
+  kinematics-dependent weight, which corresponds to evaluating
+  strong couplings in the shower scheme and computing the 
+  no-branching probability for each parton, internal or
+  external, in the clustered matrix element. 
+@ignore
+  further radiation resolvable at Q_cut. The NLL Sudakov form
+  factors employed, cf. @mycite{Catani1991hj}, are defined by
+@iftex
+  \begin{eqnarray}
+    \Delta_q(Q,Q_0) &=&
+    \exp\left@{-\int\limits_{Q_0}^{Q} dq \,\Gamma_q(Q,q)\right@} \;,\\
+    \Delta_g(Q,Q_0) &=&
+    \exp\left@{-\int\limits_{Q_0}^{Q} dq
+    \left[ \Gamma_g(Q,q) + \Gamma_f(q) \right]\right@} \;,\label{eq:sud}
+  \end{eqnarray}
+  where $\Gamma_{q,g,f}$ are the integrated splitting functions for
+  $q -> qg$, $g -> gg$\/ and $g -> q\bar q$ ($f\bar f$), given by
+  \begin{eqnarray}
+    \Gamma_q(Q,q) &=& \displaystyle\frac{2 C_F}{\pi}\frac{\alpha_s(q)}{q}
+    \left( \ln \frac Q q - \frac 3 4 \right) \;,\\
+    \Gamma_g(Q,q) &=& \displaystyle\frac{2 C_A}{\pi}\frac{\alpha_s(q)}{q}
+    \left( \ln \frac Q q - \frac{11}{12} \right) \;,\\
+    \Gamma_f(q)   &=& \displaystyle\frac{N_f}{3\pi}\frac{\alpha_s(q)}{q}\;,
+  \end{eqnarray}
+@end iftex
+  respectively. $\Gamma(Q,q)$ is cut off at zero, such that
+  $\Delta_@{q,g@}(Q,Q_0)$ retains its probability interpretation for
+  having no emission resolvable at scale $Q_0$ during the evolution
+  from $Q$ to $Q_0$. Hence, factors of that kind are used to reweight
+  in accordance to the appearance of external parton lines. 
+@end ignore
+  The ratio
+  of two Sudakov form factors Delta(Q,Q_0)/Delta(q,Q_0) accounts
+  for the probability of having no emission resolvable at Q_0 during
+  the evolution from Q to q. It thus is employed for the
+  reweighting of parton lines.
+@item The parton-shower evolution is started with suitably 
+  defined scales for intermediate and final-state particles. 
+@item Intermediate partons undergo truncated shower
+  evolution. This allows parton-shower emissions between
+  the scales of one matrix element branching and the next. 
+  This leads to a situation where, due to additional
+  partons originating from these branchings, the 
+  kinematics of the next matrix-element branching
+  needs to be redefined. If for any reason (e.g. 
+  energy-momentum conservation) the matrix element 
+  branching cannot be reconstructed after a 
+  truncated shower branching, this shower branching 
+  must be vetoed. 
+@item  In all circumstances parton-shower radiation is subject to the
+  condition that no extra jet is produced. Any emission that turns out
+  to be harder than the separation cut Q_cut is vetoed. The
+  exception to this veto -- called highest-multiplicity treatment --
+  is for matrix-element configurations with the maximal number N
+  of extra partons. These cases require the parton shower to cover the
+  phase space for more jets than those produced by the matrix
+  elements. To obtain an inclusive N-jet prediction, the veto
+  therefore is on parton emissions at scales harder than the softest
+  clustering scale, which is greater than the separation scale Q_cut. Of course,
+  correlations including the N+1th jet are only approximately taken
+  into account.
+@end enumerate
+
+
+@subsection Generation of merged samples
+
+The generation of inclusive event samples, i.e. the combination of
+matrix elements for different parton multiplicities with parton
+showers and hadronization, is completely automatized within Sherpa. 
+To obtain consistent results, certain parameters related to the
+matrix-element calculation and the parton showers have to be set
+accordingly. In the following the basic parameter settings for
+generating ``merged'' samples are summarised. Potential pitfalls are
+pointed out.
+@enumerate
+@item @strong{Process setup}
+
+   The starting point is the definition of a basic core
+  (lowest-order) process with respect to which the impact of
+  additional QCD radiation shall be studied. As an illustrative
+  example, consider Drell--Yan lepton-pair production in proton--proton
+  collisions. The lowest-order process reads pp -> l-bar l, mediated
+  through Z/photon exchange. Additional QCD radiation will then
+  manifest itself through additional QCD partons in the final state,
+  i.e. pp -> l\bar l + n jets with n=1,...,N. To initialise
+  the calculation of all the different matrix elements (for pp ->
+  l\bar l+0,1,...,N QCD partons) in a single generator run,
+  besides selecting the basic core process, the maximal number N
+  of additional final-state QCD partons has to be specified in the
+  @code{(processes)} section of the steering file. For the above example,
+  assuming N=3, this reads:
+@verbatim
+    Process 93 93 -> 90 90 93{3}
+    Order_EW 2
+@end verbatim
+  N is given in the curly brackets belonging to the @code{93}, the
+  code for QCD partons. Note, that it is mandatory to fix the order of
+  electroweak couplings to the corresponding order of the basic core
+  process, here pp -> l-bar l or @code{93 93 -> 90 90}, as only QCD
+  corrections to this process can be considered and further
+  electroweak corrections are not treated by Sherpa's CKKW
+  implementation.
+  
+@item @strong{Setting the merging scale}
+
+  The most important parameter to be specified when generating
+  CKKW merged samples with Sherpa is the actual value of the jet
+  resolution that separates the subsamples of different parton
+  multiplicities, the merging scale. 
+  
+  The jet criterion is given in 
+  @ref{The algorithm implemented in Sherpa}. The separation cut, Q_cut, 
+  must be specified. It is set using the @ref{CKKW} tag, in the form
+  (Q_cut/E_cms)^2. For example, a valid setting reads
+@verbatim
+    CKKW sqr(20/E_CMS)
+@end verbatim
+  and must be included in the process specification, before the 
+  @code{End process} line. 
+  As mentioned before,
+  all extra QCD parton radiation is regularised by satisfying the
+  jet criterion. However, divergences of the basic core process, such as
+  vanishing invariant masses of lepton pairs, need to be regularised
+  by imposing additional cuts see @ref{Selectors}.
+  
+@item @strong{Parton showering}
+
+  It always should be ensured that the parton showers are
+  switched on.
+@end enumerate
+
+@strong{Further remarks}
+
+Although the merging of different multiplicity matrix-element samples
+with parton showers attached is fully automatized in Sherpa, some
+care has to be taken to ensure physical meaningful results. Some of
+the most prominent mistakes are listed here:
+@itemize @bullet
+@item  When explicitly specifying the subprocesses instead of using the
+  curly-bracket notation, it should always be ensured that the full
+  sequence n=0,...,N of processes with extra partons is listed.
+  Otherwise there will be ``holes'' in phase space that are neither
+  filled by matrix elements nor parton showering.
+@item  The jet criterion specified by the @ref{CKKW} 
+  parameter defines which phase-space regions are
+  populated by matrix elements and which ones by parton showers. In
+  order to guarantee functioning of Sherpa's CKKW implementation, no
+  further phase-space cuts on the additional QCD parton emissions
+  need/should be applied while generating the samples.
+@item  When jets are included in the core process, like in the 
+  @ref{Tevatron_QCD} example, a jet criterion must be specified 
+  for the core jets. This can be done using the @code{NJetFinder}
+  parameter, which applies it's jet criterion to only the specified 
+  jets. See the @ref{Examples} section for an example of the usage.
+@item  In @ref{Getting started} it has been pointed out that the
+  cross-section results of the matrix-element integration can be
+  stored and hence re-used in later runs. The same applies to the
+  cross sections sigma_k (cf. the first item in
+  @ref{The algorithm implemented in Sherpa}) 
+  of the various matrix-element multiplicities.
+  For the merging algorithm to work correctly, the re-evaluation of
+  these cross sections is however mandatory and stored integration
+  results of former runs will not be valid whenever related parameters
+  are changed. This includes all parameters given in the @code{(selector)}
+  part of the steering file, or the merging scale set by @ref{CKKW}.
+  Furthermore, changing the number of
+  matrix-element partons, the centre-of-mass energy, the choice of the
+  PDF or the running of alpha_s requires to integrate and possibly
+  store afresh.
+@item  The total inclusive cross section of a Sherpa CKKW prediction
+  does not correspond to the sum of the sigma_k. Because of the
+  matrix-element reweighting, all these fixed-multiplicity cross
+  sections are modified (scaled down) by the CKKW procedure. The sum
+  of the modified values determines Sherpa's total inclusive cross
+  section.
+@item  The CKKW merging implemented in Sherpa is not yet enabled for
+  supersymmetric processes.
+@end itemize
+Finally, a few more useful comments related to Sherpa's CKKW merging
+are stated below:
+@itemize @bullet
+@item  Factors can be given to vary the default choices for the
+  renormalization and factorization scales used in Sherpa
+  simulations. The corresponding keywords are @ref{
+  RENORMALIZATION_SCALE_FACTOR}
+  and @ref{FACTORIZATION_SCALE_FACTOR}, and they are multiplied
+  to the default mu_R^2 and mu_F^2 scales used for alpha_s
+  and PDF evaluations, respectively. By varying them in a certain
+  range around 1 (like [1/4,4]), an estimate for the uncertainty
+  of Sherpa CKKW predictions can be obtained conveniently. Note that
+  the application of the factors requires to re-integrate the matrix
+  elements.
+@item  The generation of merged event samples for the production and
+  decay of heavy particles in association with jets has a few
+  particularities, which are best explained by means of an example.
+  The reader is therefore referred to @ref{Examples} for some 
+  applications of merged matrix elements and parton showers.
+@end itemize
+

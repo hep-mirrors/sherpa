@@ -147,6 +147,8 @@ please contact the authors, @ref{Authors}.
 
 @cindex FACTORIZATION_SCALE_FACTOR
 @cindex RENORMALIZATION_SCALE_FACTOR
+@anchor{FACTORIZATION_SCALE_FACTOR}
+@anchor{RENORMALIZATION_SCALE_FACTOR}
 
 Simple scale variations can be done using the following parameters:
 @itemize
