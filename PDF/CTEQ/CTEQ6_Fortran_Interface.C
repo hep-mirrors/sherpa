@@ -24,7 +24,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						 const std::string _path):
   m_set(_set), m_path(_path), m_member(_member), m_anti(1) 
 {
-  m_xmin=1.e-12;
+  m_xmin=1.e-6;
   m_xmax=1.;
   m_q2min=.5;
   m_q2max=1.e12;
