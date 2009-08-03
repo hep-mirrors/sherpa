@@ -962,8 +962,8 @@ void AMEGIC::Single_Process::FillCombinations
 	break;
       }
     if (!in) {
-      m_cflavs[idc].push_back(p->fl);
-      m_cflavs[id].push_back(p->fl.Bar());
+      m_cflavs[idc].push_back(p->fl.Bar());
+      m_cflavs[id].push_back(p->fl);
       msg_Debugging()<<"  flav "<<ID(idc)<<" / "
 		     <<ID(id)<<" -> "<<p->fl<<"\n";
     }
@@ -972,7 +972,7 @@ void AMEGIC::Single_Process::FillCombinations
 
 void AMEGIC::Single_Process::FillCombinations()
 {
-  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
   size_t nd(NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(Diagram(i));
