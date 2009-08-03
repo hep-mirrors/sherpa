@@ -27,7 +27,7 @@ W_To_Lepton_Neutrino::W_To_Lepton_Neutrino
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FI(pvv) {
   m_name = "W_To_Lepton_Neutrino";
   m_flavs[0]  = pvv[0][0]->Flav();
-  m_masses[0] = pvv[1][0]->FinalMass();
+  m_masses[0] = pvv[0][0]->FinalMass();
   m_flavs[1]  = pvv[2][0]->Flav();
   m_masses[1] = pvv[2][0]->FinalMass();
   m_flavs[2]  = pvv[3][0]->Flav();
