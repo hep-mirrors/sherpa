@@ -43,7 +43,7 @@ public:
   }
 };
 
-void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md)
+void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 {
   SFC_Filler_Getter::Getter_List flist(SFC_Filler_Getter::GetGetters());
   for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
@@ -76,18 +76,18 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md)
 	if (v->in[2]==v->in[0]) dmode=1;
 	else if (v->in[1]!=v->in[0] && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode)));
 	if (v->in[0].Mass()<100.0) {
-  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF)));
- 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II)));
+  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode)));
+ 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode)));
 	}
 	if (v->in[1]!=v->in[2]) {
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode)));
 	  if (v->in[0].Mass()<100.0) {
-  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF)));
- 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II)));
+  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode)));
+ 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode)));
 	  }
 	}
       }
@@ -101,20 +101,22 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			  const double &isfac,const double &fsfac)
 {
   m_k0sq=k0sq;
-  m_as_is_fac=isfac;
-  m_as_fs_fac=fsfac;
+  m_as_is_fac=m_as_fs_fac=std::numeric_limits<double>::max();
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac)) {
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,isfac,fsfac)) {
       delete *sit;
       sit=m_splittings.erase(sit);
     }
     else {
+      if ((*sit)->GetType()==cstp::FF || (*sit)->GetType()==cstp::FI)
+	m_as_fs_fac=Min(m_as_fs_fac,(*sit)->Coupling()->CplFac(m_k0sq));
+      else m_as_is_fac=Min(m_as_is_fac,(*sit)->Coupling()->CplFac(m_k0sq));
       ++sit;
     }
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_addsplittings.begin());sit!=m_addsplittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,m_as_is_fac,m_as_fs_fac)) {
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,isfac,fsfac)) {
       delete *sit;
       sit=m_addsplittings.erase(sit);
     }

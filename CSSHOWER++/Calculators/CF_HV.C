@@ -49,8 +49,8 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   case 1: m_q=TR;break; 
   case 2: m_q=CF;break;
   }
-  m_cplmax.push_back((*p_cpl)(m_cplfac*k0sq)*m_q);
-  std::cout<<" cpl max HV "<<(*p_cpl)(m_cplfac*k0sq)*m_q<<" "<<m_cplfac*k0sq<<" "<<m_q <<std::endl; 
+  m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
+  std::cout<<" cpl max HV "<<(*p_cpl)(k0sq)*m_q<<" "<<k0sq<<" "<<m_q <<std::endl; 
   m_cplmax.push_back(0.0);
   return true;
 }
@@ -58,7 +58,7 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 double CF_HV::Coupling(const double &scale,const int mode)
 {
   if (mode!=0) return 0.0;
-  return (*p_cpl)(m_cplfac*scale)*m_q;
+  return (*p_cpl)(CplFac(scale)*scale)*m_q;
 }
 
 bool CF_HV::AllowSpec(const ATOOLS::Flavour &fl) 

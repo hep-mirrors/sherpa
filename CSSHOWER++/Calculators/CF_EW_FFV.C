@@ -67,7 +67,7 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_q[1]=2.0/stw*sqr(af*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
   m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_QED");
-  double cqed((*p_cpl)(m_cplfac*rpa.gen.CplScale()));
+  double cqed((*p_cpl)(rpa.gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return true;
@@ -76,7 +76,7 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 double CF_EW_FFZ::Coupling(const double &scale,const int mode)
 {
   if (mode>1) return 0.0;
-  return (*p_cpl)(m_cplfac*scale)*m_q[mode];
+  return (*p_cpl)(CplFac(scale)*scale)*m_q[mode];
 }
 
 bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -103,7 +103,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_q[1]=1.0/stw*sqr(vf*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
   m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_QED");
-  double cqed((*p_cpl)(m_cplfac*rpa.gen.CplScale()));
+  double cqed((*p_cpl)(rpa.gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return m_q[0]>0.0;
@@ -112,7 +112,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 double CF_EW_FFW::Coupling(const double &scale,const int mode)
 {
   if (mode>1) return 0.0;
-  return (*p_cpl)(m_cplfac*scale)*m_q[mode];
+  return (*p_cpl)(CplFac(scale)*scale)*m_q[mode];
 }
 
 bool CF_EW_FFW::AllowSpec(const ATOOLS::Flavour &fl) 

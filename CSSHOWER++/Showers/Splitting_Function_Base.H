@@ -34,14 +34,16 @@ namespace CSSHOWER {
   public:
     ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
-    int m_mode;
+    int m_mode, m_kfmode;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
     inline SF_Key(ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
-		  const int mode,const cstp::code type):
-      p_ms(ms), p_v(v), m_mode(mode), m_type(type), p_cf(NULL) {}
+		  const int mode,const cstp::code type,
+		  const int kfmode):
+      p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
+      m_type(type), p_cf(NULL) {}
     std::string ID(const int mode) const;
   };
 
@@ -123,6 +125,7 @@ namespace CSSHOWER {
 
     cstp::code m_type;
     double     m_cplfac;
+    int        m_kfmode;
 
     /**
       * m_cplmax[i] = max_{scale} Coupling(scale, i)
@@ -132,7 +135,7 @@ namespace CSSHOWER {
   public:
 
     inline SF_Coupling(const SF_Key &key):
-      p_lf(NULL), m_type(key.m_type) {}
+      p_lf(NULL), m_type(key.m_type), m_kfmode(key.m_kfmode) {}
 
     virtual ~SF_Coupling();
 
@@ -141,11 +144,11 @@ namespace CSSHOWER {
     virtual double Coupling(const double &scale,const int mode) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
 
+    virtual double CplFac(const double &scale) const;
+
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
-
-    inline double CplFac() const { return m_cplfac; }
 
   };
 

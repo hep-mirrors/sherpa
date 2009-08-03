@@ -607,6 +607,7 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
       }
       msg_Debugging()<<"}\n";
     }
+    size_t istag(((1<<ampl->NIn())-1));
     while (ref->Prev()) {
       ref=ref->Prev();
       bool split(false);
@@ -616,10 +617,29 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
 	  for (size_t j(i+1);j<ref->Legs().size();++j) {
 	    size_t idj(ref->Leg(j)->Id());
 	    if (legs.find(idi+idj)!=legs.end()) {
-	      double cf((idi&((1<<ampl->NIn())-1))?
+	      double cf((idi&istag)?
 			p_shower->GetSudakov()->ISCplFac():
 			p_shower->GetSudakov()->FSCplFac());
 	      double ckt2(ref->KT2QCD());
+	      const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
+	      if ((idi+idj)&istag) {
+		if (legs[idi+idj]->K()&istag) cmap=&p_shower->GetSudakov()->IIMap();
+		else cmap=&p_shower->GetSudakov()->IFMap();
+	      }
+	      else {
+		if (legs[idi+idj]->K()&istag) cmap=&p_shower->GetSudakov()->FIMap();
+	      }
+	      SF_EEE_Map::const_iterator eees(cmap->find(ref->Leg(i)->Flav()));
+	      if (eees!=cmap->end()) {
+		SF_EE_Map::const_iterator ees(eees->second.find(ref->Leg(j)->Flav()));
+		if (ees!=eees->second.end()) {
+		  SF_E_Map::const_iterator es(ees->second.find(legs[idi+idj]->Flav()));
+		  if (es!=ees->second.end()) {
+		    cf=es->second->Coupling()->CplFac(ckt2);
+		    msg_Debugging()<<"known ";
+		  }
+		}
+	      }
 	      msg_Debugging()<<"split "<<ID(idi+idj)
 			<<" -> "<<ID(idi)<<","<<ID(idj)
 			<<" => kt = "<<sqrt(cf)<<"*"<<sqrt(ckt2)<<" {\n";

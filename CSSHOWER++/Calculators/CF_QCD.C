@@ -2,6 +2,7 @@
 
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Exception.H"
 
 namespace CSSHOWER {
@@ -14,7 +15,7 @@ namespace CSSHOWER {
   class CF_QCD: public SF_Coupling {
   protected:
 
-    ATOOLS::Function_Base *p_cpl;
+    MODEL::Running_AlphaS *p_cpl;
 
     double m_q;
 
@@ -34,6 +35,8 @@ namespace CSSHOWER {
     double Coupling(const double &scale,const int mode);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
+    double CplFac(const double &scale) const;
+
   };
 
 }
@@ -45,8 +48,8 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			 const double &isfac,const double &fsfac)
 {
   m_cplfac=(m_type/10==1)?fsfac:isfac;
-  p_cpl=md->GetScalarFunction("alpha_S");
-  m_cplmax.push_back((*p_cpl)(m_cplfac*k0sq/m_cplfac)*m_q);
+  p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
+  m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }
@@ -54,7 +57,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 double CF_QCD::Coupling(const double &scale,const int mode)
 {
   if (mode!=0) return 0.0;
-  double cpl=(*p_cpl)(m_cplfac*scale)*m_q;
+  double cpl=(*p_cpl)(CplFac(scale)*scale)*m_q;
   if (cpl>m_cplmax.front()) return m_cplmax.front();
   return cpl;
 }
@@ -62,6 +65,14 @@ double CF_QCD::Coupling(const double &scale,const int mode)
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
 {
   return fl.Strong();
+}
+
+double CF_QCD::CplFac(const double &scale) const
+{
+  if (m_kfmode==0) return m_cplfac;
+  double nf=p_cpl->Nf(scale);
+  double kfac=exp(-(67.0-3.0*sqr(M_PI)-5.0*nf)/(33.0-2.0*nf));
+  return m_cplfac*kfac;
 }
 
 DECLARE_CPL_GETTER(CF_QCD_Getter);

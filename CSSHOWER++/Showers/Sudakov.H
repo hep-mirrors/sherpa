@@ -41,7 +41,7 @@ namespace CSSHOWER {
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
 
-    void InitSplittingFunctions(MODEL::Model_Base *md);
+    void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
     bool   Dice(Parton *);

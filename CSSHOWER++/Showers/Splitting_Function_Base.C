@@ -49,8 +49,14 @@ double SF_Lorentz::Lambda
 
 SF_Coupling::~SF_Coupling() {}
 
+double SF_Coupling::CplFac(const double &scale) const
+{
+  return m_cplfac;
+}
+
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_on(1), m_qcd(-1)
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none),
+  m_on(1), m_bwon(0), m_qcd(-1)
 {
 }
 
@@ -197,7 +203,7 @@ double Splitting_Function_Base::GetXPDF
   if (p_pdf[beam]==NULL || !p_pdf[beam]->Contains(a)) return 0.0;
   if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
   if (IsNan(scale) || IsNan(x)) return 0.0;
-  double Q2(scale*p_cf->CplFac());
+  double Q2(scale*p_cf->CplFac(scale));
   if (Q2<p_lf->MS()->Mass2(a) || x<p_pdf[beam]->XMin() ||
       x>p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor() ||
       Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())
