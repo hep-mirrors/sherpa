@@ -5,18 +5,28 @@ The hadronization setup is covered by the `(fragmentation)' section of
 the steering file or the fragmentation data file `Fragmentation.dat', respectively.
 
 @menu
-* FRAGMENTATION::           Sets fragmentation module.
-* HADRONS++::               The hadron decay module, and its parameters.
+* Hadronization parameters:: General hadronization parameters
+* AHADIC++::                 The fragmentation module, and its parameters.
+* HADRONS++::                The hadron decay module, and its parameters.
 @end menu
 
-
-@node FRAGMENTATION
-@subsection FRAGMENTATION
+@node Hadronization parameters
+@subsection Hadronization parameters
 @cindex FRAGMENTATION
-This parameter sets the fragmentation module to be employed during event generation.
-This parameter can also be set on the command line using option @option{-F},
-see @ref{Command line}. The default is @option{Ahadic}.
+@cindex DECAYMODEL
+@cindex STABLE[<id>]
+@cindex WIDTH[<id>]
+@cindex MASS[<id>]
 
+The @code{FRAGMENTATION} parameter sets the fragmentation module to be employed
+during event generation. The default is @option{Ahadic}.
+
+TODO.
+
+@node AHADIC++
+@subsection AHADIC++
+
+TODO.
 
 @node HADRONS++
 @subsection HADRONS++

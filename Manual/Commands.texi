@@ -29,7 +29,7 @@ see @ref{EVENT_GENERATION_MODE}.
 
 @item -F <module>
 Set the fragmentation module to @samp{<module>},
-see @ref{FRAGMENTATION}.
+see @ref{Fragmentation}.
 
 @item -a <analyses>
 Set the analysis handler list to @samp{<analyses>},
