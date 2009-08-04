@@ -1170,7 +1170,7 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D * mom, double **dsij)
 }
 
 
-void AMEGIC::Single_LOProcess::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor,double sfactor)
+void AMEGIC::Single_LOProcess::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
 {
   if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
   else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));

@@ -1,12 +1,12 @@
 #include "HADRONS++/ME_Library/Four_Body_MEs.H"
 #include "ATOOLS/Org/Message.H"
 #include "HADRONS++/Main/Tools.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Math/Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 void QQ_QQQQ_Spectator::SetModelParameters( GeneralModel _md )
@@ -55,7 +55,7 @@ void QQ_QQQQ_Spectator::SetModelParameters( GeneralModel _md )
 
 void QQ_QQQQ_Spectator::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   double factor = m_GF*m_Vxx_decay*m_Vxx_production;
   Flavour partonflavs[] = {m_decayer, m_flavs[p_i[1]], m_flavs[p_i[2]], m_flavs[p_i[3]]};
@@ -126,7 +126,7 @@ void Baryon_Diquark_3Quarks::SetModelParameters( GeneralModel _md )
 
 void Baryon_Diquark_3Quarks::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   vector<pair<int,int> > spins(5);
   for(int h0=0; h0<m_flavs[p_i[0]].IntSpin()+1;++h0) {

@@ -2,10 +2,10 @@
 #define COMIX_Vertices_Vertex_H
 
 #include "COMIX/Amplitude/Vertex_Base.H"
-#include "HELICITIES/Main/C_Scalar.H"
-#include "HELICITIES/Main/C_Spinor.H"
-#include "HELICITIES/Main/C_Vector.H"
-#include "HELICITIES/Main/C_Tensor.H"
+#include "METOOLS/Main/C_Scalar.H"
+#include "METOOLS/Main/C_Spinor.H"
+#include "METOOLS/Main/C_Vector.H"
+#include "METOOLS/Main/C_Tensor.H"
 
 namespace COMIX {
 

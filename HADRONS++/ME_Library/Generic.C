@@ -4,10 +4,10 @@
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
-#include "HELICITIES/Main/Partial_Amplitude_Base.H"
+#include "METOOLS/Main/Partial_Amplitude_Base.H"
 
 Generic::Generic(ATOOLS::Flavour* flavs, int n, int* decayindices, 
                  std::string name):
@@ -20,7 +20,7 @@ Generic::~Generic() {
   delete p_me;
 }
 
-void Generic::operator()(const ATOOLS::Vec4D* p, HELICITIES::Spin_Amplitudes* amps)
+void Generic::operator()(const ATOOLS::Vec4D* p, METOOLS::Spin_Amplitudes* amps)
 {
   (*p_me)(p, m_anti);
   if(amps->size()!=p_me->size())

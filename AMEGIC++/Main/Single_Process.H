@@ -115,7 +115,7 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *);
     //! Return the spin correlations for the current process.
 //     virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
-    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     bool PerformTests();
 
   };

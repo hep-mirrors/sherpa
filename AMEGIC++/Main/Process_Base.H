@@ -6,7 +6,7 @@
 #include "PHASIC++/Process/Single_Process.H"
 
 namespace MODEL { class Model_Base; }
-namespace HELICITIES { class Amplitude_Tensor; }
+namespace METOOLS { class Amplitude_Tensor; }
 
 namespace AMEGIC {
 
@@ -66,7 +66,7 @@ namespace AMEGIC {
     virtual void ISRInfo(int,int &,double &,double &);
     virtual void BeamInfo(int,int &,double &,double &);
 
-    virtual void FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.) = 0;
+    virtual void FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.) = 0;
     virtual int                             NumberOfDiagrams() = 0;
     virtual AMEGIC::Point                 * Diagram(int i) = 0;
     virtual bool IsFreeOfFourVertex(AMEGIC::Point * _p) { return 1; }

@@ -5,7 +5,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include <string>
 #include <utility>
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Main/Spin_Structure.H"
 #include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
@@ -35,7 +35,7 @@ namespace HADRONS {
     void SetAnti(bool anti) { m_anti = anti; }
 
     virtual void   operator()(const ATOOLS::Vec4D* p,
-                              HELICITIES::Spin_Amplitudes* amps) = 0;
+                              METOOLS::Spin_Amplitudes* amps) = 0;
     virtual void   AddVector(double,double) {}
     virtual void   SetModelParameters( GeneralModel _md ) {};
     virtual bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g);
@@ -79,12 +79,12 @@ namespace HADRONS {
     \section spin The Implemention of Spin Correlations
 
     At this stage, the implementation of the spin correlation algorithm will be explained a bit.
-    Each ME class (Tau_Lepton, Tau_Pseudo, ...) has to set up an HELICITIES::Amplitude_Tensor.
+    Each ME class (Tau_Lepton, Tau_Pseudo, ...) has to set up an METOOLS::Amplitude_Tensor.
     This is a structure where an entry stands for a value of the ME (\e not squared) with
     a certain helicity combination. That is, each helicity combination has its own entry in 
     the Amplitude_Tensor. To make it easy to insert an amplitude for a specific helicity
     combination, it provides a number of methods. Have a look at the documentation in
-    HELICITIES::Amplitude_Tensor for them.
+    METOOLS::Amplitude_Tensor for them.
   */
 
   /*!

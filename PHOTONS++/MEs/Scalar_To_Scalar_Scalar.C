@@ -1,14 +1,14 @@
 #include "PHOTONS++/MEs/Scalar_To_Scalar_Scalar.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "HELICITIES/Main/XYZFuncs.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
-#include "HELICITIES/Loops/Master_Integrals.H"
+#include "METOOLS/Main/XYZFuncs.H"
+#include "METOOLS/Main/Polarization_Tools.H"
+#include "METOOLS/Loops/Master_Integrals.H"
 
 #define B_0(A,B,C,M) Master_Bubble(A,B,C,M)
 
 using namespace PHOTONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 Scalar_To_Scalar_Scalar::Scalar_To_Scalar_Scalar

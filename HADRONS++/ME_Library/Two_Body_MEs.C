@@ -1,8 +1,8 @@
 #include "HADRONS++/ME_Library/Two_Body_MEs.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
-#include "HELICITIES/Main/XYZFuncs.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/XYZFuncs.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -17,7 +17,7 @@ void Baryon_Diquark_Quark::SetModelParameters( GeneralModel _md )
 
 void Baryon_Diquark_Quark::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   vector<pair<int,int> > spins(3);
   for(int h0=0; h0<m_flavs[p_i[0]].IntSpin()+1;++h0) {

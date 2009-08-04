@@ -1,12 +1,12 @@
 #include "HADRONS++/ME_Library/B_K_Semileptonic.H"
 #include "ATOOLS/Org/Message.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "MODEL/Main/Model_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace MODEL;
 using namespace std;
 
@@ -41,7 +41,7 @@ void B_K_Semileptonic::SetModelParameters( GeneralModel _md )
 
 void B_K_Semileptonic::operator()( 
     const Vec4D             * _p,
-    HELICITIES::Spin_Amplitudes * amps)
+    METOOLS::Spin_Amplitudes * amps)
 {
   double s     = (_p[p_i[2]]+_p[p_i[3]]).Abs2();
   double shat  = s/sqr(p_masses[0]);

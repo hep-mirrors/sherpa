@@ -9,7 +9,7 @@
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 Loop_ME_Base::Loop_ME_Base(const Process_Info& pi,
                            const Flavour_Vector& flavs) :

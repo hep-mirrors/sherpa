@@ -1,12 +1,12 @@
 #include "HADRONS++/ME_Library/Eta_Decay_MEs.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 #include "MODEL/Main/Model_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace MODEL;
 
 void Eta_PPV::SetModelParameters(GeneralModel md)

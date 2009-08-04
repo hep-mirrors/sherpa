@@ -29,7 +29,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void   operator()(
 	const ATOOLS::Vec4D  * _p,
-	HELICITIES::Spin_Amplitudes     * amps);
+	METOOLS::Spin_Amplitudes     * amps);
     void   SetModelParameters( GeneralModel _md );
     Complex C9sehgal(double sHat);
     Complex sehgalld(double sHat);

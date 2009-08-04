@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "AMEGIC++/Main/Process_Tags.H"
 #include "ATOOLS/Org/IO_Handler.H"
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Main/Spin_Structure.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 using namespace AMEGIC;
@@ -856,7 +856,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   return M;
 }
 
-void Amplitude_Handler::FillAmplitudes(HELICITIES::Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
+void Amplitude_Handler::FillAmplitudes(METOOLS::Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
 {
   atensor->SetColorMatrix(CFCol_Matrix->GetCMatrix());
   vector<Complex> amps; amps.resize(graphs.size());

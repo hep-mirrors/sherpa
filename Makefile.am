@@ -2,7 +2,7 @@ MAKE = make
 
 SUBDIRS       = \
 		ATOOLS \
-		HELICITIES \
+		METOOLS \
 		BEAM \
 		PDF \
 		MODEL \

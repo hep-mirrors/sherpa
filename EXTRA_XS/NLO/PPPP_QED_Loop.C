@@ -2,13 +2,13 @@
 #ifdef USING__GOLEM95
 
 #include "EXTRA_XS/NLO/Loop_ME_Base.H"
-#include "HELICITIES/Loops/Box_4.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Loops/Box_4.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 namespace EXTRAXS {
   class PPPP_QED_Loop : public Loop_ME_Base {
@@ -18,7 +18,7 @@ namespace EXTRAXS {
     std::vector<ATOOLS::Vec4D> m_delta_a3;
     std::vector<ATOOLS::Vec4D> m_delta_a4;
     
-    HELICITIES::Box_4 m_box4;
+    METOOLS::Box_4 m_box4;
 
     void FillKinematics(const Vec4D_Vector& momenta);
 

@@ -1,9 +1,9 @@
 #include "HADRONS++/Current_Library/VA_B_DstarPi.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 
 void VA_B_DstarPi::SetModelParameters( struct GeneralModel _md )

@@ -1,9 +1,9 @@
 #include "PHOTONS++/MEs/Vector_To_Scalar_Scalar.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "HELICITIES/Main/XYZFuncs.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
-#include "HELICITIES/Loops/Master_Integrals.H"
-#include "HELICITIES/Loops/PV_Integrals.H"
+#include "METOOLS/Main/XYZFuncs.H"
+#include "METOOLS/Main/Polarization_Tools.H"
+#include "METOOLS/Loops/Master_Integrals.H"
+#include "METOOLS/Loops/PV_Integrals.H"
 
 #define A_0(A,M)            Master_Tadpole(A,M)
 #define B_0(A,B,C,M)        Master_Bubble(A,B,C,M)
@@ -17,7 +17,7 @@
 
 using namespace PHOTONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 Vector_To_Scalar_Scalar::Vector_To_Scalar_Scalar

@@ -9,20 +9,20 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "HADRONS++/Main/Tools.H"
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Main/Spin_Structure.H"
 
 #define DEFINE_CURRENT_GETTER(CLASS,NAME,TAG)                                   \
 DECLARE_GETTER(NAME,TAG,Current_Base,Flavour_Info);                             \
 Current_Base* NAME::operator()(const Flavour_Info &parameters) const            \
 { return new CLASS(parameters.flavs, parameters.n, parameters.indices,TAG); }
 
-namespace HELICITIES {
+namespace METOOLS {
   typedef Spin_Structure<ATOOLS::Vec4C> Spin_Currents;
 }
 
 namespace HADRONS {
 
-  class Current_Base : public HELICITIES::Spin_Currents {
+  class Current_Base : public METOOLS::Spin_Currents {
   protected:
     int               m_n;
     bool              m_anti;
@@ -51,7 +51,7 @@ namespace HADRONS {
 				  Current_Base* c2,
                                   const ATOOLS::Vec4D * moms,
 				  Complex mefactor,
-				  HELICITIES::Spin_Amplitudes* amps);
+				  METOOLS::Spin_Amplitudes* amps);
     friend std::ostream& operator<<(std::ostream& s, const Current_Base& cb);
   };
   

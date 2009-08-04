@@ -488,7 +488,7 @@ Point * Single_DipoleTerm::Diagram(int i) {
 
 void Single_DipoleTerm::AddChannels(std::list<std::string>*) { }
 
-void Single_DipoleTerm::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor,double sfactor)
+void Single_DipoleTerm::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
 {
   if (p_partner==this) p_LO_process->FillAmplitudes(atensor,sfactor);
   else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));

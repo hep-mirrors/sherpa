@@ -274,7 +274,7 @@ with mathematical tools like vectors and matrices, organization tools
 such as read-in or write-out devices, and physics tools like particle 
 data or classes for the event record.
 
-@item HELICITIES
+@item METOOLS
 
 In this module some general methods for the evaluation of helicity
 amplitudes have been accumulated.  They are used in 
@@ -295,7 +295,7 @@ H\scalebox{0.8}{ADRONS++}\xspace
 @ifnottex
 HADRONS++
 @end ifnottex
-. Further, HELICITIES also contains a simple library of tensor integrals
+. Further, METOOLS also contains a simple library of tensor integrals
 which are used in the
 @iftex
 P\scalebox{0.8}{HOTONS++}\xspace

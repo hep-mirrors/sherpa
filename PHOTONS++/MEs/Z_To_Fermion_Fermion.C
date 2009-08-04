@@ -1,11 +1,11 @@
 #include "PHOTONS++/MEs/Z_To_Fermion_Fermion.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "HELICITIES/Main/XYZFuncs.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/XYZFuncs.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 Z_To_Fermion_Fermion::Z_To_Fermion_Fermion

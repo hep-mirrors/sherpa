@@ -13,7 +13,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -26,7 +26,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -39,7 +39,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -52,7 +52,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -65,7 +65,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -78,7 +78,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -91,7 +91,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -104,7 +104,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -117,7 +117,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -130,7 +130,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,decayindices,name) {};
     void operator()(
                     const ATOOLS::Vec4D  * p,
-                    HELICITIES::Spin_Amplitudes     * amps
+                    METOOLS::Spin_Amplitudes     * amps
                     );
     void SetModelParameters( GeneralModel _md );
   };
@@ -192,7 +192,7 @@ namespace HADRONS {
     double operator()(const ATOOLS::Vec4D *);
     void   operator()( 
         const ATOOLS::Vec4D     * _p,
-	HELICITIES::Spin_Amplitudes * amps);
+	METOOLS::Spin_Amplitudes * amps);
     void SetModelParameters( GeneralModel _md );
   };
 

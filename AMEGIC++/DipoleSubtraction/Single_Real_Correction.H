@@ -94,7 +94,7 @@ namespace AMEGIC {
     void SetKFactor(const std::string &kfactor,
 		    const size_t &oqcdlo,const size_t &oewlo);
 
-    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 

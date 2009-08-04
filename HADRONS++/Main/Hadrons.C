@@ -21,11 +21,11 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "HADRONS++/PS_Library/HD_PS_Base.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Main/Spin_Structure.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string path, string file, string constfile ) :

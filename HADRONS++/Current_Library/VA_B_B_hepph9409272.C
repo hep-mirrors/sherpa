@@ -1,11 +1,11 @@
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include "HADRONS++/Current_Library/Current_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 namespace HADRONS {

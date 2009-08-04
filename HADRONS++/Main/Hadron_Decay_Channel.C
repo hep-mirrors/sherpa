@@ -11,7 +11,7 @@
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 Hadron_Decay_Channel::Hadron_Decay_Channel( Flavour flin, string _path ) :

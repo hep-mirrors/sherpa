@@ -1,10 +1,10 @@
 #include "HADRONS++/Current_Library/VA_F_F.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 
 using namespace std;
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 void VA_F_F::SetModelParameters( struct GeneralModel _md )
 {

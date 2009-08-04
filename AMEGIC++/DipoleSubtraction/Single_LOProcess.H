@@ -116,7 +116,7 @@ namespace AMEGIC {
     virtual double operator()(const ATOOLS::Vec4D *,std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D *,double**);
 
-    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
   };
 }
 

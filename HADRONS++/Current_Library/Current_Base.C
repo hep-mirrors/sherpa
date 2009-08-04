@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace HADRONS;
 
 Current_Base::Current_Base(ATOOLS::Flavour* flavs, int n, int* decayindices, string name) :
@@ -36,7 +36,7 @@ namespace HADRONS {
                         HADRONS::Current_Base* c2,
                         const ATOOLS::Vec4D * moms,
                         Complex mefactor,
-                        HELICITIES::Spin_Amplitudes* amps)
+                        METOOLS::Spin_Amplitudes* amps)
   {
     c1->Calc(moms);
     c2->Calc(moms);

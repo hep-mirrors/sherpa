@@ -4,12 +4,12 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "ATOOLS/Org/Getter_Function.H"
-#include "HELICITIES/Loops/Divergence_Array.H"
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Loops/Divergence_Array.H"
+#include "METOOLS/Main/Spin_Structure.H"
 
 namespace EXTRAXS {
 
-  typedef HELICITIES::Spin_Structure<HELICITIES::DivArrC> DivAmps;
+  typedef METOOLS::Spin_Structure<METOOLS::DivArrC> DivAmps;
 
   class Loop_ME_Base {
   protected:

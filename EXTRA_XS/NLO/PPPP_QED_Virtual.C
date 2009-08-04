@@ -7,7 +7,7 @@
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 namespace EXTRAXS {
   class PPPP_QED_Virtual : public Virtual_ME2_Base {

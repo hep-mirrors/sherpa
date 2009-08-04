@@ -707,7 +707,7 @@ Point * Single_Virtual_Correction::Diagram(int i) {
   return p_partner->Diagram(i);
 } 
 
-void Single_Virtual_Correction::FillAmplitudes(HELICITIES::Amplitude_Tensor* atensor,double sfactor)
+void Single_Virtual_Correction::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
 { }
 
 void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist) 

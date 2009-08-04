@@ -44,9 +44,9 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
 	  ATOOLS/Makefile \
-          HELICITIES/Main/Makefile \
-          HELICITIES/Loops/Makefile \
-          HELICITIES/Makefile \
+          METOOLS/Main/Makefile \
+          METOOLS/Loops/Makefile \
+          METOOLS/Makefile \
 	  BEAM/Main/Makefile \
 	  BEAM/Makefile \
 	  PDF/Main/Makefile \

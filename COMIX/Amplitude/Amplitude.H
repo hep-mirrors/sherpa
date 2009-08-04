@@ -2,14 +2,14 @@
 #define COMIX_Amplitude_Amplitude_H
 
 #include "ATOOLS/Phys/Spinor.H"
-#include "HELICITIES/Main/C_Vector.H"
-#include "HELICITIES/Main/C_Spinor.H"
+#include "METOOLS/Main/C_Vector.H"
+#include "METOOLS/Main/C_Spinor.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "COMIX/Amplitude/Vertex_Base.H"
-#include "HELICITIES/Main/C_Scalar.H"
-#include "HELICITIES/Main/C_Spinor.H"
-#include "HELICITIES/Main/C_Vector.H"
-#include "HELICITIES/Main/C_Tensor.H"
+#include "METOOLS/Main/C_Scalar.H"
+#include "METOOLS/Main/C_Spinor.H"
+#include "METOOLS/Main/C_Vector.H"
+#include "METOOLS/Main/C_Tensor.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #ifdef USING__Threading 

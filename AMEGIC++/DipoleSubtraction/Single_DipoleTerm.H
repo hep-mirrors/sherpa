@@ -112,7 +112,7 @@ namespace AMEGIC {
 
     double         GetDPSF(const ATOOLS::Vec4D *);
 
-    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
 
     int            Type() { return 15; }
     bool PerformTests() { return true; }

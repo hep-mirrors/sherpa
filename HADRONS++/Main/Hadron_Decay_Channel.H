@@ -11,7 +11,7 @@
 namespace ATOOLS {
   class Particle;
 }
-namespace HELICITIES {
+namespace METOOLS {
   class Spin_Amplitudes;
   class Amplitude_Tensor;
 }
@@ -42,7 +42,7 @@ namespace HADRONS {
     Complex                 m_cp_asymmetry_lambda;
     double                  m_original_width;
     GeneralModel            m_startmd;
-    HELICITIES::Spin_Amplitudes * p_amplitudes;
+    METOOLS::Spin_Amplitudes * p_amplitudes;
     
     void   ProcessOptions(std::vector<std::vector<std::string> > helpsvv);
     void   ProcessPhasespace(std::vector<std::vector<std::string> > ps_svv,
@@ -84,8 +84,8 @@ namespace HADRONS {
     ATOOLS::Flavour       * Flavours() { return p_flavours; }
     int                     GetN() { return 1+NOut(); }
 
-    void   CalculateAmplitudes(ATOOLS::Vec4D* moms, HELICITIES::Spin_Amplitudes* amps, bool anti);
-    void   CalculateAmplitudes(ATOOLS::Vec4D* moms, HELICITIES::Amplitude_Tensor* amps, bool anti);
+    void   CalculateAmplitudes(ATOOLS::Vec4D* moms, METOOLS::Spin_Amplitudes* amps, bool anti);
+    void   CalculateAmplitudes(ATOOLS::Vec4D* moms, METOOLS::Amplitude_Tensor* amps, bool anti);
     bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g);
     
   }; // end of class

@@ -7,7 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <set>
 
-namespace HELICITIES {
+namespace METOOLS {
   class Spin_Amplitudes;
 }
 
@@ -21,7 +21,7 @@ namespace ATOOLS {
     double      m_width, m_deltawidth, m_minmass, m_max;
     Flavour     m_flin;
     FlavourSet  m_flouts;
-    std::vector<HELICITIES::Spin_Amplitudes*> m_diagrams;
+    std::vector<METOOLS::Spin_Amplitudes*> m_diagrams;
     PHASIC::Multi_Channel* p_channels;
   public :
     Decay_Channel() {}
@@ -55,10 +55,10 @@ namespace ATOOLS {
     }
     inline const double& Max() const { return m_max; }
     inline void SetMax(const double& max) { m_max=max; }
-    inline std::vector<HELICITIES::Spin_Amplitudes*>& GetDiagrams() {
+    inline std::vector<METOOLS::Spin_Amplitudes*>& GetDiagrams() {
       return m_diagrams;
     }
-    inline void AddDiagram(HELICITIES::Spin_Amplitudes* amp) {
+    inline void AddDiagram(METOOLS::Spin_Amplitudes* amp) {
       m_diagrams.push_back(amp);
     }
     inline PHASIC::Multi_Channel* Channels() const { return p_channels; }

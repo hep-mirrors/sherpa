@@ -1,9 +1,9 @@
 #include "HADRONS++/Current_Library/VA_P_V.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 #include "HADRONS++/Current_Library/VA_P_V_ISGW.C"
 #include "HADRONS++/Current_Library/VA_P_V_ISGW2.C"

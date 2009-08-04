@@ -8,7 +8,7 @@ namespace HADRONS {
     public:
       Phi_PPGamma(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
 	HD_ME_Base(flavs,n,indices,name) {};
-      void operator()(const ATOOLS::Vec4D *,HELICITIES::Spin_Amplitudes *,int);
+      void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
       void SetModelParameters(GeneralModel);
   };
 
@@ -16,7 +16,7 @@ namespace HADRONS {
     public:
       Phi_VP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
 	HD_ME_Base(flavs,n,indices,name) {};
-      void operator()(const ATOOLS::Vec4D *,HELICITIES::Spin_Amplitudes *,int);
+      void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
       void SetModelParameters(GeneralModel);
   };
 

@@ -14,7 +14,7 @@
 // #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
 // #include "AMEGIC++/Main/AMEGIC_SCT.H"
 
-namespace HELICITIES { class Amplitude_Tensor; }
+namespace METOOLS { class Amplitude_Tensor; }
 
 namespace AMEGIC {
 
@@ -74,7 +74,7 @@ namespace AMEGIC {
     double Differential(int ihel,int i,int k)        { return (Zvalue(ihel,i,k)).real();}
     //! Returns an SCT; hel=ptr to the Helicity class; nIn=Number of incoming particles.
 //     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations(Helicity* hel, size_t nIn);
-    void   FillAmplitudes(HELICITIES::Amplitude_Tensor*,Helicity*,double);
+    void   FillAmplitudes(METOOLS::Amplitude_Tensor*,Helicity*,double);
     inline int GetGraphNumber() {return ngraph;}  
     inline int GetRealGraphNumber() {return namplitude;}  
     inline int GetTotalGraphNumber() {return ntotal;}

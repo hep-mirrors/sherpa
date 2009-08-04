@@ -1,11 +1,11 @@
 #include "HADRONS++/ME_Library/Three_Body_MEs.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Org/Message.H"
-#include "HELICITIES/Main/Polarization_Tools.H"
+#include "METOOLS/Main/Polarization_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 void B_Bpi_pwave::SetModelParameters( GeneralModel _md )
@@ -16,7 +16,7 @@ void B_Bpi_pwave::SetModelParameters( GeneralModel _md )
 
 void B_Bpi_pwave::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -49,7 +49,7 @@ void B3_Bpi_pwave::SetModelParameters( GeneralModel _md )
 
 void B3_Bpi_pwave::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -81,7 +81,7 @@ void B_Bpi_swave::SetModelParameters( GeneralModel _md )
 
 void B_Bpi_swave::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -113,7 +113,7 @@ void B3_Bpi_dwave::SetModelParameters( GeneralModel _md )
 
 void B3_Bpi_dwave::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -146,7 +146,7 @@ void B_Bphoton_M1::SetModelParameters( GeneralModel _md )
 
 void B_Bphoton_M1::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -183,7 +183,7 @@ void B3_Bphoton_M1::SetModelParameters( GeneralModel _md )
 
 void B3_Bphoton_M1::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -221,7 +221,7 @@ void B3_Bphoton_M1_2::SetModelParameters( GeneralModel _md )
 
 void B3_Bphoton_M1_2::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -260,7 +260,7 @@ void B_Bphoton_E1::SetModelParameters( GeneralModel _md )
 
 void B_Bphoton_E1::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -303,7 +303,7 @@ void B3_Bphoton_E1::SetModelParameters( GeneralModel _md )
 
 void B3_Bphoton_E1::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
 
@@ -345,7 +345,7 @@ void QQ_PGG::SetModelParameters( GeneralModel _md )
 
 void QQ_PGG::operator()(
                       const Vec4D             * p,
-                      HELICITIES::Spin_Amplitudes * amps)
+                      METOOLS::Spin_Amplitudes * amps)
 {
   Vec4D mom_gg=p[p_i[2]]+p[p_i[3]];
   double mass2=mom_gg.Abs2();
@@ -385,7 +385,7 @@ void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
 
 void   P_3P_Dalitz::operator()( 
     const ATOOLS::Vec4D  * _p, 
-    HELICITIES::Spin_Amplitudes * amps)
+    METOOLS::Spin_Amplitudes * amps)
 {
   Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
   vector<pair<int,int> > spins;

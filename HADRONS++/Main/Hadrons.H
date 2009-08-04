@@ -23,7 +23,7 @@ namespace ATOOLS {
   class Decay_Channel;
 }
 
-namespace HELICITIES { class Amplitude_Tensor; }
+namespace METOOLS { class Amplitude_Tensor; }
 
 namespace HADRONS {
   class Hadron_Decay_Map;
@@ -40,7 +40,7 @@ namespace HADRONS {
     ATOOLS::Blob        * p_spblob;
 
     ATOOLS::Blob* GetSignalProcessBlob(ATOOLS::Particle* inpart);
-    HELICITIES::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
+    METOOLS::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
                                                    ATOOLS::Particle*& outpart,
                                                    const ATOOLS::Vec4D& labmom);
     Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob, Hadron_Decay_Table*);

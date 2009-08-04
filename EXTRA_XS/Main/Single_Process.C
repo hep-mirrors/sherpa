@@ -15,7 +15,7 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
 #include "EXTRA_XS/Main/ME_Base.H"
-#include "HELICITIES/Main/Spin_Structure.H"
+#include "METOOLS/Main/Spin_Structure.H"
 
 using namespace EXTRAXS;
 using namespace ATOOLS;

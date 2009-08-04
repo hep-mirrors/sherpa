@@ -13,7 +13,7 @@ namespace HADRONS {
   public:
     Eta_PVV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,HELICITIES::Spin_Amplitudes *);
+    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
     void SetModelParameters(GeneralModel);
   };
 
@@ -28,7 +28,7 @@ namespace HADRONS {
     Eta_PPV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), 
       m_npol(3), m_ff(0), m_VDM_mass(0.), m_VDM_width(0.), m_fP(0.) {};
-    void operator()(const ATOOLS::Vec4D *,HELICITIES::Spin_Amplitudes *);
+    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
     void SetModelParameters(GeneralModel);
   };
 
@@ -36,7 +36,7 @@ namespace HADRONS {
   public:
     Eta_PPP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,HELICITIES::Spin_Amplitudes *);
+    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
     void SetModelParameters(GeneralModel);
   };
 

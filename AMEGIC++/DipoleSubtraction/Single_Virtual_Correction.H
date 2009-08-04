@@ -110,7 +110,7 @@ namespace AMEGIC {
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D *);
 
-    void           FillAmplitudes(HELICITIES::Amplitude_Tensor*, double =1.);
+    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 

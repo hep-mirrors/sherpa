@@ -6,7 +6,7 @@
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 namespace EXTRAXS {
   class DY_QCD_Loop : public Loop_ME_Base {

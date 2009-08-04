@@ -1,6 +1,6 @@
 #include "EXTRA_XS/Main/ME_Base.H"
 #include "Exception.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flow.H"
@@ -9,7 +9,7 @@
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 using namespace std;
 
 

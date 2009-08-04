@@ -2,7 +2,7 @@
 #define EXTRA_XS_NLO_Virtual_ME2_Base_H
 
 #include "EXTRA_XS/Main/ME2_Base.H"
-#include "HELICITIES/Loops/Divergence_Array.H"
+#include "METOOLS/Loops/Divergence_Array.H"
 
 namespace EXTRAXS {
 
@@ -10,7 +10,7 @@ namespace EXTRAXS {
   protected:
     const PHASIC::Process_Info& m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
-    HELICITIES::DivArrD m_res;
+    METOOLS::DivArrD m_res;
     bool m_needsborn,m_newlibs;
     double m_born;
     double m_mur2;
@@ -20,7 +20,7 @@ namespace EXTRAXS {
     virtual ~Virtual_ME2_Base();
 
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
-    inline const HELICITIES::DivArrD& Result() { return m_res; }
+    inline const METOOLS::DivArrD& Result() { return m_res; }
 
     virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 

@@ -1,6 +1,6 @@
 #include "EXTRA_XS/Main/ME_Base.H"
 #include "ATOOLS/Org/Exception.H"
-#include "HELICITIES/Main/XYZFuncs.H"
+#include "METOOLS/Main/XYZFuncs.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -8,7 +8,7 @@
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace HELICITIES;
+using namespace METOOLS;
 
 namespace EXTRAXS {
   class DY_Tree : public ME_Base {
