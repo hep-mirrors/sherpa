@@ -9,6 +9,7 @@ nobase_dist_examples_DATA         =	\
 			LHC_TopPair/Run.dat \
 			LHC_ZJets/Run.dat \
 			PEPII_BaBar/Run.dat \
+			Tevatron_DiBoson/Run.dat \
 			Tevatron_QCD/Run.dat \
 			Tevatron_TopPair/Run.dat \
 			Tevatron_UE/Run.dat \
