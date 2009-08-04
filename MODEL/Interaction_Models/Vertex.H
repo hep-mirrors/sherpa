@@ -25,7 +25,6 @@ namespace MODEL {
     void        CheckEqual(ATOOLS::Flavour**,short int&);
     void        GenerateVertex();
     int         CheckExistence(Single_Vertex&);  
-    int         FermionRule(Single_Vertex& probe);
     int         SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
 
     void        ColorExchange(Color_Function*,int,int,int,int);
@@ -124,19 +123,6 @@ namespace MODEL {
   vertices m_v or m_v4. 
 
   As a note here: In constrast to intuition this class returns true, if the vertex is not in the list.
-  */
-  /*!
-    \fn int Vertex::FermionRule(Single_Vertex& probe)
-
-    \brief For three leg vertices involving fermions a specific
-    ordering of the external flavous is used. 
-
-    Vertices with three external legs involving fermions are chosen
-    such that fermionic anti-particles have to occupy position in[1] and
-    fermionic particles position in[2]. Note that Majorana fermions
-    are explicitly left out by this rule.
-    
-    If one of the above conditions is not fulfilled the method returns a zero.
   */
  
 }

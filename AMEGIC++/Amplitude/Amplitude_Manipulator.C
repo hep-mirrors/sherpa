@@ -274,7 +274,7 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
     minus = -1;
   }
 
-  if (p->m==1) {
+  if (p->m==-1) {
     // ====>===== Fermion number flow
     // ----<----- Orientation
     // ---->----- Momentum Flow
