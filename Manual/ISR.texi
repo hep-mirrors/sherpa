@@ -86,7 +86,8 @@ Built-in library for the GRV photon PDF @mycite{Gluck1991jc}
 @item PDFESherpa
 Built-in library for the electron structure function.
 The perturbative order of the fine structure constant can be set using the
-parameter @code{ISR_E_ORDER} (default: 1). The switch @code{ISR_E_SCHEME} allows
+parameter @anchor{ISR_E_ORDER} @code{ISR_E_ORDER} (default: 1). The
+switch @anchor{ISR_E_SCHEME} @code{ISR_E_SCHEME} allows
 to set the scheme of respecting non-leading terms. Possible options are 0
 ("mixed choice"), 1 ("eta choice"), or 2 ("beta choice", default).
 @end table

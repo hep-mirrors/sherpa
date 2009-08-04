@@ -4,11 +4,7 @@
 The Tevatron W+jets set-up is very similar to the 
 Z+jets example. The only differences are in the 
 final state leptons, and the invariant mass cuts on 
-the lepton pairs. However, an analysis example has also
-been included in this folder, providing examples
-of Rivet analyses valid for W+jet production.
-
-@subsection Run.dat
+the lepton pairs.
 
 @example
 @smallformat
@@ -21,22 +17,5 @@ Things to notice:
 @item the invariant mass cut is necessary to avoid evaluating the PDF outside
 its valid range of the factorisation scale @math{Q^2} (which in this process is
 typically given by the boson mass).
-
-@end itemize
-
-
-@subsection Run.analyse.dat
-
-@example
-@smallformat
-@verbatiminclude ../Examples/Tevatron_WJets/Run.analyse.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize @bullet
-@item the analysis used in this example is valid 
-for W+jet production at the Tevatron, see the
-@uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.
 
 @end itemize

@@ -62,6 +62,7 @@ Decays of other particles have to be specified in the process setup
 Note: To set properties of hadrons, you can use the same switches (except for
 @code{MASSIVE}) in the fragmentation section, see @ref{Fragmentation}.
 
+@anchor{Models available in Sherpa}
 @menu
 * SM::		   Standard Model
 * MSSM::	   Minimal Supersymmetric Standard Model

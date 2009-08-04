@@ -3,7 +3,15 @@
 
 This example generates QCD events at the Tevatron,
 with 2, 3 or 4 final state partons in the matrix
-element.
+element. A run card with an example
+analysis set-up enabled is also included in this folder, and called 
+@code{Run.analyse.dat}. This run card provides an example of using weighted
+events with Sherpa, and the use of the @ref{Enhance_Function} and 
+@ref{Enhance_Factor} tags. To use this run card, as it is not named @option{Run.dat}, 
+the parameter @code{RUNDATA} must be specified on the command line,
+see @ref{Input structure}.
+
+@subsection Run.dat
 
 @example
 @smallformat
@@ -18,6 +26,48 @@ ensures that all final state jets are produced via
 the strong interaction.
 @item an @code{NJetFinder} selector is used to 
 set a resolution criterion for the two jets of the core process.
-This is necessary, because the `CKKW' tag does not apply any cut to the core
-process, but only to the extra-jet matrix elements.
+This is necessary because the `CKKW' tag does not apply any cuts to the core
+process, but only to the extra-jet matrix elements, see @ref{Merging ME and PS}.
 @end itemize
+
+@subsection Run.analyse.dat 
+
+This run card also generates QCD events at the Tevatron, 
+but it uses weighted events, and the
+tags @ref{Enhance_Factor}, and @ref{Enhance_Function}. 
+It also has some Rivet analyses enabled. For more information 
+on using Rivet with Sherpa, see @ref{Rivet analyses}.
+To use this run card, as it is not named @option{Run.dat}, 
+the @code{RUNDATA} parameter must be specified on the command line,
+see @ref{Input structure}.
+
+The run card looks like this:
+
+@example
+@smallformat
+@verbatiminclude ../Examples/Tevatron_QCD/Run.analyse.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item the @ref{EVENT_GENERATION_MODE} has been set to generate weighted events
+in the @code{(me)} section.
+
+@item the @ref{ANALYSIS} switch has been set to @option{Internal,Rivet}, enabling 
+both the Rivet analyses listed, and the analyses using the internal Sherpa 
+Analysis module.
+
+@item to use Sherpa's Analysis module, Sherpa has to be configured with the 
+tag @option{--enable-analysis} on the command line. See @ref{ANALYSIS}.
+
+@item an @code{(analysis)} section is included. This lists the Rivet analyses to 
+be performed, and specifies the internal analyses. 
+
+@item the Rivet analyses listed in this example (@option{D0_2008_S7662670} etc)
+are all analyses valid for QCD jet production at the Tevatron. See @ref{Rivet analyses}
+and the @uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.
+@end itemize
+
+
+

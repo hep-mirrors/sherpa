@@ -28,10 +28,14 @@ in the final state, see @ref{Curly brackets}.
 @item the multi-jet merging parameter @ref{CKKW} is set
 using an algebraic expression. For more information on
 algrebraic expressions recognised by Sherpa, see 
-@ref{Interpreter}.
+@ref{Interpreter}. For more information on the CKKW 
+parameter and the Sherpa method for merging matrix elements
+and parton showers, see @ref{Merging ME and PS}.
 
 @item the @ref{Integration_Error} is set separately for some of the final state 
-multiplicities.
+multiplicities. The higher multiplicity cross sections are smaller, so
+to get the same order of magnitude for the absolute error in the 
+cross section integrations, the relative error can be higher. 
 
 @item there is a selector cut on the invariant mass of the lepton pair. This cut 
 shields the IR singularity as the invariant mass tends to zero, and

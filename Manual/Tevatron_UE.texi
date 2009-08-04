@@ -6,7 +6,6 @@ parameters controlling the simulation of multiple interactions
 can be set in the @code{(mi)} section of the run card. For a
 full list of the available settings, see @ref{MPI Parameters}.
 
-@subsection Run.dat
 
 @example
 @smallformat
@@ -23,13 +22,4 @@ Things to notice:
 to 2.5GeV.
 
 @end itemize
-
-
-@subsection Run.analyse.dat
-
-@example
-@smallformat
-@verbatiminclude ../Examples/Tevatron_UE/Run.analyse.dat
-@end smallformat
-@end example
 

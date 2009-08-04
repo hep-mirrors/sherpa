@@ -16,12 +16,11 @@ of the main features of these examples.
 * LHC_TopPair::               
 * Tevatron_TopPair::          
 * Tevatron_UE::               
+* EGamma::                    
+* PEPII_BaBar::               
 * LHC_4thGen::                
 * LHC_AGC::                   
 * LHC_ADD::
-@c * EGamma::                    
-* PEPII_BaBar::               
-@c * BFKL::                      
 @end menu
 
 @include LHC_ZJets.texi
@@ -32,10 +31,11 @@ of the main features of these examples.
 @include LHC_TopPair.texi
 @include Tevatron_TopPair.texi
 @include Tevatron_UE.texi
+@include EGamma.texi
+@include PEPII_BaBar.texi
 @include LHC_4thGen.texi
 @include LHC_AGC.texi
 @include LHC_ADD.texi
-@c @include EGamma.texi
-@include PEPII_BaBar.texi
-@c @include BFKL.texi
+
+
 

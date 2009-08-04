@@ -14,13 +14,13 @@ Z-gamma-gamma coupling is given here.
 Things to notice:
 @itemize @bullet
 @item the AGC model is chosen using the @code{MODEL} parameter, see
-@ref{Model Parameters}.
+@ref{Models available in Sherpa}.
 
 @item parameters from the model are set in the 
 @code{(model)} section. For more information on available 
 parameters, and their meanings, run Sherpa with 
 @code{SHOW_MODEL_SYNTAX=1} on the command line, or see 
-@ref{Model Parameters}.
+@ref{AGC}.
 
 @item @ref{Print_Graphs} is included in the 
 @code{(processes)} section. When Sherpa is run with this

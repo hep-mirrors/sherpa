@@ -4,8 +4,6 @@
 This set-up illustrates the possibility of specifying a
 particular decay chain for the particles in the signal process.
 
-This is the @code{(processes)} section of the run card:
-
 @example
 @smallformat
 @verbatiminclude ../Examples/LHC_TopPair/Run.dat

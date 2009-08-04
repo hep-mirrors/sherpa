@@ -2,13 +2,7 @@
 @section Tevatron_ZJets
 
 This set-up is very similar to the one above, for @ref{LHC_ZJets}, but with 
-proton--anti-proton collisions at Tevatron energies. A run card with 
-analysis enabled is also included in this folder, and called 
-@code{Run.analyse.dat}. To use this run card, as it is not named @option{Run.dat}, 
-the parameter @option{RUNDATA} must be specified on the command line,
-see @ref{Input structure}.
-
-@subsection Run.dat
+proton--anti-proton collisions at Tevatron energies.
 
 @example
 @smallformat
@@ -20,46 +14,6 @@ Things to notice:
 @itemize @bullet
 @item the PDG code for an anti-proton @option{-2212} is minus the PDG
 code for a proton @option{2212}.
+
 @end itemize
-
-@subsection Run.analyse.dat
-
-This run card also generates Z+jets events at the Tevatron, 
-but it also has some Rivet analyses enabled. For more information 
-on using Rivet with Sherpa, see @ref{Rivet analyses}.
-To use this run card, as it is not named @option{Run.dat}, 
-the @option{RUNDATA} parameter must be specified on the command line,
-see @ref{Input structure}.
-
-The relevant parts of the run card are:
-
-@example
-@smallformat
-@verbatiminclude ../Examples/Tevatron_ZJets/Run.analyse.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize @bullet
-@item the @ref{Tags} set in the @code{(run)} section can be used anywhere else
-in the runcard, including naming directories (e.g. @code{RESULT_DIRECTORY = 
-Results.QCUT} will save the integration results in a directory called 
-@code{Results.20/} in this example), naming files (e.g. the rivet histograms 
-will be in aida file @code{4jet.20GeV.trunk.aida}), specifying the process (e.g. 
-@code{93@{NJET@}} will produce up to 4 jets in this example) and setting 
-parameters (e.g. @code{CKKW sqr(QCUT/E_CMS);}). For more information
-on when to clear the Results directory see @ref{Results directory}
-
-@item the @ref{EVENT_GENERATION_MODE} has been set to generate weighted events.
-
-@item the @ref{ANALYSIS} switch has been set to @option{Rivet}.
-
-@item an @code{(analysis)} section specifying the output aida files 
-and the analyses to be performed must be included in the run-card.
-
-@item the analyses listed in this example (@option{CDF_2006_S6653332} etc)
-are all analyses valid for Z-production at the Tevatron. See @ref{Rivet analyses}
-and the @uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.
-@end itemize
-
 

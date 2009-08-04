@@ -1,8 +1,6 @@
 @node Tevatron_TopPair
 @section Tevatron_TopPair
 
-@subsection Run.dat
-
 This set-up is very similar to the @ref{LHC_TopPair} example above.
 There are two notable differences. Firstly, obviously this is a Tevatron
 set-up with proton anti-proton collisions at Tevatron energies. 
@@ -28,43 +26,4 @@ must have it's own process. It is not possible to group the different W-
 decays into one top-production process. 
 
 @end itemize
-
-
-
-@subsection Run.analyse.dat
-
-This set-up is very similar to the @ref{Tevatron_TopPair} one above, with exactly the same 
-processes being generated. There are three main differences. Firstly, 
-tags have been used when setting up the run-card. Secondly, a results 
-directory has been set up. Thirdly, a Rivet 
-analysis has been set up.
-
-To see these differences, look at the @code{(run)} and the @code{(analysis)}
-section of the run-card:
-@example
-@smallformat
-@verbatiminclude ../Examples/Tevatron_TopPair/Run.analyse.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize @bullet
-
-@item the results of the integration will be stored in the directory
-specified by @code{RESULT_DIRECTORY}, see @ref{RESULT_DIRECTORY}. If 
-Sherpa is run again with the parameters changed in such a way that you
-would expect a different integration result (e.g. by varying @code{QCUT} in 
-this example), then a new directory must be specified. This is automatically
-done here by using the @code{QCUT} tag in the directory name.
-
-@item if the result directory specified by @code{RESULT_DIRECTORY} has 
-not already been created, the switch @code{GENERATE_RESULT_DIRECTORY} 
-must be set to @option{1}.
-
-@item to perform a Rivet analysis, the @ref{ANALYSIS} parameter must be 
-set to Rivet, and an @code{(analysis)} section specifying the output aida files 
-and the analyses to be performed must be included in the run-card.
-
-@end itemize
-
 

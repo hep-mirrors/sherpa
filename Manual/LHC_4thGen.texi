@@ -4,7 +4,8 @@
 This example shows a beyond the Standard Model set-up. In 
 this example, a 4th generation of particles is included, as 
 well as the Standard Model particles. This is one of Sherpa's
-built-in BSM options. For more information
+built-in BSM options, see @ref{Models available in Sherpa}. 
+For more information
 on using your own BSM models with Sherpa, see 
 @ref{Exotic physics}.
 

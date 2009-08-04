@@ -1,0 +1,34 @@
+@node EGamma
+@section EGamma
+
+@example
+@smallformat
+@verbatiminclude ../Examples/EGamma/Run.dat
+@end smallformat
+@end example
+
+
+Things to notice:
+@itemize @bullet
+@item the incoming beams are both electrons. Accordingly, 
+in the @code{(beam)} section of the data card, the beams 
+are set as electrons by @code{BEAM_@{1,2@}=11}.
+
+@item the photon is produced through laser backscattering
+off one of the incoming electrons. 
+@code{BEAM_SPECTRUM_1=Laser_Backscattering} and
+@code{BEAM_SPECTRUM_2=Monochromatic} have been specified.
+
+@item the photon has no initial state radiation, set by
+the tags @code{BUNCH_1 = 22} and @code{ISR_1 = Off}.
+
+@item the other electron experiences some initial-state
+radiation according to a structure function. This is switched on
+using the tags @code{BUNCH_2 = 11} and @code{ISR_2 = On}.
+
+@item the perturbative order of the electron structure 
+function is set using the @ref{ISR_E_ORDER} tag, and 
+the beta-scheme is set using @ref{ISR_E_SCHEME}.
+
+@end itemize
+
