@@ -16,6 +16,7 @@ of the main features of these examples.
 * LHC_TopPair::               
 * Tevatron_TopPair::          
 * Tevatron_UE::               
+* Tevatron_DiBoson::          
 * EGamma::                    
 * PEPII_BaBar::               
 * LHC_4thGen::                
@@ -31,6 +32,7 @@ of the main features of these examples.
 @include LHC_TopPair.texi
 @include Tevatron_TopPair.texi
 @include Tevatron_UE.texi
+@include Tevatron_DiBoson.texi
 @include EGamma.texi
 @include PEPII_BaBar.texi
 @include LHC_4thGen.texi
