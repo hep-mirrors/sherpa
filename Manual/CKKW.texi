@@ -3,7 +3,7 @@
 @strong{The Sherpa method of merging matrix elements and parton showers}
 
 
-@subsection Improved multijet final-state predictions
+@section Improved multijet final-state predictions
 For a large fraction of LHC final states, the application of
 reconstruction algorithms will lead to the identification of several
 hard jets. A major task is to distinguish whether such events are
@@ -55,7 +55,7 @@ referred to this paper.
 
 
 @anchor{The algorithm implemented in Sherpa}
-@subsection The algorithm implemented in Sherpa
+@section The algorithm implemented in Sherpa
 In Sherpa the CKKW merging of matrix elements and parton showers
 is accomplished as follows:
 @enumerate
@@ -115,7 +115,9 @@ is accomplished as follows:
   must be vetoed. 
 @item  In all circumstances parton-shower radiation is subject to the
   condition that no extra jet is produced. If any emission turns out
-  to be harder than the separation cut Q_cut, the event is vetoed. The
+  to be harder than the separation cut Q_cut, the event is vetoed. This
+  effectively implements a Sudakov rejection and reduces the individual
+  inclusive cross section to exclusive ones. The
   exception to this veto -- called highest-multiplicity treatment --
   is for matrix-element configurations with the maximal number N
   of extra partons. These cases require the parton shower to cover the
@@ -129,7 +131,7 @@ is accomplished as follows:
 @end enumerate
 
 
-@subsection Generation of merged samples
+@section Generation of merged samples
 
 The generation of inclusive event samples, i.e. the combination of
 matrix elements for different parton multiplicities with parton
