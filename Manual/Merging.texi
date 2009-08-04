@@ -14,9 +14,9 @@ the subsequent evolution and conversion of the hard partons into jets
 of hadrons. Several scales therefore determine the thorough
 development of the event. This makes it difficult to unambiguously
 disentangle the components, which belong to the hard process from
-those of the hard-parton evolution. Given an n jet event of well
+those of the hard-parton evolution. Given an n-jet event of well
 separated partons, its jet structure is retained when emitting a
-further collinear or soft parton only. An additional hard, large-angle
+further collinear or soft parton. An additional hard, large-angle
 emission however gives rise to an extra jet changing the n to an
 n+1 final state. The merging scheme has to define, on an
 event-by-event basis, which possibility has to be followed. Its
@@ -25,39 +25,39 @@ events to appear twice, i.e. once for each possibility, as well as
 dead regions by generating each configuration only once and using the
 appropriate path.
 
-Different schemes have been proposed and exist. The MLM scheme, has
-been developed using a geometric analysis of the unconstrained
-radiation pattern in terms of cone jets to generate the inclusive
-samples @mycite{Mangano2001xp},@mycite{Mangano2006rw}. The CKKW scheme or CKKW
-merging algorithm has been introduced first for electron--positron
-annihilation into jets in @mycite{Catani2001cc}. Its extension to
-hadronic processes has been discussed in @mycite{Krauss2002up} and the
-approach has been validated for several cases, for e+e- collisions
-into hadrons @mycite{Schalicke2005nv}, @mycite{Krauss2005re}, for the production
-of single vector bosons at the Fermilab Tevatron @mycite{Krauss2004bs} and
-the CERN LHC @mycite{Krauss2005nu} and for W+W- production at
-hadron colliders, see @mycite{Gleisberg2005qq}. A reformulation of CKKW
-to a merging procedure in conjunction with a dipole shower (CKKW-L) has
-been presented in @mycite{Lonnblad2001iq}. In a number of works, all
-these different algorithms have been implemented in different
-variations on different levels of sophistication in conjunction with
-various matrix-element generators or already in full-fledged event
-generators. Again, common to all schemes is that sequences of
-tree-level multileg matrix elements with increasing final-state
-multiplicity are merged with parton showers to yield a fully inclusive
-sample with no double counting and correct at leading logarithmic
-accuracy.
-
-An improved prescription for merging was presented in @mycite{Hoeche2009rj}, 
-extending the CKKW approach with truncated showers. For a more complete
-description of ME-PS merging as implemented in Sherpa, readers are 
-referred to this paper.
-
+Various such merging schemes have been proposed. The currently most advanced
+treatment at tree-level is detailed in @mycite{Hoeche2009rj}. It relies on
+a strict separation of the phasespace for additional QCD radiation into
+a matrix-element and a parton-shower domain. Truncated showers are then needed
+to account for potential radiation in the parton-shower domain, if radiation
+in the matrix-element domain has already occured. A similar method
+was presented in @mycite{Hamilton2009ne} for the special case of angular-ordered
+parton showers.
+Several older merging approaches exist. The CKKW scheme as a procedure similar
+to the truncated shower merging was introduced in @mycite{Catani2001cc}.
+Its extension to hadronic processes has been discussed in @mycite{Krauss2002up},
+and the approach has been validated for several cases @mycite{Schalicke2005nv},
+@mycite{Krauss2005re}, @mycite{Krauss2004bs}, @mycite{Krauss2005nu},
+@mycite{Gleisberg2005qq}. A reformulation of CKKW to a merging procedure 
+in conjunction with a dipole shower (CKKW-L) has been presented in
+@mycite{Lonnblad2001iq}. The MLM scheme has been developed using a geometric analysis
+of the unconstrained radiation pattern in terms of cone jets to generate the inclusive
+samples @mycite{Mangano2001xp},@mycite{Mangano2006rw}.
+In a number of works, all these different algorithms
+have been implemented in different variations on different levels of
+sophistication in conjunction with various matrix-element generators
+or already in full-fledged event generators. Their respective results have been compared
+e.g. in @mycite{Hoche2006ph}, @mycite{Alwall2007fs}. Common to all schemes is
+that sequences of tree-level multileg matrix elements with increasing
+final-state multiplicity are merged with parton showers to yield a fully
+inclusive sample with no double counting and correct at leading logarithmic
+accuracy. Their connection with truncated shower merging is outlined
+in @mycite{Hoeche2009rj}.
 
 @anchor{The algorithm implemented in Sherpa}
 @section The algorithm implemented in Sherpa
-In Sherpa the CKKW merging of matrix elements and parton showers
-is accomplished as follows:
+In Sherpa the merging of matrix elements and parton showers
+is accomplished as follows, cf. @mycite{Hoeche2009rj}:
 @enumerate
 @item  All cross sections sigma_k for processes with
   k=0,1,...,N extra partons are calculated with the constraint
@@ -68,8 +68,8 @@ is accomplished as follows:
 @example
   Q_ij^2 = 2p_i.p_j min@{2/(Cijk+Cjik)@}
 @end example
-  where the minimum is taken over other partons k, where k is not 
-  equivalent to i or j, and where, for final state partons i and j,
+  where the minimum is taken over the colour-connected partons k (k different from i and j),
+  and where, for final state partons i and j,
 @example
   Cijk = p_i.p_k/((p_i+p_k).p_j) - m_i^2/(2p_i.p_j)@ @ @ @ @ @ if j=g,
 
@@ -88,7 +88,7 @@ is accomplished as follows:
   up to N extra jets.
 @item  The parton configuration of the matrix element has to be
   analysed to eventually accomplish the reweighting. Matrix elements are
-  interpreted in the large Nc limit. The partons are
+  interpreted in the large N_c limit. The partons are
   clustered backwards according to the shower measure and inverted shower
   kinematics.
   The clustering is guided
@@ -124,7 +124,7 @@ is accomplished as follows:
   phase space for more jets than those produced by the matrix
   elements. To obtain an inclusive N-jet prediction, the veto
   therefore is on parton emissions at scales harder than the softest
-  clustering scale, which can produce allowed emissions harder
+  parton-shower scale, which can produce allowed emissions harder
   than the separation scale Q_cut. Of course,
   correlations including the N+1th jet are only approximately taken
   into account.
@@ -177,7 +177,7 @@ pointed out.
   resolution that separates the subsamples of different parton
   multiplicities, the merging scale. 
   
-  The jet criterion is given in 
+  The jet criterion is explained in 
   @ref{The algorithm implemented in Sherpa}. The separation cut, Q_cut, 
   must be specified. It is set using the @ref{CKKW} tag, in the form
   (Q_cut/E_cms)^2. For example, a valid setting reads
@@ -190,7 +190,7 @@ pointed out.
   all extra QCD parton radiation is regularised by satisfying the
   jet criterion. However, divergences of the basic core process, such as
   vanishing invariant masses of lepton pairs, need to be regularised
-  by imposing additional cuts see @ref{Selectors}.
+  by imposing additional cuts, see @ref{Selectors}.
   
 @item @strong{Parton showering}
 
@@ -205,11 +205,6 @@ with parton showers attached is fully automatized in Sherpa, some
 care has to be taken to ensure physical meaningful results. Some of
 the most prominent mistakes are listed here:
 @itemize @bullet
-@item  When explicitly specifying the subprocesses instead of using the
-  curly-bracket notation, it should always be ensured that the full
-  sequence n=0,...,N of processes with extra partons is listed.
-  Otherwise there will be ``holes'' in phase space that are neither
-  filled by matrix elements nor parton showering.
 @item  The jet criterion specified by the @ref{CKKW} 
   parameter defines which phase-space regions are
   populated by matrix elements and which ones by parton showers. In
@@ -220,7 +215,7 @@ the most prominent mistakes are listed here:
   @ref{Tevatron_QCD} example, a jet criterion must be specified 
   for the core jets. This can be done using the @code{NJetFinder}
   parameter, which applies it's jet criterion to only the specified 
-  jets. See the @ref{Examples} section for an example of the usage.
+  number of jets. See the @ref{Examples} section for an example of the usage.
 @item  In @ref{Getting started} it has been pointed out that the
   cross-section results of the matrix-element integration can be
   stored and hence re-used in later runs. The same applies to the
