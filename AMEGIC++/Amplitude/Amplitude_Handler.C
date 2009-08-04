@@ -108,6 +108,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     else {
       ++ntotal;
       prev = n;
+      n->GetPointlist()->GeneratePropID();
       n = n->Next;
     }
   }
@@ -936,7 +937,12 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   //outgoing number equal
   if ((p1->left==0) && (p2->left==0)) {
     if (p1->number!=p2->number) return 0;
-                           else return 1;
+    else {
+      string pid=p2->GetPropID();
+      if (m_flavourmap.find(pid)==m_flavourmap.end()) 
+	m_flavourmap[pid]=p1->fl;
+      return 1;
+    }
   }
 
   if ((p1->left==0) && (p2->left!=0)) return 0;
@@ -959,11 +965,15 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   sf *= abs(ratio);
   // return 1 if equal and 0 if different
 
-  if (m_flavourmap.find(p2->fl)==m_flavourmap.end()) {
-    m_flavourmap[p2->fl]=p1->fl;
-    if (p2->fl!=p2->fl.Bar()) m_flavourmap[p2->fl.Bar()]=p1->fl.Bar();
+  {
+    string pid=p2->GetPropID();
+    if (m_flavourmap.find(pid)==m_flavourmap.end()) {
+      m_flavourmap[pid]=p1->fl;
+    }
+    else if (m_flavourmap[pid]!=p1->fl){
+      return 0;  
+    }
   }
-  else if (m_flavourmap[p2->fl]!=p1->fl) return 0;  
   
   if (SingleCompare(p1->middle,p2->middle,sf,cplmap)) {
     int sw1 = SingleCompare(p1->left,p2->left,sf,cplmap);

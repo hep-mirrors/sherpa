@@ -18,6 +18,7 @@ Point::Point(const Point& copy) {
 
 Point::Point(int extra) : nextra(extra)  { 
   zwf     = 0;
+  propid  = 0;
   extrafl = 0;
   v       = 0;
   Color   = new Color_Function;
@@ -32,6 +33,7 @@ Point& Point::operator=(const Point& p) {
     b      = p.b;
     t      = p.t;
     zwf    = p.zwf;
+    propid = p.propid;
     m      = p.m;
     fl     = p.fl;
       
@@ -139,6 +141,28 @@ int Point::CountKK()
   }
   if (fl.IsKK()) KKnum++;
   return KKnum;
+}
+
+void Point::GeneratePropID()
+{
+  propid=0;
+  if (!left) {
+    propid=(1<<number);
+    return;
+  }
+  left->GeneratePropID();
+  propid+=left->propid;
+  right->GeneratePropID();
+  propid+=right->propid;
+  if (middle) {
+    middle->GeneratePropID();
+    propid+=middle->propid;    
+  }
+}
+
+std::string Point::GetPropID() const
+{
+  return fl.IDName()+ATOOLS::ToString(propid);
 }
 
 std::ostream & AMEGIC::operator<<(std::ostream & s, const Point & p)

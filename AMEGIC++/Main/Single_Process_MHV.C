@@ -137,12 +137,14 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   case 1 :
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : "<<std::endl
-		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	p_mapproc = p_partner   = (Single_Process_MHV*)links[j];
-	m_pslibname = links[j]->PSLibName();
-	InitFlavmap(p_partner);
-	break;
+	if (CheckMapping(links[j])) {
+	  msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : "<<std::endl
+			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	  p_mapproc = p_partner   = (Single_Process_MHV*)links[j];
+	  m_pslibname = links[j]->PSLibName();
+	  InitFlavmap(p_partner);
+	  break;
+	}
       } 
     }
     if (p_partner==this) links.push_back(this);

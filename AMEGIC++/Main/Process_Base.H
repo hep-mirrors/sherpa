@@ -32,7 +32,8 @@ namespace AMEGIC {
     double         m_Norm;
     double         m_sfactor;
 
-    std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_flavourmap;
+    std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
+    std::map<std::string,ATOOLS::Flavour> m_fmap;
 
   public:
 
@@ -85,14 +86,14 @@ namespace AMEGIC {
     double GetSFactor() { return m_sfactor; }
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual void               PrintProcessSummary(int=0);
-    ATOOLS::Flavour ReMap(const ATOOLS::Flavour&) const;
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour&,const std::string&) const;
   protected:
     double         SymmetryFactors();
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);
     
     bool           CheckMapping(const Process_Base * proc);
     void           InitFlavmap(const Process_Base * proc);
-    void           AddtoFlavmap(const ATOOLS::Flavour&,const ATOOLS::Flavour&);
+    void           AddtoFlavmap(const std::string&,const ATOOLS::Flavour&);
 
   };
 

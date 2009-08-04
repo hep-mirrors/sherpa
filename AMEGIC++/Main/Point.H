@@ -14,6 +14,7 @@ public:
   int             t;  // t=10: intermediate particle in decay treatment
   int             zwf;
   int             m;
+  int             propid;
   ATOOLS::Flavour   fl;
   ATOOLS::Flavour * extrafl;
   int                  nextra;
@@ -43,6 +44,8 @@ public:
   Point* CopyList(Point* p);
   size_t Ncpl() const {return cpl.size();}
   int CountKK();
+  void GeneratePropID();
+  std::string GetPropID() const;
 };
 
  // Format of a Point to transport via MPI:

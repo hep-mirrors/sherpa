@@ -59,8 +59,8 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
   std::ofstream to;
   to.open(altname.c_str(),ios::out);
   to<<aname<<" "<<m_sfactor<<endl;
-  for (Flavour_Map::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++) {
-    to<<(long int)fit->first<<" "<<(long int)fit->second<<endl;
+  for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++) {
+    to<<fit->first<<" "<<(long int)fit->second<<endl;
   }
   to.close();
 }
@@ -83,15 +83,15 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
 	m_oew=p_partner->OrderEW();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
-	InitFlavmap(p_partner);
 	while (from) {
-	  long int f1,f2;
+	  string f1;
+	  long int f2;
 	  getline(from,dummy);
 	  if (dummy!="") {
 	    MyStrStream str;
 	    str<<dummy;
 	    str>>f1>>f2;
-	    AddtoFlavmap(Flavour(abs(f1),f1>0),Flavour(abs(f2),f2>0));
+	    AddtoFlavmap(f1,Flavour(abs(f2),f2>0));
 	  }
 	}
 	from.close();
@@ -240,12 +240,14 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   case 1 :
     for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
-		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	p_mapproc = p_partner   = (Single_Process*)links[j];
-	m_pslibname = links[j]->PSLibName();
-	WriteAlternativeName(p_partner->Name());
-	break;
+	if (CheckMapping(links[j])) {
+	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
+			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	  p_mapproc = p_partner   = (Single_Process*)links[j];
+	  m_pslibname = links[j]->PSLibName();
+	  WriteAlternativeName(p_partner->Name());
+	  break;
+	}
       } 
     }
     if (Result()==0.) return -3;
