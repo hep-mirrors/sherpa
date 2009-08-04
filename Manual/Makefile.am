@@ -48,7 +48,7 @@ completion.index: $(srcdir)/*.texi $(srcdir)/Sherpa.info
         awk 'BEGIN{ m=0; }{ if (match($$0,"Appendix B Index")>0) { m=m+1; getline; getline; getline;} if (m==2) { print $$0 } }' Sherpa.txt | cut -d ":" -f 1 > completion.index || touch completion.index
 	@rm -f Sherpa.txt*
 
-Sherpa.html: $(srcdir)/*.texi $(srcdir)/*.css
+Sherpa.html: $(srcdir)/*.texi $(srcdir)/Sherpa.info $(srcdir)/*.css
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
           rm -rf Sherpa.html; texi2html --nosec-nav --css-include=$(srcdir)/Sherpa.css $(srcdir)/Sherpa.texi; \
         elif test -x "$$(which makeinfo 2>/dev/null)"; then \
