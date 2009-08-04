@@ -210,7 +210,10 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
 
   Flavour_Map::const_iterator efit(m_eflmap.find(f0));
   if (efit!=m_eflmap.end()) return efit->second;
+  if (f0.IsBoson()) return f0;
 
-  else THROW(critical_error,"Flavour map incomplete!");
+  else {
+    THROW(critical_error,"Flavour map incomplete!");
+  }
   return f0;
 }

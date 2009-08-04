@@ -59,9 +59,8 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
   std::ofstream to;
   to.open(altname.c_str(),ios::out);
   to<<aname<<" "<<m_sfactor<<endl;
-  for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++) {
+  for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
     to<<fit->first<<" "<<(long int)fit->second<<endl;
-  }
   to.close();
 }
 
@@ -91,10 +90,11 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
 	    MyStrStream str;
 	    str<<dummy;
 	    str>>f1>>f2;
-	    AddtoFlavmap(f1,Flavour(abs(f2),f2>0));
+	    AddtoFlavmap(f1,Flavour(abs(f2),f2<0));
 	  }
 	}
 	from.close();
+	if (m_fmap.size()==0) InitFlavmap(p_partner);
 	return true;
       }
     }
@@ -195,19 +195,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 				  m_ptypename+string("/")+m_libname);    
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
-	if (CheckMapping(links[j])) {
-	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
-			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			<<"   Map processes."<<std::endl;
-	  p_mapproc = p_partner = (Single_Process*)links[j];
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
-    if (p_partner==this) links.push_back(this);
+    links.push_back(this);
     msg_Info()<<".";
     Minimize();
     return 1;
@@ -223,7 +211,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
     case 2 : 
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])) {
+	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
 	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			<<"   Map processes."<<std::endl;
@@ -240,7 +228,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   case 1 :
     for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])) {
+	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
 	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	  p_mapproc = p_partner   = (Single_Process*)links[j];

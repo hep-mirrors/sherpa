@@ -992,8 +992,26 @@ void Amplitude_Handler::FillPointlist()
   }
 }
 
+bool Amplitude_Handler::CheckEFMap()
+{
+  bool mf(1);
+  Single_Amplitude* n = firstgraph;  
+  while (n) {
+    mf=CheckSingleEFM(n->GetPointlist());     
+    if (!mf) return 0;
+  }
+  return mf;
+}
 
-
+bool Amplitude_Handler::CheckSingleEFM(Point* p)
+{
+  if (p->left==0) return 1;
+  if (p->fl.IsBoson() && p->fl.IntCharge()!=0) return 0;
+  bool mf=CheckSingleEFM(p->left);
+  if (mf) mf=CheckSingleEFM(p->right);
+  if (p->middle && mf) mf=CheckSingleEFM(p->middle);
+  return mf;
+}
 
 
 

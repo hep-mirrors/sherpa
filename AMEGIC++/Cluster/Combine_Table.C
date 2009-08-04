@@ -256,8 +256,8 @@ ATOOLS::Flavour Combine_Table::IsoFlip(const ATOOLS::Flavour &fl) const
 
 Flavour Combine_Table::MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const
 {
-  Flavour mf=p_proc->ReMap(a.Point()->fl,a.Point()->GetPropID());
-  return a.Point()->fl.IsAnti()^mf.IsAnti()?mf.Bar():mf;
+  if (p_proc->Partner()==p_proc) return a.Point()->fl;
+  return p_proc->ReMap(a.Point()->fl,a.Point()->GetPropID());
 }
 
 Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)

@@ -50,6 +50,7 @@ namespace AMEGIC {
     int  SingleCompare(Point*,Point*,double &, std::map<std::string,Complex> &);
 //     void Kicker(int*,int,std::string);
     void RestoreAmplitudes(std::string path);
+    bool CheckSingleEFM(Point*);
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
 		      MODEL::Model_Base *,Topology *,int &,int &,
@@ -86,6 +87,7 @@ namespace AMEGIC {
     bool   ExistFourVertex(Point *);
     int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
     std::map<std::string,ATOOLS::Flavour>& GetFlavourmap() { return m_flavourmap; }
+    bool   CheckEFMap();
   };
 
     //! The alternative color matrix, for more details see CFColor.

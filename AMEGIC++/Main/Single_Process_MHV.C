@@ -137,7 +137,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   case 1 :
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])) {
+	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
 	  msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	  p_mapproc = p_partner   = (Single_Process_MHV*)links[j];
