@@ -1,5 +1,5 @@
 @node Merging ME and PS
-@chapter CKKW 
+@chapter ME-PS merging
 @strong{The Sherpa method of merging matrix elements and parton showers}
 
 
@@ -80,7 +80,7 @@ terms to obtain optimal agreement with data.
 
 An improved prescription for merging was presented in @mycite{Hoeche2009rj}, 
 extending the CKKW approach with truncated showers. For a more complete
-description of CKKW as implemented in Sherpa, readers are 
+description of ME-PS merging as implemented in Sherpa, readers are 
 referred to this paper.
 
 
@@ -232,13 +232,13 @@ pointed out.
   electroweak couplings to the corresponding order of the basic core
   process, here pp -> l-bar l or @code{93 93 -> 90 90}, as only QCD
   corrections to this process can be considered and further
-  electroweak corrections are not treated by Sherpa's CKKW
+  electroweak corrections are not treated by Sherpa's ME-PS merging
   implementation.
   
 @item @strong{Setting the merging scale}
 
   The most important parameter to be specified when generating
-  CKKW merged samples with Sherpa is the actual value of the jet
+  merged samples with Sherpa is the actual value of the jet
   resolution that separates the subsamples of different parton
   multiplicities, the merging scale. 
   
@@ -278,7 +278,7 @@ the most prominent mistakes are listed here:
 @item  The jet criterion specified by the @ref{CKKW} 
   parameter defines which phase-space regions are
   populated by matrix elements and which ones by parton showers. In
-  order to guarantee functioning of Sherpa's CKKW implementation, no
+  order to guarantee functioning of Sherpa's ME-PS merging implementation, no
   further phase-space cuts on the additional QCD parton emissions
   need/should be applied while generating the samples.
 @item  When jets are included in the core process, like in the 
@@ -301,16 +301,16 @@ the most prominent mistakes are listed here:
   matrix-element partons, the centre-of-mass energy, the choice of the
   PDF or the running of alpha_s requires to integrate and possibly
   store afresh.
-@item  The total inclusive cross section of a Sherpa CKKW prediction
+@item  The total inclusive cross section of a merged Sherpa prediction
   does not correspond to the sum of the sigma_k. Because of the
   matrix-element reweighting, all these fixed-multiplicity cross
-  sections are modified (scaled down) by the CKKW procedure. The sum
+  sections are modified (scaled down) by the ME-PS merging procedure. The sum
   of the modified values determines Sherpa's total inclusive cross
   section.
-@item  The CKKW merging implemented in Sherpa is not yet enabled for
+@item  The ME-PS merging implemented in Sherpa is not yet enabled for
   supersymmetric processes.
 @end itemize
-Finally, a few more useful comments related to Sherpa's CKKW merging
+Finally, a few more useful comments related to Sherpa's merging
 are stated below:
 @itemize @bullet
 @item  Factors can be given to vary the default choices for the
@@ -321,7 +321,7 @@ are stated below:
   to the default mu_R^2 and mu_F^2 scales used for alpha_s
   and PDF evaluations, respectively. By varying them in a certain
   range around 1 (like [1/4,4]), an estimate for the uncertainty
-  of Sherpa CKKW predictions can be obtained conveniently. Note that
+  of Sherpa merged predictions can be obtained conveniently. Note that
   the application of the factors requires to re-integrate the matrix
   elements.
 @item  The generation of merged event samples for the production and
