@@ -4,6 +4,19 @@
 The hadronization setup is covered by the `(fragmentation)' section of
 the steering file or the fragmentation data file `Fragmentation.dat', respectively.
 
+There are, broadly speaking, two options of how Sherpa handles the transition
+of quarks and gluons into primordial hadrons (hadronization) and their decay:
+@itemize @bullet
+@item  In previous versions the only way of dealing with this was to invoke
+	corresponding routines of Pythia, invoking the Lund model of
+	string fragmentation and Pythia's native hadron decay routines.
+	Although now the @option{Lund} option is disfavoured, it will still be 
+	kept in Sherpa for backward compatibility and for some consistency checks.  
+@item  From version 1.1 on, the default choice will be to rely entirely on
+	two internal modules, AHADIC++ and HADRONS++ for hadronization and
+	hadron decays.  
+@end itemize
+
 @menu
 * Hadronization parameters:: General hadronization parameters
 * AHADIC++::                 The fragmentation module, and its parameters.
@@ -19,9 +32,49 @@ the steering file or the fragmentation data file `Fragmentation.dat', respective
 @cindex MASS[<id>]
 
 The @code{FRAGMENTATION} parameter sets the fragmentation module to be employed
-during event generation. The default is @option{Ahadic}.
+during event generation. The default is @option{Ahadic}. This parameter steers whether the 
+fragmentation is switched on and performed by the internal cluster fragmentation module 
+AHADIC++, by an interface to the corresponding routines of the Lund 
+string hadronization of Pythia @mycite{Sjostrand2003wg}), indicated by @option{Lund}), or 
+whether the fragmentation is completely switched (@option{Off}).
 
-TODO.
+The treatment of hadron 
+and tau decays is specified by @code{DECAYMODEL}.  Its allowed values are either the 
+default choice @option{Hadrons}, which renders the HADRONS++ module responsible for 
+performing the decays, or as alternative, the interface to Pythia can be invoked 
+by setting this parameter to @option{Lund}.  For the former option, the reader is referred
+to @ref{HADRONS++} for a more detailed discussion.
+
+Please note that it is absolutely not advisable to use one fragmentation model with 
+another model for the hadron decays, since there is quite an intimate relation between 
+two - for instance, AHADIC++ knows and allows for many more primordial hadrons than Pythia 
+does, which would obviously lead to problems, if they were created in AHADIC++ and left 
+to Pythia for decays.
+
+
+@subsubsection Using the Pythia routines 
+@cindex LUND_FILE
+
+The Pythia routines have been made available through an interface to
+the corresponding @code{Fortran} code, with the option to steer Pythia
+parameters through Sherpa.
+The Lund parameters can be collected in a file set by the parameter @code{LUND_FILE} 
+(default is @code{Lund.dat}), if @option{Lund} is chosen as the method of choice for 
+both fragmentation and hadron decays.  Driven in this option, Sherpa is more or less 
+ignorant about hadron decays, with the exception of tau-decays, which have been 
+supplemented early in the development of the Sherpa event generator.  
+	
+The coarse features of the string breakup in the Lund model are characterized by three 
+parameters, Lund-a through @code{PARJ(41)} (data file value: 0.431), Lund-b through 
+@code{PARJ(42)} (data file value: 0.878), and Lund-sigma through @code{PARJ(21)} 
+(data file value: 0.336).  If the data-file parameters are not set, Sherpa employs
+the default values in Pythia.  
+
+More Pythia parameters can be added to the @code{Lund.dat} file using the Pythia 
+nomenclature in the common-blocks, e.g. @code{MSTJ(11)} for changing the fragmentation 
+function for heavy quarks. Please note that particle decays cannot directly be disabled 
+there.  Instead, the stable flag for the corresponding hadron needs to be used. 
+
 
 @node AHADIC++
 @subsection AHADIC++
