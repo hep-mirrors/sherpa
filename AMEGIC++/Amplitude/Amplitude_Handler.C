@@ -999,6 +999,7 @@ bool Amplitude_Handler::CheckEFMap()
   while (n) {
     mf=CheckSingleEFM(n->GetPointlist());     
     if (!mf) return 0;
+    n = n->Next;
   }
   return mf;
 }
