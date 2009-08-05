@@ -1,5 +1,7 @@
 @node Input structure
 @chapter Input structure
+@cindex PATH
+@cindex RUNDATA
 
 A Sherpa setup is steered by various parameters, associated with the
 different components of event generation.
