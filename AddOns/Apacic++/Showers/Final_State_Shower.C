@@ -37,7 +37,7 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));
   p_sud->SetKTScheme(dataread->GetValue<int>("FS_KT_SCHEME",1));
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_QED_SCHEME",1));        
-  p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",4));
+  p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
   p_sud->SetPT2MinQED(dataread->GetValue<double>("FS_PT2MIN_QED",.0025));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
   m_showermode=1;

@@ -26,7 +26,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
 {
   double cplscalefac(0.25*ToType<double>
 		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
-  m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
+  m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",1.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
