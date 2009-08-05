@@ -275,30 +275,30 @@ void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
   p_split=p_spect=NULL;
   if (dip->Triplet()->m_flav.IsGluon() && 
       (dip->AntiTriplet()->m_flav.IsQuark() ||
-       dip->AntiTriplet()->m_flav.IsDiQuark())){
+       dip->AntiTriplet()->m_flav.IsDiQuark())) {
     // asymmetric case: triplet splits (gluon)
     p_spect = dip->AntiTriplet(); 
     p_split = dip->Triplet();
     dip->SetSwitched(true);
   }
-  else if ((dip->AntiTriplet()->m_flav.IsGluon() && 
-	    (dip->Triplet()->m_flav.IsQuark() ||
-	     dip->Triplet()->m_flav.IsDiQuark())) ||
-	   (dip->AntiTriplet()->m_info=='l' &&
-	    dip->Triplet()->m_info=='L')) {
+  else if (dip->AntiTriplet()->m_flav.IsGluon() && 
+	   (dip->Triplet()->m_flav.IsQuark() ||
+	    dip->Triplet()->m_flav.IsDiQuark())) {
     // asymmetric case: antitriplet splits (gluon)
     p_split = dip->AntiTriplet(); 
     p_spect = dip->Triplet();
     dip->SetSwitched(false);
   }
   else if ((dip->Triplet()->m_flav.IsGluon() && 
-	    dip->AntiTriplet()->m_flav.IsGluon()) ||
+	    dip->AntiTriplet()->m_flav.IsGluon())     ||
 	   (!dip->Triplet()->m_flav.IsGluon() && 
 	    !dip->AntiTriplet()->m_flav.IsGluon())) { 
     if ((dip->Triplet()->m_info=='L' && 
 	 dip->AntiTriplet()->m_info=='L') ||
 	(dip->Triplet()->m_info=='l' && 
-	 dip->AntiTriplet()->m_info=='l')) {
+	 dip->AntiTriplet()->m_info=='l') ||
+	(dip->Triplet()->m_info=='B' && 
+	 dip->AntiTriplet()->m_info=='B')) {
       // symmetric case: pick at random.
       double l1(sqr(Max(dip->Triplet()->m_mass,1.e-4)));
       double l2(sqr(Max(dip->AntiTriplet()->m_mass,1.e-4)));
@@ -314,15 +314,17 @@ void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
 	dip->SetSwitched(false);
       }
     }
-    else if (dip->Triplet()->m_info=='L' && 
-	     dip->AntiTriplet()->m_info!='L') {
-      // asymmetric case: antitriplet splits (non-leading with leading spectator)
+    else if ((dip->Triplet()->m_info=='L' && 
+	      dip->AntiTriplet()->m_info!='L')   ||
+	     dip->Triplet()->m_info=='B')  {
+      // asymmetric case: antitriplet splits (non-leading with leading/beam remnant spectator)
       p_split = dip->AntiTriplet(); 
       p_spect = dip->Triplet();
       dip->SetSwitched(false);
     }
-    else if (dip->Triplet()->m_info!='L' && 
-	     dip->AntiTriplet()->m_info=='L') {
+    else if ((dip->Triplet()->m_info!='L' && 
+	      dip->AntiTriplet()->m_info=='L')   ||
+	     dip->AntiTriplet()->m_info=='B') {
       // asymmetric case: antitriplet splits (non-leading with leading spectator)
       p_split = dip->Triplet(); 
       p_spect = dip->AntiTriplet();
@@ -478,6 +480,7 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
 
 double Splitting_Tools::Scale2Max(const double & pt2max,const PTOrder::code & ptorder) {
   double scale2(p_split->m_flav.IsGluon()?m_Qt2:m_Qt2/4.);
+  if (p_split->m_info=='B') scale2 = p_split->m_mom.PPerp2();
   if (pt2max>0.) scale2 = ATOOLS::Min(scale2,pt2max);
   if ((ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
       (ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||

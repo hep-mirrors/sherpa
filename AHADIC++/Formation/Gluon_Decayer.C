@@ -10,6 +10,7 @@ using namespace ATOOLS;
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
   p_splitter(splitter), 
   m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
+  m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
   m_analyse(ana),m_tot(0),m_s(0),m_u(0),m_d(0)
 { 
   double norm(0.);
@@ -542,6 +543,14 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
 double Gluon_Decayer::PT2Max(Dipole * dip) const {
   double pt2max(dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom));
   if (IsZero(pt2max)) pt2max = dip->MassBar2();
+  if (dip->Triplet()->m_info=='B') {
+    if (dip->Triplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
+    else pt2max = Min(pt2max,dip->Triplet()->m_mom.PPerp2());
+  }
+  if (dip->AntiTriplet()->m_info=='B') {
+    if (dip->AntiTriplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
+    else pt2max = Min(pt2max,dip->AntiTriplet()->m_mom.PPerp2());
+  }
   return m_pt2max_factor * pt2max;
 }
 

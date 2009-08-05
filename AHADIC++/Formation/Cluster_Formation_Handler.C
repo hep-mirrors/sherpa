@@ -114,7 +114,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 	(part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
     if (construct) {
       if (part->GetFlow(2)==col1) {
-	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),
+						   part->Info()=='B'?'B':'L');
 	SetInfoTagForPrimaryParticle(copy,leading);
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
@@ -134,7 +135,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       col1 = part->GetFlow(1);
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
-      Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+      Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),
+						 part->Info()=='B'?'B':'L');
       SetInfoTagForPrimaryParticle(copy,leading);
       pli->push_back(copy);
       m_partlists.push_back(pli);
@@ -146,6 +148,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 
 void Cluster_Formation_Handler::SetInfoTagForPrimaryParticle(Proto_Particle * proto,
 							     leading::code lead) const {
+  if (proto->m_info=='B') return;
   switch (lead) {
   case leading::quarks_and_gluons:
     break;
