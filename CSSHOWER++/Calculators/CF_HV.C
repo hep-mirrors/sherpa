@@ -42,15 +42,15 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   double CA = double(md->ScalarConstant(std::string("CA")));
   double TR = double(md->ScalarConstant(std::string("TR")));
 
-  m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_HV");
   switch (int(m_q)) {
   case 0: m_q=CA;break; 
   case 1: m_q=TR;break; 
   case 2: m_q=CF;break;
   }
+  m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(k0sq);
   m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
-  std::cout<<" cpl max HV "<<(*p_cpl)(k0sq)*m_q<<" "<<k0sq<<" "<<m_q <<std::endl; 
+  std::cout<<" cpl max HV "<<m_cplmax.back()<<" "<<k0sq<<" "<<m_q <<std::endl; 
   m_cplmax.push_back(0.0);
   return true;
 }

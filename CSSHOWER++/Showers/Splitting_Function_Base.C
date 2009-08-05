@@ -47,6 +47,12 @@ double SF_Lorentz::Lambda
   return a*a+b*b+c*c-2.*(a*b+a*c+b*c);
 }
 
+SF_Coupling::SF_Coupling(const SF_Key &key):
+  p_lf(NULL), m_type(key.m_type),
+  m_cplfac(1.0), m_kfmode(key.m_kfmode) 
+{
+}
+
 SF_Coupling::~SF_Coupling() {}
 
 double SF_Coupling::CplFac(const double &scale) const

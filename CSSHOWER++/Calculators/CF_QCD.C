@@ -47,8 +47,8 @@ using namespace ATOOLS;
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			 const double &isfac,const double &fsfac)
 {
-  m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
+  m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(k0sq);
   m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
   m_cplmax.push_back(0.0);
   return true;

@@ -134,8 +134,7 @@ namespace CSSHOWER {
 
   public:
 
-    inline SF_Coupling(const SF_Key &key):
-      p_lf(NULL), m_type(key.m_type), m_kfmode(key.m_kfmode) {}
+    SF_Coupling(const SF_Key &key);
 
     virtual ~SF_Coupling();
 

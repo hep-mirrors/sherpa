@@ -65,8 +65,8 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   double af(m_ffl.IsoWeak()), vf(af-2.0*m_ffl.Charge()*stw);
   m_q[0]=0.25/(stw*(1.0-stw))*(sqr(vf)+sqr(af));
   m_q[1]=2.0/stw*sqr(af*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
-  m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_QED");
+  m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(rpa.gen.CplScale());
   double cqed((*p_cpl)(rpa.gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
@@ -101,8 +101,8 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   double vf(sqr(std::abs(vij)));
   m_q[0]=0.5/stw*sqr(vf);
   m_q[1]=1.0/stw*sqr(vf*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
-  m_cplfac=(m_type/10==1)?fsfac:isfac;
   p_cpl=md->GetScalarFunction("alpha_QED");
+  m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(rpa.gen.CplScale());
   double cqed((*p_cpl)(rpa.gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
