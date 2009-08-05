@@ -34,11 +34,12 @@ public:
   bool operator<(const FTrip &f) const
   {
     if (m_a<f.m_a) return true;
-    if (m_a>f.m_a) return false;
-    if (m_b<f.m_b) return true;
-    if (m_b>f.m_b) return false;
-    if (m_c<f.m_c) return true;
-    if (m_c>f.m_c) return false;
+    if (m_a==f.m_a) {
+      if (m_b<f.m_b) return true;
+      if (m_b==f.m_b) {
+	return m_c<f.m_c;
+      }
+    }
     return false;
   }
 };
