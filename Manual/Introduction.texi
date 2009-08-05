@@ -316,10 +316,10 @@ backscattering off the electrons, leading to photonic initial states.
 
 @item PDF 
 
-The @code{PDF} module provides access to various parton density functions (PDFs)
-for the proton @mycite{Pumplin2002vw},@mycite{Martin1999ww},@mycite{Martin2001es} and the photon 
-@mycite{Gluck1991jc}. In addition, it hosts an interface to the LHAPDF package 
-@mycite{Whalley2005nh}, which makes a full wealth of proton PDFs available. An 
+The PDF module provides access to various parton density functions (PDFs)
+for the proton and the photon. In addition, it hosts an interface to the 
+@uref{http://projects.hepforge.org/lhapdf,,LHAPDF} package,
+which makes a full wealth of proton PDFs available. An 
 (analytical) electron structure function is supplied in the PDF module 
 as well.   
 	
@@ -329,11 +329,9 @@ This module is responsible for setting up the physics model for a simulation run
 It comprises the initialization of particle properties, basic physics parameters 
 (coupling constants, mixing angles, etc.) and the set of available interaction
 vertices (Feynman rules). By now, there exist explicit implementations of the 
-Standard Model (SM), its Minimal Supersymmetric extension (MSSM) 
-@mycite{Hagiwara2005wg}, the ADD model of large extra dimensions 
-@mycite{Gleisberg2003ue}, and a comprehensive set of operators parametrizing 
-anomalous triple and quartic electroweak gauge boson couplings 
-@mycite{Hagiwara1986vm}.
+Standard Model (SM), its Minimal Supersymmetric extension (MSSM), the ADD model
+of large extra dimensions, and a comprehensive set of operators parametrizing 
+anomalous triple and quartic electroweak gauge boson couplings.
 
 @item EXTRA_XS
 
@@ -400,7 +398,7 @@ AMEGIC++
 @end ifnottex 
 has been tested for multi-particle production in the Standard 
 Model @mycite{Gleisberg2003bi}. Its MSSM implementation has been
-tested in @mycite{Hagiwara2005wg}. 
+validated in @mycite{Hagiwara2005wg}. 
 
 @item COMIX
 
