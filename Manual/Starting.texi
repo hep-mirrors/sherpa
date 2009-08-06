@@ -30,6 +30,23 @@ provided. Compilation and installation proceed through the following commands
 @code{ make install}
 @end example
 
+If not specified differently, the directory structure after installation is organized as follows 
+
+@table @code
+@item $(prefix)/bin
+Sherpa executeable and scripts
+
+@item $(prefix)/include
+headers for process library compilation
+
+@item $(prefix)/lib
+basic libraries
+
+@item $(prefix)/share
+PDFs, Decaydata, fallback run cards
+@end table
+
+
 If Sherpa has to be moved to a different directory after the installation,
 one has to set the following environment variables for each run:
 @itemize @bullet
@@ -62,6 +79,49 @@ well as on Mac OS X 10 using the GNU C++ compiler version 4.0. In all cases the
 GNU FORTRAN compiler g77 or gfortran has been employed. Note that GCC
 version 2.96 is @strong{not} supported.
 
+If you have multiple compilers installed on your system, you can use shell 
+environment variables to specify which of these are to be used. A list of 
+the available variables is printed with
+@example
+@code{./configure --help}
+@end example
+in the Sherpa top level directory and looking at the last lines. Depending 
+on the shell you are using, you can set these variables e.g. with export 
+(bash) or setenv (csh).
+Examples:
+@example
+@code{export CXX=g++-3.4
+export CC=gcc-3.4
+export CPP=cpp-3.4
+TOOLS/makeinstall -c}
+@end example
+
+@subsubheading MacOS Installation
+
+Installation on MacOS is supported at least in all Sherpa versions > 1.1.2. 
+Before that, there might have been problems on the newer MacOS 
+versions or architectures (10.5, Intel).
+The following issues have come up on Mac installations before, so 
+please be aware of them:
+@itemize @bullet
+@item On 10.4 and 10.5 only gfortran is supported, and you will 
+have to install it e.g. from HPC
+@item If you want to reconfigure, i.e. run the command @code{autoreconf} 
+or @code{(g)libtoolize}, you have to make sure that you have a recent version 
+of GNU libtool (>=1.5.22 has been tested). Don’t confuse this with 
+the native non-GNU libtool which is installed in @code{/usr/bin/libtool} and 
+of no use! Also make sure that your autools (autoconf >= 2.61, 
+automake >= 1.10 have been tested) are of recent versions. All this should 
+not be necessary though, if you only run @code{configure}.
+@item Make sure that you don’t have two versions of g++ and libstdc++ 
+installed and being used inconsistently. This appeared e.g. when the gcc 
+suite was installed through Fink to get gfortran. This caused Sherpa to 
+use the native MacOS compilers but link the libstdc++ from Fink (which 
+is located in /sw/lib). You can find out which libraries are used by Sherpa 
+by running @code{otool -L bin/Sherpa}
+@end itemize
+
+
 @ignore
 For users who modified parts of Sherpa according to their own needs
 or who added own modules and who would like to distribute the code,
@@ -85,6 +145,15 @@ This steering file is called @code{Run.dat} and some example setups
 of Sherpa. They can be found in the directory @code{<prefix>/share/SHERPA-MC/Examples/}, 
 and descriptions of some of their key features can be found in the section
 @ref{Examples}.
+
+@strong{Please note:} It is not in general possible to reuse run 
+cards from previous Sherpa versions. Often there are small changes 
+in the parameter syntax of the run cards from 
+one version to the next. 
+These changes are documented in our manuals. In addition, 
+always use the newer Hadron.dat and Decaydata directories 
+(and reapply any changes which you might have applied to the old ones),
+see @ref{HADRONS++}.
  
 The very first step in running Sherpa 
 is therefore to adjust all parameters to the needs of the
@@ -479,7 +548,40 @@ showering, and, @code{FRAGMENTATION=Off}, to do so for the
 hadronization effects.
 
 
+@subsection Sherpa's total cross section
 
+At the end of an event generation run, Sherpa will display its
+total cross section for that process. In contrast to plain 
+LO cross sections, Sherpa's total cross section is 
+composed of the various entries, such that
+
+sigma_tot = sigma_0 * weight_0 + sigma_1 * weight_1 ...
+
+where sigma_i is the cross section for, e.g. Z+i jets (with jet measure 
+as specified) and weight_i is the average Sudakov rejection weight on 
+this configuration. In principle, both have the same formal accuracy, but 
+they will probably always differ by up to 20-30%. Depending on jet definitions, 
+process etc., Sherpa's cross section then may be larger or smaller than the 
+ordinary LO cross section.
+
+Concerning a comparison with NLO calculations: It is known that for, e.g., 
+inclusive Z production the NLO-LO K-factor is about 1.3, give or take. In some setups 
+the Sherpa cross section is smaller than the LO one, and therefore further from the
+NLO. Therefore, the Sherpa total cross section should @strong{not} be thought of
+as being ``improved LO'', which would suggest that it is closer to the NLO 
+than the LO cross section. Sherpa total cross sections have LO accuracy.
+
+More technically speaking, Sherpa's merged ME and PS (see @ref{Merging ME and PS}) 
+is good for capturing the information from logs (as is the parton 
+shower), but typically NLO cross sections are dominated by finite terms, 
+as they are often quite inclusive and there are no logs in this case. 
+Sherpa's merging algorithm has no way to calculate these finite terms, and 
+this is why Sherpa's cross section is not a good approximation to the NLO
+cross section.
+
+On the other hand, shapes are typically dominated by logs (especially 
+jet pt's etc.). Therefore Sherpa can be expected to perform
+reasonably well here.
 
 
 

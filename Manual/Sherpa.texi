@@ -40,6 +40,8 @@
 @sp 1
 * Examples::           Examples to illustrate some of Sherpa's features
 @sp 1
+* Getting help::       What to do if you have questions about Sherpa
+@sp 1
 * Authors::            Authors of Sherpa 
 * Copying::            Your rights and freedoms
 @sp 1
@@ -60,6 +62,35 @@
 @include Tips.texi
 @include Customization.texi
 @include Examples.texi
+
+
+@node Getting help
+@chapter Getting help
+
+If Sherpa exits abnormally, first check the Sherpa output 
+for hints on the reason of program abort, and try to figure 
+out what has gone wrong with the help of the Manual. Note 
+that Sherpa throwing a ‘normal_exit’ exception does not 
+imply any abnormal program termination! When using AMEGIC++
+Sherpa will exit with the message:
+@example
+   New libraries created. Please compile.
+@end example
+In this case, folow the instructions given in
+@ref{Running Sherpa with AMEGIC++}.
+
+If this does not help, contact the Sherpa team (see the 
+Sherpa Team section of the website 
+@uref{http://www.sherpa-mc.de,,http://www.sherpa-mc.de}), providing 
+all information on your setup. Please include
+@enumerate
+@item A complete tarred and gzipped set of the @option{.dat} 
+files leading to the crash. Use the status recovery directory 
+@code{Status__<date of crash>} produced before the program abort.
+@item The command line (including possible parameters) you used to start Sherpa.
+@item The installation log file, if available.
+@end enumerate
+
 
 @node Authors
 @chapter Authors
