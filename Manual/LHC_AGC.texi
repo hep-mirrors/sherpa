@@ -7,7 +7,7 @@ Z-gamma-gamma coupling is given here.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LHC_AGC/Run.dat
+@verbatiminclude Examples/LHC_AGC/Run.dat
 @end smallformat
 @end example
 

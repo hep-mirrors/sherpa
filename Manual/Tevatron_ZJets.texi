@@ -6,7 +6,7 @@ proton--anti-proton collisions at Tevatron energies.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_ZJets/Run.dat
+@verbatiminclude Examples/Tevatron_ZJets/Run.dat
 @end smallformat
 @end example
 

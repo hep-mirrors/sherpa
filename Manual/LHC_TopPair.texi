@@ -6,7 +6,7 @@ particular decay chain for the particles in the signal process.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LHC_TopPair/Run.dat
+@verbatiminclude Examples/LHC_TopPair/Run.dat
 @end smallformat
 @end example
 

@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LEP91/Run.dat
+@verbatiminclude Examples/LEP91/Run.dat
 @end smallformat
 @end example
 

@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude ../Examples/PEPII_BaBar/Run.dat
+@verbatiminclude Examples/PEPII_BaBar/Run.dat
 @end smallformat
 @end example
 

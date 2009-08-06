@@ -15,7 +15,7 @@ see @ref{Input structure}.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_QCD/Run.dat
+@verbatiminclude Examples/Tevatron_QCD/Run.dat
 @end smallformat
 @end example
 
@@ -45,7 +45,7 @@ The run card looks like this:
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_QCD/Run.analyse.dat
+@verbatiminclude Examples/Tevatron_QCD/Run.analyse.dat
 @end smallformat
 @end example
 

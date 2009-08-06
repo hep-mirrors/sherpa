@@ -9,7 +9,7 @@ full list of the available settings, see @ref{MPI Parameters}.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_UE/Run.dat
+@verbatiminclude Examples/Tevatron_UE/Run.dat
 @end smallformat
 @end example
 

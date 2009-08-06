@@ -8,7 +8,7 @@ the lepton pairs.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_WJets/Run.dat
+@verbatiminclude Examples/Tevatron_WJets/Run.dat
 @end smallformat
 @end example
 

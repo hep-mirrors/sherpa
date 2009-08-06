@@ -38,21 +38,25 @@ dist_html_DATA = \
         Sherpa.html \
         SherpaLogo.jpg
 
+## this is needed to get the includes from Examples/.../ working.
+## we can't use relative paths there because that breaks out-of-source builds
+AM_MAKEINFOFLAGS = -I $(top_srcdir)
+
 update-manpage:
 	groff -Tascii -mandoc $(srcdir)/Sherpa.trf > Sherpa.1
 
-completion.index: $(srcdir)/*.texi $(srcdir)/Sherpa.info
+completion.index: $(srcdir)/*.texi Sherpa.info
 	@echo "Creating index for tab completion."
 	@rm -f Sherpa.txt* Sherpa.index
-	-@makeinfo --plaintext -o Sherpa.txt $(srcdir)/Sherpa.texi && \
+	-@makeinfo $(AM_MAKEINFOFLAGS) --plaintext -o Sherpa.txt $(srcdir)/Sherpa.texi && \
         awk 'BEGIN{ m=0; }{ if (match($$0,"Appendix B Index")>0) { m=m+1; getline; getline; getline;} if (m==2) { print $$0 } }' Sherpa.txt | cut -d ":" -f 1 > completion.index || touch completion.index
 	@rm -f Sherpa.txt*
 
-Sherpa.html: $(srcdir)/*.texi $(srcdir)/Sherpa.info $(srcdir)/*.css
+Sherpa.html: $(srcdir)/*.texi Sherpa.info $(srcdir)/*.css
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
-          rm -rf Sherpa.html; texi2html --nosec-nav --css-include=$(srcdir)/Sherpa.css $(srcdir)/Sherpa.texi; \
+          texi2html --I $(top_srcdir) --nosec-nav --css-include=$(srcdir)/Sherpa.css $(srcdir)/Sherpa.texi; \
         elif test -x "$$(which makeinfo 2>/dev/null)"; then \
-          makeinfo --html --no-split --css-include=$(srcdir)/Sherpa.css -o Sherpa.html $(srcdir)/Sherpa.texi; \
+          makeinfo $(AM_MAKEINFOFLAGS) --html --no-split --css-include=$(srcdir)/Sherpa.css -o Sherpa.html $(srcdir)/Sherpa.texi; \
         else \
           touch Sherpa.html; \
         fi

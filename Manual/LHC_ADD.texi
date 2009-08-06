@@ -7,7 +7,7 @@ with Sherpa, see @ref{Exotic physics}.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LHC_ADD/Run.dat
+@verbatiminclude Examples/LHC_ADD/Run.dat
 @end smallformat
 @end example
 

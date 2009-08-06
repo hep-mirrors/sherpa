@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_DiBoson/Run.dat
+@verbatiminclude Examples/Tevatron_DiBoson/Run.dat
 @end smallformat
 @end example
 

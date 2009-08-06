@@ -8,7 +8,7 @@ Secondly, there are two allowed decay channels.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/Tevatron_TopPair/Run.dat
+@verbatiminclude Examples/Tevatron_TopPair/Run.dat
 @end smallformat
 @end example
 

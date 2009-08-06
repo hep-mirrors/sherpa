@@ -7,7 +7,7 @@ pair and up to 4 partons from the matrix element.
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LHC_ZJets/Run.dat
+@verbatiminclude Examples/LHC_ZJets/Run.dat
 @end smallformat
 @end example
  

@@ -11,7 +11,7 @@ on using your own BSM models with Sherpa, see
 
 @example
 @smallformat
-@verbatiminclude ../Examples/LHC_4thGen/Run.dat
+@verbatiminclude Examples/LHC_4thGen/Run.dat
 @end smallformat
 @end example
 
