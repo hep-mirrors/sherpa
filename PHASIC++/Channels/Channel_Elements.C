@@ -354,9 +354,12 @@ double Channel_Elements::ThresholdMomenta(double sexp,double mass,double smin,do
   double s = sqrt(sqr(Channel_Basics::PeakedDist(0.,sexp,sgmin,sgmax,1,ran))-sqr(sqr(mass)));
   if (!(s>0) && !(s<0) && s!=0) { msg_Error()<<"ThresholdMomenta produced a nan !"<<endl;
   cout<<"Channel_Elements::ThresholdMomenta "<<sexp<<" "<<mass<<" "<<sgmax-sgmin<<" "<<s<<" "<<ran<<endl;
+  if (IsEqual(sgmin,sgmax)) s=0.5*(sgmin+sgmax);
   }
   if ((s<smin) || (s>smax)) {    msg_Error()<<"ThresholdMomenta out of bounds !"<<endl;
    cout<<"Channel_Elements::ThresholdMomenta "<<sexp<<" "<<mass<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
+   if (s<smin) s=smin;
+   else s=smax;
   }
   return s;
 }
