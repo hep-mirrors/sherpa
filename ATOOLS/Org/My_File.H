@@ -17,12 +17,16 @@ namespace ATOOLS {
     enum code {
       temporary =  1,
       permanent =  2,
-      error     =  3,
+      error     =  4,
+      nosearch  =  8,
       unknown   = 99
     };
 
   };// end of struct fom
     
+  inline const fom::code operator|(const fom::code c1,const fom::code c2)
+  { return (fom::code)((int)c1|(int)c2); }
+
   std::ostream &operator<<(std::ostream &ostr,const fom::code &code);
 
   template <class FileType>

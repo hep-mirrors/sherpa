@@ -35,6 +35,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
+  if (rpa.gen.Variable("PATH_PIECE")!="")
+    m_respath=rpa.gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;

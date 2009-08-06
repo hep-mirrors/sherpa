@@ -498,7 +498,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   My_In_File &infile(InFile(i));
   if (infile()==NULL) return;
   m_filecontent[i].clear();
-  if (infile.Mode()==fom::permanent && !mode) return;
+  if ((infile.Mode()&fom::permanent) && !mode) return;
   std::string file(InputPath(i)+InputFile(i));
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
@@ -526,7 +526,7 @@ void Read_Write_Base::CloseOutFile(const unsigned int i,const int mode)
 { 
   My_Out_File &outfile(OutFile(i));
   if (outfile()==NULL) return;
-  if (outfile.Mode()==fom::permanent && !mode) return;
+  if ((outfile.Mode()&fom::permanent) && !mode) return;
   if (m_fileend.size()>0 && !outfile->bad()) {
     (*outfile)<<m_fileend[0]<<std::endl;
   }

@@ -13,6 +13,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
   case fom::temporary: return ostr<<"temporary";
   case fom::permanent: return ostr<<"permanent";
   case fom::error:     return ostr<<"error";
+  case fom::nosearch:  return ostr<<"nosearch";
   case fom::unknown:   return ostr<<"unknown";
   }
   return ostr;
@@ -77,6 +78,11 @@ bool My_File<FileType>::Open()
     return false;
   }
   Close();
+  if (m_mode&fom::nosearch) {
+    p_file = new File_Type();
+    p_file->open((m_path+m_file).c_str());
+    return p_file->good();
+  }
   String_Map::const_iterator fit(s_filelocations.find(m_path+m_file));
   if (fit!=s_filelocations.end()) m_path=fit->second+"/"+m_path;
   if ((m_path+m_file)[0]=='/') {

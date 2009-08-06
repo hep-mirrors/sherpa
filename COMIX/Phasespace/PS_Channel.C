@@ -1102,6 +1102,7 @@ void PS_Channel::WriteOut(std::string pid)
       vids.push_back(vit->first);
     }
     Data_Writer writer;
+    writer.SetOutFileMode(fom::permanent|fom::nosearch);
     writer.SetOutputPath(pid);
     writer.SetOutputFile("_"+name+"_VI");
     writer.VectorToFile(vids);
@@ -1126,6 +1127,7 @@ void PS_Channel::WriteOut(std::string pid)
       }
     }
   Data_Writer writer;
+  writer.SetOutFileMode(fom::permanent|fom::nosearch);
   writer.SetOutputPath(pid);
   writer.SetOutputFile("_"+name+"_PV");
   writer.MatrixToFile(pvds);
@@ -1134,6 +1136,7 @@ void PS_Channel::WriteOut(std::string pid)
 void PS_Channel::ReadIn(std::string pid)
 {
   Data_Reader reader;
+  reader.SetInFileMode(fom::permanent|fom::nosearch);
   reader.SetAddCommandLine(false);
   reader.SetInputPath(pid);
   reader.SetInputFile("_"+name+"_PV");
@@ -1159,6 +1162,7 @@ void PS_Channel::ReadIn(std::string pid)
   if (m_vmode>0) {
     m_tmode=0;
     Data_Reader reader;
+    reader.SetInFileMode(fom::permanent|fom::nosearch);
     reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");

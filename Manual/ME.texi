@@ -51,6 +51,8 @@ and phasespace mappings. The default is @samp{Results/}.
 It can also be set using the command line parameter @option{-r},
 see @ref{Command line}. The directory will not be created automatically
 by Sherpa, unless the command line parameter @option{-g} is set.
+Its location is relative to a potentially specified input path,
+see @ref{Command line}.
 
 
 @node EVENT_GENERATION_MODE
