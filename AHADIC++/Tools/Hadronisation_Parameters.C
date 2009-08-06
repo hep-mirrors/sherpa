@@ -129,13 +129,13 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("P_qg_Exponent")] =
     dataread.GetValue<double>("P_Q2QG_EXPONENT",1.);      
   m_parametermap[string("Offset_C->H")]        =
-    dataread.GetValue<double>("TRANSITION_OFFSET",-1.4258e-03);      
+    dataread.GetValue<double>("TRANSITION_OFFSET",1.0);      
   m_parametermap[string("Offset_C->HH")]       =
     dataread.GetValue<double>("DECAY_OFFSET",-1.9844e+00);      
   m_parametermap[string("MassExponent_C->H")]  =
-    dataread.GetValue<double>("TRANSITION_EXPONENT",5.0236e-01);      
+    dataread.GetValue<double>("TRANSITION_EXPONENT",0.0);      
   m_parametermap[string("WidthExponent_C->H")] =
-    dataread.GetValue<double>("TRANSITION_EXPONENT2",1.3163e-02);      
+    dataread.GetValue<double>("TRANSITION_EXPONENT2",0.0);      
   m_parametermap[string("MassExponent_C->HH")] =
     dataread.GetValue<double>("DECAY_EXPONENT",3.7959e+00);      
   m_parametermap[string("Strange_fraction")]   =
