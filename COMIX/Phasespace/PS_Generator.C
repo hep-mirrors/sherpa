@@ -23,6 +23,8 @@ using namespace COMIX;
 using namespace ATOOLS;
 using namespace PHASIC;
 
+const double s_pwmin(1.0e-6);
+
 namespace ATOOLS { template class SP(PS_Generator); }
 
 PS_Generator::PS_Generator(Process_Base *const xs):
@@ -224,6 +226,7 @@ bool PS_Generator::AddCurrent
   cur->SetId(ref->Id());
   cur->SetKey(m_cur[n].size());
   cur->SetDirection(ref->Direction());
+  cur->SetCut(ref->Cut());
   cur->SetOnShell(ref->OnShell());
   m_cur[n].push_back(cur);
   m_tccs[cur->CId()].push_back(cur);
@@ -317,7 +320,8 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	}
 	continue;
       }
-      if (curs[n][j]->Flav().Mass()>0.0 &&
+      if (curs[n][j]->Flav().Width()<s_pwmin &&
+	  !curs[n][j]->Cut() && curs[n][j]->Flav().Mass()>0.0 &&
 	  curs[n][j]->Flav().Mass()<m_chmass && n>1 && n<m_n-1) 
 	AddCurrent(curs[n][j],curs[n][j]->Flav(),n,1);
       else AddCurrent(curs[n][j],curs[n][j]->Flav(),n);
@@ -481,6 +485,10 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       size_t pid((cid&3)?(1<<m_n)-1-cid:cid);
       double psmin(sqrt(cuts->Getscut(PSId(pid))));
       double mass(m_cur[n][j]->Mass());
+      if (m_cur[n][j]->OnShell()) {
+	mmin[cid]=mass;
+	continue;
+      }
       if ((cid&3)==1 || (cid&3)==2) mass=0.0;
       for (size_t k(0);k<m_cur[n][j]->In().size();++k) {
 	mass=Max(mass,mmin[m_cur[n][j]->In()[k]->JA()->CId()]+
@@ -488,11 +496,12 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       }
       if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
       else mmin[cid]=Max(mmin[cid],mass);
+      if (m_cur[n][j]->Cut() || (cid&3)==1 || (cid&3)==2) continue;
       if ((m_ecmode&4) && mass<rpa.gen.Ecms() &&
 	  mass>psmin && !IsEqual(mass,m_cur[n][j]->Mass()))
 	AddExtraCurrent(m_cur[n][j],n,mass,0.0);
       if ((m_ecmode&2) && m_cur[n][j]->Mass()>m_chmass &&
-	  m_cur[n][j]->Width()>1.0e-6)
+	  m_cur[n][j]->Width()>s_pwmin)
 	AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Mass(),0.0);
       if ((m_ecmode&1) && psmin>m_chmass)
 	AddExtraCurrent(m_cur[n][j],n,psmin,0.0);

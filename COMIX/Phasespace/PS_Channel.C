@@ -163,7 +163,7 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
   if (!(m_vmode&4)) vegas->SetOutputMode(0);
   if (m_vmap.size()==1)
     msg_Tracking()<<"  Init internal Vegas map ( "
-		  <<ni<<" bins )."<<std::endl;
+		  <<m_nvints<<" bins )."<<std::endl;
   if (m_vmode&4)
     msg_Tracking()<<"  Init Vegas "<<std::setw(3)<<std::right
 		  <<m_vmap.size()<<" ( "<<ni<<" bins ) '"
