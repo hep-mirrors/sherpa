@@ -13,6 +13,8 @@ pkglib_LTLIBRARIES    =	libHZToolSherpa.la
 
 libHZToolSherpa_la_SOURCES    =	$(HZTOOL_SOURCES)
 
+libHZToolSherpa_la_LIBADD     =	@CONDITIONAL_HZTOOLLIBS@
+
 HZTOOL_EXTRA_DIST    = $(HZTOOL_ADDS)
 else
 HZTOOL_EXTRA_DIST    = $(HZTOOL_ADDS) $(HZTOOL_SOURCES)

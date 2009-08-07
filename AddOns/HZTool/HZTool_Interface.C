@@ -64,6 +64,16 @@ public:
 
 };// end of class HZTool_Interface
 
+extern "C" {
+  void structm_() {}
+  void kpisflag_() {}
+  void pdfset_() {}
+  void vp2_() {}
+  void pylist_() {}
+  void lulist_() {}
+  void luexec_() {}
+}
+
 using namespace SHERPA;
 using namespace ATOOLS;
 

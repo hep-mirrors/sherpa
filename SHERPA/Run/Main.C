@@ -14,18 +14,6 @@
 
 using namespace SHERPA;
 
-#ifdef USING__HZTOOL
-extern "C" {
-  void structm_() {}
-  void kpisflag_() {}
-  void pdfset_() {}
-  void vp2_() {}
-  void pylist_() {}
-  void lulist_() {}
-  void luexec_() {}
-}
-#endif
-
 #ifdef FC_DUMMY_MAIN
 extern "C" int FC_DUMMY_MAIN() { return 1; }
 #endif
