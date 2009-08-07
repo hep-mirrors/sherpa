@@ -60,7 +60,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set Vegas mode "<<m_vmode<<".\n";
   if (!read.ReadFromFile(m_tmode,"CDXS_TMODE")) m_tmode=1;
   else msg_Info()<<METHOD<<"(): Set t-channel mode "<<m_tmode<<".\n";
-  if (!read.ReadFromFile(m_vsopt,"CDXS_VSOPT")) m_vsopt=0;
+  if (!read.ReadFromFile(m_vsopt,"CDXS_VSOPT")) m_vsopt=3;
   else msg_Info()<<METHOD<<"(): Set Vegas opt start "<<m_vsopt<<".\n";
   if (!read.ReadFromFile(m_nvints,"CDXS_VINTS")) m_nvints=100;
   else msg_Info()<<METHOD<<"(): Set Vegas intervals "<<m_nvints<<".\n";
@@ -192,7 +192,7 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
       if (cs->size()==1) cur=cs->front();
-      else if ((m_tmode&1) && (m_vmode&1)) {
+      else if ((m_tmode&1) && (m_vmode&3)) {
 	m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
 				 ToString(cs->size()),cs->size()));
 	double rn(ran.Get());
@@ -241,9 +241,12 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
       if (cs->size()==1) cur=cs->front();
-      else if ((m_tmode&1) && (m_vmode&1)) {
+      else if ((m_tmode&1) && (m_vmode&3)) {
 	STCC_Map::const_iterator it(m_stccs.find(id));
-	if (it==m_stccs.end()) {
+	if (it!=m_stccs.end()) {
+	  cur=it->second;
+	}
+	else {
 	  Vegas *cvgs(GetVegas("C_"+GetPSId(id)+"_"+
 			       ToString(cs->size()),cs->size()));
 	  rn=ran.Get();
@@ -261,12 +264,6 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	  msg_Debugging()<<"    generate point "<<m_wvgs.back()->Name()<<"\n";
 #endif
 	}
-	it=m_stccs.find(id);
-	for (size_t i(0);i<cs->size();++i)
-	  if ((*cs)[i]==it->second) {
-	    cur=(*cs)[i];
-	    break;
-	  }
       }
     }
   }
@@ -279,7 +276,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
     else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
   }
   else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
-  if (m_vmode&1) {
+  if (m_vmode&3) {
     Vegas *cvgs(cur!=NULL?GetVegas("P_"+cur->PSInfo()):
 		GetVegas("P_"+GetPSId(id)));
 #ifdef USING__Threading
@@ -358,7 +355,7 @@ double PS_Channel::TChannelWeight
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,p1.Abs2(),p2.Abs2());
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
 			       m_texp,ctmax,ctmin,1.0,0,rns[0],rns[1]));
-  if (m_vmode&1) {
+  if (m_vmode&3) {
     Vegas *cvgs(GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
@@ -415,7 +412,7 @@ double PS_Channel::SChannelWeight
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),id,ctmin,ctmax);
   double wgt(CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax));
-  if (m_vmode&1) {
+  if (m_vmode&3) {
     Vegas *cvgs(GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo()));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
@@ -661,6 +658,7 @@ void PS_Channel::GeneratePoint
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   p_cuts=cuts;
+  p_gen->SetPrefMasses(p_cuts);
   m_p[(1<<m_n)-1-3]=m_p[3]=
     (m_p[(1<<m_n)-1-1]=m_p[1]=p[0])+
     (m_p[(1<<m_n)-1-2]=m_p[2]=p[1]);
@@ -947,7 +945,7 @@ void PS_Channel::AddPoint(double value)
 #endif
 	}
       }
-  if (m_vmode&1) {
+  if (m_vmode&3) {
 #ifdef CHECK_POINT
     for (int i(m_vgs.size()-1);i>=0;--i) {
 #ifdef DEBUG__BG

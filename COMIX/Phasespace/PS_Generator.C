@@ -12,6 +12,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "COMIX/Main/Process_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
@@ -25,16 +26,20 @@ using namespace PHASIC;
 namespace ATOOLS { template class SP(PS_Generator); }
 
 PS_Generator::PS_Generator(Process_Base *const xs):
-  p_xs(xs), m_n(0), m_zmode(1), m_thmass(0.0), m_chmass(0.0)
+  p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
+  m_thmass(0.0), m_chmass(0.0)
 {
   Data_Reader read(" ",";","!","=");
   read.SetInputFile("Integration.dat");
   if (!read.ReadFromFile(m_itmin,"CDXS_ITMIN")) m_itmin=5000;
   else msg_Info()<<METHOD<<"(): Set iteration minimum "<<m_itmin<<".\n";
-  if (!read.ReadFromFile(m_itmax,"CDXS_ITMAX")) m_itmax=10000;
+  if (!read.ReadFromFile(m_itmax,"CDXS_ITMAX")) m_itmax=50000;
   else msg_Info()<<METHOD<<"(): Set iteration maximum "<<m_itmax<<".\n";
-  if (!read.ReadFromFile(m_chmass,"CDXS_PS_CHTH")) m_chmass=0.0;
+  if (!read.ReadFromFile(m_ecmode,"CDXS_ECMODE")) m_ecmode=2;
+  else msg_Info()<<METHOD<<"(): Set extra channel mode "<<m_ecmode<<".\n";
+  if (!read.ReadFromFile(m_chmass,"CDXS_PS_CHTH")) m_chmass=0.01;
   else msg_Info()<<METHOD<<"(): Set channel mass threshold "<<m_chmass<<".\n";
+  m_chmass*=rpa.gen.Ecms();
   p_xs->ConstructPSVertices(this);
 #ifdef USING__Threading
   int helpi(0);
@@ -207,13 +212,14 @@ bool PS_Generator::Evaluate()
 
 bool PS_Generator::AddCurrent
 (Current_Base *const ref,const Flavour &fl,
- const size_t &n,const int mode)
+ const size_t &n,const int mode,
+ const double &m,const double &w)
 {
   Current_Key ckey(fl,NULL);
   PS_Current *cur(new PS_Current(ckey));
   if (mode&1) {
-    cur->SetMass(0.0);
-    cur->SetWidth(0.0);
+    cur->SetMass(m);
+    cur->SetWidth(w);
   }
   cur->SetId(ref->Id());
   cur->SetKey(m_cur[n].size());
@@ -251,6 +257,7 @@ public:
 
 bool PS_Generator::Construct(Amplitude *const ampl)
 {
+  m_pmsinit=0;
   Current_Matrix curs(ampl->Currents());
   msg_Debugging()<<METHOD<<"(): '"<<ampl<<"' {\n";
   if (m_n>0) {
@@ -379,7 +386,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
       msg_Debugging()<<"  set min mass "
 		     <<m_cur[i][j]->PSInfo()<<" -> "<<mass<<"\n";
 #endif
-      if ((cid==3 || cid==(1<<m_n)-1-3) &&
+      if ((cid==3 || cid==(size_t)((1<<m_n)-1-3)) &&
 	  m_cur[i][j]->Mass()>0.0) {
 	bool found(false);
 	for (size_t k(0);k<m_smasses.size();++k)
@@ -418,3 +425,80 @@ bool PS_Generator::Construct(Amplitude *const ampl)
   return true;
 }
 
+void PS_Generator::AddExtraCurrent
+(Current_Base *const cur,const size_t &n,
+ const double &m,const double &w)
+{
+  AddCurrent(cur,cur->Flav(),n,1,m,w);
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()<<" {\n";
+#endif
+  const Vertex_Vector &in(cur->In());
+  for (size_t i(0);i<in.size();++i) {
+    Vertex_Key vkey(in[i]->JA(),in[i]->JB(),m_cur[n].back(),NULL);
+    PS_Vertex *vtx(new PS_Vertex(vkey));
+    vtx->SetJA(vkey.p_a);
+    vtx->SetJB(vkey.p_b);
+    vtx->SetJC(vkey.p_c);
+#ifdef DEBUG__BG
+    msg_Debugging()<<"    "<<*vtx<<"\n";
+#endif
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  } <-> {\n";
+#endif
+  const Vertex_Vector &out(cur->Out());
+  for (size_t i(0);i<out.size();++i) {
+    Current_Base *ja(out[i]->JA()), *jb(out[i]->JB());
+    if (ja==cur) ja=m_cur[n].back();
+    else jb=m_cur[n].back();
+    Vertex_Key vkey(ja,jb,out[i]->JC(),NULL);
+    PS_Vertex *vtx(new PS_Vertex(vkey));
+    vtx->SetJA(vkey.p_a);
+    vtx->SetJB(vkey.p_b);
+    vtx->SetJC(vkey.p_c);
+#ifdef DEBUG__BG
+    msg_Debugging()<<"    "<<*vtx<<"\n";
+#endif
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  }\n";
+#endif
+}
+
+void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
+{
+  if (m_pmsinit) return;
+  m_pmsinit=1;
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"() {\n";
+#endif
+  std::map<size_t,double> mmin;
+  for (size_t n(2);n<m_n-2;++n) {
+    size_t oldsize(m_cur[n].size());
+    for (size_t j(0);j<oldsize;++j) {
+      size_t cid(m_cur[n][j]->CId());
+      size_t pid((cid&3)?(1<<m_n)-1-cid:cid);
+      double psmin(sqrt(cuts->Getscut(PSId(pid))));
+      double mass(m_cur[n][j]->Mass());
+      if ((cid&3)==1 || (cid&3)==2) mass=0.0;
+      for (size_t k(0);k<m_cur[n][j]->In().size();++k) {
+	mass=Max(mass,mmin[m_cur[n][j]->In()[k]->JA()->CId()]+
+		 mmin[m_cur[n][j]->In()[k]->JB()->CId()]);
+      }
+      if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
+      else mmin[cid]=Max(mmin[cid],mass);
+      if ((m_ecmode&4) && mass<rpa.gen.Ecms() &&
+	  mass>psmin && !IsEqual(mass,m_cur[n][j]->Mass()))
+	AddExtraCurrent(m_cur[n][j],n,mass,0.0);
+      if ((m_ecmode&2) && m_cur[n][j]->Mass()>m_chmass &&
+	  m_cur[n][j]->Width()>1.0e-6)
+	AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Mass(),0.0);
+      if ((m_ecmode&1) && psmin>m_chmass)
+	AddExtraCurrent(m_cur[n][j],n,psmin,0.0);
+    }
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"}\n";
+#endif
+}

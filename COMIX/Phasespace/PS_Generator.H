@@ -7,6 +7,8 @@
 #include <pthread.h> 
 #endif 
 
+namespace PHASIC { class Cut_Data; }
+
 namespace COMIX {
 
   class Process_Base;
@@ -49,7 +51,7 @@ namespace COMIX {
 
     size_t m_n, m_itmin, m_itmax;
 
-    int m_zmode;
+    int m_zmode, m_ecmode, m_pmsinit;
 
     double m_thmass, m_chmass;
 
@@ -70,7 +72,10 @@ namespace COMIX {
     void CalcJL();
 
     bool AddCurrent(Current_Base *const ref,const ATOOLS::Flavour &fl,
-		    const size_t &n,const int mode=0);
+		    const size_t &n,const int mode=0,
+		    const double &m=0.0,const double &w=0.0);
+    void AddExtraCurrent(Current_Base *const cur,const size_t &n,
+			 const double &m,const double &w);
 
   public:
     
@@ -82,6 +87,7 @@ namespace COMIX {
 
     // member functions
     bool Construct(Amplitude *const ampl);
+    void SetPrefMasses(PHASIC::Cut_Data *const cuts);
 
     bool Evaluate();
 
