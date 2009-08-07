@@ -14,7 +14,7 @@
 (me){
   ME_SIGNAL_GENERATOR Amegic;
   EVENT_GENERATION_MODE Weighted;
-  SCALE_SCHEME NLO{PPerp2(p[2]+p[3])+sqr(80.419)}{PPerp2(p[2]+p[3])+sqr(80.419)};
+  SCALES NLO{PPerp2(p[2]+p[3])+sqr(80.419)}{PPerp2(p[2]+p[3])+sqr(80.419)};
 }(me);
 (model){
   ORDER_ALPHAS 1; ALPHAS(MZ) 0.118;
