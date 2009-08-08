@@ -1,6 +1,7 @@
 #ifndef AHADIC_Tools_Splitting_Tools_H
 #define AHADIC_Tools_Splitting_Tools_H
 
+#include "AHADIC++/Tools/Splitting_Functions.H"
 #include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Dipole.H"
@@ -30,68 +31,18 @@ namespace AHADIC {
       total       = 3,
       gluon_split = 2,
       gluon_emit  = 1,
-      none        = 0
+      none        = 0,
+      flat        = -1
     };
   };
   PTOrder::code DefinePTOrder(const int & ptorder);
 
 
-  struct ZForm {
-    enum code {
-      fragmentation    = 30,
-      splitkernel_frag = 3,
-      splitkernel_flat = 2,
-      splitkernel      = 1,
-      flat             = 0
-    };
-  };
-  ZForm::code DefineZForm(const int & zform);
-
-
-
-
-  class Splitting_Functions {
-  private:
-    int    m_masstreatment;
-    double m_alpha,m_sigma,m_kappa;
-
-    double m_m1_2,m_m2_2,m_m3_2,m_Q2,m_y,m_viji,m_vijk,m_zp,m_zm,m_pipj;
-
-    double SelectZFromG2QQSplittingFunction(const double & zmin,const double & zmax);
-    double SelectZFromQ2QGSplittingFunction(const double & zmin,const double & zmax);
-    double SelectZFromQ2QGFragmentationFunction(const double & zmin,const double & zmax);
-
-    double WeightForG2QQSplittingFunction(const double & z,const double & kt2);
-    double WeightForQ2QGSplittingFunction(const double & z,const double & kt2);
-    double WeightForQ2QGFragmentationFunction(const double & z,const double & kt2);
-
-    double J(const double & z,const bool & glusplit);
-
-    double IntegratedFromQ2QGSplittingFunction(const double & zmin,const double & zmax);
-    double lambda(const double & x,const double & y,const double & z);
-  public:
-    Splitting_Functions(const int & masstreatment);
-    ~Splitting_Functions() {};
-    double SelectZ(const double & zmin,const double & zmax,
-		   const ZForm::code & zform,const bool & glusplit,const bool & leading=true);
-    double Weight(const double & kt2,const double & z,
-		  const ZForm::code & zform,const bool & glusplit,const bool & leading=true);
-    double Integrated(const double & zmin,const double & zmax,
-		      const ZForm::code & zform,const bool & glusplit);
-    void   SetScales(const double & m1_2,const double & m2_2,const double & m3_2,
-		     const double & Q2,const double & y,
-		     const double & viji,const double & vijk,
-		     const double & zp,const double & zm,const double & pipj) {
-      m_m1_2 = m1_2; m_m2_2 = m2_2; m_m3_2 = m3_2;
-      m_Q2 = Q2; m_y = y; m_viji = viji; m_vijk = vijk; 
-      m_zp = zp; m_zm = zm; m_pipj = pipj;
-    }
-
-  };
 
   class Splitting_Tools {
   private:
     leading::code         m_leading;
+    PTOrder::code         m_ptorder;
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
     bool                  m_fourquarks, m_analyse;
     int                   m_masstreatment;
@@ -104,43 +55,42 @@ namespace AHADIC {
     FlavDecayMap        * p_options;
 
     Proto_Particle   * p_spect, * p_split, * p_out1, * p_out2;
-    double             m_mmin_2, m_pt02, m_pt2min;
+    double             m_mmin_2, m_pt2max, m_pt2max_factor, m_pt02, m_pt2min;
 
     ATOOLS::Poincare   m_cms,m_zrot;
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
     double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
-    double             m_Q2,m_Q,m_Qt2,m_scale2_max,m_mass2;
-    double             m_scale2,m_z,m_phi,m_y,m_kt,m_kt2,m_s23;
+    double             m_Q2,m_Q,m_Qt2,m_kt2_max,m_kt2_min,m_mass2;
+    double             m_pt2,m_z,m_phi,m_y,m_kt,m_kt2,m_s23;
  
     ATOOLS::Flavour    m_flav;
     long int           m_tot,m_d,m_s,m_u;
 
     bool   ProduceKinematics(double & kt2,double & z,double & phi,
-			     ATOOLS::Flavour & flav,
-			     const ZForm::code & zform,
-			     const bool & vetodiquark);
+			     ATOOLS::Flavour & flav,const bool & vetodiquark);
     void   SelectFlavour(const double & maxmass,const bool & vetodiquark);
     bool   KinCheck(const double & kt2,const double & z);
     bool   ConstructKinematics(const bool glusplit);
-    double Scale2Max(const double & pt2max,const PTOrder::code & ptorder);
+    double KT2Max(const bool & first=false);
+    double KT2Min(const double & kt2max,const bool & glusplit);
     void   SetInfoTagsForOutgoings() const;
     void   AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
 			     const ATOOLS::Vec4D & q3);
    public:
-    Splitting_Tools(Strong_Coupling *,const leading::code &,const bool &);
+    Splitting_Tools(const leading::code &,const PTOrder::code &,const ZForm::code &,
+		    Strong_Coupling *,const bool &);
     ~Splitting_Tools();
 
-    void SetSpectatorAndSplitter(Dipole * dip);
-    bool PrepareKinematics(Dipole * dip1,const double & pt2max,
-			   const PTOrder::code & ptorder);
-    bool DetermineSplitting(Dipole * dip1,
-			    const ZForm::code & zform,
-			    const bool & vetodiquark);
-    void AftermathOfSplitting(Dipole * dip1);
+    double SetSpectatorAndSplitter(Dipole * dip);
+    double SwapSpectatorAndSplitter(Dipole * dip);
+    bool   PrepareKinematics(Dipole * dip1,const bool & first=false,const bool & enforce=false);
+    bool   DetermineSplitting(Dipole * dip1,const bool & vetodiquark=true);
+    bool   EnforcedSplitting(Dipole * dip);
+    void   AftermathOfSplitting(Dipole * dip1);
 
-    void SetOptions(FlavDecayMap *);
-    void UpdateSpectator();
-    void GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2) const;
+    void   SetOptions(FlavDecayMap *);
+    void   UpdateSpectator();
+    void   GetNewParticles(Proto_Particle *& out1,Proto_Particle *& out2) const;
 
     const double & PT2() const   { return m_kt2; }
     const double & PT() const    { return m_kt; }

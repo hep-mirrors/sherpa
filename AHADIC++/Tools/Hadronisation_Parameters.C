@@ -73,6 +73,10 @@ void Hadronisation_Parameters::Init(string dir,string file)
     m_leading = leading::none;
     break;
   }
+
+  m_ptorder = DefinePTOrder(int(m_parametermap[string("PT_Ordering")]));
+  m_zform   = DefineZForm(int(m_parametermap[string("Z_Form")]));
+
   switch (int(m_parametermap[string("asform")])) {
   case 8:
     m_asform = asform::GDH_inspired;
@@ -89,7 +93,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
     break;
   }
   p_coupling          = new Strong_Coupling(m_asform);
-  p_splitter          = new Dipole_Splitter(p_coupling,m_leading,ana);
+  p_splitter          = new Dipole_Splitter(m_leading,m_ptorder,m_zform,p_coupling,ana);
 
   p_softclusters      = new Soft_Cluster_Handler(ana);
 }
@@ -122,6 +126,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("PT^2_MIN",0.09);
   m_parametermap[string("pt02")]               = 
     dataread.GetValue<double>("PT^2_0",9.7738e-01);
+  m_parametermap[string("ptmax")]              = 
+    dataread.GetValue<double>("PT_MAX",4.);
   m_parametermap[string("ptmax_factor")]       = 
     dataread.GetValue<double>("PT_MAX_FACTOR",8.3145e-01);
   m_parametermap[string("pt_exponent")]        = 
@@ -268,13 +274,16 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,ATOOLS::Vec4D * moms,co
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
+    if (!success) std::cout<<METHOD<<" failed for ZeroThem(0,"<<n<<")."<<std::endl;
     success = success && stretcher.MassThem(0,n,moms,masses);
+    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<")."<<std::endl;
     if (boost) {
       for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
     }
   }
   else {
     success = stretcher.MassThem(0,n,moms,masses,1.e-10);
+    if (!success) std::cout<<METHOD<<" failed for MassThem(0,"<<n<<"), 2nd."<<std::endl;
   }
   if (!success && msg->LevelIsDebugging()) {
     msg_Debugging()<<"Error in "<<METHOD<<" : "<<std::endl

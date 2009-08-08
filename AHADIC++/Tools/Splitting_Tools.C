@@ -26,219 +26,29 @@ PTOrder::code AHADIC::DefinePTOrder(const int & ptorder) {
   return PTOrder::none;
 }
 
-ZForm::code AHADIC::DefineZForm(const int & zform) {
-  switch (zform) {
-  case 30:
-    return ZForm::fragmentation;
-  case 3:
-    return ZForm::splitkernel_frag;
-  case 2:
-    return ZForm::splitkernel_flat;
-  case 1:
-    return ZForm::splitkernel;
-  case 0:
-  default:
-    break;
-  }
-  return ZForm::flat;
-}
 
-
-Splitting_Functions::Splitting_Functions(const int & masstreatment) :
-  m_masstreatment(masstreatment),
-  m_alpha(2. /*hadpars.Get(std::string(""))*/), 
-  m_sigma(hadpars.Get(std::string("pt02"))), 
-  m_kappa(hadpars.Get(std::string("P_qg_Exponent")))
-{
-}
-
-double Splitting_Functions::SelectZ(const double & zmin,const double & zmax,
-				    const ZForm::code & zform,const bool & glusplit,
-				    const bool & leading) {
-  //msg_Out()<<"In "<<METHOD<<" with glusplit = "<<glusplit<<", leading = "<<leading<<"."<<std::endl;
-  if (glusplit) {
-    switch (zform) {
-    case ZForm::fragmentation:
-    case ZForm::splitkernel_frag:
-    case ZForm::splitkernel_flat:
-    case ZForm::splitkernel:
-      if (leading) return SelectZFromG2QQSplittingFunction(zmin,zmax);
-      return zmin + ran.Get()*(zmax-zmin);
-    case ZForm::flat:
-    default:
-      break;
-    }
-  }
-  else {
-    switch (zform) {
-    case ZForm::fragmentation:
-      return SelectZFromQ2QGFragmentationFunction(zmin,zmax);
-    case ZForm::splitkernel_frag:
-      if (leading) return SelectZFromQ2QGSplittingFunction(zmin,zmax);
-      return SelectZFromQ2QGFragmentationFunction(zmin,zmax);
-    case ZForm::splitkernel_flat:
-      if (leading) return SelectZFromQ2QGSplittingFunction(zmin,zmax);
-      return zmin + ran.Get()*(zmax-zmin);
-    case ZForm::splitkernel:
-      return SelectZFromQ2QGSplittingFunction(zmin,zmax);
-    case ZForm::flat:
-    default:
-      break;
-    }
-  }
-  return zmin + ran.Get()*(zmax-zmin);
-}
-
-double Splitting_Functions::
-SelectZFromG2QQSplittingFunction(const double & zmin,const double & zmax) {  
-  return zmin+(zmax-zmin)*ran.Get();
-}
-
-double Splitting_Functions::
-SelectZFromQ2QGSplittingFunction(const double & zmin,const double & zmax) {
-  if (m_kappa==1.) {
-    double z(1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran.Get()));
-    //std::cout<<METHOD<<" yields z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]."<<std::endl;
-    return z;
-  }
-  double rn = ran.Get();
-  return 1.-pow(rn*pow(1.-zmax,1.-m_kappa)+(1.-rn)*pow(1.-zmin,1.-m_kappa),1./(1.-m_kappa));
-}
-
-double Splitting_Functions::
-SelectZFromQ2QGFragmentationFunction(const double & zmin,const double & zmax) {
-  return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran.Get());
-}
-
-
-double Splitting_Functions::Weight(const double & scale2,const double & z,
-				   const ZForm::code & zform,const bool & glusplit,
-				   const bool & leading) {
-  if (glusplit) {
-    switch (zform) {
-    case ZForm::fragmentation:
-    case ZForm::splitkernel_frag:
-    case ZForm::splitkernel_flat:
-      if (leading) return J(z,glusplit)*WeightForG2QQSplittingFunction(scale2,z);
-      break;
-    case ZForm::splitkernel:
-      return J(z,glusplit)*WeightForG2QQSplittingFunction(scale2,z);
-    case ZForm::flat:
-    default:
-      break;
-    }
-  }
-  else {
-    switch (zform) {
-    case ZForm::fragmentation:
-      return J(z,glusplit)*WeightForQ2QGFragmentationFunction(scale2,z);
-    case ZForm::splitkernel_frag:
-      if (leading) return J(z,glusplit)*WeightForQ2QGSplittingFunction(scale2,z);
-      else return J(z,glusplit)*WeightForQ2QGFragmentationFunction(scale2,z);
-    case ZForm::splitkernel_flat:
-      if (leading)  return J(z,glusplit)*WeightForQ2QGSplittingFunction(scale2,z);
-      break;
-    case ZForm::splitkernel:
-      return J(z,glusplit)*WeightForQ2QGSplittingFunction(scale2,z);
-    case ZForm::flat:
-    default:
-      break;
-    }
-  }
-  return J(z,glusplit);
-}
-
-double Splitting_Functions::
-WeightForG2QQSplittingFunction(const double & scale2,const double & z) {  
-  double Qt2 = m_Q2-m_m1_2-m_m2_2-m_m3_2;
-  double wt  = (1.-2.*(z*(1.-z)-m_zp*m_zm))/m_vijk;
-  wt *= sqr(Qt2)/(Qt2+(m_m2_2+m_m3_2)/m_y)/sqrt(lambda(m_Q2,0,m_m1_2));
-  return wt;
-}
-
-
-double Splitting_Functions::
-WeightForQ2QGSplittingFunction(const double & scale2,const double & z) {
-  double vtijk = sqrt(lambda(m_Q2,m_m3_2,m_m1_2))/(m_Q2-m_m3_2-m_m1_2);
-  double wt    = Max(0.,1./(1.-z+z*m_y) - vtijk/m_vijk * (1.+z+m_m3_2/m_pipj)/2.);
-  return pow((1.-z)*wt,m_kappa);
-}
-
-double Splitting_Functions::
-WeightForQ2QGFragmentationFunction(const double & scale2,const double & z) {
-  return pow(1.-z,m_kappa)*pow(z,m_alpha) * exp(-scale2/(m_sigma*(1.-z)));
-}
-
-double Splitting_Functions::J(const double & z,const bool & glusplit) {
-  double term(sqr(m_Q2-m_m1_2-m_m3_2)), mij2(m_m3_2);
-  if (glusplit) mij2 = 0.;
-  return (1.-m_y)*term/((m_Q2-m_m1_2-m_m3_2+(m_m3_2-mij2)/m_y)*sqrt(lambda(m_Q2,mij2,m_m1_2)));				    
-}
-
-double Splitting_Functions::lambda(const double & x,const double & y,const double & z) {
-  return x*x+y*y+z*z-2.*(x*y+y*z+z*z);
-}
-
-double Splitting_Functions::Integrated(const double & zmin,const double & zmax,
-				       const ZForm::code & zform,const bool & glusplit) {
-  if (!glusplit) {
-    switch (zform) {
-    case ZForm::fragmentation:
-    case ZForm::splitkernel_frag:
-    case ZForm::splitkernel_flat:
-    case ZForm::splitkernel:
-      return IntegratedFromQ2QGSplittingFunction(zmin,zmax);
-    case ZForm::flat:
-    default:
-      break;
-    }
-  }
-  return zmax-zmin;
-}
-
-double Splitting_Functions::
-IntegratedFromQ2QGSplittingFunction(const double & zmin,const double & zmax) {
-  double integrated(zmax-zmin);
-  if (m_kappa==1.) 
-    integrated = log((1.-zmin)/(1.-zmax));
-  else 
-    integrated = (pow(1.-zmin,1.-m_kappa)-pow(1.-zmax,1.-m_kappa))/(1.-m_kappa);
-  return integrated;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Splitting_Tools::Splitting_Tools(Strong_Coupling * as,const leading::code & lead,
-				 const bool & analyse) :
-  m_leading(lead), 
+Splitting_Tools::Splitting_Tools(const leading::code & lead,const PTOrder::code & ptorder,
+				 const ZForm::code & zform,
+				 Strong_Coupling * as,const bool & analyse) :
+  m_leading(lead), m_ptorder(ptorder),
   m_fourquarks(false), m_analyse(true),
   m_masstreatment(int(hadpars.Get(std::string("Mass_treatment")))), 
   m_lastpt2(-1.), 
-  p_as(as), p_kernels(new Splitting_Functions(m_masstreatment)), p_options(NULL),
+  p_as(as), p_kernels(new Splitting_Functions(zform,m_masstreatment)), p_options(NULL),
   p_spect(NULL), p_split(NULL), p_out1(NULL), p_out2(NULL),
   m_mmin_2(sqr(hadpars.GetConstituents()->MinMass())),
+  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), 
+  m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
   m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
   m_pt2min(dabs(hadpars.Get(std::string("pt2min")))),
   m_tot(0),m_d(0),m_s(0),m_u(0)
 { 
   if (m_analyse) {
-    m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,10.,200);
-    m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,10.,200);
-    m_histograms[std::string("PT_Gluon_Primary")]        = new Histogram(0,0.,25.,100);
-    m_histograms[std::string("PT2_Gluon_Splitting")]     = new Histogram(0,0.,4.,100);
-    m_histograms[std::string("PT2_Gluon_Emission")]      = new Histogram(0,0.,4.,100);
+    m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,100.,2000);
+    m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,100.,2000);
+    m_histograms[std::string("PT_Gluon_Primary")]        = new Histogram(0,0.,250.,1000);
+    m_histograms[std::string("PT2_Gluon_Splitting")]     = new Histogram(0,0.,10000.,1000);
+    m_histograms[std::string("PT2_Gluon_Emission")]      = new Histogram(0,0.,10000.,1000);
     m_histograms[std::string("Z_Gluon_Splitting")]       = new Histogram(0,0.,1.,50);
     m_histograms[std::string("Z_Gluon_Emission")]        = new Histogram(0,0.,1.,50);
     m_histograms[std::string("Z_Gluon_Primary")]         = new Histogram(0,0.,1.,50);
@@ -271,7 +81,10 @@ Splitting_Tools::~Splitting_Tools() {
 }
 
 
-void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
+
+
+
+double Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
   p_split=p_spect=NULL;
   if (dip->Triplet()->m_flav.IsGluon() && 
       (dip->AntiTriplet()->m_flav.IsQuark() ||
@@ -314,37 +127,46 @@ void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
 	dip->SetSwitched(false);
       }
     }
-    else if ((dip->Triplet()->m_info=='L' && 
-	      dip->AntiTriplet()->m_info!='L')   ||
-	     dip->Triplet()->m_info=='B')  {
+    else if ((dip->Triplet()->m_info=='L' || dip->Triplet()->m_info=='B') && 
+	     dip->AntiTriplet()->m_info!='L') {
       // asymmetric case: antitriplet splits (non-leading with leading/beam remnant spectator)
       p_split = dip->AntiTriplet(); 
       p_spect = dip->Triplet();
       dip->SetSwitched(false);
     }
-    else if ((dip->Triplet()->m_info!='L' && 
-	      dip->AntiTriplet()->m_info=='L')   ||
-	     dip->AntiTriplet()->m_info=='B') {
+    else if (dip->Triplet()->m_info!='L' && 
+	     (dip->AntiTriplet()->m_info=='L' || dip->AntiTriplet()->m_info=='B')) {
       // asymmetric case: antitriplet splits (non-leading with leading spectator)
       p_split = dip->Triplet(); 
       p_spect = dip->AntiTriplet();
       dip->SetSwitched(true);
     }	
   }
-  //if (p_split==NULL || p_spect==NULL) 
-  //msg_Out()<<METHOD<<" : gotcha!"<<std::endl
-  //	   <<(*dip->Triplet())<<(*dip->AntiTriplet())<<std::endl;
   if (p_split->m_kt2max<=0.) 
     p_split->m_kt2max = p_spect->m_kt2max = ATOOLS::Max(p_split->m_kt2max,p_spect->m_kt2max);
+
+  return p_split->m_kt2max;
 }
 
-bool Splitting_Tools::PrepareKinematics(Dipole * dip,const double & pt2max,
-					const PTOrder::code & ptorder) {
+double Splitting_Tools::SwapSpectatorAndSplitter(Dipole * dip) {
+  Proto_Particle * help(p_split); p_split = p_spect; p_spect = help;
+  if (dip->IsSwitched()) dip->SetSwitched(false);
+                    else dip->SetSwitched(true); 
+  if (p_split->m_kt2max<=0.) 
+    p_split->m_kt2max = p_spect->m_kt2max = ATOOLS::Max(p_split->m_kt2max,p_spect->m_kt2max);
+
+  return p_split->m_kt2max;
+}
+
+
+bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
   if (dip->MassBar2()<m_mmin_2) {
-    if (msg->LevelIsTracking()) {
-      msg_Out()<<"Warning in "<<METHOD<<":"<<std::endl
-	       <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
-      (*dip).Output();
+    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
+      if (msg->LevelIsTracking()) {
+	msg_Out()<<"Warning in "<<METHOD<<":"<<std::endl
+		 <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
+	(*dip).Output();
+      }
     }
     return false;
   }
@@ -364,26 +186,20 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const double & pt2max,
 
   if (m_Q-m_m1-2.*sqrt(m_mmin_2)<0.) return false;
   m_Qt2            = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
-  if (m_Qt2<0.) return false;
-
-  m_scale2_max = Scale2Max(pt2max,ptorder);
-
-  if (m_scale2_max==0.) {
-    std::cout<<"___ "<<METHOD<<" : pt2(max) = "<<m_scale2_max
-	     <<" from "<<m_mom1.PPerp2(m_mom3)<<","<<std::endl
-	     <<"___ "<<m_mom1<<" "<<m_mom3<<"."<<std::endl;
+  if (m_Qt2<0.) {
+    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
+      msg_Tracking()<<"___ "<<METHOD<<" yields Qt2 = "<<m_Qt2<<"."<<std::endl;
+    }  
     return false;
   }
+  m_kt2_max = KT2Max(first);
+  m_kt2_min = KT2Min(m_kt2_max,p_split->m_flav.IsGluon());
 
-  if (m_scale2_max<0.) {
-    msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
-		  <<"   No physical splitting possible for pt2max = "
-		  <<pt2max<<" m_scale2_max = "<<m_scale2_max<<std::endl;
-    return false;
+
+  if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
+    msg_Tracking()<<"___ "<<METHOD<<": set up dipole for splitting, "
+		  <<"splitter = "<<p_split->m_flav<<"."<<std::endl;
   }
-  msg_Tracking()<<"___ "<<METHOD<<": set up dipole for splitting, "
-		<<"splitter = "<<p_split->m_flav<<"."<<std::endl;
-
   m_cms  = Poincare(m_mom0);
   m_cms.Boost(m_mom0);
   m_cms.Boost(m_mom1);
@@ -396,16 +212,22 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const double & pt2max,
   return true;
 }
 
-bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const ZForm::code & zform,
-					 const bool & vetodiquark) {
-  msg_Tracking()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_scale2_max<<"."<<std::endl;
+
+
+
+bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & vetodiquark) {
+  if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
+    msg_Tracking()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_kt2_max<<"."<<std::endl;
+  }
   int  trials(0);
   m_z = -1.;
   m_flav = Flavour(kf_none);
   do {
     if (trials>1000 || 
-	!ProduceKinematics(m_scale2,m_z,m_phi,m_flav,zform,vetodiquark)) {
-      msg_Tracking()<<"___ "<<METHOD<<"(out): no splitting determined, trials = "<<trials<<"."<<std::endl;
+	!ProduceKinematics(m_pt2,m_z,m_phi,m_flav,vetodiquark)) {
+      if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
+	msg_Tracking()<<"___ "<<METHOD<<"(out): no splitting determined, trials = "<<trials<<"."<<std::endl;
+      } 
       return false;
     }
     trials++;
@@ -414,6 +236,22 @@ bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const ZForm::code & zform
   msg_Tracking()<<"___ "<<METHOD<<"(out): splitting succeeded."<<std::endl;
   return true;
 }
+
+
+bool Splitting_Tools::EnforcedSplitting(Dipole * dip) {
+  m_kt2 = m_mmin_2;
+  m_z   = 0.5;
+  SelectFlavour(m_kt2,true);
+  
+  if (!KinCheck(m_kt2,m_z) || !ConstructKinematics(dip)) {
+    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
+      msg_Tracking()<<METHOD<<" did not work out."<<std::endl;
+    }
+    return false;
+  }
+  return true;
+}
+
 
 void Splitting_Tools::SetInfoTagsForOutgoings() const {
   switch (m_leading) {
@@ -440,6 +278,9 @@ void Splitting_Tools::SetInfoTagsForOutgoings() const {
 }
 
 
+
+
+
 void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   if (p_split->m_flav.IsGluon()) {
     p_spect->m_mom    = m_mom1;
@@ -448,7 +289,7 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
     SetInfoTagsForOutgoings();
     p_out1->p_partner = p_out2;
     p_out2->p_partner = p_out1;
-    p_spect->m_kt2max = p_out1->m_kt2max = p_out2->m_kt2max = m_lastpt2;
+    p_out1->m_kt2max = p_out2->m_kt2max = m_lastpt2;
     delete p_split;
     if (false && !p_spect->m_flav.IsGluon()) {
       if ((p_spect->m_flav.IsQuark() && !p_spect->m_flav.IsAnti()) ||
@@ -478,94 +319,129 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   }
 }
 
-double Splitting_Tools::Scale2Max(const double & pt2max,const PTOrder::code & ptorder) {
-  double scale2(p_split->m_flav.IsGluon()?m_Qt2:m_Qt2/4.);
-  if (p_split->m_info=='B') scale2 = p_split->m_mom.PPerp2();
-  if (pt2max>0.) scale2 = ATOOLS::Min(scale2,pt2max);
-  if ((ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
-      (ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
-      (ptorder==PTOrder::total)) {
-    scale2 = ATOOLS::Min(scale2,p_split->m_kt2max);
-  }
-  msg_Tracking()<<"___ "<<METHOD<<" yields pt^2(max) = "<<scale2<<"."<<std::endl;
-  return scale2;
-}
 
-bool Splitting_Tools::ProduceKinematics(double & scale2,double & z,double & phi,
+
+
+bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double & phi_test,
 					ATOOLS::Flavour & flav,
-					const ZForm::code & zform,
 					const bool & vetodiquark) {
-  double pt2min(m_pt2min);
-  if (m_m3_2>0.) pt2min *= m_pt2min/m_m3_2;
-  if (m_m1_2>0.) pt2min *= m_pt2min/m_m1_2;
-  if ((pt2min>m_scale2_max) && (pt2min<m_Qt2/4.)) m_scale2_max = m_Qt2/4.;
-  if (m_masstreatment==3) { pt2min = (m_Qt2>4.*m_mmin_2)?m_mmin_2+4.*pt2min:pt2min; }
-  double disc(4.*pt2min/m_Qt2); 
+  double disc(4.*m_kt2_min/m_Qt2), discp(disc); 
   if (disc<0. || disc>1.) {
     msg_Tracking()<<"___ "<<METHOD<<": Cannot split object with reduced mass = "
 		  <<sqrt(m_Qt2)<<"."<<std::endl;
     return false;
   }
   double deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
-
-  scale2 = -1.;
+  double deltazp(deltaz), zminp(zmin), zmaxp(zmax);
+  kt2_test = -1.;
   int  trials(0);
-  msg_Tracking()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<pt2min<<", "<<m_scale2_max<<"] "
-  		<<"and z = "<<z<<" for "<<m_flav<<". "
+  msg_Tracking()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<m_kt2_min<<", "<<m_kt2_max<<"] "
+  		<<"and z = "<<z_test<<" for "<<m_flav<<". "
   		<<"Glusplit = "<<p_split->m_flav.IsGluon()<<"."<<std::endl;
-  while ((scale2<0. || z<0.) && trials<1000) {
+  while ((kt2_test<0. || z_test<0.) && trials<1000) {
     trials++;
-    scale2 = p_as->SelectPT(m_scale2_max,pt2min);
+    kt2_test = p_as->SelectPT(m_kt2_max,m_kt2_min);
     if (p_split->m_flav.IsGluon()) {
       if (m_masstreatment==3) {
-	SelectFlavour(scale2,vetodiquark);
+	SelectFlavour(kt2_test,vetodiquark);
 	disc = m_m2_2/m_Qt2;
 	if (disc<0. || disc>1.) continue;
-	deltaz = sqrt(1.-disc);
-	zmin = (1.-deltaz)/2.;
-	zmax = (1.+deltaz)/2.;
       }
       else {
 	SelectFlavour(m_Qt2/4.,vetodiquark);
       }
     }
-    z = p_kernels->SelectZ(zmin,zmax,zform,p_split->m_flav.IsGluon(),p_split->m_info=='L');
-    //msg_Tracking()<<"___ Test emission with kt2 = "<<scale2<<", z = "<<z<<"."<<std::endl;
-    if (z<0.) continue;
+    z_test = p_kernels->SelectZ(zmin,zmax,p_split->m_flav.IsGluon(),p_split->m_info=='L');
 
-    if (!KinCheck(scale2,z)) {
-      scale2 = -1;
+    if (true) {
+      discp   = 4.*kt2_test/m_Qt2;
+      deltazp = sqrt(1.-disc);
+      zminp   = (1.-deltaz)/2.;
+      zmaxp   = (1.+deltaz)/2.;
+      if (z_test<zminp || z_test>zmaxp) {
+	kt2_test = -1.;
+	continue;
+      }
+    }
+
+    if (!KinCheck(kt2_test,z_test)) {
+      kt2_test = -1;
       continue;
     }
-    if (p_kernels->Weight(scale2,z,zform,p_split->m_flav.IsGluon(),
+    if (p_kernels->Weight(kt2_test,z_test,p_split->m_flav.IsGluon(),
 			  p_split->m_info=='L' && p_spect->m_info!='L')<ran.Get()) {
-      scale2 = -1;
+      kt2_test = -1;
       continue;
     }
   }
-  msg_Tracking()<<"___ "<<METHOD<<" : exit inner loop with scale2 = "<<scale2<<" "
-		<<"and z = "<<z<<" for "<<m_flav<<"."<<std::endl;
+  msg_Tracking()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<kt2_test<<" "
+		<<"and z = "<<z_test<<" for "<<m_flav<<"."<<std::endl;
 
   //if (p_split->m_flav.IsGluon()) {
   // msg_Out()<<"Out of "<<METHOD<<"(veto = "<<vetodiquark<<", mass = "<<m_masstreatment<<"): "
-  //	     <<"Flavour = "<<m_flav<<" for pt^2 = "<<scale2<<",    Qt^2 = "<<m_Qt2<<"."<<std::endl;
+  //	     <<"Flavour = "<<m_flav<<" for pt^2 = "<<kt2<<",    Qt^2 = "<<m_Qt2<<"."<<std::endl;
   //}
   //std::cout<<"Out of "<<METHOD<<" with "<<trials<<" trials."<<std::endl;
-  phi = 2.*M_PI*ran.Get();
+  phi_test = 2.*M_PI*ran.Get();
   return (trials<1000);
 }
 
-bool Splitting_Tools::KinCheck(const double & scale2,const double & z) {
+double Splitting_Tools::KT2Max(const bool & first) {
+  double kt2max = Min((p_split->m_flav.IsGluon()?m_Qt2:m_Qt2/4.),m_pt2max);
+  if (m_ptorder==PTOrder::flat) return kt2max;
+
+  if (!first &&
+      ((m_ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
+       (m_ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
+       (m_ptorder==PTOrder::total))) {
+    kt2max    = p_split->m_kt2max;
+    if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon() && m_m1_2>1.e-6) 
+      kt2max *= m_pt2min/m_m1_2;
+  }
+  else {
+    if (p_spect->m_info=='B') {
+      if (p_split->m_info=='B') 
+	kt2max = m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2());
+      else 
+	kt2max = m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min);
+    }
+    else {
+      kt2max = Min(m_Qt2/4.,p_spect->m_mom.PPerp2(p_split->m_mom));
+      if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon() && m_m1_2>1.e-6) 
+	kt2max *= m_pt2min/Max(m_pt2min,m_m1_2);
+      //kt2max = Max(m_pt2max,sqrt(m_pt2max*kt2max));
+    }
+  }
+    
+  msg_Tracking()<<METHOD<<"(first = "<<first<<") yields kt2_max = "<<kt2max<<"("<<sqr(kt2max)/m_pt2max<<")"
+		<<" for:"<<std::endl<<(*p_split)<<(*p_spect);
+  return kt2max;
+}
+    
+
+
+
+double Splitting_Tools::KT2Min(const double & kt2max,const bool & glusplit) {
+  double kt2min(m_pt2min);
+  if (m_m3_2>0.) kt2min *= m_pt2min/m_m3_2;
+  if (m_m1_2>0.) kt2min *= m_pt2min/m_m1_2;
+  if ((kt2min>kt2max) && (kt2min<m_Qt2/4.)) kt2min = 0.;
+  if (glusplit) kt2min = Max(kt2min,m_mmin_2);
+  return kt2min;
+}
+
+
+bool Splitting_Tools::KinCheck(const double & kt2_test,const double & z_test) {
   //double mu1(m_m1_2/m_Q2),mu2(m_m2_2/m_Q2),mu3(m_m3_2/m_Q2);
   if (m_masstreatment==3 && p_split->m_flav.IsGluon()) {
-    m_s23 = scale2;
-    m_kt2 = m_Qt2*m_s23-(1.-m_z)/m_z*m_m2_2-m_z/(1.-m_z)*m_m3_2;
+    m_s23 = kt2_test;
+    m_kt2 = m_Qt2*m_s23-(1.-z_test)/z_test*m_m2_2-z_test/(1.-z_test)*m_m3_2;
     if (m_kt2<0.0) return false;
     m_y   = (m_s23-m_m2_2-m_m3_2)/m_Qt2;
   }
   else { 
-    m_kt2 = m_scale2;
-    m_y   = (scale2 - sqr(1.-z)*m_m2_2 - sqr(z)*m_m3_2)/(z*(1.-z)*m_Qt2);
+    m_kt2 = kt2_test;
+    m_y   = (kt2_test - sqr(1.-z_test)*m_m2_2 - sqr(z_test)*m_m3_2)/(z_test*(1.-z_test)*m_Qt2);
     m_s23 = m_y*m_Qt2+m_m2_2+m_m3_2;
     if (m_s23<0.0) return false;
     if (m_masstreatment==3 && p_split->m_flav.IsGluon()) {
@@ -581,7 +457,7 @@ bool Splitting_Tools::KinCheck(const double & scale2,const double & z) {
   double frac = (2.*m_m3_2+m_Qt2*m_y)/(2.*(m_m3_2+m_m2_2+m_Qt2*m_y));
   double zm   = frac*(1.-viji*vijk);
   double zp   = frac*(1.+viji*vijk);
-  if (z<zm || z>zp) return false;
+  if (z_test<zm || z_test>zp) return false;
 
   p_kernels->SetScales(m_m1_2,m_m2_2,m_m3_2,m_Q2,m_y,
 		       viji,vijk,zm,zp,m_y*m_Qt2/2.);
@@ -645,7 +521,7 @@ void Splitting_Tools::SelectFlavour(const double & maxmass,const bool & vetodiqu
 bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
   msg_Tracking()<<"___ "<<METHOD<<"(in) for kt^2 = "<<m_kt2<<", z = "<<m_z<<"."<<std::endl;
   if (IsZero(m_Qt2))  
-    msg_Error()<<"Warning in "<<METHOD<<": Qt^2 = "<<m_Qt2<<" for kt^2 = "<<m_scale2<<"."<<std::endl;
+    msg_Error()<<"Warning in "<<METHOD<<": Qt^2 = "<<m_Qt2<<" for kt^2 = "<<m_pt2<<"."<<std::endl;
 
   m_lastpt2 = m_kt2;
 
@@ -808,34 +684,35 @@ void Splitting_Tools::AnalyseKinematics(const ATOOLS::Vec4D & q1,
   }
 }
 
-/*
-void Splitting_Tools::AnalyseClusterSplitting(Cluster * cluster) {
-  Cluster * left(cluster->GetLeft()), * right(cluster->GetRight());
-  Histogram * histo;
-  histo = (m_histograms.find(std::string("Masses")))->second;
-  histo->Insert(left->Mass());
-  histo->Insert(right->Mass());
-  
-  double Eq    = left->GetAnti()->m_mom[0];
-  double Eqbar = right->GetTrip()->m_mom[0];
-  histo = (m_histograms.find(std::string("EQ")))->second;
-  histo->Insert(Eq);
-  histo->Insert(Eqbar);
-  double Q     = cluster->Mass();
-  histo = (m_histograms.find(std::string("XQ")))->second;
-  histo->Insert(Eq/Q);
-  histo->Insert(Eqbar/Q);
-  double zq = 
-    (left->GetTrip()->m_mom*left->GetAnti()->m_mom)/
-    (left->GetTrip()->m_mom*right->GetAnti()->m_mom);
-  double zqbar = 
-    (right->GetTrip()->m_mom*right->GetAnti()->m_mom)/
-    (left->GetTrip()->m_mom*right->GetAnti()->m_mom);
-  histo = (m_histograms.find(std::string("ZQ")))->second;
-  histo->Insert(zq);
-  histo->Insert(zqbar);
-}
 
+/*
+double Gluon_Decayer::PT2Max(Dipole * dip) const {
+  double pt2max(Min(Min(dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom),
+			dip->AntiTriplet()->m_mom.PPerp2(dip->Triplet()->m_mom)),
+		    dabs((dip->Triplet()->m_mom-dip->AntiTriplet()->m_mom).Abs2())));
+  if (IsZero(pt2max)) pt2max = dip->MassBar2();
+  if (dip->Triplet()->m_info=='B' && dip->AntiTriplet()->m_info!='B') {
+    if (dip->AntiTriplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
+    else pt2max = Min(pt2max,dip->AntiTriplet()->m_mom.PPerp2());
+  }
+  else if (dip->AntiTriplet()->m_info=='B' && dip->Triplet()->m_info!='B') {
+    if (dip->Triplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
+    else pt2max = Min(pt2max,dip->Triplet()->m_mom.PPerp2());
+  }
+  else if (dip->AntiTriplet()->m_info=='B' && dip->Triplet()->m_info=='B') {
+    pt2max = Min(pt2max,sqrt(dip->Triplet()->m_mom.PPerp2()*dip->AntiTriplet()->m_mom.PPerp2()));
+  }
+  if (pt2max>m_pt2max) {
+    msg_Tracking()<<"Unusually large pt2max in "<<METHOD<<" for : "<<std::endl;
+    if (msg_LevelIsTracking()) dip->Output();
+    msg_Tracking()<<"   pt^2 = "<<dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom)
+		  <<" vs. pt^2 = "<<dip->AntiTriplet()->m_mom.PPerp2(dip->Triplet()->m_mom)
+		  <<" vs. m^2 = "<<(dip->Triplet()->m_mom-dip->AntiTriplet()->m_mom).Abs2()
+		  <<" --> "<<(m_pt2max_factor*pt2max)<<"."<<std::endl;
+    pt2max = m_pt2max;
+  }
+  return m_pt2max_factor * pt2max;
+}
 */
 
 

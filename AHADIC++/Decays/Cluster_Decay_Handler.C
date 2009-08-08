@@ -37,7 +37,10 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       msg_Error()<<"   Will continue and hope for the best."<<std::endl;
       return -1;
     }
-   if (p_clus->TestDecay(cluster)) {
+    msg_Tracking()<<"+++ Test cluster ["
+		  <<cluster->GetTrip()->m_flav<<"("<<cluster->GetTrip()->m_info<<"), "
+		  <<cluster->GetAnti()->m_flav<<"("<<cluster->GetAnti()->m_info<<")]."<<std::endl;
+    if (p_clus->TestDecay(cluster)) {
       clist.empty();
       clist.push_back(cluster->GetLeft());
       clist.push_back(cluster->GetRight());
@@ -58,7 +61,7 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       }
     }
     else {
-      if (!p_softclusters->EnforcedDecay(cluster,blob)) {
+      if (!p_softclusters->EnforcedDecay(cluster,blob,true)) {
 	msg_Tracking()<<"  no decay."<<std::endl
 		      <<"++++ TestDecay did not work out, will return -1."<<std::endl;
 	return -1;

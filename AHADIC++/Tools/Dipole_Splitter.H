@@ -12,18 +12,17 @@
 namespace AHADIC {
   class Dipole_Splitter {
   private:
-    Splitting_Tools  * p_tools;
-    PTOrder::code      m_ptorder;
     ZForm::code        m_zform;
+    Splitting_Tools  * p_tools;
     bool               m_analyse;
     double             m_mmin_2;
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool EmitGluon(Dipole * dip1,Dipole *& dip2,const double pt2max);
+    bool EmitGluon(Dipole * dip1,Dipole *& dip2);
     bool SelectOrder(Dipole *& dip1,Dipole *& dip2);
     bool Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2);
-    
+    bool EnforceSplit(Dipole * dip1,Dipole * dip2);
 
     bool DetermineSplitting(const bool glusplit);
 
@@ -31,14 +30,14 @@ namespace AHADIC {
     void AnalyseKinematics(const ATOOLS::Vec4D,const ATOOLS::Vec4D,
 			   const ATOOLS::Vec4D,const bool=true);
   public:
-    Dipole_Splitter(Strong_Coupling *,const leading::code & lead,
-		    const bool & analyse);
+    Dipole_Splitter(const leading::code & lead,const PTOrder::code & ptorder,
+		    const ZForm::code & zform,
+		    Strong_Coupling *,const bool & analyse);
     ~Dipole_Splitter();
 
-    bool SplitCluster(Cluster * clu,const double pt2max=-1.);
-    bool EnforceSplit(Cluster * clu);
-    bool SplitDipole(Dipole * dip,const double & pt2max=-1.,
-		     const bool & vetodiquark=false);
+    bool SplitCluster(Cluster * clu);
+    bool EnforceSplit(Cluster * clu) { return false; }
+    bool SplitDipole(Dipole * dip,const bool & first,const bool & vetodiquark=false);
 
     void SetOptions(FlavDecayMap *);
     void UpdateSpectator();

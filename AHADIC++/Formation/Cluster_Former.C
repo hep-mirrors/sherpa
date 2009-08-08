@@ -22,14 +22,6 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
 	     <<"pps ("<<(*pit1)<<"/"<<(*pit2)<<") from "<<METHOD<<"."<<std::endl;
 #endif
     clout->push_back(cluster);
-    (*pit1)->m_kt2max = (*pit2)->m_kt2max = ATOOLS::Max((*pit1)->m_kt2max,(*pit2)->m_kt2max);
-    if (IsZero((*pit1)->m_kt2max)) 
-      (*pit1)->m_kt2max = (*pit2)->m_kt2max = 
-	cluster->GetTrip()->m_mom.PPerp2(cluster->GetAnti()->m_mom);
-    if (IsZero((*pit1)->m_kt2max)) 
-      (*pit1)->m_kt2max = (*pit2)->m_kt2max = 
-	cluster->Mass2()-sqr(cluster->GetTrip()->m_flav.HadMass()+
-			     cluster->GetAnti()->m_flav.HadMass());
     pit1 = plin->erase(pit1);
     pit1 = plin->erase(pit1);
 

@@ -9,8 +9,7 @@ using namespace ATOOLS;
 
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
   p_splitter(splitter), 
-  m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
-  m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
+  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), 
   m_analyse(ana),m_tot(0),m_s(0),m_u(0),m_d(0)
 { 
   double norm(0.);
@@ -131,17 +130,17 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
   Proto_Particle * begin(*pit);
   Dipole * dip;
   do {
+    (*pit)->m_kt2max  = (*pit)->m_info=='B'?(*pit)->m_mom.PPerp2():m_pt2max;
+    (*pit1)->m_kt2max = (*pit1)->m_info=='B'?(*pit1)->m_mom.PPerp2():m_pt2max;
     dip = new Dipole(*pit,*pit1);
-    (*pit)->m_kt2max  = (*pit1)->m_kt2max = PT2Max(dip); 
-
     m_dipoles.push_back(dip);
     pit = pit1;
     pit1++;
+    PrintDipoleList();
   } while (pit1!=plin->end());
   if ((*pit)->m_flav.IsGluon()) {
     if (begin->m_flav.IsGluon()) {
       dip = new Dipole(*pit,begin);
-      (*pit)->m_kt2max  = begin->m_kt2max = PT2Max(dip); 
       m_dipoles.push_back(dip);
     }
     else {
@@ -202,7 +201,7 @@ bool Gluon_Decayer::DecayDipoles() {
       msg_Out()<<"--- "<<METHOD<<" splits the following dipole :"<<(*dipiter)<<std::endl;
       (*dipiter)->Output();
     }
-    if (!p_splitter->SplitDipole((*dipiter),PT2Max((*dipiter)),false)) {
+    if (!p_splitter->SplitDipole((*dipiter),true,false)) {
       switch (Rescue(dipiter)) {
       case -1:
 	msg_Debugging()<<"--- Rescue failed."<<std::endl;
@@ -267,7 +266,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
+      if (p_splitter->SplitDipole((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -276,7 +275,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
+      if (p_splitter->SplitDipole((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -297,7 +296,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
+    if (p_splitter->SplitDipole((*partner),true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -307,7 +306,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_splitter->SplitDipole((*partner),PT2Max((*partner)),false)) {
+    if (p_splitter->SplitDipole((*partner),true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -540,20 +539,6 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   msg_Debugging()<<"--- "<<METHOD<<"(out)."<<std::endl;
 }
 
-double Gluon_Decayer::PT2Max(Dipole * dip) const {
-  double pt2max(dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom));
-  if (IsZero(pt2max)) pt2max = dip->MassBar2();
-  if (dip->Triplet()->m_info=='B') {
-    if (dip->Triplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
-    else pt2max = Min(pt2max,dip->Triplet()->m_mom.PPerp2());
-  }
-  if (dip->AntiTriplet()->m_info=='B') {
-    if (dip->AntiTriplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
-    else pt2max = Min(pt2max,dip->AntiTriplet()->m_mom.PPerp2());
-  }
-  return m_pt2max_factor * pt2max;
-}
-
 void Gluon_Decayer::PrintDipoleList()
 {
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
@@ -566,7 +551,7 @@ void Gluon_Decayer::PrintDipoleList()
 		   <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("<<(*dip)->AntiTriplet()->m_mom<<"),"
 		   <<" "<<hadpars.GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
 		   <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
-		   <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<"."<<std::endl;
+		   <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<"."<<std::endl;
   }
 }
 

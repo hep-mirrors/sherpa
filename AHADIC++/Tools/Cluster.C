@@ -65,7 +65,7 @@ bool Proto_Particle::CheckConsistency(std::ostream & s,std::string method) {
 std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle& proto) {
   s<<"   "<<proto.m_info<<" : "<<proto.m_flav<<" "<<proto.m_mom
    <<" "<<sqrt(ATOOLS::Max(0.,proto.m_mom.Abs2()))
-   <<", kt2max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<std::endl;
+   <<", kt_max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<std::endl;
   return s;
 }
 

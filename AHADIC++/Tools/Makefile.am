@@ -8,6 +8,7 @@ libAhadicTools_la_SOURCES = \
                             Transitions.C \
 			    Strong_Coupling.C \
 			    Dipole_Splitter.C \
+			    Splitting_Functions.C \
 			    Splitting_Tools.C \
 			    Dipole.C \
 			    Soft_Cluster_Handler.C \
@@ -21,6 +22,7 @@ localinc_HEADERS   = \
                      Constituents.H \
 		     Strong_Coupling.H \
 		     Dipole_Splitter.H \
+		     Splitting_Functions.H \
 		     Splitting_Tools.H \
 		     Dipole.H \
                      Hadron_Wave_Function.H \

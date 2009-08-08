@@ -38,7 +38,7 @@ namespace AHADIC {
     TransWeight::code    m_tweightmode;
     DecayWeight::code    m_dweightmode;
     double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi;
-    double               m_pt2min,m_pt2maxfac;
+    double               m_pt2min,m_pt2max,m_pt2maxfac;
     Cluster_List *       m_clin;
 
     long int             m_transitions, m_dtransitions, m_decays, m_forceddecays, m_lists;
@@ -60,7 +60,8 @@ namespace AHADIC {
 			      const bool enforce=false);
     bool          ClusterAnnihilation(Cluster * cluster,ATOOLS::Flavour &,ATOOLS::Flavour &);
     void          FixHHDecay(Cluster * cluster,ATOOLS::Blob * blob,
-			     const ATOOLS::Flavour had1,const ATOOLS::Flavour had2);
+			     const ATOOLS::Flavour had1,const ATOOLS::Flavour had2,
+			     const bool & constrained=false);
 
 
     bool          CheckIfAllowed(Cluster_List * clin,double & E);
@@ -77,7 +78,8 @@ namespace AHADIC {
     ~Soft_Cluster_Handler();
     bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *,bool cludec=false);
     bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
-    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,Cluster_List * clin=0);
+    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,const bool & constrained,
+				Cluster_List * clin=0);
   };
 
   /*!

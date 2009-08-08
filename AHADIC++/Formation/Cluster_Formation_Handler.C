@@ -321,6 +321,7 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
     if(p_gludecayer->DecayList(*pplit)) {
       clist = new Cluster_List;
       p_cformer->ConstructClusters(*pplit,clist);
+      msg_Tracking()<<"======= "<<METHOD<<" for :"<<std::endl<<(*clist)<<std::endl;
       m_clulists.push_back(clist);
       pplit=m_partlists.erase(pplit);
     }

@@ -29,6 +29,8 @@ namespace AHADIC {
     Double_Transitions     * p_doubletransitions;
     Soft_Cluster_Handler   * p_softclusters;
     leading::code            m_leading;
+    PTOrder::code            m_ptorder;
+    ZForm::code              m_zform;
     asform::code             m_asform;
     Strong_Coupling        * p_coupling; 
     Dipole_Splitter        * p_splitter;

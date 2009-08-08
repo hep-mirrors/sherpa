@@ -131,6 +131,13 @@ const double Strong_Coupling::SelectPT(const double & scale2max,const double & s
   }
   //std::cout<<"In "<<METHOD<<" with "<<scale2max<<" --> "<<pt2max
   //	   <<" leads to pt2 = "<<pt2<<"."<<std::endl;
+  if (pt2>400.) 
+    msg_Tracking()<<"Surprise in "<<METHOD<<": pt = "<<sqrt(pt2)
+		  <<" from pt_min,max = "<<sqrt(scale2min)<<", "<<sqrt(scale2max)
+		  <<" --> "<<sqrt(m_pt2max)<<std::endl
+		  <<"    as(pt^2) = "<<(*this)(pt2,false)<<", asmax = "<<m_asmax
+		  <<" ("<<int(m_form)<<", eta = "<<m_eta<<", pt0^2 = "<<m_pt02
+		  <<", random = "<<ran1<<")."<<std::endl;
   return m_lastpt2 = pt2;
 }
 

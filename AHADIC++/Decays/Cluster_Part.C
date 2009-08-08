@@ -9,7 +9,6 @@ using namespace std;
 
 Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
   m_ana(ana),
-  m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
   p_splitter(splitter) 
 { 
   if (m_ana) {
@@ -35,16 +34,25 @@ Cluster_Part::~Cluster_Part()
 
 bool Cluster_Part::TestDecay(Cluster * const cluster)
 {
-  msg_Tracking()<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl
-		<<"::: "<<METHOD<<" : Try "<<cluster->Number()<<" ("	   
-		<<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
-		<<"m = "<<cluster->Mass()<<") --> "<<std::endl;
-   if (!p_splitter->SplitCluster(cluster,PT2Max(cluster))) {
-    msg_Tracking()<<"Warning in "<<METHOD<<":"<<std::endl
-		  <<"   Could not split cluster ("<<cluster->Number()<<"): "
-		  <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
-		  <<"mass = "<<cluster->Mass()<<","<<std::endl
-		  <<"   try to enforce splitting (not implemented)."<<std::endl;
+  if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+    msg_Tracking()<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl
+		  <<"::: "<<METHOD<<" : Try "<<cluster->Number()<<" ("	   
+		  <<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
+		  <<"m = "<<cluster->Mass()<<") --> "<<std::endl;
+  }
+  if (!p_splitter->SplitCluster(cluster)) {
+    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+      msg_Tracking()<<"::: Warning in "<<METHOD<<":"<<std::endl
+		    <<":::   Could not split cluster ("<<cluster->Number()<<"): "
+		    <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
+		    <<"mass = "<<cluster->Mass()<<","<<std::endl
+		    <<":::   try to enforce splitting (not implemented)."<<std::endl;
+    }
+    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+      msg_Tracking()<<"::: "<<METHOD<<" : yields enforced decay of "
+		    <<cluster->Number()<<" succeded."<<std::endl
+		    <<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
+    }
     return p_splitter->EnforceSplit(cluster);
   }
   if (m_ana) {
@@ -56,15 +64,9 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 #ifdef AHAmomcheck
   cluster->CheckConsistency(msg_Error(),METHOD);
 #endif
-  msg_Tracking()<<"::: "<<METHOD<<" : decay of "<<cluster->Number()<<" succeded."<<std::endl
-		<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
+  if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+    msg_Tracking()<<"::: "<<METHOD<<" : decay of "<<cluster->Number()<<" succeded."<<std::endl
+		  <<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
+  }
   return true;
-}
-
-double Cluster_Part::PT2Max(Cluster * cluster) const {
-  double pt2max(cluster->GetTrip()->m_mom.PPerp2(cluster->GetAnti()->m_mom));
-  if (IsZero(pt2max)) 
-    pt2max = cluster->Mass2()-sqr(cluster->GetTrip()->m_flav.HadMass()+
-				  cluster->GetAnti()->m_flav.HadMass());
-  return m_pt2max_factor * pt2max;
 }
