@@ -47,12 +47,10 @@ bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pm
 void COMIX::Process_Base::InitModel(MODEL::Model_Base *const model,
 			  const std::string &file)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddWordSeparator("\t");
-  read.SetInputFile(file);
-  std::string mt(read.GetValue<std::string>("SIGNAL_MODEL","SM"));
-  p_model = Model_Getter::GetObject(mt,"");
-  if (p_model==NULL) THROW(fatal_error,"Interaction model not implemented");
+  p_model = Model_Getter::GetObject(model->Name(),"");
+  if (p_model==NULL)
+    THROW(not_implemented,"No model '"+model->Name()+
+	  "' in Comix. Try 'ME_SIGNAL_GENERATOR=Amegic'.");
   p_model->Initialize(model,file);
 }
 
