@@ -90,7 +90,7 @@ static const PHASIC::nlo_type::code wrongnlotype
 Comix::Comix(): 
   ME_Generator_Base("Comix"), p_cluster(NULL)
 {
-  PrintLogo(std::cout);
+  PrintLogo(msg->Info());
 }
 
 Comix::~Comix() 

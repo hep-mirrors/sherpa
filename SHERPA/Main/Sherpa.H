@@ -19,7 +19,6 @@ namespace SHERPA {
 
     void DrawLogo();  
 
-    void WriteCitationInfo();
     void PrepareTerminate();
 
   public:

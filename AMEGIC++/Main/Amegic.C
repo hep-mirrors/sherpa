@@ -83,7 +83,7 @@ void Amegic::DrawLogo(std::ostream &ostr)
 Amegic::Amegic(): 
   ME_Generator_Base("Amegic"), p_model(NULL), p_cluster(NULL)
 {
-  DrawLogo(std::cout);
+  DrawLogo(msg->Info());
   p_testmoms=NULL;
 }
 
