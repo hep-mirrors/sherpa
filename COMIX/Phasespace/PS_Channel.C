@@ -1055,7 +1055,16 @@ void PS_Channel::ISRInfo
     ps=(*p_xs->Process())[0]->Get<Process_Base>()->PSGenerator();
   }
   msg_Debugging()<<METHOD<<"(): Add isr infos {\n";
-  if (ps->ThresholdMass()>0.0) {
+  bool addth(ps->ThresholdMass()>0.0);
+  const Double_Vector &mps(ps->ISRMasses()), &wps(ps->ISRWidths());
+  for (size_t i(0);i<mps.size();++i) {
+    msg_Debugging()<<"  resonance "<<i<<": "<<mps[i]<<" / "<<wps[i]<<"\n";
+    if (IsEqual(mps[i],ps->ThresholdMass(),s_pwmin)) addth=false;
+    ts.push_back(1);
+    ms.push_back(mps[i]);
+    ws.push_back(wps[i]);
+  }
+  if (addth) {
     msg_Debugging()<<"  threshold  : "<<ps->ThresholdMass()<<"\n";
     ts.push_back(2);
     ms.push_back(ps->ThresholdMass());
@@ -1063,13 +1072,6 @@ void PS_Channel::ISRInfo
     ts.push_back(2);
     ms.push_back(2.0*ps->ThresholdMass());
     ws.push_back(0.0);
-  }
-  const Double_Vector &mps(ps->ISRMasses()), &wps(ps->ISRWidths());
-  for (size_t i(0);i<mps.size();++i) {
-    msg_Debugging()<<"  resonance "<<i<<": "<<mps[i]<<" / "<<wps[i]<<"\n";
-    ts.push_back(1);
-    ms.push_back(mps[i]);
-    ws.push_back(wps[i]);
   }
   msg_Debugging()<<"}\n";
 }
