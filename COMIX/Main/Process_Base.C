@@ -48,9 +48,10 @@ void COMIX::Process_Base::InitModel(MODEL::Model_Base *const model,
 			  const std::string &file)
 {
   p_model = Model_Getter::GetObject(model->Name(),"");
-  if (p_model==NULL)
-    THROW(not_implemented,"No model '"+model->Name()+
-	  "' in Comix. Try 'ME_SIGNAL_GENERATOR=Amegic'.");
+  if (p_model==NULL) {
+    msg_Info()<<METHOD<<"(): No model '"+model->Name()+"' in Comix."<<std::endl;
+    return;
+  }
   p_model->Initialize(model,file);
 }
 

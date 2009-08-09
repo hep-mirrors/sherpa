@@ -90,7 +90,6 @@ static const PHASIC::nlo_type::code wrongnlotype
 Comix::Comix(): 
   ME_Generator_Base("Comix"), p_cluster(NULL)
 {
-  PrintLogo(msg->Info());
 }
 
 Comix::~Comix() 
@@ -162,7 +161,10 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   m_path=path;
   m_file=file;
   InitModel(model,m_path+m_file);
-  InitVertices(p_model);
+  if (p_model!=NULL) {
+    PrintLogo(msg->Info());
+    InitVertices(p_model);
+  }
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
   // init mapping file
@@ -209,6 +211,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 PHASIC::Process_Base *Comix::
 InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 {
+  if (p_model==NULL) return NULL;
   if ((pi.m_fi.m_nloqcdtype&wrongnlotype) || 
       (pi.m_fi.m_nloewtype&wrongnlotype)) return NULL;
   PHASIC::Process_Base *newxs(NULL);
