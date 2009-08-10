@@ -1281,7 +1281,6 @@ Delta_Eta_Selector::~Delta_Eta_Selector() {
   delete [] detamin;
   delete [] detamax;
   delete [] value;
-  delete m_sel_log;
 }
 
 bool Delta_Eta_Selector::Trigger(const Vec4D_Vector & mom) 
@@ -1394,7 +1393,6 @@ Delta_Phi_Selector::~Delta_Phi_Selector() {
   delete [] dphimin;
   delete [] dphimax;
   delete [] value;
-  delete m_sel_log;
 }
 
 bool Delta_Phi_Selector::Trigger(const Vec4D_Vector & mom) 
@@ -1507,7 +1505,6 @@ Delta_R_Selector::~Delta_R_Selector() {
   delete [] drmin;
   delete [] drmax;
   delete [] value;
-  delete m_sel_log;
 }
 
 bool Delta_R_Selector::Trigger(const Vec4D_Vector & mom) 
