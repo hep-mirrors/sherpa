@@ -116,7 +116,7 @@ bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
     mc->DropAllChannels();
     PS_Channel *ch(new PS_Channel(p_proc->NIn(),p_proc->NOut(),
 				  (Flavour*)&p_proc->Flavours().front(),this));
-    InitPSGenerator(ch->ISMode());
+    InitPSGenerator(0);
     mc->Add(ch);
     return false;
   }

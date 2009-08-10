@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -48,8 +49,6 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   name="CDBG_Channel";
   Data_Reader read(" ",";","!","=");
   read.SetInputFile("Integration.dat");
-  if (!read.ReadFromFile(m_ismode,"CDXS_ISMODE")) m_ismode=0;
-  else msg_Info()<<METHOD<<"(): Set integrator mode "<<m_ismode<<".\n";
   if (!read.ReadFromFile(m_zmode,"CDXS_ZMODE")) m_zmode=0;
   else msg_Info()<<METHOD<<"(): Set zero treatment mode "<<m_zmode<<".\n";
   if (!read.ReadFromFile(m_bmode,"CDXS_BMODE")) m_bmode=1;
@@ -622,25 +621,6 @@ bool PS_Channel::GenerateChannel(Vertex_Vector &v)
 bool PS_Channel::GenerateChannels()
 {
   PHASIC::Process_Base *cur(p_xs->Process());
-  if (m_ismode&1)
-    while ((*cur)[0]!=cur) {
-      double sum(0.0);
-      Double_Vector sums;
-      std::vector<PHASIC::Process_Base*> pss;
-      for (size_t i(0);i<cur->Size();++i)
-	if (!(*cur)[i]->Get<COMIX::Process_Base>()->Zero()) {
-	  if ((*cur)[i]->Integrator()->SumSqr()==0) sum+=1.0;
-	  else sum+=(*cur)[i]->Integrator()->SumSqr();
-	  sums.push_back(sum);
-	  pss.push_back((*cur)[i]);
-	}
-      double disc(sum*ran.Get());
-      for (size_t i(0);i<pss.size();++i)
-	if (disc<=sums[i]) {
-	  cur=pss[i];
-	  break;
-	}
-    }
   p_gen=cur->Get<Process_Base>()->PSGenerator();
   if (p_gen==NULL) 
     THROW(fatal_error,"No phasespace generator for "+cur->Name());
@@ -1135,6 +1115,9 @@ void PS_Channel::WriteOut(std::string pid)
 
 void PS_Channel::ReadIn(std::string pid)
 {
+  p_gen=p_xs->Process()->Get<Process_Base>()->PSGenerator();
+  p_gen->SetPrefMasses
+    (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
   reader.SetInFileMode(fom::permanent|fom::nosearch);
   reader.SetAddCommandLine(false);

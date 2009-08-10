@@ -61,7 +61,7 @@ namespace COMIX {
     size_t m_n, m_nr, m_cpr, m_ccr, m_num, m_nopt, m_lid, m_rid;
     double m_texp, m_sexp, m_thexp, m_mfac;
 
-    int    m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode, m_ismode;
+    int    m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     size_t m_nvints, m_vsopt;
 
     SP(PS_Generator) p_gen;
@@ -162,9 +162,6 @@ namespace COMIX {
 
     void WriteOut(std::string pid);
     void ReadIn(std::string pid);
-
-    // inline functions
-    inline size_t ISMode() const { return m_ismode; }
 
   };// end of class PS_Channel
 
