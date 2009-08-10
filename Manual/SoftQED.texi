@@ -50,8 +50,8 @@ Photons will use collinearly approximated real emission matrix elements. Virtual
 emission matrix elements of order alpha_QED are ignored. If, however,
 YFS_USE_ME=1, then exact real and/or virtual emission matrix elements
 are used wherever possible. These are presently available for V->FF, V->SS,
-S->FF, S->SS, S->Slnu, S->Vlnu type decays, leptonic tau-decays, W->lnu and 
-Z->FF decays. For all other decay types general collinearly approximated matrix
+S->FF, S->SS, S->Slnu, S->Vlnu type decays, Z->FF decays and leptonic tau and W
+decays. For all other decay types general collinearly approximated matrix
 elements are used. In both approaches all hadrons are treated as point-like
 objects. The default setting is @code{YFS_USE_ME = 1}. This switch is only
 effective if @code{YFS_MODE = 2}.

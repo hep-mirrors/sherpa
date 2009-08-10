@@ -35,7 +35,7 @@ Further the cut-off scale and the ADD scale M_S have been set equal
 to a rather low value (2 TeV).
 
 @item the analysis has been switched off, but
-to use it, switch @ref{ANALYSIS} to @option{1}.
+to use it, switch @ref{ANALYSIS} to @option{Internal}.
 
 @item the analysis in this example uses Sherpa's
 in-built analysis package. To use this Analysis 

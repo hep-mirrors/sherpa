@@ -49,7 +49,7 @@ beginning of each run, just before the particle content
 of the model.
 
 @item the analysis has been switched off, but
-to use it, switch @ref{ANALYSIS} to @option{1}.
+to use it, switch @ref{ANALYSIS} to @option{Internal}.
 
 @item the analysis in this example uses Sherpa's
 in-built analysis package. To use this Analysis 
