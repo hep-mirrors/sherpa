@@ -73,7 +73,7 @@ Splitting_Tools::~Splitting_Tools() {
     }
     m_histograms.clear();
   }
-  //msg_Out()<<"Flavour production in "<<m_tot<<" gluon splittings (tools): "
+  //msg_Debugging()<<"Flavour production in "<<m_tot<<" gluon splittings (tools): "
   //	   <<"s_rate = "<<double(m_s)/double(m_tot)<<", "
   //	   <<"u_rate = "<<double(m_u)/double(m_tot)<<", "
   //	   <<"d_rate = "<<double(m_d)/double(m_tot)<<"."<<std::endl;
@@ -162,8 +162,8 @@ double Splitting_Tools::SwapSpectatorAndSplitter(Dipole * dip) {
 bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
   if (dip->MassBar2()<m_mmin_2) {
     if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-      if (msg->LevelIsTracking()) {
-	msg_Out()<<"Warning in "<<METHOD<<":"<<std::endl
+      if (msg->LevelIsDebugging()) {
+	msg_Debugging()<<"Warning in "<<METHOD<<":"<<std::endl
 		 <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
 	(*dip).Output();
       }
@@ -188,16 +188,16 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bo
   m_Qt2            = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
   if (m_Qt2<0.) {
     if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-      msg_Tracking()<<"___ "<<METHOD<<" yields Qt2 = "<<m_Qt2<<"."<<std::endl;
+      msg_Debugging()<<"___ "<<METHOD<<" yields Qt2 = "<<m_Qt2<<"."<<std::endl;
     }  
     return false;
   }
-  m_kt2_max = KT2Max(first);
-  m_kt2_min = KT2Min(m_kt2_max,p_split->m_flav.IsGluon());
+  m_kt2_min = KT2Min(p_split->m_flav.IsGluon(),first);
+  m_kt2_max = KT2Max(m_kt2_min,first);
 
 
   if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-    msg_Tracking()<<"___ "<<METHOD<<": set up dipole for splitting, "
+    msg_Debugging()<<"___ "<<METHOD<<": set up dipole for splitting, "
 		  <<"splitter = "<<p_split->m_flav<<"."<<std::endl;
   }
   m_cms  = Poincare(m_mom0);
@@ -217,7 +217,7 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bo
 
 bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & vetodiquark) {
   if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-    msg_Tracking()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_kt2_max<<"."<<std::endl;
+    msg_Debugging()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_kt2_max<<"."<<std::endl;
   }
   int  trials(0);
   m_z = -1.;
@@ -226,30 +226,28 @@ bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & vetodiquark)
     if (trials>1000 || 
 	!ProduceKinematics(m_pt2,m_z,m_phi,m_flav,vetodiquark)) {
       if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-	msg_Tracking()<<"___ "<<METHOD<<"(out): no splitting determined, trials = "<<trials<<"."<<std::endl;
+	msg_Debugging()<<"___ "<<METHOD<<"(out): no splitting determined, trials = "<<trials<<"."<<std::endl;
       } 
       return false;
     }
     trials++;
   } while (!ConstructKinematics(dip1));
 
-  msg_Tracking()<<"___ "<<METHOD<<"(out): splitting succeeded."<<std::endl;
+  msg_Debugging()<<"___ "<<METHOD<<"(out): splitting succeeded."<<std::endl;
   return true;
 }
 
 
 bool Splitting_Tools::EnforcedSplitting(Dipole * dip) {
-  m_kt2 = m_mmin_2;
-  m_z   = 0.5;
-  SelectFlavour(m_kt2,true);
-  
-  if (!KinCheck(m_kt2,m_z) || !ConstructKinematics(dip)) {
-    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-      msg_Tracking()<<METHOD<<" did not work out."<<std::endl;
-    }
-    return false;
-  }
-  return true;
+  m_kt2 = KT2Min(true,false);
+  double disc(4.*m_kt2/m_Qt2), deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
+  int trials(0);
+  do {
+    m_z   = zmin+(zmax-zmin)*ran.Get();
+    SelectFlavour(m_kt2,true);
+    trials++;
+  } while (trials<1000 && (!KinCheck(m_kt2,m_z) || !ConstructKinematics(dip)));
+  return (trials<1000);
 }
 
 
@@ -274,7 +272,6 @@ void Splitting_Tools::SetInfoTagsForOutgoings() const {
   default:
     break;
   }
-  //msg_Out()<<"Out "<<METHOD<<":"<<std::endl<<(*p_split)<<(*p_spect)<<(*p_out1)<<(*p_out2)<<std::endl;
 }
 
 
@@ -284,8 +281,23 @@ void Splitting_Tools::SetInfoTagsForOutgoings() const {
 void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   if (p_split->m_flav.IsGluon()) {
     p_spect->m_mom    = m_mom1;
-    p_out1 = new Proto_Particle(m_flav.Bar(),m_mom2,'l');
-    p_out2 = new Proto_Particle(m_flav,m_mom3,'l');
+    if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon()) {
+      double s12((m_mom1+m_mom2).Abs2()), s13((m_mom1+m_mom3).Abs2());
+      bool swap(s12/(s12+s13)>0.5); // ran.Get());
+      if ((p_spect->m_flav.IsQuark() && !p_spect->m_flav.IsAnti()) || 
+	  (p_spect->m_flav.IsDiQuark() && p_spect->m_flav.IsAnti())) {
+	p_out1 = new Proto_Particle(m_flav.Bar(),swap?m_mom3:m_mom2,'l');
+	p_out2 = new Proto_Particle(m_flav,swap?m_mom2:m_mom3,'l');
+      }
+      else {
+	p_out1 = new Proto_Particle(m_flav.Bar(),swap?m_mom2:m_mom3,'l');
+	p_out2 = new Proto_Particle(m_flav,swap?m_mom3:m_mom2,'l');
+      }
+    }
+    else {
+      p_out1 = new Proto_Particle(m_flav.Bar(),m_mom2,'l');
+      p_out2 = new Proto_Particle(m_flav,m_mom3,'l');
+    }
     SetInfoTagsForOutgoings();
     p_out1->p_partner = p_out2;
     p_out2->p_partner = p_out1;
@@ -306,7 +318,7 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
 	}
       }
     }
-    msg_Tracking()<<"___ "<<METHOD<<" yields new particles : "<<std::endl
+    msg_Debugging()<<"___ "<<METHOD<<" yields new particles : "<<std::endl
 		  <<(*p_out1)<<(*p_out2)<<std::endl;
   }
   else {
@@ -327,17 +339,18 @@ bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double
 					const bool & vetodiquark) {
   double disc(4.*m_kt2_min/m_Qt2), discp(disc); 
   if (disc<0. || disc>1.) {
-    msg_Tracking()<<"___ "<<METHOD<<": Cannot split object with reduced mass = "
+    msg_Debugging()<<"___ "<<METHOD<<": Cannot split object with reduced mass = "
 		  <<sqrt(m_Qt2)<<"."<<std::endl;
     return false;
   }
   double deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
+  msg_Tracking()<<"::: z boundaries: ["<<zmin<<", "<<zmax<<"] for "<<p_split->m_flav<<"."<<std::endl;
   double deltazp(deltaz), zminp(zmin), zmaxp(zmax);
   kt2_test = -1.;
   int  trials(0);
-  msg_Tracking()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<m_kt2_min<<", "<<m_kt2_max<<"] "
-  		<<"and z = "<<z_test<<" for "<<m_flav<<". "
-  		<<"Glusplit = "<<p_split->m_flav.IsGluon()<<"."<<std::endl;
+  msg_Debugging()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<m_kt2_min<<", "<<m_kt2_max<<"] "
+	   <<"and z = "<<z_test<<" for "<<m_flav<<". "
+	   <<"Glusplit = "<<p_split->m_flav.IsGluon()<<"."<<std::endl;
   while ((kt2_test<0. || z_test<0.) && trials<1000) {
     trials++;
     kt2_test = p_as->SelectPT(m_kt2_max,m_kt2_min);
@@ -353,7 +366,7 @@ bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double
     }
     z_test = p_kernels->SelectZ(zmin,zmax,p_split->m_flav.IsGluon(),p_split->m_info=='L');
 
-    if (true) {
+    if (false) {
       discp   = 4.*kt2_test/m_Qt2;
       deltazp = sqrt(1.-disc);
       zminp   = (1.-deltaz)/2.;
@@ -374,11 +387,11 @@ bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double
       continue;
     }
   }
-  msg_Tracking()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<kt2_test<<" "
-		<<"and z = "<<z_test<<" for "<<m_flav<<"."<<std::endl;
+  msg_Debugging()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<kt2_test<<" "
+	   <<"and z = "<<z_test<<" for "<<m_flav<<"."<<std::endl;
 
   //if (p_split->m_flav.IsGluon()) {
-  // msg_Out()<<"Out of "<<METHOD<<"(veto = "<<vetodiquark<<", mass = "<<m_masstreatment<<"): "
+  // msg_Debugging()<<"Out of "<<METHOD<<"(veto = "<<vetodiquark<<", mass = "<<m_masstreatment<<"): "
   //	     <<"Flavour = "<<m_flav<<" for pt^2 = "<<kt2<<",    Qt^2 = "<<m_Qt2<<"."<<std::endl;
   //}
   //std::cout<<"Out of "<<METHOD<<" with "<<trials<<" trials."<<std::endl;
@@ -386,47 +399,63 @@ bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double
   return (trials<1000);
 }
 
-double Splitting_Tools::KT2Max(const bool & first) {
-  double kt2max = Min((p_split->m_flav.IsGluon()?m_Qt2:m_Qt2/4.),m_pt2max);
-  if (m_ptorder==PTOrder::flat) return kt2max;
+double Splitting_Tools::KT2Max(const double & kt2min,const bool & first) {
+  double kt2max(m_Qt2);
+  if (m_ptorder==PTOrder::flat) return Min(sqrt(kt2max*m_pt2max),m_pt2max);
 
-  if (!first &&
-      ((m_ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
-       (m_ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
-       (m_ptorder==PTOrder::total))) {
-    kt2max    = p_split->m_kt2max;
-    if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon() && m_m1_2>1.e-6) 
-      kt2max *= m_pt2min/m_m1_2;
-  }
+  bool order((m_ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
+	     (m_ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
+	     (m_ptorder==PTOrder::total));
+  if (!first && order) kt2max = p_split->m_kt2max;
   else {
-    if (p_spect->m_info=='B') {
-      if (p_split->m_info=='B') 
-	kt2max = m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2());
-      else 
-	kt2max = m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min);
+    if (!(p_spect->m_info=='B')) {
+      if (!p_split->m_flav.IsGluon()) 
+	kt2max = (first?m_Qt2/4.:p_spect->m_mom.PPerp2(p_split->m_mom));
+      //m_pt2min/sqrt(Max(m_pt2min,m_m1_2)*Max(m_pt2min,m_m3_2));
+      kt2max *= m_pt2max_factor;
+      msg_Tracking()<<"... first: "<<p_split->m_info<<p_spect->m_info
+		    <<"("<<p_split->m_flav<<" "<<p_spect->m_flav<<"): "
+		    <<"kt_max = "<<sqrt(kt2max)<<" from pt = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<", "
+		    <<"p_min = "<<Min(p_split->m_mom.PSpat(),p_spect->m_mom.PSpat())<<" and "
+		    <<"cos = "<<p_split->m_mom.CosTheta(p_spect->m_mom)
+		    <<", red. mass = "<<sqrt(m_Qt2/4.)<<"."<<std::endl;
     }
     else {
-      kt2max = Min(m_Qt2/4.,p_spect->m_mom.PPerp2(p_split->m_mom));
-      if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon() && m_m1_2>1.e-6) 
-	kt2max *= m_pt2min/Max(m_pt2min,m_m1_2);
-      //kt2max = Max(m_pt2max,sqrt(m_pt2max*kt2max));
+      if (p_split->m_info=='B') 
+    	kt2max = m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2());
+      else 
+    	kt2max = m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min);
     }
+    if (kt2max>m_pt2max) kt2max = sqrt(kt2max*m_pt2max);
   }
-    
-  msg_Tracking()<<METHOD<<"(first = "<<first<<") yields kt2_max = "<<kt2max<<"("<<sqr(kt2max)/m_pt2max<<")"
-		<<" for:"<<std::endl<<(*p_split)<<(*p_spect);
+
+  if (p_split->m_info=='L' && p_spect->m_info=='L') {
+    msg_Debugging()<<METHOD<<"(first = "<<first<<", order = "<<order<<") yields kt2_max = "<<kt2max<<" "
+		  <<"(fac = "<<m_pt2max_factor<<", kt^2_min = "<<kt2min<<", Qt^2/4 = "<<m_Qt2/4.
+		  <<", pt^2 = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<")"
+		  <<" for split/spect:"<<std::endl<<(*p_split)<<(*p_spect);
+  }
+  if (kt2min>kt2max) {
+    kt2max = kt2min + 4.*m_mmin_2;
+    msg_Debugging()<<"   correct to kt^2_max = "<<kt2max<<"."<<std::endl;
+  }
   return kt2max;
 }
     
 
 
 
-double Splitting_Tools::KT2Min(const double & kt2max,const bool & glusplit) {
+double Splitting_Tools::KT2Min(const bool & glusplit,const bool & first) {
   double kt2min(m_pt2min);
-  if (m_m3_2>0.) kt2min *= m_pt2min/m_m3_2;
-  if (m_m1_2>0.) kt2min *= m_pt2min/m_m1_2;
-  if ((kt2min>kt2max) && (kt2min<m_Qt2/4.)) kt2min = 0.;
-  if (glusplit) kt2min = Max(kt2min,m_mmin_2);
+  if (first) {
+    if (glusplit)               kt2min += m_mmin_2;
+    if (m_m1_2>0.)              kt2min *= 4.*m_pt2min/m_m1_2;    
+  }
+  else {
+    if (!glusplit && m_m3_2>0.) kt2min *= m_pt2min/m_m3_2;
+    if (glusplit)               kt2min += m_mmin_2;
+    if (m_m1_2>0.)              kt2min *= m_pt2min/m_m1_2;
+  }
   return kt2min;
 }
 
@@ -519,7 +548,6 @@ void Splitting_Tools::SelectFlavour(const double & maxmass,const bool & vetodiqu
 
 
 bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
-  msg_Tracking()<<"___ "<<METHOD<<"(in) for kt^2 = "<<m_kt2<<", z = "<<m_z<<"."<<std::endl;
   if (IsZero(m_Qt2))  
     msg_Error()<<"Warning in "<<METHOD<<": Qt^2 = "<<m_Qt2<<" for kt^2 = "<<m_pt2<<"."<<std::endl;
 
@@ -535,7 +563,7 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
     m_kt   = sqrt(m_kt2);
     double fac1 = m_Q2 - ((1.-m_z)*m_m2_2+m_z*m_m3_2+m_kt2)/(m_z*(1.-m_z));
     if (fac1<0.) {
-      msg_Tracking()<<"      ----> (fail0) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
+      msg_Debugging()<<"      ----> (fail0) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
       return false;
     }
     double div  = m_Q2-m_m23_2;
@@ -552,7 +580,7 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
     double po  = sqr(m_Q2-m_m23_2-m_m1_2)-4.*m_m23_2*m_m1_2; 
     double pn  = sqr(m_Q2-m_s23-m_m1_2)-4.0*m_s23*m_m1_2;
     if (po<0.0 || pn<0.0) {
-      msg_Tracking()<<"      ----> (fail1) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
+      msg_Debugging()<<"      ----> (fail1) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
       return false;
     }
     if (IsZero(po) || IsZero(pn)) {
@@ -591,7 +619,7 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
       ((1./a1-(m_m2_2+m_m3_2)/gam)/(1.0+a23*a1)-m_y/(1.0-m_y));
     m_kt2 = gam*m_y/(1.-m_y)*(1.+a23*a1)*m_z*(1.-m_z)-sqr(1.-m_z)*m_m3_2-m_z*m_z*m_m2_2;
     if (m_kt2<0.0 || m_z<0. || m_z>1. || IsNan(m_kt2) || IsNan(m_z)) {
-      msg_Tracking()<<"      ----> (fail2) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
+      msg_Debugging()<<"      ----> (fail2) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
       return false;
     }
     m_kt = sqrt(m_kt2);
@@ -603,12 +631,12 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
   q2 = m_mom0-q3-q1;
 
   if (m_m1_2==0.) {
-    msg_Tracking()<<"___ "<<METHOD<<" summary: "<<std::endl
+    msg_Debugging()<<"___ "<<METHOD<<" summary: "<<std::endl
 		  <<"     Masses: m_m2 = m_m3 = "<<m_m2<<" = "<<m_m3<<" --> s23 = "<<m_m23_2<<"."<<std::endl;
   }
 
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<"      ----> (fail3) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
+    msg_Debugging()<<"      ----> (fail3) for kt^2 = "<<m_kt2<<", z = "<<m_z<<std::endl;
     return false;
   }
   
@@ -631,8 +659,8 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
   m_mom3 = q3;
   m_cms.BoostBack(m_mom0);
 
-  msg_Tracking()<<"___ "<<METHOD<<"(out): succeeded to build kinematics "
-		<<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
+  msg_Debugging()<<"___ "<<METHOD<<"(out): succeeded to build kinematics "
+	   <<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
 
   return true;
 }
@@ -683,36 +711,3 @@ void Splitting_Tools::AnalyseKinematics(const ATOOLS::Vec4D & q1,
     }
   }
 }
-
-
-/*
-double Gluon_Decayer::PT2Max(Dipole * dip) const {
-  double pt2max(Min(Min(dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom),
-			dip->AntiTriplet()->m_mom.PPerp2(dip->Triplet()->m_mom)),
-		    dabs((dip->Triplet()->m_mom-dip->AntiTriplet()->m_mom).Abs2())));
-  if (IsZero(pt2max)) pt2max = dip->MassBar2();
-  if (dip->Triplet()->m_info=='B' && dip->AntiTriplet()->m_info!='B') {
-    if (dip->AntiTriplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
-    else pt2max = Min(pt2max,dip->AntiTriplet()->m_mom.PPerp2());
-  }
-  else if (dip->AntiTriplet()->m_info=='B' && dip->Triplet()->m_info!='B') {
-    if (dip->Triplet()->m_mom.PPerp2()<1.e-6) pt2max = Min(pt2max,m_pt02);
-    else pt2max = Min(pt2max,dip->Triplet()->m_mom.PPerp2());
-  }
-  else if (dip->AntiTriplet()->m_info=='B' && dip->Triplet()->m_info=='B') {
-    pt2max = Min(pt2max,sqrt(dip->Triplet()->m_mom.PPerp2()*dip->AntiTriplet()->m_mom.PPerp2()));
-  }
-  if (pt2max>m_pt2max) {
-    msg_Tracking()<<"Unusually large pt2max in "<<METHOD<<" for : "<<std::endl;
-    if (msg_LevelIsTracking()) dip->Output();
-    msg_Tracking()<<"   pt^2 = "<<dip->Triplet()->m_mom.PPerp2(dip->AntiTriplet()->m_mom)
-		  <<" vs. pt^2 = "<<dip->AntiTriplet()->m_mom.PPerp2(dip->Triplet()->m_mom)
-		  <<" vs. m^2 = "<<(dip->Triplet()->m_mom-dip->AntiTriplet()->m_mom).Abs2()
-		  <<" --> "<<(m_pt2max_factor*pt2max)<<"."<<std::endl;
-    pt2max = m_pt2max;
-  }
-  return m_pt2max_factor * pt2max;
-}
-*/
-
-

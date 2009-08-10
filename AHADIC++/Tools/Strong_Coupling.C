@@ -88,7 +88,8 @@ const double Strong_Coupling::operator()(double q2,bool reweight) const {
 
 const double Strong_Coupling::SelectPT(const double & scale2max,const double & scale2min) {
   double pt2(0.), pt2max(Min(scale2max,m_pt2max)), ran1;
-  double mini(m_pt02+scale2min),maxi(m_pt02+pt2max),expo(m_eta==1.?0.:1./1.-m_eta);;
+  double mini(m_pt02+scale2min),maxi(m_pt02+pt2max),expo(dabs(m_eta-1.)<0.01?0.:1.-m_eta), invexpo(1./expo);
+  double mini_pow(pow(mini,expo)), maxi_pow(pow(maxi,expo));
   bool   runit(true);
   while (runit) {
     ran1 = ran.Get();
@@ -123,8 +124,10 @@ const double Strong_Coupling::SelectPT(const double & scale2max,const double & s
     case asform::GDH_inspired:
     case asform::constant: 
     default:
-      if (m_eta==1.) pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
-                else pt2 = -m_pt02+pow(mini*(1.-ran1)+maxi*ran1,expo);
+      if (m_eta==1.) 
+	pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
+      else 
+	pt2 = -m_pt02+pow(ran1*maxi_pow+(1.-ran1)*mini_pow,invexpo);
       if ((*this)(pt2)/m_asmax>ran.Get()) runit = false;
       break;
     }

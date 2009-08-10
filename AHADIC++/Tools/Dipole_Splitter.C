@@ -55,6 +55,7 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
 		   cluster->GetAnti()->m_flav.IsDiQuark());
 
   if (!EmitGluon(dip1,dip2)) return false;
+  double kt2_emit(p_tools->PT2()), z_emit(p_tools->Z());
 
   bool swapped(SelectOrder(dip1,dip2));
   
@@ -71,6 +72,7 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
       return false;
     }
   }
+  double kt2_split(p_tools->PT2()), z_split(p_tools->Z());
   
   Proto_Particle * out1, * out2;
   p_tools->GetNewParticles(out1,out2);
@@ -86,22 +88,29 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
   dip1->Update();
   dip2->Update();
 
+  if (cluster->Mass()>80.) {
+    msg_Tracking()<<"::: split massive cluster ("<<cluster->GetTrip()->m_info<<cluster->GetAnti()->m_info<<", "
+		  <<"mass = "<<cluster->Mass()<<") with "
+		  <<"kt_emit = "<<sqrt(kt2_emit)<<" & z_emit = "<<z_emit<<", " 
+		  <<"kt_split = "<<sqrt(kt2_split)<<" & z_split = "<<z_split<<") " 
+		  <<" --> "<<sqrt(dip1->MassBar2())<<" + "<<sqrt(dip2->MassBar2())<<std::endl;
+  }
+  else {
+    msg_Tracking()<<"::: split cluster ("<<cluster->GetTrip()->m_info<<cluster->GetAnti()->m_info<<", "
+		  <<"mass = "<<cluster->Mass()<<") with "
+		  <<"kt_emit = "<<sqrt(kt2_emit)<<" & z_emit = "<<z_emit<<", " 
+		  <<"kt_split = "<<sqrt(kt2_split)<<" & z_split = "<<z_split<<") " 
+		  <<" --> "<<sqrt(dip1->MassBar2())<<" + "<<sqrt(dip2->MassBar2())<<std::endl;
+  }
   return Produce2Clusters(cluster,dip1,dip2);
 }
 
 bool Dipole_Splitter::EmitGluon(Dipole * dip1,Dipole *& dip2) {
   double pt2max(p_tools->SetSpectatorAndSplitter(dip1));
-  if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-    msg_Debugging()<<"==============================================================="<<std::endl
-		   <<"=== "<<METHOD<<"(pt_max = "<<sqrt(pt2max)<<", "
-		   <<"m^2 = "<<dip1->Mass2()<<") for "
-		   <<dip1->Triplet()->m_flav<<"("<<dip1->Triplet()->m_info<<") "
-		   <<dip1->AntiTriplet()->m_flav<<"("<<dip1->AntiTriplet()->m_info<<")"<<std::endl
-		   <<"    "<<dip1->Triplet()->m_mom<<" (kt^2_max = "<<dip1->Triplet()->m_kt2max<<") "
-		   <<dip1->AntiTriplet()->m_mom<<" (kt^2_max =  "<<dip1->AntiTriplet()->m_kt2max<<")"
-		   <<"."<<std::endl;
-  }
-  if (!p_tools->PrepareKinematics(dip1) || !p_tools->DetermineSplitting(dip1)) {
+  bool first(false);
+  if (dip1->Triplet()->m_info=='L' && dip1->AntiTriplet()->m_info=='L' &&
+      dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
+  if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1)) {
     pt2max = p_tools->SwapSpectatorAndSplitter(dip1);
     if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
       msg_Debugging()<<"==============================================================="<<std::endl
@@ -113,7 +122,7 @@ bool Dipole_Splitter::EmitGluon(Dipole * dip1,Dipole *& dip2) {
 		     <<dip1->AntiTriplet()->m_mom<<" (kt^2_max =  "<<dip1->AntiTriplet()->m_kt2max<<")"
 		     <<"."<<std::endl;
     }
-    if (!p_tools->PrepareKinematics(dip1) || !p_tools->DetermineSplitting(dip1)) {
+    if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1)) {
       delete dip1->Triplet();
       delete dip1->AntiTriplet();
       delete dip1;
@@ -158,7 +167,7 @@ bool Dipole_Splitter::Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *
 #endif
   if (m_analyse) AnalyseClusterSplitting(cluster);
 
-  msg_Tracking()<<(*cluster)<<std::endl;
+  msg_Debugging()<<(*cluster)<<std::endl;
   return true;
 }
 
@@ -175,12 +184,16 @@ bool Dipole_Splitter::SplitDipole(Dipole * dip,const bool & first,const bool & v
 
   if (!p_tools->PrepareKinematics(dip,first) || 
       !p_tools->DetermineSplitting(dip,vetodiquark)) {
-    msg_Tracking()<<"=== "<<METHOD<<"(out): could not split dipole."<<std::endl;
+    msg_Debugging()<<"=== "<<METHOD<<"(out): could not split dipole."<<std::endl;
     return false;
   }  
   p_tools->AftermathOfSplitting(dip);
+  if (first) 
+    msg_Tracking()<<"::: split initial gluon with "
+		  <<"kt = "<<sqrt(p_tools->PT2())<<", z = "<<p_tools->Z()<<", "
+		  <<"dipole mass = "<<sqrt(dip->Mass2())<<"."<<std::endl;
 
-  msg_Tracking()<<"=== "<<METHOD<<"(out): succeded to split dipole."<<std::endl;
+  msg_Debugging()<<"=== "<<METHOD<<"(out): succeded to split dipole."<<std::endl;
   return true;
 }
 
@@ -194,12 +207,12 @@ bool Dipole_Splitter::EnforceSplit(Dipole * dip1,Dipole * dip2) {
 		 <<"    "<<dipole->Triplet()->m_mom<<" ( "<<dipole->Triplet()->m_kt2max<<" ) "
 		 <<dipole->AntiTriplet()->m_mom<<" ( "<<dipole->AntiTriplet()->m_kt2max<<" )."<<std::endl;
   if (!p_tools->PrepareKinematics(dipole,false,true) || !p_tools->EnforcedSplitting(dipole)) {
-    msg_Tracking()<<"=== "<<METHOD<<"(out): could not split dipole."<<std::endl;
+    msg_Debugging()<<"=== "<<METHOD<<"(out): could not split dipole."<<std::endl;
     return false;
   }  
   p_tools->AftermathOfSplitting(dipole);
 
-  msg_Tracking()<<"=== "<<METHOD<<"(out): succeded to split dipole."<<std::endl;
+  msg_Debugging()<<"=== "<<METHOD<<"(out): succeded to split dipole."<<std::endl;
   return true;
 }
 

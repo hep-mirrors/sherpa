@@ -189,14 +189,13 @@ Double_Transitions::Double_Transitions() :
       anti = iter2->first;
       if (anti.IsQuark()) anti = anti.Bar();
       flpair.second = wf2.second = anti;
-      //std::cout<<"  "<<trip<<" / "<<anti<<std::endl;
+      //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar()) 
+      //	std::cout<<"  "<<trip<<" / "<<anti<<std::endl;
 
       for (FlavCCMap_Iterator iter3=constituents.begin();
 	   iter3!=constituents.end();iter3++) {
 	norm = 0.;
 	popwt = iter3->second->TotWeight();
-	//std::cout<<"  pop "<<iter3->first<<" ( wt = "<<popwt<<") "
-	//	 <<" between "<<trip<<" and "<<anti<<"."<<std::endl;
 	if (popwt==0.) continue;
 	popped = iter3->first;
 	if (popped.IsQuark()) popped = popped.Bar();
@@ -217,10 +216,12 @@ Double_Transitions::Double_Transitions() :
 	       haditer1!=hads1->end();haditer1++) {
 	    for (Single_Transition_Siter haditer2=hads2->begin();
 		 haditer2!=hads2->end();haditer2++) {
-	      weight = haditer1->second * haditer2->second/norm * popwt;
-	      //std::cout<<"   add : "<<weight/popwt<<" for "
-	      //	       <<haditer1->first<<"("<<haditer1->second<<") * "
-	      //	       <<haditer2->first<<"("<<haditer2->second<<")."<<std::endl;
+	      weight = haditer1->second * haditer2->second * popwt;
+	      //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar()) 
+	      //	std::cout<<"   add : "<<weight/popwt<<" "
+	      //		 <<"("<<(haditer1->second*haditer2->second)<<") for "
+	      //		 <<haditer1->first<<"("<<haditer1->second<<") * "
+	      //		 <<haditer2->first<<"("<<haditer2->second<<")."<<std::endl;
 	      hadpair.first  = haditer1->first;
 	      hadpair.second = haditer2->first;
 	      if (weight>0.) {

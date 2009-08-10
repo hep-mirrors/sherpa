@@ -71,8 +71,8 @@ namespace AHADIC {
     void   SelectFlavour(const double & maxmass,const bool & vetodiquark);
     bool   KinCheck(const double & kt2,const double & z);
     bool   ConstructKinematics(const bool glusplit);
-    double KT2Max(const bool & first=false);
-    double KT2Min(const double & kt2max,const bool & glusplit);
+    double KT2Max(const double & kt2min,const bool & first=false);
+    double KT2Min(const bool & glusplit,const bool & first=false);
     void   SetInfoTagsForOutgoings() const;
     void   AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
 			     const ATOOLS::Vec4D & q3);

@@ -34,26 +34,24 @@ Cluster_Part::~Cluster_Part()
 
 bool Cluster_Part::TestDecay(Cluster * const cluster)
 {
-  if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-    msg_Tracking()<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl
-		  <<"::: "<<METHOD<<" : Try "<<cluster->Number()<<" ("	   
-		  <<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
-		  <<"m = "<<cluster->Mass()<<") --> "<<std::endl;
-  }
+  msg_Tracking()<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl
+		<<"::: "<<METHOD<<" : Try "<<cluster->Number()<<" ("	   
+		<<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
+		<<"m = "<<cluster->Mass()<<") --> "<<std::endl;
   if (!p_splitter->SplitCluster(cluster)) {
-    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-      msg_Tracking()<<"::: Warning in "<<METHOD<<":"<<std::endl
-		    <<":::   Could not split cluster ("<<cluster->Number()<<"): "
-		    <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
-		    <<"mass = "<<cluster->Mass()<<","<<std::endl
-		    <<":::   try to enforce splitting (not implemented)."<<std::endl;
-    }
-    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-      msg_Tracking()<<"::: "<<METHOD<<" : yields enforced decay of "
-		    <<cluster->Number()<<" succeded."<<std::endl
+    msg_Tracking()<<"::: Warning in "<<METHOD<<":"<<std::endl
+		  <<":::   Could not split cluster ("<<cluster->Number()<<"): "
+		  <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
+		  <<"mass = "<<cluster->Mass()<<","<<std::endl
+		  <<":::   try to enforce splitting (not implemented)."<<std::endl;
+   
+    bool worked(p_splitter->EnforceSplit(cluster));
+    if (worked) {
+      msg_Tracking()<<"::: "<<METHOD<<" : forced decay of "<<cluster->Momentum()<<" succeded."<<std::endl
+		    <<(*cluster->GetLeft())<<(*cluster->GetRight())
 		    <<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
     }
-    return p_splitter->EnforceSplit(cluster);
+    return worked;
   }
   if (m_ana) {
     Vec4D lmom(cluster->GetLeft()->Momentum());
@@ -64,9 +62,8 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
 #ifdef AHAmomcheck
   cluster->CheckConsistency(msg_Error(),METHOD);
 #endif
-  if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-    msg_Tracking()<<"::: "<<METHOD<<" : decay of "<<cluster->Number()<<" succeded."<<std::endl
-		  <<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
-  }
+  msg_Tracking()<<"::: "<<METHOD<<" : decay of "<<cluster->Momentum()<<" succeded."<<std::endl
+		<<(*cluster->GetLeft())<<(*cluster->GetRight())
+		<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
   return true;
 }
