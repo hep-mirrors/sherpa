@@ -2,8 +2,7 @@ HZTOOL_SOURCES        =	\
 			hztool_sherpa.f \
 			HZTool_Interface.C
 HZTOOL_ADDS           = \
-			HZTool_Wrapper.H \
-			HZTool_Analyses.H
+			HZTool_Wrapper.H
 
 AM_FFLAGS     =	-fno-automatic @CONDITIONAL_HZTOOLINCS@
 

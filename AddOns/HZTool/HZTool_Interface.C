@@ -8,9 +8,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Library_Loader.H"
-#include "AddOns/HZTool/HZTool_Analyses.H"
 
-typedef void (*HZTool_Analysis)(int flag);
+typedef void (*HZTool_Analysis)(int *flag);
 
 #define PTP long unsigned int
 
@@ -90,7 +89,8 @@ void HZTool_Interface::HZxxxx(int *flag)
   for (size_t i(0);i<m_analyses.size();++i) {
     if (*flag==3) msg_Info()<<"Writing out '"
 			   <<m_tags[i]<<"'."<<std::endl;
-    m_analyses[i](m_flags[*flag]);
+    int cflag(m_flags[*flag]);
+    m_analyses[i](&cflag);
   }
 }
 
@@ -253,19 +253,21 @@ bool HZTool_Interface::Init()
 	  helpiv.size()==3)
 	for (size_t i(1);i<=3;++i) m_flags[i]=helpiv[i-1];
       else for (size_t i(1);i<=3;++i) m_flags[i]=i;
-      std::vector<std::string> helpsv;
-      reader.VectorFromFile(helpsv,"HZ_ENABLE");
-      for (size_t i(0);i<helpsv.size();++i) {
-	msg_Info()<<"Set up '"<<helpsv[i]<<"' ... "<<std::flush;
-	void *func(s_loader->GetLibraryFunction
-		   ("HZToolSherpa",helpsv[i]));
-	if (func==NULL) {
-	  msg_Info()<<"not found."<<std::endl;
-	}
-	else {
-	  m_analyses.push_back((HZTool_Analysis)(PTP)func);
-	  m_tags.push_back(helpsv[i]);
-	  msg_Info()<<"found."<<std::endl;
+      std::vector<std::vector<std::string> > helpsvv;
+      reader.MatrixFromFile(helpsvv,"HZ_ENABLE");
+      for (size_t i(0);i<helpsvv.size();++i) {
+	for (size_t j(0);j<helpsvv[i].size();++j) {
+	  msg_Info()<<"Set up '"<<helpsvv[i][j]<<"' ... "<<std::flush;
+	  void *func(s_loader->GetLibraryFunction
+		     ("HZToolSherpa",helpsvv[i][j]+"_"));
+	  if (func==NULL) {
+	    msg_Info()<<"not found."<<std::endl;
+	  }
+	  else {
+	    m_analyses.push_back((HZTool_Analysis)(PTP)func);
+	    m_tags.push_back(helpsvv[i][j]);
+	    msg_Info()<<"found."<<std::endl;
+	  }
 	}
       }
     }
