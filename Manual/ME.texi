@@ -109,6 +109,23 @@ are determined according to run-time information from the matrix element
 generator.
 Scales are defined as the minimum of the largest transverse momentum
 during clustering and the lowest invariant mass in the core process.
+@sp 1
+This is the default scale scheme in Sherpa, since it is employed
+for truncated shower merging, see @ref{Merging ME and PS}.
+However, it might be subject to changes to enable further classes
+of processes for merging in the future and should therefore be seen with care.
+Integration results might change slightly between different Sherpa
+versions.
+@sp 1
+Occasionally, users might encounter the warning message
+@verbatim
+METS_Scale_Setter::CalculateScale(): No CSS history for '<process name>' in <percentage>% of calls. Set \hat{s}.
+@end verbatim
+As long as the percentage quoted here is not too high, this does not pose
+a serious problem. The warning occurs when - based on the current colour
+configuration and matrix element information - no suitable clustering is
+found by the algorithm. In such cases the scale is set to the invariant mass
+of the partonic process.
 
 @item NLO
 This scale scheme has a similar functionality and syntax as the 
@@ -210,6 +227,18 @@ Their values can be computed e.g. using the @option{VAR} scale setter, see
 SCALES    VAR{...}{PPerp(p[4])}{Abs2(p[2]+p[3])}
 COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_TOT)*Alpha_QED(S_TOT))}
 @end verbatim
+
+@item METS
+Reweighting of QCD couplings for truncated shower merging, see
+@ref{Merging ME and PS}. This is the default coupling scheme in Sherpa.
+Strong couplings are computed such that they give an overestimate,
+which can later on be reweighted. The precise scale is set using
+the Q_@{cut@} value, which is modified by an additional prefactor
+given in the shower algorithm.
+@sp 1
+Except in the context of truncated shower merging, users should refrain
+from employing this scheme. It's implementation might be subject to changes
+to enable further classes of processes.
 @end table
 
 It is possible to implement a dedicated coupling evaluation
