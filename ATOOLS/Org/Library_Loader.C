@@ -112,7 +112,7 @@ void *Library_Loader::GetLibraryFunction(const std::string &libname,
     msg_Debugging()<<"failed"<<std::endl;
     msg_Error()<<error<<std::endl;
     msg_Error()<<METHOD<<"(): Failed to load function '"
-	       <<funcname<<"'."<<LD_PATH_NAME<<std::endl;
+	       <<funcname<<"'."<<std::endl;
     return NULL;
   }
   msg_Debugging()<<"done"<<std::endl;
