@@ -270,11 +270,12 @@ void Run_Parameter::Gen::WriteCitationInfo()
     f<<Citations()[i]<<std::endl;
   }
   f<<"\n\\end{document}"<<std::endl;
-  std::cout<<om::bold<<"Please cite the publications listed in '"
+  std::cout<<std::string(72,'-')<<"\n"
+	   <<om::bold<<"Please cite the publications listed in '"
 	   <<om::red<<refname<<om::reset<<om::bold<<"'."<<om::reset
 	   <<"\n  Extract the bibtex list by running 'get_bibtex "
 	   <<refname<<"'\n  or email the file to 'slaclib2@slac.stanford.edu'"
-	   <<", subject 'generate'.\n"<<std::endl;
+	   <<", subject 'generate'.\n"<<std::string(72,'-')<<std::endl;
 }
 
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
