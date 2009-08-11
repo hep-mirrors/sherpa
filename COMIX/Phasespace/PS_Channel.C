@@ -186,7 +186,6 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 			       const double &smin,const double &smax,
 			       const double *rn)
 {
-  const double *cr(rn);
   if (cur==NULL) {
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
@@ -195,15 +194,18 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 	m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
 				 ToString(cs->size()),cs->size()));
 	double rn(ran.Get());
-	cr=m_vgs.back()->GeneratePoint(&rn);
+	double *cr(m_vgs.back()->GeneratePoint(&rn));
 	m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
 	m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
-	msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
+	msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()
+		       <<" -> "<<m_vgs.back()->GetPointBins()[0]
+		       <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
 #endif
       }
     }
   }
+  const double *cr(rn);
   if (cur!=NULL && cur->OnShell())
     return sqr(cur->Flav().Mass());
   if (m_vmode&1) {
@@ -235,7 +237,6 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 			      const double &smin,const double &smax,
 			      const double &s)
 {
-  double wgt(1.0), rn;
   if (cur==NULL) {
     const Current_Vector *cs(p_gen->TCC(id));
     if (cs!=NULL) {
@@ -248,7 +249,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	else {
 	  Vegas *cvgs(GetVegas("C_"+GetPSId(id)+"_"+
 			       ToString(cs->size()),cs->size()));
-	  rn=ran.Get();
+	  double rn(ran.Get());
 	  const double *cr(cvgs->GeneratePoint(&rn));
 #ifdef USING__Threading
 	  pthread_mutex_lock(&m_wvgs_mtx);
@@ -260,12 +261,15 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	  pthread_mutex_unlock(&m_wvgs_mtx);
 #endif
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    generate point "<<m_wvgs.back()->Name()<<"\n";
+	  msg_Debugging()<<"    generate point "<<cvgs->Name()
+			 <<" -> "<<cvgs->GetPointBins()[0]
+			 <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
 #endif
 	}
       }
     }
   }
+  double wgt(1.0), rn;
   if (cur!=NULL) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 

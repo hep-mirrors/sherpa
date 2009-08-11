@@ -484,7 +484,7 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       size_t cid(m_cur[n][j]->CId());
       size_t pid((cid&3)?(1<<m_n)-1-cid:cid);
       double psmin(sqrt(cuts->Getscut(PSId(pid))));
-      double mass(m_cur[n][j]->Mass());
+      double mass(Max(psmin,m_cur[n][j]->Mass()));
       if (m_cur[n][j]->OnShell()) {
 	mmin[cid]=mass;
 	continue;
@@ -497,14 +497,12 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
       else mmin[cid]=Max(mmin[cid],mass);
       if (m_cur[n][j]->Cut() || (cid&3)==1 || (cid&3)==2) continue;
-      if ((m_ecmode&4) && mass<rpa.gen.Ecms() &&
-	  mass>psmin && !IsEqual(mass,m_cur[n][j]->Mass()))
+      if ((m_ecmode&1) && mass>m_chmass &&
+	  mass<rpa.gen.Ecms() && !IsEqual(mass,m_cur[n][j]->Mass()))
 	AddExtraCurrent(m_cur[n][j],n,mass,0.0);
       if ((m_ecmode&2) && m_cur[n][j]->Mass()>m_chmass &&
 	  m_cur[n][j]->Width()>s_pwmin)
 	AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Mass(),0.0);
-      if ((m_ecmode&1) && psmin>m_chmass)
-	AddExtraCurrent(m_cur[n][j],n,psmin,0.0);
     }
   }
 #ifdef DEBUG__BG
