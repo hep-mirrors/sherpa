@@ -135,7 +135,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Triggers/Makefile \
 	  AddOns/Analysis/Observables/Makefile \
 	  AddOns/Analysis/Makefile \
-	  AddOns/HZTool/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/Makefile \
 	  Makefile )
