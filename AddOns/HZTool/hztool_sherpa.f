@@ -6,7 +6,7 @@
       COMMON/HZHNAME/HNAME
 include "hepevtp.inc"
 include "heracmn.inc"
-      PARAMETER (NWPAWC=100000)
+      PARAMETER (NWPAWC=5000000)
       COMMON/PAWC/H(NWPAWC)
       WRITE(6,*) ' Now initializing HZTool'
       WRITE(6,*) ' LO cross section [pb]: ',XSLO
