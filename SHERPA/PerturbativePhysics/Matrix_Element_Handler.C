@@ -690,6 +690,8 @@ namespace SHERPA {
   {
     int position;
     position = str.find("{");
+    while (position>0 && str[position-1]!=' ' && str[position-1]!='\t')
+      position=str.find('{',position+1);
     if (position==-1) {
       msg_Debugging()<<METHOD<<"(): adding '"<<str
 		     <<"' {-}("<<priority<<")\n";
