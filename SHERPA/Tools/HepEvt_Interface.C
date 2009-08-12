@@ -7,6 +7,7 @@
 
 #include <iomanip>
 #include <stdio.h>
+#include <cassert>
 
 using namespace ATOOLS;
 using namespace SHERPA;
@@ -136,7 +137,57 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   m_convertS2H.clear();
 
   m_evtnumber++;
-  //   if ((m_evtnumber-1)%m_filesize==0 && p_outstream!=NULL) ChangeOutStream();
+  //if ((m_evtnumber-1)%m_filesize==0 && p_outstream!=NULL) ChangeOutStream();
+
+  for(size_t w=0; w<_blobs->size(); ++w) {
+    Blob* blob=(*_blobs)[w]; Blob* fsblob(NULL), * fragblob(NULL);
+    if(blob->Type()==btp::Hadron_Decay) {
+      for(size_t u=0; u<(size_t)blob->NOutP(); ++u)
+	if(blob->ConstOutParticle(u)->RefFlav().IsQuark() ||
+	   blob->ConstOutParticle(u)->RefFlav().IsDiQuark() ||
+	   blob->ConstOutParticle(u)->RefFlav().IsGluon()) {
+	  if(u!=0) {
+	    PRINT_INFO("Warning(1): Unusual hadron-decay blob, "<<
+		       "cannot yet correct for it."); break;}
+	  fsblob=blob->ConstOutParticle(0)->DecayBlob();
+	  assert(blob->Id()<fsblob->Id()); bool flg(false);
+	  for(size_t v=1; v<(size_t)blob->NOutP(); ++v) {
+	    if(blob->ConstOutParticle(v)->DecayBlob()!=fsblob) { flg=1; break;}
+	    if(blob->ConstOutParticle(v)->RefFlav().Strong() ||
+	       blob->ConstOutParticle(u)->RefFlav().IsDiQuark() ||
+	       blob->ConstOutParticle(u)->RefFlav().IsGluon());
+	    else { flg=1; break;}
+	  }
+	  if(flg) {
+	    PRINT_INFO("Warning(2): Unusual hadron-decay blob, "<<
+		       "cannot yet correct for it."); break;}
+	  if(fsblob->NInP()!=blob->NOutP()) {
+	    PRINT_INFO("Warning(3): Unusual hadron-decay blob, "<<
+		       "cannot yet correct for it."); break;}
+	  fragblob=fsblob->ConstOutParticle(0)->DecayBlob();
+	  assert(fsblob->Id()<fragblob->Id()); flg=false;
+	  for(size_t v=1; v<(size_t)fsblob->NOutP(); ++v)
+	    if(fsblob->ConstOutParticle(v)->DecayBlob()!=fragblob) {
+	      flg=1; break;}
+	  if(flg) {
+	    PRINT_INFO("Warning(4): Unusual hadron-decay blob, "<<
+		       "cannot yet correct for it."); break;}
+	  if(fragblob->NInP()!=fsblob->NOutP()) {
+	    PRINT_INFO("Warning(5): Unusual hadron-decay blob, "<<
+		       "cannot yet correct for it."); break;}
+	  //cout<<" ..testing.. "<<_blobs->size()<<"\n";
+	  //cout<<"\n"<<*blob<<"\n"<<*fsblob<<"\n"<<*fragblob<<"\n";
+	  blob->RemoveOutParticles(); fragblob->RemoveInParticles();
+	  size_t Nfrag(fragblob->NOutP());
+	  for(size_t v=0; v<Nfrag; ++v)
+	    blob->AddToOutParticles(fragblob->RemoveOutParticle
+				    (fragblob->NOutP()-1));
+	  //cout<<"\n\n"<<*blob<<"\n"<<*fsblob<<"\n"<<*fragblob<<endl;
+	  assert(_blobs->Delete(fsblob)); assert(_blobs->Delete(fragblob));
+	  //cout<<*_blobs<<endl;
+	}
+    }
+  }
 
   int nhep = 0;
 
