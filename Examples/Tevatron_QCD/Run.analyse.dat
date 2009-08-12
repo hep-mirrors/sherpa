@@ -30,7 +30,7 @@
 }(processes)
 
 (selector){
-  NJetFinder sqr(10/E_CMS) 1 2
+  NJetFinder  2  10.0  0.0  1.0
 }(selector)
 
 (model){

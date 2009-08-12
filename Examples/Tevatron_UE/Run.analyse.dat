@@ -22,7 +22,7 @@
 }(processes)
 
 (selector){
-  NJetFinder sqr(MPISCALE/E_CMS) 1 2
+  NJetFinder  2  MPISCALE  0.0  1.0
 }(selector)
 
 (model){
