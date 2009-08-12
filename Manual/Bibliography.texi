@@ -254,7 +254,7 @@
 @mybibitem{Gleisberg2005qq,Gle05, T. Gleisberg and F. Krauss and A. Schalicke and S.  Schumann and J. C. Winter,Studying W^+ W^- production at the Fermilab Tevatron with Sherpa,Phys. Rev.,D72,(2005),034028,[hep-ph/0504032],hep-ph/0504032}
 @mybibitem{Gleisberg2007md,Gle07, T. Gleisberg and F. Krauss,Automating dipole subtraction for QCD NLO calculations,Eur. Phys. J.,C53,(2008),501-523,[arXiv:0709.2881],arXiv:0709.2881}
 @mybibitem{Gleisberg2008fv,Gle08, T. Gleisberg and S. Hoche,Comix a new matrix element generator,JHEP,12,(2008),039,[arXiv:0808.3674],arXiv:0808.3674}
-@mybibitem{Gleisberg2008ft,Gle08a, T. Gleisberg and S. Hoche and F. Krauss and R. law Matyskiewicz,How to calculate colourful cross sections efficiently,,,,,arXiv:0808.3672,arXiv:0808.3672}
+@mybibitem{Gleisberg2008ft,Gle08a, T. Gleisberg and S. Hoche and F. Krauss and R. Matyskiewicz,How to calculate colourful cross sections efficiently,,,,,arXiv:0808.3672,arXiv:0808.3672}
 @mybibitem{Gleisberg2008ta,Gle08b, T. Gleisberg and S. Hoche and F. Krauss and  M. Schonherr and S. Schumann and F Siegert and J. Winter,Event generation with Sherpa 1.1,JHEP,02,(2009),007,[arXiv:0811.4622],arXiv:0811.4622}
 @mybibitem{Gluck1991ee,Glu91, M. Gluck and E. Reya and A. Vogt,Parton structure of the photon beyond the leading order,Phys. Rev.,D45,(1992),3986-3994,,F+J+Phys. Rev.%2CD45%2C3986}
 @mybibitem{Gluck1991jc,Glu91a, M. Gluck and E. Reya and A. Vogt,Photonic parton distributions,Phys. Rev.,D46,(1992),1973-1979,,F+J+Phys. Rev.%2CD46%2C1973}
