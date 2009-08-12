@@ -16,7 +16,7 @@
   % jet jet -> jet graviton
   %
   Process 93 93 -> 93 39;
-  Print_Graphs 1;
+  Print_Graphs : Process;
   End process;
 }(processes)
 
