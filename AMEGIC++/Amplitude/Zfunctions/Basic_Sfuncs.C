@@ -106,7 +106,7 @@ void Basic_Sfuncs::UpdateMasses(string name)
 	Momlist[idx].kfc = kfc;
 	Flavour flav(kfc);
 	Momlist[idx].mass = flav.Mass();
-	if (idx>=nmom) Momlist[idx].cplxmass2 = Complex(sqr(flav.Mass()),flav.Width()*flav.Mass());
+	if (idx>=nmom) Momlist[idx].cplxmass2 = Complex(sqr(flav.Mass()),-flav.Width()*flav.Mass());
       }
       else {
 	THROW(critical_error,"Inconsistent flavour entry in *.map");
