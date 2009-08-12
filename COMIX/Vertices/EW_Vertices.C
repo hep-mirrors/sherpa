@@ -612,7 +612,7 @@ void *EW_Vertex_Filler<SType,STag>::operator()
       Flavour f((kf_code)i);
       if (!f.IsOn()) continue;
       std::string ftag("{"+f.IDName()+"}"), fbtag("{"+f.Bar().IDName()+"}");
-      if (i<6 || i%2==1) {
+      if (i<=6 || i%2==1) {
 	new EW_FFH_Getter<SType,STag>(ftag+fbtag+htag);
 	new EW_FFH_Getter<SType,STag>(fbtag+htag+fbtag);
 	new EW_FFH_Getter<SType,STag>(htag+ftag+ftag);
