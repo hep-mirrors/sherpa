@@ -462,6 +462,7 @@ void Cluster_Algorithm::Convert()
     Cluster_Amplitude *ampl(p_ampl);
     p_ampl=p_ampl->InitNext();
     p_ampl->SetMS(p_ms);
+    p_ampl->SetJF(jf);
     p_ampl->SetNIn(ampl->NIn());
     ampl->SetKT2QCD(kt2qcd);
     for (int i(0);i<ct_tmp->NLegs();++i) {
@@ -488,13 +489,11 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
   }
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
-	  p_proc->Info().m_fi.m_nmax);
+	  p_proc->Info().m_fi.NMaxExternal());
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
   for (size_t i(2);i<4;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
-  p_ampl->SetOrderEW(0);
-  p_ampl->SetOrderQCD(0);
   while (p_ampl->Prev()) {
     Cluster_Amplitude *ampl(p_ampl->Prev());
     size_t jwin(std::numeric_limits<size_t>::max());

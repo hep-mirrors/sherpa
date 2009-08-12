@@ -172,6 +172,14 @@ Decay_Info_Vector Subprocess_Info::GetDecayInfos() const
   return ids;
 }
 
+size_t Subprocess_Info::NMaxExternal() const
+{
+  if (m_ps.empty()) return 1;
+  size_t n(m_nmax-m_ps.size());
+  for (size_t i(0);i<m_ps.size();++i) n+=m_ps[i].NMaxExternal();
+  return n;
+}
+
 void Subprocess_Info::SetNMax(const Subprocess_Info &ref)
 {
   m_nmax=Max(m_ps.size(),ref.m_nmax);

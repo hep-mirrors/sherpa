@@ -53,6 +53,7 @@ namespace PHASIC {
 
     size_t NExternal() const;
     size_t NTotalExternal() const;
+    size_t NMaxExternal() const;
 
     void SetExternal(const std::vector<ATOOLS::Flavour> &fl);
     void SetExternal(const ATOOLS::Flavour &fl,const size_t &i);

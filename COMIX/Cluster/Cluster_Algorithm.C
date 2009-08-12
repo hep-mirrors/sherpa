@@ -483,7 +483,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   }
   msg_Debugging()<<"}\n";
   SetNMax(p_ampl,(1<<ccurs.size())-1,
-	  xs->Process()->Info().m_fi.m_nmax);
+	  xs->Process()->Info().m_fi.NMaxExternal());
   if (msg_LevelIsDebugging()) p_ampl->Print();
   while (p_ampl->Prev()) {
     if (m_swap) p_ampl->SwapInOrder();
