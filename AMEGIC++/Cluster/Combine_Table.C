@@ -942,10 +942,6 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][3]=0;
     }
     else THROW(fatal_error,"No match for hard process.");
-    if (p_hard[i][0].Point()->t>=10) {
-      msg_Debugging()<<"cut propagator "<<p_hard[i][0].Flav()<<"\n";
-      return false;
-    }
     m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
   }
   return true;
