@@ -95,20 +95,16 @@ namespace ATOOLS {
 
     Function_Base *p_f;
 
-    Term *p_res;
-
   public:
 
     inline Function_Wrapper(Function_Base *const f):
-      Function(f->Name()), p_f(f),
-      p_res(Term::New(std::string("1.0"))) {}
-
-    ~Function_Wrapper() { p_res->Delete(); }
+      Function(f->Name()), p_f(f) {}
 
     Term *Evaluate(const std::vector<Term*> &args) const
     {
-      p_res->Set((*p_f)(args[0]->Get<double>()));
-      return p_res;
+      Term *res(Term::New((*p_f)(args[0]->Get<double>())));
+      p_interpreter->AddTerm(res);
+      return res;
     }
 
   };// end of class Function_Wrapper
