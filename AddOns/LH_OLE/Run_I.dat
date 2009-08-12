@@ -11,7 +11,7 @@
   End process;
 }(processes);
 (selector){
-  NJetFinder sqr(50/E_CMS) 1. 1
+  NJetFinder 1 50. 0. 1.
 }(selector);
 (me){
   ME_SIGNAL_GENERATOR Amegic;

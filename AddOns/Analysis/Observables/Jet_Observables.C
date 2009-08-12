@@ -351,6 +351,7 @@ void Two_Jet_Observable_Base::EvaluateNLOcontrib(double weight, double ncount)
 
 void Two_Jet_Observable_Base::EvaluateNLOevt()
 {
+  if (m_histos.size()<2) return;
   for (size_t i=0; i<m_histos.size();++i) { 
     m_histos[i]->FinishMCB();
   }
