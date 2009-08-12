@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Blob.H"
 
 
 #include <map>
@@ -16,7 +17,6 @@ namespace HepMC {
 
 namespace ATOOLS {
   class Blob_List;
-  class Blob;
   class Particle;
 }
 
@@ -27,6 +27,7 @@ namespace SHERPA {
 
     std::map<ATOOLS::Blob*,HepMC::GenVertex *> m_blob2genvertex;
     std::map<ATOOLS::Particle*,HepMC::GenParticle *> m_particle2genparticle;
+    std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC::GenEvent *p_event;
 
@@ -47,6 +48,7 @@ namespace SHERPA {
 
     // inline functions
     inline HepMC::GenEvent *const GenEvent() { return p_event; }
+    inline void Ignore(ATOOLS::btp::code type) { m_ignoreblobs.insert(type); }
 
   };// end of class HepMC2_Interface
 

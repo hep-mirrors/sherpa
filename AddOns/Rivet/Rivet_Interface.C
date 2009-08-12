@@ -23,21 +23,25 @@ using namespace ATOOLS;
 class Rivet_Interface: public Analysis_Interface {
 private:
 
-  std::string m_inpath, m_infile, m_outpath;
+  std::string m_inpath, m_infile, m_outpath, m_filesuffix;
 
   size_t m_nevt;
   bool   m_finished;
   
   Rivet::AnalysisHandler* p_rivet;
   HepMC2_Interface m_hepmc2;
+  std::vector<btp::code> m_ignoreblobs;
 
 public:
 
   inline Rivet_Interface(const std::string &inpath,
                          const std::string &infile,
-                         const std::string &outpath) :
-    m_inpath(inpath), m_infile(infile), m_outpath(outpath),
-    m_nevt(0), m_finished(false), p_rivet(NULL)
+                         const std::string &outpath,
+                         const std::string &suff,
+                         const std::vector<btp::code> &ignoreblobs) :
+    m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_filesuffix(suff),
+    m_nevt(0), m_finished(false), p_rivet(NULL),
+    m_ignoreblobs(ignoreblobs)
   {
   }
   
@@ -63,7 +67,7 @@ public:
       reader.AddComment("#");
       reader.SetFileBegin("BEGIN_RIVET");
       reader.SetFileEnd("END_RIVET");
-      std::string fname=reader.GetValue<std::string>("-H", "Rivet");
+      std::string fname=reader.GetValue<std::string>("-H","Rivet")+m_filesuffix;
       int loglevel=reader.GetValue<int>("-l", 20);
       
       Rivet::Log::setLevel("Rivet", loglevel);
@@ -73,6 +77,10 @@ public:
         p_rivet->addAnalyses(analyses);
       }
       p_rivet->init();
+      
+      for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
+        m_hepmc2.Ignore(m_ignoreblobs[i]);
+      }
     }
     return true;
   }
@@ -126,13 +134,34 @@ Analysis_Interface *Rivet_Interface_Getter::operator()
 (const Analysis_Arguments &args) const
 {
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath);
+    (args.m_inpath,args.m_infile,args.m_outpath, "", std::vector<btp::code>());
 }
 
 void Rivet_Interface_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"Rivet interface";
+}
+
+
+DECLARE_GETTER(RivetShower_Interface_Getter,"RivetShower",
+	       Analysis_Interface,Analysis_Arguments);
+
+Analysis_Interface *RivetShower_Interface_Getter::operator()
+(const Analysis_Arguments &args) const
+{
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Fragmentation);
+  ignoreblobs.push_back(btp::Hadron_Decay);
+  ignoreblobs.push_back(btp::Hadron_Mixing);
+  return new Rivet_Interface
+    (args.m_inpath,args.m_infile,args.m_outpath, ".SL", ignoreblobs);
+}
+
+void RivetShower_Interface_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"Rivet interface on top of shower level events.";
 }
 
 #endif

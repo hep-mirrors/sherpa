@@ -93,6 +93,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)
 {
   if (blob->Type()==ATOOLS::btp::Bunch) return false;
+  if (m_ignoreblobs.count(blob->Type())) return false;
   int count = m_blob2genvertex.count(blob);
   if (count>0) {
     vertex = m_blob2genvertex[blob];
@@ -153,8 +154,9 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
   ATOOLS::Vec4D mom  = parton->Momentum();
   HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
   int stat = int(parton->Status());
-  if (parton->DecayBlob()!=NULL) stat = 2;
-               else if (stat==2) stat=1;
+  if (parton->DecayBlob()!=NULL &&
+      m_ignoreblobs.count(parton->DecayBlob()->Type())==0) stat = 2;
+  else if (stat==2 || stat==4) stat=1;
   if (stat==2) {
     if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
 	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;
