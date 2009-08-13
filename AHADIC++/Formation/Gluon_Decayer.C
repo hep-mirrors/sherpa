@@ -24,7 +24,7 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
     if (!fdit->first.IsAnti()) {
       decspec = new DecaySpecs;
       decspec->popweight = hadpars.GetConstituents()->TotWeight(fdit->first)/norm;
-      decspec->massmin   = 2.*hadpars.GetConstituents()->Mass(fdit->first);
+      decspec->massmin   = hadpars.GetConstituents()->Mass(fdit->first);
       m_options.insert(std::make_pair(fdit->first,decspec));
       msg_Debugging()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }

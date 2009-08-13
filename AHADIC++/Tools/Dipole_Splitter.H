@@ -22,7 +22,6 @@ namespace AHADIC {
     bool EmitGluon(Dipole * dip1,Dipole *& dip2);
     bool SelectOrder(Dipole *& dip1,Dipole *& dip2);
     bool Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2);
-    bool EnforceSplit(Dipole * dip1,Dipole * dip2);
 
     bool DetermineSplitting(const bool glusplit);
 

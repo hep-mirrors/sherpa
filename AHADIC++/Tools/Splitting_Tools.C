@@ -33,7 +33,6 @@ Splitting_Tools::Splitting_Tools(const leading::code & lead,const PTOrder::code 
   m_leading(lead), m_ptorder(ptorder),
   m_fourquarks(false), m_analyse(true),
   m_masstreatment(int(hadpars.Get(std::string("Mass_treatment")))), 
-  m_lastpt2(-1.), 
   p_as(as), p_kernels(new Splitting_Functions(zform,m_masstreatment)), p_options(NULL),
   p_spect(NULL), p_split(NULL), p_out1(NULL), p_out2(NULL),
   m_mmin_2(sqr(hadpars.GetConstituents()->MinMass())),
@@ -41,9 +40,13 @@ Splitting_Tools::Splitting_Tools(const leading::code & lead,const PTOrder::code 
   m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
   m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
   m_pt2min(dabs(hadpars.Get(std::string("pt2min")))),
-  m_tot(0),m_d(0),m_s(0),m_u(0)
+  m_lastpt2(-1.), 
+  m_tot(0),m_d(0),m_s(0),m_u(0),m_reject_y(0),m_reject_z(0)
 { 
   if (m_analyse) {
+    m_histograms[std::string("Splitting_Trials")]        = new Histogram(0,0.,1000,500);
+    m_histograms[std::string("Enforced_Trials")]         = new Histogram(0,0.,1000,500);
+    m_histograms[std::string("Kinematics_Trials")]       = new Histogram(0,0.,1000,500);
     m_histograms[std::string("PT_Gluon_Splitting")]      = new Histogram(0,0.,100.,2000);
     m_histograms[std::string("PT_Gluon_Emission")]       = new Histogram(0,0.,100.,2000);
     m_histograms[std::string("PT_Gluon_Primary")]        = new Histogram(0,0.,250.,1000);
@@ -84,7 +87,7 @@ Splitting_Tools::~Splitting_Tools() {
 
 
 
-double Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
+void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
   p_split=p_spect=NULL;
   if (dip->Triplet()->m_flav.IsGluon() && 
       (dip->AntiTriplet()->m_flav.IsQuark() ||
@@ -144,62 +147,34 @@ double Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
   }
   if (p_split->m_kt2max<=0.) 
     p_split->m_kt2max = p_spect->m_kt2max = ATOOLS::Max(p_split->m_kt2max,p_spect->m_kt2max);
-
-  return p_split->m_kt2max;
 }
 
-double Splitting_Tools::SwapSpectatorAndSplitter(Dipole * dip) {
+void Splitting_Tools::SwapSpectatorAndSplitter(Dipole * dip) {
   Proto_Particle * help(p_split); p_split = p_spect; p_spect = help;
   if (dip->IsSwitched()) dip->SetSwitched(false);
                     else dip->SetSwitched(true); 
   if (p_split->m_kt2max<=0.) 
     p_split->m_kt2max = p_spect->m_kt2max = ATOOLS::Max(p_split->m_kt2max,p_spect->m_kt2max);
-
-  return p_split->m_kt2max;
 }
 
-
 bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
-  if (dip->MassBar2()<m_mmin_2) {
-    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-      if (msg->LevelIsDebugging()) {
-	msg_Debugging()<<"Warning in "<<METHOD<<":"<<std::endl
-		 <<"   Can not decay dipole for massmin^2 = "<<m_mmin_2<<"."<<std::endl;
-	(*dip).Output();
-      }
-    }
+  if (dip->MassBar2()<4.*m_mmin_2) {
+    msg_Debugging()<<METHOD<<"(massmin^2 = "<<m_mmin_2<<", red.mass^2 = "<<dip->MassBar2()<<") :"<<std::endl
+		   <<"   --> Dipole cannot split."<<std::endl;
+    //(*dip).Output();
     return false;
   }
 
-  m_mom1           = p_spect->m_mom;
-  m_mom3           = p_split->m_mom;
-  m_mom0           = m_mom1+m_mom3;
-  m_Q2             = m_mom0.Abs2();
-  m_Q              = sqrt(m_Q2);
+  m_mom1 = p_spect->m_mom;
+  m_mom3 = p_split->m_mom;
+  m_mom0 = m_mom1+m_mom3;
+  m_Q2   = m_mom0.Abs2();
+  m_Q    = sqrt(m_Q2);
 
-  m_m1             = p_spect->m_flav.HadMass();
-  m_m2             = Flavour(kf_gluon).HadMass();
-  m_m3   = m_m23   = p_split->m_flav.HadMass();
-  m_m1_2           = sqr(m_m1);
-  m_m2_2           = sqr(m_m2);
-  m_m3_2 = m_m23_2 = sqr(m_m23);
+  m_m1    = p_spect->m_flav.HadMass();
+  m_m1_2  = sqr(m_m1);
+  m_m23_2 = sqr(p_split->m_flav.HadMass());
 
-  if (m_Q-m_m1-2.*sqrt(m_mmin_2)<0.) return false;
-  m_Qt2            = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
-  if (m_Qt2<0.) {
-    if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-      msg_Debugging()<<"___ "<<METHOD<<" yields Qt2 = "<<m_Qt2<<"."<<std::endl;
-    }  
-    return false;
-  }
-  m_kt2_min = KT2Min(p_split->m_flav.IsGluon(),first);
-  m_kt2_max = KT2Max(m_kt2_min,first);
-
-
-  if (dip->Triplet()->m_info=='B' || dip->AntiTriplet()->m_info=='B') {
-    msg_Debugging()<<"___ "<<METHOD<<": set up dipole for splitting, "
-		  <<"splitter = "<<p_split->m_flav<<"."<<std::endl;
-  }
   m_cms  = Poincare(m_mom0);
   m_cms.Boost(m_mom0);
   m_cms.Boost(m_mom1);
@@ -209,70 +184,217 @@ bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bo
   m_zrot.Rotate(m_mom1);
   m_zrot.Rotate(m_mom3);
 
+  m_glusplit = p_split->m_flav.IsGluon();
+
+  msg_Debugging()<<METHOD<<"(glusplit = "<<m_glusplit<<", Q = "<<m_Q<<"): " 
+		 <<"can in principle split."<<std::endl;
+  //(*dip).Output();
   return true;
 }
 
 
 
-
-bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & vetodiquark) {
-  if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-    msg_Debugging()<<"___ "<<METHOD<<"(in): pt^2(max) = "<<m_kt2_max<<"."<<std::endl;
-  }
-  int  trials(0);
-  m_z = -1.;
-  m_flav = Flavour(kf_none);
-  do {
-    if (trials>1000 || 
-	!ProduceKinematics(m_pt2,m_z,m_phi,m_flav,vetodiquark)) {
-      if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-	msg_Debugging()<<"___ "<<METHOD<<"(out): no splitting determined, trials = "<<trials<<"."<<std::endl;
-      } 
+bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
+{
+  if (m_glusplit) {
+    m_flav = Flavour(kf_none);
+    // from QT^2>0:
+    double maxmass((m_Q-m_m1)/sqrt(2.));
+    double sumwt(0.);
+    
+    for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
+      if (vetodiquark && fdit->first.IsDiQuark()) continue;
+      if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
+	sumwt += fdit->second->popweight;
+      }
+    }
+    if (sumwt<=0) {
+      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		 <<"   no flavour can be picked for gluon splitting: Q = "<<m_Q<<", "
+		 <<"m_1 = "<<m_m1<<" --> mass < "<<(sqrt((m_Q2-m_m1_2)/2.))<<"."<<std::endl;
       return false;
     }
-    trials++;
-  } while (!ConstructKinematics(dip1));
+    sumwt *= ran.Get();
+    for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
+      if (vetodiquark && fdit->first.IsDiQuark()) continue;
+      if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
+	sumwt -= fdit->second->popweight;
+      }
+      if (sumwt<0.) {
+	m_flav = fdit->first;
+	break;
+      }
+    }
+    if (m_flav.IsDiQuark()) m_flav = m_flav.Bar(); 
+    if (m_flav==Flavour(kf_d)) m_d++;
+    else if (m_flav==Flavour(kf_u)) m_u++;
+    else if (m_flav==Flavour(kf_s)) m_s++;
+    m_tot++;
+    
+    //std::cout<<"-------------------------------------------------"<<std::endl;
+    m_m2  = m_m3 = m_flav.HadMass();
+  }
+  else {
+    m_flav = Flavour(kf_gluon);
+    m_m2   = m_flav.HadMass();
+    m_m3   = p_split->m_flav.HadMass();
+  }
+  m_m2_2   = sqr(m_m2); 
+  m_m3_2   = sqr(m_m3); 
+  m_Qt2    = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
 
-  msg_Debugging()<<"___ "<<METHOD<<"(out): splitting succeeded."<<std::endl;
+  m_ymin   = 2.*m_m2*m_m3/m_Qt2;
+  m_ymax   = (m_Qt2-2.*m_m1*(m_Q-m_m1))/m_Qt2;
+  return (m_flav!=Flavour(kf_none));
+}
+
+bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & first,const bool & vetodiquark) {
+  int trials(0);
+  msg_Debugging()<<"In "<<METHOD<<"(first = "<<first<<", veto = "<<vetodiquark<<")."<<std::endl;
+  //dip1->Output();
+  while (trials<1000) {
+    trials++;
+    if (ProduceKinematics(first,vetodiquark) &&
+	ConstructKinematics()) break;
+  }
+  if (m_analyse) {
+    Histogram * histo = (m_histograms.find(std::string("Splitting_Trials")))->second;
+    histo->Insert(trials);
+  }
+  msg_Debugging()<<"In "<<METHOD<<"(first = "<<first<<", veto = "<<vetodiquark<<") -> succeeded."<<std::endl;
   return true;
 }
 
 
-bool Splitting_Tools::EnforcedSplitting(Dipole * dip) {
-  m_kt2 = KT2Min(true,false);
-  double disc(4.*m_kt2/m_Qt2), deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
+bool Splitting_Tools::ProduceKinematics(const bool & first,const bool & vetodiquark) {
+  msg_Debugging()<<"In "<<METHOD<<"."<<std::endl;
+  if (!SelectFlavour(vetodiquark)) {
+    msg_Error()<<"no flavour selected, return false."<<std::endl;
+    return false;
+  }
+  msg_Debugging()<<"   flav = "<<m_flav<<"."<<std::endl;
+  if (!FixRanges(first)) return false;
+  msg_Debugging()<<"   kt2min = "<<m_kt2_min<<", "
+		 <<"z in ["<<m_zmin<<", "<<m_zmax<<"]."<<std::endl;
+
+  m_kt2 = m_z = -1.;
   int trials(0);
-  do {
-    m_z   = zmin+(zmax-zmin)*ran.Get();
-    SelectFlavour(m_kt2,true);
+  while ((m_kt2<0. || m_z<0.) && trials<1000) {
     trials++;
-  } while (trials<1000 && (!KinCheck(m_kt2,m_z) || !ConstructKinematics(dip)));
+    m_z   = p_kernels->SelectZ(m_zmin,m_zmax,m_glusplit,p_split->m_info=='L');
+    if (!UpdateRanges(first)) {
+      m_kt2 = -1.;
+      continue;
+    }
+    m_kt2 = p_as->SelectPT(m_kt2_max,m_kt2_min);
+    if (!KinCheck()) {
+      m_kt2 = -1;
+      continue;
+    }
+    if (p_kernels->Weight(m_kt2,m_z,p_split->m_flav.IsGluon(),
+			  p_split->m_info=='L' && p_spect->m_info!='L')<ran.Get()) {
+      m_kt2 = -1;
+      continue;
+    }
+  }
+  m_phi = 2.*M_PI*ran.Get();
+  msg_Debugging()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<m_kt2<<" "
+	   <<"and z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
+
+  if (m_analyse) {
+    Histogram * histo = (m_histograms.find(std::string("Kinematics_Trials")))->second;
+    histo->Insert(trials);
+  }
   return (trials<1000);
 }
 
-
-void Splitting_Tools::SetInfoTagsForOutgoings() const {
-  switch (m_leading) {
-  case leading::quarks_and_gluons:
-    if (p_split->m_flav.IsGluon() && p_split->m_info=='L') {
-      if (m_z<0.5) 
-	p_out1->m_info='L';
-      else 
-	p_out2->m_info='L';
-    }
-    break;
-  case leading::quarks_and_gluons2:
-    if (p_split->m_flav.IsGluon() && p_split->m_info=='L') {
-      p_out1->m_info='L';
-      p_out2->m_info='L';
-    }
-    break;
-  case leading::only_quarks:
-  case leading::none:
-  default:
-    break;
+bool Splitting_Tools::FixRanges(const bool & first) {
+  double a(m_Qt2+m_m2_2+m_m3_2), b(m_Qt2+2.*m_m3_2);
+  m_kt2_min = m_pt2min;
+  if ((p_spect->m_info=='L') && !p_spect->m_flav.IsGluon() && m_m1_2>1.e-4) {
+    m_kt2_min *= (first?4.:1.)*m_pt2min/m_m1_2;
   }
+  if (!m_glusplit && m_m3_2>0.) {
+    m_kt2_min *= (first?4.:1.)*m_pt2min/m_m3_2;
+  }
+  double pt2check(sqr(b)/(4.*a)-m_m3_2);
+  if (m_kt2_min>pt2check) {
+    m_kt2_min = m_pt2min;
+    if (m_kt2_min>pt2check) {
+      m_kt2_min = pt2check/4.;
+    }
+  }
+  double c(m_kt2_min+m_m3_2);
+  double disc(b*b-4.*a*c);
+  if (disc<0.) {
+    return false;
+    msg_Error()<<"ERROR in "<<METHOD<<"(first = "<<first<<"):"<<std::endl
+	       <<"   Discriminator for z range negative.  This should not happen, "
+	       <<"kt2_min = "<<m_kt2_min<<" from "<<pt2check<<"."<<std::endl;
+    disc = b;
+  }
+  m_zmin = Max(0.,(b-sqrt(disc))/(2.*a));
+  m_zmax = Min(1.,(b+sqrt(disc))/(2.*a));
+  //if (first && m_zmax-m_zmin>2.*m_kt2_min/m_m1_2) {
+  //  m_zmin += m_kt2_min/m_m1_2;
+  //  m_zmax -= m_kt2_min/m_m1_2;
+  // }
+  return true;
 }
+
+bool Splitting_Tools::UpdateRanges(const bool & first) {
+  m_kt2_max = (sqr(m_Q-m_m1)-m_m2_2-m_m3_2)*m_z*(1.-m_z)-m_m2_2*m_z*m_z-m_m3_2*(1.-m_z)*(1.-m_z);
+  msg_Debugging()<<"... "<<METHOD<<"(z = "<<m_z<<") --> kt^2_max = "<<m_kt2_max<<"."<<std::endl;
+  if (m_kt2_max<0.) {
+    return false;
+  }
+  if (m_ptorder==PTOrder::flat) {
+    if (m_kt2_max>m_pt2max) m_kt2_max = sqrt(m_kt2_max*m_pt2max);
+  }
+  else {
+    bool order((m_ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
+	       (m_ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
+	       (m_ptorder==PTOrder::total));
+    if (!first && order) m_kt2_max = Min(m_kt2_max,p_split->m_kt2max);
+    else {
+      if ((p_spect->m_info=='B')) {
+	if (p_split->m_info=='B') 
+	  m_kt2_max = Min(m_kt2_max,m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2()));
+	else 
+	  m_kt2_max = Min(m_kt2_max,m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min));
+      }
+      else {
+	m_kt2_max = Min(m_kt2_max,m_pt2max_factor*p_spect->m_mom.PPerp2(p_split->m_mom));
+	
+      }
+    }
+    msg_Tracking()<<"... first: "<<p_split->m_info<<p_spect->m_info
+		  <<"("<<p_split->m_flav<<" "<<p_spect->m_flav<<"): "
+		  <<"kt_max = "<<sqrt(m_kt2_max)<<" from pt(kin) = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<", "
+		  <<"p_min = "<<Min(p_split->m_mom.PSpat(),p_spect->m_mom.PSpat())<<" and "
+		  <<"cos = "<<p_split->m_mom.CosTheta(p_spect->m_mom)
+		  <<", red. mass = "<<sqrt(m_Qt2)<<"."<<std::endl;
+    if (m_kt2_max>m_pt2max) m_kt2_max = sqrt(m_kt2_max*m_pt2max);
+    m_kt2_min  = sqr(m_z*m_m2+(1.-m_z)*m_m3); 
+    m_kt2_min += m_pt2min;
+    if (!p_spect->m_flav.IsGluon() && m_m1_2>1.e-4) {
+      m_kt2_min *= (first?4.:1.)*m_pt2min/m_m1_2;
+    }
+    if (!m_glusplit && m_m3_2>0.) {
+      m_kt2_min *= (first?4.:1.)*m_pt2min/m_m3_2;
+    }
+    if (m_kt2_min>m_kt2_max) {
+      m_kt2_min = m_kt2_max/4.;
+      msg_Debugging()<<"   correct to kt^2_min,max = "<<m_kt2_min<<", "<<m_kt2_max<<"."<<std::endl;
+    }
+  }
+  return true;
+}
+    
+
+
+
+
 
 
 
@@ -331,163 +453,72 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   }
 }
 
-
-
-
-bool Splitting_Tools::ProduceKinematics(double & kt2_test,double & z_test,double & phi_test,
-					ATOOLS::Flavour & flav,
-					const bool & vetodiquark) {
-  double disc(4.*m_kt2_min/m_Qt2), discp(disc); 
-  if (disc<0. || disc>1.) {
-    msg_Debugging()<<"___ "<<METHOD<<": Cannot split object with reduced mass = "
-		  <<sqrt(m_Qt2)<<"."<<std::endl;
-    return false;
-  }
-  double deltaz(sqrt(1.-disc)),zmin((1.-deltaz)/2.), zmax((1.+deltaz)/2.); 
-  msg_Tracking()<<"::: z boundaries: ["<<zmin<<", "<<zmax<<"] for "<<p_split->m_flav<<"."<<std::endl;
-  double deltazp(deltaz), zminp(zmin), zmaxp(zmax);
-  kt2_test = -1.;
-  int  trials(0);
-  msg_Debugging()<<"___ "<<METHOD<<" : start inner loop with pt2 in ["<<m_kt2_min<<", "<<m_kt2_max<<"] "
-	   <<"and z = "<<z_test<<" for "<<m_flav<<". "
-	   <<"Glusplit = "<<p_split->m_flav.IsGluon()<<"."<<std::endl;
-  while ((kt2_test<0. || z_test<0.) && trials<1000) {
-    trials++;
-    kt2_test = p_as->SelectPT(m_kt2_max,m_kt2_min);
-    if (p_split->m_flav.IsGluon()) {
-      if (m_masstreatment==3) {
-	SelectFlavour(kt2_test,vetodiquark);
-	disc = m_m2_2/m_Qt2;
-	if (disc<0. || disc>1.) continue;
-      }
-      else {
-	SelectFlavour(m_Qt2/4.,vetodiquark);
-      }
-    }
-    z_test = p_kernels->SelectZ(zmin,zmax,p_split->m_flav.IsGluon(),p_split->m_info=='L');
-
-    if (false) {
-      discp   = 4.*kt2_test/m_Qt2;
-      deltazp = sqrt(1.-disc);
-      zminp   = (1.-deltaz)/2.;
-      zmaxp   = (1.+deltaz)/2.;
-      if (z_test<zminp || z_test>zmaxp) {
-	kt2_test = -1.;
-	continue;
-      }
-    }
-
-    if (!KinCheck(kt2_test,z_test)) {
-      kt2_test = -1;
-      continue;
-    }
-    if (p_kernels->Weight(kt2_test,z_test,p_split->m_flav.IsGluon(),
-			  p_split->m_info=='L' && p_spect->m_info!='L')<ran.Get()) {
-      kt2_test = -1;
-      continue;
-    }
-  }
-  msg_Debugging()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<kt2_test<<" "
-	   <<"and z = "<<z_test<<" for "<<m_flav<<"."<<std::endl;
-
-  //if (p_split->m_flav.IsGluon()) {
-  // msg_Debugging()<<"Out of "<<METHOD<<"(veto = "<<vetodiquark<<", mass = "<<m_masstreatment<<"): "
-  //	     <<"Flavour = "<<m_flav<<" for pt^2 = "<<kt2<<",    Qt^2 = "<<m_Qt2<<"."<<std::endl;
-  //}
-  //std::cout<<"Out of "<<METHOD<<" with "<<trials<<" trials."<<std::endl;
-  phi_test = 2.*M_PI*ran.Get();
-  return (trials<1000);
-}
-
-double Splitting_Tools::KT2Max(const double & kt2min,const bool & first) {
-  double kt2max(m_Qt2);
-  if (m_ptorder==PTOrder::flat) return Min(sqrt(kt2max*m_pt2max),m_pt2max);
-
-  bool order((m_ptorder==PTOrder::gluon_split && p_split->m_flav==Flavour(kf_gluon)) ||
-	     (m_ptorder==PTOrder::gluon_emit && p_split->m_flav!=Flavour(kf_gluon)) ||
-	     (m_ptorder==PTOrder::total));
-  if (!first && order) kt2max = p_split->m_kt2max;
-  else {
-    if (!(p_spect->m_info=='B')) {
-      if (!p_split->m_flav.IsGluon()) 
-	kt2max = (first?m_Qt2/4.:p_spect->m_mom.PPerp2(p_split->m_mom));
-      //m_pt2min/sqrt(Max(m_pt2min,m_m1_2)*Max(m_pt2min,m_m3_2));
-      kt2max *= m_pt2max_factor;
-      msg_Tracking()<<"... first: "<<p_split->m_info<<p_spect->m_info
-		    <<"("<<p_split->m_flav<<" "<<p_spect->m_flav<<"): "
-		    <<"kt_max = "<<sqrt(kt2max)<<" from pt = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<", "
-		    <<"p_min = "<<Min(p_split->m_mom.PSpat(),p_spect->m_mom.PSpat())<<" and "
-		    <<"cos = "<<p_split->m_mom.CosTheta(p_spect->m_mom)
-		    <<", red. mass = "<<sqrt(m_Qt2/4.)<<"."<<std::endl;
-    }
-    else {
-      if (p_split->m_info=='B') 
-    	kt2max = m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2());
+void Splitting_Tools::SetInfoTagsForOutgoings() const {
+  switch (m_leading) {
+  case leading::quarks_and_gluons:
+    if (p_split->m_flav.IsGluon() && p_split->m_info=='L') {
+      if (m_z<0.5) 
+	p_out1->m_info='L';
       else 
-    	kt2max = m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min);
+	p_out2->m_info='L';
     }
-    if (kt2max>m_pt2max) kt2max = sqrt(kt2max*m_pt2max);
+    break;
+  case leading::quarks_and_gluons2:
+    if (p_split->m_flav.IsGluon() && p_split->m_info=='L') {
+      p_out1->m_info='L';
+      p_out2->m_info='L';
+    }
+    break;
+  case leading::only_quarks:
+  case leading::none:
+  default:
+    break;
   }
-
-  if (p_split->m_info=='L' && p_spect->m_info=='L') {
-    msg_Debugging()<<METHOD<<"(first = "<<first<<", order = "<<order<<") yields kt2_max = "<<kt2max<<" "
-		  <<"(fac = "<<m_pt2max_factor<<", kt^2_min = "<<kt2min<<", Qt^2/4 = "<<m_Qt2/4.
-		  <<", pt^2 = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<")"
-		  <<" for split/spect:"<<std::endl<<(*p_split)<<(*p_spect);
-  }
-  if (kt2min>kt2max) {
-    kt2max = kt2min + 4.*m_mmin_2;
-    msg_Debugging()<<"   correct to kt^2_max = "<<kt2max<<"."<<std::endl;
-  }
-  return kt2max;
-}
-    
-
-
-
-double Splitting_Tools::KT2Min(const bool & glusplit,const bool & first) {
-  double kt2min(m_pt2min);
-  if (first) {
-    if (glusplit)               kt2min += m_mmin_2;
-    if (m_m1_2>0.)              kt2min *= 4.*m_pt2min/m_m1_2;    
-  }
-  else {
-    if (!glusplit && m_m3_2>0.) kt2min *= m_pt2min/m_m3_2;
-    if (glusplit)               kt2min += m_mmin_2;
-    if (m_m1_2>0.)              kt2min *= m_pt2min/m_m1_2;
-  }
-  return kt2min;
 }
 
 
-bool Splitting_Tools::KinCheck(const double & kt2_test,const double & z_test) {
+
+
+
+
+bool Splitting_Tools::KinCheck() {
+  msg_Debugging()<<METHOD<<"(kt^2 = "<<m_kt2<<", z = "<<m_z<<")."<<std::endl;
   //double mu1(m_m1_2/m_Q2),mu2(m_m2_2/m_Q2),mu3(m_m3_2/m_Q2);
   if (m_masstreatment==3 && p_split->m_flav.IsGluon()) {
-    m_s23 = kt2_test;
-    m_kt2 = m_Qt2*m_s23-(1.-z_test)/z_test*m_m2_2-z_test/(1.-z_test)*m_m3_2;
+    m_s23 = m_kt2;
+    m_kt2 = m_Qt2*m_s23-(1.-m_z)/m_z*m_m2_2-m_z/(1.-m_z)*m_m3_2;
     if (m_kt2<0.0) return false;
     m_y   = (m_s23-m_m2_2-m_m3_2)/m_Qt2;
   }
   else { 
-    m_kt2 = kt2_test;
-    m_y   = (kt2_test - sqr(1.-z_test)*m_m2_2 - sqr(z_test)*m_m3_2)/(z_test*(1.-z_test)*m_Qt2);
+    m_y   = (m_kt2 + sqr(1.-m_z)*m_m2_2 + sqr(m_z)*m_m3_2)/(m_z*(1.-m_z)*m_Qt2);
     m_s23 = m_y*m_Qt2+m_m2_2+m_m3_2;
-    if (m_s23<0.0) return false;
+    if (m_s23<0.0) {
+      msg_Debugging()<<"   ... negative s23."<<std::endl;
+      return false;
+    }
     if (m_masstreatment==3 && p_split->m_flav.IsGluon()) {
-      if (m_kt2/m_s23*(*p_as)(m_s23)/(*p_as)(m_kt2)<ran.Get()) return false;
+      if (m_kt2/m_s23*(*p_as)(m_s23)/(*p_as)(m_kt2)<ran.Get()) {
+	msg_Debugging()<<"   ... reweighted as."<<std::endl;
+	return false;
+      }
     }
   }
-  double ym = 2.*m_m2*m_m3/m_Qt2;
-  double yp = (m_Q2-2.*m_m1_2/m_Q2*(m_Q2-m_m3_2))/m_Qt2;
-  if (m_y<ym || m_y>yp) return false;
-
+  if (m_y<m_ymin || m_y>m_ymax) {
+    msg_Debugging()<<"   ... y = "<<m_y<<" out of bounds ["<<m_ymin<<", "<<m_ymax<<"]."<<std::endl;
+    m_reject_y++;
+    return false;
+  }
   double viji = sqrt(sqr(m_Qt2*m_y)-4.*m_m2_2*m_m3_2)/(m_Qt2*m_y+2.*m_m3_2);
   double vijk = sqrt(sqr(2.*m_m1_2+m_Qt2*(1.-m_y))-4.*m_m1_2)/(m_Qt2*(1.-m_y));
   double frac = (2.*m_m3_2+m_Qt2*m_y)/(2.*(m_m3_2+m_m2_2+m_Qt2*m_y));
   double zm   = frac*(1.-viji*vijk);
   double zp   = frac*(1.+viji*vijk);
-  if (z_test<zm || z_test>zp) return false;
-
+  if (m_z<zm || m_z>zp) {
+    msg_Debugging()<<"   ... z = "<<m_z<<" out of (updated) bounds ["<<zm<<", "<<zp<<"]."<<std::endl;
+    m_reject_z++;
+    return false;
+  }
   p_kernels->SetScales(m_m1_2,m_m2_2,m_m3_2,m_Q2,m_y,
 		       viji,vijk,zm,zp,m_y*m_Qt2/2.);
 
@@ -495,59 +526,9 @@ bool Splitting_Tools::KinCheck(const double & kt2_test,const double & z_test) {
 }
 
 
-void Splitting_Tools::SelectFlavour(const double & maxmass,const bool & vetodiquark) {
-  double sumwt(0.);
-  m_flav = Flavour(kf_none);
-  //std::cout<<"-------------------------------------------------"<<std::endl;
-  while (m_flav==Flavour(kf_none)) {
-    for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
-      if (vetodiquark && fdit->first.IsDiQuark()) continue;
-      if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
-	sumwt += fdit->second->popweight;
-	//std::cout<<"  add "<<fdit->first<<" with pop = "<<fdit->second->popweight<<", "
-	//	 <<"mass = "<<fdit->second->massmin<<" (max = "<<maxmass<<")  "
-	//	 <<"--> sum = "<<sumwt<<"."<<std::endl;
-      }
-    }
-    if (sumwt==0) {
-      m_flav=(ran.Get()<0.5)?Flavour(kf_d):Flavour(kf_u);
-      if (m_flav==Flavour(kf_d)) m_d++;
-      else if (m_flav==Flavour(kf_u)) m_u++;
-      m_m2    = m_m3    = m_flav.HadMass();
-      m_m2_2  = m_m3_2  = sqr(m_m2); 
-      m_Qt2   = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
-      return;
-    }
-    sumwt *= ran.Get();
-    for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
-      if (vetodiquark && fdit->first.IsDiQuark()) continue;
-      if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
-	//std::cout<<"  sub "<<fdit->first<<" with pop = "<<fdit->second->popweight<<", "
-	//	 <<"mass = "<<fdit->second->massmin<<"(max = "<<maxmass<<")  "
-	//	 <<"<-- sum = "<<sumwt<<"."<<std::endl;
-	sumwt -= fdit->second->popweight;
-      }
-      if (sumwt<0.) {
-	m_flav = fdit->first;
-	if (m_flav.IsDiQuark()) m_flav = m_flav.Bar(); 
-	break;
-      }
-    }
-    sumwt = 0.;
-  }
-  if (m_flav==Flavour(kf_d)) m_d++;
-  else if (m_flav==Flavour(kf_u)) m_u++;
-  else if (m_flav==Flavour(kf_s)) m_s++;
-  m_tot++;
-
-  //std::cout<<"-------------------------------------------------"<<std::endl;
-  m_m2    = m_m3    = m_flav.HadMass();
-  m_m2_2  = m_m3_2  = sqr(m_m2); 
-  m_Qt2   = m_Q2 - m_m1_2 - m_m2_2 - m_m3_2;
-}
 
 
-bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
+bool Splitting_Tools::ConstructKinematics() {
   if (IsZero(m_Qt2))  
     msg_Error()<<"Warning in "<<METHOD<<": Qt^2 = "<<m_Qt2<<" for kt^2 = "<<m_pt2<<"."<<std::endl;
 
@@ -629,6 +610,13 @@ bool Splitting_Tools::ConstructKinematics(const bool glusplit) {
     q3 = m_z*l + (m_m3_2+m_kt2)/(gam*m_z)*n + m_kt*nperp;
   }
   q2 = m_mom0-q3-q1;
+
+  msg_Debugging()<<"___ "<<METHOD<<": before boosting back."<<std::endl
+		 <<"___ "<<m_mom0<<" = "<<m_mom1<<" ("<<sqrt(Max(0.,m_mom1.Abs2()))<<")"
+		 <<" + "<<m_mom3<<" ("<<sqrt(Max(0.,m_mom3.Abs2()))<<")"<<std::endl
+		 <<"___ "<<q1<<" ("<<sqrt(Max(0.,q1.Abs2()))<<")"
+		 <<" + "<<q2<<" ("<<sqrt(Max(0.,q2.Abs2()))<<")"
+		 <<" + "<<q3<<" ("<<sqrt(Max(0.,q3.Abs2()))<<")."<<std::endl;
 
   if (m_m1_2==0.) {
     msg_Debugging()<<"___ "<<METHOD<<" summary: "<<std::endl

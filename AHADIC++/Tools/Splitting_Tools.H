@@ -12,7 +12,7 @@
 namespace AHADIC {
   class Hadronisation_Parameters;
 
-  struct DecaySpecs { double weight,massmin,popweight; };
+  struct  DecaySpecs { double weight,massmin,popweight; };
   typedef std::map<ATOOLS::Flavour,DecaySpecs *> FlavDecayMap;
   typedef FlavDecayMap::iterator                 FDIter;
   
@@ -46,7 +46,6 @@ namespace AHADIC {
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
     bool                  m_fourquarks, m_analyse;
     int                   m_masstreatment;
-    double                m_lastpt2;
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
@@ -59,33 +58,35 @@ namespace AHADIC {
 
     ATOOLS::Poincare   m_cms,m_zrot;
     ATOOLS::Vec4D      m_mom1,m_mom2,m_mom3,m_mom0;
+    bool               m_glusplit;
+
+    double             m_lastpt2;
     double             m_m1,m_m2,m_m3,m_m23,m_m1_2,m_m2_2,m_m3_2,m_m23_2;
-    double             m_Q2,m_Q,m_Qt2,m_kt2_max,m_kt2_min,m_mass2;
+    double             m_Q2,m_Q,m_Qt2,m_kt2_max,m_kt2_min,m_mass2,m_zmin,m_zmax,m_ymin,m_ymax;
     double             m_pt2,m_z,m_phi,m_y,m_kt,m_kt2,m_s23;
  
     ATOOLS::Flavour    m_flav;
-    long int           m_tot,m_d,m_s,m_u;
+    long int           m_tot,m_d,m_s,m_u,m_reject_y,m_reject_z;
 
-    bool   ProduceKinematics(double & kt2,double & z,double & phi,
-			     ATOOLS::Flavour & flav,const bool & vetodiquark);
-    void   SelectFlavour(const double & maxmass,const bool & vetodiquark);
-    bool   KinCheck(const double & kt2,const double & z);
-    bool   ConstructKinematics(const bool glusplit);
-    double KT2Max(const double & kt2min,const bool & first=false);
-    double KT2Min(const bool & glusplit,const bool & first=false);
-    void   SetInfoTagsForOutgoings() const;
-    void   AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
+    bool ProduceKinematics(const bool & first,const bool & vetodiquark);
+    bool SelectFlavour(const bool & vetodiquark);
+    bool KinCheck();
+    bool ConstructKinematics();
+    bool FixRanges(const bool & first=false);
+    bool UpdateRanges(const bool & first=false);
+    void SetInfoTagsForOutgoings() const;
+    void AnalyseKinematics(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
 			     const ATOOLS::Vec4D & q3);
    public:
     Splitting_Tools(const leading::code &,const PTOrder::code &,const ZForm::code &,
 		    Strong_Coupling *,const bool &);
     ~Splitting_Tools();
 
-    double SetSpectatorAndSplitter(Dipole * dip);
-    double SwapSpectatorAndSplitter(Dipole * dip);
+    void   SetSpectatorAndSplitter(Dipole * dip);
+    void   SwapSpectatorAndSplitter(Dipole * dip);
     bool   PrepareKinematics(Dipole * dip1,const bool & first=false,const bool & enforce=false);
-    bool   DetermineSplitting(Dipole * dip1,const bool & vetodiquark=true);
-    bool   EnforcedSplitting(Dipole * dip);
+
+    bool   DetermineSplitting(Dipole * dip1,const bool & first,const bool & vetodiquark=true);
     void   AftermathOfSplitting(Dipole * dip1);
 
     void   SetOptions(FlavDecayMap *);

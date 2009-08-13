@@ -62,13 +62,13 @@ void Dipole::Output()
   else msg_Out()<<" no flav ";
   msg_Out()<<"], (mass = "<<sqrt(m_mass2)<<", decay = "<<m_mustdecay<<") ---"<<std::endl<<"--- ";
   if (p_triplet!=NULL)	
-    msg_Out()<<p_triplet->m_mom<<" "
+    msg_Out()<<p_triplet->m_mom<<" m = "
 	     <<sqrt(ATOOLS::Max(p_triplet->m_mom.Abs2(),0.))
 	     <<" ("<<p_triplet->m_mom.Abs2()<<") ";
   else msg_Out()<<" XXX ";
   msg_Out()<<" + "; 
   if (p_antitriplet!=NULL)	
-    msg_Out()<<p_antitriplet->m_mom<<" "
+    msg_Out()<<p_antitriplet->m_mom<<" m = "
 	     <<sqrt(ATOOLS::Max(p_antitriplet->m_mom.Abs2(),0.))
 	     <<" ("<<p_antitriplet->m_mom.Abs2()<<") ";
   else msg_Out()<<" XXX ";

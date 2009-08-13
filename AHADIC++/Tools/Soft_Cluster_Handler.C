@@ -673,7 +673,9 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
     }
     return 0.;
   }
-  if (!enforce && MC>p_doubletransitions->GetLightestMass(flpair)+m_decayoffset) {
+  if (!enforce && 
+      p_doubletransitions->GetLightestMass(flpair)*(1.-m_decayoffset)+
+      p_doubletransitions->GetHeaviestMass(flpair)*m_decayoffset<MC) {
     msg_Debugging()<<"@@      --> too heavy, no decay."<<std::endl;
     had1 = had2 = Flavour(kf_none);
     return 0.;
