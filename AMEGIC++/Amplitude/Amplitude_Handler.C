@@ -955,11 +955,11 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   //if (p1->ncpl!=p2->ncpl) return 0;
   Complex ratio = Complex(0.,0.);
   for (int i=0;i<2;i++) {
-    if (ratio==Complex(0.,0.) && p2->cpl[i]!=Complex(0.,0.)) ratio = p1->cpl[i]/p2->cpl[i];
-    if (!ATOOLS::IsEqual(p2->cpl[i]*ratio,p1->cpl[i])) return 0;
-    if (!ATOOLS::IsEqual(p2->cpl[i],p1->cpl[i])) {
-      string help=ToString(p2->cpl[i]);
-      if (cplmap.find(help)==cplmap.end()) cplmap[help]=p1->cpl[i];
+    if (ratio==Complex(0.,0.) && p2->v->Coupling(i)!=Complex(0.,0.)) ratio = p1->v->Coupling(i)/p2->v->Coupling(i);
+    if (!ATOOLS::IsEqual(p2->v->Coupling(i)*ratio,p1->v->Coupling(i))) return 0;
+    if (!ATOOLS::IsEqual(p2->v->Coupling(i),p1->v->Coupling(i))) {
+      string help=ToString(p2->v->Coupling(i));
+      if (cplmap.find(help)==cplmap.end()) cplmap[help]=p1->v->Coupling(i);
     } 
   }
   sf *= abs(ratio);
