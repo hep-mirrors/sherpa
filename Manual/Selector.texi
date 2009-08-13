@@ -12,6 +12,8 @@ Sherpa provides the following selectors
 * Two particle selectors::    two particle selectors
 * Jet finders::               cuts on QCD partons
 * Universal selector::        user-defined cuts
+* Minimum selector::          cuts that are inclusive for several selectors
+* NLO selectors::             selectors for NLO QCD calculations
 @end menu
 
 @node One particle selectors
@@ -81,19 +83,22 @@ R separation
 @node Jet finders
 @subsection Jet finders
 
-There are two different types of jet finders
+There are three different types of jet finders
 
 @table @option
 @item JetFinder   
 k_T-algorithm
 @item ConeFinder  
 cone-algorithm
+@item NJetFinder
+k_T-type algorithm to select on a given number of jets
 @end table
 
 Their respective syntax is 
 @verbatim
 JetFinder  <ycut>[<ycut decay 1>[<ycut decay 11>...]...]... <D parameter>
 ConeFinder <min R> 
+NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>]
 @end verbatim
 
 For @option{JetFinder}, it is possible to give different values
@@ -106,12 +111,18 @@ are left out.
 floating point numbers, which can also be given in a form that is
 understood by the internal algebra interpreter, see @ref{Interpreter}.
 
+The @option{NJetFinder} allows to select for kinematic configurations with
+at least @option{<n>} jets that satisfy both, the @option{<ptmin>} and
+the @option{<etmin>} minimum requirements and that are in a PseudoRapidity region
+|eta|<@option{<eta max>}. The @option{<exponent>} allows to apply a kt-algorithm
+(1) or an anti-kt algorithm (-1).
+
 
 @node Universal selector
 @subsection Universal selector
 @cindex SHOW_VARIABLE_SYNTAX
 
-The universal selector is intended to implement non-stnadard cuts
+The universal selector is intended to implement non-standard cuts
 on the matrix element level. Its syntax is
 @verbatim
 "<variable>" <kf1>,..,<kfn> <min1>,<max1>;..;<minn>,<maxn> [<order1>,...,<orderm>]
@@ -189,5 +200,55 @@ Examples
       "m"   90,90   80,100;0,E_CMS;0,E_CMS;0,E_CMS;0,E_CMS;80,100;
 
       Here we use knowledge about the internal ordering to cut only on the correct lepton pairs.
+
+@end table
+
+
+@node Minimum selector
+@subsection Minimum selector
+
+This selector can combine several selectors to pass an event if either those passes the event.
+It is mainly designed to generate more inclusive samples that, for instance, include several
+jet finders and that allows a specification later. The syntax is
+
+@verbatim
+MinSelector {
+  Selector 1
+  Selector 2
+  ...
+} 
+@end verbatim
+
+@node NLO selectors
+@subsection NLO selectors
+
+Phase-space cuts that are applied on next-to-leading order calculations must be defined in a
+infrared safe way. Technically there is also a special treatment for the real (subtracted) 
+correction required. Currently only the following selectors meet this requirement:
+
+@table @asis
+@item QCD parton cuts
+
+@verbatim
+NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>]
+@end verbatim
+(see @ref{Jet finders})
+
+@item Cuts on not strongly interacting particles
+
+@ref{One particle selectors}
+@verbatim
+PTNLO <flavour code> <min value> <max value>
+RapidityNLO <flavour code> <min value> <max value>
+PseudoRapidityNLO <flavour code> <min value> <max value>
+@end verbatim
+
+@ref{Two particle selectors}
+@verbatim
+PT2NLO <flavour1 code> <flavour2 code> <min value> <max value>
+Mass <flavour1 code> <flavour2 code> <min value> <max value>
+@end verbatim
+
+@item The @ref{Minimum selector} can be used if constructed with other selectors mentioned in this section
 
 @end table
