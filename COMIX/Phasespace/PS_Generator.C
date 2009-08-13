@@ -2,6 +2,7 @@
 
 #include "COMIX/Phasespace/PS_Current.H"
 #include "COMIX/Phasespace/PS_Vertex.H"
+#include "COMIX/Phasespace/PS_Channel.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
@@ -501,7 +502,7 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
 	  mass<rpa.gen.Ecms() && !IsEqual(mass,m_cur[n][j]->Mass()))
 	AddExtraCurrent(m_cur[n][j],n,mass,0.0);
       if ((m_ecmode&2) && m_cur[n][j]->Mass()>m_chmass &&
-	  m_cur[n][j]->Width()>s_pwmin)
+	  m_cur[n][j]->Width()>s_pwmin && IdCount(pid)>2)
 	AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Mass(),0.0);
     }
   }
