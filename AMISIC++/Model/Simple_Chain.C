@@ -141,6 +141,7 @@ bool Simple_Chain::GeneratePathName()
 bool Simple_Chain::ReadInData()
 {
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddComment("#");
   reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
@@ -172,6 +173,7 @@ bool Simple_Chain::CreateGrid()
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","!","=");
+  reader->AddComment("#");
   reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile(2));
@@ -350,6 +352,7 @@ bool Simple_Chain::Initialize()
       !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddComment("#");
   reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());

@@ -35,6 +35,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
 #endif
 {
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.AddIgnore("[");
   dr.AddIgnore("]");

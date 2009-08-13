@@ -31,6 +31,7 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   p_kperp[0] = new std::vector<Vec3D>();
   p_kperp[1] = new std::vector<Vec3D>();
   Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(_m_path);
   dataread.SetInputFile(_m_file);

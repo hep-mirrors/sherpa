@@ -16,6 +16,7 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
 {
   
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
   dr.SetInputFile(file);

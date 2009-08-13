@@ -67,6 +67,7 @@ void Model_Base::ReadParticleData() {
   std::map<int,double> cdm, cdw;
   std::map<int,int> cia, cis, cim, cic;
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.AddIgnore("[");
   dr.AddIgnore("]");
@@ -164,6 +165,7 @@ void Model_Base::ReadParticleData() {
 void Model_Base::InitializeInteractionModel()
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_dir);
   read.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));

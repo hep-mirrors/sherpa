@@ -44,6 +44,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
 
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa.GetPath());
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));

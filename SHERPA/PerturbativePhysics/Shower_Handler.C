@@ -15,6 +15,7 @@ Shower_Handler::Shower_Handler
   p_shower(NULL), p_isr(isr)
 {
   Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);

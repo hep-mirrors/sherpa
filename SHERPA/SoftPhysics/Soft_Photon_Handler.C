@@ -11,6 +11,7 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile) :
   m_name(""), m_mode(softphotons::off), p_yfs(NULL)
 {
   Data_Reader * dataread = new Data_Reader(" ",";","!","=");
+  dataread->AddComment("#");
   dataread->AddWordSeparator("\t");
   dataread->SetInputPath(path);
   dataread->SetInputFile(datfile);

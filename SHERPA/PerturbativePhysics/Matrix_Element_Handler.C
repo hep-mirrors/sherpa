@@ -32,6 +32,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_shower(NULL), m_totalxs(0.0)
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
@@ -254,6 +255,7 @@ bool Matrix_Element_Handler::InitializeProcesses
 void Matrix_Element_Handler::BuildProcesses()
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);

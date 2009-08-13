@@ -36,6 +36,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
 #ifdef USING__Amisic
   std::string mihandler="None";
   ATOOLS::Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(path);
   read.SetInputFile(file);

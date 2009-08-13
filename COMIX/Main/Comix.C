@@ -169,6 +169,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   p_int->SetISR(isrhandler);
   // init mapping file
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);

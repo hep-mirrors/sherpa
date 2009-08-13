@@ -29,6 +29,7 @@ void Model::Initialize(MODEL::Model_Base *const model,
   msg_Debugging()<<METHOD<<"(\""<<file<<"\"): {\n";
   p_model=model;
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputFile(file);
   m_cplscheme=read.GetValue<std::string>("COUPLING_SCHEME","Running");

@@ -20,6 +20,7 @@ long unsigned int Phase_Space_Integrator::nmax=
 Phase_Space_Integrator::Phase_Space_Integrator()
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(rpa.GetPath());
   read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));

@@ -14,6 +14,7 @@ ME_Generators::ME_Generators(const std::string &path,
   std::vector<ME_Generator_Base*>(), m_path(path), m_file(file)
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   std::vector<std::string> megens;
@@ -65,12 +66,10 @@ bool ME_Generators::PerformTests()
 Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
 {
   DEBUG_FUNC(&pi);
-  size_t nf(pi.m_fi.NExternal());
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (pi.m_fi.NLOType()==nlo_type::loop && pi.m_loopgenerator!=(*mit)->Name())
       continue;
     DEBUG_INFO("trying "<<(*mit)->Name());
-    if (nf>4 && mit!=--end()) continue;
     Process_Base *proc((*mit)->InitializeProcess(pi,add));
     if (proc) {
       DEBUG_INFO("found "<<proc->Name());

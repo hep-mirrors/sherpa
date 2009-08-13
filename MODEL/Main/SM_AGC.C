@@ -63,6 +63,7 @@ SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
 
 void SM_AGC::FillSpectrum() {
   p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
   p_dataread->SetInputFile(m_file);

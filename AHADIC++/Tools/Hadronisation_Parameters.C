@@ -101,6 +101,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
 {
   Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);

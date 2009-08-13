@@ -67,6 +67,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     ShowParameterSyntax();
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
     p_dataread    = new Data_Reader(" ",";","!","=");
+    p_dataread->AddComment("#");
     p_dataread->AddWordSeparator("\t");
     p_dataread->SetInputPath(m_path);
     p_dataread->SetInputFile(m_file);
@@ -90,6 +91,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 void Initialization_Handler::SetFileNames()
 {
   p_dataread    = new Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_path);
   p_dataread->SetInputFile(m_file);
@@ -214,6 +216,7 @@ Initialization_Handler::~Initialization_Handler()
 void Initialization_Handler::LoadLibraries() const
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.SetInputFile(m_path+m_file);
   std::vector<std::string> ldadd;
   if (!read.VectorFromFile(ldadd,"SHERPA_LDADD")) return;
@@ -427,6 +430,7 @@ bool Initialization_Handler::InitializeTheModel()
   if (p_model) delete p_model;
   //determine and set scale for coupling initialization
   Data_Reader beamer(" ",";","!","=");
+  beamer.AddComment("#");
   beamer.AddWordSeparator("\t");
   beamer.SetInputFile(m_path+m_beamdat);
   double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
@@ -451,6 +455,7 @@ bool Initialization_Handler::InitializeTheBeams()
 {
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
   Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_beamdat);
@@ -462,6 +467,7 @@ bool Initialization_Handler::InitializeTheBeams()
 bool Initialization_Handler::InitializeThePDFs()
 {
   Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_isrdat[0]);
@@ -634,6 +640,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_hadrondecaysdat);
@@ -778,6 +785,7 @@ bool Initialization_Handler::CalculateTheHardProcesses()
 void Initialization_Handler::SetScaleFactors() 
 {
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_medat);

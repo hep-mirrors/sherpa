@@ -111,6 +111,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (!user_info) gen.m_username="<unknown user>";
   else gen.m_username=user_info->pw_gecos;
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(file);
@@ -164,6 +165,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   // read only if defined (no error message if not defined)
   Data_Reader dreader(" ",";","!","=");
+  dreader.AddComment("#");
   dreader.AddWordSeparator("\t");
   dreader.SetInputFile(m_path+file);
   std::vector<long int> seeds;

@@ -330,6 +330,7 @@ void ATOOLS::Random::PrepareTerminate()
 bool Random::InitExternal(const std::string &path,const std::string &file)
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.SetInputPath(path);
   read.SetInputFile(file);
   std::string name;

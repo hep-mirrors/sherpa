@@ -41,6 +41,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   m_weight(1.)
 {
   Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa.GetPath());
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));

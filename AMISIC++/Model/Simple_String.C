@@ -63,6 +63,7 @@ bool Simple_String::Initialize()
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddComment("#");
   reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
