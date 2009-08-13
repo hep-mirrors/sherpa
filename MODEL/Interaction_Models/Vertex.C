@@ -66,10 +66,10 @@ Vertex::Vertex(Interaction_Model_Base * _model)
 
   m_nvertex  = m_v.size();
   m_n4vertex = m_v4.size();
-  Print();
+  //Print();
   //TexOutput();
   GenerateVertex();
-  //Print();
+  Print();
   
   msg_Debugging()<<"... done with it ("<<m_nvertex+m_n4vertex<<")."<<endl;
   msg_Tracking()<<"Initialized interaction model of MODEL : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
@@ -210,6 +210,28 @@ int Vertex::CheckExistence(Single_Vertex& probe)
   return 1;
 }
 
+int Vertex::FermionRule(Single_Vertex& probe)
+{
+  // fermionic: particles left, anti-particles right
+  int hit = 1;
+  if (probe.in[1].IsFermion() && !probe.in[1].IsAnti() && !probe.in[1].Majorana()) hit = 0;
+  if (probe.in[2].IsFermion() &&  probe.in[2].IsAnti() && !probe.in[2].Majorana()) hit = 0;
+  
+  //FNV chargino interactions
+  if (hit==0) {
+    if (probe.in[1].IsFermion() && probe.in[2].IsFermion() &&
+	!probe.in[1].Majorana() && !probe.in[2].Majorana()) {
+      if (probe.in[1].IsAnti() && probe.in[2].IsAnti()) {
+	if (probe.in[1].IsChargino()) hit=1;
+      }
+      if (!probe.in[1].IsAnti() && !probe.in[2].IsAnti()) { 
+      if (probe.in[2].IsChargino()) hit=1;
+      }
+    }
+  }
+  return hit;
+}
+
 int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1, int i2, int i3)
 {
   probe = orig;
@@ -226,9 +248,10 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
   }
   
   if (CheckExistence(probe)==0) return 0;
-
-  int hc = 0;
-
+  if (probe.nleg==3) {
+    if (FermionRule(probe)==0) return 0;}
+    
+  int hc  = 0;
   int cnt = 0;
   for(int i=0;i<orig.nleg;i++) {
     if(orig.in[i]!=orig.in[i].Bar()) cnt++;
@@ -305,8 +328,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
   } 
   if (orig.nleg==3 && (orig.Lorentz.front()->Type()=="Gamma")) {
     //exchange left and right for 'barred' FFV vertices
-    if ((i0==-1 && !orig.in[0].SelfAnti())  || 
-	(i0==-3 && !orig.in[2].SelfAnti())) {
+    if ((i0==-1 && (!orig.in[0].SelfAnti() || (!orig.in[2].SelfAnti())))  || 
+	(i0==-3 && (!orig.in[2].SelfAnti() || (!orig.in[0].SelfAnti())))) {
       Kabbala help = -probe.cpl[0];
       probe.cpl[0] = -probe.cpl[1];
       probe.cpl[1] = help;
