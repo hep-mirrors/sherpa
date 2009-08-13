@@ -59,6 +59,7 @@ Selector_Key Combined_Selector::FindArguments
 	  result.back().resize(k+1);
 	  if (k==0 && result.back()[0].length()==0) 
 	    result.resize(result.size()-1);
+	  starty=i;
 	  return result;
 	}
       }
@@ -77,9 +78,10 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       if (key[k][0]=="{" || key[k][0]=="}") continue;
     }
     size_t col=1;
+    size_t startk=k;
     Selector_Key mat(FindArguments(key,k,col));
-    mat.m_key=key[k][0];
-    Selector_Base *sel(Selector_Getter::GetObject(key[k][0],mat));
+    mat.m_key=key[startk][0];
+    Selector_Base *sel(Selector_Getter::GetObject(key[startk][0],mat));
     if (sel!=NULL) {
       m_sels.push_back(sel);
       m_update|=sel->NeedUpdate();

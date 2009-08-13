@@ -12,6 +12,7 @@ libPhasicSelectors_la_SOURCES =	\
 				Cone_Finder.C \
 				Standard_Selector.C \
 				NLO_Selector.C \
+				MinSelector.c \
 				Selector_Bias.C
 
 localinc_HEADERS      =	\
