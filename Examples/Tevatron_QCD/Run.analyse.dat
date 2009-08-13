@@ -6,7 +6,7 @@
   RESULT_DIRECTORY = Results.QCUT
   GENERATE_RESULT_DIRECTORY = 1
 
-  ANALYSIS = Internal,Rivet
+  ANALYSIS = Rivet
 }(run)
 
 (beam){

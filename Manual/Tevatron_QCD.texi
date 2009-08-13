@@ -11,7 +11,7 @@ events with Sherpa, and the use of the @ref{Enhance_Function} and
 the parameter @code{RUNDATA} must be specified on the command line,
 see @ref{Input structure}.
 
-@subsection Run.dat
+@comment  @subsection Run.dat
 
 @example
 @smallformat
@@ -30,44 +30,44 @@ This is necessary because the `CKKW' tag does not apply any cuts to the core
 process, but only to the extra-jet matrix elements, see @ref{Merging ME and PS}.
 @end itemize
 
-@subsection Run.analyse.dat 
-
-This run card also generates QCD events at the Tevatron, 
-but it uses weighted events, and the
-tags @ref{Enhance_Factor}, and @ref{Enhance_Function}. 
-It also has some Rivet analyses enabled. For more information 
-on using Rivet with Sherpa, see @ref{Rivet analyses}.
-To use this run card, as it is not named @option{Run.dat}, 
-the @code{RUNDATA} parameter must be specified on the command line,
-see @ref{Input structure}.
-
-The run card looks like this:
-
-@example
-@smallformat
-@verbatiminclude Examples/Tevatron_QCD/Run.analyse.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize @bullet
-@item the @ref{EVENT_GENERATION_MODE} has been set to generate weighted events
-in the @code{(me)} section.
-
-@item the @ref{ANALYSIS} switch has been set to @option{Internal,Rivet}, enabling 
-both the Rivet analyses listed, and the analyses using the internal Sherpa 
-Analysis module.
-
-@item to use Sherpa's Analysis module, Sherpa has to be configured with the 
-tag @option{--enable-analysis} on the command line. See @ref{ANALYSIS}.
-
-@item an @code{(analysis)} section is included. This lists the Rivet analyses to 
-be performed, and specifies the internal analyses. 
-
-@item the Rivet analyses listed in this example (@option{D0_2008_S7662670} etc)
-are all analyses valid for QCD jet production at the Tevatron. See @ref{Rivet analyses}
-and the @uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.
-@end itemize
+@comment  @subsection Run.analyse.dat 
+@comment  
+@comment  This run card also generates QCD events at the Tevatron, 
+@comment  but it uses weighted events, and the
+@comment  tags @ref{Enhance_Factor}, and @ref{Enhance_Function}. 
+@comment  It also has some Rivet analyses enabled. For more information 
+@comment  on using Rivet with Sherpa, see @ref{Rivet analyses}.
+@comment  To use this run card, as it is not named @option{Run.dat}, 
+@comment  the @code{RUNDATA} parameter must be specified on the command line,
+@comment  see @ref{Input structure}.
+@comment  
+@comment  The run card looks like this:
+@comment  
+@comment  @example
+@comment  @smallformat
+@comment  @verbatiminclude Examples/Tevatron_QCD/Run.analyse.dat
+@comment  @end smallformat
+@comment  @end example
+@comment  
+@comment  Things to notice:
+@comment  @itemize @bullet
+@comment  @item the @ref{EVENT_GENERATION_MODE} has been set to generate weighted events
+@comment  in the @code{(me)} section.
+@comment  
+@comment  @item the @ref{ANALYSIS} switch has been set to @option{Internal,Rivet}, enabling 
+@comment  both the Rivet analyses listed, and the analyses using the internal Sherpa 
+@comment  Analysis module.
+@comment  
+@comment  @item to use Sherpa's Analysis module, Sherpa has to be configured with the 
+@comment  tag @option{--enable-analysis} on the command line. See @ref{ANALYSIS}.
+@comment  
+@comment  @item an @code{(analysis)} section is included. This lists the Rivet analyses to 
+@comment  be performed, and specifies the internal analyses. 
+@comment  
+@comment  @item the Rivet analyses listed in this example (@option{D0_2008_S7662670} etc)
+@comment  are all analyses valid for QCD jet production at the Tevatron. See @ref{Rivet analyses}
+@comment  and the @uref{http://projects.hepforge.org/rivet/,,Rivet Website} for more details.
+@comment  @end itemize
 
 
 
