@@ -188,7 +188,7 @@ Selector_Base *ET_Bias_Getter::operator()(const Selector_Key &key) const
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
   Flavour_Vector flavs(1,flav);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -282,7 +282,7 @@ Selector_Base *PT_Bias_Getter::operator()(const Selector_Key &key) const
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
   Flavour_Vector flavs(1,flav);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -377,7 +377,7 @@ Selector_Base *Eta_Bias_Getter::operator()(const Selector_Key &key) const
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
   Flavour_Vector flavs(1,flav);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -489,7 +489,7 @@ Selector_Base *Mass_Bias_Getter::operator()(const Selector_Key &key) const
   if (crit2<0) flav2 = flav2.Bar();
   Flavour_Vector flavs(1,flav);
   flavs.push_back(flav2);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -602,7 +602,7 @@ Selector_Base *Delta_Eta_Bias_Getter::operator()(const Selector_Key &key) const
   if (crit2<0) flav2 = flav2.Bar();
   Flavour_Vector flavs(1,flav);
   flavs.push_back(flav2);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -715,7 +715,7 @@ Selector_Base *Delta_Phi_Bias_Getter::operator()(const Selector_Key &key) const
   if (crit2<0) flav2 = flav2.Bar();
   Flavour_Vector flavs(1,flav);
   flavs.push_back(flav2);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;
@@ -828,7 +828,7 @@ Selector_Base *Delta_R_Bias_Getter::operator()(const Selector_Key &key) const
   if (crit2<0) flav2 = flav2.Bar();
   Flavour_Vector flavs(1,flav);
   flavs.push_back(flav2);
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(values);
   reader.SetString(values);
   std::vector<std::vector<double> > crits;

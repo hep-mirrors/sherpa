@@ -125,7 +125,7 @@ the @option{<etmin>} minimum requirements and that are in a PseudoRapidity regio
 The universal selector is intended to implement non-standard cuts
 on the matrix element level. Its syntax is
 @verbatim
-"<variable>" <kf1>,..,<kfn> <min1>,<max1>;..;<minn>,<maxn> [<order1>,...,<orderm>]
+"<variable>" <kf1>,..,<kfn> <min1>,<max1>:..:<minn>,<maxn> [<order1>,...,<orderm>]
 @end verbatim
 
 @emph{No additional white spaces are allowed}
@@ -144,7 +144,7 @@ operators can be found here @ref{Interpreter}.
 @option{<kf1>,..,<kfn>} specify the PDG codes of the particles
 the variable has to be calculated from. In case this choice is
 not unique in the final state, you have to specify multiple cut ranges
-(@option{<min1>,<max1>;..;<minn>,<maxn>}) for all (combinations
+(@option{<min1>,<max1>:..:<minn>,<maxn>}) for all (combinations
 of) particles you want to cut on, separated by semicolons.
 
 If no fourth argument is given, the order of cuts is determined
@@ -197,7 +197,7 @@ Examples
 
 @item In @samp{Z[lepton lepton] Z[lepton lepton]}, cut on mass of lepton-pairs produced from Z's:
 
-      "m"   90,90   80,100;0,E_CMS;0,E_CMS;0,E_CMS;0,E_CMS;80,100;
+      "m"   90,90   80,100:0,E_CMS:0,E_CMS:0,E_CMS:0,E_CMS:80,100
 
       Here we use knowledge about the internal ordering to cut only on the correct lepton pairs.
 

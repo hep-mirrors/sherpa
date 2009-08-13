@@ -55,7 +55,7 @@ void Selector_Key::ReadData(const std::string &path,const std::string &file)
   msg_Debugging()<<METHOD<<"('"<<path<<"','"<<file<<"'): {\n";
   msg_Indent();
   if (m_del && p_read!=NULL) delete p_read;
-  p_read=new Data_Reader(" ","\\;","!");
+  p_read=new Data_Reader(" ",";","!");
   p_read->AddWordSeparator("\t");
   p_read->AddComment("#");
   p_read->AddComment("//");

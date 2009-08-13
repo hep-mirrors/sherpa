@@ -91,7 +91,7 @@ Variable_Selector::Variable_Selector
     if (m_omode[0]=='[') {
       if (m_omode[m_omode.length()-1]!=']') 
 	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
-      Data_Reader reader(",",";","!","=");
+      Data_Reader reader(",",":","!","=");
       std::string mode(m_omode.substr(1));
       mode.erase(mode.length()-1,1);
       if (mode.length()>0) {
@@ -109,7 +109,7 @@ Variable_Selector::Variable_Selector
     else if (m_omode[0]=='{') {
       if (m_omode[m_omode.length()-1]!='}') 
 	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
-      Data_Reader reader(",",";","!","=");
+      Data_Reader reader(",",":","!","=");
       std::string ffl(m_omode.substr(1));
       ffl.erase(ffl.length()-1,1);
       if (ffl.length()>0) {
@@ -252,7 +252,7 @@ DECLARE_ND_GETTER(Variable_Selector_Getter,"\"",Selector_Base,Selector_Key,true)
 Selector_Base *Variable_Selector_Getter::operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
-  Data_Reader reader(",",";","!","=");
+  Data_Reader reader(",",":","!","=");
   reader.SetString(key[0][0]);
   std::vector<int> flavs;
   if (!reader.VectorFromString(flavs,""))
