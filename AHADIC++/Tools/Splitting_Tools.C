@@ -344,7 +344,7 @@ bool Splitting_Tools::FixRanges(const bool & first) {
 
 bool Splitting_Tools::UpdateRanges(const bool & first) {
   m_kt2_max = (sqr(m_Q-m_m1)-m_m2_2-m_m3_2)*m_z*(1.-m_z)-m_m2_2*m_z*m_z-m_m3_2*(1.-m_z)*(1.-m_z);
-  msg_Debugging()<<"... "<<METHOD<<"(z = "<<m_z<<") --> kt^2_max = "<<m_kt2_max<<"."<<std::endl;
+  msg_Debugging()<<"... "<<METHOD<<"(z = "<<m_z<<") --> kt_max = "<<sqrt(m_kt2_max)<<"."<<std::endl;
   if (m_kt2_max<0.) {
     return false;
   }
@@ -364,8 +364,8 @@ bool Splitting_Tools::UpdateRanges(const bool & first) {
 	  m_kt2_max = Min(m_kt2_max,m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min));
       }
       else {
-	m_kt2_max = Min(m_kt2_max,m_pt2max_factor*p_spect->m_mom.PPerp2(p_split->m_mom));
-	
+	double pt2(m_pt2max_factor*p_spect->m_mom.PPerp2(p_split->m_mom));
+	if (m_kt2_max>pt2) m_kt2_max = sqrt(m_kt2_max*pt2);
       }
     }
     msg_Tracking()<<"... first: "<<p_split->m_info<<p_spect->m_info
