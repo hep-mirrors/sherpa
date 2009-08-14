@@ -213,8 +213,8 @@ and one power at the transverse momentum squared of the gluon.
 Assuming the Higgs mass to be 120 GeV, the corresponding reweighting factor would read
 
 @verbatim
-SCALES    VAR{...}{PPerp(p[3])}
-COUPLINGS VAR{sqr(Alpha_QCD(120))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_TOT),3)}
+SCALES    VAR{...}{PPerp2(p[3])}
+COUPLINGS VAR{sqr(Alpha_QCD(sqr(120)))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_TOT),3)}
 @end verbatim
 
 If more than two scales are to be used, the subsequent scales are referred to
@@ -224,7 +224,7 @@ Their values can be computed e.g. using the @option{VAR} scale setter, see
 @ref{SCALES}. A fictious example would be
 
 @verbatim
-SCALES    VAR{...}{PPerp(p[4])}{Abs2(p[2]+p[3])}
+SCALES    VAR{...}{PPerp2(p[4])}{Abs2(p[2]+p[3])}
 COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_TOT)*Alpha_QED(S_TOT))}
 @end verbatim
 
