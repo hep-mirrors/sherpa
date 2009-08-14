@@ -63,7 +63,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	
 	
 	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));
@@ -111,7 +111,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	      
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));
@@ -160,7 +160,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));
@@ -229,7 +229,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));
@@ -268,7 +268,7 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	
 	
 	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSV",LF_Key()));
@@ -309,7 +309,7 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSV",LF_Key()));
@@ -338,7 +338,7 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSV",LF_Key()));
@@ -375,7 +375,7 @@ void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSV",LF_Key()));
@@ -437,7 +437,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	    vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -475,7 +475,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	    vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -518,7 +518,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		
 		
-		vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -558,7 +558,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		
 		
-		vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -586,7 +586,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -624,7 +624,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -665,7 +665,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		  
 		  
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -698,7 +698,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		
 		
-		vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -739,7 +739,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -796,7 +796,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		  
 		  
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -888,7 +888,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+		  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 		  
 		  
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
@@ -937,7 +937,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
       
-      vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::None));     
       
       
       vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
@@ -980,7 +980,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
@@ -1010,7 +1010,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));     
@@ -1043,7 +1043,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	
 	
 	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
@@ -1069,7 +1069,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	
 	
 	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
@@ -1108,7 +1108,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
@@ -1150,7 +1150,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
@@ -1179,7 +1179,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::None));     
 	    
 	    
 	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
@@ -1233,7 +1233,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -1264,19 +1264,18 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav2.Bar();
-	 
+	  vertex[vanz].in[2] = flav2;
+	  
 	  kcpl0 = K_zero;
 	  kcpl1 = -M_I*(K_Z_MI(0,j)*K_Z_L((i-12)/2,k-1)*g2+
-					    K_Z_MI(1,j)*K_Z_L((i-12)/2+3,k-1)*K_lI);
-	  
+			K_Z_MI(1,j)*K_Z_L((i-12)/2+3,k-1)*K_lI);
 	  
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -1305,17 +1304,17 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav2;
-
+	  vertex[vanz].in[2] = flav2.Bar();
+	  
 	  kcpl0 = -M_I*K_lI*K_Z_MI(1,j)*K_Z_Nu((i-11)/2,k);
 	  kcpl1 = -M_I*g2*K_Z_PL(0,j)*K_Z_Nu((i-11)/2,k); 
-
+	  
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -1362,7 +1361,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));

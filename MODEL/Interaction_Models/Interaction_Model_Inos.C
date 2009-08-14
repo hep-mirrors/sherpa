@@ -49,9 +49,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	else      c_ino=1000037;
       	Flavour flav2 = Flavour((kf_code)(c_ino));
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k!=2)) {
-	  vertex[vanz].in[0] = flav2;
+	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav1;
+	  vertex[vanz].in[2] = flav2;
 	
 	  kcpl0 = -M_I/root2*g2*
 	    (K_Z_R(0,k)*K_Z_PL(0,j)*K_Z_MI(1,i)+
@@ -66,7 +66,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -75,9 +75,9 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k==2)) {
-	  vertex[vanz].in[0] = flav2.Bar();
+	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[2] = flav3;
-	  vertex[vanz].in[1] = flav1.Bar();
+	  vertex[vanz].in[1] = flav2;
 
 	  kcpl0 = g2/root2*
 	    (K_Z_H(0,0)*K_Z_PL(0,j)*K_Z_MI(1,i)+
@@ -92,7 +92,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -137,7 +137,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	 
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -168,7 +168,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -194,7 +194,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flHm;
-	  vertex[vanz].in[2] = flav1.Bar();
+	  vertex[vanz].in[2] = flav1;
 	  
 	  kcpl0 = -M_I*g2/costW*
 	    K_Z_H(1,0)*(K_Z_PL(1,i)/root2*
@@ -211,7 +211,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));
 	  
 	  
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
@@ -246,7 +246,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   vertex[vanz].in[1] = flph;
 	   vertex[vanz].in[2] = flav2;
 	   
-	   kcpl0 = M_I*g1;
+	   kcpl0 = -M_I*g1;
 	   kcpl1 = kcpl0;
 	   
 	   vertex[vanz].cpl[0]  = kcpl0;
@@ -254,7 +254,7 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	   
 	   
-	   vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	   vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	   
 	   
 	   vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -270,22 +270,23 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	   if (flav1 == flav2) helper = Kabbala(string("cos2\\theta_W"),
 						1.-2.*sintW.Value()*
 						sintW.Value());
-	   vertex[vanz].in[0] = flav1.Bar();
-	   vertex[vanz].in[2] = flZ;
-	   vertex[vanz].in[1] = flav2.Bar();	  
 	   
-	   kcpl1 = M_I/(costW*num_2)*g2*
+	   vertex[vanz].in[0] = flav1;
+	   vertex[vanz].in[1] = flZ;
+	   vertex[vanz].in[2] = flav2;	  
+
+	   kcpl0 = -M_I/(costW*num_2)*g2*
 	     (K_Z_MI(0,j)*K_Z_MI(0,i) + helper);
 
-	   kcpl0 = M_I/(costW*num_2)*g2*
+	   kcpl1 = -M_I/(costW*num_2)*g2*
 	     (K_Z_PL(0,j)*K_Z_PL(0,i) + helper);
-	   
+	
 	   vertex[vanz].cpl[0] = kcpl0;
 	   vertex[vanz].cpl[1] = kcpl1; 
 	   vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	   
 	   
-	   vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	   vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	   
 	   
 	   vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -310,21 +311,21 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
        Flavour flav2 = Flavour((kf_code)(c_ino));
        if (flav1.IsOn() && flav2.IsOn()) {
 	 vertex[vanz].in[0] = flav1;
-	 vertex[vanz].in[1] = Flavour(kf_Wplus);
+	 vertex[vanz].in[1] = Flavour(kf_Wplus).Bar();
 	 vertex[vanz].in[2] = flav2;
 
-	 kcpl0 = M_I*g2*(K_Z_N(1,i)*K_Z_PL(0,j)-
-			 K_Z_N(3,i)*K_Z_PL(1,j)/root2);
-
-	 kcpl1 = M_I*g2*(K_Z_N(1,i)*K_Z_MI(0,j)+
+	 kcpl0 = M_I*g2*(K_Z_N(1,i)*K_Z_MI(0,j)+
 			 K_Z_N(2,i)*K_Z_MI(1,j)/root2);
 
+	 kcpl1 = M_I*g2*(K_Z_N(1,i)*K_Z_PL(0,j)-
+			 K_Z_N(3,i)*K_Z_PL(1,j)/root2);
+	 
 	 vertex[vanz].cpl[0] = kcpl0;
 	 vertex[vanz].cpl[1] = kcpl1; 
 	 vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	 
 	 
-	 vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	 vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	 
 	 
 	 vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -355,18 +356,18 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 vertex[vanz].in[2] = flav2;
 	 
 	 kcpl0 = -M_I/(costW*num_2)*g2*
-	   (K_Z_N_com(3,i)*K_Z_N_com_conj(3,j)-
-	    K_Z_N_com(2,i)*K_Z_N_com_conj(2,j));
+	   (K_Z_N_com(3,j)*K_Z_N_com_conj(3,i)-
+	    K_Z_N_com(2,j)*K_Z_N_com_conj(2,i));
 	 kcpl1 = M_I/(costW*num_2)*g2*
-	   (K_Z_N_com_conj(3,i)*K_Z_N_com(3,j)-
-	    K_Z_N_com_conj(2,i)*K_Z_N_com(2,j));
+	   (K_Z_N_com_conj(3,j)*K_Z_N_com(3,i)-
+	    K_Z_N_com_conj(2,j)*K_Z_N_com(2,i));
 	 
 	 vertex[vanz].cpl[0] = kcpl0;
 	 vertex[vanz].cpl[1] = kcpl1;
 	 vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	 
 	 
-	 vertex[vanz].Color.push_back(Color_Function(cf::None));; 
+	 vertex[vanz].Color.push_back(Color_Function(cf::None)); 
 	 
 	 
 	 vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));

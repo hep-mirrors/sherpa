@@ -87,7 +87,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
 	      
-	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	      vertex[vanz].Color.back().SetParticleArg(2,3);     
 	      vertex[vanz].Color.back().SetStringArg('2','3');     
 	      
@@ -135,7 +135,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
 	      
-	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	      vertex[vanz].Color.back().SetParticleArg(2,3);     
 	      vertex[vanz].Color.back().SetStringArg('2','3');     
 	      
@@ -192,7 +192,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(2,3);     
 		  vertex[vanz].Color.back().SetStringArg('2','3');     
 		  
@@ -267,7 +267,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,1);     
 		  vertex[vanz].Color.back().SetStringArg('0','1');     
 		  
@@ -336,7 +336,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 		  
 		  
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,1);     
 		  vertex[vanz].Color.back().SetStringArg('0','1');     
 		  

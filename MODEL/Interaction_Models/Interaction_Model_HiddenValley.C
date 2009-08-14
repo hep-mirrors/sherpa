@@ -75,12 +75,12 @@ void Interaction_Model_HiddenValley::c_FFV(std::vector<Single_Vertex>& vertex,in
     
     
     if (SMferm.Strong()) {
-      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::D));     
       vertex[vanz].Color.back().SetParticleArg(0,2);     
       vertex[vanz].Color.back().SetStringArg('0','2');     
     }
     else 
-      vertex[vanz].Color.push_back(Color_Function(cf::None));;
+      vertex[vanz].Color.push_back(Color_Function(cf::None));
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -112,12 +112,12 @@ void Interaction_Model_HiddenValley::c_FFV(std::vector<Single_Vertex>& vertex,in
     //might be changed to none
     //adjust coupling instead
     if (HVferm.Strong()) {
-      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::D));     
       vertex[vanz].Color.back().SetParticleArg(0,2);     
       vertex[vanz].Color.back().SetStringArg('0','2');     
     }
     else 
-      vertex[vanz].Color.push_back(Color_Function(cf::None));;
+      vertex[vanz].Color.push_back(Color_Function(cf::None));
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -144,12 +144,12 @@ void Interaction_Model_HiddenValley::c_FFV(std::vector<Single_Vertex>& vertex,in
       //might be changed to none
       //adjust coupling instead
       if (HVferm.Strong()) {
-	vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	vertex[vanz].Color.back().SetParticleArg(0,2);     
 	vertex[vanz].Color.back().SetStringArg('0','2');     
       }
       else 
-	vertex[vanz].Color.push_back(Color_Function(cf::None));;
+	vertex[vanz].Color.push_back(Color_Function(cf::None));
       
       
       vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -176,7 +176,7 @@ void Interaction_Model_HiddenValley::c_VVV(std::vector<Single_Vertex>& vertex,in
   vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();
 
   
-  vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+  vertex[vanz].Color.push_back(Color_Function(cf::F));     
   vertex[vanz].Color.back().SetParticleArg(0,2,1);     
   vertex[vanz].Color.back().SetStringArg('0','2','1');     
 

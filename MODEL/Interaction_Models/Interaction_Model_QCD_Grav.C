@@ -42,7 +42,7 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
     
-    vertex[vanz].Color.push_back(Color_Function(cf::G));;//GD;     
+    vertex[vanz].Color.push_back(Color_Function(cf::G));//GD;     
     vertex[vanz].Color.back().SetParticleArg(0,2);     
     vertex[vanz].Color.back().SetStringArg('0','2');     
     
@@ -68,7 +68,7 @@ void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
     
-    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::G));     
     vertex[vanz].Color.back().SetParticleArg(0,2);     
     vertex[vanz].Color.back().SetStringArg('0','2');     
     
@@ -106,7 +106,7 @@ void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	vertex[vanz].Color.back().SetParticleArg(1,2,0);     
 	vertex[vanz].Color.back().SetStringArg('1','2','0');     
 	
@@ -132,7 +132,7 @@ void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	vertex[vanz].Color.back().SetParticleArg(1,2,0);     
 	vertex[vanz].Color.back().SetStringArg('1','2','0');     
 
@@ -167,7 +167,7 @@ void Interaction_Model_QCD_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& 
   vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 
   
-  vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+  vertex[vanz].Color.push_back(Color_Function(cf::F));     
   vertex[vanz].Color.back().SetParticleArg(0,2,1);     
   vertex[vanz].Color.back().SetStringArg('0','2','1');     
 

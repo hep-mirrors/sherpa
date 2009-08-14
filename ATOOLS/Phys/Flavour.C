@@ -362,8 +362,9 @@ void ATOOLS::OutputParticles(std::ostream &str) {
     kf_code fd(flav.Kfcode());
     // suppress pseudoparticle output
     while (fd/10) fd/=10;
-    if (!flav.IsHadron() && flav.Size()==1 && 
-	flav.Kfcode()!=0 && fd!=9) {
+    if ((!flav.IsHadron()&& fd!=9) ||
+	(flav.Kfcode()>9900000&&flav.Kfcode()<9900099) && 
+	flav.Size()==1 && flav.Kfcode()!=0) {
       str<<std::setw(12)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
       str<<std::setw(14)<<flav.Mass(true);

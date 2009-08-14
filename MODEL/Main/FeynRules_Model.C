@@ -47,6 +47,7 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
   p_matrices         = new ComplexMatricesMap();
 
   p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
   p_dataread->SetInputFile(m_file);
@@ -65,6 +66,7 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
 void FeynRules_Model::ParticleInit() {
   m_partfile = p_dataread->GetValue<string>("FR_PARTICLES",std::string("Particle.dat"));
   Data_Reader reader = Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
   reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.SetInputPath(m_dir);

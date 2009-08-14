@@ -58,7 +58,8 @@ Running_Alpha_HV::Running_Alpha_HV(const double as_MZ,const double m2_MZ,const i
 
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {
-    if (kfit->first>=9900001&&kfit->first<=9900021 && Flavour(kfit->first).Strong()) {
+    if (kfit->first>=9900001 && kfit->first<=9900021 && 
+	Flavour(kfit->first).Strong() && Flavour(kfit->first).IsOn()) {
       m_nth++;
     }
   }
@@ -68,7 +69,7 @@ Running_Alpha_HV::Running_Alpha_HV(const double as_MZ,const double m2_MZ,const i
   int count = 0;
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {
-    if (kfit->first>=9900001 && kfit->first<=9900021) {
+    if (kfit->first>=9900001 && kfit->first<=9900021 && Flavour(kfit->first).IsOn()) {
       Flavour flav(kfit->first);
       if (flav.Strong()) {
 	masses[count] = sqr(flav.Mass(true));

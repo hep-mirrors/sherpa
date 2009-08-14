@@ -95,12 +95,12 @@ void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 	
 		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,2);     
 		  vertex[vanz].Color.back().SetStringArg('0','2');     
 		}
 		else 
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		  vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -125,12 +125,12 @@ void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 	
 	      
 	      if (flav1.Strong()) {
-		vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		vertex[vanz].Color.back().SetParticleArg(0,2);     
 		vertex[vanz].Color.back().SetStringArg('0','2');     
 	      }
 	      else 
-		vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 	      
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -177,12 +177,12 @@ void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 	
 		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,2);     
 		  vertex[vanz].Color.back().SetStringArg('0','2');     
 		}
 		else 
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		  vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -242,7 +242,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str+=kcpl3.String()+"|"+kcpl1.String()+"|"+kcpl2.String();
     
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge3",LF_Key()));
@@ -278,7 +278,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl.push_back(kcpl);  //overall coupling factor
 
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge3",LF_Key()));
@@ -302,7 +302,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl[0]  = kcpl0;  //f4
     vertex[vanz].cpl[1]  = kcpl1;  //f5
 
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
        
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AZZZ",LF_Key()));
     vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
@@ -334,7 +334,7 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl.push_back(kcpl0);  //h1
     vertex[vanz].cpl.push_back(kcpl1);  //h2
 
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
        
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AZZG",LF_Key()));
     vertex[vanz].Lorentz.back()->SetParticleArg(1,2,0);     
@@ -399,7 +399,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gauge4",LF_Key()));
@@ -426,7 +426,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gauge4",LF_Key()));     
@@ -452,7 +452,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge4",LF_Key()));     
@@ -479,7 +479,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge4",LF_Key())); 
@@ -506,7 +506,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
   
     
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::None));     
     
     
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("AGauge4",LF_Key())); 

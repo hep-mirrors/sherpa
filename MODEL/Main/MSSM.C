@@ -61,9 +61,9 @@ void MSSM::ParticleInit() {
   s_kftable[35] = new Particle_Info(35,1000.,10.0,0,0,0,0,-1,1,1,1,"H0","H_0");
   s_kftable[36] = new Particle_Info(36,1000.,10.0,0,0,0,0,-1,1,1,1,"A0","A_0");
   s_kftable[37] = new Particle_Info(37,1000.,10.0,3,0,0,0,0,1,1,1,"H+","H^+");
-  s_kftable[1000024] = new Particle_Info(1000024,1000.,10.0,-3,0,0,1,0,1,1,1,"chargino1","\\chi^-_1");
-  s_kftable[1000037] = new Particle_Info(1000037,1000.,10.0,-3,0,0,1,0,1,1,1,"chargino2","\\chi^-_2");
-  s_kftable[1000022] = new Particle_Info(1000022,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino1","\\chi^0_1");
+  s_kftable[1000024] = new Particle_Info(1000024,1000.,10.0,3,0,0,1,0,1,1,1,"chargino1","\\chi^+_1");
+  s_kftable[1000037] = new Particle_Info(1000037,1000.,10.0,3,0,0,1,0,1,1,1,"chargino2","\\chi^+_2");
+  s_kftable[1000022] = new Particle_Info(1000022,1000.,0.0,0,0,0,1,1,1,1,1,"neutralino1","\\chi^0_1");
   s_kftable[1000023] = new Particle_Info(1000023,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino2","\\chi^0_2");
   s_kftable[1000025] = new Particle_Info(1000025,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino3","\\chi^0_3");
   s_kftable[1000035] = new Particle_Info(1000035,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino4","\\chi^0_4");

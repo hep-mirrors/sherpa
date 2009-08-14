@@ -87,7 +87,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	    vertex[vanz].Color.back().SetParticleArg(0,1);     
 	    vertex[vanz].Color.back().SetStringArg('0','1');     
 	  
@@ -126,7 +126,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	    vertex[vanz].Color.back().SetParticleArg(0,1);     
 	    vertex[vanz].Color.back().SetStringArg('0','1');     
 	    
@@ -157,7 +157,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[2] = flav2.Bar();
 	  
 	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav3)+2)).Yuk()*
 				 sqrt(2.)/v2.Value());
@@ -174,7 +174,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,1);     
 	  vertex[vanz].Color.back().SetStringArg('0','1');     
 	  
@@ -202,7 +202,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav2.Bar();
+	  vertex[vanz].in[2] = flav2;
 	  	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
 				 -Flavour((kf_code)(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
@@ -220,7 +220,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,1);     
 	  vertex[vanz].Color.back().SetStringArg('0','1');     
 	  
@@ -264,7 +264,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	vertex[vanz].Color.back().SetParticleArg(0,2);     
 	vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -297,7 +297,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	vertex[vanz].Color.back().SetParticleArg(0,2);     
 	vertex[vanz].Color.back().SetStringArg('0','2');     
 	
@@ -343,7 +343,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -384,7 +384,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -433,7 +433,7 @@ void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -493,7 +493,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -549,7 +549,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -618,7 +618,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -679,7 +679,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	  
@@ -751,7 +751,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	vertex[vanz].Color.back().SetParticleArg(0,2);     
 	vertex[vanz].Color.back().SetStringArg('0','2');     
 	
@@ -788,7 +788,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	
 	 Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 	 
-	 kcpl0 = M_I*charge*charge*num_2*g1*g1;;
+	 kcpl0 = M_I*charge*charge*num_2*g1*g1;
 	 kcpl1 = kcpl0;
 	 
 	 vertex[vanz].cpl[0]  = kcpl0;
@@ -796,7 +796,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	 vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	 
 	 
-	 vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	 vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	 vertex[vanz].Color.back().SetParticleArg(1,2);     
 	 vertex[vanz].Color.back().SetStringArg('1','2');     
 	 
@@ -844,7 +844,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -892,7 +892,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -942,7 +942,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -991,7 +991,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -1045,7 +1045,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	    vertex[vanz].Color.back().SetParticleArg(1,2);     
 	    vertex[vanz].Color.back().SetStringArg('1','2');     
 	    
@@ -1085,7 +1085,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	    vertex[vanz].Color.back().SetParticleArg(1,2);     
 	    vertex[vanz].Color.back().SetStringArg('1','2');     
 	    
@@ -1129,7 +1129,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -1171,7 +1171,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -1215,7 +1215,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	vertex[vanz].Color.back().SetParticleArg(0,2,1);     
 	vertex[vanz].Color.back().SetStringArg('0','2','1');    
 	
@@ -1250,7 +1250,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	
 	
-	vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	vertex[vanz].Color.back().SetParticleArg(0,2,1);     
 	vertex[vanz].Color.back().SetStringArg('0','2','1');    
 		
@@ -1294,7 +1294,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	    vertex[vanz].Color.back().SetParticleArg(0,2,1);     
 	    vertex[vanz].Color.back().SetStringArg('0','2','1');    
 	    
@@ -1339,7 +1339,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::T));;     
+	    vertex[vanz].Color.push_back(Color_Function(cf::T));     
 	    vertex[vanz].Color.back().SetParticleArg(0,2,1);     
 	    vertex[vanz].Color.back().SetStringArg('0','2','1');    
 	    
@@ -1383,7 +1383,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
 	    
 	    
-	    vertex[vanz].Color.push_back(Color_Function(cf::T));;
+	    vertex[vanz].Color.push_back(Color_Function(cf::T));
 	    vertex[vanz].Color.back().SetParticleArg(3,2,1);     
 	    vertex[vanz].Color.back().SetStringArg('3','2','1');    
 	    
@@ -1456,7 +1456,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -1493,7 +1493,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	    
@@ -1534,7 +1534,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
 	      
-	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	      vertex[vanz].Color.back().SetParticleArg(1,2);     
 	      vertex[vanz].Color.back().SetStringArg('1','2');     
 	      
@@ -1598,7 +1598,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	  
@@ -1635,7 +1635,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	  
 	  
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(1,2);     
 	  vertex[vanz].Color.back().SetStringArg('1','2');     
 	    
@@ -1676,7 +1676,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
 	      
-	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	      vertex[vanz].Color.back().SetParticleArg(1,2);     
 	      vertex[vanz].Color.back().SetStringArg('1','2');     
 	      
@@ -1740,7 +1740,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	      
 	      
-	      vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	      vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	      vertex[vanz].Color.back().SetParticleArg(1,2);     
 	      vertex[vanz].Color.back().SetStringArg('1','2');     
 	      
@@ -1771,7 +1771,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	     vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
 	     
 	     
-	     vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	     vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	     vertex[vanz].Color.back().SetParticleArg(1,2);     
 	     vertex[vanz].Color.back().SetStringArg('1','2');     
 	     

@@ -63,7 +63,6 @@ void Model_Base::ShowSyntax(const size_t i)
 }
 
 void Model_Base::ReadParticleData() {
-  
   std::map<int,double> cdm, cdw;
   std::map<int,int> cia, cis, cim, cic;
   Data_Reader dr(" ",";","!","=");
@@ -78,8 +77,8 @@ void Model_Base::ReadParticleData() {
   if (dr.MatrixFromFile(helpdvv,"MASS"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cdm[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"WIDTH"))
-    for (size_t i(0);i<helpdvv.size();++i)
+  if (dr.MatrixFromFile(helpdvv,"WIDTH")) 
+    for (size_t i(0);i<helpdvv.size();++i) 
       if (helpdvv[i].size()==2) cdw[int(helpdvv[i][0])]=helpdvv[i][1];
   if (dr.MatrixFromFile(helpdvv,"ACTIVE"))
     for (size_t i(0);i<helpdvv.size();++i)

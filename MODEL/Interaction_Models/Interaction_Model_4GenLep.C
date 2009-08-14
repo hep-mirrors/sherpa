@@ -81,12 +81,12 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	
 		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,2);     
 		  vertex[vanz].Color.back().SetStringArg('0','2');     
 		}
 		else 
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		  vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -111,12 +111,12 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	
 	      
 	      if (flav1.Strong()) {
-		vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		vertex[vanz].Color.back().SetParticleArg(0,2);     
 		vertex[vanz].Color.back().SetStringArg('0','2');     
 	      }
 	      else 
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		  vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 	      
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -157,12 +157,12 @@ void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& va
 	
 		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+		  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 		  vertex[vanz].Color.back().SetParticleArg(0,2);     
 		  vertex[vanz].Color.back().SetStringArg('0','2');     
 		}
 		else 
-		  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+		  vertex[vanz].Color.push_back(Color_Function(cf::None));
 
 		
 		vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
@@ -215,12 +215,12 @@ void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& va
 
 	
 	if (flav.Strong()) {
-	  vertex[vanz].Color.push_back(Color_Function(cf::D));;     
+	  vertex[vanz].Color.push_back(Color_Function(cf::D));     
 	  vertex[vanz].Color.back().SetParticleArg(0,2);     
 	  vertex[vanz].Color.back().SetStringArg('0','2');     
 	}
 	else 
-	  vertex[vanz].Color.push_back(Color_Function(cf::None));;
+	  vertex[vanz].Color.push_back(Color_Function(cf::None));
 	
 	
 	vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));

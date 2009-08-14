@@ -94,7 +94,7 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
 
   pbegin = BackwardLine(pcurr);
   pend   = ForwardLine(pcurr);
-
+  
   if (b[pbegin->number]==-1 ||
       b[pend->number]  ==-1) {
     //pure Majorana cases
@@ -130,13 +130,9 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
     }
     //special cases
     if (b[pbegin->number]==-1 && b[pend->number]==-1 && 
-	pbegin->fl.Majorana() && !pend->fl.IsAnti()) {
-      return;
-    }
+	pbegin->fl.Majorana() && !pend->fl.IsAnti()) return;
     if (b[pbegin->number]==-1 && b[pend->number]==1 && 
-	pbegin->fl.Majorana() && pend->fl.IsAnti()) {
-      return;
-    }
+	pbegin->fl.Majorana() && pend->fl.IsAnti())  return;
     if (b[pbegin->number]==1 && b[pend->number]==-1 && 
 	pbegin->fl.IsAnti()  && pend->fl.Majorana()) {
       Point* h = pbegin;
@@ -156,31 +152,51 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
       pbegin   = pend;
       pend     = h;
       return;
-    }    
+    }
     return;
   }     
-  //final fermion line
-  if (!fl[pbegin->number].IsAnti() && !fl[pbegin->number].Majorana()) return;
-  if (fl[pend->number].IsAnti()    && !fl[pend->number].Majorana()) return;
-  if ( (fl[pbegin->number].IsAnti()  && !fl[pbegin->number].Majorana()) ||
-       (!fl[pend->number].IsAnti()   && !fl[pend->number].Majorana()) ) {
+
+  if (fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() && fl[pend->number].Majorana()) {
     Point* h = pbegin;
     pbegin   = pend;
     pend     = h;
     return;
   }
   
-  if (fl[pbegin->number].Majorana() && fl[pend->number].Majorana()) {
-    /*
-      if (pbegin->number<pend->number) {
-      Point* h = pbegin;
-      pbegin   = pend;
-      pend     = h;
-      return;
-      }
-    */
+  if (!fl[pend->number].IsAnti() && fl[pend->number].IsChargino() && fl[pbegin->number].Majorana()) {
+    Point* h = pbegin;
+    pbegin   = pend;
+    pend     = h;
+    return;
+    }
+  
+  if (fl[pend->number].IsAnti() && fl[pbegin->number].Majorana() && 
+      fl[pend->number].IsChargino()) return;
+  
+  if (!fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() &&
+      fl[pend->number].IsAnti() && fl[pend->number].IsChargino()) return;
+  
+  if (fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() &&
+      !fl[pend->number].IsAnti() && fl[pend->number].IsChargino()) {
+    Point* h = pbegin;
+    pbegin   = pend;
+    pend     = h;
     return;
   }
+  
+  //standard final fermion line
+  if (!fl[pbegin->number].IsAnti() && !fl[pbegin->number].Majorana()) return;
+  if (fl[pend->number].IsAnti() && !fl[pend->number].Majorana()) return;
+  if ( (fl[pbegin->number].IsAnti()  && !fl[pbegin->number].Majorana()) ||
+       (!fl[pend->number].IsAnti()   && !fl[pend->number].Majorana() && 
+	!fl[pend->number].IsChargino()) ) {
+    Point* h = pbegin;
+    pbegin   = pend;
+    pend     = h;
+    return;
+  }
+ 
+  if (fl[pbegin->number].Majorana() && fl[pend->number].Majorana()) return;
   
   msg_Error()<<"ERROR in Amplitude_Manipulator::GetFermionLine(). Continue run."<<endl;
   return;
@@ -298,7 +314,7 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
       Complex h = p->cpl[0];
       p->cpl[0] = -p->cpl[1];
       p->cpl[1] = -h;
-    }    
+    }   
   }
 
   if (minus==-1) {

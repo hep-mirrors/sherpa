@@ -54,7 +54,7 @@ void Interaction_Model_AxiQCD::c_FFV(std::vector<Single_Vertex>& vertex,int & va
       vertex[vanz].Str           = (kcpl0*PR-kcpl1*PL).String();      
 
       
-      vertex[vanz].Color.push_back(Color_Function(cf::T,1,2,0,'1','2','0'));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::T,1,2,0,'1','2','0'));     
 
       vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gamma",LF_Key()));     
       vertex[vanz].Lorentz.back()->SetParticleArg(1);     
@@ -83,7 +83,7 @@ void Interaction_Model_AxiQCD::c_VVV(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();
     
     
-    vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::F));     
     vertex[vanz].Color.back().SetParticleArg(0,2,1);     
     vertex[vanz].Color.back().SetStringArg('0','2','1');     
     

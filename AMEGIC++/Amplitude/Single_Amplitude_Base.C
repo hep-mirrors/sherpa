@@ -125,16 +125,31 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
 	}      
       }
 
-      if(z->p_arguments[i]<99) 
-	if (fl[z->p_arguments[i]].Majorana() && i%2!=0) //args[2*i].spinortype = Spinor::v;
-	  {args[2*i]   *= -1;args[2*i+1] *= -1;}
+      if(z->p_arguments[i]<99) {
+	if (((fl[z->p_arguments[i]].Majorana() || 
+	      //final-state line
+	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==1 && !fl[z->p_arguments[i]].IsAnti()) ||
+	      //initial-state line
+	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==-1 && fl[z->p_arguments[i]].IsAnti())
+	      )
+	     && i%2!=0 ) || 
+	    ((
+	      //final-state line
+	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==1 && fl[z->p_arguments[i]].IsAnti()) || 
+	      //initial state line
+	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==-1 && !fl[z->p_arguments[i]].IsAnti()))
+	     
+	     && i%2==0)) //args[2*i].spinortype = Spinor::v;
+	  {
+	    args[2*i]   *= -1;args[2*i+1] *= -1;
+	  }
       if(i<z->m_narg-1)
 	if(z->p_arguments[i]==z->p_arguments[i+1]&&(*iz)[j]==(*iz)[j+1]){ // spin2 boson
 	  i++;j++;
 	  args[2*i] = z->p_arguments[i];
 	  args[2*i+1] = (*iargs)[2*j+1];
 	}
-
+      }
     }
     else{
       if (z->p_arguments[i]<massiveskip) {                                //old external massless Vector Boson treatment

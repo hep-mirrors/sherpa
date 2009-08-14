@@ -103,7 +103,7 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
       vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
       
-      vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::F));     
       vertex[vanz].Color.back().SetParticleArg(0,2,1);     
       vertex[vanz].Color.back().SetStringArg('0','2','1');     
       
@@ -169,7 +169,7 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].cpl[1]  = kcpl1;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
     
-    vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::F));     
     vertex[vanz].Color.back().SetParticleArg(0,2,1);     
     vertex[vanz].Color.back().SetStringArg('0','2','1');     
     
@@ -221,7 +221,7 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
       vertex[vanz].cpl[1]  = kcpl0;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
       
-      vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::G));     
       vertex[vanz].Color.back().SetParticleArg(0,2);     
       vertex[vanz].Color.back().SetStringArg('0','2');     
       
@@ -245,7 +245,7 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
       vertex[vanz].cpl[1]  = kcpl0;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
       
-      vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+      vertex[vanz].Color.push_back(Color_Function(cf::G));     
       vertex[vanz].Color.back().SetParticleArg(0,2);     
       vertex[vanz].Color.back().SetStringArg('0','2');     
       
@@ -276,7 +276,7 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].cpl[1]  = kcpl0;
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
       
-    vertex[vanz].Color.push_back(Color_Function(cf::G));;     
+    vertex[vanz].Color.push_back(Color_Function(cf::G));     
     vertex[vanz].Color.back().SetParticleArg(0,2);     
     vertex[vanz].Color.back().SetStringArg('0','2');     
     vertex[vanz].Color.back().SetParticleArg(2,0);     
