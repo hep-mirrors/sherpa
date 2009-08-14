@@ -277,16 +277,42 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  break;
 	}
 	case 'T' : {
-	  //std::cout<<" T : "<<vv[i][1][2]<<" "<< vv[i][1][4]<<" "<<vv[i][1][6]<<endl;  
-	  int arg1   = int(vv[i][1][2])-49;
-	  int arg2   = int(vv[i][1][4])-49;
-	  int arg3   = int(vv[i][1][6])-49;
-	  char sarg1[2],sarg2[2],sarg3[2];
-	  sprintf(sarg1,"%i",arg1);
-	  sprintf(sarg2,"%i",arg2);
-	  sprintf(sarg3,"%i",arg3);
-	  //
-	  vertex[vanz].Color.push_back(Color_Function(cf::T,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	  if (vv[i][1].size()==8) {
+	    int arg1   = int(vv[i][1][2])-49;
+	    int arg2   = int(vv[i][1][4])-49;
+	    int arg3   = int(vv[i][1][6])-49;
+	    char sarg1[2],sarg2[2],sarg3[2];
+	    sprintf(sarg1,"%i",arg1);
+	    sprintf(sarg2,"%i",arg2);
+	    sprintf(sarg3,"%i",arg3);
+	    //
+	    vertex[vanz].Color.push_back(Color_Function(cf::T,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	  }
+	  if (vv[i][1].size()==10) {
+	    int arg1   = int(vv[i][1][2])-49;
+	    int arg2   = int(vv[i][1][4])-49;
+	    int arg3   = int(vv[i][1][6])-49;
+	    int arg4   = int(vv[i][1][8])-49;
+	    char sarg1[2],sarg2[2],sarg3[2],sarg4[2];
+	    sprintf(sarg1,"%i",arg1);
+	    sprintf(sarg2,"%i",arg2);
+	    sprintf(sarg3,"%i",arg3);
+	    sprintf(sarg4,"%i",arg4);
+	    //
+	    vertex[vanz].Color.clear();
+	    vertex[vanz].Color.resize(2);
+	    vertex[vanz].Lorentz.resize(2); 
+	    //
+	    vertex[vanz].Color[0] = Color_Function(cf::T,arg1,arg3,4,sarg1[0],sarg3[0],'4',
+						   new Color_Function(cf::T,arg2,4,arg4,sarg2[0],'4',sarg4[0]));
+	    vertex[vanz].Lorentz[0]= LF_Getter::GetObject("VVSS",LF_Key());     
+	    vertex[vanz].Lorentz[0]->SetParticleArg(0,3);     
+	    //
+	    vertex[vanz].Color[1] = Color_Function(cf::T,arg2,arg3,4,sarg2[0],sarg3[0],'4',
+						   new Color_Function(cf::T,arg1,4,arg4,sarg1[0],'4',sarg4[0]));
+	    vertex[vanz].Lorentz[1]= LF_Getter::GetObject("VVSS",LF_Key());     
+	    vertex[vanz].Lorentz[1]->SetParticleArg(0,3);     
+	  }
 	  break;
 	}
 	case 'D' : {
@@ -330,19 +356,19 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  vertex[vanz].Color.clear();
 	  vertex[vanz].Color.resize(3);
 	  vertex[vanz].Lorentz.resize(3); 
-	  vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4',
+	  vertex[vanz].Color[0]   = Color_Function(cf::F,0,2,4,'0','2','4',
 							new Color_Function(cf::F,1,3,4,'1','3','4'));
-	  vertex[vanz].Lorentz[0]=LF_Getter::GetObject("Gluon4",LF_Key());
+	  vertex[vanz].Lorentz[0] = LF_Getter::GetObject("Gluon4",LF_Key());
 	  vertex[vanz].Lorentz[0]->SetParticleArg(0,1,2,3);     
 	  
 	  vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4',
 							new Color_Function(cf::F,1,2,4,'1','2','4'));
-	  vertex[vanz].Lorentz[1]=LF_Getter::GetObject("Gluon4",LF_Key());
+	  vertex[vanz].Lorentz[1] = LF_Getter::GetObject("Gluon4",LF_Key());
 	  vertex[vanz].Lorentz[1]->SetParticleArg(0,1,3,2);     
 	  
-	  vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4',
+	  vertex[vanz].Color[2]   = Color_Function(cf::F,0,1,4,'0','1','4',
 							new Color_Function(cf::F,3,2,4,'3','2','4')); 
-	  vertex[vanz].Lorentz[2]=LF_Getter::GetObject("Gluon4",LF_Key());     
+	  vertex[vanz].Lorentz[2] = LF_Getter::GetObject("Gluon4",LF_Key());     
 	  vertex[vanz].Lorentz[2]->SetParticleArg(0,3,1,2);     
 	  //correct coupling
 	  Kabbala kcpl0 = Kabbala(vertex[vanz].cpl[0].String()+"*i",vertex[vanz].cpl[0].Value()*Complex(0.,1.));
@@ -355,8 +381,10 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));
 	}
 	else if(vv[i][1]=="VVSS") {
-	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
-	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
+	  if (vertex[vanz].Color.size()==1) {
+	    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
+	  }
 	}
 	else {
 	  msg_Error()<<" Lorentz structure missing: 4-particle interaction "<<vv[i][1]<<endl; 
