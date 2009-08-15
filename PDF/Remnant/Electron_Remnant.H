@@ -20,8 +20,6 @@ namespace PDF {
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
     bool AdjustKinematics();
 
-    ATOOLS::Flavour ConstituentType(const ATOOLS::Flavour &flavour);
-
   };// end of class Remnant_Base
 
 }// end of namespace PDF

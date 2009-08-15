@@ -328,17 +328,3 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
   return 0.;
 }
 
-ATOOLS::Flavour Hadron_Remnant::ConstituentType(const ATOOLS::Flavour &flavour) 
-{
-  if (flavour.IsGluon()) return kf_gluon;
-  return kf_quark;
-  if (flavour.Kfcode()==kf_quark || 
-      flavour.Kfcode()==kf_seaquark) return flavour.Kfcode();
-  if (flavour.IsQuark()) {
-    for (size_t i=0;i<m_constit.size();++i) 
-      if (flavour==m_constit[i]) return kf_quark;
-    return kf_seaquark;
-  }
-  return kf_none;
-}
-

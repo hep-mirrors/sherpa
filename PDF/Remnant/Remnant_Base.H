@@ -67,7 +67,6 @@ namespace PDF {
     virtual void QuickClear();
 
     virtual double          MinimalEnergy(const ATOOLS::Flavour &flavour);
-    virtual ATOOLS::Flavour ConstituentType(const ATOOLS::Flavour &flavour);
 
     virtual bool FillBlob(ATOOLS::Blob *beamblob,
 			  ATOOLS::Particle_List *particlelist) = 0;

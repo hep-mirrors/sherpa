@@ -53,9 +53,3 @@ bool Electron_Remnant::AdjustKinematics()
   return true;
 }
 
-ATOOLS::Flavour Electron_Remnant::
-ConstituentType(const ATOOLS::Flavour &flavour) 
-{
-  if (flavour.Kfcode()==kf_e) return flavour;
-  return kf_none;
-}
