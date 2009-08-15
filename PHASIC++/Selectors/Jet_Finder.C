@@ -172,7 +172,7 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 	(m_fl[0].Strong() || m_fl[1].Strong())) {
       bool found(false);
       for (size_t l(0);l<m_pcs.size();++l)
-	if (m_pcs[l]==pos[i]) {
+	if (m_pcs[l]==(size_t)pos[i]) {
 	  found=true;
 	  break;
 	}
@@ -491,6 +491,7 @@ bool Jet_Finder::ColorConnected(const size_t &i,const size_t &j) const
 
 void Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data *cuts) 
 {
+  if (!m_on) return;
   msg_Debugging()<<METHOD<<"(): {\n";
   for (int i(m_nin); i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].Mass();
