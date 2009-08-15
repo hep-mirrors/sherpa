@@ -66,6 +66,7 @@ namespace ATOOLS {
       Hard_Collision      =     4,
       Soft_Collision      =     8,
       Shower              =    16,
+      QED_Radiation       =    32,
       Beam                =   256,
       Bunch               =   512,
       Fragmentation       =  1024,

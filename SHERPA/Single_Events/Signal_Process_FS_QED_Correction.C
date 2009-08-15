@@ -120,7 +120,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   // if switched off or no need for QED stop here and build a blob
   if (!m_on || !sigblob->Has(blob_status::needs_extraQED)) {
-    Blob * onshellblob = bloblist->AddBlob(btp::Shower);
+    Blob * onshellblob = bloblist->AddBlob(btp::QED_Radiation);
     onshellblob->SetTypeSpec("setting leptons on-shell");
     if (sigblob->Has(blob_status::needs_extraQED))
       sigblob->UnsetStatus(blob_status::needs_extraQED);
@@ -161,7 +161,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   sigblob->UnsetStatus(blob_status::needs_extraQED);
   // build new QED radiation blob
-  Blob * QEDblob = bloblist->AddBlob(btp::Shower);
+  Blob * QEDblob = bloblist->AddBlob(btp::QED_Radiation);
   QEDblob->SetTypeSpec("YFS-type QED Corrections to ME");
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
     // set info back to hard process, otherwise

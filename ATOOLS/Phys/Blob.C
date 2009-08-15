@@ -14,6 +14,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::Hard_Collision:     return ostr<<"Hard Collision    ";
   case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
   case btp::Shower:             return ostr<<"Shower            ";
+  case btp::QED_Radiation:      return ostr<<"QED Radiation     ";
   case btp::Beam:               return ostr<<"Beam              ";
   case btp::Bunch:              return ostr<<"Bunch             ";
   case btp::Fragmentation:      return ostr<<"Fragmentation     ";

@@ -444,7 +444,8 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
 {
   if (m_mode&ANALYSIS::do_hadron) return true;
   if (m_mode&ANALYSIS::do_shower && 
-      blob->Type()==btp::Shower) return true;
+      (blob->Type()==btp::Shower ||
+       blob->Type()==btp::QED_Radiation)) return true;
   if (m_mode&ANALYSIS::do_mi && 
       (blob->Type()==btp::Hard_Collision ||
        blob->Type()==btp::Signal_Process)) return true;
@@ -474,7 +475,8 @@ void Primitive_Analysis::CreateFinalStateParticleList()
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
 	if ((p->DecayBlob()==NULL || (m_mode&ANALYSIS::do_hadron)==0) &&
-	    p->Info()!='G')
+	    (p->Info()!='H' || (m_mode&ANALYSIS::do_shower)==0) &&
+	     p->Info()!='G')
 	  pl->push_back(p);
       }
     }
