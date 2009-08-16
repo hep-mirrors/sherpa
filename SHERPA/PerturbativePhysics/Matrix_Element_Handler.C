@@ -303,7 +303,7 @@ void Matrix_Element_Handler::BuildProcesses()
       size_t pos(proc.find("->"));
       if (pos==std::string::npos) continue;
       std::string gycut;
-      MPSV_Map vefunc, vycut, vscale, vsfile;
+      MPSV_Map vefunc, vycut, vscale, vcoupl, vsfile;
       MPDV_Map vmaxerr, vmaxeps, vefac;
       std::string ini(proc.substr(0,pos));
       std::string fin(proc.substr(pos+2));
@@ -316,6 +316,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,vscale,nf);
+	}
+	if (cur[0]=="Couplings") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,vcoupl,nf);
 	}
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
@@ -369,7 +373,8 @@ void Matrix_Element_Handler::BuildProcesses()
       }
       BuildSingleProcessList
 	(pi,ini,fin,dectags,vmaxerr,vmaxeps,
-	 vefac,vefunc,vycut,vscale,vsfile,gycut,selfile);
+	 vefac,vefunc,vycut,vscale,vcoupl,
+	 vsfile,gycut,selfile);
       if (msg_LevelIsDebugging()) {
         msg_Indentation(4);
         msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -427,7 +432,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 (Process_Info &pi,const std::string &ini,
  const std::string &fin,const std::vector<std::string> &dectags,
  MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
- MPSV_Map &vycut,MPSV_Map &vscale,MPSV_Map &vsfile,
+ MPSV_Map &vycut,MPSV_Map &vscale,MPSV_Map &vcoupl,MPSV_Map &vsfile,
  const std::string &gycut,const std::string &selfile)
 {
   Subprocess_Info AIS, AFS;
@@ -484,6 +489,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
         cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
 	if (GetMPvalue(vscale,nfs,pnid,ds)) cpi.m_scale=ds;
+	if (GetMPvalue(vcoupl,nfs,pnid,ds)) cpi.m_kfactor=ds;
 	if (GetMPvalue(vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
 	Process_Base *proc(InitializeProcess(cpi));
 	if (proc==NULL) continue;
