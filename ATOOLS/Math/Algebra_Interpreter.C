@@ -377,6 +377,28 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
     Iterate(left+"{"+ToString(PT(leaf))+"}"+right);
 }
 
+size_t FindBitwiseAnd(const std::string &expr,const bool fwd,
+		      size_t cpos=std::string::npos)
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("&",cpos):expr.rfind("&",cpos));
+  if (pos==std::string::npos || pos==0) return std::string::npos;
+  if (expr[pos+1]=='&' || expr[pos-1]=='&') 
+    return FindBitwiseAnd(expr,fwd,fwd?pos+2:pos-2);
+  return pos;  
+}
+
+size_t FindBitwiseOr(const std::string &expr,const bool fwd,
+		     size_t cpos=std::string::npos)
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("|",cpos):expr.rfind("|",cpos));
+  if (pos==std::string::npos || pos==0) return std::string::npos;
+  if (expr[pos+1]=='|' || expr[pos-1]=='|') 
+    return FindBitwiseOr(expr,fwd,fwd?pos+2:pos-2);
+  return pos;  
+}
+
 size_t FindBinaryPlus(const std::string &expr,const bool fwd,
 		      size_t cpos=std::string::npos)
 {
@@ -428,6 +450,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
     if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,true);
     else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,true);
     else if (oit->second->Tag()=="+") pos=FindBinaryPlus(expr,true);
+    else if (oit->second->Tag()=="&") pos=FindBitwiseAnd(expr,true);
+    else if (oit->second->Tag()=="|") pos=FindBitwiseOr(expr,true);
     else pos=expr.find(oit->second->Tag());
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
@@ -448,6 +472,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
     size_t tlfpos=std::string::npos;
     if (oit->second->Tag()=="-") tlfpos=FindBinaryMinus(lstr,false);
     else if (oit->second->Tag()=="+") tlfpos=FindBinaryPlus(lstr,false);
+    else if (oit->second->Tag()=="&") tlfpos=FindBitwiseAnd(lstr,true);
+    else if (oit->second->Tag()=="|") tlfpos=FindBitwiseOr(lstr,true);
     else tlfpos=lstr.rfind(oit->second->Tag());
     if (tlfpos!=std::string::npos) 
       lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
@@ -462,6 +488,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
     size_t trfpos=std::string::npos;
     if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
     else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
+    else if (oit->second->Tag()=="&") trfpos=FindBitwiseAnd(rstr,true);
+    else if (oit->second->Tag()=="|") trfpos=FindBitwiseOr(rstr,true);
     else trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
@@ -522,6 +550,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
     size_t trfpos=std::string::npos;
     if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
     else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
+    else if (oit->second->Tag()=="&") trfpos=FindBitwiseAnd(rstr,true);
+    else if (oit->second->Tag()=="|") trfpos=FindBitwiseOr(rstr,true);
     else trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
