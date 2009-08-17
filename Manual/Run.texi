@@ -55,13 +55,16 @@ E.g. OUTPUT=3 would display information, events and errors.
 @node RANDOM_SEED
 @subsection RANDOM_SEED
 @cindex RANDOM_SEED
+@cindex RANDOM_SEED1
+@cindex RANDOM_SEED2
 SHERPA uses a random-number generator as described in
 [Florida State University Report FSU-SCRI-87-50].
 The two independent integer-valued seeds are specified by the option
-``RANDOM SEED=A B''. The seeds A and B may range from 0 to 31328 and from
-0 to 30081, respectively. If RANDOM SEED is not specified at all or only by one
-integer number, the old random-number generator (SHERPA 1.0.6 and older)
-will be used.
+``RANDOM_SEED=A B''. The seeds A and B may range from 0 to 31328 and from
+0 to 30081, respectively. They can also directly be set using 
+``RANDOM_SEED1=A'' and ``RANDOM_SEED2=B'' If RANDOM_SEED is not 
+specified at all or only by one integer number, the old random-number 
+generator (SHERPA 1.0.6 and older) will be used.
 
 @node ANALYSIS
 @subsection ANALYSIS

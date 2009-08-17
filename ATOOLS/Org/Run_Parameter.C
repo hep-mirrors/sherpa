@@ -169,12 +169,20 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dreader.AddWordSeparator("\t");
   dreader.SetInputFile(m_path+file);
   std::vector<long int> seeds;
+  std::vector<long int> seed1;
+  std::vector<long int> seed2;
   gen.m_seed2 = -1;
   if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {
     gen.m_seed = seeds[0];
     // if 2nd seed is given, store it
     if (seeds.size() == 2) { gen.m_seed2 = seeds[1]; } 
-  } else gen.m_seed=1234;
+  } 
+  else if (dreader.VectorFromFile(seed1,"RANDOM_SEED1") && 
+	   dreader.VectorFromFile(seed2,"RANDOM_SEED2")) {
+    gen.m_seed  = seed1[0];
+    gen.m_seed2 = seed2[0];  
+  }
+  else gen.m_seed=1234;
 
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
