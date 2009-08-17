@@ -81,12 +81,14 @@ Variable_Selector::Variable_Selector
   m_imode=imode;
   m_fl = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i]=fl[i];
-  std::string vname(name.substr(0,name.find('|')));
+  size_t pos(name.find('|'));
+  while (pos<name.length()-1 && name[pos+1]=='|') pos=name.find('|',pos+2);
+  std::string vname(name.substr(0,pos));
   p_variable = ATOOLS::Variable_Getter::GetObject(vname,vname);
   if (p_variable==NULL) THROW
     (fatal_error,"Variable '"+vname+"' does not exist. Run 'Sherpa"+
        std::string(" SHOW_VARIABLE_SYNTAX=1' to list variables."));
-  m_omode=name.substr(name.find('|')+1);
+  m_omode=name.substr(pos!=std::string::npos?pos+1:pos);
   if (m_omode!="") {
     if (m_omode[0]=='[') {
       if (m_omode[m_omode.length()-1]!=']') 
