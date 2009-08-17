@@ -191,6 +191,8 @@ void FeynRules_Spectrum::SetExternalParameters() {
   p_model->GetScalarFunctions()->insert(make_pair(string("alpha_QED"),aqed));
   double sin2TW = 1.-sqr(Flavour(kf_Wplus).Mass()/Flavour(kf_Z).Mass());
   p_model->GetScalarConstants()->insert(make_pair(std::string("sin2_thetaW"),sin2TW));
+  double cos2TW = sqr(Flavour(kf_Wplus).Mass()/Flavour(kf_Z).Mass());
+  p_model->GetScalarConstants()->insert(make_pair(std::string("cos2_thetaW"),cos2TW));
   
   msg_Info()<<"   set alphaS(MZ) to "
 	   <<p_model->ScalarFunction(string("alpha_S"),sqr(MZ))<<" "<<sqr(MZ)<<endl;
