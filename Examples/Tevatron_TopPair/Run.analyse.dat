@@ -8,6 +8,7 @@
   FRAGMENTATION = Off
 
   ANALYSIS = Rivet
+  ANALYSIS_OUTPUT = NJETjet.QCUTGeV.ANATAG.aida
 }(run)
 
 (beam){
@@ -51,7 +52,6 @@
 
 (analysis){
   BEGIN_RIVET {
-    -H NJETjet.QCUTGeV.ANATAG.aida
     -a CDF_2009_S8210160
   } END_RIVET
 }(analysis)

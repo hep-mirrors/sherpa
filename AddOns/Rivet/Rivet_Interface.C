@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 #ifdef USING__RIVET
 #include "Rivet/AnalysisHandler.hh"
@@ -19,16 +20,21 @@
 
 using namespace SHERPA;
 using namespace ATOOLS;
+using namespace Rivet;
 
 class Rivet_Interface: public Analysis_Interface {
+  typedef std::map<int, AnalysisHandler*> RivetMap;
 private:
 
-  std::string m_inpath, m_infile, m_outpath, m_filesuffix;
+  std::string m_inpath, m_infile, m_outpath;
+  std::vector<std::string> m_analyses;
 
   size_t m_nevt;
+  double m_sum_of_weights;
   bool   m_finished;
+  bool   m_splitjetconts;
   
-  Rivet::AnalysisHandler* p_rivet;
+  RivetMap m_rivet;
   HepMC2_Interface m_hepmc2;
   std::vector<btp::code> m_ignoreblobs;
 
@@ -37,10 +43,9 @@ public:
   inline Rivet_Interface(const std::string &inpath,
                          const std::string &infile,
                          const std::string &outpath,
-                         const std::string &suff,
                          const std::vector<btp::code> &ignoreblobs) :
-    m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_filesuffix(suff),
-    m_nevt(0), m_finished(false), p_rivet(NULL),
+    m_inpath(inpath), m_infile(infile), m_outpath(outpath),
+    m_nevt(0), m_sum_of_weights(0.0), m_finished(false),
     m_ignoreblobs(ignoreblobs)
   {
   }
@@ -49,7 +54,9 @@ public:
   ~Rivet_Interface()
   {
     if (!m_finished) Finish();
-    if (p_rivet) delete p_rivet;
+    for (RivetMap::iterator it=m_rivet.begin(); it!=m_rivet.end(); ++it) {
+      delete it->second;
+    }
   }
 
   
@@ -67,22 +74,32 @@ public:
       reader.AddComment("#");
       reader.SetFileBegin("BEGIN_RIVET");
       reader.SetFileEnd("END_RIVET");
-      std::string fname=reader.GetValue<std::string>("-H","Rivet")+m_filesuffix;
-      int loglevel=reader.GetValue<int>("-l", 20);
       
-      Rivet::Log::setLevel("Rivet", loglevel);
-      p_rivet = new Rivet::AnalysisHandler(fname, "", Rivet::AIDAML);
-      std::vector<std::string> analyses;
-      if (reader.VectorFromFile(analyses,"-a")) {
-        p_rivet->addAnalyses(analyses);
-      }
-      p_rivet->init();
+//      m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
+      Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
+      reader.VectorFromFile(m_analyses,"-a");
+      m_sum_of_weights=0.0;
       
       for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
         m_hepmc2.Ignore(m_ignoreblobs[i]);
       }
     }
     return true;
+  }
+  
+  AnalysisHandler* GetRivet(int jetcont) {
+    RivetMap::iterator it=m_rivet.find(jetcont);
+    if (it!=m_rivet.end()) {
+      return it->second;
+    }
+    else {
+      std::string out=(jetcont>0 ? m_outpath+".j"+ToString(jetcont) : m_outpath);
+      AnalysisHandler* rivet(new AnalysisHandler(out, "", AIDAML));
+      rivet->addAnalyses(m_analyses);
+      rivet->init();
+      m_rivet.insert(std::make_pair(jetcont, rivet));
+      return rivet;
+    }
   }
   
   
@@ -97,17 +114,27 @@ public:
     xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
     event.set_cross_section(xs);
 #endif
-    p_rivet->analyze(event);
-    ++m_nevt;
     
+    GetRivet(0)->analyze(event);
+//    if (m_splitjetconts) {
+//      GetRivet(sp->NOutP())->analyze(event);
+//    }
+    
+    ++m_nevt;
+    m_sum_of_weights+=weight;
     return true;
   }
   
   
   bool Finish()
   {
-    p_rivet->finalize();
-    p_rivet->commitData();
+    for (RivetMap::iterator it=m_rivet.begin(); it!=m_rivet.end(); ++it) {
+//#ifdef USING__RIVET__SETSOW
+//      it->second->setSumOfWeights(m_sum_of_weights);
+//#endif
+      it->second->finalize();
+      it->second->commitData();
+    }
     m_finished=true;
     return true;
   }
@@ -118,7 +145,6 @@ public:
     if (!msg_LevelIsInfo() || i==0) return;
     msg_Out()<<METHOD<<"(): {\n\n"
         <<"   BEGIN_RIVET {\n\n"
-        <<"     -H <filename>        output file name\n"
         <<"     -a <ana_1> <ana_2>   analyses to run\n";
     msg_Out()<<"\n   } END_RIVET\n\n"
         <<"}"<<std::endl;
@@ -134,7 +160,7 @@ Analysis_Interface *Rivet_Interface_Getter::operator()
 (const Analysis_Arguments &args) const
 {
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath, "", std::vector<btp::code>());
+    (args.m_inpath,args.m_infile,args.m_outpath, std::vector<btp::code>());
 }
 
 void Rivet_Interface_Getter::PrintInfo
@@ -155,7 +181,7 @@ Analysis_Interface *RivetShower_Interface_Getter::operator()
   ignoreblobs.push_back(btp::Hadron_Decay);
   ignoreblobs.push_back(btp::Hadron_Mixing);
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath, ".SL", ignoreblobs);
+    (args.m_inpath,args.m_infile,args.m_outpath+".SL", ignoreblobs);
 }
 
 void RivetShower_Interface_Getter::PrintInfo

@@ -28,6 +28,7 @@ source command above to your ~/.bashrc.
 
 @node Rivet analyses
 @section Rivet analyses
+@cindex ANALYSIS_OUTPUT
 
 Sherpa is equipped with an interface to the analysis tool Rivet. To enable it,
 Rivet and HepMC have to be installed (e.g. using the Rivet bootstrap script)
@@ -43,30 +44,30 @@ To use the interface, specify the switch
   Sherpa ANALYSIS=Rivet
 @end verbatim
 
-and create an analysis section in ``Run.dat'' that reads as follows:
+and create an analysis section in @code{Run.dat} that reads as follows:
 @verbatim
   (analysis){
     BEGIN_RIVET {
-      -H outputfile
       -a D0_2008_S7662670 CDF_2007_S7057202 D0_2004_S5992206 CDF_2008_S7828950
     } END_RIVET
   }(analysis)
 @end verbatim
 
-The line starting with ``-a'' specifies which Rivet analyses to run and the
-``-H'' switch sets the output file that the histograms are written to.
+The line starting with @code{-a} specifies which Rivet analyses to run and the
+histogram output file can be changed with the normal @code{ANALYSIS_OUTPUT}
+switch.
 
-You can also use ``TOOLS/make-html'' to create webpages from Rivet's output
-files:
+You can also use @code{AddOns/Rivet/make-html} to create webpages from Rivet's
+output files:
 @verbatim
   (source /path/to/rivetenv.sh)   # see below
-  TOOLS/make-html -o output/ file1.aida [file2.aida, ...]
+  AddOns/Rivet/make-html -o output/ file1.aida [file2.aida, ...]
   firefox output/index.html &
 @end verbatim
 
 If your Rivet installation is not in a standard location, the bootstrap script
-should have created a ``rivetenv.sh'' which you have to source before running
-the ``make-html'' script.
+should have created a @code{rivetenv.sh} which you have to source before running
+the @code{make-html} script.
 
 @node Debugging a crashing/stalled event
 @section Debugging a crashing/stalled event
