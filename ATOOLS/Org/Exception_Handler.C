@@ -238,7 +238,7 @@ void Exception_Handler::SetExitCode()
 {
   m_print=true;
   if (m_exception==NULL) return;
-  if (m_exception->m_class=="Matrix_Element_Handler") m_exitcode=201;
+  if (m_exception->m_class=="Amegic") m_exitcode=201;
   else m_exitcode=1;
   if (m_exception->m_type==ex::normal_exit ||
       m_exception->m_type==ex::missing_input) m_print=false;
