@@ -159,8 +159,12 @@ DECLARE_GETTER(Rivet_Interface_Getter,"Rivet",
 Analysis_Interface *Rivet_Interface_Getter::operator()
 (const Analysis_Arguments &args) const
 {
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath, std::vector<btp::code>());
+    (args.m_inpath,args.m_infile,outpath, std::vector<btp::code>());
 }
 
 void Rivet_Interface_Getter::PrintInfo
@@ -176,12 +180,16 @@ DECLARE_GETTER(RivetShower_Interface_Getter,"RivetShower",
 Analysis_Interface *RivetShower_Interface_Getter::operator()
 (const Analysis_Arguments &args) const
 {
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
   std::vector<btp::code> ignoreblobs;
   ignoreblobs.push_back(btp::Fragmentation);
   ignoreblobs.push_back(btp::Hadron_Decay);
   ignoreblobs.push_back(btp::Hadron_Mixing);
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath+".SL", ignoreblobs);
+    (args.m_inpath,args.m_infile,outpath+".SL", ignoreblobs);
 }
 
 void RivetShower_Interface_Getter::PrintInfo
