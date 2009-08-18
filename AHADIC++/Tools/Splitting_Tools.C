@@ -283,9 +283,10 @@ bool Splitting_Tools::ProduceKinematics(const bool & first,const bool & vetodiqu
 
   m_kt2 = m_z = -1.;
   int trials(0);
+  bool leading(p_split->m_info=='L');
   while ((m_kt2<0. || m_z<0.) && trials<1000) {
     trials++;
-    m_z   = p_kernels->SelectZ(m_zmin,m_zmax,m_glusplit,p_split->m_info=='L');
+    m_z   = p_kernels->SelectZ(m_zmin,m_zmax,m_glusplit,leading);
     if (!UpdateRanges(first)) {
       m_kt2 = -1.;
       continue;
@@ -295,8 +296,7 @@ bool Splitting_Tools::ProduceKinematics(const bool & first,const bool & vetodiqu
       m_kt2 = -1;
       continue;
     }
-    if (p_kernels->Weight(m_kt2,m_z,p_split->m_flav.IsGluon(),
-			  p_split->m_info=='L' && p_spect->m_info!='L')<ran.Get()) {
+    if (p_kernels->Weight(m_kt2,m_z,m_glusplit,leading)<ran.Get()) {
       m_kt2 = -1;
       continue;
     }
@@ -408,7 +408,7 @@ bool Splitting_Tools::UpdateRanges(const bool & first) {
 void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   if (p_split->m_flav.IsGluon()) {
     p_spect->m_mom    = m_mom1;
-    if (p_spect->m_info=='L' && !p_spect->m_flav.IsGluon()) {
+    if (p_spect->m_info=='L' || p_split->m_info=='L') {
       double s12((m_mom1+m_mom2).Abs2()), s13((m_mom1+m_mom3).Abs2());
       bool swap(s12/(s12+s13)>0.5); // ran.Get());
       if ((p_spect->m_flav.IsQuark() && !p_spect->m_flav.IsAnti()) || 

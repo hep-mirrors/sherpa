@@ -792,31 +792,32 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   cluster->BoostInCMSAndRotateOnZ();
   int sign(1.);
 
-  double E1((M2+m12-m22)/(2.*M)), p2max(sqr(E1)-m12), pt2min(0.), pt2(0.), pt(0.);
+  double E1((M2+m12-m22)/(2.*M)), p2max(sqr(E1)-m12), pt2min(m_pt2min), pt2(0.), pt(0.);
   double pt2max(p2max);
   if (constrained && m_pt2max<p2max) pt2max = m_pt2max;
 
   if (cluster->GetTrip()->m_info=='L' || cluster->GetAnti()->m_info=='L') {
     pt2max *= sqr(m_pt2max)/(Max(m_pt2max,m12)*Max(m_pt2max,m22)); 
-    pt2min  = m_pt2min/m12*m_pt2min/m22*m_pt2min;
-    if (pt2min>pt2max) pt2min = pt2max/4.;
-    pt2     = p_as->SelectPT(pt2max,pt2min);
-    pt      = sqrt(pt2);
-    sign    = cluster->GetTrip()->m_mom[3]<0?-1:1;
-
-    msg_Tracking()<<"$$ aniso (constrained = "<<constrained<<"): "
-		  <<"pt2 = "<<pt2<<" --> pt = "<<pt<<" from p2_max =  "<<p2max<<" "
-		  <<"and pt2_min = "<<pt2min<<", pt2_max = "<<pt2max<<"."<<std::endl;
-  }
-  else {
-    // isotropic decay
-    pt2          = pt2max*(1.-sqr(1.-2.*ran.Get()));
-    pt           = sqrt(pt2);
-
-    msg_Tracking()<<"$$ iso (constrained = "<<constrained<<"): "
-		  <<"pt2 = "<<pt2<<" --> pt = "<<pt<<" from p2_max =  "<<p2max<<" "
-		  <<"and pt2_min = "<<pt2min<<", pt2_max = "<<pt2max<<"."<<std::endl;
-  }
+    pt2min *= sqr(m_pt2min)/(Max(m_pt2min,m12)*Max(m_pt2min,m22));
+  } 
+  if (pt2min>pt2max) pt2min = pt2max/4.;
+  pt2     = p_as->SelectPT(pt2max,pt2min);
+  pt      = sqrt(pt2);
+  sign    = cluster->GetTrip()->m_mom[3]<0?-1:1;
+  
+  //  msg_Tracking()<<"$$ aniso (constrained = "<<constrained<<"): "
+  //		  <<"pt2 = "<<pt2<<" --> pt = "<<pt<<" from p2_max =  "<<p2max<<" "
+  //		  <<"and pt2_min = "<<pt2min<<", pt2_max = "<<pt2max<<"."<<std::endl;
+  //}
+  //else {
+  //  // isotropic decay
+  //  pt2          = pt2max*(1.-sqr(1.-2.*ran.Get()));
+  //  pt           = sqrt(pt2);
+  //
+  //  msg_Tracking()<<"$$ iso (constrained = "<<constrained<<"): "
+  //		  <<"pt2 = "<<pt2<<" --> pt = "<<pt<<" from p2_max =  "<<p2max<<" "
+  //		  <<"and pt2_min = "<<pt2min<<", pt2_max = "<<pt2max<<"."<<std::endl;
+  //}
 
   double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
   double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);

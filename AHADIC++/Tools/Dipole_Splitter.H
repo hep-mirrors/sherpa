@@ -19,9 +19,10 @@ namespace AHADIC {
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool EmitGluon(Dipole * dip1,Dipole *& dip2);
+    bool EmitGluon(Dipole * dip1,Dipole *& dip2,const bool & first);
     bool SelectOrder(Dipole *& dip1,Dipole *& dip2);
-    bool Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2);
+    bool Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2,
+			  const bool & swap);
 
     bool DetermineSplitting(const bool glusplit);
 

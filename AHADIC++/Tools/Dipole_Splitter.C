@@ -58,7 +58,10 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
   bool vetodiquark(cluster->GetTrip()->m_flav.IsDiQuark() ||
 		   cluster->GetAnti()->m_flav.IsDiQuark());
 
-  if (!EmitGluon(dip1,dip2)) return false;
+  bool first(false);
+  if (dip1->Triplet()->m_info=='L' && dip1->AntiTriplet()->m_info=='L' &&
+      dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
+  if (!EmitGluon(dip1,dip2,first)) return false;
   double kt2_emit(p_tools->PT2()), z_emit(p_tools->Z());
 
   bool swapped(SelectOrder(dip1,dip2));
@@ -83,36 +86,19 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
   if (!swapped) {
     dip1->SetAntiTriplet(out1);
     dip2->SetTriplet(out2);
+    Produce2Clusters(cluster,dip1,dip2,false);
   }
   else {
     dip2->SetAntiTriplet(out1);
     dip1->SetTriplet(out2);
+    Produce2Clusters(cluster,dip2,dip1,true);
   }
-  dip1->Update();
-  dip2->Update();
 
-  if (cluster->Mass()>80.) {
-    msg_Tracking()<<"::: split massive cluster ("<<cluster->GetTrip()->m_info<<cluster->GetAnti()->m_info<<", "
-		  <<"mass = "<<cluster->Mass()<<") with "
-		  <<"kt_emit = "<<sqrt(kt2_emit)<<" & z_emit = "<<z_emit<<", " 
-		  <<"kt_split = "<<sqrt(kt2_split)<<" & z_split = "<<z_split<<") " 
-		  <<" --> "<<sqrt(dip1->MassBar2())<<" + "<<sqrt(dip2->MassBar2())<<std::endl;
-  }
-  else {
-    msg_Tracking()<<"::: split cluster ("<<cluster->GetTrip()->m_info<<cluster->GetAnti()->m_info<<", "
-		  <<"mass = "<<cluster->Mass()<<") with "
-		  <<"kt_emit = "<<sqrt(kt2_emit)<<" & z_emit = "<<z_emit<<", " 
-		  <<"kt_split = "<<sqrt(kt2_split)<<" & z_split = "<<z_split<<") " 
-		  <<" --> "<<sqrt(dip1->MassBar2())<<" + "<<sqrt(dip2->MassBar2())<<std::endl;
-  }
-  return Produce2Clusters(cluster,dip1,dip2);
+  return true;
 }
 
-bool Dipole_Splitter::EmitGluon(Dipole * dip1,Dipole *& dip2) {
+bool Dipole_Splitter::EmitGluon(Dipole * dip1,Dipole *& dip2,const bool & first) {
   p_tools->SetSpectatorAndSplitter(dip1);
-  bool first(false);
-  if (dip1->Triplet()->m_info=='L' && dip1->AntiTriplet()->m_info=='L' &&
-      dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
   if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1,first)) {
     p_tools->SwapSpectatorAndSplitter(dip1);
     if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1,first,false)) {
@@ -169,13 +155,45 @@ bool Dipole_Splitter::SelectOrder(Dipole *& dip1,Dipole *& dip2) {
   return false;
 }
 
-bool Dipole_Splitter::Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2) {
-  Cluster * left  = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
-  Cluster * right = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
-  cluster->SetLeft(left);
-  cluster->SetRight(right);
-  left->SetPrev(cluster);
-  right->SetPrev(cluster);
+bool Dipole_Splitter::Produce2Clusters(Cluster * cluster,Dipole *& dip1,Dipole *& dip2,
+				       const bool & swap) {
+  if (false) {
+    double s12((dip1->Triplet()->m_mom+dip1->AntiTriplet()->m_mom).Abs2());
+    double s13((dip1->Triplet()->m_mom+dip2->Triplet()->m_mom).Abs2());
+    double s42((dip2->AntiTriplet()->m_mom+dip1->AntiTriplet()->m_mom).Abs2());
+    double s43((dip2->AntiTriplet()->m_mom+dip2->AntiTriplet()->m_mom).Abs2());
+    bool swapmoms(false);
+    if (dip1->Triplet()->m_info=='L' && dip2->AntiTriplet()->m_info=='L') {
+      if ((s12*s43)/(s12*s43+s13*s42)>0.5) swapmoms = true;
+    }
+    else if (dip1->Triplet()->m_info=='L') {
+      if ((s12)/(s12+s13)>0.5) swapmoms = true;
+    }
+    else if (dip2->AntiTriplet()->m_info=='L') {
+      if ((s43)/(s42+s43)>0.5) swapmoms = true;
+    }
+    if (swapmoms) {
+      Vec4D swapmom(dip1->AntiTriplet()->m_mom);
+      dip1->AntiTriplet()->m_mom = dip2->Triplet()->m_mom;
+      dip2->Triplet()->m_mom     = swapmom;
+    }
+  }
+
+  dip1->Update();
+  dip2->Update();
+
+  Cluster * clu1 = new Cluster(dip1->Triplet(),dip1->AntiTriplet());
+  Cluster * clu2 = new Cluster(dip2->Triplet(),dip2->AntiTriplet());
+  if (!swap) {
+    cluster->SetLeft(clu1);
+    cluster->SetRight(clu2);
+  }
+  else {
+    cluster->SetLeft(clu2);
+    cluster->SetRight(clu1);
+  }
+  clu1->SetPrev(cluster);
+  clu2->SetPrev(cluster);
 
   delete dip1;
   delete dip2;
