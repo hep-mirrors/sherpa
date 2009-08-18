@@ -216,11 +216,11 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 	       <<(*blob)<<endl;
     return false;
   }
-  msg_Debugging()<<"Passed "<<METHOD<<" with "
-		 <<"protoparticles = "<<control::s_AHAprotoparticles
-		 <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-		 <<"   : "<<blob->CheckMomentumConservation()<<endl
-		 <<(*blob)<<endl;
+  msg_Tracking()<<"Passed "<<METHOD<<" with "
+		<<"protoparticles = "<<control::s_AHAprotoparticles
+		<<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+		<<"   : "<<blob->CheckMomentumConservation()<<endl;
+  msg_Debugging()<<(*blob)<<endl;
   return true;
 }
 

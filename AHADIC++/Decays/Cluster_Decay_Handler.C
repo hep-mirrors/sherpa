@@ -44,7 +44,7 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       clist.empty();
       clist.push_back(cluster->GetLeft());
       clist.push_back(cluster->GetRight());
-      msg_Tracking()<<"++++ From "<<cluster->Number()<<": "
+      msg_Tracking()<<"++++ From "<<cluster->Number()<<"("<<cluster->Mass()<<"): "
 		    <<cluster->GetLeft()->Number()<<" ("<<cluster->GetLeft()->Mass()<<") "
 		    <<cluster->GetRight()->Number()<<" ("<<cluster->GetRight()->Mass()<<"), "
 		    <<"popped "<<cluster->GetLeft()->GetAnti()->m_flav<<"."<<std::endl;
@@ -61,11 +61,12 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       }
     }
     else {
+      msg_Tracking()<<"+++ TestDecay did not work out - try to enforce decay."<<std::endl;
       if (!p_softclusters->EnforcedDecay(cluster,blob,true)) {
-	msg_Tracking()<<"  no decay."<<std::endl
-		      <<"++++ TestDecay did not work out, will return -1."<<std::endl;
+	msg_Error()<<"+++ EnforcedDecay did not work out, will return -1."<<std::endl;
 	return -1;
       }
+      msg_Tracking()<<"+++ EnforcedDecay did work out, will continue."<<std::endl;
     }
     delete (p_clulist->front()->GetTrip());
     delete (p_clulist->front()->GetAnti());
@@ -90,5 +91,6 @@ ATOOLS::Blob * Cluster_Decay_Handler::ClusterDecayBlob(Cluster * cluster,Cluster
   if (cluster) cluster->SetActive(false);
   return decblob;
 }
+
 
 

@@ -51,13 +51,12 @@ namespace AHADIC {
     int           CheckCluster(Cluster *,bool);
 
     double        TransformWeight(Cluster *,ATOOLS::Flavour &,
-				  const bool & lighter=false,
-				  const bool & enforce=false);
+				  const bool & lighter=false,const bool & enforce=false);
     double        TransformKin(const double MC,const ATOOLS::Flavour & flav,
 			       const bool & enforce=false);
 
     double        DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
-			      const bool enforce=false);
+			      const bool & enforce=false);
     bool          ClusterAnnihilation(Cluster * cluster,ATOOLS::Flavour &,ATOOLS::Flavour &);
     void          FixHHDecay(Cluster * cluster,ATOOLS::Blob * blob,
 			     const ATOOLS::Flavour had1,const ATOOLS::Flavour had2,

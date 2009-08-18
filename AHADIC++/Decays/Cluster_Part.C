@@ -37,21 +37,14 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
   msg_Tracking()<<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl
 		<<"::: "<<METHOD<<" : Try "<<cluster->Number()<<" ("	   
 		<<cluster->GetTrip()->m_flav<<" "<<cluster->GetAnti()->m_flav<<", "
-		<<"m = "<<cluster->Mass()<<") --> "<<std::endl;
+		<<"mass = "<<cluster->Mass()<<") --> "<<std::endl;
   if (!p_splitter->SplitCluster(cluster)) {
     msg_Tracking()<<"::: Warning in "<<METHOD<<":"<<std::endl
 		  <<":::   Could not split cluster ("<<cluster->Number()<<"): "
 		  <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav<<", "
 		  <<"mass = "<<cluster->Mass()<<","<<std::endl
-		  <<":::   try to enforce splitting (not implemented)."<<std::endl;
-   
-    bool worked(p_splitter->EnforceSplit(cluster));
-    if (worked) {
-      msg_Tracking()<<"::: "<<METHOD<<" : forced decay of "<<cluster->Momentum()<<" succeded."<<std::endl
-		    <<(*cluster->GetLeft())<<(*cluster->GetRight())
-		    <<":::::::::::::::::::::::::::::::::::::::::::::::"<<std::endl;	   
-    }
-    return worked;
+		  <<":::   try to enforce cluster splitting into hadrons."<<std::endl;
+    return false;
   }
   if (m_ana) {
     Vec4D lmom(cluster->GetLeft()->Momentum());

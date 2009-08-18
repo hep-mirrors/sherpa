@@ -115,16 +115,7 @@ bool Dipole_Splitter::EmitGluon(Dipole * dip1,Dipole *& dip2) {
       dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
   if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1,first)) {
     p_tools->SwapSpectatorAndSplitter(dip1);
-    if (dip1->Triplet()->m_info=='B' || dip1->AntiTriplet()->m_info=='B') {
-      msg_Debugging()<<"==============================================================="<<std::endl
-		     <<"=== swapped splitter and spectator (now: m^2 = "<<dip1->Mass2()<<") for "
-		     <<dip1->Triplet()->m_flav<<"("<<dip1->Triplet()->m_info<<") "
-		     <<dip1->AntiTriplet()->m_flav<<"("<<dip1->AntiTriplet()->m_info<<")"<<std::endl
-		     <<"    "<<dip1->Triplet()->m_mom<<" (kt^2_max = "<<dip1->Triplet()->m_kt2max<<") "
-		     <<dip1->AntiTriplet()->m_mom<<" (kt^2_max =  "<<dip1->AntiTriplet()->m_kt2max<<")"
-		     <<"."<<std::endl;
-    }
-    if (!p_tools->PrepareKinematics(dip1,false) || !p_tools->DetermineSplitting(dip1,false,false)) {
+    if (!p_tools->PrepareKinematics(dip1,first) || !p_tools->DetermineSplitting(dip1,first,false)) {
       delete dip1->Triplet();
       delete dip1->AntiTriplet();
       delete dip1;

@@ -152,14 +152,15 @@ void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
 void Splitting_Tools::SwapSpectatorAndSplitter(Dipole * dip) {
   Proto_Particle * help(p_split); p_split = p_spect; p_spect = help;
   if (dip->IsSwitched()) dip->SetSwitched(false);
-                    else dip->SetSwitched(true); 
+  else dip->SetSwitched(true); 
   if (p_split->m_kt2max<=0.) 
     p_split->m_kt2max = p_spect->m_kt2max = ATOOLS::Max(p_split->m_kt2max,p_spect->m_kt2max);
 }
 
 bool Splitting_Tools::PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
   if (dip->MassBar2()<4.*m_mmin_2) {
-    msg_Debugging()<<METHOD<<"(massmin^2 = "<<m_mmin_2<<", red.mass^2 = "<<dip->MassBar2()<<") :"<<std::endl
+    msg_Debugging()<<"~~ "<<METHOD<<"(massmin^2 = "<<m_mmin_2<<", red.mass^2 = "<<dip->MassBar2()<<") :"
+		   <<std::endl
 		   <<"   --> Dipole cannot split."<<std::endl;
     //(*dip).Output();
     return false;
@@ -250,32 +251,35 @@ bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
 
 bool Splitting_Tools::DetermineSplitting(Dipole * dip1,const bool & first,const bool & vetodiquark) {
   int trials(0);
-  msg_Debugging()<<"In "<<METHOD<<"(first = "<<first<<", veto = "<<vetodiquark<<")."<<std::endl;
-  //dip1->Output();
+  msg_Debugging()<<"~~ "<<METHOD<<"(first = "<<first<<", veto = "<<vetodiquark<<")."<<std::endl;
   while (trials<1000) {
     trials++;
     if (ProduceKinematics(first,vetodiquark) &&
-	ConstructKinematics()) break;
+	ConstructKinematics()) {
+      if (m_analyse) {
+	Histogram * histo = (m_histograms.find(std::string("Splitting_Trials")))->second;
+	histo->Insert(trials);
+      }
+      msg_Debugging()<<"~~ "<<METHOD<<"(first = "<<first<<", "
+		     <<"veto = "<<vetodiquark<<") -> succeeded."<<std::endl;
+      return true;
+    }
   }
-  if (m_analyse) {
-    Histogram * histo = (m_histograms.find(std::string("Splitting_Trials")))->second;
-    histo->Insert(trials);
-  }
-  msg_Debugging()<<"In "<<METHOD<<"(first = "<<first<<", veto = "<<vetodiquark<<") -> succeeded."<<std::endl;
-  return true;
+  msg_Debugging()<<"~~ "<<METHOD<<"(first = "<<first<<", "
+		 <<"veto = "<<vetodiquark<<") -> failed."<<std::endl;
+  return false;
 }
 
 
 bool Splitting_Tools::ProduceKinematics(const bool & first,const bool & vetodiquark) {
-  msg_Debugging()<<"In "<<METHOD<<"."<<std::endl;
+  msg_Debugging()<<"~~ "<<METHOD<<"."<<std::endl;
   if (!SelectFlavour(vetodiquark)) {
     msg_Error()<<"no flavour selected, return false."<<std::endl;
     return false;
   }
   msg_Debugging()<<"   flav = "<<m_flav<<"."<<std::endl;
   if (!FixRanges(first)) return false;
-  msg_Debugging()<<"   kt2min = "<<m_kt2_min<<", "
-		 <<"z in ["<<m_zmin<<", "<<m_zmax<<"]."<<std::endl;
+  msg_Debugging()<<"   kt2min = "<<m_kt2_min<<", z in ["<<m_zmin<<", "<<m_zmax<<"]."<<std::endl;
 
   m_kt2 = m_z = -1.;
   int trials(0);
@@ -298,8 +302,8 @@ bool Splitting_Tools::ProduceKinematics(const bool & first,const bool & vetodiqu
     }
   }
   m_phi = 2.*M_PI*ran.Get();
-  msg_Debugging()<<"___ "<<METHOD<<" : exit inner loop with kt2 = "<<m_kt2<<" "
-	   <<"and z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
+  msg_Debugging()<<"~~ "<<METHOD<<" : exit inner loop with kt2 = "<<m_kt2<<" "
+		 <<"and z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
 
   if (m_analyse) {
     Histogram * histo = (m_histograms.find(std::string("Kinematics_Trials")))->second;
@@ -359,18 +363,19 @@ bool Splitting_Tools::UpdateRanges(const bool & first) {
     else {
       if ((p_spect->m_info=='B')) {
 	if (p_split->m_info=='B') 
-	  m_kt2_max = Min(m_kt2_max,m_pt2max_factor*sqrt(4.*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2()));
+	  m_kt2_max = Min(m_kt2_max,sqrt(m_pt2max_factor*p_spect->m_mom.PPerp2()*p_split->m_mom.PPerp2()));
 	else 
-	  m_kt2_max = Min(m_kt2_max,m_pt2max_factor*sqrt(4.*p_split->m_mom.PPerp2()*m_pt2min));
+	  m_kt2_max = Min(m_kt2_max,sqrt(m_pt2max_factor*p_split->m_mom.PPerp2()*m_pt2min));
       }
       else {
-	double pt2(m_pt2max_factor*p_spect->m_mom.PPerp2(p_split->m_mom));
+	double pt2((m_glusplit?m_pt2max_factor:1.)*p_spect->m_mom.PPerp2(p_split->m_mom));
 	if (m_kt2_max>pt2) m_kt2_max = sqrt(m_kt2_max*pt2);
       }
     }
     msg_Tracking()<<"... first: "<<p_split->m_info<<p_spect->m_info
 		  <<"("<<p_split->m_flav<<" "<<p_spect->m_flav<<"): "
-		  <<"kt_max = "<<sqrt(m_kt2_max)<<" from pt(kin) = "<<p_spect->m_mom.PPerp2(p_split->m_mom)<<", "
+		  <<"kt_max = "<<sqrt(m_kt2_max)<<" from pt(kin) = "
+		  <<p_spect->m_mom.PPerp2(p_split->m_mom)<<", "
 		  <<"p_min = "<<Min(p_split->m_mom.PSpat(),p_spect->m_mom.PSpat())<<" and "
 		  <<"cos = "<<p_split->m_mom.CosTheta(p_spect->m_mom)
 		  <<", red. mass = "<<sqrt(m_Qt2)<<"."<<std::endl;
@@ -441,7 +446,7 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
       }
     }
     msg_Debugging()<<"___ "<<METHOD<<" yields new particles : "<<std::endl
-		  <<(*p_out1)<<(*p_out2)<<std::endl;
+		   <<(*p_out1)<<(*p_out2)<<std::endl;
   }
   else {
     p_split->m_mom = m_mom3;
@@ -575,14 +580,14 @@ bool Splitting_Tools::ConstructKinematics() {
     
     Vec4D  q23 = m_mom0-q1;
     if (sqr(q23*q1)-m_s23*m_m1_2<0.) {
-      //msg_Error()<<"Warning in "<<METHOD<<": gamma explodes: "<<(sqr(q23*q1)-m_s23*m_m1_2)
-      //		 <<" for kt^2 = "<<m_kt2<<"."<<std::endl;
+      msg_Debugging()<<"Warning in "<<METHOD<<": gamma explodes: "<<(sqr(q23*q1)-m_s23*m_m1_2)
+		     <<" for kt^2 = "<<m_kt2<<"."<<std::endl;
       return false;
     }
     double gam = q23*q1+sqrt(sqr(q23*q1)-m_s23*m_m1_2);
     if (IsZero(m_s23*m_m1_2-gam*gam) || IsZero(gam)) {
-      msg_Error()<<"Warning in "<<METHOD<<": beta explodes: "<<(m_s23*m_m1_2-gam*gam)
-		 <<" for kt^2 = "<<m_kt2<<" & gamma = "<<gam<<"."<<std::endl;
+      msg_Debugging()<<"Warning in "<<METHOD<<": beta explodes: "<<(m_s23*m_m1_2-gam*gam)
+		     <<" for kt^2 = "<<m_kt2<<" & gamma = "<<gam<<"."<<std::endl;
       return false;
     }
     double a23 = m_s23/gam, a1=m_m1_2/gam, beta=1.0/(1.0-a23*a1);
@@ -590,9 +595,9 @@ bool Splitting_Tools::ConstructKinematics() {
     Vec4D  n   = beta*(q1-a1*q23);
     if (IsZero(a1) || IsZero(1.-m_y) && IsZero(gam) || IsZero((1.+a23*a1)) ||
 	IsZero((1./a1-(m_m2_2+m_m3_2)/gam))) {
-      msg_Error()<<"Warning in "<<METHOD<<": z explodes: "<<std::endl
-		 <<"  a23 = "<<a23<<", a1 = "<<a1<<", y "<<m_y<<" gamma = "<<gam
-		 <<" & masses = "<<m_m2_2<<"/"<<m_m3_2<<"."<<std::endl;
+      msg_Debugging()<<"Warning in "<<METHOD<<": z explodes: "<<std::endl
+		     <<"  a23 = "<<a23<<", a1 = "<<a1<<", y "<<m_y<<" gamma = "<<gam
+		     <<" & masses = "<<m_m2_2<<"/"<<m_m3_2<<"."<<std::endl;
       return false;
     }
     m_z =
@@ -611,16 +616,16 @@ bool Splitting_Tools::ConstructKinematics() {
   }
   q2 = m_mom0-q3-q1;
 
-  msg_Debugging()<<"___ "<<METHOD<<": before boosting back."<<std::endl
-		 <<"___ "<<m_mom0<<" = "<<m_mom1<<" ("<<sqrt(Max(0.,m_mom1.Abs2()))<<")"
+  msg_Debugging()<<"~~ "<<METHOD<<": before boosting back."<<std::endl
+		 <<"~~ "<<m_mom0<<" = "<<m_mom1<<" ("<<sqrt(Max(0.,m_mom1.Abs2()))<<")"
 		 <<" + "<<m_mom3<<" ("<<sqrt(Max(0.,m_mom3.Abs2()))<<")"<<std::endl
-		 <<"___ "<<q1<<" ("<<sqrt(Max(0.,q1.Abs2()))<<")"
+		 <<"~~ "<<q1<<" ("<<sqrt(Max(0.,q1.Abs2()))<<")"
 		 <<" + "<<q2<<" ("<<sqrt(Max(0.,q2.Abs2()))<<")"
 		 <<" + "<<q3<<" ("<<sqrt(Max(0.,q3.Abs2()))<<")."<<std::endl;
 
   if (m_m1_2==0.) {
     msg_Debugging()<<"___ "<<METHOD<<" summary: "<<std::endl
-		  <<"     Masses: m_m2 = m_m3 = "<<m_m2<<" = "<<m_m3<<" --> s23 = "<<m_m23_2<<"."<<std::endl;
+		   <<"     Masses: m_m2 = m_m3 = "<<m_m2<<" = "<<m_m3<<" --> s23 = "<<m_m23_2<<"."<<std::endl;
   }
 
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
@@ -648,7 +653,7 @@ bool Splitting_Tools::ConstructKinematics() {
   m_cms.BoostBack(m_mom0);
 
   msg_Debugging()<<"___ "<<METHOD<<"(out): succeeded to build kinematics "
-	   <<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
+		 <<"for kt^2 = "<<m_kt2<<", z = "<<m_z<<" for "<<m_flav<<"."<<std::endl;
 
   return true;
 }

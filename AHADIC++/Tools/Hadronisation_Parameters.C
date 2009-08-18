@@ -56,7 +56,6 @@ void Hadronisation_Parameters::Init(string dir,string file)
   p_doubletransitions = new Double_Transitions();
   if (msg_LevelIsTracking()) 
     p_doubletransitions->PrintDoubleTransitions(); 
-    //exit(1);
 
   switch (int(m_parametermap[string("leading")])) {
   case 3:
