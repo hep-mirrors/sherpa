@@ -136,7 +136,6 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   }
   if (m_massive||fsgluons) {
     p_masskern = new Massive_Kernels(model);
-    p_masskern->SetAlpha(m_dalpha);
     if (p_masskern->Nmf()>0) m_massive=1;
     if (!m_massive) {
       delete p_masskern;
@@ -146,6 +145,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       m_xpa.resize(p_masskern->Nmf()*fsgluons);
       m_xpb.resize(p_masskern->Nmf()*fsgluons);
     }
+    if (p_masskern) p_masskern->SetAlpha(m_dalpha);
   }
 
   PolarizationNorm();
