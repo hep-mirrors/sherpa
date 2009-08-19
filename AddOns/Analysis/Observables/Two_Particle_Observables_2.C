@@ -25,10 +25,12 @@ namespace ANALYSIS {
      const std::string &name);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
-		  double weight=1.,double ncount=1);
+		  double weight=1.,double ncount=1.);
     
-    virtual bool Evaluate(const Particle *p1,const Particle *p2,
-			  double weight=1.,double ncount=1) const = 0;
+    void EvaluateNLOcontrib(double weight, double ncount);
+    void EvaluateNLOevt();
+    
+    virtual double Calc(const Particle *p1,const Particle *p2) = 0;
 
   };// end of class STwo_Particle_Observable_Base
 
@@ -40,8 +42,7 @@ namespace ANALYSIS {
 			  const int type,const double min,const double max,const int bins,
 			  const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -55,8 +56,7 @@ namespace ANALYSIS {
 			  const int type,const double min,const double max,const int bins,
 			  const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -70,8 +70,7 @@ namespace ANALYSIS {
 			  const int type,const double min,const double max,const int bins,
 			  const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -85,8 +84,7 @@ namespace ANALYSIS {
 			const int type,const double min,const double max,const int bins,
 			const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -100,8 +98,7 @@ namespace ANALYSIS {
 			const int type,const double min,const double max,const int bins,
 			const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -115,8 +112,7 @@ namespace ANALYSIS {
 			  const int type,const double min,const double max,const int bins,
 			  const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -130,8 +126,7 @@ namespace ANALYSIS {
 			const int type,const double min,const double max,const int bins,
 			const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -145,8 +140,7 @@ namespace ANALYSIS {
 			const int type,const double min,const double max,const int bins,
 			const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -160,8 +154,7 @@ namespace ANALYSIS {
 			    const int type,const double min,const double max,const int bins,
 			    const std::string &inlist,const std::string &reflist);
     
-    bool Evaluate(const Particle *p1,const Particle *p2,
-		  double weight=1.,double ncount=1) const;
+    double Calc(const Particle *p1,const Particle *p2);
 
     Primitive_Observable_Base *Copy() const;
     
@@ -283,8 +276,49 @@ void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &list,
       }
     }
   }
-  if (pos==std::string::npos || refpos==std::string::npos) return;
-  Evaluate(list[pos],(*reflist)[refpos],weight,ncount);
+  if (pos==std::string::npos || refpos==std::string::npos) {
+    p_histo->Insert(0.,0.,ncount);
+    return;
+  }
+  p_histo->Insert(Calc(list[pos],(*reflist)[refpos]),weight,ncount);
+}
+
+void STwo_Particle_Observable_Base::EvaluateNLOcontrib(double weight,double ncount)
+{
+  ATOOLS::Particle_List * plist =p_ana->GetParticleList(m_listname);
+  ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
+  int no=-1, refno=-1; 
+  size_t pos=std::string::npos, refpos=std::string::npos;
+  for (size_t i=0;i<plist->size();++i) {
+    if ((*plist)[i]->Flav()==m_flavour || 
+	m_flavour.Kfcode()==kf_none) {
+      ++no;
+      if (no==(int)m_item) {
+	pos=i;
+	if (refpos!=std::string::npos) break;
+      }
+    }
+  }
+  for (size_t i=0;i<reflist->size();++i) {
+    if ((*reflist)[i]->Flav()==m_refflavour || 
+	m_refflavour.Kfcode()==kf_none) {
+      ++refno;
+      if (refno==(int)m_refitem) {
+	refpos=i;
+	if (pos!=std::string::npos) break;
+      }
+    }
+  }
+  if (pos==std::string::npos || refpos==std::string::npos) {
+    p_histo->InsertMCB(0.,0.,ncount);
+    return;
+  }
+  p_histo->InsertMCB(Calc((*plist)[pos],(*reflist)[refpos]),weight,ncount);
+}
+
+void STwo_Particle_Observable_Base::EvaluateNLOevt()
+{
+  p_histo->FinishMCB();
 }
 
 DEFINE_TWO_OBSERVABLE_GETTER(Two_DPhi_Distribution,
@@ -298,11 +332,9 @@ Two_DPhi_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoDPhi") {}
 
-bool Two_DPhi_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				     double weight,double ncount) const
+double Two_DPhi_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(p1->Momentum().DPhi(p2->Momentum()),weight,ncount);
-  return true;
+  return p1->Momentum().DPhi(p2->Momentum());
 }
 
 Primitive_Observable_Base *Two_DPhi_Distribution::Copy() const
@@ -322,11 +354,9 @@ Two_DEta_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoDEta") {}
 
-bool Two_DEta_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				     double weight,double ncount) const
+double Two_DEta_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(dabs(p1->Momentum().Eta()-p2->Momentum().Eta()),weight,ncount);
-  return true;
+  return dabs(p1->Momentum().Eta()-p2->Momentum().Eta());
 }
 
 Primitive_Observable_Base *Two_DEta_Distribution::Copy() const
@@ -346,11 +376,9 @@ Two_PEta_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoPEta") {}
 
-bool Two_PEta_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				     double weight,double ncount) const
+double Two_PEta_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(p1->Momentum().Eta()*p2->Momentum().Eta(),weight,ncount);
-  return true;
+  return p1->Momentum().Eta()*p2->Momentum().Eta();
 }
 
 Primitive_Observable_Base *Two_PEta_Distribution::Copy() const
@@ -370,11 +398,9 @@ Two_DY_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoDY") {}
 
-bool Two_DY_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				   double weight,double ncount) const
+double Two_DY_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(dabs(p1->Momentum().Y()-p2->Momentum().Y()),weight,ncount);
-  return true;
+  return dabs(p1->Momentum().Y()-p2->Momentum().Y());
 }
 
 Primitive_Observable_Base *Two_DY_Distribution::Copy() const
@@ -394,11 +420,9 @@ Two_PY_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoPY") {}
 
-bool Two_PY_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				   double weight,double ncount) const
+double Two_PY_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(p1->Momentum().Y()*p2->Momentum().Y(),weight,ncount);
-  return true;
+  return p1->Momentum().Y()*p2->Momentum().Y();
 }
 
 Primitive_Observable_Base *Two_PY_Distribution::Copy() const
@@ -418,11 +442,9 @@ Two_Mass_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoMass") {}
 
-bool Two_Mass_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				     double weight,double ncount) const
+double Two_Mass_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert((p1->Momentum()+p2->Momentum()).Mass(),weight,ncount);
-  return true;
+  return (p1->Momentum()+p2->Momentum()).Mass();
 }
 
 Primitive_Observable_Base *Two_Mass_Distribution::Copy() const
@@ -442,11 +464,9 @@ Two_PT_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoPT") {}
 
-bool Two_PT_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				   double weight,double ncount) const
+double Two_PT_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert((p1->Momentum()+p2->Momentum()).PPerp(),weight,ncount);
-  return true;
+  return (p1->Momentum()+p2->Momentum()).PPerp();
 }
 
 Primitive_Observable_Base *Two_PT_Distribution::Copy() const
@@ -466,12 +486,10 @@ Two_DR_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoDR") {}
 
-bool Two_DR_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				   double weight,double ncount) const
+double Two_DR_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(sqrt(sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
-		       sqr(p1->Momentum().DPhi(p2->Momentum()))),weight,ncount);
-  return true;
+  return sqrt(sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
+	      sqr(p1->Momentum().DPhi(p2->Momentum())));
 }
 
 Primitive_Observable_Base *Two_DR_Distribution::Copy() const
@@ -491,11 +509,9 @@ Two_ETFrac_Distribution(const ATOOLS::Flavour flav,const size_t item,
   STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
 				inlist,reflist,"TwoETFrac") {}
 
-bool Two_ETFrac_Distribution::Evaluate(const Particle *p1,const Particle *p2,
-				       double weight,double ncount) const
+double Two_ETFrac_Distribution::Calc(const Particle *p1,const Particle *p2)
 {
-  p_histo->Insert(p1->Momentum().EPerp()/p2->Momentum().EPerp(),weight,ncount);
-  return true;
+  return p1->Momentum().EPerp()/p2->Momentum().EPerp();
 }
 
 Primitive_Observable_Base *Two_ETFrac_Distribution::Copy() const
