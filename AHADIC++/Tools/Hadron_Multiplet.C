@@ -98,86 +98,82 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
     wavefunction = new Hadron_Wave_Function;
     wavefunction->AddToWaves(pair,1.);
   }
-  else {
-    if (fl1==fl2) {
+  else if (fl1==fl2) {
+    if (fl1==1) {
       LookUpAngles(lp,spin,costh,sinth);
-      if (fl1==1) {
+      wavefunction = new Hadron_Wave_Function;
+      wavefunction->AddToWaves(pair,-1./sqrt(2.));
+      flavs[0]     = Flavour((kf_code)(2));
+      pair         = new Flavour_Pair;
+      pair->first  = flavs[0];
+      pair->second = flavs[0].Bar();
+      wavefunction->AddToWaves(pair,+1./sqrt(2.));
+    } 
+    else if (fl1==2 && iso0==1) {
+      weight       = 1/sqrt(3.);
+      wavefunction = new Hadron_Wave_Function;
+      wavefunction->AddToWaves(pair,weight);
+      flavs[0]     = Flavour((kf_code)(1));
+      pair         = new Flavour_Pair;
+      pair->first  = flavs[0];
+      pair->second = flavs[0].Bar();
+      wavefunction->AddToWaves(pair,weight);
+      flavs[0]     = Flavour((kf_code)(3));
+      pair         = new Flavour_Pair;
+      pair->first  = flavs[0];
+      pair->second = flavs[0].Bar();
+      wavefunction->AddToWaves(pair,weight);
+    }
+    else if ((fl1==2 && spin!=1) || (fl1==3 && spin==1)) {
+      weight         = (sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
+      if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
-	wavefunction->AddToWaves(pair,-1./sqrt(2.));
-	flavs[0]     = Flavour((kf_code)(fl1+1));
+	wavefunction->AddToWaves(pair,weight);
+	flavs[0]     = Flavour((kf_code)(1));
 	pair         = new Flavour_Pair;
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
-	wavefunction->AddToWaves(pair,+1./sqrt(2.));
-      } 
-      else if (fl1==2) {
-	if (iso0==1) {
-	  weight       = 1/sqrt(3.);
-	  wavefunction = new Hadron_Wave_Function;
-	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour((kf_code)(1));
-	  pair         = new Flavour_Pair;
-	  pair->first  = flavs[0];
-	  pair->second = flavs[0].Bar();
-	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour((kf_code)(3));
-	  pair         = new Flavour_Pair;
-	  pair->first  = flavs[0];
-	  pair->second = flavs[0].Bar();
-	  wavefunction->AddToWaves(pair,weight);
-	}
-	else {
-	  weight         = (sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
-	  if (dabs(weight)>1.e-3) {
-	    wavefunction = new Hadron_Wave_Function;
-	    wavefunction->AddToWaves(pair,weight);
-	    flavs[0]     = Flavour((kf_code)(1));
-	    pair         = new Flavour_Pair;
-	    pair->first  = flavs[0];
-	    pair->second = flavs[0].Bar();
-	    wavefunction->AddToWaves(pair,weight);
-	  }
-	  weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
-	  if (dabs(weight)>1.e-3) {
-	    flavs[0]     = Flavour((kf_code)(3));
-	    pair         = new Flavour_Pair;
-	    pair->first  = flavs[0];
-	    pair->second = flavs[0].Bar();
-	    if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
-	    wavefunction->AddToWaves(pair,weight);
-	  }
-	}
-      } 
-      else if (fl1==3) {
-	weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
-	if (dabs(weight)>1.e-3) {
-	  wavefunction = new Hadron_Wave_Function;
-	  wavefunction->AddToWaves(pair,weight);
-	}
-	weight         = (costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
-	if (dabs(weight)>1.e-3) {
-	  flavs[0]     = Flavour((kf_code)(1));
-	  pair         = new Flavour_Pair;
-	  pair->first  = flavs[0];
-	  pair->second = flavs[0].Bar();
-	  if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
-	  wavefunction->AddToWaves(pair,weight);
-	  flavs[0]     = Flavour((kf_code)(2));
-	  pair         = new Flavour_Pair;
-	  pair->first  = flavs[0];
-	  pair->second = flavs[0].Bar();
-	  wavefunction->AddToWaves(pair,weight);
-	}
+	wavefunction->AddToWaves(pair,weight);
       }
-      if (fl1==4 || fl1==5) {
-	wavefunction = new Hadron_Wave_Function;
-	wavefunction->AddToWaves(pair,1.);
+      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
+      if (dabs(weight)>1.e-3) {
+	flavs[0]     = Flavour((kf_code)(3));
+	pair         = new Flavour_Pair;
+	pair->first  = flavs[0];
+	pair->second = flavs[0].Bar();
+	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
+	wavefunction->AddToWaves(pair,weight);
       }
     }
-    else if (flavs[0].Charge()+flavs[1].Charge()==0.) {
+    else if ((fl1==2 && spin==1) || (fl1==3 && spin!=1)) {
+      weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
+      if (dabs(weight)>1.e-3) {
+	wavefunction = new Hadron_Wave_Function;
+	wavefunction->AddToWaves(pair,weight);
+      }
+      weight         = (costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
+      if (dabs(weight)>1.e-3) {
+	flavs[0]     = Flavour((kf_code)(1));
+	pair         = new Flavour_Pair;
+	pair->first  = flavs[0];
+	pair->second = flavs[0].Bar();
+	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
+	wavefunction->AddToWaves(pair,weight);
+	flavs[0]     = Flavour((kf_code)(2));
+	pair         = new Flavour_Pair;
+	pair->first  = flavs[0];
+	pair->second = flavs[0].Bar();
+	wavefunction->AddToWaves(pair,weight);
+      }
+    }
+    else if (fl1==fl2 && (fl1==4 || fl1==5)) {
       wavefunction = new Hadron_Wave_Function;
       wavefunction->AddToWaves(pair,1.);
     }
+  }
+  else if (flavs[0].Charge()+flavs[1].Charge()==0.) {
+    wavefunction = new Hadron_Wave_Function;
+    wavefunction->AddToWaves(pair,1.);
   }
   if (wavefunction) wavefunction->SetSpin(spin);
   return wavefunction;

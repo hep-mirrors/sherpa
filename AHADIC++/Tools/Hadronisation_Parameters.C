@@ -173,7 +173,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Multiplet_Meson_L1R0S2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_TENSORS2",0.0);
   m_parametermap[string("Multiplet_Meson_L2R0S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_L2R0_VECTORS",0.0);
+    dataread.GetValue<double>("MULTI_WEIGHT_L2R0_VECTORS",1.0);
   m_parametermap[string("Multiplet_Meson_L3R0S1")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L3R0_VECTORS",0.0);
   m_parametermap[string("Multiplet_Meson_L0R1S0")]   = 
@@ -193,7 +193,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Multiplet_exc_Delta_L1R0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_L1R0_DELTA*_3/2",0.0);
   m_parametermap[string("Mixing_Angle_0+")]    = 
-    dataread.GetValue<double>("Mixing_0+",1.2686);
+    dataread.GetValue<double>("Mixing_0+",-0.31416);
   m_parametermap[string("Mixing_Angle_1-")]    = 
     dataread.GetValue<double>("Mixing_1-",0.61075);
   m_parametermap[string("Mixing_Angle_2+")]    = 
