@@ -85,10 +85,18 @@ void THDM::FillSpectrum() {
 				     p_dataread->GetValue<double>("MHplus",Flavour(kf_Hplus).Mass())));
 
 
-  Flavour h0(kf_h0); h0.SetMass(ScalarConstant("Mh0"));
-  Flavour H0(kf_H0); H0.SetMass(ScalarConstant("MH0"));
-  Flavour A0(kf_A0); A0.SetMass(ScalarConstant("MA0"));
-  Flavour Hplus(kf_Hplus); Hplus.SetMass(ScalarConstant("MHplus"));
+  Flavour h0(kf_h0); 
+  h0.SetMass(ScalarConstant("Mh0"));
+  h0.SetHadMass(ScalarConstant("Mh0"));
+  Flavour H0(kf_H0); 
+  H0.SetMass(ScalarConstant("MH0"));
+  H0.SetHadMass(ScalarConstant("MH0"));
+  Flavour A0(kf_A0); 
+  A0.SetMass(ScalarConstant("MA0"));
+  A0.SetHadMass(ScalarConstant("MA0"));
+  Flavour Hplus(kf_Hplus); 
+  Hplus.SetMass(ScalarConstant("MHplus"));
+  Hplus.SetHadMass(ScalarConstant("MHplus"));
 
   double alpha(ScalarConstant("alpha")),tanb(ScalarConstant("tan(beta)"));
  

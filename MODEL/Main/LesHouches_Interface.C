@@ -168,7 +168,10 @@ void LesHouches_Interface::SetMasses() {
     Flavour flav;    
     for (unsigned int i=0;i<vd.size();++i) {
       flav.FromHepEvt(int(vd[i][0]));
-      if (flav!=Flavour(kf_Wplus)) flav.SetMass(dabs(vd[i][1]));
+      if (flav!=Flavour(kf_Wplus)) {
+	flav.SetMass(dabs(vd[i][1]));
+	flav.SetHadMass(dabs(vd[i][1]));
+      }
       if (vd[i][1]<0) flav.SetMassSign(-1);
       if (flav!=Flavour(kf_Wplus))
 	msg_Tracking()<<"   Set mass of "<<flav<<" to "<<vd[i][1]<<std::endl;

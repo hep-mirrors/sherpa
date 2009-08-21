@@ -74,6 +74,7 @@ void SM_AxiGluon::FillSpectrum() {
 				p_dataread->GetValue<double>("MASS_AXIGLUON",1000.)));
   Flavour flav = Flavour(61);
   flav.SetMass(ScalarConstant(string("MASS_AXI")));
+  flav.SetHadMass(ScalarConstant(string("MASS_AXI")));
   flav.SetMassOn(true);
   flav.SetStable(false);
   flav.SetWidth(-1.);

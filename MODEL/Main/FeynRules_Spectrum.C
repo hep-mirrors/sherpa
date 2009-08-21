@@ -159,6 +159,7 @@ void FeynRules_Spectrum::SetExternalParameters() {
     for (size_t i=0;i<vm.size();++i) {
       flav.FromHepEvt(int(vm[i][0]));
       flav.SetMass(dabs(vm[i][1]));
+      flav.SetHadMass(dabs(vm[i][1]));
       if (vm[i][1]<0) flav.SetMassSign(-1);
       msg_Info()<<"     Set mass of "<<flav<<" to "<<vm[i][1]<<endl;
     }

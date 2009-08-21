@@ -101,11 +101,13 @@ void SM_Phantom_U1::FillSpectrum() {
   Flavour flav;
   flav = Flavour(kf_h0);
   flav.SetMass(ScalarConstant(string("M_H1")));
+  flav.SetHadMass(ScalarConstant(string("M_H1")));
   flav.SetMassOn(true);
   flav.SetStable(false);
   flav.SetWidth(-1.);
   flav = Flavour(kf_H0);
   flav.SetMass(ScalarConstant(string("M_H2")));
+  flav.SetHadMass(ScalarConstant(string("M_H2")));
   flav.SetMassOn(true);
   flav.SetStable(false);
   flav.SetWidth(-1.);
@@ -115,6 +117,7 @@ void SM_Phantom_U1::FillSpectrum() {
   flav.SetWidth(0.);
   flav = Flavour(kf_Z0_2);
   flav.SetMass(ScalarConstant(string("M_Z'")));
+  flav.SetHadMass(ScalarConstant(string("M_Z'")));
   flav.SetMassOn(true);
   flav.SetWidth(0.);
 
