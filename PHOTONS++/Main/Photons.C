@@ -27,19 +27,20 @@ Photons::Photons(Data_Reader* reader, bool ana) :
   rpa.gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
   s_mode          = reader->GetValue<int>("YFS_MODE",2);
+  if (s_mode>2) s_mode=2;
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
   s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
   std::string irframe
-            = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME","Dipole_CMS");
-  if      (irframe == "Dipole_CMS")         s_ircutoffframe = 0;
+            = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME","Multipole_CMS");
+  if      (irframe == "Multipole_CMS")      s_ircutoffframe = 0;
   else if (irframe == "Lab")                s_ircutoffframe = 1;
   else if (irframe == "Decayer_Rest_Frame") s_ircutoffframe = 2;
   else {
     s_ircutoffframe = 0;
     msg_Info()<<"value '"<<irframe<<"' for the frame for applying the\n"
-              <<"IR cut-off for soft photon radiation not unkown ...\n"
-              <<"setting it to 'Dipole_CMS' ...\n";
+              <<"IR cut-off for soft photon radiation unkown ...\n"
+              <<"setting it to 'Multipole_CMS' ...\n";
   }
   s_accu          = sqrt(rpa.gen.Accu());
   m_success       = true;
