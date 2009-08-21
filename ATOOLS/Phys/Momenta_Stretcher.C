@@ -339,7 +339,7 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts,
   for(size_t i=0; i<moms.size(); i++) {
     boost.BoostBack(moms[i]);
     outparts[i]->SetMomentum(moms[i]);
-    outparts[i]->SetFinalMass();
+    outparts[i]->SetFinalMass(masses[i]);
   }
   return true;
 }
