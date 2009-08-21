@@ -40,6 +40,18 @@ m_success(true), m_photonsadded(false) {
   else
     m_dtype = Dipole_Type::unknown;
 
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<METHOD<<"(){\n";
+    if      (m_dtype==Dipole_Type::ff) msg_Out()<<"  Dipole_FF(";
+    else if (m_dtype==Dipole_Type::fi) msg_Out()<<"  Dipole_FI(";
+    else if (m_dtype==Dipole_Type::ii) msg_Out()<<"  Dipole_II(";
+    else 			       msg_Out()<<"  Undefined(";
+    msg_Out()<<m_chargedinparticles.size()<<","
+	     <<m_neutralinparticles.size()<<","
+	     <<m_chargedoutparticles.size()<<","
+	     <<m_neutraloutparticles.size()<<")\n}\n";
+  }
+
   m_pvv.push_back(m_chargedinparticles);
   m_pvv.push_back(m_neutralinparticles);
   m_pvv.push_back(m_chargedoutparticles);

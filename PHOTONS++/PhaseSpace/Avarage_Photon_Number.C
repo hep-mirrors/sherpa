@@ -61,7 +61,10 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
                           *(2.-(1.-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj));
 #ifdef PHOTONS_DEBUG
       msg_Info()<<"ana: "<<dipoleij<<endl;
+      msg_Info()<<"alpha/pi*ZiZjtitj: "<<Photons::s_alpha/M_PI*Zi*Zj*titj<<endl;
+      msg_Info()<<"log(Emax/Emin): "<<log(m_omegaMax/m_omegaMin)<<endl;
       msg_Info()<<"int: "<<(1-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj)<<endl;
+      msg_Info()<<"Emax,Emin: "<<m_omegaMax<<" ,  "<<m_omegaMin<<endl;
 #endif
       m_nbars.push_back(dipoleij);
       sum = sum + dipoleij;

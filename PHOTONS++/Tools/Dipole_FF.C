@@ -33,6 +33,7 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
     sum = sum + m_mN[i];
   }
   m_omegaMax  = (m_M/2.) * ( m_M/sum - sum/m_M );
+  if (m_omegaMax<0.) m_omegaMax = m_omegaMin;
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
   Photons::SetAlphaQED(sqr(m_M));

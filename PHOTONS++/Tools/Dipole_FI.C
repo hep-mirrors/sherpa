@@ -316,6 +316,7 @@ double Dipole_FI::DetermineMaximumPhotonEnergy() {
     xN = sqrt(m_M*m_M + nC*nC*F_xNminus1) - sum;
     count++;
   }
+  if (xN<0.) return m_omegaMin;
   return xN;
 }
 
