@@ -447,6 +447,10 @@ PT_Selector::~PT_Selector() {
 
 bool PT_Selector::Trigger(const Vec4D_Vector & mom) 
 {
+   double sumM2=0.;
+  for (int i=m_nin;i<m_n;i++) {
+    sumM2+=sqr(m_fl[i].SelMass());
+  }
   double pti;
   for (int i=m_nin;i<m_n;i++) {
     pti = value[i] = sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
@@ -472,10 +476,15 @@ bool PT_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
+  double sumM2=0.;
+  for (int i=m_nin;i<m_n;i++) {
+    sumM2+=sqr(m_fl[i].SelMass());
+  }
   for (int i=m_nin;i<m_n;i++) {
     cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].SelMass())),cuts->energymin[i]);
+    double Emax2 = sqr((m_smax+2.*sqr(m_fl[i].SelMass())-sumM2)/(2.*sqrt(m_smax)));
     cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-      Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(0.25*m_smax-sqr(m_fl[i].SelMass()))));
+      Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(Emax2-sqr(m_fl[i].SelMass()))));
     cuts->etmin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].SelMass())*(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
   }
 }
