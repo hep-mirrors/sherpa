@@ -41,6 +41,12 @@ AMEGIC::Process_Group::~Process_Group()
 
 PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_Info &pi) const
 {
+  int typechk(0);
+  if (pi.m_fi.m_nloqcdtype&nlo_type::real) typechk++;
+  if (pi.m_fi.m_nloqcdtype&nlo_type::vsub||pi.m_fi.m_nloqcdtype&nlo_type::loop) typechk++;
+  if (pi.m_fi.m_nloqcdtype&nlo_type::born) typechk++;    
+  if (typechk>1) THROW(fatal_error,"NLO_QCD_Parts 'RS', 'VI' and 'B' must be assigned separately!");
+
   if ((pi.m_nlomode==0 && pi.m_fi.m_nloqcdtype==nlo_type::rsub) ||
       (pi.m_nlomode==1 && (pi.m_fi.m_nloqcdtype&nlo_type::real))) 
     return new Single_Real_Correction();

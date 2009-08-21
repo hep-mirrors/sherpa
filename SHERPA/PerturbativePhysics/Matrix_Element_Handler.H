@@ -88,7 +88,7 @@ namespace SHERPA {
 			 <std::string,std::pair<int,Type> >& dv,
 			 const int &priority);
 
-    PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi);
+    std::vector<PHASIC::Process_Base*> InitializeProcess(const PHASIC::Process_Info &pi);
 
     void BuildProcesses();
 

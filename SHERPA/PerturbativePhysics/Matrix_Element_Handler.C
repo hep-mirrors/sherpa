@@ -138,13 +138,17 @@ bool Matrix_Element_Handler::GenerateWeightedEvent()
   return false;
 }
 
-Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
 {
   DEBUG_FUNC(pi);
+  std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
-    if (proc) m_procs.push_back(proc);
-    return proc;
+    if (proc) {
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+    }
+    return procs;
   }
   else {
     if (m_nlomode==0) {
@@ -153,35 +157,46 @@ Process_Base *Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
       proc->Integrator()->InitEEG();
       proc->SetShower(p_shower->GetShower());
       m_procs.push_back(proc);
-      return proc;
+      procs.push_back(proc);
+      return procs;
     }
     else if (m_nlomode==1) {
-      Process_Base *proc(NULL);
+      if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
+	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
+	  Process_Info rpi(pi);
+	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born));
+	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	}
+      }
+      else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
+	if (pi.m_fi.NLOType()&nlo_type::born) {
+	  Process_Info rpi(pi);
+	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&nlo_type::born);
+	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	}
+	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop)) {
+	  Process_Info rpi(pi);
+	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop));
+	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	}
+      }
       if (pi.m_fi.NLOType()&nlo_type::real || pi.m_fi.NLOType()&nlo_type::rsub){
         // if real or rsub is requested, the extra jet is not yet contained
         // in the process info, but has to be added here
         Process_Info rpi(pi);
+	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::real|nlo_type::rsub));
         if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
           rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
         }
         else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
           rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
         }
-        proc=m_gens.InitializeProcess(rpi,true);
+        procs.push_back(m_gens.InitializeProcess(rpi,true));
       }
-      else {
-        proc=m_gens.InitializeProcess(pi,true);
-      }
-      if (proc!=NULL) {
-        m_procs.push_back(proc);
-        if (!(pi.m_fi.NLOType()&nlo_type::real)) {
-          proc->Integrator()->InitEEG();
-        }
-        return proc;
-      }
+      for (size_t i(0);i<procs.size();i++) m_procs.push_back(procs[i]);
     }
   }
-  return NULL;
+  return procs;
 }
 
 bool Matrix_Element_Handler::InitializeProcesses
@@ -491,22 +506,23 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(vscale,nfs,pnid,ds)) cpi.m_scale=ds;
 	if (GetMPvalue(vcoupl,nfs,pnid,ds)) cpi.m_kfactor=ds;
 	if (GetMPvalue(vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
-	Process_Base *proc(InitializeProcess(cpi));
-	if (proc==NULL) continue;
-	procs.push_back(proc);
-	proc->Integrator()->
-	  SetISRThreshold(ATOOLS::Max(inisum,finsum));
-	if (GetMPvalue(vefunc,nfs,pnid,ds))
-	  proc->Integrator()->SetEnhanceFunction(ds);
-	if (GetMPvalue(vefac,nfs,pnid,dd))
-	  proc->Integrator()->SetEnhanceFactor(dd);
-	if (GetMPvalue(vmaxeps,nfs,pnid,dd))
-	  proc->Integrator()->SetMaxEpsilon(dd);
-	double maxerr(-1.0);
-	if (GetMPvalue(vmaxerr,nfs,pnid,dd)) maxerr=dd;
-	proc->Integrator()->SetPSHandler
-	  (new Phase_Space_Handler
-	   (proc->Integrator(),p_isr,p_beam,maxerr));
+	std::vector<Process_Base*> proc=InitializeProcess(cpi);
+	for (size_t i(0);i<proc.size();i++) {
+	  procs.push_back(proc[i]);
+	  proc[i]->Integrator()->
+	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
+	  if (GetMPvalue(vefunc,nfs,pnid,ds))
+	    proc[i]->Integrator()->SetEnhanceFunction(ds);
+	  if (GetMPvalue(vefac,nfs,pnid,dd))
+	    proc[i]->Integrator()->SetEnhanceFactor(dd);
+	  if (GetMPvalue(vmaxeps,nfs,pnid,dd))
+	    proc[i]->Integrator()->SetMaxEpsilon(dd);
+	  double maxerr(-1.0);
+	  if (GetMPvalue(vmaxerr,nfs,pnid,dd)) maxerr=dd;
+	  proc[i]->Integrator()->SetPSHandler
+	    (new Phase_Space_Handler
+	     (proc[i]->Integrator(),p_isr,p_beam,maxerr));
+	}
       }
     }
   }
