@@ -276,7 +276,6 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
       if (_moms[i][0]<m_flavs[i].Mass()) return m_last = 0.;
     }
   }
-  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
   if (p_partner == this) {
     m_lastxs = operator()(&_moms.front());
   }
@@ -291,8 +290,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
 
   if (m_nin==2) {
     if (p_int->ISR()->On()) {
-      if (!p_int->ISR()->CalculateWeight
-          (p_scale->Scale(stp::fac))) 
+      if (!p_int->ISR()->CalculateWeight(Partner()->ScaleSetter()->Scale(stp::fac))) 
         return m_last=m_lastlumi=0.0;
       m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
     }
@@ -304,7 +302,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
   }
   else  m_lastlumi = 1.;
-  return m_last = m_Norm * (m_lastxs+kpterm) * m_lastlumi * KFactor();
+  return m_last = m_Norm * (m_lastxs+kpterm) * m_lastlumi * Partner()->KFactor();
 }
 
 double Single_Virtual_Correction::DSigma2() 
@@ -315,8 +313,8 @@ double Single_Virtual_Correction::DSigma2()
   }
   double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
-  if (!p_int->ISR()->CalculateWeight2(p_scale->Scale(stp::fac))) return 0.0;
-  double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* KFactor2(); 
+  if (!p_int->ISR()->CalculateWeight2(Partner()->ScaleSetter()->Scale(stp::fac))) return 0.0;
+  double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* Partner()->KFactor2(); 
   m_last    += tmp;
   return tmp;
 }
@@ -646,6 +644,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D * mom)
 {
   if (p_partner!=this) return p_partner->operator()(mom)*m_sfactor;
   Integrator()->RestoreInOrder();
+  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
 
   double M2(0.);
 
