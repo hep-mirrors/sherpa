@@ -148,8 +148,8 @@ void Initialization_Handler::SetFileNames()
   if (cf.RereadInFile()) m_showerdat=fname+"|(shower){|}(shower)";
   cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(fragmentation){|}(fragmentation)");
-  if (cf.RereadInFile()) m_fragmentationdat=
-    m_hadrondecaysdat=fname+"|(fragmentation){|}(fragmentation)";
+  if (cf.RereadInFile()) m_fragmentationdat=m_hadrondecaysdat=
+    m_softphotonsdat=fname+"|(fragmentation){|}(fragmentation)";
   cf.ClearFileBegin(); cf.ClearFileEnd();
   cf.SetInputFile(fname+"|(analysis){|}(analysis)");
   if (cf.RereadInFile()) m_analysisdat=fname+"|(analysis){|}(analysis)";

@@ -73,6 +73,10 @@ Photons is switched on, i.e. @code{YFS_MODE = [1,2]}.
 @node QED Corrections to the Hard Interaction
 @subsection QED Corrections to the Hard Interaction
 
+The switch to steer QED corrections to the hard scatter resides in the '(me)'
+section of the steering file or the matrix element data file `ME.dat', 
+respectively.
+
 @menu
 * ME_QED::           Mode of operation.
 @end menu

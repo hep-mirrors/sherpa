@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -33,6 +34,9 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   m_type      = eph::Perturbative;
   // general switch
   Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.AddWordSeparator("\t");
+  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   std::string on = reader.GetValue<std::string>("ME_QED","On");
   m_on = (on=="On")?true:false;
 
