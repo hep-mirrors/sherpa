@@ -59,6 +59,7 @@ namespace PHASIC {
     long unsigned int m_sn, m_svn, m_son;
 
     bool m_swaped;
+    bool m_writeout;
 
     std::string m_efunc;
 

@@ -30,7 +30,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_max(0.), m_rbmax(0.0), m_rbsum(0.0), m_rbsum2(0.0), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
-  m_svn(0), m_son(1), m_swaped(false),
+  m_svn(0), m_son(1), m_swaped(false), m_writeout(false),
   m_efunc("1"), p_whisto(NULL), p_colint(NULL), p_helint(NULL)
 {
   m_colorscheme=cls::sum;
@@ -60,6 +60,7 @@ bool Process_Integrator::Initialize
       if (s_omitnlosuffix) 
 	msg_Info()<<METHOD<<"(): store/read results without Process_Info suffix.\n";
     }
+    else s_omitnlosuffix=0;
     minit=true;
   }
   return true;
@@ -182,10 +183,7 @@ void Process_Integrator::InitWeightHistogram()
     delete p_whisto; 
     p_whisto=0;
   }
-  std::ofstream to;
-  to.open((m_resultpath+"/XS_"+p_proc->Name()).c_str(),std::ios::out);
-  if (!to) return;
-  to.close();
+  if (!m_writeout) return;
 
   double av(TotalResult());
   if (!av>0.) {
@@ -252,6 +250,7 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
   }
   std::ofstream outfile((path+"/"+fname).c_str());
+  if (outfile) m_writeout=1;
   outfile.precision(12);
   outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
 	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
