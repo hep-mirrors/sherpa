@@ -286,6 +286,23 @@ transverse momentum squared of the jet.
 @node NLO_QCD_Part
 @subsection NLO_QCD_Part
 
+Specifies which pieces of a QCD NLO calculation are computed.
+Possible choices are
+
+@itemize
+@item B  ... born term
+@item RS ... real correction, regularized using Catani-Seymour subtraction terms
+@item I  ... integrated subtraction terms
+@item V  ... virtual (one-loop) correction
+@item P  ... check cancelation of epsilon poles between 'I' and 'V' 
+@end itemize
+
+Different pieces can be combined in the processes setup. Only pieces with the same number
+of final state particles and the same order in alpha_S can be treated as one process, otherwise
+they will be automatically split up.
+
+Note that Sherpa includes only a very limited selection of one-loop corrections. For processes
+not included external codes can be interfaced, see ...
 
 @node NLO_EW_Part
 @subsection NLO_EW_Part

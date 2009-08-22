@@ -164,7 +164,8 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
       if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	  Process_Info rpi(pi);
-	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born));
+	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|
+						 nlo_type::polecheck|nlo_type::born));
 	  procs.push_back(m_gens.InitializeProcess(rpi,true));
 	}
       }
@@ -176,7 +177,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
 	}
 	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop)) {
 	  Process_Info rpi(pi);
-	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop));
+	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::polecheck));
 	  procs.push_back(m_gens.InitializeProcess(rpi,true));
 	}
       }
