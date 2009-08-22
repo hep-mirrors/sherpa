@@ -23,7 +23,7 @@ using namespace ATOOLS;
 using namespace Rivet;
 
 class Rivet_Interface: public Analysis_Interface {
-  typedef std::map<int, AnalysisHandler*> RivetMap;
+  typedef std::map<std::pair<std::string, int>, AnalysisHandler*> RivetMap;
 private:
 
   std::string m_inpath, m_infile, m_outpath;
@@ -32,7 +32,7 @@ private:
   size_t m_nevt;
   double m_sum_of_weights;
   bool   m_finished;
-  bool   m_splitjetconts;
+  bool   m_splitjetconts, m_splitcoreprocs;
   
   RivetMap m_rivet;
   HepMC2_Interface m_hepmc2;
@@ -76,6 +76,7 @@ public:
       reader.SetFileEnd("END_RIVET");
       
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
+      m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
       reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
@@ -88,19 +89,76 @@ public:
     return true;
   }
   
-  AnalysisHandler* GetRivet(int jetcont) {
-    RivetMap::iterator it=m_rivet.find(jetcont);
+  AnalysisHandler* GetRivet(std::string proc, int jetcont) {
+    std::pair<std::string, int> key = std::make_pair(proc, jetcont);
+    RivetMap::iterator it=m_rivet.find(key);
     if (it!=m_rivet.end()) {
       return it->second;
     }
     else {
-      std::string out=(jetcont>0 ? m_outpath+".j"+ToString(jetcont) : m_outpath);
+      std::string out=m_outpath;
+      if (proc!="") out+="."+proc;
+      if (jetcont!=0) out+=".j"+ToString(jetcont);
       AnalysisHandler* rivet(new AnalysisHandler(out, "", AIDAML));
       rivet->addAnalyses(m_analyses);
       rivet->init();
-      m_rivet.insert(std::make_pair(jetcont, rivet));
+      m_rivet.insert(std::make_pair(key, rivet));
       return rivet;
     }
+  }
+  
+  std::string GetCoreProc(const std::string& proc) {
+    DEBUG_FUNC(proc);
+    std::string ret;
+    size_t idx=5, nflav=0;
+    while (idx<proc.size()) {
+      std::string fl(1, proc[idx]);
+      if (fl=="_") {
+        ++idx;
+        ret+="_";
+        continue;
+      }
+      for (++idx; idx<proc.size(); ++idx) {
+        if (proc[idx]=='_') break;
+        fl+=proc[idx];
+      }
+      bool bar(false);
+      if (fl.length()>1) {
+        if (fl[fl.length()-1]=='b') {
+          fl.erase(fl.length()-1,1);
+          bar=true;
+        }
+        else if ((fl[0]=='W' || fl[0]=='H')) {
+          if (fl[fl.length()-1]=='-') {
+            fl[fl.length()-1]='+';
+            bar=true;
+          }
+        }
+        else if (fl[fl.length()-1]=='+') {
+          fl[fl.length()-1]='-';
+          bar=true;
+        }
+      }
+      Flavour flav(s_kftable.KFFromIDName(fl));
+      if (bar) flav=flav.Bar();
+      Flavour jet(kf_jet);
+      if (flav.Kfcode()==kf_none) {
+        msg_Error()<<"Couldn't identify flavour "<<fl<<" in "<<proc<<std::endl;
+      }
+      if (jet.Includes(flav)) {
+        if (nflav<4) ret+=jet.IDName();
+      }
+      else {
+        ret+=flav.IDName();
+      }
+      ++nflav;
+    }
+    
+    while (ret[ret.length()-1]=='_') {
+      ret.erase(ret.length()-1, 1);
+    }
+    DEBUG_VAR(ret);
+    return ret;
   }
   
   
@@ -116,9 +174,15 @@ public:
     event.set_cross_section(xs);
 #endif
     
-    GetRivet(0)->analyze(event);
+    GetRivet("", 0)->analyze(event);
     if (m_splitjetconts) {
-      GetRivet(sp->NOutP())->analyze(event);
+      GetRivet("", sp->NOutP())->analyze(event);
+    }
+    if (m_splitcoreprocs) {
+      GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
+      if (m_splitjetconts) {
+        GetRivet(GetCoreProc(sp->TypeSpec()), sp->NOutP())->analyze(event);
+      }
     }
     
     ++m_nevt;
