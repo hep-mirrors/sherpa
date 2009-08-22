@@ -434,11 +434,18 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
+      rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
+      if grep -q -s setSumOfWeights $rivetincludedir/Rivet/AnalysisHandler.hh; then
+        rivetsetsow=true;
+      fi
     ],
     [ rivet=false ]
   )
   if test "$rivet" = "true" ; then
     AC_DEFINE([USING__RIVET], "1", [using Rivet])
+  fi
+  if test "$rivetsetsow" = "true" ; then
+    AC_DEFINE([USING__RIVET__SETSOW], "1", [setSumOfWeights function available in Rivet])
   fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)

@@ -37,5 +37,8 @@
 /* using Rivet */
 #undef USING__RIVET
 
+/* setSumOfWeights function available in Rivet */
+#undef USING__RIVET__SETSOW
+
 /* using FASTJET */
 #undef USING__FASTJET

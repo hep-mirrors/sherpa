@@ -75,8 +75,9 @@ public:
       reader.SetFileBegin("BEGIN_RIVET");
       reader.SetFileEnd("END_RIVET");
       
-//      m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
+      m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
+      reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
       m_sum_of_weights=0.0;
       
@@ -116,9 +117,9 @@ public:
 #endif
     
     GetRivet(0)->analyze(event);
-//    if (m_splitjetconts) {
-//      GetRivet(sp->NOutP())->analyze(event);
-//    }
+    if (m_splitjetconts) {
+      GetRivet(sp->NOutP())->analyze(event);
+    }
     
     ++m_nevt;
     m_sum_of_weights+=weight;
@@ -129,9 +130,9 @@ public:
   bool Finish()
   {
     for (RivetMap::iterator it=m_rivet.begin(); it!=m_rivet.end(); ++it) {
-//#ifdef USING__RIVET__SETSOW
-//      it->second->setSumOfWeights(m_sum_of_weights);
-//#endif
+#ifdef USING__RIVET__SETSOW
+      it->second->setSumOfWeights(m_sum_of_weights);
+#endif
       it->second->finalize();
       it->second->commitData();
     }
