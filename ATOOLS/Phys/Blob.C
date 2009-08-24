@@ -152,12 +152,13 @@ Particle * Blob::RemoveInParticle(int _pos,bool setit) {
 
 Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
   if (_pos>(int)m_outparticles.size()-1 || _pos<0) { return NULL; }
-  for (Particle_Vector::iterator part = m_outparticles.begin();
-       part != m_outparticles.end(); ++part) {
-    if ((*part)==m_outparticles[_pos]) {
-      m_outparticles.erase(part);
-      if (setit) (*part)->SetProductionBlob(NULL);
-      return (*part);
+  for (Particle_Vector::iterator pit = m_outparticles.begin();
+       pit != m_outparticles.end(); ++pit) {
+    Particle * part(*pit);
+    if (part==m_outparticles[_pos]) {
+      m_outparticles.erase(pit);
+      if (setit) part->SetProductionBlob(NULL);
+      return part;
     }
   }
   return NULL;
