@@ -327,7 +327,7 @@ bool Soft_Cluster_Handler::UpdateTransitions(Cluster_List * clin) {
   Cluster * cluster, * winner(NULL);
   Flavour hadron1,hadron2,winhad1,winhad2;
   double  wt, maxwt(0.);
-  int     winno;
+  int     winno(0);
   bool    found(false);
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
