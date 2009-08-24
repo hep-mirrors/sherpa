@@ -282,7 +282,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
 		   <<cluster->GetTrip()->m_flav<<"("<<cluster->GetTrip()->m_info<<"), "
 		   <<cluster->GetAnti()->m_flav<<"("<<cluster->GetAnti()->m_info<<"), "
 		   <<"m = "<<cluster->Mass()<<") --> ";
-    double totweight((decayweight+transformweight)*0.9999999);
+    double totweight((decayweight+Max(0.,transformweight))*0.9999999);
     if (totweight<=0. || decayweight/totweight>ran.Get()) {
       m_decays      += 1;
       cluster->push_back(haddec1);
@@ -344,7 +344,7 @@ bool Soft_Cluster_Handler::UpdateTransitions(Cluster_List * clin) {
       }
     }
     else if (wt<0. || cluster->size()==2) {
-      wt     = TransformWeight(cluster,hadron1,hadron2,true);
+      wt     = DecayWeight(cluster,hadron1,hadron2,true);
       if (wt>maxwt) {
 	winner  = cluster;
 	winhad1 = hadron1;
@@ -393,6 +393,7 @@ bool Soft_Cluster_Handler::ClusterAnnihilation(Cluster * cluster,Flavour & had1,
   double mass(cluster->Mass());
   double wt1(TransformWeight(&cluster1,had1,false,true));
   double wt2(TransformWeight(&cluster2,had2,false,true));
+  if (wt1<0. || wt2<0.) return false;
   bool lighter1(wt1>0.), lighter2(wt2>0.);
   while (had1.Mass()+had2.Mass()>mass && lighter1 && lighter2) {
     lighter1 = wt1>0.;
@@ -437,7 +438,12 @@ bool Soft_Cluster_Handler::EnforcedDecay(Cluster * cluster, Blob * blob,const bo
     }
     else {
       weight1 = TransformWeight(cluster,had1,true,true);
-      if (weight1<=0.) return false;
+      if (weight1<=0.) {
+	msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
+		   <<"   No suitable single transition found, "
+		   <<"will return false and hope for the best."<<std::endl;
+	return false;
+      }
       had2 = Flavour(kf_photon);
     }
     m_forceddecays++;m_decays--;
@@ -559,9 +565,6 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
 		 <<"enforce = "<<enforce<<", lighter = "<<lighter<<" for "<<hadron<<"."<<std::endl;
 
   if (!enforce && p_singletransitions->GetHeaviestMass(fpair)<MC+m_transitionoffset) {
-    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-      msg_Debugging()<<"@@      --> too heavy, no transformation."<<std::endl;
-    }
     hadron = Flavour(kf_none);
     return 0.;
   }
@@ -575,20 +578,16 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
 	       <<"lightest mass = "<<p_singletransitions->GetLightestMass(fpair)<<" for "
 	       <<p_singletransitions->GetLightestTransition(fpair)<<"."<<std::endl
 	       <<(*cluster)<<std::endl;
-    exit(1.);
     return 0.;
   }
   Single_Transition_Miter stiter = p_singletransitions->GetTransitions()->find(fpair);
   if (stiter==p_singletransitions->GetTransitions()->end()) {
-    if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-      msg_Debugging()<<"."<<std::endl;
-    }
-    msg_Error()<<"Potential error in  All_Single_Transitions::MustTransit :"<<endl
+    msg_Error()<<"Potential error in  "<<METHOD<<" :"<<endl
 	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second
 	       <<", mass = "<<cluster->Mass()<<"\n"
 	       <<"   will continue and hope for the best."<<endl;
     hadron = Flavour(kf_none);
-    return 0.;
+    return -1.;
   }
   Single_Transition_List * stl(stiter->second);
   Single_Transition_Siter  start(stl->begin()),siter;
