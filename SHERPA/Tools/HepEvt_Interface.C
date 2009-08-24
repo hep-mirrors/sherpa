@@ -193,7 +193,9 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
 
   ISBlobs2HepEvt(_blobs,nhep);
   HardBlob2HepEvt(_blobs,nhep);
-  FSBlobs2HepEvt(_blobs,nhep);
+  ShowerBlobs2HepEvt(_blobs,nhep);
+  //FSBlobs2HepEvt(_blobs,nhep);
+  QEDBlobs2HepEvt(_blobs,nhep);
   FragmentationBlob2HepEvt(_blobs,nhep);
   HadronDecayBlobs2HepEvt(_blobs,nhep);
   
@@ -201,7 +203,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
 
   Blob *signal(_blobs->FindFirst(btp::Signal_Process));
   if (signal) {
-    Blob_Data_Base *message((*signal)["Process_Weight"]);
+    Blob_Data_Base *message((*signal)["Weight"]);
     if (message) {
       msg_Debugging()<<"HEI::OTF: proc weight: "
           <<message->Get<double>()<<"\n";
@@ -209,7 +211,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
     }
     else THROW(fatal_error,"No weight information.");
     
-    Blob_Data_Base *facscale((*signal)["Factorisation_Scale"]);
+    Blob_Data_Base *facscale((*signal)[/*"Factorisation_Scale"*/"MI_Scale"]);//!
     if (facscale) {
       SetQ2(facscale->Get<double>());
     }
@@ -363,7 +365,8 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
       if ((*bit)->NOutP()>=2) {
 	Particle2HepEvt((*bit)->InParticle(0),_nhep);
 	Particle2HepEvt((*bit)->InParticle(1),_nhep);
-	for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+	for(int j=0;j<(*bit)->NOutP(); ++j)
+	  Particle2HepEvt((*bit)->OutParticle(j),_nhep);
 	EstablishRelations((*bit));
       }
     }
@@ -389,13 +392,50 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
   }
 }
 
+void HepEvt_Interface::ShowerBlobs2HepEvt(ATOOLS::Blob_List * const _blobs,
+					  int & _nhep) {
+  for(Blob_List::const_iterator bit=_blobs->begin();
+      bit!=_blobs->end(); ++bit) {
+    if((*bit)->Type()==btp::Shower
+       //&& ((*bit)->NInP()==1 || (*bit)->NInP()==2)
+       //&& (*bit)->Beam()==beam
+       ) {
+      //for(int j=0; j<(*bit)->NInP(); ++j)
+      //  Particle2HepEvt((*bit)->InParticle(j),_nhep);
+      for(int j=0; j<(*bit)->NOutP(); ++j) {
+	//cout<<(*bit)->OutParticle(j)->Info()<<endl;
+	if((*bit)->OutParticle(j)->Info()!='G')
+	  Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+      }
+      EstablishRelationsModified((*bit));
+    }
+  }
+}
+
+void HepEvt_Interface::QEDBlobs2HepEvt(ATOOLS::Blob_List * const _blobs,
+				       int & _nhep) {
+  for(Blob_List::const_iterator bit=_blobs->begin();
+      bit!=_blobs->end(); ++bit) {
+    if((*bit)->Type()==btp::QED_Radiation) {
+      if((*bit)->NInP()<=2) {
+	for(int j=0; j<(*bit)->NOutP(); ++j)
+	  Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+	EstablishRelations((*bit));
+      }
+      else
+	PRINT_INFO("Warning: QED Radiation blob with more than two incoming "<<
+		   "particles. Translation skipped.");
+    }
+  }
+}
+
 void HepEvt_Interface::FSBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
-//     if ((*bit)->Type()==btp::FS_Shower &&
-//        ((*bit)->NInP()==1 || (*bit)->NInP()==2)) {
-//       for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
-//       EstablishRelations((*bit));
-//     } 
+    //if ((*bit)->Type()==btp::FS_Shower &&
+    //((*bit)->NInP()==1 || (*bit)->NInP()==2)) {
+    //for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
+    //EstablishRelations((*bit));
+    //}
   }
 }
 
@@ -525,6 +565,53 @@ void HepEvt_Interface::EstablishRelations(Blob * const _blob) {
       for (int j=0;j<_blob->NInP();j++){ 
 	p_jmohep[2*m_convertS2H[_blob->OutParticle(i)]+j] = mothers[j]+1; 
       }
+    }
+  }
+}
+
+void HepEvt_Interface::EstablishRelationsModified(Blob * const _blob) {
+  int mothers[2];
+  int daughters[2];
+  mothers[0]=mothers[1]=0;
+  for(int i=0, ii=0; i<_blob->NInP(); ++i) {
+    if(_blob->InParticle(i)->Info()=='I') {
+      assert(ii<2); mothers[ii]=m_convertS2H[_blob->InParticle(i)]; ++ii;}
+  }
+  if(_blob->NOutP()>0) {
+    int outn(0);
+    while(outn<_blob->NOutP() && _blob->OutParticle(outn)->Info()=='G') ++outn;
+    if(outn<_blob->NOutP()) {
+      daughters[0]=m_convertS2H[_blob->OutParticle(outn)];
+      if(_blob->NOutP()>outn+1)
+	daughters[1]=m_convertS2H[_blob->OutParticle(_blob->NOutP()-1)];
+      else daughters[1]=m_convertS2H[_blob->OutParticle(outn)];
+    }
+    else daughters[0]=daughters[1]=0;
+  }
+  else daughters[0]=daughters[1]=0;
+
+  if(mothers[0]) {
+    p_jdahep[2*mothers[0]]   = daughters[0]+1;
+    p_jdahep[2*mothers[0]+1] = daughters[1]+1;}
+  if(mothers[1]) {
+    p_jdahep[2*mothers[1]]   = daughters[0]+1;
+    p_jdahep[2*mothers[1]+1] = daughters[1]+1;}
+  if(_blob->NInP()>0) {
+    for(int i=0; i<_blob->NInP(); ++i) {
+      if(_blob->InParticle(i)->Info()!='I') {
+	p_jdahep[2*m_convertS2H[_blob->InParticle(i)]] = daughters[0]+1;
+	p_jdahep[2*m_convertS2H[_blob->InParticle(i)]+1] = daughters[1]+1;
+      }
+    }
+  }
+  if(_blob->NOutP()>0) {
+    for(int i=0; i<_blob->NOutP(); ++i) {
+      //if(_blob->OutParticle(i)->Info()!='G') {
+        if(mothers[0])
+	  p_jmohep[2*m_convertS2H[_blob->OutParticle(i)]] = mothers[0]+1;
+	if(mothers[1])
+	  p_jmohep[2*m_convertS2H[_blob->OutParticle(i)]+1] = mothers[1]+1;
+      //}
     }
   }
 }

@@ -50,11 +50,14 @@ namespace SHERPA {
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
     void FSBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
+    void ShowerBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
+    void QEDBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void FragmentationBlob2HepEvt(ATOOLS::Blob_List * const,int &);
     void HadronDecayBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
 
     void EstablishRelations(ATOOLS::Particle * const,ATOOLS::Blob * const);  
-    void EstablishRelations(ATOOLS::Blob * const);  
+    void EstablishRelations(ATOOLS::Blob * const);
+    void EstablishRelationsModified(ATOOLS::Blob * const);
     void Particle2HepEvt(ATOOLS::Particle * const,int &);
     void String2HepEvt(ATOOLS::Blob * const,int &);
     
