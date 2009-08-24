@@ -283,7 +283,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
 		   <<cluster->GetAnti()->m_flav<<"("<<cluster->GetAnti()->m_info<<"), "
 		   <<"m = "<<cluster->Mass()<<") --> ";
     double totweight((decayweight+Max(0.,transformweight))*0.9999999);
-    if (totweight<=0. || decayweight/totweight>ran.Get()) {
+    if (transformweight<=0. || decayweight/totweight>ran.Get()) {
       m_decays      += 1;
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
