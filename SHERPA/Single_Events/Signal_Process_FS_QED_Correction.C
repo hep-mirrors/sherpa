@@ -174,9 +174,17 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     (*it)->SetStatus(part_status::decayed);
     QEDblob->AddToInParticles(*it);
   }
+  // first fill in all LO particles
+  for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
+    while ((*it)->NOutP() && (*it)->OutParticle(0)->Info()!='S') {
+      Particle * part((*it)->RemoveOutParticle(0,true));
+      QEDblob->AddToOutParticles(part);
+    }
+  }
+  // then append all photons
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     while ((*it)->NOutP()) {
-      Particle * part((*it)->RemoveOutParticle((*it)->NOutP()-1,true));
+      Particle * part((*it)->RemoveOutParticle(0,true));
       QEDblob->AddToOutParticles(part);
     }
   }

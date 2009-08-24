@@ -140,7 +140,7 @@ void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
 }
 
 
-void Dress_Blob_Base::DeleteAll(Particle_Vector pv) {
+void Dress_Blob_Base::DeleteAll(Particle_Vector& pv) {
   while (pv.size() != 0) {
     delete pv[pv.size()-1];
     pv.pop_back();

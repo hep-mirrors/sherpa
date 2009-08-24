@@ -1,5 +1,10 @@
 #include "PHOTONS++/Main/Define_Dipole.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "PHOTONS++/Tools/Dipole_FF.H"
+#include "PHOTONS++/Tools/Dipole_FI.H"
+#include "PHOTONS++/Tools/Dress_Blob_Base.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -62,28 +67,35 @@ Define_Dipole::~Define_Dipole() {
 }
 
 void Define_Dipole::AddRadiation() {
+  Dress_Blob_Base * dipole(NULL);
   if (m_dtype == Dipole_Type::ff) {
-    Dipole_FF dipole(m_pvv);
-    dipole.AddRadiation();
-    m_success = dipole.DoneSuccessfully();
-    m_photonsadded = dipole.AddedAnything();
-    if ((m_success == true) && (m_photonsadded == true)) {
-      for (int i=0; i<dipole.GetPhotonNumber(); i++) {
-        p_blob->AddToOutParticles(dipole.GetPhoton(i));
-      }
-    }
+    dipole = new Dipole_FF(m_pvv);
   }
   else if (m_dtype == Dipole_Type::fi) {
-    Dipole_FI dipole(m_pvv);
-    dipole.AddRadiation();
-    m_success = dipole.DoneSuccessfully();
-    m_photonsadded = dipole.AddedAnything();
+    dipole = new Dipole_FI(m_pvv);
+  }
+  else return;
+  // treat and add to blob, reset photon's number
+  if (dipole) {
+    dipole->AddRadiation();
+    m_success = dipole->DoneSuccessfully();
+    m_photonsadded = dipole->AddedAnything();
+    Particle_Vector photons;
     if ((m_success == true) && (m_photonsadded == true)) {
-      for (int i=0; i<dipole.GetPhotonNumber(); i++) {
-        p_blob->AddToOutParticles(dipole.GetPhoton(i));
+      for (int i=0; i<dipole->GetPhotonNumber(); i++) {
+	photons.push_back(dipole->GetPhoton(i));
+      }
+    }
+    delete dipole;
+    if ((m_success == true) && (m_photonsadded == true)) {
+      for (Particle_Vector::iterator pvit=photons.begin();
+	   pvit!=photons.end();++pvit) {
+	(*pvit)->SetNumber(0);
+	p_blob->AddToOutParticles(*pvit);
       }
     }
   }
+  else m_success = false;
 #ifdef PHOTONS_DEBUG
   msg_Info()<<"momentum conservation in lab: "
             <<p_blob->CheckMomentumConservation()<<endl;

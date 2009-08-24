@@ -51,7 +51,7 @@ namespace PHOTONS {
       Vec4D               CalculateMomentumSum(const Particle_Vector&);
       void                CalculateWeights();
       void                CheckAvaragePhotonNumberForNumericalErrors();
-      void                DeleteAll(Particle_Vector);
+      void                DeleteAll(Particle_Vector&);
       void                DeleteAllPhotons();
       void                DetermineU();
       std::vector<double> GenerateNumberAndEnergies();

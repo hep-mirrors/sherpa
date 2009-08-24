@@ -307,6 +307,7 @@ double Dipole_FF::Func(const double& M2, const std::vector<double>& mC2,
 }
 
 void Dipole_FF::ResetVariables() {
+  DeleteAllPhotons();
   for (unsigned int i=0; i<m_olddipole.size(); i++)
     m_newdipole[i]->SetMomentum(m_olddipole[i]->Momentum());
   for (unsigned int i=0; i<m_oldspectator.size(); i++)
