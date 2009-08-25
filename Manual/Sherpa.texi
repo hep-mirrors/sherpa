@@ -76,7 +76,7 @@ Sherpa will exit with the message:
 @example
    New libraries created. Please compile.
 @end example
-In this case, folow the instructions given in
+In this case, follow the instructions given in
 @ref{Running Sherpa with AMEGIC++}.
 
 If this does not help, contact the Sherpa team (see the 
