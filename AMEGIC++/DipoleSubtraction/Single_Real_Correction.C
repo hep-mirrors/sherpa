@@ -11,7 +11,6 @@
 
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -31,13 +30,6 @@ Single_Real_Correction::Single_Real_Correction() :
   p_partner(this), p_tree_process(NULL)
 {
   m_Norm = 1.;  
-  m_dalphamax = 1.;
-  double helpd;
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHAMAX_CUT")) {
-    m_dalphamax = helpd;
-    msg_Tracking()<<"Set dipole cut alphamax="<<m_dalphamax<<"."<<std::endl;
-  }
   rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour Dipole\
  Terms is published under \\cite{Gleisberg:2007md}.");
 }

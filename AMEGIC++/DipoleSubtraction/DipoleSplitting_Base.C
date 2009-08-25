@@ -39,6 +39,9 @@ DipoleSplitting_Base::DipoleSplitting_Base(Model_Base *model)
   m_amin = max(ATOOLS::Accu(),1.e-8);
   double helpd;
   Data_Reader reader(" ",";","!","=");
+  reader.SetInputPath(rpa.GetPath());
+  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+
   if (reader.ReadFromFile(helpd,"DIPOLE_AMIN")) {
     m_amin = helpd;
     msg_Tracking()<<"Set dipole cut alphamin="<<m_amin<<"."<<std::endl;

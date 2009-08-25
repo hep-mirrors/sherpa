@@ -17,7 +17,6 @@ namespace AMEGIC {
     double                  m_iresult;
     int                     m_libnumb;
     bool                    m_valid;
-    double                  m_dalphamax;
 
     Single_Real_Correction     * p_partner;
 

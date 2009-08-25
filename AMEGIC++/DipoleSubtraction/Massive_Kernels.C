@@ -32,6 +32,8 @@ Massive_Kernels::Massive_Kernels(MODEL::Model_Base *model)
 
   int helpi,nfgs=m_nf;
   Data_Reader reader(" ",";","!","=");
+  reader.SetInputPath(rpa.GetPath());
+  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {
     nfgs = helpi;
     msg_Tracking()<<"Set number of flavours from gluon splitting="<<nfgs<<"."<<std::endl;

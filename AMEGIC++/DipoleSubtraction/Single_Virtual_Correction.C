@@ -39,6 +39,8 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_dalpha = 1.;
   double helpd;
   Data_Reader reader(" ",";","!","=");
+  reader.SetInputPath(rpa.GetPath());
+  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
