@@ -18,7 +18,6 @@ namespace EXTRAXS {
   class ee3jet_QCD_Virtual : public Virtual_ME2_Base {
     double m_cpl;
     int m_nf;
-     PHASIC::Process_Base* p_tree;
 
     double Q2,y12,y13,y23;
     double Ff(double,double,double);
@@ -27,11 +26,11 @@ namespace EXTRAXS {
     double Kf(double,double,double);
 
   public:
-    ee3jet_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
-                       PHASIC::Process_Base* tree) :
-      Virtual_ME2_Base(pi, flavs), p_tree(tree)
+    ee3jet_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
+      Virtual_ME2_Base(pi, flavs)
     {
       DEBUG_INFO("ee3jet virtual opened ...");
+      m_needsborn = true;
       m_cpl=MODEL::s_model->ScalarFunction(std::string("alpha_S"),
                                            sqr(rpa.gen.Ecms()));
       m_cpl/=2.*M_PI;
@@ -41,21 +40,14 @@ namespace EXTRAXS {
     }
 
     ~ee3jet_QCD_Virtual() {
-       if (p_tree) delete p_tree;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector& mom);
-
-    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {
-      return 2.*M_PI*m_mur2/(mom[0]*mom[2]);
-    }
   };
 }
 
 
 void ee3jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
-  m_born=p_tree->Differential(mom); // todo: divide out ISR for hadron-hadron
-  
   m_born*=m_cpl;
   Q2  = mom[0]*mom[1];
   y12 = mom[3]*mom[4]/Q2;
@@ -117,17 +109,7 @@ Virtual_ME2_Base *ee3jet_QCD_Virtual_Getter::operator()(const Process_Info &pi) 
     if (fl[0]==Flavour(kf_e) && fl[1]==Flavour(kf_e).Bar() &&
         fl[2].IsGluon() && fl[3].IsQuark() && fl[4].IsQuark()) {
       if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
-        Process_Info tree_pi(pi);
-        tree_pi.m_fi.m_nloqcdtype=nlo_type::lo;
-        Process_Base* tree = pi.p_gens->InitializeProcess(tree_pi,true);
-        if (!tree) {
-          DEBUG_INFO("no corresponding born found");
-          return NULL;
-        }
-        std::string scale=ToString(sqr(rpa.gen.Ecms()));
-        tree->SetScale("VAR["+scale+"]");
-        tree->SetKFactor("QCD",1,2);
-        return new ee3jet_QCD_Virtual(pi, fl, tree);
+        return new ee3jet_QCD_Virtual(pi, fl);
       }
     }
   }

@@ -14,19 +14,17 @@ using namespace ATOOLS;
 namespace EXTRAXS {
   class DY_QCD_Virtual : public Virtual_ME2_Base {
     double m_cpl;
-    ME2_Base* p_tree;
   public:
-    DY_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
-                   ME2_Base* tree) :
-      Virtual_ME2_Base(pi, flavs), p_tree(tree)
+    DY_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
+      Virtual_ME2_Base(pi, flavs)
     {
+      m_needsborn = true;
       m_cpl = MODEL::s_model->ScalarFunction(std::string("alpha_S"),
                                            sqr(rpa.gen.Ecms()));
       m_cpl *= CF/(2.*M_PI);
     }
 
     ~DY_QCD_Virtual() {
-      if (p_tree) delete p_tree;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
@@ -37,7 +35,6 @@ namespace EXTRAXS {
 
 
 void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
-  m_born=(*p_tree)(momenta);
   m_born*=m_cpl;
 
   // 1/epsIR
@@ -61,16 +58,12 @@ Virtual_ME2_Base *DY_QCD_Virtual_Getter::operator()(const Process_Info &pi) cons
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl.size()!=4) return NULL;
-    if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
-         fl[0].IsQuark()  && fl[1]==fl[0].Bar()) ||   
-        (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
-         fl[2].IsQuark()  && fl[3]==fl[2].Bar())) {
+    if ((fl[2].IsLepton() && fl[3].IsLepton() &&
+         fl[0].IsQuark()  && fl[1].IsQuark()) ||   
+        (fl[0].IsLepton() && fl[1].IsLepton() &&
+         fl[2].IsQuark()  && fl[3].IsQuark())) {
       if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
-        Process_Info tree_pi(pi);
-        tree_pi.m_fi.m_nloqcdtype=nlo_type::lo;
-        ME2_Base* tree_me2 = ME2_Base::GetME2(tree_pi);
-        if (!tree_me2) return NULL;
-        return new DY_QCD_Virtual(pi, fl, tree_me2);
+        return new DY_QCD_Virtual(pi, fl);
       }
     }
   }

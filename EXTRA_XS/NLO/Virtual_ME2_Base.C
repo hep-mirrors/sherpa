@@ -23,11 +23,9 @@ Virtual_ME2_Base::~Virtual_ME2_Base()
 }
 
 double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
-{   
+{
   //MSbar
    return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
-  //DIS
-//   return 2.*M_PI*m_mur2/(p_mom[0]*p_mom[2]);
 }
 
 bool Virtual_ME2_Base::SetColours(const Vec4D_Vector& mom)
