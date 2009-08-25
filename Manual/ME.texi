@@ -13,6 +13,7 @@ The following parameters are used to steer the matrix element setup.
 * EVENT_GENERATION_MODE::   The event generation mode.
 * SCALES::                  How to compute the scales. 
 * COUPLINGS::               How to evaluate the couplings.
+* Dipole subtraction::      Parameters for calculations with dipole subtraction.
 @end menu
 
 
@@ -245,3 +246,33 @@ It is possible to implement a dedicated coupling evaluation
 scheme within Sherpa. For advice on this topic please contact
 the authors, @ref{Authors}.
 
+
+@node Dipole subtraction
+@subsection Dipole subtraction
+This list of parameters can be used to optimize the performance
+when employing the Catani-Seymour dipole subtraction 
+@mycite{Catani1996vz} as implemented in Amegic @mycite{Gleisberg2007md}.
+
+@table @option
+@item `DIPOLE_ALPHA' 
+Specifies a dipole cutoff in the nonsingular region @mycite{Nagy2003tz}.
+Changing this paramter shifts contributions from the subtracted real 
+correction piece (RS) to the piece including integrated dipole terms (I), 
+while their sum remains constant. This parameter can be used to optimize
+the integration performance of the individual pieces. 
+Also the average calculation time for the subtracted real correction
+is reduced with smaller choices of `DIPOLE_ALPHA' due to the (on average)
+reduced number of contributing dipole terms. For most processes
+a reasonable choice is between 0.01 and 1 (default).
+@item `DIPOLE_AMIN'
+Specifies the cutoff of real correction terms in the infrared reagion
+to avoid numerical problems with the subtraction. The default is 1.e-8.
+@item `DIPOLE_NF_GSPLIT'
+Specifies the number of quark flavours that are produced from 
+gluon splittings. This number must be at least the number of massless 
+flavours (default). If this number is larger than the number of massless
+quarks the massive dipole subtraction @mycite{Catani2002hc} is employed.
+@item `DIPOLE_KAPPA'
+Specifies the kappa-parameter in the massive dipole subtraction formalism
+@mycite{Catani2002hc}.
+@end table

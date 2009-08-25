@@ -13,9 +13,11 @@ Several specific examples are listed in the following sections.
 * External RNG::     How to add an external random number generator.
 * External PDF::     How to add an external PDF.
 * Exotic physics::   How to introduce your own models to Sherpa. Example: Z-prime.
+* External one-loop ME:: How to interface external one-loop codes.
 @end menu
 
 @include RNG.texi
 @include PDF.texi
 @include NewModel.texi
+@include OLE.texi
 

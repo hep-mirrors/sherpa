@@ -6,6 +6,7 @@
 * Rivet analyses:: How to analyse Sherpa events using Rivet
 * Debugging a crashing/stalled event::  How to recover the random seed for an event that is hanging or crashing
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
+* NLO calculations::  How to efficiently perform NLO calculations
 @end menu
 
 @node Bash completion
@@ -133,3 +134,5 @@ If you want to install different Sherpa versions into the same prefix
 by using the configure option @samp{--enable-versioning}.
 Optionally you can even pass an argument to this parameter of what you want the
 version tag to look like.
+
+@include NLOtips.texi
