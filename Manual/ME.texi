@@ -256,14 +256,15 @@ when employing the Catani-Seymour dipole subtraction
 @table @option
 @item `DIPOLE_ALPHA' 
 Specifies a dipole cutoff in the nonsingular region @mycite{Nagy2003tz}.
-Changing this paramter shifts contributions from the subtracted real 
+Changing this parameter shifts contributions from the subtracted real 
 correction piece (RS) to the piece including integrated dipole terms (I), 
 while their sum remains constant. This parameter can be used to optimize
 the integration performance of the individual pieces. 
 Also the average calculation time for the subtracted real correction
 is reduced with smaller choices of `DIPOLE_ALPHA' due to the (on average)
 reduced number of contributing dipole terms. For most processes
-a reasonable choice is between 0.01 and 1 (default).
+a reasonable choice is between 0.01 and 1 (default). See also
+@ref{Choosing DIPOLE_ALPHA}
 @item `DIPOLE_AMIN'
 Specifies the cutoff of real correction terms in the infrared reagion
 to avoid numerical problems with the subtraction. The default is 1.e-8.

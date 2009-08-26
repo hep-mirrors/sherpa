@@ -1,2 +1,62 @@
 @node NLO calculations
 @section NLO calculations
+
+@menu
+* Choosing DIPOLE_ALPHA::
+* Integrating complicated Loop-ME::
+@end menu
+
+@node Choosing DIPOLE_ALPHA
+@subsection Choosing DIPOLE_ALPHA
+
+A variation of the parameter @code{DIPOLE_ALPHA} 
+(see @ref{Dipole subtraction}) changes the 
+contribution from the real (subtracted) piece (@code{RS}) and 
+the integrated subtraction terms (@code{I}), keeping their sum constant.
+Varying this parameter provides a nice check of the consistency 
+of the subtraction procedure and it allows to optimize the
+integration performance of the real correction. This piece
+has the most complicated momentum phase space and is often the
+most time consuming part of the NLO calculation.
+The optimal choice depends on the specific setup and can be 
+determined best by trial. 
+
+Hints to find a good value: 
+@itemize
+@item The smaller @code{DIPOLE_ALPHA} is the less dipole term have to be
+calculated, thus the less time the evaluation/phase space point takes.
+@item Too small choices lead to large cancelations between the @code{RS}
+and the @code{I} parts and thus to large statisical errors.
+@item For very simple processes (with only a total of two 
+partons in the iniatial and the final state
+of the born process) the best choice is typically @code{DIPOLE_ALPHA=1}.
+The more complicated a process is the smaller @code{DIPOLE_ALPHA} should be
+(e.g. with 5 partons the best choice is typically around 0.01).
+@item A good choice is typically such that the cross section from the 
+@code{RS} piece is significantly positive but not much larger than 
+the born cross section.
+@end itemize
+
+@node Integrating complicated Loop-ME
+@subsection Integrating complicated Loop-ME
+
+For complicated processes the evaluation of one-loop matrix elements
+can be very time consuming. The generation time of a fully optimized 
+integration grid can become prohibitively long. Rather than using a 
+poorly optimized grid in this case it is more advisable to use a grid
+optimized with the born matrix elements, since the distibution in
+the phase space is rather similar.
+
+This can be done as follows:
+@enumerate
+@item Run the born piece with a specified (and existing) 
+@ref{RESULT_DIRECTORY} and adding the parameter 
+@code{RESULT_OMIT_NLO_SUFFIX=1}.
+@item Run the loop piece using the same @code{RESULT_DIRECTORY}
+and also with @code{RESULT_OMIT_NLO_SUFFIX=1}.
+@item Note: while running the total cross section of the born
+piece is displayed. This is not an error, the weighted
+event generation will produce the correct (one-loop) cross section.
+@end enumerate
+
+Note: this will not work for the @code{RS} piece!

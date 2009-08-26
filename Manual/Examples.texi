@@ -22,7 +22,7 @@ of the main features of these examples.
 * LHC_4thGen::                
 * LHC_AGC::                   
 * LHC_ADD::
-* W_NLO::
+* NLO_W::
 @end menu
 
 @include LHC_ZJets.texi

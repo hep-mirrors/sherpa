@@ -1,2 +1,86 @@
 @node External one-loop ME
 @section External one-loop ME
+
+Sherpa includes only a very limited selection of one-loop matrix elements.
+To make full use of the implemented automated dipole subtraction it is
+possible to link external one-loop codes to Sherpa in order to perform
+full calculations at QCD next-to-leading order. 
+
+In general Sherpa can take care of any piece of the calculation except
+one-loop matrix elements, i.e. the born ME, the real correction, the real
+and integrated subtraction terms as well as the phase space integration
+and PDF weights for hadron collisions. Sherpa will provide sets of 
+four-momenta and request for a specific parton level process the
+helicity and colour summed one-loop matrix element 
+(more specific: the coefficients of the Laurent series in the dimensional
+regularization parameter epsilon up to the order epsilon^0).
+
+The directory @code{./AddOns/LH_OLE} includes an example interface
+which follows the (still preliminary) propsal of the 2009 Les Houches 
+workshop (@uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft}).
+A sample setup for W+1jet production at LHC 14TeV is included.
+
+The interface:
+@itemize @bullet
+@item During an initialization run Sherpa stores setup information
+(schemes, model information etc.) and requests a list of parton-level
+one-loop processes that are needed for the NLO calculation. This information
+is stored in a file, by default called @code{OLE_order.lh}. 
+The external one-loop code (OLE) should confirm these settings/requests
+writing out a file @code{OLE_contract.lh}. For the syntax and 
+details see the above url.
+
+For Sherpa the output/input of the order/contract file is handled
+in @code{LH_OLE_Communicator.[CH]}.
+The actual interface is contained in @code{LH_OLE_Interface.C}. 
+The parameters to be exchanged with the OLE are defined in the
+latter file via
+@verbatim
+
+  lhfile.AddParameter(...);
+@end verbatim
+
+and might require an update for specific OLE or processes.
+
+
+@item At runtime the communication is performed via function calls.
+To allow Sherpa to call the external code the functions
+@verbatim
+
+  void Init(const char * filename);
+  void EvalSubprocess(int,double*,double,double,double,double*);
+@end verbatim
+
+which are defined and called in @code{LH_OLE_Interface.C} 
+must be specified.
+For the data fields passed with this functions see
+@uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft}.
+
+The function @code{Init(...)} is called once when Sherpa is starting.
+The function @code{EvalSubprocess(...)} will be called many times
+for different subprocesses and momentum configurations.
+
+@item An example @code{Makefile} shows how to compile the 
+sources above into a shared library.
+@end itemize
+
+The setup:
+@itemize @bullet
+@item The setup example includes three different files for
+the born @code{Run_B.dat}, the virtual @code{Run_I.dat}
+and the real correction piece @code{Run_R.dat}. While for a
+full NLO calculation all three must be employed (and their results
+combined) only the virtual piece requires the interface.
+
+@item The line @code{SHERPA_LDADD = LHOLE} in the @code{(run)} section of the run-card tells Sherpa to load the extra libraries.
+
+@item The line @code{Loop_Generator LHOLE} tells the code to use
+the interface for computing one-loop matrix elements.
+
+@item Sherpa's internal analysis package is used to 
+generate a few histograms. Therefore,
+when installing Sherpa the option
+@code{--enable-analysis} must be include on the command line when
+Sherpa is configured, see @ref{ANALYSIS}.
+
+@end itemize
