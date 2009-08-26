@@ -274,7 +274,12 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       x=m_xrem*ran.Get();
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
-    p_pdfbase->Calculate(x,scale);
+    if (x>p_pdfbase->XMin() && x<p_pdfbase->XMax()) {
+      p_pdfbase->Calculate(x,scale);
+    }
+    else {
+      m_xscheme=0; return 0.01;
+    }
     if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
     if (p_pdfbase->GetXPDF(flavour)/x>ran.Get()) return x;
   } 
