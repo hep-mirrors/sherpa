@@ -99,8 +99,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
     wavefunction->AddToWaves(pair,1.);
   }
   else if (fl1==fl2) {
+    LookUpAngles(lp,spin,costh,sinth);
     if (fl1==1) {
-      LookUpAngles(lp,spin,costh,sinth);
       wavefunction = new Hadron_Wave_Function;
       wavefunction->AddToWaves(pair,-1./sqrt(2.));
       flavs[0]     = Flavour((kf_code)(2));
