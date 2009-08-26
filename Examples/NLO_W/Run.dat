@@ -26,14 +26,13 @@
 }(me);
 (model){
   ORDER_ALPHAS 1; ALPHAS(MZ) 0.118;
-}()model;
+}(model);
 (beam){
   BEAM_1  2212; BEAM_ENERGY_1 980;
   BEAM_2  -2212; BEAM_ENERGY_2 980;
   K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
   K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
 }(beam);
-(isr){
 (isr){
   PDF_LIBRARY = CTEQ6Sherpa
   PDF_SET = cteq6m
