@@ -118,6 +118,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_dalpha = 1.;
   double helpd;
   Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
   reader.SetInputPath(rpa.GetPath());
   reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {

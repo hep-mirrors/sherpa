@@ -32,6 +32,7 @@ Massive_Kernels::Massive_Kernels(MODEL::Model_Base *model)
 
   int helpi,nfgs=m_nf;
   Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
   reader.SetInputPath(rpa.GetPath());
   reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {

@@ -39,6 +39,7 @@ DipoleSplitting_Base::DipoleSplitting_Base(Model_Base *model)
   m_amin = max(ATOOLS::Accu(),1.e-8);
   double helpd;
   Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
   reader.SetInputPath(rpa.GetPath());
   reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
 
