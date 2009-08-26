@@ -1,5 +1,6 @@
 #include "ATOOLS/Org/Info_Key.H"
 
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 

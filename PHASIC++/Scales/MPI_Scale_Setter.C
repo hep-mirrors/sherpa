@@ -52,7 +52,7 @@ double MPI_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
     std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
     msg_Debugging()<<"Assign '"<<p_proc->Name()
 		   <<"' '"<<kfinfo<<"'\n";
-    m_kfkey.Assign(p_proc->Name(),2,0,p_proc->
+    m_kfkey.Assign(p_proc->Name(),3,0,p_proc->
 		   Integrator()->PSHandler()->GetInfo());
     m_kfkey.SetInfo(kfinfo);
   }
@@ -64,7 +64,7 @@ double MPI_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &moment
 		 <<sqrt(m_scale[stp::ren])<<", \\mu_f = "
 		 <<sqrt(m_scale[stp::fac])<<".\n";
   m_kfkey[0]=m_scale[stp::ren];
-  m_kfkey[1]=m_scale[stp::fac];
+  m_kfkey[2]=m_kfkey[1]=m_scale[stp::fac];
   return m_scale[stp::fac];
 }
 
