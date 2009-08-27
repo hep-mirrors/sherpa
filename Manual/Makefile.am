@@ -10,6 +10,7 @@ Sherpa_TEXINFOS = \
 	Macros.texi \
 	Bibliography.texi \
 	Introduction.texi \
+	CrossSection.texi \
 	Commands.texi \
 	Input.texi \
 	Parameters.texi \

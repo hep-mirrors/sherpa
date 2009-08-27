@@ -1,0 +1,20 @@
+@node Cross section
+@chapter Cross section
+
+To determine the total cross section, in particular in the context of
+running CKKW merging with Sherpa, the final output of the event generation
+run can be used, e.g.
+@verbatim
++-----------------------------------------------------+
+|                                                     |
+|  Total XS is 1612.17 pb +- ( 8.48908 pb = 0.52 % )  |
+|                                                     |
++-----------------------------------------------------+
+@end verbatim
+Note that the Monte Carlo error quoted for the total cross section is
+determined during event generation. It, therefore, differs
+substantially from the error quoted during the integration step.
+
+@b{The exclusive higher order tree-level cross sections determined during 
+integration are meaningless by themselves, only the inclusive cross section 
+printed at the end of the generation run is to be used.}
