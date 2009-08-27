@@ -92,8 +92,7 @@ Examples:
 @example
 @code{export CXX=g++-3.4
 export CC=gcc-3.4
-export CPP=cpp-3.4
-TOOLS/makeinstall -c}
+export CPP=cpp-3.4}
 @end example
 
 @subsubheading MacOS Installation
