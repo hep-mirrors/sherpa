@@ -19,5 +19,37 @@ substantially from the error quoted during the integration step.
 integration are meaningless by themselves, only the inclusive cross section 
 printed at the end of the generation run is to be used.}
 
-For more information on the formal accuracy of the inclusive cross section of 
-CKKW merged samples, see @ref{Sherpa's total cross section}.
+@section Sherpa's total cross section
+
+At the end of an event generation run, Sherpa will display its
+total cross section for that process. In contrast to plain 
+LO cross sections, Sherpa's total cross section is 
+composed of the various entries, such that
+
+sigma_tot = sigma_0 * weight_0 + sigma_1 * weight_1 ...
+
+where sigma_i is the cross section for, e.g. Z+i jets (with jet measure 
+as specified) and weight_i is the average Sudakov rejection weight on 
+this configuration. In principle, both have the same formal accuracy, but 
+they will probably always differ by up to 20-30%. Depending on jet definitions, 
+process etc., Sherpa's cross section then may be larger or smaller than the 
+ordinary LO cross section.
+
+Concerning a comparison with NLO calculations: It is known that for, e.g., 
+inclusive Z production the NLO-LO K-factor is about 1.3, give or take. In some setups 
+the Sherpa cross section is smaller than the LO one, and therefore further from the
+NLO. Therefore, the Sherpa total cross section should @strong{not} be thought of
+as being ``improved LO'', which would suggest that it is closer to the NLO 
+than the LO cross section. Sherpa total cross sections have LO accuracy.
+
+More technically speaking, Sherpa's merged ME and PS (see @ref{Merging ME and PS}) 
+is good for capturing the information from logs (as is the parton 
+shower), but typically NLO cross sections are dominated by finite terms, 
+as they are often quite inclusive and there are no logs in this case. 
+Sherpa's merging algorithm has no way to calculate these finite terms, and 
+this is why Sherpa's cross section is not a good approximation to the NLO
+cross section.
+
+On the other hand, shapes are typically dominated by logs (especially 
+jet pt's etc.). Therefore Sherpa can be expected to perform
+reasonably well here.
