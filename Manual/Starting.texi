@@ -548,6 +548,7 @@ showering, and, @code{FRAGMENTATION=Off}, to do so for the
 hadronization effects.
 
 
+@anchor{Sherpa's total cross section}
 @subsection Sherpa's total cross section
 
 At the end of an event generation run, Sherpa will display its

@@ -3,7 +3,7 @@
 
 To determine the total cross section, in particular in the context of
 running CKKW merging with Sherpa, the final output of the event generation
-run can be used, e.g.
+run should be used, e.g.
 @verbatim
 +-----------------------------------------------------+
 |                                                     |
@@ -18,3 +18,6 @@ substantially from the error quoted during the integration step.
 @b{The exclusive higher order tree-level cross sections determined during 
 integration are meaningless by themselves, only the inclusive cross section 
 printed at the end of the generation run is to be used.}
+
+For more information on the formal accuracy of the inclusive cross section of 
+CKKW merged samples, see @ref{Sherpa's total cross section}.
