@@ -150,15 +150,18 @@ Specifying a tag on the command line using the syntax
 @samp{<Tag>:=<Value>} will replace every occurrence of @samp{<Tag>} in all files
 during read-in. An example tag definition could read
 @verbatim
-  <prefix>/bin/Sherpa YCUT:=20
+  <prefix>/bin/Sherpa QCUT:=20 NJET:=3
 @end verbatim
 
-and then be used in the (me) and (selector) sections like
+and then be used in the (me) and (processes) sections like
 @verbatim
   (me){
-    RESULT_DIRECTORY = Result_YCUT/
+    RESULT_DIRECTORY = Result_QCUT/
   }(me)
-  (selector){
-    JetFinder   sqr(YCUT/E_CMS) 1.
-  }(selector)
+  (processes){
+    Process 93 93 -> 11 -11 93{NJET}
+    Order_EW 2;
+    CKKW sqr(QCUT/E_CMS)
+    End process;
+  }(processes)
 @end verbatim
