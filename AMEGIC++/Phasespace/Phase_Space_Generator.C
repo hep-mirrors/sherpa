@@ -53,6 +53,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   if (inttype<4 && !(inttype>1 && nout==2)) return 0;
   if (inttype==2) inttype=6;
   if (inttype==3) inttype=7;
+  if (proc->Info().m_fi.m_nloqcdtype&nlo_type::real) inttype=7;
   if (inttype>20) return 0;
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);

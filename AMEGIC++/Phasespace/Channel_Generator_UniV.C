@@ -1026,7 +1026,7 @@ std::string Channel_Generator_UniV::CreateChannelID(int echflag)
     idstr+=(*it);
     idstr+=string("$");
   }
-  idstr = string("CG2$")+idstr;
+  idstr = string("CGND$")+idstr;
   m_idstr = idstr;
   return idstr;
 }

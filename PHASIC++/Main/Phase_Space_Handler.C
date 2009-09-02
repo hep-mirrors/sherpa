@@ -686,6 +686,10 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (m_nin==2) { 
     if (m_nout==2&&m_inttype==2) m_inttype=6;
     if (m_nout==2&&m_inttype==3) m_inttype=7;
+    if (p_process->Process()->Info().m_fi.m_nloqcdtype&nlo_type::real) {
+      if (m_inttype==2) m_inttype=3;
+      if (m_inttype>=4&&m_inttype<7) m_inttype=7;
+    }
     if ((m_inttype<4||m_inttype>20) && (p_fsrchannels!=0)) 
       p_fsrchannels->DropAllChannels();
   }

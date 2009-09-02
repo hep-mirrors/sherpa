@@ -302,7 +302,7 @@ of final state particles and the same order in alpha_S can be treated as one pro
 they will be automatically split up.
 
 Note that Sherpa includes only a very limited selection of one-loop corrections. For processes
-not included external codes can be interfaced, see ...
+not included external codes can be interfaced, see @ref{External one-loop ME}
 
 @node NLO_EW_Part
 @subsection NLO_EW_Part
