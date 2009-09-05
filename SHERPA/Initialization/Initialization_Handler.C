@@ -882,6 +882,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
     else if (ExtractValArg(helpsv,oit,"-m","ME_SIGNAL_GENERATOR"));
     else if (ExtractValArg(helpsv,oit,"-w","EVENT_GENERATION_MODE"));
+    else if (ExtractValArg(helpsv,oit,"-s","SHOWER_GENERATOR"));
     else if (ExtractValArg(helpsv,oit,"-F","FRAGMENTATION"));
     else if (ExtractValArg(helpsv,oit,"-a","ANALYSIS"));
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
@@ -902,6 +903,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-r <results>      set result directory <results>"<<endl;
       msg_Out()<<"\t\t-m <generator>    set me generator <generator>"<<endl;
       msg_Out()<<"\t\t-w <mode>         set event generation mode <mode>"<<endl;
+      msg_Out()<<"\t\t-s <generator>    set ps generator <generator>"<<endl;
       msg_Out()<<"\t\t-F <module>       set fragmentation module <module>"<<endl;
       msg_Out()<<"\t\t-a <analysis>     set analysis handler <analysis>"<<endl;
       msg_Out()<<"\t\t-O <level>        set output level <level>"<<endl;

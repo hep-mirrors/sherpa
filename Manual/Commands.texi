@@ -27,6 +27,10 @@ see @ref{ME_SIGNAL_GENERATOR}.
 Set the event generation mode to @samp{<mode>},
 see @ref{EVENT_GENERATION_MODE}.
 
+@item -s <generator>
+Set the parton shower generator to @samp{<generator>},
+see @ref{SHOWER_GENERATOR}.
+
 @item -F <module>
 Set the fragmentation module to @samp{<module>},
 see @ref{Fragmentation}.
