@@ -94,9 +94,11 @@ Multiple options can be combined using a comma, e.g. @samp{ANALYSIS=Internal,Riv
 @node ANALYSIS_OUTPUT
 @subsection ANALYSIS_OUTPUT
 @cindex ANALYSIS_OUTPUT
-Name of the directory for generated histogram files when using the Internal analysis,
-see @ref{ANALYSIS}. This directory will be created w.r.t. the working directory. The default
-for this tag is @option{Analysis/}.
+Name of the directory for histogram files when using the internal analysis
+and name of the Aida file when using Rivet, see @ref{ANALYSIS}. 
+The directory / file will be created w.r.t. the working directory. The default
+value is @option{Analysis/}. This parameter can also be specified on the 
+command line using option @option{-A}, see @ref{Command line}.
 
 @node TIMEOUT
 @subsection TIMEOUT

@@ -885,6 +885,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-s","SHOWER_GENERATOR"));
     else if (ExtractValArg(helpsv,oit,"-F","FRAGMENTATION"));
     else if (ExtractValArg(helpsv,oit,"-a","ANALYSIS"));
+    else if (ExtractValArg(helpsv,oit,"-A","ANALYSIS_OUTPUT"));
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
     else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
     else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
@@ -906,6 +907,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-s <generator>    set ps generator <generator>"<<endl;
       msg_Out()<<"\t\t-F <module>       set fragmentation module <module>"<<endl;
       msg_Out()<<"\t\t-a <analysis>     set analysis handler <analysis>"<<endl;
+      msg_Out()<<"\t\t-A <path>         set analysis output path <path>"<<endl;
       msg_Out()<<"\t\t-O <level>        set output level <level>"<<endl;
       msg_Out()<<"\t\t-g                create result directory automatically"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
