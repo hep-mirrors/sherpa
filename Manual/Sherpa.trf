@@ -30,10 +30,14 @@ Sets the result directory name to \fIresults\fP.
 Sets the ME generator list to \fIgenerators\fP.
 .IP "\fB-w\fP \fImode\fP"
 Sets the event generation mode to \fImode\fP.
+.IP "\fB-s\fP \fIgenerator\fP"
+Sets the parton shower generator \fIgenerator\fP.
 .IP "\fB-F\fP \fImodule\fP"
 Sets the fragmentation module \fImodule\fP.
 .IP "\fB-a\fP \fIanalyses\fP"
 Sets the analysis handler list to \fIanalyses\fP.
+.IP "\fB-A\fP \fIpath\fP"
+Sets the analysis output path \fIpath\fP.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP.
 .IP "\fB-g\fP"
