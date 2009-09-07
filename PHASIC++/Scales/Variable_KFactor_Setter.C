@@ -134,8 +134,8 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
 
 void Variable_KFactor_Setter::AssignId(Term *term)
 {
-  if (term->Tag()=="MU_F2") term->SetId(1);
-  else if (term->Tag()=="MU_R2") term->SetId(2);
+  if (term->Tag()=="MU_R2") term->SetId(1);
+  else if (term->Tag()=="MU_F2") term->SetId(2);
   else if (term->Tag()=="E_CMS") term->SetId(3);
   else if (term->Tag()=="S_TOT") term->SetId(4);
   else {

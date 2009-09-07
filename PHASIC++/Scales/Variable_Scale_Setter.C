@@ -92,7 +92,10 @@ double Variable_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &m
     m_kfkey[i]=m_calcs[i]->Calculate()->Get<double>();
   m_scale[stp::ren]=m_scale[stp::fac]=m_kfkey[0];
   if (m_calcs.size()==1) m_kfkey[1]=m_kfkey[0];
-  else m_scale[stp::ren]=m_kfkey[1];
+  else {
+    m_scale[stp::ren]=m_kfkey[1];
+    std::swap<double>(m_kfkey[0],m_kfkey[1]);
+  }
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n";
