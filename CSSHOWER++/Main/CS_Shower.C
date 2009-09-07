@@ -580,15 +580,15 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
     while (ref->Next()) ref=ref->Next();
     double muf2(ref->MuF2());
     if (!IsEqual(muf2,ref->KT2QCD(),1.0e-3)) {
-      p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
-      p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
-      double xfe[2]={p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()),
-		     p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav())};
+      if (p_isr->PDF(0)) p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
+      if (p_isr->PDF(1)) p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
+      double xfe[2]={p_isr->PDF(0)?p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()):1.0,
+		     p_isr->PDF(1)?p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav()):1.0};
       muf2=ref->KT2QCD();
-      p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
-      p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
-      double xfc[2]={p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()),
-		     p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav())};
+      if (p_isr->PDF(0)) p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
+      if (p_isr->PDF(1)) p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
+      double xfc[2]={p_isr->PDF(0)?p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()):1.0,
+		     p_isr->PDF(1)?p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav()):1.0};
       msg_Debugging()<<"PDF 0: "<<xfc[0]<<" / "<<xfe[0]<<"\n";
       msg_Debugging()<<"PDF 1: "<<xfc[1]<<" / "<<xfe[1]<<"\n";
       if (!IsZero(xfe[0],1.0e-6)) wgt*=xfc[0]/xfe[0];
