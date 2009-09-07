@@ -12,6 +12,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include <algorithm>
@@ -138,14 +139,24 @@ CParam Cluster_Algorithm::GetMeasure
   bool ismo(idi&((1<<p_xs->NIn())-1));
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl));
   if (ismo) mmofl=mmofl.Bar();
-  kt2[idi][idj][idk][mofl]=
-    p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms);
+  if (p_ampl->Legs().size()>4) {
+    kt2[idi][idj][idk][mofl]=
+      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms);
+  }
+  else {
+    Cluster_Leg *li(p_ampl->Leg(i)), *lj(p_ampl->Leg(j));
+    double ckt2(0.0);
+    if (li->Flav().Strong() && lj->Flav().Strong() &&
+	p_ampl->Leg(k)->Flav().Strong())
+      ckt2=Max(li->Mom().MPerp2(),lj->Mom().MPerp2());
+    else ckt2=dabs((li->Mom()+lj->Mom()).Abs2());
+    kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2);
+  }
   if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
   msg_Debugging()<<"calc Q_{"<<ID(idi)<<p_ampl->Leg(i)->Flav()
 		 <<","<<ID(idj)<<""<<p_ampl->Leg(j)->Flav()
 		 <<"->"<<mmofl<<";"
-		 <<ID(idk)<<"} -> "<<kt2[idi][idj][idk][mofl]
-		 <<"("<<kt2[idi][idj][idk][mofl]<<")\n";
+		 <<ID(idk)<<"} -> "<<kt2[idi][idj][idk][mofl]<<"\n";
   msg_Debugging()<<"  p_{"<<ID(idi)<<"} = "<<p_ampl->Leg(i)->Mom()
 		 <<" "<<p_ampl->Leg(i)->Col()<<"\n";
   msg_Debugging()<<"  p_{"<<ID(idj)<<"} = "<<p_ampl->Leg(j)->Mom()
@@ -191,10 +202,8 @@ void Cluster_Algorithm::CalculateMeasures
 	      (in[j]->OrderQCD()==0?
 	       EWConnected(in[j]->JC()->Flav(),p_ampl->Leg(k)->Flav()):
 	       ColorConnected(coli,colj,colk))) {
-	    CParam ckt2(1.0,1.0);
-	    if (p_ampl->Legs().size()>4)
-	      ckt2=GetMeasure(m_id[idi],m_id[idj],idk,
-			      in[j]->JC()->Flav(),kt2,cid);
+	    CParam ckt2(GetMeasure(m_id[idi],m_id[idj],idk,
+				   in[j]->JC()->Flav(),kt2,cid));
 	    cinfo.insert(ClusterInfo_Pair
 			 (Cluster_Key(idi,idj),
 			  Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
@@ -233,9 +242,7 @@ void Cluster_Algorithm::CalculateMeasures
 		  (in[j]->OrderQCD()==0?
 		   EWConnected(mofl,p_ampl->Leg(k)->Flav()):
 		   ColorConnected(coli,colj,colk))) {
-		CParam ckt2(1.0,1.0);
-		if (p_ampl->Legs().size()>4)
-		  ckt2=GetMeasure(m_id[idi],m_id[idj],idk,mofl,kt2,cid);
+		CParam ckt2(GetMeasure(m_id[idi],m_id[idj],idk,mofl,kt2,cid));
 		cinfo.insert(ClusterInfo_Pair
 			     (Cluster_Key(idi,idj),
 			      Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
@@ -437,7 +444,17 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   if (p_bg==NULL) THROW(fatal_error,"Internal error");
   Selector_Base *jf=p_xs->Selector()
     ->GetSelector("Jetfinder");
-  msg_Debugging()<<METHOD<<"(): {\n";
+  bool trig(true);
+  if (jf) {
+    Vec4D_Vector moms(xs->Process()->Integrator()->Momenta());
+    if (m_swap) {
+      std::swap<Vec4D>(moms[0],moms[1]);
+      for (size_t i(0);i<moms.size();++i)
+	moms[i]=Vec4D(moms[i][0],-moms[i]);
+    }
+    trig=((Jet_Finder*)jf)->SingleTrigger(moms);
+  }
+  msg_Debugging()<<METHOD<<"(): trig = "<<trig<<" {\n";
   msg_Indent();
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
@@ -483,7 +500,8 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   }
   msg_Debugging()<<"}\n";
   SetNMax(p_ampl,(1<<ccurs.size())-1,
-	  xs->Process()->Info().m_fi.NMaxExternal());
+	  trig?xs->Process()->Info().m_fi.NMaxExternal():
+	  xs->Process()->Info().m_fi.NExternal());
   if (msg_LevelIsDebugging()) p_ampl->Print();
   while (p_ampl->Prev()) {
     if (m_swap) p_ampl->SwapInOrder();
@@ -512,7 +530,14 @@ bool Cluster_Algorithm::Cluster
     Current_Base *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
-      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
+      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
+#ifdef METS__reject_unordered
+ 	if (ampl->Legs().size()==4 || 
+ 	    ampl->KT2QCD()<p_ampl->KT2QCD()) return true;
+#else
+	return true;
+#endif
+      }
     p_ampl=ampl;
   } while (oldsize<nocl.size());
   return false;

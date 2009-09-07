@@ -11,6 +11,7 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
@@ -193,8 +194,11 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     for (size_t i(0);i<m_p.size();++i) 
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
+  ampl->SetX1(p_proc->Integrator()->ISR()->X1());
+  ampl->SetX2(p_proc->Integrator()->ISR()->X2());
   Single_Process *proc(p_proc->Get<Single_Process>());
   std::set<MCKey> trials;
+  std::vector<double> ops(ampl->Legs().size()-3,0.0);
   while (ampl->Legs().size()>4) {
     double op2w(0.0), kt2w(0.0);
     size_t iw(0), jw(0), kw(0);
@@ -302,7 +306,14 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
 		   <<" <-> "<<ID(ckw.m_k)
 		   <<" => "<<sqrt(kt2w)
-		   <<" ("<<sqrt(op2w)<<")\n";
+		   <<" ("<<sqrt(op2w)<<") <-> "
+		   <<sqrt(ops[ampl->Legs().size()-4])<<"\n";
+    if (ops[ampl->Legs().size()-4]>kt2w) {
+      msg_Debugging()<<"unordered configuration\n";
+#ifdef METS__reject_unordered
+      continue;
+#endif
+    }
     ampl->SetKT2QCD(kt2w);
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
@@ -311,6 +322,7 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
       ampl->DeleteNext();
       continue;
     }
+    ops[ampl->Legs().size()-4]=kt2w;
 #ifdef CHECK__stepwise
     Vec4D psum;
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -583,6 +595,9 @@ bool METS_Scale_Setter::Combine
 	ampl.Leg(m)->SetMom(cm);
       }
     }
+    double x(1.0+(pi*pj)/((pi+pj)*pa));
+    if (k==0) ampl.SetX1(ampl.X1()*x);
+    else ampl.SetX2(ampl.X2()*x);
   }
   if (i<2 && j>1 && k>1) {
     Vec4D pa(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pa+pj+pk);
@@ -631,6 +646,9 @@ bool METS_Scale_Setter::Combine
 	ampl.Leg(m)->SetMom(cm);
       }
     }
+    double x(1.0+(pj*pk)/((pj+pk)*pa));
+    if (i==0) ampl.SetX1(ampl.X1()*x);
+    else ampl.SetX2(ampl.X2()*x);
   }
   if (i<2 && j>1 && k<2) {
     Vec4D pa(li->Mom()), pj(lj->Mom()), pb(lk->Mom());
@@ -664,6 +682,9 @@ bool METS_Scale_Setter::Combine
 	ampl.Leg(m)->SetMom(km);
       }
     }
+    double x(1.0+(pj*(pa+pb))/(pa*pb));
+    if (i==0) ampl.SetX1(ampl.X1()*x);
+    else ampl.SetX2(ampl.X2()*x);
   }
   li->SetCol(CombineColors(li,lj,lk,mo));
   li->SetId(li->Id()+lj->Id());

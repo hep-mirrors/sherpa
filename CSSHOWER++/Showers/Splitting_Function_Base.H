@@ -34,16 +34,16 @@ namespace CSSHOWER {
   public:
     ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
-    int m_mode, m_kfmode;
+    int m_mode, m_kfmode, m_ewmode;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
     inline SF_Key(ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
 		  const int mode,const cstp::code type,
-		  const int kfmode):
+		  const int kfmode,const int ewmode):
       p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
-      m_type(type), p_cf(NULL) {}
+      m_ewmode(ewmode), m_type(type), p_cf(NULL) {}
     std::string ID(const int mode) const;
   };
 

@@ -28,7 +28,7 @@ namespace ATOOLS {
 
     kf_code m_kfc;
     double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
-    int     m_icharge, m_isoweak, m_strong;
+    int     m_icharge, m_isoweak, m_strong, m_resummed;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana;
     bool    m_on, m_massive, m_hadron;
 
@@ -41,8 +41,8 @@ namespace ATOOLS {
     // default constructor
     inline Particle_Info(): 
       m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(0.0), m_width(0.0),
-      m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), 
-      m_isoweak(0), m_strong(0), m_spin(0), m_stable(1), m_masssign(0), 
+      m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0),
+      m_strong(0), m_resummed(0), m_spin(0), m_stable(1), m_masssign(0), 
       m_dummy(1), m_majorana(0), m_on(0), m_massive(0), m_hadron(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
@@ -159,6 +159,9 @@ namespace ATOOLS {
     inline void SetIntCharge(const int icharge) const 
     { p_info->m_icharge=icharge; }
 
+    inline void SetResummed() const 
+    { p_info->m_resummed=true; s_kftable[kf_resummed]->Add(*this); }
+
     inline int    IntCharge() const
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }
     inline double Charge() const
@@ -175,6 +178,9 @@ namespace ATOOLS {
     { int c(p_info->m_strong); return m_anti?-c:c; }
     inline bool Strong() const
     { return p_info->m_strong!=0&&!IsDiQuark(); }
+
+    inline bool Resummed() const
+    { return p_info->m_resummed; }
 
     inline int IntSpin() const { return p_info->m_spin;     }
     inline double Spin() const { return p_info->m_spin/2.0; }

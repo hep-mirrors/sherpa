@@ -184,8 +184,8 @@ void Standard_Model::ParticleInit() {
   // add pseudo particles and containers
   s_kftable[kf_none] = new
     Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle");
-  s_kftable[kf_seaquark] = new
-    Particle_Info(kf_seaquark,0.,0.,0,0,1,1,0,1,1,0,"seaquark","seaquark");
+  s_kftable[kf_resummed] = new
+    Particle_Info(kf_resummed,0.,0.,0,0,1,2,1,1,1,0,"r","resummed");
   s_kftable[kf_bjet] = new
     Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet");
   s_kftable[kf_cjet] = new
@@ -203,6 +203,8 @@ void Standard_Model::ParticleInit() {
     Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino");
   s_kftable[kf_fermion]->Clear();
   s_kftable[kf_jet]->Clear();
+  s_kftable[kf_resummed]->Clear();
+  s_kftable[kf_resummed]->m_resummed=true;
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
@@ -211,6 +213,8 @@ void Standard_Model::ParticleInit() {
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
+      addit.SetResummed();
+      addit.Bar().SetResummed();
       s_kftable[kf_quark]->Add(addit);
       s_kftable[kf_quark]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
@@ -218,6 +222,8 @@ void Standard_Model::ParticleInit() {
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
+  Flavour(kf_gluon).SetResummed();
+  Flavour(kf_photon).SetResummed();
   for (int i=11;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {

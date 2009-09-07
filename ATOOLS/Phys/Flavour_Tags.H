@@ -43,7 +43,7 @@
 #define      kf_cluster                 96
 #define      kf_bjet                    97
 #define      kf_cjet                    98
-#define      kf_seaquark                99
+#define      kf_resummed                99
 #define      kf_gluon_qgc               921
 #define      kf_h0_qsc                  925
 #define      kf_Z_qgc                   923

@@ -128,7 +128,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
-  int _qed=_dataread->GetValue<int>("CSS_EW_MODE",3);
+  int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
   p_shower = new Shower(_isr,_qed,_dataread);
   
   p_next = new All_Singlets();
@@ -287,7 +287,6 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
   Cluster_Amplitude *campl(ampl);
   while (campl->Next()) campl=campl->Next();
   GetKT2Min(campl,(1<<ampl->Legs().size())-1,kt2xmap,aset);
-
   std::vector<size_t> cns;
   double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
   for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
@@ -309,7 +308,6 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
       else kit->second.first=0.0;
       kit->second.second=ckt2max;
     }
-
   msg_Debugging()<<"k_{T,min} / k_{T,max} = {\n";
   for (KT2X_Map::const_iterator
 	 kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
@@ -578,32 +576,38 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
   {
     msg_Indent();
     std::map<size_t,Cluster_Leg*> legs;
-    // find hard scale
-    double kt2max(ampl->MuF2());
     Cluster_Amplitude *ref(ampl);
-    while (ref->Next()) {
-      ref=ref->Next();
-      for (size_t i(0);i<ref->Legs().size();++i) {
-	const Cluster_Leg *cl(ref->Leg(i));  
-	//to be changed!!!!
-	kt2max=Max(kt2max,dabs(cl->Mom().Abs2()));
+    while (ref->Next()) ref=ref->Next();
+    double muf2(ref->MuF2());
+    if (!IsEqual(muf2,ref->KT2QCD(),1.0e-3)) {
+      p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
+      p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
+      double xfe[2]={p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()),
+		     p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav())};
+      muf2=ref->KT2QCD();
+      p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
+      p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
+      double xfc[2]={p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()),
+		     p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav())};
+      msg_Debugging()<<"PDF 0: "<<xfc[0]<<" / "<<xfe[0]<<"\n";
+      msg_Debugging()<<"PDF 1: "<<xfc[1]<<" / "<<xfe[1]<<"\n";
+      if (!IsZero(xfe[0],1.0e-6)) wgt*=xfc[0]/xfe[0];
+      if (!IsZero(xfe[1],1.0e-6)) wgt*=xfc[1]/xfe[1];
+      ampl->SetMuF2(muf2);
+      Cluster_Amplitude *cref(ampl);
+      while (cref->Next()) {
+	cref=cref->Next();
+	cref->SetMuF2(muf2);
       }
     }
-    kt2max=Max(kt2max,HardScale(ref));
-    msg_Debugging()<<"largest ps scale "<<sqrt(kt2max)<<"\n";
     for (size_t i(0);i<ref->Legs().size();++i) {
       legs[ref->Leg(i)->Id()]=ref->Leg(i);
     }
     if (ref->OrderQCD()) {
-      double cf((ref->Leg(0)->Flav().Strong()||
-		 ref->Leg(ref->NIn()-1)->Flav().Strong())?
-		p_shower->GetSudakov()->ISCplFac():
-		p_shower->GetSudakov()->FSCplFac());
-      msg_Debugging()<<"core => mu = "<<sqrt(cf)
-		     <<"*"<<sqrt(ref->MuF2())<<" {\n";
+      msg_Debugging()<<"core => mu = "<<sqrt(ref->MuF2())<<" {\n";
       {
 	msg_Indent();
-	wgt*=CouplingWeight(ref->OrderQCD(),cf*ref->MuF2(),ref->MuR2());
+	wgt*=CouplingWeight(ref->OrderQCD(),ref->MuF2(),ref->MuR2());
       }
       msg_Debugging()<<"}\n";
     }
@@ -681,13 +685,8 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
     if (ampl->NIn()==1) return (ampl->Leg(0)->Mom()).Abs2();
     THROW(fatal_error,"Invalid amplitude");
   }
-  double q2cut(0.0);
-  if (ampl->JF<PHASIC::Jet_Finder>()) {
-    q2cut=ampl->JF<PHASIC::Jet_Finder>()->GlobalYcut();
-    q2cut*=sqr(rpa.gen.Ecms());
-  }
   double xf(m_dmode?ampl->X1()*ampl->X2():1.0);
-  return Max(ampl->MuF2()/xf,q2cut);
+  return ampl->MuF2()/xf;
 }
 
 double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,

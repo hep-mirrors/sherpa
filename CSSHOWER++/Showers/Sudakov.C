@@ -15,6 +15,7 @@ using namespace std;
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) : 
   p_rms(NULL)
 {
+  m_ewmode=qed;
   //int hadron = rpa.gen.Beam1().Strong()==1?0:1;
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
@@ -77,18 +78,18 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	if (v->in[2]==v->in[0]) dmode=1;
 	else if (v->in[1]!=v->in[0] && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode)));
 	if (v->in[0].Mass()<100.0) {
-  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode)));
- 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode)));
+  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode)));
+ 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_ewmode)));
 	}
 	if (v->in[1]!=v->in[2]) {
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_ewmode)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode)));
 	  if (v->in[0].Mass()<100.0) {
-  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode)));
- 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode)));
+  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode)));
+ 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_ewmode)));
 	  }
 	}
       }

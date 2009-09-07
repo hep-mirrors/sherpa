@@ -347,6 +347,11 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 	    Trigger(p)) trigger=true;
     return trigger;
   }
+  return SingleTrigger(p);
+}
+
+bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
+{
   FillCombinations();
   PrepareMomList(p);
   bool uc(false);

@@ -57,6 +57,7 @@ namespace PHASIC {
 
     void   FillCombinations();
     bool   Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool   SingleTrigger(const ATOOLS::Vec4D_Vector &p);
     bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
                       const ATOOLS::Flavour_Vector &, int);
     bool   JetTrigger(const ATOOLS::Vec4D_Vector &p);

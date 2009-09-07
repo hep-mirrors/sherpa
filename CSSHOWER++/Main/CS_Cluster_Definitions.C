@@ -517,9 +517,10 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
   double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.0*mai2*mb2))
     /(tau+sqrt(tau*tau-4.0*ma2*mb2*xiab*xiab));
-  if (ttau*ttau<4.0*mai2*mb2 || ttau<0.0 ||
-      tau*tau<4.0*ma2*mb2*xiab*xiab || tau<0.0) return Vec4D_Vector();
+  if (ttau*ttau<4.0*mai2*mb2 || ttau<=0.0 ||
+      tau*tau<4.0*ma2*mb2*xiab*xiab || tau<=0.0) return Vec4D_Vector();
   double gam   = papb+sqrt(papb*papb-ma2*mb2);
+  if (IsZero(xiiab,1.0e-6) || IsZero(gam,1.0e-6)) return Vec4D_Vector();
 
   Vec4D pait = xiiab
     *(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))

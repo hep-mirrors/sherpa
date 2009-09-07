@@ -7,6 +7,7 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "AMEGIC++/Main/Process_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -432,6 +433,17 @@ void Cluster_Algorithm::Convert()
   msg_Indent();
   Selector_Base *jf=p_proc->Selector()
     ->GetSelector("Jetfinder");
+  bool trig(true);
+  if (jf) {
+    Vec4D_Vector moms(p_proc->Integrator()->Momenta());
+    if (p_proc->Integrator()->InSwaped()) {
+      std::swap<Vec4D>(moms[0],moms[1]);
+      for (size_t i(0);i<moms.size();++i)
+	moms[i]=Vec4D(moms[i][0],-moms[i]);
+    }
+    trig=((PHASIC::Jet_Finder*)jf)->SingleTrigger(moms);
+  }
+  msg_Debugging()<<METHOD<<"(): trig = "<<trig<<"\n";
   Combine_Table *ct_tmp(p_ct);
   while (ct_tmp->Up()) ct_tmp=ct_tmp->Up();
   if (p_ampl) p_ampl->Delete();
@@ -488,8 +500,10 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderEW(ampl->OrderEW()-win.OrderQED());
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
   }
+  p_ampl->SetKT2QCD(muf2);
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
-	  p_proc->Info().m_fi.NMaxExternal());
+	  trig?p_proc->Info().m_fi.NMaxExternal():
+	  p_proc->Info().m_fi.NExternal());
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
   for (size_t i(2);i<4;++i)

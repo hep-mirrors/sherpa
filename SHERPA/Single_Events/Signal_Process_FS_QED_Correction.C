@@ -76,6 +76,7 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
 Return_Value::code Signal_Process_FS_QED_Correction::Treat
 (Blob_List * bloblist, double & weight)
 {
+  if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
                <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
