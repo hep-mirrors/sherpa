@@ -7,27 +7,60 @@
 info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
-	Macros.texi \
-	Bibliography.texi \
-	Introduction.texi \
-	CrossSection.texi \
-	Commands.texi \
-	Input.texi \
-	Parameters.texi \
+	4thGen.texi \
+	ADD.texi \
+	AGC.texi \
 	Beam.texi \
-	Model.texi \
-	ISR.texi \
-	ME.texi \
-	Processes.texi \
-	Selector.texi \
-	Integration.texi \
-	Shower.texi \
-	SoftQED.texi \
-	MI.texi \
-	Tips.texi \
+	Bibliography.texi \
+	Commands.texi \
+	CrossSection.texi \
 	Customization.texi \
+	EGamma.texi \
+	EHC.texi \
+	Examples.texi \
+	FeynRules.texi \
+	Fragmentation.texi \
+	Input.texi \
+	Integration.texi \
+	Introduction.texi \
+	ISR.texi \
+	LEP91.texi \
+	LHC_4thGen.texi \
+	LHC_ADD.texi \
+	LHC_AGC.texi \
+	LHC_TopPair.texi \
+	LHC_ZJets.texi \
+	Macros.texi \
+	Merging.texi \
+	ME.texi \
+	MI.texi \
+	Model.texi \
+	MSSM.texi \
+	NewModel.texi \
+	NLOtips.texi \
+	OLE.texi \
+	Parameters.texi \
+	PDF.texi \
+	PEPII_BaBar.texi \
+	Processes.texi \
+	RNG.texi \
 	Run.texi \
-	RNG.texi
+	Selector.texi \
+	Sherpa.texi \
+	Shower.texi \
+	SM.texi \
+	SoftQED.texi \
+	Starting.texi \
+	Tevatron_DiBoson.texi \
+	Tevatron_QCD.texi \
+	Tevatron_TopPair.texi \
+	Tevatron_UE.texi \
+	Tevatron_WJets.texi \
+	Tevatron_ZJets.texi \
+	THDM.texi \
+	Tips.texi \
+	version.texi \
+	W_NLO.texi
 
 man1_MANS = Sherpa.1
 
