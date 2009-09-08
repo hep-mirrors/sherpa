@@ -351,8 +351,9 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
   m_p.resize(ampl->Legs().size());
   Vec4D psum;
-  int csum[4]={0,0,0,0};
-  size_t qcd(0);
+  int qcd(0), csum[4]={0,0,0,0};
+  size_t cid[4]={ampl->Leg(0)->Id(),ampl->Leg(1)->Id(),
+		 ampl->Leg(2)->Id(),ampl->Leg(3)->Id()};
   ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
 		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
   for (size_t i(0);i<m_p.size();++i) {
@@ -370,69 +371,65 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
     abort();
   }
-  double kt2cmin(s_kt2max);
-  if (qcd!=15) {
-    if (p_ci==NULL) {
-      bool s[4]={ampl->Leg(0)->Flav().Strong(),
-		 ampl->Leg(1)->Flav().Strong(),
-		 ampl->Leg(2)->Flav().Strong(),
-		 ampl->Leg(3)->Flav().Strong()};
-      if ((s[0] && s[1]) || (s[2] && s[3])) {
-	kt2cmin=Min(kt2cmin,2.0*(m_p[0]*m_p[1]));
+  bool pureqcd(false);
+  if (qcd==15) {
+    for (size_t j(1);j<4;++j) {
+      if (proc->Combinable(cid[0],cid[j])) {
+	const Flavour_Vector &cf(proc->CombinedFlavour(cid[0]+cid[j]));
+	for (size_t i(0);i<cf.size();++i)
+	  if (cf[i].Strong()) {
+	    pureqcd=true;
+	    break;
+	  }
       }
-      if ((s[0] && s[2]) || (s[1] && s[3])) {
-	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[2])));
-      }
-      if ((s[0] && s[3]) || (s[1] && s[2])) {
-	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[3])));
-      }
+      if (pureqcd) break;
     }
-    else {
-      if ((c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
+  }
+  double kt2cmin(s_kt2max);
+  if (pureqcd) {
+    kt2cmin=Max(m_p[2].MPerp2(),m_p[3].MPerp2());
+  }
+  else {
+    // s-channel
+    if (proc->Combinable(cid[0],cid[1])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
 	  (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
 	  (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
-	kt2cmin=Min(kt2cmin,2.0*(m_p[0]*m_p[1]));
+	kt2cmin=Min(kt2cmin,
+		    Max((m_p[0]+m_p[1]).Abs2(),
+			(m_p[2]+m_p[3]).Abs2()));
       }
-      if ((c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
+    }
+    // t-channel
+    if (proc->Combinable(cid[0],cid[2])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
-	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
-	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
-	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[2])));
+	  (c[2].m_i>0 && c[1].m_i==c[3].m_j) ||
+	  (c[2].m_j>0 && c[1].m_j==c[3].m_i)) {
+	kt2cmin=Min(kt2cmin,
+		    Max(dabs((m_p[0]+m_p[2]).Abs2()),
+			dabs((m_p[1]+m_p[3]).Abs2())));
       }
-      if ((c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
+    }
+    // u-channel
+    if (proc->Combinable(cid[0],cid[3])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
 	  (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
 	  (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
-	kt2cmin=Min(kt2cmin,dabs(2.0*(m_p[0]*m_p[3])));
-      }
-    }
-    double m2max(0.0);
-    for (size_t i(0);i<4;++i) m2max=Max
-      (m2max,sqr(ampl->Leg(i)->Flav().Mass()));
-    kt2cmin+=m2max;
-  }
-  if (kt2cmin==s_kt2max) {
-    if (ampl->Leg(2)->Flav().IsMassive()) {
-      if (ampl->Leg(3)->Flav().IsMassive()) {
-	kt2cmin=sqrt(m_p[2].MPerp2()*m_p[3].MPerp2());
-      }
-      else {
-	kt2cmin=m_p[2].MPerp2();
-      }
-    }
-    else {
-      if (ampl->Leg(3)->Flav().IsMassive()) {
-	kt2cmin=m_p[3].MPerp2();
-      }
-      else {
-	kt2cmin=m_p[3].PPerp2();
+	kt2cmin=Min(kt2cmin,
+		    Max(dabs((m_p[0]+m_p[3]).Abs2()),
+			dabs((m_p[1]+m_p[2]).Abs2())));
       }
     }
   }
   while (ampl->Prev()) {
     ampl=ampl->Prev();
-    kt2cmin=Max(kt2cmin,ampl->KT2QCD());
+    // kt2cmin=Max(kt2cmin,ampl->KT2QCD());
   }
   ampl->Delete();
   m_scale[stp::ren]=m_scale[stp::fac]=kt2cmin;

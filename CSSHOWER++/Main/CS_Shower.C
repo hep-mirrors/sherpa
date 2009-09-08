@@ -286,6 +286,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
   std::set<size_t> aset;
   Cluster_Amplitude *campl(ampl);
   while (campl->Next()) campl=campl->Next();
+  double kt2max(HardScale(campl));
   GetKT2Min(campl,(1<<ampl->Legs().size())-1,kt2xmap,aset);
   std::vector<size_t> cns;
   double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
@@ -306,7 +307,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
     if (aset.find(kit->first)==aset.end()) {
       if (smin) kit->second.first=ckt2min;
       else kit->second.first=0.0;
-      kit->second.second=ckt2max;
+      kit->second.second=kt2max;
     }
   msg_Debugging()<<"k_{T,min} / k_{T,max} = {\n";
   for (KT2X_Map::const_iterator
@@ -675,11 +676,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2QCD();
     for (size_t i(0);i<next->Legs().size();++i)
       if (next->Leg(i)->K()) {
-	Vec4D sum;
-	size_t cid(next->Leg(i)->Id());
-	for (size_t j(0);j<ampl->Legs().size();++j)
-	  if (ampl->Leg(j)->Id()&cid) sum+=ampl->Leg(j)->Mom();
-	return dabs(sum.Abs2());
+	return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2QCD());
       }
     // this should catch the partonic hadron decays
     if (ampl->NIn()==1) return (ampl->Leg(0)->Mom()).Abs2();

@@ -147,7 +147,7 @@ CParam Cluster_Algorithm::GetMeasure
     Cluster_Leg *li(p_ampl->Leg(i)), *lj(p_ampl->Leg(j));
     double ckt2(0.0);
     if (li->Flav().Strong() && lj->Flav().Strong() &&
-	p_ampl->Leg(k)->Flav().Strong())
+	p_ampl->Leg(k)->Flav().Strong() && mmofl.Strong())
       ckt2=Max(li->Mom().MPerp2(),lj->Mom().MPerp2());
     else ckt2=dabs((li->Mom()+lj->Mom()).Abs2());
     kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2);
