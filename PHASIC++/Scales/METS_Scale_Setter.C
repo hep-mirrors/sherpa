@@ -404,7 +404,6 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     }
     // t-channel
     if (proc->Combinable(cid[0],cid[2])) {
-      DEBUG_INFO("t");
       if (p_ci==NULL || qcd==0 ||
 	  (c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
@@ -476,7 +475,6 @@ CS_Params METS_Scale_Setter::KT2
 (const Cluster_Leg *li,const Cluster_Leg *lj,
  const Cluster_Leg *lk,const Flavour &mo) const
 {
-  static const CS_Params nd(s_kt2max,0.0,0.0,-1);
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
