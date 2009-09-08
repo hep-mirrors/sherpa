@@ -531,22 +531,19 @@ int Combine_Table::AddCouplings(int &nqed,int &nqcd) const
   return NLegs();
 }
 
-bool Combine_Table::Combinable(const Leg &a,const Leg &b,Flavour &mo) const
+bool Combine_Table::Combinable(const Leg &a,const Leg &b) const
 {
   Leg lmo;
   if (a.Point()->prev!=NULL && a.Point()->prev==b.Point()->prev) {
     lmo.SetPoint((AMEGIC::Point*)a.Point()->prev);
-    mo=MatchFlavour(lmo,a,b,0);
     return true;
   }
   if (a.Point()->prev==b.Point()) {
     lmo.SetPoint((AMEGIC::Point*)b.Point());
-    mo=MatchFlavour(lmo,b,a,1);
     return true;
   }
   if (b.Point()->prev==a.Point()) {
     lmo.SetPoint((AMEGIC::Point*)a.Point());
-    mo=MatchFlavour(lmo,a,b,1);
     return true;
   }
   return false;
@@ -608,7 +605,7 @@ double Combine_Table::GetWinner(int &i,int &j,int &k)
 }
 
 void Combine_Table::AddPossibility(const int i,const int j,const int k,
-				   const int ngraph,const Flavour &mo) 
+				   const int ngraph) 
 {
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k));
   if (cit!=m_combinations.end()) {
@@ -618,8 +615,9 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
   }
   else {
     Combine_Data cd(0.,ngraph);
-    cd.m_mo=mo;
-    cd.m_strong=CombinedLeg(p_legs[ngraph],i,j).OrderQCD();
+    Leg cl(CombinedLeg(p_legs[ngraph],i,j));
+    cd.m_strong=cl.OrderQCD();
+    cd.m_mo=cl.Flav();
     m_combinations[Combine_Key(i,j,k)]=cd;
   }
 }
@@ -646,7 +644,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 	for (int k=0;k<m_nampl;++k) {
 // 	  msg_Debugging()<<"start w/ "<<k<<", "
 // 			 <<i<<": "<<p_legs[k][i].MapFlavour()<<"\n";
-	  if (Combinable(p_legs[k][i],p_legs[k][j],mo)) {
+	  if (Combinable(p_legs[k][i],p_legs[k][j])) {
 	    int sci(p_legs[k][i].Flav().StrongCharge());
 	    int scj(p_legs[k][j].Flav().StrongCharge());
 	    for (int l=0;l<m_nlegs;++l)
@@ -654,7 +652,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 		int sc(p_legs[k][l].Flav().StrongCharge());
 		if (((sci==8 || scj==8 || sc==8) && 
 		     (sci!=0 && scj!=0 && sc!=0)) ||
-		    (sci!=8 && scj!=8 && sc!=8)) AddPossibility(i,j,l,k,mo);
+		    (sci!=8 && scj!=8 && sc!=8)) AddPossibility(i,j,l,k);
 	      }
 	  }
 	}
@@ -870,7 +868,6 @@ bool Combine_Table::IdentifyHardProcess()
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
   m_nstrong=0;
-  Flavour mo;
   if (p_hard==NULL) {
     p_hard = new Leg*[m_nampl];
     for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
@@ -878,8 +875,8 @@ bool Combine_Table::IdentifyHardProcess()
     for (int i(0);i<m_nampl;++i) p_hardc[i] = new int[4];
   }
   for (int i(0);i<m_nampl;++i) {
-    if (Combinable(p_legs[i][0],p_legs[i][1],mo) &&
-	Combinable(p_legs[i][2],p_legs[i][3],mo)) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
       double pt2ij1((p_moms[0]+p_moms[1]).Abs2());
       double pt2ij2((p_moms[0]+p_moms[1]).Abs2());
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
@@ -899,8 +896,8 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][2]=1;
       p_hardc[i][3]=1;
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][2],mo) &&
-	     Combinable(p_legs[i][1],p_legs[i][3],mo)) {
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
       double pt2ij1((p_moms[0]-p_moms[2]).Abs2());
       double pt2ij2((p_moms[0]-p_moms[2]).Abs2());
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
@@ -920,8 +917,8 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][2]=0;
       p_hardc[i][3]=1;
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][3],mo) &&
-	     Combinable(p_legs[i][1],p_legs[i][2],mo)) {
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
       double pt2ij1((p_moms[0]-p_moms[3]).Abs2());
       double pt2ij2((p_moms[0]-p_moms[3]).Abs2());
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
@@ -951,38 +948,34 @@ int Combine_Table::IdentifyHardPropagator() const
 {
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
-  Flavour mo;
   int channel(-1);
   double mmin(std::numeric_limits<double>::max());
   for (int i(0);i<m_nampl;++i) {
-    if (Combinable(p_legs[i][0],p_legs[i][1],mo) &&
-	Combinable(p_legs[i][2],p_legs[i][3],mo)) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
       msg_Debugging()<<"s-channel "
-		     <<(p_moms[0]+p_moms[1]).Mass()
-		     <<" vs. "<<mo.Mass()<<"\n";
-      double val=(p_moms[0]+p_moms[1]).Abs2()-sqr(mo.Mass());
+		     <<(p_moms[0]+p_moms[1]).Mass()<<"\n";
+      double val=(p_moms[0]+p_moms[1]).Abs2();
       if (val<mmin) {
 	mmin=val;
 	channel=1;
       }
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][2],mo) &&
-	     Combinable(p_legs[i][1],p_legs[i][3],mo)) {
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
       msg_Debugging()<<"t-channel "
-		     <<sqrt(dabs((p_moms[0]-p_moms[2]).Abs2()))
-		     <<" vs. "<<mo.Mass()<<"\n";
-      double val=(p_moms[0]-p_moms[2]).Abs2()-sqr(mo.Mass());
+		     <<sqrt(dabs((p_moms[0]-p_moms[2]).Abs2()))<<"\n";
+      double val=dabs((p_moms[0]-p_moms[2]).Abs2());
       if (val<mmin) {
 	mmin=val;
 	channel=2;
       }
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][3],mo) &&
-	     Combinable(p_legs[i][1],p_legs[i][2],mo)) {
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
       msg_Debugging()<<"u-channel "
-		     <<sqrt(dabs((p_moms[0]-p_moms[3]).Abs2()))
-		     <<" vs. "<<mo.Mass()<<"\n";
-      double val=(p_moms[0]-p_moms[3]).Abs2()-sqr(mo.Mass());
+		     <<sqrt(dabs((p_moms[0]-p_moms[3]).Abs2()))<<"\n";
+      double val=dabs((p_moms[0]-p_moms[3]).Abs2());
       if (val<mmin) {
 	mmin=val;
 	channel=3;

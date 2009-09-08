@@ -157,7 +157,7 @@ namespace AMEGIC {
     bool CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
 		     const int maxl,ATOOLS::Vec4D *&omoms);
     void AddPossibility(const int i,const int j,const int k,
-			const int ngraph,const ATOOLS::Flavour &mo);
+			const int ngraph);
     bool InitStep(ATOOLS::Vec4D *moms,const int nl);
     bool SelectWinner(const bool did_boost);
     Combine_Table *CreateNext(bool did_boost);
@@ -191,7 +191,7 @@ namespace AMEGIC {
     bool                 IdentifyHardProcess();
     int                  IdentifyHardPropagator() const;
 
-    bool Combinable(const Leg &a,const Leg &b,ATOOLS::Flavour &mo) const ;
+    bool Combinable(const Leg &a,const Leg &b) const ;
 
     int    AddCouplings(int &nqed,int &nqcd) const;
     double MinKt2() const;
