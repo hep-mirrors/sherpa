@@ -953,24 +953,40 @@ int Combine_Table::IdentifyHardPropagator() const
   msg_Indent();
   Flavour mo;
   int channel(-1);
+  double mmin(std::numeric_limits<double>::max());
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1],mo) &&
 	Combinable(p_legs[i][2],p_legs[i][3],mo)) {
-      msg_Debugging()<<"s-channel\n";
-      if (channel<0) channel=1;
-      else if (channel!=1) return -1;
+      msg_Debugging()<<"s-channel "
+		     <<(p_moms[0]+p_moms[1]).Mass()
+		     <<" vs. "<<mo.Mass()<<"\n";
+      double val=(p_moms[0]+p_moms[1]).Abs2()-sqr(mo.Mass());
+      if (val<mmin) {
+	mmin=val;
+	channel=1;
+      }
     }
     else if (Combinable(p_legs[i][0],p_legs[i][2],mo) &&
 	     Combinable(p_legs[i][1],p_legs[i][3],mo)) {
-      msg_Debugging()<<"t-channel\n";
-      if (channel<0) channel=2;
-      else if (channel!=2) return -1;
+      msg_Debugging()<<"t-channel "
+		     <<sqrt(dabs((p_moms[0]-p_moms[2]).Abs2()))
+		     <<" vs. "<<mo.Mass()<<"\n";
+      double val=(p_moms[0]-p_moms[2]).Abs2()-sqr(mo.Mass());
+      if (val<mmin) {
+	mmin=val;
+	channel=2;
+      }
     }
     else if (Combinable(p_legs[i][0],p_legs[i][3],mo) &&
 	     Combinable(p_legs[i][1],p_legs[i][2],mo)) {
-      msg_Debugging()<<"u-channel\n";
-      if (channel<0) channel=3;
-      else if (channel!=3) return -1;
+      msg_Debugging()<<"u-channel "
+		     <<sqrt(dabs((p_moms[0]-p_moms[3]).Abs2()))
+		     <<" vs. "<<mo.Mass()<<"\n";
+      double val=(p_moms[0]-p_moms[3]).Abs2()-sqr(mo.Mass());
+      if (val<mmin) {
+	mmin=val;
+	channel=3;
+      }
     }
     else THROW(fatal_error,"No match for hard process.");
   }
