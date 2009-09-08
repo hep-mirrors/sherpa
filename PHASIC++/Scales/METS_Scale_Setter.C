@@ -404,11 +404,12 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
     }
     // t-channel
     if (proc->Combinable(cid[0],cid[2])) {
+      DEBUG_INFO("t");
       if (p_ci==NULL || qcd==0 ||
 	  (c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
 	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
-	  (c[2].m_i>0 && c[1].m_i==c[3].m_j) ||
-	  (c[2].m_j>0 && c[1].m_j==c[3].m_i)) {
+	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
+	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
 	kt2cmin=Min(kt2cmin,
 		    Max(dabs((m_p[0]+m_p[2]).Abs2()),
 			dabs((m_p[1]+m_p[3]).Abs2())));
