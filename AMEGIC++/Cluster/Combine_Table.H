@@ -158,12 +158,10 @@ namespace AMEGIC {
 		     const int maxl,ATOOLS::Vec4D *&omoms);
     void AddPossibility(const int i,const int j,const int k,
 			const int ngraph);
-    bool InitStep(ATOOLS::Vec4D *moms,const int nl);
-    bool SelectWinner(const bool did_boost);
-    Combine_Table *CreateNext(bool did_boost);
+    bool SelectWinner();
+    Combine_Table *CreateNext();
     Combine_Table *NextTable(Combine_Table *tab,
 			     const double x1,const double x2);
-    bool TestMomenta(const int i,const int j);
 
     double Sprime() const;
 

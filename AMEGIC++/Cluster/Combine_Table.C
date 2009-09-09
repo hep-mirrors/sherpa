@@ -708,22 +708,20 @@ CalcJet(int nl,const double x1,const double x2,
   }
   m_rejected.clear();
   while (true) {
-    bool did_boost(InitStep(moms,nl));
-    if (!SelectWinner(did_boost)) {
+    m_nl=nl;
+    if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
+    if (!SelectWinner()) {
       if (mode==1 ||
 	  (nl==4 && (IdentifyHardProcess() || p_up==NULL))) {
-	if (did_boost) for (size_t i=0;i<m_nl;++i) p_moms[i]=p_save_moms[i]; 
-	delete [] p_save_moms;
 	return this;
       }
-      delete [] p_save_moms;
       delete this;
       return NULL;
     }
     // if number of legs is still greater 4 Cluster once more
     // if number of legs equals 4, determine end situation
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
-    Combine_Table *tab(CreateNext(did_boost));
+    Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
       Combine_Table *next(NextTable(tab,x1,x2));
       if (next!=NULL) return next;
@@ -735,32 +733,7 @@ CalcJet(int nl,const double x1,const double x2,
   return NULL;
 }
 
-bool Combine_Table::InitStep(ATOOLS::Vec4D *moms,const int nl)
-{
-  m_nl=nl;
-  // change momenta to actual values    
-  if (moms!=0) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
-  // boost in CMS frame and rotate to z-axis (store old moms)
-  p_save_moms = new Vec4D[m_nl];
-  for (size_t i=0;i<m_nl;++i) p_save_moms[i] = p_moms[i];
-  bool did_boost(false);
-  if (!(Vec3D(p_moms[0])==Vec3D(-1.*p_moms[1]))) {
-    Poincare cms, zaxis;
-    bool dir(p_moms[0][3]>0.0);
-    if (p_moms[0].PSpat2()<p_moms[1].PSpat2()) dir=p_moms[1][3]<0.0;
-    cms   = Poincare(p_moms[0]+p_moms[1]);
-    for (size_t i=0;i<m_nl;++i) cms.Boost(p_moms[i]);
-    
-    if (dir) zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
-    else zaxis = Poincare(p_moms[1],Vec4D::ZVEC);
-    
-    for (size_t i=0;i<m_nl;++i) zaxis.Rotate(p_moms[i]);
-    did_boost = true;
-  }
-  return did_boost;
-}
-
-bool Combine_Table::SelectWinner(const bool did_boost)
+bool Combine_Table::SelectWinner()
 {
   CD_List & cl(m_combinations);
   if (cl.size()==0) return false;
@@ -796,25 +769,8 @@ bool Combine_Table::SelectWinner(const bool did_boost)
   return m_cdata_winner!=cl.end();
 }
 
-bool Combine_Table::TestMomenta(const int i,const int j)
+Combine_Table *Combine_Table::CreateNext()
 {
-  // check if combined momenta are physical in their cms
-  Vec4D s1 = p_save_moms[i] - p_save_moms[j];
-  Vec4D s2 = p_save_moms[1-i];
-  Poincare test(s1+s2);
-  test.Boost(s1);
-  test.Boost(s2);
-  // do not check energies individually, but cms energy 
-  return (s1[0]+s2[0])>0.0;
-}
-
-Combine_Table *Combine_Table::CreateNext(bool did_boost)
-{
-  // check if boosted  (restore saved moms)
-  if (did_boost) { 
-    for (size_t i=0;i<m_nl;++i) p_moms[i]=p_save_moms[i]; 
-  }
-  delete [] p_save_moms;
   --m_nl;
   if (!m_cdata_winner->second.p_down) {
     Vec4D * amoms;
