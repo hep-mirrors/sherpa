@@ -438,18 +438,18 @@ bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 }
 
 double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
-			const Flavour &fi,const Flavour &fj)
+			const Flavour &fi,const Flavour &fj,const int mode)
 {
   if (fi.IsQuark() && fj.IsQuark() && fi!=fj.Bar()) return -1.0;
   Vec4D npi(pi), npj(pj);
   Flavour nfi(fi), nfj(fj);
   if (npi[0]<0.0) {
     npi=-pi-pj;
-    nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsGluon()?fj:fi);
+    if (mode==0) nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsGluon()?fj.Bar():fi);
   }
   else if (npj[0]<0.0) {
     npj=-pj-pi;
-    nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsGluon()?fi:fj);
+    if (mode==0) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsGluon()?fi.Bar():fj);
   }
   double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
   double mti(sqr(Flavour(nfi).Mass())), mtj(sqr(Flavour(nfj).Mass()));
@@ -462,7 +462,7 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   }
   double Cij(nfj.IsGluon()?Max(0.0,pipk/(pipj+pjpk)-mti):1.0);
   double Cji(nfi.IsGluon()?Max(0.0,pjpk/(pipj+pipk)-mtj):1.0);
-  return 4.0*pipj/(Cij+Cji);
+  return 4.0*dabs(pi*pj)/(Cij+Cji);
 }
 
 bool Jet_Finder::ColorConnected(const size_t &i,const size_t &j) const

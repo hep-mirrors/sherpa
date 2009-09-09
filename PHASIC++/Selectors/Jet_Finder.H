@@ -66,7 +66,8 @@ namespace PHASIC {
     double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		const ATOOLS::Vec4D &pk,
 		const ATOOLS::Flavour &fi=ATOOLS::Flavour(kf_none),
-		const ATOOLS::Flavour &fj=ATOOLS::Flavour(kf_none));
+		const ATOOLS::Flavour &fj=ATOOLS::Flavour(kf_none),
+		const int mode=0);
 
     void   BuildCuts(Cut_Data *cuts);
     void   UpdateCuts(double,double,Cut_Data *cuts);
