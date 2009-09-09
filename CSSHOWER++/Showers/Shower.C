@@ -210,7 +210,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       if (kt2win<(*splitter)->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
-	continue;
+	return true;
       }
       if (kt2win>(*splitter)->KtPrev()) {
 	(*splitter)->SetStart(kt2win);
