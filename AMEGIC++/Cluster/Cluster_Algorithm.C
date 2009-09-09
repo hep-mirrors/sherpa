@@ -98,8 +98,8 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
 	fl=p_proc->Flavours()[1-i];
       }
       legs[k][i].SetMapFlavour(fl);
-      // 	msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
-      // 		       <<p_proc->InSwaped()<<"\n";
+      msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
+		     <<p_proc->Integrator()->InSwaped()<<"\n";
     }
   }
   return legs;
