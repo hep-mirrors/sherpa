@@ -429,7 +429,7 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
   }
   while (ampl->Prev()) {
     ampl=ampl->Prev();
-    // kt2cmin=Max(kt2cmin,ampl->KT2QCD());
+    kt2cmin=Max(kt2cmin,ampl->KT2QCD());
   }
   ampl->Delete();
   m_scale[stp::ren]=m_scale[stp::fac]=kt2cmin;

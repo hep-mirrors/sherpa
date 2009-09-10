@@ -579,6 +579,7 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
     std::map<size_t,Cluster_Leg*> legs;
     Cluster_Amplitude *ref(ampl);
     while (ref->Next()) ref=ref->Next();
+#ifdef REWEIGHT_METS_XPDF
     double muf2(ref->MuF2());
     if (!IsEqual(muf2,ref->KT2QCD(),1.0e-3)) {
       if (p_isr->PDF(0)) p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
@@ -601,6 +602,7 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
 	cref->SetMuF2(muf2);
       }
     }
+#endif
     for (size_t i(0);i<ref->Legs().size();++i) {
       legs[ref->Leg(i)->Id()]=ref->Leg(i);
     }
