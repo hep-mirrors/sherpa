@@ -175,18 +175,18 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
     if (split->On())
-      m_sifmap[split->GetFlavourB()]
+      m_sifmap[split->GetFlavourA()]
 	[split->GetFlavourC()]
-	[split->GetFlavourA()]=split;
+	[split->GetFlavourB()]=split;
     break;
   case cstp::II:
     m_iimap[split->GetFlavourA().Bar()]
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
     if (split->On())
-      m_siimap[split->GetFlavourB()]
+      m_siimap[split->GetFlavourA()]
 	[split->GetFlavourC()]
-	[split->GetFlavourA()]=split;
+	[split->GetFlavourB()]=split;
     break;
   case cstp::none: break;
   }
