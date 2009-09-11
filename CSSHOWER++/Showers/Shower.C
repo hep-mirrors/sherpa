@@ -213,7 +213,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	return true;
       }
       if (kt2win>(*splitter)->KtPrev()) {
-	(*splitter)->SetStart(kt2win);
 	msg_Debugging()<<"... Veto split ...\n\n";
 	continue;
       }
@@ -449,11 +448,12 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
   double kt2(0.),z(0.),y(0.),phi(0.);
   if (split->KtTest()!=0.0 &&
       split->KtTest()<split->KtNext()) return false;
+  while (true) {
   if (m_sudakov.Dice(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-    if (kt2>kt2old) {
+    if (kt2>kt2old || kt2>split->KtPrev()) {
       if (kt2>split->KtNext()) split->SetStart(kt2);
-      return false;
+      continue;
     }
     if (kt2>kt2win) {
       kt2win  = kt2;
@@ -463,6 +463,8 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
       split->SetTest(kt2,z,y,phi);
       return true;
     }
+  }
+  return false;
   }
   return false;
 }
