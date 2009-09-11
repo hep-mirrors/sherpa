@@ -270,7 +270,7 @@ int Kinematics_IF::MakeKinematics
   double kt2 = split->KtTest(), z = split->ZTest(), y = split->YTest();
   double mk2 = p_ms->Mass2(spect->GetFlavour()), phi = split->Phi();
   double mi2 = p_ms->Mass2(fli), ma2 = p_ms->Mass2(fla);
-  double mai2 = p_ms->Mass2(split->GetFlavour()), Q2 = Q.Abs2();
+  double mai2 = p1.Abs2(), Q2 = Q.Abs2();
   
   //the massless & massive cases
   //fix the initial state parton momentum

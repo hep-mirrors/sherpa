@@ -457,6 +457,8 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   double bet=1.0-ma2*sik/(gam*gam), gamt=gam*xiika;
   Vec4D l=(-pa-ma2/gam*(pi+pk))/bet;
   Vec4D n=((pi+pk)+sik/gam*pa)/bet;
+  l[0]=l.PSpat();// improve num accuracy
+  n[0]=n.PSpat();// improve num accuracy
   l*=(1.0-sik/gam)/(1.0-mk2/gamt);
   n*=(1.0-ma2/gam)/(1.0-mai2/gamt);
   Vec4D pat=-l-mai2/gamt*n, pikt=n+mk2/gamt*l;
