@@ -451,7 +451,9 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
   while (true) {
   if (m_sudakov.Dice(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-    if (kt2>kt2old || kt2>split->KtPrev()) {
+    if (kt2>kt2old || 
+	(kt2>split->KtPrev() &&
+	 split->KtPrev()>split->KtNext())) {
       if (kt2>split->KtNext()) split->SetStart(kt2);
       continue;
     }
