@@ -94,7 +94,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   m_bwon=((key.m_type==cstp::FF || key.m_type==cstp::FI)
 	  && key.p_v->in[0].Width()) ||
     ((key.m_type==cstp::IF || key.m_type==cstp::II)
-     && key.p_v->in[1].Width());
+     && key.p_v->in[key.m_mode==0?1:2].Width());
   if (key.p_v->in[1].Mass()>10.0 &&
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&
@@ -124,36 +124,32 @@ double Splitting_Function_Base::BWFactor
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
     double mj2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double mk2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
-    return scale/
-      sqrt(sqr(y*(Q2-mk2)+(1.0-y)*(mi2+mj2)-mij2)
-	   +mij2*sqr(p_lf->FlA().Width()));
+    double sij=y*(Q2-mk2)+(1.0-y)*(mi2+mj2);
+    return sij/sqrt(sqr(sij-mij2)+mij2*sqr(p_lf->FlA().Width()));
   }
   case cstp::FI: {
     double mij2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
     double mj2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
-    return scale/
-      sqrt(sqr((y*(Q2+ma2)+(mi2+mj2))/(1.0-y)-mij2)
-	   +mij2*sqr(p_lf->FlA().Width()));
+    double sij=(y*(Q2+ma2)+(mi2+mj2))/(1.0-y);
+    return sij/sqrt(sqr(sij-mij2)+mij2*sqr(p_lf->FlA().Width()));
   }
   case cstp::IF: {
     double mai2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
     double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double mk2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
-    return scale/
-      sqrt(sqr((-y*(Q2+mk2)+(z-y)*(mi2+ma2))/z-mai2)
-	   +mai2*sqr(p_lf->FlB().Width()));
+    double sai=(-y*(Q2+mk2)+(z-y)*(mi2+ma2))/z;
+    return sai/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
   }
   case cstp::II: {
     double mai2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
     double ma2 = sqr(p_lf->MS()->Mass(p_lf->FlA()));
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double mb2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
-    return scale/
-      sqrt(sqr((-y*(Q2-mb2)+(z+y)*(mi2+ma2))/z-mai2)
-	   +mai2*sqr(p_lf->FlB().Width()));
+    double sai=(-y*(Q2-mb2)+(z+y)*(mi2+ma2))/z;
+    return sai/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
   }
   case cstp::none: break;
   }
