@@ -251,8 +251,7 @@ double METS_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momen
 		    // if resonance, reweight with breit-wigner
 		    double s((li->Mom()+lj->Mom()).Abs2());
 		    double m2(sqr(cf[f].Mass()));
-		    cs.m_op2*=cs.m_kt2/
-		      sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
+		    cs.m_op2*=s/sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
 		  }
 		  else {
 		    // if non-resonant, reweight with massive prop

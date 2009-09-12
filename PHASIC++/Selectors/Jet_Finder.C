@@ -440,7 +440,6 @@ bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 			const Flavour &fi,const Flavour &fj,const int mode)
 {
-  if (fi.IsQuark() && fj.IsQuark() && fi!=fj.Bar()) return -1.0;
   Vec4D npi(pi), npj(pj);
   Flavour nfi(fi), nfj(fj);
   if (npi[0]<0.0) {
@@ -451,6 +450,7 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
     npj=-pj-pi;
     if (mode==0) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsGluon()?fi.Bar():fj);
   }
+  if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
   double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
   double mti(sqr(Flavour(nfi).Mass())), mtj(sqr(Flavour(nfj).Mass()));
   if (pipj==0.0) {

@@ -165,7 +165,7 @@ int Kinematics_FI::MakeKinematics
   x=GetY(Q2,kt2,z,mi2,mj2,ma2);
   double sij=-((1.0-x)*(Q2-ma2)-(mi2+mj2))/x;
   double po=sqr(Q2-mij2-ma2)-4.0*mij2*ma2, pn=sqr(Q2-sij-ma2)-4.0*sij*ma2;
-  if (po<0.0^pn<0.0) {
+  if ((po<0.0)^(pn<0.0)) {
     msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
     return -1;
   }
@@ -340,8 +340,8 @@ int Kinematics_IF::MakeKinematics
     if (p_sud->HasKernel(spect->GetFlavour(),fli,cstp::FI) ||
 	p_sud->HasKernel(fli,spect->GetFlavour(),cstp::FI))
       jet&=p_jf->Qij2(q2,q3,-q1,spect->GetFlavour(),fli)>=split->KtVeto();
-    if (p_sud->HasKernel(split->GetFlavour(),spect->GetFlavour(),cstp::IF))
-      jet&=p_jf->Qij2(-q1,q2,q3,split->GetFlavour(),spect->GetFlavour(),1)>=split->KtVeto();
+    if (p_sud->HasKernel(fla,spect->GetFlavour(),cstp::IF))
+      jet&=p_jf->Qij2(-q1,q2,q3,fla.Bar(),spect->GetFlavour())>=split->KtVeto();
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
