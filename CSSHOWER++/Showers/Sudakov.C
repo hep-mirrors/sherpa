@@ -374,8 +374,9 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
   
   m_type=cstp::FI;
-  m_zmin   = Min(0.999,m_k0sq/Q2*x/(1.0-x));
-  m_zmax   = Min(0.999,m_k0sq/Q2*xmax/(1.0-xmax));
+  double deltaz(sqrt(1.-4.*(m_k0sq/Q2)));
+  m_zmin   = 0.5*(1.0-deltaz);
+  m_zmax   = 0.5*(1.0+deltaz);
   m_scale  = p_split->KtStart();
   if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {
     msg_Error()<<"Error in Sudakov::DefineFIBoundaries : "<<endl
