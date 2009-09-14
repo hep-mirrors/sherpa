@@ -146,8 +146,11 @@ CParam Cluster_Algorithm::GetMeasure
   else {
     Cluster_Leg *li(p_ampl->Leg(i)), *lj(p_ampl->Leg(j));
     double ckt2(0.0);
-    if (li->Flav().Strong() && lj->Flav().Strong() &&
-	p_ampl->Leg(k)->Flav().Strong() && mmofl.Strong())
+    if ((mmofl.Resummed() || mmofl.Strong()) &&
+	(li->Flav().Resummed() || li->Flav().Strong()) && 
+	(lj->Flav().Resummed() || lj->Flav().Strong()) && 
+	(p_ampl->Leg(k)->Flav().Resummed() || 
+	 p_ampl->Leg(k)->Flav().Strong()))
       ckt2=Max(li->Mom().MPerp2(),lj->Mom().MPerp2());
     else ckt2=dabs((li->Mom()+lj->Mom()).Abs2());
     kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2);
@@ -222,13 +225,12 @@ void Cluster_Algorithm::CalculateMeasures
 	if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
 	  if (ccurs[i]->CId()&2) continue;
 	  size_t idi(fcur->CId()), idj(ccurs[i]->CId());
-	  if (cinfo.find(Cluster_Key(idi,idj))==cinfo.end()) {
-	    msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
-			   <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
-			   <<(in[j]->JA()==ccurs[i]?in[j]->JB()->Flav():
-			      in[j]->JA()->Flav())<<" ["
-			   <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
-	    {
+	  msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
+			 <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
+			 <<(in[j]->JA()==ccurs[i]?in[j]->JB()->Flav():
+			    in[j]->JA()->Flav())<<" ["
+			 <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
+	  {
 	    msg_Indent();
 	    ColorID coli(p_ampl->Leg(cid.find(m_id[idi])->second)->Col());
 	    ColorID colj(p_ampl->Leg(cid.find(m_id[idj])->second)->Col());
@@ -249,9 +251,8 @@ void Cluster_Algorithm::CalculateMeasures
 					   in[j]->OrderQCD(),mofl)));
 	      }
 	    }
-	    }
-	    msg_Debugging()<<"}\n";
 	  }
+	  msg_Debugging()<<"}\n";
 	}
       }
     }
@@ -355,16 +356,24 @@ bool Cluster_Algorithm::ClusterStep
   nocl.insert(winfo.p_v);
   if (!CombineWinner(winfo.p_v,ccurs,fcur,cinfo)) return false;
   if (p_ampl->Legs().size()==4) {
-    for (size_t i(0);i<3;++i)
-      if (ccurs[i]->Cut()) {
-	Cluster_Amplitude *ampl(p_ampl);
-	do {
-	  for (size_t j(0);j<ampl->Legs().size();++j)
-	    if (ampl->Leg(j)->Stat()==3) return false;
-	  ampl=ampl->Prev();
-	} while (ampl);
+    if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
+    bool match(false);
+    const Vertex_Vector &in(fcur->In());
+    for (size_t i(0);i<in.size();++i) {
+      size_t ncm(0);
+      for (size_t j(0);j<ccurs.size();++j) {
+	if (ccurs[j]==in[i]->JA() ||
+	    ccurs[j]==in[i]->JB()) ++ncm;
+      }
+      if (ncm==2) {
+	match=true;
 	break;
       }
+    }
+    if (!match) {
+      msg_Debugging()<<"Invalid core\n";
+      return false;
+    }
   }
   Vec4D_Vector p;
   if (p_ampl->Legs().size()>4) {

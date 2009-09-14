@@ -141,7 +141,7 @@ double Splitting_Function_Base::BWFactor
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double mk2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
     double sai=(-y*(Q2+mk2)+(z-y)*(mi2+ma2))/z;
-    return sai/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
+    return dabs(sai)/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
   }
   case cstp::II: {
     double mai2 = sqr(p_lf->MS()->Mass(p_lf->FlB()));
@@ -149,7 +149,7 @@ double Splitting_Function_Base::BWFactor
     double mi2 = sqr(p_lf->MS()->Mass(p_lf->FlC()));
     double mb2 = sqr(p_lf->MS()->Mass(p_lf->FlSpec()));
     double sai=(-y*(Q2-mb2)+(z+y)*(mi2+ma2))/z;
-    return sai/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
+    return dabs(sai)/sqrt(sqr(sai-mai2)+mai2*sqr(p_lf->FlB().Width()));
   }
   case cstp::none: break;
   }

@@ -190,7 +190,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   while (mustshower) {
     kt2win = 0.;
     splitter = SelectSplitting(kt2win,kt2old);
-    kt2old=kt2win;
     //no shower anymore 
     if (splitter==p_actual->end()) return true;
     else {
@@ -200,21 +199,30 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 		     <<sqrt((*splitter)->KtPrev())<<" ), z = "<<(*splitter)->ZTest()<<", y = "
 		     <<(*splitter)->YTest()<<" for\n"<<**splitter
 		     <<*(*splitter)->GetSpect()<<"\n";
-      if ((*splitter)->GetSing()->GetLeft()) {
-	if ((*splitter)->GetType()==pst::IS) {
-	  if (m_flavA!=(*splitter)->GetFlavour()) continue;
-	}
-	else {
-	  if (m_flavB!=(*splitter)->GetFlavour()) continue;
-	}
-      }
       if (kt2win<(*splitter)->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
 	return true;
       }
-      if (kt2win>(*splitter)->KtPrev()) {
+      if (kt2win>Min(kt2old,(*splitter)->KtPrev())) {
+	(*splitter)->SetStart(kt2win);
 	msg_Debugging()<<"... Veto split ...\n\n";
 	continue;
+      }
+      if ((*splitter)->GetSing()->GetLeft()) {
+	if ((*splitter)->GetType()==pst::IS) {
+	  if (m_flavA!=(*splitter)->GetFlavour()) {
+	    msg_Debugging()<<"... Veto flavour change ...\n\n";
+	    (*splitter)->SetStart(kt2win);
+	    continue;
+	  }
+	}
+	else {
+	  if (m_flavB!=(*splitter)->GetFlavour()) {
+	    msg_Debugging()<<"... Veto flavour change ...\n\n";
+	    (*splitter)->SetStart(kt2win);
+	    continue;
+	  }
+	}
       }
       Vec4D splitorig((*splitter)->Momentum()), spectorig((*splitter)->GetSpect()->Momentum());
       //the FF case 
@@ -428,6 +436,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       else abort();
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (++nem>=maxem) return true;
+      kt2old=kt2win;
     }
     //cout<<"-----------------------------------------------------------"<<endl<<(*p_actual);
   }
@@ -451,8 +460,7 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
   while (true) {
   if (m_sudakov.Dice(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-    if (kt2>split->KtNext() &&
-	kt2>Min(kt2old,split->KtPrev())) {
+    if (kt2>split->KtNext() && kt2>split->KtPrev()) {
       split->SetStart(kt2);
       continue;
     }

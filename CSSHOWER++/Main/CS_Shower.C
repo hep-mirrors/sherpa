@@ -607,10 +607,19 @@ double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl)
       legs[ref->Leg(i)->Id()]=ref->Leg(i);
     }
     if (ref->OrderQCD()) {
-      msg_Debugging()<<"core => mu = "<<sqrt(ref->MuF2())<<" {\n";
+      double cf((ref->Leg(0)->Flav().Strong()||
+		 ref->Leg(ref->NIn()-1)->Flav().Strong())?
+		((ref->Leg(ref->NIn())->Flav().Strong()||
+		  ref->Leg(ref->NIn()+1)->Flav().Strong())?
+		 sqrt(p_shower->GetSudakov()->ISCplFac()*
+		      p_shower->GetSudakov()->FSCplFac()):
+		 p_shower->GetSudakov()->ISCplFac()):
+		p_shower->GetSudakov()->FSCplFac());
+      msg_Debugging()<<"core => mu = "<<sqrt(cf)
+		     <<"*"<<sqrt(ref->MuF2())<<" {\n";
       {
 	msg_Indent();
-	wgt*=CouplingWeight(ref->OrderQCD(),ref->MuF2(),ref->MuR2());
+	wgt*=CouplingWeight(ref->OrderQCD(),cf*ref->MuF2(),ref->MuR2());
       }
       msg_Debugging()<<"}\n";
     }
@@ -678,13 +687,19 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2QCD();
     for (size_t i(0);i<next->Legs().size();++i)
       if (next->Leg(i)->K()) {
-	return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2QCD());
+	if (!next->Leg(i)->Flav().Resummed())
+	  return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2QCD());
       }
-    // this should catch the partonic hadron decays
-    if (ampl->NIn()==1) return (ampl->Leg(0)->Mom()).Abs2();
-    THROW(fatal_error,"Invalid amplitude");
+    return ampl->MuF2();
   }
-  double xf(m_dmode?ampl->X1()*ampl->X2():1.0);
+  double xf(1.0);
+  if (m_dmode) {
+    if ((!ampl->Leg(0)->Flav().Resummed()^
+	 !ampl->Leg(1)->Flav().Resummed()) &&
+	(!ampl->Leg(2)->Flav().Resummed()^
+	 !ampl->Leg(3)->Flav().Resummed())) 
+    xf=ampl->X1()*ampl->X2();
+  }
   return ampl->MuF2()/xf;
 }
 

@@ -67,7 +67,21 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetKT2QCD(muf2);
+  double kt2(0.0);
+  if (p_ampl->Leg(0)->Flav().Resummed() && 
+      p_ampl->Leg(1)->Flav().Resummed() &&
+      p_ampl->Leg(2)->Flav().Resummed() &&
+      p_ampl->Leg(3)->Flav().Resummed()) {
+    kt2=Max(moms[2].MPerp2(),moms[3].MPerp2());
+  }
+  else {
+    int sintt(xs->GetME()->SIntType());
+    kt2=std::numeric_limits<double>::max();
+    if (sintt&1) kt2=Min(kt2,(moms[0]+moms[1]).Abs2());
+    if (sintt&2) kt2=Min(kt2,dabs((moms[0]-moms[2]).Abs2()));
+    if (sintt&4) kt2=Min(kt2,dabs((moms[0]-moms[3]).Abs2()));
+  }
+  p_ampl->SetKT2QCD(kt2);
   p_ampl->SetX1(xs->Integrator()->ISR()->X1());
   p_ampl->SetX2(xs->Integrator()->ISR()->X2());
   p_ampl->SetOrderEW(xs->OrderEW());
