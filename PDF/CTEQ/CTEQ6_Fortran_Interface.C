@@ -38,6 +38,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (m_set==std::string("cteq6d"))  iset = 2;
   if (m_set==std::string("cteq6l"))  iset = 3;
   if (m_set==std::string("cteq6l1")) iset = 4;
+  if (iset==1 && m_member>=0 && m_member<=40) iset=100+m_member;
   
   char buffer[1024];
   char * err = getcwd(buffer,1024);
@@ -45,6 +46,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
   }
   int stat=chdir(m_path.c_str());
+  if (iset>100) msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
   ctq6initset_(iset);
   if (stat==0) {
     stat=chdir(buffer);
@@ -146,7 +148,7 @@ PDF_Base *CTEQ6_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
+  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   return new CTEQ6_Fortran_Interface(args.m_bunch,m_key,mode,args.m_path);
 }
 

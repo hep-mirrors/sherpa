@@ -45,6 +45,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
+    if (m_member!=0) msg_Info()<<METHOD<<"(): Init member "<<m_member<<"."<<std::endl;
 #ifdef LHAPDF__NATIVE__WRAPPER
     LHAPDF::initPDFByName(m_set, m_member);
 #else
@@ -148,7 +149,7 @@ PDF_Base *LHAPDF_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
+  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   return new LHAPDF_Fortran_Interface(args.m_bunch,m_key,mode);
 }
 
