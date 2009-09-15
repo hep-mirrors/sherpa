@@ -234,8 +234,9 @@ double METS_Scale_Setter::CalculateStrict(const Vec4D_Vector &momenta)
 double METS_Scale_Setter::CalculateScale2(const Vec4D_Vector &momenta) 
 {
   if (m_mode==2 || (m_mode==1 && !p_proc->LookUp())) {
+    p_proc->Integrator()->SetMomenta(momenta);
     p_proc->Integrator()->SwapInOrder();
-    double muf2(CalculateScale(momenta));
+    double muf2(CalculateScale(p_proc->Integrator()->Momenta()));
     p_proc->Integrator()->RestoreInOrder();
     return muf2;
   }
