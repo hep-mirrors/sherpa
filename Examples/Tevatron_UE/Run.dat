@@ -14,7 +14,7 @@
 }(processes)
 
 (selector){
-  NJetFinder  2  2.25  0.0  1.0
+  NJetFinder  2  2.45  0.0  1.0
 }(selector)
 
 (model){
@@ -29,5 +29,5 @@
 
 (mi){
   MI_HANDLER = Amisic
-  SCALE_MIN = 2.25;
+  SCALE_MIN = 2.45;
 }(mi)
