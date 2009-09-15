@@ -38,7 +38,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (m_set==std::string("cteq6d"))  iset = 2;
   if (m_set==std::string("cteq6l"))  iset = 3;
   if (m_set==std::string("cteq6l1")) iset = 4;
-  if (iset==1 && m_member>=0 && m_member<=40) iset=100+m_member;
+  if (iset==1 && m_member>0 && m_member<=40) iset=100+m_member;
   
   char buffer[1024];
   char * err = getcwd(buffer,1024);
