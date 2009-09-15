@@ -24,6 +24,7 @@ namespace SHERPA {
   class Signal_Process_FS_QED_Correction: public Event_Phase_Handler {
   private :
     bool                      m_on;
+    bool                      m_qed;
     MEHandlersMap           * p_mehandlers;
     Soft_Photon_Handler     * p_sphotons;
 

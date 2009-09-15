@@ -159,6 +159,7 @@ void Initialization_Handler::SetFileNames()
   rpa.gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   rpa.gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
+  rpa.gen.SetVariable("FRAGMENTATION_DATA_FILE",m_fragmentationdat);
 }
 
 

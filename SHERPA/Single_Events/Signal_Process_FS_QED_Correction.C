@@ -28,6 +28,7 @@ using namespace std;
 
 Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
 (MEHandlersMap *_mehandlers, Soft_Photon_Handler *_sphotons) :
+  m_on(true), m_qed(true),
   p_mehandlers(_mehandlers), p_sphotons(_sphotons)
 {
   m_name      = string("Lepton_FS_QED_Corrections:");
@@ -37,11 +38,21 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
   reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
-  std::string on = reader.GetValue<std::string>("ME_QED","On");
-  m_on = (on=="On")?true:false;
+  std::string qed = reader.GetValue<std::string>("ME_QED","On");
+  m_qed = (qed=="On")?true:false;
+  // look whether there is any hadronisation following
+  // if not, do not even put them on-shell -> switch everthing off
+  if (!m_qed) {
+    Data_Reader reader1(" ",";","!","=");
+    reader1.AddComment("#");
+    reader1.AddWordSeparator("\t");
+    reader1.SetInputFile(rpa.gen.Variable("FRAGMENTATION_DATA_FILE"));
+    std::string on = reader1.GetValue<std::string>("FRAGMENTATION","");
+    m_on = (on!="Off")?true:false;
+  }
 
-  if (p_mehandlers->size()>1) {
-    m_on = false;
+  if (m_on && p_mehandlers->size()>1) {
+    m_qed = false;
     msg_Error()<<METHOD<<"() {\n"
                <<"  there are "<<p_mehandlers->size()<<" ME Handlers present ...\n"
                <<"  do not know how to continue ...\n"
@@ -50,7 +61,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   }
 
   Process_Vector pvec(p_mehandlers->begin()->second->AllProcesses());
-  if (m_on) {
+  if (m_qed) {
     m_name += p_sphotons->SoftQEDGenerator();
     msg_Debugging()<<METHOD<<"(){\n";
     for (size_t i=0;i<pvec.size();++i) {
@@ -76,6 +87,8 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
 Return_Value::code Signal_Process_FS_QED_Correction::Treat
 (Blob_List * bloblist, double & weight)
 {
+  PRINT_VAR(m_on);  PRINT_VAR(m_qed);
+  exit(0);
   if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
@@ -124,7 +137,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     return Return_Value::New_Event;
   }
   // if switched off or no need for QED stop here and build a blob
-  if (!m_on || !sigblob->Has(blob_status::needs_extraQED)) {
+  if (!m_qed || !sigblob->Has(blob_status::needs_extraQED)) {
     Blob * onshellblob = bloblist->AddBlob(btp::QED_Radiation);
     onshellblob->SetTypeSpec("setting leptons on-shell");
     if (sigblob->Has(blob_status::needs_extraQED))
