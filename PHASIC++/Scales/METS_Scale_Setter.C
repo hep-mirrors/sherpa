@@ -219,11 +219,8 @@ double METS_Scale_Setter::CalculateStrict(const Vec4D_Vector &momenta)
     }
     return SetScales((m_p[0]+m_p[1]).Abs2());
   }
+  while (ampl->Next()) ampl=ampl->Next();
   double kt2max(ampl->KT2QCD());
-  while (ampl->Next()) {
-    ampl=ampl->Next();
-    kt2max=Max(kt2max,ampl->KT2QCD());
-  }
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
   m_p.resize(ampl->Legs().size());
   for (size_t i(0);i<m_p.size();++i)
@@ -502,10 +499,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       }
     }
   }
-  while (ampl->Prev()) {
-    ampl=ampl->Prev();
-    kt2cmin=Max(kt2cmin,ampl->KT2QCD());
-  }
+  while (ampl->Prev()) ampl=ampl->Prev();
   ampl->Delete();
   return SetScales(kt2cmin);
 }
