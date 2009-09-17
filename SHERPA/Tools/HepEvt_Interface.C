@@ -572,15 +572,21 @@ void HepEvt_Interface::EstablishRelations(Blob * const _blob) {
 void HepEvt_Interface::EstablishRelationsModified(Blob * const _blob) {
   int mothers[2];
   int daughters[2];
+  int incoming[2];
   mothers[0]=mothers[1]=0;
   for(int i=0, ii=0; i<_blob->NInP(); ++i) {
     if(_blob->InParticle(i)->Info()=='I') {
       assert(ii<2); mothers[ii]=m_convertS2H[_blob->InParticle(i)]; ++ii;}
   }
+  incoming[0]=incoming[1]=0;
   if(_blob->NOutP()>0) {
     int outn(0);
-    while(outn<_blob->NOutP() && _blob->OutParticle(outn)->Info()=='G') ++outn;
+    while(outn<_blob->NOutP() && _blob->OutParticle(outn)->Info()=='G') {
+      if(outn==0) incoming[0]=m_convertS2H[_blob->OutParticle(0)];
+      ++outn;
+    }
     if(outn<_blob->NOutP()) {
+      if(outn>0) incoming[1]=m_convertS2H[_blob->OutParticle(outn-1)];
       daughters[0]=m_convertS2H[_blob->OutParticle(outn)];
       if(_blob->NOutP()>outn+1)
 	daughters[1]=m_convertS2H[_blob->OutParticle(_blob->NOutP()-1)];
@@ -591,11 +597,11 @@ void HepEvt_Interface::EstablishRelationsModified(Blob * const _blob) {
   else daughters[0]=daughters[1]=0;
 
   if(mothers[0]) {
-    p_jdahep[2*mothers[0]]   = daughters[0]+1;
-    p_jdahep[2*mothers[0]+1] = daughters[1]+1;}
+    p_jdahep[2*mothers[0]]   = incoming[0]+1;  //daughters[0]+1;
+    p_jdahep[2*mothers[0]+1] = incoming[1]+1;} //daughters[1]+1;}
   if(mothers[1]) {
-    p_jdahep[2*mothers[1]]   = daughters[0]+1;
-    p_jdahep[2*mothers[1]+1] = daughters[1]+1;}
+    p_jdahep[2*mothers[1]]   = incoming[0]+1;  //daughters[0]+1;
+    p_jdahep[2*mothers[1]+1] = incoming[1]+1;} //daughters[1]+1;}
   if(_blob->NInP()>0) {
     for(int i=0; i<_blob->NInP(); ++i) {
       if(_blob->InParticle(i)->Info()!='I') {
