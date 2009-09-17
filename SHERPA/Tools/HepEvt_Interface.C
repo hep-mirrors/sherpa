@@ -211,7 +211,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
     }
     else THROW(fatal_error,"No weight information.");
     
-    Blob_Data_Base *facscale((*signal)[/*"Factorisation_Scale"*/"MI_Scale"]);//!
+    Blob_Data_Base *facscale((*signal)["Factorisation_Scale"/*"MI_Scale"*/]);//!
     if (facscale) {
       SetQ2(facscale->Get<double>());
     }

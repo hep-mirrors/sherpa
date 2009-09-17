@@ -1,6 +1,7 @@
 #include "SHERPA/Single_Events/Signal_Processes.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -81,6 +82,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
   blob->AddData("Enhance",new Blob_Data<double>
 		(p_mehandler->Process()->Integrator()->EnhanceFactor()));
+  blob->AddData("Factorisation_Scale",new Blob_Data<double>
+		(proc->ScaleSetter()->Scale(PHASIC::stp::fac)));
+  blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
+  blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
+
+  //PRINT_INFO(winfo.m_weight<<"  "<<
+  //           proc->ScaleSetter()->Scale(PHASIC::stp::fac));
+  //PRINT_INFO(proc->ScaleSetter()->Scale(PHASIC::stp::ren));
 
   PHASIC::NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(nlos));
