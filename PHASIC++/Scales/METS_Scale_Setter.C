@@ -115,7 +115,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"LOOSE_METS",
+DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *Loose_METS_Scale_Setter_Getter::
@@ -130,13 +130,13 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"loose mets scale scheme\n";
 }
 
-DECLARE_GETTER(METS_Scale_Setter_Getter,"METS",
+DECLARE_GETTER(METS_Scale_Setter_Getter,"SEMI_STRICT_METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args.p_proc,args.m_scale);
+  return new METS_Scale_Setter(args.p_proc,args.m_scale,1);
 }
 
 void METS_Scale_Setter_Getter::
