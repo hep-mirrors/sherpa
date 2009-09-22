@@ -152,7 +152,7 @@ bool Simple_Chain::ReadInData()
     if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) 
       m_regulator="QCD_Trivial";
     if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
-      m_regulation=std::vector<double>(1,2.225);
+      m_regulation=std::vector<double>(1,2.45);
     double exponent, scale;
     if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.25;
     if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
@@ -361,8 +361,8 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
-  double stop(2.225), exponent, scale;
-  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.225;
+  double stop(2.45), exponent, scale;
+  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.45;
   if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.25;
   if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
   stop*=pow(m_ecms/scale,exponent);
