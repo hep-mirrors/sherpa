@@ -102,6 +102,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ANALYSIS/Detector/Makefile \
 	  ANALYSIS/Observables/Makefile \
 	  SHERPA/Tools/Makefile \
+	  SHERPA/LundTools/pythia6214.f \
 	  SHERPA/LundTools/Makefile \
 	  SHERPA/Initialization/Makefile \
 	  SHERPA/PerturbativePhysics/Makefile \

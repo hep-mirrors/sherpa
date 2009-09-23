@@ -519,6 +519,25 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   AM_CONDITIONAL(PYTHIA_SUPPORT, test "$pythia" = "true")
 
+  AC_ARG_ENABLE(
+    hepevtsize,
+    AC_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE], [HEPEVT common block size @<:@default=10000@:>@]),
+    [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
+      echo HEPEVT size=$enableval
+      if test ${enableval} -gt 0 2>/dev/null ; then
+         HEPEVT_CB_SIZE=${enableval}
+      	 AC_MSG_RESULT(${HEPEVT_CB_SIZE})
+      fi
+    ],
+    [ HEPEVT_CB_SIZE=10000 ]
+  )
+  if test "x$HEPEVT_CB_SIZE" = "xno" ; then
+        exit 1
+  else
+  	AC_DEFINE_UNQUOTED(HEPEVT_CB_SIZE, ${HEPEVT_CB_SIZE} , [HEPEVT common block size])
+  fi
+  AC_SUBST(HEPEVT_CB_SIZE)
+
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
     [ AC_MSG_CHECKING(whether to include AMISIC headers);

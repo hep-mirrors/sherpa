@@ -41,6 +41,9 @@
 /* using Pythia */
 #undef USING__PYTHIA
 
+/* HEPEVT common block size */
+#undef HEPEVT_CB_SIZE
+
 /* using AHADIC */
 #undef USING__Ahadic
 

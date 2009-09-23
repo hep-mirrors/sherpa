@@ -5,6 +5,7 @@
 #include "Lund_Interface.H"
 #include "ISR_Handler.H"
 #include "Exception.H"
+#include "CXXFLAGS.H"
 #include <cstring>
 
 using namespace SHERPA;
@@ -118,7 +119,7 @@ const int nmaxpart  = 500;
 const int nmaxdecay = 8000;
 const int nmaxpup   = 100;
 
-const int nmxhep    = 10000;
+const int nmxhep    = HEPEVT_CB_SIZE;
 
 extern "C" {
 extern struct {
