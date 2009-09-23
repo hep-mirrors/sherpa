@@ -153,6 +153,7 @@ void Amplitude_Generator::Print_P(Point* p)
     msg_Out()<<"  "<<p->fl<<"("<<p->b<<")"<<endl;
     return;
   }
+  if (p->cpl.size()>1) msg_Out()<<"cpl: "<<p->cpl[0]<<" "<<p->cpl[1]<<"\n";
   msg_Indent();
   msg_Out()<<"left : \n";
   Print_P(p->left);
@@ -1657,7 +1658,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
 	SetProps(single_top->p[j],2*N-3,first_amp,perm,j,count);
 	
-// 	Print_P(&single_top->p[j][0]);
+//  	Print_P(&single_top->p[j][0]);
       }
     }     
     for (j=nloop-1;j>=0;j--) {
@@ -1709,8 +1710,6 @@ Single_Amplitude* Amplitude_Generator::Matching()
     MPI::COMM_WORLD.Send(&dummy,1,MPI::INT, 0,43);
   }
 #endif
-
-  Amplitude_Manipulator(N,fl,b).FixSign(first_amp);
 
   Single_Amplitude*  f1 = first_amp;
   while (f1) { 

@@ -94,6 +94,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   if (ndecays==0 || subgraphlist[0]==0) firstgraph = subgraphlist[0];
   else ConstructSignalAmplitudes(N,fl,b,pinfo,subgraphlist,BS);
 
+  Amplitude_Manipulator(N,fl,b,ndecays).FixSign(firstgraph);
+
   Single_Amplitude* n = firstgraph;
   Single_Amplitude* prev = firstgraph;
   ntotal = 0;
@@ -143,8 +145,6 @@ void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
     if (over) break;
   }
   
-  Amplitude_Manipulator(N,fl,b,ndecays).FixSign(firstgraph);
-
   delete [] nl;
   for (int i=0;i<ndecays+1;i++) {
     n = sglist[i];
@@ -249,7 +249,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   if (msg_LevelIsTracking()) {
     PrintGraph();
-//     BS->PrintMomlist();
+    // BS->PrintMomlist();
   }
   if (m_print_graph) {
     Amplitude_Output ao(pID,top);
