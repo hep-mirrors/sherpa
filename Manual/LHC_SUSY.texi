@@ -22,6 +22,14 @@ the run card, using the parameter @code{MODEL}, see
 @item the necessary SUSY Les Houches Accord input file containing all parameters
 is set by @code{SLHA_INPUT}, see @ref{MSSM}.
 
+@item the process is specified with up to one extra parton in the production 
+subprocess, see @ref{Curly brackets}.
+
+@item the multi-jet merging parameter @ref{CKKW} is set
+using an algebraic expression, see @ref{Merging ME and PS}.
+
+@item the tag @code{DecayOS} is used to specify the decays. See @ref{DecayOS}.
+
 @item the matrix element generator AMEGIC++ is used
 for this set-up, see @ref{Running Sherpa with AMEGIC++}.
 @end itemize
