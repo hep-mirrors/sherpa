@@ -10,7 +10,7 @@
 
 (processes){
   %
-  % jet jet -> snu_2[-> snu_3 mu tau] smuon_L[-> snu_3 tau neutrino] + 0-1 jets
+  % jet jet -> snu_2[-> chi^0_1 mu neutrino] smuon_L[-> chi^0_1 muon] + 0-1 jets
   % 
   Process 93 93 -> 1000014[a] -1000013[b] 93{1};
     DecayOS 1000014[a] -> 1000022 14;
