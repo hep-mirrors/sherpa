@@ -218,17 +218,9 @@ int Vertex::FermionRule(Single_Vertex& probe)
   if (probe.in[2].IsFermion() &&  probe.in[2].IsAnti() && !probe.in[2].Majorana()) hit = 0;
   
   //FNV chargino interactions
-  if (hit==0) {
-    if (probe.in[1].IsFermion() && probe.in[2].IsFermion() &&
-	!probe.in[1].Majorana() && !probe.in[2].Majorana()) {
-      if (probe.in[1].IsAnti() && probe.in[2].IsAnti()) {
-	if (probe.in[1].IsChargino() || probe.in[2].IsChargino()) hit=1;
-      }
-      if (!probe.in[1].IsAnti() && !probe.in[2].IsAnti()) { 
-      if (probe.in[1].IsChargino() || probe.in[2].IsChargino()) hit=1;
-      }
-    }
-  }
+  if (hit==0) 
+    if (probe.in[0].IsIno() || probe.in[1].IsIno() || probe.in[2].IsIno()) hit=1;
+  
   return hit;
 }
 
