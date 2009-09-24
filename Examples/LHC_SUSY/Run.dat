@@ -13,8 +13,8 @@
   % jet jet -> snu_2[-> snu_3 mu tau] smuon_L[-> snu_3 tau neutrino] + 0-1 jets
   % 
   Process 93 93 -> 1000014[a] -1000013[b] 93{1};
-    DecayOS 1000014[a] -> 1000016 13 -15;
-    DecayOS -1000013[b] -> 1000016 -15 91;
+    DecayOS 1000014[a] -> 1000022 14;
+    DecayOS -1000013[b] -> 1000022 -13;
   Order_EW 2;
   CKKW sqr(30/E_CMS);
   Print_Graphs 1;
