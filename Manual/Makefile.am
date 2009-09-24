@@ -28,6 +28,7 @@ Sherpa_TEXINFOS = \
 	LHC_4thGen.texi \
 	LHC_ADD.texi \
 	LHC_AGC.texi \
+	LHC_SUSY.texi \
 	LHC_TopPair.texi \
 	LHC_ZJets.texi \
 	Macros.texi \

@@ -22,6 +22,7 @@ of the main features of these examples.
 * LHC_4thGen::                
 * LHC_AGC::                   
 * LHC_ADD::
+* LHC_SUSY::
 * NLO_W::
 @end menu
 
@@ -39,6 +40,7 @@ of the main features of these examples.
 @include LHC_4thGen.texi
 @include LHC_AGC.texi
 @include LHC_ADD.texi
+@include LHC_SUSY.texi
 @include W_NLO.texi
 
 
