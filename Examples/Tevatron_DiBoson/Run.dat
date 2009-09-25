@@ -10,9 +10,14 @@
 (processes){
  Process : 93 93 ->  12 -11 13 -14 93{2}
   Order_EW : 4
-  CKKW sqr(15/E_CMS)
+  CKKW sqr(30/E_CMS)
   End process
 }(processes)
+
+(selector){
+  Mass -11 12 10 E_CMS
+  Mass 13 -14 10 E_CMS
+}(selector)
 
 (model){
   # set quark masses consistent with default PDF cteq6l
