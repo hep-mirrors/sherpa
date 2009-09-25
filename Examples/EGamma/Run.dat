@@ -27,7 +27,7 @@
 }(processes)
 
 (selector){
-  JetFinder   4.e-3  1.
+  NJetFinder  2  0.  1. .4
   ET         11       1.   10000.
   ET          1       1.   10000.
   ET         -1       1.   10000.
