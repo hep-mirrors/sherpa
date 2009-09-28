@@ -14,6 +14,11 @@
   End process
 }(processes)
 
+(selector){
+  Mass -11 12 10 E_CMS
+  Mass 13 -14 10 E_CMS
+}(selector)
+
 (model){
   # set quark masses consistent with default PDF cteq6l
   MASS[1] = 0; MASS[2] = 0; MASS[3] = 0
