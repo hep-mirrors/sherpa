@@ -46,12 +46,6 @@
   Mass 11 -12 1.7 E_CMS
 }(selector)
 
-(model){
-  # set quark masses consistent with default PDF cteq6l
-  MASS[1] = 0; MASS[2] = 0; MASS[3] = 0
-  MASS[4] = 1.3; MASS[5] = 4.5
-}(model)
-
 (me){
   ME_SIGNAL_GENERATOR = Internal Comix
   EVENT_GENERATION_MODE = Weighted

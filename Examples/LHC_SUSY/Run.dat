@@ -23,9 +23,6 @@
 
 (model){
   MODEL = MSSM;
-  # set quark masses consistent with default PDF cteq6l
-  MASS[1] = 0; MASS[2] = 0; MASS[3] = 0.3;
-  MASS[4] = 1.3; MASS[5] = 4.5;
   # SUSY spectrum input file
   SLHA_INPUT = LesHouches_SPS1A.dat;
 }(model);
