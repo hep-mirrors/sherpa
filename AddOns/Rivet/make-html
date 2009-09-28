@@ -86,6 +86,7 @@ for aidafile in aidafiles:
 ## run compare-histos to get plain .dat files from .aida
 ch_cmd = ["compare-histos"]
 ch_cmd.append("--mc-errs")
+ch_cmd.append("--plot-info-dir=../")
 if len(aidafiles)+len(reffiles)<2:
     ch_cmd.append("--show-ref-only")
     ch_cmd.append("--no-ratio")
