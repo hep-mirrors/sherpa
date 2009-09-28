@@ -46,6 +46,9 @@ basic libraries
 PDFs, Decaydata, fallback run cards
 @end table
 
+The installation directory @code{$(prefix)} can be specified by using the
+@code{./configure --prefix /path/to/installation/target} directive and defaults
+to the current working directory.
 
 If Sherpa has to be moved to a different directory after the installation,
 one has to set the following environment variables for each run:
