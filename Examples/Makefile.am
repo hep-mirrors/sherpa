@@ -8,7 +8,7 @@ nobase_dist_examples_DATA         =	\
                         LHC_ADD/Run.dat \
 			LHC_SUSY/Run.dat \
 			LHC_SUSY/LesHouches_SPS1A.dat \
-			LHC_TopPair/Run.dat \
+			LHC_TTH/Run.dat \
 			LHC_ZJets/Run.dat \
 			PEPII_BaBar/Run.dat \
 			Tevatron_DiBoson/Run.dat \

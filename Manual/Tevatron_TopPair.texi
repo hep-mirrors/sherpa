@@ -1,10 +1,13 @@
 @node Tevatron_TopPair
 @section Tevatron_TopPair
 
-This set-up is very similar to the @ref{LHC_TopPair} example above.
-There are two notable differences. Firstly, obviously this is a Tevatron
-set-up with proton anti-proton collisions at Tevatron energies. 
-Secondly, there are two allowed decay channels.
+This set-up is very similar to the @ref{LHC_TTH} example above.
+There are three notable differences. Firstly, the colliding beams 
+are changed to proton anti-proton at Tevatron energies. 
+Secondly, there is no Higgs boson produced in the core process, but 
+there are two allowed decay channels of the top quark pair.
+Third, Matrix-Element Parton-Shower merging is enabled using
+the @ref{CKKW} tag.
 
 @example
 @smallformat
@@ -17,7 +20,7 @@ possibly an extra final-state parton. Each top then decays into (anti-)bottom
 quark and W+(-) boson. One of the W-bosons then decays leptonically, and 
 the other decays to quarks. This time we include processes with either of 
 the two W-bosons decaying leptonically, not just the W-, as in the
-@ref{LHC_TopPair} example above.
+@ref{LHC_TTH} example above.
 
 Things to notice:
 @itemize @bullet

@@ -29,7 +29,7 @@ Sherpa_TEXINFOS = \
 	LHC_ADD.texi \
 	LHC_AGC.texi \
 	LHC_SUSY.texi \
-	LHC_TopPair.texi \
+	LHC_TTH.texi \
 	LHC_ZJets.texi \
 	Macros.texi \
 	Merging.texi \

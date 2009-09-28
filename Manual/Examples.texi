@@ -13,7 +13,7 @@ of the main features of these examples.
 * Tevatron_WJets::            
 * Tevatron_QCD::              
 * LEP91::                     
-* LHC_TopPair::               
+* LHC_TTH::               
 * Tevatron_TopPair::          
 * Tevatron_UE::               
 * Tevatron_DiBoson::          
@@ -31,7 +31,7 @@ of the main features of these examples.
 @include Tevatron_WJets.texi
 @include Tevatron_QCD.texi
 @include LEP91.texi
-@include LHC_TopPair.texi
+@include LHC_TTH.texi
 @include Tevatron_TopPair.texi
 @include Tevatron_UE.texi
 @include Tevatron_DiBoson.texi

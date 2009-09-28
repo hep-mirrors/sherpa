@@ -1,19 +1,20 @@
-@node LHC_TopPair
-@section LHC_TopPair
+@node LHC_TTH
+@section LHC_TTH
 
 This set-up illustrates the possibility of specifying a
 particular decay chain for the particles in the signal process.
 
 @example
 @smallformat
-@verbatiminclude Examples/LHC_TopPair/Run.dat
+@verbatiminclude Examples/LHC_TTH/Run.dat
 @end smallformat
 @end example
 
-The process generated is the production of a top pair from two light quarks, with 
-possibly an extra final-state parton. Each top then decays into (anti-)bottom
-quark and W-boson. The W+ boson then decays leptonically, and 
-the W- boson decays to quarks. 
+The process generated is the production of a Higgs boson in association with 
+a top quark pair from two light partons in the initial state.
+The Higgs boson decays into a bottom-antibottom pair, while each top quark
+decays into (anti-)bottom quark and W-boson. The W+ boson in turn decays 
+leptonically, and the W- boson decays to quarks. 
 
 Things to notice:
 @itemize @bullet
