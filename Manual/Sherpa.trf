@@ -3,11 +3,13 @@
 Sherpa \- Monte Carlo event generator
 .SH SYNOPSIS
 Sherpa
-.B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP]"
+.B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP] [\-O \fIlevel\fP]"
 .br
-.B "       [\-e \fIevents\fP] [\-a \fIanalyses\fP] [\-O \fIlevel\fP]"
+.B "       [\-e \fIevents\fP] [\-a \fIanalyses\fP] [\-A \fIpath\fP]"
 .br
-.B "       [\-r \fIresults\fP] [\-m \fIgenerators\fP] [\-w \fImode\fP] [\-F \fImodule\fP]"
+.B "       [\-m \fIgenerators\fP] [\-w \fImode\fP] [\-r \fIresults\fP]"
+.br
+.B "       [\-s \fIshower\fP] [\-F \fImodule\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
@@ -30,8 +32,8 @@ Sets the result directory name to \fIresults\fP.
 Sets the ME generator list to \fIgenerators\fP.
 .IP "\fB-w\fP \fImode\fP"
 Sets the event generation mode to \fImode\fP.
-.IP "\fB-s\fP \fIgenerator\fP"
-Sets the parton shower generator \fIgenerator\fP.
+.IP "\fB-s\fP \fIshower\fP"
+Sets the parton shower generator \fIshower\fP.
 .IP "\fB-F\fP \fImodule\fP"
 Sets the fragmentation module \fImodule\fP.
 .IP "\fB-a\fP \fIanalyses\fP"
