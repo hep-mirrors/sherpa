@@ -186,10 +186,14 @@ double Subprocess_Info::ISSymmetryFactor() const
     double pols(2.0*m_ps[i].m_fl.Spin()+1.0);
     if (m_ps[i].m_fl.IntSpin()==2 &&
 	m_ps[i].m_fl.Mass()==0.0) pols=2.0;
-    sf*=pols*abs(m_ps[i].m_fl.StrongCharge());
+    sf*=pols;
     msg_Debugging()<<"     "<<std::setw(15)
-		   <<m_ps[i].m_fl<<" -> "<<pols<<"*"
-		   <<abs(m_ps[i].m_fl.StrongCharge())<<"\n";
+		   <<m_ps[i].m_fl<<" -> "<<pols;
+    if (m_ps[i].m_fl.Strong()) {
+      sf*=abs(m_ps[i].m_fl.StrongCharge());
+      msg_Debugging()<<"*"<<abs(m_ps[i].m_fl.StrongCharge());
+    }
+    msg_Debugging()<<"\n";
   }
   msg_Debugging()<<"} -> "<<sf<<"\n";
   return sf;
