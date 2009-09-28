@@ -172,6 +172,59 @@ Decay_Info_Vector Subprocess_Info::GetDecayInfos() const
   return ids;
 }
 
+double Subprocess_Info::Factorial(const double &n) const
+{
+  if (n<=0.0) return 1.0;
+  return n*Factorial(n-1.0);
+}
+
+double Subprocess_Info::ISSymmetryFactor() const
+{
+  double sf(1.0);
+  msg_Debugging()<<METHOD<<"(): {\n";
+  for (size_t i(0);i<m_ps.size();++i) {
+    double pols(2.0*m_ps[i].m_fl.Spin()+1.0);
+    if (m_ps[i].m_fl.IntSpin()==2 &&
+	m_ps[i].m_fl.Mass()==0.0) pols=2.0;
+    sf*=pols*abs(m_ps[i].m_fl.StrongCharge());
+    msg_Debugging()<<"     "<<std::setw(15)
+		   <<m_ps[i].m_fl<<" -> "<<pols<<"*"
+		   <<abs(m_ps[i].m_fl.StrongCharge())<<"\n";
+  }
+  msg_Debugging()<<"} -> "<<sf<<"\n";
+  return sf;
+}
+
+double Subprocess_Info::FSSymmetryFactor() const
+{
+  double sf(1.0);
+  msg_Debugging()<<METHOD<<"(): {\n";
+  std::map<Flavour,size_t> fc;
+  for (size_t i(0);i<m_ps.size();++i) {
+    if (m_ps[i].m_ps.size()) {
+      msg_Indent();
+      sf*=m_ps[i].FSSymmetryFactor();
+    }
+    else {
+      std::map<Flavour,size_t>::iterator fit(fc.find(m_ps[i].m_fl));
+      if (fit==fc.end()) {
+	fc[m_ps[i].m_fl]=0;
+	fit=fc.find(m_ps[i].m_fl);
+      }
+      ++fit->second;
+    }
+  }
+  for (std::map<Flavour,size_t>::const_iterator fit(fc.begin());
+       fit!=fc.end();++fit) {
+    msg_Debugging()<<"  "<<std::setw(2)<<fit->second<<" "
+		   <<std::setw(15)<<fit->first<<" -> "
+		   <<std::setw(12)<<Factorial(fit->second)<<"\n";
+    sf*=Factorial(fit->second);
+  }
+  msg_Debugging()<<"} -> "<<sf<<"\n";
+  return sf;
+}
+
 size_t Subprocess_Info::NMaxExternal() const
 {
   if (m_ps.empty()) return 1;

@@ -22,7 +22,8 @@ Matrix_Element::~Matrix_Element()
 
 bool Matrix_Element::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
- Model *const model,const size_t &oew,const size_t &oqcd,
+ const double &isf,const double &fsf,Model *const model,
+ const size_t &oew,const size_t &oqcd,
  const size_t &maxoew,const size_t &maxoqcd)
 {
   m_nin=nin;
@@ -43,38 +44,8 @@ bool Matrix_Element::Initialize
     }
     ++fit->second;
   }
-  m_sf=1.0;
-  msg_Debugging()<<METHOD<<"(): Construct symmetry factor {\n";
-  msg_Debugging()<<"  Final state:\n";
-  for (std::map<Flavour,size_t>::const_iterator fit(fc.begin());
-       fit!=fc.end();++fit) {
-    msg_Debugging()<<"  "<<std::setw(2)<<fit->second<<" "
-		   <<std::setw(15)<<fit->first<<" -> "
-		   <<std::setw(12)<<Factorial(fit->second)<<"\n";
-    m_sf*=Factorial(fit->second);
-  }
-  m_fsf=m_sf;
-  msg_Debugging()<<"  Initial state:\n";
-  for (size_t i(0);i<nin;++i) {
-    int pols(1);
-    switch (flavs[i].IntSpin()) {
-    case 1: pols=2; break;
-    case 2: pols=IsZero(flavs[i].Mass())?2:3; break;
-    }
-    msg_Debugging()<<"     "<<std::setw(15)<<flavs[i]
-		   <<" -> "<<pols;
-    m_sf*=pols;
-    if (flavs[i].IsGluon()) {
-      msg_Debugging()<<"*8";
-      m_sf*=8;
-    }
-    else if (flavs[i].IsQuark()) {
-      msg_Debugging()<<"*3";
-      m_sf*=3;
-    }
-      msg_Debugging()<<"\n";
-  }
-  msg_Debugging()<<"} -> "<<m_sf<<"\n";
+  m_fsf=fsf;
+  m_sf=m_fsf*isf;
   return true;
 }
 
@@ -87,12 +58,6 @@ void Matrix_Element::PrintStatistics
 (std::ostream &str,const int mode) const
 {
   m_ampl.PrintStatistics(str,mode);
-}
-
-double Matrix_Element::Factorial(const double &n) 
-{
-  if (n<=0.0) return 1.0;
-  return n*Factorial(n-1.0);
 }
 
 double Matrix_Element::Differential(const std::vector<Vec4D> &momenta)

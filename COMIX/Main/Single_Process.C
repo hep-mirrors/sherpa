@@ -48,12 +48,14 @@ bool COMIX::Single_Process::Initialize
   }
   msg_Debugging()<<"'"<<m_name<<"' not pre-mapped"<<std::endl;
   p_bg = new Matrix_Element();
+  double isf(m_pinfo.m_ii.ISSymmetryFactor());
+  double fsf(m_pinfo.m_fi.FSSymmetryFactor());
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
   p_bg->SetDecayInfos(info.GetDecayInfos());
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
-  if (p_bg->Initialize(m_nin,m_nout,flavs,&*p_model,
+  if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       m_pinfo.m_oew,m_pinfo.m_oqcd,
 		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd)) {
     m_oew=p_bg->MaxOrderEW();

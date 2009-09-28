@@ -26,8 +26,6 @@ namespace COMIX {
 
     int m_mode, m_tests;
 
-    double Factorial(const double &n);
-
   public:
 
     // constructor
@@ -39,7 +37,7 @@ namespace COMIX {
     // member functions
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
-		    Model *const model,
+		    const double &isf,const double &fsf,Model *const model,
 		    const size_t &oew=99,const size_t &oqcd=99,
 		    const size_t &maxoew=99,const size_t &maxoqcd=99);
     bool Map(const Matrix_Element *me,ATOOLS::Flavour_Map &fmap);

@@ -51,6 +51,11 @@ namespace PHASIC {
 
     std::string MultiplicityTag() const;
 
+    double Factorial(const double &n) const;
+
+    double ISSymmetryFactor() const;
+    double FSSymmetryFactor() const;
+
     size_t NExternal() const;
     size_t NTotalExternal() const;
     size_t NMaxExternal() const;
