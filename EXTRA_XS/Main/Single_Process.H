@@ -29,6 +29,7 @@ namespace EXTRAXS {
 
     double Differential(const ATOOLS::Vec4D_Vector& momenta);
     double Differential2();
+    bool Combinable(const size_t &idi, const size_t &idj);
 
     // inline functions
     inline ME2_Base *GetME() const { return p_born_me2; }

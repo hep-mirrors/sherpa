@@ -156,3 +156,24 @@ bool EXTRAXS::Single_Process::FillIntegrator
     mc->Add(new PHASIC::U1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
   return false;
 }
+
+bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
+{
+  size_t sintt(7);
+  if (GetME()) sintt=GetME()->SIntType();
+  if (idi==1 && idj==2) {
+    return sintt&1;
+  }
+  else if (idi==1 && idj==4) {
+    return sintt&2;
+  }
+  else if (idi==1 && idj==8) {
+    return sintt&4;
+  }
+  else {
+    PRINT_INFO("Can't decide whether i="<<idi<<" and j="<<idj<<
+               " are combinable. Returning false.");
+    return false;
+  }
+}
+
