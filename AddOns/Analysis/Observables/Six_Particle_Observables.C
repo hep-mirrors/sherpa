@@ -136,7 +136,7 @@ void Six_Particle_Observable_Base::Evaluate(const Particle_List& plist,
     if((*plit1)->Flav()==m_flavs[0]) {
       for(Particle_List::const_iterator plit2=plist.begin();
           plit2!=plist.end(); ++plit2) {
-        if((*plit2)->Flav()==m_flavs[0] && plit1!=plit2) {
+        if((*plit2)->Flav()==m_flavs[1] && plit1!=plit2) {
           for(Particle_List::const_iterator plit3=plist.begin();
               plit3!=plist.end(); ++plit3) {
             if((*plit3)->Flav()==m_flavs[2] && plit3!=plit2 && plit3!=plit1) {
@@ -150,7 +150,7 @@ void Six_Particle_Observable_Base::Evaluate(const Particle_List& plist,
                        plit5!=plit3 && plit5!=plit2 && plit5!=plit1) {
                       for(Particle_List::const_iterator plit6=plist.begin();
                           plit6!=plist.end(); ++plit6) {
-                        if((*plit6)->Flav()==m_flavs[3] && plit6!=plit5 &&
+                        if((*plit6)->Flav()==m_flavs[5] && plit6!=plit5 &&
                            plit6!=plit4 && plit6!=plit3 && plit6!=plit2 &&
                            plit6!=plit1) {
                           Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),
