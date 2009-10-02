@@ -187,7 +187,7 @@ namespace AMEGIC {
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
     double               GetWinner(int &i, int &j,int &k);
     bool                 IdentifyHardProcess();
-    int                  IdentifyHardPropagator() const;
+    int                  IdentifyHardPropagator(double &scale) const;
 
     bool Combinable(const Leg &a,const Leg &b) const ;
 

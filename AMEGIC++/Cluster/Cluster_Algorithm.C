@@ -237,7 +237,8 @@ int Cluster_Algorithm::SetColours(const Vec4D_Vector& p,Flavour * fl)
 int Cluster_Algorithm::Set4Colours(const int nquark,const int ngluon,
                                    const Vec4D_Vector& p,Flavour * fl)
 {
-  int prop(p_ct->IdentifyHardPropagator());
+  double scale;
+  int prop(p_ct->IdentifyHardPropagator(scale));
   if (fl[0].IsGluon() || fl[0].IsGluino() || 
       fl[1].IsGluon() || fl[1].IsGluino() || 
       fl[2].IsGluon() || fl[2].IsGluino() || 
@@ -500,7 +501,9 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderEW(ampl->OrderEW()-win.OrderQED());
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
   }
-  p_ampl->SetKT2QCD(muf2);
+  double scale;
+  p_ct->IdentifyHardPropagator(scale);
+  p_ampl->SetKT2QCD(scale);
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
 	  trig?p_proc->Info().m_fi.NMaxExternal():
 	  p_proc->Info().m_fi.NExternal());

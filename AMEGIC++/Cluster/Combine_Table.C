@@ -906,12 +906,12 @@ bool Combine_Table::IdentifyHardProcess()
   return true;
 }
 
-int Combine_Table::IdentifyHardPropagator() const
+int Combine_Table::IdentifyHardPropagator(double &mmin) const
 {
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
   int channel(-1);
-  double mmin(std::numeric_limits<double>::max());
+  mmin=std::numeric_limits<double>::max();
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1]) &&
 	Combinable(p_legs[i][2],p_legs[i][3])) {
