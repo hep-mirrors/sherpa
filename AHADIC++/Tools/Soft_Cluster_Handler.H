@@ -10,7 +10,7 @@
 #include <map>
 
 namespace AHADIC {
-  struct TransWeight {
+  struct Trans_Weight {
     enum code {
       waveonly         = 3,
       nonrelativistic  = 2,
@@ -18,7 +18,7 @@ namespace AHADIC {
     };
   };
 
-  struct DecayWeight {
+  struct Decay_Weight {
     enum code {
       waves                   = 4,
       phasespace_masses_waves = 3,
@@ -35,8 +35,8 @@ namespace AHADIC {
     Single_Transitions * p_singletransitions;
     Double_Transitions * p_doubletransitions;
     
-    TransWeight::code    m_tweightmode;
-    DecayWeight::code    m_dweightmode;
+    Trans_Weight::code   m_tweightmode;
+    Decay_Weight::code   m_dweightmode;
     double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi;
     double               m_pt2min,m_pt2max,m_pt2maxfac;
     Cluster_List *       m_clin;
