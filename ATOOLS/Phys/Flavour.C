@@ -151,20 +151,7 @@ void Flavour::FromHepEvt(long int code)
 {
   m_anti=code<0;
   code=(kf_code)abs(code);
-  p_info=s_kftable[code];
-  switch (code) {
-  case 10111:   p_info=s_kftable[kf_a_0_1450]; break;
-  case 10211:   p_info=s_kftable[kf_a_0_1450_plus]; break;
-  case 10221:   p_info=s_kftable[kf_f_0_1370]; break;
-  case 10331:   p_info=s_kftable[kf_f_0_1710]; break;
-  case 13122:   p_info=s_kftable[23122]; break;
-  case 23122:   p_info=s_kftable[13122]; break;
-  case 9000111: p_info=s_kftable[kf_a_0_980]; break;
-  case 9000211: p_info=s_kftable[kf_a_0_980_plus]; break;
-  case 9010221: p_info=s_kftable[kf_f_0_980]; break; 
-  case 91:      p_info=s_kftable[kf_cluster]; break;
-  case 92:      p_info=s_kftable[kf_string]; break;
-  }
+  p_info=s_kftable[PdgToSherpa(code)];
 }
 
 std::string Flavour::TexName() const 
@@ -310,6 +297,24 @@ bool Flavour::IsStable() const
   if (p_info->m_stable==2 && !IsAnti()) return true;
   if (p_info->m_stable==3 && IsAnti()) return true;
   return false;
+}
+
+kf_code Flavour::PdgToSherpa(const unsigned long& pdg)
+{
+  switch (pdg) {
+  case 10111:   return kf_a_0_1450; break;
+  case 10211:   return kf_a_0_1450_plus; break;
+  case 10221:   return kf_f_0_1370; break;
+  case 10331:   return kf_f_0_1710; break;
+  case 13122:   return 23122; break;
+  case 23122:   return 13122; break;
+  case 9000111: return kf_a_0_980; break;
+  case 9000211: return kf_a_0_980_plus; break;
+  case 9010221: return kf_f_0_980; break; 
+  case 91:      return kf_cluster; break;
+  case 92:      return kf_string; break;
+  default:      return pdg; break;
+  }
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)

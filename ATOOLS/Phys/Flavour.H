@@ -310,6 +310,8 @@ namespace ATOOLS {
       if (Kfcode()>f.Kfcode()) return false;
       return m_anti<f.m_anti;
     }
+    
+    static kf_code PdgToSherpa(const unsigned long& pdg);
 
   };// end of class Flavour
 
