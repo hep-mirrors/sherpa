@@ -77,7 +77,7 @@ For a complete list of possible configuration options run
 
 The Sherpa package has successfully been compiled, installed and
 tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux systems 
-using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1, 4.2 and 4.3 as
+using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1, 4.2, 4.3 and 4.4 as
 well as on Mac OS X 10 using the GNU C++ compiler version 4.0. In all cases the 
 GNU FORTRAN compiler g77 or gfortran has been employed. Note that GCC
 version 2.96 is @strong{not} supported.
