@@ -104,15 +104,26 @@ bool Color_Setter::SetLargeNCColors()
     psum.clear();
     while (colint->NextOrder()) {
       ++cc;
+      bool valid(true);
       Idx_Vector perm(colint->Orders().front());
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
+      int lc(p_xs->Flavours()[perm.back()].StrongCharge());
+      if (perm.back()<p_xs->NIn() && lc!=8) lc=-lc;
       for (size_t i(0);i<perm.size();++i) {
 	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
 	int sc(p_xs->Flavours()[cur].StrongCharge());
-	if (cur<p_xs->NIn()) sc=-sc;
+	if (cur<p_xs->NIn() && sc!=8) sc=-sc;
 	if (sc==3 || sc==8)
 	  cj[next]=ci[cur]=Flow::Counter();
+	if (lc!=0) 
+	  if (((lc==8 || lc==3) && sc==3) ||
+	      (lc==-3 && (sc==-3 || sc==8))) {
+	    valid=false;
+	    break;
+	  }
+	if (sc!=0) lc=sc;
       }
+      if (!valid) continue;
       double part(p_xs->GetME()->Differential
 		  (p_xs->Integrator()->PSHandler()->CMSPoint(),ci,cj,true));
       part*=sqr(colint->Weights().front());
@@ -126,7 +137,7 @@ bool Color_Setter::SetLargeNCColors()
 		       <<perm<<" = "<<psum.back()<<"\n";
     }
     if (psum.empty()) {
-      msg_Error()<<METHOD<<"(): No nonzero partial amplitude. Randomize."<<std::endl;
+      msg_Tracking()<<METHOD<<"(): No nonzero amplitude. Randomize."<<std::endl;
       return false;
     }
   msg_Debugging()<<"sum = "<<psum.back()<<"\n";
@@ -147,12 +158,20 @@ bool Color_Setter::SetLargeNCColors()
     if (ck==cc) {
       Idx_Vector perm(colint->Orders().front());
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
+      int lc(p_xs->Flavours()[perm.back()].StrongCharge());
+      if (perm.back()<p_xs->NIn() && lc!=8) lc=-lc;
       for (size_t i(0);i<perm.size();++i) {
 	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
 	int sc(p_xs->Flavours()[cur].StrongCharge());
-	if (cur<p_xs->NIn()) sc=-sc;
+	if (cur<p_xs->NIn() && sc!=8) sc=-sc;
 	if (sc==3 || sc==8)
 	  cj[next]=ci[cur]=Flow::Counter();
+	if (lc!=0) 
+	  if (((lc==8 || lc==3) && sc==3) ||
+	      (lc==-3 && (sc==-3 || sc==8))) {
+	    THROW(fatal_error,"Internal error");
+	  }
+	if (sc!=0) lc=sc;
       }
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
