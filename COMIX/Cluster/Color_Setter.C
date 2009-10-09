@@ -111,8 +111,9 @@ bool Color_Setter::SetLargeNCColors()
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
       for (size_t i(0);i<perm.size();++i) {
 	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
-	if (p_xs->Flavours()[cur].Strong() &&
-	    p_xs->Flavours()[next].Strong())
+	int sc(p_xs->Flavours()[cur].StrongCharge());
+	if (cur<p_xs->NIn()) sc=-sc;
+	if (sc==3 || sc==8)
 	  cj[next]=ci[cur]=Flow::Counter();
       }
       double part(p_xs->GetME()->Differential
@@ -153,8 +154,9 @@ bool Color_Setter::SetLargeNCColors()
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
       for (size_t i(0);i<perm.size();++i) {
 	size_t cur(perm[i]), next(i<perm.size()-1?perm[i+1]:perm[0]);
-	if (p_xs->Flavours()[cur].Strong() &&
-	    p_xs->Flavours()[next].Strong())
+	int sc(p_xs->Flavours()[cur].StrongCharge());
+	if (cur<p_xs->NIn()) sc=-sc;
+	if (sc==3 || sc==8)
 	  cj[next]=ci[cur]=Flow::Counter();
       }
       for (size_t i(0);i<ampl->Legs().size();++i)
@@ -184,7 +186,7 @@ bool Color_Setter::SetColors(Single_Process *const xs)
     break;
   case 2: 
     sol=SetLargeNCColors();
-    sol=SetRandomColors();
+    if (!sol) sol=SetRandomColors();
     break;
   default:
     THROW(fatal_error,"Invalid colour setting mode");
