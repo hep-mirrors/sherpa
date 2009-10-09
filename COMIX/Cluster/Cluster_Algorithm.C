@@ -492,7 +492,9 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetMuF2(muf2);
   p_ampl->SetX1(xs->Process()->Integrator()->ISR()->X1());
   p_ampl->SetX2(xs->Process()->Integrator()->ISR()->X2());
+  if (m_swap) xs->Process()->SwapInOrder();
   m_nosol=!m_cs.SetColors(xs);
+  if (m_swap) xs->Process()->SwapInOrder();
   ClusterInfo_Map cinfo;
   ++m_cnt;
   if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo)) {

@@ -100,13 +100,10 @@ bool Color_Setter::SetLargeNCColors()
   colint->SetOTFCC(true);
   Double_Vector psum;
   std::map<size_t,size_t> cmap;
-  size_t ntrials(0);
-  while (true) {
     size_t cc(0);
     psum.clear();
     while (colint->NextOrder()) {
       ++cc;
-      if (colint->Weights().front()!=1.0) continue;
       Idx_Vector perm(colint->Orders().front());
       Int_Vector ci(perm.size(),0), cj(perm.size(),0);
       for (size_t i(0);i<perm.size();++i) {
@@ -118,6 +115,7 @@ bool Color_Setter::SetLargeNCColors()
       }
       double part(p_xs->GetME()->Differential
 		  (p_xs->Integrator()->PSHandler()->CMSPoint(),ci,cj,true));
+      part*=sqr(colint->Weights().front());
       if (psum.size()) part+=psum.back();
       if (part>0.0) {
 	cmap[psum.size()]=cc;
@@ -127,14 +125,10 @@ bool Color_Setter::SetLargeNCColors()
 	msg_Debugging()<<"psum["<<psum.size()-1<<"]/["<<cc<<"]"
 		       <<perm<<" = "<<psum.back()<<"\n";
     }
-    if (psum.size()) break;
-    // select new color configuration
-    while (!colint->GeneratePoint());
-    Int_Vector ni(colint->I()), nj(colint->J());
-    for (size_t i(0);i<ampl->Legs().size();++i)
-      oc[i]=ColorID(ni[i],nj[i]);
-    if ((ntrials+=10)>=s_clmaxtrials) return false; 
-  }
+    if (psum.empty()) {
+      msg_Error()<<METHOD<<"(): No nonzero partial amplitude. Randomize."<<std::endl;
+      return false;
+    }
   msg_Debugging()<<"sum = "<<psum.back()<<"\n";
   size_t l(0), r(psum.size()-1), c((l+r)/2);
   double a(psum[c]), disc(ran.Get()*psum.back());
@@ -145,7 +139,8 @@ bool Color_Setter::SetLargeNCColors()
     a=psum[c];
   }
   if (disc<psum[l]) r=l;
-  size_t ck(cmap[r]), cc(0);
+  size_t ck(cmap[r]);
+  cc=0;
   msg_Debugging()<<"selected r = "<<r<<", ck = "<<ck<<": "<<psum[r]<<"\n";
   while (colint->NextOrder()) {
     ++cc;
