@@ -3,11 +3,15 @@
   NJET:=1; QCUT:=2.25; ANATAG:=trunk
 
   RESULT_DIRECTORY = Results.QCUT
-  GENERATE_RESULT_DIRECTORY = 1
 
   ANALYSIS = Rivet
   ANALYSIS_OUTPUT = NJETjet.QCUT.ANATAG
   OUTPUT= 2;
+
+  ME_QED = Off
+  FRAGMENTATION = Off
+  CSS_EW_MODE = 1
+  SCALES = STRICT_METS
 }(run)
 
 (beam){
@@ -16,31 +20,29 @@
 }(beam)
 
 (processes){
-  Process 11 -11 -> 93 93 93{NJET};
+  Process 11 -11 -> 93 93 22{1};
   CKKW pow(10,-QCUT);
-  Order_EW 2;
-  End process;
-
-  Process 11 -11 -> 5 -5 93{NJET};
-  CKKW pow(10,-QCUT);
-  Order_EW 2;
   End process;
 }(processes)
+
+(selector){
+}(selector)
 
 (model){
   ORDER_ALPHAS = 0
   ALPHAS(MZ) = 0.127
-  MASSIVE[5] = 1
+#  MASSIVE[5] = 1
 }(model)
 
 (me){
-  ME_SIGNAL_GENERATOR = Internal Comix
-  EVENT_GENERATION_MODE = Unweighted
+  ME_SIGNAL_GENERATOR = Comix
+  EVENT_GENERATION_MODE = Weighted
 }(me)
 
 (analysis){
   BEGIN_RIVET {
-    -a ALEPH_1996_S3486095 DELPHI_1996_S3430090 DELPHI_2002_069_CONF_603 DELPHI_2003_WUD_03_11 JADE_OPAL_2000_S4300807_91GEV OPAL_1998_S3780481 ALEPH_1991_S2435284 DELPHI_1995_S3137023 
-    # PDG_HADRON_MULTIPLICITIES PDG_HADRON_MULTIPLICITIES_RATIOS  
+    -a ALEPH_1996_S3196992
+    JETCONTS 1
+    SPLITCOREPROCS 1
   } END_RIVET
 }(analysis)
