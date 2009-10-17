@@ -123,7 +123,7 @@ double LF_VVV_FF::OverEstimated(const double z,const double y)
 
 double LF_VVV_FF::Z()
 {
-  return 1./(1. + ((1.-m_zmin)/m_zmax) *
+  return 1./(1. + ((1.-m_zmin)/m_zmin) *
 	     pow(m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax),ATOOLS::ran.Get()));
 }
 
