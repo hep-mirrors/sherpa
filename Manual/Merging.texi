@@ -238,7 +238,7 @@ the most prominent mistakes are listed here:
   section, which is given in the final output after event generation, see
   @ref{Running Sherpa}.
 @item  The ME-PS merging implemented in Sherpa is not yet enabled for
-  supersymmetric processes.
+  processes involving coloured supersymmetric particles.
 @end itemize
 Finally, a few more useful comments related to Sherpa's merging
 are stated below:

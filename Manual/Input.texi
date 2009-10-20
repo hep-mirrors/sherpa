@@ -66,6 +66,10 @@ PDG. These codes and the particle properties will be listed during each run with
 In both cases, antiparticles are characterized by a minus sign in front of their
 code, e.g. a mu- has code @samp{13}, while a mu+ has @samp{-13}.
 
+All quantities have to be specified in units of GeV and millimeter. The same
+units apply to all numbers in the event output (momenta, vertex positions).
+Scattering cross sections are denoted in pico-barn in the output.
+
 There are a few extra features for an easier handling of the parameter
 file(s), namely global tag replacement, see @ref{Tags}, and algebra
 interpretation, see @ref{Interpreter}.
