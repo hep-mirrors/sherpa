@@ -413,6 +413,7 @@ void Standard_Model::FixEWParameters() {
   p_constants->insert(std::make_pair(std::string("MH"),          MH));
   p_constants->insert(std::make_pair(std::string("lambdaH"),     lambdaH));
   p_constants->insert(std::make_pair(std::string("GF"),          GF));
+  p_numbers->insert(std::make_pair(std::string("EW_SCHEME"),m_ewscheme));
 }
 
 void Standard_Model::FixCKM() {
