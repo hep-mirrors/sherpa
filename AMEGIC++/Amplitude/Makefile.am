@@ -19,4 +19,4 @@ localinc_HEADERS   = CFColor.H Single_Amplitude.H \
 		 Amplitude_Group.H \
 		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
 		 FullAmplitude_MHV_Base.H \
-		 Super_Amplitude.H Amplitude_Output.H
+		 Amplitude_Output.H
