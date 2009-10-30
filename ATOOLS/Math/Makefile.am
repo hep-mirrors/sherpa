@@ -36,7 +36,6 @@ localinc_HEADERS          =	\
 			Matrix.H \
 			Fast_Function.H \
 			Gauss_Integrator.H \
-			Histogram.H \
 			Variable.H \
 			Scaling.H \
 			Axis.H \
