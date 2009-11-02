@@ -15,7 +15,7 @@ public:
 HQET2::HQET2(GeneralModel model, double* masses, Flavour* flavs, int* indices) :
   FormFactor_Base(model, masses, flavs, indices)
 {
-  m_rho2  = model("HQET2_rho2",0.7);
+  m_rho2  = model("HQET2_rho2",1.19);
   m_V1_1  = model("HQET2_V1_1",0.98);
 }
 
