@@ -541,15 +541,11 @@ void Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data *cuts)
     cuts->energymin[i] = m_fl[i].Mass();
     if (m_fl[i].Strong())
       for (int j(i+1); j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong())
-	  if (GetYcut(1<<i,1<<j)>0.0) {
-	    double scut=GetYcut(1<<i,1<<j)*m_s+
-	      sqr(m_fl[i].Mass())+sqr(m_fl[j].Mass());
-	    if (m_fl[i].StrongCharge()==8 || m_fl[j].StrongCharge()==8)
-	      scut=Min(scut,Max(1.0,sqr(m_fl[i].Mass())+sqr(m_fl[j].Mass())));
-	    msg_Debugging()<<"  ("<<i<<","<<j<<") -> "<<sqrt(scut)<<"\n";
-	    cuts->scut[i][j]=cuts->scut[j][i]=Max(cuts->scut[i][j],scut);
-	  }
+	if (m_fl[j].Strong()) {
+	  double scut=Max(1.0,sqr(m_fl[i].Mass())+sqr(m_fl[j].Mass()));
+	  msg_Debugging()<<"  ("<<i<<","<<j<<") -> "<<sqrt(scut)<<"\n";
+	  cuts->scut[i][j]=cuts->scut[j][i]=Max(cuts->scut[i][j],scut);
+	}
       }
   }
   msg_Debugging()<<"}\n";
