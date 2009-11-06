@@ -1,1 +1,1 @@
-SUBDIRS       =	Main LHAPDF MRST CTEQ GRV Electron Remnant
+SUBDIRS       =	Main LHAPDF MSTW MRST CTEQ GRV Electron Remnant

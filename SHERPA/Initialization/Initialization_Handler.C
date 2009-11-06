@@ -491,9 +491,9 @@ bool Initialization_Handler::InitializeThePDFs()
     defset="cteq6l";
     defpath="CTEQ6Grid";
   }
-  else if (m_pdflib=="MRST04QEDSherpa") {
-    defset="MRST04QED";
-    defpath="MRST04Grid";
+  else if (m_pdflib=="MSTW08Sherpa") {
+    defset="mstw2008lo";
+    defpath="MSTW08Grid";
   }
   std::string grid_path=dataread.GetValue<string>("PDF_GRID_PATH",defpath);
   if (grid_path.length()==0 || grid_path[0]!='/')
