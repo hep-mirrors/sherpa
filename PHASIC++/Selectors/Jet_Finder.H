@@ -5,6 +5,8 @@
 #include "ATOOLS/Phys/Cluster_Leg.H"
 
 namespace PHASIC {
+
+  class Single_Process;
   
   struct Comb_Key: public std::pair<size_t,size_t> {
     size_t partner;
@@ -37,6 +39,8 @@ namespace PHASIC {
 
     bool m_sok, m_on;
 
+    Single_Process *p_sproc;
+
     ATOOLS::Flavour GetFlavour(std::string fl);
 
     size_t FillCombinations(const std::string &name,const std::string &ycut,
@@ -46,7 +50,9 @@ namespace PHASIC {
     bool PrepareColList(const std::vector<int> &ci,
 			const std::vector<int> &cj);
 
-    bool ColorConnected(const size_t &i,const size_t &j) const;
+    bool ColorConnected(const size_t &i,const size_t &j,const size_t &k) const;
+    bool ColorConnected(const ATOOLS::ColorID &ci,const ATOOLS::ColorID &cj,
+			const int si,const int sj) const;
 
   public:
 

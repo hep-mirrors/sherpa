@@ -1,6 +1,7 @@
 #include "PHASIC++/Selectors/Jet_Finder.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -190,8 +191,10 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 	    sc[2]=m_flavs[pos[k]].StrongCharge();
 	    if (sc[0] && sc[1] && sc[2] &&
 		(sc[0]==-sc[1] || abs(sc[0])!=3 || abs(sc[1])!=3) &&
-		(sc[2]==-sc[1] || abs(sc[2])!=3 || abs(sc[1])!=3))
-	      m_fills[fl].push_back(Comb_Key(pos[i],pos[j],pos[k]));
+		(sc[2]==-sc[1] || abs(sc[2])!=3 || abs(sc[1])!=3)) {
+	      if (p_sproc && p_sproc->Combinable(pos[i],pos[j]))
+		m_fills[fl].push_back(Comb_Key(pos[i],pos[j],pos[k]));
+	    }
 	  }
       }
     }
@@ -206,6 +209,7 @@ void Jet_Finder::FillCombinations()
   if (m_ycuts.empty()) {
     if (p_proc==NULL) THROW(fatal_error,"Process not set.");
     m_procname=p_proc->Process()->Name();
+    p_sproc=p_proc->Process()->Get<Single_Process>();
     if (m_procname.find("__QCD")!=std::string::npos)
       m_procname=m_procname.substr(0,m_procname.find("__QCD"));
     if (m_procname.find("__EW")!=std::string::npos)
@@ -360,6 +364,7 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
     uc=true;
     std::vector<int> ic(ci->I()), jc(ci->J());
     if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
+    p_sproc=p_proc->Process()->Get<Single_Process>();
   }
   m_value=2.0;
   msg_Debugging()<<METHOD<<"(): '"
@@ -376,7 +381,7 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
     for (size_t ps(0);ps<m_fills[cl].size();++ps) {
       size_t i(m_fills[cl][ps].first),
 	j(m_fills[cl][ps].second), k(m_fills[cl][ps].partner);
-      if (uc && !(ColorConnected(i,j) && ColorConnected(j,k))) continue;
+      if (uc && !ColorConnected(i,j,k)) continue;
       if (m_flavs[i].IsQuark() && m_flavs[j].IsQuark() &&
 	  m_flavs[i]!=m_flavs[j].Bar()) continue;
       double ycut(m_ycuts[i][j]);
@@ -465,12 +470,46 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   return 4.0*dabs(pi*pj)/(Cij+Cji);
 }
 
-bool Jet_Finder::ColorConnected(const size_t &i,const size_t &j) const
+bool Jet_Finder::ColorConnected
+(const size_t &i,const size_t &j,const size_t &k) const
 {
   const ColorID &ci(m_cols.find(i)->second), 
     &cj(m_cols.find(j)->second);
   int si(m_flavs.find(i)->second.StrongCharge()), 
     sj(m_flavs.find(j)->second.StrongCharge());
+  if (!ColorConnected(ci,cj,si,sj)) return false;
+  const ColorID &ck(m_cols.find(k)->second);
+  int sk(m_flavs.find(k)->second.StrongCharge());
+  const Flavour_Vector &cf(p_sproc->CombinedFlavour(i+j));
+  for (size_t f(0);f<cf.size();++f) {
+    int sij(cf[f].StrongCharge());
+    if (sij==0) {
+      if (abs(sk)==3) return true;
+      continue;
+    }
+    ColorID cij(0,0);
+    if (sij==3) cij.m_i=si==3?cj.m_i:ci.m_i;
+    else if (sij==-3) cij.m_j=si==-3?cj.m_j:ci.m_j;
+    else {
+      if (ci.m_i==cj.m_j) {
+	if (ci.m_j==cj.m_i) {
+	  cij=ColorID(ci.m_i,cj.m_j);
+	  if (ColorConnected(cij,ck,sij,sk)) return true;
+	}
+	cij=ColorID(cj.m_i,ci.m_j);
+      }
+      else {
+	cij=ColorID(ci.m_i,cj.m_j);
+      }
+    }
+    if (ColorConnected(cij,ck,sij,sk)) return true;
+  }
+  return false;
+}
+
+bool Jet_Finder::ColorConnected
+(const ColorID &ci,const ColorID &cj,const int si,const int sj) const
+{
   if (si==3) {
     if (sj==8) 
       if (cj.m_i!=cj.m_j && ci.m_i!=cj.m_j) return false;
@@ -487,8 +526,8 @@ bool Jet_Finder::ColorConnected(const size_t &i,const size_t &j) const
       if (ci.m_i!=ci.m_j && ci.m_i!=cj.m_j) return false;
     }
     else {
-      if (ci.m_i==ci.m_j && 
-	  ci.m_i==cj.m_j && ci.m_j==cj.m_i) return false;
+      if ((ci.m_i!=cj.m_j && ci.m_j!=cj.m_i) ||
+	  (ci.m_i==cj.m_j && ci.m_j==cj.m_i && ci.m_i==ci.m_j)) return false;
     }
   }
   return true;
