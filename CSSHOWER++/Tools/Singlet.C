@@ -1,5 +1,7 @@
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Tools/Parton.H"
+#include "CSSHOWER++/Showers/Sudakov.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -52,6 +54,34 @@ Singlet::~Singlet() {
     clear();
   }
   
+}
+
+bool Singlet::JetVeto
+(Sudakov *const sud,PHASIC::Jet_Finder *const jf,const double &q2,
+ const Flavour &fj,const Vec4D &pj) const
+{
+  for (const_iterator eit(begin());eit!=end();++eit) {
+    for (const_iterator sit(begin());sit!=end();++sit) {
+      if (eit==sit) continue;
+      Parton *e(*eit), *s(*sit);
+      bool ei(e->GetType()==pst::IS), si(s->GetType()==pst::IS);
+      cstp::code et(ei?(si?cstp::II:cstp::IF):(si?cstp::FI:cstp::FF));
+      const SF_E_Map *sfs(sud->HasKernel(e->GetFlavour(),fj,et));
+      if (sfs==NULL) continue;
+      for (SF_E_Map::const_iterator
+	     kit(sfs->begin());kit!=sfs->end();++kit) {
+	if (kit->second->Coupling()->AllowSpec(s->GetFlavour())) {
+	  Flavour fi(ei?e->GetFlavour().Bar():e->GetFlavour());
+	  Flavour fk(si?s->GetFlavour().Bar():s->GetFlavour());
+	  Vec4D pi(ei?-e->Momentum():e->Momentum());
+	  Vec4D pk(si?-s->Momentum():s->Momentum());
+	  if (jf->Qij2(pi,pj,pk,fi,fj)<q2) return false;
+	  break;
+	}
+      }
+    }
+  }
+  return true;
 }
 
 void Singlet::SetColours(Singlet *const sing,

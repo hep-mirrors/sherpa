@@ -110,14 +110,15 @@ int Kinematics_FF::MakeKinematics
     return -1;
   }
   if (p_jf) {
-    bool jet(true);
-    jet&=p_jf->Qij2(q1,q3,q2,fli,flj)>=split->KtVeto();
-    if (p_sud->HasKernel(spect->GetFlavour(),flj,cstp::FF) ||
-	p_sud->HasKernel(flj,spect->GetFlavour(),cstp::FF))
-      jet&=p_jf->Qij2(q2,q3,q1,spect->GetFlavour(),flj)>=split->KtVeto();
-    if (p_sud->HasKernel(fli,spect->GetFlavour(),cstp::FF) ||
-	p_sud->HasKernel(spect->GetFlavour(),fli,cstp::FF))
-      jet&=p_jf->Qij2(q1,q2,q3,fli,spect->GetFlavour())>=split->KtVeto();
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    split->SetMomentum(q1);
+    spect->SetMomentum(q2);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),flj,q3));
+    split->SetFlavour(sfi);
+    split->SetMomentum(p1);
+    spect->SetMomentum(p2);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -221,12 +222,15 @@ int Kinematics_FI::MakeKinematics
   }
 
   if (p_jf) {
-    bool jet(true);
-    jet&=p_jf->Qij2(q1,q3,-q2,fli,flj)>=split->KtVeto();
-    if (p_sud->HasKernel(spect->GetFlavour(),flj,cstp::IF))
-      jet&=p_jf->Qij2(-q2,q3,q1,spect->GetFlavour().Bar(),flj)>=split->KtVeto();
-    if (p_sud->HasKernel(spect->GetFlavour(),fli,cstp::IF))
-      jet&=p_jf->Qij2(-q2,q1,q3,spect->GetFlavour().Bar(),fli)>=split->KtVeto();
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    split->SetMomentum(q1);
+    spect->SetMomentum(q2);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),flj,q3));
+    split->SetFlavour(sfi);
+    split->SetMomentum(p1);
+    spect->SetMomentum(p2);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -335,13 +339,15 @@ int Kinematics_IF::MakeKinematics
   }
   
   if (p_jf) {
-    bool jet(true);
-    jet&=p_jf->Qij2(-q1,q3,q2,split->GetFlavour(),fli,1)>=split->KtVeto();
-    if (p_sud->HasKernel(spect->GetFlavour(),fli,cstp::FI) ||
-	p_sud->HasKernel(fli,spect->GetFlavour(),cstp::FI))
-      jet&=p_jf->Qij2(q2,q3,-q1,spect->GetFlavour(),fli)>=split->KtVeto();
-    if (p_sud->HasKernel(fla,spect->GetFlavour(),cstp::IF))
-      jet&=p_jf->Qij2(-q1,q2,q3,fla.Bar(),spect->GetFlavour())>=split->KtVeto();
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fla);
+    split->SetMomentum(q1);
+    spect->SetMomentum(q2);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),fli,q3));
+    split->SetFlavour(sfi);
+    split->SetMomentum(p1);
+    spect->SetMomentum(p2);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;
@@ -434,10 +440,15 @@ int Kinematics_II::MakeKinematics
   //std::cout<<"test  : "<<y<<" vs. "<<(q1*q3)/(q1*q2)<<std::endl;  
 
   if (p_jf) {
-    bool jet(true);
-    jet&=p_jf->Qij2(-q1,q3,-q2,split->GetFlavour(),newfl,1)>=split->KtVeto();
-    if (p_sud->HasKernel(spect->GetFlavour(),newfl,cstp::II))
-      jet&=p_jf->Qij2(-q2,q3,-q1,spect->GetFlavour().Bar(),newfl)>=split->KtVeto();
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    split->SetMomentum(q1);
+    spect->SetMomentum(q2);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),newfl,q3));
+    split->SetFlavour(sfi);
+    split->SetMomentum(p1);
+    spect->SetMomentum(p2);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
       return 0;

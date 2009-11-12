@@ -64,6 +64,27 @@ double CF_QCD::Coupling(const double &scale,const int mode)
 
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
 {
+  if (abs(fl.StrongCharge())==3) {
+    switch (m_type) {
+    case cstp::FF: 
+      if (abs(p_lf->FlA().StrongCharge())==3)
+	return p_lf->FlA().StrongCharge()==-fl.StrongCharge();
+      break;
+    case cstp::FI: 
+      if (abs(p_lf->FlA().StrongCharge())==3)
+	return p_lf->FlA().StrongCharge()==fl.StrongCharge();
+      break;
+    case cstp::IF: 
+      if (abs(p_lf->FlB().StrongCharge())==3)
+	return p_lf->FlB().StrongCharge()==fl.StrongCharge();
+      break;
+    case cstp::II: 
+      if (abs(p_lf->FlB().StrongCharge())==3)
+	return p_lf->FlB().StrongCharge()==-fl.StrongCharge();
+      break;
+    case cstp::none: abort();
+    }
+  }
   return fl.Strong();
 }
 

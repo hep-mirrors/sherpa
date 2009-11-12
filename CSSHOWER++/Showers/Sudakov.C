@@ -546,17 +546,17 @@ bool Sudakov::Splitting(double Q2,double x) {
   return true;
 }
 
-bool Sudakov::HasKernel(const ATOOLS::Flavour &fli,
-			const ATOOLS::Flavour &flj,
-			const cstp::code type) const
+const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,
+				   const ATOOLS::Flavour &flj,
+				   const cstp::code type) const
 {
   const SF_EEE_Map *cmap(&m_sffmap);
   if (type==cstp::FI) cmap=&m_sfimap;
   else if (type==cstp::IF) cmap=&m_sifmap;
   else if (type==cstp::II) cmap=&m_siimap;
   SF_EEE_Map::const_iterator eees(cmap->find(fli));
-  if (eees==cmap->end()) return false;
+  if (eees==cmap->end()) return NULL;
   SF_EE_Map::const_iterator ees(eees->second.find(flj));
-  if (ees==eees->second.end()) return false;
-  return true;
+  if (ees==eees->second.end()) return NULL;
+  return &ees->second;
 }

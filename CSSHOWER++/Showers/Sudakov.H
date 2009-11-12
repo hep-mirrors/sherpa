@@ -64,9 +64,9 @@ namespace CSSHOWER {
     inline const SF_EEE_Map &IFMap() const { return m_ifmap; }
     inline const SF_EEE_Map &IIMap() const { return m_iimap; }
 
-    bool HasKernel(const ATOOLS::Flavour &fli,
-		   const ATOOLS::Flavour &flj,
-		   const cstp::code type) const;
+    const SF_E_Map *HasKernel(const ATOOLS::Flavour &fli,
+			      const ATOOLS::Flavour &flj,
+			      const cstp::code type) const;
 
     inline double PT2Min() const { return m_k0sq; }
 
