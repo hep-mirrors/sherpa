@@ -189,6 +189,7 @@ bool Simple_Chain::CreateGrid()
   pi.m_oqcd=2;
   pi.m_scale="MPI";
   pi.m_kfactor="QCD";
+  pi.m_mpiprocess=true;
   p_processes = new Semihard_QCD();
   p_processes->Init(pi,p_beam,p_isr);
   msg_Info()<<METHOD<<"(): Init processes ";
