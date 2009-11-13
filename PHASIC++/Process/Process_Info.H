@@ -25,6 +25,8 @@ namespace PHASIC {
     std::string m_loopgenerator;
 
     std::string m_selectorfile;
+
+    bool m_mpiprocess;
     
     ME_Generators* p_gens;
 
@@ -37,7 +39,7 @@ namespace PHASIC {
       m_nmaxq(99), m_psmc(0),
       m_ckkw(0), m_nmax(0), m_nlomode(0), m_amegicmhv(1),
       m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
-      m_selectorfile(""), p_gens(NULL) {}
+      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
 
