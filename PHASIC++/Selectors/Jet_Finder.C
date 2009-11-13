@@ -3,6 +3,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -164,12 +165,11 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
   interpreter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
   m_cycut=ToType<double>(interpreter.Interprete(ccut));
   m_gcycut=ToType<double>(interpreter.Interprete(cgcut));
-  int sc[3];
   for (size_t i(0);i<pos.size();++i) {
     m_ycuts[pos[i]][pos[i]]=m_cycut;
     m_gycuts[pos[i]][pos[i]]=m_gcycut;
-    sc[0]=m_flavs[pos[i]].StrongCharge();
-    if ((pos[i]&3)==0 && sc[0]!=0 &&
+    int sc=m_flavs[pos[i]].StrongCharge();
+    if ((pos[i]&3)==0 && sc!=0 &&
 	(m_fl[0].Strong() || m_fl[1].Strong())) {
       bool found(false);
       for (size_t l(0);l<m_pcs.size();++l)
@@ -185,15 +185,16 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 	m_gycuts[pos[i]][pos[j]]=m_gcycut;
 	m_ycut=Min(m_ycut,m_cycut);
 	m_gycut=Min(m_gycut,m_gcycut);
-	sc[1]=m_flavs[pos[j]].StrongCharge();
 	for (size_t k(0);k<pos.size();++k)
 	  if (i!=k && j!=k) {
-	    sc[2]=m_flavs[pos[k]].StrongCharge();
-	    if (sc[0] && sc[1] && sc[2] &&
-		(sc[0]==-sc[1] || abs(sc[0])!=3 || abs(sc[1])!=3) &&
-		(sc[2]==-sc[1] || abs(sc[2])!=3 || abs(sc[1])!=3)) {
-	      if (p_sproc && p_sproc->Combinable(pos[i],pos[j]))
+	    if (p_sproc && p_sproc->Combinable(pos[i],pos[j])) {
+	      int tp((pos[i]+pos[j])&3?(pos[k]&3)?3:1:(pos[k]&3)?2:0);
+	      Flavour fli((pos[i]&3)?m_flavs[pos[i]].Bar():m_flavs[pos[i]]);
+	      Flavour flj((pos[j]&3)?m_flavs[pos[j]].Bar():m_flavs[pos[j]]);
+	      Flavour flk((pos[k]&3)?m_flavs[pos[k]].Bar():m_flavs[pos[k]]);
+	      if (p_proc->Process()->Shower()->HasKernel(fli,flj,flk,tp)) {
 		m_fills[fl].push_back(Comb_Key(pos[i],pos[j],pos[k]));
+	      }
 	    }
 	  }
       }
@@ -246,9 +247,12 @@ void Jet_Finder::FillCombinations()
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
       for (size_t i(0);i<m_fills.size();++i)
 	for (size_t j(0);j<m_fills[i].size();++j)
-	  msg_Out()<<"  ["<<ID(m_fills[i][j].first)<<","
+	  msg_Out()<<"  "<<i<<": ["<<ID(m_fills[i][j].first)<<","
 		   <<ID(m_fills[i][j].second)<<"] <-> "
-		   <<ID(m_fills[i][j].partner)<<" ("<<i<<")\n";
+		   <<ID(m_fills[i][j].partner)<<" => "
+		   <<m_flavs[m_fills[i][j].first]<<" & "
+		   <<m_flavs[m_fills[i][j].second]<<" <-> "
+		   <<m_flavs[m_fills[i][j].partner]<<"\n";
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {

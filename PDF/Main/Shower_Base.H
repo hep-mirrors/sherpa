@@ -2,6 +2,7 @@
 #define PDF_Main_Shower_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 #include <string>
 
@@ -56,6 +57,11 @@ namespace PDF {
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
+
+    virtual int HasKernel(const ATOOLS::Flavour &fli,
+                          const ATOOLS::Flavour &flj,
+                          const ATOOLS::Flavour &flk,
+                          const int type) const = 0;
 
   };// end of class Shower_Base
 

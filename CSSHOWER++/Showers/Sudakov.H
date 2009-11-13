@@ -68,6 +68,11 @@ namespace CSSHOWER {
 			      const ATOOLS::Flavour &flj,
 			      const cstp::code type) const;
 
+    int HasKernel(const ATOOLS::Flavour &fli,
+                  const ATOOLS::Flavour &flj,
+                  const ATOOLS::Flavour &flk,
+                  const cstp::code type) const;
+
     inline double PT2Min() const { return m_k0sq; }
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }

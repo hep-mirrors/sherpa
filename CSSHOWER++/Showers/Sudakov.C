@@ -560,3 +560,32 @@ const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,
   if (ees==eees->second.end()) return NULL;
   return &ees->second;
 }
+
+int Sudakov::HasKernel(const ATOOLS::Flavour &fli,
+                       const ATOOLS::Flavour &flj,
+                       const ATOOLS::Flavour &flk,
+                       const cstp::code type) const
+{
+  const SF_EEE_Map *cmap(&m_sffmap);
+  if (type==cstp::FI) cmap=&m_sfimap;
+  else if (type==cstp::IF) cmap=&m_sifmap;
+  else if (type==cstp::II) cmap=&m_siimap;
+  
+  // find whether a kernel for ij k -> i j k exists and which coupling type
+  // it has, i.e. doesn't exist (=0), qcd (=1), ew (=2), qcd and ew (=3)
+  // the latter can happen e.g. if  i=q  j=qbar  k=q'  where ij = {G | P}
+  int cpl=0;
+  SF_EEE_Map::const_iterator eees(cmap->find(fli));
+  if (eees==cmap->end()) return 0;
+  SF_EE_Map::const_iterator ees(eees->second.find(flj));
+  if (ees==eees->second.end()) return 0;
+  for (SF_E_Map::const_iterator es=ees->second.begin(); es!=ees->second.end();
+       ++es) {
+    Splitting_Function_Base* sf = es->second;
+    if (sf->Coupling()->AllowSpec(flk)) {
+      if (sf->PureQCD()) cpl|=1;
+      else cpl|=2;
+    }
+  }
+  return cpl;
+}

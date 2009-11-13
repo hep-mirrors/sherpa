@@ -92,6 +92,11 @@ namespace CSSHOWER {
 
     std::string GetKT2(const std::string &jm2) const;
 
+    int HasKernel(const ATOOLS::Flavour &fli,
+                  const ATOOLS::Flavour &flj,
+                  const ATOOLS::Flavour &flk,
+                  const int type) const;
+
   };
 }
 
@@ -846,6 +851,17 @@ double CS_Shower::CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl)
 std::string CS_Shower::GetKT2(const std::string &jm2) const
 {
   return "0.25*"+jm2;
+}
+
+int CS_Shower::HasKernel(const ATOOLS::Flavour &fli,
+                         const ATOOLS::Flavour &flj,
+                         const ATOOLS::Flavour &flk,
+                         const int type) const
+{
+  cstp::code stp((type&1)?
+		 (type&2)?cstp::II:cstp::IF:
+		 (type&2)?cstp::FI:cstp::FF);
+  return p_shower->GetSudakov()->HasKernel(fli, flj, flk,stp);
 }
 
 namespace PDF {
