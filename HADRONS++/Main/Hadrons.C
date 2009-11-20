@@ -291,7 +291,7 @@ Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* part,
       else                     return NULL;
     }
     else {
-      if(motherblob->Type()==btp::Hadron_Decay)
+      if(motherblob->Type()==btp::Hadron_Decay && motherblob->InParticle(0)->ProductionBlob())
         motherblob = motherblob->InParticle(0)->ProductionBlob();
       else break;
     }

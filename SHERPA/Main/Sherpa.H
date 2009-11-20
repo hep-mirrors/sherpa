@@ -31,6 +31,7 @@ namespace SHERPA {
     bool     GenerateOneEvent(bool reset=true);
     bool     SummarizeRun();
     long int NumberOfErrors() { return m_errors; } 
+    inline void SetTrials(const long& trials) { m_trials = trials; }
     
     inline Initialization_Handler *const GetInitHandler() const 
     { return p_inithandler; }

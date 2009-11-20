@@ -52,8 +52,12 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
   if(p_dechandlers->empty() || bloblist->empty()) return Return_Value::Nothing;
 
   p_bloblist = bloblist;
+  Blob* spblob = p_bloblist->FindFirst(btp::Signal_Process);
+  if (spblob==NULL) {
+    spblob = p_bloblist->at(0);
+  }
   for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
-    hd->second->SetSignalProcessBlob(p_bloblist->FindFirst(btp::Signal_Process));
+    hd->second->SetSignalProcessBlob(spblob);
   }
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
