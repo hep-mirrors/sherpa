@@ -34,9 +34,14 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   double hmass2 = sqr(Flavour(kf_h0).Mass());
   
   geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_PP_EFF")));
+  Data_Reader read(" ",";","!","=");
+  double asggh=read.GetValue<double>("ALPHAS_GGH",ScalarFunction(std::string("alpha_S"),hmass2));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),hmass2)/
+		  asggh/
 		  (2.*M_PI*ScalarConstant(std::string("vev"))));
+  if (read.ReadFromFile(asggh,"ALPHAS_GGH")) {
+    msg_Info()<<METHOD<<"(): hgg coupling is "<<ghgg.Value()<<" ( \\alpha_s = "<<asggh<<" )\n"; 
+  }
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
