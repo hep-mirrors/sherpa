@@ -7,6 +7,7 @@ libAnalysisTriggers_la_SOURCES        =	\
 					Two_Particle_Selector.C \
 					All_Particle_Selector.C \
 					Four_Particle_Calculator.C \
+					Fastjet_Interface.C \
 					Final_Selector.C \
 					Midpoint_Cone.C \
 				    	Calorimeter_Cone.C \
@@ -27,6 +28,9 @@ pkginclude_HEADERS    =	\
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
-INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @ATOOLSINCS@
+INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @ATOOLSINCS@ @CONDITIONAL_FASTJETINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
+
+libAnalysisTriggers_la_LIBADD = \
+	@CONDITIONAL_FASTJETLIBS@

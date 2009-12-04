@@ -21,3 +21,6 @@
 
 /* using ROOT */
 #undef USING__ROOT
+
+/* using FASTJET */
+#undef USING__FASTJET
