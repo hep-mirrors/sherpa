@@ -25,4 +25,4 @@ _Sherpa()
       return 0
     fi
 }
-complete -o nospace -F _Sherpa Sherpa@VERSIONING@
+complete -o nospace -o default -F _Sherpa Sherpa@VERSIONING@
