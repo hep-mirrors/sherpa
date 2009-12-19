@@ -11,9 +11,7 @@ namespace HADRONS {
   public :
     Iso2Channel(const ATOOLS::Flavour *);
     void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
-    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
     std::string ChID()              { return std::string("Iso2");}
@@ -25,9 +23,7 @@ namespace HADRONS {
   public :
     Iso1Channel(const ATOOLS::Flavour *);
     void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
-    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
     std::string ChID()              { return std::string("Iso1");}

@@ -16,7 +16,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
-  double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",0.25);
+  double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
   m_sudakov.SetCoupling(MODEL::s_model,k0sq,is_fac,fs_fac);
   m_sudakov.SetShower(this);

@@ -36,9 +36,6 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 3:
     term->Set(JF()->Ycut()*sqr(rpa.gen.Ecms()));
     return term;
-  case 4:
-    term->Set(JF()->ActualValue()*sqr(rpa.gen.Ecms()));
-    return term;
   case 5:
     term->Set(sqr(p_setter->HT()));
     return term;
@@ -54,7 +51,6 @@ void Tag_Setter::AssignId(Term *term)
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="Q2_CUT") term->SetId(3);
-  else if (term->Tag()=="Q2_MIN") term->SetId(4);
   else if (term->Tag()=="H_T2") term->SetId(5);
   else {
     term->SetId(100+ToType<int>

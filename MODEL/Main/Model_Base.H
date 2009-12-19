@@ -68,6 +68,9 @@ namespace MODEL {
   public:
     Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();
+
+    virtual bool ModelInit() = 0;
+
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
 

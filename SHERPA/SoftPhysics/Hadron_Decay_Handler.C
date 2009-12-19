@@ -266,9 +266,14 @@ Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
       p_ampl->CreateLeg(cl->Mom(),cl->Flav(),cl->Col(),cl->Id());
     }    
   }
+  double mu2=p_ampl->Leg(0)->Mom().Abs2();
+  p_ampl->SetMuF2(mu2);
+  p_ampl->SetKT2QCD(mu2);
   if (msg_LevelIsDebugging()) p_ampl->Print();
   while (p_ampl->Prev()) {
     p_ampl=p_ampl->Prev();
+    p_ampl->SetMuF2(mu2);
+    p_ampl->SetKT2QCD(mu2);
   }
   msg_Debugging()<<"}\n";
   return p_ampl;

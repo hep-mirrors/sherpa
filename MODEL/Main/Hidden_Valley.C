@@ -39,27 +39,32 @@ void HiddenValley_Getter::PrintInfo(std::ostream &str,const size_t width) const
 HiddenValley::HiddenValley(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
+  p_sm = new Standard_Model(m_dir,m_file,false);
+  ParticleInit();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+}
+
+bool HiddenValley::ModelInit()
+{
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model Hidden Sector "
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+HiddenValley");
 
-  Standard_Model * sm(new Standard_Model(m_dir,m_file,false));
-  p_numbers          = sm->ExtractScalarNumbers();
-  p_constants        = sm->ExtractScalarConstants();
-  p_complexconstants = sm->ExtractComplexConstants();
-  p_functions        = sm->ExtractScalarFunctions();
-  p_matrices         = sm->ExtractComplexMatrices();
+  p_numbers          = p_sm->ExtractScalarNumbers();
+  p_constants        = p_sm->ExtractScalarConstants();
+  p_complexconstants = p_sm->ExtractComplexConstants();
+  p_functions        = p_sm->ExtractScalarFunctions();
+  p_matrices         = p_sm->ExtractComplexMatrices();
 
-  delete sm;
+  delete p_sm;
 
-  ParticleInit();
   FillSpectrum();
   
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
+  return true;
 }
 
 HiddenValley::~HiddenValley() 

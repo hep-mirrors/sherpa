@@ -31,24 +31,30 @@ void THDM_Getter::PrintInfo(std::ostream &str,const size_t width) const
 THDM::THDM(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
-  if (m_elementary)
-    msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
-  m_name      = std::string("THDM");
-
-  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
-  p_numbers   = sm->ExtractScalarNumbers();
-  p_constants = sm->ExtractScalarConstants();
-  p_functions = sm->ExtractScalarFunctions();
-  p_matrices  = sm->ExtractComplexMatrices();
-
-  delete sm;
-
+  p_sm = new Standard_Model(m_dir,m_file,false);
   ParticleInit();
-  FillSpectrum();
   if (m_elementary) {
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }
+}
+
+bool THDM::ModelInit()
+{
+  if (m_elementary)
+    msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
+  m_name      = std::string("THDM");
+
+  p_numbers   = p_sm->ExtractScalarNumbers();
+  p_constants = p_sm->ExtractScalarConstants();
+  p_functions = p_sm->ExtractScalarFunctions();
+  p_matrices  = p_sm->ExtractComplexMatrices();
+
+  delete p_sm;
+
+  FillSpectrum();
+
+  return true;
 }
 
 THDM::~THDM()

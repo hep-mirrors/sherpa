@@ -326,7 +326,6 @@ void QCD_Scale_Setter::SetScale
   mu2calc.AddTag("MU_R2","1.0");
   mu2calc.AddTag("H_T2","1.0");
   mu2calc.AddTag("Q2_CUT","1.0");
-  mu2calc.AddTag("Q2_MIN","1.0");
   Process_Integrator *ib(p_proc->Integrator());
   for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));

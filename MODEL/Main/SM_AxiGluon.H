@@ -5,14 +5,17 @@
 #include "ATOOLS/Math/MyComplex.H"
 
 namespace MODEL {
+  class Standard_Model;
   class SM_AxiGluon : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit();
     void FillSpectrum();
   public :
     SM_AxiGluon(std::string,std::string,bool);
     ~SM_AxiGluon();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
+    bool ModelInit();
   };
   /*!
     \class SM_AxiGluon

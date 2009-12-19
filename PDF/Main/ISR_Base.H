@@ -14,7 +14,7 @@ namespace PDF {
     ATOOLS::Flavour m_bunch;
 
     double m_weight, m_exponent, m_xmax;
-    bool   m_on, m_ewon;
+    bool   m_on;
 
   public:
 
@@ -26,7 +26,6 @@ namespace PDF {
 
     // member functions
     bool On() const   { return m_on;   }
-    bool EWOn() const { return m_ewon; }
 
     void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
 

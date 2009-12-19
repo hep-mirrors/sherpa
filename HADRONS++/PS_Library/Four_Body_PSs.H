@@ -32,9 +32,7 @@ namespace HADRONS {
 		const int _j );
     ~TwoResonances();
     void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
-    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p);
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
     std::string ChID()              { return name;}
@@ -56,9 +54,7 @@ namespace HADRONS {
     IsotropicSpectator(const ATOOLS::Flavour *, int spectator);
     ~IsotropicSpectator() { delete m_rambo; }
     void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
-    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
-    void GenerateWeight(ATOOLS::Vec4D * p);
     std::string ChID()              { return std::string("IsotropicSpectator");}
   }; // end of class
 

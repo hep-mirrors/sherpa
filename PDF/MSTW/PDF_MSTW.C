@@ -13,7 +13,7 @@ namespace PDF {
 
     std::string m_path, m_file;
 
-    int    m_set, m_anti;
+    int    m_anti;
     double m_x, m_Q2;
 
   public:
@@ -46,8 +46,9 @@ using namespace ATOOLS;
 PDF_MSTW::PDF_MSTW
 (const ATOOLS::Flavour &bunch,const std::string &path,
  const std::string &bfile,int set):
-  m_path(path), m_file(bfile), m_set(set), m_anti(1)
+  m_path(path), m_file(bfile), m_anti(1)
 {
+  m_member=set;
   m_type="MSTW";
   m_bunch=bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
@@ -61,16 +62,19 @@ PDF_MSTW::PDF_MSTW
   m_partons.insert(Flavour(kf_quark).Bar());
   m_partons.insert(Flavour(kf_photon));
   std::string file(m_file);
-  if (m_set<100) file+=".00.dat";
-  else if (m_set<200) file+=(m_set<110?".68cl.0":".68cl.")+ToString(m_set-100)+".dat";
-  else file+=(m_set<210?".90cl.0":".90cl.")+ToString(m_set-200)+".dat";
-  if (m_set>100) msg_Info()<<METHOD<<"(): Init member "<<m_set
-			   <<", file '"<<file<<"'."<<std::endl;
+  if (m_member<100) file+=".00.dat";
+  else if (m_member<200)
+    file+=(m_member<110?".68cl.0":".68cl.")+ToString(m_member-100)+".dat";
+  else file+=(m_member<210?".90cl.0":".90cl.")+ToString(m_member-200)+".dat";
+  if (m_member>100) msg_Info()<<METHOD<<"(): Init member "<<m_member
+			      <<", file '"<<file<<"'."<<std::endl;
   p_pdf = new c_mstwpdf(m_path+"/"+file);
   m_xmin=p_pdf->xmin;
   m_xmax=p_pdf->xmax;
   m_q2min=p_pdf->qsqmin;
   m_q2max=p_pdf->qsqmax;
+  m_orderas=p_pdf->alphaSorder;
+  m_asmz=p_pdf->alphaSMZ;
 }
 
 PDF_MSTW::~PDF_MSTW()
@@ -80,7 +84,7 @@ PDF_MSTW::~PDF_MSTW()
 
 PDF_Base *PDF_MSTW::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MSTW(m_bunch,m_path,m_file,m_set);
+  PDF_Base *copy = new PDF_MSTW(m_bunch,m_path,m_file,m_member);
   m_copies.push_back(copy);
   return copy;
 }

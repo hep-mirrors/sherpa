@@ -150,7 +150,6 @@ void NLO_Tag_Setter::AssignId(Term *term)
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="Q2_CUT") term->SetId(3);
-  else if (term->Tag()=="Q2_MIN") term->SetId(4);
   else if (term->Tag()=="H_T2") term->SetId(5);
   else {
     term->SetId(100+ToType<int>

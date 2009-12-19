@@ -499,8 +499,8 @@ bool Hadron_Decay_Channel::SetColorFlow(Particle_Vector outparts,int n_q, int n_
 double Hadron_Decay_Channel::Differential()
 {
   p_momenta[0] = Vec4D(p_flavours[0].HadMass(),0.,0.,0.);        // decay from rest
-  p_ps->GeneratePoint(p_momenta);                               // generate a PS point
-  p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
+  p_ps->GeneratePoint(p_momenta,(PHASIC::Cut_Data*)(NULL));     // generate a PS point
+  p_ps->GenerateWeight(p_momenta,(PHASIC::Cut_Data*)(NULL));    // calculate its weight factor
   double weight = p_ps->Weight();                               // get weight factor
   CalculateAmplitudes(p_momenta,p_amplitudes,false);
   double value=p_amplitudes->SumSquare();
@@ -516,8 +516,8 @@ double Hadron_Decay_Channel::Differential(Vec4D * mom, bool anti)
     PRINT_INFO("Error: given momentum is not in CMS: "<<mom[0]);
   }
 #endif
-  p_ps->GeneratePoint(mom);                               // generate a PS point
-  p_ps->GenerateWeight(mom);                              // calculate its weight factor
+  p_ps->GeneratePoint(mom,(PHASIC::Cut_Data*)(NULL));     // generate a PS point
+  p_ps->GenerateWeight(mom,(PHASIC::Cut_Data*)(NULL));    // calculate its weight factor
   
   double weight = p_ps->Weight();                               // weight factor
   CalculateAmplitudes(mom,p_amplitudes,anti);

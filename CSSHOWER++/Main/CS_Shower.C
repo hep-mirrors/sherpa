@@ -487,7 +487,7 @@ Singlet *CS_Shower::TranslateAmplitude
  const KT2X_Map &kt2xmap)
 {
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf?jf->GlobalYcut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
+  double ktveto2(jf?jf->Ycut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -698,7 +698,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
     return ampl->MuF2();
   }
   double xf(1.0);
-  if (m_dmode) {
+  if (m_dmode && ampl->NIn()>1) {
     if ((!ampl->Leg(0)->Flav().Resummed()^
 	 !ampl->Leg(1)->Flav().Resummed()) &&
 	(!ampl->Leg(2)->Flav().Resummed()^

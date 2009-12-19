@@ -8,23 +8,21 @@
 }(beam)
 
 (processes){
-  Process 11 -11 -> 93 93 93{1};
-  CKKW pow(10,-2.25);
-  Order_EW 2;
+  Process 11 -11 -> 93 93;
   End process;
 
-  Process 11 -11 -> 5 -5 93{1};
-  CKKW pow(10,-2.25);
-  Order_EW 2;
+  Process 11 -11 -> 5 -5;
   End process;
 }(processes)
 
 (model){
-  ORDER_ALPHAS = 0
-  ALPHAS(MZ) = 0.127
-  MASSIVE[5] = 1
+  MASSIVE[5] 1;
 }(model)
 
 (me){
-  ME_SIGNAL_GENERATOR = Internal Comix
+  ME_SIGNAL_GENERATOR Comix;
 }(me)
+
+(fragmentation){
+  FRAGMENTATION Lund; DECAYMODEL Lund;
+}(fragmentation)

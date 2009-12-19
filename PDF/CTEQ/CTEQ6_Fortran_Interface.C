@@ -22,8 +22,9 @@ void errmsg_() {
 CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						 const std::string _set,const int _member,
 						 const std::string _path):
-  m_set(_set), m_path(_path), m_member(_member), m_anti(1) 
+  m_set(_set), m_path(_path), m_anti(1) 
 {
+  m_member=_member;
   m_xmin=1.e-6;
   m_xmax=1.;
   m_q2min=.5;
@@ -34,11 +35,31 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   int iset = 0;
   
-  if (m_set==std::string("cteq6m"))  iset = 1;
-  if (m_set==std::string("cteq6d"))  iset = 2;
-  if (m_set==std::string("cteq6l"))  iset = 3;
-  if (m_set==std::string("cteq6l1")) iset = 4;
-  if (iset==1 && m_member>0 && m_member<=40) iset=100+m_member;
+  if (m_set==std::string("cteq6m")) {
+    iset = 1;
+    m_orderas=1;
+    m_asmz=0.118;
+  }
+  if (m_set==std::string("cteq6d")) {
+    iset = 2;
+    m_orderas=1;
+    m_asmz=0.118;
+  }
+  if (m_set==std::string("cteq6l")) {
+    iset = 3;
+    m_orderas=1;
+    m_asmz=0.117981;
+  }
+  if (m_set==std::string("cteq6l1")) {
+    iset = 4;
+    m_orderas=0;
+    m_asmz=0.129783;
+  }
+  if (iset==1 && m_member>0 && m_member<=40) {
+    iset=100+m_member;
+    m_orderas=1;
+    m_asmz=0.118;
+  }
   
   char buffer[1024];
   char * err = getcwd(buffer,1024);
@@ -96,28 +117,6 @@ void CTEQ6_Fortran_Interface::CalculateSpec(double x,double _Q2)
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
   m_x=x/m_rescale;
   m_Q=sqrt(_Q2);
-  if(m_Q*m_Q<m_q2min) {
-    msg_Error()<<METHOD<<"(): Q-range violation Q = "<<m_Q
-	       <<" < "<<sqrt(m_q2min)<<". Set Q -> "
-	       <<sqrt(m_q2min)<<"."<<std::endl;
-    m_Q=1.000001*sqrt(m_q2min);
-  }
-  if(m_Q*m_Q>m_q2max) {
-    msg_Error()<<METHOD<<"(): Q-range violation Q = "<<m_Q
-	       <<" > "<<sqrt(m_q2max)<<". Set Q -> "
-	       <<sqrt(m_q2max)<<"."<<std::endl;
-    m_Q=0.999999*sqrt(m_q2max);
-  }
-  if(m_x<m_xmin) {
-    msg_Error()<<METHOD<<"("<<this<<"): x = "<<m_x<<" ("<<m_rescale
-	       <<") < "<<m_xmin<<". Set x -> "<<m_xmin<<".\n";
-    m_x=m_xmin;
-  }
-  if(m_x>m_xmax) {
-    msg_Error()<<METHOD<<"("<<this<<"): x = "<<m_x<<" ("<<m_rescale
-	       <<") > "<<m_xmax<<". Set x -> "<<m_xmax<<".\n";
-    m_x=m_xmax;
-  }
 }
 
 double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) 

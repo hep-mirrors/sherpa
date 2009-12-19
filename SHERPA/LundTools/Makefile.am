@@ -1,6 +1,7 @@
 pkglib_LTLIBRARIES       =	libLundTools.la
 
-PYTHIASOURCES = pythia6214.f pydata.f pyalps.f pypdfu.f pyplst.f pymult.f \
+PYTHIASOURCES = pythia-6.4.18.f \
+		pyplst.f \
 		Lund_Interface.C
 PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
 

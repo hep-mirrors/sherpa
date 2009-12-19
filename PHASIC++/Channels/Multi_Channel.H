@@ -71,22 +71,8 @@ namespace PHASIC {
     virtual bool OptimizationFinished();
 
     virtual void AddPoint(double);
-    void    GeneratePoint(int,ATOOLS::Vec4D *,Cut_Data *,double *);
-    void    GenerateWeight(int,ATOOLS::Vec4D *,Cut_Data *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);     
-
-    virtual void GeneratePoint(int& sv,ATOOLS::Vec4D *p,Cut_Data *cuts);
-
-    void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
-    void    GenerateWeight(int,ATOOLS::Vec4D *);
-    void    GeneratePoint(ATOOLS::Vec4D *);
-    void    GenerateWeight(ATOOLS::Vec4D *);     
-
-    void    GeneratePoint(int n,double & sprime,double & y,int mode);
-    void    GenerateWeight(int n,double sprime,double y,int mode);
-    void    GeneratePoint(double & sprime,double & y,int mode);
-    void    GenerateWeight(double sprime,double y,int mode);
 
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
     void    GenerateWeight(int mode);

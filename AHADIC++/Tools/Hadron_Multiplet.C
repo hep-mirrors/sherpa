@@ -56,7 +56,7 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
     fl3 = int(kfcode/1000)-int(kfcode/10000)*10;
 
     //std::cout<<"Construct wave function for "<<hadron<<" --> "
-    //	     <<fl1<<" "<<fl2<<" "<<fl3<<" spin = "<<kfcode-10*int(kfcode/10)<<"."<<std::endl;
+    //      <<fl1<<" "<<fl2<<" "<<fl3<<" spin = "<<kfcode-10*int(kfcode/10)<<"."<<std::endl;
     if (fl3==0) {
       if (int(fl2/2.)!=fl2/2.) { help = fl1; fl1 = fl2; fl2 = help; }
       wavefunction = ConstructMesonWaveFunction(int(kfcode/9000000),
@@ -128,8 +128,12 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       weight         = (sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
-	wavefunction->AddToWaves(pair,weight);
-	flavs[0]     = Flavour((kf_code)(1));
+        delete pair;
+        pair = new Flavour_Pair;
+        pair->first = Flavour((kf_code)(1));
+        pair->second = pair->first.Bar();
+        wavefunction->AddToWaves(pair,weight);
+	flavs[0]     = Flavour((kf_code)(2));
 	pair         = new Flavour_Pair;
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
@@ -149,20 +153,21 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
+        pair->first = Flavour((kf_code)(3));
+        pair->second = Flavour((kf_code)(3)).Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
       weight         = (costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
       if (dabs(weight)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(1));
 	pair         = new Flavour_Pair;
-	pair->first  = flavs[0];
-	pair->second = flavs[0].Bar();
+	pair->first  = Flavour((kf_code)(1));
+	pair->second = Flavour((kf_code)(1)).Bar();
 	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
 	wavefunction->AddToWaves(pair,weight);
-	flavs[0]     = Flavour((kf_code)(2));
 	pair         = new Flavour_Pair;
-	pair->first  = flavs[0];
-	pair->second = flavs[0].Bar();
+	pair->first  = Flavour((kf_code)(2));
+	pair->second = Flavour((kf_code)(2)).Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
     }

@@ -73,7 +73,9 @@ namespace ATOOLS {
     inline long int GetSeed() { return m_id; }
 
     int  WriteOutStatus(const char *outfile);
+    int  WriteOutStatus(std::ostream &os,const size_t &idx);
     void ReadInStatus(const char *infile);
+    size_t ReadInStatus(std::istream &is,const size_t &idx);
     void SaveStatus();
     void RestoreStatus();
 

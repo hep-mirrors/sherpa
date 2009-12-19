@@ -4,14 +4,17 @@
 #include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
+  class Standard_Model;
   class MSSM : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit();
     void FillSpectrum();
     void RunSpectrumGenerator();
   public :
     MSSM(std::string,std::string,bool);
     ~MSSM();
+    bool ModelInit();
   };
   /*!
     \class MSSM

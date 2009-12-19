@@ -22,6 +22,12 @@
 /* golem95 found and linked */
 #undef USING__GOLEM95
 
+/* hztool found */
+#undef USING__HZTOOL
+
+/* cernlib found */
+#undef USING__CERNLIB
+
 /* using LHAPDF */
 #undef LHAPDF_PATH
 

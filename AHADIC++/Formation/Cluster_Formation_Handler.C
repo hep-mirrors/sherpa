@@ -189,10 +189,10 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
     bool takefromshift(false);
     if(nonshiftables.size()==1) {
       if(shiftables.empty()) {
-	msg_Error()<<"Error in "<<METHOD<<": "<<std::endl
-		   <<"   Cannot shift single particle on its mass shells:"<<std::endl
-		   <<"   "<<(*nonshiftables.front())<<"."<<std::endl
-		   <<"   Will trigger new event."<<std::endl;
+// 	msg_Error()<<"Error in "<<METHOD<<": "<<std::endl
+// 		   <<"   Cannot shift single particle on its mass shells:"<<std::endl
+// 		   <<"   "<<(*nonshiftables.front())<<"."<<std::endl
+// 		   <<"   Will trigger new event."<<std::endl;
 	Reset();
 	delete nonshiftables.front();
 	return false;

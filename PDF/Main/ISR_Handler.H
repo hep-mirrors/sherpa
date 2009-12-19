@@ -28,7 +28,7 @@ namespace PDF {
 
     std::string m_name, m_type;
 
-    int m_mode, m_ewmode, m_rmode; 
+    int m_mode, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2];
@@ -61,6 +61,8 @@ namespace PDF {
 
     // member functions
     void Init(double *splimits,double *kplimits);
+
+    void SetPDFMember() const;
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
@@ -114,7 +116,6 @@ namespace PDF {
     { return p_isrbase[beam]->Flavour(); }
 
     inline int On()    { return m_mode;    }
-    inline int EWOn()  { return m_ewmode;  }
 
     inline double *SprimeRange()         { return m_splimits;    }
     inline double *YRange()              { return m_ylimits;     }

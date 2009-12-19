@@ -215,6 +215,17 @@ int ATOOLS::Random::WriteOutStatus(const char * filename)
   return 1;
 }
 
+int ATOOLS::Random::WriteOutStatus
+(std::ostream &outstream,const size_t &idx)
+{
+  outstream<<idx<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
+  for (int i=0;i<56;++i) outstream<<m_ma[i]<<"\t";
+  outstream<<iy<<"\t"<<idum2<<"\t";
+  for (int i=0;i<NTAB;++i) outstream<<iv[i]<<"\t";
+  outstream<<"\n";
+  return idx+1;
+}
+
 bool ATOOLS::Random::ReadInStatus(const std::string &path) 
 {
   ReadInStatus((path+"random.dat").c_str());
@@ -254,6 +265,21 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
   }
 }
 
+size_t ATOOLS::Random::ReadInStatus
+(std::istream &myinstream,const size_t &idx)
+{
+  size_t count;
+  while (!myinstream.eof()) {
+    myinstream>>count;
+    std::string buffer;
+    myinstream>>m_id; myinstream>>m_inext; myinstream>>m_inextp;
+    for (int i=0;i<56;++i) myinstream>>m_ma[i];    
+    myinstream>>iy>>idum2;
+    for (int i=0;i<NTAB;++i) myinstream>>iv[i];
+    if (count==idx) return idx+1;
+  }
+  return std::string::npos;
+}
 
 double ATOOLS::Random::GetNZ() 
 {

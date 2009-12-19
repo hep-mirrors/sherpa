@@ -39,7 +39,7 @@ PDF_Base * GRVph_Fortran_Interface::GetCopy()
 
 void GRVph_Fortran_Interface::CalculateSpec(double _x,double _Q2) 
 {
-  float x = _x, Q2 = _Q2;
+  float x = _x/m_rescale, Q2 = _Q2;
   
   grvglo_(x,Q2,m_u,m_d,m_s,m_c,m_b,m_g);
 }
@@ -57,7 +57,7 @@ double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   
   value  *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),sqr(rpa.gen.Ecms()));
   
-  return value;
+  return m_rescale*value;
 }
 
 DECLARE_PDF_GETTER(GRVph_Getter);

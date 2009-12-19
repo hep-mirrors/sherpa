@@ -11,107 +11,85 @@
 using namespace SHERPA;
 
 extern "C" {
-  void sphepc_(int*);
-  void spinit_(const char*,const char*,const char*,double*,int,int,int);
-  void spevnt_();
-  void spexec_();
-  void spprep_(int &);
-  void spstrf_(int &);
-  void spdecy_(int &);
-  void spinki_(int*);
-  void spinpr_();
-  void splist_(int*);
-  void spplst_();
-  void spmult_(int*);
-  double spalp_(double*);
-  double shalps_(double*);
-  int spcomp_(int*);
-  void sppdpr_(double*,double*,double*);
-  void shpdpr_(double*,double*,double*);
-  void sherrm_(int*);
-  void psherp_();
+  void pyhepc_(int*);
+  void pyinit_(const char*,const char*,const char*,double*,int,int,int);
+  void pyevnt_();
+  void pyexec_();
+  void pyprep_(int &);
+  void pystrf_(int &);
+  void pydecy_(int &);
+  void pyinki_(int*);
+  void pyinpr_();
+  void pylist_(int*);
+  void pyplst_();
+  void pymult_(int*);
+  double pyalp_(double*);
+  double pyalps_(double*);
+  int pycomp_(int*);
+  void pypdpr_(double*,double*,double*);
+  void pypdpr_(double*,double*,double*);
+  void pyerrm_(int*);
 }
 
-void sphepc(int mconv) { 
-  sphepc_(&mconv); 
+void pyhepc(int mconv) { 
+  pyhepc_(&mconv); 
 }
 
-int spcomp(int kfcode) { 
-  return spcomp_(&kfcode); 
+int pycomp(int kfcode) { 
+  return pycomp_(&kfcode); 
 }
 
-void spinit(const char *frame,const char *beam,const char *target,double win) {
-  spinit_(frame,beam,target,&win,strlen(frame),strlen(beam),strlen(target));
+void pyinit(const char *frame,const char *beam,const char *target,double win) {
+  pyinit_(frame,beam,target,&win,strlen(frame),strlen(beam),strlen(target));
 }
 
-void spevnt() { 
-  spevnt_(); 
+void pyevnt() { 
+  pyevnt_(); 
 }
 
-void spexec() { 
-  spexec_(); 
+void pyexec() { 
+  pyexec_(); 
 }
 
-void spprep(int & callno) {
-  spprep_(callno);
+void pyprep(int & callno) {
+  pyprep_(callno);
 }
 
-void spstrf(int & callno) {
-  spstrf_(callno);
+void pystrf(int & callno) {
+  pystrf_(callno);
 }
 
-void spdecy(int & callno) {
-  spdecy_(callno);
+void pydecy(int & callno) {
+  pydecy_(callno);
 }
 
-void spinki(int modki) { 
-  spinki_(&modki); 
+void pyinki(int modki) { 
+  pyinki_(&modki); 
 }
 
-void spinpr() {
-  spinpr_();
+void pyinpr() {
+  pyinpr_();
 }
 
-void splist(int dummy) { 
-  splist_(&dummy); 
+void pylist(int dummy) { 
+  pylist_(&dummy); 
 }
 
-void spmult(int mmul) {
-  spmult_(&mmul);
+void pymult(int mmul) {
+  pymult_(&mmul);
 }
 
-double shalps_(double *q2) {
+double pyalps_(double *q2) {
   if (Lund_Interface::ExportAS()) return (*MODEL::as)(*q2);
-  return spalp_(q2);
+  return pyalp_(q2);
 }
 
-void shpdpr_(double *x,double *q2,double *xppr) {
-  if (Lund_Interface::ExportPDF()) {
-    for (int i=0;i<=10;++i) {
-      Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,*q2);
-      if (i!=3 && i!=4) {
-	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((kf_code)(i-5)));
-      }
-      else {
-	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((kf_code)(2-i)));
-      }
-    }
-  }
-  else {
-    sppdpr_(x,q2,xppr);
-  }
-}
-
-void sherrm_(int *error) {
+void pyerrm_(int *error) {
   SHERPA::Lund_Interface::Error(*error);
 }
 
-void psherp_() {
-  ATOOLS::exh->GenerateStackTrace(std::cout);
-}
-
 void ListLundParameters() { 
-  spplst_(); 
+  pyplst_(); 
 }
 
 const int nmaxjets  = 10000;
@@ -122,11 +100,6 @@ const int nmaxpup   = 100;
 const int nmxhep    = HEPEVT_CB_SIZE;
 
 extern "C" {
-extern struct {
-  int mfudge[100];
-  double pfudge[100];
-} cfudge_;
-#define cfudge cfudge_
 
 extern struct {
   int nevhep, nhep, isthep[nmxhep], idhep[nmxhep];
@@ -138,126 +111,126 @@ extern struct {
 extern struct {
   int n, npad;
   double k[5][nmaxjets], p[5][nmaxjets], v[5][nmaxjets];
-} spjets_;
-#define spjets spjets_
+} pyjets_;
+#define pyjets pyjets_
 
 extern struct {
   int mstu[200];
   double paru[200];
   int mstj[200];
   double parj[200];
-} spdat1_;
-#define spdat1 spdat1_
+} pydat1_;
+#define pydat1 pydat1_
 
 extern struct {
   int kchg[4][nmaxpart];
   double pmas[4][nmaxpart];
   double parf[2000];
   double vckm[4][4];
-} spdat2_;
-#define spdat2 spdat2_
+} pydat2_;
+#define pydat2 pydat2_
 
 extern struct {
   int mdcy[3][nmaxpart], mdme[2][nmaxdecay];
   double brat[nmaxdecay];
   int kfdp[5][nmaxdecay];
-} spdat3_;
-#define spdat3 spdat3_
+} pydat3_;
+#define pydat3 pydat3_
 
 extern struct {
   char *chaf[2][nmaxpart];
-} spdat4_;
-#define spdat4 spdat4_
+} pydat4_;
+#define pydat4 pydat4_
 
 extern struct {
   int msel, mselpd, msub[500], kfin[81][2];
   double ckin[200];
-} spsubs_;
-#define spsubs spsubs_
+} pysubs_;
+#define pysubs pysubs_
 
 extern struct {
   int mstp[200];
   double parp[200];
   int msti[200];
   double pari[200];
-} sppars_;
-#define sppars sppars_
+} pypars_;
+#define pypars pypars_
 
 extern struct {
-  int mrsp[6];
-  double rrsp[100];
-} spdatr_;
-#define spdatr spdatr_
+  int mrpy[6];
+  double rrpy[100];
+} pydatr_;
+#define pydatr pydatr_
 
 extern struct {
   int mint[400];
   double vint[400];
-} spint1_;
-#define spint1 spint1_
+} pyint1_;
+#define pyint1 pyint1_
 
 extern struct {
   int iset[nmaxpart], kfpr[nmaxpart][2];
   double coef[20][nmaxpart];
   int icol[2][4][40];
-} spint2_;
-#define spint2 spint2_
+} pyint2_;
+#define pyint2 pyint2_
 
 extern struct {
   double xsfx[81][2];
   int isig[3][1000];
   double sigh[1000];
-} spint3_;
-#define spint3 spint3_
+} pyint3_;
+#define pyint3 pyint3_
 
 extern struct {
   int mwid[nmaxpart];
   double wids[5][nmaxpart];
-} spint4_;
-#define spint4 spint4_
+} pyint4_;
+#define pyint4 pyint4_
 
 extern struct {
   int ngenpd, ngen[3][501];
   double xsec[3][501];
-} spint5_;
-#define spint5 spint5_
+} pyint5_;
+#define pyint5 pyint5_
 
 extern struct {
   char *proc[501];
-} spint6_;
-#define spint6 spint6_
+} pyint6_;
+#define pyint6 pyint6_
 
 extern struct {
   double sigt[7][7][6];
-} spint7_;
-#define spint7 spint7_
+} pyint7_;
+#define pyint7 pyint7_
 
 extern struct {
   int imss[100];
   double rmss[100];
-} spmssm_;
-#define spmssm spmssm_
+} pymssm_;
+#define pymssm pymssm_
 
 extern struct {
   double zmix[4][4], umix[2][2], vmix[2][2], smz[4], smw[2];
   double sfmix[4][16], zmixi[4][4], umixi[2][2], vmixi[2][2];
-} spssmt_;
-#define spssmt spssmt_
+} pyssmt_;
+#define pyssmt pyssmt_
 
 extern struct {
   double rvlam[3][3][3], rvlamp[3][3][3], rvlamb[3][3][3];
-} spmsrv_;
-#define spmsrv spmsrv_
+} pymsrv_;
+#define pymsrv pymsrv_
 
 extern struct {
   int itcm[100];
   double rtcm[100];
-} sptcsm_;
-#define sptcsm sptcsm_
+} pytcsm_;
+#define pytcsm pytcsm_
 
 extern struct {
   int ihist[4], indx[1000];
   double bin[20000];
-} spbins_;
+} pybins_;
 
 extern struct {
   int idbmup[2];

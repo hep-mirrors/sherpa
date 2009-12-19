@@ -190,8 +190,10 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha()>0.) {
       if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
+      if (channels.size()>1) {
       channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
       if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
+      }
     }
   }
   double norm = 0;
@@ -322,16 +324,6 @@ void Multi_Channel::AddPoint(double value)
 
 
 
-void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts) 
-{
-  if (channels[n]->Alpha() > 0.) {
-    channels[n]->GenerateWeight(p,cuts);
-    if (channels[n]->Weight()==0.) m_weight = 0.; 
-    else m_weight = 1./channels[n]->Weight();
-  }
-  else m_weight = 0.;
-}
-
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
   if (channels.size()==1) {
@@ -355,11 +347,6 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   if (m_weight!=0) m_weight = 1./m_weight;
 }
 
-
-void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
-{
-  channels[n]->GeneratePoint(p,cuts,ran);
-}
 
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
@@ -386,114 +373,6 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   }  
 }
 
-void Multi_Channel::GenerateWeight(int n,Vec4D* p) 
-{
-  if (channels[n]->Alpha() > 0.) {
-    channels[n]->GenerateWeight(p);
-    if (channels[n]->Weight()==0.) m_weight = 0.; 
-                              else m_weight = 1./channels[n]->Weight();
-  }
-  else m_weight = 0.;
-}
-
-void Multi_Channel::GenerateWeight(Vec4D * p)
-{
-  m_weight = 0.;
-  if (channels.size()==1) {
-    channels[0]->GenerateWeight(p);
-    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
-    return;
-  }
-  for (size_t i=0; i<channels.size(); ++i) {
-    if (channels[i]->Alpha() > 0.) {
-      channels[i]->GenerateWeight(p);
-      if (!(channels[i]->Weight()>0) && 
-	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg_Error()<<"Multi_Channel::GenerateWeight(.): ("<<this->name
-		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
-      }
-      if (channels[i]->Weight()!=0) 
-	m_weight += channels[i]->Alpha()/channels[i]->Weight();
-    }
-  }
-  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
-}
-
-
-void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
-{
-  channels[n]->GeneratePoint(p,rn);
-}
-
-void Multi_Channel::GeneratePoint(Vec4D * p)
-{
-  if (channels.size()==1) {
-    channels[0]->GeneratePoint(p);
-    return;
-  }
-  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  double rn  = ran.Get();
-  double sum = 0;
-  for (size_t i=0;i<channels.size();i++) {
-    sum += channels[i]->Alpha();
-    if (sum>rn) {
-      channels[i]->GeneratePoint(p);
-      m_lastdice = i;
-      return;
-    }
-  }  
-  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
-  channels[0]->GeneratePoint(p);
-}
-
-void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
-  m_weight = 0.;
-  for (size_t i=0; i<channels.size(); ++i) {
-    if (channels[i]->Alpha() > 0.) {
-      channels[i]->GenerateWeight(sprime,y,mode);
-      if (!(channels[i]->Weight()>0) && 
-	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg_Error()<<"Multi_Channel::GenerateWeight(...): ("<<this->name
-		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
-      }
-      if (channels[i]->Weight()!=0.) 
-	m_weight += channels[i]->Alpha()/channels[i]->Weight();
-    }
-  }
-  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
-}
-
-void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
-  if (channels[n]->Alpha() > 0.) {
-    channels[n]->GenerateWeight(sprime,y,mode);
-    if (channels[n]->Weight()==0.) m_weight = 0.; 
-                              else m_weight = 1./channels[n]->Weight();
-  }
-  else m_weight = 0.;
-}
-
-void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
-  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  double disc = ran.Get();
-  double sum  = 0;
-  for (size_t n=0;n<channels.size();n++) {
-    sum += channels[n]->Alpha();
-    if (sum>disc) {
-      for (int i=0;i<2;i++) rans[i] = ran.Get();
-      channels[n]->GeneratePoint(sprime,y,mode,rans);
-      m_lastdice = n;
-      return;
-    }
-  }  
-  msg_Error()<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
-  channels[0]->GeneratePoint(sprime,y,mode,rans);
-}
-
-void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {
-  for (int i=0;i<2;i++) rans[i] = ran.Get();
-  channels[n]->GeneratePoint(sprime,y,mode,rans);
-}
-
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
 {
   for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
@@ -511,6 +390,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
   msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
+  abort();
 }
 
 void Multi_Channel::GenerateWeight(int mode=0)
@@ -638,12 +518,6 @@ void Multi_Channel::SetRange(double *_sprimerange,double *_yrange)
 void Multi_Channel::GetRange() 
 {
   for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
-}
-
-void Multi_Channel::GeneratePoint(int& sv,ATOOLS::Vec4D *p,Cut_Data *cuts) 
-{ 
-  sv=0;
-  GeneratePoint(p,cuts);
 }
 
 bool Multi_Channel::Initialize()

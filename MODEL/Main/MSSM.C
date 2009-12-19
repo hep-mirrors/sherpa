@@ -30,26 +30,32 @@ void MSSM_Getter::PrintInfo(std::ostream &str,const size_t width) const
 MSSM::MSSM(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
-  if (m_elementary) 
-    msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
-  m_name      = std::string("MSSM");
-
-  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
-  p_numbers   = sm->ExtractScalarNumbers();
-  p_constants = sm->ExtractScalarConstants();
-  p_functions = sm->ExtractScalarFunctions();
-  p_matrices  = sm->ExtractComplexMatrices();
-
-  delete sm;
-
-  p_constants->insert(std::make_pair(std::string("mT"),ScalarConstant("Yukawa_t")));
-
+  p_sm = new Standard_Model(m_dir,m_file,false);
   ParticleInit();
-  FillSpectrum();
   if (m_elementary) {
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }
+}
+
+bool MSSM::ModelInit()
+{
+  if (m_elementary) 
+    msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
+  m_name      = std::string("MSSM");
+
+  p_numbers   = p_sm->ExtractScalarNumbers();
+  p_constants = p_sm->ExtractScalarConstants();
+  p_functions = p_sm->ExtractScalarFunctions();
+  p_matrices  = p_sm->ExtractComplexMatrices();
+
+  delete p_sm;
+
+  p_constants->insert(std::make_pair(std::string("mT"),ScalarConstant("Yukawa_t")));
+
+  FillSpectrum();
+
+  return true;
 }
 
 MSSM::~MSSM() {}

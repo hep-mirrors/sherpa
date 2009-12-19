@@ -14,12 +14,11 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Jet_Finder::Jet_Finder
-(const int nin,const int nout,Flavour *fl,
- const std::string &ycut,const std::string &gycut):
-  Selector_Base("Jetfinder"), m_value(0.0), 
-  m_cuttag(ycut), m_gcuttag(gycut), m_on(true)
+(const int nin,const int nout,Flavour *fl,const std::string &ycut):
+  Selector_Base("Jetfinder"), m_cuttag(ycut),
+  m_on(true), p_yccalc(NULL)
 {
-  m_gycut=m_ycut=2.0;
+  m_ycut=2.0;
   /*
   // something better needs to be done, only useful if single ycut, gycut
   if (m_cuttag[0]!='[') {
@@ -50,6 +49,7 @@ Jet_Finder::Jet_Finder
 
 Jet_Finder::~Jet_Finder() 
 {
+  if (p_yccalc) delete p_yccalc;
 }
 
 Flavour Jet_Finder::GetFlavour(std::string fl)
@@ -84,15 +84,11 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
 }
 
 size_t Jet_Finder::FillCombinations(const std::string &name,
-				    const std::string &ycut,
-				    const std::string &gycut,
 				    size_t &cp,const int fl)
 {
   bool ex(false);
   size_t sum(0), sp(0);
   std::vector<int> pos;
-  std::string cut(ycut), ccut(cut), ncut(cut);
-  std::string gcut(gycut), cgcut(gcut), ngcut(gcut);
   for (size_t i(0);i<name.length();++i) {
     if (name[i]=='[') {
       int open(1);
@@ -100,36 +96,8 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 	if (name[j]=='[') ++open;
 	if (name[j]==']') --open;
 	if (open==0) {
-	  for (size_t ci(0);ci<cut.length();++ci) {
-	    if (cut[ci]=='[') {
-	      int copen(1);
-	      for (size_t cj(ci+1);cj<cut.length();++cj) {
-		if (cut[cj]=='[') ++copen;
-		if (cut[cj]==']') --copen;
-		if (copen==0) {
-		  if (ccut==ycut) ccut=cut.substr(0,ci);
-		  ncut=cut.substr(ci+1,cj-ci-1);
-		  cut=cut.substr(cj+1);
-		}
-	      }
-	    }
-	  }
-	  for (size_t ci(0);ci<gcut.length();++ci) {
-	    if (gcut[ci]=='[') {
-	      int copen(1);
-	      for (size_t cj(ci+1);cj<gcut.length();++cj) {
-		if (gcut[cj]=='[') ++copen;
-		if (gcut[cj]==']') --copen;
-		if (copen==0) {
-		  if (cgcut==gycut) cgcut=gcut.substr(0,ci);
-		  ngcut=gcut.substr(ci+1,cj-ci-1);
-		  gcut=gcut.substr(cj+1);
-		}
-	      }
-	    }
-	  }
 	  pos.push_back(FillCombinations
-			(name.substr(i+1,j-i-1),ncut,ngcut,cp,fl-1));
+			(name.substr(i+1,j-i-1),cp,fl-1));
 	  m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
 	  if (pos.back()&((1<<m_nin)-1)) 
 	    m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
@@ -161,13 +129,7 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
       m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
     sum=sum|pos.back();
   }
-  Algebra_Interpreter interpreter;
-  interpreter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
-  m_cycut=ToType<double>(interpreter.Interprete(ccut));
-  m_gcycut=ToType<double>(interpreter.Interprete(cgcut));
   for (size_t i(0);i<pos.size();++i) {
-    m_ycuts[pos[i]][pos[i]]=m_cycut;
-    m_gycuts[pos[i]][pos[i]]=m_gcycut;
     int sc=m_flavs[pos[i]].StrongCharge();
     if ((pos[i]&3)==0 && sc!=0 &&
 	(m_fl[0].Strong() || m_fl[1].Strong())) {
@@ -181,10 +143,6 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
     }
     for (size_t j(i+1);j<pos.size();++j) {
       if (pos[i]>2 || pos[j]>2) {
-	m_ycuts[pos[i]][pos[j]]=m_cycut;
-	m_gycuts[pos[i]][pos[j]]=m_gcycut;
-	m_ycut=Min(m_ycut,m_cycut);
-	m_gycut=Min(m_gycut,m_gcycut);
 	for (size_t k(0);k<pos.size();++k)
 	  if (i!=k && j!=k) {
 	    if (p_sproc && p_sproc->Combinable(pos[i],pos[j])) {
@@ -207,7 +165,7 @@ size_t Jet_Finder::FillCombinations(const std::string &name,
 
 void Jet_Finder::FillCombinations()
 {
-  if (m_ycuts.empty()) {
+  if (p_yccalc==NULL) {
     if (p_proc==NULL) THROW(fatal_error,"Process not set.");
     m_procname=p_proc->Process()->Name();
     p_sproc=p_proc->Process()->Get<Single_Process>();
@@ -217,31 +175,21 @@ void Jet_Finder::FillCombinations()
       m_procname=m_procname.substr(0,m_procname.find("__EW"));
     m_moms.clear();
     m_flavs.clear();
-    m_ycuts.clear();
-    m_gycuts.clear();
     m_fills.resize(m_nin+m_nout+1);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find("__")+2);
     size_t i(0);
-    FillCombinations(name,m_cuttag,m_gcuttag,i,m_nin+m_nout);
+    FillCombinations(name,i,m_nin+m_nout);
+    p_yccalc = new Algebra_Interpreter();
+    p_yccalc->SetTagReplacer(this);
+    for (size_t i=0;i<p_proc->NIn()+p_proc->NOut();++i) 
+      p_yccalc->AddTag("p["+ToString(i)+"]",ToString(p_proc->Momenta()[i]));
+    p_yccalc->Interprete(m_cuttag);
     if (msg_LevelIsDebugging()) {
-      msg_Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
-      double s(sqr(rpa.gen.Ecms()));
-      for (std::map<size_t,std::map<size_t,double> >::const_iterator
-	     iit(m_ycuts.begin());iit!=m_ycuts.end();++iit) {
-	size_t i(iit->first);
-	if (iit->second.size()>1)
-	  msg_Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
-		   <<m_flavs[i].Strong()<<"] & {";
-	for (std::map<size_t,double>::const_iterator
-	       jit(iit->second.begin());jit!=iit->second.end();++jit) {
-	  size_t j(jit->first);
-	  if (i!=j) 
-	    msg_Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
-		     <<m_flavs[j].Strong()<<",("<<sqrt(m_ycuts[i][j]*s)
-		     <<","<<sqrt(m_gycuts[i][j]*s)<<")]";
-	}
-	if (iit->second.size()>1) msg_Out()<<" }\n";
+      msg_Out()<<METHOD<<"(): Q_{cut} for '"<<m_procname<<"' {\n";
+      {
+	msg_Indent();
+	p_yccalc->PrintEquation();
       }
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
@@ -370,14 +318,14 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
     if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
     p_sproc=p_proc->Process()->Get<Single_Process>();
   }
-  m_value=2.0;
-  msg_Debugging()<<METHOD<<"(): '"
-		 <<p_proc->Process()->Name()<<"' {\n";
+  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()<<"' Q_cut = "
+		 <<sqrt(p_yccalc->Calculate()->Get<double>()*m_s)<<" {\n";
   for (size_t i(0);i<m_pcs.size();++i) {
     msg_Debugging()<<"  "<<ID(m_pcs[i])<<"["<<m_flavs[m_pcs[i]]
 		   <<"] -> "<<m_moms[m_pcs[i]].PPerp()<<"\n";
     if (m_moms[m_pcs[i]].PPerp2()<m_pt2min) return 1-m_sel_log->Hit(true);
   }
+  m_ycut=p_yccalc->Calculate()->Get<double>();
   for (size_t cl(1);cl<m_fills.size();++cl) {
     if (m_fills[cl].empty()) continue;
     msg_Indent();
@@ -388,21 +336,19 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
       if (uc && !ColorConnected(i,j,k)) continue;
       if (m_flavs[i].IsQuark() && m_flavs[j].IsQuark() &&
 	  m_flavs[i]!=m_flavs[j].Bar()) continue;
-      double ycut(m_ycuts[i][j]);
       msg_Debugging()<<"  "<<ID(i)<<"["<<m_flavs[i]<<"] & "
 		     <<ID(j)<<"["<<m_flavs[j]<<"] <-> "
 		     <<ID(k)<<"["<<m_flavs[k]<<"], qcut = "
-		     <<sqrt(ycut*m_s)<<"/"<<sqrt(m_gycuts[i][j]*m_s);
+		     <<sqrt(m_ycut*m_s);
       double pt2ij=Qij2(m_moms[i],m_moms[j],m_moms[k],m_flavs[i],m_flavs[j]);
       msg_Debugging()<<", ptjk = "<<sqrt(pt2ij)<<" ("
-		     <<(pt2ij>=ycut*m_s)<<(pt2ij<ycut*m_s?")\n":")");
-      if (pt2ij<ycut*m_s) return 1-m_sel_log->Hit(true);
-      if (pt2ij<m_value*m_s) m_value=pt2ij/m_s;
+		     <<(pt2ij>=m_ycut*m_s)<<(pt2ij<m_ycut*m_s?")\n":")");
+      if (pt2ij<m_ycut*m_s) return 1-m_sel_log->Hit(true);
       msg_Debugging()<<"\n";
     }
     msg_Debugging()<<"}\n";
   }
-  msg_Debugging()<<"} -> q_min = "<<sqrt(m_value*m_s)<<"\n";
+  msg_Debugging()<<"}\n";
   return 1-m_sel_log->Hit(false);
 }
 
@@ -561,27 +507,22 @@ void Jet_Finder::BuildCuts(Cut_Data *cuts)
   UpdateCuts(0.0,0.0,cuts);
 }
 
-double Jet_Finder::ActualValue() const 
+std::string Jet_Finder::ReplaceTags(std::string &expr) const
 {
-  return m_value; 
+  return p_yccalc->ReplaceTags(expr);
 }
 
-double Jet_Finder::GetYcut(const size_t& i,const size_t& j) const
+Term *Jet_Finder::ReplaceTags(Term *term) const
 {
-  std::map<size_t,std::map<size_t,double> >::const_iterator it=m_ycuts.find(i);
-  if(it==m_ycuts.end()) return -1.0;
-  std::map<size_t,double>::const_iterator jt=(it->second).find(j);
-  if(jt==(it->second).end()) return -1.0;
-  return jt->second;
+  term->Set(m_moms.find(1<<term->Id())->second);
+  return term;
 }
 
-double Jet_Finder::GetGlobalYcut(const size_t &i,const size_t &j) const
+void Jet_Finder::AssignId(Term *term)
 {
-  std::map<size_t,std::map<size_t,double> >::const_iterator it=m_gycuts.find(i);
-  if(it==m_gycuts.end()) return -1.0;
-  std::map<size_t,double>::const_iterator jt=(it->second).find(j);
-  if(jt==(it->second).end()) return -1.0;
-  return jt->second;
+  term->SetId(ToType<int>
+	      (term->Tag().substr
+	       (2,term->Tag().length()-3)));
 }
 
 namespace PHASIC{
@@ -590,10 +531,10 @@ DECLARE_ND_GETTER(Jet_Finder_Getter,"METS",Selector_Base,Selector_Key,false);
 
 Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
+  if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
   Jet_Finder *jf(new Jet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
 				(Flavour*)&key.p_proc->Process()->
-				Flavours().front(),key[0][0],key[0][1]));
+				Flavours().front(),key[0][0]));
   jf->SetProcess(key.p_proc);
   if (key.front().size()>2 && key[0][2]=="LO") jf->SetOn(false);
   return jf;

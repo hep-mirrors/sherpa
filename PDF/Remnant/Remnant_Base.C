@@ -74,6 +74,8 @@ bool Remnant_Base::AdjustKinematics()
 	  p_partner->p_beam->OutMomentum())[0];
   m_pzrem=(p_beam->OutMomentum()+
 	   p_partner->p_beam->OutMomentum())[3];
+  if ((p_last[1]==NULL || p_last[0]==NULL) &&
+      (Type()==rtp::electron || p_partner->Type()==rtp::electron)) return true;
   for (size_t i=0;i<2;++i) {
     ATOOLS::Blob *cur=p_beamblob;
     if (i==1) cur=p_partner->p_beamblob;
@@ -98,8 +100,6 @@ bool Remnant_Base::AdjustKinematics()
   if (p_last[1]==NULL && p_last[0]==NULL) {
     THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
   }
-  if ((p_last[1]==NULL || p_last[0]==NULL) &&
-      (Type()==rtp::electron || p_partner->Type()==rtp::electron)) return true;
   ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
   ATOOLS::Momentum_Shifter shift(p_last[0],p_last[1]);
   shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().Mass())+pr1.PPerp2(),1);

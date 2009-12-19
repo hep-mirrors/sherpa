@@ -100,6 +100,8 @@ bool Color_Setter::SetLargeNCColors()
   colint->SetOTFCC(true);
   Double_Vector psum;
   std::map<size_t,size_t> cmap;
+  size_t ntrials(0);
+  while (true) {
     size_t cc(0);
     psum.clear();
     while (colint->NextOrder()) {
@@ -136,10 +138,17 @@ bool Color_Setter::SetLargeNCColors()
 	msg_Debugging()<<"psum["<<psum.size()-1<<"]/["<<cc<<"]"
 		       <<perm<<" = "<<psum.back()<<"\n";
     }
-    if (psum.empty()) {
-      msg_Tracking()<<METHOD<<"(): No nonzero amplitude. Randomize."<<std::endl;
+    if (psum.size()) break;
+    // select new color configuration
+    while (!colint->GeneratePoint());
+    Int_Vector ni(colint->I()), nj(colint->J());
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      oc[i]=ColorID(ni[i],nj[i]);
+    if ((ntrials+=10)>=s_clmaxtrials) {
+      msg_Error()<<METHOD<<"(): No nonzero amplitude. Randomize."<<std::endl;
       return false;
     }
+  }
   msg_Debugging()<<"sum = "<<psum.back()<<"\n";
   size_t l(0), r(psum.size()-1), c((l+r)/2);
   double a(psum[c]), disc(ran.Get()*psum.back());
@@ -150,8 +159,7 @@ bool Color_Setter::SetLargeNCColors()
     a=psum[c];
   }
   if (disc<psum[l]) r=l;
-  size_t ck(cmap[r]);
-  cc=0;
+  size_t ck(cmap[r]), cc(0);
   msg_Debugging()<<"selected r = "<<r<<", ck = "<<ck<<": "<<psum[r]<<"\n";
   while (colint->NextOrder()) {
     ++cc;

@@ -1,5 +1,6 @@
 #include "AddOns/Analysis/Triggers/DIS_Algorithm.H"
 #include "ATOOLS/Phys/Particle_List.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 #include <iomanip>
@@ -168,7 +169,7 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
   if (n==0) return 0.;
   if (n==1) {
     AddToJetlist(p[0],bf[0]);
-    double dmin=sqr(p[0][0])*R2(p[0])/m_r2min;
+    double dmin=sqr(p[0][0])*R2(p[0]);
     AddToKtlist(dmin);
     return dmin;;
   }
@@ -183,10 +184,10 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
     PROFILE_LOCAL(" first loop ");
     
     for (int i=0;i<n;++i) {
-      double di = p_ktij[i][i] = sqr(p[i][0])*R2(p[i])/m_r2min;
+      double di = p_ktij[i][i] = sqr(p[i][0])*R2(p[i]);
       if (di<dmin) { dmin=di; ii=i; jj=i;}
       for (int j=0;j<i;++j) {
-	double dij = p_ktij[i][j] = sqr(Min(p[i][0],p[j][0]))*R2(p[i],p[j])/m_r2min;
+	double dij = p_ktij[i][j] = sqr(Min(p[i][0],p[j][0]))*R2(p[i],p[j]);
 	if (dij<dmin) {dmin=dij; ii=i; jj=j;}
       }
     }
@@ -195,6 +196,7 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
   // recalc matrix
   while (n>0) {
     PROFILE_LOCAL(" main loop ");
+    if (dmin>m_r2min*sqr(rpa.gen.Ecms())) break;
     if (ii!=jj) {
       // combine precluster
 #ifdef DEBUG_JETRATES
@@ -209,11 +211,10 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
     else {
       // add to jet list
 #ifdef DEBUG_JETRATES
-      msg_Debugging()<<"jet at rate Q_{"<<n<<"->"
+      msg_Debugging()<<"jetrate Q_{"<<n<<"->"
 		     <<n-1<<"} = "<<sqrt(dmin)
 		     <<" <- "<<p[p_imap[jj]]<<"\n";
 #endif
-      AddToJetlist(p[p_imap[jj]],bf[p_imap[jj]]);
       AddToKtlist(dmin);
     }
 
@@ -223,7 +224,7 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
 
     if (n==1) {
       int jjx=p_imap[jj];
-      p_ktij[jjx][jjx] = sqr(p[jjx][0])*R2(p[jjx])/m_r2min;
+      p_ktij[jjx][jjx] = sqr(p[jjx][0])*R2(p[jjx]);
       break;
     }
     // update map (remove precluster)
@@ -233,13 +234,13 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
     
     // update matrix (only what is necessary)
     int jjx=p_imap[jj];
-    p_ktij[jjx][jjx] = sqr(p[jjx][0])*R2(p[jjx])/m_r2min;
+    p_ktij[jjx][jjx] = sqr(p[jjx][0])*R2(p[jjx]);
     for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = 
       sqr(Min(p[jjx][0],p[p_imap[j]][0]))
-      *R2(p[jjx],p[p_imap[j]])/m_r2min;
+      *R2(p[jjx],p[p_imap[j]]);
     for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = 
       sqr(Min(p[jjx][0],p[p_imap[i]][0]))
-      *R2(p[jjx],p[p_imap[i]])/m_r2min;
+      *R2(p[jjx],p[p_imap[i]]);
     }
     // redetermine rmin and dmin
     ii=jj=0;

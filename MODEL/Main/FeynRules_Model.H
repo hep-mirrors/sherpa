@@ -16,6 +16,7 @@ namespace MODEL {
     ~FeynRules_Model()                   {}
     
     bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
+    bool ModelInit();
   };
 }
 

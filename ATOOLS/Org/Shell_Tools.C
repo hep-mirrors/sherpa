@@ -68,6 +68,19 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
   return true;
 }
 
+bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
+{
+  if (!FileExists(file)) return false;
+  if (chmod(file.c_str(),mode)!=0) {
+#ifdef DEBUG__Shell_Tools
+    std::cout<<METHOD<<"(): Error "<<errno<<" in setting mode "
+	     <<mode<<"on '"<<file<<"'."<<std::endl;
+#endif
+    return false;
+  }
+  return true;
+}
+
 bool ATOOLS::CopyFile(const std::string &oldname,const std::string &newname)
 {
   if (!FileExists(oldname)) return false;

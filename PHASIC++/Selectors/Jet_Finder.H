@@ -2,6 +2,7 @@
 #define PHASIC_Selectors_Jet_Finder_H
 
 #include "PHASIC++/Selectors/Selector.H"
+#include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
 
 namespace PHASIC {
@@ -15,12 +16,12 @@ namespace PHASIC {
       std::pair<size_t,size_t>(f,s), partner(p) {}
   };// end of struct Comb_Key
 
-  class Jet_Finder: public Selector_Base {
+  class Jet_Finder: public Selector_Base,
+		    public ATOOLS::Tag_Replacer {
 
-    double m_ycut, m_gycut, m_cycut, m_gcycut;
-    double m_s, m_sprime, m_value, m_pt2min;
+    double m_ycut, m_s, m_pt2min;
 
-    std::string m_cuttag, m_gcuttag, m_procname;
+    std::string m_cuttag, m_procname;
 
     std::map<size_t,ATOOLS::Vec4D>   m_moms;
     std::map<size_t,ATOOLS::Flavour> m_flavs;
@@ -28,8 +29,6 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector           m_strongflavs;
     std::vector<size_t>              m_stronglocs;
-
-    std::map<size_t,std::map<size_t,double> > m_ycuts, m_gycuts;
 
     std::vector<std::vector<int> > m_mcomb;
 
@@ -41,10 +40,12 @@ namespace PHASIC {
 
     Single_Process *p_sproc;
 
+    ATOOLS::Algebra_Interpreter *p_yccalc;
+
     ATOOLS::Flavour GetFlavour(std::string fl);
 
-    size_t FillCombinations(const std::string &name,const std::string &ycut,
-			    const std::string &gycut,size_t &cp,const int fl);
+    size_t FillCombinations(const std::string &name,
+			    size_t &cp,const int fl);
 
     void PrepareMomList(const ATOOLS::Vec4D_Vector &vec);
     bool PrepareColList(const std::vector<int> &ci,
@@ -57,9 +58,13 @@ namespace PHASIC {
   public:
 
     Jet_Finder(const int nin=0,const int nout=0,ATOOLS::Flavour *const fl=NULL,
-	       const std::string &ycut="1",const std::string &gycut="1");
+	       const std::string &ycut="1");
 
     ~Jet_Finder();
+
+    std::string   ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+    void          AssignId(ATOOLS::Term *term);
 
     void   FillCombinations();
     bool   Trigger(const ATOOLS::Vec4D_Vector &p);
@@ -78,15 +83,7 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *cuts);
     void   UpdateCuts(double,double,Cut_Data *cuts);
 
-    double ActualValue() const;
-
-    double GetYcut(const size_t &i,const size_t &j) const;
-    double GetGlobalYcut(const size_t &i,const size_t &j) const;
-
     inline double Ycut() const           { return m_ycut;   }
-    inline double GlobalYcut() const     { return m_gycut;  }
-    inline double CoreYcut() const       { return m_cycut;  }
-    inline double GlobalCoreYcut() const { return m_gcycut; }
 
     inline void SetOn(const bool on) { m_on=on; }
 

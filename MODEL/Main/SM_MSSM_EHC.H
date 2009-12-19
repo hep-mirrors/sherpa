@@ -4,22 +4,28 @@
 #include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
+  class Standard_Model;
   class SM_EHC : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit();
     void FillSpectrum();
   public :
     SM_EHC(std::string,std::string,bool);
     ~SM_EHC()                   {}
+    bool ModelInit();
   };
 
+  class MSSM;
   class MSSM_EHC : public Model_Base {
   private :
+    MSSM *p_mssm;
     void ParticleInit();
     void FillSpectrum();
   public :
     MSSM_EHC(std::string,std::string,bool);
     ~MSSM_EHC()                   {}
+    bool ModelInit();
   };
 
   /*!

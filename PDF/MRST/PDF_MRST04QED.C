@@ -102,11 +102,6 @@ double PDF_MRST04QED::GetXPDF(const ATOOLS::Flavour infl)
   }
 }
 
-bool PDF_MRST04QED::EWOn()
-{
-  return true;
-}
-
 DECLARE_PDF_GETTER(MRST04QED_Getter);
 
 PDF_Base *MRST04QED_Getter::operator()

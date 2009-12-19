@@ -18,7 +18,12 @@ Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(Vec4D p1, Vec4D p2) {
   // generate null vector of unit length in that frame
   m_b1 = CalculateBeta(p1);
   m_b2 = CalculateBeta(p2);
-  GenerateDipoleAngle();
+  if (!IsEqual(p1,p2)) GenerateDipoleAngle();
+  else {
+    msg_Error()<<METHOD<<"(): \\beta_1 = 0 / \\beta_2 = 0 !"<<std::endl;
+    m_theta = 0.0;
+    m_phi   = 2.*M_PI*ran.Get();
+  }
   GenerateNullVector();
   // transform to original frame
   rotate.RotateBack(m_dir);

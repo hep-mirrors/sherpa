@@ -116,11 +116,11 @@ void Variable_Scale_Setter::SetScale
   mu2calc.AddTag("MU_R2","1.0");
   mu2calc.AddTag("H_T2","1.0");
   mu2calc.AddTag("Q2_CUT","1.0");
-  mu2calc.AddTag("Q2_MIN","1.0");
   Process_Integrator *ib(p_proc->Integrator());
   for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));
   mu2calc.Interprete(mu2tag);
+  if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
   msg_Debugging()<<"}\n";
 }
 

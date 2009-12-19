@@ -5,14 +5,17 @@
 #include "ATOOLS/Math/MyComplex.H"
 
 namespace MODEL {
+  class Standard_Model;
   class SM_Phantom_U1 : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit();
     void FillSpectrum();
     bool SanityChecks();
   public :
     SM_Phantom_U1(std::string,std::string,bool);
     ~SM_Phantom_U1();
+    bool ModelInit();
   };
   /*!
     \class SM_Phantom_U1

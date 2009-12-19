@@ -608,6 +608,64 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(GOLEM95_SUPPORT, test "$golem95" = "true")
 
   AC_ARG_ENABLE(
+    hztool,
+    AC_HELP_STRING([--enable-hztool=/path/to/hztool], [Enable hztool for analysis.]),
+    [ AC_MSG_CHECKING(for hztool installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(hztool not enabled); hztool=false;;
+        *)  if test -d "${enableval}"; then
+              if test -f "${enableval}/lib/libhztool.so"; then
+                CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib -lhztool";
+	        CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLDIR="${enableval}";
+                hztool=true;
+                AC_MSG_RESULT(${enableval});
+              else
+                AC_MSG_ERROR(Did not find '${enableval}/libhztool.so'.); 
+              fi;
+            else
+              AC_MSG_ERROR(Did not find hztool directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ hztool=false ]
+  )
+  if test "$hztool" = "true" ; then
+    AC_DEFINE([USING__HZTOOL], "1", [hztool found])
+  fi
+  AC_SUBST(CONDITIONAL_HZTOOLDIR)
+  AC_SUBST(CONDITIONAL_HZTOOLINCS)
+  AC_SUBST(CONDITIONAL_HZTOOLLIBS)
+  AM_CONDITIONAL(HZTOOL_SUPPORT, test "$hztool" = "true")
+
+  AC_ARG_ENABLE(
+    cernlib,
+    AC_HELP_STRING([--enable-cernlib=/path/to/cernlib], [Enable cernlib.]),
+    [ AC_MSG_CHECKING(for cernlib installation directory);
+      case "${enableval}" in
+        no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
+        *)  if test -d "${enableval}"; then
+              if test -f "${enableval}/lib/libkernlib.a"; then
+                CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib.a"
+                cernlib=true;
+                AC_MSG_RESULT(${enableval});
+              else
+                AC_MSG_ERROR(Did not find '${enableval}/lib/libkernlib.a'.); 
+              fi;
+            else
+              AC_MSG_ERROR(Did not find cernlib directory '${enableval}'.);
+            fi;
+      esac;
+    ],
+    [ cernlib=false ]
+  )
+  if test "$cernlib" = "true" ; then
+    AC_DEFINE([USING__CERNLIB], "1", [cernlib found])
+  fi
+  AC_SUBST(CONDITIONAL_CERNLIBLIBS)
+  AM_CONDITIONAL(CERNLIB_SUPPORT, test "$cernlib" = "true")
+
+  AC_ARG_ENABLE(
     gzip,
     AC_HELP_STRING([--enable-gzip], [Enable gzip support (for compressed event output)]),
     [ case "${enableval}" in

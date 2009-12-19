@@ -76,12 +76,6 @@ void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 }
 
 
-void Single_Channel::GeneratePoint(Vec4D * p)
-{
-  for (int i=0;i<rannum;i++) rans[i] = ran.Get();
-  GeneratePoint(p,rans);
-}
-
 void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *rans) 
 {
   msg_Error()<<"Single_Channel::GeneratePoint(Vec4D *p,Cut_Data *cuts,double *rans): "
@@ -94,46 +88,10 @@ void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
 		     <<"Virtual Method called !"<<std::endl; 
 }
 
-void Single_Channel::GeneratePoint(ATOOLS::Vec4D *p,double *rans) 
-{ 
-  msg_Error()<<"Single_Channel::GeneratePoint(Vec4D *p,double *rans).: "
-		     <<"Virtual Method called !"<<std::endl; 
-}
-
-void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p) 
-{
-  msg_Error()<<"Single_Channel::GenerateWeight(Vec4D *p): "
-		     <<"Virtual Method called !"<<std::endl; 
-}
-
-void Single_Channel::GeneratePoint(double &sprime,double &y,int mode,double *rans) 
-{
-  msg_Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode,double *rans): "
-		     <<"Virtual Method called !"<<std::endl; 
-}
-
-void Single_Channel::GeneratePoint(double &sprime,double &y,int mode) 
-{
-  msg_Error()<<"Single_Channel::GeneratePoint(double &sprime,double &y,int mode): "
-		     <<"Virtual Method called !"<<std::endl; 
-}
-
-void Single_Channel::GenerateWeight(double sprime,double y,int mode) 
-{
-  msg_Error()<<"Single_Channel::GenerateWeight(double sprime,double y,int mode): "
-		     <<"Virtual Method called !"<<std::endl; 
-}
-
 void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
 {
   msg_Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
 		     <<"Virtual Method called !"<<std::endl; 
-}
-
-void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode) 
-{
-  msg_Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
- 		     <<"Virtual Method called !"<<std::endl; 
 }
 
 void Single_Channel::GenerateWeight(const int mode) 

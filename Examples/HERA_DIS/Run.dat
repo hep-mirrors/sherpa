@@ -1,0 +1,22 @@
+(run){
+  OUTPUT 2; EVENTS 10000000;
+  NJET:=4; QCUT:=5; ICUT:=4; SDIS:=0.6;
+}(run);
+(processes){
+  Process -11 93 -> -11 93 93{NJET};
+  Order_EW 2; Max_N_Quarks 6;
+  Scales SEMI_STRICT_METS;
+  CKKW sqr(QCUT/E_CMS)/(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]));
+  End process;
+}(processes);
+(selector){
+  "Calc(Abs2(p[0]-p[1]))" -11,-11 -1.0e12,-ICUT {0,2} 1
+  PT 93 1 E_CMS
+}(selector)
+(me){
+  ME_SIGNAL_GENERATOR Comix;
+}(me);
+(beam){
+  BEAM_1  -11; BEAM_ENERGY_1 27.5;
+  BEAM_2 2212; BEAM_ENERGY_2  820; 
+}(beam);

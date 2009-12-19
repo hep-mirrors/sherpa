@@ -4,13 +4,16 @@
 #include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
+  class Standard_Model;
   class SM_AGC : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit() {}
     void FillSpectrum();
   public :
     SM_AGC(std::string,std::string,bool);
     ~SM_AGC()                   {}
+    bool ModelInit();
   };
   /*!
     \class SM_AGC

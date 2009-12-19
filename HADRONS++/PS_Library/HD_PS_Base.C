@@ -129,8 +129,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
 ////////// class HD_PS_Base /////////
 
 HD_PS_Base::HD_PS_Base( Hadron_Decay_Channel * hdc ) :
-  Multi_Channel("hadron decay channel"), p_hdc(hdc),
-  p_channelselector(new HD_Channel_Selector),
+  Multi_Channel("hadron decay channel"),
+  p_channelselector(new HD_Channel_Selector), p_hdc(hdc),
   m_res(-1.), m_error(1.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].HadMass()))
 {
 }
@@ -169,10 +169,9 @@ vector<double> HD_PS_Base::CalculateNormalisedWidth() {
   long int iter = Number()*5000*int(pow(2.,int(p_hdc->NOut())-2));
   int maxopt    = Number()*int(pow(2.,2*(int(p_hdc->NOut())-2)));
 
-  long int n;
+  long int n=0;
   int      opt=0;
   double   value, oldvalue=0., sum=0., sum2=0., result=1., disc;
-  bool     anti = false;
   bool     simple=false;
 
   while(opt<maxopt && result>0. && m_error/result>0.002 ) {

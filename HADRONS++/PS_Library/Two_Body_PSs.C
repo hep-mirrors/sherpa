@@ -28,19 +28,7 @@ void Iso2Channel::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _r
 }
 
 
-void Iso2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
-{
-  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[0],_ran[1]);
-}
-
-
 void Iso2Channel::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
-{
-  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2]) * pow(2.*M_PI,2.*3.-4.) );
-}
-
-
-void Iso2Channel::GenerateWeight(ATOOLS::Vec4D * p)
 {
   weight = 1. / ( CE.Isotropic2Weight(p[1],p[2]) * pow(2.*M_PI,2.*3.-4.) );
 }
@@ -60,19 +48,8 @@ void Iso1Channel::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data *,double * _r
 }
 
 
-void Iso1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
-{
-  p[1]=p[0];
-}
-
-
 void Iso1Channel::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data *)
 {
   weight = 1.0;
 }
 
-
-void Iso1Channel::GenerateWeight(ATOOLS::Vec4D * p)
-{
-  weight = 1.0;
-}

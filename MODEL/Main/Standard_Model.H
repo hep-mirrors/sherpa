@@ -16,6 +16,8 @@ namespace MODEL {
     Standard_Model(std::string,std::string,bool,const int =0);
     ~Standard_Model()                   {}
 
+    bool ModelInit();
+
     bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
   };
   /*!

@@ -25,8 +25,6 @@ namespace PDF {
     void   CalculateSpec(double,double);
     double GetXPDF(const ATOOLS::Flavour); 
 
-    bool EWOn();
-
   };// end of class PDF_MRST04QED
 
 }  

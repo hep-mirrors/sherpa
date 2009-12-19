@@ -31,6 +31,16 @@ void SM_EHC_Getter::PrintInfo(std::ostream &str,const size_t width) const
 SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
+  p_sm = new Standard_Model(m_dir,m_file,false);
+  ParticleInit();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+}
+
+bool SM_EHC::ModelInit()
+{
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model \\w EHC from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+EHC");
@@ -39,20 +49,16 @@ SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
-  Standard_Model * sm = new Standard_Model(m_dir,m_file,false);
-  p_numbers   = sm->ExtractScalarNumbers();
-  p_constants = sm->ExtractScalarConstants();
-  p_functions = sm->ExtractScalarFunctions();
-  p_matrices  = sm->ExtractComplexMatrices();
+  p_numbers   = p_sm->ExtractScalarNumbers();
+  p_constants = p_sm->ExtractScalarConstants();
+  p_functions = p_sm->ExtractScalarFunctions();
+  p_matrices  = p_sm->ExtractComplexMatrices();
 
-  delete sm;
+  delete p_sm;
   
-  ParticleInit();
   FillSpectrum();
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
+
+  return true;
 }
 
 void SM_EHC::ParticleInit() {
@@ -103,6 +109,16 @@ void MSSM_EHC_Getter::PrintInfo(std::ostream &str,const size_t width) const
 MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
+  p_mssm = new MSSM(m_dir,m_file,false);
+  ParticleInit();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+}
+
+bool MSSM_EHC::ModelInit()
+{
   if (m_elementary)
     msg_Info()<<"Initialize the MSSM \\w EHCs from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("MSSM+EHC");
@@ -111,20 +127,16 @@ MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
-  MSSM * mssm = new MSSM(m_dir,m_file,false);
-  p_numbers   = mssm->ExtractScalarNumbers();
-  p_constants = mssm->ExtractScalarConstants();
-  p_functions = mssm->ExtractScalarFunctions();
-  p_matrices  = mssm->ExtractComplexMatrices();
+  p_numbers   = p_mssm->ExtractScalarNumbers();
+  p_constants = p_mssm->ExtractScalarConstants();
+  p_functions = p_mssm->ExtractScalarFunctions();
+  p_matrices  = p_mssm->ExtractComplexMatrices();
 
-  delete mssm;
+  delete p_mssm;
   
-  ParticleInit();
   FillSpectrum();
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
+
+  return true;
 }
 
 void MSSM_EHC::ParticleInit() {

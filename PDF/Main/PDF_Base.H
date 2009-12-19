@@ -39,16 +39,20 @@ namespace PDF {
 
     std::string m_type;    
 
-    double m_exponent, m_rescale;
+    int m_orderas, m_member;
+
+    double m_exponent, m_rescale, m_asmz;
     double m_xmin, m_xmax, m_q2min, m_q2max;
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
-    double m_fac_scale_factor;
-
     void SingleExtract(const ATOOLS::Flavour flavour,const double x);
     void SingleReset();
     virtual void CalculateSpec(double x,double Q2) = 0;
+
+  private:
+
+    double m_fac_scale_factor, m_rq2min, m_rq2max;
 
   public:
 
@@ -70,15 +74,17 @@ namespace PDF {
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF();
 
-    virtual bool EWOn();
+    void SetBounds();
+
+    virtual void SetPDFMember();
 
     static void ShowSyntax(const size_t i);
 
     // inline functions
     inline double XMin() const  { return m_xmin;  }
     inline double XMax() const  { return m_xmax;  }
-    inline double Q2Min() const { return m_q2min; }
-    inline double Q2Max() const { return m_q2max; }
+    inline double Q2Min() const { return m_rq2min; }
+    inline double Q2Max() const { return m_rq2max; }
 
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
     inline const ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
@@ -97,6 +103,11 @@ namespace PDF {
     { return m_partons.find(a)!=m_partons.end(); }
 
     inline double RescaleFactor() const { return m_rescale; }
+
+    inline int    OrderAS() const { return m_orderas; }
+    inline double ASMZ() const    { return m_asmz;    }
+
+    inline int Member() const { return m_member; }
 
   };
   

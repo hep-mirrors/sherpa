@@ -14,6 +14,9 @@
 #include "PHASIC++/Process/NLO_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#ifdef USING__GZIP
+#include "ATOOLS/Org/Gzip_Stream.H"
+#endif
 
 #include <unistd.h>
 
@@ -29,7 +32,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_proc(NULL), p_beam(NULL), p_isr(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0),
-  p_shower(NULL), m_totalxs(0.0)
+  p_shower(NULL), m_totalxs(0.0), 
+  m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -42,11 +46,40 @@ Matrix_Element_Handler::Matrix_Element_Handler
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else m_eventmode=0;
+  if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
+  else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
+  std::string seedfile;
+  if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE")) 
+    seedfile="ran.stat."+ToString(rpa.gen.RandomSeed());
+  else msg_Info()<<METHOD<<"(): Set seed file "<<seedfile<<"."<<std::endl;
+#ifdef USING__GZIP
+  seedfile+=".gz";
+#endif
+  if (m_seedmode==1) {
+#ifdef USING__GZIP
+    p_ranin = new ATOOLS::igzstream(seedfile.c_str());
+#else
+    p_ranin = new std::ifstream(seedfile.c_str());
+#endif
+    if (p_ranin!=NULL && !p_ranin->good()) THROW
+      (fatal_error,"Cannot initialize random generator status file");
+  }
+  else if (m_seedmode==2) {
+#ifdef USING__GZIP
+    p_ranout = new ATOOLS::ogzstream(seedfile.c_str());
+#else
+    p_ranout = new std::ofstream(seedfile.c_str());
+#endif
+    if (p_ranout!=NULL && !p_ranout->good()) THROW
+      (fatal_error,"Cannot initialize random generator status file");
+  }
   if (!read.ReadFromFile(m_nlomode,"NLO_Mode")) m_nlomode=1;
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
 {
+  if (p_ranin) delete p_ranin;
+  if (p_ranout) delete p_ranout;
 }
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
@@ -69,8 +102,28 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   return okay;
 }
 
+void Matrix_Element_Handler::SetRandomSeed()
+{
+  if (m_seedmode==1) {
+    m_ranidx=ran.ReadInStatus(*p_ranin,m_ranidx);
+    if (m_ranidx==std::string::npos) {
+      msg_Error()<<METHOD<<"(): Status file read error. Abort."<<std::endl;
+      abort();
+    }
+  }
+  else if (m_seedmode==2) {
+    m_ranidx=ran.WriteOutStatus(*p_ranout,m_ranidx);
+    if (m_ranidx==std::string::npos) {
+      msg_Error()<<METHOD<<"(): Status file write error. Abort."<<std::endl;
+      abort();
+    }
+  }
+}
+
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
+  SetRandomSeed();
+  p_isr->SetPDFMember();
   if (m_eventmode==1) return GenerateUnweightedEvent(); 
   return GenerateWeightedEvent();
 }
@@ -537,7 +590,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
     while (sfile[sfile.length()-1]==' ') sfile.erase(sfile.length()-1,1);
     skey.ReadData(m_path,sfile);
     if (pi.m_ckkw&1) {
-      std::vector<std::string> jfargs(2,gycut);
+      std::vector<std::string> jfargs(1,gycut);
       GetMPvalue(vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
       if (i==0) jfargs.push_back("LO");

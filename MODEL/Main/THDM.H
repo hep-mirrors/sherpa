@@ -4,13 +4,16 @@
 #include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
+  class Standard_Model;
   class THDM : public Model_Base {
   private :
+    Standard_Model *p_sm;
     void ParticleInit();
     void FillSpectrum();
   public :
     THDM(std::string,std::string,bool);
     ~THDM();
+    bool ModelInit();
   };
   /*!
     \class THDM

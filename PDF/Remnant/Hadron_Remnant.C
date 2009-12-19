@@ -185,6 +185,7 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
     x = 1.;
   }
   if (x<p_pdfbase->XMin() || x>p_pdfbase->XMax()) return false;
+  if (m_scale<p_pdfbase->Q2Min()) m_scale=1.001*p_pdfbase->Q2Min();
   p_pdfbase->Calculate(x,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran.Get();
@@ -254,7 +255,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
 {
   PROFILE_HERE;
   double cut, x;
-  cut=2.0*(flavour.Mass()+m_hardpt.PPerp()/
+  cut=2.0*(flavour.HadMass()+m_hardpt.PPerp()/
 	   sqr(m_companions.size()))/p_beam->OutMomentum()[0];
   // assume heavy flavours have been pair-produced
   // => scale should be approximately (2m)^2
@@ -263,7 +264,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     msg_Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
 		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
-    return cut;
+    scale=1.001*p_pdfbase->Q2Min();
   } 
   unsigned int xtrials, pdftrials=0;
   while (true) {
@@ -272,8 +273,12 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     do { 
       ++xtrials;
       x=m_xrem*ran.Get();
-      if (xtrials>=m_maxtrials) x=cut;
-    } while (x<cut);
+      if (xtrials>=m_maxtrials) {
+	x=Min(cut,0.999999*p_pdfbase->RescaleFactor());
+	break;
+      }
+      if (x>p_pdfbase->RescaleFactor()) continue;
+    } while (x<cut);	
     if (x>p_pdfbase->XMin() && x<p_pdfbase->XMax()) {
       p_pdfbase->Calculate(x,scale);
     }

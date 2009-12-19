@@ -7,6 +7,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 #include <map> 
 
@@ -14,6 +15,10 @@ namespace ATOOLS {
   class Jet_Finder_Base;
   class Cluster_Definitions_Base;
   class Cluster_Amplitude;
+#ifdef USING__GZIP
+  class igzstream;
+  class ogzstream;
+#endif
 }
 
 namespace BEAM { class Beam_Spectra_Handler; }
@@ -49,14 +54,22 @@ namespace SHERPA {
     PDF::ISR_Handler           *p_isr;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
-    int         m_eventmode;
+    int         m_eventmode, m_seedmode;
 
     PHASIC::Weight_Info m_evtinfo;
 
     Shower_Handler *p_shower;
 
     double m_totalxs;
-    size_t m_nlomode;
+    size_t m_nlomode, m_ranidx;
+
+#ifdef USING__GZIP
+    ATOOLS::igzstream *p_ranin;
+    ATOOLS::ogzstream *p_ranout;
+#else
+    std::ifstream *p_ranin;
+    std::ofstream *p_ranout;
+#endif
 
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
@@ -91,6 +104,8 @@ namespace SHERPA {
     std::vector<PHASIC::Process_Base*> InitializeProcess(const PHASIC::Process_Info &pi);
 
     void BuildProcesses();
+
+    void SetRandomSeed();
 
     bool GenerateUnweightedEvent();
     bool GenerateWeightedEvent(); 

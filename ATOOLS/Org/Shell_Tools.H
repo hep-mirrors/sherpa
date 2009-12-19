@@ -9,6 +9,7 @@ namespace ATOOLS {
 
   bool MakeDir(std::string path,const bool create_tree=1,
 	       const mode_t mode=0777);
+  bool ChMod(const std::string &file,const mode_t mode=0777);
   bool CopyFile(const std::string &oldname,const std::string &newname);
   bool MoveFile(const std::string &oldname,const std::string &newname);
 

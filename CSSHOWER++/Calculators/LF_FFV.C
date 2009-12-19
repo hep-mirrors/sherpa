@@ -1,5 +1,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
+#define USING_DIS_MEC 
+
 namespace CSSHOWER {
   
   class LF_FFV_FF: public SF_Lorentz {
@@ -287,7 +289,11 @@ double LF_FFV_FF::Z()
 
 double LF_FFV_FI::CDIS(const double z,const double y)
 {
+#ifdef USING_DIS_MEC 
   return y*(1.+3.*z*(1.-y));
+#else
+  return 0.0;
+#endif
 }
 
 double LF_FFV_FI::CDISMax()
@@ -344,7 +350,11 @@ double LF_FFV_FI::Z()
 
 double LF_FFV_IF::CDIS(const double z,const double y)
 {
+#ifdef USING_DIS_MEC 
   return y*(1.+3.*z*(1.-y));
+#else
+  return 0.0;
+#endif
 }
 
 double LF_FFV_IF::CDISMax()
@@ -460,11 +470,25 @@ double LF_FVF_FF::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
 }
 
+double LF_FVF_FI::CDIS(const double z,const double y)
+{
+#ifdef USING_DIS_MEC 
+  return y*(1.+3.*z*(1.-y));
+#else
+  return 0.0;
+#endif
+}
+
+double LF_FVF_FI::CDISMax()
+{
+  return 0.;
+}
+
 double LF_FVF_FI::operator() (const double z,const double y,
 			    const double eta, const double scale,const double Q2,int mode) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = (2./(z+y) - 2.+z);
+  double massless = (2./(z+y) - 2.+z + CDIS(1.-z,y));
   if (mj2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
@@ -491,17 +515,31 @@ double LF_FVF_FI::OverIntegrated
   if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=m_flspec.Kfcode()<3?5.:1.;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
 double LF_FVF_FI::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*(2.0+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
 
 double LF_FVF_FI::Z()
 {
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
+}
+
+double LF_FVF_IF::CDIS(const double z,const double y)
+{
+#ifdef USING_DIS_MEC 
+  return y*(1.+3.*z*(1.-y));
+#else
+  return 0.0;
+#endif
+}
+
+double LF_FVF_IF::CDISMax()
+{
+  return 0.;
 }
 
 double LF_FVF_IF::operator()
@@ -510,7 +548,7 @@ double LF_FVF_IF::operator()
 {
   double mk2  = sqr(p_ms->Mass(m_flspec));
   double muk2 = mk2*z/(Q2-mk2); 
-  double massless = ( 2./z - 2. +z );
+  double massless = ( 2./z - 2. +z + CDIS(1.-z,y));
   if (muk2==0.) {
     //the massless case
     double longpol = 0.5 * z;
@@ -540,12 +578,12 @@ double LF_FVF_IF::OverIntegrated
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.;
   m_Jmax = 5.*fresh/old;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
 double LF_FVF_IF::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
 
 double LF_FVF_IF::Z()
@@ -635,12 +673,20 @@ double LF_VFF_FF::Z() {
 
 double LF_VFF_FI::CDIS(const double z,const double y)
 {
+#ifdef USING_DIS_MEC 
   return 4.*y*z*(1.-z);
+#else
+  return 0.0;
+#endif
 }
 
 double LF_VFF_FI::CDISMax()
 {
+#ifdef USING_DIS_MEC 
   return 0.5;
+#else
+  return 0.0;
+#endif
 }
 
 double LF_VFF_FI::operator()
@@ -693,12 +739,20 @@ double LF_VFF_FI::Z()
 
 double LF_VFF_IF::CDIS(const double z,const double y)
 {
+#ifdef USING_DIS_MEC 
   return 4.*y*z*(1.-z);
+#else
+  return 0.0;
+#endif
 }
 
 double LF_VFF_IF::CDISMax()
 {
+#ifdef USING_DIS_MEC 
   return 0.5;
+#else
+  return 0.0;
+#endif
 }
 
 double LF_VFF_IF::operator() 

@@ -66,7 +66,7 @@ TwoResonances::~TwoResonances() {
   if (p_info) delete p_info; p_info=NULL;
 }
 
-void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
+void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
 {
   double *ran = p_vegas->GeneratePoint(_ran);
   for(int i=0;i<rannum;i++) rans[i]=ran[i];
@@ -97,12 +97,7 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
   CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
 }
 
-void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
-{
-  THROW(fatal_error, "not implemented.");
-}
-
-void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
+void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
 {
   double wt = 1.;
   Vec4D  p1234 = p[0];
@@ -148,11 +143,6 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
   weight = wt;
 }
 
-void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
-{
-  THROW(fatal_error, "not implemented.");
-}
-
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -176,12 +166,6 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator
 }
 
 void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
-{
-  THROW(fatal_error, "not implemented.");
-}
-
-
-void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 {
   // dice the momentum of the decayer and spectator quark
   // according to PSpat() = gauss(mean=lambda_qcd, sigma=lambda_qcd/mQ)
@@ -223,12 +207,6 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 
 
 void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
-{
-  THROW(fatal_error, "not implemented.");
-}
-
-
-void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p)
 {
   Vec4D isotropicmoms[4];
   int j=1;

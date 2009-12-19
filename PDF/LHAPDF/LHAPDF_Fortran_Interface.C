@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Math/Random.H"
 #include <cstring>
 #include <dirent.h>
 #include <cstring>
@@ -31,30 +32,37 @@ extern "C" {
   void   lhapdfinit_(int &);
   void   lhapdfevolve_(double &,double &,double *);
   double lhapdfalphas_(double &);
+  void   getorderas_(int &);
   void   lhapdfgetdesc_();
 }
 #endif
 
 LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   const std::string _set,const int _member) :
-  m_set(_set), m_member(_member), m_anti(1)
+  m_set(_set), m_anti(1)
 {
+  m_smember=_member;
   m_type="LHA["+m_set+"]";
 
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
-    if (m_member!=0) msg_Info()<<METHOD<<"(): Init member "<<m_member<<"."<<std::endl;
+    if (m_smember!=0) msg_Info()<<METHOD<<"(): Init member "<<m_smember<<"."<<std::endl;
+    m_member=abs(m_smember);
 #ifdef LHAPDF__NATIVE__WRAPPER
-    LHAPDF::initPDFByName(m_set, m_member);
+    LHAPDF::initPDFSet(m_set);
+    LHAPDF::initPDF(m_member);
+    m_orderas=LHAPDF::getOrderAlphaS();
 #else
     std::string full = m_set;
     const char * help;
     help = full.c_str();
     lhapdfinitsetbyname_(help, strlen(help));
     lhapdfinit_(m_member);
+    getorderas_(m_orderas);
 #endif
+    m_asmz=AlphaSPDF(sqr(Flavour(kf_Z).Mass()));
   }
 
 #ifdef LHAPDF__NATIVE__WRAPPER
@@ -81,7 +89,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
 {
-  return new LHAPDF_Fortran_Interface(m_bunch,m_set,m_member);
+  return new LHAPDF_Fortran_Interface(m_bunch,m_set,m_smember);
 }
 
 
@@ -95,33 +103,22 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
   return as;
 }
 
+void LHAPDF_Fortran_Interface::SetPDFMember()
+{
+  if (m_smember<0) {
+    double rn=ran.Get();
+    m_member=1+Min((int)(rn*abs(m_smember)),-m_smember-1);
+#ifdef LHAPDF__NATIVE__WRAPPER
+    LHAPDF::initPDF(m_member);
+#else
+    lhapdfinit_(m_member);
+#endif
+  }
+}
+
 void LHAPDF_Fortran_Interface::CalculateSpec(double x,double Q2) {
   x/=m_rescale;
   double Q = sqrt(Q2);
-  if(Q*Q<m_q2min) {
-    msg_Error()<<METHOD<<"(): Q-range violation Q = "<<Q
-	       <<" < "<<sqrt(m_q2min)<<". Set Q -> "
-	       <<sqrt(m_q2min)<<"."<<std::endl;
-    Q=1.000001*sqrt(m_q2min);
-  }
-  if(Q*Q>m_q2max) {
-    msg_Error()<<METHOD<<"(): Q-range violation Q = "<<Q
-	       <<" > "<<sqrt(m_q2max)<<". Set Q -> "
-	       <<sqrt(m_q2max)<<"."<<std::endl;
-    Q=0.999999*sqrt(m_q2max);
-  }
-  if(x<m_xmin) {
-    msg_Error()<<METHOD<<"(): x = "<<x<<" ("<<m_rescale
-	       <<") < "<<m_xmin<<". Set x -> "
-	       <<m_xmin<<"."<<std::endl;
-    x=1.000001*m_xmin;
-  }
-  if(x>m_xmax) {
-    msg_Error()<<METHOD<<"(): x = "<<x<<" ("<<m_rescale
-	       <<") > "<<m_xmax<<". Set x -> "
-	       <<m_xmax<<"."<<std::endl;
-    x=0.999999*m_xmax;
-  }
 #ifdef LHAPDF__NATIVE__WRAPPER
   m_fv=LHAPDF::xfx(x,Q);
 #else

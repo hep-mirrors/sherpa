@@ -31,12 +31,11 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_cms(8)
 {
   p_remnants[1]=p_remnants[0]=NULL;
-  m_ewmode=m_mode=0;
+  m_mode=0;
   for (short int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) {
       p_isrbase[i]->AssignKeys(p_info);
       m_mode += i+1;
-      if (p_isrbase[i]->EWOn()) m_ewmode += i+1;
     }
   }
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
@@ -126,6 +125,12 @@ void ISR_Handler::SetFixedSprimeMax(const double spmax)
 {
   m_fixed_smax = spmax;
   m_splimits[1] = spmax;
+}
+
+void ISR_Handler::SetPDFMember() const
+{
+  for (int i=0;i<2;++i)
+    if (p_isrbase[i]->On()) p_isrbase[i]->PDF()->SetPDFMember();
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons) 

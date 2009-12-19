@@ -48,18 +48,8 @@ namespace PHASIC {
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
 
-    virtual void GeneratePoint(ATOOLS::Vec4D *,double *); 
-    virtual void GeneratePoint(ATOOLS::Vec4D *);
-    virtual void GenerateWeight(ATOOLS::Vec4D *);
-
-    virtual void GeneratePoint(double &,double &,int,double *);
-    virtual void GeneratePoint(double &,double &,int);
-    virtual void GenerateWeight(double,double,int);
-
     virtual void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 			       const double *rans,const int mode=0);
-    virtual void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-			       const int mode=0);
     virtual void GenerateWeight(const int mode=0);
 
     virtual void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);

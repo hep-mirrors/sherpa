@@ -37,6 +37,21 @@ void FeynRules_Model_Getter::PrintInfo(std::ostream &str,const size_t width) con
 FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
+  ParticleInit();
+  if (m_elementary) {
+    msg_Info()<<"\n";
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+}
+
+bool FeynRules_Model::ModelInit()
+{
   if (m_elementary)
     msg_Info()<<"Initialize a FeynRules Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name             = std::string("FeynRules");
@@ -46,21 +61,11 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
   p_functions        = new ScalarFunctionsMap();
   p_matrices         = new ComplexMatricesMap();
 
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
-  ParticleInit();
   FillSpectrum();
 
-  if (m_elementary) {
-    msg_Info()<<"\n";
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
   rpa.gen.AddCitation
     (1,"The Sherpa interface to FeynRules is published under \\cite{Christensen:2009jx}.");
+  return true;
 }
 
 void FeynRules_Model::ParticleInit() {

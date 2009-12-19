@@ -127,6 +127,15 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
 			       bool _elementary,int _trivialextension) :
   Model_Base(_dir,_file,_elementary), m_trivialextension(_trivialextension)
 {
+  ParticleInit();
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+}
+
+bool Standard_Model::ModelInit()
+{
   if (m_elementary) 
     msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM");
@@ -138,12 +147,9 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
   
   (*p_numbers)["Extension"] = m_trivialextension;
 
-  ParticleInit();
   FillSpectrum();
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
+
+  return true;
 }
 
 void Standard_Model::ParticleInit() {

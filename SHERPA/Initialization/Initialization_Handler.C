@@ -3,6 +3,7 @@
 
 #include "SHERPA/Tools/Input_Output_Handler.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
@@ -325,6 +326,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
+  if (!p_model->ModelInit()) THROW(critical_error,"Model cannot be initialized");
+  p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
   m_isrhandlers[isr::hard_process]->AssignKeys(info);
@@ -446,7 +449,6 @@ bool Initialization_Handler::InitializeTheModel()
   p_model=Model_Base::Model_Getter_Function::
     GetObject(name,Model_Arguments(m_path,m_modeldat,true));
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
-  p_model->InitializeInteractionModel();
   MODEL::s_model=p_model;
   return 1;
 }
@@ -533,10 +535,33 @@ bool Initialization_Handler::InitializeThePDFs()
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib
 	      +"' for "+ToString(m_bunch_particles[j])+" bunch.");
-      if (i==0) msg_Info()<<"PDF set '"<<set<<"' loaded from 'lib"
-			  <<m_pdflib<<"'."<<std::endl;
+      if (i==0) {
+	msg_Info()<<"PDF set '"<<set<<"' loaded from 'lib"
+		  <<m_pdflib<<"'."<<std::endl;
+	if (m_bunch_particles[j].IsHadron() && pdfbase->OrderAS()>=0) {
+	  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+	    msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
+		       <<"Overriding \\alpha_s information from PDF. "
+		       <<"Make sure you know what you are doing!"
+		       <<om::reset<<std::endl;
+	  }
+	  else {
+	    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
+		      <<"  perturbative order "<<pdfbase->OrderAS()
+		      <<"\n  \\alpha_s(M_Z) = "<<pdfbase->ASMZ()
+		      <<"\n}"<<std::endl;
+	    Read_Write_Base::AddCommandLine
+	      ("ORDER_ALPHAS "+ToString(pdfbase->OrderAS())+"; ");
+	    Read_Write_Base::AddCommandLine
+	      ("ALPHAS(MZ) "+ToString(pdfbase->ASMZ())+"; ");
+	  }
+	}
+      }
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
-      else isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
+      else {
+	pdfbase->SetBounds();
+	isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
+      }
       ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
     }
     m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",1e-10);
