@@ -55,6 +55,7 @@ bool SM_AGC::ModelInit()
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
+  p_sm->ModelInit();
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();

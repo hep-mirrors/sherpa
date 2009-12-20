@@ -45,6 +45,7 @@ bool SM_Phantom_U1::ModelInit()
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+Phantom_U1");
 
+  p_sm->ModelInit();
   p_numbers          = p_sm->ExtractScalarNumbers();
   p_constants        = p_sm->ExtractScalarConstants();
   p_complexconstants = p_sm->ExtractComplexConstants();

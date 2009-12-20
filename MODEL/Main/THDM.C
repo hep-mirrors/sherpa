@@ -45,6 +45,7 @@ bool THDM::ModelInit()
     msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("THDM");
 
+  p_sm->ModelInit();
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();

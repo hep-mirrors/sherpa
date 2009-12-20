@@ -46,6 +46,7 @@ bool SM_AxiGluon::ModelInit()
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+AxiGluon");
 
+  p_sm->ModelInit();
   p_numbers          = p_sm->ExtractScalarNumbers();
   p_constants        = p_sm->ExtractScalarConstants();
   p_complexconstants = p_sm->ExtractComplexConstants();

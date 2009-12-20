@@ -54,6 +54,7 @@ bool HiddenValley::ModelInit()
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+HiddenValley");
 
+  p_sm->ModelInit();
   p_numbers          = p_sm->ExtractScalarNumbers();
   p_constants        = p_sm->ExtractScalarConstants();
   p_complexconstants = p_sm->ExtractComplexConstants();

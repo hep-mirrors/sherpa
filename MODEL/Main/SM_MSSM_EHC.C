@@ -48,7 +48,8 @@ bool SM_EHC::ModelInit()
   p_constants = new ScalarConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
- 
+
+  p_sm->ModelInit();
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -127,6 +128,7 @@ bool MSSM_EHC::ModelInit()
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
+  p_mssm->ModelInit();
   p_numbers   = p_mssm->ExtractScalarNumbers();
   p_constants = p_mssm->ExtractScalarConstants();
   p_functions = p_mssm->ExtractScalarFunctions();
