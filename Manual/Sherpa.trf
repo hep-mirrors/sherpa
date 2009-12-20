@@ -9,7 +9,7 @@ Sherpa
 .br
 .B "       [\-m \fIgenerators\fP] [\-w \fImode\fP] [\-r \fIresults\fP]"
 .br
-.B "       [\-s \fIshower\fP] [\-F \fImodule\fP]"
+.B "       [\-s \fIshower\fP] [\-F \fImodule\fP] [\-D \fImodule\fP]"
 .br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
@@ -36,6 +36,8 @@ Sets the event generation mode to \fImode\fP.
 Sets the parton shower generator \fIshower\fP.
 .IP "\fB-F\fP \fImodule\fP"
 Sets the fragmentation module \fImodule\fP.
+.IP "\fB-D\fP \fImodule\fP"
+Sets the decay module \fImodule\fP.
 .IP "\fB-a\fP \fIanalyses\fP"
 Sets the analysis handler list to \fIanalyses\fP.
 .IP "\fB-A\fP \fIpath\fP"

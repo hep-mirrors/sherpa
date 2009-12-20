@@ -35,6 +35,10 @@ see @ref{SHOWER_GENERATOR}.
 Set the fragmentation module to @samp{<module>},
 see @ref{Fragmentation}.
 
+@item -D <module>
+Set the decay module to @samp{<module>},
+see @ref{Fragmentation}.
+
 @item -a <analyses>
 Set the analysis handler list to @samp{<analyses>},
 see @ref{ANALYSIS}.
