@@ -18,7 +18,7 @@ Things to notice:
 while the protons carry 820 GeV of energy.
 
 @item the multi-jet merging cut is set dynamically for each event, depending 
-on the photon virtuality, see @mycite{Carli2009xy}.
+on the photon virtuality, see @mycite{Carli2009cg}.
 
 @item there is a selector cut on the photon virtuality. This cut implements
 the experimental requirements for idenitfying the deep-inelastic scattering process.

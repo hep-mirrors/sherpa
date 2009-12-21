@@ -117,10 +117,11 @@ S\scalebox{0.8}{HERPA}\xspace
 @ifnottex 
 Sherpa 
 @end ifnottex 
-the program provides an implementation of the 
-merging approach of @mycite{Hoeche2009rj}. This yields improved descriptions of multijet 
-production processes, which copiously appear at the Tevatron and the LHC, see for 
-instance @mycite{Krauss2004bs},@mycite{Krauss2005nu},@mycite{Gleisberg2005qq}. 
+the program provides an implementation of the merging approach of @mycite{Hoeche2009rj}. 
+This algorithm yields improved descriptions of multijet production processes, 
+which copiously appear at lepton-hadron colliders like HERA @mycite{Carli2009cg}, 
+or hadron-hadron colliders like the Tevatron and the LHC, @mycite{Krauss2004bs},
+@mycite{Krauss2005nu},@mycite{Gleisberg2005qq},@mycite{Hoeche2009xc}. 
 An older approach, implemented in previous versions of Sherpa and known
 as the CKKW technique @mycite{Catani2001cc},@mycite{Krauss2002up},
 has been compared in great detail in @mycite{Alwall2007fs} with other approaches, such 
