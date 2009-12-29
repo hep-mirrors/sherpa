@@ -323,13 +323,48 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
     Dl_info info;
     if (dladdr(trace[n],&info) && info.dli_fname && info.dli_fname[0]) {
       unsigned long symaddr=(unsigned long)info.dli_saddr;
+      if (symaddr==(unsigned long)NULL) continue;
       const char *symname=info.dli_sname;
-      if (!info.dli_sname || !info.dli_sname[0]) symname="<unknown>";
-      ostr<<comment<<om::bold<<"   0x"<<std::setiosflags(std::ios::left)
-	  <<std::setw(12)<<std::hex<<symaddr<<std::dec<<om::reset
-	  <<" in '"<<om::red<<Demangle(symname)<<om::reset
-	  <<"'\n                from '"<<om::brown<<info.dli_fname
-	  <<om::reset<<"'"<<std::endl;
+      if (!info.dli_sname || !info.dli_sname[0]) symname="<unknown function>";
+      if (!msg->LevelIsDebugging()) {
+	if (std::string(symname).find
+	    ("Exception_Handler")!=std::string::npos ||
+	    std::string(symname).find
+	    ("SignalHandler")!=std::string::npos) continue;
+      }
+      std::string linfo;
+      unsigned long libaddr=(unsigned long)info.dli_fbase;
+      unsigned long offset=(addr>=libaddr)?addr-libaddr:libaddr-libaddr;
+      char cmd[4096];
+      sprintf(cmd,"addr2line -se %s 0x%016lx 2>/dev/null",
+	      info.dli_fname,offset);
+      if (FILE *pf=popen(cmd,"r")) {
+	char buf[2048];
+	if (fgets(buf,2048,pf)) {
+	  linfo=buf;
+	  linfo=linfo.substr(0,linfo.length()-1);
+	}
+	if (linfo=="??:0") {
+	  pclose(pf);
+	  sprintf(cmd,"addr2line -se %s 0x%016lx 2>/dev/null",
+		  info.dli_fname,addr);
+	  pf=popen(cmd,"r");
+	  if (fgets(buf,2048,pf)) {
+	    linfo=buf;
+	    linfo=linfo.substr(0,linfo.length()-1);
+	  }
+	}
+	pclose(pf);
+      }
+      ostr<<comment<<"  "<<std::setiosflags(std::ios::left)
+	  <<std::setw(15)<<trace[n]<<std::dec
+	  <<" in '"<<om::red<<Demangle(symname)<<om::reset<<"' ";
+      if (linfo!="") ostr<<"("<<om::lblue<<linfo<<om::reset<<")";
+      ostr<<"\n";
+      if (msg->LevelIsDebugging()) ostr<<"                from '"<<
+	om::brown<<info.dli_fname<<om::reset<<"'\n";
+      ostr<<std::flush;
+      if (std::string(info.dli_sname)=="main") break;
     } 
     else {
       ostr<<comment<<"   "<<addr<<" in   <unknown function>"<<std::endl;
