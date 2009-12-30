@@ -3,6 +3,7 @@ examplesdir        = $(pkgdatadir)/Examples
 nobase_dist_examples_DATA         =	\
 			EGamma/Run.dat \
 			LEP91/Run.dat \
+			HERA_DIS/Run.dat \
 			LHC_4thGen/Run.dat \
 			LHC_AGC/Run.dat \
                         LHC_ADD/Run.dat \

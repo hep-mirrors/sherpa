@@ -4,6 +4,7 @@
 @menu
 * Bash completion:: How to add bash completion for Sherpa parameters
 * Rivet analyses:: How to analyse Sherpa events using Rivet
+* HZTool analyses:: How to analyse Sherpa events using HZTool
 * Debugging a crashing/stalled event::  How to recover the random seed for an event that is hanging or crashing
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
 * NLO calculations::  How to efficiently perform NLO calculations
@@ -31,8 +32,10 @@ source command above to your ~/.bashrc.
 @section Rivet analyses
 @cindex ANALYSIS_OUTPUT
 
-Sherpa is equipped with an interface to the analysis tool Rivet. To enable it,
-Rivet and HepMC have to be installed (e.g. using the Rivet bootstrap script)
+Sherpa is equipped with an interface to the analysis tool 
+@uref{http://projects.hepforge.org/rivet/,,Rivet}. To enable it,
+Rivet and @uref{http://lcgapp.cern.ch/project/simu/HepMC/,,HepMC}
+have to be installed (e.g. using the Rivet bootstrap script)
 and your Sherpa compilation has to be configured with the following options:
 @verbatim
   ./configure --enable-hepmc2=/path/to/hepmc2 --enable-rivet=/path/to/rivet
@@ -69,6 +72,37 @@ output files:
 If your Rivet installation is not in a standard location, the bootstrap script
 should have created a @code{rivetenv.sh} which you have to source before running
 the @code{make-html} script.
+
+@node HZTool analyses
+@section HZTool analyses
+@cindex ANALYSIS_OUTPUT
+
+Sherpa is equipped with an interface to the analysis tool
+@uref{http://projects.hepforge.org/hztool/,,HZTool}. To enable it,
+HZTool and @uref{http://cernlib.web.cern.ch/,,CERNLIB} have to be installed 
+and your Sherpa compilation has to be configured with the following options:
+@verbatim
+  ./configure --enable-hztool=/path/to/hztool --enable-cernlib=/path/to/cernlib --enable-hepevtsize=4000
+@end verbatim
+
+To use the interface, specify the switch
+@verbatim
+  Sherpa ANALYSIS=HZTool
+@end verbatim
+
+and create an analysis section in @code{Run.dat} that reads as follows:
+@verbatim
+  (analysis){
+    BEGIN_HZTOOL {
+      HISTO_NAME output.hbook;
+      HZ_ENABLE hz00145 hz01073 hz02079 hz03160;
+    } END_HZTOOL;
+  }(analysis)
+@end verbatim
+
+The line starting with @code{HZ_ENABLE} specifies which HZTool analyses to run.
+The histogram output directory can be changed using the @code{ANALYSIS_OUTPUT}
+switch, while @code{HISTO_NAME} specifies the hbook output file.
 
 @node Debugging a crashing/stalled event
 @section Debugging a crashing/stalled event

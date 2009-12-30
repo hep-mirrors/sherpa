@@ -1,0 +1,139 @@
+#!/bin/bash
+
+export LANG=en_US
+
+print_help() {
+    echo "pawsum version 1.0" && echo && \
+    echo "options: -i <input>  set input path(s) to <input>" && \
+    echo "         -o <output> set output path to <output>" && \
+    echo "         -l <depth>  process <depth> subdirectories" && \
+    echo "         -e <name>   exclude paths matching <name>" && \
+    echo "         -p          replace old output path w/o prompting" && \
+    echo "         -h          display this help and exit" && echo && \
+    echo "all path names must be given with a trailing slash" && echo
+}
+
+DEPTH=1
+NOPROMPT=FALSE
+while getopts :i:o:l:e:Hph OPT
+do
+  case $OPT in
+  i) INPUT=$INPUT" "$OPTARG ;; 
+  o) OUTPUT=$OPTARG ;;
+  l) DEPTH=$OPTARG ;;
+  e) EXCLUDE=$OPTARG ;;
+  p) NOPROMPT=TRUE ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    if [ "$1" = "--help" ]; then print_help && exit 0
+    else 
+      echo -n "pawsum: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
+      else echo "'$1'. try '-h'"
+      fi
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
+done
+if [ "$INPUT" = "" ]; then
+  echo "pawsum: no input paths"
+  exit 1
+fi
+if [ "$OUTPUT" = "" ]; then
+  echo "pawsum: no output paths"
+  exit 1
+fi
+if test -d $OUTPUT; then
+  if [ "$NOPROMPT" = "TRUE" ]; then
+    rm -r $OUTPUT
+  else
+    if ! read -t30 -p "pawsum: overwrite directory '$OUTPUT' (y/n) ? " ANS; then
+      echo -e "\npawsum: timeout"
+      exit 1
+    else 
+      if [ "$ANS" != "y" ]; then
+        echo "pawsum: invalid output path"
+        exit 1
+      fi
+      rm -r $OUTPUT
+    fi
+  fi
+fi
+mkdir $OUTPUT
+SDIR=`echo "$INPUT" | cut -d' ' -f2`
+echo -n "scanning directory '$SDIR' ... "
+if ! cd $SDIR; then exit 1; fi
+FILES=`find . -maxdepth $DEPTH -name \*.dat`; NFILES=0
+for I in $FILES; do (( ++NFILES )); done
+cd $OLDPWD
+echo "$NFILES files"
+
+for FILE in $FILES; do
+
+  if ! $(echo $FILE | awk '{ if (match($1,"'$EXCLUDE'")!=0) exit 1; }'); then continue; fi
+
+  echo -n "processing '$FILE' "
+
+  CFS=""
+  for DIR in $INPUT; do
+    if [ "$DIR" = "$OUTPUT" ]; then continue; fi
+    if ! test -f $DIR$FILE; then
+      echo "pawsum: file '$FILE' not found in '$DIR'. skipped."
+    else
+      CFS=$CFS" "$DIR$FILE
+    fi
+  done
+  if [ "$CFS" = "" ]; then continue; fi
+
+  awk 'BEGIN{ ofile="'$OUTPUT$FILE'"; init=0; write=0; }{
+    if (init==0) { n=0; }
+    if (FNR==1) {
+      if (FILENAME==ofile) nextfile;
+      printf ".";
+      cn=$4;
+      l=0;
+      n+=cn;
+      ++init;
+      next;
+    }
+    if (init==1) { 
+      x[l]=$1; xp[l]=$3; xm[l]=$4; y[l]=0; y2p[l]=0; y2m[l]=0;
+      nb=l; write=1;
+    }
+    dev=x[l]-$1;
+    if (x[l]>1.0e-12 || x[l]<-1.0e-12) dev=dev/x[l];
+    if (dev>1.0e-3 || dev<-1.0e-3) {
+      print "\nerror: bins "l" ("x[l]","$1") " \
+        " do not coincide in "FILENAME" (rel. dev. "dev"). abort.";
+      write=0;
+      exit;
+    }
+    y[l]+=cn*$2;
+    y2p[l]+=cn*((cn-1)*$5*$5+$2*$2);
+    y2m[l]+=cn*((cn-1)*$6*$6+$2*$2);
+    ++l;
+  }END{ 
+    if (write>0) {
+      dls=split(ofile,dirs,"/");
+      cdir=dirs[1];
+      for (i=2;i<dls;++i) {
+        cdir=cdir"/"dirs[i];
+        system("if ! test -d "cdir"; then mkdir "cdir"; fi");
+      }
+      split(ofile,oprint,"/");
+      print " combined "init" files into "oprint[1]"/, "\
+        n" events in ["x[0]-xm[0]","x[nb]+xp[nb]"].";
+      print "# "x[0]-xm[0]" "x[nb]+xp[nb]" "n > ofile;
+      for (i=0;i<=nb;++i) { 
+        y2p[i]=(y2p[i]/n-y[i]*y[i]/(n*n))/(n-1);
+        y2m[i]=(y2m[i]/n-y[i]*y[i]/(n*n))/(n-1);
+        print x[i]" "y[i]/n" "xm[i]" "xp[i]" "\
+          sqrt(y2p[i])" "sqrt(y2m[i]) > ofile; 
+      }
+    }
+  }' $CFS
+
+done
