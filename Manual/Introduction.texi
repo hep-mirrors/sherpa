@@ -528,23 +528,6 @@ therefore accounts for corrections that usually are
 added by the application of PHOTOS @mycite{Barberio1993qi} to the
 final state.
  
-@item ANALYSIS
-
-This package provides all the ingredients necessary to
-(internally) perform simple analyses of events generated with
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
-. During generation events can be analysed at different
-stages of their evolution, namely at the level of the hard matrix
-element, after parton-shower evolution and after full hadronization.
-Apart from numerous observables, a comprehensive list of selectors,
-jet algorithms and triggers is available to select final states that
-pass certain criteria.
- 
 @item SHERPA
 
 Finally, SHERPA is the steering module that initializes,
