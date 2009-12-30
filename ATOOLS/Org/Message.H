@@ -105,7 +105,7 @@ namespace ATOOLS {
   class Message {
   private:
 
-    std::ofstream *p_no, *p_logfile; 
+    std::ofstream *p_no; 
     std::ostream  *p_output, *p_error;
     indentbuf m_buf;
 
@@ -119,8 +119,6 @@ namespace ATOOLS {
 
     int m_modifiable;
 
-    void InitLogFile(const std::string &logfile); 
-
   public:
 
     // constructor
@@ -130,7 +128,7 @@ namespace ATOOLS {
     ~Message(); 
 
     // member functions
-    void Init(const std::string& level,const std::string &logfile="");
+    void Init(const std::string& level);
     void SetPrecision(const int precision);
     void SetStandard();
 
@@ -142,8 +140,6 @@ namespace ATOOLS {
     std::ostream &Tracking() const;  
     std::ostream &Debugging() const; 
     std::ostream &IODebugging() const;
-
-    std::ostream &LogFile() const;   
 
     std::string ExtractMethodName(std::string cmethod) const;
 
@@ -260,7 +256,6 @@ namespace ATOOLS {
 
 #define msg_Error() ATOOLS::msg->Error()
 #define msg_Out() ATOOLS::msg->Out()
-#define msg_LogFile() ATOOLS::msg->LogFile()
 #define msg_Events() if (msg_LevelIsEvents()) ATOOLS::msg->Out()
 #define msg_Info() if (msg_LevelIsInfo()) ATOOLS::msg->Out()
 #define msg_Tracking() if (msg_LevelIsTracking()) ATOOLS::msg->Out()

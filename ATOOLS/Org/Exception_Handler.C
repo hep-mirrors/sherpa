@@ -116,9 +116,6 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
-  msg_LogFile()<<"Exception_Handler::Exit: "
-	       <<"Exiting "<<m_progname<<" with code ("
-	       <<exitcode<<")"<<std::endl;
   exit(exitcode);
 }
 
@@ -136,7 +133,6 @@ void ATOOLS::Terminate()
 
 void Exception_Handler::Terminate() 
 {
-  bool modifiable=msg->Modifiable();
   SetExitCode();
   if ((m_signal!=SIGTERM && m_signal!=SIGINT &&
        m_signal!=SIGXCPU && m_signal!=SIGPIPE) &&
@@ -145,9 +141,6 @@ void Exception_Handler::Terminate()
 	m_exception->Type()!=ex::missing_input &&
 	m_exception->Type()!=ex::missing_module))) {
     if (m_print) {
-      msg->SetModifiable(false);
-      GenerateStackTrace(msg->LogFile(),true,"! ");
-      msg->SetModifiable(modifiable);
       if (m_stacktrace) GenerateStackTrace(msg->Error());
     }
     rpa.gen.SetVariable

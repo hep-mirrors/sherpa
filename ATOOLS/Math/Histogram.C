@@ -347,8 +347,6 @@ void Histogram::Output() {
 void Histogram::Output(const std::string name) 
 {
   if (!m_active) return;
-  msg_LogFile()<<"! Histogram::Output(..): "
-	       <<"Writing ("<<this<<") to '"<<name<<"'\n";
   std::ofstream ofile;
   ofile.open(name.c_str());
 

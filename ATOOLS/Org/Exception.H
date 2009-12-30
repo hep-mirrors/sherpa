@@ -76,9 +76,6 @@ namespace ATOOLS {
     // destructor
     ~Exception();
 
-    // member functions
-    void UpdateLogFile() const;
-    
     // inline functions
     inline void SetClass(const std::string cclass)     { m_class=cclass;    }
     inline void SetMethod(const std::string cmethod)   { m_method=cmethod;  }

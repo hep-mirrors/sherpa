@@ -93,15 +93,6 @@ Exception::~Exception()
   }
 }
 
-void Exception::UpdateLogFile() const 
-{
-  msg_LogFile()<<"Sherpa";
-  if (m_class.length()>0) {
-    msg_LogFile()<<" : "<<m_class<<"::"<<m_method;
-  }
-  msg_LogFile()<<" throws "<<m_type<<": "<<m_info;
-}
-
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Exception &exception)
 {
   str<<om::bold<<"Sherpa";

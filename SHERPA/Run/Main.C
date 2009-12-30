@@ -74,7 +74,6 @@ int main(int argc,char* argv[])
     return 0;
   }
   catch (ATOOLS::Exception exception) {
-    exception.UpdateLogFile();
     msg_Error()<<exception<<std::endl;
     std::terminate();
   }

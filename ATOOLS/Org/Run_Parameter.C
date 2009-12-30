@@ -118,8 +118,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
   if (color=="Off") msg->SetModifiable(false);
   std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
-  std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
-  msg->Init(outputlevel,logfile);
+  msg->Init(outputlevel);
   if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;

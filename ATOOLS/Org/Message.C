@@ -119,7 +119,6 @@ Message::Message() : m_buf(std::cout.rdbuf())
   p_output = &std::cout;
   p_error = &std::cerr;
   p_no = new std::ofstream("/dev/null",std::ios::app);
-  p_logfile = p_no;
   m_file = 0;
   m_level = 0;
   m_modifiable = true;
@@ -128,12 +127,11 @@ Message::Message() : m_buf(std::cout.rdbuf())
 Message::~Message() 
 {      
   std::cout.rdbuf(m_buf.BaseBuf());
-  if (p_logfile!=p_no) delete p_logfile;
   delete p_no;
 
 }
 
-void Message::Init(const std::string& level,const std::string &logfile) 
+void Message::Init(const std::string& level) 
 { 
   Data_Reader dr("|","[","!");
   dr.AddLineSeparator("]");
@@ -159,55 +157,6 @@ void Message::Init(const std::string& level,const std::string &logfile)
            std::ostream_iterator<std::string>(Out(), " "));
     }
   }
-  if (m_level&16) {
-    InitLogFile(logfile);
-    Out()<<"Initialize output module Message. Level "<<m_level<<std::endl;
-  }
-}
-
-void Message::InitLogFile(const std::string &logfile) 
-{
-  if (p_logfile!=p_no) return;
-  std::string name=logfile;
-  if (name==std::string("")) {
-    int i=0;
-    do { 
-      name=std::string("./sherpa_log_")+ToString(++i)+std::string(".log"); 
-      std::ifstream testfile(name.c_str());
-      if (!testfile.is_open()) break;
-    } while (true);
-  }
-  std::string gccv;
-  FILE *pout(popen("gcc -dumpversion","r"));
-  int cch;
-  while ((cch=fgetc(pout))!=EOF) gccv+=(char)cch;
-  pclose(pout);
-  if (gccv.find('\n')!=std::string::npos) 
-    gccv=gccv.substr(0,gccv.find('\n'));
-  const char *hostname=getenv("HOSTNAME");
-  if (hostname==NULL) hostname="";
-  const char *hosttype=getenv("HOSTTYPE");
-  if (hosttype==NULL) hosttype="";
-  p_logfile = new std::ofstream(name.c_str(),std::ios::app);
-  (*p_logfile)<<"! ****************************************\n"
-	      <<"! *           Sherpa Log File            *\n"
-	      <<"! ****************************************\n";
-  (*p_logfile)<<"! starting Sherpa "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
-              <<" at '"
-	      <<hostname
-	      <<"' (architecture "
-	      <<hosttype
-	      <<") \n! on "<<rpa.gen.Timer().TimeString()<<"\n";
-  (*p_logfile)<<"! +--------------------------------------+\n"
-	      <<"! |            shell settings            |\n"
-	      <<"! +--------------------------------------+\n"
-	      <<"! PATH="<<rpa.gen.Variable("PATH")<<"\n\n"
-	      <<"! LD_LIBRARY_PATH="<<rpa.gen.Variable("LD_LIBRARY_PATH")
-	      <<"\n\n! PWD="<<rpa.gen.Variable("SHERPA_RUN_PATH")
-	      <<"\n\n! Sherpa was compiled for gcc "<<gccv<<"\n\n";
-  (*p_logfile)<<"! +--------------------------------------+\n"
-	      <<"! |            run parameters            |\n"
-	      <<"! +--------------------------------------+\n!\n";
 }
 
 void Message::SetStandard() 
@@ -256,12 +205,6 @@ std::ostream &Message::Debugging() const
 { 
   if (m_level & 8) return *p_output; 
   return *p_no;  
-}
-
-std::ostream &Message::LogFile() const   
-{ 
-  if (m_level & 16) return *p_logfile; 
-  return *p_no; 
 }
 
 std::ostream &Message::IODebugging() const

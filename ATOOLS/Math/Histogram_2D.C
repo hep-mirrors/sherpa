@@ -408,8 +408,6 @@ void Histogram_2D::Output() {
 
 void Histogram_2D::Output(const std::string name) {
   if (!m_active) return;
-  msg_LogFile()<<"! Histogram_2D::Output(..): "
-         <<"Writing ("<<this<<") to '"<<name<<"'\n";
   std::ofstream ofile;
   ofile.open(name.c_str());
 
