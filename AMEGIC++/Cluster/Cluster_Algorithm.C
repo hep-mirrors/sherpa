@@ -9,6 +9,7 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Flow.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
@@ -597,6 +598,7 @@ void Cluster_Algorithm::SetColours
       colj.m_i=coli.m_j=nc;
       colj.m_j=colij.m_j;
       coli.m_i=colij.m_i;
+      if (ran.Get()>0.5) std::swap<ColorID>(coli,colj);
     }
     else {
       coli.m_i=colij.m_i;
