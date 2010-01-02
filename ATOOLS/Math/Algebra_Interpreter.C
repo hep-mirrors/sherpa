@@ -63,6 +63,7 @@ Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer):
   p_replacer->ReplaceTags(value);
   if (stag!=value) m_replace=true;
   p_value = Term::New(value);
+  if (m_sign) *p_value=-*p_value;
   p_value->SetTag(stag);
   if (m_replace) p_replacer->AssignId(p_value);
 }
@@ -75,8 +76,10 @@ Single_Term::~Single_Term()
 Term *Single_Term::Evaluate(const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Single_Term requires no argument.");
-  if (m_replace) p_replacer->ReplaceTags(p_value);
-  if (m_sign) *p_value=-*p_value;
+  if (m_replace) {
+    p_replacer->ReplaceTags(p_value);
+    if (m_sign) *p_value=-*p_value;
+  }
   return p_value;
 }
 
