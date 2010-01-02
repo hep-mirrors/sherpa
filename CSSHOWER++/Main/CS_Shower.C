@@ -527,9 +527,10 @@ Singlet *CS_Shower::TranslateAmplitude
   }
   for (Singlet::const_iterator sit(singlet->begin());
        sit!=singlet->end();++sit) {
-    if (!(*sit)->GetFlavour().Strong() ||
-	(*sit)->GetLeft() || (*sit)->GetRight()) continue;
     int flow[2]={(*sit)->GetFlow(1),(*sit)->GetFlow(2)};
+    if (!(*sit)->GetFlavour().Strong()) continue;
+    if ((flow[0]==0 || (*sit)->GetLeft()!=NULL) &&
+	(flow[1]==0 || (*sit)->GetRight()!=NULL)) continue;
     if (flow[0]) {
       for (Singlet::const_iterator tit(singlet->begin());
 	   tit!=singlet->end();++tit)
@@ -549,7 +550,7 @@ Singlet *CS_Shower::TranslateAmplitude
 	}
     }
     if ((flow[0] && (*sit)->GetLeft()==NULL) ||
-	(flow[0] && (*sit)->GetLeft()==NULL))
+	(flow[1] && (*sit)->GetRight()==NULL))
       THROW(fatal_error,"Missing colour partner");
   }
   for (size_t i(0);i<ampl->Legs().size();++i)
