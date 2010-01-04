@@ -1,9 +1,6 @@
 @node Merging ME and PS
 @chapter ME-PS merging
-@strong{The Sherpa method of merging matrix elements and parton showers}
 
-
-@section Improved multijet final-state predictions
 For a large fraction of LHC final states, the application of
 reconstruction algorithms will lead to the identification of several
 hard jets. A major task is to distinguish whether such events are
@@ -30,10 +27,13 @@ treatment at tree-level is detailed in @mycite{Hoeche2009rj}. It relies on
 a strict separation of the phasespace for additional QCD radiation into
 a matrix-element and a parton-shower domain. Truncated showers are then needed
 to account for potential radiation in the parton-shower domain, if radiation
-in the matrix-element domain has already occured. A similar method
-was presented in @mycite{Hamilton2009ne} for the special case of angular-ordered
-parton showers.
-Several older merging approaches exist. The CKKW scheme as a procedure similar
+in the matrix-element domain has already occured. This technique has been applied 
+to the simulation of final states containing hard photons @mycite{Hoeche2009xc} and 
+has been extended to multi-scale processes where the leading order is
+dominated by very low scales @mycite{Carli2009cg}. A merging approach similar to
+@mycite{Hoeche2009rj} was presented in @mycite{Hamilton2009ne} for the special 
+case of angular-ordered parton showers.
+Several older approaches exist. The CKKW scheme as a procedure similar
 to the truncated shower merging was introduced in @mycite{Catani2001cc}.
 Its extension to hadronic processes has been discussed in @mycite{Krauss2002up},
 and the approach has been validated for several cases @mycite{Schalicke2005nv},
@@ -50,9 +50,8 @@ or already in full-fledged event generators. Their respective results have been 
 e.g. in @mycite{Hoche2006ph}, @mycite{Alwall2007fs}. Common to all schemes is
 that sequences of tree-level multileg matrix elements with increasing
 final-state multiplicity are merged with parton showers to yield a fully
-inclusive sample with no double counting and correct at leading logarithmic
-accuracy. Their connection with truncated shower merging is outlined
-in @mycite{Hoeche2009rj}.
+inclusive sample with no double counting. Their connection with truncated 
+shower merging is outlined in @mycite{Hoeche2009rj}.
 
 @anchor{The algorithm implemented in Sherpa}
 @section The algorithm implemented in Sherpa
@@ -179,13 +178,14 @@ pointed out.
   
   The jet criterion is explained in 
   @ref{The algorithm implemented in Sherpa}. The separation cut, Q_cut, 
-  must be specified. It is set using the @ref{CKKW} tag, in the form
+  must be specified. It is set using the @ref{CKKW} tag, usually in the form
   (Q_cut/E_cms)^2. For example, a valid setting reads
 @verbatim
     CKKW sqr(20/E_CMS)
 @end verbatim
   and must be included in the process specification, before the 
-  @code{End process} line. 
+  @code{End process} line. More sophisticated and more flexible 
+  settings of Q_cut are possible, as is exemplified in @ref{HERA_DIS}.
   As mentioned before,
   all extra QCD parton radiation is regularised by satisfying the
   jet criterion. However, divergences of the basic core process, such as
@@ -231,8 +231,9 @@ the most prominent mistakes are listed here:
   PDF or the running of alpha_s requires to integrate and possibly
   store afresh.
 @item  The total inclusive cross section of a merged Sherpa prediction
-  does not correspond to the sum of the sigma_k. Because of the
-  matrix-element reweighting, all these fixed-multiplicity cross
+  does not correspond to the sum of the sigma_k. Because of
+  reweighting with Sudakov form factors on an event-by-event basis, 
+  all these fixed-multiplicity cross
   sections are modified (scaled down) by the ME-PS merging procedure. The sum
   of the modified values determines Sherpa's total inclusive cross
   section, which is given in the final output after event generation, see

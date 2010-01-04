@@ -9,7 +9,7 @@ Sherpa
 @end ifnottex
 is a Monte Carlo event generator for the Simulation 
 of High-Energy Reactions of PArticles in lepton-lepton, 
-lepton-photon, photon-photon and hadron-hadron collisions. 
+lepton-photon, photon-photon, lepton-hadron and hadron-hadron collisions. 
 This document provides information to help users understand 
 and apply 
 @iftex 
@@ -48,14 +48,15 @@ To this end, the authors refer the reader to the original publication,
 S\scalebox{0.8}{HERPA}\xspace 
 @end iftex 
 @ifnottex
-Sherpa 
+@uref{http://projects.hepforge.org/sherpa/,,Sherpa}
 @end ifnottex 
 @mycite{Gleisberg2008ta} is a Monte Carlo event generator that
 provides complete hadronic final states in simulations of high-energy
 particle collisions. The produced events may be passed into detector
 simulations used by the various experiments.
 The entire code has been written in C++, like its competitors 
-Herwig++ @mycite{Bahr2008pv} and Pythia 8 @mycite{Sjostrand2007gs}.
+@uref{http://projects.hepforge.org/herwig/,,Herwig++} @mycite{Bahr2008pv} and 
+@uref{http://home.thep.lu.se/~torbjorn/Pythia.html,,Pythia 8} @mycite{Sjostrand2007gs}.
 
 @iftex 
 S\scalebox{0.8}{HERPA}\xspace 
@@ -66,14 +67,15 @@ Sherpa
 simulations can be achieved for the following types of
 collisions:
 @itemize @bullet
-@item for lepton--lepton collisions, e.g. as explored by the CERN LEP
-  experiments for colliding electrons and positrons.
+@item for lepton--lepton collisions, as explored by the CERN LEP
+  experiments,
 @item for lepton--photon collisions,
 @item for photon--photon collisions with both photons either resolved or
-	unresolved, and, 
+	unresolved,
+@item for deep-inelastic lepton-hadron scattering, as investigated
+  by the HERA experiments at DESY, and,
 @item in particular, for hadronic interactions as studied at the
-  Fermilab Tevatron or CERN LHC, where protons and antiprotons or only
-  protons are brought to collisions, respectively.
+  Fermilab Tevatron or the CERN LHC.
 @end itemize
 
 
@@ -106,7 +108,7 @@ and to it's phase-space generator Phasic @mycite{Krauss2001iv}, which automatica
 calculate and integrate tree-level amplitudes for the implemented models.  This 
 feature enables Sherpa 
 to be used as a cross-section integrator and parton-level 
-event generator as well.  This has also been extensively tested, see e.g. 
+event generator as well.  This aspect has been extensively tested, see e.g. 
 @mycite{Gleisberg2003bi},@mycite{Hagiwara2005wg}.
 
 
@@ -320,7 +322,7 @@ backscattering off the electrons, leading to photonic initial states.
 The PDF module provides access to various parton density functions (PDFs)
 for the proton and the photon. In addition, it hosts an interface to the 
 @uref{http://projects.hepforge.org/lhapdf,,LHAPDF} package,
-which makes a full wealth of proton PDFs available. An 
+which makes a full wealth of PDFs available. An 
 (analytical) electron structure function is supplied in the PDF module 
 as well.   
 	
@@ -356,7 +358,7 @@ A\scalebox{0.8}{MEGIC++}\xspace
 @ifnottex
 AMEGIC++ 
 @end ifnottex 
-as well.
+and Comix as well.
 
 @item AMEGIC++
 

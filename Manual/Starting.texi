@@ -218,7 +218,7 @@ subdirectories for different simulations as is demonstrated with
 the example setups. 
 
 If AMEGIC++ is used, Sherpa requires an initialization run, where 
-libraries are written out, then the libraries must be linked by running
+libraries are written out, then the libraries must be compiled and linked by running
 a @code{makelibs} script in the working directory, and then Sherpa is 
 run again for the actual cross section integrations and event generation.
 For an example of how to run Sherpa using AMEGIC++, see @ref{Running Sherpa with AMEGIC++}.
