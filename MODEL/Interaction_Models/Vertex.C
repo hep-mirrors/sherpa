@@ -90,9 +90,8 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (m_v4[i].Coupling(0)==Complex(0.,0.) && m_v4[i].Coupling(1)==Complex(0.,0.))
-	m_v4[i].on = 0;
-      else { 
+      m_v4[i].on = m_v4[i].CheckCoupling();
+      if (m_v4[i].on) { 
 	if(m_v4[i].nleg==4) {
 	  for (short int k=1;k<5;k++) {
 	    for (short int l=1;l<5;l++) {
@@ -129,8 +128,7 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (m_v[i].Coupling(0)==Complex(0.,0.) && m_v[i].Coupling(1)==Complex(0.,0.))
-	m_v[i].on = 0;
+      m_v[i].on = m_v[i].CheckCoupling();
       if (m_v[i].nleg==3) {  
 	for (short int k=1;k<4;k++) {
 	  for (short int l=1;l<4;l++) {
