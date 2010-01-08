@@ -40,7 +40,6 @@ localinc_HEADERS          =	\
 			Variable.H \
 			Scaling.H \
 			Axis.H \
-			Histogram.H \
 			Histogram_2D.H \
 			Permutation.H \
 			PermStore.H \
