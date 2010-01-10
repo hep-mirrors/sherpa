@@ -171,8 +171,6 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
     return sintt&4;
   }
   else {
-    PRINT_INFO("Can't decide whether i="<<idi<<" and j="<<idj<<
-               " are combinable. Returning false.");
     return false;
   }
 }
