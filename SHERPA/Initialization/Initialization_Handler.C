@@ -916,6 +916,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
     else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
     else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
+    else if (ExtractValArg(helpsv,oit,"-j","PG_THREADS"));
     else if (par=="--version" || par=="-v"){
       msg_Out()<<"Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
       exit(0);
@@ -937,6 +938,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-a <analysis>     set analysis handler <analysis>"<<endl;
       msg_Out()<<"\t\t-A <path>         set analysis output path <path>"<<endl;
       msg_Out()<<"\t\t-O <level>        set output level <level>"<<endl;
+      msg_Out()<<"\t\t-j <threads>      set number of threads <threads>"<<endl;
       msg_Out()<<"\t\t-g                create result directory automatically"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
       msg_Out()<<"\t\t-v,--version      print the version number"<<endl;

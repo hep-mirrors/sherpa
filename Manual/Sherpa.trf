@@ -3,7 +3,9 @@
 Sherpa \- Monte Carlo event generator
 .SH SYNOPSIS
 Sherpa
-.B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP] [\-O \fIlevel\fP]"
+.B "[\-gbvh] [\-f \fIfile\fP] [\-p \fIpath\fP] "
+.br
+.B "       [\-O \fIlevel\fP] [\-j \fIthreads\fP]"
 .br
 .B "       [\-e \fIevents\fP] [\-a \fIanalyses\fP] [\-A \fIpath\fP]"
 .br
@@ -44,6 +46,8 @@ Sets the analysis handler list to \fIanalyses\fP.
 Sets the analysis output path \fIpath\fP.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP.
+.IP "\fB-j\fP \fIthreads\fP"
+Sets the number of threads \fIthreads\fP.
 .IP "\fB-g\fP"
 Creates the result directory automatically.
 .IP "\fB-b\fP"

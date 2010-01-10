@@ -346,6 +346,7 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
 	    linfo=buf;
 	    linfo=linfo.substr(0,linfo.length()-1);
 	  }
+	  if (linfo=="??:0") linfo="";
 	}
 	pclose(pf);
       }

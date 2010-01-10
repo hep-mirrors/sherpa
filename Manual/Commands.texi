@@ -50,6 +50,9 @@ see @ref{ANALYSIS_OUTPUT}.
 @item -O <level>
 Set output level @samp{<level>}, see @ref{OUTPUT}.
 
+@item -j <threads>
+Set number of threads @samp{<threads>}, see @ref{Multi-threading}.
+
 @item -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
 

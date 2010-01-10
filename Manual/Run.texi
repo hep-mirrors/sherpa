@@ -14,6 +14,7 @@ The following parameters describe general run information. They may be set in th
 * SPIN_CORRELATIONS:: Switch spin correlations on/off.
 * NUM_ACCURACY::      Accuracy for gauge tests.
 * Event output formats:: Event output in different formats.
+* Multi-threading::   Multi-threaded integration with Sherpa.
 
 * SHERPA_CPP_PATH::   The C++ code generation path.
 * SHERPA_LIB_PATH::   The runtime library path.
@@ -210,3 +211,18 @@ GenEvent print method
 HepEvt common block
 @end table
 
+@node Multi-threading
+@subsection Multi-threading
+@cindex PG_THREADS
+@cindex COMIX_ME_THREADS
+@cindex COMIX_PS_THREADS
+
+Multi-threaded integration in Sherpa can be enabled using the configuration
+option @samp{--enable-multithread}. Subsequently the computation of amplitudes
+for large groups of processes is split into a number of threads which is limited 
+from above by the parameter @option{PG_THREADS}. This parameter can also
+be specified using the command line option @option{-j}, see @ref{Command line}.
+Additionally, matrix-element calculation and phase-space evaluation for a 
+single process with Comix can be distributed to different threads according to 
+@mycite{Gleisberg2008fv}. The number of threads is then specified using the 
+parameters @option{COMIX_ME_THREADS} and @option{COMIX_PS_THREADS}, respectively.
