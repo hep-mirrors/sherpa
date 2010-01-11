@@ -2,10 +2,10 @@
 @mybibitem{2007cp,07, T. Aaltonen and others,Measurement of Inclusive Jet Cross Sections in Z/gamma^* (to ee)+ jets Production in pbarp Collisions at sqrts=1.96 TeV,Phys. Rev. Lett.,100,(2008),102001,[arXiv:0711.3717],arXiv:0711.3717}
 @mybibitem{Aad2009wy,Aad09, G. Aad and others,Expected Performance of the ATLAS Experiment - Detector Trigger and Physics,,,,,arXiv:0901.0512,arXiv:0901.0512}
 @mybibitem{Aaltonen2007ip,Aal07, T. Aaltonen and others,Measurement of the cross section for W-boson production in association with jets in pbarp collisions at sqrts=1.96 TeV,Phys. Rev.,D77,(2008),011108,[arXiv:0711.4044],arXiv:0711.4044}
-@mybibitem{Aaltonen2009ty,Aal09, T. Aaltonen,Measurement of the Inclusive Isolated Prompt Photon Cross Section in pbarp Collisions at sqrts = 1.96 TeV using the CDF Detector,,,,,arXiv:0910.3623,arXiv:0910.3623}
+@mybibitem{Aaltonen2009ty,Aal09, T. Aaltonen,Measurement of the inclusive isolated prompt photon cross section in pbarp collisions at sqrts = 1.96 TeV using the CDF detector,Phys. Rev.,D80,(2009),111106,[arXiv:0910.3623],arXiv:0910.3623}
 @mybibitem{Aaltonen2009ga,Aal09a, T. Aaltonen and others,Search for a Fermiophobic Higgs Boson Decaying into Diphotons in pbarp Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,103,(2009),061803,[arXiv:0905.0413],arXiv:0905.0413}
 @mybibitem{Aaron2007xx,Aar07, F. D. Aaron and others,Three- and four-jet production at low x at HERA,Eur. Phys. J.,C54,(2008),389-409,[arXiv:0711.2606],arXiv:0711.2606}
-@mybibitem{Aaron2009vs,Aar09, F. D. Aaron and others,Jet Production in ep Collisions at High Q^2 and Determination of alpha_s,,,,,arXiv:0904.3870,arXiv:0904.3870}
+@mybibitem{Aaron2009vs,Aar09, F. D. Aaron and others,Jet production in ep collisions at high Q^2 and determination of alpha_s,Eur. Phys. J.,C,(2009),,[arXiv:0904.3870],arXiv:0904.3870}
 @mybibitem{Abazov2001hb,Aba01, V. M. Abazov and others,The inclusive jet cross-section in pbarp collisions at sqrts = 1.8 TeV using the k_perp algorithm,Phys. Lett.,B525,(2002),211-218,[hep-ex/0109041],hep-ex/0109041}
 @mybibitem{Abazov2004hm,Aba04, V. M. Abazov and others,Measurement of Dijet Azimuthal Decorrelations at Central Rapidities in pbarp Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,94,(2005),221801,[hep-ex/0409040],hep-ex/0409040}
 @mybibitem{Abazov2005wc,Aba05, V. M. Abazov and others,Measurement of the isolated photon cross section in p barp collisions at sqrts = 1.96 TeV,Phys. Lett.,B639,(2006),151-158,[hep-ex/0511054],hep-ex/0511054}
@@ -113,7 +113,7 @@
 @mybibitem{Aubert1988xb,Aub88, J. J. Aubert and others,Evidence for anomalous prompt photons in deep inelastic muon scattering at 200 GeV,Phys. Lett.,B218,(1989),248,,F+J+Phys. Lett.%2CB218%2C248}
 @mybibitem{Aurenche2006vj,Aur06, P. Aurenche and M. Fontannaz and J. P. Guillet and E. Pilon and M. Werlen,Recent critical study of photon production in hadronic collisions,Phys. Rev.,D73,(2006),094007,[hep-ph/0602133],hep-ph/0602133}
 @mybibitem{Aurenche1985yk,Aur85, P. Aurenche and A. Douiri and R. Baier and M. Fontannaz and  D. Schiff,Large p_T Double Photon Production in Hadronic Collisions --- Beyond Leading Logarithm QCD Calculation,Z. Phys.,C29,(1985),459-475,,F+J+Z. Phys.%2CC29%2C459}
-@mybibitem{Aurenche1987fs,Aur87, P. Aurenche and R. Baier and M. Fontannaz and D. Schiff,Prompt Photon Production at Large p(T) Scheme Invariant QCD Predictions and Comparison with Experiment,Nucl. Phys.,B297,(1988),661,,F+J+Nucl. Phys.%2CB297%2C661}
+@mybibitem{Aurenche1987fs,Aur87, P. Aurenche and R. Baier and M. Fontannaz and D. Schiff,Prompt photon production at large p_T Scheme invariant QCD predictions and comparison with experiment,Nucl. Phys.,B297,(1988),661,,F+J+Nucl. Phys.%2CB297%2C661}
 @mybibitem{Aurenche1988vi,Aur88, P. Aurenche and R. Baier and M. Fontannaz and J. F. Owens and M. Werlen,Gluon content of the nucleon probed with real and virtual photons,Phys. Rev.,D39,(1989),3275,,F+J+Phys. Rev.%2CD39%2C3275}
 @mybibitem{Aurenche1989gv,Aur89, P. Aurenche and R. Baier and M. Fontannaz,Prompt photon production at colliders,Phys. Rev.,D42,(1990),1440-1449,,F+J+Phys. Rev.%2CD42%2C1440}
 @mybibitem{Badelek2001xb,Bad01, B. Badelek and others,TESLA Technical Design Report Part VI Chapter 1: Photon collider at TESLA,Int. J. Mod. Phys.,A19,(2004),5097-5186,[hep-ex/0108012],hep-ex/0108012}
@@ -172,6 +172,7 @@
 @mybibitem{Binoth2000zt,Bin00, T. Binoth and J. P. . Guillet and E. Pilon and M. Werlen,Beyond leading order effects in photon pair production at the Fermilab Tevatron,Phys. Rev.,D63,(2001),114016,[hep-ph/0012191],hep-ph/0012191}
 @mybibitem{Binoth2003xk,Bin03, T. Binoth and J. P. Guillet and F. Mahmoudi,A compact representation of the gamma gamma g g g to 0 amplitude,JHEP,02,(2004),057,[hep-ph/0312334],hep-ph/0312334}
 @mybibitem{Binoth2008uq,Bin08, T. Binoth and J. -P. . Guillet and G. Heinrich and E. Pilon and T. Reiter,Golem95: a numerical program to calculate one-loop tensor integrals with up to six external legs,,,,,arXiv:0810.0992,arXiv:0810.0992}
+@mybibitem{Binoth2010xt,Bin10, T. Binoth and others,A proposal for a standard interface between Monte Carlo tools and one-loop programs,,,,,arXiv:1001.1307,arXiv:1001.1307}
 @mybibitem{Binoth1999qq,Bin99, T. Binoth and J. P. Guillet and E. Pilon and M. Werlen,A full next-to-leading order study of direct photon pair production in hadronic collisions,Eur. Phys. J.,C16,(2000),311-330,[hep-ph/9911340],hep-ph/9911340}
 @mybibitem{Bird2005js,Bir05, I. Bird and others,LHC computing Grid. Technical design report,,,,,,}
 @mybibitem{Birthwright2005ak,Bir05a, T. G. Birthwright and E. W. N. Glover and V. V. Khoze and  P. Marquard,Multi-gluon collinear limits from MHV diagrams,JHEP,05,(2005),013,[hep-ph/0503063],hep-ph/0503063}
@@ -193,7 +194,7 @@
 @mybibitem{Brook1995nn,Bro95, N. Brook and R. G. Waugh and T. Carli and R. Mohr and  M. Sutton,Tuning Monte Carlo event generators to HERA data,,,,,,}
 @mybibitem{Brook1998jd,Bro98, N. H. Brook and others,A Comparison of Deep Inelastic Scattering Monte Carlo Event Generators to HERA Data,,,,,hep-ex/9912053,hep-ex/9912053}
 @mybibitem{Buckley2008vh,Buc08, A. Buckley,Tools for event generator tuning and validation,,,,,arXiv:0809.4638,arXiv:0809.4638}
-@mybibitem{Buckley2009bj,Buc09, A. Buckley and H. Hoeth and H. Lacker and H. Schulz and J. E. von Seggern,Systematic event generator tuning for the LHC,,,,,arXiv:0907.2973,arXiv:0907.2973}
+@mybibitem{Buckley2009bj,Buc09, A. Buckley and H. Hoeth and H. Lacker and H. Schulz and J. E. von Seggern,Systematic event generator tuning for the LHC,Eur. Phys. J.,C65,(2010),331-357,[arXiv:0907.2973],arXiv:0907.2973}
 @mybibitem{Buckley2009ad,Buc09a, A. Buckley and H. Hoeth and H. Schulz and  J. E. von Seggern,Monte Carlo event generator validation and tuning for the LHC,,,,,arXiv:0902.4403,arXiv:0902.4403}
 @mybibitem{Budnev1974de,Bud74, V. M. Budnev and I. F. Ginzburg and G. V. Meledin and V. G. Serbo,The two photon particle production mechanism. Physical problems. Applications. Equivalent photon approximation,Phys. Rept.,15,(1974),181-281,,F+J+Phys. Rept.%2C15%2C181}
 @mybibitem{Buskulic1992ji,Bus92, D. Buskulic and others,Measurement of prompt photon production in hadronic Z decays,Z. Phys.,C57,(1993),17-36,,F+J+Z. Phys.%2CC57%2C17}
@@ -406,7 +407,7 @@
 @mybibitem{Jadach1999sf,Jad99, S. Jadach,Foam: Multi-dimensional general purpose Monte Carlo generator with self-adapting simplical grid,Comput. Phys. Commun.,130,(2000),244-259,[arXiv:physics/9910004],arXiv:physics/9910004}
 @mybibitem{Jadach1999vf,Jad99a, S. Jadach and B. F. L. Ward and Z. Wc as,The precision Monte Carlo event generator mathcalKK for two- fermion final states in e^+ e^- collisions,Comput. Phys. Commun.,130,(2000),260-325,[hep-ph/9912214],hep-ph/9912214}
 @mybibitem{James1968gu,Jam68, F. James,Monte-Carlo phase space,,,,,,}
-@mybibitem{JimenezDelgado2008hf,Jim08, P. Jimenez-Delgado and E. Reya,Dynamical NNLO parton distributions,Phys. Rev.,D79,(2009),074023,[arXiv:0810.4274],arXiv:0810.4274}
+@mybibitem{JimenezDelgado2008hf,Jim08, P. Jimenez-Delgado and E. Reya,Dynamical next-to-next-to-leading order parton distributions,Phys. Rev.,D79,(2009),074023,[arXiv:0810.4274],arXiv:0810.4274}
 @mybibitem{Jung2000hk,Jun00,H. Jung and G. P. Salam,Hadronic final state predictions from CCFM: the hadron-level Monte Carlo generator CASCADE,Eur. Phys. J.,C19,(2001),351-360,[hep-ph/0012143],hep-ph/0012143}
 @mybibitem{Jung2001hx,Jun01,H. Jung,The CCFM Monte Carlo generator CASCADE,Comput. Phys. Commun.,143,(2002),100-111,[hep-ph/0109102],hep-ph/0109102}
 @mybibitem{Kalinowski1980ju,Kal80, J. Kalinowski and K. Konishi and T. R. Taylor,Jet calculus beyond leading logarithms,Nucl. Phys.,B181,(1981),221,,F+J+Nucl. Phys.%2CB181%2C221}
@@ -512,6 +513,7 @@
 @mybibitem{Nagy2008eq,Nag08, Z. Nagy and D. E. Soper,Parton showers with quantum interference: leading color with spin,JHEP,07,(2008),025,[arXiv:0805.0216],arXiv:0805.0216}
 @mybibitem{Nagy2008ns,Nag08a, Z. Nagy and D. E. Soper,Parton showers with quantum interference: leading color spin averaged,JHEP,03,(2008),030,[arXiv:0801.1917],arXiv:0801.1917}
 @mybibitem{Nagy2009re,Nag09, Z. Nagy and D. E. Soper,Final state dipole showers and the DGLAP equation,JHEP,05,(2009),088,[arXiv:0901.3587],arXiv:0901.3587}
+@mybibitem{Nagy2009vg,Nag09a, Z. Nagy and D. E. Soper,On the transverse momentum in Z-boson production in a virtuality ordered parton shower,,,,,arXiv:0912.4534,arXiv:0912.4534}
 @mybibitem{Nanava2006vv,Nan06, G. Nanava and Z. Wc as,Scalar QED NLO and PHOTOS Monte Carlo,Eur. Phys. J.,C51,(2007),569-583,[hep-ph/0607019],hep-ph/0607019}
 @mybibitem{Nason2004rx,Nas04, P. Nason,A new method for combining NLO QCD with shower Monte Carlo algorithms,JHEP,11,(2004),040,[hep-ph/0409146],hep-ph/0409146}
 @mybibitem{Nason2006hfa,Nas06, P. Nason and G. Ridolfi,A positive-weight next-to-leading-order Monte Carlo for Z pair hadroproduction,JHEP,08,(2006),077,[hep-ph/0606275],hep-ph/0606275}
@@ -585,7 +587,7 @@
 @mybibitem{Summers1994mc,Sum94, D. J. Summers,Exponentiation of soft photons in a process involving hard photons,Phys. Rev.,D53,(1996),2430-2441,[hep-ph/9405430],hep-ph/9405430}
 @mybibitem{Thorne1999rb,Tho99, R. S. Thorne,NLO BFKL equation running coupling and renormalization scales,Phys. Rev.,D60,(1999),054031,[hep-ph/9901331],hep-ph/9901331}
 @mybibitem{Uhlemann2008pm,Uhl08, C. F. Uhlemann and N. Kauer,Narrow-width approximation accuracy,,,,,arXiv:0807.4112,arXiv:0807.4112}
-@mybibitem{Vesterinen2008hx,Ves08, M. Vesterinen and T. R. Wyatt,A Novel Technique for Studying the Z Boson Transverse Momentum Distribution at Hadron Colliders,Nucl. Instrum. Meth.,A602,(2009),432-437,[arXiv:0807.4956],arXiv:0807.4956}
+@mybibitem{Vesterinen2008hx,Ves08, M. Vesterinen and T. R. Wyatt,A novel technique for studying the Z boson transverse momentum distribution at hadron colliders,Nucl. Instrum. Meth.,A602,(2009),432-437,[arXiv:0807.4956],arXiv:0807.4956}
 @mybibitem{Virkus2008zz,Vir08, T. Virkus and others,Direct measurement of the Chudakov effect,Phys. Rev. Lett.,100,(2008),164802,,F+J+Phys. Rev. Lett.%2C100%2C164802}
 @mybibitem{Vogt2004mw,Vog04, A. Vogt and S. Moch and J. A. M. Vermaseren,The three-loop splitting functions in QCD: The singlet case,Nucl. Phys.,B691,(2004),129-181,[hep-ph/0404111],hep-ph/0404111}
 @mybibitem{Vogelsang1995bg,Vog95, W. Vogelsang and A. Vogt,Constraints on the proton's gluon distribution from prompt photon production,Nucl. Phys.,B453,(1995),334-354,[hep-ph/9505404],hep-ph/9505404}

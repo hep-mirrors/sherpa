@@ -15,9 +15,9 @@ helicity and colour summed one-loop matrix element
 (more specific: the coefficients of the Laurent series in the dimensional
 regularization parameter epsilon up to the order epsilon^0).
 
-The directory @code{./AddOns/LH_OLE} includes an example interface
-which follows the (still preliminary) propsal of the 2009 Les Houches 
-workshop (@uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft}).
+The directory @code{./AddOns/LH_OLE} includes an example interface which 
+follows the @uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft,,proposal} 
+of the 2009 Les Houches workshop @mycite{Binoth2010xt}.
 A sample setup for W+1jet production at LHC 14TeV is included.
 
 The interface:
