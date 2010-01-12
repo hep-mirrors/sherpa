@@ -28,6 +28,7 @@ namespace MODEL {
     ~Single_Vertex(); 
     
     Complex Coupling(size_t i) const;
+    int CheckCoupling() const;
     // operators
     Single_Vertex&       operator= (const Single_Vertex&);
     const bool           operator==(const Single_Vertex&);

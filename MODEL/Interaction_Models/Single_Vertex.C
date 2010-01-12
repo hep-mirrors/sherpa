@@ -30,6 +30,14 @@ Complex Single_Vertex::Coupling(size_t i) const
   return cpl[i].Value();
 }
  
+int Single_Vertex::CheckCoupling() const
+{
+  for (size_t i(0);i<cpl.size();++i) 
+    if (cpl[i].Value()!=Complex(0.,0.)) return 1;
+  return 0;
+}
+
+
 // Operators
 Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) 
 {
