@@ -151,6 +151,7 @@ CS_Shower::~CS_Shower()
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower) return 1;
+  m_weight=1.0;
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
@@ -160,6 +161,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	    (*it)->SetStart((*it)->GetPrev()->KtStart());
       msg_Debugging()<<**sit;
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
+    m_weight*=p_shower->Weight();
     if ((*sit)->GetLeft()) p_shower->ReconstructDaughters(*sit,true);
     msg_Debugging()<<"after shower step\n";
       msg_Debugging()<<**sit;

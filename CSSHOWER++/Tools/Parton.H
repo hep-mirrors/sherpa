@@ -28,11 +28,13 @@ namespace CSSHOWER {
     int             m_beam,m_stat;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_kt_max, m_kt_prev, m_kt_next, m_phi;
-    double          m_z_test, m_y_test, m_xBj;
+    double          m_z_test, m_y_test, m_weight, m_xBj;
     Parton        * p_left, * p_right;
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
     size_t          m_id;
+
+    std::vector<std::pair<double,double> > m_weights;
   public:
     inline Parton();
     inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
@@ -40,6 +42,10 @@ namespace CSSHOWER {
 
     Parton *FollowUp();
     void    UpdateDaughters();
+
+    inline std::vector<std::pair<double,double> > &Weights() { return m_weights; }
+
+    double Weight(const double &scale);
 
     inline ATOOLS::Flavour   const GetFlavour()  const;
     inline ATOOLS::Vec4D     const Momentum()    const;
@@ -59,6 +65,7 @@ namespace CSSHOWER {
     inline double            const KtTest()      const;
     inline double            const ZTest()       const;
     inline double            const YTest()       const;
+    inline double            const Weight()        const;
     inline double            const Xbj()         const;
     inline double            const Phi()         const;
     inline Parton *                GetLeft();
@@ -77,6 +84,7 @@ namespace CSSHOWER {
     inline void SetKtTest(const double);
     inline void SetZTest(const double);
     inline void SetYTest(const double);
+    inline void SetWeight(const double);
     inline void SetTest(const double,const double,const double,const double);
     inline void SetXbj(const double);
     inline void SetPhi(const double);
@@ -103,7 +111,7 @@ namespace CSSHOWER {
     m_pst(pst::none), m_beam(0), m_stat(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
-    m_z_test(1.), m_y_test(1.), m_xBj(1.), p_left(NULL), p_right(NULL),
+    m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
   { 
     m_flow.SetCode(1,0);
@@ -114,7 +122,7 @@ namespace CSSHOWER {
     m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
-    m_z_test(1.), m_y_test(1.), m_xBj(1.), p_left(NULL), p_right(NULL),
+    m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
   {
     m_flow.SetCode(1,0);
@@ -126,7 +134,7 @@ namespace CSSHOWER {
     m_pst(pst), m_beam(0), m_stat(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(0.),
-    m_z_test(1.), m_y_test(1.), m_xBj(1.), p_left(NULL), p_right(NULL),
+    m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
   {
     if (m_pst==pst::FS) {
@@ -160,6 +168,7 @@ namespace CSSHOWER {
   double            const Parton::KtTest()      const { return m_kt_test; }
   double            const Parton::ZTest()       const { return m_z_test; }
   double            const Parton::YTest()       const { return m_y_test; }
+  double            const Parton::Weight()      const { return m_weight; }
   double            const Parton::Xbj()         const { return m_xBj; }
   double            const Parton::Phi()         const { return m_phi; }
   int               const Parton::Beam()        const { return m_beam; }
@@ -181,6 +190,7 @@ namespace CSSHOWER {
   void Parton::SetKtTest(const double kt)             { m_kt_test  = kt; }
   void Parton::SetZTest(const double z)               { m_z_test   = z; }
   void Parton::SetYTest(const double y)               { m_y_test   = y; }  
+  void Parton::SetWeight(const double weight)         { m_weight   = weight; }  
   void Parton::SetTest(const double kt,
 		       const double z, 
 		       const double y,

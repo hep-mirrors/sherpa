@@ -18,6 +18,8 @@ template class Getter_Function
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "CSSHOWER++/Showers/Shower.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -66,9 +68,18 @@ Splitting_Function_Base::Splitting_Function_Base():
 {
 }
 
+void Splitting_Function_Base::SetEFac(Shower *const shower)
+{
+  std::string id="S{"+ToString(p_lf->FlA())+"}{"
+    +ToString(p_lf->FlB())+"}{"+ToString(p_lf->FlC())+"}";
+  m_efac=shower->EFac(id);
+  if (m_efac!=1.0) msg_Info()<<"Enhance "<<id<<" with "<<m_efac<<"\n";
+}
+
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
-  m_symf(1.0), m_polfac(1.0), m_on(1), m_bwon(0), m_qcd(-1)
+  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_on(1), m_bwon(0),
+  m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -168,8 +179,15 @@ double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
+  if (m_efac!=1.0) lastint*=m_efac;
   m_lastint+=lastint;
   return lastint;
+}
+
+double Splitting_Function_Base::EFac() const
+{
+  if (m_efac!=1.0) return m_efac; 
+  return 1.0;
 }
 
 double Splitting_Function_Base::Overestimated(const double z,const double y)

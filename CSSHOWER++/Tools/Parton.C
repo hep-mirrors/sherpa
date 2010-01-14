@@ -48,3 +48,12 @@ void Parton::UpdateDaughters()
   msg_Debugging()<<"}\n";
 }
 
+double Parton::Weight(const double &scale) 
+{
+  double weight=1.0;
+  for (size_t i(0);i<m_weights.size();++i)
+    if (m_weights[i].first>scale) weight*=m_weights[i].second;
+    else break;
+  return weight;
+}
+    

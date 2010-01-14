@@ -151,6 +151,8 @@ namespace CSSHOWER {
 
   };
 
+  class Shower;
+
   typedef ATOOLS::Getter_Function<SF_Coupling,SF_Key,
 				  std::less<std::string> > SFC_Getter;
 
@@ -162,7 +164,7 @@ namespace CSSHOWER {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint, m_symf, m_polfac, m_lpdf;
+    double m_lastint, m_symf, m_polfac, m_lpdf, m_efac;
     int m_on, m_bwon, m_qcd;
     std::vector<Parton*> m_specs;
     PDF::PDF_Base **p_pdf;
@@ -201,6 +203,10 @@ namespace CSSHOWER {
 
     Parton *SelectSpec() const;
     bool PureQCD() const;
+
+    void SetEFac(Shower *const shower);
+
+    double EFac() const;
 
     inline double     Last() const    { return m_lastint; } 
     inline cstp::code GetType() const { return m_type;    } 

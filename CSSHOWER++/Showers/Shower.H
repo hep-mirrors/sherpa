@@ -3,6 +3,7 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/STL_Tools.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
@@ -19,6 +20,10 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[3];
+
+    std::map<std::string,double,ATOOLS::String_Sort> m_efac;
+
+    double m_weight;
 
     int    SetXBj(Parton *const p) const;
     PLiter SelectSplitting(double &,const double &);
@@ -38,6 +43,8 @@ namespace CSSHOWER {
 				const bool one=false);
     void SetMS(ATOOLS::Mass_Selector *const ms);
     void SetRBMax(const double &rbmax);
+    double EFac(const std::string &sfk) const;
+    inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline Parton *const *GetLast() const { return m_last; }
 
@@ -45,6 +52,9 @@ namespace CSSHOWER {
     inline const Kinematics_FI *KinFI() const { return &m_kinFI; }
     inline const Kinematics_IF *KinIF() const { return &m_kinIF; }
     inline const Kinematics_II *KinII() const { return &m_kinII; }
+
+    inline double Weight() const { return m_weight; }
+
   };
 }
 

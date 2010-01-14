@@ -147,6 +147,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     return;
   }
   split->SetPDF(p_pdf);
+  split->SetEFac(p_shower);
   if (mode) {
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";
@@ -194,6 +195,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
 
 bool Sudakov::Dice(Parton * split) 
 {
+  m_weight=1.0;
   ClearSpecs();
   ResetLastInt();
   m_cfl = split->GetFlavour();
@@ -543,9 +545,21 @@ bool Sudakov::KinCheck(double Q2,double x) {
 }
 
 bool Sudakov::Splitting(double Q2,double x) {
+  if (m_kperp2>p_split->KtPrev()) return false;
   double wt(RejectionWeight(m_z,m_y,x,m_kperp2,Q2));
-  if (ran.Get()>wt) return false;  
-  return true;
+  double efac=p_selected->EFac();
+  if (ran.Get()>wt) {
+    if (efac!=1.0) {
+      m_weight*=(1.0-wt/efac)/(1.0-wt);
+      p_split->Weights().push_back
+	(std::make_pair(m_kperp2,(1.0-wt/efac)/(1.0-wt)));
+    }
+    return false;  
+  }
+  else {
+    m_weight*=1.0/efac;
+    return true;
+  }
 }
 
 const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,
@@ -568,21 +582,13 @@ int Sudakov::HasKernel(const ATOOLS::Flavour &fli,
                        const ATOOLS::Flavour &flk,
                        const cstp::code type) const
 {
-  const SF_EEE_Map *cmap(&m_sffmap);
-  if (type==cstp::FI) cmap=&m_sfimap;
-  else if (type==cstp::IF) cmap=&m_sifmap;
-  else if (type==cstp::II) cmap=&m_siimap;
-  
   // find whether a kernel for ij k -> i j k exists and which coupling type
   // it has, i.e. doesn't exist (=0), qcd (=1), ew (=2), qcd and ew (=3)
   // the latter can happen e.g. if  i=q  j=qbar  k=q'  where ij = {G | P}
   int cpl=0;
-  SF_EEE_Map::const_iterator eees(cmap->find(fli));
-  if (eees==cmap->end()) return 0;
-  SF_EE_Map::const_iterator ees(eees->second.find(flj));
-  if (ees==eees->second.end()) return 0;
-  for (SF_E_Map::const_iterator es=ees->second.begin(); es!=ees->second.end();
-       ++es) {
+  const SF_E_Map * sfmap = HasKernel(fli, flj, type);
+  if (sfmap==NULL) return 0;
+  for (SF_E_Map::const_iterator es=sfmap->begin(); es!=sfmap->end(); ++es) {
     Splitting_Function_Base* sf = es->second;
     if (sf->Coupling()->AllowSpec(flk)) {
       if (sf->PureQCD()) cpl|=1;

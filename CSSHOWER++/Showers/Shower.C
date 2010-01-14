@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
@@ -14,24 +15,43 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
   double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sq,is_fac,fs_fac);
+  std::vector<std::vector<std::string> > helpsvv;
+  dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
+  m_efac.clear();
+  for (size_t i(0);i<helpsvv.size();++i)
+    if (helpsvv[i].size()==2) {
+      m_efac[helpsvv[i][0]]=ToType<double>(helpsvv[i][1]);
+    }
   m_sudakov.SetShower(this);
+  m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sq,is_fac,fs_fac);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
   m_kinII.SetSudakov(&m_sudakov);
+  m_last[0]=NULL;
+  m_last[1]=NULL;
+  m_last[2]=NULL;
 }
 
 Shower::~Shower() 
 {
 }
 
+double Shower::EFac(const std::string &sfk) const 
+{ 
+  for (std::map<std::string,double,ATOOLS::String_Sort>::const_reverse_iterator
+	 eit=m_efac.rbegin();eit!=m_efac.rend();++eit)
+    if (sfk.find(eit->first)!=std::string::npos) return eit->second;
+  return 1.0;
+}
+
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
+  m_weight=1.0;
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -191,7 +211,15 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     kt2win = 0.;
     splitter = SelectSplitting(kt2win,kt2old);
     //no shower anymore 
-    if (splitter==p_actual->end()) return true;
+    if (splitter==p_actual->end()) {
+      for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
+           ++it) {
+        if ((*it)->Weight()!=1.0)
+          msg_Debugging()<<"Add wt for "<<(**it)<<": "<<(*it)->Weight()<<"\n";
+        m_weight*=(*it)->Weight();
+      }
+      return true;
+    }
     else {
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt((*splitter)->KtTest())
@@ -199,14 +227,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 		     <<sqrt((*splitter)->KtPrev())<<" ), z = "<<(*splitter)->ZTest()<<", y = "
 		     <<(*splitter)->YTest()<<" for\n"<<**splitter
 		     <<*(*splitter)->GetSpect()<<"\n";
+      m_last[0]=m_last[1]=m_last[2]=NULL;
       if (kt2win<(*splitter)->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
 	return true;
       }
       if (kt2win>Min(kt2old,(*splitter)->KtPrev())) {
-	(*splitter)->SetStart(kt2win);
-	msg_Debugging()<<"... Veto split ...\n\n";
-	continue;
+	THROW(fatal_error,"Internal error");
       }
       if ((*splitter)->GetSing()->GetLeft()) {
 	if ((*splitter)->GetType()==pst::IS) {
@@ -260,6 +287,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  }
 	  continue;
 	}
+	m_weight*=(*splitter)->Weight();
+	msg_Debugging()<<"sw = "<<(*splitter)->Weight()
+		       <<", w = "<<m_weight<<"\n";
 	mustsplit = p_actual->SplitParton(splitter,newpB,newpC);
 	m_last[0]=newpB;
 	m_last[1]=newpC;
@@ -314,6 +344,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
 	if (stat>0) {
 	  SetXBj(spect);
+	  m_weight*=(*splitter)->Weight();
+	  msg_Debugging()<<"sw = "<<(*splitter)->Weight()
+			 <<", w = "<<m_weight<<"\n";
 	  mustsplit = p_actual->SplitParton(splitter,newpB,newpC);
 	  m_last[0]=newpB;
 	  m_last[1]=newpC;
@@ -370,6 +403,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  stat=-1;
 	}
 	if (stat>0) {
+	  m_weight*=(*splitter)->Weight();
+	  msg_Debugging()<<"sw = "<<(*splitter)->Weight()
+			 <<", w = "<<m_weight<<"\n";
 	  mustsplit = p_actual->SplitParton(splitter,newpA,newpC);
 	  m_last[0]=newpA;
 	  m_last[1]=newpC;
@@ -427,6 +463,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  stat=-1;
 	}
 	if (stat>0) {
+	  m_weight*=(*splitter)->Weight();
+	  msg_Debugging()<<"sw = "<<(*splitter)->Weight()
+			 <<", w = "<<m_weight<<"\n";
 	  mustsplit = p_actual->SplitParton(splitter,newpA,newpC);
 	  m_last[0]=newpA;
 	  m_last[1]=newpC;
@@ -435,6 +474,24 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       else abort();
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
+      if (m_last[0]) {
+        for (Singlet::const_iterator it=p_actual->begin();
+             it!=p_actual->end();++it) {
+          if ((*it)->Weight()!=1.0) {
+            msg_Debugging()<<"Add wt for "<<(**it)<<": "
+                           <<(*it)->Weight(m_last[0]->KtStart())<<"\n";
+            m_weight*=(*it)->Weight(m_last[0]->KtStart());
+            (*it)->Weights().clear();
+          }
+          (*it)->SetKtPrev(m_last[0]->KtStart());
+        }
+      }
+      else {
+        for (Singlet::const_iterator it=p_actual->begin();
+             it!=p_actual->end();++it) {
+          (*it)->SetKtPrev(kt2win);
+        }
+      }
       if (++nem>=maxem) return true;
       kt2old=kt2win;
     }
@@ -460,6 +517,7 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
   while (true) {
   if (m_sudakov.Dice(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
+    split->SetWeight(m_sudakov.Weight());
     if (kt2>split->KtNext() && kt2>split->KtPrev()) {
       split->SetStart(kt2);
       continue;
@@ -472,6 +530,9 @@ bool Shower::TrialEmission(double & kt2win,const double &kt2old,
       split->SetTest(kt2,z,y,phi);
       return true;
     }
+  }
+  else {
+    split->SetWeight(m_sudakov.Weight());
   }
   return false;
   }

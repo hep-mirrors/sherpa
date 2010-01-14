@@ -27,6 +27,7 @@ namespace PDF {
     ATOOLS::Cluster_Definitions_Base * p_cluster;
     
     std::string m_name;
+    double      m_weight;
 
   public:
 
@@ -62,6 +63,8 @@ namespace PDF {
                           const ATOOLS::Flavour &flj,
                           const ATOOLS::Flavour &flk,
                           const int type) const = 0;
+
+    inline double Weight() const { return m_weight; }
 
   };// end of class Shower_Base
 

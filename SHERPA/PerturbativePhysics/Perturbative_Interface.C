@@ -159,7 +159,14 @@ int Perturbative_Interface::PerformShowers()
     }
     return true;
   }
-  return csh->PerformShowers();
+  int stat=csh->PerformShowers();
+  double weight=csh->Weight();
+  p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));
+  Blob_Data_Base *winfo((*p_hard)["Weight"]);
+  if (!winfo) THROW(fatal_error,"No weight information in signal blob");
+  double meweight(winfo->Get<double>());
+  p_hard->AddData("Weight",new Blob_Data<double>(meweight*weight));
+  return stat;
 }
 
 int Perturbative_Interface::PerformDecayShowers()
