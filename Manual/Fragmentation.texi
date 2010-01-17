@@ -65,10 +65,9 @@ ignorant about hadron decays, with the exception of tau-decays, which have been
 supplemented early in the development of the Sherpa event generator.  
 	
 The coarse features of the string breakup in the Lund model are characterized by three 
-parameters, Lund-a through @code{PARJ(41)} (data file value: 0.431), Lund-b through 
-@code{PARJ(42)} (data file value: 0.878), and Lund-sigma through @code{PARJ(21)} 
-(data file value: 0.336).  If the data-file parameters are not set, Sherpa employs
-the default values in Pythia.  
+parameters, Lund-a through @code{PARJ(41)}, Lund-b through @code{PARJ(42)}, and 
+Lund-sigma through @code{PARJ(21)}. If the data-file parameters are not set, 
+Sherpa employs the default values in Pythia.  
 
 More Pythia parameters can be added to the @code{Lund.dat} file using the Pythia 
 nomenclature in the common-blocks, e.g. @code{MSTJ(11)} for changing the fragmentation 

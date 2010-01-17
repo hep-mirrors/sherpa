@@ -76,12 +76,14 @@ available then) if Sherpa has been compiled with support for LHAPDF, see
 Built-in library for some PDF sets from the CTEQ collaboration, cf.
 @mycite{Pumplin2002vw}. This is the
 default, if Sherpa has not been compiled with LHAPDF support.
-@item MRST99Sherpa
-Built-in library for some PDF sets from the MRST group, cf. @mycite{Martin1999ww}.
-@item MRST01LOSherpa
-Built-in library for another PDF set from the MRST group, cf. @mycite{Martin2001es}.
+@item MSTW08Sherpa
+Built-in library for PDF sets from the MSTW group, cf. @mycite{Martin2009iq}.
 @item MRST04QEDSherpa
 Built-in library for photon PDF sets from the MRST group, cf. @mycite{Martin2004dh}.
+@item MRST01LOSherpa
+Built-in library for another PDF set from the MRST group, cf. @mycite{Martin2001es}.
+@item MRST99Sherpa
+Built-in library for some PDF sets from the MRST group, cf. @mycite{Martin1999ww}.
 @item GRVSherpa
 Built-in library for the GRV photon PDF @mycite{Gluck1991jc}, @mycite{Gluck1991ee}
 @item PDFESherpa
