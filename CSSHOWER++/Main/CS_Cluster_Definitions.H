@@ -22,6 +22,7 @@ namespace CSSHOWER {
   private:
 
     ATOOLS::Mass_Selector *p_ms;
+    ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
     int     m_mode, m_kmode;
@@ -46,7 +47,8 @@ namespace CSSHOWER {
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		  ATOOLS::Mass_Selector *const ms=NULL);
-    CS_Parameters KT2(const ATOOLS::Cluster_Leg *i,
+    CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
+		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),

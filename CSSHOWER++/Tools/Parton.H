@@ -25,7 +25,7 @@ namespace CSSHOWER {
     ATOOLS::Vec4D   m_mom;
     ATOOLS::Flow    m_flow,m_meflow;
     pst::code       m_pst;
-    int             m_beam,m_stat;
+    int             m_beam,m_stat,m_kin;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_kt_max, m_kt_prev, m_kt_next, m_phi;
     double          m_z_test, m_y_test, m_weight, m_xBj;
@@ -56,6 +56,7 @@ namespace CSSHOWER {
     inline int                     GetRFlow(const int) const;
     inline int               const Beam()        const;
     inline int               const Stat()        const;
+    inline int               const Kin()         const { return m_kin; }
     inline size_t            const Id()          const;
     inline double            const KtMax()       const;
     inline double            const KtPrev()      const;
@@ -101,6 +102,7 @@ namespace CSSHOWER {
     inline void SetRFlow();
     inline void SetBeam(int);
     inline void SetStat(int);
+    inline void SetKin(int kin) { m_kin=kin; }
     inline void SetId(size_t);
     friend std::ostream& operator<<(std::ostream &,const Parton &);
   };
@@ -108,7 +110,7 @@ namespace CSSHOWER {
   Parton::Parton() : 
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
-    m_pst(pst::none), m_beam(0), m_stat(0),
+    m_pst(pst::none), m_beam(0), m_stat(0), m_kin(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
@@ -119,7 +121,7 @@ namespace CSSHOWER {
   }
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
-    m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0),
+    m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0), m_kin(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
@@ -131,7 +133,7 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
-    m_pst(pst), m_beam(0), m_stat(0),
+    m_pst(pst), m_beam(0), m_stat(0), m_kin(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(0.),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),

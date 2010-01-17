@@ -50,7 +50,7 @@ void Dipole_FI::AddRadiation() {
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
     Vec4D mom = m_olddipole[i]->Momentum();
     boost.Boost(mom);
-    if (i==0)  rotate = Poincare(mom,Vec4D(0.,0.,0.,-1.));
+    if (i==0)  rotate = Poincare(mom/mom.PSpat2(),Vec4D(0.,0.,0.,-1.));
     rotate.Rotate(mom);
     m_olddipole[i]->SetMomentum(mom);
     if (i==0)  m_p = m_olddipole[0]->Momentum();

@@ -397,14 +397,15 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters cp(p_cluster->KT2
-		       (almap[l],almap[r],almap[s],
-			split->GetFlavour(),p_ms));
+		       (campl->Prev(),almap[l],almap[r],almap[s],
+			split->GetType()==pst::FS?split->GetFlavour():
+			split->GetFlavour().Bar(),p_ms));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       l->SetStart(cp.m_kt2);
       r->SetStart(cp.m_kt2);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
-		     <<", mode = "<<cp.m_mode<<"\n";
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<l->Kin()<<"\n";
       sing->SetAll(p_next);
 #ifdef USING__reco_check
       std::cout.precision(12);
@@ -415,8 +416,9 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters ncp(p_cluster->KT2
-			(almap[l],almap[r],almap[s],
-			 split->GetFlavour(),p_ms));
+			(campl->Prev(),almap[l],almap[r],almap[s],
+			 split->GetType()==pst::FS?split->GetFlavour():
+			 split->GetFlavour().Bar(),p_ms));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi<<"\n";
       msg_Debugging()<<"            vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
@@ -509,6 +511,7 @@ Singlet *CS_Shower::TranslateAmplitude
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetRFlow();
+    parton->SetKin(p_shower->KinScheme());
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
 	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
@@ -824,7 +827,7 @@ double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
       cdip->SetFlavourSpec(k<ampl->NIn()?lkt->Flav().Bar():lkt->Flav());
       double Q2=(lijt->Mom()+lkt->Mom()).Abs2(), scale=Q2;
       Cluster_Leg *lk(next->IdLeg(lkt->Id()));
-      CS_Parameters cs(p_cluster->KT2(li,lj,lk,lijt->Flav(),p_ms));
+      CS_Parameters cs(p_cluster->KT2(ampl,li,lj,lk,lijt->Flav(),p_ms));
       double eta=1.0;// temporary, FF only
       double w=8.0*M_PI*as/((li->Mom()+lj->Mom()).Abs2()
 			    -sqr(p_ms->Mass(lijt->Flav())))

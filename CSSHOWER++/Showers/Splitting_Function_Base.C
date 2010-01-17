@@ -12,6 +12,7 @@ template class Getter_Function
 template class Getter_Function
 <void,const MODEL::Model_Base*,SORT_CRITERION>;
 
+#include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Interaction_Models/Lorentz_Function.H"
 #include "MODEL/Interaction_Models/Color_Function.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
@@ -179,8 +180,15 @@ double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
-  if (m_efac!=1.0) lastint*=m_efac;
-  m_lastint+=lastint;
+  if (!(IsBad(lastint)||lastint<0.0)) {
+    if (m_efac!=1.0) lastint*=m_efac;
+    m_lastint+=lastint;
+  }
+  else {
+    msg_Error()<<METHOD<<"(): Integral is "<<lastint<<" in ("<<m_type<<") "
+	       <<p_lf->FlA()<<"->"<<p_lf->FlB()<<p_lf->FlC()<<std::endl;
+    return 0.0;
+  }
   return lastint;
 }
 
@@ -204,14 +212,23 @@ double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
  const double scale,const double Q2) 
 {
-  return operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
+  double res = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
+#ifdef CHECK_rejection_weight
+  if (res>1.0) {
+    msg_Error()<<METHOD<<"(): Weight is "<<res<<" in ("<<m_type<<") "
+	       <<p_lf->FlA()<<"->"<<p_lf->FlB()<<p_lf->FlC()
+	       <<" at z = "<<z<<", y = "<<y<<", x = "
+	       <<eta<<", Q = "<<sqrt(Q2)<<std::endl;
+  }
+#endif
+  return res;
 }
 
-Parton *Splitting_Function_Base::SelectSpec() const
+Parton *Splitting_Function_Base::SelectSpec()
 {
   if (m_specs.empty()) return NULL;
   double disc=ran.Get()*m_specs.size();
-  return m_specs[Min(m_specs.size()-1,(size_t)disc)];
+  return p_spec=m_specs[Min(m_specs.size()-1,(size_t)disc)];
 }
 
 void Splitting_Function_Base::ClearSpecs()

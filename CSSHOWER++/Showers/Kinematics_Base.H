@@ -21,6 +21,16 @@ namespace CSSHOWER {
 			       const ATOOLS::Flavour &,Parton *&) = 0;
     virtual double GetY(const double &Q2,const double &kt2,const double &z,
 			const double &s1,const double &s2,const double &s3) const = 0;
+    double GetS(const double &Q2,const double &y,
+		const double &mi2,const double &mj2,const double &mk2) const;
+    double GetZ(const double &Q2,const double &sij,const double &y,const double &zt,
+		const double &mi2,const double &mk2) const;
+    double GetKT2(const double &Q2,const double &y,const double &z,
+		  const double &mi2,const double &mj2,const double &mk2) const;
+    double ConstructLN(const double &Q2,const double &sij,
+		       const double &mij2,const double &mk2,
+		       const ATOOLS::Vec4D &Q,ATOOLS::Vec4D &pk,
+		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
     inline PHASIC::Jet_Finder *SetJF(PHASIC::Jet_Finder *const jf) 
     { PHASIC::Jet_Finder *ojf(p_jf); p_jf=jf; return ojf; }
     inline PHASIC::Jet_Finder *JF() const { return p_jf; }
