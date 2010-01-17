@@ -32,7 +32,7 @@ namespace CSSHOWER {
   private:
  
     PDF::ISR_Handler * p_isr;
-    int m_weightmode, m_kmode, m_dmode;
+    int m_weightmode, m_kmode;
     size_t m_maxem;
     
     Shower          * p_shower;
@@ -128,8 +128,6 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   }
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
-  m_dmode=_dataread->GetValue<int>("CSS_DMODE",0);
-  if (m_dmode!=0) msg_Info()<<METHOD<<"(): Set DIS mode "<<m_dmode<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -703,15 +701,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
       }
     return ampl->MuF2();
   }
-  double xf(1.0);
-  if (m_dmode && ampl->NIn()>1) {
-    if ((!ampl->Leg(0)->Flav().Resummed()^
-	 !ampl->Leg(1)->Flav().Resummed()) &&
-	(!ampl->Leg(2)->Flav().Resummed()^
-	 !ampl->Leg(3)->Flav().Resummed())) 
-    xf=ampl->X1()*ampl->X2();
-  }
-  return ampl->MuF2()/xf;
+  return ampl->MuF2();
 }
 
 double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,
