@@ -22,20 +22,7 @@ on the photon virtuality, see @mycite{Carli2009cg}.
 
 @item there is a selector cut on the photon virtuality. This cut implements
 the experimental requirements for idenitfying the deep-inelastic scattering process.
+
+@item parton shower kinematics are optimized for deep-inelastic scattering
+using the option @option{CSS_KIN_SCHEME 1}.
 @end itemize
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

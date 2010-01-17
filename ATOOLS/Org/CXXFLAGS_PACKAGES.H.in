@@ -1,6 +1,3 @@
-/* using APACIC++ */
-#undef USING__Apacic
-
 /* Using HEPMC2 */
 #undef USING__HEPMC2
 

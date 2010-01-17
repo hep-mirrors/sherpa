@@ -323,28 +323,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
 
   AC_ARG_ENABLE(
-    apacic,
-    AC_HELP_STRING([--enable-apacic], [Enable APACIC++.]),
-    [ AC_MSG_CHECKING(for APACIC++);
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(no); apacic=false ;;
-        yes)  APACICDIR="\${top_srcdir}/AddOns/Apacic++"
-              APACICBUILDDIR="\${top_builddir}/AddOns/Apacic++"
-              APACICLIBS="-L\${APACICBUILDDIR}/Main -lApacicMain"
-              AC_MSG_RESULT(yes); apacic=true;;
-      esac
-      ],
-    [ apacic=false ]
-  )
-  if test "$apacic" = "true" ; then
-    AC_DEFINE([USING__Apacic], "1", [using APACIC++])
-    fi
-  AC_SUBST(APACICDIR)
-  AC_SUBST(APACICBUILDDIR)
-  AC_SUBST(APACICLIBS)
-  AM_CONDITIONAL(USING__Apacic, test "$apacic" = "true" )
-
-  AC_ARG_ENABLE(
     mcatnloinclude,
     AC_HELP_STRING([--enable-mcatnloinclude], [Enable MC@NLO support]),
     [ AC_MSG_CHECKING(for MC@NLO support)

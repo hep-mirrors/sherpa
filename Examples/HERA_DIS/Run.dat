@@ -1,6 +1,7 @@
 (run){
   OUTPUT 2; EVENTS 10000000;
   NJET:=4; QCUT:=5; SDIS:=0.6;
+  CSS_KIN_SCHEME 1;
 }(run);
 
 (beam){

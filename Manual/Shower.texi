@@ -10,22 +10,40 @@ The following parameters are used to steer the shower setup.
 
 @menu
 * SHOWER_GENERATOR::      Tag to set Sherpa's shower generator.
+
+* CS Shower options::     Options for Sherpa's default shower.         
 @end menu
 
 
 @node SHOWER_GENERATOR
 @subsection SHOWER_GENERATOR
 
-The only shower option available in the default Sherpa set-up is 
+The only shower option currently available in Sherpa is 
 @option{CSS}, and this is the default for this tag. See the 
-module summaries in @ref{Basic structure}
-for more details on this shower.
+module summaries in @ref{Basic structure} for details about 
+this shower.
 
-APACIC++, Sherpa's previous shower module is included in 
-@code{<prefix>/AddOns/Apacic++}, but is not linked to Sherpa 
-in the default installation.
-
-To see the available shower options, the tag 
+Different shower modules are in principle supported and more
+choices will be provided by Sherpa in the near future.
+To list all available shower modules, the tag 
 @code{SHOW_SHOWER_GENERATORS=1} can be specified on the
 command line. 
 
+@node CS Shower options
+@subsection CS Shower options
+@cindex CSS_KIN_SCHEME
+@cindex CSS_PT2MIN
+
+Sherpa's default shower module is based on @mycite{Schumann2007mg}.
+A new ordering parameter for initial state splitters was introduced 
+in @mycite{Hoeche2009rj} and a novel recoil strategy for initial state 
+splittings was proposed in @mycite{Hoeche2009xc}. 
+While the ordering variable is fixed, the recoil strategy for dipoles 
+with initial-state emitter and final-state spectator can be changed 
+for systematics studies. Setting @option{CSS_KIN_SCHEME=0} (default) 
+corresponds to using the recoil scheme proposed in @mycite{Hoeche2009xc}, 
+while @option{CSS_KIN_SCHEME=1} enables the original recoil strategy.
+Note that the latter is more suitable for parton evolution in deep-inelastic
+lepton nucleon scattering, see @ref{HERA_DIS} @mycite{Carli2009cg}. 
+The lower cutoff of the shower evolution can be set via @option{CSS_PT2MIN}. 
+Note that this value is specified in GeV^2.
