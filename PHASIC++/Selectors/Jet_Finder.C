@@ -9,42 +9,32 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
 Jet_Finder::Jet_Finder
-(const int nin,const int nout,Flavour *fl,const std::string &ycut):
-  Selector_Base("Jetfinder"), m_cuttag(ycut),
+(const int nin,const int nout,Flavour *fl,
+ const std::string &ycut):
+  Selector_Base("Jetfinder"), m_dparam(0.3), m_cuttag(ycut),
   m_on(true), p_yccalc(NULL)
 {
   m_ycut=2.0;
-  /*
-  // something better needs to be done, only useful if single ycut, gycut
-  if (m_cuttag[0]!='[') {
-    Algebra_Interpreter interpreter;
-    interpreter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
-    m_ycut=ToType<double>(interpreter.Interprete(ycut));
-    m_gycut=ToType<double>(interpreter.Interprete(gycut));
-  }
-  */
   m_fl=fl;
   m_nin=nin;
   m_nout=nout;
   m_n=m_nin+m_nout;
-  /*
-  for (size_t i(0);i<m_n;++i)
-    if(m_fl[i].Strong()) {
-      m_strongflavs.push_back(m_fl[i]);
-      m_stronglocs.push_back(i);
-    }
-  */
   m_smax=m_s=sqr(rpa.gen.Ecms());
+  if (ycut.find("|")!=std::string::npos) {
+    m_dparam=ToType<double>(ycut.substr(ycut.find("|")+1));
+    m_cuttag=ycut.substr(0, ycut.find("|"));
+  }
   // m_smin=m_ycut*m_s;
   m_pt2min=1.0;
   m_sel_log = new Selector_Log(m_name);
-  rpa.gen.AddCitation(1,"Matrix element merging with truncated showers\
- is published under \\cite{Hoeche:2009rj}.");
+  rpa.gen.AddCitation(1,"Matrix element merging with truncated showers is "+
+                      std::string("published under \\cite{Hoeche:2009rj}."));
 }
 
 Jet_Finder::~Jet_Finder() 
@@ -52,109 +42,79 @@ Jet_Finder::~Jet_Finder()
   if (p_yccalc) delete p_yccalc;
 }
 
-Flavour Jet_Finder::GetFlavour(std::string fl)
-{
-  bool bar(false);
-  if (fl=="j") return Flavour(kf_jet);
-  if (fl=="Q") return Flavour(kf_quark);
-  if (fl=="G") return Flavour(kf_gluon);
-  if (fl=="P") return Flavour(kf_photon);
-  if (fl.length()>1) {
-    if (fl[fl.length()-1]=='b') {
-      fl.erase(fl.length()-1,1);
-      bar=true;
-    }
-    else if ((fl[0]=='W' || fl[0]=='H')) {
-      if (fl[fl.length()-1]=='-') {
-	fl[fl.length()-1]='+';
-	bar=true;
-      }
-    }
-    else if (fl[fl.length()-1]=='+') {
-      fl[fl.length()-1]='-';
-      bar=true;
-    }
-  }
-  if (fl=="Q") return Flavour(kf_quark); // why again?
-  Flavour flav(s_kftable.KFFromIDName(fl));
-  if (flav.Kfcode()==kf_none) 
-    THROW(critical_error,"No flavour for '"+fl+"'.");
-  if (bar) flav=flav.Bar();
-  return flav;
-}
-
-size_t Jet_Finder::FillCombinations(const std::string &name,
+size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
 				    size_t &cp,const int fl)
 {
-  bool ex(false);
-  size_t sum(0), sp(0);
+  // sum is the sum of the binary indices of all particles which are at the
+  // current level of decay-building, e.g. for a simple 2->2 it is going to be
+  // 1 + 2 + 4 + 8 or in a decay step it is the sum of all decay products.
+  size_t sum(0);
+  // pos contains all binary indices involved in the current level of
+  // decay-building
   std::vector<int> pos;
-  for (size_t i(0);i<name.length();++i) {
-    if (name[i]=='[') {
-      int open(1);
-      for (size_t j(i+1);j<name.length();++j) {
-	if (name[j]=='[') ++open;
-	if (name[j]==']') --open;
-	if (open==0) {
-	  pos.push_back(FillCombinations
-			(name.substr(i+1,j-i-1),cp,fl-1));
-	  m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
-	  if (pos.back()&((1<<m_nin)-1)) 
-	    m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
-	  sum=sum|pos.back();
-	  sp=i=j+3;
-	  break;
-	}
-      }
+
+
+  for (size_t i(0); i<pinfo.m_ps.size(); ++i) {
+    Subprocess_Info subinfo(pinfo.m_ps[i]);
+    if (subinfo.m_ps.size()==0) {
+      pos.push_back(1<<cp++);
+      m_flavs[pos.back()]=subinfo.m_fl;
+      // if the current combination contains an initial state (1 or 2), bar it
+      if (pos.back()&((1<<m_nin)-1)) 
+        m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
+      sum=sum|pos.back();
     }
-    else if (name[i]=='_') {
-      if (name[i-1]!='_' && name[i+1]=='_') {
-	pos.push_back(1<<cp++);
-	m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
-	if (pos.back()&((1<<m_nin)-1)) 
-	  m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
-	sum=sum|pos.back();
-	ex=true;
-      }
-      if (ex && name[i+1]!='_') {
-	sp=i+1;
-	ex=false;
+    else {
+      for (size_t i(0); i<subinfo.m_ps.size(); ++i) {
+        pos.push_back(FillCombinations(subinfo.m_ps[i],cp,fl-1));
+        m_flavs[pos.back()]=subinfo.m_fl;
+        sum=sum|pos.back();
       }
     }
   }
-  if (name[name.length()-1]!=']') {
-    pos.push_back(1<<cp++);
-    m_flavs[pos.back()]=GetFlavour(name.substr(sp,name.length()-sp));
-    if (pos.back()&((1<<m_nin)-1)) 
-      m_flavs[pos.back()]=m_flavs[pos.back()].Bar();
-    sum=sum|pos.back();
-  }
+
+  // now that we know about all outer and intermediate particles involved in the
+  // process, loop over them and identify all combinations on which we want to
+  // cut
   for (size_t i(0);i<pos.size();++i) {
-    int sc=m_flavs[pos[i]].StrongCharge();
-    if ((pos[i]&3)==0 && sc!=0 &&
-	(m_fl[0].Strong() || m_fl[1].Strong())) {
-      bool found(false);
-      for (size_t l(0);l<m_pcs.size();++l)
-	if (m_pcs[l]==(size_t)pos[i]) {
-	  found=true;
-	  break;
-	}
-      if (!found) m_pcs.push_back(pos[i]);
+    // a safety pT cut of 1GeV will be added to FS gluons/photons
+    // this is purely for technical reasons, no physics and has to do with the
+    // choice of reference vectors for their pol vectors in comix
+    if ((pos[i]&3)==0 && (m_flavs[pos[i]].Kfcode()==kf_photon ||
+                          m_flavs[pos[i]].Kfcode()==kf_gluon
+                          || m_flavs[pos[i]].Strong()
+                          )) {
+      m_pcs.insert(pos[i]);
     }
+    
     for (size_t j(i+1);j<pos.size();++j) {
-      if (pos[i]>2 || pos[j]>2) {
-	for (size_t k(0);k<pos.size();++k)
-	  if (i!=k && j!=k) {
-	    if (p_sproc && p_sproc->Combinable(pos[i],pos[j])) {
-	      int tp((pos[i]+pos[j])&3?(pos[k]&3)?3:1:(pos[k]&3)?2:0);
-	      Flavour fli((pos[i]&3)?m_flavs[pos[i]].Bar():m_flavs[pos[i]]);
-	      Flavour flj((pos[j]&3)?m_flavs[pos[j]].Bar():m_flavs[pos[j]]);
-	      Flavour flk((pos[k]&3)?m_flavs[pos[k]].Bar():m_flavs[pos[k]]);
-	      if (p_proc->Process()->Shower()->HasKernel(fli,flj,flk,tp)) {
-		m_fills[fl].push_back(Comb_Key(pos[i],pos[j],pos[k]));
-	      }
-	    }
-	  }
+      if (pos[i]>2 || pos[j]>2) { // we can ignore the initial-initial case
+        // for all others we check whether they are an allowed combination
+        // and if yes, add them to the appropriate decay level "fl"
+        
+        // check whether i and j are actually combinable in the ME, otherwise
+        // they shouldn't be cut on, even if they could be produced by the PS
+        // example: e+ e- -> G G d db   here d db are *not* combinable!
+        if (p_sproc && p_sproc->Combinable(pos[i], pos[j])) {
+          for (size_t k(0);k<pos.size();++k) {
+            if (i==k || j==k) continue;
+            // un-bar IS flavs for looking for kernel, since that is taken care
+            // of by the splitting function type
+            Flavour fli((pos[i]&3)?m_flavs[pos[i]].Bar():m_flavs[pos[i]]);
+            Flavour flj((pos[j]&3)?m_flavs[pos[j]].Bar():m_flavs[pos[j]]);
+            Flavour flk((pos[k]&3)?m_flavs[pos[k]].Bar():m_flavs[pos[k]]);
+            // splitting function type:
+            // 1 <-> emitter im IS, 2 <-> spectator im IS => 0=FF, 1=IF, 2=FI, 3=II
+            int sftype((pos[i]+pos[j])&3?(pos[k]&3)?3:1:(pos[k]&3)?2:0);
+
+            // ask whether the combination i j k is allowed by the shower and if
+            // so, whether it's coupling is strong (1), ew (2) or both (3)
+            int cpl(p_proc->Process()->Shower()->HasKernel(fli, flj, flk,sftype));
+            if (cpl>0) {
+              m_fills[fl].push_back(Comb_Key(cpl, pos[i],pos[j],pos[k]));
+            }
+          }
+        }
       }
     }
   }
@@ -167,26 +127,25 @@ void Jet_Finder::FillCombinations()
 {
   if (p_yccalc==NULL) {
     if (p_proc==NULL) THROW(fatal_error,"Process not set.");
-    m_procname=p_proc->Process()->Name();
     p_sproc=p_proc->Process()->Get<Single_Process>();
-    if (m_procname.find("__QCD")!=std::string::npos)
-      m_procname=m_procname.substr(0,m_procname.find("__QCD"));
-    if (m_procname.find("__EW")!=std::string::npos)
-      m_procname=m_procname.substr(0,m_procname.find("__EW"));
+    //if (p_sproc==NULL) {
+    //  THROW(fatal_error, "Tried to apply JetFinder to Process_Group.");
+    //}
     m_moms.clear();
     m_flavs.clear();
     m_fills.resize(m_nin+m_nout+1);
-    std::string name(m_procname.substr(m_procname.find('_')+1));
-    name=name.substr(name.find("__")+2);
-    size_t i(0);
-    FillCombinations(name,i,m_nin+m_nout);
+    Subprocess_Info start(p_proc->Process()->Info().m_ii);
+    start.Add(p_proc->Process()->Info().m_fi);
+    size_t idx(0);
+    FillCombinations(start, idx,m_nin+m_nout);
     p_yccalc = new Algebra_Interpreter();
     p_yccalc->SetTagReplacer(this);
     for (size_t i=0;i<p_proc->NIn()+p_proc->NOut();++i) 
       p_yccalc->AddTag("p["+ToString(i)+"]",ToString(p_proc->Momenta()[i]));
     p_yccalc->Interprete(m_cuttag);
     if (msg_LevelIsDebugging()) {
-      msg_Out()<<METHOD<<"(): Q_{cut} for '"<<m_procname<<"' {\n";
+      msg_Out()<<METHOD<<"(): Q_{cut} for '"
+	       <<p_proc->Process()->Name()<<"' {\n";
       {
 	msg_Indent();
 	p_yccalc->PrintEquation();
@@ -194,13 +153,13 @@ void Jet_Finder::FillCombinations()
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Identified clusterings {\n";
       for (size_t i(0);i<m_fills.size();++i)
-	for (size_t j(0);j<m_fills[i].size();++j)
-	  msg_Out()<<"  "<<i<<": ["<<ID(m_fills[i][j].first)<<","
-		   <<ID(m_fills[i][j].second)<<"] <-> "
-		   <<ID(m_fills[i][j].partner)<<" => "
-		   <<m_flavs[m_fills[i][j].first]<<" & "
-		   <<m_flavs[m_fills[i][j].second]<<" <-> "
-		   <<m_flavs[m_fills[i][j].partner]<<"\n";
+        for (size_t j(0);j<m_fills[i].size();++j)
+          msg_Out()<<"  "<<i<<": ["<<ID(m_fills[i][j].first)<<","
+                   <<ID(m_fills[i][j].second)<<"] <-> "
+                   <<ID(m_fills[i][j].partner)<<" => "
+                   <<m_flavs[m_fills[i][j].first]<<" & "
+                   <<m_flavs[m_fills[i][j].second]<<" <-> "
+                   <<m_flavs[m_fills[i][j].partner]<<"\n";
       msg_Out()<<"}\n";
       msg_Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {
@@ -212,13 +171,6 @@ void Jet_Finder::FillCombinations()
       msg_Out()<<"}\n";
     }
   }
-  m_sok=false;
-  for (int i(0);i<m_nin+m_nout;++i)
-    if (m_flavs[1<<i].Strong() && 
-	m_flavs[1<<i].StrongCharge()!=8) {
-      m_sok=true;
-      break;
-    }
 }
 
 void Jet_Finder::PrepareMomList(const Vec4D_Vector &vec)
@@ -295,19 +247,6 @@ bool Jet_Finder::PrepareColList(const std::vector<int> &ci,
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 {
   if (!m_on) return true;
-  if (p_proc->Process()->IsGroup()) {
-    bool trigger(false);
-    for (size_t i(0);i<p_proc->Process()->Size();++i)
-      if (!(*p_proc->Process())[i]->IsMapped())
-	if ((*p_proc->Process())[i]->
-	    Trigger(p)) trigger=true;
-    return trigger;
-  }
-  return SingleTrigger(p);
-}
-
-bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
-{
   FillCombinations();
   PrepareMomList(p);
   bool uc(false);
@@ -316,14 +255,14 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
     uc=true;
     std::vector<int> ic(ci->I()), jc(ci->J());
     if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
-    p_sproc=p_proc->Process()->Get<Single_Process>();
   }
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()<<"' Q_cut = "
 		 <<sqrt(p_yccalc->Calculate()->Get<double>()*m_s)<<" {\n";
-  for (size_t i(0);i<m_pcs.size();++i) {
-    msg_Debugging()<<"  "<<ID(m_pcs[i])<<"["<<m_flavs[m_pcs[i]]
-		   <<"] -> "<<m_moms[m_pcs[i]].PPerp()<<"\n";
-    if (m_moms[m_pcs[i]].PPerp2()<m_pt2min) return 1-m_sel_log->Hit(true);
+  for (std::set<size_t>::const_iterator it(m_pcs.begin());it!=m_pcs.end();++it){
+    const size_t i=*it;
+    msg_Debugging()<<"  "<<ID(i)<<"["<<m_flavs[i]
+		   <<"] -> "<<m_moms[i].PPerp()<<"\n";
+    if (m_moms[i].PPerp2()<m_pt2min) return 1-m_sel_log->Hit(true);
   }
   m_ycut=p_yccalc->Calculate()->Get<double>();
   for (size_t cl(1);cl<m_fills.size();++cl) {
@@ -333,7 +272,8 @@ bool Jet_Finder::SingleTrigger(const Vec4D_Vector &p)
     for (size_t ps(0);ps<m_fills[cl].size();++ps) {
       size_t i(m_fills[cl][ps].first),
 	j(m_fills[cl][ps].second), k(m_fills[cl][ps].partner);
-      if (uc && !ColorConnected(i,j,k)) continue;
+      int cpl = m_fills[cl][ps].cpl;
+      if (uc && (cpl&1) && !ColorConnected(i,j,k)) continue;
       if (m_flavs[i].IsQuark() && m_flavs[j].IsQuark() &&
 	  m_flavs[i]!=m_flavs[j].Bar()) continue;
       msg_Debugging()<<"  "<<ID(i)<<"["<<m_flavs[i]<<"] & "
@@ -399,13 +339,20 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   Flavour nfi(fi), nfj(fj);
   if (npi[0]<0.0) {
     npi=-pi-pj;
-    if (mode==0) nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsGluon()?fj.Bar():fi);
+    if (mode==0) nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsVector()?fj.Bar():fi);
   }
   else if (npj[0]<0.0) {
     npj=-pj-pi;
-    if (mode==0) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsGluon()?fi.Bar():fj);
+    if (mode==0) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsVector()?fi.Bar():fj);
   }
   if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
+  if ((fi.IsPhoton() && fj.IntCharge()==0) ||
+      (fj.IsPhoton() && fi.IntCharge()==0)) return -1.0;
+  if (fi.IsPhoton() || fj.IsPhoton()) {
+    if (pi[0]<0.0) return pj.PPerp2();
+    if (pj[0]<0.0) return pi.PPerp2();
+    return Min(pi.PPerp2(), pj.PPerp2())*sqr(pi.DR(pj)/m_dparam);
+  }
   double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
   double mti(sqr(Flavour(nfi).Mass())), mtj(sqr(Flavour(nfj).Mass()));
   if (pipj==0.0) {
@@ -415,8 +362,8 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
     mti/=2.0*pipj;
     mtj/=2.0*pipj;
   }
-  double Cij(nfj.IsGluon()?Max(0.0,pipk/(pipj+pjpk)-mti):1.0);
-  double Cji(nfi.IsGluon()?Max(0.0,pjpk/(pipj+pipk)-mtj):1.0);
+  double Cij(nfj.IsVector()?Max(0.0,pipk/(pipj+pjpk)-mti):1.0);
+  double Cji(nfi.IsVector()?Max(0.0,pjpk/(pipj+pipk)-mtj):1.0);
   return 4.0*dabs(pi*pj)/(Cij+Cji);
 }
 
@@ -489,14 +436,15 @@ void Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data *cuts)
   msg_Debugging()<<METHOD<<"(): {\n";
   for (int i(m_nin); i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].Mass();
-    if (m_fl[i].Strong())
+    if (m_fl[i].Resummed()) {
       for (int j(i+1); j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong()) {
+	if (m_fl[j].Resummed()) {
 	  double scut=Max(1.0,sqr(m_fl[i].Mass())+sqr(m_fl[j].Mass()));
 	  msg_Debugging()<<"  ("<<i<<","<<j<<") -> "<<sqrt(scut)<<"\n";
 	  cuts->scut[i][j]=cuts->scut[j][i]=Max(cuts->scut[i][j],scut);
 	}
       }
+    }
   }
   msg_Debugging()<<"}\n";
 }

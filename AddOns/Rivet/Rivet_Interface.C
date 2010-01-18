@@ -109,13 +109,12 @@ public:
   
   std::string GetCoreProc(const std::string& proc) {
     DEBUG_FUNC(proc);
-    std::string ret;
-    size_t idx=5, nflav=0;
+    size_t idx=5;
+    std::vector<ATOOLS::Flavour> flavs;
     while (idx<proc.size()) {
       std::string fl(1, proc[idx]);
       if (fl=="_") {
         ++idx;
-        ret+="_";
         continue;
       }
       for (++idx; idx<proc.size(); ++idx) {
@@ -141,22 +140,53 @@ public:
       }
       Flavour flav(s_kftable.KFFromIDName(fl));
       if (bar) flav=flav.Bar();
-      Flavour jet(kf_jet);
-      if (flav.Kfcode()==kf_none) {
-        msg_Error()<<"Couldn't identify flavour "<<fl<<" in "<<proc<<std::endl;
-      }
-      if (jet.Includes(flav)) {
-        if (nflav<4) ret+=jet.IDName();
-      }
-      else {
-        ret+=flav.IDName();
-      }
-      ++nflav;
+      flavs.push_back(flav);
     }
-    
+
+    std::vector<Flavour> nojetflavs;
+    for (size_t i=2; i<flavs.size(); ++i) {
+      if (!Flavour(kf_jet).Includes(flavs[i])) nojetflavs.push_back(flavs[i]);
+    }
+
+    std::vector<Flavour> noresflavs;
+    for (size_t i=0; i<nojetflavs.size(); ++i) {
+      if (!Flavour(kf_resummed).Includes(nojetflavs[i])) noresflavs.push_back(nojetflavs[i]);
+    }
+
+    std::vector<Flavour> finalflavs;
+    // start with initial state
+    for (size_t i=0; i<2; ++i) {
+      if (Flavour(kf_jet).Includes(flavs[i]))
+        finalflavs.push_back(Flavour(kf_jet));
+      else if (Flavour(kf_resummed).Includes(flavs[i]))
+        finalflavs.push_back(Flavour(kf_resummed));
+      else
+        finalflavs.push_back(flavs[i]);
+    }
+    // add all non-jet and non-resummed particles
+    for (size_t i=0; i<noresflavs.size(); ++i) {
+      finalflavs.push_back(noresflavs[i]);
+    }
+    // add all resummed particles
+    for (size_t i=0; i<nojetflavs.size()-noresflavs.size(); ++i) {
+      if (finalflavs.size()>3) break;
+      finalflavs.push_back(Flavour(kf_resummed));
+    }
+    // add all jet particles
+    for (size_t i=0; i<flavs.size()-2-nojetflavs.size(); ++i) {
+      if (finalflavs.size()>3) break;
+      finalflavs.push_back(Flavour(kf_jet));
+    }
+
+    std::string ret;
+    for (size_t i=0; i<finalflavs.size(); ++i) {
+      ret+=finalflavs[i].IDName();
+      ret+="__";
+    }    
     while (ret[ret.length()-1]=='_') {
       ret.erase(ret.length()-1, 1);
     }
+
     DEBUG_VAR(ret);
     return ret;
   }

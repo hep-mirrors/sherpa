@@ -2,6 +2,7 @@
 #define PHASIC_Selectors_Jet_Finder_H
 
 #include "PHASIC++/Selectors/Selector.H"
+#include "PHASIC++/Process/Subprocess_Info.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
 
@@ -11,17 +12,18 @@ namespace PHASIC {
   
   struct Comb_Key: public std::pair<size_t,size_t> {
     size_t partner;
-    inline Comb_Key(const size_t &f,const size_t &s,
+    int cpl;
+    inline Comb_Key(const int &_cpl, const size_t &f,const size_t &s,
 		    const size_t &p=0):
-      std::pair<size_t,size_t>(f,s), partner(p) {}
+      std::pair<size_t,size_t>(f,s), partner(p), cpl(_cpl) {}
   };// end of struct Comb_Key
 
   class Jet_Finder: public Selector_Base,
 		    public ATOOLS::Tag_Replacer {
 
-    double m_ycut, m_s, m_pt2min;
+    double m_ycut, m_s, m_pt2min, m_dparam;
 
-    std::string m_cuttag, m_procname;
+    std::string m_cuttag;
 
     std::map<size_t,ATOOLS::Vec4D>   m_moms;
     std::map<size_t,ATOOLS::Flavour> m_flavs;
@@ -34,9 +36,9 @@ namespace PHASIC {
 
     std::vector<std::vector<Comb_Key> > m_fills;
 
-    std::vector<size_t> m_pcs;
+    std::set<size_t> m_pcs;
 
-    bool m_sok, m_on;
+    bool m_on;
 
     Single_Process *p_sproc;
 
@@ -44,8 +46,8 @@ namespace PHASIC {
 
     ATOOLS::Flavour GetFlavour(std::string fl);
 
-    size_t FillCombinations(const std::string &name,
-			    size_t &cp,const int fl);
+    size_t FillCombinations(const Subprocess_Info &pinfo,
+                            size_t &cp,const int fl);
 
     void PrepareMomList(const ATOOLS::Vec4D_Vector &vec);
     bool PrepareColList(const std::vector<int> &ci,
@@ -68,7 +70,6 @@ namespace PHASIC {
 
     void   FillCombinations();
     bool   Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool   SingleTrigger(const ATOOLS::Vec4D_Vector &p);
     bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
                       const ATOOLS::Flavour_Vector &, int);
     bool   JetTrigger(const ATOOLS::Vec4D_Vector &p);

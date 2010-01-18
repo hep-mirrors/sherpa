@@ -295,6 +295,9 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
 {
   PROFILE_HERE;
   if (!m_initialized) {
+    if (!flavour.Strong()) {
+      return p_beam->Beam().HadMass();
+    }
     bool found(false);
     kf_code di[3];
     if (flavour.IsQuark()) {

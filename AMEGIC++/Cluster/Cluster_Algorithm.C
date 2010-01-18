@@ -443,7 +443,7 @@ void Cluster_Algorithm::Convert()
       for (size_t i(0);i<moms.size();++i)
 	moms[i]=Vec4D(moms[i][0],-moms[i]);
     }
-    trig=((PHASIC::Jet_Finder*)jf)->SingleTrigger(moms);
+    trig=jf->Trigger(moms);
   }
   msg_Debugging()<<METHOD<<"(): trig = "<<trig<<"\n";
   Combine_Table *ct_tmp(p_ct);

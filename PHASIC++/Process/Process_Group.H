@@ -89,6 +89,7 @@ namespace PHASIC {
     void SetGenerator(ME_Generator_Base *const gen);
     void SetShower(PDF::Shower_Base *const ps);
     void SetSelector(const Selector_Key &key);
+    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
   };// end of class Process_Group
 

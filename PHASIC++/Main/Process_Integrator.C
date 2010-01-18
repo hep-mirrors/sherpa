@@ -325,6 +325,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
 void Process_Integrator::SetUpEnhance() 
 {
   m_selectionweight=SelectionWeight()*m_enhancefac;
+  if (m_enhancefac<0.0) m_selectionweight=p_proc->Size()*dabs(m_enhancefac);
   if (m_maxeps>0.0) {
     double max(GetMaxEps(m_maxeps));
     msg_Info()<<"Max reduction for '"<<p_proc->Name()<<"': "<<Max()/max
