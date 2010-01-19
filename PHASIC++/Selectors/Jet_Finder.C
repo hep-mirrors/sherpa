@@ -42,7 +42,7 @@ Jet_Finder::~Jet_Finder()
   if (p_yccalc) delete p_yccalc;
 }
 
-size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
+size_t Jet_Finder::FillCombinations(const Subprocess_Info &subinfo,
 				    size_t &cp,const int fl)
 {
   // sum is the sum of the binary indices of all particles which are at the
@@ -53,9 +53,6 @@ size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
   // decay-building
   std::vector<int> pos;
 
-
-  for (size_t i(0); i<pinfo.m_ps.size(); ++i) {
-    Subprocess_Info subinfo(pinfo.m_ps[i]);
     if (subinfo.m_ps.size()==0) {
       pos.push_back(1<<cp++);
       m_flavs[pos.back()]=subinfo.m_fl;
@@ -67,11 +64,10 @@ size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
     else {
       for (size_t i(0); i<subinfo.m_ps.size(); ++i) {
         pos.push_back(FillCombinations(subinfo.m_ps[i],cp,fl-1));
-        m_flavs[pos.back()]=subinfo.m_fl;
+	m_flavs[pos.back()]=subinfo.m_ps[i].m_fl;
         sum=sum|pos.back();
       }
     }
-  }
 
   // now that we know about all outer and intermediate particles involved in the
   // process, loop over them and identify all combinations on which we want to
@@ -110,6 +106,7 @@ size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
             // ask whether the combination i j k is allowed by the shower and if
             // so, whether it's coupling is strong (1), ew (2) or both (3)
             int cpl(p_proc->Process()->Shower()->HasKernel(fli, flj, flk,sftype));
+            if (cpl==0) cpl=p_proc->Process()->Shower()->HasKernel(flj, fli, flk,sftype);
             if (cpl>0) {
               m_fills[fl].push_back(Comb_Key(cpl, pos[i],pos[j],pos[k]));
             }
@@ -118,8 +115,10 @@ size_t Jet_Finder::FillCombinations(const Subprocess_Info &pinfo,
       }
     }
   }
-  m_mcomb.push_back(pos);
-  m_mcomb.back().push_back(sum);
+  if (subinfo.m_ps.size()) {
+    m_mcomb.push_back(pos);
+    m_mcomb.back().push_back(sum);
+  }
   return sum;
 }
 
