@@ -208,7 +208,7 @@ bool Event_Handler::GenerateEvent(int mode)
       if (sp) {
         double trials((*sp)["Trials"]->Get<double>());
         sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
-        double cxs((*sp)["Weight"]->Get<double>());
+        double cxs(m_blobs.Weight());
         m_n+=trials+m_addn;
         m_sum+=cxs;
         m_sumsqr+=sqr(cxs);

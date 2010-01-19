@@ -201,16 +201,11 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   
   m_nhep=nhep;
 
+  msg_Debugging()<<"HEI::OTF: proc weight: "
+		 <<_blobs->Weight()<<"\n";
+  SetWeight(_blobs->Weight());
   Blob *signal(_blobs->FindFirst(btp::Signal_Process));
   if (signal) {
-    Blob_Data_Base *message((*signal)["Weight"]);
-    if (message) {
-      msg_Debugging()<<"HEI::OTF: proc weight: "
-          <<message->Get<double>()<<"\n";
-      SetWeight(message->Get<double>());
-    }
-    else THROW(fatal_error,"No weight information.");
-    
     Blob_Data_Base *facscale((*signal)["Factorisation_Scale"/*"MI_Scale"*/]);//!
     if (facscale) {
       SetQ2(facscale->Get<double>());

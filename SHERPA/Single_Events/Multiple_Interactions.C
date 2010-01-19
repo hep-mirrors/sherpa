@@ -146,6 +146,7 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
       }
     }
     blob->SetStatus(blob_status::needs_showers);
+    blob->AddData("Weight",new Blob_Data<double>(1.0));
     bloblist->push_back(blob);
     return Return_Value::Success;
   }

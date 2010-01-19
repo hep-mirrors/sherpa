@@ -143,13 +143,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
-  double weight=1.0;
-  for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
-    if ((*blit)->Type()==btp::Signal_Process) {
-      Blob_Data_Base *info((**blit)["Weight"]);
-      if (info!=NULL) weight*=info->Get<double>();
-    }
-  }
+  double weight=blobs->Weight();
 
   double xs(p_eventhandler->TotalXS()), xserr(p_eventhandler->TotalErr());
   for (map<string,Output_Base *>::iterator oit=m_outmap.begin();

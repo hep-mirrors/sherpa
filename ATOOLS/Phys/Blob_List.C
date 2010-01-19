@@ -411,3 +411,13 @@ bool Blob_List::Shorten(kf_code kfc,btp::code out,btp::code in)
 void Blob_List::ShortenRecursively(kf_code kfc,btp::code out,btp::code in) {
   while (Shorten(kfc,out,in)) {}
 }
+
+double Blob_List::Weight() const
+{
+  double weight(1.0);
+  for (const_iterator it(begin());it!=end();++it) {
+    Blob_Data_Base *bd((**it)["Weight"]);
+    if (bd) weight*=bd->Get<double>();
+  }
+  return weight;
+}
