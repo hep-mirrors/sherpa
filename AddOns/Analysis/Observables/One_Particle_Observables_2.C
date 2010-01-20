@@ -165,7 +165,10 @@ void SOne_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &inlist
       }
     }
   }
-  if (pos==std::string::npos) return;
+  if (pos==std::string::npos) {
+    p_histo->Insert(0,0,ncount);
+    return;
+  }
   Evaluate(*inlist[pos],weight,ncount);
 }
 
