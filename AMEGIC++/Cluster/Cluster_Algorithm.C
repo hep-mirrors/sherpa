@@ -365,15 +365,11 @@ ME2_Base *Cluster_Algorithm::GetXS(const ATOOLS::Flavour_Vector &fl)
   if (xit!=m_xsmap.end()) return xit->second;
   Process_Info pi;
   pi.m_oqcd=2;
-  pi.m_oew=2;
-  Flavour_Vector initial_fl;
-  initial_fl.push_back(fl[0]);
-  initial_fl.push_back(fl[1]);
-  pi.m_ii.SetExternal(initial_fl);
-  Flavour_Vector final_fl;
-  final_fl.push_back(fl[2]);
-  final_fl.push_back(fl[3]);
-  pi.m_fi.SetExternal(final_fl);
+  pi.m_oew=0;
+  pi.m_ii.m_ps.push_back(Subprocess_Info(fl[0]));
+  pi.m_ii.m_ps.push_back(Subprocess_Info(fl[1]));
+  pi.m_fi.m_ps.push_back(Subprocess_Info(fl[2]));
+  pi.m_fi.m_ps.push_back(Subprocess_Info(fl[3]));
   ME2_Base* me2=ME2_Base::GetME2(pi);
   if (me2) {
     m_xsmap[fl]=me2;
