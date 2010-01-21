@@ -52,10 +52,6 @@ namespace PHASIC {
     static double s_eps, s_kt2max;
 
     bool CheckX(const ATOOLS::Vec4D &p,const size_t &isid) const;
-    void ZAlign(ATOOLS::Cluster_Amplitude &ampl,
-		ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
-		const double &ma2,const double &mb2,
-		const int mode=0) const;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
@@ -627,62 +623,136 @@ bool METS_Scale_Setter::Combine
   Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
   if (i>1 && j>1 && k>1) {
     Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pi+pj+pk);
-    double Q2=Q.Abs2(), mij2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
-    double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
+    double Q2=Q*Q, mij2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
+    double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj)*(pi+pj),mk2);
     Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
     Vec4D pijt(Q-pkt); 
-    if (lrat<0.0 || pkt[0]<0.0 || pijt[0]<0.0) return false;
+    if (pkt[0]<0.0 || pijt[0]<0.0) return false;
     li->SetMom(pijt);
     lk->SetMom(pkt);
   }
   if (i>1 && j>1 && k<2) {
     Vec4D pi(li->Mom()), pj(lj->Mom()), pa(lk->Mom()), Q(pa+pi+pj);
-    double Q2=Q.Abs2(), mij2=sqr(mo.Mass()), ma2=sqr(lk->Flav().Mass());
+    double mij2=sqr(mo.Mass()), ma2=sqr(lk->Flav().Mass());
+    double mb2=sqr(ampl.Leg(1-k)->Flav().Mass()), Q2=Q.Abs2();
     double lrat=Lam(Q2,mij2,ma2)/Lam(Q2,(pi+pj).Abs2(),ma2);
+    if (lrat<0.0) return false;
     Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-    Vec4D pijt(Q-pat), pb(ampl.Leg(1-k)->Mom());
-    if (lrat<0.0 || pat[0]>0.0 || pijt[0]<0.0) return false;
-    li->SetMom(pijt);
-    lk->SetMom(pat);
-    ZAlign(ampl,pat,pb,ma2,sqr(ampl.Leg(1-k)->Flav().Mass()));
+    Vec4D pijt(Q-pat), pb(ampl.Leg(1-k)->Mom()), path(pat);
+    if (pijt[0]<0.0) return false;
+    double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
+    if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
+    else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
+    Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
+    if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
+    if (ea>0.0 || IsZero(ea,1.0e-6) ||
+	patpb*patpb<ma2*mb2) return false;
 #ifdef CHECK__x
-    if (!CheckX(pat,lk->Id()&3)) return false;
+    if (!CheckX(pan,lk->Id()&3)) return false;
 #endif
+    Poincare cmso(-pat-pb), cmsn(-pan-pb);
+    cmso.Boost(pat);
+    Poincare zrot(pat,-sb*Vec4D::ZVEC);
+    for (size_t m(0);m<ampl.Legs().size();++m) {
+      if (m==(size_t)j) continue;
+      {
+	Vec4D cm(ampl.Leg(m)->Mom());
+	if (m==(size_t)i) cm=pijt;
+	else if (m==(size_t)k) cm=path;
+	cmso.Boost(cm);
+	zrot.Rotate(cm);
+	cmsn.BoostBack(cm);
+	ampl.Leg(m)->SetMom(cm);
+      }
+    }
     double x(1.0+(pi*pj)/((pi+pj)*pa));
     if (k==0) ampl.SetX1(ampl.X1()*x);
     else ampl.SetX2(ampl.X2()*x);
   }
   if (i<2 && j>1 && k>1) {
     Vec4D pa(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pa+pj+pk);
-    double Q2=Q.Abs2(), maj2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
-    double lrat=Lam(Q2,maj2,mk2)/Lam(Q2,(pa+pj).Abs2(),mk2);
-    Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-maj2)/(2.*Q2)*Q);
-    Vec4D pajt(Q-pkt), pb(ampl.Leg(1-i)->Mom());
-    if (lrat<0.0 || pkt[0]<0.0 || pajt[0]>0.0) return false;
-    li->SetMom(pajt);
-    lk->SetMom(pkt);
-    ZAlign(ampl,pajt,pb,maj2,sqr(ampl.Leg(1-i)->Flav().Mass()));
+    double pjpa=pj*pa, pkpa=pk*pa, pjpk=pj*pk;
+    double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
+    double mj2=sqr(lj->Flav().Mass()), mk2=sqr(lk->Flav().Mass());
+    double ma2=sqr(li->Flav().Mass()), maj2=sqr(mo.Mass());
+    double mb2=sqr(ampl.Leg(1-i)->Flav().Mass());
+    double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;
+    double sjk=-((1.0-xjka)*(Q2-ma2)-(mj2+mk2))/xjka;
+    if (ttau*ttau<4.*maj2*mk2 || ttau>0.0 ||
+	tau*tau<4.*ma2*sjk*sqr(xjka) || tau>0.0) return false;
+    double xijka=xjka*(ttau-sqrt(ttau*ttau-4.*maj2*mk2))/
+      (tau-sqrt(tau*tau-4.*ma2*sjk*sqr(xjka)));
+    double pjkpa=pjpa+pkpa, gam=-pjkpa+sqrt(pjkpa*pjkpa-ma2*sjk);
+    if (IsZero(xijka,1.0e-6) || IsZero(gam,1.0e-6)) return false;
+    double bet=1.0-ma2*sjk/(gam*gam), gamt=gam*xijka;
+    Vec4D l((-pa-ma2/gam*(pj+pk))/bet), n(((pj+pk)+sjk/gam*pa)/bet);
+    l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
+    n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
+    Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l), pb(ampl.Leg(1-i)->Mom());
+    if (pat[3]*pb[3]>0.0 || pjkt[0]<0.0) return false;
+    double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
+    if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
+    else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
+    Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2)), pam(ea,0.0,0.0,-pan[3]);
+    if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
+    if (ea>0.0 || IsZero(ea,1.0e-6) ||
+	patpb*patpb<maj2*mb2) return false;
 #ifdef CHECK__x
-    if (!CheckX(pajt,li->Id()&3)) return false;
+    if (!CheckX(pan,li->Id()&3)) return false;
 #endif
+    Vec4D path(pat);
+    Poincare cmso(-pat-pb), cmsn(-pan-pb);
+    cmso.Boost(pat);
+    Poincare zrot(pat,-sb*Vec4D::ZVEC);
+    for (size_t m(0);m<ampl.Legs().size();++m) {
+      if (m==(size_t)j) continue;
+      {
+	Vec4D cm(ampl.Leg(m)->Mom());
+	if (m==(size_t)i) cm=path;
+	else if (m==(size_t)k) cm=pjkt;
+	cmso.Boost(cm);
+	zrot.Rotate(cm);
+	cmsn.BoostBack(cm);
+	ampl.Leg(m)->SetMom(cm);
+      }
+    }
     double x(1.0+(pj*pk)/((pj+pk)*pa));
     if (i==0) ampl.SetX1(ampl.X1()*x);
     else ampl.SetX2(ampl.X2()*x);
   }
   if (i<2 && j>1 && k<2) {
-    Vec4D pa(li->Mom()), paj(pa+lj->Mom()), pb(lk->Mom()), Q(paj+pb);
-    double Q2=Q.Abs2(), maj2=sqr(mo.Mass()), mb2=sqr(lk->Flav().Mass());
-    double saj=paj.Abs2(), x=1.0+(lj->Mom()*(pa+pb))/(pa*pb);
-    ZAlign(ampl,paj,pb,saj,mb2,1);
-    Q=paj+pb;
-    double lrat=Lam(Q2,maj2,mb2)/Lam(Q2,saj,mb2);
-    Vec4D pbt(sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-maj2)/(2.*Q2)*Q);
-    if (lrat<0.0 || pbt[0]>0.0) return false;
+    Vec4D pa(li->Mom()), pj(lj->Mom()), pb(lk->Mom());
+    double papb=pa*pb, pjpa=pj*pa, pjpb=pj*pb;
+    double mj2=sqr(lj->Flav().Mass()), ma2=sqr(li->Flav().Mass());
+    double mb2=sqr(ampl.Leg(1-i)->Flav().Mass());
+    double maj2=sqr(mo.Mass()), Q2=(pa+pj+pb).Abs2();
+    double xjab=(papb+pjpa+pjpb)/papb;
+    double ttau=Q2-maj2-mb2, tau=Q2-ma2-mj2-mb2;
+    if (ttau*ttau<4.0*maj2*mb2 ||
+	tau*tau<4.0*ma2*mb2*xjab*xjab) return false;
+    double xijab=xjab*(ttau+sqrt(ttau*ttau-4.0*maj2*mb2))
+      /(tau+sqrt(tau*tau-4.0*ma2*mb2*xjab*xjab));
+    double gam=papb+sqrt(papb*papb-ma2*mb2);
+    if (IsZero(xijab,1.0e-6) || IsZero(gam,1.0e-6)) return false;
+    Vec4D pajt=xijab
+      *(1.0-maj2*mb2/sqr(gam*xijab))/(1.0-ma2*mb2/sqr(gam))
+      *(pa-ma2/gam*pb)+maj2/(xijab*gam)*pb;
+    if (pajt[3]*pb[3]>0.0) return false;
 #ifdef CHECK__x
-    if (!CheckX(Q-pbt,li->Id()&3)) return false;
+    if (!CheckX(pajt,li->Id()&3)) return false;
 #endif
-    li->SetMom(Q-pbt);
-    lk->SetMom(pbt);
+    Vec4D K(-pa-pb-pj), Kt(-pajt-pb), KpKt(K+Kt);
+    for (size_t m(0);m<ampl.Legs().size();++m) {
+      if (m==(size_t)j) continue;
+      if (m==(size_t)i) ampl.Leg(m)->SetMom(pajt);
+      else if (m==(size_t)k) ampl.Leg(m)->SetMom(pb);
+      else {
+	Vec4D km = ampl.Leg(m)->Mom();
+	km=km-2.*km*KpKt/(KpKt*KpKt)*KpKt+2.*km*K/(K*K)*Kt;
+	ampl.Leg(m)->SetMom(km);
+      }
+    }
+    double x(1.0+(pj*(pa+pb))/(pa*pb));
     if (i==0) ampl.SetX1(ampl.X1()*x);
     else ampl.SetX2(ampl.X2()*x);
   }
@@ -694,33 +764,6 @@ bool METS_Scale_Setter::Combine
   (*lit)->Delete();
   ampl.Legs().erase(lit);
   return true;
-}
-
-void METS_Scale_Setter::ZAlign
-(ATOOLS::Cluster_Amplitude &ampl,ATOOLS::Vec4D &pa,
- const ATOOLS::Vec4D &pb,const double &ma2,const double &mb2,
- const int mode) const
-{
-  Vec4D Q(pa+pb);
-  double Q2=Q.Abs2(), papb=pa*pb, sb=Sign(pb[3]), ea=0.0;
-  if (IsZero(mb2)) ea=0.5*(papb+ma2*sqr(pb[3])/papb)/pb[0];
-  else ea=(pb[0]*papb+dabs(pb[3])*sqrt(papb*papb-ma2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-Q2)<dabs((pan+pb).Abs2()-Q2)) pan=pam;
-  Poincare cmso(-Q), cmsn(-pan-pb);
-  cmso.Boost(pa);
-  Poincare zrot(pa,-sb*Vec4D::ZVEC);
-  if (mode) {
-    zrot.Rotate(pa);
-    cmsn.BoostBack(pa);
-  }
-  for (size_t m(0);m<ampl.Legs().size();++m) {
-    Vec4D cm(ampl.Leg(m)->Mom());
-    cmso.Boost(cm);
-    zrot.Rotate(cm);
-    cmsn.BoostBack(cm);
-    ampl.Leg(m)->SetMom(cm);
-  }
 }
 
 bool METS_Scale_Setter::CheckX

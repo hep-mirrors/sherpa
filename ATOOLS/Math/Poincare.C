@@ -16,22 +16,9 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
   ATOOLS::Vec3D b(v1), a(v2);
   m_ct=a*b/(a.Abs()*b.Abs());
   m_n=Vec4D(0.0,cross(a,b));
-  m_usen=!IsZero(m_n.PSpat2());
-  if (!m_usen) {
-    m_n=Vec4D(0.0,cross(a,Vec3D::XVEC));
-    m_usen=!IsZero(m_n.PSpat2());
-    if (!m_usen) {
-      m_n=Vec4D(0.0,cross(a,Vec3D::YVEC));
-      m_usen=!IsZero(m_n.PSpat2());
-      if (!m_usen) {
-	m_n=Vec4D(0.0,cross(a,Vec3D::ZVEC));
-	m_usen=!IsZero(m_n.PSpat2());
-      }
-    }
-  }
-  m_usen&=m_ct<1.0;
   m_nsq=m_n.PSpat2();
   m_nabs=sqrt(m_nsq);
+  m_usen=m_n.PSpat2()>0.0 && m_ct<1.0;
   if(sqr(m_ct)>1.0) {
     if (!IsEqual(sqr(m_ct),1.0)) {
       int prc(msg_Error().precision());
@@ -49,7 +36,7 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
     b=1.0/b.Abs()*b;
     Vec3D n(m_n), at(n*(n*a)/m_nsq), ap(a-at);
     Vec3D ta(at+m_ct*ap-m_st/m_nabs*cross(n,ap));
-    if (!ATOOLS::IsZero((ta-b).Sqr(),1.0e-6)) 
+    if (!ATOOLS::IsZero((ta-b).Sqr())) 
       msg_Error()<<METHOD<<"(): Inaccurate rotation {\n"
  		 <<"  a    = "<<a<<"\n"
 		 <<"  b    = "<<b<<"\n"

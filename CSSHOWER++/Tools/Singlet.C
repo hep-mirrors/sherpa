@@ -543,28 +543,27 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (p_all==NULL) return;
   if (mode&2) {
     if (mode&1) {
-      Vec4D pa(-l->Momentum()), pb(-s->Momentum());
-      Vec4D pi(r->Momentum()), pai(pa+pi);
-      double ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(s->GetFlavour()));
-      double paipb=pa*pb, sb=Sign(pb[3]), ea=0.0, shat=(pa+pb).Abs2();
-      if (IsZero(mb2)) ea=0.5*(paipb+ma2*sqr(pb[3])/paipb)/pb[0];
-      else ea=(pb[0]*paipb+dabs(pb[3])*sqrt(paipb*paipb-ma2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
-      if (dabs((pam+pb).Abs2()-shat)<dabs((pan+pb).Abs2()-shat)) pan=pam;
-      Poincare cmsn(-pan-pb), cmso(-pa-pb);
-      cmso.Boost(pa);
-      Poincare zrot(pa,-sb*Vec4D::ZVEC);
-      zrot.Rotate(pa);
-      cmsn.BoostBack(pa);
-      l->SetMomentum(-pa);
+      Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
+      double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
+      double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
+      double mai2(p_ms->Mass2(mo)), ma2(p_ms->Mass2(l->GetFlavour()));
+      double mb2(p_ms->Mass2(s->GetFlavour())), Q2((pl+ps-pr).Abs2());
+      double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
+      double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
+		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
+      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
+      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
+		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
+      Poincare cmso(pait+ps), cmsn(pl+ps-pr);
+      cmsn.Boost(pait);
+      Poincare zrot(pait,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  if (*plit==l) continue;
+	  if ((*plit)==l || (*plit)==r || (*plit)==s) continue;
 	  Vec4D p((*plit)->Momentum());
 	  cmso.Boost(p);
-	  zrot.Rotate(p);
+	  zrot.RotateBack(p);
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
 	}
@@ -604,7 +603,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   }
   else {
     if (mode&1) {
-      if (l->Kin()==1) {
       Parton *b(NULL);
       for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
 	if ((*plit)->GetType()==pst::IS && *plit!=f) {
@@ -640,41 +638,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  (*plit)->SetMomentum(p);
 	}
       }
-      }
-      else {
-      Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pl(-l->Momentum());
-      double ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(b->GetFlavour())), plpb(pl*pb);
-      double sb(Sign(pb[3])), ea(0.0), s((pl+pb).Abs2());
-      if (IsZero(mb2)) ea=0.5*(plpb+ma2*sqr(pb[3])/plpb)/pb[0];
-      else ea=(pb[0]*plpb+dabs(pb[3])*sqrt(plpb*plpb-ma2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
-      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-      Poincare cmso(-pl-pb), cmsn(-pan-pb);
-      cmso.Boost(pl);
-      Poincare zrot(pl,-sb*Vec4D::ZVEC);
-      zrot.Rotate(pl);
-      cmsn.BoostBack(pl);
-      l->SetMomentum(-pl);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  if (*plit==l) continue;
-	  Vec4D p((*plit)->Momentum());
-	  cmso.Boost(p);
-	  zrot.Rotate(p);
-	  cmsn.BoostBack(p);
-	  (*plit)->SetMomentum(p);
-	}
-      }
-      }
     }
   }
 }
@@ -685,17 +648,20 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (p_all==NULL) return;
   if (mode&2) {
     if (mode&1) {
-      Vec4D pa(-l->Momentum()), pb(-s->Momentum());
-      Vec4D pi(r->Momentum()), pai(pa+pi), Q(pai+pb);
-      double sai(pai.Abs2()), mb2(p_ms->Mass2(s->GetFlavour())), Q2(Q.Abs2());
-      double paipb=pai*pb, sb=Sign(pb[3]), ea=0.0;
-      if (IsZero(mb2)) ea=0.5*(paipb+sai*sqr(pb[3])/paipb)/pb[0];
-      else ea=(pb[0]*paipb+dabs(pb[3])*sqrt(paipb*paipb-sai*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-sai)), pam(ea,0.0,0.0,-pan[3]);
-      if (dabs((pam+pb).Abs2()-Q2)<dabs((pan+pb).Abs2()-Q2)) pan=pam;
-      Poincare cmso(-pai-pb), cmsn(-pan-pb);
-      cmso.Boost(pai);
-      Poincare zrot(pai,-sb*Vec4D::ZVEC);
+      Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
+      double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
+      double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
+      double mai2(p_ms->Mass2(mo)), ma2(p_ms->Mass2(l->GetFlavour()));
+      double mb2(p_ms->Mass2(s->GetFlavour())), Q2((pl+ps-pr).Abs2());
+      double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
+      double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
+		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
+      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
+      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
+		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
+      Poincare cmso(pl+ps-pr), cmsn(pait+ps);
+      cmso.Boost(pait);
+      Poincare zrot(pait,-sb*Vec4D::ZVEC);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
@@ -703,9 +669,10 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  cmso.Boost(p);
 	  zrot.Rotate(p);
 	  cmsn.BoostBack(p);
-	  (*plit)->SetMomentum(p);
+ 	  (*plit)->SetMomentum(p);
 	}
       }
+      r->SetMomentum(pr);
     }
     else {
       Parton *b(NULL);
@@ -747,7 +714,6 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   }
   else {
     if (mode&1) {
-      if (l->Kin()==1) {
       Parton *b(NULL);
       for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
 	if ((*plit)->GetType()==pst::IS && *plit!=f) {
@@ -790,43 +756,6 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
 	}
-      }
-      }
-      else {
-      Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pa(-l->Momentum());
-      Vec4D pj(r->Momentum()), pk(s->Momentum()), Q(pa+pj+pk);
-      double mb2(p_ms->Mass2(b->GetFlavour())), maj2(p_ms->Mass2(mo));
-      double mk2(p_ms->Mass2(s->GetFlavour()));
-      double saj((pa+pj).Abs2()), Q2(Q.Abs2());
-      double lrat((sqr(Q2-maj2-mk2)-4.0*maj2*mk2)/
-		  (sqr(Q2-saj-mk2)-4.0*saj*mk2));
-      Vec4D pikt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-maj2)/(2.*Q2)*Q);
-      Vec4D pat(Q-pikt); 
-      double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
-      if (IsZero(mb2)) ea=0.5*(patpb+maj2*sqr(pb[3])/patpb)/pb[0];
-      else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-maj2*mb2))/mb2;
-      Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-maj2)), pam(ea,0.0,0.0,-pan[3]);
-      if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-      Poincare cmso(-pat-pb), cmsn(-pan-pb);
-      cmso.Boost(pat);
-      Poincare zrot(pat,-sb*Vec4D::ZVEC);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  cmso.Boost(p);
-	  zrot.Rotate(p);
-	  cmsn.BoostBack(p);
-	  (*plit)->SetMomentum(p);
-	}
-      }
       }
     }
   }

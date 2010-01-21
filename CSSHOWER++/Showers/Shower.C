@@ -18,7 +18,6 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
   double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
-  m_kscheme = dataread->GetValue<double>("CSS_KIN_SCHEME",0);
   std::vector<std::vector<std::string> > helpsvv;
   dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
   m_efac.clear();
@@ -134,7 +133,6 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),3);
 	stat=RemnantTest(l);
-	if (stat>0) stat=RemnantTest(s);
 	if (stat<=0) split->BoostBackAllFS
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),3);
       }
@@ -178,14 +176,7 @@ bool Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   }
   newpB->UpdateDaughters();
   split->GetSpect()->UpdateDaughters();
-  bool rd(ReconstructDaughters(split->GetSing()));
-  if (rd) {
-    if (newpB->GetType()==pst::IS &&
-	RemnantTest(newpB)==-1) rd=false;
-    if (split->GetSpect()->GetType()==pst::IS &&
-	RemnantTest(split->GetSpect())==-1) rd=false;
-  }
-  if (!rd) {
+  if (!ReconstructDaughters(split->GetSing())) {
     if (split->GetNext()) {
       newpB->GetNext()->SetPrev(split);
       split->SetNext(newpB->GetNext());
@@ -278,9 +269,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	mom       = (*splitter)->Momentum();
 	newpB     = new Parton(m_flavB,mom,(*splitter)->GetType());
 	newpB->SetId((*splitter)->Id());
-	newpB->SetKin(m_kscheme);
 	spect     = (*splitter)->GetSpect();
-	newpC->SetKin(m_kscheme);
 	p_actual->push_back(newpC);
 	bool ustat(UpdateDaughters(*splitter,newpB,newpC));
 	p_actual->erase(--p_actual->end());
@@ -314,6 +303,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinFI.JF()<<"\n";
 	int stat(m_kinFI.MakeKinematics((*splitter),m_flavB,m_flavC,newpC));
+	if (stat>0) {
+	  stat=RemnantTest((*splitter)->GetSpect());
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
@@ -324,10 +317,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpB     = new Parton(m_flavB,mom,(*splitter)->GetType());
 	newpB->SetId((*splitter)->Id());
 	newpB->SetSing((*splitter)->GetSing());
-	newpB->SetKin(m_kscheme);
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
-	newpC->SetKin(m_kscheme);
 	p_actual->push_back(newpC);
  	p_actual->BoostAllFS(newpB,newpC,spect,*splitter,
 			     (*splitter)->GetFlavour(),2);
@@ -370,6 +361,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinIF.JF()<<"\n";
 	int stat(m_kinIF.MakeKinematics((*splitter),m_flavA,m_flavC,newpC));
+	if (stat>0) {
+	  stat=RemnantTest(*splitter);
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
@@ -380,12 +375,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
 	newpA->SetBeam((*splitter)->Beam());
-	newpA->SetKin(m_kscheme);
 	SetXBj(newpA);
 	newpA->SetSing((*splitter)->GetSing());
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
-	newpC->SetKin(m_kscheme);
 	p_actual->push_back(newpC);
  	p_actual->BoostAllFS(newpA,newpC,spect,*splitter,
 			     (*splitter)->GetFlavour(),1);
@@ -429,6 +422,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt((*splitter)->KtTest())<<" vs. "<<sqrt((*splitter)->KtMax())
 		       <<" -> "<<(*splitter)->GetSing()->JF()<<" vs. "<<m_kinII.JF()<<"\n";
 	int stat(m_kinII.MakeKinematics((*splitter),m_flavA,m_flavC,newpC));
+	if (stat>0) {
+	  stat=RemnantTest(*splitter);
+	  if (stat==-1) delete newpC;
+	}
 	if (stat==-1) {
 	  (*splitter)->SetMomentum(splitorig);
 	  (*splitter)->GetSpect()->SetMomentum(spectorig);
@@ -439,14 +436,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpA     = new Parton(m_flavA,mom,(*splitter)->GetType());
 	newpA->SetId((*splitter)->Id());
 	newpA->SetBeam((*splitter)->Beam());
-	newpA->SetKin(m_kscheme);
 	SetXBj(newpA);
 	spect     = (*splitter)->GetSpect();
 	// Boost the full thing into the c.m. frame
-	newpC->SetKin(m_kscheme);
-	p_actual->push_back(newpC);
  	p_actual->BoostAllFS(newpA,newpC,spect,*splitter,
 			     (*splitter)->GetFlavour(),3);
+	p_actual->push_back(newpC);
 	bool ustat(UpdateDaughters(*splitter,newpA,newpC,false));
 	p_actual->erase(--p_actual->end());
 	if (!ustat) {

@@ -167,7 +167,6 @@ namespace CSSHOWER {
     double m_lastint, m_symf, m_polfac, m_lpdf, m_efac;
     int m_on, m_bwon, m_qcd;
     std::vector<Parton*> m_specs;
-    Parton *p_spec;
     PDF::PDF_Base **p_pdf;
     double BWFactor(const double&,const double&,
 		    const double&,const double&,
@@ -202,7 +201,7 @@ namespace CSSHOWER {
 		   const ATOOLS::Flavour &a,const int beam,
 		   const int mode=0);
 
-    Parton *SelectSpec();
+    Parton *SelectSpec() const;
     bool PureQCD() const;
 
     void SetEFac(Shower *const shower);
@@ -214,10 +213,6 @@ namespace CSSHOWER {
 
     inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
     inline void AddSpec(Parton *const s) { m_specs.push_back(s); }
-
-    inline void SetSpec(Parton *const spec) { p_spec=spec; }
-
-    inline Parton *Spec() const { return p_spec; }
 
     inline int On() const { return m_on; }
     template <class _Type> inline _Type *Get() { return dynamic_cast<_Type*>(this); }
