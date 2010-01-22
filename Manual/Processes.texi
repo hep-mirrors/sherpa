@@ -170,6 +170,10 @@ The given number is exclusive, i.e. only matrix elements
 with exactly the given order in the electroweak coupling
 are generated.
 
+Note that for decay chains with Amegic this setting 
+applies to the core process only, while with Comix it applies to
+the full process, see @ref{Decay} and @ref{DecayOS}.
+
 
 @node Max_Order_EW
 @subsection Max_Order_EW
@@ -178,6 +182,10 @@ The given number is inclusive, i.e. matrix elements
 with up to the given order in the electroweak coupling
 are generated.
 
+Note that for decay chains with Amegic this setting 
+applies to the core process only, while with Comix it applies to
+the full process, see @ref{Decay} and @ref{DecayOS}.
+
 
 @node Order_QCD
 @subsection Order_QCD
@@ -185,12 +193,20 @@ Sets a process-specific QCD order.
 The given number is exclusive, i.e. only matrix elements
 with exactly the given order in the strong coupling are generated.
 
+Note that for decay chains with Amegic this setting 
+applies to the core process only, while with Comix it applies to
+the full process, see @ref{Decay} and @ref{DecayOS}.
+
 
 @node Max_Order_QCD
 @subsection Max_Order_QCD
 Sets a process-specific maximum QCD order.
 The given number is inclusive, i.e. matrix elements
 with up to the given order in the strong coupling are generated.
+
+Note that for decay chains with Amegic this setting 
+applies to the core process only, while with Comix it applies to
+the full process, see @ref{Decay} and @ref{DecayOS}.
 
 
 @node Max_N_Quarks
