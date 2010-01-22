@@ -707,7 +707,7 @@ double LF_VSS_II::Z()
   return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran.Get();
 }
 
-DECLARE_GETTER(LF_SSV_Getter,"Gamma",SF_Lorentz,SF_Key);
+DECLARE_GETTER(LF_SSV_Getter,"SSV",SF_Lorentz,SF_Key);
 
 SF_Lorentz *LF_SSV_Getter::operator()
   (const Parameter_Type &args) const
