@@ -380,7 +380,7 @@ bool Cluster_Algorithm::ClusterStep
     if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
     p=p_clus->Combine(*p_ampl,cid[m_id[wkey.first]],
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
-		      winfo.m_mofl,p_ms);
+		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin);
     if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
     if (p.empty()) return false;
   }
@@ -413,6 +413,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetJF(ampl->JF<Selector_Base>());
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
   p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
+  p_ampl->SetKin(winfo.m_kt2.m_kin);
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));

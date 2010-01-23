@@ -28,7 +28,7 @@ ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
 
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   p_prev(prev), p_next(NULL), 
-  m_oew(0), m_oqcd(0), m_swap(0), m_nin(0), m_new(0),
+  m_oew(0), m_oqcd(0), m_swap(0), m_nin(0), m_new(0), m_kin(0),
   m_mur2(0.0), m_muf2(0.0), m_kt2qcd(0.0), 
   m_x1(1.0), m_x2(1.0), m_rbmax(1.0),
   p_jf(NULL)
@@ -58,7 +58,7 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->p_next=NULL;
   ca->m_oew=ca->m_oqcd=0;
   ca->m_swap=0;
-  ca->m_nin=ca->m_new=0;
+  ca->m_nin=ca->m_new=ca->m_kin=0;
   ca->m_mur2=ca->m_muf2=ca->m_kt2qcd=0.0; 
   ca->m_x1=ca->m_x2=1.0;
   ca->m_rbmax=1.0;
@@ -196,8 +196,8 @@ void Cluster_Amplitude::Print() const
   msg_Out()<<"  x_1 = "<<m_x1<<", x_2 = "<<m_x2<<"\n";
   msg_Out()<<"  k_{T,QCD} = "<<sqrt(m_kt2qcd)
 	   <<", (R/B)_{max} = "<<m_rbmax<<"\n";
-  msg_Out()<<"  oew = "<<m_oew
-	   <<", oqcd = "<<m_oqcd<<"\n";
+  msg_Out()<<"  oew = "<<m_oew<<", oqcd = "<<m_oqcd
+	   <<", kin = "<<m_kin<<"\n";
   msg_Out()<<"  swap = "<<m_swap
 	   <<", new = "<<ID(m_new)<<"\n";
   if (m_cmap.size()) {
@@ -261,8 +261,8 @@ namespace ATOOLS {
     ostr<<"  x_1 = "<<ampl.X1()<<", x_2 = "<<ampl.X2()<<"\n";
     ostr<<"  k_{T,QCD} = "<<sqrt(ampl.KT2QCD())
 	<<", (R/B)_{max} = "<<ampl.RBMax()<<"\n";
-    ostr<<"  oew = "<<ampl.OrderEW()
-	<<", oqcd = "<<ampl.OrderQCD()<<"\n";
+    ostr<<"  oew = "<<ampl.OrderEW()<<", oqcd = "<<ampl.OrderQCD()
+	<<", kin = "<<ampl.Kin()<<"\n";
     msg_Out()<<"  swap = "<<ampl.InSwaped()
 	     <<", new = "<<ID(ampl.IdNew())<<"\n";
     if (ampl.ColorMap().size()) {

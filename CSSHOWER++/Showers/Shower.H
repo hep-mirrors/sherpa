@@ -20,6 +20,7 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[3];
+    int                m_kscheme;
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
@@ -54,6 +55,8 @@ namespace CSSHOWER {
     inline const Kinematics_II *KinII() const { return &m_kinII; }
 
     inline double Weight() const { return m_weight; }
+
+    inline int KinScheme() const { return m_kscheme; }
 
   };
 }

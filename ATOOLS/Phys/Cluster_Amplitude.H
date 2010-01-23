@@ -47,7 +47,7 @@ namespace ATOOLS {
 
     ClusterLeg_Vector m_legs;
 
-    size_t m_oew, m_oqcd, m_swap, m_nin, m_new;
+    size_t m_oew, m_oqcd, m_swap, m_nin, m_new, m_kin;
     double m_mur2, m_muf2, m_kt2qcd, m_x1, m_x2, m_rbmax;
     CI_Map m_cmap;
 
@@ -111,6 +111,8 @@ namespace ATOOLS {
     inline void SetNIn(const size_t &nin)  { m_nin=nin; }
     inline void SetIdNew(const size_t &id) { m_new=id;  }
 
+    inline void SetKin(const size_t &kin) { m_kin=kin; }
+
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
 
@@ -129,6 +131,8 @@ namespace ATOOLS {
 
     inline size_t NIn() const   { return m_nin; }
     inline size_t IdNew() const { return m_new; }
+
+    inline size_t Kin() const { return m_kin; }
 
     inline size_t OrderEW() const  { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }

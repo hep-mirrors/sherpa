@@ -497,6 +497,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetMuF2(ampl->MuF2());
     p_ampl->SetOrderEW(ampl->OrderEW()-win.OrderQED());
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
+    p_ampl->SetKin(win.Kin());
   }
   double scale;
   p_ct->IdentifyHardPropagator(scale);

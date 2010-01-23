@@ -160,7 +160,8 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
  	s<<cit->first<<std::setw(8)
 	 <<ct.p_moms[cit->first.m_i].
-	  Theta(ct.p_moms[cit->first.m_j])<<cit->second<<std::endl; 
+	  Theta(ct.p_moms[cit->first.m_j])<<cit->second
+	 <<(cit==ct.m_cdata_winner?"<-":"")<<std::endl; 
       }
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
 	if (cit->second.p_down) {
@@ -368,13 +369,14 @@ void Combine_Table::SetLegScales
 }
   
 Leg * Combine_Table::CombineLegs
-(Leg *legs,const int i,const int j,const int nlegs,const double pt2ij) 
+(Leg *legs,const int i,const int j,const int nlegs,const double pt2ij,const int kin) 
 {
   Leg * alegs = new Leg[nlegs];
   // assume i < j 
   for (int l=0; l<j; ++l) {
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
+      alegs[i].SetKin(kin);
       SetLegScales(alegs[i],legs[i],legs[j],p_moms[i],p_moms[j],pt2ij);
       size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID()), id(idi|idj);
       alegs[i].SetID(id);
@@ -398,7 +400,8 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
-     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms);
+     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
+     m_cdata_winner->second.m_pt2ij.m_kin);
   ampl->Delete();
   if (after.empty()) return false;
   for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
@@ -739,33 +742,29 @@ bool Combine_Table::SelectWinner()
   if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
-  CD_List::iterator qcd_winner(cl.end()), nqcd_winner(cl.end());
-  double kt2(std::numeric_limits<double>::max()), kt2qcd(kt2), kt2nqcd(kt2);
+  CD_List::iterator rdata_winner(cl.end());
+  double kt2(std::numeric_limits<double>::max()), rkt2(kt2);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
-      if (pt2ij<kt2) {
-	m_cdata_winner=cit;
-	kt2=pt2ij;
+      if (pt2ij>0.0) {
+	if (pt2ij<kt2) {
+	  m_cdata_winner=cit;
+	  kt2=pt2ij;
+	}
       }
-      if (cit->second.m_strong && pt2ij<kt2qcd) {
-	qcd_winner=cit;
-	kt2qcd=pt2ij;
-      }
-      if (pt2ij<kt2nqcd &&
-	  ((p_legs[0][cit->first.m_i].Flav().Strong() &&
-	    cit->first.m_i>1)||
- 	   (p_legs[0][cit->first.m_j].Flav().Strong() &&
-	    cit->first.m_j>1))) {
- 	nqcd_winner=cit;
- 	kt2nqcd=pt2ij;
+      else {
+	if (cit->second.m_pt2ij.m_kt2<rkt2) {
+	  rdata_winner=cit;
+	  rkt2=cit->second.m_pt2ij.m_kt2;
+	}
       }
     }
   }
-  if (nqcd_winner!=cl.end()) m_cdata_winner=nqcd_winner;
-  if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
+  if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
+  msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
 }
 
@@ -782,7 +781,7 @@ Combine_Table *Combine_Table::CreateNext()
       alegs[k] = CombineLegs
 	(p_legs[m_cdata_winner->second.m_graphs[k]],
 	 m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl,
-	 m_cdata_winner->second.m_pt2ij.m_kt2);
+	 m_cdata_winner->second.m_pt2ij.m_kt2,m_cdata_winner->second.m_pt2ij.m_kin);
     }
     m_cdata_winner->second.p_down = 
       new Combine_Table(p_proc,p_ms,p_clus,amoms,this);

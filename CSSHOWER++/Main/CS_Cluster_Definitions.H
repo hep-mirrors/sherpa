@@ -10,18 +10,20 @@ namespace CSSHOWER {
 
   struct CS_Parameters {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws;
-    int m_mode;
+    int m_mode, m_kin;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
-		  const double &x,const int mode=-1):
+		  const double &x,const int mode=-1,
+		  const int kin=0):
       m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x),
-      m_wk(1.0), m_ws(kt2), m_mode(mode) {}
+      m_wk(1.0), m_ws(kt2), m_mode(mode), m_kin(kin) {}
   };// end of struct CS_Parameters
 
   class CS_Cluster_Definitions: public ATOOLS::Cluster_Definitions_Base {
   private:
 
     ATOOLS::Mass_Selector *p_ms;
+    ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
     int     m_mode, m_kmode;
@@ -46,7 +48,8 @@ namespace CSSHOWER {
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		  ATOOLS::Mass_Selector *const ms=NULL);
-    CS_Parameters KT2(const ATOOLS::Cluster_Leg *i,
+    CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
+		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
@@ -73,7 +76,8 @@ namespace CSSHOWER {
     ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,
 				 int i,int j,int k,
 				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-				 ATOOLS::Mass_Selector *const ms=NULL);
+				 ATOOLS::Mass_Selector *const ms=NULL,
+				 const int kin=0);
     
     ATOOLS::Vec4D_Vector Combine_FF(const ATOOLS::Cluster_Amplitude &ampl,
 				    int i,int j,int k,
@@ -83,7 +87,8 @@ namespace CSSHOWER {
 				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
     ATOOLS::Vec4D_Vector Combine_IF(const ATOOLS::Cluster_Amplitude &ampl,
 				    int i,int j,int k,
-				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
+				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
+				    const int kin=0);
     ATOOLS::Vec4D_Vector Combine_II(const ATOOLS::Cluster_Amplitude &ampl,
 				    int i,int j,int k,
 				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));

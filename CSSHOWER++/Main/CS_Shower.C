@@ -33,7 +33,7 @@ namespace CSSHOWER {
  
     PDF::ISR_Handler * p_isr;
     int m_weightmode, m_kmode;
-    size_t m_maxem;
+    size_t m_maxem, m_recocheck;
     
     Shower          * p_shower;
     All_Singlets m_allsinglets;
@@ -128,6 +128,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   }
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
+  m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
+  if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -394,17 +396,19 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
+      l->SetKin(campl->Kin());
       CS_Parameters cp(p_cluster->KT2
-		       (almap[l],almap[r],almap[s],
-			split->GetFlavour(),p_ms));
+		       (campl->Prev(),almap[l],almap[r],almap[s],
+			split->GetType()==pst::FS?split->GetFlavour():
+			split->GetFlavour().Bar(),p_ms));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       l->SetStart(cp.m_kt2);
       r->SetStart(cp.m_kt2);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
-		     <<", mode = "<<cp.m_mode<<"\n";
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<l->Kin()<<"\n";
       sing->SetAll(p_next);
-#ifdef USING__reco_check
+      if (m_recocheck&1) {
       std::cout.precision(12);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
@@ -413,12 +417,15 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters ncp(p_cluster->KT2
-			(almap[l],almap[r],almap[s],
-			 split->GetFlavour(),p_ms));
+			(campl->Prev(),almap[l],almap[r],almap[s],
+			 split->GetType()==pst::FS?split->GetFlavour():
+			 split->GetFlavour().Bar(),p_ms));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
-		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi<<"\n";
+		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
+		     <<", kin = "<<ncp.m_kin<<"\n";
       msg_Debugging()<<"            vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
-		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi<<"\n";
+		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
+		     <<", kin = "<<cp.m_kin<<"\n";
       if (!IsEqual(ncp.m_kt2,cp.m_kt2,1.0e-6) || 
 	  !IsEqual(ncp.m_z,cp.m_z,1.0e-6) || 
 	  !IsEqual(ncp.m_y,cp.m_y,1.0e-6) || 
@@ -433,11 +440,12 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 	msg_Error()<<"  "<<oldl<<" "<<oldr<<" "<<olds<<"\n";
 	msg_Error()<<"  "<<l->Momentum()<<" "<<r->Momentum()
 		   <<" "<<s->Momentum()<<"\n";
+	if (m_recocheck&2) abort();
       }
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
-#endif
+      }
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
     }
     double kt2prev(campl->Next()?campl->KT2QCD():kt2xmap[1].second);
@@ -507,6 +515,7 @@ Singlet *CS_Shower::TranslateAmplitude
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetRFlow();
+    parton->SetKin(p_shower->KinScheme());
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
 	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
@@ -814,7 +823,7 @@ double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
       cdip->SetFlavourSpec(k<ampl->NIn()?lkt->Flav().Bar():lkt->Flav());
       double Q2=(lijt->Mom()+lkt->Mom()).Abs2(), scale=Q2;
       Cluster_Leg *lk(next->IdLeg(lkt->Id()));
-      CS_Parameters cs(p_cluster->KT2(li,lj,lk,lijt->Flav(),p_ms));
+      CS_Parameters cs(p_cluster->KT2(ampl,li,lj,lk,lijt->Flav(),p_ms));
       double eta=1.0;// temporary, FF only
       double w=8.0*M_PI*as/((li->Mom()+lj->Mom()).Abs2()
 			    -sqr(p_ms->Mass(lijt->Flav())))

@@ -22,7 +22,7 @@ namespace AMEGIC {
   class Leg {
   private:
     AMEGIC::Point *p_point;
-    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets;
+    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets, m_kin;
     long unsigned int m_id;
     double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
     double *p_qmin;
@@ -48,6 +48,7 @@ namespace AMEGIC {
     inline size_t ID() const              { return m_id; }
     inline void   SetKT2(const double &kt2)    
     { m_kt2=kt2; SetMinKT2(m_kt2); }
+    inline void   SetKin(const int kin) { m_kin=kin; }
     inline void   SetKT2QCD(const double &kt2) 
     { m_kt2qcd=kt2; SetMinKT2QCD(m_kt2qcd); }
     inline void   SetKT2QED(const double &kt2) 
@@ -59,6 +60,7 @@ namespace AMEGIC {
     inline void   SetMinKT2QED(const double &kt2) 
     { m_minkt2qed=ATOOLS::Min(m_minkt2qed,kt2); }
     inline double KT2() const       { return m_kt2;       }
+    inline int    Kin() const       { return m_kin;       }
     inline double KT2QCD() const    { return m_kt2qcd;    }
     inline double KT2QED() const    { return m_kt2qed;    }
     inline double MinKT2() const    { return m_minkt2;    }
@@ -151,7 +153,7 @@ namespace AMEGIC {
     
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
-		     const int nlegs,const double pt2ij);
+		     const int nlegs,const double pt2ij,const int kin);
     bool CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
 		     const int maxl);
     bool CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,

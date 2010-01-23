@@ -8,10 +8,12 @@ namespace ATOOLS {
 
   struct CParam {
     double m_kt2, m_op2, m_x;
+    int m_kin;
     inline CParam(const double &kt2=0.0,
 		  const double &op2=0.0,
-		  const double &x=0.0):
-      m_kt2(kt2), m_op2(op2), m_x(x) {}
+		  const double &x=0.0,
+		  const int kin=0):
+      m_kt2(kt2), m_op2(op2), m_x(x), m_kin(kin) {}
   };// end of struct CParam
 
   std::ostream &operator<<(std::ostream &str,const CParam &cp);
@@ -29,7 +31,8 @@ namespace ATOOLS {
     virtual Vec4D_Vector Combine(const Cluster_Amplitude &ampl,
 				 int i,int j,int k=-1,
 				 const Flavour &mo=Flavour(kf_none),
-				 Mass_Selector *const ms=NULL) = 0;
+				 Mass_Selector *const ms=NULL,
+				 const int kin=0) = 0;
 
   };// end of class Cluster_Definitions_Base
 
