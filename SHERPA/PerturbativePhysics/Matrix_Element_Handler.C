@@ -367,13 +367,10 @@ void Matrix_Element_Handler::BuildProcesses()
       pi.m_kfactor=kfactor;
       pi.m_cls=cls;
       pi.m_hls=hls;
-      std::string selfile(m_selectorfile);
       std::string proc(MakeString(cur,1));
       size_t pos(proc.find("->"));
       if (pos==std::string::npos) continue;
-      std::string gycut;
-      MPSV_Map vefunc, vycut, vscale, vcoupl, vsfile;
-      MPDV_Map vmaxerr, vmaxeps, vefac;
+      Processblock_Info pbi;
       std::string ini(proc.substr(0,pos));
       std::string fin(proc.substr(pos+2));
       std::vector<std::string> dectags;
@@ -384,25 +381,25 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vscale,nf);
+	  ExtractMPvalues(cb,pbi.m_vscale,nf);
 	}
 	if (cur[0]=="Couplings") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vcoupl,nf);
+	  ExtractMPvalues(cb,pbi.m_vcoupl,nf);
 	}
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
 	    THROW(fatal_error,"Invalid shower generator");
 	  pi.m_ckkw=1;
-	  gycut=cur[1];
+	  pbi.m_gycut=cur[1];
 	}
 	if (cur[0]=="Y_Cut") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vycut,nf);
+	  ExtractMPvalues(cb,pbi.m_vycut,nf);
 	}
 	if (cur[0]=="Selector_File") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vsfile,nf);
+	  ExtractMPvalues(cb,pbi.m_vsfile,nf);
 	}
 	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
 	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
@@ -414,19 +411,19 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);	
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vmaxerr,nf);
+	  ExtractMPvalues(cb,pbi.m_vmaxerr,nf);
 	}
 	if (cur[0]=="Max_Epsilon") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vmaxeps,nf);
+	  ExtractMPvalues(cb,pbi.m_vmaxeps,nf);
 	}
 	if (cur[0]=="Enhance_Factor") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vefac,nf);
+	  ExtractMPvalues(cb,pbi.m_vefac,nf);
 	}
 	if (cur[0]=="Enhance_Function") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,vefunc,nf);
+	  ExtractMPvalues(cb,pbi.m_vefunc,nf);
 	}
 	if (cur[0]=="NLO_QCD_Part") {
 	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(cur[1]);
@@ -440,10 +437,7 @@ void Matrix_Element_Handler::BuildProcesses()
         pi.p_gens=&m_gens;
 	if (cur[0]=="End" && cur[1]=="process") break;
       }
-      BuildSingleProcessList
-	(pi,ini,fin,dectags,vmaxerr,vmaxeps,
-	 vefac,vefunc,vycut,vscale,vcoupl,
-	 vsfile,gycut,selfile);
+      BuildSingleProcessList(pi,pbi,ini,fin,dectags);
       if (msg_LevelIsDebugging()) {
         msg_Indentation(4);
         msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
@@ -498,11 +492,9 @@ void Matrix_Element_Handler::BuildDecays
 }
 
 void Matrix_Element_Handler::BuildSingleProcessList
-(Process_Info &pi,const std::string &ini,
- const std::string &fin,const std::vector<std::string> &dectags,
- MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
- MPSV_Map &vycut,MPSV_Map &vscale,MPSV_Map &vcoupl,MPSV_Map &vsfile,
- const std::string &gycut,const std::string &selfile)
+(Process_Info &pi,Processblock_Info &pbi,
+ const std::string &ini,const std::string &fin,
+ const std::vector<std::string> &dectags)
 {
   Subprocess_Info AIS, AFS;
   ExtractFlavours(AIS,ini);
@@ -557,22 +549,22 @@ void Matrix_Element_Handler::BuildSingleProcessList
         cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
         cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
-	if (GetMPvalue(vscale,nfs,pnid,ds)) cpi.m_scale=ds;
-	if (GetMPvalue(vcoupl,nfs,pnid,ds)) cpi.m_kfactor=ds;
-	if (GetMPvalue(vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
+	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
+	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_kfactor=ds;
+	if (GetMPvalue(pbi.m_vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi);
 	for (size_t i(0);i<proc.size();i++) {
 	  procs.push_back(proc[i]);
 	  proc[i]->Integrator()->
 	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
-	  if (GetMPvalue(vefunc,nfs,pnid,ds))
+	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds))
 	    proc[i]->Integrator()->SetEnhanceFunction(ds);
-	  if (GetMPvalue(vefac,nfs,pnid,dd))
+	  if (GetMPvalue(pbi.m_vefac,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
-	  if (GetMPvalue(vmaxeps,nfs,pnid,dd))
+	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
 	  double maxerr(-1.0);
-	  if (GetMPvalue(vmaxerr,nfs,pnid,dd)) maxerr=dd;
+	  if (GetMPvalue(pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;
 	  proc[i]->Integrator()->SetPSHandler
 	    (new Phase_Space_Handler
 	     (proc[i]->Integrator(),p_isr,p_beam,maxerr));
@@ -586,12 +578,13 @@ void Matrix_Element_Handler::BuildSingleProcessList
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
     Selector_Key skey(NULL,new Data_Reader(),true);
-    std::string sfile(cpi.m_selectorfile!=""?cpi.m_selectorfile:selfile);
+    std::string sfile(cpi.m_selectorfile!=""?
+		      cpi.m_selectorfile:m_selectorfile);
     while (sfile[sfile.length()-1]==' ') sfile.erase(sfile.length()-1,1);
     skey.ReadData(m_path,sfile);
     if (pi.m_ckkw&1) {
-      std::vector<std::string> jfargs(1,gycut);
-      GetMPvalue(vycut,cpi.m_fi.NExternal(),
+      std::vector<std::string> jfargs(1,pbi.m_gycut);
+      GetMPvalue(pbi.m_vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
       if (i==0) jfargs.push_back("LO");
       if (procs.size()>1) skey.SetData("METS",jfargs);

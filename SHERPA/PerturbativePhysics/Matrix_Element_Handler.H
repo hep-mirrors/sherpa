@@ -39,9 +39,14 @@ namespace SHERPA {
   class Matrix_Element_Handler {
   public:
 
-
     typedef std::map<std::string,std::pair<int,double> >      MPDV_Map;
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
+
+    struct Processblock_Info {
+      MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac;
+      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vsfile;
+      std::string m_gycut;
+    };// end of struct Processblock_Info
 
   private :
 
@@ -74,11 +79,9 @@ namespace SHERPA {
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
     void BuildSingleProcessList
-    (PHASIC::Process_Info &pi, const std::string &ini,
-     const std::string &fin,const std::vector<std::string> &dectags,
-     MPDV_Map &vmaxerr,MPDV_Map &vmaxeps,MPDV_Map &vefac,MPSV_Map &vefunc,
-     MPSV_Map &vycut,MPSV_Map &vscale,MPSV_Map &vcoupl,MPSV_Map &vsfile,
-     const std::string &gycut,const std::string &selfile);
+    (PHASIC::Process_Info &pi,Processblock_Info &pbi,
+     const std::string &ini,const std::string &fin,
+     const std::vector<std::string> &dectags);
 
     std::string MakeString(const std::vector<std::string> &in,
 			   const size_t &first);
