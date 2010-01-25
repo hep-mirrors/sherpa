@@ -7,6 +7,10 @@
   BEAM_2 = -11; BEAM_ENERGY_2 = 45.625;
 }(beam)
 
+(isr){
+  ISR_1 On; ISR_2 On; PDF_SET PDFe;
+}(isr)
+
 (processes){
   Process 11 -11 -> 93 93 93{1};
   CKKW pow(10,-2.25);
