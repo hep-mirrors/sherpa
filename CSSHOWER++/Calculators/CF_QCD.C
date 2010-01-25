@@ -128,6 +128,25 @@ void *CF_QCD_Filler::operator()
     new CF_QCD_Getter(qbtag+qbtag+gtag);
     new CF_QCD_Getter(qtag+qtag+gtag);
   }
+  if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
+  for (int i(1);i<=6;++i) {
+    Flavour f((kf_code)(1000000+i));
+    if (!f.IsOn()) continue;
+    std::string qtag("{"+f.IDName()+"}");
+    std::string qbtag ("{"+f.Bar().IDName()+"}");
+    new CF_QCD_Getter(gtag+qtag+qbtag);
+    new CF_QCD_Getter(qbtag+qbtag+gtag);
+    new CF_QCD_Getter(qtag+qtag+gtag);
+  }
+  for (int i(1);i<=6;++i) {
+    Flavour f((kf_code)(2000000+i));
+    if (!f.IsOn()) continue;
+    std::string qtag("{"+f.IDName()+"}");
+    std::string qbtag ("{"+f.Bar().IDName()+"}");
+    new CF_QCD_Getter(gtag+qtag+qbtag);
+    new CF_QCD_Getter(qbtag+qbtag+gtag);
+    new CF_QCD_Getter(qtag+qtag+gtag);
+  }
   return NULL;
 }
 
