@@ -8,7 +8,7 @@ namespace PDF {
     double m_mass;
     double m_alpha,m_beta;
     double m_xpdf;
-    int    m_izetta,m_order;
+    int    m_izetta,m_order,m_init;
   public:
     PDF_Electron(const ATOOLS::Flavour,const int,const int);
     ~PDF_Electron() {}
