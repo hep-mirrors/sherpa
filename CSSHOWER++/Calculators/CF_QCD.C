@@ -129,6 +129,10 @@ void *CF_QCD_Filler::operator()
     new CF_QCD_Getter(qtag+qtag+gtag);
   }
   if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
+  std::string sgtag("{"+Flavour(kf_Gluino).IDName()+"}");
+  new CF_QCD_Getter(sgtag+sgtag+gtag);
+  new CF_QCD_Getter(sgtag+gtag+sgtag);
+  new CF_QCD_Getter(gtag+sgtag+sgtag);
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)(1000000+i));
     if (!f.IsOn()) continue;
