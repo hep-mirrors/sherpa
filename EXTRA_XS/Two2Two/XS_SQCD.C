@@ -10,7 +10,7 @@ namespace EXTRAXS {
   class XS_q1q2_sQ1sQ2 : public ME2_Base {
   private:
 
-    int    m_a, m_p;
+    int    m_a, m_p, m_r;
     double m_mgluino2, m_g3;
     
   public:
@@ -25,7 +25,7 @@ namespace EXTRAXS {
   class XS_q1q2_sQ1LsQ2R : public ME2_Base {
   private:
 
-    int    m_a, m_p;
+    int    m_a, m_p, m_r;
     double m_mgluino2, m_msq32, m_msq42, m_g3;
     
   public:
@@ -40,7 +40,7 @@ namespace EXTRAXS {
   class XS_q1qbar2_sQ1sQbar2 : public ME2_Base {
   private:
 
-    int    m_a, m_p;
+    int    m_a, m_p, m_r;
     double m_mgluino2, m_msq32, m_msq42, m_g3;
     
   public:
@@ -55,7 +55,7 @@ namespace EXTRAXS {
   class XS_q1qbar1_sQ2sQbar2 : public ME2_Base {
   private:
 
-    int    m_a, m_p;
+    int    m_a, m_p, m_r;
     double m_msquark2, m_g3;
 
   public:
@@ -231,6 +231,7 @@ XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const Process_Info &pi,const Flavour_Vector &fl):
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
 	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
+  m_r = !SuperPartner(fl[2],fl[0]);
 }
 
 double XS_q1q2_sQ1sQ2::operator()(const ATOOLS::Vec4D_Vector &p) 
@@ -241,7 +242,7 @@ double XS_q1q2_sQ1sQ2::operator()(const ATOOLS::Vec4D_Vector &p)
 
 bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p) 
 { 
-  int r = !SuperPartner(m_pinfo.m_fi.m_ps[0].m_fl,m_pinfo.m_ii.m_ps[0].m_fl);
+  int r = m_r;
   if (m_a==m_p) {
     /*
       0-----\   /-----2, if fl[0]==~fl[2]
@@ -304,6 +305,7 @@ XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const PHASIC::Process_Info &pi,const ATOOLS::
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
+  m_r = !SuperPartner(fl[2],fl[0]);
 }
 
 double XS_q1q2_sQ1LsQ2R::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -315,7 +317,7 @@ double XS_q1q2_sQ1LsQ2R::operator()(const ATOOLS::Vec4D_Vector &p)
 
 bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 { 
-  int r = !SuperPartner(m_pinfo.m_fi.m_ps[0].m_fl,m_pinfo.m_ii.m_ps[0].m_fl);
+  int r = m_r;
   if (m_a==m_p) {
     /*
       0-----\   /-----2, if fl[0]==~fl[2]
@@ -383,6 +385,7 @@ XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const Process_Info &pi,const Flavour_
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
+  m_r = !SuperPartner(fl[2],fl[0]);
 }
 
 double XS_q1qbar2_sQ1sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -394,7 +397,7 @@ double XS_q1qbar2_sQ1sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
 
 bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p) 
 { 
-  int r = !SuperPartner(m_pinfo.m_fi.m_ps[0].m_fl,m_pinfo.m_ii.m_ps[0].m_fl);
+  int r = m_r;
   /*
     0-----+ +-----2
           | |
@@ -436,6 +439,7 @@ XS_q1qbar1_sQ2sQbar2::XS_q1qbar1_sQ2sQbar2(const PHASIC::Process_Info &pi,const 
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
 	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_msquark2=sqr(fl[2].Mass());
+  m_r = !(fl[0].IsAnti() == fl[2].IsAnti());
 }
 
 double XS_q1qbar1_sQ2sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -447,7 +451,7 @@ double XS_q1qbar1_sQ2sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
 
 bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p) 
 { 
-  int r = !(m_pinfo.m_ii.m_ps[0].m_fl.IsAnti() == m_pinfo.m_fi.m_ps[0].m_fl.IsAnti());
+  int r = m_r;
   /*
     0\         /2, if fl[0].IsAnti()==fl[2].IsAnti()
       \   s   /
