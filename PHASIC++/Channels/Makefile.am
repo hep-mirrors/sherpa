@@ -24,13 +24,7 @@ libPhasicChannels_la_SOURCES  =	\
 				Beam_Channels.C \
 				FSR_Channels.C \
 				PreSample_Multi_Channel.C \
-				Sample_Multi_Channel.C \
-				CS_Dipole.C \
-                                CS_Dipoles_FF.C \
-                                CS_Dipoles_FI.C \
-                                CS_Dipoles_IF.C \
-                                CS_Dipoles_II.C \
-				Extra_Emission_Generator.C
+				Sample_Multi_Channel.C
 
 localinc_HEADERS      =	\
 			Channel_Basics.H \
@@ -55,7 +49,4 @@ localinc_HEADERS      =	\
 			Beam_Channels.H \
 			FSR_Channels.H \
 			PreSample_Multi_Channel.H \
-			Sample_Multi_Channel.H \
-			CS_Dipole.H \
-			CS_Dipoles.H \
-			Extra_Emission_Generator.H
+			Sample_Multi_Channel.H

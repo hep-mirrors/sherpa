@@ -11,7 +11,6 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PHASIC++/Process/NLO_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #ifdef USING__GZIP
@@ -204,16 +203,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     return procs;
   }
   else {
-    if (m_nlomode==0) {
-      Process_Base *proc=new NLO_Process(m_gens);
-      proc->Init(pi, p_beam, p_isr);
-      proc->Integrator()->InitEEG();
-      proc->SetShower(p_shower->GetShower());
-      m_procs.push_back(proc);
-      procs.push_back(proc);
-      return procs;
-    }
-    else if (m_nlomode==1) {
+    if (m_nlomode==1) {
       if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	  Process_Info rpi(pi);

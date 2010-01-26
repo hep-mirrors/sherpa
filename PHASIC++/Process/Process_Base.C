@@ -4,7 +4,6 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Channels/Extra_Emission_Generator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/MyStrStream.H"

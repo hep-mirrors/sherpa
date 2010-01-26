@@ -4,7 +4,6 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
-#include "PHASIC++/Channels/Extra_Emission_Generator.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -23,7 +22,7 @@ static int s_omitnlosuffix(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
-  p_beamhandler(NULL), p_isrhandler(NULL), p_eeg(NULL),
+  p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_corenout(0), m_smode(1),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_maxeps(0.0),
   m_xinfo(std::vector<double>(4)), m_n(0), m_rbn(0), m_itmin(0), 
@@ -68,7 +67,6 @@ bool Process_Integrator::Initialize
 
 Process_Integrator::~Process_Integrator()
 {
-  if (p_eeg!=NULL) delete p_eeg;
   if (p_whisto!=NULL) delete p_whisto;
 }
 
@@ -425,20 +423,6 @@ void Process_Integrator::SetMax(const double max,const int flag)
   }
 } 
 
-void Process_Integrator::InitEEG()
-{
-  if (p_eeg) {
-    delete p_eeg;
-    p_eeg=NULL;
-  }
-  if (p_proc->Info().m_fi.m_nloqcdtype!=nlo_type::lo){
-    p_eeg = new Extra_Emission_Generator(this,true);
-  }
-  if (p_proc->Info().m_fi.m_nloewtype!=nlo_type::lo){
-    p_eeg = new Extra_Emission_Generator(this,false);
-  }
-}
-
 void Process_Integrator::Reset()
 {
   m_n=0;
@@ -450,16 +434,11 @@ void Process_Integrator::Reset()
   m_vsn.clear();   
   m_vsum.clear(); 
   m_vsvn.clear();   
-  if (p_eeg) ResetRB();
+  m_rbn=0;
+  m_rbmax=m_rbsum2=m_rbsum=0.0;
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i) 
       (*p_proc)[i]->Integrator()->Reset();
-}
-
-void Process_Integrator::ResetRB()
-{
-  m_rbn=0;
-  m_rbmax=m_rbsum2=m_rbsum=0.0;
 }
 
 void Process_Integrator::ResetMax(int flag) 
@@ -529,7 +508,6 @@ void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
 
 void Process_Integrator::Optimize()
 {
-  if (p_eeg) p_eeg->Optimize();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->Optimize();
@@ -537,28 +515,10 @@ void Process_Integrator::Optimize()
 
 void Process_Integrator::EndOptimize()
 {
-  if (p_eeg) p_eeg->EndOptimize();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->EndOptimize();
 } 
-
-void Process_Integrator::WriteOutEEG(const std::string &pid)
-{
-  if (p_eeg) p_eeg->WriteOut(pid);
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->WriteOutEEG(pid);
-}
-
-bool Process_Integrator::ReadInEEG(const std::string &pid)
-{
-  if (p_eeg) p_eeg->ReadIn(pid);
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->ReadInEEG(pid);
-  return true;
-}
 
 void Process_Integrator::OptimizeResult()
 {
@@ -647,17 +607,6 @@ void Process_Integrator::ReadResults()
 
 bool Process_Integrator::WriteOutRB(const std::string &path)
 {
-  if (p_eeg) {
-    std::ofstream rbmax((path+"/"+p_proc->Name()+".rb").c_str());
-    if (!rbmax.good()) return false;
-    rbmax.precision(12);
-    rbmax<<m_rbsum<<" "<<m_rbsum2<<" "<<m_rbmax<<" "<<m_rbn<<std::endl;
-    if (m_rbmax<1.0) {
-      msg_Error()<<METHOD<<"(): ( (R/B)_{ME} / (R/B)_{PS} )_{max} < "
-		 <<m_rbmax<<". Set to 1."<<std::endl;
-      m_rbmax=1.0;
-    }
-  }
   bool res(true);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -667,17 +616,6 @@ bool Process_Integrator::WriteOutRB(const std::string &path)
 
 bool Process_Integrator::ReadInRB(const std::string &path)
 {
-  if (p_eeg) {
-    std::ifstream rbmax((path+"/"+p_proc->Name()+".rb").c_str());
-    if (!rbmax.good()) return false;
-    rbmax.precision(12);
-    rbmax>>m_rbsum>>m_rbsum2>>m_rbmax>>m_rbn;
-    if (m_rbmax<1.0) {
-      msg_Error()<<METHOD<<"(): ( (R/B)_{ME} / (R/B)_{PS} )_{max} < "
-		 <<m_rbmax<<". Set to 1."<<std::endl;
-      m_rbmax=1.0;
-    }
-  }
   bool res(true);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)

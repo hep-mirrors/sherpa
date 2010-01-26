@@ -18,7 +18,6 @@ namespace PHASIC {
   class Multi_Channel;
   class Color_Integrator;
   class Helicity_Integrator;
-  class Extra_Emission_Generator;
 
   class Phase_Space_Handler;
 
@@ -31,8 +30,6 @@ namespace PHASIC {
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
-
-    Extra_Emission_Generator *p_eeg;
 
     std::string m_resultpath;
     size_t      m_nin, m_nout, m_corenout, m_smode;
@@ -88,7 +85,6 @@ namespace PHASIC {
     // member functions
     bool Initialize(BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL);
-    void InitEEG();
   
     void SetMomenta(const ATOOLS::Vec4D_Vector &p); 
 
@@ -98,7 +94,6 @@ namespace PHASIC {
     void AddPoint(const double xs);
     void AddRBPoint(const double rb);
     void Reset();
-    void ResetRB();
 
     void SetMax(const double max,const int flag=0);
     void SetTotal(const int mode=1);
@@ -123,9 +118,6 @@ namespace PHASIC {
     void Optimize();
     void EndOptimize();
     void OptimizeResult();
-
-    void WriteOutEEG(const std::string &pid);
-    bool ReadInEEG(const std::string &pid);
 
     double GetMaxEps(double);
     void   SetUpEnhance();
@@ -199,8 +191,6 @@ namespace PHASIC {
 
     inline SP(Phase_Space_Handler) PSHandler() const
     { return p_pshandler; }
-
-    inline Extra_Emission_Generator *EEG() const { return p_eeg; }
 
     inline void SetColorIntegrator(const SP(Color_Integrator) colint)
     { p_colint=colint; }

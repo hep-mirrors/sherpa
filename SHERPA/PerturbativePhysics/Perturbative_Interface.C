@@ -9,7 +9,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "PHASIC++/Process/NLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/Random.H"
 
@@ -133,9 +132,7 @@ int Perturbative_Interface::PerformShowers()
        m_fi.NLOType()&nlo_type::born)) {
     while (csh->TrialEmission()) {
       Cluster_Amplitude *ampl(csh->GetRealEmissionAmplitude());
-      NLO_Process *nlo(p_me->Process()->Parent()->Get<NLO_Process>());
-      double me(nlo->RealEmissionWeight(ampl->Next()));
-      double ps(csh->TrialWeight(ampl));
+      double ps(csh->TrialWeight(ampl)), me(ps);
       msg_Debugging()<<METHOD<<"():  me / ps = "
 		     <<me<<" / "<<ps<<" = "<<me/ps;
       double weight(me/ps);

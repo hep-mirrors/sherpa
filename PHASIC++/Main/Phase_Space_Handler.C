@@ -646,7 +646,6 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
-  p_process->WriteOutEEG(pID+"/MC_EEG");
   std::string help     = (pID+"/Random").c_str();
   ran.WriteOutStatus(help.c_str());
   Data_Writer writer;
@@ -662,7 +661,6 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
-  okay = okay && p_process->ReadInEEG(pID+"/MC_EEG");
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str());
