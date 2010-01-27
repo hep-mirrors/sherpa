@@ -953,6 +953,18 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     if (cf.OpenInFile()) m_file+="|(run){|}(run)";
   }
 
+  if (datpath!="") m_path=datpath;
+  std::vector<std::string> searchpaths;
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
+  My_Out_File::SetSearchPaths(searchpaths);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH"));
+  My_In_File::SetSearchPaths(searchpaths);
+  rpa.gen.SetVariable("PATH_PIECE",m_path);
+  m_path="";
+
   std::vector<std::string> helpsv2;
   // Add parameters from possible global.dat to command line
   Data_Reader dr(" ",";","!","=");
@@ -1006,17 +1018,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   }
   rpa.gen.SetVariable("RUN_DATA_FILE",m_file);
 
-  if (datpath!="") m_path=datpath;
-  std::vector<std::string> searchpaths;
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
-  My_Out_File::SetSearchPaths(searchpaths);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH"));
-  My_In_File::SetSearchPaths(searchpaths);
-  rpa.gen.SetVariable("PATH_PIECE",m_path);
-  m_path="";
   return m_mode;
 }
 
