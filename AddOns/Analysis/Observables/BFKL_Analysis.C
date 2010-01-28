@@ -93,30 +93,25 @@ void BFKL_Analysis::Evaluate(const ATOOLS::Particle_List& pl,
 {
   Particle_List jets(*p_ana->GetParticleList(m_listname));
   Particle_List alljets(*p_ana->GetParticleList(m_jetslist));
-  if (jets.size()<2) AddZero(weight,ncount);
+  Particle_List ref(*p_ana->GetParticleList(m_reflist));
+  if (jets.size()<2 || ref.size()!=1) AddZero(weight,ncount);
+  if (dabs(ref.front()->Momentum().Y())>4.5) AddZero(weight,ncount);
   // sort pt
   std::sort(jets.begin(),jets.end(),JS_Order_PT());
   m_histos[1]->Insert(jets[0]->Momentum().Y()-
 		      jets[1]->Momentum().Y(),weight,ncount);
   // sort y
   std::sort(jets.begin(),jets.end(),JS_Order_Y());
-  m_histos[0]->Insert(jets[0]->Momentum().Y()-
-		      jets[1]->Momentum().Y(),weight,ncount);
   double dy(jets.front()->Momentum().Y()-
 	    jets.back()->Momentum().Y());
   double cdphi(cos(M_PI-jets.front()->Momentum().DPhi
 		   (jets.back()->Momentum())));
+  m_histos[0]->Insert(dy,weight,ncount);
   m_dists[0]->Fill(dy,jets.size(),weight,ncount);
   m_dists[1]->Fill(dy,cdphi,weight,ncount);
   if (dy>4.0) {
-    Particle_List ref(*p_ana->GetParticleList(m_reflist));
-    if (ref.size()==1) {
-      m_histos[2]->Insert
-	(ref.front()->Momentum().PPerp(),weight,ncount);
-    }
-    else {
-      m_histos[2]->Insert(0.0,0.0,ncount);
-    }
+    m_histos[2]->Insert
+      (ref.front()->Momentum().PPerp(),weight,ncount);
     double ymean=0.5*(jets.front()->Momentum().Y()+
 		      jets.back()->Momentum().Y());
     double yc[3]={100.0,100.0,100.0};
