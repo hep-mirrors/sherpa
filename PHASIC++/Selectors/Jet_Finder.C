@@ -236,8 +236,9 @@ bool Jet_Finder::PrepareColList(const std::vector<int> &ci,
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 {
-  if (!m_on) return true;
   FillCombinations();
+  m_ycut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
   PrepareMomList(p);
   bool uc(false);
   SP(Color_Integrator) ci(p_proc->ColorIntegrator());
@@ -254,7 +255,6 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 		   <<"] -> "<<m_moms[i].PPerp()<<"\n";
     if (m_moms[i].PPerp2()<m_pt2min) return 1-m_sel_log->Hit(true);
   }
-  m_ycut=p_yccalc->Calculate()->Get<double>();
   for (size_t cl(1);cl<m_fills.size();++cl) {
     if (m_fills[cl].empty()) continue;
     msg_Indent();
