@@ -474,7 +474,7 @@ Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
 				(Flavour*)&key.p_proc->Process()->
 				Flavours().front(),key[0][0]));
   jf->SetProcess(key.p_proc);
-  if (key.front().size()>2 && key[0][2]=="LO") jf->SetOn(false);
+  if (key.front().size()>1 && key[0][1]=="LO") jf->SetOn(false);
   return jf;
 }
 
