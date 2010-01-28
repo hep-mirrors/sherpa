@@ -45,6 +45,8 @@ namespace SHERPA {
     { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
     inline double TotalErr() const {
       if (m_n==1) return TotalXS();
+      else if (ATOOLS::IsEqual
+	       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
       else return sqrt(TotalVar()/m_n);
     }
 
