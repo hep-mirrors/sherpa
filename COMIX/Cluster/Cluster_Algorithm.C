@@ -13,6 +13,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include <algorithm>
@@ -335,20 +336,27 @@ bool Cluster_Algorithm::ClusterStep
     msg_Debugging()<<"rejected configuration\n";
     return false;
   }
-  double wmin(std::numeric_limits<double>::max()), rwmin(wmin);
+  double rwmin(std::numeric_limits<double>::max()), sum(0.0);
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit)
-    if (cit->second.m_kt2.m_op2>=0.0 &&
-	cit->second.m_kt2.m_op2<wmin) {
-      win=cit;
-      wmin=cit->second.m_kt2.m_op2;
+    if (cit->second.m_kt2.m_op2>=0.0) {
+      sum+=1.0/cit->second.m_kt2.m_op2;
     }
     else if (cit->second.m_kt2.m_kt2>=0.0 &&
 	     cit->second.m_kt2.m_kt2<rwmin) {
       rwin=cit;
       rwmin=cit->second.m_kt2.m_kt2;
     }
+  double disc(sum*ran.Get()), psum(0.0);
+  for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
+       cit!=cinfo.end();++cit)
+    if (cit->second.m_kt2.m_op2>=0.0 &&
+	(psum+=1.0/cit->second.m_kt2.m_op2)>=disc) {
+      win=cit;
+      break;
+    }
+  if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
   if (win==cinfo.end()) win=rwin;
   if (win==cinfo.end()) THROW(fatal_error,"Invalid amplitude");
   Cluster_Key wkey(win->first);

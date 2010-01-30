@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Blob.H"
 #include <iomanip>
 
@@ -743,26 +744,34 @@ bool Combine_Table::SelectWinner()
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator rdata_winner(cl.end());
-  double kt2(std::numeric_limits<double>::max()), rkt2(kt2);
+  double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
-	if (pt2ij<kt2) {
-	  m_cdata_winner=cit;
-	  kt2=pt2ij;
-	}
+	sum+=1.0/pt2ij;
       }
-      else {
-	if (cit->second.m_pt2ij.m_kt2<rkt2) {
-	  rdata_winner=cit;
-	  rkt2=cit->second.m_pt2ij.m_kt2;
-	}
+      else if (cit->second.m_pt2ij.m_kt2>0.0 &&
+	       cit->second.m_pt2ij.m_kt2<rkt2) {
+	rdata_winner=cit;
+	rkt2=cit->second.m_pt2ij.m_kt2;
       }
     }
   }
+  double disc(sum*ran.Get()), psum(0.0);
+  for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
+    double pt2ij(cit->second.m_pt2ij.m_op2);
+    if (cit->second.m_graphs.size()==0) continue;
+    if (m_rejected.find(cit->first)==m_rejected.end() &&
+	pt2ij>0.0 && (psum+=1.0/pt2ij)>=disc) {
+      m_cdata_winner=cit;
+      break;
+    }
+  }
+  if (sum>0.0 && m_cdata_winner==cl.end())
+    THROW(fatal_error,"Internal error");
   if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
