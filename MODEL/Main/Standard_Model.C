@@ -180,10 +180,10 @@ void Standard_Model::ParticleInit() {
   }
 
   // pseudoparticles for comix
-  s_kftable[921] = new Particle_Info(921,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4");
-  s_kftable[923] = new Particle_Info(923,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4");
-  s_kftable[924] = new Particle_Info(924,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4");
-  s_kftable[925] = new Particle_Info(925,120.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}");
+  s_kftable[921] = new Particle_Info(921,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4",1);
+  s_kftable[923] = new Particle_Info(923,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4",1);
+  s_kftable[924] = new Particle_Info(924,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4",1);
+  s_kftable[925] = new Particle_Info(925,120.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}",1);
 
   ReadParticleData();
 

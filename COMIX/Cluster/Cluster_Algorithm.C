@@ -33,20 +33,6 @@ Cluster_Algorithm::~Cluster_Algorithm()
   if (p_ampl) p_ampl->Delete();
 }
 
-Flavour Cluster_Algorithm::ProperFlav(const Flavour &fl) const
-{
-  Flavour pfl(fl);
-  switch (pfl.Kfcode()) {
-  case kf_gluon_qgc: pfl=Flavour(kf_gluon); break;
-  case kf_h0_qsc: pfl=Flavour(kf_h0); break;
-  case kf_Z_qgc: pfl=Flavour(kf_Z); break;
-  case kf_Wplus_qgc: pfl=Flavour(kf_Wplus);
-    if (fl.IsAnti()) pfl=pfl.Bar(); break;
-  default: break;
-  }
-  return pfl;
-}
-
 template <class SType> ColorID
 Cluster_Algorithm::GetPColor(Current_Base *const j,
 				  Current_Base *const fcur) const
@@ -353,7 +339,8 @@ bool Cluster_Algorithm::ClusterStep
   double rwmin(std::numeric_limits<double>::max()), sum(0.0);
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
-       cit!=cinfo.end();++cit)
+       cit!=cinfo.end();++cit) {
+    if (cit->second.m_mofl.IsDummy()) continue;
     if (cit->second.m_kt2.m_op2>=0.0) {
       sum+=1.0/cit->second.m_kt2.m_op2;
     }
@@ -362,6 +349,7 @@ bool Cluster_Algorithm::ClusterStep
       rwin=cit;
       rwmin=cit->second.m_kt2.m_kt2;
     }
+  }
   double disc(sum*ran.Get()), psum(0.0);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit)
@@ -450,7 +438,7 @@ bool Cluster_Algorithm::ClusterStep
 	}
       }
     }
-    p_ampl->CreateLeg(p[i],ProperFlav(flav),col,cid);
+    p_ampl->CreateLeg(p[i],flav,col,cid);
     if (IdCount(m_id[ccurs[i]->CId()])==1) {
       p_ampl->Legs().back()->SetStat(1);
     }

@@ -60,8 +60,6 @@ namespace COMIX {
     size_t m_cnt, m_rej;
     double m_lfrac;
 
-    ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl) const;
-
     template <class SType>
     ATOOLS::ColorID GetPColor(Current_Base *const j,
 			      Current_Base *const fcur) const;
