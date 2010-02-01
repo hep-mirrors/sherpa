@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/MyTiming.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include <iostream>
 #include <unistd.h>
@@ -6,6 +7,21 @@
 
 using std::endl;
 using namespace ATOOLS;
+
+namespace ATOOLS {
+std::string FormatTime(const size_t &in,const int mode)
+{
+  int days(in/86400), hrs((in%86400)/3600);
+  int mins(((in%86400)%3600)/60), secs(((in%86400)%3600)%60);
+  std::string out;
+  if (days) out+=ToString(days)+"d ";
+  if (hrs) out+=ToString(hrs)+"h ";
+  if (mins) out+=ToString(mins)+"m ";
+  if (secs) out+=ToString(secs)+"s ";
+  if (out.length()) out.erase(out.length()-1,1);
+  return out;
+}
+}
 
 MyTiming::MyTiming()
 {

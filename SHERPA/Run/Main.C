@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyTiming.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
@@ -50,9 +50,9 @@ int main(int argc,char* argv[])
 	if (i%100==0) {
 	  double diff=ATOOLS::rpa.gen.Timer().RealTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
-		    <<int(diff)<<" s elapsed / "
-		    <<int((nevt-i)/(double)i*diff)
-		    <<" s left ) -> ETA: "<<ATOOLS::rpa.gen.Timer().
+		    <<ATOOLS::FormatTime(size_t(diff))<<" elapsed / "
+		    <<ATOOLS::FormatTime(size_t((nevt-i)/(double)i*diff))
+		    <<" left ) -> ETA: "<<ATOOLS::rpa.gen.Timer().
 	    StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
 	  if (ATOOLS::rpa.gen.BatchMode()&2) { msg_Info()<<std::endl; }
 	  else { msg_Info()<<ATOOLS::bm::cr<<std::flush; }

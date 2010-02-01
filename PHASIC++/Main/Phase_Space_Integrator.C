@@ -227,17 +227,19 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       }
       else msg_Info()<<"integration time: ";
 #ifdef USING__Threading
-      msg_Info()<<" ( "<<int(rtime-rstarttime+0.5)<<"("
-		<<int(time-starttime+0.5)<<") s elapsed / "
-		<<int(rtimeest+0.5)-int((rtime-rstarttime+0.5))<<"("
-		<<int(timeest+0.5)-int((time-starttime+0.5))
-		<<") s left / "<<int(rtimeest+0.5)
-		<<"("<<int(timeest+0.5)<<") s total )   "<<endl;
+      msg_Info()<<" ( "<<FormatTime(size_t(rtime-rstarttime+0.5))<<"("
+		<<FormatTime(size_t(time-starttime+0.5))<<") elapsed / "
+		<<FormatTime(size_t(rtimeest+0.5)
+			     -size_t((rtime-rstarttime+0.5)))<<"("
+		<<FormatTime(size_t(timeest+0.5)
+			     -size_t((time-starttime+0.5)))
+		<<") left / "<<FormatTime(size_t(rtimeest+0.5))
+		<<"("<<FormatTime(size_t(timeest+0.5))<<") total )   "<<endl;
 #else
-      msg_Info()<<" ( "<<int(time-starttime)<<" s elapsed / " 
-		<<int(timeest)-int((time-starttime)) 
-		<<" s left / "<<int(timeest) 
-		<<" s total )   "<<endl; 
+      msg_Info()<<" ( "<<FormatTime(size_t(time-starttime))<<" elapsed / " 
+		<<FormatTime(size_t(timeest)-size_t((time-starttime))) 
+		<<" left / "<<FormatTime(size_t(timeest)) 
+		<<" total )   "<<endl; 
 #endif
       std::vector<double> stats(6);
       stats[0]=psh->Process()->TotalResult()*rpa.Picobarn();
