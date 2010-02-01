@@ -237,9 +237,11 @@ bool Jet_Finder::PrepareColList(const std::vector<int> &ci,
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 {
   FillCombinations();
-  m_ycut=p_yccalc->Calculate()->Get<double>();
-  if (!m_on) return true;
   PrepareMomList(p);
+  m_ycut=p_yccalc->Calculate()->Get<double>();
+  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
+		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
+  if (!m_on) return true;
   bool uc(false);
   SP(Color_Integrator) ci(p_proc->ColorIntegrator());
   if (ci!=NULL && ci->On()) {
@@ -247,8 +249,6 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
     std::vector<int> ic(ci->I()), jc(ci->J());
     if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
   }
-  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()<<"' Q_cut = "
-		 <<sqrt(p_yccalc->Calculate()->Get<double>()*m_s)<<" {\n";
   for (std::set<size_t>::const_iterator it(m_pcs.begin());it!=m_pcs.end();++it){
     const size_t i=*it;
     msg_Debugging()<<"  "<<ID(i)<<"["<<m_flavs[i]

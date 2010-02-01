@@ -258,7 +258,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
   Vec4D Q(a->Mom()+i->Mom()+k->Mom());
   double Q2=Q.Abs2();
 
-  if (p_shower->KinScheme()==1 || !mo.Strong() ||
+  if (p_shower->KinScheme()==1 ||
       IsZero(xika-ui,s_uxeps)) {
   double ttau=Q2-mai2-mk2, tau=Q2-ma2-mi2-mk2;
   double sik=-((1.0-xika)*(Q2-ma2)-(mi2+mk2))/xika;
