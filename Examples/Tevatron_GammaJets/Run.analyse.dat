@@ -8,7 +8,7 @@
   GENERATE_RESULT_DIRECTORY = 1
 
   ANALYSIS = Rivet
-  ANALYSIS_OUTPUT = NJETjet.QCUTGeV.ENHANCETAG.ANATAG
+  ANALYSIS_OUTPUT = ANATAG.NJETjet.QCUTGeV.ENHANCETAG
 
   FRAGMENTATION = Off
   ME_QED = Off
@@ -37,6 +37,7 @@
   Enhance_Factor -1;
   Scales VAR{Abs2(p[2]+p[3])}
   Loop_Generator gg_yy
+  Selector_File Run.analyse.dat|(coreselector){|}(coreselector) {2};
   End process;
 
   Process 93 93 -> 99 99 99{NJET}
@@ -55,8 +56,7 @@
 }(processes)
 
 (coreselector){
-  JetFinder  sqr(3.0/E_CMS)  1.0
-  PT 93 1.0 E_CMS
+  PT 99 3.0 E_CMS
 }(coreselector)
 
 (selector){
