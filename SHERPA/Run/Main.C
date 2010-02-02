@@ -47,7 +47,7 @@ int main(int argc,char* argv[])
       Generator->InitializeTheEventHandler();
       double starttime=ATOOLS::rpa.gen.Timer().RealTime();
       for (int i=1;i<=ATOOLS::rpa.gen.NumberOfEvents();i++) {
-	if (i%100==0) {
+	if (i%100==0 && i<ATOOLS::rpa.gen.NumberOfEvents()) {
 	  double diff=ATOOLS::rpa.gen.Timer().RealTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
 		    <<ATOOLS::FormatTime(size_t(diff))<<" elapsed / "
