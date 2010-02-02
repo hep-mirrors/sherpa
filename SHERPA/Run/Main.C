@@ -59,7 +59,9 @@ int main(int argc,char* argv[])
 	}
 	if (Generator->GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
-      msg_Info()<<std::endl;      
+      msg_Info()<<"  Event "<<ATOOLS::rpa.gen.NumberOfEvents()<<" ( "
+		<<size_t(ATOOLS::rpa.gen.Timer().RealTime()-starttime)
+		<<" s total )                                         "<<std::endl;      
       Generator->SummarizeRun();
     }
     msg_Events()<<"=========================================================================="<<std::endl

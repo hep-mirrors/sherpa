@@ -19,6 +19,7 @@ std::string FormatTime(const size_t &in,const int mode)
   if (mins) out+=ToString(mins)+"m ";
   if (secs) out+=ToString(secs)+"s ";
   if (out.length()) out.erase(out.length()-1,1);
+  else out="0s";
   return out;
 }
 }
@@ -66,14 +67,16 @@ void MyTiming::PrintTime()
     if (status==1) SetCurrent();
     double clocks=currentclock-startclock;
     double secs=clocks/clk_tck;
-    msg_Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<") on "
+    msg_Info()<<"Time: "<<FormatTime((size_t)secs)<<" on "
 	      <<TimeString()<<"\n";
     double utime=(currenttms.tms_utime-starttms.tms_utime)/clk_tck;
     double stime=(currenttms.tms_stime-starttms.tms_stime)/clk_tck;
     double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/clk_tck;
     double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/clk_tck;
-    msg_Info()<<" (User: "<<utime<<" s ,System: "<<stime<<" s ,Children User: "
-	      <<cutime<<" s ,Children System: "<<cstime<<")\n";
+    msg_Info()<<" (User: "<<FormatTime((size_t)utime)<<", System: "
+	      <<FormatTime((size_t)stime)<<", Children User: "
+	      <<FormatTime((size_t)cutime)<<", Children System: "
+	      <<FormatTime((size_t)cstime)<<")\n";
   }
 }
 
