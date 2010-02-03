@@ -233,13 +233,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 			     -size_t((rtime-rstarttime+0.5)))<<"("
 		<<FormatTime(size_t(timeest+0.5)
 			     -size_t((time-starttime+0.5)))
-		<<") left / "<<FormatTime(size_t(rtimeest+0.5))
-		<<"("<<FormatTime(size_t(timeest+0.5))<<") total )   "<<endl;
+		<<") left )   "<<endl;
 #else
       msg_Info()<<" ( "<<FormatTime(size_t(time-starttime))<<" elapsed / " 
 		<<FormatTime(size_t(timeest)-size_t((time-starttime))) 
-		<<" left / "<<FormatTime(size_t(timeest)) 
-		<<" total )   "<<endl; 
+		<<" left )   "<<endl; 
 #endif
       std::vector<double> stats(6);
       stats[0]=psh->Process()->TotalResult()*rpa.Picobarn();
