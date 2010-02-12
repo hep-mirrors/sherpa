@@ -21,13 +21,30 @@ LH_OLE_Communicator::LH_OLE_Communicator(string name) :
   }
   ofstream ofile;
   ofile.open(m_name.c_str(),ios::trunc);
-  ofile<<"# "<<m_name<<endl<<endl;
+  ofile<<"# "<<m_name<<endl;
+  ofile<<"# Created by Sherpa"<<endl<<endl;
   ofile.close();
 }
 
 
 LH_OLE_Communicator::~LH_OLE_Communicator()
 {}
+
+bool LH_OLE_Communicator::GetPLine(std::ifstream& file,std::string& s1,std::string&s2)
+{
+  s1="";s2="";
+  string buffer;
+  if (!file) return 0;
+  getline(file,buffer);
+  buffer=buffer.substr(0,buffer.find("#"));
+  size_t pos=buffer.find("|");
+  s1=buffer.substr(0,pos);
+  if (pos!=string::npos) s2=buffer.substr(pos+1);
+  while (s1.length()>0 && s1[0]==' ') s1.erase(0,1);
+  while (s2.length()>0 && s2[0]==' ') s2.erase(0,1);
+  return 1;
+}
+
 
 void LH_OLE_Communicator::AddParameter(string param)
 {
@@ -41,34 +58,39 @@ int  LH_OLE_Communicator::CheckParameterStatus()
 {
   ifstream ifile;
   ifile.open(m_name.c_str());
-  string buffer;
+  string s1,s2;
   int status(1);
-  while (ifile) {
-    getline(ifile,buffer);
-    if (buffer.find("| -")!=string::npos) if (buffer[0]!='#')
-      {
-	cout<<endl<<"Warning: OLE returned "<<buffer.substr(buffer.find("| -")+2)<<endl;
-	status=-1;
-      }
+  while (GetPLine(ifile,s1,s2)) {
+    if (s1.length()>0&&s2.length()>0) 
+      if (s1.find("->")==string::npos)
+	if (s2.find("OK")==string::npos)
+	  {
+	    cout<<endl<<"Warning: OLE returned \""<<s2<<"\" for parameter "<<s1<<endl;
+	    status=-1;
+	  }
   }
   return status;
 }
 
 int LH_OLE_Communicator::CheckProcess(int nin,int nout,const Flavour_Vector& flavs)
 {
-  string pstr(ToString(nin)+" -> "+ToString(nout));
-  for (int i=0;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
+  string pstr("");
+  for (int i=0;i<nin;i++) pstr+=ToString((long int)flavs[i])+" ";
+  pstr+="->";
+  for (int i=nin;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
   ifstream ifile;
   ifile.open(m_name.c_str());
-  string buffer;
+  string s1,s2;
   int status(-1);
-  while (ifile) {
-    getline(ifile,buffer);
-    if (buffer.find(pstr)!=string::npos) {
-      if (buffer.find("|")!=string::npos) {
-	buffer=buffer.substr(buffer.find("|")+2);
-	buffer=buffer.substr(0,buffer.find(" "));
-	status=ToType<int>(buffer);
+  while (GetPLine(ifile,s1,s2)) {
+    if (s1.find(pstr)!=string::npos) {
+      if (s2.length()>0) {
+	s2=s2.substr(0,s2.find(" "));
+	status=ToType<int>(s2);
+	if (ToString(status)!=s2) {
+	    cout<<endl<<"Warning: OLE returned \""<<s2<<"\" for process "<<s1<<endl;
+	    status=-2;
+	}
 	break;
       }
       else {
@@ -83,32 +105,40 @@ int LH_OLE_Communicator::CheckProcess(int nin,int nout,const Flavour_Vector& fla
 
 void LH_OLE_Communicator::AddProcess(int nin,int nout,const Flavour_Vector& flavs)
 {
-  string pstr(ToString(nin)+" -> "+ToString(nout));
-  for (int i=0;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
+  string pstr("");
+  for (int i=0;i<nin;i++) pstr+=ToString((long int)flavs[i])+" ";
+  pstr+="->";
+  for (int i=nin;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
   AddParameter(pstr);
 }
 
 int LH_OLE_Communicator::GetID(int nin,int nout,const Flavour_Vector& flavs,int n)
 {
-  string pstr(ToString(nin)+" -> "+ToString(nout));
-  for (int i=0;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
+  string pstr("");
+  for (int i=0;i<nin;i++) pstr+=ToString((long int)flavs[i])+" ";
+  pstr+="->";
+  for (int i=nin;i<nin+nout;i++) pstr+=" "+ToString((long int)flavs[i]);
   ifstream ifile;
   ifile.open(m_name.c_str());
-  string buffer;
+  string s1,s2;
   int id(-1);
-  while (ifile) {
-    getline(ifile,buffer);
-    if (buffer.find(pstr)!=string::npos) {
-      if (buffer.find("|")!=string::npos) {
-	buffer=buffer.substr(buffer.find("|")+2);
-	for(int i=0;i<n+1;i++) buffer=buffer.substr(buffer.find(" ")+1);
-	buffer=buffer.substr(0,buffer.find(" "));
-	id=ToType<int>(buffer);
+  while (GetPLine(ifile,s1,s2)) {
+    if (s1.find(pstr)!=string::npos) {
+      if (s2.length()>0) {
+	string hstr=s2.substr(0,s2.find(" "));
+	int nb=ToType<int>(hstr);
+	if (n<nb) {
+	  for(int i=0;i<n+1;i++) {
+	    s2=s2.substr(s2.find(" ")+1);
+	    while (s2.length()>0 && s2[0]==' ') s2.erase(0,1);
+	  }
+	  s2=s2.substr(0,s2.find(" "));
+	  id=ToType<int>(s2);
+	}
       }    
       break;
     }
   }
   ifile.close();
   return id;
-
 }

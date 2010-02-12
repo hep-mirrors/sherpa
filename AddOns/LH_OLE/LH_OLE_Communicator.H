@@ -11,6 +11,7 @@ namespace OLE {
     int m_filestatus;
     std::string m_name;
 
+    bool GetPLine(std::ifstream&,std::string&,std::string&);
   public:
     LH_OLE_Communicator(std::string name);
     ~LH_OLE_Communicator();

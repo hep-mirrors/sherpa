@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace OLE;
 using namespace EXTRAXS;
@@ -13,8 +14,8 @@ using namespace ATOOLS;
 using namespace std;
 
 namespace OLE {
-  void Init(const char * filename) {}
-  void EvalSubprocess(int,double*,double,double,double,double*) {}
+  void OLP_Start(const char * filename) {}
+  void OLP_EvalSubProcess(int,double*,double,double,double*) {}
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
     double m_bf;
@@ -24,7 +25,7 @@ namespace OLE {
     double* p_momenta;
     double p_result[4];
     double m_as,m_aqed;
-    static int s_bhinit;
+    static int s_oleinit;
     double m_cpl;
     int m_nf;
   public:
@@ -40,7 +41,7 @@ namespace OLE {
   };
 }
 
-int LH_OLE_Interface::s_bhinit=0;
+int LH_OLE_Interface::s_oleinit=0;
 
 LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector& flavs,bool active) :
   Virtual_ME2_Base(pi, flavs), m_OLE_id(-1), p_momenta(0)
@@ -57,32 +58,49 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   m_pn=flavs.size();
 
   bool contract(0);
-  string fname("OLE_order.lh");
+  string orderfn("OLE_order.lh");
+  string contractfn("OLE_contract.lh");
+  string fname("");
+  Data_Reader reader(" ",";","!","=");
+  reader.SetInputPath(rpa.GetPath());
+  if (reader.ReadFromFile(fname,"LHOLE_ORDERFILE")) {
+    orderfn=fname;
+  }
+  if (reader.ReadFromFile(fname,"LHOLE_CONTRACTFILE")) {
+    contractfn=fname;
+  }
   ifstream ifile;
-  ifile.open(string("OLE_contract.lh").c_str());
+  ifile.open(contractfn.c_str());
   if (ifile) {
     contract=1;
-    fname=string("OLE_contract.lh");
+    fname=contractfn;
     ifile.close();
   }
+  else fname=orderfn;
 
   LH_OLE_Communicator lhfile(fname);
   if (!contract) {
     if (lhfile.FileStatus()==0) {
-      lhfile.AddParameter("AmplitudeType CH_SUMMED");
-      lhfile.AddParameter("Z_mass "+ToString(Flavour(kf_Z).Mass()));
-      lhfile.AddParameter("Z_width "+ToString(Flavour(kf_Z).Width()));
-      lhfile.AddParameter("W_mass "+ToString(Flavour(kf_Wplus).Mass()));
-      lhfile.AddParameter("W_width "+ToString(Flavour(kf_Wplus).Width()));
-      double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
-      lhfile.AddParameter("sin_th_2 "+ToString(sin_th_2));
-      lhfile.AddParameter("sin_2th "+ToString(sin(2.*asin(sqrt(sin_th_2)))));
+      lhfile.AddParameter("MatrixElementSquareType CHsummed");
+      lhfile.AddParameter("CorrectionType          QCD");
+      lhfile.AddParameter("IRregularisation        CDR");
+      lhfile.AddParameter("AlphasPower             "+ToString(pi.m_oqcd-1));
+      lhfile.AddParameter("AlphaPower              "+ToString(pi.m_oew));
+      lhfile.AddParameter("OperationMode           CouplingsStrippedOff");
       lhfile.AddParameter("");
+      lhfile.AddParameter("Z_mass                  "+ToString(Flavour(kf_Z).Mass()));
+      lhfile.AddParameter("Z_width                 "+ToString(Flavour(kf_Z).Width()));
+      lhfile.AddParameter("W_mass                  "+ToString(Flavour(kf_Wplus).Mass()));
+      lhfile.AddParameter("W_width                 "+ToString(Flavour(kf_Wplus).Width()));
+      double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
+      lhfile.AddParameter("sin_th_2                "+ToString(sin_th_2));
+      lhfile.AddParameter("");
+      lhfile.AddParameter("# process list");
     }
     if(lhfile.CheckProcess(2,m_pn-2,flavs)==-1) {
       lhfile.AddProcess(2,m_pn-2,flavs);
-      m_newlibs=1;
     }
+    m_newlibs=1;
     return;
   }
 
@@ -92,19 +110,20 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
 
   int pstatus=lhfile.CheckProcess(2,m_pn-2,flavs);
   switch (pstatus) {
-  case -1: cout<<"Error: Process not found in contract file!"<<endl;
-    abort();
-  case 0: cout<<"Error: No OLE info"<<endl;
-    abort();
+  case -2: 
+  case 0:
+    THROW(fatal_error,"OLE did not return valid process ID");
+  case -1: 
+    THROW(fatal_error,"Process not found in contract file");
   default:
     if (pstatus!=1) cout<<endl<<"Found "<<pstatus<<" subprocesses. Cannot handle this yet,"
 			<<" only first ID will be used!"<<endl;
     m_OLE_id=lhfile.GetID(2,m_pn-2,flavs,0);
   }
 
-  if (s_bhinit==0) {
-    OLE::Init(fname.c_str());
-    s_bhinit=1;
+  if (s_oleinit==0) {
+    OLE::OLP_Start(fname.c_str());
+    s_oleinit=1;
   }
   p_momenta = new double[m_pn*5];
   for (size_t i=0;i<m_pn;i++) p_momenta[4+i*5]=flavs[i].Mass();
@@ -127,7 +146,7 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
     p_momenta[3+i*5]=momenta[i][3];
   }
 
-  OLE::EvalSubprocess(m_OLE_id,p_momenta,m_mur2,m_as,m_aqed,p_result);
+  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),m_as,p_result);
   // finite
   m_res.Finite()= p_result[2]/p_result[3]*m_bf;
   // 1/epsIR
