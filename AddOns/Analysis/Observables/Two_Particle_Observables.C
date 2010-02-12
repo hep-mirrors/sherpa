@@ -564,3 +564,36 @@ Primitive_Observable_Base * Two_Particle_Mass2::Copy() const
   return new Two_Particle_Mass2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_MT2,Two_Particle_MT2_Getter,"MT2")
+
+Two_Particle_MT2::Two_Particle_MT2(const Flavour & flav1, const Flavour & flav2,
+				   int type, double xmin, double xmax, int nbins,
+				   const std::string & listname) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"MT2") { }
+
+
+void Two_Particle_MT2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
+{
+  double mass = sqrt(2.*(mom1.PPerp()*mom2.PPerp()-mom1[1]*mom2[1]-mom1[2]*mom2[2]));
+  p_histo->Insert(mass,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(mass));
+  }
+} 
+
+void Two_Particle_MT2::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
+{
+  double mass = sqrt(2.*(mom1.PPerp()*mom2.PPerp()-mom1[1]*mom2[1]-mom1[2]*mom2[2]));
+  p_histo->InsertMCB(mass,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(mass));
+  }
+} 
+
+Primitive_Observable_Base * Two_Particle_MT2::Copy() const
+{
+  return new Two_Particle_MT2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

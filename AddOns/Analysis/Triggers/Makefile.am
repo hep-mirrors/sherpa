@@ -4,7 +4,10 @@ ANATRIGGER_SOURCES    =	\
 			One_Particle_Selector.C \
 			Two_Particle_Selector.C \
 			All_Particle_Selector.C \
+			Jet_Particle_Selector.C \
 			Four_Particle_Calculator.C \
+			Two_Particle_X_Selector.C\
+			Uni_Selector.C\
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
 			Kt_Algorithm.C \

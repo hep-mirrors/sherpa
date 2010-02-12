@@ -244,3 +244,77 @@ double JetX_DeltaEta_Distribution::Calc(const Vec4D &mom1,const Vec4D &mom2)
 }
 //----------------------------------------------------------------------
 
+
+  class JetX_DeltaY_Distribution : public Jet_X_Observables {
+  protected:
+  public:
+    JetX_DeltaY_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			     unsigned int mode, unsigned int minn, unsigned int maxn, 
+			     const std::string & =std::string("Jets"),
+			     const std::string & =std::string("FinalState"));
+
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const Vec4D &m1,const Vec4D &m2);
+  };
+
+DEFINE_OBSERVABLE_GETTER(JetX_DeltaY_Distribution,
+			 JetX_DeltaY_Distribution_Getter,"JetXDY")
+
+JetX_DeltaY_Distribution::JetX_DeltaY_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+						   unsigned int mode,unsigned int minn,unsigned int maxn, 
+						   const std::string & lname,const std::string & rname) :
+  Jet_X_Observables(type,xmin,xmax,nbins,mode,minn,maxn,lname,rname)
+{
+  m_name+="dY_";
+}
+
+Primitive_Observable_Base * JetX_DeltaY_Distribution::Copy() const 
+{
+  JetX_DeltaY_Distribution * jde =
+    new JetX_DeltaY_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname,m_reflistname);
+  return jde;
+}
+
+double JetX_DeltaY_Distribution::Calc(const Vec4D &mom1,const Vec4D &mom2)
+{
+  return dabs((mom1.Y()-mom2.Y()));
+}
+//----------------------------------------------------------------------
+
+
+  class JetX_DeltaPhi_Distribution : public Jet_X_Observables {
+  protected:
+  public:
+    JetX_DeltaPhi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			       unsigned int mode, unsigned int minn, unsigned int maxn, 
+			       const std::string & =std::string("Jets"),
+			       const std::string & =std::string("FinalState"));
+    
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const Vec4D &m1,const Vec4D &m2);
+  };
+
+DEFINE_OBSERVABLE_GETTER(JetX_DeltaPhi_Distribution,
+			 JetX_DeltaPhi_Distribution_Getter,"JetXDPhi")
+  
+JetX_DeltaPhi_Distribution::JetX_DeltaPhi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+						       unsigned int mode,unsigned int minn,unsigned int maxn, 
+						       const std::string & lname,const std::string & rname) :
+  Jet_X_Observables(type,xmin,xmax,nbins,mode,minn,maxn,lname,rname)
+{
+  m_name+="dPhi_";
+}
+
+Primitive_Observable_Base * JetX_DeltaPhi_Distribution::Copy() const 
+{
+  JetX_DeltaPhi_Distribution * jde =
+    new JetX_DeltaPhi_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname,m_reflistname);
+  return jde;
+}
+
+double JetX_DeltaPhi_Distribution::Calc(const Vec4D &mom1,const Vec4D &mom2)
+{
+  return mom1.DPhi(mom2);
+}
+//----------------------------------------------------------------------
+

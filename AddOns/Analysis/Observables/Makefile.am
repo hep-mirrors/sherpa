@@ -12,6 +12,7 @@ ANAOBS_SOURCES        =	\
 			One_Variable_Observable.C \
 			BFKL_Analysis.C \
 			HT.C \
+			TotalMass.C \
 			PSM_Observables.C \
 			Multiplicity.C \
 			MI_Observables.C \
@@ -28,6 +29,7 @@ ANAOBS_SOURCES        =	\
 			Jet_Cone_Distribution.C \
 			Jet_Observables.C \
 			Jet_X_Observables.C \
+			Universal_Observable.C \
 			Momentum_Tensor.C \
 			CD_Parameters.C \
 			Sphericity_Observables.C \
