@@ -26,10 +26,28 @@ Specifies the relative integration error target.
 @subsection INTEGRATOR
 @cindex INTEGRATOR
 Specifies the integrator. The possible integrator types
-depend on the matrix element generator. Users should
-rely on the default value and otherwise seek the help 
-of the authors, see @ref{Authors}.
-
+depend on the matrix element generator. In general users 
+should rely on the default value and otherwise seek the 
+help of the authors, see @ref{Authors}.
+However, there are a few generator independent choices
+which have been designed for specific processes and might 
+be more efficient there:
+@itemize @bullet
+ @item @option{1}: is an integrator for a final state of a weak boson,
+decaying into two particles plus two or more jets. When this
+integrator is used the keyword @code{VHAAG_RES_KF} specifies
+the kf-code of the weak boson, the default is W (@code{24}).
+@code{VHAAG_RES_D1} and @code{VHAAG_RES_D2} define the
+positions of the Boson decay products within the internal
+naming scheme, where @code{2} is the position of the first
+outgoing particle. The defaults are @code{VHAAG_RES_D1=2}
+and @code{VHAAG_RES_D2=3}, which is the correct choice for
+all processes where the decay products are the only not
+strongly interacting final state particles.
+ @item @option{2}: is an integrator designed for pure QCD final
+states. It is based on the HAAG algorithm 
+@mycite{vanHameren2002tc}.     
+@end itemize
 
 @node VEGAS
 @subsection VEGAS

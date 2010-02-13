@@ -16,8 +16,8 @@ helicity and colour summed one-loop matrix element
 regularization parameter epsilon up to the order epsilon^0).
 
 The directory @code{./AddOns/LH_OLE} includes an example interface which 
-follows the @uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft,,proposal} 
-of the 2009 Les Houches workshop @mycite{Binoth2010xt}.
+follows the Binoth Les Houches interface proposal @mycite{Binoth2010xt}
+of the 2009 Les Houches workshop.
 A sample setup for W+1jet production at LHC 14TeV is included.
 
 The interface:
@@ -47,17 +47,17 @@ and might require an update for specific OLE or processes.
 To allow Sherpa to call the external code the functions
 @verbatim
 
-  void Init(const char * filename);
-  void EvalSubprocess(int,double*,double,double,double,double*);
+  void OLP_Start(const char * filename);
+  void OLP_EvalSubProcess(int,double*,double,double,double*);
 @end verbatim
 
 which are defined and called in @code{LH_OLE_Interface.C} 
 must be specified.
-For the data fields passed with this functions see
-@uref{http://www.lpthe.jussieu.fr/LesHouches09Wiki/index.php/Draft}.
+For keywords possible data fields passed with this functions see
+@mycite{Binoth2010xt}.
 
-The function @code{Init(...)} is called once when Sherpa is starting.
-The function @code{EvalSubprocess(...)} will be called many times
+The function @code{OLP_Start(...)} is called once when Sherpa is starting.
+The function @code{OLP_EvalSubProcess(...)} will be called many times
 for different subprocesses and momentum configurations.
 
 @item An example @code{Makefile} shows how to compile the 
