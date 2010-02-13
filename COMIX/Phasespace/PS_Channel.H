@@ -20,7 +20,13 @@ namespace COMIX {
   typedef std::vector<PHASIC::Vegas*>          Vegas_Vector;
   typedef std::map<std::string,PHASIC::Vegas*> Vegas_Map;
 
+  typedef std::map<const Current_Base*,PHASIC::Vegas*> CVegas_Map;
+  typedef std::map<size_t,PHASIC::Vegas*>              IVegas_Map;
+  typedef std::map<size_t,CVegas_Map>                  ICVegas_Map;
+
   typedef std::map<size_t,std::string> PSId_Map;
+
+  typedef std::map<size_t,std::vector<int> > CId_Map;
 
   typedef std::map<size_t,const Current_Base*> STCC_Map;
 
@@ -51,6 +57,10 @@ namespace COMIX {
     Vertex_Vector  m_vtc;
     Vegas_Map      m_vmap;
 
+    CVegas_Map  m_pcmap;
+    IVegas_Map  m_pimap, m_cimap;
+    ICVegas_Map m_sicmap, m_ticmap;
+
     PHASIC::Cut_Data *p_cuts;
 
     Vec4D_Vector  m_p;
@@ -68,19 +78,21 @@ namespace COMIX {
 
     STCC_Map m_stccs;
 
-    mutable PSId_Map m_psid;
+    PSId_Map m_psid;
+    CId_Map  m_cid;
     
 #ifdef USING__Threading 
     CDBG_PS_TID_Vector m_cts;
-    pthread_mutex_t    m_vgs_mtx, m_wvgs_mtx;
+    pthread_mutex_t    m_psid_mtx, m_cid_mtx, m_vgs_mtx, m_wvgs_mtx;
 
     static void *TGenerateWeight(void *arg);
 #endif 
 
-    std::string GetPSId(const size_t &id) const;
+    const std::string      &GetPSId(const size_t &id);
+    const std::vector<int> &GetCId(const size_t &id);
 
     size_t SId(const size_t &id) const;
-    double SCut(const size_t &id) const;
+    double SCut(const size_t &id);
 
     void FillMoms(const size_t &aid,Int_Vector &cur,size_t n);
 
@@ -132,6 +144,11 @@ namespace COMIX {
     bool Zero(Vertex_Base *const vtx) const;
 
     PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
+
+    PHASIC::Vegas *GetPVegas(const Current_Base *cur,const size_t &id);
+    PHASIC::Vegas *GetCVegas(const size_t &id,const size_t &n);
+    PHASIC::Vegas *GetSVegas(const size_t &id,const Current_Base *cur);
+    PHASIC::Vegas *GetTVegas(const size_t &id,const Current_Base *cur);
 
   public :
 

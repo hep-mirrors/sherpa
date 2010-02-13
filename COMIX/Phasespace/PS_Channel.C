@@ -99,6 +99,8 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 	THROW(fatal_error,"Cannot create thread "+ToString(i));
     }
   }
+  pthread_mutex_init(&m_psid_mtx,NULL);
+  pthread_mutex_init(&m_cid_mtx,NULL);
   pthread_mutex_init(&m_vgs_mtx,NULL);
   pthread_mutex_init(&m_wvgs_mtx,NULL);
 #endif
@@ -109,6 +111,8 @@ PS_Channel::~PS_Channel()
 #ifdef USING__Threading
   pthread_mutex_destroy(&m_wvgs_mtx);
   pthread_mutex_destroy(&m_vgs_mtx);
+  pthread_mutex_destroy(&m_cid_mtx);
+  pthread_mutex_destroy(&m_psid_mtx);
   for (size_t i(0);i<m_cts.size();++i) {
     CDBG_PS_TID *tid(m_cts[i]);
     tid->m_s=0;
@@ -129,11 +133,32 @@ PS_Channel::~PS_Channel()
        vit!=m_vmap.end();++vit) delete vit->second;
 }
 
-std::string PS_Channel::GetPSId(const size_t &id) const
+const std::string &PS_Channel::GetPSId(const size_t &id)
 {
   PSId_Map::const_iterator iit(m_psid.find(id));
   if (iit!=m_psid.end()) return iit->second;
-  return m_psid[id]=PSId(id);
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_psid_mtx);
+#endif
+  m_psid[id]=PSId(id);
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_psid_mtx);
+#endif
+  return m_psid[id];
+}
+
+const std::vector<int> &PS_Channel::GetCId(const size_t &id)
+{
+  CId_Map::const_iterator iit(m_cid.find(id));
+  if (iit!=m_cid.end()) return iit->second;
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_cid_mtx);
+#endif
+  m_cid[id]=ID(id);
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_cid_mtx);
+#endif
+  return m_cid[id];
 }
 
 size_t PS_Channel::SId(const size_t &id) const
@@ -147,15 +172,9 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
   if (vit!=m_vmap.end()) return vit->second;
   bool ibi(ni>0);
   if (!ibi) ni=m_nvints;
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vegas(new Vegas(1,ni,"CDBG_"+tag,0));
   m_vmap[tag] = vegas;
   if (ibi) vegas->InitBinInfo();
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
 #ifndef CHECK_POINT
   vegas->SetCheckMode(0);
 #endif
@@ -170,13 +189,90 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
   return vegas;
 }
 
+PHASIC::Vegas *PS_Channel::GetPVegas
+(const Current_Base *cur,const size_t &id)
+{
+  if (cur!=NULL) {
+    CVegas_Map::const_iterator vit(m_pcmap.find(cur));
+    if (vit!=m_pcmap.end()) return vit->second;
+#ifdef USING__Threading
+    pthread_mutex_lock(&m_vgs_mtx);
+#endif
+    m_pcmap[cur]=GetVegas("P_"+cur->PSInfo());
+#ifdef USING__Threading
+    pthread_mutex_unlock(&m_vgs_mtx);
+#endif
+    return m_pcmap[cur];
+  }
+  IVegas_Map::const_iterator vit(m_pimap.find(id));
+  if (vit!=m_pimap.end()) return vit->second;
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_pimap[id]=GetVegas("P_"+GetPSId(id));
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_vgs_mtx);
+#endif
+  return m_pimap[id];
+}
+
+PHASIC::Vegas *PS_Channel::GetCVegas(const size_t &id,const size_t &n)
+{
+  IVegas_Map::const_iterator vit(m_cimap.find(id));
+  if (vit!=m_cimap.end()) return vit->second;
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_cimap[id]=GetVegas("C_"+GetPSId(id)+"_"+ToString(n),n);
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_vgs_mtx);
+#endif
+  return m_cimap[id];
+}
+
+PHASIC::Vegas *PS_Channel::GetSVegas
+(const size_t &id,const Current_Base *cur)
+{
+  ICVegas_Map::const_iterator vit(m_sicmap.find(id));
+  if (vit!=m_sicmap.end()) {
+    CVegas_Map::const_iterator it(vit->second.find(cur));
+    if (it!=vit->second.end()) return it->second;
+  }
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_sicmap[id][cur]=GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo());
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_vgs_mtx);
+#endif
+  return m_sicmap[id][cur];
+}
+
+PHASIC::Vegas *PS_Channel::GetTVegas
+(const size_t &id,const Current_Base *cur)
+{
+  ICVegas_Map::const_iterator vit(m_ticmap.find(id));
+  if (vit!=m_ticmap.end()) {
+    CVegas_Map::const_iterator it(vit->second.find(cur));
+    if (it!=vit->second.end()) return it->second;
+  }
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_ticmap[id][cur]=GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo());
+#ifdef USING__Threading
+  pthread_mutex_unlock(&m_vgs_mtx);
+#endif
+  return m_ticmap[id][cur];
+}
+
 bool PS_Channel::Zero(Vertex_Base *const vtx) const
 {
   if (m_czmode&1) return vtx->Zero();
   return false;
 }
 
-double PS_Channel::SCut(const size_t &id) const
+double PS_Channel::SCut(const size_t &id)
 {
   if (id&3) return p_cuts->Getscut(GetPSId((1<<m_n)-1-id));
   return p_cuts->Getscut(GetPSId(id));
@@ -191,8 +287,7 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
     if (cs!=NULL) {
       if (cs->size()==1) cur=cs->front();
       else if ((m_tmode&1) && (m_vmode&3)) {
-	m_vgs.push_back(GetVegas("C_"+GetPSId(id)+"_"+
-				 ToString(cs->size()),cs->size()));
+	m_vgs.push_back(GetCVegas(id,cs->size()));
 	double rn(ran.Get());
 	double *cr(m_vgs.back()->GeneratePoint(&rn));
 	m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
@@ -209,16 +304,9 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
   if (cur!=NULL && cur->OnShell())
     return sqr(cur->Flav().Mass());
   if (m_vmode&1) {
-    if (cur!=NULL) {
-      m_vgs.push_back(GetVegas("P_"+cur->PSInfo()));
-      cr=m_vgs.back()->GeneratePoint(rn);
-      m_rns.push_back(cr[0]);
-    }
-    else {
-      m_vgs.push_back(GetVegas("P_"+GetPSId(id)));
-      cr=m_vgs.back()->GeneratePoint(rn);
-      m_rns.push_back(cr[0]);
-    }
+    m_vgs.push_back(GetPVegas(cur,id));
+    cr=m_vgs.back()->GeneratePoint(rn);
+    m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
 #endif
@@ -247,8 +335,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	  cur=it->second;
 	}
 	else {
-	  Vegas *cvgs(GetVegas("C_"+GetPSId(id)+"_"+
-			       ToString(cs->size()),cs->size()));
+	  Vegas *cvgs(GetCVegas(id,cs->size()));
 	  double rn(ran.Get());
 	  const double *cr(cvgs->GeneratePoint(&rn));
 #ifdef USING__Threading
@@ -280,8 +367,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
   }
   else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
   if (m_vmode&3) {
-    Vegas *cvgs(cur!=NULL?GetVegas("P_"+cur->PSInfo()):
-		GetVegas("P_"+GetPSId(id)));
+    Vegas *cvgs(GetPVegas(cur,id));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -304,9 +390,9 @@ void PS_Channel::TChannelBounds
  const double &s1,const double &s2)
 {
   if (m_bmode==0) return;
-  Int_Vector aidi(ID(aid));
+  Int_Vector aidi(GetCId(aid));
   if (aidi.front()==aidi.back()) {
-    Int_Vector aidj(ID(lid));
+    Int_Vector aidj(GetCId(lid));
     if (aidj.front()==aidj.back()) {
       ctmin=p_cuts->cosmin[aidi.front()][aidj.front()];
       ctmax=p_cuts->cosmax[aidi.front()][aidj.front()];
@@ -337,7 +423,7 @@ void PS_Channel::TChannelMomenta
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()));
+    m_vgs.push_back(GetTVegas(id,cur));
     cr=m_vgs.back()->GeneratePoint(rns);
     m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
@@ -359,7 +445,7 @@ double PS_Channel::TChannelWeight
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
 			       m_texp,ctmax,ctmin,1.0,0,rns[0],rns[1]));
   if (m_vmode&3) {
-    Vegas *cvgs(GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()));
+    Vegas *cvgs(GetTVegas(id,cur));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -380,7 +466,7 @@ void PS_Channel::SChannelBounds
 (const size_t &id,const size_t &lid,double &ctmin,double &ctmax)
 {
   if (m_bmode==0) return;
-  Int_Vector aid(ID((id&lid)==lid?id:(1<<m_n)-1-id));
+  Int_Vector aid(GetCId((id&lid)==lid?id:(1<<m_n)-1-id));
   if (aid.size()==2) {
     ctmin=p_cuts->cosmin[aid.front()][aid.back()];
     ctmax=p_cuts->cosmax[aid.front()][aid.back()];
@@ -397,7 +483,7 @@ void PS_Channel::SChannelMomenta
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo()));
+    m_vgs.push_back(GetSVegas(id,cur));
     cr=m_vgs.back()->GeneratePoint(rns);
     m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
@@ -416,7 +502,7 @@ double PS_Channel::SChannelWeight
   SChannelBounds(cur->CId(),id,ctmin,ctmax);
   double wgt(CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax));
   if (m_vmode&3) {
-    Vegas *cvgs(GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo()));
+    Vegas *cvgs(GetSVegas(id,cur));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -683,7 +769,7 @@ double PS_Channel::GenerateWeight
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       wgt*=PropWeight(NULL,pid,smin,smax,sp=m_p[pid].Abs2());
     }
-    wgt*=TChannelWeight(jc,bid,aid,-m_p[aid],-m_p[m_rid],
+    wgt*=TChannelWeight(jc,bid,aid,m_p[aid],-m_p[m_rid],
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
@@ -885,28 +971,20 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
     msg_Debugging()<<"  p_"<<i<<" = "<<m_p[1<<i]<<"\n";
 #endif
   }
-  Int_Vector ids(m_n,1);
-  FillMoms(0,ids,0);
+  for (size_t n(2);n<p_cur->size();++n)
+    for (size_t i(0);i<(*p_cur)[n].size();++i) {
+      Current_Base *cur((*p_cur)[n][i]);
+      if (cur->In().empty()) THROW(fatal_error,"Internal error");
+      m_p[(1<<m_n)-1-cur->CId()]=m_p[cur->CId()]=
+	m_p[cur->In().front()->JA()->CId()]+
+	m_p[cur->In().front()->JB()->CId()];
+#ifdef DEBUG__BG
+	msg_Debugging()<<"  p_"<<PSId(cur->CId())
+		       <<" = "<<m_p[cur->CId()]<<"\n";
+#endif
+    }
   if (!GenerateWeight())
     THROW(fatal_error,"Internal error");
-}
-
-void PS_Channel::FillMoms(const size_t &aid,Int_Vector &cur,size_t n)
-{
-  for (size_t i(n);i<m_n;++i) {
-    size_t bid(1<<i);
-    if (cur[i]>0 && (bid&aid)==0) {
-      if (aid>0) {
-	m_p[aid+bid]=m_p[aid]+m_p[bid];
-#ifdef DEBUG__BG
-// 	msg_Debugging()<<"  p_"<<PSId(aid+bid)<<" = "<<m_p[aid+bid]<<"\n";
-#endif
-      }
-      cur[i]=0;
-      FillMoms(aid+bid,cur,n+1);
-      cur[i]=1;
-    }
-  }
 }
 
 void PS_Channel::AddPoint(double value)

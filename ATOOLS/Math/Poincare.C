@@ -16,16 +16,16 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
   ATOOLS::Vec3D b(v1), a(v2);
   m_ct=a*b/(a.Abs()*b.Abs());
   m_n=Vec4D(0.0,cross(a,b));
-  m_usen=!IsZero(m_n.PSpat2());
+  m_usen=!IsZero(m_n.PSpat());
   if (!m_usen) {
     m_n=Vec4D(0.0,cross(a,Vec3D::XVEC));
-    m_usen=!IsZero(m_n.PSpat2());
+    m_usen=!IsZero(m_n.PSpat());
     if (!m_usen) {
       m_n=Vec4D(0.0,cross(a,Vec3D::YVEC));
-      m_usen=!IsZero(m_n.PSpat2());
+      m_usen=!IsZero(m_n.PSpat());
       if (!m_usen) {
 	m_n=Vec4D(0.0,cross(a,Vec3D::ZVEC));
-	m_usen=!IsZero(m_n.PSpat2());
+	m_usen=!IsZero(m_n.PSpat());
       }
     }
   }
