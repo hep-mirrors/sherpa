@@ -17,6 +17,7 @@ libPhasicChannels_la_SOURCES  =	\
 				Sarge.C \
 				VHAAG.C \
 				VHAAG_ND.C \
+				VHAAG_res.C \
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 				Multi_Channel.C \
@@ -43,6 +44,7 @@ localinc_HEADERS      =	\
 			Sarge.H \
 			VHAAG.H \
 			VHAAG_ND.H \
+			VHAAG_res.H \
 			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
 			ISR_Channels.H \

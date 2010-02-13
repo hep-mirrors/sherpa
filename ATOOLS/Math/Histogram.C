@@ -180,7 +180,7 @@ Histogram::Histogram(const std::string & pID)
     m_yvalues[0]  = Get<double>(conf[k++]);
     if (m_depth>1) {
       m_y2values   = new double[m_nbin];
-      m_y2values[0] = sqr(Get<double>(conf[k++]));
+      m_y2values[0] = Get<double>(conf[k++]);
     }    
     if (m_depth>2) {
       m_psvalues   = new double[m_nbin];
@@ -194,7 +194,7 @@ Histogram::Histogram(const std::string & pID)
 
     m_yvalues[m_nbin-1]  = Get<double>(conf[k++]);
     if (m_depth>1) {
-      m_y2values[m_nbin-1] = sqr(Get<double>(conf[k++]));
+      m_y2values[m_nbin-1] = Get<double>(conf[k++]);
     }    
     if (m_depth>2) {
       m_psvalues[m_nbin-1] = Get<double>(conf[k++]);
@@ -483,12 +483,13 @@ void Histogram::InsertMCBIM(double coordinate,double value) {
 void Histogram::FinishMCB()
 {
   m_fills+=m_mcb;
+  m_psfills++;
 
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i] += m_tmp[i];
     if (m_depth>1) {
       m_y2values[i] += m_tmp[i]*m_tmp[i];
-      if (m_depth>2) m_psvalues[i] += 1.;
+      if (m_depth>2&&m_tmp[i]!=0.) m_psvalues[i] += 1.;
     }
     m_tmp[i] = 0.;
   }
@@ -830,4 +831,74 @@ void Histogram::Addopt(const Histogram & histo)
   m_fills+=histo.m_fills;
   m_psfills+=histo.m_psfills;
   return;
+}
+
+void Histogram::BinMin(const Histogram & histo)
+{
+  if (histo.m_nbin!=m_nbin) {
+    msg_Error()<<"Error in Histogram::Min : histograms have different number of bins"<<std::endl;
+    return;
+  }
+  for (int i=0;i<m_nbin;i++) { 
+    double h1=m_yvalues[i];
+    double h2=histo.m_yvalues[i];
+    m_yvalues[i] = Min(h1,h2);
+    if (m_depth>1) {
+      if (h2<h1) m_y2values[i]= histo.m_y2values[i];
+    }
+    if (m_depth>2) {
+      if (h2<h1) m_psvalues[i]= histo.m_psvalues[i];       
+    }
+  }  
+  return;
+}
+
+void Histogram::BinMax(const Histogram & histo)
+{
+  if (histo.m_nbin!=m_nbin) {
+    msg_Error()<<"Error in Histogram::Max : histograms have different number of bins"<<std::endl;
+    return;
+  }
+  for (int i=0;i<m_nbin;i++) { 
+    double h1=m_yvalues[i];
+    double h2=histo.m_yvalues[i];
+    m_yvalues[i] = Max(h1,h2);
+    if (m_depth>1) {
+      if (h2>h1) m_y2values[i]= histo.m_y2values[i];
+    }
+    if (m_depth>2) {
+      if (h2>h1) m_psvalues[i]= histo.m_psvalues[i];       
+    }
+  }  
+  return;
+}
+
+int Histogram::CheckStatistics(const Histogram & histo,double& avgs,double& stdd)
+{
+  if (!m_finished||(!(histo.m_finished))) {
+    msg_Error()<<"Error in Histogram : Histogram must be Finalized for CheckStatistics()!"<<std::endl;
+    return 0;
+  }
+  if (m_depth<=1) {
+    msg_Error()<<"Error in Histogram : can not CheckStatistics() histograms without statistical errors"<<std::endl;
+    return 0;
+  }
+  avgs=0.;stdd=0.;
+  double cnt=0.;
+  for (int i=1;i<m_nbin-1;i++) { 
+    double dxs=0.;
+    if (!IsEqual(m_y2values[i],sqr(m_yvalues[i]))&&
+	!IsEqual(histo.m_y2values[i],sqr(histo.m_yvalues[i]))) {
+      dxs=(m_yvalues[i]-histo.m_yvalues[i])/sqrt(m_y2values[i]+histo.m_y2values[i]);
+      cnt+=1.;
+    }
+    avgs+=dxs;
+    stdd+=sqr(dxs);
+  }
+  if (cnt>0.) {
+    avgs/=cnt;
+    stdd/=cnt;
+    stdd=sqrt(stdd);
+  }
+  return int(cnt);
 }

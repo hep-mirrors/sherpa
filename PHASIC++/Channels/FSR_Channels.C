@@ -8,6 +8,7 @@
 #include "PHASIC++/Channels/Sarge.H"
 #include "PHASIC++/Channels/VHAAG.H"
 #include "PHASIC++/Channels/VHAAG_ND.H"
+#include "PHASIC++/Channels/VHAAG_res.H"
 #include "ATOOLS/Math/Permutation.H"
 
 using namespace PHASIC;
@@ -35,7 +36,16 @@ bool FSR_Channels::Initialize()
     else Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front()));
     break;
   case 1: 
-    Add(new Sarge(m_nin,m_nout));
+    {
+	VHAAG_res *firsthaag=NULL,*hlp=NULL;
+	Permutation pp(m_nin+m_nout-3);
+	for (int j=0;j<pp.MaxNumber();j++) {
+	  Add(hlp=new VHAAG_res(m_nin,m_nout,2*j,firsthaag));
+	  if (!firsthaag) firsthaag=hlp;
+	  Add(hlp=new VHAAG_res(m_nin,m_nout,2*j+1,firsthaag));
+	  if (!firsthaag) firsthaag=hlp;
+ 	}
+    }
     break;
   case 2: 
     {

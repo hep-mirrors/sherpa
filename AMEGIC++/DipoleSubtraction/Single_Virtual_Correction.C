@@ -88,7 +88,7 @@ void Single_Virtual_Correction::SelectLoopProcess()
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
     Process_Info loop_pi(m_pinfo);
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
-    
+   
     p_loopme=EXTRAXS::Virtual_ME2_Base::GetME2(loop_pi);  
   }
   else {
@@ -157,6 +157,8 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_iresult = p_LO_process->Result();
   m_oqcd = p_LO_process->OrderQCD()+1;
   m_oew = p_LO_process->OrderEW();
+  m_pinfo.m_oqcd=m_oqcd;
+  m_pinfo.m_oew=m_oew;
 
   if (p_LO_process!=p_LO_process->Partner()) {
     string partnerID=p_LO_process->Partner()->Name();
