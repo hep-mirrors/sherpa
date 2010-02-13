@@ -504,6 +504,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
       m_beamykey[2]  = xinfo[1];
       m_isrspkey[3]  = xinfo[2];
       m_isrykey[2]   = xinfo[3];
+      m_beamykey[0]  = xinfo[4];
+      m_beamykey[1]  = xinfo[5];
+      m_isrykey[0]   = xinfo[6];
+      m_isrykey[1]   = xinfo[7];
       if (!p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&cur->Process()->
                                  Flavours().front(),m_nin+m_nout)) {
         return new Weight_Info(1, 0.0, 0.0, 1.0, 0.0, 0.0);
@@ -541,6 +545,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
 	  xinfo[1]=m_beamykey[2];
 	  xinfo[2]=m_isrspkey[3];
 	  xinfo[3]=m_isrykey[2];
+	  xinfo[4]=m_beamykey[0];
+	  xinfo[5]=m_beamykey[1];
+	  xinfo[6]=m_isrykey[0];
+	  xinfo[7]=m_isrykey[1];
 	  value=max;	
 	}
       }

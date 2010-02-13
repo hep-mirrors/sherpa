@@ -25,7 +25,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_corenout(0), m_smode(1),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_maxeps(0.0),
-  m_xinfo(std::vector<double>(4)), m_n(0), m_rbn(0), m_itmin(0), 
+  m_xinfo(std::vector<double>(8)), m_n(0), m_rbn(0), m_itmin(0), 
   m_max(0.), m_rbmax(0.0), m_rbsum(0.0), m_rbsum2(0.0), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
