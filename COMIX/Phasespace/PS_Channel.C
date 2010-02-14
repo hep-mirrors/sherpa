@@ -390,9 +390,9 @@ void PS_Channel::TChannelBounds
  const double &s1,const double &s2)
 {
   if (m_bmode==0) return;
-  Int_Vector aidi(GetCId(aid));
+  const Int_Vector &aidi(GetCId(aid));
   if (aidi.front()==aidi.back()) {
-    Int_Vector aidj(GetCId(lid));
+    const Int_Vector &aidj(GetCId(lid));
     if (aidj.front()==aidj.back()) {
       ctmin=p_cuts->cosmin[aidi.front()][aidj.front()];
       ctmax=p_cuts->cosmax[aidi.front()][aidj.front()];
@@ -466,7 +466,7 @@ void PS_Channel::SChannelBounds
 (const size_t &id,const size_t &lid,double &ctmin,double &ctmax)
 {
   if (m_bmode==0) return;
-  Int_Vector aid(GetCId((id&lid)==lid?id:(1<<m_n)-1-id));
+  const Int_Vector &aid(GetCId((id&lid)==lid?id:(1<<m_n)-1-id));
   if (aid.size()==2) {
     ctmin=p_cuts->cosmin[aid.front()][aid.back()];
     ctmax=p_cuts->cosmax[aid.front()][aid.back()];
@@ -528,11 +528,11 @@ bool PS_Channel::GeneratePoint
     size_t pid(aid-(m_rid+bid));
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
-    if (IdCount(bid)>1) {
+    if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
       se=PropMomenta(jb,bid,smin,smax,&rans[nr++]);
     }
-    if (IdCount(pid)>1) {
+    if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       sp=PropMomenta(NULL,pid,smin,smax,&rans[nr++]);
     }
@@ -552,11 +552,11 @@ bool PS_Channel::GeneratePoint
   else {
     size_t lid(SId(aid)), rid(SId(bid));
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
-    if (IdCount(lid)>1) {
+    if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
       sl=PropMomenta(ja,lid,smin,smax,&rans[nr++]);
     }
-    if (IdCount(rid)>1) {
+    if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
     }
@@ -594,8 +594,8 @@ bool PS_Channel::GeneratePoint
       }
       if (!GeneratePoint(ja,jb,jc,nr)) return false;
       v[i]=NULL;
-      if (IdCount(SId(aid))>1) GeneratePoint(aid,nr,v);
-      if (IdCount(SId(bid))>1) GeneratePoint(bid,nr,v);
+      if (CIdCount(SId(aid))>1) GeneratePoint(aid,nr,v);
+      if (CIdCount(SId(bid))>1) GeneratePoint(bid,nr,v);
       break;
     }
   }
@@ -633,12 +633,12 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
 	if (cid==rid) {
 	  v[i]=NULL;
 	  if (bid!=3) m_p[bid]=m_p[aid-cid];
-	  if (IdCount(bid)>1) GeneratePoint(bid,nr,v);
+	  if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
 	  break;
 	}
 	if (!GeneratePoint(ja,jb,jc,nr)) return false;
 	v[i]=NULL;
-	if (IdCount(bid)>1) GeneratePoint(bid,nr,v);
+	if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
 	lid=cid;
       }
     }
@@ -759,13 +759,14 @@ double PS_Channel::GenerateWeight
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
     aid=(1<<m_n)-1-aid;
+    m_p[pid]=m_p[aid]-m_p[m_rid]-m_p[bid];
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
-    if (IdCount(bid)>1) {
+    if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
       wgt*=PropWeight(jb,bid,smin,smax,se=m_p[bid].Abs2());
     }
-    if (IdCount(pid)>1) {
+    if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       wgt*=PropWeight(NULL,pid,smin,smax,sp=m_p[pid].Abs2());
     }
@@ -785,11 +786,11 @@ double PS_Channel::GenerateWeight
   else {
     size_t lid(SId(aid)), rid(SId(bid));
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
-    if (IdCount(lid)>1) {
+    if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
       wgt*=PropWeight(ja,lid,smin,smax,sl=m_p[lid].Abs2());
     }
-    if (IdCount(rid)>1) {
+    if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
@@ -852,11 +853,11 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 	}
       }
       else {
-	if (aid&(m_lid+m_rid) && IdCount(aid)<IdCount(cid)) { 
+	if (aid&(m_lid+m_rid) && CIdCount(aid)<CIdCount(cid)) { 
 	  std::swap<size_t>(aid,cid);
 	  std::swap<Current_Base*>(ja,jc);
 	}
-	else if (bid&(m_lid+m_rid) && IdCount(bid)<IdCount(cid)) { 
+	else if (bid&(m_lid+m_rid) && CIdCount(bid)<CIdCount(cid)) { 
 	  std::swap<size_t>(bid,cid);
 	  std::swap<Current_Base*>(jb,jc);
 	}
@@ -979,7 +980,8 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 	m_p[cur->In().front()->JA()->CId()]+
 	m_p[cur->In().front()->JB()->CId()];
 #ifdef DEBUG__BG
-	msg_Debugging()<<"  p_"<<PSId(cur->CId())
+	msg_Debugging()<<"  p_"<<PSId((1<<m_n)-1-cur->CId())
+		       <<" = p_"<<PSId(cur->CId())
 		       <<" = "<<m_p[cur->CId()]<<"\n";
 #endif
     }

@@ -51,7 +51,7 @@ namespace COMIX {
   class PS_Channel: public PHASIC::Single_Channel {
   protected:
 
-    Process_Base      *p_xs;
+    Process_Base   *p_xs;
     Current_Matrix *p_cur;
 
     Vertex_Vector  m_vtc;
@@ -90,6 +90,8 @@ namespace COMIX {
 
     const std::string      &GetPSId(const size_t &id);
     const std::vector<int> &GetCId(const size_t &id);
+
+    inline size_t CIdCount(const size_t &id) { return GetCId(id).size(); }
 
     size_t SId(const size_t &id) const;
     double SCut(const size_t &id);
