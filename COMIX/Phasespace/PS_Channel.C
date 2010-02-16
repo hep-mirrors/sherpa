@@ -348,7 +348,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	  pthread_mutex_unlock(&m_wvgs_mtx);
 #endif
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    generate point "<<cvgs->Name()
+	  msg_Debugging()<<"    generate weight "<<cvgs->Name()
 			 <<" -> "<<cvgs->GetPointBins()[0]
 			 <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
 #endif
@@ -759,7 +759,7 @@ double PS_Channel::GenerateWeight
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
     aid=(1<<m_n)-1-aid;
-    m_p[pid]=m_p[aid]-m_p[m_rid]-m_p[bid];
+    m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
@@ -770,7 +770,7 @@ double PS_Channel::GenerateWeight
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       wgt*=PropWeight(NULL,pid,smin,smax,sp=m_p[pid].Abs2());
     }
-    wgt*=TChannelWeight(jc,bid,aid,m_p[aid],-m_p[m_rid],
+    wgt*=TChannelWeight(jc,bid,aid,-m_p[aid],-m_p[m_rid],
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
@@ -976,11 +976,11 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
     for (size_t i(0);i<(*p_cur)[n].size();++i) {
       Current_Base *cur((*p_cur)[n][i]);
       if (cur->In().empty()) THROW(fatal_error,"Internal error");
-      m_p[(1<<m_n)-1-cur->CId()]=m_p[cur->CId()]=
-	m_p[cur->In().front()->JA()->CId()]+
-	m_p[cur->In().front()->JB()->CId()];
+      m_p[(1<<m_n)-1-cur->CId()]=
+	-(m_p[cur->CId()]=m_p[cur->In().front()->JA()->CId()]
+	  +m_p[cur->In().front()->JB()->CId()]);
 #ifdef DEBUG__BG
-	msg_Debugging()<<"  p_"<<PSId((1<<m_n)-1-cur->CId())
+	msg_Debugging()<<"  -p_"<<PSId((1<<m_n)-1-cur->CId())
 		       <<" = p_"<<PSId(cur->CId())
 		       <<" = "<<m_p[cur->CId()]<<"\n";
 #endif
