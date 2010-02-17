@@ -115,7 +115,7 @@ void *QED_Vertex_Filler<SType,STag>::operator()
   for (int i(1);i<=16;++i) {
     if (i==7) i=11;
     Flavour f((kf_code)i);
-    if (!f.IsOn()) continue;
+    if (!f.IsOn() || f.IntCharge()==0) continue;
     std::string ftag("{"+f.IDName()+"}");
     std::string fbtag ("{"+f.Bar().IDName()+"}");
     new QED_FFP_Getter<SType,STag>(ftag+fbtag+ptag);
