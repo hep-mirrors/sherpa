@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Message.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 
 #include <map>
 #include <vector>
@@ -31,6 +32,7 @@ namespace SHERPA {
     HepEvt_Interface         * p_hepevt;
     std::string m_outmode;
     const Event_Handler      * p_eventhandler;
+    const Matrix_Element_Handler * p_mehandler;
 
     bool InitialiseOutput(ATOOLS::Data_Reader* dr);
   public :
@@ -47,6 +49,7 @@ namespace SHERPA {
     void PrintEvent(ATOOLS::Blob_List *const);
     
     void SetEventHandler(const Event_Handler* eh) { p_eventhandler=eh; }
+    void SetMEHandler(const Matrix_Element_Handler* meh) { p_mehandler=meh; }
 
 #ifdef USING__HEPMC2
     inline HepMC2_Interface *const GetHepMC2Interface() const { 

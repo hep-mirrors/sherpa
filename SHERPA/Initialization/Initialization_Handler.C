@@ -409,6 +409,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 bool Initialization_Handler::InitializeTheIO()
 {
   p_iohandler = new Input_Output_Handler(p_dataread);
+  p_iohandler->SetMEHandler(m_mehandlers["SignalMEs"]);
   return true;
 }
 

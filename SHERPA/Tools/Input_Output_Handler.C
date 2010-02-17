@@ -144,6 +144,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
   double weight=blobs->Weight();
+  weight/=p_mehandler->TotalXS()*rpa.Picobarn();
 
   double xs(p_eventhandler->TotalXS()), xserr(p_eventhandler->TotalErr());
   for (map<string,Output_Base *>::iterator oit=m_outmap.begin();
