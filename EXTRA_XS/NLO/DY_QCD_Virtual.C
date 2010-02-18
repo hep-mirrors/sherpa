@@ -62,7 +62,7 @@ Virtual_ME2_Base *DY_QCD_Virtual_Getter::operator()(const Process_Info &pi) cons
          fl[0].IsQuark()  && fl[1].IsQuark()) ||   
         (fl[0].IsLepton() && fl[1].IsLepton() &&
          fl[2].IsQuark()  && fl[3].IsQuark())) {
-      if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
         return new DY_QCD_Virtual(pi, fl);
       }
     }

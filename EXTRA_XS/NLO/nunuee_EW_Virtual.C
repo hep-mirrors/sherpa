@@ -67,7 +67,7 @@ Virtual_ME2_Base *nunuee_EW_Virtual_Getter::operator()(const Process_Info &pi) c
          fl[0].IsFermion() && fl[1]==fl[0].Bar()) &&
         (fl[0].Electromagnetic() || fl[2].Electromagnetic()) &&
         (fl[0]!=fl[2]  &&  fl[0]!=fl[3])) {
-      if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==3 || pi.m_oew==99)) {
         Process_Info tree_pi(pi);
         tree_pi.m_fi.m_nloewtype=nlo_type::lo;
         ME2_Base* tree_me2 = ME2_Base::GetME2(tree_pi);
