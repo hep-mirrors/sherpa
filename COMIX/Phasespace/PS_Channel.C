@@ -348,7 +348,7 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 	  pthread_mutex_unlock(&m_wvgs_mtx);
 #endif
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    generate weight "<<cvgs->Name()
+	  msg_Debugging()<<"    generate point "<<cvgs->Name()
 			 <<" -> "<<cvgs->GetPointBins()[0]
 			 <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
 #endif
