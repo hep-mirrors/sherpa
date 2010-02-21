@@ -49,10 +49,10 @@ namespace EXTRAXS {
 
 void ee3jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
   m_born*=m_cpl;
-  Q2  = mom[0]*mom[1];
-  y12 = mom[3]*mom[4]/Q2;
-  y13 = mom[3]*mom[2]/Q2;
-  y23 = mom[4]*mom[2]/Q2;
+  Q2  = 2.*mom[0]*mom[1];
+  y12 = 2.*mom[3]*mom[4]/Q2;
+  y13 = 2.*mom[3]*mom[2]/Q2;
+  y23 = 2.*mom[4]*mom[2]/Q2;
 
   // finite
   double dren = 0.5*(11.-2./3.*(double)m_nf)*log(m_mur2/Q2);
