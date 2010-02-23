@@ -274,11 +274,11 @@ bool Matrix_Element_Handler::InitializeProcesses
     for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
 #ifdef USING__Threading
   msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
-	    <<int((retime-rbtime)*100)/100.0<<" / "
-	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+	    <<FormatTime(size_t(retime-rbtime))<<" / "
+	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #else
   msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
-	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #endif
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
@@ -297,11 +297,11 @@ bool Matrix_Element_Handler::InitializeProcesses
     for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
 #ifdef USING__Threading
   msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
-	    <<int((retime-rbtime)*100)/100.0<<" / "
-	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+	    <<FormatTime(size_t(retime-rbtime))<<" / "
+	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #else
   msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
-	    <<int((etime-btime)*100)/100.0<<" s )."<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #endif
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
