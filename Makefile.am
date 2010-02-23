@@ -24,7 +24,7 @@ fastinstall:
 	awk 'function install(){ \
   if (old!="") system("cd "old"; make install; cd -"); \
   old=""; }BEGIN{ n=0; "pwd" | getline cur[n]; \
-  cmd="'$(MAKE)' '$(MAKEFLAGS)'; echo EXIT $$?"; \
+  cmd="$(MAKE); echo EXIT $$?"; \
 while (cmd | getline) { \
   if ($$1=="EXIT") { ret=$$2; exit ret; }; \
   if ($$2=="Entering") { install(); \
