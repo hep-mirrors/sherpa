@@ -31,5 +31,5 @@ while (cmd | getline) { \
     cur[n]=substr($$4,2,length($$4)-2); } \
   if ($$2=="Leaving") --n; print $$0; \
   if ((match($$0,"mode=compile")>0 ||  \
-       match($$0,"mode=link")>0)) { old=cur[n]; } \
+       match($$0,"mode=link")>0)) old=cur[n]; \
 }}END{ close(cmd); if (ret==0) install(); }'
