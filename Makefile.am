@@ -21,4 +21,15 @@ SUBDIRS       = \
 EXTRA_DIST = @SVNINCLUDE@ GUIDELINES
 
 fastinstall:
-	+./make_install
+	awk 'function install(){ \
+  if (old!="") system("cd "old"; make install; cd -"); \
+  old=""; }BEGIN{ n=0; "pwd" | getline cur[n]; \
+  cmd="'$(MAKE)' '$(MAKEFLAGS)'; echo EXIT $$?"; \
+while (cmd | getline) { \
+  if ($$1=="EXIT") { ret=$$2; exit ret; }; \
+  if ($$2=="Entering") { install(); \
+    cur[n]=substr($$4,2,length($$4)-2); } \
+  if ($$2=="Leaving") --n; print $$0; \
+  if ((match($$0,"mode=compile")>0 ||  \
+       match($$0,"mode=link")>0)) { old=cur[n]; } \
+}}END{ close(cmd); if (ret==0) install(); }'
