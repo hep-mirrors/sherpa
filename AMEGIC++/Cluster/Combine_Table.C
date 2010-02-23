@@ -744,14 +744,25 @@ bool Combine_Table::SelectWinner()
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator rdata_winner(cl.end());
+#ifdef USING__UWCluster
+  double kt2(std::numeric_limits<double>::max()), rkt2(kt2);
+#else
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
+#endif
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
+#ifdef USING__UWCluster
+	if (pt2ij<kt2) {
+	  m_cdata_winner=cit;
+	  kt2=pt2ij;
+	}
+#else
 	sum+=1.0/pt2ij;
+#endif
       }
       else if (cit->second.m_pt2ij.m_kt2>0.0 &&
 	       cit->second.m_pt2ij.m_kt2<rkt2) {
@@ -760,6 +771,7 @@ bool Combine_Table::SelectWinner()
       }
     }
   }
+#ifndef USING__UWCluster
   double disc(sum*ran.Get()), psum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     double pt2ij(cit->second.m_pt2ij.m_op2);
@@ -772,6 +784,7 @@ bool Combine_Table::SelectWinner()
   }
   if (sum>0.0 && m_cdata_winner==cl.end())
     THROW(fatal_error,"Internal error");
+#endif
   if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();

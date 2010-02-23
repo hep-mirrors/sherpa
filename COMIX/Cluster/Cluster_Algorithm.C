@@ -336,20 +336,33 @@ bool Cluster_Algorithm::ClusterStep
     msg_Debugging()<<"rejected configuration\n";
     return false;
   }
+#ifdef USING__UWCluster
+  double wmin(std::numeric_limits<double>::max()), rwmin(wmin);
+#else
   double rwmin(std::numeric_limits<double>::max()), sum(0.0);
+#endif
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
+#ifdef USING__UWCluster
+    if (cit->second.m_kt2.m_op2>=0.0 &&
+	cit->second.m_kt2.m_op2<wmin) {
+      win=cit;
+      wmin=cit->second.m_kt2.m_op2;
+    }
+#else
     if (cit->second.m_mofl.IsDummy()) continue;
     if (cit->second.m_kt2.m_op2>=0.0) {
       sum+=1.0/cit->second.m_kt2.m_op2;
     }
+#endif
     else if (cit->second.m_kt2.m_kt2>=0.0 &&
 	     cit->second.m_kt2.m_kt2<rwmin) {
       rwin=cit;
       rwmin=cit->second.m_kt2.m_kt2;
     }
   }
+#ifndef USING__UWCluster
   double disc(sum*ran.Get()), psum(0.0);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit)
@@ -359,6 +372,7 @@ bool Cluster_Algorithm::ClusterStep
       break;
     }
   if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
+#endif
   if (win==cinfo.end()) win=rwin;
   if (win==cinfo.end()) THROW(fatal_error,"Invalid amplitude");
   Cluster_Key wkey(win->first);
