@@ -302,7 +302,7 @@ double Dipole_FI::DetermineMaximumPhotonEnergy() {
   double fac         = 1./(2.*nC+nN);
   double x0          = 0.5*(m_M-sum);
   double xNminus1    = x0;
-  double xN          = x0;
+  double xN          = 0.;
   double F_xNminus1  = 0.;
   while (abs(xN - xNminus1) > 1E-6) {
     if (count==500) {
