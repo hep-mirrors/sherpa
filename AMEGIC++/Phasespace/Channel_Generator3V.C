@@ -619,20 +619,40 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
 
   Point* sclmp = clmp;
   //max
-  if (prt.length()>1) {
-    if (!CheckVariables(flag,prt+string("_min"),0)) CalcSmin(flag,"min",prt,sf,0);
-    else if (flag>=0 && CheckVariables(flag,prt,0)) sf<<"  s"<< prt <<"_min = s"<< prt <<";"<<endl;
-    if (p->zwf==0) {
+  if (p->zwf==0) {
+    if (prt.length()>1) {
+      if (!CheckVariables(flag,prt+string("_min"),0)) CalcSmin(flag,"min",prt,sf,0);
+      else if (flag>=0 && CheckVariables(flag,prt,0)) sf<<"  s"<< prt <<"_min = s"<< prt <<";"<<endl;
       AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
 		     string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
     }
-    else CalcSmin(flag,"max",mummy,sf,0);
+    if (prt.length()==1) {
+      AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
+		     string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
+    }
   }
-  if (prt.length()==1) {
-    AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
+  else {
+    rannum++;
+    if (flag==0) {
+      sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<(p->fl).Kfcode()<<"));"<<endl;
+      sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl; 
+      sf<<"  Vec4D  p"<<mummy<<";"<<endl;
+    }
+    if (flag==1) {
+      string s; 
+      if (mummy.length()>0) {
+	for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+GetMassIndex(mummy[i])+string("]+");
+	s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
+      }
+      AddToVariables(flag,mummy,s,1,sf);
+      AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
+    }
+    if (flag==-11) m_idc.push_back(string("FM")+ToString((p->fl).Kfcode())+string("_")+mummy);
+    AddToVariables(flag,mummy+string("_max"),"s"+mummy,0,sf);    
+    AddToVariables(flag,mummy+string("_min"),"s"+mummy,0,sf);    
+    sclmp = p;
   }
-  
+
   if (rm.length()>1 && lm.length()>1) sclmp = p;
   else if (clmp->left==p && LinkedMasses(clmp->right).length()>1) sclmp = p;
   else if (clmp->right==p && LinkedMasses(clmp->left).length()>1) sclmp = p;
@@ -642,6 +662,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   //cout<<":GenerateMassChain: left:  "<<LinkedMasses(p->left)<<endl;
   GenerateMassChain(flag,p->left,sclmp,rannum,sf);
 
+  if (p->zwf!=0) return;
   if (clmp==p) return; 
 
 //   if (sclm!=mummy) {
