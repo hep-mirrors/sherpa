@@ -170,7 +170,6 @@ namespace AMEGIC {
     void SetLegScales(Leg &leg,Leg &legi,Leg &legj,
 		      const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		      const double &pt2ij);
-    ATOOLS::Flavour IsoFlip(const ATOOLS::Flavour &fl) const;
     ATOOLS::Flavour MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const;
     friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);

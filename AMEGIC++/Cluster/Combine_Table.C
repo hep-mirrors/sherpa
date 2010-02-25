@@ -242,20 +242,6 @@ void Leg::DetermineCouplings(const int type)
   */
 }
 
-ATOOLS::Flavour Combine_Table::IsoFlip(const ATOOLS::Flavour &fl) const
-{
-  switch (fl.Kfcode()) {
-  case kf_u: return fl.IsAnti()?Flavour(kf_d).Bar():Flavour(kf_d);
-  case kf_d: return fl.IsAnti()?Flavour(kf_u).Bar():Flavour(kf_u);
-  case kf_c: return fl.IsAnti()?Flavour(kf_s).Bar():Flavour(kf_s);
-  case kf_s: return fl.IsAnti()?Flavour(kf_c).Bar():Flavour(kf_c);
-  case kf_t: return fl.IsAnti()?Flavour(kf_b).Bar():Flavour(kf_b);
-  case kf_b: return fl.IsAnti()?Flavour(kf_t).Bar():Flavour(kf_t);
-  default: break;
-  }
-  return fl;
-}
-
 Flavour Combine_Table::MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const
 {
   if (p_proc->Partner()==p_proc) return a.Point()->fl;
