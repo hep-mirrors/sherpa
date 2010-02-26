@@ -235,8 +235,9 @@ void AMEGIC::Process_Group::PrintProcessSummary(int it)
 
 void AMEGIC::Process_Group::TestPoint(Vec4D *tp)
 {
+  size_t nout=p_pinfo->Nout();
   ATOOLS::Flavour_Vector flavs;
-  Vec4D *hmom=new Vec4D[m_nin+m_nout];
+  Vec4D *hmom=new Vec4D[m_nin+nout];
   vector<Process_Tags*> decaylist;
   for (size_t i=0;i<m_nin;i++) flavs.push_back(m_flavs[i]);
   size_t n=p_pinfo->GetOnshellFlavList(flavs,decaylist);

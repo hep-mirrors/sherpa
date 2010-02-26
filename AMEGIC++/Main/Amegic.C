@@ -139,7 +139,13 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     if (!newxs) return NULL;
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     p_testmoms = new Vec4D[newxs->NIn()+newxs->NOut()];
-    if (!p_pinfo) p_pinfo = Translate(pi);
+    if (!p_pinfo) {
+      p_pinfo = Translate(pi);
+      m_nin = newxs->NIn();
+      m_flavs.clear();
+      for (size_t i=0;i<m_nin;i++) 
+	m_flavs.push_back(newxs->Flavours()[i]);
+    }
     if (p_pinfo->OSDecays()) TestPoint(p_testmoms);
     else Phase_Space_Handler::TestPoint(p_testmoms,newxs->NIn(),newxs->NOut(),newxs->Flavours());
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);

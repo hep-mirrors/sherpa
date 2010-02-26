@@ -345,7 +345,7 @@ int AMEGIC::Single_Process::Tests()
   //shorten helicities
   int switchhit = 0;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
+    if (M_doub[i]==0.) {
       p_hel->SwitchOff(i);
       switchhit++;
     }
@@ -505,8 +505,8 @@ int AMEGIC::Single_Process::TestLib()
     M2 += M_doub[i] = p_ampl->Differential(i)*p_hel->Multiplicity(i)*p_hel->PolarizationFactor(i);
   } 
   for (size_t i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]==0. || dabs(M_doub[i]/M2)<(ATOOLS::Accu()*1.e-2)) {
-      p_hel->SwitchOff(i);
+    if (M_doub[i]==0.) {
+     p_hel->SwitchOff(i);
     }
   }
   if (!rpa.gen.SpinCorrelation()) {
