@@ -2,8 +2,6 @@
 @section ISR Parameters
 @cindex BUNCH_1
 @cindex BUNCH_2
-@cindex ISR_1
-@cindex ISR_2
 @cindex ISR_SMIN
 @cindex ISR_SMAX
 @cindex ISR_E_ORDER
@@ -15,7 +13,7 @@
 @cindex SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
-initial state radiation. They may be set in the
+initial state radiation (ISR). They may be set in the
 @code{(isr)} section of the run-card, see @ref{Input structure}.
 
 @table @code
@@ -28,27 +26,6 @@ Per default these are taken to be identical to the parameters
 Monochromatic. In case the Simple Compton or Laser Backscattering spectra are
 enabled the bunch particles would have to be set to 22, the PDG code of the
 photon.
-
-@item ISR_1/ISR_2
-Specifies whether ISR is enabled for the
-first/second bunch particle.
-Possible values are @option{On} and @option{Off}.
-@*
-For bunch particles with hadronic substructure, i.e.
-hadrons and photons, this amounts to employing a PDF 
-to extract partons.
-@*
-@table @var
-@item Proton bunches
-For incoming protons, ISR must be enabled, which is ensured by default.
-@item  Photons
-For colliding photons, this parameter defines if the resolved or unresolved
-component of the cross section is to be considered.
-@item Leptons
-For leptons this switch steers the inclusion of a structure function,
-corresponding to the emission of undetected photons `before' the actual
-lepton-lepton interaction.
-@end table
 
 @item ISR_SMIN/ISR_SMAX
 This parameter specifies the minimum fraction of cms energy
@@ -81,9 +58,9 @@ Built-in library for PDF sets from the MSTW group, cf. @mycite{Martin2009iq}.
 @item MRST04QEDSherpa
 Built-in library for photon PDF sets from the MRST group, cf. @mycite{Martin2004dh}.
 @item MRST01LOSherpa
-Built-in library for another PDF set from the MRST group, cf. @mycite{Martin2001es}.
+Built-in library for the 2001 leading-order PDF set from the MRST group, cf. @mycite{Martin2001es}.
 @item MRST99Sherpa
-Built-in library for some PDF sets from the MRST group, cf. @mycite{Martin1999ww}.
+Built-in library for the 1999 PDF sets from the MRST group, cf. @mycite{Martin1999ww}.
 @item GRVSherpa
 Built-in library for the GRV photon PDF @mycite{Gluck1991jc}, @mycite{Gluck1991ee}
 @item PDFESherpa
@@ -95,7 +72,7 @@ to set the scheme of respecting non-leading terms. Possible options are 0
 ("mixed choice"), 1 ("eta choice"), or 2 ("beta choice", default).
 @end table
 @*
-Furthermore it is simple to built an external interface to an arbitrary PDF
+Furthermore it is simple to build an external interface to an arbitrary PDF
 and load that dynamically in the Sherpa run. See @ref{External PDF} for
 instructions.
 @item PDF_SET
@@ -107,7 +84,14 @@ chosen @code{PDF_LIBRARY} can be figured by running Sherpa with the parameter
 @end verbatim  
 @item PDF_SET_VERSION
 This parameter allows to eventually select a specific version (member)
-within the chosen PDF set.
+within the chosen PDF set. Specifying a negative value, e.g.
+@verbatim
+  PDF_LIBRARY LHAPDFSherpa;
+  PDF_SET NNPDF12_100.LHgrid; PDF_SET_VERSION -100;
+@end verbatim
+results in Sherpa sampling all sets 1..100, which can be used to obtain 
+the averaging required when employing PDF's from the NNPDF 
+collaboration @mycite{Ball2008by}, @mycite{Ball2009mk}.
 @item PDF_GRID_PATH
 For the internal PDF sets this parameter may be specified to select the
 directory where the PDF grid files are located.
