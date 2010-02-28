@@ -20,7 +20,6 @@ namespace PDF {
     PDF_Base * GetCopy();
 
     void   CalculateSpec(double,double);
-    double AlphaSPDF(double);
     double GetXPDF(const ATOOLS::Flavour);
 
     static void Error();
@@ -52,11 +51,6 @@ namespace PDF {
   /*!
     \var double CTEQ6_Fortran_Interface::m_f[13]
     The array of the 13 pdfs.
-  */
-  /*!
-    \var double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
-    Gives the value of \f$\alpha_s\f$ at a given scale squared that is used internally.
-    This might become important to enforce self-consistency of calculations.
   */
   /*!
     void CTEQ6_Fortran_Interface::Calculate(const double, const double)

@@ -125,28 +125,6 @@ PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
   return copy;
 }
 
-
-
-double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2) 
-{
-  //  ** ALL fits are obtained by using the same coupling strength
-  //   \alpha_s(Mz)=0.118 and the NLO running \alpha_s formula, except CTEQ6L1
-  //   which uses the LO running \alpha_s and its value determined from the fit.
-
-  double asmz = 0.;
-  if (m_set==std::string("cteq6.6m"))  asmz = 0.118;
-  if (m_set==std::string("cteq6.6a1"))  asmz = 0.125;
-  if (m_set==std::string("cteq6.6a2"))  asmz = 0.122;
-  if (m_set==std::string("cteq6.6a3"))  asmz = 0.114;
-  if (m_set==std::string("cteq6.6a4"))  asmz = 0.112;
-  if (m_set==std::string("cteq6m"))  asmz = 0.118;
-  if (m_set==std::string("cteq6d"))  asmz = 0.118;
-  if (m_set==std::string("cteq6l"))  asmz = 0.118;
-  if (m_set==std::string("cteq6l1")) asmz = 0.130;
-
-  return asmz;
-}
-
 void CTEQ6_Fortran_Interface::CalculateSpec(double x,double _Q2) 
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
