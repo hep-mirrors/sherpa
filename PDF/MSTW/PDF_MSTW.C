@@ -123,16 +123,18 @@ void MSTW_Getter::PrintInfo
      <<std::string(width+4,' ')<<"see arXiv:0901:0002 [hep-ph]";
 }
 
-MSTW_Getter *p_get;
+MSTW_Getter *p_get[24];
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get = new MSTW_Getter("mstw2008lo");
-  p_get = new MSTW_Getter("mstw2008nlo");
-  p_get = new MSTW_Getter("mstw2008nnlo");
+  p_get[0] = new MSTW_Getter("mstw2008lo");
+  p_get[1] = new MSTW_Getter("mstw2008nlo");
+  p_get[2] = new MSTW_Getter("mstw2008nnlo");
+  for (int i(10);i<=30;++i) 
+    p_get[i-7] = new MSTW_Getter("mstw2008nlo_asmz1"+ToString(i));
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  for (int i(0);i<24;++i) delete p_get[i];
 }
