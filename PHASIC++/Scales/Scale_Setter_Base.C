@@ -3,6 +3,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Scale_Setter_Base
@@ -58,4 +60,14 @@ double Scale_Setter_Base::HT() const
   for (size_t i(0);i<p_proc->NOut();++i) 
     ht+=psh->LabPoint()[i+p_proc->NIn()].PPerp();
   return sqrt(ht);
+}
+
+double Scale_Setter_Base::YCut() const
+{
+  if (p_proc->LookUp() && p_proc->IsMapped())
+    return p_proc->MapProc()->ScaleSetter()->YCut();
+  if (p_jf!=NULL) return p_jf->Ycut();
+  p_jf=(Jet_Finder*)p_proc->Selector()->GetSelector("Jetfinder");
+  if (p_jf==NULL) THROW(critical_error,"Jet finder not found");
+  return p_jf->Ycut();
 }

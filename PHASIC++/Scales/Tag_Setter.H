@@ -6,8 +6,6 @@
 
 namespace PHASIC {
 
-  class Jet_Finder;
-
   class Tag_Setter: public ATOOLS::Tag_Replacer {
   private:
 
@@ -15,15 +13,11 @@ namespace PHASIC {
 
     ATOOLS::Algebra_Interpreter *p_calc;
 
-    mutable Jet_Finder *p_jf;
-
-    Jet_Finder *JF() const;
-
   public:
     
     // constructor
     inline Tag_Setter(Scale_Setter_Base *const setter): 
-      p_setter(setter), p_calc(NULL), p_jf(NULL) {}
+      p_setter(setter), p_calc(NULL) {}
     
     // member functions
     std::string   ReplaceTags(std::string &expr) const;    

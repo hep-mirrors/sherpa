@@ -22,6 +22,7 @@ namespace PHASIC {
   std::ostream &operator<<(std::ostream &ostr,const stp::id &scl);
 
   class Integrable_Base;
+  class Jet_Finder;
 
   struct Scale_Setter_Arguments {
     Process_Base *p_proc;
@@ -47,11 +48,13 @@ namespace PHASIC {
 
     bool m_scale2;
 
+    mutable Jet_Finder *p_jf;
+
   public:
 
     inline Scale_Setter_Base(Process_Base *const proc,
 			     const bool scale2=false):
-      p_proc(proc), m_scale(stp::size), m_scale2(scale2) {}
+      p_proc(proc), m_scale(stp::size), m_scale2(scale2), p_jf(NULL) {}
 
     virtual ~Scale_Setter_Base();
 
@@ -61,6 +64,7 @@ namespace PHASIC {
     virtual ATOOLS::Vec4D Momentum(const size_t &i) const;
 
     virtual double HT() const;
+    virtual double YCut() const;
 
     inline const double Scale(const stp::id type) { return m_scale[type]; }
 

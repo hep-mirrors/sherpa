@@ -1,23 +1,12 @@
 #include "PHASIC++/Scales/Tag_Setter.H"
 
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-Jet_Finder *Tag_Setter::JF() const
-{
-  if (p_jf!=NULL) return p_jf;
-  p_jf=(Jet_Finder*)p_setter->Process()->
-    Selector()->GetSelector("Jetfinder");
-  if (p_jf==NULL) THROW(critical_error,"Jet finder not found");
-  return p_jf;
-}
 
 std::string Tag_Setter::ReplaceTags(std::string &expr) const
 {
@@ -34,7 +23,7 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
     term->Set(p_setter->Scale(stp::ren));
     return term;
   case 3:
-    term->Set(JF()->Ycut()*sqr(rpa.gen.Ecms()));
+    term->Set(p_setter->YCut()*sqr(rpa.gen.Ecms()));
     return term;
   case 5:
     term->Set(sqr(p_setter->HT()));
