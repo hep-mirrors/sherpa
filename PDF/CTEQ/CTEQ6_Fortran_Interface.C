@@ -35,6 +35,31 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   int iset = 0;
   
+  if (m_set==std::string("cteq6.6m")) {
+    iset = 400;
+    m_orderas=1;
+    m_asmz=0.118;
+  }
+  if (m_set==std::string("cteq6.6a1")) {
+    iset = 460;
+    m_orderas=1;
+    m_asmz=0.125;
+  }
+  if (m_set==std::string("cteq6.6a2")) {
+    iset = 461;
+    m_orderas=1;
+    m_asmz=0.122;
+  }
+  if (m_set==std::string("cteq6.6a3")) {
+    iset = 462;
+    m_orderas=1;
+    m_asmz=0.114;
+  }
+  if (m_set==std::string("cteq6.6a4")) {
+    iset = 463;
+    m_orderas=1;
+    m_asmz=0.112;
+  }
   if (m_set==std::string("cteq6m")) {
     iset = 1;
     m_orderas=1;
@@ -60,6 +85,11 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_orderas=1;
     m_asmz=0.118;
   }
+  if (iset==400 && m_member>0 && m_member<=44) {
+    iset+=m_member;
+    m_orderas=1;
+    m_asmz=0.118;
+  }
   
   char buffer[1024];
   char * err = getcwd(buffer,1024);
@@ -67,7 +97,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
   }
   int stat=chdir(m_path.c_str());
-  if (iset>100) msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
+  msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
   ctq6initset_(iset);
   if (stat==0) {
     stat=chdir(buffer);
@@ -104,6 +134,11 @@ double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
   //   which uses the LO running \alpha_s and its value determined from the fit.
 
   double asmz = 0.;
+  if (m_set==std::string("cteq6.6m"))  asmz = 0.118;
+  if (m_set==std::string("cteq6.6a1"))  asmz = 0.125;
+  if (m_set==std::string("cteq6.6a2"))  asmz = 0.122;
+  if (m_set==std::string("cteq6.6a3"))  asmz = 0.114;
+  if (m_set==std::string("cteq6.6a4"))  asmz = 0.112;
   if (m_set==std::string("cteq6m"))  asmz = 0.118;
   if (m_set==std::string("cteq6d"))  asmz = 0.118;
   if (m_set==std::string("cteq6l"))  asmz = 0.118;
@@ -154,19 +189,25 @@ PDF_Base *CTEQ6_Getter::operator()
 void CTEQ6_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"CTEQ 6 fit, see hep-ph/0201195";
+  str<<"CTEQ 6 fit, see hep-ph/0201195"
+     <<" / CTEQ 6.6 fit, see arXiv:0802.0007 [hep-ph]";
 }
 
-CTEQ6_Getter *p_get[3];
+CTEQ6_Getter *p_get[8];
 
 extern "C" void InitPDFLib(const std::string &path)
 {
   p_get[0] = new CTEQ6_Getter("cteq6l1");
   p_get[1] = new CTEQ6_Getter("cteq6l");
   p_get[2] = new CTEQ6_Getter("cteq6m");
+  p_get[3] = new CTEQ6_Getter("cteq6.6m");
+  p_get[4] = new CTEQ6_Getter("cteq6.6a1");
+  p_get[5] = new CTEQ6_Getter("cteq6.6a2");
+  p_get[6] = new CTEQ6_Getter("cteq6.6a3");
+  p_get[7] = new CTEQ6_Getter("cteq6.6a4");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<3;++i) delete p_get[i];
+  for (int i(0);i<8;++i) delete p_get[i];
 }

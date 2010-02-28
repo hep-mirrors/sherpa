@@ -496,12 +496,12 @@ bool Initialization_Handler::InitializeThePDFs()
     if (dataread.ReadFromFile(speciallib,"PDF_LIBRARY_"+ToString(beam+1)))
       m_pdflib[beam]=speciallib;
     if (m_pdflib[beam]=="LHAPDFSherpa") {
-      defset[beam]="cteq6l.LHpdf";
+      defset[beam]="cteq66.LHgrid";
       defpath="PDFSets";
     }
     else if (m_pdflib[beam]=="CTEQ6Sherpa") {
-      defset[beam]="cteq6l";
-      defpath="CTEQ6Grid";
+      defset[beam]="cteq6.6m";
+      defpath="CTEQ66Grid";
     }
     else if (m_pdflib[beam]=="MSTW08Sherpa") {
       defset[beam]="mstw2008nlo";
