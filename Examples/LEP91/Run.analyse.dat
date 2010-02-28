@@ -16,7 +16,7 @@
 }(beam)
 
 (isr){
-  ISR_1 On; ISR_2 On; PDF_SET PDFe;
+  PDF_SET PDFe;
 }(isr)
 
 (processes){

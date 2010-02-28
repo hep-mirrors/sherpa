@@ -38,14 +38,5 @@
 
 (isr){
   BUNCH_1         = 22
-  ISR_1           = Off
-
   BUNCH_2         = 11
-  ISR_2           = On
-
-  ISR_SMIN        = 0.01
-  ISR_SMAX        = 1.0
-
-  ISR_E_ORDER     = 1   ! Perturbative order of electron structure function
-  ISR_E_SCHEME    = 2   ! Beta-scheme : 0,1,2 , default = 2 
 }(isr)

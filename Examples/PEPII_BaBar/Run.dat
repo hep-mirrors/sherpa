@@ -27,10 +27,7 @@
 
 (isr){
   BUNCH_1         = 11
-  ISR_1           = On
-
   BUNCH_2         = -11
-  ISR_2           = On
 
   PDF_LIBRARY PDFESherpa
   PDF_SET PDFe;
