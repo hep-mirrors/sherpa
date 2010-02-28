@@ -2,7 +2,6 @@ pkglib_LTLIBRARIES    =	libCTEQ6Sherpa.la
 
 libCTEQ6Sherpa_la_SOURCES     =	\
 				Cteq6Pdf-2008.f \
-				cteq6_inter.f \
 			    	CTEQ6_Fortran_Interface.C 
 
 localinc_HEADERS      =	\

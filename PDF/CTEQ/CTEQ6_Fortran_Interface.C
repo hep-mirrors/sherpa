@@ -9,8 +9,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 extern "C" {
-  void    ctq6initset_(int &);
-  double  ctq6evolve_(int &,double &, double &);
+  void    setctq6_(int &);
+  double  ctq6pdf_(int &,double &, double &);
   void    errmsg_();
 }
 
@@ -98,7 +98,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   }
   int stat=chdir(m_path.c_str());
   msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
-  ctq6initset_(iset);
+  setctq6_(iset);
   if (stat==0) {
     stat=chdir(buffer);
   }
@@ -165,7 +165,7 @@ double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   default:                cteqindex=m_anti*int(infl);   break;
   }
   if (!m_calculated[5-cteqindex]) {
-    m_f[5-cteqindex]=ctq6evolve_(cteqindex,m_x,m_Q)*m_x; 
+    m_f[5-cteqindex]=ctq6pdf_(cteqindex,m_x,m_Q)*m_x; 
     m_calculated[5-cteqindex]=true;
   }
   return m_rescale*m_f[5-cteqindex];     
