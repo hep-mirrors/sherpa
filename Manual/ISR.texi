@@ -7,7 +7,11 @@
 @cindex ISR_E_ORDER
 @cindex ISR_E_SCHEME
 @cindex PDF_LIBRARY
+@cindex PDF_LIBRARY_1
+@cindex PDF_LIBRARY_2
 @cindex PDF_SET
+@cindex PDF_SET_1
+@cindex PDF_SET_2
 @cindex PDF_SET_VERSION
 @cindex PDF_GRID_PATH
 @cindex SHOW_PDF_SETS
@@ -42,8 +46,11 @@ They can be configured with the following parameters.
 
 @table @code
 @item PDF_LIBRARY
-Switches between different interfaces to PDFs. The following options are
-distributed with Sherpa:
+Switches between different interfaces to PDFs. If the two colliding beams
+are of different type, e.g. protons and electrons or photons and electrons,
+it is possible to specify two different PDF libraries using @anchor{PDF_LIBRARY_1}
+@option{PDF_LIBRARY_1} and @anchor{PDF_LIBRARY_2} @option{PDF_LIBRARY_2}. 
+The following options are distributed with Sherpa:
 @table @code
 @item LHAPDFSherpa
 Use PDF's from LHAPDF @mycite{Whalley2005nh}. This is the default (and only
@@ -82,6 +89,9 @@ chosen @code{PDF_LIBRARY} can be figured by running Sherpa with the parameter
 @verbatim
   Sherpa PDF_LIBRARY=CTEQ6Sherpa SHOW_PDF_SETS=1
 @end verbatim  
+If the two colliding beams are of different type, e.g. protons and electrons
+or photons and electrons, it is possible to specify two different PDF sets using 
+@anchor{PDF_SET_1} @option{PDF_SET_1} and @anchor{PDF_SET_2} @option{PDF_SET_2}.
 @item PDF_SET_VERSION
 This parameter allows to eventually select a specific version (member)
 within the chosen PDF set. Specifying a negative value, e.g.

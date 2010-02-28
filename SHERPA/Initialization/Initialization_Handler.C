@@ -210,9 +210,14 @@ Initialization_Handler::~Initialization_Handler()
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
-  void *exit(s_loader->GetLibraryFunction(m_pdflib,"ExitPDFLib"));
+  void *exit(s_loader->GetLibraryFunction(m_pdflib[0],"ExitPDFLib"));
   if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
   ((PDF_Exit_Function)(PTP)exit)();
+  if (m_pdflib[1]!=m_pdflib[0]) {
+    exit=s_loader->GetLibraryFunction(m_pdflib[1],"ExitPDFLib");
+    if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
+    ((PDF_Exit_Function)(PTP)exit)();
+  }
 }
 
 void Initialization_Handler::LoadLibraries() const
@@ -475,33 +480,42 @@ bool Initialization_Handler::InitializeThePDFs()
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_isrdat[0]);
+  std::string defset[2], grid_path[2];
+  for (int beam(0);beam<=1;++beam) {
 #ifdef USING__LHAPDF
-  std::string defaultlib("LHAPDFSherpa");
+    std::string defaultlib("LHAPDFSherpa");
 #else
-  std::string defaultlib("CTEQ6Sherpa");
+    std::string defaultlib("CTEQ6Sherpa");
 #endif  
-  if (rpa.gen.Beam1().IsLepton() &&
-      rpa.gen.Beam2().IsLepton()) defaultlib="PDFESherpa";
-  m_pdflib=dataread.GetValue<std::string>("PDF_LIBRARY", defaultlib);
-  void *init(s_loader->GetLibraryFunction(m_pdflib,"InitPDFLib"));
-  if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
-  std::string defset, defpath;
-  if (m_pdflib=="LHAPDFSherpa") {
-    defset="cteq6l.LHpdf";
-    defpath="PDFSets";
+    if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsLepton())
+      defaultlib="PDFESherpa";
+    else if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsPhoton())
+      defaultlib="GRVSherpa";
+    m_pdflib[beam]=dataread.GetValue<std::string>("PDF_LIBRARY",defaultlib);
+    std::string speciallib, defpath;
+    if (dataread.ReadFromFile(speciallib,"PDF_LIBRARY_"+ToString(beam+1)))
+      m_pdflib[beam]=speciallib;
+    if (m_pdflib[beam]=="LHAPDFSherpa") {
+      defset[beam]="cteq6l.LHpdf";
+      defpath="PDFSets";
+    }
+    else if (m_pdflib[beam]=="CTEQ6Sherpa") {
+      defset[beam]="cteq6l";
+      defpath="CTEQ6Grid";
+    }
+    else if (m_pdflib[beam]=="MSTW08Sherpa") {
+      defset[beam]="mstw2008nlo";
+      defpath="MSTW08Grid";
+    }
+    grid_path[beam]=dataread.GetValue<string>("PDF_GRID_PATH",defpath);
+    if (grid_path[beam].length()==0 || grid_path[beam][0]!='/')
+      grid_path[beam]=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+grid_path[beam];
+    if (beam==0 || m_pdflib[1]!=m_pdflib[0]) {
+      void *init(s_loader->GetLibraryFunction(m_pdflib[beam],"InitPDFLib"));
+      if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
+      ((PDF_Init_Function)(PTP)init)(grid_path[beam]);
+    }
   }
-  else if (m_pdflib=="CTEQ6Sherpa") {
-    defset="cteq6l";
-    defpath="CTEQ6Grid";
-  }
-  else if (m_pdflib=="MSTW08Sherpa") {
-    defset="mstw2008lo";
-    defpath="MSTW08Grid";
-  }
-  std::string grid_path=dataread.GetValue<string>("PDF_GRID_PATH",defpath);
-  if (grid_path.length()==0 || grid_path[0]!='/')
-    grid_path=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+grid_path;
-  ((PDF_Init_Function)(PTP)init)(grid_path);
   int helpi(0);
   if (!dataread.ReadFromFile(helpi,"SHOW_PDF_SETS")) helpi=0;
   if (helpi>0) {
@@ -530,15 +544,19 @@ bool Initialization_Handler::InitializeThePDFs()
       int flav = dataread.GetValue<int>("BUNCH_"+ToString(j+1),defaultflav);
       m_bunch_particles[j] = Flavour((kf_code)abs(flav));
       if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
-      std::string set = dataread.GetValue<std::string>("PDF_SET",defset);
+      std::string set = dataread.GetValue<std::string>("PDF_SET",defset[j]);
+      std::string specialset;
+      if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
+	set=specialset;
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-	(set,PDF_Arguments(m_bunch_particles[j],grid_path,&dataread));
+	(set,PDF_Arguments(m_bunch_particles[j],grid_path[j],&dataread));
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
-	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib
+	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib[j]
 	      +"' for "+ToString(m_bunch_particles[j])+" bunch.");
-      if (i==0) {
+      if (pdfbase && i==0) {
 	msg_Info()<<"PDF set '"<<set<<"' loaded from 'lib"
-		  <<m_pdflib<<"'."<<std::endl;
+		  <<m_pdflib[j]<<"' for beam "<<j+1<<" ("
+		  <<m_bunch_particles[j]<<")."<<std::endl;
 	if (m_bunch_particles[j].IsHadron() && pdfbase->OrderAS()>=0) {
 	  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
 	    msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red

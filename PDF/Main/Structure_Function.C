@@ -35,5 +35,6 @@ bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2)
 
 double Structure_Function::Weight(ATOOLS::Flavour flin)
 {
+  if (!p_pdf->Contains(flin)) return 0.0;
   return m_weight * p_pdf->GetXPDF(flin); 
 }
