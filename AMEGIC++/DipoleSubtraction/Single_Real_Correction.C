@@ -60,11 +60,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_newlib   = false;
 //   m_name+= "_REAL";
   if (m_pinfo.m_amegicmhv>0) {
-    vector<ATOOLS::Flavour> flin;
-    vector<ATOOLS::Flavour> flout;
-    m_pinfo.m_ii.GetExternal(flin);
-    m_pinfo.m_fi.GetExternal(flout);
-    if (CF.MHVCalculable(flin,flout)) p_tree_process = new Single_Process_MHV();
+    if (CF.MHVCalculable(m_pinfo)) p_tree_process = new Single_Process_MHV();
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
   if (!p_tree_process) p_tree_process = new AMEGIC::Single_Process();

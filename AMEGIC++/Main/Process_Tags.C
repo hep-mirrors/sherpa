@@ -515,7 +515,13 @@ bool Check_External_Flavours::PureGluonic(int _nin,Flavour * _in,
 
 
 ///////////////////////////// MHV ///////////////////////////////////
-bool Check_External_Flavours::MHVCalculable(vector<Flavour>& flin,vector<Flavour>& flout) {
+bool Check_External_Flavours::MHVCalculable(const PHASIC::Process_Info& pi) {
+  if (pi.m_fi.m_ps.size()!=pi.m_fi.NExternal()) return 0;
+  vector<ATOOLS::Flavour> flin;
+  vector<ATOOLS::Flavour> flout;
+  pi.m_ii.GetExternal(flin);
+  pi.m_fi.GetExternal(flout);
+
     int n_gl(0);
     int n_q(0);
     int n_l(0);
@@ -541,7 +547,10 @@ bool Check_External_Flavours::MHVCalculable(vector<Flavour>& flin,vector<Flavour
       }
       else n_gl++;
     }
-    if (n_q>4 || flin.size()+flout.size()>9 || n_l>0) return 0;
+    if (flin.size()+flout.size()>9 || n_l>0) return 0;
+    if (n_q<=2) return 1;
+    if (n_q==4 && (pi.m_oew==0||pi.m_maxoew==0) ) return 1;
+    return 0;
 //     if (n_q>4 || flin.size()+flout.size()>9 || n_l>2 || (n_l>0 && n_q!=2)) return 0;
     return 1;
 }

@@ -93,11 +93,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   else lopi.m_fi.m_ps[m_LOpk-m_nin].m_tag=2;
 
   if (lopi.m_amegicmhv>0) {
-    vector<ATOOLS::Flavour> flin;
-    vector<ATOOLS::Flavour> flout;
-    lopi.m_ii.GetExternal(flin);
-    lopi.m_fi.GetExternal(flout);
-    if (CF.MHVCalculable(flin,flout)) p_LO_process = new Single_LOProcess_MHV(lopi);
+    if (CF.MHVCalculable(lopi)) p_LO_process = new Single_LOProcess_MHV(lopi);
     if (lopi.m_amegicmhv==2) { m_valid=0; return; }
   }
   if (!p_LO_process) p_LO_process = new Single_LOProcess(lopi);

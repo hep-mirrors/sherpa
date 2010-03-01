@@ -57,11 +57,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   if (pi.m_nlomode==1 && pi.m_fi.m_nloqcdtype==nlo_type::rsub) return NULL;
 
   if (pi.m_amegicmhv>0) {
-    vector<ATOOLS::Flavour> flin;
-    vector<ATOOLS::Flavour> flout;
-    pi.m_ii.GetExternal(flin);
-    pi.m_fi.GetExternal(flout);
-    if (CF.MHVCalculable(flin,flout)) return new Single_Process_MHV();
+    if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
     if (pi.m_amegicmhv==2) return NULL;
   }
 

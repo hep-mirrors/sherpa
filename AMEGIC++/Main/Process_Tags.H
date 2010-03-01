@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "AMEGIC++/Main/Pol_Info.H"
+#include "PHASIC++/Process/Process_Info.H"
 #include <vector>
 #include <map>
 
@@ -62,7 +63,7 @@ namespace AMEGIC {
     bool ValidProcess(int _nin,ATOOLS::Flavour * _in,int _nout,ATOOLS::Flavour * _out);
     bool PureGluonic(int _nin,ATOOLS::Flavour * _in,int _nout,ATOOLS::Flavour * _out);
 ////////////////////////////////////// MHV //////////////////////////////////////////
-    bool MHVCalculable(std::vector<ATOOLS::Flavour>& flin,std::vector<ATOOLS::Flavour>& flout);
+    bool MHVCalculable(const PHASIC::Process_Info&);
 /////////////////////////////////////////////////////////////////////////////////////
   };
   extern Check_External_Flavours CF;                                                  

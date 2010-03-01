@@ -117,11 +117,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 //   m_name+= "_VIRT";
 
   if (m_pinfo.m_amegicmhv>0) {
-    vector<ATOOLS::Flavour> flin;
-    vector<ATOOLS::Flavour> flout;
-    m_pinfo.m_ii.GetExternal(flin);
-    m_pinfo.m_fi.GetExternal(flout);
-    if (CF.MHVCalculable(flin,flout)) p_LO_process = new Single_LOProcess_MHV(m_pinfo);
+    if (CF.MHVCalculable(m_pinfo)) p_LO_process = new Single_LOProcess_MHV(m_pinfo);
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
   if (!p_LO_process) p_LO_process = new Single_LOProcess(m_pinfo);
