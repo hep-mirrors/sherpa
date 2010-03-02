@@ -131,4 +131,6 @@ namespace ATOOLS {
 
 #include "ATOOLS/Org/Exception_Handler.H"
 
+#define DO_STACK_TRACE ATOOLS::exh->GenerateStackTrace(std::cout)
+
 #endif
