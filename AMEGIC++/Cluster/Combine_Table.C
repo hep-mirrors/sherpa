@@ -611,18 +611,17 @@ double Combine_Table::GetWinner(int &i,int &j,int &k)
 void Combine_Table::AddPossibility(const int i,const int j,const int k,
 				   const int ngraph) 
 {
-  CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k));
+  Leg cl(CombinedLeg(p_legs[ngraph],i,j));
+  CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k,cl.Flav()));
   if (cit!=m_combinations.end()) {
     cit->second.m_graphs.push_back(ngraph);
-    cit->second.m_strong=Max(cit->second.m_strong,
-			     CombinedLeg(p_legs[ngraph],i,j).OrderQCD());
+    cit->second.m_strong=Max(cit->second.m_strong,cl.OrderQCD());
   }
   else {
     Combine_Data cd(0.,ngraph);
-    Leg cl(CombinedLeg(p_legs[ngraph],i,j));
     cd.m_strong=cl.OrderQCD();
     cd.m_mo=cl.Flav();
-    m_combinations[Combine_Key(i,j,k)]=cd;
+    m_combinations[Combine_Key(i,j,k,cl.Flav())]=cd;
   }
 }
 
@@ -667,7 +666,6 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 
 CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 {
-  if (cit->first.m_flav.Kfcode()==kf_none) {
     cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
     for (int i=0;i<m_nlegs;++i)
@@ -684,18 +682,6 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 		   <<"],"<<cit->second.m_mo<<") -> "<<cit->second.m_pt2ij<<std::endl;
     ampl->Delete();
     return cit;
-  }
-  else {
-    CD_List::iterator father= 
-      m_combinations.find(Combine_Key(cit->first.m_i,cit->first.m_j,
-				      cit->first.m_k));
-    if (father!=m_combinations.end()) {
-      cit->second.m_pt2ij = father->second.m_pt2ij;
-      return father;
-    }
-    else THROW(fatal_error,"No father.");
-  }
-  return m_combinations.end();
 }
 
 Combine_Table *Combine_Table::

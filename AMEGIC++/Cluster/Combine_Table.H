@@ -92,7 +92,7 @@ namespace AMEGIC {
     // constructors
     Combine_Key();
     Combine_Key(const int i,const int j,const int k,
-		const ATOOLS::Flavour &flav=ATOOLS::Flavour(kf_none));
+		const ATOOLS::Flavour &flav);
   };// end of class Combine_Key
 
   bool operator<(const Combine_Key &a,const Combine_Key &b);
