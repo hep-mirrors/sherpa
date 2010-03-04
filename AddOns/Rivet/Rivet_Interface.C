@@ -48,6 +48,8 @@ public:
     m_nevt(0), m_sum_of_weights(0.0), m_finished(false),
     m_ignoreblobs(ignoreblobs)
   {
+    if (m_outpath[m_outpath.size()-1]=='/')
+      m_outpath=m_outpath.substr(0,m_outpath.size()-1);
   }
   
   
