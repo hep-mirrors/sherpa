@@ -46,7 +46,6 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   dr.SetInputPath(rpa.GetPath());
   dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
-  m_inttype  = dr.GetValue<int>("INTEGRATOR",6);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
   if (error>0.) {
     m_error   = error;
@@ -684,21 +683,6 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 
 bool Phase_Space_Handler::CreateIntegrators()
 {
-  if (m_nin==1) {
-    if (m_nout==2) m_inttype = 0;
-    if (m_inttype<4)  m_inttype = 0;
-    else m_inttype = 4;
-  }
-  if (m_nin==2) { 
-    if (m_nout==2&&m_inttype==2) m_inttype=6;
-    if (m_nout==2&&m_inttype==3) m_inttype=7;
-    if (p_process->Process()->Info().m_fi.m_nloqcdtype&nlo_type::real) {
-      if (m_inttype==2) m_inttype=3;
-      if (m_inttype>=4&&m_inttype<7) m_inttype=7;
-    }
-    if ((m_inttype<4||m_inttype>20) && (p_fsrchannels!=0)) 
-      p_fsrchannels->DropAllChannels();
-  }
   m_sintegrator=p_fsrchannels->Initialize();
   if (m_nin==2) {
     if (p_beamhandler && p_beamhandler->On()>0) {

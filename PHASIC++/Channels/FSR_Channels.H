@@ -12,6 +12,8 @@ namespace PHASIC {
 
     Phase_Space_Handler *p_psh;
 
+    int m_inttype;
+
     void DropRedundantChannels();
     bool CompareCh(std::string C1,std::string C2);
     bool Compare(const ATOOLS::Vec4D *p1,const ATOOLS::Vec4D *p2);

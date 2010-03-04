@@ -87,7 +87,7 @@ namespace PHASIC {
 
     ATOOLS::Poincare *p_massboost;
 
-    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_dmode;
+    int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode;
     bool m_initialized, m_sintegrator;
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
@@ -171,8 +171,6 @@ namespace PHASIC {
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
     inline long int MaxTrials() const { return m_maxtrials; }
-
-    inline long int IntType() const { return m_inttype; }
 
     inline void SetFSRIntegrator(Multi_Channel *const fsr)
     { p_fsrchannels=fsr;  }

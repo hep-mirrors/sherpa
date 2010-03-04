@@ -9,6 +9,7 @@
 #include "PHASIC++/Channels/VHAAG.H"
 #include "PHASIC++/Channels/VHAAG_ND.H"
 #include "PHASIC++/Channels/VHAAG_res.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Permutation.H"
 
 using namespace PHASIC;
@@ -16,10 +17,32 @@ using namespace ATOOLS;
 
 bool FSR_Channels::Initialize()
 {
+  Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(rpa.GetPath());
+  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  m_inttype=dr.GetValue<int>("INTEGRATOR",6);
+  nin=p_psh->Process()->NIn();
+  nout=p_psh->Process()->NOut();
+  if (nin==1) {
+    if (nout==2) m_inttype = 0;
+    if (m_inttype<4)  m_inttype = 0;
+    else m_inttype = 4;
+  }
+  if (nin==2) { 
+    if (nout==2&&m_inttype==2) m_inttype=6;
+    if (nout==2&&m_inttype==3) m_inttype=7;
+    if (p_psh->Process()->Process()->Info().m_fi.m_nloqcdtype&nlo_type::real) {
+      if (m_inttype==2) m_inttype=3;
+      if (m_inttype>=4&&m_inttype<7) m_inttype=7;
+    }
+    if (m_inttype<4||m_inttype>20) DropAllChannels();
+  }
   bool sintegrator(false);
   int m_nin(p_psh->Process()->NIn());
   int m_nout(p_psh->Process()->NOut());
-  switch (p_psh->IntType()) {
+  switch (m_inttype) {
   case 0:
     {
       bool kk_fs=false;
