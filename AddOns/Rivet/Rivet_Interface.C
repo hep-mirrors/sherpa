@@ -26,7 +26,7 @@ class Rivet_Interface: public Analysis_Interface {
   typedef std::map<std::pair<std::string, int>, AnalysisHandler*> RivetMap;
 private:
 
-  std::string m_inpath, m_infile, m_outpath;
+  std::string m_inpath, m_infile, m_outpath, m_tag;
   std::vector<std::string> m_analyses;
 
   size_t m_nevt;
@@ -43,8 +43,9 @@ public:
   inline Rivet_Interface(const std::string &inpath,
                          const std::string &infile,
                          const std::string &outpath,
-                         const std::vector<btp::code> &ignoreblobs) :
-    m_inpath(inpath), m_infile(infile), m_outpath(outpath),
+                         const std::vector<btp::code> &ignoreblobs,
+                         const std::string &tag) :
+    m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
     m_nevt(0), m_sum_of_weights(0.0), m_finished(false),
     m_ignoreblobs(ignoreblobs)
   {
@@ -74,8 +75,8 @@ public:
         infile=infile.substr(0,infile.find('|'));
       reader.SetInputFile(infile);
       reader.AddComment("#");
-      reader.SetFileBegin("BEGIN_RIVET");
-      reader.SetFileEnd("END_RIVET");
+      reader.SetFileBegin("BEGIN_"+m_tag);
+      reader.SetFileEnd("END_"+m_tag);
       
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
@@ -231,7 +232,7 @@ Analysis_Interface *Rivet_Interface_Getter::operator()
     outpath.erase(outpath.length()-1, 1);
   }
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,outpath, std::vector<btp::code>());
+    (args.m_inpath,args.m_infile,outpath, std::vector<btp::code>(), "RIVET");
 }
 
 void Rivet_Interface_Getter::PrintInfo
@@ -256,7 +257,7 @@ Analysis_Interface *RivetShower_Interface_Getter::operator()
   ignoreblobs.push_back(btp::Hadron_Decay);
   ignoreblobs.push_back(btp::Hadron_Mixing);
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,outpath+".SL", ignoreblobs);
+    (args.m_inpath,args.m_infile,outpath+".SL", ignoreblobs, "RIVETSHOWER");
 }
 
 void RivetShower_Interface_Getter::PrintInfo
