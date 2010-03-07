@@ -482,11 +482,7 @@ bool Initialization_Handler::InitializeThePDFs()
   dataread.SetInputFile(m_isrdat[0]);
   std::string defset[2], grid_path[2];
   for (int beam(0);beam<=1;++beam) {
-#ifdef USING__LHAPDF
-    std::string defaultlib("LHAPDFSherpa");
-#else
     std::string defaultlib("CTEQ6Sherpa");
-#endif  
     if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsLepton())
       defaultlib="PDFESherpa";
     else if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsPhoton())
