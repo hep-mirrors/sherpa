@@ -811,6 +811,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
   msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
+  ATOOLS::Data_Reader read(" ",";","!","=");
+  ATOOLS::msg->SetLevel(read.GetValue<int>("INT_OUTPUT",ATOOLS::msg->Level()));
   int ok = me->CalculateTotalXSecs();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl

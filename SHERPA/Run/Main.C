@@ -45,6 +45,8 @@ int main(int argc,char* argv[])
 		       <<nevt<<" events"<<std::endl
 		       <<"=========================================================================="<<std::endl;
       Generator->InitializeTheEventHandler();
+      ATOOLS::Data_Reader read(" ",";","!","=");
+      ATOOLS::msg->SetLevel(read.GetValue<int>("EVT_OUTPUT",ATOOLS::msg->Level()));
       double starttime=ATOOLS::rpa.gen.Timer().RealTime();
       for (int i=1;i<=ATOOLS::rpa.gen.NumberOfEvents();i++) {
 	if (i%100==0 && i<ATOOLS::rpa.gen.NumberOfEvents()) {
