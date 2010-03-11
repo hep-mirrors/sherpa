@@ -132,7 +132,6 @@ int main(int argc, char *argv[])
     if(rpa.gen.Analysis()) FinishAnalysis();
   }
   catch (Exception Sherpaexception) {
-    Sherpaexception.UpdateLogFile();
     msg_Error()<<Sherpaexception<<endl;
     terminate();
   }
