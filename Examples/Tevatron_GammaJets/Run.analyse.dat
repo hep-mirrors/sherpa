@@ -15,16 +15,11 @@
   STABLE[111] = 1
   STABLE[221] = 1
   CSS_EW_MODE = 1
-  CSS_QCD_MODE = 1
   CSS_PT2MIN = 4
   CSS_ENHANCE = P ENHANCETAG
   CSS_ENHANCE = S{P} 1
 
-  PDF_LIBRARY = CTEQ6Sherpa
-  PDF_SET = cteq6l
-
   ACTIVE[24] = 0
-  FINISH_OPTIMIZATION = Off
 }(run)
 
 (beam){
@@ -42,10 +37,10 @@
 
   Process 93 93 -> 99 99 99{NJET}
   CKKW sqr(QCUT/E_CMS)
-  Integration_Error 0.02 {2};
-  Integration_Error 0.03 {3};
+  Integration_Error 0.003 {2};
+  Integration_Error 0.02 {3};
   Integration_Error 0.08 {4};
-  Integration_Error 0.05 {5};
+  Integration_Error 0.08 {5};
   Selector_File Run.analyse.dat|(coreselector){|}(coreselector) {2};
   Enhance_Factor -1;
   Enhance_Function PPerp2(p[2]) {2};
@@ -70,7 +65,7 @@
 
 (analysis){
   BEGIN_RIVET {
-    -a CDF_2005_S6080774 CDF_2009_S8436959 D0_2006_S6438750
+    -a CDF_2005_S6080774 D0_2010_S8570965 CDF_2009_S8436959 D0_2006_S6438750 D0_2008_S7719523 MC_PHOTONJETS
     JETCONTS 1
     SPLITCOREPROCS 1
   } END_RIVET
