@@ -119,14 +119,14 @@ void MRST04QED_Getter::PrintInfo
      <<std::string(width+4,' ')<<"see hep-ph/0411040";
 }
 
-MRST04QED_Getter *p_get;
+MRST04QED_Getter *p_get_mrst04qed;
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get = new MRST04QED_Getter("MRST04QED");
+  p_get_mrst04qed = new MRST04QED_Getter("MRST04QED");
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  delete p_get_mrst04qed;
 }

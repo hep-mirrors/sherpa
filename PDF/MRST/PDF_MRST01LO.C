@@ -111,14 +111,14 @@ void MRST01LO_Getter::PrintInfo
      <<std::string(width+4,' ')<<"see hep-ph/0201127";
 }
 
-MRST01LO_Getter *p_get;
+MRST01LO_Getter *p_get_mrst01lo;
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get = new MRST01LO_Getter("MRST01LO");
+  p_get_mrst01lo = new MRST01LO_Getter("MRST01LO");
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  delete p_get_mrst01lo;
 }

@@ -119,22 +119,25 @@ PDF_Base *MSTW_Getter::operator()
 void MSTW_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"MSTW 08 fit including O(alpha) contributions"
-     <<std::string(width+4,' ')<<"see arXiv:0901:0002 [hep-ph]";
+  str<<"MSTW 2008 fit, see arXiv:0901:0002 [hep-ph]";
 }
 
-MSTW_Getter *p_get[24];
+MSTW_Getter *p_get_mstw08[45];
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get[0] = new MSTW_Getter("mstw2008lo");
-  p_get[1] = new MSTW_Getter("mstw2008nlo");
-  p_get[2] = new MSTW_Getter("mstw2008nnlo");
+  p_get_mstw08[0] = new MSTW_Getter("mstw2008lo");
+  p_get_mstw08[1] = new MSTW_Getter("mstw2008nlo");
+  p_get_mstw08[2] = new MSTW_Getter("mstw2008nnlo");
   for (int i(10);i<=30;++i) 
-    p_get[i-7] = new MSTW_Getter("mstw2008nlo_asmz1"+ToString(i));
+    p_get_mstw08[i-7] = new MSTW_Getter("mstw2008nlo_asmz1"+ToString(i));
+  for (int i(7);i<=9;++i) 
+    p_get_mstw08[i+17] = new MSTW_Getter("mstw2008nnlo_asmz10"+ToString(i));
+  for (int i(10);i<=27;++i) 
+    p_get_mstw08[i+17] = new MSTW_Getter("mstw2008nnlo_asmz1"+ToString(i));
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<24;++i) delete p_get[i];
+  for (int i(0);i<45;++i) delete p_get_mstw08[i];
 }

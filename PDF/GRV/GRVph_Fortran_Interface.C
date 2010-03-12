@@ -75,14 +75,14 @@ void GRVph_Getter::PrintInfo
   str<<"GRV photon PDF, see PRD45(1992)3986 and PRD46(1992)1973";
 }
 
-GRVph_Getter *p_get;
+GRVph_Getter *p_get_grv;
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get = new GRVph_Getter("GRV");
+  p_get_grv = new GRVph_Getter("GRV");
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  delete p_get_grv;
 }

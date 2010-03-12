@@ -100,14 +100,14 @@ void MRST99_Getter::PrintInfo
      <<std::string(width+4,' ')<<"see hep-ph/9907231";
 }
 
-MRST99_Getter *p_get;
+MRST99_Getter *p_get_mrst99;
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get = new MRST99_Getter("MRST99");
+  p_get_mrst99 = new MRST99_Getter("MRST99");
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  delete p_get_mrst99;
 }

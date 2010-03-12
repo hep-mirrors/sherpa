@@ -190,7 +190,7 @@ std::vector<std::string> LHAPDF_ScanDir(const std::string &path)
   return res;
 }
 
-std::vector<LHAPDF_Getter*> p_get;
+std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib(const std::string &path)
 {
@@ -204,11 +204,11 @@ extern "C" void InitPDFLib(const std::string &path)
   std::vector<std::string> files=LHAPDF_ScanDir
     (lp==NULL?std::string(LHAPDF_PATH)+"/share/lhapdf/PDFsets":std::string(lp));
 #endif
-  p_get.resize(files.size());
-  for (size_t i(0);i<files.size();++i) p_get[i] = new LHAPDF_Getter(files[i]);
+  p_get_lhapdf.resize(files.size());
+  for (size_t i(0);i<files.size();++i) p_get_lhapdf[i] = new LHAPDF_Getter(files[i]);
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (size_t i(0);i<p_get.size();++i) delete p_get[i];
+  for (size_t i(0);i<p_get_lhapdf.size();++i) delete p_get_lhapdf[i];
 }

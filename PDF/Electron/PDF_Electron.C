@@ -113,14 +113,14 @@ void PDFE_Getter::PrintInfo
   str<<"electron PDF";
 }
 
-PDFE_Getter *p_get;
+PDFE_Getter *p_get_pdfe;
 
 extern "C" void InitPDFLib()
 {
-  p_get = new PDFE_Getter("PDFe");
+  p_get_pdfe = new PDFE_Getter("PDFe");
 }
 
 extern "C" void ExitPDFLib()
 {
-  delete p_get;
+  delete p_get_pdfe;
 }

@@ -171,21 +171,21 @@ void CTEQ6_Getter::PrintInfo
      <<" / CTEQ 6.6 fit, see arXiv:0802.0007 [hep-ph]";
 }
 
-CTEQ6_Getter *p_get[8];
+CTEQ6_Getter *p_get_cteq6[8];
 
 extern "C" void InitPDFLib(const std::string &path)
 {
-  p_get[0] = new CTEQ6_Getter("cteq6l1");
-  p_get[1] = new CTEQ6_Getter("cteq6l");
-  p_get[2] = new CTEQ6_Getter("cteq6m");
-  p_get[3] = new CTEQ6_Getter("cteq6.6m");
-  p_get[4] = new CTEQ6_Getter("cteq6.6a1");
-  p_get[5] = new CTEQ6_Getter("cteq6.6a2");
-  p_get[6] = new CTEQ6_Getter("cteq6.6a3");
-  p_get[7] = new CTEQ6_Getter("cteq6.6a4");
+  p_get_cteq6[0] = new CTEQ6_Getter("cteq6l1");
+  p_get_cteq6[1] = new CTEQ6_Getter("cteq6l");
+  p_get_cteq6[2] = new CTEQ6_Getter("cteq6m");
+  p_get_cteq6[3] = new CTEQ6_Getter("cteq6.6m");
+  p_get_cteq6[4] = new CTEQ6_Getter("cteq6.6a1");
+  p_get_cteq6[5] = new CTEQ6_Getter("cteq6.6a2");
+  p_get_cteq6[6] = new CTEQ6_Getter("cteq6.6a3");
+  p_get_cteq6[7] = new CTEQ6_Getter("cteq6.6a4");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<8;++i) delete p_get[i];
+  for (int i(0);i<8;++i) delete p_get_cteq6[i];
 }
