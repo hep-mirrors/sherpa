@@ -466,7 +466,7 @@ void Cluster_Algorithm::Convert()
   p_ampl->SetX2(p_proc->Integrator()->ISR()->X2());
   while (ct_tmp->Down()) {
     int iwin, jwin, kwin;
-    double kt2qcd(sqr(ct_tmp->GetWinner(iwin,jwin,kwin)));
+    double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin));
     ct_tmp=ct_tmp->Down();
     const Leg &win(ct_tmp->GetLeg(iwin));
     Cluster_Amplitude *ampl(p_ampl);

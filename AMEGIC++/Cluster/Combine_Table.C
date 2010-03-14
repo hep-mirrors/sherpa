@@ -589,19 +589,19 @@ double Combine_Table::GetWinner(int &i,int &j,int &k)
   i=m_cdata_winner->first.m_i; 
   j=m_cdata_winner->first.m_j;
   k=m_cdata_winner->first.m_k;
-  if (m_cdata_winner->second.p_down!=NULL) {
-    double kt2qcd(m_cdata_winner->second.p_down->GetLeg(i).KT2QCD());
-    if (kt2qcd<std::numeric_limits<double>::max()) return sqrt(kt2qcd);
-    return sqrt(m_cdata_winner->second.p_down->GetLeg(i).KT2());
-  }
-  THROW(fatal_error,"Legs not combined. No Scale information");
-  return 0.0;
+  return m_cdata_winner->second.m_pt2ij.m_kt2;
 }
 
 void Combine_Table::AddPossibility(const int i,const int j,const int k,
 				   const int ngraph) 
 {
   Leg cl(CombinedLeg(p_legs[ngraph],i,j));
+  if (cl.Flav().Strong()) {
+    if (!p_legs[ngraph][k].Flav().Strong()) return;
+  }
+  else if (cl.Flav().IntCharge()==0) {
+    if (p_legs[ngraph][k].Flav().IntCharge()==0) return;
+  }
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k,cl.Flav()));
   if (cit!=m_combinations.end()) {
     cit->second.m_graphs.push_back(ngraph);
