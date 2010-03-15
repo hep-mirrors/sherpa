@@ -9,7 +9,7 @@
   Loop_Generator Internal;
   Order_EW 2;
   End process;
-  %
+  #
   Process 93 93 -> 11 -12;
   NLO_QCD_Part RS;
   Order_EW 2;

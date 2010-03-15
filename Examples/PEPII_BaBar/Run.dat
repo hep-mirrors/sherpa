@@ -11,15 +11,15 @@
 }(beam)
 
 (processes){
-  %
-  % electron positron -> Y(4S) -> B+ B-
-  %
+  #
+  # electron positron -> Y(4S) -> B+ B-
+  #
   Process 11 -11 -> 300553[a];
   Decay 300553[a] -> 521 -521;
   End process;
-  %
-  % electron positron -> Y(4S) -> B0 B0bar
-  %
+  #
+  # electron positron -> Y(4S) -> B0 B0bar
+  #
   Process 11 -11 -> 300553[a];
   Decay 300553[a] -> 511 -511;
   End process;

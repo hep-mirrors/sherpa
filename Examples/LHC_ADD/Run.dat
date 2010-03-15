@@ -12,9 +12,9 @@
 }(beam)
 
 (processes){
-  %
-  % jet jet -> jet graviton
-  %
+  #
+  # jet jet -> jet graviton
+  #
   Process 93 93 -> 93 39;
   Print_Graphs : Process;
   End process;
