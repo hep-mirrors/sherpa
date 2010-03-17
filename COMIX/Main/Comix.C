@@ -48,7 +48,7 @@ namespace COMIX {
 
     PHASIC::Process_Base *GetProcesses();
 
-    void SetClusterDefinitions(ATOOLS::Cluster_Definitions_Base *const defs);
+    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
     (PHASIC::Process_Base *const proc,const size_t &mode);
@@ -311,7 +311,7 @@ bool Comix::PerformTests()
   return true;
 }
 
-void Comix::SetClusterDefinitions(ATOOLS::Cluster_Definitions_Base *const defs)
+void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 {
   if (p_cluster==NULL) p_cluster = new Cluster_Algorithm(this);
   p_cluster->SetClusterDefinitions(defs);

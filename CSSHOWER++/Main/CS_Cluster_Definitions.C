@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace CSSHOWER;
+using namespace PDF;
 using namespace ATOOLS;
 
 const double s_uxeps=1.0e-3;

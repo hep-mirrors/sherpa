@@ -6,7 +6,7 @@
 #define EXACTMATCH false
 #include "ATOOLS/Org/Getter_Function.C"
 
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 
 using namespace PDF;
 using namespace ATOOLS;

@@ -2,11 +2,11 @@
 #define COMIX_Cluster_Cluster_Algorithm_H
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "COMIX/Amplitude/Amplitude.H"
 #include "COMIX/Cluster/Color_Setter.H"
 
-namespace ATOOLS { class Cluster_Definitions_Base; }
+namespace PDF { class Cluster_Definitions_Base; }
 
 namespace PHASIC { class Subprocess_Info; }
 
@@ -15,10 +15,10 @@ namespace COMIX {
   struct Cluster_Info {
     Vertex_Base *p_v;
     size_t m_k, m_oew, m_oqcd;
-    ATOOLS::CParam m_kt2;
+    PDF::CParam m_kt2;
     ATOOLS::Flavour m_mofl;
     Cluster_Info(Vertex_Base *const v,const size_t &k,
-		 const ATOOLS::CParam &kt2=ATOOLS::CParam(-1.0,-1.0),
+		 const PDF::CParam &kt2=PDF::CParam(-1.0,-1.0),
 		 const size_t &oew=0,const size_t &oqcd=0,
 		 const ATOOLS::Flavour &mofl=ATOOLS::Flavour(kf_none)): 
       p_v(v), m_k(k), m_oew(oew), m_oqcd(oqcd), m_kt2(kt2), m_mofl(mofl) {}
@@ -32,7 +32,7 @@ namespace COMIX {
   typedef std::map<size_t,std::map
 		   <size_t,std::map
 		    <size_t,std::map<ATOOLS::Flavour,
-				     ATOOLS::CParam> > > > Double_Map;
+				     PDF::CParam> > > > Double_Map;
 
   typedef std::map<size_t,ATOOLS::Vec4D> Vec4D_Map;
   typedef std::map<size_t,size_t>        SizeT_Map;
@@ -48,8 +48,8 @@ namespace COMIX {
 
     ATOOLS::Mass_Selector *p_ms;
 
-    ATOOLS::Cluster_Amplitude        *p_ampl;
-    ATOOLS::Cluster_Definitions_Base *p_clus;
+    ATOOLS::Cluster_Amplitude     *p_ampl;
+    PDF::Cluster_Definitions_Base *p_clus;
 
     Amplitude      *p_bg;
     Single_Process *p_xs;
@@ -73,9 +73,9 @@ namespace COMIX {
     bool ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
 			const ATOOLS::ColorID &k) const;
     
-    ATOOLS::CParam GetMeasure(const size_t &idi,const size_t &idj,
-			      const size_t &idk,const ATOOLS::Flavour &mofl,
-			      Double_Map &kt2,const SizeT_Map &cid);
+    PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
+			   const size_t &idk,const ATOOLS::Flavour &mofl,
+			   Double_Map &kt2,const SizeT_Map &cid);
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current_Base *const fcur,
@@ -108,7 +108,7 @@ namespace COMIX {
     inline ATOOLS::Cluster_Amplitude *GetAmplitude() { return p_ampl; }
 
     inline void SetClusterDefinitions
-    (ATOOLS::Cluster_Definitions_Base *const cb) { p_clus=cb; }
+    (PDF::Cluster_Definitions_Base *const cb) { p_clus=cb; }
 
   };// end of class Cluster_Algorithm
 

@@ -2,7 +2,7 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Blob.H"
 #include <iomanip>
@@ -194,7 +194,7 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
 
 Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 			     ATOOLS::Mass_Selector *const ms,
-			     Cluster_Definitions_Base *clus,
+			     PDF::Cluster_Definitions_Base *clus,
 			     Vec4D *moms, Combine_Table *up):
   p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 

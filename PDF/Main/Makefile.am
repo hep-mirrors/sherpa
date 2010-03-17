@@ -6,6 +6,7 @@ libPDF_la_SOURCES     =	\
 		    	Intact.C \
 			Structure_Function.C \
 			ISR_Handler.C \
+			Cluster_Definitions_Base.C \
 			Shower_Base.C
 
 localinc_HEADERS         =	\
@@ -14,4 +15,5 @@ localinc_HEADERS         =	\
 			Intact.H \
 			Structure_Function.H\
 		 	ISR_Handler.H \
+			Cluster_Definitions_Base.H \
 			Shower_Base.H

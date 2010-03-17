@@ -5,7 +5,7 @@
 #include "AMEGIC++/Cluster/Combine_Table.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 
-namespace ATOOLS { class Cluster_Definitions_Base; }
+namespace PDF { class Cluster_Definitions_Base; }
 
 namespace AMEGIC {
 
@@ -22,8 +22,8 @@ namespace AMEGIC {
 
     Process_Base *p_proc;
 
-    ATOOLS::Cluster_Amplitude        *p_ampl;
-    ATOOLS::Cluster_Definitions_Base *p_clus;
+    ATOOLS::Cluster_Amplitude     *p_ampl;
+    PDF::Cluster_Definitions_Base *p_clus;
 
     Combine_Table *p_ct, *p_combi;
 
@@ -76,7 +76,7 @@ namespace AMEGIC {
     inline ATOOLS::Cluster_Amplitude *Amplitude() { return p_ampl; }
 
     inline void SetClusterDefinitions
-    (ATOOLS::Cluster_Definitions_Base *const cb) { p_clus=cb; }
+    (PDF::Cluster_Definitions_Base *const cb) { p_clus=cb; }
 
   };// end of class Amegic_Cluster_Algorithm
 

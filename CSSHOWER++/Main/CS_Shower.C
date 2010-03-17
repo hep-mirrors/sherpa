@@ -84,7 +84,7 @@ namespace CSSHOWER {
     void CleanUp();
 
     // inline functions
-    ATOOLS::Cluster_Definitions_Base * GetClusterDefinitions();
+    PDF::Cluster_Definitions_Base * GetClusterDefinitions();
     ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude();
     bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl);
     double CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl);      
@@ -222,7 +222,7 @@ void CS_Shower::CleanUp()
   m_psp.clear();
 }
 
-ATOOLS::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions() 
+PDF::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions() 
 {
   if (p_cluster==NULL)
     p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);

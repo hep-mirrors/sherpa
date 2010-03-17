@@ -4,13 +4,12 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS { 
-  class Cluster_Definitions_Base; 
-  class Cluster_Amplitude;
-}
-
+namespace ATOOLS { class Cluster_Amplitude; }
 namespace BEAM { class Beam_Spectra_Handler; }
-namespace PDF { class ISR_Handler; }
+namespace PDF {
+  class Cluster_Definitions_Base; 
+  class ISR_Handler;
+}
 namespace MODEL { class Model_Base; }
 
 namespace PHASIC {
@@ -39,7 +38,7 @@ namespace PHASIC {
     virtual Process_Base *GetProcesses() = 0;
 
     virtual void SetClusterDefinitions
-    (ATOOLS::Cluster_Definitions_Base *const defs) = 0;
+    (PDF::Cluster_Definitions_Base *const defs) = 0;
 
     virtual ATOOLS::Cluster_Amplitude *
     ClusterConfiguration(Process_Base *const proc,

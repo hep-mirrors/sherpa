@@ -1,6 +1,6 @@
 #include "EXTRA_XS/Cluster/Cluster_Algorithm.H"
 
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PDF/Main/ISR_Handler.H"

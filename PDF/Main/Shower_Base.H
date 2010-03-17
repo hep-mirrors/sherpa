@@ -8,7 +8,6 @@
 
 namespace ATOOLS {
 
-  class Cluster_Definitions_Base;
   class Cluster_Amplitude;
   class Blob_List;
   class Data_Reader;
@@ -20,11 +19,12 @@ namespace MODEL { class Model_Base; }
 namespace PDF {
 
   class ISR_Handler;
+  class Cluster_Definitions_Base;
 
   class Shower_Base {
   protected:
 
-    ATOOLS::Cluster_Definitions_Base * p_cluster;
+    Cluster_Definitions_Base * p_cluster;
     
     std::string m_name;
     double      m_weight;
@@ -45,7 +45,7 @@ namespace PDF {
     virtual bool ExtractPartons(ATOOLS::Blob_List *const bl) = 0;
     virtual void CleanUp()=0;
 
-    virtual ATOOLS::Cluster_Definitions_Base *GetClusterDefinitions() = 0;
+    virtual Cluster_Definitions_Base *GetClusterDefinitions() = 0;
 
     virtual ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude() = 0;
 

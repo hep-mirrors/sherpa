@@ -40,7 +40,7 @@ namespace EXTRAXS {
 
     Process_Base *GetProcesses();
 
-    void SetClusterDefinitions(ATOOLS::Cluster_Definitions_Base *const defs);
+    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration(Process_Base *const proc,
 						    const size_t &mode);
@@ -144,7 +144,7 @@ Process_Base *Simple_XS::GetProcesses()
   return this;
 }
 
-void Simple_XS::SetClusterDefinitions(Cluster_Definitions_Base *const defs)
+void Simple_XS::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 {
   if (p_cluster==NULL) p_cluster = new Cluster_Algorithm();
   p_cluster->SetClusterDefinitions(defs);

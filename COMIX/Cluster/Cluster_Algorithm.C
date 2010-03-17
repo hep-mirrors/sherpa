@@ -8,7 +8,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "COMIX/Phasespace/PS_Channel.H"
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -20,6 +20,7 @@
 
 using namespace COMIX;
 using namespace PHASIC;
+using namespace PDF;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):

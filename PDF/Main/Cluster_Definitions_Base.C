@@ -1,8 +1,9 @@
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 
+using namespace PDF;
 using namespace ATOOLS;
 
-std::ostream &ATOOLS::operator<<(std::ostream &str,const CParam &cp)
+std::ostream &PDF::operator<<(std::ostream &str,const CParam &cp)
 {
   return str<<"CP{kt="<<sqrt(cp.m_kt2)<<",op="<<
     (cp.m_op2<0.0?"-":"")<<sqrt(dabs(cp.m_op2))

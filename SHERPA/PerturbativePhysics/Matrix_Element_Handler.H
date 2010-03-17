@@ -12,9 +12,6 @@
 #include <map> 
 
 namespace ATOOLS { 
-  class Jet_Finder_Base;
-  class Cluster_Definitions_Base;
-  class Cluster_Amplitude;
 #ifdef USING__GZIP
   class igzstream;
   class ogzstream;

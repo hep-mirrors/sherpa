@@ -1,7 +1,7 @@
 #ifndef CSSHOWER_Main_CS_Cluster_Definitions_H
 #define CSSHOWER_Main_CS_Cluster_Definitions_H
 
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 
 namespace CSSHOWER {
 
@@ -19,7 +19,7 @@ namespace CSSHOWER {
       m_wk(1.0), m_ws(kt2), m_mode(mode), m_kin(kin) {}
   };// end of struct CS_Parameters
 
-  class CS_Cluster_Definitions: public ATOOLS::Cluster_Definitions_Base {
+  class CS_Cluster_Definitions: public PDF::Cluster_Definitions_Base {
   private:
 
     ATOOLS::Mass_Selector *p_ms;
@@ -44,7 +44,7 @@ namespace CSSHOWER {
     CS_Cluster_Definitions(Shower *const shower,const int kmode=1);
 
     // CS cluster kperps
-    ATOOLS::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
+    PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		  ATOOLS::Mass_Selector *const ms=NULL);

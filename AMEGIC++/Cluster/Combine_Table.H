@@ -8,12 +8,9 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Phys/Cluster_Definitions_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 
-namespace ATOOLS { 
-  class Cluster_Definitions_Base; 
-  class Jet_Finder;
-}
+namespace PDF { class Cluster_Definitions_Base; }
 
 namespace AMEGIC {
 
@@ -103,7 +100,7 @@ namespace AMEGIC {
 
   class Combine_Data {
   public:
-    ATOOLS::CParam m_pt2ij;
+    PDF::CParam m_pt2ij;
     double m_sij, m_prop, m_coupling, m_weight;
     int    m_strong;
     Combine_Table *p_down;
@@ -138,7 +135,7 @@ namespace AMEGIC {
 
     Combine_Table  * p_up;
     Leg                ** p_legs;
-    ATOOLS::Cluster_Definitions_Base *p_clus;
+    PDF::Cluster_Definitions_Base *p_clus;
     ATOOLS::Vec4D       * p_moms;
 
     Leg **p_hard;
@@ -177,7 +174,7 @@ namespace AMEGIC {
     // constructors
     Combine_Table(AMEGIC::Process_Base *const proc,
 		  ATOOLS::Mass_Selector *const ms,
-		  ATOOLS::Cluster_Definitions_Base *clus, 
+		  PDF::Cluster_Definitions_Base *clus, 
 		  ATOOLS::Vec4D * moms,Combine_Table * up);
     // destructor
     ~Combine_Table();

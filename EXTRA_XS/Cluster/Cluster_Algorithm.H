@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
-namespace ATOOLS { class Cluster_Definitions_Base; }
+namespace PDF { class Cluster_Definitions_Base; }
 
 namespace EXTRAXS {
 
@@ -12,8 +12,8 @@ namespace EXTRAXS {
   class Cluster_Algorithm {
   private:
 
-    ATOOLS::Cluster_Amplitude        *p_ampl;
-    ATOOLS::Cluster_Definitions_Base *p_clus;
+    ATOOLS::Cluster_Amplitude     *p_ampl;
+    PDF::Cluster_Definitions_Base *p_clus;
 
     bool SetColors();
 
@@ -29,7 +29,7 @@ namespace EXTRAXS {
     inline ATOOLS::Cluster_Amplitude *Amplitude() { return p_ampl; }
 
     inline void SetClusterDefinitions
-    (ATOOLS::Cluster_Definitions_Base *const cb) { p_clus=cb; }
+    (PDF::Cluster_Definitions_Base *const cb) { p_clus=cb; }
 
   };// end of class Cluster_Algorithm
 
