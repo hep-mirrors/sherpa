@@ -24,7 +24,6 @@ Cluster_Algorithm::~Cluster_Algorithm()
 {
   for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
        xsit!=m_xsmap.end();++xsit) delete xsit->second;
-  if (p_ampl) p_ampl->Delete();
   if (p_combi) delete p_combi;
 }
 
@@ -131,7 +130,7 @@ void Cluster_Algorithm::CreateTables
     */ 
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,x1,x2); 
+    p_ct = p_combi->CalcJet(nlegs,x1,x2,NULL,mode); 
   }
   else {
     // use the existing combination table and determine best combination sheme
@@ -444,7 +443,6 @@ void Cluster_Algorithm::Convert()
   msg_Debugging()<<METHOD<<"(): trig = "<<trig<<"\n";
   Combine_Table *ct_tmp(p_ct);
   while (ct_tmp->Up()) ct_tmp=ct_tmp->Up();
-  if (p_ampl) p_ampl->Delete();
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);

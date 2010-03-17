@@ -18,18 +18,19 @@ using namespace ATOOLS;
 
 Perturbative_Interface::Perturbative_Interface
 (Matrix_Element_Handler *const meh,Shower_Handler *const psh):
-  p_me(meh), p_mi(NULL), p_hd(NULL), p_shower(psh) {}
+  p_me(meh), p_mi(NULL), p_hd(NULL), p_shower(psh), p_ampl(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
-  p_me(NULL), p_mi(mi), p_hd(NULL), p_shower(psh) {}
+  p_me(NULL), p_mi(mi), p_hd(NULL), p_shower(psh), p_ampl(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Hadron_Decay_Handler *const hdh,Shower_Handler *const psh):
-  p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh) {}
+  p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh), p_ampl(NULL) {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
+  if (p_ampl) p_ampl->Delete();
 }
 
 bool Perturbative_Interface::SetColours
@@ -64,6 +65,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (!p_shower->On()) {
     m_weight=1.0;
     return Return_Value::Success;
+  }
+  if (p_ampl) {
+    p_ampl->Delete();
+    p_ampl=NULL;
   }
   p_shower->CleanUp();
   msg_Indent();

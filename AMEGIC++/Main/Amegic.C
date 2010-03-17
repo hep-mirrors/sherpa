@@ -189,7 +189,7 @@ void Amegic::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 Cluster_Amplitude *Amegic::ClusterConfiguration
 (PHASIC::Process_Base *const proc,const size_t &mode)
 {
-  if (mode!=2) p_cluster->Cluster(proc->Get<AMEGIC::Process_Base>(),mode);
+  p_cluster->Cluster(proc->Get<AMEGIC::Process_Base>(),mode);
   return p_cluster->Amplitude();
 }
 

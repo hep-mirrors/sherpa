@@ -320,7 +320,7 @@ void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 Cluster_Amplitude *Comix::ClusterConfiguration
 (PHASIC::Process_Base *const proc,const size_t &mode)
 {
-  if (mode!=2) p_cluster->Cluster(proc->Get<COMIX::Single_Process>());
+  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),mode);
   return p_cluster->GetAmplitude();
 }
 

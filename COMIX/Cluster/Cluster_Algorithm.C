@@ -31,7 +31,6 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
-  if (p_ampl) p_ampl->Delete();
 }
 
 template <class SType> ColorID
@@ -337,43 +336,46 @@ bool Cluster_Algorithm::ClusterStep
     msg_Debugging()<<"rejected configuration\n";
     return false;
   }
-#ifdef USING__UWCluster
-  double wmin(std::numeric_limits<double>::max()), rwmin(wmin);
-#else
+  double wmin(std::numeric_limits<double>::max());
   double rwmin(std::numeric_limits<double>::max()), sum(0.0);
-#endif
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
-#ifdef USING__UWCluster
-    if (cit->second.m_kt2.m_op2>=0.0 &&
-	cit->second.m_kt2.m_op2<wmin) {
-      win=cit;
-      wmin=cit->second.m_kt2.m_op2;
+    if (m_wmode!=0) {
+      if (cit->second.m_kt2.m_op2>=0.0 &&
+	  cit->second.m_kt2.m_op2<wmin) {
+	win=cit;
+	wmin=cit->second.m_kt2.m_op2;
+      }
+      else if (cit->second.m_kt2.m_kt2>=0.0 &&
+	       cit->second.m_kt2.m_kt2<rwmin) {
+	rwin=cit;
+	rwmin=cit->second.m_kt2.m_kt2;
+      }
     }
-#else
-    if (cit->second.m_mofl.IsDummy()) continue;
-    if (cit->second.m_kt2.m_op2>=0.0) {
-      sum+=1.0/cit->second.m_kt2.m_op2;
-    }
-#endif
-    else if (cit->second.m_kt2.m_kt2>=0.0 &&
-	     cit->second.m_kt2.m_kt2<rwmin) {
-      rwin=cit;
-      rwmin=cit->second.m_kt2.m_kt2;
+    else {
+      if (cit->second.m_mofl.IsDummy()) continue;
+      if (cit->second.m_kt2.m_op2>=0.0) {
+	sum+=1.0/cit->second.m_kt2.m_op2;
+      }
+      else if (cit->second.m_kt2.m_kt2>=0.0 &&
+	       cit->second.m_kt2.m_kt2<rwmin) {
+	rwin=cit;
+	rwmin=cit->second.m_kt2.m_kt2;
+      }
     }
   }
-#ifndef USING__UWCluster
-  double disc(sum*ran.Get()), psum(0.0);
-  for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
-       cit!=cinfo.end();++cit)
-    if (cit->second.m_kt2.m_op2>=0.0 &&
-	(psum+=1.0/cit->second.m_kt2.m_op2)>=disc) {
-      win=cit;
-      break;
-    }
-  if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
-#endif
+  if (m_wmode==0) {
+    double disc(sum*ran.Get()), psum(0.0);
+    for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
+	 cit!=cinfo.end();++cit)
+      if (cit->second.m_kt2.m_op2>=0.0 &&
+	  (psum+=1.0/cit->second.m_kt2.m_op2)>=disc) {
+	win=cit;
+	break;
+      }
+    if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
+  }
   if (win==cinfo.end()) win=rwin;
   if (win==cinfo.end()) THROW(fatal_error,"Invalid amplitude");
   Cluster_Key wkey(win->first);
@@ -472,8 +474,10 @@ bool Cluster_Algorithm::ClusterStep
   return true;
 }
 
-bool Cluster_Algorithm::Cluster(Single_Process *const xs)
+bool Cluster_Algorithm::Cluster
+(Single_Process *const xs,const size_t &mode)
 {
+  m_wmode=mode;
   p_bg=(p_xs=xs)->GetAmplitude();
   m_swap=xs->Process()->Integrator()->InSwaped();
   if (p_bg==NULL) THROW(fatal_error,"Internal error");
@@ -494,7 +498,6 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
   Current_Base *fcur(ccurs[0]=p_bg->Currents().back().front());
-  if (p_ampl) p_ampl->Delete();
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);

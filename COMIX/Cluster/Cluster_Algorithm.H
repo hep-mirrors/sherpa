@@ -57,7 +57,7 @@ namespace COMIX {
     SizeT_Map m_id;
 
     bool   m_nosol, m_swap;
-    size_t m_cnt, m_rej;
+    size_t m_cnt, m_rej, m_wmode;
     double m_lfrac;
 
     template <class SType>
@@ -102,7 +102,7 @@ namespace COMIX {
 
     ~Cluster_Algorithm();
 
-    bool Cluster(Single_Process *const xs);
+    bool Cluster(Single_Process *const xs,const size_t &mode);
 
     // inline functions
     inline ATOOLS::Cluster_Amplitude *GetAmplitude() { return p_ampl; }

@@ -686,9 +686,8 @@ CalcJet(int nl,const double x1,const double x2,
   while (true) {
     m_nl=nl;
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
-    if (!SelectWinner()) {
-      if (mode==1 ||
-	  (nl==4 && (IdentifyHardProcess() || p_up==NULL))) {
+    if (!SelectWinner(mode)) {
+      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
 	return this;
       }
       delete this;
@@ -709,32 +708,30 @@ CalcJet(int nl,const double x1,const double x2,
   return NULL;
 }
 
-bool Combine_Table::SelectWinner()
+bool Combine_Table::SelectWinner(const size_t &mode)
 {
   CD_List & cl(m_combinations);
   if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator rdata_winner(cl.end());
-#ifdef USING__UWCluster
-  double kt2(std::numeric_limits<double>::max()), rkt2(kt2);
-#else
+  double kt2(std::numeric_limits<double>::max());
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
-#endif
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
-#ifdef USING__UWCluster
-	if (pt2ij<kt2) {
-	  m_cdata_winner=cit;
-	  kt2=pt2ij;
+	if (mode!=0) {
+	  if (pt2ij<kt2) {
+	    m_cdata_winner=cit;
+	    kt2=pt2ij;
+	  }
 	}
-#else
+	else {
 	sum+=1.0/pt2ij;
-#endif
+	}
       }
       else if (cit->second.m_pt2ij.m_kt2>0.0 &&
 	       cit->second.m_pt2ij.m_kt2<rkt2) {
@@ -743,20 +740,20 @@ bool Combine_Table::SelectWinner()
       }
     }
   }
-#ifndef USING__UWCluster
-  double disc(sum*ran.Get()), psum(0.0);
-  for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
-    double pt2ij(cit->second.m_pt2ij.m_op2);
-    if (cit->second.m_graphs.size()==0) continue;
-    if (m_rejected.find(cit->first)==m_rejected.end() &&
-	pt2ij>0.0 && (psum+=1.0/pt2ij)>=disc) {
-      m_cdata_winner=cit;
-      break;
+  if (mode==0) {
+    double disc(sum*ran.Get()), psum(0.0);
+    for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
+      double pt2ij(cit->second.m_pt2ij.m_op2);
+      if (cit->second.m_graphs.size()==0) continue;
+      if (m_rejected.find(cit->first)==m_rejected.end() &&
+	  pt2ij>0.0 && (psum+=1.0/pt2ij)>=disc) {
+	m_cdata_winner=cit;
+	break;
+      }
     }
+    if (sum>0.0 && m_cdata_winner==cl.end())
+      THROW(fatal_error,"Internal error");
   }
-  if (sum>0.0 && m_cdata_winner==cl.end())
-    THROW(fatal_error,"Internal error");
-#endif
   if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
