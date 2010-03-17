@@ -9,8 +9,9 @@ using std::endl;
 using namespace ATOOLS;
 
 namespace ATOOLS {
-std::string FormatTime(const size_t &in,const int mode)
+std::string FormatTime(const int &intime,const int mode)
 {
+  size_t in = (intime<0 ? 0 : intime);
   int days(in/86400), hrs((in%86400)/3600);
   int mins(((in%86400)%3600)/60), secs(((in%86400)%3600)%60);
   std::string out;

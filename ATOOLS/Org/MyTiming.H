@@ -10,7 +10,7 @@
 
 namespace ATOOLS {
 
-  std::string FormatTime(const size_t &in,const int mode=0);
+  std::string FormatTime(const int &in,const int mode=0);
 
   class MyTiming {
     tms starttms, currenttms, stoptms;
