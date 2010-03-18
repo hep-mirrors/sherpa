@@ -22,6 +22,8 @@ namespace COMIX {
 		 const size_t &oew=0,const size_t &oqcd=0,
 		 const ATOOLS::Flavour &mofl=ATOOLS::Flavour(kf_none)): 
       p_v(v), m_k(k), m_oew(oew), m_oqcd(oqcd), m_kt2(kt2), m_mofl(mofl) {}
+    inline bool operator<(const Cluster_Info &ci) const
+    { return p_v<ci.p_v?true:(p_v>ci.p_v?false:m_k<ci.m_k); }
   };// end of struct Cluster_Info
 
   typedef std::pair<size_t,size_t> Cluster_Key;
@@ -37,7 +39,7 @@ namespace COMIX {
   typedef std::map<size_t,ATOOLS::Vec4D> Vec4D_Map;
   typedef std::map<size_t,size_t>        SizeT_Map;
 
-  typedef std::set<Vertex_Base*> Vertex_Set;
+  typedef std::map<Cluster_Info,double> Vertex_Set;
 
   class Single_Process;
 
@@ -80,7 +82,7 @@ namespace COMIX {
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current_Base *const fcur,
 			   ClusterInfo_Map &cinfo,const SizeT_Map &cid);
-    bool CombineWinner(Vertex_Base *const v,Current_Vector &ccurs,
+    bool CombineWinner(const Cluster_Info &ci,Current_Vector &ccurs,
 		       Current_Base *&fcur,ClusterInfo_Map &cinfo);
     bool ClusterStep(const size_t &step,Vertex_Set &nocl,
 		     Current_Vector &ccurs,Current_Base *&fcur,
@@ -102,7 +104,8 @@ namespace COMIX {
 
     ~Cluster_Algorithm();
 
-    bool Cluster(Single_Process *const xs,const size_t &mode);
+    bool Cluster(Single_Process *const xs,
+		 const size_t &mode,const double &kt2);
 
     // inline functions
     inline ATOOLS::Cluster_Amplitude *GetAmplitude() { return p_ampl; }

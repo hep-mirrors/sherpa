@@ -676,7 +676,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 
 Combine_Table *Combine_Table::
 CalcJet(int nl,const double x1,const double x2,
-	ATOOLS::Vec4D * moms,const size_t mode) 
+	ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
 {
   if (p_up==NULL) {
     m_x1 = x1;
@@ -690,18 +690,63 @@ CalcJet(int nl,const double x1,const double x2,
       if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
 	return this;
       }
-      delete this;
-      return NULL;
+      break;
     }
-    // if number of legs is still greater 4 Cluster once more
-    // if number of legs equals 4, determine end situation
+    m_rejected[m_cdata_winner->first]=m_cdata_winner->second.m_pt2ij.m_kt2-kt2;
+    if (kt2>m_cdata_winner->second.m_pt2ij.m_kt2) {
+      msg_Debugging()<<"unordered configuration "<<sqrt(kt2)<<" vs. "
+		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_kt2)<<"\n";
+      continue;
+    }
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
-      Combine_Table *next(NextTable(tab,x1,x2));
+      Combine_Table *next(NextTable(tab,x1,x2,mode,m_cdata_winner->
+				    second.m_pt2ij.m_kt2));
       if (next!=NULL) return next;
     }
-    m_rejected.insert(m_cdata_winner->first);
+    msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
+		   <<m_cdata_winner->first<<"\n";
+  }
+  msg_Debugging()<<"trying unordered configuration\n";
+  std::map<Combine_Key,double> norejected;
+  while (true) {
+    double nmin(std::numeric_limits<double>::max()), pmin(nmin);
+    std::map<Combine_Key,double>::iterator nwin(m_rejected.end()), pwin(nwin);
+    for (std::map<Combine_Key,double>::iterator 
+	   vit(m_rejected.begin());vit!=m_rejected.end();++vit) {
+      if (norejected.find(vit->first)!=norejected.end()) continue;
+      if (vit->second<0.0) {
+	if (-vit->second<nmin) {
+	  nmin=-vit->second;
+	  nwin=vit;
+	}
+      }
+      else {
+	if (vit->second<pmin) {
+	  pmin=vit->second;
+	  pwin=vit;
+	}
+      }
+    }
+    if (nwin==m_rejected.end()) nwin=pwin;
+    if (nwin==m_rejected.end()) {
+      delete this;
+      return NULL;
+    }
+    norejected[nwin->first]=nwin->second;
+    m_rejected.erase(nwin);
+    m_nl=nl;
+    if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
+    if (!SelectWinner(mode)) continue;
+    m_rejected[m_cdata_winner->first]=m_cdata_winner->second.m_pt2ij.m_kt2-kt2;
+    if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
+    Combine_Table *tab(CreateNext());
+    if (tab!=NULL) {
+      Combine_Table *next(NextTable(tab,x1,x2,mode,m_cdata_winner->
+				    second.m_pt2ij.m_kt2));
+      if (next!=NULL) return next;
+    }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";
   }
@@ -719,6 +764,8 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
+    if (IsEqual(sqr(cit->second.m_pt2ij.m_kt2),
+		std::numeric_limits<double>::max())) continue;
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
@@ -805,9 +852,10 @@ Combine_Table *Combine_Table::CreateNext()
 }
 
 Combine_Table *Combine_Table::NextTable(Combine_Table *tab,
-					const double x1,const double x2)
+					const double x1,const double x2,
+					const int mode,const double &kt2)
 {
-  Combine_Table* ct = tab->CalcJet(m_nl,x1,x2);
+  Combine_Table* ct = tab->CalcJet(m_nl,x1,x2,NULL,mode,kt2);
   if (ct!=NULL) m_graph_winner=tab->m_graph_winner;
   else m_cdata_winner->second.p_down=NULL;
   // translate back

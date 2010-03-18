@@ -18,15 +18,26 @@ using namespace ATOOLS;
 
 Perturbative_Interface::Perturbative_Interface
 (Matrix_Element_Handler *const meh,Shower_Handler *const psh):
-  p_me(meh), p_mi(NULL), p_hd(NULL), p_shower(psh), p_ampl(NULL) {}
+  p_me(meh), p_mi(NULL), p_hd(NULL), p_shower(psh),
+  p_ampl(NULL), m_cmode(0)
+{
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.SetInputPath(p_me->Path());
+  read.SetInputFile(p_me->File());
+  m_cmode=read.GetValue<int>("METS_CLUSTER_MODE",0);
+  if (m_cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<m_cmode<<".\n";
+}
 
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
-  p_me(NULL), p_mi(mi), p_hd(NULL), p_shower(psh), p_ampl(NULL) {}
+  p_me(NULL), p_mi(mi), p_hd(NULL), p_shower(psh),
+  p_ampl(NULL), m_cmode(0) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Hadron_Decay_Handler *const hdh,Shower_Handler *const psh):
-  p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh), p_ampl(NULL) {}
+  p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh),
+  p_ampl(NULL), m_cmode(0) {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
@@ -86,7 +97,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   p_me->Process()->Generator()->SetClusterDefinitions
     (p_shower->GetShower()->GetClusterDefinitions());
-  p_ampl=p_me->Process()->Generator()->ClusterConfiguration(p_me->Process());
+  p_ampl=p_me->Process()->Generator()->ClusterConfiguration(p_me->Process(),m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;
   if (p_me->Process()->Parent()->Info().m_fi.NLOType()&nlo_type::born) 
     p_ampl->SetRBMax(p_me->Process()->Integrator()->RBMax());
@@ -146,8 +157,6 @@ int Perturbative_Interface::PerformShowers()
 		  <<"' w_{me}/w_{ps} = "<<weight<<std::endl;
 	Process_Integrator *pint(p_me->Process()->Integrator());
 	pint->AddRBPoint(weight*pint->RBMax());
-	pint->WriteOutRB(p_me->RPath()+"/"+p_me->Process()->
-			 Generator()->Name()+"_"+csh->Name());
       }
       if (weight>ran.Get()) {
 	msg_Debugging()<<" -> accept\n";

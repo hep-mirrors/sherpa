@@ -28,14 +28,14 @@ Cluster_Algorithm::~Cluster_Algorithm()
 }
 
 bool Cluster_Algorithm::Cluster
-(Process_Base *const xs,const size_t mode)
+(Process_Base *const xs,const size_t mode,const double &kt2)
 {
   p_proc=xs;
   int nampl=p_proc->NumberOfDiagrams();
   int nlegs=p_proc->NIn()+p_proc->NOut();
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,p_proc->Integrator()->ISR()->X1(),
-	       p_proc->Integrator()->ISR()->X2(),mode);
+	       p_proc->Integrator()->ISR()->X2(),mode,kt2);
   Vec4D_Vector moms(4);
   ATOOLS::Flavour_Vector fl(4);
   for (int i(0);i<4;++i) {
@@ -107,7 +107,7 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
 
 void Cluster_Algorithm::CreateTables
 (Leg ** legs,const int nampl,
- const double x1,const double x2,const size_t mode) 
+ const double x1,const double x2,const size_t mode,const double &kt2) 
 {
   p_ct = 0;
   // if no combination table exist, create it
@@ -130,11 +130,11 @@ void Cluster_Algorithm::CreateTables
     */ 
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,x1,x2,NULL,mode); 
+    p_ct = p_combi->CalcJet(nlegs,x1,x2,NULL,mode,kt2); 
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,x1,x2,amoms,mode);
+    p_ct = p_combi->CalcJet(nlegs,x1,x2,amoms,mode,kt2);
   }
   //  delete [] amoms;
 }

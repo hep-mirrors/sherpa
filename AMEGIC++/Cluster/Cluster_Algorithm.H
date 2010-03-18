@@ -41,7 +41,8 @@ namespace AMEGIC {
     bool FillLegs(Leg * alegs, Point * root, int & l, int maxl);
     Leg **CreateLegs(int &nampl,const int nlegs);
     void CreateTables(Leg ** legs,const int nampl,
-		      const double x1,const double x2,const size_t mode) ;
+		      const double x1,const double x2,
+		      const size_t mode,const double &kt2) ;
 
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
@@ -70,7 +71,7 @@ namespace AMEGIC {
 
     ~Cluster_Algorithm();
 
-    bool Cluster(Process_Base *const xs,const size_t mode);
+    bool Cluster(Process_Base *const xs,const size_t mode,const double &kt2);
 
     // inline functions
     inline ATOOLS::Cluster_Amplitude *Amplitude() { return p_ampl; }

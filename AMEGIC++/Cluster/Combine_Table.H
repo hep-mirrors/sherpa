@@ -144,7 +144,7 @@ namespace AMEGIC {
     ATOOLS::Vec4D *p_save_moms;
     size_t         m_nl;
 
-    std::set<Combine_Key> m_rejected;
+    std::map<Combine_Key,double> m_rejected;
 
     AMEGIC::Process_Base *p_proc;
     
@@ -160,7 +160,8 @@ namespace AMEGIC {
     bool SelectWinner(const size_t &mode);
     Combine_Table *CreateNext();
     Combine_Table *NextTable(Combine_Table *tab,
-			     const double x1,const double x2);
+			     const double x1,const double x2,
+			     const int mode,const double &kt2);
 
     double Sprime() const;
 
@@ -181,7 +182,7 @@ namespace AMEGIC {
     // member functions
     CD_List::iterator    CalcPropagator(CD_List::iterator &cit);
     Combine_Table * CalcJet(int nl,const double x1,const double x2,
-			    ATOOLS::Vec4D *moms=NULL,const size_t mode=0);
+			    ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
     double               GetWinner(int &i, int &j,int &k);
     bool                 IdentifyHardProcess();

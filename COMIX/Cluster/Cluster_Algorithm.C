@@ -186,7 +186,6 @@ void Cluster_Algorithm::CalculateMeasures
       const Vertex_Vector &in(curs[i]->In()); 
       for (size_t j(0);j<in.size();++j) {
 	if (in[j]->Zero()&&!m_nosol) continue;
-	if (nocl.find(in[j])!=nocl.end()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JA())==ccurs.end()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JB())==ccurs.end()) continue;
 	size_t idi(in[j]->JA()->CId()), idj(in[j]->JB()->CId());
@@ -201,6 +200,7 @@ void Cluster_Algorithm::CalculateMeasures
 	for (size_t k(0);k<p_ampl->Legs().size();++k) {
 	  size_t idk(p_ampl->Leg(k)->Id());
 	  if (idk==m_id[idi] || idk==m_id[idj]) continue;
+	  if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	  ColorID colk(p_ampl->Leg(k)->Col());
 	  if (p_ampl->Legs().size()==4 ||
 	      (in[j]->OrderQCD()==0?
@@ -221,7 +221,6 @@ void Cluster_Algorithm::CalculateMeasures
     const Vertex_Vector &in(fcur->In()); 
     for (size_t j(0);j<in.size();++j) {
       if (in[j]->Zero()&&!m_nosol) continue;
-      if (nocl.find(in[j])!=nocl.end()) continue;
       for (size_t i(1);i<ccurs.size();++i) {
 	if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
 	  if (ccurs[i]->CId()&2) continue;
@@ -238,6 +237,7 @@ void Cluster_Algorithm::CalculateMeasures
 	    for (size_t k(0);k<p_ampl->Legs().size();++k) {
 	      size_t idk(p_ampl->Leg(k)->Id());
 	      if (idk==m_id[idi] || idk==m_id[idj]) continue;
+	      if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	      ColorID colk(p_ampl->Leg(k)->Col());
 	      Flavour mofl((in[j]->JA()==ccurs[i]?
 			    in[j]->JB():in[j]->JA())->Flav().Bar());
@@ -262,9 +262,10 @@ void Cluster_Algorithm::CalculateMeasures
 }
 
 bool Cluster_Algorithm::CombineWinner
-(Vertex_Base *const v,Current_Vector &ccurs,
+(const Cluster_Info &ci,Current_Vector &ccurs,
  Current_Base *&fcur,ClusterInfo_Map &cinfo)
 {
+  Vertex_Base *v(ci.p_v);
   if (v->JC()!=fcur) {
     Current_Base *ja(v->JA()), *jb(v->JB());
     m_id[v->JC()->CId()]=m_id[ja->CId()]+m_id[jb->CId()];
@@ -288,7 +289,7 @@ bool Cluster_Algorithm::CombineWinner
     if (found!=3) THROW(fatal_error,"Invalid clustering");
     msg_Debugging()<<"combine "<<ID(m_id[v->JA()->CId()])
 		   <<"&"<<ID(m_id[v->JB()->CId()])<<" -> "
-		   <<ID(m_id[v->JC()->CId()])<<"\n";
+		   <<ID(m_id[v->JC()->CId()])<<" <-> "<<ID(ci.m_k)<<"\n";
   }
   else {
     bool found(false);
@@ -315,8 +316,8 @@ bool Cluster_Algorithm::CombineWinner
       }
     if (!found) THROW(fatal_error,"Invalid clustering");
     msg_Debugging()<<"combine "<<ID(m_id[v->JC()->CId()])
-		   <<" -> "<<ID(m_id[v->JA()->CId()])
-		   <<"&"<<ID(m_id[v->JB()->CId()])<<"\n";
+		   <<" -> "<<ID(m_id[v->JA()->CId()])<<"&"
+		   <<ID(m_id[v->JB()->CId()])<<" <-> "<<ID(ci.m_k)<<"\n";
   }
   return true;
 }
@@ -380,8 +381,8 @@ bool Cluster_Algorithm::ClusterStep
   if (win==cinfo.end()) THROW(fatal_error,"Invalid amplitude");
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
-  nocl.insert(winfo.p_v);
-  if (!CombineWinner(winfo.p_v,ccurs,fcur,cinfo)) return false;
+  nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2QCD();
+  if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
   if (p_ampl->Legs().size()==4) {
     if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
     bool match(false);
@@ -409,7 +410,10 @@ bool Cluster_Algorithm::ClusterStep
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
 		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin);
     if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
-    if (p.empty()) return false;
+    if (p.empty()) {
+      msg_Debugging()<<"kinematics failed\n";
+      return false;
+    }
   }
   else if (p_ampl->Legs().size()==4) {
     p.push_back(p_ampl->Leg(0)->Mom());
@@ -428,6 +432,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetMuF2(ampl->MuF2());
   p_ampl->SetX1(ampl->X1());
   p_ampl->SetX2(ampl->X2());
+  p_ampl->SetKT2QCD(winfo.m_kt2.m_kt2);
   size_t nid(m_id[wkey.first]+m_id[wkey.second]);
   if (nid&3) {
     if (nid&1) p_ampl->SetX1(ampl->X1()*winfo.m_kt2.m_x);
@@ -475,7 +480,7 @@ bool Cluster_Algorithm::ClusterStep
 }
 
 bool Cluster_Algorithm::Cluster
-(Single_Process *const xs,const size_t &mode)
+(Single_Process *const xs,const size_t &mode,const double &kt2)
 {
   m_wmode=mode;
   p_bg=(p_xs=xs)->GetAmplitude();
@@ -501,6 +506,7 @@ bool Cluster_Algorithm::Cluster
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
+  p_ampl->SetKT2QCD(kt2);
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetOrderEW(p_bg->MaxOrderEW());
   p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
@@ -571,15 +577,50 @@ bool Cluster_Algorithm::Cluster
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
-#ifdef METS__reject_unordered
- 	if (ampl->Legs().size()==4 || 
- 	    ampl->KT2QCD()<p_ampl->KT2QCD()) return true;
-#else
-	return true;
-#endif
+  	if (ampl->Legs().size()==4) return true;
+	if (ampl->KT2QCD()<=ampl->Next()->KT2QCD()) return true;
+	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->KT2QCD())
+		       <<" vs. "<<sqrt(ampl->Next()->KT2QCD())<<"\n";
       }
     p_ampl=ampl;
   } while (oldsize<nocl.size());
+  msg_Debugging()<<"trying unordered configurations\n";
+  if (ampl->Legs().size()==4) return false;
+  if (nocl.empty()) THROW(fatal_error,"Internal error");
+  Vertex_Set nonocl;
+  while (true) {
+    double nmin(std::numeric_limits<double>::max()), pmin(nmin);
+    Vertex_Set::iterator nwin(nocl.end()), pwin(nwin);
+    for (Vertex_Set::iterator
+	   vit(nocl.begin());vit!=nocl.end();++vit) {
+      if (nonocl.find(vit->first)!=nonocl.end()) continue;
+      if (vit->second<0.0) {
+	if (-vit->second<nmin) {
+	  nmin=-vit->second;
+	  nwin=vit;
+	}
+      }
+      else {
+	if (vit->second<pmin) {
+	  pmin=vit->second;
+	  pwin=vit;
+	}
+      }
+    }
+    if (nwin==nocl.end()) nwin=pwin;
+    if (nwin==nocl.end()) {
+      p_ampl=ampl;
+      return false;
+    }
+    nonocl[nwin->first]=nwin->second;
+    nocl.erase(nwin);
+    Current_Vector nccurs(ccurs);
+    Current_Base *nfcur(fcur);
+    ClusterInfo_Map ncinfo(cinfo);
+    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
+      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
+    p_ampl=ampl;
+  }
   return false;
 }
 

@@ -138,9 +138,10 @@ namespace SHERPA {
 
     inline void SetShowerHandler(Shower_Handler *const sh) { p_shower=sh; }
 
-    inline const std::string &RPath() const { return m_respath; }
-
     inline double TotalXS() const { return m_totalxs; }
+
+    inline const std::string &Path() const { return m_path; }
+    inline const std::string &File() const { return m_file; }
 
   };// end of class Matrix_Element_Handler
 
