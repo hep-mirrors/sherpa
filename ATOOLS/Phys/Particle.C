@@ -2,6 +2,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
@@ -22,6 +23,7 @@ namespace ATOOLS {
 
 using namespace ATOOLS;
 
+namespace ATOOLS { template class SP(Part_List); }
 
 bool ATOOLS::Particle::operator==(Particle part)
 {
