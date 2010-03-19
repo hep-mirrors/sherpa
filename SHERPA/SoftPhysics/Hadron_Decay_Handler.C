@@ -69,7 +69,6 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
-  if (p_ampl!=NULL) p_ampl->Delete();
   delete p_cans;
   if (p_hadrons) delete p_hadrons; p_hadrons=NULL;
 }

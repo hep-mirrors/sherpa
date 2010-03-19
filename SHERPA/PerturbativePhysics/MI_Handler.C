@@ -65,7 +65,6 @@ MI_Handler::~MI_Handler()
 #ifdef USING__Amisic
   if (p_amisic!=NULL) delete p_amisic;
 #endif
-  if (p_ampl) p_ampl->Delete();
 }
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
