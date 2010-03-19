@@ -221,7 +221,6 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
-  if (p_ampl) p_ampl->Delete();
   p_ampl = Cluster_Amplitude::New();
   const Vec4D_Vector &moms(xs->Integrator()->Momenta());
   me->SetColours(moms);

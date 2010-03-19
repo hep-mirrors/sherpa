@@ -203,7 +203,6 @@ Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
 {
   msg_Debugging()<<METHOD<<"() {\n";
   msg_Indent();
-  if (p_ampl!=NULL) p_ampl->Delete();
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(this);
   for (int i(0);i<bl->NInP();++i) {
