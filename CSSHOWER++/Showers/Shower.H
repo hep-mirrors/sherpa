@@ -8,7 +8,10 @@
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 
+namespace ATOOLS { class Cluster_Leg; }
+
 namespace CSSHOWER {
+
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -22,15 +25,22 @@ namespace CSSHOWER {
     Parton           * m_last[3];
     int                m_kscheme;
 
+    ATOOLS::Cluster_Leg *p_old[2];
+
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
     double m_weight;
 
+    void   ResetScales(Parton *const split);
+    void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
+			const ATOOLS::Vec4D &pspect,
+			Parton *const split,Parton *const newb,
+			Parton *const newc,const int mode);
     int    SetXBj(Parton *const p) const;
-    PLiter SelectSplitting(double &,const double &);
+    PLiter SelectSplitting(double &);
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);
     bool   PerformSplitting();
-    bool   TrialEmission(double &,const double &,Parton *);
+    bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p);
     void   UpdateDaughters(Parton *const split);
     bool   UpdateDaughters(Parton *const split,Parton *const newpB,

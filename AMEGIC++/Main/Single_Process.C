@@ -945,17 +945,18 @@ void AMEGIC::Single_Process::FillCombinations
   m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
   if (idc!=1) {
     bool in(false);
-    Flavour_Vector cf(m_cflavs[idc]);
+    Flavour fl(ReMap(p->fl,p->GetPropID()));
+    Flavour_Vector cf(m_cflavs[id]);
     for (size_t i(0);i<cf.size();++i)
-      if (cf[i]==p->fl) {
+      if (cf[i]==fl) {
 	in=true;
 	break;
       }
     if (!in) {
-      m_cflavs[idc].push_back(p->fl.Bar());
-      m_cflavs[id].push_back(p->fl);
+      m_cflavs[idc].push_back(fl.Bar());
+      m_cflavs[id].push_back(fl);
       msg_Debugging()<<"  flav "<<ID(idc)<<" / "
-		     <<ID(id)<<" -> "<<p->fl<<"\n";
+		     <<ID(id)<<" -> "<<fl<<"\n";
     }
   }
 }
@@ -963,9 +964,9 @@ void AMEGIC::Single_Process::FillCombinations
 void AMEGIC::Single_Process::FillCombinations()
 {
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
-  size_t nd(NumberOfDiagrams());
+  size_t nd(p_partner->NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
-    Point *p(Diagram(i));
+    Point *p(p_partner->Diagram(i));
     size_t id(1<<p->number);
     FillCombinations(p,id);
   }
@@ -978,7 +979,6 @@ void AMEGIC::Single_Process::FillCombinations()
 bool AMEGIC::Single_Process::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  if (p_partner!=this) return p_partner->Combinable(idi,idj);
   if (m_ccombs.empty()) FillCombinations();
   Combination_Set::const_iterator 
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
@@ -988,7 +988,6 @@ bool AMEGIC::Single_Process::Combinable
 const Flavour_Vector &AMEGIC::Single_Process::
 CombinedFlavour(const size_t &idij)
 {
-  if (p_partner!=this) return p_partner->CombinedFlavour(idij);
   if (m_cflavs.empty()) FillCombinations();
   CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
   if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
