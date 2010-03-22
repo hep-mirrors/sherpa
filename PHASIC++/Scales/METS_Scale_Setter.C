@@ -409,13 +409,9 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
     }
 #endif
     if (ampl->Legs().size()==4) {
-      size_t qcd(0), qc(0);
-      for (size_t i(0);i<4;++i) {
-	int cc(ampl->Leg(i)->Flav().StrongCharge());
-	qc+=abs(cc)==3;
-	qcd+=cc;
-      }
-      if (qcd%8!=0 || (qc==0 && qcd<32)) {
+      if (!proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(1)->Id()) &&
+	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(2)->Id()) &&
+	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(3)->Id())) {
 	ampl=ampl->Prev();
 	ampl->DeleteNext();
 	continue;
@@ -739,7 +735,13 @@ bool METS_Scale_Setter::CheckColors
 {
   if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
       lk->Col().m_i==-1) return true;
-  if (!mo.Strong()) {
+  if (mo.StrongCharge()==8) {
+    if (!lk->Flav().Strong()) return false;
+  }
+  else if (mo.Strong()) {
+    if (lk->Flav().StrongCharge()!=-mo.StrongCharge()) return false;
+  }
+  else {
     if (lk->Flav().StrongCharge()==8) return false;
     ColorID ci(li->Col()), cj(lj->Col());
     if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
