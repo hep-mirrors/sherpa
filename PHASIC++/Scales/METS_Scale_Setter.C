@@ -739,7 +739,8 @@ bool METS_Scale_Setter::CheckColors
     if (!lk->Flav().Strong()) return false;
   }
   else if (mo.Strong()) {
-    if (lk->Flav().StrongCharge()!=-mo.StrongCharge()) return false;
+    if (!(lk->Flav().StrongCharge()==8 ||
+	  lk->Flav().StrongCharge()==-mo.StrongCharge())) return false;
   }
   else {
     if (lk->Flav().StrongCharge()==8) return false;
