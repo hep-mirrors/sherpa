@@ -8,14 +8,14 @@ namespace PDF {
 
   class CTEQ6_Fortran_Interface : public PDF_Base {
   private:
-    std::string m_set,m_path;
+    std::string m_set;
     int         m_anti;
     double      m_f[11], m_x, m_Q;
     bool        m_calculated[11];
 
   public:
 
-    CTEQ6_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string);
+    CTEQ6_Fortran_Interface(const ATOOLS::Flavour,std::string,int);
 
     PDF_Base * GetCopy();
 

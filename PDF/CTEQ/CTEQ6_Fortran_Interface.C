@@ -20,9 +20,8 @@ void errmsg_() {
 
 
 CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
-						 const std::string _set,const int _member,
-						 const std::string _path):
-  m_set(_set), m_path(_path), m_anti(1) 
+						 const std::string _set,const int _member):
+  m_set(_set), m_anti(1) 
 {
   m_member=_member;
   m_xmin=1.e-6;
@@ -34,61 +33,73 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_bunch = _bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   int iset = 0;
+  std::string path = rpa.gen.Variable("SHERPA_SHARE_PATH")+"/";
   
   if (m_set==std::string("cteq6.6m")) {
     iset = 400;
     m_orderas=1;
     m_asmz=0.118;
+    path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a1")) {
     iset = 460;
     m_orderas=1;
     m_asmz=0.125;
+    path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a2")) {
     iset = 461;
     m_orderas=1;
     m_asmz=0.122;
+    path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a3")) {
     iset = 462;
     m_orderas=1;
     m_asmz=0.114;
+    path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a4")) {
     iset = 463;
     m_orderas=1;
     m_asmz=0.112;
+    path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6m")) {
     iset = 1;
     m_orderas=1;
     m_asmz=0.118;
+    path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6d")) {
     iset = 2;
     m_orderas=1;
     m_asmz=0.118;
+    path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6l")) {
     iset = 3;
     m_orderas=1;
     m_asmz=0.117981;
+    path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6l1")) {
     iset = 4;
     m_orderas=0;
     m_asmz=0.129783;
+    path+="CTEQ6Grid";
   }
   if (iset==1 && m_member>0 && m_member<=40) {
     iset=100+m_member;
     m_orderas=1;
     m_asmz=0.118;
+    path+="CTEQ6Grid";
   }
   if (iset==400 && m_member>0 && m_member<=44) {
     iset+=m_member;
     m_orderas=1;
     m_asmz=0.118;
+    path+="CTEQ6Grid";
   }
   
   char buffer[1024];
@@ -96,7 +107,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (err==NULL) {
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
   }
-  int stat=chdir(m_path.c_str());
+  int stat=chdir(path.c_str());
   msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
   setctq6_(iset);
   if (stat==0) {
@@ -104,7 +115,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   }
   else {
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
-	       <<"   path "<<m_path<<" not found "<<std::endl;
+	       <<"   path "<<path<<" not found "<<std::endl;
   }
   
   for (int i=1;i<6;i++) {
@@ -120,7 +131,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 
 PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
 {
-  PDF_Base *copy = new CTEQ6_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+  PDF_Base *copy = new CTEQ6_Fortran_Interface(m_bunch,m_set,m_member);
   m_copies.push_back(copy);
   return copy;
 }
@@ -161,7 +172,7 @@ PDF_Base *CTEQ6_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
-  return new CTEQ6_Fortran_Interface(args.m_bunch,m_key,mode,args.m_path);
+  return new CTEQ6_Fortran_Interface(args.m_bunch,m_key,mode);
 }
 
 void CTEQ6_Getter::PrintInfo
@@ -173,7 +184,7 @@ void CTEQ6_Getter::PrintInfo
 
 CTEQ6_Getter *p_get_cteq6[8];
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_cteq6[0] = new CTEQ6_Getter("cteq6l1");
   p_get_cteq6[1] = new CTEQ6_Getter("cteq6l");

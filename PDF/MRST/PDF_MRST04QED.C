@@ -1,6 +1,7 @@
 #include "PDF/MRST/PDF_MRST04QED.H"
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -33,8 +34,8 @@ inline void MakeFortranString(char *output,std::string input,unsigned int length
   for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
 }
 
-PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch,const std::string path):
-  m_path(path),
+PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch):
+  m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MRST04Grid"),
   m_anti(1),
   m_mode(1)
 {
@@ -62,7 +63,7 @@ PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch,const std::string path)
 
 PDF_Base *PDF_MRST04QED::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MRST04QED(m_bunch,m_path);
+  PDF_Base *copy = new PDF_MRST04QED(m_bunch);
   m_copies.push_back(copy);
   return copy;
 }
@@ -109,7 +110,7 @@ PDF_Base *MRST04QED_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  return new PDF_MRST04QED(args.m_bunch,args.m_path);
+  return new PDF_MRST04QED(args.m_bunch);
 }
 
 void MRST04QED_Getter::PrintInfo
@@ -121,7 +122,7 @@ void MRST04QED_Getter::PrintInfo
 
 MRST04QED_Getter *p_get_mrst04qed;
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_mrst04qed = new MRST04QED_Getter("MRST04QED");
 }

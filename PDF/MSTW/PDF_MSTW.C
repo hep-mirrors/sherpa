@@ -2,6 +2,7 @@
 #define PDF_MSTW_PDF_MSTW_H
 
 #include "PDF/Main/PDF_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "mstwpdf.h"
 
 namespace PDF {
@@ -18,8 +19,7 @@ namespace PDF {
 
   public:
 
-    PDF_MSTW(const ATOOLS::Flavour &bunch,const std::string &path,
-	     const std::string &file,int set); 
+    PDF_MSTW(const ATOOLS::Flavour &bunch,const std::string &file,int set); 
 
     ~PDF_MSTW(); 
 
@@ -44,9 +44,10 @@ using namespace PDF;
 using namespace ATOOLS;
 
 PDF_MSTW::PDF_MSTW
-(const ATOOLS::Flavour &bunch,const std::string &path,
+(const ATOOLS::Flavour &bunch,
  const std::string &bfile,int set):
-  m_path(path), m_file(bfile), m_anti(1)
+  m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MSTW08Grid"),
+  m_file(bfile), m_anti(1)
 {
   m_member=set;
   m_type="MSTW";
@@ -84,7 +85,7 @@ PDF_MSTW::~PDF_MSTW()
 
 PDF_Base *PDF_MSTW::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MSTW(m_bunch,m_path,m_file,m_member);
+  PDF_Base *copy = new PDF_MSTW(m_bunch,m_file,m_member);
   m_copies.push_back(copy);
   return copy;
 }
@@ -113,7 +114,7 @@ PDF_Base *MSTW_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   int set=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
-  return new PDF_MSTW(args.m_bunch,args.m_path,m_key,set);
+  return new PDF_MSTW(args.m_bunch,m_key,set);
 }
 
 void MSTW_Getter::PrintInfo
@@ -124,7 +125,7 @@ void MSTW_Getter::PrintInfo
 
 MSTW_Getter *p_get_mstw08[45];
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_mstw08[0] = new MSTW_Getter("mstw2008lo");
   p_get_mstw08[1] = new MSTW_Getter("mstw2008nlo");

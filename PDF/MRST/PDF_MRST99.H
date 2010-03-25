@@ -19,7 +19,7 @@ namespace PDF {
 
   public:
 
-    PDF_MRST99(const ATOOLS::Flavour,const int,const std::string); 
+    PDF_MRST99(const ATOOLS::Flavour,const int); 
 
     PDF_Base * GetCopy();
 

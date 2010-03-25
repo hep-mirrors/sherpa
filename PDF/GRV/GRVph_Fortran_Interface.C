@@ -77,7 +77,7 @@ void GRVph_Getter::PrintInfo
 
 GRVph_Getter *p_get_grv;
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_grv = new GRVph_Getter("GRV");
 }

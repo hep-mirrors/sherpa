@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace std;
 using namespace PDF;
@@ -11,8 +12,8 @@ c_mrst * PDF_MRST99::p_proton = NULL;
 
 
 PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
-		       const int _set,const std::string _path) :
-  m_set(_set), m_path(_path)//, p_proton(NULL)
+		       const int _set) :
+  m_set(_set), m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
 {
   if ((m_set<1)||(m_set>12)) {
     msg_Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
@@ -44,7 +45,7 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 
 PDF_Base *PDF_MRST99::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MRST99(m_bunch,m_set,m_path);
+  PDF_Base *copy = new PDF_MRST99(m_bunch,m_set);
   m_copies.push_back(copy);
   return copy;
 }
@@ -90,7 +91,7 @@ PDF_Base *MRST99_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
-  return new PDF_MRST99(args.m_bunch,mode,args.m_path);
+  return new PDF_MRST99(args.m_bunch,mode);
 }
 
 void MRST99_Getter::PrintInfo
@@ -102,7 +103,7 @@ void MRST99_Getter::PrintInfo
 
 MRST99_Getter *p_get_mrst99;
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_mrst99 = new MRST99_Getter("MRST99");
 }

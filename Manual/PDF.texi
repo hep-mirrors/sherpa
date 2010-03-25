@@ -38,7 +38,7 @@ void Example_PDF_Getter::PrintInfo
 { str<<"example PDF"; }
 // this lets Sherpa initialize and unload the library
 Example_PDF_Getter *p_get=NULL;
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 { p_get = new Example_PDF_Getter("ExamplePDF"); }
 extern "C" void ExitPDFLib() { delete p_get; }
 @end verbatim

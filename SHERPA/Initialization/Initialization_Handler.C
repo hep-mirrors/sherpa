@@ -43,7 +43,7 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-typedef void (*PDF_Init_Function)(const std::string &);
+typedef void (*PDF_Init_Function)();
 typedef void (*PDF_Exit_Function)();
 
 #define PTP long unsigned int
@@ -480,7 +480,7 @@ bool Initialization_Handler::InitializeThePDFs()
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_isrdat[0]);
-  std::string defset[2], grid_path[2];
+  std::string defset[2];
   for (int beam(0);beam<=1;++beam) {
     std::string defaultlib("CTEQ6Sherpa");
     if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsLepton())
@@ -503,13 +503,10 @@ bool Initialization_Handler::InitializeThePDFs()
       defset[beam]="mstw2008nlo";
       defpath="MSTW08Grid";
     }
-    grid_path[beam]=dataread.GetValue<string>("PDF_GRID_PATH",defpath);
-    if (grid_path[beam].length()==0 || grid_path[beam][0]!='/')
-      grid_path[beam]=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+grid_path[beam];
     if (beam==0 || m_pdflib[1]!=m_pdflib[0]) {
       void *init(s_loader->GetLibraryFunction(m_pdflib[beam],"InitPDFLib"));
       if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
-      ((PDF_Init_Function)(PTP)init)(grid_path[beam]);
+      ((PDF_Init_Function)(PTP)init)();
     }
   }
   int helpi(0);
@@ -545,7 +542,7 @@ bool Initialization_Handler::InitializeThePDFs()
       if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
 	set=specialset;
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-	(set,PDF_Arguments(m_bunch_particles[j],grid_path[j],&dataread));
+	(set,PDF_Arguments(m_bunch_particles[j],&dataread));
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib[j]
 	      +"' for "+ToString(m_bunch_particles[j])+" bunch.");

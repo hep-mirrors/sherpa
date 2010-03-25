@@ -13,7 +13,6 @@
 @cindex PDF_SET_1
 @cindex PDF_SET_2
 @cindex PDF_SET_VERSION
-@cindex PDF_GRID_PATH
 @cindex SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
@@ -102,7 +101,4 @@ within the chosen PDF set. Specifying a negative value, e.g.
 results in Sherpa sampling all sets 1..100, which can be used to obtain 
 the averaging required when employing PDF's from the NNPDF 
 collaboration @mycite{Ball2008by}, @mycite{Ball2009mk}.
-@item PDF_GRID_PATH
-For the internal PDF sets this parameter may be specified to select the
-directory where the PDF grid files are located.
 @end table

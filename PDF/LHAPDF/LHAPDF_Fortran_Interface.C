@@ -192,7 +192,7 @@ std::vector<std::string> LHAPDF_ScanDir(const std::string &path)
 
 std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   // redirect to correct lhapdf path here
   s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");

@@ -16,12 +16,10 @@ namespace PDF {
 
   struct PDF_Arguments {
     ATOOLS::Flavour m_bunch;
-    std::string m_path;
     ATOOLS::Data_Reader *p_read;
     PDF_Arguments(const ATOOLS::Flavour &bunch,
-		  const std::string &path,
 		  ATOOLS::Data_Reader *const read):
-      m_bunch(bunch), m_path(path), p_read(read) {}
+      m_bunch(bunch), p_read(read) {}
   };// end of struct PDF_Arguments
 
   class PDF_Base {

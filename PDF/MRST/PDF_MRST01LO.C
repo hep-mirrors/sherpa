@@ -1,4 +1,5 @@
 #include "PDF/MRST/PDF_MRST01LO.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -31,8 +32,8 @@ inline void MakeFortranString(char *output,std::string input,unsigned int length
   for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
 }
 
-PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path):
-  m_path(path),
+PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch):
+  m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MRST01Grid"),
   m_anti(1),
   m_mode(1)
 {
@@ -57,7 +58,7 @@ PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path):
 
 PDF_Base *PDF_MRST01LO::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MRST01LO(m_bunch,m_path);
+  PDF_Base *copy = new PDF_MRST01LO(m_bunch);
   m_copies.push_back(copy);
   return copy;
 }
@@ -101,7 +102,7 @@ PDF_Base *MRST01LO_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  return new PDF_MRST01LO(args.m_bunch,args.m_path);
+  return new PDF_MRST01LO(args.m_bunch);
 }
 
 void MRST01LO_Getter::PrintInfo
@@ -113,7 +114,7 @@ void MRST01LO_Getter::PrintInfo
 
 MRST01LO_Getter *p_get_mrst01lo;
 
-extern "C" void InitPDFLib(const std::string &path)
+extern "C" void InitPDFLib()
 {
   p_get_mrst01lo = new MRST01LO_Getter("MRST01LO");
 }

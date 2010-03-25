@@ -18,7 +18,7 @@ namespace PDF {
 
   public:
 
-    PDF_MRST04QED(const ATOOLS::Flavour bunch,const std::string path); 
+    PDF_MRST04QED(const ATOOLS::Flavour bunch); 
 
     PDF_Base * GetCopy();
 
