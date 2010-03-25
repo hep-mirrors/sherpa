@@ -17,9 +17,10 @@ namespace PDF {
   struct PDF_Arguments {
     ATOOLS::Flavour m_bunch;
     ATOOLS::Data_Reader *p_read;
+    int m_ibeam;
     PDF_Arguments(const ATOOLS::Flavour &bunch,
-		  ATOOLS::Data_Reader *const read):
-      m_bunch(bunch), p_read(read) {}
+		  ATOOLS::Data_Reader *const read, int ibeam):
+      m_bunch(bunch), p_read(read), m_ibeam(ibeam) {}
   };// end of struct PDF_Arguments
 
   class PDF_Base {

@@ -114,6 +114,8 @@ PDF_Base *MSTW_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   int set=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
+  int ibeam=args.m_ibeam;
+  set=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),set);
   return new PDF_MSTW(args.m_bunch,m_key,set);
 }
 

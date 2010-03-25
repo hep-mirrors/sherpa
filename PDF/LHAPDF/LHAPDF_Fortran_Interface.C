@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include <cstring>
 #include <dirent.h>
@@ -147,6 +148,8 @@ PDF_Base *LHAPDF_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
+  int ibeam=args.m_ibeam;
+  mode=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),mode);
   return new LHAPDF_Fortran_Interface(args.m_bunch,m_key,mode);
 }
 
@@ -194,9 +197,6 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  // redirect to correct lhapdf path here
-  s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
-  s_loader->LoadLibrary("LHAPDF");
 #ifdef LHAPDF__NATIVE__WRAPPER
   std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
 #else
