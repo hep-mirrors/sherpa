@@ -733,8 +733,6 @@ bool METS_Scale_Setter::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
 {
-  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
-      lk->Col().m_i==-1) return true;
   if (mo.StrongCharge()==8) {
     if (!lk->Flav().Strong()) return false;
   }
@@ -744,11 +742,15 @@ bool METS_Scale_Setter::CheckColors
   }
   else {
     if (lk->Flav().StrongCharge()==8) return false;
+    if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+	lk->Col().m_i==-1) return true;
     ColorID ci(li->Col()), cj(lj->Col());
     if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
     if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
     return false;
   }
+  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+      lk->Col().m_i==-1) return true;
   ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
   if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
   if (li->Flav().StrongCharge()==3) {
