@@ -12,6 +12,7 @@
 #endif
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
@@ -492,8 +493,12 @@ bool Initialization_Handler::InitializeThePDFs()
     if (dataread.ReadFromFile(speciallib,"PDF_LIBRARY_"+ToString(beam+1)))
       m_pdflib[beam]=speciallib;
     if (m_pdflib[beam]=="LHAPDFSherpa") {
+#ifdef USING__LHAPDF
       s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
       s_loader->LoadLibrary("LHAPDF");
+#else
+      THROW(fatal_error, "Sherpa not compiled with LHAPDF support.");
+#endif
       defset[beam]="cteq66.LHgrid";
       defpath="PDFSets";
     }
