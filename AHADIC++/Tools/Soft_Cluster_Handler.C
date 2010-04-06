@@ -115,8 +115,8 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,boo
   }
 
   if (ShiftMomenta(clin)) {
-    AttachHadronsToBlob(clin,blob);
-    return true;
+    //msg_Out()<<"From "<<METHOD<<"."<<std::endl;
+    return AttachHadronsToBlob(clin,blob);
   }
 
   msg_Error()<<"Error in "<<METHOD<<" : "<<std::endl
@@ -171,8 +171,10 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
     }
     return true;
   }  
-  if (UpdateClusterDecayKinematics((*clin->begin())->GetPrev()))
+  if (UpdateClusterDecayKinematics((*clin->begin())->GetPrev())) {
+    //msg_Out()<<"From "<<METHOD<<"."<<std::endl;
     return AttachHadronsToBlob(clin,blob);
+  }
   return false;
 }
 
@@ -188,6 +190,8 @@ bool Soft_Cluster_Handler::AttachHadronsToBlob(Cluster_List * clin,ATOOLS::Blob 
     case 1:
       part = cluster->GetSelf();
       part->SetFinalMass();
+      //if (dabs(sqr(part->Flav().HadMass())-part->Momentum().Abs2())>1.e-6)
+      //	msg_Out()<<" @@@@@@@@@@@@@@ Bad masses: "<<std::endl<<(*part)<<std::endl;
       blob->AddToOutParticles(part);
       msg_Debugging()<<"$$ attach one hadron ("<<part->Flav()<<", "<<part->Momentum()<<") "
 		     <<"from cluster "<<cluster->Number()<<"."<<std::endl;
@@ -462,13 +466,13 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
   std::vector<double> masses;
   std::vector<Vec4D>  momenta;
   Cluster * cluster;
-  //std::cout<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
+  std::cout<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
     //std::cout<<"   "<<cluster->Number()<<" ("<<cluster->size()<<") ";
     switch (cluster->size()) {
     case 1: 
-      //std::cout<<"with "<<(*cluster)[0]<<"."<<std::endl;
+      //std::cout<<"with "<<(*cluster)[0]<<" from "<<cluster->Momentum().Abs2()<<"."<<std::endl;
       masses.push_back((*cluster)[0].HadMass());
       momenta.push_back(cluster->Momentum());
       ++size;
@@ -796,6 +800,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   if (constrained && m_pt2max<p2max) pt2max = m_pt2max;
 
   if (cluster->GetTrip()->m_info=='L' || cluster->GetAnti()->m_info=='L') {
+    // maybe replace m_pt2max -> m_pt2min in eq. below.
     pt2max *= sqr(m_pt2max)/(Max(m_pt2max,m12)*Max(m_pt2max,m22)); 
     pt2min *= sqr(m_pt2min)/(Max(m_pt2min,m12)*Max(m_pt2min,m22));
   } 
@@ -850,6 +855,10 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 		<<"                      "<<"("<<right->Flav()<<", "<<right->Momentum()<<") "
 		<<"from cluster "<<cluster->Number()<<" : "<<cluster->Momentum()<<"."<<std::endl;
 
+  //if (dabs(sqr(left->Flav().HadMass())-left->Momentum().Abs2())>1.e-6 ||
+  //   dabs(sqr(right->Flav().HadMass())-right->Momentum().Abs2())>1.e-6)
+  // msg_Out()<<" @@@@@@@@@@@@@@ Bad masses: "<<std::endl<<(*cluster)<<std::endl;
+
   if (blob!=NULL) {
     blob->AddToOutParticles(left);
     blob->AddToOutParticles(right);
@@ -867,7 +876,9 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 
 bool Soft_Cluster_Handler::ShiftMomenta(Cluster_List * clin)
 {
-  if (!TryLocalCompensation(clin)) return ForceMomenta(clin);
+  if (!TryLocalCompensation(clin)) {
+    return ForceMomenta(clin);
+  }
   return true;
 }
 
@@ -940,11 +951,18 @@ bool Soft_Cluster_Handler::TryLocalCompensation(Cluster_List * clin)
       masses.push_back(mass2);
       momenta.push_back(cluster->Momentum());
       momenta.push_back(partner->Momentum());
+      //msg_Debugging()<<METHOD<<" for "<<mass1<<" & "<<mass2<<" vs. "
+      //	       <<cluster->Momentum()<<" & "<<partner->Momentum()<<"."<<std::endl;
       if (!hadpars.AdjustMomenta(2,&momenta.front(),&masses.front())) {
+	//msg_Error()<<" Adjust momenta failed!"<<std::endl;
 	//msg_Tracking()<<"@@@ "<<METHOD<<": Tried "<<partner->Number()
 	//	 <<" for cluster "<<cluster->Number()<<", adjusting didn't work."<<std::endl;
 	return false;
       }
+      cluster->SetFlav((*cluster)[0]);
+      cluster->SetMomentum(momenta[0]);
+      partner->RescaleMomentum(momenta[1]);
+      partner->SetMomentum(momenta[1]);
       break;
     case 2:
     case 0:
