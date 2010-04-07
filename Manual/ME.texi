@@ -105,11 +105,13 @@ during clustering and the lowest invariant mass in the core process.
 
 @item METS
 The matrix element is clustered onto a core 2->2 configuration using a
-k_T-type algorithm with recombination into on-shell particles, which
-are determined according to run-time information from the matrix element
-generator.
-Scales are defined as the minimum of the largest transverse momentum
-during clustering and the lowest invariant mass in the core process.
+k_T-type algorithm with recombination into on-shell particles. Their 
+corresponding flavours are determined using run-time information from 
+the matrix element generator.
+Scales are defined as the lowest invariant mass or negative virtuality 
+in the core process. For core interactions which are pure QCD processes 
+scales are set to the maximum transverse mass squared of the outgoing
+particles.
 @sp 1
 This is the default scale scheme in Sherpa, since it is employed
 for truncated shower merging, see @ref{Merging ME and PS}.
