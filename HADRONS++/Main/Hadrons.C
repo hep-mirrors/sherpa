@@ -35,8 +35,10 @@ Hadrons::Hadrons( string path, string file, string constfile ) :
   msg_Tracking()<<"In Hadrons: ("<<path<<") "<<constfile<<std::endl;
   p_decaymap = new Hadron_Decay_Map(path, file, constfile);
   p_decaymap->ReadInConstants();
+  p_decaymap->ReadHadronAliases(path, "HadronAliases.dat");
   p_decaymap->SetHadronProperties();
-  p_decaymap->Read();
+  p_decaymap->Read(path, file);
+  p_decaymap->Read(path, "AliasDecays.dat");
   p_decaymap->Initialise();
   p_decaymap->ReadFixedTables();
   p_mixinghandler = new Mixing_Handler(p_decaymap);

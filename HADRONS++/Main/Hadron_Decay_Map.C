@@ -72,24 +72,48 @@ void Hadron_Decay_Map::SetHadronProperties()
   }
 }
 
-void Hadron_Decay_Map::Read()
+void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
+{
+  Data_Reader reader = Data_Reader("->", ";", "#", "");
+  reader.AddWordSeparator("\t");
+  reader.SetAddCommandLine(false);
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
+  
+  vector<vector<string> > aliases;
+  reader.MatrixFromFile(aliases);
+  
+  for (size_t i=0;i<aliases.size();++i) {
+    if (aliases[i].size()!=2) {
+      msg_Error()<<METHOD<<": Wrong syntax in hadron alias file."<<endl
+          <<"  "<<aliases[i]<<endl;
+    }
+    kf_code alias = ToType<kf_code>(aliases[i][0]);
+    kf_code real = ToType<kf_code>(aliases[i][1]);
+    m_startmd.m_aliases[alias]=real;
+    Particle_Info* aliasinfo = new Particle_Info(*s_kftable[real]);
+    aliasinfo->m_kfc=alias;
+    s_kftable[alias]=aliasinfo;
+    msg_Info()<<METHOD<<" created alias "<<alias<<" for "<<Flavour(alias)<<endl;
+  }
+}
+
+void Hadron_Decay_Map::Read(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
-  reader.SetInputPath(m_decaypath);
-  reader.SetInputFile(m_decayfile);
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
   
   vector<vector<string> > Decayers;
-  if(!reader.MatrixFromFile(Decayers)) {
-    msg_Error()<<METHOD<<" Warning:\n"
-      <<"   No decayers found in "<<m_decaypath<<m_decayfile<<"."<<endl;
-  }
-  else {
-    msg_Info()<<METHOD<<":"<<endl
-              <<"   Initializing hadron decay tables. This may take some time."
+  if(reader.MatrixFromFile(Decayers)) {
+    msg_Info()<<METHOD<<":"
+              <<"   Initializing from "<<file<<", this may take some time."
               <<endl;
   }
   

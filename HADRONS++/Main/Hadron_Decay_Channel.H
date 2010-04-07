@@ -27,6 +27,7 @@ namespace HADRONS {
   class Hadron_Decay_Channel : public ATOOLS::Decay_Channel {
   private:
     ATOOLS::Flavour       * p_flavours;
+    ATOOLS::Flavour       * p_physicalflavours;
     ATOOLS::Vec4D         * p_momenta;
     std::vector<MEPair>     m_mes;    // MEs with their relative factors
     std::vector<CurrentsPair> m_currents;

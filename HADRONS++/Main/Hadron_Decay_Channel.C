@@ -27,6 +27,7 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
   if(p_amplitudes) delete p_amplitudes; p_amplitudes=NULL;
   if(p_momenta)    delete [] p_momenta; p_momenta=NULL;
   if(p_flavours)   delete [] p_flavours; p_flavours=NULL;
+  if(p_physicalflavours) delete [] p_physicalflavours; p_physicalflavours=NULL;
   for(size_t i=0;i<m_mes.size();i++)      delete m_mes[i].second;
   for(size_t i=0;i<m_currents.size();i++) {
     delete m_currents[i].second.first;
@@ -65,18 +66,27 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     msg_Error()<<"  Total outgoing mass heavier than incoming particle. Will abort."<<endl;
     abort();
   }
-  p_amplitudes = new Spin_Amplitudes(Flavours(),GetN(),Complex(0.0,0.0));
+  p_physicalflavours=new Flavour[GetN()];
+  for (int i=0; i<GetN(); ++i) {
+    map<kf_code,kf_code>::const_iterator it =
+        startmd.m_aliases.find(p_flavours[i].Kfcode());
+    if (it!=startmd.m_aliases.end())
+      p_physicalflavours[i] = Flavour(it->second, p_flavours[i].IsAnti());
+    else
+      p_physicalflavours[i] = p_flavours[i];
+  }
+  p_amplitudes = new Spin_Amplitudes(p_physicalflavours,GetN(),Complex(0.0,0.0));
   p_ps = new HD_PS_Base(this);
   // check for identical particles
   Flavour refflav;
   double symfactor (1);         
   int l(0), lfac (1);              
   for( int i=0; i<NOut(); ++i ) {
-    refflav = p_flavours[i+1];
+    refflav = p_physicalflavours[i+1];
     l = 0;
     lfac = 1;
     for( int j=0; j<NOut(); ++j ) {
-      if( p_flavours[j+1]==refflav ) {
+      if( p_physicalflavours[j+1]==refflav ) {
         l++;
         lfac *= l;
       }
@@ -147,7 +157,7 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     for(int i=0;i<NOut()+1;i++) {
       decayindices[i]=i;
     }
-    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NOut()+1,
+    m_mes.push_back(MEPair(1.0,new Generic(p_physicalflavours,NOut()+1,
                                            decayindices,"Generic")));
     delete [] decayindices;
     p_ps->AddChannel( string("Isotropic"), 1., m_startmd );
@@ -266,7 +276,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
     for(int i=0;i<NOut()+1;i++) {
       decayindices[i]=i;
     }
-    m_mes.push_back(MEPair(1.0,new Generic(p_flavours,NOut()+1,
+    m_mes.push_back(MEPair(1.0,new Generic(p_physicalflavours,NOut()+1,
                                            decayindices,"Generic")));
     delete [] decayindices;
   }
@@ -498,7 +508,7 @@ bool Hadron_Decay_Channel::SetColorFlow(Particle_Vector outparts,int n_q, int n_
 // differential with random PS points; just for weight
 double Hadron_Decay_Channel::Differential()
 {
-  p_momenta[0] = Vec4D(p_flavours[0].HadMass(),0.,0.,0.);        // decay from rest
+  p_momenta[0] = Vec4D(p_physicalflavours[0].HadMass(),0.,0.,0.);        // decay from rest
   p_ps->GeneratePoint(p_momenta,(PHASIC::Cut_Data*)(NULL));     // generate a PS point
   p_ps->GenerateWeight(p_momenta,(PHASIC::Cut_Data*)(NULL));    // calculate its weight factor
   double weight = p_ps->Weight();                               // get weight factor
@@ -539,7 +549,7 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
   fi.n=resultstrings.size()-1;
   int* indices = new int[fi.n]; // will get deleted by Current_Base
   for(int i=0; i<fi.n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
-  fi.flavs=p_flavours; fi.indices=indices;
+  fi.flavs=p_physicalflavours; fi.indices=indices;
 
   Current_Base* current = Current_Getter_Function::GetObject(resultstrings[0],fi);
   if(current==NULL) {
@@ -573,7 +583,7 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
   fi.n=NOut()+1;
   int* indices = new int[fi.n]; // will get deleted by HD_ME_Base
   for(int i=0; i<fi.n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
-  fi.flavs=p_flavours; fi.indices=indices;
+  fi.flavs=p_physicalflavours; fi.indices=indices;
 
   HD_ME_Base* me = HD_ME_Getter_Function::GetObject(resultstrings[0],fi);
   if(me==NULL) {

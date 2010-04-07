@@ -24,6 +24,8 @@ namespace HADRONS
   typedef std::map<std::string,double> String_Map;
 
   struct GeneralModel: public String_Map {
+    std::map<kf_code, kf_code> m_aliases;
+    
   public:
     inline double operator()(const std::string &tag,const double &def) const 
     {

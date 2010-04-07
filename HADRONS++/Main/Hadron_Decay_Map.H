@@ -39,7 +39,8 @@ namespace HADRONS {
 	      std::string file,
               std::string constfile );
     ~Hadron_Decay_Map();
-    void Read();
+    void Read(const std::string& path, const std::string& file);
+    void ReadHadronAliases(const std::string& path, const std::string& file);
     void Initialise();
     void ReadFixedTables();
     void ReadInConstants();
