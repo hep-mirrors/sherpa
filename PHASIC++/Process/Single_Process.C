@@ -7,6 +7,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -123,4 +124,15 @@ CombinedFlavour(const size_t &idij)
 {
   static Flavour_Vector fls(1,kf_none);
   return fls;
+}
+
+double Single_Process::BeamWeight(const double& Q2)
+{
+  if (p_int->Beam()->On()>0) {
+    p_int->Beam()->MtxLock();
+    p_int->Beam()->CalculateWeight(Q2);
+    p_int->Beam()->MtxUnLock();
+    return p_int->Beam()->Weight();
+  }
+  else return 1.;
 }

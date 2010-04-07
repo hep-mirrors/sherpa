@@ -21,6 +21,7 @@ using namespace EXTRAXS;
 using namespace ATOOLS;
 using PHASIC::nlo_type;
 using PHASIC::Process_Info;
+using PHASIC::stp;
 
 Single_Process::Single_Process() :
   p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo)
@@ -116,6 +117,7 @@ double Single_Process::Differential(const ATOOLS::Vec4D_Vector& momenta)
     else m_lastlumi=1.;
   }
   else m_lastlumi=1.;
+  m_lastlumi *= BeamWeight(p_scale->Scale(stp::fac));
   return m_last=m_lastxs*m_lastlumi*KFactor();
 }
 
@@ -133,6 +135,7 @@ double Single_Process::Differential2()
     }
     double tmp=m_lastxs*p_int->ISR()->Weight2(&m_flavs.front()); 
     p_int->ISR()->MtxUnLock();
+    tmp *= BeamWeight(p_scale->Scale(stp::fac));
     m_last+=tmp*=KFactor2();
     return tmp;
   }

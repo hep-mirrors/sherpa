@@ -294,14 +294,6 @@ void Phase_Space_Handler::CalculateME()
     else {
       m_result_2=p_active->Process()->Differential2();
     }
-    if (p_beamhandler->On()>0) {
-      double Q2(p_active->Process()->ScaleSetter()->CalculateScale(p_lab));
-      p_beamhandler->CalculateWeight(Q2);
-      m_result_1*=p_beamhandler->Weight();
-      m_result_2*=p_beamhandler->Weight();
-      PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-      if (nlos) (*nlos)*=p_beamhandler->Weight();	
-    }
   }
 }
 

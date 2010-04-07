@@ -820,9 +820,12 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool loo
     double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
     if (p_pl[0].num>1) pols[0] = 99;
     if (p_pl[1].num>1) pols[1] = 99;
+    p_int->Beam()->MtxLock();
     m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
+    p_int->Beam()->MtxUnLock();
   }
   else  m_lastlumi = 1.;
+  m_lastlumi *= BeamWeight(p_scale->Scale(stp::fac));
 
   return m_last = m_Norm * m_lastxs * m_lastlumi*KFactor();
 }
@@ -840,6 +843,9 @@ double AMEGIC::Single_Process::DSigma2()
   }
   double tmp = m_Norm * m_lastxs * p_int->ISR()->Weight2(&m_flavs.front()); 
   p_int->ISR()->MtxUnLock();
+  tmp *= BeamWeight(p_scale->Scale(stp::fac));
+  /// @todo Is there any reason why there is no Beam()->Weight(pols, dofs) here
+  /// and in all other Amegic DSigma2()?
   m_last    += tmp*=KFactor2();
   return tmp;
 }

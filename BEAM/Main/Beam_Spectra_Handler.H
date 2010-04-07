@@ -6,6 +6,10 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Info_Key.H"
 
+#ifdef USING__Threading
+#include <pthread.h> 
+#endif
+
 namespace ATOOLS { class Data_Reader; }
 
 namespace BEAM {
@@ -23,6 +27,9 @@ namespace BEAM {
     ATOOLS::Vec4D         m_fiXVECs[2];
     std::string           m_name,m_type;
     ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
+#ifdef USING__Threading
+    pthread_mutex_t m_mtx;
+#endif
   private:
     bool InitKinematics(ATOOLS::Data_Reader *);
     bool SpecifySpectra(ATOOLS::Data_Reader *);
@@ -70,6 +77,9 @@ namespace BEAM {
     int             On()                  { return m_mode; }
     int             Polarisation()        { return m_polarisation; }
     Beam_Base *     GetBeam(const int i)  { return p_BeamBase[i]; }
+    
+    void MtxLock();
+    void MtxUnLock();
   };
 
   /*!

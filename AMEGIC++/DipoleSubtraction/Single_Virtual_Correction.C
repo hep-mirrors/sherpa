@@ -296,6 +296,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
       m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
     }
     else m_lastlumi=1.;
+    m_lastlumi*=BeamWeight(Partner()->ScaleSetter()->Scale(stp::fac));
     int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
     double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
     if (p_pl[0].num>1) pols[0] = 99;
@@ -316,6 +317,7 @@ double Single_Virtual_Correction::DSigma2()
   if (p_partner != this) kpterm*=m_sfactor;
   if (!p_int->ISR()->CalculateWeight2(Partner()->ScaleSetter()->Scale(stp::fac))) return 0.0;
   double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* Partner()->KFactor2(); 
+  tmp *= BeamWeight(Partner()->ScaleSetter()->Scale(stp::fac));
   m_last    += tmp;
   return tmp;
 }

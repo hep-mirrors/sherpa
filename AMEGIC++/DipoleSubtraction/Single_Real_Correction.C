@@ -212,11 +212,13 @@ double Single_Real_Correction::DSigma(const ATOOLS::Vec4D_Vector &moms)
       if (m_subevtlist[i]->m_scale!=scale) {
 	multiscale++;
 	p_int->ISR()->CalculateWeight(m_subevtlist[i]->m_scale);
-	(*m_subevtlist[i])*=p_int->ISR()->Weight(&m_flavs.front());
+	(*m_subevtlist[i])*=p_int->ISR()->Weight(&m_flavs.front())*
+                            BeamWeight(m_subevtlist[i]->m_scale);
       }
     if (multiscale<m_subevtlist.size()) {
       p_int->ISR()->CalculateWeight(scale);
-      m_lastlumi = p_int->ISR()->Weight(&m_flavs.front());
+      m_lastlumi = p_int->ISR()->Weight(&m_flavs.front())*
+                   BeamWeight(scale);
       for (size_t i=0;i<m_subevtlist.size();++i) 
 	if (m_subevtlist[i]->m_scale==scale) (*m_subevtlist[i])*=m_lastlumi;
     }
@@ -240,13 +242,14 @@ double Single_Real_Correction::DSigma2() {
       multiscale++;
       p_int->ISR()->CalculateWeight2(m_subevtlist[i]->m_scale);
       m_subevtlist[i]->m_result+=m_subevtlist[i]->m_me
-	*p_int->ISR()->Weight2(&m_flavs.front());
+	*p_int->ISR()->Weight2(&m_flavs.front())
+        *BeamWeight(m_subevtlist[i]->m_scale);
     }
   }
   double tmp;
   if (multiscale<m_subevtlist.size()) {
     p_int->ISR()->CalculateWeight2(scale);
-    tmp = p_int->ISR()->Weight2(&m_flavs.front());
+    tmp = p_int->ISR()->Weight2(&m_flavs.front())*BeamWeight(scale);
     for (size_t i=0;i<m_subevtlist.size();++i) {
       if (m_subevtlist[i]->m_scale==scale) {
 	m_subevtlist[i]->m_result+=m_subevtlist[i]->m_me*tmp;

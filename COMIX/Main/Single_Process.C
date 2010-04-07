@@ -198,6 +198,7 @@ double COMIX::Single_Process::Differential(const Vec4D_Vector &p)
     else m_lastlumi=1.;
   }
   else m_lastlumi=1.;
+  m_lastlumi*=BeamWeight(p_scale->Scale(stp::fac));
   return m_last=m_lastxs*m_lastlumi*KFactor();
 }
 
@@ -216,6 +217,7 @@ double COMIX::Single_Process::Differential2()
     double tmp=m_lastxs*p_int->ISR()->
       Weight2(&m_flavs.front())*KFactor2(); 
     p_int->ISR()->MtxUnLock();
+    tmp *= BeamWeight(p_scale->Scale(stp::fac));
     m_last+=tmp;
     return tmp;
   }

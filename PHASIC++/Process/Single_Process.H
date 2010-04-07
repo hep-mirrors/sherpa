@@ -31,6 +31,7 @@ namespace PHASIC {
 			    const size_t &idj);
     virtual const ATOOLS::Flavour_Vector &
     CombinedFlavour(const size_t &idij);
+    double BeamWeight(const double& Q2);
 
   };// end of class Single_Process
 

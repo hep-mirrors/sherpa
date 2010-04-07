@@ -376,6 +376,7 @@ double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool
     m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
   }
   else  m_lastlumi = 1.;
+  m_lastlumi *= BeamWeight(p_scale->Scale(stp::fac));
 
   return m_last = m_Norm * m_lastxs * m_lastlumi*KFactor();
 }
@@ -392,6 +393,7 @@ double AMEGIC::Single_Process_MHV::DSigma2()
   }
   double tmp = m_Norm * m_lastxs * p_int->ISR()->Weight2(&m_flavs.front()); 
   p_int->ISR()->MtxUnLock();
+  tmp *= BeamWeight(p_scale->Scale(stp::fac));
   m_last    += tmp*=KFactor2();
   return tmp;
 }
