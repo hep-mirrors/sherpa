@@ -453,3 +453,74 @@ void AMEGIC::Single_Process_MHV::AddChannels(std::list<std::string>* tlist)
   }
 }
 
+void AMEGIC::Single_Process_MHV::FillCombinations
+(Point *const p,size_t &id)
+{
+  if (p->middle) return;
+  if (p->left==NULL || p->right==NULL) {
+    id=1<<p->number;
+    return;
+  }
+  size_t ida(id), idb(id);
+  FillCombinations(p->left,ida);
+  FillCombinations(p->right,idb);
+  id=ida+idb;
+  size_t idc((1<<(m_nin+m_nout))-1-id);
+  msg_Debugging()<<"  comb "<<ID(ida)
+		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
+  if (idc!=1) {
+    bool in(false);
+    Flavour fl(ReMap(p->fl,p->GetPropID()));
+    Flavour_Vector cf(m_cflavs[id]);
+    for (size_t i(0);i<cf.size();++i)
+      if (cf[i]==fl) {
+	in=true;
+	break;
+      }
+    if (!in) {
+      m_cflavs[idc].push_back(fl.Bar());
+      m_cflavs[id].push_back(fl);
+      msg_Debugging()<<"  flav "<<ID(idc)<<" / "
+		     <<ID(id)<<" -> "<<fl<<"\n";
+    }
+  }
+}
+
+void AMEGIC::Single_Process_MHV::FillCombinations()
+{
+  msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
+  size_t nd(p_partner->NumberOfDiagrams());
+  for (size_t i(0);i<nd;++i) {
+    Point *p(p_partner->Diagram(i));
+    size_t id(1<<p->number);
+    FillCombinations(p,id);
+  }
+  msg_Debugging()<<"  } -> "<<m_cflavs.size()
+		 <<" flavours, "<<m_ccombs.size()
+		 <<" combinations\n";
+  msg_Debugging()<<"}\n";
+}
+
+bool AMEGIC::Single_Process_MHV::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  if (m_ccombs.empty()) FillCombinations();
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
+}
+
+const Flavour_Vector &AMEGIC::Single_Process_MHV::
+CombinedFlavour(const size_t &idij)
+{
+  if (m_cflavs.empty()) FillCombinations();
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
+}

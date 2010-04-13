@@ -14,6 +14,10 @@
 namespace AMEGIC {
   class Helicity;
   class Phase_Space_Generator;
+
+  typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
+  typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
+
   class Single_Process_MHV: public Process_Base {
   private:
     int                     m_gen_str;
@@ -33,6 +37,12 @@ namespace AMEGIC {
     FullAmplitude_MHV_Base    * p_MHVamp;
     MomentumList              * p_momlist;
     Single_Process_MHV        * p_partner;
+
+    Combination_Set m_ccombs;
+    CFlavVector_Map m_cflavs;
+
+    void FillCombinations(Point *const p,size_t &id);
+    void FillCombinations();
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -44,6 +54,11 @@ namespace AMEGIC {
     ~Single_Process_MHV();
     
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+
+    bool Combinable(const size_t &idi,const size_t &idj);
+
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+
   private:
     void           PolarizationNorm();
 
