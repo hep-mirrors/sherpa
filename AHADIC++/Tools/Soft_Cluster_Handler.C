@@ -466,7 +466,7 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
   std::vector<double> masses;
   std::vector<Vec4D>  momenta;
   Cluster * cluster;
-  std::cout<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
+  //std::cout<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
     //std::cout<<"   "<<cluster->Number()<<" ("<<cluster->size()<<") ";
