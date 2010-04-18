@@ -549,7 +549,7 @@ bool Initialization_Handler::InitializeThePDFs()
       if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
 	set=specialset;
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-	(set,PDF_Arguments(m_bunch_particles[j],&dataread, i));
+	(set,PDF_Arguments(m_bunch_particles[j],&dataread, j));
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib[j]
 	      +"' for "+ToString(m_bunch_particles[j])+" bunch.");
