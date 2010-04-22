@@ -87,6 +87,9 @@ namespace ATOOLS {
 
     inline double Theta() { return acos(2.*Get()-1.); }  
     double        GetNZ();
+    
+    inline External_RNG* GetExternalRng() { return p_external; }
+    
 
   };// end of class Random
 

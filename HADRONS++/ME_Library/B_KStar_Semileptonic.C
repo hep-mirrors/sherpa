@@ -95,7 +95,6 @@ void B_KStar_Semileptonic::operator()(
 
   // calculate coefficients
   Flavour cquark(kf_c); Flavour squark(kf_s);
-  double mchat = cquark.HadMass()/m_mB; double mshat = squark.HadMass()/m_mB;
   Complex C9eff;
   if(m_LD==true) C9eff = C9sehgal(shat) + sehgalld(shat);
   else C9eff = m_C9 + gSD(m_mc/p_masses[0],shat) * (3.*m_C1+m_C2+3.*m_C3+m_C4+3.*m_C5+m_C6)

@@ -328,7 +328,6 @@ void ISGW2::CalcFFs( Vec4D p0, Vec4D p1 )
 
     double R_g     = Cji*(1.0+betaji_g*Getas(mq,sqrt(m_m0*mq))/M_PI);
     double R_f     = Cji*(1.0+betaji_f*Getas(mq,sqrt(m_m0*mq))/M_PI);
-    double R_appam = Cji*(betaji_appam*Getas(mq,sqrt(m_m0*mq))/M_PI);
     double R_apmam = Cji*(1.0+betaji_apmam*Getas(mq,sqrt(m_m0*mq))/M_PI);
 
     double F3=sqrt(mX/mB)*pow(sqrt(betaX2*betaB2)/betaBX2,1.5)/

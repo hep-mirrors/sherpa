@@ -66,8 +66,6 @@ void VA_P_T::Calc(const ATOOLS::Vec4D * moms)
   Vec4D p0 = moms[p_i[0]];
   Vec4D p1 = moms[p_i[1]];
   Vec4D q = p0 - p1;
-  double q2 = q*q;
-  double m0 = p_masses[0];
   double m1 = p_masses[1];
 
   // Get formfactors

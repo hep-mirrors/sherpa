@@ -54,9 +54,9 @@ namespace ATOOLS {
     };
   };
 
-  inline const blob_status::code operator|(const blob_status::code c1,const blob_status::code c2)
+  inline blob_status::code operator|(const blob_status::code& c1,const blob_status::code& c2)
   { return (blob_status::code)((int)c1|(int)c2); }
-  inline const blob_status::code operator&(const blob_status::code c1,const blob_status::code c2)
+  inline blob_status::code operator&(const blob_status::code& c1,const blob_status::code& c2)
   { return (blob_status::code)((int)c1&(int)c2); }
 
   struct btp {
@@ -79,9 +79,9 @@ namespace ATOOLS {
     };
   };// end of struct btp
 
-  inline const btp::code operator|(const btp::code c1,const btp::code c2)
+  inline btp::code operator|(const btp::code& c1,const btp::code& c2)
   { return (btp::code)((int)c1|(int)c2); }
-  inline const btp::code operator&(const btp::code c1,const btp::code c2)
+  inline btp::code operator&(const btp::code& c1,const btp::code& c2)
   { return (btp::code)((int)c1&(int)c2); }
 
   std::ostream& operator<<(std::ostream&,const btp::code);
@@ -185,13 +185,13 @@ namespace ATOOLS {
     int      NInP()                      const { return m_inparticles.size(); }
     int      NOutP()                     const { return m_outparticles.size(); }
  
-    double              const Weight()   const { return m_weight; }
+    const double& Weight()               const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
     Vec4D        CheckMomentumConservation() const;
     bool  MomentumConserved();
     const Vec4D& Position()              const { return m_position; }
     const Vec4D& CMS()                   const { return m_cms_vec; }
-    btp::code   const Type()             const { return m_type; }
+    const btp::code& Type()              const { return m_type; }
     std::string const TypeSpec()         const { return m_typespec; }
     void SwapInParticles(const size_t i,const size_t j);
     void SwapOutParticles(const size_t i,const size_t j);

@@ -21,11 +21,14 @@ void QQ_QQQQ_Spectator::SetModelParameters( GeneralModel _md )
   m_decayer = Flavour(decayerkfc, decayerquark<0);
 
   m_Vxx_decay=1.0;
-  if(m_decayer.Kfcode()==kf_b)
-    if(m_flavs[p_i[1]].Kfcode()==kf_c)
+  if(m_decayer.Kfcode()==kf_b) {
+    if(m_flavs[p_i[1]].Kfcode()==kf_c) {
       m_Vxx_decay=Tools::Vcb;
-    else if(m_flavs[p_i[1]].Kfcode()==kf_u)
+    }
+    else if(m_flavs[p_i[1]].Kfcode()==kf_u) {
       m_Vxx_decay=Tools::Vub;
+    }
+  }
   m_Vxx_decay = _md("Vxx_decay",m_Vxx_decay);
 
   m_Vxx_production=1.0;

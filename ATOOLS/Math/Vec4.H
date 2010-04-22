@@ -163,20 +163,20 @@ namespace ATOOLS {
 
     // some functions which only make sense for doubles
     // and thus have to be specialised for the type
-    const Scalar CosPhi() const;
-    const Scalar SinPhi() const;
-    const Scalar Phi() const;
-    const Scalar CosTheta() const;
-    const Scalar SinTheta() const;
-    const Scalar Theta() const;
-    const Scalar Eta() const;
-    const Scalar CosTheta(const Vec4<Scalar>& ref) const;
-    const Scalar Theta(const Vec4<Scalar>& ref) const;
-    const Scalar Eta(const Vec4<Scalar>& ref) const;
-    const Scalar CosDPhi(const Vec4<Scalar>& ref) const;
-    const Scalar DPhi(const Vec4<Scalar>& ref) const;
-    const Scalar DEta(const Vec4<Scalar>& ref) const;
-    const Scalar DR(const Vec4<Scalar>& ref) const;
+    Scalar CosPhi() const;
+    Scalar SinPhi() const;
+    Scalar Phi() const;
+    Scalar CosTheta() const;
+    Scalar SinTheta() const;
+    Scalar Theta() const;
+    Scalar Eta() const;
+    Scalar CosTheta(const Vec4<Scalar>& ref) const;
+    Scalar Theta(const Vec4<Scalar>& ref) const;
+    Scalar Eta(const Vec4<Scalar>& ref) const;
+    Scalar CosDPhi(const Vec4<Scalar>& ref) const;
+    Scalar DPhi(const Vec4<Scalar>& ref) const;
+    Scalar DEta(const Vec4<Scalar>& ref) const;
+    Scalar DR(const Vec4<Scalar>& ref) const;
 
     // standard vectors:
     const static Vec4<Scalar> XVEC;

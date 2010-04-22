@@ -21,7 +21,7 @@ namespace HADRONS {
        
       LorenzBase( ) {};
       virtual ~LorenzBase() {};
-      virtual ATOOLS::Vec4C operator()() {};
+      virtual ATOOLS::Vec4C operator()() { return ATOOLS::Vec4C(); };
       void SetPrivates(const ATOOLS::Vec4D *, int* i);
     };
 

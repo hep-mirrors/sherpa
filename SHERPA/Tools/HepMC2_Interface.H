@@ -47,7 +47,7 @@ namespace SHERPA {
     bool Sherpa2HepMC(ATOOLS::Particle *,HepMC::GenParticle *&);
 
     // inline functions
-    inline HepMC::GenEvent *const GenEvent() { return p_event; }
+    inline HepMC::GenEvent* GenEvent() { return p_event; }
     inline void Ignore(ATOOLS::btp::code type) { m_ignoreblobs.insert(type); }
 
   };// end of class HepMC2_Interface

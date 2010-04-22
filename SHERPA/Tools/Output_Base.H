@@ -30,8 +30,8 @@ namespace SHERPA {
     inline const std::string& Ext() const { return m_ext; }
 
     virtual void Header() {}
-    virtual void Footer(std::string nr) {}
-    virtual void SetXS(const double& xs, const double& xserr) {}
+    virtual void Footer(std::string) {}
+    virtual void SetXS(const double&, const double&) {}
     virtual void Output(ATOOLS::Blob_List* blobs, double weight) = 0;
   };
 }

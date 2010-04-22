@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 HD_ME_Base::HD_ME_Base(Flavour * flavs, int n, int* decayindices, string name) :
-  m_n(n), m_name(name), m_flavs(flavs), p_i(decayindices)
+  m_name(name), m_n(n), m_flavs(flavs), p_i(decayindices)
 {
   p_masses = new double[n];
   p_masses2 = new double[n];

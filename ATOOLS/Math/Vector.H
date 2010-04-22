@@ -16,20 +16,20 @@ namespace ATOOLS {
   typedef Vec4<double> Vec4D;
   typedef std::vector<Vec4D> Vec4D_Vector;
 
-  template<> const double Vec4D::CosPhi() const;
-  template<> const double Vec4D::SinPhi() const;
-  template<> const double Vec4D::Phi() const;
-  template<> const double Vec4D::CosTheta() const;
-  template<> const double Vec4D::SinTheta() const;
-  template<> const double Vec4D::Theta() const;
-  template<> const double Vec4D::Eta() const;
-  template<> const double Vec4D::CosTheta(const Vec4D& ref) const;
-  template<> const double Vec4D::Theta(const Vec4D& ref) const;
-  template<> const double Vec4D::Eta(const Vec4D& ref) const;
-  template<> const double Vec4D::CosDPhi(const Vec4D& ref) const;
-  template<> const double Vec4D::DPhi(const Vec4D& ref) const;
-  template<> const double Vec4D::DEta(const Vec4D& ref) const;
-  template<> const double Vec4D::DR(const Vec4D& ref) const;
+  template<> double Vec4D::CosPhi() const;
+  template<> double Vec4D::SinPhi() const;
+  template<> double Vec4D::Phi() const;
+  template<> double Vec4D::CosTheta() const;
+  template<> double Vec4D::SinTheta() const;
+  template<> double Vec4D::Theta() const;
+  template<> double Vec4D::Eta() const;
+  template<> double Vec4D::CosTheta(const Vec4D& ref) const;
+  template<> double Vec4D::Theta(const Vec4D& ref) const;
+  template<> double Vec4D::Eta(const Vec4D& ref) const;
+  template<> double Vec4D::CosDPhi(const Vec4D& ref) const;
+  template<> double Vec4D::DPhi(const Vec4D& ref) const;
+  template<> double Vec4D::DEta(const Vec4D& ref) const;
+  template<> double Vec4D::DR(const Vec4D& ref) const;
 
   std::istream& operator>>(std::istream& s,Vec4D& vec);
   std::istream& operator>>(std::istream& s,Vec3D& vec);

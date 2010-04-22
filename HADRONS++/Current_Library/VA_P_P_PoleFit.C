@@ -26,8 +26,8 @@ PoleFit::PoleFit(GeneralModel model, double* masses, Flavour* flavs, int* i) :
   m_fplus_c0=0.0; m_fplus_d0=0.0;
   m_fplus_F1=0.0; m_fplus_m1=0.0; m_fplus_a1=0.0; m_fplus_b1=0.0;
   m_fplus_c1=0.0; m_fplus_d1=0.0;
-  m_f0_F0=0.0; m_f0_m0=0.0; m_f0_a0=0.0; m_f0_b0=0.0; m_f0_c0=0.0; m_f0_d0;
-  m_f0_F1=0.0; m_f0_m1=0.0; m_f0_a1=0.0; m_f0_b1=0.0; m_f0_c1=0.0; m_f0_d1;
+  m_f0_F0=0.0; m_f0_m0=0.0; m_f0_a0=0.0; m_f0_b0=0.0; m_f0_c0=0.0; m_f0_d0=0.0;
+  m_f0_F1=0.0; m_f0_m1=0.0; m_f0_a1=0.0; m_f0_b1=0.0; m_f0_c1=0.0; m_f0_d1=0.0;
   m_fmin_F0=0.0; m_fmin_m0=0.0; m_fmin_a0=0.0; m_fmin_b0=0.0;
   m_fmin_c0=0.0; m_fmin_d0=0.0;
   m_fmin_F1=0.0; m_fmin_m1=0.0; m_fmin_a1=0.0; m_fmin_b1=0.0;

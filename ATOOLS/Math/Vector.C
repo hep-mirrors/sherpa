@@ -13,27 +13,27 @@ template<> const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
 template<> const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
 template<> const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
 
-template<> const double Vec4D::CosPhi() const {
+template<> double Vec4D::CosPhi() const {
   return Max(Min(m_x[1]/PPerp(),1.0),-1.0);
 }
-template<> const double Vec4D::SinPhi() const {
+template<> double Vec4D::SinPhi() const {
   if (PPerp() == 0.0) return 0.0;
   return Max(Min(m_x[2]/PPerp(),1.0),-1.0);
 }
-template<> const double Vec4D::Phi() const {
+template<> double Vec4D::Phi() const {
   if(m_x[2]>0.) return acos(CosPhi());
   else return -acos(CosPhi());
 }
-template<> const double Vec4D::CosTheta() const {
+template<> double Vec4D::CosTheta() const {
   return Max(Min(m_x[3]/PSpat(),1.0),-1.0);
 }
-template<> const double Vec4D::SinTheta() const { 
+template<> double Vec4D::SinTheta() const { 
   return Max(Min(sqrt(PPerp2()/PSpat2()),1.0),-1.0);
 }
-template<> const double Vec4D::Theta() const {
+template<> double Vec4D::Theta() const {
   return acos(CosTheta());
 }
-template<> const double Vec4D::Eta() const {
+template<> double Vec4D::Eta() const {
   double pt2=PPerp2();
   double pp =P();
   double pz =dabs(m_x[3]);
@@ -43,28 +43,28 @@ template<> const double Vec4D::Eta() const {
   }
   return sn*0.5*log(sqr(pp+pz)/pt2);
 }
-template<> const double Vec4D::CosTheta(const Vec4D& ref) const {
+template<> double Vec4D::CosTheta(const Vec4D& ref) const {
   Vec3D pref=Vec3D(ref), p=Vec3D(*this);
   return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
 }
-template<> const double Vec4D::Theta(const Vec4D& ref) const {
+template<> double Vec4D::Theta(const Vec4D& ref) const {
   return acos(CosTheta(ref));
 }
-template<> const double Vec4D::Eta(const Vec4D& ref) const {
+template<> double Vec4D::Eta(const Vec4D& ref) const {
   double cos=CosTheta(ref);
   return 0.5*log(sqr(1.0+cos)/(1.0-cos*cos));
 }
-template<> const double Vec4D::CosDPhi(const Vec4D& ref) const {
+template<> double Vec4D::CosDPhi(const Vec4D& ref) const {
   Vec3D pref=Vec3D(ref[1],ref[2],0.0), p=Vec3D(m_x[1],m_x[2],0.0);
   return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
 }
-template<> const double Vec4D::DPhi(const Vec4D& ref) const {
+template<> double Vec4D::DPhi(const Vec4D& ref) const {
   return acos(CosDPhi(ref));
 }
-template<> const double Vec4D::DEta(const Vec4D& ref) const {
+template<> double Vec4D::DEta(const Vec4D& ref) const {
   return Eta()-ref.Eta();
 }
-template<> const double Vec4D::DR(const Vec4D& ref) const {
+template<> double Vec4D::DR(const Vec4D& ref) const {
   return sqrt(sqr(DPhi(ref))+sqr(DEta(ref)));
 }
 

@@ -131,7 +131,7 @@ namespace ATOOLS {
 
     inline kf_code Kfcode() const { return p_info->m_kfc; }
 
-    inline const size_t Size() const { return p_info->Size(); }
+    inline size_t Size() const { return p_info->Size(); }
 
     inline bool Includes(const Flavour &fl) const 
     {
@@ -292,13 +292,13 @@ namespace ATOOLS {
     inline bool IsUptype() const   { return p_info->m_isoweak==1;  }
     inline bool IsDowntype() const { return p_info->m_isoweak==-1; }
 
-    inline const bool IsSusy() const 
+    inline bool IsSusy() const 
     { return 1000000<Kfcode()&&Kfcode()<3000000; }
 
-    inline const bool IsKK() const 
+    inline bool IsKK() const 
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
       return 0; }
-    inline const int KKGeneration() const 
+    inline int KKGeneration() const 
     { if (!IsKK()) return 0; 
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
     inline bool Is5VDummy() const 

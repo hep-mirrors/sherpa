@@ -18,8 +18,8 @@ Dalitz::Dalitz(
   Single_Channel(1,3,fl),
   m_decvec(Vec4D(fl[0].HadMass(),0.,0.,0.)),
   m_pmass(res.Mass()), m_pwidth(res.Width()), 
-  m_p1(p1), m_p2(p2), m_mode(0),
-  m_sexp(.5)
+  m_sexp(.5),
+  m_p1(p1), m_p2(p2), m_mode(0)
 {
   name = string("Dalitz_")+res.Name()+string("_")+ToString(m_p1)+ToString(m_p2);
 											// generate channel name

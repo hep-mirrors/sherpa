@@ -21,8 +21,8 @@ TwoResonances::TwoResonances(
 	const int _j )
 : Single_Channel(1,4,fl), 
   m_P(Vec4D(fl[0].HadMass(),0.,0.,0.)), 
-  m_prop1 (prop1), m_prop2 (prop2),
-  m_i (_i), m_j (_j), m_k (_k)
+  m_i (_i), m_j (_j), m_k (_k),
+  m_prop1 (prop1), m_prop2 (prop2)
 {
   name = string("TwoResonances_")
 	+ prop1.Name() + string("_")
@@ -72,11 +72,9 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,doub
   for(int i=0;i<rannum;i++) rans[i]=ran[i];
   Vec4D  p1234 = p[0];
   // kinematic variables
-  double s1234_min = ms[0];
   double s1_min = ms[m_i];
   double s2_min = ms[m_j];
   double s3_min = ms[m_k];
-  double s4_min = ms[m_dir];
   double s12_min = sqr( sqrt(s1_min) + sqrt(s2_min) );
   double s123_min = sqr( sqrt(s12_min) + sqrt(s3_min) );
   double s1234 = dabs(p1234.Abs2());
@@ -102,16 +100,12 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
   double wt = 1.;
   Vec4D  p1234 = p[0];
   // kinematic variables
-  double s1234_min = ms[0];
   double s1_min = ms[m_i];
   double s2_min = ms[m_j];
   double s3_min = ms[m_k];
-  double s4_min = ms[m_dir];
   double s12_min = sqr( sqrt(s1_min) + sqrt(s2_min) );
   double s123_min = sqr( sqrt(s12_min) + sqrt(s3_min) );
   double s1234 = dabs(p1234.Abs2());
-  double s1 = ms[m_i];
-  double s2 = ms[m_j];
   double s3 = ms[m_k];
   double s4 = ms[m_dir];
   double s123_max = sqr(sqrt(s1234)-sqrt(s4));
