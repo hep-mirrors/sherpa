@@ -24,6 +24,7 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
 Sudakov::~Sudakov() 
 {
   for (size_t i(0);i<m_addsplittings.size();++i) delete m_addsplittings[i];
+  for (size_t i(0);i<m_cgets.size();++i) delete m_cgets[i];
 }
 
 struct FTrip {
@@ -49,7 +50,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 {
   SFC_Filler_Getter::Getter_List flist(SFC_Filler_Getter::GetGetters());
   for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
-       git!=flist.end();++git) (*git)->GetObject(md);
+       git!=flist.end();++git) (*git)->GetObject(SFC_Filler_Key(md,&m_cgets));
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available coupling calcs\n\n";

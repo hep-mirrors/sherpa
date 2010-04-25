@@ -28,6 +28,7 @@ namespace CSSHOWER {
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
+    std::vector<SFC_Getter*> m_cgets;
     void ProduceT();
     bool Veto(double,double);
     bool KinCheck(double,double);

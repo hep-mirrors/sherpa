@@ -71,10 +71,10 @@ void CF_QED_Getter::PrintInfo
 }
 
 DECLARE_GETTER(CF_QED_Filler,"SF_QED_Fill",
-	       void,const MODEL::Model_Base *);
+	       void,SFC_Filler_Key);
 
 void *CF_QED_Filler::operator()
-  (const MODEL::Model_Base *const &model) const
+  (const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_photon).IsOn()) return NULL;
   std::string ptag("{"+Flavour(kf_photon).IDName()+"}");
@@ -84,9 +84,9 @@ void *CF_QED_Filler::operator()
     if (!f.IsOn() || f.IntCharge()==0) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
-    new CF_QED_Getter(ptag+qtag+qbtag);
-    new CF_QED_Getter(qbtag+qbtag+ptag);
-    new CF_QED_Getter(qtag+qtag+ptag);
+    key.p_gets->push_back(new CF_QED_Getter(ptag+qtag+qbtag));
+    key.p_gets->push_back(new CF_QED_Getter(qbtag+qbtag+ptag));
+    key.p_gets->push_back(new CF_QED_Getter(qtag+qtag+ptag));
   }
   return NULL;
 }

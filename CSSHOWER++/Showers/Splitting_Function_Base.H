@@ -156,8 +156,16 @@ namespace CSSHOWER {
   typedef ATOOLS::Getter_Function<SF_Coupling,SF_Key,
 				  std::less<std::string> > SFC_Getter;
 
-  typedef ATOOLS::Getter_Function<void,const MODEL::Model_Base*,
-				  std::less<std::string> > SFC_Filler_Getter;
+  struct SFC_Filler_Key {
+    const MODEL::Model_Base *p_md;
+    std::vector<SFC_Getter*> *p_gets;
+    inline SFC_Filler_Key(const MODEL::Model_Base *const md,
+			  std::vector<SFC_Getter*> *const gets):
+      p_md(md), p_gets(gets) {}
+  };
+
+  typedef ATOOLS::Getter_Function
+  <void,SFC_Filler_Key,std::less<std::string> > SFC_Filler_Getter;
 
   class Splitting_Function_Base {
   protected:

@@ -81,23 +81,23 @@ void CF_HV_Getter::PrintInfo
 }
 
 DECLARE_GETTER(CF_HV_Filler,"SF_HV_Fill",
-	       void,const MODEL::Model_Base *);
+	       void,SFC_Filler_Key);
 
 void *CF_HV_Filler::operator()
-  (const MODEL::Model_Base *const &model) const
+  (const SFC_Filler_Key &key) const
 {
-  if (model->Name()!=std::string("SM+HiddenValley")) return NULL;
+  if (key.p_md->Name()!=std::string("SM+HiddenValley")) return NULL;
   if (!Flavour(9900021).IsOn()) return NULL;
   std::string gDtag("{"+Flavour(9900021).IDName()+"}");
-  new CF_HV_Getter(gDtag+gDtag+gDtag);
+  key.p_gets->push_back(new CF_HV_Getter(gDtag+gDtag+gDtag));
   for (int i(1);i<3;++i) {
     Flavour f((kf_code)9900000+i);
     if (!f.IsOn()) continue;
     std::string qDtag("{"+f.IDName()+"}");
     std::string qDbtag ("{"+f.Bar().IDName()+"}");
-    new CF_HV_Getter(gDtag+qDtag+qDbtag);
-    new CF_HV_Getter(qDbtag+qDbtag+gDtag);
-    new CF_HV_Getter(qDtag+qDtag+gDtag);
+    key.p_gets->push_back(new CF_HV_Getter(gDtag+qDtag+qDbtag));
+    key.p_gets->push_back(new CF_HV_Getter(qDbtag+qDbtag+gDtag));
+    key.p_gets->push_back(new CF_HV_Getter(qDtag+qDtag+gDtag));
   }
   return NULL;
 }

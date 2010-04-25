@@ -149,10 +149,10 @@ void CF_EW_FFW_Getter::PrintInfo
 }
 
 DECLARE_GETTER(CF_EW_FFV_Filler,"SF_EW_FFV_Fill",
-	       void,const MODEL::Model_Base *);
+	       void,SFC_Filler_Key);
 
 void *CF_EW_FFV_Filler::operator()
-  (const MODEL::Model_Base *const &model) const
+  (const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_Z).IsOn()) return NULL;
   std::string ptag("{"+Flavour(kf_Z).IDName()+"}");
@@ -166,9 +166,9 @@ void *CF_EW_FFV_Filler::operator()
       if (!f.IsOn()) continue;
       std::string qtag("{"+f.IDName()+"}");
       std::string qbtag ("{"+f.Bar().IDName()+"}");
-      new CF_EW_FFZ_Getter(ptag+qtag+qbtag);
-      new CF_EW_FFZ_Getter(qbtag+qbtag+ptag);
-      new CF_EW_FFZ_Getter(qtag+qtag+ptag);
+      key.p_gets->push_back(new CF_EW_FFZ_Getter(ptag+qtag+qbtag));
+      key.p_gets->push_back(new CF_EW_FFZ_Getter(qbtag+qbtag+ptag));
+      key.p_gets->push_back(new CF_EW_FFZ_Getter(qtag+qtag+ptag));
     }
   }
   if (Flavour(kf_Wplus).IsOn()) {
@@ -181,12 +181,12 @@ void *CF_EW_FFV_Filler::operator()
 	std::string f2tag("{"+f2.IDName()+"}");
 	std::string f1btag("{"+f1.Bar().IDName()+"}");
 	std::string f2btag("{"+f2.Bar().IDName()+"}");
-	new CF_EW_FFW_Getter(f1tag+f2tag+wmtag);
-	new CF_EW_FFW_Getter(f2tag+f1tag+wptag);
-	new CF_EW_FFW_Getter(f2btag+wmtag+f1btag);
-	new CF_EW_FFW_Getter(f1btag+wptag+f2btag);
-	new CF_EW_FFW_Getter(wptag+f1btag+f2tag);
-	new CF_EW_FFW_Getter(wmtag+f2btag+f1tag);
+	key.p_gets->push_back(new CF_EW_FFW_Getter(f1tag+f2tag+wmtag));
+	key.p_gets->push_back(new CF_EW_FFW_Getter(f2tag+f1tag+wptag));
+	key.p_gets->push_back(new CF_EW_FFW_Getter(f2btag+wmtag+f1btag));
+	key.p_gets->push_back(new CF_EW_FFW_Getter(f1btag+wptag+f2btag));
+	key.p_gets->push_back(new CF_EW_FFW_Getter(wptag+f1btag+f2tag));
+	key.p_gets->push_back(new CF_EW_FFW_Getter(wmtag+f2btag+f1tag));
       }
     }
     // llw couplings
@@ -197,12 +197,12 @@ void *CF_EW_FFV_Filler::operator()
       std::string f2tag("{"+f2.IDName()+"}");
       std::string f1btag("{"+f1.Bar().IDName()+"}");
       std::string f2btag("{"+f2.Bar().IDName()+"}");
-      new CF_EW_FFW_Getter(f1tag+f2tag+wmtag);
-      new CF_EW_FFW_Getter(f2tag+f1tag+wptag);
-      new CF_EW_FFW_Getter(f2btag+wmtag+f1btag);
-      new CF_EW_FFW_Getter(f1btag+wptag+f2btag);
-      new CF_EW_FFW_Getter(wptag+f1btag+f2tag);
-      new CF_EW_FFW_Getter(wmtag+f2btag+f1tag);
+      key.p_gets->push_back(new CF_EW_FFW_Getter(f1tag+f2tag+wmtag));
+      key.p_gets->push_back(new CF_EW_FFW_Getter(f2tag+f1tag+wptag));
+      key.p_gets->push_back(new CF_EW_FFW_Getter(f2btag+wmtag+f1btag));
+      key.p_gets->push_back(new CF_EW_FFW_Getter(f1btag+wptag+f2btag));
+      key.p_gets->push_back(new CF_EW_FFW_Getter(wptag+f1btag+f2tag));
+      key.p_gets->push_back(new CF_EW_FFW_Getter(wmtag+f2btag+f1tag));
     }
   }
   return NULL;

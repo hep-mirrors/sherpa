@@ -111,45 +111,45 @@ void CF_QCD_Getter::PrintInfo
 }
 
 DECLARE_GETTER(CF_QCD_Filler,"SF_QCD_Fill",
-	       void,const MODEL::Model_Base *);
+	       void,SFC_Filler_Key);
 
 void *CF_QCD_Filler::operator()
-  (const MODEL::Model_Base *const &model) const
+  (const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_gluon).IsOn()) return NULL;
   std::string gtag("{"+Flavour(kf_gluon).IDName()+"}");
-  new CF_QCD_Getter(gtag+gtag+gtag);
+  key.p_gets->push_back(new CF_QCD_Getter(gtag+gtag+gtag));
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)i);
     if (!f.IsOn()) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
-    new CF_QCD_Getter(gtag+qtag+qbtag);
-    new CF_QCD_Getter(qbtag+qbtag+gtag);
-    new CF_QCD_Getter(qtag+qtag+gtag);
+    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
   }
   if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
   std::string sgtag("{"+Flavour(kf_Gluino).IDName()+"}");
-  new CF_QCD_Getter(sgtag+sgtag+gtag);
-  new CF_QCD_Getter(sgtag+gtag+sgtag);
-  new CF_QCD_Getter(gtag+sgtag+sgtag);
+  key.p_gets->push_back(new CF_QCD_Getter(sgtag+sgtag+gtag));
+  key.p_gets->push_back(new CF_QCD_Getter(sgtag+gtag+sgtag));
+  key.p_gets->push_back(new CF_QCD_Getter(gtag+sgtag+sgtag));
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)(1000000+i));
     if (!f.IsOn()) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
-    new CF_QCD_Getter(gtag+qtag+qbtag);
-    new CF_QCD_Getter(qbtag+qbtag+gtag);
-    new CF_QCD_Getter(qtag+qtag+gtag);
+    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
   }
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)(2000000+i));
     if (!f.IsOn()) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
-    new CF_QCD_Getter(gtag+qtag+qbtag);
-    new CF_QCD_Getter(qbtag+qbtag+gtag);
-    new CF_QCD_Getter(qtag+qtag+gtag);
+    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
+    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
   }
   return NULL;
 }

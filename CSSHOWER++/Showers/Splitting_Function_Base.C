@@ -10,7 +10,7 @@ template class Getter_Function
 <CSSHOWER::SF_Coupling,CSSHOWER::SF_Key,SORT_CRITERION>;
 
 template class Getter_Function
-<void,const MODEL::Model_Base*,SORT_CRITERION>;
+<void,CSSHOWER::SFC_Filler_Key,SORT_CRITERION>;
 
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Interaction_Models/Lorentz_Function.H"
