@@ -56,6 +56,8 @@ namespace AMEGIC {
     virtual Process_Base *Partner() const = 0;
     virtual std::string PSLibName() = 0;
 
+    virtual void FillAlphaHistogram(ATOOLS::Histogram*,double) {}
+
     virtual double Result();
     virtual void SetPrintGraphs(bool print_graphs=true);
     virtual std::string LibName();

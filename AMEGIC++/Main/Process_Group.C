@@ -282,5 +282,6 @@ void AMEGIC::Process_Group::FillOnshellConditions()
 
 void AMEGIC::Process_Group::FillAlphaHistogram(ATOOLS::Histogram* histo,double weight)
 {
-  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->FillAlphaHistogram(histo,weight);
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->Get<AMEGIC::Process_Base>()->FillAlphaHistogram(histo,weight);
 }
