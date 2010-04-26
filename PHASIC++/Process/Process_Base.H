@@ -5,7 +5,6 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Selectors/Cut_Data.H"
-#include "ATOOLS/Math/Histogram_2D.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -131,8 +130,6 @@ namespace PHASIC {
     virtual NLO_subevtlist *GetSubevtList();
 
     virtual const ATOOLS::Vec4D_Vector &ActiveMom() const;
-
-    virtual void FillAlphaHistogram(ATOOLS::Histogram*,double) {}
 
     void FillOnshellConditions();
 
