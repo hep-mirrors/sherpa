@@ -395,6 +395,17 @@ class VVSS4_Calc : public Zfunc_Calc,
     ATOOLS::Kabbala Do();
   };
 
-
+  class SSVgen_Calc : public Zfunc_Calc,
+		      public Basic_Xfunc,
+		      public Basic_Mfunc,
+		      public Basic_Vfunc {
+  public:
+    SSVgen_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~SSVgen_Calc() {}
+    ATOOLS::Kabbala Do();
+    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+		 Point *const p,Point *const pf,Point *&pb,
+		 int *lfnumb,int *canumb);
+  };
 }
 #endif

@@ -186,6 +186,7 @@ public:
   }
 };
 DEFINE_LF_GETTER(LF_SSV,LFSSV_Getter,"SSV","")
+
 class LF_SSS: public Lorentz_Function {
 public:  
   LF_SSS(): Lorentz_Function("SSS") {}
@@ -764,4 +765,34 @@ public:
   }
 };
 DEFINE_LF_GETTER(LF_PseudoBox,LFPseudoBox_Getter,"PseudoBox","")
+
+class LF_SSVgen: public Lorentz_Function {
+public:
+  LF_SSVgen(): Lorentz_Function("SSVgen") {}
+  int NofIndex() const { return 3; }
+  void InitPermutation()
+  {
+    Lorentz_Function::InitPermutation();
+    AddPermutation( 1,0,1,2);
+    AddPermutation(-1,1,0,2);
+  }
+  std::string String(int shortversion) const
+  {
+    //A*(P[0,2] - P[1,2]) + B*(P[0,2] + P[1,2])
+    std::string help;
+    help = std::string("A*[P[") + Str(0) + std::string(",") + Str(2) +std::string("]-");
+    help += std::string("P[") + Str(1) + std::string(",") + Str(2) +std::string("]]+");
+    help += std::string("B*[P[") + Str(0) + std::string(",") + Str(2) +std::string("]+");
+    help += std::string("P[") + Str(1) + std::string(",") + Str(2) +std::string("]]");
+    return help;
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_SSVgen());
+    *copy=*this;
+    return copy;
+  }
+
+};
+DEFINE_LF_GETTER(LF_SSVgen,SSVgen_Getter,"SSVgen","")
 

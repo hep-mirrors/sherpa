@@ -203,9 +203,11 @@ bool Color_Setter::SetColors(Single_Process *const xs)
   p_xs=xs;
   bool sol(false);
   switch (m_cmode) {
-  case 1: 
+  case 1: {
     sol=SetRandomColors();
+    if (!sol) sol=SetLargeNCColors();
     break;
+  } 
   case 2: 
     sol=SetLargeNCColors();
     if (!sol) sol=SetRandomColors();

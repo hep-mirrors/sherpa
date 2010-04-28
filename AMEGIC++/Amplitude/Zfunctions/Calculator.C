@@ -152,6 +152,23 @@ VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[3]->SetParticleArg(2,1);
 }
 
+DEFINE_ZFCALC_GETTER(SSVgen_Calc,SSVgenCalc_Getter,"SSVgen","LHTM SSV calculator")
+
+  SSVgen_Calc::SSVgen_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
+    Basic_Func(_sgen,_BS),
+    Zfunc_Calc(_sgen,_BS),
+    Basic_Xfunc(_sgen,_BS),
+    Basic_Mfunc(_sgen,_BS),
+    Basic_Vfunc(_sgen,_BS)
+{
+  type="SSVgen";
+  ncoupl=8;narg=6;pn=3;
+  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("SSVgen",LF_Key()));
+  lorentzlist[0]->SetParticleArg(2);
+  lorentzlist[1]->SetParticleArg(0,1,2);
+}
+
 Kabbala Y_Calc::Do() {return Y(0);}
 
 void Y_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
@@ -212,4 +229,37 @@ Kabbala VVSS_Calc::Do()
 		     +M(0)*M(1)*M(2)*V(0,2)*V(1,2)*X(0,0)*X(1,1)
 		     -Z(1,0));
 }
+
+Kabbala SSVgen_Calc::Do()
+{
+  Kabbala kcpl0 = sgen->GetEnumber(coupl[6]);
+  Kabbala kcpl1 = sgen->GetEnumber(coupl[7]);
+  Kabbala A = kcpl0 + kcpl1;
+  Kabbala B = kcpl1 - kcpl0;
+
+  return ( -A*X(2,0) - B*X(2,1) + M(2)*( A*V(0,2) + B*V(1,2) )*X(2,2) );
+}
+
+void SSVgen_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
+                          Point *const p,Point *const pf,Point *&pb,
+                          int *lfnumb,int *canumb)
+{
+  int icoupl(zf->m_narg-GetScalarNumb());
+
+  pb->cpl.resize(2);
+  zf->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  zf->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+
+  zfc->SetArgs(zf,lfnumb,canumb,pb->left,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->right,p,icoupl);
+  zfc->SetArgs(zf,lfnumb,canumb,pb->middle,p,icoupl);
+  if(GetScalarNumb()>0){
+    int scnt(narg-GetScalarNumb());
+    if(pb->fl.IsScalar()) zfc->SetScalarArgs(zf,scnt,pb);
+    zfc->SetScalarArgs(zf,scnt,pb->left);
+    zfc->SetScalarArgs(zf,scnt,pb->right);
+    zfc->SetScalarArgs(zf,scnt,pb->middle);
+  }
+}
+
 
