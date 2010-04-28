@@ -15,7 +15,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 
 #define CHECK__x
@@ -697,24 +697,12 @@ void METS_Scale_Setter::ZAlign
  const ATOOLS::Vec4D &pb,const double &ma2,const double &mb2,
  const int mode) const
 {
-  Vec4D Q(pa+pb);
-  double Q2=Q.Abs2(), papb=pa*pb, sb=Sign(pb[3]), ea=0.0;
-  if (IsZero(mb2)) ea=0.5*(papb+ma2*sqr(pb[3])/papb)/pb[0];
-  else ea=(pb[0]*papb+dabs(pb[3])*sqrt(papb*papb-ma2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-Q2)<dabs((pan+pb).Abs2()-Q2)) pan=pam;
-  Poincare cmso(-Q), cmsn(-pan-pb);
-  cmso.Boost(pa);
-  Poincare zrot(pa,-sb*Vec4D::ZVEC);
-  if (mode) {
-    zrot.Rotate(pa);
-    cmsn.BoostBack(pa);
-  }
+  ATOOLS::ZAlign lt(-pa,-pb,ma2,mb2);
+  if (mode) pa=-lt.PaNew();
+  else lt.OldCMS().Boost(pa);
   for (size_t m(0);m<ampl.Legs().size();++m) {
     Vec4D cm(ampl.Leg(m)->Mom());
-    cmso.Boost(cm);
-    zrot.Rotate(cm);
-    cmsn.BoostBack(cm);
+    lt.Align(cm);
     ampl.Leg(m)->SetMom(cm);
   }
 }

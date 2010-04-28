@@ -11,6 +11,8 @@ namespace ATOOLS {
     Poincare m_cmso, m_zrot, m_cmsn;
     Vec4D    m_pao, m_pan, m_pb;
 
+    int m_stat;
+
   public:
 
     ZAlign(const Vec4D &pa,const Vec4D &pb,
@@ -25,6 +27,8 @@ namespace ATOOLS {
     inline const Vec4D &PaOld() const { return m_pao; }
     inline const Vec4D &PaNew() const { return m_pan; }
     inline const Vec4D &Pb() const    { return m_pb;  }
+
+    inline int Status() const { return m_stat; }
 
   };// end of class ZAlign
 
