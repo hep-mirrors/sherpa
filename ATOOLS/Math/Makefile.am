@@ -7,6 +7,7 @@ libToolsMath_la_SOURCES       =	\
 				Random.C \
 				Function_Base.C \
 				Poincare.C \
+				ZAlign.C \
 				Vector.C \
 				Matrix.C \
 				Fast_Function.C \
@@ -29,6 +30,7 @@ localinc_HEADERS          =	\
 			Random.H \
 			Function_Base.H \
 			Poincare.H \
+			ZAlign.H \
 			Vec3.H \
 			Vec4.H \
 			Vector.H \
