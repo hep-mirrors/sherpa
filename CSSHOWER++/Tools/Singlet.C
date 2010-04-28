@@ -583,7 +583,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   }
   else {
     if (mode&1) {
-      if (l->Kin()==1) {
+      if (f->Kin()==1) {
       Parton *b(NULL);
       for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
 	if ((*plit)->GetType()==pst::IS && *plit!=f) {
@@ -683,7 +683,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   }
   else {
     if (mode&1) {
-      if (l->Kin()==1) {
+      if (f->Kin()==1) {
       Parton *b(NULL);
       for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
 	if ((*plit)->GetType()==pst::IS && *plit!=f) {

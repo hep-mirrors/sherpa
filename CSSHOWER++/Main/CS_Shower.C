@@ -396,7 +396,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
-      l->SetKin(campl->Kin());
+      split->SetKin(campl->Kin());
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
 			split->GetType()==pst::FS?split->GetFlavour():
