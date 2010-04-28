@@ -32,12 +32,12 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
 	dabs((m_pan+pb).Abs2()-Q2)) m_pan[3]=-m_pan[3];
   }
   else {
-    double kr((pb.PMinus()*Q.PPlus())/(pb.PPlus()*Q.PMinus()));
     double kap(papb*papb-ma2*mb2);
     if (kap<0.0) m_stat=-1;
-    else kap=Sign(pb[3])*sqrt(kap);
-    if (dabs((papb+kap)/(papb-kap)-kr)<
-	dabs((papb-kap)/(papb+kap)-kr)) kap=-kap;
+    else kap=sqrt(kap);
+    double kr((pb.PMinus()*Q.PPlus())/(pb.PPlus()*Q.PMinus()));
+    double yo(log(kr)), yn(log((papb+mb2+kap)/(papb+mb2-kap)));
+    if (dabs(yn+yo)<dabs(yn-yo)) kap=-kap;
     m_pan=Vec4D((pb[0]*papb+pb[3]*kap)/mb2,0.0,
 		0.0,(pb[3]*papb+pb[0]*kap)/mb2);
   }

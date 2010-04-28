@@ -1,7 +1,7 @@
 #include "CSSHOWER++/Main/CS_Cluster_Definitions.H"
 
 #include "CSSHOWER++/Showers/Shower.H"
-#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -68,6 +68,8 @@ double CS_Cluster_Definitions::Phi
   }
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
+    pijt[1]=pijt[2]=0.0;
+    zax=Poincare(pijt,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
   zax.Rotate(pi);
@@ -256,7 +258,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
     return cs;
   }
   
-  Vec4D Q(a->Mom()+i->Mom()+k->Mom());
+  Vec4D Q(a->Mom()+i->Mom()+k->Mom()), pi(i->Mom());
   double Q2=Q.Abs2();
 
   if (p_shower->KinScheme()==1 ||
@@ -284,24 +286,10 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
-  Vec4D pait=Q-pkt, pb=p_b->Mom(), pk=k->Mom(), pi=i->Mom();
-  double mb2=p_ms->Mass2(p_b->Flav());
-  double patpb=pait*pb, sb=Sign(pb[3]), ea=0.0, s=(pait+pb).Abs2();
-  if (IsZero(mb2)) ea=0.5*(patpb+mai2*sqr(pb[3])/patpb)/pb[0];
-  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-mai2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-mai2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-  Poincare cmso(-pait-pb);
-  cmso.Boost(pait);
-  Poincare zrot(pait,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pb);
-  cmso.Boost(pkt);
-  zrot.Rotate(pkt);
-  cmsn.BoostBack(pkt);
-  cmso.Boost(pi);
-  zrot.Rotate(pi);
-  cmsn.BoostBack(pi);
-  CS_Parameters cs(kt2,xika,ui,Phi(-pan,pkt,pi),xika,1);
+  ZAlign lt(pkt-Q,-p_b->Mom(),mai2,p_ms->Mass2(p_b->Flav()));
+  lt.Align(pi);
+  lt.Align(pkt);
+  CS_Parameters cs(kt2,xika,ui,Phi(lt.PaNew(),pkt,pi),xika,1);
   if (IsZero(xika-ui,s_uxeps))
     THROW(fatal_error,"Invalid parton configuration");
   KernelWeight(a,i,k,mo,cs);
@@ -337,21 +325,13 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
-  Vec4D pait=Q-pbt, pb=b->Mom(), pi=i->Mom();
-  double patpb=pait*pbt, sb=Sign(pb[3]), ea=0.0, s=(pait+pbt).Abs2();
-  if (IsZero(mb2)) ea=0.5*(patpb+mai2*sqr(pb[3])/patpb)/pb[0];
-  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-mai2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-mai2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-  Poincare cmso(-pait-pbt), cmsn(-pan-pb);
-  cmso.Boost(pait);
-  Poincare zrot(pait,-sb*Vec4D::ZVEC);
-  cmso.Boost(pi);
-  zrot.Rotate(pi);
-  cmsn.BoostBack(pi);
+  Vec4D pait=-Q+pbt, pb=-b->Mom(), pi=i->Mom();
+  ZAlign lt(pait,pb,mai2,mb2);
+  pait=lt.PaNew();
+  lt.Align(pi);
 
-  CS_Parameters cs(kt2,xiab,vi,Phi(-pan,-pb,pi,true),xiab,3);
-  if (pan[3]*pb[3]>0.0) {
+  CS_Parameters cs(kt2,xiab,vi,Phi(pait,pb,pi,true),xiab,3);
+  if (pait[3]*pb[3]>0.0) {
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
@@ -438,18 +418,11 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
 
   Vec4D pb=ampl.Leg(1-a)->Mom();
   if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
-  double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
-  if (IsZero(mb2)) ea=0.5*(patpb+ma2*sqr(pb[3])/patpb)/pb[0];
-  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-ma2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-  if (ea>0.0 || IsZero(ea,1.0e-6) ||
-      patpb*patpb<ma2*mb2) return Vec4D_Vector();
+  ZAlign lt(-pat,-pb,ma2,mb2);
+  Vec4D pan(-lt.PaNew());
+  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
+      lt.Status()<0) return Vec4D_Vector();
   if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
-  Poincare cmso(-pat-pb);
-  cmso.Boost(pat);
-  Poincare zrot(pat,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pb);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)j) continue;
     if (m==(size_t)a) after[l]=pan;
@@ -457,9 +430,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
     else {
       after[l]=ampl.Leg(m)->Mom();
       if (m==(size_t)i) after[l]=pijt;
-      cmso.Boost(after[l]);
-      zrot.Rotate(after[l]);
-      cmsn.BoostBack(after[l]);
+      lt.Align(after[l]);
     }
     ++l;
   }
@@ -516,18 +487,11 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
 
   Vec4D pb=ampl.Leg(1-a)->Mom();
   if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
-  double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
-  if (IsZero(mb2)) ea=0.5*(patpb+mai2*sqr(pb[3])/patpb)/pb[0];
-  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-mai2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-mai2)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-  if (ea>0.0 || IsZero(ea,1.0e-6) ||
-      patpb*patpb<mai2*mb2) return Vec4D_Vector();
+  ZAlign lt(-pat,-pb,mai2,mb2);
+  Vec4D pan(-lt.PaNew());
+  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
+      lt.Status()<0) return Vec4D_Vector();
   if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
-  Poincare cmso(-pat-pb);
-  cmso.Boost(pat);
-  Poincare zrot(pat,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pb);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;
@@ -535,9 +499,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
     else {
       after[l]=ampl.Leg(m)->Mom();
       if (m==(size_t)k) after[l]=pikt;
-      cmso.Boost(after[l]);
-      zrot.Rotate(after[l]);
-      cmsn.BoostBack(after[l]);
+      lt.Align(after[l]);
     }
     ++l;
   }
@@ -546,21 +508,13 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   double lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(pa+pi)*(pa+pi),mk2);
   Vec4D pikt=sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
   if (lrat<0.0 || pikt[0]<0.0) return Vec4D_Vector();
-  Vec4D pat=Q-pikt, pb=ampl.Leg(1-a)->Mom();
-  double patpb=pat*pb, sb=Sign(pb[3]), ea=0.0, s=(pat+pb).Abs2();
-  if (IsZero(mb2)) ea=0.5*(patpb+mai2*sqr(pb[3])/patpb)/pb[0];
-  else ea=(pb[0]*patpb+dabs(pb[3])*sqrt(patpb*patpb-mai2*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-mai2)), pam(ea,0.0,0.0,-pan[3]);
-  std::cout.precision(12);
-  if (dabs((pam+pb).Abs2()-s)<dabs((pan+pb).Abs2()-s)) pan=pam;
-  if (ea>0.0 || IsZero(ea,1.0e-6) ||
-      patpb*patpb<mai2*mb2) return Vec4D_Vector();
+  Vec4D pb(ampl.Leg(1-a)->Mom());
+  ZAlign lt(pikt-Q,-pb,mai2,mb2);
+  Vec4D pan(-lt.PaNew());
+  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
+      lt.Status()<0) return Vec4D_Vector();
   if (-pan[0]>rpa.gen.PBeam(a)[0] ||
       IsZero(xika-ui,s_uxeps)) return Vec4D_Vector();
-  Poincare cmso(-pat-pb);
-  cmso.Boost(pat);
-  Poincare zrot(pat,-sb*Vec4D::ZVEC);
-  Poincare cmsn(-pan-pb);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;
@@ -568,9 +522,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
     else {
       after[l]=ampl.Leg(m)->Mom();
       if (m==(size_t)k) after[l]=pikt;
-      cmso.Boost(after[l]);
-      zrot.Rotate(after[l]);
-      cmsn.BoostBack(after[l]);
+      lt.Align(after[l]);
     }
     ++l;
   }
@@ -592,20 +544,12 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
 
   double mb2  = sqr(p_ms->Mass(ampl.Leg(b)->Flav()));
   double mai2 = sqr(p_ms->Mass(mo));
-  double sai  = (pai).Abs2(), Q2 = (pai+pb).Abs2();
+  double sai  = pai.Abs2(), Q2 = Q.Abs2();
 
-  double paipb=pai*pb, sb=Sign(pb[3]), ea=0.0;
-  if (IsZero(mb2)) ea=0.5*(paipb+sai*sqr(pb[3])/paipb)/pb[0];
-  else ea=(pb[0]*paipb+dabs(pb[3])*sqrt(paipb*paipb-sai*mb2))/mb2;
-  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-sai)), pam(ea,0.0,0.0,-pan[3]);
-  if (dabs((pam+pb).Abs2()-Q2)<dabs((pan+pb).Abs2()-Q2)) pan=pam;
-  if (pan[3]*pb[3]>0.0) return Vec4D_Vector();
-  Poincare cmso(-Q), cmsn(-pan-pb);
-  cmso.Boost(pai);
-  Poincare zrot(pai,-sb*Vec4D::ZVEC);
-  zrot.Rotate(pai);
-  cmsn.BoostBack(pai);
+  ZAlign lt(-pai,-pb,sai,mb2);
+  pai=-lt.PaNew();
   Q=pai+pb;
+  if (pai[3]*pb[3]>0.0) return Vec4D_Vector();
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
@@ -619,9 +563,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
     else if (m==(size_t)1-a) after[l]=pbt;
     else {
       after[l]=ampl.Leg(m)->Mom();
-      cmso.Boost(after[l]);
-      zrot.Rotate(after[l]);
-      cmsn.BoostBack(after[l]);
+      lt.Align(after[l]);
     }
     ++l;
   }
