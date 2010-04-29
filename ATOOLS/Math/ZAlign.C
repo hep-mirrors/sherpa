@@ -13,10 +13,11 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
   double Q2=Q.Abs2(), papb=0.5*(Q2-ma2-mb2);
   if (!IsEqual(papb,pa*pb,1.0e-6))
     msg_Error()<<METHOD<<"(): p_a*p_b = "<<papb
-	       <<" vs. "<<pa*pb<<", rel diff "
+	       <<" vs. "<<pa*pb<<", rel. diff. "
 	       <<papb/(pa*pb)-1.0<<std::endl;
-  if (!IsZero(pb[1],1.0e-6) || !IsZero(pb[2],1.0e-6))
-    msg_Error()<<METHOD<<"(): p_b not aligned -> "<<pb<<" !\n";
+  if (!IsZero(pb[1],1.0e-3) || !IsZero(pb[2],1.0e-3))
+    msg_Error()<<METHOD<<"(): p_b not aligned -> "
+	       <<pb<<std::endl;
   if (IsZero(mb2)) {
     double ea(0.5*(papb+ma2*sqr(pb[3])/papb)/pb[0]);
     if (ea*ea<ma2) m_stat=-1;
@@ -37,7 +38,8 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
   }
   if (!IsEqual(Q2,(m_pan+m_pb).Abs2(),1.0e-6))
     msg_Error()<<METHOD<<"(): Q = "<<sqrt(Q2)<<" vs. "
-	       <<(m_pan+m_pb).Mass()<<" !\n";
+	       <<(m_pan+m_pb).Mass()<<", rel. diff. "
+	       <<sqrt(Q2/(m_pan+m_pb).Abs2())-1.0<<std::endl;
   Vec4D pao(m_pao), pan(m_pan);
   m_cmso=Poincare(pao+pb);
   m_cmsn=Poincare(pan+pb);
