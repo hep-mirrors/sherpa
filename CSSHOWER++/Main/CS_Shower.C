@@ -434,9 +434,11 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 	  !IsEqual(oldr,r->Momentum(),1.0e-6) || 
 	  !IsEqual(olds,s->Momentum(),1.0e-6)) {
 	msg_Error()<<"\nFaulty reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
-		   <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi<<"\n";
+		   <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
+		   <<", mode = "<<ncp.m_mode<<", kin = "<<ncp.m_kin<<"\n";
 	msg_Error()<<"               vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
-		   <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi<<"\n";
+		   <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
+		   <<", mode = "<<cp.m_mode<<", kin = "<<cp.m_kin<<"\n";
 	msg_Error()<<"  "<<oldl<<" "<<oldr<<" "<<olds<<"\n";
 	msg_Error()<<"  "<<l->Momentum()<<" "<<r->Momentum()
 		   <<" "<<s->Momentum()<<"\n";

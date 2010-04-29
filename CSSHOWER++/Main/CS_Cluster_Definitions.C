@@ -287,7 +287,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
   lt.Align(pi);
   lt.Align(pkt);
   CS_Parameters cs(kt2,xika,ui,Phi(lt.PaNew(),pkt,pi),xika,1);
-  if (IsZero(xika-ui,s_uxeps))
+  if (IsZero(xika-ui,s_uxeps) && ma2==mai2)
     THROW(fatal_error,"Invalid parton configuration");
   KernelWeight(a,i,k,mo,cs);
   return cs;
