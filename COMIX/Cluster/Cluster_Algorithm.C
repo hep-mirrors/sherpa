@@ -618,7 +618,8 @@ bool Cluster_Algorithm::Cluster
     Current_Base *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
-      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
+      if (p_ampl->KT2QCD()<sqrt(std::numeric_limits<double>::max()))
+	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
     p_ampl=ampl;
   }
   return false;
