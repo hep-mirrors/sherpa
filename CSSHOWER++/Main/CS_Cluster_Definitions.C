@@ -183,7 +183,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_FF
   Vec4D pkt(sqrt(lrat)*(k->Mom()-(Q*k->Mom())/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
 
   if (lrat<0.0 || pkt[0]<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,2);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
@@ -224,7 +224,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_FI
 	      (sqr(Q2-sij-ma2)-4.0*sij*ma2));
   Vec4D pat(sqrt(lrat)*(a->Mom()-(Q*a->Mom()/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
   if (lrat<0.0 || pat[0]>0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,2);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
@@ -261,21 +261,18 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
   Vec4D Q(a->Mom()+i->Mom()+k->Mom()), pi(i->Mom());
   double Q2=Q.Abs2();
 
-  if (p_shower->KinScheme()==1 ||
-      IsZero(xika-ui,s_uxeps)) {
-  double ttau=Q2-mai2-mk2, tau=Q2-ma2-mi2-mk2;
-  double sik=-((1.0-xika)*(Q2-ma2)-(mi2+mk2))/xika;
-  double xiika=xika*(ttau-sqrt(ttau*ttau-4.*mai2*mk2))/
-    (tau-sqrt(tau*tau-4.*ma2*sik*sqr(xika)));
-  double pikpa=pipa+pkpa, gam=-pikpa+sqrt(pikpa*pikpa-ma2*sik);
-  double bet=1.0-ma2*sik/(gam*gam), gamt=gam*xiika;
-  Vec4D l=(-a->Mom()-ma2/gam*(i->Mom()+k->Mom()))/bet;
-  Vec4D n=((i->Mom()+k->Mom())+sik/gam*a->Mom())/bet;
-  l*=(1.0-sik/gam)/(1.0-mk2/gamt);
-  n*=(1.0-ma2/gam)/(1.0-mai2/gamt);
-  Vec4D pat=l+mai2/gamt*n, pikt=n+mk2/gamt*l;
-
-  CS_Parameters cs(kt2,xika,ui,Phi(pat,pikt,i->Mom()),xika,1,1);
+  if ((p_shower->KinScheme()==1 ||
+       IsZero(xika-ui,s_uxeps)) && ma2==mai2) {
+  double sik((i->Mom()+k->Mom()).Abs2()), Q2(Q.Abs2());
+  double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
+	      (sqr(Q2-sik-ma2)-4.0*sik*ma2));
+  Vec4D pat(sqrt(lrat)*(a->Mom()-(Q*a->Mom()/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
+  if (lrat<0.0 || pat[0]>0.0) {
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1,1);
+    cs.m_wk=cs.m_ws=-1.0;
+    return cs;
+  }
+  CS_Parameters cs(kt2,xika,ui,Phi(Q-pat,-pat,i->Mom()),xika,1,1);
   KernelWeight(a,i,k,mo,cs);
   return cs;
   }
@@ -468,26 +465,16 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   double kt2  = -2.*(pipa+pkpa)*(1.-xika)*ui-mi2-sqr(1.0-xika)*ma2; 
   if (kt2<0.0) return Vec4D_Vector();
 
-  double ttau=Q2-mai2-mk2, tau=Q2-ma2-mi2-mk2;
-  double sik=-((1.0-xika)*(Q2-ma2)-(mi2+mk2))/xika;
-  if (ttau*ttau<4.*mai2*mk2 || ttau>0.0 ||
-      tau*tau<4.*ma2*sik*sqr(xika) || tau>0.0) return Vec4D_Vector();
-  double xiika=xika*(ttau-sqrt(ttau*ttau-4.*mai2*mk2))/
-    (tau-sqrt(tau*tau-4.*ma2*sik*sqr(xika)));
-  double pikpa=pipa+pkpa, gam=-pikpa+sqrt(pikpa*pikpa-ma2*sik);
-  if (IsZero(xiika) || pikpa*pikpa<ma2*sik) return Vec4D_Vector();
-  double bet=1.0-ma2*sik/(gam*gam), gamt=gam*xiika;
-  Vec4D l=(-pa-ma2/gam*(pi+pk))/bet;
-  Vec4D n=((pi+pk)+sik/gam*pa)/bet;
-  l[0]=l.PSpat();// improve num accuracy
-  n[0]=n.PSpat();// improve num accuracy
-  l*=(1.0-sik/gam)/(1.0-mk2/gamt);
-  n*=(1.0-ma2/gam)/(1.0-mai2/gamt);
-  Vec4D pat=-l-mai2/gamt*n, pikt=n+mk2/gamt*l;
+  double sik((pi+pk).Abs2()), Q2(Q.Abs2());
+  double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
+	      (sqr(Q2-sik-ma2)-4.0*sik*ma2));
+  Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
+  if (lrat<0.0 || pat[0]>0.0) return Vec4D_Vector();
+  Vec4D pikt(Q-pat);
 
   Vec4D pb=ampl.Leg(1-a)->Mom();
   if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
-  ZAlign lt(-pat,-pb,mai2,mb2);
+  ZAlign lt(-pat,-pb,ma2,mb2);
   Vec4D pan(-lt.PaNew());
   if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
       lt.Status()<0) return Vec4D_Vector();

@@ -695,21 +695,13 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       Vec4D pj(r->Momentum()), pk(s->Momentum()), Q(pa+pj+pk);
       double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
       double mb2(p_ms->Mass2(b->GetFlavour()));
-      double mj2(p_ms->Mass2(r->GetFlavour()));
       double mk2(p_ms->Mass2(s->GetFlavour()));
       if (ma2==0.0 && maj2==0.0) return;
-      double pjpa=pj*pa, pkpa=pk*pa, pjpk=pj*pk;
-      double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa), sjk=(pj+pk).Abs2();
-      double Q2=Q.Abs2(), ttau=Q2-maj2-mk2, tau=Q2-ma2-mj2-mk2;
-      double xijka=xjka*(ttau-sqrt(ttau*ttau-4.*maj2*mk2))/
-	(tau-sqrt(tau*tau-4.*ma2*sjk*sqr(xjka)));
-      double pjkpa=pjpa+pkpa, gam=-pjkpa+sqrt(pjkpa*pjkpa-ma2*sjk);
-      double bet=1.0-ma2*sjk/(gam*gam), gamt=gam*xijka;
-      Vec4D l((-pa-ma2/gam*(pj+pk))/bet), n(((pj+pk)+sjk/gam*pa)/bet);
-      l*=(1.0-sjk/gam)/(1.0-mk2/gamt);
-      n*=(1.0-ma2/gam)/(1.0-maj2/gamt);
-      Vec4D pat(-l-maj2/gamt*n), pjkt(n+mk2/gamt*l);
-      ZAlign lt(-pat,-pb,maj2,mb2);
+      double sjk((pj+pk).Abs2()), Q2(Q.Abs2());
+      double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
+		  (sqr(Q2-sjk-ma2)-4.0*sjk*ma2));
+      Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
+      ZAlign lt(-pat,-pb,ma2,mb2);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {

@@ -240,84 +240,46 @@ int Kinematics_IF::MakeKinematics
 {
   if (split->Kin()==1) {
   Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1(p1), rp2(p2);
-  Vec4D n_perp(0.0,cross(Vec3D(p1),Vec3D(p2)));
+  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p2;
+  Vec4D n_perp(0.0,cross(Vec3D(p2),Vec3D(p1)));
+  n_perp*=1.0/n_perp.PSpat();
 
   Poincare cms(p1+p2);
-  cms.Boost(p1);
-  cms.Boost(p2);
-  Poincare zrot(p1,Vec4D::ZVEC);
-  zrot.Rotate(p1);
-  zrot.Rotate(p2);
-  zrot.Rotate(n_perp);
+  cms.Boost(rp1);
+  Vec4D l_perp(0.0,cross(Vec3D(rp1),Vec3D(n_perp)));
+  l_perp*=1.0/l_perp.PSpat();
 
-  Poincare xrot(n_perp,Vec4D::XVEC);
-    
-  Vec4D q1,q2,q3,Q=p2-p1;
+  Vec4D q1=-p1,q2,q3,Q=p2-p1,l,n;
   double kt2 = split->KtTest(), z = split->ZTest(), y = split->YTest();
   double mk2 = p_ms->Mass2(spect->GetFlavour()), phi = split->Phi();
-  double mi2 = p_ms->Mass2(fli), ma2 = p_ms->Mass2(fla);
-  double mai2 = p1.Abs2(), Q2 = Q.Abs2();
+  double mi2 = p_ms->Mass2(fli), ma2 = p_ms->Mass2(fla), Q2 = Q.Abs2();
   
-  //the massless & massive cases
-  //fix the initial state parton momentum
-
   y=GetY(Q2,kt2,z,ma2,mi2,mk2);
-  double tt=Q2-mai2-mk2, t=Q2-ma2-mi2-mk2;
-  double sik=-((1.0-z)*(Q2-ma2)-(mi2+mk2))/z;
-  double xi=z*(tt-sqrt(tt*tt-4.*mai2*mk2))/
-    (t-sqrt(t*t-4.*ma2*sik*z*z));
-  if (tt*tt<4.*mai2*mk2 || tt>0.0 ||
-      t*t<4.*ma2*sik*z*z || t>0.0) return -1;
-  double p1p2=p1*p2, gamt=p1p2+Sign(p1p2)*sqrt(sqr(p1p2)-mai2*mk2);
-  if (sqr(p1p2)<mai2*mk2 || IsZero(gamt,1.0e-6)) return -1;
-  double bet=1.0-mai2*mk2/(gamt*gamt), gam=gamt/xi;
-  Vec4D l=(p1-mai2/gamt*p2)/bet;
-  Vec4D n=(p2-mk2/gamt*p1)/bet;
-  l*=(1.0-mk2/gamt)/(1.0-sik/gam);
-  n*=(1.0-mai2/gamt)/(1.0-ma2/gam);
-  double zt=(gam*gam+ma2*sik)/(gam*gam-ma2*sik)*
-    (y-ma2/gam*(1.0-z+2.0*mi2/(gam+ma2*sik/gam)));
-  double ktt=(gam+ma2*sik/gam)*(1.0-z)*
-    zt*(1.0-zt)-sqr(1.0-zt)*mi2-zt*zt*mk2;
+  double xi=-y, yt=1.0-1.0/z;
+  double sik=GetS(Q2,yt,mi2,mk2,ma2);
+  double gam=ConstructLN(Q2,sik,mk2,ma2,Q,q1,l,n);
+  if (gam==0.0) return -1;
+  double zt=GetZ(Q2,sik,yt,xi,mk2,ma2);
+  double ktt=GetKT2(Q2,yt,zt,mi2,mk2,ma2);
   if (ktt<0.0) {
     msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
     return -1;
   }
   ktt=sqrt(ktt);
-  q1 = l + ma2/gam*n;
-  q3 = zt*n + (mi2+ktt*ktt)/(gam*zt)*l
-    + ktt*cos(phi)*Vec4D(0.0,1.0,0.0,0.0) 
-    + ktt*sin(phi)*Vec4D(0.0,0.0,1.0,0.0); 
-  q2 = Q+q1-q3;
-
-  xrot.RotateBack(q1);
-  xrot.RotateBack(q2);
-  xrot.RotateBack(q3);
-  zrot.RotateBack(q1);
-  zrot.RotateBack(q2);
-  zrot.RotateBack(q3);
-  cms.BoostBack(q1);
-  cms.BoostBack(q2);
+  q3 = ktt*sin(phi)*l_perp;
   cms.BoostBack(q3);
+  q3 += zt*l + (mi2+ktt*ktt)/(gam*zt)*n + ktt*cos(phi)*n_perp;
+  q2 = Q-q1-q3;
+  q1 = -q1;
+
+  if (!IsZero(sqr(((p2-p1)-(q2+q3-q1))[0])/(p2-p1).Abs2()) ||
+      !IsZero(((p2-p1)-(q2+q3-q1)).Abs2()/(p2-p1).Abs2()))
+    msg_Error()<<METHOD<<"(): Momentum not conserved. Difference is "
+	       <<(p2-p1)-(q2+q3-q1)<<std::endl; 
   
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<"Error in  Kinematics_IF::MakeKinematics (past boost) "<<endl
-	       <<" negative energy "<<q1<<"\n"
-	       <<"                 "<<q2<<"\n"
-	       <<"                 "<<q3<<"\n";
-    return -1;
-  }
-  
-  if (!IsEqual((rp2-rp1).Abs2(),(q2+q3-q1).Abs2(),sqrt(ATOOLS::Accu()))) {
-    std::cout.precision(12);
-    msg_Error()<<METHOD<<"(): Faulty kinematics "<<(rp2-rp1).Abs2()
-	       <<" vs. "<<(q2+q3-q1).Abs2()<<" {\n"
-	       <<"  old p_1 = "<<rp1<<"\n"
-	       <<"      p_2 = "<<rp2<<"\n"
-	       <<"  new q_1 = "<<q1<<"\n"
-	       <<"      q_2 = "<<q2<<"\n"
-	       <<"      q_3 = "<<q3<<"\n}"<<std::endl;
+    msg_Tracking()<<METHOD<<"(): Negative energy in {\n  "
+		  <<q1<<"\n  "<<q2<<"\n  "<<q3<<"\n}\n";
     return -1;
   }
   
