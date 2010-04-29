@@ -500,8 +500,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   Vec4D pan(-lt.PaNew());
   if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
       lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa.gen.PBeam(a)[0] ||
-      IsZero(xika-ui,s_uxeps)) return Vec4D_Vector();
+  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;

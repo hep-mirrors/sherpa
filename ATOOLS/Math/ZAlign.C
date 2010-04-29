@@ -11,18 +11,12 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
 {
   Vec4D Q(pa+pb);
   double Q2=Q.Abs2(), papb=0.5*(Q2-ma2-mb2);
-  if (!IsEqual(papb,pa*pb,1.0e-6)) {
+  if (!IsEqual(papb,pa*pb,1.0e-6))
     msg_Error()<<METHOD<<"(): p_a*p_b = "<<papb
-	       <<" vs. "<<pa*pb<<" !\n";
-    if (!IsEqual(pa.Abs2(),ma2,1.0e-6))
-      msg_Error()<<METHOD<<"(): p_b^2 = "<<pa.Mass()
-		 <<" vs. "<<sqrt(ma2)<<" !\n";
-    if (!IsEqual(pb.Abs2(),ma2,1.0e-6))
-      msg_Error()<<METHOD<<"(): p_a^2 = "<<pb.Mass()
-		 <<" vs. "<<sqrt(ma2)<<" !\n";
-    if (msg_LevelIsDebugging())
-      exh->GenerateStackTrace(std::cout);
-  }
+	       <<" vs. "<<pa*pb<<", rel diff "
+	       <<papb/(pa*pb)-1.0<<std::endl;
+  if (!IsZero(pb[1],1.0e-6) || !IsZero(pb[2],1.0e-6))
+    msg_Error()<<METHOD<<"(): p_b not aligned -> "<<pb<<" !\n";
   if (IsZero(mb2)) {
     double ea(0.5*(papb+ma2*sqr(pb[3])/papb)/pb[0]);
     if (ea*ea<ma2) m_stat=-1;

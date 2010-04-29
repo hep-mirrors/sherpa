@@ -19,7 +19,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
   double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
-  m_kscheme = dataread->GetValue<double>("CSS_KIN_SCHEME",0);
+  m_kscheme = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   std::vector<std::vector<std::string> > helpsvv;
   dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
   m_efac.clear();
@@ -89,25 +89,29 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
   Parton *l(split->GetLeft()), *r(split->GetRight());
   Parton *c(split->GetSplit()->FollowUp()), *s(split->GetSpec());
   Flavour fli(l->GetFlavour());
+  int kin(l->Kin());
   s->SetMomentum(s->GetPrev()->Momentum());
   l->SetMomentum(c->Momentum());
   l->SetFlavour(c->GetFlavour());
+  l->SetKin(c->Kin());
   l->SetSpect(s);
   msg_Debugging()<<"before: c: "<<*l<<"        s: "<<*s<<"\n";
   msg_Debugging()<<"kt = "<<sqrt(l->KtTest())<<", z = "
 		 <<l->ZTest()<<", y = "<<l->YTest()
-		 <<", phi = "<<l->Phi()<<"\n\n";
+		 <<", phi = "<<l->Phi()<<", scheme = "<<l->Kin()<<"\n\n";
   int stat=0;
   if (c->GetType()==pst::FS) {
     if (s->GetPrev()->GetType()==pst::FS) {
       m_kinFF.SetJF(NULL);
       stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r);
       l->SetFlavour(fli);
+      l->SetKin(kin);
     }
     else {
       m_kinFI.SetJF(NULL);
       stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r);
       l->SetFlavour(fli);
+      l->SetKin(kin);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),2);
@@ -123,6 +127,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
       m_kinIF.SetJF(NULL);
       stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r);
       l->SetFlavour(fli);
+      l->SetKin(kin);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),1);
@@ -135,6 +140,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
       m_kinII.SetJF(NULL);
       stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r);
       l->SetFlavour(fli);
+      l->SetKin(kin);
       if (stat>0) {
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),3);
