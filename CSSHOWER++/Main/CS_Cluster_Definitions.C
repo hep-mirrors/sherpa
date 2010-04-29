@@ -317,8 +317,9 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mb2);
   Vec4D pbt=sqrt(lrat)*(b->Mom()-(Q*b->Mom()/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q;
-  if (lrat<0.0 || pbt[0]>0.0 || IsZero(sqr(pbt[0])/Q2) || xiab<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1);
+  if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 ||
+      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2)) {
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }

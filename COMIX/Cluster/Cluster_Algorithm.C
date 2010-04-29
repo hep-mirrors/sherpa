@@ -378,7 +378,7 @@ bool Cluster_Algorithm::ClusterStep
     if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
   }
   if (win==cinfo.end()) win=rwin;
-  if (win==cinfo.end()) THROW(fatal_error,"Invalid amplitude");
+  if (win==cinfo.end()) return false;
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
   nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2QCD();
