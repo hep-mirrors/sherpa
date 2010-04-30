@@ -1,0 +1,48 @@
+(run){
+  EVENTS = 1000000
+}(run)
+
+(processes){
+  Process 93 93 -> 93 93 93{2}
+  Order_EW 0
+  CKKW sqr(10.0/E_CMS)
+  Enhance_Function PPerp2(p[2]) {2}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4])) {3}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5])) {4}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5]),PPerp2(p[6])) {5}
+  End process
+}(processes)
+
+(selector){
+  NJetFinder  2  10.0  0.0  1.0
+}(selector)
+
+(shower){
+  CSS_EW_MODE = 1
+}(shower)  
+
+(me){
+  ME_SIGNAL_GENERATOR = Comix
+  EVENT_GENERATION_MODE = Weighted
+  ME_QED = Off
+}(me)
+
+(integration){
+  ERROR = 0.1
+}(integration)
+
+(fragmentation){
+  FRAGMENTATION = Off
+  DECAYMODEL = Off
+}(fragmentation)
+
+(mi){
+  MI_HANDLER = None
+}(mi)
+
+(beam){
+  BEAM_1 = 2212
+  BEAM_ENERGY_1 = 980.0
+  BEAM_2 = -2212
+  BEAM_ENERGY_2 = 980.0
+}(beam)

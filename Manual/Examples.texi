@@ -25,6 +25,7 @@ of the main features of these examples.
 * LHC_ADD::
 * LHC_SUSY::
 * NLO_W::
+* Tevatron_Photons::
 @end menu
 
 @include LHC_ZJets.texi
@@ -44,5 +45,5 @@ of the main features of these examples.
 @include LHC_ADD.texi
 @include LHC_SUSY.texi
 @include W_NLO.texi
-
+@include Tevatron_Photons.texi
 
