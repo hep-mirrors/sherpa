@@ -298,6 +298,18 @@ Enhance_Function PPerp2(p[4]) {3}
 Here, the 1-jet process is enhanced with the
 transverse momentum squared of the jet.
 
+Note that the convergence of the Monte Carlo integration can be worse
+if enhance functions are employed and therefore the integration can take
+significantly longer. The reason is that the default phase space 
+mapping, which is constructed according to diagrammatic information from
+hard matrix elements, is not suited for event generation including
+enhancement. It must first be adapted, which, depending on the enhance 
+function and the final state multiplicity, can be an intricate task. 
+
+@emph{If Sherpa cannot achieve an integration error target due to the use
+ of enhance functions, it might be appropriate to locally redefine this
+ error target}, see @ref{Integration_Error}.
+
 
 @node NLO_QCD_Part
 @subsection NLO_QCD_Part

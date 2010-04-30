@@ -13,11 +13,12 @@ The following parameters describe general run information. They may be set in th
 * BATCH_MODE::        Batch mode settings.
 * SPIN_CORRELATIONS:: Switch spin correlations on/off.
 * NUM_ACCURACY::      Accuracy for gauge tests.
-* Event output formats:: Event output in different formats.
-* Multi-threading::   Multi-threaded integration with Sherpa.
 
 * SHERPA_CPP_PATH::   The C++ code generation path.
 * SHERPA_LIB_PATH::   The runtime library path.
+
+* Event output formats:: Event output in different formats.
+* Multi-threading::   Multi-threaded integration with Sherpa.
 @end menu
 
 

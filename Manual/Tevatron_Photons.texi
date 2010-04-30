@@ -93,12 +93,12 @@ very efficiently.
       the @code{shower} section.
 @item The @code{me} section enables weighted event generation and switches
       off the emission of additional soft photons from the hard scattering.
-@item Due to generating weighted events, the cross section calculation can be
-      shortened by setting the integration error target very high in the
-      @code{integration} section.
+@item The steeply rising enhance functions necessitate a redefinition 
+      of the integration error target, see @ref{Enhance_Function}. 
+      The new value is set globally in the @code{integration} section.
 @item To generate only prompt photons, the hadronisation, hadron decays and
-      underlying event are turned off. To include them, they can be enabled
-      as described in @ref{Hadronization parameters} and set
+      underlying event are turned off. These steps of the simulation can be 
+      enabled as described in @ref{Hadronization parameters} and
       @ref{MI_HANDLER}.
 @item The @code{beam} section specifies Tevatron Run 2 conditions in this
       example but can simply be changed.

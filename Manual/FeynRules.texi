@@ -8,7 +8,7 @@
 @cindex FR_INTERACTIONS
 
 
-To use a model generated using the FeynRules package, cf. Refs. @mycite{Christensen2008py}and @mycite{Christensen2009jx}, 
+To use a model generated using the FeynRules package, cf. Refs. @mycite{Christensen2008py} and @mycite{Christensen2009jx}, 
 the MODEL switch has to be set to @option{FeynRules} and @ref{ME_SIGNAL_GENERATOR} has to be set to 
 @option{Amegic}. Note, in order to obtain the FeynRules model output in a format readable by Sherpa the FeynRules
 subroutine 'WriteSHOutput[ L ]' needs to be called for the desired model Lagrangian 'L'. This results in a
