@@ -179,13 +179,11 @@ bool Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetVeto(split->KtVeto());
   newpB->SetKtPrev(split->KtPrev());
   newpC->SetKtPrev(split->KtPrev());
-  newpB->SetNext(split->GetNext());
   newpB->SetKtNext(split->KtNext());
   newpB->SetStat(split->Stat());
   if (split->GetNext()) {
     split->GetNext()->SetPrev(newpB);
-    split->SetNext(newpB);
-    newpB->SetPrev(split);
+    newpB->SetNext(split->GetNext());
   }
   newpB->UpdateDaughters();
   split->GetSpect()->UpdateDaughters();
@@ -220,6 +218,7 @@ void Shower::ResetScales(Parton *const split)
 {
   for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
     (*pit)->SetStart(split->KtTest());
+  m_last[0]=m_last[1]=m_last[2]=NULL;
 }
 
 void Shower::SetSplitInfo
