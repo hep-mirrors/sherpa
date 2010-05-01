@@ -586,7 +586,7 @@ bool Cluster_Algorithm::Cluster
   } while (oldsize<nocl.size());
   msg_Debugging()<<"trying unordered configurations\n";
   if (ampl->Legs().size()==4) return false;
-  if (nocl.empty()) THROW(fatal_error,"Internal error");
+  if (nocl.empty()) return false;
   Vertex_Set nonocl;
   while (true) {
     double nmin(std::numeric_limits<double>::max()), pmin(nmin);

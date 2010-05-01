@@ -698,8 +698,7 @@ void METS_Scale_Setter::ZAlign
  const int mode) const
 {
   ATOOLS::ZAlign lt(-pa,-pb,ma2,mb2);
-  if (mode) pa=-lt.PaNew();
-  else lt.OldCMS().Boost(pa);
+  lt.Align(pa);
   for (size_t m(0);m<ampl.Legs().size();++m) {
     Vec4D cm(ampl.Leg(m)->Mom());
     lt.Align(cm);
