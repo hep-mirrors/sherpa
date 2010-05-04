@@ -552,9 +552,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  if (*plit==l) continue;
-	  Vec4D p((*plit)->Momentum());
- 	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
     }
@@ -574,9 +572,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
     }
@@ -601,9 +597,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  if (*plit==l) continue;
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
       }
@@ -624,9 +618,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
  	  if (*plit==l) continue;
-	  Vec4D p((*plit)->Momentum());
-  	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
       }
@@ -647,9 +639,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
     }
@@ -674,9 +664,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
- 	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
     }
@@ -705,9 +693,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
       }
@@ -732,9 +718,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  lt.Align(p);
-	  (*plit)->SetMomentum(p);
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
 	}
       }
       }

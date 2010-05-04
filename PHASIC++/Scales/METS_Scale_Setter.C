@@ -12,24 +12,39 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 
 #define CHECK__x
+// #define METS__reject_unordered
+// #define CHECK__stepwise
 
 namespace PHASIC {
 
   struct CS_Params {
-    double m_kt2, m_op2, m_z, m_y;
+    size_t m_i, m_j, m_k;
     ATOOLS::Flavour m_fl;
-    int m_mode;
-    CS_Params(const double &kt2,const double &z,
-	      const double &y,const ATOOLS::Flavour &fl,
-	      const int mode=-1):
-      m_kt2(kt2), m_op2(0.0), m_z(z), m_y(y), m_fl(fl), m_mode(mode) {}
+    double m_kt2, m_op2, m_z, m_y;
+    ATOOLS::Vec4D m_pijt, m_pkt;
+    CS_Params(const size_t &i,const size_t &j,
+	      const size_t &k,const ATOOLS::Flavour &fl):
+      m_i(i),m_j(j), m_k(k), m_fl(fl),
+      m_kt2(-1.0), m_op2(0.0), m_z(0.0), m_y(0.0) {}
+    bool operator<(const CS_Params &ck) const
+    { 
+      if (m_i<ck.m_i) return true;
+      if (m_i>ck.m_i) return false;
+      if (m_j<ck.m_j) return true;
+      if (m_j>ck.m_j) return false;
+      if (m_k<ck.m_k) return true;
+      if (m_k>ck.m_k) return false;
+      return m_fl<ck.m_fl;
+    }
+    void SetParams(const double &kt2,const double &z,const double &y,
+		   const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt)
+    { m_kt2=kt2, m_z=z; m_y=y; m_pijt=pijt; m_pkt=pkt; }
   };// end of struct CS_Params
 
   class METS_Scale_Setter: public Scale_Setter_Base {
@@ -52,10 +67,8 @@ namespace PHASIC {
     static double s_eps, s_kt2max;
 
     bool CheckX(const ATOOLS::Vec4D &p,const size_t &isid) const;
-    void ZAlign(ATOOLS::Cluster_Amplitude &ampl,
-		ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
-		const double &ma2,const double &mb2,
-		const int mode=0) const;
+
+    double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
@@ -69,13 +82,12 @@ namespace PHASIC {
     double Lam(const double &s,
 	       const double &sb,const double &sc) const;
 
-    CS_Params KT2(const ATOOLS::Cluster_Leg *li,
-		  const ATOOLS::Cluster_Leg *lj,
-		  const ATOOLS::Cluster_Leg *lk,
-		  const ATOOLS::Flavour &mo) const;
+    void KT2(const ATOOLS::Cluster_Leg *li,
+	     const ATOOLS::Cluster_Leg *lj,
+	     const ATOOLS::Cluster_Leg *lk,CS_Params &cs) const;
 
     bool Combine(ATOOLS::Cluster_Amplitude &ampl,
-		 int i,int j,int k,const ATOOLS::Flavour &mo) const;
+		 int i,int j,int k,const CS_Params &cs) const;
 
     double SetScales(const double &scale);
 
@@ -95,24 +107,6 @@ namespace PHASIC {
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
   };// end of class METS_Scale_Setter
-
-  struct MCKey {
-    size_t m_i, m_j, m_k;
-    ATOOLS::Flavour m_fl;
-    MCKey(const size_t &i,const size_t &j,const size_t &k,
-	  const ATOOLS::Flavour &fl):
-      m_i(i),m_j(j), m_k(k), m_fl(fl) {}
-    bool operator<(const MCKey &ck) const
-    { 
-      if (m_i<ck.m_i) return true;
-      if (m_i>ck.m_i) return false;
-      if (m_j<ck.m_j) return true;
-      if (m_j>ck.m_j) return false;
-      if (m_k<ck.m_k) return true;
-      if (m_k>ck.m_k) return false;
-      return m_fl<ck.m_fl;
-    }
-  };// end of struct MCKey
 
 }// end of namespace PHASIC
 
@@ -260,6 +254,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   if (m_mode==2 || (m_mode==1 && !p_proc->LookUp()))
     return CalculateStrict(momenta);
+  DEBUG_FUNC(p_proc->Name());
   if (p_proc->IsMapped() && p_proc->LookUp()) {
     m_kfkey[0]=m_scale[stp::ren]=
       p_proc->MapProc()->ScaleSetter()->Scale(stp::ren);
@@ -277,15 +272,14 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
     for (size_t i(0);i<m_p.size();++i) 
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
-  ampl->SetX1(p_proc->Integrator()->ISR()->X1());
-  ampl->SetX2(p_proc->Integrator()->ISR()->X2());
   Single_Process *proc(p_proc->Get<Single_Process>());
-  std::set<MCKey> trials;
+  std::set<CS_Params> trials;
   std::vector<double> ops(ampl->Legs().size()-3,0.0);
+  double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl));
   while (ampl->Legs().size()>4) {
-    double op2w(0.0), kt2w(0.0);
+    msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     size_t iw(0), jw(0), kw(0);
-    MCKey ckw(0,0,0,kf_none);
+    CS_Params ckw(0,0,0,kf_none);
     for (size_t i(0);i<ampl->Legs().size();++i) {
       Cluster_Leg *li(ampl->Leg(i));
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
@@ -296,18 +290,23 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k!=i && k!=j) {
 	    for (size_t f(0);f<cf.size();++f) {
-	      MCKey ck(li->Id(),lj->Id(),lk->Id(),cf[f]);
-	      if (trials.find(ck)!=trials.end()) {
-		msg_Debugging()<<"Vetoed "<<cf[f]<<" = "
-			       <<ID(ck.m_i)<<" & "<<ID(ck.m_j)
-			       <<" <-> "<<ID(ck.m_k)<<"\n";
-		continue;
-	      }
+	      CS_Params cs(li->Id(),lj->Id(),lk->Id(),cf[f]);
+	      if (trials.find(cs)!=trials.end()) continue;
 	      if (!CheckColors(li,lj,lk,cf[f])) {
-		trials.insert(ck);
+		msg_Debugging()<<"Veto colours: "<<cf[f]<<" = "
+			       <<ID(cs.m_i)<<" & "<<ID(cs.m_j)
+			       <<" <-> "<<ID(cs.m_k)<<"\n";
+		trials.insert(cs);
 		continue;
 	      }
-	      CS_Params cs(KT2(li,lj,lk,cf[f]));
+	      KT2(li,lj,lk,cs);
+	      if (cs.m_kt2==-1.0) {
+		msg_Debugging()<<"Veto kinematics: "<<cf[f]<<" = "
+			       <<ID(cs.m_i)<<" & "<<ID(cs.m_j)
+			       <<" <-> "<<ID(cs.m_k)<<"\n";
+		trials.insert(cs);
+		continue;
+	      }
 	      cs.m_op2=1.0/cs.m_kt2;
 	      if (cf[f].Strong() &&
 		  li->Flav().Strong() &&
@@ -334,7 +333,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
 		    // if resonance, reweight with breit-wigner
 		    double s((li->Mom()+lj->Mom()).Abs2());
 		    double m2(sqr(cf[f].Mass()));
-		    cs.m_op2*=dabs(s)/
+		    cs.m_op2*=cs.m_kt2/
 		      sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
 		  }
 		  else {
@@ -343,10 +342,8 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
 		  }
 		}
 	      }
-	      if (cs.m_op2>op2w) {
-		op2w=cs.m_op2;
-		kt2w=cs.m_kt2;
-		ckw=ck;
+	      if (cs.m_op2>ckw.m_op2) {
+		ckw=cs;
 		iw=i;
 		jw=j;
 		kw=k;
@@ -375,28 +372,27 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       ampl->DeleteNext();
       continue;
     }
-    msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     msg_Debugging()<<"Cluster "<<ckw.m_fl<<" "
 		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
 		   <<" <-> "<<ID(ckw.m_k)
-		   <<" => "<<sqrt(kt2w)
-		   <<" ("<<sqrt(op2w)<<") <-> "
+		   <<" => "<<sqrt(ckw.m_kt2)
+		   <<" ("<<sqrt(ckw.m_op2)<<") <-> "
 		   <<sqrt(ops[ampl->Legs().size()-4])<<"\n";
-    if (ops[ampl->Legs().size()-4]>kt2w) {
+    if (ops[ampl->Legs().size()-4]>ckw.m_kt2) {
       msg_Debugging()<<"unordered configuration\n";
 #ifdef METS__reject_unordered
       continue;
 #endif
     }
-    ampl->SetKT2QCD(kt2w);
+    ampl->SetKT2QCD(ckw.m_kt2);
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
-    if (!Combine(*ampl,iw,jw,kw,ckw.m_fl)) {
+    if (!Combine(*ampl,iw,jw,kw,ckw)) {
       ampl=ampl->Prev();
       ampl->DeleteNext();
       continue;
     }
-    ops[ampl->Legs().size()-4]=kt2w;
+    ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
     Vec4D psum;
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -416,8 +412,24 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
 	ampl->DeleteNext();
 	continue;
       }
+      kt2core=CoreScale(ampl);
+      if (ops[ampl->Legs().size()-4]>kt2core) {
+	msg_Debugging()<<"unordered configuration (core)\n";
+#ifdef METS__reject_unordered
+	ampl=ampl->Prev();
+	ampl->DeleteNext();
+	continue;
+#endif
+      }
     }
   }
+  while (ampl->Prev()) ampl=ampl->Prev();
+  ampl->Delete();
+  return SetScales(kt2core);
+}
+
+double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
+{
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
   m_p.resize(ampl->Legs().size());
   Vec4D psum;
@@ -444,6 +456,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
     abort();
   }
   bool pureres(false);
+  Single_Process *proc(p_proc->Get<Single_Process>());
   if ((res&7)==7 || (res&11)==11) {
     for (size_t j(1);j<4;++j) {
       if (proc->Combinable(cid[0],cid[j])) {
@@ -499,9 +512,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       }
     }
   }
-  while (ampl->Prev()) ampl=ampl->Prev();
-  ampl->Delete();
-  return SetScales(kt2cmin);
+  return kt2cmin;
 }
 
 double METS_Scale_Setter::SetScales(const double &scale)
@@ -545,165 +556,94 @@ double METS_Scale_Setter::Lam
   return sqr(s-sb-sc)-4.0*sb*sc;
 }
 
-CS_Params METS_Scale_Setter::KT2
+void METS_Scale_Setter::KT2
 (const Cluster_Leg *li,const Cluster_Leg *lj,
- const Cluster_Leg *lk,const Flavour &mo) const
+ const Cluster_Leg *lk,CS_Params &cs) const
 {
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
+  Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pi+pj+pk);
+  double Q2=Q.Abs2(), mij2=sqr(cs.m_fl.Mass()), mk2=sqr(lk->Flav().Mass());
+  double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
+  Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q), pijt(Q-pkt);
+  if (lrat<0.0 || Sign(pkt[0])!=Sign(pk[0]) || Sign(pijt[0])!=Sign(pi[0]) ||
+      IsZero(pkt[0],1.0e-6) || IsZero(pijt[0],1.0e-6)) return;
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
-	Vec4D pk(lk->Mom()), Q(li->Mom()+lj->Mom()+pk);
-	double pipj=li->Mom()*lj->Mom(), pipk=li->Mom()*lk->Mom();
-	double pjpk=lj->Mom()*lk->Mom(), Q2=Q*Q, yijk=pipj/(pipj+pipk+pjpk);
-	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
-	double mij2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
-	double zi=pipk/(pipk+pjpk);
-	double kt2=(Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)
-	  -(1.0-zi)*(1.0-zi)*mi2-zi*zi*mj2;
-	double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(li->Mom()+lj->Mom()).Abs2(),mk2);
-	Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
-	if (lrat<0.0 || IsZero(lrat,1.0e-6) ||
-	    pkt[0]<0.0 || IsZero(pkt[0],1.0e-6))
-	  kt2=s_kt2max;
-	return CS_Params(kt2,zi,yijk,mo,0);
+ 	double pipj=pi*pj, pipk=pi*pk, pjpk=pj*pk, Q2=Q*Q;
+  	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
+ 	double yijk=pipj/(pipj+pipk+pjpk), zi=pipk/(pipk+pjpk);
+  	double kt2=(Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)
+  	  -(1.0-zi)*(1.0-zi)*mi2-zi*zi*mj2;
+ 	cs.SetParams(kt2,zi,yijk,pijt,pkt);
       }
       else {
-	double pipj=li->Mom()*lj->Mom(), pipa=li->Mom()*lk->Mom();
-	double pjpa=lj->Mom()*lk->Mom(), xija=(pipa+pjpa+pipj)/(pipa+pjpa);
-	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
-	double ma2=sqr(lk->Flav().Mass()), zi=pipa/(pipa+pjpa);
-	double arg=sqr(pipa+pjpa)-ma2*(li->Mom()+lj->Mom()).Abs2();
-	double kt2=-2.0*(pipa+pjpa)*(1.0-xija)*zi*(1.0-zi)
-	  -sqr(1.0-zi)*mi2-zi*zi*mj2;
-	if (kt2<0.0 || IsZero(kt2,1.0e-6) ||
-	    xija<0.0 || IsZero(xija,1.0e-6) || arg<0.0)
-	  kt2=s_kt2max;
-	return CS_Params(kt2,zi,1.0-xija,mo,2);
+ 	double pipj=pi*pj, pipa=pi*pk, pjpa=pj*pk;
+  	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
+ 	double xija=(pipa+pjpa+pipj)/(pipa+pjpa), zi=pipa/(pipa+pjpa);
+  	double kt2=-2.0*(pipa+pjpa)*(1.0-xija)*zi*(1.0-zi)
+  	  -sqr(1.0-zi)*mi2-zi*zi*mj2;
+ 	cs.SetParams(kt2,zi,1.0-xija,pijt,pkt);
       }
     }
   }
   else {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
-	double pjpa=lj->Mom()*li->Mom(), pkpa=lk->Mom()*li->Mom();
-	double pjpk=lj->Mom()*lk->Mom(), xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
-	double ma2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
-	double uj=pjpa/(pjpa+pkpa);
-	double arg=sqr(pjpa+pkpa)-ma2*(lj->Mom()+lk->Mom()).Abs2();
-	double kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj-mj2-sqr(1.0-xjka)*ma2;
-	if (kt2<0.0 || IsZero(kt2,1.0e-6) ||
-	    xjka<0.0 || IsZero(xjka,1.0e-6) || arg<0.0)
-	  kt2=s_kt2max;
-	return CS_Params(kt2,xjka,uj,mo,1);
+ 	double pjpa=pj*pi, pkpa=pk*pi, pjpk=pj*pk;
+  	double ma2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
+ 	double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa), uj=pjpa/(pjpa+pkpa);
+  	double kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj-mj2-sqr(1.0-xjka)*ma2;
+ 	cs.SetParams(kt2,xjka,uj,pijt,pkt);
       }
       else {
-	double papb=li->Mom()*lk->Mom(), pjpa=lj->Mom()*li->Mom();
-	double pjpb=lj->Mom()*lk->Mom(), xjab=(papb+pjpa+pjpb)/papb;
-	double mj2=sqr(lj->Flav().Mass()), ma2=sqr(li->Flav().Mass());
-	double maj2=sqr(mo.Mass()), mb2=sqr(lk->Flav().Mass());
-	double Q2=(li->Mom()+lj->Mom()+lk->Mom()).Abs2(), vj=-pjpa/papb;
-	double kt2=2.0*papb*vj*(1.0-xjab)-mj2-sqr(1.0-xjab)*ma2;
-	double ttau=Q2-maj2-mb2, tau=Q2-ma2-mj2-mb2;
-	if (xjab<0.0 || IsZero(xjab,1.0e-6) ||
-	    ttau<0.0 || IsZero(ttau,1.0e-6) ||
-	    tau<0.0 || IsZero(tau,1.0e-6))
-	  kt2=s_kt2max;
-	return CS_Params(kt2,xjab,vj,mo,3);
+ 	double papb=pi*pk, pjpa=pj*pi, pjpb=pj*pk;
+  	double mj2=sqr(lj->Flav().Mass()), ma2=sqr(li->Flav().Mass());
+ 	double xjab=(papb+pjpa+pjpb)/papb, vj=-pjpa/papb;
+  	double kt2=2.0*papb*vj*(1.0-xjab)-mj2-sqr(1.0-xjab)*ma2;
+ 	cs.SetParams(kt2,xjab,vj,pijt,pkt);
       }
     }
   }
-  THROW(fatal_error,"Unknown CS dipole configuration");  
 }
-
-bool METS_Scale_Setter::Combine
-  (Cluster_Amplitude &ampl,int i,int j,int k,const Flavour &mo) const
+  
+bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
+				const CS_Params &cs) const
 {
   if (i>j) std::swap<int>(i,j);
   Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
-  if (i>1 && j>1 && k>1) {
-    Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pi+pj+pk);
-    double Q2=Q.Abs2(), mij2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
-    double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
-    Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
-    Vec4D pijt(Q-pkt); 
-    if (lrat<0.0 || pkt[0]<0.0 || pijt[0]<0.0) return false;
-    li->SetMom(pijt);
-    lk->SetMom(pkt);
+  li->SetCol(CombineColors(li,lj,lk,cs.m_fl));
+  li->SetFlav(cs.m_fl);
+  bool ii(i<2 && k<2);
+  if (ii) li->SetMom(li->Mom()+lj->Mom());
+  else {
+    li->SetMom(cs.m_pijt);
+    lk->SetMom(cs.m_pkt);
   }
-  if (i>1 && j>1 && k<2) {
-    Vec4D pi(li->Mom()), pj(lj->Mom()), pa(lk->Mom()), Q(pa+pi+pj);
-    double Q2=Q.Abs2(), mij2=sqr(mo.Mass()), ma2=sqr(lk->Flav().Mass());
-    double lrat=Lam(Q2,mij2,ma2)/Lam(Q2,(pi+pj).Abs2(),ma2);
-    Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-    Vec4D pijt(Q-pat), pb(ampl.Leg(1-k)->Mom());
-    if (lrat<0.0 || pat[0]>0.0 || pijt[0]<0.0) return false;
-    li->SetMom(pijt);
-    lk->SetMom(pat);
-    ZAlign(ampl,pat,pb,ma2,sqr(ampl.Leg(1-k)->Flav().Mass()));
+  if (i<2 || k<2) {
+    Cluster_Leg *la(ampl.Leg(i<2?i:k)), *lb(ampl.Leg(1-(i<2?i:k)));
+    ZAlign lt(-la->Mom(),-lb->Mom(),ii?li->Mom().Abs2():
+	      sqr(la->Flav().Mass()),sqr(lb->Flav().Mass()));
+    for (size_t m(0);m<ampl.Legs().size();++m) {
+      ampl.Leg(m)->SetMom(lt.Align(ampl.Leg(m)->Mom()));
+      ampl.Leg(m)->SetK(0);
+    }
+    if (ii) {
+      li->SetMom(lt.Align(cs.m_pijt));
+      lk->SetMom(lt.Align(cs.m_pkt));
+    }
 #ifdef CHECK__x
-    if (!CheckX(pat,lk->Id()&3)) return false;
+    if (!CheckX(la->Mom(),la->Id()&3)) return false;
+    if (!CheckX(lb->Mom(),lb->Id()&3)) return false;
 #endif
-    double x(1.0+(pi*pj)/((pi+pj)*pa));
-    if (k==0) ampl.SetX1(ampl.X1()*x);
-    else ampl.SetX2(ampl.X2()*x);
   }
-  if (i<2 && j>1 && k>1) {
-    Vec4D pa(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pa+pj+pk);
-    double Q2=Q.Abs2(), maj2=sqr(mo.Mass()), mk2=sqr(lk->Flav().Mass());
-    double lrat=Lam(Q2,maj2,mk2)/Lam(Q2,(pa+pj).Abs2(),mk2);
-    Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-maj2)/(2.*Q2)*Q);
-    Vec4D pajt(Q-pkt), pb(ampl.Leg(1-i)->Mom());
-    if (lrat<0.0 || pkt[0]<0.0 || pajt[0]>0.0) return false;
-    li->SetMom(pajt);
-    lk->SetMom(pkt);
-    ZAlign(ampl,pajt,pb,maj2,sqr(ampl.Leg(1-i)->Flav().Mass()));
-#ifdef CHECK__x
-    if (!CheckX(pajt,li->Id()&3)) return false;
-#endif
-    double x(1.0+(pj*pk)/((pj+pk)*pa));
-    if (i==0) ampl.SetX1(ampl.X1()*x);
-    else ampl.SetX2(ampl.X2()*x);
-  }
-  if (i<2 && j>1 && k<2) {
-    Vec4D pa(li->Mom()), paj(pa+lj->Mom()), pb(lk->Mom()), Q(paj+pb);
-    double Q2=Q.Abs2(), maj2=sqr(mo.Mass()), mb2=sqr(lk->Flav().Mass());
-    double saj=paj.Abs2(), x=1.0+(lj->Mom()*(pa+pb))/(pa*pb);
-    ZAlign(ampl,paj,pb,saj,mb2,1);
-    Q=paj+pb;
-    double lrat=Lam(Q2,maj2,mb2)/Lam(Q2,saj,mb2);
-    Vec4D pbt(sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-maj2)/(2.*Q2)*Q);
-    if (lrat<0.0 || pbt[0]>0.0) return false;
-#ifdef CHECK__x
-    if (!CheckX(Q-pbt,li->Id()&3)) return false;
-#endif
-    li->SetMom(Q-pbt);
-    lk->SetMom(pbt);
-    if (i==0) ampl.SetX1(ampl.X1()*x);
-    else ampl.SetX2(ampl.X2()*x);
-  }
-  li->SetCol(CombineColors(li,lj,lk,mo));
   li->SetId(li->Id()+lj->Id());
-  li->SetFlav(mo);
+  li->SetK(lk->Id());
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();
   ampl.Legs().erase(lit);
   return true;
-}
-
-void METS_Scale_Setter::ZAlign
-(ATOOLS::Cluster_Amplitude &ampl,ATOOLS::Vec4D &pa,
- const ATOOLS::Vec4D &pb,const double &ma2,const double &mb2,
- const int mode) const
-{
-  ATOOLS::ZAlign lt(-pa,-pb,ma2,mb2);
-  lt.Align(pa);
-  for (size_t m(0);m<ampl.Legs().size();++m) {
-    Vec4D cm(ampl.Leg(m)->Mom());
-    lt.Align(cm);
-    ampl.Leg(m)->SetMom(cm);
-  }
 }
 
 bool METS_Scale_Setter::CheckX

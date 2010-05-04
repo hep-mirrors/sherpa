@@ -54,3 +54,12 @@ void ZAlign::Align(Vec4D &p) const
   m_zrot.Rotate(p);
   m_cmsn.BoostBack(p);
 }
+
+Vec4D ZAlign::Align(const Vec4D &p) const
+{
+  Vec4D cp(p);
+  m_cmso.Boost(cp);
+  m_zrot.Rotate(cp);
+  m_cmsn.BoostBack(cp);
+  return cp;
+}

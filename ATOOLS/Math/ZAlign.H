@@ -18,7 +18,8 @@ namespace ATOOLS {
     ZAlign(const Vec4D &pa,const Vec4D &pb,
 	   const double &ma2,const double &mb2);
 
-    void Align(Vec4D &p) const;
+    void  Align(Vec4D &p) const;
+    Vec4D Align(const Vec4D &p) const;
 
     inline const Poincare &OldCMS() const { return m_cmso; }
     inline const Poincare &NewCMS() const { return m_cmsn; }
