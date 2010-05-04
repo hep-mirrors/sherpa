@@ -230,7 +230,6 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
   Flavour(kf_jet).SetResummed();
   Flavour(kf_gluon).SetResummed();
-  Flavour(kf_photon).SetResummed();
   for (int i=11;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {

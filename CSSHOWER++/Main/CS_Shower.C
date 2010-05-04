@@ -134,6 +134,9 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
   int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
+  if (_qed==1) {
+    Flavour(kf_photon).SetResummed();
+  }
   p_shower = new Shower(_isr,_qed,_dataread);
   
   p_next = new All_Singlets();

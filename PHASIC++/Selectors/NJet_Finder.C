@@ -83,7 +83,7 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
 
   if (m_nin==2) {
     int instrong(0);
-    for (int j=0;j<m_nin;j++) { if (m_fl[j].Strong()) instrong++; }
+    for (int j=0;j<m_nin;j++) { if (m_fl[j].Resummed()) instrong++; }
     if (instrong==0) m_type = 1;
     if (instrong==1) m_type = 2;
     if (instrong==2) m_type = 4;
@@ -97,7 +97,7 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
   
   m_nstrong = 0;
   for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (fl[i].Strong()) m_nstrong++;
+    if (fl[i].Resummed()) m_nstrong++;
   }
 
   m_sel_log    = new Selector_Log(m_name);
@@ -133,7 +133,7 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
   int n=0;
   Vec4D * moms = new Vec4D[m_nout];
   for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (m_fl[i].Strong()) {
+    if (m_fl[i].Resummed()) {
       moms[n]=p[i];
       n++;
     }
@@ -161,7 +161,7 @@ bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,int 
   int n=0;
   Vec4D * moms = new Vec4D[ns];
   for (int i=m_nin;i<ns+m_nin;i++) {
-    if (fl[i].Strong()) {
+    if (fl[i].Resummed()) {
       moms[n]=p[i];
       n++;
     }
