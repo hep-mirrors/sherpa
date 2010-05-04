@@ -92,14 +92,14 @@ This parameter specifies the mean intrinsic transverse
 momentum for the first (left) beam in case of hadronic 
 beams, such as protons.
 @*
-The default value for protons is 0.33 GeV.
+The default value for protons is 0.8 GeV.
 
 @item K_PERP_MEAN_2
 This parameter specifies the mean intrinsic transverse
 momentum for the second (right) beam in case of hadronic 
 beams, such as protons.
 @*
-The default value for protons is 0.33 GeV.
+The default value for protons is 0.8 GeV.
 
 @item K_PERP_SIGMA_1
 This parameter specifies the width of the Gaussian distribution
