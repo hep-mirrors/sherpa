@@ -67,7 +67,7 @@ using namespace ATOOLS;
 NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl, 
 			 double ptmin, double etmin, double dr, int exp, double etamax, int nn) : 
   Selector_Base("NJetfinder"), m_pt2min(sqr(ptmin)), m_et2min(sqr(etmin)), 
-  m_delta_r(dr), m_etamax(etamax), m_exp(1)
+  m_delta_r(dr), m_etamax(etamax), m_exp(exp)
 {
   m_fl         = fl;
   m_ene        = rpa.gen.Ecms()/2.;
@@ -331,7 +331,7 @@ Selector_Base *NJet_Finder_Getter::operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   
-  int exp(10);
+  int exp(1);
   if (key.front().size()>=5) exp=ToType<int>(key[0][4]);
   double etamax(100.);
   if (key.front().size()>=6) etamax=ToType<double>(key[0][5]);

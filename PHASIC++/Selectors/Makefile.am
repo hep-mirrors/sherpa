@@ -13,7 +13,8 @@ libPhasicSelectors_la_SOURCES =	\
 				Standard_Selector.C \
 				NLO_Selector.C \
 				MinSelector.C \
-				Selector_Bias.C
+				Selector_Bias.C \
+				Fastjet_Finder.C
 
 localinc_HEADERS      =	\
 			Cut_Data.H \
@@ -21,3 +22,8 @@ localinc_HEADERS      =	\
 			Combined_Selector.H \
 			Jet_Finder.H \
 			KT_Finder.H
+
+libPhasicSelectors_la_LIBADD = \
+		@CONDITIONAL_FASTJETLIBS@
+        
+INCLUDES      = @CONDITIONAL_FASTJETINCS@
