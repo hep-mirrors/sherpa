@@ -4,6 +4,7 @@
 @menu
 * Single photon production::
 * Diphoton production::
+* Notes for users of release 1.2.1::
 @end menu
 
 
@@ -58,9 +59,10 @@ adapt these two parameters, e.g. in the following run cards set
 @end example
 for @code{Q_cut=10.0} and @code{D=0.2}.
 If you notice that your photon isolation criterion is not sufficiently similar
-(the shower sample does contribute to your analysis) one could still manually
-adapt the slicing criterion in Sherpa. Please contact us for assistance in that
-case.
+(the shower sample does contribute to your analysis or your ME sample still
+produces many photons which aren't isolated according to your criterion) one
+could still manually adapt the slicing criterion in Sherpa. Please contact us
+for assistance in that case.
 
 In the following sections we show and discuss run cards for single- and
 diphoton production. They have been separated into a matrix-element part
@@ -75,11 +77,8 @@ very efficiently.
 @subsection Single photon production
 
 @subsubsection Photons from ME
-@example
-@smallformat
+
 @verbatiminclude Examples/Tevatron_Photons/Run.single.me.dat
-@end smallformat
-@end example
 
 @itemize @bullet
 @item In the @code{processes} section, matrix elements for
@@ -92,8 +91,8 @@ very efficiently.
       to produce more hard partons/photons than the steeply falling cross
       section would imply (appropriately weighted).
 @item The @code{selector} section allows to specify phase space cuts on the
-      matrix element level, cf. @ref{Selectors}. Here we demand two jets
-      with pT > 10.0 GeV.
+      matrix element level, cf. @ref{Selectors}. Here we demand two
+      jets/photons with pT > 10.0 GeV, cf. @ref{Jet finders}.
 @item Electro-weak splitting functions in the shower are activated in
       the @code{shower} section.
 @item The @code{me} section enables weighted event generation and switches
@@ -113,11 +112,7 @@ very efficiently.
 
 (which will ideally be irrelevant for the analysis)
 
-@example
-@smallformat
 @verbatiminclude Examples/Tevatron_Photons/Run.single.ps.dat
-@end smallformat
-@end example
 
 Here only the differences with respect to above are explained:
 @itemize @bullet
@@ -132,11 +127,8 @@ Here only the differences with respect to above are explained:
 @subsection Diphoton production
 
 @subsubsection Photons from ME
-@example
-@smallformat
+
 @verbatiminclude Examples/Tevatron_Photons/Run.diphoton.me.dat
-@end smallformat
-@end example
 
 Here only the differences with respect to the single photon example are
 explained:
@@ -159,11 +151,7 @@ events or from di-jet events by producing one or two photons respectively.
 Here these two contributions are generated in one run, but of course they
 could be separated as well.
 
-@example
-@smallformat
 @verbatiminclude Examples/Tevatron_Photons/Run.diphoton.ps.dat
-@end smallformat
-@end example
 
 Here only the differences with respect to above are explained:
 @itemize @bullet
@@ -174,6 +162,7 @@ Here only the differences with respect to above are explained:
       are allowed (for efficiency reasons).
 @end itemize
 
+@node Notes for users of release 1.2.1
 @subsection Notes for users of release 1.2.1
 
 Unfortunately we realised too late that one minor change that allows event
@@ -182,10 +171,21 @@ use the NJetFinder in a context of democratic partons/photons you will have
 to download 
 @uref{http://projects.hepforge.org/sherpa/dokuwiki/_media/downloads/version-1.2/njetfinder.patch,,this patch}
 and apply it to the 1.2.1 source code as follows:
-@example
+@verbatim
 cd SHERPA-MC-1.2.1
 patch -p0 < njetfinder.patch
 make install
-@end example
+@end verbatim
 
+If this is not possible for you, e.g. because you use an externally installed
+version of Sherpa, there is a workaround. Replace the NJetFinder lines in the
+selector sections above with the following cuts:
+@verbatim
+(selector){
+  PT 22 10.0 E_CMS
+  PT 93 10.0 E_CMS
+}(selector)
+@end verbatim
 
+This will work fine as long as the pT cut applied here is not higher then
+the @code{Q_cut} value in the ME+PS merging (@code{CKKW} line in processes).
