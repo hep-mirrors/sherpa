@@ -16,7 +16,7 @@ namespace EXTRAXS {
 
   class gg_yy : public ME2_Base {
   private:
-    double m_alphas2, m_alphaqed2;
+    double m_fac;
   public:
 
     gg_yy(const Process_Info& pi, const Flavour_Vector& fl);
@@ -29,16 +29,37 @@ namespace EXTRAXS {
   {
     rpa.gen.AddCitation
       (1,"The box diagram implementation for $gg \\to \\gamma \\gamma$ is\
- documented in \\cite{photonmergingpaper} and references therein.");
+ documented in \\cite{Hoeche:2009xc} and references therein.");
     m_oew=2;
     m_oqcd=2;
-    m_alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())));
-    m_alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa.gen.Ecms())));
+    double alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())));
+    double alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa.gen.Ecms())));
 
     for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
     p_colours[0][0] = p_colours[1][1] = 500;
     p_colours[0][1] = p_colours[1][0] = 501;
+    
+    
+    double qcharge[6] = {-1., 2, -1., 2., -1., 2.};
+    double sumc = 0;
+    for (size_t i=0; i<5; ++i) {
+      sumc += sqr(qcharge[i]);
+    }
+    double sumc4 = sqr(sumc)/81.0;
+    
+    m_fac = 1.0;
+    // sum over loop charges
+    m_fac *= sumc4;
+
+    // couplings at E_cms
+    m_fac *= alphas2*alphaqed2;
+
+    // average over initial state heli/colour
+    m_fac /= 4.0*64;
+
+    // sym factor for two photons
+    m_fac /= 2.0;
   }
   
   double gg_yy::operator()(const ATOOLS::Vec4D_Vector& mom)
@@ -46,13 +67,6 @@ namespace EXTRAXS {
     double s=(mom[0]+mom[1]).Abs2();
     double t=(mom[0]-mom[2]).Abs2();
     double u=(mom[0]-mom[3]).Abs2();
-
-    double qcharge[6] = {-1., 2, -1., 2., -1., 2.};
-    double sumc = 0;
-    for (size_t i=0; i<5; ++i) {
-      sumc += sqr(qcharge[i]);
-    }
-    double sumc4 = sqr(sumc)/81.0;
 
     double s2 = sqr(s);
     double t2 = sqr(t);
@@ -67,19 +81,8 @@ namespace EXTRAXS {
       256.0*pi2*sqr((s-t)/u+(s2+t2)/u2*log(-s/t))+
       1280.0;
 
-    // sum over loop charges
-    box *= sumc4;
-
-    // couplings
-    box *= m_alphas2*m_alphaqed2;
-
-    // average over initial state heli/colour
-    box /= 4.0*64;
-
-    // sym factor for two photons
-    box /= 2.0;
-
-    return box;
+    // global factor see above
+    return box*m_fac*CouplingFactor(2,2);
   }
 }
 

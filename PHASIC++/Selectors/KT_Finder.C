@@ -909,11 +909,6 @@ void KT_Finder::BoostBack(Vec4D & p)
   m_cms_boost.BoostBack(p);
 }
 
-double KT_Finder::ActualValue() const 
-{
-  return m_value; 
-}
-
 void KT_Finder::SetDeltaR(double dr) 
 { 
   if (dr<=1.e-6) {

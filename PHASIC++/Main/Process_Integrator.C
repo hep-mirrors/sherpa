@@ -23,7 +23,7 @@ static int s_omitnlosuffix(0);
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
-  m_nin(0), m_nout(0), m_corenout(0), m_smode(1),
+  m_nin(0), m_nout(0), m_smode(1),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_maxeps(0.0),
   m_xinfo(std::vector<double>(8)), m_n(0), m_rbn(0), m_itmin(0), 
   m_max(0.), m_rbmax(0.0), m_rbsum(0.0), m_rbsum2(0.0), m_totalxs(0.), 
@@ -41,7 +41,7 @@ bool Process_Integrator::Initialize
  PDF::ISR_Handler *const isrhandler)
 {
   m_nin=p_proc->NIn();
-  m_corenout=m_nout=p_proc->NOut();
+  m_nout=p_proc->NOut();
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
@@ -171,8 +171,6 @@ double Process_Integrator::RemainTimeFactor(double maxerr)
 void Process_Integrator::SetMomenta(const Vec4D_Vector &p) 
 { 
   p_momenta=p;
-  if (p_proc->Selected()!=p_proc) 
-    p_proc->Selected()->Integrator()->p_momenta=p;
 }
 
 void Process_Integrator::InitWeightHistogram() 
@@ -183,7 +181,7 @@ void Process_Integrator::InitWeightHistogram()
   }
   if (!m_writeout) return;
 
-  double av(TotalResult());
+  double av(dabs(TotalResult()));
   if (!av>0.) {
     msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
 		       <<"No valid result: "<<av<<std::endl;
@@ -304,7 +302,8 @@ void Process_Integrator::SetTotal(const int mode)
 double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
-  double pxs = TotalResult()*epsilon*p_whisto->Fills();
+  double res = TotalResult();
+  double pxs = res*epsilon*p_whisto->Fills();
   double cutxs = 0.;
   double cnt = 0.;
 
@@ -314,7 +313,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
     cnt+= p_whisto->Value(i);
     double twmax = exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));
     if (cutxs-cnt*twmax>pxs) {
-      return ATOOLS::Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),m_max);
+      return Sign(res)*Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
     }
   }
   return m_max;
@@ -369,7 +368,7 @@ void Process_Integrator::AddPoint(const double value)
   if (value>m_max)  m_max  = value;
   if (value>m_smax) m_smax = value;
   if (p_whisto) {
-    if(value!=0.) p_whisto->Insert(value);
+    if(value!=0.) p_whisto->Insert(dabs(value));
     else p_whisto->SetFills(p_whisto->Fills()+1);
   }
   if (!p_proc->IsGroup()) {
@@ -524,11 +523,6 @@ void Process_Integrator::OptimizeResult()
 {
   OptimizeSubResult(Sigma2());
 } 
-
-void Process_Integrator::SetMomenta()   
-{ 
-  p_momenta=p_pshandler->LabPoint();
-}
 
 double Process_Integrator::TriggerEfficiency()
 {

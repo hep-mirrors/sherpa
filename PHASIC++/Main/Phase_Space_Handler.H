@@ -46,15 +46,17 @@ namespace PHASIC {
 
   struct Weight_Info {
     
-    double m_weight, m_dxs, m_ntrial, m_xf1, m_xf2;
+    double m_weight, m_dxs, m_ntrial, m_xf1, m_xf2, m_muf12, m_muf22;
     size_t m_mode;
     
     // constructor
-    Weight_Info(const size_t mode=0,const double weight=0.0,
-                const double dxs=0.0,const double ntrial=0.0,
-		const double xf1=0.0,const double xf2=0.0):
+    Weight_Info(const size_t &mode=0,const double &weight=0.0,
+                const double &dxs=0.0,const double &ntrial=0.0,
+		const double &xf1=0.0,const double &xf2=0.0,
+		const double &muf12=0.0,const double &muf22=0.0):
       m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
-      m_xf1(xf1), m_xf2(xf2), m_mode(mode) {}
+      m_xf1(xf1), m_xf2(xf2), m_muf12(muf12), m_muf22(muf22),
+      m_mode(mode) {}
 
   };// end of struct Weight_Info
 
@@ -161,9 +163,6 @@ namespace PHASIC {
     void AssignId(ATOOLS::Term *term);
 
     // inline functions
-    inline const ATOOLS::Vec4D_Vector &LabPoint() const { return p_lab; }
-    inline const ATOOLS::Vec4D_Vector &CMSPoint() const { return p_cms; }
-
     inline const ATOOLS::Flavour_Vector &Flavs() const { return p_flavours; }
 
     inline Cut_Data *const Cuts() const { return p_cuts; }

@@ -6,13 +6,10 @@ libPhasicScales_la_SOURCES    =	\
 				KFactor_Setter_Base.C \
 				Tag_Setter.C \
 				Variable_Scale_Setter.C \
-				NLO_Scale_Setter.C \
 				MPI_Scale_Setter.C \
 				QCD_Scale_Setter.C \
 				METS_Scale_Setter.C \
-				QCD_KFactor_Setter.C \
 				Variable_KFactor_Setter.C \
-				METS_KFactor_Setter.C \
 				No_KFactor_Setter.C
 
 localinc_HEADERS      =	\

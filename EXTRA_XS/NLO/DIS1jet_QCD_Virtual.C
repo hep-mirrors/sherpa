@@ -41,7 +41,7 @@ namespace EXTRAXS {
 
 void DIS1jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
 //   m_born=(*p_tree)(mom);
-  m_born*=m_cpl;
+  m_born*=m_cpl*CouplingFactor(1, 0);
   m_res.IR()=-3.*m_born;
   m_res.IR()=-2.*m_born;
   m_res.Finite()=(-8.)*m_born;

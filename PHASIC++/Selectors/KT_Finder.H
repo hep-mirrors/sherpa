@@ -79,8 +79,6 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
 
-    double   ActualValue() const;
-
     double GetYcut(const size_t &i,const size_t &j) const;
     double GetScaledYcut(const size_t &i,const size_t &j) const;
     double GetGlobalYcut(const size_t &i,const size_t &j) const;

@@ -465,6 +465,40 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
 
   AC_ARG_ENABLE(
+    whitehat,
+    AC_HELP_STRING([--enable-whitehat=/path/to/whitehat], [Enable WHITEHAT.]),
+    [ AC_MSG_CHECKING(for WHITEHAT installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(WHITEHAT not enabled); whitehat=false ;;
+        yes)  if test -d "$WHITEHATDIR"; then
+                CONDITIONAL_WHITEHATDIR="$WHITEHATDIR"
+                CONDITIONAL_WHITEHATINCS="-I$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --include)";
+                CONDITIONAL_WHITEHATLIBS="$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --libs)"
+              else
+                AC_MSG_ERROR(\$WHITEHATDIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_WHITEHATDIR}]); whitehat=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_WHITEHATDIR="${enableval}"
+                CONDITIONAL_WHITEHATINCS="-I$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --include)";
+                CONDITIONAL_WHITEHATLIBS="$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --libs)"
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_WHITEHATDIR}]); whitehat=true;;
+      esac
+      ],
+    [ whitehat=false ]
+  )
+  if test "$whitehat" = "true" ; then
+    AC_DEFINE([USING__WHITEHAT], "1", [Using WHITEHAT])
+  fi
+  AC_SUBST(CONDITIONAL_WHITEHATDIR)
+  AC_SUBST(CONDITIONAL_WHITEHATINCS)
+  AC_SUBST(CONDITIONAL_WHITEHATLIBS)
+  AM_CONDITIONAL(WHITEHAT_SUPPORT, test "$whitehat" = "true")
+
+  AC_ARG_ENABLE(
     root,
     AC_HELP_STRING([--enable-root\[=/path/to/root\]], [Enable ROOT support and specify where it is installed if non-standard.]),
     [ AC_MSG_CHECKING(for ROOT installation directory)

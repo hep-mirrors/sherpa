@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "AMEGIC++/Main/Pol_Info.H"
+#include "MODEL/Main/Coupling_Data.H"
 #include <vector>
 #include <limits>
 
@@ -53,14 +54,16 @@ namespace AMEGIC {
     std::vector<double> m_pfactors;
 //     spt::splittingtype m_ft;
     int m_ft;
-    double m_spfac,m_cpl;
+    double m_spfdef;
     double m_g1,m_g2;
+    MODEL::Coupling_Data *p_cpl;
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
   public:
-    DipoleSplitting_Base(MODEL::Model_Base*);
+    DipoleSplitting_Base();
     virtual ~DipoleSplitting_Base() {}
     
     virtual void SetMomenta(const ATOOLS::Vec4D*);
+    void SetCoupling(const MODEL::Coupling_Map *cpls);
     std::vector<ATOOLS::Vec4D>* GetMomenta() {return &m_mom;}
     ATOOLS::Vec4D Getptij() {return m_ptij;}
     ATOOLS::Vec4D Getptk()  {return m_ptk;}
@@ -77,7 +80,7 @@ namespace AMEGIC {
     double Vif(int type);
     double Vie1(int type);
     double Vie2(int type);
-    double Coupling() { return m_cpl; }
+    double SPFac() { return m_spfdef*p_cpl->Factor(); }
   };
 }
 #endif

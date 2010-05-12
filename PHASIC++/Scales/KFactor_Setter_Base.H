@@ -8,11 +8,8 @@ namespace PHASIC {
   struct KFactor_Setter_Arguments {
     Process_Base *p_proc;
     std::string m_kfac;
-    size_t m_oqcdlo, m_oewlo;
-    KFactor_Setter_Arguments(Process_Base *const proc,
-			     const std::string &kfac,
-			     const size_t &oqcdlo,const size_t &oewlo):
-      p_proc(proc), m_kfac(kfac), m_oqcdlo(oqcdlo), m_oewlo(oewlo) {}
+    KFactor_Setter_Arguments(const std::string &kfac):
+      m_kfac(kfac) {}
   };// end of class KFactor_Setter_Arguments
 
   class KFactor_Setter_Base {
@@ -25,19 +22,17 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    bool m_on;
+    double m_weight;
 
-    ATOOLS::Info_Key m_kfkey;
+    bool m_on;
 
   public:
 
-    KFactor_Setter_Base(Process_Base *const proc);
+    KFactor_Setter_Base(const KFactor_Setter_Arguments &args);
 
     virtual ~KFactor_Setter_Base();
 
     virtual double KFactor() = 0;
-
-    double KFactor2(const bool diff);
 
     inline Process_Base *Process() const { return p_proc; }
 

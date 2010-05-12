@@ -60,21 +60,6 @@ namespace MODEL {
 
   typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
 
-  // Format of a Lorentz_Function to transport via MPI:
-  struct MPI_Lorentz_Function {
-    
-    std::string m_type;
-    int    m_partarg[4];         
-
-   };
-
-  //for MPI usage
-  
-  void Lorentz_Function2MPI(const Lorentz_Function * , MPI_Lorentz_Function &);
-  
-  Lorentz_Function * MPI2Lorentz_Function(const MPI_Lorentz_Function &);
-  
-  std::ostream & operator<<(std::ostream &, const MPI_Lorentz_Function &);
 
  /*! 
     \file

@@ -14,7 +14,8 @@ using namespace ATOOLS;
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
-  p_model(NULL), m_n(0), m_nf(6), m_ngpl(3),
+  p_model(NULL), p_aqcd(NULL), p_aqed(NULL),
+  m_n(0), m_nf(6), m_ngpl(3),
   m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
   m_pmode('D')
 {
@@ -507,6 +508,11 @@ void *Amplitude::TCalcJL(void *arg)
 
 void Amplitude::CalcJL()
 {
+  for (size_t i(0);i<m_cur[m_n-1].size();++i) {
+    const Vertex_Vector &in(m_cur[m_n-1][i]->In());
+    for (size_t j(0);j<in.size();++j)
+      in[j]->SetCplFac(CouplingFactor(in[j]));
+  }
   for (size_t i(0);i<m_cur[1].size();++i) 
     m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1]);
   for (size_t n(2);n<m_n;++n) {
@@ -540,6 +546,38 @@ void Amplitude::CalcJL()
       m_cur[n][i]->Evaluate();
 #endif
   }
+}
+
+double Amplitude::CouplingFactor(Vertex_Base *const v) const
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+#endif
+  double fac(1.0);
+  int oqcd(v->OrderQCD()+v->JA()->OrderQCD()+v->JB()->OrderQCD());
+  int oew(v->OrderEW()+v->JA()->OrderEW()+v->JB()->OrderEW());
+//   if (v->JE()) {
+//     oqcd+=v->JE()->OrderQCD();
+//     oew+=v->JE()->OrderEW();
+//   }
+  if (p_aqcd && oqcd) {
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<oqcd
+		   <<" = "<<pow(p_aqcd->Factor(),oqcd/2.0)<<"\n";
+#endif
+    fac*=pow(p_aqcd->Factor(),oqcd/2.0);
+  }
+  if (p_aqed && oew) {
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<oew
+		   <<" = "<<pow(p_aqed->Factor(),oew/2.0)<<"\n";
+#endif
+    fac*=pow(p_aqed->Factor(),oew/2.0);
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"} -> "<<fac<<"\n";
+#endif
+  return fac;
 }
 
 void Amplitude::ResetZero()
@@ -705,9 +743,9 @@ bool Amplitude::ConstructChirs(Int_Vector chirs,const size_t &i)
   return true;
 }
 
-bool Amplitude::Construct(const Int_Vector &incs,
-			       const Flavour_Vector &flavs,
-			       Model *const model)
+bool Amplitude::Construct
+(const Int_Vector &incs,const Flavour_Vector &flavs,
+ Model *const model,MODEL::Coupling_Map *const cpls)
 {
   CleanUp();
   p_model=model;
@@ -723,6 +761,8 @@ bool Amplitude::Construct(const Int_Vector &incs,
 		   <<MakeId(ihm,m_n)<<","<<ihp<<MakeId(ihp,m_n)<<"}\n";
 #endif
   }
+  if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
+  if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
   return true;
 }
 

@@ -12,6 +12,9 @@
 namespace AMEGIC {
   class Helicity;
 
+  typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
+  typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
+
   class Single_LOProcess : public Process_Base {
   protected:
     int                     m_gen_str;
@@ -31,6 +34,12 @@ namespace AMEGIC {
     std::vector<int>        m_partonlist;
 
     std::vector<ATOOLS::Vec4D> m_epol;
+
+    Combination_Set m_ccombs;
+    CFlavVector_Map m_cflavs;
+
+    void FillCombinations(Point *const p,size_t &id);
+    void FillCombinations();    
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -41,6 +50,10 @@ namespace AMEGIC {
    Single_LOProcess(const PHASIC::Process_Info &pi);
     ~Single_LOProcess();
 
+    bool Combinable(const size_t &idi,const size_t &idj);
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+    
+    const MODEL::Coupling_Map *CouplingMap() const { return &m_cpls; }
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -111,10 +124,11 @@ namespace AMEGIC {
   private:
     double         Calc_M2ik(int ci, int ck); 
   public:
-    double         Differential(const ATOOLS::Vec4D_Vector&);
-    double         Differential2();
-    virtual double operator()(const ATOOLS::Vec4D *,std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
-    virtual void   Calc_AllXS(const ATOOLS::Vec4D *,double**);
+    double         Partonic(const ATOOLS::Vec4D_Vector&);
+    virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
+			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
+    virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
+			      const ATOOLS::Vec4D *,double**);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
   };

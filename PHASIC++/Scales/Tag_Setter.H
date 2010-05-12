@@ -25,8 +25,11 @@ namespace PHASIC {
     
     void AssignId(ATOOLS::Term *term);
 
+    void SetTags(ATOOLS::Algebra_Interpreter *const calc);
+
     // inline functions
-    void SetCalculator(ATOOLS::Algebra_Interpreter *const calc) { p_calc=calc; }
+    inline void SetCalculator(ATOOLS::Algebra_Interpreter *const calc)
+    { p_calc=calc; }
 
   };// end of class Tag_Setter
 

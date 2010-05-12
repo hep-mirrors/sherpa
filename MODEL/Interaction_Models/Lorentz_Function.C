@@ -73,20 +73,6 @@ int Lorentz_Function::GetSign()
   return m_signlist[m_permcount];
 }
 
-void Lorentz_Function2MPI(const Lorentz_Function * lf , MPI_Lorentz_Function & mpi_lf) 
-{  
-  mpi_lf.m_type =  lf->Type();
-  for (int i=0; i<4; ++i)  
-    mpi_lf.m_partarg[i] = lf->ParticleArg(i);
-}
-
-Lorentz_Function * MPI2Lorentz_Function(const MPI_Lorentz_Function & mpi_lf ) 
-{
-  Lorentz_Function * lf = LF_Getter::GetObject(mpi_lf.m_type,LF_Key());
-  lf->SetParticleArg(mpi_lf.m_partarg[0],mpi_lf.m_partarg[1],mpi_lf.m_partarg[2],mpi_lf.m_partarg[3]);
-  return lf;
-}
-
 std::string Lorentz_Function::Str(int a) const
 {
   MyStrStream sstr;
@@ -95,13 +81,6 @@ std::string Lorentz_Function::Str(int a) const
   sstr>>help;
   return help;
 } 
-
-
-std::ostream & MODEL::operator<<(std::ostream & s, const MPI_Lorentz_Function & lf) {
-  s<<lf.m_type<<",";
-  s<<lf.m_partarg[0]<<","<<lf.m_partarg[1]<<","<<lf.m_partarg[2]<<","<<lf.m_partarg[3];
-  return s;
-}
 
 
 Lorentz_Function & Lorentz_Function::operator=(const Lorentz_Function & l)

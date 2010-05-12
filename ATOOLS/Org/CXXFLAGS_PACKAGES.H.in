@@ -45,3 +45,6 @@
 
 /* using FASTJET */
 #undef USING__FASTJET
+
+/* using WhiteHat */
+#undef USING__WHITEHAT

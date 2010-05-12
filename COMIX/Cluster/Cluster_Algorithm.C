@@ -510,8 +510,10 @@ bool Cluster_Algorithm::Cluster
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetOrderEW(p_bg->MaxOrderEW());
   p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
-  double muf2(xs->Process()->ScaleSetter()->Scale(stp::fac));
-  double mur2(xs->Process()->ScaleSetter()->Scale(stp::ren));
+  PHASIC::Process_Base *pb(xs->Process()->IsMapped()?
+			   xs->Process()->MapProc():xs);
+  double muf2(pb->ScaleSetter()->Scale(stp::fac));
+  double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
     ColorID col(GetColor(i==0?p_bg->Currents()[1][0]:ccurs[i],fcur));

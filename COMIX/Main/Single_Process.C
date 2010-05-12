@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -47,6 +48,7 @@ bool COMIX::Single_Process::Initialize
     if (mapname!=m_name) return true;
   }
   msg_Debugging()<<"'"<<m_name<<"' not pre-mapped"<<std::endl;
+  p_model->GetModel()->GetCouplings(m_cpls);
   p_bg = new Matrix_Element();
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
@@ -56,7 +58,7 @@ bool COMIX::Single_Process::Initialize
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
-		       m_pinfo.m_oew,m_pinfo.m_oqcd,
+		       &m_cpls,m_pinfo.m_oew,m_pinfo.m_oqcd,
 		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd)) {
     m_oew=p_bg->MaxOrderEW();
     m_oqcd=p_bg->MaxOrderQCD();
@@ -155,15 +157,15 @@ double COMIX::Single_Process::Differential(const Cluster_Amplitude &ampl)
   return PHASIC::Process_Base::Differential(ampl);
 }
 
-double COMIX::Single_Process::Differential(const Vec4D_Vector &p) 
+double COMIX::Single_Process::Partonic(const Vec4D_Vector &p) 
 {
   if (p_map!=NULL && m_lookup && p_map->m_lookup)
     SetTrigger(p_map->Trigger());
-  if (m_zero || !Trigger()) return m_lastxs=m_last=0.0;
+  if (m_zero || !Trigger()) return m_lastxs=0.0;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
     double psm(m_flavs[i].Mass());
-    if (m_p[i][0]<psm) return m_lastxs=m_last=0.0;
+    if (m_p[i][0]<psm) return m_lastxs=0.0;
     if (i<m_nin && psm==0.0) m_p[i][0]=dabs(m_p[i][3]);
   }
   if (p_map!=NULL && m_lookup && p_map->m_lookup) {
@@ -173,7 +175,9 @@ double COMIX::Single_Process::Differential(const Vec4D_Vector &p)
 #ifdef TIME_CDBG_ME
     double stime(rpa.gen.Timer().UserTime());
 #endif
-    m_lastxs=(p_map!=NULL?p_map->p_bg:p_bg)->Differential(m_p);
+    m_lastxs=(p_map!=NULL?p_map->p_bg:p_bg)->
+      Differential(m_p,&*p_int->ColorIntegrator(),
+		   &*p_int->HelicityIntegrator());
 #ifdef TIME_CDBG_ME
     m_etime+=rpa.gen.Timer().UserTime()-stime;
     ++m_en;
@@ -181,47 +185,9 @@ double COMIX::Single_Process::Differential(const Vec4D_Vector &p)
     m_lastxs*=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
       m_lastxs*=p_int->HelicityIntegrator()->Weight();
+    m_lastxs*=p_map!=NULL?p_map->KFactor():KFactor();
   }
-  if (m_lastxs<=0.) return m_lastxs=m_last=0.;
-  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
-  if (p_int->ISR() && m_nin==2) { 
-    if (p_int->ISR()->On()) {
-      p_int->ISR()->MtxLock();
-      if (!p_int->ISR()->CalculateWeight
-	  (p_scale->Scale(stp::fac))) {
-	p_int->ISR()->MtxUnLock();
-	return m_last=m_lastlumi=0.0;
-      }
-      m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
-      p_int->ISR()->MtxUnLock();
-    }
-    else m_lastlumi=1.;
-  }
-  else m_lastlumi=1.;
-  m_lastlumi*=BeamWeight(p_scale->Scale(stp::fac));
-  return m_last=m_lastxs*m_lastlumi*KFactor();
-}
-
-double COMIX::Single_Process::Differential2() 
-{
-  if (m_zero || m_lastxs==0.0 || !Trigger()) return 0.0;
-  if (p_int->ISR() && m_nin==2) {
-    p_scale->CalculateScale2(p_int->PSHandler()->LabPoint());
-    if (m_flavs[0]==m_flavs[1] || p_int->ISR()->On()==0) return 0.;
-    p_int->ISR()->MtxLock();
-    if (!p_int->ISR()->CalculateWeight2
-	(p_scale->Scale(stp::fac))) {
-      p_int->ISR()->MtxUnLock();
-      return 0.0;
-    }
-    double tmp=m_lastxs*p_int->ISR()->
-      Weight2(&m_flavs.front())*KFactor2(); 
-    p_int->ISR()->MtxUnLock();
-    tmp *= BeamWeight(p_scale->Scale(stp::fac));
-    m_last+=tmp;
-    return tmp;
-  }
-  return 0;
+  return m_lastxs;
 }
 
 bool COMIX::Single_Process::Tests()
@@ -259,7 +225,20 @@ bool COMIX::Single_Process::Tests()
     else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
     else types[i]=i<m_nin?-1:1;
   }
-  if (!p_int->ColorIntegrator()->ConstructRepresentations(ids,types,acts)) return false;
+  if (!p_int->ColorIntegrator()->
+      ConstructRepresentations(ids,types,acts)) return false;
+  const Decay_Info_Vector &dinfos(p_bg->GetAmplitude()->DecayInfos());
+  std::vector<size_t> dids(dinfos.size());
+  acts.resize(dids.size());
+  types.resize(dids.size());
+  for (size_t i(0);i<dids.size();++i) {
+    dids[i]=dinfos[i].m_id;
+    acts[i]=dinfos[i].m_fl.Strong();
+    if (!dinfos[i].m_fl.IsFermion()) types[i]=0;
+    else if (dinfos[i].m_fl.IsAnti()) types[i]=-1;
+    else types[i]=1;
+  }
+  p_int->ColorIntegrator()->SetDecayIds(dids,types,acts);
   Phase_Space_Handler::TestPoint(&m_p.front(),m_nin,m_nout,m_flavs);
   bool res(p_bg->GaugeTest(m_p));
   if (!res) {

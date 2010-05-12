@@ -107,7 +107,7 @@ double XS_f1f1_f1f1::operator()(const Vec4D_Vector& mom)
       (u-m_mz2)/(u*(sqr(u-m_mz2)+m_mz2*m_wz2)) *
       ( sqr(m_v*m_eq) * (s*s+t*t) + sqr(m_a*m_eq) * (s*s-t*t));
   }
-  return M_t + M_u + M_mix;
+  return (M_t + M_u + M_mix)*CouplingFactor(0,2);
 }
 
 bool XS_f1f1_f1f1::SetColours(const Vec4D_Vector& mom) 
@@ -239,7 +239,7 @@ double XS_f1f1b_f1f1b::operator()(const Vec4D_Vector& mom)
       (s-m_mz2)/(s*(sqr(s-m_mz2)+m_mz2*m_wz2)) *
       ( sqr(m_v*m_eq) * (u*u+t*t) + sqr(m_a*m_eq) * (u*u-t*t));
   }
-  return 2.*(M_t + M_s + M_mix);
+  return 2.*(M_t + M_s + M_mix)*CouplingFactor(0,2);
 }
 
 bool XS_f1f1b_f1f1b::SetColours(const Vec4D_Vector& mom) 
@@ -409,7 +409,7 @@ double XS_f1f1b_f2f2b::operator()(const Vec4D_Vector& mom)
       (sqr((s-m_mz2)*(t-m_mw2)-mixed)+sqr(sqrt(m_mz2*m_wz2)*(t-m_mw2)+sqrt(m_mw2*m_ww2)*(s-m_mz2))) *
       2.*(m_v1*m_v2+m_a1*m_a2) * u*u;
   }
-  return 2.*(M_s+M_t+M_mix);
+  return 2.*(M_s+M_t+M_mix)*CouplingFactor(0,2);
 }
 
 bool XS_f1f1b_f2f2b::SetColours(const Vec4D_Vector& mom) 
@@ -581,7 +581,7 @@ double XS_f1f2_f1f2::operator()(const Vec4D_Vector& mom)
       (sqr((t-m_mz2)*(u-m_mw2)-mixed)+sqr(sqrt(m_mz2*m_wz2)*(u-m_mw2)+sqrt(m_mw2*m_ww2)*(t-m_mz2))) *
       2.*(m_v1*m_v2+m_a1*m_a2) * s*s;
   }
-  return 2.*(M_t+M_u+M_mix);
+  return 2.*(M_t+M_u+M_mix)*CouplingFactor(0,2);
 }
 
 bool XS_f1f2_f1f2::SetColours(const Vec4D_Vector& mom) 
@@ -763,7 +763,7 @@ double XS_f1f2b_f1f2b::operator()(const Vec4D_Vector& mom)
       (sqr((t-m_mz2)*(s-m_mw2)-mixed)+sqr(sqrt(m_mz2*m_wz2)*(s-m_mw2)+sqrt(m_mw2*m_ww2)*(t-m_mz2))) *
       2.*(m_v1*m_v2+m_a1*m_a2) * u*u;
   }
-  return 2.*(M_t+M_s+M_mix);
+  return 2.*(M_t+M_s+M_mix)*CouplingFactor(0,2);
 }
 
 bool XS_f1f2b_f1f2b::SetColours(const Vec4D_Vector& mom) 
@@ -921,7 +921,7 @@ double XS_f1f2_f3f4::operator()(const Vec4D_Vector& mom)
   double t=(mom[0]-mom[2]).Abs2();
   double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
-  return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (s*s);
+  return sqr(m_pref_W)*CouplingFactor(0,2)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (s*s);
 }
 
 bool XS_f1f2_f3f4::SetColours(const Vec4D_Vector& mom) 
@@ -1132,7 +1132,7 @@ double XS_f1f2b_f3f4b::operator()(const Vec4D_Vector& mom)
   double u=(mom[0]-mom[3]).Abs2();
   if (m_rev) { double help = u; u = t; t = help; }
   if (m_schannel) return sqr(m_pref_W)/((sqr(s-m_mw2)+m_mw2*m_ww2)) * (u*u);
-  return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (u*u);
+  return sqr(m_pref_W)*CouplingFactor(0,2)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (u*u);
 }
 
 bool XS_f1f2b_f3f4b::SetColours(const Vec4D_Vector& mom) 

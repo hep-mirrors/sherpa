@@ -1,14 +1,13 @@
 pkglib_LTLIBRARIES       =	libExtraXSNLO.la
 
 libExtraXSNLO_la_SOURCES      =	Virtual_ME2_Base.C \
-				Loop_ME_Base.C \
-				TreeLoop_Virtual.C \
+				WhiteHat_Virtual.C \
 				DY_QCD_Virtual.C \
 				DIS1jet_QCD_Virtual.C \
-				ee3jet_QCD_Virtual.C \
-                                PPPP_QED_Virtual.C \
-				PPPP_QED_Loop.C \
-				DY_QCD_Loop.C
+				ee3jet_QCD_Virtual.C
 
-localinc_HEADERS          =	Virtual_ME2_Base.H \
-				Loop_ME_Base.H
+localinc_HEADERS          =	Virtual_ME2_Base.H
+
+libExtraXSNLO_la_LIBADD = @CONDITIONAL_WHITEHATLIBS@
+
+libExtraXSNLO_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_WHITEHATINCS@

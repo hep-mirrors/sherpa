@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libDipoleSubtraction.la
 
-libDipoleSubtraction_la_SOURCES = Flavour_Kernels.C \
+libDipoleSubtraction_la_SOURCES = \
 		       Flavour_KernelsA.C \
 		       Massive_Kernels.C \
 		       DipoleSplitting_Base.C \
@@ -15,7 +15,6 @@ libDipoleSubtraction_la_SOURCES = Flavour_Kernels.C \
 		       Single_Real_Correction.C 
 
 localinc_HEADERS   = \
-		     Flavour_Kernels.H \
 		     Flavour_KernelsA.H \
 		     Massive_Kernels.H \
 		     DipoleSplitting_Base.H \

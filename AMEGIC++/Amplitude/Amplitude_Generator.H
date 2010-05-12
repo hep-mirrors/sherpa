@@ -10,11 +10,6 @@
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 #include "AMEGIC++/String/String_Handler.H"
 
-//#define _USE_MPI_
-//#ifdef _USE_MPI_
-//#include <mpi++.h>
-//#endif
-
 namespace AMEGIC {
   class Pre_Amplitude {
   public:
@@ -30,29 +25,6 @@ namespace AMEGIC {
   typedef  std::vector<Pre_Amplitude> Pre_Ampl_List;
 
 
-  class Mpi_Tag {
-  public:
-    enum code {  complete_buffer = 11,
-		 partial_buffer  = 12,
-                 empty_buffer    = 13,
-                 on_switches     = 15,
-		 cfc             = 22,
-                 dummy           = 42};
-  };
-
-  struct Prea_Buffer {
-    MPI_Point    * buff;
-    int          * counters;
-    int            nbuff;
-
-    Mpi_Tag::code  tag;
-#ifdef _USE_MPI_
-    MPI::Request   req;
-#endif
-  };
-
-  typedef  std::vector<Prea_Buffer> Prea_Buffers;
-  
   class Amplitude_Generator {
     static int NMAX;
     ATOOLS::Flavour     * fl;
@@ -71,7 +43,6 @@ namespace AMEGIC {
     MODEL::Vertex_Table     v_table;
     //exhibits the points, the topology and the permutation number
     Pre_Ampl_List    prea_table;
-    //  Counter_List     counter_table;
     
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
@@ -81,8 +52,6 @@ namespace AMEGIC {
     void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);
     int  SingleCompare(Point*,Point*);
-    int  FindQEDOrder(Point*,int&);
-    int  FindQCDOrder(Point*,int&);
     void CountOrders(Single_Amplitude* &);
     bool CheckOrders(Point * p);
     void Compare(Single_Amplitude* &);
@@ -96,22 +65,12 @@ namespace AMEGIC {
     int  ShrinkProps(Point*&,Point*&,Point*&,Point*&,std::vector<Point*>&);
     Point* FindNext(Point*);
     
-
-    MPI_Point *              s_buffer;
-    Prea_Buffers             r_buffers;
-    int *                    s_counter_buffer;
-    void CollectPreAmplitudes();
-    void DistributePreAmplitudes();
-    void CommitMPITypes() ;
-    void ReplaceVertex(Point *);
-  
     void Kill5VertexArtefacts(Single_Amplitude* first);
     int  Is5VertexArtefact(Point* p, int &tcnt);
 
     int Count4G(Point * p);
     int CountRealAmplitudes(Single_Amplitude* first);
   public:
-    static int * DivideComparisons(int cpu_size, int nampl, int rank);
     Amplitude_Generator(int,ATOOLS::Flavour *,int *,MODEL::Model_Base *,Topology *,
 			int,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 

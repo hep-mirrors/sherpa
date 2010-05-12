@@ -40,16 +40,12 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_flavs.resize(m_nin+m_nout);
   if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
     SortFlavours(m_pinfo);
-    m_new=0;
-    m_nqcd=0;
     std::vector<Flavour> fl;
     m_pinfo.m_ii.GetExternal(fl);
     m_pinfo.m_fi.GetExternal(fl);
     if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
     for (size_t i(0);i<fl.size();++i) {
       m_flavs[i]=fl[i];
-      if (m_flavs[i].Strong()) ++m_nqcd;
-      else ++m_new;
     }
     m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   }
@@ -307,33 +303,33 @@ void Single_DipoleTerm::PrintLOmom()
 
 
 
-int Single_DipoleTerm::InitAmplitude(Model_Base * model,Topology* top,
+int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs)
 {
   switch (m_dipoletype) {
   case dpt::f_f: 
-    p_dipole = new FF_DipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    p_dipole = new FF_DipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
     break;
   case dpt::f_i: 
-    p_dipole = new FI_DipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    p_dipole = new FI_DipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
     break;
   case dpt::i_f: 
-    p_dipole = new IF_DipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    p_dipole = new IF_DipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
     break;
   case dpt::i_i: 
-    p_dipole = new II_DipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    p_dipole = new II_DipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
     break;
   case dpt::f_fm: 
-    p_dipole = new FF_MassiveDipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk,
+    p_dipole = new FF_MassiveDipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk,
 					     m_fli.Mass(),m_flj.Mass(),m_flk.Mass(),m_flij.Mass());
     break;
   case dpt::f_im: 
-    p_dipole = new FI_MassiveDipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk,
+    p_dipole = new FI_MassiveDipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk,
 					     m_fli.Mass(),m_flj.Mass(),m_flij.Mass());
     break;
   case dpt::i_fm: 
-    p_dipole = new IF_MassiveDipoleSplitting(model,m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    p_dipole = new IF_MassiveDipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
     break;
   default:
     p_dipole=NULL;
@@ -356,6 +352,7 @@ int Single_DipoleTerm::InitAmplitude(Model_Base * model,Topology* top,
   SetOrderQCD(p_LO_process->OrderQCD()+1);
   SetOrderEW(p_LO_process->OrderEW());
 
+  p_dipole->SetCoupling(((Single_LOProcess*)p_LO_process->Partner())->CouplingMap());
   p_dipole->SetAlpha(m_dalpha);
 
   map<string,Complex> dummy;
@@ -425,10 +422,7 @@ void Single_DipoleTerm::Minimize()
 }
 
 
-double Single_DipoleTerm::Differential(const Vec4D_Vector &_moms) { return 0.; }
-
-double Single_DipoleTerm::Differential2() { return 0.; }
-
+double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms) { return 0.; }
 
 double Single_DipoleTerm::GetDPSF(const ATOOLS::Vec4D * mom)
 {
@@ -455,21 +449,19 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom)
   p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom);
 
-  double df = p_dipole->GetF();
-  if (!(df>0.)&& !(df<0.))
-    return m_lastxs=df;
-
   bool trg(false);
   if (m_pinfo.m_nlomode==0) trg=p_LO_process->JetTrigger(p_LO_labmom);
   else trg=p_realint->Process()->JetTrigger(p_LO_labmom,p_LO_process->Flavours(),m_nout-1);
   if (!trg) return m_lastxs=0.;
 
-  m_subevt.m_scale = p_scale->CalculateScale(p_LO_labmom);
-  double M2 = p_LO_process->operator()(p_LO_mom,p_dipole->GetFactors(),p_dipole->GetDiPolarizations());
+  double M2 = p_LO_process->operator()(p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),p_dipole->GetDiPolarizations());
+  double df = p_dipole->GetF();
+  if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
   m_lastxs = M2 * df * KFactor();
   m_subevt.m_me = m_subevt.m_result = -m_lastxs;
   m_subevt.m_alpha = p_dipole->GetDPSF();
+  m_subevt.m_scale = p_scale->Scale(stp::fac);
   return m_lastxs;
 }
 
@@ -509,3 +501,9 @@ void Single_DipoleTerm::PrintProcessSummary(int it)
   }
   cout<<endl;
 } 
+
+void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
+{
+  if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
+  SetScaleSetter(p_LO_process->Partner()->ScaleSetter());
+}

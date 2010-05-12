@@ -22,13 +22,11 @@ namespace PHASIC {
 
     std::string m_kftag;
 
-    void SetCoupling(const std::string &kftag);
+    void SetKFactor(const std::string &kftag);
 
   public:
 
-    Variable_KFactor_Setter(Process_Base *const proc,
-			    const std::string &kfac,
-			    const size_t &oqcdlo,const size_t &oewlo);
+    Variable_KFactor_Setter(const KFactor_Setter_Arguments &args);
 
     ~Variable_KFactor_Setter();
 
@@ -52,8 +50,7 @@ DECLARE_GETTER(Variable_KFactor_Setter_Getter,"VAR",
 KFactor_Setter_Base *Variable_KFactor_Setter_Getter::
 operator()(const KFactor_Setter_Arguments &args) const
 {
-  return new Variable_KFactor_Setter
-    (args.p_proc,args.m_kfac,args.m_oqcdlo,args.m_oewlo);
+  return new Variable_KFactor_Setter(args);
 }
 
 void Variable_KFactor_Setter_Getter::
@@ -63,21 +60,22 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 Variable_KFactor_Setter::Variable_KFactor_Setter
-(Process_Base *const proc,const std::string &kfac,
- const size_t &oqcdlo,const size_t &oewlo):
-  KFactor_Setter_Base(proc)
+(const KFactor_Setter_Arguments &args):
+  KFactor_Setter_Base(args)
 {
-  size_t pos(kfac.find('{'));
+  size_t pos(args.m_kfac.find('{'));
   if (pos==std::string::npos)
-    THROW(fatal_error,"Invalid coupling '"+kfac+"'");
-  m_kftag=kfac.substr(pos+1);
+    THROW(fatal_error,"Invalid coupling '"+args.m_kfac+"'");
+  m_kftag=args.m_kfac.substr(pos+1);
   pos=m_kftag.rfind('}');
   if (pos==std::string::npos)
-    THROW(fatal_error,"Invalid coupling '"+kfac+"'");
+    THROW(fatal_error,"Invalid coupling '"+args.m_kfac+"'");
   m_kftag=m_kftag.substr(0,pos);
   p_calc = new Algebra_Interpreter();
   p_calc->AddFunction(MODEL::as->GetAIFunction());
   p_calc->AddFunction(MODEL::aqed->GetAIFunction());
+  SetKFactor(m_kftag);
+  if (msg_LevelIsDebugging()) p_calc->PrintEquation();
 }
 
 Variable_KFactor_Setter::~Variable_KFactor_Setter()
@@ -88,21 +86,7 @@ Variable_KFactor_Setter::~Variable_KFactor_Setter()
 double Variable_KFactor_Setter::KFactor() 
 {
   if (!m_on) return 1.0;
-  if (!m_kfkey.Assigned()) {
-     std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
-    msg_Debugging()<<"Assign '"<<p_proc->Name()
-		   <<"' '"<<kfinfo<<"'\n";
-    m_kfkey.Assign(p_proc->Name(),2,0,p_proc->
-		   Integrator()->PSHandler()->GetInfo());
-    m_kfkey.SetInfo(kfinfo);
-    SetCoupling(m_kftag);
-  }
-  if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
-  if (p_proc->OrderQCD()<0 || p_proc->OrderEW()<0) {
-    THROW(fatal_error,"Couplings not set for process '"+p_proc->Name()+"'");
-  }
-  m_kfkey<<p_calc->Calculate()->Get<double>();
-  return m_kfkey.Weight();
+  return m_weight=p_calc->Calculate()->Get<double>();
 }
 
 std::string Variable_KFactor_Setter::ReplaceTags(std::string &expr) const
@@ -114,10 +98,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
 {
   switch (term->Id()) {
   case 1:
-    term->Set(m_kfkey.Doubles()[0]);
+    term->Set(p_proc->ScaleSetter()->Scale(stp::ren));
     return term;
   case 2:
-    term->Set(m_kfkey.Doubles()[1]);
+    term->Set(p_proc->ScaleSetter()->Scale(stp::fac));
     return term;
   case 3:
     term->Set(rpa.gen.Ecms());
@@ -125,8 +109,14 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
   case 4:
     term->Set(sqr(rpa.gen.Ecms()));
     return term;
+  case 11:
+    term->Set((double)p_proc->OrderQCD());
+    return term;
+  case 12:
+    term->Set((double)p_proc->OrderEW());
+    return term;
   default:
-    term->Set(m_kfkey.Doubles()[term->Id()-100]);
+    term->Set(p_proc->ScaleSetter()->Scales()[term->Id()-100]);
     return term;
   }
   return term;
@@ -138,6 +128,8 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   else if (term->Tag()=="MU_F2") term->SetId(2);
   else if (term->Tag()=="E_CMS") term->SetId(3);
   else if (term->Tag()=="S_TOT") term->SetId(4);
+  else if (term->Tag()=="Order_QCD") term->SetId(11);
+  else if (term->Tag()=="Order_EW") term->SetId(12);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -145,7 +137,7 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   }
 }
 
-void Variable_KFactor_Setter::SetCoupling(const std::string &kftag)
+void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
 { 
   if (kftag=="" || kftag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): coupling '"<<kftag<<"' {\n";
@@ -155,7 +147,11 @@ void Variable_KFactor_Setter::SetCoupling(const std::string &kftag)
   p_calc->AddTag("MU_R2","1.0");
   p_calc->AddTag("E_CMS","1.0");
   p_calc->AddTag("S_TOT","1.0");
-  for (size_t i(0);i<m_kfkey.Doubles().size();++i)
+  p_calc->AddTag("Order_QCD","0.0");
+  p_calc->AddTag("Order_EW","0.0");
+  if (p_proc->ScaleSetter()==NULL) THROW
+    (fatal_error,"Process "+p_proc->Name()+" has no scale setter");
+  for (size_t i(0);i<p_proc->ScaleSetter()->Scales().size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
   std::string res=p_calc->Interprete(kftag);
   msg_Debugging()<<"} -> "<<res<<"\n";

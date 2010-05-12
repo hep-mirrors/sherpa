@@ -7,24 +7,6 @@
 #include "ATOOLS/Math/Permutation.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
-//Do not use this here !!! 
-//This is only for test purposes !!!
-//#define _USE_MPI_
-
-#ifdef _USE_MPI_
-#include <mpi++.h>
-#include <algorithm>
-
-int AMEGIC::Amplitude_Generator::NMAX=15000;
-
-MPI::Datatype   mpi_lf_type;
-MPI::Datatype   mpi_cf_type;
-MPI::Datatype   mpi_sv_type;
-MPI::Datatype   mpi_point_type;
-#endif
-
-
-
 namespace AMEGIC {
   class Compare_Pre_Amplitudes {
   public:
@@ -45,7 +27,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 int _nQCD,int _nEW,
 					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
   : fl(_fl), b(_b), p_model(_model), top(_top), N(_no), nEW(_nEW), nQCD(_nQCD),
-    BS(_BS), shand(_shand), m_create_4V(create_4V), s_buffer(0)
+    BS(_BS), shand(_shand), m_create_4V(create_4V)
 {
   single_top = top->Get(N-2);
   
@@ -62,42 +44,10 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
       v_table[(*v)[i]->in[0]].push_back((*v)[i]);
     }
   }
-
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-  if (rank==0) {
-    for (int i=0; i<size; ++i) {
-      r_buffers.push_back(Prea_Buffer());
-      r_buffers[i].buff     = new MPI_Point[NMAX];
-      r_buffers[i].counters = new int[2*NMAX]; // too big!!!
-      r_buffers[i].nbuff = 0;
-    }
-  }
-  else {
-    r_buffers.push_back(Prea_Buffer());
-    r_buffers[0].buff     = new MPI_Point[NMAX];
-    r_buffers[0].counters = new int[2*NMAX]; // too big!!!
-    r_buffers[0].nbuff = 0;
-  }
-
-  CommitMPITypes();
-#endif
-  
 }
 
 Amplitude_Generator::~Amplitude_Generator() 
 {
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-  if (rank==0) {
-    for (int i=0; i<size; ++i) {
-      delete [] r_buffers[i].buff;
-    }
-  }
-#endif
-
   for(size_t i=0;i<prea.size();++i) delete [] prea[i].p;
 
   for(unsigned int i=0;i<prea_table.size();i++) delete[] prea_table[i].p;
@@ -400,14 +350,6 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 
 
 void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-#else
-  //int rank=0;
-  //int size=1;
-#endif
-
 
   int count=0;
   Single_Amplitude* n;
@@ -495,225 +437,12 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
       }
       if (CheckOrders(prea_table[i].p)) {
 	gra = new Single_Amplitude(prea_table[i].p,prea_table[i].top,prea_table[i].perm,b,dep,N,top,BS,fl,shand);
-
 	count++;
 	if (first) n->Next = gra;
 	else first   = gra; 
 	n = gra;
       }
     }
-  }
-}
-
-
-void  Amplitude_Generator::CollectPreAmplitudes() {
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-
-  int dep  = single_top->depth;
-
-  if (size == 1) return;
-
-  // if slave
-  if (rank>0) {
-    int nbuf  = prea_table.size()*dep;
-    int ncbuf = 2*prea_table.size();
-
-    s_buffer=new MPI_Point[nbuf];
-    s_counter_buffer = new int[ncbuf];
-
-    // - fuelle buffer
-    int ibuf  =0;
-    int icbuf =0;
-    for (int i=0; i<prea_table.size();++i) {      
-      Point2MPI(prea_table[i].p,&s_buffer[ibuf]);
-      ibuf+=dep;
-      s_counter_buffer[2*i]   = prea_table[i].top;
-      s_counter_buffer[2*i+1] = prea_table[i].perm;
-    }
-
-    // check if receive-buffer is big enough !!!
-    if (nbuf<=NMAX) {
-    
-      // send local list
-      MPI::COMM_WORLD.Send(s_buffer,nbuf,mpi_point_type,0,Mpi_Tag::complete_buffer);
-      MPI::COMM_WORLD.Send(s_counter_buffer,ncbuf,MPI::INT,0,Mpi_Tag::complete_buffer);  
-    }
-    else {
-      ibuf  =0;
-      icbuf =0;
-      int pnbuf=NMAX/dep;
-      int pncbuf=pnbuf*2;
-      pnbuf*=dep;
-      for (;;) {
-	MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,0,Mpi_Tag::partial_buffer);      
-	MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,0,Mpi_Tag::partial_buffer);  
-	ibuf+=pnbuf;
-	icbuf+=pncbuf;
-	if (ibuf+pnbuf>=nbuf) break;
-      }
-      pnbuf = nbuf  - ibuf;
-      pncbuf= ncbuf - icbuf;
-      MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,0,Mpi_Tag::complete_buffer);
-      MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,0,Mpi_Tag::complete_buffer);  
-    }
-  }
-  else {
-    // if master
-    // receive all buffers!
-    for (int i=1;i<size;++i) {
-      r_buffers[i].tag=Mpi_Tag::partial_buffer;
-    }
- 
-    for (;;) {
-      bool rerun=0;
-      for (int i=1;i<size;++i) {
-	if (r_buffers[i].tag==Mpi_Tag::partial_buffer) {
-	  MPI::Status    r_status;
-	  MPI::COMM_WORLD.Recv(r_buffers[i].buff,NMAX,mpi_point_type, i,MPI::ANY_TAG , r_status);
-	  MPI::COMM_WORLD.Recv(r_buffers[i].counters,2*NMAX,MPI::INT, i,MPI::ANY_TAG);
-	  r_buffers[i].nbuff=r_status.Get_count(mpi_point_type);
-	  r_buffers[i].tag  =(Mpi_Tag::code)r_status.Get_tag();
-	  if (r_buffers[i].tag==Mpi_Tag::partial_buffer) rerun=1;
-	}
-      }
-
-      // translate in own list:
-      for (int i=1;i<size;++i) {
-	if (r_buffers[i].tag==Mpi_Tag::complete_buffer||r_buffers[i].tag==Mpi_Tag::partial_buffer) {
-	  int jc=0;
-	  for (int j=0;j<r_buffers[i].nbuff;j+=dep, jc+=2) {
-	    Point* ph = new Point[dep];
-	    MPI2Point(&(r_buffers[i].buff[j]),ph);
-	    ReplaceVertex(ph);
-	    prea_table.push_back(Pre_Amplitude(ph,
-		 r_buffers[i].counters[jc],r_buffers[i].counters[jc+1]));
-	  }
-	}
-	if (r_buffers[i].tag==Mpi_Tag::complete_buffer) r_buffers[i].tag=Mpi_Tag::empty_buffer;
-      }
-      if (!rerun) break;
-    }
-    // distribute 
-  }
-#endif
-}
-
-
-void  Amplitude_Generator::DistributePreAmplitudes() {
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-
-  int dep  = single_top->depth;
-
-  if (size==1) return;
-
-  if (rank==0) {
-    // master sends combined result to all cpus
-    int nbuf  = prea_table.size()*dep;
-    int ncbuf = 2*prea_table.size();
-
-    s_buffer=new MPI_Point[nbuf];
-    s_counter_buffer = new int[ncbuf];
-
-    // - fill buffer
-    int ibuf  =0;
-    int icbuf =0;
-    for (int i=0; i<prea_table.size();++i) {      
-      Point2MPI(prea_table[i].p,&s_buffer[ibuf]);
-      ibuf+=dep;
-      s_counter_buffer[2*i]   = prea_table[i].top;
-      s_counter_buffer[2*i+1] = prea_table[i].perm;
-    }
-
-    // check if receive-buffer is big enough !!!
-    if (nbuf<=NMAX) {
-    
-      // send local list
-      for (int cpu=1;cpu<size;++cpu) {
-	MPI::COMM_WORLD.Send(s_buffer,nbuf,mpi_point_type,cpu,Mpi_Tag::complete_buffer);
-	MPI::COMM_WORLD.Send(s_counter_buffer,ncbuf,MPI::INT,cpu,Mpi_Tag::complete_buffer);  
-      }
-    }
-    else {
-      ibuf  =0;
-      icbuf =0;
-      int pnbuf=NMAX/dep;
-      int pncbuf=pnbuf*2;
-      pnbuf*=dep;
-      for (;;) {
-	for (int cpu=1;cpu<size;++cpu) {
-	  MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,cpu,Mpi_Tag::partial_buffer);      
-	  MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,cpu,Mpi_Tag::partial_buffer);  
-	}
-	ibuf+=pnbuf;
-	icbuf+=pncbuf;
-	if (ibuf+pnbuf>=nbuf) break;
-      }
-      pnbuf = nbuf  - ibuf;
-      pncbuf= ncbuf - icbuf;
-      for (int cpu=1;cpu<size;++cpu) {
-	MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,cpu,Mpi_Tag::complete_buffer);
-	MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,cpu,Mpi_Tag::complete_buffer);  
-      }
-    }
-  }
-  else {
-    // clear old Preas:
-    for (Pre_Ampl_List::iterator pit=prea_table.begin();pit!=prea_table.end();++pit)
-      delete [] (*pit).p;
-    prea_table.clear();
-
-    r_buffers[0].tag=Mpi_Tag::partial_buffer;
- 
-    for (;;) {
-      if (r_buffers[0].tag==Mpi_Tag::partial_buffer) {
-	MPI::Status    r_status;
-	MPI::COMM_WORLD.Recv(r_buffers[0].buff,NMAX,mpi_point_type, 0,MPI::ANY_TAG , r_status);
-	MPI::COMM_WORLD.Recv(r_buffers[0].counters,2*NMAX,MPI::INT, 0,MPI::ANY_TAG);
-	r_buffers[0].nbuff=r_status.Get_count(mpi_point_type);
-	r_buffers[0].tag  =(Mpi_Tag::code)r_status.Get_tag();
-      }
-
-      // translate in own list:
-      if (r_buffers[0].tag==Mpi_Tag::complete_buffer||r_buffers[0].tag==Mpi_Tag::partial_buffer) {
-	int jc=0;
-	for (int j=0;j<r_buffers[0].nbuff;j+=dep, jc+=2) {
-	  Point* ph = new Point[dep];
-	  MPI2Point(&(r_buffers[0].buff[j]),ph);
-	  ReplaceVertex(ph);
-	  prea_table.push_back(Pre_Amplitude(ph,
-		       r_buffers[0].counters[jc],r_buffers[0].counters[jc+1]));
-	}
-      }
-      if (r_buffers[0].tag==Mpi_Tag::complete_buffer) break;
-    }
-  }
-#endif
-}
-
-
-void Amplitude_Generator::ReplaceVertex(Point * p) {
-  if (!p) return;
-  Single_Vertex * sv = p->v;
-  if (!sv) return;
-
-  int hit=0;
-  Vertex_List & vl= v_table[sv->in[0]];
-  for (size_t i=0;i<vl.size();++i) {
-    if (vl[i]->in[1] == sv->in[1]  && vl[i]->in[2] == sv->in[2] && vl[i]->in[3] == sv->in[3]) {
-      delete sv;
-      p->v=vl[i];
-      hit=1;
-      break;
-    }
-  }
-  if (!hit) {
-    msg_Error()<<"ERROR in Amplitude_Generator::ReplaceVertex :"<<std::endl
-	       <<"   Vertex not found , something wrong with MPI mode. Abort the run."<<endl;
-    abort();
   }
 }
 
@@ -965,64 +694,8 @@ int Amplitude_Generator::Kill_Off(Single_Amplitude* &first)
     }
   }
   return count;
-}
+}				     
 
-int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
-{
-  if (!p) return countQED;
-  
-  int hit = 0;
-  
-  //Vector-Boson propagators
-  if (p->number>99 && (p->fl.IsVector() || p->fl.IsScalar()) && !(p->fl.IsGluon())) {
-    countQED += 2;
-    hit       = 1; 
-  }    
-  //External Vector-Boson 
-  if (p->number<99 && (p->fl.IsVector() || p->fl.IsScalar()) && !(p->fl.IsGluon())) {
-    countQED += 1;
-    hit       = 1;
-  }
-  
-  //triple and quartic Vector-Boson interactions
-  if (hit) {
-    if (p->left   && (p->left->fl.IsVector() || p->left->fl.IsScalar()) && !(p->left->fl.IsGluon()))      countQED -= 1;
-    if (p->right  && (p->right->fl.IsVector() || p->right->fl.IsScalar()) && !(p->right->fl.IsGluon()))   countQED -= 1;
-  }
-  
-  FindQEDOrder(p->left,countQED);
-  FindQEDOrder(p->right,countQED);
-  return countQED;
-}
-
-int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
-{
-  if (!p) return countQCD;
-  int hit = 0;
-  
-  //Gluon propagators
-  if (p->number>99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
-    countQCD += 2;
-    hit       = 1;
-    if (p->fl==Flavour(kf_shgluon)) countQCD += 2;
-  }
-  //External gluon 
-  if (p->number<99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
-    countQCD += 1;
-    hit       = 1;
-  }
-
-   //triple and quartic Gluon/Gluino vertices and ADD-Gluon/Higgs-Gluon Vertices
-  if (hit) {
-    if (p->left   && (p->left->fl.IsGluon() || p->left->fl.IsGluino() || !p->left->fl.Strong()))     countQCD -= 1;
-    if (p->right  && (p->right->fl.IsGluon() || p->right->fl.IsGluino() || !p->right->fl.Strong()))  countQCD -= 1;
-  }
-  else if (!p->fl.Strong() && p->left   && (p->left->fl.IsGluon() || p->left->fl.IsGluino()))     countQCD -= 2;
-
-  FindQCDOrder(p->left,countQCD);
-  FindQCDOrder(p->right,countQCD);
-  return countQCD;
-}
 
 void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
 {
@@ -1036,7 +709,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   while (f1) {
     int hitQED = 0;
     int hitQCD = 0;
-    hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
+    hitQCD = f1->GetPointlist()->FindQCDOrder(hitQCD);
     hitQED = N -2 - hitQCD;  // N = nin + nout
     if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
     if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
@@ -1070,67 +743,18 @@ bool Amplitude_Generator::CheckOrders(Point * p)
 {
   int hitQED = 0;
   int hitQCD = 0;
-  hitQCD = FindQCDOrder(p,hitQCD);
+  hitQCD = p->FindQCDOrder(hitQCD);
   hitQED = N -2 - hitQCD;  // N = nin + nout
   if (nEW<99  && hitQED!=nEW)  return 0; 
   if (nQCD<99 && hitQCD!=nQCD) return 0; 
   return 1;
 }
  
-
-int *  Amplitude_Generator::DivideComparisons(int cpu_size, int nampl, int rank) {
-  // determine share (multi cpu only)
-  double total_compare = double(nampl)*(double(nampl)-1.)/2.;
-  double  rest_share    = total_compare;
-  double * compare_share = new double[cpu_size];
-  for (int cpu=0;cpu<cpu_size;++cpu) {
-    // ideal shares
-    compare_share[cpu]=floor(rest_share/double(cpu_size-cpu));
-    rest_share-=compare_share[cpu];
-  }
-
-  rest_share    = total_compare;
-  int * start_no= new int[cpu_size];
-  for (int cpu=0;cpu<cpu_size;++cpu) {
-    // ideal shares
-    rest_share-=compare_share[cpu];
-    double est_no = 0.5 + sqrt(0.25+2.*rest_share);
-    int no = int(est_no+0.5);      // round
-    start_no[cpu]=no;
-    // real shares
-    no = 0;
-    if (cpu>0) no=nampl-start_no[cpu-1];
-    double cmp=total_compare;
-    if (cpu>0) cmp=double(start_no[cpu-1])*double((start_no[cpu-1]-1.))*0.5;
-    cmp-=double(start_no[cpu])*double(start_no[cpu]-1.)*0.5;
-    compare_share[cpu]=cmp;
-  }
-  // translate to reverse shares
-  for (int cpu=cpu_size-1;cpu>=0;--cpu) {
-    int no = 0;
-    if (cpu>0) no=nampl-start_no[cpu-1];
-    start_no[cpu]=no;
-  }
-  delete [] compare_share;
-
-  return start_no;
-}
-
 void Amplitude_Generator::Compare(Single_Amplitude* &first)
 {
-  int rank=0;
-  int size =1;
-#ifdef _USE_MPI_
-  rank = MPI::COMM_WORLD.Get_Rank();
-  size = MPI::COMM_WORLD.Get_size();
-#endif
-
   Single_Amplitude* f1;
   Single_Amplitude* f2;
 
-  Single_Amplitude*   start_ampl=first;
-  Single_Amplitude*   stop_ampl =0;
-  
   // count amplitudes
   int nampl=0;
   f1 = first;
@@ -1139,35 +763,12 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
     f1=f1->Next;
   } 
 
-  int * start_no=DivideComparisons(size,nampl,rank);
-
   // determine new start_amplitude and 
   f1 = first;
-  int iampl=0;
-  while (f1) {
-    if (iampl==start_no[rank]) {
-      start_ampl=f1;
-      if (rank==size-1) break;
-    }
-    if (rank<size-1) {
-      if (iampl==start_no[rank+1]) {
-	stop_ampl=f1;
-	break;
-      }
-    }
-    ++iampl;
-    f1=f1->Next;
-  }
-
-  delete [] start_no;
-
   // start comparison
   Point* p1;
   Point* p2;  
 
-  //int ncomps=0;
-  //int noffs=0;
-  f1 = start_ampl;
   while (f1) { 
     if (f1->on) {
       p1 = f1->GetPointlist();
@@ -1185,62 +786,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
       }
     }
     f1 = f1->Next;
-    if (f1==stop_ampl) break;
   }
-
-#ifdef _USE_MPI_
-  // collect off-switches
-  if (rank>0) {
-    int * sw_buffer = new int[nampl];
-    f1 = first;
-    for (int iamp=0;iamp<nampl;++iamp) {
-      sw_buffer[iamp]=f1->on;
-      f1 = f1->Next;
-    }
-    // send local off-switches
-    MPI::COMM_WORLD.Send(sw_buffer,nampl,MPI::INT,0,Mpi_Tag::on_switches);
-    // receive global off-switches
-    MPI::COMM_WORLD.Recv(sw_buffer,nampl,MPI::INT,0,Mpi_Tag::on_switches);
-    // set switches in amplitudes
-    f1=first;
-    for (int iamp=0;iamp<nampl;++iamp) {
-      f1->on=sw_buffer[iamp];
-      f1 = f1->Next;
-    }
-    delete [] sw_buffer;
-  }
-  else {
-    int * sw_buffer = new int[nampl];
-    int * all_sw_buffer = new int[nampl];
-    f1=first;
-    for (int iamp=0;iamp<nampl;++iamp) {
-      all_sw_buffer[iamp]=f1->on;
-      f1 = f1->Next;
-    }
-    for (int cpu=1;cpu<size;++cpu) {
-      // receive slave off-switches
-      MPI::COMM_WORLD.Recv(sw_buffer,nampl,MPI::INT,cpu,Mpi_Tag::on_switches);
-      // combine slave off-switches with master 
-      for (int iamp=0;iamp<nampl;++iamp) {
-	all_sw_buffer[iamp]=all_sw_buffer[iamp] & sw_buffer[iamp];
-      }
-    }
-    for (int cpu=1;cpu<size;++cpu) {
-      // send global off-switches to all slaves
-      MPI::COMM_WORLD.Send(all_sw_buffer,nampl,MPI::INT,cpu,Mpi_Tag::on_switches);
-    }
-
-    // set switches in amplitudes
-    f1=first;
-    for (int iamp=0;iamp<nampl;++iamp) {
-      f1->on=all_sw_buffer[iamp];
-      f1 = f1->Next;
-    }
-
-    delete [] sw_buffer;
-    delete [] all_sw_buffer;
-  }
-#endif
   
   Kill_Off(first);
 
@@ -1539,34 +1085,14 @@ Single_Amplitude* Amplitude_Generator::Matching()
   int* perm = new int[N];
   int sw1;
   int qsum,lsum; 
-  //int chsum,neusum;           
   Single_Amplitude* first_amp;
   int over = 0;
   perm[0]  = 0;
   first_amp = 0;
 
   int count = 0;
-
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
-  int size = MPI::COMM_WORLD.Get_size();
-
-  int top_range =  single_top->number/size;
-
   int start_top = 0;
   int end_top = single_top->number;
-
-  start_top=rank*top_range;
-  if (rank<size-1)
-    end_top=(rank+1)*top_range;
-
-
-#else
-  //int rank = 0;
-  //int size = 1;
-  int start_top = 0;
-  int end_top = single_top->number;
-#endif
 
   for(;;) {
     sw1 = 1;
@@ -1676,15 +1202,6 @@ Single_Amplitude* Amplitude_Generator::Matching()
   delete[] ii;
   delete[] perm;
   
-#ifdef _USE_MPI_
-  CollectPreAmplitudes();
-
-  if (rank==0) {
-    std::stable_sort(prea_table.begin(),prea_table.end(),Compare_Pre_Amplitudes());
-  }
-
-  DistributePreAmplitudes();
-#endif
   CreateSingleAmplitudes(first_amp);
   
   CountOrders(first_amp);
@@ -1693,24 +1210,6 @@ Single_Amplitude* Amplitude_Generator::Matching()
   Kill5VertexArtefacts(first_amp);
   Compare(first_amp);
 
-#ifdef _USE_MPI_
-  if (rank==0) {
-    for (int cpu=1;cpu<size;++cpu) {
-      int dummy;
-      MPI::COMM_WORLD.Recv(&dummy,1,MPI::INT, cpu,42);
-    }
-    for (int cpu=1;cpu<size;++cpu) {
-      int dummy;
-      MPI::COMM_WORLD.Recv(&dummy,1,MPI::INT, cpu,43);
-    }
-  }
-  else {
-    int dummy;
-    MPI::COMM_WORLD.Send(&dummy,1,MPI::INT, 0,42);
-    MPI::COMM_WORLD.Send(&dummy,1,MPI::INT, 0,43);
-  }
-#endif
-
   Single_Amplitude*  f1 = first_amp;
   while (f1) { 
     (f1->GetPointlist())->ResetFlag();
@@ -1718,70 +1217,6 @@ Single_Amplitude* Amplitude_Generator::Matching()
   }
 
   return first_amp;
-}
-
-void Amplitude_Generator::CommitMPITypes() {
-#ifdef _USE_MPI_
-  MPI_Lorentz_Function   sample_lf;
-
-  MPI::Datatype lf_types[2]  = {MPI::INT,MPI::INT};
-  int           lf_blocks[2] = {1       ,4       };
-  MPI::Aint     lf_disp[2];
-  lf_disp[0] = MPI::Get_address(&sample_lf.m_type);
-  lf_disp[1] = MPI::Get_address(&sample_lf.m_partarg);
-  for (short int i=1;i>=0;i--) lf_disp[i] -= lf_disp[0];
-
-  mpi_lf_type = MPI::Datatype::Create_struct(2,lf_blocks,lf_disp,lf_types);
-  mpi_lf_type.Commit();
-
-  // ----------------------------------------
-
-  MPI_Color_Function   sample_cf;
-
-  MPI::Datatype cf_types[3]  = {MPI::INT,MPI::INT,MPI::CHAR};
-  int           cf_blocks[3] = {1       ,3       ,4        };
-  MPI::Aint     cf_disp[3];
-  cf_disp[0] = MPI::Get_address(&sample_cf.m_type);
-  cf_disp[1] = MPI::Get_address(&sample_cf.m_partarg);
-  cf_disp[2] = MPI::Get_address(&sample_cf.m_strarg);
-  for (short int i=2;i>=0;i--) cf_disp[i] -= cf_disp[0];
-
-  mpi_cf_type = MPI::Datatype::Create_struct(3,cf_blocks,cf_disp,cf_types);
-  mpi_cf_type.Commit();
-
-
-  // ----------------------------------------
-
-  MPI::Datatype sv_types[1]  = {MPI::INT};
-  int           sv_blocks[1] = {4       };
-  MPI::Aint     sv_disp[1];
-  sv_disp[0] =  0;
-
-  mpi_sv_type = MPI::Datatype::Create_struct(1,sv_blocks,sv_disp,sv_types);
-  mpi_sv_type.Commit();
-
-  // ----------------------------------------
-
-
-  MPI_Point   sample_point;
-
-  MPI::Datatype point_types[6]  = {MPI::INT,mpi_lf_type,mpi_cf_type,mpi_sv_type,MPI::DOUBLE,MPI::INT };
-  int           point_blocks[6] = {1       ,1          ,1          ,1          ,8          ,5        };
-  MPI::Aint     point_disp[6];
-  point_disp[0] = MPI::Get_address(&(sample_point.m_fl));
-  point_disp[1] = MPI::Get_address(&(sample_point.m_lf));
-  point_disp[2] = MPI::Get_address(&(sample_point.m_cf));
-  point_disp[3] = MPI::Get_address(&(sample_point.m_v));
-  point_disp[4] = MPI::Get_address(&(sample_point.m_cpl));
-  point_disp[5] = MPI::Get_address(&(sample_point.m_left));
-
-
-  for (short int i=5;i>=0;i--) point_disp[i] -= point_disp[0];
-  
-  mpi_point_type = MPI::Datatype::Create_struct(6,point_blocks,point_disp,point_types);
-  mpi_point_type.Commit();
-#endif
-
 }
 
 

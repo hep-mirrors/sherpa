@@ -56,11 +56,11 @@ bool COMIX::Process_Group::MapProcess()
 
 bool COMIX::Process_Group::GeneratePoint()
 {
-  m_zero=true;
-  m_lastxs=m_last=0.0;
+  bool zero=true;
+  m_last=0.0;
   for (size_t i(0);i<m_procs.size();++i)
-    if (m_procs[i]->GeneratePoint()) m_zero=false;
-  return !m_zero;
+    if (m_procs[i]->GeneratePoint()) zero=false;
+  return !zero;
 }
 
 bool COMIX::Process_Group::Tests()

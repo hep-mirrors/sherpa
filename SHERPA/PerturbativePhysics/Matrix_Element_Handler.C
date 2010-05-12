@@ -28,7 +28,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
 (const std::string &dir,const std::string &file,
  const std::string &processfile,const std::string &selectorfile):
   m_gens(dir, file),
-  p_proc(NULL), p_beam(NULL), p_isr(NULL),
+  p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0),
   p_shower(NULL), m_totalxs(0.0), 
@@ -252,7 +252,7 @@ bool Matrix_Element_Handler::InitializeProcesses
     Don't even try to think about modifying 
     either this routine or any of its dependencies !!!
   */
-  p_beam=beam; p_isr=isr;
+  p_beam=beam; p_isr=isr; p_model=model;
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
 #ifdef USING__Threading
   double rbtime(ATOOLS::rpa.gen.Timer().RealTime());
@@ -327,15 +327,13 @@ void Matrix_Element_Handler::BuildProcesses()
   hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));
   read.SetTags(std::map<std::string,std::string>());
   // set kfactor scheme
-  std::string kfactor=read.GetValue<std::string>("COUPLINGS","METS");
+  std::string kfactor=read.GetValue<std::string>("KFACTOR","NO");
   // set scale scheme
   std::string scale=read.GetValue<std::string>("SCALES","METS");
-  // check for fixed scale
-  std::string fixscale;
-  if (read.ReadFromFile(fixscale,"FIXED_SCALE")) {
-    scale="VAR{"+fixscale+"}";
-    kfactor="NO";
-  }
+  std::vector<std::string> helpsv;
+  if (!read.VectorFromFile(helpsv,"COUPLINGS"))
+    helpsv.push_back("Alpha_QCD 1");
+  std::string coupling(MakeString(helpsv,0));
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -354,6 +352,7 @@ void Matrix_Element_Handler::BuildProcesses()
     if (cur[0]=="Process") {
       Process_Info pi;
       pi.m_scale=scale;
+      pi.m_coupling=coupling;
       pi.m_kfactor=kfactor;
       pi.m_cls=cls;
       pi.m_hls=hls;
@@ -376,6 +375,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Couplings") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vcoupl,nf);
+	}
+	if (cur[0]=="KFactor") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vkfac,nf);
 	}
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
@@ -540,7 +543,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
         cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
 	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
-	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_kfactor=ds;
+	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
+	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
 	if (GetMPvalue(pbi.m_vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi);
 	for (size_t i(0);i<proc.size();i++) {
@@ -564,7 +568,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
   }
   if (pi.m_ckkw && rpa.gen.NumberOfEvents()==0)
     THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
-  size_t oqcdlo(0), oewlo(0);
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
     Selector_Key skey(NULL,new Data_Reader(),true);
@@ -581,27 +584,19 @@ void Matrix_Element_Handler::BuildSingleProcessList
     }
     procs[i]->SetSelector(skey);
     if (pi.m_ckkw&1) {
-      cpi.m_kfactor="METS";
+      cpi.m_coupling="Alpha_QCD 1";
       if (procs.size()>1) {
 	if (cpi.m_scale.rfind('}')==std::string::npos)
 	  cpi.m_scale+="{MU_F2}";
 	cpi.m_scale+="{"+p_shower->GetShower()->GetKT2("Q2_CUT")+"}";
       }
     }
-    if (i==0) GetMaxCouplings(procs[i],oqcdlo,oewlo);
-    procs[i]->SetScale(cpi.m_scale);
-    procs[i]->SetKFactor(cpi.m_kfactor,oqcdlo,oewlo);
+    procs[i]->SetScale
+      (Scale_Setter_Arguments(p_model,cpi.m_scale,cpi.m_coupling));
+    procs[i]->SetKFactor
+      (KFactor_Setter_Arguments(cpi.m_kfactor));
     procs[i]->SetShower(p_shower->GetShower());
   }
-}
-
-void Matrix_Element_Handler::GetMaxCouplings
-(PHASIC::Process_Base *const proc,size_t &oqcd,size_t &oew)
-{
-  if (proc->IsGroup())
-    for (size_t i(0);i<proc->Size();++i) GetMaxCouplings((*proc)[i],oqcd,oew);
-  oqcd=Max(oqcd,proc->OrderQCD());
-  oew=Max(oew,proc->OrderEW());
 }
 
 size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string buffer)
@@ -786,8 +781,8 @@ namespace SHERPA {
 
 }
 
-std::string Matrix_Element_Handler::MakeString(const std::vector<std::string> &in,
-			      const size_t &first)
+std::string Matrix_Element_Handler::MakeString
+(const std::vector<std::string> &in,const size_t &first)
 {
   std::string out(in.size()>first?in[first]:"");
   for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];

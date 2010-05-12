@@ -6,6 +6,11 @@
 namespace PHASIC {
 
   class Single_Process: public Process_Base {
+  protected:
+
+    double m_lastxs;
+    bool   m_zero;
+
   public:
 
     Single_Process();
@@ -20,21 +25,38 @@ namespace PHASIC {
     Weight_Info *OneEvent();
     Weight_Info *WeightedEvent(const int mode=0);
 
-    double KFactor();
-    double KFactor2();
+    double KFactor() const;
+
+    double BeamISRWeight(const double &Q2,const int mode) const;
+    void BeamISRWeight(NLO_subevtlist *const subs,
+		       const int mode) const;
+
+    double Differential(const ATOOLS::Vec4D_Vector &p);
+    double Differential2();
 
     bool CalculateTotalXSec(const std::string &resultpath,
 			    const bool create);
     void SetLookUp(const bool lookup);
 
+    void SetScale(const Scale_Setter_Arguments &args);
+    void SetKFactor(const KFactor_Setter_Arguments &args);
+
+    virtual double Partonic(const ATOOLS::Vec4D_Vector &p) = 0;
+    virtual double Partonic2();
+
     virtual bool Combinable(const size_t &idi,
 			    const size_t &idj);
     virtual const ATOOLS::Flavour_Vector &
     CombinedFlavour(const size_t &idij);
-    double BeamWeight(const double& Q2);
+
+    inline void ResetLastXS() { m_lastxs=0.0; }
+
+    inline double LastXS() const { return m_lastxs; }
+
+    inline bool Zero() const { return m_zero; }
 
   };// end of class Single_Process
 
-}// end of namespace ATOOLS
+}// end of namespace PHASIC
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef AMEGIC_DipoleSubtraction_Massive_Kernels_H
 #define AMEGIC_DipoleSubtraction_Massive_Kernels_H
 
+#include "MODEL/Main/Coupling_Data.H"
 #include <vector>
 
 namespace MODEL {
@@ -12,12 +13,13 @@ namespace AMEGIC {
   class Massive_Kernels {
   protected:
     size_t m_nf,m_nmf;
-    double m_cpl,m_g1,m_g2,m_K1,m_K2;
+    double m_cpldef,m_g1,m_g2,m_K1,m_K2;
     double m_alpha,m_loga,m_kappa;
     double p_VS[3];
     double p_VNS[3];
     double p_Gamma[3];
     std::vector<double> m_massflav;
+    MODEL::Coupling_Data *p_cpl;
 
     double Lambda(double x,double y, double z);
     void CalcVS(double,double,double);
@@ -26,11 +28,12 @@ namespace AMEGIC {
     void CalcVNSg(double s,double mk,bool);
     void CalcGamma(int,double,double);
   public:
-    Massive_Kernels(MODEL::Model_Base*);
+    Massive_Kernels();
     
+    void SetCoupling(const MODEL::Coupling_Map *cpls);
     void SetAlpha(double a); 
     void SetKappa(double k) { m_kappa=k; } 
-    double Coupling() { return m_cpl; }
+    double Coupling() { return m_cpldef*p_cpl->Factor(); }
     size_t Nf()       { return m_nf; }
     size_t Nmf()      { return m_nmf; }
     double FMass(int i) { return m_massflav[i]; }

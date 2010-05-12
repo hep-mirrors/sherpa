@@ -32,7 +32,7 @@ namespace PHASIC {
     PDF::ISR_Handler           *p_isrhandler;
 
     std::string m_resultpath;
-    size_t      m_nin, m_nout, m_corenout, m_smode;
+    size_t      m_nin, m_nout, m_smode;
 
     ATOOLS::Vec4D_Vector p_momenta;
 
@@ -121,7 +121,6 @@ namespace PHASIC {
 
     double GetMaxEps(double);
     void   SetUpEnhance();
-    void   SetMomenta();
 
     void ReadResults();
     void StoreResults(const int mode=0);

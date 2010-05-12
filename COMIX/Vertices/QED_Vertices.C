@@ -62,7 +62,7 @@ void QED_FFP<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
   CVec4Type j(ZERO,ZERO,ZERO,ZERO,0,0,a.H(0)+b.H(0),a.H(1)+b.H(1));
   if (cl) j+=LorentzLeft(a,b);
   if (cr) j+=LorentzRight(a,b);
-  AddJ(j*m_cpl);
+  AddJ(j*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>
@@ -73,7 +73,7 @@ void QED_FFP<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
   CSpinorType j(a.R(),a.B(),a(),a.H(0)+b.H(0),a.H(1)+b.H(1),0);
   if (cl) j+=LorentzLeft(a,b);
   if (cr) j+=LorentzRight(a,b);
-  AddJ(j*m_cpl);
+  AddJ(j*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>

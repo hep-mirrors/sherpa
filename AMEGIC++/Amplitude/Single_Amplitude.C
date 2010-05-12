@@ -257,8 +257,18 @@ void Single_Amplitude::Prop_Replace(Flavour falt,int alt,int neu1,int neu2)
   plist.push_back(Ph);
 }
 
+void Single_Amplitude::SetOrderQED() {
+  int oqed =0;
+  m_oqed = GetPointlist()->FindQEDOrder(oqed);
+}
+void Single_Amplitude::SetOrderQCD() {
+  int oqcd =0;
+  m_oqcd = GetPointlist()->FindQCDOrder(oqcd);
+}
 
+int Single_Amplitude::GetOrderQED() { return m_oqed; }
 
+int Single_Amplitude::GetOrderQCD() { return m_oqcd; }
 
 
 

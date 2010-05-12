@@ -5,6 +5,8 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Selectors/Cut_Data.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Scales/KFactor_Setter_Base.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -24,8 +26,6 @@ namespace PHASIC {
   typedef std::map<int, int> FMMap;
 
   class Process_Integrator;
-  class Scale_Setter_Base;
-  class KFactor_Setter_Base;
   class Phase_Space_Handler;
   class Combined_Selector;
   class ME_Generator_Base;
@@ -50,14 +50,16 @@ namespace PHASIC {
     SP(Scale_Setter_Base)   p_scale;
     SP(KFactor_Setter_Base) p_kfactor;
 
-    size_t      m_nin, m_nout, m_nqcd, m_new, m_oqcd, m_oew;
+    size_t      m_nin, m_nout, m_oqcd, m_oew;
     std::string m_name;
 
     ATOOLS::Flavour_Vector      m_flavs;
     Process_Info                m_pinfo;
 
-    double m_last, m_lastxs, m_lastlumi, m_lastsingle;
+    double m_last;
     bool   m_lookup, m_trigger;
+
+    MODEL::Coupling_Map m_cpls;
 
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
     static void SortFlavours(Process_Info &pi);
@@ -73,10 +75,8 @@ namespace PHASIC {
     Process_Base *Parent();
     Process_Base *Selected();
 
-    virtual void SetScale(const std::string &scale);
-    virtual void SetKFactor(const std::string &kfactor,
-			    const size_t &oqcdlo,
-			    const size_t &oewlo);
+    virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
+    virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
 
     virtual void SetKFactorOn(const bool on);
 
@@ -129,8 +129,6 @@ namespace PHASIC {
 
     virtual NLO_subevtlist *GetSubevtList();
 
-    virtual const ATOOLS::Vec4D_Vector &ActiveMom() const;
-
     void FillOnshellConditions();
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl);
@@ -161,20 +159,12 @@ namespace PHASIC {
 
     PDF::Shower_Base *Shower() const { return p_shower; }
 
-    inline size_t NQCD() const { return m_nqcd; }
-    inline size_t NEW() const  { return m_new;  }
-
     inline Process_Info       &Info()       { return m_pinfo; }
     inline const Process_Info &Info() const { return m_pinfo; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
 
-    inline double Last() const     { return m_last;     }
-    inline double LastXS() const   { return m_lastxs;   }
-    inline double LastLumi() const { return m_lastlumi; }
-    inline void   ResetLastXS()    { m_lastxs=0.; }
-
-    inline double LastSingle() const { return m_lastsingle; }
+    inline double Last() const { return m_last; }
 
     inline bool LookUp() const { return m_lookup; }
 

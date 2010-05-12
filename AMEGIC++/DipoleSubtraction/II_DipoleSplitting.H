@@ -15,8 +15,7 @@ namespace AMEGIC {
     double m_sff;
 //     ATOOLS::Vec4D m_pt;
   public:
-    II_DipoleSplitting(MODEL::Model_Base* model,int ft, int m,int i,int j,int k) 
-      : DipoleSplitting_Base(model)
+    II_DipoleSplitting(int ft, int m,int i,int j,int k) 
     {m_ft=ft; m_type=dpt::i_i; m_m=m; m_i=i;m_j=j;m_k=k;}
     
     void SetMomenta(const ATOOLS::Vec4D*);

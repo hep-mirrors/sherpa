@@ -44,6 +44,8 @@ namespace AMEGIC {
     Single_DipoleTerm(const PHASIC::Process_Info &,size_t,size_t,size_t,PHASIC::Process_Integrator*);
     ~Single_DipoleTerm();
 
+    void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+
     /*------------------------------------------------------------------------------
 
       Generic stuff for initialization of Single_DipoleTermes
@@ -106,8 +108,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Differential(const ATOOLS::Vec4D_Vector &);
-    double         Differential2();
+    double         Partonic(const ATOOLS::Vec4D_Vector &);
     double         operator()(const ATOOLS::Vec4D *);
 
     double         GetDPSF(const ATOOLS::Vec4D *);
@@ -117,7 +118,6 @@ namespace AMEGIC {
     int            Type() { return 15; }
     bool PerformTests() { return true; }
     void PrintLOmom();
-    const ATOOLS::Vec4D_Vector &ActiveMom() const { return p_LO_labmom; }
   };
 }
 

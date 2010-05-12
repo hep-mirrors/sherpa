@@ -32,6 +32,9 @@ namespace AMEGIC {
 
     Amplitude_Base* GetAmplitude(const int n) {return (n==amplnumber) ? this : 0;}
     const int GetNumber() { return amplnumber; }
+
+    int GetOrderQED();
+    int GetOrderQCD();
   };
 }
 #endif

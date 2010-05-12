@@ -61,7 +61,7 @@ bool Color_Setter::SetRandomColors()
     }
     if (!sing) {
     double csum(p_xs->GetME()->Differential
-		(p_xs->Integrator()->PSHandler()->CMSPoint(),ci,cj,true));
+		(p_xs->Integrator()->Momenta(),ci,cj,true));
     msg_Debugging()<<"sc: csum = "<<csum<<"\n";
     if (csum!=0.0) {
       CI_Map &cmap(ampl->ColorMap());
@@ -127,7 +127,7 @@ bool Color_Setter::SetLargeNCColors()
       }
       if (!valid) continue;
       double part(p_xs->GetME()->Differential
-		  (p_xs->Integrator()->PSHandler()->CMSPoint(),ci,cj,true));
+		  (p_xs->Integrator()->Momenta(),ci,cj,true));
       part*=sqr(colint->Weights().front());
       if (psum.size()) part+=psum.back();
       if (part>0.0) {
@@ -184,8 +184,7 @@ bool Color_Setter::SetLargeNCColors()
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
       if (p_xs->GetME()->Differential
-	  (p_xs->Integrator()->PSHandler()->
-	   CMSPoint(),ci,cj,true)==0.0)
+	  (p_xs->Integrator()->Momenta(),ci,cj,true)==0.0)
 	THROW(fatal_error,"Internal error");
       CI_Map &cmap(ampl->ColorMap());
       for (size_t i(0);i<ampl->Legs().size();++i)

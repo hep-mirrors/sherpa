@@ -449,8 +449,10 @@ void Cluster_Algorithm::Convert()
   p_ampl->SetNIn(p_proc->NIn());
   p_ampl->SetOrderEW(p_proc->OrderEW());
   p_ampl->SetOrderQCD(p_proc->OrderQCD());
-  double muf2(p_proc->ScaleSetter()->Scale(stp::fac));
-  double mur2(p_proc->ScaleSetter()->Scale(stp::ren));
+  PHASIC::Process_Base *pb(p_proc->IsMapped()?
+			   p_proc->MapProc():p_proc);
+  double muf2(pb->ScaleSetter()->Scale(stp::fac));
+  double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (int i(0);i<ct_tmp->NLegs();++i) {
     size_t id(ct_tmp->GetLeg(i).ID());
     Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));

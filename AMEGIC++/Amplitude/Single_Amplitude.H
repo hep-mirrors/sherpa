@@ -13,7 +13,7 @@
 namespace AMEGIC {
   class Process_Tags;
   class Single_Amplitude: public Single_Amplitude_Base {
-
+    
     Point* Pointlist;
     MODEL::Color_Function* CFlist;
     MODEL::Color_Function* CCFlist;
@@ -41,6 +41,13 @@ namespace AMEGIC {
     inline  MODEL::Color_Function* Get_CCFlist() {return CCFlist;}
 
     void    AddSpinorDirection(const int&,const int&);    
+    
+    void    SetOrderQED();
+    void    SetOrderQCD();
+
+    int     GetOrderQED();
+    int     GetOrderQCD();
+    
   };
 }
 #endif

@@ -49,6 +49,18 @@ Model_Base::~Model_Base()
   if (p_vertextable!=NULL)       delete p_vertextable;
 }
 
+void Model_Base::GetCouplings(Coupling_Map &cpls) const
+{
+  DEBUG_FUNC(&cpls);
+  for (ScalarFunctionsMap::const_iterator
+	 cit(p_functions->begin());cit!=p_functions->end();++cit) {
+    std::string tag(cit->second->Name());
+    cpls[tag] = new Coupling_Data
+      (cit->second,tag,(*cit->second)(rpa.gen.CplScale()));
+    msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls[tag]<<")"<<*cpls[tag]<<"\n";
+  }
+}
+
 void Model_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;

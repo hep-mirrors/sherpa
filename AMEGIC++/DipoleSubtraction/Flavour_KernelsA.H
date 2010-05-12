@@ -1,6 +1,7 @@
 #ifndef AMEGIC_DipoleSubtraction_Flavour_KernelsA_H
 #define AMEGIC_DipoleSubtraction_Flavour_KernelsA_H
 
+#include "MODEL/Main/Coupling_Data.H"
 
 namespace MODEL {
   class Model_Base;
@@ -11,10 +12,13 @@ namespace AMEGIC {
   class Flavour_KernelsA {
   protected:
     int m_nf;
-    double m_cpl,m_g1,m_g2;
+    double m_cpldef,m_g1,m_g2;
     double m_alpha,m_loga;
+    MODEL::Coupling_Data *p_cpl;
   public:
-    Flavour_KernelsA(MODEL::Model_Base*);
+    Flavour_KernelsA();
+
+    void SetCoupling(const MODEL::Coupling_Map *cpls);
     
     void SetAlpha(double a); 
     double Kb1(int type,double x);
@@ -33,7 +37,7 @@ namespace AMEGIC {
     double P3(int type,double x);
     double P4(int type,double x);
     double ft(int type);
-    double Coupling() { return m_cpl; }
+    double Coupling() { return m_cpldef*p_cpl->Factor(); }
     double Nf()       { return m_nf; }
     double hfnc1(double x);
 

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libModelMain.la
 
-libModelMain_la_SOURCES = Model_Base.C \
+libModelMain_la_SOURCES = Coupling_Data.C Model_Base.C \
 			  Standard_Model.C SM_AGC.C MSSM.C SM_MSSM_EHC.C THDM.C \
 			  ADD.C SM_Phantom_U1.C SM_AxiGluon.C \
 			  Running_AlphaS.C Running_AlphaQED.C Running_Fermion_Mass.C \
@@ -9,7 +9,7 @@ libModelMain_la_SOURCES = Model_Base.C \
 			  FeynRules_Model.C FeynRules_Spectrum.C \
 	                  Hidden_Valley.C Running_Alpha_HV.C 	
 
-localinc_HEADERS   = Model_Base.H \
+localinc_HEADERS   = Coupling_Data.H Model_Base.H \
 		     Standard_Model.H SM_AGC.H MSSM.H SM_MSSM_EHC.H THDM.H \
 		     ADD.H SM_Phantom_U1.H SM_AxiGluon.H \
 		     Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \

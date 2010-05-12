@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -13,10 +14,10 @@ using namespace std;
 
 //for equations see hep-ph/0201036
 
-Massive_Kernels::Massive_Kernels(MODEL::Model_Base *model) 
+Massive_Kernels::Massive_Kernels() 
 {
-  m_cpl   = model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms()));
-  m_cpl /= 2.*M_PI;
+  m_cpldef = 0.0;
+  p_cpl = NULL;
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2; //number of massless flavours
@@ -51,6 +52,14 @@ Massive_Kernels::Massive_Kernels(MODEL::Model_Base *model)
     m_kappa = helpd;
     msg_Tracking()<<"Set massive dipole kappa="<<m_kappa<<"."<<std::endl;
   }
+}
+
+void Massive_Kernels::SetCoupling(const MODEL::Coupling_Map *cpls)
+{
+  if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
+  else THROW(fatal_error,"Coupling not found");
+  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<endl;
+  m_cpldef = p_cpl->Default()/(2.*M_PI);
 }
 
 void Massive_Kernels::SetAlpha(double a)

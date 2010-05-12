@@ -54,7 +54,6 @@ namespace PHASIC {
     virtual void     Reset();
     virtual void     ResetOpt();
     virtual void     Optimize(double);
-    void             MPIOptimize(double);
     void             ResetCnt();
 
     inline std::vector<Single_Channel*> &Channels() { return channels; }

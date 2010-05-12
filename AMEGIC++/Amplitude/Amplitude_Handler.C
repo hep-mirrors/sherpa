@@ -21,8 +21,9 @@ using namespace std;
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Model_Base * model,Topology* top,
-				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
-				     String_Handler* _shand, bool print_graph,bool create_4V) 
+				     int & _orderQCD,int & _orderEW,MODEL::Coupling_Map *const cpls,
+				     Basic_Sfuncs* BS,String_Handler* _shand, 
+				     bool print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
 {
   groupname = "Amplitude_Handler";
@@ -93,7 +94,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 
   if (ndecays==0 || subgraphlist[0]==0) firstgraph = subgraphlist[0];
   else ConstructSignalAmplitudes(N,fl,b,pinfo,subgraphlist,BS);
-
+  
   Amplitude_Manipulator(N,fl,b,ndecays).FixSign(firstgraph);
 
   Single_Amplitude* n = firstgraph;
@@ -111,11 +112,21 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
       ++ntotal;
       prev = n;
       n->GetPointlist()->GeneratePropID();
+      //
+      n->SetOrderQCD();
+      n->SetOrderQED();
+      //
       n = n->Next;
     }
   }
   msg_Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
+  
+  if (ngraph!=0) {
+    if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
+    if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
+  }
+  
   delete [] subgraphlist;
   delete [] b_dec;
 }
@@ -222,11 +233,6 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
 
-  //On-Switches
-  //int* switch_graphs = new int[ngraph];
-  // *FS*  for(short int i=0;i<ngraph;i++) onswitch[i] = 1;
-  //Kicker(switch_graphs,ngraph,pID);
-
   n = firstgraph;
 
   // fill color groups
@@ -284,7 +290,10 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",int(graphs.size()));
+  std::ofstream cplfile((path+"/Couplings.dat").c_str());
   for (size_t i=0;i<graphs.size();i++) {
+    cplfile<<i<<" "<<graphs[i]->GetOrderQCD()
+	   <<" "<<graphs[i]->GetOrderQED()<<"\n";
     int size=graphs[i]->Size();
     int *nums= new int[size];
     for (int j=0;j<size;j++) nums[j]=(*graphs[i])[j]->GetNumber();
@@ -296,6 +305,7 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
   std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Cluster.dat";
+  std::ifstream cplfile((rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Couplings.dat").c_str());
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
@@ -307,11 +317,18 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   int cnt=0;
   Amplitude_Base* ab;
   for (size_t i=0;i<graphs.size();i++) {
-    int *nums;
+    int *nums, ci, oqcd, oqed;
+    if (cplfile.bad()) THROW(fatal_error,"Missing coupling data");
+    cplfile>>ci>>oqcd>>oqed;
+    if (ci!=(int)i) THROW(fatal_error,"Invalid coupling data");
     nums=ioh.ArrayInput<int>("");
     int size=ioh.Nx();
     for (int j=0;j<size;j++) {
-      graphs[i]->Add(ab=new Single_Amplitude_Base(shand,nums[j]));
+      ab=new Single_Amplitude_Base(shand,nums[j]);
+      ab->SetOrderQCD(oqcd);
+      ab->SetOrderQED(oqed);
+      graphs[i]->Add(ab);
+      
       m_ramplist.push_back(ab);
     }
     cnt+=size;
@@ -378,7 +395,7 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
   }
  
   RestoreAmplitudes(lib);
- 
+  
   ngraph=pointlist.size();
 
   Mi      = new Complex[graphs.size()];
@@ -405,7 +422,6 @@ Amplitude_Handler::~Amplitude_Handler()
 
   for(CFC_iterator it=CFCol_MMatrixMap.begin();it!=CFCol_MMatrixMap.end();++it)
     delete it->second;
-//   if (p_SCT!=NULL) delete p_SCT;
 }
 
 int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
@@ -712,39 +728,6 @@ bool Amplitude_Handler::ExistFourVertex(Point* p)
   return ExistFourVertex(p->right);
 }
 
-// void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
-// {
-//   std::string name =rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".kick";
-//   //  sprintf(name,"%s/Kicker.dat",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
-//   fstream test;
-//   test.open(name.c_str(),ios::in);
-
-//   if (test) {
-//     test.close();
-//     fstream from;
-//     from.open(name.c_str(),ios::in);
-//     //read in
-//     int i,sw;
-//     for(;from;) {
-//       from>>i>>sw;
-//       Switch_Vector[i-1] =sw;
-//       if (sw==0) msg_Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
-//       if (i==ngraph) break;
-//     }
-//     return;
-//   }
-
-//   test.close();
-
-//   for(short int i=0;i<ngraph;i++) Switch_Vector[i] = 1;
-  
-
-//   ofstream to;
-//   to.open(name.c_str());
-
-//   for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
-// }
-
 Point* Amplitude_Handler::GetPointlist(int n)
 { return pointlist[n];}
 
@@ -764,17 +747,43 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel)
-{ // Called for actual calculation of the CS
+{ 
+  // Called for actual calculation of the CS
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+#endif
   for (size_t i=0;i<graphs.size();i++) {
-    Mi[i] = graphs[i]->Zvalue(ihel);
+    double cplfac(1.0);
+    int oqcd(graphs[i]->GetOrderQCD());
+    int oqed(graphs[i]->GetOrderQED());
+    if (p_aqcd && oqcd) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<oqcd
+		     <<" = "<<pow(p_aqcd->Factor(),oqcd/2.0)<<"\n";
+#endif     
+      cplfac *= pow(p_aqcd->Factor(),oqcd/2.0);
+    }  
+    if (p_aqed && oqed) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<oqed
+		     <<" = "<<pow(p_aqed->Factor(),oqed/2.0)<<"\n";
+#endif   
+      cplfac *= pow(p_aqed->Factor(),oqed/2.0); 
+    }
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
+#endif  
+    Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
   }
-
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
       M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
     }
   }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"}\n";
+#endif  
   return M;
 }
 
@@ -795,7 +804,16 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
   }
   
   for (size_t i=0;i<graphs.size();i++) {
-    Mi[i] = graphs[i]->Zvalue(ihel);
+    double cplfac(1.0);
+    int oqcd(graphs[i]->GetOrderQCD());
+    int oqed(graphs[i]->GetOrderQED());
+    if (p_aqcd && oqcd) {
+      cplfac *= pow(p_aqcd->Factor(),oqcd/2.0);
+    }
+    if (p_aqed && oqed) {
+      cplfac *= pow(p_aqed->Factor(),oqed/2.0);
+    }
+    Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
   }
   
   Complex M(0.,0.);
@@ -817,7 +835,16 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
   /* For all graphs: Calculate all the helicity formalisms amplitudes and transform them to
      desired polarisation states, if nessecary. */
   for (size_t col=0; col<graphs.size(); ++col) {
-    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
+    double cplfac(1.0);
+    int oqcd(graphs[col]->GetOrderQCD());
+    int oqed(graphs[col]->GetOrderQED());
+    if (p_aqcd && oqcd) {
+      cplfac *= pow(p_aqcd->Factor(),oqcd/2.0);
+    }
+    if (p_aqed && oqed) {
+      cplfac *= pow(p_aqed->Factor(),oqed/2.0);
+    }
+    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(cplfac*(graphs[col]->Zvalue(ihel)));
     hel->SpinorTransformation(A[col]);
   }
 
@@ -841,8 +868,18 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 { // This is called for the gauge test
-  for (size_t i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
-
+  for (size_t i=0;i<graphs.size();i++) {
+    double cplfac(1.0);
+    int oqcd(graphs[i]->GetOrderQCD());
+    int oqed(graphs[i]->GetOrderQED());
+    if (p_aqcd && oqcd) {
+      cplfac *= pow(p_aqcd->Factor(),oqcd/2.0);
+    }
+    if (p_aqed && oqed) {
+      cplfac *= pow(p_aqed->Factor(),oqed/2.0);
+    }
+    Mi[i] = cplfac*(graphs[i]->Zvalue(ihel,sign));
+  }
   Complex mcm,M(0.,0.);
   double max = 0.;
   for (size_t i=0;i<graphs.size();i++) {
@@ -866,28 +903,6 @@ void Amplitude_Handler::FillAmplitudes(METOOLS::Amplitude_Tensor *atensor,Helici
     atensor->Insert(amps,ihel);
   }
 }
-
-// ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel, 
-// 									size_t nIn)
-// { 
-//   // If there is no pre-SCT constructed, then do this now
-//   if (p_SCT==NULL) {
-//     Spin_Correlation_Tensor SCTmethods;
-  
-//     std::vector<int> pList;
-//     for (size_t i=nIn; i<hel->Nflavs(); ++i)
-//       if ( SCTmethods.PossibleParticle( hel->GetFlav(i).Kfcode() ) )
-// 	pList.push_back(i);
-
-//     std::vector<int> AmplNrs;
-//     for (size_t i=0; i<hel->MaxHel(); ++i) AmplNrs.push_back(i);
-
-//     p_SCT = new AMEGIC_SCT(AmplNrs, AmplNrs, hel, &pList);
-//   }
-
-//   // Create an SCT from the pre-SCT
-//   return p_SCT->CreateSCT(&graphs, CFCol_Matrix, hel);
-// }
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  

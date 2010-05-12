@@ -86,6 +86,7 @@ namespace PHASIC {
 
   class NLO_subevtlist : public std::vector<NLO_subevt*> { 
   public:
+    double m_muf2;
     NLO_subevtlist& operator*=(const double scal);
     void Print();
     void Mult(const double scal);

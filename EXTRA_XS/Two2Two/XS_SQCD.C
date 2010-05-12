@@ -237,7 +237,7 @@ XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const Process_Info &pi,const Flavour_Vector &fl):
 double XS_q1q2_sQ1sQ2::operator()(const ATOOLS::Vec4D_Vector &p) 
 {
   double s((p[0]+p[1]).Abs()), t((p[0]-p[2]).Abs());
-  return sqr(m_g3*m_g3)*2.0/9.0*m_mgluino2*s/sqr(t-m_mgluino2);
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*2.0/9.0*m_mgluino2*s/sqr(t-m_mgluino2);
 }
 
 bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p) 
@@ -312,7 +312,7 @@ double XS_q1q2_sQ1LsQ2R::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double pT2=(u*t-m_msq32*m_msq42)/s;
-  return sqr(m_g3*m_g3)*2.0/9.0*s*pT2/sqr(t-m_mgluino2);
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*2.0/9.0*s*pT2/sqr(t-m_mgluino2);
 }
 
 bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
@@ -392,7 +392,7 @@ double XS_q1qbar2_sQ1sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double pT2=(u*t-m_msq32*m_msq42)/s;
-  return sqr(m_g3*m_g3)*2.0/9.0*s*pT2/sqr(t-m_mgluino2);
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*2.0/9.0*s*pT2/sqr(t-m_mgluino2);
 }
 
 bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p) 
@@ -446,7 +446,7 @@ double XS_q1qbar1_sQ2sQbar2::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double pT2= (u*t-sqr(m_msquark2))/s;
-  return sqr(m_g3*m_g3)*4.0/9.0*pT2/s; 
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*4.0/9.0*pT2/s; 
 }
 
 bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p) 
@@ -496,7 +496,7 @@ XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const Process_Info &pi,const Flavour_Vector &fl):
 double XS_q1q1_sQ1sQ1::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
-  return sqr(m_g3*m_g3)/9.0 * m_mgluino2*s *
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)/9.0 * m_mgluino2*s *
     (1./sqr(t-m_mgluino2) + 1./sqr(u-m_mgluino2) - 2./3./(t-m_mgluino2)/(u-m_mgluino2));
 }
 
@@ -572,7 +572,7 @@ double XS_q1q1_sQ1LsQ1R::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double pT2(u*t-m_msq32*m_msq42);
-  return sqr(m_g3*m_g3)*2./9. * m_mgluino2*pT2 *
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*2./9. * m_mgluino2*pT2 *
     (1./sqr(t-m_mgluino2) + 1./sqr(u-m_mgluino2));
 }
 
@@ -650,7 +650,7 @@ double XS_q1qbar1_sQ1sQbar1::operator()(const ATOOLS::Vec4D_Vector &p)
 {
   double s((p[0]+p[1]).Abs2()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double pT2 = (u*t-sqr(m_msquark2))/s;
-  return sqr(m_g3*m_g3)*2.0/9.0*s*pT2*(1./sqr(t-m_mgluino2)+2./sqr(s)-2./3/(s*(t-m_mgluino2)));
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*2.0/9.0*s*pT2*(1./sqr(t-m_mgluino2)+2./sqr(s)-2./3/(s*(t-m_mgluino2)));
 }
 
 
@@ -730,7 +730,7 @@ double XS_q1qbar1_GluinoGluino::operator()(const ATOOLS::Vec4D_Vector &p)
     + sqr(deltaL)*(1./sqr(t3-deltaL) + 1./sqr(u4-deltaL) - 1./9.*sqr(1./(t3-deltaL) - 1./(u4-deltaL)));
   double CR = 2.*pT2/s*((sqr(u4)-sqr(deltaR))+(sqr(t3)-sqr(deltaR)) - sqr(s)/9.)/((u4-deltaR)*(t3-deltaR))
     + sqr(deltaR)*(1./sqr(t3-deltaR) + 1./sqr(u4-deltaR) - 1./9.*sqr(1./(t3-deltaR) - 1./(u4-deltaR)));
-  return sqr(m_g3*m_g3)/3.*(CL+CR); 
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)/3.*(CL+CR); 
 }
 
 
@@ -812,7 +812,7 @@ double XS_gg_sQ1sQbar1::operator()(const ATOOLS::Vec4D_Vector &p)
   double s((p[0]+p[1]).Abs2()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double t3(t-m_msquark2), u4(u-m_msquark2);
   double pT2= (u*t-sqr(m_msquark2))/s;
-  return sqr(m_g3*m_g3)*3./16.*(sqr(s*pT2)+sqr(m_msquark2*s))*
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*3./16.*(sqr(s*pT2)+sqr(m_msquark2*s))*
     (sqr(u4)+sqr(t3)-sqr(s)/9.)/sqr(s*t3*u4); 
 }
 
@@ -909,7 +909,7 @@ double XS_q1g_sQ1Gluino::operator()(const ATOOLS::Vec4D_Vector &p)
   if (m_swaput) std::swap<double>(t,u);
   
   double u4(u-m_msquark2), t3(t-m_mgluino2);
-  return sqr(m_g3*m_g3)/4.*(-u4-2.*(m_msquark2-m_mgluino2)*(1.+m_mgluino2/t3+m_msquark2/u4))*
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)/4.*(-u4-2.*(m_msquark2-m_mgluino2)*(1.+m_mgluino2/t3+m_msquark2/u4))*
     (sqr(u4)+sqr(s)-sqr(t3/3.))/(s*t3*u4); 
 }
 
@@ -984,7 +984,7 @@ double XS_gg_GluinoGluino::operator()(const ATOOLS::Vec4D_Vector &p)
   double s((p[0]+p[1]).Abs2()), t((p[0]-p[2]).Abs()), u((p[0]-p[3]).Abs2());
   double u4(u-m_mgluino2), t3(t-m_mgluino2);
   double pT2= (u*t-sqr(m_mgluino2))/s;
-  return sqr(m_g3*m_g3)*9.0/8.0*u4*t3/2.*
+  return sqr(m_g3*m_g3)*CouplingFactor(2,0)*9.0/8.0*u4*t3/2.*
     (sqr(u4)+sqr(t3)+4.*m_mgluino2*sqr(s)*pT2/(u4*t3))*
     (1./(sqr(s)*sqr(t3)) + 1./(sqr(s)*sqr(u4)) + 1./(sqr(u4)*sqr(t3)));
 }

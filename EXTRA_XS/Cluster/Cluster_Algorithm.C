@@ -45,8 +45,9 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetJF(jf);
   const Vec4D_Vector &moms(xs->Integrator()->Momenta());
   me->SetColours(moms);
-  double muf2(xs->ScaleSetter()->Scale(stp::fac));
-  double mur2(xs->ScaleSetter()->Scale(stp::ren));
+  PHASIC::Process_Base *pb(xs->IsMapped()?xs->MapProc():xs);
+  double muf2(pb->ScaleSetter()->Scale(stp::fac));
+  double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
     size_t id(1<<p_ampl->Legs().size());
     size_t idx(i<2?(swap?1-i:i):i);

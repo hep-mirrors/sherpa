@@ -44,6 +44,11 @@ namespace AMEGIC {
     virtual void SetSign(int);
 
     virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
+
+    virtual void  SetOrderQED(int);
+    virtual void  SetOrderQCD(int);
+    virtual int   GetOrderQED();
+    virtual int   GetOrderQCD();
   };
 }
 #endif

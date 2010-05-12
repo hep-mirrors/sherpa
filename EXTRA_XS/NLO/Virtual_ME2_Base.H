@@ -3,6 +3,7 @@
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "METOOLS/Loops/Divergence_Array.H"
+#include "MODEL/Main/Coupling_Data.H"
 
 namespace EXTRAXS {
 
@@ -14,10 +15,15 @@ namespace EXTRAXS {
     bool m_needsborn,m_newlibs;
     double m_born;
     double m_mur2;
+    MODEL::Coupling_Data *p_aqcd, *p_aqed;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
     virtual ~Virtual_ME2_Base();
+
+    void SetCouplings(MODEL::Coupling_Map *const cpls);
+
+    double CouplingFactor(const int oqcd,const int oew) const;
 
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
     inline const METOOLS::DivArrD& Result() { return m_res; }

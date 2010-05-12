@@ -67,7 +67,8 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 {
   m_type = 21;
   if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
-
+  model->GetCouplings(m_cpls);
+  
   m_partonlist.clear();
   for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
   for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
@@ -107,7 +108,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 
   int oew(m_oew), oqcd(m_oqcd);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,fl,p_b,p_pinfo,model,top,oqcd,oew,
-				   p_BS,p_shand,m_print_graphs,0);
+				   &m_cpls,p_BS,p_shand,m_print_graphs,0);
   m_oew=oew;
   m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
@@ -169,7 +170,8 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 {
   m_type = 11;
   if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
-
+  model->GetCouplings(m_cpls);
+  
   if (m_gen_str>1) {
     ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
@@ -240,7 +242,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 
   int oew(m_oew), oqcd(m_oqcd);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
-				   p_BS,p_shand,m_print_graphs,0);
+				   &m_cpls,p_BS,p_shand,m_print_graphs,0);
   m_oew=oew;
   m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
@@ -423,15 +425,18 @@ Complex Single_LOProcess_MHV::CalculateHelicityPhase(const ATOOLS::Vec4D * mom)
 }
 
 
-double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D * mom,std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
+double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
+					std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
 {
   if (p_partner!=this) {
     if (m_lookup) {
       m_lastxs = p_partner->LastXS()*m_sfactor;
       if (m_lastxs!=0.) return m_lastxs;
     }
-    return m_lastxs = p_partner->operator()(mom,pfactors,epol)*m_sfactor;
+    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol)*m_sfactor;
   }
+  p_int->SetMomenta(labmom);
+  p_scale->CalculateScale(labmom);
 
 #ifdef Basic_Sfuncs_In_MHV
      p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
@@ -440,7 +445,7 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D * mom,std::vector<do
 #endif  
   double M2(0.);
 
-   if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],CalculateHelicityPhase(mom));
+  if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],CalculateHelicityPhase(mom));
 
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
@@ -456,8 +461,11 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D * mom,std::vector<do
 
 
 
-void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D * mom, double** dsij) 
+void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
+				      const ATOOLS::Vec4D *mom, double** dsij) 
 {
+  p_int->SetMomenta(labmom);
+  p_scale->CalculateScale(labmom);
 #ifdef Basic_Sfuncs_In_MHV
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
 #else

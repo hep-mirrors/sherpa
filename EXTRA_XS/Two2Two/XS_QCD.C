@@ -67,7 +67,7 @@ double XS_pp_q1qbar1::operator()(const Vec4D_Vector& mom)
   double mtt(2.0*(tp*(up-2.0*m_m2)-4.0*m_m2*m_m2)/(tp*tp));
   double muu(2.0*(up*(tp-2.0*m_m2)-4.0*m_m2*m_m2)/(up*up));
   double mtu(2.0*m_m2*(s-4.0*m_m2)/(tp*up));
-  return sqr(sqr(m_g)*sqr(m_eq))*
+  return sqr(sqr(m_g)*sqr(m_eq))*CouplingFactor(0,2)*
     (m_flavs[2].Strong()?3.0:1.0)*(mtt+muu+2.0*mtu); 
 }
 
@@ -134,7 +134,7 @@ double XS_q1q2_q1q2::operator()(const Vec4D_Vector& mom)
   double u=(mom[0]-mom[3]).Abs2();
   //if (s<m_threshold) return 0.;
   double Mt(sqr(u-m_m12-m_m22)+sqr(s-m_m12-m_m22)+2.0*t*(m_m12+m_m22));
-  return sqr(m_g*m_g)*4.0/9.0*Mt/(t*t);
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*4.0/9.0*Mt/(t*t);
 }
 
 bool XS_q1q2_q1q2::SetColours(const Vec4D_Vector& mom) 
@@ -225,7 +225,7 @@ double XS_q1qbar1_q2qbar2::operator()(const Vec4D_Vector& mom)
   double u=(mom[0]-mom[3]).Abs2();
   //if (s<m_threshold) return 0.;
   double Ms(sqr(u-m_m12-m_m32)+sqr(t-m_m12-m_m32)+2.0*s*(m_m12+m_m32));
-  return sqr(m_g*m_g)*4.0/9.0*Ms/(s*s); 
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*4.0/9.0*Ms/(s*s); 
 }
 
 bool XS_q1qbar1_q2qbar2::SetColours(const Vec4D_Vector& mom) 
@@ -299,7 +299,7 @@ double XS_q1q1_q1q1::operator()(const Vec4D_Vector& mom)
   double Mt(sqr(u-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*t*m_m12); 
   double Mu(sqr(t-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*u*m_m12); 
   double Mtu(-2.0/3.0*(s*s-8.0*(s-2.0*m_m12)*m_m12-4.0*m_m12*m_m12));
-  return sqr(m_g*m_g)*4.0/9.0*(Mt/(t*t)+Mu/(u*u)+Mtu/(t*u))/2.0;
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*4.0/9.0*(Mt/(t*t)+Mu/(u*u)+Mtu/(t*u))/2.0;
 }
 
 bool XS_q1q1_q1q1::SetColours(const Vec4D_Vector& mom) 
@@ -395,7 +395,7 @@ double XS_q1qbar1_q1qbar1::operator()(const Vec4D_Vector& mom)
   double Mt(sqr(s-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*t*m_m12); 
   double Ms(sqr(t-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*s*m_m12); 
   double Mts(-2.0/3.0*(u*u-8.0*(u-2.0*m_m12)*m_m12-4.0*m_m12*m_m12));
-  return sqr(m_g*m_g)*4.0/9.0*(Mt/(t*t)+Ms/(s*s)+Mts/(t*s));
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*4.0/9.0*(Mt/(t*t)+Ms/(s*s)+Mts/(t*s));
 }
 
 
@@ -493,7 +493,7 @@ double XS_q1qbar1_gg::operator()(const Vec4D_Vector& mom)
   double Mt(32.0/27.0*(tp*up-m_m12*(4.0*(m_m12+tp)+m_m12*tp/s))/(tp*tp));
   double Mu(32.0/27.0*(up*tp-m_m12*(4.0*(m_m12+up)+m_m12*up/s))/(up*up));
   double Ms(-8.0/3.0*(tp*tp+up*up+4.0*m_m12*s)/(s*s));
-  return sqr(m_g*m_g)*(Mt+Mu+Ms)/2.0; 
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*(Mt+Mu+Ms)/2.0; 
 }
 
 
@@ -594,7 +594,7 @@ double XS_gg_q1qbar1::operator()(const Vec4D_Vector& mom)
   double Mt(1.0/6.0*(tp*up-m_m32*(4.0*(m_m32+tp)+m_m32*tp/s))/(tp*tp));
   double Mu(1.0/6.0*(up*tp-m_m32*(4.0*(m_m32+up)+m_m32*up/s))/(up*up));
   double Ms(-3.0/8.0*(tp*tp+up*up+4.0*m_m32*s)/(s*s));
-  return sqr(m_g*m_g)*(Mt+Mu+Ms); 
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*(Mt+Mu+Ms); 
 }
 
 
@@ -713,7 +713,7 @@ double XS_q1g_q1g::operator()(const Vec4D_Vector& mom)
   double Ms(4.0/9.0*(sp*up-m_mq2*(4.0*(m_mq2+sp)+m_mq2*sp/t))/(sp*sp));
   double Mu(4.0/9.0*(up*sp-m_mq2*(4.0*(m_mq2+up)+m_mq2*up/t))/(up*up));
   double Mt(-(sp*sp+up*up+4.0*m_mq2*t)/(t*t));
-  return -sqr(m_g*m_g)*(Ms+Mu+Mt); 
+  return -sqr(m_g*m_g)*CouplingFactor(2,0)*(Ms+Mu+Mt); 
 }
 
 bool XS_q1g_q1g::SetColours(const Vec4D_Vector& mom) 
@@ -820,7 +820,7 @@ double XS_gg_gg::operator()(const Vec4D_Vector& mom)
   double Ms(1.0-t*u/(s*s));
   double Mt(1.0-s*u/(t*t));
   double Mu(1.0-s*t/(u*u));
-  return sqr(m_g*m_g)*9.0/2.0*(Ms+Mt+Mu)/2.0;
+  return sqr(m_g*m_g)*CouplingFactor(2,0)*9.0/2.0*(Ms+Mt+Mu)/2.0;
 }
   
 bool XS_gg_gg::SetColours(const Vec4D_Vector& mom) 

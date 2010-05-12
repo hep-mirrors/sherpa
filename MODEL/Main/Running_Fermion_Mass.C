@@ -1,5 +1,6 @@
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace MODEL;
@@ -10,6 +11,7 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _polemas
   m_polemass(_polemass), p_as(as)
 {
   m_type    = std::string("Running Mass");
+  m_name    = "Mass_"+ToString(_flav);
   m_defval  = m_polemass;
   if (_flav.Mass(true)<1.||(!_flav.IsQuark())||m_polemass<1.) {
     m_order = 0;

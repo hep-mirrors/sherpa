@@ -47,9 +47,8 @@ namespace COMIX {
     Matrix_Element *GetME() const;
     Amplitude      *GetAmplitude() const;
     
-    double Differential(const ATOOLS::Vec4D_Vector &p);
+    double Partonic(const ATOOLS::Vec4D_Vector &p);
     double Differential(const ATOOLS::Cluster_Amplitude &ampl);
-    double Differential2();
 
     bool GeneratePoint();
     bool Tests();

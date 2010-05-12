@@ -610,3 +610,19 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
   if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
   return value.Value();
 }
+
+void Single_Amplitude_Base::SetOrderQCD(int oqcd) {
+  m_oqcd=oqcd;
+}
+
+void Single_Amplitude_Base::SetOrderQED(int oqed) {
+  m_oqed=oqed;
+}
+
+int Single_Amplitude_Base::GetOrderQCD() {
+  return m_oqcd;
+}
+
+int Single_Amplitude_Base::GetOrderQED() {
+  return m_oqed;
+}

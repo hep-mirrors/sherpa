@@ -308,26 +308,6 @@ void   Particle::SetFinalMass(const double _lower,const double _upper) {
 }
 
 
-void Particle2MPI(const Particle * p , MPI_Particle & mpi_p) {
-  mpi_p.id  =p->Number();
-  mpi_p.m_fl=int(p->Flav());
-  for (int i=0; i<4; ++i)  
-  mpi_p.m_mom[i]=p->Momentum()[i];
-  mpi_p.m_flow[0]=p->GetFlow(1);
-  mpi_p.m_flow[1]=p->GetFlow(2);
-}
-  
-Particle * MPI2Particle(const MPI_Particle & mpi_p ) {
-  Particle * p ;
-  if (mpi_p.m_fl>0) p= new Particle(mpi_p.id, Flavour((kf_code)mpi_p.m_fl),
-			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
-  else p= new Particle(mpi_p.id, Flavour((kf_code)(-mpi_p.m_fl)).Bar(),
-			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
-  if (mpi_p.m_flow[0]) p->SetFlow(1,mpi_p.m_flow[0]);
-  if (mpi_p.m_flow[1]) p->SetFlow(2,mpi_p.m_flow[1]);
-  return p;
-}
-
 
 
 

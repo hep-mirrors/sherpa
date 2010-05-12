@@ -59,6 +59,8 @@ namespace COMIX {
     // inline functions
     inline std::string Name() const { return m_name; }
 
+    inline MODEL::Model_Base *GetModel() const { return p_model; }
+
     inline Complex Constant(const std::string &name) 
     { return m_consts.find(name)!=m_consts.end()?m_consts[name]:CZERO; }
     

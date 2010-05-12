@@ -11,8 +11,7 @@
 #include "AMEGIC++/Amplitude/CFColor.H"
 #include "AMEGIC++/Amplitude/Amplitude_Group.H"
 #include "AMEGIC++/Main/Helicity.H"
-// #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
-// #include "AMEGIC++/Main/AMEGIC_SCT.H"
+#include "MODEL/Main/Coupling_Data.H"
 
 namespace METOOLS { class Amplitude_Tensor; }
 
@@ -38,7 +37,6 @@ namespace AMEGIC {
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
 
-//     AMEGIC_SCT* p_SCT;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
     void CheckEqual(Single_Amplitude*);
@@ -48,12 +46,14 @@ namespace AMEGIC {
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
     int  SingleCompare(Point*,Point*,double &, std::map<std::string,Complex> &);
-//     void Kicker(int*,int,std::string);
     void RestoreAmplitudes(std::string path);
     bool CheckSingleEFM(Point*);
+    
+    MODEL::Coupling_Data *p_aqcd, *p_aqed;
+    
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
-		      MODEL::Model_Base *,Topology *,int &,int &,
+		      MODEL::Model_Base *,Topology *,int &,int &,MODEL::Coupling_Map *const cpls,
 		      Basic_Sfuncs *,String_Handler *, bool print_graph=false, bool create_4V=true);
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
@@ -73,8 +73,6 @@ namespace AMEGIC {
     double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }
     double Differential(int ihel,int i,int k)        { return (Zvalue(ihel,i,k)).real();}
-    //! Returns an SCT; hel=ptr to the Helicity class; nIn=Number of incoming particles.
-//     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations(Helicity* hel, size_t nIn);
     void   FillAmplitudes(METOOLS::Amplitude_Tensor*,Helicity*,double);
     inline int GetGraphNumber() {return ngraph;}  
     inline int GetRealGraphNumber() {return namplitude;}  

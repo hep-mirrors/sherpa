@@ -83,7 +83,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Enhance",new Blob_Data<double>
 		(p_mehandler->Process()->Integrator()->EnhanceFactor()));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
-		(proc->ScaleSetter()->Scale(PHASIC::stp::fac)));
+		(sqrt(winfo.m_muf12*winfo.m_muf22)));
   blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
   blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
 

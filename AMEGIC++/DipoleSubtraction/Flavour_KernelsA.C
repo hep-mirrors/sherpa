@@ -4,16 +4,17 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
 using namespace std;
 
 
-Flavour_KernelsA::Flavour_KernelsA(MODEL::Model_Base *model) 
+Flavour_KernelsA::Flavour_KernelsA()
 {
-  m_cpl   = model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms()));
-  m_cpl /= 2.*M_PI;
+  m_cpldef = 0.0;
+  p_cpl = NULL;
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
@@ -24,6 +25,14 @@ Flavour_KernelsA::Flavour_KernelsA(MODEL::Model_Base *model)
 
   m_alpha = 1.;
   m_loga = 0.;
+}
+
+void Flavour_KernelsA::SetCoupling(const MODEL::Coupling_Map *cpls)
+{
+  if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
+  else THROW(fatal_error,"Coupling not found");
+  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<endl;
+  m_cpldef = p_cpl->Default()/(2.*M_PI);
 }
 
 void Flavour_KernelsA::SetAlpha(double a)

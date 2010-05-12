@@ -230,18 +230,14 @@ double Process_Group::Differential2()
   return tmp;
 }
 
-void Process_Group::SetScale(const std::string &scale)
+void Process_Group::SetScale(const Scale_Setter_Arguments &args)
 {
-  for (size_t i(0);i<m_procs.size();++i) 
-    m_procs[i]->SetScale(scale);
+  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetScale(args);
 }
   
-void Process_Group::SetKFactor(const std::string &kfactor,
-			       const size_t &oqcdlo,
-			       const size_t &oewlo)
+void Process_Group::SetKFactor(const KFactor_Setter_Arguments &args)
 {
-  for (size_t i(0);i<m_procs.size();++i) 
-    m_procs[i]->SetKFactor(kfactor,oqcdlo,oewlo);
+  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetKFactor(args);
 }
 
 bool Process_Group::IsGroup() const

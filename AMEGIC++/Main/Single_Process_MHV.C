@@ -61,6 +61,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
 					 vector<Process_Base *> & errs)
 {
   Init();
+  model->GetCouplings(m_cpls);
   if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   m_newlib   = false;
   m_libnumb  = 0;
@@ -102,7 +103,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
   int oew(m_oew), oqcd(m_oqcd);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
-				   p_BS,p_shand,m_print_graphs,0);
+				   &m_cpls,p_BS,p_shand,m_print_graphs,0);
   m_oew=oew;
   m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
@@ -322,80 +323,39 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_oew       = p_partner->OrderEW();
 }
 
-double AMEGIC::Single_Process_MHV::Differential(const Vec4D_Vector &_moms) 
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms) 
 { 
-  return DSigma(_moms,m_lookup); 
+  if (p_partner!=this&&m_lookup) SetTrigger(p_partner->Trigger());
+  Vec4D_Vector moms(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    Poincare cms(moms[0]+moms[1]);
+    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+  }
+  return DSigma(moms,m_lookup); 
 }
-
-double AMEGIC::Single_Process_MHV::Differential2() 
-{ 
-  if (p_int->ISR()->On()==0) return 0.0;
-  return DSigma2(); 
-}
-
 
 double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
-  m_last = m_lastxs = 0.;
+  m_lastxs = 0.;
   if (!Trigger()) return 0.0;
   if (m_nin==2) {
     for (size_t i=0;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return m_last = 0.;
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
     }
   }
   if (m_nin==1) {
     for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return m_last = 0.;
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
     }
   }
   if (p_partner == this) {
-    m_lastxs = operator()((ATOOLS::Vec4D*)&_moms.front());
+    m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
   }
   else {
     if (lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
-           else m_lastxs = p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
+    else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
   }
-  if (m_lastxs <= 0.) return m_lastxs = m_last = 0.;
-  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
-  if (m_nin==2) {
-    if (p_int->ISR()->On()) {
-      p_int->ISR()->MtxLock();
-      if (!p_int->ISR()->CalculateWeight
-          (p_scale->Scale(stp::fac))) {
-	p_int->ISR()->MtxUnLock();
-        return m_last=m_lastlumi=0.0;
-      }
-      m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
-      p_int->ISR()->MtxUnLock();
-    }
-    else m_lastlumi=1.;
-    int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
-    double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
-    if (p_pl[0].num>1) pols[0] = 99;
-    if (p_pl[1].num>1) pols[1] = 99;
-    m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
-  }
-  else  m_lastlumi = 1.;
-  m_lastlumi *= BeamWeight(p_scale->Scale(stp::fac));
-
-  return m_last = m_Norm * m_lastxs * m_lastlumi*KFactor();
-}
-
-double AMEGIC::Single_Process_MHV::DSigma2() 
-{ 
-  if (m_flavs[0]==m_flavs[1] || p_int->ISR()->On()==0) return 0.0;
-  p_scale->CalculateScale2(p_int->PSHandler()->LabPoint());
-  p_int->ISR()->MtxLock();
-  if (!p_int->ISR()->CalculateWeight2
-      (p_scale->Scale(stp::fac))) {
-    p_int->ISR()->MtxUnLock();
-    return 0.0;
-  }
-  double tmp = m_Norm * m_lastxs * p_int->ISR()->Weight2(&m_flavs.front()); 
-  p_int->ISR()->MtxUnLock();
-  tmp *= BeamWeight(p_scale->Scale(stp::fac));
-  m_last    += tmp*=KFactor2();
-  return tmp;
+  return m_lastxs;
 }
 
 double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
@@ -415,7 +375,7 @@ double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
 	  M2       += helvalue;
       }
   }
-  return M2*p_MHVamp->ParticlesNorm();
+  return M2*p_MHVamp->ParticlesNorm() * KFactor();
 }
 
 

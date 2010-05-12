@@ -14,11 +14,11 @@ namespace PHASIC {
   class No_KFactor_Setter: public KFactor_Setter_Base {
   public:
 
-    No_KFactor_Setter(Process_Base *const proc);
+    No_KFactor_Setter(const KFactor_Setter_Arguments &args);
 
     double KFactor();
 
-  };// end of class KFactor_Setter_Base
+  };// end of class No_KFactor_Setter
 
 }// end of namespace PHASIC
 
@@ -31,7 +31,7 @@ DECLARE_GETTER(No_KFactor_Setter_Getter,"NO",
 KFactor_Setter_Base *No_KFactor_Setter_Getter::
 operator()(const KFactor_Setter_Arguments &args) const
 {
-  return new No_KFactor_Setter(args.p_proc);
+  return new No_KFactor_Setter(args);
 }
 
 void No_KFactor_Setter_Getter::
@@ -41,19 +41,11 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 No_KFactor_Setter::No_KFactor_Setter
-(Process_Base *const proc): KFactor_Setter_Base(proc) {}
+(const KFactor_Setter_Arguments &args):
+  KFactor_Setter_Base(args) {}
 
 double No_KFactor_Setter::KFactor() 
 {
-  if (!m_kfkey.Assigned()) {
-     std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
-    msg_Debugging()<<"Assign '"<<p_proc->Name()
-		   <<"' '"<<kfinfo<<"'\n";
-    m_kfkey.Assign(p_proc->Name(),2,0,p_proc->
-		   Integrator()->PSHandler()->GetInfo());
-    m_kfkey.SetInfo(kfinfo);
-  }
-  m_kfkey<<1.0;
-  return 1.0;
+  return m_weight=1.0;
 }
 

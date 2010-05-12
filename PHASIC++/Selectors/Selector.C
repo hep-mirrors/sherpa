@@ -106,11 +106,6 @@ void Selector_Base::AddOnshellCondition(std::string,double)
 {
 }
 
-double Selector_Base::ActualValue() const
-{ 
-  return 2.; 
-}
-
 int Selector_Base::NeedUpdate()
 { 
   return 0; 

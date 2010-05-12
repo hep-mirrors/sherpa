@@ -228,7 +228,7 @@ EW_HHS<SType>::EW_HHS(const Vertex_Key &key):
 template <typename SType>
 void EW_HHS<SType>::Evaluate(const CScalarType &a,const CScalarType &b)
 {
-  AddJ(m_cpl*Lorentz(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*Lorentz(a,b));
 }
 
 template <typename SType>
@@ -255,13 +255,13 @@ template <typename SType>
 void EW_FFH<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
 {
   if (a()!=b()) return;
-  AddJ(m_cpl*Lorentz(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*Lorentz(a,b));
 }
 
 template <typename SType>
 void EW_FFH<SType>::Evaluate(const CSpinorType &a,const CScalarType &b)
 {
-  AddJ(Lorentz(a,b)*m_cpl);
+  AddJ(Lorentz(a,b)*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>
@@ -298,8 +298,8 @@ void EW_FFZ<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
   bool cl(CalcLeft(a,b)), cr(CalcRight(a,b));
   if (!(cl || cr)) return;
   CVec4Type j(ZERO,ZERO,ZERO,ZERO,0,0,a.H(0)+b.H(0),a.H(1)+b.H(1));
-  if (cl) j+=m_cpll*LorentzLeft(a,b);
-  if (cr) j+=m_cplr*LorentzRight(a,b);
+  if (cl) j+=m_cpll*SType(this->m_cplfac)*LorentzLeft(a,b);
+  if (cr) j+=m_cplr*SType(this->m_cplfac)*LorentzRight(a,b);
   AddJ(j);
 }
 
@@ -309,8 +309,8 @@ void EW_FFZ<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
   bool cl(CalcLeft(a)), cr(CalcRight(a));
   if (!(cl || cr)) return;
   CSpinorType j(a.R(),a.B(),a(),a.H(0)+b.H(0),a.H(1)+b.H(1),0);
-  if (cl) j+=LorentzLeft(a,b)*m_cpll;
-  if (cr) j+=LorentzRight(a,b)*m_cplr;
+  if (cl) j+=LorentzLeft(a,b)*m_cpll*SType(this->m_cplfac);
+  if (cr) j+=LorentzRight(a,b)*m_cplr*SType(this->m_cplfac);
   AddJ(j);
 }
 
@@ -345,14 +345,14 @@ void EW_FFW<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
 {
   if (a()!=b()) return;
   if (!CalcLeft(a,b)) return;
-  AddJ(m_cpl*LorentzLeft(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*LorentzLeft(a,b));
 }
 
 template <typename SType>
 void EW_FFW<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
 {
   if (!CalcLeft(a)) return;
-  AddJ(LorentzLeft(a,b)*m_cpl);
+  AddJ(LorentzLeft(a,b)*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>
@@ -388,13 +388,13 @@ EW_VVH<SType>::EW_VVH(const Vertex_Key &key):
 template <typename SType>
 void EW_VVH<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
 {
-  AddJ(m_cpl*Lorentz(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*Lorentz(a,b));
 }
 
 template <typename SType>
 void EW_VVH<SType>::Evaluate(const CVec4Type &a,const CScalarType &b)
 {
-  AddJ(m_cpl*Lorentz(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*Lorentz(a,b));
 }
 
 template <typename SType>
@@ -424,7 +424,7 @@ void EW_WWV<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
   msg_Debugging()<<"    "<<b<<"\n";
 #endif
   j(1)=j(0)=0;
-  AddJ(m_cpl*j);
+  AddJ(m_cpl*SType(this->m_cplfac)*j);
 }
 
 template <typename SType>
@@ -457,7 +457,7 @@ void EW_WWT<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
   msg_Debugging()<<"'+' "<<a<<"\n";
   msg_Debugging()<<"    "<<b<<"\n";
 #endif
-  AddJ(m_cpl*Lorentz(a,b));
+  AddJ(m_cpl*SType(this->m_cplfac)*Lorentz(a,b));
 }
 
 template <typename SType>
@@ -469,7 +469,7 @@ void EW_WWT<SType>::Evaluate(const CVec4Type &a,const CAsT4Type &b)
   msg_Debugging()<<"    "<<b<<"\n";
 #endif
   j(1)=j(0)=0;
-  AddJ(m_cpl*j);
+  AddJ(m_cpl*SType(this->m_cplfac)*j);
 }
 
 template <typename SType>

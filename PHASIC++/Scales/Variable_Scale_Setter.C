@@ -3,8 +3,10 @@
 #include "PHASIC++/Scales/Tag_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
 namespace PHASIC {
@@ -18,8 +20,7 @@ namespace PHASIC {
 
   public:
 
-    Variable_Scale_Setter(Process_Base *const proc,
-			  const std::string &scale);
+    Variable_Scale_Setter(const Scale_Setter_Arguments &args);
 
     ~Variable_Scale_Setter();
 
@@ -41,7 +42,7 @@ DECLARE_GETTER(Variable_Scale_Setter_Getter,"VAR",
 Scale_Setter_Base *Variable_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new Variable_Scale_Setter(args.p_proc,args.m_scale);
+  return new Variable_Scale_Setter(args);
 }
 
 void Variable_Scale_Setter_Getter::
@@ -51,19 +52,20 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 Variable_Scale_Setter::Variable_Scale_Setter
-(Process_Base *const proc,const std::string &scale): 
-  Scale_Setter_Base(proc), m_tagset(this)
+(const Scale_Setter_Arguments &args):
+  Scale_Setter_Base(args), m_tagset(this)
 {
-  std::string tag(scale);
+  std::string tag(args.m_scale);
   while (true) {
     size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
       if (!m_calcs.empty()) break;
-      else { THROW(fatal_error,"Invalid scale '"+scale+"'"); }
+      else { THROW(fatal_error,"Invalid scale '"+args.m_scale+"'"); }
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) THROW(fatal_error,"Invalid scale '"+scale+"'");
+    if (pos==std::string::npos) 
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
     m_calcs.push_back(new Algebra_Interpreter());
@@ -71,6 +73,8 @@ Variable_Scale_Setter::Variable_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
+  m_scale.resize(Max(m_scale.size(),m_calcs.size()));
+  SetCouplings();
 }
 
 Variable_Scale_Setter::~Variable_Scale_Setter()
@@ -80,28 +84,16 @@ Variable_Scale_Setter::~Variable_Scale_Setter()
 
 double Variable_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
 {
-  if (!m_kfkey.Assigned()) {
-    std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
-    msg_Debugging()<<"Assign '"<<p_proc->Name()
-		   <<"' '"<<kfinfo<<"'\n";
-    m_kfkey.Assign(p_proc->Name(),Max(2,(int)m_calcs.size()),0,p_proc->
-		   Integrator()->PSHandler()->GetInfo());
-    m_kfkey.SetInfo(kfinfo);
-  }
   for (size_t i(0);i<m_calcs.size();++i)
-    m_kfkey[i]=m_calcs[i]->Calculate()->Get<double>();
-  m_scale[stp::ren]=m_scale[stp::fac]=m_kfkey[0];
-  if (m_calcs.size()==1) m_kfkey[1]=m_kfkey[0];
-  else {
-    m_scale[stp::ren]=m_kfkey[1];
-    std::swap<double>(m_kfkey[0],m_kfkey[1]);
-  }
+    m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
+  if (m_calcs.size()==1) m_scale[1]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
-		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
-		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n";
-  for (size_t i(0);i<m_calcs.size();++i)
-    msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_kfkey[i])<<"\n";
-  msg_Debugging()<<"}\n";
+		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+  for (size_t i(2);i<m_calcs.size();++i)
+    msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
+  msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
+  p_cpls->Calculate();
   return m_scale[stp::fac];
 }
 
@@ -112,13 +104,7 @@ void Variable_Scale_Setter::SetScale
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_proc->Name()<<"' {\n";
   msg_Indent();
-  mu2calc.AddTag("MU_F2","1.0");
-  mu2calc.AddTag("MU_R2","1.0");
-  mu2calc.AddTag("H_T2","1.0");
-  mu2calc.AddTag("Q2_CUT","1.0");
-  Process_Integrator *ib(p_proc->Integrator());
-  for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
-    mu2calc.AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));
+  m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
   msg_Debugging()<<"}\n";

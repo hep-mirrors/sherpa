@@ -104,10 +104,8 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Differential(const ATOOLS::Vec4D_Vector &);
-    double         Differential2();
+    double         Partonic(const ATOOLS::Vec4D_Vector &);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
-    double         DSigma2();
     double         operator()(const ATOOLS::Vec4D *);
     //! Return the spin correlations for the current process.
 //     virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();

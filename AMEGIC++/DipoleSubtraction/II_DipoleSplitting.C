@@ -69,7 +69,7 @@ double II_DipoleSplitting::GetF()
    if (m_vi<=m_amin) {
      return nan;
    }
-  double h=m_spfac/(2.*m_pi*m_pj)/m_xijk;  
+   double h=SPFac()/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
     h*=m_sff;

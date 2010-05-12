@@ -26,7 +26,7 @@ Vertex_Base::Vertex_Base(const Vertex_Key &key,
   p_a(NULL), p_b(NULL), p_c(NULL), 
   m_sign(false), m_act(true), 
   m_fperm(0), m_oew(oew), m_oqcd(oqcd),
-  m_tag(key.Type()) {}
+  m_tag(key.Type()), m_cplfac(1.0) {}
 
 Vertex_Base::~Vertex_Base()
 {

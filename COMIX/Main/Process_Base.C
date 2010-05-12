@@ -27,8 +27,7 @@ std::string COMIX::ComixLogo()
 }
 
 COMIX::Process_Base::Process_Base(PHASIC::Process_Base *const proc,Model *const model):
-  p_proc(proc), p_model(model), p_psgen(NULL), 
-  m_psmc(false), m_zero(true),
+  p_proc(proc), p_model(model), p_psgen(NULL), m_psmc(false),
   m_cls(-1), m_hls(-1), p_pmap(NULL), p_umprocs(NULL) {}
 
 COMIX::Process_Base::~Process_Base() 
@@ -109,7 +108,9 @@ bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_imode,"CDXS_IMODE")) m_imode=2;
   else msg_Info()<<METHOD<<"(): Set integration mode "<<m_imode<<".\n";
-  bool pureqcd(p_proc->NQCD()==p_proc->NIn()+p_proc->NOut());
+  bool pureqcd(true);
+  for (size_t i(0);i<p_proc->Flavours().size();++i)
+    if (!p_proc->Flavours()[i].Strong()) pureqcd=false;
   if (!pureqcd) m_imode&=~1;
   Multi_Channel *mc(psh->FSRIntegrator());
   if (!(m_imode&1)) {

@@ -133,6 +133,8 @@ namespace PDF {
     inline double X1() const { return m_x[0]; }
     inline double X2() const { return m_x[1]; }
 
+    inline double MuF2(int i) const { return m_mu2[i]; }
+
     inline double XF1(int i) const { return m_xf1[i]; }
     inline double XF2(int i) const { return m_xf2[i]; }
 

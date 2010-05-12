@@ -50,8 +50,10 @@ namespace AMEGIC {
   private:
     Complex CalculateHelicityPhase(const ATOOLS::Vec4D *);
   public:
-    double  operator()(const ATOOLS::Vec4D *,std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
-    void    Calc_AllXS(const ATOOLS::Vec4D *,double**);
+    double  operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
+		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
+    void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,
+		       const ATOOLS::Vec4D *,double**);
   };
 }
 

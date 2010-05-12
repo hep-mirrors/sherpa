@@ -11,8 +11,9 @@ The following parameters are used to steer the matrix element setup.
 * ME_SIGNAL_GENERATOR::     The matrix element generator(s).
 * RESULT_DIRECTORY::        The directory to store integration results.
 * EVENT_GENERATION_MODE::   The event generation mode.
-* SCALES::                  How to compute the scales. 
-* COUPLINGS::               How to evaluate the couplings.
+* SCALES::                  How to compute scales. 
+* COUPLINGS::               How to evaluate couplings.
+* KFACTOR::                 Whether and how to apply a K-factor.
 * Dipole subtraction::      Parameters for calculations with dipole subtraction.
 @end menu
 
@@ -95,7 +96,7 @@ SCALES VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 
 In this case the factorization scale must be specified first.
 More than two scales can be set as well to be subsequently used, e.g.
-by the @option{VAR} coupling scheme, see @ref{COUPLINGS}.
+by different couplings, see @ref{COUPLINGS}.
 
 @item QCD
 The matrix element is clustered onto a core 2->2 configuration using a
@@ -130,16 +131,22 @@ configuration and matrix element information - no suitable clustering is
 found by the algorithm. In such cases the scale is set to the invariant mass
 of the partonic process.
 
-@item NLO
-This scale scheme has a similar functionality and syntax as the 
-@option{VAR} scheme. It is currently the only scheme to be used with
-next-to-leading order calculations. It makes sure that the scale is 
+@end table
+
+It is possible to implement a dedicated scale
+scheme within Sherpa. For advice on this topic
+please contact the authors, @ref{Authors}.
+
+
+@subsubsection Scale schemes for NLO calculations
+
+For next-to-leading order calculations it must be guaranteed that the scale is 
 calculated separately for the real correction and the subtraction terms,
 such that within the subtraction procedure the same amount is subtracted
-and added back.
-
-The definition of the scale must be infrared safe wrt to the radiation
-of an extra parton. Infrared safe (for QCD-NLO calculations) are:
+and added back. Starting from version 1.2.2 this is the case for all 
+scale setters in Sherpa. Also, the definition of the scale must be 
+infrared safe w.r.t. to the radiation of an extra parton. Infrared safe 
+(for QCD-NLO calculations) are:
 
 @itemize
 @item any function of momenta of NOT strongly interacting particles
@@ -161,11 +168,7 @@ Since the total number of partons is different for different pieces
 of the NLO calculation any explicit reference to a parton momentum
 will lead to an inconsistent result.
 
-@end table
-
-It is possible to implement a dedicated scale
-scheme within Sherpa. For advice on this topic
-please contact the authors, @ref{Authors}.
+@subsubsection Simple scale variations
 
 @cindex FACTORIZATION_SCALE_FACTOR
 @cindex RENORMALIZATION_SCALE_FACTOR
@@ -190,21 +193,28 @@ Note: This affects also the running coupling used in the parton shower evolution
 @node COUPLINGS
 @subsection COUPLINGS
 @cindex COUPLINGS
-This parameter specifies how to evaluate couplings in the hard
-process. Within Sherpa, this means the scheme to employ
-the renormalization scale for reweighting matrix elements,
-which are initially computed with a fixed value 
-of the coupling constants. If, for example 
-the strong coupling is to be evaluated at the
-renormalization scale set by the specified scale setter
-(cf. @ref{SCALES}), the corresponding value
-is @option{QCD}. The currently available options are
+Within Sherpa, strong and electroweak couplings can be computed at any scale 
+specified by a scale setter (cf. @ref{SCALES}). The @option{COUPLINGS} tag 
+links the argument of a running coupling to one of the respective scales. 
+This is better seen in an example. Assuming the following input
+@verbatim
+SCALES    VAR{...}{PPerp2(p[2])}{Abs2(p[2]+p[3])}
+COUPLINGS Alpha_QCD 1, Alpha_QED 2
+@end verbatim
+Sherpa will compute any strong couplings at scale one, i.e. @samp{PPerp2(p[2])} 
+and electroweak couplings at scale two, i.e. @samp{Abs2(p[2]+p[3])}.
+Note that counting starts at zero.
+
+@node KFACTOR
+@subsection KFACTOR
+@cindex KFACTOR
+This parameter specifies how to evaluate potential K-factors in the hard
+process. This is equivalent to the @option{COUPLINGS} specification of Sherpa
+versions prior to 1.2.2. Currently available options are
 
 @table @option
 @item NO   
 No reweighting
-@item QCD  
-Reweighting of QCD couplings only
 @item VAR
 Couplings specified by an additional parameter in a form which is understood
 by the internal interpreter, see @ref{Interpreter}. The tags @kbd{Alpha_QCD}
@@ -213,40 +223,19 @@ and @kbd{Alpha_QED} serve as links to the built-in running coupling implementati
 If for example the process @samp{g g -> h g} in effective theory is computed,
 one could think of evaluating two powers of the strong coupling at the Higgs mass scale 
 and one power at the transverse momentum squared of the gluon.
-Assuming the Higgs mass to be 120 GeV, the corresponding reweighting factor would read
-
+Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
 @verbatim
 SCALES    VAR{...}{PPerp2(p[3])}
-COUPLINGS VAR{sqr(Alpha_QCD(sqr(120)))*Alpha_QCD(MU_R2)/pow(Alpha_QCD(S_TOT),3)}
+COUPLINGS Alpha_QCD 1
+KFACTOR   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
 @end verbatim
-
-If more than two scales are to be used, the subsequent scales are referred to
-as @kbd{MU_<i>2}, where @kbd{<i>} is replaced with the appropriate number,
-including an offset of one.
-Their values can be computed e.g. using the @option{VAR} scale setter, see
-@ref{SCALES}. A fictious example would be
-
-@verbatim
-SCALES    VAR{...}{PPerp2(p[4])}{Abs2(p[2]+p[3])}
-COUPLINGS VAR{Alpha_QCD(MU_12)*Alpha_QED(MU_22)/(Alpha_QCD(S_TOT)*Alpha_QED(S_TOT))}
-@end verbatim
-
-@item METS
-Reweighting of QCD couplings for truncated shower merging, see
-@ref{Merging ME and PS}. This is the default coupling scheme in Sherpa.
-Strong couplings are computed such that they give an overestimate,
-which can later on be reweighted. The precise scale is set using
-the Q_@{cut@} value, which is modified by an additional prefactor
-given in the shower algorithm.
-@sp 1
-Except in the context of truncated shower merging, users should refrain
-from employing this scheme. It's implementation might be subject to changes
-to enable further classes of processes.
+As can be seen from this example, scales are referred to as @kbd{MU_<i>2},
+where @kbd{<i>} is replaced with the appropriate number. 
+Note that counting starts at zero.
 @end table
 
-It is possible to implement a dedicated coupling evaluation
-scheme within Sherpa. For advice on this topic please contact
-the authors, @ref{Authors}.
+It is possible to implement a dedicated K-factor scheme within Sherpa.
+For advice on this topic please contact the authors, @ref{Authors}.
 
 
 @node Dipole subtraction

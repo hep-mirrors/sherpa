@@ -117,7 +117,7 @@ void QCD_GGG<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
     msg_Debugging()<<"'+' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*j);
+    AddJ(m_cpl*SType(this->m_cplfac)*j);
   }
   if (a(1)==b(0)) {
     CVec4Type j(invsqrttwo*Lorentz(a,b));
@@ -127,7 +127,7 @@ void QCD_GGG<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
     msg_Debugging()<<"'-' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(-m_cpl*j);
+    AddJ(-m_cpl*SType(this->m_cplfac)*j);
   }
 }
 
@@ -152,14 +152,14 @@ void QCD_GGT<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
     msg_Debugging()<<"'+' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*invsqrttwo*Lorentz(a,b));
+    AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*Lorentz(a,b));
   }
   if (a(1)==b(0)) {
 #ifdef DEBUG__BG
     msg_Debugging()<<"'-' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*invsqrttwo*Lorentz(b,a));
+    AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*Lorentz(b,a));
   }
 }
 
@@ -177,7 +177,7 @@ void QCD_GGT<SType>::Evaluate(const CVec4Type &a,const CAsT4Type &b)
       msg_Debugging()<<"'+' "<<a<<"\n";
       msg_Debugging()<<"    "<<b<<"\n";
 #endif
-      AddJ(m_cpl*j);
+      AddJ(m_cpl*SType(this->m_cplfac)*j);
     }
     if (a(1)==b(0)) {
       CVec4Type j(invsqrttwo*Lorentz(a,b));
@@ -187,7 +187,7 @@ void QCD_GGT<SType>::Evaluate(const CVec4Type &a,const CAsT4Type &b)
       msg_Debugging()<<"'-' "<<a<<"\n";
       msg_Debugging()<<"    "<<b<<"\n";
 #endif
-      AddJ(-m_cpl*j);
+      AddJ(-m_cpl*SType(this->m_cplfac)*j);
     }
   }
 }
@@ -221,7 +221,7 @@ void QCD_QQG<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
     j(0)=b();
     j(1)=a();
   }
-  AddJ(j*=invsqrttwo*m_cpl);
+  AddJ(j*=invsqrttwo*m_cpl*SType(this->m_cplfac));
   if (singlet) {
     j*=-1.0/3.0;
     for (size_t i(this->s_cimin);i<=this->s_cimax;++i) {
@@ -243,7 +243,7 @@ void QCD_QQG<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
     CSpinorType j(a.R(),a.B(),a(),a.H(0)+b.H(0),a.H(1)+b.H(1),0);
     if (cl) j+=LorentzLeft(a,b);
     if (cr) j+=LorentzRight(a,b);
-    j*=invsqrttwo*m_cpl;
+    j*=invsqrttwo*m_cpl*SType(this->m_cplfac);
     if (match) {
       j()=a.B()<0?b(0):b(1);
       AddJ(j);

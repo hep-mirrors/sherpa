@@ -30,7 +30,7 @@ namespace AMEGIC {
     ATOOLS::Vec4D* p_testmoms;
 
     double         m_Norm;
-    double         m_sfactor;
+    double         m_sfactor, m_lastdxs;
 
     std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
     std::map<std::string,ATOOLS::Flavour> m_fmap;
@@ -86,6 +86,7 @@ namespace AMEGIC {
     virtual int Type()  { return 0; }
     double Norm()       { return m_Norm; }
     double GetSFactor() { return m_sfactor; }
+    double LastDXS() { return m_lastdxs; }
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual void               PrintProcessSummary(int=0);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour&,const std::string&) const;

@@ -362,3 +362,9 @@ Complex Amplitude_Group::Zvalue(int ihel,int* signlist) {
   if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
 }
+
+int Amplitude_Group::GetOrderQED() 
+{return graphs.front()->GetOrderQED();}
+
+int Amplitude_Group::GetOrderQCD() 
+{return graphs.front()->GetOrderQCD();}

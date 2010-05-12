@@ -97,7 +97,7 @@ double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   term2 = (1.+2.*t/s) * (4. * qe*qf*ae*af * chi1 + 8. * ae*ve*af*vf * chi2);
 
   // Divide by two ????
-  return sqr(4.*M_PI*alpha) * colfac * (term1+term2); 
+  return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * (term1+term2); 
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) 

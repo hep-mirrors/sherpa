@@ -35,7 +35,7 @@ namespace EXTRAXS {
 
 
 void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
-  m_born*=m_cpl;
+  m_born*=m_cpl*CouplingFactor(1, 0);
 
   // 1/epsIR
   m_res.IR()=-3.*m_born;

@@ -7,6 +7,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "MODEL/Main/Coupling_Data.H"
 #include <map>
 
 namespace ATOOLS { 
@@ -73,6 +74,7 @@ namespace MODEL {
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
+    void GetCouplings(Coupling_Map &cpls) const;
 
     std::string           Name() const          { return m_name; } 
     ScalarNumbersMap    * GetScalarNumbers()    { return p_numbers; }

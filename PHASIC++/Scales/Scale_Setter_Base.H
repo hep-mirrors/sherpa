@@ -1,9 +1,11 @@
 #ifndef PHASIC_Scales_Scale_Setter_Base_H
 #define PHASIC_Scales_Scale_Setter_Base_H
 
-#include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Math/Vector.H"
+
+namespace MODEL { class Model_Base; }
 
 namespace PHASIC {
 
@@ -12,8 +14,8 @@ namespace PHASIC {
   struct stp {
 
     enum id {
-      ren     =  0,
-      fac     =  1,
+      fac     =  0,
+      ren     =  1,
       size    =  2
     };
 
@@ -26,10 +28,14 @@ namespace PHASIC {
 
   struct Scale_Setter_Arguments {
     Process_Base *p_proc;
-    std::string m_scale;
-    Scale_Setter_Arguments(Process_Base *const proc,
-			   const std::string &scale=""):
-      p_proc(proc), m_scale(scale) {}
+    MODEL::Model_Base *p_model;
+    MODEL::Coupling_Map *p_cpls;
+    std::string m_scale, m_coupling;
+    Scale_Setter_Arguments(MODEL::Model_Base *const model,
+			   const std::string &scale="",
+			   const std::string &coupling=""):
+      p_proc(NULL), p_model(model), p_cpls(NULL),
+      m_scale(scale), m_coupling(coupling) {}
   };// end of class Scale_Setter_Arguments
 
   class Scale_Setter_Base {
@@ -42,9 +48,12 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
+    MODEL::Model_Base   *p_model;
+    MODEL::Coupling_Map *p_cpls;
+
     std::vector<double> m_scale;
 
-    ATOOLS::Info_Key m_kfkey;
+    std::string m_coupling;
 
     bool m_scale2;
 
@@ -52,11 +61,12 @@ namespace PHASIC {
 
   public:
 
-    inline Scale_Setter_Base(Process_Base *const proc,
-			     const bool scale2=false):
-      p_proc(proc), m_scale(stp::size), m_scale2(scale2), p_jf(NULL) {}
+    Scale_Setter_Base(const Scale_Setter_Arguments &args,
+		      const bool scale2=false);
 
     virtual ~Scale_Setter_Base();
+
+    void SetCouplings();
 
     virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p) = 0;
     virtual double CalculateScale2(const std::vector<ATOOLS::Vec4D> &p);
@@ -67,6 +77,8 @@ namespace PHASIC {
     virtual double YCut() const;
 
     inline const double Scale(const stp::id type) { return m_scale[type]; }
+
+    inline const std::vector<double> &Scales() const { return m_scale; }
 
     inline Process_Base *Process() const { return p_proc; }
 

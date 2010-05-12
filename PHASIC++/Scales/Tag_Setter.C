@@ -47,3 +47,15 @@ void Tag_Setter::AssignId(Term *term)
 		 (2,term->Tag().length()-3)));
   }
 }
+
+void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
+{
+  calc->AddTag("MU_F2","1.0");
+  calc->AddTag("MU_R2","1.0");
+  calc->AddTag("Q2_CUT","1.0");
+  calc->AddTag("H_T2","1.0");
+  Process_Integrator *ib(p_setter->Process()->Integrator());
+  ib->SetMomenta(Vec4D_Vector(ib->NIn()+ib->NOut()));
+  for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
+    calc->AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));
+}

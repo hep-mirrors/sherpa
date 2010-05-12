@@ -76,7 +76,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   m_uset=0;
 #endif
   m_nvec=m_nin+m_nout;
-  p_cms.resize(m_nvec);  
+  p_cms.resize(m_nvec);
   p_lab.resize(m_nvec);  
 }
 
@@ -287,7 +287,7 @@ void Phase_Space_Handler::CalculateME()
     m_result_1=p_active->Process()->Differential(p_lab);
   }
   else {
-    m_result_1=p_active->Process()->Differential(p_cms);
+    m_result_1=p_active->Process()->Differential(p_lab);
     if (p_isrhandler->On()!=3) {
       m_result_2=0.0;
     }
@@ -501,7 +501,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
       m_isrykey[1]   = xinfo[7];
       if (!p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&cur->Process()->
                                  Flavours().front(),m_nin+m_nout)) {
-        return new Weight_Info(1, 0.0, 0.0, 1.0, 0.0, 0.0);
+        return new Weight_Info(1, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
       }
       p_lab=cur->Momenta();
       if (value > max) {
@@ -546,21 +546,25 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
       else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
 	m_sumtrials += i;m_events ++;
-        double xf1(0.0), xf2(0.0), dxs(0.0);
+        double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  cur->SetMomenta(p_lab);
 	  cur->SwapInOrder();
 	  dxs=m_result_2/m_psweight;
           xf1=p_isrhandler->XF1(1);
           xf2=p_isrhandler->XF2(1);
+          mu12=p_isrhandler->MuF2(1);
+          mu22=p_isrhandler->MuF2(0);
 	}
 	else {
 	  cur->SetMomenta(p_lab);
 	  dxs=m_result_1/m_psweight;
           xf1=p_isrhandler->XF1(0);
           xf2=p_isrhandler->XF2(0);
+          mu12=p_isrhandler->MuF2(0);
+          mu22=p_isrhandler->MuF2(1);
 	}
-	return new Weight_Info(1,value,dxs,1.0,xf1,xf2);
+	return new Weight_Info(1,value,dxs,1.0,xf1,xf2,mu12,mu22);
       }
       else j=1;
     }
@@ -584,13 +588,15 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
   value = Differential(selected,(psm::code)mode);
   if (value != 0.) {
     ++m_events;
-    double xf1(0.0), xf2(0.0), dxs(0.0);
+    double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
     if (dabs(m_result_1) < dabs(m_result_1+m_result_2)*ATOOLS::ran.Get()) {
       selected->SetMomenta(p_lab);
       selected->SwapInOrder();
       dxs=m_result_2/m_psweight;
       xf1=p_isrhandler->XF1(1);
       xf2=p_isrhandler->XF2(1);
+      mu12=p_isrhandler->MuF2(1);
+      mu22=p_isrhandler->MuF2(0);
       PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
       if (nlos) {
 	for (size_t l=0;l<nlos->size();l++) 
@@ -602,9 +608,11 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
       dxs=m_result_1/m_psweight;
       xf1=p_isrhandler->XF1(0);
       xf2=p_isrhandler->XF2(0);
+      mu12=p_isrhandler->MuF2(0);
+      mu22=p_isrhandler->MuF2(1);
     }
     m_weight=value;
-    return new Weight_Info(2,value,dxs,1.0,xf1,xf2);
+    return new Weight_Info(2,value,dxs,1.0,xf1,xf2,mu12,mu22);
   }
 
   return NULL;

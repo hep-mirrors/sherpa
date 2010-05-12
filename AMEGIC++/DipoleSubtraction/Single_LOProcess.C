@@ -33,22 +33,19 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi) :
   m_gen_str(2), m_emit(-1), m_spect(-1),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
+  PHASIC::Process_Base::Init(pi,NULL,NULL);
   m_pinfo=pi;
   m_nin=m_pinfo.m_ii.NExternal();
   m_nout=m_pinfo.m_fi.NExternal();
   m_flavs.resize(m_nin+m_nout);
   if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
     SortFlavours(m_pinfo);
-    m_new=0;
-    m_nqcd=0;
     std::vector<Flavour> fl;
     m_pinfo.m_ii.GetExternal(fl);
     m_pinfo.m_fi.GetExternal(fl);
     if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
     for (size_t i(0);i<fl.size();++i) {
       m_flavs[i]=fl[i];
-      if (m_flavs[i].Strong()) ++m_nqcd;
-      else ++m_new;
     }
     m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   }
@@ -147,6 +144,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 {
   m_type = 20;
   if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->GetCouplings(m_cpls);
 
   m_partonlist.clear();
   for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
@@ -187,7 +185,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
   int oew(m_oew), oqcd(m_oqcd);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
-				   p_BS,p_shand,m_print_graphs,!directload);
+				   &m_cpls,p_BS,p_shand,m_print_graphs,!directload);
   m_oew=oew;
   m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
@@ -325,7 +323,8 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 				    std::vector<ATOOLS::Vec4D>* epol,std::vector<double> * pfactors)
 {
   m_type = 10;
-
+  model->GetCouplings(m_cpls);
+  
   if (m_gen_str>1) {
     ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
@@ -378,7 +377,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
  
   int oew(m_oew), oqcd(m_oqcd);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
-				   p_BS,p_shand,m_print_graphs,!directload);
+				   &m_cpls,p_BS,p_shand,m_print_graphs,!directload);
   m_oew=oew;
   m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
@@ -1092,21 +1091,22 @@ void Single_LOProcess::Minimize()
   
   ------------------------------------------------------------------------------*/
 
-double Single_LOProcess::Differential(const ATOOLS::Vec4D_Vector& _moms) { return 0.; }
+double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms) { return 0.; }
 
-double Single_LOProcess::Differential2() {  return 0.; }
-
-double Single_LOProcess::operator()(const ATOOLS::Vec4D * mom,std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
+double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
+				    std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
 {
   if (p_partner!=this) {
     if (m_lookup) {
       m_lastxs = p_partner->LastXS()*m_sfactor;
       if (m_lastxs!=0.) return m_lastxs;
     }
-    return m_lastxs = p_partner->operator()(mom,pfactors,epol)*m_sfactor;
+    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol)*m_sfactor;
   }
 
   double M2(0.);
+  p_int->SetMomenta(labmom);
+  p_scale->CalculateScale(labmom);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
@@ -1142,10 +1142,11 @@ double Single_LOProcess::Calc_M2ik(int ci, int ck)
   return M2;
 }
 
-void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D * mom, double **dsij) 
+void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
+				  const ATOOLS::Vec4D *mom, double **dsij) 
 {
   if (p_partner!=this) {
-    p_partner->Calc_AllXS(mom,dsij);
+    p_partner->Calc_AllXS(labmom,mom,dsij);
     dsij[0][0]*=m_sfactor;
     for (size_t i=0;i<m_partonlist.size();i++) {
       for (size_t k=i+1;k<m_partonlist.size();k++) {
@@ -1154,6 +1155,9 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D * mom, double **dsij)
     }
     return;
   }
+  p_int->SetMomenta(labmom);
+  p_scale->CalculateScale(labmom);
+
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
   p_hel->InitializeSpinorTransformation(p_BS);
 
@@ -1207,4 +1211,76 @@ Point * AMEGIC::Single_LOProcess::Diagram(int i) {
 void AMEGIC::Single_LOProcess::AddChannels(std::list<std::string>* tlist) 
 { }
 
+void AMEGIC::Single_LOProcess::FillCombinations
+(Point *const p,size_t &id)
+{
+  if (p->middle) return;
+  if (p->left==NULL || p->right==NULL) {
+    id=1<<p->number;
+    return;
+  }
+  size_t ida(id), idb(id);
+  FillCombinations(p->left,ida);
+  FillCombinations(p->right,idb);
+  id=ida+idb;
+  size_t idc((1<<(m_nin+m_nout))-1-id);
+  msg_Debugging()<<"  comb "<<ID(ida)
+		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
+  if (idc!=1) {
+    bool in(false);
+    Flavour_Vector cf(m_cflavs[idc]);
+    for (size_t i(0);i<cf.size();++i)
+      if (cf[i]==p->fl) {
+	in=true;
+	break;
+      }
+    if (!in) {
+      m_cflavs[idc].push_back(p->fl.Bar());
+      m_cflavs[id].push_back(p->fl);
+      msg_Debugging()<<"  flav "<<ID(idc)<<" / "
+		     <<ID(id)<<" -> "<<p->fl<<"\n";
+    }
+  }
+}
+
+void AMEGIC::Single_LOProcess::FillCombinations()
+{
+  msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
+  size_t nd(NumberOfDiagrams());
+  for (size_t i(0);i<nd;++i) {
+    Point *p(Diagram(i));
+    size_t id(1<<p->number);
+    FillCombinations(p,id);
+  }
+  msg_Debugging()<<"  } -> "<<m_cflavs.size()
+		 <<" flavours, "<<m_ccombs.size()
+		 <<" combinations\n";
+  msg_Debugging()<<"}\n";
+}
+
+bool AMEGIC::Single_LOProcess::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  if (p_partner!=this) return p_partner->Combinable(idi,idj);
+  if (m_ccombs.empty()) FillCombinations();
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
+}
+
+const Flavour_Vector &AMEGIC::Single_LOProcess::
+CombinedFlavour(const size_t &idij)
+{
+  if (p_partner!=this) return p_partner->CombinedFlavour(idij);
+  if (m_cflavs.empty()) FillCombinations();
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
+}
 

@@ -123,22 +123,6 @@ namespace MODEL {
    
   };  
 
-  // Format of a Color_Function to transport via MPI:
-  struct MPI_Color_Function {
-    
-    int    m_type;
-    int    m_partarg[3];         
-    char   m_strarg[4];         
-  };
-  
-  //for MPI usage
-  
-  void Color_Function2MPI(const Color_Function * , MPI_Color_Function &);
-  
-  Color_Function * MPI2Color_Function(const MPI_Color_Function &);
-
-  std::ostream & operator<<(std::ostream &, const MPI_Color_Function &);
-
 /*! 
     \file
     \brief this file contains the classes MODEL::Color_Function

@@ -11,6 +11,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -191,7 +192,7 @@ bool PS_Generator::Evaluate()
       Double_Vector sums;
       std::vector<PHASIC::Process_Base*> pss;
       for (size_t i(0);i<cur->Size();++i)
-	if (!(*cur)[i]->Get<COMIX::Process_Base>()->Zero()) {
+	if (!(*cur)[i]->Get<PHASIC::Single_Process>()->Zero()) {
 	  if ((*cur)[i]->Integrator()->SumSqr()==0) sum+=1.0;
 	  else sum+=(*cur)[i]->Integrator()->SumSqr();
 	  sums.push_back(sum);

@@ -177,23 +177,15 @@ void Single_Real_Correction::Minimize()
 }
 
 
-double Single_Real_Correction::Differential(const ATOOLS::Vec4D_Vector &moms) { return DSigma(moms); }
-
-double Single_Real_Correction::Differential2() { 
-  if (p_int->ISR()->On()==0) return 0.;
-  return DSigma2(); 
-}
-
-
-double Single_Real_Correction::DSigma(const ATOOLS::Vec4D_Vector &moms)
+double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms)
 {
-  m_last = m_lastxs = 0.;
+  m_lastxs = 0.;
     // So far only massless partons!!!!
 
   if (p_partner == this) operator()(moms);
   else {
-    if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
-    else m_lastxs = p_partner->operator()(moms)*m_sfactor;
+    if (m_lookup) m_lastdxs = p_partner->LastDXS()*m_sfactor;
+    else m_lastdxs = p_partner->operator()(moms)*m_sfactor;
     for (size_t i=0;i<m_subevtlist.size();++i) delete m_subevtlist[i];
     m_subevtlist.clear();
     std::vector<NLO_subevt*>* partnerlist=p_partner->GetSubevtList();
@@ -204,70 +196,21 @@ double Single_Real_Correction::DSigma(const ATOOLS::Vec4D_Vector &moms)
     }
     m_subevtlist.Mult(m_sfactor);
   }
-
-  if (m_nin==2) {
-    double scale = p_partner->ScaleSetter()->Scale(stp::fac);
-    size_t multiscale=0;
-    for (size_t i=0;i<m_subevtlist.size();++i) 
-      if (m_subevtlist[i]->m_scale!=scale) {
-	multiscale++;
-	p_int->ISR()->CalculateWeight(m_subevtlist[i]->m_scale);
-	(*m_subevtlist[i])*=p_int->ISR()->Weight(&m_flavs.front())*
-                            BeamWeight(m_subevtlist[i]->m_scale);
-      }
-    if (multiscale<m_subevtlist.size()) {
-      p_int->ISR()->CalculateWeight(scale);
-      m_lastlumi = p_int->ISR()->Weight(&m_flavs.front())*
-                   BeamWeight(scale);
-      for (size_t i=0;i<m_subevtlist.size();++i) 
-	if (m_subevtlist[i]->m_scale==scale) (*m_subevtlist[i])*=m_lastlumi;
-    }
-    int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
-    double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
-    if (p_pl[0].num>1) pols[0] = 99;
-    if (p_pl[1].num>1) pols[1] = 99;
-    m_subevtlist*= m_lastlumi = p_int->Beam()->Weight(pols,dofs);
-  }
-  for (size_t i=0;i<m_subevtlist.size();++i) m_last+=m_subevtlist[i]->m_result;
-  return m_last;
+  return m_lastxs=m_lastdxs;
 }
 
-double Single_Real_Correction::DSigma2() { 
-  if ((m_flavs[0]==m_flavs[1]) || (p_int->ISR()->On()==0) ) return 0.;
-  if (m_subevtlist.size()==0) return 0.;
-  double scale = p_partner->ScaleSetter()->Scale(stp::fac);
-  size_t multiscale=0;
-  for (size_t i=0;i<m_subevtlist.size();++i) {
-    if (m_subevtlist[i]->m_scale!=scale) {
-      multiscale++;
-      p_int->ISR()->CalculateWeight2(m_subevtlist[i]->m_scale);
-      m_subevtlist[i]->m_result+=m_subevtlist[i]->m_me
-	*p_int->ISR()->Weight2(&m_flavs.front())
-        *BeamWeight(m_subevtlist[i]->m_scale);
-    }
-  }
-  double tmp;
-  if (multiscale<m_subevtlist.size()) {
-    p_int->ISR()->CalculateWeight2(scale);
-    tmp = p_int->ISR()->Weight2(&m_flavs.front())*BeamWeight(scale);
-    for (size_t i=0;i<m_subevtlist.size();++i) {
-      if (m_subevtlist[i]->m_scale==scale) {
-	m_subevtlist[i]->m_result+=m_subevtlist[i]->m_me*tmp;
-      }
-    }    
-  }
-  tmp=m_last;
-  m_last=0.;
-  for (size_t i=0;i<m_subevtlist.size();++i) m_last+=m_subevtlist[i]->m_result;
-
-  return m_last-tmp;
-}
-
-
-double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
+double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom)
 {
   m_subevtlist.clear();
-  p_scale->CalculateScale(mom);
+  m_subevtlist.m_muf2=0.0;
+  p_tree_process->Integrator()->SetMomenta(_mom);
+
+  Vec4D_Vector mom(_mom);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    Poincare cms(mom[0]+mom[1]);
+    for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
+  }
+
   double M2=0.;
   
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::rsub) {
@@ -289,39 +232,39 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   }
 
   if (m_pinfo.m_nlomode==1) {
-  bool trg= JetTrigger(Integrator()->PSHandler()->LabPoint(),m_flavs,m_nout);
+  bool trg= JetTrigger(_mom,m_flavs,m_nout);
   if (trg) {
-    M2 = p_tree_process->operator()(&mom.front())*KFactor();
+    m_subevtlist.m_muf2=p_tree_process->ScaleSetter()->CalculateScale(_mom);
+    M2 = p_tree_process->operator()(&mom.front());
     if (M2>0.) {
-      m_realevt.p_mom  = &(Integrator()->PSHandler()->LabPoint().front());
+      m_realevt.p_mom  = &p_int->Momenta().front();
       m_realevt.m_me   = m_realevt.m_result = M2;
-      m_realevt.m_scale = ScaleSetter()->Scale(stp::fac);
+      m_realevt.m_scale = m_subevtlist.m_muf2;
       m_subevtlist.push_back(&m_realevt);
     }
   }
   }
   
   m_subevtlist.Mult(p_tree_process->Norm());
-  m_lastxs = M2*p_tree_process->Norm();
+  m_lastdxs = M2*p_tree_process->Norm();
   if (!(M2>0.)&&!(M2<0.)) return 0.;
   
-  return m_lastxs;
+  return m_lastdxs;
 }
 
-void Single_Real_Correction::SetScale(const std::string &scale)
+void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
-  Process_Base::SetScale(scale);
+  p_tree_process->SetScale(args);
   for (size_t i(0);i<m_subtermlist.size();++i) {
-    m_subtermlist[i]->SetScale(scale);
+    m_subtermlist[i]->SetScale(args);
   }
 }
  
-void Single_Real_Correction::SetKFactor(const std::string &kfactor,
-					const size_t &oqcdlo,const size_t &oewlo)
+void Single_Real_Correction::SetKFactor(const KFactor_Setter_Arguments &args)
 {
-  Process_Base::SetKFactor(kfactor,oqcdlo,oewlo);
+  p_tree_process->SetKFactor(args);
   for (size_t i(0);i<m_subtermlist.size();++i) {
-    m_subtermlist[i]->SetKFactor(kfactor,oqcdlo,oewlo);
+    m_subtermlist[i]->SetKFactor(args);
   }
 }
 

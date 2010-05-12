@@ -13,6 +13,8 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PDF/Main/Shower_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
@@ -95,8 +97,8 @@ namespace PHASIC {
 
   public:
 
-    METS_Scale_Setter(Process_Base *const proc,
-		      const std::string &scale,const int mode=1);
+    METS_Scale_Setter(const Scale_Setter_Arguments &args,
+		      const int mode=1);
 
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
     double CalculateScale2(const std::vector<ATOOLS::Vec4D> &p);
@@ -119,7 +121,7 @@ DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"METS",
 Scale_Setter_Base *Loose_METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args.p_proc,args.m_scale,0);
+  return new METS_Scale_Setter(args,0);
 }
 
 void Loose_METS_Scale_Setter_Getter::
@@ -134,7 +136,7 @@ DECLARE_GETTER(METS_Scale_Setter_Getter,"SEMI_STRICT_METS",
 Scale_Setter_Base *METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args.p_proc,args.m_scale,1);
+  return new METS_Scale_Setter(args,1);
 }
 
 void METS_Scale_Setter_Getter::
@@ -149,7 +151,7 @@ DECLARE_GETTER(Strict_METS_Scale_Setter_Getter,"STRICT_METS",
 Scale_Setter_Base *Strict_METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args.p_proc,args.m_scale,2);
+  return new METS_Scale_Setter(args,2);
 }
 
 void Strict_METS_Scale_Setter_Getter::
@@ -163,18 +165,18 @@ double METS_Scale_Setter::s_kt2max=
        sqrt(std::numeric_limits<double>::max());
 
 METS_Scale_Setter::METS_Scale_Setter
-(Process_Base *const proc,const std::string &scale,const int mode):
-  Scale_Setter_Base(proc), m_muf2tagset(this), m_mur2tagset(this),
+(const Scale_Setter_Arguments &args,const int mode):
+  Scale_Setter_Base(args), m_muf2tagset(this), m_mur2tagset(this),
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
   m_p.resize(4);
-  size_t pos(scale.find('{'));
+  size_t pos(args.m_scale.find('{'));
   std::string mur2tag("MU_R2"), muf2tag("MU_F2");
   if (pos!=std::string::npos) {
-    muf2tag=scale.substr(pos+1);
+    muf2tag=args.m_scale.substr(pos+1);
     pos=muf2tag.rfind('}');
     if (pos==std::string::npos)
-      THROW(fatal_error,"Invalid scale '"+scale+"'");
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     muf2tag=muf2tag.substr(0,pos);
     pos=muf2tag.find("}{");
     if (pos==std::string::npos) {
@@ -187,6 +189,8 @@ METS_Scale_Setter::METS_Scale_Setter
   }
   SetScale(muf2tag,m_muf2tagset,m_muf2calc);
   SetScale(mur2tag,m_mur2tagset,m_mur2calc);
+  m_scale.resize(p_proc->NOut());
+  SetCouplings();
   m_f=p_proc->Flavours();
   m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
@@ -235,33 +239,19 @@ double METS_Scale_Setter::CalculateScale2(const Vec4D_Vector &momenta)
     p_proc->Integrator()->RestoreInOrder();
     return muf2;
   }
+  p_cpls->Calculate();
   return m_scale[stp::fac];
 }
 
 double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta) 
 {
-  if (!m_kfkey.Assigned()) {
-    std::string kfinfo("O(QCD)="+ToString(p_proc->OrderQCD()));
-    msg_Debugging()<<"Assign '"<<p_proc->Name()
-		   <<"' '"<<kfinfo<<"'\n";
-    m_kfkey.Assign(p_proc->Name(),3,0,p_proc->
-		   Integrator()->PSHandler()->GetInfo());
-    m_kfkey.SetInfo(kfinfo);
-    p_ci=p_proc->Integrator()->ColorIntegrator();
-  }
   ++m_cnt;
   m_p=momenta;
+  p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   if (m_mode==2 || (m_mode==1 && !p_proc->LookUp()))
     return CalculateStrict(momenta);
   DEBUG_FUNC(p_proc->Name());
-  if (p_proc->IsMapped() && p_proc->LookUp()) {
-    m_kfkey[0]=m_scale[stp::ren]=
-      p_proc->MapProc()->ScaleSetter()->Scale(stp::ren);
-    m_kfkey[2]=m_kfkey[1]=m_scale[stp::fac]=
-      p_proc->MapProc()->ScaleSetter()->Scale(stp::fac);
-    return m_scale[stp::fac];
-  }
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
   if (p_ci==NULL) {
@@ -423,7 +413,11 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       }
     }
   }
-  while (ampl->Prev()) ampl=ampl->Prev();
+  size_t idx(2);
+  while (ampl->Prev()) {
+    ampl=ampl->Prev();
+    m_scale[idx++]=ampl->KT2QCD();
+  }
   ampl->Delete();
   return SetScales(kt2core);
 }
@@ -521,11 +515,13 @@ double METS_Scale_Setter::SetScales(const double &scale)
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
   m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
   m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();
-  msg_Debugging()<<"Set \\mu_r = "
-		 <<sqrt(m_scale[stp::ren])<<", \\mu_f = "
-		 <<sqrt(m_scale[stp::fac])<<"\n";
-  m_kfkey[0]=m_scale[stp::ren];
-  m_kfkey[2]=m_kfkey[1]=m_scale[stp::fac];
+  msg_Debugging()<<METHOD<<"(): Set {\n"
+		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+  for (size_t i(2);i<m_scale.size();++i)
+    msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
+  msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
+  p_cpls->Calculate();
   return m_scale[stp::fac];
 }
 
@@ -538,13 +534,7 @@ void METS_Scale_Setter::SetScale
   msg_Indent();
   mu2tagset.SetCalculator(&mu2calc);
   mu2calc.SetTagReplacer(&mu2tagset);
-  mu2calc.AddTag("MU_F2","1.0");
-  mu2calc.AddTag("MU_R2","1.0");
-  mu2calc.AddTag("H_T2","1.0");
-  mu2calc.AddTag("Q2_CUT","1.0");
-  Process_Integrator *ib(p_proc->Integrator());
-  for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
-    mu2calc.AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));
+  mu2tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
   msg_Debugging()<<"}\n";

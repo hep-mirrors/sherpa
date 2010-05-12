@@ -56,6 +56,7 @@ namespace AMEGIC {
     ~Single_Virtual_Correction();
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+    void SetScale(const PHASIC::Scale_Setter_Arguments &args);
 
     /*------------------------------------------------------------------------------
 
@@ -104,11 +105,11 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Differential(const ATOOLS::Vec4D_Vector &);
-    double         Differential2();
+    double         Partonic(const ATOOLS::Vec4D_Vector &);
+    double         Partonic2();
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
     double         DSigma2();
-    double         operator()(const ATOOLS::Vec4D *);
+    double         operator()(const ATOOLS::Vec4D_Vector &);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();

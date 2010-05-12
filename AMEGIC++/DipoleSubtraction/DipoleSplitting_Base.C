@@ -2,6 +2,7 @@
 #include "AMEGIC++/Main/ColorSC.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
@@ -12,13 +13,11 @@ using namespace std;
 
 #define SQRT_05 0.70710678118654757
 
-DipoleSplitting_Base::DipoleSplitting_Base(Model_Base *model) 
+DipoleSplitting_Base::DipoleSplitting_Base() 
 {
   m_type  = dpt::none;
-  m_cpl   = model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms()));
-  m_spfac = -8.*M_PI*m_cpl;
-  m_cpl /= 2.*M_PI;
-  msg_Tracking()<<"DipoleSplitting_Base:: alpha_s= "<<model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms()))<<endl;
+  m_spfdef = 0.0;
+  p_cpl = NULL;
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
@@ -55,6 +54,13 @@ DipoleSplitting_Base::DipoleSplitting_Base(Model_Base *model)
   }
 }
 
+void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)
+{
+  if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
+  else THROW(fatal_error,"Coupling not found");
+  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<endl;
+  m_spfdef = -8.*M_PI*p_cpl->Default();
+}
 
 void DipoleSplitting_Base::SetMomenta(const Vec4D* mom)
 {

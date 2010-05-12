@@ -292,3 +292,9 @@ Complex Super_Amplitude::Zvalue(String_Handler * sh,int ihel)
 
 Complex Super_Amplitude::Zvalue(int ihel)   
   {return Single_Amplitude_Base::Zvalue(ihel);}
+
+int Super_Amplitude::GetOrderQED() 
+{return graphs.front()->GetOrderQED();}
+
+int Super_Amplitude::GetOrderQCD() 
+{return graphs.front()->GetOrderQCD();}

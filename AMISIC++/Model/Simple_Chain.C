@@ -188,7 +188,8 @@ bool Simple_Chain::CreateGrid()
   pi.m_oew=0;
   pi.m_oqcd=2;
   pi.m_scale="MPI";
-  pi.m_kfactor="QCD";
+  pi.m_coupling="alpha_S 1";
+  pi.m_kfactor="NO";
   pi.m_mpiprocess=true;
   p_processes = new Semihard_QCD();
   p_processes->Init(pi,p_beam,p_isr);
@@ -196,8 +197,9 @@ bool Simple_Chain::CreateGrid()
   if (!p_processes->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
     THROW(fatal_error,"Cannot initialize MPI simulation.");
   msg_Info()<<" done."<<std::endl;
-  p_processes->SetScale(pi.m_scale);
-  p_processes->SetKFactor(pi.m_kfactor,0,2);
+  p_processes->SetScale(PHASIC::Scale_Setter_Arguments
+			(p_model,pi.m_scale,pi.m_coupling));
+  p_processes->SetKFactor(PHASIC::KFactor_Setter_Arguments(pi.m_kfactor));
   p_processes->Integrator()->SetPSHandler
     (new PHASIC::Phase_Space_Handler
      (p_processes->Integrator(),p_isr,p_beam,m_error));

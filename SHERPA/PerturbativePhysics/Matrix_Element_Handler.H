@@ -41,7 +41,7 @@ namespace SHERPA {
 
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac;
-      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vsfile;
+      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac, m_vsfile;
       std::string m_gycut;
     };// end of struct Processblock_Info
 
@@ -54,6 +54,7 @@ namespace SHERPA {
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
+    MODEL::Model_Base          *p_model;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
     int         m_eventmode, m_seedmode;
@@ -82,9 +83,6 @@ namespace SHERPA {
 
     std::string MakeString(const std::vector<std::string> &in,
 			   const size_t &first);
-
-    void GetMaxCouplings(PHASIC::Process_Base *const proc,
-			 size_t &oqcd,size_t &oew);
 
     size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 

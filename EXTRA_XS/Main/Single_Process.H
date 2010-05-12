@@ -7,7 +7,6 @@ namespace EXTRAXS {
 
   class ME2_Base;
   class Virtual_ME2_Base;
-  class ME_Base;
 
   class Single_Process: public PHASIC::Single_Process {
   private:
@@ -27,8 +26,8 @@ namespace EXTRAXS {
     bool Initialize();
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
-    double Differential(const ATOOLS::Vec4D_Vector& momenta);
-    double Differential2();
+    double Partonic(const ATOOLS::Vec4D_Vector& momenta);
+
     bool Combinable(const size_t &idi, const size_t &idj);
 
     // inline functions

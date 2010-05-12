@@ -83,15 +83,11 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Differential(const ATOOLS::Vec4D_Vector &);
-    double         Differential2();
-    double         DSigma(const ATOOLS::Vec4D_Vector &);
-    double         DSigma2();
+    double         Partonic(const ATOOLS::Vec4D_Vector &);
     double         operator()(const ATOOLS::Vec4D_Vector &);
 
-    void SetScale(const std::string &scale);
-    void SetKFactor(const std::string &kfactor,
-		    const size_t &oqcdlo,const size_t &oewlo);
+    void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+    void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();

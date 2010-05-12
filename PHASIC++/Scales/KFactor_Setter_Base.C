@@ -13,21 +13,12 @@ using namespace ATOOLS;
 
 namespace ATOOLS { template class SP(KFactor_Setter_Base); }
 
-KFactor_Setter_Base::KFactor_Setter_Base(Process_Base *const proc): 
-  p_proc(proc), m_on(true) {}
+KFactor_Setter_Base::KFactor_Setter_Base
+(const KFactor_Setter_Arguments &args): 
+  p_proc(args.p_proc), m_weight(0.0), m_on(true) {}
 
 KFactor_Setter_Base::~KFactor_Setter_Base()
 {
-}
-
-double KFactor_Setter_Base::KFactor2(const bool diff)
-{
-  if (!m_kfkey.Assigned()) return KFactor();
-  if (diff) {
-    m_kfkey<<ATOOLS::UNDEFINED_WEIGHT;
-    return KFactor();
-  }
-  return m_kfkey.Weight();
 }
 
 void KFactor_Setter_Base::ShowSyntax(const size_t i)

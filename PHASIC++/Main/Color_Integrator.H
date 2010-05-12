@@ -23,18 +23,21 @@ namespace PHASIC {
 
   std::ostream &operator<<(std::ostream &str,const cls::scheme &s);
 
+  typedef std::vector<int>    Int_Vector;
+  typedef std::vector<double> Double_Vector;
+
   class Representation {
   protected:
 
     size_t m_id, m_i, m_j;
     int    m_type, m_act;
 
+    Int_Vector m_ids;
+
   public:
 
     // constructor
-    inline Representation(const size_t &id,
-			  const int &type,const int &act): 
-      m_id(id), m_i(0), m_j(0), m_type(type), m_act(act) {}
+    Representation(const size_t &id,const int &type,const int &act);
 
     // inline functions
     inline void SetI(const size_t &i) { m_i=i; }
@@ -48,13 +51,12 @@ namespace PHASIC {
     inline int Type() const { return m_type; }
     inline int Act() const  { return m_act;  }
 
+    inline const Int_Vector &Ids() const { return m_ids; }
+
   };// end of class Representation
 
   std::ostream &operator<<(std::ostream &ostr,const Representation &v);
   
-  typedef std::vector<int>    Int_Vector;
-  typedef std::vector<double> Double_Vector;
-
   typedef short unsigned int      Idx_Type;
   typedef std::vector<Idx_Type>   Idx_Vector;
   typedef std::vector<Idx_Vector> Idx_Matrix;
@@ -62,7 +64,7 @@ namespace PHASIC {
   class Color_Integrator {
   private:
 
-    std::vector<Representation*> m_ids;
+    std::vector<Representation*> m_ids, m_decids;
 
     Idx_Matrix m_orders;
     Idx_Vector m_lastids, m_lastperm, m_nexti;
@@ -90,6 +92,7 @@ namespace PHASIC {
     int  ConstructConfigurations();
 
     bool TrivialCheck();
+    bool CheckDecays();
     bool CheckPermutation(const Idx_Vector &perm);
 
     bool AddConfiguration(const size_t &i);
@@ -127,6 +130,9 @@ namespace PHASIC {
     void SetAlpha(const Double_Vector &alpha);
 
     void SetPoint(const ATOOLS::Cluster_Amplitude *const ampl);
+
+    void SetDecayIds(const std::vector<size_t> &ids,
+		     const Int_Vector &types,const Int_Vector &acts);
 
     // inline functions
     inline void SetNoGen(const bool nogen)     { m_nogen=nogen;     }

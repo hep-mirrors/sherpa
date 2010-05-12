@@ -99,27 +99,6 @@ namespace ATOOLS {
   typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
 
 
-
-
-
-
-  // Format of a particle to transport via MPI:
-  struct MPI_Particle {
-    int     id;     
-    int     m_status;         
-    char    m_info;   
-    int     m_fl;      
-    int     m_flow[2];
-    double  m_mom[4];  
-    int     blob_owned_by;
-    int     is_initial;           
-    // 1 - is initial particle of this blob, 0 - is final particle of this
-  };
-
-  void Particle2MPI(const Particle * , MPI_Particle &);  
-  Particle * MPI2Particle(const MPI_Particle &);
-
-
   /*! 
     \class Particle
     \brief Characterising individual particles occuring in event generation.

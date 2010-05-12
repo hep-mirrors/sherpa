@@ -38,3 +38,21 @@ void Amplitude_Base::SetSign(int) {
 void Amplitude_Base::BuildGlobalString(int* i,int j,Basic_Sfuncs* BS ,ATOOLS::Flavour* fl,
 				       String_Handler* shand)
 {std::cerr<<"Error: Virtual  Amplitude_Base::BuildGlobalString() called!"<<std::endl;}
+
+void Amplitude_Base::SetOrderQED(int) {
+  std::cerr<<"Error: Virtual  Amplitude_Base::GetOrderQED() called!"<<std::endl;
+}
+
+void Amplitude_Base::SetOrderQCD(int) {
+  std::cerr<<"Error: Virtual  Amplitude_Base::GetOrderQCD() called!"<<std::endl;
+}
+
+int Amplitude_Base::GetOrderQED() {
+  std::cerr<<"Error: Virtual  Amplitude_Base::GetOrderQED() called!"<<std::endl;return 0;
+}
+
+int Amplitude_Base::GetOrderQCD() {
+  std::cerr<<"Error: Virtual  Amplitude_Base::GetOrderQCD() called!"<<std::endl;return 0;
+}
+
+

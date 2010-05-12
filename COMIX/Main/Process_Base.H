@@ -32,7 +32,7 @@ namespace COMIX {
 
     Int_Matrix m_colours;
 
-    bool   m_psmc, m_zero;
+    bool   m_psmc;
     int    m_cls, m_hls, m_imode;
 
     std::string m_gpath;
@@ -76,8 +76,6 @@ namespace COMIX {
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
     inline SP(PS_Generator) PSGenerator() const { return p_psgen; }
-
-    inline bool Zero() const { return m_zero; }
 
     inline void SetModel(const SP(Model) &model) { p_model=model; }
 

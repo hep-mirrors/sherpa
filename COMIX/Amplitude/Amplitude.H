@@ -6,6 +6,7 @@
 #include "METOOLS/Main/C_Spinor.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "COMIX/Amplitude/Vertex_Base.H"
+#include "MODEL/Main/Coupling_Data.H"
 #include "METOOLS/Main/C_Scalar.H"
 #include "METOOLS/Main/C_Spinor.H"
 #include "METOOLS/Main/C_Vector.H"
@@ -56,6 +57,8 @@ namespace COMIX {
   private:
 
     Model *p_model;
+
+    MODEL::Coupling_Data *p_aqcd, *p_aqed;
 
     ATOOLS::Flavour_Vector m_fl;
 
@@ -109,6 +112,8 @@ namespace COMIX {
 
     void CalcJL();
 
+    double CouplingFactor(Vertex_Base *const v) const;
+
     void WriteOutGraph(std::ostream &str,Graph_Node *graph,
 		       size_t &ng,std::set<std::string> &cvs) const;
 
@@ -128,7 +133,7 @@ namespace COMIX {
 
     bool Construct(const Int_Vector &incs,
 		   const ATOOLS::Flavour_Vector &flavs,
-		   Model *const model);
+		   Model *const model,MODEL::Coupling_Map *const cpls);
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);
     bool GaugeTest(const Vec4D_Vector &moms);
 
@@ -166,6 +171,8 @@ namespace COMIX {
 
     inline void SetDecayInfos(const PHASIC::Decay_Info_Vector &id) 
     { m_decid=id; }
+    inline const PHASIC::Decay_Info_Vector &DecayInfos() const
+    { return m_decid; }
 
     inline char PMode() const { return m_pmode; }
 

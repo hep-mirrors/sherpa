@@ -9,11 +9,6 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-//#define _USE_MPI_
-#ifdef _USE_MPI_
-#include <mpi++.h>
-#endif
-
 Multi_Channel::Multi_Channel(string _name,int id) : 
   fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
 {
@@ -115,55 +110,6 @@ void Multi_Channel::ResetCnt()
   m_p    = 0;
 }        
 
-void Multi_Channel::MPIOptimize(double error)
-{
-#ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_rank();
-  int size = MPI::COMM_WORLD.Get_size();
-
-  double * messageblock = new double[1+3*channels.size()];
-  double * alp = new double[channels.size()];
-  //tag 9 for communication
-  if (rank==0) {
-    int count = 0;
-    while (count<size-1) {
-      MPI::COMM_WORLD.Recv(messageblock, 1+3*channels.size(), MPI::DOUBLE, MPI::ANY_SOURCE, 9);
-      count++;
-      for (short int i=0;i<channels.size();i++) {
-	channels[i]->SetRes1(channels[i]->Res1() + messageblock[1+channels.size()+i]);
-	channels[i]->SetRes2(channels[i]->Res2() + messageblock[1+2*channels.size()+i]);
-	channels[i]->SetRes3(sqr(channels[i]->Res1()) - channels[i]->Res2());
-	channels[i]->SetN(channels[i]->N() + int(messageblock[1+i]));
-      }
-    }
-    Optimize(error);
-    //broadcast alphai
-    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();
-    
-    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
-  }
-  else {
-    messageblock[0] = rank;
-    for (int i=0;i<channels.size();i++) messageblock[1+i]                   = channels[i]->N();
-    for (int i=0;i<channels.size();i++) messageblock[1+channels.size()+i]   = channels[i]->Res1();
-    for (int i=0;i<channels.size();i++) messageblock[1+2*channels.size()+i] = channels[i]->Res2();
-    MPI::COMM_WORLD.Send(messageblock, 1+3*channels.size(), MPI::DOUBLE, 0, 9);   
-    //Waiting for new alpha's
-    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
-
-    for (short int i=0;i<channels.size();i++) {
-      channels[i]->SetAlpha(alp[i]);
-      channels[i]->ResetOpt();
-      channels[i]->SetWeight(0.);
-    }
-  }
-  delete[] alp;
-  delete[] messageblock;
-#else
-#endif
-
-}
-
 class Order_Weight {
 public:
   bool operator()(Single_Channel* c1,Single_Channel* c2)
@@ -234,8 +180,6 @@ void Multi_Channel::EndOptimize(double error)
 {
   size_t i;
 
-#ifndef _USE_MPI_
-
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
     if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(0.);
@@ -255,40 +199,6 @@ void Multi_Channel::EndOptimize(double error)
   msg_Tracking()<<"S1X: "<<s1xmin<<endl
  		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-------------------------------------------"<<endl;
-
-#else
-
-  //bcast them to all
-  int rank = MPI::COMM_WORLD.Get_rank();
-  int size = MPI::COMM_WORLD.Get_size();
-
-  double* alp = new double[channels.size()];
-  //tag 9 for communication
-  if (rank==0) {
-    short int i;
-    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->AlphaSave());
-    double norm = 0;
-    for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
-    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
-
-    msg_Tracking()<<"Best weights:-------------------------------"<<endl;
-    for (i=0;i<channels.size();i++)
-      if (channels[i]->Alpha() > 0) {
-	msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl
-		      <<"S1X: "<<s1xmin<<endl
-		      <<"-------------------------------------------"<<endl;
-      }
-    //broadcast alphai
-    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();    
-    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
-  }
-  else {
-    //Waiting for new alpha's
-    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
-    for (short int i=0;i<channels.size();i++) channels[i]->SetAlpha(alp[i]);
-  }
-  delete[] alp;
-#endif
 }
 
 bool Multi_Channel::OptimizationFinished()
@@ -302,7 +212,7 @@ void Multi_Channel::AddPoint(double value)
 {
   //if (!ATOOLS::IsZero(value)) n_contrib++;
   if (value!=0.) n_contrib++;
-//   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
+  //   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
   n_points++;
   m_p++;
   m_sum+=value;

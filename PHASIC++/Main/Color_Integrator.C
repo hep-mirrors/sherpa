@@ -54,6 +54,13 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Representation &v)
   return ostr<<"<error>";
 }
 
+Representation::Representation(const size_t &id,
+			       const int &type,const int &act): 
+  m_id(id), m_i(0), m_j(0), m_type(type), m_act(act)
+{
+  m_ids=ID(m_id);
+}
+
 Color_Integrator::Color_Integrator():
   m_lastconf(0), m_alphamode(0), 
   m_check(false), m_on(true), 
@@ -414,6 +421,59 @@ bool Color_Integrator::TrivialCheck()
   return sumr==0 && sumg==0 && sumb==0;
 }
 
+void Color_Integrator::SetDecayIds(const std::vector<size_t> &ids,
+				   const Int_Vector &types,
+				   const Int_Vector &acts)
+{
+  m_decids.resize(ids.size());
+  for (size_t i(0);i<ids.size();++i)
+    m_decids[i] = new Representation(ids[i],types[i],acts[i]);
+}
+
+bool Color_Integrator::CheckDecays()
+{
+  for (size_t j(0);j<m_decids.size();++j) {
+    int sumr(0), sumg(0), sumb(0);
+    const Int_Vector &ids(m_decids[j]->Ids());
+    for (size_t i(0);i<ids.size();++i) {
+      const Representation *cr(m_ids[ids[i]]);
+      sumr+=(cr->I()==1)-(cr->J()==1);
+      sumg+=(cr->I()==2)-(cr->J()==2);
+      sumb+=(cr->I()==3)-(cr->J()==3);
+    }
+#ifdef DEBUG__BG
+    msg_Debugging()<<"Decay "<<j<<" "<<*m_decids[j]
+		   <<": sum red = "<<sumr<<", sum green = "
+		   <<sumg<<", sum blue = "<<sumb<<"\n";
+#endif
+    if (m_decids[j]->Act()) {
+      if (m_decids[j]->Type()==1) {
+	if (!((sumr==1 && sumg==0 && sumb==0) ||
+	      (sumr==0 && sumg==1 && sumb==0) ||
+	      (sumr==0 && sumg==0 && sumb==1))) return false;
+      }
+      else if (m_decids[j]->Type()==-1) {
+	if (!((sumr==-1 && sumg==0 && sumb==0) ||
+	      (sumr==0 && sumg==-1 && sumb==0) ||
+	      (sumr==0 && sumg==0 && sumb==-1))) return false;
+      }
+      else {
+	if (!((sumr==1 && sumg==-1 && sumb==0) ||
+	      (sumr==1 && sumg==0 && sumb==-1) ||
+	      (sumr==-1 && sumg==1 && sumb==0) ||
+	      (sumr==-1 && sumg==0 && sumb==1) ||
+	      (sumr==0 && sumg==1 && sumb==-1) ||
+	      (sumr==0 && sumg==-1 && sumb==1) ||
+	      (sumr==0 && sumg==0 && sumb==0))) return false;
+      }
+    }
+    else {
+      if (!(sumr==0 && sumg==0 && sumb==0)) return false;
+    }
+  }
+  return true;
+}
+
 bool Color_Integrator::CheckPermutation(const Idx_Vector &perm)
 {
   std::set<size_t> all;
@@ -559,6 +619,7 @@ bool Color_Integrator::GeneratePoint()
   if (m_alpha.empty() || m_alphamode==0) {
     DiceColours();
     m_cweight=m_weight;
+    if (!CheckDecays()) return false;
     return m_valid=m_nogen?true:GenerateOrders();
   }
   if (LookUp()) return m_valid=true;

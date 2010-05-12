@@ -94,8 +94,6 @@ namespace PHASIC {
     virtual int NeedUpdate();
     virtual int IsConditional();
 
-    virtual double ActualValue() const;
-
     // inline functions
     inline void SetProcess(Process_Integrator *const proc) 
     { p_proc=proc; }

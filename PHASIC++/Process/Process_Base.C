@@ -20,7 +20,7 @@ Process_Base::Process_Base():
   p_cuts(NULL), p_gen(NULL), p_shower(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), 
-  m_nqcd(0), m_new(0), m_oqcd(0), m_oew(0),
+  m_oqcd(0), m_oew(0),
   m_lookup(false), m_trigger(true) {}
 
 Process_Base::~Process_Base() 
@@ -61,24 +61,6 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl)
   double res(this->Differential(p));
   SetKFactorOn(true);
   return res;
-}
-
-void Process_Base::SetScale(const std::string &scale)
-{
-  p_scale = Scale_Setter_Base::Scale_Getter_Function::GetObject
-    (scale,Scale_Setter_Arguments(this,m_pinfo.m_scale=scale));
-  if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
-  SetScaleSetter(p_scale);
-}
-
-void Process_Base::SetKFactor(const std::string &kfactor,
-			      const size_t &oqcdlo,const size_t &oewlo)
-{
-  p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::GetObject
-    (kfactor,KFactor_Setter_Arguments
-     (this,m_pinfo.m_kfactor=kfactor,oqcdlo,oewlo));
-  if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
-  SetKFactorSetter(p_kfactor);
 }
 
 void Process_Base::SetScaleSetter(const SP(Scale_Setter_Base) &scale)
@@ -255,17 +237,11 @@ void Process_Base::Init(const Process_Info &pi,
   m_flavs.resize(m_nin+m_nout);
   if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
     SortFlavours(m_pinfo);
-    m_new=0;
-    m_nqcd=0;
     std::vector<Flavour> fl;
     m_pinfo.m_ii.GetExternal(fl);
     m_pinfo.m_fi.GetExternal(fl);
     if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
-    for (size_t i(0);i<fl.size();++i) {
-      m_flavs[i]=fl[i];
-      if (m_flavs[i].Strong()) ++m_nqcd;
-      else ++m_new;
-    }
+    for (size_t i(0);i<fl.size();++i) m_flavs[i]=fl[i];
     m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   }
   double massin=0.0, massout=0.0;
@@ -399,11 +375,6 @@ void Process_Base::FillOnshellConditions()
   for(size_t i=0;i<ids.size();i++)
     if (ids[i].m_osd) Selector()->AddOnshellCondition
       (PSId(ids[i].m_id),sqr(ids[i].m_fl.Mass()));  
-}
-
-const ATOOLS::Vec4D_Vector &Process_Base::ActiveMom() const
-{ 
-  return Integrator()->PSHandler()->LabPoint(); 
 }
 
 void Process_Base::SetSelector(const Selector_Key &key)

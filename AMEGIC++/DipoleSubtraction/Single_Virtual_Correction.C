@@ -123,9 +123,9 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   if (!p_LO_process) p_LO_process = new Single_LOProcess(m_pinfo);
   p_LO_process->SetTestMoms(p_testmoms);
 
-  p_dipole = new DipoleSplitting_Base(model);
+  p_dipole = new DipoleSplitting_Base();
   p_dipole->SetAlpha(m_dalpha);
-  p_flkern = new Flavour_KernelsA(model);
+  p_flkern = new Flavour_KernelsA();
   p_flkern->SetAlpha(m_dalpha);
 
   size_t fsgluons(0);
@@ -134,7 +134,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
     if (m_flavs[i].IsGluon()) fsgluons++; 
   }
   if (m_massive||fsgluons) {
-    p_masskern = new Massive_Kernels(model);
+    p_masskern = new Massive_Kernels();
     if (p_masskern->Nmf()>0) m_massive=1;
     if (!m_massive) {
       delete p_masskern;
@@ -156,6 +156,10 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_pinfo.m_oqcd=m_oqcd;
   m_pinfo.m_oew=m_oew;
 
+  p_dipole->SetCoupling(p_LO_process->CouplingMap());
+  p_flkern->SetCoupling(p_LO_process->CouplingMap());
+  if (p_masskern) p_masskern->SetCoupling(p_LO_process->CouplingMap());
+
   if (p_LO_process!=p_LO_process->Partner()) {
     string partnerID=p_LO_process->Partner()->Name();
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -170,6 +174,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (p_partner==this) {
     SelectLoopProcess();
+    p_loopme->SetCouplings((Coupling_Map*)p_LO_process->CouplingMap());
 
     links.push_back(this);
     p_dsij = new double*[p_LO_process->PartonList().size()];
@@ -256,9 +261,18 @@ void Single_Virtual_Correction::Minimize()
   ------------------------------------------------------------------------------*/
 
 
-double Single_Virtual_Correction::Differential(const ATOOLS::Vec4D_Vector &_moms) { return DSigma(_moms,m_lookup); }
+double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &_moms)
+{
+  Vec4D_Vector moms(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    Poincare cms(moms[0]+moms[1]);
+    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+  }
+  return DSigma(moms,m_lookup);
+}
 
-double Single_Virtual_Correction::Differential2() { 
+double Single_Virtual_Correction::Partonic2()
+{ 
   if (p_int->ISR()->On()==0) return 0.;
   return DSigma2(); 
 }
@@ -266,60 +280,37 @@ double Single_Virtual_Correction::Differential2() {
 
 double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
-  m_last = m_lastxs = 0.;
+  m_lastxs = 0.;
   if (m_nin==2) {
     for (size_t i=0;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return m_last = 0.;
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.;
     }
   }
   if (m_nin==1) {
     for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return m_last = 0.;
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.;
     }
   }
   if (p_partner == this) {
-    m_lastxs = operator()(&_moms.front());
+    m_lastdxs = operator()(_moms);
   }
   else {
     if (lookup) {
-      m_lastxs = p_partner->LastXS()*m_sfactor;
+      m_lastdxs = p_partner->LastDXS()*m_sfactor;
     }
-    else m_lastxs = p_partner->operator()(&_moms.front())*m_sfactor;
+    else m_lastdxs = p_partner->operator()(_moms)*m_sfactor;
   }
   double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
-
-  if (m_nin==2) {
-    if (p_int->ISR()->On()) {
-      if (!p_int->ISR()->CalculateWeight(Partner()->ScaleSetter()->Scale(stp::fac))) 
-        return m_last=m_lastlumi=0.0;
-      m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
-    }
-    else m_lastlumi=1.;
-    m_lastlumi*=BeamWeight(Partner()->ScaleSetter()->Scale(stp::fac));
-    int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
-    double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
-    if (p_pl[0].num>1) pols[0] = 99;
-    if (p_pl[1].num>1) pols[1] = 99;
-    m_lastlumi *= p_int->Beam()->Weight(pols,dofs);
-  }
-  else  m_lastlumi = 1.;
-  return m_last = m_Norm * (m_lastxs+kpterm) * m_lastlumi * Partner()->KFactor();
+  return m_lastxs = m_Norm * (m_lastdxs+kpterm);
 }
 
 double Single_Virtual_Correction::DSigma2() 
 {
-  if (m_last==0.) return 0.;
-  if ((m_flavs[0]==m_flavs[1]) || (p_int->ISR()->On()==0) ) return 0.;
-  if (p_partner == this) {
-  }
+  if (m_lastxs==0.) return 0.;
   double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
-  if (!p_int->ISR()->CalculateWeight2(Partner()->ScaleSetter()->Scale(stp::fac))) return 0.0;
-  double tmp = m_Norm * (m_lastxs+kpterm) * p_int->ISR()->Weight2(&m_flavs.front())* Partner()->KFactor2(); 
-  tmp *= BeamWeight(Partner()->ScaleSetter()->Scale(stp::fac));
-  m_last    += tmp;
-  return tmp;
+  return m_Norm * (m_lastdxs+kpterm);
 }
 
 
@@ -609,7 +600,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, AT
   if (sb) {
     res+= (m_kpcb[0]*fbq+m_kpcb[1]*fbqx+m_kpcb[2]*fbg+m_kpcb[3]*fbgx)/fb;
   }
-  return res;
+  return res * KFactor();
 }
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
@@ -643,21 +634,22 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
 }
 
-double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D * mom)
+double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
 {
-  if (p_partner!=this) return p_partner->operator()(mom)*m_sfactor;
+  if (p_partner!=this) {
+    p_partner->Integrator()->SetMomenta(p_int->Momenta());
+    return p_partner->operator()(mom)*m_sfactor;
+  }
   Integrator()->RestoreInOrder();
-  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
 
   double M2(0.);
 
-  p_LO_process->Calc_AllXS(mom,p_dsij);
+  p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij);
   if (p_loopme->NeedsBorn()) p_loopme->SetBorn(p_dsij[0][0]);
   p_loopme->SetRenScale(p_scale->Scale(stp::ren));
-  Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-  p_loopme->Calc(momv);
+  p_loopme->Calc(mom);
   double I=0.;
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) I=Calc_I(mom);
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) I=Calc_I(&mom.front());
   m_x0=1.,m_x1=1.;
   double eta0=1.,eta1=1.;
   double w=1.;
@@ -676,12 +668,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D * mom)
 //        w *= -m_x1*log(eta1);
   }
 
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) Calc_KP(mom,m_x0,m_x1,eta0,eta1,w);
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) Calc_KP(&mom.front(),m_x0,m_x1,eta0,eta1,w);
 
   double lme = 0.;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) lme= p_loopme->ME_Finite();
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::polecheck) CheckPoleCancelation(mom);
-    
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::polecheck) CheckPoleCancelation(&mom.front());
   M2+=I+lme;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) M2+=p_dsij[0][0]; 
   if (!(M2>0.) && !(M2<0.)
@@ -694,7 +685,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D * mom)
       && !(M2==0.)) {
     std::cout<<"NAN!!! "<<M2<<std::endl;
   }
-  return M2;
+  return M2 * KFactor();
 }
 
 
@@ -729,4 +720,8 @@ void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist)
   }
 }
 
-
+void Single_Virtual_Correction::SetScale(const Scale_Setter_Arguments &args)
+{
+  if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
+  SetScaleSetter(p_LO_process->Partner()->ScaleSetter());
+}

@@ -37,12 +37,15 @@ namespace COMIX {
     // member functions
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
-		    const double &isf,const double &fsf,Model *const model,
+		    const double &isf,const double &fsf,
+		    Model *const model,MODEL::Coupling_Map *const cpls,
 		    const size_t &oew=99,const size_t &oqcd=99,
 		    const size_t &maxoew=99,const size_t &maxoqcd=99);
     bool Map(const Matrix_Element *me,ATOOLS::Flavour_Map &fmap);
 
-    double Differential(const std::vector<ATOOLS::Vec4D> &momenta);
+    double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
+			PHASIC::Color_Integrator *const colint,
+			PHASIC::Helicity_Integrator *const helint);
     double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
 			const Int_Vector &ci,const Int_Vector &cj,
 			const bool set=false);

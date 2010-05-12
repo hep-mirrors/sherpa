@@ -14,7 +14,6 @@
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
-#include "EXTRA_XS/Main/ME_Base.H"
 #include "METOOLS/Main/Spin_Structure.H"
 
 using namespace EXTRAXS;
@@ -38,7 +37,8 @@ bool Single_Process::Initialize()
 {
   DEBUG_FUNC(&m_pinfo);
   DEBUG_VAR(m_pinfo);
-  if (m_nin!=2 || (m_nout!=2 && m_nout!=3)) return false;
+  MODEL::s_model->GetCouplings(m_cpls);
+  if (m_nin!=2) return false;
   
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
@@ -61,6 +61,7 @@ bool Single_Process::Initialize()
     p_virtual_me2=Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
       DEBUG_INFO("found");
+      p_virtual_me2->SetCouplings(&m_cpls);
       return true;
     }
     else {
@@ -74,6 +75,7 @@ bool Single_Process::Initialize()
     p_born_me2=ME2_Base::GetME2(m_pinfo);
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
+      p_born_me2->SetCouplings(&m_cpls);
       m_oqcd=p_born_me2->OrderQCD();
       m_oew=p_born_me2->OrderEW();
       return true;
@@ -89,12 +91,9 @@ bool Single_Process::Initialize()
   }
 }
 
-double Single_Process::Differential(const ATOOLS::Vec4D_Vector& momenta) 
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta) 
 {
-  if (m_nlotype==nlo_type::lo && !Trigger()) return m_lastxs=m_last=0.0;
-  
-  p_scale->CalculateScale(p_int->PSHandler()->LabPoint());
-
+  if (m_nlotype==nlo_type::lo && !Trigger()) return m_lastxs=0.0;
   if (p_born_me2) {
     m_lastxs=(*p_born_me2)(momenta);
   }
@@ -103,45 +102,7 @@ double Single_Process::Differential(const ATOOLS::Vec4D_Vector& momenta)
     p_virtual_me2->Calc(momenta);
     m_lastxs=p_virtual_me2->Result().GetFinite();
   }
-
-  if (p_int->ISR() && m_nin==2) {
-    if (p_int->ISR()->On()) {
-      p_int->ISR()->MtxLock();
-      if (!p_int->ISR()->CalculateWeight(p_scale->Scale(PHASIC::stp::fac))) {
-	p_int->ISR()->MtxUnLock();
-	return m_last=m_lastlumi=0.0;
-      }
-      m_lastlumi=p_int->ISR()->Weight(&m_flavs.front()); 
-      p_int->ISR()->MtxUnLock();
-    }
-    else m_lastlumi=1.;
-  }
-  else m_lastlumi=1.;
-  m_lastlumi *= BeamWeight(p_scale->Scale(stp::fac));
-  return m_last=m_lastxs*m_lastlumi*KFactor();
-}
-
-double Single_Process::Differential2() 
-{
-  if (m_lastxs==0.0 || !Trigger()) return 0.0;
-  if (p_int->ISR() && m_nin==2) {
-    p_scale->CalculateScale2(p_int->PSHandler()->LabPoint());
-    if (m_flavs[0]==m_flavs[1] || p_int->ISR()->On()==0)
-      return 0.;
-    p_int->ISR()->MtxLock();
-    if (!p_int->ISR()->CalculateWeight2(p_scale->Scale(PHASIC::stp::fac))) {
-      p_int->ISR()->MtxUnLock();
-      return 0.0;
-    }
-    double tmp=m_lastxs*p_int->ISR()->Weight2(&m_flavs.front()); 
-    p_int->ISR()->MtxUnLock();
-    tmp *= BeamWeight(p_scale->Scale(stp::fac));
-    m_last+=tmp*=KFactor2();
-    return tmp;
-  }
-  else {
-    return 0.0;
-  }
+  return m_lastxs*=KFactor();
 }
 
 bool EXTRAXS::Single_Process::FillIntegrator

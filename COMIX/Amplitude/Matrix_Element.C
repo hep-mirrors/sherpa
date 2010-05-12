@@ -9,6 +9,7 @@
 #include <iomanip>
 
 using namespace COMIX;
+using namespace PHASIC;
 using namespace ATOOLS;
 
 Matrix_Element::Matrix_Element():
@@ -23,7 +24,7 @@ Matrix_Element::~Matrix_Element()
 bool Matrix_Element::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
  const double &isf,const double &fsf,Model *const model,
- const size_t &oew,const size_t &oqcd,
+ MODEL::Coupling_Map *const cpls,const size_t &oew,const size_t &oqcd,
  const size_t &maxoew,const size_t &maxoqcd)
 {
   m_nin=nin;
@@ -34,7 +35,7 @@ bool Matrix_Element::Initialize
   m_ampl.SetMaxOrderQCD(Min(oqcd,maxoqcd));
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
-  if (!m_ampl.Construct(incs,flavs,model)) return false;
+  if (!m_ampl.Construct(incs,flavs,model,cpls)) return false;
   std::map<Flavour,size_t> fc;
   for (size_t i(nin);i<flavs.size();++i) {
     std::map<Flavour,size_t>::iterator fit(fc.find(flavs[i]));
@@ -60,8 +61,12 @@ void Matrix_Element::PrintStatistics
   m_ampl.PrintStatistics(str,mode);
 }
 
-double Matrix_Element::Differential(const std::vector<Vec4D> &momenta)
+double Matrix_Element::Differential(const std::vector<Vec4D> &momenta,
+				    Color_Integrator *const colint,
+				    Helicity_Integrator *const helint)
 {
+  p_colint=colint;
+  p_helint=helint;
   return Differential(momenta,p_colint->I(),p_colint->J());
 }
 

@@ -193,84 +193,77 @@ PHASIC::Vegas *PS_Channel::GetPVegas
 (const Current_Base *cur,const size_t &id)
 {
   if (cur!=NULL) {
+    CVegas_Map::const_iterator vit(m_pcmap.find(cur));
+    if (vit!=m_pcmap.end()) return vit->second;
 #ifdef USING__Threading
     pthread_mutex_lock(&m_vgs_mtx);
 #endif
-    Vegas *vgs(NULL);
-    CVegas_Map::const_iterator vit(m_pcmap.find(cur));
-    if (vit!=m_pcmap.end()) vgs=vit->second;
-    else vgs=m_pcmap[cur]=GetVegas("P_"+cur->PSInfo());
+    m_pcmap[cur]=GetVegas("P_"+cur->PSInfo());
 #ifdef USING__Threading
     pthread_mutex_unlock(&m_vgs_mtx);
 #endif
-    return vgs;
+    return m_pcmap[cur];
   }
+  IVegas_Map::const_iterator vit(m_pimap.find(id));
+  if (vit!=m_pimap.end()) return vit->second;
 #ifdef USING__Threading
   pthread_mutex_lock(&m_vgs_mtx);
 #endif
-  Vegas *vgs(NULL);
-  IVegas_Map::const_iterator vit(m_pimap.find(id));
-  if (vit!=m_pimap.end()) vgs=vit->second;
-  else vgs=m_pimap[id]=GetVegas("P_"+GetPSId(id));
+  m_pimap[id]=GetVegas("P_"+GetPSId(id));
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
-  return vgs;
+  return m_pimap[id];
 }
 
 PHASIC::Vegas *PS_Channel::GetCVegas(const size_t &id,const size_t &n)
 {
+  IVegas_Map::const_iterator vit(m_cimap.find(id));
+  if (vit!=m_cimap.end()) return vit->second;
 #ifdef USING__Threading
   pthread_mutex_lock(&m_vgs_mtx);
 #endif
-  Vegas *vgs(NULL);
-  IVegas_Map::const_iterator vit(m_cimap.find(id));
-  if (vit!=m_cimap.end()) vgs=vit->second;
-  else vgs=m_cimap[id]=GetVegas("C_"+GetPSId(id)+"_"+ToString(n),n);
+  m_cimap[id]=GetVegas("C_"+GetPSId(id)+"_"+ToString(n),n);
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
-  return vgs;
+  return m_cimap[id];
 }
 
 PHASIC::Vegas *PS_Channel::GetSVegas
 (const size_t &id,const Current_Base *cur)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
-  Vegas *vgs(NULL);
   ICVegas_Map::const_iterator vit(m_sicmap.find(id));
   if (vit!=m_sicmap.end()) {
     CVegas_Map::const_iterator it(vit->second.find(cur));
-    if (it!=vit->second.end()) vgs=it->second;
+    if (it!=vit->second.end()) return it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[id][cur]=
-    GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo());
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_sicmap[id][cur]=GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo());
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
-  return vgs;
+  return m_sicmap[id][cur];
 }
 
 PHASIC::Vegas *PS_Channel::GetTVegas
 (const size_t &id,const Current_Base *cur)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
-  Vegas *vgs(NULL);
   ICVegas_Map::const_iterator vit(m_ticmap.find(id));
   if (vit!=m_ticmap.end()) {
     CVegas_Map::const_iterator it(vit->second.find(cur));
-    if (it!=vit->second.end()) vgs=it->second;
+    if (it!=vit->second.end()) return it->second;
   }
-  if (vgs==NULL) vgs=m_ticmap[id][cur]=
-    GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo());
+#ifdef USING__Threading
+  pthread_mutex_lock(&m_vgs_mtx);
+#endif
+  m_ticmap[id][cur]=GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo());
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
-  return vgs;
+  return m_ticmap[id][cur];
 }
 
 bool PS_Channel::Zero(Vertex_Base *const vtx) const

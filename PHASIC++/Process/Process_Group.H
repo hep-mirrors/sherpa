@@ -72,10 +72,8 @@ namespace PHASIC {
     double Differential(const ATOOLS::Vec4D_Vector &p);
     double Differential2();
 
-    void SetScale(const std::string &scale);
-    void SetKFactor(const std::string &kfactor,
-		    const size_t &oqcdlo,
-		    const size_t &oewlo);
+    void SetScale(const Scale_Setter_Arguments &args);
+    void SetKFactor(const KFactor_Setter_Arguments &args);
 
     bool CalculateTotalXSec(const std::string &resultpath,
 			    const bool create);

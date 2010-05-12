@@ -12,7 +12,7 @@ namespace PHASIC {
     int m_nd;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
     double m_alpha;
-    double m_sum,m_sum2;
+    double m_weight,m_sum,m_sum2;
     double m_nc;
     double **p_xi;
     double *p_x,*p_xin,*p_r,*p_cx,*p_bm;
@@ -28,8 +28,8 @@ namespace PHASIC {
     Vegas(int dim,int ndx,const std::string &,int=1);
     ~Vegas();
     double* GeneratePoint(const double * _ran);
-    double GenerateWeight(const double *) const;
-    double GenerateBinWeight(int *) const;
+    double GenerateWeight(const double *);
+    double GenerateBinWeight(int *);
     void AddPoint(double,double *);
     void AddBinPoint(double,int *);
 

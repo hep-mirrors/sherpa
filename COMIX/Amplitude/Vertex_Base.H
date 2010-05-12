@@ -28,6 +28,8 @@ namespace COMIX {
 
     std::string m_tag;
 
+    double m_cplfac;
+
     static size_t s_vlmode, s_cimin, s_cimax;
 
     template <typename CType> inline void 
@@ -57,6 +59,8 @@ namespace COMIX {
     void CollectGraphs(Graph_Node *graph) const;
 
     // inline functions
+    inline void SetCplFac(const double &fac) { m_cplfac=fac; }
+
     inline void SetJA(Current_Base *const a) 
     { p_a=a; if (a!=NULL) a->AttachOut(this); }
     inline void SetJB(Current_Base *const b) 
