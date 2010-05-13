@@ -4,6 +4,8 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "METOOLS/Main/Spin_Structure.H"
+#include "AMEGIC++/Main/Single_Process.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -93,6 +95,22 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 
   PHASIC::NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(nlos));
+  
+  if (rpa.gen.SpinCorrelation()) {
+    Particle_Vector inparticles = blob->GetInParticles();
+    Particle_Vector outparticles = blob->GetOutParticles();
+    Particle_Vector particles(inparticles.begin(),inparticles.end());
+    particles.insert(particles.end(),outparticles.begin(),outparticles.end());
+    METOOLS::Amplitude_Tensor* amps = new METOOLS::Amplitude_Tensor(particles);
+    
+    AMEGIC::Single_Process* aproc = dynamic_cast<AMEGIC::Single_Process*>(proc);
+    if (!aproc) {
+      THROW(fatal_error, "Spin correlations can only be enabled when using "+
+            std::string("Amegic as matrix element generator."));
+    }
+    aproc->FillAmplitudes(amps);
+    blob->AddData("amps",new Blob_Data<METOOLS::Amplitude_Tensor*>(amps));
+  }
 
   return success;
 }
