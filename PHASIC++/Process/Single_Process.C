@@ -125,7 +125,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       p_mapproc->Integrator()->SetMomenta(p);
       scs=p_mapproc->ScaleSetter();
     }
-    scs->CalculateScale(p);
+    if (!(IsMapped() && LookUp())) scs->CalculateScale(p);
     if (Partonic(p)==0.0) return 0.0;
     return m_last=m_lastxs*BeamISRWeight(scs->Scale(stp::fac),0);
   }
