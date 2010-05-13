@@ -6,11 +6,6 @@ libPhasicChannels_la_SOURCES  =	\
 				Channel_Elements.C \
 				Channel_Elements_KK.C \
 				Single_Channel.C \
-				Simple_Pole.C \
-				Resonance.C \
-				Threshold.C \
-				Leading_Log.C \
-				LBS_Compton_Peak.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
@@ -32,11 +27,6 @@ localinc_HEADERS      =	\
 			Channel_Elements.H \
 			Channel_Elements_KK.H \
 			Single_Channel.H \
-			Simple_Pole.H \
-			Resonance.H \
-			Threshold.H \
-			Leading_Log.H \
-			LBS_Compton_Peak.H \
 			FSR_Channel.H \
 			Channel_Interface.H \
 			Rambo.H \

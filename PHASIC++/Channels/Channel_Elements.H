@@ -48,20 +48,13 @@ namespace PHASIC {
     double MasslessPropWeight(double,double,double,double);
     double MasslessPropWeight(double,double,double,double,double&);
     double MasslessPropMomenta(double,double,double,double);
-    void MasslessPropGrid(double,double,double,double,double&);
 
     double AntennaWeight(double amin,double amax,const double a,double &ran);
     double AntennaMomenta(double amin,double amax,double ran);
 
-    double FlatWeight(double,double,double,double);
-    double FlatWeight(double,double,double,double,double&);
-    double FlatMomenta(double,double,double,double);
-    void FlatGrid(double,double,double,double,double&);
-
     double MassivePropWeight(double,double,int,double,double,double);
     double MassivePropWeight(double,double,int,double,double,double,double&);
     double MassivePropMomenta(double,double,int,double,double,double);
-    void MassivePropGrid(double,double,double,double,double,double&);
 
     double QCDAPWeight(ATOOLS::Vec4D*,int,double);
     void QCDAPMomenta(ATOOLS::Vec4D*,ATOOLS::Vec4D,int,double);
@@ -69,53 +62,33 @@ namespace PHASIC {
     double LLPropWeight(double,double,double,double,double);
     double LLPropWeight(double,double,double,double,double,double&);
     double LLPropMomenta(double,double,double,double,double);
-    void LLPropGrid(double,double,double,double,double,double&);
 
     double ThresholdMomenta(double,double,double,double);
     double ThresholdWeight(double,double,double,double);
     double ThresholdMomenta(double,double,double,double,double);
     double ThresholdWeight(double,double,double,double,double);
     double ThresholdWeight(double,double,double,double,double,double&);
-    void ThresholdGrid(double sexp,double mass,double smin,double smax,double s,double &ran);
 
     double DiceYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,const int mode) const;
-    double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
-    void   YUniformGrid(const double tau,const ATOOLS::Double_Container &xinfo,
-			ATOOLS::Double_Container &yinfo,double& ran,const int mode);
     double DiceYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,const int mode) const;
-    double WeightYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
-    void YCentralGrid(const double tau,const ATOOLS::Double_Container &xinfo,
-		      ATOOLS::Double_Container &yinfo,double &ran,const int mode);
     double DiceYForward(const double yexponent,const double tau,
 			const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYForward(const double yexponent,const double tau,
 			  const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,const int mode) const;
-    double WeightYForward(const double yexponent,const double tau,
-			  const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
-    void YForwardGrid(const double yexponent,const double tau,const ATOOLS::Double_Container &xinfo,
-		      ATOOLS::Double_Container &yinfo,double &ran,const int mode);
     double DiceYBackward(const double yexponent,const double tau,
 			 const ATOOLS::Double_Container &xinfo,
 			 ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYBackward(const double yexponent,const double tau,
 			   const ATOOLS::Double_Container &xinfo,
-			   ATOOLS::Double_Container &yinfo,const int mode) const;
-    double WeightYBackward(const double yexponent,const double tau,
-			   const ATOOLS::Double_Container &xinfo,
 			   ATOOLS::Double_Container &yinfo,double&,const int mode) const;
-    void YBackwardGrid(const double yexponent,const double tau,const ATOOLS::Double_Container &xinfo,
-		       ATOOLS::Double_Container &yinfo,double &ran,const int mode);
 
   };// end of class Channel_Elements
 

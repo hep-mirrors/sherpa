@@ -286,28 +286,6 @@ namespace PHASIC {
 
   /////////////////////////////////////////////////////////////////////////////////////
 
-  class Flat_ISR_V: public ISR_Channel_Base {
-  protected:
-
-    double m_exponent;
-    bool   m_zchannel;
-
-  public:
-
-    // constructor
-    Flat_ISR_V(const double exponent,const std::string cinfo,
-	       ATOOLS::Integration_Info *info);
-
-    // member functions
-    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-		       const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
-    void AddPoint(double);
-
-  };// end of class Flat_ISR_V
-
-  /////////////////////////////////////////////////////////////////////////////////
-
   class Leading_Log_Uniform_V: public ISR_Channel_Base {
   protected:
 

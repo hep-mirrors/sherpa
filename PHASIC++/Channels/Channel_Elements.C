@@ -264,24 +264,6 @@ double Channel_Elements::AntennaMomenta(double amin,double amax,
 }
 
 
-void Channel_Elements::MasslessPropGrid(double sexp,double smin,double smax,double s,double &ran)
-{
-  if (s<smin||s>smax) {
-    ran=-1.;
-    return;
-  }
-  if (sexp==1.) {
-    ran=log(s/smin)/log(smax/smin);
-  }
-  else {
-    double cn=1.-sexp;
-    double psm=pow(smin,cn);
-    ran = (pow(s,cn)-psm)/(pow(smax,cn)-psm);
-  }
-//   cout<<"MlPGrid: "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
-}
-
-
 double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,double s)
 {
   if ((s<=smin) && (s>=smax)) return 0;
@@ -363,18 +345,6 @@ double Channel_Elements::ThresholdMomenta(double sexp,double mass,double smin,do
   }
   return s;
 }
-void Channel_Elements::ThresholdGrid(double sexp,double mass,double smin,double smax,double s,double &ran)
-{
-  if (s<smin||s>smax) {
-    ran=-1.;
-    return;
-  }
-  double m4 = sqr(sqr(mass));
-  double sg = sqrt(sqr(s)+m4);
-  double sgmin=sqrt(sqr(smin)+m4);
-  double sgmax=sqrt(sqr(smax)+m4);
-  MasslessPropGrid(sexp,sgmin,sgmax,sg,ran);
-}
 
 double Channel_Elements::LLPropWeight(double sexp,double pole,
 				      double smin,double smax,
@@ -421,17 +391,6 @@ double Channel_Elements::LLPropMomenta(double sexp,double pole,
   if (!(s>0) && !(s<0) && s!=0) msg_Error()<<"LLPropMomenta produced a nan !"<<endl;
   if ((s<smin) || (s>smax))     msg_Error()<<"LLPropMomenta out of bounds !"<<endl;
   return s;
-}
-
-void Channel_Elements::LLPropGrid(double sexp,double pole,
-				    double smin,double smax,double s,double& ran)
-{
-  if (s<smin||s>smax) {
-    ran=-1.;
-    return;
-  }
-  if (smin==smax) ran=0.;
-  else Channel_Basics::PeakedGrid(pole,sexp,smin,smax,s,-1,ran);
 }
 
 double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
@@ -503,22 +462,6 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
   if (!(s>0) && !(s<0) && s!=0) 
     msg_Error()<<"MassivePropMomenta produced a nan !"<<endl;
   return s;
-}
-
-void Channel_Elements::MassivePropGrid(double mass,double width,
-				       double smin,double smax,double s,double &ran)
-{
-  if (s<smin||s>smax) {
-    ran=-1.;
-    return;
-  }
-  double m2 = mass*mass;
-  double mw = mass*width;
-  double ymax= atan((smin-m2)/mw);
-  double ymin= atan((smax-m2)/mw);
-  double y   = atan((s-m2)/mw);
-  ran = (y-ymin)/(ymax-ymin);
-//   cout<<"MPGrid:  "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<" "<<mass<<" "<<width<<endl;
 }
 
 double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
@@ -798,18 +741,6 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
   return y;
 }
 
-void Channel_Elements::YUniformGrid(const double tau,const Double_Container &xinfo,
-				    Double_Container &yinfo,double& ran,const int mode)
-{
-  if (mode<3) return;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  ran = (yinfo[2]-ymin)/(ymax-ymin);
-}
-
 double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
 					Double_Container &yinfo,double& ran,const int mode) const
 {
@@ -823,21 +754,6 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ran = (yinfo[2]-ymin)/(ymax-ymin);
-  return (ymax-ymin);
-}
-
-double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
-					Double_Container &yinfo,const int mode) const
-{
-  /*
-    See DiceYUniform for details
-  */
-  if (mode!=3) return 1.;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
   return (ymax-ymin);
 }
 
@@ -869,19 +785,6 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
   return y;
 }
 
-void Channel_Elements::YCentralGrid(const double tau,const Double_Container &xinfo,
-				    Double_Container &yinfo,double& ran,const int mode)
-{
-  if (mode<3) return;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  double atey = atan(ymin/pre);
-  ran = (atan(yinfo[2]/pre)-atey)/(atan(ymax/pre)-atey);
-}
-
 double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
 					Double_Container &yinfo,double& ran,const int mode) const
 {
@@ -895,18 +798,6 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   double wt = atan(ymax/pre)-atey;
   ran = (atan(yinfo[2]/pre)-atey)/wt;
   return wt/pre*(pre*pre+yinfo[2]*yinfo[2]);
-}
-
-double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
-					Double_Container &yinfo,const int mode) const
-{
-  if (mode!=3) return 1.;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  return (atan(ymax/pre)-atan(ymin/pre))*(pre*pre+yinfo[2]*yinfo[2])/pre;
 }
 
 double Channel_Elements::DiceYForward(const double yexponent,const double tau,
@@ -940,21 +831,6 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
   return y;
 }
 
-void Channel_Elements::YForwardGrid(const double yexponent,const double tau,const Double_Container &xinfo,
-				    Double_Container &yinfo,double& ran,const int mode)
-{
-  if (mode<3) return;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  double ypeak = ymax-xinfo[3];
-  if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
-
-  Channel_Basics::PeakedGrid(ypeak,yexponent,ymin,ymax,yinfo[2],-1,ran);
-}
-
 double Channel_Elements::WeightYForward(const double yexponent,const double tau,
 					const Double_Container &xinfo,
 					Double_Container &yinfo,double& ran,const int mode) const
@@ -970,26 +846,6 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
 
   double wt = Channel_Basics::PeakedWeight(ypeak,yexponent,ymin,ymax,yinfo[2],-1,ran)* 
     pow(ypeak-yinfo[2],yexponent);
-    if (!(wt>0) && !(wt<0) && wt!=0) {
-      msg_Error()<<"WeightYForward produces a nan!"<<endl
-			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
-      abort();
-    }
-  return wt;
-}
-
-double Channel_Elements::WeightYForward(const double yexponent,const double tau,
-					const Double_Container &xinfo,
-					Double_Container &yinfo,const int mode) const
-{
-  if (mode!=3) return 1.;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  double wt = Channel_Basics::PeakedWeight(ymax-xinfo[3],yexponent,ymin,ymax,-1)* 
-    pow(ymax-xinfo[3]-yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
       msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
@@ -1029,19 +885,6 @@ msg_Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
   return y;
 }
 
-void Channel_Elements::YBackwardGrid(const double yexponent,const double tau,const Double_Container &xinfo,
-				    Double_Container &yinfo,double& ran,const int mode)
-{
-  if (mode<3) return;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-
-  Channel_Basics::PeakedGrid(-ymin-xinfo[1],yexponent,-ymax,-ymin,-yinfo[2],-1,ran);
-}
-
 double Channel_Elements::WeightYBackward(const double yexponent,const double tau,
 					 const Double_Container &xinfo,
 					 Double_Container &yinfo,double& ran,const int mode) const
@@ -1061,81 +904,3 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
     }
   return wt;
 }
-
-double Channel_Elements::WeightYBackward(const double yexponent,const double tau,
-					 const Double_Container &xinfo,
-					 Double_Container &yinfo,const int mode) const
-{
-  if (mode!=3) return 1.;
-  double logtau=0.5*log(tau);
-  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
-  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1)* 
-    pow(-ymin-xinfo[1]+yinfo[2],yexponent);
-    if (!(wt>0) && !(wt<0) && wt!=0) {
-      msg_Error()<<"WeightYForward produces a nan!"<<endl
-			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
-      abort();
-    }
-  return wt;
-}
-
-double Channel_Elements::
-FlatMomenta(double sexp,double smin,double smax,double ran)
-{
-  double tmin=smin/smax, tmax=1.0;
-  double s=smax*Channel_Basics::FlatDist(sexp,tmin,tmax,ran);
-  if (!(s>0) && !(s<0) && s!=0) 
-    msg_Error()<<"MasslessFlatMomenta produced a nan !"<<endl;
-  return s;
-}
-
-double Channel_Elements::
-FlatWeight(double sexp,double smin,double smax,double s)
-{
-  if (s<=smin || s>=smax) return 0;
-  double tau=s/smax, tmin=smin/smax, tmax=1.0;
-  double wt=pow(log(tau),sexp)/
-    (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax));
-  if (!(wt>0) && !(wt<=0)) { 
-    msg_Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
-		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
-		       <<"   sexp = "<<sexp<<endl;
-  }
-  return wt;
-}
-
-double Channel_Elements::
-FlatWeight(double sexp,double smin,double smax,const double s,double &ran)
-{
-  if (s<smin || s>=smax) {
-    ran=-1.;
-    return 0.;
-  }
-  double tau=s/smax, tmin=smin/smax, tmax=1.0;
-  double wt=pow(log(tau),sexp)/
-    (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax,tau,ran));
-  if (!(wt>0) && !(wt<=0)) { 
-    msg_Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
-		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
-		       <<"   sexp = "<<sexp<<endl;
-  }
-  return wt;
-}
-
-void Channel_Elements::
-FlatGrid(double sexp,double smin,double smax,double s,double &ran)
-{
-  if (s<smin||s>smax) {
-    ran=-1.;
-    return;
-  }
-  else {
-    double tau=s/smax, tmin=smin/smax, tmax=1.0;
-    Channel_Basics::FlatGrid(sexp,tmin,tmax,tau,ran);
-  }
-}
-
-
