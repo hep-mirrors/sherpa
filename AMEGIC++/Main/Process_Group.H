@@ -59,9 +59,6 @@ namespace AMEGIC {
 
     void PrintProcessSummary(int=0); 
 
-    void TestPoint(ATOOLS::Vec4D *tp);
-    void DecayPoint(ATOOLS::Vec4D *tp,Process_Tags* pinfo,size_t &cnt);
-
     // inline functions
     inline void SetMFname(const std::string &name) { m_mfname=name; }
 

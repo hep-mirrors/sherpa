@@ -9,7 +9,7 @@
 #include "PHASIC++/Channels/ISR_Channels.H"
 #include "PHASIC++/Channels/Beam_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
-#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Process/Process_Info.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -621,6 +621,68 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
 void Phase_Space_Handler::AddPoint(const double value) 
 { 
   p_process->AddPoint(value); 
+}
+
+void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
+				    ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
+				    const Subprocess_Info *info,size_t &n)
+{
+  size_t nin(fl.size());
+  for (size_t i(0);i<nin;++i) msg_Debugging()<<fl[i]<<" ";
+  msg_Debugging()<<"->";
+  fl.resize(nin+info->m_ps.size());
+  cp.resize(nin+info->m_ps.size());
+  for (size_t i(0);i<info->m_ps.size();++i) {
+    fl[nin+i]=info->m_ps[i].m_fl;
+    msg_Debugging()<<" "<<fl[nin+i];
+  }
+  msg_Debugging()<<" {\n";
+  Single_Channel * TestCh = new Rambo(nin,info->m_ps.size(),&fl.front());
+  TestCh->GeneratePoint(&cp.front(),(Cut_Data*)(NULL));
+  delete TestCh;
+  if (nin==1) {
+    Poincare cms(cp.front());
+    for (size_t i(1);i<cp.size();++i) cms.BoostBack(cp[i]);
+  }
+  for (size_t i(0);i<info->m_ps.size();++i) {
+    msg_Indent();
+    if (info->m_ps[i].m_ps.empty()) {
+      msg_Debugging()<<"p["<<n<<"] = "<<cp[nin+i]<<", m = "
+		     <<sqrt(dabs(cp[nin+i].Abs2()))<<" ("<<fl[nin+i]<<")\n";
+      p[n++]=cp[nin+i];
+    }
+    else {
+      msg_Debugging()<<"P["<<nin+i<<"] = "<<cp[nin+i]<<", m = "
+		     <<sqrt(dabs(cp[nin+i].Abs2()))<<" ("<<fl[nin+i]<<")\n";
+      Vec4D_Vector ncp(1,cp[nin+i]);
+      Flavour_Vector nfl(1,info->m_ps[i].m_fl);
+      TestPoint(p,ncp,nfl,&info->m_ps[i],n);
+    }
+  }
+  msg_Debugging()<<"}\n";
+}
+
+void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
+				    const Process_Info *info)
+{
+  DEBUG_FUNC("");
+  Flavour_Vector fl(info->m_ii.GetExternal());
+  Vec4D_Vector cp(fl.size());
+  if (fl.size()==1) {
+    p[0]=cp[0]=Vec4D(fl[0].Mass(),0.0,0.0,0.0);
+    msg_Debugging()<<"p[0] = "<<p[0]<<"\n";
+  }
+  else {
+    double m[2]={fl[0].Mass(),fl[1].Mass()};
+    double E=rpa.gen.Ecms();
+    if (E<m[0]+m[1]) return;
+    double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
+    p[0]=cp[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));
+    p[1]=cp[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
+    msg_Debugging()<<"p[0] = "<<p[0]<<"\np[1] = "<<p[1]<<"\n";
+  }
+  size_t n(fl.size());
+  TestPoint(p,cp,fl,&info->m_fi,n);
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,

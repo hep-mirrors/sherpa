@@ -72,8 +72,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   if (!p_testmoms) {
     if (!p_pinfo) p_pinfo=Translate(m_pinfo);
     p_testmoms = new Vec4D[m_nin+m_nout];
-    if (p_pinfo->OSDecays()) TestPoint(p_testmoms);
-    else Phase_Space_Handler::TestPoint(p_testmoms,m_nin,m_nout,m_flavs);
+    Phase_Space_Handler::TestPoint(p_testmoms,&Info());
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath!="");
@@ -228,48 +227,6 @@ void AMEGIC::Process_Group::PrintProcessSummary(int it)
 
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->Get<AMEGIC::Process_Base>()->PrintProcessSummary(it+1);
 } 
-
-void AMEGIC::Process_Group::TestPoint(Vec4D *tp)
-{
-  size_t nout=p_pinfo->Nout();
-  ATOOLS::Flavour_Vector flavs;
-  Vec4D *hmom=new Vec4D[m_nin+nout];
-  vector<Process_Tags*> decaylist;
-  for (size_t i=0;i<m_nin;i++) flavs.push_back(m_flavs[i]);
-  size_t n=p_pinfo->GetOnshellFlavList(flavs,decaylist);
-  Phase_Space_Handler::TestPoint(hmom,m_nin,n,flavs);
-  for (size_t i=0;i<m_nin;i++) tp[i]=hmom[i];
-  size_t cnt=m_nin;
-  for (size_t i=0;i<n;i++) {
-    if (decaylist[i]==0) tp[cnt++]=hmom[i+m_nin];
-    else {
-      tp[cnt]=hmom[i+m_nin];
-      DecayPoint(tp,decaylist[i],cnt);
-    }
-  }
-  delete[] hmom;
-}
-
-void AMEGIC::Process_Group::DecayPoint(Vec4D *tp,Process_Tags* pinfo,size_t &cnt)
-{
-  size_t nout=pinfo->TotalNout();
-  ATOOLS::Flavour_Vector flavs;
-  Vec4D *hmom=new Vec4D[1+nout];
-  flavs.push_back(*(pinfo->p_fl));
-  vector<Process_Tags*> decaylist;
-  size_t n=pinfo->GetOnshellFlavList(flavs,decaylist);
-  Phase_Space_Handler::TestPoint(hmom,1,n,flavs);
-  Poincare bst(tp[cnt]);
-  for (size_t i=0;i<n;i++) {
-    bst.BoostBack(hmom[i+1]);
-    if (decaylist[i]==0) tp[cnt++]=hmom[i+1];
-    else {
-      tp[cnt]=hmom[i+1];
-      DecayPoint(tp,decaylist[i],cnt);
-    }
-  }
-  delete[] hmom;  
-}
 
 void AMEGIC::Process_Group::FillOnshellConditions()
 {

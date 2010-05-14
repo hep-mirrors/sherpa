@@ -146,8 +146,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       for (size_t i=0;i<m_nin;i++) 
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
-    if (p_pinfo->OSDecays()) TestPoint(p_testmoms);
-    else Phase_Space_Handler::TestPoint(p_testmoms,newxs->NIn(),newxs->NOut(),newxs->Flavours());
+    Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info());
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath!="");
     if (!newxs->Get<AMEGIC::Process_Base>()->

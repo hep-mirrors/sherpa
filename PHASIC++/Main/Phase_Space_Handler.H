@@ -26,6 +26,8 @@ namespace PDF {
 namespace PHASIC {
   class Process_Integrator;
   class Multi_Channel;
+  class Subprocess_Info;
+  class Process_Info;
 
   struct psm {
     
@@ -117,6 +119,10 @@ namespace PHASIC {
     void CalculateME();
     void CalculatePS();
 
+    static void TestPoint(ATOOLS::Vec4D *const p,
+			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
+			  const Subprocess_Info *info,size_t &n);
+
   public:
 
     //constructor
@@ -147,6 +153,7 @@ namespace PHASIC {
 
     double EnhanceFactor();
 
+    static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info);
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  const size_t &nin,const size_t &nout,
 			  const ATOOLS::Flavour_Vector &flavs);
