@@ -621,7 +621,19 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   //max
   if (p->zwf==0) {
     if (prt.length()>1) {
-      if (!CheckVariables(flag,prt+string("_min"),0)) CalcSmin(flag,"min",prt,sf,0);
+      Point* po=clmp->left;
+      if (po==p) po=clmp->right;
+      if (po->zwf) {
+	if (!CheckVariables(flag,prt+string("_min"),0)) {
+	  if (!CheckVariables(flag,prt,0)) {
+	    sf<<"  Flavour fl"<<prt<<" = "<<"Flavour((kf_code)("<<(po->fl).Kfcode()<<"));"<<endl;
+	    AddToVariables(flag,prt,string("sqr(fl"+prt+".Mass())"),0,sf);
+	  }
+	  AddToVariables(flag,prt+string("_min"),string("s")+prt,0,sf);
+
+	}
+      }
+      else if (!CheckVariables(flag,prt+string("_min"),0)) CalcSmin(flag,"min",prt,sf,0);
       else if (flag>=0 && CheckVariables(flag,prt,0)) sf<<"  s"<< prt <<"_min = s"<< prt <<";"<<endl;
       AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
 		     string("_max)-sqrt(s") + prt + string("_min))"),0,sf);    
@@ -634,8 +646,10 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
   else {
     rannum++;
     if (flag==0) {
-      sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<(p->fl).Kfcode()<<"));"<<endl;
-      sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl; 
+      if (!CheckVariables(flag,mummy,0)) {
+	sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<(p->fl).Kfcode()<<"));"<<endl;
+	sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl; 
+      }
       sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     }
     if (flag==1) {
@@ -645,7 +659,8 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
 	s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
       }
       AddToVariables(flag,mummy,s,1,sf);
-      AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
+      if (!CheckVariables(flag,mummy,0))
+	AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     }
     if (flag==-11) m_idc.push_back(string("FM")+ToString((p->fl).Kfcode())+string("_")+mummy);
     AddToVariables(flag,mummy+string("_max"),"s"+mummy,0,sf);    

@@ -167,10 +167,10 @@ double* Vegas::GeneratePoint(const double * ran)
   return p_x;
 }
 
-double Vegas::GenerateWeight(const double* xy)
+double Vegas::GenerateWeight(const double* xy) const
 {
   if (m_on==0) return 1.;
-  m_weight = m_nc;
+  double weight = m_nc;
   for (int i=0;i<m_dim;i++) {
     size_t l(0), r(m_nd-1), c((l+r)/2);
     double a(p_xi[i][c]);
@@ -184,30 +184,30 @@ double Vegas::GenerateWeight(const double* xy)
     int k(r);
     p_ia[i] = k;
     if (k==0) {
-      m_weight *= p_xi[i][k];
+      weight *= p_xi[i][k];
     }
     else {
-      m_weight *= p_xi[i][k]-p_xi[i][k-1];
+      weight *= p_xi[i][k]-p_xi[i][k-1];
     }
   }
-  return m_weight;
+  return weight;
 }
 
-double Vegas::GenerateBinWeight(int* xy)
+double Vegas::GenerateBinWeight(int* xy) const
 {
   if (m_on==0) return 1.;
-  m_weight = m_nc;
+  double weight = m_nc;
   for (int i=0;i<m_dim;i++) {
     int k(xy[i]);
     p_ia[i] = k;
     if (k==0) {
-      m_weight *= p_xi[i][k];
+      weight *= p_xi[i][k];
     }
     else {
-      m_weight *= p_xi[i][k]-p_xi[i][k-1];
+      weight *= p_xi[i][k]-p_xi[i][k-1];
     }
   }
-  return m_weight;
+  return weight;
 }
 
 double *Vegas::GetBinsMean(int *xy) const
