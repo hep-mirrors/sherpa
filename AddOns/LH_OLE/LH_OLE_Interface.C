@@ -49,8 +49,9 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   m_active=active;
   if (!m_active) return;
   m_needsborn = true;
-  m_cpl = MODEL::s_model->ScalarFunction(std::string("alpha_S"),
-					 sqr(rpa.gen.Ecms()));
+  m_cpl=MODEL::s_model->ScalarFunction
+    (std::string("alpha_S"),rpa.gen.CplScale());
+
   m_cpl /= 2.*M_PI;
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
@@ -137,7 +138,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
 void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
   if (!m_active) return;
   if (m_OLE_id<0) return;
-  m_bf  = m_born*m_cpl;
+  m_bf  = m_born*m_cpl*CouplingFactor(1,0);
 
   for (size_t i=0;i<m_pn;i++) {
     p_momenta[0+i*5]=momenta[i][0];
@@ -146,7 +147,7 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
     p_momenta[3+i*5]=momenta[i][3];
   }
 
-  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),m_as,p_result);
+  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),m_as*CouplingFactor(1,0),p_result);
   // finite
   m_res.Finite()= p_result[2]/p_result[3]*m_bf;
   // 1/epsIR
