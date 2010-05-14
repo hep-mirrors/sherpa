@@ -97,16 +97,16 @@ void Single_Process::BeamISRWeight
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
-      if (sub->m_scale!=muf2) {
-	if (mode==0) (*sub)*=BeamISRWeight(sub->m_scale,mode);
-	else sub->m_result+=sub->m_me*BeamISRWeight(sub->m_scale,mode);
+      if (sub->m_facscale!=muf2) {
+	if (mode==0) (*sub)*=BeamISRWeight(sub->m_facscale,mode);
+	else sub->m_result+=sub->m_me*BeamISRWeight(sub->m_facscale,mode);
 	++nscales;
       }
     }
     if (nscales<subs->size()) {
       double lumi(BeamISRWeight(muf2,mode));
       for (size_t i(0);i<subs->size();++i) 
-	if ((*subs)[i]->m_scale==muf2) {
+	if ((*subs)[i]->m_facscale==muf2) {
 	  if (mode==0) (*(*subs)[i])*=lumi;
 	  else (*subs)[i]->m_result+=(*subs)[i]->m_me*lumi;
 	}
@@ -116,7 +116,7 @@ void Single_Process::BeamISRWeight
 
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
-  m_last=0.0;
+  m_wgtinfo.m_w0 = m_last=0.0;
   p_int->SetMomenta(p);
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
@@ -127,6 +127,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     }
     if (!(IsMapped() && LookUp())) scs->CalculateScale(p);
     if (Partonic(p)==0.0) return 0.0;
+    if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
+    m_wgtinfo.m_renscale = scs->Scale(stp::ren);
     return m_last=m_lastxs*BeamISRWeight(scs->Scale(stp::fac),0);
   }
   Partonic(p);

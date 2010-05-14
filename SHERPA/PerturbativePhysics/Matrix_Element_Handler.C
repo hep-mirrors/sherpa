@@ -181,8 +181,11 @@ bool Matrix_Element_Handler::GenerateWeightedEvent()
       delete info;
       double wf(rpa.Picobarn()/sw);
       m_evtinfo.m_weight*=wf;
-      if (p_proc->GetSubevtList()) 
+      if (p_proc->GetSubevtList()) {
 	(*p_proc->GetSubevtList())*=wf;
+	p_proc->GetSubevtList()->MultMEwgt(wf);
+      }
+      if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
       m_evtinfo.m_ntrial=addn;
       return true;
     }

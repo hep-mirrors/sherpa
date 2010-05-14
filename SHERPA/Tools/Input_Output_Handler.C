@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/Output_Sherpa.H"
+#include "SHERPA/Tools/Output_RootNtuple.H"
 #include "SHERPA/Tools/Output_HepEvt.H"
 #include "SHERPA/Tools/Output_D0_HepEvt.H"
 #include "SHERPA/Tools/HepEvt_Interface.H"
@@ -52,6 +53,7 @@ Input_Output_Handler::~Input_Output_Handler()
 
 bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string sherpaoutput=dr->GetValue<string>("SHERPA_OUTPUT",string(""));
+  string rootntupleoutput=dr->GetValue<string>("ROOTNTUPLE_OUTPUT",string(""));
   string hepevtoutput=dr->GetValue<string>("HEPEVT_OUTPUT",string(""));
   string d0hepevtoutput=dr->GetValue<string>("D0_HEPEVT_OUTPUT",string(""));
   string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
@@ -64,6 +66,15 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   if (!sherpaoutput.empty()) {
     m_outmap["SHERPA"]=
       new Output_Sherpa(evtpath+"/"+sherpaoutput,".evts", precision);
+  }
+  if (!rootntupleoutput.empty()) {
+#ifdef USING__ROOT
+    m_outmap["ROOTNTUPLE"]=
+      new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision);
+#else
+    THROW(fatal_error,"ROOTNTUPLE format can only be created when Sherpa was linked "
+          +string("with root, please read our Howto for more information."));
+#endif
   }
   if (!hepevtoutput.empty()) {
     m_outmap["HEPEVT"]=

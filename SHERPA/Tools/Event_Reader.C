@@ -11,7 +11,7 @@ using namespace std;
 
 
 Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
-  m_path(path), m_add(file), m_file(file),
+  Event_Reader_Base(path,file), 
   m_generator(std::string("Unknown generator")),
   f_gz(false), m_inputmode(0), m_eventmode(0), m_phasemode(-1)
 {

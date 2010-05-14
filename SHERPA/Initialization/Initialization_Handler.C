@@ -31,6 +31,9 @@
 
 #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
 
+#include "SHERPA/Tools/Event_Reader.H"
+#include "SHERPA/Tools/RootNtuple_Reader.H"
+
 #ifdef USING__Hadrons
 #include "HADRONS++/Main/Hadrons.H"
 #endif
@@ -70,6 +73,16 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
     p_dataread    = new Data_Reader(" ",";","!","=");
     p_dataread->AddComment("#");
+    p_dataread->AddWordSeparator("\t");
+    p_dataread->SetInputPath(m_path);
+    p_dataread->SetInputFile(m_file);
+    m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+    rpa.Init(m_path,m_file,argc,argv);
+    return;
+  }  
+  if (m_mode==9990||m_mode==9991) {
+    p_evtreader   = new RootNtuple_Reader(m_path,m_evtfile,m_mode-9990);
+    p_dataread    = new Data_Reader(" ",";","!","=");
     p_dataread->AddWordSeparator("\t");
     p_dataread->SetInputPath(m_path);
     p_dataread->SetInputFile(m_file);
@@ -324,7 +337,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   SetScaleFactors();
   okay = okay && InitializeTheModel();  
   
-  if (m_mode==9999) {
+  if (m_mode==9999 || m_mode==9990 || m_mode==9991) {
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
@@ -806,6 +819,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
       msg_Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
+    case 9990:
+    case 9991:
     case 9999:
       msg_Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
@@ -917,6 +932,20 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	m_mode       = 9999;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
+        oit=helpsv.erase(oit);
+      }
+      else if (key=="EVTDATA_ROOTNTUPLE") {
+	m_mode       = 9990;
+	m_evtfile    = value;
+	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
+        Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
+        oit=helpsv.erase(oit);
+      }
+      else if (key=="EVTDATA_ROOTNTUPLE_RC") {
+	m_mode       = 9991;
+	m_evtfile    = value;
+	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
+        Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
         oit=helpsv.erase(oit);
       }
       else {

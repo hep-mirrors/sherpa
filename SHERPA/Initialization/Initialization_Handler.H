@@ -15,7 +15,7 @@
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
-#include "SHERPA/Tools/Event_Reader.H"
+#include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
@@ -70,7 +70,7 @@ namespace SHERPA {
     Soft_Photon_Handler        * p_softphotons;
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
-    Event_Reader               * p_evtreader;
+    Event_Reader_Base          * p_evtreader;
     Analysis_Map                 m_analyses;
     void ShowParameterSyntax();
     void LoadLibraries() const;
@@ -131,7 +131,7 @@ namespace SHERPA {
     Soft_Photon_Handler         * const GetSoftPhotonHandler()     const { return p_softphotons;     }
     Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
     Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
-    Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
+    Event_Reader_Base           * const GetEventReader()           const { return p_evtreader;       }
 
     int    const Mode()           const { return m_mode; };
 

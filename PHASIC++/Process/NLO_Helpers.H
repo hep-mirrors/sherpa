@@ -35,53 +35,33 @@ namespace PHASIC {
     const ATOOLS::Flavour* p_fl;
     const ATOOLS::Vec4D*   p_mom;
     bool m_flip;
-    double m_result,m_me,m_scale,m_alpha;
+    double m_result,m_me,m_mewgt,m_facscale,m_renscale,m_alpha;
     std::string m_ID;
 
-    NLO_subevt() {n=0;p_fl=0;p_mom=0;m_ID=std::string("");m_result=0.;m_scale=0.;m_alpha=0.;}
+    NLO_subevt();
 
-    NLO_subevt(size_t nn,const ATOOLS::Flavour* fl,const ATOOLS::Vec4D* mom,std::string ID)
-    { n=nn; p_fl=fl; p_mom=mom; m_ID=ID; m_result=0.;m_me=0.;m_scale=0.;m_alpha=0.; }
+    NLO_subevt(size_t nn,const ATOOLS::Flavour* fl,const ATOOLS::Vec4D* mom,std::string ID);
 
-    NLO_subevt(NLO_subevt* nlos)
-    { *this = *nlos; m_result=m_me; }
+    NLO_subevt(NLO_subevt* nlos);
 
-    void Print() {std::cout<<m_ID<<": "<<m_result<<std::endl;}
+    void Print();
   
     ATOOLS::Particle_List* CreateParticleList();
 
-    void Mult(const double scal) {
-      m_result*=scal;
-      m_me*=scal;
-    }
+    void Mult(const double scal);
     
-    NLO_subevt& operator*= (const double scal) {
-      m_result*=scal;
-      return *this;
-    }
+    void MultMEwgt(const double scal);
 
-    NLO_subevt& operator+= (const double sm) {
-      m_result+=sm;
-      return *this;
-    }
+    NLO_subevt& operator*= (const double scal);
 
-    NLO_subevt& operator=(const NLO_subevt& cp) {
-      if (this!=&cp) {
-	n        = cp.n;
-	p_fl     = cp.p_fl;
-	p_mom    = cp.p_mom;
-	m_result = cp.m_result;
-	m_me     = cp.m_me;
-	m_scale  = cp.m_scale;
-	m_alpha  = cp.m_alpha;
-	m_ID     = cp.m_ID;
-      }
-      return *this;
-    }
-    friend std::ostream &operator<< (std::ostream &ostr,const  NLO_subevt *sevt)
-    {
+    NLO_subevt& operator+= (const double sm);
+
+    NLO_subevt& operator=(const NLO_subevt& cp);
+
+    friend std::ostream &operator<< (std::ostream &ostr,const  NLO_subevt *sevt) {
       return ostr<<sevt->m_ID<<"\n";
     }
+
   };
 
   class NLO_subevtlist : public std::vector<NLO_subevt*> { 
@@ -90,6 +70,7 @@ namespace PHASIC {
     NLO_subevtlist& operator*=(const double scal);
     void Print();
     void Mult(const double scal);
+    void MultMEwgt(const double scal);
   };
 
 

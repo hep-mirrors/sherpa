@@ -36,6 +36,20 @@ namespace PHASIC {
   class Process_Base;
   typedef std::map<std::string,Process_Base*> Process_Map;
 
+  class ME_wgtinfo {
+  public: 
+    int m_nx;
+    double m_w0;
+    double* p_wx;
+    double m_x1,m_x2,m_y1,m_y2;
+    double m_renscale;
+    ME_wgtinfo();
+    ~ME_wgtinfo();
+    ME_wgtinfo& operator*= (const double scal);
+    void Flip();
+    void AddMEweights(int n);
+  };
+
   class Process_Base {
   protected:
 
@@ -128,6 +142,7 @@ namespace PHASIC {
     virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &p);
 
     virtual NLO_subevtlist *GetSubevtList();
+    virtual ME_wgtinfo* GetMEwgtinfo() { return NULL; }
 
     void FillOnshellConditions();
 

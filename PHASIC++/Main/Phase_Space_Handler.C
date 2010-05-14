@@ -119,7 +119,7 @@ bool Phase_Space_Handler::InitIncoming()
 
 double Phase_Space_Handler::Integrate() 
 {
-  if (p_process->Points()>0 && p_process->TotalError()<m_error*p_process->TotalXS()) 
+  if (p_process->Points()>0 && dabs(p_process->TotalError())<dabs(m_error*p_process->TotalXS())) 
     return p_process->TotalXS()*rpa.Picobarn();
   p_integrator = new Phase_Space_Integrator();
   if (!InitIncoming()) return 0;
@@ -452,6 +452,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       (*nlos)[i]->m_flip=0;
     }
     (*nlos)*=m_psweight;
+    (*nlos).MultMEwgt(m_psweight);
   }
   return m_flux*(m_result_1+m_result_2);
 }
@@ -589,7 +590,9 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
   if (value != 0.) {
     ++m_events;
     double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
-    if (dabs(m_result_1) < dabs(m_result_1+m_result_2)*ATOOLS::ran.Get()) {
+    PHASIC::ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
+    double pnf=dabs(m_result_1)/dabs(m_result_1+m_result_2);
+    if (pnf < ATOOLS::ran.Get()) {
       selected->SetMomenta(p_lab);
       selected->SwapInOrder();
       dxs=m_result_2/m_psweight;
@@ -599,9 +602,16 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
       mu22=p_isrhandler->MuF2(0);
       PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
       if (nlos) {
+	(*nlos).MultMEwgt(1./(1.-pnf));
 	for (size_t l=0;l<nlos->size();l++) 
 	  (*nlos)[l]->m_flip=1;
       }	
+      if (wgtinfo) {
+	(*wgtinfo)*=m_psweight/(1.-pnf);
+	wgtinfo->m_x1=p_isrhandler->X1();
+	wgtinfo->m_x2=p_isrhandler->X2();
+	wgtinfo->Flip();
+      }
     }
     else {
       selected->SetMomenta(p_lab);
@@ -610,6 +620,13 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
       xf2=p_isrhandler->XF2(0);
       mu12=p_isrhandler->MuF2(0);
       mu22=p_isrhandler->MuF2(1);
+      PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+      if (nlos) (*nlos).MultMEwgt(1./pnf);
+      if (wgtinfo) {
+	(*wgtinfo)*=m_psweight/pnf;
+	wgtinfo->m_x1=p_isrhandler->X1();
+	wgtinfo->m_x2=p_isrhandler->X2();
+      }
     }
     m_weight=value;
     return new Weight_Info(2,value,dxs,1.0,xf1,xf2,mu12,mu22);

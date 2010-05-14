@@ -81,6 +81,7 @@ namespace AMEGIC {
     double Vie1(int type);
     double Vie2(int type);
     double SPFac() { return m_spfdef*p_cpl->Factor(); }
+    double G2() { return m_g2; }
   };
 }
 #endif

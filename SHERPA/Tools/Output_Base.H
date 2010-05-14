@@ -21,6 +21,7 @@ namespace SHERPA {
 #endif
 
   public:
+    Output_Base() {}
     Output_Base(std::string basename,std::string ext,int precision);
     virtual ~Output_Base();
 

@@ -89,10 +89,12 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
   blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
 
-  //PRINT_INFO(winfo.m_weight<<"  "<<
-  //           proc->ScaleSetter()->Scale(PHASIC::stp::fac));
-  //PRINT_INFO(proc->ScaleSetter()->Scale(PHASIC::stp::ren));
-
+  PHASIC::ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
+  if (wgtinfo) {
+    blob->AddData("ME_wgtinfo",new Blob_Data<PHASIC::ME_wgtinfo*>(wgtinfo));
+    blob->AddData("Renormalization_Scale",new Blob_Data<double>
+		(wgtinfo->m_renscale));
+  }
   PHASIC::NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(nlos));
   

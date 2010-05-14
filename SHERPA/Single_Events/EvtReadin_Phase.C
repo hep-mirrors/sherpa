@@ -13,7 +13,7 @@ EvtReadin_Phase::EvtReadin_Phase(Input_Output_Handler * iohandler) :
   m_type = eph::Read_In;
 }    
 
-EvtReadin_Phase::EvtReadin_Phase(Event_Reader * evtreader) :
+EvtReadin_Phase::EvtReadin_Phase(Event_Reader_Base * evtreader) :
   p_iohandler(NULL), p_evtreader(evtreader), m_path(evtreader->GetPath())
 {
   m_type = eph::Read_In;

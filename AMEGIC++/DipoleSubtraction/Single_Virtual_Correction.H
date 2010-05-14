@@ -31,8 +31,9 @@ namespace AMEGIC {
     Phase_Space_Generator * p_psgen;
 
     double               ** p_dsij;
-    double                  m_kpca[4];
-    double                  m_kpcb[4];
+    double                  m_kpca[8];
+    double                  m_kpcb[8];
+    double                  m_cmur[2];
     double                  m_x0,m_x1;
     std::vector<xp_coeff>   m_xpa, m_xpb;
 
@@ -123,6 +124,7 @@ namespace AMEGIC {
     void           Calc_KP(const ATOOLS::Vec4D*, double, double, double, double, double);
     double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, ATOOLS::Flavour_Vector&); 
     void           CheckPoleCancelation(const ATOOLS::Vec4D*);
+    void           FillMEwgts(PHASIC::ME_wgtinfo&);
 
   };
 }

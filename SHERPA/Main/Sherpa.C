@@ -138,6 +138,8 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
     break;
 #endif
+  case 9990: 
+  case 9991: 
   case 9999: 
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
     break;

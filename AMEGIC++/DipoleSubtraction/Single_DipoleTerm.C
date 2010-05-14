@@ -437,8 +437,9 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom)
   if (p_partner!=this) {
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = p_partner->operator()(mom)*m_sfactor;
-    m_subevt.m_me = m_subevt.m_result = -m_lastxs;
-    m_subevt.m_scale = p_partner->GetSubevt()->m_scale;
+    m_subevt.m_me = m_subevt.m_result = m_subevt.m_mewgt = -m_lastxs;
+    m_subevt.m_facscale = p_partner->GetSubevt()->m_facscale;
+    m_subevt.m_renscale = p_partner->GetSubevt()->m_renscale;
     m_subevt.m_alpha = p_partner->GetSubevt()->m_alpha;
     return m_lastxs;
   }
@@ -459,9 +460,10 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom)
   if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
   m_lastxs = M2 * df * KFactor();
-  m_subevt.m_me = m_subevt.m_result = -m_lastxs;
+  m_subevt.m_me = m_subevt.m_result = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_alpha = p_dipole->GetDPSF();
-  m_subevt.m_scale = p_scale->Scale(stp::fac);
+  m_subevt.m_facscale = p_scale->Scale(stp::fac);
+  m_subevt.m_renscale = p_scale->Scale(stp::ren);
   return m_lastxs;
 }
 

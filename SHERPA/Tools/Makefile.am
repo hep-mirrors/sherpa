@@ -13,12 +13,14 @@ libSherpaTools_la_SOURCES     =	\
 				Output_Base.C \
 				Output_Sherpa.C \
 				Output_HepEvt.C \
+				Output_RootNtuple.C \
 				Output_D0_HepEvt.C \
 			    	$(HEPMC2SOURCES) \
 			    	HepEvt_Interface.C \
 				Pythia_HepEvt_Translator.C \
                                 Event_Reader.C \
-				Analysis_Interface.C
+				Analysis_Interface.C \
+				RootNtuple_Reader.C
 
 localinc_HEADERS      =	\
 			Input_Output_Handler.H \
@@ -26,11 +28,15 @@ localinc_HEADERS      =	\
 			Output_Sherpa.H \
 			Output_HepEvt.H \
 			Output_D0_HepEvt.H \
+			Output_RootNtuple.H \
 		 	$(HEPMC2HEADERS) \
 			HepEvt_Interface.H \
 			Pythia_HepEvt_Translator.H \
+			Event_Reader_Base.H \
 			Event_Reader.H \
-			Analysis_Interface.H
+			Analysis_Interface.H \
+			RootNtuple_Reader.H
+
 
 libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 

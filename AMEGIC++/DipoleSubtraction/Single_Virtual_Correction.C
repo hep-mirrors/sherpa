@@ -46,6 +46,11 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
   }
+  for (int i=0;i<8;i++) m_kpca[i]=0.;
+  for (int i=0;i<8;i++) m_kpcb[i]=0.;
+  m_cmur[0]=0.;
+  m_cmur[1]=0.;
+
   rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour Dipole\
  Terms is published under \\cite{Gleisberg:2007md}.");
 }
@@ -183,6 +188,8 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       for (size_t j=0;j<p_LO_process->PartonList().size();j++) p_dsij[i][j]=0.;
     }
   }
+  if (m_pinfo.m_fi.m_nloqcdtype&&nlo_type::vsub) m_wgtinfo.AddMEweights(18);
+  else if (m_pinfo.m_fi.m_nloqcdtype&&nlo_type::loop) m_wgtinfo.AddMEweights(2);
   Minimize();
   if (p_partner==this && Result()>0.) SetUpIntegrator();
   return 1;
@@ -302,6 +309,11 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   }
   double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
+
+  m_wgtinfo.m_w0 = m_lastdxs/m_sfactor;
+  p_partner->FillMEwgts(m_wgtinfo); 
+  m_wgtinfo*=m_Norm*m_sfactor;
+
   return m_lastxs = m_Norm * (m_lastdxs+kpterm);
 }
 
@@ -358,21 +370,19 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
       double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/p_loopme->Eps_Scheme_Factor(momv));
       double splf = p_dipole->Vif(typei)+p_dipole->Vif(typek);
-      double splf1 = (p_dipole->Vie1(typei)+p_dipole->Vie1(typek))*lsc;
-      double splf2 = (p_dipole->Vie2(typei)+p_dipole->Vie2(typek))*0.5*sqr(lsc);
+      double splf1 = p_dipole->Vie1(typei)+p_dipole->Vie1(typek);
+      double splf2 = p_dipole->Vie2(typei)+p_dipole->Vie2(typek);
 
-      splf+=splf1+splf2;
+      splf+=splf1*lsc+splf2*0.5*sqr(lsc);
       res+=p_dsij[i][k]*splf;
+      m_cmur[0]+=p_dsij[i][k]*(splf1+splf2*lsc);
+      m_cmur[1]+=p_dsij[i][k]*splf2;
     }
   }
-  return -res*p_flkern->Coupling();
-}
+  m_cmur[0]*=-p_flkern->Coupling();
+  m_cmur[1]*=-p_flkern->Coupling();
 
-double GetXPDF(ATOOLS::Flavour flav, double x) 
-{
-  if (flav.IsGluon()) return 1.+x*(1.-x);
-  if (flav.IsQuark()) return 1.-sqr(x*(1.-x));
-  return 0.;
+  return -res*p_flkern->Coupling();
 }
 
 void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, double x1, double eta0, double eta1, double weight) 
@@ -384,8 +394,8 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   size_t pls=1;
   if (sa&&sb) pls++;
   double muf = p_scale->Scale(stp::fac);
-  for (int i=0;i<4;i++) m_kpca[i]=0.;
-  for (int i=0;i<4;i++) m_kpcb[i]=0.;
+  for (int i=0;i<8;i++) m_kpca[i]=0.;
+  for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
   if (sa) {
     double w=1.-eta0;
@@ -440,14 +450,20 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
       m_kpca[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x0)+p_flkern->Kt3(type+2,x0));
     }
     
-    double asum=0.;
-    for (size_t i=1;i<p_LO_process->PartonList().size();i++) 
+    double asum=0.,fsum=0.;
+    for (size_t i=1;i<p_LO_process->PartonList().size();i++) {
+      fsum+=p_dsij[0][i];
       asum+=p_dsij[0][i]*log(muf/dabs(2.*mom[p_LO_process->PartonList()[0]]*mom[p_LO_process->PartonList()[i]]));
-
-    m_kpca[0]+=asum*(-w*p_flkern->P1(type,x0)+p_flkern->P2(type)-p_flkern->P4(type,eta0));
-    m_kpca[1]+=asum*w*(p_flkern->P1(type,x0)+p_flkern->P3(type,x0));
-    m_kpca[2]+=asum*(-w*p_flkern->P1(type+2,x0)+p_flkern->P2(type+2)-p_flkern->P4(type+2,eta0));
-    m_kpca[3]+=asum*w*(p_flkern->P1(type+2,x0)+p_flkern->P3(type+2,x0));
+    }
+    asum/=fsum;
+    m_kpca[4]=fsum*(-w*p_flkern->P1(type,x0)+p_flkern->P2(type)-p_flkern->P4(type,eta0));
+    m_kpca[5]=fsum*w*(p_flkern->P1(type,x0)+p_flkern->P3(type,x0));
+    m_kpca[6]=fsum*(-w*p_flkern->P1(type+2,x0)+p_flkern->P2(type+2)-p_flkern->P4(type+2,eta0));
+    m_kpca[7]=fsum*w*(p_flkern->P1(type+2,x0)+p_flkern->P3(type+2,x0));
+    m_kpca[0]+=asum*m_kpca[4];
+    m_kpca[1]+=asum*m_kpca[5];
+    m_kpca[2]+=asum*m_kpca[6];
+    m_kpca[3]+=asum*m_kpca[7];
   }
   
   if (sb) {
@@ -503,15 +519,20 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
       m_kpcb[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x1)+p_flkern->Kt3(type+2,x1));
     }
 
-    double asum=0.;
-    for (size_t i=0;i<p_LO_process->PartonList().size();i++) if (i!=pls-1) 
+    double asum=0.,fsum=0.;
+    for (size_t i=0;i<p_LO_process->PartonList().size();i++) if (i!=pls-1) {
+      fsum+=p_dsij[pls-1][i];
       asum+=p_dsij[pls-1][i]*log(muf/dabs(2.*mom[p_LO_process->PartonList()[pls-1]]*mom[p_LO_process->PartonList()[i]]));
-
-    m_kpcb[0]+=asum*(-w*p_flkern->P1(type,x1)+p_flkern->P2(type)-p_flkern->P4(type,eta1));
-    m_kpcb[1]+=asum*w*(p_flkern->P1(type,x1)+p_flkern->P3(type,x1));
-    m_kpcb[2]+=asum*(-w*p_flkern->P1(type+2,x1)+p_flkern->P2(type+2)-p_flkern->P4(type+2,eta1));
-    m_kpcb[3]+=asum*w*(p_flkern->P1(type+2,x1)+p_flkern->P3(type+2,x1));
-
+    }
+    asum/=fsum;
+    m_kpcb[4]=fsum*(-w*p_flkern->P1(type,x1)+p_flkern->P2(type)-p_flkern->P4(type,eta1));
+    m_kpcb[5]=fsum*w*(p_flkern->P1(type,x1)+p_flkern->P3(type,x1));
+    m_kpcb[6]=fsum*(-w*p_flkern->P1(type+2,x1)+p_flkern->P2(type+2)-p_flkern->P4(type+2,eta1));
+    m_kpcb[7]=fsum*w*(p_flkern->P1(type+2,x1)+p_flkern->P3(type+2,x1));
+    m_kpcb[0]+=asum*m_kpcb[4];
+    m_kpcb[1]+=asum*m_kpcb[5];
+    m_kpcb[2]+=asum*m_kpcb[6];
+    m_kpcb[3]+=asum*m_kpcb[7];
   }
 
   double gfac=weight;
@@ -519,8 +540,8 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   if (sb) gfac/=(1.-eta1);
   gfac*=p_flkern->Coupling();
 
-  if (sa) for (int i=0;i<4;i++) m_kpca[i]*=gfac;
-  if (sb) for (int i=0;i<4;i++) m_kpcb[i]*=gfac;
+  if (sa) for (int i=0;i<8;i++) m_kpca[i]*=gfac;
+  if (sb) for (int i=0;i<8;i++) m_kpcb[i]*=gfac;
 }
 
 double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, ATOOLS::Flavour_Vector& flav) 
@@ -643,6 +664,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   Integrator()->RestoreInOrder();
 
   double M2(0.);
+  m_cmur[0]=0.;
+  m_cmur[1]=0.;
 
   p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij);
   if (p_loopme->NeedsBorn()) p_loopme->SetBorn(p_dsij[0][0]);
@@ -671,7 +694,12 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) Calc_KP(&mom.front(),m_x0,m_x1,eta0,eta1,w);
 
   double lme = 0.;
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) lme= p_loopme->ME_Finite();
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
+    lme= p_loopme->ME_Finite();
+    m_cmur[0]+=p_loopme->ME_E1()+
+      double(m_nin+m_nout-4)*p_dipole->G2()*p_dsij[0][0]*p_flkern->Coupling();
+    m_cmur[1]+=p_loopme->ME_E2();
+  }
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::polecheck) CheckPoleCancelation(&mom.front());
   M2+=I+lme;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) M2+=p_dsij[0][0]; 
@@ -724,4 +752,16 @@ void Single_Virtual_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
   SetScaleSetter(p_LO_process->Partner()->ScaleSetter());
+}
+
+void Single_Virtual_Correction::FillMEwgts(PHASIC::ME_wgtinfo& wgtinfo) {
+  wgtinfo.m_y1=m_x0;
+  wgtinfo.m_y2=m_x1;
+  if (wgtinfo.m_nx<2) return;
+  for (int i=0;i<2;i++) wgtinfo.p_wx[i]=m_cmur[i];
+  if (wgtinfo.m_nx<18) return;
+  for (int i=0;i<4;i++) wgtinfo.p_wx[i+2]=m_kpca[i];
+  for (int i=0;i<4;i++) wgtinfo.p_wx[i+6]=m_kpcb[i];
+  for (int i=0;i<4;i++) wgtinfo.p_wx[i+10]=m_kpca[i+4];
+  for (int i=0;i<4;i++) wgtinfo.p_wx[i+14]=m_kpcb[i+4];
 }

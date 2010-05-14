@@ -10,6 +10,7 @@ namespace PHASIC {
 
     double m_lastxs;
     bool   m_zero;
+    ME_wgtinfo m_wgtinfo;
 
   public:
 
@@ -54,6 +55,8 @@ namespace PHASIC {
     inline double LastXS() const { return m_lastxs; }
 
     inline bool Zero() const { return m_zero; }
+
+    ME_wgtinfo* GetMEwgtinfo() { return &m_wgtinfo; }
 
   };// end of class Single_Process
 
