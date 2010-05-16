@@ -129,6 +129,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (Partonic(p)==0.0) return 0.0;
     if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
     m_wgtinfo.m_renscale = scs->Scale(stp::ren);
+    if (m_lastxs==0.0) return m_last=0.0; 
     return m_last=m_lastxs*BeamISRWeight(scs->Scale(stp::fac),0);
   }
   Partonic(p);
