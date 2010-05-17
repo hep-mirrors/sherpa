@@ -97,7 +97,7 @@ void Single_Process::BeamISRWeight
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
-      if (sub->m_facscale!=muf2) {
+      if (!IsEqual(sub->m_facscale,muf2)) {
 	if (mode==0) (*sub)*=BeamISRWeight(sub->m_facscale,mode);
 	else sub->m_result+=sub->m_me*BeamISRWeight(sub->m_facscale,mode);
 	++nscales;
@@ -106,7 +106,7 @@ void Single_Process::BeamISRWeight
     if (nscales<subs->size()) {
       double lumi(BeamISRWeight(muf2,mode));
       for (size_t i(0);i<subs->size();++i) 
-	if ((*subs)[i]->m_facscale==muf2) {
+	if (IsEqual((*subs)[i]->m_facscale,muf2)) {
 	  if (mode==0) (*(*subs)[i])*=lumi;
 	  else (*subs)[i]->m_result+=(*subs)[i]->m_me*lumi;
 	}
