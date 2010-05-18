@@ -11,6 +11,7 @@ namespace CSSHOWER {
   struct CS_Parameters {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws;
     int m_mode, m_kin;
+    ATOOLS::Vec4D m_pbt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
 		  const double &x,const int mode=-1,

@@ -142,9 +142,9 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) {
-    eta=GetX(i,cdip)*cs.m_z;
-    pb = new Parton(p_b->Flav().Bar(),-p_b->Mom(),pst::IS);
-    pb->SetXbj(GetX(p_b,NULL));
+    eta=GetX(i,cdip)*(cs.m_z+cs.m_y);
+    pb = new Parton(p_b->Flav().Bar(),-cs.m_pbt,pst::IS);
+    pb->SetXbj(GetX(p_b,NULL)*cs.m_z/(cs.m_z+cs.m_y));
     cdip->SetSpec(pb);
   }
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
@@ -333,6 +333,8 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
+  cs.m_pbt=pbt;
+  lt.Align(cs.m_pbt);
   KernelWeight(a,i,b,mo,cs);
   return cs;
 }
