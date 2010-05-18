@@ -692,6 +692,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   else {
     double m[2]={fl[0].Mass(),fl[1].Mass()};
     double E=rpa.gen.Ecms();
+    if (info->m_fi.m_ps.size()==1)
+      E=info->m_fi.m_ps.front().m_fl.Mass();
     if (E<m[0]+m[1]) return;
     double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
     p[0]=cp[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));
