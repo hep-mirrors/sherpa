@@ -783,63 +783,7 @@ int CS_Shower::TrialEmission()
 
 double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
 {
-  double as((*MODEL::as)(rpa.gen.CplScale()));
-  if (p_cluster==NULL) p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
-  DEBUG_FUNC("");
-  p_ms=ampl->MS();
-  p_shower->SetMS(p_ms);
-  Cluster_Amplitude *next(ampl->Next());
-  Cluster_Leg *lj(next->IdLeg(next->IdNew()));
-  msg_Debugging()<<*ampl<<"\n"<<*next<<"\nnew = "<<*lj<<"\n";
-  double wgt(0.0);
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *lijt(ampl->Leg(i)), *li(next->IdLeg(lijt->Id())); 
-    if (!lijt->Flav().Strong()) continue;
-    for (size_t k(0);k<ampl->Legs().size();++k) {
-      if (i==k) continue;
-      Cluster_Leg *lkt(ampl->Leg(k));
-      if (!lkt->Flav().Strong()) continue;
-      const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-      if (i<ampl->NIn()) {
-	if (k<ampl->NIn()) cmap=&p_shower->GetSudakov()->IIMap();
-	else cmap=&p_shower->GetSudakov()->IFMap();
-      }
-      else {
-	if (k<ampl->NIn()) cmap=&p_shower->GetSudakov()->FIMap();
-	else cmap=&p_shower->GetSudakov()->FFMap();
-      }
-      SF_EEE_Map::const_iterator eees(cmap->find(li->Flav()));
-      if (eees==cmap->end()) {
-	msg_Error()<<METHOD<<"(): No SF for emitted flavour "<<li->Flav()<<".\n";
-	continue;
-      }
-      SF_EE_Map::const_iterator ees(eees->second.find(lj->Flav()));
-      if (ees==eees->second.end()) {
-	msg_Error()<<METHOD<<"(): No SF for emitted flavour "<<lj->Flav()<<".\n";
-	continue;
-      }
-      SF_E_Map::const_iterator es(ees->second.find(lijt->Flav()));
-      if (es==ees->second.end()) {
-	msg_Debugging()<<METHOD<<"(): No SF for emitter flavour "
-		       <<lijt->Flav()<<".\n";
-	continue;
-      }
-      Splitting_Function_Base *cdip(es->second);
-      cdip->SetFlavourSpec(k<ampl->NIn()?lkt->Flav().Bar():lkt->Flav());
-      double Q2=(lijt->Mom()+lkt->Mom()).Abs2(), scale=Q2;
-      Cluster_Leg *lk(next->IdLeg(lkt->Id()));
-      CS_Parameters cs(p_cluster->KT2(ampl,li,lj,lk,lijt->Flav(),p_ms));
-      double eta=1.0;// temporary, FF only
-      double w=8.0*M_PI*as/((li->Mom()+lj->Mom()).Abs2()
-			    -sqr(p_ms->Mass(lijt->Flav())))
-	*(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2,1);
-      msg_Debugging()<<"add  {\n  "<<*lijt<<"\n  "<<*lkt
-		     <<"\n} -> w = "<<w<<"\n";
-      wgt+=w;
-    }
-  }
-  msg_Debugging()<<"weight = "<<wgt<<"\n";
-  return wgt*ampl->RBMax();
+  return 1.0/ampl->RBMax();
 }
 
 double CS_Shower::CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl)
