@@ -224,11 +224,17 @@ double Splitting_Function_Base::RejectionWeight
   return res;
 }
 
+Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
+{
+  SetFlavourSpec(spec->GetFlavour());
+  return p_spec=spec;
+}
+
 Parton *Splitting_Function_Base::SelectSpec()
 {
   if (m_specs.empty()) return NULL;
   double disc=ran.Get()*m_specs.size();
-  return p_spec=m_specs[Min(m_specs.size()-1,(size_t)disc)];
+  return SetSpec(m_specs[Min(m_specs.size()-1,(size_t)disc)]);
 }
 
 void Splitting_Function_Base::ClearSpecs()

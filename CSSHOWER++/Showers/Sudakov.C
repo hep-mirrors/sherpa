@@ -220,7 +220,7 @@ bool Sudakov::Dice(Parton * split)
   p_split=split;
   for (size_t i(0);i<slist.size();++i) {
     Parton *spect(slist[i]);
-    p_spec=spect;
+    p_spect=spect;
   double Q2(0.);
   int beam = -1;
   m_flspec = spect->GetFlavour();
@@ -442,8 +442,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
     if ((*m_splitter)->GetType()==m_type && 
 	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
       if ((*m_splitter)->PureQCD() &&
-	  !(p_split->GetLeft()==p_spec || p_split->GetRight()==p_spec)) continue;
-      (*m_splitter)->AddSpec(p_spec);
+	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
       bool match=false;
       switch (m_type) {
       case cstp::FF: 
@@ -458,7 +457,8 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 	THROW(fatal_error,"Internal error");
       }
       if (match) {
-	(*m_splitter)->SetFlavourSpec(m_flspec);
+	(*m_splitter)->AddSpec(p_spect);
+	(*m_splitter)->SetSpec(p_spect);
 	if (beam!=-1) (*m_splitter)->Lorentz()->SetBeam(beam);
 	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
 	if (m_lastint>0. && m_lastint <0.) cout<<(*this);    

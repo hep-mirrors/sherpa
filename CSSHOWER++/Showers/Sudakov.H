@@ -23,7 +23,7 @@ namespace CSSHOWER {
     PDF::PDF_Base         *  p_pdf[2];
     ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
-    Parton * p_split, * p_spec;
+    Parton * p_split, * p_spect;
     SF_EEE_Map m_ffmap, m_fimap, m_ifmap, m_iimap;
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
     std::vector<Splitting_Function_Base *> m_addsplittings;

@@ -217,13 +217,13 @@ namespace CSSHOWER {
 
     double EFac() const;
 
+    Parton *SetSpec(Parton *const spec);
+
     inline double     Last() const    { return m_lastint; } 
     inline cstp::code GetType() const { return m_type;    } 
 
     inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
     inline void AddSpec(Parton *const s) { m_specs.push_back(s); }
-
-    inline void SetSpec(Parton *const spec) { p_spec=spec; }
 
     inline Parton *Spec() const { return p_spec; }
 
