@@ -67,8 +67,8 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
 {
   DEBUG_FUNC(&pi);
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
-    if (pi.m_fi.NLOType()==nlo_type::loop && pi.m_loopgenerator!=(*mit)->Name())
-      continue;
+//     if (pi.m_fi.NLOType()==nlo_type::loop && pi.m_loopgenerator!=(*mit)->Name())
+//       continue;
     DEBUG_INFO("trying "<<(*mit)->Name());
     Process_Base *proc((*mit)->InitializeProcess(pi,add));
     if (proc) {
