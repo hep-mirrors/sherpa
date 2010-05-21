@@ -172,6 +172,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p)
     m_lastxs=p_map->m_lastxs;
   }
   else {
+    (p_map!=NULL?p_map:this)->p_scale->CalculateScale(p);
 #ifdef TIME_CDBG_ME
     double stime(rpa.gen.Timer().UserTime());
 #endif

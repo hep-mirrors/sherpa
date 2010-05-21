@@ -94,6 +94,7 @@ bool Single_Process::Initialize()
 double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta) 
 {
   if (m_nlotype==nlo_type::lo && !Trigger()) return m_lastxs=0.0;
+  p_scale->CalculateScale(momenta);
   if (p_born_me2) {
     m_lastxs=(*p_born_me2)(momenta);
   }

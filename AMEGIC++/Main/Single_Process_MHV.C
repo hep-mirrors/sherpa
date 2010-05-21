@@ -326,6 +326,7 @@ void AMEGIC::Single_Process_MHV::Minimize()
 double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms) 
 { 
   if (p_partner!=this&&m_lookup) SetTrigger(p_partner->Trigger());
+  if (!(IsMapped() && LookUp())) p_partner->ScaleSetter()->CalculateScale(_moms);
   Vec4D_Vector moms(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
     Poincare cms(moms[0]+moms[1]);

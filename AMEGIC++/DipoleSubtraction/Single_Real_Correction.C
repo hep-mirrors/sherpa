@@ -67,7 +67,10 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   int status;
 
-  p_tree_process->Get<PHASIC::Process_Base>()->Init(m_pinfo,p_int->Beam(),p_int->ISR());
+  Process_Info rinfo(m_pinfo);
+  rinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::rsub;
+  rinfo.m_fi.m_nloewtype&=(nlo_type::code)~nlo_type::rsub;
+  p_tree_process->PHASIC::Process_Base::Init(rinfo,p_int->Beam(),p_int->ISR());
   p_tree_process->SetTestMoms(p_testmoms);
 
   status = p_tree_process->InitAmplitude(model,top,links,errs);
@@ -82,9 +85,12 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   }
 
   if (p_tree_process!=p_tree_process->Partner()) {
-    string partnerID=p_tree_process->Partner()->Name();//+"_REAL";
+    string partnerID=p_tree_process->Partner()->Name();
+    partnerID.erase(partnerID.find("("),3);
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (partnerID==links[j]->Name()) {
+      string lname=links[j]->Name();
+      lname.erase(lname.find("("),4);
+      if (partnerID==lname) {
 	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "<<partnerID<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
 	p_mapproc = p_partner = (Single_Real_Correction*)links[j];
 	m_sfactor = p_tree_process->GetSFactor();
@@ -98,6 +104,9 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_realevt.p_mom  = NULL;
   m_realevt.m_ID   = string("Real");
 
+  Process_Info cinfo(m_pinfo);
+  cinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::real;
+  cinfo.m_fi.m_nloewtype&=(nlo_type::code)~nlo_type::real;
   vector<int> partlist;
   for (size_t i=0;i<m_nin+m_nout;i++) {
     if (m_flavs[i].Strong()) partlist.push_back(i);
@@ -105,7 +114,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   for (size_t i=0;i<partlist.size();i++) {
     for (size_t j=0;j<partlist.size();j++) {
       for (size_t k=0;k<partlist.size();k++) if (k!=i&&k!=j&&i!=j) {
-	Single_DipoleTerm *pdummy = new Single_DipoleTerm(m_pinfo,partlist[i],partlist[j],partlist[k],p_int);
+	Single_DipoleTerm *pdummy = new Single_DipoleTerm(cinfo,partlist[i],partlist[j],partlist[k],p_int);
 	if (pdummy->IsValid()) {
           pdummy->SetTestMoms(p_testmoms);
           int st=pdummy->InitAmplitude(model,top,links,errs);
