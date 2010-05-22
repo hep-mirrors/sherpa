@@ -20,18 +20,12 @@ Leg::Leg(AMEGIC::Point *const point,const int anti):
   p_point(point), m_anti(anti), 
   m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(0), 
   m_qcdjets(point!=NULL?point->fl.Strong():0), m_id(0),
-  m_kt2(std::numeric_limits<double>::max()), 
-  m_kt2qcd(m_kt2), m_kt2qed(m_kt2), 
-  m_minkt2(m_kt2), m_minkt2qcd(m_kt2), m_minkt2qed(m_kt2), 
   p_qmin(NULL) {}
 
 Leg::Leg(const Leg &leg): 
   p_point(leg.p_point), m_anti(leg.m_anti), 
   m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
   m_qcdjets(leg.m_qcdjets), m_id(leg.m_id),
-  m_kt2(std::numeric_limits<double>::max()), 
-  m_kt2qcd(m_kt2), m_kt2qed(m_kt2), m_minkt2(leg.m_minkt2),  
-  m_minkt2qcd(leg.m_minkt2qcd), m_minkt2qed(leg.m_minkt2qed), 
   p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) {}
 
 std::ostream &AMEGIC::operator<<
@@ -85,9 +79,7 @@ bool AMEGIC::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<std::setw(20)<<cd.m_pt2ij<<" "<<std::setw(10)<<sqrt(dabs(cd.m_sij))<<" "
-   <<std::setw(3)<<cd.m_strong;
-//   s<<" ("<<std::setw(11)<<cd.m_prop<<","<<std::setw(11)<<cd.m_coupling<<") ";
+  s<<" "<<std::setw(20)<<cd.m_pt2ij;
   std::string graphs;
   for (size_t k=0;k<cd.m_graphs.size();++k) graphs+=","+ToString(cd.m_graphs[k]);
   s<<std::setw(50)<<graphs.substr(1);
@@ -98,19 +90,8 @@ std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
 Combine_Data::Combine_Data():
   m_pt2ij(0.0), m_strong(0), p_down(NULL) {}
 
-Combine_Data::Combine_Data(const Combine_Data &cd):
-  m_pt2ij(cd.m_pt2ij), m_sij(cd.m_sij), m_prop(cd.m_prop), m_coupling(cd.m_coupling),
-  m_weight(cd.m_weight), m_strong(cd.m_strong), 
-  p_down(NULL), 
-  m_graphs(cd.m_graphs)
-{
-  if (cd.p_down) THROW(fatal_error,"You are not supposed to use this constructor.");
-}
-
 Combine_Data::Combine_Data(const double pt2ij,const int ngraph):
-  m_pt2ij(pt2ij), m_sij(0.), m_prop(0.), m_coupling(0.), m_weight(0.), 
-  m_strong(0),
-  p_down(NULL) 
+  m_pt2ij(pt2ij), m_strong(0), p_down(NULL) 
 {
   if (ngraph>=0) m_graphs.push_back(ngraph);
 }
@@ -129,39 +110,23 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
   if (&ct) {
     s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no<<" (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
-    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<" kt_min="<<sqrt(ct.Kt2())
-     <<" kt_min(QCD)="<<sqrt(ct.Kt2QCD())<<" kt_min(QED)="
-     <<sqrt(ct.Kt2QED())<<std::endl;
-    s<<" min{kt_min}="<<sqrt(ct.MinKt2())<<" min{kt_min(QCD)}="
-     <<sqrt(ct.MinKt2QCD())<<" min{kt_min(QED)}="
-     <<sqrt(ct.MinKt2QED())<<std::endl;
+    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<std::endl;
     s<<" ==============="<<std::endl;
     s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
-     <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
-     <<"q_min"<<std::setw(12)<<"q_{min qcd}"<<std::setw(12)
-     <<"q_{min qed}"<<std::setw(12)<<"Q_{cut,me}"<<std::setw(12)
-     <<"Q_{cut,jv}"<<std::setw(12)<<"Q_{cut,ps}"
-     <<std::setw(12)<<"\\sqrt{|t|}"<<" mom"<<std::endl;
+     <<"flav"<<std::setw(5)<<"cut  qcd qed"<<std::setw(12)
+     <<" mom"<<std::endl;
     for (int l=0; l<ct.m_nlegs; ++l) {
-      double mc(ct.GetLeg(l).MinKT2QCD()), me(ct.GetLeg(l).MinKT2QED());
       s<<std::setw(3)<<l<<std::setw(12)<<ToString(ID(ct.GetLeg(l).ID()))
        <<std::setw(8)<<ct.p_legs[0][l].Flav()<<std::setw(4)
        <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
        <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
-       <<"/"<<ct.GetLeg(l).NQED()<<std::setw(12)
-       <<ct.GetLeg(l).QMin()<<std::setw(12)<<(mc!=MAXD?sqrt(mc):-1)
-       <<std::setw(12)<<(me!=MAXD?sqrt(me):-1)<<std::setw(12)
-       <<sqrt(dabs(ct.p_moms[l].Abs2()))<<" "<<ct.p_moms[l]<<std::endl;
+       <<"/"<<ct.GetLeg(l).NQED()<<" "<<ct.p_moms[l]<<std::endl;
     }
     s<<" ---------------"<<std::endl;
     const CD_List & cl=ct.m_combinations;
     if (cl.size()>0) {
-      s<<" cmb       cos\\theta        k_t \\sqrt{|t|} qcd"
-       <<std::setw(50)<<"graphs"<<std::endl;
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
- 	s<<cit->first<<std::setw(8)
-	 <<ct.p_moms[cit->first.m_i].
-	  Theta(ct.p_moms[cit->first.m_j])<<cit->second
+ 	s<<cit->first<<std::setw(8)<<cit->second
 	 <<(cit==ct.m_cdata_winner?"<-":"")<<std::endl; 
       }
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
@@ -176,13 +141,11 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
        <<"q_{min qcd}"<<std::setw(12)<<"q_{min qed}"<<std::setw(12)<<std::endl;
       for (int k=0;k<ct.m_nampl;++k) {
 	for (int l=0;l<2;++l) {
-	  double mc(ct.p_hard[k][l].KT2QCD()), me(ct.p_hard[k][l].KT2QED());
 	  s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
 	   <<ct.p_hard[k][l].Flav()<<std::setw(4)
 	   <<ct.p_hard[k][l].Point()->t<<" "<<ct.p_hard[k][l].OrderQCD()
 	   <<"/"<<ct.p_hard[k][l].NQCD()<<" "<<ct.p_hard[k][l].OrderQED()
-	   <<"/"<<ct.p_hard[k][l].NQED()<<std::setw(12)<<(mc!=MAXD?sqrt(mc):-1)
-	   <<std::setw(12)<<(me!=MAXD?sqrt(me):-1)<<std::endl;
+	   <<"/"<<ct.p_hard[k][l].NQED()<<std::setw(12)<<std::endl;
 	}
       }
     }
@@ -313,48 +276,6 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
   return mo;
 }
 
-void Combine_Table::SetLegScales
-(Leg &leg,Leg &legi,Leg &legj,const Vec4D &pi,const Vec4D &pj,
- const double &pt2ij)
-{
-  /*
-  msg_Debugging()<<"set leg scales "<<legi.Point()->fl<<" & "<<legj.Point()->fl
-		 <<" -> "<<leg.Point()->fl<<" w/ "<<sqrt(pt2ij)<<" "
-		 <<(pi+pj)<<" s = "<<sqrt((pi+pj).Abs2())<<" mt2 = "
-		 <<pi.MPerp()<<" / "<<pj.MPerp()<<" / "<<(pi+pj).Mass()<<"\n"; 
-  */
-  leg.SetKT2(pt2ij);
-  // special case: ggh vertex -> order qcd = 2
-  // must therefore check for order qed as well
-  if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
-  else if (leg.NQCD()>0) {
-    leg.SetKT2QCD(pt2ij);
-    if (!leg.Point()->fl.Strong()) 
-      leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),leg.KT2QCD()));
-  }
-  if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
-  else if (leg.NQED()>0) {
-    leg.SetKT2QCD(pt2ij);
-  }
-  if (legi.Point()->t<10) {
-    if (legj.Point()->t<10) {
-      leg.SetMinKT2(Min(legi.MinKT2(),legj.MinKT2()));
-      leg.SetMinKT2QCD(Min(legi.MinKT2QCD(),legj.MinKT2QCD()));
-      leg.SetMinKT2QED(Min(legi.MinKT2QED(),legj.MinKT2QED()));
-    }
-    else {
-      leg.SetMinKT2(legi.MinKT2());
-      leg.SetMinKT2QCD(legi.MinKT2QCD());
-      leg.SetMinKT2QED(legi.MinKT2QED());
-    }
-  }
-  else if (legj.Point()->t<10) {
-    leg.SetMinKT2(legj.MinKT2());
-    leg.SetMinKT2QCD(legj.MinKT2QCD());
-    leg.SetMinKT2QED(legj.MinKT2QED());
-  }
-}
-  
 Leg * Combine_Table::CombineLegs
 (Leg *legs,const int i,const int j,const int nlegs,const double pt2ij,const int kin) 
 {
@@ -364,7 +285,6 @@ Leg * Combine_Table::CombineLegs
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
       alegs[i].SetKin(kin);
-      SetLegScales(alegs[i],legs[i],legs[j],p_moms[i],p_moms[j],pt2ij);
       size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID()), id(idi|idj);
       alegs[i].SetID(id);
     }
@@ -412,82 +332,6 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
   omoms = new Vec4D[maxl];
   for (size_t l=0; l<after.size(); ++l) omoms[l] = l<2?-after[l]:after[l];
   return true;
-}
-
-double Combine_Table::MinKt2() const
-{
-  // return lowest cluster scale, which is not necessarily 
-  // scale of first clustering
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).MinKT2()<min) min=GetLeg(i).MinKT2();
-  return min;
-}
-
-double Combine_Table::MinKt2QCD(const int cpl) const
-{
-  // return lowest cluster scale, which is not necessarily 
-  // scale of first clustering
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).MinKT2QCD()<min) {
-      if (cpl==0 ||
-	  (cpl==1 && GetLeg(i).OrderQCD()>0) ||
-	  (cpl==2 && GetLeg(i).NQCD()>1)) min=GetLeg(i).MinKT2QCD();
-    }
-  return min;
-}
-
-double Combine_Table::MinKt2QED(const int cpl) const
-{
-  // return lowest cluster scale, which is not necessarily 
-  // scale of first clustering
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).MinKT2QED()<min) {
-      if (cpl==0 ||
-	  (cpl==1 && GetLeg(i).OrderQED()>0) ||
-	  (cpl==2 && GetLeg(i).NQED()>1)) min=GetLeg(i).MinKT2QED();
-    }
-  return min;
-}
-
-double Combine_Table::Kt2() const
-{
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).KT2()<min) min=GetLeg(i).KT2();
-  return min;
-}
-
-double Combine_Table::Kt2QCD(const int cpl) const
-{
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).KT2QCD()<min) {
-      if (cpl==0 ||
-	  (cpl==1 && GetLeg(i).OrderQCD()>0) ||
-	  (cpl==2 && GetLeg(i).NQCD()>1)) min=GetLeg(i).KT2QCD();
-    }
-  return min;
-}
-
-double Combine_Table::Kt2QED(const int cpl) const
-{
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nlegs;++i) 
-    if (GetLeg(i).Point()->t<10 && 
-	GetLeg(i).KT2QED()<min) {
-      if (cpl==0 ||
-	  (cpl==1 && GetLeg(i).OrderQED()>0) ||
-	  (cpl==2 && GetLeg(i).NQED()>1)) min=GetLeg(i).KT2QED();
-    }
-  return min;
 }
 
 double Combine_Table::Sprime() const
@@ -541,47 +385,6 @@ bool Combine_Table::Combinable(const Leg &a,const Leg &b) const
     return true;
   }
   return false;
-}
-
-double Combine_Table::Kt2Hard() const
-{
-  if (p_hard==NULL) THROW(fatal_error,"No hard legs");
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nampl;++i) {
-    for (int j(0);j<2;++j) 
-      if (p_hard[i][j].KT2()<min) min=p_hard[i][j].KT2();
-  }
-  return min;
-}
-
-double Combine_Table::Kt2QCDHard(const int cpl) const
-{
-  if (p_hard==NULL) THROW(fatal_error,"No hard legs");
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nampl;++i) {
-    for (int j(0);j<2;++j) 
-      if (p_hard[i][j].KT2QCD()<min) {
-	if (cpl==0 ||
-	    (cpl==1 && p_hard[i][j].OrderQCD()>0) ||
-	    (cpl==2 && p_hard[i][j].NQCD()>1)) min=p_hard[i][j].KT2QCD();
-      }
-  }
-  return min;
-}
-
-double Combine_Table::Kt2QEDHard(const int cpl) const
-{
-  if (p_hard==NULL) THROW(fatal_error,"No hard legs");
-  double min(std::numeric_limits<double>::max());
-  for (int i(0);i<m_nampl;++i) {
-    for (int j(0);j<2;++j) 
-      if (p_hard[i][j].KT2QED()<min) {
-	if (cpl==0 ||
-	    (cpl==1 && p_hard[i][j].OrderQCD()>0) ||
-	    (cpl==2 && p_hard[i][j].NQCD()>1)) min=p_hard[i][j].KT2QED();
-      }
-  }
-  return min;
 }
 
 double Combine_Table::GetWinner(int &i,int &j,int &k)
@@ -656,7 +459,6 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 
 CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 {
-    cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
     for (int i=0;i<m_nlegs;++i)
       ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
@@ -886,11 +688,7 @@ bool Combine_Table::IdentifyHardProcess()
 		     <<" -> "<<p_legs[i][2].Flav()<<" "
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
-      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
-		   p_moms[0],p_moms[1],pt2ij1);
       p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
-      SetLegScales(p_hard[i][1],p_legs[i][2],p_legs[i][3],
-		   p_moms[2],p_moms[3],pt2ij2);
       p_hardc[i][0]=0;
       p_hardc[i][1]=0;
       p_hardc[i][2]=1;
@@ -907,11 +705,7 @@ bool Combine_Table::IdentifyHardProcess()
 		     <<" -> "<<p_legs[i][2].Flav()<<" "
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,2);
-      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][2],
-		   p_moms[0],p_moms[2],pt2ij1);
       p_hard[i][1]=CombinedLeg(p_legs[i],1,3);
-      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][3],
-		   p_moms[1],p_moms[3],pt2ij2);
       p_hardc[i][0]=0;
       p_hardc[i][1]=1;
       p_hardc[i][2]=0;
@@ -928,11 +722,7 @@ bool Combine_Table::IdentifyHardProcess()
 		     <<" -> "<<p_legs[i][2].Flav()<<" "
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,3);
-      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][3],
-		   p_moms[0],p_moms[3],pt2ij1);
       p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
-      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][2],
-		   p_moms[1],p_moms[2],pt2ij2);
       p_hardc[i][0]=0;
       p_hardc[i][1]=1;
       p_hardc[i][2]=1;

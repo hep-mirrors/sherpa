@@ -21,7 +21,6 @@ namespace AMEGIC {
     AMEGIC::Point *p_point;
     int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets, m_kin;
     long unsigned int m_id;
-    double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
     double *p_qmin;
     std::string m_type;
     ATOOLS::Flavour m_mapfl;
@@ -43,26 +42,8 @@ namespace AMEGIC {
     inline int  QCDJets() const               { return m_qcdjets;  }
     inline void   SetID(const size_t &id) { m_id=id;     }
     inline size_t ID() const              { return m_id; }
-    inline void   SetKT2(const double &kt2)    
-    { m_kt2=kt2; SetMinKT2(m_kt2); }
     inline void   SetKin(const int kin) { m_kin=kin; }
-    inline void   SetKT2QCD(const double &kt2) 
-    { m_kt2qcd=kt2; SetMinKT2QCD(m_kt2qcd); }
-    inline void   SetKT2QED(const double &kt2) 
-    { m_kt2qed=kt2; SetMinKT2QED(m_kt2qed); }
-    inline void   SetMinKT2(const double &kt2) 
-    { m_minkt2=ATOOLS::Min(m_minkt2,kt2); }
-    inline void   SetMinKT2QCD(const double &kt2) 
-    { m_minkt2qcd=ATOOLS::Min(m_minkt2qcd,kt2); }
-    inline void   SetMinKT2QED(const double &kt2) 
-    { m_minkt2qed=ATOOLS::Min(m_minkt2qed,kt2); }
-    inline double KT2() const       { return m_kt2;       }
     inline int    Kin() const       { return m_kin;       }
-    inline double KT2QCD() const    { return m_kt2qcd;    }
-    inline double KT2QED() const    { return m_kt2qed;    }
-    inline double MinKT2() const    { return m_minkt2;    }
-    inline double MinKT2QCD() const { return m_minkt2qcd; }
-    inline double MinKT2QED() const { return m_minkt2qed; }
     inline void    SetPQMin(double *const qmin) { p_qmin=qmin;   }
     inline double *PQMin() const                { return p_qmin; }
     inline void   SetQMin(const double qmin) { *p_qmin=qmin; }
@@ -101,7 +82,6 @@ namespace AMEGIC {
   class Combine_Data {
   public:
     PDF::CParam m_pt2ij;
-    double m_sij, m_prop, m_coupling, m_weight;
     int    m_strong;
     Combine_Table *p_down;
     ATOOLS::Flavour m_mo;
@@ -110,7 +90,6 @@ namespace AMEGIC {
   public:
     // constructors
     Combine_Data();
-    Combine_Data(const Combine_Data &cd);
     Combine_Data(const double pt2ij,const int ngraph);
     // destructor
     ~Combine_Data();
@@ -165,9 +144,6 @@ namespace AMEGIC {
 
     double Sprime() const;
 
-    void SetLegScales(Leg &leg,Leg &legi,Leg &legj,
-		      const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
-		      const double &pt2ij);
     ATOOLS::Flavour MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const;
     friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
@@ -191,15 +167,6 @@ namespace AMEGIC {
     bool Combinable(const Leg &a,const Leg &b) const ;
 
     int    AddCouplings(int &nqed,int &nqcd) const;
-    double MinKt2() const;
-    double MinKt2QCD(const int cpl=0) const;
-    double MinKt2QED(const int cpl=0) const;
-    double Kt2() const;
-    double Kt2QCD(const int cpl=0) const;
-    double Kt2QED(const int cpl=0) const;
-    double Kt2Hard() const;
-    double Kt2QCDHard(const int cpl=0) const;
-    double Kt2QEDHard(const int cpl=0) const;
     // inline functions
     inline const int                  Number()                             const { return m_no; }
     inline const int                  NLegs()                              const { return m_nlegs; }

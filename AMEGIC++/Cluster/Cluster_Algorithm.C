@@ -370,11 +370,8 @@ ME2_Base *Cluster_Algorithm::GetXS(const ATOOLS::Flavour_Vector &fl)
   pi.m_fi.m_ps.push_back(Subprocess_Info(fl[2]));
   pi.m_fi.m_ps.push_back(Subprocess_Info(fl[3]));
   ME2_Base* me2=ME2_Base::GetME2(pi);
-  if (me2) {
-    m_xsmap[fl]=me2;
-    return me2;
-  }
-  else return NULL;
+  m_xsmap[fl]=me2;
+  return me2;
 }
 
 int Cluster_Algorithm::SetColours(EXTRAXS::ME2_Base * xs, 
