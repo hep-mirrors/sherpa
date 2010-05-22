@@ -770,7 +770,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
-	if (mode!=0) {
+	if (mode&1) {
 	  if (pt2ij<kt2) {
 	    m_cdata_winner=cit;
 	    kt2=pt2ij;
@@ -787,7 +787,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       }
     }
   }
-  if (mode==0) {
+  if (!(mode&1)) {
     double disc(sum*ran.Get()), psum(0.0);
     for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
       double pt2ij(cit->second.m_pt2ij.m_op2);

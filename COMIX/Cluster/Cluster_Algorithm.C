@@ -342,7 +342,7 @@ bool Cluster_Algorithm::ClusterStep
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
-    if (m_wmode!=0) {
+    if (m_wmode&1) {
       if (cit->second.m_kt2.m_op2>=0.0 &&
 	  cit->second.m_kt2.m_op2<wmin) {
 	win=cit;
@@ -366,7 +366,7 @@ bool Cluster_Algorithm::ClusterStep
       }
     }
   }
-  if (m_wmode==0) {
+  if (!(m_wmode&1)) {
     double disc(sum*ran.Get()), psum(0.0);
     for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
 	 cit!=cinfo.end();++cit)
@@ -488,17 +488,7 @@ bool Cluster_Algorithm::Cluster
   if (p_bg==NULL) THROW(fatal_error,"Internal error");
   Selector_Base *jf=p_xs->Selector()
     ->GetSelector("Jetfinder");
-  bool trig(true);
-  if (jf) {
-    Vec4D_Vector moms(xs->Process()->Integrator()->Momenta());
-    if (m_swap) {
-      std::swap<Vec4D>(moms[0],moms[1]);
-      for (size_t i(0);i<moms.size();++i)
-	moms[i]=Vec4D(moms[i][0],-moms[i]);
-    }
-    trig=jf->Trigger(moms);
-  }
-  msg_Debugging()<<METHOD<<"(): trig = "<<trig<<" {\n";
+  msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
@@ -548,8 +538,7 @@ bool Cluster_Algorithm::Cluster
   }
   msg_Debugging()<<"}\n";
   SetNMax(p_ampl,(1<<ccurs.size())-1,
-	  trig?xs->Process()->Info().m_fi.NMaxExternal():
-	  xs->Process()->Info().m_fi.NExternal());
+	  xs->Process()->Info().m_fi.NMaxExternal());
   if (msg_LevelIsDebugging()) p_ampl->Print();
   while (p_ampl->Prev()) {
     if (m_swap) p_ampl->SwapInOrder();
