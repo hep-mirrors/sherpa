@@ -434,8 +434,13 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	  for (int j=0;j<p_masskern->Nmf();j++) {
 	    m_xpa[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
 	    if (m_xpa[xpcnt].xp>eta0) {
+	      m_kpca[0]+=p_dsij[0][i]*p_masskern->t6(type,m_xpa[xpcnt].xp);
+	      m_kpca[1]+=p_dsij[0][i]*w*p_masskern->t5(type,x0,m_xpa[xpcnt].xp);
+	      m_kpca[2]+=p_dsij[0][i]*p_masskern->t6(type+2,m_xpa[xpcnt].xp);
+	      m_kpca[3]+=p_dsij[0][i]*w*p_masskern->t5(type+2,x0,m_xpa[xpcnt].xp);
+	      
 	      m_xpa[xpcnt].kpc=p_dsij[0][i]*
-		(-w*p_masskern->t5(type,x0,m_xpa[xpcnt].xp)+p_masskern->t6(type,m_xpa[xpcnt].xp)-p_masskern->t7(type,eta0,m_xpa[xpcnt].xp));
+		(-w*p_masskern->t5(type,x0,m_xpa[xpcnt].xp)-p_masskern->t6(type,m_xpa[xpcnt].xp)-p_masskern->t7(type,eta0,m_xpa[xpcnt].xp));
 	    }
 	    xpcnt++;
 	  }
@@ -503,8 +508,13 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	  for (int j=0;j<p_masskern->Nmf();j++) {
 	    m_xpb[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
 	    if (m_xpb[xpcnt].xp>eta1) {
+	      m_kpcb[0]+=p_dsij[pls-1][i]*p_masskern->t6(type,m_xpb[xpcnt].xp);
+	      m_kpcb[1]+=p_dsij[pls-1][i]*w*p_masskern->t5(type,x1,m_xpb[xpcnt].xp);
+	      m_kpcb[2]+=p_dsij[pls-1][i]*p_masskern->t6(type+2,m_xpb[xpcnt].xp);
+	      m_kpcb[3]+=p_dsij[pls-1][i]*w*p_masskern->t5(type+2,x1,m_xpb[xpcnt].xp);
+
 	      m_xpb[xpcnt].kpc=p_dsij[pls-1][i]*
-		(-w*p_masskern->t5(type,x1,m_xpb[xpcnt].xp)+p_masskern->t6(type,m_xpb[xpcnt].xp)-p_masskern->t7(type,eta1,m_xpb[xpcnt].xp));
+		(-w*p_masskern->t5(type,x1,m_xpb[xpcnt].xp)-p_masskern->t6(type,m_xpb[xpcnt].xp)-p_masskern->t7(type,eta1,m_xpb[xpcnt].xp));
 	    }
 	    xpcnt++;
 	  }
@@ -540,8 +550,14 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   if (sb) gfac/=(1.-eta1);
   gfac*=p_flkern->Coupling();
 
-  if (sa) for (int i=0;i<8;i++) m_kpca[i]*=gfac;
-  if (sb) for (int i=0;i<8;i++) m_kpcb[i]*=gfac;
+  if (sa) {
+    for (int i=0;i<8;i++) m_kpca[i]*=gfac;
+    for (size_t i=0;i<m_xpa.size();i++) m_xpa[i].kpc*=gfac;
+  }
+  if (sb) {
+    for (int i=0;i<8;i++) m_kpcb[i]*=gfac;
+    for (size_t i=0;i<m_xpb.size();i++) m_xpb[i].kpc*=gfac;
+  }
 }
 
 double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, ATOOLS::Flavour_Vector& flav) 
@@ -583,7 +599,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, AT
     if (m_massive) {
       for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
 	pdfa->Calculate(eta0/m_xpa[i].xp,muf);
-	g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(gluon)/eta0/fa;
+	g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(m_flavs[0])/eta0/fa;
       }
     }    
   }
@@ -608,7 +624,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, AT
     if (m_massive) {
       for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
 	pdfb->Calculate(eta1/m_xpb[i].xp,muf);
-	g2massq+=m_xpb[i].kpc*pdfb->GetXPDF(gluon)/eta1/fb;
+	g2massq+=m_xpb[i].kpc*pdfb->GetXPDF(m_flavs[1])/eta1/fb;
       }
     }    
   }
