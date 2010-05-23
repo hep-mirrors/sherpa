@@ -39,8 +39,6 @@ namespace AMEGIC {
                                             bool add);
     bool PerformTests();
 
-    PHASIC::Process_Base *GetProcesses();
-
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
@@ -172,11 +170,6 @@ bool Amegic::PerformTests()
       THROW(normal_exit,"New libraries created. Please compile.");
   Minimize();
   return tests;
-}
-
-PHASIC::Process_Base *Amegic::GetProcesses()
-{
-  return this;
 }
 
 void Amegic::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)

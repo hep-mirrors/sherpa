@@ -35,8 +35,6 @@ namespace PHASIC {
     virtual Process_Base *InitializeProcess(const Process_Info &pi, bool add)=0;
     virtual bool PerformTests() = 0;
 
-    virtual Process_Base *GetProcesses() = 0;
-
     virtual void SetClusterDefinitions
     (PDF::Cluster_Definitions_Base *const defs) = 0;
 

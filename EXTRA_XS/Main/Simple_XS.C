@@ -38,8 +38,6 @@ namespace EXTRAXS {
     Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     bool PerformTests();
 
-    Process_Base *GetProcesses();
-
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
@@ -139,11 +137,6 @@ bool Simple_XS::PerformTests()
   return true;
 }
   
-Process_Base *Simple_XS::GetProcesses()
-{
-  return this;
-}
-
 void Simple_XS::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 {
   if (p_cluster==NULL) p_cluster = new Cluster_Algorithm();

@@ -46,8 +46,6 @@ namespace COMIX {
                                             bool add);
     bool PerformTests();
 
-    PHASIC::Process_Base *GetProcesses();
-
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
@@ -296,11 +294,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   }
   newxs->SetGenerator(this);
   return newxs;
-}
-
-PHASIC::Process_Base *Comix::GetProcesses()
-{
-  return this;
 }
 
 bool Comix::PerformTests()
