@@ -134,6 +134,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Observables/Makefile \
 	  AddOns/Analysis/Scripts/Makefile \
 	  AddOns/Analysis/Makefile \
+	  AddOns/WhiteHat/Makefile \
 	  AddOns/HZTool/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/Makefile \

@@ -5,13 +5,14 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Library_Loader.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
 
 ME_Generators::ME_Generators(const std::string &path,
-                                       const std::string &file) :
-  std::vector<ME_Generator_Base*>(), m_path(path), m_file(file)
+			     const std::string &file):
+  m_path(path), m_file(file)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -26,6 +27,12 @@ ME_Generators::ME_Generators(const std::string &path,
   for (size_t i(0);i<megens.size();++i) {
     if (megens[i]=="None") continue;
     push_back(ME_Generator_Getter::GetObject(megens[i],ME_Generator_Key()));
+    if (back()==NULL) {
+      msg_Info()<<METHOD<<"(): Try loading '"<<megens[i]
+		<<"' from 'libSherpa"<<megens[i]<<"'."<<std::endl;
+      if (s_loader->LoadLibrary("Sherpa"+megens[i]))
+	back()=ME_Generator_Getter::GetObject(megens[i],ME_Generator_Key());
+    }
     if (back()==NULL) {
       msg_Error()<<METHOD<<"(): ME generator '"<<megens[i]
                  <<"' not found. Ignoring it."<<std::endl;
@@ -67,8 +74,6 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
 {
   DEBUG_FUNC(&pi);
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
-//     if (pi.m_fi.NLOType()==nlo_type::loop && pi.m_loopgenerator!=(*mit)->Name())
-//       continue;
     DEBUG_INFO("trying "<<(*mit)->Name());
     Process_Base *proc((*mit)->InitializeProcess(pi,add));
     if (proc) {

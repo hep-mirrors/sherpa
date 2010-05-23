@@ -1,4 +1,4 @@
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -7,12 +7,11 @@
 #define CA 3.
 #define TR 0.5
 
-using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
 namespace EXTRAXS {
-  class DY_QCD_Virtual : public Virtual_ME2_Base {
+  class DY_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
     double m_cpl;
   public:
     DY_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
@@ -33,6 +32,7 @@ namespace EXTRAXS {
   };
 }
 
+using namespace EXTRAXS;
 
 void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_born*=m_cpl*CouplingFactor(1, 0);

@@ -7,6 +7,7 @@ libPhasicProcess_la_SOURCES   =	\
 				Process_Base.C \
 				Process_Group.C \
 				Single_Process.C \
+				Virtual_ME2_Base.C \
 				NLO_Helpers.C \
 				ME_Generators.C \
 				ME_Generator_Base.C
@@ -17,6 +18,7 @@ localinc_HEADERS      =	\
 			Process_Base.H \
 			Process_Group.H \
 			Single_Process.H \
+			Virtual_ME2_Base.H \
 			NLO_Helpers.H \
 			ME_Generators.H \
 			ME_Generator_Base.H

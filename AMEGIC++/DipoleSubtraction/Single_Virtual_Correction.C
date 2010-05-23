@@ -16,7 +16,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -94,17 +94,17 @@ void Single_Virtual_Correction::SelectLoopProcess()
     Process_Info loop_pi(m_pinfo);
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
    
-    p_loopme=EXTRAXS::Virtual_ME2_Base::GetME2(loop_pi);  
+    p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);  
   }
   else {
     if (m_pinfo.m_loopgenerator!="Internal")
-      p_loopme = EXTRAXS::Virtual_ME2_Base::GetME2(m_pinfo);
-    else p_loopme = new EXTRAXS::Trivial_Virtual(m_pinfo, Flavour_Vector());
+      p_loopme = PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
+    else p_loopme = new PHASIC::Trivial_Virtual(m_pinfo, Flavour_Vector());
   }
 
   if (!p_loopme) {
     msg_Error()<<"No Loop ME found for "<<Name()<<endl;
-    p_loopme=new EXTRAXS::Trivial_Virtual(m_pinfo, Flavour_Vector());
+    p_loopme=new PHASIC::Trivial_Virtual(m_pinfo, Flavour_Vector());
   }
 }
 

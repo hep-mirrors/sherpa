@@ -8,7 +8,7 @@
 
 namespace PDF { class PDF_Base; } 
 
-namespace EXTRAXS { class Virtual_ME2_Base; }
+namespace PHASIC { class Virtual_ME2_Base; }
 
 namespace AMEGIC {
   class Helicity;
@@ -43,7 +43,7 @@ namespace AMEGIC {
     DipoleSplitting_Base  * p_dipole;
     Flavour_KernelsA      * p_flkern;
     Massive_Kernels       * p_masskern;
-    EXTRAXS::Virtual_ME2_Base* p_loopme;  
+    PHASIC::Virtual_ME2_Base* p_loopme;  
 
     bool m_massive;
     /*------------------------------------------------------------------------------

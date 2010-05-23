@@ -1,4 +1,4 @@
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -6,7 +6,6 @@
 #include "PHASIC++/Process/ME_Generators.H"
 #include "PHASIC++/Process/Process_Base.H"
 
-using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
@@ -15,7 +14,7 @@ using namespace ATOOLS;
 #define TR 0.5
 
 namespace EXTRAXS {
-  class ee3jet_QCD_Virtual : public Virtual_ME2_Base {
+  class ee3jet_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
     double m_cpl;
     int m_nf;
 
@@ -46,6 +45,7 @@ namespace EXTRAXS {
   };
 }
 
+using namespace EXTRAXS;
 
 void ee3jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
   m_born*=m_cpl*CouplingFactor(1, 0);

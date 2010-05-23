@@ -13,7 +13,7 @@
 #include "MODEL/Main/Model_Base.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "METOOLS/Main/Spin_Structure.H"
 
 using namespace EXTRAXS;
@@ -58,7 +58,7 @@ bool Single_Process::Initialize()
   
   if (m_nlotype==nlo_type::loop || m_nlotype==nlo_type::vsub) {
     DEBUG_INFO("searching loop process");
-    p_virtual_me2=Virtual_ME2_Base::GetME2(m_pinfo);
+    p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
       DEBUG_INFO("found");
       p_virtual_me2->SetCouplings(&m_cpls);

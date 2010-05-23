@@ -1,66 +1,56 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__WHITEHAT
+#include "AddOns/WhiteHat/WhiteHat_Virtual.H"
 
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
-
-#include "whitehat/BH_Ampl.h"
-#include "whitehat/BH_interface.h"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "whitehat/BH_error.h"
 
-using namespace EXTRAXS;
+using namespace WHITEHAT;
 using namespace PHASIC;
+using namespace MODEL;
 using namespace ATOOLS;
 
-namespace EXTRAXS {
-  class WhiteHat_Virtual : public Virtual_ME2_Base {
-    BH::BH_Ampl* p_ampl;
-    double m_cpl;
-  public:
-    WhiteHat_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
-                     BH::BH_Ampl* ampl) :
-      Virtual_ME2_Base(pi, flavs), p_ampl(ampl)
-    {
-      m_needsborn=true;
-      m_cpl=MODEL::s_model->ScalarFunction
-	(std::string("alpha_S"),rpa.gen.CplScale());
-      m_cpl/=2.0*M_PI;
-    }
+BH::BH_interface *WHITEHAT::WhiteHat_Virtual::s_interface=NULL;
+MODEL::Model_Base *WHITEHAT::WhiteHat_Virtual::s_model=NULL;
 
-    ~WhiteHat_Virtual()
-    {
-      if (p_ampl) delete p_ampl;
-      if (s_interface) delete s_interface; s_interface=NULL;
-    }
-
-    static BH::BH_interface* s_interface;
-    static void InitInterface();
-
-    void Calc(const ATOOLS::Vec4D_Vector& momenta);
-    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
-  };
+WhiteHat_Virtual::WhiteHat_Virtual(const Process_Info& pi,
+				   const Flavour_Vector& flavs,
+				   BH::BH_Ampl* ampl) :
+  Virtual_ME2_Base(pi, flavs), p_ampl(ampl)
+{
+  m_needsborn=true;
+  m_cpl=WhiteHat_Virtual::s_model->ScalarFunction
+    (std::string("alpha_S"),rpa.gen.CplScale());
+  m_cpl/=2.0*M_PI;
 }
 
-BH::BH_interface* EXTRAXS::WhiteHat_Virtual::s_interface = NULL;
-
-void WhiteHat_Virtual::InitInterface()
+WhiteHat_Virtual::~WhiteHat_Virtual()
 {
+  if (p_ampl) delete p_ampl;
+}
+
+void WhiteHat_Virtual::InitInterface(Model_Base *model)
+{
+  WhiteHat_Virtual::s_model=model;
   if (s_interface==NULL) {
-    msg_Info()<<"Initialising WhiteHat interface . . . "<<std::flush;
+    msg_Info()<<"Initialising WhiteHat interface {"<<std::endl;
     s_interface=new BH::BH_interface();
     s_interface->set("Z_mass",Flavour(kf_Z).Mass());
     s_interface->set("Z_width",Flavour(kf_Z).Width());
     s_interface->set("W_mass",Flavour(kf_Wplus).Mass());
     s_interface->set("W_width",Flavour(kf_Wplus).Width());
-    double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
+    double sin_th_2=model->ScalarConstant(std::string("sin2_thetaW"));
     s_interface->set("sin_th_2",sin_th_2);
     s_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
-    s_interface->set("alpha_S",MODEL::s_model->ScalarFunction(std::string("alpha_S")));
-    s_interface->set("alpha_QED",MODEL::s_model->ScalarFunction(std::string("alpha_QED")));
-    msg_Info()<<" . . . done."<<std::endl;
+    s_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
+    s_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
+    msg_Info()<<"}"<<std::endl;
   }
+}
+
+void WhiteHat_Virtual::DeleteInterface()
+{
+  if (s_interface) delete s_interface;
+  s_interface=NULL;
 }
 
 void WhiteHat_Virtual::Calc(const Vec4D_Vector& momenta) {
@@ -95,21 +85,18 @@ Virtual_ME2_Base *WhiteHat_Virtual_Getter::operator()(const Process_Info &pi) co
     Flavour_Vector fl=pi.ExtractFlavours();
     std::vector<int> kfvector;
     for (size_t i=0; i<fl.size(); ++i) kfvector.push_back(fl[i].HepEvt());
-    WhiteHat_Virtual::InitInterface();
     BH::BH_Ampl* ampl=NULL;
     try {
-      msg_Info()<<"Trying WhiteHat for "<<kfvector<<" . . . "<<std::flush;
-      ampl = WhiteHat_Virtual::s_interface->new_ampl(kfvector);
+      msg_Info()<<"Trying WhiteHat for "<<kfvector<<" ... "<<std::flush;
+      ampl = WhiteHat_Virtual::Interface()->new_ampl(kfvector);
     } catch (BH::BHerror err) {
-      msg_Info()<<" . . . not found."<<std::endl;
+      msg_Info()<<"not found."<<std::endl;
       return NULL;
     }
     if (ampl) {
-      msg_Info()<<" . . . found."<<std::endl;
+      msg_Info()<<"found."<<std::endl;
       return new WhiteHat_Virtual(pi, fl, ampl);
     }
   }
   return NULL;
 }
-
-#endif

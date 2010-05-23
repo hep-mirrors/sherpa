@@ -1,12 +1,11 @@
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "ATOOLS/Org/Message.H"
 
 #define COMPILE__Getter_Function
-#define OBJECT_TYPE EXTRAXS::Virtual_ME2_Base
+#define OBJECT_TYPE PHASIC::Virtual_ME2_Base
 #define PARAMETER_TYPE PHASIC::Process_Info
 #include "ATOOLS/Org/Getter_Function.C"
 
-using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 

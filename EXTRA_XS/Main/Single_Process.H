@@ -3,15 +3,16 @@
 
 #include "PHASIC++/Process/Single_Process.H"
 
+namespace PHASIC { class Virtual_ME2_Base; }
+
 namespace EXTRAXS {
 
   class ME2_Base;
-  class Virtual_ME2_Base;
 
   class Single_Process: public PHASIC::Single_Process {
   private:
     ME2_Base* p_born_me2;
-    Virtual_ME2_Base* p_virtual_me2;
+    PHASIC::Virtual_ME2_Base* p_virtual_me2;
     PHASIC::nlo_type::code m_nlotype;
 
   public:

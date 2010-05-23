@@ -1,15 +1,15 @@
-#ifndef EXTRA_XS_NLO_Virtual_ME2_Base_H
-#define EXTRA_XS_NLO_Virtual_ME2_Base_H
+#ifndef PHASIC_Process_Virtual_ME2_Base_H
+#define PHASIC_Process_Virtual_ME2_Base_H
 
-#include "EXTRA_XS/Main/ME2_Base.H"
+#include "PHASIC++/Process/Process_Info.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "MODEL/Main/Coupling_Data.H"
 
-namespace EXTRAXS {
+namespace PHASIC {
 
   class Virtual_ME2_Base {
   protected:
-    const PHASIC::Process_Info& m_pinfo;
+    const Process_Info& m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
     METOOLS::DivArrD m_res;
     bool m_needsborn,m_newlibs;

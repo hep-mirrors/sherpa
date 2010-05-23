@@ -1,14 +1,13 @@
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
-using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
 namespace EXTRAXS {
-  class DIS1jet_QCD_Virtual : public Virtual_ME2_Base {
+  class DIS1jet_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
     double m_cpl;
 //     ME2_Base* p_tree;
   public:
@@ -38,6 +37,7 @@ namespace EXTRAXS {
   };
 }
 
+using namespace EXTRAXS;
 
 void DIS1jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
 //   m_born=(*p_tree)(mom);
