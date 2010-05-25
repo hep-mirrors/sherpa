@@ -135,7 +135,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   size_t fsgluons(0);
   for (size_t i=m_nin;i<m_flavs.size();i++) {
-    if (m_flavs[i].IsMassive()) m_massive=1;
+    if (m_flavs[i].Strong()&&m_flavs[i].IsMassive()) m_massive=1;
     if (m_flavs[i].IsGluon()) fsgluons++; 
   }
   if (m_massive||fsgluons) {
