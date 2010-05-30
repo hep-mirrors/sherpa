@@ -352,9 +352,9 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
     mti/=2.0*pipj;
     mtj/=2.0*pipj;
   }
-  double Cij(nfj.IsVector()?Max(0.0,pipk/(pipj+pjpk)-mti):1.0);
-  double Cji(nfi.IsVector()?Max(0.0,pjpk/(pipj+pipk)-mtj):1.0);
-  return 4.0*dabs(pi*pj)/(Cij+Cji);
+  double Cij(nfj.IsVector()?Max(0.0,pipk/(pipj+pjpk)-mti):0.5*pipk/(pipk+pjpk));
+  double Cji(nfi.IsVector()?Max(0.0,pjpk/(pipj+pipk)-mtj):0.5*pjpk/(pipk+pjpk));
+  return 2.0*dabs(pi*pj)/(Cij+Cji);
 }
 
 bool Jet_Finder::ColorConnected
