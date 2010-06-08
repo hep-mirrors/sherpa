@@ -68,7 +68,8 @@ double CS_Cluster_Definitions::Phi
   }
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
-    pijt[1]=pijt[2]=0.0;
+    if (IsZero(pijt[1],1.0e-6) &&
+        IsZero(pijt[2],1.0e-6)) pijt[1]=pijt[2]=0.0;
     zax=Poincare(pijt,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
