@@ -33,6 +33,7 @@ command line.
 @subsection CS Shower options
 @cindex CSS_KIN_SCHEME
 @cindex CSS_PT2MIN
+@cindex CSS_EW_MODE
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -47,3 +48,10 @@ Note that the latter is more suitable for parton evolution in deep-inelastic
 lepton nucleon scattering, see @ref{HERA_DIS} @mycite{Carli2009cg}. 
 The lower cutoff of the shower evolution can be set via @option{CSS_PT2MIN}. 
 Note that this value is specified in GeV^2.
+
+By default, only QCD splitting functions are enabled in the shower.
+If you also want to allow for photon splittings, you can enable them
+by using @option{CSS_EW_MODE=1}. Note, that if you have leptons in your
+matrix-element final state, they are by default treated by a soft
+photon resummation as explained in @ref{QED Corrections}. To avoid
+double counting, this has to be disabled as explained in that section.

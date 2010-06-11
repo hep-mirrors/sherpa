@@ -14,6 +14,7 @@ The following parameters are used to steer the matrix element setup.
 * SCALES::                  How to compute scales. 
 * COUPLINGS::               How to evaluate couplings.
 * KFACTOR::                 Whether and how to apply a K-factor.
+* YUKAWA_MASSES::           Running of Yukawa couplings
 * Dipole subtraction::      Parameters for calculations with dipole subtraction.
 @end menu
 
@@ -237,6 +238,13 @@ Note that counting starts at zero.
 It is possible to implement a dedicated K-factor scheme within Sherpa.
 For advice on this topic please contact the authors, @ref{Authors}.
 
+@node YUKAWA_MASSES
+@subsection YUKAWA_MASSES
+@cindex YUKAWA_MASSES
+
+This parameter specifies whether the Yukawa couplings are evaluated using
+running or fixed quark masses: @code{YUKAWA_MASSES=Running} is the default since
+version 1.2.2 while @code{YUKAWA_MASSES=Fixed} was the default until 1.2.1.
 
 @node Dipole subtraction
 @subsection Dipole subtraction
