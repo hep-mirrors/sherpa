@@ -32,8 +32,6 @@ void Model::Initialize(MODEL::Model_Base *const model,
   read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputFile(file);
-  m_cplscheme=read.GetValue<std::string>("COUPLING_SCHEME","Running");
-  m_yukscheme=read.GetValue<std::string>("YUKAWA_MASSES","Running");
   m_widthscheme=read.GetValue<std::string>("WIDTH_SCHEME","Fixed");
   msg_Debugging()<<"}\n";
 }

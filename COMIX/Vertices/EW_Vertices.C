@@ -243,10 +243,8 @@ EW_FFH<SType>::EW_FFH(const Vertex_Key &key):
   m_cpl(-M_I/SComplex(key.p_model->Constant("v_{EW}"))) 
 {
   Flavour f((key.p_a->Flav().IsFermion()?key.p_a:key.p_b)->RFlav());
-  std::string tag(f.IDName());
-  if (f.IsLepton()) tag=tag.substr(0,tag.length()-1);
-  tag="Yukawa_"+tag;
-  m_cpl*=key.p_model->ScalarConstant(tag);
+  m_cpl*=key.p_model->ScalarFunction
+    ("m"+f.IDName(),sqr(Flavour(kf_h0).Mass(true)));
   if (IsZero(m_cpl)) this->m_act=false;
   msg_Debugging()<<"m_cpl = "<<m_cpl<<" <- "<<key.ID()<<"\n";
 }

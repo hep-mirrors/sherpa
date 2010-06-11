@@ -20,7 +20,7 @@ namespace COMIX {
 
     MODEL::Model_Base *p_model;
 
-    std::string m_cplscheme, m_masscheme, m_widthscheme, m_yukscheme;
+    std::string m_widthscheme;
 
     Complex_Map m_consts;
 
