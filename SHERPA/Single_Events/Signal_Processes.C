@@ -35,6 +35,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 	weight = p_mehandler->WeightInfo().m_weight;
 	return Return_Value::Success; 
       }
+      else return Return_Value::New_Event;
     }
   return Return_Value::Nothing;
 }

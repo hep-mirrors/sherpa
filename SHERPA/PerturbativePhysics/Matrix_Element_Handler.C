@@ -144,7 +144,7 @@ bool Matrix_Element_Handler::GenerateUnweightedEvent()
   }
   if (proc==NULL) THROW(fatal_error,"No process selected");
   PHASIC::Weight_Info *info=proc->OneEvent();
-  if (info==NULL) THROW(fatal_error,"No weight information.");
+  if (info==NULL) return false;
   m_evtinfo=*info;
   delete info;
   p_proc=proc->Selected();

@@ -182,7 +182,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	case Return_Value::New_Event : 
 	  {
 	    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
-            if (sp) m_addn+=(*sp)["Trials"]->Get<double>();
+            if (sp && (*sp)["Trials"]) m_addn+=(*sp)["Trials"]->Get<double>();
 	  }
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncNewEvent((*pit)->Name());
