@@ -1,0 +1,106 @@
+#! /usr/bin/env python
+
+import os, sys
+
+class SherpaHistogram:
+    def __init__(self, path, filename):
+        self.path = path
+        self.filename = filename
+        self.data=[]
+        self.read_input()
+
+    def read_input(self):
+        f = open(os.path.join(self.path, self.filename), "r")
+        for line in f:
+            linearray = line.split()
+            if len(linearray)==9:
+                self.binwidth=(float(linearray[3])-float(linearray[2]))/(int(linearray[1])-2)
+            elif len(linearray)==2:
+                self.data.append({'LowEdge': float(linearray[0]),
+                                  'Content': float(linearray[1]),
+                                  'Error':   0.0})
+            elif len(linearray)==3:
+                self.data.append({'LowEdge': float(linearray[0]),
+                                  'Content': float(linearray[1]),
+                                  'Error':   float(linearray[2])})
+            else:
+                print "Can't handle lin of length %s:\n %s" % (len(linearray), linearray)
+        f.close()
+
+    def write_datapoint(self, f, xval, xerr, yval, yerr):
+            f.write('    <dataPoint>\n')
+            f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(xerr, xval, xerr))
+            f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(yerr, yval, yerr))
+            f.write('    </dataPoint>\n')
+
+    def write_datapointset_header(self, f):
+        aidapath = "/".join(self.path.split("/")[1:])
+        aidapath = "/Sherpa"+aidapath.replace("/","_")
+        aidaname = self.filename.replace("/","_")
+        aidaname = aidaname.replace(".dat", "")
+        title = self.filename.replace("_", " ")
+        title = title.replace(".dat", "")
+        f.write('  <dataPointSet name="%s" dimension="2"\n' % aidaname)
+        f.write('    path="%s" title="%s">\n' % (aidapath, title))
+        f.write('    <dimension dim="0" title="$X$" />\n')
+        f.write('    <dimension dim="1" title="d$\sigma$/d$X$" />\n')
+        f.write('    <annotation>\n')
+        f.write('      <item key="Title" value="%s" sticky="true"/>\n' % title)
+        f.write('      <item key="AidaPath" value="%s" sticky="true"/>\n' % aidapath)
+        f.write('      <item key="FullPath" value="%s/%s" sticky="true"/>\n' %(aidapath, aidaname))
+        f.write('    </annotation>\n')
+
+    def write_datapointset_footer(self, f):
+        f.write('  </dataPointSet>\n')
+
+    def write_datapointset(self, f):
+        self.write_datapointset_header(f)
+        for bindata in self.data:
+            xval = bindata['LowEdge'] + 0.5*float(self.binwidth)
+            xerr = 0.5*float(self.binwidth)
+            yval = bindata['Content']
+            yerr = bindata['Error']
+            self.write_datapoint(f, xval, xerr, yval, yerr)
+        self.write_datapointset_footer(f)
+
+        
+          
+
+from optparse import OptionParser
+parser = OptionParser(usage="""%prog anadir1 [anadir2 ...]
+
+Creates an AIDA file for each input directory, containing all histograms
+found in .dat files  (of the Sherpa internal analysis format) in the
+given directory.
+These AIDA files can then be plotted using Rivet's plotting tools,
+e.g. rivet-mkhtml anadir1.aida [anadir2.aida ...].
+""")
+opts, args = parser.parse_args()
+
+if len(args) < 1:
+    sys.stderr.write("Must specity at least one analysis directory\n")
+    sys.exit(1)
+
+for dir in args:
+    if not os.path.isdir(dir):
+        continue
+    while dir[-1]=="/":
+        dir = dir[0:-1]
+    if dir[0:2]=="./":
+        dir = dir[2:]
+    print "Processing", dir
+    f = open(dir+'.aida', 'w')
+    f.write('<?xml version="1.0" encoding="ISO-8859-1" ?>\n')
+    f.write('<!DOCTYPE aida SYSTEM "http://aida.freehep.org/schemas/3.3/aida.dtd">\n')
+    f.write('<aida version="3.3">\n')
+    f.write('  <implementation version="1.1" package="FreeHEP"/>\n')
+
+    for path, dirs, files in os.walk(dir):
+        for file in files:
+            if not file[-4:]==".dat":
+                continue
+            print "Converting %s in %s" %(file, path)
+            histo = SherpaHistogram(path, file)
+            histo.write_datapointset(f)
+    f.write('</aida>\n')
+    f.close
