@@ -147,6 +147,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
 	   blob->ConstOutParticle(u)->RefFlav().IsDiQuark() ||
 	   blob->ConstOutParticle(u)->RefFlav().IsGluon()) {
 	  if(u!=0) {
+	    //cout<<*_blobs<<endl;
 	    PRINT_INFO("Warning(1): Unusual hadron-decay blob, "<<
 		       "cannot yet correct for it."); break;}
 	  fsblob=blob->ConstOutParticle(0)->DecayBlob();
@@ -412,14 +413,15 @@ void HepEvt_Interface::QEDBlobs2HepEvt(ATOOLS::Blob_List * const _blobs,
   for(Blob_List::const_iterator bit=_blobs->begin();
       bit!=_blobs->end(); ++bit) {
     if((*bit)->Type()==btp::QED_Radiation) {
-      if((*bit)->NInP()<=2) {
+      /*if((*bit)->NInP()<=2)*/ {
 	for(int j=0; j<(*bit)->NOutP(); ++j)
 	  Particle2HepEvt((*bit)->OutParticle(j),_nhep);
 	EstablishRelations((*bit));
+	//if((*bit)->NInP()>2) cout<<*_blobs<<endl;
       }
-      else
-	PRINT_INFO("Warning: QED Radiation blob with more than two incoming "<<
-		   "particles. Translation skipped.");
+      //else
+      //PRINT_INFO("Warning: QED Radiation blob with more than two incoming "<<
+      //	   "particles. Translation skipped.");
     }
   }
 }
@@ -535,34 +537,46 @@ void HepEvt_Interface::String2HepEvt(Blob * const _string,int & _nhep)
 }
 
 
-void HepEvt_Interface::EstablishRelations(Blob * const _blob) {
+void HepEvt_Interface::EstablishRelations(Blob* const _blob) {
   int mothers[2];
   int daughters[2];
-  mothers[0]  = mothers[1]   = 0;
-  for (int i=0;i<_blob->NInP();i++) {
-    mothers[i] = m_convertS2H[_blob->InParticle(i)];
+  int inum(_blob->NInP());
+  mothers[0] = mothers[1] = 0;
+  switch(inum) {
+  case  0: break;
+  case  2: mothers[1] = m_convertS2H[_blob->InParticle(1)];
+  case  1: mothers[0] = m_convertS2H[_blob->InParticle(0)]; break;
+  default: //PRINT_INFO("Note, evt#"<<m_evtnumber
+                      //<<": blob (type="<<_blob->Type()
+                      //<<") with "<<inum<<" incoming particles.");
+    mothers[0] = m_convertS2H[_blob->InParticle(0)];
+    mothers[1] = m_convertS2H[_blob->InParticle(inum-1)];
   }
-  if (_blob->NOutP()>0) {
+  if(_blob->NOutP()>0) {
     daughters[0] = m_convertS2H[_blob->OutParticle(0)];
-    if (_blob->NOutP()>1) daughters[1] = m_convertS2H[_blob->OutParticle(_blob->NOutP()-1)];
+    if(_blob->NOutP()>1)
+      daughters[1] = m_convertS2H[_blob->OutParticle(_blob->NOutP()-1)];
     else daughters[1] = m_convertS2H[_blob->OutParticle(0)];
   }
   else daughters[0] = daughters[1] = 0;
-  
-  if (_blob->NInP()>0) {
-    for (int i=0;i<_blob->NInP();i++) {
-      p_jdahep[2*mothers[i]]   = daughters[0]+1;
-      p_jdahep[2*mothers[i]+1] = daughters[1]+1;
+
+  if(inum>2) {
+    for(int i=1; i<inum-1; ++i) {
+      int tmp=m_convertS2H[_blob->InParticle(i)];
+      p_jdahep[2*tmp]   = daughters[0]+1;
+      p_jdahep[2*tmp+1] = daughters[1]+1;
     }
+    inum=2;
   }
-  if (_blob->NOutP()>0) {
-    for (int i=0;i<_blob->NOutP();i++) {
-      for (int j=0;j<_blob->NInP();j++){ 
-	p_jmohep[2*m_convertS2H[_blob->OutParticle(i)]+j] = mothers[j]+1; 
-      }
-    }
+  for(int i=0; i<inum; ++i) {
+    p_jdahep[2*mothers[i]]   = daughters[0]+1;
+    p_jdahep[2*mothers[i]+1] = daughters[1]+1;
+  }
+  for(int i=0; i<_blob->NOutP(); ++i) for (int j=0; j<inum; ++j) { 
+    p_jmohep[2*m_convertS2H[_blob->OutParticle(i)]+j] = mothers[j]+1; 
   }
 }
+
 
 void HepEvt_Interface::EstablishRelationsModified(Blob * const _blob) {
   int mothers[2];
