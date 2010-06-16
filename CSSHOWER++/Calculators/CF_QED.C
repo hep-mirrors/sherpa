@@ -53,7 +53,17 @@ double CF_QED::Coupling(const double &scale,const int mode)
 bool CF_QED::AllowSpec(const ATOOLS::Flavour &fl) 
 {
   if (m_cfl.IntCharge()==0) return fl.Charge();
-  return fl.IntCharge()*m_cfl.IntCharge()<0;
+  
+  switch (m_type) {
+  case cstp::FF:
+  case cstp::II:
+    return fl.IntCharge()*m_cfl.IntCharge()<0;
+  case cstp::FI:
+  case cstp::IF:
+    return fl.IntCharge()*m_cfl.IntCharge()>0;
+  default:
+    return false;
+  }
 }
 
 DECLARE_CPL_GETTER(CF_QED_Getter);
