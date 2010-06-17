@@ -98,9 +98,8 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       }
     }
     else {
-      msg_Error()<<METHOD<<" Ignored unknown selector \""
-                 <<key[startk][0]<<"\". "
-                 <<"Please check your selector settings."<<endl;
+      msg_Out()<<endl;
+      THROW(fatal_error, "Did not find selector \""+key[startk][0]+"\".");
     }
   }
   msg_Debugging()<<"   }\n";
