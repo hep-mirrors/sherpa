@@ -98,9 +98,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   Blob * sigblob(bloblist->FindLast(btp::Shower));
   if (!sigblob) return Return_Value::Nothing;
   // if already treated -> nothing to do
-  if (sigblob->TypeSpec()=="YFS-type QED Corrections to ME")
+  if (sigblob->TypeSpec()=="YFS-type_QED_Corrections_to_ME")
     return Return_Value::Nothing;
-  if (sigblob->TypeSpec()=="setting leptons on-shell")
+  if (sigblob->TypeSpec()=="setting_leptons_on-shell")
     return Return_Value::Nothing;
   // extract FS leptons
   // two vectors -> the ones from the blob and the ones to be massive
@@ -127,9 +127,20 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   // put them on-shell (spoils consistency of pertubative calculation,
   // but necessary for YFS)
   if (!PutOnMassShell(mfslep)) {
-    msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
-               <<"  Leptons could not be put on their mass shell."<<endl
-               <<"  Trying new event."<<endl;
+    msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("
+	       <<bloblist<<","<<weight<<"): \n"
+               <<"  Leptons could not be put on their mass shell.\n"
+               <<"  Trying new event.\n"
+               <<"  The event contained a ";
+    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
+       msg_Error()<<(*it)->Flav().ShellName()<<"-";
+    if (mfslep.size()==2) msg_Error()<<"pair";
+    else                  msg_Error()<<"set";
+    msg_Error()<<" of too little invariant mass to be put\n"
+	       <<"  on their mass shell. If you are sensitive to this specific"
+	       <<" signature consider\n  to set the respective particles"
+	       <<" massive in the perturbative calculation using\n"
+	       <<"  'MASSIVE[<id>]=1' to avoid this problem.\n";
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
       delete *it;
     return Return_Value::New_Event;
@@ -137,7 +148,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   // if switched off or no need for QED stop here and build a blob
   if (!m_qed || !sigblob->Has(blob_status::needs_extraQED)) {
     Blob * onshellblob = bloblist->AddBlob(btp::QED_Radiation);
-    onshellblob->SetTypeSpec("setting leptons on-shell");
+    onshellblob->SetTypeSpec("setting_leptons_on-shell");
     if (sigblob->Has(blob_status::needs_extraQED))
       sigblob->UnsetStatus(blob_status::needs_extraQED);
     for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
@@ -178,7 +189,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   sigblob->UnsetStatus(blob_status::needs_extraQED);
   // build new QED radiation blob
   Blob * QEDblob = bloblist->AddBlob(btp::QED_Radiation);
-  QEDblob->SetTypeSpec("YFS-type QED Corrections to ME");
+  QEDblob->SetTypeSpec("YFS-type_QED_Corrections_to_ME");
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
     // set info back to hard process, otherwise
     // check for momentum conservation does not work
