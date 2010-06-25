@@ -7,6 +7,7 @@
 #include "PHOTONS++/PhaseSpace/Generate_Dipole_Photon_Angle.H"
 #include "PHOTONS++/PhaseSpace/Generate_Multipole_Photon_Angle.H"
 
+using namespace ATOOLS;
 using namespace PHOTONS;
 using namespace std;
 

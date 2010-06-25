@@ -6,7 +6,6 @@
 #include "ATOOLS/Org/Exception.H"
 #include <vector>
 
-using namespace std;
 using namespace ATOOLS;
 
 namespace METOOLS {

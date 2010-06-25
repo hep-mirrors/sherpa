@@ -9,6 +9,8 @@
 namespace ATOOLS {
   class Blob;
   class Flavour;
+  class Particle;
+  typedef std::vector<Particle* > Particle_Vector;
 }
 
 namespace PHASIC {
@@ -30,24 +32,24 @@ namespace SHERPA {
 
     std::map<std::string,SubInfoVector> m_proc_lep_map;
 
-    bool    PutOnMassShell(const Particle_Vector&);
-    Flavour DetermineResonanceFlavour(const Particle_Vector&);
-    Vec4D   MomentumSum(const Particle_Vector&);
+    bool            PutOnMassShell(const ATOOLS::Particle_Vector&);
+    ATOOLS::Flavour DetermineResonanceFlavour(const ATOOLS::Particle_Vector&);
+    ATOOLS::Vec4D   MomentumSum(const ATOOLS::Particle_Vector&);
 
     void FindSubProcessInfosContainingLeptons(const PHASIC::Process_Info&,
                                               SubInfoVector&);
     void FindSubProcessInfosContainingLeptons(const PHASIC::Subprocess_Info&,
                                               SubInfoVector&);
 
-    Blob_Vector BuildResonantBlobs(Particle_Vector&);
+    Blob_Vector BuildResonantBlobs(ATOOLS::Particle_Vector&);
 
-    bool    ContainsNoAmbiguities(const Particle_Vector&);
+    bool    ContainsNoAmbiguities(const ATOOLS::Particle_Vector&);
     void    FillBlob(ATOOLS::Blob *,
                      const PHASIC::Subprocess_Info&,
-                     Particle_Vector&);
+                     ATOOLS::Particle_Vector&);
     void    FillBlob(ATOOLS::Blob *,
                      const ATOOLS::Flavour&,
-                     Particle_Vector&);
+                     ATOOLS::Particle_Vector&);
   public :
 
     // constructor

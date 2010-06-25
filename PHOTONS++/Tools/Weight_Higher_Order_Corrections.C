@@ -8,6 +8,7 @@
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Main/Photons.H"
 
+using namespace ATOOLS;
 using namespace PHOTONS;
 using namespace std;
 

@@ -10,9 +10,9 @@ namespace PHOTONS {
 
   class Weight_Higher_Order_Corrections: public Weight_Base {
     private:
-      Particle_Vector m_olddipole;
-      Particle_Vector m_newdipole;
-      Particle_Vector m_softphotons;
+      ATOOLS::Particle_Vector m_olddipole;
+      ATOOLS::Particle_Vector m_newdipole;
+      ATOOLS::Particle_Vector m_softphotons;
       double          m_M;
       unsigned int    m_n;
 

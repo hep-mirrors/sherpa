@@ -3,24 +3,26 @@
 
 #include "PHOTONS++/Main/Dipole_Type.H"
 
-using namespace ATOOLS;
+namespace ATOOLS {
+  class Blob;
+}
 
 namespace PHOTONS {
   class Define_Dipole {
     private:
       bool                    m_success;
       bool                    m_photonsadded;
-      Blob *                  p_blob;
-      Particle_Vector         m_chargedinparticles;
-      Particle_Vector         m_neutralinparticles;
-      Particle_Vector         m_chargedoutparticles;
-      Particle_Vector         m_neutraloutparticles;
-      Particle_Vector         m_softphotons;
+      ATOOLS::Blob *          p_blob;
+      ATOOLS::Particle_Vector m_chargedinparticles;
+      ATOOLS::Particle_Vector m_neutralinparticles;
+      ATOOLS::Particle_Vector m_chargedoutparticles;
+      ATOOLS::Particle_Vector m_neutraloutparticles;
+      ATOOLS::Particle_Vector m_softphotons;
       Particle_Vector_Vector  m_pvv;
       Dipole_Type::code       m_dtype;
 
     public:
-      Define_Dipole(Blob *);
+      Define_Dipole(ATOOLS::Blob *);
       ~Define_Dipole();
 
       void AddRadiation();

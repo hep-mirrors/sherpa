@@ -3,9 +3,6 @@
 
 #include "ATOOLS/Math/Vector.H"
 
-using namespace ATOOLS;
-using namespace std;
-
 namespace PHOTONS {
   class Generate_Dipole_Photon_Angle {
     private:
@@ -14,21 +11,21 @@ namespace PHOTONS {
       double              m_c;
       double              m_theta;
       double              m_phi;
-      Vec4D               m_dir;
+      ATOOLS::Vec4D       m_dir;
 
-      double  CalculateBeta(const Vec4D&);
+      double  CalculateBeta(const ATOOLS::Vec4D&);
       void    GenerateDipoleAngle();
       void    GenerateNullVector();
 
     public:
-      Generate_Dipole_Photon_Angle(Vec4D, Vec4D);
+      Generate_Dipole_Photon_Angle(ATOOLS::Vec4D, ATOOLS::Vec4D);
       Generate_Dipole_Photon_Angle(const double&, const double&);
       ~Generate_Dipole_Photon_Angle();
 
       inline double               GetCosTheta()   { return m_c; }
       inline double               GetTheta()      { return m_theta; }
       inline double               GetPhi()        { return m_phi; }
-      inline Vec4D                GetVector()     { return m_dir; }
+      inline ATOOLS::Vec4D        GetVector()     { return m_dir; }
   };
 
 

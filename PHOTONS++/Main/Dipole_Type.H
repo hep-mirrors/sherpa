@@ -1,15 +1,18 @@
 #ifndef PHOTONS_Main_Dipole_Type_H
 #define PHOTONS_Main_Dipole_Type_H
 
+#include <vector>
+
 // #define PHOTONS_DEBUG
 
-#include "ATOOLS/Phys/Particle.H"
-
-using namespace ATOOLS;
+namespace ATOOLS {
+  class Particle;
+  typedef std::vector<Particle* > Particle_Vector;
+}
 
 namespace PHOTONS {
 
-  typedef std::vector<Particle_Vector>    Particle_Vector_Vector;
+  typedef std::vector<ATOOLS::Particle_Vector> Particle_Vector_Vector;
 
   class Dipole_Type {
     public:

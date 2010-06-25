@@ -4,8 +4,6 @@
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Tools/Dipole_FF.H"
 
-using namespace ATOOLS;
-
 namespace PHOTONS {
   class Vector_To_Fermion_Fermion: public PHOTONS_ME_Base, public Dipole_FF {
     private:

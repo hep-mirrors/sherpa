@@ -1,5 +1,10 @@
 #include "PHOTONS++/Tools/YFS_Form_Factor.H"
+
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Math/Gauss_Integrator.H"
 #include "PHOTONS++/Main/Photons.H"
 
 #define LOG_2 0.69314718055994530942

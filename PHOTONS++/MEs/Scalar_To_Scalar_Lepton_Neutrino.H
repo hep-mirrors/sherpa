@@ -4,8 +4,6 @@
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
 #include "PHOTONS++/Tools/Dipole_FF.H"
 
-using namespace ATOOLS;
-
 namespace PHOTONS {
   class Scalar_To_Scalar_Lepton_Neutrino: public PHOTONS_ME_Base, public Dipole_FF {
     private:

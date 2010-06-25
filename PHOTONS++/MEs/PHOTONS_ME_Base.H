@@ -1,7 +1,9 @@
 #ifndef PHOTONS_MEs_PHOTONS_ME_Base_H
 #define PHOTONS_MEs_PHOTONS_ME_Base_H
 
+#include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
 
@@ -10,37 +12,35 @@ namespace ATOOLS {
   class Poincare;
 }
 
-using namespace ATOOLS;
-
 namespace PHOTONS {
 
   class PHOTONS_ME_Base {
     protected:
-      std::string   m_name;
+      std::string        m_name;
 
-      unsigned int  m_nV;
-      unsigned int  m_nR;
-      double        m_alpha;
-      double        m_e;
-      double        m_sW;
-      double        m_cW;
-      double        m_GF;
-      double        m_sqrt2;
-      Complex       m_i;
+      unsigned int       m_nV;
+      unsigned int       m_nR;
+      double             m_alpha;
+      double             m_e;
+      double             m_sW;
+      double             m_cW;
+      double             m_GF;
+      double             m_sqrt2;
+      Complex    m_i;
 
-      Complex  m_cL;
-      Complex  m_cR;
+      Complex    m_cL;
+      Complex    m_cR;
 
-      Poincare * p_boost;
-      Poincare * p_rot;
+      ATOOLS::Poincare * p_boost;
+      ATOOLS::Poincare * p_rot;
 
-      Flavour  m_flavs[9];
-      double   m_masses[9];
-      Vec4D *  m_moms;
-      Vec4D    m_moms0[9];
-      Vec4D    m_moms1[9][9];
-      Vec4D    m_moms2[9][9];
-      int      m_spins[9];
+      ATOOLS::Flavour    m_flavs[9];
+      double             m_masses[9];
+      ATOOLS::Vec4D *    m_moms;
+      ATOOLS::Vec4D      m_moms0[9];
+      ATOOLS::Vec4D      m_moms1[9][9];
+      ATOOLS::Vec4D      m_moms2[9][9];
+      int                m_spins[9];
 
       const Particle_Vector_Vector& m_pvv_zero;
 

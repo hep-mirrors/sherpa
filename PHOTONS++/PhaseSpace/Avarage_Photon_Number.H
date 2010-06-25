@@ -1,28 +1,26 @@
 #ifndef PHOTONS_PhaseSpace_Avarage_Photon_Number_H
 #define PHOTONS_PhaseSpace_Avarage_Photon_Number_H
 
+#include "ATOOLS/Math/Vector.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
-
-
-using namespace ATOOLS;
 
 namespace PHOTONS {
   class Avarage_Photon_Number {
     private:
       double              m_omegaMax;
       double              m_omegaMin;
-      Particle_Vector     m_dipole;
+      ATOOLS::Particle_Vector m_dipole;
 
       double              m_nbar;
       std::vector<double> m_nbars;
 
       void    CalculateAvaragePhotonNumber();
-      double  CalculateBeta(const Vec4D&);
+      double  CalculateBeta(const ATOOLS::Vec4D&);
       double  InterferenceTerm(const double&, const double&,
                                const double&, const double&);
 
     public:
-      Avarage_Photon_Number(const Particle_Vector&,
+      Avarage_Photon_Number(const ATOOLS::Particle_Vector&,
                             const double&, const double&);
       ~Avarage_Photon_Number();
 

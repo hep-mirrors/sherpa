@@ -5,8 +5,6 @@
 #include "PHOTONS++/Tools/Dipole_FF.H"
 #include "ATOOLS/Math/Tensor.H"
 
-using namespace ATOOLS;
-
 namespace PHOTONS {
   class Scalar_To_Vector_Lepton_Neutrino: public PHOTONS_ME_Base, public Dipole_FF {
     private:

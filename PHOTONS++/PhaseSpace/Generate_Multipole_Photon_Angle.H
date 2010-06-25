@@ -2,18 +2,16 @@
 #define PHOTONS_PhaseSpace_Generate_Multipole_Photon_Angle_H
 
 #include "ATOOLS/Math/Vector.H"
+
 namespace ATOOLS {
   class Particle;
   typedef std::vector<Particle*> Particle_Vector;
 }
 
-using namespace ATOOLS;
-using namespace std;
-
 namespace PHOTONS {
   class Generate_Multipole_Photon_Angle {
     private:
-      Particle_Vector     m_dipole;
+      ATOOLS::Particle_Vector m_dipole;
       double              m_nbar;
       std::vector<double> m_nbars;
       unsigned int        m_i;
@@ -21,12 +19,12 @@ namespace PHOTONS {
       double              m_theta;
       double              m_phi;
 
-      double  CalculateBeta(const Vec4D&);
+      double  CalculateBeta(const ATOOLS::Vec4D&);
       void    GenerateMultipoleAngle();
       void    IndexLookup(unsigned int);
 
     public:
-      Generate_Multipole_Photon_Angle(const Particle_Vector&,
+      Generate_Multipole_Photon_Angle(const ATOOLS::Particle_Vector&,
                                       const std::vector<double>&);
       ~Generate_Multipole_Photon_Angle();
 

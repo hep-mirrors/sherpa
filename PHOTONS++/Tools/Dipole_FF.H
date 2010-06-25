@@ -3,22 +3,19 @@
 
 #include "PHOTONS++/Tools/Dress_Blob_Base.H"
 
-using namespace ATOOLS;
-using namespace std;
-
 namespace PHOTONS {
   class Dipole_FF: public Dress_Blob_Base {
     protected:
 
       virtual void   CalculateAvaragePhotonNumber(const double&, const double&);
       virtual bool   CheckIfExceedingPhotonEnergyLimits();
-      virtual void   CheckMomentumConservationInQCMS(const Poincare&,
-                                                     const Poincare&);
+      virtual void   CheckMomentumConservationInQCMS(const ATOOLS::Poincare&,
+                                                     const ATOOLS::Poincare&);
       virtual void   CorrectMomenta();
       virtual void   DefineDipole();
       virtual double Func(const double&, const std::vector<double>&,
-                          const std::vector<double>&, const std::vector<Vec3D>&,
-                          const double&);
+                          const std::vector<double>&,
+                          const std::vector<ATOOLS::Vec3D>&, const double&);
       virtual void   ResetVariables();
       virtual void   ReturnMomenta();
 

@@ -14,7 +14,7 @@ namespace PHOTONS {
       virtual void CalculateMax();
 
     public:
-      Weight_YFS(const Particle_Vector&, const Particle_Vector&,
+      Weight_YFS(const ATOOLS::Particle_Vector&, const ATOOLS::Particle_Vector&,
                  const double&, const double&);
       virtual ~Weight_YFS();
   };

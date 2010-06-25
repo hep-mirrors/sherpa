@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PHOTONS++/Main/Define_Dipole.H"
+#include "ATOOLS/Phys/Blob.H"
 
 
 using namespace PHOTONS;

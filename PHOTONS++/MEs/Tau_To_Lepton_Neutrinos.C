@@ -1,5 +1,7 @@
 #include "PHOTONS++/MEs/Tau_To_Lepton_Neutrinos.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Particle.H"
 #include "METOOLS/Main/XYZFuncs.H"
 #include "METOOLS/Main/Polarization_Tools.H"
 

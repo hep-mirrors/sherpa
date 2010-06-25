@@ -2,6 +2,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Particle.H"
 #include "PHOTONS++/Main/Photons.H"
 #include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
 

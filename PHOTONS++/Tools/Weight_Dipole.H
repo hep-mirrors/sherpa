@@ -1,25 +1,26 @@
 #ifndef PHOTONS_Tools_Weight_Dipole_H
 #define PHOTONS_Tools_Weight_Dipole_H
 
+#include "ATOOLS/Math/Vector.H"
 #include "PHOTONS++/Tools/Weight_Base.H"
-
-
-using namespace ATOOLS;
 
 namespace PHOTONS {
   class Weight_Dipole: public Weight_Base {
     private:
-      Particle_Vector     m_olddipole;
-      Particle_Vector     m_newdipole;
-      Particle_Vector     m_softphotons;
+      ATOOLS::Particle_Vector     m_olddipole;
+      ATOOLS::Particle_Vector     m_newdipole;
+      ATOOLS::Particle_Vector     m_softphotons;
 
       virtual void CalculateWeight();
       virtual void CalculateMax();
-      double SMod(const Vec4D&, const Vec4D&, const Vec4D&);
+      double SMod(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  const ATOOLS::Vec4D&);
 
     public:
-      Weight_Dipole(const Particle_Vector&, const Particle_Vector&,
-                    const Particle_Vector&, Dipole_Type::code);
+      Weight_Dipole(const ATOOLS::Particle_Vector&,
+                    const ATOOLS::Particle_Vector&,
+                    const ATOOLS::Particle_Vector&,
+                    Dipole_Type::code);
       virtual ~Weight_Dipole();
   };
 

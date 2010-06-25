@@ -2,19 +2,19 @@
 #define PHOTONS_Tools_YFS_Form_Factor_H
 
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Math/Gauss_Integrator.H"
 
-using namespace ATOOLS;
+namespace ATOOLS {
+  class Particle;
+  typedef std::vector<Particle* > Particle_Vector;
+  class Gauss_Integrator;
+  class Function_Base;
+}
 
 namespace PHOTONS {
   class YFS_Form_Factor {
     private:
-      Vec4D       m_p1;
-      Vec4D       m_p2;
+      ATOOLS::Vec4D m_p1;
+      ATOOLS::Vec4D m_p2;
       double      m_ks;
       double      m_m1;
       double      m_m2;
@@ -36,19 +36,20 @@ namespace PHOTONS {
       double IntP2();
       double GFunc(double);
       double IntG();
-      double CalculateBeta(const Vec4D&);
+      double CalculateBeta(const ATOOLS::Vec4D&);
 
     public:
-      YFS_Form_Factor(const Particle_Vector&, const double&);
-      YFS_Form_Factor(const Particle*, const Particle*, const double&);
+      YFS_Form_Factor(const ATOOLS::Particle_Vector&, const double&);
+      YFS_Form_Factor(const ATOOLS::Particle*, const ATOOLS::Particle*,
+                      const double&);
       ~YFS_Form_Factor();
 
       double G(double);
 
       inline const double Get() const { return m_Y; }
 
-      inline const Vec4D &P1() const  { return m_p1; }
-      inline const Vec4D &P2() const  { return m_p2; }
+      inline const ATOOLS::Vec4D &P1() const  { return m_p1; }
+      inline const ATOOLS::Vec4D &P2() const  { return m_p2; }
   };
 
 

@@ -1,14 +1,12 @@
 #ifndef PHOTONS_Main_Photons_H
 #define PHOTONS_Main_Photons_H
-#include "ATOOLS/Org/CXXFLAGS.H"
 
-#include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Phys/Blob.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 
-using namespace ATOOLS;
-
-namespace ATOOLS { class Data_Reader; }
+namespace ATOOLS {
+  class Blob;
+  class Data_Reader;
+}
 
 namespace PHOTONS {
   class Photons {
@@ -21,7 +19,7 @@ namespace PHOTONS {
     Photons(ATOOLS::Data_Reader* reader=NULL,bool=false);
     Photons(bool=false);
     ~Photons();
-    bool AddRadiation(Blob *);
+    bool AddRadiation(ATOOLS::Blob *);
 
     inline bool        DoneSuccessfully() { return m_success; }
     inline std::string Name()             { return m_name; }

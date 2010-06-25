@@ -1,8 +1,9 @@
 #include "PHOTONS++/MEs/PHOTONS_ME_Base.H"
-#include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Particle.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHOTONS++/Main/Photons.H"
 

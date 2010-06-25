@@ -1,12 +1,13 @@
 #ifndef PHOTONS_Tools_Weight_Jacobian_H
 #define PHOTONS_Tools_Weight_Jacobian_H
 
+#include "ATOOLS/Math/Vector.H"
 #include "PHOTONS++/Tools/Weight_Base.H"
 
 namespace PHOTONS {
   class Weight_Jacobian: public Weight_Base {
     protected:
-      Vec4D   CalculateMomentumSum(const Particle_Vector&);
+      ATOOLS::Vec4D CalculateMomentumSum(const ATOOLS::Particle_Vector&);
 
       virtual void CalculateWeight() = 0;
       virtual void CalculateMax() = 0;
@@ -32,30 +33,36 @@ namespace PHOTONS {
       virtual void CalculateMax();
 
     public:
-      Weight_Jacobian_Lorentz(const Particle_Vector&, const Particle_Vector&,
-                              const Particle_Vector&, const Particle_Vector&,
-                              const Particle_Vector&, Dipole_Type::code);
+      Weight_Jacobian_Lorentz(const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              Dipole_Type::code);
       virtual ~Weight_Jacobian_Lorentz();
   };
 
 
   class Weight_Jacobian_Mapping: public Weight_Jacobian {
     private:
-      Particle_Vector       m_newdipole;
-      Particle_Vector       m_olddipole;
-      Particle_Vector       m_newspectator;
-      Particle_Vector       m_oldspectator;
-      double                m_M;
-      double                m_u;
-      Vec3D                 m_K;
+      ATOOLS::Particle_Vector m_newdipole;
+      ATOOLS::Particle_Vector m_olddipole;
+      ATOOLS::Particle_Vector m_newspectator;
+      ATOOLS::Particle_Vector m_oldspectator;
+      double                  m_M;
+      double                  m_u;
+      ATOOLS::Vec3D           m_K;
 
       virtual void CalculateWeight();
       virtual void CalculateMax();
 
     public:
-      Weight_Jacobian_Mapping(const Particle_Vector&, const Particle_Vector&,
-                              const Particle_Vector&, const Particle_Vector&,
-                              const Vec4D&, double, double, Dipole_Type::code);
+      Weight_Jacobian_Mapping(const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Particle_Vector&,
+                              const ATOOLS::Vec4D&,
+                              double, double, Dipole_Type::code);
       virtual ~Weight_Jacobian_Mapping();
   };
 

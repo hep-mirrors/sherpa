@@ -3,8 +3,6 @@
 
 #include "PHOTONS++/Main/Dipole_Type.H"
 
-using namespace ATOOLS;
-
 namespace PHOTONS {
   class Generate_One_Photon {
     private:
@@ -15,7 +13,7 @@ namespace PHOTONS {
       double            m_w;
       double            m_delta;
       Dipole_Type::code m_dtype;
-      Particle *        p_photon;
+      ATOOLS::Particle *p_photon;
 
       void GeneratePhotonAngleMassless();
       void GeneratePhoton();
@@ -23,11 +21,11 @@ namespace PHOTONS {
     public:
       Generate_One_Photon(const double&, const double&,
                           const double&, Dipole_Type::code);
-      Generate_One_Photon(const Particle_Vector&, const std::vector<double>&,
-                          double, Dipole_Type::code);
+      Generate_One_Photon(const ATOOLS::Particle_Vector&,
+                          const std::vector<double>&,double, Dipole_Type::code);
       ~Generate_One_Photon();
 
-      inline Particle * GetPhoton()                   { return p_photon; }
+      inline ATOOLS::Particle * GetPhoton() { return p_photon; }
 
       void SetMinimalPhotonAngle(const double&);
   };

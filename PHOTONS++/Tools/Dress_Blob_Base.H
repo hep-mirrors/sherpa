@@ -1,12 +1,12 @@
 #ifndef PHOTONS_Tools_Dress_Blob_Base_H
 #define PHOTONS_Tools_Dress_Blob_Base_H
 
+#include "ATOOLS/Math/Vector.H"
 #include "PHOTONS++/Main/Dipole_Type.H"
 
-namespace ATOOLS { class Poincare; }
-
-using namespace ATOOLS;
-using namespace std;
+namespace ATOOLS {
+  class Poincare;
+}
 
 namespace PHOTONS {
   class Dress_Blob_Base {
@@ -17,23 +17,23 @@ namespace PHOTONS {
       Dipole_Type::code       m_dtype;
       Particle_Vector_Vector  m_pvv;
       Particle_Vector_Vector  m_pvv_new;
-      Particle_Vector         m_chargedinparticles;
-      Particle_Vector         m_neutralinparticles;
-      Particle_Vector         m_chargedoutparticles;
-      Particle_Vector         m_neutraloutparticles;
-      Particle_Vector         m_softphotons;
-      Particle_Vector         m_olddipole;
-      Particle_Vector         m_newdipole;
-      Particle_Vector         m_oldspectator;
-      Particle_Vector         m_newspectator;
-      Particle *              p_newinitialstate;
-      Vec4D                   m_K;
-      Vec4D                   m_p;
-      Vec4D                   m_pN;
-      Vec4D                   m_P;
-      Vec4D                   m_PN;
-      Vec4D                   m_Q;
-      Vec4D                   m_QN;
+      ATOOLS::Particle_Vector m_chargedinparticles;
+      ATOOLS::Particle_Vector m_neutralinparticles;
+      ATOOLS::Particle_Vector m_chargedoutparticles;
+      ATOOLS::Particle_Vector m_neutraloutparticles;
+      ATOOLS::Particle_Vector m_softphotons;
+      ATOOLS::Particle_Vector m_olddipole;
+      ATOOLS::Particle_Vector m_newdipole;
+      ATOOLS::Particle_Vector m_oldspectator;
+      ATOOLS::Particle_Vector m_newspectator;
+      ATOOLS::Particle *      p_newinitialstate;
+      ATOOLS::Vec4D           m_K;
+      ATOOLS::Vec4D           m_p;
+      ATOOLS::Vec4D           m_pN;
+      ATOOLS::Vec4D           m_P;
+      ATOOLS::Vec4D           m_PN;
+      ATOOLS::Vec4D           m_Q;
+      ATOOLS::Vec4D           m_QN;
       double                  m_accu;
       double                  m_genweight;
       double                  m_genmaxweight;
@@ -47,11 +47,11 @@ namespace PHOTONS {
       double                  m_u;
 
       void                BuildNewParticleVectorVector();
-      double              CalculateBeta(const Vec4D&);
-      Vec4D               CalculateMomentumSum(const Particle_Vector&);
+      double              CalculateBeta(const ATOOLS::Vec4D&);
+      ATOOLS::Vec4D       CalculateMomentumSum(const ATOOLS::Particle_Vector&);
       void                CalculateWeights();
       void                CheckAvaragePhotonNumberForNumericalErrors();
-      void                DeleteAll(Particle_Vector&);
+      void                DeleteAll(ATOOLS::Particle_Vector&);
       void                DeleteAllPhotons();
       void                DetermineU();
       std::vector<double> GenerateNumberAndEnergies();
@@ -63,12 +63,13 @@ namespace PHOTONS {
       virtual void   CalculateAvaragePhotonNumber(const double&,
                                                   const double&) = 0;
       virtual bool   CheckIfExceedingPhotonEnergyLimits() = 0;
-      virtual void   CheckMomentumConservationInQCMS(const Poincare&,
-                                                     const Poincare&) = 0;
+      virtual void   CheckMomentumConservationInQCMS(const ATOOLS::Poincare&,
+                                                     const ATOOLS::Poincare&) = 0;
       virtual void   CorrectMomenta() = 0;
       virtual void   DefineDipole() = 0;
       virtual double Func(const double&, const std::vector<double>&,
-                          const std::vector<double>&, const std::vector<Vec3D>&,
+                          const std::vector<double>&,
+                          const std::vector<ATOOLS::Vec3D>&,
                           const double&) = 0;
       virtual void   ResetVariables() = 0;
       virtual void   ReturnMomenta() = 0;
@@ -80,9 +81,9 @@ namespace PHOTONS {
       inline bool                     AddedAnything()         { return m_photonsadded; }
       inline bool                     DoneSuccessfully()      { return m_success; }
       inline Particle_Vector_Vector   GetCorrectedParticles() { return m_pvv; }
-      inline Particle *               GetPhoton(int i)        { return m_softphotons.at(i); }
+      inline ATOOLS::Particle *       GetPhoton(int i)        { return m_softphotons.at(i); }
       inline int                      GetPhotonNumber()       { return m_softphotons.size(); }
-      inline Particle_Vector          GetPhotons()            { return m_softphotons; }
+      inline ATOOLS::Particle_Vector  GetPhotons()            { return m_softphotons; }
 
       virtual void AddRadiation() = 0;
   };
