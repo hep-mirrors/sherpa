@@ -6,11 +6,14 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Exception.H"
-#ifdef USING__Ahadic
-#include "AHADIC++/Main/Ahadic.H"
-#endif
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
+#endif
+
+#ifdef USING__Ahadic
+namespace AHADIC {
+  class Ahadic;
+}
 #endif
 
 namespace SHERPA {

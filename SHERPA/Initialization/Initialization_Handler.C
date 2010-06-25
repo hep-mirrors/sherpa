@@ -1,6 +1,14 @@
 #include <time.h>
 #include "SHERPA/Initialization/Initialization_Handler.H"
 
+#include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
+#include "SHERPA/PerturbativePhysics/MI_Handler.H"
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "SHERPA/LundTools/Lund_Interface.H"
+#include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Tools/Input_Output_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -643,7 +651,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   return 1;
 }
 
-Matrix_Element_Handler * const Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
+Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
   MEHandlerIter pos = m_mehandlers.find(_key);
   if (pos!=m_mehandlers.end()) return pos->second;
   msg_Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
@@ -769,7 +777,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   return true;
 }
 
-Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
+Hadron_Decay_Handler * Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
   HDHandlersIter pos = m_hdhandlers.find(_key);
   if (pos!=m_hdhandlers.end()) return pos->second;
   msg_Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"

@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "ATOOLS/Org/Message.H"

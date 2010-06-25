@@ -33,11 +33,11 @@ namespace SHERPA {
     long int NumberOfErrors() { return m_errors; } 
     inline void SetTrials(const long& trials) { m_trials = trials; }
     
-    inline const Initialization_Handler * GetInitHandler() const 
+    inline Initialization_Handler * GetInitHandler() const 
     { return p_inithandler; }
-    inline const Event_Handler * GetEventHandler() const 
+    inline Event_Handler * GetEventHandler() const 
     { return p_eventhandler; }
-    inline const Input_Output_Handler * GetIOHandler() const 
+    inline Input_Output_Handler * GetIOHandler() const 
     { return p_iohandler; }
     
   };

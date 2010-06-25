@@ -6,6 +6,9 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Return_Value.H"
+#ifdef USING__Ahadic
+#include "AHADIC++/Main/Ahadic.H"
+#endif
 
 #ifdef PROFILE__all
 #define PROFILE__Fragmentation_Handler

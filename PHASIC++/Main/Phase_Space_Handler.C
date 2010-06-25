@@ -801,7 +801,7 @@ bool Phase_Space_Handler::UpdateIntegrators()
   return true;
 }
 
-Integration_Info *const Phase_Space_Handler::GetInfo() 
+Integration_Info* Phase_Space_Handler::GetInfo() 
 {
   if (p_info==NULL) return p_info = new Integration_Info();
   return p_info;

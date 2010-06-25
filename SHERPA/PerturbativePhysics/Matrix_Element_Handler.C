@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"

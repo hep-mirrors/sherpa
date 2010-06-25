@@ -197,8 +197,8 @@ namespace PHASIC {
     inline ME_Generator_Base *Generator() const { return p_gen;     }
     inline Process_Base      *MapProc() const   { return p_mapproc; }
 
-    inline Cut_Data          *const Cuts() const     { return p_cuts;     }
-    inline Combined_Selector *const Selector() const { return p_selector; }
+    inline Cut_Data          * Cuts() const     { return p_cuts;     }
+    inline Combined_Selector * Selector() const { return p_selector; }
 
     template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }

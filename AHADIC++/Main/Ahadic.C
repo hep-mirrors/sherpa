@@ -5,6 +5,10 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "AHADIC++/Tools/Hadron_Init.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "AHADIC++/Formation/Cluster_Formation_Handler.H"
+#include "AHADIC++/Decays/Cluster_Decay_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;

@@ -76,7 +76,7 @@ namespace PHASIC {
     virtual double HT() const;
     virtual double YCut() const;
 
-    inline const double Scale(const stp::id type) { return m_scale[type]; }
+    inline double Scale(const stp::id type) { return m_scale[type]; }
 
     inline const std::vector<double> &Scales() const { return m_scale; }
 

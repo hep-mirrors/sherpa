@@ -29,7 +29,7 @@ namespace ATOOLS {
 
     void operator<<(Node<Node_Type> *const prev);
 
-    Node<Node_Type> *const operator--() const;
+    Node<Node_Type>* operator--() const;
 
   };// end of class Node
 

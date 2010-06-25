@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/Output_Sherpa.H"
 #include "SHERPA/Tools/Output_RootNtuple.H"

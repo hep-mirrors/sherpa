@@ -2,26 +2,22 @@
 #define SHERPA_Initialization_Initialization_Handler_H
 
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
-#include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
-#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
-#include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
-#include "SHERPA/PerturbativePhysics/MI_Handler.H"
-#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-#include "SHERPA/LundTools/Lund_Interface.H"
-#include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <map>
 #include <string>
 #include <iostream> 
+
+namespace ATOOLS {
+  class Data_Reader;
+}
 
 namespace SHERPA {
 
@@ -39,6 +35,17 @@ namespace SHERPA {
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
 
   class Input_Output_Handler;
+  class Matrix_Element_Handler;
+  class Hard_Decay_Handler;
+  class Shower_Handler;
+  class Beam_Remnant_Handler;
+  class Fragmentation_Handler;
+  class Hadron_Decay_Handler;
+  class MI_Handler;
+  class Soft_Photon_Handler;
+  class Lund_Interface;
+  class Event_Reader_Base;
+  class Analysis_Interface;
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
@@ -109,31 +116,31 @@ namespace SHERPA {
     bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
 
-    const std::string Path()    const { return m_path; }
-    const std::string File()    const { return m_file; }
-    const std::string EvtFile() const { return m_evtfile; }
+    const std::string & Path()    const { return m_path; }
+    const std::string & File()    const { return m_file; }
+    const std::string & EvtFile() const { return m_evtfile; }
 
-    Matrix_Element_Handler      * const GetMatrixElementHandler(std::string);
-    Hadron_Decay_Handler        * const GetHadronDecayHandler(std::string);
-    inline PDF::ISR_Handler     * const GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
-    MEHandlersMap               * const GetMatrixElementHandlers()       { return &m_mehandlers;     }
-    Analysis_Map                * const GetAnalyses()                    { return &m_analyses;        }
-    MODEL::Model_Base           * const GetModel()                 const { return p_model;           }
-    ISR_Handler_Map             * const GetISRHandlers()                 { return &m_isrhandlers;    }
-    BEAM::Beam_Spectra_Handler  * const GetBeamSpectraHandler()    const { return p_beamspectra;     }
-    Hard_Decay_Handler          * const GetHardDecayHandler()      const { return p_harddecays;      }
-    Shower_Handler              * const GetShowerHandler()         const { return p_showerhandler;   }
-    Beam_Remnant_Handler        * const GetBeamRemnantHandler()    const { return p_beamremnants;    }
-    Fragmentation_Handler       * const GetFragmentationHandler()  const { return p_fragmentation;   }
-    HDHandlersMap               * const GetHadronDecayHandlers()         { return &m_hdhandlers;     }
-    ATOOLS::Flavour             * const GetBunches()                     { return m_bunch_particles; }
-    MI_Handler                  * const GetMIHandler()             const { return p_mihandler;       }
-    Soft_Photon_Handler         * const GetSoftPhotonHandler()     const { return p_softphotons;     }
-    Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
-    Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
-    Event_Reader_Base           * const GetEventReader()           const { return p_evtreader;       }
+    Matrix_Element_Handler       * GetMatrixElementHandler(std::string);
+    Hadron_Decay_Handler         * GetHadronDecayHandler(std::string);
+    inline PDF::ISR_Handler      * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
+    MEHandlersMap                * GetMatrixElementHandlers()       { return &m_mehandlers;     }
+    Analysis_Map                 * GetAnalyses()                    { return &m_analyses;        }
+    MODEL::Model_Base            * GetModel()                 const { return p_model;           }
+    ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
+    BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
+    Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
+    Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;   }
+    Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
+    Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
+    HDHandlersMap                * GetHadronDecayHandlers()         { return &m_hdhandlers;     }
+    ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
+    MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
+    Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
+    Input_Output_Handler         * GetIOHandler()             const { return p_iohandler;       }
+    Lund_Interface               * GetPythiaInterface()       const { return p_pythia;          }
+    Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
 
-    int    const Mode()           const { return m_mode; };
+    int    Mode()           const { return m_mode; };
 
   };
 

@@ -82,12 +82,12 @@ namespace ATOOLS {
       \fn inline Type &operator*() const
       \brief Returns a reference to p_this.
     */
-    inline Type *const operator->() const { return p_this;  }
+    inline Type* operator->() const { return p_this;  }
     /*!
       \fn inline Type *const operator->() const
       \brief Returns a pointer to p_this.
     */
-    inline Type *const operator--() const { return p_this;  }
+    inline Type* operator--() const { return p_this;  }
     /*!
       \fn inline Type *const operator--() const
       \brief Returns a pointer to p_this.

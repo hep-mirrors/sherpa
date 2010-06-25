@@ -27,7 +27,7 @@ namespace ATOOLS {
     double       * operator[](int i);
     const double * operator[](int i) const;
     void MatrixOut() const;  
-    const int Rank() const {return _rank;}
+    int Rank() const {return _rank;}
     void Diagonalize(double *,Matrix<_rank>&) const;
     void DiagonalizeSort(double *,Matrix<_rank>&) const;
     Matrix<_rank> Dagger();

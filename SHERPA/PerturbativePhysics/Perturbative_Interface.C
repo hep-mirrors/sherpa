@@ -10,6 +10,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 
 using namespace SHERPA;

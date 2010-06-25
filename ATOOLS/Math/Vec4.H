@@ -108,35 +108,35 @@ namespace ATOOLS {
     }
 
 
-    inline const Scalar Abs2() const { return m_x[0]*m_x[0]-PSpat2(); }      
-    inline const Scalar Abs() const { return sqrt(Abs2()); }
-    inline const double Mass() const {
+    Scalar Abs2() const { return m_x[0]*m_x[0]-PSpat2(); }      
+    Scalar Abs() const { return sqrt(Abs2()); }
+    double Mass() const {
       return sqrt(ATOOLS::Abs<Scalar>(Abs2()));
     }
-    inline const Scalar P() const { return PSpat(); }
+    Scalar P() const { return PSpat(); }
 
-    inline const Scalar PPerp2() const { return m_x[1]*m_x[1]+m_x[2]*m_x[2]; }
-    inline const Scalar PPerp() const { return sqrt(PPerp2()); }
-    inline const Scalar MPerp2() const { return m_x[0]*m_x[0]-m_x[3]*m_x[3]; }
-    inline const Scalar MPerp() const { return sqrt(MPerp2()); }
-    inline const Scalar MPerp2(const Vec4<Scalar> &ref) const {
+    Scalar PPerp2() const { return m_x[1]*m_x[1]+m_x[2]*m_x[2]; }
+    Scalar PPerp() const { return sqrt(PPerp2()); }
+    Scalar MPerp2() const { return m_x[0]*m_x[0]-m_x[3]*m_x[3]; }
+    Scalar MPerp() const { return sqrt(MPerp2()); }
+    Scalar MPerp2(const Vec4<Scalar> &ref) const {
       return Abs2()+PPerp2(ref);
     }
-    inline const Scalar MPerp(const Vec4<Scalar> &ref) const {
+    Scalar MPerp(const Vec4<Scalar> &ref) const {
       return sqrt(MPerp2(ref));
     }
-    inline const Scalar EPerp2() const {
+    Scalar EPerp2() const {
       return m_x[0]*m_x[0]*PPerp2()/PSpat2();
     }
-    inline const Scalar EPerp() const { return sqrt(EPerp2()); }
-    inline const Scalar PPlus() const { return m_x[0]+m_x[3]; }
-    inline const Scalar PMinus() const { return m_x[0]-m_x[3]; }
+    Scalar EPerp() const { return sqrt(EPerp2()); }
+    Scalar PPlus() const { return m_x[0]+m_x[3]; }
+    Scalar PMinus() const { return m_x[0]-m_x[3]; }
 
-    inline const Scalar PSpat2() const {
+    Scalar PSpat2() const {
       return m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3];
     }
-    inline const Scalar PSpat() const { return sqrt(PSpat2()); }
-    inline const Scalar Y() const { return 0.5*log(PPlus()/PMinus()); }
+    Scalar PSpat() const { return sqrt(PSpat2()); }
+    Scalar Y() const { return 0.5*log(PPlus()/PMinus()); }
 
     inline Vec4<Scalar> Perp() const { 
       return Vec4<Scalar>(0.,m_x[1],m_x[2],0.);
@@ -150,11 +150,11 @@ namespace ATOOLS {
       return Vec4<Scalar>(pminus,0.0,0.0,-pminus);
     }
     
-    inline const Scalar PPerp2(const Vec4<Scalar>& ref) const {
+    Scalar PPerp2(const Vec4<Scalar>& ref) const {
       Scalar ppref = PPerp(ref);
       return ppref*ppref;
     }
-    inline const Scalar PPerp(const Vec4<Scalar>& ref) const {
+    Scalar PPerp(const Vec4<Scalar>& ref) const {
       Vec3<Scalar> perp=1./ATOOLS::Max(Vec3<Scalar>(ref).Abs(),1.e-12)*
         Vec3<Scalar>(ref);
       perp=Vec3<Scalar>(*this)-perp*(perp*Vec3<Scalar>(*this));

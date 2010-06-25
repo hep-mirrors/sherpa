@@ -4,17 +4,16 @@
 
 
 
-#include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "AHADIC++/Formation/Cluster_Formation_Handler.H"
-#include "AHADIC++/Decays/Cluster_Decay_Handler.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Org/Return_Value.H"
-#include "ATOOLS/Org/Data_Reader.H"
-
 
 namespace AHADIC {
+
+  class Cluster_Formation_Handler;
+  class Cluster_Decay_Handler;
+
   class Ahadic {
   private:
     bool                        m_fullinfo;

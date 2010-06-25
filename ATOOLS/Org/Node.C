@@ -43,7 +43,7 @@ namespace ATOOLS {
   }
 
   template <class Node_Type>
-  Node<Node_Type> *const Node<Node_Type>::operator--() const 
+  Node<Node_Type>* Node<Node_Type>::operator--() const 
   { 
     return p_previous; 
   }

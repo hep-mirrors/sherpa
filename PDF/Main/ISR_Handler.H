@@ -96,7 +96,7 @@ namespace PDF {
 		 const size_t i) const; 
     void Reset(const size_t i) const; 
 
-    ATOOLS::Blob_Data_Base *const Info(const int frame) const;
+    ATOOLS::Blob_Data_Base* Info(const int frame) const;
 
     void MtxLock();
     void MtxUnLock();
@@ -143,7 +143,7 @@ namespace PDF {
     inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
     { if (i<2) p_beam[i]=beam; }
 
-    inline Remnant_Base *const GetRemnant(const size_t i) const
+    inline Remnant_Base* GetRemnant(const size_t i) const
     { return i<2?p_remnants[i]:NULL; }
 
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }

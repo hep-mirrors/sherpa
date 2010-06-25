@@ -10,6 +10,7 @@
 #include "PHASIC++/Channels/VHAAG_ND.H"
 #include "PHASIC++/Channels/VHAAG_res.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Permutation.H"
 
 using namespace PHASIC;

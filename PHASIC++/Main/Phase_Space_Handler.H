@@ -39,10 +39,10 @@ namespace PHASIC {
 
   };// end of struct psm
 
-  inline const psm::code 
+  inline psm::code 
   operator|(const psm::code &c1,const psm::code &c2)
   { return (psm::code)((int)c1|(int)c2); }
-  inline const psm::code 
+  inline psm::code 
   operator&(const psm::code &c1,const psm::code &c2)
   { return (psm::code)((int)c1&(int)c2); }
 
@@ -158,7 +158,7 @@ namespace PHASIC {
 			  const size_t &nin,const size_t &nout,
 			  const ATOOLS::Flavour_Vector &flavs);
 
-    static ATOOLS::Integration_Info *const GetInfo();
+    static ATOOLS::Integration_Info* GetInfo();
 
     static void DeleteInfo();
 
@@ -172,7 +172,7 @@ namespace PHASIC {
     // inline functions
     inline const ATOOLS::Flavour_Vector &Flavs() const { return p_flavours; }
 
-    inline Cut_Data *const Cuts() const { return p_cuts; }
+    inline Cut_Data* Cuts() const { return p_cuts; }
 
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
@@ -181,15 +181,15 @@ namespace PHASIC {
     inline void SetFSRIntegrator(Multi_Channel *const fsr)
     { p_fsrchannels=fsr;  }
  
-    inline Multi_Channel *const BeamIntegrator() const  
+    inline Multi_Channel* BeamIntegrator() const  
     { return p_beamchannels; }
-    inline Multi_Channel *const ISRIntegrator() const   
+    inline Multi_Channel* ISRIntegrator() const   
     { return p_isrchannels;  }
-    inline Multi_Channel *const FSRIntegrator() const   
+    inline Multi_Channel* FSRIntegrator() const   
     { return p_fsrchannels;  }
 
-    inline Process_Integrator *const Process() const { return p_process; }
-    inline Process_Integrator *const Active() const  { return p_active;  }
+    inline Process_Integrator* Process() const { return p_process; }
+    inline Process_Integrator* Active() const  { return p_active;  }
 
     inline double PSWeight() const { return m_psweight; }
 
@@ -198,7 +198,7 @@ namespace PHASIC {
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
 
-    inline Phase_Space_Integrator *const Integrator() const 
+    inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }
 
     inline const std::vector<std::vector<double> > Stats() const

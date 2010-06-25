@@ -429,7 +429,7 @@ void ISR_Handler::Reset(const size_t i) const
   if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset(); 
 }
 
-ATOOLS::Blob_Data_Base *const ISR_Handler::Info(const int frame) const
+ATOOLS::Blob_Data_Base* ISR_Handler::Info(const int frame) const
 {
   if (frame==0) return new ATOOLS::Blob_Data<std::vector<double> >(m_info_cms);
   return new ATOOLS::Blob_Data<std::vector<double> >(m_info_lab);
