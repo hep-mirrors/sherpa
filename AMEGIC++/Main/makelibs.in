@@ -54,6 +54,24 @@ if [ "$ONE" = "TRUE" ] ; then
   done
 fi
 
+if ! test -z "@CXX@"; then export CXX="@CXX@"; fi
+export CXXFLAGS="@CXXFLAGS@ -O2";
+if ! test -z "@LDFLAGS@"; then export LDFLAGS="@LDFLAGS@"; fi
+if ! test -z "@LIBS@"; then export LIBS="@LIBS@"; fi
+if ! test -z "@CPPFLAGS@"; then export CPPFLAGS="@CPPFLAGS@"; fi
+if ! test -z "@CC@"; then export CC="@CC@"; fi
+if ! test -z "@CFLAGS@"; then export CFLAGS="@CFLAGS@"; fi
+if ! test -z "@FC@"; then export FC="@FC@"; fi
+if ! test -z "@FCFLAGS@"; then export FCFLAGS="@FCFLAGS@"; fi
+if ! test -z "@CPP@"; then export CPP="@CPP@"; fi
+if ! test -z "@CXXCPP@"; then export CXXCPP="@CXXCPP@"; fi
+
+if echo "@host@" | grep -q "i686"; then
+    export CXX="$CXX -m32"
+    export CC="$CC -m32"
+    export LDFLAGS="$LDFLAGS -m32"
+fi
+
 for J in $DIRS ; do
   echo "."
   echo "======================"
@@ -71,17 +89,6 @@ for J in $DIRS ; do
   aclocal
   automake -a
   autoconf
-  if ! test -z "@CXX@"; then export CXX="@CXX@"; fi
-  export CXXFLAGS="@CXXFLAGS@ -O2";
-  if ! test -z "@LDFLAGS@"; then export LDFLAGS="@LDFLAGS@"; fi
-  if ! test -z "@LIBS@"; then export LIBS="@LIBS@"; fi
-  if ! test -z "@CPPFLAGS@"; then export CPPFLAGS="@CPPFLAGS@"; fi
-  if ! test -z "@CC@"; then export CC="@CC@"; fi
-  if ! test -z "@CFLAGS@"; then export CFLAGS="@CFLAGS@"; fi
-  if ! test -z "@FC@"; then export FC="@FC@"; fi
-  if ! test -z "@FCFLAGS@"; then export FCFLAGS="@FCFLAGS@"; fi
-  if ! test -z "@CPP@"; then export CPP="@CPP@"; fi
-  if ! test -z "@CXXCPP@"; then export CXXCPP="@CXXCPP@"; fi
   ./configure
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
   if ! make install -j $JOBS; then

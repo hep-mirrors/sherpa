@@ -81,8 +81,6 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   if (!FileExists(newpath+"/makelibs")) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
-	     newpath+"/grid_makelibs");
   }
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
@@ -180,8 +178,6 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   if (!FileExists(newpath+"/makelibs")) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
-	     newpath+"/grid_makelibs");
   }
   int cnt=0;
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i) {

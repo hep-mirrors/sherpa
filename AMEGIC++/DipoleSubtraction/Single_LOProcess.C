@@ -158,8 +158,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   if (!FileExists(newpath+"/makelibs")) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
-	     newpath+"/grid_makelibs");
   }
 
   if (CheckAlternatives(links,Name())) return 1;
@@ -333,8 +331,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   if (!FileExists(newpath+"/makelibs")) {
     CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/grid_makelibs",
-	     newpath+"/grid_makelibs");
   }
 
   m_name+= "_S"+ToString((int)m_emit)+"_"+ToString((int)m_spect);

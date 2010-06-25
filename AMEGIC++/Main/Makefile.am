@@ -14,4 +14,4 @@ localinc_HEADERS   = \
 			Single_Process.H Single_Process_MHV.H \
 			Process_Group.H 
 
-dist_pkgdata_SCRIPTS  =	makelibs grid_makelibs
+dist_pkgdata_SCRIPTS  =	makelibs
