@@ -22,10 +22,9 @@ namespace CSSHOWER {
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
     ATOOLS::Mass_Selector *p_ms;
-    bool ArrangeColours(Parton *, Parton *, Parton *);
-    void SetColours(Singlet *const sing,
+    void SetColours(Singlet *const sing,Parton *const np,
 		      const int oldc[2],const int newc[2]);
-    void SetColours(Parton *const pa,
+    void SetColours(Parton *const pa,Parton *const p,
 		    const int oldc[2],const int newc[2]);
   public :
     Singlet() : 
@@ -33,7 +32,13 @@ namespace CSSHOWER {
       p_jf(NULL), p_all(NULL) {}
     ~Singlet();
 
-    int       SplitParton(PLiter &, Parton *, Parton *);
+    void AddParton(Parton *const p);
+    void RemoveParton(Parton *const p,const int mode=0);
+
+    bool RearrangeColours(Parton *, Parton *, Parton *);
+    bool ArrangeColours(Parton *, Parton *, Parton *);
+    int  SplitParton(Parton *, Parton *, Parton *);
+
     void      ExtractPartons(ATOOLS::Blob *,ATOOLS::Mass_Selector *const ms);
 
     void        UpdateDaughters();

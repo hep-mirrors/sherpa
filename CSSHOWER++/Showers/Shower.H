@@ -37,14 +37,14 @@ namespace CSSHOWER {
 			Parton *const split,Parton *const newb,
 			Parton *const newc,const int mode);
     int    SetXBj(Parton *const p) const;
-    PLiter SelectSplitting(double &);
+    Parton *SelectSplitting(double &);
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);
     bool   PerformSplitting();
     bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p);
     void   UpdateDaughters(Parton *const split);
     bool   UpdateDaughters(Parton *const split,Parton *const newpB,
-			   Parton *const newpC,const bool del=true);
+			   Parton *const newpC);
  public:
     Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);

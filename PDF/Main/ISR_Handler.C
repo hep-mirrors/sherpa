@@ -30,6 +30,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_lab(8),
   m_info_cms(8)
 {
+  m_mu2[0]=m_mu2[1]=0.0;
+  m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;
   p_remnants[1]=p_remnants[0]=NULL;
   m_mode=0;
   for (short int i=0;i<2;i++) {

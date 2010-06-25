@@ -24,6 +24,12 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_isr(isr), p_beam(beam), 
   m_path(path), m_file(file), m_fill(true)
 {
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_file);
+  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
+  else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
   p_kperp = new Primordial_KPerp(path,file);
   for (size_t i=0;i<2;++i) {
     p_beampart[i] = p_isr->GetRemnant(i);
@@ -164,6 +170,7 @@ FillBeamBlobs(Blob_List *const bloblist,
     }
     return Return_Value::Success;
   }
+  if (m_vmode) abort();
   return Return_Value::Retry_Event;
 }
 

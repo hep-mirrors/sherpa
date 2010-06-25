@@ -32,6 +32,12 @@ namespace CSSHOWER {
   }
 }
 
+void Parton::DeleteAll()
+{
+  if (p_next) p_next->DeleteAll();
+  delete this;
+}
+
 Parton *Parton::FollowUp()
 {
   if (p_next) return p_next->FollowUp();
@@ -46,6 +52,40 @@ void Parton::UpdateDaughters()
   p_next->SetMomentum(m_mom);
   msg_Debugging()<<*p_next;
   p_next->UpdateDaughters();
+  msg_Debugging()<<"}\n";
+}
+
+void Parton::UpdateNewDaughters()
+{
+  if (this==NULL || p_next==NULL) return;
+  msg_Indent();
+  msg_Debugging()<<METHOD<<"("<<this<<") {\n";
+  p_next->SetMomentum(m_mom);
+  for (int n(1);n<=2;++n) {
+    p_next->SetFlow(n,GetFlow(n));
+    p_next->SetMEFlow(n,GetMEFlow(n));
+  }
+  p_next->SetStart(m_kt_start);
+  p_next->SetKtMax(m_kt_max);
+  p_next->SetVeto(m_kt_veto);
+  p_next->SetKtPrev(m_kt_prev);
+  p_next->SetKtPrev(m_kin);
+  msg_Debugging()<<*p_next;
+  p_next->UpdateNewDaughters();
+  msg_Debugging()<<"}\n";
+}
+
+void Parton::UpdateColours()
+{
+  if (this==NULL || p_next==NULL) return;
+  msg_Indent();
+  msg_Debugging()<<METHOD<<"("<<this<<") {\n";
+  for (int n(1);n<=2;++n) {
+    p_next->SetFlow(n,GetFlow(n));
+    p_next->SetMEFlow(n,GetMEFlow(n));
+  }
+  msg_Debugging()<<*p_next;
+  p_next->UpdateColours();
   msg_Debugging()<<"}\n";
 }
 

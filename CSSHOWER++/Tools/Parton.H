@@ -40,8 +40,12 @@ namespace CSSHOWER {
     inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
     inline Parton(const ATOOLS::Particle *,pst::code=pst::none);
 
+    void DeleteAll();
+
     Parton *FollowUp();
     void    UpdateDaughters();
+    void    UpdateNewDaughters();
+    void    UpdateColours();
 
     inline std::vector<std::pair<double,double> > &Weights() { return m_weights; }
 
