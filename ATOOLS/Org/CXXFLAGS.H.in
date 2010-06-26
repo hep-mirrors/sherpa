@@ -23,6 +23,12 @@
 /* library suffix */
 #define LIB_SUFFIX ".so"
 
+/* binreloc activation */
+#undef ENABLE_BINRELOC
+
+/* Sherpa installation prefix */
+#undef SHERPA_PREFIX
+
 /* Sherpa include directory */
 #undef SHERPA_INCLUDE_PATH
 

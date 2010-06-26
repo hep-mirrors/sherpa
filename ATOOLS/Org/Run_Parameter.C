@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/binreloc.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -87,17 +88,32 @@ void Run_Parameter::AnalyseEnvironment()
   s_variables["HOME"]=std::string(((var=getenv("HOME"))==
 				   NULL?s_variables["SHERPA_RUN_PATH"]:var));
 
+  // The paths are determined with the following fallback route:
+  // 1. Environment variable
+  // 2. binreloc (if enabled during configure)
+  // 3. Hard coded value in installation directory
   // set share path
+  string sharepath=SHERPA_SHARE_PATH;
+  string includepath=SHERPA_INCLUDE_PATH;
+  string librarypath=SHERPA_LIBRARY_PATH;
+  BrInitError error;
+  if (br_init_lib(&error)) {
+    string BR_prefix=br_find_prefix(SHERPA_PREFIX);
+    sharepath=BR_prefix+"/share/SHERPA-MC";
+    includepath=BR_prefix+"/include/SHERPA-MC";
+    librarypath=BR_prefix+"/lib/SHERPA-MC";
+  }
+  
   s_variables["SHERPA_SHARE_PATH"]=
-    (var=getenv("SHERPA_SHARE_PATH"))==NULL?SHERPA_SHARE_PATH:var;
+    (var=getenv("SHERPA_SHARE_PATH"))==NULL?sharepath:var;
 
   // set include path
   s_variables["SHERPA_INC_PATH"]=
-    (var=getenv("SHERPA_INCLUDE_PATH"))==NULL?SHERPA_INCLUDE_PATH:var;
+    (var=getenv("SHERPA_INCLUDE_PATH"))==NULL?includepath:var;
 
   // set library path 
   s_variables["SHERPA_LIBRARY_PATH"]=
-    (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?SHERPA_LIBRARY_PATH:var;
+    (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?librarypath:var;
 
   s_initialized=true;
 }

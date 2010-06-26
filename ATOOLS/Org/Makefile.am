@@ -28,6 +28,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				$(GZIPSTREAMSOURCES) \
+				binreloc.c \
 				My_Root.C
 
 localinc_HEADERS         =	\
@@ -62,6 +63,7 @@ localinc_HEADERS         =	\
 			Node.H \
 			Node.C \
 			$(GZIPSTREAMHEADERS) \
+			binreloc.h \
 			My_Root.H
 
 libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@

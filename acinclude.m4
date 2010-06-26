@@ -232,9 +232,11 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AS_AC_EXPAND(INCLUDEDIR, ${pkgincludedir})
   AS_AC_EXPAND(BINDIR, ${bindir})
   AS_AC_EXPAND(DATADIR, ${pkgdatadir})
+  AS_AC_EXPAND(SHERPAPREFIX, ${prefix})
 
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
+  AC_DEFINE_UNQUOTED([SHERPA_PREFIX], "$SHERPAPREFIX", [Sherpa installation prefix])
   AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR", [Sherpa include directory])
   AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR", [Sherpa library directory])
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
@@ -733,6 +735,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   	AC_DEFINE_UNQUOTED(HEPEVT_CB_SIZE, ${HEPEVT_CB_SIZE} , [HEPEVT common block size])
   fi
   AC_SUBST(HEPEVT_CB_SIZE)
+
+  AC_ARG_ENABLE(
+    binreloc,
+    AC_HELP_STRING([--enable-binreloc], [Enable binrelocing]),
+    [ AC_MSG_CHECKING(whether to install relocatable Sherpa)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); binreloc=false ;;
+        yes) AC_MSG_RESULT(yes); binreloc=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to install relocatable Sherpa); AC_MSG_RESULT(no); binreloc=false ] 
+  )
+  if test "$binreloc" = "true" ; then
+    AC_DEFINE([ENABLE_BINRELOC], "1", [binreloc activation])
+  fi
 
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
