@@ -17,10 +17,6 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-#include "ATOOLS/Org/Smart_Pointer.C"
-
-namespace ATOOLS { template class SP(Scale_Setter_Base); }
-
 std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
 {
   switch (scl) {

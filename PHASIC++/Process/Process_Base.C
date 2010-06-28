@@ -55,6 +55,8 @@ Process_Base::Process_Base():
 
 Process_Base::~Process_Base() 
 {
+  if (p_kfactor) delete p_kfactor;
+  if (p_scale) delete p_scale;
   delete p_selector;
   delete p_int;
 }
@@ -91,16 +93,6 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl)
   double res(this->Differential(p));
   SetKFactorOn(true);
   return res;
-}
-
-void Process_Base::SetScaleSetter(const SP(Scale_Setter_Base) &scale)
-{
-  p_scale=scale;
-}
-
-void Process_Base::SetKFactorSetter(const SP(KFactor_Setter_Base) &kfactor)
-{
-  p_kfactor=kfactor;
 }
 
 bool Process_Base::IsGroup() const

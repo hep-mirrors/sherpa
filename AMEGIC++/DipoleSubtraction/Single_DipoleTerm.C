@@ -130,6 +130,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
 
 Single_DipoleTerm::~Single_DipoleTerm()
 {
+  p_scale=NULL;
   if (p_LO_process) {delete p_LO_process; p_LO_process=0;}
   if (p_LO_mom)     {delete[] p_LO_mom; p_LO_mom=0;}
   if (p_dipole)     {delete p_dipole; p_dipole=0;}
@@ -507,5 +508,5 @@ void Single_DipoleTerm::PrintProcessSummary(int it)
 void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
 {
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
-  SetScaleSetter(p_LO_process->Partner()->ScaleSetter());
+  p_scale=p_LO_process->Partner()->ScaleSetter();
 }

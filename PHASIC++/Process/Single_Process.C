@@ -120,7 +120,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   p_int->SetMomenta(p);
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
-    SP(Scale_Setter_Base) scs(ScaleSetter());
+    Scale_Setter_Base *scs(ScaleSetter());
     if (IsMapped()) {
       p_mapproc->Integrator()->SetMomenta(p);
       scs=p_mapproc->ScaleSetter();
@@ -145,7 +145,7 @@ double Single_Process::Differential2()
   if (m_flavs[0]==m_flavs[1]) return 0.0;
   if (GetSubevtList()==NULL) {
     if (m_lastxs==0.0) return 0.0;
-    SP(Scale_Setter_Base) scs((IsMapped()?p_mapproc:this)->ScaleSetter());
+    Scale_Setter_Base *scs((IsMapped()?p_mapproc:this)->ScaleSetter());
     double tmp=Partonic2();
     if (tmp!=0.0) m_last+=tmp*=BeamISRWeight(scs->Scale(stp::fac),1);
     return tmp;
@@ -217,7 +217,6 @@ void Single_Process::SetScale(const Scale_Setter_Arguments &args)
   p_scale = Scale_Setter_Base::Scale_Getter_Function::
     GetObject(m_pinfo.m_scale=cargs.m_scale,cargs);
   if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
-  SetScaleSetter(p_scale);
 }
 
 void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
@@ -228,7 +227,6 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
-  SetKFactorSetter(p_kfactor);
 }
 
 void Single_Process::SetLookUp(const bool lookup)

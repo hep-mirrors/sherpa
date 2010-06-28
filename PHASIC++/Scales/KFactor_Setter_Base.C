@@ -9,10 +9,6 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-#include "ATOOLS/Org/Smart_Pointer.C"
-
-namespace ATOOLS { template class SP(KFactor_Setter_Base); }
-
 KFactor_Setter_Base::KFactor_Setter_Base
 (const KFactor_Setter_Arguments &args): 
   p_proc(args.p_proc), m_weight(0.0), m_on(true) {}

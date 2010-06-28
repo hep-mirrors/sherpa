@@ -1,7 +1,6 @@
 #ifndef PHASIC_Process_Process_Base_H
 #define PHASIC_Process_Process_Base_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Selectors/Cut_Data.H"
@@ -61,8 +60,8 @@ namespace PHASIC {
 
     PDF::Shower_Base *p_shower;
 
-    SP(Scale_Setter_Base)   p_scale;
-    SP(KFactor_Setter_Base) p_kfactor;
+    Scale_Setter_Base   *p_scale;
+    KFactor_Setter_Base *p_kfactor;
 
     size_t      m_nin, m_nout, m_oqcd, m_oew;
     std::string m_name;
@@ -109,9 +108,6 @@ namespace PHASIC {
 
     virtual bool GeneratePoint();
     virtual void AddPoint(const double &value);
-
-    virtual void SetScaleSetter(const SP(Scale_Setter_Base) &scale);
-    virtual void SetKFactorSetter(const SP(KFactor_Setter_Base) &kfactor);
 
     virtual bool IsGroup() const;
 
@@ -186,10 +182,8 @@ namespace PHASIC {
     inline void SwapInOrder() 
     { std::swap<ATOOLS::Flavour>(m_flavs[0],m_flavs[1]); }
 
-    inline const SP(Scale_Setter_Base) &ScaleSetter() const
-    { return p_scale;   }
-    inline const SP(KFactor_Setter_Base) &KFactorSetter() const
-    { return p_kfactor; }
+    inline Scale_Setter_Base   *ScaleSetter() const   { return p_scale;   }
+    inline KFactor_Setter_Base *KFactorSetter() const { return p_kfactor; }
 
     inline bool Trigger() const  { return m_trigger; }
     inline bool IsMapped() const { return p_mapproc; }

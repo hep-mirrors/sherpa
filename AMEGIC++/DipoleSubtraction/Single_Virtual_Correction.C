@@ -59,6 +59,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
 
 Single_Virtual_Correction::~Single_Virtual_Correction()
 {
+  p_scale=NULL;
   if (p_psgen)      {delete p_psgen; p_psgen=0;}
   if (p_dsij) {
     for (size_t i=0;i<p_LO_process->PartonList().size();i++) delete[] p_dsij[i];
@@ -767,7 +768,7 @@ void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist)
 void Single_Virtual_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
-  SetScaleSetter(p_LO_process->Partner()->ScaleSetter());
+  p_scale=p_LO_process->Partner()->ScaleSetter();
 }
 
 void Single_Virtual_Correction::FillMEwgts(PHASIC::ME_wgtinfo& wgtinfo) {
