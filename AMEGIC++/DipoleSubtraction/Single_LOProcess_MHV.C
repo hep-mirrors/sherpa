@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include <unistd.h>
 
@@ -35,6 +36,7 @@ using namespace std;
 Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi) :  
   Single_LOProcess(pi)
 {
+  THROW(not_implemented, "Amegic MHV amplitudes temporarily disabled.");
   m_ownamps = false;
   m_emitgluon = false;
 }

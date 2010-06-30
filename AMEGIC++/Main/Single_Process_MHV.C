@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -30,7 +31,9 @@ using namespace std;
 AMEGIC::Single_Process_MHV::Single_Process_MHV():
   m_gen_str(2), m_ownamps(false), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0),  
   p_MHVamp(0), p_momlist(0), p_partner(this)
-{ }
+{
+  THROW(not_implemented, "Amegic MHV amplitudes temporarily disabled.");
+}
 
 AMEGIC::Single_Process_MHV::~Single_Process_MHV()
 {
