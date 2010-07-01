@@ -26,19 +26,8 @@ namespace CSSHOWER {
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
-	  key.p_v->in[2].StrongCharge()==8) m_q=2.0*s_CA;
+	  key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
       else m_q=(key.p_v->in[0].StrongCharge()==8)?s_TR:s_CF;
-      if (key.m_type==cstp::FF || key.m_type==cstp::FI) {
-	if (key.p_v->in[0].StrongCharge()==8) m_q/=2.0;
-      }
-      else {
-	if (key.m_mode==0) {
-	  if (key.p_v->in[1].StrongCharge()==8) m_q/=2.0;
-	}
-	else {
-	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
-	}
-      }
     }
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
