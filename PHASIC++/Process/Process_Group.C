@@ -503,9 +503,8 @@ void Process_Group::SetSelector(const Selector_Key &key)
 bool Process_Group::Trigger(const Vec4D_Vector &p)
 {
   m_trigger=false;
-  for (size_t i(0);i<Size();++i) {
-    if (!m_procs[i]->IsMapped() && m_procs[i]->Trigger(p)) m_trigger=true;
-  }
+  for (size_t i(0);i<Size();++i)
+    if (m_procs[i]->Trigger(p)) m_trigger=true;
   return m_trigger;
 }
  

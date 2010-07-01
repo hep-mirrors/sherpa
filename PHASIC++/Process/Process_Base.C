@@ -408,7 +408,8 @@ bool Process_Base::Trigger(const Vec4D_Vector &p)
 {
   if (((m_pinfo.m_fi.m_nloqcdtype)&nlo_type::real) ||
       ((m_pinfo.m_fi.m_nloqcdtype)&nlo_type::rsub)) return NoJetTrigger(p);
-  if (LookUp() && IsMapped()) return true;
+  if (IsMapped() && LookUp() &&
+      MapProc()->LookUp()) return p_mapproc->m_trigger;
   m_trigger=p_selector->Trigger(p);
   return m_trigger;
 }
