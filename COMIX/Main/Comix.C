@@ -19,8 +19,8 @@ namespace COMIX {
 
     Cluster_Algorithm *p_cluster;
 
-    std::vector<Single_Process*>       m_umprocs;
-    std::vector<PHASIC::Process_Base*> m_rsprocs;
+    std::vector<std::vector<Single_Process*> > m_umprocs;
+    std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
     std::string m_path, m_file;
     int    m_map;
@@ -218,6 +218,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   if (p_model==NULL) return NULL;
   if ((pi.m_fi.m_nloqcdtype&wrongnlotype) || 
       (pi.m_fi.m_nloewtype&wrongnlotype)) return NULL;
+  m_umprocs.push_back(std::vector<Single_Process*>());
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
   size_t nt(pi.m_ii.NTotalExternal()+pi.m_fi.NTotalExternal());
@@ -249,7 +250,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs = new Process_Group();
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
-    if (!newxs->Get<Process_Group>()->Initialize(&pmap,&m_umprocs)) {
+    if (!newxs->Get<Process_Group>()->Initialize(&pmap,&m_umprocs.back())) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
@@ -274,7 +275,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     newxs->Get<COMIX::Process_Base>()->SetPSMC(pi.m_psmc);
-    if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs)) {
+    if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
