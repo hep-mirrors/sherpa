@@ -14,7 +14,6 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Exception.H"
 
 #include <unistd.h>
 
@@ -36,7 +35,6 @@ using namespace std;
 Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi) :  
   Single_LOProcess(pi)
 {
-  THROW(not_implemented, "Amegic MHV amplitudes temporarily disabled.");
   m_ownamps = false;
   m_emitgluon = false;
 }
@@ -99,7 +97,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i] = fl[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-fl[i];
-  p_MHVamp = FullAmplitude_MHV_Handler(model,m_nin+m_nout,plist,p_momlist,m_ownamps,127,127); 
+  p_MHVamp = FullAmplitude_MHV_Handler(model,&m_cpls,m_nin+m_nout,plist,p_momlist,m_ownamps,127,127); 
 
   delete [] plist;
   //////////////////////////////////////////////
@@ -231,7 +229,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i]=fl[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-fl[i];
-  p_MHVamp = FullAmplitude_MHV_Handler(model,m_nin+m_nout,plist,p_momlist,m_ownamps,m_emit,m_spect); 
+  p_MHVamp = FullAmplitude_MHV_Handler(model,&m_cpls,m_nin+m_nout,plist,p_momlist,m_ownamps,m_emit,m_spect); 
 
   delete [] plist;
   //////////////////////////////////////////////

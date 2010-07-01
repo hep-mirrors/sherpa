@@ -12,7 +12,6 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Exception.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -32,7 +31,6 @@ AMEGIC::Single_Process_MHV::Single_Process_MHV():
   m_gen_str(2), m_ownamps(false), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0),  
   p_MHVamp(0), p_momlist(0), p_partner(this)
 {
-  THROW(not_implemented, "Amegic MHV amplitudes temporarily disabled.");
 }
 
 AMEGIC::Single_Process_MHV::~Single_Process_MHV()
@@ -96,7 +94,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i] = fl[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-fl[i];
-  p_MHVamp = FullAmplitude_MHV_Handler(model,m_nin+m_nout,plist,p_momlist,m_ownamps); 
+  p_MHVamp = FullAmplitude_MHV_Handler(model,&m_cpls,m_nin+m_nout,plist,p_momlist,m_ownamps); 
 
   delete [] plist;
   //////////////////////////////////////////////

@@ -33,10 +33,8 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
   double Norm = 1.;
   CSC.Init();
   for (int i=0;i<nin;i++) {
-    if (flin[i].IsQuark())   Norm *= CSC.Nc;    
-    if (flin[i].IsSquark())  Norm *= CSC.Nc;// sQuark is boson !!    
-    if (flin[i].IsGluon())   Norm *= CSC.Nc*CSC.Nc-1.;
-    if (flin[i].IsGluino())  Norm *= CSC.Nc*CSC.Nc-1.;// Gluino is fermion !!
+    if (abs(flin[i].StrongCharge())==3)  Norm *= CSC.Nc; 
+    if (flin[i].StrongCharge()==8)       Norm *= CSC.Nc*CSC.Nc-1.; 
 
     if (flin[i].IsFermion()) Norm *= 2.;
     if (flin[i].IsVector()) {

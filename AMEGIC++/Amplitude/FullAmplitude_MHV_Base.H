@@ -24,7 +24,8 @@ namespace AMEGIC {
   protected:
 
     MODEL::Interaction_Model_Base *p_model;
-
+    MODEL::Coupling_Map * m_cpls; 
+    
     PermStore* p_permstore;	
     Permutation* p_permutation;
     MHVCalculator *p_calc;
@@ -52,12 +53,13 @@ namespace AMEGIC {
     virtual bool AmpStoreDPT(MomentumList*);
     virtual double Result(Complex**); 
     virtual double ResultDPT(); 
-
-
+    MODEL::Coupling_Data *p_aqcd, *p_aqed;
+    double m_oqcd, m_oqed;
+    
   public:
 	
     // constructor
-    FullAmplitude_MHV_Base(MODEL::Model_Base *model,int part,int* plist); 
+    FullAmplitude_MHV_Base(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist); 
 
     //destructor
     virtual ~FullAmplitude_MHV_Base(); 
@@ -88,8 +90,8 @@ namespace AMEGIC {
   public:
 	
     // constructor
-    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist); 
-    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,int part,int* plist,int,int); 
+    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist); 
+    FullAmplitude_MHV_PureG(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_PureG();
@@ -115,8 +117,8 @@ namespace AMEGIC {
   public:
     
     // constructor
-    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist); 
-    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,int part,int* plist,int,int); 
+    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist); 
+    FullAmplitude_MHV_Q2(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_Q2();
@@ -145,8 +147,8 @@ namespace AMEGIC {
   public:
     
     // constructor
-    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist); 
-    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,int part,int* plist,int,int); 
+    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist); 
+    FullAmplitude_MHV_Q4(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist,int,int); 
 
     //destructor
     ~FullAmplitude_MHV_Q4();
@@ -170,7 +172,7 @@ namespace AMEGIC {
     public:
 	
     // constructor
-    FullAmplitude_MHV_Q2L2(MODEL::Model_Base *model,int part,int* plist); 
+    FullAmplitude_MHV_Q2L2(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist); 
 
     //destructor
     ~FullAmplitude_MHV_Q2L2();
@@ -181,7 +183,7 @@ namespace AMEGIC {
 
 
 //   FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,MomentumList* BS); 
-  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,int part,int* plist,
+  FullAmplitude_MHV_Base* FullAmplitude_MHV_Handler(MODEL::Model_Base *model,MODEL::Coupling_Map *const cpls,int part,int* plist,
 						    MomentumList* BS,bool &newamp,int emit=-1,int spec=-1); 
   
 

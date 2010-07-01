@@ -32,10 +32,6 @@ MSSM::MSSM(std::string _dir,std::string _file,bool _elementary) :
 {
   p_sm = new Standard_Model(m_dir,m_file,false);
   ParticleInit();
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
 }
 
 bool MSSM::ModelInit()
@@ -55,7 +51,12 @@ bool MSSM::ModelInit()
   p_constants->insert(std::make_pair(std::string("mT"),ScalarConstant("Yukawa_t")));
 
   FillSpectrum();
-
+  
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
+  
   return true;
 }
 
@@ -65,37 +66,37 @@ MSSM::~MSSM() {}
 void MSSM::ParticleInit() {
   //add SUSY particles
   //kf_code,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,idname,tex_name
-  s_kftable[35] = new Particle_Info(35,1000.,10.0,0,0,0,0,-1,1,1,1,"H0","H_0");
-  s_kftable[36] = new Particle_Info(36,1000.,10.0,0,0,0,0,-1,1,1,1,"A0","A_0");
-  s_kftable[37] = new Particle_Info(37,1000.,10.0,3,0,0,0,0,1,1,1,"H+","H^+");
-  s_kftable[1000024] = new Particle_Info(1000024,1000.,10.0,3,0,0,1,0,1,1,1,"chargino1","\\chi^+_1");
-  s_kftable[1000037] = new Particle_Info(1000037,1000.,10.0,3,0,0,1,0,1,1,1,"chargino2","\\chi^+_2");
+  s_kftable[35] = new Particle_Info(35,1000.,0.0,0,0,0,0,-1,1,1,1,"H0","H_0");
+  s_kftable[36] = new Particle_Info(36,1000.,0.0,0,0,0,0,-1,1,1,1,"A0","A_0");
+  s_kftable[37] = new Particle_Info(37,1000.,0.0,3,0,0,0,0,1,1,1,"H+","H^+");
+  s_kftable[1000024] = new Particle_Info(1000024,1000.,0.0,3,0,0,1,0,1,1,1,"chargino1","\\chi^+_1");
+  s_kftable[1000037] = new Particle_Info(1000037,1000.,0.0,3,0,0,1,0,1,1,1,"chargino2","\\chi^+_2");
   s_kftable[1000022] = new Particle_Info(1000022,1000.,0.0,0,0,0,1,1,1,1,1,"neutralino1","\\chi^0_1");
-  s_kftable[1000023] = new Particle_Info(1000023,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino2","\\chi^0_2");
-  s_kftable[1000025] = new Particle_Info(1000025,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino3","\\chi^0_3");
-  s_kftable[1000035] = new Particle_Info(1000035,1000.,10.0,0,0,0,1,1,1,1,1,"neutralino4","\\chi^0_4");
-  s_kftable[1000021] = new Particle_Info(1000021,1000.,10.0,0,0,8,1,1,1,1,1,"gluino","\\tilde{g}");
-  s_kftable[1000002] = new Particle_Info(1000002,1000.,10.0,2,1,3,0,0,1,1,1,"sup_L","\\tilde{u}_L");
-  s_kftable[1000004] = new Particle_Info(1000004,1000.,10.0,2,1,3,0,0,1,1,1,"scharm_L","\\tilde{c}_L");
-  s_kftable[1000006] = new Particle_Info(1000006,1000.,10.0,2,1,3,0,0,1,1,1,"stop_1","\\tilde{t}_1");
-  s_kftable[2000002] = new Particle_Info(2000002,1000.,10.0,2,1,3,0,0,1,1,1,"sup_R","\\tilde{u}_R");
-  s_kftable[2000004] = new Particle_Info(2000004,1000.,10.0,2,1,3,0,0,1,1,1,"scharm_R","\\tilde{c}_R");
-  s_kftable[2000006] = new Particle_Info(2000006,1000.,10.0,2,1,3,0,0,1,1,1,"stop_2","\\tilde{t}_2");
-  s_kftable[1000001] = new Particle_Info(1000001,1000.,10.0,-1,-1,3,0,0,1,1,1,"sdown_L","\\tilde{d}_L");
-  s_kftable[1000003] = new Particle_Info(1000003,1000.,10.0,-1,-1,3,0,0,1,1,1,"sstrange_L","\\tilde{s}_L");
-  s_kftable[1000005] = new Particle_Info(1000005,1000.,10.0,-1,-1,3,0,0,1,1,1,"sbottom_1","\\tilde{b}_1");
-  s_kftable[2000001] = new Particle_Info(2000001,1000.,10.0,-1,-1,3,0,0,1,1,1,"sdown_R","\\tilde{d}_R");
-  s_kftable[2000003] = new Particle_Info(2000003,1000.,10.0,-1,-1,3,0,0,1,1,1,"sstrange_R","\\tilde{s}_R");
-  s_kftable[2000005] = new Particle_Info(2000005,1000.,10.0,-1,-1,3,0,0,1,1,1,"sbottom_2","\\tilde{b}_2");
-  s_kftable[1000011] = new Particle_Info(1000011,1000.,10.0,-3,-1,0,0,0,1,1,1,"selectron_L","\\tilde{e}_L");
-  s_kftable[1000013] = new Particle_Info(1000013,1000.,10.0,-3,-1,0,0,0,1,1,1,"smuon_L","\\tilde{\\mu}_L");
-  s_kftable[1000015] = new Particle_Info(1000015,1000.,10.0,-3,-1,0,0,0,1,1,1,"stau_1","\\tilde{\\tau}_1");
-  s_kftable[2000011] = new Particle_Info(2000011,1000.,10.0,-3,-1,0,0,0,1,1,1,"selectron_R","\\tilde{e}_R");
-  s_kftable[2000013] = new Particle_Info(2000013,1000.,10.0,-3,-1,0,0,0,1,1,1,"smuon_R","\\tilde{\\mu}_R");
-  s_kftable[2000015] = new Particle_Info(2000015,1000.,10.0,-3,-1,0,0,0,1,1,1,"stau_2","\\tilde{\\tau}_2");
-  s_kftable[1000012] = new Particle_Info(1000012,1000.,10.0,0,1,0,0,0,1,1,1,"snu_1","\\tilde{\\nu}_1");
-  s_kftable[1000014] = new Particle_Info(1000014,1000.,10.0,0,1,0,0,0,1,1,1,"snu_2","\\tilde{\\nu}_2");
-  s_kftable[1000016] = new Particle_Info(1000016,1000.,10.0,0,1,0,0,0,1,1,1,"snu_3","\\tilde{\\nu}_3");
+  s_kftable[1000023] = new Particle_Info(1000023,1000.,0.0,0,0,0,1,1,1,1,1,"neutralino2","\\chi^0_2");
+  s_kftable[1000025] = new Particle_Info(1000025,1000.,0.0,0,0,0,1,1,1,1,1,"neutralino3","\\chi^0_3");
+  s_kftable[1000035] = new Particle_Info(1000035,1000.,0.0,0,0,0,1,1,1,1,1,"neutralino4","\\chi^0_4");
+  s_kftable[1000021] = new Particle_Info(1000021,1000.,0.0,0,0,8,1,1,1,1,1,"gluino","\\tilde{g}");
+  s_kftable[1000002] = new Particle_Info(1000002,1000.,0.0,2,1,3,0,0,1,1,1,"sup_L","\\tilde{u}_L");
+  s_kftable[1000004] = new Particle_Info(1000004,1000.,0.0,2,1,3,0,0,1,1,1,"scharm_L","\\tilde{c}_L");
+  s_kftable[1000006] = new Particle_Info(1000006,1000.,0.0,2,1,3,0,0,1,1,1,"stop_1","\\tilde{t}_1");
+  s_kftable[2000002] = new Particle_Info(2000002,1000.,0.0,2,1,3,0,0,1,1,1,"sup_R","\\tilde{u}_R");
+  s_kftable[2000004] = new Particle_Info(2000004,1000.,0.0,2,1,3,0,0,1,1,1,"scharm_R","\\tilde{c}_R");
+  s_kftable[2000006] = new Particle_Info(2000006,1000.,0.0,2,1,3,0,0,1,1,1,"stop_2","\\tilde{t}_2");
+  s_kftable[1000001] = new Particle_Info(1000001,1000.,0.0,-1,-1,3,0,0,1,1,1,"sdown_L","\\tilde{d}_L");
+  s_kftable[1000003] = new Particle_Info(1000003,1000.,0.0,-1,-1,3,0,0,1,1,1,"sstrange_L","\\tilde{s}_L");
+  s_kftable[1000005] = new Particle_Info(1000005,1000.,0.0,-1,-1,3,0,0,1,1,1,"sbottom_1","\\tilde{b}_1");
+  s_kftable[2000001] = new Particle_Info(2000001,1000.,0.0,-1,-1,3,0,0,1,1,1,"sdown_R","\\tilde{d}_R");
+  s_kftable[2000003] = new Particle_Info(2000003,1000.,0.0,-1,-1,3,0,0,1,1,1,"sstrange_R","\\tilde{s}_R");
+  s_kftable[2000005] = new Particle_Info(2000005,1000.,0.0,-1,-1,3,0,0,1,1,1,"sbottom_2","\\tilde{b}_2");
+  s_kftable[1000011] = new Particle_Info(1000011,1000.,0.0,-3,-1,0,0,0,1,1,1,"selectron_L","\\tilde{e}_L");
+  s_kftable[1000013] = new Particle_Info(1000013,1000.,0.0,-3,-1,0,0,0,1,1,1,"smuon_L","\\tilde{\\mu}_L");
+  s_kftable[1000015] = new Particle_Info(1000015,1000.,0.0,-3,-1,0,0,0,1,1,1,"stau_1","\\tilde{\\tau}_1");
+  s_kftable[2000011] = new Particle_Info(2000011,1000.,0.0,-3,-1,0,0,0,1,1,1,"selectron_R","\\tilde{e}_R");
+  s_kftable[2000013] = new Particle_Info(2000013,1000.,0.0,-3,-1,0,0,0,1,1,1,"smuon_R","\\tilde{\\mu}_R");
+  s_kftable[2000015] = new Particle_Info(2000015,1000.,0.0,-3,-1,0,0,0,1,1,1,"stau_2","\\tilde{\\tau}_2");
+  s_kftable[1000012] = new Particle_Info(1000012,1000.,0.0,0,1,0,0,0,1,1,1,"snu_1","\\tilde{\\nu}_1");
+  s_kftable[1000014] = new Particle_Info(1000014,1000.,0.0,0,1,0,0,0,1,1,1,"snu_2","\\tilde{\\nu}_2");
+  s_kftable[1000016] = new Particle_Info(1000016,1000.,0.0,0,1,0,0,0,1,1,1,"snu_3","\\tilde{\\nu}_3");
 
   ReadParticleData(); 
 }
