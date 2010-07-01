@@ -574,6 +574,7 @@ bool Cluster_Algorithm::Cluster
 		       <<" vs. "<<sqrt(ampl->Next()->KT2QCD())<<"\n";
       }
     p_ampl=ampl;
+    p_ampl->DeleteNext();
   } while (oldsize<nocl.size());
   msg_Debugging()<<"trying unordered configurations\n";
   if (ampl->Legs().size()==4) return false;
@@ -612,6 +613,7 @@ bool Cluster_Algorithm::Cluster
       if (p_ampl->KT2QCD()<sqrt(std::numeric_limits<double>::max()))
 	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
     p_ampl=ampl;
+    p_ampl->DeleteNext();
   }
   return false;
 }

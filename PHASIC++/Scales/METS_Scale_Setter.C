@@ -221,12 +221,14 @@ double METS_Scale_Setter::CalculateStrict(const Vec4D_Vector &momenta)
     }
     return SetScales((m_p[0]+m_p[1]).Abs2());
   }
+  Cluster_Amplitude *rampl(ampl);
   while (ampl->Next()) ampl=ampl->Next();
   double kt2max(ampl->KT2QCD());
   msg_Debugging()<<"Core = "<<*ampl<<"\n";
   m_p.resize(ampl->Legs().size());
   for (size_t i(0);i<m_p.size();++i)
     m_p[i]=ampl->Leg(i)->Mom();
+  rampl->Delete();
   return SetScales(kt2max);
 }
 
