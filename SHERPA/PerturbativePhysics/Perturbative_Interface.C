@@ -144,33 +144,6 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 int Perturbative_Interface::PerformShowers()
 {
   PDF::Shower_Base *csh(p_shower->GetShower());
-  if (p_me && 
-      (p_me->Process()->Parent()->Info().
-       m_fi.NLOType()&nlo_type::born)) {
-    while (csh->TrialEmission()) {
-      Cluster_Amplitude *ampl(csh->GetRealEmissionAmplitude());
-      double ps(csh->TrialWeight(ampl)), me(ps);
-      msg_Debugging()<<METHOD<<"():  me / ps = "
-		     <<me<<" / "<<ps<<" = "<<me/ps;
-      double weight(me/ps);
-      if (weight>1.0) {
-	msg_Info()<<METHOD<<"(): '"<<p_me->Process()->Name()
-		  <<"' w_{me}/w_{ps} = "<<weight<<std::endl;
-	Process_Integrator *pint(p_me->Process()->Integrator());
-	pint->AddRBPoint(weight*pint->RBMax());
-      }
-      if (weight>ran.Get()) {
-	msg_Debugging()<<" -> accept\n";
-	return csh->PerformShowers();
-      }
-      msg_Debugging()<<" -> reject\n";
-      for (size_t i(0);i<p_ampl->Legs().size();++i)
-	p_ampl->Leg(i)->SetQ2Shower(ampl->Leg(i)->Q2Shower());
-      csh->CleanUp();
-      csh->PrepareShower(p_ampl);
-    }
-    return true;
-  }
   int stat=csh->PerformShowers();
   double weight=csh->Weight();
   p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));

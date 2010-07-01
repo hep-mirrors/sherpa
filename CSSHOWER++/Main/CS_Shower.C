@@ -74,10 +74,8 @@ namespace CSSHOWER {
     //member functions
     int  PerformShowers();
     int  PerformDecayShowers();
-    int  TrialEmission();
 
     double CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl);
-    double TrialWeight(ATOOLS::Cluster_Amplitude *const ampl);
 
     bool ExtractPartons(ATOOLS::Blob_List *const blist);
 
@@ -85,7 +83,6 @@ namespace CSSHOWER {
 
     // inline functions
     PDF::Cluster_Definitions_Base * GetClusterDefinitions();
-    ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude();
     bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl);
     double CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl);      
     double CalculateAnalyticWeight(ATOOLS::Cluster_Amplitude *const ampl);      
@@ -532,8 +529,7 @@ Singlet *CS_Shower::TranslateAmplitude
       }
     }
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
-    if (cl->Q2Shower()<0.0) parton->SetStart(xit->second.second);
-    else parton->SetStart(cl->Q2Shower());
+    parton->SetStart(xit->second.second);
     parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
@@ -725,65 +721,6 @@ double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,
 		 <<asc<<" / "<<asr<<" ) ^ "<<oqcd<<" = "
 		 <<pow(asc/asr,int(oqcd))<<"\n";
   return pow(asc/asr,int(oqcd));
-}
-
-ATOOLS::Cluster_Amplitude *CS_Shower::GetRealEmissionAmplitude()
-{
-  if (p_ampl) p_ampl->Delete();
-  Cluster_Amplitude *ampl(p_rampl);
-  while (ampl->Next()) ampl=ampl->Next();
-  p_ampl=ampl->Copy();
-  ampl=p_ampl->InitNext();
-  ampl->CopyFrom(p_ampl);
-  Parton *const *split(p_shower->GetLast());
-  for (int i(0);i<3;++i)
-    if (split[i]->GetType()==pst::FS) {
-      if (split[i]->Id()==0) {
-	ampl->CreateLeg(split[i]->Momentum(),split[i]->GetFlavour(),
-			ColorID(split[i]->GetFlow(1),split[i]->GetFlow(2)));
-	ampl->Legs().back()->SetQ2Shower(split[i]->KtStart());
-	ampl->Legs().back()->SetStat(1);
-      }
-      else {
-	Cluster_Leg *cl(ampl->IdLeg(split[i]->Id()));
-	cl->SetMom(split[i]->Momentum());
-	cl->SetFlav(split[i]->GetFlavour());
-	cl->SetCol(ColorID(split[i]->GetFlow(1),split[i]->GetFlow(2)));
-	cl->SetQ2Shower(split[i]->KtStart());
-	p_ampl->IdLeg(cl->Id())->SetQ2Shower(split[i]->KtStart());
-      }
-    }
-    else {
-      if (split[i]->Id()==0) {
-	ampl->CreateLeg(-split[i]->Momentum(),split[i]->GetFlavour().Bar(),
-			ColorID(split[i]->GetFlow(2),split[i]->GetFlow(1)));
-	ampl->Legs().back()->SetQ2Shower(split[i]->KtStart());
-	ampl->Legs().back()->SetStat(1);
-      }
-      else {
-	Cluster_Leg *cl(ampl->IdLeg(split[i]->Id()));
-	cl->SetMom(-split[i]->Momentum());
-	cl->SetFlav(-split[i]->GetFlavour());
-	cl->SetCol(ColorID(split[i]->GetFlow(2),split[i]->GetFlow(1)));
-	cl->SetQ2Shower(split[i]->KtStart());
-	p_ampl->IdLeg(cl->Id())->SetQ2Shower(split[i]->KtStart());
-      }
-    }
-  ampl->SetIdNew(1<<p_ampl->Legs().size());
-  return p_ampl;
-}
-
-int CS_Shower::TrialEmission()
-{
-  size_t nem(0);
-  int res(PerformShowers(1,nem));
-  if (res!=1) return res;
-  return nem==1;
-}
-
-double CS_Shower::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
-{
-  return 1.0/ampl->RBMax();
 }
 
 double CS_Shower::CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl)

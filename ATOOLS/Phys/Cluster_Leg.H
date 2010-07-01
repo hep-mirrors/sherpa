@@ -64,8 +64,6 @@ namespace ATOOLS {
     Flavour m_fl;
     ColorID m_c;
 
-    double m_q2s;
-
     static ClusterLeg_PVector s_legs;
 
   public:
@@ -77,7 +75,7 @@ namespace ATOOLS {
 		       const Vec4D &p,const Flavour &fl,
 		       const ColorID &c=ColorID()):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
-      m_p(p), m_fl(fl), m_c(c), m_q2s(-1.0) {}
+      m_p(p), m_fl(fl), m_c(c) {}
 
     inline ~Cluster_Leg() {}
 
@@ -100,8 +98,6 @@ namespace ATOOLS {
     inline void SetMom(const Vec4D &p)     { m_p=p; }
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }
 
-    inline void SetQ2Shower(const double &sc) { m_q2s=sc;   }
-
     inline Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
     inline Vec4D   Mom() const  { return m_p;  }
@@ -113,8 +109,6 @@ namespace ATOOLS {
     inline size_t NMax() const { return m_n;  }
     inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
-
-    inline double Q2Shower() const { return m_q2s;   }
 
   };// end of class Cluster_Leg
 

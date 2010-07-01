@@ -63,7 +63,6 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_p=p;
   cl->m_fl=fl;
   cl->m_c=c;
-  cl->m_q2s=-1.0;
   return cl;
 }
 
@@ -88,7 +87,6 @@ namespace ATOOLS {
 	<<" "<<std::left<<leg.Mom()<<" "<<leg.Col();
     ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<","<<leg.DMax()<<"]";
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
-    if (leg.Q2Shower()>=0.0) ostr<<" "<<sqrt(dabs(leg.Q2Shower()));
     return ostr;
   }
 

@@ -37,17 +37,13 @@ namespace PDF {
 
     virtual int  PerformShowers() = 0;
     virtual int  PerformDecayShowers() = 0;
-    virtual int  TrialEmission() = 0;
 
     virtual double CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl) = 0;
-    virtual double TrialWeight(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     virtual bool ExtractPartons(ATOOLS::Blob_List *const bl) = 0;
     virtual void CleanUp()=0;
 
     virtual Cluster_Definitions_Base *GetClusterDefinitions() = 0;
-
-    virtual ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude() = 0;
 
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
