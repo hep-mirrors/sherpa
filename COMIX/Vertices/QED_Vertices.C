@@ -103,14 +103,14 @@ namespace COMIX {
 }
 
 DECLARE_TEMPLATE_GETTER(QED_Vertex_Filler,"QED_VFill",
-			void,const Model *);
+			void,Vertex_Filler_Key);
 
 template <typename SType,char STag>
 void *QED_Vertex_Filler<SType,STag>::operator()
-  (const Model *const &model) const
+  (const Vertex_Filler_Key &key) const
 {
   if (!Flavour(kf_photon).IsOn()) return NULL;
-  if (!model->IncludesModel("QED")) return NULL;
+  if (!key.p_model->IncludesModel("QED")) return NULL;
   std::string ptag("{"+Flavour(kf_photon).IDName()+"}");
   for (int i(1);i<=16;++i) {
     if (i==7) i=11;
@@ -118,9 +118,9 @@ void *QED_Vertex_Filler<SType,STag>::operator()
     if (!f.IsOn() || f.IntCharge()==0) continue;
     std::string ftag("{"+f.IDName()+"}");
     std::string fbtag ("{"+f.Bar().IDName()+"}");
-    new QED_FFP_Getter<SType,STag>(ftag+fbtag+ptag);
-    new QED_FFP_Getter<SType,STag>(fbtag+ptag+fbtag);
-    new QED_FFP_Getter<SType,STag>(ptag+ftag+ftag);
+    key.p_vtcs->push_back(new QED_FFP_Getter<SType,STag>(ftag+fbtag+ptag));
+    key.p_vtcs->push_back(new QED_FFP_Getter<SType,STag>(fbtag+ptag+fbtag));
+    key.p_vtcs->push_back(new QED_FFP_Getter<SType,STag>(ptag+ftag+ftag));
   }
   return NULL;
 }

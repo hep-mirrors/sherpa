@@ -586,13 +586,14 @@ namespace COMIX {
 
 }
 
-DECLARE_TEMPLATE_GETTER(EW_Vertex_Filler,"EW_VFill",void,const Model *);
+DECLARE_TEMPLATE_GETTER(EW_Vertex_Filler,"EW_VFill",void,
+			Vertex_Filler_Key);
 
 template <typename SType,char STag>
 void *EW_Vertex_Filler<SType,STag>::operator()
-  (const Model *const &model) const
+  (const Vertex_Filler_Key &key) const
 {
-  if (!model->IncludesModel("EW")) return NULL;
+  if (!key.p_model->IncludesModel("EW")) return NULL;
   std::string wptag("{"+Flavour(kf_Wplus).IDName()+"}");
   std::string wmtag("{"+Flavour(kf_Wplus).Bar().IDName()+"}");
   std::string ztag("{"+Flavour(kf_Z).IDName()+"}");
@@ -611,16 +612,16 @@ void *EW_Vertex_Filler<SType,STag>::operator()
       if (!f.IsOn()) continue;
       std::string ftag("{"+f.IDName()+"}"), fbtag("{"+f.Bar().IDName()+"}");
       if (i<=6 || i%2==1) {
-	new EW_FFH_Getter<SType,STag>(ftag+fbtag+htag);
-	new EW_FFH_Getter<SType,STag>(fbtag+htag+fbtag);
-	new EW_FFH_Getter<SType,STag>(htag+ftag+ftag);
+	key.p_vtcs->push_back(new EW_FFH_Getter<SType,STag>(ftag+fbtag+htag));
+	key.p_vtcs->push_back(new EW_FFH_Getter<SType,STag>(fbtag+htag+fbtag));
+	key.p_vtcs->push_back(new EW_FFH_Getter<SType,STag>(htag+ftag+ftag));
       }
     }
     // hhs couplings
-    new EW_HHS_Getter<SType,STag>(htag+htag+htag);
-    new EW_HHS_Getter<SType,STag>(htag+htag+hsrtag);
-    new EW_HHS_Getter<SType,STag>(htag+hsatag+htag);
-    new EW_HHS_Getter<SType,STag>(htag+hsrtag+htag);
+    key.p_vtcs->push_back(new EW_HHS_Getter<SType,STag>(htag+htag+htag));
+    key.p_vtcs->push_back(new EW_HHS_Getter<SType,STag>(htag+htag+hsrtag));
+    key.p_vtcs->push_back(new EW_HHS_Getter<SType,STag>(htag+hsatag+htag));
+    key.p_vtcs->push_back(new EW_HHS_Getter<SType,STag>(htag+hsrtag+htag));
   }
   if (Flavour(kf_Z).IsOn()) {
     // ffz couplings
@@ -629,15 +630,15 @@ void *EW_Vertex_Filler<SType,STag>::operator()
       Flavour f((kf_code)i);
       if (!f.IsOn()) continue;
       std::string ftag("{"+f.IDName()+"}"), fbtag("{"+f.Bar().IDName()+"}");
-      new EW_FFZ_Getter<SType,STag>(ftag+fbtag+ztag);
-      new EW_FFZ_Getter<SType,STag>(fbtag+ztag+fbtag);
-      new EW_FFZ_Getter<SType,STag>(ztag+ftag+ftag);
+      key.p_vtcs->push_back(new EW_FFZ_Getter<SType,STag>(ftag+fbtag+ztag));
+      key.p_vtcs->push_back(new EW_FFZ_Getter<SType,STag>(fbtag+ztag+fbtag));
+      key.p_vtcs->push_back(new EW_FFZ_Getter<SType,STag>(ztag+ftag+ftag));
     }
     // zzs couplings
-    new EW_VVH_Getter<SType,STag>(ztag+ztag+htag);
-    new EW_VVH_Getter<SType,STag>(ztag+htag+ztag);
-    new EW_VVH_Getter<SType,STag>(ztag+ztag+hsatag);
-    new EW_VVH_Getter<SType,STag>(ztag+hsrtag+ztag);
+    key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(ztag+ztag+htag));
+    key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(ztag+htag+ztag));
+    key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(ztag+ztag+hsatag));
+    key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(ztag+hsrtag+ztag));
   }
   if (Flavour(kf_Wplus).IsOn()) {
     // qqw couplings
@@ -649,12 +650,12 @@ void *EW_Vertex_Filler<SType,STag>::operator()
 	std::string f2tag("{"+f2.IDName()+"}");
 	std::string f1btag("{"+f1.Bar().IDName()+"}");
 	std::string f2btag("{"+f2.Bar().IDName()+"}");
-	new EW_FFW_Getter<SType,STag>(f1tag+f2btag+wmtag);
-	new EW_FFW_Getter<SType,STag>(f2tag+f1btag+wptag);
-	new EW_FFW_Getter<SType,STag>(f2btag+wptag+f1btag);
-	new EW_FFW_Getter<SType,STag>(f1btag+wmtag+f2btag);
-	new EW_FFW_Getter<SType,STag>(wptag+f1tag+f2tag);
-	new EW_FFW_Getter<SType,STag>(wmtag+f2tag+f1tag);
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f1tag+f2btag+wmtag));
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f2tag+f1btag+wptag));
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f2btag+wptag+f1btag));
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f1btag+wmtag+f2btag));
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(wptag+f1tag+f2tag));
+	key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(wmtag+f2tag+f1tag));
       }
     }
     // llw couplings
@@ -665,51 +666,51 @@ void *EW_Vertex_Filler<SType,STag>::operator()
       std::string f2tag("{"+f2.IDName()+"}");
       std::string f1btag("{"+f1.Bar().IDName()+"}");
       std::string f2btag("{"+f2.Bar().IDName()+"}");
-      new EW_FFW_Getter<SType,STag>(f1tag+f2btag+wmtag);
-      new EW_FFW_Getter<SType,STag>(f2tag+f1btag+wptag);
-      new EW_FFW_Getter<SType,STag>(f2btag+wptag+f1btag);
-      new EW_FFW_Getter<SType,STag>(f1btag+wmtag+f2btag);
-      new EW_FFW_Getter<SType,STag>(wptag+f1tag+f2tag);
-      new EW_FFW_Getter<SType,STag>(wmtag+f2tag+f1tag);
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f1tag+f2btag+wmtag));
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f2tag+f1btag+wptag));
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f2btag+wptag+f1btag));
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(f1btag+wmtag+f2btag));
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(wptag+f1tag+f2tag));
+      key.p_vtcs->push_back(new EW_FFW_Getter<SType,STag>(wmtag+f2tag+f1tag));
     }
     // wwt couplings
-    new EW_WWT_Getter<SType,STag>(wmtag+wptag+zttag);
-    new EW_WWT_Getter<SType,STag>(wptag+zttag+wptag);
-    new EW_WWT_Getter<SType,STag>(zttag+wmtag+wmtag);
+    key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wmtag+wptag+zttag));
+    key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wptag+zttag+wptag));
+    key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(zttag+wmtag+wmtag));
     if (Flavour(kf_photon).IsOn()) {
       // wwa couplings
-      new EW_WWV_Getter<SType,STag>(wmtag+wptag+atag);
-      new EW_WWV_Getter<SType,STag>(wptag+atag+wptag);
-      new EW_WWV_Getter<SType,STag>(atag+wmtag+wmtag);
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(wmtag+wptag+atag));
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(wptag+atag+wptag));
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(atag+wmtag+wmtag));
       // wat couplings
-      new EW_WWT_Getter<SType,STag>(atag+wmtag+wmttag);
-      new EW_WWT_Getter<SType,STag>(wmtag+wpttag+atag);
-      new EW_WWT_Getter<SType,STag>(wpttag+atag+wptag);
-      new EW_WWT_Getter<SType,STag>(wptag+atag+wpttag);
-      new EW_WWT_Getter<SType,STag>(atag+wmttag+wmtag);
-      new EW_WWT_Getter<SType,STag>(wmttag+wptag+atag);
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(atag+wmtag+wmttag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wmtag+wpttag+atag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wpttag+atag+wptag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wptag+atag+wpttag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(atag+wmttag+wmtag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wmttag+wptag+atag));
     }
     if (Flavour(kf_Z).IsOn()) {
       // wwz couplings
-      new EW_WWV_Getter<SType,STag>(wmtag+wptag+ztag);
-      new EW_WWV_Getter<SType,STag>(wptag+ztag+wptag);
-      new EW_WWV_Getter<SType,STag>(ztag+wmtag+wmtag);
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(wmtag+wptag+ztag));
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(wptag+ztag+wptag));
+      key.p_vtcs->push_back(new EW_WWV_Getter<SType,STag>(ztag+wmtag+wmtag));
       // wzt couplings
-      new EW_WWT_Getter<SType,STag>(ztag+wmtag+wmttag);
-      new EW_WWT_Getter<SType,STag>(wmtag+wpttag+ztag);
-      new EW_WWT_Getter<SType,STag>(wpttag+ztag+wptag);
-      new EW_WWT_Getter<SType,STag>(wptag+ztag+wpttag);
-      new EW_WWT_Getter<SType,STag>(ztag+wmttag+wmtag);
-      new EW_WWT_Getter<SType,STag>(wmttag+wptag+ztag);
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(ztag+wmtag+wmttag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wmtag+wpttag+ztag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wpttag+ztag+wptag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wptag+ztag+wpttag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(ztag+wmttag+wmtag));
+      key.p_vtcs->push_back(new EW_WWT_Getter<SType,STag>(wmttag+wptag+ztag));
     }
     if (Flavour(kf_h0).IsOn()) {
       // wws couplings
-      new EW_VVH_Getter<SType,STag>(wmtag+wptag+htag);
-      new EW_VVH_Getter<SType,STag>(wptag+htag+wptag);
-      new EW_VVH_Getter<SType,STag>(htag+wmtag+wmtag);
-      new EW_VVH_Getter<SType,STag>(wptag+wmtag+hsatag);
-      new EW_VVH_Getter<SType,STag>(wmtag+hsrtag+wmtag);
-      new EW_VVH_Getter<SType,STag>(hsrtag+wptag+wptag);
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(wmtag+wptag+htag));
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(wptag+htag+wptag));
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(htag+wmtag+wmtag));
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(wptag+wmtag+hsatag));
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(wmtag+hsrtag+wmtag));
+      key.p_vtcs->push_back(new EW_VVH_Getter<SType,STag>(hsrtag+wptag+wptag));
     }
   }
   return NULL;

@@ -97,7 +97,21 @@ namespace COMIX {
   
   typedef ATOOLS::Getter_Function<Vertex_Base,Vertex_Key,
 				  std::less<std::string> > Vertex_Getter;
-  typedef ATOOLS::Getter_Function<void,const Model*,
+
+  struct Vertex_Filler_Key {
+  public:
+
+    Model *p_model;
+
+    std::vector<Vertex_Getter*> *p_vtcs;
+
+    Vertex_Filler_Key(Model *const model,
+		      std::vector<Vertex_Getter*> *vtcs):
+      p_model(model), p_vtcs(vtcs) {}
+
+  };// end of struct Vertex_Filler_Key
+  
+  typedef ATOOLS::Getter_Function<void,Vertex_Filler_Key,
 				  std::less<std::string> > Filler_Getter;
 
   std::ostream &operator<<(std::ostream &str,const Vertex_Base &v);

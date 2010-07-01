@@ -12,7 +12,7 @@
 #include "ATOOLS/Org/Getter_Function.C"
 
 template class Getter_Function
-<void,const COMIX::Model*,std::less<std::string> >;
+<void,COMIX::Vertex_Filler_Key,std::less<std::string> >;
 
 using namespace COMIX;
 using namespace ATOOLS;

@@ -1,6 +1,7 @@
 #ifndef COMIX_Main_Comix_H
 #define COMIX_Main_Comix_H
 
+#include "COMIX/Amplitude/Vertex_Base.H"
 #include "COMIX/Main/Process_Group.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -24,6 +25,8 @@ namespace COMIX {
     std::string m_path, m_file;
     int    m_map;
     time_t m_mets;
+
+    std::vector<Vertex_Getter*> m_vtcs;
 
     void PrintLogo(std::ostream &s);
 
@@ -92,6 +95,7 @@ Comix::Comix():
 
 Comix::~Comix() 
 {
+  for (size_t i(0);i<m_vtcs.size();++i) delete m_vtcs[i];
   if (p_cluster) delete p_cluster;
 }
 
@@ -139,9 +143,10 @@ void Comix::PrintLogo(std::ostream &s)
 
 void Comix::InitVertices(const SP(Model) &model)
 {
+  Vertex_Filler_Key vfkey(&*model,&m_vtcs);
   Filler_Getter::Getter_List flist(Filler_Getter::GetGetters());
   for (Filler_Getter::Getter_List::const_iterator git(flist.begin());
-       git!=flist.end();++git) (*git)->GetObject(&*model);
+       git!=flist.end();++git) (*git)->GetObject(vfkey);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n   Implemented currents:\n\n";
     Current_Getter::PrintGetterInfo(msg_Out(),5);

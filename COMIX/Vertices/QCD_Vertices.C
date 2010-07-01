@@ -313,27 +313,27 @@ namespace COMIX {
 }
 
 DECLARE_TEMPLATE_GETTER(QCD_Vertex_Filler,"QCD_VFill",
-			void,const Model *);
+			void,Vertex_Filler_Key);
 
 template <typename SType,char STag>
 void *QCD_Vertex_Filler<SType,STag>::operator()
-  (const Model *const &model) const
+  (const Vertex_Filler_Key &key) const
 {
   if (!Flavour(kf_gluon).IsOn()) return NULL;
-  if (!model->IncludesModel("QCD")) return NULL;
+  if (!key.p_model->IncludesModel("QCD")) return NULL;
   std::string gtag("{"+Flavour(kf_gluon).IDName()+"}");
   std::string ttag("{"+Flavour(kf_gluon_qgc).IDName()+"}");
-  new QCD_GGG_Getter<SType,STag>(gtag+gtag+gtag);
-  new QCD_GGT_Getter<SType,STag>(gtag+gtag+ttag);
-  new QCD_GGT_Getter<SType,STag>(gtag+ttag+gtag);
+  key.p_vtcs->push_back(new QCD_GGG_Getter<SType,STag>(gtag+gtag+gtag));
+  key.p_vtcs->push_back(new QCD_GGT_Getter<SType,STag>(gtag+gtag+ttag));
+  key.p_vtcs->push_back(new QCD_GGT_Getter<SType,STag>(gtag+ttag+gtag));
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)i);
     if (!f.IsOn()) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
-    new QCD_QQG_Getter<SType,STag>(qtag+qbtag+gtag);
-    new QCD_QQG_Getter<SType,STag>(qbtag+gtag+qbtag);
-    new QCD_QQG_Getter<SType,STag>(gtag+qtag+qtag);
+    key.p_vtcs->push_back(new QCD_QQG_Getter<SType,STag>(qtag+qbtag+gtag));
+    key.p_vtcs->push_back(new QCD_QQG_Getter<SType,STag>(qbtag+gtag+qbtag));
+    key.p_vtcs->push_back(new QCD_QQG_Getter<SType,STag>(gtag+qtag+qtag));
   }
   return NULL;
 }
