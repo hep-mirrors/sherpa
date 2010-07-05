@@ -384,8 +384,10 @@ bool Simple_Chain::Initialize()
   std::vector<double> parameters;
   if (!reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     function="Double_Gaussian";
-    parameters.push_back(0.5);
-    parameters.push_back(0.5);
+    if (!reader->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
+      parameters.push_back(0.5);
+      parameters.push_back(0.5);
+    }
   }
   else {
     reader->VectorFromFile(parameters,"PROFILE_PARAMETERS");
