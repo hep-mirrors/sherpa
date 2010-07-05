@@ -76,6 +76,64 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   return true;
 }
 
+bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+                                         HepMC::GenEvent& event, double weight)
+{
+#ifdef USING__HEPMC2__UNITS
+  event.use_units(HepMC::Units::GEV,
+                  HepMC::Units::MM);
+#endif
+  event.set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+  HepMC::GenVertex * vertex=new HepMC::GenVertex();
+  std::vector<HepMC::GenParticle*> beamparticles;
+  for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+    Blob* blob=*blit;
+    for (int i=0;i<blob->NInP();i++) {
+      if (blob->InParticle(i)->ProductionBlob()==NULL) {
+        Particle* parton=blob->InParticle(i);
+        ATOOLS::Vec4D mom  = parton->Momentum();
+        HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
+        HepMC::GenParticle* inpart = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
+        vertex->add_particle_in(inpart);
+        beamparticles.push_back(inpart);
+      }
+    }
+    for (int i=0;i<blob->NOutP();i++) {
+      if (blob->OutParticle(i)->DecayBlob()==NULL) {
+        Particle* parton=blob->OutParticle(i);
+        ATOOLS::Vec4D mom  = parton->Momentum();
+        HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
+        vertex->add_particle_out(new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),1));
+      }
+    }
+
+    if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
+      if((*blit)->NInP()==2) {
+        kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
+        kf_code fl2=(*blit)->InParticle(1)->Flav().HepEvt();
+        double x1=(*blit)->InParticle(0)->Momentum()[0]/rpa.gen.PBeam(0)[0];
+        double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa.gen.PBeam(1)[0];
+        double q(0.0), p1(0.0), p2(0.0);
+        Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
+        if (facscale) q=sqrt(facscale->Get<double>());
+        Blob_Data_Base *xf1((**blit)["XF1"]);
+        Blob_Data_Base *xf2((**blit)["XF2"]);
+        if (xf1) p1=xf1->Get<double>();
+        if (xf1) p2=xf2->Get<double>();
+        HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
+        event.set_pdf_info(pdfinfo);
+      }
+      std::vector<double> weights; weights.push_back(weight);
+      event.weights()=weights;
+    }
+  }
+  event.add_vertex(vertex);
+  if (beamparticles.size()==2) {
+    event.set_beam_particles(beamparticles[0],beamparticles[1]);
+  }
+  return true;
+}
+
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                                     double weight)
 {

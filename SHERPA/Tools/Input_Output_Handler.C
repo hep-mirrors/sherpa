@@ -16,6 +16,7 @@
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "HepMC/GenEvent.h"
 #include "SHERPA/Tools/Output_HepMC2_Genevent.H"
+#include "SHERPA/Tools/Output_HepMC2_Short.H"
 #endif
 
 #include <stdio.h>
@@ -58,6 +59,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string hepevtoutput=dr->GetValue<string>("HEPEVT_OUTPUT",string(""));
   string d0hepevtoutput=dr->GetValue<string>("D0_HEPEVT_OUTPUT",string(""));
   string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
+  string hepmc2short=dr->GetValue<string>("HEPMC2_SHORT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
     ("EVT_FILE_PATH",rpa.gen.Variable("SHERPA_RUN_PATH"));
   int precision       = dr->GetValue<int>("OUTPUT_PRECISION",12);
@@ -89,6 +91,15 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
 #ifdef USING__HEPMC2
     m_outmap["HEPMC2_GENEVENT"]= new
       Output_HepMC2_Genevent(evtpath+"/"+hepmc2genevent,".hepmc2g",precision);
+#else
+    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
+          +string("with HepMC2, please read our Howto for more information."));
+#endif
+  }
+  if (!hepmc2short.empty()) {
+#ifdef USING__HEPMC2
+    m_outmap["HEPMC2_SHORT"]= new
+      Output_HepMC2_Short(evtpath+"/"+hepmc2short,".hepmc",precision);
 #else
     THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
           +string("with HepMC2, please read our Howto for more information."));

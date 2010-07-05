@@ -46,6 +46,10 @@ namespace SHERPA {
     bool Sherpa2HepMC(ATOOLS::Blob *,HepMC::GenVertex *&);
     bool Sherpa2HepMC(ATOOLS::Particle *,HepMC::GenParticle *&);
 
+    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+                           HepMC::GenEvent& event,
+                           double weight=1.0);
+
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }
     inline void Ignore(ATOOLS::btp::code type) { m_ignoreblobs.insert(type); }
