@@ -369,9 +369,16 @@ int Combine_Table::AddCouplings(int &nqed,int &nqcd) const
   return NLegs();
 }
 
-bool Combine_Table::Combinable(const Leg &a,const Leg &b) const
+bool Combine_Table::Combinable(const Leg &a,const Leg &b,const int i,const int j) const
 {
   Leg lmo;
+  Leg tmp1 = a;
+  Leg tmp2 = b;
+
+  if ((i<2 || j<2) && (tmp1.Flav().IsSusy() || tmp2.Flav().IsSusy())) {
+    return 0;
+  }
+
   if (a.Point()->prev!=NULL && a.Point()->prev==b.Point()->prev) {
     lmo.SetPoint((AMEGIC::Point*)a.Point()->prev);
     return true;
@@ -440,7 +447,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 	for (int k=0;k<m_nampl;++k) {
 // 	  msg_Debugging()<<"start w/ "<<k<<", "
 // 			 <<i<<": "<<p_legs[k][i].MapFlavour()<<"\n";
-	  if (Combinable(p_legs[k][i],p_legs[k][j])) {
+	  if (Combinable(p_legs[k][i],p_legs[k][j],i,j)) {
 	    int sci(p_legs[k][i].Flav().StrongCharge());
 	    int scj(p_legs[k][j].Flav().StrongCharge());
 	    for (int l=0;l<m_nlegs;++l)
@@ -677,8 +684,8 @@ bool Combine_Table::IdentifyHardProcess()
     for (int i(0);i<m_nampl;++i) p_hardc[i] = new int[4];
   }
   for (int i(0);i<m_nampl;++i) {
-    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
-	Combinable(p_legs[i][2],p_legs[i][3])) {
+    if (Combinable(p_legs[i][0],p_legs[i][1],0+2,1+2) &&
+	Combinable(p_legs[i][2],p_legs[i][3],2+2,3+2)) {
       double pt2ij1((p_moms[0]+p_moms[1]).Abs2());
       double pt2ij2((p_moms[0]+p_moms[1]).Abs2());
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
@@ -694,8 +701,8 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][2]=1;
       p_hardc[i][3]=1;
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
-	     Combinable(p_legs[i][1],p_legs[i][3])) {
+    else if (Combinable(p_legs[i][0],p_legs[i][2],0+2,2+2) &&
+	     Combinable(p_legs[i][1],p_legs[i][3],1+2,3+2)) {
       double pt2ij1((p_moms[0]-p_moms[2]).Abs2());
       double pt2ij2((p_moms[0]-p_moms[2]).Abs2());
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
@@ -711,8 +718,8 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][2]=0;
       p_hardc[i][3]=1;
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
-	     Combinable(p_legs[i][1],p_legs[i][2])) {
+    else if (Combinable(p_legs[i][0],p_legs[i][3],0+2,3+2) &&
+	     Combinable(p_legs[i][1],p_legs[i][2],1+2,2+2)) {
       double pt2ij1((p_moms[0]-p_moms[3]).Abs2());
       double pt2ij2((p_moms[0]-p_moms[3]).Abs2());
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
@@ -741,8 +748,8 @@ int Combine_Table::IdentifyHardPropagator(double &mmin) const
   int channel(-1);
   mmin=std::numeric_limits<double>::max();
   for (int i(0);i<m_nampl;++i) {
-    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
-	Combinable(p_legs[i][2],p_legs[i][3])) {
+    if (Combinable(p_legs[i][0],p_legs[i][1],0+2,1+2) &&
+	Combinable(p_legs[i][2],p_legs[i][3],2+2,3+2)) {
       msg_Debugging()<<"s-channel "
 		     <<(p_moms[0]+p_moms[1]).Mass()<<"\n";
       double val=(p_moms[0]+p_moms[1]).Abs2();
@@ -751,8 +758,8 @@ int Combine_Table::IdentifyHardPropagator(double &mmin) const
 	channel=1;
       }
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
-	     Combinable(p_legs[i][1],p_legs[i][3])) {
+    else if (Combinable(p_legs[i][0],p_legs[i][2],0+2,2+2) &&
+	     Combinable(p_legs[i][1],p_legs[i][3],1+2,3+2)) {
       msg_Debugging()<<"t-channel "
 		     <<sqrt(dabs((p_moms[0]-p_moms[2]).Abs2()))<<"\n";
       double val=dabs((p_moms[0]-p_moms[2]).Abs2());
@@ -761,8 +768,8 @@ int Combine_Table::IdentifyHardPropagator(double &mmin) const
 	channel=2;
       }
     }
-    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
-	     Combinable(p_legs[i][1],p_legs[i][2])) {
+    else if (Combinable(p_legs[i][0],p_legs[i][3],0+2,3+2) &&
+	     Combinable(p_legs[i][1],p_legs[i][2],1+2,2+2)) {
       msg_Debugging()<<"u-channel "
 		     <<sqrt(dabs((p_moms[0]-p_moms[3]).Abs2()))<<"\n";
       double val=dabs((p_moms[0]-p_moms[3]).Abs2());

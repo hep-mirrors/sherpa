@@ -164,7 +164,7 @@ namespace AMEGIC {
     bool                 IdentifyHardProcess();
     int                  IdentifyHardPropagator(double &scale) const;
 
-    bool Combinable(const Leg &a,const Leg &b) const ;
+    bool Combinable(const Leg &a,const Leg &b,const int i,const int j) const ;
 
     int    AddCouplings(int &nqed,int &nqcd) const;
     // inline functions
