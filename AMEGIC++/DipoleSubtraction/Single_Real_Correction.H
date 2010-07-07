@@ -21,6 +21,7 @@ namespace AMEGIC {
     Single_Real_Correction     * p_partner;
 
     Process_Base          * p_tree_process;
+    ATOOLS::Vec4D_Vector    m_real_momenta;
     std::vector<Single_DipoleTerm*> m_subtermlist;
     PHASIC::NLO_subevtlist          m_subevtlist;
     PHASIC::NLO_subevt              m_realevt;
