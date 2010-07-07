@@ -249,7 +249,6 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom)
     m_subevtlist.m_muf2=p_tree_process->ScaleSetter()->CalculateScale(_mom);
     M2 = p_tree_process->operator()(&mom.front());
     if (M2>0.) {
-      m_realevt.p_mom  = &m_real_momenta.front();
       m_realevt.m_me   = m_realevt.m_result = m_realevt.m_mewgt = M2;
       m_realevt.m_facscale = m_subevtlist.m_muf2;
       m_realevt.m_renscale = p_tree_process->ScaleSetter()->Scale(stp::ren);
