@@ -22,6 +22,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 		     PDF::ISR_Handler *const isr,
 		     BEAM::Beam_Spectra_Handler *const beam):
   p_isr(isr), p_beam(beam), 
+  p_signal(NULL), p_shower(NULL),
   m_path(path), m_file(file), m_fill(true)
 {
   Data_Reader read(" ",";","!","=");
@@ -47,10 +48,75 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler()
 Return_Value::code 
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
+  StorePerturbativeBlobs(bloblist);
   Return_Value::code fbc(FillBeamBlobs(bloblist));
-  if (fbc!=Return_Value::Success) return fbc;
-  fbc=FillBunchBlobs(bloblist);
-  return fbc;
+  switch(fbc) {
+  case Return_Value::Success:
+    if (p_signal) delete p_signal; p_signal=NULL;
+    if (p_shower) delete p_shower; p_shower=NULL;
+    return FillBunchBlobs(bloblist);
+  case Return_Value::Retry_Phase:
+    bloblist->Clear();
+    bloblist->push_back(p_signal);
+    p_signal=NULL;
+    bloblist->push_back(p_shower);
+    p_shower=NULL;
+    DEBUG_VAR(*bloblist);
+    return Return_Value::Retry_ShowerEvent;
+  default:
+    if (p_signal) delete p_signal; p_signal=NULL;
+    if (p_shower) delete p_shower; p_shower=NULL;
+    return fbc;
+  }
+}
+
+void Beam_Remnant_Handler::StorePerturbativeBlobs(ATOOLS::Blob_List* blobs)
+{
+  DEBUG_FUNC(*blobs);
+  Blob* signal = blobs->FindFirst(btp::Signal_Process);
+  if (signal) {
+    p_signal = new Blob(signal);
+  }
+
+  Blob* shower = blobs->FindFirst(btp::Shower);
+  if (shower) {
+    p_shower = new Blob(shower);
+    // delete copied particles because we have to take some of them from SP
+    p_shower->DeleteInParticles();
+    p_shower->DeleteOutParticles();
+
+    Particle * part(NULL);
+    for (int i=0;i<shower->NInP();i++) {
+      if (shower->ConstInParticle(i)->ProductionBlob() &&
+          shower->ConstInParticle(i)->ProductionBlob()->Type()==btp::Signal_Process) continue;
+      part = new Particle((*shower->ConstInParticle(i)));
+      p_shower->AddToInParticles(part);
+    }
+    for (int i=0;i<shower->NOutP();i++) {
+      if (shower->ConstOutParticle(i)->DecayBlob() &&
+          shower->ConstOutParticle(i)->DecayBlob()->Type()==btp::Signal_Process) continue;
+      part = new Particle((*shower->ConstOutParticle(i)));
+      part->SetDecayBlob(NULL);
+      part->SetStatus(part_status::active);
+      p_shower->AddToOutParticles(part);
+    }
+
+    p_shower->SetStatus(blob_status::needs_harddecays|
+                        blob_status::needs_beams|
+                        blob_status::needs_hadronization|
+                        blob_status::needs_extraQED);
+  }
+
+  if (p_signal && p_shower) {
+    for (int i=0; i<p_signal->NInP(); ++i) {
+      p_shower->AddToOutParticles(p_signal->InParticle(i));
+    }
+    for (int i=0; i<p_signal->NOutP(); ++i) {
+      p_shower->AddToInParticles(p_signal->OutParticle(i));
+    }
+  }
+  DEBUG_VAR(*p_signal);
+  DEBUG_VAR(*p_shower);
 }
 
 Return_Value::code Beam_Remnant_Handler::
@@ -135,7 +201,7 @@ FillBeamBlobs(Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) {
     if (!p_beampart[i]->FillBlob(p_beamblob[i],NULL)) {
-      return Return_Value::Retry_Event; 
+      return Return_Value::Retry_Event;
     }
   }
   if (p_beampart[0]->Type()==PDF::rtp::hadron || 
@@ -147,7 +213,7 @@ FillBeamBlobs(Blob_List *const bloblist,
   for (short unsigned int i=0;i<2;++i) {
     if (!p_beampart[i]->AdjustKinematics() || 
 	!p_beampart[i]->AdjustColors()) { 
-      return Return_Value::Retry_Event; 
+      return Return_Value::Retry_Phase;
     }
   }
   // set status for all partons entering the shower to decayed

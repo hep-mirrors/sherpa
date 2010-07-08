@@ -94,6 +94,9 @@ Blob::Blob(const Blob * blob) :
     part->SetStatus(part_status::active);
     AddToOutParticles(part);
   }
+  for (String_BlobDataBase_Map::const_iterator it=blob->m_datacontainer.begin(); it!=blob->m_datacontainer.end(); ++it) {
+    AddData(it->first, it->second->ClonePtr());
+  }
 }
 
 Blob::~Blob() {

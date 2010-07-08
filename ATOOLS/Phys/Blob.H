@@ -21,6 +21,7 @@ namespace ATOOLS {
     Blob_Data_Base(const Blob_Data_Base &base);
     virtual ~Blob_Data_Base();
     virtual std::ostream & operator>>(std::ostream &) const =0;
+    virtual Blob_Data_Base* ClonePtr() { return NULL; }
   };
 
   template <class Type> class Blob_Data : public Blob_Data_Base {
@@ -30,6 +31,7 @@ namespace ATOOLS {
     Type &Get() { return m_data; }
     void Set(const Type & d) { m_data=d; }
     std::ostream & operator>>(std::ostream &) const;
+    virtual Blob_Data_Base* ClonePtr() { return new Blob_Data(m_data); }
     ~Blob_Data();
   };
 

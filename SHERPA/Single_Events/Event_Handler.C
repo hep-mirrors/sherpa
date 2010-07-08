@@ -117,6 +117,7 @@ void Event_Handler::Reset()
 
 bool Event_Handler::GenerateEvent(int mode) 
 {
+  DEBUG_FUNC(rpa.gen.NumberOfDicedEvents());
   ATOOLS::ran.SaveStatus();
 #ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
@@ -153,23 +154,30 @@ bool Event_Handler::GenerateEvent(int mode)
 	msg_Debugging()<<METHOD<<"(): run '"<<(*pit)->Name()<<"'"<<std::endl;
 	switch ((*pit)->Treat(&m_blobs,weight)) {
 	case Return_Value::Nothing :
+          DEBUG_INFO("Nothing");
+	  msg_Debugging()<<m_blobs;
 	  ++pit;
 	  break;
 	case Return_Value::Success : 
 	  rvalue.IncCall((*pit)->Name());
 	  pit=p_phases->begin();
+          DEBUG_INFO("Success");
+          DEBUG_VAR(m_blobs.FourMomentumConservation());
 	  msg_Debugging()<<m_blobs;
 	  break;
 	case Return_Value::Error :
+          DEBUG_INFO("Error");
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncError((*pit)->Name());
 	  return false;
 	case Return_Value::Retry_Phase : 
+          DEBUG_INFO("Retry_Phase");
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryPhase((*pit)->Name());
 	  pit=p_phases->begin();
 	  break;
 	case Return_Value::Retry_Event : 
+          DEBUG_INFO("Retry_Event");
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryEvent((*pit)->Name());
           m_blobs.Clear(p_signal);
@@ -179,7 +187,15 @@ bool Event_Handler::GenerateEvent(int mode)
           Flow::ResetCounter();
 	  pit=p_phases->begin();
 	  break;
-	case Return_Value::New_Event : 
+	case Return_Value::Retry_ShowerEvent :
+          DEBUG_INFO("Retry_ShowerEvent");
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncRetryShowerEvent((*pit)->Name());
+          p_signal=m_blobs.front();
+	  pit=p_phases->begin();
+	  break;
+	case Return_Value::New_Event :
+          DEBUG_INFO("New_Event");
 	  {
 	    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
             if (sp && (*sp)["Trials"]) m_addn+=(*sp)["Trials"]->Get<double>();
