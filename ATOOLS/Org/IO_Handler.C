@@ -29,7 +29,7 @@ int IO_Handler::SetFileName(std::string _name) {
   m_file.open(m_filename.c_str(),ios::out);
 
   if (!(m_file.good())) {
-    msg_Out()<<" ERROR: opening "<<m_filename<<endl;
+    msg_Info()<<METHOD<<": "<<m_filename<<" not available."<<endl;
     return 0;
   }
   m_file.precision(15);
@@ -45,7 +45,7 @@ int IO_Handler::SetFileNameRO(string _name) {
   m_file.open(m_filename.c_str(),ios::in);
 
   if (!(m_file.good())) {
-    msg_Error()<<"ERROR: opening "<<m_filename<<endl;
+    msg_Info()<<METHOD<<": "<<m_filename<<" not available."<<endl;
     return 0;
   }
   return 1;
