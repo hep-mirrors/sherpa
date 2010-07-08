@@ -220,24 +220,24 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 
   Vec4D testmom = m_momentum-p_trip->m_mom-p_anti->m_mom;
   if (dabs(testmom.Abs2()/save[0][0])>1.e-6 || testmom[0]/save[0][0]>1.e-6) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+    msg_Debugging()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"   From "<<save[0]<<" ("<<sqrt(Max(0.,save[0].Abs2()))<<") to "
 	       <<m_momentum<<" with "<<std::endl
 	       <<"   "<<save[1]<<" ("<<save[1].Abs2()<<") + "
 	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl;
     if (p_trip!=NULL) 
-      msg_Error()<<"  Trip: "<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
+      msg_Debugging()<<"  Trip: "<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
     else 
-      msg_Error()<<"No triplet: "<<p_trip<<" ";
+      msg_Debugging()<<"No triplet: "<<p_trip<<" ";
     if (p_anti!=NULL) 
-      msg_Error()<<" Anti: "<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
+      msg_Debugging()<<" Anti: "<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
     else 
-      msg_Error()<<"No antitriplet: "<<p_anti<<" ";
-    msg_Error()<<"   diff: "<<testmom;
+      msg_Debugging()<<"No antitriplet: "<<p_anti<<" ";
+    msg_Debugging()<<"   diff: "<<testmom;
     rest.Boost(m_momentum); 
     back.BoostBack(m_momentum);
-    PRINT_VAR(m_momentum);
-    msg_Error()<<" from "<<newmom<<" --> "<<m_momentum<<"."<<std::endl;
+    DEBUG_VAR(m_momentum);
+    msg_Debugging()<<" from "<<newmom<<" --> "<<m_momentum<<"."<<std::endl;
   }
   if (p_left!=NULL) {
     msg_Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
