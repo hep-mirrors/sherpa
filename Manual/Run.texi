@@ -187,6 +187,8 @@ Filename for output in HepEvt format.
 @item ROOTNTUPLE_OUTPUT=<filename>
 Filename for output in ROOT ntuple format for NLO event generation. 
 For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
+This output option is only available if Sherpa was linked to ROOT during 
+installation by using the configure option @code{--enable-root=/path/to/root}.
 @end table
 
 With these keywords the filename's root can be

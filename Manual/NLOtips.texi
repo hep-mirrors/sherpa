@@ -121,21 +121,20 @@ momenta the following treatment becomes necessary:
 several sub-events. All entries with the same id belong to the same event. 
 Step 2 has to be repeated for each event.
 @item Each sub-event must be checked separately whether it passes possible 
-phase space cuts. Then for each observable add up ``weight2'' of all sub-events 
-that go into the same histogram bin. These sums x_id are the quantities to 
-enter the actual histogram.
-@item To compute statistical errors each bin must store the sum over all x_id 
-and the sum over all x_id^2. The cross section in the bin is given by 
-@math{<x>=1/N \sum x_id},
-where N is the number of events (not sub-events). 
-The 1-@math{\sigma} statistical error for the bin is
-@math{\sqrt{(<x^2>-<x>^2)/(N-1)}}
+phase space cuts. Then for each observable add up @code{weight2} of all 
+sub-events that go into the same histogram bin. These sums x_id are the 
+quantities to enter the actual histogram.
+@item To compute statistical errors each bin must store the sum over all 
+@code{x_id} and the sum over all @code{x_id^2}. The cross section in the bin is 
+given by @code{<x> = 1/N \sum x_id}, where @code{N} is the number of events 
+(not sub-events). The @code{1-\sigma} statistical error for the bin is
+@code{\sqrt@{ (<x^2>-<x>^2)/(N-1) @} }
 @end enumerate
-Note: The main difference between ``weight'' and ``weight2'' is that they refer 
-to a different counting of events. While ``weight'' corresponds to each event 
-entry (sub-event) counted separately, ``weight2'' counts events as defined in 
-step 1 of the above procedure. For NLO pieces other than the real correction 
-``weight'' and ``weight2'' are identical.
+Note: The main difference between @code{weight} and @code{weight2} is that they 
+refer to a different counting of events. While @code{weight} corresponds to 
+each event entry (sub-event) counted separately, @code{weight2} counts events 
+as defined in step 1 of the above procedure. For NLO pieces other than the real 
+correction @code{weight} and @code{weight2} are identical.
 
 @subsubsection Computation of cross sections with new PDF's
 
@@ -143,42 +142,44 @@ step 1 of the above procedure. For NLO pieces other than the real correction
 
 Notation:
 
-f_a(x_a) = PDF 1 applied on parton a,
+@code{f_a(x_a) = PDF 1 applied on parton a,
 
-F_b(x_b) = PDF 2 applied on parton b.
+      F_b(x_b) = PDF 2 applied on parton b.}
 
-The total cross section weight is given by weight = me_wgt f_a(x_a)F_a(x_b).
+The total cross section weight is given by
+
+@code{weight = me_wgt f_a(x_a)F_a(x_b).}
 
 @strong{Loop piece and integrated subtraction terms:}
 
 The weights here have an explicit dependence on the renormalization
 and factorization scales.
 
-To take care of the renormalization scale dependence (other than via alpha_S) 
-the weight w_0 is defined as
+To take care of the renormalization scale dependence (other than via 
+@code{alpha_S}) the weight @code{w_0} is defined as
 
-w_0 = me\_wgt + usr_wgts[0] log((\mu_R^new)^2/(\mu_R^old)^2)
-              + usr_wgts[1] 1/2 [log((\mu_R^new)^2/(\mu_R^old)^2)]^2.
+@code{ w_0 = me\_wgt + usr_wgts[0] log((\mu_R^new)^2/(\mu_R^old)^2)
+                     + usr_wgts[1] 1/2 [log((\mu_R^new)^2/(\mu_R^old)^2)]^2.}
 
-To address the factorization scale dependence the weights w_1,...,w_8 are given 
-by 
+To address the factorization scale dependence the weights @code{w_1,...,w_8} 
+are given by 
 
-w_i = usr_wgts[i+1] + usr_wgts[i+9] log((\mu_F^new)^2/(\mu_F^old)^2).
+@code{w_i = usr_wgts[i+1] + usr_wgts[i+9] log((\mu_F^new)^2/(\mu_F^old)^2).}
 
 The full cross section weight can be calculated as
 
-weight = w_0 f_a(x_a)F_b(x_b)
-	 + (f_a^1 w_1 + f_a^2 w_2 + f_a^3 w_3 + f_a^4 w_4) F_b(x_b)
-	 + (F_b^1 w_5 + F_b^2 w_6 + F_b^3 w_7 + F_b^4 w_8) f_a(x_a)
+@code{weight = w_0 f_a(x_a)F_b(x_b)
+	       + (f_a^1 w_1 + f_a^2 w_2 + f_a^3 w_3 + f_a^4 w_4) F_b(x_b)
+	       + (F_b^1 w_5 + F_b^2 w_6 + F_b^3 w_7 + F_b^4 w_8) f_a(x_a)}
 
 where
 
-f_a^1 = f_a(x_a) (a=quark), \sum_q f_q(x_a) (a=gluon),
+@code{f_a^1 = f_a(x_a) (a=quark), \sum_q f_q(x_a) (a=gluon),
 
-f_a^2 = f_a(x_a/x'_a)/x'_a (a=quark), \sum_q f_q(x_a/x'_a)x'_a (a=gluon),
+      f_a^2 = f_a(x_a/x'_a)/x'_a (a=quark), \sum_q f_q(x_a/x'_a)x'_a (a=gluon),
 
-f_a^3 = f_g(x_a),
+      f_a^3 = f_g(x_a),
 
-f_a^4 = f_g(x_a/x'_a)/x'_a.
+      f_a^4 = f_g(x_a/x'_a)/x'_a.}
 
 

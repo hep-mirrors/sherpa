@@ -76,7 +76,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
       new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision);
 #else
     THROW(fatal_error,"ROOTNTUPLE format can only be created when Sherpa was linked "
-          +string("with root, please read our Howto for more information."));
+          +string("with root, please read our Manual for more information."));
 #endif
   }
   if (!hepevtoutput.empty()) {
