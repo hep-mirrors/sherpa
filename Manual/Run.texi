@@ -178,8 +178,15 @@ specified:
 Filename for output in Sherpa format
 @item HEPMC2_GENEVENT_OUTPUT=<filename>
 Filename for output in HepMC::IO_GenEvent format.
+@item HEPMC2_SHORT_OUTPUT=<filename>
+Filename for output in HepMC::IO_GenEvent format. Only incoming beams and 
+outgoing particles are stored. Intermediate and decayed particles are not 
+listed.
 @item HEPEVT_OUTPUT=<filename>
 Filename for output in HepEvt format.
+@item ROOTNTUPLE_OUTPUT=<filename>
+Filename for output in ROOT ntuple format for NLO event generation. 
+For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
 @end table
 
 With these keywords the filename's root can be
