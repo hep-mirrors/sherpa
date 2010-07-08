@@ -99,7 +99,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     }
   }
 
-  m_real_momenta.reserve(m_nin+m_nout);
+  m_real_momenta.resize(m_nin+m_nout);
 
   m_realevt.n      = m_nin+m_nout;
   m_realevt.p_fl   = &(p_tree_process->Flavours().front());
@@ -215,7 +215,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom)
   m_subevtlist.clear();
   m_subevtlist.m_muf2=0.0;
   p_tree_process->Integrator()->SetMomenta(_mom);
-  m_real_momenta=_mom;
+  for (size_t i=0; i<m_real_momenta.size(); ++i) m_real_momenta[i]=_mom[i];
 
   Vec4D_Vector mom(_mom);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
