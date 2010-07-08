@@ -339,7 +339,14 @@ not included external codes can be interfaced, see @ref{External one-loop ME}
 @node Loop_Generator
 @subsection Loop_Generator
 Set a process specific nametag for the desired
-loop-ME generator.
+loop-ME generator. The only Sherpa-native option is @code{Internal} with a few 
+hard coded loop matrix elements, e.g. @ref{NLO_W}.
+
+@subsubsection WhiteHat Interface
+
+Another source for loop matrix elements is @code{WhiteHat}. To use this Sherpa 
+has to be linked to WhiteHat during installation by using the configure option 
+@code{--enable-whitehat=/path/to/whitehat}.
 
 
 @node End process
