@@ -36,6 +36,7 @@ namespace CSSHOWER {
 			const ATOOLS::Vec4D &pspect,
 			Parton *const split,Parton *const newb,
 			Parton *const newc,const int mode);
+    double GetXBj(Parton *const p) const;
     int    SetXBj(Parton *const p) const;
     Parton *SelectSplitting(double &);
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);

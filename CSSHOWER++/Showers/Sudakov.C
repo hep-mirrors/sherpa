@@ -16,13 +16,14 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   p_rms(NULL)
 {
   m_ewmode=qed;
-  //int hadron = rpa.gen.Beam1().Strong()==1?0:1;
+  p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
 }
 
 Sudakov::~Sudakov() 
 {
+  delete [] p_pdf;
   for (size_t i(0);i<m_addsplittings.size();++i) delete m_addsplittings[i];
   for (size_t i(0);i<m_cgets.size();++i) delete m_cgets[i];
 }

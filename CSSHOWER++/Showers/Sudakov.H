@@ -20,7 +20,6 @@ namespace CSSHOWER {
     double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
     double m_as_is_fac,m_as_fs_fac,m_rbmax,m_zmin,m_zmax, m_weight;
     int m_ewmode;
-    PDF::PDF_Base         *  p_pdf[2];
     ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;

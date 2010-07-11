@@ -61,11 +61,15 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
   return EvolveSinglet(actual,maxem,nem);
 }
 
+double Shower::GetXBj(Parton *const p) const
+{
+  if (p->Beam()==0) return p->Momentum().PPlus()/rpa.gen.PBeam(0).PPlus();
+  return p->Momentum().PMinus()/rpa.gen.PBeam(1).PMinus();
+}
+
 int Shower::SetXBj(Parton *const p) const
 {
-  double x=0.0;
-  if (p->Beam()==0) x=p->Momentum().PPlus()/rpa.gen.PBeam(0).PPlus();
-  else x=p->Momentum().PMinus()/rpa.gen.PBeam(1).PMinus();
+  double x(GetXBj(p));
   if (x>1.0) return -1;
   p->SetXbj(x);
   return 1;
@@ -76,6 +80,7 @@ int Shower::RemnantTest(Parton *const p)
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
   if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0] &&
       !IsEqual(p->Momentum()[0],rpa.gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
+  if (!m_sudakov.CheckPDF(GetXBj(p),p->GetFlavour(),p->Beam())) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
 }

@@ -262,6 +262,13 @@ double Splitting_Function_Base::GetXPDF
   return m_lpdf=p_pdf[beam]->GetXPDF(a);
 }
 
+bool Splitting_Function_Base::CheckPDF
+(const double &x,const ATOOLS::Flavour &a,const int beam)
+{
+  if (p_pdf[beam]==NULL) return true;
+  return x<=p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor();
+}
+
 double SF_Lorentz::JFF(const double &y) const
 { 
   return (1.-y);

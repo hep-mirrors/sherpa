@@ -209,6 +209,7 @@ namespace CSSHOWER {
     double GetXPDF(const double &scale,const double &x,
 		   const ATOOLS::Flavour &a,const int beam,
 		   const int mode=0);
+    bool CheckPDF(const double &x,const ATOOLS::Flavour &a,const int beam);
 
     Parton *SelectSpec();
     bool PureQCD() const;
