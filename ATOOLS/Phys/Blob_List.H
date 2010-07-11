@@ -81,6 +81,8 @@ namespace ATOOLS {
     bool Shorten(kf_code,btp::code,btp::code);
     void Clear(Blob *blob=NULL);
 
+    Blob_List Copy() const;
+
     double Weight() const;
 
   };// end of class Blob_List

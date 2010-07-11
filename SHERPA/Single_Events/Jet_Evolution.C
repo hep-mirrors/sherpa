@@ -355,7 +355,7 @@ void Jet_Evolution::Update(const Blob *blob,const size_t beam)
     const Particle *cur=blob->ConstInParticle(i);
     if (!cur->Flav().Strong() || cur->ProductionBlob()) continue;
     if (cbeam==beam) {
-      msg_Debugging()<<"  "<<*cur<<"\n";
+      msg_Debugging()<<"  "<<*cur<<", beam = "<<beam<<"\n";
       p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
       return;
     }

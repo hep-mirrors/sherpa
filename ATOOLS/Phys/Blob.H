@@ -110,7 +110,7 @@ namespace ATOOLS {
 		       std::set<const Blob*> &checked) const;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
-    Blob(const Blob *);
+    Blob(const Blob *,const bool);
     ~Blob();
     void     AddToInParticles(Particle *);
     void     AddToOutParticles(Particle *);

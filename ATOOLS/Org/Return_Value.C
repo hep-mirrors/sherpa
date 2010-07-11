@@ -13,7 +13,6 @@ Counter_Map ATOOLS::Return_Value::s_retry_method_counter;
 Counter_Map ATOOLS::Return_Value::s_retry_phase_counter;
 Counter_Map ATOOLS::Return_Value::s_new_event_counter;
 Counter_Map ATOOLS::Return_Value::s_retry_event_counter;
-Counter_Map ATOOLS::Return_Value::s_retry_showerevent_counter;
 Counter_Map ATOOLS::Return_Value::s_call_counter;
 
 ATOOLS::Return_Value ATOOLS::rvalue;
@@ -30,7 +29,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Return_Value::code &rvc
   case Return_Value::Retry_Method: return str<<"Retry_Method";
   case Return_Value::Retry_Phase: return str<<"Retry_Phase";
   case Return_Value::Retry_Event: return str<<"Retry_Event";
-  case Return_Value::Retry_ShowerEvent: return str<<"Retry_ShowerEvent";
   case Return_Value::New_Event: return str<<"New_Event";
   }
   return str;
@@ -71,7 +69,6 @@ void Return_Value::PrintStatistics(std::ostream &str) const
   PrintSingleStatistics(str,"Errors",s_error_counter);
   PrintSingleStatistics(str,"Warnings",s_warning_counter);
   PrintSingleStatistics(str,"New events",s_new_event_counter);
-  PrintSingleStatistics(str,"Retried showered events",s_retry_showerevent_counter);
   PrintSingleStatistics(str,"Retried events",s_retry_event_counter);
   PrintSingleStatistics(str,"Retried phases",s_retry_phase_counter);
   PrintSingleStatistics(str,"Retried methods",s_retry_method_counter);
@@ -112,12 +109,6 @@ void Return_Value::IncRetryEvent(std::string name) {
   Counter_Map::iterator cit(s_retry_event_counter.find(name));
   if (cit!=s_retry_event_counter.end()) cit->second++;
   else s_retry_event_counter[name] = 1;
-}
-
-void Return_Value::IncRetryShowerEvent(std::string name) {
-  Counter_Map::iterator cit(s_retry_showerevent_counter.find(name));
-  if (cit!=s_retry_showerevent_counter.end()) cit->second++;
-  else s_retry_showerevent_counter[name] = 1;
 }
 
 void Return_Value::IncCall(std::string name) {

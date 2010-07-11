@@ -21,9 +21,6 @@ namespace SHERPA {
 
     ATOOLS::Blob               * p_beamblob[2];
 
-    ATOOLS::Blob               * p_signal;
-    ATOOLS::Blob               * p_shower;
-
     std::string                  m_path, m_file;
     bool                         m_fill;
     short unsigned int           m_beam;
@@ -35,8 +32,6 @@ namespace SHERPA {
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List *const,
 					     ATOOLS::Particle_List *const=NULL);
     void                       InitBeamBlob(const int beam);
-    void                       StorePerturbativeBlobs(ATOOLS::Blob_List*);
-
 
   public :
 

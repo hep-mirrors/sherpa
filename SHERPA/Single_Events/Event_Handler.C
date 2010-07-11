@@ -96,6 +96,7 @@ void Event_Handler::PrintGenericEventStructure()
 
 void Event_Handler::Reset()
 {
+  m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
     if ((*pit)->Type()!=eph::Perturbative ||
 	(*pit)->Name().find("Signal_Processes")==std::string::npos) 
@@ -135,17 +136,16 @@ bool Event_Handler::GenerateEvent(int mode)
   case 0:
     if (m_blobs.size()==1) {
       p_signal=m_blobs.back();
-      m_signalstatus=blob_status::code(p_signal->Status());
     }
     else {
       p_signal=new Blob();
       p_signal->SetType(btp::Signal_Process);
       p_signal->SetId();
       p_signal->SetStatus(blob_status::needs_signal);
-      m_signalstatus=blob_status::internal_flag | blob_status::needs_signal;
       m_blobs.push_back(p_signal);
     }
     do {
+      bool hardps(true);
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {
 	if ((*pit)->Type()==eph::Analysis) {
 	  ++pit;
@@ -159,6 +159,11 @@ bool Event_Handler::GenerateEvent(int mode)
 	  ++pit;
 	  break;
 	case Return_Value::Success : 
+	  if ((*pit)->Name().find("Jet_Evolution")==0 && hardps) {
+	    m_sblobs.Clear();
+	    m_sblobs=m_blobs.Copy();
+	    hardps=false;
+	  }
 	  rvalue.IncCall((*pit)->Name());
 	  pit=p_phases->begin();
           DEBUG_INFO("Success");
@@ -180,18 +185,9 @@ bool Event_Handler::GenerateEvent(int mode)
           DEBUG_INFO("Retry_Event");
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryEvent((*pit)->Name());
-          m_blobs.Clear(p_signal);
-          p_signal->SetStatus(m_signalstatus);
-          Blob::Reset();
-          Particle::Reset();
-          Flow::ResetCounter();
-	  pit=p_phases->begin();
-	  break;
-	case Return_Value::Retry_ShowerEvent :
-          DEBUG_INFO("Retry_ShowerEvent");
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncRetryShowerEvent((*pit)->Name());
-          p_signal=m_blobs.front();
+          m_blobs.Clear();
+	  m_blobs=m_sblobs.Copy();
+	  p_signal=m_blobs.FindFirst(btp::Signal_Process);
 	  pit=p_phases->begin();
 	  break;
 	case Return_Value::New_Event :
@@ -323,8 +319,6 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  Particle::Reset();
-  Flow::ResetCounter();
   double xs(TotalXS()), err(TotalErr());
   std::string res;
   MyStrStream conv;

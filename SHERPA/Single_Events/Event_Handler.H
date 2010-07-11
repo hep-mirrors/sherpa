@@ -18,9 +18,8 @@ namespace SHERPA {
     double m_n, m_addn, m_sum, m_sumsqr;
 
     Phase_List        * p_phases;
-    ATOOLS::Blob_List   m_blobs;
+    ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
-    ATOOLS::blob_status::code m_signalstatus;
 
   public:
 

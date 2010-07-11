@@ -3,6 +3,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace ATOOLS;
@@ -420,4 +421,31 @@ double Blob_List::Weight() const
     if (bd) weight*=bd->Get<double>();
   }
   return weight;
+}
+
+Blob_List Blob_List::Copy() const
+{
+  Blob_List copy;
+  copy.resize(size());
+  std::map<Particle*,Particle*> pmap;
+  for (size_t i(0);i<size();++i) {
+    Blob *cb((*this)[i]), *nb(copy[i] = new Blob(cb,false));
+    for (int j(0);j<cb->NInP();++j) {
+      Particle *cp(cb->InParticle(j)), *np(NULL);
+      std::map<Particle*,Particle*>::iterator pit(pmap.find(cp));
+      if (pit!=pmap.end()) np=pit->second;
+      else pmap[cp]=np = new Particle(*cp);
+      if (np->DecayBlob()) THROW(fatal_error,"Internal error");
+      nb->AddToInParticles(np);
+    }
+    for (int j(0);j<cb->NOutP();++j) {
+      Particle *cp(cb->OutParticle(j)), *np(NULL);
+      std::map<Particle*,Particle*>::iterator pit(pmap.find(cp));
+      if (pit!=pmap.end()) np=pit->second;
+      else pmap[cp]=np = new Particle(*cp);
+      if (np->ProductionBlob()) THROW(fatal_error,"Internal error");
+      nb->AddToOutParticles(np);
+    }
+  }
+  return copy;
 }

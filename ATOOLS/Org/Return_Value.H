@@ -15,7 +15,6 @@ namespace ATOOLS {
     static Counter_Map s_retry_method_counter;
     static Counter_Map s_retry_phase_counter;
     static Counter_Map s_retry_event_counter;
-    static Counter_Map s_retry_showerevent_counter;
     static Counter_Map s_new_event_counter;
     static Counter_Map s_call_counter;
     void PrintSingleStatistics(std::ostream &str,const std::string &type,
@@ -28,7 +27,6 @@ namespace ATOOLS {
     void IncError(std::string);
     void IncRetryMethod(std::string);
     void IncRetryPhase(std::string);
-    void IncRetryShowerEvent(std::string);
     void IncRetryEvent(std::string);
     void IncNewEvent(std::string);
     void IncCall(std::string);
@@ -42,7 +40,6 @@ namespace ATOOLS {
       Retry_Method = 20,
       Retry_Phase  = 21,
       Retry_Event  = 22,
-      Retry_ShowerEvent  = 23,
       New_Event    = 100
     };
   };
