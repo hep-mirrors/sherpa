@@ -3,6 +3,7 @@
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -87,7 +88,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
-	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
 	case Return_Value::Nothing    : return Return_Value::Nothing;
 	case Return_Value::Error      : return Return_Value::Error;
 	default:
@@ -143,33 +143,17 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
       Reset();
       AftermathOfSuccessfulShower(blob,bloblist,interface);    
       return Return_Value::Success;
-    case -1:
-      Reset();
-      p_showerhandler->CleanUp();
-      if (blob->Type()==btp::Hadron_Decay) {
-        Particle* inpart = blob->InParticle(0);
-        inpart->SetStatus(part_status::active);
-        inpart->ProductionBlob()->SetStatus(blob_status::needs_hadrondecays);
-	return Return_Value::Success;
-      }
-      return Return_Value::Retry_Event;
-    default:
+    case 0:
       Reset();
       p_showerhandler->CleanUp();
       interface->CleanUp();
       return Return_Value::New_Event;
+    default:
+      THROW(fatal_error,"Invalid return value from shower");
     }
   case Return_Value::Nothing:
     AftermathOfNoShower(blob,bloblist);
     return Return_Value::Success;
-  case Return_Value::New_Event:
-    p_showerhandler->CleanUp();
-    interface->CleanUp();
-    return Return_Value::New_Event;
-  case Return_Value::Retry_Event:
-    p_showerhandler->CleanUp();
-    interface->CleanUp();
-    return Return_Value::Retry_Event;
   case Return_Value::Error:
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   DefineInitialConditions yields an error for "<<std::endl<<(*blob)
