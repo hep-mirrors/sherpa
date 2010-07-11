@@ -62,8 +62,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     p_remnants[i]->QuickClear();
   }
   Blob_List isr=bloblist->Find(btp::Shower);
-  for (Blob_List::reverse_iterator iit=isr.rbegin();
-       iit!=isr.rend();++iit) {
+  for (Blob_List::iterator iit=isr.begin();iit!=isr.end();++iit) {
     for (int beam(0), i(0);i<(*iit)->NInP();++i) {
       Particle *cp((*iit)->InParticle(i));
       if (cp->ProductionBlob()) continue;
