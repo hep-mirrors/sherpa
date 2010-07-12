@@ -309,6 +309,7 @@ void Event_Handler::Finish() {
     (*pit)->CleanUp();
   }
   m_blobs.Clear();
+  m_sblobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
