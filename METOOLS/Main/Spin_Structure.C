@@ -248,9 +248,7 @@ std::ostream& operator<<( std::ostream& ostr, const Amplitude_Tensor & amps) {
 }
 
 namespace ATOOLS {
-  template <> Blob_Data<Amplitude_Tensor*>::~Blob_Data() {
-    if(m_data) delete m_data; m_data=NULL;
-  }
+  template <> Blob_Data<Amplitude_Tensor*>::~Blob_Data() {}
   template class Blob_Data<Amplitude_Tensor*>;
   template Amplitude_Tensor* &Blob_Data_Base::Get<Amplitude_Tensor*>();
 }

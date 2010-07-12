@@ -5,6 +5,10 @@
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "PDF/Remnant/Remnant_Base.H"
 
+namespace METOOLS {
+  class Amplitude_Tensor;
+}
+
 namespace SHERPA {
 
   class Signal_Processes: public Event_Phase_Handler {
@@ -12,6 +16,7 @@ namespace SHERPA {
 
     Matrix_Element_Handler *p_mehandler;
     PDF::Remnant_Base      *p_remnants[2];
+    METOOLS::Amplitude_Tensor *p_amps;
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 
   public:

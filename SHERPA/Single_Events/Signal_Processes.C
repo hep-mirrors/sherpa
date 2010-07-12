@@ -11,7 +11,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
-  p_mehandler(mehandler)
+  p_mehandler(mehandler), p_amps(NULL)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -23,6 +23,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
 
 Signal_Processes::~Signal_Processes()
 {
+  if (p_amps) delete p_amps; p_amps=NULL;
 }
 
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
@@ -104,15 +105,16 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     Particle_Vector outparticles = blob->GetOutParticles();
     Particle_Vector particles(inparticles.begin(),inparticles.end());
     particles.insert(particles.end(),outparticles.begin(),outparticles.end());
-    METOOLS::Amplitude_Tensor* amps = new METOOLS::Amplitude_Tensor(particles);
+    if (p_amps) delete p_amps;
+    p_amps = new METOOLS::Amplitude_Tensor(particles);
     
     AMEGIC::Single_Process* aproc = dynamic_cast<AMEGIC::Single_Process*>(proc);
     if (!aproc) {
       THROW(fatal_error, "Spin correlations can only be enabled when using "+
             std::string("Amegic as matrix element generator."));
     }
-    aproc->FillAmplitudes(amps);
-    blob->AddData("amps",new Blob_Data<METOOLS::Amplitude_Tensor*>(amps));
+    aproc->FillAmplitudes(p_amps);
+    blob->AddData("amps",new Blob_Data<METOOLS::Amplitude_Tensor*>(p_amps));
   }
 
   return success;
