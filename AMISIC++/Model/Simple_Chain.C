@@ -551,6 +551,7 @@ bool Simple_Chain::CreateMomenta()
 	}
       }
     }
+    if (pstrials==m_maxtrials) return false;
     for (size_t j=0;j<p_xs->NIn();++j) 
       m_last[2+j]-=2.0*p_xs->Integrator()->
 	Momenta()[j][0]/m_ecms;
