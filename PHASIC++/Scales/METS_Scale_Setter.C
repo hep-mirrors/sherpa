@@ -13,6 +13,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -251,8 +252,10 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  if (m_mode==2 || (m_mode==1 && !p_proc->LookUp()))
+  if (m_mode==2 || (m_mode==1 && !p_proc->LookUp())) {
+    m_scale2=p_proc->Integrator()->ISR()->On() && m_f[0]!=m_f[1];
     return CalculateStrict(momenta);
+  }
   DEBUG_FUNC(p_proc->Name());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
@@ -265,11 +268,12 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       ampl->CreateLeg(m_p[i],m_f[i],ColorID(ci[i],cj[i]));
   }
   Single_Process *proc(p_proc->Get<Single_Process>());
-  std::set<CS_Params> trials;
+  std::vector<std::set<CS_Params> > alltrials(ampl->Legs().size()-4);
   std::vector<double> ops(ampl->Legs().size()-3,0.0);
   double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl));
   while (ampl->Legs().size()>4) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
+    std::set<CS_Params> &trials(alltrials[ampl->Legs().size()-5]);
     size_t iw(0), jw(0), kw(0);
     CS_Params ckw(0,0,0,kf_none);
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -362,6 +366,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
       }
       ampl=ampl->Prev();
       ampl->DeleteNext();
+      trials.clear();
       continue;
     }
     msg_Debugging()<<"Cluster "<<ckw.m_fl<<" "
