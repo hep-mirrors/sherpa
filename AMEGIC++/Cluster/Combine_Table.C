@@ -326,7 +326,8 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
-     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms);
+     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
+     m_cdata_winner->second.m_pt2ij.m_kin);
   ampl->Delete();
   if (after.empty()) return false;
   omoms = new Vec4D[maxl];
