@@ -121,6 +121,8 @@ FillBeamBlobs(Blob_List *const bloblist,
 	    msg_Debugging()<<*bloblist<<std::endl;
 	    for (short unsigned int i(0);i<2;++i) 
 	      bloblist->push_front(p_beamblob[i]);
+	    if ((*bit)->IsConnectedTo(btp::Signal_Process))
+	      return Return_Value::New_Event;
 	    return Return_Value::Retry_Event;
 	  }
 	}
