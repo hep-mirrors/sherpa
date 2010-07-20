@@ -22,6 +22,7 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
+static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
@@ -145,6 +146,7 @@ bool Event_Handler::GenerateEvent(int mode)
       m_blobs.push_back(p_signal);
     }
     do {
+      int retry(0);
       bool hardps(true);
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {
 	if ((*pit)->Type()==eph::Analysis) {
@@ -183,6 +185,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	  break;
 	case Return_Value::Retry_Event : 
           DEBUG_INFO("Retry_Event");
+	  if (++retry<s_retrymax) {
 	  rvalue.IncCall((*pit)->Name());
 	  rvalue.IncRetryEvent((*pit)->Name());
           m_blobs.Clear();
@@ -190,6 +193,11 @@ bool Event_Handler::GenerateEvent(int mode)
 	  p_signal=m_blobs.FindFirst(btp::Signal_Process);
 	  pit=p_phases->begin();
 	  break;
+	  }
+	  else {
+	    msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
+		       <<" trials. Request new event."<<std::endl;
+	  }
 	case Return_Value::New_Event :
           DEBUG_INFO("New_Event");
 	  {
