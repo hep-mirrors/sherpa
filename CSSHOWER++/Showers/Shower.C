@@ -147,7 +147,6 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	if (stat<=0) split->BoostBackAllFS
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),2);
       }
-      SetXBj(s);
     }
   }
   else {
@@ -178,7 +177,6 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
 	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),3);
       }
     }
-    SetXBj(l);
   }
   msg_Debugging()<<"after: l: "<<*l<<"       r: "<<*r<<"       s: "<<*s<<"\n";
   if (stat<0) {
@@ -279,6 +277,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   
   if (nem>=maxem) return true;
   while (mustshower) {
+    for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
+      if ((*it)->GetType()==pst::IS) SetXBj(*it);
     kt2win = 0.;
     split = SelectSplitting(kt2win);
     //no shower anymore 
@@ -415,7 +415,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  stat=-1;
 	}
 	if (stat>0) {
-	  SetXBj(spect);
 	  m_weight*=split->Weight();
 	  msg_Debugging()<<"sw = "<<split->Weight()
 			 <<", w = "<<m_weight<<"\n";
@@ -442,7 +441,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpA->SetId(split->Id());
 	newpA->SetBeam(split->Beam());
 	newpA->SetKin(m_kscheme);
-	SetXBj(newpA);
 	newpA->SetSing(split->GetSing());
 	spect     = split->GetSpect();
 	// Boost the full thing into the c.m. frame
@@ -499,7 +497,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	newpA->SetId(split->Id());
 	newpA->SetBeam(split->Beam());
 	newpA->SetKin(m_kscheme);
-	SetXBj(newpA);
 	spect     = split->GetSpect();
 	// Boost the full thing into the c.m. frame
 	newpC->SetKin(m_kscheme);

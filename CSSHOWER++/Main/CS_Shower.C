@@ -520,11 +520,9 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetKin(p_shower->KinScheme());
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
 	parton->SetBeam(0);
       }
       else { 
-	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(1)[0]);
 	parton->SetBeam(1);
       }
     }
