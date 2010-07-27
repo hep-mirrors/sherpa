@@ -1,7 +1,7 @@
       SUBROUTINE HZNORM(IFLAG)
       IMPLICIT NONE
-include "hepevtp.inc"
-include "heracmn.inc"
+#include "hepevtp.inc"
+#include "heracmn.inc"
       INTEGER IFLAG
       DOUBLE PRECISION NEVTNRM
       CHARACTER *6 XXXX

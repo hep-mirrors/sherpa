@@ -308,6 +308,8 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
 	  pl[i]->Flav().IntCharge()!=0) ++nch;
     m_nchsum+=cxs*nch;
     ++m_nevt;
+    Convert(bl);
+    heracmn.wtx=cxs;
     return true;
   }
   for (size_t i(0);i<bl->size();++i) {

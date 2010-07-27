@@ -1,6 +1,6 @@
 HZTOOL_SOURCES        =	\
-			hznorm.f \
-			hztool_sherpa.f \
+			hznorm.F \
+			hztool_sherpa.F \
 			HZTool_Interface.C
 HZTOOL_ADDS           = \
 			HZTool_Wrapper.H

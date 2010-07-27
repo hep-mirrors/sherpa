@@ -4,8 +4,8 @@
       INTEGER NWPAWC,H,N,ISTAT
       CHARACTER*128 HNAME
       COMMON/HZHNAME/HNAME
-include "hepevtp.inc"
-include "heracmn.inc"
+#include "hepevtp.inc"
+#include "heracmn.inc"
       PARAMETER (NWPAWC=5000000)
       COMMON/PAWC/H(NWPAWC)
       WRITE(6,*) ' Now initializing HZTool'
@@ -23,8 +23,8 @@ include "heracmn.inc"
       SUBROUTINE HZEVNT(WGT)
       IMPLICIT NONE
       DOUBLE PRECISION WGT
-include "hepevtp.inc"
-include "heracmn.inc"
+#include "hepevtp.inc"
+#include "heracmn.inc"
       CALL HZFILHEP
       WTX=WGT
       CALL HZXXXX(2)
@@ -34,8 +34,8 @@ include "heracmn.inc"
       SUBROUTINE HZFINL()
       IMPLICIT NONE
       INTEGER ICYCLE
-include "hepevtp.inc"
-include "heracmn.inc"
+#include "hepevtp.inc"
+#include "heracmn.inc"
       WTX=1.0
       CALL HZXXXX(3)
       CALL HCDIR('//PAWC',' ')
