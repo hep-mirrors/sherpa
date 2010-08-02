@@ -130,6 +130,7 @@ void Jet_Finder::FillCombinations()
     FillCombinations(start, idx,m_nin+m_nout);
     p_yccalc = new Algebra_Interpreter();
     p_yccalc->SetTagReplacer(this);
+    PrepareMomList(p_proc->Momenta());
     for (size_t i=0;i<p_proc->NIn()+p_proc->NOut();++i) 
       p_yccalc->AddTag("p["+ToString(i)+"]",ToString(p_proc->Momenta()[i]));
     p_yccalc->Interprete(m_cuttag);

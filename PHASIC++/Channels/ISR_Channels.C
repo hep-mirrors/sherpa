@@ -67,6 +67,7 @@ bool ISR_Channels::MakeChannels()
       //The DIS case
       ci.type = 0; 
       (ci.parameters).push_back(1.);
+      (ci.parameters).push_back(1.);
       m_isrparams.push_back(ci);
       ci.parameters.clear();
     }
@@ -124,10 +125,12 @@ bool ISR_Channels::CreateChannels()
 {
   if (m_isrparams.size() < 1) return 0;
   int isr = p_psh->Process()->ISR()->On();
+  int ep = (p_psh->Flavs()[0].IsLepton() && p_psh->Flavs()[1].Strong()) ||
+    (p_psh->Flavs()[1].IsLepton() && p_psh->Flavs()[0].Strong());
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
     case 0:
-      if (isr==3) {
+      if (isr==3 && !ep) {
  	Add(new Simple_Pole_Uniform_V
 	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo()));
 	Add(new Simple_Pole_Forward_V
@@ -137,14 +140,18 @@ bool ISR_Channels::CreateChannels()
 	    (m_isrparams[i].parameters[0],
 	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
       }
+      else if (isr==3 && ep) {
+	Add(new Simple_Pole_Forward_V
+	    (m_isrparams[i].parameters[0],
+	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+      }
       else {
-	//The channels used for DIS
 	Add(new Simple_Pole_Central_V
 	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
       }
       break;
     case 1:
-      if (isr==3) {
+      if (isr==3 && !ep) {
 	Add(new Resonance_Uniform_V
 	    (m_isrparams[i].parameters[0],
 	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
@@ -152,6 +159,11 @@ bool ISR_Channels::CreateChannels()
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
 	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
 	Add(new Resonance_Backward_V
+	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
+	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+      }
+      else if (isr==3 && ep) {
+	Add(new Resonance_Forward_V
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
 	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
       }
