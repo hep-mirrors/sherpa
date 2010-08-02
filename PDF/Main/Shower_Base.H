@@ -38,8 +38,6 @@ namespace PDF {
     virtual int  PerformShowers() = 0;
     virtual int  PerformDecayShowers() = 0;
 
-    virtual double CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl) = 0;
-
     virtual bool ExtractPartons(ATOOLS::Blob_List *const bl) = 0;
     virtual void CleanUp()=0;
 

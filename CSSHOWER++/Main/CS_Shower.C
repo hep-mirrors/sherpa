@@ -75,8 +75,6 @@ namespace CSSHOWER {
     int  PerformShowers();
     int  PerformDecayShowers();
 
-    double CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl);
-
     bool ExtractPartons(ATOOLS::Blob_List *const blist);
 
     void CleanUp();
@@ -719,19 +717,6 @@ double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,
 		 <<asc<<" / "<<asr<<" ) ^ "<<oqcd<<" = "
 		 <<pow(asc/asr,int(oqcd))<<"\n";
   return pow(asc/asr,int(oqcd));
-}
-
-double CS_Shower::CouplingWeight(ATOOLS::Cluster_Amplitude *const ampl)
-{
-  double kt2(ampl->KT2QCD());
-  size_t idi(ampl->Next()->IdLeg(ampl->Next()->IdNew())->Id());
-  double cf((idi&((1<<ampl->NIn())-1))?
-	    p_shower->GetSudakov()->ISCplFac():
-	    p_shower->GetSudakov()->FSCplFac());
-  if (kt2/cf<p_shower->GetSudakov()->PT2Min()) return 1.0;
-  size_t coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
-  if (coqcd) return CouplingWeight(coqcd,cf*kt2,ampl->MuR2());
-  return 1.0;
 }
 
 std::string CS_Shower::GetKT2(const std::string &jm2) const
