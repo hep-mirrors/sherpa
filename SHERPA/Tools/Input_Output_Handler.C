@@ -34,7 +34,8 @@ Input_Output_Handler::Input_Output_Handler(Data_Reader* dr) :
 #ifdef USING__HEPMC2
   p_hepmc2(NULL),
 #endif
-  p_hepevt(NULL)
+  p_hepevt(NULL),
+  p_eventhandler(NULL), p_mehandler(NULL)
 {
   InitialiseOutput(dr);
 }
@@ -167,9 +168,13 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
   double weight=blobs->Weight();
-  weight/=p_mehandler->TotalXS()*rpa.Picobarn();
+  if (p_mehandler) weight/=p_mehandler->TotalXS()*rpa.Picobarn();
 
-  double xs(p_eventhandler->TotalXS()), xserr(p_eventhandler->TotalErr());
+  double xs(1.0), xserr(0.0);
+  if (p_eventhandler) {
+    xs=p_eventhandler->TotalXS();
+    xserr=p_eventhandler->TotalErr();
+  }
   for (map<string,Output_Base *>::iterator oit=m_outmap.begin();
        oit!=m_outmap.end();oit++) {
     oit->second->SetXS(xs, xserr);
@@ -178,7 +183,7 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
   
   m_evtnumber++;
   m_evtcount++;
-  
+
   if (m_evtcount%m_filesize==0) {
     m_evtcount = 0;
     string number(ToString(int(m_evtnumber/m_filesize)));

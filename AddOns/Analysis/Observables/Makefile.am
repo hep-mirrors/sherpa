@@ -5,6 +5,7 @@ OBSEXTRADIST = Dalitz_Observables.C
 endif
 
 ANAOBS_SOURCES        =	\
+			Event_Output.C \
 			$(EXTRAOBS) \
 			Global_Calculator.C \
 			Primitive_Observable_Base.C \
