@@ -48,6 +48,7 @@ public:
   inline HZTool_Interface(const std::string &inpath,
 			  const std::string &infile,
 			  const std::string &outpath):
+    Analysis_Interface("HZTool"),
     m_inpath(inpath), m_infile(infile), m_outpath(outpath),
     m_nevt(0), m_xsnevt(10000),
     m_xssum(0.0), m_nchsum(0.0), m_nsum(0.0),
@@ -337,6 +338,22 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
   Convert(bl);
   hzevnt(wgt);
   Check(bl);
+  for (size_t i(0);i<bl->size();++i) {
+    for (int j(0);j<(*bl)[i]->NInP();++j) {
+      Particle *cp((*bl)[i]->InParticle(j));
+      if (cp->ProductionBlob()==NULL) {
+	Vec4D p(cp->Momentum());
+	p=Vec4D(p[0],-p[1],-p[2],-p[3]);
+	cp->SetMomentum(p);
+      }
+    }
+    for (int j(0);j<(*bl)[i]->NOutP();++j) {
+      Particle *cp((*bl)[i]->OutParticle(j));
+      Vec4D p(cp->Momentum());
+      p=Vec4D(p[0],-p[1],-p[2],-p[3]);
+      cp->SetMomentum(p);
+    }
+  }
   return true;
 }
 

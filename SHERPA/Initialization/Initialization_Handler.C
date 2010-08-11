@@ -207,8 +207,8 @@ Initialization_Handler::~Initialization_Handler()
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   while (m_analyses.size()>0) {
-    delete m_analyses.begin()->second;
-    m_analyses.erase(m_analyses.begin());
+    delete m_analyses.back();
+    m_analyses.pop_back();
   }
   std::set<Matrix_Element_Handler*> deletedme;
   while (m_mehandlers.size()>0) {
@@ -286,8 +286,8 @@ void Initialization_Handler::ShowParameterSyntax()
   if (helpi>0) {
     msg->SetLevel(2);
     InitializeTheAnalyses();
-    for (Analysis_Map::iterator it=m_analyses.begin(); it!=m_analyses.end(); ++it)
-      it->second->ShowSyntax(helpi);
+    for (Analysis_Vector::iterator it=m_analyses.begin(); it!=m_analyses.end(); ++it)
+      (*it)->ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_VARIABLE_SYNTAX")) helpi=0;
@@ -814,7 +814,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
                             (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
     if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);
-    m_analyses.insert(make_pair(analyses[i],ana));
+    m_analyses.push_back(ana);
   }
   return true;
 }

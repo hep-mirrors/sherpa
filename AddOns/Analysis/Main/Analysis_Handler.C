@@ -27,6 +27,7 @@ using namespace ATOOLS;
 size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
+  Analysis_Interface("Internal"),
   m_weighted(0), m_write(false) {}
 
 Analysis_Handler::~Analysis_Handler()

@@ -19,6 +19,7 @@ namespace SHERPA {
 
   class Analysis_Interface {
   protected:
+    std::string m_name;
     const Event_Handler* p_eventhandler;
   public:
 
@@ -27,6 +28,9 @@ namespace SHERPA {
     Analysis_Getter_Function;
 
   public:
+
+    inline Analysis_Interface(const std::string &name):
+      m_name(name) {}
 
     virtual ~Analysis_Interface();
 
@@ -41,9 +45,11 @@ namespace SHERPA {
     
     void SetEventHandler(const Event_Handler* eh) { p_eventhandler = eh; }
 
+    inline std::string Name() const { return m_name; }
+
   };// end of class Analysis_Interface
 
-  typedef std::map<std::string,Analysis_Interface *> Analysis_Map;
+  typedef std::vector<Analysis_Interface*> Analysis_Vector;
 
 }// end of namespace SHERPA
 

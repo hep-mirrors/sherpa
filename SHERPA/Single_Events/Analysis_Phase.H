@@ -9,7 +9,7 @@ namespace SHERPA {
   class Analysis_Phase: public Event_Phase_Handler {
   private:
     
-    Analysis_Map *p_analyses;
+    Analysis_Vector *p_analyses;
 
     size_t m_wit;
 
@@ -18,7 +18,7 @@ namespace SHERPA {
   public:
     
     // constructors
-    Analysis_Phase(Analysis_Map *const ana);
+    Analysis_Phase(Analysis_Vector *const ana);
 
     // member functions
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);

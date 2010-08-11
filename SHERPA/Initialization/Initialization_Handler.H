@@ -78,7 +78,7 @@ namespace SHERPA {
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader_Base          * p_evtreader;
-    Analysis_Map                 m_analyses;
+    Analysis_Vector              m_analyses;
     void ShowParameterSyntax();
     void LoadLibraries() const;
   private :
@@ -124,7 +124,7 @@ namespace SHERPA {
     Hadron_Decay_Handler         * GetHadronDecayHandler(std::string);
     inline PDF::ISR_Handler      * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
     MEHandlersMap                * GetMatrixElementHandlers()       { return &m_mehandlers;     }
-    Analysis_Map                 * GetAnalyses()                    { return &m_analyses;        }
+    Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
     ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }

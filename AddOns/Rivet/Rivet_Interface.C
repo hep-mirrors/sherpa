@@ -46,6 +46,7 @@ public:
                          const std::string &outpath,
                          const std::vector<btp::code> &ignoreblobs,
                          const std::string &tag) :
+    Analysis_Interface("Rivet"),
     m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
     m_nevt(0), m_sum_of_weights(0.0), m_finished(false),
     m_ignoreblobs(ignoreblobs)

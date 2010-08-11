@@ -126,9 +126,9 @@ bool Sherpa::InitializeTheEventHandler()
   int mode        = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
   p_iohandler->SetEventHandler(p_eventhandler);
-  Analysis_Map *anas(p_inithandler->GetAnalyses());
-  for (Analysis_Map::iterator it=anas->begin(); it!=anas->end(); ++it) {
-    it->second->SetEventHandler(p_eventhandler);
+  Analysis_Vector *anas(p_inithandler->GetAnalyses());
+  for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
+    (*it)->SetEventHandler(p_eventhandler);
   }
   
   std::string sme = std::string("SignalMEs");
