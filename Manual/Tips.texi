@@ -61,17 +61,17 @@ The line starting with @code{-a} specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal @code{ANALYSIS_OUTPUT}
 switch.
 
-You can also use @code{AddOns/Rivet/make-html} to create webpages from Rivet's
-output files:
+You can also use @code{rivet-mkhtml} (distributed with Rivet) to create
+plot webpages from Rivet's output files:
 @verbatim
-  (source /path/to/rivetenv.sh)   # see below
-  AddOns/Rivet/make-html -o output/ file1.aida [file2.aida, ...]
+  source /path/to/rivetenv.sh   # see below
+  rivet-mkhtml -o output/ file1.aida [file2.aida, ...]
   firefox output/index.html &
 @end verbatim
 
 If your Rivet installation is not in a standard location, the bootstrap script
 should have created a @code{rivetenv.sh} which you have to source before running
-the @code{make-html} script.
+the @code{rivet-mkhtml} script.
 
 @node HZTool analyses
 @section HZTool analyses
