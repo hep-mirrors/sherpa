@@ -88,6 +88,8 @@ the corresponding setup reads
 SCALES VAR{Abs2(p[2]+p[3])}
 @end verbatim
 
+Note: the square of the desired scale must be given.
+ 
 Renormalization and factorization scales can be chosen differently.
 For example in Drell-Yan + jet production one could set
 
