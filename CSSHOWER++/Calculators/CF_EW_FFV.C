@@ -20,6 +20,8 @@ namespace CSSHOWER {
     inline CF_EW_FFZ(const SF_Key &key):
       SF_Coupling(key), m_cfl(key.p_v->in[0]) 
     {
+      if (key.m_type==cstp::IF || key.m_type==cstp::II)
+	m_cfl=key.p_v->in[key.m_mode==0?1:2];
       m_ffl=m_cfl.Kfcode()==kf_Z?key.p_v->in[1]:m_cfl;
     }
 
@@ -43,6 +45,8 @@ namespace CSSHOWER {
     inline CF_EW_FFW(const SF_Key &key):
       SF_Coupling(key), m_cfl(key.p_v->in[0]) 
     {
+      if (key.m_type==cstp::IF || key.m_type==cstp::II)
+	m_cfl=key.p_v->in[key.m_mode==0?1:2];
       m_ffl=m_cfl.Kfcode()==kf_Wplus?key.p_v->in[1]:m_cfl;
     }
 
