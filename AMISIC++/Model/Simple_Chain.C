@@ -32,7 +32,8 @@ using namespace ATOOLS;
 Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
-  m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
+  m_maxreduction(1.0), m_sigma_nd_fac(1.0),
+  m_xsextension("_xs.dat"), m_mcextension("MC"),
   p_processes(NULL), p_fsrinterface(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
@@ -45,7 +46,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
 			   PDF::ISR_Handler *const isr):
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
-  m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
+  m_maxreduction(1.0), m_sigma_nd_fac(1.0),
+  m_xsextension("_xs.dat"), m_mcextension("MC"),
   p_processes(NULL), p_fsrinterface(NULL), p_model(model), 
   p_beam(beam), p_isr(isr), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
@@ -160,6 +162,7 @@ bool Simple_Chain::ReadInData()
   }
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
+  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",1.0);
   GeneratePathName();
   delete reader;
   return true;
@@ -283,7 +286,7 @@ void Simple_Chain::CalculateSigmaND()
 		<<"   \\sigma_{dd}  = "<<xsdd<<" mb\n"
 		<<"   \\sigma_{nd}  = "<<(xstot-xsel-2.0*xssd-xsdd)
 		<<" mb.\n}"<<std::endl;
-  SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa.Picobarn());
+  SetNorm(m_sigma_nd_fac*(xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa.Picobarn());
 }
 
 bool Simple_Chain::CalculateTotal()

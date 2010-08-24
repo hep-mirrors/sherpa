@@ -37,7 +37,7 @@ namespace AMISIC {
 
     Process_Map m_processmap;
 
-    double m_norm, m_enhance, m_maxreduction;
+    double m_norm, m_enhance, m_maxreduction, m_sigma_nd_fac;
 
     std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
 
