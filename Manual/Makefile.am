@@ -20,6 +20,7 @@ Sherpa_TEXINFOS = \
 	Examples.texi \
 	FeynRules.texi \
 	Fragmentation.texi \
+	HERA_DIS.texi \
 	Input.texi \
 	Integration.texi \
 	Introduction.texi \
@@ -54,6 +55,7 @@ Sherpa_TEXINFOS = \
 	Starting.texi \
 	Tevatron_DiBoson.texi \
 	Tevatron_QCD.texi \
+	Tevatron_Photons.texi \
 	Tevatron_TopPair.texi \
 	Tevatron_UE.texi \
 	Tevatron_WJets.texi \
