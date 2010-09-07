@@ -158,7 +158,7 @@ and factorization scales.
 To take care of the renormalization scale dependence (other than via 
 @code{alpha_S}) the weight @code{w_0} is defined as
 
-@code{ w_0 = me\_wgt + usr_wgts[0] log((\mu_R^new)^2/(\mu_R^old)^2)
+@code{ w_0 = me_wgt + usr_wgts[0] log((\mu_R^new)^2/(\mu_R^old)^2)
                      + usr_wgts[1] 1/2 [log((\mu_R^new)^2/(\mu_R^old)^2)]^2.}
 
 To address the factorization scale dependence the weights @code{w_1,...,w_8} 
