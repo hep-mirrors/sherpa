@@ -68,11 +68,11 @@ namespace COMIX {
     Double_Vector m_rns, m_wrns;
     Vegas_Vector  m_vgs, m_wvgs;
 
-    size_t m_n, m_nr, m_cpr, m_ccr, m_num, m_nopt, m_lid, m_rid;
+    size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_sexp, m_thexp, m_mfac;
 
-    int    m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
-    size_t m_nvints, m_vsopt;
+    int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
+    int m_nvints, m_vsopt, m_nopt;
 
     SP(PS_Generator) p_gen;
 

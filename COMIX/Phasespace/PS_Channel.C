@@ -37,7 +37,7 @@ size_t COMIX::IdCount(const size_t &id)
 
 PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
-  p_xs(xs), m_n(_nin+_nout), m_nopt(0), m_lid(1), m_rid(2)
+  p_xs(xs), m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0)
 {
   nin=_nin;
   nout=_nout;
@@ -71,7 +71,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set threshold exp "<<m_thexp<<".\n";
   if (!read.ReadFromFile(m_mfac,"CDXS_MFAC")) m_mfac=1.0;
   else msg_Info()<<METHOD<<"(): Set m_{min} factor "<<m_mfac<<".\n";
-  m_nvints=Max((size_t)10,Min(m_nvints,(size_t)500));
+  m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
   rannum=m_nr+m_n-2+1;
@@ -1164,6 +1164,24 @@ std::string PS_Channel::ChID()
 
 void PS_Channel::WriteOut(std::string pid)
 { 
+  {
+    Data_Writer writer;
+    writer.SetOutFileMode(fom::permanent|fom::nosearch);
+    writer.SetOutputPath(pid);
+    writer.SetOutputFile("_"+name+"_PS");
+    writer.WriteToFile(m_zmode,"m_zmode");
+    writer.WriteToFile(m_bmode,"m_bmode");
+    writer.WriteToFile(m_omode,"m_omode");
+    writer.WriteToFile(m_vmode,"m_vmode");
+    writer.WriteToFile(m_tmode,"m_tmode");
+    writer.WriteToFile(m_vsopt,"m_vsopt");
+    writer.WriteToFile(m_nvints,"m_nvints");
+    writer.WriteToFile(m_texp,"m_texp");
+    writer.WriteToFile(m_sexp,"m_sexp");
+    writer.WriteToFile(m_thexp,"m_thexp");
+    writer.WriteToFile(m_mfac,"m_mfac");
+    writer.WriteToFile(m_nopt,"m_nopt");
+  }
   if (m_vmode>0) {
     std::vector<std::string> vids;
     for (Vegas_Map::const_iterator vit(m_vmap.begin());
@@ -1176,6 +1194,7 @@ void PS_Channel::WriteOut(std::string pid)
     writer.SetOutFileMode(fom::permanent|fom::nosearch);
     writer.SetOutputPath(pid);
     writer.SetOutputFile("_"+name+"_VI");
+    writer.SetVectorType(vtc::vertical);
     writer.VectorToFile(vids);
   }
   p_cur = (Current_Matrix*)
@@ -1206,6 +1225,25 @@ void PS_Channel::WriteOut(std::string pid)
 
 void PS_Channel::ReadIn(std::string pid)
 {
+  {
+    Data_Reader reader;
+    reader.SetInFileMode(fom::permanent|fom::nosearch);
+    reader.SetAddCommandLine(false);
+    reader.SetInputPath(pid);
+    reader.SetInputFile("_"+name+"_PS");
+    reader.ReadFromFile(m_zmode,"m_zmode");
+    reader.ReadFromFile(m_bmode,"m_bmode");
+    reader.ReadFromFile(m_omode,"m_omode");
+    reader.ReadFromFile(m_vmode,"m_vmode");
+    reader.ReadFromFile(m_tmode,"m_tmode");
+    reader.ReadFromFile(m_vsopt,"m_vsopt");
+    reader.ReadFromFile(m_nvints,"m_nvints");
+    reader.ReadFromFile(m_texp,"m_texp");
+    reader.ReadFromFile(m_sexp,"m_sexp");
+    reader.ReadFromFile(m_thexp,"m_thexp");
+    reader.ReadFromFile(m_mfac,"m_mfac");
+    reader.ReadFromFile(m_nopt,"m_nopt");
+  }
   p_gen=p_xs->Process()->Get<Process_Base>()->PSGenerator();
   p_gen->SetPrefMasses
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
@@ -1234,12 +1272,12 @@ void PS_Channel::ReadIn(std::string pid)
       }
   }
   if (m_vmode>0) {
-    m_tmode=0;
     Data_Reader reader;
     reader.SetInFileMode(fom::permanent|fom::nosearch);
     reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");
+    reader.SetVectorType(vtc::vertical);
     std::vector<std::string> vids;
     if (reader.VectorFromFile(vids)) {
       for (size_t i(0);i<vids.size();++i) {
@@ -1252,11 +1290,9 @@ void PS_Channel::ReadIn(std::string pid)
 	  size_t pos(vids[i].rfind('_'));
 	  vegas=GetVegas(vids[i],ToType<int>
 			 (vids[i].substr(pos+1)));
-	  m_tmode=1;
 	}
 	vegas->ReadIn(pid);
       }
     }
-    if (vids.size()) (m_vmode&=~2)|=1;
   }
 }
