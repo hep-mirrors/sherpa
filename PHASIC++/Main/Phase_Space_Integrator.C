@@ -79,7 +79,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   if (ncontrib/iter0>=5) iter=iter1;
 
   endopt = 1;
-  nlo=0;
+  nlo=psh->FSRIntegrator()->ValidN();
   if (ncontrib>maxopt) endopt=2;
 
   addtime = 0.0;
