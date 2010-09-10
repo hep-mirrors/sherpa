@@ -36,6 +36,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_name = name;
   m_mode=0;
   m_nd = ndx;
+  m_sint=m_scnt=0;
   m_alpha = 1.;
   m_autooptimize = -1;
   m_cmode = m_omode = 1;
@@ -366,7 +367,36 @@ void Vegas::Optimize()
     Rebin(rc/double(m_nd),p_xi[j]);
   }
   m_nopt++;
+  if (m_sint>0 && ++m_scnt==m_sint) Refine();
   Reset();
+}
+
+void Vegas::Refine()
+{
+  if (m_omode&1)
+    msg_Tracking()<<"Refine '"<<m_name<<"' "<<m_nd<<" -> "
+		  <<2*m_nd<<" ( int = "<<m_sint<<" )\n";
+  m_scnt=0;
+  ++m_sint;
+  m_nd*=2;
+  m_nc=pow(double(m_nd),double(m_dim));
+  delete [] p_xin; p_xin = new double[m_nd];
+  delete [] p_r; p_r = new double[m_nd];
+  for(int i=0;i<m_dim;++i) {
+    p_r[i]=1.0;
+    p_xin[m_nd-1] = 1.;
+    std::vector<double> xi(&p_xi[i][0],&p_xi[i][m_nd/2]);
+    delete [] p_xi[i]; p_xi[i] = new double[m_nd];
+    delete [] p_bestxi[i]; p_bestxi[i] = new double[m_nd];
+    delete [] p_d[i]; p_d[i] = new double[m_nd];
+    delete [] p_di[i]; p_di[i] = new double[m_nd];
+    delete [] p_hit[i]; p_hit[i] = new int[m_nd]; 
+    double lx=0.0;
+    for (int j=0;j<m_nd;++j) {
+      p_xi[i][j]=(j%2==0)?(lx+xi[j/2])/2.0:lx=xi[j/2];
+      p_bestxi[i][j]=p_xi[i][j];
+    }
+  }
 }
 
 void Vegas::EndOptimize()
@@ -446,7 +476,8 @@ void Vegas::WriteOut(const std::string & pid)
   std::string fn=pid+std::string("_")+m_name+std::string("_Vegas");
   std::ofstream ofile(fn.c_str());
 
-  ofile<<m_nopt<<" "<<m_dim<<" "<<m_autooptimize<<" "<<m_name<<std::endl;
+  ofile<<m_nopt<<" "<<m_dim<<" "<<m_autooptimize<<" "
+       <<m_sint<<" "<<m_scnt<<" "<<m_name<<std::endl;
   if (m_nopt>0) {
     ofile.precision(12);
     for (int i=0;i<m_dim;i++) {
@@ -478,8 +509,7 @@ void Vegas::ReadIn(const std::string & pid)
   if (m_nopt==0||m_on==0) return;
   std::string buffer;
   int number;
-  ifile>>number;
-  ifile>>m_autooptimize;
+  ifile>>number>>m_autooptimize>>m_sint>>m_scnt;
   getline(ifile,buffer);
   msg_Tracking()<<"Vegas::ReadIn "<<buffer<<" with "<<number<<" dimensions; nopt="<<m_nopt<<std::endl;
   if (number!=m_dim) {

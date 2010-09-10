@@ -55,13 +55,13 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set boundary mode "<<m_bmode<<".\n";
   if (!read.ReadFromFile(m_omode,"CDXS_OMODE")) m_omode=3;
   else msg_Info()<<METHOD<<"(): Set optimization mode "<<m_omode<<".\n";
-  if (!read.ReadFromFile(m_vmode,"CDXS_VMODE")) m_vmode=1;
+  if (!read.ReadFromFile(m_vmode,"CDXS_VMODE")) m_vmode=9;
   else msg_Info()<<METHOD<<"(): Set Vegas mode "<<m_vmode<<".\n";
   if (!read.ReadFromFile(m_tmode,"CDXS_TMODE")) m_tmode=1;
   else msg_Info()<<METHOD<<"(): Set t-channel mode "<<m_tmode<<".\n";
-  if (!read.ReadFromFile(m_vsopt,"CDXS_VSOPT")) m_vsopt=3;
+  if (!read.ReadFromFile(m_vsopt,"CDXS_VSOPT")) m_vsopt=0;
   else msg_Info()<<METHOD<<"(): Set Vegas opt start "<<m_vsopt<<".\n";
-  if (!read.ReadFromFile(m_nvints,"CDXS_VINTS")) m_nvints=100;
+  if (!read.ReadFromFile(m_nvints,"CDXS_VINTS")) m_nvints=8;
   else msg_Info()<<METHOD<<"(): Set Vegas intervals "<<m_nvints<<".\n";
   if (!read.ReadFromFile(m_texp,"CDXS_TEXP")) m_texp=0.9;
   else msg_Info()<<METHOD<<"(): Set t-channel exp "<<m_texp<<".\n";
@@ -71,7 +71,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set threshold exp "<<m_thexp<<".\n";
   if (!read.ReadFromFile(m_mfac,"CDXS_MFAC")) m_mfac=1.0;
   else msg_Info()<<METHOD<<"(): Set m_{min} factor "<<m_mfac<<".\n";
-  m_nvints=Max(10,Min(m_nvints,500));
+  if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
   rannum=m_nr+m_n-2+1;
@@ -178,6 +178,7 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
 #ifndef CHECK_POINT
   vegas->SetCheckMode(0);
 #endif
+  if (!ibi && (m_vmode&8)) vegas->SetAutoRefine();
   if (!(m_vmode&4)) vegas->SetOutputMode(0);
   if (m_vmap.size()==1)
     msg_Tracking()<<"  Init internal Vegas map ( "
