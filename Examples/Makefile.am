@@ -15,6 +15,10 @@ nobase_dist_examples_DATA         =	\
 			PEPII_BaBar/Run.dat \
 			Tevatron_DiBoson/Run.dat \
 			Tevatron_QCD/Run.dat \
+			Tevatron_Photons/Run.diphoton.me.dat \
+			Tevatron_Photons/Run.diphoton.ps.dat \
+			Tevatron_Photons/Run.single.me.dat \
+			Tevatron_Photons/Run.single.ps.dat \
 			Tevatron_TopPair/Run.dat \
 			Tevatron_UE/Run.dat \
 			Tevatron_WJets/Run.dat \
