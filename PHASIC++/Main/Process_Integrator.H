@@ -95,7 +95,7 @@ namespace PHASIC {
     void AddRBPoint(const double rb);
     void Reset();
 
-    void SetMax(const double max,const int flag=0);
+    void SetMax(const double max);
     void SetTotal(const int mode=1);
 
     void ResetMax(int);  

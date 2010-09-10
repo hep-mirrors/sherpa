@@ -204,13 +204,21 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
     pos=fname.find("QCD");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
   }
+  size_t vn;
   std::string name;
   std::ifstream from((path+"/"+fname).c_str());
   if (!from.good()) return false;
-  from.precision(12);
-  from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr>>m_n
-      >>m_ssum>>m_ssumsqr>>m_ssigma2>>m_sn>>m_wmin>>m_son>>m_vmean>>m_svn;
+  from.precision(16);
+  from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
+      >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
+      >>m_son>>m_vmean>>m_svn>>vn;
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
+  m_vsmax.resize(vn);
+  m_vsum.resize(vn);
+  m_vsn.resize(vn);
+  m_vsvn.resize(vn);
+  for (size_t i(0);i<m_vsn.size();++i)
+    from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>m_vsvn[i];
   msg_Tracking()<<"Found result: xs for "<<name<<" : "
 		<<m_totalxs*rpa.Picobarn()<<" pb"
 		<<" +- ( "<<m_totalerr*rpa.Picobarn()<<" pb = "
@@ -247,12 +255,15 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
   }
   std::ofstream outfile((path+"/"+fname).c_str());
   if (outfile) m_writeout=1;
-  outfile.precision(12);
+  outfile.precision(16);
   outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
 	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
-	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "
-	 <<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
-	 <<m_vmean<<" "<<m_svn<<std::endl; 
+	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_smax<<" "
+	 <<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
+	 <<m_vmean<<" "<<m_svn<<"\n"<<m_vsn.size()<<"\n";
+  for (size_t i(0);i<m_vsn.size();++i)
+    outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
+	   <<m_vsn[i]<<" "<<m_vsvn[i]<<"\n";
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutXSecs(path);
@@ -394,15 +405,10 @@ void Process_Integrator::AddRBPoint(const double rb)
   m_rbmax=ATOOLS::Max(m_rbmax,rb);
 }
 
-void Process_Integrator::SetMax(const double max,const int flag) 
+void Process_Integrator::SetMax(const double max) 
 {
-  if (flag==1) m_max=max;
+  m_max=max;
   if (!p_proc->IsGroup()) return;
-  if (flag==1) {
-    for (size_t i(0);i<p_proc->Size();++i) 
-      (*p_proc)[i]->Integrator()->SetMax(max/(double)p_proc->Size(),flag);
-    return;
-  }
   double sum(0.0);
   m_max=0.0;
   for (size_t i(0);i<p_proc->Size();++i) {
