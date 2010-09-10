@@ -125,6 +125,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       p_mapproc->Integrator()->SetMomenta(p);
       scs=p_mapproc->ScaleSetter();
     }
+    scs->SetCaller(this);
     if (Partonic(p)==0.0) return 0.0;
     if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
     m_wgtinfo.m_renscale = scs->Scale(stp::ren);
@@ -146,6 +147,7 @@ double Single_Process::Differential2()
   if (GetSubevtList()==NULL) {
     if (m_lastxs==0.0) return 0.0;
     Scale_Setter_Base *scs((IsMapped()?p_mapproc:this)->ScaleSetter());
+    scs->SetCaller(this);
     double tmp=Partonic2();
     if (tmp!=0.0) m_last+=tmp*=BeamISRWeight(scs->Scale(stp::fac),1);
     return tmp;

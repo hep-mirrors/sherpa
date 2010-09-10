@@ -205,11 +205,11 @@ Vec4D METS_Scale_Setter::Momentum(const size_t &i) const
 
 double METS_Scale_Setter::CalculateStrict(const Vec4D_Vector &momenta)
 {
-  p_proc->Integrator()->SetMomenta(momenta);
-  p_proc->Generator()->SetClusterDefinitions
-    (p_proc->Shower()->GetClusterDefinitions());
+  p_caller->Integrator()->SetMomenta(momenta);
+  p_caller->Generator()->SetClusterDefinitions
+    (p_caller->Shower()->GetClusterDefinitions());
   Cluster_Amplitude *ampl
-    (p_proc->Generator()->ClusterConfiguration(p_proc));
+    (p_caller->Generator()->ClusterConfiguration(p_caller));
   if (ampl==NULL) {
     ++m_rej;
     double frac(m_rej/(double)m_cnt);
@@ -235,11 +235,11 @@ double METS_Scale_Setter::CalculateStrict(const Vec4D_Vector &momenta)
 
 double METS_Scale_Setter::CalculateScale2(const Vec4D_Vector &momenta) 
 {
-  if (m_mode==2 || (m_mode==1 && !p_proc->LookUp())) {
-    p_proc->Integrator()->SetMomenta(momenta);
-    p_proc->Integrator()->SwapInOrder();
-    double muf2(CalculateScale(p_proc->Integrator()->Momenta()));
-    p_proc->Integrator()->RestoreInOrder();
+  if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
+    p_caller->Integrator()->SetMomenta(momenta);
+    p_caller->Integrator()->SwapInOrder();
+    double muf2(CalculateScale(p_caller->Integrator()->Momenta()));
+    p_caller->Integrator()->RestoreInOrder();
     return muf2;
   }
   p_cpls->Calculate();
@@ -252,7 +252,7 @@ double METS_Scale_Setter::CalculateScale(const Vec4D_Vector &momenta)
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  if (m_mode==2 || (m_mode==1 && !p_proc->LookUp())) {
+  if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
     m_scale2=p_proc->Integrator()->ISR()->On() && m_f[0]!=m_f[1];
     return CalculateStrict(momenta);
   }

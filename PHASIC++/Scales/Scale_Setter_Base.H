@@ -46,7 +46,7 @@ namespace PHASIC {
 
   protected:
 
-    Process_Base *p_proc;
+    Process_Base *p_proc, *p_caller;
 
     MODEL::Model_Base   *p_model;
     MODEL::Coupling_Map *p_cpls;
@@ -75,6 +75,8 @@ namespace PHASIC {
 
     virtual double HT() const;
     virtual double YCut() const;
+
+    inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
     inline double Scale(const stp::id type) { return m_scale[type]; }
 
