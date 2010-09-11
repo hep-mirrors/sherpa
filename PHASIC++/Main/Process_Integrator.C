@@ -25,8 +25,8 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(1),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_maxeps(0.0),
-  m_xinfo(std::vector<double>(8)), m_n(0), m_rbn(0), m_itmin(0), 
-  m_max(0.), m_rbmax(0.0), m_rbsum(0.0), m_rbsum2(0.0), m_totalxs(0.), 
+  m_xinfo(std::vector<double>(8)), m_n(0), m_itmin(0), 
+  m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
   m_svn(0), m_son(1), m_swaped(false), m_writeout(false),
@@ -396,15 +396,6 @@ void Process_Integrator::AddPoint(const double value)
   }
 }
 
-void Process_Integrator::AddRBPoint(const double rb) 
-{
-  if (p_proc->IsGroup()) THROW(fatal_error,"Invalid call");
-  ++m_rbn;
-  m_rbsum+=rb;
-  m_rbsum2+=rb*rb;
-  m_rbmax=ATOOLS::Max(m_rbmax,rb);
-}
-
 void Process_Integrator::SetMax(const double max) 
 {
   m_max=max;
@@ -439,8 +430,6 @@ void Process_Integrator::Reset()
   m_vsn.clear();   
   m_vsum.clear(); 
   m_vsvn.clear();   
-  m_rbn=0;
-  m_rbmax=m_rbsum2=m_rbsum=0.0;
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i) 
       (*p_proc)[i]->Integrator()->Reset();
@@ -585,7 +574,6 @@ void Process_Integrator::StoreResults(const int mode)
   WriteOutXSecs(m_resultpath+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->WriteOut(m_resultpath+"/MC_"+fname);
-  WriteOutRB(m_resultpath+"/RB_"+p_proc->Name());
 }
 
 void Process_Integrator::ReadResults()
@@ -601,26 +589,7 @@ void Process_Integrator::ReadResults()
   if (!ReadInXSecs(m_resultpath+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->ReadIn(m_resultpath+"/MC_"+fname);
-  ReadInRB(m_resultpath+"/RB_"+p_proc->Name());
   SetTotal(0); 
-}
-
-bool Process_Integrator::WriteOutRB(const std::string &path)
-{
-  bool res(true);
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      if (!(*p_proc)[i]->Integrator()->WriteOutRB(path)) res=false;
-  return res;
-}
-
-bool Process_Integrator::ReadInRB(const std::string &path)
-{
-  bool res(true);
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      if (!(*p_proc)[i]->Integrator()->ReadInRB(path)) res=false;
-  return res;
 }
 
 void Process_Integrator::PrepareTerminate()  

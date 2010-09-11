@@ -43,9 +43,9 @@ namespace PHASIC {
 
     std::vector<double> m_xinfo;
 
-    long unsigned int m_n, m_rbn, m_itmin;
+    long unsigned int m_n, m_itmin;
 
-    double m_max, m_rbmax, m_rbsum, m_rbsum2;
+    double m_max;
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_selectionweight;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin, m_vmean;
@@ -92,7 +92,6 @@ namespace PHASIC {
     void RestoreInOrder();
 
     void AddPoint(const double xs);
-    void AddRBPoint(const double rb);
     void Reset();
 
     void SetMax(const double max);
@@ -109,9 +108,6 @@ namespace PHASIC {
     void WriteOutHistogram(std::string);
     bool ReadInXSecs(const std::string &path);
     void WriteOutXSecs(const std::string &path);
-
-    bool WriteOutRB(const std::string &path);
-    bool ReadInRB(const std::string &path);
 
     double TriggerEfficiency();
     
@@ -160,13 +156,6 @@ namespace PHASIC {
     inline double Overflow() const   { return m_overflow; }
 
     inline double SelectionWeight() const { return m_selectionweight; }
-
-    inline double RBMax() const { return m_rbmax; }
-    inline double RBMean() const { return m_rbsum/m_rbn; }
-    inline double RBVariance() const 
-    { return (m_rbsum2-m_rbsum*m_rbsum/m_rbn)/(m_rbn-1.0); }
-    inline double RBSigma() const { return sqrt(RBVariance()/m_rbn); }
-    inline double RBPoints() const { return m_rbn; }
 
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
