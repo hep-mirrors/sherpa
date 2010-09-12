@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 
 
 using namespace ATOOLS;
@@ -476,8 +477,9 @@ void Vegas::WriteOut(const std::string & pid)
   std::string fn=pid+std::string("_")+m_name+std::string("_Vegas");
   std::ofstream ofile(fn.c_str());
 
-  ofile<<m_nopt<<" "<<m_dim<<" "<<m_autooptimize<<" "
-       <<m_sint<<" "<<m_scnt<<" "<<m_name<<std::endl;
+  ofile<<m_name<<" "<<m_dim<<" "<<m_nd<<" "
+       <<m_autooptimize<<" "<<m_nopt<<" "
+       <<m_sint<<" "<<m_scnt<<std::endl;
   if (m_nopt>0) {
     ofile.precision(12);
     for (int i=0;i<m_dim;i++) {
@@ -502,20 +504,31 @@ void Vegas::WriteOut(const std::string & pid)
 
 void Vegas::ReadIn(const std::string & pid)
 {
-  std::string fn=pid+std::string("_")+m_name+std::string("_Vegas");
+  std::string fn=pid+std::string("_")+m_name+std::string("_Vegas"), tn;
   std::ifstream ifile(fn.c_str());
   if (ifile.bad()) return;
-  ifile>>m_nopt;
+  ifile>>tn;
+  if (tn!=m_name) THROW(fatal_error,"Corrupted input file");
+  int nd;
+  ifile>>m_dim>>nd>>m_autooptimize>>m_nopt>>m_sint>>m_scnt;
+  if (nd!=m_nd) {
+    m_nd=nd;
+    m_nc=pow(double(m_nd),double(m_dim));
+    delete [] p_xin; p_xin = new double[m_nd];
+    delete [] p_r; p_r = new double[m_nd];
+    for(int i=0;i<m_dim;++i) {
+      p_r[i]=1.0;
+      p_xin[m_nd-1] = 1.;
+      delete [] p_xi[i]; p_xi[i] = new double[m_nd];
+      delete [] p_bestxi[i]; p_bestxi[i] = new double[m_nd];
+      delete [] p_d[i]; p_d[i] = new double[m_nd];
+      delete [] p_di[i]; p_di[i] = new double[m_nd];
+      delete [] p_hit[i]; p_hit[i] = new int[m_nd]; 
+    }
+  }
   if (m_nopt==0||m_on==0) return;
   std::string buffer;
-  int number;
-  ifile>>number>>m_autooptimize>>m_sint>>m_scnt;
   getline(ifile,buffer);
-  msg_Tracking()<<"Vegas::ReadIn "<<buffer<<" with "<<number<<" dimensions; nopt="<<m_nopt<<std::endl;
-  if (number!=m_dim) {
-    msg_Error()<<"Error Vegas::ReadIn() - wrong dimension!"<<endl;
-    abort();
-  }
   for (int i=0;i<m_dim;++i) {
     getline(ifile,buffer);
     size_t  a=buffer.find("(")+1;
