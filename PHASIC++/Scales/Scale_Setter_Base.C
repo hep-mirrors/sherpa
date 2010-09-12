@@ -29,7 +29,8 @@ std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
 
 Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args,const bool scale2):
-  p_proc(args.p_proc), p_model(args.p_model), p_cpls(args.p_cpls),
+  p_proc(args.p_proc), p_caller(p_proc),
+  p_model(args.p_model), p_cpls(args.p_cpls),
   m_scale(stp::size), m_coupling(args.m_coupling),
   m_scale2(scale2), p_jf(NULL)
 {
@@ -99,10 +100,10 @@ double Scale_Setter_Base::HT() const
 
 double Scale_Setter_Base::YCut() const
 {
-  if (p_proc->LookUp() && p_proc->IsMapped())
-    return p_proc->MapProc()->ScaleSetter()->YCut();
-  if (p_jf!=NULL) return p_jf->Ycut();
-  p_jf=(Jet_Finder*)p_proc->Selector()->GetSelector("Jetfinder");
+  Process_Base *proc(p_caller);
+  if (proc->IsMapped() && proc->LookUp() &&
+      proc->MapProc()->LookUp()) proc=proc->MapProc();
+  p_jf=(Jet_Finder*)proc->Selector()->GetSelector("Jetfinder");
   if (p_jf==NULL) THROW(critical_error,"Jet finder not found");
   return p_jf->Ycut();
 }
