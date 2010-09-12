@@ -408,8 +408,16 @@ void PS_Channel::TChannelBounds
       msg_Debugging()<<"    set t_{"<<aidi.front()<<","<<aidj.front()
 		     <<"} ctmin = "<<ctmin<<", ctmax = "<<ctmax<<"\n";
 #endif    
-      double ct(sqrt(1.0-4.0*(sqr(p_cuts->etmin[aidj.front()])-s1)/
-		     (pa+pb).Abs2()));
+      double s12((pa+pb).Abs2()), Q12(sqrt(s12));
+      double E1((s12+s1-s2)/(2.0*Q12)), pcm2(E1*E1-s1);
+      double tmax(p_cuts->scut[aidi.front()][aidj.front()]);
+      if (tmax<0.0) {
+	double sa(pa.Abs2()), Ea((s12+sa-pb.Abs2())/(2.0*Q12));
+	double tctmax(E1*Ea+(tmax-s1-sa)/2.0);
+	ctmax=Min(tctmax/sqrt(pcm2*(Ea*Ea-sa)),ctmax);
+      }
+      double pt2(sqr(p_cuts->etmin[aidj.front()])-s1);
+      double ct(sqrt(Max(0.0,1.0-pt2/pcm2)));
       ctmin=Max(ctmin,-ct);
       ctmax=Min(ctmax,ct);
 #ifdef DEBUG__BG

@@ -96,7 +96,7 @@ void Phase_Space_Handler::InitCuts()
 {
   if (p_cuts!=NULL) delete p_cuts;
   p_cuts = new Cut_Data();
-  p_cuts->Init(m_nin+m_nout,&p_flavours.front());
+  p_cuts->Init(m_nin,m_nout,&p_flavours.front());
   p_process->Process()->FillOnshellConditions();
   p_process->Process()->BuildCuts(p_cuts);
 }

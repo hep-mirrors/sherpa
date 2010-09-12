@@ -21,12 +21,12 @@ namespace PHASIC {
     double *  energymin;
     double *  energymax;
     double *  etmin;
-    int       ncut;
+    int       nin, ncut;
     double    smin;
 
     Cut_Data();
     ~Cut_Data();
-    void Init(int,ATOOLS::Flavour *);
+    void Init(int,int,ATOOLS::Flavour *);
     //void Init(Cut_Data *,Flavour *);
     void Update(double,double);
 

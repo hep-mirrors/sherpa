@@ -570,7 +570,6 @@ void Process_Integrator::StoreResults(const int mode)
   MakeDir(m_resultpath+"/XS_"+fname,0); 
   MakeDir(m_resultpath+"/WD_"+p_proc->Name(),0); 
   MakeDir(m_resultpath+"/MC_"+fname,0); 
-  MakeDir(m_resultpath+"/RB_"+p_proc->Name(),0); 
   WriteOutXSecs(m_resultpath+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->WriteOut(m_resultpath+"/MC_"+fname);

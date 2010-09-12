@@ -51,10 +51,11 @@ Cut_Data::~Cut_Data() {
   delete[] etmin;
 }
 
-void Cut_Data::Init(int _ncut,Flavour * _fl) {
+void Cut_Data::Init(int _nin, int _nout,Flavour * _fl) {
   if (energymin != 0) return;
   smin = 0.;
-  ncut           = _ncut;
+  nin            = _nin;
+  ncut           = _nin+_nout;
   fl             = _fl;
   double E       = rpa.gen.Ecms();
   energymin      = new double[ncut];
@@ -91,7 +92,8 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
 	-2.*sqrt(dabs(sqr(energymin[i])-sqr(fl[i].SelMass())))
 	*sqrt(dabs(sqr(energymin[j])-sqr(fl[j].SelMass())))
 	*cosmax[i][j];*/
-      scut[i][j] = scut[j][i] = scut_save[i][j] = 1.e-12*sqr(rpa.gen.Ecms());
+      scut[i][j] = scut[j][i] = scut_save[i][j] =
+	(i<nin)^(j<nin)?0.0:1.e-12*sqr(rpa.gen.Ecms());
 	//Max(sc,1.e-12*sqr(rpa.gen.Ecms()));
     }
   }  
@@ -101,6 +103,7 @@ void Cut_Data::Complete()
 {
   for (int i=0;i<ncut;i++) {
     for (int j=i+1;j<ncut;j++) {
+      if ((i<nin)^(j<nin)) continue;
       scut[i][j] =  
 // 	Max(scut[i][j],2.*energymin[i]*energymin[j]*(1.-cosmax[i][j])+sqr(fl[i].SelMass())+sqr(fl[j].SelMass()));
 	Max(scut[i][j],2.*energymin[i]*energymin[j]-2.*sqrt(sqr(energymin[i])-sqr(fl[i].SelMass()))
