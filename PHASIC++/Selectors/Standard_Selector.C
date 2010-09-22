@@ -722,8 +722,10 @@ bool PseudoRapidity_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=m_nin;i<m_n;i++) {
+    cuts->cosmin[1][i] = cuts->cosmin[i][1] = Max(cuts->cosmin[1][i],tanh(-etamax[i]));
+    cuts->cosmin[0][i] = cuts->cosmin[i][0] = Max(cuts->cosmin[0][i],tanh(etamin[i])); 
     cuts->cosmax[0][i] = cuts->cosmax[i][0] = Min(cuts->cosmax[0][i],tanh(etamax[i]));
-    cuts->cosmax[1][i] = cuts->cosmax[i][1] = Min(cuts->cosmax[0][i],tanh(-etamin[i]));
+    cuts->cosmax[1][i] = cuts->cosmax[i][1] = Min(cuts->cosmax[1][i],tanh(-etamin[i]));
   }
 }
 
