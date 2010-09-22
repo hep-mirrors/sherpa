@@ -1,0 +1,129 @@
+#include "ATOOLS/Phys/NLO_Subevt.H"
+
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/MyStrStream.H"
+
+using namespace ATOOLS;
+
+ME_wgtinfo::ME_wgtinfo():
+  m_nx(0), m_w0(0.0), p_wx(NULL),
+  m_y1(1.0), m_y2(1.0), m_mur2(0.0) {}
+
+ME_wgtinfo::~ME_wgtinfo()
+{
+  if (m_nx>0) delete [] p_wx;
+}
+
+ME_wgtinfo &ME_wgtinfo::operator*=(const double &scal)
+{
+  m_w0*=scal;
+  for (int i=0;i<m_nx;i++) p_wx[i]*=scal;
+  return *this;
+}
+
+void ME_wgtinfo::Flip()
+{
+  std::swap<double>(m_x1,m_x2);
+  std::swap<double>(m_y1,m_y2);
+  if (m_nx>=10) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+2],p_wx[i+6]);
+  if (m_nx>=18) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+10],p_wx[i+14]);
+}
+
+void ME_wgtinfo::AddMEweights(int n)
+{
+  m_nx=n;
+  p_wx=new double[m_nx];
+  for (int i=0;i<m_nx;i++) p_wx[i]=0.;
+}
+
+namespace ATOOLS {
+  template <> Blob_Data<ME_wgtinfo*>::~Blob_Data() {}
+  template class Blob_Data<ME_wgtinfo*>;
+}
+
+bool IDip_ID::operator<(const IDip_ID &di) const
+{
+  if (m_ijt<di.m_ijt) return true;
+  if (m_ijt>di.m_ijt) return false;
+  return m_kt<di.m_kt;
+}
+
+bool DDip_ID::operator<(const DDip_ID &di) const
+{
+  if (m_i<di.m_i) return true;
+  if (m_i>di.m_i) return false;
+  if (m_j<di.m_j) return true;
+  if (m_j>di.m_j) return false;
+  return m_k<di.m_k;
+}
+
+bool Dip_ID::operator<(const Dip_ID &di) const
+{
+  if (m_ijt<di.m_ijt) return true;
+  if (m_ijt>di.m_ijt) return false;
+  if (m_kt<di.m_kt) return true;
+  if (m_kt>di.m_kt) return false;
+  return DDip_ID::operator<(di);
+}
+
+void NLO_subevtlist::Mult(const double &scal)
+{
+  for (const_iterator it=begin();it!=end();it++) (*it)->Mult(scal);
+}
+
+void NLO_subevtlist::MultMEwgt(const double &scal)
+{
+  for (const_iterator it=begin();it!=end();it++) (*it)->MultMEwgt(scal);
+}
+
+ATOOLS::Particle_List *NLO_subevt::CreateParticleList() const
+{
+  ATOOLS::Particle_List * pl = new ATOOLS::Particle_List;
+  for (size_t i=2;i<m_n;i++) {
+    pl->push_back(new ATOOLS::Particle(i,p_fl[i],p_mom[i]));
+  }
+  if (m_flip) pl->Flip();
+  return pl;
+}
+
+std::string NLO_subevt::IDString() const
+{
+  std::string tag;
+  for (size_t i(0);i<m_n;++i) tag+=ToString(p_id[i])+"_";
+  tag+="_"+ToString(m_i|m_j)+"_"+ToString(m_k);
+  return tag;
+}
+
+NLO_subevtlist &NLO_subevtlist::operator*=(const double scal)
+{
+  for (const_iterator it=begin();it!=end();it++) {
+    (*it)->m_result*=scal;
+    (*it)->m_last[0]*=scal;
+    (*it)->m_last[1]*=scal;
+  }
+  return *this;
+}
+
+namespace ATOOLS
+{
+  std::ostream &operator<<(std::ostream &ostr,const Dip_ID &di)
+  {
+    return ostr<<"["<<di.m_ijt<<"]("<<di.m_i<<","<<di.m_j
+	       <<") <-> ["<<di.m_kt<<"]("<<di.m_k<<")";
+  }
+  std::ostream &operator<<(std::ostream &ostr,const NLO_subevt &sevt)
+  {
+    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
+               <<" {\n  result = "<<sevt.m_result
+               <<" ( "<<sevt.m_last[0]<<" , "<<sevt.m_last[1]<<" ) "
+               <<" ,  ME = "<<sevt.m_me
+	       <<"\n  \\mu_F = "<<sqrt(sevt.m_muf2)<<", \\mu_R = "
+	       <<sqrt(sevt.m_mur2)<<"\n}";
+  }
+}
+
+namespace ATOOLS {
+  template <> Blob_Data<NLO_subevtlist*>::~Blob_Data() {}
+  template class Blob_Data<NLO_subevtlist*>;
+}
+

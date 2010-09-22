@@ -29,28 +29,14 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 
-Single_LOProcess::Single_LOProcess(const Process_Info &pi) :   
+Single_LOProcess::Single_LOProcess(const Process_Info &pi,
+                                   BEAM::Beam_Spectra_Handler *const beam,
+                                   PDF::ISR_Handler *const isr) :   
   m_gen_str(2), m_emit(-1), m_spect(-1),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
-  PHASIC::Process_Base::Init(pi,NULL,NULL);
-  m_pinfo=pi;
-  m_nin=m_pinfo.m_ii.NExternal();
-  m_nout=m_pinfo.m_fi.NExternal();
-  m_flavs.resize(m_nin+m_nout);
-  if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
-    SortFlavours(m_pinfo);
-    std::vector<Flavour> fl;
-    m_pinfo.m_ii.GetExternal(fl);
-    m_pinfo.m_fi.GetExternal(fl);
-    if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
-    for (size_t i(0);i<fl.size();++i) {
-      m_flavs[i]=fl[i];
-    }
-    m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
-  }
-
-  Init();
+  PHASIC::Process_Base::Init(pi, beam, isr);
+  AMEGIC::Process_Base::Init();
   m_newlib   = false;
   m_libnumb  = 0;
   m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
@@ -1087,22 +1073,22 @@ void Single_LOProcess::Minimize()
   
   ------------------------------------------------------------------------------*/
 
-double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms) { return 0.; }
+double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms,const int mode) { return 0.; }
 
 double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
-				    std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
+				    std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol,const int mode)
 {
   if (p_partner!=this) {
     if (m_lookup) {
       m_lastxs = p_partner->LastXS()*m_sfactor;
       if (m_lastxs!=0.) return m_lastxs;
     }
-    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol)*m_sfactor;
+    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
 
   double M2(0.);
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom);
+  p_scale->CalculateScale(labmom,mode);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
@@ -1139,10 +1125,10 @@ double Single_LOProcess::Calc_M2ik(int ci, int ck)
 }
 
 void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				  const ATOOLS::Vec4D *mom, double **dsij) 
+				  const ATOOLS::Vec4D *mom, double **dsij,const int mode) 
 {
   if (p_partner!=this) {
-    p_partner->Calc_AllXS(labmom,mom,dsij);
+    p_partner->Calc_AllXS(labmom,mom,dsij,mode);
     dsij[0][0]*=m_sfactor;
     for (size_t i=0;i<m_partonlist.size();i++) {
       for (size_t k=i+1;k<m_partonlist.size();k++) {
@@ -1152,7 +1138,7 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
     return;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom);
+  p_scale->CalculateScale(labmom,mode);
 
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
   p_hel->InitializeSpinorTransformation(p_BS);
@@ -1204,7 +1190,7 @@ Point * AMEGIC::Single_LOProcess::Diagram(int i) {
   return p_partner->Diagram(i);
 } 
 
-void AMEGIC::Single_LOProcess::AddChannels(std::list<std::string>* tlist) 
+void Single_LOProcess::AddChannels(std::list<std::string>* tlist) 
 { }
 
 void AMEGIC::Single_LOProcess::FillCombinations
@@ -1220,8 +1206,10 @@ void AMEGIC::Single_LOProcess::FillCombinations
   FillCombinations(p->right,idb);
   id=ida+idb;
   size_t idc((1<<(m_nin+m_nout))-1-id);
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<"  comb "<<ID(ida)
 		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+#endif
   m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
   m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
   m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
@@ -1239,25 +1227,31 @@ void AMEGIC::Single_LOProcess::FillCombinations
     if (!in) {
       m_cflavs[idc].push_back(p->fl.Bar());
       m_cflavs[id].push_back(p->fl);
+#ifdef DEBUG__Fill_Combinations
       msg_Debugging()<<"  flav "<<ID(idc)<<" / "
 		     <<ID(id)<<" -> "<<p->fl<<"\n";
+#endif
     }
   }
 }
 
 void AMEGIC::Single_LOProcess::FillCombinations()
 {
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
+#endif
   size_t nd(NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(Diagram(i));
     size_t id(1<<p->number);
     FillCombinations(p,id);
   }
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<"  } -> "<<m_cflavs.size()
 		 <<" flavours, "<<m_ccombs.size()
 		 <<" combinations\n";
   msg_Debugging()<<"}\n";
+#endif
 }
 
 bool AMEGIC::Single_LOProcess::Combinable

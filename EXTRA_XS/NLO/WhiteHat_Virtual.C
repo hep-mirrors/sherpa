@@ -1,0 +1,108 @@
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#ifdef USING__WHITEHAT
+
+#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Model_Base.H"
+
+#include "whitehat/BH_Ampl.h"
+#include "whitehat/BH_interface.h"
+#include "whitehat/BH_error.h"
+
+using namespace EXTRAXS;
+using namespace PHASIC;
+using namespace ATOOLS;
+
+namespace EXTRAXS {
+  class WhiteHat_Virtual : public Virtual_ME2_Base {
+    BH::BH_Ampl* p_ampl;
+  public:
+    WhiteHat_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
+                     BH::BH_Ampl* ampl) :
+      Virtual_ME2_Base(pi, flavs), p_ampl(ampl)
+    {
+    }
+
+    ~WhiteHat_Virtual()
+    {
+      if (p_ampl) delete p_ampl;
+      if (s_interface) delete s_interface; s_interface=NULL;
+    }
+
+    static BH::BH_interface* s_interface;
+    static void InitInterface();
+
+    void Calc(const ATOOLS::Vec4D_Vector& momenta);
+    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
+  };
+}
+
+BH::BH_interface* EXTRAXS::WhiteHat_Virtual::s_interface = NULL;
+
+void WhiteHat_Virtual::InitInterface()
+{
+  if (s_interface==NULL) {
+    msg_Info()<<"Initialising WhiteHat interface . . . "<<std::flush;
+    s_interface=new BH::BH_interface();
+    s_interface->set("Z_mass",Flavour(kf_Z).Mass());
+    s_interface->set("Z_width",Flavour(kf_Z).Width());
+    s_interface->set("W_mass",Flavour(kf_Wplus).Mass());
+    s_interface->set("W_width",Flavour(kf_Wplus).Width());
+    double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
+    s_interface->set("sin_th_2",sin_th_2);
+    s_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
+    s_interface->set("alpha_S",MODEL::s_model->ScalarFunction(std::string("alpha_S")));
+    s_interface->set("alpha_QED",MODEL::s_model->ScalarFunction(std::string("alpha_QED")));
+    msg_Info()<<" . . . done."<<std::endl;
+  }
+}
+
+void WhiteHat_Virtual::Calc(const Vec4D_Vector& momenta) {
+  std::vector<std::vector<double> > moms(momenta.size(), std::vector<double>(4, 0.0));
+  for (size_t i=0; i<momenta.size(); ++i) {
+    for (size_t j=0; j<4; ++j) {
+      moms[i][j]=momenta[i][j];
+    }
+  }
+  BH::BHinput input(moms, sqrt(m_mur2));
+  s_interface->operator()(input);
+
+  m_res.Finite() = p_ampl->get_finite();
+  m_res.IR()     = p_ampl->get_single_pole();
+  m_res.IR2()    = p_ampl->get_double_pole();
+}
+
+double WhiteHat_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {
+  //MSbar
+   return 4.*M_PI;
+}
+
+DECLARE_VIRTUALME2_GETTER(WhiteHat_Virtual_Getter,"WhiteHat_Virtual")
+Virtual_ME2_Base *WhiteHat_Virtual_Getter::operator()(const Process_Info &pi) const
+{
+  DEBUG_FUNC(pi);
+  if (pi.m_loopgenerator!="WhiteHat") return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    Flavour_Vector fl=pi.ExtractFlavours();
+    std::vector<int> kfvector;
+    for (size_t i=0; i<fl.size(); ++i) kfvector.push_back(fl[i].HepEvt());
+    WhiteHat_Virtual::InitInterface();
+    BH::BH_Ampl* ampl=NULL;
+    try {
+      msg_Info()<<"Trying WhiteHat for "<<kfvector<<" . . . "<<std::flush;
+      ampl = WhiteHat_Virtual::s_interface->new_ampl(kfvector);
+    } catch (BH::BHerror err) {
+      msg_Info()<<" . . . not found."<<std::endl;
+      return NULL;
+    }
+    if (ampl) {
+      msg_Info()<<" . . . found."<<std::endl;
+      return new WhiteHat_Virtual(pi, fl, ampl);
+    }
+  }
+  return NULL;
+}
+
+#endif

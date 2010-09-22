@@ -18,15 +18,14 @@ using namespace ATOOLS;
 namespace ATOOLS { template class SP(Process_Integrator); }
 
 static int s_whbins(1000);
-static int s_omitnlosuffix(0);
+static int s_omitnlosuffix(0), s_genresdir(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(1),
-  m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_maxeps(0.0),
-  m_xinfo(std::vector<double>(8)), m_n(0), m_itmin(0), 
-  m_max(0.), m_totalxs(0.), 
+  m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rbmaxeps(0.0),
+  m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
   m_svn(0), m_son(1), m_swaped(false), m_writeout(false),
@@ -60,6 +59,8 @@ bool Process_Integrator::Initialize
 	msg_Info()<<METHOD<<"(): store/read results without Process_Info suffix.\n";
     }
     else s_omitnlosuffix=0;
+    if (read.ReadFromFile(s_genresdir,"GENERATE_RESULT_DIRECTORY"));
+    else s_genresdir=0;
     minit=true;
   }
   return true;
@@ -67,6 +68,8 @@ bool Process_Integrator::Initialize
 
 Process_Integrator::~Process_Integrator()
 {
+  for (RB_Map::iterator rbit(m_rbmap.begin());
+       rbit!=m_rbmap.end();++rbit) delete rbit->second;
   if (p_whisto!=NULL) delete p_whisto;
 }
 
@@ -168,18 +171,35 @@ double Process_Integrator::RemainTimeFactor(double maxerr)
   return (sqr(1./maxerr)-m_ssigma2)/Sigma2();
 }
 
-void Process_Integrator::SetMomenta(const Vec4D_Vector &p) 
-{ 
+void Process_Integrator::SetMomenta(const Vec4D_Vector &p)
+{
   p_momenta=p;
+  if (p_proc->Selected() && p_proc->Selected()!=p_proc)
+    p_proc->Selected()->Integrator()->SetMomenta(p);
 }
 
-void Process_Integrator::InitWeightHistogram() 
+void Process_Integrator::SetMomenta(const Cluster_Amplitude &ampl)
+{
+  if (p_momenta.size()!=ampl.Legs().size()) {
+    msg_Error()<<METHOD<<"("<<this<<"){\n  "
+        <<"Cannot Set Momenta of Cluster_Amplitude "<<&ampl
+        <<" because dimensions do not match.\n}\n";
+    return;
+  }
+  for (size_t i(0);i<ampl.NIn();++i)
+    p_momenta[i]=-ampl.Leg(i)->Mom();
+  for (size_t i(ampl.NIn());i<p_momenta.size();++i)
+    p_momenta[i]=ampl.Leg(i)->Mom();
+  if (p_proc->Selected() && p_proc->Selected()!=p_proc)
+    p_proc->Selected()->Integrator()->SetMomenta(p_momenta);
+}
+
+void Process_Integrator::InitWeightHistogram()
 {
   if (p_whisto) {
     delete p_whisto; 
     p_whisto=0;
   }
-  if (!m_writeout) return;
 
   double av(dabs(TotalResult()));
   if (!av>0.) {
@@ -292,22 +312,47 @@ void Process_Integrator::SetTotal(const int mode)
   m_totalxs=TotalResult();
   if (!p_proc->IsGroup()) m_selectionweight=dabs(m_totalxs);
   m_totalerr=TotalVar();
-  if (mode) {
+  if (mode && m_totalxs!=0.0) {
     if (p_proc->NIn()==1) {
       msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs<<" GeV"<<om::reset<<" +- ( "<<om::red
-                <<m_totalerr<<" GeV = "<<m_totalerr/m_totalxs*100.
+                <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<std::endl;
+                <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
     else {
       msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs*rpa.Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
-                <<m_totalerr*rpa.Picobarn()<<" pb = "<<m_totalerr/m_totalxs*100.
+                <<m_totalerr*rpa.Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<std::endl;
+                <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
+    PrintRBInfo();
   }
+}
+
+void Process_Integrator::PrintRBInfo() const
+{
+  if (p_proc->IsGroup()) {
+    if (msg_LevelIsTracking()) return;
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->PrintRBInfo();
+  }
+  if (m_rbmap.empty() || m_rbmap.begin()->second->m_n==0.0) return;
+  if (!msg_LevelIsTracking()) msg_Info()<<"  R_{ME}/R_{PS} for "<<p_proc->Name()<<"\n";
+  for (RB_Map::const_iterator rbit(m_rbmap.begin());rbit!=m_rbmap.end();++rbit)
+    if (rbit->second->m_n>0.0) {
+      msg_Info()<<"    max = "<<rbit->second->GetMaxEps(m_rbmaxeps)
+		<<" ("<<rbit->second->m_max<<"), mean = "<<rbit->second->Mean()
+		<<" for "<<((rbit->first.m_type&1)?"I":"F")
+		<<((rbit->first.m_type&2)?"I":"F")<<" "
+		<<((rbit->first.m_type&1)?rbit->first.m_fli:rbit->first.m_flij)
+		<<" -> "<<((rbit->first.m_type&1)?rbit->first.m_flij:rbit->first.m_fli)
+		<<" "<<rbit->first.m_flj;
+      if (rbit->second->m_ktres>0.0)
+	msg_Info()<<" [ kt = "<<rbit->second->m_ktres<<" ]";
+	msg_Info()<<"\n";
+    }
 }
 
 double Process_Integrator::GetMaxEps(double epsilon)
@@ -336,9 +381,20 @@ void Process_Integrator::SetUpEnhance()
   if (m_enhancefac<0.0) m_selectionweight=p_proc->Size()*dabs(m_enhancefac);
   if (m_maxeps>0.0) {
     double max(GetMaxEps(m_maxeps));
-    msg_Info()<<"Max reduction for '"<<p_proc->Name()<<"': "<<Max()/max
-	      <<" ( \\epsilon = "<<m_maxeps<<")"<<std::endl;
+    msg_Info()<<"  max '"<<p_proc->Name()<<"' -"
+	      <<m_maxeps<<"-> "<<max/Max()<<std::endl;
     SetMax(max);
+  }
+  if (m_rbmaxeps>0.0) {
+    for (RB_Map::iterator rbit(m_rbmap.begin());
+	 rbit!=m_rbmap.end();++rbit) {
+      double max(rbit->second->GetMaxEps(m_rbmaxeps));
+      msg_Tracking()<<"  R_{ME}/R_{PS} max '"<<p_proc->Name()<<"'(S"
+		    <<rbit->first.m_type<<" "<<rbit->first.m_flij<<" -> "
+		    <<rbit->first.m_fli<<" "<<rbit->first.m_flj<<") -"
+		    <<m_rbmaxeps<<"-> "<<max<<std::endl;
+      rbit->second->m_max=max;
+    }
   }
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -367,6 +423,14 @@ void Process_Integrator::SetMaxEpsilon(const double &maxeps)
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->SetMaxEpsilon(maxeps);
+}
+
+void Process_Integrator::SetRBMaxEpsilon(const double &rbmaxeps)
+{ 
+  m_rbmaxeps=rbmaxeps; 
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->SetRBMaxEpsilon(rbmaxeps);
 }
 
 void Process_Integrator::AddPoint(const double value) 
@@ -535,24 +599,28 @@ void Process_Integrator::SetISRThreshold(const double threshold)
 
 void Process_Integrator::SwapInOrder() 
 {
-  if (!m_swaped) {
-    p_proc->SwapInOrder();
-    std::swap<Vec4D>(p_momenta[0],p_momenta[1]);
-    for (size_t i(0);i<p_momenta.size();++i) 
-      p_momenta[i]=Vec4D(p_momenta[i][0],-p_momenta[i]);
-    m_swaped=true;
-  }
+  if (m_swaped) return;
+  p_proc->SwapInOrder();
+  std::swap<Vec4D>(p_momenta[0],p_momenta[1]);
+  for (size_t i(0);i<p_momenta.size();++i) 
+    p_momenta[i]=Vec4D(p_momenta[i][0],-p_momenta[i]);
+  m_swaped=true;
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->SwapInOrder();
 }
 
 void Process_Integrator::RestoreInOrder() 
 {
-  if (m_swaped) {
-    p_proc->SwapInOrder();
-    std::swap<Vec4D>(p_momenta[0],p_momenta[1]);
-    for (size_t i(0);i<p_momenta.size();++i) 
-      p_momenta[i]=Vec4D(p_momenta[i][0],-p_momenta[i]);
-    m_swaped=false;
-  }
+  if (!m_swaped) return;
+  p_proc->SwapInOrder();
+  std::swap<Vec4D>(p_momenta[0],p_momenta[1]);
+  for (size_t i(0);i<p_momenta.size();++i) 
+    p_momenta[i]=Vec4D(p_momenta[i][0],-p_momenta[i]);
+  m_swaped=false;
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->RestoreInOrder();
 }
 
 void Process_Integrator::StoreResults(const int mode)
@@ -567,12 +635,15 @@ void Process_Integrator::StoreResults(const int mode)
     pos=fname.find("QCD");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
   }
+  if (s_genresdir) MakeDir(m_resultpath,true); 
   MakeDir(m_resultpath+"/XS_"+fname,0); 
   MakeDir(m_resultpath+"/WD_"+p_proc->Name(),0); 
   MakeDir(m_resultpath+"/MC_"+fname,0); 
+  MakeDir(m_resultpath+"/RB_"+p_proc->Name(),0); 
   WriteOutXSecs(m_resultpath+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->WriteOut(m_resultpath+"/MC_"+fname);
+  WriteOutRB(m_resultpath+"/RB_"+p_proc->Name());
 }
 
 void Process_Integrator::ReadResults()
@@ -588,7 +659,64 @@ void Process_Integrator::ReadResults()
   if (!ReadInXSecs(m_resultpath+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->ReadIn(m_resultpath+"/MC_"+fname);
+  ReadInRB(m_resultpath+"/RB_"+p_proc->Name());
   SetTotal(0); 
+}
+
+bool Process_Integrator::WriteOutRB(const std::string &path)
+{
+  if (p_proc->IsGroup()) {
+    bool res(true);
+    for (size_t i(0);i<p_proc->Size();++i)
+      if (!(*p_proc)[i]->Integrator()->WriteOutRB(path)) res=false;
+    return res;
+  }
+  if (p_proc->Info().m_fi.NLOType()!=nlo_type::lo) return true;
+  std::string bname(path+"/"+p_proc->Name());
+  std::ofstream rbmax((bname+".rb").c_str());
+  if (!rbmax.good()) return false;
+  rbmax.precision(12);
+  rbmax<<m_rbmap.size()<<"\n";
+  for (RB_Map::const_iterator rbit(m_rbmap.begin());
+       rbit!=m_rbmap.end();++rbit) {
+    rbmax<<rbit->first<<" "<<*rbit->second<<"\n";
+    std::string hname=bname+"__S"
+      +ToString(rbit->first.m_type)+"_"
+      +ToString(rbit->first.m_flij)+"__"
+      +ToString(rbit->first.m_fli)+"__"+
+      ToString(rbit->first.m_flj);
+    rbit->second->WriteOutHisto(hname);
+  }
+  return true;
+}
+
+bool Process_Integrator::ReadInRB(const std::string &path)
+{
+  if (p_proc->IsGroup()) {
+    bool res(true);
+    for (size_t i(0);i<p_proc->Size();++i)
+      if (!(*p_proc)[i]->Integrator()->ReadInRB(path)) res=false;
+    return res;
+  }
+  std::string bname(path+"/"+p_proc->Name());
+  std::ifstream rbmax((bname+".rb").c_str());
+  if (!rbmax.good()) return false;
+  rbmax.precision(12);
+  size_t nr(0);
+  rbmax>>nr;
+  for (size_t i(0);i<nr;++i) {
+    RB_Key key(0,kf_none,kf_none,kf_none);
+    rbmax>>key;
+    RB_Data *data(NULL);
+    if (m_rbmap.find(key)!=m_rbmap.end()) data=m_rbmap[key];
+    else data = new RB_Data();
+    rbmax>>*data;
+    std::string hname=bname+"__S"
+      +ToString(key.m_type)+"_"+ToString(key.m_flij)+"__"
+      +ToString(key.m_fli)+"__"+ToString(key.m_flj);
+    m_rbmap[key]->ReadInHisto(hname);
+  }
+  return true;
 }
 
 void Process_Integrator::PrepareTerminate()  

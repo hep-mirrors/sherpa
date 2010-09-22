@@ -17,10 +17,6 @@ WhiteHat_Virtual::WhiteHat_Virtual(const Process_Info& pi,
 				   BH::BH_Ampl* ampl) :
   Virtual_ME2_Base(pi, flavs), p_ampl(ampl)
 {
-  m_needsborn=true;
-  m_cpl=WhiteHat_Virtual::s_model->ScalarFunction
-    (std::string("alpha_S"),rpa.gen.CplScale());
-  m_cpl/=2.0*M_PI;
 }
 
 WhiteHat_Virtual::~WhiteHat_Virtual()
@@ -63,11 +59,9 @@ void WhiteHat_Virtual::Calc(const Vec4D_Vector& momenta) {
   BH::BHinput input(moms, sqrt(m_mur2));
   s_interface->operator()(input);
 
-  m_born*=m_cpl*CouplingFactor(1,0);
-
-  m_res.Finite() = p_ampl->get_finite()*m_born;
-  m_res.IR()     = p_ampl->get_single_pole()*m_born;
-  m_res.IR2()    = p_ampl->get_double_pole()*m_born;
+  m_res.Finite() = p_ampl->get_finite();
+  m_res.IR()     = p_ampl->get_single_pole();
+  m_res.IR2()    = p_ampl->get_double_pole();
 }
 
 double WhiteHat_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {

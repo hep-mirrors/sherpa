@@ -26,7 +26,7 @@ namespace ATOOLS {
 
   std::vector<int> ID(size_t id);
 
-  size_t IDCount(size_t id);
+  size_t IdCount(size_t id);
 
 }
 

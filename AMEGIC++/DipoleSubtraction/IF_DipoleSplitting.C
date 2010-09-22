@@ -41,21 +41,6 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case 4:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
   }
-  if (1) {
-    double pf = (m_uj)/m_alpha;
-    switch (m_ft) {
-    case 1:
-      m_sff -= pf*Vcijf(1);
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    case 4:
-      m_sff -= pf*(0.5*Vcijf(4)+m_nf*Vcijf(3));
-      break;
-    }
-  }
 }
 
 double IF_DipoleSplitting::GetF()
@@ -128,21 +113,6 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
     break;
   case 4:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
-  }
-  if (0) {
-    double pf = (m_uj)/m_alpha;
-    switch (m_ft) {
-    case 1:
-      m_sff -= pf*Vcijf(1);
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    case 4:
-      m_sff -= pf*(0.5*Vcijf(4)+m_nf*Vcijf(3));
-      break;
-    }
   }
 }
 

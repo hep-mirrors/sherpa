@@ -3,6 +3,7 @@
 
 #include "CSSHOWER++/Tools/Parton.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Poincare.H"
 
 namespace ATOOLS { class Mass_Selector; }
@@ -22,6 +23,7 @@ namespace CSSHOWER {
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
     ATOOLS::Mass_Selector *p_ms;
+    int m_nlo;
     void SetColours(Singlet *const sing,Parton *const np,
 		      const int oldc[2],const int newc[2]);
     void SetColours(Parton *const pa,Parton *const p,
@@ -29,7 +31,7 @@ namespace CSSHOWER {
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
-      p_jf(NULL), p_all(NULL) {}
+      p_jf(NULL), p_all(NULL), m_nlo(0) {}
     ~Singlet();
 
     void AddParton(Parton *const p);
@@ -70,6 +72,10 @@ namespace CSSHOWER {
     inline All_Singlets *All() const { return p_all; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
+    inline void SetNLO(const int nlo) { m_nlo=nlo; }
+
+    inline int NLO() const { return m_nlo; }
 
   };
 

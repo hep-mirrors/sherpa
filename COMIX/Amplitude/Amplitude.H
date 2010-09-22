@@ -62,7 +62,7 @@ namespace COMIX {
 
     ATOOLS::Flavour_Vector m_fl;
 
-    PHASIC::Decay_Info_Vector m_decid;
+    ATOOLS::DecayInfo_Vector m_decid;
 
     Vec4D_Vector m_p;
     Int_Vector   m_ch, m_dirs; 
@@ -169,9 +169,9 @@ namespace COMIX {
 
     inline const Current_Matrix &Currents() const { return m_cur; }
 
-    inline void SetDecayInfos(const PHASIC::Decay_Info_Vector &id) 
+    inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
     { m_decid=id; }
-    inline const PHASIC::Decay_Info_Vector &DecayInfos() const
+    inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
     { return m_decid; }
 
     inline char PMode() const { return m_pmode; }

@@ -78,7 +78,7 @@ namespace COMIX {
 
     inline Amplitude *GetAmplitude() { return &m_ampl; }
 
-    inline void SetDecayInfos(const PHASIC::Decay_Info_Vector &id) 
+    inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
     { m_ampl.SetDecayInfos(id); }
     
   };// end of class Matrix_Element

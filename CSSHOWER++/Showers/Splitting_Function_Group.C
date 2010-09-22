@@ -58,9 +58,9 @@ double Splitting_Function_Group::OverIntegrated(const double zmin,const double z
 
 
 double Splitting_Function_Group::operator() (const double z,const double y,
-					     const double eta = 1.,const double scale=0.,
-					     const double Q2=0.,int mode) { 
-  return (*p_selected)(z,y,eta,scale,Q2,mode); 
+					     const double eta,const double scale,
+					     const double Q2) { 
+  return (*p_selected)(z,y,eta,scale,Q2); 
 }
 
 double Splitting_Function_Group::Overestimated(const double z,const double y) { 

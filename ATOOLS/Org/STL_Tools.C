@@ -1,6 +1,8 @@
 #include "ATOOLS/Org/STL_Tools.H"
 
 #include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 #include <fstream>
 #include <string>
 
@@ -60,6 +62,10 @@ namespace std {
     (std::ostream &str,const std::vector<double> &v);
   template std::ostream &operator<<
     (std::ostream &str,const std::vector<std::string> &v);
+  template std::ostream &operator<<
+    (std::ostream &str,const std::vector<ATOOLS::Flavour> &v);
+  template std::ostream &operator<<
+    (std::ostream &str,const std::vector<ATOOLS::Vec4D> &v);
 
 }
 
@@ -85,7 +91,7 @@ namespace ATOOLS {
     return ids;
   }
   
-  size_t IDCount(size_t id)
+  size_t IdCount(size_t id)
   {
     size_t idc(0);
     for (size_t n(0);id>0;++n) {

@@ -70,25 +70,25 @@ namespace PHASIC {
     double ThresholdWeight(double,double,double,double,double,double&);
 
     double DiceYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
-			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
+			const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+			  const ATOOLS::Double_Container &yinfo,double&,const int mode) const;
     double DiceYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
-			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
+			const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+			  const ATOOLS::Double_Container &yinfo,double&,const int mode) const;
     double DiceYForward(const double yexponent,const double tau,
 			const ATOOLS::Double_Container &xinfo,
-			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
+			const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYForward(const double yexponent,const double tau,
 			  const ATOOLS::Double_Container &xinfo,
-			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+			  const ATOOLS::Double_Container &yinfo,double&,const int mode) const;
     double DiceYBackward(const double yexponent,const double tau,
 			 const ATOOLS::Double_Container &xinfo,
-			 ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
+			 const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYBackward(const double yexponent,const double tau,
 			   const ATOOLS::Double_Container &xinfo,
-			   ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+			   const ATOOLS::Double_Container &yinfo,double&,const int mode) const;
 
   };// end of class Channel_Elements
 

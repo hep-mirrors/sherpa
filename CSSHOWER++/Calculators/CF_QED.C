@@ -26,7 +26,7 @@ namespace CSSHOWER {
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    double Coupling(const double &scale,const int mode);
+    double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
   };
@@ -46,10 +46,11 @@ bool CF_QED::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   return true;
 }
 
-double CF_QED::Coupling(const double &scale,const int mode)
+double CF_QED::Coupling(const double &scale,const int pol)
 {
-  if (mode!=0) return 0.0;
-  return (*p_cpl)(CplFac(scale)*scale)*m_q*dabs(p_lf->FlSpec().Charge());
+  if (pol!=0) return 0.0;
+  double scl(CplFac(scale)*scale);
+  return (*p_cpl)(scl)*m_q*dabs(p_lf->FlSpec().Charge());
 }
 
 bool CF_QED::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -67,6 +68,8 @@ bool CF_QED::AllowSpec(const ATOOLS::Flavour &fl)
     return false;
   }
 }
+
+namespace CSSHOWER {
 
 DECLARE_CPL_GETTER(CF_QED_Getter);
 
@@ -108,3 +111,6 @@ void CF_QED_Filler::PrintInfo
 {
   str<<"qed coupling filler";
 }
+
+}
+

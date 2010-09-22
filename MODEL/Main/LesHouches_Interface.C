@@ -137,9 +137,10 @@ void LesHouches_Interface::SetSMInput() {
     p_model->GetScalarFunctions()->insert(std::make_pair(std::string("alpha_QED"),aqed));
     
     int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
+    int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
     double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
     
-    as = new Running_AlphaS(alphaS,sqr(MZ),order_alphaS);
+    as = new Running_AlphaS(alphaS,sqr(MZ),order_alphaS,th_alphaS);
     as->SetDefault(alphaS_default);
   
     p_model->GetScalarFunctions()->insert(std::make_pair(std::string("alpha_S"),as));

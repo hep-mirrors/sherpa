@@ -24,7 +24,7 @@ namespace PHASIC {
 
     ATOOLS::Algebra_Interpreter m_muf2calc, m_mur2calc;
 
-    Tag_Setter m_muf2tagset, m_mur2tagset;
+    Tag_Setter m_tagset;
 
     ATOOLS::Vec4D_Vector   m_p;
     ATOOLS::Flavour_Vector m_f;
@@ -35,7 +35,8 @@ namespace PHASIC {
 
     QCD_Scale_Setter(const Scale_Setter_Arguments &args);
 
-    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
+    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
+			  const int mode);
 
     ATOOLS::Vec4D Momentum(const size_t &i) const;
 
@@ -112,7 +113,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 QCD_Scale_Setter::QCD_Scale_Setter(const Scale_Setter_Arguments &args):
-  Scale_Setter_Base(args), m_muf2tagset(this), m_mur2tagset(this)
+  Scale_Setter_Base(args), m_tagset(this)
 {
   m_p.resize(4);
   size_t pos(args.m_scale.find('{'));
@@ -132,8 +133,8 @@ QCD_Scale_Setter::QCD_Scale_Setter(const Scale_Setter_Arguments &args):
       muf2tag=muf2tag.substr(0,pos);
     }
   }
-  SetScale(muf2tag,m_muf2tagset,m_muf2calc);
-  SetScale(mur2tag,m_mur2tagset,m_mur2calc);
+  SetScale(muf2tag,m_tagset,m_muf2calc);
+  SetScale(mur2tag,m_tagset,m_mur2calc);
   SetCouplings();
   m_f=p_proc->Flavours();
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
@@ -145,8 +146,16 @@ Vec4D QCD_Scale_Setter::Momentum(const size_t &i) const
   return m_p[i];
 }
 
-double QCD_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
+double QCD_Scale_Setter::CalculateScale
+(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
 {
+  if (mode==1) return m_scale[stp::fac];
+  if (m_escale.size()) {
+    m_scale[stp::fac]=m_escale[stp::fac];
+    m_scale[stp::ren]=m_escale[stp::ren];
+    p_cpls->Calculate();
+    return m_scale[stp::fac];    
+  }
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];

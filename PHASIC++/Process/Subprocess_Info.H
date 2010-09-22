@@ -1,27 +1,35 @@
 #ifndef PHASIC_Process_Subprocess_Info_H
 #define PHASIC_Process_Subprocess_Info_H
 
-#include "ATOOLS/Phys/Flavour.H"
-#include "PHASIC++/Process/NLO_Helpers.H"
-
-#include <vector>
+#include "ATOOLS/Phys/Decay_Info.H"
 
 namespace PHASIC {
 
+  struct nlo_type {
+    enum code {
+      lo   = 0,
+      born = 1,
+      loop = 2,
+      vsub = 4,
+      real = 8,
+      rsub = 16,
+      polecheck = 32
+    };
+  };// end of struct nlo_type
+
+  inline const nlo_type::code operator|(const nlo_type::code c1,const nlo_type::code c2)  
+  { return (nlo_type::code)((int)c1|(int)c2); }
+  inline const nlo_type::code &operator|=(nlo_type::code &c1,const nlo_type::code c2)  
+  { return c1=(nlo_type::code)((int)c1|(int)c2); }
+  inline const nlo_type::code operator&(const nlo_type::code c1,const nlo_type::code c2)  
+  { return (nlo_type::code)((int)c1&(int)c2); }
+  inline const nlo_type::code &operator&=(nlo_type::code &c1,const nlo_type::code c2)  
+  { return c1=(nlo_type::code)((int)c1&(int)c2); }
+
+  std::ostream &operator<<(std::ostream &str,const nlo_type::code &c);
+  std::istream &operator>>(std::istream &str,nlo_type::code &c);
+
   std::string PSId(const size_t &id);
-
-  struct Decay_Info {
-    long unsigned int m_id;
-    ATOOLS::Flavour m_fl;
-    size_t m_nmax;
-    int m_osd;
-    Decay_Info(const long unsigned int &id,
-	       const ATOOLS::Flavour &fl,
-	       const size_t &nmax,const int osd):
-      m_id(id), m_fl(fl), m_nmax(nmax), m_osd(osd) {}
-  };// end of struct Decay_Info
-
-  typedef std::vector<Decay_Info> Decay_Info_Vector;
 
   struct Subprocess_Info {
   public:
@@ -42,7 +50,7 @@ namespace PHASIC {
     bool GetExternal(ATOOLS::Flavour &fl,const size_t &i,size_t &n) const;
     bool SetExternal(const ATOOLS::Flavour &fl,const size_t &i,size_t &n);
 
-    size_t GetDecayInfos(Decay_Info_Vector &ids,size_t &n) const;
+    size_t GetDecayInfos(ATOOLS::DecayInfo_Vector &ids,size_t &n) const;
 
   public:
 
@@ -69,7 +77,7 @@ namespace PHASIC {
     void Add(const Subprocess_Info &info);
     bool AddDecay(const Subprocess_Info &ii,const Subprocess_Info &fi,int osf=0);
 
-    Decay_Info_Vector GetDecayInfos() const;
+    ATOOLS::DecayInfo_Vector GetDecayInfos() const;
 
     void Print(std::ostream &ostr,const size_t &ni=0) const;
 

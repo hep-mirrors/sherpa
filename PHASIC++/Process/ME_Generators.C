@@ -40,8 +40,7 @@ ME_Generators::ME_Generators(const std::string &path,
     }
   }
   for (size_t i(0);i<size();++i) {
-    rpa.gen.SetVariable(at(i)->Name(),ToString
-                        ((long unsigned int)at(i)));
+    rpa.gen.SetVariable(at(i)->Name(),ToString(at(i)));
   }
 }
 
@@ -56,6 +55,7 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
                                          BEAM::Beam_Spectra_Handler *beam,
                                          PDF::ISR_Handler *isr)
 {
+  p_model=model;
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (!(*mit)->Initialize(m_path,m_file,model,beam,isr)) return false;
   }

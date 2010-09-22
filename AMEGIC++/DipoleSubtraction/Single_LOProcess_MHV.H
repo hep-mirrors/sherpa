@@ -22,7 +22,9 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
 
-   Single_LOProcess_MHV(const PHASIC::Process_Info &pi);
+   Single_LOProcess_MHV(const PHASIC::Process_Info &pi,
+                        BEAM::Beam_Spectra_Handler *const beam,
+                        PDF::ISR_Handler *const isr);
     ~Single_LOProcess_MHV();
 
 
@@ -51,9 +53,9 @@ namespace AMEGIC {
     Complex CalculateHelicityPhase(const ATOOLS::Vec4D *);
   public:
     double  operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
-		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
+		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-		       const ATOOLS::Vec4D *,double**);
+		       const ATOOLS::Vec4D *,double**,const int);
   };
 }
 

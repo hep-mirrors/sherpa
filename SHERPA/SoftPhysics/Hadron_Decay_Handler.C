@@ -216,7 +216,7 @@ Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
     p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
   }
   while (p_ampl->Legs().size()>p_ampl->NIn()+2) {
-    if (msg_LevelIsDebugging()) p_ampl->Print();
+    msg_Debugging()<<*p_ampl<<"\n";
     Cluster_Amplitude *ampl(p_ampl);
     p_ampl = p_ampl->InitNext();
     p_ampl->SetMS(this);
@@ -266,12 +266,12 @@ Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
   }
   double mu2=p_ampl->Leg(0)->Mom().Abs2();
   p_ampl->SetMuF2(mu2);
-  p_ampl->SetKT2QCD(mu2);
-  if (msg_LevelIsDebugging()) p_ampl->Print();
+  p_ampl->SetKT2(mu2);
+  msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
     p_ampl=p_ampl->Prev();
     p_ampl->SetMuF2(mu2);
-    p_ampl->SetKT2QCD(mu2);
+    p_ampl->SetKT2(mu2);
   }
   msg_Debugging()<<"}\n";
   return p_ampl;

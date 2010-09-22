@@ -79,19 +79,19 @@ bool AMEGIC::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<std::setw(20)<<cd.m_pt2ij;
+  s<<" "<<cd.m_pt2ij<<" ";
   std::string graphs;
   for (size_t k=0;k<cd.m_graphs.size();++k) graphs+=","+ToString(cd.m_graphs[k]);
-  s<<std::setw(50)<<graphs.substr(1);
+  s<<graphs.substr(1);
   if (cd.p_down) s<<" -> "<<cd.p_down->m_no;
   return s;
 }
 
 Combine_Data::Combine_Data():
-  m_pt2ij(0.0), m_strong(0), p_down(NULL) {}
+  m_pt2ij(0.0), m_strong(0), m_calc(0), p_down(NULL) {}
 
 Combine_Data::Combine_Data(const double pt2ij,const int ngraph):
-  m_pt2ij(pt2ij), m_strong(0), p_down(NULL) 
+  m_pt2ij(pt2ij), m_strong(0), m_calc(0), p_down(NULL) 
 {
   if (ngraph>=0) m_graphs.push_back(ngraph);
 }
@@ -110,8 +110,6 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
   if (&ct) {
     s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no<<" (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
-    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<std::endl;
-    s<<" ==============="<<std::endl;
     s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
      <<"flav"<<std::setw(5)<<"cut  qcd qed"<<std::setw(12)
      <<" mom"<<std::endl;
@@ -127,7 +125,7 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
     if (cl.size()>0) {
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
  	s<<cit->first<<std::setw(8)<<cit->second
-	 <<(cit==ct.m_cdata_winner?"<-":"")<<std::endl; 
+	 <<(cit==ct.m_cdata_winner?" <-":"")<<std::endl; 
       }
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
 	if (cit->second.p_down) {
@@ -161,7 +159,8 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 			     Vec4D *moms, Combine_Table *up):
   p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
-  p_up(up), p_legs(0), p_clus(clus), p_moms(moms), p_hard(NULL), p_hardc(NULL)
+  p_up(up), p_legs(0), p_clus(clus), p_moms(moms),
+  p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL)
 {
   p_proc=proc;
   m_no=++s_all;
@@ -169,6 +168,8 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 
 Combine_Table::~Combine_Table()
 {
+  if (p_scale) delete [] p_scale;
+  if (p_channel) delete [] p_channel;
   delete [] p_moms;
   for (int k=0;k<m_nampl;++k) {
     delete [] p_legs[k];
@@ -310,7 +311,10 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
      m_cdata_winner->second.m_pt2ij.m_kin);
   ampl->Delete();
-  if (after.empty()) return false;
+  if (after.empty()) {
+    msg_Debugging()<<"combine moms failed\n";
+    return false;
+  }
   for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
   return true;
 }
@@ -329,7 +333,10 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
      m_cdata_winner->second.m_pt2ij.m_kin);
   ampl->Delete();
-  if (after.empty()) return false;
+  if (after.empty()) {
+    msg_Debugging()<<"combine moms failed\n";
+    return false;
+  }
   omoms = new Vec4D[maxl];
   for (size_t l=0; l<after.size(); ++l) omoms[l] = l<2?-after[l]:after[l];
   return true;
@@ -395,11 +402,12 @@ bool Combine_Table::Combinable(const Leg &a,const Leg &b,const int i,const int j
   return false;
 }
 
-double Combine_Table::GetWinner(int &i,int &j,int &k)
+double Combine_Table::GetWinner(int &i,int &j,int &k,double &mu2)
 { 
   i=m_cdata_winner->first.m_i; 
   j=m_cdata_winner->first.m_j;
   k=m_cdata_winner->first.m_k;
+  mu2=m_cdata_winner->second.m_pt2ij.m_mu2;
   return m_cdata_winner->second.m_pt2ij.m_kt2;
 }
 
@@ -410,7 +418,7 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
   if (cl.Flav().Strong()) {
     if (!p_legs[ngraph][k].Flav().Strong()) return;
   }
-  else if (cl.Flav().IntCharge()==0) {
+  else if (cl.Flav().IntCharge()==0 && cl.Flav()!=Flavour(kf_h0)) {
     if (p_legs[ngraph][k].Flav().IntCharge()==0) return;
   }
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k,cl.Flav()));
@@ -451,12 +459,15 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 	  if (Combinable(p_legs[k][i],p_legs[k][j],i,j)) {
 	    int sci(p_legs[k][i].Flav().StrongCharge());
 	    int scj(p_legs[k][j].Flav().StrongCharge());
+	    Leg lmo(CombinedLeg(p_legs[k],i,j));
 	    for (int l=0;l<m_nlegs;++l)
 	      if (l!=i && l!=j) {
 		int sc(p_legs[k][l].Flav().StrongCharge());
 		if (((sci==8 || scj==8 || sc==8) && 
 		     (sci!=0 && scj!=0 && sc!=0)) ||
-		    (sci!=8 && scj!=8 && sc!=8)) AddPossibility(i,j,l,k);
+		    (sci!=8 && scj!=8 && sc!=8) ||
+		    Combinable(lmo,p_legs[k][l],i,l))
+		  AddPossibility(i,j,l,k);
 	      }
 	  }
 	}
@@ -467,11 +478,13 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 
 CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 {
+    if (cit->second.m_calc) return cit;
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
     for (int i=0;i<m_nlegs;++i)
       ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
 		      i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
 		     ColorID(),p_legs[0][i].ID());
+    cit->second.m_calc=1;
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
        cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms);
@@ -485,24 +498,41 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 }
 
 Combine_Table *Combine_Table::
-CalcJet(int nl,const double x1,const double x2,
-	ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
+CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
 {
-  if (p_up==NULL) {
-    m_x1 = x1;
-    m_x2 = x2;
-  }
+  DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
   m_rejected.clear();
+  bool invonly(true), valid(mode&512);
   while (true) {
     m_nl=nl;
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
-	return this;
+	std::set<int> rej;
+	while (rej.size()<(size_t)m_nampl) {
+	  m_graph_winner=-1;
+	  double kt2min(std::numeric_limits<double>::max());
+	  for (int i(0);i<m_nampl;++i)
+	    if (rej.find(i)==rej.end() && p_scale[i]<kt2min) {
+	      kt2min=p_scale[i];
+	      m_graph_winner=i;
+	    }
+	  rej.insert(m_graph_winner);
+	  if (kt2>kt2min) {
+	    msg_Debugging()<<"unordered configuration (core) "
+			   <<sqrt(kt2)<<" vs. "<<sqrt(kt2min)<<"\n";
+	    continue;
+	  }
+	  if (m_graph_winner>=0) return this;
+	}
+	delete this;
+	return NULL;
       }
       break;
     }
-    m_rejected[m_cdata_winner->first]=m_cdata_winner->second.m_pt2ij.m_kt2-kt2;
+    m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
+    if (m_cdata_winner->second.m_pt2ij.m_op2<0.0) continue;
+    invonly=false;
     if (kt2>m_cdata_winner->second.m_pt2ij.m_kt2) {
       msg_Debugging()<<"unordered configuration "<<sqrt(kt2)<<" vs. "
 		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_kt2)<<"\n";
@@ -511,49 +541,65 @@ CalcJet(int nl,const double x1,const double x2,
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
-      Combine_Table *next(NextTable(tab,x1,x2,mode,m_cdata_winner->
+      Combine_Table *next(NextTable(tab,mode,m_cdata_winner->
 				    second.m_pt2ij.m_kt2));
       if (next!=NULL) return next;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";
   }
+  if (valid && invonly && kt2>0.0) {
+    msg_Debugging()<<"no valid configuration, retry previous\n";
+    delete this;
+    return NULL;    
+  }
   msg_Debugging()<<"trying unordered configuration\n";
-  std::map<Combine_Key,double> norejected;
+  bool zero(false);
+  CD_List norejected;
   while (true) {
     double nmin(std::numeric_limits<double>::max()), pmin(nmin);
-    std::map<Combine_Key,double>::iterator nwin(m_rejected.end()), pwin(nwin);
-    for (std::map<Combine_Key,double>::iterator 
-	   vit(m_rejected.begin());vit!=m_rejected.end();++vit) {
+    CD_List::iterator nwin(m_rejected.end()), pwin(nwin);
+    for (CD_List::iterator vit(m_rejected.begin());
+	 vit!=m_rejected.end();++vit) {
       if (norejected.find(vit->first)!=norejected.end()) continue;
-      if (vit->second<0.0) {
-	if (-vit->second<nmin) {
-	  nmin=-vit->second;
+      double ktdiff(vit->second.m_pt2ij.m_kt2-kt2);
+      if (ktdiff<0.0) {
+	if (-ktdiff<nmin) {
+	  nmin=-ktdiff;
 	  nwin=vit;
 	}
       }
       else {
-	if (vit->second<pmin) {
-	  pmin=vit->second;
+	if (ktdiff<pmin) {
+	  pmin=ktdiff;
 	  pwin=vit;
 	}
       }
     }
     if (nwin==m_rejected.end()) nwin=pwin;
     if (nwin==m_rejected.end()) {
-      delete this;
-      return NULL;
+      if (!zero) {
+	zero=true;
+	norejected.clear();
+	continue;
+      }
+      else {
+	if (valid && p_up==NULL) return CalcJet(nl,moms,mode&~512,kt2);
+	delete this;
+	return NULL;
+      }
     }
     norejected[nwin->first]=nwin->second;
+    if (valid && nwin->second.m_pt2ij.m_op2<0.0) continue;
     m_rejected.erase(nwin);
     m_nl=nl;
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) continue;
-    m_rejected[m_cdata_winner->first]=m_cdata_winner->second.m_pt2ij.m_kt2-kt2;
+    m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
-      Combine_Table *next(NextTable(tab,x1,x2,mode,m_cdata_winner->
+      Combine_Table *next(NextTable(tab,mode,zero?0.0:m_cdata_winner->
 				    second.m_pt2ij.m_kt2));
       if (next!=NULL) return next;
     }
@@ -574,8 +620,6 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
-    if (IsEqual(sqr(cit->second.m_pt2ij.m_kt2),
-		std::numeric_limits<double>::max())) continue;
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
@@ -641,31 +685,14 @@ Combine_Table *Combine_Table::CreateNext()
 	CombineMoms(p_moms,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl)) return NULL;
   }
 
-  // update x1,2 (before calling CalcJet again
   Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);
-  if (m_cdata_winner->first.m_i<2) {
-    double z=tab->Sprime()/Sprime();
-    if (m_cdata_winner->first.m_i==0) {
-      tab->m_x1=m_x1*z;
-      tab->m_x2=m_x2;
-    }
-    else {
-      tab->m_x1=m_x1;
-      tab->m_x2=m_x2*z;
-    }
-  }
-  else {
-    tab->m_x1=m_x1;
-    tab->m_x2=m_x2;
-  }
   return tab;
 }
 
 Combine_Table *Combine_Table::NextTable(Combine_Table *tab,
-					const double x1,const double x2,
 					const int mode,const double &kt2)
 {
-  Combine_Table* ct = tab->CalcJet(m_nl,x1,x2,NULL,mode,kt2);
+  Combine_Table* ct = tab->CalcJet(m_nl,NULL,mode,kt2);
   if (ct!=NULL) m_graph_winner=tab->m_graph_winner;
   else m_cdata_winner->second.p_down=NULL;
   // translate back
@@ -684,11 +711,13 @@ bool Combine_Table::IdentifyHardProcess()
     p_hardc = new int*[m_nampl];
     for (int i(0);i<m_nampl;++i) p_hardc[i] = new int[4];
   }
+  if (p_scale==NULL) p_scale = new double[m_nampl];
+  if (p_channel==NULL) p_channel = new int[m_nampl];
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1],0+2,1+2) &&
 	Combinable(p_legs[i][2],p_legs[i][3],2+2,3+2)) {
       double pt2ij1((p_moms[0]+p_moms[1]).Abs2());
-      double pt2ij2((p_moms[0]+p_moms[1]).Abs2());
+      double pt2ij2((p_moms[2]+p_moms[3]).Abs2());
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
@@ -701,11 +730,13 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][1]=0;
       p_hardc[i][2]=1;
       p_hardc[i][3]=1;
+      p_scale[i]=sqrt(dabs(pt2ij1*pt2ij2));
+      p_channel[i]=1;
     }
     else if (Combinable(p_legs[i][0],p_legs[i][2],0+2,2+2) &&
 	     Combinable(p_legs[i][1],p_legs[i][3],1+2,3+2)) {
       double pt2ij1((p_moms[0]-p_moms[2]).Abs2());
-      double pt2ij2((p_moms[0]-p_moms[2]).Abs2());
+      double pt2ij2((p_moms[1]-p_moms[3]).Abs2());
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
@@ -718,11 +749,13 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][1]=1;
       p_hardc[i][2]=0;
       p_hardc[i][3]=1;
+      p_scale[i]=sqrt(dabs(pt2ij1*pt2ij2));
+      p_channel[i]=2;
     }
     else if (Combinable(p_legs[i][0],p_legs[i][3],0+2,3+2) &&
 	     Combinable(p_legs[i][1],p_legs[i][2],1+2,2+2)) {
       double pt2ij1((p_moms[0]-p_moms[3]).Abs2());
-      double pt2ij2((p_moms[0]-p_moms[3]).Abs2());
+      double pt2ij2((p_moms[1]-p_moms[2]).Abs2());
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "
@@ -735,6 +768,8 @@ bool Combine_Table::IdentifyHardProcess()
       p_hardc[i][1]=1;
       p_hardc[i][2]=1;
       p_hardc[i][3]=0;
+      p_scale[i]=sqrt(dabs(pt2ij1*pt2ij2));
+      p_channel[i]=3;
     }
     else THROW(fatal_error,"No match for hard process.");
     m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
@@ -744,43 +779,7 @@ bool Combine_Table::IdentifyHardProcess()
 
 int Combine_Table::IdentifyHardPropagator(double &mmin) const
 {
-  msg_Debugging()<<METHOD<<"():\n";
-  msg_Indent();
-  int channel(-1);
-  mmin=std::numeric_limits<double>::max();
-  for (int i(0);i<m_nampl;++i) {
-    if (Combinable(p_legs[i][0],p_legs[i][1],0+2,1+2) &&
-	Combinable(p_legs[i][2],p_legs[i][3],2+2,3+2)) {
-      msg_Debugging()<<"s-channel "
-		     <<(p_moms[0]+p_moms[1]).Mass()<<"\n";
-      double val=(p_moms[0]+p_moms[1]).Abs2();
-      if (val<mmin) {
-	mmin=val;
-	channel=1;
-      }
-    }
-    else if (Combinable(p_legs[i][0],p_legs[i][2],0+2,2+2) &&
-	     Combinable(p_legs[i][1],p_legs[i][3],1+2,3+2)) {
-      msg_Debugging()<<"t-channel "
-		     <<sqrt(dabs((p_moms[0]-p_moms[2]).Abs2()))<<"\n";
-      double val=dabs((p_moms[0]-p_moms[2]).Abs2());
-      if (val<mmin) {
-	mmin=val;
-	channel=2;
-      }
-    }
-    else if (Combinable(p_legs[i][0],p_legs[i][3],0+2,3+2) &&
-	     Combinable(p_legs[i][1],p_legs[i][2],1+2,2+2)) {
-      msg_Debugging()<<"u-channel "
-		     <<sqrt(dabs((p_moms[0]-p_moms[3]).Abs2()))<<"\n";
-      double val=dabs((p_moms[0]-p_moms[3]).Abs2());
-      if (val<mmin) {
-	mmin=val;
-	channel=3;
-      }
-    }
-    else THROW(fatal_error,"No match for hard process.");
-  }
-  return channel;
+  mmin=p_scale[m_graph_winner];
+  return p_channel[m_graph_winner];
 }
 

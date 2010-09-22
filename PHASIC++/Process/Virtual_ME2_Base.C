@@ -12,9 +12,8 @@ using namespace ATOOLS;
 Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
                              const Flavour_Vector& flavs) :
   m_pinfo(pi), m_flavs(flavs),
-  m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), m_needsborn(false), 
-  m_newlibs(false), m_mur2(1.0),
-  p_aqcd(NULL), p_aqed(NULL)
+  m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+  m_mur2(1.0), m_mode(0), m_drmode(0)
 {
 }
 
@@ -32,20 +31,6 @@ bool Virtual_ME2_Base::SetColours(const Vec4D_Vector& mom)
 {
   THROW(fatal_error, "Virtual function called.");
   return false;
-}
-
-void Virtual_ME2_Base::SetCouplings(MODEL::Coupling_Map *const cpls)
-{
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
-  if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
-}
-
-double Virtual_ME2_Base::CouplingFactor(const int oqcd,const int oew) const
-{
-  double fac(1.0);
-  if (p_aqcd && oqcd) fac*=pow(p_aqcd->Factor(),oqcd);
-  if (p_aqed && oew) fac*=pow(p_aqed->Factor(),oew);
-  return fac;
 }
 
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>

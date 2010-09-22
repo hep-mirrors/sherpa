@@ -61,6 +61,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MODEL/Interaction_Models/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/Makefile \
+	  POWHEG/Tools/Makefile \
+	  POWHEG/Calculators/Makefile \
+	  POWHEG/Showers/Makefile \
+	  POWHEG/Main/Makefile \
+	  POWHEG/Makefile \
 	  PHASIC++/Main/Makefile \
 	  PHASIC++/Channels/Makefile \
 	  PHASIC++/Process/Makefile \
@@ -135,6 +140,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Scripts/Makefile \
 	  AddOns/Analysis/Makefile \
 	  AddOns/WhiteHat/Makefile \
+	  AddOns/MCFM/Makefile \
 	  AddOns/HZTool/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/Makefile \

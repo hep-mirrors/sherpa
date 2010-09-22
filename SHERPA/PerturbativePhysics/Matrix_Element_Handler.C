@@ -3,15 +3,17 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/POWHEG_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #ifdef USING__GZIP
@@ -31,8 +33,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   m_gens(dir, file),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
-  m_selectorfile(selectorfile), m_eventmode(0),
-  p_shower(NULL), m_totalxs(0.0), 
+  m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
+  p_shower(NULL), p_powheg(NULL), m_totalxs(0.0), 
   m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
@@ -80,6 +82,19 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 {
   if (p_ranin) delete p_ranin;
   if (p_ranout) delete p_ranout;
+  for (size_t i=0; i<m_procs.size(); ++i)
+    if (dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
+  if (p_powheg) delete p_powheg;
+}
+
+void Matrix_Element_Handler::InitPOWHEG()
+{
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_file);
+  std::string powheg=read.GetValue<std::string>("POWHEG_GENERATOR","CSS");
+  p_powheg = POWHEG_Getter::GetObject(powheg,POWHEG_Key(p_model,p_isr,&read));
 }
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
@@ -152,6 +167,8 @@ bool Matrix_Element_Handler::GenerateUnweightedEvent()
   m_evtinfo.m_ntrial=1.0/p_proc->Integrator()->EnhanceFactor();
   double wf(m_totalxs*rpa.Picobarn()/
 	    p_proc->Integrator()->EnhanceFactor());
+  double max(p_proc->Integrator()->Max());
+  if (m_evtinfo.m_weight>max) wf*=m_evtinfo.m_weight/max;
   if (p_proc->GetSubevtList()) 
     (*p_proc->GetSubevtList())*=wf/m_evtinfo.m_weight;
   m_evtinfo.m_weight=wf;
@@ -196,7 +213,6 @@ bool Matrix_Element_Handler::GenerateWeightedEvent()
 
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
 {
-  DEBUG_FUNC(pi);
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
@@ -207,7 +223,19 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     return procs;
   }
   else {
-    if (m_nlomode==1) {
+    if (m_nlomode==2) {
+      m_hasnlo=2;
+      if (p_powheg==NULL) InitPOWHEG();
+      POWHEG_Process *proc=new POWHEG_Process(m_gens,&m_procs);
+      proc->Init(pi, p_beam, p_isr);
+      proc->SetShower(p_shower->GetShower());
+      proc->SetPOWHEG(p_powheg);
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+      return procs;
+    }
+    else if (m_nlomode==1) {
+      m_hasnlo=1;
       if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	  Process_Info rpi(pi);
@@ -414,6 +442,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmaxeps,nf);
 	}
+	if (cur[0]=="RB_Max_Epsilon") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vrbmaxeps,nf);
+	}
 	if (cur[0]=="Enhance_Factor") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vefac,nf);
@@ -423,12 +455,12 @@ void Matrix_Element_Handler::BuildProcesses()
 	  ExtractMPvalues(cb,pbi.m_vefunc,nf);
 	}
 	if (cur[0]=="NLO_QCD_Part") {
-	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(cur[1]);
-	  pi.m_nlomode=m_nlomode;
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnloqcd,nf);
 	}
 	if (cur[0]=="NLO_EW_Part") {
-	  pi.m_fi.m_nloewtype=ToType<nlo_type::code>(cur[1]);
-	  pi.m_nlomode=m_nlomode;
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnloew,nf);
 	}
 	if (cur[0]=="Loop_Generator") pi.m_loopgenerator=cur[1];
         pi.p_gens=&m_gens;
@@ -550,6 +582,14 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
 	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
 	if (GetMPvalue(pbi.m_vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
+	if (GetMPvalue(pbi.m_vnloqcd,nfs,pnid,ds)) {
+          cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
+          cpi.m_nlomode=m_nlomode;
+        }
+	if (GetMPvalue(pbi.m_vnloew,nfs,pnid,ds)) {
+          cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
+          cpi.m_nlomode=m_nlomode;
+        }
 	std::vector<Process_Base*> proc=InitializeProcess(cpi);
 	for (size_t i(0);i<proc.size();i++) {
 	  procs.push_back(proc[i]);
@@ -561,6 +601,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
 	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
+	  if (GetMPvalue(pbi.m_vrbmaxeps,nfs,pnid,dd))
+	    proc[i]->Integrator()->SetRBMaxEpsilon(dd);
 	  double maxerr(-1.0);
 	  if (GetMPvalue(pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;
 	  proc[i]->Integrator()->SetPSHandler
@@ -587,14 +629,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
       if (procs.size()>1) skey.SetData("METS",jfargs);
     }
     procs[i]->SetSelector(skey);
-    if (pi.m_ckkw&1) {
-      cpi.m_coupling="Alpha_QCD 1";
-      if (procs.size()>1) {
-	if (cpi.m_scale.rfind('}')==std::string::npos)
-	  cpi.m_scale+="{MU_F2}";
-	cpi.m_scale+="{"+p_shower->GetShower()->GetKT2("Q2_CUT")+"}";
-      }
-    }
     procs[i]->SetScale
       (Scale_Setter_Arguments(p_model,cpi.m_scale,cpi.m_coupling));
     procs[i]->SetKFactor

@@ -3,13 +3,16 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -30,11 +33,14 @@ Jet_Finder::Jet_Finder
     m_dparam=ToType<double>(ycut.substr(ycut.find("|")+1));
     m_cuttag=ycut.substr(0, ycut.find("|"));
   }
-  // m_smin=m_ycut*m_s;
   m_pt2min=1.0;
   m_sel_log = new Selector_Log(m_name);
-  rpa.gen.AddCitation(1,"Matrix element merging with truncated showers is "+
-                      std::string("published under \\cite{Hoeche:2009rj}."));
+  static bool mets(false);
+  if (!mets) {
+    mets=true;
+    rpa.gen.AddCitation(1,"Matrix element merging with truncated showers is "+
+			std::string("published under \\cite{Hoeche:2009rj}."));
+  }
 }
 
 Jet_Finder::~Jet_Finder() 
@@ -118,9 +124,6 @@ void Jet_Finder::FillCombinations()
   if (p_yccalc==NULL) {
     if (p_proc==NULL) THROW(fatal_error,"Process not set.");
     p_sproc=p_proc->Process()->Get<Single_Process>();
-    //if (p_sproc==NULL) {
-    //  THROW(fatal_error, "Tried to apply JetFinder to Process_Group.");
-    //}
     m_moms.clear();
     m_flavs.clear();
     m_fills.resize(m_nin+m_nout+1);
@@ -240,9 +243,9 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   FillCombinations();
   PrepareMomList(p);
   m_ycut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
 		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
-  if (!m_on) return true;
   bool uc(false);
   SP(Color_Integrator) ci(p_proc->ColorIntegrator());
   if (ci!=NULL && ci->On()) {
@@ -271,7 +274,8 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 		     <<ID(j)<<"["<<m_flavs[j]<<"] <-> "
 		     <<ID(k)<<"["<<m_flavs[k]<<"], qcut = "
 		     <<sqrt(m_ycut*m_s);
-      double pt2ij=Qij2(m_moms[i],m_moms[j],m_moms[k],m_flavs[i],m_flavs[j]);
+      double pt2ij=Qij2(m_moms[i],m_moms[j],m_moms[k],m_flavs[i],m_flavs[j],
+                        m_dparam);
       msg_Debugging()<<", ptjk = "<<sqrt(pt2ij)<<" ("
 		     <<(pt2ij>=m_ycut*m_s)<<(pt2ij<m_ycut*m_s?")\n":")");
       if (pt2ij<m_ycut*m_s) return 1-m_sel_log->Hit(true);
@@ -283,48 +287,212 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   return 1-m_sel_log->Hit(false);
 }
 
+struct Qij2_Key {
+public:
+
+  double m_qij2;
+  size_t m_i, m_j, m_k;
+
+public:
+
+  inline Qij2_Key(const double &qij2=std::numeric_limits<double>::max(),
+		  const size_t &i=0,const size_t &j=0,const size_t &k=0):
+    m_qij2(qij2), m_i(i), m_j(j), m_k(k) {}
+
+};// end of struct Qij2_Key
+
 bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
-                            const ATOOLS::Flavour_Vector &fl, int n)
+                            NLO_subevtlist *const subs)
 {
-  // needs to be suitably defined, only useful for n = #coloured particles
-  ATOOLS::Vec4D_Vector   colp;
-  ATOOLS::Flavour_Vector colfl;
-  for (size_t i(0);i<fl.size();++i)
-    if (fl[i].Strong()) {
-      colfl.push_back(fl[i]);
-      colp.push_back(p[i]);
+  FillCombinations();
+  PrepareMomList(p);
+  m_ycut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
+  msg_Debugging()<<METHOD<<"("<<p_proc->Process()->Name()<<"): {\n";
+  bool uc(false);
+  SP(Color_Integrator) ci(p_proc->ColorIntegrator());
+  if (ci!=NULL && ci->On()) {
+    uc=true;
+    std::vector<int> ic(ci->I()), jc(ci->J());
+    if (!PrepareColList(ic,jc)) return 1-m_sel_log->Hit(true);
+  }
+  Qij2_Key qij2;
+  for (size_t cl(1);cl<m_fills.size();++cl) {
+    if (m_fills[cl].empty()) continue;
+    msg_Indent();
+    msg_Debugging()<<"level = "<<m_fills.size()-cl<<" {\n";
+    for (size_t ps(0);ps<m_fills[cl].size();++ps) {
+      size_t i(m_fills[cl][ps].first),
+	j(m_fills[cl][ps].second), k(m_fills[cl][ps].partner);
+      int cpl = m_fills[cl][ps].cpl;
+      if (uc && (cpl&1) && !ColorConnected(i,j,k)) continue;
+      if (m_flavs[i].IsQuark() && m_flavs[j].IsQuark() &&
+	  m_flavs[i]!=m_flavs[j].Bar()) continue;
+      double pt2ij=Qij2(m_moms[i],m_moms[j],m_moms[k],
+			kf_gluon,kf_gluon);
+      msg_Debugging()<<"  "<<ID(i)<<"["<<m_flavs[i]<<"] & "
+		     <<ID(j)<<"["<<m_flavs[j]<<"] <-> "
+		     <<ID(k)<<"["<<m_flavs[k]
+		     <<"], ptjk = "<<sqrt(pt2ij)<<"\n";
+      if (pt2ij<qij2.m_qij2) qij2=Qij2_Key(pt2ij,i,j,k);
     }
-  for (size_t i(0);i<colfl.size();++i)
-    for (size_t j(0);j<i;++j)
-      for (size_t k(0);k<colfl.size();++k)
-        if (k!=i && k!=j)
-          if (Qij2(colp[i],colp[j],colp[k],colfl[i],colfl[j])<m_smin)
-            return false;
-  return true;
+    msg_Debugging()<<"}\n";
+    break;
+  }
+  if (qij2.m_i==qij2.m_j)
+    THROW(fatal_error,"No valid clustering");
+  size_t i(ID(qij2.m_i).front()), j(ID(qij2.m_j).front());
+  size_t k(ID(qij2.m_k).front());
+  NLO_subevt *sub(NULL);
+  for (size_t l(0);l<subs->size();++l) {
+    sub=(*subs)[l];
+    if ((sub->m_i==i && sub->m_j==j && sub->m_k==k) ||
+	(sub->m_i==j && sub->m_j==i && sub->m_k==k)) break;
+    else sub=NULL;
+  }
+  if (sub==NULL) THROW(fatal_error,"Internal error");
+  Process_Base *pi(sub->Proc<Process_Integrator>()->Process());
+  Jet_Finder *jf((Jet_Finder*)pi->Selector()->GetSelector("Jetfinder"));
+  if (jf==NULL) THROW(critical_error,"No jet finder for "+pi->Name());
+  msg_Debugging()<<"} -> jf = "<<jf<<" => '"<<pi->Name()<<"'\n"<<*sub<<"\n";
+  Vec4D_Vector pp(CombineMoms(p,sub));
+  Vec4D sum;
+  for (size_t l(0);l<pp.size();++l)
+    sum+=l<(size_t)m_nin?-pp[l]:pp[l];
+  if (!IsEqual(sum,Vec4D(),1.0e-6)) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved ("
+	       <<i<<","<<j<<") <-> "<<k<<" {\n";
+    for (size_t l(0);l<pp.size();++l)
+      msg_Error()<<"  p["<<l<<"] = "<<pp[l]<<"\n";
+    msg_Error()<<"}"<<std::endl;
+  }
+  bool trg=jf->Trigger(pp);
+  return trg;
 }
 
-bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p)
+double Jet_Finder::Qij2Min(const ATOOLS::Vec4D_Vector &p,
+			   NLO_subevtlist *const subs)
 {
-  return Trigger(p);
-  // only useful for n = #coloured particles
-  for (size_t i(0);i<m_strongflavs.size();++i)
-    for (size_t j(0);j<i;++j)
-      for (size_t k(0);k<m_strongflavs.size();++k)
-        if (k!=i && k!=j)
-          if (Qij2(p[m_stronglocs[i]],p[m_stronglocs[j]],p[m_stronglocs[k]],m_strongflavs[i],m_strongflavs[j])>m_smin)
-            return false;
-  return true;
+  DEBUG_FUNC(subs->back()->m_pname);
+  Qij2_Key qij2;
+  const ATOOLS::Flavour *f(subs->back()->p_fl);
+  for (size_t n(0);n<subs->size()-1;++n) {
+    size_t i((*subs)[n]->m_i), j((*subs)[n]->m_j), k((*subs)[n]->m_k);
+    Vec4D pi(i<2?-p[i]:p[i]), pj(j<2?-p[j]:p[j]), pk(k<2?-p[k]:p[k]);
+    Flavour fi(i<2?f[i].Bar():f[i]), fj(j<2?f[j].Bar():f[j]);
+    double pt2ij=Qij2(pi,pj,pk,fi,fj);
+    msg_Debugging()<<"("<<i<<")["<<fi<<"] & ("<<j<<")["<<fj
+		   <<"] <-> ("<<k<<"), ptjk = "<<sqrt(pt2ij)<<"\n";
+    if (pt2ij<qij2.m_qij2) qij2=Qij2_Key(pt2ij,i,j,k);
+  }
+  msg_Debugging()<<"q_ij = "<<sqrt(qij2.m_qij2)<<"\n";
+  return qij2.m_qij2;
+}
+
+double Jet_Finder::Lam
+(const double &s,const double &sb,const double &sc) const
+{
+  return sqr(s-sb-sc)-4.0*sb*sc;
+}
+
+Vec4D_Vector Jet_Finder::CombineMoms
+(const Vec4D_Vector &p,NLO_subevt *const sub)
+{
+  size_t i(sub->m_i), j(sub->m_j), k(sub->m_k);
+  if (i>j) std::swap<size_t>(i,j);
+  Flavour flij(kf_none);
+  for (size_t m(0);m<sub->m_n;++m)
+    if (ID(sub->p_id[m]).size()==2) {
+      flij=sub->p_fl[m];
+      break;
+    }
+  double mij2=sqr(flij.Mass()), mk2=sqr(m_flavs[1<<k].Mass());
+  if (i>1 && j>1 && k>1) {
+    Vec4D pi(p[i]), pj(p[j]), pk(p[k]), Q(pi+pj+pk);
+    double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
+    Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
+    Vec4D pijt(Q-pkt);
+    if (lrat<0.0 || pkt[0]<0.0 || pijt[0]<0.0) return Vec4D_Vector();
+    return GetMomMap(p,pijt,pkt,sub,i);
+  }
+  if (i>1 && j>1 && k<2) {
+    Vec4D pi(p[i]), pj(p[j]), pa(-p[k]), Q(pa+pi+pj);
+    double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
+    Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
+    Vec4D pijt(Q-pat), pb(-p[1-k]);
+    if (lrat<0.0 || pat[0]>0.0 || pijt[0]<0.0) return Vec4D_Vector();
+    Vec4D_Vector pp(GetMomMap(p,pijt,pat,sub,i));
+    ZAlign(pp,pat,pb,mk2,sqr(m_flavs[1<<(1-k)].Mass()));
+    return pp;
+  }
+  if (i<2 && j>1 && k>1) {
+    Vec4D pa(-p[i]), pj(p[j]), pk(p[k]), Q(pa+pj+pk);
+    double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pa+pj).Abs2(),mk2);
+    Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
+    Vec4D pajt(Q-pkt), pb(-p[1-i]);
+    if (lrat<0.0 || pkt[0]<0.0 || pajt[0]>0.0) return Vec4D_Vector();
+    Vec4D_Vector pp(GetMomMap(p,pajt,pkt,sub,i));
+    ZAlign(pp,pajt,pb,mij2,sqr(m_flavs[1<<(1-i)].Mass()));
+    return pp;
+  }
+  if (i<2 && j>1 && k<2) {
+    Vec4D pa(-p[i]), paj(pa+p[j]), pb(-p[k]), Q(paj+pb);
+    double Q2=Q.Abs2(), saj=paj.Abs2();
+    Vec4D_Vector pp(p);
+    ZAlign(pp,paj,pb,saj,mk2,1);
+    Q=paj+pb;
+    double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,saj,mk2);
+    Vec4D pbt(sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
+    if (lrat<0.0 || pbt[0]>0.0) return Vec4D_Vector();
+    return GetMomMap(pp,Q-pbt,pbt,sub,i);
+  }
+  return Vec4D_Vector();
+}
+
+Vec4D_Vector Jet_Finder::GetMomMap
+(const Vec4D_Vector &p,const Vec4D &pijt,const Vec4D &pkt,
+ NLO_subevt *const sub,const size_t &i) const
+{
+  Vec4D_Vector pp(p.size()-1);
+  for (size_t m(0);m<sub->m_n;++m) {
+    size_t l(ID(sub->p_id[m]).front());
+    if (l==i) pp[m]=pijt;
+    else if (l==sub->m_k) pp[m]=pkt;
+    else pp[m]=p[l];
+  }
+  return pp;
+}
+
+void Jet_Finder::ZAlign
+(ATOOLS::Vec4D_Vector &p,ATOOLS::Vec4D &pa,
+ const ATOOLS::Vec4D &pb,const double &ma2,const double &mb2,
+ const int mode) const
+{
+  Vec4D Q(pa+pb);
+  double Q2=Q.Abs2(), papb=pa*pb, sb=Sign(pb[3]), ea=0.0;
+  if (IsZero(mb2)) ea=0.5*(papb+ma2*sqr(pb[3])/papb)/pb[0];
+  else ea=(pb[0]*papb+dabs(pb[3])*sqrt(papb*papb-ma2*mb2))/mb2;
+  Vec4D pan(ea,0.0,0.0,-sb*sqrt(ea*ea-ma2)), pam(ea,0.0,0.0,-pan[3]);
+  if (dabs((pam+pb).Abs2()-Q2)<dabs((pan+pb).Abs2()-Q2)) pan=pam;
+  Poincare cmso(-Q), cmsn(-pan-pb);
+  cmso.Boost(pa);
+  Poincare zrot(pa,-sb*Vec4D::ZVEC);
+  for (size_t m(0);m<p.size();++m) {
+    cmso.Boost(p[m]);
+    zrot.Rotate(p[m]);
+    cmsn.BoostBack(p[m]);
+  }
 }
 
 bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 {
-  // copied from NJet_Finder
-  double s=(p[0]+p[1]).Abs2();
-  return (s>m_smin*4.);
+  return true;
 }
 
 double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
-			const Flavour &fi,const Flavour &fj,const int mode)
+			const Flavour &fi,const Flavour &fj,
+                        const double &dparam,
+                        const int mode)
 {
   Vec4D npi(pi), npj(pj);
   Flavour nfi(fi), nfj(fj);
@@ -342,7 +510,7 @@ double Jet_Finder::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   if (fi.IsPhoton() || fj.IsPhoton()) {
     if (pi[0]<0.0) return pj.PPerp2();
     if (pj[0]<0.0) return pi.PPerp2();
-    return Min(pi.PPerp2(), pj.PPerp2())*sqr(pi.DR(pj)/m_dparam);
+    return Min(pi.PPerp2(), pj.PPerp2())*sqr(pi.DR(pj)/dparam);
   }
   double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
   double mti(sqr(Flavour(nfi).Mass())), mtj(sqr(Flavour(nfj).Mass()));
@@ -421,29 +589,31 @@ bool Jet_Finder::ColorConnected
   return true;
 }
 
-void Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data *cuts) 
+void Jet_Finder::BuildCuts(Cut_Data *cuts) 
 {
+  FillCombinations();
   if (!m_on) return;
   msg_Debugging()<<METHOD<<"(): {\n";
+  for (std::set<size_t>::const_iterator
+	 it(m_pcs.begin());it!=m_pcs.end();++it) {
+    const size_t id=*it, i=ID(id).front();
+    msg_Debugging()<<"  p_{T,"<<i<<"} > "<<sqrt(m_pt2min)<<"\n";
+    cuts->etmin[i]=Max
+      (cuts->etmin[i],sqrt(m_pt2min+sqr(m_flavs[id].SelMass())));
+  }
   for (int i(m_nin); i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].Mass();
     if (m_fl[i].Resummed()) {
       for (int j(i+1); j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Resummed()) {
 	  double scut=Max(1.0,sqr(m_fl[i].Mass())+sqr(m_fl[j].Mass()));
-	  msg_Debugging()<<"  ("<<i<<","<<j<<") -> "<<sqrt(scut)<<"\n";
+	  msg_Debugging()<<"  m_{"<<i<<","<<j<<"} > "<<sqrt(scut)<<"\n";
 	  cuts->scut[i][j]=cuts->scut[j][i]=Max(cuts->scut[i][j],scut);
 	}
       }
     }
   }
   msg_Debugging()<<"}\n";
-}
-
-void Jet_Finder::BuildCuts(Cut_Data *cuts) 
-{
-  FillCombinations();
-  UpdateCuts(0.0,0.0,cuts);
 }
 
 std::string Jet_Finder::ReplaceTags(std::string &expr) const
@@ -475,6 +645,12 @@ Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
 				(Flavour*)&key.p_proc->Process()->
 				Flavours().front(),key[0][0]));
   jf->SetProcess(key.p_proc);
+  static bool menlots(false);
+  if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
+    menlots=true;
+    rpa.gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
+			std::string("published under \\cite{Hoeche:2010kg}."));
+  }
   if (key.front().size()>1 && key[0][1]=="LO") jf->SetOn(false);
   return jf;
 }

@@ -7,7 +7,6 @@
 namespace PDF {  
 
   class Structure_Function : public ISR_Base {
-    double m_x,m_q2;
   public:
 
     // constructor

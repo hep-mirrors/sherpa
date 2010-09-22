@@ -8,7 +8,7 @@ namespace CSSHOWER {
     inline LF_VVV_FF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -26,7 +26,7 @@ namespace CSSHOWER {
     inline LF_VVV_FI(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -44,7 +44,7 @@ namespace CSSHOWER {
     inline LF_VVV_IF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -62,7 +62,7 @@ namespace CSSHOWER {
     inline LF_VVV_II(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -80,7 +80,7 @@ using namespace ATOOLS;
 
 double LF_VVV_FF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
@@ -88,7 +88,6 @@ double LF_VVV_FF::operator()
   double massless = 2. * ( 1./(1.-z+z*y) + 1./(z+y-z*y) -2. + z*(1.-z) );
   if (muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless;
-    if (mode&1) return value;
     return value * JFF(y);
   }
   else {
@@ -104,7 +103,6 @@ double LF_VVV_FF::operator()
     }
     massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = 2.0 * p_cf->Coupling(scale,0) * massive;
-    if (mode&1) return value;
     return value * JFF(y);
   }
 }
@@ -129,10 +127,9 @@ double LF_VVV_FF::Z()
 
 double LF_VVV_FI::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 4.0*p_cf->Coupling(scale,0) * ( 1./(1.-z+y) + 1./(z+y) -2. + z*(1.-z) );
-  if (mode&1) return value;
   return value * JFI(y,eta,scale);
 }
 
@@ -157,14 +154,13 @@ double LF_VVV_FI::Z()
 
 double LF_VVV_IF::operator() 
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double muk2 = sqr(p_ms->Mass(m_flspec))/Q2;
   double massless = 2. * ( 1./(1.-z+y) + 1./z - 2. +z*(1.-z));
   if (muk2==0.) {
     //the massless case
     double value = 2.0 * p_cf->Coupling(scale,0) * massless;
-    if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
   else {
@@ -174,7 +170,6 @@ double LF_VVV_IF::operator()
       return 0.;
   }
     double value = 2.0 * p_cf->Coupling(scale,0) * massive;
-    if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
 }
@@ -200,10 +195,9 @@ double LF_VVV_IF::Z()
 
 double LF_VVV_II::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 4.0 * p_cf->Coupling(scale,0) * ( 1./(1.-z) + 1./z -2. +z*(1.-z));
-  if (mode&1) return value;
   return value * JII(z,y,eta,scale);
 }
 

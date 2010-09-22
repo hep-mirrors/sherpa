@@ -7,31 +7,30 @@
 namespace PHASIC {
 
   class Cut_Data {
-    ATOOLS::Flavour * fl;
+    const ATOOLS::Flavour * fl;
+    double ** cosmin_save;
     double ** cosmax_save;
     double ** scut_save;
     double *  energymin_save;
     std::map<std::string,double> m_smin_map;
     char GetIndexID(int id);
     double Getscut(std::vector<char>,std::vector<char>,int,int,int);
+    void Reset(bool);
   public:
     double ** cosmin;
     double ** cosmax;
     double ** scut;
     double *  energymin;
-    double *  energymax;
     double *  etmin;
     int       nin, ncut;
     double    smin;
 
     Cut_Data();
     ~Cut_Data();
-    void Init(int,int,ATOOLS::Flavour *);
-    //void Init(Cut_Data *,Flavour *);
+    void Init(int,const ATOOLS::Flavour_Vector &fl);
     void Update(double,double);
 
     void Complete();
-    void Reset(bool);
     double Smin() const { return smin; }
     double Getscut(std::string);
     void Setscut(std::string,double);

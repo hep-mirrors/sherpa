@@ -165,8 +165,7 @@ bool Grid_Creator::InitializeCalculation(PHASIC::Process_Group *const processes)
   PHASIC::Selector_Key skey(processes->Integrator(),&read);
   skey.SetData(m_criterion,bounds);
   processes->SetSelector(skey);
-  processes->CalculateTotalXSec(OutputPath()+OutputFile()
-				+MCExtension(),true);
+  processes->Integrator()->PSHandler()->InitCuts();
   return true;
 }
 
@@ -232,11 +231,8 @@ bool Grid_Creator::CreateGrid()
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
   msg->SetLevel(m_outputlevel);
-  if (!InitializeCalculation(p_processes)) {
-    msg_Error()<<"Grid_Creator_Base::CreateGrid(..): "
-	       <<"Initialization failed! Abort."<<std::endl;
-    return false;
-  }
+  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()
+				  +MCExtension(),true);
   if (!CreateGrid(p_processes)) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 	     <<"Grid creation failed."<<std::endl;

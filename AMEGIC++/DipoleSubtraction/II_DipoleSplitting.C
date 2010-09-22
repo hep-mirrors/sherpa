@@ -46,21 +46,6 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case 4:
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
   }
-  if (1) {
-    double pf = (m_vi)/m_alpha;
-    switch (m_ft) {
-    case 1:
-      m_sff -= pf*Vcijf(1);
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    case 4:
-      m_sff -= pf*(0.5*Vcijf(4)+m_nf*Vcijf(3));
-      break;
-    }
-  }
 }
 
 double II_DipoleSplitting::GetF()

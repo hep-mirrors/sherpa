@@ -5,12 +5,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS {
-
-  class Integration_Info;
-  class Data_Reader;
-
-}
+namespace ATOOLS { class Data_Reader; }
 
 namespace PDF {
 
@@ -62,8 +57,6 @@ namespace PDF {
     virtual ~PDF_Base();
 
     // member functions
-    virtual void AssignKeys(ATOOLS::Integration_Info *const info);
-
     virtual bool   Collinear(const double kp2) const;
     virtual double Cut(const std::string &type);
     

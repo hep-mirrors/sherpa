@@ -5,6 +5,7 @@
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
@@ -141,7 +142,7 @@ bool COMIX::Single_Process::MapProcess()
 bool COMIX::Single_Process::GeneratePoint()
 {
   m_zero=true;
-  m_lastxs=m_last=0.0;
+  m_lastxs=m_last[1]=m_last[0]=0.0;
   if (p_map!=NULL && m_lookup && p_map->m_lookup) 
     return !(m_zero=p_map->m_zero);
   if (!p_int->ColorIntegrator()->GeneratePoint()) return false;
@@ -157,11 +158,12 @@ double COMIX::Single_Process::Differential(const Cluster_Amplitude &ampl)
   return PHASIC::Process_Base::Differential(ampl);
 }
 
-double COMIX::Single_Process::Partonic(const Vec4D_Vector &p) 
+double COMIX::Single_Process::Partonic
+(const Vec4D_Vector &p,const int mode) 
 {
-  if (p_map!=NULL && m_lookup && p_map->m_lookup)
-    SetTrigger(p_map->Trigger());
-  if (m_zero || !Trigger()) return m_lastxs=0.0;
+  if (mode==1 && !(p_map!=NULL?p_map:this)
+      ->p_scale->Scale2()) return m_lastxs;
+  if (m_zero || !Selector()->Result()) return m_lastxs=0.0;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
     double psm(m_flavs[i].Mass());
@@ -172,7 +174,8 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p)
     m_lastxs=p_map->m_lastxs;
   }
   else {
-    (p_map!=NULL?p_map:this)->p_scale->CalculateScale(p);
+    Single_Process *sp(p_map!=NULL?p_map:this);
+    sp->p_scale->CalculateScale(p,mode);
 #ifdef TIME_CDBG_ME
     double stime(rpa.gen.Timer().UserTime());
 #endif
@@ -228,7 +231,7 @@ bool COMIX::Single_Process::Tests()
   }
   if (!p_int->ColorIntegrator()->
       ConstructRepresentations(ids,types,acts)) return false;
-  const Decay_Info_Vector &dinfos(p_bg->GetAmplitude()->DecayInfos());
+  const DecayInfo_Vector &dinfos(p_bg->GetAmplitude()->DecayInfos());
   std::vector<size_t> dids(dinfos.size());
   acts.resize(dids.size());
   types.resize(dids.size());
@@ -300,12 +303,6 @@ Flavour COMIX::Single_Process::ReMap(const Flavour &fl) const
   if (fit!=m_fmap.end()) return fit->second.Bar();
   THROW(fatal_error,"Invalid flavour '"+ToString(fl)+"'");
   return fl;
-}
-
-void COMIX::Single_Process::SetKFactorOn(const bool on)
-{
-  PHASIC::Single_Process::SetKFactorOn(on);
-  if (p_map) p_map->SetKFactorOn(on);
 }
 
 bool COMIX::Single_Process::Combinable

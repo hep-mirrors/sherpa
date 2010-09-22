@@ -37,10 +37,9 @@ namespace PHASIC {
 
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
 
     void   BuildCuts(Cut_Data *);
-    void   UpdateCuts(double,double,Cut_Data *);
   };
 }
 
@@ -152,16 +151,16 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
   return (1-m_sel_log->Hit(1-trigger));
 }
 
-bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,int ns)
+bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
 {
   if (m_n<1) return true;
 
   // create copy
   m_jetpt.clear();
-  int n=0;
+  int n=0, ns=subs->back()->m_n-m_nin;
   Vec4D * moms = new Vec4D[ns];
   for (int i=m_nin;i<ns+m_nin;i++) {
-    if (fl[i].Resummed()) {
+    if (subs->back()->p_fl[i].Resummed()) {
       moms[n]=p[i];
       n++;
     }
@@ -266,11 +265,6 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
 
 
 void NJet_Finder::BuildCuts(Cut_Data * cuts) 
-{
-  return;
-}
-
-void   NJet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
 {
   return;
 }

@@ -66,18 +66,15 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   if (m_nin==2) {
     m_isrspkey.Assign("s' isr",4,0,p_info);
     m_isrykey.Assign("y isr",3,0,p_info);
+    m_isrxkey.Assign("x isr",5,0,p_info);
     m_beamspkey.Assign("s' beam",4,0,p_info);
     m_beamykey.Assign("y beam",3,0,p_info);
-    m_mu2key[0].Assign("mu2_1",1,0,p_info);
-    m_mu2key[1].Assign("mu2_2",1,0,p_info);
     p_beamhandler->AssignKeys(p_info);
-    p_isrhandler->AssignKeys(p_info);
   }
 #ifdef USING__Threading
   m_uset=0;
 #endif
   m_nvec=m_nin+m_nout;
-  p_cms.resize(m_nvec);
   p_lab.resize(m_nvec);  
 }
 
@@ -96,7 +93,7 @@ void Phase_Space_Handler::InitCuts()
 {
   if (p_cuts!=NULL) delete p_cuts;
   p_cuts = new Cut_Data();
-  p_cuts->Init(m_nin,m_nout,&p_flavours.front());
+  p_process->Process()->InitCuts(p_cuts);
   p_process->Process()->FillOnshellConditions();
   p_process->Process()->BuildCuts(p_cuts);
 }
@@ -111,7 +108,6 @@ bool Phase_Space_Handler::InitIncoming()
     return 0;
   } 
   if (m_nin>1) {
-    InitCuts();
     m_smin=ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin());
   }
   m_initialized=1;
@@ -120,7 +116,7 @@ bool Phase_Space_Handler::InitIncoming()
 
 double Phase_Space_Handler::Integrate() 
 {
-  if (p_process->Points()>0 && dabs(p_process->TotalError())<dabs(m_error*p_process->TotalXS())) 
+  if (p_process->Points()>0 && p_process->TotalError()<dabs(m_error*p_process->TotalXS())) 
     return p_process->TotalXS()*rpa.Picobarn();
   p_integrator = new Phase_Space_Integrator();
   if (!InitIncoming()) return 0;
@@ -146,7 +142,7 @@ double Phase_Space_Handler::Integrate()
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
 #ifdef USING__Threading
-  if (m_nout>3) {
+  if (m_nout>3 && (p_process->Process()->ThreadInfo()&1)) {
   pthread_cond_init(&m_sme_cnd,NULL);
   pthread_cond_init(&m_tme_cnd,NULL);
   pthread_mutex_init(&m_sme_mtx,NULL);
@@ -226,7 +222,6 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
     double E2 = (1.-x)*Eprime;
     p[0] = Vec4D(E1,0.,0.,sqrt(sqr(E1)-sqr(m_m[0])));
     p[1] = Vec4D(E2,(-1.)*Vec3D(p[0]));
-    m_flux = 1./(2.*sqrt(sqr(m_isrspkey[3]-m_m2[0]-m_m2[1])-4.*m_m2[0]*m_m2[1]));
     if (p_beamhandler->On()==0 && p_isrhandler->On()==0) {
       double eb1=p_beamhandler->GetBeam(0)->Energy();
       double eb2=p_beamhandler->GetBeam(1)->Energy();
@@ -312,7 +307,7 @@ void Phase_Space_Handler::CalculatePS()
       m_psweight*=p_beamchannels->Weight();
     }
   }
-  p_fsrchannels->GenerateWeight(&p_cms.front(),p_cuts);
+  p_fsrchannels->GenerateWeight(&p_lab.front(),p_cuts);
   m_psweight*=p_fsrchannels->Weight();
 }
 
@@ -373,15 +368,16 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     }
     if (!(mode&psm::no_lim_isr)) p_isrhandler->SetSprimeMin(m_smin);
     if (!(mode&psm::no_dice_isr)) {
-      p_isrhandler->SetLimits();
-      p_isrhandler->SetMasses(&process->Process()->
-			      Selected()->Flavours().front(),m_nout);
+      p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
+			      m_isrxkey.Doubles());
+      p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
       if (p_isrhandler->On()>0) { 
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
-    if (!p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&process->Process()->
-			       Selected()->Flavours().front(),m_nin+m_nout)) {
+    if (!p_isrhandler->MakeISR(m_isrspkey[3],m_isrykey[2],
+			     p_lab,process->Process()->
+			     Selected()->Flavours())) {
       if (p_beamchannels) p_beamchannels->NoDice();    
       if (p_isrchannels)  p_isrchannels->NoDice();    
       p_fsrchannels->NoDice();
@@ -389,12 +385,17 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     }
     if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {
       if (p_isrhandler->On()==0) m_isrspkey[3]=m_beamspkey[3];
-      process->Process()->
-	UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
+      p_cuts->Update(m_isrspkey[3],m_beamykey[2]+m_isrykey[2]);
     }
     else {
       MakeIncoming(&p_lab.front());
     }
+  }
+  if (m_nin>1) {
+    if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(&p_lab.front(),m_nvec);
+    if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(&p_lab.front(),m_nvec);
+    if (p_massboost) for (int i=0;i<m_nvec;++i) 
+      p_massboost->BoostBack(p_lab[i]);
   }
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
   if (!Check4Momentum(p_lab)) {
@@ -402,13 +403,6 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
  						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
     return 0.;
-  }
-  for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
-  if (m_nin>1) {
-    if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(&p_lab.front(),m_nvec);
-    if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(&p_lab.front(),m_nvec);
-    if (p_massboost) for (int i=0;i<m_nvec;++i) 
-      p_massboost->BoostBack(p_lab[i]);
   }
   m_result_2=m_result_1=0.0;
   if (process->Process()->Trigger(p_lab)) {
@@ -428,14 +422,14 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       pthread_cond_signal(&m_tme_cnd);
     }
     else {
+      CalculatePS();
       CalculateME();
       if (m_result_1+m_result_2==0.) { return 0.;}
-      CalculatePS();
     }
 #else
+    CalculatePS();
     CalculateME();
     if (m_result_1+m_result_2==0.) { return 0.;}
-    CalculatePS();
 #endif
     msg_Debugging()<<"csum: me = "<<m_result_1<<" / "<<m_result_2
 		   <<", ps = "<<m_psweight<<", p[2] = "<<p_lab[2]
@@ -443,11 +437,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     m_result_1*=m_psweight;
     m_result_2*=m_psweight;
   }
-  if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
-    m_flux=p_isrhandler->Flux();
-  }
-  m_psweight*=m_flux;
-  PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+  NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
   if (nlos) {
     for (size_t i=0;i<nlos->size();i++) {
       (*nlos)[i]->m_flip=0;
@@ -455,7 +445,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
-  return m_flux*(m_result_1+m_result_2);
+  return (m_result_1+m_result_2);
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -476,74 +466,22 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p)
 
 Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
 {
-  bool use_overflow=true;
-  if (m_nin==1) use_overflow=false;
   if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   m_weight=1.;
-  double value;
   for (int j=1, i=1;i<m_maxtrials+1;i++) {
-    double max = cur->Max();
-    if (cur->Overflow()==0.) {
-      cur->RestoreInOrder(); // use last order for overflow events
-      p_isrhandler->SetRunMode(1);
-      value = Differential(cur);
-    }
-    else {
-      value = cur->Overflow();
-      std::vector<double> & xinfo =cur->XInfo();
-      m_beamspkey[3] = xinfo[0];
-      m_beamykey[2]  = xinfo[1];
-      m_isrspkey[3]  = xinfo[2];
-      m_isrykey[2]   = xinfo[3];
-      m_beamykey[0]  = xinfo[4];
-      m_beamykey[1]  = xinfo[5];
-      m_isrykey[0]   = xinfo[6];
-      m_isrykey[1]   = xinfo[7];
-      if (!p_isrhandler->MakeISR(&p_lab.front(),m_nvec,&cur->Process()->
-                                 Flavours().front(),m_nin+m_nout)) {
-        return new Weight_Info(1, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
-      }
-      p_lab=cur->Momenta();
-      if (value > max) {
-	cur->SetOverflow(value-max);
-	value=max;
-      }
-      else {
-	cur->SetOverflow(0.);
-      }
-      m_result_1=value;
-      m_result_2=0.;
-    }
+    cur->RestoreInOrder();
+    p_isrhandler->SetRunMode(1);
+    double value = Differential(cur), max = cur->Max();
     if (value == 0.) {
       ++j;
     }
     else {
       double disc = 0.;
       if (value > max) {
-	if (!use_overflow) {
-	  // don't use overflow
-	  msg_Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
-		   <<"   Shifted maximum in "<<cur->Process()->Name()<<" : "
-		    <<cur->Max()<<" -> "<<value<<std::endl;
-	  cur->SetMax(value*1.001);
-	  p_process->SetMax(0.);
-	}
-	else {
-	  // use overflow
-	  cur->SetOverflow(value-max);
-	  std::vector<double> & xinfo =cur->XInfo();
-	  xinfo[0]=m_beamspkey[3];
-	  xinfo[1]=m_beamykey[2];
-	  xinfo[2]=m_isrspkey[3];
-	  xinfo[3]=m_isrykey[2];
-	  xinfo[4]=m_beamykey[0];
-	  xinfo[5]=m_beamykey[1];
-	  xinfo[6]=m_isrykey[0];
-	  xinfo[7]=m_isrykey[1];
-	  value=max;	
-	}
+	msg_Info()<<METHOD<<"(): Point for '"<<cur->Process()->Name()
+		  <<"' exceeds maximum by "<<value/cur->Max()-1.0<<"."<<std::endl;
       }
       else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
@@ -591,7 +529,7 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
   if (value != 0.) {
     ++m_events;
     double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
-    PHASIC::ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
+    ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
     double pnf=dabs(m_result_1)/dabs(m_result_1+m_result_2);
     if (pnf < ATOOLS::ran.Get()) {
       selected->SetMomenta(p_lab);
@@ -601,7 +539,7 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
       xf2=p_isrhandler->XF2(1);
       mu12=p_isrhandler->MuF2(1);
       mu22=p_isrhandler->MuF2(0);
-      PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+      NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
       if (nlos) {
 	(*nlos).MultMEwgt(1./(1.-pnf));
 	for (size_t l=0;l<nlos->size();l++) 
@@ -621,7 +559,7 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
       xf2=p_isrhandler->XF2(0);
       mu12=p_isrhandler->MuF2(0);
       mu22=p_isrhandler->MuF2(1);
-      PHASIC::NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+      NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
       if (nlos) (*nlos).MultMEwgt(1./pnf);
       if (wgtinfo) {
 	(*wgtinfo)*=m_psweight/pnf;
@@ -697,7 +635,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   }
   else {
     double m[2]={fl[0].Mass(),fl[1].Mass()};
-    double E=rpa.gen.Ecms();
+    double E=0.5*rpa.gen.Ecms();
     if (info->m_fi.m_ps.size()==1)
       E=info->m_fi.m_ps.front().m_fl.Mass();
     if (E<m[0]+m[1]) return;
@@ -719,7 +657,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   }
   else {
     double m[2]={flavs[0].Mass(),flavs[1].Mass()};
-    double E=rpa.gen.Ecms();
+    double E=0.5*rpa.gen.Ecms();
     if (E<m[0]+m[1]) return;
     double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
     p[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));
@@ -730,13 +668,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   delete TestCh;
 }
 
-void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
+void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-  Data_Reader read(" ",";","!","=");
-  int ovf(0);
-  if (!read.ReadFromFile(ovf,"GENERATE_RESULT_DIRECTORY")) ovf=0;
-  msg_Tracking()<<"Write out channels into directory : "<<pID<<std::endl;
-  ATOOLS::MakeDir(pID,force|ovf); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");

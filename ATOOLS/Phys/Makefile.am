@@ -9,6 +9,9 @@ libToolsPhys_la_SOURCES       =	\
 				Decay_Table.C \
 				Decay_Map.C \
 				Particle_List.C \
+				NLO_Subevt.C \
+				RB_Data.C \
+				Decay_Info.C \
 				Cluster_Leg.C \
 				Cluster_Amplitude.C \
 				Blob.C \
@@ -34,6 +37,9 @@ localinc_HEADERS      =	\
 			Decay_Channel.H \
 			Decay_Table.H \
 			Decay_Map.H \
+			NLO_Subevt.H \
+			RB_Data.H \
+			Decay_Info.H \
 			Cluster_Leg.H \
 			Cluster_Amplitude.H \
 			Flow.H \

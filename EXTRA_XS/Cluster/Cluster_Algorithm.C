@@ -80,12 +80,11 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
     if (sintt&2) kt2=Min(kt2,dabs((moms[0]-moms[2]).Abs2()));
     if (sintt&4) kt2=Min(kt2,dabs((moms[0]-moms[3]).Abs2()));
   }
-  p_ampl->SetKT2QCD(kt2);
-  p_ampl->SetX1(xs->Integrator()->ISR()->X1());
-  p_ampl->SetX2(xs->Integrator()->ISR()->X2());
+  p_ampl->SetKT2(kt2);
+  p_ampl->SetMu2(kt2);
   p_ampl->SetOrderEW(xs->OrderEW());
   p_ampl->SetOrderQCD(xs->OrderQCD());
-  if (msg_LevelIsDebugging()) p_ampl->Print();
+  msg_Debugging()<<*p_ampl<<"\n";
   return true;
 }
 

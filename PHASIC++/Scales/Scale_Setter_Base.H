@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace MODEL { class Model_Base; }
@@ -51,11 +52,13 @@ namespace PHASIC {
     MODEL::Model_Base   *p_model;
     MODEL::Coupling_Map *p_cpls;
 
-    std::vector<double> m_scale;
+    std::vector<double> m_scale, m_escale;
 
     std::string m_coupling;
 
     bool m_scale2;
+
+    ATOOLS::ClusterAmplitude_Vector m_ampls;
 
     mutable Jet_Finder *p_jf;
 
@@ -68,13 +71,15 @@ namespace PHASIC {
 
     void SetCouplings();
 
-    virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p) = 0;
-    virtual double CalculateScale2(const std::vector<ATOOLS::Vec4D> &p);
+    virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
+				  const int mode) = 0;
 
     virtual ATOOLS::Vec4D Momentum(const size_t &i) const;
 
     virtual double HT() const;
     virtual double YCut() const;
+
+    inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
     inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
@@ -85,6 +90,10 @@ namespace PHASIC {
     inline Process_Base *Process() const { return p_proc; }
 
     inline bool Scale2() { return m_scale2; }
+
+    inline ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
+
+    inline MODEL::Coupling_Map *Couplings() const { return p_cpls; }
 
     static void ShowSyntax(const size_t i);
 

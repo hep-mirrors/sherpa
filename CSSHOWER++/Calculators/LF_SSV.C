@@ -10,7 +10,7 @@ namespace CSSHOWER {
     inline LF_SSV_FF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -28,7 +28,7 @@ namespace CSSHOWER {
     inline LF_SSV_FI(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -46,7 +46,7 @@ namespace CSSHOWER {
     inline LF_SSV_IF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -64,7 +64,7 @@ namespace CSSHOWER {
     inline LF_SSV_II(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -78,7 +78,7 @@ namespace CSSHOWER {
     inline LF_SVS_FF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -96,7 +96,7 @@ namespace CSSHOWER {
     inline LF_SVS_FI(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -114,7 +114,7 @@ namespace CSSHOWER {
     inline LF_SVS_IF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -132,7 +132,7 @@ namespace CSSHOWER {
     inline LF_SVS_II(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -146,7 +146,7 @@ namespace CSSHOWER {
     inline LF_VSS_FF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -164,7 +164,7 @@ namespace CSSHOWER {
     inline LF_VSS_FI(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -182,7 +182,7 @@ namespace CSSHOWER {
     inline LF_VSS_IF(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -200,7 +200,7 @@ namespace CSSHOWER {
     inline LF_VSS_II(const SF_Key &key): SF_Lorentz(key) {}
 
     double operator()(const double,const double,const double,
-		      const double,const double,int mode=0);
+		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
     double OverEstimated(const double,const double);
@@ -218,7 +218,7 @@ using namespace ATOOLS;
 
 double LF_SSV_FF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mi2   = sqr(p_ms->Mass(m_flavs[1]));
@@ -229,7 +229,6 @@ double LF_SSV_FF::operator()
   if (muij2==0. && mui2==0. && muk2==0.) {
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   }
   else {
@@ -246,7 +245,6 @@ double LF_SSV_FF::operator()
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2))*sqr(1.-mui2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   } 
 }
@@ -271,7 +269,7 @@ double LF_SSV_FF::Z()
 
 double LF_SSV_FI::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {  
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
@@ -279,7 +277,6 @@ double LF_SSV_FI::operator()
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -292,7 +289,6 @@ double LF_SSV_FI::operator()
     }
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
 }
@@ -318,11 +314,10 @@ double LF_SSV_FI::Z()
 
 double LF_SSV_IF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z+y) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
-  if (mode&1) return value;
   return value * JIF(z,y,eta,scale);
 }
 
@@ -346,11 +341,10 @@ double LF_SSV_IF::Z()
 
 double LF_SSV_II::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
-  if (mode&1) return value;
   return value * JII(z,y,eta,scale);
 }
 
@@ -374,7 +368,7 @@ double LF_SSV_II::Z()
 
 double LF_SVS_FF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mj2   = sqr(p_ms->Mass(m_flavs[2]));
@@ -385,7 +379,6 @@ double LF_SVS_FF::operator()
   if (muij2==0. && muj2==0. && muk2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   }
   else {
@@ -401,7 +394,6 @@ double LF_SVS_FF::operator()
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2))*sqr(1.-muj2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   }
 }
@@ -425,14 +417,13 @@ double LF_SVS_FF::Z()
 }
 
 double LF_SVS_FI::operator() (const double z,const double y,
-			    const double eta, const double scale,const double Q2,int mode) {
+			    const double eta, const double scale,const double Q2) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
   double massless = (2./(z+y) );
   if (mj2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -445,7 +436,6 @@ double LF_SVS_FI::operator() (const double z,const double y,
     }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
 }
@@ -470,7 +460,7 @@ double LF_SVS_FI::Z()
 
 double LF_SVS_IF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double mk2  = sqr(p_ms->Mass(m_flspec));
   double muk2 = mk2*z/(Q2-mk2); 
@@ -479,7 +469,6 @@ double LF_SVS_IF::operator()
     //the massless case
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
   else {
@@ -491,7 +480,6 @@ double LF_SVS_IF::operator()
     }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JIF(z,y,eta,scale);
   }
 }
@@ -519,11 +507,10 @@ double LF_SVS_IF::Z()
 
 double LF_SVS_II::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./z )
     + p_cf->Coupling(scale,1) * 0.5 * z;
-  if (mode&1) return value;
   return value * JII(z,y,eta,scale);
 }
 
@@ -550,7 +537,7 @@ double LF_SVS_II::Z()
 
 double LF_VSS_FF::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   //if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
@@ -561,7 +548,6 @@ double LF_VSS_FF::operator()
   double longpol = 0.5;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   }
   else {
@@ -575,7 +561,6 @@ double LF_VSS_FF::operator()
     double massive = vijk * (1.- 2.*(z*(1.-z) - 2.* zp*zm));
     massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2))*sqr(1.-mui2-muj2-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFF(y);
   }
 }
@@ -599,7 +584,7 @@ double LF_VSS_FF::Z() {
 
 double LF_VSS_FI::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   
   if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
@@ -610,7 +595,6 @@ double LF_VSS_FI::operator()
   double longpol = 0.5;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -621,7 +605,6 @@ double LF_VSS_FI::operator()
     double massive = (1.-2.*(zp-z)*(z-zm));
     if (massive < 0.) std::cout<<" massive V_FF FI < 0. "<<massive<<std::endl; 
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
-    if (mode&1) return value;
     return value * JFI(y,eta,scale);
   }
 }
@@ -647,11 +630,10 @@ double LF_VSS_FI::Z()
 
 double LF_VSS_IF::operator() 
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * ( (1.-2.*z*(1.-z)) )
     + p_cf->Coupling(scale,1) * 0.5;
-  if (mode&1) return value;
   return value * JIF(z,y,eta,scale);
 }
 
@@ -678,11 +660,10 @@ double LF_VSS_IF::Z()
 
 double LF_VSS_II::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
   double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z))
     + p_cf->Coupling(scale,1) * 0.5;
-  if (mode&1) return value;
   return value * JII(z,y,eta,scale);
 }
 

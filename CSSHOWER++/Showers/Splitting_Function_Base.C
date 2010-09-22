@@ -16,6 +16,7 @@ template class Getter_Function
 #include "MODEL/Interaction_Models/Lorentz_Function.H"
 #include "MODEL/Interaction_Models/Color_Function.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -79,8 +80,8 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
-  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_on(1), m_bwon(0),
-  m_qcd(-1)
+  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0),
+  m_on(1), m_bwon(0), m_qcd(-1)
 {
   SF_Key ckey(key);
   ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(0),ckey);
@@ -113,7 +114,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
   m_polfac=key.p_v->in[0].IntSpin()+1;
   if (key.p_v->in[0].IntSpin()==2 && IsZero(key.p_v->in[0].Mass())) m_polfac=2.0;
-  msg_Debugging()<<"Init("<<m_on<<") "<<key
+  msg_Debugging()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
+		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac;
@@ -127,7 +129,7 @@ Splitting_Function_Base::~Splitting_Function_Base()
 
 double Splitting_Function_Base::BWFactor
 (const double &z,const double &y,const double &eta,
- const double &scale,const double &Q2,int mode) const
+ const double &scale,const double &Q2) const
 {
   if (!m_bwon) return 1.0;
   switch (m_type) {
@@ -170,10 +172,10 @@ double Splitting_Function_Base::BWFactor
 
 double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,int mode)
+   const double scale,const double Q2)
 {
-  return (*p_lf)(z,y,eta,scale,Q2,mode)
-    *BWFactor(z,y,eta,scale,Q2,mode)/m_symf/m_polfac;
+  return (*p_lf)(z,y,eta,scale,Q2)
+    *BWFactor(z,y,eta,scale,Q2)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::OverIntegrated
@@ -277,29 +279,32 @@ double SF_Lorentz::JFF(const double &y) const
 double SF_Lorentz::JFI(const double &y,const double &eta,
 		       const double &scale) const
 { 
-  double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
+  double scalea(scale), scaleb(scale);
+  double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
+  double old = p_sf->GetXPDF(scaleb,eta,m_flspec,m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return (1.0-y) * fresh/old;
 }
 
-double SF_Lorentz::JIF(const double &z,const double &y,
-		       const double &eta,const double &scale) const
+double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
+		       const double &scale) const
 { 
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+  double scalea(scale), scaleb(scale);
+  double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }
 
-double SF_Lorentz::JII(const double &z,const double &y,
-		       const double &eta,const double &scale) const
+double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
+		       const double &scale) const
 { 
+  double scalea(scale), scaleb(scale);
   Parton *s(p_sf->Spec());
-  double fresh = p_sf->GetXPDF(scale,eta/(z+y),m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-  fresh *= p_sf->GetXPDF(scale,s->Xbj()*(z+y)/z,s->GetFlavour(),1-m_beam);
-  old *= p_sf->GetXPDF(scale,s->Xbj(),s->GetFlavour(),1-m_beam);
+  double fresh = p_sf->GetXPDF(scalea,eta/(z+y),m_flavs[0],m_beam);
+  double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);
+  fresh *= p_sf->GetXPDF(scalea,s->Xbj()*(z+y)/z,s->GetFlavour(),1-m_beam);
+  old *= p_sf->GetXPDF(scaleb,s->Xbj(),s->GetFlavour(),1-m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }

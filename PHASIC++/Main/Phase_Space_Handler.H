@@ -78,8 +78,8 @@ namespace PHASIC {
  
     static ATOOLS::Integration_Info *p_info;
 
-    ATOOLS::Info_Key  m_isrspkey, m_isrykey, m_beamspkey, m_beamykey;
-    ATOOLS::Info_Key  m_mu2key[2];
+    ATOOLS::Info_Key m_isrspkey, m_isrykey, m_isrxkey;
+    ATOOLS::Info_Key m_beamspkey, m_beamykey;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -87,7 +87,7 @@ namespace PHASIC {
     Multi_Channel *p_fsrchannels, *p_isrchannels, *p_beamchannels;
 
     ATOOLS::Flavour_Vector p_flavours;
-    ATOOLS::Vec4D_Vector   p_cms, p_lab;
+    ATOOLS::Vec4D_Vector   p_lab;
 
     ATOOLS::Poincare *p_massboost;
 
@@ -116,9 +116,6 @@ namespace PHASIC {
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
 
-    void CalculateME();
-    void CalculatePS();
-
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
 			  const Subprocess_Info *info,size_t &n);
@@ -133,7 +130,7 @@ namespace PHASIC {
     ~Phase_Space_Handler();
 
     // member functions
-    void WriteOut(const std::string &path,const bool force=false);
+    void WriteOut(const std::string &path);
     bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming();
     bool CreateIntegrators();
@@ -152,6 +149,9 @@ namespace PHASIC {
     void SetUpEnhance();
 
     double EnhanceFactor();
+
+    void CalculateME();
+    void CalculatePS();
 
     static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info);
     static void TestPoint(ATOOLS::Vec4D *const p,

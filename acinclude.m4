@@ -148,6 +148,14 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSLIBS)
   
+  POWHEGDIR="\${top_srcdir}/POWHEG"
+  POWHEGBUILDDIR="\${top_builddir}/POWHEG"
+  POWHEGLIBS="-L\${POWHEGBUILDDIR}/Main -L\${POWHEGBUILDDIR}/Calculators -L\${POWHEGBUILDDIR}/Showers -L\${POWHEGBUILDDIR}/Tools \
+		-lPOWHEGTools -lPOWHEGCalculators -lPOWHEGShowers -lPOWHEGMain"
+  AC_SUBST(POWHEGDIR)
+  AC_SUBST(POWHEGBUILDDIR)
+  AC_SUBST(POWHEGLIBS)
+  
   CSSDIR="\${top_srcdir}/CSSHOWER++"
   CSSBUILDDIR="\${top_builddir}/CSSHOWER++"
   CSSLIBS="-L\${CSSBUILDDIR}/Main -L\${CSSBUILDDIR}/Calculators -L\${CSSBUILDDIR}/Showers -L\${CSSBUILDDIR}/Tools \
@@ -439,7 +447,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(FASTJET not enabled); fastjet=false ;;
         yes)  if test -d "$FASTJETDIR"; then
-                CONDITIONAL_FASTJETDIR="${enableval}"
+                CONDITIONAL_FASTJETDIR="$FASTJETDIR"
                 CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
                 CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
               else
@@ -499,6 +507,37 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_WHITEHATINCS)
   AC_SUBST(CONDITIONAL_WHITEHATLIBS)
   AM_CONDITIONAL(WHITEHAT_SUPPORT, test "$whitehat" = "true")
+
+  AC_ARG_ENABLE(
+    mcfm,
+    AC_HELP_STRING([--enable-mcfm=/path/to/mcfm], [Enable MCFM.]),
+    [ AC_MSG_CHECKING(for MCFM installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
+        yes)  if test -d "$MCFMDIR"; then
+                CONDITIONAL_MCFMDIR="$MCFMDIR"
+                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+              else
+                AC_MSG_ERROR(\$MCFMDIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_MCFMDIR="${enableval}"
+                CONDITIONAL_MCFMLIBS="$CONDITIONAL_MCFMDIR/lib/libMCFM.a"
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_MCFMDIR}]); mcfm=true;;
+      esac
+      ],
+    [ mcfm=false ]
+  )
+  if test "$mcfm" = "true" ; then
+    AC_DEFINE([USING__MCFM], "1", [Using MCFM])
+  fi
+  AC_SUBST(CONDITIONAL_MCFMDIR)
+  AC_SUBST(CONDITIONAL_MCFMLIBS)
+  AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
   AC_ARG_ENABLE(
     root,

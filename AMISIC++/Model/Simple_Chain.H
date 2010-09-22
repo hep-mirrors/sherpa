@@ -61,7 +61,7 @@ namespace AMISIC {
     
     PDF::Remnant_Base *p_remnants[2];
 
-    ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
+    ATOOLS::Info_Key m_spkey, m_ykey, m_xkey, m_isrspkey, m_isrykey;
 
     void Init();
     void CleanUp();

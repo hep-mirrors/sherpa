@@ -1,0 +1,42 @@
+(run){
+  EVENTS = 0
+  FRAGMENTATION Off
+}(run)
+
+(beam){
+  BEAM_1 =  11; BEAM_ENERGY_1 = 45.625;
+  BEAM_2 = -11; BEAM_ENERGY_2 = 45.625;
+}(beam)
+
+(isr){
+  ISR_1 On; ISR_2 On; PDF_SET PDFe;
+}(isr)
+
+(processes){
+  Process 11 -11 -> 93 93 93 93;
+  NLO_QCD_Part BIVRS;
+  Loop_Generator WhiteHat;
+  Order_EW 2;
+  End process;
+}(processes)
+
+(selector){
+  NJetFinder 4 5 0 1
+}(selector)
+
+(model){
+  ORDER_ALPHAS = 1
+  ALPHAS(MZ) = 0.1188
+}(model)
+
+(me){
+  ME_SIGNAL_GENERATOR = Internal Amegic WhiteHat
+  EVENT_GENERATION_MODE = Weighted
+  NLO_Mode = 1
+  SCALES = VAR{sqr(E_CMS)}
+}(me)
+
+(integration){
+  INTEGRATOR = 7
+  FINISH_OPTIMIZATION = Off
+}(integration)

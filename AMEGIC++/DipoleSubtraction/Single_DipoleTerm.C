@@ -4,6 +4,7 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PDF/Main/ISR_Handler.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -32,25 +33,10 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_t pk, Process_Integrator* pint) :   
-  p_partner(this), p_LO_process(0), p_LO_mom(0), m_ftype(0), p_dipole(0), p_realint(pint)
+  m_maxgsmass(0.), p_partner(this), p_LO_process(0), p_LO_mom(0), m_ftype(0), p_dipole(0), p_realint(pint)
 {
-  m_pinfo=pinfo;
-  m_nin=m_pinfo.m_ii.NExternal();
-  m_nout=m_pinfo.m_fi.NExternal();
-  m_flavs.resize(m_nin+m_nout);
-  if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
-    SortFlavours(m_pinfo);
-    std::vector<Flavour> fl;
-    m_pinfo.m_ii.GetExternal(fl);
-    m_pinfo.m_fi.GetExternal(fl);
-    if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
-    for (size_t i(0);i<fl.size();++i) {
-      m_flavs[i]=fl[i];
-    }
-    m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
-  }
-
-  Init();
+  PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
+  AMEGIC::Process_Base::Init();
 
   m_pi = pi;
   m_pj = pj;
@@ -89,23 +75,48 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   else lopi.m_fi.m_ps[m_LOpk-m_nin].m_tag=2;
 
   if (lopi.m_amegicmhv>0) {
-    if (CF.MHVCalculable(lopi)) p_LO_process = new Single_LOProcess_MHV(lopi);
+    if (CF.MHVCalculable(lopi))
+      p_LO_process = new Single_LOProcess_MHV(lopi, p_int->Beam(), p_int->ISR());
     if (lopi.m_amegicmhv==2) { m_valid=0; return; }
   }
-  if (!p_LO_process) p_LO_process = new Single_LOProcess(lopi);
+  if (!p_LO_process)
+    p_LO_process = new Single_LOProcess(lopi, p_int->Beam(), p_int->ISR());
   if (!p_LO_process) THROW(fatal_error,"LO process unknown");
-  if (m_pinfo.m_nlomode==0)
-    p_LO_process->Get<PHASIC::Process_Base>()
-      ->Init(p_LO_process->Info(),p_realint->Beam(),p_realint->ISR());
 
   p_LO_mom = new Vec4D[m_nin+m_nout-1];
   p_LO_labmom.resize(m_nin+m_nout-1); 
   p_LO_process->SetTestMoms(p_LO_mom);
 
-  m_subevt.n      = m_nin+m_nout-1;
+  Subprocess_Info info(m_pinfo.m_ii);
+  info.Add(m_pinfo.m_fi);
+  m_decinfos=info.GetDecayInfos();
+
+  m_subevt.m_n    = m_nin+m_nout-1;
   m_subevt.p_fl   = &(p_LO_process->Flavours().front());
+  m_subevt.p_dec  = &m_decinfos;
   m_subevt.p_mom  = &p_LO_labmom.front();
-  m_subevt.m_ID   = ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
+  m_subevt.m_i    = m_pi;
+  m_subevt.m_j    = m_pj;
+  m_subevt.m_k    = m_pk;
+  m_subevt.p_proc = p_LO_process->Integrator();
+
+  m_sids.resize(m_nin+m_nout-1);
+  size_t em=p_LO_process->GetEmit();
+  size_t sp=p_LO_process->GetSpect();
+  for (size_t cnt=0, i=0;i<m_nin+m_nout;i++) {
+    for (;cnt==em||cnt==sp;) cnt++;
+    if (i!=m_pi&&i!=m_pj&&i!=m_pk) {
+      m_sids[cnt] = 1<<i;
+      cnt++;
+    }
+  }
+  m_sids[em]=(1<<m_pi)|(1<<m_pj);
+  m_sids[sp]=1<<m_pk;
+  m_subevt.m_ijt=em;
+  m_subevt.m_kt=sp;
+  m_subevt.p_id=&m_sids.front();
+  m_subevt.m_pname=GenerateName(p_LO_process->Info().m_ii,p_LO_process->Info().m_fi);
+  m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
 
   m_dalpha = 1.;
   double helpd;
@@ -118,7 +129,6 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
   }
 
-  m_maxgsmass=0.;
   int helpi;
   if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {
     msg_Tracking()<<"Set number of flavours from gluon splitting="<<helpi<<"."<<std::endl;
@@ -240,8 +250,7 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms)
   size_t em=p_LO_process->GetEmit();
   size_t sp=p_LO_process->GetSpect();
   if (em==sp) {
-    em=2; sp=3;
-    PRINT_INFO("?????????????");
+    THROW(fatal_error,"Incorrect emitter and spectator assignments.");
   }
   for (size_t i=0;i<m_nin+m_nout;i++) {
     for (;cnt==em||cnt==sp;) cnt++;
@@ -258,30 +267,15 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms)
     for (size_t i=0;i<m_nin+m_nout-1;i++) 
       p_LO_mom[i]=Vec4D(p_LO_mom[i][0],-p_LO_mom[i][1],-p_LO_mom[i][2],-p_LO_mom[i][3]);
   }
-   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
-   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
-   size_t ndip=(p_dipole->GetDiPolarizations())->size();
-   for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
+  Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
+  for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
+  size_t ndip=(p_dipole->GetDiPolarizations())->size();
+  for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
 
-   p_LO_mom[0]=Vec4D(p_LO_mom[0][0],0.,0.,p_LO_mom[0][0]);
-   p_LO_mom[1]=Vec4D(p_LO_mom[0][0],0.,0.,-p_LO_mom[0][0]);
+  p_LO_mom[0]=Vec4D(p_LO_mom[0][0],0.,0.,p_LO_mom[0][0]);
+  p_LO_mom[1]=Vec4D(p_LO_mom[0][0],0.,0.,-p_LO_mom[0][0]);
 
-   p_realint->ISR()->BoostInLab(&p_LO_labmom.front(),m_nin+m_nout-1);
-//    Vec4D msum(0.,0.,0.,0.);
-//   cout<<p_dipole->GetType()<<endl;
-//    cout<<"Moms: for "<<m_name<<endl;
-   
-//        for (size_t i=0;i<m_nin+m_nout;i++) {
-// 	 cout<<i<<": "<<moms[i]<<" "<<moms[i].Abs2()<<endl;
-//        }
-//         cout<<"LOMoms: ("<<p_LO_process->Name()<<")"<<endl;
-//          for (size_t i=0;i<m_nin+m_nout-1;i++) {
-//  	  if (i<2) msum-=p_LO_mom[i];
-//  	  else msum+=p_LO_mom[i];
-//            cout<<i<<": "<<p_LO_mom[i]<<" "<<p_LO_mom[i].Abs2()<<endl;
-//         }
-//  	cout<<"sum: "<<msum<<endl;
- 
+  p_realint->ISR()->BoostInLab(&p_LO_labmom.front(),m_nin+m_nout-1);
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
@@ -377,10 +371,16 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
       msg_Tracking()<<"Can map Dipole Term: "<<Name()<<" -> "<<check->Name()<<" Factor: "<<m_sfactor<<endl;
       p_partner = check;
       Minimize();  //can be switched on if actually mapped!
+      m_subevt.m_nco = p_partner->m_subevt.m_nco;
       return 1;
     }
   }
   links.push_back(this);
+  Complex C(p_LO_process->GetAmplitudeHandler()->CommonColorFactor());
+  if (C!=Complex(0.,0.)) {
+    if (C.real()<0) m_subevt.m_nco=1;
+    else m_subevt.m_nco=2;
+  }
 
   return 1;
 }
@@ -397,7 +397,9 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
 
 bool Single_DipoleTerm::SetUpIntegrator() 
 {  
-  return 1;
+  bool res=p_LO_process->SetUpIntegrator();
+  if (res) return res;
+  return true;
 }
 
 
@@ -423,25 +425,17 @@ void Single_DipoleTerm::Minimize()
 }
 
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms) { return 0.; }
+double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode) { return 0.; }
 
-double Single_DipoleTerm::GetDPSF(const ATOOLS::Vec4D * mom)
-{
-  p_dipole->SetMomenta(mom);
-  SetLOMomenta(mom);
-  bool trg = p_realint->Process()->JetTrigger(p_LO_labmom,p_LO_process->Flavours(),m_nout-1);
-  return trg?p_dipole->GetDPSF():-p_dipole->GetDPSF();
-}
-
-double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom)
+double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const int mode)
 {
   if (p_partner!=this) {
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
-    else m_lastxs = p_partner->operator()(mom)*m_sfactor;
-    m_subevt.m_me = m_subevt.m_result = m_subevt.m_mewgt = -m_lastxs;
-    m_subevt.m_facscale = p_partner->GetSubevt()->m_facscale;
-    m_subevt.m_renscale = p_partner->GetSubevt()->m_renscale;
-    m_subevt.m_alpha = p_partner->GetSubevt()->m_alpha;
+    else m_lastxs = p_partner->operator()(mom,mode)*m_sfactor;
+    m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+    m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
+    m_subevt.m_muf2 = p_partner->GetSubevt()->m_muf2;
+    m_subevt.m_mur2 = p_partner->GetSubevt()->m_mur2;
     return m_lastxs;
   }
 
@@ -452,23 +446,30 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom)
   SetLOMomenta(mom);
 
   bool trg(false);
-  if (m_pinfo.m_nlomode==0) trg=p_LO_process->JetTrigger(p_LO_labmom);
-  else trg=p_realint->Process()->JetTrigger(p_LO_labmom,p_LO_process->Flavours(),m_nout-1);
-  if (!trg) return m_lastxs=0.;
+  trg= p_LO_process->Trigger(p_LO_labmom) || !p_LO_process->Selector()->On();
+  p_int->SetMomenta(p_LO_labmom);
+  p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
-  double M2 = p_LO_process->operator()(p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),p_dipole->GetDiPolarizations());
+  double M2 =trg ? p_LO_process->operator()
+    (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
+     p_dipole->GetDiPolarizations(),mode) : 0.0;
   double df = p_dipole->GetF();
   if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
+  m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+  if (!trg) return m_lastxs=m_subevt.m_me=0.;
+
   m_lastxs = M2 * df * KFactor();
-  m_subevt.m_me = m_subevt.m_result = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_alpha = p_dipole->GetDPSF();
-  m_subevt.m_facscale = p_scale->Scale(stp::fac);
-  m_subevt.m_renscale = p_scale->Scale(stp::ren);
+  m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
+  m_subevt.m_muf2 = p_scale->Scale(stp::fac);
+  m_subevt.m_mur2 = p_scale->Scale(stp::ren);
   return m_lastxs;
 }
 
-
+void Single_DipoleTerm::SetSelector(const PHASIC::Selector_Key &key)
+{
+  p_LO_process->SetSelector(key);
+}
 
 int Single_DipoleTerm::NumberOfDiagrams() { 
   if (p_partner==this) return p_LO_process->NumberOfDiagrams(); 
@@ -480,7 +481,10 @@ Point * Single_DipoleTerm::Diagram(int i) {
   return p_partner->Diagram(i);
 } 
 
-void Single_DipoleTerm::AddChannels(std::list<std::string>*) { }
+void Single_DipoleTerm::AddChannels(std::list<std::string>*psln)
+{
+  p_LO_process->AddChannels(psln);
+}
 
 void Single_DipoleTerm::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
 {

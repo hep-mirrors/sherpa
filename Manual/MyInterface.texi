@@ -1,0 +1,79 @@
+@node My own interface
+@section My own interface
+
+It is possible to pass Sherpa output to an external Fortran or C++ framework on-the-flight.
+To illustrate this option, a simple, yet functional example is included in the directory 
+@code{./AddOns/HEPEVTInterface}, showing how to fill the HEPEVT common from Sherpa output.
+It also exemplifies how to retrieve the weight of weighted events and how to access information
+about the total cross section of the event sample at the end of the run. 
+
+Note that only the event converter is included in the sources, you will still need to implement 
+the calling function and an initialize and finalize method, see below. However, these are rather
+simple.
+
+The important features of this example include:
+@itemize @bullet
+
+@item Your part of the interface (The rest is handled in @code{HEPEVT_Interface.C})
+
+@verbatim
+#include "SHERPA/Main/Sherpa.H"
+
+class My_Sherpa {
+private:
+  SHERPA::Sherpa m_sherpa;
+public:
+  void init(int argc,char *argv[])
+  {
+    // initialize the generator
+    m_sherpa.InitializeTheRun(argc,argv);
+    // set it up for event generation
+    m_sherpa.InitializeTheEventHandler();
+  }
+  bool one_event()
+  {
+    // generate event and return status
+    if (!m_sherpa.GenerateOneEvent()) return false;
+    // now the HEPEVT common is filled and you can use it
+    return true;
+  }
+  void finish()
+  {
+    // clean up and store total cross section
+    m_sherpa.SummarizeRun();
+  }
+};// end of class My_Sherpa
+@end verbatim
+
+@item The source file @code{HEPEVT_Interface.C}. 
+
+      This file defines a pseudo-analysis, which implements the conversion to HEPEVT.
+      
+@item An example @code{Makefile}.
+
+      This shows how to compile the source into a shared library called @code{libSherpaHEPEVT.so}.
+      The library can either be copied into the directory @code{<prefix>/lib/SHERPA-MC},
+      or it can be placed in the run path.
+      
+@item The line @code{SHERPA_LDADD = SherpaHEPEVT} in the @code{(run)} section of the run-card.
+
+      This line tells Sherpa to load the extra library created from the *.C file above.
+      
+@item The line @code{ANALYSIS = HEPEVT} in the @code{(run)} section of the run-card.
+
+      This line tells Sherpa to run the pseudo-analysis implementing your HEPEVT interface.
+
+@end itemize
+
+To use this interface, create the additional library for Sherpa by running
+
+@example
+make SHERPA_PREFIX=/path/to/sherpa
+@end example
+
+in the directory @kbd{AddOns/HEPEVTInterface}. After copying the library, 
+run Sherpa from your interface.
+
+Note: You don't have to modify or recompile any part of Sherpa to use this
+interface. As long as the @code{SHERPA_LDADD} parameter is specified as above,
+Sherpa will pick up the HEPEVT converter automatically.

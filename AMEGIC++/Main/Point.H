@@ -49,6 +49,8 @@ namespace AMEGIC {
     int FindQCDOrder(int &);
     int FindQEDOrder(int &);
   };
+
+  std::ostream &operator<<(std::ostream &str,const Point &p);
 }
 #endif
 

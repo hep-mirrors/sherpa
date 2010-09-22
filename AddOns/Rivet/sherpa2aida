@@ -13,7 +13,7 @@ class SherpaHistogram:
         f = open(os.path.join(self.path, self.filename), "r")
         for line in f:
             linearray = line.split()
-            if len(linearray)==9:
+            if len(linearray)>6:
                 self.binwidth=(float(linearray[3])-float(linearray[2]))/(int(linearray[1])-2)
             elif len(linearray)==2:
                 self.data.append({'LowEdge': float(linearray[0]),

@@ -59,6 +59,11 @@ namespace AMEGIC {
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
 
+    void SetSelector(const PHASIC::Selector_Key &key);
+    void SetShower(PDF::Shower_Base *const ps);
+    void SetFixedScale(const std::vector<double> &s);
+    void SetSelectorOn(const bool on);
+    void SetGenerator(PHASIC::ME_Generator_Base *const gen);
     /*------------------------------------------------------------------------------
 
       Generic stuff for initialization of Single_Virtual_Correctiones
@@ -66,6 +71,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   protected:
     void                PolarizationNorm();
+    double              Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     bool                CreateChannelLibrary();
 
     /*------------------------------------------------------------------------------
@@ -106,11 +112,10 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &);
-    double         Partonic2();
-    double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
+    double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
     double         DSigma2();
-    double         operator()(const ATOOLS::Vec4D_Vector &);
+    double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();
@@ -118,13 +123,17 @@ namespace AMEGIC {
 
     bool PerformTests() { return true; }
 
+    bool Combinable(const size_t &idi,const size_t &idj);
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+
   protected:
     double         Calc_Imassive(const ATOOLS::Vec4D *mom);
     double         Calc_I(const ATOOLS::Vec4D*);
     void           Calc_KP(const ATOOLS::Vec4D*, double, double, double, double, double);
-    double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, ATOOLS::Flavour_Vector&); 
+    double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
+			       const double&,const double&,ATOOLS::Flavour_Vector&); 
     void           CheckPoleCancelation(const ATOOLS::Vec4D*);
-    void           FillMEwgts(PHASIC::ME_wgtinfo&);
+    void           FillMEwgts(ATOOLS::ME_wgtinfo&);
 
   };
 }

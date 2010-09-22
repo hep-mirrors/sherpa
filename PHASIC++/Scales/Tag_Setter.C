@@ -15,6 +15,14 @@ std::string Tag_Setter::ReplaceTags(std::string &expr) const
 
 Term *Tag_Setter::ReplaceTags(Term *term) const
 {
+  if (term->Id()>=10) {
+    if (term->Id()>=100) {
+      term->Set(p_setter->Momentum(term->Id()-100));
+      return term;
+    }
+    term->Set(p_setter->Scales()[term->Id()-10]);
+    return term;
+  }
   switch (term->Id()) {
   case 1:
     term->Set(p_setter->Scale(stp::fac));
@@ -28,9 +36,6 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 5:
     term->Set(sqr(p_setter->HT()));
     return term;
-  default:
-    term->Set(p_setter->Momentum(term->Id()-100));
-    return term;
   }
   return term;
 }
@@ -41,6 +46,11 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="Q2_CUT") term->SetId(3);
   else if (term->Tag()=="H_T2") term->SetId(5);
+  else if (term->Tag().find("MU_")==0) {
+    term->SetId(10+ToType<int>
+		(term->Tag().substr
+		 (3,term->Tag().length()-4)));
+  }
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr

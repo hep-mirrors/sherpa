@@ -10,6 +10,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -51,14 +52,19 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
-  rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour Dipole\
- Terms is published under \\cite{Gleisberg:2007md}.");
+  static bool addcite(false);
+  if (!addcite) {
+    addcite=true;
+  rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
+ terms in Amegic is published under \\cite{Gleisberg:2007md}.");
+  }
 }
 
 
 
 Single_Virtual_Correction::~Single_Virtual_Correction()
 {
+  p_selector=NULL;
   p_scale=NULL;
   if (p_psgen)      {delete p_psgen; p_psgen=0;}
   if (p_dsij) {
@@ -82,6 +88,28 @@ void Single_Virtual_Correction::PolarizationNorm() {
   m_Norm = SymmetryFactors() * p_LO_process->GetPolarisation()->Spin_Average(m_nin,&m_flavs.front());
 }
 
+double Single_Virtual_Correction::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {
+  if (p_loopme) {
+    return p_loopme->Eps_Scheme_Factor(mom);
+  }
+  else {
+    // MSbar
+    return 2.*M_PI*p_scale->Scale(stp::ren)/(mom[0]*mom[1]);
+  }
+}
+
+bool AMEGIC::Single_Virtual_Correction::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  return p_LO_process->Combinable(idi, idj);
+}
+
+  
+const Flavour_Vector &AMEGIC::Single_Virtual_Correction::CombinedFlavour
+(const size_t &idij)
+{
+  return p_LO_process->CombinedFlavour(idij);
+}
 
 
 /*------------------------------------------------------------------------------
@@ -91,21 +119,15 @@ void Single_Virtual_Correction::PolarizationNorm() {
   ------------------------------------------------------------------------------*/
 void Single_Virtual_Correction::SelectLoopProcess()
 {
+  p_loopme=NULL;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
     Process_Info loop_pi(m_pinfo);
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
-   
     p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);  
-  }
-  else {
-    if (m_pinfo.m_loopgenerator!="Internal")
-      p_loopme = PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
-    else p_loopme = new PHASIC::Trivial_Virtual(m_pinfo, Flavour_Vector());
-  }
-
-  if (!p_loopme) {
-    msg_Error()<<"No Loop ME found for "<<Name()<<endl;
-    p_loopme=new PHASIC::Trivial_Virtual(m_pinfo, Flavour_Vector());
+    if (!p_loopme) {
+      PRINT_VAR(loop_pi);
+      THROW(not_implemented, "Couldn't find virtual ME for this process.");
+    }
   }
 }
 
@@ -123,10 +145,12 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 //   m_name+= "_VIRT";
 
   if (m_pinfo.m_amegicmhv>0) {
-    if (CF.MHVCalculable(m_pinfo)) p_LO_process = new Single_LOProcess_MHV(m_pinfo);
+    if (CF.MHVCalculable(m_pinfo))
+      p_LO_process = new Single_LOProcess_MHV(m_pinfo, p_int->Beam(), p_int->ISR());
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
-  if (!p_LO_process) p_LO_process = new Single_LOProcess(m_pinfo);
+  if (!p_LO_process)
+    p_LO_process = new Single_LOProcess(m_pinfo, p_int->Beam(), p_int->ISR());
   p_LO_process->SetTestMoms(p_testmoms);
 
   p_dipole = new DipoleSplitting_Base();
@@ -180,7 +204,6 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (p_partner==this) {
     SelectLoopProcess();
-    p_loopme->SetCouplings((Coupling_Map*)p_LO_process->CouplingMap());
 
     links.push_back(this);
     p_dsij = new double*[p_LO_process->PartonList().size()];
@@ -198,9 +221,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
 bool AMEGIC::Single_Virtual_Correction::NewLibs() 
 {
-  bool newloops(0);
-  if (p_loopme) newloops=p_loopme->NewLibs();
-  return newloops||(p_partner->GetLOProcess()->NewLibs());
+  return p_partner->GetLOProcess()->NewLibs();
 }
 /*------------------------------------------------------------------------------
   
@@ -222,7 +243,7 @@ bool Single_Virtual_Correction::SetUpIntegrator()
 {  
   if (m_nin==2) {
     if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(&m_flavs.front());
+	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
@@ -269,24 +290,19 @@ void Single_Virtual_Correction::Minimize()
   ------------------------------------------------------------------------------*/
 
 
-double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &_moms)
+double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &_moms,const int mode)
 {
+  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return DSigma2();
+  if (!p_LO_process->Selector()->Result()) return m_lastxs = m_lastdxs = 0.0;
   Vec4D_Vector moms(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
     Poincare cms(moms[0]+moms[1]);
     for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
   }
-  return DSigma(moms,m_lookup);
+  return DSigma(moms,m_lookup,mode);
 }
 
-double Single_Virtual_Correction::Partonic2()
-{ 
-  if (p_int->ISR()->On()==0) return 0.;
-  return DSigma2(); 
-}
-
-
-double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
+double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup,const int mode)
 {
   m_lastxs = 0.;
   if (m_nin==2) {
@@ -300,15 +316,25 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     }
   }
   if (p_partner == this) {
-    m_lastdxs = operator()(_moms);
+    m_lastdxs = operator()(_moms,mode);
   }
   else {
     if (lookup) {
       m_lastdxs = p_partner->LastDXS()*m_sfactor;
     }
-    else m_lastdxs = p_partner->operator()(_moms)*m_sfactor;
+    else m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
   }
-  double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),m_flavs);
+  double eta0(0.0), eta1(0.0);
+  if (mode==0) {
+    eta0=p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(0).PPlus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(1).PMinus();
+  }
+  else {
+    eta0=p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(1).PMinus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(0).PPlus();
+  }
+  double kpterm = p_partner->Get_KPterms
+    (p_int->ISR()->PDF(mode),p_int->ISR()->PDF(1-mode),eta0,eta1,m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
 
   m_wgtinfo.m_w0 = m_lastdxs/m_sfactor;
@@ -321,7 +347,10 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
 double Single_Virtual_Correction::DSigma2() 
 {
   if (m_lastxs==0.) return 0.;
-  double kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),m_flavs);
+  double eta0(p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(1).PMinus());
+  double eta1(p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(0).PPlus());
+  double kpterm = p_partner->Get_KPterms
+    (p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),eta0,eta1,m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
   return m_Norm * (m_lastdxs+kpterm);
 }
@@ -349,7 +378,7 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
       splf2 += p_masskern->I_E2();
 
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(sik)/p_loopme->Eps_Scheme_Factor(momv));
+      double lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
 
       splf+=splf1*lsc+splf2*0.5*sqr(lsc);
       res+=p_dsij[i][k]*splf;
@@ -364,13 +393,14 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
 
   double res=0.;
   double mur = p_scale->Scale(stp::ren);
+  int lm(p_loopme?p_loopme->DRMode():0);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
       int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/p_loopme->Eps_Scheme_Factor(momv));
-      double splf = p_dipole->Vif(typei)+p_dipole->Vif(typek);
+      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
+      double splf = p_dipole->Vif(typei,lm)+p_dipole->Vif(typek,lm);
       double splf1 = p_dipole->Vie1(typei)+p_dipole->Vie1(typek);
       double splf2 = p_dipole->Vie2(typei)+p_dipole->Vie2(typek);
 
@@ -432,7 +462,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	m_kpca[3]+=p_dsij[0][i]*
 	  (w*(p_masskern->t1(type+2,spin,muq2,x0)+p_masskern->t3(type+2,spin,muq2,x0)));	
 	if (spin==2) {
-	  for (int j=0;j<p_masskern->Nmf();j++) {
+          for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpa[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
 	    if (m_xpa[xpcnt].xp>eta0) {
 	      m_kpca[0]+=p_dsij[0][i]*p_masskern->t6(type,m_xpa[xpcnt].xp);
@@ -506,7 +536,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	m_kpcb[3]+=p_dsij[pls-1][i]*
 	  (w*(p_masskern->t1(type+2,spin,muq2,x1)+p_masskern->t3(type+2,spin,muq2,x1)));	
 	if (spin==2) {
-	  for (int j=0;j<p_masskern->Nmf();j++) {
+          for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpb[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
 	    if (m_xpb[xpcnt].xp>eta1) {
 	      m_kpcb[0]+=p_dsij[pls-1][i]*p_masskern->t6(type,m_xpb[xpcnt].xp);
@@ -561,14 +591,16 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   }
 }
 
-double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, ATOOLS::Flavour_Vector& flav) 
+double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
+					      const double &eta0,const double &eta1,
+					      ATOOLS::Flavour_Vector& flav) 
 {
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   bool sa=flav[0].Strong();
   bool sb=flav[1].Strong();
+  if (sa && (pdfa==NULL || !pdfa->Contains(flav[0]))) return 0.0;
+  if (sb && (pdfb==NULL || !pdfb->Contains(flav[1]))) return 0.0;
   if (!sa && !sb) return 0.;
-  double eta0 = 1.; if (sa) eta0 = p_int->ISR()->X1();
-  double eta1 = 1.; if (sb) eta1 = p_int->ISR()->X2();
   if (m_x0<eta0 || m_x1<eta1) return 0.; 
   size_t pls=1;
   if (sa&&sb) pls++;
@@ -643,10 +675,10 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb, AT
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
 {
-  cout.precision(15);
-    for (size_t i=0;i<m_nin+m_nout;i++) cout<<i<<": "<<mom[i]<<endl;
-    cout<<"Process: "<<Name()<<endl;
-  cout.precision(6);
+  if (!p_loopme) {
+    cout<<"Didn't initialise virtual ME. Ignoring pole check."<<endl;
+    return;
+  }
   double doublepole=0.;
   double singlepole=0.;
   double mur = p_scale->Scale(stp::ren);
@@ -655,28 +687,37 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
       int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
       int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/p_loopme->Eps_Scheme_Factor(momv));
+      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
 
       doublepole+=p_dsij[i][k]*(p_dipole->Vie2(typei)+p_dipole->Vie2(typek));
       singlepole+=p_dsij[i][k]*(p_dipole->Vie1(typei)+p_dipole->Vie1(typek)+
 				(p_dipole->Vie2(typei)+p_dipole->Vie2(typek))*lsc);
     }
   }
-  doublepole*=-p_flkern->Coupling();
-  singlepole*=-p_flkern->Coupling();
-  if (!ATOOLS::IsEqual(doublepole,-p_loopme->ME_E2())) {
-    cout<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p_loopme->ME_E2()<<endl;
+  double p1(p_loopme->ME_E1()), p2(p_loopme->ME_E2());
+  if (p_loopme->Mode()==0) {
+    p1*=p_dsij[0][0];
+    p2*=p_dsij[0][0];
   }
-  if (!ATOOLS::IsEqual(singlepole,-p_loopme->ME_E1())) {
-    cout<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p_loopme->ME_E1()<<endl;
+  if (!ATOOLS::IsEqual(doublepole,p2) || !ATOOLS::IsEqual(singlepole,p1)) {
+    cout.precision(15);
+    for (size_t i=0;i<m_nin+m_nout;i++) cout<<i<<": "<<mom[i]<<endl;
+    cout<<"Process: "<<Name()<<endl;
+    cout.precision(6);
+  }
+  if (!ATOOLS::IsEqual(doublepole,p2)) {
+    cout<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2<<", rel. diff. "<<(doublepole-p2)/(doublepole+p2)<<endl;
+  }
+  if (!ATOOLS::IsEqual(singlepole,p1)) {
+    cout<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1<<", rel. diff. "<<(singlepole-p1)/(singlepole+p1)<<endl;
   }
 }
 
-double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
+double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,const int mode)
 {
   if (p_partner!=this) {
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
-    return p_partner->operator()(mom)*m_sfactor;
+    return p_partner->operator()(mom,mode)*m_sfactor;
   }
   Integrator()->RestoreInOrder();
 
@@ -684,10 +725,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
-  p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij);
-  if (p_loopme->NeedsBorn()) p_loopme->SetBorn(p_dsij[0][0]);
+  p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij,mode);
+  if (p_loopme) {
   p_loopme->SetRenScale(p_scale->Scale(stp::ren));
   p_loopme->Calc(mom);
+  }
   double I=0.;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) I=Calc_I(&mom.front());
   m_x0=1.,m_x1=1.;
@@ -711,24 +753,35 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom)
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) Calc_KP(&mom.front(),m_x0,m_x1,eta0,eta1,w);
 
   double lme = 0.;
+  // virtual me2 is supposed to return local nlo kfactor to born
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
-    lme= p_loopme->ME_Finite();
-    m_cmur[0]+=p_loopme->ME_E1()+
-      double(m_nin+m_nout-4)*p_dipole->G2()*p_dsij[0][0]*p_flkern->Coupling();
-    m_cmur[1]+=p_loopme->ME_E2();
+    if (p_loopme->Mode()==0) {
+      lme = p_dsij[0][0]*p_flkern->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]+=(p_loopme->ME_E1()+double(m_nin+m_nout-4)*p_dipole->G2())*
+	p_dsij[0][0]*p_flkern->Coupling();
+      m_cmur[1]+=p_loopme->ME_E2()*p_dsij[0][0]*p_flkern->Coupling();
+    }
+    else if (p_loopme->Mode()==1) {
+      lme = p_flkern->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]+=p_flkern->Coupling()*
+	(p_loopme->ME_E1()+double(m_nin+m_nout-4)*p_dipole->G2());
+      m_cmur[1]+=p_flkern->Coupling()*p_loopme->ME_E2();
+    }
+    else THROW(not_implemented,"Unknown mode");
   }
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::polecheck) CheckPoleCancelation(&mom.front());
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::polecheck)
+    CheckPoleCancelation(&mom.front());
+    
   M2+=I+lme;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) M2+=p_dsij[0][0]; 
-  if (!(M2>0.) && !(M2<0.)
-      && !(M2==0.)) {
-    std::cout<<"NAN!!! "<<eta0<<" "<<m_x0<<" "<<eta1<<" "<<m_x1<<" "<<p_dsij[0][0]<<" "<<I<<std::endl;
-    for (size_t i=0;i<m_nin+m_nout;i++) cout<<i<<": "<<mom[i]<<endl;
-  }
-
-  if (!(M2>0.) && !(M2<0.)
-      && !(M2==0.)) {
-    std::cout<<"NAN!!! "<<M2<<std::endl;
+  if (!(M2>0.) && !(M2<0.) && !(M2==0.)) {
+    msg_Error()<<METHOD<<"(){\n  M2 = nan.\n  eta0 = "<<eta0
+        <<" ,  m_x0 = "<<m_x0<<" ,  eta1 = "<<eta1<<" ,  m_x1 = "<<m_x1
+        <<" ,  p_dsij[0][0] = "<<p_dsij[0][0]
+        <<"\n  L = "<<lme<<" , I = "<<I<<"\n";
+    for (size_t i=0;i<m_nin+m_nout;i++)
+      msg_Error()<<"  "<<i<<": "<<mom[i]<<std::endl;
+    msg_Error()<<"}\n";
   }
   return M2 * KFactor();
 }
@@ -765,13 +818,42 @@ void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist)
   }
 }
 
+void Single_Virtual_Correction::SetSelector(const Selector_Key &key)
+{
+  p_LO_process->SetSelector(key);
+  p_selector=p_LO_process->Selector();
+}
+
 void Single_Virtual_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
   p_scale=p_LO_process->Partner()->ScaleSetter();
 }
 
-void Single_Virtual_Correction::FillMEwgts(PHASIC::ME_wgtinfo& wgtinfo) {
+void Single_Virtual_Correction::SetGenerator(ME_Generator_Base *const gen) 
+{ 
+  p_LO_process->SetGenerator(gen);
+  p_gen=gen;
+}
+
+void Single_Virtual_Correction::SetShower(PDF::Shower_Base *const ps)
+{
+  p_LO_process->SetShower(ps);
+  p_shower=ps;
+}
+
+void Single_Virtual_Correction::SetFixedScale(const std::vector<double> &s)
+{
+  p_LO_process->SetFixedScale(s);
+}
+
+void Single_Virtual_Correction::SetSelectorOn(const bool on)
+{
+  p_LO_process->SetSelectorOn(on);
+}
+
+void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_wgtinfo& wgtinfo)
+{
   wgtinfo.m_y1=m_x0;
   wgtinfo.m_y2=m_x1;
   if (wgtinfo.m_nx<2) return;

@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
-#include "PHASIC++/Process/NLO_Helpers.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include <vector>
 #ifdef USING__ROOT
 #include "TChain.h"
@@ -27,7 +27,7 @@ namespace SHERPA {
 
     int                m_eventmode;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
-    PHASIC::NLO_subevtlist m_nlos;
+    ATOOLS::NLO_subevtlist m_nlos;
 
     void               CloseFile();
     bool               ReadInEntry();

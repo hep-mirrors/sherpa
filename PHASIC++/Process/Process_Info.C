@@ -1,4 +1,5 @@
 #include "PHASIC++/Process/Process_Info.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include "ATOOLS/Org/Message.H"
 
@@ -30,5 +31,18 @@ ATOOLS::Flavour_Vector Process_Info::ExtractFlavours() const
   ATOOLS::Flavour_Vector fi=m_fi.GetExternal();
   flavs.insert(flavs.end(), fi.begin(), fi.end());
   return flavs;
+}
+
+bool Process_Info::Has(nlo_type::code nlotype) const
+{
+  if (m_fi.m_nloewtype==nlo_type::lo) {
+    return (m_fi.m_nloqcdtype&nlotype) ? true : false;
+  }
+  else if (m_fi.m_nloqcdtype==nlo_type::lo) {
+    return (m_fi.m_nloewtype&nlotype) ? true : false;
+  }
+  else {
+    THROW(fatal_error, "Can't handle NLO EW and NLO QCD in one amplitude.");
+  }
 }
 

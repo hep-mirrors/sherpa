@@ -45,7 +45,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 {
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
-  blob->SetTypeSpec(proc->Name());
+  blob->SetTypeSpec(proc->Parent()->Name());
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) 
     cms += proc->Integrator()->Momenta()[i];
@@ -91,14 +91,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
   blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
 
-  PHASIC::ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
+  ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
-    blob->AddData("ME_wgtinfo",new Blob_Data<PHASIC::ME_wgtinfo*>(wgtinfo));
-    blob->AddData("Renormalization_Scale",new Blob_Data<double>
-		(wgtinfo->m_renscale));
+    blob->AddData("ME_wgtinfo",new Blob_Data<ME_wgtinfo*>(wgtinfo));
+    blob->AddData("Renormalization_Scale",new Blob_Data<double>(wgtinfo->m_mur2));
   }
-  PHASIC::NLO_subevtlist* nlos=proc->GetSubevtList();
-  if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(nlos));
+  NLO_subevtlist* nlos=proc->GetSubevtList();
+  if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));
   
   if (rpa.gen.SpinCorrelation()) {
     Particle_Vector inparticles = blob->GetInParticles();
@@ -122,6 +121,11 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 
 void Signal_Processes::CleanUp() 
 { 
+  if (p_mehandler)
+    if (p_mehandler->Process())
+      if (p_mehandler->Process()->Parent())
+        if (p_mehandler->Process()->Parent()->Integrator())
+          p_mehandler->Process()->Parent()->Integrator()->RestoreInOrder();
 }
 
 void Signal_Processes::Finish(const std::string &) 

@@ -705,7 +705,7 @@ void Channel_Elements::TChannelGrid(const Vec4D& p1in,const Vec4D& p2in,
 // treated from here
 
 double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,
-				      Double_Container &yinfo,const double ran,const int mode) const
+				      const Double_Container &yinfo,const double ran,const int mode) const
 {
   /*!
     The boundaries for y are 
@@ -722,8 +722,8 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
-  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=ymin+(ymax-ymin)*ran;
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
@@ -742,7 +742,7 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
 }
 
 double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
-					Double_Container &yinfo,double& ran,const int mode) const
+					const Double_Container &yinfo,double& ran,const int mode) const
 {
   /*
     See DiceYUniform for details
@@ -753,6 +753,7 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymax=ATOOLS::Min(yinfo[1],ymax);
   ymin=ATOOLS::Max(yinfo[0],ymin);
+  if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   ran = (yinfo[2]-ymin)/(ymax-ymin);
   return (ymax-ymin);
 }
@@ -760,15 +761,15 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
 const double pre=1.0;
 
 double Channel_Elements::DiceYCentral(const double tau,const Double_Container &xinfo,
-				      Double_Container &yinfo,const double ran,const int mode) const
+				      const Double_Container &yinfo,const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
-  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
@@ -786,7 +787,7 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
 }
 
 double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
-					Double_Container &yinfo,double& ran,const int mode) const
+					const Double_Container &yinfo,double& ran,const int mode) const
 {
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
@@ -794,6 +795,7 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
+  if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   double atey = atan(ymin/pre);
   double wt = atan(ymax/pre)-atey;
   ran = (atan(yinfo[2]/pre)-atey)/wt;
@@ -801,7 +803,7 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
 }
 
 double Channel_Elements::DiceYForward(const double yexponent,const double tau,
-				      const Double_Container &xinfo,Double_Container &yinfo, 
+				      const Double_Container &xinfo,const Double_Container &yinfo, 
 				      const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
@@ -809,8 +811,8 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
-  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
   double ypeak = ymax-xinfo[3];
   if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
 
@@ -833,7 +835,7 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
 
 double Channel_Elements::WeightYForward(const double yexponent,const double tau,
 					const Double_Container &xinfo,
-					Double_Container &yinfo,double& ran,const int mode) const
+					const Double_Container &yinfo,double& ran,const int mode) const
 {
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
@@ -841,6 +843,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
+  if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   double ypeak = ymax-xinfo[3];
   if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
 
@@ -855,7 +858,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
 }
 
 double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
-				       const Double_Container &xinfo,Double_Container &yinfo, 
+				       const Double_Container &xinfo,const Double_Container &yinfo, 
 				       const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
@@ -863,8 +866,8 @@ double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
-  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=-Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
@@ -887,7 +890,7 @@ msg_Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 
 double Channel_Elements::WeightYBackward(const double yexponent,const double tau,
 					 const Double_Container &xinfo,
-					 Double_Container &yinfo,double& ran,const int mode) const
+					 const Double_Container &yinfo,double& ran,const int mode) const
 {
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
@@ -895,6 +898,7 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
+  if (yinfo[2]<ymin || yinfo[2]>ymax) return 0.0;
   double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)* 
     pow(-ymin-xinfo[1]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {

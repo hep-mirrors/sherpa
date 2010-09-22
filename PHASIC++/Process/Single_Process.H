@@ -10,7 +10,8 @@ namespace PHASIC {
 
     double m_lastxs;
     bool   m_zero;
-    ME_wgtinfo m_wgtinfo;
+
+    ATOOLS::ME_wgtinfo m_wgtinfo;
 
   public:
 
@@ -29,7 +30,7 @@ namespace PHASIC {
     double KFactor() const;
 
     double BeamISRWeight(const double &Q2,const int mode) const;
-    void BeamISRWeight(NLO_subevtlist *const subs,
+    void BeamISRWeight(ATOOLS::NLO_subevtlist *const subs,
 		       const int mode) const;
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
@@ -42,8 +43,13 @@ namespace PHASIC {
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
 
-    virtual double Partonic(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual double Partonic2();
+    ATOOLS::ME_wgtinfo *GetMEwgtinfo();
+
+    ATOOLS::Cluster_Amplitude *Cluster(const size_t &mode=0,
+				       const double &kt2=0.0);
+
+    virtual double Partonic(const ATOOLS::Vec4D_Vector &p,
+			    const int mode) = 0;
 
     virtual bool Combinable(const size_t &idi,
 			    const size_t &idj);
@@ -55,8 +61,6 @@ namespace PHASIC {
     inline double LastXS() const { return m_lastxs; }
 
     inline bool Zero() const { return m_zero; }
-
-    ME_wgtinfo* GetMEwgtinfo() { return &m_wgtinfo; }
 
   };// end of class Single_Process
 

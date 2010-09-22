@@ -3,7 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "PHASIC++/Process/NLO_Helpers.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -214,6 +214,10 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     std::string fsname(name.substr(name.find("__")+3));
     fsname=fsname.substr(fsname.find("__")+3);
     fsname=fsname.substr(fsname.find("__")+2);
+    if (fsname.find("QCD")!=std::string::npos)
+      fsname=fsname.substr(0,fsname.find("QCD")-2);
+    if (fsname.find("EW")!=std::string::npos)
+      fsname=fsname.substr(0,fsname.find("EW")-2);
     key=JetID(fsname,m_maxjettag);
     key="j"+key;
   }
@@ -361,12 +365,13 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 
   if (!info) return 0;
 
-  PHASIC::NLO_subevtlist* nlos = info->Get<PHASIC::NLO_subevtlist*>();
+  NLO_subevtlist* nlos = info->Get<NLO_subevtlist*>();
 
   // (*nlos)*=(*signal)["XS_Weight"]->Get<double>();
   double ncount=(*signal)["Trials"]->Get<double>();
 
   for (size_t j=0;j<nlos->size();j++) {
+    if ((*nlos)[j]->m_result==0.) continue;
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   
     // do nonsplittable (helper and legacy objects) first

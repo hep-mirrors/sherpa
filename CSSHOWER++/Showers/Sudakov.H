@@ -16,9 +16,9 @@ namespace CSSHOWER {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sq, m_nspect, m_phi;
+    double m_k0sq, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
-    double m_as_is_fac,m_as_fs_fac,m_rbmax,m_zmin,m_zmax, m_weight;
+    double m_as_is_fac,m_as_fs_fac,m_zmin,m_zmax, m_weight;
     int m_ewmode;
     ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
@@ -55,7 +55,6 @@ namespace CSSHOWER {
     inline double ISCplFac() const { return m_as_is_fac; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
-    inline void SetRBMax(const double &rbmax) { m_rbmax=rbmax; }
 
     inline ATOOLS::Mass_Selector *MS() const { return p_rms; }
 
@@ -72,6 +71,9 @@ namespace CSSHOWER {
                   const ATOOLS::Flavour &flj,
                   const ATOOLS::Flavour &flk,
                   const cstp::code type) const;
+    double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
+                  const ATOOLS::Flavour &flk,const cstp::code type,
+		  const int cpl,const double &mu2) const;
 
     inline double PT2Min() const { return m_k0sq; }
 

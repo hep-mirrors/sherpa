@@ -44,7 +44,8 @@ namespace MODEL {
   public:
 
     // constructor
-    Running_AlphaS(const double as_MZ,const double m2_MZ,const int order=0, const double fac=1.);
+    Running_AlphaS(const double as_MZ,const double m2_MZ,
+		   const int order=0, const int thmode=1);
     
     // destructor
     ~Running_AlphaS();
@@ -66,6 +67,9 @@ namespace MODEL {
 
     inline double CutQ2() { return m_cutq2; }    
     inline double ScaleFactor() { return m_fac; }
+
+    inline double BoundedAlphaS(const double &q2)
+    { return (*this)(std::max(q2,m_cutq2)); }
   };
 
   extern Running_AlphaS * as;

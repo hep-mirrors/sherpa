@@ -31,7 +31,7 @@ namespace AMEGIC {
     String_Handler        * p_shand;
 
     Single_LOProcess      * p_partner;
-    std::vector<int>        m_partonlist;
+    std::vector<size_t>     m_partonlist;
 
     std::vector<ATOOLS::Vec4D> m_epol;
 
@@ -47,7 +47,9 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
 
-   Single_LOProcess(const PHASIC::Process_Info &pi);
+   Single_LOProcess(const PHASIC::Process_Info &pi,
+                    BEAM::Beam_Spectra_Handler *const beam,
+                    PDF::ISR_Handler *const isr);
     ~Single_LOProcess();
 
     bool Combinable(const size_t &idi,const size_t &idj);
@@ -70,6 +72,7 @@ namespace AMEGIC {
     std::string         CreateLibName();
     void                CreateMappingFile(Single_LOProcess*);
     void                UpdateMappingFile(std::string,std::map<std::string,Complex> &); 
+    bool                CreateChannelLibrary();
     void                WriteAlternativeName(std::string aname);
     bool                CheckAlternatives(std::vector<Process_Base *> & links,
 					  std::string procname);
@@ -113,7 +116,7 @@ namespace AMEGIC {
     Process_Base   * Partner()   const                  { return p_partner;     }
     void             Minimize();
     int  Type() { return m_type; }
-    inline const std::vector<int>& PartonList() const { return m_partonlist; }
+    inline const std::vector<size_t>& PartonList() const { return m_partonlist; }
     Polarisation *GetPolarisation()             { return &m_pol; }
 
     /*------------------------------------------------------------------------------
@@ -124,11 +127,11 @@ namespace AMEGIC {
   private:
     double         Calc_M2ik(int ci, int ck); 
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector&);
+    double         Partonic(const ATOOLS::Vec4D_Vector&,const int);
     virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
-			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*);
+			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-			      const ATOOLS::Vec4D *,double**);
+			      const ATOOLS::Vec4D *,double**,const int);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
   };

@@ -19,7 +19,7 @@ namespace CSSHOWER {
     virtual void SelectOne();
 
     virtual double operator() (const double,const double,const double,
-			       const double,const double,int mode=0);
+			       const double,const double);
     virtual double OverIntegrated(const double,const double,const double,const double);
     virtual double Overestimated(const double,const double);
     virtual double RejectionWeight(const double,const double,
@@ -33,6 +33,8 @@ namespace CSSHOWER {
     virtual const ATOOLS::Flavour & GetFlavourB() const    { return p_selected->GetFlavourB(); }
     virtual const ATOOLS::Flavour & GetFlavourC() const    { return p_selected->GetFlavourC(); }
     virtual const ATOOLS::Flavour & GetFlavourSpec() const { return p_selected->GetFlavourSpec(); }
+
+    inline Splitting_Function_Base *Selected() const { return p_selected; }
 
     friend std::ostream& operator<<(std::ostream &,Splitting_Function_Group &);
   };

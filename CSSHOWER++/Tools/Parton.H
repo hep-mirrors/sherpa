@@ -26,7 +26,7 @@ namespace CSSHOWER {
     ATOOLS::Flow    m_flow,m_meflow;
     pst::code       m_pst;
     int             m_beam,m_stat,m_kin;
-    double          m_kt_start, m_kt_veto, m_kt_test;
+    double          m_kt_start, m_kt_veto, m_kt_test, m_t_min;
     double          m_kt_max, m_kt_prev, m_kt_next, m_phi;
     double          m_z_test, m_y_test, m_weight, m_xBj;
     Parton        * p_left, * p_right;
@@ -35,6 +35,7 @@ namespace CSSHOWER {
     size_t          m_id;
 
     std::vector<std::pair<double,double> > m_weights;
+
   public:
     inline Parton();
     inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
@@ -63,6 +64,7 @@ namespace CSSHOWER {
     inline int               const Kin()         const { return m_kin; }
     inline size_t            const Id()          const;
     inline double            const KtMax()       const;
+    inline double            const TMin()        const;
     inline double            const KtPrev()      const;
     inline double            const KtNext()      const;
     inline double            const KtStart()     const;
@@ -83,6 +85,7 @@ namespace CSSHOWER {
     inline void SetMomentum(const ATOOLS::Vec4D &);
     inline void SetStart(const double);
     inline void SetKtMax(const double);
+    inline void SetTMin(const double);
     inline void SetKtPrev(const double);
     inline void SetKtNext(const double);
     inline void SetVeto(const double);
@@ -115,7 +118,7 @@ namespace CSSHOWER {
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
     m_pst(pst::none), m_beam(0), m_stat(0), m_kin(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_t_min(0.0),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
@@ -126,7 +129,7 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
     m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0), m_kin(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_t_min(0.0),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
@@ -138,7 +141,7 @@ namespace CSSHOWER {
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
     m_pst(pst), m_beam(0), m_stat(0), m_kin(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_t_min(0.0),
     m_kt_max(0.), m_kt_prev(0.), m_kt_next(0.), m_phi(0.),
     m_z_test(1.), m_y_test(1.), m_weight(1.0), m_xBj(1.), p_left(NULL), p_right(NULL),
     p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), m_id(0)
@@ -168,6 +171,7 @@ namespace CSSHOWER {
   }
   double            const Parton::KtStart()     const { return m_kt_start; }
   double            const Parton::KtMax()       const { return m_kt_max; }
+  double            const Parton::TMin()        const { return m_t_min; }
   double            const Parton::KtPrev()      const { return m_kt_prev; }
   double            const Parton::KtNext()      const { return m_kt_next; }
   double            const Parton::KtVeto()      const { return m_kt_veto; }
@@ -190,6 +194,7 @@ namespace CSSHOWER {
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
   void Parton::SetStart(const double kt)              { m_kt_start = kt; }
   void Parton::SetKtMax(const double kt)              { m_kt_max   = kt; }
+  void Parton::SetTMin(const double t)                { m_t_min    = t; }
   void Parton::SetKtPrev(const double kt)             { m_kt_prev  = kt; }
   void Parton::SetKtNext(const double kt)             { m_kt_next  = kt; }
   void Parton::SetVeto(const double kt)               { m_kt_veto  = kt; }
@@ -233,16 +238,6 @@ namespace CSSHOWER {
   void Parton::SetId(const size_t id)                 { m_id = id;}          
   typedef std::list<Parton *>   Parton_List;
   typedef Parton_List::iterator PLiter;
-
-  inline size_t IdCount(const size_t &id)
-  {
-    size_t ic(id), cn(0);
-    for (size_t i(0);ic>0;++i) {
-      size_t c(1<<i);
-      if (ic&c) { ++cn;	ic-=c; }
-    }
-    return cn;
-  }
 
 }
 

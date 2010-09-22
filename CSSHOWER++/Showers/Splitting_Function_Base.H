@@ -68,14 +68,6 @@ namespace CSSHOWER {
 
     double Lambda(const double &a,const double &b,const double &c);
 
-    double JFF(const double &y) const;
-    double JFI(const double &y,
-	       const double &eta,const double &scale) const;
-    double JIF(const double &z,const double &y,
-	       const double &eta,const double &scale) const;
-    double JII(const double &z,const double &y,
-	       const double &eta,const double &scale) const;
-
   public:
 
     SF_Lorentz(const SF_Key &key);
@@ -84,7 +76,7 @@ namespace CSSHOWER {
 
     virtual double operator()
       (const double z,const double y,const double eta,
-       const double scale,const double Q2,int mode=0) = 0;
+       const double scale,const double Q2) = 0;
     /**
       * Overestimate integrated over [zmin, zmax]
       */
@@ -98,6 +90,13 @@ namespace CSSHOWER {
       * Dice z according to OverEstimated (solve OverIntegrated for new z)
       */
     virtual double Z() = 0;
+
+    double JFF(const double &y) const;
+    double JFI(const double &y,const double &eta,const double &scale) const;
+    double JIF(const double &z,const double &y,
+	       const double &eta,const double &scale) const;
+    double JII(const double &z,const double &y,
+	       const double &eta,const double &scale) const;
 
     inline const ATOOLS::Flavour &FlA() const { return m_flavs[0]; }
     inline const ATOOLS::Flavour &FlB() const { return m_flavs[1]; }
@@ -140,7 +139,7 @@ namespace CSSHOWER {
 
     virtual bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			     const double &isfac,const double &fsfac) = 0;
-    virtual double Coupling(const double &scale,const int mode) = 0;
+    virtual double Coupling(const double &scale,const int pol) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
 
     virtual double CplFac(const double &scale) const;
@@ -179,7 +178,7 @@ namespace CSSHOWER {
     PDF::PDF_Base **p_pdf;
     double BWFactor(const double&,const double&,
 		    const double&,const double&,
-		    const double&,int mode=0) const;
+		    const double&) const;
   public:
 
     Splitting_Function_Base();
@@ -187,9 +186,9 @@ namespace CSSHOWER {
 
     virtual ~Splitting_Function_Base();
 
-    virtual double operator() (const double,const double,
-			       const double,const double,
-			       const double,int mode=0);
+    virtual double operator()
+      (const double z,const double y,const double eta,
+       const double scale,const double Q2);
     virtual double OverIntegrated(const double,const double,
 				  const double,const double);
     virtual double Overestimated(const double,const double);

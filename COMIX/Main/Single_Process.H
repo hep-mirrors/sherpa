@@ -42,12 +42,11 @@ namespace COMIX {
     bool MapProcess();
 
     void ConstructPSVertices(PS_Generator *ps);
-    void SetKFactorOn(const bool on);
 
     Matrix_Element *GetME() const;
     Amplitude      *GetAmplitude() const;
     
-    double Partonic(const ATOOLS::Vec4D_Vector &p);
+    double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
     double Differential(const ATOOLS::Cluster_Amplitude &ampl);
 
     bool GeneratePoint();

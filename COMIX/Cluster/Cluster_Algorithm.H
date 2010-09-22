@@ -81,12 +81,13 @@ namespace COMIX {
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current_Base *const fcur,
-			   ClusterInfo_Map &cinfo,const SizeT_Map &cid);
+			   ClusterInfo_Map &cinfo,Double_Map &kt2,
+			   const SizeT_Map &cid);
     bool CombineWinner(const Cluster_Info &ci,Current_Vector &ccurs,
 		       Current_Base *&fcur,ClusterInfo_Map &cinfo);
     bool ClusterStep(const size_t &step,Vertex_Set &nocl,
 		     Current_Vector &ccurs,Current_Base *&fcur,
-		     ClusterInfo_Map &cinfo);
+		     ClusterInfo_Map &cinfo,Double_Map &kt2);
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
 		 const Current_Vector &ccurs,Current_Base *const fcur,
 		 const ClusterInfo_Map &cinfo);

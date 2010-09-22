@@ -125,7 +125,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     double scale(0.0);
     Cluster_Amplitude *ampl(interface->Amplitude());
     while (ampl->Next()) ampl=ampl->Next();
-    if (msg_LevelIsDebugging()) ampl->Print();
+    msg_Debugging()<<*ampl<<"\n";
     for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
       if (ampl->Leg(i)->Flav().Strong()) 
 	scale=Max(scale,ampl->Leg(i)->Mom().PPerp());

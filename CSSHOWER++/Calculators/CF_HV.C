@@ -2,6 +2,7 @@
 
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace CSSHOWER {
   
@@ -21,11 +22,22 @@ namespace CSSHOWER {
 	  key.p_v->in[1].StrongCharge()==8 &&
 	  key.p_v->in[2].StrongCharge()==8) m_q=0;
       else m_q=(key.p_v->in[0].StrongCharge()==8)?1:2;
+      if (key.m_type==cstp::FF || key.m_type==cstp::FI) {
+	if (key.p_v->in[0].StrongCharge()==8) m_q/=2.0;
+      }
+      else {
+	if (key.m_mode==0) {
+	  if (key.p_v->in[1].StrongCharge()==8) m_q/=2.0;
+	}
+	else {
+	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
+	}
+      }
     }
     
     bool   SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    double Coupling(const double &scale,const int mode);
+    double Coupling(const double &scale,const int pol);
     bool   AllowSpec(const ATOOLS::Flavour &fl);
 
   };
@@ -55,16 +67,19 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   return true;
 }
 
-double CF_HV::Coupling(const double &scale,const int mode)
+double CF_HV::Coupling(const double &scale,const int pol)
 {
-  if (mode!=0) return 0.0;
-  return (*p_cpl)(CplFac(scale)*scale)*m_q;
+  if (pol!=0) return 0.0;
+  double scl(CplFac(scale)*scale);
+  return (*p_cpl)(scl)*m_q;
 }
 
 bool CF_HV::AllowSpec(const ATOOLS::Flavour &fl) 
 {
   return (fl.Strong()&&fl.Kfcode()>9900000);
 }
+
+namespace CSSHOWER {
 
 DECLARE_CPL_GETTER(CF_HV_Getter);
 
@@ -106,4 +121,6 @@ void CF_HV_Filler::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"HV coupling filler";
+}
+
 }

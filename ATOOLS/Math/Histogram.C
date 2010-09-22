@@ -806,6 +806,28 @@ Histogram & Histogram::operator+=(const Histogram & histo)
 }
 
 
+Histogram & Histogram::operator=(const Histogram & histo)
+{
+  for (int i=0;i<m_nbin;i++) { 
+    m_yvalues[i]= histo.m_yvalues[i]; 
+  }
+  if (m_depth>1) {
+    for (int i=0;i<m_nbin;i++) { 
+      m_y2values[i]= histo.m_y2values[i]; 
+    }
+  }
+  if (m_depth>2) {
+    for (int i=0;i<m_nbin;i++) { 
+      m_psvalues[i]= histo.m_psvalues[i]; 
+    }
+  }
+  
+  m_fills=histo.m_fills;
+  m_psfills=histo.m_psfills;
+  return *this;
+}
+
+
 void Histogram::Addopt(const Histogram & histo)
 {
   

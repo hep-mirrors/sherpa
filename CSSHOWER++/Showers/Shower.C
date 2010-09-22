@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
@@ -34,9 +35,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
   m_kinII.SetSudakov(&m_sudakov);
-  m_last[0]=NULL;
-  m_last[1]=NULL;
-  m_last[2]=NULL;
+  m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
 }
@@ -131,13 +130,13 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
   if (c->GetType()==pst::FS) {
     if (s->GetPrev()->GetType()==pst::FS) {
       m_kinFF.SetJF(NULL);
-      stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r);
+      stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
       l->SetKin(kin);
     }
     else {
       m_kinFI.SetJF(NULL);
-      stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r);
+      stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
       l->SetKin(kin);
       if (stat>0) {
@@ -152,7 +151,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
   else {
     if (s->GetPrev()->GetType()==pst::FS) {
       m_kinIF.SetJF(NULL);
-      stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r);
+      stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
       l->SetKin(kin);
       if (stat>0) {
@@ -165,7 +164,7 @@ bool Shower::ReconstructDaughters(Singlet *const split,const bool one)
     }
     else {
       m_kinII.SetJF(NULL);
-      stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r);
+      stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
       l->SetKin(kin);
       if (stat>0) {
@@ -226,7 +225,6 @@ bool Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     if (split->GetSpect()->GetType()==pst::IS &&
 	RemnantTest(split->GetSpect())==-1) rd=false;
   }
-  newpC->UpdateDaughters();
   p_actual->RemoveParton(newpC);
   if (!rd) {
     p_actual->RearrangeColours(split,newpB,newpC);
@@ -264,6 +262,7 @@ void Shower::SetSplitInfo
   m_last[0]=newb;
   m_last[1]=newc;
   m_last[2]=split->GetSpect();
+  m_last[3]=split;
 }
 
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
@@ -298,7 +297,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 		     <<sqrt(split->KtPrev())<<" ), z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
-      m_last[0]=m_last[1]=m_last[2]=NULL;
+      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
       if (kt2win<split->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
 	return true;
@@ -331,13 +330,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt(split->KtTest())<<" vs. "<<sqrt(split->KtMax())
 		       <<" -> "<<split->GetSing()->JF()<<" vs. "<<m_kinFF.JF()<<"\n";
 	int stat(m_kinFF.MakeKinematics(split,m_flavB,m_flavC,newpC));
+	if (stat==0) return false;
 	if (stat==-1) {
 	  split->SetMomentum(splitorig);
 	  split->GetSpect()->SetMomentum(spectorig);
 	  ResetScales(split);
 	  continue;
 	}
-	if (stat==0) return false;
 	mom       = split->Momentum();
 	newpB     = new Parton(m_flavB,mom,split->GetType());
 	newpB->SetId(split->Id());
@@ -376,13 +375,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt(split->KtTest())<<" vs. "<<sqrt(split->KtMax())
 		       <<" -> "<<split->GetSing()->JF()<<" vs. "<<m_kinFI.JF()<<"\n";
 	int stat(m_kinFI.MakeKinematics(split,m_flavB,m_flavC,newpC));
+	if (stat==0) return false;
 	if (stat==-1) {
 	  split->SetMomentum(splitorig);
 	  split->GetSpect()->SetMomentum(spectorig);
 	  ResetScales(split);
 	  continue;
 	}
-	if (stat==0) return false;
+	stat=1;
 	mom       = split->Momentum();
 	newpB     = new Parton(m_flavB,mom,split->GetType());
 	newpB->SetId(split->Id());
@@ -429,13 +429,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt(split->KtTest())<<" vs. "<<sqrt(split->KtMax())
 		       <<" -> "<<split->GetSing()->JF()<<" vs. "<<m_kinIF.JF()<<"\n";
 	int stat(m_kinIF.MakeKinematics(split,m_flavA,m_flavC,newpC));
+	if (stat==0) return false;
 	if (stat==-1) {
 	  split->SetMomentum(splitorig);
 	  split->GetSpect()->SetMomentum(spectorig);
 	  ResetScales(split);
 	  continue;
 	}
-	if (stat==0) return false;
+	stat=1;
 	mom       = split->Momentum();
 	newpA     = new Parton(m_flavA,mom,split->GetType());
 	newpA->SetId(split->Id());
@@ -485,13 +486,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<sqrt(split->KtTest())<<" vs. "<<sqrt(split->KtMax())
 		       <<" -> "<<split->GetSing()->JF()<<" vs. "<<m_kinII.JF()<<"\n";
 	int stat(m_kinII.MakeKinematics(split,m_flavA,m_flavC,newpC));
+	if (stat==0) return false;
 	if (stat==-1) {
 	  split->SetMomentum(splitorig);
 	  split->GetSpect()->SetMomentum(spectorig);
 	  ResetScales(split);
 	  continue;
 	}
-	if (stat==0) return false;
+	stat=1;
 	mom       = split->Momentum();
 	newpA     = new Parton(m_flavA,mom,split->GetType());
 	newpA->SetId(split->Id());
@@ -577,6 +579,10 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       split->SetStart(kt2);
       continue;
     }
+    if (kt2<split->KtNext()) {
+      split->SetKtNext(split->KtStart());
+      return false;
+    }
     if (kt2>kt2win) {
       kt2win  = kt2;
       m_flavA = m_sudakov.GetFlavourA();
@@ -601,9 +607,4 @@ void Shower::SetMS(ATOOLS::Mass_Selector *const ms)
   m_kinFI.SetMS(ms);
   m_kinIF.SetMS(ms);
   m_kinII.SetMS(ms);
-}
-
-void Shower::SetRBMax(const double &rbmax)
-{
-  m_sudakov.SetRBMax(rbmax);
 }

@@ -22,19 +22,6 @@ using namespace ATOOLS;
 const double s_alphamin(1.0e-12);
 const double s_pwmin(1.0e-6), s_pmmin(1.0e-6);
 
-size_t COMIX::IdCount(const size_t &id)
-{
-  size_t ic(id), cn(0);
-  for (size_t i(0);ic>0;++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      ++cn;
-      ic-=c;
-    }
-  }
-  return cn;
-}
-
 PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
   p_xs(xs), m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0)
@@ -401,35 +388,52 @@ void PS_Channel::TChannelBounds
   const Int_Vector &aidi(GetCId(aid));
   if (aidi.front()==aidi.back()) {
     const Int_Vector &aidj(GetCId(lid));
-    if (aidj.front()==aidj.back()) {
-      ctmin=p_cuts->cosmin[aidi.front()][aidj.front()];
-      ctmax=p_cuts->cosmax[aidi.front()][aidj.front()];
-#ifdef DEBUG__BG
-      msg_Debugging()<<"    set t_{"<<aidi.front()<<","<<aidj.front()
-		     <<"} ctmin = "<<ctmin<<", ctmax = "<<ctmax<<"\n";
-#endif    
-      double s12((pa+pb).Abs2()), Q12(sqrt(s12));
-      double E1((s12+s1-s2)/(2.0*Q12)), pcm2(E1*E1-s1);
-      double tmax(p_cuts->scut[aidi.front()][aidj.front()]);
-      if (tmax<0.0) {
-	double sa(pa.Abs2()), Ea((s12+sa-pb.Abs2())/(2.0*Q12));
-	double tctmax(E1*Ea+(tmax-s1-sa)/2.0);
-	ctmax=Min(tctmax/sqrt(pcm2*(Ea*Ea-sa)),ctmax);
-      }
-      double pt2(sqr(p_cuts->etmin[aidj.front()])-s1);
-      double ct(sqrt(Max(0.0,1.0-pt2/pcm2)));
-      ctmin=Max(ctmin,-ct);
-      ctmax=Min(ctmax,ct);
-#ifdef DEBUG__BG
-      msg_Debugging()<<"    reset t_{"<<aidi.front()<<","<<aidj.front()
-		     <<"} ctmin = "<<ctmin<<", ctmax = "<<ctmax<<"\n";
-#endif    
-      if (ctmin>=ctmax) {
-	ctmin=p_cuts->cosmin[aidi.front()][aidj.front()];
-	ctmax=p_cuts->cosmax[aidi.front()][aidj.front()];
-      }
-    }
+    if (aidj.front()==aidj.back())
+      SingleTChannelBounds(aidi.front(),aidj.front(),
+			   ctmin,ctmax,pa,pb,s1,s2,0);
+    const Int_Vector &aidk(GetCId((1<<m_n)-1-m_rid-aid-lid));
+    if (aidk.front()==aidk.back())
+      SingleTChannelBounds(GetCId(m_rid).front(),aidk.front(),
+			   ctmin,ctmax,pb,pa,s2,s1,1);
   }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"    ctmin = "<<ctmin<<", ctmax = "<<ctmax<<"\n";
+#endif    
+}
+
+void PS_Channel::SingleTChannelBounds
+(const size_t &a,const size_t &j,double &rctmin,double &rctmax,
+ const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
+ const double &s1,const double &s2,const int mode)
+{
+  double ctmin=p_cuts->cosmin[a][j];
+  double ctmax=p_cuts->cosmax[a][j];
+#ifdef DEBUG__BG
+  msg_Debugging()<<"    set t_{"<<a<<","<<j<<"} ctmin = "
+		 <<ctmin<<", ctmax = "<<ctmax<<" ("<<mode<<")\n";
+#endif    
+  double s12((pa+pb).Abs2()), Q12(sqrt(s12));
+  double E1((s12+s1-s2)/(2.0*Q12)), pcm2(E1*E1-s1);
+  double tmax(p_cuts->scut[a][j]);
+  if (tmax<0.0) {
+    double sa(pa.Abs2()), Ea((s12+sa-pb.Abs2())/(2.0*Q12));
+    double tctmax(E1*Ea+(tmax-s1-sa)/2.0);
+    ctmax=Min(tctmax/sqrt(pcm2*(Ea*Ea-sa)),ctmax);
+  }
+  double pt2(sqr(p_cuts->etmin[j])-s1);
+  double ct(sqrt(Max(0.0,1.0-pt2/pcm2)));
+  ctmin=Max(ctmin,-ct);
+  ctmax=Min(ctmax,ct);
+#ifdef DEBUG__BG
+  msg_Debugging()<<"    reset t_{"<<a<<","<<j<<"} ctmin = "
+		 <<ctmin<<", ctmax = "<<ctmax<<" ("<<mode<<")\n";
+#endif    
+  if (ctmin>=ctmax) {
+    ctmin=p_cuts->cosmin[a][j];
+    ctmax=p_cuts->cosmax[a][j];
+  }
+  rctmin=Max(rctmin,ctmin);
+  rctmax=Min(rctmax,ctmax);
 }
 
 void PS_Channel::TChannelMomenta

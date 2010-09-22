@@ -45,10 +45,6 @@ namespace PDF {
 
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
-    virtual double CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl) = 0;
-
-    virtual std::string GetKT2(const std::string &jm2) const = 0;
-
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
@@ -57,6 +53,9 @@ namespace PDF {
                           const ATOOLS::Flavour &flj,
                           const ATOOLS::Flavour &flk,
                           const int type) const = 0;
+    virtual double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
+                          const ATOOLS::Flavour &flk,const int type,
+			  const int cpl,const double &mu2) const = 0;
 
     inline double Weight() const { return m_weight; }
 

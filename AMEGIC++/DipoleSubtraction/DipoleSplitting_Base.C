@@ -135,46 +135,30 @@ double DipoleSplitting_Base::GetR(const ATOOLS::Vec4D* mom,const ATOOLS::Vec4D* 
 
 
 
-double DipoleSplitting_Base::Vijf(int type)
+double DipoleSplitting_Base::Vijf(int type,int mode)
 {
   double loga = log(m_alpha);
   switch (type) {
   case 1:
   case 2:
-    return 5.-0.5*sqr(M_PI)-sqr(loga)+1.5*(m_alpha-1-loga);
+    return 5.-0.5*sqr(M_PI)-sqr(loga)+1.5*(m_alpha-1-loga)-(mode?0.5:0.);
   case 3:
-    return -16./9.-2./3.*(m_alpha-1-loga);
+    return -16./9.-2./3.*(m_alpha-1-loga)-(mode?1./6.:0.);
   case 4:
-    return 50./9.-0.5*sqr(M_PI)-sqr(loga)+11./6.*(m_alpha-1-loga);
+    return 50./9.-0.5*sqr(M_PI)-sqr(loga)+11./6.*(m_alpha-1-loga)-(mode?1./6.:0.);
   }
   return 0.;
 }
 
-double DipoleSplitting_Base::Vcijf(int type)
-{
-   return 0.;
-  double loga = log(m_alpha);
-  switch (type) {
-  case 1:
-  case 2:
-    return 5.-0.5*sqr(M_PI)-sqr(loga)+1.5*(m_alpha-1-loga);
-  case 3:
-    return -16./9.-2./3.*(m_alpha-1-loga);
-  case 4:
-    return 50./9.-0.5*sqr(M_PI)-sqr(loga)+11./6.*(m_alpha-1-loga);
-  }
-  return 0.;
-}
-
-double DipoleSplitting_Base::Vif(int type)
+double DipoleSplitting_Base::Vif(int type,int mode)
 {
   switch (type) {
   case 1:
   case 2:
-    return Vijf(1)-Vcijf(1);
+    return Vijf(1,mode);
   case 3:
   case 4:
-    return (Vijf(4)-Vcijf(4))+m_nf*CSC.TR/CSC.CA*(Vijf(3)-Vcijf(3));
+    return Vijf(4,mode)+m_nf*CSC.TR/CSC.CA*Vijf(3,mode);
   }
   return 0.;
 }

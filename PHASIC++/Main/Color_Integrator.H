@@ -130,6 +130,7 @@ namespace PHASIC {
     void SetAlpha(const Double_Vector &alpha);
 
     void SetPoint(const ATOOLS::Cluster_Amplitude *const ampl);
+    void SetPoint(const Int_Vector &ci,const Int_Vector &cj);
 
     void SetDecayIds(const std::vector<size_t> &ids,
 		     const Int_Vector &types,const Int_Vector &acts);

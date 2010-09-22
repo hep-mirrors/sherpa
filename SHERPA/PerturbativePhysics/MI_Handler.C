@@ -241,12 +241,10 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetX1(xs->Integrator()->ISR()->X1());
-  p_ampl->SetX2(xs->Integrator()->ISR()->X2());
   p_ampl->SetOrderEW(xs->OrderEW());
   p_ampl->SetOrderQCD(xs->OrderQCD());
   p_ampl->SetMS(this);
-  if (msg_LevelIsDebugging()) p_ampl->Print();
+  msg_Debugging()<<*p_ampl<<"\n";
 #endif
   return p_ampl;
 }

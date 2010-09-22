@@ -17,8 +17,10 @@ namespace COMIX {
 
     int m_cmode;
 
-    bool SetRandomColors();
-    bool SetLargeNCColors();
+    bool SetRandomColors(const PHASIC::Int_Vector &ci,
+			 const PHASIC::Int_Vector &cj);
+    bool SetLargeNCColors(const PHASIC::Int_Vector &ci,
+			  const PHASIC::Int_Vector &cj);
 
   public:
 

@@ -20,7 +20,6 @@ namespace PHASIC {
     void   Init(const ATOOLS::Vec4D *);
     bool   Trigger(const ATOOLS::Vec4D_Vector &);
     void   BuildCuts(Cut_Data *);
-    void   UpdateCuts(double,double,Cut_Data *);
     int    IsConditional() { return 1; }
   };
 }
@@ -115,8 +114,6 @@ void Cone_Finder::BuildCuts(Cut_Data * cuts)
     }
   }
 }
-
-void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 double Cone_Finder::DEta12(const Vec4D & p1,const Vec4D & p2)
 {

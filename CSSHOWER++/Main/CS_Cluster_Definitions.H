@@ -9,16 +9,21 @@ namespace CSSHOWER {
   class Shower;
 
   struct CS_Parameters {
-    double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws;
+    double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws, m_q2, m_mu2;
     int m_mode, m_kin;
+    Splitting_Function_Base *p_sf;
+    size_t m_idi, m_idj, m_idk;
     ATOOLS::Vec4D m_pbt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
-		  const double &x,const int mode=-1,
-		  const int kin=0):
-      m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x),
-      m_wk(1.0), m_ws(kt2), m_mode(mode), m_kin(kin) {}
+		  const double &x,const double &q2,
+		  const int mode=-1,const int kin=0):
+      m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0), m_ws(kt2),
+      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), p_sf(NULL),
+      m_idi(0), m_idj(0), m_idk(0) {}
   };// end of struct CS_Parameters
+
+  std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs);
 
   class CS_Cluster_Definitions: public PDF::Cluster_Definitions_Base {
   private:
@@ -36,8 +41,6 @@ namespace CSSHOWER {
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
-    double GetX(const ATOOLS::Cluster_Leg *l,
-		Splitting_Function_Base *const sf) const;
     ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl) const;
 
   public:
@@ -45,6 +48,8 @@ namespace CSSHOWER {
     CS_Cluster_Definitions(Shower *const shower,const int kmode=1);
 
     // CS cluster kperps
+    double GetX(const ATOOLS::Cluster_Leg *l,
+		Splitting_Function_Base *const sf) const;
     PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
@@ -98,6 +103,8 @@ namespace CSSHOWER {
     inline double Lambda(const double a, const double b, const double c) {
       return a*a+b*b+c*c-2.*a*b-2.*a*c-2.*b*c;
     }
+    inline ATOOLS::Cluster_Leg *LegB() const { return p_b; }
+
   };// end of class CS_Cluster_Definitions
 
 }// end of namespace CSSHOWER

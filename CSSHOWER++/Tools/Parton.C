@@ -1,7 +1,9 @@
 #include "CSSHOWER++/Tools/Parton.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace CSSHOWER;
+using namespace ATOOLS;
 using namespace std;
 
 namespace CSSHOWER {
@@ -15,7 +17,8 @@ namespace CSSHOWER {
     else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
     else                     str<<"                           ";
     str<<"  Colour partners ("
-       <<part.p_left<<","<<part.p_right<<")"<<endl;
+       <<part.p_left<<","<<part.p_right<<"), t_min = "
+       <<sqrt(dabs(part.m_t_min))<<endl;
     str<<"  k_T start : "<<sqrt(part.m_kt_start);
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto)<<"("<<sqrt(part.m_kt_max)<<")";

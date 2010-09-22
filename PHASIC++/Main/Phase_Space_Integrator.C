@@ -213,7 +213,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 #endif
 	}
       }
-      error=(psh->Process())->TotalVar()/(psh->Process())->TotalResult();
+      error=dabs(psh->Process()->TotalVar()/psh->Process()->TotalResult());
       msg_Info()<<om::blue
 		<<(psh->Process())->TotalResult()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red

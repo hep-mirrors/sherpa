@@ -42,6 +42,7 @@ namespace PHASIC {
       m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
+    bool Has(nlo_type::code nlotype) const;
 
   };// end of struct Process_Info
 

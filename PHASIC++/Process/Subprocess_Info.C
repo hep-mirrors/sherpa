@@ -153,7 +153,7 @@ bool Subprocess_Info::AddDecay
 }
 
 size_t Subprocess_Info::GetDecayInfos
-(Decay_Info_Vector &ids,size_t &n) const
+(DecayInfo_Vector &ids,size_t &n) const
 {
   if (m_ps.empty()) return 1<<n++;
   size_t cont(0);
@@ -163,7 +163,7 @@ size_t Subprocess_Info::GetDecayInfos
   return cont;
 }
 
-Decay_Info_Vector Subprocess_Info::GetDecayInfos() const
+DecayInfo_Vector Subprocess_Info::GetDecayInfos() const
 {
   size_t n(0);
   std::vector<Decay_Info> ids;
@@ -294,4 +294,30 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
     ostr<<std::string(ni,' ')<<"}";
   }
   ostr<<"\n";
+}
+
+std::ostream &PHASIC::operator<<(std::ostream &str,const nlo_type::code &c) 
+{
+  std::string out="";
+  if (c&nlo_type::born) out+="B";
+  if (c&nlo_type::loop) out+="V";
+  if (c&nlo_type::vsub) out+="I";
+  if (c&nlo_type::real) out+="R";
+  if (c&nlo_type::rsub) out+="S";
+  if (c&nlo_type::polecheck) out+="P";
+  return str<<out;
+}
+
+std::istream &PHASIC::operator>>(std::istream &str,nlo_type::code &c) 
+{
+  std::string tag;
+  str>>tag;
+  c=nlo_type::lo;
+  if (tag.find('B')!=std::string::npos) c|=nlo_type::born;
+  if (tag.find('V')!=std::string::npos) c|=nlo_type::loop;
+  if (tag.find('I')!=std::string::npos) c|=nlo_type::vsub;
+  if (tag.find('R')!=std::string::npos) c|=nlo_type::real;
+  if (tag.find('S')!=std::string::npos) c|=nlo_type::rsub;
+  if (tag.find('P')!=std::string::npos) c|=nlo_type::polecheck;
+  return str;
 }

@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Channels/FSR_Channel.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Channels/RamboKK.H"
@@ -26,6 +27,8 @@ bool FSR_Channels::Initialize()
   m_inttype=dr.GetValue<int>("INTEGRATOR",6);
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
+  if (dynamic_cast<POWHEG_Process*>(p_psh->Process()->Process())) nout-=1;
+  int m_nin(nin), m_nout(nout);
   if (nin==1) {
     if (nout==2) m_inttype = 0;
     if (m_inttype<4)  m_inttype = 0;
@@ -41,8 +44,6 @@ bool FSR_Channels::Initialize()
     if (m_inttype<4||m_inttype>20) DropAllChannels();
   }
   bool sintegrator(false);
-  int m_nin(p_psh->Process()->NIn());
-  int m_nout(p_psh->Process()->NOut());
   switch (m_inttype) {
   case 0:
     {
@@ -103,6 +104,8 @@ bool FSR_Channels::Initialize()
     msg_Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
     Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front()));
   }  
+  if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
+    THROW(critical_error,"InitIntegrator failed");
   return sintegrator;
 }
 
@@ -202,6 +205,7 @@ bool FSR_Channels::Compare(const Vec4D *p1,const Vec4D *p2)
 {
   int m_nin(p_psh->Process()->NIn());
   int m_nout(p_psh->Process()->NOut());
+  if (dynamic_cast<POWHEG_Process*>(p_psh->Process()->Process())) m_nout-=1;
   if (m_nout==2) {
     for (short int i=0;i<m_nout;i++) { 
       if (p1[m_nin+i] != p2[m_nin+i]) return 0;

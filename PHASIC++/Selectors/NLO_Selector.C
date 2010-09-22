@@ -15,10 +15,9 @@ namespace PHASIC {
     ~PTNLO_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class RapidityNLO_Selector : public Selector_Base {
@@ -30,10 +29,9 @@ namespace PHASIC {
     ~RapidityNLO_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class PseudoRapidityNLO_Selector : public Selector_Base {
@@ -45,10 +43,9 @@ namespace PHASIC {
     ~PseudoRapidityNLO_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class PT2NLO_Selector : public Selector_Base {
@@ -60,10 +57,9 @@ namespace PHASIC {
     ~PT2NLO_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Isolation_Cut : public Selector_Base {
@@ -82,10 +78,9 @@ namespace PHASIC {
     
     void   SetRange(ATOOLS::Flavour_Vector,double,double);
     bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector & p) {return 1;}
     void   BuildCuts(Cut_Data *);
-    void   UpdateCuts(double,double,Cut_Data *);
   };
 }
 
@@ -143,14 +138,14 @@ bool PTNLO_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool PTNLO_Selector::JetTrigger(const Vec4D_Vector &mom,const Flavour_Vector &fl,int ns)
+bool PTNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_strong==0) return 1;
   if (m_strong==-1) {
     double pti;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<m_nin+ns;i++) {
-	if (flav[k].Includes(fl[i])) {
+      for (int i=m_nin;i<subs->back()->m_n;i++) {
+	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  pti = sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
 	  if (m_sel_log->Hit( ((pti<ptmin[k]) || (pti>ptmax[k])) )) return 0;
 	} 
@@ -173,8 +168,6 @@ void PTNLO_Selector::BuildCuts(Cut_Data * cuts)
 {
 }
 
-void PTNLO_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
@@ -271,14 +264,14 @@ bool RapidityNLO_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool RapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,const Flavour_Vector &fl,int ns)
+bool RapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_strong==0) return 1;
   if (m_strong==-1) {
     double yi;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<m_nin+ns;i++) {
-	if (flav[k].Includes(fl[i])) {
+      for (int i=m_nin;i<subs->back()->m_n;i++) {
+	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  yi = mom[i].Y();
 	  if (m_sel_log->Hit( ((yi<ymin[k]) || (yi>ymax[k])) )) return 0;
 	} 
@@ -301,8 +294,6 @@ void RapidityNLO_Selector::BuildCuts(Cut_Data * cuts)
 {
 }
 
-void RapidityNLO_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 void RapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max)
 {
@@ -397,14 +388,14 @@ bool PseudoRapidityNLO_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool PseudoRapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,const Flavour_Vector &fl,int ns)
+bool PseudoRapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_strong==0) return 1;
   if (m_strong==-1) {
     double etai;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<m_nin+ns;i++) {
-	if (flav[k].Includes(fl[i])) {
+      for (int i=m_nin;i<subs->back()->m_n;i++) {
+	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  etai = mom[i].Eta();
 	  if (m_sel_log->Hit( ((etai<etamin[k]) || (etai>etamax[k])) )) return 0;
 	} 
@@ -427,8 +418,6 @@ void PseudoRapidityNLO_Selector::BuildCuts(Cut_Data * cuts)
 {
 }
 
-void PseudoRapidityNLO_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 void PseudoRapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max)
 {
@@ -526,16 +515,18 @@ bool PT2NLO_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,const Flavour_Vector &fl,int ns)
+bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_strong==0) return 1;
   if (m_strong==-1) {
     double ptij;
     for (size_t k=0;k<flav1.size();k++) {
-      for (int i=m_nin;i<m_nin+ns;i++) {
-	for (int j=i+1;j<m_nin+ns;j++) {
-	  if ( ((flav1[k].Includes(fl[i])) && (flav2[k].Includes(fl[j])) ) || 
-	       ((flav1[k].Includes(fl[j])) && (flav2[k].Includes(fl[i])) ) ) {
+      for (int i=m_nin;i<subs->back()->m_n;i++) {
+	for (int j=i+1;j<subs->back()->m_n;j++) {
+	  if ( ((flav1[k].Includes(subs->back()->p_fl[i])) &&
+		(flav2[k].Includes(subs->back()->p_fl[j])) ) || 
+	       ((flav1[k].Includes(subs->back()->p_fl[j])) &&
+		(flav2[k].Includes(subs->back()->p_fl[i])) ) ) {
 	    ptij = (mom[i]+mom[j]).PPerp();
 	    if (m_sel_log->Hit( ((ptij<ptmin[k]) || (ptij>ptmax[k])) )) return 0;
 	  }
@@ -559,8 +550,6 @@ void PT2NLO_Selector::BuildCuts(Cut_Data * cuts)
 {
 }
 
-void PT2NLO_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
@@ -701,18 +690,19 @@ bool Isolation_Cut::Trigger(const Vec4D_Vector & p)
   return 1;
 }
 
-bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,int ns)
+bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,ATOOLS::NLO_subevtlist *const subs)
 {
   vector<int> vf;
-  for (int i=m_nin;i<m_nin+ns;i++) {
-    if (m_iflav.Includes(fl[i])) {
+  for (int i=m_nin;i<subs->back()->m_n;i++) {
+    if (m_iflav.Includes(subs->back()->p_fl[i])) {
       vf.push_back(i);
     }
   }
   for (size_t k=0;k<vf.size();k++) {
     double egamma=p[vf[k]].PPerp();
     vector<edr> edrlist;
-    for (int i=m_nin;i<m_nin+ns;i++) if (fl[i].Strong()) {
+    for (int i=m_nin;i<subs->back()->m_n;i++)
+      if (subs->back()->p_fl[i].Strong()) {
       double dr=DR(p[vf[k]],p[i]);
       if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
     }
@@ -733,8 +723,6 @@ bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,in
 void Isolation_Cut::BuildCuts(Cut_Data * cuts) 
 {
 }
-
-void   Isolation_Cut::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 double Isolation_Cut::Chi(double eg,double dr)
 {

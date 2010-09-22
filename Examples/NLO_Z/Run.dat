@@ -1,0 +1,49 @@
+(run){
+  EVENTS 1000000;
+  BATCH_MODE 0; OUTPUT 2;
+}(run);
+
+(processes){
+  Process 93 93 -> 11 -11;
+  NLO_QCD_Part BIVRS;
+  Loop_Generator Internal;
+  Order_EW 2;
+  End process;
+}(processes);
+
+(selector){
+  Mass 11 -11 66. 116.
+}(selector)
+
+(me){
+  ME_SIGNAL_GENERATOR Amegic;
+  EVENT_GENERATION_MODE Weighted;
+  NLO_Mode 1;
+  SCALES VAR{Abs2(p[2]+p[3])};
+}(me);
+
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 7000;
+  BEAM_2  2212; BEAM_ENERGY_2 7000;
+  K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
+  K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
+}(beam);
+
+(integration){
+  INTEGRATOR 7; ERROR 0.1;
+  FINISH_OPTIMIZATION On;
+}(integration);
+
+(fragmentation){
+  FRAGMENTATION Off;
+}(fragmentation);
+
+(analysis){
+    BEGIN_ANALYSIS {
+        LEVEL MENLO
+                
+        PT        11  0. 500. 100   LinErr FinalState
+        PT        -11  0. 500. 100  LinErr FinalState
+        Y2        11 -11 -5. 5. 50  LinErr FinalState
+    } END_ANALYSIS;
+}(analysis)

@@ -28,11 +28,22 @@ namespace CSSHOWER {
 	  key.p_v->in[1].StrongCharge()==8 &&
 	  key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
       else m_q=(key.p_v->in[0].StrongCharge()==8)?s_TR:s_CF;
+      if (key.m_type==cstp::FF || key.m_type==cstp::FI) {
+	if (key.p_v->in[0].StrongCharge()==8) m_q/=2.0;
+      }
+      else {
+	if (key.m_mode==0) {
+	  if (key.p_v->in[1].StrongCharge()==8) m_q/=2.0;
+	}
+	else {
+	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
+	}
+      }
     }
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    double Coupling(const double &scale,const int mode);
+    double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
     double CplFac(const double &scale) const;
@@ -54,11 +65,17 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   return true;
 }
 
-double CF_QCD::Coupling(const double &scale,const int mode)
+double CF_QCD::Coupling(const double &scale,const int pol)
 {
-  if (mode!=0) return 0.0;
-  double cpl=(*p_cpl)(CplFac(scale)*scale)*m_q;
+  if (pol!=0) return 0.0;
+  double scl(CplFac(scale)*scale);
+  double cpl=(*p_cpl)(scl)*m_q;
   if (cpl>m_cplmax.front()) return m_cplmax.front();
+#ifdef DEBUG__Trial_Weight
+  msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
+		 <<sqrt(scale)<<", \\alpha_s("<<sqrt(scl)<<") = "
+		 <<(*p_cpl)(scl)<<", m_q = "<<m_q<<"\n";
+#endif
   return cpl;
 }
 
@@ -95,6 +112,8 @@ double CF_QCD::CplFac(const double &scale) const
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
   return m_cplfac*kfac;
 }
+
+namespace CSSHOWER {
 
 DECLARE_CPL_GETTER(CF_QCD_Getter);
 
@@ -158,4 +177,6 @@ void CF_QCD_Filler::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"qcd coupling filler";
+}
+
 }

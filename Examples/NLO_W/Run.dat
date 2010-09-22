@@ -1,26 +1,19 @@
 (run){
-  EVENTS 1000000; ANALYSIS_WRITEOUT_INTERVAL 0.1;
-  ANALYSIS Internal;
+  EVENTS 0;
   BATCH_MODE 0; OUTPUT 2;
 }(run);
 (processes){
   Process 93 93 -> 11 -12;
-  NLO_QCD_Part BIV;
-  Loop_Generator Internal;
+  NLO_QCD_Part BIVRS;
+  Loop_Generator WhiteHat;
   Order_EW 2;
-  End process;
-  #
-  Process 93 93 -> 11 -12;
-  NLO_QCD_Part RS;
-  Order_EW 2;
-  Enhance_Factor 10;
   End process;
 }(processes);
 (selector){
   Mass 11 -12 10 E_CMS;
 }(selector)
 (me){
-  ME_SIGNAL_GENERATOR Amegic;
+  ME_SIGNAL_GENERATOR Amegic WhiteHat;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 1;
   SCALES VAR{Abs2(p[2]+p[3])};
@@ -35,19 +28,3 @@
   INTEGRATOR 7; ERROR 0.1;
   FINISH_OPTIMIZATION On;
 }(integration);
-(shower){
-  SHOWER_GENERATOR None;
-  FSR_SHOWER 0; ISR_SHOWER 0;
-}(shower);
-(fragmentation){
-  FRAGMENTATION Off;
-}(fragmentation);
-(analysis){
-    BEGIN_ANALYSIS {
-        LEVEL MENLO
-                
-        PT        11  0. 500. 100   LinErr FinalState
-        PT        -12  0. 500. 100  LinErr FinalState
-        Y2        11 -12 -5. 5. 50  LinErr FinalState
-    } END_ANALYSIS;
-}(analysis)

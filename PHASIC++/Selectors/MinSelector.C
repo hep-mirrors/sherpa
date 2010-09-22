@@ -16,10 +16,10 @@ namespace PHASIC {
 
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
+		      ATOOLS::NLO_subevtlist *const);
 
     void   BuildCuts(Cut_Data *);
-    void   UpdateCuts(double,double,Cut_Data *);
   };
 }
 
@@ -79,10 +79,10 @@ bool MinSelector::Trigger(const Vec4D_Vector &p)
   return 0;
 }
 
-bool MinSelector::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,int ns)
+bool MinSelector::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
 {
   for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->JetTrigger(p,fl,ns)) {
+    if (m_sels[k]->JetTrigger(p,subs)) {
       m_sel_log->Hit(0);
       return 1;
     }
@@ -104,11 +104,6 @@ bool MinSelector::NoJetTrigger(const Vec4D_Vector & mom)
 }
 
 void MinSelector::BuildCuts(Cut_Data * cuts) 
-{
-  return;
-}
-
-void MinSelector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
 {
   return;
 }

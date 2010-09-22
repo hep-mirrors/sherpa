@@ -50,7 +50,7 @@ bool Process_Group::SelectOne()
       disc-=m_procs[i]->Integrator()->SelectionWeight();
       if (disc<=0.) {
 	p_selected=m_procs[i];
-	return true;
+	return m_procs[i]->SelectOne();
       }
     }
     if (disc>0.) { 
@@ -113,11 +113,11 @@ void *Process_Group::TDifferential(void *arg)
 
 double Process_Group::Differential(const Vec4D_Vector &p)
 {
-  m_last=0.0;
+  m_last[0]=0.0;
 #ifdef USING__Threading
   if (m_cts.empty()) {
     for (size_t i=0;i<m_procs.size();i++)
-      m_last+=m_procs[i]->Differential(p);
+      m_last[0]+=m_procs[i]->Differential(p);
   }
   else {
     // start calculator threads
@@ -138,7 +138,7 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      m_last+=tid->m_d;
+      m_last[0]+=tid->m_d;
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
@@ -158,27 +158,27 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      m_last+=tid->m_d;
+      m_last[0]+=tid->m_d;
     }
   }
 #else
   for (size_t i(0);i<m_procs.size();++i)
-    m_last+=m_procs[i]->Differential(p);
+    m_last[0]+=m_procs[i]->Differential(p);
 #endif
-  if (IsNan(m_last))
+  if (IsNan(m_last[0]))
     msg_Error()<<METHOD<<"(): "<<om::red
 		<<"Cross section is 'nan'."<<om::reset<<std::endl;
-  return m_last;
+  return m_last[0];
 }
 
 double Process_Group::Differential2()
 {
   if (p_int->ISR()==NULL || p_int->ISR()->On()==0) return 0.0;
-  double tmp(0.0);
+  m_last[1]=0.0;
 #ifdef USING__Threading
   if (m_cts.empty()) {
     for (size_t i=0;i<m_procs.size();i++)
-      tmp+=m_procs[i]->Differential2();
+      m_last[1]+=m_procs[i]->Differential2();
   }
   else {
     // start calculator threads
@@ -198,7 +198,7 @@ double Process_Group::Differential2()
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      tmp+=tid->m_d;
+      m_last[1]+=tid->m_d;
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
@@ -217,18 +217,17 @@ double Process_Group::Differential2()
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      tmp+=tid->m_d;
+      m_last[1]+=tid->m_d;
     }
   }
 #else
   for (size_t i(0);i<m_procs.size();++i)
-    tmp+=m_procs[i]->Differential2();
+    m_last[1]+=m_procs[i]->Differential2();
 #endif
-  if (IsNan(tmp))
+  if (IsNan(m_last[1]))
     msg_Error()<<METHOD<<"(): "<<om::red
 	       <<"Cross section is 'nan'."<<om::reset<<std::endl;
-  m_last+=tmp;
-  return tmp;
+  return m_last[1];
 }
 
 void Process_Group::SetScale(const Scale_Setter_Arguments &args)
@@ -316,13 +315,12 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_nin==2) {
       if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
 	  m_flavs[1].Mass()!=p_int->ISR()->Flav(1).Mass()) {
-	p_int->ISR()->SetPartonMasses(&m_flavs.front());
+	p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
     psh->InitCuts();
     for (size_t i=0;i<m_procs.size();++i)
-      m_procs[i]->Selector()->BuildCuts
-	(psh->Cuts());
+      m_procs[i]->BuildCuts(psh->Cuts());
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   }
   psh->CreateIntegrators();
@@ -382,7 +380,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
 	       <<"  '"<<m_name<<"': "<<totalxs
 	       <<" vs. "<<p_int->TotalResult()<<std::endl;
   }
-  if (p_int->TotalXS()>0.0) {
+  if (p_int->TotalXS()!=0.0) {
     p_int->SetTotal();
     if (var==p_int->TotalVar()) {
       exh->RemoveTerminatorObject(p_int);
@@ -398,6 +396,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
 
 void Process_Group::SetLookUp(const bool lookup)
 {
+  m_lookup=lookup;
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetLookUp(lookup);
 }
 
@@ -500,11 +499,45 @@ void Process_Group::SetSelector(const Selector_Key &key)
     m_procs[i]->SetSelector(key);
 }
 
+void Process_Group::SetFixedScale(const std::vector<double> &s)
+{
+  Process_Base::SetFixedScale(s);
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->SetFixedScale(s);
+}
+
+void Process_Group::SetSelectorOn(const bool on)
+{
+  Process_Base::SetSelectorOn(on);
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->SetSelectorOn(on);
+}
+
+void Process_Group::SetUseBIWeight(bool on)
+{
+  Process_Base::SetUseBIWeight(on);
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->SetUseBIWeight(on);
+}
+
 bool Process_Group::Trigger(const Vec4D_Vector &p)
 {
-  m_trigger=false;
+  bool trigger=false;
   for (size_t i(0);i<Size();++i)
-    if (m_procs[i]->Trigger(p)) m_trigger=true;
-  return m_trigger;
+    if (m_procs[i]->Trigger(p)) trigger=true;
+  return trigger;
 }
  
+void Process_Group::MultiplyLast(const double &w,const int mode)
+{
+  m_last[mode]*=w;
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->MultiplyLast(w,mode);
+}
+
+void Process_Group::FillOnshellConditions()
+{
+  Process_Base::FillOnshellConditions();
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->FillOnshellConditions();
+}

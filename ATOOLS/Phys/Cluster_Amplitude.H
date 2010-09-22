@@ -2,6 +2,8 @@
 #define ATOOLS_Phys_Cluster_Amplitude_H
 
 #include "ATOOLS/Phys/Cluster_Leg.H"
+#include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Phys/RB_Data.H"
 
 #include <vector>
 #include <map>
@@ -46,12 +48,15 @@ namespace ATOOLS {
     Cluster_Amplitude *p_prev, *p_next;
 
     ClusterLeg_Vector m_legs;
+    DecayInfo_Vector  m_decs;
 
-    size_t m_oew, m_oqcd, m_swap, m_nin, m_new, m_kin;
-    double m_mur2, m_muf2, m_kt2qcd, m_x1, m_x2, m_rbmax;
+    size_t m_oew, m_oqcd, m_nin, m_new, m_kin, m_nlo;
+    double m_mur2, m_muf2, m_mu2, m_kt2, m_z, m_phi;
     CI_Map m_cmap;
 
-    void *p_jf;
+    void *p_jf, *p_procs, *p_iinfo, *p_dinfo;
+
+    RB_Map *p_rb;
 
     Mass_Selector *p_ms;
 
@@ -71,7 +76,8 @@ namespace ATOOLS {
 
     void Delete();
 
-    void CopyFrom(const Cluster_Amplitude *const master);
+    void CopyFrom(const Cluster_Amplitude *const master,
+		  const int mode=0);
 
     Cluster_Amplitude *Copy() const;
     Cluster_Amplitude *CopyNext() const;
@@ -86,15 +92,15 @@ namespace ATOOLS {
 
     Cluster_Amplitude *InitNext();
     void SetNext(Cluster_Amplitude *const next);
+    void UnsetNext();
 
     void DeletePrev();
     void DeleteNext();
-    void Print() const;
+
+    void IdSort();
 
     size_t NQCD() const;
     size_t NEW() const;
-
-    void SwapInOrder();
 
     Cluster_Leg *IdLeg(const size_t &id) const;
     size_t       IdIndex(const size_t &id) const;
@@ -108,61 +114,74 @@ namespace ATOOLS {
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }
 
+    inline const DecayInfo_Vector &Decays() const { return m_decs; }
+    inline DecayInfo_Vector       &Decays()       { return m_decs; }
+
     inline void SetNIn(const size_t &nin)  { m_nin=nin; }
     inline void SetIdNew(const size_t &id) { m_new=id;  }
 
-    inline void SetKin(const size_t &kin) { m_kin=kin; }
+    inline void SetKin(const size_t &kin)   { m_kin=kin; }
+    inline void SetNLO(const size_t &nlo)   { m_nlo=nlo; }
 
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
 
     inline void SetMuF2(const double &muf2) { m_muf2=muf2; }
     inline void SetMuR2(const double &mur2) { m_mur2=mur2; }
+    inline void SetMu2(const double &mu2)   { m_mu2=mu2;   }
 
-    inline void SetX1(const double &x1) { m_x1=x1; }
-    inline void SetX2(const double &x2) { m_x2=x2; }
+    inline void SetKT2(const double &kt2) { m_kt2=kt2; }
+    inline void SetZ(const double &z)     { m_z=z;     }
+    inline void SetPhi(const double &phi) { m_phi=phi; }
 
-    inline void SetKT2QCD(const double &kt2) { m_kt2qcd=kt2; }
-    inline void SetRBMax(const double &rb)   { m_rbmax=rb;   }
+    inline void SetJF(void *const jf)   { p_jf=jf;   }
+    inline void SetProcs(void *const p) { p_procs=p; }
+    inline void SetIInfo(void *const i) { p_iinfo=i; }
+    inline void SetDInfo(void *const d) { p_dinfo=d; }
 
-    inline void SetJF(void *const jf) { p_jf=jf; }
+    inline void SetRBMap(RB_Map *const rb) { p_rb=rb; }
 
     inline void SetMS(Mass_Selector *const ms) { p_ms=ms; }
 
     inline size_t NIn() const   { return m_nin; }
     inline size_t IdNew() const { return m_new; }
 
-    inline size_t Kin() const { return m_kin; }
+    inline size_t Kin() const  { return m_kin; }
+    inline size_t NLO() const  { return m_nlo; }
 
     inline size_t OrderEW() const  { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }
 
     inline double MuF2() const { return m_muf2; }
     inline double MuR2() const { return m_mur2; }
+    inline double Mu2() const  { return m_mu2;  }
 
-    inline double X1() const { return m_x1; }
-    inline double X2() const { return m_x2; }
-
-    inline double KT2QCD() const { return m_kt2qcd; }
-    inline double RBMax() const  { return m_rbmax;  }
-
-    inline bool InSwaped() const { return m_swap; }
+    inline double KT2() const { return m_kt2; }
+    inline double Z() const   { return m_z;   }
+    inline double Phi() const { return m_phi; }
 
     inline CI_Map       &ColorMap()       { return m_cmap; }
     inline const CI_Map &ColorMap() const { return m_cmap; }
+
+    inline RB_Map *RBMap() const { return p_rb; }
 
     inline Mass_Selector *MS() const { return p_ms; }
 
     template <class Type> inline Type *JF() const 
     { return static_cast<Type*>(p_jf); }
-
-    inline void SwapLegs(const size_t &i,const size_t &j)
-    { std::swap<Cluster_Leg*>(m_legs[i],m_legs[j]); }
+    template <class Type> inline Type *Procs() const 
+    { return static_cast<Type*>(p_procs); }
+    template <class Type> inline Type *IInfo() const 
+    { return static_cast<Type*>(p_iinfo); }
+    template <class Type> inline Type *DInfo() const 
+    { return static_cast<Type*>(p_dinfo); }
 
   };// end of class Cluster_Amplitude
 
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl);
+
+  typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
 
 }// end of namespace ATOOLS
 

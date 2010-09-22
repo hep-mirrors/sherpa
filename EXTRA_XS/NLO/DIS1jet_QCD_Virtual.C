@@ -8,25 +8,14 @@ using namespace ATOOLS;
 
 namespace EXTRAXS {
   class DIS1jet_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
-    double m_cpl;
-//     ME2_Base* p_tree;
+    double m_fac;
   public:
     DIS1jet_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
-      Virtual_ME2_Base(pi, flavs)/*, p_tree(NULL)*/
-    {
-//       Process_Info tree_pi(pi);
-//       tree_pi.m_nloqcdtype=nlo_type::lo;
-//       p_tree = ME2_Base::GetME2("DIS1jet", tree_pi);
-      m_needsborn=true;
-
-      m_cpl=MODEL::s_model->ScalarFunction(std::string("alpha_S"),
-                                           sqr(rpa.gen.Ecms()));
-      m_cpl/=2.*M_PI;
-      m_cpl*=4.0/3.0;
+      Virtual_ME2_Base(pi, flavs) {
+      m_fac=4.0/3.0;
     }
 
     ~DIS1jet_QCD_Virtual() {
-//       if (p_tree) delete p_tree;
     }
 
     void Calc(const ATOOLS::Vec4D_Vector& mom);
@@ -40,11 +29,9 @@ namespace EXTRAXS {
 using namespace EXTRAXS;
 
 void DIS1jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
-//   m_born=(*p_tree)(mom);
-  m_born*=m_cpl*CouplingFactor(1, 0);
-  m_res.IR()=-3.*m_born;
-  m_res.IR()=-2.*m_born;
-  m_res.Finite()=(-8.)*m_born;
+  m_res.IR()=-3.*m_fac;
+  m_res.IR()=-2.*m_fac;
+  m_res.Finite()=(-8.)*m_fac;
 }
 
 

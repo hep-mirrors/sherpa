@@ -119,6 +119,21 @@ Point* Point::CopyList(Point* p)
   return nx;
 }
 
+namespace AMEGIC {
+
+  std::ostream &operator<<(std::ostream &str,const Point &p)
+  {
+    str<<p.fl<<"("<<p.b<<","<<p.number<<")";
+    if (p.left) {
+      str<<"[->"<<*p.left<<","<<*p.right;
+      if (p.middle) str<<","<<*p.middle;
+      str<<"]";
+    }
+    return str;
+  }
+
+}
+
 void Point::Print()
 {
   std::cout<<" "<<fl<<"("<<b<<","<<number<<")";

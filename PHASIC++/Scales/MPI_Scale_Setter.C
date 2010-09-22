@@ -18,7 +18,8 @@ namespace PHASIC {
 
     MPI_Scale_Setter(const Scale_Setter_Arguments &args);
 
-    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p);
+    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
+			  const int mode);
 
   };// end of class Scale_Setter_Base
 
@@ -48,8 +49,16 @@ MPI_Scale_Setter::MPI_Scale_Setter(const Scale_Setter_Arguments &args):
   SetCouplings();
 }
 
-double MPI_Scale_Setter::CalculateScale(const std::vector<ATOOLS::Vec4D> &momenta) 
+double MPI_Scale_Setter::CalculateScale
+(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
 {
+  if (mode==1) return m_scale[stp::fac];
+  if (m_escale.size()) {
+    m_scale[stp::fac]=m_escale[stp::fac];
+    m_scale[stp::ren]=m_escale[stp::ren];
+    p_cpls->Calculate();
+    return m_scale[stp::fac];    
+  }
   double s((momenta[0]+momenta[1]).Abs2());
   double t((momenta[0]-momenta[2]).Abs2());
   double u((momenta[0]-momenta[3]).Abs2());

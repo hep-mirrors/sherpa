@@ -1,7 +1,7 @@
 #include "SHERPA/Tools/Output_RootNtuple.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "PHASIC++/Process/NLO_Helpers.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -85,8 +85,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
 
 
   Blob_Data_Base* seinfo=(*signal)["ME_wgtinfo"];
-  PHASIC::ME_wgtinfo* wgtinfo(0);
-  if (seinfo) wgtinfo=seinfo->Get<PHASIC::ME_wgtinfo*>();
+  ME_wgtinfo* wgtinfo(0);
+  if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
   seinfo=(*signal)["NLO_subeventlist"];
   
   if (!seinfo) {
@@ -131,7 +131,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     }
   }
   else {
-    PHASIC::NLO_subevtlist* nlos = seinfo->Get<PHASIC::NLO_subevtlist*>();
+    NLO_subevtlist* nlos = seinfo->Get<NLO_subevtlist*>();
     double tweight=0.;
     for (size_t j=0;j<nlos->size();j++) {
       ATOOLS::Particle_List * pl=(*nlos)[j]->CreateParticleList();
@@ -140,8 +140,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].nparticle=pl->size();
       m_evtlist[m_cnt2].id=m_idcnt;
       m_evtlist[m_cnt2].wgt0=(*nlos)[j]->m_mewgt;
-      m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_facscale);
-      m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_renscale);
+      m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_muf2);
+      m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mur2);
 
       if (wgtinfo) {
 	m_evtlist[m_cnt2].x1=wgtinfo->m_x1;

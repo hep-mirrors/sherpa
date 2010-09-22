@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Poincare.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -236,15 +237,20 @@ void Multi_Channel::AddPoint(double value)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
+  Vec4D_Vector pp(p,&p[nin+nout]);
+  if (nin==2) {
+    Poincare cms(pp[0]+pp[1]);
+    for (int i(0);i<nin+nout;++i) cms.Boost(pp[i]);
+  }
   if (channels.size()==1) {
-    channels[0]->GenerateWeight(p,cuts);
+    channels[0]->GenerateWeight(&pp.front(),cuts);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
     return;
   }
   m_weight = 0.;
   for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
-      channels[i]->GenerateWeight(p,cuts);
+      channels[i]->GenerateWeight(&pp.front(),cuts);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
 	msg_Error()<<"Multi_Channel::GenerateWeight(..): ("<<this->name
@@ -258,11 +264,14 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 }
 
 
-void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
+void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 {
+  Poincare cms(p[0]+p[1]);
+  if (nin==2) for (int i(0);i<nin;++i) cms.Boost(p[i]);
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
+    if (nin==2) for (int i(0);i<nin+nout;++i) cms.BoostBack(p[i]);
     m_lastdice = 0;
     return;
   }  
@@ -277,6 +286,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p,cuts);
+      if (nin==2) for (int i(0);i<nin+nout;++i) cms.BoostBack(p[i]);
       m_lastdice = i;
       break;
     }

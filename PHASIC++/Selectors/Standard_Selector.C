@@ -14,10 +14,9 @@ namespace PHASIC {
     ~Energy_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class ET_Selector : public Selector_Base {
@@ -28,10 +27,9 @@ namespace PHASIC {
     ~ET_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class PT_Selector : public Selector_Base {
@@ -42,10 +40,9 @@ namespace PHASIC {
     ~PT_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Rapidity_Selector : public Selector_Base {
@@ -56,10 +53,9 @@ namespace PHASIC {
     ~Rapidity_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
     int      IsConditional() { return 1; }
   };
 
@@ -71,10 +67,9 @@ namespace PHASIC {
     ~PseudoRapidity_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Angle_Selector : public Selector_Base {
@@ -86,10 +81,9 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     void     SetRange(ATOOLS::Flavour_Vector,int,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class PT2_Selector : public Selector_Base {
@@ -100,10 +94,9 @@ namespace PHASIC {
     ~PT2_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class IMass_Selector : public Selector_Base {
@@ -114,10 +107,9 @@ namespace PHASIC {
     ~IMass_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class IQ2_Selector : public Selector_Base {
@@ -131,7 +123,6 @@ namespace PHASIC {
     bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Delta_Eta_Selector : public Selector_Base {
@@ -142,7 +133,6 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Delta_Phi_Selector : public Selector_Base {
@@ -153,7 +143,6 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
   class Delta_R_Selector : public Selector_Base {
@@ -164,7 +153,6 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
     void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
   };
 
 }
@@ -235,7 +223,7 @@ bool Energy_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool Energy_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool Energy_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"Energy_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -254,13 +242,9 @@ void Energy_Selector::BuildCuts(Cut_Data * cuts)
 {
   for (int i=0;i<m_n;i++) {
     cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
   }
 }
 
-void Energy_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-}
- 
 void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
@@ -352,7 +336,7 @@ bool ET_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool ET_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool ET_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"ET_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -377,9 +361,6 @@ void ET_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void ET_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
-{ }
- 
 void ET_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=rpa.gen.Ecms())
 {
@@ -474,7 +455,7 @@ bool PT_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool PT_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool PT_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"PT_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -504,8 +485,6 @@ void PT_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 void PT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
@@ -602,7 +581,7 @@ bool Rapidity_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool Rapidity_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool Rapidity_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"Rapidity_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -626,19 +605,6 @@ void Rapidity_Selector::BuildCuts(Cut_Data * cuts)
       Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]));
   }
 }
-
-void Rapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
-{
-  for (int i=m_nin;i<m_n-1;i++) {
-    if (!ATOOLS::IsZero(m_fl[i].SelMass())) {
-      cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
-	1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
-      cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
-	1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
-    }  
-  }
-}
- 
 
 
 void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
@@ -738,7 +704,7 @@ bool PseudoRapidity_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool PseudoRapidity_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool PseudoRapidity_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"PseudoRapidity_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -760,9 +726,6 @@ void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts)
     cuts->cosmax[1][i] = cuts->cosmax[i][1] = Min(cuts->cosmax[0][i],tanh(-etamin[i]));
   }
 }
-
-void PseudoRapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
- 
 
 
 void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
@@ -867,7 +830,7 @@ bool Angle_Selector::Trigger(const Vec4D_Vector & mom)
 }
 
 
-bool Angle_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool Angle_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"Angle_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -900,9 +863,6 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
     }
   }
 }
-
-void Angle_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
 
 void Angle_Selector::SetRange(std::vector<Flavour> crit,
 			      double _min, double _max)
@@ -1058,7 +1018,7 @@ bool PT2_Selector::Trigger(const Vec4D_Vector &mom)
 }
 
 
-bool PT2_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector&,int)
+bool PT2_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"PT2_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -1075,9 +1035,6 @@ bool PT2_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 void PT2_Selector::BuildCuts(Cut_Data * cuts) 
 {
 }
-
-void PT2_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
 
 void PT2_Selector::SetRange(std::vector<Flavour> crit,
 			      double _min, double _max)
@@ -1187,7 +1144,7 @@ bool IMass_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool IMass_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool IMass_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"Mass_Selector::JetTrigger: IR unsave cut"<<std::endl;
@@ -1209,9 +1166,6 @@ void IMass_Selector::BuildCuts(Cut_Data * cuts)
     }
   }
 }
-
-void IMass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
 
 void IMass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
@@ -1344,9 +1298,6 @@ void IQ2_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void IQ2_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
-
 void IQ2_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
@@ -1457,9 +1408,6 @@ bool Delta_Eta_Selector::Trigger(const Vec4D_Vector & mom)
 
 void Delta_Eta_Selector::BuildCuts(Cut_Data * cuts) {}
 
-void Delta_Eta_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
-
 void Delta_Eta_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
@@ -1569,9 +1517,6 @@ bool Delta_Phi_Selector::Trigger(const Vec4D_Vector & mom)
 
 void Delta_Phi_Selector::BuildCuts(Cut_Data * cuts) {}
 
-void Delta_Phi_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
-
 void Delta_Phi_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
@@ -1680,9 +1625,6 @@ bool Delta_R_Selector::Trigger(const Vec4D_Vector & mom)
 }
 
 void Delta_R_Selector::BuildCuts(Cut_Data * cuts) {}
-
-void Delta_R_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
-
 
 void Delta_R_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {

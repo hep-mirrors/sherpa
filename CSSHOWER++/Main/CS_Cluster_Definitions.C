@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace CSSHOWER;
 using namespace PDF;
@@ -22,7 +23,7 @@ CParam CS_Cluster_Definitions::KPerp2
   m_mode=m_kmode;
   CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms));
   m_mode=0;
-  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_kin);
+  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin);
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2
@@ -69,7 +70,7 @@ double CS_Cluster_Definitions::Phi
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
     if (IsZero(pijt[1],1.0e-6) &&
-        IsZero(pijt[2],1.0e-6)) pijt[1]=pijt[2]=0.0;
+	IsZero(pijt[2],1.0e-6)) pijt[1]=pijt[2]=0.0;
     zax=Poincare(pijt,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
@@ -110,33 +111,44 @@ void CS_Cluster_Definitions::KernelWeight
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs) const
 {
-  if (!(m_mode&1)) return;
-  p_shower->SetMS(p_ms);
   const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
   if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FIMap();
   else if (cs.m_mode==1) cmap=&p_shower->GetSudakov()->IFMap();
   else if (cs.m_mode==3) cmap=&p_shower->GetSudakov()->IIMap();
   SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(i->Flav())));
   if (eees==cmap->end()) {
-    msg_Debugging()<<"No splitting function, skip kernel weight calc\n";
+    msg_Debugging()<<"No splitting function (i), skip kernel weight calc\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
   SF_EE_Map::const_iterator ees(eees->second.find(ProperFlav(j->Flav())));
   if (ees==eees->second.end()) {
-    msg_Debugging()<<"No splitting function, skip kernel weight calc\n";
+    msg_Debugging()<<"No splitting function (j), skip kernel weight calc\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
   SF_E_Map::const_iterator es(ees->second.find(ProperFlav(mo)));
   if (es==ees->second.end()) {
-    msg_Debugging()<<"No splitting function, skip kernel weight calc\n";
+    msg_Debugging()<<"No splitting function (k), skip kernel weight calc\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
   Splitting_Function_Base *cdip(es->second);
-  cdip->SetFlavourSpec((k->Id()&3)?ProperFlav(k->Flav()).Bar():
-		       ProperFlav(k->Flav()));
+  Flavour fls((k->Id()&3)?ProperFlav(k->Flav()).Bar():ProperFlav(k->Flav()));
+  if (!cdip->Coupling()->AllowSpec(fls)) {
+    msg_Debugging()<<"Invalid spectator "<<fls<<"\n";
+    cs.m_ws=cs.m_wk=-1.0;
+    return;
+  }
+  cs.p_sf=cdip;
+  cs.m_mu2=Max(cs.m_kt2,p_shower->GetSudakov()->PT2Min());
+  cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
+  cs.m_idi=i->Id();
+  cs.m_idj=j->Id();
+  cs.m_idk=k->Id();
+  if (!(m_mode&1)) return;
+  p_shower->SetMS(p_ms);
+  cdip->SetFlavourSpec(fls);
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
   Parton *pb(NULL);
   double scale=cs.m_kt2, eta=1.0;
@@ -152,6 +164,11 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=cs.m_kt2/cs.m_wk;
+  if (!cdip->On() && AMode()) {
+    if (AMode()==1) cs.m_wk=-1.0;
+    else cs.m_wk=sqrt(std::numeric_limits<double>::min());
+    cs.m_ws=1.0/cs.m_wk;
+  }
   msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
@@ -184,12 +201,12 @@ CS_Parameters CS_Cluster_Definitions::KT2_FF
   Vec4D pkt(sqrt(lrat)*(k->Mom()-(Q*k->Mom())/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
 
   if (lrat<0.0 || pkt[0]<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,0);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
 
-  CS_Parameters cs(kt2,zi,yijk,Phi(Q-pkt,pkt,i->Mom()),1.0,0);
+  CS_Parameters cs(kt2,zi,yijk,Phi(Q-pkt,pkt,i->Mom()),1.0,Q2,0);
   KernelWeight(i,j,k,mo,cs);
   return cs;
 }
@@ -213,7 +230,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_FI
 
   double kt2 = -2.*(pipa+pjpa)*(1.-xija)*zi*(1.0-zi)-sqr(1.0-zi)*mi2-zi*zi*mj2;
   if (kt2<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,2);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,2);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
@@ -225,12 +242,12 @@ CS_Parameters CS_Cluster_Definitions::KT2_FI
 	      (sqr(Q2-sij-ma2)-4.0*sij*ma2));
   Vec4D pat(sqrt(lrat)*(a->Mom()-(Q*a->Mom()/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
   if (lrat<0.0 || pat[0]>0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,2);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,2);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
 
-  CS_Parameters cs(kt2,zi,1.0-xija,Phi(Q-pat,-pat,i->Mom()),xija,2);
+  CS_Parameters cs(kt2,zi,1.0-xija,Phi(Q-pat,-pat,i->Mom()),xija,Q2,2);
   KernelWeight(i,j,a,mo,cs);
   return cs;
 }
@@ -254,15 +271,34 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
 
   double kt2  = -2.*(pipa+pkpa)*(1.-xika)*ui-mi2-sqr(1.0-xika)*ma2; 
   if (kt2<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,1);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
   
-  Vec4D Q(a->Mom()+i->Mom()+k->Mom()), pi(i->Mom());
-  double Q2=Q.Abs2();
+  Vec4D Q(a->Mom()+i->Mom()+k->Mom()), pi(i->Mom()), pkt;
+  double Q2=Q.Abs2(), lrat=0.0;
+  ZAlign lt;
 
-  if ((p_shower->KinScheme()==1 ||
+  int stat(1);
+  if (p_shower->KinScheme()==0 || ma2!=mai2) {
+    lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mk2);
+    pkt=sqrt(lrat)*(k->Mom()-(Q*k->Mom()/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
+    if (lrat<0.0 || pkt[0]<0.0 || 
+	(mai2>0.0 && !IsEqual((pkt-Q).Abs2(),mai2,s_uxeps))) stat=0;
+    else {
+      lt=ZAlign(pkt-Q,-p_b->Mom(),mai2,p_ms->Mass2(p_b->Flav()));
+      Vec4D pan(-lt.PaNew());
+      if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) || lt.Status()<0) stat=0;
+      if (-pan[0]>rpa.gen.PBeam(ID(a->Id()).front())[0]) stat=0;
+    }
+    if (stat==0 && ma2!=mai2) {
+      CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1,1);
+      cs.m_wk=cs.m_ws=-1.0;
+      return cs;
+    }
+  }
+  if ((p_shower->KinScheme()==1 || stat==0 ||
        IsZero(xika-ui,s_uxeps)) && ma2==mai2) {
   double sik((i->Mom()+k->Mom()).Abs2()), Q2(Q.Abs2());
   double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
@@ -273,21 +309,18 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
-  CS_Parameters cs(kt2,xika,ui,Phi(Q-pat,-pat,i->Mom()),xika,1,1);
+  CS_Parameters cs(kt2,xika,ui,Phi(Q-pat,-pat,i->Mom()),xika,Q2,1,1);
   KernelWeight(a,i,k,mo,cs);
   return cs;
   }
-  double lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mk2);
-  Vec4D pkt=sqrt(lrat)*(k->Mom()-(Q*k->Mom()/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
   if (lrat<0.0 || pkt[0]<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1);
+    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,1);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
-  ZAlign lt(pkt-Q,-p_b->Mom(),mai2,p_ms->Mass2(p_b->Flav()));
   lt.Align(pi);
   lt.Align(pkt);
-  CS_Parameters cs(kt2,xika,ui,Phi(lt.PaNew(),pkt,pi),xika,1);
+  CS_Parameters cs(kt2,xika,ui,Phi(lt.PaNew(),pkt,pi),xika,Q2,1);
   if (IsZero(xika-ui,s_uxeps) && ma2==mai2)
     THROW(fatal_error,"Invalid parton configuration");
   KernelWeight(a,i,k,mo,cs);
@@ -313,29 +346,30 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
 
   double kt2   = 2.*papb*vi*(1.-xiab)-mi2-sqr(1.-xiab)*ma2;
 
-  Vec4D Q(a->Mom()+i->Mom()+b->Mom());
-  double Q2=Q.Abs2();
+  Vec4D pai(a->Mom()+i->Mom()), Q(pai+b->Mom());
+  double Q2=Q.Abs2(), sai=pai.Abs2();
 
-  double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mb2);
+  ZAlign lt(-pai,-b->Mom(),sai,mb2,1);
+  pai=-lt.PaNew();
+  Q=pai+b->Mom();
+
+  double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(b->Mom()-(Q*b->Mom()/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q;
-  if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 ||
+  if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 || pai[3]*b->Mom()[3]>0.0 ||
       IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2)) {
     CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
   Vec4D pait=-Q+pbt, pb=-b->Mom(), pi=i->Mom();
-  ZAlign lt(pait,pb,mai2,mb2);
-  pait=lt.PaNew();
   lt.Align(pi);
 
-  CS_Parameters cs(kt2,xiab,vi,Phi(pait,pb,pi,true),xiab,3);
+  CS_Parameters cs(kt2,xiab,vi,Phi(pait,pb,pi,true),xiab,Q2,3);
   if (pait[3]*pb[3]>0.0) {
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
   cs.m_pbt=pbt;
-  lt.Align(cs.m_pbt);
   KernelWeight(a,i,b,mo,cs);
   return cs;
 }
@@ -536,15 +570,14 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   double mai2 = sqr(p_ms->Mass(mo));
   double sai  = pai.Abs2(), Q2 = Q.Abs2();
 
-  ZAlign lt(-pai,-pb,sai,mb2);
+  ZAlign lt(-pai,-pb,sai,mb2,1);
   pai=-lt.PaNew();
   Q=pai+pb;
-  if (pai[3]*pb[3]>0.0) return Vec4D_Vector();
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
   double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
-  if (lrat<0.0 || pbt[0]>0.0 || 
+  if (lrat<0.0 || pbt[0]>0.0 || pai[3]*pb[3]>0.0 ||
       IsZero(sqr(pbt[0])/Q2) || xiab<0.0) return Vec4D_Vector();
 
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
@@ -558,4 +591,14 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
     ++l;
   }
   return after;
+}
+
+namespace CSSHOWER {
+
+  std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs)
+  {
+    return str<<"CS{kt="<<sqrt(cs.m_kt2)<<",z="<<cs.m_z<<",phi="<<cs.m_phi
+	      <<",mode="<<cs.m_mode<<",kin="<<cs.m_kin<<"}";
+  }
+
 }

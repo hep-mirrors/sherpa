@@ -24,14 +24,15 @@ Color_Setter::Color_Setter(Cluster_Algorithm *const ca):
   if (!read.ReadFromFile(m_cmode,"COMIX_CCMODE")) m_cmode=1;
 }
 
-bool Color_Setter::SetRandomColors()
+bool Color_Setter::SetRandomColors
+(const Int_Vector &ci,const Int_Vector &cj)
 {
   size_t trials(0);
   Cluster_Amplitude *ampl(p_ca->GetAmplitude());
   std::vector<ColorID> oc(ampl->Legs().size());
-  msg_Debugging()<<*ampl<<"\n";
   for (size_t i(0);i<ampl->Legs().size();++i)
-    oc[i]=ampl->Leg(i)->Col();
+    ampl->Leg(i)->SetCol(oc[i]=ColorID(ci[i],cj[i]));
+  msg_Debugging()<<*ampl<<"\n";
   for (;trials<s_clmaxtrials;++trials) {
     bool sing(false);
     std::set<size_t> cs;
@@ -89,12 +90,13 @@ bool Color_Setter::SetRandomColors()
   return true;
 }
 
-bool Color_Setter::SetLargeNCColors()
+bool Color_Setter::SetLargeNCColors
+(const Int_Vector &ci,const Int_Vector &cj)
 {
   Cluster_Amplitude *ampl(p_ca->GetAmplitude());
   std::vector<ColorID> oc(ampl->Legs().size());
   for (size_t i(0);i<ampl->Legs().size();++i)
-    oc[i]=ampl->Leg(i)->Col();
+    ampl->Leg(i)->SetCol(oc[i]=ColorID(ci[i],cj[i]));
   SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
   bool sotfcc(colint->OTFCC());
   colint->SetOTFCC(true);
@@ -200,20 +202,23 @@ bool Color_Setter::SetLargeNCColors()
 bool Color_Setter::SetColors(Single_Process *const xs)
 {
   p_xs=xs;
+  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  Int_Vector ci(colint->I()), cj(colint->J());
   bool sol(false);
   switch (m_cmode) {
   case 1: {
-    sol=SetRandomColors();
-    if (!sol) sol=SetLargeNCColors();
+    sol=SetRandomColors(ci,cj);
+    if (!sol) sol=SetLargeNCColors(ci,cj);
     break;
   } 
   case 2: 
-    sol=SetLargeNCColors();
-    if (!sol) sol=SetRandomColors();
+    sol=SetLargeNCColors(ci,cj);
+    if (!sol) sol=SetRandomColors(ci,cj);
     break;
   default:
     THROW(fatal_error,"Invalid colour setting mode");
   }
+  colint->SetPoint(ci,cj);
   return sol;
 }
 

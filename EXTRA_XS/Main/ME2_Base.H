@@ -2,6 +2,7 @@
 #define EXTRA_XS_Main_ME2_Base_H
 
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"

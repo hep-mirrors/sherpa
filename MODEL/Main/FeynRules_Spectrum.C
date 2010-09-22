@@ -176,9 +176,10 @@ void FeynRules_Spectrum::SetExternalParameters() {
   double asMZ = p_model->ScalarConstant(string("aS(MZ)"));
   p_model->GetScalarConstants()->insert(make_pair(string("alpha_S(MZ)"),asMZ));
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",0);
+  int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",asMZ);
   double MZ = Flavour(kf_Z).Mass();
-  as = new Running_AlphaS(asMZ,sqr(MZ),order_alphaS);
+  as = new Running_AlphaS(asMZ,sqr(MZ),order_alphaS,th_alphaS);
   as->SetDefault(alphaS_default);
   p_model->GetScalarFunctions()->insert(make_pair(string("alpha_S"),as));
   //insert aS @ cpl scale

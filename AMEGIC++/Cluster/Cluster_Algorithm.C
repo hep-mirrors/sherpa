@@ -6,6 +6,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "AMEGIC++/Main/Process_Base.H"
+#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Flow.H"
@@ -34,8 +35,7 @@ bool Cluster_Algorithm::Cluster
   int nampl=p_proc->NumberOfDiagrams();
   int nlegs=p_proc->NIn()+p_proc->NOut();
   Leg **legs(CreateLegs(nampl,nlegs));
-  CreateTables(legs,nampl,p_proc->Integrator()->ISR()->X1(),
-	       p_proc->Integrator()->ISR()->X2(),mode,kt2);
+  CreateTables(legs,nampl,mode,kt2);
   Vec4D_Vector moms(4);
   ATOOLS::Flavour_Vector fl(4);
   for (int i(0);i<4;++i) {
@@ -98,16 +98,15 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
 	fl=p_proc->Flavours()[1-i];
       }
       legs[k][i].SetMapFlavour(fl);
-      msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
-		     <<p_proc->Integrator()->InSwaped()<<"\n";
+//       msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
+// 		     <<p_proc->Integrator()->InSwaped()<<"\n";
     }
   }
   return legs;
 }
 
 void Cluster_Algorithm::CreateTables
-(Leg ** legs,const int nampl,
- const double x1,const double x2,const size_t mode,const double &kt2) 
+(Leg ** legs,const int nampl,const size_t mode,const double &kt2) 
 {
   p_ct = 0;
   // if no combination table exist, create it
@@ -116,7 +115,6 @@ void Cluster_Algorithm::CreateTables
   for (int i=0;i<nin+nout;++i)  
     amoms[i]     = p_proc->Integrator()->Momenta()[i];
   if (p_proc->Integrator()->InSwaped()) {
-    // avoid flavour mismatch if using amplitudes
     Vec4D help=amoms[0];
     amoms[0]=amoms[1];
     amoms[1]=help;
@@ -130,11 +128,11 @@ void Cluster_Algorithm::CreateTables
     */ 
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,x1,x2,NULL,mode,kt2); 
+    p_ct = p_combi->CalcJet(nlegs,NULL,mode,kt2); 
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,x1,x2,amoms,mode,kt2);
+    p_ct = p_combi->CalcJet(nlegs,amoms,mode,kt2);
   }
   //  delete [] amoms;
 }
@@ -408,25 +406,15 @@ int Cluster_Algorithm::SetColours(EXTRAXS::ME2_Base * xs,
   return test;
 }
 
-inline size_t IdCount(const size_t &id)
-{
-  size_t ic(id), cn(0);
-  for (size_t i(0);ic>0;++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      ++cn;
-      ic-=c;
-    }
-  }
-  return cn;
-}
-
 void Cluster_Algorithm::Convert()
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
   Selector_Base *jf=p_proc->Selector()
     ->GetSelector("Jetfinder");
+  Subprocess_Info info(p_proc->Info().m_ii);
+  info.Add(p_proc->Info().m_fi);
+  DecayInfo_Vector decinfos(info.GetDecayInfos());
   Combine_Table *ct_tmp(p_ct);
   while (ct_tmp->Up()) ct_tmp=ct_tmp->Up();
   p_ampl = Cluster_Amplitude::New();
@@ -448,11 +436,12 @@ void Cluster_Algorithm::Convert()
   }
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetX1(p_proc->Integrator()->ISR()->X1());
-  p_ampl->SetX2(p_proc->Integrator()->ISR()->X2());
+  p_ampl->Decays()=decinfos;
+  Cluster_Amplitude *eampl(p_ampl);
   while (ct_tmp->Down()) {
     int iwin, jwin, kwin;
-    double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin));
+    double mu2;
+    double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin,mu2));
     ct_tmp=ct_tmp->Down();
     const Leg &win(ct_tmp->GetLeg(iwin));
     Cluster_Amplitude *ampl(p_ampl);
@@ -460,7 +449,8 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetMS(p_ms);
     p_ampl->SetJF(jf);
     p_ampl->SetNIn(ampl->NIn());
-    ampl->SetKT2QCD(kt2qcd);
+    ampl->SetKT2(kt2qcd);
+    ampl->SetMu2(mu2);
     for (int i(0);i<ct_tmp->NLegs();++i) {
       size_t id(ampl->Leg(i<jwin?i:i+1)->Id());
       Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
@@ -481,15 +471,26 @@ void Cluster_Algorithm::Convert()
     }
     p_ampl->SetMuR2(ampl->MuR2());
     p_ampl->SetMuF2(ampl->MuF2());
+    p_ampl->Decays()=decinfos;
     p_ampl->SetOrderEW(ampl->OrderEW()-win.OrderQED());
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
     p_ampl->SetKin(win.Kin());
   }
   double scale;
   p_ct->IdentifyHardPropagator(scale);
-  p_ampl->SetKT2QCD(scale);
-  SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
-	  p_proc->Info().m_fi.NMaxExternal());
+  p_ampl->SetKT2(scale);
+  p_ampl->SetMu2(scale);
+  size_t nmax(p_proc->Info().m_fi.NMaxExternal());
+  if (dynamic_cast<POWHEG_Process*>(p_proc->Parent())) {
+    if (p_proc->Parent()->Info().m_fi.NExternal()<=nmax) ++nmax;
+    else nmax=eampl->Legs().size()-eampl->NIn();
+    eampl->SetNLO(1);
+    while (eampl->Next()) {
+      eampl=eampl->Next();
+      eampl->SetNLO(1);
+    }
+  }
+  SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
   for (size_t i(2);i<4;++i)
@@ -515,10 +516,10 @@ void Cluster_Algorithm::Convert()
 	}
       }
     }
-    if (msg_LevelIsDebugging()) p_ampl->Print();
+    msg_Debugging()<<*p_ampl<<"\n";
     p_ampl=p_ampl->Prev();
   }
-  if (msg_LevelIsDebugging()) p_ampl->Print();
+  msg_Debugging()<<*p_ampl<<"\n";
   msg_Debugging()<<"}\n";
 }
 

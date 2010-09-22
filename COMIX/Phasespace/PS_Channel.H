@@ -30,8 +30,6 @@ namespace COMIX {
 
   typedef std::map<size_t,const Current_Base*> STCC_Map;
 
-  size_t IdCount(const size_t &id);
-
 #ifdef USING__Threading
   class PS_Channel;
 
@@ -108,6 +106,10 @@ namespace COMIX {
 			double &ctmin,double &ctmax,
 			const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			const double &s1,const double &s2);
+    void SingleTChannelBounds(const size_t &aid,const size_t &lid,
+			      double &ctmin,double &ctmax,
+			      const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
+			      const double &s1,const double &s2,const int mode);
     void TChannelMomenta(Current_Base *cur,const size_t &id,const size_t &aid,
 			 const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			 ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2,

@@ -1,110 +1,15 @@
-#ifndef CSSHOWER_Main_CS_Shower_H
-#define CSSHOWER_Main_CS_Shower_H
-
-#include "PDF/Main/Shower_Base.H"
-
-#include "PDF/Main/ISR_Handler.H"
-#include "CSSHOWER++/Showers/Shower.H"
-#include "CSSHOWER++/Tools/Singlet.H"
-
-#include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Blob.H"
-
-#include "CSSHOWER++/Main/CS_Cluster_Definitions.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
-
-namespace ATOOLS { 
-  class Cluster_Leg;
-  class Data_Reader; 
-}
-
-namespace CSSHOWER {
-  class Splitting_Function_Base;
-}
-
-namespace CSSHOWER {
-
-  typedef std::map<size_t,std::pair<double,double> > KT2X_Map;
-
-  class CS_Shower : public PDF::Shower_Base {
-  
-  private:
- 
-    PDF::ISR_Handler * p_isr;
-    int m_weightmode, m_kmode;
-    size_t m_maxem, m_recocheck;
-    
-    Shower          * p_shower;
-    All_Singlets m_allsinglets;
-    CS_Cluster_Definitions *p_cluster;
-    All_Singlets *p_next;
-
-    ATOOLS::Mass_Selector *p_ms;
-
-    ATOOLS::Cluster_Amplitude *p_ampl, *p_rampl;
-    ATOOLS::Particle_List      m_psp;
-
-    size_t IdCount(const size_t &id);
-    void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,const size_t &id,
-		     KT2X_Map &kt2xmap,std::set<size_t> &aset);
-    void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap);
-
-    double HardScale(const ATOOLS::Cluster_Amplitude *const ampl);
-
-    double CouplingWeight(const size_t &oqcd,const double &kt2,
-			  const double &kt2r) const;
-    
-    Singlet *TranslateAmplitude(ATOOLS::Cluster_Amplitude *const ampl,
-				std::map<ATOOLS::Cluster_Leg*,Parton*> &pmap,
-				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap,
-				const KT2X_Map &kt2xmap);
-
-    int PerformShowers(const size_t &maxem,size_t &nem);
-
-  public:
-
-    // constructor 
-    CS_Shower(PDF::ISR_Handler *const isr, MODEL::Model_Base *const model,
-	      ATOOLS::Data_Reader *const dataread); 
-
-    // destructor
-    ~CS_Shower();
-
-    //member functions
-    int  PerformShowers();
-    int  PerformDecayShowers();
-
-    bool ExtractPartons(ATOOLS::Blob_List *const blist);
-
-    void CleanUp();
-
-    // inline functions
-    PDF::Cluster_Definitions_Base * GetClusterDefinitions();
-    bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl);
-    double CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl);      
-    double CalculateAnalyticWeight(ATOOLS::Cluster_Amplitude *const ampl);      
-
-    std::string GetKT2(const std::string &jm2) const;
-
-    int HasKernel(const ATOOLS::Flavour &fli,
-                  const ATOOLS::Flavour &flj,
-                  const ATOOLS::Flavour &flk,
-                  const int type) const;
-
-  };
-}
-
-#endif
-
-#include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Exception.H"
+#include "CSSHOWER++/Main/CS_Shower.H"
 
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace CSSHOWER;
+using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
@@ -125,6 +30,11 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
+  m_cmode=_dataread->GetValue<int>("METS_CLUSTER_MODE",0);
+  if (m_cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<m_cmode<<".\n";
+  rpa.gen.SetVariable("METS_CLUSTER_MODE",ToString(m_cmode));
+  int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
+  if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -135,6 +45,9 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   p_shower = new Shower(_isr,_qed,_dataread);
   
   p_next = new All_Singlets();
+
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
+  p_cluster->SetAMode(amode);
 }
 
 CS_Shower::~CS_Shower() 
@@ -146,22 +59,42 @@ CS_Shower::~CS_Shower()
   delete p_next;
 }
 
+void CS_Shower::SetScalesNLO()
+{
+  All_Singlets::const_reverse_iterator sit(m_allsinglets.rbegin());
+  if (!(*sit)->NLO()) return;
+  if (p_rampl->RBMap()==NULL) ++sit;
+  for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it) {
+    Parton *p(*it);
+    p->SetTMin(std::numeric_limits<double>::max());
+    while (p->GetPrev()) {
+      p->GetPrev()->SetTMin(p->TMin());
+      p=p->GetPrev();
+    }
+  }
+}
+
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower) return 1;
   m_weight=1.0;
+  SetScalesNLO();
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
       for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
 	if ((*it)->GetPrev()) 
 	  if((*it)->GetPrev()->GetNext()==*it)
+	    if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
+	      (*it)->SetStart((*it)->GetPrev()->KtNext()); else
 	    (*it)->SetStart((*it)->GetPrev()->KtStart());
       msg_Debugging()<<**sit;
+    size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
     if ((*sit)->GetLeft()) p_shower->ReconstructDaughters(*sit,true);
-    msg_Debugging()<<"after shower step\n";
+    msg_Debugging()<<"after shower step with "<<nem-pem
+		   <<" of "<<nem<<" emission(s)\n";
       msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }
@@ -170,8 +103,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 
 int CS_Shower::PerformShowers() 
 {
-  size_t nem(0);
-  return PerformShowers(m_maxem,nem);
+  return PerformShowers(m_maxem,m_nem);
 }
 
 int CS_Shower::PerformDecayShowers() {
@@ -210,6 +142,8 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
 
 void CS_Shower::CleanUp()
 {
+  m_nem=0;
+  m_kt2prev=std::numeric_limits<double>::max();
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
@@ -222,22 +156,7 @@ void CS_Shower::CleanUp()
 
 PDF::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions() 
 {
-  if (p_cluster==NULL)
-    p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
   return p_cluster;
-}
-
-size_t CS_Shower::IdCount(const size_t &id)
-{
-  size_t ic(id), cn(0);
-  for (size_t i(0);ic>0;++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      ++cn;
-      ic-=c;
-    }
-  }
-  return cn;
 }
 
 void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
@@ -448,13 +367,13 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       }
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
     }
-    double kt2prev(campl->Next()?campl->KT2QCD():kt2xmap[1].second);
-    double kt2next(campl->Prev()?campl->Prev()->KT2QCD():0.0);
+    double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
+    double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
     for (size_t i(0);i<campl->Legs().size();++i) {
       std::map<Cluster_Leg*,Parton*>::const_iterator 
 	pit(apmap.find(campl->Leg(i)));
       if (pit!=apmap.end()) {
-	pit->second->SetKtPrev(kt2prev);
+	pit->second->SetKtPrev(Min(kt2prev,m_kt2prev));
 	pit->second->SetKtNext(kt2next);
       }
     }
@@ -475,7 +394,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 	if ((*pit)->GetPrev()) {
 	  if ((*pit)->GetPrev()->GetNext()==*pit) 
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
-	  (*pit)->SetKtPrev((*pit)->GetPrev()->KtNext());
+	  (*pit)->SetKtPrev(Min((*pit)->GetPrev()->KtNext(),m_kt2prev));
 	}
       }
       (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
@@ -484,7 +403,6 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
     msg_Debugging()<<"\n";
   }
   msg_Debugging()<<"}\n";
-  p_shower->SetRBMax(ampl->RBMax());
   p_shower->SetMS(p_ms);
   return true;
 }
@@ -498,6 +416,7 @@ Singlet *CS_Shower::TranslateAmplitude
   double ktveto2(jf?jf->Ycut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
+  singlet->SetNLO(ampl->NLO());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
@@ -568,160 +487,19 @@ Singlet *CS_Shower::TranslateAmplitude
   return singlet;
 }
 
-
-double CS_Shower::CalculateWeight(Cluster_Amplitude *const ampl)
-{
-  if (ampl->JF<PHASIC::Jet_Finder>()==NULL) return 1.0;
-  switch (m_weightmode) {
-  case 1 : return CalculateAnalyticWeight(ampl);
-  default : THROW(fatal_error,"Invalid reweighting mode"); 
-  }
-  return 1.0;
-}
-
-
-double CS_Shower::CalculateAnalyticWeight(Cluster_Amplitude *const ampl) 
-{
-  // calculate weight
-  p_ms=ampl->MS();
-  msg_Debugging()<<METHOD<<"(): {\n";
-  double wgt(1.0);
-  {
-    msg_Indent();
-    std::map<size_t,Cluster_Leg*> legs;
-    Cluster_Amplitude *ref(ampl);
-    while (ref->Next()) ref=ref->Next();
-#ifdef REWEIGHT_METS_XPDF
-    double muf2(ref->MuF2());
-    if (!IsEqual(muf2,ref->KT2QCD(),1.0e-3)) {
-      if (p_isr->PDF(0)) p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
-      if (p_isr->PDF(1)) p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
-      double xfe[2]={p_isr->PDF(0)?p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()):1.0,
-		     p_isr->PDF(1)?p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav()):1.0};
-      muf2=ref->KT2QCD();
-      if (p_isr->PDF(0)) p_isr->PDF(0)->Calculate(ampl->X1(),muf2);
-      if (p_isr->PDF(1)) p_isr->PDF(1)->Calculate(ampl->X2(),muf2);
-      double xfc[2]={p_isr->PDF(0)?p_isr->PDF(0)->GetXPDF(ampl->Leg(0)->Flav()):1.0,
-		     p_isr->PDF(1)?p_isr->PDF(1)->GetXPDF(ampl->Leg(1)->Flav()):1.0};
-      msg_Debugging()<<"PDF 0: "<<xfc[0]<<" / "<<xfe[0]<<"\n";
-      msg_Debugging()<<"PDF 1: "<<xfc[1]<<" / "<<xfe[1]<<"\n";
-      if (!IsZero(xfe[0],1.0e-6)) wgt*=xfc[0]/xfe[0];
-      if (!IsZero(xfe[1],1.0e-6)) wgt*=xfc[1]/xfe[1];
-      ampl->SetMuF2(muf2);
-      Cluster_Amplitude *cref(ampl);
-      while (cref->Next()) {
-	cref=cref->Next();
-	cref->SetMuF2(muf2);
-      }
-    }
-#endif
-    for (size_t i(0);i<ref->Legs().size();++i) {
-      legs[ref->Leg(i)->Id()]=ref->Leg(i);
-    }
-    if (ref->OrderQCD()) {
-      double cf((ref->Leg(0)->Flav().Strong()||
-		 ref->Leg(ref->NIn()-1)->Flav().Strong())?
-		((ref->Leg(ref->NIn())->Flav().Strong()||
-		  ref->Leg(ref->NIn()+1)->Flav().Strong())?
-		 sqrt(p_shower->GetSudakov()->ISCplFac()*
-		      p_shower->GetSudakov()->FSCplFac()):
-		 p_shower->GetSudakov()->ISCplFac()):
-		p_shower->GetSudakov()->FSCplFac());
-      msg_Debugging()<<"core => mu = "<<sqrt(cf)
-		     <<"*"<<sqrt(ref->MuF2())<<" {\n";
-      {
-	msg_Indent();
-	wgt*=CouplingWeight(ref->OrderQCD(),cf*ref->MuF2(),ref->MuR2());
-      }
-      msg_Debugging()<<"}\n";
-    }
-    size_t istag(((1<<ampl->NIn())-1));
-    while (ref->Prev()) {
-      ref=ref->Prev();
-      bool split(false);
-      for (size_t i(0);i<ref->Legs().size();++i) {
-	size_t idi(ref->Leg(i)->Id());
-	if (legs.find(idi)==legs.end()) {
-	  for (size_t j(i+1);j<ref->Legs().size();++j) {
-	    size_t idj(ref->Leg(j)->Id());
-	    if (legs.find(idi+idj)!=legs.end()) {
-	      double cf((idi&istag)?
-			p_shower->GetSudakov()->ISCplFac():
-			p_shower->GetSudakov()->FSCplFac());
-	      double ckt2(ref->KT2QCD());
-	      const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-	      if ((idi+idj)&istag) {
-		if (legs[idi+idj]->K()&istag) cmap=&p_shower->GetSudakov()->IIMap();
-		else cmap=&p_shower->GetSudakov()->IFMap();
-	      }
-	      else {
-		if (legs[idi+idj]->K()&istag) cmap=&p_shower->GetSudakov()->FIMap();
-	      }
-	      SF_EEE_Map::const_iterator eees(cmap->find(ref->Leg(i)->Flav()));
-	      if (eees!=cmap->end()) {
-		SF_EE_Map::const_iterator ees(eees->second.find(ref->Leg(j)->Flav()));
-		if (ees!=eees->second.end()) {
-		  SF_E_Map::const_iterator es(ees->second.find(legs[idi+idj]->Flav()));
-		  if (es!=ees->second.end()) {
-		    cf=es->second->Coupling()->CplFac(ckt2);
-		    msg_Debugging()<<"known ";
-		  }
-		}
-	      }
-	      msg_Debugging()<<"split "<<ID(idi+idj)
-			<<" -> "<<ID(idi)<<","<<ID(idj)
-			<<" => kt = "<<sqrt(cf)<<"*"<<sqrt(ckt2)<<" {\n";
-	      msg_Indent();
-	      size_t coqcd(ref->OrderQCD()-ref->Next()->OrderQCD());
-	      if (coqcd) wgt*=CouplingWeight(coqcd,cf*ckt2,ref->MuR2());
-	      legs[idi]=ref->Leg(i);
-	      legs[idj]=ref->Leg(j);
-	      split=true;
-	      break;
-	      
-	    }
-	  }
-	  msg_Debugging()<<"}\n";
-	  break;
-	}
-      }
-      if (!split) THROW(fatal_error,"Internal error");
-    } 
-  }
-  msg_Debugging()<<"} -> w = "<<wgt<<"\n";
-  return wgt;
-}
-
 double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
-    if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2QCD();
+    if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
     for (size_t i(0);i<next->Legs().size();++i)
       if (next->Leg(i)->K()) {
 	if (!next->Leg(i)->Flav().Resummed())
-	  return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2QCD());
+	  return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2());
       }
-    return ampl->MuF2();
+    return ampl->KT2();
   }
-  return ampl->MuF2();
-}
-
-double CS_Shower::CouplingWeight(const size_t &oqcd,const double &kt2,
-				 const double &kt2r) const
-{
-  double asc((*MODEL::as)(kt2));
-  double asr((*MODEL::as)(kt2r));
-  msg_Debugging()<<"as weight (\\alpha_s("<<sqrt(kt2)
-		 <<")/\\alpha_s("<<sqrt(kt2r)<<"))^O_{as} = ( "
-		 <<asc<<" / "<<asr<<" ) ^ "<<oqcd<<" = "
-		 <<pow(asc/asr,int(oqcd))<<"\n";
-  return pow(asc/asr,int(oqcd));
-}
-
-std::string CS_Shower::GetKT2(const std::string &jm2) const
-{
-  return "0.25*"+jm2;
+  return ampl->KT2();
 }
 
 int CS_Shower::HasKernel(const ATOOLS::Flavour &fli,
@@ -733,6 +511,16 @@ int CS_Shower::HasKernel(const ATOOLS::Flavour &fli,
 		 (type&2)?cstp::II:cstp::IF:
 		 (type&2)?cstp::FI:cstp::FF);
   return p_shower->GetSudakov()->HasKernel(fli, flj, flk,stp);
+}
+
+double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
+                         const ATOOLS::Flavour &flk,const int type,
+			 const int cpl,const double &mu2) const
+{
+  cstp::code stp((type&1)?
+		 (type&2)?cstp::II:cstp::IF:
+		 (type&2)?cstp::FI:cstp::FF);
+  return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
 }
 
 namespace PDF {

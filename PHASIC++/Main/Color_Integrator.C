@@ -148,6 +148,37 @@ bool Color_Integrator::DiceColours()
   return true;
 }
 
+void Color_Integrator::SetPoint(const Int_Vector &ci,const Int_Vector &cj)
+{
+  if (ci.size()!=m_ids.size() || cj.size()!=m_ids.size()) 
+    THROW(fatal_error,"Invalid number of colours");
+  for (size_t i(0);i<m_ids.size();++i) {
+    m_ids[i]->SetI(ci[i]);
+    m_ids[i]->SetJ(cj[i]);
+  }
+  size_t nr(0), ng(0), nb(0);
+  for (size_t k(0);k<m_ids.size();++k) {
+    int idx(m_ids[k]->I());
+    if (idx==1) ++nr;
+    else if (idx==2) ++ng;
+    else if (idx==3) ++nb;
+  }
+  if (nr==0) ++nr;
+  if (ng==0) ++ng;
+  if (nb==0) ++nb;
+  size_t niids(0);
+  for (size_t i(0);i<m_ids.size();++i)
+    if (m_ids[i]->Act() && m_ids[i]->Type()>=0) ++niids;
+  m_weight=pow(3.0,niids)*Factorial(niids)/
+    (Factorial(nr)*Factorial(ng)*Factorial(nb));
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";
+#endif
+  m_fincc=true;
+  m_cweight=m_weight;
+  m_valid=m_nogen?true:GenerateOrders();
+}
+
 void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Legs().size()!=m_ids.size()) 

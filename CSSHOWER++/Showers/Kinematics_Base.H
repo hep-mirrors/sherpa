@@ -18,7 +18,8 @@ namespace CSSHOWER {
     Kinematics_Base(): p_jf(NULL), p_ms(NULL) {}
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
-			       const ATOOLS::Flavour &,Parton *&) = 0;
+			       const ATOOLS::Flavour &,Parton *&,
+			       const int mode=0) = 0;
     virtual double GetY(const double &Q2,const double &kt2,const double &z,
 			const double &s1,const double &s2,const double &s3) const = 0;
     double GetS(const double &Q2,const double &y,
@@ -42,7 +43,8 @@ namespace CSSHOWER {
   public:
     Kinematics_FF() {}
     virtual ~Kinematics_FF() {}
-    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
+		       const ATOOLS::Flavour &,Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3) const;
   };
@@ -51,7 +53,8 @@ namespace CSSHOWER {
   public:
     Kinematics_FI() {}
     virtual ~Kinematics_FI() {}
-    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
+		       const ATOOLS::Flavour &,Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3) const;
   };
@@ -60,7 +63,8 @@ namespace CSSHOWER {
   public:
     Kinematics_IF() {}
     virtual ~Kinematics_IF() {}
-    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
+		       const ATOOLS::Flavour &,Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3) const;
   };
@@ -69,7 +73,8 @@ namespace CSSHOWER {
   public:
     Kinematics_II() {}
     virtual ~Kinematics_II() {}
-    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
+    int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
+		       const ATOOLS::Flavour &,Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3) const;
   };

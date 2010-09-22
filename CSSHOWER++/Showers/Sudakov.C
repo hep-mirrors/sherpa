@@ -6,6 +6,7 @@
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -201,8 +202,6 @@ bool Sudakov::Dice(Parton * split)
   ClearSpecs();
   ResetLastInt();
   m_cfl = split->GetFlavour();
-  if (m_cfl.StrongCharge()==8) m_nspect = 2.;
-                               else m_nspect = 1.;  
   
   m_type     = cstp::none;
   std::vector<Parton*> slist;
@@ -442,7 +441,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
     if ((*m_splitter)->GetType()==m_type && 
 	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
-      if ((*m_splitter)->PureQCD() &&
+      if ((*m_splitter)->PureQCD() && 
 	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
       bool match=false;
       switch (m_type) {
@@ -471,7 +470,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 
 void Sudakov::ProduceT()
 {
-  double ne=m_nspect*2.*M_PI/(m_lastint*m_rbmax);
+  double ne=2.*M_PI/m_lastint;
   m_kperp2 *= exp(log(ran.Get())*Max(ne,1.0e-3));
 }
 
@@ -598,4 +597,20 @@ int Sudakov::HasKernel(const ATOOLS::Flavour &fli,
     }
   }
   return cpl;
+}
+
+double Sudakov::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
+                       const ATOOLS::Flavour &flk,const cstp::code type,
+		       const int cpl,const double &mu2) const
+{
+  const SF_E_Map * sfmap = HasKernel(fli, flj, type);
+  if (sfmap==NULL) return 0;
+  for (SF_E_Map::const_iterator es=sfmap->begin(); es!=sfmap->end(); ++es) {
+    Splitting_Function_Base* sf = es->second;
+    if (sf->Coupling()->AllowSpec(flk)) {
+      if (cpl==1 && sf->PureQCD()) return sf->Coupling()->CplFac(mu2);
+      if (cpl==2 && !sf->PureQCD()) return sf->Coupling()->CplFac(mu2);
+    }
+  }
+  return -1.0;
 }

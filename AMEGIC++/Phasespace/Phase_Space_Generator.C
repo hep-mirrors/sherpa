@@ -9,6 +9,7 @@
 #include "AMEGIC++/Phasespace/Channel_Generator_KK.H"
 #include "AMEGIC++/Phasespace/Channel_Generator_Decays.H"
 #include "AMEGIC++/Main/Process_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"

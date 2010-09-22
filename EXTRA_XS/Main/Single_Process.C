@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
@@ -61,7 +62,6 @@ bool Single_Process::Initialize()
     p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
       DEBUG_INFO("found");
-      p_virtual_me2->SetCouplings(&m_cpls);
       return true;
     }
     else {
@@ -91,10 +91,13 @@ bool Single_Process::Initialize()
   }
 }
 
-double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta) 
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
+				const int mode) 
 {
-  if (m_nlotype==nlo_type::lo && !Trigger()) return m_lastxs=0.0;
-  p_scale->CalculateScale(momenta);
+  if (mode==1 && !p_scale->Scale2()) return m_lastxs;
+  if (m_nlotype==nlo_type::lo && !Selector()->Result()) return m_lastxs=0.0;
+  
+  p_scale->CalculateScale(momenta,mode);
   if (p_born_me2) {
     m_lastxs=(*p_born_me2)(momenta);
   }

@@ -6,6 +6,7 @@
 #include "PHASIC++/Selectors/Cut_Data.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -22,32 +23,14 @@ namespace PDF {
 
 namespace PHASIC {
 
-  typedef std::map<int, int> FMMap;
+  typedef std::map<int,int> FMMap;
 
   class Process_Integrator;
   class Phase_Space_Handler;
   class Combined_Selector;
   class ME_Generator_Base;
-  class EEG_Multi_Channel;
 
   struct Weight_Info;
-
-  class Process_Base;
-  typedef std::map<std::string,Process_Base*> Process_Map;
-
-  class ME_wgtinfo {
-  public: 
-    int m_nx;
-    double m_w0;
-    double* p_wx;
-    double m_x1,m_x2,m_y1,m_y2;
-    double m_renscale;
-    ME_wgtinfo();
-    ~ME_wgtinfo();
-    ME_wgtinfo& operator*= (const double scal);
-    void Flip();
-    void AddMEweights(int n);
-  };
 
   class Process_Base {
   protected:
@@ -63,14 +46,14 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    size_t      m_nin, m_nout, m_oqcd, m_oew;
+    size_t      m_nin, m_nout, m_oqcd, m_oew, m_tinfo;
     std::string m_name;
 
-    ATOOLS::Flavour_Vector      m_flavs;
-    Process_Info                m_pinfo;
+    ATOOLS::Flavour_Vector m_flavs;
+    Process_Info           m_pinfo;
 
-    double m_last;
-    bool   m_lookup, m_trigger;
+    double m_last[2], m_symfac;
+    bool   m_lookup, m_use_biweight;
 
     MODEL::Coupling_Map m_cpls;
 
@@ -88,10 +71,14 @@ namespace PHASIC {
     Process_Base *Parent();
     Process_Base *Selected();
 
+    bool SetSelected(Process_Base *const proc);
+
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
 
-    virtual void SetKFactorOn(const bool on);
+    virtual void SetFixedScale(const std::vector<double> &s);
+    virtual void SetSelectorOn(const bool on);
+    virtual void SetUseBIWeight(bool on);
 
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
@@ -103,7 +90,8 @@ namespace PHASIC {
     virtual Weight_Info *WeightedEvent(const int mode=0) = 0;
 
     virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl);
+    virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
+                                int mode=0);
     virtual double Differential2() = 0;
 
     virtual bool GeneratePoint();
@@ -120,6 +108,7 @@ namespace PHASIC {
 		      PDF::ISR_Handler *const isrhandler);
 
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
+    virtual bool InitIntegrator(Phase_Space_Handler *const psh);
     virtual void UpdateIntegrator(Phase_Space_Handler *const psh);
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
@@ -127,24 +116,25 @@ namespace PHASIC {
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetUpThreading();
 
+    virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);
-    virtual void UpdateCuts(const double &sp,const double &y,
-			    Cut_Data *const cuts);
 
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p);
-    virtual bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
-    virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &p,
-                    const ATOOLS::Flavour_Vector &fl,int n);
-    virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &p);
 
-    virtual NLO_subevtlist *GetSubevtList();
-    virtual ME_wgtinfo* GetMEwgtinfo() { return NULL; }
+    virtual ATOOLS::NLO_subevtlist *GetSubevtList();
+    virtual ATOOLS::ME_wgtinfo     *GetMEwgtinfo();
 
-    void FillOnshellConditions();
+    virtual void MultiplyLast(const double &w,const int mode);
+
+    virtual void SetRBMap(ATOOLS::Cluster_Amplitude *ampl);
+
+    virtual void FillOnshellConditions();
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl);
 
     static std::string GenerateName(const ATOOLS::Cluster_Amplitude *ampl);
+    static std::string GenerateName(const ATOOLS::NLO_subevt *sub,
+				    const size_t &nin);
 
     static std::string GenerateName(const Subprocess_Info &info);
     static std::string GenerateName(const Subprocess_Info &ii,
@@ -152,8 +142,6 @@ namespace PHASIC {
 
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
-
-    inline void SetTrigger(const bool trigger) { m_trigger=trigger; }
 
     inline size_t NIn() const  { return m_nin;  }
     inline size_t NOut() const { return m_nout; }
@@ -175,9 +163,15 @@ namespace PHASIC {
 
     inline Process_Integrator *Integrator() const { return p_int; }
 
-    inline double Last() const { return m_last; }
+    inline void SetLast(const double &last,const int mode)
+    { m_last[mode]=last; }
+
+    inline double Last(const int mode) const { return m_last[mode]; }
+    inline double Last() const { return m_last[0]+m_last[1]; }
 
     inline bool LookUp() const { return m_lookup; }
+
+    inline double SymFac() const { return m_symfac; }
 
     inline void SwapInOrder() 
     { std::swap<ATOOLS::Flavour>(m_flavs[0],m_flavs[1]); }
@@ -185,14 +179,17 @@ namespace PHASIC {
     inline Scale_Setter_Base   *ScaleSetter() const   { return p_scale;   }
     inline KFactor_Setter_Base *KFactorSetter() const { return p_kfactor; }
 
-    inline bool Trigger() const  { return m_trigger; }
     inline bool IsMapped() const { return p_mapproc; }
 
-    inline ME_Generator_Base *Generator() const { return p_gen;     }
-    inline Process_Base      *MapProc() const   { return p_mapproc; }
+    inline size_t ThreadInfo() const { return m_tinfo; }
 
-    inline Cut_Data          * Cuts() const     { return p_cuts;     }
-    inline Combined_Selector * Selector() const { return p_selector; }
+    inline ME_Generator_Base *Generator() const { return p_gen; }
+
+    inline Process_Base *MapProc() const  { return p_mapproc; }
+
+    inline Cut_Data          *const Cuts() const { return p_cuts; }
+    inline Combined_Selector *const Selector() const 
+    { return p_mapproc?p_mapproc->p_selector:p_selector; }
 
     template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }
@@ -200,6 +197,8 @@ namespace PHASIC {
     { return dynamic_cast<PType*>(this); }
 
   };// end of class Process_Base
+
+  typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
 }// end of namespace ATOOLS
 

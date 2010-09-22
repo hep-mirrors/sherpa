@@ -1,0 +1,88 @@
+#ifndef AddOns_MCFM_MCFM_Wrapper_H
+#define AddOns_MCFM_MCFM_Wrapper_H
+
+#include "ATOOLS/Math/Vector.H"
+#include <cstring>
+
+inline void MakeFortranString
+(char *output,std::string input,unsigned int length)
+{
+  for (unsigned int i=0;i<length;++i) 
+    output[i]=(char)32;
+  for (size_t j=0;j<input.length();++j) 
+    output[j]=(char)input[j];
+}
+
+#define MCFM_NF 5
+#define MCFM_NMX 12
+
+inline int mp(const int id,const int i)
+{ return i*MCFM_NMX+id; }
+
+inline int mr(const int i,const int j)
+{ return (j+MCFM_NF)*(2*MCFM_NF+1)+(i+MCFM_NF); }
+
+inline void GetMom(double *m,const int n,const ATOOLS::Vec4D &p)
+{ m[mp(n,3)]=p[0]; for (int i(1);i<4;++i) m[mp(n,i-1)]=p[i]; }
+
+extern "C" {
+
+  extern struct {
+    double epinv;
+  } epinv_;
+  extern struct {
+    double epinv2;
+  } epinv2_;
+  extern struct {
+    char scheme[4];
+  } scheme_;
+  extern struct {
+    double scale,musq;
+  } scale_;
+  extern struct {
+    double gsq,as,ason2pi,ason4pi;
+  } qcdcouple_;
+  extern struct {
+    double gf_inp,aemmz_inp,xw_inp,wmass_inp,zmass_inp;
+  } ewinput_;
+  extern struct {
+    int ewscheme;
+  } ewscheme_;
+  extern struct {
+    int nflav;
+  } nflav_;
+  extern struct {
+    double md,mu,ms,mc,mb,mt,
+      mel,mmu,mtau,
+      hmass,hwidth,
+      wmass,wwidth,
+      zmass,zwidth,
+      twidth,
+      tauwidth,
+      mtausq,mcsq,mbsq;
+  } masses_;
+  extern struct {
+    double Vud,Vus,Vub,Vcd,Vcs,Vcb;
+  } cabib_;
+  extern struct {
+    int nlooprun;
+  } nlooprun_;
+  extern struct {
+    char pdlabel[7];
+  } pdlabel_;
+  extern struct {
+    double amz;
+  } couple_;
+  extern struct {
+    int nproc;
+  } nproc_;
+  extern struct {
+    bool removebr;
+  } removebr_;
+  extern struct {
+    bool zerowidth;
+  } zerowidth_;
+
+}
+
+#endif

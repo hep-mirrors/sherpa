@@ -67,7 +67,7 @@ double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 
 int Kinematics_FF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
- const ATOOLS::Flavour & flj,Parton *&pc)
+ const ATOOLS::Flavour & flj,Parton *&pc,const int mode)
 {
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
@@ -95,6 +95,7 @@ int Kinematics_FF::MakeKinematics
   double Q2=Q.Abs2();
   y=GetY(Q2,split->KtTest(),z,mi2,mj2,mk2);
   double sij=GetS(Q2,y,mi2,mj2,mk2);
+  if (mode==0 && sij<split->TMin()) return -1;
   double gam=ConstructLN(Q2,sij,mij2,mk2,Q,q2,l,n);
   if (gam==0.0) return -1;
   double zt=GetZ(Q2,sij,y,z,mi2,mk2);
@@ -123,26 +124,24 @@ int Kinematics_FF::MakeKinematics
 		  <<q1<<"\n  "<<q2<<"\n  "<<q3<<"\n}\n";
     return -1;
   }
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    split->SetMomentum(q1);
-    spect->SetMomentum(q2);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),flj,q3));
-    split->SetFlavour(sfi);
-    split->SetMomentum(p1);
-    spect->SetMomentum(p2);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      return 0;
-    }
-  }
-
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
   else pc->SetMomentum(q3);
+  if (p_jf) {
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),flj,q3));
+    split->SetFlavour(sfi);
+    if (jet) {
+      msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
+      return 0;
+    }
+  }
+
   return 1;
 }
 
@@ -155,7 +154,7 @@ double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
 
 int Kinematics_FI::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
- const ATOOLS::Flavour & flj,Parton *&pc)
+ const ATOOLS::Flavour & flj,Parton *&pc,const int mode)
 { 
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
@@ -176,6 +175,7 @@ int Kinematics_FI::MakeKinematics
   y=1.0-(x=GetY(Q2,split->KtTest(),z,mi2,mj2,ma2));
   double xi=-z, yt=1.0-1.0/x;
   double sij=GetS(Q2,yt,mi2,mj2,ma2);
+  if (mode==0 && sij<split->TMin()) return -1;
   double gam=ConstructLN(Q2,sij,mij2,ma2,Q,q2,l,n);
   if (gam==0.0) return -1;
   double zt=GetZ(Q2,sij,yt,xi,mij2,ma2);
@@ -204,26 +204,24 @@ int Kinematics_FI::MakeKinematics
     return -1;
   }
 
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    split->SetMomentum(q1);
-    spect->SetMomentum(q2);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),flj,q3));
-    split->SetFlavour(sfi);
-    split->SetMomentum(p1);
-    spect->SetMomentum(p2);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      return 0;
-    }
-  }
-  
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
   else pc->SetMomentum(q3);
+  if (p_jf) {
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),flj,q3));
+    split->SetFlavour(sfi);
+    if (jet) {
+      msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
+      return 0;
+    }
+  }
+  
   return 1;
 }
 
@@ -236,7 +234,7 @@ double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
 
 int Kinematics_IF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fla,
- const ATOOLS::Flavour & fli,Parton *&pc)
+ const ATOOLS::Flavour & fli,Parton *&pc,const int mode)
 {
   if (split->Kin()==1) {
   Parton * spect = split->GetSpect();
@@ -257,6 +255,7 @@ int Kinematics_IF::MakeKinematics
   y=GetY(Q2,kt2,z,ma2,mi2,mk2);
   double xi=-y, yt=1.0-1.0/z;
   double sik=GetS(Q2,yt,mi2,mk2,ma2);
+  if (mode==0 && sik>split->TMin()) return -1;
   double gam=ConstructLN(Q2,sik,mk2,ma2,Q,q1,l,n);
   if (gam==0.0) return -1;
   double zt=GetZ(Q2,sik,yt,xi,mk2,ma2);
@@ -283,26 +282,24 @@ int Kinematics_IF::MakeKinematics
     return -1;
   }
   
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fla);
-    split->SetMomentum(q1);
-    spect->SetMomentum(q2);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),fli,q3));
-    split->SetFlavour(sfi);
-    split->SetMomentum(p1);
-    spect->SetMomentum(p2);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      return 0;
-    }
-  }
-
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
   else pc->SetMomentum(q3);
+  if (p_jf) {
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fla);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),fli,q3));
+    split->SetFlavour(sfi);
+    if (jet) {
+      msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
+      return 0;
+    }
+  }
+
   return 1;
   }
   Parton * spect = split->GetSpect();
@@ -325,6 +322,7 @@ int Kinematics_IF::MakeKinematics
   y=GetY(Q2,split->KtTest(),z,ma2,mi2,mk2);
   double xi=dabs((1.0-z)/(z-y)), yt=y/z, rf=dabs(z-y);
   double sai=GetS(Q2,yt,ma2,mi2,mk2);
+  if (mode==0 && -sai<split->TMin()) return -1;
   double gam=ConstructLN(Q2,sai,mai2,mk2,Q,q2,l,n);
   if (gam==0.0) return -1;
   double zt=GetZ(Q2,sai,yt,xi,mi2,mk2);
@@ -361,26 +359,24 @@ int Kinematics_IF::MakeKinematics
     return -1;
   }
   
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fla);
-    split->SetMomentum(q1);
-    spect->SetMomentum(q2);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),fli,q3));
-    split->SetFlavour(sfi);
-    split->SetMomentum(p1);
-    spect->SetMomentum(p2);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      return 0;
-    }
-  }
-
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
   else pc->SetMomentum(q3);
+  if (p_jf) {
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fla);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),fli,q3));
+    split->SetFlavour(sfi);
+    if (jet) {
+      msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
+      return 0;
+    }
+  }
+
   return 1;
 }
 
@@ -393,7 +389,7 @@ double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
 
 int Kinematics_II::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fli,
- const ATOOLS::Flavour & newfl,Parton *&pc)
+ const ATOOLS::Flavour & newfl,Parton *&pc,const int mode)
 {
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
@@ -418,6 +414,7 @@ int Kinematics_II::MakeKinematics
   y=GetY(Q2,split->KtTest(),z,ma2,mi2,mb2);
   double xi=1.0-1.0/(z+y), yt=-y/z, rf=z+y;
   double sai=GetS(Q2,yt,ma2,mi2,mb2);
+  if (mode==0 && -sai<split->TMin()) return -1;
   double gam=ConstructLN(Q2,sai,mai2,mb2,Q,q2,l,n);
   if (gam==0.0) return -1;
   double zt=GetZ(Q2,sai,yt,xi,mi2,mb2);
@@ -435,26 +432,24 @@ int Kinematics_II::MakeKinematics
   q1=-Q+q2+q3;
   q2=-q2;
 
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    split->SetMomentum(q1);
-    spect->SetMomentum(q2);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),newfl,q3));
-    split->SetFlavour(sfi);
-    split->SetMomentum(p1);
-    spect->SetMomentum(p2);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      return 0;
-    }
-  }
-
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(newfl,q3,pst::FS);
   else pc->SetMomentum(q3);
+  if (p_jf) {
+    Flavour sfi(split->GetFlavour());
+    split->SetFlavour(fli);
+    bool jet(split->GetSing()->JetVeto
+	     (p_sud,p_jf,split->KtVeto(),newfl,q3));
+    split->SetFlavour(sfi);
+    if (jet) {
+      msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
+      return 0;
+    }
+  }
+
   return 1;
 }
 

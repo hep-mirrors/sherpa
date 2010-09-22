@@ -99,9 +99,7 @@ void Event_Handler::Reset()
 {
   m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
-    if ((*pit)->Type()!=eph::Perturbative ||
-	(*pit)->Name().find("Signal_Processes")==std::string::npos) 
-      (*pit)->CleanUp();
+    (*pit)->CleanUp();
   m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
@@ -223,6 +221,11 @@ bool Event_Handler::GenerateEvent(int mode)
       }
     } while (m_blobs.empty() || p_signal->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
+    if (IsBad(m_blobs.Weight())) {
+      msg_Error()<<METHOD<<"(): Event weight is "<<m_blobs.Weight()
+		 <<". Skip event."<<std::endl;
+      return false;
+    }
     {
       Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
       if (sp) {

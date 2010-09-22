@@ -14,7 +14,7 @@ at the HERA collider at DESY Hamburg.
  
 Things to notice:
 @itemize @bullet
-@item the beams are asymmetric with the positrons at an energy of 27.5 GeV,
+@item the beams are asymmetric with the positrons at an energy of 27.6 GeV,
 while the protons carry 820 GeV of energy.
 
 @item the multi-jet merging cut is set dynamically for each event, depending 
@@ -23,6 +23,4 @@ on the photon virtuality, see @mycite{Carli2009cg}.
 @item there is a selector cut on the photon virtuality. This cut implements
 the experimental requirements for idenitfying the deep-inelastic scattering process.
 
-@item parton shower kinematics are optimized for deep-inelastic scattering
-using the option @option{CSS_KIN_SCHEME 1}.
 @end itemize

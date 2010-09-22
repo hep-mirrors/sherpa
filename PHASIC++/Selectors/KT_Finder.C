@@ -713,29 +713,6 @@ void KT_Finder::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void   KT_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
-{
-  if (m_type>1) return;
-  for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    if (m_fl[i].Strong()) {                
-      if (m_type==1)
-	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s/4.),
-				 cuts->energymin[i]);
-      else
-	cuts->energymin[i] = Max(sqrt(GetYcut(1<<i,1<<i) * m_s),
-				 cuts->energymin[i]);
-      for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && GetYcut(1<<i,1<<j)>0.0) {
-	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
-			   = Max(cuts->scut[i][j],GetYcut(1<<i,1<<j)*m_s);
-	  else cuts->scut[i][j] = cuts->scut[j][i] = 
-		 Max(cuts->scut[i][j],GetYcut(1<<i,1<<j)*m_s);
-	}
-      }
-    }
-  }
-}
-
 double KT_Finder::GetYcut(const size_t& i,const size_t& j) const {
   std::map<size_t,std::map<size_t,double> >::const_iterator it=m_ycuts.find(i);
   if(it==m_ycuts.end()) return -1.0;

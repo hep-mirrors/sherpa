@@ -27,7 +27,7 @@ namespace CSSHOWER {
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    double Coupling(const double &scale,const int mode);
+    double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
   };
@@ -52,7 +52,7 @@ namespace CSSHOWER {
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    double Coupling(const double &scale,const int mode);
+    double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
   };
@@ -77,10 +77,11 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   return true;
 }
 
-double CF_EW_FFZ::Coupling(const double &scale,const int mode)
+double CF_EW_FFZ::Coupling(const double &scale,const int pol)
 {
-  if (mode>1) return 0.0;
-  return (*p_cpl)(CplFac(scale)*scale)*m_q[mode];
+  if (pol>1) return 0.0;
+  double scl(CplFac(scale)*scale);
+  return (*p_cpl)(scl)*m_q[pol];
 }
 
 bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -113,16 +114,19 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   return m_q[0]>0.0;
 }
 
-double CF_EW_FFW::Coupling(const double &scale,const int mode)
+double CF_EW_FFW::Coupling(const double &scale,const int pol)
 {
-  if (mode>1) return 0.0;
-  return (*p_cpl)(CplFac(scale)*scale)*m_q[mode];
+  if (pol>1) return 0.0;
+  double scl(CplFac(scale)*scale);
+  return (*p_cpl)(scl)*m_q[pol];
 }
 
 bool CF_EW_FFW::AllowSpec(const ATOOLS::Flavour &fl) 
 {
   return true;
 }
+
+namespace CSSHOWER {
 
 DECLARE_CPL_GETTER(CF_EW_FFZ_Getter);
 
@@ -216,4 +220,6 @@ void CF_EW_FFV_Filler::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"ew ffv coupling filler";
+}
+
 }

@@ -27,8 +27,6 @@ namespace PDF {
     // member functions
     bool On() const   { return m_on;   }
 
-    void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
-
     // inline functions
     inline const std::string     Type() const    { return m_type;  }
     inline const ATOOLS::Flavour Flavour() const { return m_bunch; }

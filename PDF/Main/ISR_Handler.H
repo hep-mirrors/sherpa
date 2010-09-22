@@ -4,7 +4,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "PDF/Main/ISR_Base.H"
-#include "ATOOLS/Org/Info_Key.H"
 
 #ifdef USING__Threading
 #include <pthread.h> 
@@ -15,6 +14,8 @@ namespace BEAM   { class Beam_Base;      }
 
 namespace PDF {
 
+  typedef std::vector<double> Double_Vector;
+
   class Remnant_Base; 
 
   class ISR_Handler {
@@ -22,17 +23,13 @@ namespace PDF {
 
     ISR_Base **p_isrbase;
 
-    ATOOLS::Integration_Info *p_info;
-    ATOOLS::Info_Key          m_spkey, m_ykey, m_xkey;
-    ATOOLS::Info_Key          m_mu2key[2], m_beamspkey, m_beamykey;
-
     std::string m_name, m_type;
 
     int m_mode, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2];
-    double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
+    double m_fixed_smin, m_fixed_smax;
 
     ATOOLS::Poincare m_cmsboost;
     ATOOLS::Vec4D    m_fixvecs[2], p_cms[2];
@@ -51,6 +48,9 @@ namespace PDF {
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
+    void MtxLock();
+    void MtxUnLock();
+
   public:
 
     // constructor
@@ -66,17 +66,15 @@ namespace PDF {
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
-    void SetPartonMasses(ATOOLS::Flavour *fl); 
-    void SetMasses(const ATOOLS::Flavour *fl,const size_t nout=0); 
+    void SetPartonMasses(const ATOOLS::Flavour_Vector &fl); 
+    void SetMasses(const ATOOLS::Flavour_Vector &fl); 
 
-    bool MakeISR(ATOOLS::Vec4D *const p,const size_t n,
-		 const ATOOLS::Flavour *flavs,const size_t nflavs);
+    bool MakeISR(const double &sp,const double &y,
+		 ATOOLS::Vec4D_Vector &p,const ATOOLS::Flavour_Vector &flavs);
 
-    bool CalculateWeight(const double scale);
-    bool CalculateWeight2(const double scale);
-
-    double Weight(const ATOOLS::Flavour *const flavour);
-    double Weight2(const ATOOLS::Flavour *const flavour);
+    double Weight(const int mode,
+		  ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
+		  ATOOLS::Flavour fl1,ATOOLS::Flavour fl2);
 
     bool BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
@@ -88,8 +86,8 @@ namespace PDF {
     void SetFixedSprimeMin(const double spmin);
     void SetFixedSprimeMax(const double spmax);
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    void SetLimits();
+    void SetLimits(Double_Vector &spkey,Double_Vector &ykey,
+		   Double_Vector &xkey);
     void Reset();
 
     void Extract(const ATOOLS::Flavour flavour,const double energy,
@@ -97,9 +95,6 @@ namespace PDF {
     void Reset(const size_t i) const; 
 
     ATOOLS::Blob_Data_Base* Info(const int frame) const;
-
-    void MtxLock();
-    void MtxUnLock();
 
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
@@ -137,8 +132,6 @@ namespace PDF {
 
     inline double XF1(int i) const { return m_xf1[i]; }
     inline double XF2(int i) const { return m_xf2[i]; }
-
-    inline double Flux() const { return m_flux; }
 
     inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
     { if (i<2) p_beam[i]=beam; }

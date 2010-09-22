@@ -55,6 +55,7 @@ namespace AMEGIC {
 #include "AMEGIC++/Cluster/Cluster_Algorithm.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -145,6 +146,15 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
     Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info());
+    Vec4D sum;
+    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+    msg_Debugging()<<"After rotation {\n";
+    for (size_t i(0);i<nis+nfs;++i) {
+      rot.Rotate(p_testmoms[i]);
+      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+    }
+    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath!="");
     if (!newxs->Get<AMEGIC::Process_Base>()->

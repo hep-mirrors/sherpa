@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Message.H"
@@ -70,23 +71,44 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  if (fl[2].IsQuark()) {
+  if (fl[0].IsLepton() && fl[1].IsLepton()) {
     barred = fl[2].IsAnti();
     p_colours[2][barred] = p_colours[3][1-barred] = 500;
     colfac = 3.;
   }
 
-  if (fl[0].IsQuark())  {
+  if (fl[0].IsQuark() && fl[1].IsQuark())  {
     barred = fl[0].IsAnti();
     p_colours[0][barred] = p_colours[1][1-barred] = 500;
     colfac  = 1./3.;
     kswitch = 1;
   }
+
+  if (fl[0].IsLepton() && fl[1].IsQuark())  {
+    qe       = fl[0].Charge();
+    qf       = fl[1].Charge();
+    ae       = fl[0].IsoWeak();
+    af       = fl[1].IsoWeak();
+    ve       = ae - 2.*qe*sin2tw;
+    vf       = af - 2.*qf*sin2tw;
+    barred = fl[1].IsAnti();
+    p_colours[1][barred] = p_colours[3][barred] = 500;
+    colfac  = 1.;
+    kswitch = 2;
+  }
 }
 
 double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
-  double s=(momenta[0]+momenta[1]).Abs2();
-  double t=(momenta[0]-momenta[2]).Abs2();
+  double s(0.),t(0.);
+  if (kswitch == 0 || kswitch==1) {
+    s=(momenta[0]+momenta[1]).Abs2();
+    t=(momenta[0]-momenta[2]).Abs2();
+  }
+  else if (kswitch==2) { // meaning of t and s interchanged in DIS
+    t=(momenta[0]+momenta[1]).Abs2();
+    s=(momenta[0]-momenta[2]).Abs2();
+  }
+  else THROW(fatal_error,"Internal error.")
 
   //if (s<m_threshold) return 0.;
   chi1  = kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
@@ -121,9 +143,100 @@ ME2_Base *DY_Getter::operator()(const Process_Info &pi) const
   if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
        fl[1]==fl[0].Bar()) ||   
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
-       fl[3]==fl[2].Bar())) { 
+       fl[3]==fl[2].Bar()) ||
+      (fl[0].IsLepton() && fl[2]==fl[0] && fl[1].IsQuark() &&
+       fl[3]==fl[1])) {
     if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
       return new XS_ee_ffbar(pi, fl);
+    }
+  }
+  return NULL;
+}
+
+
+namespace EXTRAXS {
+
+  class XS_Charged_Drell_Yan : public ME2_Base {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
+  private:
+
+    bool   barred;
+    double kappa,sin2tw,MW2,GW2,alpha;
+    double term;
+    double colfac;
+
+  public:
+
+    XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour_Vector& fl);
+
+    double operator()(const ATOOLS::Vec4D_Vector& mom);
+    bool   SetColours(double,double,double);
+  };
+}
+
+XS_Charged_Drell_Yan::XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour_Vector& fl)
+  : ME2_Base(pi, fl)
+{
+  DEBUG_INFO("now entered EXTRAXS::XS_Charged_Drell_Yan ...");
+
+  m_sintt=1;
+  m_oew=2;
+  m_oqcd=0;
+
+  MW2    = sqr(ATOOLS::Flavour(kf_Wplus).Mass());
+  GW2    = sqr(ATOOLS::Flavour(kf_Wplus).Width());
+
+  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()));
+  sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
+  kappa  = 1./(2.*sin2tw);
+
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  if (fl[0].IsLepton() && fl[1].IsLepton()) {
+    barred = fl[2].IsAnti();
+    p_colours[2][barred] = p_colours[3][1-barred] = 500;
+    colfac = 3.;
+  }
+
+  if (fl[0].IsQuark() && fl[1].IsQuark())  {
+    barred = fl[0].IsAnti();
+    p_colours[0][barred] = p_colours[1][1-barred] = 500;
+    colfac  = 1./3.;
+  }
+}
+
+double XS_Charged_Drell_Yan::operator()(const ATOOLS::Vec4D_Vector& mom) {
+  double s=(mom[0]+mom[1]).Abs2();
+  double u=(mom[0]-mom[3]).Abs2();
+
+  term = sqr(kappa)/((sqr(s-MW2)+MW2*GW2)) * (u*u);
+  return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * term;
+}
+
+bool XS_Charged_Drell_Yan::SetColours(double s,double t,double u)
+{
+  /*
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] =
+    m_scale[PHASIC::stp::sis] =
+    s+dabs(p_momenta[0].Abs2())+dabs(p_momenta[1].Abs2());
+  m_scale[PHASIC::stp::sfs] = s;
+  */
+  return 1;
+}
+
+
+DECLARE_ME2_GETTER(CDY_Getter,"CDY") // Charged Drell-Yan
+ME2_Base *CDY_Getter::operator()(const Process_Info &pi) const
+{
+  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  if (fl.size()!=4) return NULL;
+  for (size_t i(0);i<fl.size();++i) if (fl[i].Mass()!=0.) return NULL;
+  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
+  if ((fl[2].IsLepton() && fl[2]!=fl[3].Bar() &&
+       fl[2].LeptonFamily()==fl[2].LeptonFamily() &&
+       fl[0].IsQuark() && fl[0]!=fl[1].Bar() &&
+       fl[0].QuarkFamily()==fl[1].QuarkFamily())) {
+    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      return new XS_Charged_Drell_Yan(pi, fl);
     }
   }
   return NULL;

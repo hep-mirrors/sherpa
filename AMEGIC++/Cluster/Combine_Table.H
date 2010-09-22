@@ -82,7 +82,7 @@ namespace AMEGIC {
   class Combine_Data {
   public:
     PDF::CParam m_pt2ij;
-    int    m_strong;
+    int    m_strong, m_calc;
     Combine_Table *p_down;
     ATOOLS::Flavour m_mo;
     std::vector<int>    m_graphs;
@@ -107,9 +107,8 @@ namespace AMEGIC {
 
     int        m_no, m_nstrong;
     int        m_nlegs, m_nampl, m_graph_winner;
-    double     m_x1, m_x2;
 
-    CD_List               m_combinations;
+    CD_List               m_combinations, m_rejected;
     CD_List::iterator     m_cdata_winner;
 
     Combine_Table  * p_up;
@@ -118,12 +117,11 @@ namespace AMEGIC {
     ATOOLS::Vec4D       * p_moms;
 
     Leg **p_hard;
-    int **p_hardc;
+    int **p_hardc, *p_channel;
+    double *p_scale;
 
     ATOOLS::Vec4D *p_save_moms;
     size_t         m_nl;
-
-    std::map<Combine_Key,double> m_rejected;
 
     AMEGIC::Process_Base *p_proc;
     
@@ -139,7 +137,6 @@ namespace AMEGIC {
     bool SelectWinner(const size_t &mode);
     Combine_Table *CreateNext();
     Combine_Table *NextTable(Combine_Table *tab,
-			     const double x1,const double x2,
 			     const int mode,const double &kt2);
 
     double Sprime() const;
@@ -157,10 +154,9 @@ namespace AMEGIC {
     ~Combine_Table();
     // member functions
     CD_List::iterator    CalcPropagator(CD_List::iterator &cit);
-    Combine_Table * CalcJet(int nl,const double x1,const double x2,
-			    ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
+    Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
-    double               GetWinner(int &i, int &j,int &k);
+    double               GetWinner(int &i, int &j,int &k,double &mu2);
     bool                 IdentifyHardProcess();
     int                  IdentifyHardPropagator(double &scale) const;
 
@@ -182,7 +178,6 @@ namespace AMEGIC {
     inline Leg               ** const GetLegs()                            const { return p_legs; }
     inline Leg               ** const GetHardLegs()                        const { return p_hard; }
     inline int               ** const GetHardInfo()                        const { return p_hardc; }
-    inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
     inline static void                ResetCounter()                             { s_all=0; }
 
   };// end of class Combine_Table

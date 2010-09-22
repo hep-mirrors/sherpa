@@ -19,6 +19,13 @@ void Coupling_Map::Calculate() const
        cit!=end();++cit) cit->second->Calculate();
 }
 
+Coupling_Data *Coupling_Map::Get(const std::string &tag) const
+{
+  const_iterator cit(find(tag));
+  if (cit!=end()) return cit->second;
+  return NULL;
+}
+
 namespace MODEL {
 
   std::ostream &operator<<(std::ostream &str,const Coupling_Data &cd)

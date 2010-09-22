@@ -133,6 +133,8 @@ HD_PS_Base::HD_PS_Base( Hadron_Decay_Channel * hdc ) :
   p_channelselector(new HD_Channel_Selector), p_hdc(hdc),
   m_res(-1.), m_error(1.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].HadMass()))
 {
+  nin=1;
+  nout=hdc->NOut();
 }
 
 

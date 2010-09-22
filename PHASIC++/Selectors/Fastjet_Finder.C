@@ -25,7 +25,6 @@ namespace PHASIC {
     bool   JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
 
     void   BuildCuts(Cut_Data *) {}
-    void   UpdateCuts(double,double,Cut_Data *) {}
   };
 }
 

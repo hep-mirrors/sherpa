@@ -15,8 +15,11 @@ namespace ATOOLS {
 
   public:
 
+    inline ZAlign() {}
+
     ZAlign(const Vec4D &pa,const Vec4D &pb,
-	   const double &ma2,const double &mb2);
+	   const double &ma2,const double &mb2,
+	   const int mode=0);
 
     void  Align(Vec4D &p) const;
     Vec4D Align(const Vec4D &p) const;

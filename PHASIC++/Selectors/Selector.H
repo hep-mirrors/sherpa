@@ -2,6 +2,7 @@
 #define PHASIC_Selectors_Selector_H
 
 #include "PHASIC++/Selectors/Cut_Data.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
@@ -82,16 +83,13 @@ namespace PHASIC {
 
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p) = 0;
     virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-                            const ATOOLS::Flavour_Vector &,int);
-    virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &p);
+			    ATOOLS::NLO_subevtlist *const subs);
     virtual bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
 
     virtual void BuildCuts(Cut_Data *);
-    virtual void UpdateCuts(double,double,Cut_Data *);
     virtual void AddOnshellCondition(std::string,double);
     virtual void Output();
     
-    virtual int NeedUpdate();
     virtual int IsConditional();
 
     // inline functions

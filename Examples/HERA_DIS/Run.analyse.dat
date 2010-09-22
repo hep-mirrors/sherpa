@@ -1,44 +1,32 @@
 (run){
   OUTPUT 2; EVENTS 10000000;
-  NJET:=4; QCUT:=5; ICUT:=4; SDIS:=0.6;
-  PARJ(21) 0.432; PARJ(41) 1.05; PARJ(42) 1.0;
-  PARJ(47) 0.65; MSTJ(11) 5;
+  NJET:=4; QCUT:=5; SDIS:=0.6;
+  CDXS_ITMAX 5000;
 
-  RESULT_DIRECTORY r_tICUT_qQCUT_sSDIS/;
+  RESULT_DIRECTORY r_qQCUT_sSDIS/;
   GENERATE_RESULT_DIRECTORY 1;
   BATCH_MODE 0; WRITE_MAPPING_FILE 3;
   ANALYSIS HZTool,Internal;
   ASET:=1; ANALYSIS_OUTPUT a_1/;
 }(run);
+(beam){
+  BEAM_1  -11; BEAM_ENERGY_1 27.6;
+  BEAM_2 2212; BEAM_ENERGY_2  820; 
+}(beam);
 (processes){
   Process -11 93 -> -11 93 93{NJET};
   Order_EW 2; Max_N_Quarks 6;
-  Scales SEMI_STRICT_METS;
   CKKW sqr(QCUT/E_CMS)/(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]));
   End process;
 }(processes);
 (selector){
-  "Calc(Abs2(p[0]-p[1]))" -11,-11 -1.0e12,-ICUT {0,2} 1
-  PT 93 1 E_CMS
+  Q2 -11 -11 4 1e12
+  PT -11 1 E_CMS
 }(selector)
 (me){
   ME_SIGNAL_GENERATOR Comix;
   EVENT_GENERATION_MODE Weighted;
 }(me);
-(isr){
-  PDF_LIBRARY LHAPDFSherpa; PDF_SET NNPDF12_100.LHgrid;
-  PDF_SET_VERSION -100;
-}(isr);
-(beam){
-  BEAM_1  -11; BEAM_ENERGY_1 27.5;
-  BEAM_2 2212; BEAM_ENERGY_2  820; 
-}(beam);
-(shower){
-  CSS_PT2MIN 0.8;
-}(shower);
-(fragmentation){
-  FRAGMENTATION Ahadic;
-}(fragmentation);
 
 
 (analysis){

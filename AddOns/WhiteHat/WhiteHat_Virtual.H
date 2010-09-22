@@ -13,7 +13,6 @@ namespace WHITEHAT {
   private:
 
     BH::BH_Ampl *p_ampl;
-    double       m_cpl;
 
     static BH::BH_interface  *s_interface;
     static MODEL::Model_Base *s_model;

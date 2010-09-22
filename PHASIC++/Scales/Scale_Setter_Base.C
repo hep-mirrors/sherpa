@@ -69,11 +69,6 @@ Scale_Setter_Base::~Scale_Setter_Base()
 {
 }
 
-double Scale_Setter_Base::CalculateScale2(const std::vector<ATOOLS::Vec4D> &p)
-{
-  return m_scale[stp::fac];
-}
-
 void Scale_Setter_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;

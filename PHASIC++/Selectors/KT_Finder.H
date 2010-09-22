@@ -77,7 +77,6 @@ namespace PHASIC {
     double MTij2(ATOOLS::Vec4D,ATOOLS::Vec4D,double=0.0,double=0.0);
     void   SetRange(std::vector<ATOOLS::Flavour>,double,double) {}
     void   BuildCuts(Cut_Data *);
-    void   UpdateCuts(double,double,Cut_Data *);
 
     double GetYcut(const size_t &i,const size_t &j) const;
     double GetScaledYcut(const size_t &i,const size_t &j) const;

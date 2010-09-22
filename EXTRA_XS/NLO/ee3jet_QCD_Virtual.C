@@ -15,7 +15,6 @@ using namespace ATOOLS;
 
 namespace EXTRAXS {
   class ee3jet_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
-    double m_cpl;
     int m_nf;
 
     double Q2,y12,y13,y23;
@@ -29,10 +28,6 @@ namespace EXTRAXS {
       Virtual_ME2_Base(pi, flavs)
     {
       DEBUG_INFO("ee3jet virtual opened ...");
-      m_needsborn = true;
-      m_cpl=MODEL::s_model->ScalarFunction(std::string("alpha_S"),
-                                           sqr(rpa.gen.Ecms()));
-      m_cpl/=2.*M_PI;
 
       Flavour hfl(kf_quark);
       m_nf = hfl.Size()/2;
@@ -48,7 +43,6 @@ namespace EXTRAXS {
 using namespace EXTRAXS;
 
 void ee3jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
-  m_born*=m_cpl*CouplingFactor(1, 0);
   Q2  = 2.*mom[0]*mom[1];
   y12 = 2.*mom[3]*mom[4]/Q2;
   y13 = 2.*mom[3]*mom[2]/Q2;
@@ -57,14 +51,14 @@ void ee3jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
   // finite
   double dren = 0.5*(11.-2./3.*(double)m_nf)*log(m_mur2/Q2);
   double ep = 0.5*((2.*CF-CA)*sqr(log(y12))+CA*(sqr(log(y13))+sqr(log(y23))));
-  m_res.Finite()=(dren-ep+0.5*sqr(M_PI)*(2.*CF+CA)-8.*CF+Ff(y12,y13,y23))*m_born;
+  m_res.Finite()=(dren-ep+0.5*sqr(M_PI)*(2.*CF+CA)-8.*CF+Ff(y12,y13,y23));
 
   // eps_IR^1
   double epIR = (2.*CF-CA)*log(y12)+CA*(log(y13)+log(y23));
-  m_res.IR()=(epIR-3.*CF-11./6.*CA+2./3.*TR*m_nf)*m_born;
+  m_res.IR()=(epIR-3.*CF-11./6.*CA+2./3.*TR*m_nf);
 
   // eps_IR^2
-  m_res.IR2()=-(2.*CF+CA)*m_born;
+  m_res.IR2()=-(2.*CF+CA);
 }
 
 double ee3jet_QCD_Virtual::Rf(double y1,double y2)

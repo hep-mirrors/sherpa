@@ -47,21 +47,23 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   if (pi.m_fi.m_nloqcdtype&nlo_type::born) typechk++;    
   if (typechk>1) THROW(fatal_error,"NLO_QCD_Parts 'RS', 'VI' and 'B' must be assigned separately!");
 
-  if ((pi.m_nlomode==0 && pi.m_fi.m_nloqcdtype==nlo_type::rsub) ||
-      (pi.m_nlomode==1 && (pi.m_fi.m_nloqcdtype&nlo_type::real))) 
+  nlo_type::code nloqcd=pi.m_fi.m_nloqcdtype;
+  if (nloqcd&nlo_type::real && nloqcd&nlo_type::rsub) {
     return new Single_Real_Correction();
-  if ((pi.m_nlomode==0 && pi.m_fi.m_nloqcdtype==nlo_type::vsub) ||
-      (pi.m_nlomode==1 && (pi.m_fi.m_nloqcdtype&nlo_type::vsub||pi.m_fi.m_nloqcdtype&nlo_type::loop)))
-    return new Single_Virtual_Correction();
-
-  if (pi.m_nlomode==1 && pi.m_fi.m_nloqcdtype==nlo_type::rsub) return NULL;
-
-  if (pi.m_amegicmhv>0) {
-    if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
-    if (pi.m_amegicmhv==2) return NULL;
   }
-
-  return new Single_Process();
+  else if (nloqcd&nlo_type::vsub || nloqcd&nlo_type::loop) {
+    return new Single_Virtual_Correction();
+  }
+  else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::born || nloqcd==nlo_type::real) {
+    if (pi.m_amegicmhv>0) {
+      if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
+      if (pi.m_amegicmhv==2) return NULL;
+    }
+    return new Single_Process();
+  }
+  else {
+    return NULL;
+  }
 }
 
 bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
@@ -73,6 +75,15 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     if (!p_pinfo) p_pinfo=Translate(m_pinfo);
     p_testmoms = new Vec4D[m_nin+m_nout];
     Phase_Space_Handler::TestPoint(p_testmoms,&Info());
+    Vec4D sum;
+    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+    msg_Debugging()<<"After rotation:\n";
+    for (size_t i(0);i<m_nin+m_nout;++i) {
+      rot.Rotate(p_testmoms[i]);
+      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+    }
+    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath!="");
@@ -119,14 +130,14 @@ void AMEGIC::Process_Group::WriteMappingFile()
 
 bool AMEGIC::Process_Group::SetUpIntegrator()
 {
-  if (p_parent==NULL) {
+  if (p_parent==NULL || (*p_parent)[0]->IsGroup()/* this is fudgy, need mode ... */) {
     for (size_t i(0);i<m_procs.size();i++)
       if (!(m_procs[i]->Get<AMEGIC::Process_Base>()->SetUpIntegrator())) return false;
   }
   if (m_nin==2) {
     if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
 	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) 
-      p_int->ISR()->SetPartonMasses(&m_flavs.front());
+      p_int->ISR()->SetPartonMasses(m_flavs);
   }
   for (size_t i=0;i<m_procs.size();i++) 
     m_procs[i]->Get<AMEGIC::Process_Base>()->AddChannels(p_channellibnames);

@@ -3,6 +3,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -287,7 +288,7 @@ bool AMEGIC::Single_Process_MHV::SetUpIntegrator()
 {  
   if (m_nin==2) {
     if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(&m_flavs.front());
+	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
@@ -322,10 +323,13 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_oew       = p_partner->OrderEW();
 }
 
-double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms) 
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms,const int mode) 
 { 
-  if (p_partner!=this&&m_lookup) SetTrigger(p_partner->Trigger());
-  if (!(IsMapped() && LookUp())) p_partner->ScaleSetter()->CalculateScale(_moms);
+  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return m_lastxs;
+  if (!Selector()->Result()) return m_lastxs = 0.0;
+  if (!(IsMapped() && LookUp())) {
+    p_partner->ScaleSetter()->CalculateScale(_moms,mode);
+  }
   Vec4D_Vector moms(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
     Poincare cms(moms[0]+moms[1]);
@@ -337,7 +341,6 @@ double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms)
 double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
   m_lastxs = 0.;
-  if (!Trigger()) return 0.0;
   if (m_nin==2) {
     for (size_t i=0;i<m_nin+m_nout;i++) {
       if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
@@ -352,7 +355,7 @@ double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
   }
   else {
-    if (lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
+    if (lookup && p_partner->m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
   }
   return m_lastxs;
@@ -426,8 +429,10 @@ void AMEGIC::Single_Process_MHV::FillCombinations
   FillCombinations(p->right,idb);
   id=ida+idb;
   size_t idc((1<<(m_nin+m_nout))-1-id);
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<"  comb "<<ID(ida)
 		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+#endif
   m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
   m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
   m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
@@ -446,25 +451,31 @@ void AMEGIC::Single_Process_MHV::FillCombinations
     if (!in) {
       m_cflavs[idc].push_back(fl.Bar());
       m_cflavs[id].push_back(fl);
+#ifdef DEBUG__Fill_Combinations
       msg_Debugging()<<"  flav "<<ID(idc)<<" / "
 		     <<ID(id)<<" -> "<<fl<<"\n";
+#endif
     }
   }
 }
 
 void AMEGIC::Single_Process_MHV::FillCombinations()
 {
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
+#endif
   size_t nd(p_partner->NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(p_partner->Diagram(i));
     size_t id(1<<p->number);
     FillCombinations(p,id);
   }
+#ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<"  } -> "<<m_cflavs.size()
 		 <<" flavours, "<<m_ccombs.size()
 		 <<" combinations\n";
   msg_Debugging()<<"}\n";
+#endif
 }
 
 bool AMEGIC::Single_Process_MHV::Combinable

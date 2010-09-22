@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Combined_Selector::Combined_Selector(Process_Integrator *const proc):
-  Selector_Base("Combined_Selector"), m_count(0), m_update(false)
+  Selector_Base("Combined_Selector"), m_count(0), m_on(1)
 {
   p_proc=proc;
 }
@@ -84,7 +84,6 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
     Selector_Base *sel(Selector_Getter::GetObject(key[startk][0],mat));
     if (sel!=NULL) {
       m_sels.push_back(sel);
-      m_update|=sel->NeedUpdate();
       if (msg_LevelIsDebugging()) {
 	msg_Out()<<"      new Selector_Base(\""
 		 <<key[k][0]<<"\",";
@@ -106,44 +105,46 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
   return true;
 }
 
-int  Combined_Selector::NeedUpdate() 
-{ 
-  return m_update>0; 
-}
-
 bool Combined_Selector::Trigger(const Vec4D_Vector &p) 
 {
+  m_res=1;
+  if (!m_on) return m_res;
   m_count++;
   for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->Trigger(p))) return 0;
+    if (!(m_sels[i]->Trigger(p))) {
+      m_res=0;
+      return m_res;
+    }
   }
-  return 1;
+  return m_res;
 }
 
 bool Combined_Selector::JetTrigger
-(const Vec4D_Vector &p,const Flavour_Vector &fl, int ns)
+(const Vec4D_Vector &p,NLO_subevtlist *const subs)
 {
+  m_jres=1;
+  if (!m_on) return m_jres;
   for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->JetTrigger(p,fl,ns))) return 0;
+    if (!(m_sels[i]->JetTrigger(p,subs))) {
+      m_jres=0;
+      return m_jres;
+    }
   }
-  return 1;
-}
-
-bool Combined_Selector::JetTrigger(const Vec4D_Vector &p)
-{
-  for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->JetTrigger(p))) return 0;
-  }
-  return 1;
+  return m_jres;
 }
 
 bool Combined_Selector::NoJetTrigger(const Vec4D_Vector &p)
 {
+  m_res=1;
+  if (!m_on) return m_res;
   m_count++;
   for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->NoJetTrigger(p))) return 0;
+    if (!(m_sels[i]->NoJetTrigger(p))) {
+      m_res=0;
+      return m_res;
+    }
   }
-  return 1;
+  return m_res;
 }
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
@@ -163,16 +164,6 @@ void Combined_Selector::BuildCuts(Cut_Data * cuts)
   for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
 }
 
-void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
-{
-  cuts->Reset(NeedUpdate());
-  if (NeedUpdate()) 
-    for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
-  cuts->Update(sprime,y);      
-  for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
-}
-
- 
 void Combined_Selector::AddOnshellCondition(std::string s,double d)
 {
   m_osc.push_back(std::pair<std::string,double>(s,d));

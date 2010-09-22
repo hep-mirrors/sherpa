@@ -56,11 +56,6 @@ namespace AMISIC {
       fills the respective histograms.
     */
 
-    bool InitializeCalculation(PHASIC::Process_Group *const process);
-    /*!
-      \fn bool InitializeCalculation()
-      \brief Initializes the calculation.
-    */
     bool CreateGrid(PHASIC::Process_Group *const process);
     /*!
       \fn bool CreateInitialGrid()
@@ -103,6 +98,12 @@ namespace AMISIC {
     /*!
       \fn bool CreateGrid()
       \brief Creates the grids. 
+    */
+
+    bool InitializeCalculation(PHASIC::Process_Group *const process);
+    /*!
+      \fn bool InitializeCalculation()
+      \brief Initializes the calculation.
     */
 
     bool ReadInArguments(std::string tempifile=ATOOLS::nullstring,

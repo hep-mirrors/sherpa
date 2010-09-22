@@ -6,7 +6,6 @@
 #include "ATOOLS/Org/Getter_Function.C"
 
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -40,7 +39,7 @@ PDF_Base *PDF_Base::GetBasicPDF()
 
 double PDF_Base::Cut(const std::string &type)
 {
-  return ATOOLS::UNDEFINED_LOWER;
+  return 0.0;
 }
 
 void PDF_Base::SetBounds()
@@ -101,10 +100,6 @@ void PDF_Base::SingleReset()
        cit!=m_copies.end();++cit) {
     (*cit)->SingleReset();
   }
-}
-
-void PDF_Base::AssignKeys(ATOOLS::Integration_Info *const info)
-{
 }
 
 void PDF_Base::ShowSyntax(const size_t i)

@@ -22,7 +22,7 @@ namespace CSSHOWER {
     Singlet      *     p_actual;
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
-    Parton           * m_last[3];
+    Parton           * m_last[4];
     int                m_kscheme;
 
     ATOOLS::Cluster_Leg *p_old[2];
@@ -54,16 +54,21 @@ namespace CSSHOWER {
     bool   ReconstructDaughters(Singlet *const split,
 				const bool one=false);
     void SetMS(ATOOLS::Mass_Selector *const ms);
-    void SetRBMax(const double &rbmax);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline Parton *const *GetLast() const { return m_last; }
+    inline ATOOLS::Cluster_Leg *GetOld(const int i) const { return p_old[i]; }
 
     inline const Kinematics_FF *KinFF() const { return &m_kinFF; }
     inline const Kinematics_FI *KinFI() const { return &m_kinFI; }
     inline const Kinematics_IF *KinIF() const { return &m_kinIF; }
     inline const Kinematics_II *KinII() const { return &m_kinII; }
+
+    inline Kinematics_FF *KinFF() { return &m_kinFF; }
+    inline Kinematics_FI *KinFI() { return &m_kinFI; }
+    inline Kinematics_IF *KinIF() { return &m_kinIF; }
+    inline Kinematics_II *KinII() { return &m_kinII; }
 
     inline double Weight() const { return m_weight; }
 

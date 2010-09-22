@@ -57,6 +57,21 @@ namespace PHASIC {
     bool ColorConnected(const ATOOLS::ColorID &ci,const ATOOLS::ColorID &cj,
 			const int si,const int sj) const;
 
+    double Lam(const double &s,
+	       const double &sb,const double &sc) const;
+
+    ATOOLS::Vec4D_Vector GetMomMap
+    (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt,
+     ATOOLS::NLO_subevt *const sub,const size_t &i) const;
+
+    ATOOLS::Vec4D_Vector CombineMoms
+    (const ATOOLS::Vec4D_Vector &p,ATOOLS::NLO_subevt *const sub);
+
+    void ZAlign(ATOOLS::Vec4D_Vector &p,ATOOLS::Vec4D &pa,
+		const ATOOLS::Vec4D &pb,const double &ma2,
+		const double &mb2,const int mode=0) const;
+
   public:
 
     Jet_Finder(const int nin=0,const int nout=0,ATOOLS::Flavour *const fl=NULL,
@@ -70,19 +85,21 @@ namespace PHASIC {
 
     void   FillCombinations();
     bool   Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
-                      const ATOOLS::Flavour_Vector &, int);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &p);
+    bool   JetTrigger(const ATOOLS::Vec4D_Vector &p,
+		      ATOOLS::NLO_subevtlist *const subs);
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
 
-    double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+    static double Qij2Min(const ATOOLS::Vec4D_Vector &p,
+			  ATOOLS::NLO_subevtlist *const subs);
+
+    static double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		const ATOOLS::Vec4D &pk,
 		const ATOOLS::Flavour &fi=ATOOLS::Flavour(kf_none),
 		const ATOOLS::Flavour &fj=ATOOLS::Flavour(kf_none),
+                const double& dparam=0.3,
 		const int mode=0);
 
     void   BuildCuts(Cut_Data *cuts);
-    void   UpdateCuts(double,double,Cut_Data *cuts);
 
     inline double Ycut() const           { return m_ycut;   }
 

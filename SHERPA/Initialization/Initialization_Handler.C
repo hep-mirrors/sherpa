@@ -33,6 +33,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PDF/Main/POWHEG_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
@@ -264,6 +265,12 @@ void Initialization_Handler::ShowParameterSyntax()
     PHASIC::ME_Generator_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+  if (!read.ReadFromFile(helpi,"SHOW_POWHEG_GENERATORS")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    PDF::POWHEG_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
   if (!read.ReadFromFile(helpi,"SHOW_SHOWER_GENERATORS")) helpi=0;
   if (helpi>0) {
     msg->SetLevel(2);
@@ -356,11 +363,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (!p_model->ModelInit()) THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
-  ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
-  m_isrhandlers[isr::hard_process]->AssignKeys(info);
-  if (m_isrhandlers.find(isr::hard_subprocess)!=m_isrhandlers.end()) {
-    m_isrhandlers[isr::hard_subprocess]->AssignKeys(info);
-  }
+  PHASIC::Phase_Space_Handler::GetInfo();
   if (!CheckBeamISRConsistency()) return 0.;
   if (m_mode>8999) {
     okay &= InitializeTheExternalMC();

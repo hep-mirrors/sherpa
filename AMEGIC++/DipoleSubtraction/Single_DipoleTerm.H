@@ -30,10 +30,13 @@ namespace AMEGIC {
     size_t                  m_LOpij,m_LOpk;
     ATOOLS::Flavour         m_fli,m_flj,m_flij,m_flk;
     DipoleSplitting_Base*   p_dipole;
-    PHASIC::NLO_subevt      m_subevt;
+    ATOOLS::NLO_subevt      m_subevt;
     double                  m_lastscale;
     
     PHASIC::Process_Integrator*     p_realint;
+
+    std::vector<size_t> m_sids;
+    ATOOLS::DecayInfo_Vector m_decinfos;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -51,6 +54,7 @@ namespace AMEGIC {
       Generic stuff for initialization of Single_DipoleTermes
 
       ------------------------------------------------------------------------------*/
+
   private:
     bool           DetermineType();
     void           SetLOMomenta(const ATOOLS::Vec4D*);
@@ -78,7 +82,7 @@ namespace AMEGIC {
 //     Flavour*            GetLOFlavs()                   { return m_LO_process->Flavour(); }
     Single_LOProcess*   GetLOProcess()                 { return p_LO_process; }
     dpt::dipoltype      GetDipoleType()                { return m_dipoletype; }
-    PHASIC::NLO_subevt* GetSubevt()                    { return &m_subevt; }
+    ATOOLS::NLO_subevt* GetSubevt()                    { return &m_subevt; }
     std::string         GetSplitConfID();
     ATOOLS::Vec4D*      GetLOmom()                     { return p_LO_mom; }
     void                PrintProcessSummary(int it);
@@ -101,6 +105,8 @@ namespace AMEGIC {
     std::string      PSLibName()                        { return p_partner->GetLOProcess()->PSLibName();   }
     Process_Base   * Partner() const                    { return p_partner;     }
     void             Minimize();
+
+    void SetSelector(const PHASIC::Selector_Key &key);
     
     /*------------------------------------------------------------------------------
 
@@ -108,10 +114,8 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &);
-    double         operator()(const ATOOLS::Vec4D *);
-
-    double         GetDPSF(const ATOOLS::Vec4D *);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
+    double         operator()(const ATOOLS::Vec4D *,const int);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
 

@@ -9,7 +9,7 @@ namespace PHASIC {
   protected: 
 
     long int m_count;
-    int      m_update;
+    int      m_on, m_res, m_jres;
     std::vector<Selector_Base *> m_sels;
     std::vector<std::pair<std::string,double> > m_osc;
 
@@ -26,18 +26,23 @@ namespace PHASIC {
 
     bool Trigger(const ATOOLS::Vec4D_Vector &);
     bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-                    const ATOOLS::Flavour_Vector &,int);
-    bool JetTrigger(const ATOOLS::Vec4D_Vector &p);
+                    ATOOLS::NLO_subevtlist *const subs);
     bool NoJetTrigger(const ATOOLS::Vec4D_Vector &);
 
     void BuildCuts(Cut_Data *);
-    void UpdateCuts(double,double,Cut_Data *);
     void AddOnshellCondition(std::string,double);
-    int  NeedUpdate();
 
     void Output();
 
     Selector_Base *GetSelector(const std::string &name) const;
+
+    inline void SetOn(const int on) { m_on=on; }
+
+    inline int On() const { return m_on; }
+
+    inline int Result() const { return m_on?m_res:1; }
+
+    inline int JetResult() const { return m_on?m_jres:1; }
 
   };
 

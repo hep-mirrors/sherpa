@@ -76,9 +76,9 @@ namespace PHASIC {
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
     void    GenerateWeight(int mode);
 
-    void    ISRInfo(int,int &,double &,double &);
-    void    ISRInfo(std::vector<int> &ts,
-		    std::vector<double> &ms,std::vector<double> &ws) const;
+    virtual void    ISRInfo(int,int &,double &,double &);
+    virtual void    ISRInfo(std::vector<int> &ts,
+			    std::vector<double> &ms,std::vector<double> &ws) const;
 
     inline  Single_Channel *operator[](size_t i) { return channels[i]; }
 

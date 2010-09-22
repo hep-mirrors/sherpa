@@ -4,6 +4,7 @@ SUBDIRS       = \
 		BEAM \
 		PDF \
 		MODEL \
+		POWHEG \
 		PHASIC++ \
 		EXTRA_XS \
 		AMEGIC++ \

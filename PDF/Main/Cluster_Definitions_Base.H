@@ -7,20 +7,23 @@
 namespace PDF {
 
   struct CParam {
-    double m_kt2, m_op2, m_x;
+    double m_kt2, m_op2, m_x, m_mu2;
     int m_kin;
     inline CParam(const double &kt2=0.0,
 		  const double &op2=0.0,
 		  const double &x=0.0,
+		  const double &mu2=0.0,
 		  const int kin=0):
-      m_kt2(kt2), m_op2(op2), m_x(x), m_kin(kin) {}
+      m_kt2(kt2), m_op2(op2), m_x(x), m_mu2(mu2), m_kin(kin) {}
   };// end of struct CParam
 
   std::ostream &operator<<(std::ostream &str,const CParam &cp);
 
   class Cluster_Definitions_Base {
+    int m_amode;
   public:
 
+    Cluster_Definitions_Base();
     virtual ~Cluster_Definitions_Base();
 
     virtual CParam KPerp2
@@ -32,6 +35,9 @@ namespace PDF {
     (const ATOOLS::Cluster_Amplitude &ampl,int i,int j,int k=-1,
      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
      ATOOLS::Mass_Selector *const ms=NULL,const int kin=0) = 0;
+
+    inline void SetAMode(const size_t mode) { m_amode=mode; }
+    inline int AMode() const { return m_amode; }
 
   };// end of class Cluster_Definitions_Base
 

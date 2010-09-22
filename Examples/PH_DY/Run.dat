@@ -1,0 +1,36 @@
+(run){
+  EVENTS = 10000
+  FRAGMENTATION Off
+}(run)
+
+(beam){
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 980.;
+  BEAM_2 = -2212; BEAM_ENERGY_2 = 980.;
+}(beam)
+
+(processes){
+  Process 93 93 -> 11 -11;
+  Loop_Generator WhiteHat;
+  NLO_QCD_Part BVIRS;
+  !RB_Max_Epsilon 1e-3 {2}
+  Order_EW 2;
+  End process;
+}(processes)
+
+(selector){
+  Mass 11 -11 66. 116.
+}(selector)
+
+(me){
+  ME_SIGNAL_GENERATOR = Amegic WhiteHat
+  EVENT_GENERATION_MODE = Weighted
+  NLO_Mode = 2;
+  SCALES = VAR{MPerp2(p[2]+p[3])}
+}(me)
+
+(analysis){
+  BEGIN_RIVET {
+    -a CDF_2008_S7540469 D0_2007_S7075677 D0_2008_S6879055 D0_2008_S7554427 D0_2008_S7863608 D0_2009_S8202443 D0_2009_S8349509 D0_2010_S8671338 MC_ZJETS 
+  } END_RIVET
+}(analysis)
+

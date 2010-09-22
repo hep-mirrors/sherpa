@@ -6,7 +6,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m_bunch):
-  ISR_Base(_p_pdf), m_x(0.), m_q2(0.)
+  ISR_Base(_p_pdf)
 {
   m_bunch = _m_bunch;
   m_type  = std::string("(SF)");
@@ -24,12 +24,8 @@ bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2)
 	       <<"q2range = "<<p_pdf->Q2Min()<<" ... "<<p_pdf->Q2Max()<<std::endl;
     return 0; 
   }
-  if (x!=m_x||q2!=m_q2) {
-    p_pdf->Calculate(x,q2);
-    m_x=x;
-    m_q2=q2;
-    m_weight = 1./m_x;
-  }
+  p_pdf->Calculate(x,q2);
+  m_weight=1.0/x;
   return 1;
 }
 

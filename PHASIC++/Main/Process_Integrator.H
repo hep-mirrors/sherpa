@@ -5,11 +5,15 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "ATOOLS/Phys/RB_Data.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <string>
 
-namespace ATOOLS { class Blob_Data_Base; }
+namespace ATOOLS {
+  class Blob_Data_Base;
+  class Cluster_Amplitude;
+}
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler; }
 
@@ -39,15 +43,12 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_overflow, m_enhancefac, m_maxeps;
-
-    std::vector<double> m_xinfo;
+    double m_threshold, m_enhancefac, m_maxeps, m_rbmaxeps;
 
     long unsigned int m_n, m_itmin;
 
-    double m_max;
-    double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_selectionweight;
+    double m_max, m_totalxs, m_totalsum, m_totalsumsqr;
+    double m_totalerr, m_selectionweight;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin, m_vmean;
 
     std::vector<double> m_vsmax, m_vsum;
@@ -64,6 +65,8 @@ namespace PHASIC {
 
     SP(Color_Integrator)    p_colint;
     SP(Helicity_Integrator) p_helint;
+
+    ATOOLS::RB_Map m_rbmap;
 
     double Sigma2();
 
@@ -86,7 +89,8 @@ namespace PHASIC {
     bool Initialize(BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL);
   
-    void SetMomenta(const ATOOLS::Vec4D_Vector &p); 
+    void SetMomenta(const ATOOLS::Vec4D_Vector &p);
+    void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
 
     void SwapInOrder();
     void RestoreInOrder();
@@ -109,6 +113,9 @@ namespace PHASIC {
     bool ReadInXSecs(const std::string &path);
     void WriteOutXSecs(const std::string &path);
 
+    bool WriteOutRB(const std::string &path);
+    bool ReadInRB(const std::string &path);
+
     double TriggerEfficiency();
     
     void Optimize();
@@ -125,6 +132,9 @@ namespace PHASIC {
     void SetEnhanceFunction(const std::string &efunc);
     void SetEnhanceFactor(const double &efac);
     void SetMaxEpsilon(const double &maxeps);
+    void SetRBMaxEpsilon(const double &maxeps);
+
+    void PrintRBInfo() const;
 
     // inline functions
     inline Process_Base *Process() const { return p_proc; }
@@ -132,8 +142,6 @@ namespace PHASIC {
     inline void SetColorScheme(const cls::scheme &s)    { m_colorscheme=s;    }
     inline void SetHelicityScheme(const hls::scheme &s) { m_helicityscheme=s; }
 
-    inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
-    
     inline void SetItMin(const long unsigned int &itmin) { m_itmin=itmin;  }
 
     inline void SetSelectionWeight(const double &w) { m_selectionweight=w; }
@@ -153,9 +161,10 @@ namespace PHASIC {
     inline double TotalError() const { return m_totalerr; }
     inline double VMean() const      { return m_vmean;    }
     inline double Max() const        { return m_max;      }
-    inline double Overflow() const   { return m_overflow; }
 
     inline double SelectionWeight() const { return m_selectionweight; }
+
+    inline ATOOLS::RB_Map &RBMap() { return m_rbmap; }
 
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
@@ -164,8 +173,6 @@ namespace PHASIC {
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
 
     inline bool InSwaped() const { return m_swaped;  }
-
-    inline std::vector<double> &XInfo() { return m_xinfo; }
 
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }
@@ -197,6 +204,8 @@ namespace PHASIC {
     inline void SetResultPath(const std::string &path) { m_resultpath=path; }
 
     inline std::string ResultPath() const { return m_resultpath; }
+
+    inline ATOOLS::Histogram *WeightHisto() const { return p_whisto; }
 
   };// end of class Process_Integrator
 

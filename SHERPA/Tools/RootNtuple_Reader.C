@@ -7,7 +7,6 @@
 
 using namespace SHERPA;
 using namespace ATOOLS;
-using namespace PHASIC;
 using namespace std;
 
 
@@ -139,7 +138,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       moms[i+2]=Vec4D(p_E[i],p_px[i],p_py[i],p_pz[i]);
       flav[i+2]=Flavour(abs(p_kf[i]),p_kf[i]<0);
     }
-    m_nlos.push_back(new NLO_subevt(m_nparticle+2,flav,moms,""));
+    m_nlos.push_back(new NLO_subevt(m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=m_wgt2;
     m_nlos.back()->m_flip=0;
     m_weight+=m_wgt2;
@@ -149,7 +148,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("Trials",new Blob_Data<int>(1.));
-  signalblob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(&m_nlos));
+  signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   blobs->push_back(signalblob);
   m_evtcnt++;  
   return 1;

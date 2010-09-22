@@ -69,6 +69,7 @@ namespace AMEGIC {
     Complex Zvalue(String_Handler*,int);
     Complex Zvalue(int,int,int);
     double Zvalue(Helicity* hel);
+    Complex CommonColorFactor();
     double Differential(int ihel,int* signlist)      { return (Zvalue(ihel,signlist)).real();}
     double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }

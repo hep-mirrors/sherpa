@@ -27,8 +27,9 @@ namespace MODEL {
 
 }
 
-Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int order, const double fac) : 
-  m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac)
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+			       const int order, const int thmode) : 
+  m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(1.0)
 {
   if(m_fac==1.0 && rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
     m_fac=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -58,7 +59,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
       kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
     Flavour flav(kfit->first);
     if (flav.Strong()) {
-      masses[count] = sqr(flav.Mass(true));
+      masses[count] = sqr(flav.Mass(thmode!=0));
       count++;
     }
   }

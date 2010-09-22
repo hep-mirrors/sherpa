@@ -7,6 +7,7 @@ libPDF_la_SOURCES     =	\
 			Structure_Function.C \
 			ISR_Handler.C \
 			Cluster_Definitions_Base.C \
+			POWHEG_Base.C \
 			Shower_Base.C
 
 localinc_HEADERS         =	\
@@ -16,4 +17,5 @@ localinc_HEADERS         =	\
 			Structure_Function.H\
 		 	ISR_Handler.H \
 			Cluster_Definitions_Base.H \
+			POWHEG_Base.H \
 			Shower_Base.H

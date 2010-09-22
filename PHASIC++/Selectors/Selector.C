@@ -74,13 +74,7 @@ Selector_Base::~Selector_Base()
 }
 
 bool Selector_Base::JetTrigger
-(const Vec4D_Vector &,const Flavour_Vector &,int)
-{
-  THROW(fatal_error,"Virtual method not redefined");
-  return false;
-}
-
-bool Selector_Base::JetTrigger(const Vec4D_Vector &)
+(const Vec4D_Vector &,NLO_subevtlist *const sub)
 {
   THROW(fatal_error,"Virtual method not redefined");
   return false;
@@ -97,18 +91,8 @@ void Selector_Base::BuildCuts(Cut_Data *)
   THROW(fatal_error,"Virtual method not redefined");
 }
 
-void Selector_Base::UpdateCuts(double,double,Cut_Data *) 
-{ 
-  THROW(fatal_error,"Virtual method not redefined");
-}
-
 void Selector_Base::AddOnshellCondition(std::string,double) 
 {
-}
-
-int Selector_Base::NeedUpdate()
-{ 
-  return 0; 
 }
 
 int Selector_Base::IsConditional()
@@ -143,13 +127,12 @@ namespace PHASIC {
     No_Selector(): Selector_Base("No_Selector") {}
 
     bool Trigger(const Vec4D_Vector &) { return true; }
-    bool JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int) 
+    bool JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const) 
     { return true; }
     bool NoJetTrigger(const Vec4D_Vector &) { return true; }
 
     void SetRange(ATOOLS::Flavour_Vector,double,double) {}
     void BuildCuts(Cut_Data * cuts) {}
-    void UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
     void Output() {}
 
   };

@@ -23,9 +23,14 @@ namespace AMEGIC {
     Process_Base          * p_tree_process;
     ATOOLS::Vec4D_Vector    m_real_momenta;
     std::vector<Single_DipoleTerm*> m_subtermlist;
-    PHASIC::NLO_subevtlist          m_subevtlist;
-    PHASIC::NLO_subevt              m_realevt;
+    ATOOLS::NLO_subevtlist          m_subevtlist;
+    ATOOLS::NLO_subevt              m_realevt;
 
+    std::vector<size_t> m_sids;
+    std::map<void*,ATOOLS::Flavour_Vector*> m_dfmap;
+    std::map<void*,std::string> m_dnmap;
+    ATOOLS::DecayInfo_Vector m_decinfos;
+    void ReMapFlavs(ATOOLS::NLO_subevt *const sub);
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -37,7 +42,12 @@ namespace AMEGIC {
     ~Single_Real_Correction();
  
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+    bool Combinable(const size_t &idi,const size_t &idj);
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
+    void SetFixedScale(const std::vector<double> &s);
+    void SetSelectorOn(const bool on);
+    void SetGenerator(PHASIC::ME_Generator_Base *const gen);
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -68,8 +78,9 @@ namespace AMEGIC {
     void             Minimize();
 
     void SetSelector(const PHASIC::Selector_Key &key);
+    void SetShower(PDF::Shower_Base *const ps);
 
-    inline PHASIC::NLO_subevtlist*             GetSubevtList()
+    inline ATOOLS::NLO_subevtlist*             GetSubevtList()
     { return &m_subevtlist; }
     inline Single_DipoleTerm*                  GetSubTerm(size_t i)
     { return m_subtermlist[i]; }
@@ -84,8 +95,10 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &);
-    double         operator()(const ATOOLS::Vec4D_Vector &);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
+    double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
+
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
@@ -105,7 +118,6 @@ namespace AMEGIC {
     void           PrintProcessSummary(int=0); 
     void           PrintSubevtSummary();
     size_t         NumberOfDipoles() {return m_subtermlist.size();} 
-    void FillAlphaHistogram(ATOOLS::Histogram*,double);
   };
 }
 

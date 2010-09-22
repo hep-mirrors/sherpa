@@ -1,6 +1,8 @@
 #include "ATOOLS/Math/Function_Base.H"
 
+#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
+#include "ATOOLS/Org/Message.C"
 #include <math.h>
 
 using namespace ATOOLS;
@@ -28,64 +30,76 @@ double Function_Base::operator()()
 std::string Function_Base::Type()                     
 { return m_type; }
 
+/* (C) Copr. 1986-92 Numerical Recipes Software */
 
-double Function_Base::FindZero(double x_min, double x_max,int MAX_ITR,double precision) {
-
-  double root = 0.5 * (x_min + x_max);
-  double x_lower = x_min;
-  double x_upper = x_max;
-
-  bool SUCCESS = false;
-
-  for(int i=0;i<MAX_ITR;i++){
-    SUCCESS=this->IterateBisection(root,x_lower,x_upper,precision);
-    if(SUCCESS) break;
+double Function_Base::WDBSolve
+(const double &y,const double &xmin,const double &xmax,
+ const double &precision,const int maxit)
+{
+  double eps=std::numeric_limits<double>::epsilon();
+  double a=xmin, b=xmax, c=b;
+  double fa=(*this)(a)-y, fb=(*this)(b)-y, fc=fb;
+  double d=0.0, e=0.0, p=0.0, q=0.0, r=0.0, s=0.0, x=0.0, t=0.0;
+  for (int it=0;it<maxit;++it) {
+    if ((fb>0.0 && fc>0.0) || (fb<0.0 && fc<0.0)) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+    if (dabs(fc)<dabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    t=2.0*eps*dabs(b)+0.5*precision;
+    x=0.5*(c-b);
+    if (dabs(x)<=t || fb==0.0) return b;
+    if (dabs(e)>=t && dabs(fa)>dabs(fb)) {
+      s=fb/fa;
+      if (a==c) {
+	p=2.0*x*s;
+	q=1.0-s;
+      }
+      else {
+	q=fa/fc;
+	r=fb/fc;
+	p=s*(2.0*x*q*(q-r)-(b-a)*(r-1.0));
+	q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p>0.0) q=-q;
+      p=dabs(p);
+      double min1=3.0*x*q-dabs(t*q);
+      double min2=dabs(e*q);
+      if (2.0*p<(min1<min2?min1:min2)) {
+	e=d;
+	d=p/q;
+      }
+      else {
+	d=x;
+	e=d;
+      }
+    }
+    else {
+      d=x;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (dabs(d)>t) b+=d;
+    else b+=x>=0.0?dabs(t):-dabs(t);
+    fb=(*this)(b)-y;
   }
-
-  return root;
-
+  msg_Error()<<METHOD<<"(): No solution for f(x) = "
+	     <<y<<" in ["<<xmin<<","<<xmax<<"]"<<std::endl;
+  return 0.5*(xmin+xmax);
 }
 
-
-bool Function_Base::IterateBisection(double& root, double& x_lower, double& x_upper, double precision){
-  // Bisection algorithm inspired by gsl-1.9
-
-  double x_bisect,f_bisect;
-
-  const double f_lower = this->GetValue(x_lower);
-  const double f_upper = this->GetValue(x_upper);
-
-
-  if ( fabs(f_lower-0.0)<precision )
-    {
-      root = x_lower;
-      x_upper = x_lower;
-      return true;
-    }
-
-  if ( fabs(f_upper-0.0)<precision)
-    {
-      root = x_upper ;
-      x_lower = x_upper;
-      return true;
-    }
-
-  x_bisect = ( x_lower + x_upper) / 2.0;
-  f_bisect = this->GetValue(x_bisect);
-
-  if ((f_lower > 0.0 && f_bisect < 0.0) || (f_lower < 0.0 && f_bisect > 0.0))
-    {
-      root = 0.5 * (x_lower + x_bisect) ;
-      x_upper = x_bisect;
-    }
-  else
-    {
-      root = 0.5 * (x_bisect + x_upper) ;
-      x_lower = x_bisect;
-    }
-
-  return false; // keep searching!!!
-
+double Function_Base::FindZero(double x_min, double x_max,int MAX_ITR,double precision)
+{
+  return WDBSolve(0.0,x_min,x_max,precision,MAX_ITR);
 }
 
 namespace ATOOLS {

@@ -62,6 +62,7 @@ namespace ATOOLS {
 
 
     Histogram & operator+=(const Histogram & histo);
+    Histogram & operator=(const Histogram & histo);
     void Addopt(const Histogram & histo);
     void BinMin(const Histogram & histo);
     void BinMax(const Histogram & histo);

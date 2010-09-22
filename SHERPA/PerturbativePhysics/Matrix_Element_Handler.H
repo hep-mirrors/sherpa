@@ -19,7 +19,10 @@ namespace ATOOLS {
 }
 
 namespace BEAM { class Beam_Spectra_Handler; }
-namespace PDF { class ISR_Handler; }
+namespace PDF {
+  class ISR_Handler;
+  class POWHEG_Base;
+}
 
 namespace PHASIC { 
   class Single_Process;
@@ -28,8 +31,6 @@ namespace PHASIC {
 }
 
 namespace SHERPA {
-
-  typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
   class Shower_Handler;
 
@@ -40,15 +41,16 @@ namespace SHERPA {
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
 
     struct Processblock_Info {
-      MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac;
-      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac, m_vsfile;
+      MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrbmaxeps;
+      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
+	m_vsfile, m_vnloqcd, m_vnloew;
       std::string m_gycut;
     };// end of struct Processblock_Info
 
   private :
 
-    PHASIC::ME_Generators m_gens;
-    Process_Vector     m_procs;
+    PHASIC::ME_Generators  m_gens;
+    PHASIC::Process_Vector m_procs;
 
     PHASIC::Process_Base *p_proc;
 
@@ -57,11 +59,12 @@ namespace SHERPA {
     MODEL::Model_Base          *p_model;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
-    int         m_eventmode, m_seedmode;
+    int         m_eventmode, m_seedmode, m_hasnlo;
 
     PHASIC::Weight_Info m_evtinfo;
 
-    Shower_Handler *p_shower;
+    Shower_Handler   *p_shower;
+    PDF::POWHEG_Base *p_powheg;
 
     double m_totalxs;
     size_t m_nlomode, m_ranidx;
@@ -104,6 +107,7 @@ namespace SHERPA {
     void BuildProcesses();
 
     void SetRandomSeed();
+    void InitPOWHEG();
 
     bool GenerateUnweightedEvent();
     bool GenerateWeightedEvent(); 
@@ -125,7 +129,8 @@ namespace SHERPA {
 
     // inline functions
     inline PHASIC::Process_Base *Process() const { return p_proc; }
-    inline Process_Vector        AllProcesses() const { return m_procs; }
+
+    inline PHASIC::Process_Vector AllProcesses() const { return m_procs; }
 
     inline int EventGenerationMode() const { return m_eventmode; }
 
@@ -140,6 +145,9 @@ namespace SHERPA {
 
     inline const std::string &Path() const { return m_path; }
     inline const std::string &File() const { return m_file; }
+    
+    inline int NLOMode() const { return m_nlomode; }
+    inline int HasNLO() const  { return m_hasnlo;  }
 
   };// end of class Matrix_Element_Handler
 

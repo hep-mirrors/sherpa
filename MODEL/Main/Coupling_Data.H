@@ -41,6 +41,7 @@ namespace MODEL {
   struct Coupling_Map: public std::map
   <std::string,Coupling_Data*,ATOOLS::String_Sort> {
     void Calculate() const;
+    Coupling_Data *Get(const std::string &tag) const;
   };
 
 }// end of namespace MODEL

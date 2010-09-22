@@ -5,6 +5,7 @@
 #include "COMIX/Amplitude/Amplitude.H"
 #include "COMIX/Amplitude/Matrix_Element.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "COMIX/Phasespace/PS_Channel.H"
@@ -154,7 +155,7 @@ CParam Cluster_Algorithm::GetMeasure
 	 p_ampl->Leg(k)->Flav().Strong()))
       ckt2=Max(li->Mom().MPerp2(),lj->Mom().MPerp2());
     else ckt2=dabs((li->Mom()+lj->Mom()).Abs2());
-    kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2);
+    kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2,0.0,ckt2,-1);
   }
   if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
   msg_Debugging()<<"calc Q_{"<<ID(idi)<<p_ampl->Leg(i)->Flav()
@@ -173,11 +174,10 @@ CParam Cluster_Algorithm::GetMeasure
 void Cluster_Algorithm::CalculateMeasures
 (const size_t &step,const Vertex_Set &nocl,
  const Current_Vector &ccurs,Current_Base *const fcur,
- ClusterInfo_Map &cinfo,const SizeT_Map &cid)
+ ClusterInfo_Map &cinfo,Double_Map &kt2,const SizeT_Map &cid)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
-  Double_Map kt2;
   ClusterInfo_Map ccinfo(cinfo);
   cinfo.clear();
   for (size_t nc(2);nc<=step;++nc) {
@@ -218,43 +218,43 @@ void Cluster_Algorithm::CalculateMeasures
 	msg_Debugging()<<"}\n";
       }
     }
-    const Vertex_Vector &in(fcur->In()); 
-    for (size_t j(0);j<in.size();++j) {
-      if (in[j]->Zero()&&!m_nosol) continue;
-      for (size_t i(1);i<ccurs.size();++i) {
-	if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
-	  if (ccurs[i]->CId()&2) continue;
-	  size_t idi(fcur->CId()), idj(ccurs[i]->CId());
-	  msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
-			 <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
-			 <<(in[j]->JA()==ccurs[i]?in[j]->JB()->Flav():
-			    in[j]->JA()->Flav())<<" ["
-			 <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
-	  {
-	    msg_Indent();
-	    ColorID coli(p_ampl->Leg(cid.find(m_id[idi])->second)->Col());
-	    ColorID colj(p_ampl->Leg(cid.find(m_id[idj])->second)->Col());
-	    for (size_t k(0);k<p_ampl->Legs().size();++k) {
-	      size_t idk(p_ampl->Leg(k)->Id());
-	      if (idk==m_id[idi] || idk==m_id[idj]) continue;
-	      if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
-	      ColorID colk(p_ampl->Leg(k)->Col());
-	      Flavour mofl((in[j]->JA()==ccurs[i]?
-			    in[j]->JB():in[j]->JA())->Flav().Bar());
-	      if (p_ampl->Legs().size()==4 ||
-		  (in[j]->OrderQCD()==0?
-		   EWConnected(mofl,p_ampl->Leg(k)->Flav()):
-		   ColorConnected(coli,colj,colk))) {
-		CParam ckt2(GetMeasure(m_id[idi],m_id[idj],idk,mofl,kt2,cid));
-		cinfo.insert(ClusterInfo_Pair
-			     (Cluster_Key(idi,idj),
-			      Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
-					   in[j]->OrderQCD(),mofl)));
-	      }
+  }
+  const Vertex_Vector &in(fcur->In()); 
+  for (size_t j(0);j<in.size();++j) {
+    if (in[j]->Zero()&&!m_nosol) continue;
+    for (size_t i(1);i<ccurs.size();++i) {
+      if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
+	if (ccurs[i]->CId()&2) continue;
+	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
+	msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
+		       <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
+		       <<(in[j]->JA()==ccurs[i]?in[j]->JB()->Flav():
+			  in[j]->JA()->Flav())<<" ["
+		       <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
+	{
+	  msg_Indent();
+	  ColorID coli(p_ampl->Leg(cid.find(m_id[idi])->second)->Col());
+	  ColorID colj(p_ampl->Leg(cid.find(m_id[idj])->second)->Col());
+	  for (size_t k(0);k<p_ampl->Legs().size();++k) {
+	    size_t idk(p_ampl->Leg(k)->Id());
+	    if (idk==m_id[idi] || idk==m_id[idj]) continue;
+	    if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
+	    ColorID colk(p_ampl->Leg(k)->Col());
+	    Flavour mofl((in[j]->JA()==ccurs[i]?
+			  in[j]->JB():in[j]->JA())->Flav().Bar());
+	    if (p_ampl->Legs().size()==4 ||
+		(in[j]->OrderQCD()==0?
+		 EWConnected(mofl,p_ampl->Leg(k)->Flav()):
+		 ColorConnected(coli,colj,colk))) {
+	      CParam ckt2(GetMeasure(m_id[idi],m_id[idj],idk,mofl,kt2,cid));
+	      cinfo.insert(ClusterInfo_Pair
+			   (Cluster_Key(idi,idj),
+			    Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
+					 in[j]->OrderQCD(),mofl)));
 	    }
 	  }
-	  msg_Debugging()<<"}\n";
 	}
+	msg_Debugging()<<"}\n";
       }
     }
   }
@@ -325,14 +325,14 @@ bool Cluster_Algorithm::CombineWinner
 bool Cluster_Algorithm::ClusterStep
 (const size_t &step,Vertex_Set &nocl,
  Current_Vector &ccurs,Current_Base *&fcur,
- ClusterInfo_Map &cinfo)
+ ClusterInfo_Map &cinfo,Double_Map &kt2)
 {
   msg_Debugging()<<METHOD<<"(): step = "<<step<<" {\n";
   msg_Indent();
   SizeT_Map cid;
   for (size_t i(0);i<p_ampl->Legs().size();++i) 
     cid[p_ampl->Leg(i)->Id()]=i;
-  CalculateMeasures(step,nocl,ccurs,fcur,cinfo,cid);
+  CalculateMeasures(step,nocl,ccurs,fcur,cinfo,kt2,cid);
   if (cinfo.empty()) {
     msg_Debugging()<<"rejected configuration\n";
     return false;
@@ -381,7 +381,7 @@ bool Cluster_Algorithm::ClusterStep
   if (win==cinfo.end()) return false;
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
-  nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2QCD();
+  nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2();
   if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
   if (p_ampl->Legs().size()==4) {
     if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
@@ -424,25 +424,17 @@ bool Cluster_Algorithm::ClusterStep
     THROW(fatal_error,"Invalid amplitude");
   }
   Cluster_Amplitude *ampl(p_ampl);
-  ampl->SetKT2QCD(winfo.m_kt2.m_kt2);
+  ampl->SetKT2(winfo.m_kt2.m_kt2);
+  ampl->SetMu2(winfo.m_kt2.m_mu2);
   p_ampl=p_ampl->InitNext();
   p_ampl->SetMS(p_ms);
   p_ampl->SetNIn(ampl->NIn());
   p_ampl->SetMuR2(ampl->MuR2());
   p_ampl->SetMuF2(ampl->MuF2());
-  p_ampl->SetX1(ampl->X1());
-  p_ampl->SetX2(ampl->X2());
-  p_ampl->SetKT2QCD(winfo.m_kt2.m_kt2);
-  size_t nid(m_id[wkey.first]+m_id[wkey.second]);
-  if (nid&3) {
-    if (nid&1) p_ampl->SetX1(ampl->X1()*winfo.m_kt2.m_x);
-    else p_ampl->SetX2(ampl->X2()*winfo.m_kt2.m_x);
-  }
-  else if (winfo.m_k&3) {
-    if (winfo.m_k&1) p_ampl->SetX1(ampl->X1()*winfo.m_kt2.m_x);
-    else p_ampl->SetX2(ampl->X2()*winfo.m_kt2.m_x);
-  }
+  p_ampl->SetKT2(winfo.m_kt2.m_kt2);
+  p_ampl->SetMu2(winfo.m_kt2.m_mu2);
   p_ampl->SetJF(ampl->JF<Selector_Base>());
+  p_ampl->Decays()=p_bg->DecayInfos();
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
   p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
   p_ampl->SetKin(winfo.m_kt2.m_kin);
@@ -496,8 +488,10 @@ bool Cluster_Algorithm::Cluster
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
-  p_ampl->SetKT2QCD(kt2);
+  p_ampl->SetKT2(kt2);
+  p_ampl->SetMu2(kt2);
   p_ampl->SetNIn(xs->NIn());
+  p_ampl->Decays()=p_bg->DecayInfos();
   p_ampl->SetOrderEW(p_bg->MaxOrderEW());
   p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
   PHASIC::Process_Base *pb(xs->Process()->IsMapped()?
@@ -506,19 +500,17 @@ bool Cluster_Algorithm::Cluster
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
-    ColorID col(GetColor(i==0?p_bg->Currents()[1][0]:ccurs[i],fcur));
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
     if (ccurs[i]==fcur) flav=flav.Bar();
     size_t idx(i<2?(m_swap?1-i:i):i);
     Vec4D mom(i<2?-xs->Process()->Integrator()->Momenta()[idx]:
 	      xs->Process()->Integrator()->Momenta()[idx]);
-    p_ampl->CreateLeg(mom,flav,col,cid);
+    p_ampl->CreateLeg(mom,flav,ColorID(),cid);
     p_ampl->Legs().back()->SetStat(1);
   }
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetX1(xs->Process()->Integrator()->ISR()->X1());
-  p_ampl->SetX2(xs->Process()->Integrator()->ISR()->X2());
+  Cluster_Amplitude *eampl(p_ampl);
   if (m_swap) xs->Process()->SwapInOrder();
   m_nosol=!m_cs.SetColors(xs);
   if (m_swap) xs->Process()->SwapInOrder();
@@ -537,15 +529,26 @@ bool Cluster_Algorithm::Cluster
     return false;
   }
   msg_Debugging()<<"}\n";
-  SetNMax(p_ampl,(1<<ccurs.size())-1,
-	  xs->Process()->Info().m_fi.NMaxExternal());
-  if (msg_LevelIsDebugging()) p_ampl->Print();
-  while (p_ampl->Prev()) {
-    if (m_swap) p_ampl->SwapInOrder();
-    p_ampl=p_ampl->Prev();
-    if (msg_LevelIsDebugging()) p_ampl->Print();
+  size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
+  if (dynamic_cast<POWHEG_Process*>(xs->Process()->Parent())) {
+    if (xs->Process()->Parent()->Info().m_fi.NExternal()<=nmax) ++nmax;
+    else nmax=eampl->Legs().size()-eampl->NIn();
+    eampl->SetNLO(1);
+    while (eampl->Next()) {
+      eampl=eampl->Next();
+      eampl->SetNLO(1);
+    }
   }
-  if (m_swap) p_ampl->SwapInOrder();
+  SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
+  msg_Debugging()<<*p_ampl<<"\n";
+  while (p_ampl->Prev()) {
+    if (m_swap) std::swap<Cluster_Leg*>
+      (p_ampl->Legs()[0],p_ampl->Legs()[1]);
+    p_ampl=p_ampl->Prev();
+    msg_Debugging()<<*p_ampl<<"\n";
+  }
+  if (m_swap) std::swap<Cluster_Leg*>
+    (p_ampl->Legs()[0],p_ampl->Legs()[1]);
   return true;
 }
 
@@ -559,6 +562,7 @@ bool Cluster_Algorithm::Cluster
     return true;
   }
   size_t oldsize(0);
+  Double_Map kt2;
   Vertex_Set nocl;
   Cluster_Amplitude *ampl(p_ampl);
   do {
@@ -566,12 +570,12 @@ bool Cluster_Algorithm::Cluster
     Current_Vector nccurs(ccurs);
     Current_Base *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
-    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
+    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
   	if (ampl->Legs().size()==4) return true;
-	if (ampl->KT2QCD()<=ampl->Next()->KT2QCD()) return true;
-	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->KT2QCD())
-		       <<" vs. "<<sqrt(ampl->Next()->KT2QCD())<<"\n";
+	if (ampl->KT2()<=ampl->Next()->KT2()) return true;
+	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->KT2())
+		       <<" vs. "<<sqrt(ampl->Next()->KT2())<<"\n";
       }
     p_ampl=ampl;
     p_ampl->DeleteNext();
@@ -609,8 +613,8 @@ bool Cluster_Algorithm::Cluster
     Current_Vector nccurs(ccurs);
     Current_Base *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
-    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo))
-      if (p_ampl->KT2QCD()<sqrt(std::numeric_limits<double>::max()))
+    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
+      if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
 	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
     p_ampl=ampl;
     p_ampl->DeleteNext();

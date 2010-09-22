@@ -6,52 +6,26 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/ISR_Handler.H"
 #include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
-ME_wgtinfo::ME_wgtinfo(): m_nx(0), m_w0(0.), p_wx(0), m_y1(1.), m_y2(1.), m_renscale(0.) {}
-
-ME_wgtinfo::~ME_wgtinfo() {if (m_nx>0) delete[] p_wx;}
-
-ME_wgtinfo& ME_wgtinfo::operator*= (const double scal) {
-  m_w0*=scal;
-  for (int i=0;i<m_nx;i++) p_wx[i]*=scal;
-  return *this;
-}
-
-void ME_wgtinfo::Flip() {
-  std::swap<double>(m_x1,m_x2);
-  std::swap<double>(m_y1,m_y2);
-  if (m_nx>=10) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+2],p_wx[i+6]);
-  if (m_nx>=18) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+10],p_wx[i+14]);
-}
-
-void ME_wgtinfo::AddMEweights(int n) {
-  m_nx=n;
-  p_wx=new double[m_nx];
-  for (int i=0;i<m_nx;i++) p_wx[i]=0.;
-}
-
-namespace ATOOLS {
-  template <> Blob_Data<PHASIC::ME_wgtinfo*>::~Blob_Data() {}
-  template class Blob_Data<PHASIC::ME_wgtinfo*>;
-}
-
-
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
-  p_int(new Process_Integrator(this)), 
-  p_selector(new Combined_Selector(p_int)),
+  p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), 
-  m_oqcd(0), m_oew(0),
-  m_lookup(false), m_trigger(true) {}
+  m_oqcd(0), m_oew(0), m_tinfo(1),
+  m_lookup(false), m_use_biweight(true)
+{
+  m_last[1]=m_last[0]=0.0;
+}
 
 Process_Base::~Process_Base() 
 {
@@ -68,6 +42,21 @@ Process_Base *Process_Base::Selected()
   return this; 
 }
 
+bool Process_Base::SetSelected(Process_Base *const proc)
+{
+  if (proc==this) {
+    p_selected=this;
+    return true;
+  }
+  if (IsGroup())
+    for (size_t i(0);i<Size();++i)
+      if ((*this)[i]->SetSelected(proc)) {
+	p_selected=(*this)[i];
+	return true;
+      }
+  return false;
+}
+
 Process_Base *Process_Base::Parent()
 { 
   if (p_parent && p_parent!=this) return p_parent->Parent();
@@ -79,19 +68,45 @@ bool Process_Base::GeneratePoint()
   return true;
 }
 
-void Process_Base::SetKFactorOn(const bool on)
+void Process_Base::SetFixedScale(const std::vector<double> &s)
 {
-  if (p_kfactor!=NULL) p_kfactor->SetOn(on);
+  if (IsMapped()) p_mapproc->SetFixedScale(s);
+  if (p_scale!=NULL) p_scale->SetFixedScale(s);
 }
 
-double Process_Base::Differential(const Cluster_Amplitude &ampl) 
+void Process_Base::SetSelectorOn(const bool on)
+{
+  Selector()->SetOn(on);
+}
+
+void Process_Base::SetUseBIWeight(bool on)
+{
+  m_use_biweight=on;
+}
+
+double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
 {
   Vec4D_Vector &p(p_int->Momenta());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
-  SetKFactorOn(false);
+  bool selon(Selector()->On());
+  if (!Trigger(p)) {
+    if ((mode&1) && selon) {
+      SetSelectorOn(false);
+      Trigger(p);
+    }
+  }
+  if (mode&2) {
+    std::vector<double> s(stp::size);
+    s[stp::fac]=ampl.MuF2();
+    s[stp::ren]=ampl.MuR2();
+    SetFixedScale(s);
+  }
+  if (mode&4) SetUseBIWeight(false);
   double res(this->Differential(p));
-  SetKFactorOn(true);
+  if (mode&4) SetUseBIWeight(true);
+  if (mode&2) SetFixedScale(std::vector<double>());
+  if (Selector()->On()!=selon) SetSelectorOn(selon);
   return res;
 }
 
@@ -104,6 +119,12 @@ bool Process_Base::FillIntegrator
 (Phase_Space_Handler *const psh)
 {
   return false;
+}
+
+bool Process_Base::InitIntegrator
+(Phase_Space_Handler *const psh)
+{
+  return true;
 }
 
 void Process_Base::UpdateIntegrator
@@ -271,6 +292,7 @@ void Process_Base::Init(const Process_Info &pi,
   for (size_t i=m_nin;i<m_nin+m_nout;++i) massout+=m_flavs[i].Mass();
   p_int->SetISRThreshold(sqr(Max(massin,massout)));
   p_int->Initialize(beamhandler,isrhandler);
+  m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
 }
 
 std::string Process_Base::GenerateName(const Subprocess_Info &info) 
@@ -369,8 +391,43 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
   std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ampl->NIn();++i) 
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
-  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) 
-    name+="__"+ampl->Leg(i)->Flav().IDName();
+  ClusterLeg_Vector legs(ampl->Legs().size()-ampl->NIn());
+  for (size_t i(0);i<legs.size();++i) legs[i]=ampl->Leg(ampl->NIn()+i);
+  DecayInfo_Vector decs(ampl->Decays());
+  while (decs.size()) {
+    size_t nc(0);
+    DecayInfo_Vector::iterator dc(decs.end());
+    for (DecayInfo_Vector::iterator
+	   dit(decs.begin());dit!=decs.end();++dit) {
+      size_t nit(IdCount(dit->m_id));
+      if (nit>nc) {
+	nc=nit;
+	dc=dit;
+      }
+    }
+    name+="__"+dc->m_fl.IDName()+"[";
+    for (ClusterLeg_Vector::iterator lit(legs.begin());lit!=legs.end();)
+      if (!((*lit)->Id()&dc->m_id)) ++lit;
+      else {
+	name+=(*lit)->Flav().IDName()+"__";
+	lit=legs.erase(lit);
+      }
+    name.replace(name.length()-2,2,"]");
+    decs.erase(dc);
+  }
+  for (size_t i(0);i<legs.size();++i) name+="__"+legs[i]->Flav().IDName();
+  return name;
+}
+
+std::string Process_Base::GenerateName(const NLO_subevt *sub,const size_t &nin)
+{
+  char nii[3], nfi[3];
+  if (sprintf(nii,"%i",(int)nin)<=0)
+    THROW(fatal_error,"Conversion error");
+  if (sprintf(nfi,"%i",(int)(sub->m_n-nin))<=0)
+    THROW(fatal_error,"Conversion error");
+  std::string name(nii+std::string("_")+nfi);
+  for (size_t i(0);i<sub->m_n;++i) name+="__"+sub->p_fl[i].IDName();
   return name;
 }
 
@@ -393,7 +450,7 @@ void Process_Base::FillOnshellConditions()
   if (!Selector()) return;
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
-  Decay_Info_Vector ids(info.GetDecayInfos());
+  DecayInfo_Vector ids(info.GetDecayInfos());
   for(size_t i=0;i<ids.size();i++)
     if (ids[i].m_osd) Selector()->AddOnshellCondition
       (PSId(ids[i].m_id),sqr(ids[i].m_fl.Mass()));  
@@ -401,51 +458,47 @@ void Process_Base::FillOnshellConditions()
 
 void Process_Base::SetSelector(const Selector_Key &key)
 {
+  if (IsMapped()) return;
+  if (p_selector==NULL) p_selector = new Combined_Selector(p_int);
   p_selector->Initialize(key);
 }
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)
 {
-  if (((m_pinfo.m_fi.m_nloqcdtype)&nlo_type::real) ||
-      ((m_pinfo.m_fi.m_nloqcdtype)&nlo_type::rsub)) return NoJetTrigger(p);
-  if (IsMapped() && LookUp() &&
-      MapProc()->LookUp()) return p_mapproc->m_trigger;
-  m_trigger=p_selector->Trigger(p);
-  return m_trigger;
+  if (IsMapped() && LookUp()) return Selector()->Result();
+  return Selector()->Trigger(p);
 }
  
-bool Process_Base::NoJetTrigger(const Vec4D_Vector &p)
-{
-  return p_selector->NoJetTrigger(p);
-}
-
-bool Process_Base::JetTrigger
-(const Vec4D_Vector &p,const Flavour_Vector &fl,int n)
-{
-  return p_selector->JetTrigger(p,fl,n);
-}
-
-bool Process_Base::JetTrigger(const Vec4D_Vector &p)
-{
-  return p_selector->JetTrigger(p);
-}
-
 NLO_subevtlist *Process_Base::GetSubevtList()
 {
   return NULL;
 }
 
-void Process_Base::BuildCuts(Cut_Data *const cuts)
+ME_wgtinfo *Process_Base::GetMEwgtinfo()
 {
-  return p_selector->BuildCuts(cuts);
+  return NULL;
 }
 
-void Process_Base::UpdateCuts(const double &sp,const double &y,
-			      Cut_Data *const cuts)
+void Process_Base::InitCuts(Cut_Data *const cuts)
 {
-  return p_selector->UpdateCuts(sp,y,cuts);
+  cuts->Init(m_nin,m_flavs);
+}
+
+void Process_Base::BuildCuts(Cut_Data *const cuts)
+{
+  if (IsMapped() && LookUp()) return;
+  Selector()->BuildCuts(cuts);
 }
 
 void Process_Base::AddPoint(const double &value)
+{
+}
+
+void Process_Base::MultiplyLast(const double &w,const int mode)
+{
+  m_last[mode]*=w;
+}
+
+void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 {
 }

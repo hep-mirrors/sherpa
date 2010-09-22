@@ -7,11 +7,8 @@
 #include "PDF/Remnant/Electron_Remnant.H"
 #include "PDF/Remnant/Photon_Remnant.H"
 #include "PDF/Remnant/No_Remnant.H"
-#include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Phys/Blob.H"
-#include <stdio.h>
+#include "ATOOLS/Org/My_Limits.H"
 
 using namespace ATOOLS;
 using namespace PDF;
@@ -24,9 +21,7 @@ double Lambda2(double sp,double sp1,double sp2)
 
 ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
-  p_info(new ATOOLS::Integration_Info()),
   m_rmode(0),
-  m_weight(1.),
   m_info_lab(8),
   m_info_cms(8)
 {
@@ -35,14 +30,14 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_remnants[1]=p_remnants[0]=NULL;
   m_mode=0;
   for (short int i=0;i<2;i++) {
-    if (p_isrbase[i]->On()) {
-      p_isrbase[i]->AssignKeys(p_info);
-      m_mode += i+1;
-    }
+    if (p_isrbase[i]->On()) m_mode += i+1;
   }
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   m_x[1]=m_x[0]=1.; 
+  m_mu2[1]=m_mu2[0]=0.0; 
+  m_xf1[1]=m_xf1[0]=0.0;
+  m_xf2[1]=m_xf2[0]=0.0;
   for (size_t i=0;i<2;++i) {
     if (Flav(i).IsHadron()) {
       Hadron_Remnant *remnant = new Hadron_Remnant(this,i);
@@ -73,7 +68,6 @@ ISR_Handler::~ISR_Handler()
     }
     delete[] p_isrbase; p_isrbase = 0;
   }
-  delete p_info;
   for (size_t i(0);i<2;++i) 
     if (p_remnants[i]!=NULL) delete p_remnants[i];
 }
@@ -109,12 +103,12 @@ void ISR_Handler::Init(double *splimits,double *kplimits)
 
 void ISR_Handler::SetSprimeMin(const double spmin)       
 { 
-  m_spkey[0]=m_splimits[0]=Max(m_fixed_smin,spmin); 
+  m_splimits[0]=Max(m_fixed_smin,spmin); 
 }
 
 void ISR_Handler::SetSprimeMax(const double spmax)       
 { 
-  m_spkey[1]=m_splimits[1]=Min(m_fixed_smax,spmax); 
+  m_splimits[1]=Min(m_fixed_smax,spmax); 
 }
 
 void ISR_Handler::SetFixedSprimeMin(const double spmin)  
@@ -178,17 +172,17 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
   return fit;
 }
 
-void ISR_Handler::SetMasses(const Flavour *fl,const size_t nout) 
+void ISR_Handler::SetMasses(const Flavour_Vector &fl) 
 {
   m_mass2[0]=sqr(fl[0].Mass());
   m_mass2[1]=sqr(fl[1].Mass());
   double emin=0.0;
-  for (size_t i=0;i<nout;++i) emin+=fl[2+i].Mass();
+  for (size_t i=2;i<fl.size();++i) emin+=fl[i].Mass();
   emin=ATOOLS::Max(emin,fl[0].Mass()+fl[1].Mass());
   m_splimits[0]=ATOOLS::Max(m_splimits[0],sqr(emin));
 }
 
-void ISR_Handler::SetPartonMasses(Flavour *fl) 
+void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) 
 {
   SetMasses(fl);
   double E=ATOOLS::rpa.gen.Ecms();
@@ -199,29 +193,19 @@ void ISR_Handler::SetPartonMasses(Flavour *fl)
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
 }
 
-bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
-			  const ATOOLS::Flavour *flavs,const size_t nflavs) 
+bool ISR_Handler::MakeISR(const double &sp,const double &y,
+			  Vec4D_Vector &p,const Flavour_Vector &flavs) 
 {
-  p_info->ResetAll();
-  m_weight=1.;
   if (m_mode==0) {
     m_x[1]=m_x[0]=1.;
-    m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
     return true;
   }
-  if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
+  if (sp<m_splimits[0] || sp>m_splimits[1]) {
     msg_Error()<<METHOD<<"(..): "<<om::red
 		       <<"s' out of bounds.\n"<<om::reset
 		       <<"  s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
 		       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
-		       <<" vs. "<<m_spkey[3]<<std::endl;
-    return false;
-  }
-  if (m_ykey[2]<m_ykey[0] || m_ykey[2]>m_ykey[1]) {
-    msg_Error()<<METHOD<<"(..): "<<om::red
-		       <<"y out of bounds.\n"<<om::reset
-		       <<"  y_{min}, y_{max} vs. y: "<<m_ykey[0]
-		       <<", "<<m_ykey[1]<<" vs. "<<m_ykey[2]<<std::endl;
+		       <<" vs. "<<sp<<std::endl;
     return false;
   }
   Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
@@ -230,7 +214,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   double aa(sa/gam), ab(sb/gam), bet(1.0/(1.0-aa*ab));
   Vec4D pp(bet*(pa-aa*pb)), pm(bet*(pb-ab*pa));
   double s1(sqr(flavs[0].Mass())), s2(sqr(flavs[1].Mass()));
-  double st(2.0*pp*pm), tau(0.5/st*(m_spkey[3]-s1-s2));
+  double st(2.0*pp*pm), tau(0.5/st*(sp-s1-s2));
   if (tau*tau<s1*s2/(st*st)) {
     msg_Error()<<METHOD<<"(): s' out of range."<<std::endl;
     return false;
@@ -245,7 +229,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     m_x[1]=tau/m_x[0];
   }
   else if (m_mode==3) {
-    double yt(m_ykey[2]-0.5*log((tau+s2/st)/(tau+s1/st)));
+    double yt(y-0.5*log((tau+s2/st)/(tau+s1/st)));
     tau=sqrt(tau);
     yt=exp(yt);
     m_x[0]=tau*yt;
@@ -261,7 +245,6 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_cmsboost=Poincare(p_cms[0]+p_cms[1]);
   m_cmsboost.Boost(p[0]);
   m_cmsboost.Boost(p[1]);
-  m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   // m_x[0]=p_cms[0].PPlus()/pa.PPlus();
   // m_x[1]=p_cms[1].PMinus()/pb.PMinus();
   if (m_x[0]>=1.0) m_x[0]=1.0-1.0e-12;
@@ -269,120 +252,96 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   return true;
 }
 
-void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
-{
-  m_spkey.Assign("s' isr",4,0,info);
-  m_ykey.Assign("y isr",3,0,info);
-  m_beamspkey.Assign("s' beam",4,0,info);
-  m_beamykey.Assign("y beam",3,0,info);
-  m_xkey.Assign("x isr",5,0,info);
-  m_mu2key[0].Assign("mu2_1",1,0,info);
-  m_mu2key[1].Assign("mu2_2",1,0,info);
-}
-
 void ISR_Handler::Reset() 
 {
   m_splimits[1]=m_fixed_smax*Upper1()*Upper2();
 }
 
-void ISR_Handler::SetLimits() 
+void ISR_Handler::SetLimits(Double_Vector &spkey,Double_Vector &ykey,
+			    Double_Vector &xkey) 
 {
   for (short int i=0;i<3;++i) {
-    m_spkey[i]=m_splimits[i];
-    if (i<2) m_ykey[i]=m_ylimits[i];
+    spkey[i]=m_splimits[i];
+    if (i<2) ykey[i]=m_ylimits[i];
   }
-  m_xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
+  xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
     log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus()));
-  m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
+  xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
     log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus()));
   double e1=p_beam[0]->OutMomentum()[0];
-  m_xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
-			(1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
+  xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+		      (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
   double e2=p_beam[1]->OutMomentum()[0];
-  m_xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
-			(1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
-  m_spkey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
-  m_xkey[1]=log(m_xkey[1]);
-  m_xkey[3]=log(m_xkey[3]);
+  xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
+		      (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
+  spkey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*xkey[1]*xkey[3]);
+  xkey[1]=log(xkey[1]);
+  xkey[3]=log(xkey[3]);
 }
 
-bool ISR_Handler::CalculateWeight(const double scale) 
+double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
+			   double Q12,double Q22,Flavour fl1,Flavour fl2)
 {
-  if (scale>0.0) {
-    m_mu2[0]=m_mu2[1]=scale;
+  if (m_mode==0) return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
+  DEBUG_FUNC("mode = "<<mode);
+  if (fl1.Size()>1 || fl2.Size()>1)
+    THROW(fatal_error,"Do not try to calculate an ISR weight with containers.");
+  if (mode) {
+    p1[3]=-p1[3];
+    p2[3]=-p2[3];
   }
-  else {
-    m_mu2[0]=m_mu2key[0][0];
-    m_mu2[1]=m_mu2key[1][0];
+  double x1(0.),x2(0.);
+  if (p1[3]<0.0 && p2[3]>0.0) {
+    std::swap<Flavour>(fl1,fl2);
+    std::swap<Vec4D>(p1,p2);
+    std::swap<double>(Q12,Q22);
   }
-  if (PDF(0) && (m_mu2[0]<PDF(0)->Q2Min() || m_mu2[0]>PDF(0)->Q2Max()))
+  x1=Min(1.0,p1.PPlus()/p_beam[0]->OutMomentum().PPlus());
+  x2=Min(1.0,p2.PMinus()/p_beam[1]->OutMomentum().PMinus());
+  msg_Debugging()<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
+		 <<p1.PPlus()<<" / "<<p_beam[0]->
+    OutMomentum().PPlus()<<" = "<<x1<<std::endl;
+  msg_Debugging()<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
+		 <<p2.PMinus()<<" / "<<p_beam[1]->
+    OutMomentum().PMinus()<<" = "<<x2<<std::endl;
+  if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max()))
     return 0.;
-  if (PDF(1) && (m_mu2[1]<PDF(1)->Q2Min() || m_mu2[1]>PDF(1)->Q2Max()))
+  if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
     return 0.;
+  MtxLock();
   switch (m_mode) {
-  case 3 :
-    if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor() ||
-	m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) return 0;
-    if (p_isrbase[0]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0]) && 
-	p_isrbase[1]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1])) return 1;
-    break;
-  case 2 :
-    if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) return 0;
-    if (p_isrbase[1]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1])) return 1;
-    break;
-  case 1 :
-    if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) return 0;
-    if (p_isrbase[0]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0])) return 1;
-    break;
-  case 0 : return 1; 
+    case 3 :
+      if (!p_isrbase[0]->PDF()->Contains(fl1) ||
+          !p_isrbase[1]->PDF()->Contains(fl2)) return 0.;
+      if (x1>p_isrbase[0]->PDF()->RescaleFactor() ||
+          x2>p_isrbase[1]->PDF()->RescaleFactor()) return 0.;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12) &&
+          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
+    case 2 :
+      if (!p_isrbase[1]->PDF()->Contains(fl2)) return 0.;
+      if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) return 0.;
+      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
+    case 1 :
+      if (!p_isrbase[0]->PDF()->Contains(fl1)) return 0.;
+      if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) return 0.;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12)) break;
+    case 0 : break;
+    default : MtxUnLock(); return 0.;
   }
-  return 0;
-}
-
-bool ISR_Handler::CalculateWeight2(const double scale) 
-{
-  if (m_mode != 3) { 
-    THROW(fatal_error,"Called for one ISR only.");
+  if (m_mode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
+                    CheckRemnantKinematics(fl2,x2,1,false))) {
+    double f1=p_isrbase[0]->Weight(fl1), f2=p_isrbase[1]->Weight(fl2);
+    MtxUnLock();
+    msg_Debugging()<<"PDF1: "<<rpa.gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
+		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
+    msg_Debugging()<<"PDF2: "<<rpa.gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
+		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
+    double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
+    msg_Debugging()<<"Flux: "<<flux<<std::endl;
+    if (IsBad(f1*f2)) return 0.0;
+    return f1*f2*flux;
   }
-  if (scale>0.0) {
-    m_mu2[0]=m_mu2[1]=scale;
-  }
-  else {
-    m_mu2[0]=m_mu2key[0][0];
-    m_mu2[1]=m_mu2key[1][0];
-  }
-  if (PDF(0) && (m_mu2[1]<PDF(0)->Q2Min() || m_mu2[1]>PDF(0)->Q2Max()))
-    return 0.;
-  if (PDF(1) && (m_mu2[0]<PDF(1)->Q2Min() || m_mu2[0]>PDF(1)->Q2Max()))
-    return 0.;
-  if (m_x[0]>p_isrbase[1]->PDF()->RescaleFactor() ||
-      m_x[1]>p_isrbase[0]->PDF()->RescaleFactor()) return 0;
-  if (p_isrbase[0]->CalculateWeight(m_x[1],0.0,0.0,m_mu2[1]) && 
-      p_isrbase[1]->CalculateWeight(m_x[0],0.0,0.0,m_mu2[0])) { 
-    return 1;
-  }
-  return 0;
-}
-
-double ISR_Handler::Weight(const Flavour *const flin)
-{
-  if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_x[0],0,false) &&
-		    CheckRemnantKinematics(flin[1],m_x[1],1,false))) {
-    m_xf1[0]=p_isrbase[0]->Weight(flin[0]);
-    m_xf2[0]=p_isrbase[1]->Weight(flin[1]);
-    return m_xf1[0]*m_xf2[0]/m_weight;
-  }
-  return 0.;
-}
-
-double ISR_Handler::Weight2(const Flavour *const flin)
-{
-  if (CheckRemnantKinematics(flin[0],m_x[0],1,true) &&
-      CheckRemnantKinematics(flin[1],m_x[1],0,true)) {
-    m_xf1[1]=p_isrbase[0]->Weight(flin[1]);
-    m_xf2[1]=p_isrbase[1]->Weight(flin[0]);
-    return m_xf1[1]*m_xf2[1]/m_weight;
-  }
+  MtxUnLock();
   return 0.;
 }
 

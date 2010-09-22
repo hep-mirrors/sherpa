@@ -50,6 +50,9 @@ namespace PHASIC {
 		  std::vector<std::pair<double,double> > &bounds);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
+    bool JetTrigger(const ATOOLS::Vec4D_Vector &,
+		    ATOOLS::NLO_subevtlist *const);
 
   };// end of class Variable_Selector
 
@@ -288,6 +291,17 @@ Selector_Base *Variable_Selector_Getter::operator()(const Selector_Key &key) con
   vs->SetRange(cflavs,bounds);
   vs->SetProcess(key.p_proc);
   return vs;
+}
+
+bool Variable_Selector::NoJetTrigger(const Vec4D_Vector &p) 
+{
+  return Trigger(p);
+}
+
+bool Variable_Selector::JetTrigger
+(const Vec4D_Vector &,NLO_subevtlist *const)
+{
+  return true;
 }
 
 void Variable_Selector_Getter::PrintInfo

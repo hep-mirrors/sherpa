@@ -70,6 +70,7 @@ void Simple_Chain::Init()
   m_stop[3]=m_stop[2]=0.0;
   m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_xkey.Assign("x isr",5,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
   p_remnants[1]=p_remnants[0]=NULL;
@@ -215,6 +216,10 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
+  if (!p_gridcreator->InitializeCalculation(p_processes)) {
+    msg_Error()<<METHOD<<"(): Initialization failed! Abort."<<std::endl;
+    return false;
+  }
   if (!p_gridcreator->ReadInGrid()) {
     if (MakeDir(OutputPath())==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
@@ -514,7 +519,8 @@ bool Simple_Chain::CreateMomenta()
 			       <<value<<" "<<cur->BinExtra(m_last[0])
 			       <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
 		SetISRRange();
-		p_isr->SetLimits();
+		p_isr->SetLimits(m_spkey.Doubles(),m_ykey.Doubles(),
+				 m_xkey.Doubles());
 		PHASIC::Weight_Info *info=
 		  p_xs->WeightedEvent(PHASIC::psm::no_lim_isr|
 				      PHASIC::psm::no_dice_isr);

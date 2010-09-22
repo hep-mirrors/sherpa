@@ -32,8 +32,10 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 
-Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi) :  
-  Single_LOProcess(pi)
+Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi,
+                                           BEAM::Beam_Spectra_Handler *const beam,
+                                           PDF::ISR_Handler *const isr) :  
+  Single_LOProcess(pi, beam, isr)
 {
   m_ownamps = false;
   m_emitgluon = false;
@@ -422,17 +424,17 @@ Complex Single_LOProcess_MHV::CalculateHelicityPhase(const ATOOLS::Vec4D * mom)
 
 
 double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
-					std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol)
+					std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol,const int mode)
 {
   if (p_partner!=this) {
     if (m_lookup) {
       m_lastxs = p_partner->LastXS()*m_sfactor;
       if (m_lastxs!=0.) return m_lastxs;
     }
-    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol)*m_sfactor;
+    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom);
+  p_scale->CalculateScale(labmom,mode);
 
 #ifdef Basic_Sfuncs_In_MHV
      p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
@@ -458,10 +460,10 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
 
 
 void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				      const ATOOLS::Vec4D *mom, double** dsij) 
+				      const ATOOLS::Vec4D *mom, double** dsij,const int mode) 
 {
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom);
+  p_scale->CalculateScale(labmom,mode);
 #ifdef Basic_Sfuncs_In_MHV
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
 #else

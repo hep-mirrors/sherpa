@@ -75,9 +75,8 @@ namespace AMEGIC {
     std::vector<ATOOLS::Vec4D>* GetDiPolarizations() {return &m_dpollist;}
     std::vector<double>* GetFactors() {return &m_pfactors;}
     dpt::dipoltype GetType() { return m_type;}
-    double Vijf(int type);
-    double Vcijf(int type);
-    double Vif(int type);
+    double Vijf(int type,int mode);
+    double Vif(int type,int mode);
     double Vie1(int type);
     double Vie2(int type);
     double SPFac() { return m_spfdef*p_cpl->Factor(); }
