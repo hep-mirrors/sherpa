@@ -251,21 +251,21 @@ void Cut_Data::Update(double sprime,double y)
   // reset cuts to lab values
   Reset(false);
   // boost from lab to cms
-  Poincare cms(Vec4D(cosh(y),0.0,0.0,sinh(y)));
+  double chy(cosh(y)), shy(sinh(y));
+  Poincare cms[2]={Poincare(Vec4D(chy,0.0,0.0,shy)),
+		   Poincare(Vec4D(chy,0.0,0.0,-shy))};
   for (int a=0;a<2;++a) {
     for (int i=2;i<ncut;i++) {
       if (cosmax[a][i]<1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmax[a][i])),0.0,
-		   a==0?cosmax[a][i]:-cosmax[a][i]);
-	cms.Boost(help);
-	cosmax[a][i]=cosmax[i][a]=(a==0?help[3]:-help[3])/help[0];
+	Vec4D help(1.0,sqrt(1.0-sqr(cosmax[a][i])),0.0,cosmax[a][i]);
+	cms[a].Boost(help);
+	cosmax[a][i]=cosmax[i][a]=help[3]/help[0];
       } 
       else cosmax[a][i] = cosmax[i][a] = 1.0;
       if (cosmin[a][i]>-1.0 && !fl[i].IsMassive()) {
-	Vec4D help(1.0,sqrt(1.0-sqr(cosmin[a][i])),0.0,
-		   a==0?cosmin[a][i]:-cosmin[a][i]);
-	cms.Boost(help);
-	cosmin[a][i]=cosmin[i][a]=(a==0?help[3]:-help[3])/help[0];
+	Vec4D help(1.0,sqrt(1.0-sqr(cosmin[a][i])),0.0,cosmin[a][i]);
+	cms[a].Boost(help);
+	cosmin[a][i]=cosmin[i][a]=help[3]/help[0];
       } 
       else cosmin[a][i] = cosmin[i][a] = -1.0;
       double ct=sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].SelMass()))/
