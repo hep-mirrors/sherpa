@@ -16,6 +16,7 @@ ostream& CSSHOWER::operator<<(std::ostream& str, Splitting_Function_Group &group
 }
 
 Splitting_Function_Group::~Splitting_Function_Group() {
+  if (m_splittings.size()==0) return;
   m_splitter=m_splittings.begin();
   do {
     if (*m_splitter) { delete (*m_splitter); (*m_splitter=NULL); }
