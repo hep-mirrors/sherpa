@@ -534,6 +534,10 @@ bool Initialization_Handler::InitializeThePDFs()
       defset[beam]="mstw2008nlo";
       defpath="MSTW08Grid";
     }
+    else if (m_pdflib[beam]=="PDFESherpa") {
+      defset[beam]="PDFe";
+      defpath="";
+    }
     if (beam==0 || m_pdflib[1]!=m_pdflib[0]) {
       void *init(s_loader->GetLibraryFunction(m_pdflib[beam],"InitPDFLib"));
       if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
