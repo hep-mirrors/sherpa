@@ -64,10 +64,11 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
 using namespace ATOOLS;
 using namespace std;
 
-Three_Particle_Observable_Base::Three_Particle_Observable_Base(const Flavour & flav1,const Flavour & flav2,
-							       const Flavour & flav3,int type,double xmin,
-							       double xmax,int nbins,const std::string & listname,
-							       const std::string & name) :
+Three_Particle_Observable_Base::
+Three_Particle_Observable_Base(const Flavour & flav1,const Flavour & flav2,
+			       const Flavour & flav3,int type,double xmin,
+			       double xmax,int nbins,const std::string & listname,
+			       const std::string & name) :
   Primitive_Observable_Base(type,xmin,xmax,nbins), 
   m_flav1(flav1), m_flav2(flav2), m_flav3(flav3)
 {
@@ -302,5 +303,87 @@ void Three_Particle_3EnergyCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,c
 Primitive_Observable_Base * Three_Particle_3EnergyCMS::Copy() const
 {
     return new Three_Particle_3EnergyCMS(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_Correlation,Three_Particle_Correlation_Getter,"Correlation")
+
+Three_Particle_Correlation::
+Three_Particle_Correlation(const Flavour & flav1,const Flavour & flav2,
+			   const Flavour & flav3,int type,
+			   double xmin,double xmax,int nbins,const std::string & listname) :
+Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"Correlation")
+{ 
+  p_histo10  = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  p_histo20  = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  p_histo50  = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  p_histo100 = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
+}
+
+Three_Particle_Correlation::~Three_Particle_Correlation() {
+  p_histo10->Finalize();
+  p_histo10->Output((std::string("Anna/")+m_name+std::string("10")).c_str());
+
+  p_histo20->Finalize();
+  p_histo20->Output((std::string("Anna/")+m_name+std::string("20")).c_str());
+
+  p_histo50->Finalize();
+  p_histo50->Output((std::string("Anna/")+m_name+std::string("50")).c_str());
+
+  p_histo100->Finalize();
+  p_histo100->Output((std::string("Anna/")+m_name+std::string("100")).c_str());
+
+}
+
+void Three_Particle_Correlation::
+Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, double ncount)
+{ 
+  double eta1 = mom1.Eta();
+  double eta2 = mom2.Eta();
+  double eta3 = mom3.Eta();
+  if (ATOOLS::dabs(eta1)>2. || ATOOLS::dabs(eta2)>2. || ATOOLS::dabs(eta3)>2.) return;
+  double phi1 = mom1.Phi();
+  double phi2 = mom2.Phi();
+  double phi3 = mom3.Phi();
+
+  double delta12 = ATOOLS::dabs(phi1-phi2); delta12 = ATOOLS::Min(delta12,2.*M_PI-delta12);
+  double delta23 = ATOOLS::dabs(phi2-phi3); delta23 = ATOOLS::Min(delta23,2.*M_PI-delta23); 
+  double delta31 = ATOOLS::dabs(phi3-phi1); delta31 = ATOOLS::Min(delta31,2.*M_PI-delta31); 
+
+  if (ATOOLS::dabs(eta1-eta2)>2.) p_histo->Insert(delta12,weight,ncount);
+  if (ATOOLS::dabs(eta2-eta3)>2.) p_histo->Insert(delta23,weight,ncount);
+  if (ATOOLS::dabs(eta3-eta1)>2.) p_histo->Insert(delta31,weight,ncount);
+
+  if (mom1.PPerp()>10. || mom2.PPerp()>10. || mom3.PPerp()>10.) {
+    if (ATOOLS::dabs(eta1-eta2)>2.) p_histo10->Insert(delta12,weight,ncount);
+    if (ATOOLS::dabs(eta2-eta3)>2.) p_histo10->Insert(delta23,weight,ncount);
+    if (ATOOLS::dabs(eta3-eta1)>2.) p_histo10->Insert(delta31,weight,ncount);
+  }
+
+  if (mom1.PPerp()>20. || mom2.PPerp()>20. || mom3.PPerp()>20.) {
+    if (ATOOLS::dabs(eta1-eta2)>2.) p_histo20->Insert(delta12,weight,ncount);
+    if (ATOOLS::dabs(eta2-eta3)>2.) p_histo20->Insert(delta23,weight,ncount);
+    if (ATOOLS::dabs(eta3-eta1)>2.) p_histo20->Insert(delta31,weight,ncount);
+  }
+
+  if (mom1.PPerp()>50. || mom2.PPerp()>50. || mom3.PPerp()>50.) {
+    if (ATOOLS::dabs(eta1-eta2)>2.) p_histo50->Insert(delta12,weight,ncount);
+    if (ATOOLS::dabs(eta2-eta3)>2.) p_histo50->Insert(delta23,weight,ncount);
+    if (ATOOLS::dabs(eta3-eta1)>2.) p_histo50->Insert(delta31,weight,ncount);
+  }
+
+  if (mom1.PPerp()>100. || mom2.PPerp()>100. || mom3.PPerp()>100.) {
+    if (ATOOLS::dabs(eta1-eta2)>2.) p_histo100->Insert(delta12,weight,ncount);
+    if (ATOOLS::dabs(eta2-eta3)>2.) p_histo100->Insert(delta23,weight,ncount);
+    if (ATOOLS::dabs(eta3-eta1)>2.) p_histo100->Insert(delta31,weight,ncount);
+  }
+} 
+
+Primitive_Observable_Base * Three_Particle_Correlation::Copy() const
+{
+  return new Three_Particle_Correlation(m_flav1,m_flav2,m_flav3,m_type,
+					m_xmin,m_xmax,m_nbins,m_listname);
 }
 
