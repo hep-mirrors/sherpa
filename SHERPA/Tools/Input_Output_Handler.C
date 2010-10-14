@@ -12,6 +12,7 @@
 #include "SHERPA/Tools/Output_HepEvt.H"
 #include "SHERPA/Tools/Output_D0_HepEvt.H"
 #include "SHERPA/Tools/HepEvt_Interface.H"
+#include "SHERPA/Tools/Output_LHEF.H"
 #ifdef USING__HEPMC2
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include "HepMC/GenEvent.h"
@@ -60,6 +61,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string hepevtoutput=dr->GetValue<string>("HEPEVT_OUTPUT",string(""));
   string d0hepevtoutput=dr->GetValue<string>("D0_HEPEVT_OUTPUT",string(""));
   string hepmc2genevent=dr->GetValue<string>("HEPMC2_GENEVENT_OUTPUT",string(""));
+  string lheoutput=dr->GetValue<string>("LHEF_OUTPUT",string(""));
   string hepmc2short=dr->GetValue<string>("HEPMC2_SHORT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
     ("EVT_FILE_PATH",rpa.gen.Variable("SHERPA_RUN_PATH"));
@@ -87,6 +89,10 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   if (!d0hepevtoutput.empty()) {
     m_outmap["D0_HEPEVT"]=
       new Output_D0_HepEvt(evtpath+"/"+d0hepevtoutput,".d0.hepevt", precision);
+  }
+  if (!lheoutput.empty()) {
+    m_outmap["LHEF"]=
+      new Output_LHEF(evtpath+"/"+lheoutput,".lhe", precision);
   }
   if (!hepmc2genevent.empty()) {
 #ifdef USING__HEPMC2
@@ -137,7 +143,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 #endif
   }
   if (!msg_LevelIsEvents()) return;
-  if (m_outmode=="Sherpa") {
+  if (m_outmode=="Sherpa" || m_outmode=="LHEF") {
     if (!blobs->empty()) {
       msg_Out()<<"  -------------------------------------------------  "<<std::endl;
       for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 

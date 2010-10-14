@@ -16,6 +16,7 @@ libSherpaTools_la_SOURCES     =	\
 				Output_HepEvt.C \
 				Output_RootNtuple.C \
 				Output_D0_HepEvt.C \
+				Output_LHEF.C \
 			    	$(HEPMC2SOURCES) \
 			    	HepEvt_Interface.C \
 				Pythia_HepEvt_Translator.C \
@@ -30,6 +31,7 @@ localinc_HEADERS      =	\
 			Output_HepEvt.H \
 			Output_D0_HepEvt.H \
 			Output_RootNtuple.H \
+			Output_LHEF.H \
 		 	$(HEPMC2HEADERS) \
 			HepEvt_Interface.H \
 			Pythia_HepEvt_Translator.H \

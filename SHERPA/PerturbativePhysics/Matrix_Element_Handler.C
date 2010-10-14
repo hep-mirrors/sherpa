@@ -48,6 +48,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else m_eventmode=0;
+  //need for LHE-output
+  rpa.gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
   if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
   else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
   std::string seedfile;
