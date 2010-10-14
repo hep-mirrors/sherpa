@@ -698,7 +698,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
         *)  if test -d "${enableval}"; then
-              if test -f "${enableval}/lib/libkernlib.a"; then
+              if test -f "${enableval}/lib/libkernlib_noshift.a"; then
+                CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib_noshift.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib_noshift.a"
+                cernlib=true;
+                AC_MSG_RESULT(${enableval});
+              elif test -f "${enableval}/lib/libkernlib.a"; then
                 CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib.a"
                 cernlib=true;
                 AC_MSG_RESULT(${enableval});
