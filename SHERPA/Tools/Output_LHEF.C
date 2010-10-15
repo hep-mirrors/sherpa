@@ -1,7 +1,7 @@
-#include "Output_LHEF.H"
-#include "CXXFLAGS.H"
+#include "SHERPA/Tools/Output_LHEF.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
 #include <iomanip>
