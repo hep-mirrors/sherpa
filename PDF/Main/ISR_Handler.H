@@ -60,7 +60,7 @@ namespace PDF {
     ~ISR_Handler();
 
     // member functions
-    void Init(double *splimits,double *kplimits);
+    void Init(double *splimits);
 
     void SetPDFMember() const;
 

@@ -613,13 +613,10 @@ bool Initialization_Handler::InitializeThePDFs()
     }
     m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",1e-10);
     m_bunch_splimits[1] = dataread.GetValue<double>("ISR_SMAX",1.);
-    double kplimits[2];
-    kplimits[0] = dataread.GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
-    kplimits[1] = dataread.GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
     m_isrhandlers[id] = new ISR_Handler(isrbases);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
-    m_isrhandlers[id]->Init(m_bunch_splimits,kplimits);
+    m_isrhandlers[id]->Init(m_bunch_splimits);
     if (i==0)
       msg_Info()<<"Initialized the ISR: "<<m_isrhandlers[id]->Type()<<endl;
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {

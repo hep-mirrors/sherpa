@@ -72,7 +72,7 @@ ISR_Handler::~ISR_Handler()
     if (p_remnants[i]!=NULL) delete p_remnants[i];
 }
 
-void ISR_Handler::Init(double *splimits,double *kplimits) 
+void ISR_Handler::Init(double *splimits) 
 {
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
