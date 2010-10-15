@@ -635,7 +635,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   }
   else {
     double m[2]={fl[0].Mass(),fl[1].Mass()};
-    double E=0.5*rpa.gen.Ecms();
+    double E=rpa.gen.Ecms();
     if (info->m_fi.m_ps.size()==1)
       E=info->m_fi.m_ps.front().m_fl.Mass();
     if (E<m[0]+m[1]) return;
