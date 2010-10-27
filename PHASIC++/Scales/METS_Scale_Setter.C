@@ -54,7 +54,8 @@ namespace PHASIC {
     CS_Params(const size_t &i,const size_t &j,
 	      const size_t &k,const ATOOLS::Flavour &fl):
       m_i(i),m_j(j), m_k(k), m_oqcd(0), m_fl(fl),
-      m_kt2(-1.0), m_op2(0.0), m_mu2(-1.0), m_z(0.0), m_y(0.0) {}
+      m_kt2(-1.0), m_op2(-std::numeric_limits<double>::max()),
+      m_mu2(-1.0), m_z(0.0), m_y(0.0) {}
     bool operator<(const CS_Params &ck) const
     { 
       if (m_i<ck.m_i) return true;
@@ -330,7 +331,9 @@ double METS_Scale_Setter::CalculateMyScale
     std::set<CS_Params> &trials(alltrials[ampl->Legs().size()-5]);
     size_t iw(0), jw(0), kw(0);
     CS_Params ckw(0,0,0,kf_none);
+    msg_Debugging()<<"Weights: {\n";
     for (size_t i(0);i<ampl->Legs().size();++i) {
+      msg_Indent();
       Cluster_Leg *li(ampl->Leg(i));
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
 	Cluster_Leg *lj(ampl->Leg(j));
@@ -364,6 +367,9 @@ double METS_Scale_Setter::CalculateMyScale
 	      if (m_rproc && ampl->Prev()==NULL) cs.m_op2=
 		1.0/Jet_Finder::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 				     kf_gluon,kf_gluon);
+	      msg_Debugging()<<ID(cs.m_i)<<" & "<<ID(cs.m_j)<<" <-> "
+			     <<ID(cs.m_k)<<" ["<<cf[f]
+			     <<"]: "<<cs.m_op2<<" -> ";
 	      if (cf[f].Strong() &&
 		  li->Flav().Strong() &&
 		  lj->Flav().Strong()) {
@@ -398,6 +404,7 @@ double METS_Scale_Setter::CalculateMyScale
 		  }
 		}
 	      }
+	      msg_Debugging()<<cs.m_op2<<"\n";
 	      if (cs.m_op2>ckw.m_op2) {
 		ckw=cs;
 		iw=i;
@@ -409,6 +416,7 @@ double METS_Scale_Setter::CalculateMyScale
 	}
       }
     }
+    msg_Debugging()<<"}\n";
     trials.insert(ckw);
     if (iw==0 && jw==0 && kw==0) {
       if (ords[ampl->Legs().size()-5]) {
@@ -456,13 +464,14 @@ double METS_Scale_Setter::CalculateMyScale
     ampl->SetMu2(ckw.m_mu2>0.0?ckw.m_mu2:ckw.m_kt2);
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
-    ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    if (!Combine(*ampl,iw,jw,kw,ckw)) {
+    if (!Combine(*ampl,iw,jw,kw,ckw) ||
+	ampl->OrderQCD()<ckw.m_oqcd) {
       msg_Debugging()<<"combine failed\n";
       ampl=ampl->Prev();
       ampl->DeleteNext();
       continue;
     }
+    ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
     ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
     Vec4D psum;
@@ -545,7 +554,7 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
       if (pureres) break;
     }
   }
-  double kt2cmin(s_kt2max);
+  double kt2cmin(sqr(rpa.gen.Ecms()));
   if (pureres) {
     kt2cmin=Max(m_p[2].MPerp2(),m_p[3].MPerp2());
   }
