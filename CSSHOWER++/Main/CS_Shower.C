@@ -40,7 +40,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   
   int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
   if (_qed==1) {
-    Flavour(kf_photon).SetResummed();
+    s_kftable[kf_photon]->SetResummed();
   }
   p_shower = new Shower(_isr,_qed,_dataread);
   

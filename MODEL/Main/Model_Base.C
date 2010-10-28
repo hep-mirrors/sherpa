@@ -27,6 +27,11 @@ Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
   p_vertextable(NULL)
 {
+  p_dataread = new Data_Reader(" ",";","!","=");
+  p_dataread->AddComment("#");
+  p_dataread->AddWordSeparator("\t");
+  p_dataread->SetInputPath(m_dir);
+  p_dataread->SetInputFile(m_file);
 }
 
 Model_Base::~Model_Base() 
@@ -172,6 +177,43 @@ void Model_Base::ReadParticleData() {
   }
 }
 
+void Model_Base::CustomContainerInit()
+{
+  DEBUG_FUNC("");
+  std::vector<std::vector<std::string> > helpsvv;
+  if (!p_dataread->MatrixFromFile(helpsvv,"PARTICLE_CONTAINER")) return;
+  for (size_t i(0);i<helpsvv.size();++i) {
+    if (helpsvv[i].size()<3) continue;
+    std::string props, kfs(helpsvv[i][0]);
+    size_t opos(kfs.find('['));
+    if (opos<std::string::npos) {
+      props=kfs.substr(opos+1,kfs.find(']')-opos-1);
+      kfs=kfs.substr(0,opos);
+    }
+    long int nkf(ToType<long int>(kfs));
+    if (s_kftable.find(nkf)!=s_kftable.end())
+      THROW(critical_error,"Particle ID "+helpsvv[i][0]+" already exists.");
+    msg_Debugging()<<helpsvv[i][1]<<" ("<<nkf<<") ["<<props<<"] = {";
+    Data_Reader ppread("|",";","#",":");
+    ppread.SetAddCommandLine(false);
+    ppread.SetString(props);
+    s_kftable[nkf] = new Particle_Info
+      (nkf,0.0,0.0,
+       ppread.StringValue<int>("C",0),//ICharge
+       ppread.StringValue<int>("I",0),//Isoweak
+       ppread.StringValue<int>("Q",0),//Strong
+       ppread.StringValue<int>("S",0),//Spin
+       ppread.StringValue<int>("M",0),//Majorana
+       1,1,0,helpsvv[i][1],helpsvv[i][1]);
+    s_kftable[nkf]->Clear();
+    for (size_t j(2);j<helpsvv[i].size();++j) {
+      msg_Debugging()<<" "<<helpsvv[i][j];
+      long int kfc(ToType<long int>(helpsvv[i][j]));
+      s_kftable[nkf]->Add(Flavour((kf_code)abs(kfc),kfc<0));
+    }
+    msg_Debugging()<<" }\n";
+  }
+}
 
 void Model_Base::InitializeInteractionModel()
 {

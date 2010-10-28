@@ -128,6 +128,7 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
   Model_Base(_dir,_file,_elementary), m_trivialextension(_trivialextension)
 {
   ParticleInit();
+  CustomContainerInit();
   if (m_elementary) {
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
@@ -194,8 +195,6 @@ void Standard_Model::ParticleInit() {
     Particle_Info(kf_resummed,0.,0.,0,0,1,2,1,1,1,0,"r","resummed");
   s_kftable[kf_bjet] = new
     Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet");
-  s_kftable[kf_cjet] = new
-    Particle_Info(kf_cjet,0.,0.,0,0,1,2,0,1,1,0,"cj","cjet");
 
   s_kftable[kf_fermion] = new
     Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion");
@@ -219,8 +218,6 @@ void Standard_Model::ParticleInit() {
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
-      addit.SetResummed();
-      addit.Bar().SetResummed();
       s_kftable[kf_quark]->Add(addit);
       s_kftable[kf_quark]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
@@ -228,8 +225,7 @@ void Standard_Model::ParticleInit() {
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
-  Flavour(kf_jet).SetResummed();
-  Flavour(kf_gluon).SetResummed();
+  s_kftable[kf_jet]->SetResummed();
   for (int i=11;i<17+(m_trivialextension==2?2:0);i+=2) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
@@ -250,12 +246,8 @@ void Standard_Model::ParticleInit() {
   }
 }
 
-void Standard_Model::FillSpectrum() {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
+void Standard_Model::FillSpectrum()
+{
   FixEWParameters();  
   FixCKM();
   p_constants->insert(std::make_pair(std::string("Yukawa_e"), 

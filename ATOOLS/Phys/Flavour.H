@@ -68,6 +68,8 @@ namespace ATOOLS {
     inline size_t Size() const  { return m_content.size();   }
     inline bool   Group() const { return m_content.size()>1; }
 
+    void SetResummed();
+
   };// end of class Particle_Info
 
   typedef std::map<kf_code,Particle_Info*> KFCode_ParticleInfo_Map;
@@ -158,9 +160,6 @@ namespace ATOOLS {
 
     inline void SetIntCharge(const int icharge) const 
     { p_info->m_icharge=icharge; }
-
-    inline void SetResummed() const 
-    { p_info->m_resummed=true; s_kftable[kf_resummed]->Add(*this); }
 
     inline int    IntCharge() const
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }

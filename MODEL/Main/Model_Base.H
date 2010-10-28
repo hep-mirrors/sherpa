@@ -63,6 +63,8 @@ namespace MODEL {
     Vertex                  * p_vertex;
     Vertex_Table            * p_vertextable;
 
+    void CustomContainerInit();
+
     virtual void ParticleInit() = 0;
     virtual void FillSpectrum() = 0;
     void ReadParticleData();

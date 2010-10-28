@@ -37,12 +37,8 @@ void FeynRules_Model_Getter::PrintInfo(std::ostream &str,const size_t width) con
 FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elementary) :
   Model_Base(_dir,_file,_elementary)
 {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
   ParticleInit();
+  CustomContainerInit();
   if (m_elementary) {
     msg_Info()<<"\n";
     ATOOLS::OutputParticles(msg->Info());
@@ -141,8 +137,6 @@ void FeynRules_Model::ParticleInit() {
     if (addit.Mass()==0.0 || !addit.IsMassive() && addit.IsOn()) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
-      addit.SetResummed();
-      addit.Bar().SetResummed();
       s_kftable[kf_quark]->Add(addit);
       s_kftable[kf_quark]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);
@@ -150,8 +144,7 @@ void FeynRules_Model::ParticleInit() {
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
-  Flavour(kf_gluon).SetResummed();
-  Flavour(kf_photon).SetResummed();
+  s_kftable[kf_jet]->SetResummed();
   for (int i=11;i<17;i+=2) {
     Flavour addit((kf_code)i);
     if (addit.Mass()==0.0 || !addit.IsMassive() && addit.IsOn()) {

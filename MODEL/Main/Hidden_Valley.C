@@ -83,11 +83,6 @@ void HiddenValley::ParticleInit() {
 }
 
 void HiddenValley::FillSpectrum() {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
 
   int    order_alpha_HV = p_dataread->GetValue<int>("ORDER_ALPHA_HV",1);
   double alpha_HV       = p_dataread->GetValue<double>("ALPHA_HV(MZ)",0.118);

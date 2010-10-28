@@ -72,11 +72,6 @@ void SM_AxiGluon::ParticleInit() {
 }
 
 void SM_AxiGluon::FillSpectrum() {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
   p_constants->insert(make_pair(string("MASS_AXI"),    
 				p_dataread->GetValue<double>("MASS_AXIGLUON",1000.)));
   Flavour flav = Flavour(61);

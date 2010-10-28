@@ -71,10 +71,6 @@ void ADD::ParticleInit() {
 }
 
 void ADD::FillSpectrum() {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
 
   
   p_constants->insert(std::make_pair(std::string("G_Newton"), 
