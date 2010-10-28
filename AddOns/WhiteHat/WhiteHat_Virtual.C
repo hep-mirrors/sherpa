@@ -21,7 +21,7 @@ WhiteHat_Virtual::WhiteHat_Virtual(const Process_Info& pi,
 
 WhiteHat_Virtual::~WhiteHat_Virtual()
 {
-  if (p_ampl) delete p_ampl;
+  // if (p_ampl) delete p_ampl;
 }
 
 void WhiteHat_Virtual::InitInterface(Model_Base *model)
