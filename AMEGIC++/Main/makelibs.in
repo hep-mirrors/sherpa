@@ -78,17 +78,7 @@ for J in $DIRS ; do
   echo "$J";
   echo "======================"
   cd $J 
-  if test -x "$(which libtoolize)"; then
-      libtoolize --force;
-  elif test -x "$(which glibtoolize)"; then
-      glibtoolize --force;
-  else
-    echo "Error: libtoolize not found."
-    exit 1
-  fi
-  aclocal
-  automake -a
-  autoconf
+  autoreconf -fi
   ./configure
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
   if ! make install -j $JOBS; then

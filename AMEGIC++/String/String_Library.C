@@ -32,8 +32,8 @@ void String_Library::UpdateConfigure(std::string pathID)
     ofstream file(name.c_str());
 
     file<<"dnl Process this file with autoconf to produce a configure script."<<endl;
-    file<<"AC_INIT"<<endl; 
-    file<<"AM_INIT_AUTOMAKE("<<base<<",1.0)"<<endl;
+    file<<"AC_INIT("<<base<<",1.0)"<<endl; 
+    file<<"AM_INIT_AUTOMAKE"<<endl;
     file<<"AM_DISABLE_STATIC"<<endl;
     file<<"AC_PREFIX_DEFAULT("<<ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")
 	<<"/Process)"<<endl;
