@@ -277,6 +277,12 @@ void Initialization_Handler::ShowParameterSyntax()
     PDF::Shower_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+  if (!read.ReadFromFile(helpi,"SHOW_SCALE_SYNTAX")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    PHASIC::Scale_Setter_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
   if (!read.ReadFromFile(helpi,"SHOW_SELECTOR_SYNTAX")) helpi=0;
   if (helpi>0) {
     msg->SetLevel(2);

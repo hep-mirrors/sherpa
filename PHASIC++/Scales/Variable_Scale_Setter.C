@@ -49,7 +49,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void Variable_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"variable scale scheme\n";
+  str<<"variable scale scheme";
 }
 
 Variable_Scale_Setter::Variable_Scale_Setter

@@ -40,7 +40,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void MPI_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"mpi scale scheme\n";
+  str<<"mpi scale scheme";
 }
 
 MPI_Scale_Setter::MPI_Scale_Setter(const Scale_Setter_Arguments &args):

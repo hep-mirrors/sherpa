@@ -151,7 +151,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void Loose_METS_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"loose mets scale scheme\n";
+  str<<"loose mets scale scheme";
 }
 
 DECLARE_GETTER(METS_Scale_Setter_Getter,"METS",
@@ -166,7 +166,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void METS_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"mets scale scheme\n";
+  str<<"mets scale scheme";
 }
 
 DECLARE_GETTER(Strict_METS_Scale_Setter_Getter,"STRICT_METS",
@@ -181,7 +181,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void Strict_METS_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"strict mets scale scheme\n";
+  str<<"strict mets scale scheme";
 }
 
 double METS_Scale_Setter::s_eps=1.0e-6;

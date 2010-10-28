@@ -109,7 +109,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void QCD_Scale_Setter_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"qcd scale scheme\n";
+  str<<"qcd scale scheme";
 }
 
 QCD_Scale_Setter::QCD_Scale_Setter(const Scale_Setter_Arguments &args):
