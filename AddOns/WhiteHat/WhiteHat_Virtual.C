@@ -2,6 +2,7 @@
 
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "whitehat/BH_error.h"
 
 using namespace WHITEHAT;
@@ -29,7 +30,9 @@ void WhiteHat_Virtual::InitInterface(Model_Base *model)
   WhiteHat_Virtual::s_model=model;
   if (s_interface==NULL) {
     msg_Info()<<"Initialising WhiteHat interface {"<<std::endl;
-    s_interface=new BH::BH_interface();
+    Data_Reader reader(" ",";","!","=");
+    s_interface=new BH::BH_interface
+      (reader.GetValue<std::string>("BH_SETTINGS_FILE",std::string("")));
     s_interface->set("Z_mass",Flavour(kf_Z).Mass());
     s_interface->set("Z_width",Flavour(kf_Z).Width());
     s_interface->set("W_mass",Flavour(kf_Wplus).Mass());
