@@ -73,17 +73,18 @@ if echo "@host@" | grep -q "i686"; then
 fi
 
 for J in $DIRS ; do
-  echo "."
   echo "======================"
   echo "$J";
   echo "======================"
   cd $J 
+  if test -f configure.in; then
   autoreconf -fi
   ./configure
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
   if ! make install -j $JOBS; then
     echo "makeinstall: error: \"make install\" in $I failed"
     exit 1
+  fi
   fi
   cd ../..
 done
