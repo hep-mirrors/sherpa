@@ -76,7 +76,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     p_testmoms = new Vec4D[m_nin+m_nout];
     Phase_Space_Handler::TestPoint(p_testmoms,&Info());
     Vec4D sum;
-    Poincare lab(Vec4D::ZVEC,Vec4D(sqrt(10.0),0.0,0.0,1.0));
+    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
     msg_Debugging()<<"After boost:\n";
     for (size_t i(0);i<m_nin+m_nout;++i) {
       lab.Boost(p_testmoms[i]);
