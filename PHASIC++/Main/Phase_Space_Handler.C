@@ -627,14 +627,14 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 				    const Process_Info *info)
 {
   DEBUG_FUNC("");
-  Flavour_Vector fl(info->m_ii.GetExternal());
-  Vec4D_Vector cp(fl.size());
-  if (fl.size()==1) {
-    p[0]=cp[0]=Vec4D(fl[0].Mass(),0.0,0.0,0.0);
+  Flavour_Vector fl_i(info->m_ii.GetExternal());
+  Vec4D_Vector cp(fl_i.size());
+  if (fl_i.size()==1) {
+    p[0]=cp[0]=Vec4D(fl_i[0].Mass(),0.0,0.0,0.0);
     msg_Debugging()<<"p[0] = "<<p[0]<<"\n";
   }
   else {
-    double m[2]={fl[0].Mass(),fl[1].Mass()};
+    double m[2]={fl_i[0].Mass(),fl_i[1].Mass()};
     double E=rpa.gen.Ecms();
     if (info->m_fi.m_ps.size()==1)
       E=info->m_fi.m_ps.front().m_fl.Mass();
@@ -644,8 +644,25 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     p[1]=cp[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
     msg_Debugging()<<"p[0] = "<<p[0]<<"\np[1] = "<<p[1]<<"\n";
   }
-  size_t n(fl.size());
-  TestPoint(p,cp,fl,&info->m_fi,n);
+  
+  unsigned int osd_counter=0;
+  for (size_t i=0;i<info->m_fi.GetDecayInfos().size();i++)
+    if (info->m_fi.GetDecayInfos()[i].m_osd) osd_counter++;  
+    
+  if (osd_counter==info->m_fi.GetDecayInfos().size()) {
+    size_t n(fl_i.size());
+    TestPoint(p,cp,fl_i,&info->m_fi,n);
+  }
+  else {
+    Flavour_Vector fl_f(info->m_fi.GetExternal());
+    Flavour_Vector fl_tot(fl_i);
+    fl_tot.insert(fl_tot.end(),fl_f.begin(),fl_f.end());
+    //
+    Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front());
+    TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
+    //
+    delete TestCh;
+  }
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
