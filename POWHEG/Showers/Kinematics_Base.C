@@ -135,6 +135,8 @@ int Kinematics_FF::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
@@ -212,6 +214,8 @@ int Kinematics_FI::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
@@ -287,6 +291,8 @@ int Kinematics_IF::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
@@ -361,6 +367,8 @@ int Kinematics_IF::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
@@ -433,6 +441,8 @@ int Kinematics_II::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
@@ -491,6 +501,8 @@ int Kinematics_II::MakeKinematics
     split->SetFlavour(sfi);
     if (jet) {
       msg_Debugging()<<"--- Jet veto ---\n\n";
+      delete pc;
+      pc=NULL;
       return 0;
     }
   }
