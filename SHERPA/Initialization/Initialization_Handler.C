@@ -102,6 +102,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   SetFileNames();
 
+  ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",1));
+
   rpa.Init(m_path,m_file,argc,argv);
   LoadLibraries();
   ShowParameterSyntax();

@@ -16,7 +16,7 @@ using namespace ATOOLS;
 
 Library_Loader *ATOOLS::s_loader(NULL);
 
-Library_Loader::Library_Loader(): m_wait(3600)
+Library_Loader::Library_Loader(): m_wait(3600), m_check(true)
 {
   m_paths=EnvironmentVariable(LD_PATH_NAME);
   m_paths.push_back(rpa.gen.Variable("SHERPA_LIBRARY_PATH"));
@@ -24,6 +24,10 @@ Library_Loader::Library_Loader(): m_wait(3600)
 
 bool Library_Loader::CreateLockFile(const std::string &lockname)
 {
+  if (!m_check) {
+    msg_Debugging()<<"not checking lock file"<<std::endl;
+  }
+  else {
   msg_Debugging()<<"checking lock file '"<<lockname<<"' ... "<<std::flush;
   struct stat buffer;
   if (!stat(lockname.c_str(),&buffer)) {
@@ -44,6 +48,7 @@ bool Library_Loader::CreateLockFile(const std::string &lockname)
     }
   }
   msg_Debugging()<<" not found"<<std::endl;
+  }
   msg_Debugging()<<"creating lock file '"<<lockname<<"' ... "<<std::flush;
   std::ofstream *lock(new std::ofstream(lockname.c_str()));
   delete lock;
