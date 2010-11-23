@@ -61,7 +61,7 @@ void Model_Base::GetCouplings(Coupling_Map &cpls) const
 	 cit(p_functions->begin());cit!=p_functions->end();++cit) {
     std::string tag(cit->second->Name());
     cpls[tag] = new Coupling_Data
-      (cit->second,tag,(*cit->second)(rpa.gen.CplScale()));
+      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa.gen.CplScale()));
     msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls[tag]<<")"<<*cpls[tag]<<"\n";
   }
 }
