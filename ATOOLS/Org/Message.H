@@ -7,6 +7,10 @@
 #include <fstream>
 #include <set>
 #include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__Threading
+#include <pthread.h>
+#endif
 
 namespace ATOOLS {
 
@@ -88,15 +92,18 @@ namespace ATOOLS {
   class indentbuf : public std::streambuf {
   public:
     indentbuf(std::streambuf* basebuf);
-    inline void Indent(size_t i=2) { m_indent+=i; }
-    inline void DeIndent(size_t i=2) { if (m_indent>=i) m_indent-=i; }
-    inline void Reset() { m_indent=0; }
+    ~indentbuf();
+    void Indent(size_t i=2);
+    void DeIndent(size_t i=2);
     inline std::streambuf* BaseBuf() { return m_basebuf; }
 
   protected:
     std::streambuf* m_basebuf;
     size_t m_indent;
     bool at_start;
+#ifdef USING__Threading
+    pthread_mutex_t m_mtx;
+#endif
 
     int_type overflow(int_type ch);
     inline int sync() { return m_basebuf->pubsync(); }
