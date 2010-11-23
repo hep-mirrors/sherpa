@@ -25,10 +25,6 @@ WhiteHat_Tree::WhiteHat_Tree(const Process_Info& pi,
     if (flavs[i].Strong()) ++nqcd;
   m_oqcd=nqcd-2;
   m_oew=flavs.size()-m_oqcd-2;
-  m_asfac=s_model->ScalarFunction("alpha_S",rpa.gen.CplScale())/
-    s_model->ScalarFunction("alpha_S",sqr(Flavour(kf_Z).Mass()));
-  m_afac=s_model->ScalarFunction("alpha_QED",rpa.gen.CplScale())/
-    s_model->ScalarFunction("alpha_QED",sqr(Flavour(kf_Z).Mass()));
 }
 
 WhiteHat_Tree::~WhiteHat_Tree()
@@ -38,8 +34,14 @@ WhiteHat_Tree::~WhiteHat_Tree()
 
 void WhiteHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
 {
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
-  if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
+  if (cpls->find("Alpha_QCD")!=cpls->end()) {
+    p_aqcd=(*cpls)["Alpha_QCD"];
+    m_asfac=p_aqcd->Default()/s_model->ScalarFunction("alpha_S");
+  }
+  if (cpls->find("Alpha_QED")!=cpls->end()) {
+    p_aqed=(*cpls)["Alpha_QED"];
+    m_afac=p_aqed->Default()/s_model->ScalarFunction("alpha_QED");
+  }
 }
 
 double WhiteHat_Tree::CouplingFactor(const int oqcd,const int oew) const
