@@ -133,14 +133,15 @@ void FastJet_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList    list\n"
      <<std::setw(width+7)<<" "<<"OutList   list\n"
-     <<std::setw(width+7)<<" "<<"NJets     #jets (0 for inclusive mode)\n"
-     <<std::setw(width+7)<<" "<<"PTMin     ptmin (default is 0)\n"
-     <<std::setw(width+7)<<" "<<"Algorithm algorithm\n"
-     <<std::setw(width+7)<<" "<<"Scheme    scheme\n"
-     <<std::setw(width+7)<<" "<<"R         R\n"
-     <<std::setw(width+7)<<" "<<"p         p\n"
-     <<std::setw(width+7)<<" "<<"Strategy  strategy\n"
-     <<std::setw(width+7)<<"}";
+     <<std::setw(width+7)<<" "<<"NJets     #jets (default 0 -> inclusive mode)\n"
+     <<std::setw(width+7)<<" "<<"PTMin     ptmin (default 0)\n"
+     <<std::setw(width+7)<<" "<<"Algorithm algorithm [kt|antikt|cambridge|siscone] (default kt)\n"
+     <<std::setw(width+7)<<" "<<"Scheme    scheme [E|pt|pt2|Et|Et2|BIpt|BIpt2] (default E)\n"
+     <<std::setw(width+7)<<" "<<"R         R (default 0.4)\n"
+     <<std::setw(width+7)<<" "<<"p         p (default 1.0)\n"
+     <<std::setw(width+7)<<" "<<"f         f (siscone only, default 0.75)\n"
+     <<std::setw(width+7)<<" "<<"Strategy  strategy [N2Plain|N2Tiled|N2MinHeapTiled|NlnN|NlnNCam|Best] (default Best)\n"
+     <<std::setw(width+4)<<" "<<"}";
 }
 
 #endif

@@ -1,22 +1,18 @@
 #ifndef EXTRA_XS_Main_ME2_Base_H
 #define EXTRA_XS_Main_ME2_Base_H
 
-#include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Math/Vector.H"
-#include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 
 namespace EXTRAXS {
 
-  class ME2_Base {
+  class ME2_Base: public PHASIC::Tree_ME2_Base {
   protected:
-    const PHASIC::Process_Info& m_pinfo;
-    const ATOOLS::Flavour_Vector m_flavs;
-
     int **p_colours;
     size_t m_oew, m_oqcd, m_sintt;
     MODEL::Coupling_Data *p_aqcd, *p_aqed;
+    double m_symfac;
   public:
     ME2_Base(const PHASIC::Process_Info& pi,
              const ATOOLS::Flavour_Vector& flavs);
@@ -26,6 +22,8 @@ namespace EXTRAXS {
 
     double CouplingFactor(const int oqcd,const int oew) const;
 
+    double Calc(const ATOOLS::Vec4D_Vector &p);
+
     virtual double operator()(const ATOOLS::Vec4D_Vector& momenta) = 0;
     virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 
@@ -34,17 +32,7 @@ namespace EXTRAXS {
     inline size_t OrderQCD() const { return m_oqcd; }
     inline size_t SIntType() const { return m_sintt; }
 
-    static ME2_Base* GetME2(const PHASIC::Process_Info& pi);
-    static ME2_Base* GetME2(const std::string& tag,
-                            const PHASIC::Process_Info& pi);
   };
 }
-
-#define DECLARE_ME2_GETTER(NAME,TAG)                               \
-  DECLARE_GETTER(NAME,TAG,ME2_Base,Process_Info);                  \
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const \
-  {                                                                \
-    str<<#TAG;                                                     \
-  }
 
 #endif

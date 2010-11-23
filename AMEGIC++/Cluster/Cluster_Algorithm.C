@@ -367,7 +367,7 @@ ME2_Base *Cluster_Algorithm::GetXS(const ATOOLS::Flavour_Vector &fl)
   pi.m_ii.m_ps.push_back(Subprocess_Info(fl[1]));
   pi.m_fi.m_ps.push_back(Subprocess_Info(fl[2]));
   pi.m_fi.m_ps.push_back(Subprocess_Info(fl[3]));
-  ME2_Base* me2=ME2_Base::GetME2(pi);
+  ME2_Base* me2=dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pi));
   m_xsmap[fl]=me2;
   return me2;
 }

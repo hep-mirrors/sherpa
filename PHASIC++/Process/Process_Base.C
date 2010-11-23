@@ -286,6 +286,11 @@ void Process_Base::Init(const Process_Info &pi,
     if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
     for (size_t i(0);i<fl.size();++i) m_flavs[i]=fl[i];
     m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
+    if (IsGroup()) {
+      if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout) 
+        m_name+="__NQ_"+ToString(m_pinfo.m_nminq)+
+	  "-"+ToString(m_pinfo.m_nmaxq);
+    }
   }
   double massin=0.0, massout=0.0;
   for (size_t i=0;i<m_nin;++i) massin+=m_flavs[i].Mass();

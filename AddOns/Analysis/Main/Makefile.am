@@ -14,9 +14,9 @@ pkglib_LTLIBRARIES       =	libSherpaAnalysis.la
 libSherpaAnalysis_la_SOURCES  =	$(ANAMAIN_SOURCES)
 
 libSherpaAnalysis_la_LIBADD   =	-L../Tools \
-	-L../Triggers -L../Observables \
+	-L../Triggers -L../Observables -L../Analyses \
 	-lSherpaAnalysisTools -lSherpaAnalysisTrigger \
-	-lSherpaObservables
+	-lSherpaObservables -lSherpaAnalyses
 
 ANAMAIN_EXTRA_DIST = $(ANAMAIN_ADDS)
 else

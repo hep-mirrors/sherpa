@@ -22,8 +22,6 @@ namespace PHASIC {
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
     inline const METOOLS::DivArrD& Result() { return m_res; }
 
-    virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
-
     virtual double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     inline double ME_Finite() { return m_res.GetFinite(); }
     inline double ME_E1() { return m_res.GetIR(); }

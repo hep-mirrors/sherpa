@@ -14,7 +14,8 @@ namespace ANALYSIS {
 
     // constructors
     Normalized_Observable();
-    Normalized_Observable(int type,double xmin,double xmax,int nbins);
+    Normalized_Observable(int type,double xmin,double xmax,int nbins,
+			  const std::string &name="");
     Normalized_Observable(const Normalized_Observable & old);
 
     // destructor
@@ -30,8 +31,13 @@ namespace ANALYSIS {
 
     void Fill(const double &x,const double &y,
 	      const double &weight,const double &ntrial);
+    void FillMCB(const double &x,const double &y,
+		 const double &weight,const double &ntrial);
+    void FinishMCB();
 
     Primitive_Observable_Base *Copy() const;
+
+    inline const std::string &Name() const { return p_obs->Name(); }
 
   };// end of class Normalized_Observable
 

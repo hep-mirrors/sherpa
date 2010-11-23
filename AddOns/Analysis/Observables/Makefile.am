@@ -11,7 +11,6 @@ ANAOBS_SOURCES        =	\
 			Primitive_Observable_Base.C \
 			Normalized_Observable.C \
 			One_Variable_Observable.C \
-			BFKL_Analysis.C \
 			HT.C \
 			TotalMass.C \
 			PSM_Observables.C \
@@ -41,7 +40,6 @@ ANAOBS_SOURCES        =	\
 			Four_Jet_Angles.C \
 			General_Observable.C \
 			BFKL_Observables.C \
-			Atlas_TDR_SL_Top_Fitter.C \
 			ChargedDEta.C
 
 ANAOBS_ADDS           =	\

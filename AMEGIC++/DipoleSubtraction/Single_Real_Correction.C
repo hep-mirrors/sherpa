@@ -1,6 +1,7 @@
 #include "AMEGIC++/DipoleSubtraction/Single_Real_Correction.H"
 #include "AMEGIC++/Main/Single_Process.H"
 #include "AMEGIC++/Main/Single_Process_MHV.H"
+#include "AMEGIC++/Main/Single_Process_External.H"
 #include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -68,7 +69,8 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_newlib   = false;
 //   m_name+= "_REAL";
   if (m_pinfo.m_amegicmhv>0) {
-    if (CF.MHVCalculable(m_pinfo)) p_tree_process = new Single_Process_MHV();
+    if (m_pinfo.m_amegicmhv==10) p_tree_process = new Single_Process_External();
+    else if (CF.MHVCalculable(m_pinfo)) p_tree_process = new Single_Process_MHV();
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
   if (!p_tree_process) p_tree_process = new AMEGIC::Single_Process();

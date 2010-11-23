@@ -24,7 +24,6 @@ namespace EXTRAXS {
     }
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
-    virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 
   };
 }
@@ -38,10 +37,6 @@ void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.IR2()=-2.*m_fac;
   // finite
   m_res.Finite()=(-8.+sqr(M_PI))*m_fac;
-}
-
-bool DY_QCD_Virtual::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
-  return true;
 }
 
 DECLARE_VIRTUALME2_GETTER(DY_QCD_Virtual_Getter,"DY_QCD_Virtual")

@@ -1,8 +1,11 @@
 WHITEHAT_SOURCES      =	\
+			WhiteHat_Tree.C \
 			WhiteHat_Virtual.C \
 			WhiteHat_Interface.C
 
-WHITEHAT_ADDS         =	WhiteHat_Virtual.H
+WHITEHAT_ADDS         =	\
+			WhiteHat_Tree.H \
+			WhiteHat_Virtual.H
 
 if WHITEHAT_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaWhiteHat.la

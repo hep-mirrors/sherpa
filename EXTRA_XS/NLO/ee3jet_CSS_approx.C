@@ -40,7 +40,7 @@ XS_ee3jet_CSS_approx::XS_ee3jet_CSS_approx
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.begin());
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
   PRINT_INFO(pico);
-  p_bornme = EXTRAXS::ME2_Base::GetME2(pico);
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
   PRINT_INFO("initialised XS_ee3jet_CSS_approx2");
 }
@@ -79,9 +79,9 @@ double XS_ee3jet_CSS_approx::LOME2(const Vec4D& p0, const Vec4D& p1,
   return born*split*m_alphasdef;
 }
 
-DECLARE_ME2_GETTER(XS_ee3jet_CSS_approx_Getter,
+DECLARE_TREEME2_GETTER(XS_ee3jet_CSS_approx_Getter,
                    "XS_ee3jet_CSS_approx")
-ME2_Base *XS_ee3jet_CSS_approx_Getter::operator()
+Tree_ME2_Base *XS_ee3jet_CSS_approx_Getter::operator()
 (const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");

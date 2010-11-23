@@ -20,10 +20,11 @@ Type Get(const std::string & in)
   return (Type)0;
 }
 
-Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
+Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
+		     const std::string &name) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
   m_yvalues(0),m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_psfills(0), 
-  m_finished(false), m_initialized(false), m_fuzzyexp(-1)
+  m_finished(false), m_initialized(false), m_fuzzyexp(-1), m_name(name)
 {
   m_mcb = 0.;
   if (m_type>1000) {
@@ -102,6 +103,7 @@ Histogram::Histogram(const Histogram * histo)
   m_binsize = histo->m_binsize;
   m_active  = 1;
   m_finished = histo->m_finished;
+  m_name     = histo->m_name;
 
   m_yvalues   = new double[m_nbin];
   for (int i=0;i<m_nbin;i++) {

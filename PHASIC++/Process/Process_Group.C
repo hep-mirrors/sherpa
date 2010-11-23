@@ -418,6 +418,11 @@ bool Process_Group::CheckFlavours
 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
       return false;
     }
+    if (quarks<m_pinfo.m_nminq) {
+      msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q < "
+		     <<m_pinfo.m_nminq<<". Skip process.\n";
+      return false;
+    }
   }
   if (charge!=0 || strong!=0) return false;
   return true;

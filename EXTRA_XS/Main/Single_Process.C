@@ -72,7 +72,8 @@ bool Single_Process::Initialize()
   else if (m_nlotype==nlo_type::lo || m_nlotype==nlo_type::born ||
            m_nlotype==nlo_type::real || m_nlotype==nlo_type::rsub) {
     DEBUG_INFO("searching tree process");
-    p_born_me2=ME2_Base::GetME2(m_pinfo);
+    p_born_me2=dynamic_cast<ME2_Base*>
+      (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
       p_born_me2->SetCouplings(&m_cpls);

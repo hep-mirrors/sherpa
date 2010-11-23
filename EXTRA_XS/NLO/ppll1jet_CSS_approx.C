@@ -51,7 +51,7 @@ XS_gqllq_CSS_approx::XS_gqllq_CSS_approx
     m_anti=true;
   }
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
-  p_bornme = EXTRAXS::ME2_Base::GetME2(pico);
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
   m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
   PRINT_INFO("initialised XS_gqllq_CSS_approx2");
@@ -127,8 +127,8 @@ double XS_gqllq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   return -born*split*m_alphasdef;
 }
 
-DECLARE_ME2_GETTER(XS_gqllq_CSS_approx_Getter,"XS_gqllq_CSS_approx")
-ME2_Base *XS_gqllq_CSS_approx_Getter::operator()
+DECLARE_TREEME2_GETTER(XS_gqllq_CSS_approx_Getter,"XS_gqllq_CSS_approx")
+Tree_ME2_Base *XS_gqllq_CSS_approx_Getter::operator()
 (const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
@@ -175,7 +175,7 @@ XS_qqllg_CSS_approx::XS_qqllg_CSS_approx
   Process_Info pico(pi);
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-1);
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
-  p_bornme = EXTRAXS::ME2_Base::GetME2(pico);
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
   PRINT_INFO("initialised XS_qqllg_CSS_approx2");
 }
@@ -248,8 +248,8 @@ double XS_qqllg_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   return -born*split*m_alphasdef;
 }
 
-DECLARE_ME2_GETTER(XS_qqllg_CSS_approx_Getter,"XS_qqllg_CSS_approx")
-ME2_Base *XS_qqllg_CSS_approx_Getter::operator()
+DECLARE_TREEME2_GETTER(XS_qqllg_CSS_approx_Getter,"XS_qqllg_CSS_approx")
+Tree_ME2_Base *XS_qqllg_CSS_approx_Getter::operator()
 (const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");

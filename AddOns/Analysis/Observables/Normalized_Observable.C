@@ -11,11 +11,12 @@ Normalized_Observable::Normalized_Observable():
 }
 
 Normalized_Observable::
-Normalized_Observable(int type,double xmin,double xmax,int nbins):
+Normalized_Observable(int type,double xmin,double xmax,int nbins,
+		      const std::string &name):
   Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
-  p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
-  p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
+  p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
 }
 
 Normalized_Observable::
@@ -23,8 +24,8 @@ Normalized_Observable(const Normalized_Observable & old):
   Primitive_Observable_Base(old)
 {
   if (old.p_histo) {
-    p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
-    p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
+    p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins,old.Name());
+    p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins,old.Name());
   }
 }
 
@@ -92,7 +93,21 @@ void Normalized_Observable::Fill
   p_norm->Insert(x,weight,ntrial);
 }
 
+void Normalized_Observable::FillMCB
+(const double &x,const double &y,
+ const double &weight,const double &ntrial)
+{
+  p_obs->InsertMCB(x,y*weight,ntrial);
+  p_norm->InsertMCB(x,weight,ntrial);
+}
+
+void Normalized_Observable::FinishMCB()
+{
+  p_obs->FinishMCB();
+  p_norm->FinishMCB();
+}
+
 Primitive_Observable_Base *Normalized_Observable::Copy() const
 {
-  return new Normalized_Observable(m_type,m_xmin,m_xmax,m_nbins);
+  return new Normalized_Observable(m_type,m_xmin,m_xmax,m_nbins,Name());
 }

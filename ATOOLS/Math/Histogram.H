@@ -19,8 +19,10 @@ namespace ATOOLS {
     int        m_depth;
     bool       m_active, m_finished, m_initialized;
     int        m_logarithmic,m_fuzzyexp;
+    std::string m_name;
   public :
-    Histogram(int type,double xmin, double xmax, int nbins);
+    Histogram(int type,double xmin, double xmax, int nbins,
+	      const std::string &name="");
     Histogram(const Histogram *);
     Histogram(const std::string &);
     ~Histogram();
@@ -67,6 +69,8 @@ namespace ATOOLS {
     void BinMin(const Histogram & histo);
     void BinMax(const Histogram & histo);
     int CheckStatistics(const Histogram & histo,double& avgs,double& maxs);
+
+    inline const std::string &Name() const { return m_name; }
   };
 
 

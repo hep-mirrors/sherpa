@@ -29,8 +29,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_pp_q1qbar1_Getter,"1XS_pp_q1qbar1")
-ME2_Base *XS_pp_q1qbar1_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_pp_q1qbar1_Getter,"1XS_pp_q1qbar1")
+Tree_ME2_Base *XS_pp_q1qbar1_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -96,8 +96,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1q2_q1q2_Getter,"1XS_q1q2_q1q2")
-ME2_Base *XS_q1q2_q1q2_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1q2_q1q2_Getter,"1XS_q1q2_q1q2")
+Tree_ME2_Base *XS_q1q2_q1q2_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -188,8 +188,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1qbar1_q2qbar2_Getter,"1XS_q1qbar1_q2qbar2")
-ME2_Base *XS_q1qbar1_q2qbar2_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1qbar1_q2qbar2_Getter,"1XS_q1qbar1_q2qbar2")
+Tree_ME2_Base *XS_q1qbar1_q2qbar2_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -264,8 +264,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1q1_q1q1_Getter,"1XS_q1q1_q1q1")
-ME2_Base *XS_q1q1_q1q1_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1q1_q1q1_Getter,"1XS_q1q1_q1q1")
+Tree_ME2_Base *XS_q1q1_q1q1_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -357,8 +357,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1qbar1_q1qbar1_Getter,"1XS_q1qbar1_q1qbar1")
-ME2_Base *XS_q1qbar1_q1qbar1_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1qbar1_q1qbar1_Getter,"1XS_q1qbar1_q1qbar1")
+Tree_ME2_Base *XS_q1qbar1_q1qbar1_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -456,8 +456,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1qbar1_gg_Getter,"1XS_q1qbar1_gg")
-ME2_Base *XS_q1qbar1_gg_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1qbar1_gg_Getter,"1XS_q1qbar1_gg")
+Tree_ME2_Base *XS_q1qbar1_gg_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -558,8 +558,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_gg_q1qbar1_Getter,"1XS_gg_q1qbar1")
-ME2_Base *XS_gg_q1qbar1_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_gg_q1qbar1_Getter,"1XS_gg_q1qbar1")
+Tree_ME2_Base *XS_gg_q1qbar1_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -659,8 +659,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_q1g_q1g_Getter,"1XS_q1g_q1g")
-ME2_Base *XS_q1g_q1g_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_q1g_q1g_Getter,"1XS_q1g_q1g")
+Tree_ME2_Base *XS_q1g_q1g_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -787,8 +787,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_gg_gg_Getter,"1XS_gg_gg")
-ME2_Base *XS_gg_gg_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_gg_gg_Getter,"1XS_gg_gg")
+Tree_ME2_Base *XS_gg_gg_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();

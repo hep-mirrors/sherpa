@@ -27,12 +27,6 @@ double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
    return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
 }
 
-bool Virtual_ME2_Base::SetColours(const Vec4D_Vector& mom)
-{
-  THROW(fatal_error, "Virtual function called.");
-  return false;
-}
-
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>
 Virtual_ME2_Getter;
 

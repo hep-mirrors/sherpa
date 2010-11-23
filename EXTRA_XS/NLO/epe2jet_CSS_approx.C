@@ -48,8 +48,8 @@ XS_egeqq_CSS_approx::XS_egeqq_CSS_approx
   pico2.m_fi.m_ps.erase(pico2.m_fi.m_ps.end()-2);
   pico1.m_fi.m_nloqcdtype=nlo_type::born;
   pico2.m_fi.m_nloqcdtype=nlo_type::born;
-  p_bornme1 = EXTRAXS::ME2_Base::GetME2(pico1);
-  p_bornme2 = EXTRAXS::ME2_Base::GetME2(pico2);
+  p_bornme1 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico1));
+  p_bornme2 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico2));
   if (!p_bornme1 || !p_bornme2) THROW(fatal_error,"no born me found.");
   m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
   PRINT_INFO("initialised XS_egeqq_CSS_approx2");
@@ -115,8 +115,8 @@ double XS_egeqq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   return born*split*m_alphasdef;
 }
 
-DECLARE_ME2_GETTER(XS_egeqq_CSS_approx_Getter,"XS_egeqq_CSS_approx")
-ME2_Base *XS_egeqq_CSS_approx_Getter::operator()
+DECLARE_TREEME2_GETTER(XS_egeqq_CSS_approx_Getter,"XS_egeqq_CSS_approx")
+Tree_ME2_Base *XS_egeqq_CSS_approx_Getter::operator()
 (const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
@@ -166,7 +166,7 @@ XS_eqegq_CSS_approx::XS_eqegq_CSS_approx
   Process_Info pico(pi);
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-2);
   pico.m_fi.m_nloqcdtype=nlo_type::born;
-  p_bornme = EXTRAXS::ME2_Base::GetME2(pico);
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
   m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
   PRINT_INFO("initialised XS_eqegq_CSS_approx2");
@@ -268,8 +268,8 @@ double XS_eqegq_CSS_approx::LOME2IF(const Vec4D& pi, const Vec4D& pj,
   return born*split*m_alphasdef;
 }
 
-DECLARE_ME2_GETTER(XS_eqegq_CSS_approx_Getter,"XS_eqegq_CSS_approx")
-ME2_Base *XS_eqegq_CSS_approx_Getter::operator()
+DECLARE_TREEME2_GETTER(XS_eqegq_CSS_approx_Getter,"XS_eqegq_CSS_approx")
+Tree_ME2_Base *XS_eqegq_CSS_approx_Getter::operator()
 (const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");

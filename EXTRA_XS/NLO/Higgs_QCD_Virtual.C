@@ -37,7 +37,6 @@ namespace EXTRAXS {
     }
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
-    virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 
   };
 }
@@ -52,10 +51,6 @@ void Higgs_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.IR2()=-2.*m_fac;
   // finite
   m_res.Finite()=(m_finiteconst - 4.0*M_PI*m_b0/CA*log(p2/m_mur2))*m_fac;
-}
-
-bool Higgs_QCD_Virtual::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
-  return true;
 }
 
 DECLARE_VIRTUALME2_GETTER(Higgs_QCD_Virtual_Getter,"Higgs_QCD_Virtual")

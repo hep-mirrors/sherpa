@@ -49,8 +49,8 @@ namespace EXTRAXS {
   }
 }
 
-DECLARE_ME2_GETTER(ee_Y4S_BB_Getter,"ee_Y4S_BB")
-ME2_Base *ee_Y4S_BB_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(ee_Y4S_BB_Getter,"ee_Y4S_BB")
+Tree_ME2_Base *ee_Y4S_BB_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born)
     return NULL;

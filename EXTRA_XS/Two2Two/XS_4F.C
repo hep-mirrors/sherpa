@@ -34,8 +34,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f1_f1f1_Getter,"0XS_f1f1_f1f1")
-ME2_Base *XS_f1f1_f1f1_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f1_f1f1_Getter,"0XS_f1f1_f1f1")
+Tree_ME2_Base *XS_f1f1_f1f1_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -165,8 +165,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f1b_f1f1b_Getter,"0XS_f1f1b_f1f1b")
-ME2_Base *XS_f1f1b_f1f1b_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f1b_f1f1b_Getter,"0XS_f1f1b_f1f1b")
+Tree_ME2_Base *XS_f1f1b_f1f1b_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -309,8 +309,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f1b_f2f2b_Getter,"0XS_f1f1b_f2f2b")
-ME2_Base *XS_f1f1b_f2f2b_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f1b_f2f2b_Getter,"0XS_f1f1b_f2f2b")
+Tree_ME2_Base *XS_f1f1b_f2f2b_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -478,8 +478,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f2_f1f2_Getter,"0XS_f1f2_f1f2")
-ME2_Base *XS_f1f2_f1f2_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f2_f1f2_Getter,"0XS_f1f2_f1f2")
+Tree_ME2_Base *XS_f1f2_f1f2_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -661,8 +661,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f2b_f1f2b_Getter,"0XS_f1f2b_f1f2b")
-ME2_Base *XS_f1f2b_f1f2b_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f2b_f1f2b_Getter,"0XS_f1f2b_f1f2b")
+Tree_ME2_Base *XS_f1f2b_f1f2b_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -832,8 +832,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f2_f3f4_Getter,"0XS_f1f2_f3f4")
-ME2_Base *XS_f1f2_f3f4_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f2_f3f4_Getter,"0XS_f1f2_f3f4")
+Tree_ME2_Base *XS_f1f2_f3f4_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;
@@ -982,8 +982,8 @@ namespace EXTRAXS {
   };
 }
 
-DECLARE_ME2_GETTER(XS_f1f2b_f3f4b_Getter,"0XS_f1f2b_f3f4b")
-ME2_Base *XS_f1f2b_f3f4b_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_f1f2b_f3f4b_Getter,"0XS_f1f2b_f3f4b")
+Tree_ME2_Base *XS_f1f2b_f3f4b_Getter::operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
     return NULL;

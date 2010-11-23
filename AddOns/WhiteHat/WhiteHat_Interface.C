@@ -4,10 +4,16 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "AddOns/WhiteHat/WhiteHat_Virtual.H"
+#include "AddOns/WhiteHat/WhiteHat_Tree.H"
 
 namespace WHITEHAT {
 
   class WhiteHat_Interface: public PHASIC::ME_Generator_Base {
+  private:
+
+    BH::BH_interface  *p_interface;
+    MODEL::Model_Base *p_model;
+
   public :
 
     // constructor
@@ -37,6 +43,7 @@ namespace WHITEHAT {
 
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace WHITEHAT;
@@ -44,20 +51,40 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 WhiteHat_Interface::WhiteHat_Interface(): 
-  ME_Generator_Base("WhiteHat")
+  ME_Generator_Base("WhiteHat"), p_interface(NULL)
 {
 }
 
 WhiteHat_Interface::~WhiteHat_Interface() 
 {
-  WhiteHat_Virtual::DeleteInterface();
+  if (p_interface) delete p_interface;
 }
 
 bool WhiteHat_Interface::Initialize
 (const std::string &path,const std::string &file,MODEL::Model_Base *const model,
  BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
 {
-  WhiteHat_Virtual::InitInterface(model);
+  if (p_interface==NULL) {
+    msg_Info()<<"Initialising WhiteHat interface {"<<std::endl;
+    p_model=model;
+    WhiteHat_Tree::SetModel(p_model);
+    WhiteHat_Virtual::SetModel(p_model);
+    Data_Reader reader(" ",";","!","=");
+    p_interface=new BH::BH_interface
+      (reader.GetValue<std::string>("BH_SETTINGS_FILE",std::string("")));
+    p_interface->set("Z_mass",Flavour(kf_Z).Mass());
+    p_interface->set("Z_width",Flavour(kf_Z).Width());
+    p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
+    p_interface->set("W_width",Flavour(kf_Wplus).Width());
+    double sin_th_2=model->ScalarConstant(std::string("sin2_thetaW"));
+    p_interface->set("sin_th_2",sin_th_2);
+    p_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
+    p_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
+    p_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
+    msg_Info()<<"}"<<std::endl;
+    WhiteHat_Tree::SetInterface(p_interface);
+    WhiteHat_Virtual::SetInterface(p_interface);
+  }
   return true;
 }
 

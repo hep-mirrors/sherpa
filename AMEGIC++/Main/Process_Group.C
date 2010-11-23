@@ -1,6 +1,7 @@
 #include "AMEGIC++/Main/Process_Group.H"
 #include "AMEGIC++/Main/Single_Process.H"
 #include "AMEGIC++/Main/Single_Process_MHV.H"
+#include "AMEGIC++/Main/Single_Process_External.H"
 #include "AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H"
 #include "AMEGIC++/DipoleSubtraction/Single_Real_Correction.H"
 #include "AMEGIC++/Main/Process_Tags.H"
@@ -56,6 +57,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   }
   else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::born || nloqcd==nlo_type::real) {
     if (pi.m_amegicmhv>0) {
+      if (pi.m_amegicmhv==10) return new Single_Process_External();
       if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
       if (pi.m_amegicmhv==2) return NULL;
     }
