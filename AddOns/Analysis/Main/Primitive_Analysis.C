@@ -371,8 +371,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
   double ncount=(*signal)["Trials"]->Get<double>();
 
   for (size_t j=0;j<nlos->size();j++) {
-    if ((*nlos)[j]->m_result==0.0 ||
-	(*nlos)[j]->m_i==(*nlos)[j]->m_j) continue;
+    if ((*nlos)[j]->m_result==0.) continue;
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   
     // do nonsplittable (helper and legacy objects) first
