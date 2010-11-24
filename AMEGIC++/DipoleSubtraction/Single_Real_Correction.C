@@ -116,7 +116,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_real_momenta.resize(m_nin+m_nout);
 
   m_realevt.m_n    = m_nin+m_nout;
-  m_realevt.p_fl   = &Flavours().front();
+  m_realevt.p_fl   = &p_tree_process->Flavours().front();
   m_realevt.p_dec  = &m_decinfos;
 
   m_realevt.p_mom  = &m_real_momenta.front();
