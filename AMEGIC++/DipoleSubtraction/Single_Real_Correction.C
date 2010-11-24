@@ -292,7 +292,6 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.p_mom  = &p_int->Momenta().front();
   m_realevt.m_me   = m_realevt.m_result =
     m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
 
