@@ -290,8 +290,10 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     p1[3]=-p1[3];
     p2[3]=-p2[3];
   }
+  int swap(0);
   double x1(0.),x2(0.);
   if (p1[3]<0.0 && p2[3]>0.0) {
+    swap=1;
     std::swap<Flavour>(fl1,fl2);
     std::swap<Vec4D>(p1,p2);
     std::swap<double>(Q12,Q22);
@@ -309,6 +311,8 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
     return 0.;
   MtxLock();
+  m_mu2[swap]=Q12;
+  m_mu2[1-swap]=Q22;
   switch (m_mode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
@@ -331,6 +335,8 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   if (m_mode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
                     CheckRemnantKinematics(fl2,x2,1,false))) {
     double f1=p_isrbase[0]->Weight(fl1), f2=p_isrbase[1]->Weight(fl2);
+    m_xf1[swap]=x1*f1;
+    m_xf2[swap]=x2*f2;
     MtxUnLock();
     msg_Debugging()<<"PDF1: "<<rpa.gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
