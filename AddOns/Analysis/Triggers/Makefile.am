@@ -7,6 +7,7 @@ ANATRIGGER_SOURCES    =	\
 			Jet_Particle_Selector.C \
 			Four_Particle_Calculator.C \
 			Two_Particle_X_Selector.C\
+			HT_Selector.C \
 			Uni_Selector.C\
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
