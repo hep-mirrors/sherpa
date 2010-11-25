@@ -46,8 +46,10 @@ void Scale_Setter_Base::SetCouplings()
   read.SetString(m_coupling);
   read.MatrixFromString(helpsvv,"");
   for (size_t i(0);i<helpsvv.size();++i) {
-    if (helpsvv[i].size()!=2)
+    if (helpsvv[i].size()!=2) {
+      if (helpsvv[i].size()==1 && helpsvv[i][0]=="None") break;
       THROW(fatal_error,"Invalid tag "+m_coupling+".");
+    }
     msg_Debugging()<<helpsvv[i][0]<<" -> "<<helpsvv[i][1]<<"\n";
     Coupling_Map::iterator cit(p_cpls->find(helpsvv[i][0]));
     if (cit!=p_cpls->end()) {
