@@ -4,6 +4,7 @@
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace CSSHOWER {
   
@@ -11,7 +12,7 @@ namespace CSSHOWER {
   protected:
 
     ATOOLS::Function_Base *p_cpl;
-    ATOOLS::Flavour m_cfl, m_ffl;
+    ATOOLS::Flavour m_cfl;
 
     double m_q[2];
 
@@ -22,7 +23,6 @@ namespace CSSHOWER {
     {
       if (key.m_type==cstp::IF || key.m_type==cstp::II)
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];
-      m_ffl=m_cfl.Kfcode()==kf_Z?key.p_v->in[1]:m_cfl;
     }
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
@@ -36,7 +36,7 @@ namespace CSSHOWER {
   protected:
 
     ATOOLS::Function_Base *p_cpl;
-    ATOOLS::Flavour m_cfl, m_ffl;
+    ATOOLS::Flavour m_cfl;
 
     double m_q[2];
 
@@ -47,7 +47,6 @@ namespace CSSHOWER {
     {
       if (key.m_type==cstp::IF || key.m_type==cstp::II)
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];
-      m_ffl=m_cfl.Kfcode()==kf_Wplus?key.p_v->in[1]:m_cfl;
     }
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
@@ -66,9 +65,12 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 			    const double &isfac,const double &fsfac)
 {
   double stw(md->GetInteractionModel()->ScalarConstant("sin2_thetaW"));
-  double af(m_ffl.IsoWeak()), vf(af-2.0*m_ffl.Charge()*stw);
+  Flavour ffl(p_lf->FlB().IsFermion()?p_lf->FlB():p_lf->FlC());
+  if (!ffl.IsFermion()) THROW(fatal_error,"Internal error");
+  if (ffl.IsAnti()) ffl=ffl.Bar();
+  double af(ffl.IsoWeak()), vf(af-2.0*ffl.Charge()*stw);
   m_q[0]=0.25/(stw*(1.0-stw))*(sqr(vf)+sqr(af));
-  m_q[1]=2.0/stw*sqr(af*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
+  m_q[1]=2.0/stw*sqr(af*ffl.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(rpa.gen.CplScale());
   double cqed((*p_cpl)(rpa.gen.CplScale()));
@@ -99,13 +101,16 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   if (!f1.IsFermion()) f1=p_lf->FlA();
   else if (!f2.IsFermion()) f2=p_lf->FlA();
   if (f1.IsQuark()) {
+    if (f1.IsDowntype()) std::swap<Flavour>(f1,f2);
     int i((int)(f1.Kfcode())), j((int)(f2.Kfcode()));
-    if (f1.IsDowntype()) std::swap<int>(i,j);
     vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
+  }
+  else {
+    if (f1.Kfcode()%2==0) std::swap<Flavour>(f1,f2);
   }
   double vf(sqr(std::abs(vij)));
   m_q[0]=0.5/stw*sqr(vf);
-  m_q[1]=1.0/stw*sqr(vf*m_ffl.Mass()/Flavour(kf_Wplus).Mass());
+  m_q[1]=1.0/stw*sqr(vf*f1.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(rpa.gen.CplScale());
   double cqed((*p_cpl)(rpa.gen.CplScale()));

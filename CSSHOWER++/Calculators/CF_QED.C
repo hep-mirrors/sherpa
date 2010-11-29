@@ -3,6 +3,7 @@
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace CSSHOWER {
   
@@ -21,7 +22,9 @@ namespace CSSHOWER {
     {
       if (key.m_type==cstp::IF || key.m_type==cstp::II)
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];
-      m_q=ATOOLS::dabs(m_cfl.IntCharge()?m_cfl.Charge():key.p_v->in[1].Charge());
+      m_q=ATOOLS::dabs(m_cfl.IntCharge()?m_cfl.Charge():
+		       key.p_v->in[key.m_mode==0?2:1].Charge());
+      if (m_q==0.0) THROW(fatal_error,"Internal error");
     }
 
     bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
