@@ -116,7 +116,7 @@ int Kinematics_FF::MakeKinematics
       " Four-Momentum violation "<<(p1+p2)-(q1+q2+q3)<<"\n"<<
       " Q initial : "<<p1+p2<<" -> "<<(p1+p2)*(p1+p2)<<"\n"<< 
       " Q final   : "<<q1+q2+q3<<" -> "<<(q1+q2+q3)*(q1+q2+q3)<<"\n";
-    return -2;
+    return -1;
   }
   
   if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
@@ -128,19 +128,6 @@ int Kinematics_FF::MakeKinematics
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
   else pc->SetMomentum(q3);
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),flj,q3));
-    split->SetFlavour(sfi);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      delete pc;
-      pc=NULL;
-      return 0;
-    }
-  }
 
   return 1;
 }
@@ -208,19 +195,6 @@ int Kinematics_FI::MakeKinematics
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
   else pc->SetMomentum(q3);
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),flj,q3));
-    split->SetFlavour(sfi);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      delete pc;
-      pc=NULL;
-      return 0;
-    }
-  }
   
   return 1;
 }
@@ -286,19 +260,6 @@ int Kinematics_IF::MakeKinematics
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
   else pc->SetMomentum(q3);
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fla);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),fli,q3));
-    split->SetFlavour(sfi);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      delete pc;
-      pc=NULL;
-      return 0;
-    }
-  }
 
   return 1;
   }
@@ -363,19 +324,6 @@ int Kinematics_IF::MakeKinematics
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
   else pc->SetMomentum(q3);
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fla);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),fli,q3));
-    split->SetFlavour(sfi);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      delete pc;
-      pc=NULL;
-      return 0;
-    }
-  }
 
   return 1;
 }
@@ -436,19 +384,6 @@ int Kinematics_II::MakeKinematics
   spect->SetMomentum(q2);
   if (pc==NULL) pc = new Parton(newfl,q3,pst::FS);
   else pc->SetMomentum(q3);
-  if (p_jf) {
-    Flavour sfi(split->GetFlavour());
-    split->SetFlavour(fli);
-    bool jet(split->GetSing()->JetVeto
-	     (p_sud,p_jf,split->KtVeto(),newfl,q3));
-    split->SetFlavour(sfi);
-    if (jet) {
-      msg_Debugging()<<"--- Jet veto ---\n\n";
-      delete pc;
-      pc=NULL;
-      return 0;
-    }
-  }
 
   return 1;
 }

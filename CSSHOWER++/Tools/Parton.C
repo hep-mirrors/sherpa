@@ -8,8 +8,8 @@ using namespace std;
 
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
-    str<<"  Parton "<<&part<<" ("<<part.m_stat<<"|"
-       <<part.m_kin<<")["<<ATOOLS::ID(part.m_id)
+    str<<"  Parton "<<&part<<" ("<<part.p_sing<<"), stat="
+       <<part.m_stat<<", kin="<<part.m_kin<<" ["<<ATOOLS::ID(part.m_id)
        <<"]: "<<part.m_flav<<" : "<<part.m_mom
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
        <<"["<<part.GetRFlow(1)<<","<<part.GetRFlow(2)<<"]"<<endl;
@@ -73,6 +73,7 @@ void Parton::UpdateNewDaughters()
   p_next->SetVeto(m_kt_veto);
   p_next->SetKtPrev(m_kt_prev);
   p_next->SetKtPrev(m_kin);
+  p_next->SetId(m_id);
   msg_Debugging()<<*p_next;
   p_next->UpdateNewDaughters();
   msg_Debugging()<<"}\n";

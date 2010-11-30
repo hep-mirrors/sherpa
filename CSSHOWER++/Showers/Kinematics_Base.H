@@ -11,11 +11,9 @@ namespace CSSHOWER {
   class Kinematics_Base {
   public:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
-    PHASIC::Jet_Finder *p_jf;
     ATOOLS::Mass_Selector *p_ms;
-    Sudakov *p_sud;
   public:
-    Kinematics_Base(): p_jf(NULL), p_ms(NULL) {}
+    Kinematics_Base() {}
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
 			       const ATOOLS::Flavour &,Parton *&,
@@ -32,11 +30,7 @@ namespace CSSHOWER {
 		       const double &mij2,const double &mk2,
 		       const ATOOLS::Vec4D &Q,ATOOLS::Vec4D &pk,
 		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
-    inline PHASIC::Jet_Finder *SetJF(PHASIC::Jet_Finder *const jf) 
-    { PHASIC::Jet_Finder *ojf(p_jf); p_jf=jf; return ojf; }
-    inline PHASIC::Jet_Finder *JF() const { return p_jf; }
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
-    inline void SetSudakov(Sudakov *const sud) { p_sud=sud; }
   };
 
   class Kinematics_FF : public Kinematics_Base {

@@ -24,7 +24,7 @@ namespace CSSHOWER {
     Shower          * p_shower;
     All_Singlets m_allsinglets;
     CS_Cluster_Definitions *p_cluster;
-    All_Singlets *p_next;
+    All_Singlets *p_next, *p_refs;
 
     ATOOLS::Mass_Selector *p_ms;
 
@@ -45,6 +45,7 @@ namespace CSSHOWER {
     int PerformShowers(const size_t &maxem,size_t &nem);
 
     void SetScalesNLO();
+    void RefCopy();
 
   public:
 

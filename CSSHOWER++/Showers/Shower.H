@@ -43,16 +43,18 @@ namespace CSSHOWER {
     bool   PerformSplitting();
     bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p);
-    void   UpdateDaughters(Parton *const split);
-    bool   UpdateDaughters(Parton *const split,Parton *const newpB,
-			   Parton *const newpC);
+    int    UpdateDaughters(Parton *const split,Parton *const newpB,
+			   Parton *const newpC,int mode);
+    int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
+		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
+		       const int mode);
  public:
     Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
-    bool   ReconstructDaughters(Singlet *const split,
-				const bool one=false);
+    int    ReconstructDaughters(Singlet *const split,const int mode,
+				Parton *const pi=NULL,Parton *const pj=NULL);
     void SetMS(ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }

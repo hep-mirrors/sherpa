@@ -22,6 +22,7 @@ namespace CSSHOWER {
     Parton *p_split, *p_left, *p_right, *p_spec;
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
+    Singlet *p_ref;
     ATOOLS::Mass_Selector *p_ms;
     int m_nlo;
     void SetColours(Singlet *const sing,Parton *const np,
@@ -31,8 +32,10 @@ namespace CSSHOWER {
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
-      p_jf(NULL), p_all(NULL), m_nlo(0) {}
+      p_jf(NULL), p_all(NULL), p_ref(NULL), m_nlo(0) {}
     ~Singlet();
+
+    Singlet *RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap);
 
     void AddParton(Parton *const p);
     void RemoveParton(Parton *const p,const int mode=0);
@@ -49,9 +52,11 @@ namespace CSSHOWER {
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			       const ATOOLS::Flavour &mo,const int mode);
 
-    bool JetVeto(Sudakov *const sud,
-		 PHASIC::Jet_Finder *const jf,const double &q2,
-		 const ATOOLS::Flavour &fj,const ATOOLS::Vec4D &pj) const;
+    ATOOLS::Cluster_Amplitude *GetAmplitude(Parton *const p=NULL) const;
+
+    Parton *IdParton(const size_t &id) const;
+
+    bool JetVeto(Sudakov *const sud) const;
       
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 
@@ -64,6 +69,8 @@ namespace CSSHOWER {
     inline Parton *GetLeft() const  { return p_left;  }
     inline Parton *GetRight() const { return p_right; }
     inline Parton *GetSpec() const  { return p_spec;  }
+
+    inline Singlet *GetRef() const  { return p_ref; }
 
     inline void SetJF(PHASIC::Jet_Finder *const jf) { p_jf=jf; }
     inline void SetAll(All_Singlets *const all) { p_all=all; }

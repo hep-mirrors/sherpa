@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include <list>
 
 using namespace CSSHOWER;
@@ -53,34 +54,71 @@ Singlet::~Singlet() {
     } while (plit!=end());
     clear();
   }
-  
+  if (p_ref) delete p_ref;
 }
 
-bool Singlet::JetVeto
-(Sudakov *const sud,PHASIC::Jet_Finder *const jf,const double &q2,
- const Flavour &fj,const Vec4D &pj) const
+Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap)
 {
-  for (const_iterator eit(begin());eit!=end();++eit) {
-    for (const_iterator sit(begin());sit!=end();++sit) {
-      if (eit==sit) continue;
-      Parton *e(*eit), *s(*sit);
-      bool ei(e->GetType()==pst::IS), si(s->GetType()==pst::IS);
-      cstp::code et(ei?(si?cstp::II:cstp::IF):(si?cstp::FI:cstp::FF));
-      const SF_E_Map *sfs(sud->HasKernel(e->GetFlavour(),fj,et));
-      if (sfs==NULL) continue;
-      for (SF_E_Map::const_iterator
-	     kit(sfs->begin());kit!=sfs->end();++kit) {
-	if (kit->second->Coupling()->AllowSpec(s->GetFlavour())) {
-	  Flavour fi(ei?e->GetFlavour().Bar():e->GetFlavour());
-	  Flavour fk(si?s->GetFlavour().Bar():s->GetFlavour());
-	  Vec4D pi(ei?-e->Momentum():e->Momentum());
-	  Vec4D pk(si?-s->Momentum():s->Momentum());
-	  if (jf->Qij2(pi,pj,pk,fi,fj)<q2) return false;
-	  break;
+  if (p_ref) delete p_ref;  
+  p_ref = new Singlet();
+  all->push_back(p_ref);
+  p_ref->p_all=all;
+  p_ref->p_ms=p_ms;
+  for (const_iterator it(begin());it!=end();++it) {
+    Parton *c(new Parton(**it));
+    p_ref->push_back(c);
+    c->SetSing(p_ref);
+    pmap[*it]=c;
+  }
+  for (const_iterator it(begin());it!=end();++it) {
+    Parton *c(pmap[*it]);
+    std::map<Parton*,Parton*>::iterator lit(pmap.find((*it)->GetLeft()));
+    if (lit!=pmap.end()) c->SetLeft(lit->second);
+    std::map<Parton*,Parton*>::iterator rit(pmap.find((*it)->GetRight()));
+    if (rit!=pmap.end()) c->SetRight(rit->second);
+  }
+  return p_ref;
+}
+
+Parton *Singlet::IdParton(const size_t &id) const
+{
+  for (const_iterator it(begin());it!=end();++it)
+    if ((*it)->Id()==id) return *it;
+  return NULL;
+}
+
+bool Singlet::JetVeto(Sudakov *const sud) const
+{
+  DEBUG_FUNC("");
+  msg_Debugging()<<*(Singlet*)this<<"\n";
+  for (const_iterator iit(begin());iit!=end();++iit) {
+    bool ii((*iit)->GetType()==pst::IS);
+    Flavour fi((*iit)->GetFlavour());
+    for (const_iterator jit(iit);jit!=end();++jit) {
+      bool ji((*jit)->GetType()==pst::IS);
+      Flavour fj((*jit)->GetFlavour());
+      if (jit==iit || (ii&&ji)) continue;
+      for (const_iterator kit(begin());kit!=end();++kit) {
+	if (kit==iit || kit==jit) continue;
+	bool ki((*kit)->GetType()==pst::IS);
+	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
+	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
+	  double q2ijk(p_jf->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
+				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
+				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
+				  ii?fi.Bar():fi,ji?fj.Bar():fj));
+ 	  msg_Debugging()<<"Q_{"<<(*iit)->Id()<<(*jit)->Id()
+			 <<","<<(*kit)->Id()<<"} = "<<sqrt(q2ijk)<<"\n";
+	  if (q2ijk<(*kit)->KtVeto()) return false;
+	}
+	else {
+	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "
+			 <<(*kit)->GetFlavour()<<" ("<<et<<")\n";
 	}
       }
     }
   }
+  msg_Debugging()<<"--- Jet veto ---\n";
   return true;
 }
 

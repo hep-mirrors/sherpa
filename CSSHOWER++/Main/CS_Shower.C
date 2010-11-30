@@ -45,6 +45,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   p_shower = new Shower(_isr,_qed,_dataread);
   
   p_next = new All_Singlets();
+  p_refs = new All_Singlets();
 
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
   p_cluster->SetAMode(amode);
@@ -57,6 +58,7 @@ CS_Shower::~CS_Shower()
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
   if (p_ampl) p_ampl->Delete();
   delete p_next;
+  delete p_refs;
 }
 
 void CS_Shower::SetScalesNLO()
@@ -74,25 +76,61 @@ void CS_Shower::SetScalesNLO()
   }
 }
 
+void CS_Shower::RefCopy()
+{
+  p_refs->clear();
+  std::map<Parton*,Parton*> pmap;
+  std::map<Parton*,Parton*>::iterator pit;
+  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
+       sit!=m_allsinglets.end();++sit) (*sit)->RefCopy(p_refs,pmap);
+  for (size_t i(0);i<m_allsinglets.size();++i) {
+    pit=pmap.find(m_allsinglets[i]->GetLeft());
+    if (pit!=pmap.end()) (*p_refs)[i]->SetLeft(pit->second);
+    pit=pmap.find(m_allsinglets[i]->GetRight());
+    if (pit!=pmap.end()) (*p_refs)[i]->SetRight(pit->second);
+    pit=pmap.find(m_allsinglets[i]->GetSplit());
+    if (pit!=pmap.end()) (*p_refs)[i]->SetSplit(pit->second);
+    pit=pmap.find(m_allsinglets[i]->GetSpec());
+    if (pit!=pmap.end()) (*p_refs)[i]->SetSpec(pit->second);
+    for (Singlet::const_iterator it(m_allsinglets[i]->begin());
+	 it!=m_allsinglets[i]->end();++it) {
+      Parton *c(pmap[*it]);
+      pit=pmap.find((*it)->GetLeft());
+      if (pit!=pmap.end()) c->SetLeft(pit->second);
+      pit=pmap.find((*it)->GetRight());
+      if (pit!=pmap.end()) c->SetRight(pit->second);
+      pit=pmap.find((*it)->GetPrev());
+      if (pit!=pmap.end()) c->SetPrev(pit->second);
+      pit=pmap.find((*it)->GetNext());
+      if (pit!=pmap.end()) c->SetNext(pit->second);
+    }
+  }
+}
+
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower) return 1;
   m_weight=1.0;
   SetScalesNLO();
-  for (All_Singlets::const_iterator 
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
+  RefCopy();
+  for (All_Singlets::const_iterator rit(p_refs->begin()),
+	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
     msg_Debugging()<<"before shower step\n";
       for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
 	if ((*it)->GetPrev()) 
-	  if((*it)->GetPrev()->GetNext()==*it)
+	  if((*it)->GetPrev()->GetNext()==*it) {
 	    if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
-	      (*it)->SetStart((*it)->GetPrev()->KtNext()); else
-	    (*it)->SetStart((*it)->GetPrev()->KtStart());
+	      (*it)->SetStart((*it)->GetPrev()->KtNext());
+	    else (*it)->SetStart((*it)->GetPrev()->KtStart());
+	  }
       msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
-    if ((*sit)->GetLeft()) p_shower->ReconstructDaughters(*sit,true);
+    if ((*sit)->GetLeft()) {
+      p_shower->ReconstructDaughters(*sit,1);
+      p_shower->ReconstructDaughters(*rit,1);
+    }
     msg_Debugging()<<"after shower step with "<<nem-pem
 		   <<" of "<<nem<<" emission(s)\n";
       msg_Debugging()<<**sit;
@@ -149,6 +187,7 @@ void CS_Shower::CleanUp()
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();
+  p_refs->clear();
   for (size_t i(0);i<m_psp.size();++i)
     delete m_psp[i];
   m_psp.clear();
@@ -329,7 +368,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       std::cout.precision(12);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
-      p_shower->ReconstructDaughters(sing,true);
+      p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
