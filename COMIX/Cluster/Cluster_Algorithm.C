@@ -147,14 +147,15 @@ CParam Cluster_Algorithm::GetMeasure
   }
   else {
     Cluster_Leg *li(p_ampl->Leg(i)), *lj(p_ampl->Leg(j));
-    double ckt2(0.0);
+    double ckt2(2.0*dabs(li->Mom()*lj->Mom()));
     if ((mmofl.Resummed() || mmofl.Strong()) &&
 	(li->Flav().Resummed() || li->Flav().Strong()) && 
 	(lj->Flav().Resummed() || lj->Flav().Strong()) && 
 	(p_ampl->Leg(k)->Flav().Resummed() || 
 	 p_ampl->Leg(k)->Flav().Strong()))
-      ckt2=Max(li->Mom().MPerp2(),lj->Mom().MPerp2());
-    else ckt2=dabs((li->Mom()+lj->Mom()).Abs2());
+      ckt2=dabs(3.0/(2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(1)->Mom())+
+		     2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(2)->Mom())+
+		     2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(3)->Mom())));
     kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2,0.0,ckt2,-1);
   }
   if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));

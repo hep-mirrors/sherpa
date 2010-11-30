@@ -556,7 +556,9 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
   }
   double kt2cmin(sqr(rpa.gen.Ecms()));
   if (pureres) {
-    kt2cmin=Max(m_p[2].MPerp2(),m_p[3].MPerp2());
+    kt2cmin=dabs(3.0/(2.0/(m_p[0]*m_p[1])+
+		      2.0/(m_p[0]*m_p[2])+
+		      2.0/(m_p[0]*m_p[3])));
   }
   else {
     // s-channel
@@ -567,8 +569,8 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 	  (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
 	  (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
 	kt2cmin=Min(kt2cmin,
-		    Max((m_p[0]+m_p[1]).Abs2(),
-			(m_p[2]+m_p[3]).Abs2()));
+		    Min(2.0*(m_p[0]*m_p[1]),
+			2.0*(m_p[2]*m_p[3])));
       }
     }
     // t-channel
@@ -579,8 +581,8 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
 	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
 	kt2cmin=Min(kt2cmin,
-		    Max(dabs((m_p[0]+m_p[2]).Abs2()),
-			dabs((m_p[1]+m_p[3]).Abs2())));
+		    Min(2.0*dabs(m_p[0]*m_p[2]),
+			2.0*dabs(m_p[1]*m_p[3])));
       }
     }
     // u-channel
@@ -591,8 +593,8 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 	  (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
 	  (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
 	kt2cmin=Min(kt2cmin,
-		    Max(dabs((m_p[0]+m_p[3]).Abs2()),
-			dabs((m_p[1]+m_p[2]).Abs2())));
+		    Min(2.0*dabs(m_p[0]*m_p[3]),
+			2.0*dabs(m_p[1]*m_p[2])));
       }
     }
   }
