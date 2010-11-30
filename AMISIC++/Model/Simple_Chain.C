@@ -155,15 +155,15 @@ bool Simple_Chain::ReadInData()
     if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) 
       m_regulator="QCD_Trivial";
     if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
-      m_regulation=std::vector<double>(1,2.45);
+      m_regulation=std::vector<double>(1,2.63);
     double exponent, scale;
-    if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.22271;
+    if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.192;
     if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
     m_regulation[0]*=pow(m_ecms/scale,exponent);
   }
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
-  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",1.0);
+  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.332);
   GeneratePathName();
   delete reader;
   return true;
@@ -372,9 +372,9 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
-  double stop(2.45), exponent, scale;
-  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.0745;
-  if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.22271;
+  double stop, exponent, scale;
+  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.63;
+  if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.192;
   if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
   stop*=pow(m_ecms/scale,exponent);
   SetStop(stop,0);
@@ -393,8 +393,8 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     function="Double_Gaussian";
     if (!reader->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
-      parameters.push_back(0.5);
-      parameters.push_back(0.5);
+      parameters.push_back(0.8);
+      parameters.push_back(0.4);
     }
   }
   else {
