@@ -16,6 +16,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -47,17 +48,20 @@ Getter_Function(const std::string &name):
   std::cout<<"Getter_Function::Getter_Function(..): "
 	   <<"Added getter '"<<this<<"' -> \""<<name<<"\"."<<std::endl;
 #endif
-  if (s_getters->find(name)==s_getters->end()) {
-    s_getters->insert(std::pair<const std::string,
-		      Getter_Function *const>(name,this));
+  typename String_Getter_Map::iterator git(s_getters->find(name));
+  if (git!=s_getters->end()) {
+    std::cout<<std::string(80,'#')<<std::endl;
+    std::cout<<"Getter_Function<"<<Demangle(typeid(ObjectType*).name())
+	     <<","<<Demangle(typeid(ParameterType*).name())<<"> {\n"
+	     <<"  Doubled identifier \""<<name<<"\"!\n  Now replacing '"
+	     <<Demangle(typeid(*git->second).name())<<"'.\n  "
+	     <<"This operation may lead to wrong results "
+	     <<"or a program crash.\n}"<<std::endl;
+    std::cout<<std::string(80,'#')<<std::endl;
+    s_getters->erase(git);
   }
-  else {
-    std::cout<<"Getter_Function<"<<typeid(ObjectType*).name()
-	     <<","<<typeid(ParameterType*).name()<<">::"
-	     <<"Getter_Function(\""<<name<<"\"): "
-	     <<"Doubled identifier. Abort."<<std::endl;
-    abort();
-  }
+  s_getters->insert(std::pair<const std::string,
+		    Getter_Function *const>(name,this));
 }
 
 template<class ObjectType,class ParameterType,class SortCriterion>
