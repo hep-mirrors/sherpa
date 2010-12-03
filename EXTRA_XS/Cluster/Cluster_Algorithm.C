@@ -67,18 +67,20 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   double kt2(0.0);
+  int sintt(xs->GetME()->SIntType());
   if (p_ampl->Leg(0)->Flav().Resummed() && 
       p_ampl->Leg(1)->Flav().Resummed() &&
       p_ampl->Leg(2)->Flav().Resummed() &&
-      p_ampl->Leg(3)->Flav().Resummed()) {
-    kt2=Max(moms[2].MPerp2(),moms[3].MPerp2());
+      p_ampl->Leg(3)->Flav().Resummed() && (sintt&6)) {
+    kt2=dabs(3.0/(2.0/(moms[0]*moms[1])-
+		  2.0/(moms[0]*moms[2])-
+		  2.0/(moms[0]*moms[3])));
   }
   else {
-    int sintt(xs->GetME()->SIntType());
     kt2=std::numeric_limits<double>::max();
-    if (sintt&1) kt2=Min(kt2,(moms[0]+moms[1]).Abs2());
-    if (sintt&2) kt2=Min(kt2,dabs((moms[0]-moms[2]).Abs2()));
-    if (sintt&4) kt2=Min(kt2,dabs((moms[0]-moms[3]).Abs2()));
+    if (sintt&1) kt2=Min(kt2,Min(2.0*(moms[0]*moms[1]),2.0*(moms[2]*moms[3])));
+    if (sintt&2) kt2=Min(kt2,Min(2.0*(moms[0]*moms[2]),2.0*(moms[1]*moms[3])));
+    if (sintt&4) kt2=Min(kt2,Min(2.0*(moms[0]*moms[3]),2.0*(moms[1]*moms[2])));
   }
   p_ampl->SetKT2(kt2);
   p_ampl->SetMu2(kt2);

@@ -32,6 +32,7 @@ namespace EXTRAXS {
  documented in \\cite{Hoeche:2009xc} and references therein.");
     m_oew=2;
     m_oqcd=2;
+    m_sintt=1;
     double alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())));
     double alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa.gen.Ecms())));
 
