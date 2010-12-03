@@ -683,7 +683,7 @@ double LF_VFF_FI::operator()
   
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
-  double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/(1.0-z)*CDIS(y,z)) + CDIS(z,y) );
+  double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
