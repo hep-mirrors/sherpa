@@ -106,7 +106,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 	  double q2ijk(p_jf->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
 				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
 				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
-				  ii?fi.Bar():fi,ji?fj.Bar():fj));
+				  ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
  	  msg_Debugging()<<"Q_{"<<(*iit)->Id()<<(*jit)->Id()
 			 <<","<<(*kit)->Id()<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<(*kit)->KtVeto()) return false;
