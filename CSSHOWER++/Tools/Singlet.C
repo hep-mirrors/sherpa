@@ -64,6 +64,7 @@ Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pma
   all->push_back(p_ref);
   p_ref->p_all=all;
   p_ref->p_ms=p_ms;
+  p_ref->p_jf=p_jf;
   for (const_iterator it(begin());it!=end();++it) {
     Parton *c(new Parton(**it));
     p_ref->push_back(c);

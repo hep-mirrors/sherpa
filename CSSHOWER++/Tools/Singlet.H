@@ -52,8 +52,6 @@ namespace CSSHOWER {
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			       const ATOOLS::Flavour &mo,const int mode);
 
-    ATOOLS::Cluster_Amplitude *GetAmplitude(Parton *const p=NULL) const;
-
     Parton *IdParton(const size_t &id) const;
 
     bool JetVeto(Sudakov *const sud) const;
