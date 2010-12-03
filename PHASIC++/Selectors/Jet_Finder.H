@@ -102,6 +102,7 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *cuts);
 
     inline double Ycut() const           { return m_ycut;   }
+    inline double DR() const             { return m_dparam; }
 
     inline void SetOn(const bool on) { m_on=on; }
 
