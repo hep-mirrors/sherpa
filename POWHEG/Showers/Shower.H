@@ -42,9 +42,11 @@ namespace POWHEG {
     bool   PerformSplitting();
     bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p);
-    void   UpdateDaughters(Parton *const split);
-    bool   UpdateDaughters(Parton *const split,Parton *const newpB,
-			   Parton *const newpC);
+    int    UpdateDaughters(Parton *const split,Parton *const newpB,
+			   Parton *const newpC,const int mode);
+    int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
+		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
+		       const int mode);
  public:
     Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);

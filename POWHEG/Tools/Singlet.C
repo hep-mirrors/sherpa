@@ -49,31 +49,39 @@ Singlet::~Singlet() {
   
 }
 
-bool Singlet::JetVeto
-(Sudakov *const sud,PHASIC::Jet_Finder *const jf,const double &q2,
- const Flavour &fj,const Vec4D &pj) const
+bool Singlet::JetVeto(Sudakov *const sud) const
 {
-  for (const_iterator eit(begin());eit!=end();++eit) {
-    for (const_iterator sit(begin());sit!=end();++sit) {
-      if (eit==sit) continue;
-      Parton *e(*eit), *s(*sit);
-      bool ei(e->GetType()==pst::IS), si(s->GetType()==pst::IS);
-      cstp::code et(ei?(si?cstp::II:cstp::IF):(si?cstp::FI:cstp::FF));
-      const SF_E_Map *sfs(sud->HasKernel(e->GetFlavour(),fj,et));
-      if (sfs==NULL) continue;
-      for (SF_E_Map::const_iterator
-	     kit(sfs->begin());kit!=sfs->end();++kit) {
-	if (kit->second->Coupling()->AllowSpec(s->GetFlavour())) {
-	  Flavour fi(ei?e->GetFlavour().Bar():e->GetFlavour());
-	  Flavour fk(si?s->GetFlavour().Bar():s->GetFlavour());
-	  Vec4D pi(ei?-e->Momentum():e->Momentum());
-	  Vec4D pk(si?-s->Momentum():s->Momentum());
-	  if (jf->Qij2(pi,pj,pk,fi,fj)<q2) return false;
-	  break;
+  if (p_jf==NULL) return false;
+  DEBUG_FUNC("");
+  msg_Debugging()<<*(Singlet*)this<<"\n";
+  for (const_iterator iit(begin());iit!=end();++iit) {
+    bool ii((*iit)->GetType()==pst::IS);
+    Flavour fi((*iit)->GetFlavour());
+    for (const_iterator jit(iit);jit!=end();++jit) {
+      bool ji((*jit)->GetType()==pst::IS);
+      Flavour fj((*jit)->GetFlavour());
+      if (jit==iit || (ii&&ji)) continue;
+      for (const_iterator kit(begin());kit!=end();++kit) {
+	if (kit==iit || kit==jit) continue;
+	bool ki((*kit)->GetType()==pst::IS);
+	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
+	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
+	  double q2ijk(p_jf->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
+				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
+				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
+				  ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
+ 	  msg_Debugging()<<"Q_{"<<(*iit)->Id()<<(*jit)->Id()
+			 <<","<<(*kit)->Id()<<"} = "<<sqrt(q2ijk)<<"\n";
+	  if (q2ijk<(*kit)->KtVeto()) return false;
+	}
+	else {
+	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "
+			 <<(*kit)->GetFlavour()<<" ("<<et<<")\n";
 	}
       }
     }
   }
+  msg_Debugging()<<"--- Jet veto ---\n";
   return true;
 }
 

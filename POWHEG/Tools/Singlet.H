@@ -37,9 +37,7 @@ namespace POWHEG {
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			       const ATOOLS::Flavour &mo,const int mode);
 
-    bool JetVeto(Sudakov *const sud,
-		 PHASIC::Jet_Finder *const jf,const double &q2,
-		 const ATOOLS::Flavour &fj,const ATOOLS::Vec4D &pj) const;
+    bool JetVeto(Sudakov *const sud) const;
       
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 

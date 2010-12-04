@@ -391,7 +391,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
       }
       Singlet *ref(split->GetSing()->GetRef());
-      if (split->KtTest()>split->KtMax() && ref) {
+      if (split->KtTest()>split->KtMax() &&
+	  ref && ref->JF()) {
 	std::vector<Parton*> aems, pems, psps;
 	size_t aid(0), eid(0);
 	for (Singlet::const_iterator
