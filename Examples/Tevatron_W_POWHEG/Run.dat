@@ -33,7 +33,7 @@
 }(selector)
 
 (me){
-  ME_SIGNAL_GENERATOR Amegic WhiteHat;
+  ME_SIGNAL_GENERATOR Amegic Internal;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 2;
 }(me)

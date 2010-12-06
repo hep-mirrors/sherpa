@@ -411,6 +411,7 @@
 @mybibitem{Hamilton2006xz,Ham06a, K. Hamilton and P. Richardson,Simulation of QED radiation in particle decays using the YFS formalism,JHEP,07,(2006),010,[hep-ph/0603034],hep-ph/0603034}
 @mybibitem{Hamilton2008pd,Ham08, K. Hamilton and P. Richardson and J. Tully,A positive-weight next-to-leading order Monte Carlo simulation of Drell-Yan vector boson production,JHEP,10,(2008),015,[arXiv:0806.0290],arXiv:0806.0290}
 @mybibitem{Hamilton2009ne,Ham09, K. Hamilton and P. Richardson and J. Tully,A modified CKKW matrix element merging approach to angular-ordered parton showers,JHEP,11,(2009),038,[arXiv:0905.3072],arXiv:0905.3072}
+@mybibitem{Hamilton2010wh,Ham10, K. Hamilton and P.Nason,Improving NLO-parton shower matched simulations with higher order matrix elements,JHEP,06,(2010),039,[arXiv:1004.1764],arXiv:1004.1764}
 @mybibitem{Hamacher1995df,Ham95, K. Hamacher and M. Weierstall,The Next Round of Hadronic Generator Tuning Heavily Based on Identified Particle Data,,,,,hep-ex/9511011,hep-ex/9511011}
 @mybibitem{Han1998sg,Han98, T. Han and J. D. Lykken and R. J. Zhang,On Kaluza-Klein states from large extra dimensions,Phys. Rev.,D59,(1999),105006,[hep-ph/9811350],hep-ph/9811350}
 @mybibitem{Harel2008px,Har08, A. Harel,Monte Carlo for top background at the Tevatron,Nuovo Cim.,123B,(2008),1165-1172,[arXiv:0807.4127],arXiv:0807.4127}
@@ -425,6 +426,8 @@
 @mybibitem{Hoche2007hg,Hoc07, S. Hoche and F. Krauss and T. Teubner,Multi-jet events in the k_T-factorisation scheme,Eur. Phys. J.,C58,(2008),17-28,[arXiv:0705.4577],arXiv:0705.4577}
 @mybibitem{Hoeche2009rj,Hoe09, S. Hoche and F. Krauss and S. Schumann and  F. Siegert,QCD matrix elements and truncated showers,JHEP,05,(2009),053,[arXiv:0903.1219],arXiv:0903.1219}
 @mybibitem{Hoeche2009xc,Hoe09a,S. Hoche and S. Schumann and F. Siegert,Hard photon production and matrix-element parton-shower merging,Phys. Rev.,D81,(2010),034026,[arXiv:0912.3501],arXiv:0912.3501}
+@mybibitem{Hoche2010pf,Hoe10, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,Automating the POWHEG method in Sherpa,,,,,[arXiv:1008.5399],arXiv:1008.5399}
+@mybibitem{Hoche2010kg,Hoe10a, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,NLO matrix elements and truncated showers,,,,,[arXiv:1009.1127],arXiv:1009.1127}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}
 @mybibitem{Isgur1988gb,Isg88, N. Isgur and D. Scora and B. Grinstein and  M. B. Wise,Semileptonic B and D decays in the quark model,Phys. Rev.,D39,(1989),799,,F+J+Phys. Rev.%2CD39%2C799}

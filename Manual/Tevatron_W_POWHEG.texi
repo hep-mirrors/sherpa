@@ -1,0 +1,33 @@
+@node Tevatron_W_POWHEG
+@section Tevatron_W_POWHEG
+
+This setup implements a matching of NLO matrix elements with the parton 
+shower using the POWHEG method, cf. @mycite{Hoche2010pf}, @mycite{Nason2004rx}, 
+@mycite{Frixione2007vw}. Its result, after switching on both the hadronisation 
+and underlying event modules, can then be directly compared to experimental 
+data.
+
+@example
+@smallformat
+@verbatiminclude Examples/Tevatron_W_POWHEG/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item This is a Tevatron Run I setup for a parton shower matched NLO 
+simulation, using the POWHEG method.
+@item The renormalisation and factorisation scales are set to the transverse 
+mass of the electron-neutrino pair.
+@item The automated dipole subtraction implemented in matrix element generator 
+Amegic @mycite{Gleisberg2007md} is used.
+@item An internal hard-coded matrix element is used for the virtual term. For 
+more information on how to interface @ref{External one-loop ME}s see the 
+linked section.
+@item The kt-resolution parameter determining the splitting between singular 
+and regular real contributions is set to 2.
+@item Neither hadronisation nor underlying event corrections are taken into 
+account. Both can be switched on by setting the relevant @ref{Parameters} 
+accordingly.
+
+@end itemize

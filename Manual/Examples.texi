@@ -12,6 +12,7 @@ of the main features of these examples.
 * Tevatron_ZJets::            
 * Tevatron_WJets::            
 * Tevatron_QCD::              
+* Tevatron_Photons::
 * LEP91::                     
 * HERA_DIS::
 * LHC_TTH::               
@@ -25,13 +26,15 @@ of the main features of these examples.
 * LHC_ADD::
 * LHC_SUSY::
 * NLO_W::
-* Tevatron_Photons::
+* Tevatron_W_POWHEG::
+* Tevatron_ZJets_MENLOPS::
 @end menu
 
 @include LHC_ZJets.texi
 @include Tevatron_ZJets.texi
 @include Tevatron_WJets.texi
 @include Tevatron_QCD.texi
+@include Tevatron_Photons.texi
 @include LEP91.texi
 @include HERA_DIS.texi
 @include LHC_TTH.texi
@@ -45,5 +48,6 @@ of the main features of these examples.
 @include LHC_ADD.texi
 @include LHC_SUSY.texi
 @include W_NLO.texi
-@include Tevatron_Photons.texi
+@include Tevatron_W_POWHEG.texi
+@include Tevatron_ZJets_MENLOPS.texi
 
