@@ -195,7 +195,7 @@ One_Particle_Eta::One_Particle_Eta(const Flavour & flav,
   One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Eta") { }
 
 
-void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, double ncount) 
+void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, double ncount)
 {
   double pt2=sqr(mom[1])+sqr(mom[2]);
   double pp =sqrt(pt2+sqr(mom[3]));
@@ -208,7 +208,7 @@ void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, double ncount)
   p_histo->Insert(value,weight,ncount);
 } 
 
-void One_Particle_Eta::EvaluateNLOcontrib(const Vec4D & mom,double weight, double ncount) 
+void One_Particle_Eta::EvaluateNLOcontrib(const Vec4D & mom,double weight, double ncount)
 {
   double pt2=sqr(mom[1])+sqr(mom[2]);
   double pp =sqrt(pt2+sqr(mom[3]));
@@ -249,6 +249,31 @@ void One_Particle_Y::EvaluateNLOcontrib(const Vec4D & mom,double weight, double 
 Primitive_Observable_Base * One_Particle_Y::Copy() const
 {
   return new One_Particle_Y(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_Phi,One_Particle_Phi_Getter,"Phi")
+
+One_Particle_Phi::One_Particle_Phi(const Flavour & flav,
+                                   int type,double xmin,double xmax,int nbins,
+                                   const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Phi") { }
+
+
+void One_Particle_Phi::Evaluate(const Vec4D & mom,double weight, double ncount)
+{
+  p_histo->Insert(mom.Phi(),weight,ncount);
+}
+
+void One_Particle_Phi::EvaluateNLOcontrib(const Vec4D & mom,double weight, double ncount)
+{
+  p_histo->Insert(mom.Phi(),weight,ncount);
+}
+
+Primitive_Observable_Base * One_Particle_Phi::Copy() const
+{
+  return new One_Particle_Phi(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

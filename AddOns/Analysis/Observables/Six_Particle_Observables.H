@@ -39,6 +39,18 @@ namespace ANALYSIS {
     Primitive_Observable_Base* Copy() const;
   };
 
+  class Six_Particle_ET : public Six_Particle_Observable_Base {
+    void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+                  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+                  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+                  double=1.,double=1.);
+  public:
+    Six_Particle_ET(const std::vector<ATOOLS::Flavour>&,
+                    int,double,double,int,
+                    const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
+  };
+
   class Six_Particle_Mass : public Six_Particle_Observable_Base {
     void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
                   const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
@@ -62,6 +74,31 @@ namespace ANALYSIS {
                                 const std::string& listname);
     Primitive_Observable_Base* Copy() const;
   };
+
+  class Two_Partontriplett_DeltaEta : public Six_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  double=1.,double=1.);
+  public:
+    Two_Partontriplett_DeltaEta(const std::vector<ATOOLS::Flavour>&,
+                                int, double, double, int,
+                                const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
+  };
+
+  class Two_Partontriplett_DR : public Six_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+                  double=1.,double=1.);
+  public:
+    Two_Partontriplett_DR(const std::vector<ATOOLS::Flavour>&,
+                          int, double, double, int,
+                          const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
+  };
+
 
   // ======================================================================
 

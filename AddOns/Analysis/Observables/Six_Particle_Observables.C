@@ -201,6 +201,33 @@ Primitive_Observable_Base* Six_Particle_PT::Copy() const
 
 //=============================================================================
 
+DEFINE_OBSERVABLE_GETTER(Six_Particle_ET,
+       Six_Particle_ET_Getter,"ET6")
+
+void Six_Particle_ET::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+                               const Vec4D& mom3,const Vec4D& mom4,
+                               const Vec4D& mom5,const Vec4D& mom6,
+                               double weight, double ncount)
+{
+  double pt2 = sqr(mom1[1]+mom2[1]+mom3[1]+mom4[1]+mom5[1]+mom6[1]) +
+               sqr(mom1[2]+mom2[2]+mom3[2]+mom4[2]+mom5[2]+mom6[2]);
+  double p2  = sqr(mom1[3]+mom2[3]+mom3[3]+mom4[3]+mom5[3]+mom6[3])+pt2;
+  double et  = (mom1[0]+mom2[0]+mom3[0]+mom4[0]+mom5[0]+mom6[0])*sqrt(pt2/p2);
+  p_histo->Insert(et,weight,ncount);
+}
+
+Six_Particle_ET::Six_Particle_ET(const std::vector<Flavour>& flavs,
+           int type,double xmin,double xmax,int nbins,
+           const std::string & listname)
+  : Six_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"ET") {}
+
+Primitive_Observable_Base* Six_Particle_ET::Copy() const
+{
+  return new Six_Particle_ET(m_flavs,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//=============================================================================
+
 DEFINE_OBSERVABLE_GETTER(Six_Particle_Mass,
        Six_Particle_Mass_Getter,"6Mass")
 
@@ -261,5 +288,67 @@ Two_Partontriplett_DeltaPhi::Two_Partontriplett_DeltaPhi(
 Primitive_Observable_Base* Two_Partontriplett_DeltaPhi::Copy() const {
   return new Two_Partontriplett_DeltaPhi(m_flavs, m_type, m_xmin, m_xmax,
                                          m_nbins, m_listname);
+}
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Two_Partontriplett_DeltaEta,
+       Two_Partontriplett_DeltaEta_Getter,"DEta3_2")
+
+void Two_Partontriplett_DeltaEta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+                                           const Vec4D& mom3,const Vec4D& mom4,
+                                           const Vec4D& mom5,const Vec4D& mom6,
+                                           double weight, double ncount) {
+  Vec4D vecA(mom1); vecA+=mom2; vecA+=mom3;
+  Vec4D vecB(mom4); vecB+=mom5; vecB+=mom6;
+  double deta(abs(vecA.Eta()-vecB.Eta()));
+  p_histo->Insert(deta, weight, ncount);
+}
+
+Two_Partontriplett_DeltaEta::Two_Partontriplett_DeltaEta(
+             const std::vector<Flavour>& flavs,
+             int type, double xmin, double xmax,
+             int nbins,
+             const std::string & listname)
+  : Six_Particle_Observable_Base(flavs,type,xmin,xmax,
+                                 nbins,listname,"DEta3_2") {}
+
+Primitive_Observable_Base* Two_Partontriplett_DeltaEta::Copy() const {
+  return new Two_Partontriplett_DeltaEta(m_flavs, m_type, m_xmin, m_xmax,
+                                         m_nbins, m_listname);
+}
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Two_Partontriplett_DR,
+                         Two_Partontriplett_DR_Getter,"DR3_2")
+
+void Two_Partontriplett_DR::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+                                     const Vec4D& mom3,const Vec4D& mom4,
+                                     const Vec4D& mom5,const Vec4D& mom6,
+                                     double weight, double ncount) {
+  Vec4D vecA(mom1); vecA+=mom2; vecA+=mom3;
+  Vec4D vecB(mom4); vecB+=mom5; vecB+=mom6;
+  double pt1=sqrt(vecA[1]*vecA[1]+vecA[2]*vecA[2]);
+  double pt2=sqrt(vecB[1]*vecB[1]+vecB[2]*vecB[2]);
+  double dphi=acos((vecA[1]*vecB[1]+vecA[2]*vecB[2])/(pt1*pt2));
+  double c1=vecA[3]/Vec3D(vecA).Abs();
+  double c2=vecB[3]/Vec3D(vecB).Abs();
+  double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
+  double dR= sqrt(sqr(deta) + sqr(dphi));
+  p_histo->Insert(dR, weight, ncount);
+}
+
+Two_Partontriplett_DR::Two_Partontriplett_DR(
+             const std::vector<Flavour>& flavs,
+             int type, double xmin, double xmax,
+             int nbins,
+             const std::string & listname)
+  : Six_Particle_Observable_Base(flavs,type,xmin,xmax,
+                                 nbins,listname,"DR3_2") {}
+
+Primitive_Observable_Base* Two_Partontriplett_DR::Copy() const {
+  return new Two_Partontriplett_DR(m_flavs, m_type, m_xmin, m_xmax,
+                                   m_nbins, m_listname);
 }
 
