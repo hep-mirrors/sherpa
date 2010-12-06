@@ -1,0 +1,45 @@
+(run){
+  EVENTS = 10000
+
+  # cteq6l1
+  PDF_LIBRARY = CTEQ6Sherpa
+  PDF_SET = cteq6l1
+
+  SIGMA_ND_FACTOR = 0.4
+}(run)
+
+(beam){
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 900;
+  BEAM_2 = -2212; BEAM_ENERGY_2 = 900;
+
+  K_PERP_MEAN_1 = 1.2
+  K_PERP_MEAN_2 = 1.2
+  K_PERP_SIGMA_1 = 0.75
+  K_PERP_SIGMA_2 = 0.75
+}(beam)
+
+(processes){
+  Process 93 93 -> 93 93
+  Order_EW 0
+  End process
+}(processes)
+
+(selector){
+  # To be as inclusive as possible, the pT cut has been lowered to the
+  # same value as in the multiple parton interactions.
+  # Note that this pT cut has to be adjusted if E_CMS is changed,
+  # such that it is never lower then SCALE_MIN*(E_CMS/1800)^RESCALE_EXPONENT
+  # in the multiple parton interactions.
+  NJetFinder  2  2.65  0.0  1.0
+}(selector)
+
+(me){
+  ME_SIGNAL_GENERATOR = Comix
+}(me)
+
+(mi){
+  MI_HANDLER = Amisic
+  SCALE_MIN = 2.65
+  RESCALE_EXPONENT = 0.23
+  PROFILE_PARAMETERS = 0.714 0.31
+}(mi)
