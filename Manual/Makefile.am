@@ -58,7 +58,9 @@ Sherpa_TEXINFOS = \
 	Tevatron_Photons.texi \
 	Tevatron_TopPair.texi \
 	Tevatron_UE.texi \
+	Tevatron_W_POWHEG.texi \
 	Tevatron_WJets.texi \
+	Tevatron_ZJets_MENLOPS.texi \
 	Tevatron_ZJets.texi \
 	THDM.texi \
 	Tips.texi \

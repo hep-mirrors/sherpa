@@ -22,4 +22,6 @@ nobase_dist_examples_DATA         =	\
 			Tevatron_TopPair/Run.dat \
 			Tevatron_UE/Run.dat \
 			Tevatron_WJets/Run.dat \
+			Tevatron_W_POWHEG/Run.dat \
+			Tevatron_ZJets_MENLOPS/Run.dat \
 			Tevatron_ZJets/Run.dat

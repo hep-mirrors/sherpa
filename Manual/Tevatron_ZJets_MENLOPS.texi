@@ -21,8 +21,7 @@ the MENLOPS method.
 therefore similar to @ref{Tevatron_W_POWHEG}. Its scale is set to the 
 transverse mass of the lepton pair.
 @item Up to three additional jets are described by leading order matrix 
-elements. The core process is forced to be the Drell-Yan process with 
-@code{EXCLUSIVE_CLUSTER_MODE 0}.
+elements.
 @item An internal hard-coded matrix element is used for the virtual term of the
 Drell-Yan core process. For more information on how to interface 
 @ref{External one-loop ME}s see the linked section. Higher order emissions 
