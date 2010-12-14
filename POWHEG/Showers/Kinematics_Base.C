@@ -328,7 +328,7 @@ double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &ma2,const double &mi2,const double &mb2) const
 {
   if (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2) return -1.0;
-  return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
+  return 1.0/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
 int Kinematics_II::MakeKinematics
@@ -405,6 +405,8 @@ int Kinematics_II::MakeKinematics
   double mi2 = sqr(p_ms->Mass(newfl)), phi = split->Phi();
 
   y=GetY(Q2,split->KtTest(),z,ma2,mi2,mb2);
+  z/=1.0+y;
+  y*=z;
   double xi=1.0-1.0/(z+y), yt=-y/z, rf=z+y;
   double sai=GetS(Q2,yt,ma2,mi2,mb2);
   double gam=ConstructLN(Q2,sai,mai2,mb2,Q,q2,l,n);

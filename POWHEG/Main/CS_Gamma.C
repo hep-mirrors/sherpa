@@ -163,10 +163,9 @@ int CS_Gamma::SingleWeight
   if (cs.m_mode==1) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=p_cluster->GetX(lk,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) {
-    eta=p_cluster->GetX(li,cdip)*(cs.m_z+cs.m_y);
+    eta=p_cluster->GetX(li,cdip)*cs.m_z;
     pb = new Parton(p_cluster->LegB()->Flav().Bar(),-cs.m_pbt,pst::IS);
-    pb->SetXbj(p_cluster->GetX(p_cluster->LegB(),NULL)*
-	       cs.m_z/(cs.m_z+cs.m_y));
+    pb->SetXbj(p_cluster->GetX(p_cluster->LegB(),NULL)*cs.m_x/cs.m_z);
     cdip->SetSpec(pb);
   }
   Weight_Value meps(Differential(ampl,0));

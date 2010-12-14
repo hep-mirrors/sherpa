@@ -171,10 +171,16 @@ double Splitting_Function_Base::BWFactor
 }
 
 double Splitting_Function_Base::operator()
-  (const double z,const double y,const double eta,
+  (const double zd,const double yd,const double eta,
    const double scale,const double Q2)
 {
-  return (*p_lf)(z,y,eta,scale,Q2)
+  double z=zd, y=yd, J=1.0;
+  if (m_type==cstp::II) {
+    z/=1.0+y;
+    y*=z;
+    J=z/zd;
+  }
+  return (*p_lf)(z,y,eta,scale,Q2)*J
     *BWFactor(z,y,eta,scale,Q2)/m_symf/m_polfac;
 }
 
