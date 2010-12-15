@@ -187,26 +187,18 @@ double Splitting_Function_Base::MEPSWeight
     return (8.0*M_PI)/(-Q2*y)/p_lf->JFI(y,eta,scale,sub);
   case cstp::IF:
     return (8.0*M_PI)/(-Q2*y)/p_lf->JIF(z,y,eta,scale,sub);
-  case cstp::II: {
-    double zt=z/(1.0+y), yt=y*zt;
-    return (8.0*M_PI)/(Q2*yt)/p_lf->JII(zt,yt,eta,scale,sub)*z/zt;
-  }
+  case cstp::II:
+    return (8.0*M_PI)/(Q2*y)/p_lf->JII(z,y,eta,scale,sub);
   case cstp::none: break;
   }
   return 0.0;
 }
 
 double Splitting_Function_Base::operator()
-  (const double zd,const double yd,const double eta,
+  (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double z=zd, y=yd, J=1.0;
-  if (m_type==cstp::II) {
-    z/=1.0+y;
-    y*=z;
-    J=z/zd;
-  }
-  return (*p_lf)(z,y,eta,scale,Q2,sub)*J
+  return (*p_lf)(z,y,eta,scale,Q2,sub)
     *BWFactor(z,y,eta,scale,Q2)/m_symf/m_polfac;
 }
 

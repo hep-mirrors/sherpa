@@ -536,12 +536,10 @@ bool Sudakov::KinCheck(double Q2,double x) {
     }
   }
     break;
-  case cstp::II: {
-    double z = m_z/(1.0+m_y), y = m_y*z;
-    if (y<0.     || y>1.)  return false;
-    if (y>(1.-z) || x>z)   return false;
+  case cstp::II: 
+    if (m_y<0.       || m_y>1.)  return false;
+    if (m_y>(1.-m_z) || x>m_z)   return false;
     break;
-  }
   case cstp::none:             return false;
   }
   return true;

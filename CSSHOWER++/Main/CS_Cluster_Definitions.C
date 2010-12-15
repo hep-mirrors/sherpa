@@ -155,9 +155,9 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) {
-    eta=GetX(i,cdip)*cs.m_z;
+    eta=GetX(i,cdip)*(cs.m_z+cs.m_y);
     pb = new Parton(p_b->Flav().Bar(),-cs.m_pbt,pst::IS);
-    pb->SetXbj(GetX(p_b,NULL)*cs.m_x/cs.m_z);
+    pb->SetXbj(GetX(p_b,NULL)*cs.m_z/(cs.m_z+cs.m_y));
     cdip->SetSpec(pb);
   }
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
@@ -344,7 +344,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
   double mb2  = sqr(p_ms->Mass(b->Flav()));
   double mai2 = sqr(p_ms->Mass(mo));
 
-  double kt2   = 2.*papb*vi*(1.-xiab-vi)-mi2-sqr(1.-xiab-vi)*ma2;
+  double kt2   = 2.*papb*vi*(1.-xiab)-mi2-sqr(1.-xiab)*ma2;
 
   Vec4D pai(a->Mom()+i->Mom()), Q(pai+b->Mom());
   double Q2=Q.Abs2(), sai=pai.Abs2();
@@ -364,7 +364,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
   Vec4D pait=-Q+pbt, pb=-b->Mom(), pi=i->Mom();
   lt.Align(pi);
 
-  CS_Parameters cs(kt2,xiab+vi,vi/xiab,Phi(pait,pb,pi,true),xiab,Q2,3);
+  CS_Parameters cs(kt2,xiab,vi,Phi(pait,pb,pi,true),xiab,Q2,3);
   if (pait[3]*pb[3]>0.0) {
     cs.m_wk=cs.m_ws=-1.0;
     return cs;

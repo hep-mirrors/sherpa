@@ -311,8 +311,7 @@ bool Sudakov::Dice(Parton * split)
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2);
       x   = split->Xbj();
-      double z = m_z/(1.0+m_y), y = m_y*z;
-      if (y<0.0 || y>1.0-z || z<x) continue;
+      if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
     }
       break;
   default:
