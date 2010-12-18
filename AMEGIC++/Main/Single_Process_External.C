@@ -74,6 +74,8 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
       msg_Tracking()<<"AMEGIC::Single_Process_External::InitAmplitude : "<<std::endl
 		    <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
       p_mapproc = p_partner   = (Single_Process_External*)links[j];
+      for (size_t i(0);i<m_nin+m_nout;++i)
+	AddtoFlavmap(ToString(1<<i),p_partner->Flavours()[i]);
       break;
     } 
   }
