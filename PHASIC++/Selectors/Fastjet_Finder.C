@@ -22,7 +22,8 @@ namespace PHASIC {
 
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
+		      ATOOLS::NLO_subevtlist *const subs);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -111,13 +112,14 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
   return (1-m_sel_log->Hit(1-trigger));
 }
 
-bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,const Flavour_Vector &fl,int ns)
+bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
+				ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_n<1) return true;
 
   std::vector<fastjet::PseudoJet> input,jets;
-  for (int i(m_nin);i<ns+m_nin;++i) {
-    if (fl[i].Strong())
+  for (size_t i(m_nin);i<subs->back()->m_n;++i) {
+    if (subs->back()->p_fl[i].Strong())
       input.push_back(fastjet::PseudoJet(p[i][1],p[i][2],p[i][3],p[i][0]));      
   }
   

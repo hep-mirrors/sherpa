@@ -120,7 +120,7 @@ namespace PHASIC {
     ~IQ2_Selector();
     void     SetRange(ATOOLS::Flavour_Vector,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,const ATOOLS::Flavour_Vector &,int);
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
     bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
@@ -1277,7 +1277,7 @@ bool IQ2_Selector::Trigger(const Vec4D_Vector & mom)
   return 1;
 }
 
-bool IQ2_Selector::JetTrigger(const Vec4D_Vector &,const Flavour_Vector &,int)
+bool IQ2_Selector::JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const subs)
 {
   if (!m_strong) return 1;
   msg_Error()<<"Q2_Selector::JetTrigger: IR unsafe cut"<<std::endl;
