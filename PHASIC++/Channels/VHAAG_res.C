@@ -320,7 +320,7 @@ void VHAAG_res::ConstructMomenta(double a1,double phi,
 			  ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)
 {
   double ps = 0.25*(sqr(s-s1-s2)-4.*s1*s2)/s;
-  if (q1.PPerp()!=0.||!IsZero(q1.Abs2()/Max(1.,sqr(q1[0])))) {
+  if (q1.PPerp()!=0.||!IsZero(q1.Abs2()/Max(1.,sqr(q1[0])),1.0e-6)) {
     msg_Error()<<" Error in"<<std::endl
 	       <<"ConstructMomenta(double a1,double phi,double s1,double s2,double s,"<<std::endl
 	       <<"                 ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)!"<<std::endl
