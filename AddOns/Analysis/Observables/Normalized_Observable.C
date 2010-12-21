@@ -12,8 +12,8 @@ Normalized_Observable::Normalized_Observable():
 
 Normalized_Observable::
 Normalized_Observable(int type,double xmin,double xmax,int nbins,
-		      const std::string &name):
-  Primitive_Observable_Base(type,xmin,xmax,nbins)
+		      const std::string &name,const int mode):
+  Primitive_Observable_Base(type,xmin,xmax,nbins), m_mode(mode)
 {
   p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
   p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
@@ -67,7 +67,8 @@ Normalized_Observable::operator+=(const Primitive_Observable_Base &obs)
 void Normalized_Observable::EndEvaluation(double scale)
 {
   double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
-  p_obs->Scale(scale*m_nbins/(m_xmax-m_xmin)/n);              
+  if (m_mode==0) p_obs->Scale(scale*m_nbins/(m_xmax-m_xmin)/n);
+  else p_obs->Scale(scale/n);
   p_norm->Scale(scale/n);                                 
   if (!m_copied) {                                                 
     for (int i=0;i<m_nbins+2;++i) {			   
@@ -81,7 +82,8 @@ void Normalized_Observable::EndEvaluation(double scale)
 void Normalized_Observable::Restore(double scale)
 {
   double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
-  p_obs->Scale(scale*n*(m_xmax-m_xmin)/m_nbins);              
+  if (m_mode==0) p_obs->Scale(scale*n*(m_xmax-m_xmin)/m_nbins);
+  else p_obs->Scale(scale*n);
   p_norm->Scale(scale*n);                                 
 }
 

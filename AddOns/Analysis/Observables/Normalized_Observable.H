@@ -10,12 +10,14 @@ namespace ANALYSIS {
     
     ATOOLS::Histogram *p_obs, *p_norm;
 
+    int m_mode;
+
   public:
 
     // constructors
     Normalized_Observable();
     Normalized_Observable(int type,double xmin,double xmax,int nbins,
-			  const std::string &name="");
+			  const std::string &name="",const int mode=0);
     Normalized_Observable(const Normalized_Observable & old);
 
     // destructor
