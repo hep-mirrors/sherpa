@@ -96,6 +96,10 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
     colfac  = 1.;
     kswitch = 2;
   }
+  m_cfls[3].push_back(kf_photon);
+  m_cfls[3].push_back(kf_Z);
+  m_cfls[12].push_back(kf_photon);
+  m_cfls[12].push_back(kf_Z);
 }
 
 double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
@@ -200,6 +204,14 @@ XS_Charged_Drell_Yan::XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour
     barred = fl[0].IsAnti();
     p_colours[0][barred] = p_colours[1][1-barred] = 500;
     colfac  = 1./3.;
+  }
+  if (fl[2].IntCharge()+fl[3].IntCharge()>0) {
+    m_cfls[12].push_back(kf_Wplus);
+    m_cfls[3].push_back(Flavour(kf_Wplus).Bar());
+  }
+  else {
+    m_cfls[3].push_back(kf_Wplus);
+    m_cfls[12].push_back(Flavour(kf_Wplus).Bar());
   }
 }
 

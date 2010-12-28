@@ -476,8 +476,8 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
     p_ampl->SetKin(win.Kin());
   }
-  double scale;
-  p_ct->IdentifyHardPropagator(scale);
+  p_ampl->SetProcs(p_proc);
+  double scale(p_clus->CoreScale(p_ampl));
   p_ampl->SetKT2(scale);
   p_ampl->SetMu2(scale);
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());

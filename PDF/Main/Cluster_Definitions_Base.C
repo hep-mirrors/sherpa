@@ -1,5 +1,7 @@
 #include "PDF/Main/Cluster_Definitions_Base.H"
 
+#include "ATOOLS/Org/Exception.H"
+
 using namespace PDF;
 using namespace ATOOLS;
 
@@ -17,4 +19,10 @@ Cluster_Definitions_Base::Cluster_Definitions_Base() : m_amode(0)
 
 Cluster_Definitions_Base::~Cluster_Definitions_Base() 
 {
+}
+
+double Cluster_Definitions_Base::CoreScale
+(ATOOLS::Cluster_Amplitude *const ampl)
+{
+  THROW(fatal_error,"Invalid function call");
 }
