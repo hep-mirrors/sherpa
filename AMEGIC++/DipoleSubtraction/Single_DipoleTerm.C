@@ -475,9 +475,11 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const int mode)
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
      p_dipole->GetDiPolarizations(),mode) : 0.0;
   double df = p_dipole->GetF();
+  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result =
+    m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+
   if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
-  m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
   if (!trg) return m_lastxs=m_subevt.m_me=0.;
 
   m_lastxs = M2 * df * KFactor();
