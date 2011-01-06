@@ -57,6 +57,8 @@ namespace AMEGIC {
 
   private:
     bool           DetermineType();
+    std::vector<PHASIC::Subprocess_Info>::iterator
+                   FindInInfo(PHASIC::Subprocess_Info& fi, int idx) const;
     void           SetLOMomenta(const ATOOLS::Vec4D*);
     bool           CompareLOmom(const ATOOLS::Vec4D*);
 
