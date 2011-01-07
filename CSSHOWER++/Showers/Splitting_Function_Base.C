@@ -300,11 +300,8 @@ double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 		       const double &scale) const
 { 
   double scalea(scale), scaleb(scale);
-  Parton *s(p_sf->Spec());
-  double fresh = p_sf->GetXPDF(scalea,eta/(z+y),m_flavs[0],m_beam);
+  double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);
-  fresh *= p_sf->GetXPDF(scalea,s->Xbj()*(z+y)/z,s->GetFlavour(),1-m_beam);
-  old *= p_sf->GetXPDF(scaleb,s->Xbj(),s->GetFlavour(),1-m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }

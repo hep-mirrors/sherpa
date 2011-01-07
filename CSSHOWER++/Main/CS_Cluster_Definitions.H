@@ -46,6 +46,10 @@ namespace CSSHOWER {
 		     const ATOOLS::Cluster_Leg *lk,
 		     const ATOOLS::Flavour &mo) const;
 
+    double ConstructLN(const ATOOLS::Cluster_Leg *pl,
+		       const ATOOLS::Cluster_Leg *pn,
+		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
+
   public:
     
     CS_Cluster_Definitions(Shower *const shower,const int kmode=1);

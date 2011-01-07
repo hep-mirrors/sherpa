@@ -149,16 +149,10 @@ void CS_Cluster_Definitions::KernelWeight
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
-  Parton *pb(NULL);
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
-  else if (cs.m_mode==3) {
-    eta=GetX(i,cdip)*(cs.m_z+cs.m_y);
-    pb = new Parton(p_b->Flav().Bar(),-cs.m_pbt,pst::IS);
-    pb->SetXbj(GetX(p_b,NULL)*cs.m_z/(cs.m_z+cs.m_y));
-    cdip->SetSpec(pb);
-  }
+  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
@@ -171,7 +165,6 @@ void CS_Cluster_Definitions::KernelWeight
   msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
-  if (pb) delete pb;
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2_FF
@@ -562,6 +555,19 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   Vec4D pi = ampl.Leg(i)->Mom();
   Vec4D pb = ampl.Leg(b)->Mom();
   
+  double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
+  double vi   = -(pa*pi)/(pa*pb);
+
+  Vec4D pl, pn;
+  ConstructLN(ampl.Leg(a),ampl.Leg(b),pl,pn);
+  Poincare newcms(pl+pn), oldcms(pl/(1.0+vi/xiab)+pn*(1.0+vi/xiab));
+  newcms.Boost(pa);
+  oldcms.BoostBack(pa);
+  newcms.Boost(pi);
+  oldcms.BoostBack(pi);
+  newcms.Boost(pb);
+  oldcms.BoostBack(pb);
+
   Vec4D Q(pa+pi+pb), pai(pa+pi);
 
   double mb2  = sqr(p_ms->Mass(ampl.Leg(b)->Flav()));
@@ -574,7 +580,6 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
-  double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
   if (lrat<0.0 || pbt[0]>0.0 || pai[3]*pb[3]>0.0 ||
       IsZero(sqr(pbt[0])/Q2) || xiab<0.0) return Vec4D_Vector();
 
@@ -584,11 +589,26 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
     else if (m==(size_t)1-a) after[l]=pbt;
     else {
       after[l]=ampl.Leg(m)->Mom();
+      newcms.Boost(after[l]);
+      oldcms.BoostBack(after[l]);
       lt.Align(after[l]);
     }
     ++l;
   }
   return after;
+}
+
+double CS_Cluster_Definitions::ConstructLN
+(const Cluster_Leg *pl,const Cluster_Leg *pn,Vec4D &l,Vec4D &n) const
+{
+  Vec4D pij=pl->Mom(), pk=pn->Mom();
+  double sij=p_ms->Mass2(pl->Flav());
+  double Q2=(pij+pk).Abs2(), mk2=p_ms->Mass2(pn->Flav());
+  double gam=pij*pk+Sign(Q2-sij-mk2)*sqrt(sqr(pij*pk)-sij*mk2);
+  double a13=sij/gam, a2=mk2/gam, bet=1.0/(1.0-a13*a2);
+  l=bet*(pij-a13*pk);
+  n=bet*(pk-a2*pij);
+  return gam;
 }
 
 double CS_Cluster_Definitions::CoreScale
