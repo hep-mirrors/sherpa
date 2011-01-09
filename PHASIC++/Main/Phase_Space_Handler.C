@@ -398,14 +398,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_massboost->BoostBack(p_lab[i]);
   }
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
-  if (!Check4Momentum(p_lab)) {
-    msg_Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
-    for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
- 						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
-    return 0.;
-  }
   m_result_2=m_result_1=0.0;
   if (process->Process()->Trigger(p_lab)) {
+    Check4Momentum(p_lab);
 #ifdef USING__Threading
     if (m_uset) {
       // start me calc
@@ -457,8 +452,15 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p)
   double sin = pin.Abs2(), sout = pout.Abs2();
   static double accu(sqrt(Accu()));
   if (!IsEqual(pin,pout,accu) || !IsEqual(sin,sout,accu)) {
-    msg_Error()<<"Phase_Space_Handler::Check4Momentum(..): "
-		       <<"Difference: "<<pin-pout<<" "<<sin-sout<<std::endl;
+    int prec(msg_Error().precision());
+    msg_Error().precision(12);
+    msg_Error()<<METHOD<<"(): {\n";
+    for (int i=0;i<m_nin+m_nout;++i) msg_Error()
+      <<"  p_"<<i<<" = "<<p_lab[i]<<" ("<<p_lab[i].Abs2()<<")\n";
+    msg_Error()<<"  p_in  = "<<pin<<" ("<<sin<<")\n"
+	       <<"  p_out = "<<pout<<" ("<<sout<<")\n"
+	       <<"  diff  = "<<pout-pin<<" ("<<sout-sin<<")\n}"<<std::endl;
+    msg_Error().precision(prec);
     return false;
   }
   return true;
