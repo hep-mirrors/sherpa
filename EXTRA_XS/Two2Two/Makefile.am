@@ -10,4 +10,3 @@ libExtraXS2_2_la_SOURCES      =	SVN_Info.C \
 				XS_4F.C \
                                 ee_Y4S_BB.C \
 				gg_yy.C
-localinc_HEADERS          =	SVN_Info.C.in

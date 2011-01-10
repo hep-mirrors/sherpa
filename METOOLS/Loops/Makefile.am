@@ -24,7 +24,6 @@ libHelicitiesLoops_la_SOURCES       =	\
 localincdir = $(pkgincludedir)/METOOLS/Loops
 
 localinc_HEADERS      =	\
-                        SVN_Info.C.in \
 			Divergence_Array.H \
                         Master_Integrals.H \
                         PV_Integrals.H \

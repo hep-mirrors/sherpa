@@ -9,6 +9,5 @@ libCSMain_la_SOURCES = \
 		CS_Shower.C
 
 localinc_HEADERS   = \
-		SVN_Info.C.in \
 		CS_Cluster_Definitions.H \
 		CS_Shower.H

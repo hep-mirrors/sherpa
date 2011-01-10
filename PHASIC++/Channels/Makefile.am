@@ -31,7 +31,6 @@ libPhasicChannels_la_SOURCES  =	\
                                 Extra_Emission_Generator.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Channel_Basics.H \
 			Channel_Elements.H \
 			Channel_Elements_KK.H \

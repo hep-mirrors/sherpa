@@ -10,7 +10,6 @@ MCFM_SOURCES  =	\
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\
-		SVN_Info.C.in \
 		MCFM_Wrapper.H
 
 if MCFM_SUPPORT

@@ -13,8 +13,7 @@ libModelMain_la_SOURCES = SVN_Info.C \
 			  FeynRules_Model.C FeynRules_Spectrum.C \
 	                  Hidden_Valley.C Running_Alpha_HV.C 	
 
-localinc_HEADERS   = SVN_Info.C.in \
-		     Coupling_Data.H Model_Base.H \
+localinc_HEADERS =   Coupling_Data.H Model_Base.H \
 		     Standard_Model.H SM_AGC.H MSSM.H SM_MSSM_EHC.H THDM.H \
 		     ADD.H SM_Phantom_U1.H SM_AxiGluon.H \
 		     Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \

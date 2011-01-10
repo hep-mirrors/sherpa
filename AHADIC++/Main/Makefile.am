@@ -10,7 +10,6 @@ libAhadicMain_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Main
 
 localinc_HEADERS   = \
-                     SVN_Info.C.in \
 		     Ahadic.H
 
 EXTRA_DIST    = @SVNINCLUDE@

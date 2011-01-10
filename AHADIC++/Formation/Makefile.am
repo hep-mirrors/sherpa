@@ -13,7 +13,6 @@ libAhadicFormation_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Formation
 
 localinc_HEADERS   = \
-                     SVN_Info.C.in \
 		     Cluster_Formation_Handler.H \
                      Gluon_Decayer.H \
                      Cluster_Former.H \

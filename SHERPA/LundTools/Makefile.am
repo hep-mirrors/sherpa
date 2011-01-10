@@ -10,8 +10,8 @@ include ../../svn.make
 
 if PYTHIA_SUPPORT
 libLundTools_la_SOURCES       =	$(PYTHIASOURCES) SVN_Info.C
-localinc_HEADERS        =	$(PYTHIAHEADERS) SVN_Info.C.in Dummy.C
+localinc_HEADERS        =      $(PYTHIAHEADERS) Dummy.C
 else
 libLundTools_la_SOURCES       = SVN_Info.C Dummy.C
-localinc_HEADERS        =       $(PYTHIASOURCES) $(PYTHIAHEADERS) SVN_Info.C.in
+localinc_HEADERS        =       $(PYTHIASOURCES) $(PYTHIAHEADERS)
 endif

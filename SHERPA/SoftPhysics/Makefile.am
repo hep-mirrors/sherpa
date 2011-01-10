@@ -12,7 +12,6 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Soft_Photon_Handler.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Primordial_KPerp.H \
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \

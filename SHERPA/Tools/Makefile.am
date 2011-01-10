@@ -29,7 +29,6 @@ libSherpaTools_la_SOURCES     =	\
 				RootNtuple_Reader.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Input_Output_Handler.H \
 			Output_Base.H \
 			Output_Sherpa.H \

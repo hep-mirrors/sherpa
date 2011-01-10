@@ -24,7 +24,6 @@ libHadronsCurrents_la_SOURCES = \
         VA_F_F.C
 
 localinc_HEADERS   = \
-        SVN_Info.C.in \
 	Current_Base.H \
 	VA_P_P.H \
 	VA_P_V.H \

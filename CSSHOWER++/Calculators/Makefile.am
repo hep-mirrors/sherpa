@@ -13,4 +13,3 @@ libCSCalculators_la_SOURCES = \
 	LF_FFV.C \
 	LF_VVV.C
 
-localinc_HEADERS = SVN_Info.C.in

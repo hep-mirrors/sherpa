@@ -12,7 +12,6 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Hard_Decay_Handler.C
 
 localinc_HEADERS          =	\
-			SVN_Info.C.in \
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
 			Shower_Handler.H \

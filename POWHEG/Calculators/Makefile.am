@@ -8,6 +8,3 @@ libPOWHEGCalculators_la_SOURCES = \
 	CF_QCD.C \
 	LF_FFV.C \
 	LF_VVV.C
-
-localinc_HEADERS = \
-	SVN_Info.C.in

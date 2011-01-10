@@ -25,7 +25,6 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					$(MCINTERFACESOURCES)
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \

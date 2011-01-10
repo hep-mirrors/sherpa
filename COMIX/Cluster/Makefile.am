@@ -9,6 +9,5 @@ libComixCluster_la_SOURCES    =	\
 				Cluster_Algorithm.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Color_Setter.H \
 			Cluster_Algorithm.H

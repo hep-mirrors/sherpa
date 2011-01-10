@@ -19,7 +19,6 @@ libDipoleSubtraction_la_SOURCES = \
 		       Single_Real_Correction.C 
 
 localinc_HEADERS   = \
-		     SVN_Info.C.in \
 		     Flavour_KernelsA.H \
 		     Massive_Kernels.H \
 		     DipoleSplitting_Base.H \

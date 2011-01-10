@@ -12,7 +12,6 @@ libCSShowers_la_SOURCES = \
 	Kinematics_Base.C
 
 localinc_HEADERS   = \
-	SVN_Info.C.in \
 	Splitting_Function_Base.H \
 	Splitting_Function_Group.H \
 	Sudakov.H \

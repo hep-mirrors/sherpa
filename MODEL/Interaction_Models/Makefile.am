@@ -38,7 +38,6 @@ libModelInteractions_la_SOURCES = \
 
 
 localinc_HEADERS   = \
-				SVN_Info.C.in \
 				Lorentz_Function.H Color_Function.H \
 				Single_Vertex.H Vertex.H \
 				Interaction_Model_Base.H \

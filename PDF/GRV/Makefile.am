@@ -9,5 +9,4 @@ libGRVSherpa_la_SOURCES       =	\
 				GRVph_Fortran_Interface.C 
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			GRVph_Fortran_Interface.H 

@@ -33,7 +33,6 @@ libToolsPhys_la_SOURCES       =	\
 				Mass_Handler.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \

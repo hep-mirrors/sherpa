@@ -36,7 +36,6 @@ libToolsOrg_la_SOURCES        = \
 				My_Root.C
 
 localinc_HEADERS         =	\
-			SVN_Info.C.in \
 			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
 			Return_Value.H \

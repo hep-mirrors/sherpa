@@ -8,6 +8,5 @@ libAmisic_la_SOURCES  = \
 			MI_Base.C \
 			Amisic.C 
 localinc_HEADERS          = \
-			SVN_Info.C.in \
 			MI_Base.H \
 			Amisic.H 

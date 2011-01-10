@@ -8,7 +8,6 @@ libString_la_SOURCES = SVN_Info.C \
                        String_Tree.C String_Output.C \
 	               MyString.C String_Library.C
 
-localinc_HEADERS   = SVN_Info.C.in \
-		 String_Handler.H String_Generator.H \
+localinc_HEADERS   = String_Handler.H String_Generator.H \
                  String_Tree.H String_Output.H \
 	         MyString.H Values.H String_Library.H

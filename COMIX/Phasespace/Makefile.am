@@ -11,7 +11,6 @@ libComixPhasespace_la_SOURCES =	\
 				PS_Generator.C \
 				PS_Channel.C
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			PS_Info.H \
 			PS_Vertex.H \
 			PS_Current.H \

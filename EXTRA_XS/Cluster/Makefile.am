@@ -7,5 +7,4 @@ libExtraXSCluster_la_SOURCES  =	\
 				SVN_Info.C \
 				Cluster_Algorithm.C
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Cluster_Algorithm.H

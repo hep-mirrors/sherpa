@@ -8,5 +8,4 @@ libPDFESherpa_la_SOURCES     =	\
 				PDF_Electron.C 
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			PDF_Electron.H 

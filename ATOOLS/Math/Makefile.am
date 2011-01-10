@@ -29,7 +29,6 @@ libToolsMath_la_SOURCES       =	\
 				Tensor.C
 
 localinc_HEADERS          =	\
-			SVN_Info.C.in \
 			MathTools.H \
 			Term.H \
 			Algebra_Interpreter.H \

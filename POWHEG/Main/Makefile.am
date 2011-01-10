@@ -10,7 +10,6 @@ libPOWHEGMain_la_SOURCES = \
 		CS_POWHEG.C
 
 localinc_HEADERS   = \
-		SVN_Info.C.in \
 		CS_Cluster_Definitions.H \
 		CS_Gamma.H \
 		CS_POWHEG.H

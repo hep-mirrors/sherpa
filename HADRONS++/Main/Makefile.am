@@ -13,7 +13,6 @@ libHadronsMain_la_SOURCES = \
 		Tools.C
 
 localinc_HEADERS   = \
-		SVN_Info.C.in \
 		Hadrons.H \
 		Hadron_Decay_Map.H \
 		Hadron_Decay_Table.H \

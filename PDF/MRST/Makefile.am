@@ -20,7 +20,6 @@ libMRST04QEDSherpa_la_SOURCES =	\
 				PDF_MRST04QED.C
 
 localinc_HEADERS      = \
-			SVN_Info.C.in \
 			mrst99.h \
 			PDF_MRST99.H \
 			PDF_MRST01LO.H \

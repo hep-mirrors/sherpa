@@ -8,7 +8,6 @@ WHITEHAT_SOURCES      =	\
 			WhiteHat_Interface.C
 
 WHITEHAT_ADDS         =	\
-			SVN_Info.C.in \
 			WhiteHat_Tree.H \
 			WhiteHat_Virtual.H
 

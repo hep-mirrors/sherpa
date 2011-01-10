@@ -15,8 +15,7 @@ libAmplitude_la_SOURCES = SVN_Info.C \
                           FullAmplitude_MHV_Base.C \
                           Amplitude_Output.C
 
-localinc_HEADERS   = SVN_Info.C.in \
-		 CFColor.H Single_Amplitude.H \
+localinc_HEADERS   = CFColor.H Single_Amplitude.H \
                  Amplitude_Generator.H Amplitude_Manipulator.H \
 		 Color_Generator.H \
 	         Prop_Generator.H Zfunc_Generator.H Pfunc.H \

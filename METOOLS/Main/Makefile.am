@@ -18,7 +18,6 @@ libHelicitiesMain_la_SOURCES       =	\
 			Four_Particle_Amplitudes.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			C_Scalar.H \
 			C_Tensor.H \
 			C_Spinor.H \

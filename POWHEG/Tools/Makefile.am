@@ -9,6 +9,5 @@ libPOWHEGTools_la_SOURCES = \
 	Singlet.C
 
 localinc_HEADERS   = \
-	SVN_Info.C.in \
 	Parton.H \
 	Singlet.H

@@ -12,4 +12,3 @@ libExtraXSNLO_la_SOURCES      =	SVN_Info.C \
                                 ppll1jet_CSS_approx.C \
                                 epe2jet_CSS_approx.C
 
-localinc_HEADERS = SVN_Info.C.in

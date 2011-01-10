@@ -11,8 +11,7 @@ libBeam_la_SOURCES    =	SVN_Info.C \
 			Spectrum_Reader.C \
 			Beam_Spectra_Handler.C
 
-localinc_HEADERS          =	SVN_Info.C.in \
-			Beam_Base.H \
+localinc_HEADERS =	Beam_Base.H \
 		 	Monochromatic.H \
 			Laser_Backscattering.H \
 			EPA.H \

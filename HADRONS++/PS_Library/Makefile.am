@@ -12,7 +12,6 @@ libHadronsPSs_la_SOURCES = \
 		ResonanceFlavour.C
 
 localinc_HEADERS   = \
-		SVN_Info.C.in \
 		HD_PS_Base.H \
 		Three_Body_PSs.H \
 		Two_Body_PSs.H  \

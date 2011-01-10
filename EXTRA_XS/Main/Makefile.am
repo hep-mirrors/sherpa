@@ -11,7 +11,6 @@ libExtraXS_la_SOURCES =	\
 			ME2_Base.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Single_Process.H \
 			Process_Group.H \
 			ME2_Base.H

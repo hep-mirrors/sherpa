@@ -5,7 +5,7 @@ include ../../svn.make
 
 libSherpaMain_la_SOURCES      =	SVN_Info.C Sherpa.C 
 
-localinc_HEADERS          =	SVN_Info.C.in Sherpa.H 
+localinc_HEADERS          =    Sherpa.H 
 
 SYSLIBS	      =	$(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
 

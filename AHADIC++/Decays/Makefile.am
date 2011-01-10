@@ -12,7 +12,6 @@ libAhadicDecays_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Decays
 
 localinc_HEADERS   = \
-                     SVN_Info.C.in \
 		     Cluster_Decay_Handler.H \
                      Cluster_Decay_Analysis.H \
                      Cluster_Part.H 

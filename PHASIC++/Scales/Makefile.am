@@ -17,7 +17,6 @@ libPhasicScales_la_SOURCES    =	\
 				No_KFactor_Setter.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Scale_Setter_Base.H \
 			KFactor_Setter_Base.H \
 			Tag_Setter.H

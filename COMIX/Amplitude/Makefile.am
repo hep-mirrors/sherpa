@@ -11,7 +11,6 @@ libComixAmplitude_la_SOURCES  =	\
 				Matrix_Element.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Vertex_Base.H \
 			Current_Base.H \
 			Amplitude.H \

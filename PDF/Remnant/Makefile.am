@@ -14,7 +14,6 @@ libRemnant_la_SOURCES =	\
 			Photon_Remnant.C 
 
 localinc_HEADERS          =	\
-			SVN_Info.C.in \
 			Remnant_Base.H \
 			No_Remnant.H \
 			Color_Dipole.H \

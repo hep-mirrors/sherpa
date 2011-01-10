@@ -9,5 +9,4 @@ libComixCurrents_la_SOURCES   =	\
 				Currents.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Current.H

@@ -9,7 +9,6 @@ libCTEQ6Sherpa_la_SOURCES     =	\
 			    	CTEQ6_Fortran_Interface.C 
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			CTEQ6_Fortran_Interface.H 
 
 nobase_dist_pkgdata_DATA         =	\

@@ -12,7 +12,6 @@ libComix_la_SOURCES   =	\
 			Comix.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Model.H \
 			Process_Base.H \
 			Process_Group.H \

@@ -21,7 +21,6 @@ libPhasicSelectors_la_SOURCES =	\
 				Fastjet_Finder.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Cut_Data.H \
 			Selector.H \
 			Combined_Selector.H \

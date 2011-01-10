@@ -10,7 +10,6 @@ libAmisicTools_la_SOURCES     = \
 				Semihard_QCD.C 
 
 localinc_HEADERS          = \
-			SVN_Info.C.in \
 			Amisic_Histogram.H \
 			Fixed_Variable_Channel.H \
 			Semihard_QCD.H 

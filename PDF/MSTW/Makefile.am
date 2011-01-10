@@ -10,7 +10,6 @@ libMSTW08Sherpa_la_SOURCES      =	\
 				PDF_MSTW.C
 
 localinc_HEADERS      = \
-			SVN_Info.C.in \
 			mstwpdf.h
 
 nobase_dist_pkgdata_DATA         =	\

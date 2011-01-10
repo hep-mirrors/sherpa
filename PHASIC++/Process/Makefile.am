@@ -18,7 +18,6 @@ libPhasicProcess_la_SOURCES   =	\
 				ME_Generator_Base.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Subprocess_Info.H \
 			Process_Info.H \
 			Process_Base.H \

@@ -7,4 +7,3 @@ libComixModels_la_SOURCES     =	\
 				SVN_Info.C \
 				Model_SM.C
 
-localinc_HEADERS = SVN_Info.C.in

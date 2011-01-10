@@ -8,7 +8,6 @@ libPhotonsPhaseSpace_la_SOURCES = 	SVN_Info.C \
 					Generate_Dipole_Photon_Angle.C \
 					Generate_Multipole_Photon_Angle.C
 
-localinc_HEADERS   = 		SVN_Info.C.in \
-				Avarage_Photon_Number.H \
+localinc_HEADERS =		Avarage_Photon_Number.H \
 				Generate_Dipole_Photon_Angle.H \
 				Generate_Multipole_Photon_Angle.H

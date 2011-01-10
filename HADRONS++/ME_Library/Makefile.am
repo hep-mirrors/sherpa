@@ -15,7 +15,6 @@ libHadronsMEs_la_SOURCES = \
 		B_KStar_Semileptonic.C
 
 localinc_HEADERS   = \
-		SVN_Info.C.in \
 		HD_ME_Base.H \
 		Generic.H \
 		PseudoScalar_Decay_MEs.H \

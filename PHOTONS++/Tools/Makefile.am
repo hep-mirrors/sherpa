@@ -16,7 +16,6 @@ libPhotonsTools_la_SOURCES = 	\
 				YFS_Form_Factor.C
 
 localinc_HEADERS   = 	\
-			SVN_Info.C.in \
 			Dipole_FF.H \
 			Dipole_FI.H \
 			Dress_Blob_Base.H \

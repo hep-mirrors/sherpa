@@ -9,6 +9,5 @@ libAmegicCluster_la_SOURCES   =	\
 				Cluster_Algorithm.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Combine_Table.H \
 			Cluster_Algorithm.H

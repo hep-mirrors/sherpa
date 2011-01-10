@@ -16,8 +16,7 @@ libPhotonsMEs_la_SOURCES =	SVN_Info.C \
 				Vector_To_Scalar_Scalar.C
 
 
-localinc_HEADERS =	SVN_Info.C.in \
-			PHOTONS_ME_Base.H \
+localinc_HEADERS =	PHOTONS_ME_Base.H \
 			Scalar_To_Scalar_Scalar.H \
 			Scalar_To_Fermion_Fermion.H \
 			Scalar_To_Scalar_Lepton_Neutrino.H \

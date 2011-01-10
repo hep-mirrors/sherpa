@@ -11,5 +11,4 @@ libComixVertices_la_SOURCES   =	\
 				EW_Vertices.C
 
 localinc_HEADERS      =	\
-			SVN_Info.C.in \
 			Vertex.H

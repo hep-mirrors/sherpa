@@ -13,7 +13,6 @@ libAmisicModel_la_SOURCES     = \
 				Simple_String.C 
 
 localinc_HEADERS          = \
-			SVN_Info.C.in \
 			Grid_Creator.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \

@@ -15,7 +15,6 @@ libPDF_la_SOURCES     =	\
 			Shower_Base.C
 
 localinc_HEADERS         =	\
-	         	SVN_Info.C.in \
 			PDF_Base.H \
 			ISR_Base.H \
 			Intact.H \

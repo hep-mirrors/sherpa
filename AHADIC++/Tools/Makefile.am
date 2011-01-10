@@ -22,7 +22,6 @@ libAhadicTools_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Tools
 
 localinc_HEADERS   = \
-                     SVN_Info.C.in \
 		     Cluster.H \
                      Constituents.H \
 		     Strong_Coupling.H \
