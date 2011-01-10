@@ -45,6 +45,32 @@ double getpmem()
 using namespace ATOOLS;
 using namespace std;
 
+std::vector<const SVN_Info*> *ATOOLS::SVN_Info::s_objects=NULL;
+
+SVN_Info::SVN_Info(const std::string &name,
+		   const std::string &branch,
+		   const std::string &revision):
+  m_name(name), m_branch(branch), m_revision(revision)
+{
+  static bool init(false);
+  if (!init || s_objects==NULL) {
+    s_objects = new std::vector<const SVN_Info*>();
+    init=true;
+  }
+  s_objects->push_back(this);
+}
+
+SVN_Info::~SVN_Info()
+{
+  for (std::vector<const SVN_Info*>::iterator
+	 it(s_objects->begin());it!=s_objects->end();++it)
+    if (*it==this) {
+      s_objects->erase(it);
+      break;
+    }
+  if (s_objects->empty()) delete s_objects;
+}
+
 bool ATOOLS::Run_Parameter::s_initialized=false;
 size_t ATOOLS::Run_Parameter::s_clevel=100;
 std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
@@ -79,8 +105,6 @@ void Run_Parameter::AnalyseEnvironment()
 #endif
 #endif
   char *var=NULL;
-  s_variables["SHERPA_SVN_BRANCH"]=SVN_BRANCH;
-  s_variables["SHERPA_SVN_REVISION"]=SVN_REVISION;
   s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
   s_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
   s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
@@ -326,4 +350,23 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
 std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
 { 
   return s_variables.find(key)!=s_variables.end()?s_variables[key]:def; 
+}
+
+void Run_Parameter::Gen::PrintSVNVersion()
+{
+  const std::vector<const SVN_Info*> &info(*SVN_Info::Infos());
+  if (info.empty()) THROW(fatal_error,"No SVN information");
+  std::string branch, revision;
+  for (size_t i(0);i<info.size();++i) {
+    if (branch=="") branch=info.front()->Branch();
+    if (info[i]->Branch()!=branch) msg_Error()
+      <<"===> "<<info[i]->Name()<<" has branch "<<info[i]->Branch()
+      <<", first seen was "<<branch<<" <===\n";
+    if (revision=="") revision=info.front()->Revision();
+    if (info[i]->Revision()!=revision) msg_Error()
+      <<"===> "<<info[i]->Name()<<" has revision "<<info[i]->Revision()
+      <<", first seen was "<<revision<<" <===\n";
+  }
+  msg_Out()<<"SVN branch "<<branch
+	   <<", revision "<<revision<<"."<<std::endl;
 }

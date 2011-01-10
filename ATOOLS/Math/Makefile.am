@@ -1,6 +1,11 @@
+
+SVNTAG = ATOOLS_Math
+include ../../svn.make
+
 pkglib_LTLIBRARIES       =	libToolsMath.la
 
 libToolsMath_la_SOURCES       =	\
+				SVN_Info.C \
 				MathTools.C \
 				Term.C \
 				Algebra_Interpreter.C \
@@ -24,6 +29,7 @@ libToolsMath_la_SOURCES       =	\
 				Tensor.C
 
 localinc_HEADERS          =	\
+			SVN_Info.C.in \
 			MathTools.H \
 			Term.H \
 			Algebra_Interpreter.H \

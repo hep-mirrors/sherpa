@@ -1,6 +1,11 @@
+
+SVNTAG = ATOOLS_Phys
+include ../../svn.make
+
 pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
+				SVN_Info.C \
 				Flavour.C \
 				Ordering.C \
 				Particle.C \
@@ -28,6 +33,7 @@ libToolsPhys_la_SOURCES       =	\
 				Mass_Handler.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
