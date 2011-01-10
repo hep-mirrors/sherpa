@@ -1,4 +1,0 @@
-#include "ATOOLS/Org/SVN_Info.H"
-
-static ATOOLS::SVN_Info initializer
-("SVNTAG","SVNBRANCH","SVNREVISION");
