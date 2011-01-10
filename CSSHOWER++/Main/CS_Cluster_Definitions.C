@@ -632,7 +632,7 @@ double CS_Cluster_Definitions::CoreScale
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
   PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
-  double kt2cmin(sqr(rpa.gen.Ecms()));
+  double kt2cmin((p[0]+p[1]).Abs2());
   SP(PHASIC::Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));
