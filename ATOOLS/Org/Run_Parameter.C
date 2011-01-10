@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/SVN_Info.H"
 #include "ATOOLS/Org/binreloc.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -78,6 +79,8 @@ void Run_Parameter::AnalyseEnvironment()
 #endif
 #endif
   char *var=NULL;
+  s_variables["SHERPA_SVN_BRANCH"]=SVN_BRANCH;
+  s_variables["SHERPA_SVN_REVISION"]=SVN_REVISION;
   s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
   s_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
   s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));

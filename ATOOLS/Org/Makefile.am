@@ -7,6 +7,21 @@ else
 GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
+Run_Parameter.C: SVN_Info.H.in
+	@if ! which svn > /dev/null; then exit 0; fi; \
+	url=$$(svn info | awk '{ if ($$1=="URL:") { \
+	  split($$2,a,"svn/sherpa/"); sub("/ATOOLS","",a[2]); \
+	  sub("/Org","",a[2]); gsub("/","\\/",a[2]); print a[2]; } }'); \
+	sed -e's/SVNBRANCH/'$$url'/1' -e's/SVNREVISION/'$$(svnversion)'/1' \
+	  < $< > $(basename $<).tmp; \
+	if ! diff $(basename $<).tmp $(basename $<) > /dev/null 2>&1; \
+	  then mv $(basename $<).tmp $(basename $<); \
+	  else rm $(basename $<).tmp; fi;
+
+.PHONY: SVN_Info.H.in
+
+data_DATA     =	SVN_Info.H
+
 libToolsOrg_la_SOURCES        = \
 				MyStrStream.C \
 				Return_Value.C \
@@ -32,6 +47,7 @@ libToolsOrg_la_SOURCES        = \
 				My_Root.C
 
 localinc_HEADERS         =	\
+			SVN_Info.H \
 			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
 			Return_Value.H \
