@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 
+SVNTAG = SHERPA__SoftPhysics
+include ../../svn.make
+
 libSherpaSoftPhysics_la_SOURCES	      =	\
+					SVN_Info.C \
 					Primordial_KPerp.C \
 					Beam_Remnant_Handler.C \
 				   	Fragmentation_Handler.C \
@@ -8,6 +12,7 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Soft_Photon_Handler.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Primordial_KPerp.H \
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \

@@ -1,4 +1,8 @@
-RIVET_SOURCES       =	Rivet_Interface.C
+SVNTAG = AddOns__Rivet
+include ../../svn.make
+
+RIVET_SOURCES       =	SVN_Info.C \
+			Rivet_Interface.C
 
 if RIVET_SUPPORT
 pkglib_LTLIBRARIES       =	libSherpaRivetAnalysis.la
@@ -13,4 +17,4 @@ else
 RIVET_EXTRA_DIST = $(RIVET_SOURCES)
 endif
 
-EXTRA_DIST = @SVNINCLUDE@ $(RIVET_EXTRA_DIST)
+EXTRA_DIST = @SVNINCLUDE@ $(RIVET_EXTRA_DIST) SVN_Info.C.in

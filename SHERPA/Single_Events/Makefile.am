@@ -5,7 +5,11 @@ MCINTERFACESOURCES= MC_Interface.C
 MCINTERFACEHEADERS= MC_Interface.H
 endif
 
+SVNTAG = SHERPA__Single_Events
+include ../../svn.make
+
 libSherpaSingleEvents_la_SOURCES      =	\
+					SVN_Info.C \
 					Event_Handler.C \
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \
@@ -21,6 +25,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					$(MCINTERFACESOURCES)
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \

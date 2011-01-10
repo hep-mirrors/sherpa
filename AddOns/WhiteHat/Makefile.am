@@ -1,9 +1,14 @@
+SVNTAG = AddOns__WhiteHat
+include ../../svn.make
+
 WHITEHAT_SOURCES      =	\
+			SVN_Info.C \
 			WhiteHat_Tree.C \
 			WhiteHat_Virtual.C \
 			WhiteHat_Interface.C
 
 WHITEHAT_ADDS         =	\
+			SVN_Info.C.in \
 			WhiteHat_Tree.H \
 			WhiteHat_Virtual.H
 

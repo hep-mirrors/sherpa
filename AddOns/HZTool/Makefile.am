@@ -1,8 +1,13 @@
+SVNTAG = AddOns__HZTool
+include ../../svn.make
+
 HZTOOL_SOURCES        =	\
+			SVN_Info.C \
 			hznorm.F \
 			hztool_sherpa.F \
 			HZTool_Interface.C
 HZTOOL_ADDS           = \
+			SVN_Info.C.in \
 			HZTool_Wrapper.H
 
 AM_FFLAGS     =	-fno-automatic @CONDITIONAL_HZTOOLINCS@

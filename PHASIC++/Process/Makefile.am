@@ -1,7 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicProcess.la
 
+SVNTAG = PHASIC++__Process
+include ../../svn.make
+
 libPhasicProcess_la_SOURCES   =	\
+				SVN_Info.C \
 				Subprocess_Info.C \
 				Process_Info.C \
 				Process_Base.C \
@@ -14,6 +18,7 @@ libPhasicProcess_la_SOURCES   =	\
 				ME_Generator_Base.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Subprocess_Info.H \
 			Process_Info.H \
 			Process_Base.H \

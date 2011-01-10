@@ -2,7 +2,11 @@ SUBDIRS = Zfunctions
 
 pkglib_LTLIBRARIES = libAmplitude.la
 
-libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
+SVNTAG = AMEGIC++__Amplitude
+include ../../svn.make
+
+libAmplitude_la_SOURCES = SVN_Info.C \
+			  CFColor.C Amplitude_Base.C \
 			  Single_Amplitude.C Amplitude_Manipulator.C \
                           Amplitude_Generator.C Color_Generator.C \
 	                  Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
@@ -11,7 +15,8 @@ libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
                           FullAmplitude_MHV_Base.C \
                           Amplitude_Output.C
 
-localinc_HEADERS   = CFColor.H Single_Amplitude.H \
+localinc_HEADERS   = SVN_Info.C.in \
+		 CFColor.H Single_Amplitude.H \
                  Amplitude_Generator.H Amplitude_Manipulator.H \
 		 Color_Generator.H \
 	         Prop_Generator.H Zfunc_Generator.H Pfunc.H \

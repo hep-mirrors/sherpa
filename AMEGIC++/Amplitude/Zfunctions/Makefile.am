@@ -1,6 +1,9 @@
 pkglib_LTLIBRARIES = libZfunctions.la
 
-libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
+SVNTAG = AMEGIC++__Amplitude__Zfunctions
+include ../../../svn.make
+
+libZfunctions_la_SOURCES = SVN_Info.C Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   Basic_Mfunc.C Basic_MassTermfunc.C \
 			   Basic_Vfunc.C Basic_Xfunc.C Basic_Yfunc.C \
 			   Basic_Zfunc.C \
@@ -12,6 +15,6 @@ libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   Calculator.C \
                            Mom.C MHVCalculator.C 
 
-localinc_HEADERS   = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc \
+localinc_HEADERS   = SVN_Info.C.in Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc \
                      Zfunc_Calc.H Calculator.H \
 		     Mom.H MHVCalculator.H

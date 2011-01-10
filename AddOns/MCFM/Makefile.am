@@ -1,4 +1,8 @@
+SVNTAG = AddOns__MCFM
+include ../../svn.make
+
 MCFM_SOURCES  =	\
+		SVN_Info.C \
 		MCFM_qqb_z_v.C \
 		MCFM_qqb_w_v.C \
 		MCFM_qqb_zz_v.C \
@@ -6,6 +10,7 @@ MCFM_SOURCES  =	\
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\
+		SVN_Info.C.in \
 		MCFM_Wrapper.H
 
 if MCFM_SUPPORT

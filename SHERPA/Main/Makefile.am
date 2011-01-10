@@ -1,8 +1,11 @@
 pkglib_LTLIBRARIES       =	libSherpaMain.la
 
-libSherpaMain_la_SOURCES      =	Sherpa.C 
+SVNTAG = SHERPA__Main
+include ../../svn.make
 
-localinc_HEADERS          =	Sherpa.H 
+libSherpaMain_la_SOURCES      =	SVN_Info.C Sherpa.C 
+
+localinc_HEADERS          =	SVN_Info.C.in Sherpa.H 
 
 SYSLIBS	      =	$(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
 

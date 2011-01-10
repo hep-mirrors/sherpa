@@ -9,7 +9,11 @@ Output_HepMC2_Genevent.H Output_HepMC2_Genevent.C \
 Output_HepMC2_Short.H Output_HepMC2_Short.C
 endif
 
+SVNTAG = SHERPA__Tools
+include ../../svn.make
+
 libSherpaTools_la_SOURCES     =	\
+				SVN_Info.C \
 				Input_Output_Handler.C \
 				Output_Base.C \
 				Output_Sherpa.C \
@@ -25,6 +29,7 @@ libSherpaTools_la_SOURCES     =	\
 				RootNtuple_Reader.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Input_Output_Handler.H \
 			Output_Base.H \
 			Output_Sherpa.H \

@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libAmegic.la
 
+SVNTAG = AMEGIC++__Main
+include ../../svn.make
+
 libAmegic_la_SOURCES = \
+			SVN_Info.C \
 			AMEGIC_SCT.C ColorSC.C \
 			Helicity.C Topology.C Polarisation.C Pol_Info.C Point.C \
 			Process_Tags.C Amegic_Base.C Process_Base.C \
@@ -8,6 +12,7 @@ libAmegic_la_SOURCES = \
 			Process_Group.C Amegic.C
 
 localinc_HEADERS   = \
+			SVN_Info.C.in \
 			AMEGIC_SCT.H ColorSC.H \
 			Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
 			Process_Tags.H Amegic_Base.H Process_Base.H \

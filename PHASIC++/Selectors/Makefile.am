@@ -1,7 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicSelectors.la
 
+SVNTAG = PHASIC++__Selectors
+include ../../svn.make
+
 libPhasicSelectors_la_SOURCES =	\
+				SVN_Info.C \
 				Cut_Data.C \
 				Selector.C \
 				Variable_Selector.C \
@@ -17,6 +21,7 @@ libPhasicSelectors_la_SOURCES =	\
 				Fastjet_Finder.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Cut_Data.H \
 			Selector.H \
 			Combined_Selector.H \

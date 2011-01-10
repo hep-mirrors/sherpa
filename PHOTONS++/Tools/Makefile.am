@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libPhotonsTools.la
 
+SVNTAG = PHOTONS++__Tools
+include ../../svn.make
+
 libPhotonsTools_la_SOURCES = 	\
+				SVN_Info.C \
 				Dipole_FF.C \
 				Dipole_FI.C \
 				Dress_Blob_Base.C \
@@ -12,6 +16,7 @@ libPhotonsTools_la_SOURCES = 	\
 				YFS_Form_Factor.C
 
 localinc_HEADERS   = 	\
+			SVN_Info.C.in \
 			Dipole_FF.H \
 			Dipole_FI.H \
 			Dress_Blob_Base.H \

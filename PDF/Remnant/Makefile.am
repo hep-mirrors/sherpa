@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES       =	libRemnant.la
 
+SVNTAG = PDF__Remnant
+include ../../svn.make
+
 libRemnant_la_SOURCES =	\
+			SVN_Info.C \
 			Remnant_Base.C \
 			No_Remnant.C \
 			Color_Dipole.C \
@@ -10,6 +14,7 @@ libRemnant_la_SOURCES =	\
 			Photon_Remnant.C 
 
 localinc_HEADERS          =	\
+			SVN_Info.C.in \
 			Remnant_Base.H \
 			No_Remnant.H \
 			Color_Dipole.H \

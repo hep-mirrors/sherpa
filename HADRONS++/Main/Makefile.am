@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsMain.la
 
+SVNTAG = HADRONS++__Main
+include ../../svn.make
+
 libHadronsMain_la_SOURCES = \
+		SVN_Info.C \
 		Hadrons.C \
 		Hadron_Decay_Map.C \
 		Hadron_Decay_Table.C \
@@ -9,6 +13,7 @@ libHadronsMain_la_SOURCES = \
 		Tools.C
 
 localinc_HEADERS   = \
+		SVN_Info.C.in \
 		Hadrons.H \
 		Hadron_Decay_Map.H \
 		Hadron_Decay_Table.H \

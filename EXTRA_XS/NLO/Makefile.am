@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES       =	libExtraXSNLO.la
 
-libExtraXSNLO_la_SOURCES      =	DY_QCD_Virtual.C \
+SVNTAG = EXTRA_XS__NLO
+include ../../svn.make
+
+libExtraXSNLO_la_SOURCES      =	SVN_Info.C \
+				DY_QCD_Virtual.C \
 				Higgs_QCD_Virtual.C \
 				DIS1jet_QCD_Virtual.C \
                                 ee3jet_QCD_Virtual.C \
@@ -8,3 +12,4 @@ libExtraXSNLO_la_SOURCES      =	DY_QCD_Virtual.C \
                                 ppll1jet_CSS_approx.C \
                                 epe2jet_CSS_approx.C
 
+localinc_HEADERS = SVN_Info.C.in

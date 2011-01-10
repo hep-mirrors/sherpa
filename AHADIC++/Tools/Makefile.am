@@ -1,7 +1,11 @@
 pkglib_LTLIBRARIES = libAhadicTools.la
 
+SVNTAG = AHADIC++__Tools
+include ../../svn.make
+
 libAhadicTools_la_SOURCES = \
-                            Cluster.C \
+                            SVN_Info.C \
+			    Cluster.C \
                             Constituents.C \
                             Hadron_Wave_Function.C \
                             Hadron_Multiplet.C \
@@ -18,7 +22,8 @@ libAhadicTools_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Tools
 
 localinc_HEADERS   = \
-                     Cluster.H \
+                     SVN_Info.C.in \
+		     Cluster.H \
                      Constituents.H \
 		     Strong_Coupling.H \
 		     Dipole_Splitter.H \

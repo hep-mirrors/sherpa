@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libModelInteractions.la
 
+SVNTAG = MODEL__Interaction_Models
+include ../../svn.make
+
 libModelInteractions_la_SOURCES = \
+				SVN_Info.C \
 				Lorentz_Function.C \
 				Lorentz_Functions.C \
 				Color_Function.C \
@@ -34,6 +38,7 @@ libModelInteractions_la_SOURCES = \
 
 
 localinc_HEADERS   = \
+				SVN_Info.C.in \
 				Lorentz_Function.H Color_Function.H \
 				Single_Vertex.H Vertex.H \
 				Interaction_Model_Base.H \

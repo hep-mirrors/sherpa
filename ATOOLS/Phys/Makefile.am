@@ -1,5 +1,5 @@
 
-SVNTAG = ATOOLS_Phys
+SVNTAG = ATOOLS__Phys
 include ../../svn.make
 
 pkglib_LTLIBRARIES       =	libToolsPhys.la

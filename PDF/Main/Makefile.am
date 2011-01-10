@@ -1,7 +1,11 @@
 pkglib_LTLIBRARIES       =	libPDF.la
 
+SVNTAG = PDF__Main
+include ../../svn.make
+
 libPDF_la_SOURCES     =	\
-		    	PDF_Base.C \
+		    	SVN_Info.C \
+			PDF_Base.C \
 			ISR_Base.C \
 		    	Intact.C \
 			Structure_Function.C \
@@ -11,7 +15,8 @@ libPDF_la_SOURCES     =	\
 			Shower_Base.C
 
 localinc_HEADERS         =	\
-	         	PDF_Base.H \
+	         	SVN_Info.C.in \
+			PDF_Base.H \
 			ISR_Base.H \
 			Intact.H \
 			Structure_Function.H\

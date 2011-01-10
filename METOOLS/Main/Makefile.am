@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES       =	libHelicitiesMain.la
 
+SVNTAG = METOOLS__Main
+include ../../svn.make
+
 libHelicitiesMain_la_SOURCES       =	\
+			SVN_Info.C \
 			C_Scalar.C \
 			C_Tensor.C \
 			C_Spinor.C \
@@ -14,6 +18,7 @@ libHelicitiesMain_la_SOURCES       =	\
 			Four_Particle_Amplitudes.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			C_Scalar.H \
 			C_Tensor.H \
 			C_Spinor.H \

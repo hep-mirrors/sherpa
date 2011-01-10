@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libComix.la
 
+SVNTAG = COMIX__Main
+include ../../svn.make
+
 libComix_la_SOURCES   =	\
+			SVN_Info.C \
 			Model.C \
 			Process_Base.C \
 			Process_Group.C \
@@ -8,6 +12,7 @@ libComix_la_SOURCES   =	\
 			Comix.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Model.H \
 			Process_Base.H \
 			Process_Group.H \

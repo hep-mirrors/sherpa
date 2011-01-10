@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libPhotonsMEs.la
 
-libPhotonsMEs_la_SOURCES =	PHOTONS_ME_Base.C \
+SVNTAG = PHOTONS++__MEs
+include ../../svn.make
+
+libPhotonsMEs_la_SOURCES =	SVN_Info.C \
+				PHOTONS_ME_Base.C \
 				Scalar_To_Scalar_Scalar.C \
 				Scalar_To_Fermion_Fermion.C \
 				Scalar_To_Scalar_Lepton_Neutrino.C \
@@ -12,7 +16,8 @@ libPhotonsMEs_la_SOURCES =	PHOTONS_ME_Base.C \
 				Vector_To_Scalar_Scalar.C
 
 
-localinc_HEADERS =	PHOTONS_ME_Base.H \
+localinc_HEADERS =	SVN_Info.C.in \
+			PHOTONS_ME_Base.H \
 			Scalar_To_Scalar_Scalar.H \
 			Scalar_To_Fermion_Fermion.H \
 			Scalar_To_Scalar_Lepton_Neutrino.H \

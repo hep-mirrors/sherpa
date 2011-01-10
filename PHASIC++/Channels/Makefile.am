@@ -1,7 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicChannels.la
 
+SVNTAG = PHASIC++__Channels
+include ../../svn.make
+
 libPhasicChannels_la_SOURCES  =	\
+				SVN_Info.C \
 				Channel_Basics.C \
 				Channel_Elements.C \
 				Channel_Elements_KK.C \
@@ -27,6 +31,7 @@ libPhasicChannels_la_SOURCES  =	\
                                 Extra_Emission_Generator.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Channel_Basics.H \
 			Channel_Elements.H \
 			Channel_Elements_KK.H \

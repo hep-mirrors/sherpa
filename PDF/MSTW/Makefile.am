@@ -1,10 +1,16 @@
 pkglib_LTLIBRARIES    = \
 			libMSTW08Sherpa.la
+
+SVNTAG = PDF__MSTW
+include ../../svn.make
+
 libMSTW08Sherpa_la_SOURCES      =	\
+				SVN_Info.C \
 				mstwpdf.cc \
 				PDF_MSTW.C
 
 localinc_HEADERS      = \
+			SVN_Info.C.in \
 			mstwpdf.h
 
 nobase_dist_pkgdata_DATA         =	\

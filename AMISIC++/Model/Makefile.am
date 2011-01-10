@@ -1,7 +1,11 @@
 pkglib_LTLIBRARIES       = libAmisicModel.la
 
+SVNTAG = AMISIC++__Model
+include ../../svn.make
+
 libAmisicModel_la_SOURCES     = \
-			       	Grid_Creator.C \
+			       	SVN_Info.C \
+				Grid_Creator.C \
 				Profile_Function_Base.C \
 				Profile_Function.C \
 				Simple_Chain.C \
@@ -9,6 +13,7 @@ libAmisicModel_la_SOURCES     = \
 				Simple_String.C 
 
 localinc_HEADERS          = \
+			SVN_Info.C.in \
 			Grid_Creator.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \

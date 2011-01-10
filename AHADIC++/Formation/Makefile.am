@@ -1,7 +1,11 @@
 pkglib_LTLIBRARIES = libAhadicFormation.la
 
+SVNTAG = AHADIC++__Formation
+include ../../svn.make
+
 libAhadicFormation_la_SOURCES = \
-                                Cluster_Formation_Handler.C \
+                                SVN_Info.C \
+				Cluster_Formation_Handler.C \
                                 Gluon_Decayer.C \
                                 Cluster_Former.C \
                                 Colour_Reconnections.C
@@ -9,7 +13,8 @@ libAhadicFormation_la_SOURCES = \
 localincdir = $(pkgincludedir)/AHADIC++/Formation
 
 localinc_HEADERS   = \
-                     Cluster_Formation_Handler.H \
+                     SVN_Info.C.in \
+		     Cluster_Formation_Handler.H \
                      Gluon_Decayer.H \
                      Cluster_Former.H \
                      Colour_Reconnections.H

@@ -1,13 +1,18 @@
 pkglib_LTLIBRARIES = libBeam.la
 
-libBeam_la_SOURCES    =	Beam_Base.C \
+SVNTAG = BEAM__Main
+include ../../svn.make
+
+libBeam_la_SOURCES    =	SVN_Info.C \
+			Beam_Base.C \
 			Monochromatic.C \
 			Laser_Backscattering.C \
 			EPA.C \
 			Spectrum_Reader.C \
 			Beam_Spectra_Handler.C
 
-localinc_HEADERS          =	Beam_Base.H \
+localinc_HEADERS          =	SVN_Info.C.in \
+			Beam_Base.H \
 		 	Monochromatic.H \
 			Laser_Backscattering.H \
 			EPA.H \

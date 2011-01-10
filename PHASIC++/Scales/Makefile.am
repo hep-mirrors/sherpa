@@ -1,7 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicScales.la
 
+SVNTAG = PHASIC++__Scales
+include ../../svn.make
+
 libPhasicScales_la_SOURCES    =	\
+				SVN_Info.C \
 				Scale_Setter_Base.C \
 				KFactor_Setter_Base.C \
 				Tag_Setter.C \
@@ -13,6 +17,7 @@ libPhasicScales_la_SOURCES    =	\
 				No_KFactor_Setter.C
 
 localinc_HEADERS      =	\
+			SVN_Info.C.in \
 			Scale_Setter_Base.H \
 			KFactor_Setter_Base.H \
 			Tag_Setter.H

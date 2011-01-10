@@ -1,11 +1,15 @@
 pkglib_LTLIBRARIES       =	libHelicitiesLoops.la
 
+SVNTAG = METOOLS__Loops
+include ../../svn.make
+
 if GOLEM95_SUPPORT
 EXTRASOURCES=golem95_wrap.f90
 endif
 
 libHelicitiesLoops_la_SOURCES       =	\
-                        Master_Tadpole.C \
+                        SVN_Info.C \
+			Master_Tadpole.C \
                         Master_Bubble.C \
                         Master_Triangle.C \
                         Master_Box.C \
@@ -20,7 +24,8 @@ libHelicitiesLoops_la_SOURCES       =	\
 localincdir = $(pkgincludedir)/METOOLS/Loops
 
 localinc_HEADERS      =	\
-                        Divergence_Array.H \
+                        SVN_Info.C.in \
+			Divergence_Array.H \
                         Master_Integrals.H \
                         PV_Integrals.H \
                         Triangle_2.H \

@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libDipoleSubtraction.la
 
+SVNTAG = AMEGIC++__DipoleSubtraction
+include ../../svn.make
+
 libDipoleSubtraction_la_SOURCES = \
+		       SVN_Info.C \
 		       Flavour_KernelsA.C \
 		       Massive_Kernels.C \
 		       DipoleSplitting_Base.C \
@@ -15,6 +19,7 @@ libDipoleSubtraction_la_SOURCES = \
 		       Single_Real_Correction.C 
 
 localinc_HEADERS   = \
+		     SVN_Info.C.in \
 		     Flavour_KernelsA.H \
 		     Massive_Kernels.H \
 		     DipoleSplitting_Base.H \

@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsMEs.la
 
+SVNTAG = HADRONS++__ME_Library
+include ../../svn.make
+
 libHadronsMEs_la_SOURCES = \
+		SVN_Info.C \
 		HD_ME_Base.C \
 		Generic.C \
 		Eta_Decay_MEs.C \
@@ -11,6 +15,7 @@ libHadronsMEs_la_SOURCES = \
 		B_KStar_Semileptonic.C
 
 localinc_HEADERS   = \
+		SVN_Info.C.in \
 		HD_ME_Base.H \
 		Generic.H \
 		PseudoScalar_Decay_MEs.H \

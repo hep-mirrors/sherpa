@@ -1,7 +1,11 @@
 pkglib_LTLIBRARIES = libHadronsCurrents.la
 
+SVNTAG = HADRONS++__Current_Library
+include ../../svn.make
+
 libHadronsCurrents_la_SOURCES = \
-        Current_Base.C \
+        SVN_Info.C \
+	Current_Base.C \
 	VA_P_P.C \
 	VA_P_V.C \
 	VA_P_T.C \
@@ -20,7 +24,8 @@ libHadronsCurrents_la_SOURCES = \
         VA_F_F.C
 
 localinc_HEADERS   = \
-        Current_Base.H \
+        SVN_Info.C.in \
+	Current_Base.H \
 	VA_P_P.H \
 	VA_P_V.H \
 	VA_P_T.H \
