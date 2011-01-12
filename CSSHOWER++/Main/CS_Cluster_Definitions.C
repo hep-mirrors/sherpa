@@ -346,8 +346,11 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(b->Mom()-(Q*b->Mom()/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q;
+  double ppbt(-pbt.PPlus()), pmbt(-pbt.PMinus());
   if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 || pai[3]*b->Mom()[3]>0.0 ||
-      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2)) {
+      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2) ||
+      (ppbt>pmbt && ppbt>rpa.gen.PBeam(0).PPlus()) ||
+      (pmbt>ppbt && pmbt>rpa.gen.PBeam(1).PMinus())) {
     CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
@@ -580,8 +583,11 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
+  double ppbt(-pbt.PPlus()), pmbt(-pbt.PMinus());
   if (lrat<0.0 || pbt[0]>0.0 || pai[3]*pb[3]>0.0 ||
-      IsZero(sqr(pbt[0])/Q2) || xiab<0.0) return Vec4D_Vector();
+      IsZero(sqr(pbt[0])/Q2) || xiab<0.0 ||
+      (ppbt>pmbt && ppbt>rpa.gen.PBeam(0).PPlus()) ||
+      (pmbt>ppbt && pmbt>rpa.gen.PBeam(1).PMinus())) return Vec4D_Vector();
 
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
@@ -632,7 +638,7 @@ double CS_Cluster_Definitions::CoreScale
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
   PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
-  double kt2cmin(sqr(rpa.gen.Ecms()));
+  double kt2cmin((p[0]+p[1]).Abs2());
   SP(PHASIC::Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));

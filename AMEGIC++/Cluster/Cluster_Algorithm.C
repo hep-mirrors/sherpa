@@ -576,12 +576,19 @@ void Cluster_Algorithm::SetColours
     }
   }
   else if (lij->Flav().Strong()) {
-    if (li->Flav().StrongCharge()==8) {
+    if (li->Flav().StrongCharge()==8 &&
+	lj->Flav().StrongCharge()==8) {
       size_t nc(Flow::Counter());
       colj.m_i=coli.m_j=nc;
       colj.m_j=colij.m_j;
       coli.m_i=colij.m_i;
       if (ran.Get()>0.5) std::swap<ColorID>(coli,colj);
+    }
+    else if (li->Flav().StrongCharge()==8) {
+      coli=colij;
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      colj=colij;
     }
     else {
       coli.m_i=colij.m_i;
