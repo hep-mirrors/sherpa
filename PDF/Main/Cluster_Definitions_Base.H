@@ -36,6 +36,8 @@ namespace PDF {
      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
      ATOOLS::Mass_Selector *const ms=NULL,const int kin=0) = 0;
 
+    virtual double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
+
     inline void SetAMode(const size_t mode) { m_amode=mode; }
     inline int AMode() const { return m_amode; }
 

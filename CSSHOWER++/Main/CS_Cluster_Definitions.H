@@ -12,15 +12,13 @@ namespace CSSHOWER {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws, m_q2, m_mu2;
     int m_mode, m_kin;
     Splitting_Function_Base *p_sf;
-    size_t m_idi, m_idj, m_idk;
     ATOOLS::Vec4D m_pbt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
 		  const double &x,const double &q2,
 		  const int mode=-1,const int kin=0):
       m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0), m_ws(kt2),
-      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), p_sf(NULL),
-      m_idi(0), m_idj(0), m_idk(0) {}
+      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), p_sf(NULL) {}
   };// end of struct CS_Parameters
 
   std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs);
@@ -42,6 +40,11 @@ namespace CSSHOWER {
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
     ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl) const;
+
+    bool CheckColors(const ATOOLS::Cluster_Leg *li,
+		     const ATOOLS::Cluster_Leg *lj,
+		     const ATOOLS::Cluster_Leg *lk,
+		     const ATOOLS::Flavour &mo) const;
 
   public:
     
@@ -98,6 +101,8 @@ namespace CSSHOWER {
     ATOOLS::Vec4D_Vector Combine_II(const ATOOLS::Cluster_Amplitude &ampl,
 				    int i,int j,int k,
 				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
+
+    double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
     
     //inline methods
     inline double Lambda(const double a, const double b, const double c) {

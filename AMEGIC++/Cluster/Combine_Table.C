@@ -716,8 +716,8 @@ bool Combine_Table::IdentifyHardProcess()
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1],0+2,1+2) &&
 	Combinable(p_legs[i][2],p_legs[i][3],2+2,3+2)) {
-      double pt2ij1(2.0*(p_moms[0]*p_moms[1]));
-      double pt2ij2(2.0*(p_moms[2]*p_moms[3]));
+      double pt2ij1((p_moms[0]+p_moms[1]).Abs2());
+      double pt2ij2((p_moms[2]+p_moms[3]).Abs2());
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
@@ -735,8 +735,8 @@ bool Combine_Table::IdentifyHardProcess()
     }
     else if (Combinable(p_legs[i][0],p_legs[i][2],0+2,2+2) &&
 	     Combinable(p_legs[i][1],p_legs[i][3],1+2,3+2)) {
-      double pt2ij1(2.0*(p_moms[0]*p_moms[2]));
-      double pt2ij2(2.0*(p_moms[1]*p_moms[3]));
+      double pt2ij1((p_moms[0]-p_moms[2]).Abs2());
+      double pt2ij2((p_moms[1]-p_moms[3]).Abs2());
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
@@ -754,8 +754,8 @@ bool Combine_Table::IdentifyHardProcess()
     }
     else if (Combinable(p_legs[i][0],p_legs[i][3],0+2,3+2) &&
 	     Combinable(p_legs[i][1],p_legs[i][2],1+2,2+2)) {
-      double pt2ij1(2.0*(p_moms[0]*p_moms[3]));
-      double pt2ij2(2.0*(p_moms[1]*p_moms[2]));
+      double pt2ij1((p_moms[0]-p_moms[3]).Abs2());
+      double pt2ij2((p_moms[1]-p_moms[2]).Abs2());
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "

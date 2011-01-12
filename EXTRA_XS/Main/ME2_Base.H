@@ -13,6 +13,7 @@ namespace EXTRAXS {
     size_t m_oew, m_oqcd, m_sintt;
     MODEL::Coupling_Data *p_aqcd, *p_aqed;
     double m_symfac;
+    std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
   public:
     ME2_Base(const PHASIC::Process_Info& pi,
              const ATOOLS::Flavour_Vector& flavs);
@@ -31,6 +32,9 @@ namespace EXTRAXS {
     inline size_t OrderEW() const { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }
     inline size_t SIntType() const { return m_sintt; }
+
+    inline const ATOOLS::Flavour_Vector &
+    CombinedFlavour(const size_t &idij) { return m_cfls[idij]; }
 
   };
 }
