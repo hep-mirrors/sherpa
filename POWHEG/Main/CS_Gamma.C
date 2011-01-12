@@ -159,16 +159,9 @@ int CS_Gamma::SingleWeight
   cdip->SetFlavourSpec((lk->Id()&((1<<ampl->NIn())-1))?
 		       lk->Flav().Bar():lk->Flav());
   double eta=1.0;
-  Parton *pb(NULL);
   if (cs.m_mode==1) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=p_cluster->GetX(lk,cdip)*(1.0-cs.m_y);
-  else if (cs.m_mode==3) {
-    eta=p_cluster->GetX(li,cdip)*(cs.m_z+cs.m_y);
-    pb = new Parton(p_cluster->LegB()->Flav().Bar(),-cs.m_pbt,pst::IS);
-    pb->SetXbj(p_cluster->GetX(p_cluster->LegB(),NULL)*
-	       cs.m_z/(cs.m_z+cs.m_y));
-    cdip->SetSpec(pb);
-  }
+  else if (cs.m_mode==3) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   Weight_Value meps(Differential(ampl,0));
   meps.p_sf=cdip;
   meps.m_me*=cdip->SymFac();
@@ -179,7 +172,6 @@ int CS_Gamma::SingleWeight
     cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl);
   meps.m_qij2=Jet_Finder::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			       li->Flav(),lj->Flav());
-  if (pb) delete pb;
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight
     msg_Debugging()<<"zero matrix element\n";
