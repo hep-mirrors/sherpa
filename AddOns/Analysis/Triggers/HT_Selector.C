@@ -1,5 +1,5 @@
 #include "AddOns/Analysis/Triggers/Trigger_Base.H"
-#include "Message.H"
+#include "ATOOLS/Org/Message.H"
 namespace ANALYSIS {
 
   class HT_Selector: public Trigger_Base {  
