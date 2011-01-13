@@ -12,27 +12,25 @@ using namespace ATOOLS;
 
 namespace MODEL {
   
-  class SM_Zprime : public Standard_Model {
-  protected :
+  class SM_Zprime : public Model_Base {
+  protected :      
+    MODEL::Model_Base * p_sm;
+
     void ParticleInit();
     void FillSpectrum();
+    bool ModelInit();
+
   public :
     SM_Zprime(std::string,std::string,bool);
   };
   
   
   SM_Zprime::SM_Zprime(std::string dir, std::string file, bool elementary) :
-      Standard_Model(dir, file, false)
+      Model_Base(dir,file,elementary)
   {
-    m_elementary=elementary;
-    if (m_elementary) {
-      msg_Info()<<"Initialize the Standard Model plus dummy Zprime from "
-          <<m_dir<<" / "<<m_file<<std::endl;
-    }
-    m_name      = std::string("SM+Zprime");
+    p_sm = new Standard_Model(m_dir,m_file,false);
 
     ParticleInit();    
-    FillSpectrum();
     if (m_elementary) {
       ATOOLS::OutputParticles(msg->Info());
       ATOOLS::OutputContainers(msg->Info());
@@ -58,10 +56,32 @@ namespace MODEL {
     p_dataread->AddWordSeparator("\t");
     p_dataread->SetInputPath(m_dir);
     p_dataread->SetInputFile(m_file);
+    PRINT_INFO(p_constants);
     p_constants->insert(make_pair(string("Zp_cpl_L"),    
                                   p_dataread->GetValue<double>("Zp_cpl_L",1.)));
     p_constants->insert(make_pair(string("Zp_cpl_R"),    
                                   p_dataread->GetValue<double>("Zp_cpl_R",1.)));
+  }
+
+  bool SM_Zprime::ModelInit()
+  {
+    if (m_elementary) {
+      msg_Info()<<"Initialize the Standard Model plus dummy Zprime from "
+          <<m_dir<<" / "<<m_file<<std::endl;
+    }
+    m_name      = std::string("SM+Zprime");
+
+    p_sm->ModelInit();
+    p_numbers   = p_sm->ExtractScalarNumbers();
+    p_constants = p_sm->ExtractScalarConstants();
+    p_functions = p_sm->ExtractScalarFunctions();
+    p_matrices  = p_sm->ExtractComplexMatrices();
+    PRINT_INFO("inited SM::ModelInit");
+
+    FillSpectrum();
+    PRINT_INFO("filled spectrum");
+
+    return true;
   }
 }
 
