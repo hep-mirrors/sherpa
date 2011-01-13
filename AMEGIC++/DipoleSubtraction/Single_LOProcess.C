@@ -54,15 +54,17 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
       cnt+=10;
     }
   }
+  int npart=0;
   for (size_t i(0);i<m_pinfo.m_fi.m_ps.size();++i) {
     if (m_pinfo.m_fi.m_ps[i].m_tag==1) {
-      m_emit=i+NIn();
+      m_emit=npart+NIn();
       cnt++;
     }
     if (m_pinfo.m_fi.m_ps[i].m_tag==2) {
-      m_spect=i+NIn();
+      m_spect=npart+NIn();
       cnt+=10;
     }
+    npart+=m_pinfo.m_fi.m_ps[i].NExternal();
   }
   if (cnt!=0&&cnt!=11) THROW(critical_error,"misstaged process "+m_name);
 }
