@@ -36,6 +36,12 @@ bool Cluster_Algorithm::Cluster
   int nlegs=p_proc->NIn()+p_proc->NOut();
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,mode,kt2);
+  if (p_ct==NULL) {
+    msg_Error()<<METHOD<<"(): Failed to determine configuration."
+	       <<" Rejecting point."<<std::endl;
+    p_combi=NULL;
+    return false;
+  }
   Vec4D_Vector moms(4);
   ATOOLS::Flavour_Vector fl(4);
   for (int i(0);i<4;++i) {
