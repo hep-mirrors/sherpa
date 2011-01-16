@@ -134,6 +134,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     NLO_subevtlist* nlos = seinfo->Get<NLO_subevtlist*>();
     double tweight=0.;
     for (size_t j=0;j<nlos->size();j++) {
+      if ((*nlos)[j]->m_result==0.0) continue;
       ATOOLS::Particle_List * pl=(*nlos)[j]->CreateParticleList();
       m_evtlist[m_cnt2].weight=(*nlos)[j]->m_result;
       tweight+=m_evtlist[m_cnt2].weight;
