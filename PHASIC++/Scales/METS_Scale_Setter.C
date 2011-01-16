@@ -693,10 +693,6 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
   }
   if (i<2 || k<2) {
     Cluster_Leg *la(ampl.Leg(i<2?i:k)), *lb(ampl.Leg(1-(i<2?i:k)));
-#ifdef CHECK__x
-    if (!CheckX(la->Mom(),la->Id()&3)) return false;
-    if (!CheckX(lb->Mom(),lb->Id()&3)) return false;
-#endif
     ZAlign lt(-la->Mom(),-lb->Mom(),ii?li->Mom().Abs2():
 	      sqr(la->Flav().Mass()),sqr(lb->Flav().Mass()));
     for (size_t m(0);m<ampl.Legs().size();++m) {
@@ -706,6 +702,21 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
     if (ii) {
       li->SetMom(lt.Align(cs.m_pijt));
       lk->SetMom(lt.Align(cs.m_pkt));
+    }
+    if (ii) {
+      Vec4D pa(li->Mom()), pb(lk->Mom());
+      double sij(sqr(li->Flav().Mass())), mk2(sqr(lk->Flav().Mass()));
+      double gam(pa*pb+Sign((pa+pb).Abs2()-sij-mk2)
+		 *sqrt(sqr(pa*pb)-sij*mk2)), cf(1.0+cs.m_y/cs.m_z);
+      double a13(sij/gam), a2(mk2/gam), bet(1.0/(1.0-a13*a2));
+      Vec4D pl(bet*(pa-a13*pb)), pn(bet*(pb-a2*pa));
+      Poincare oldcms(pa+pb), newcms(pa/cf+pb*cf);
+      for (size_t m(0);m<ampl.Legs().size();++m) {
+	Vec4D p(ampl.Leg(m)->Mom());
+	oldcms.Boost(p);
+	newcms.BoostBack(p);
+	ampl.Leg(m)->SetMom(p);
+      }
     }
 #ifdef CHECK__x
     if (!CheckX(la->Mom(),la->Id()&3)) return false;
@@ -726,7 +737,10 @@ bool METS_Scale_Setter::CheckX
 {
   double x1=-p.PPlus()/rpa.gen.PBeam(0).PPlus();
   double x2=-p.PMinus()/rpa.gen.PBeam(1).PMinus();
-  return (isid==1?x1:x2)>1.0e-6 && x1<1.0 && x2<1.0;
+  double accu=sqrt(rpa.gen.Accu());
+  return (isid==1?x1:x2)>accu &&
+    (x1<1.0 || IsEqual(x1,1.0,accu)) &&
+    (x2<1.0 || IsEqual(x2,1.0,accu));
 }
 
 bool METS_Scale_Setter::CheckColors
