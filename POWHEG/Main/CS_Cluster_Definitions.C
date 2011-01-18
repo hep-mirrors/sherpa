@@ -18,7 +18,7 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
 {
   m_mode=m_kmode;
   CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms));

@@ -356,13 +356,13 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
 			split->GetType()==pst::FS?split->GetFlavour():
-			split->GetFlavour().Bar(),p_ms));
+			split->GetFlavour().Bar(),p_ms,split->Kin()));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       l->SetStart(cp.m_kt2);
       r->SetStart(cp.m_kt2);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
-		     <<", mode = "<<cp.m_mode<<", scheme = "<<l->Kin()<<"\n";
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()<<"\n";
       sing->SetAll(p_next);
       if (m_recocheck&1) {
       std::cout.precision(12);
@@ -375,7 +375,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       CS_Parameters ncp(p_cluster->KT2
 			(campl->Prev(),almap[l],almap[r],almap[s],
 			 split->GetType()==pst::FS?split->GetFlavour():
-			 split->GetFlavour().Bar(),p_ms));
+			 split->GetFlavour().Bar(),p_ms,split->Kin()));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
 		     <<", kin = "<<ncp.m_kin<<"\n";

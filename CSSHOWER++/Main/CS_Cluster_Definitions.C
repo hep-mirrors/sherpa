@@ -20,10 +20,10 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
 {
   m_mode=m_kmode;
-  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms));
+  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin));
   m_mode=0;
   return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin);
 }
@@ -32,7 +32,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms)
+ ATOOLS::Mass_Selector *const ms,const int kin)
 {
   p_ms=ms;
   if ((i->Id()&3)<(j->Id()&3)) std::swap<const Cluster_Leg*>(i,j);
@@ -45,7 +45,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   else {
     if ((j->Id()&3)==0) {
-      if ((k->Id()&3)==0) return KT2_IF(i,j,k,mo);
+      if ((k->Id()&3)==0) return KT2_IF(i,j,k,mo,kin);
       return KT2_II(i,j,k,mo);
     }
   }
@@ -246,7 +246,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_FI
 
 CS_Parameters CS_Cluster_Definitions::KT2_IF
 (const ATOOLS::Cluster_Leg *a,const ATOOLS::Cluster_Leg *i,
- const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo) 
+ const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,const int kin) 
 {
   //assume pa is outgoing
   double pipa = i->Mom()*a->Mom();
@@ -273,7 +273,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
   ZAlign lt;
 
   int stat(1);
-  if (p_shower->KinScheme()==0 || ma2!=mai2) {
+  if (p_shower->KinScheme()==0 || ma2!=mai2 || kin==0) {
     lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mk2);
     pkt=sqrt(lrat)*(k->Mom()-(Q*k->Mom()/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
     if (lrat<0.0 || pkt[0]<0.0 || 
@@ -283,13 +283,13 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
       Vec4D pan(-lt.PaNew());
       if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) || lt.Status()<0) stat=0;
     }
-    if (stat==0 && ma2!=mai2) {
+    if (stat==0 && (ma2!=mai2 || kin==0)) {
       CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1,1);
       cs.m_wk=cs.m_ws=-1.0;
       return cs;
     }
   }
-  if ((p_shower->KinScheme()==1 || stat==0 ||
+  if ((p_shower->KinScheme()==1 || stat==0 || kin==1 ||
        IsZero(xika-ui,s_uxeps)) && ma2==mai2) {
   double sik((i->Mom()+k->Mom()).Abs2()), Q2(Q.Abs2());
   double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/

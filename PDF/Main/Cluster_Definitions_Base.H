@@ -29,7 +29,7 @@ namespace PDF {
     virtual CParam KPerp2
     (const ATOOLS::Cluster_Amplitude &ampl,int i,int j=-1,int k=-1,
      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-     ATOOLS::Mass_Selector *const ms=NULL) = 0;
+     ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1) = 0;
 
     virtual ATOOLS::Vec4D_Vector Combine
     (const ATOOLS::Cluster_Amplitude &ampl,int i,int j,int k=-1,

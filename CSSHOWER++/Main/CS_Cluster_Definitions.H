@@ -60,13 +60,13 @@ namespace CSSHOWER {
     PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		  ATOOLS::Mass_Selector *const ms=NULL);
+		       ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
 		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		      ATOOLS::Mass_Selector *const ms=NULL);
+		      ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1);
 
     CS_Parameters KT2_FF(const ATOOLS::Cluster_Leg *i,
 			 const ATOOLS::Cluster_Leg *j,
@@ -79,7 +79,8 @@ namespace CSSHOWER {
     CS_Parameters KT2_IF(const ATOOLS::Cluster_Leg *a,
 			 const ATOOLS::Cluster_Leg *i,
 			 const ATOOLS::Cluster_Leg *k,
-			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
+			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
+			 const int kin=-1);
     CS_Parameters KT2_II(const ATOOLS::Cluster_Leg *a,
 			 const ATOOLS::Cluster_Leg *i,
 			 const ATOOLS::Cluster_Leg *b,

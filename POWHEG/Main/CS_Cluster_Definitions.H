@@ -53,7 +53,7 @@ namespace POWHEG {
     PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		  ATOOLS::Mass_Selector *const ms=NULL);
+		       ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
 		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,

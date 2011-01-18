@@ -516,7 +516,7 @@ double POWHEG_Process::SelectBProcess()
     campl->IdSort();
     Cluster_Definitions_Base *clus(p_shower->GetClusterDefinitions());
     CParam kt2(clus->KPerp2(*campl,ids[0],ids[1],ids[2],
-			    lij->Flav(),p_bproc->Generator()));
+			    lij->Flav(),p_bproc->Generator(),1));
     Vec4D_Vector pp(clus->Combine(*campl,ids[0],ids[1],ids[2],lij->Flav(),
 				  p_bproc->Generator(),kt2.m_kin));
     campl->Delete();
