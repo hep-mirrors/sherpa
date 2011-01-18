@@ -32,6 +32,7 @@ bool Cluster_Algorithm::Cluster
 (Process_Base *const xs,const size_t mode,const double &kt2)
 {
   p_proc=xs;
+  p_ampl=NULL;
   int nampl=p_proc->NumberOfDiagrams();
   int nlegs=p_proc->NIn()+p_proc->NOut();
   Leg **legs(CreateLegs(nampl,nlegs));
