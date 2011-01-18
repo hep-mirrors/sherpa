@@ -90,13 +90,13 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
   if (p_inithandler->InitializeTheFramework()) {
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
+    bool res(true);
     if (statuspath!="") {
-      bool res(exh->ReadInStatus(statuspath));
+      res=exh->ReadInStatus(statuspath);
       if (oldargs) {
         for (int i(0);i<argc;++i) delete [] argv[i];
         delete [] argv;
       }
-      return res;
     }
 
     Data_Reader read(" ",";","!","=");
@@ -110,7 +110,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       m_debugstep=debugstep;
       ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
-    return true;
+    return res;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
