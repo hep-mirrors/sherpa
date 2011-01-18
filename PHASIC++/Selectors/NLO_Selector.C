@@ -211,7 +211,7 @@ Selector_Base *PTNLO_Selector_Getter::operator()(const Selector_Key &key) const
   double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
-  Flavour_Vector critflavs(1,crit1);
+  Flavour_Vector critflavs(1,flav);
   PTNLO_Selector *sel = new PTNLO_Selector
     (key.p_proc->NIn(),key.p_proc->NOut(),
      (Flavour*)&key.p_proc->Process()->Flavours().front());
@@ -337,7 +337,7 @@ Selector_Base *RapidityNLO_Selector_Getter::operator()(const Selector_Key &key) 
   double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
-  Flavour_Vector critflavs(1,crit1);
+  Flavour_Vector critflavs(1,flav);
   RapidityNLO_Selector *sel = new RapidityNLO_Selector
     (key.p_proc->NIn(),key.p_proc->NOut(),
      (Flavour*)&key.p_proc->Process()->Flavours().front());
@@ -461,7 +461,7 @@ Selector_Base *PseudoRapidityNLO_Selector_Getter::operator()(const Selector_Key 
   double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
-  Flavour_Vector critflavs(1,crit1);
+  Flavour_Vector critflavs(1,flav);
   PseudoRapidityNLO_Selector *sel = new PseudoRapidityNLO_Selector
     (key.p_proc->NIn(),key.p_proc->NOut(),
      (Flavour*)&key.p_proc->Process()->Flavours().front());
@@ -599,7 +599,7 @@ Selector_Base *PT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
   double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
-  Flavour_Vector critflavs(1,crit1);
+  Flavour_Vector critflavs(1,flav);
   flav = Flavour((kf_code)abs(crit2));
   if (crit2<0) flav = flav.Bar();
   critflavs.push_back(flav);
@@ -765,7 +765,7 @@ Selector_Base *Isolation_Cut_Getter::operator()(const Selector_Key &key) const
     emax=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
   Flavour flav = Flavour((kf_code)abs(crit1));
   if (crit1<0) flav = flav.Bar();
-  Flavour_Vector critflavs(1,crit1);
+  Flavour_Vector critflavs(1,flav);
   Isolation_Cut *sel = new Isolation_Cut
     (key.p_proc->NIn(),key.p_proc->NOut(),
      (Flavour*)&key.p_proc->Process()->Flavours().front(),mode);
