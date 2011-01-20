@@ -49,6 +49,7 @@ HiddenValley::HiddenValley(std::string _dir,std::string _file,bool _elementary) 
 
 bool HiddenValley::ModelInit()
 {
+  p_dataread->RereadInFile();
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model Hidden Sector "
 	      <<m_dir<<" / "<<m_file<<std::endl;

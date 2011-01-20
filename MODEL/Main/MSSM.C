@@ -102,6 +102,7 @@ void MSSM::ParticleInit() {
 }
 
 void MSSM::FillSpectrum() {
+  p_dataread->RereadInFile();
   RunSpectrumGenerator();
 }
 

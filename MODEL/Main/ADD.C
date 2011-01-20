@@ -71,6 +71,7 @@ void ADD::ParticleInit() {
 }
 
 void ADD::FillSpectrum() {
+  p_dataread->RereadInFile();
 
   
   p_constants->insert(std::make_pair(std::string("G_Newton"), 

@@ -248,6 +248,7 @@ void Standard_Model::ParticleInit() {
 
 void Standard_Model::FillSpectrum()
 {
+  p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
   p_constants->insert(std::make_pair(std::string("Yukawa_e"), 

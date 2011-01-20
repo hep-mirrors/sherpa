@@ -69,6 +69,7 @@ bool SM_AGC::ModelInit()
 }
 
 void SM_AGC::FillSpectrum() {
+  p_dataread->RereadInFile();
   
   //Anomalous gauge couplings (hep-ph/0001065)
   p_constants->insert(std::make_pair(std::string("Alpha_4"),
