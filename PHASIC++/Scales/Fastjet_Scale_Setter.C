@@ -1,0 +1,240 @@
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#ifdef USING__FASTJET
+
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+
+#include "PHASIC++/Scales/Tag_Setter.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Message.H"
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/SISConePlugin.hh"
+
+namespace PHASIC {
+
+  class Fastjet_Scale_Setter: public Scale_Setter_Base {
+  protected:
+
+    std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
+
+    Tag_Setter m_tagset;
+
+    fastjet::JetDefinition *p_jdef;
+    fastjet::SISConePlugin *p_siscplug;
+
+    double m_ptmin, m_etmin;
+
+    ATOOLS::Vec4D_Vector   m_p;
+    ATOOLS::Flavour_Vector m_f;
+
+    int m_mode, m_ktdef;
+
+    double ASMeanScale(const std::vector<double> &mu,
+		       const size_t &offset) const;
+
+  public:
+
+    Fastjet_Scale_Setter(const Scale_Setter_Arguments &args);
+
+    ~Fastjet_Scale_Setter();
+
+    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
+			  const int mode);
+
+    void SetScale(const std::string &mu2tag,
+		  ATOOLS::Algebra_Interpreter &mu2calc);
+
+    ATOOLS::Vec4D Momentum(const size_t &i) const;
+
+  };// end of class Scale_Setter_Base
+
+}// end of namespace PHASIC
+
+using namespace PHASIC;
+using namespace ATOOLS;
+
+DECLARE_GETTER(Fastjet_Scale_Setter_Getter,"FASTJET",
+	       Scale_Setter_Base,Scale_Setter_Arguments);
+
+Scale_Setter_Base *Fastjet_Scale_Setter_Getter::
+operator()(const Scale_Setter_Arguments &args) const
+{
+  return new Fastjet_Scale_Setter(args);
+}
+
+void Fastjet_Scale_Setter_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"variable scale scheme using fast jets";
+}
+
+Fastjet_Scale_Setter::Fastjet_Scale_Setter
+(const Scale_Setter_Arguments &args):
+  Scale_Setter_Base(args), m_tagset(this),
+  p_jdef(NULL), p_siscplug(NULL),
+  m_ptmin(0.0), m_etmin(0.0), m_ktdef(1)
+{
+  std::string jtag(args.m_scale);
+  size_t pos(jtag.find("FASTJET["));
+  if (pos==std::string::npos)
+    THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+  jtag=jtag.substr(pos+8);
+  pos=jtag.find(']');
+  if (pos==std::string::npos)
+    THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+  jtag=jtag.substr(0,pos);
+  Data_Reader read(" ",",","#","=");
+  read.SetAddCommandLine(false);
+  read.SetString(jtag);
+  m_mode=read.StringValue<int>("M",1);
+  m_ptmin=read.StringValue<double>("PT",0.0);
+  m_etmin=read.StringValue<double>("ET",0.0);
+  double R(read.StringValue<double>("R",0.4));
+  double f(read.StringValue<double>("f",0.75));
+  std::string algo(read.StringValue<std::string>("A","antikt"));
+  fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
+  if (algo=="cambridge") {
+    ja=fastjet::cambridge_algorithm;
+    m_ktdef=-1;
+  }
+  if (algo=="antikt") {
+    ja=fastjet::antikt_algorithm;
+    m_ktdef=2;
+  }
+  if (algo=="siscone") {
+    p_siscplug=new fastjet::SISConePlugin(R,f);
+    m_ktdef=-1;
+  }
+  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
+  else p_jdef=new fastjet::JetDefinition(ja,R);
+  m_f=p_proc->Flavours();
+  m_p.resize(p_proc->NIn()+p_proc->NOut());
+  std::string tag(args.m_scale);
+  std::vector<std::string> ctags;
+  while (true) {
+    size_t pos(tag.find('{'));
+    if (pos==std::string::npos) {
+      if (!m_calcs.empty()) break;
+      else { THROW(fatal_error,"Invalid scale '"+args.m_scale+"'"); }
+    }
+    tag=tag.substr(pos+1);
+    pos=tag.find('}');
+    if (pos==std::string::npos) 
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+    std::string ctag(tag.substr(0,pos));
+    tag=tag.substr(pos+1);
+    m_calcs.push_back(new Algebra_Interpreter());
+    m_calcs.back()->SetTagReplacer(&m_tagset);
+    if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
+    ctags.push_back(ctag);
+  }
+  m_scale.resize(Max(m_scale.size(),m_calcs.size()+2));
+  for (size_t i(0);i<m_calcs.size();++i)
+    SetScale(ctags[i],*m_calcs[i]);
+  SetCouplings();
+}
+
+Fastjet_Scale_Setter::~Fastjet_Scale_Setter()
+{
+  for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
+  if (p_siscplug) delete p_siscplug;
+  delete p_jdef;
+}
+
+Vec4D Fastjet_Scale_Setter::Momentum(const size_t &i) const
+{
+  if (i>m_p.size()) THROW(fatal_error,"Momentum index too large");
+  return m_p[i];
+}
+
+double Fastjet_Scale_Setter::CalculateScale
+(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
+{
+  if (mode==1) return m_scale[stp::fac];
+  if (m_escale.size()) {
+    m_scale[stp::fac]=m_escale[stp::fac];
+    m_scale[stp::ren]=m_escale[stp::ren];
+    p_cpls->Calculate();
+    return m_scale[stp::fac];    
+  }
+  m_p.resize(2);
+  m_p[0]=-momenta[0];
+  m_p[1]=-momenta[1];
+  std::vector<fastjet::PseudoJet> input;
+  for (size_t i(p_proc->NIn());i<momenta.size();++i)
+    if (!m_f[i].Strong()) m_p.push_back(momenta[i]);
+    else input.push_back
+      (fastjet::PseudoJet(momenta[i][1],momenta[i][2],
+			  momenta[i][3],momenta[i][0]));
+  fastjet::ClusterSequence cs(input,*p_jdef);
+  std::vector<fastjet::PseudoJet> jets(cs.inclusive_jets());
+  size_t idx(2);
+  for (size_t i(0);i<jets.size();++i) {
+    Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+    if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin) m_p.push_back(pj);
+    m_scale[idx++]=pj.PPerp2();
+  }
+  for (size_t i(jets.size());i<input.size();++i) {
+    if (m_ktdef==1) m_scale[idx++]=cs.exclusive_dmerge(i);
+    if (m_ktdef==2) m_scale[idx++]=1.0/cs.exclusive_dmerge(i);
+  }
+  for (size_t i(0);i<m_calcs.size();++i)
+    m_scale[m_mode==1?i+2:i]=m_calcs[i]->Calculate()->Get<double>();
+  if (m_calcs.size()==1) m_scale[1]=m_scale[0];
+  if (m_mode==1) m_scale[stp::fac]=
+    m_scale[stp::ren]=ASMeanScale(m_scale,2);
+  msg_Debugging()<<METHOD<<"(): Set {\n"
+		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+  for (size_t i(2);i<m_calcs.size();++i)
+    msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
+  msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
+  p_cpls->Calculate();
+  return m_scale[stp::fac];
+}
+
+double Fastjet_Scale_Setter::ASMeanScale
+(const std::vector<double> &mu,const size_t &offset) const
+{
+  msg_Debugging()<<"Setting scales {\n";
+  double mur2(1.0), as(1.0), oqcd(0.0);
+  for (size_t i(offset);i<mu.size();++i) {
+    double cas(MODEL::as->BoundedAlphaS(mu[i]));
+    msg_Debugging()<<"  \\mu_{"<<i<<"} = "
+		   <<sqrt(mu[i])<<", as = "<<cas<<"\n";
+    mur2*=mu[i];
+    as*=cas;
+    ++oqcd;
+  }
+  if (oqcd==0.0) THROW(fatal_error,"No jets!");
+  mur2=pow(mur2,1.0/oqcd);
+  as=pow(as,1.0/oqcd);
+  mur2=MODEL::as->WDBSolve(as,MODEL::as->CutQ2(),rpa.gen.CplScale());
+  if (!IsEqual((*MODEL::as)(mur2),as))
+    msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
+  msg_Debugging()<<"} -> as = "<<as<<" -> \\mu = "<<sqrt(mur2)<<"\n";
+  return mur2;
+}
+
+void Fastjet_Scale_Setter::SetScale
+(const std::string &mu2tag,Algebra_Interpreter &mu2calc)
+{ 
+  if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
+  msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
+		 <<"' in '"<<p_proc->Name()<<"' {\n";
+  msg_Indent();
+  m_tagset.SetTags(&mu2calc);
+  mu2calc.Interprete(mu2tag);
+  if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
+  msg_Debugging()<<"}\n";
+}
+
+#endif

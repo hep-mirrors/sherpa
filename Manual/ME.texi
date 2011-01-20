@@ -101,6 +101,26 @@ In this case the factorization scale must be specified first.
 More than two scales can be set as well to be subsequently used, e.g.
 by different couplings, see @ref{COUPLINGS}.
 
+@item FASTJET
+If @uref{http://www.fastjet.fr,,FastJet} is enabled, this tag can be 
+used to set a scale based on jet, rather than parton momenta. These jets 
+can be defined in all possible ways allowed by FastJet with the arguments 
+specified in the following way
+
+@verbatim
+SCALES FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
+@end verbatim
+
+Thereby, @kbd{A} defines the jet algorithm, @kbd{R} sets the cone size,
+and @kbd{PT} / @kbd{ET} define the minimum transverse momentum/energy
+of the jets. The additional argument @kbd{M} (default 1) sets the
+averaging mode. After jet finding, the jet momenta are ordered as in
+FastJet. Non-QCD partons are unaffected by this procedure, i.e. their
+momentum indices remain the same. The additional tags @var{MU_22} .. 
+@var{MU_n2}, with @var{n} the number of strongly interacting
+final state particles, hold the nodal values of the jet clustering and
+the transverse momenta of the final state jets in descending order.
+
 @item QCD
 The matrix element is clustered onto a core 2->2 configuration using a
 k_T-type algorithm with recombination into on-shell partons.
