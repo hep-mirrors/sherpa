@@ -64,6 +64,8 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("MU_R2","1.0");
   calc->AddTag("Q2_CUT","1.0");
   calc->AddTag("H_T2","1.0");
+  for (size_t i=0;i<p_setter->Scales().size();++i) 
+    calc->AddTag("MU_"+ToString(i)+"2","1.0");
   Process_Integrator *ib(p_setter->Process()->Integrator());
   ib->SetMomenta(Vec4D_Vector(ib->NIn()+ib->NOut()));
   for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
