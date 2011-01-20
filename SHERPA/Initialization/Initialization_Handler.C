@@ -368,7 +368,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
-  if (!p_model->ModelInit()) THROW(critical_error,"Model cannot be initialized");
+  if (!p_model->ModelInit(m_isrhandlers[isr::hard_process]))
+    THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   PHASIC::Phase_Space_Handler::GetInfo();
@@ -593,24 +594,6 @@ bool Initialization_Handler::InitializeThePDFs()
 	msg_Info()<<"PDF set '"<<set<<"' loaded from 'lib"
 		  <<m_pdflib[j]<<"' for beam "<<j+1<<" ("
 		  <<m_bunch_particles[j]<<")."<<std::endl;
-	if (m_bunch_particles[j].IsHadron() && pdfbase->OrderAS()>=0) {
-	  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
-	    msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
-		       <<"Overriding \\alpha_s information from PDF. "
-		       <<"Make sure you know what you are doing!"
-		       <<om::reset<<std::endl;
-	  }
-	  else {
-	    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-		      <<"  perturbative order "<<pdfbase->OrderAS()
-		      <<"\n  \\alpha_s(M_Z) = "<<pdfbase->ASMZ()
-		      <<"\n}"<<std::endl;
-	    Read_Write_Base::AddCommandLine
-	      ("ORDER_ALPHAS "+ToString(pdfbase->OrderAS())+"; ");
-	    Read_Write_Base::AddCommandLine
-	      ("ALPHAS(MZ) "+ToString(pdfbase->ASMZ())+"; ");
-	  }
-	}
       }
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
       else {

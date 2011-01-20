@@ -2,6 +2,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
@@ -135,7 +136,7 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
   }
 }
 
-bool Standard_Model::ModelInit()
+bool Standard_Model::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary) 
     msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -148,7 +149,7 @@ bool Standard_Model::ModelInit()
   
   (*p_numbers)["Extension"] = m_trivialextension;
 
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
@@ -246,7 +247,7 @@ void Standard_Model::ParticleInit() {
   }
 }
 
-void Standard_Model::FillSpectrum()
+void Standard_Model::FillSpectrum(PDF::ISR_Handler *const isr)
 {
   p_dataread->RereadInFile();
   FixEWParameters();  
@@ -295,7 +296,14 @@ void Standard_Model::FillSpectrum()
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
   double MZ2            = sqr((*p_constants)[std::string("MZ")]);
 
-  as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS);
+  PDF::PDF_Base *aspdf(NULL);
+  if (isr) {
+    if (isr->PDF(0)) aspdf=isr->PDF(0);
+    if ((aspdf==NULL || aspdf->ASInfo().m_order<0) &&
+	isr->PDF(1)) aspdf=isr->PDF(1);
+  }
+
+  as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,aspdf);
   as->SetDefault(alphaS_default);
   p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));
   p_functions->insert(std::make_pair(std::string("alpha_S"),as));

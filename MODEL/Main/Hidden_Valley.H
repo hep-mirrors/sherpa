@@ -10,11 +10,11 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum();
+    void FillSpectrum(PDF::ISR_Handler *const isr);
   public :
     HiddenValley(std::string,std::string,bool);
     ~HiddenValley();
-    bool ModelInit();
+    bool ModelInit(PDF::ISR_Handler *const isr);
   };
 }
 

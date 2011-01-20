@@ -18,6 +18,19 @@ namespace PDF {
       m_bunch(bunch), p_read(read), m_ibeam(ibeam) {}
   };// end of struct PDF_Arguments
 
+  struct PDF_Flavour: public ATOOLS::Flavour {
+    double m_mass, m_thres;
+    PDF_Flavour(const kf_code &kf=kf_none,const bool anti=false):
+      Flavour(kf,anti), m_mass(0.0), m_thres(0.0) {}
+  };// end of struct PDF_Flavour
+
+  struct PDF_AS_Info {
+    int m_order;
+    double m_asmz;
+    std::vector<PDF_Flavour> m_flavs;
+    inline PDF_AS_Info(): m_order(-1), m_asmz(0.0) {}
+  };// end of struct PDF_AS_Info
+
   class PDF_Base {
   public:
 
@@ -33,10 +46,12 @@ namespace PDF {
 
     std::string m_type;    
 
-    int m_orderas, m_member;
+    int m_member;
 
-    double m_exponent, m_rescale, m_asmz;
+    double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
+
+    PDF_AS_Info m_asinfo;
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
@@ -62,6 +77,7 @@ namespace PDF {
     
     void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
+    virtual double AlphaSPDF(const double &q2);
 
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF();
@@ -96,8 +112,7 @@ namespace PDF {
 
     inline double RescaleFactor() const { return m_rescale; }
 
-    inline int    OrderAS() const { return m_orderas; }
-    inline double ASMZ() const    { return m_asmz;    }
+    inline PDF_AS_Info ASInfo() const { return m_asinfo; }
 
     inline int Member() const { return m_member; }
 

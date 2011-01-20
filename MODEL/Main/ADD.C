@@ -40,12 +40,12 @@ ADD::ADD(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool ADD::ModelInit()
+bool ADD::ModelInit(PDF::ISR_Handler *const isr)
 {
   msg_Info()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("ADD");
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -53,7 +53,7 @@ bool ADD::ModelInit()
 
   delete p_sm;
 
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
@@ -70,7 +70,7 @@ void ADD::ParticleInit() {
   ReadParticleData();
 }
 
-void ADD::FillSpectrum() {
+void ADD::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
 
   

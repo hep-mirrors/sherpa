@@ -39,13 +39,13 @@ THDM::THDM(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool THDM::ModelInit()
+bool THDM::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("THDM");
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -53,7 +53,7 @@ bool THDM::ModelInit()
 
   delete p_sm;
 
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
@@ -72,7 +72,7 @@ void THDM::ParticleInit() {
   ReadParticleData();
 }
 
-void THDM::FillSpectrum() {
+void THDM::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   p_constants->insert(std::make_pair(std::string("tan(beta)"),    
 				     p_dataread->GetValue<double>("TAN(BETA)",0.)));

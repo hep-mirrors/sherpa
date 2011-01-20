@@ -7,6 +7,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "PDF/Main/ISR_Handler.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -33,7 +34,7 @@ void LesHouches_Interface::PrepareTerminate()
   CopyFile(m_dir+"/"+m_inputfile,path+m_inputfile);
 }
 
-void LesHouches_Interface::Run() {
+void LesHouches_Interface::Run(PDF::ISR_Handler *const isr) {
   m_inputfile = p_dataread->GetValue<std::string>("SLHA_INPUT",std::string("LesHouches.dat"));
 
   msg_Tracking()<<"================================================================ "<<std::endl;
@@ -112,7 +113,7 @@ void LesHouches_Interface::Info() {
 		  <<m_dir+m_inputfile<<std::endl;
 }
 
-void LesHouches_Interface::SetSMInput() {
+void LesHouches_Interface::SetSMInput(PDF::ISR_Handler *const isr) {
   
   msg_Tracking()<<std::endl<<"  Reading Block SMINPUTS: "<<std::endl;
 
@@ -140,7 +141,14 @@ void LesHouches_Interface::SetSMInput() {
     int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
     double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
     
-    as = new Running_AlphaS(alphaS,sqr(MZ),order_alphaS,th_alphaS);
+    PDF::PDF_Base *aspdf(NULL);
+    if (isr) {
+      if (isr->PDF(0)) aspdf=isr->PDF(0);
+      if ((aspdf==NULL || aspdf->ASInfo().m_order<0) &&
+	  isr->PDF(1)) aspdf=isr->PDF(1);
+    }
+
+    as = new Running_AlphaS(alphaS,sqr(MZ),order_alphaS,th_alphaS,aspdf);
     as->SetDefault(alphaS_default);
   
     p_model->GetScalarFunctions()->insert(std::make_pair(std::string("alpha_S"),as));

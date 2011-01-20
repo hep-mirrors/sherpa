@@ -46,7 +46,7 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
   }
 }
 
-bool FeynRules_Model::ModelInit()
+bool FeynRules_Model::ModelInit(PDF::ISR_Handler *const isr)
 {
   p_dataread->RereadInFile();
   if (m_elementary)
@@ -58,7 +58,7 @@ bool FeynRules_Model::ModelInit()
   p_functions        = new ScalarFunctionsMap();
   p_matrices         = new ComplexMatricesMap();
 
-  FillSpectrum();
+  FillSpectrum(isr);
 
   rpa.gen.AddCitation
     (1,"The Sherpa interface to FeynRules is published under \\cite{Christensen:2009jx}.");
@@ -167,13 +167,13 @@ void FeynRules_Model::ParticleInit() {
 }
 
 
-void FeynRules_Model::FillSpectrum() {
-  RunSpectrumGenerator();
+void FeynRules_Model::FillSpectrum(PDF::ISR_Handler *const isr) {
+  RunSpectrumGenerator(isr);
 }
 
-void FeynRules_Model::RunSpectrumGenerator() {
+void FeynRules_Model::RunSpectrumGenerator(PDF::ISR_Handler *const isr) {
   p_spectrumgenerator = new FeynRules_Spectrum(p_dataread,this,m_dir);
-  p_spectrumgenerator->Run();
+  p_spectrumgenerator->Run(isr);
 }  
 
 bool FeynRules_Model::CheckFlavours(int nin, int nout, Flavour* flavs)

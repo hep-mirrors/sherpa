@@ -14,7 +14,7 @@ namespace MODEL {
     void SetUpTools();
     void FillAlgebra();
     void PrepareReader(std::string);
-    void SetExternalParameters();
+    void SetExternalParameters(PDF::ISR_Handler *const isr);
     void SetInternalParameters();
 
     std::string                  m_dir, m_identfile,m_paramdeffile,m_paramfile;
@@ -27,7 +27,7 @@ namespace MODEL {
     FeynRules_Spectrum(ATOOLS::Data_Reader *,Model_Base *,std::string);
     ~FeynRules_Spectrum();
   
-    void Run();
+    void Run(PDF::ISR_Handler *const isr);
   };
 }
 #endif

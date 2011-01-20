@@ -34,13 +34,13 @@ MSSM::MSSM(std::string _dir,std::string _file,bool _elementary) :
   ParticleInit();
 }
 
-bool MSSM::ModelInit()
+bool MSSM::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary) 
     msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("MSSM");
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -50,7 +50,7 @@ bool MSSM::ModelInit()
 
   p_constants->insert(std::make_pair(std::string("mT"),ScalarConstant("Yukawa_t")));
 
-  FillSpectrum();
+  FillSpectrum(isr);
   
   if (m_elementary) {
     ATOOLS::OutputParticles(msg->Info());
@@ -101,7 +101,7 @@ void MSSM::ParticleInit() {
   ReadParticleData(); 
 }
 
-void MSSM::FillSpectrum() {
+void MSSM::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   RunSpectrumGenerator();
 }

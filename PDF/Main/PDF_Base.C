@@ -14,8 +14,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 PDF_Base::PDF_Base():
-  m_type("none"), m_orderas(-1), m_member(0), m_exponent(1.),
-  m_rescale(1.), m_asmz(0.0), m_fac_scale_factor(1.) {
+  m_type("none"), m_member(0), m_exponent(1.),
+  m_rescale(1.), m_fac_scale_factor(1.) {
 
   if (rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
     m_fac_scale_factor = ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"));
@@ -25,6 +25,11 @@ PDF_Base::PDF_Base():
 
 PDF_Base::~PDF_Base()
 {
+}
+
+double PDF_Base::AlphaSPDF(const double &q2)
+{
+  return -1.0;
 }
 
 bool PDF_Base::Collinear(const double kp2) const

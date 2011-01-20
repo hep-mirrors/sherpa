@@ -38,14 +38,14 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file,bool _elementary
   }
 }
 
-bool SM_Phantom_U1::ModelInit()
+bool SM_Phantom_U1::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+Phantom_U1");
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers          = p_sm->ExtractScalarNumbers();
   p_constants        = p_sm->ExtractScalarConstants();
   p_complexconstants = p_sm->ExtractComplexConstants();
@@ -54,7 +54,7 @@ bool SM_Phantom_U1::ModelInit()
 
   delete p_sm;
 
-  FillSpectrum();
+  FillSpectrum(isr);
 
   if (!SanityChecks()) {
     msg_Error()<<"Potential Error in "<<METHOD<<":"<<endl
@@ -79,7 +79,7 @@ void SM_Phantom_U1::ParticleInit() {
   ReadParticleData();
 }
 
-void SM_Phantom_U1::FillSpectrum() {
+void SM_Phantom_U1::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   p_constants->insert(make_pair(string("Tan(Beta)"),    
 				p_dataread->GetValue<double>("Tan(Beta)",1.)));

@@ -74,8 +74,8 @@ PDF_MSTW::PDF_MSTW
   m_xmax=p_pdf->xmax;
   m_q2min=p_pdf->qsqmin;
   m_q2max=p_pdf->qsqmax;
-  m_orderas=p_pdf->alphaSorder;
-  m_asmz=p_pdf->alphaSMZ;
+  m_asinfo.m_order=p_pdf->alphaSorder;
+  m_asinfo.m_asmz=p_pdf->alphaSMZ;
 }
 
 PDF_MSTW::~PDF_MSTW()

@@ -10,7 +10,7 @@ namespace MODEL {
   class LesHouches_Interface : public Spectrum_Generator_Base, 
 			       public ATOOLS::Terminator_Object {
     void Info();
-    void SetSMInput(); 
+    void SetSMInput(PDF::ISR_Handler *const isr); 
     void SetMasses(); 
     void SetWidths(); 
     void SetHiggsParameters();
@@ -26,7 +26,7 @@ namespace MODEL {
   public:
     LesHouches_Interface(ATOOLS::Data_Reader *,Model_Base *,std::string);
     ~LesHouches_Interface();
-    void Run();
+    void Run(PDF::ISR_Handler *const isr);
     void FillMasses();
   };
 }

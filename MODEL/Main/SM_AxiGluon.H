@@ -10,12 +10,12 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum();
+    void FillSpectrum(PDF::ISR_Handler *const isr);
   public :
     SM_AxiGluon(std::string,std::string,bool);
     ~SM_AxiGluon();
     bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
-    bool ModelInit();
+    bool ModelInit(PDF::ISR_Handler *const isr);
   };
   /*!
     \class SM_AxiGluon

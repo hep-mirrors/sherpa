@@ -39,7 +39,7 @@ SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_EHC::ModelInit()
+bool SM_EHC::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model \\w EHC from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -49,7 +49,7 @@ bool SM_EHC::ModelInit()
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -57,7 +57,7 @@ bool SM_EHC::ModelInit()
 
   delete p_sm;
   
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
@@ -70,7 +70,7 @@ void SM_EHC::ParticleInit() {
   //particle data read by SM
 }
 
-void SM_EHC::FillSpectrum() {
+void SM_EHC::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
@@ -114,7 +114,7 @@ MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool MSSM_EHC::ModelInit()
+bool MSSM_EHC::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the MSSM \\w EHCs from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -124,7 +124,7 @@ bool MSSM_EHC::ModelInit()
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
-  p_mssm->ModelInit();
+  p_mssm->ModelInit(isr);
   p_numbers   = p_mssm->ExtractScalarNumbers();
   p_constants = p_mssm->ExtractScalarConstants();
   p_functions = p_mssm->ExtractScalarFunctions();
@@ -132,7 +132,7 @@ bool MSSM_EHC::ModelInit()
 
   delete p_mssm;
   
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
@@ -145,7 +145,7 @@ void MSSM_EHC::ParticleInit() {
 }
 
 
-void MSSM_EHC::FillSpectrum() {
+void MSSM_EHC::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 

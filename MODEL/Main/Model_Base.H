@@ -15,6 +15,8 @@ namespace ATOOLS {
   class Data_Reader;
 } 
 
+namespace PDF { class ISR_Handler; }
+
 namespace MODEL {
 
   class Spectrum_Generator_Base;
@@ -66,13 +68,13 @@ namespace MODEL {
     void CustomContainerInit();
 
     virtual void ParticleInit() = 0;
-    virtual void FillSpectrum() = 0;
+    virtual void FillSpectrum(PDF::ISR_Handler *const isr) = 0;
     void ReadParticleData();
   public:
     Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();
 
-    virtual bool ModelInit() = 0;
+    virtual bool ModelInit(PDF::ISR_Handler *const isr) = 0;
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();

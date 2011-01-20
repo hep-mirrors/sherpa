@@ -1,5 +1,8 @@
 #include "MODEL/Main/Running_AlphaS.H"
+#include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -28,8 +31,11 @@ namespace MODEL {
 }
 
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
-			       const int order, const int thmode) : 
-  m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(1.0)
+			       const int order, const int thmode,
+			       PDF::PDF_Base *const aspdf) : 
+  m_order(order), m_pdf(0),
+  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(1.0),
+  p_pdf(aspdf)
 {
   if(m_fac==1.0 && rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
     m_fac=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -64,6 +70,36 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     }
   }
 
+  if (p_pdf) {
+    Data_Reader dataread(" ",";","!","=");
+    dataread.AddComment("#");
+    dataread.AddWordSeparator("\t");
+    if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+      msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
+		 <<"Overriding \\alpha_s information from PDF. "
+		 <<"Make sure you know what you are doing!"
+		 <<om::reset<<std::endl;
+    }
+    else {
+      const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
+      m_order=info.m_order;
+      m_as_MZ=info.m_asmz;
+      if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
+      /*
+      m_nth=info.m_flavs.size()+1;
+      for (int i(0);i<m_nth;++i) {
+	masses[i]=sqr(info.m_flavs[i].m_mass);
+      }
+      masses[m_nth-1]=0.0;
+      */
+      msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
+		<<"  perturbative order "<<m_order
+		<<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+      // msg_Info<<"\n  quark masses = { ";
+      // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
+      msg_Info()<<"\n}"<<std::endl;
+    }
+  }
 
   std::vector<double> sortmass(&masses[0],&masses[m_nth]);
   std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
@@ -329,6 +365,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
 
 double Running_AlphaS::operator()(double q2)
 {
+  if (m_pdf) return p_pdf->AlphaSPDF(q2);
   double as;
   q2=q2*m_fac;
   if (q2<0.) q2=-q2;

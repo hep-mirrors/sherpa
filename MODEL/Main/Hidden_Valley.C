@@ -47,7 +47,7 @@ HiddenValley::HiddenValley(std::string _dir,std::string _file,bool _elementary) 
   }
 }
 
-bool HiddenValley::ModelInit()
+bool HiddenValley::ModelInit(PDF::ISR_Handler *const isr)
 {
   p_dataread->RereadInFile();
   if (m_elementary)
@@ -55,7 +55,7 @@ bool HiddenValley::ModelInit()
 	      <<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM+HiddenValley");
 
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers          = p_sm->ExtractScalarNumbers();
   p_constants        = p_sm->ExtractScalarConstants();
   p_complexconstants = p_sm->ExtractComplexConstants();
@@ -64,7 +64,7 @@ bool HiddenValley::ModelInit()
 
   delete p_sm;
 
-  FillSpectrum();
+  FillSpectrum(isr);
   
   return true;
 }
@@ -83,7 +83,7 @@ void HiddenValley::ParticleInit() {
   ReadParticleData();
 }
 
-void HiddenValley::FillSpectrum() {
+void HiddenValley::FillSpectrum(PDF::ISR_Handler *const isr) {
 
   int    order_alpha_HV = p_dataread->GetValue<int>("ORDER_ALPHA_HV",1);
   double alpha_HV       = p_dataread->GetValue<double>("ALPHA_HV(MZ)",0.118);

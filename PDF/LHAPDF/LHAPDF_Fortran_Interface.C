@@ -55,16 +55,23 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 #ifdef LHAPDF__NATIVE__WRAPPER
     LHAPDF::initPDFSet(m_set);
     LHAPDF::initPDF(m_member);
-    m_orderas=LHAPDF::getOrderAlphaS();
+    m_asinfo.m_order=LHAPDF::getOrderAlphaS();
+    if (LHAPDF::getNf()<0) m_asinfo.m_flavs.resize(5);
+    else m_asinfo.m_flavs.resize(LHAPDF::getNf());
+    for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
+      m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
+      m_asinfo.m_flavs[i].m_mass=LHAPDF::getQMass(i+1);
+      m_asinfo.m_flavs[i].m_thres=LHAPDF::getThreshold(i+1);
+    }
 #else
     std::string full = m_set;
     const char * help;
     help = full.c_str();
     lhapdfinitsetbyname_(help, strlen(help));
     lhapdfinit_(m_member);
-    getorderas_(m_orderas);
+    getorderas_(m_asinfo.m_order);
 #endif
-    m_asmz=AlphaSPDF(sqr(Flavour(kf_Z).Mass()));
+    m_asinfo.m_asmz=AlphaSPDF(sqr(Flavour(kf_Z).Mass()));
   }
 
 #ifdef LHAPDF__NATIVE__WRAPPER
@@ -95,7 +102,7 @@ PDF_Base * LHAPDF_Fortran_Interface::GetCopy()
 }
 
 
-double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
+double LHAPDF_Fortran_Interface::AlphaSPDF(const double &scale2) {
   double scale = sqrt(scale2);
 #ifdef LHAPDF__NATIVE__WRAPPER
   double as    = LHAPDF::alphasPDF(scale);

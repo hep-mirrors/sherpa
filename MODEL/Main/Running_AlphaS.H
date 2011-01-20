@@ -4,6 +4,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Function_Base.H"
 
+namespace PDF { struct PDF_Base; }
+
 namespace MODEL {
 
   //! Contains data for alpha_S running up to 3rd order
@@ -22,7 +24,7 @@ namespace MODEL {
   class Running_AlphaS : public ATOOLS::Function_Base {
   protected:
 
-    int         m_order;
+    int         m_order,m_pdf;
     int         m_nth,m_mzset;
     double      m_CF,m_CA;
     double      m_as_MZ,m_m2_MZ;
@@ -30,6 +32,8 @@ namespace MODEL {
     double      m_cutq2;
 
     AsDataSet * p_thresh;
+
+    PDF::PDF_Base *p_pdf;
 
     double Beta0(const int);
     double Beta1(const int);
@@ -45,7 +49,8 @@ namespace MODEL {
 
     // constructor
     Running_AlphaS(const double as_MZ,const double m2_MZ,
-		   const int order=0, const int thmode=1);
+		   const int order=0, const int thmode=1,
+		   PDF::PDF_Base *const pdf=NULL);
     
     // destructor
     ~Running_AlphaS();

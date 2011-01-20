@@ -45,7 +45,7 @@ SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_AGC::ModelInit()
+bool SM_AGC::ModelInit(PDF::ISR_Handler *const isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model \\w AGC from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -55,7 +55,7 @@ bool SM_AGC::ModelInit()
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
-  p_sm->ModelInit();
+  p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
   p_functions = p_sm->ExtractScalarFunctions();
@@ -63,12 +63,12 @@ bool SM_AGC::ModelInit()
 
   delete p_sm;
   
-  FillSpectrum();
+  FillSpectrum(isr);
 
   return true;
 }
 
-void SM_AGC::FillSpectrum() {
+void SM_AGC::FillSpectrum(PDF::ISR_Handler *const isr) {
   p_dataread->RereadInFile();
   
   //Anomalous gauge couplings (hep-ph/0001065)

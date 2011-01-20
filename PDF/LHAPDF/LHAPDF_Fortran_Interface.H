@@ -17,7 +17,7 @@ namespace PDF {
     PDF_Base * GetCopy();
 
     void   CalculateSpec(double,double);
-    double AlphaSPDF(double);
+    double AlphaSPDF(const double &);
     double GetXPDF(const ATOOLS::Flavour);
 
     void SetPDFMember();

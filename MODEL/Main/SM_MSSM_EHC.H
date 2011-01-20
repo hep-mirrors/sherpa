@@ -9,11 +9,11 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum();
+    void FillSpectrum(PDF::ISR_Handler *const isr);
   public :
     SM_EHC(std::string,std::string,bool);
     ~SM_EHC()                   {}
-    bool ModelInit();
+    bool ModelInit(PDF::ISR_Handler *const isr);
   };
 
   class MSSM;
@@ -21,11 +21,11 @@ namespace MODEL {
   private :
     MSSM *p_mssm;
     void ParticleInit();
-    void FillSpectrum();
+    void FillSpectrum(PDF::ISR_Handler *const isr);
   public :
     MSSM_EHC(std::string,std::string,bool);
     ~MSSM_EHC()                   {}
-    bool ModelInit();
+    bool ModelInit(PDF::ISR_Handler *const isr);
   };
 
   /*!

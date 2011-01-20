@@ -9,12 +9,12 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum();
+    void FillSpectrum(PDF::ISR_Handler *const isr);
     void RunSpectrumGenerator();
   public :
     MSSM(std::string,std::string,bool);
     ~MSSM();
-    bool ModelInit();
+    bool ModelInit(PDF::ISR_Handler *const isr);
   };
   /*!
     \class MSSM
