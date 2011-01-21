@@ -80,6 +80,7 @@ void SM_Phantom_U1::ParticleInit() {
 }
 
 void SM_Phantom_U1::FillSpectrum() {
+  p_dataread->RereadInFile();
   p_constants->insert(make_pair(string("Tan(Beta)"),    
 				p_dataread->GetValue<double>("Tan(Beta)",1.)));
   p_constants->insert(make_pair(string("Tan(Theta)"),    

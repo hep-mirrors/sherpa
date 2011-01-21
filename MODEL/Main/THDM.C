@@ -73,6 +73,7 @@ void THDM::ParticleInit() {
 }
 
 void THDM::FillSpectrum() {
+  p_dataread->RereadInFile();
   p_constants->insert(std::make_pair(std::string("tan(beta)"),    
 				     p_dataread->GetValue<double>("TAN(BETA)",0.)));
   p_constants->insert(std::make_pair(std::string("alpha"),    

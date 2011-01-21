@@ -48,6 +48,7 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
 
 bool FeynRules_Model::ModelInit()
 {
+  p_dataread->RereadInFile();
   if (m_elementary)
     msg_Info()<<"Initialize a FeynRules Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name             = std::string("FeynRules");

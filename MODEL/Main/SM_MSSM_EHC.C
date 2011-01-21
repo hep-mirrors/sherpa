@@ -71,6 +71,7 @@ void SM_EHC::ParticleInit() {
 }
 
 void SM_EHC::FillSpectrum() {
+  p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   Complex eh(2./3.,0.);
@@ -145,6 +146,7 @@ void MSSM_EHC::ParticleInit() {
 
 
 void MSSM_EHC::FillSpectrum() {
+  p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
 
