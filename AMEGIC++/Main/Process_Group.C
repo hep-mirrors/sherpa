@@ -249,15 +249,6 @@ void AMEGIC::Process_Group::PrintProcessSummary(int it)
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->Get<AMEGIC::Process_Base>()->PrintProcessSummary(it+1);
 } 
 
-void AMEGIC::Process_Group::FillOnshellConditions()
-{
-  if (!Selector()) return;
-  int cnt=m_nin;
-  vector<pair<string,double> > osc;
-  p_pinfo->GetOSConditions(osc,cnt);
-  for(size_t i=0;i<osc.size();i++) Selector()->AddOnshellCondition(osc[i].first,osc[i].second);  
-}
-
 void AMEGIC::Process_Group::FillAlphaHistogram(ATOOLS::Histogram* histo,double weight)
 {
   for (size_t i(0);i<m_procs.size();++i)

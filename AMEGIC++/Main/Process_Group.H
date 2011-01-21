@@ -62,7 +62,6 @@ namespace AMEGIC {
     // inline functions
     inline void SetMFname(const std::string &name) { m_mfname=name; }
 
-    void FillOnshellConditions();
     void FillAlphaHistogram(ATOOLS::Histogram*,double);
   };
 }
