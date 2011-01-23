@@ -123,10 +123,51 @@ namespace ATOOLS {
 
   };// end of class Function_Wrapper
 
+  class GMean_Function_Wrapper: public Function {
+  private:
+
+    Function_Base *p_f;
+
+  public:
+
+    inline GMean_Function_Wrapper(Function_Base *const f):
+      Function("GMean_"+f->Name()), p_f(f) {}
+
+    Term *Evaluate(const std::vector<Term*> &args) const
+    {
+      msg_Debugging()<<"GMean_"<<p_f->Name()<<"(): {\n";
+      double ym(1.0), xm(1.0);
+      double xmax(std::numeric_limits<double>::max()), xmin(-xmax);
+      for (size_t i(0);i<args.size();++i) {
+	double cx(args[i]->Get<double>()), cy((*p_f)(cx));
+	msg_Debugging()<<"  x_{"<<i<<"} = "<<cx
+		       <<", y_{"<<i<<"} = "<<cy<<"\n";
+	xm*=cx;
+	ym*=cy;
+	if (cx<xmax) xmax=cx;
+	if (cx>xmin) xmin=cx;
+      }
+      ym=pow(ym,1.0/args.size());
+      xm=p_f->WDBSolve(ym,xmin,xmax);
+      if (!IsEqual((*p_f)(xm),ym)) msg_Error()<<"GMean_"<<
+	p_f->Name()<<"(): Could not solve for x."<<std::endl; 
+      msg_Debugging()<<"} -> y = "<<ym<<" -> x = "<<xm<<"\n";
+      Term *res(Term::New(xm));
+      p_interpreter->AddTerm(res);
+      return res;
+    }
+
+  };// end of class GMean_Function_Wrapper
+
 }// end of namespace ATOOLS
 
 Function *Function_Base::GetAIFunction()
 {
   return new Function_Wrapper(this);
+}
+
+Function *Function_Base::GetAIGMeanFunction()
+{
+  return new GMean_Function_Wrapper(this);
 }
 

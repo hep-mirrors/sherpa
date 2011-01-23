@@ -25,6 +25,7 @@ namespace ATOOLS {
     virtual void SetParameters(double *parameters);
 
     Function *GetAIFunction();
+    Function *GetAIGMeanFunction();
 
     // getters
     virtual std::string Type();
