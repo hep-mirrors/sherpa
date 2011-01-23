@@ -35,7 +35,7 @@ namespace PHASIC {
     ATOOLS::Vec4D_Vector   m_p;
     ATOOLS::Flavour_Vector m_f;
 
-    int m_mode, m_ktdef;
+    int m_mode;
 
     double ASMeanScale(const std::vector<double> &mu,
 		       const size_t &offset) const;
@@ -54,7 +54,7 @@ namespace PHASIC {
 
     ATOOLS::Vec4D Momentum(const size_t &i) const;
 
-  };// end of class Scale_Setter_Base
+  };// end of class Fastjet_Scale_Setter
 
 }// end of namespace PHASIC
 
@@ -80,7 +80,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this),
   p_jdef(NULL), p_siscplug(NULL),
-  m_ptmin(0.0), m_etmin(0.0), m_ktdef(1)
+  m_ptmin(0.0), m_etmin(0.0)
 {
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
@@ -101,20 +101,19 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   double f(read.StringValue<double>("f",0.75));
   std::string algo(read.StringValue<std::string>("A","antikt"));
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-  if (algo=="cambridge") {
-    ja=fastjet::cambridge_algorithm;
-    m_ktdef=-1;
-  }
-  if (algo=="antikt") {
-    ja=fastjet::antikt_algorithm;
-    m_ktdef=2;
-  }
-  if (algo=="siscone") {
-    p_siscplug=new fastjet::SISConePlugin(R,f);
-    m_ktdef=-1;
-  }
+  if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
+  if (algo=="antikt") ja=fastjet::antikt_algorithm;
+  if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(R,f);
+  std::string reco(read.StringValue<std::string>("C","E"));
+  fastjet::RecombinationScheme recom(fastjet::E_scheme);
+  if (reco=="pt") recom=fastjet::pt_scheme;
+  if (reco=="pt2") recom=fastjet::pt2_scheme;
+  if (reco=="Et") recom=fastjet::Et_scheme;
+  if (reco=="Et2") recom=fastjet::Et2_scheme;
+  if (reco=="BIpt") recom=fastjet::BIpt_scheme;
+  if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
   if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else p_jdef=new fastjet::JetDefinition(ja,R);
+  else p_jdef=new fastjet::JetDefinition(ja,R,recom);
   m_f=p_proc->Flavours();
   m_p.resize(p_proc->NIn()+p_proc->NOut());
   std::string tag(args.m_scale);
@@ -132,10 +131,13 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
     m_calcs.push_back(new Algebra_Interpreter());
+    m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
     m_calcs.back()->SetTagReplacer(&m_tagset);
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     ctags.push_back(ctag);
   }
+  for (size_t i(p_proc->NIn());i<m_f.size();++i)
+    if (m_f[i].Strong()) m_scale.push_back(0.0);
   m_scale.resize(Max(m_scale.size(),m_calcs.size()+2));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
@@ -182,10 +184,9 @@ double Fastjet_Scale_Setter::CalculateScale
     if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin) m_p.push_back(pj);
     m_scale[idx++]=pj.PPerp2();
   }
-  for (size_t i(jets.size());i<input.size();++i) {
-    if (m_ktdef==1) m_scale[idx++]=cs.exclusive_dmerge(i);
-    if (m_ktdef==2) m_scale[idx++]=1.0/cs.exclusive_dmerge(i);
-  }
+  for (size_t i(jets.size());i<input.size();++i)
+    m_scale[idx++]=cs.exclusive_dmerge(i);
+  std::sort(m_scale.begin()+2,m_scale.end(),std::greater<double>());
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[m_mode==1?i+2:i]=m_calcs[i]->Calculate()->Get<double>();
   if (m_calcs.size()==1) m_scale[1]=m_scale[0];
@@ -194,7 +195,7 @@ double Fastjet_Scale_Setter::CalculateScale
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
-  for (size_t i(2);i<m_calcs.size();++i)
+  for (size_t i(2);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
   p_cpls->Calculate();

@@ -5,6 +5,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
@@ -70,6 +71,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
     m_calcs.push_back(new Algebra_Interpreter());
+    m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
     m_calcs.back()->SetTagReplacer(&m_tagset);
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
