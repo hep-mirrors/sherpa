@@ -5,6 +5,7 @@ MCFM_SOURCES  =	\
 		SVN_Info.C \
 		MCFM_qqb_z_v.C \
 		MCFM_qqb_w_v.C \
+		MCFM_qqb_w1jet_v.C \
 		MCFM_qqb_zz_v.C \
 		MCFM_qqb_ww_v.C \
 		MCFM_Interface.C
