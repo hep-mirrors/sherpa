@@ -76,6 +76,7 @@ Virtual_ME2_Base *MCFM_qqb_ww_v_Getter::operator()(const Process_Info &pi) const
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
+    if (fl.size()!=6 && fl.size()!=4) return NULL;
     if (fl[0].IsQuark() && fl[1]==fl[0].Bar()) {
       if (fl.size()==4 &&
 	  (fl[2]==Flavour(kf_Wplus) && fl[3]==Flavour(kf_Wplus).Bar())) {
@@ -92,13 +93,15 @@ Virtual_ME2_Base *MCFM_qqb_ww_v_Getter::operator()(const Process_Info &pi) const
 	removebr_.removebr=0;
     }
     else {
-      THROW(not_implemented,"Check ordering of FS fermions, MCFM wants f\bar f");
+      THROW(not_implemented,
+	    "Check ordering of FS fermions, MCFM wants f anti-f");
     }
     int pid=61;
     zerowidth_.zerowidth=true;
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pid)
-	THROW(not_implemented,"Only one process class allowed when using MCFM");
+	THROW(not_implemented,
+	      "Only one process class allowed when using MCFM");
     }
     msg_Info()<<"\n";
     nproc_.nproc=pid;
