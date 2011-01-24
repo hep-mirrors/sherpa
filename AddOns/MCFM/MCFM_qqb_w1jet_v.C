@@ -42,8 +42,11 @@ MCFM_qqb_w1jet_v::~MCFM_qqb_w1jet_v()
 
 void MCFM_qqb_w1jet_v::Calc(const Vec4D_Vector &p)
 {
-  msg_Out()<<"In "<<METHOD<<"(mu_R^2 = "<<m_mur2<<")."<<std::endl;
+  //msg_Out()<<"In "<<METHOD<<"(mu_R^2 = "<<m_mur2<<")."<<std::endl;
   double sf(4.0*9.0);
+  double ason2pi(MODEL::s_model->ScalarFunction(std::string("alpha_S"),m_mur2)/
+		 (2.*M_PI));
+  double asfactor(ason2pi/qcdcouple_.ason2pi);
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   for (int n(2);n<5;++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
@@ -60,11 +63,12 @@ void MCFM_qqb_w1jet_v::Calc(const Vec4D_Vector &p)
   epinv2_.epinv2 = 1.0;
   qqb_w1jet_v_(p_p,p_msqv);
   double res2(p_msqv[mr(i,j)]*sf);
-  m_res.Finite() = res/qcdcouple_.ason2pi;
-  m_res.IR()     = (res1-res)/qcdcouple_.ason2pi;
-  m_res.IR2()    = (res2-res1)/qcdcouple_.ason2pi;
-  msg_Out()<<"   Results["<<i<<", "<<j<<"]: "<<res2<<" "<<res1<<" "<<res
-	   <<" for "<<qcdcouple_.ason2pi<<"."<<std::endl;
+  m_res.Finite() = res/qcdcouple_.ason2pi * asfactor;
+  m_res.IR()     = (res1-res)/qcdcouple_.ason2pi * asfactor;
+  m_res.IR2()    = (res2-res1)/qcdcouple_.ason2pi * asfactor;
+  //msg_Out()<<"   Results["<<i<<", "<<j<<"]: "<<res2<<" "<<res1<<" "<<res
+  //	   <<" for "<<qcdcouple_.ason2pi<<" = "<<ason2pi
+  //	   <<"."<<std::endl;
 }
 
 double MCFM_qqb_w1jet_v::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)

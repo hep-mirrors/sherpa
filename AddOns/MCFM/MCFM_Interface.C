@@ -106,6 +106,7 @@ bool MCFM_Interface::Initialize
   scale_.musq=sqr(scale_.scale);
   nlooprun_.nlooprun=MODEL::as->Order()+1;
   couple_.amz=model->ScalarFunction(std::string("alpha_S"));
+  qcdcouple_.as=model->ScalarFunction(std::string("alpha_S"));
   msg_Info()<<"}\n";
   return true;
 }
