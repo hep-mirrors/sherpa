@@ -748,6 +748,7 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 
 Complex Amplitude_Handler::CommonColorFactor()
 {
+  if (graphs.empty()) return Complex(0.0,0.0);
   Complex C(CFCol_Matrix->Mij(0,0));
   for (size_t i=0;i<graphs.size();i++)
     for (size_t j=0;j<graphs.size();j++)
