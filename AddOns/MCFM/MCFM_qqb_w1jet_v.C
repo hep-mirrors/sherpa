@@ -42,13 +42,13 @@ MCFM_qqb_w1jet_v::~MCFM_qqb_w1jet_v()
 
 void MCFM_qqb_w1jet_v::Calc(const Vec4D_Vector &p)
 {
-  msg_Out()<<"In "<<METHOD<<"."<<std::endl;
-  const double sf(4.0*9.0);
+  msg_Out()<<"In "<<METHOD<<"(mu_R^2 = "<<m_mur2<<")."<<std::endl;
+  double sf(4.0*9.0);
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   for (int n(2);n<5;++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
-  if (i==21) i=0;
-  if (j==21) j=0;
+  if (i==21) { i=0; sf *= 8./3.; }
+  if (j==21) { j=0; sf *= 8./3.; }
   scale_.musq    = m_mur2;
   scale_.scale   = sqrt(scale_.musq);
   epinv_.epinv   = epinv2_.epinv2=0.0;
