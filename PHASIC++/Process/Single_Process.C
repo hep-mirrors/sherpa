@@ -71,7 +71,7 @@ double Single_Process::BeamISRWeight
 {
   if (!m_use_biweight) return 1.;
   double wgt(1.0);
-  if (m_nin!=2) return wgt;
+  if (m_nin!=2) return 0.5/p_int->Momenta()[0].Mass();
   if (p_int->ISR()) {
     wgt*=p_int->ISR()->Weight
       (mode,p_int->Momenta()[0],p_int->Momenta()[1],

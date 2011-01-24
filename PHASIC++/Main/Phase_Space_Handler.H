@@ -97,7 +97,7 @@ namespace PHASIC {
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
-    double m_result_1, m_result_2, m_flux, m_weight, m_error; 
+    double m_result_1, m_result_2, m_weight, m_error; 
     
     std::vector<std::vector<double> > m_stats;
 

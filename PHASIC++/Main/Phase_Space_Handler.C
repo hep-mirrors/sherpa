@@ -208,7 +208,6 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
 {
   if (m_nin == 1) {
     m_E = m_m[0];
-    m_flux = 1./(2.*m_E);
     m_s = m_E*m_E;
     p[0] = Vec4D(m_E,0.,0.,0.);
     return 1;
