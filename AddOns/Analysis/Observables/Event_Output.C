@@ -15,11 +15,25 @@ namespace ANALYSIS {
   class Event_Output : public Primitive_Observable_Base {
     Input_Output_Handler* p_io;
     std::string m_inlist;
+    double m_n, m_sum, m_sumsqr;
+
+    inline double TotalXS() const { return m_sum/m_n; }
+    inline double TotalVar() const
+    { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
+    inline double TotalErr() const {
+      if (m_n==1) return TotalXS();
+      else if (ATOOLS::IsEqual
+	       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
+      else return sqrt(TotalVar()/m_n);
+    }
+
   public:
 
     Event_Output(Input_Output_Handler* io, const std::string& inlist) :
-      Primitive_Observable_Base(), p_io(io), m_inlist(inlist)
+      Primitive_Observable_Base(), p_io(io), m_inlist(inlist),
+      m_n(0.0), m_sum(0.0), m_sumsqr(0.0)
     {
+      m_splitt_flag=false;
     }
 
     ~Event_Output()
@@ -28,13 +42,28 @@ namespace ANALYSIS {
     }
 
 
-    void Evaluate(const ATOOLS::Blob_List & blobs, double value, double ncount)
+    void Evaluate(const ATOOLS::Blob_List & blobs, double weight, double ncount)
     {
       if (!p_io) return;
       Particle_List * pl=p_ana->GetParticleList(m_inlist);
+      m_n+=ncount;
       if (pl->empty()) return;
+      m_sum+=weight;
+      m_sumsqr+=sqr(weight);
       Blob_List* blobsptr=const_cast<Blob_List*>(&blobs);
       p_io->OutputToFormat(blobsptr);
+    }
+
+
+    void EndEvaluation(double scale=1.)
+    {
+      if (m_sum==0.0) return;
+      PRINT_FUNC("");
+      double xs(TotalXS()), err(TotalErr());
+      msg_Info()<<om::bold<<"Triggered XS"<<om::reset<<" is "
+                <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
+                <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
+                <<" %"<<om::reset<<" )";
     }
 
 
