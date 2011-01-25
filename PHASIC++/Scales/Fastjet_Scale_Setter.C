@@ -207,7 +207,7 @@ double Fastjet_Scale_Setter::ASMeanScale
 {
   msg_Debugging()<<"Setting scales {\n";
   double mur2(1.0), as(1.0), oqcd(0.0);
-  for (size_t i(offset);i<mu.size();++i) {
+  for (size_t i(offset);i<offset+m_calcs.size();++i) {
     double cas(MODEL::as->BoundedAlphaS(mu[i]));
     msg_Debugging()<<"  \\mu_{"<<i<<"} = "
 		   <<sqrt(mu[i])<<", as = "<<cas<<"\n";
