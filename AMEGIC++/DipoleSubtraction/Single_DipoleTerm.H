@@ -59,7 +59,7 @@ namespace AMEGIC {
     bool           DetermineType();
     std::vector<PHASIC::Subprocess_Info>::iterator
                    FindInInfo(PHASIC::Subprocess_Info& fi, int idx) const;
-    void           SetLOMomenta(const ATOOLS::Vec4D*);
+    void           SetLOMomenta(const ATOOLS::Vec4D*,const ATOOLS::Poincare &);
     bool           CompareLOmom(const ATOOLS::Vec4D*);
 
     /*------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
-    double         operator()(const ATOOLS::Vec4D *,const int);
+    double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
     void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
 

@@ -280,14 +280,15 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   for (size_t i=0; i<m_real_momenta.size(); ++i) m_real_momenta[i]=_mom[i];
 
   Vec4D_Vector mom(_mom);
+  Poincare cms;
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms(mom[0]+mom[1]);
+    cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }
 
   bool res=true;
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
-    if (IsBad((*m_subtermlist[i])(&mom.front(),mode))) res=false;
+    if (IsBad((*m_subtermlist[i])(&mom.front(),cms,mode))) res=false;
     m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
   }
 

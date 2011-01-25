@@ -265,7 +265,7 @@ Single_DipoleTerm::FindInInfo(Subprocess_Info& fi, int idx) const
   return fi.m_ps.end();
 }
 
-void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms)
+void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &cms)
 {
   size_t cnt=0;
   size_t em=p_LO_process->GetEmit();
@@ -296,7 +296,7 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms)
   p_LO_mom[0]=Vec4D(p_LO_mom[0][0],0.,0.,p_LO_mom[0][0]);
   p_LO_mom[1]=Vec4D(p_LO_mom[0][0],0.,0.,-p_LO_mom[0][0]);
 
-  p_realint->ISR()->BoostInLab(&p_LO_labmom.front(),m_nin+m_nout-1);
+  for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
@@ -357,7 +357,8 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
   }
   p_dipole->SetMomenta(p_testmoms);
   p_dipole->CalcDiPolarizations();
-  SetLOMomenta(p_testmoms);
+  Poincare cms;
+  SetLOMomenta(p_testmoms,cms);
 
   int status=p_LO_process->InitAmplitude(model,top,links,errs,
 					 p_dipole->GetDiPolarizations(),p_dipole->GetFactors());
@@ -448,11 +449,11 @@ void Single_DipoleTerm::Minimize()
 
 double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode) { return 0.; }
 
-double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const int mode)
+double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {
   if (p_partner!=this) {
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
-    else m_lastxs = p_partner->operator()(mom,mode)*m_sfactor;
+    else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor;
     m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
     m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
     m_subevt.m_muf2 = p_partner->GetSubevt()->m_muf2;
@@ -464,7 +465,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const int mode)
   p_LO_process->ResetLastXS();
   p_dipole->SetMomenta(mom);
   p_dipole->CalcDiPolarizations();
-  SetLOMomenta(mom);
+  SetLOMomenta(mom,cms);
 
   bool trg(false);
   trg= p_LO_process->Trigger(p_LO_labmom) || !p_LO_process->Selector()->On();
