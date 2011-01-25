@@ -487,6 +487,10 @@ void Histogram::FinishMCB()
   m_fills+=m_mcb;
   m_psfills++;
 
+  if (!m_tmp) {
+    m_tmp = new double[m_nbin];
+    for (int i=0;i<m_nbin;++i) m_tmp[i]=0.0;
+  }
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i] += m_tmp[i];
     if (m_depth>1) {
