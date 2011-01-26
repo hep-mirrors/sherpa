@@ -229,7 +229,6 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   }
   else THROW(fatal_error,"No signal process.");
 
-
   //   switch (m_mode) {
   //   case 0 :  break;
   //   case 2 :  WriteReducedHepEvt(nhep); break;
@@ -331,7 +330,8 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
 
 void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 //   int mo,da;
-  for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
+  for(Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();
+      ++bit) {
 //     if ((*bit)->Type()==btp::ME_PS_Interface_IS) {
 //       if ((*bit)->NInP()!=2 || (*bit)->NOutP()!=2) {
 // 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
@@ -351,10 +351,11 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 // 	}
 //       }
 //     }
-    if ((*bit)->Type()==btp::Signal_Process) {
+    if ((*bit)->Type()==btp::Signal_Process ||
+	(*bit)->Type()==btp::Hard_Collision) {
       if ((*bit)->NInP()!=2) {
 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
-		   <<"   Hard ME blob with other than 2 incoming particles !"<<endl
+		   <<"   Hard ME blob with other than 2 incoming particles !\n"
 		   <<(*bit)<<endl;
 	abort();
       }
