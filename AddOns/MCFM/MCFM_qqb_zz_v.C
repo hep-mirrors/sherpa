@@ -8,7 +8,7 @@ namespace MCFM {
     double *p_p, *p_msqv;
   public:
     MCFM_qqb_zz_v(const PHASIC::Process_Info& pi,
-		 const ATOOLS::Flavour_Vector& flavs);
+		  const ATOOLS::Flavour_Vector& flavs);
     ~MCFM_qqb_zz_v();
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
@@ -43,7 +43,7 @@ MCFM_qqb_zz_v::~MCFM_qqb_zz_v()
 
 void MCFM_qqb_zz_v::Calc(const Vec4D_Vector &p)
 {
-  const double sf(4.0*9.0);
+  const double sf(4.0*9.0/qcdcouple_.ason2pi);
   for (size_t n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
@@ -58,9 +58,9 @@ void MCFM_qqb_zz_v::Calc(const Vec4D_Vector &p)
   epinv2_.epinv2=1.0;
   qqb_zz_v_(p_p,p_msqv);
   double res2(p_msqv[mr(i,j)]*sf);
-  m_res.Finite() = res/qcdcouple_.ason2pi;
-  m_res.IR()     = (res1-res)/qcdcouple_.ason2pi;
-  m_res.IR2()    = (res2-res1)/qcdcouple_.ason2pi;
+  m_res.Finite() = res;
+  m_res.IR()     = (res1-res);
+  m_res.IR2()    = (res2-res1);
 }
 
 double MCFM_qqb_zz_v::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)

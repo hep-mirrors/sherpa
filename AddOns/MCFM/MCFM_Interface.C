@@ -83,12 +83,12 @@ bool MCFM_Interface::Initialize
   masses_.mcsq=sqr(Flavour(kf_c).Mass(true));
   masses_.mbsq=sqr(Flavour(kf_b).Mass(true));
   // ew params
-  ewscheme_.ewscheme=3;
-  ewinput_.aemmz_inp=model->ScalarFunction(std::string("alpha_QED"));
-  ewinput_.gf_inp=model->ScalarConstant(std::string("GF"));
-  ewinput_.xw_inp=model->ScalarConstant(std::string("sin2_thetaW"));
-  ewinput_.wmass_inp=model->ScalarConstant(std::string("MW"));
-  ewinput_.zmass_inp=model->ScalarConstant(std::string("MZ"));
+  ewscheme_.ewscheme = 3;
+  ewinput_.aemmz_inp = model->ScalarFunction(std::string("alpha_QED"));
+  ewinput_.gf_inp    = model->ScalarConstant(std::string("GF"));
+  ewinput_.xw_inp    = model->ScalarConstant(std::string("sin2_thetaW"));
+  ewinput_.wmass_inp = model->ScalarConstant(std::string("MW"));
+  ewinput_.zmass_inp = model->ScalarConstant(std::string("MZ"));
   // ckm elements
   // must check the syntax for off-diag elements.
   cabib_.Vud=model->ComplexMatrixElement(std::string("CKM"),0,0).real();
@@ -102,12 +102,18 @@ bool MCFM_Interface::Initialize
 	   <<"           "
 	   <<cabib_.Vcd<<" "<<cabib_.Vcs<<" "<<cabib_.Vcb<<std::endl;
   // set couplings
-  scale_.scale=ewinput_.zmass_inp;
-  scale_.musq=sqr(scale_.scale);
-  nlooprun_.nlooprun=MODEL::as->Order()+1;
-  couple_.amz=model->ScalarFunction(std::string("alpha_S"));
-  qcdcouple_.as=model->ScalarFunction(std::string("alpha_S"));
+  scale_.scale       = ewinput_.zmass_inp;
+  scale_.musq        = sqr(scale_.scale);
+  nlooprun_.nlooprun = MODEL::as->Order()+1;
+  couple_.amz        = model->ScalarFunction(std::string("alpha_S"));
+
+  qcdcouple_.as      = model->ScalarFunction(std::string("alpha_S"));
+  qcdcouple_.gsq     = 4.*M_PI*qcdcouple_.as;
+  qcdcouple_.ason2pi = qcdcouple_.as/(2.*M_PI);
+  qcdcouple_.ason4pi = qcdcouple_.as/(4.*M_PI);
   msg_Info()<<"}\n";
+
+  verbose_.verbose = true;
   return true;
 }
 

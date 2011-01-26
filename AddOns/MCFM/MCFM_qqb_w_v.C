@@ -72,47 +72,35 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_w_v_Getter,"MCFM_qqb_w_v")
 Virtual_ME2_Base *MCFM_qqb_w_v_Getter::operator()(const Process_Info &pi) const
 {
-  std::cout<<"In "<<METHOD<<":"<<std::endl;
   if (pi.m_loopgenerator!="MCFM") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    msg_Out()<<"   Flavours = "<<fl.size()<<":";
-    for (size_t i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
-    msg_Out()<<"."<<std::endl;
     if (fl.size()!=4) return NULL;
+    int  pID(0);
     if (fl[0].IsQuark() && fl[1].IsQuark()) {
       if ((fl[3]==Flavour(kf_nue).Bar() && fl[2]==Flavour(kf_e)) || 
 	  (fl[3]==Flavour(kf_numu).Bar() && fl[2]==Flavour(kf_mu)) || 
 	  (fl[3]==Flavour(kf_nutau).Bar() && fl[2]==Flavour(kf_tau))) { 
-	msg_Out()<<"   --> allowed combination for W-, proc = 6."<<std::endl;
-	if (nproc_.nproc>=0) {
-	  if (nproc_.nproc!=6)
-	    THROW(not_implemented,"Only one process class allowed when using MCFM");
-	}
-	else {
-	  msg_Info()<<"\n";
-	  nproc_.nproc=6;
-	  chooser_();
-	}
+	pID = 16;
       }
       else if ((fl[3]==Flavour(kf_e).Bar() && fl[2]==Flavour(kf_nue)) || 
 	       (fl[3]==Flavour(kf_mu).Bar() && fl[2]==Flavour(kf_numu)) || 
 	       (fl[3]==Flavour(kf_tau).Bar() && fl[2]==Flavour(kf_nutau))) { 
-	msg_Out()<<"   --> allowed combination for W-, proc = 1."<<std::endl;
-	if (nproc_.nproc>=0) {
-	  if (nproc_.nproc!=1)
-	    THROW(not_implemented,"Only one process class allowed when using MCFM");
-	}
-	else {
-	  msg_Info()<<"\n";
-	  nproc_.nproc=1;
-	  chooser_();
-	}
+	pID = 11;
+      }
+    }
+    if (pID>0) {
+      if (nproc_.nproc>=0) {
+	if (nproc_.nproc!=pID)
+	  THROW(not_implemented,"Only one process class allowed when using MCFM");
       }
       else {
-	THROW(not_implemented,"Check ordering of FS fermions, MCFM wants f\bar f");	
+	msg_Info()<<"\n";
+	nproc_.nproc=pID;
+	chooser_();
       }
+      msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
       return new MCFM_qqb_w_v(pi,fl);
     }
   }

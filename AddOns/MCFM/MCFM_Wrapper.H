@@ -26,7 +26,12 @@ inline void GetMom(double *m,const int n,const ATOOLS::Vec4D &p)
 { m[mp(n,3)]=p[0]; for (int i(1);i<4;++i) m[mp(n,i-1)]=p[i]; }
 
 extern "C" {
+  void coupling_();
+  void coupling2_();
 
+  extern struct {
+    bool verbose;
+  } verbose_;
   extern struct {
     double epinv;
   } epinv_;
@@ -48,6 +53,9 @@ extern "C" {
   extern struct {
     int ewscheme;
   } ewscheme_;
+  extern struct {
+    double Gf,gw,xw,gwsq,esq,vevsq;
+  } ewcouple_;
   extern struct {
     int nflav;
   } nflav_;
