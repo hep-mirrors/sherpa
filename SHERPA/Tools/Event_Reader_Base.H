@@ -15,6 +15,7 @@ namespace SHERPA {
   public:
     Event_Reader_Base(const std::string & path,const std::string & file)
       : m_path(path), m_add(file), m_file(file) {}
+    virtual ~Event_Reader_Base() {}
     virtual bool FillBlobs(ATOOLS::Blob_List *)=0;
 
     double      Weight()  { return m_weight; }
