@@ -398,7 +398,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
       msg_Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
-	       <<"   You are using the ADD model beyond its valid range ! "<<endl;
+	       <<"   You might be using the ADD model beyond its valid range ! "<<endl;
     }
   }
 

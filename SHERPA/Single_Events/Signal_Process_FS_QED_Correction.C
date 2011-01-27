@@ -222,10 +222,14 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
 bool Signal_Process_FS_QED_Correction::PutOnMassShell(const Particle_Vector& partvec)
 {
   // if massless in ME put on mass shell for YFS
-  bool allonshell(true);
+  bool allonshell(true); kf_code kfc;
   std::vector<double>masses(partvec.size(),0.);
   for (size_t i=0;i<partvec.size();++i) {
-    masses[i]=partvec[i]->Flav().Mass(1);
+    kfc=partvec[i]->Flav().Kfcode();
+    if(kfc==kf_graviton || kfc==kf_gscalar)
+      masses[i]=sqrt(fabs(partvec[i]->Momentum().Abs2()));
+    else masses[i]=partvec[i]->Flav().Mass(1);
+    //If one of the two squared masses is zero, IsEqual always returns 0.
     if (!IsEqual(partvec[i]->Momentum().Abs2(),sqr(masses[i]),1E-4))
       allonshell=false;
   }
