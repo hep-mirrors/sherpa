@@ -11,6 +11,7 @@ MCFM_SOURCES  =	\
 		MCFM_qqb_w2jet_v.C \
 		MCFM_qqb_zz_v.C \
 		MCFM_qqb_ww_v.C \
+		MCFM_qqb_ww1jet_v.C \
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\
