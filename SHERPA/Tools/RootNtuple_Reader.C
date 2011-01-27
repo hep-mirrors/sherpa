@@ -121,7 +121,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.clear();
   }
   if (m_evtid==0) if (!ReadInEntry()) return 0;
-  size_t currentid=m_evtid;
   Blob         *signalblob=new Blob();
   m_weight = 0.;
   signalblob->SetType(btp::Signal_Process);
@@ -132,6 +131,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->SetBeam(-1);
   
 #ifdef USING__ROOT
+  size_t currentid=m_evtid;
   while (currentid==m_evtid) {
     Vec4D *moms = new Vec4D[2+m_nparticle];
     Flavour *flav = new Flavour[2+m_nparticle];
@@ -148,7 +148,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 #endif
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
-  signalblob->AddData("Trials",new Blob_Data<int>(1.));
+  signalblob->AddData("Trials",new Blob_Data<int>(1));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<PHASIC::NLO_subevtlist*>(&m_nlos));
   blobs->push_back(signalblob);
   m_evtcnt++;  
