@@ -7,6 +7,7 @@ namespace MCFM {
   private:
     bool    m_ishiggs;
     double *p_p, *p_msqv;
+    double  m_mh2,m_Gh2,m_asmh,m_ewcorr;
   public:
     MCFM_qqb_ww_v(const PHASIC::Process_Info& pi,
 		  const ATOOLS::Flavour_Vector& flavs,
@@ -33,7 +34,15 @@ using namespace ATOOLS;
 MCFM_qqb_ww_v::MCFM_qqb_ww_v(const Process_Info& pi,
 			     const Flavour_Vector& flavs,
 			     const bool & ishiggs):
-  Virtual_ME2_Base(pi,flavs), m_ishiggs(ishiggs)
+  Virtual_ME2_Base(pi,flavs), m_ishiggs(ishiggs),
+  m_mh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Mass())),
+  m_Gh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Width())),
+  m_asmh(MODEL::s_model->ScalarFunction(std::string("alpha_S"),m_mh2)),
+  m_ewcorr(ewcouple_.vevsq/
+	   ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("vev"))) *
+	   pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+	       MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))/
+	       ewcouple_.gwsq,3.))
 {
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
@@ -48,9 +57,16 @@ MCFM_qqb_ww_v::~MCFM_qqb_ww_v()
 
 void MCFM_qqb_ww_v::Calc(const Vec4D_Vector &p)
 {
-  double sf(m_ishiggs?
-	    256./qcdcouple_.ason2pi:
-	    4.0*9.0/qcdcouple_.ason2pi);
+  double sf(4.0*(m_ishiggs?64.0:9.0)/qcdcouple_.ason2pi);
+  double cplfactor(1.),propfactor(1.);
+  if (m_ishiggs) {
+    cplfactor   = m_ewcorr * ATOOLS::sqr(m_asmh/qcdcouple_.as);
+    double s12((p[0]+p[1]).Abs2());
+    propfactor = 
+      (ATOOLS::sqr(s12-ATOOLS::sqr(masses_.hmass))+
+       ATOOLS::sqr(masses_.hmass*masses_.hwidth))/
+      (ATOOLS::sqr(s12-m_mh2)+m_mh2*m_Gh2);
+  }
   for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
   for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
@@ -58,6 +74,7 @@ void MCFM_qqb_ww_v::Calc(const Vec4D_Vector &p)
   if (j==21) { j=0; }
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
+
   epinv_.epinv=epinv2_.epinv2=0.0;
   if (!m_ishiggs) qqb_ww_v_(p_p,p_msqv);
              else qqb_hww_v_(p_p,p_msqv);
@@ -70,9 +87,9 @@ void MCFM_qqb_ww_v::Calc(const Vec4D_Vector &p)
   if (!m_ishiggs) qqb_ww_v_(p_p,p_msqv);
              else qqb_hww_v_(p_p,p_msqv);
   double res2(p_msqv[mr(i,j)]*sf);
-  m_res.Finite() = res;
-  m_res.IR()     = (res1-res);
-  m_res.IR2()    = (res2-res1);
+  m_res.Finite() = res         * cplfactor * propfactor;
+  m_res.IR()     = (res1-res)  * cplfactor * propfactor;
+  m_res.IR2()    = (res2-res1) * cplfactor * propfactor;
 }
 
 double MCFM_qqb_ww_v::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
@@ -85,12 +102,11 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_ww_v_Getter,"MCFM_qqb_ww_v")
 Virtual_ME2_Base *MCFM_qqb_ww_v_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<METHOD<<"===================="<<std::endl;
+  //  msg_Out()<<METHOD<<"===================="<<std::endl;
   if (pi.m_loopgenerator!="MCFM") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    msg_Out()<<fl.size()<<" "<<pi.m_fi.m_ps.size()<<" "<<pi.m_fi.m_ps[0].m_fl[0]<<std::endl;
     if (fl.size()!=6 && fl.size()!=4) return NULL;
     int pID(0);
     if (fl.size()==4 &&
@@ -135,7 +151,6 @@ Virtual_ME2_Base *MCFM_qqb_ww_v_Getter::operator()(const Process_Info &pi) const
 	}
       }
       else if (pi.m_fi.m_ps.size()==1 && (fl[0].IsGluon() && fl[1]==fl[0])) {
-	msg_Out()<<fl.size()<<" "<<pi.m_fi.m_ps.size()<<" "<<pi.m_fi.m_ps[0].m_fl[0]<<std::endl;
 	ATOOLS::Flavour fl0(pi.m_fi.m_ps[0].m_fl[0]);
 	if (fl0==ATOOLS::Flavour(kf_h0) && Flavour(kf_h0).IsOn() &&
 	    pi.m_fi.m_ps[0].m_ps.size()==2) {
@@ -159,12 +174,6 @@ Virtual_ME2_Base *MCFM_qqb_ww_v_Getter::operator()(const Process_Info &pi) const
       nproc_.nproc=pID;
       chooser_();
       msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
-      if (pID==113) { 
-	msg_Info()<<"   vevsq = "<<ewcouple_.vevsq<<", "
-		  <<"gwsq = "<<ewcouple_.gwsq<<", "
-		  <<"wmass = "<<masses_.wmass<<" and "
-		  <<"as = "<<qcdcouple_.as<<"."<<std::endl; 
-      }
       return new MCFM_qqb_ww_v(pi,fl,pID==113);
     }
   }
