@@ -2,6 +2,19 @@
 #include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
+  // README:
+  // For Higgs production, choose model: MODEL = SM+EHC
+  // It is important for the Higgs production to have all five flavours 
+  // in the initial state, but the Yukawa coupling of the b must be
+  // switched off:  YUKAWA_B = 0.  
+  // Also, MCFM acts in the limit of mt->infinity,
+  // thus either a correction term must be introduced, or we have
+  // to set: FINITE_TOP_MASS = 0 
+  // For direct W-pair production, there's a contribution from b
+  // initial states, through a top in the t-channel.  Switch it off
+  // by setting   ACTIVE[6]=0 and/or MASSIVE[5]=1;
+
+
 
   class MCFM_qqb_ww_v: public PHASIC::Virtual_ME2_Base {
   private:
