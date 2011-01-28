@@ -333,23 +333,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
 
   AC_ARG_ENABLE(
-    mcatnloinclude,
-    AC_HELP_STRING([--enable-mcatnloinclude], [Enable MC@NLO support]),
-    [ AC_MSG_CHECKING(for MC@NLO support)
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(no); mcatnloinclude=false ;;
-        yes) AC_MSG_RESULT(yes); mcatnloinclude=true ;;
-      esac ],
-    [ AC_MSG_CHECKING(for MC@NLO support); AC_MSG_RESULT(no); mcatnloinclude=false ] 
-  )
-  if test "$mcatnloinclude" = "true" ; then
-    AC_DEFINE([USING__MCatNLO], "1", [using MC@NLO])
-    CONDITIONAL_MCATNLOLIBS="\${MCATNLOLIBS}"
-  fi
-  AC_SUBST(CONDITIONAL_MCATNLOLIBS)
-  AM_CONDITIONAL(MCATNLO_SUPPORT, test "$mcatnloinclude" = "true" )
-  
-  AC_ARG_ENABLE(
     hepmc2,
     AC_HELP_STRING([--enable-hepmc2=/path/to/hepmc], [Enable HepMC (version 2.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC2 installation directory);
