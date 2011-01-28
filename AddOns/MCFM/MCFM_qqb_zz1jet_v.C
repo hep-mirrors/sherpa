@@ -116,13 +116,13 @@ DECLARE_VIRTUALME2_GETTER(MCFM_qqb_zz1jet_v_Getter,"MCFM_qqb_zz1jet_v")
 Virtual_ME2_Base *MCFM_qqb_zz1jet_v_Getter::
 operator()(const Process_Info &pi) const
 {
-  msg_Out()<<METHOD<<"===================="<<std::endl;
+  //msg_Out()<<METHOD<<"===================="<<std::endl;
   if (pi.m_loopgenerator!="MCFM") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
-    msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
+    //for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
+    //msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
     if (fl.size()!=7 && fl.size()!=5) return NULL;
     int pID(0);
     if (fl.size()==5 &&
@@ -139,7 +139,7 @@ operator()(const Process_Info &pi) const
       if (pi.m_fi.m_ps.size()==2 && fl[0].Strong() && fl[1].Strong()) {
 	ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
 	ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
-	msg_Out()<<"  check this: "<<fl1<<" & "<<fl2<<std::endl;
+	//msg_Out()<<"  check this: "<<fl1<<" & "<<fl2<<std::endl;
 	if (fl1==ATOOLS::Flavour(kf_h0) && Flavour(kf_h0).IsOn() &&
 	    fl2.Strong() && pi.m_fi.m_ps[0].m_ps.size()==2) {
 	  ATOOLS::Flavour fl11(pi.m_fi.m_ps[0].m_ps[0].m_fl[0]);
