@@ -9,6 +9,7 @@ MCFM_SOURCES  =	\
 		MCFM_qqb_w_v.C \
 		MCFM_qqb_w1jet_v.C \
 		MCFM_qqb_w2jet_v.C \
+		MCFM_qqb_h_v.C \
 		MCFM_qqb_zz_v.C \
 		MCFM_qqb_zz1jet_v.C \
 		MCFM_qqb_ww_v.C \

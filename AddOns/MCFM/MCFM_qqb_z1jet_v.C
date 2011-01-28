@@ -91,15 +91,18 @@ operator()(const Process_Info &pi) const
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl.size()!=5) return NULL;
     int pID(0);
-    if (fl[0].Strong() && fl[1].Strong() && fl[4].Strong() &&
+    if (pi.m_fi.m_ps.size()==0 &&
+	fl[0].Strong() && fl[1].Strong() && fl[4].Strong() &&
 	((fl[0]==fl[1].Bar() && fl[4].IsGluon() && fl[0].IsQuark()) || 
 	 (fl[0]==fl[4]       && fl[1].IsGluon() && fl[0].IsQuark()) ||  
 	 (fl[1]==fl[4]       && fl[0].IsGluon() && fl[1].IsQuark())) &&
 	fl[3]==fl[2].Bar()) {
-      if (fl[2]==Flavour(kf_e) || fl[2]==Flavour(kf_mu) || fl[2]==Flavour(kf_tau)) {
+      if (fl[2]==Flavour(kf_e) || fl[2]==Flavour(kf_mu) || 
+	  fl[2]==Flavour(kf_tau)) {
 	pID = 41;
       }
-      else if (fl[2]==Flavour(kf_nue) || fl[2]==Flavour(kf_numu) || fl[2]==Flavour(kf_nutau)) {
+      else if (fl[2]==Flavour(kf_nue) || fl[2]==Flavour(kf_numu) || 
+	       fl[2]==Flavour(kf_nutau)) {
 	pID = 42;
       }
     } 
