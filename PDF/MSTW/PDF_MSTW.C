@@ -125,7 +125,7 @@ void MSTW_Getter::PrintInfo
   str<<"MSTW 2008 fit, see arXiv:0901:0002 [hep-ph]";
 }
 
-MSTW_Getter *p_get_mstw08[45];
+MSTW_Getter *p_get_mstw08[63];
 
 extern "C" void InitPDFLib()
 {
@@ -138,9 +138,27 @@ extern "C" void InitPDFLib()
     p_get_mstw08[i+17] = new MSTW_Getter("mstw2008nnlo_asmz10"+ToString(i));
   for (int i(10);i<=27;++i) 
     p_get_mstw08[i+17] = new MSTW_Getter("mstw2008nnlo_asmz1"+ToString(i));
+  p_get_mstw08[45] = new MSTW_Getter("mstw2008lo_nf3");
+  p_get_mstw08[46] = new MSTW_Getter("mstw2008lo_nf4");
+  p_get_mstw08[47] = new MSTW_Getter("mstw2008nlo_nf3");
+  p_get_mstw08[48] = new MSTW_Getter("mstw2008nlo_nf4");
+  p_get_mstw08[49] = new MSTW_Getter("mstw2008nnlo_nf3");
+  p_get_mstw08[50] = new MSTW_Getter("mstw2008nnlo_nf4");
+  p_get_mstw08[51] = new MSTW_Getter("mstw2008nlo_mb4.00GeV.00");
+  p_get_mstw08[52] = new MSTW_Getter("mstw2008nlo_mb4.00GeV_nf4.00");
+  p_get_mstw08[53] = new MSTW_Getter("mstw2008nlo_mb4.25GeV.00");
+  p_get_mstw08[54] = new MSTW_Getter("mstw2008nlo_mb4.25GeV_nf4.00");
+  p_get_mstw08[55] = new MSTW_Getter("mstw2008nlo_mb4.50GeV.00");
+  p_get_mstw08[56] = new MSTW_Getter("mstw2008nlo_mb4.50GeV_nf4.00");
+  p_get_mstw08[57] = new MSTW_Getter("mstw2008nlo_mb5.00GeV.00");
+  p_get_mstw08[58] = new MSTW_Getter("mstw2008nlo_mb5.00GeV_nf4.00");
+  p_get_mstw08[59] = new MSTW_Getter("mstw2008nlo_mb5.25GeV.00");
+  p_get_mstw08[60] = new MSTW_Getter("mstw2008nlo_mb5.25GeV_nf4.00");
+  p_get_mstw08[61] = new MSTW_Getter("mstw2008nlo_mb5.50GeV.00");
+  p_get_mstw08[62] = new MSTW_Getter("mstw2008nlo_mb5.50GeV_nf4.00");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<45;++i) delete p_get_mstw08[i];
+  for (int i(0);i<63;++i) delete p_get_mstw08[i];
 }
