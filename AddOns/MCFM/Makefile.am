@@ -3,18 +3,14 @@ include ../../svn.make
 
 MCFM_SOURCES  =	\
 		SVN_Info.C \
+		MCFM_gg_h.C \
+		MCFM_qqb_vv.C \
 		MCFM_qqb_z_v.C \
 		MCFM_qqb_z1jet_v.C \
 		MCFM_qqb_z2jet_v.C \
 		MCFM_qqb_w_v.C \
 		MCFM_qqb_w1jet_v.C \
 		MCFM_qqb_w2jet_v.C \
-		MCFM_qqb_h_v.C \
-		MCFM_qqb_zz_v.C \
-		MCFM_qqb_zz1jet_v.C \
-		MCFM_qqb_ww_v.C \
-		MCFM_qqb_ww1jet_v.C \
-		MCFM_qqb_www_v.C \
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\

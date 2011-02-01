@@ -28,7 +28,6 @@ namespace MCFM {
 }// end of namespace MCFM
 
 extern "C" { 
-  void gg_hzzg_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"

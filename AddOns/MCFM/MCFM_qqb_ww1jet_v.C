@@ -34,7 +34,6 @@ namespace MCFM {
 
 extern "C" { 
   //void qqb_ww1jet_v_(double *p,double *msqv); 
-  void gg_hwwg_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"

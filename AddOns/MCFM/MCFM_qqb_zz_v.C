@@ -29,7 +29,6 @@ namespace MCFM {
 
 extern "C" { 
   void qqb_zz_v_(double *p,double *msqv); 
-  void qqb_hzz_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"

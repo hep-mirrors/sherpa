@@ -97,10 +97,10 @@ bool MCFM_Interface::Initialize
   cabib_.Vcd=model->ComplexMatrixElement(std::string("CKM"),1,0).real();
   cabib_.Vcs=model->ComplexMatrixElement(std::string("CKM"),1,1).real();
   cabib_.Vcb=model->ComplexMatrixElement(std::string("CKM"),1,2).real();
-  msg_Out()<<"Check this:"
-	   <<cabib_.Vud<<" "<<cabib_.Vus<<" "<<cabib_.Vub<<std::endl
-	   <<"           "
-	   <<cabib_.Vcd<<" "<<cabib_.Vcs<<" "<<cabib_.Vcb<<std::endl;
+  //msg_Out()<<"Check this:"
+  //	   <<cabib_.Vud<<" "<<cabib_.Vus<<" "<<cabib_.Vub<<std::endl
+  //	   <<"           "
+  //	   <<cabib_.Vcd<<" "<<cabib_.Vcs<<" "<<cabib_.Vcb<<std::endl;
   // set couplings
   scale_.scale       = ewinput_.zmass_inp;
   scale_.musq        = sqr(scale_.scale);

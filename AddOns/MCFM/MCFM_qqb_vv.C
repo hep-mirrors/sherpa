@@ -1,0 +1,218 @@
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
+
+namespace MCFM {
+  class MCFM_qqb_vv: public PHASIC::Virtual_ME2_Base {
+  private:
+    bool    m_swapped;
+    int     m_pID;
+    double  m_aqed,m_cplcorr, m_normcorr;
+    double *p_p, *p_msqv;
+
+    double CallMCFM(const int & i,const int & j);
+  public:
+    MCFM_qqb_vv(const int & pID,const bool & swapped,
+		const PHASIC::Process_Info& pi,
+		const ATOOLS::Flavour_Vector& flavs);
+    ~MCFM_qqb_vv();
+    void Calc(const ATOOLS::Vec4D_Vector& momenta);
+    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
+  };
+
+}// end of namespace MCFM
+
+extern "C" { 
+  void qqb_ww_v_(double *p,double *msqv); 
+  void qqb_zz_v_(double *p,double *msqv); 
+}
+
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+
+using namespace MCFM;
+using namespace PHASIC;
+using namespace ATOOLS;
+
+MCFM_qqb_vv::MCFM_qqb_vv(const int & pID,const bool & swapped,
+			 const PHASIC::Process_Info& pi,
+			 const Flavour_Vector& flavs):
+  Virtual_ME2_Base(pi,flavs), m_pID(pID), m_swapped(swapped),
+  m_aqed(MODEL::s_model->ScalarFunction(std::string("alpha_QED"))),
+  m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
+  m_normcorr(4.*9./qcdcouple_.ason2pi)
+{
+  p_p = new double[4*MCFM_NMX];
+  p_msqv = new double[sqr(2*MCFM_NF+1)];
+  m_drmode=m_mode=1;
+  if (m_pID==82 || m_pID==87) m_normcorr /= 3.;
+}
+
+MCFM_qqb_vv::~MCFM_qqb_vv()
+{
+  delete [] p_p;
+  delete [] p_msqv;
+}
+
+double MCFM_qqb_vv::CallMCFM(const int & i,const int & j) {
+  switch (m_pID) {
+  case 61: qqb_ww_v_(p_p,p_msqv); break;
+  case 81:
+  case 82: 
+  case 86: 
+  case 87: qqb_zz_v_(p_p,p_msqv); break;
+  }
+  return p_msqv[mr(i,j)];
+}
+
+void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
+{
+  double corrfactor(m_cplcorr*m_normcorr);
+
+  for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
+  if (m_pID==81 || m_pID==82) {
+    GetMom(p_p,2,p[2]); msg_Out()<<"2(2) = "<<m_flavs[2]<<"."<<std::endl;
+    GetMom(p_p,3,p[4]); msg_Out()<<"3(4) = "<<m_flavs[4]<<"."<<std::endl;
+    GetMom(p_p,4,p[3]); msg_Out()<<"4(3) = "<<m_flavs[3]<<"."<<std::endl;
+    GetMom(p_p,5,p[5]); msg_Out()<<"5(5) = "<<m_flavs[5]<<"."<<std::endl;
+  }
+  else {
+    for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+  }
+  msg_Out()<<"s24 = "<<sqrt((p[2]+p[4]).Abs2())<<", "
+	   <<"s35 = "<<sqrt((p[3]+p[5]).Abs2())<<", "
+	   <<"s23 = "<<sqrt((p[2]+p[3]).Abs2())<<", "
+	   <<"s45 = "<<sqrt((p[4]+p[5]).Abs2())<<"; "
+	   <<"corr = "<<m_cplcorr<<" * "<<m_normcorr
+	   <<" = "<<corrfactor<<"."<<std::endl;
+
+  long int i(m_flavs[0]), j(m_flavs[1]);
+  if (i==21) { i=0; }
+  if (j==21) { j=0; }
+  scale_.musq=m_mur2;
+  scale_.scale=sqrt(scale_.musq);
+
+  epinv_.epinv=epinv2_.epinv2=0.0;
+  double res(CallMCFM(i,j)  * corrfactor);
+  epinv_.epinv=1.0;
+  double res1(CallMCFM(i,j) * corrfactor);
+  epinv2_.epinv2=1.0;
+  double res2(CallMCFM(i,j) * corrfactor);
+
+  msg_Out()<<"   --> "<<res<<" "<<res1<<" "<<res2<<"."<<std::endl;
+  m_res.Finite() = res;
+  m_res.IR()     = (res1-res);
+  m_res.IR2()    = (res2-res1);
+}
+
+double MCFM_qqb_vv::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
+{
+  return 4.*M_PI;
+}
+
+extern "C" { void chooser_(); }
+
+DECLARE_VIRTUALME2_GETTER(MCFM_qqb_vv_Getter,"MCFM_qqb_vv")
+Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
+{
+  bool swapped(false);
+  msg_Out()<<METHOD<<"===================="<<std::endl;
+  if (pi.m_loopgenerator!="MCFM")                       return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
+  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    // check for right model and absence of b Yukawa couplings
+    msg_Out()<<"   Check constraints: "
+	     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<", "
+	     <<"t on = "<<ATOOLS::Flavour(kf_t).IsOn()<<", "
+	     <<"model = "<<MODEL::s_model->Name()<<"."<<std::endl;
+    if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
+	MODEL::s_model->Name()!=std::string("SM") ||
+	Flavour(kf_t).IsOn())                           return NULL;
+    Flavour_Vector fl(pi.ExtractFlavours());
+    for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
+    msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
+
+    // two incoming strongly interacting particles.
+    if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
+    if (fl.size()!=6)                                   return NULL;
+    // check for fully leptonic FS
+    if (!(fl[0].IsQuark() && fl[1].IsQuark()))          return NULL;
+    int pID(0);
+    msg_Out()<<"   check types: "
+	     <<fl[2]<<" "<<fl[2].IsDowntype()<<"; "
+	     <<fl[3]<<" "<<fl[3].IsUptype()<<"; "
+	     <<fl[4]<<" "<<fl[4].IsDowntype()<<"; "
+	     <<fl[5]<<" "<<fl[5].IsUptype()<<"."<<std::endl;
+    if (pi.m_fi.m_ps.size()==2) {
+      ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
+      ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
+      msg_Out()<<"   check props: "<<fl1<<" & "<<fl2<<"."<<std::endl;
+      // WW final state
+      if ((fl1==Flavour(kf_Wplus) && fl2==Flavour(kf_Wplus).Bar()) ||
+	  (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Wplus).Bar())) {
+	if (fl[2].IsLepton() && fl[3].IsLepton() && 
+	    fl[4].IsLepton() && fl[5].IsLepton()) pID = 61;
+      }
+      // ZZ final state
+      else if (fl1==Flavour(kf_Z) && fl2==Flavour(kf_Z)) {
+	int neutrino(0);
+	if (fl[2].IsLepton() && fl[3].IsLepton() && 
+	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
+	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
+	  pID = 86+neutrino;
+	}
+      }
+      else if ((fl1==Flavour(kf_Wplus) && fl2==Flavour(kf_Z)) ||
+	       (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Z))) {
+	int neutrino(0);
+	if (fl[2].IsLepton() && fl[3].IsLepton() && 
+	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
+	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
+	  pID = 71+neutrino;
+	  if (fl2==Flavour(kf_Wplus)) swapped = true;
+	}
+      }
+      else if ((fl1==Flavour(kf_Wplus).Bar() && fl2==Flavour(kf_Z)) ||
+	       (fl2==Flavour(kf_Wplus).Bar() && fl1==Flavour(kf_Z))) {
+	int neutrino(0);
+	if (fl[2].IsLepton() && fl[3].IsLepton() && 
+	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
+	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
+	  pID = 76+neutrino;
+	  if (fl2==Flavour(kf_Wplus).Bar()) swapped = true;
+	}
+      }
+    }
+    else {
+      // Only allow for ZZ final state - try to catch the photons
+      if (fl[2].IsLepton() && fl[3].IsLepton() && 
+	  fl[4].IsLepton() && fl[5].IsLepton() &&
+	  fl[4]==fl[2].Bar() && fl[5]==fl[3].Bar()) {
+	int neutrino(0);
+	if ((fl[2].IsUptype() && fl[3].IsDowntype()) ||
+	    (fl[2].IsDowntype() && fl[3].IsUptype())) neutrino=1;
+	pID = 81+neutrino;
+	msg_Error()<<"Error in "<<METHOD<<"(pID = "<<pID<<"):"<<std::endl
+		   <<"   Continuum production with gamma interference tricky. "
+		   <<"Single resonant diagrams in Sherpa, but not in MCFM."
+		   <<std::endl<<"   Will abort the run."<<std::endl;
+	exit(1);
+      }
+    } 
+    if (pID!=0) {
+      zerowidth_.zerowidth=true;
+      if (nproc_.nproc>=0) {
+	if (nproc_.nproc!=pID)
+	  THROW(not_implemented,
+		"Only one process class allowed when using MCFM");
+      }
+      nproc_.nproc=pID;
+      chooser_();
+      msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
+      return new MCFM_qqb_vv(pID,swapped,pi,fl);
+    }
+  }
+  return NULL;
+}
