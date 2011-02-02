@@ -25,7 +25,7 @@ namespace AMEGIC {
   };
 
   class FF_MassiveDipoleSplitting : public DipoleSplitting_Base {
-    double m_yijk;
+    double m_yijk, m_yp;
     double m_zi,m_zj;
     double m_zim,m_zjm;
     double m_sff;

@@ -6,7 +6,7 @@ include ../../svn.make
 libDipoleSubtraction_la_SOURCES = \
 		       SVN_Info.C \
 		       Flavour_KernelsA.C \
-		       Massive_Kernels.C \
+		       Massive_KernelsA.C \
 		       DipoleSplitting_Base.C \
 		       FF_DipoleSplitting.C \
 		       FI_DipoleSplitting.C \
@@ -20,7 +20,7 @@ libDipoleSubtraction_la_SOURCES = \
 
 localinc_HEADERS   = \
 		     Flavour_KernelsA.H \
-		     Massive_Kernels.H \
+		     Massive_KernelsA.H \
 		     DipoleSplitting_Base.H \
 		     FF_DipoleSplitting.H \
 		     FI_DipoleSplitting.H \

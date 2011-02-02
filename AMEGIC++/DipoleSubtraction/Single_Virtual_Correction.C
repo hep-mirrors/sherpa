@@ -1,7 +1,7 @@
 #include "AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H"
 #include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
 #include "AMEGIC++/DipoleSubtraction/Flavour_KernelsA.H"
-#include "AMEGIC++/DipoleSubtraction/Massive_Kernels.H"
+#include "AMEGIC++/DipoleSubtraction/Massive_KernelsA.H"
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess_MHV.H"
 #include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -154,18 +154,13 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
     p_LO_process = new Single_LOProcess(m_pinfo, p_int->Beam(), p_int->ISR());
   p_LO_process->SetTestMoms(p_testmoms);
 
-  p_dipole = new DipoleSplitting_Base();
-  p_dipole->SetAlpha(m_dalpha);
-  p_flkern = new Flavour_KernelsA();
-  p_flkern->SetAlpha(m_dalpha);
-
   size_t fsgluons(0);
   for (size_t i=m_nin;i<m_flavs.size();i++) {
     if (m_flavs[i].Strong()&&m_flavs[i].IsMassive()) m_massive=1;
     if (m_flavs[i].IsGluon()) fsgluons++; 
   }
   if (m_massive||fsgluons) {
-    p_masskern = new Massive_Kernels();
+    p_masskern = new Massive_KernelsA();
     if (p_masskern->Nmf()>0) m_massive=1;
     if (!m_massive) {
       delete p_masskern;
@@ -177,6 +172,11 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
     }
     if (p_masskern) p_masskern->SetAlpha(m_dalpha);
   }
+
+  p_dipole = new DipoleSplitting_Base();
+  if (!m_massive) p_dipole->SetAlpha(m_dalpha);
+  p_flkern = new Flavour_KernelsA();
+  if (!m_massive) p_flkern->SetAlpha(m_dalpha);
 
   PolarizationNorm();
 
@@ -363,17 +363,17 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
   double mur = p_scale->Scale(stp::ren);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
-      int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
-      int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
+      int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
+      int typek = m_flavs[p_LO_process->PartonList()[k]].IntSpin();
       double sik=2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]];
       double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
       double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
 
-      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin);
+      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin);
       double splf  = p_masskern->I_Fin();
       double splf1 = p_masskern->I_E1();
       double splf2 = p_masskern->I_E2();
-      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin);
+      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin);
       splf  += p_masskern->I_Fin();
       splf1 += p_masskern->I_E1();
       splf2 += p_masskern->I_E2();
@@ -453,15 +453,20 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	int spin=m_flavs[p_LO_process->PartonList()[i]].IntSpin();
 	double saj=dabs(2.*mom[p_LO_process->PartonList()[0]]*mom[p_LO_process->PartonList()[i]]);
 	double muq2=saj;
+	double sajx = saj/x1;
+	double muq2x=sajx;
 	if (spin!=2) muq2=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/saj;
+	if (spin!=2) muq2x=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/sajx;
 	m_kpca[0]+=p_dsij[0][i]*
-	  (-w*p_masskern->t1(type,spin,muq2,x0)+p_masskern->t2(type,spin,muq2)-p_masskern->t4(type,spin,muq2,eta0));
+	  (-w*p_masskern->t1(type,spin,muq2,x0)-w*p_masskern->t1p(type,spin,muq2,x0)
+	  +p_masskern->t2(type,spin,muq2)-p_masskern->t4(type,spin,muq2,eta0));
 	m_kpca[1]+=p_dsij[0][i]*
-	  (w*(p_masskern->t1(type,spin,muq2,x0)+p_masskern->t3(type,spin,muq2,x0)));
+	  (w*(p_masskern->t1(type,spin,muq2x,x0)+p_masskern->t1p(type,spin,muq2,x0)+p_masskern->t3(type,spin,muq2x,x0)));
 	m_kpca[2]+=p_dsij[0][i]*
-	  (-w*p_masskern->t1(type+2,spin,muq2,x0)+p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta0));
+	  (-w*p_masskern->t1(type+2,spin,muq2,x0)-w*p_masskern->t1p(type+2,spin,muq2,x0)
+	  +p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta0));
 	m_kpca[3]+=p_dsij[0][i]*
-	  (w*(p_masskern->t1(type+2,spin,muq2,x0)+p_masskern->t3(type+2,spin,muq2,x0)));	
+	  (w*(p_masskern->t1(type+2,spin,muq2x,x0)+p_masskern->t1p(type+2,spin,muq2,x0)+p_masskern->t3(type+2,spin,muq2x,x0)));	
 	if (spin==2) {
           for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpa[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
@@ -481,10 +486,18 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
     }
 
     if (sb) {
-      m_kpca[0]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type,x0)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta0));
-      m_kpca[1]-=p_dsij[0][1]*w*(p_flkern->Kt1(type,x0)+p_flkern->Kt3(type,x0));
-      m_kpca[2]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type+2,x0)+p_flkern->Kt2(type+2)-p_flkern->Kt4(type+2,eta0));
-      m_kpca[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x0)+p_flkern->Kt3(type+2,x0));
+      if(!m_massive){
+        m_kpca[0]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type,x0)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta0));
+        m_kpca[1]-=p_dsij[0][1]*w*(p_flkern->Kt1(type,x0)+p_flkern->Kt3(type,x0));
+        m_kpca[2]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type+2,x0)+p_flkern->Kt2(type+2)-p_flkern->Kt4(type+2,eta0));
+        m_kpca[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x0)+p_flkern->Kt3(type+2,x0));
+      }
+      else{
+        m_kpca[0]-=p_dsij[0][1]*(-w*p_masskern->Kt1(type,x0)+p_masskern->Kt2(type)-p_masskern->Kt4(type,eta0));
+        m_kpca[1]-=p_dsij[0][1]*w*(p_masskern->Kt1(type,x0)+p_masskern->Kt3(type,x0));
+        m_kpca[2]-=p_dsij[0][1]*(-w*p_masskern->Kt1(type+2,x0)+p_masskern->Kt2(type+2)-p_masskern->Kt4(type+2,eta0));
+        m_kpca[3]-=p_dsij[0][1]*w*(p_masskern->Kt1(type+2,x0)+p_masskern->Kt3(type+2,x0));
+      }
     }
     
     double asum=0.,fsum=0.;
@@ -527,15 +540,20 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	int spin=m_flavs[p_LO_process->PartonList()[i]].IntSpin();
 	double saj=dabs(2.*mom[p_LO_process->PartonList()[pls-1]]*mom[p_LO_process->PartonList()[i]]);
 	double muq2=saj;
-	if (spin!=2) muq2=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/saj;
+	double sajx = saj/x1;
+	double muq2x=sajx;
+	if (spin!=2) muq2=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/saj;// mu-tilde
+	if (spin!=2) muq2x=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/sajx;// mu
 	m_kpcb[0]+=p_dsij[pls-1][i]*
-	  (-w*p_masskern->t1(type,spin,muq2,x1)+p_masskern->t2(type,spin,muq2)-p_masskern->t4(type,spin,muq2,eta1));
+	  (-w*p_masskern->t1(type,spin,muq2,x1) - w*p_masskern->t1p(type,spin,muq2,x1) 
+	  +p_masskern->t2(type,spin,muq2)-p_masskern->t4(type,spin,muq2,eta1));
 	m_kpcb[1]+=p_dsij[pls-1][i]*
-	  (w*(p_masskern->t1(type,spin,muq2,x1)+p_masskern->t3(type,spin,muq2,x1)));
+	  (w*(p_masskern->t1(type,spin,muq2x,x1) + p_masskern->t1p(type,spin,muq2,x1) +p_masskern->t3(type,spin,muq2x,x1)));
 	m_kpcb[2]+=p_dsij[pls-1][i]*
-	  (-w*p_masskern->t1(type+2,spin,muq2,x1)+p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta1));
+	  (-w*p_masskern->t1(type+2,spin,muq2,x1)-w*p_masskern->t1p(type+2,spin,muq2,x1)
+	  +p_masskern->t2(type+2,spin,muq2)-p_masskern->t4(type+2,spin,muq2,eta1));
 	m_kpcb[3]+=p_dsij[pls-1][i]*
-	  (w*(p_masskern->t1(type+2,spin,muq2,x1)+p_masskern->t3(type+2,spin,muq2,x1)));	
+	  (w*(p_masskern->t1(type+2,spin,muq2x,x1)+p_masskern->t1p(type+2,spin,muq2,x1)+p_masskern->t3(type+2,spin,muq2x,x1)));
 	if (spin==2) {
           for (size_t j=0;j<p_masskern->Nmf();j++) {
 	    m_xpb[xpcnt].xp=1.-4.*sqr(p_masskern->FMass(j))/saj;
@@ -555,10 +573,18 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
     }
 
     if (sa) {
-      m_kpcb[0]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type,x1)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta1));
-      m_kpcb[1]-=p_dsij[0][1]*w*(p_flkern->Kt1(type,x1)+p_flkern->Kt3(type,x1));
-      m_kpcb[2]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type+2,x1)+p_flkern->Kt2(type+2)-p_flkern->Kt4(type+2,eta1));
-      m_kpcb[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x1)+p_flkern->Kt3(type+2,x1));
+      if (!m_massive){
+        m_kpcb[0]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type,x1)+p_flkern->Kt2(type)-p_flkern->Kt4(type,eta1));
+        m_kpcb[1]-=p_dsij[0][1]*w*(p_flkern->Kt1(type,x1)+p_flkern->Kt3(type,x1));
+        m_kpcb[2]-=p_dsij[0][1]*(-w*p_flkern->Kt1(type+2,x1)+p_flkern->Kt2(type+2)-p_flkern->Kt4(type+2,eta1));
+        m_kpcb[3]-=p_dsij[0][1]*w*(p_flkern->Kt1(type+2,x1)+p_flkern->Kt3(type+2,x1));
+      }
+      else {
+        m_kpcb[0]-=p_dsij[0][1]*(-w*p_masskern->Kt1(type,x1)+p_masskern->Kt2(type)-p_masskern->Kt4(type,eta1));
+        m_kpcb[1]-=p_dsij[0][1]*w*(p_masskern->Kt1(type,x1)+p_masskern->Kt3(type,x1));
+        m_kpcb[2]-=p_dsij[0][1]*(-w*p_masskern->Kt1(type+2,x1)+p_masskern->Kt2(type+2)-p_masskern->Kt4(type+2,eta1));
+        m_kpcb[3]-=p_dsij[0][1]*w*(p_masskern->Kt1(type+2,x1)+p_masskern->Kt3(type+2,x1));
+      }
     }
 
     double asum=0.,fsum=0.;

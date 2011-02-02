@@ -16,7 +16,7 @@ namespace AMEGIC {
   class Phase_Space_Generator;
   class DipoleSplitting_Base;
   class Flavour_KernelsA;
-  class Massive_Kernels;
+  class Massive_KernelsA;
 
   struct xp_coeff {
     double xp;
@@ -42,7 +42,7 @@ namespace AMEGIC {
     Single_LOProcess      * p_LO_process;
     DipoleSplitting_Base  * p_dipole;
     Flavour_KernelsA      * p_flkern;
-    Massive_Kernels       * p_masskern;
+    Massive_KernelsA      * p_masskern;
     PHASIC::Virtual_ME2_Base* p_loopme;  
 
     bool m_massive, m_force_init;
