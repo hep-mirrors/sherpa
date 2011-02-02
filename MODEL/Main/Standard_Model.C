@@ -11,14 +11,17 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Standard_Model_Getter,"SM",Model_Base,Model_Arguments);
+DECLARE_GETTER(Standard_Model_Getter,
+	       "SM",Model_Base,Model_Arguments);
 
-Model_Base *Standard_Model_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Standard_Model_Getter::
+operator()(const Model_Arguments &args) const
 {
   return new Standard_Model(args.m_path,args.m_file,args.m_elementary);
 }
 
-void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Standard_Model_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
   str<<std::setw(width+4)<<" "<<"{\n"
@@ -40,14 +43,17 @@ void Standard_Model_Getter::PrintInfo(std::ostream &str,const size_t width) cons
      <<std::setw(width+4)<<" "<<"}";
 }
 
-DECLARE_GETTER(Standard_Model_Top_Getter,"SM+Top",Model_Base,Model_Arguments);
+DECLARE_GETTER(Standard_Model_Top_Getter,
+	       "SM+Top",Model_Base,Model_Arguments);
 
-Model_Base *Standard_Model_Top_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Standard_Model_Top_Getter::
+operator()(const Model_Arguments &args) const
 {
   return new Standard_Model(args.m_path,args.m_file,args.m_elementary,1);
 }
 
-void Standard_Model_Top_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Standard_Model_Top_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + non-standard top couplings\n";
   str<<std::setw(width+4)<<" "<<"{\n"
@@ -72,14 +78,17 @@ void Standard_Model_Top_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 
-DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4thGen",Model_Base,Model_Arguments);
+DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4thGen",
+	       Model_Base,Model_Arguments);
 
-Model_Base *Standard_Model_Gen4_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Standard_Model_Gen4_Getter::
+operator()(const Model_Arguments &args) const
 {
   return new Standard_Model(args.m_path,args.m_file,args.m_elementary,2);
 }
 
-void Standard_Model_Gen4_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Standard_Model_Gen4_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + 4th generation\n";
   str<<std::setw(width+4)<<" "<<"{\n"
@@ -270,6 +279,16 @@ void Standard_Model::FillSpectrum(PDF::ISR_Handler *const isr)
 				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).Mass(true))));
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
 				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).Mass(true))));
+  ATOOLS::Flavour(kf_e).SetYuk(ScalarConstant("Yukawa_e"));
+  ATOOLS::Flavour(kf_mu).SetYuk(ScalarConstant("Yukawa_mu"));
+  ATOOLS::Flavour(kf_tau).SetYuk(ScalarConstant("Yukawa_tau"));
+  ATOOLS::Flavour(kf_u).SetYuk(ScalarConstant("Yukawa_u"));
+  ATOOLS::Flavour(kf_d).SetYuk(ScalarConstant("Yukawa_d"));
+  ATOOLS::Flavour(kf_c).SetYuk(ScalarConstant("Yukawa_c"));
+  ATOOLS::Flavour(kf_s).SetYuk(ScalarConstant("Yukawa_s"));
+  ATOOLS::Flavour(kf_t).SetYuk(ScalarConstant("Yukawa_t"));
+  ATOOLS::Flavour(kf_b).SetYuk(ScalarConstant("Yukawa_b"));
+
   // Extra coupling parameters for non-Standard tbW coupling
   if (m_trivialextension==1) {
     p_constants->insert(std::make_pair(std::string("tbW_RelFactor"),
