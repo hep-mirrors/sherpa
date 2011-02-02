@@ -154,14 +154,11 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
 Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<METHOD<<"===================="<<std::endl;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     // check for right model and absence of b Yukawa couplings
     Flavour_Vector fl(pi.ExtractFlavours());
-    for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
-    msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
 
     // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
@@ -170,6 +167,8 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
     ATOOLS::Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
     // higgs propagator
     if (!flh==ATOOLS::Flavour(kf_h0))                   return NULL;
+    if (pi.m_fi.m_ps.size()==2 && 
+	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
     if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
 	MODEL::s_model->Name()!=std::string("SM+EHC") ||

@@ -170,12 +170,15 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	    MODEL::s_model->Name()!=std::string("SM") ||
 	    (Flavour(kf_t).IsOn() && fl1.Kfcode()==24 && fl2.Kfcode()==24)) {
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		     <<"   Try to initialise process qqb->VV in MCFM."<<std::endl
-		     <<"   Inconsistent setting with Sherpa: "<<std::endl
-		     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<" (should be 0), "
-		     <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM', and "
-		     <<"top on = "<<Flavour(kf_t).IsOn()<<"(should be 1 for WW)."
-		     <<std::endl<<"   Will exit the run."<<std::endl;
+		     <<"   Try to initialise process qqb->VV in MCFM.\n"
+		     <<"   Inconsistent setting with Sherpa: \n"
+		     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()
+		     <<" (should be 0), "
+		     <<"model = "<<MODEL::s_model->Name()
+		     <<"(should be 'SM', and "
+		     <<"top on = "<<Flavour(kf_t).IsOn()
+		     <<"(should be 1 for WW).\n"
+		     <<"   Will exit the run."<<std::endl;
 	  exit(1);
 	  return NULL;
 	}
