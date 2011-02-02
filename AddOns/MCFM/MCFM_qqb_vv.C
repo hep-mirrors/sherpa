@@ -24,6 +24,8 @@ namespace MCFM {
 extern "C" { 
   void qqb_ww_v_(double *p,double *msqv); 
   void qqb_zz_v_(double *p,double *msqv); 
+  void qqb_wgam_v_(double *p,double *msqv); 
+  void qqb_zgam_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -55,6 +57,10 @@ MCFM_qqb_vv::~MCFM_qqb_vv()
 
 double MCFM_qqb_vv::CallMCFM(const int & i,const int & j) {
   switch (m_pID) {
+  case 12: qqb_wgam_v_(p_p,p_msqv); break;
+  case 17: qqb_wgam_v_(p_p,p_msqv); break;
+  case 48: qqb_zgam_v_(p_p,p_msqv); break;
+  case 49: qqb_zgam_v_(p_p,p_msqv); break;
   case 61: qqb_ww_v_(p_p,p_msqv); break;
   case 81:
   case 82: 
@@ -74,6 +80,22 @@ void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
     GetMom(p_p,3,p[4]); msg_Out()<<"3(4) = "<<m_flavs[4]<<"."<<std::endl;
     GetMom(p_p,4,p[3]); msg_Out()<<"4(3) = "<<m_flavs[3]<<"."<<std::endl;
     GetMom(p_p,5,p[5]); msg_Out()<<"5(5) = "<<m_flavs[5]<<"."<<std::endl;
+  }
+  else if (m_pID==49) {
+    corrfactor*=1./3.;
+    if (m_swapped) {
+    GetMom(p_p,2,p[3]);
+    GetMom(p_p,3,p[4]);
+    GetMom(p_p,4,p[2]);
+    }
+    else {
+     for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+    }
+  }
+  else if (m_pID==48 || m_pID ==12 || m_pID==17) {
+    GetMom(p_p,2,p[3]);
+    GetMom(p_p,3,p[4]);
+    GetMom(p_p,4,p[2]);
   }
   else {
     for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
@@ -124,24 +146,34 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<", "
 	     <<"t on = "<<ATOOLS::Flavour(kf_t).IsOn()<<", "
 	     <<"model = "<<MODEL::s_model->Name()<<"."<<std::endl;
-    if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
-	MODEL::s_model->Name()!=std::string("SM") ||
-	Flavour(kf_t).IsOn())                           return NULL;
     Flavour_Vector fl(pi.ExtractFlavours());
+    if ((ATOOLS::Flavour(kf_b).Yuk()>0. ||
+	MODEL::s_model->Name()!=std::string("SM") ||
+	Flavour(kf_t).IsOn()) && (fl.size()==6))        return NULL;
+    if (MODEL::s_model->Name()!=std::string("SM") && 
+	(fl.size()==5))				        return NULL;
     for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
     msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
 
     // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
-    if (fl.size()!=6)                                   return NULL;
+    if (fl.size()!=6 && fl.size()!=5)                   return NULL;
     // check for fully leptonic FS
     if (!(fl[0].IsQuark() && fl[1].IsQuark()))          return NULL;
     int pID(0);
-    msg_Out()<<"   check types: "
+    if(fl.size()==6) {
+      msg_Out()<<"   check types: "
 	     <<fl[2]<<" "<<fl[2].IsDowntype()<<"; "
 	     <<fl[3]<<" "<<fl[3].IsUptype()<<"; "
 	     <<fl[4]<<" "<<fl[4].IsDowntype()<<"; "
 	     <<fl[5]<<" "<<fl[5].IsUptype()<<"."<<std::endl;
+    }
+    else {
+      msg_Out()<<"   check types: "
+	     <<fl[2]<<" "<<fl[2].IsUptype()<<"; "
+	     <<fl[3]<<" "<<fl[3].IsUptype()<<"; "
+	     <<fl[4]<<" "<<fl[4].IsUptype()<<"."<<std::endl;
+    }
     if (pi.m_fi.m_ps.size()==2) {
       ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
       ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
@@ -150,7 +182,10 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
       if ((fl1==Flavour(kf_Wplus) && fl2==Flavour(kf_Wplus).Bar()) ||
 	  (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Wplus).Bar())) {
 	if (fl[2].IsLepton() && fl[3].IsLepton() && 
-	    fl[4].IsLepton() && fl[5].IsLepton()) pID = 61;
+	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  pID = 61;
+          zerowidth_.zerowidth=true;
+	}
       }
       // ZZ final state
       else if (fl1==Flavour(kf_Z) && fl2==Flavour(kf_Z)) {
@@ -160,6 +195,7 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
 	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
 	  pID = 86+neutrino;
+          zerowidth_.zerowidth=true;
 	}
       }
       else if ((fl1==Flavour(kf_Wplus) && fl2==Flavour(kf_Z)) ||
@@ -170,6 +206,7 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
 	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
 	  pID = 71+neutrino;
+          zerowidth_.zerowidth=true;
 	  if (fl2==Flavour(kf_Wplus)) swapped = true;
 	}
       }
@@ -181,8 +218,53 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
 	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
 	  pID = 76+neutrino;
+          zerowidth_.zerowidth=true;
 	  if (fl2==Flavour(kf_Wplus).Bar()) swapped = true;
 	}
+      }
+      // Z (-> nu + nubar) + gamma 
+      else if (fl1==Flavour(kf_Z) && fl2==Flavour(kf_photon)) {
+	if (fl[2].IsLepton() && fl[3].IsLepton()) {
+	  if (fl[2].IsUptype()){ 
+	    pID = 49;
+            zerowidth_.zerowidth=true;
+	    swapped=false;
+          }
+        }
+      }
+    }
+    if (pi.m_fi.m_ps.size()==3) {
+      ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
+      ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
+      ATOOLS::Flavour fl3(pi.m_fi.m_ps[2].m_fl[0]);
+      msg_Out()<<"   check props: "<<fl1<<" & "<<fl2<<" & "<<fl3<<"."<<std::endl;
+      if (fl1==Flavour(kf_photon)) {
+      // Z + gamma final state
+	if (fl[3].IsLepton() && fl[4]==fl[3].Bar()) {
+	  if (fl[3].IsUptype()){ 
+	    pID = 49;
+            zerowidth_.zerowidth=true;
+	    swapped=true;
+          }
+          else {
+	    pID = 48;
+            zerowidth_.zerowidth=false;
+	    swapped=true;
+          }
+        }
+      // W + gamma final state
+	if (fl[3].IsLepton() && fl[4].IsLepton() && fl[4]!=fl[3].Bar()) {
+	  if (fl[3].IsUptype() && fl[4].IsDowntype()){
+	    pID = 12; 
+            zerowidth_.zerowidth=false;
+	    swapped=true;
+	  }
+	  else if (fl[3].IsDowntype() && fl[4].IsUptype()) {
+	    pID = 17; 
+            zerowidth_.zerowidth=false;
+	    swapped=true;
+          }
+        } 
       }
     }
     else {
@@ -202,7 +284,6 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
       }
     } 
     if (pID!=0) {
-      zerowidth_.zerowidth=true;
       if (nproc_.nproc>=0) {
 	if (nproc_.nproc!=pID)
 	  THROW(not_implemented,
