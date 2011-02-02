@@ -85,9 +85,9 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
   m_cplcorr *=
     ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.));
 
-  msg_Out()<<"Finite top mass correction yields : "
-	   <<MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.)
-	   <<"."<<std::endl;
+  msg_Tracking()<<"Potential finite top mass correction (enabled) yields: "
+		<<MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.)
+		<<"."<<std::endl;
 
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
@@ -159,13 +159,6 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     // check for right model and absence of b Yukawa couplings
-    msg_Out()<<"   Check constraints: "
-	     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<", "
-	     <<"model = "<<MODEL::s_model->Name()<<", and "
-	     <<"higgs on = "<<Flavour(kf_h0).IsOn()<<"."<<std::endl;
-    if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
-	MODEL::s_model->Name()!=std::string("SM+EHC") ||
-	!Flavour(kf_h0).IsOn())                         return NULL;
     Flavour_Vector fl(pi.ExtractFlavours());
     for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
     msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
@@ -178,6 +171,19 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
     // higgs propagator
     if (!flh==ATOOLS::Flavour(kf_h0))                   return NULL;
 
+    if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
+	MODEL::s_model->Name()!=std::string("SM+EHC") ||
+	!Flavour(kf_h0).IsOn()) {
+      msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+		 <<"   Try to initialise process gg->H(+jet) in MCFM."<<std::endl
+		 <<"   Inconsistent setting with Sherpa: "<<std::endl
+		 <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<" (should be 0), "
+		 <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM+EHC', and "
+		 <<"higgs on = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."
+		 <<std::endl<<"   Will exit the run."<<std::endl;
+      exit(1);
+      return NULL;
+    }
     // tau tau final state
     if ((fl.size()==4 || fl.size()==5) && 
 	(fl[2]==fl[3].Bar() && fl[2].Kfcode()==15)) {
