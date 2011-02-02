@@ -12,7 +12,7 @@
 namespace SHERPA {
   class RootNtuple_Reader : public Event_Reader_Base {
 #ifdef USING__ROOT
-    static const Int_t s_kMaxParticle = 10;
+    static const Int_t s_kMaxParticle = 100;
     UInt_t m_id;
     Int_t m_nparticle;
     Float_t p_px[s_kMaxParticle];

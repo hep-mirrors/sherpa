@@ -1,9 +1,9 @@
-#ifndef AddOns_WhiteHat_WhiteHat_Tree_H
-#define AddOns_WhiteHat_WhiteHat_Tree_H
+#ifndef AddOns_BlackHat_BlackHat_Tree_H
+#define AddOns_BlackHat_BlackHat_Tree_H
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
-#include "whitehat/BH_interface.h"
-#include "whitehat/BH_Ampl.h"
+#include "blackhat-lib/BH_interface.h"
+#include "blackhat-lib/BH_Ampl.h"
 
 namespace MODEL {
   class Model_Base;
@@ -12,7 +12,7 @@ namespace MODEL {
 
 namespace WHITEHAT {
 
-  class WhiteHat_Tree: public PHASIC::Tree_ME2_Base {
+  class BlackHat_Tree: public PHASIC::Tree_ME2_Base {
   private:
 
     BH::BH_Ampl *p_ampl;
@@ -29,11 +29,11 @@ namespace WHITEHAT {
 
   public:
 
-    WhiteHat_Tree(const PHASIC::Process_Info& pi,
+    BlackHat_Tree(const PHASIC::Process_Info& pi,
 		  const ATOOLS::Flavour_Vector& flavs,
 		  BH::BH_Ampl *ampl);
 
-    ~WhiteHat_Tree();
+    ~BlackHat_Tree();
 
     double Calc(const ATOOLS::Vec4D_Vector& momenta);
 

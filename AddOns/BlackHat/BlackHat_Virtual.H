@@ -1,15 +1,15 @@
-#ifndef AddOns_WhiteHat_WhiteHat_Virtual_H
-#define AddOns_WhiteHat_WhiteHat_Virtual_H
+#ifndef AddOns_BlackHat_BlackHat_Virtual_H
+#define AddOns_BlackHat_BlackHat_Virtual_H
 
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "whitehat/BH_interface.h"
-#include "whitehat/BH_Ampl.h"
+#include "blackhat-lib/BH_interface.h"
+#include "blackhat-lib/BH_Ampl.h"
 
 namespace MODEL { class Model_Base; }
 
 namespace WHITEHAT {
 
-  class WhiteHat_Virtual: public PHASIC::Virtual_ME2_Base {
+  class BlackHat_Virtual: public PHASIC::Virtual_ME2_Base {
   private:
 
     BH::BH_Ampl *p_ampl;
@@ -19,11 +19,11 @@ namespace WHITEHAT {
 
   public:
 
-    WhiteHat_Virtual(const PHASIC::Process_Info& pi,
+    BlackHat_Virtual(const PHASIC::Process_Info& pi,
 		     const ATOOLS::Flavour_Vector& flavs,
                      BH::BH_Ampl *ampl);
 
-    ~WhiteHat_Virtual();
+    ~BlackHat_Virtual();
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);

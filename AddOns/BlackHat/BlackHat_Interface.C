@@ -1,14 +1,15 @@
-#ifndef AddOns_WhiteHat_WhiteHat_Interface_H
-#define AddOns_WhiteHat_WhiteHat_Interface_H
+#ifndef AddOns_BlackHat_BlackHat_Interface_H
+#define AddOns_BlackHat_BlackHat_Interface_H
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "AddOns/WhiteHat/WhiteHat_Virtual.H"
-#include "AddOns/WhiteHat/WhiteHat_Tree.H"
+#include "AddOns/BlackHat/BlackHat_Virtual.H"
+#include "AddOns/BlackHat/BlackHat_Tree.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 namespace WHITEHAT {
 
-  class WhiteHat_Interface: public PHASIC::ME_Generator_Base {
+  class BlackHat_Interface: public PHASIC::ME_Generator_Base {
   private:
 
     BH::BH_interface  *p_interface;
@@ -17,10 +18,10 @@ namespace WHITEHAT {
   public :
 
     // constructor
-    WhiteHat_Interface();
+    BlackHat_Interface();
 
     // destructor
-    ~WhiteHat_Interface();
+    ~BlackHat_Interface();
 
     // member functions
     bool Initialize(const std::string &path,const std::string &file,
@@ -35,7 +36,7 @@ namespace WHITEHAT {
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
     (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2);
 
-  }; // end of class WhiteHat_Interface
+  }; // end of class BlackHat_Interface
 
 } // end of namespace WHITEHAT
 
@@ -50,25 +51,25 @@ using namespace WHITEHAT;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-WhiteHat_Interface::WhiteHat_Interface(): 
-  ME_Generator_Base("WhiteHat"), p_interface(NULL)
+BlackHat_Interface::BlackHat_Interface(): 
+  ME_Generator_Base("BlackHat"), p_interface(NULL)
 {
 }
 
-WhiteHat_Interface::~WhiteHat_Interface() 
+BlackHat_Interface::~BlackHat_Interface() 
 {
   if (p_interface) delete p_interface;
 }
 
-bool WhiteHat_Interface::Initialize
+bool BlackHat_Interface::Initialize
 (const std::string &path,const std::string &file,MODEL::Model_Base *const model,
  BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
 {
   if (p_interface==NULL) {
-    msg_Info()<<"Initialising WhiteHat interface {"<<std::endl;
+    msg_Info()<<"Initialising BlackHat interface {"<<std::endl;
     p_model=model;
-    WhiteHat_Tree::SetModel(p_model);
-    WhiteHat_Virtual::SetModel(p_model);
+    BlackHat_Tree::SetModel(p_model);
+    BlackHat_Virtual::SetModel(p_model);
     Data_Reader reader(" ",";","!","=");
     p_interface=new BH::BH_interface
       (reader.GetValue<std::string>("BH_SETTINGS_FILE",std::string("")));
@@ -82,28 +83,28 @@ bool WhiteHat_Interface::Initialize
     p_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
     p_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
     msg_Info()<<"}"<<std::endl;
-    WhiteHat_Tree::SetInterface(p_interface);
-    WhiteHat_Virtual::SetInterface(p_interface);
+    BlackHat_Tree::SetInterface(p_interface);
+    BlackHat_Virtual::SetInterface(p_interface);
   }
   return true;
 }
 
-Process_Base *WhiteHat_Interface::InitializeProcess(const Process_Info &pi, bool add)
+Process_Base *BlackHat_Interface::InitializeProcess(const Process_Info &pi, bool add)
 {
   return NULL;
 }
 
-bool WhiteHat_Interface::PerformTests()
+bool BlackHat_Interface::PerformTests()
 {
   return true;
 }
   
-void WhiteHat_Interface::SetClusterDefinitions
+void BlackHat_Interface::SetClusterDefinitions
 (PDF::Cluster_Definitions_Base *const defs)
 {
 }
 
-Cluster_Amplitude *WhiteHat_Interface::ClusterConfiguration
+Cluster_Amplitude *BlackHat_Interface::ClusterConfiguration
 (Process_Base *const proc,const size_t &mode,const double &kt2)
 {
   return NULL;
@@ -111,11 +112,23 @@ Cluster_Amplitude *WhiteHat_Interface::ClusterConfiguration
 
 namespace PHASIC {
 
+  DECLARE_GETTER(BlackHat_Interface_Getter,"BlackHat",ME_Generator_Base,ME_Generator_Key);
+
+  ME_Generator_Base *BlackHat_Interface_Getter::operator()(const ME_Generator_Key &key) const
+  {
+    return new BlackHat_Interface();
+  }
+
+  void BlackHat_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
+  { 
+    str<<"Interface to the BlackHat loop ME generator"; 
+  }
+
   DECLARE_GETTER(WhiteHat_Interface_Getter,"WhiteHat",ME_Generator_Base,ME_Generator_Key);
 
   ME_Generator_Base *WhiteHat_Interface_Getter::operator()(const ME_Generator_Key &key) const
   {
-    return new WhiteHat_Interface();
+    return new BlackHat_Interface();
   }
 
   void WhiteHat_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const

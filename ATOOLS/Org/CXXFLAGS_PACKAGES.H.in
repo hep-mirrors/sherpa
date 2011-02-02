@@ -43,8 +43,11 @@
 /* using FASTJET */
 #undef USING__FASTJET
 
-/* using WHITEHAT */
-#undef USING__WHITEHAT
+/* using BLACKHAT */
+#undef USING__BLACKHAT
+
+/* BLACKHAT directory */
+#undef BLACKHAT_PATH
 
 /* using MCFM */
 #undef USING__MCFM

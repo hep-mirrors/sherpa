@@ -47,6 +47,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
   }
+  m_force_init=reader.GetValue("LOOP_ME_INIT",0);
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
   m_cmur[0]=0.;
@@ -120,7 +121,7 @@ const Flavour_Vector &AMEGIC::Single_Virtual_Correction::CombinedFlavour
 void Single_Virtual_Correction::SelectLoopProcess()
 {
   p_loopme=NULL;
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop || m_force_init) {
     Process_Info loop_pi(m_pinfo);
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
     p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);  

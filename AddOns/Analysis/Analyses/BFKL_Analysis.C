@@ -74,8 +74,8 @@ void BFKL_Analysis::Evaluate(double weight, double ncount,int mode)
   Particle_List jets(*p_ana->GetParticleList(m_listname));
   Particle_List alljets(*p_ana->GetParticleList(m_jetslist));
   Particle_List ref(*p_ana->GetParticleList(m_reflist));
-  if (jets.size()<2 || ref.size()!=1) AddZero(weight,ncount);
-  if (dabs(ref.front()->Momentum().Y())>4.5) AddZero(weight,ncount);
+  if (jets.size()<2 || ref.size()!=1) AddZero(ncount,mode);
+  if (dabs(ref.front()->Momentum().Y())>4.5) AddZero(ncount,mode);
   // sort pt
   std::sort(jets.begin(),jets.end(),JS_Order_PT());
   FillHisto(1,jets[0]->Momentum().Y()-

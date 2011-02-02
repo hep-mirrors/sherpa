@@ -1,4 +1,4 @@
-SUBDIRS       =	Analysis WhiteHat MCFM HZTool Rivet
+SUBDIRS       =	Analysis BlackHat MCFM HZTool Rivet
 
 nobase_dist_pkgdata_DATA = ExampleModel/Interaction_Model_SM_Zprime.C \
 			ExampleModel/SM_Zprime.C \

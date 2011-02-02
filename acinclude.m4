@@ -458,38 +458,39 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
 
   AC_ARG_ENABLE(
-    whitehat,
-    AC_HELP_STRING([--enable-whitehat=/path/to/whitehat], [Enable WHITEHAT.]),
-    [ AC_MSG_CHECKING(for WHITEHAT installation directory);
+    blackhat,
+    AC_HELP_STRING([--enable-blackhat=/path/to/blackhat], [Enable BLACKHAT.]),
+    [ AC_MSG_CHECKING(for BLACKHAT installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(WHITEHAT not enabled); whitehat=false ;;
-        yes)  if test -d "$WHITEHATDIR"; then
-                CONDITIONAL_WHITEHATDIR="$WHITEHATDIR"
-                CONDITIONAL_WHITEHATINCS="-I$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --include)";
-                CONDITIONAL_WHITEHATLIBS="$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --libs)"
+        no)  AC_MSG_RESULT(BLACKHAT not enabled); blackhat=false ;;
+        yes)  if test -d "$BLACKHATDIR"; then
+                CONDITIONAL_BLACKHATDIR="$BLACKHATDIR"
+                CONDITIONAL_BLACKHATINCS="-I$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --include)";
+                CONDITIONAL_BLACKHATLIBS="$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --libs)"
               else
-                AC_MSG_ERROR(\$WHITEHATDIR is not a valid path.);
+                AC_MSG_ERROR(\$BLACKHATDIR is not a valid path.);
               fi;
-              AC_MSG_RESULT([${CONDITIONAL_WHITEHATDIR}]); whitehat=true;;
+              AC_MSG_RESULT([${CONDITIONAL_BLACKHATDIR}]); blackhat=true;;
         *)    if test -d "${enableval}"; then
-                CONDITIONAL_WHITEHATDIR="${enableval}"
-                CONDITIONAL_WHITEHATINCS="-I$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --include)";
-                CONDITIONAL_WHITEHATLIBS="$($CONDITIONAL_WHITEHATDIR/bin/blackhat-config --libs)"
+                CONDITIONAL_BLACKHATDIR="${enableval}"
+                CONDITIONAL_BLACKHATINCS="-I$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --include)";
+                CONDITIONAL_BLACKHATLIBS="$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --libs)"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
-              AC_MSG_RESULT([${CONDITIONAL_WHITEHATDIR}]); whitehat=true;;
+              AC_MSG_RESULT([${CONDITIONAL_BLACKHATDIR}]); blackhat=true;;
       esac
       ],
-    [ whitehat=false ]
+    [ blackhat=false ]
   )
-  if test "$whitehat" = "true" ; then
-    AC_DEFINE([USING__WHITEHAT], "1", [Using WHITEHAT])
+  if test "$blackhat" = "true" ; then
+    AC_DEFINE_UNQUOTED([BLACKHAT_PATH], "$CONDITIONAL_BLACKHATDIR", [BlackHat directory])
+    AC_DEFINE([USING__BLACKHAT], "1", [Using BLACKHAT])
   fi
-  AC_SUBST(CONDITIONAL_WHITEHATDIR)
-  AC_SUBST(CONDITIONAL_WHITEHATINCS)
-  AC_SUBST(CONDITIONAL_WHITEHATLIBS)
-  AM_CONDITIONAL(WHITEHAT_SUPPORT, test "$whitehat" = "true")
+  AC_SUBST(CONDITIONAL_BLACKHATDIR)
+  AC_SUBST(CONDITIONAL_BLACKHATINCS)
+  AC_SUBST(CONDITIONAL_BLACKHATLIBS)
+  AM_CONDITIONAL(BLACKHAT_SUPPORT, test "$blackhat" = "true")
 
   AC_ARG_ENABLE(
     mcfm,
@@ -747,7 +748,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     hepevtsize,
     AC_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE], [HEPEVT common block size @<:@default=10000@:>@]),
     [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
-      echo HEPEVT size=$enableval
       if test ${enableval} -gt 0 2>/dev/null ; then
          HEPEVT_CB_SIZE=${enableval}
       	 AC_MSG_RESULT(${HEPEVT_CB_SIZE})

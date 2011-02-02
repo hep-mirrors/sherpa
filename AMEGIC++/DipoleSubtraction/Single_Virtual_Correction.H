@@ -45,7 +45,7 @@ namespace AMEGIC {
     Massive_Kernels       * p_masskern;
     PHASIC::Virtual_ME2_Base* p_loopme;  
 
-    bool m_massive;
+    bool m_massive, m_force_init;
     /*------------------------------------------------------------------------------
 
       Constructors

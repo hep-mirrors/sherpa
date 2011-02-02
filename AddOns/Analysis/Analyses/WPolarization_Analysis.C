@@ -53,7 +53,7 @@ void WPolarization_Analysis::Evaluate(double weight,double ncount,int mode)
       nu=all[i];
     }
   }
-  if (l==NULL || nu==NULL) AddZero(weight,ncount);
+  if (l==NULL || nu==NULL) AddZero(ncount,mode);
   Vec4D pb1(rpa.gen.PBeam(0)), pb2(rpa.gen.PBeam(1));
   Vec4D pl(l->Momentum()), plnu(pl+nu->Momentum());
   Poincare cms(plnu), zrot(plnu,Vec4D::ZVEC);

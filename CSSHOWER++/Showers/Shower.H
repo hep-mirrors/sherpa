@@ -23,7 +23,7 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
-    int                m_kscheme;
+    int                m_kscheme, m_noem;
 
     ATOOLS::Cluster_Leg *p_old[2];
 

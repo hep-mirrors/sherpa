@@ -11,6 +11,8 @@ namespace ANALYSIS {
     std::vector<Normalized_Observable*> m_dists;
     std::vector<ATOOLS::Histogram*>     m_histos;
 
+    void AddZeroPoint(const double &ntrial,const int &mode);
+
   public:
 
     Analysis_Base(const std::string &listname);
@@ -39,13 +41,6 @@ namespace ANALYSIS {
 
 }// end of namespace ANALYSIS
 
-#define AddZero(weight,ncount)			\
-  {						\
-    for (size_t i(0);i<m_dists.size();++i)	\
-      m_dists[i]->Fill(0.0,0.0,0.0,ncount);	\
-    for (size_t i(0);i<m_histos.size();++i)	\
-      m_histos[i]->Insert(0.0,0.0,ncount);	\
-    return;					\
-  }
+#define AddZero(ntrial,mode) { AddZeroPoint(ntrial,mode); return; }
 
 #endif

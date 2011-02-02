@@ -1,20 +1,26 @@
-#include "AddOns/WhiteHat/WhiteHat_Tree.H"
+#include "AddOns/BlackHat/BlackHat_Tree.H"
 
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
-#include "whitehat/BH_error.h"
+#include "blackhat-lib/BH_error.h"
 
 using namespace WHITEHAT;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-BH::BH_interface *WHITEHAT::WhiteHat_Tree::s_interface=NULL;
-MODEL::Model_Base *WHITEHAT::WhiteHat_Tree::s_model=NULL;
+BH::BH_interface *WHITEHAT::BlackHat_Tree::s_interface=NULL;
+MODEL::Model_Base *WHITEHAT::BlackHat_Tree::s_model=NULL;
+namespace WHITEHAT {
+#ifdef USING__Threading
+  static pthread_mutex_t s_mtx;
+#endif
+}
 
-WhiteHat_Tree::WhiteHat_Tree(const Process_Info& pi,
+BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
 			     const Flavour_Vector& flavs,
 			     BH::BH_Ampl* ampl) :
   Tree_ME2_Base(pi, flavs), p_ampl(ampl),
@@ -25,14 +31,19 @@ WhiteHat_Tree::WhiteHat_Tree(const Process_Info& pi,
     if (flavs[i].Strong()) ++nqcd;
   m_oqcd=nqcd-2;
   m_oew=flavs.size()-m_oqcd-2;
+#ifdef USING__Threading
+  static bool first(true);
+  if (first) pthread_mutex_init(&s_mtx,NULL);
+  first=false;
+#endif
 }
 
-WhiteHat_Tree::~WhiteHat_Tree()
+BlackHat_Tree::~BlackHat_Tree()
 {
   // if (p_ampl) delete p_ampl;
 }
 
-void WhiteHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
+void BlackHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
 {
   if (cpls->find("Alpha_QCD")!=cpls->end()) {
     p_aqcd=(*cpls)["Alpha_QCD"];
@@ -44,7 +55,7 @@ void WhiteHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
   }
 }
 
-double WhiteHat_Tree::CouplingFactor(const int oqcd,const int oew) const
+double BlackHat_Tree::CouplingFactor(const int oqcd,const int oew) const
 {
   double fac(1.0);
   if (p_aqcd && oqcd) fac*=pow(m_asfac*p_aqcd->Factor(),oqcd);
@@ -52,7 +63,7 @@ double WhiteHat_Tree::CouplingFactor(const int oqcd,const int oew) const
   return fac;
 }
 
-double WhiteHat_Tree::Calc(const Vec4D_Vector& momenta)
+double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
 {
   std::vector<std::vector<double> > moms
     (momenta.size(), std::vector<double>(4, 0.0));
@@ -61,17 +72,25 @@ double WhiteHat_Tree::Calc(const Vec4D_Vector& momenta)
       moms[i][j]=momenta[i][j];
     }
   }
+#ifdef USING__Threading
+  pthread_mutex_lock(&s_mtx);
+#endif
   BH::BHinput input(moms,-1.0);
   s_interface->operator()(input);
+  double res=p_ampl->get_born()*CouplingFactor(m_oqcd,m_oew);
+#ifdef USING__Threading
+  pthread_mutex_unlock(&s_mtx);
+#endif
 
-  return p_ampl->get_born()*CouplingFactor(m_oqcd,m_oew);
+  return res;
 }
 
-DECLARE_TREEME2_GETTER(WhiteHat_Tree_Getter,"WhiteHat_Tree")
-Tree_ME2_Base *WhiteHat_Tree_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(BlackHat_Tree_Getter,"BlackHat_Tree")
+Tree_ME2_Base *BlackHat_Tree_Getter::operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="WhiteHat") return NULL;
+  if (pi.m_loopgenerator!="BlackHat" &&
+      pi.m_loopgenerator!="WhiteHat") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype==nlo_type::lo ||
       pi.m_fi.m_nloqcdtype==nlo_type::born ||
@@ -81,15 +100,15 @@ Tree_ME2_Base *WhiteHat_Tree_Getter::operator()(const Process_Info &pi) const
     for (size_t i=0; i<fl.size(); ++i) kfvector.push_back(fl[i].HepEvt());
     BH::BH_Ampl* ampl=NULL;
     try {
-      msg_Info()<<"Trying WhiteHat for "<<kfvector<<" ... "<<std::flush;
-      ampl = WhiteHat_Tree::Interface()->new_tree_ampl(kfvector);
+      msg_Info()<<"Trying BlackHat for "<<kfvector<<" ... "<<std::flush;
+      ampl = BlackHat_Tree::Interface()->new_tree_ampl(kfvector);
     } catch (BH::BHerror err) {
       msg_Info()<<"not found."<<std::endl;
       return NULL;
     }
     if (ampl) {
       msg_Info()<<"found."<<std::endl;
-      return new WhiteHat_Tree(pi, fl, ampl);
+      return new BlackHat_Tree(pi, fl, ampl);
     }
   }
   return NULL;

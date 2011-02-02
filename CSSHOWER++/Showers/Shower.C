@@ -22,6 +22,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
   double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
   m_kscheme = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
+  m_noem = dataread->GetValue<int>("CSS_NOEM",0);
   std::vector<std::vector<std::string> > helpsvv;
   dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
   m_efac.clear();
@@ -465,7 +466,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	int vstat(MakeKinematics(rp,fla,flb,flc,2));
 	if (vstat==0) return false;
       }
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,m_noem?2:0));
       if (kstat<0) continue;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (m_last[0]) {

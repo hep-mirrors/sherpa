@@ -28,6 +28,14 @@ Analysis_Base::~Analysis_Base()
   }
 }
 
+void Analysis_Base::AddZeroPoint(const double &ntrial,const int &mode)
+{
+  for (size_t i(0);i<m_dists.size();++i)
+    FillDist(i,0.0,0.0,0.0,ntrial,mode);
+  for (size_t i(0);i<m_histos.size();++i)
+    FillHisto(i,0.0,0.0,ntrial,mode);
+}
+
 void Analysis_Base::Evaluate(const ATOOLS::Particle_List &list,
 			     double weight, double ncount)
 {
