@@ -2,6 +2,7 @@
 #define ATOOLS_Math_Random_H
 
 #include <fstream>
+#include <stddef.h>
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Getter_Function.H"
