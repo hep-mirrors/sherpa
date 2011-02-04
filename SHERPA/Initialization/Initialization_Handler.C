@@ -65,7 +65,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_mihandler(NULL), p_softphotons(NULL),
-  p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL)
+  p_iohandler(NULL), p_evtreader(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -87,6 +87,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     rpa.Init(m_path,m_file,argc,argv);
+    LoadLibraries();
+    InitializeTheIO();
     return;
   }  
   if (m_mode==9990||m_mode==9991) {
@@ -97,6 +99,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     rpa.Init(m_path,m_file,argc,argv);
+    LoadLibraries();
+    InitializeTheIO();
     return;
   }  
 
@@ -207,7 +211,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
-  if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   while (m_analyses.size()>0) {
     delete m_analyses.back();
@@ -235,6 +238,7 @@ Initialization_Handler::~Initialization_Handler()
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
+  if (m_pdflib[0]=="" && m_pdflib[1]=="") return; 
   void *exit(s_loader->GetLibraryFunction(m_pdflib[0],"ExitPDFLib"));
   if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
   ((PDF_Exit_Function)(PTP)exit)();
@@ -360,7 +364,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   SetScaleFactors();
   okay = okay && InitializeTheModel();  
   
-  if (m_mode==9999 || m_mode==9990 || m_mode==9991) {
+  if (m_mode>=9000) {
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
@@ -374,10 +378,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheAnalyses();
   PHASIC::Phase_Space_Handler::GetInfo();
   if (!CheckBeamISRConsistency()) return 0.;
-  if (m_mode>8999) {
-    okay &= InitializeTheExternalMC();
-    return true;
-  }
   okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheShowers();
@@ -450,23 +450,6 @@ bool Initialization_Handler::InitializeTheIO()
   p_iohandler = new Input_Output_Handler(p_dataread);
   p_iohandler->SetMEHandler(m_mehandlers["SignalMEs"]);
   return true;
-}
-
-bool Initialization_Handler::InitializeTheExternalMC()
-{
-  std::string file;
-  switch (m_mode) {
-#ifdef USING__PYTHIA
-  case 9000: 
-    p_pythia  = new Lund_Interface(m_path,m_evtfile,false);
-    return true;
-#endif
-  default: 
-    m_mode = 9999;
-    msg_Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
-	      <<"   SHERPA will read in the events, the full framework is not needed."<<std::endl;
-  }
-  return false;
 }
 
 bool Initialization_Handler::InitializeTheModel()
@@ -816,20 +799,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
-  if (m_mode>8999) {
-    switch (m_mode) {
-    case 9000:
-      msg_Out()<<"SHERPA will generate the events through Pythia."<<std::endl
-	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
-      return true;
-    case 9990:
-    case 9991:
-    case 9999:
-      msg_Out()<<"SHERPA will read in the events."<<std::endl
-	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
-      return true;
-    }
-  }
+  if (m_mode>9000) return true;
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
   msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
@@ -923,12 +893,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	rpa.gen.SetVariable
 	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
 	m_savestatus=true;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="PYTHIA") {
-	m_mode       = 9000;
-	m_evtfile    = value;
-	msg_Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
         oit=helpsv.erase(oit);
       }
       else if (key=="EVTDATA") {

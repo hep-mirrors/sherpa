@@ -11,7 +11,6 @@ std::ostream& SHERPA::operator<<(std::ostream& ostr, const eph::code ephc) {
   case eph::Pert_Analysis:      return ostr<<"Pert_Analysis     ";
   case eph::Hadr_Analysis:      return ostr<<"Hadr_Analysis     ";
   case eph::Read_In:            return ostr<<"Read_In           ";
-  case eph::External_MC:        return ostr<<"External_MC       ";
   default:                      return ostr<<"Unknown           ";
   }
 }

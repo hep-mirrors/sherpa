@@ -15,8 +15,7 @@ namespace SHERPA {
       Analysis            =   10,
       Pert_Analysis       =   11,
       Hadr_Analysis       =   12,
-      Read_In             =   90,
-      External_MC         =   99
+      Read_In             =   90
     };
   };// end of struct eph
   std::ostream& operator<<(std::ostream&,const eph::code);

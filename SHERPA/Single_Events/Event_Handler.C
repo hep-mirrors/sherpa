@@ -131,8 +131,7 @@ bool Event_Handler::GenerateEvent(int mode)
     kill(getpid(),SIGINT);
   }
   double weight = 1.;
-  switch (mode) {
-  case 0:
+  if (mode==0) {
     if (m_blobs.size()==1) {
       p_signal=m_blobs.back();
     }
@@ -263,51 +262,33 @@ bool Event_Handler::GenerateEvent(int mode)
       }
     }
     return true;
-  case 9000:
-  case 9001:
-  case 9002: {
-    Reset();
-    m_blobs.Clear();
-    bool flag = false;
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==eph::External_MC) {
-	bool result=(*pit)->Treat(&m_blobs,weight);
-	if (result) flag = true;
-      }
-    }
-    if (!flag) {
-      msg_Error()<<"Error in Event_Handler::GenerateEvent"<<std::endl
-		 <<"   Treat by External_MC failed, mode = "<<mode<<"."<<std::endl
-		 <<"   Return 0 and hope for the best."<<std::endl;
-    }
-    if (m_blobs.empty()) {
-      msg_Out()<<"Potential error in Event_Handler::GenerateEvent"<<std::endl
-	       <<"   Empty bloblist would go into analysis !"<<std::endl;
-      return false;
-    }
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
-    }
-
-    return true;
   }
-  case 9999: {
+  if (mode>9000) {
     Reset();
     bool flag(true);
     while (flag) {
       flag = false;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	if ((*pit)->Type()==eph::Read_In) {
-	  bool result=(*pit)->Treat(&m_blobs,weight);
-	  if (result) flag = true;
+	  Return_Value::code result=(*pit)->Treat(&m_blobs,weight);
+	  if (result==Return_Value::Success) flag = true;
 	}
       }
+    }
+    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
+    if (sp) {
+      double trials((*sp)["Trials"]->Get<double>());
+      sp->AddData("Trials",new Blob_Data<double>(trials+m_addn));
+      double cxs(m_blobs.Weight());
+      m_n+=trials+m_addn;
+      m_sum+=cxs;
+      m_sumsqr+=sqr(cxs);
+      m_addn=0.0;
     }
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
     return true;
-  }
   }
   return false;
 } 

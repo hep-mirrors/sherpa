@@ -76,14 +76,12 @@ namespace SHERPA {
     MI_Handler                 * p_mihandler; 
     Soft_Photon_Handler        * p_softphotons;
     Input_Output_Handler       * p_iohandler;
-    Lund_Interface             * p_pythia;
     Event_Reader_Base          * p_evtreader;
     Analysis_Vector              m_analyses;
     void ShowParameterSyntax();
     void LoadLibraries() const;
   private :
     bool InitializeTheIO();
-    bool InitializeTheExternalMC();
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
@@ -137,7 +135,6 @@ namespace SHERPA {
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
     Input_Output_Handler         * GetIOHandler()             const { return p_iohandler;       }
-    Lund_Interface               * GetPythiaInterface()       const { return p_pythia;          }
     Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
 
     int    Mode()           const { return m_mode; };
