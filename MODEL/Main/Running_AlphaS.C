@@ -82,6 +82,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     }
     else {
       const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
+      if (info.m_order>=0) {
       m_order=info.m_order;
       m_as_MZ=info.m_asmz;
       if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
@@ -98,6 +99,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
       // msg_Info<<"\n  quark masses = { ";
       // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
       msg_Info()<<"\n}"<<std::endl;
+      }
     }
   }
 
