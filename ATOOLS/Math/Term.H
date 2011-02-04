@@ -32,8 +32,7 @@ namespace ATOOLS {
 
     void Print(std::ostream &ostr) const;
 
-    Term &operator-();
-
+    Term *operator-() const;
     Term *operator!() const;
 
     Term *operator+(const Term &ref) const;

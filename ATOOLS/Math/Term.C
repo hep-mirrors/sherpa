@@ -235,12 +235,11 @@ namespace ATOOLS {
     }
   }
 
-  Term &Term::operator-()
+  Term *Term::operator-() const
   {
-    if (m_type=='V') static_cast<DV4Term*>(this)->m_this=-Get<Vec4D>();
-    else if (m_type=='C') static_cast<CTerm*>(this)->m_this=-Get<Complex>();
-    else static_cast<DTerm*>(this)->m_this=-Get<double>();
-    return *this;
+    if (m_type=='V') return new DV4Term(-Get<Vec4D>());
+    if (m_type=='C') return new CTerm(-Get<Complex>());
+    return new DTerm(-Get<double>());
   }
 
   Term *Term::operator!() const

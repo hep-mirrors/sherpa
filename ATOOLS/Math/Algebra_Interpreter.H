@@ -64,6 +64,9 @@ namespace ATOOLS {
     // destructor
     ~Operator();
 
+    virtual size_t FindTag(const std::string &expr,const bool fwd,
+			   size_t cpos=std::string::npos) const;
+
     // inline functions
     inline const size_t &Priority() const { return m_priority; }
     inline const bool    Binary() const   { return m_binary;   }
@@ -207,6 +210,16 @@ namespace ATOOLS {
     Term *Evaluate(const std::vector<Term*> &args) const;		\
   }; }									\
   NAME::NAME(): Operator(TAG,PRIORITY,true) {}
+
+#define DEFINE_UNARY_BINARY_OPERATOR(NAME,TAG,PRIORITY,TYPE)		\
+  namespace ATOOLS { class NAME: public Operator {			\
+  public:								\
+    NAME();								\
+    Term *Evaluate(const std::vector<Term*> &args) const;		\
+    size_t FindTag(const std::string &expr,				\
+		   const bool fwd,size_t cpos) const;			\
+  }; }									\
+  NAME::NAME(): Operator(TAG,PRIORITY,TYPE) {}
 
 #define DEFINE_INTERPRETER_FUNCTION(NAME)				\
   namespace ATOOLS { class NAME: public Interpreter_Function {		\

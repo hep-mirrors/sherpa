@@ -34,7 +34,7 @@ private:
 
   Tag_Replacer *p_replacer;
 
-  bool m_replace, m_sign;
+  bool m_replace;
 
   mutable Term *p_value;
 
@@ -51,19 +51,13 @@ public:
 }
 
 Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer): 
-  Function(tag), p_replacer(replacer), m_replace(false), 
-  m_sign(0), p_value(NULL)
+  Function(tag), p_replacer(replacer), m_replace(false), p_value(NULL)
 {
   std::string value=tag;
-  if (tag[0]=='-' && tag.find(',')==std::string::npos) {
-    m_sign=1;
-    value=value.substr(1);
-  }
   std::string stag(value);
   p_replacer->ReplaceTags(value);
   if (stag!=value) m_replace=true;
   p_value = Term::New(value);
-  if (m_sign) *p_value=-*p_value;
   p_value->SetTag(stag);
   if (m_replace) p_replacer->AssignId(p_value);
 }
@@ -76,14 +70,98 @@ Single_Term::~Single_Term()
 Term *Single_Term::Evaluate(const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Single_Term requires no argument.");
-  if (m_replace) {
-    p_replacer->ReplaceTags(p_value);
-    if (m_sign) *p_value=-*p_value;
-  }
+  if (m_replace) p_replacer->ReplaceTags(p_value);
   return p_value;
 }
 
 Operator::~Operator() {}
+
+size_t Operator::FindTag(const std::string &expr,
+			 const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  return fwd?expr.find(m_tag,cpos):expr.rfind(m_tag,cpos);
+}
+
+DEFINE_UNARY_BINARY_OPERATOR(Binary_Plus,"+",12,true)
+Term *Binary_Plus::Evaluate(const std::vector<Term*> &args) const
+{
+  Term *res = *args[0]+*args[1];
+  p_interpreter->AddTerm(res);
+  return res;
+}
+size_t Binary_Plus::FindTag(const std::string &expr,
+			    const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
+  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
+  if (pos==0) return FindTag(expr,fwd,1);
+  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
+      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{' ||
+      expr[pos-1]=='*' || expr[pos-1]=='/') 
+    return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
+}
+
+DEFINE_UNARY_BINARY_OPERATOR(Binary_Minus,"-",12,true)
+Term *Binary_Minus::Evaluate(const std::vector<Term*> &args) const
+{
+  Term *res = *args[0]-*args[1];
+  p_interpreter->AddTerm(res);
+  return res;
+}
+size_t Binary_Minus::FindTag(const std::string &expr,
+			     const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
+  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
+  if (pos==0) return FindTag(expr,fwd,1);
+  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
+      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{' ||
+      expr[pos-1]=='*' || expr[pos-1]=='/') 
+    return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
+}
+
+DEFINE_UNARY_BINARY_OPERATOR(Bitwise_And,"&",8,true)
+Term *Bitwise_And::Evaluate(const std::vector<Term*> &args) const
+{
+  Term *res = *args[0]&*args[1];
+  p_interpreter->AddTerm(res);
+  return res;
+}
+size_t Bitwise_And::FindTag(const std::string &expr,
+			    const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("&",cpos):expr.rfind("&",cpos));
+  if (pos==std::string::npos || pos==0) return std::string::npos;
+  if (expr[pos+1]=='&' || expr[pos-1]=='&') 
+    return FindTag(expr,fwd,fwd?pos+2:pos-2);
+  return pos;  
+}
+
+DEFINE_UNARY_BINARY_OPERATOR(Bitwise_Or,"|",6,true)
+Term *Bitwise_Or::Evaluate(const std::vector<Term*> &args) const
+{
+  Term *res = *args[0]|*args[1];
+  p_interpreter->AddTerm(res);
+  return res;
+}
+size_t Bitwise_Or::FindTag(const std::string &expr,
+			   const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("|",cpos):expr.rfind("|",cpos));
+  if (pos==std::string::npos || pos==0) return std::string::npos;
+  if (expr[pos+1]=='|' || expr[pos-1]=='|') 
+    return FindTag(expr,fwd,fwd?pos+2:pos-2);
+  return pos;  
+}
 
 #define DEFINE_BINARY_TERM_OPERATOR(NAME,TAG,OP,PRIORITY)\
   DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
@@ -94,8 +172,6 @@ Operator::~Operator() {}
     return res;\
   }
 
-DEFINE_BINARY_TERM_OPERATOR(Binary_Plus,"+",+,12)
-DEFINE_BINARY_TERM_OPERATOR(Binary_Minus,"-",-,12)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Times,"*",*,13)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Divide,"/",/,13)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Modulus,"%",%,13)
@@ -103,9 +179,7 @@ DEFINE_BINARY_TERM_OPERATOR(Binary_Shift_Left,"<<",<<,11)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Shift_Right,">>",>>,11)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_And,"&&",&&,5)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_Or,"||",||,4)
-DEFINE_BINARY_TERM_OPERATOR(Bitwise_And,"&",&,8)
 DEFINE_BINARY_TERM_OPERATOR(Bitwise_XOr,"^",^,7)
-DEFINE_BINARY_TERM_OPERATOR(Bitwise_Or,"|",|,6)
 
 bool IsAlpha(const std::string& expr) 
 {
@@ -144,6 +218,26 @@ Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
   Term *res = !*args[0];
   p_interpreter->AddTerm(res);
   return res;
+}
+
+DEFINE_UNARY_BINARY_OPERATOR(Unary_Minus,"-",14,false)
+Term *Unary_Minus::Evaluate(const std::vector<Term*> &args) const
+{
+  Term *res = -*args[0];
+  p_interpreter->AddTerm(res);
+  return res;
+}
+size_t Unary_Minus::FindTag(const std::string &expr,
+			    const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
+  if (pos==std::string::npos || pos==0) return pos;
+  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
+      expr[pos-1]==',' || expr[pos-1]=='{' || expr[pos-1]=='}') 
+    return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
 }
 
 #define DEFINE_BINARY_TERM_FUNCTION(NAME,TAG,OP)\
@@ -250,24 +344,30 @@ Interpreter_Function::~Interpreter_Function()
 {
 }
 
-DEFINE_INTERPRETER_FUNCTION(Set_Value)
+DEFINE_INTERPRETER_FUNCTION(Interprete_Number)
 {
-  if (expr.find("{")==0 && expr.rfind("}")==expr.length()-1) return expr;
+  if (expr.find("{")!=std::string::npos ||
+      expr.find("(")!=std::string::npos) return expr;
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
+	 oit=p_interpreter->Operators().rbegin();
+       oit!=p_interpreter->Operators().rend();++oit) {
+    if (!oit->second->Binary()) continue;
+    if (oit->second->FindTag(expr,true)!=std::string::npos) return expr;
+  }
   std::string value(expr);
   if (value.find(',')!=std::string::npos) value="("+value+")";
   Function *func = new Single_Term(value,p_interpreter->TagReplacer());
   p_interpreter->AddLeaf(func);
   Node<Function*> *leaf = new Node<Function*>(func,false);
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Set_Value {"<<PT(leaf)<<"} -> '"<<value<<"'\n";
+  msg_IODebugging()<<"Number {"<<PT(leaf)<<"} -> '"<<value<<"'\n";
 #endif
   return "{"+ToString(PT(leaf))+"}";
 }
 
-DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
+DEFINE_INTERPRETER_FUNCTION(Interprete_Bracket)
 {
-  if (expr.find("(")==std::string::npos ||
-      expr.find(")")==std::string::npos) return expr;
+  if (expr.find("(")==std::string::npos) return expr;
   static int cnt=0;
   if (++cnt==100) 
     THROW(critical_error,"Bracket nesting deeper than 100 levels.");
@@ -305,8 +405,8 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   std::string right=expr.substr(r+1);
   std::string mid(p_interpreter->Iterate(expr.substr(l+1,r-l-1)));
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Resolve_Bracket -> '"<<left
-		   <<"' '"<<mid<<"' '"<<right<<"'\n";
+  msg_IODebugging()<<"Bracket -> '"<<left<<"' '"
+		   <<mid<<"' '"<<right<<"'\n";
 #endif
   std::string res=p_interpreter->Iterate(left+mid+right);
   --cnt;
@@ -315,8 +415,7 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
 {
-  if (expr.find("(")==std::string::npos ||
-      expr.find(")")==std::string::npos) return expr;
+  if (expr.find("(")==std::string::npos) return expr;
   Function *func=NULL;
   size_t pos=std::string::npos, rem=std::string::npos;
   for (Algebra_Interpreter::Function_Map::const_reverse_iterator 
@@ -353,7 +452,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   if (msg_LevelIsIODebugging()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
-    msg_IODebugging()<<"Interprete_Function {"<<PT(leaf)
+    msg_IODebugging()<<"Function {"<<PT(leaf)
 		     <<"} -> '"<<left<<"' '"<<func->Tag()
 		     <<"("<<out<<")' '"<<right<<"'\n";
   }
@@ -362,82 +461,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
     Iterate(left+"{"+ToString(PT(leaf))+"}"+right);
 }
 
-size_t FindBitwiseAnd(const std::string &expr,const bool fwd,
-		      size_t cpos=std::string::npos)
-{
-  if (cpos==std::string::npos && fwd) cpos=0;
-  size_t pos(fwd?expr.find("&",cpos):expr.rfind("&",cpos));
-  if (pos==std::string::npos || pos==0) return std::string::npos;
-  if (expr[pos+1]=='&' || expr[pos-1]=='&') 
-    return FindBitwiseAnd(expr,fwd,fwd?pos+2:pos-2);
-  return pos;  
-}
-
-size_t FindBitwiseOr(const std::string &expr,const bool fwd,
-		     size_t cpos=std::string::npos)
-{
-  if (cpos==std::string::npos && fwd) cpos=0;
-  size_t pos(fwd?expr.find("|",cpos):expr.rfind("|",cpos));
-  if (pos==std::string::npos || pos==0) return std::string::npos;
-  if (expr[pos+1]=='|' || expr[pos-1]=='|') 
-    return FindBitwiseOr(expr,fwd,fwd?pos+2:pos-2);
-  return pos;  
-}
-
-size_t FindBinaryPlus(const std::string &expr,const bool fwd,
-		      size_t cpos=std::string::npos)
-{
-  if (cpos==std::string::npos && fwd) cpos=0;
-  size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
-  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
-  if (pos==0) return FindBinaryPlus(expr,fwd,1);
-  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
-       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
-      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{') 
-    return FindBinaryPlus(expr,fwd,fwd?pos+1:pos-1);
-  return pos;  
-}
-
-size_t FindBinaryMinus(const std::string &expr,const bool fwd,
-		       size_t cpos=std::string::npos)
-{
-  if (cpos==std::string::npos && fwd) cpos=0;
-  size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
-  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
-  if (pos==0) return FindBinaryMinus(expr,fwd,1);
-  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
-       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
-      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{') 
-    return FindBinaryMinus(expr,fwd,fwd?pos+1:pos-1);
-  return pos;  
-}
-
-size_t FindUnaryNot(const std::string &expr,const bool fwd,
-		    size_t cpos=std::string::npos)
-{
-  if (cpos==std::string::npos && fwd) cpos=0;
-  size_t pos(fwd?expr.find("!",cpos):expr.rfind("!",cpos));
-  if (pos==std::string::npos || pos+1>=expr.length()) 
-    return std::string::npos;
-  if (expr[pos+1]=='=') return FindUnaryNot(expr,fwd,fwd?pos+1:pos-1);
-  return pos;  
-}
-
 DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 {
-  if (expr.find("(")!=std::string::npos ||
-      expr.find(")")!=std::string::npos) return expr;
+  if (expr.find("(")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,true);
-    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,true);
-    else if (oit->second->Tag()=="+") pos=FindBinaryPlus(expr,true);
-    else if (oit->second->Tag()=="&") pos=FindBitwiseAnd(expr,true);
-    else if (oit->second->Tag()=="|") pos=FindBitwiseOr(expr,true);
-    else pos=expr.find(oit->second->Tag());
+    pos=oit->second->FindTag(expr,true);
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
 	op=oit->second;
@@ -454,12 +486,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t tlfpos=std::string::npos;
-    if (oit->second->Tag()=="-") tlfpos=FindBinaryMinus(lstr,false);
-    else if (oit->second->Tag()=="+") tlfpos=FindBinaryPlus(lstr,false);
-    else if (oit->second->Tag()=="&") tlfpos=FindBitwiseAnd(lstr,true);
-    else if (oit->second->Tag()=="|") tlfpos=FindBitwiseOr(lstr,true);
-    else tlfpos=lstr.rfind(oit->second->Tag());
+    size_t tlfpos=oit->second->FindTag(lstr,false);
     if (tlfpos!=std::string::npos) 
       lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
   }
@@ -470,12 +497,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=std::string::npos;
-    if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
-    else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
-    else if (oit->second->Tag()=="&") trfpos=FindBitwiseAnd(rstr,true);
-    else if (oit->second->Tag()=="|") trfpos=FindBitwiseOr(rstr,true);
-    else trfpos=rstr.find(oit->second->Tag());
+    size_t trfpos=oit->second->FindTag(rstr,true);
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   rrstr=rstr.substr(rfpos);
@@ -489,7 +511,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   (*leaf)->push_back(p_interpreter->ExtractLeaf(args[1]));
   (*(*leaf)->back())<<leaf;
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Interprete_Binary {"<<PT(leaf)<<"} -> '"
+  msg_IODebugging()<<"Binary {"<<PT(leaf)<<"} -> '"
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
 #endif
@@ -499,15 +521,13 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 {
-  if (expr.find("(")!=std::string::npos ||
-      expr.find(")")!=std::string::npos) return expr;
+  if (expr.find("(")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
-    else pos=expr.rfind(oit->second->Tag());
+    pos=oit->second->FindTag(expr,false);
     if (pos!=std::string::npos) {
       if (!oit->second->Binary()) {
 	op=oit->second;
@@ -527,12 +547,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=std::string::npos;
-    if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
-    else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
-    else if (oit->second->Tag()=="&") trfpos=FindBitwiseAnd(rstr,true);
-    else if (oit->second->Tag()=="|") trfpos=FindBitwiseOr(rstr,true);
-    else trfpos=rstr.find(oit->second->Tag());
+    size_t trfpos=oit->second->FindTag(rstr,true);
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   if (negative) {
@@ -547,8 +562,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   (*leaf)->push_back(p_interpreter->ExtractLeaf(args[0]));
   (*(*leaf)->back())<<leaf;
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Interprete_Unary -> '"
-		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
+  msg_IODebugging()<<"Unary -> '"<<lrstr<<"' '"<<op->Tag()
+		   <<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
 #endif
   return p_interpreter->
     Iterate(lrstr+"{"+ToString(PT(leaf))+"}"+rrstr);
@@ -558,10 +573,10 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   p_replacer(this), p_root(NULL)
 {
   m_interpreters[0] = new Interprete_Function(this);
-  m_interpreters[1] = new Resolve_Bracket(this);
-  m_interpreters[2] = new Interprete_Binary(this);
+  m_interpreters[1] = new Interprete_Bracket(this);
+  m_interpreters[2] = new Interprete_Number(this);
   m_interpreters[3] = new Interprete_Unary(this);
-  m_interpreters[4] = new Set_Value(this);
+  m_interpreters[4] = new Interprete_Binary(this);
   if (!standard) return;
   m_tags["M_PI"]=ToString(M_PI);
   m_tags["M_E"]=ToString(exp(1.0));
@@ -586,6 +601,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddOperator(new Bitwise_And());
   AddOperator(new Bitwise_XOr());
   AddOperator(new Bitwise_Or());
+  AddOperator(new Unary_Minus());
   AddOperator(new Unary_Not());
   AddFunction(new Power());
   AddFunction(new Logarithm());
