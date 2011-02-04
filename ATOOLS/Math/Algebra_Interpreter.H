@@ -66,7 +66,7 @@ namespace ATOOLS {
 
     // inline functions
     inline const size_t &Priority() const { return m_priority; }
-    inline bool    Binary() const   { return m_binary;   }
+    inline const bool    Binary() const   { return m_binary;   }
 
   };// end of class Operator
 
@@ -124,15 +124,14 @@ namespace ATOOLS {
     Function_Map m_functions, m_leafs;
     Operator_Map m_operators;
 
-    Interpreter_Map       m_interpreters;
-    Interpreter_Function *p_extractor;
+    Interpreter_Map m_interpreters;
 
     Tag_Replacer *p_replacer;
 
     String_Map  m_tags;
     Term_Vector m_terms;
 
-    Node<Function*> *p_root, *p_leaf;
+    Node<Function*> *p_root;
 
     std::vector<Term_Vector> m_argvs;
 
@@ -168,21 +167,16 @@ namespace ATOOLS {
     void AddTag(const std::string &tag,const std::string &value);
     void SetTags(const String_Map &tags);
 
+    Node<Function*> *ExtractLeaf(const std::string &expr) const;
+
     // inline functions
     inline void SetTagReplacer(Tag_Replacer *const replacer) 
     { p_replacer=replacer; }
-    inline void SetLeaf(Node<Function*> *const leaf) 
-    { p_leaf=leaf; }
-
-    inline Interpreter_Function * Extractor() const 
-    { return p_extractor; }
 
     inline const Function_Map &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
 
-    inline Node<Function*>* Leaf() const { return p_leaf; }
-
-    inline Tag_Replacer* TagReplacer() const { return p_replacer; }
+    inline Tag_Replacer *const TagReplacer() const { return p_replacer; }
 
     inline void PrintEquation() const { PrintNode(p_root); }
 

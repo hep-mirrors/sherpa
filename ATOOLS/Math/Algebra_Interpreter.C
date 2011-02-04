@@ -55,7 +55,7 @@ Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer):
   m_sign(0), p_value(NULL)
 {
   std::string value=tag;
-  if (tag[0]=='-') {
+  if (tag[0]=='-' && tag.find(',')==std::string::npos) {
     m_sign=1;
     value=value.substr(1);
   }
@@ -250,6 +250,20 @@ Interpreter_Function::~Interpreter_Function()
 {
 }
 
+DEFINE_INTERPRETER_FUNCTION(Set_Value)
+{
+  if (expr.find("{")==0 && expr.rfind("}")==expr.length()-1) return expr;
+  std::string value(expr);
+  if (value.find(',')!=std::string::npos) value="("+value+")";
+  Function *func = new Single_Term(value,p_interpreter->TagReplacer());
+  p_interpreter->AddLeaf(func);
+  Node<Function*> *leaf = new Node<Function*>(func,false);
+#ifdef DEBUG__Interpreter
+  msg_IODebugging()<<"Set_Value {"<<PT(leaf)<<"} -> '"<<value<<"'\n";
+#endif
+  return "{"+ToString(PT(leaf))+"}";
+}
+
 DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 {
   if (expr.find("(")==std::string::npos ||
@@ -289,43 +303,14 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
-#ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Resolve_Bracket -> '"
-		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
-#endif
   std::string mid(p_interpreter->Iterate(expr.substr(l+1,r-l-1)));
+#ifdef DEBUG__Interpreter
+  msg_IODebugging()<<"Resolve_Bracket -> '"<<left
+		   <<"' '"<<mid<<"' '"<<right<<"'\n";
+#endif
   std::string res=p_interpreter->Iterate(left+mid+right);
   --cnt;
   return res;
-}
-
-DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
-{
-  if (expr.find("{")!=0 || expr.find("}")!=expr.length()-1) {
-    Node<Function*> *leaf=p_interpreter->Leaf();
-    Function *func=NULL;
-    std::string value(expr);
-    if (expr.find(',')!=std::string::npos) value="("+expr+")";
-    func = new Single_Term(value,p_interpreter->TagReplacer());
-    p_interpreter->AddLeaf(func);
-    (*leaf)[0]=func;
-    value=p_interpreter->TagReplacer()->ReplaceTags(value);
-    return "{"+ToString(PT(leaf))+"}";
-  }
-  Node<Function*> *leaf=p_interpreter->Leaf(), *mother=--*leaf;
-  size_t pos(expr.rfind('{')); 
-  if (mother!=NULL) 
-    for (size_t i=0;i<(*mother)->size();++i)
-      if ((*mother)()[i]==leaf) {
-	delete (*mother)()[i];
-	PTS add(ToType<PTS>(expr.substr(pos+1,expr.length()-pos-2)));
-	(*mother)()[i]=dynamic_cast<Node<Function*>*>
-	  ((Node<Function*>*)add);
-	if ((*mother)()[i]==NULL) 
-	  THROW(fatal_error,"Cannot recover node pointer.");
-	p_interpreter->SetLeaf((*mother)()[i]);
-      }
-  return expr.substr(pos+1,expr.length()-pos-2);
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
@@ -358,24 +343,21 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   }
   std::string left=expr.substr(0,pos);
   std::string right=expr.substr(i+1);
+  Node<Function*> *leaf = new Node<Function*>(func,true);
+  for (size_t j=0;j<args.size();++j) {
+    args[j]=p_interpreter->Iterate(args[j]);
+    (*leaf)->push_back(p_interpreter->ExtractLeaf(args[j]));
+    (*(*leaf)->back())<<leaf;
+  }
 #ifdef DEBUG__Interpreter
   if (msg_LevelIsIODebugging()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
-    msg_IODebugging()<<"Interprete_Function -> '"<<left
-		  <<"' '"<<func->Tag()<<"("<<out
-		  <<")' '"<<right<<"'\n";
+    msg_IODebugging()<<"Interprete_Function {"<<PT(leaf)
+		     <<"} -> '"<<left<<"' '"<<func->Tag()
+		     <<"("<<out<<")' '"<<right<<"'\n";
   }
 #endif
-  Node<Function*> *leaf = new Node<Function*>(func,true);
-  for (size_t j=0;j<args.size();++j) {
-    (*leaf)->push_back(new Node<Function*>(NULL,true));
-    (*(*leaf)->back())<<leaf;
-    args[j]=p_interpreter->Iterate(args[j]);
-    p_interpreter->SetLeaf((*leaf)->back());
-    args[j]=p_interpreter->Extractor()->Interprete(args[j]);
-  }
-  p_interpreter->SetLeaf(leaf);
   return p_interpreter->
     Iterate(left+"{"+ToString(PT(leaf))+"}"+right);
 }
@@ -500,19 +482,14 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   rstr=rstr.substr(0,rfpos);
   Node<Function*> *leaf = new Node<Function*>(op,true);
   std::vector<std::string> args(2);
-  (*leaf)->push_back(new Node<Function*>(NULL,true));
-  (*(*leaf)->back())<<leaf;
   args[0]=p_interpreter->Iterate(lstr);
-  p_interpreter->SetLeaf((*leaf)->back());
-  args[0]=p_interpreter->Extractor()->Interprete(args[0]);
-  (*leaf)->push_back(new Node<Function*>(NULL,true));
+  (*leaf)->push_back(p_interpreter->ExtractLeaf(args[0]));
   (*(*leaf)->back())<<leaf;
   args[1]=p_interpreter->Iterate(rstr);
-  p_interpreter->SetLeaf((*leaf)->back());
-  args[1]=p_interpreter->Extractor()->Interprete(args[1]);
-  p_interpreter->SetLeaf(leaf);
+  (*leaf)->push_back(p_interpreter->ExtractLeaf(args[1]));
+  (*(*leaf)->back())<<leaf;
 #ifdef DEBUG__Interpreter
-  msg_IODebugging()<<"Interprete_Binary -> '"
+  msg_IODebugging()<<"Interprete_Binary {"<<PT(leaf)<<"} -> '"
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
 #endif
@@ -566,12 +543,9 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   rstr=rstr.substr(0,rfpos);
   Node<Function*> *leaf = new Node<Function*>(op,true);
   std::vector<std::string> args(1);
-  (*leaf)->push_back(new Node<Function*>(NULL,true));
-  (*(*leaf)->back())<<leaf;
   args[0]=p_interpreter->Iterate(rstr);
-  p_interpreter->SetLeaf((*leaf)->back());
-  args[0]=p_interpreter->Extractor()->Interprete(args[0]);
-  p_interpreter->SetLeaf(leaf);
+  (*leaf)->push_back(p_interpreter->ExtractLeaf(args[0]));
+  (*(*leaf)->back())<<leaf;
 #ifdef DEBUG__Interpreter
   msg_IODebugging()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
@@ -581,13 +555,13 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 }
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
-  p_replacer(this), p_root(NULL), p_leaf(NULL)
+  p_replacer(this), p_root(NULL)
 {
-  p_extractor = new Extract_Leaf(this);
   m_interpreters[0] = new Interprete_Function(this);
   m_interpreters[1] = new Resolve_Bracket(this);
   m_interpreters[2] = new Interprete_Binary(this);
   m_interpreters[3] = new Interprete_Unary(this);
+  m_interpreters[4] = new Set_Value(this);
   if (!standard) return;
   m_tags["M_PI"]=ToString(M_PI);
   m_tags["M_E"]=ToString(exp(1.0));
@@ -674,7 +648,6 @@ Algebra_Interpreter::~Algebra_Interpreter()
     delete m_interpreters.begin()->second;
     m_interpreters.erase(m_interpreters.begin());
   }
-  delete p_extractor;
 }
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
@@ -684,30 +657,19 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 #endif
   m_argvs.clear();
   if (p_root!=NULL) delete p_root;
-  p_root=p_leaf=NULL;
+  p_root=NULL;
   while (m_leafs.size()>0) {
     delete m_leafs.begin()->second;
     m_leafs.erase(m_leafs.begin());
   }
-  if (expr.length()==0) return "0";
   std::string res=expr;
+  if (res.length()==0) res="sqrt(-1)";
   KillBlanks(res);
   std::string result=Iterate(res);
-  if (result==res) {
-    p_root = p_leaf = new Node<Function*>(NULL,false);
-    (*p_leaf)[0] = new Single_Term(result,p_replacer);
-    AddLeaf((*p_leaf)[0]);
-    AddArgs(p_root);
-    result=p_replacer->ReplaceTags(result);
-#ifdef DEBUG__Interpreter
-    msg_IODebugging()<<"} -> "<<result<<std::endl;
-#endif
-    return result;
-  }
 #ifdef DEBUG__Interpreter
   msg_IODebugging()<<"} -> "<<result<<std::endl;
 #endif
-  p_root = p_leaf;
+  p_root = ExtractLeaf(result);
   AddArgs(p_root);
   result=ToString(*Calculate());
   if (msg_LevelIsIODebugging()) {
@@ -727,11 +689,7 @@ Term *Algebra_Interpreter::Calculate()
 	 tit(m_terms.begin());tit!=m_terms.end();++tit)
     (*tit)->Delete();
   m_terms.clear();
-  if (p_root==NULL) {
-    Term *res(Term::New(std::string("0.0")));
-    m_terms.push_back(res);
-    return res;
-  }
+  if (p_root==NULL) THROW(fatal_error,"Missing expression");
   size_t n(0);
   return Iterate(p_root,n);
 }
@@ -778,6 +736,16 @@ void Algebra_Interpreter::AddLeaf(Function *const f)
 void Algebra_Interpreter::AddTerm(Term *const t)
 {
   m_terms.push_back(t); 
+}
+
+Node<Function*> *Algebra_Interpreter::
+ExtractLeaf(const std::string &expr) const
+{
+  if (expr.find("{")!=0 || expr.rfind("}")!=expr.length()-1)
+    THROW(fatal_error,"Cannot recover node pointer.");
+  size_t pos(expr.rfind('{')); 
+  return (Node<Function*>*)ToType<PTS>
+    (expr.substr(pos+1,expr.length()-pos-2));
 }
 
 std::string Algebra_Interpreter::Iterate(const std::string &expr)
