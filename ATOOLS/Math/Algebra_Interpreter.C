@@ -181,21 +181,6 @@ DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_And,"&&",&&,5)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_Or,"||",||,4)
 DEFINE_BINARY_TERM_OPERATOR(Bitwise_XOr,"^",^,7)
 
-bool IsAlpha(const std::string& expr) 
-{
-  for (size_t i=0;i<expr.length();++i) 
-    if (expr[i]<48 || expr[i]>57) {
-      if (expr[i]=='e' || expr[i]=='E')
-	if (i>0 && expr[i-1]>=48 && expr[i-1]<=57) continue;
-      if (expr[i]=='.' || expr[i]=='-')
-	if ((i>0 && expr[i-1]>=48 && expr[i-1]<=57) ||
-	    (i<expr.length()-1 && expr[i+1]>=48 && expr[i+1]<=57))
-	  continue;
-      return true;
-    }
-  return false;
-}
-
 #define DEFINE_BINARY_SORTABLE_TERM_OPERATOR(NAME,TAG,OP,PRIORITY)\
   DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
   Term *NAME::Evaluate(const std::vector<Term*> &args) const\
@@ -212,12 +197,22 @@ DEFINE_BINARY_SORTABLE_TERM_OPERATOR(Binary_Greater,">",>,10)
 DEFINE_BINARY_SORTABLE_TERM_OPERATOR(Binary_Less_Equal,"<=",<=,10)
 DEFINE_BINARY_SORTABLE_TERM_OPERATOR(Binary_Greater_Equal,">=",>=,10)
 
-DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
+DEFINE_UNARY_BINARY_OPERATOR(Unary_Not,"!",14,false)
 Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
 {
   Term *res = !*args[0];
   p_interpreter->AddTerm(res);
   return res;
+}
+size_t Unary_Not::FindTag(const std::string &expr,
+			  const bool fwd,size_t cpos) const
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("!",cpos):expr.rfind("!",cpos));
+  if (pos==std::string::npos || pos+1>=expr.length())
+    return std::string::npos;
+  if (expr[pos+1]=='=') return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  return pos;
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Unary_Minus,"-",14,false)
@@ -233,7 +228,8 @@ size_t Unary_Minus::FindTag(const std::string &expr,
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || pos==0) return pos;
-  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+  if ((expr[pos-1]>=48 && expr[pos-1]<=57) ||
+      ((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
        ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
       expr[pos-1]==',' || expr[pos-1]=='{' || expr[pos-1]=='}') 
     return FindTag(expr,fwd,fwd?pos+1:pos-1);
