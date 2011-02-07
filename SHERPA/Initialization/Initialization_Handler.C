@@ -24,9 +24,6 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
-#ifdef USING__PYTHIA
-#include "SHERPA/LundTools/Lund_Interface.H"
-#endif
 #include "ATOOLS/Org/Data_Writer.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "ATOOLS/Org/Library_Loader.H"

@@ -1,10 +1,5 @@
 pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 
-if PYTHIA_SUPPORT
-MCINTERFACESOURCES= MC_Interface.C
-MCINTERFACEHEADERS= MC_Interface.H
-endif
-
 SVNTAG = SHERPA__Single_Events
 include ../../svn.make
 
@@ -21,8 +16,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Hadronization.C \
 					Hadron_Decays.C \
 					Analysis_Phase.C \
-					EvtReadin_Phase.C \
-					$(MCINTERFACESOURCES)
+					EvtReadin_Phase.C
 
 localinc_HEADERS      =	\
 			Event_Handler.H \
@@ -36,8 +30,7 @@ localinc_HEADERS      =	\
 		 	Hadronization.H \
 			Hadron_Decays.H \
 			Analysis_Phase.H \
-			EvtReadin_Phase.H \
-			$(MCINTERFACEHEADERS)
+			EvtReadin_Phase.H
 
 libSherpaSingleEvents_la_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 

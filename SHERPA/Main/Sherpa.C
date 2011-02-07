@@ -12,9 +12,6 @@
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
-#ifdef USING__PYTHIA
-#include "SHERPA/Single_Events/MC_Interface.H"
-#endif
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -132,18 +129,10 @@ bool Sherpa::InitializeTheEventHandler()
   }
   
   std::string sme = std::string("SignalMEs");
-  switch (mode) {
-#ifdef USING__PYTHIA
-  case 9000:
-    p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
-    break;
-#endif
-  case 9990: 
-  case 9991: 
-  case 9999: 
+  if (mode>9000) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
-    break;
-  default:
+  }
+  else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme)));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
@@ -158,7 +147,6 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHadronDecayHandlers(),
                                                     p_inithandler->GetSoftPhotonHandler()));
 
-    break;
   }
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   p_eventhandler->PrintGenericEventStructure();
