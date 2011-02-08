@@ -486,7 +486,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if ( (1.>=a) && (a>=0.)) a = 1.;
+  if (a<=1.0) a = 1.0;
   double ct = (p1inh[0]*p1outh[0]-p1in*p1out)/(p1inmass*p1outmass);
   
   if  ((ct < ctmin) || (ct > ctmax)) {
@@ -533,7 +533,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if ( (1.>=a) && (a>=0.)) a = 1.;
+  if (a<=1.0) a = 1.0;
 
   Vec4D help=p1out;
   Channel_Basics::Boost(1,pin,p1outh,help);
@@ -597,7 +597,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if ( (1.>=a) && (a>=0.)) a = 1.;
+  if (a<=1.0) a = 1.0;
 //      cout<<"TChannelMomenta"<<endl;
 //      cout<<" a="<<a<<" "<<a-ctmin<<" "<<a-ctmax<<endl;
   if (dabs(a-ctmax)<1.e-14) a=ctmax;
