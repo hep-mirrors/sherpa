@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libHadronsPSs.la
 
-SVNTAG = HADRONS++__PS_Library
+SVNTAG = HADRONS++/PS_Library
 include ../../svn.make
 
 libHadronsPSs_la_SOURCES = \

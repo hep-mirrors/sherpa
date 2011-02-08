@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libPDF.la
 
-SVNTAG = PDF__Main
+SVNTAG = PDF/Main
 include ../../svn.make
 
 libPDF_la_SOURCES     =	\

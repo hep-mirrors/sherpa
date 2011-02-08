@@ -1,4 +1,4 @@
-SVNTAG = AddOns__MCFM
+SVNTAG = AddOns/MCFM
 include ../../svn.make
 
 MCFM_SOURCES  =	\

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libHadronsCurrents.la
 
-SVNTAG = HADRONS++__Current_Library
+SVNTAG = HADRONS++/Current_Library
 include ../../svn.make
 
 libHadronsCurrents_la_SOURCES = \

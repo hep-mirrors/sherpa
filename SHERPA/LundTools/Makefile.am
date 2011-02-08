@@ -5,7 +5,7 @@ PYTHIASOURCES = pythia-6.4.18.f \
 		Lund_Interface.C
 PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
 
-SVNTAG = SHERPA__LundTools
+SVNTAG = SHERPA/LundTools
 include ../../svn.make
 
 if PYTHIA_SUPPORT

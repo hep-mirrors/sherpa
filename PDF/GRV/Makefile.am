@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libGRVSherpa.la
 
-SVNTAG = PDF__GRV
+SVNTAG = PDF/GRV
 include ../../svn.make
 
 libGRVSherpa_la_SOURCES       =	\

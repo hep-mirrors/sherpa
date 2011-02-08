@@ -1,7 +1,7 @@
 
 pkglib_LTLIBRARIES    =	libPhasicMain.la
 
-SVNTAG = PHASIC++__Main
+SVNTAG = PHASIC++/Main
 include ../../svn.make
 
 libPhasicMain_la_SOURCES      =	\

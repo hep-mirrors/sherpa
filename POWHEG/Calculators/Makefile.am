@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPOWHEGCalculators.la
 
-SVNTAG = POWHEG__Calculators
+SVNTAG = POWHEG/Calculators
 include ../../svn.make
 
 libPOWHEGCalculators_la_SOURCES = \

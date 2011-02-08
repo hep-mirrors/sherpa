@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libComixAmplitude.la
 
-SVNTAG = COMIX__Amplitude
+SVNTAG = COMIX/Amplitude
 include ../../svn.make
 
 libComixAmplitude_la_SOURCES  =	\

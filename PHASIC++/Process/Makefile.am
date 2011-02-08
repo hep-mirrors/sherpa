@@ -1,7 +1,7 @@
 
 pkglib_LTLIBRARIES    =	libPhasicProcess.la
 
-SVNTAG = PHASIC++__Process
+SVNTAG = PHASIC++/Process
 include ../../svn.make
 
 libPhasicProcess_la_SOURCES   =	\

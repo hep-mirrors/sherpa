@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libZfunctions.la
 
-SVNTAG = AMEGIC++__Amplitude__Zfunctions
+SVNTAG = AMEGIC++/Amplitude/Zfunctions
 include ../../../svn.make
 
 libZfunctions_la_SOURCES = SVN_Info.C Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \

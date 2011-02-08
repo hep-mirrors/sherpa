@@ -1,4 +1,4 @@
-SVNTAG = AddOns__BlackHat
+SVNTAG = AddOns/BlackHat
 include ../../svn.make
 
 BLACKHAT_SOURCES      =	\

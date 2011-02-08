@@ -356,17 +356,17 @@ void Run_Parameter::Gen::PrintSVNVersion()
 {
   const std::vector<const SVN_Info*> &info(*SVN_Info::Infos());
   if (info.empty()) THROW(fatal_error,"No SVN information");
-  std::string branch, revision;
+  std::string branch(info.front()->Branch());
+  std::string revision(info.front()->Revision());
+  msg_Out()<<"SVN branch "<<branch
+	   <<", revision "<<revision<<"."<<std::endl;
   for (size_t i(0);i<info.size();++i) {
-    if (branch=="") branch=info.front()->Branch();
     if (info[i]->Branch()!=branch) msg_Error()
       <<"===> "<<info[i]->Name()<<" has branch "<<info[i]->Branch()
       <<", first seen was "<<branch<<" <===\n";
-    if (revision=="") revision=info.front()->Revision();
     if (info[i]->Revision()!=revision) msg_Error()
       <<"===> "<<info[i]->Name()<<" has revision "<<info[i]->Revision()
       <<", first seen was "<<revision<<" <===\n";
   }
-  msg_Out()<<"SVN branch "<<branch
-	   <<", revision "<<revision<<"."<<std::endl;
+  msg_Out()<<std::endl;
 }

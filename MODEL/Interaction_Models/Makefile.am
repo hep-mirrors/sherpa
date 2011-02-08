@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libModelInteractions.la
 
-SVNTAG = MODEL__Interaction_Models
+SVNTAG = MODEL/Interaction_Models
 include ../../svn.make
 
 libModelInteractions_la_SOURCES = \

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPOWHEGShowers.la
 
-SVNTAG = POWHEG__Showers
+SVNTAG = POWHEG/Showers
 include ../../svn.make
 
 libPOWHEGShowers_la_SOURCES = \

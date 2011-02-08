@@ -1,7 +1,7 @@
 
 pkglib_LTLIBRARIES    =	libPhasicChannels.la
 
-SVNTAG = PHASIC++__Channels
+SVNTAG = PHASIC++/Channels
 include ../../svn.make
 
 libPhasicChannels_la_SOURCES  =	\

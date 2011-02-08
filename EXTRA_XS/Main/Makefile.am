@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libExtraXS.la
 
-SVNTAG = EXTRA_XS__Main
+SVNTAG = EXTRA_XS/Main
 include ../../svn.make
 
 libExtraXS_la_SOURCES =	\

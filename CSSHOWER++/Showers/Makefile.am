@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libCSShowers.la
 
-SVNTAG = CSSHOWER++__Showers
+SVNTAG = CSSHOWER++/Showers
 include ../../svn.make
 
 libCSShowers_la_SOURCES = \

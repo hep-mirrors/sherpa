@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libCSTools.la
 
-SVNTAG = CSSHOWER++__Tools
+SVNTAG = CSSHOWER++/Tools
 include ../../svn.make
 
 libCSTools_la_SOURCES = \

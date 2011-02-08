@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 
-SVNTAG = SHERPA__SoftPhysics
+SVNTAG = SHERPA/SoftPhysics
 include ../../svn.make
 
 libSherpaSoftPhysics_la_SOURCES	      =	\

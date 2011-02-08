@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libExtraXSNLO.la
 
-SVNTAG = EXTRA_XS__NLO
+SVNTAG = EXTRA_XS/NLO
 include ../../svn.make
 
 libExtraXSNLO_la_SOURCES      =	SVN_Info.C \

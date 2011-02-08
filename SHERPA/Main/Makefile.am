@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libSherpaMain.la
 
-SVNTAG = SHERPA__Main
+SVNTAG = SHERPA/Main
 include ../../svn.make
 
 libSherpaMain_la_SOURCES      =	SVN_Info.C Sherpa.C 

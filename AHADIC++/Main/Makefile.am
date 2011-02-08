@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libAhadicMain.la
 
-SVNTAG = AHADIC++__Main
+SVNTAG = AHADIC++/Main
 include ../../svn.make
 
 libAhadicMain_la_SOURCES = \

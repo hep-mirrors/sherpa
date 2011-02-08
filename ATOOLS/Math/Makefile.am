@@ -1,5 +1,5 @@
 
-SVNTAG = ATOOLS__Math
+SVNTAG = ATOOLS/Math
 include ../../svn.make
 
 pkglib_LTLIBRARIES       =	libToolsMath.la

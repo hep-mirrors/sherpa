@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libComixVertices.la
 
-SVNTAG = COMIX__Vertices
+SVNTAG = COMIX/Vertices
 include ../../svn.make
 
 libComixVertices_la_SOURCES   =	\

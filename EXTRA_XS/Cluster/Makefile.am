@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libExtraXSCluster.la
 
-SVNTAG = EXTRA_XS__Cluster
+SVNTAG = EXTRA_XS/Cluster
 include ../../svn.make
 
 libExtraXSCluster_la_SOURCES  =	\

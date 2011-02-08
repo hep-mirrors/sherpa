@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libAmegic.la
 
-SVNTAG = AMEGIC++__Main
+SVNTAG = AMEGIC++/Main
 include ../../svn.make
 
 libAmegic_la_SOURCES = \

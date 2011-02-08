@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libComixCurrents.la
 
-SVNTAG = COMIX__Currents
+SVNTAG = COMIX/Currents
 include ../../svn.make
 
 libComixCurrents_la_SOURCES   =	\

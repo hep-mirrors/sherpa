@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libPDFESherpa.la
 
-SVNTAG = PDF__Electron
+SVNTAG = PDF/Electron
 include ../../svn.make
 
 libPDFESherpa_la_SOURCES     =	\

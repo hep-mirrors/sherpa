@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libAhadicFormation.la
 
-SVNTAG = AHADIC++__Formation
+SVNTAG = AHADIC++/Formation
 include ../../svn.make
 
 libAhadicFormation_la_SOURCES = \

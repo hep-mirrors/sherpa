@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libCSCalculators.la
 
-SVNTAG = CSSHOWER++__Calculators
+SVNTAG = CSSHOWER++/Calculators
 include ../../svn.make
 
 libCSCalculators_la_SOURCES = \

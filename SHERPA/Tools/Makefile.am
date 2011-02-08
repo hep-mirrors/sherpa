@@ -9,7 +9,7 @@ Output_HepMC2_Genevent.H Output_HepMC2_Genevent.C \
 Output_HepMC2_Short.H Output_HepMC2_Short.C
 endif
 
-SVNTAG = SHERPA__Tools
+SVNTAG = SHERPA/Tools
 include ../../svn.make
 
 libSherpaTools_la_SOURCES     =	\

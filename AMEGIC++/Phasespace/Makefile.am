@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libAmegicPSGen.la
 
-SVNTAG = AMEGIC++__Phasespace
+SVNTAG = AMEGIC++/Phasespace
 include ../../svn.make
 
 libAmegicPSGen_la_SOURCES = SVN_Info.C \

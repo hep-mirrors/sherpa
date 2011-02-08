@@ -7,7 +7,7 @@ else
 GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
-SVNTAG = ATOOLS__Org
+SVNTAG = ATOOLS/Org
 include ../../svn.make
 
 libToolsOrg_la_SOURCES        = \

@@ -2,7 +2,7 @@ SUBDIRS = Zfunctions
 
 pkglib_LTLIBRARIES = libAmplitude.la
 
-SVNTAG = AMEGIC++__Amplitude
+SVNTAG = AMEGIC++/Amplitude
 include ../../svn.make
 
 libAmplitude_la_SOURCES = SVN_Info.C \

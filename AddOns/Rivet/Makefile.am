@@ -1,4 +1,4 @@
-SVNTAG = AddOns__Rivet
+SVNTAG = AddOns/Rivet
 include ../../svn.make
 
 RIVET_SOURCES       =	SVN_Info.C \

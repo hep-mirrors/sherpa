@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPOWHEGMain.la
 
-SVNTAG = POWHEG__Main
+SVNTAG = POWHEG/Main
 include ../../svn.make
 
 libPOWHEGMain_la_SOURCES = \

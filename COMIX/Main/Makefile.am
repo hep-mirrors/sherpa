@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libComix.la
 
-SVNTAG = COMIX__Main
+SVNTAG = COMIX/Main
 include ../../svn.make
 
 libComix_la_SOURCES   =	\

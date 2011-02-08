@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libHelicitiesLoops.la
 
-SVNTAG = METOOLS__Loops
+SVNTAG = METOOLS/Loops
 include ../../svn.make
 
 if GOLEM95_SUPPORT

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libString.la
 
-SVNTAG = AMEGIC++__String
+SVNTAG = AMEGIC++/String
 include ../../svn.make
 
 libString_la_SOURCES = SVN_Info.C \

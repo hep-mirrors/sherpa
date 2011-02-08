@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libBeam.la
 
-SVNTAG = BEAM__Main
+SVNTAG = BEAM/Main
 include ../../svn.make
 
 libBeam_la_SOURCES    =	SVN_Info.C \

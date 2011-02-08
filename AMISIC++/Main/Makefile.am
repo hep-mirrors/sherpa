@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       = libAmisic.la
 
-SVNTAG = AMISIC++__Main
+SVNTAG = AMISIC++/Main
 include ../../svn.make
 
 libAmisic_la_SOURCES  = \

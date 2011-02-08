@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPhotonsMEs.la
 
-SVNTAG = PHOTONS++__MEs
+SVNTAG = PHOTONS++/MEs
 include ../../svn.make
 
 libPhotonsMEs_la_SOURCES =	SVN_Info.C \

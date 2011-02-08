@@ -1,7 +1,7 @@
 
 pkglib_LTLIBRARIES    =	libPhasicSelectors.la
 
-SVNTAG = PHASIC++__Selectors
+SVNTAG = PHASIC++/Selectors
 include ../../svn.make
 
 libPhasicSelectors_la_SOURCES =	\

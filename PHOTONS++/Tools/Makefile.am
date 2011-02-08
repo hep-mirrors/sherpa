@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPhotonsTools.la
 
-SVNTAG = PHOTONS++__Tools
+SVNTAG = PHOTONS++/Tools
 include ../../svn.make
 
 libPhotonsTools_la_SOURCES = 	\

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 
-SVNTAG = SHERPA__Single_Events
+SVNTAG = SHERPA/Single_Events
 include ../../svn.make
 
 libSherpaSingleEvents_la_SOURCES      =	\

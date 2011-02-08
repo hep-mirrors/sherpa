@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPOWHEGTools.la
 
-SVNTAG = POWHEG__Tools
+SVNTAG = POWHEG/Tools
 include ../../svn.make
 
 libPOWHEGTools_la_SOURCES = \

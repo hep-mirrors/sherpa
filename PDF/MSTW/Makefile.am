@@ -1,7 +1,7 @@
 pkglib_LTLIBRARIES    = \
 			libMSTW08Sherpa.la
 
-SVNTAG = PDF__MSTW
+SVNTAG = PDF/MSTW
 include ../../svn.make
 
 libMSTW08Sherpa_la_SOURCES      =	\

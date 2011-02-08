@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libPhotonsPhaseSpace.la
 
-SVNTAG = PHOTONS++__PhaseSpace
+SVNTAG = PHOTONS++/PhaseSpace
 include ../../svn.make
 
 libPhotonsPhaseSpace_la_SOURCES = 	SVN_Info.C \

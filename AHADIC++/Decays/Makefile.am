@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libAhadicDecays.la
 
-SVNTAG = AHADIC++__Decays
+SVNTAG = AHADIC++/Decays
 include ../../svn.make
 
 libAhadicDecays_la_SOURCES = \

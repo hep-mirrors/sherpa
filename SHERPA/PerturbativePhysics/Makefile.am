@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 
-SVNTAG = SHERPA__PerturbativePhysics
+SVNTAG = SHERPA/PerturbativePhysics
 include ../../svn.make
 
 libSherpaPerturbativePhysics_la_SOURCES       =	\

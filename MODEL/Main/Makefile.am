@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libModelMain.la
 
-SVNTAG = MODEL__Main
+SVNTAG = MODEL/Main
 include ../../svn.make
 
 libModelMain_la_SOURCES = SVN_Info.C \

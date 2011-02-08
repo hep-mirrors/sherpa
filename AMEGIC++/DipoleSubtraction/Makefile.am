@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libDipoleSubtraction.la
 
-SVNTAG = AMEGIC++__DipoleSubtraction
+SVNTAG = AMEGIC++/DipoleSubtraction
 include ../../svn.make
 
 libDipoleSubtraction_la_SOURCES = \

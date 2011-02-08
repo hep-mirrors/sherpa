@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libCTEQ6Sherpa.la
 
-SVNTAG = PDF__CTEQ
+SVNTAG = PDF/CTEQ
 include ../../svn.make
 
 libCTEQ6Sherpa_la_SOURCES     =	\

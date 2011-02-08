@@ -3,7 +3,7 @@ pkglib_LTLIBRARIES    = \
 			libMRST01LOSherpa.la \
 			libMRST04QEDSherpa.la
 
-SVNTAG = PDF__MRST99
+SVNTAG = PDF/MRST99
 include ../../svn.make
 
 libMRST99Sherpa_la_SOURCES    =	\

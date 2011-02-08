@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libComixCluster.la
 
-SVNTAG = COMIX__Cluster
+SVNTAG = COMIX/Cluster
 include ../../svn.make
 
 libComixCluster_la_SOURCES    =	\

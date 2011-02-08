@@ -1,4 +1,4 @@
-SVNTAG = AddOns__HZTool
+SVNTAG = AddOns/HZTool
 include ../../svn.make
 
 HZTOOL_SOURCES        =	\

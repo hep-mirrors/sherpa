@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libExtraXS2_2.la
 
-SVNTAG = EXTRA_XS__Two2Two
+SVNTAG = EXTRA_XS/Two2Two
 include ../../svn.make
 
 libExtraXS2_2_la_SOURCES      =	SVN_Info.C \

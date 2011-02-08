@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libRemnant.la
 
-SVNTAG = PDF__Remnant
+SVNTAG = PDF/Remnant
 include ../../svn.make
 
 libRemnant_la_SOURCES =	\

@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libCSMain.la
 
-SVNTAG = CSSHOWER++__Main
+SVNTAG = CSSHOWER++/Main
 include ../../svn.make
 
 libCSMain_la_SOURCES = \

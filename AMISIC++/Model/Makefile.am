@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       = libAmisicModel.la
 
-SVNTAG = AMISIC++__Model
+SVNTAG = AMISIC++/Model
 include ../../svn.make
 
 libAmisicModel_la_SOURCES     = \

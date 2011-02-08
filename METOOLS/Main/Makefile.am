@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       =	libHelicitiesMain.la
 
-SVNTAG = METOOLS__Main
+SVNTAG = METOOLS/Main
 include ../../svn.make
 
 libHelicitiesMain_la_SOURCES       =	\

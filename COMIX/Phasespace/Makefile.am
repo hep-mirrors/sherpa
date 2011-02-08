@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libComixPhasespace.la
 
-SVNTAG = COMIX__Phasespace
+SVNTAG = COMIX/Phasespace
 include ../../svn.make
 
 libComixPhasespace_la_SOURCES =	\

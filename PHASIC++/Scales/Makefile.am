@@ -1,7 +1,7 @@
 
 pkglib_LTLIBRARIES    =	libPhasicScales.la
 
-SVNTAG = PHASIC++__Scales
+SVNTAG = PHASIC++/Scales
 include ../../svn.make
 
 libPhasicScales_la_SOURCES    =	\

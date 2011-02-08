@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES       = libAmisicTools.la
 
-SVNTAG = AMISIC++__Tools
+SVNTAG = AMISIC++/Tools
 include ../../svn.make
 
 libAmisicTools_la_SOURCES     = \

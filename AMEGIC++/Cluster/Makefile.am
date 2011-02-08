@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES    =	libAmegicCluster.la
 
-SVNTAG = AMEGIC++__Cluster
+SVNTAG = AMEGIC++/Cluster
 include ../../svn.make
 
 libAmegicCluster_la_SOURCES   =	\

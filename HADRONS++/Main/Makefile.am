@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libHadronsMain.la
 
-SVNTAG = HADRONS++__Main
+SVNTAG = HADRONS++/Main
 include ../../svn.make
 
 libHadronsMain_la_SOURCES = \
