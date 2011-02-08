@@ -28,7 +28,7 @@
   # To be as inclusive as possible, the pT cut has been lowered to the
   # same value as in the multiple parton interactions.
   # Note that this pT cut has to be adjusted if E_CMS is changed,
-  # such that it is never lower then SCALE_MIN*(E_CMS/1800)^RESCALE_EXPONENT
+  # such that it is never lower then SCALE_MIN*pow((E_CMS/1800),RESCALE_EXPONENT)
   # in the multiple parton interactions.
   NJetFinder  2  2.65  0.0  1.0
 }(selector)
