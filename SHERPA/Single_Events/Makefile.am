@@ -31,7 +31,3 @@ localinc_HEADERS      =	\
 			Hadron_Decays.H \
 			Analysis_Phase.H \
 			EvtReadin_Phase.H
-
-libSherpaSingleEvents_la_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
-
-libSherpaSingleEvents_la_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@

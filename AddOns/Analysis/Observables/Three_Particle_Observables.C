@@ -5,6 +5,7 @@
 using namespace ANALYSIS;
 
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
@@ -98,6 +99,37 @@ void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double
   }
   p_histo->Insert(0.0,0.0,ncount);
 }
+
+void Three_Particle_Observable_Base::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, double ncount) 
+{
+  THROW(fatal_error,std::string(typeid(*this).name())+" not NLO-ready");
+} 
+
+void Three_Particle_Observable_Base::EvaluateNLOcontrib(double weight, double ncount)
+{
+  Particle_List * plist=p_ana->GetParticleList(m_listname);
+  for (Particle_List::const_iterator plit1=plist->begin();plit1!=plist->end();++plit1) {
+    if (m_flav1==(*plit1)->Flav()) {
+      for (Particle_List::const_iterator plit2=plist->begin();plit2!=plist->end();++plit2) {
+	if (m_flav2==(*plit2)->Flav() && plit1!=plit2) {
+	  for (Particle_List::const_iterator plit3=plist->begin();plit3!=plist->end();++plit3) {
+	    if (m_flav3==(*plit3)->Flav() && plit1!=plit3 && plit2!=plit3) {
+	      EvaluateNLOcontrib((*plit1)->Momentum(),(*plit2)->Momentum(),(*plit3)->Momentum(),weight,ncount);
+	      return;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  EvaluateNLOcontrib(Vec4D(1.,0,0,1.),Vec4D(1.,0,0,-1.),Vec4D(1.,0,0,0),0, ncount);
+}
+
+void Three_Particle_Observable_Base::EvaluateNLOevt()
+{
+  p_histo->FinishMCB();
+}
+
 
 //=============================================================================
 
@@ -270,6 +302,12 @@ void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const 
   
   double mass = sqrt( (mom1+mom2+mom3).Abs2() );
   p_histo->Insert(mass,weight,ncount); 
+} 
+
+void Three_Particle_3Mass::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, double ncount) 
+{
+  double mass = sqrt((mom1+mom2+mom3).Abs2());
+  p_histo->InsertMCB(mass,weight,ncount); 
 } 
 
 Primitive_Observable_Base * Three_Particle_3Mass::Copy() const 

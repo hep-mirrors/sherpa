@@ -63,7 +63,8 @@ Weight_Info *Single_Process::WeightedEvent(const int mode)
 
 double Single_Process::KFactor() const
 {
-  return p_kfactor->KFactor();
+  if (p_kfactor) return p_kfactor->KFactor();
+  return 1.0;
 }
 
 double Single_Process::BeamISRWeight
@@ -131,7 +132,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     }
     scs->SetCaller(this);
     if (Partonic(p,0)==0.0) return 0.0;
-    if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
+    double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+    if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs*flux;
     m_wgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last[0]=0.0;
     return m_last[0]=m_lastxs*BeamISRWeight(scs->Scale(stp::fac),0);

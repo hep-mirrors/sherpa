@@ -8,15 +8,21 @@ ANATOOLS_SOURCES      =	\
 			Particle_Ordering.C \
 			Particle_Qualifier.C \
 			Universal_Selector.C \
-			Particle_Selector.C
+			Particle_Selector.C \
+			My_Root.C
 
 ANATOOLS_ADDS         =	\
-			Particle_Qualifier.H
+			Particle_Qualifier.H \
+			My_Root.H
 
 if USING__Analysis
 pkglib_LTLIBRARIES       =	libSherpaAnalysisTools.la
 
 libSherpaAnalysisTools_la_SOURCES     = $(ANATOOLS_SOURCES)
+
+libSherpaAnalysisTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+
+libSherpaAnalysisTools_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 ANATOOLS_EXTRA_DIST   =	$(ANATOOLS_ADDS)
 else

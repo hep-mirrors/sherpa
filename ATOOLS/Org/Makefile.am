@@ -32,8 +32,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				$(GZIPSTREAMSOURCES) \
-				binreloc.c \
-				My_Root.C
+				binreloc.c
 
 localinc_HEADERS         =	\
 			CXXFLAGS_PACKAGES.H \
@@ -67,14 +66,9 @@ localinc_HEADERS         =	\
 			Node.H \
 			Node.C \
 			$(GZIPSTREAMHEADERS) \
-			binreloc.h \
-			My_Root.H
+			binreloc.h
 
 libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@
-
-libToolsOrg_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
-
-libToolsOrg_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@ $(GZIPEXTRADIST) CXXFLAGS.H.in
 

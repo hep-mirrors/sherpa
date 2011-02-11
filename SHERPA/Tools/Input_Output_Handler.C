@@ -75,8 +75,11 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   }
   if (!rootntupleoutput.empty()) {
 #ifdef USING__ROOT
-    m_outmap["ROOTNTUPLE"]=
-      new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision);
+    if (rootntupleoutput[0] == '/'){
+    m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(rootntupleoutput,".root", precision);
+    } else {
+      m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision);
+    }
 #else
     THROW(fatal_error,"ROOTNTUPLE format can only be created when Sherpa was linked "
           +string("with root, please read our Manual for more information."));

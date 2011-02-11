@@ -17,6 +17,10 @@ namespace ANALYSIS {
 				   const std::string & name);
     void virtual Evaluate(const ATOOLS::Particle_List & plist, 
 			  double weight, double ncount);
+    void virtual EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+				    const ATOOLS::Vec4D & mom3, double weight, double ncount); 
+    void EvaluateNLOcontrib(double weight, double ncount);
+    void EvaluateNLOevt();
   };
   
   class Three_Particle_PT : public Three_Particle_Observable_Base {  
@@ -89,6 +93,8 @@ namespace ANALYSIS {
     Three_Particle_3Mass(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 			 const ATOOLS::Flavour & flav3, int type, double xmin, 
 			 double xmax, int nbins, const std::string & listname);
+    void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+			    const ATOOLS::Vec4D & mom3, double weight, double ncount); 
     Primitive_Observable_Base * Copy() const;
   };
 

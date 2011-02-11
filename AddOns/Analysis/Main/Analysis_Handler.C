@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "AddOns/Analysis/Tools/My_Root.H"
 #include "ATOOLS/Math/Variable.H"
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 
@@ -28,10 +29,25 @@ size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
   Analysis_Interface("Internal"),
-  m_weighted(0), m_write(false) {}
+  m_weighted(0), m_write(false)
+{
+#ifdef USING__ROOT
+  if (MYROOT::myroot==NULL) {
+    MYROOT::myroot = new MYROOT::My_Root();
+    ATOOLS::exh->AddTerminatorObject(MYROOT::myroot);
+  }
+#endif
+}
 
 Analysis_Handler::~Analysis_Handler()
 {
+#ifdef USING__ROOT
+  if (MYROOT::myroot) {
+    exh->RemoveTerminatorObject(MYROOT::myroot);
+    delete MYROOT::myroot;
+    MYROOT::myroot=NULL;
+  }
+#endif
   Clean();
   exh->RemoveTesterObject(this);
 }

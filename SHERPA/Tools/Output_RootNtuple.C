@@ -3,7 +3,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "MODEL/Main/Model_Base.H"
 
 
 using namespace SHERPA;
@@ -12,6 +14,10 @@ using namespace std;
 
 Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int precision)
 {
+  Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
+  dr.AddWordSeparator("\t");
+  m_mode=dr.GetValue<int>("ROOTNTUPLE_MODE",0);
   m_basename =basename;
   m_ext = ext;
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
@@ -32,7 +38,7 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int pr
   p_t3->Branch("py",p_py,"py[nparticle]/F");
   p_t3->Branch("pz",p_pz,"pz[nparticle]/F");
   p_t3->Branch("E",p_E,"E[nparticle]/F");
-
+  p_t3->Branch("alphas",&m_alphas,"alphas/D");
   p_t3->Branch("kf",p_kf,"kf[nparticle]/I");
   p_t3->Branch("weight",&m_wgt,"weight/D");
   p_t3->Branch("weight2",&m_wgt2,"weight2/D");
@@ -70,20 +76,23 @@ Output_RootNtuple::~Output_RootNtuple()
 
 void Output_RootNtuple::Output(Blob_List* blobs, const double weight) 
 {
-  Blob* signal=0;
+  Blob* signal=0, *shower=0;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit) 
     if ((*blit)->Type()==btp::Signal_Process) {
       signal=(*blit);
-      break;
     }
-  if (!signal) return;
+    else if ((*blit)->Type()==btp::Shower) {
+      shower=(*blit);
+    }
+  if (!signal || (m_mode==1 && !shower)) return;
   int ncount=(*signal)["Trials"]->Get<double>();
   m_evt+=ncount;
   m_c1+=ncount;
   m_cnt3++;
   m_idcnt++;
 
-
+  Blob *blob=signal;
+  if (m_mode==1) blob=shower;
   Blob_Data_Base* seinfo=(*signal)["ME_wgtinfo"];
   ME_wgtinfo* wgtinfo(0);
   if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
@@ -93,11 +102,10 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
     m_sum+=m_evtlist[m_cnt2].weight;
     m_fsq+=sqr(m_evtlist[m_cnt2].weight);
-    m_evtlist[m_cnt2].nparticle=signal->NOutP();
     m_evtlist[m_cnt2].id=m_idcnt;
     m_evtlist[m_cnt2].fscale=sqrt((*signal)["Factorisation_Scale"]->Get<double>());
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
-
+    m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
     if (wgtinfo) {
       m_evtlist[m_cnt2].wgt0=wgtinfo->m_w0;
       m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
@@ -108,18 +116,21 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       for (int i=0;i<m_evtlist[m_cnt2].nuwgt;i++) 
 	m_evtlist[m_cnt2].uwgt[i]=wgtinfo->p_wx[i];
     }
-
-    Particle* part=signal->InParticle(0);
+    for (int inp=0, i=0;i<blob->NInP();i++) {
+    Particle *part=blob->InParticle(i);
+    if (part->ProductionBlob() &&
+	part->ProductionBlob()->Type()==btp::Signal_Process) continue;
     int kfc=part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
-    m_evtlist[m_cnt2].kf1=kfc;
-    part=signal->InParticle(1);
-    kfc=part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
-    m_evtlist[m_cnt2].kf2=kfc;
- 
-    ++m_cnt2;
-    for (int i=0;i<signal->NOutP();i++) {
-      part=signal->OutParticle(i);
-      kfc=part->Flav().Kfcode(); 
+    if (++inp==1) m_evtlist[m_cnt2].kf1=kfc;
+    else m_evtlist[m_cnt2].kf2=kfc;
+    }
+    int np=0;
+    for (int i=0;i<blob->NOutP();i++) {
+      Particle *part=blob->OutParticle(i);
+      if (part->DecayBlob() &&
+	  part->DecayBlob()->Type()==btp::Signal_Process) continue;
+      ++np;
+      int kfc=part->Flav().Kfcode(); 
       if (part->Flav().IsAnti()) kfc=-kfc;
       m_flavlist[m_fcnt]=kfc;
       m_momlist[m_fcnt]=part->Momentum();
@@ -129,6 +140,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
 	m_momlist.resize(m_momlist.size()+m_avsize);
       }
     }
+    m_evtlist[m_cnt2].nparticle=np;
+    ++m_cnt2;
   }
   else {
     NLO_subevtlist* nlos = seinfo->Get<NLO_subevtlist*>();
@@ -143,6 +156,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].wgt0=(*nlos)[j]->m_mewgt;
       m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_muf2);
       m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mur2);
+      m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
 
       if (wgtinfo) {
 	m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
@@ -217,6 +231,7 @@ void Output_RootNtuple::StoreEvt()
     m_rscale = m_evtlist[i].rscale;
   
     m_nparticle=m_evtlist[i].nparticle;
+    m_alphas=m_evtlist[i].alphas;
     for (size_t j=0;j<m_evtlist[i].nparticle;j++) {
       p_kf[j] = m_flavlist[fc];
       p_E[j]  = m_momlist[fc][0];

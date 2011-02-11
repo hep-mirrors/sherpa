@@ -17,7 +17,3 @@ localinc_HEADERS      =	\
 		 	Fragmentation_Handler.H \
 			Hadron_Decay_Handler.H \
 			Soft_Photon_Handler.H
-
-libSherpaSoftPhysics_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
-
-libSherpaSoftPhysics_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@

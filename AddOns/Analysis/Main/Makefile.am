@@ -16,7 +16,11 @@ libSherpaAnalysis_la_SOURCES  =	$(ANAMAIN_SOURCES)
 libSherpaAnalysis_la_LIBADD   =	-L../Tools \
 	-L../Triggers -L../Observables -L../Analyses \
 	-lSherpaAnalysisTools -lSherpaAnalysisTrigger \
-	-lSherpaObservables -lSherpaAnalyses
+	-lSherpaObservables -lSherpaAnalyses @CONDITIONAL_ROOTLIBS@
+
+libSherpaAnalysis_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+
+libSherpaAnalysis_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 ANAMAIN_EXTRA_DIST = $(ANAMAIN_ADDS)
 else

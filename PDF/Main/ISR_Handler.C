@@ -7,12 +7,15 @@
 #include "PDF/Remnant/Electron_Remnant.H"
 #include "PDF/Remnant/Photon_Remnant.H"
 #include "PDF/Remnant/No_Remnant.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 
 using namespace ATOOLS;
 using namespace PDF;
 using namespace std;
+
+static int s_nozeropdf=-1;
 
 double Lambda2(double sp,double sp1,double sp2) 
 { 
@@ -25,6 +28,14 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_lab(8),
   m_info_cms(8)
 {
+  if (s_nozeropdf<0) {
+    Data_Reader dr(" ",";","!","=");
+    dr.AddComment("#");
+    dr.AddWordSeparator("\t");
+    dr.SetInputPath(rpa.GetPath());
+    dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+    s_nozeropdf=dr.GetValue<int>("NO_ZERO_PDF",0);
+  }
   m_mu2[0]=m_mu2[1]=0.0;
   m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;
   p_remnants[1]=p_remnants[0]=NULL;
@@ -345,6 +356,8 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
     msg_Debugging()<<"Flux: "<<flux<<std::endl;
     if (IsBad(f1*f2)) return 0.0;
+    if (s_nozeropdf && f1*f2==0.0)
+      return pow(std::numeric_limits<double>::min(),0.25);
     return f1*f2*flux;
   }
   MtxUnLock();

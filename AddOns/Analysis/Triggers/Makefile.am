@@ -18,6 +18,7 @@ ANATRIGGER_SOURCES    =	\
 			Calorimeter_Cone.C \
 			Field_Stuart_Cone_Finder.C \
 	 		D0_BFKL_Cone_Finder.C \
+			FrixioneIsolation_Selector.C \
 			Fastjet_Interface.C \
 			One_Particle_Extractor.C \
 			Primitive_Detector.C \

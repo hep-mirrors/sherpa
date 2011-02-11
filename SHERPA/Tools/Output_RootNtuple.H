@@ -15,6 +15,7 @@ namespace SHERPA {
     double weight,wgt0;
     double x1,x2,y1,y2;
     double fscale,rscale;
+    double alphas;
     size_t nparticle;
     size_t id;
     int kf1,kf2;
@@ -42,9 +43,10 @@ namespace SHERPA {
     TTree* p_t3;
 #endif
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
-    size_t m_avsize,m_total;
+    size_t m_avsize,m_total,m_mode;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
+    double m_alphas;
     std::vector<rntuple_evt2> m_evtlist;
     std::vector<int> m_flavlist;    
     std::vector<ATOOLS::Vec4D> m_momlist;

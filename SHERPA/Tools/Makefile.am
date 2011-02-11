@@ -44,6 +44,7 @@ localinc_HEADERS      =	\
 			Analysis_Interface.H \
 			RootNtuple_Reader.H
 
+libSherpaTools_la_LIBADD = @CONDITIONAL_ROOTLIBS@
 
 libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 

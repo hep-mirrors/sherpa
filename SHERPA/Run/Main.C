@@ -9,10 +9,6 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
-#ifdef USING__ROOT
-#include "ATOOLS/Org/My_Root.H"
-#endif
-
 using namespace SHERPA;
 
 #ifdef FC_DUMMY_MAIN
@@ -22,10 +18,6 @@ extern "C" int FC_DUMMY_MAIN() { return 1; }
 int main(int argc,char* argv[])
 {
   ATOOLS::exh->Init();
-#ifdef USING__ROOT
-  MYROOT::myroot = new MYROOT::My_Root(argc,argv);
-  ATOOLS::exh->AddTerminatorObject(MYROOT::myroot);
-#endif
   std::set_terminate(ATOOLS::Terminate);
   std::set_unexpected(ATOOLS::Terminate);
   signal(SIGSEGV,ATOOLS::SignalHandler);
@@ -72,9 +64,6 @@ int main(int argc,char* argv[])
 		     <<Generator->NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;
     delete Generator;
-#ifdef USING__ROOT
-    delete MYROOT::myroot;
-#endif
     delete ATOOLS::exh;
     return 0;
   }

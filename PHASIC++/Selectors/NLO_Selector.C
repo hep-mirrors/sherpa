@@ -728,7 +728,7 @@ double Isolation_Cut::Chi(double eg,double dr)
 {
   if (m_mode==0) return m_emax;
   if (m_mode<0) return 0.;//rpa.gen.Ecms();
-  return eg*pow((1.-cos(dr))/(1.-cos(m_d0)),m_mode);
+  return eg*m_emax*pow((1.-cos(dr))/(1.-cos(m_d0)),m_mode);
 }
 
 double Isolation_Cut::DR(const Vec4D & p1,const Vec4D & p2)

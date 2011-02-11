@@ -8,17 +8,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
 
-//#define ANALYSE__Primordial_KPerp
-
-#ifdef ANALYSE__Primordial_KPerp
-#ifndef USING__ROOT
-#undef ANALYSE__Primordial_KPerp
-#else
-#include "ATOOLS/Org/My_Root.H"
-#include "TH1D.h"
-#endif
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 
@@ -100,17 +89,6 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  // calculate k_\perp
 	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran.Get())*m_kperpsigma[0]*ran1*r12;
 	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran.Get())*m_kperpsigma[1]*ran2*r12;
-#ifdef ANALYSE__Primordial_KPerp
-	  static TH1D *pkp[2]={NULL,NULL};
-	  if (pkp[0]==NULL) {
-	    pkp[0] = new TH1D("ikperp_1","ikperp_1",200,0.0,10.0);
-	    pkp[1] = new TH1D("ikperp_2","ikperp_2",200,0.0,10.0);
-	    MYROOT::myroot->AddObject(pkp[0],"ikperp_1");
-	    MYROOT::myroot->AddObject(pkp[1],"ikperp_2");
-	  }
-	  pkp[0]->Fill(kperp[0]);
-	  pkp[1]->Fill(kperp[1]);
-#endif
 	  for (size_t j=0;j<2;++j) {
 	    // dice angle
 	    do {
@@ -126,17 +104,6 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 		min[j]=i;
 	      }
 	    }
-#ifdef ANALYSE__Primordial_KPerp
-	    static TH1D *phi[2]={NULL,NULL};
-	    if (phi[0]==NULL) {
-	      phi[0] = new TH1D("phi_1","phi_1",100,0.0,M_PI);
-	      phi[1] = new TH1D("phi_2","phi_2",100,-M_PI/2.0,M_PI/2.0);
-	      MYROOT::myroot->AddObject(phi[0],"phi_1");
-	      MYROOT::myroot->AddObject(phi[1],"phi_2");
-	    }
-	    phi[0]->Fill(acos((ran1*ran1-ran2*ran2)/r12));
-	    phi[1]->Fill(asin(2.0*ran1*ran2/r12));
-#endif
 	  }
 	}
 	for (size_t j=0;j<2;++j) (*p_kperp[j])[blob[j]->NOutP()-1]=sum[j];
@@ -211,20 +178,6 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
       if ((m_kperpmean[0]==0.0)&&(m_kperpmean[1]==0.0)) success=true;
     } while (!success);
   }
-#ifdef ANALYSE__Primordial_KPerp
-  static TH1D *rpkp[2]={NULL,NULL};
-  if (rpkp[0]==NULL) {
-    rpkp[0] = new TH1D("rkperp_1","rkperp_1",200,0.0,10.0);
-    rpkp[1] = new TH1D("rkperp_2","rkperp_2",200,0.0,10.0);
-    MYROOT::myroot->AddObject(rpkp[0],"rkperp_1");
-    MYROOT::myroot->AddObject(rpkp[1],"rkperp_2");
-  }
-  int pairs=ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;
-  for (int i=0;i<pairs;++i) {
-    rpkp[0]->Fill((*p_kperp[0])[i].Abs());
-    rpkp[1]->Fill((*p_kperp[1])[i].Abs());
-  }
-#endif
   m_current[1]=m_current[0]=-1;
   m_kperpmean[0]=kpm1; 
   m_kperpmean[1]=kpm2;
@@ -307,20 +260,7 @@ double Primordial_KPerp::Lambda2(double sp,double sp1,double sp2)
 
 void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 {
-#ifdef ANALYSE__Primordial_KPerp
-  static TH1D *pkp[2]={NULL,NULL};
-  if (pkp[0]==NULL) {
-    pkp[0] = new TH1D("kperp_1","kperp_1",200,0.0,10.0);
-    pkp[1] = new TH1D("kperp_2","kperp_2",200,0.0,10.0);
-    MYROOT::myroot->AddObject(pkp[0],"kperp_1");
-    MYROOT::myroot->AddObject(pkp[1],"kperp_2");
-  }
-#endif
   if (m_kperpmean[0]==0.0 && m_kperpmean[1]==0.0) {
-#ifdef ANALYSE__Primordial_KPerp
-    pkp[0]->Fill(0.0);
-    pkp[1]->Fill(0.0);
-#endif
     return;
   }
   if (p_filled->find(cur1)!=p_filled->end()) return;
@@ -332,9 +272,6 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   if (!FindConnected(cur1,cur2,true,0)) {
     mom1=Vec4D(old1[0],kp1[1],kp1[2],
 	       Sign(old1[3])*sqrt(old1[3]*old1[3]-kp1[1]*kp1[1]-kp1[2]*kp1[2])); 
-#ifdef ANALYSE__Primordial_KPerp
-    pkp[beam]->Fill((*p_kperp[beam])[m_current[beam]].Abs());
-#endif
     cur1->SetMomentum(mom1); 
     p_filled->insert(cur1);
     return;
@@ -370,10 +307,6 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   }
   mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
   mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
-#ifdef ANALYSE__Primordial_KPerp
-  pkp[0]->Fill((*p_kperp[beam])[m_current[beam]].Abs());
-  pkp[1]->Fill((*p_kperp[1-beam])[m_current[1-beam]].Abs());
-#endif
   m_newcms=Poincare(mom1+mom2);
   cur1->SetMomentum(mom1); 
   cur2->SetMomentum(mom2);

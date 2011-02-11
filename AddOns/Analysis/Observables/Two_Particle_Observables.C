@@ -63,7 +63,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
 
 #ifdef USING__ROOT
 #include "ATOOLS/Math/Scaling.H"
-#include "ATOOLS/Org/My_Root.H"
+#include "AddOns/Analysis/Tools/My_Root.H"
 #include "TH2D.h"
 #endif 
 
@@ -226,7 +226,7 @@ DEFINE_OBSERVABLE_GETTER(Two_Particle_Angles,
 Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
 					 int _type,double _xmin,double _xmax,int _nbins,
 					 const std::string & _name, const std::string & _lname) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Angles",_lname) 
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,_lname,"Angles") 
 { 
   (*MYROOT::myroot)(new TH2D(ATOOLS::ToString(this).c_str(),
 			     (m_flav1.IDName()+std::string("_")+m_flav2.IDName()
