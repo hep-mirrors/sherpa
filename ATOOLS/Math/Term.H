@@ -21,7 +21,7 @@ namespace ATOOLS {
 
     template <class TType> static Term *New(const TType &val);
 
-    static Term *New(const std::string &tag);
+    static Term *NewTerm(const std::string &tag);
 
     virtual void Delete() = 0;
 
@@ -29,6 +29,8 @@ namespace ATOOLS {
 
     template <class TType> const TType &Get() const;
     template <class TType> void Set(const TType &val);
+
+    void SetTerm(const std::string &val);
 
     void Print(std::ostream &ostr) const;
 

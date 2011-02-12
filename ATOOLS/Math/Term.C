@@ -17,6 +17,28 @@
 
 namespace ATOOLS {
 
+  inline bool IsNum(const char c) { return c>=48 && c<=57; }
+
+  bool IsAlpha(const std::string &expr) 
+  {
+    bool ad(true), ae(true);
+    for (size_t i=0;i<expr.length();++i) 
+      if (!IsNum(expr[i])) {
+	if (expr[i]=='.' && ad) {
+	  ad=false;
+	  continue;
+	}
+	if ((expr[i]=='e' || expr[i]=='E') && 
+	    ae && i<expr.length()-1) {
+	  if (expr[i+1]=='+' || expr[i+1]=='-') ++i;
+	  ae=ad=false;
+	  continue;
+	}
+	return true;
+      }
+    return false;
+  }
+
   template <class _Type>
   class TermDelete_Vector:
     public std::vector<_Type*> {
@@ -170,9 +192,46 @@ namespace ATOOLS {
 
   };// end of class DV4Term
 
+  struct STerm: public Term {
+  private:
+
+    std::string m_this;
+    friend class Term;
+
+    static TermDelete_Vector<STerm> s_terms;
+
+    inline STerm(const std::string &val): 
+      Term('S'), m_this(val) {}
+
+  public:
+
+    static STerm *New(const std::string &val)
+    {
+      s_terms.MtxLock();
+      if (s_terms.empty()) {
+	s_terms.MtxUnLock();
+	return new STerm(val);
+      }
+      STerm *term(s_terms.back());
+      s_terms.pop_back();
+      s_terms.MtxUnLock();
+      term->m_this=val;
+      return term;
+    }
+
+    void Delete()
+    {
+      s_terms.MtxLock();
+      s_terms.push_back(this);
+      s_terms.MtxUnLock();
+    }
+
+  };// end of class STerm
+
   TermDelete_Vector<DTerm> DTerm::s_terms;
   TermDelete_Vector<CTerm> CTerm::s_terms;
   TermDelete_Vector<DV4Term> DV4Term::s_terms;
+  TermDelete_Vector<STerm> STerm::s_terms;
 
   template <> const double  &Term::Get() const
   { return static_cast<const DTerm *>(this)->m_this; }
@@ -180,12 +239,15 @@ namespace ATOOLS {
   { return static_cast<const CTerm *>(this)->m_this; }
   template <> const Vec4D &Term::Get() const
   { return static_cast<const DV4Term *>(this)->m_this; }
+  template <> const std::string &Term::Get() const
+  { return static_cast<const STerm *>(this)->m_this; }
 
   Term::~Term() {}
 
   void Term::Print(std::ostream &ostr) const
   {
-    if (m_type=='V') ostr<<Get<Vec4D>();
+    if (m_type=='S') ostr<<Get<std::string>();
+    else if (m_type=='V') ostr<<Get<Vec4D>();
     else if (m_type=='C') ostr<<Get<Complex>();
     else ostr<<Get<double>();
   }
@@ -202,11 +264,16 @@ namespace ATOOLS {
   { static_cast<CTerm *>(this)->m_this=val; }
   template <> void Term::Set(const Vec4D &val)
   { static_cast<DV4Term *>(this)->m_this=val; }
+  template <> void Term::Set(const std::string &val)
+  { static_cast<STerm *>(this)->m_this=val; }
 
-  template <> void Term::Set(const std::string &tag) 
+  void Term::SetTerm(const std::string &tag) 
   { 
     if (tag[0]!='(') {
-      static_cast<DTerm*>(this)->m_this=ToType<double>(tag); 
+      if (tag[0]=='"' && tag[tag.length()-1]=='"')
+	static_cast<STerm*>(this)->m_this=tag.substr(1,tag.length()-2);
+      else if (IsAlpha(tag)) static_cast<STerm*>(this)->m_this=(tag);
+      else static_cast<DTerm*>(this)->m_this=ToType<double>(tag); 
     }
     else {
       size_t pos(tag.find(','));
@@ -220,10 +287,14 @@ namespace ATOOLS {
   template <> Term *Term::New(const double &val)  { return DTerm::New(val); }
   template <> Term *Term::New(const Complex &val) { return CTerm::New(val); }
   template <> Term *Term::New(const Vec4D &val) { return DV4Term::New(val); }
+  template <> Term *Term::New(const std::string &val) { return STerm::New(val); }
 
-  Term *Term::New(const std::string &tag) 
+  Term *Term::NewTerm(const std::string &tag) 
   { 
     if (tag[0]!='(') {
+      if (tag[0]=='"' && tag[tag.length()-1]=='"')
+	return new STerm(tag.substr(1,tag.length()-2)); 
+      if (IsAlpha(tag)) return new STerm(tag); 
       return new DTerm(ToType<double>(tag)); 
     }
     else {
@@ -237,6 +308,7 @@ namespace ATOOLS {
 
   Term *Term::operator-() const
   {
+    if (m_type=='S') THROW(fatal_error,"Invalid syntax");
     if (m_type=='V') return new DV4Term(-Get<Vec4D>());
     if (m_type=='C') return new CTerm(-Get<Complex>());
     return new DTerm(-Get<double>());
@@ -253,10 +325,10 @@ namespace ATOOLS {
   Term *TVec4D(const Term &t0,const Term &t1,
 	       const Term &t2,const Term &t3)
   {
-    if (t0.Type()=='V' || t0.Type()=='C' ||
-	t1.Type()=='V' || t1.Type()=='C' ||
-	t2.Type()=='V' || t2.Type()=='C' ||
-	t3.Type()=='V' || t3.Type()=='C')
+    if (t0.Type()=='V' || t0.Type()=='C' || t0.Type()=='S' ||
+	t1.Type()=='V' || t1.Type()=='C' || t1.Type()=='S' ||
+	t2.Type()=='V' || t2.Type()=='C' || t2.Type()=='S' ||
+	t3.Type()=='V' || t3.Type()=='C' || t3.Type()=='S')
       THROW(fatal_error,"Invalid syntax");
     return DV4Term::New(Vec4D(t0.Get<double>(),t1.Get<double>(),
 			      t2.Get<double>(),t3.Get<double>()));
@@ -265,6 +337,8 @@ namespace ATOOLS {
 #define DEFINE_BINARY_STERM_OPERATOR(OP)\
   Term *Term::operator OP(const Term &ref) const\
   {\
+    if (m_type=='S' || ref.m_type=='S')\
+      THROW(fatal_error,"Invalid syntax");\
     if (m_type=='V') {\
       if (ref.m_type=='V')\
 	return DV4Term::New(Get<Vec4D>() OP ref.Get<Vec4D>());\
@@ -289,6 +363,8 @@ namespace ATOOLS {
 
   Term *Term::operator*(const Term &ref) const
   {
+    if (m_type=='S' || ref.m_type=='S')
+      THROW(fatal_error,"Invalid syntax");
     if (m_type=='V') {
       if (ref.m_type=='V')
 	return DTerm::New(Get<Vec4D>()*ref.Get<Vec4D>());
@@ -314,6 +390,8 @@ namespace ATOOLS {
  
   Term *Term::operator/(const Term &ref) const
   {
+    if (m_type=='S' || ref.m_type=='S')
+      THROW(fatal_error,"Invalid syntax");
     if (m_type=='V') {
       if (ref.m_type=='D')
 	return DV4Term::New(1.0/ref.Get<double>()*Get<Vec4D>());
@@ -336,6 +414,11 @@ namespace ATOOLS {
 #define DEFINE_BINARY_BTERM_OPERATOR(OP)\
   Term *Term::operator OP(const Term &ref) const\
   {\
+    if (m_type=='S' || ref.m_type=='S') {\
+      if (m_type!='S' || ref.m_type!='S')\
+	THROW(fatal_error,"Invalid syntax");\
+      return DTerm::New(Get<std::string>() OP ref.Get<std::string>());\
+    }\
     if (m_type=='V' || ref.m_type=='V')\
       THROW(fatal_error,"Invalid syntax");\
     if (m_type=='C') {\
@@ -366,7 +449,8 @@ namespace ATOOLS {
 #define DEFINE_BINARY_ITERM_OPERATOR(OP)\
   Term *Term::operator OP(const Term &ref) const\
   {\
-    if (m_type=='V' || ref.m_type=='V')\
+    if (m_type=='S' || ref.m_type=='S' ||\
+	m_type=='V' || ref.m_type=='V')\
       THROW(fatal_error,"Invalid syntax");\
     if (m_type=='C') {\
       if (ref.m_type=='C') \
@@ -394,7 +478,8 @@ namespace ATOOLS {
 #define DEFINE_UNARY_DTERM_FUNCTION(NAME,FUNC)\
   Term *NAME(const Term &t)\
   {\
-    if (t.Type()=='V') THROW(fatal_error,"Invalid syntax");\
+    if (t.Type()=='S' || t.Type()=='V')\
+      THROW(fatal_error,"Invalid syntax");\
     if (t.Type()=='C') return NULL;\
     return DTerm::New(FUNC(t.Get<double>()));\
   }
@@ -407,7 +492,8 @@ namespace ATOOLS {
 #define DEFINE_UNARY_TERM_FUNCTION(NAME,FUNC)\
   Term *NAME(const Term &t)\
   {\
-    if (t.Type()=='V') THROW(fatal_error,"Invalid syntax");\
+    if (t.Type()=='S' || t.Type()=='V')\
+      THROW(fatal_error,"Invalid syntax");\
     if (t.Type()=='C')\
       return CTerm::New(FUNC(t.Get<Complex>()));\
     return DTerm::New(FUNC(t.Get<double>()));\
@@ -437,7 +523,8 @@ namespace ATOOLS {
 #define DEFINE_BINARY_TERM_FUNCTION(NAME,FUNC)\
   Term *NAME(const Term &t1,const Term &t2)\
   {\
-    if (t1.Type()=='V' || t2.Type()=='V')\
+    if (t1.Type()=='S' || t2.Type()=='S' ||\
+	t1.Type()=='V' || t2.Type()=='V')\
       THROW(fatal_error,"Invalid syntax");\
     if (t1.Type()=='C') {\
       if (t2.Type()=='C')\
@@ -453,21 +540,21 @@ namespace ATOOLS {
 
   Term *Term::Real() const
   {
-    if (m_type=='V' || m_type=='D')
+    if (m_type=='S' || m_type=='V' || m_type=='D')
       THROW(fatal_error,"Invalid syntax");
     return DTerm::New(Get<Complex>().real());
   }
 
   Term *Term::Imag() const
   {
-    if (m_type=='V' || m_type=='D')
+    if (m_type=='S' || m_type=='V' || m_type=='D')
       THROW(fatal_error,"Invalid syntax");
     return DTerm::New(Get<Complex>().imag());
   }
 
   Term *Term::Conj() const
   {
-    if (m_type=='V' || m_type=='D')
+    if (m_type=='S' || m_type=='V' || m_type=='D')
       THROW(fatal_error,"Invalid syntax");
     return new CTerm(std::conj(Get<Complex>()));
   }

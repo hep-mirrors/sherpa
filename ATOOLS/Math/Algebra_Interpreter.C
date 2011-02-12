@@ -57,9 +57,10 @@ Single_Term::Single_Term(const std::string &tag,Tag_Replacer *const replacer):
   std::string stag(value);
   p_replacer->ReplaceTags(value);
   if (stag!=value) m_replace=true;
-  p_value = Term::New(value);
+  p_value = Term::NewTerm(value);
   p_value->SetTag(stag);
   if (m_replace) p_replacer->AssignId(p_value);
+  m_tag=std::string(1,p_value->Type())+"{"+m_tag+"}";
 }
 
 Single_Term::~Single_Term()
@@ -344,12 +345,6 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Number)
 {
   if (expr.find("{")!=std::string::npos ||
       expr.find("(")!=std::string::npos) return expr;
-  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
-	 oit=p_interpreter->Operators().rbegin();
-       oit!=p_interpreter->Operators().rend();++oit) {
-    if (!oit->second->Binary()) continue;
-    if (oit->second->FindTag(expr,true)!=std::string::npos) return expr;
-  }
   std::string value(expr);
   if (value.find(',')!=std::string::npos) value="("+value+")";
   Function *func = new Single_Term(value,p_interpreter->TagReplacer());
@@ -459,7 +454,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 {
-  if (expr.find("(")!=std::string::npos) return expr;
+  if (expr.find("(")!=std::string::npos ||
+      expr.find(",")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
@@ -517,7 +513,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 {
-  if (expr.find("(")!=std::string::npos) return expr;
+  if (expr.find("(")!=std::string::npos ||
+      expr.find(",")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
@@ -570,9 +567,9 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
 {
   m_interpreters[0] = new Interprete_Function(this);
   m_interpreters[1] = new Interprete_Bracket(this);
-  m_interpreters[2] = new Interprete_Number(this);
-  m_interpreters[3] = new Interprete_Unary(this);
-  m_interpreters[4] = new Interprete_Binary(this);
+  m_interpreters[2] = new Interprete_Unary(this);
+  m_interpreters[3] = new Interprete_Binary(this);
+  m_interpreters[4] = new Interprete_Number(this);
   if (!standard) return;
   m_tags["M_PI"]=ToString(M_PI);
   m_tags["M_E"]=ToString(exp(1.0));
@@ -798,7 +795,7 @@ std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
 Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
 {
   std::string cexpr(expr->Tag());
-  expr->Set(ReplaceTags(cexpr));
+  expr->SetTerm(ReplaceTags(cexpr));
   return expr;
 }
 
