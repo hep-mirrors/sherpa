@@ -236,8 +236,7 @@ size_t Unary_Minus::FindTag(const std::string &expr,
        oit!=p_interpreter->Operators().rend();++oit) {
     if (oit->second->Tag().length()<=pos &&
 	expr.rfind(oit->second->Tag(),pos-1)==
-	pos-oit->second->Tag().length() &&
-	oit->second->Tag()!="-") return pos;
+	pos-oit->second->Tag().length()) return pos;
   }
   return FindTag(expr,fwd,fwd?pos+1:pos-1);
 }
