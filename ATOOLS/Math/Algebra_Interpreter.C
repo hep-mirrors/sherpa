@@ -77,6 +77,8 @@ Term *Single_Term::Evaluate(const std::vector<Term*> &args) const
 
 Operator::~Operator() {}
 
+inline bool IsNum(const char c) { return c>=48 && c<=57; }
+
 size_t Operator::FindTag(const std::string &expr,
 			 const bool fwd,size_t cpos) const
 {
@@ -98,10 +100,10 @@ size_t Binary_Plus::FindTag(const std::string &expr,
   size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindTag(expr,fwd,1);
-  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
-       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
-      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{' ||
-      expr[pos-1]=='*' || expr[pos-1]=='/') 
+  if ((expr[pos-1]=='e' || expr[pos-1]=='E') && 
+      (pos+1<expr.length() && IsNum(expr[pos+1])) &&
+      ((pos>1 && IsNum(expr[pos-2])) || 
+       (pos>2 && expr[pos-2]=='.' && IsNum(expr[pos-3])))) 
     return FindTag(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
@@ -120,10 +122,10 @@ size_t Binary_Minus::FindTag(const std::string &expr,
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindTag(expr,fwd,1);
-  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
-       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
-      expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{' ||
-      expr[pos-1]=='*' || expr[pos-1]=='/') 
+  if ((expr[pos-1]=='e' || expr[pos-1]=='E') && 
+      (pos+1<expr.length() && IsNum(expr[pos+1])) &&
+      ((pos>1 && IsNum(expr[pos-2])) ||
+       (pos>2 && expr[pos-2]=='.' && IsNum(expr[pos-3]))))
     return FindTag(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
@@ -229,12 +231,15 @@ size_t Unary_Minus::FindTag(const std::string &expr,
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || pos==0) return pos;
-  if ((expr[pos-1]>=48 && expr[pos-1]<=57) ||
-      ((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
-       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
-      expr[pos-1]==',' || expr[pos-1]=='{' || expr[pos-1]=='}') 
-    return FindTag(expr,fwd,fwd?pos+1:pos-1);
-  return pos;  
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
+	 oit=p_interpreter->Operators().rbegin();
+       oit!=p_interpreter->Operators().rend();++oit) {
+    if (oit->second->Tag().length()<=pos &&
+	expr.rfind(oit->second->Tag(),pos-1)==
+	pos-oit->second->Tag().length() &&
+	oit->second->Tag()!="-") return pos;
+  }
+  return FindTag(expr,fwd,fwd?pos+1:pos-1);
 }
 
 #define DEFINE_BINARY_TERM_FUNCTION(NAME,TAG,OP)\
