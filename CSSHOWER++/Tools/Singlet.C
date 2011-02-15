@@ -108,8 +108,8 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
 				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
 				  ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
- 	  msg_Debugging()<<"Q_{"<<ID((*iit)->Id())<<ID((*jit)->Id())
-			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
+ 	  msg_Debugging()<<"Q_{"<<(*iit)->Id()<<(*jit)->Id()
+			 <<","<<(*kit)->Id()<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<(*kit)->KtVeto()) return false;
 	}
 	else {
@@ -804,19 +804,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   return false;
 } 
 
-double Singlet::ConstructLN(const Parton *pl,const Parton *pn,
-			    Vec4D &l,Vec4D &n) const
-{
-  Vec4D pij=pl->Momentum(), pk=pn->Momentum();
-  double sij=p_ms->Mass2(pl->GetFlavour());
-  double Q2=(pij+pk).Abs2(), mk2=p_ms->Mass2(pn->GetFlavour());
-  double gam=pij*pk+Sign(Q2-sij-mk2)*sqrt(sqr(pij*pk)-sij*mk2);
-  double a13=sij/gam, a2=mk2/gam, bet=1.0/(1.0-a13*a2);
-  l=bet*(pij-a13*pk);
-  n=bet*(pk-a2*pij);
-  return gam;
-}
-
 void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			 const Flavour &mo,const int mode)
 {
@@ -833,25 +820,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  if (*plit==l) continue;
 	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-      {
-	Vec4D pa(l->Momentum()), pb(s->Momentum()), pi(r->Momentum()), pl, pn;
-	ConstructLN(l,s,pl,pn);
-	double xiab(1.0-(pa+pb)*pi/(pa*pb)), vi((pa*pi)/(pa*pb));
-	Poincare oldcms(pl+pn), newcms(pl*(1.0+vi/xiab)+pn/(1.0+vi/xiab));
-	oldcms.Boost(pa);
-	newcms.BoostBack(pa);
- 	l->SetMomentum(pa);
-	for (All_Singlets::const_iterator asit(p_all->begin());
-	     asit!=p_all->end();++asit) {
-	  for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
- 	    if (*plit==l) continue;
-	    Vec4D p((*plit)->Momentum());
-	    oldcms.Boost(p);
-	    newcms.BoostBack(p);
-	    (*plit)->SetMomentum(p);
-	  }
 	}
       }
     }
@@ -931,28 +899,6 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (p_all==NULL) return;
   if (mode&2) {
     if (mode&1) {
-      {
-	Vec4D pa(l->Momentum()), pb(s->Momentum()), pi(r->Momentum()), pl, pn;
-	ConstructLN(l,s,pl,pn);
-	double xiab(1.0-(pa+pb)*pi/(pa*pb)), vi((pa*pi)/(pa*pb));
-	Poincare oldcms(pl/(1.0+vi/xiab)+pn*(1.0+vi/xiab)), newcms(pl+pn);
-	newcms.Boost(pi);
-	oldcms.BoostBack(pi);
-	r->SetMomentum(pi);
-	newcms.Boost(pa);
-	oldcms.BoostBack(pa);
-	l->SetMomentum(pa);
-	for (All_Singlets::const_iterator asit(p_all->begin());
-	     asit!=p_all->end();++asit) {
-	  for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	    if (*plit==r || *plit==l) continue;
-	    Vec4D p((*plit)->Momentum());
-	    newcms.Boost(p);
-	    oldcms.BoostBack(p);
-	    (*plit)->SetMomentum(p);
-	  }
-	}
-      }
       Vec4D pa(-l->Momentum()), pb(-s->Momentum());
       Vec4D pi(r->Momentum()), pai(pa+pi);
       double sai(pai.Abs2()), mb2(p_ms->Mass2(s->GetFlavour()));

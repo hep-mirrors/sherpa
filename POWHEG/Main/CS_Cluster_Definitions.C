@@ -155,10 +155,16 @@ void CS_Cluster_Definitions::KernelWeight
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
+  Parton *pb(NULL);
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
-  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
+  else if (cs.m_mode==3) {
+    eta=GetX(i,cdip)*(cs.m_z+cs.m_y);
+    pb = new Parton(p_b->Flav().Bar(),-cs.m_pbt,pst::IS);
+    pb->SetXbj(GetX(p_b,NULL)*cs.m_z/(cs.m_z+cs.m_y));
+    cdip->SetSpec(pb);
+  }
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk) || 
       (m_amode==1 && !cdip->On()))
@@ -167,6 +173,7 @@ void CS_Cluster_Definitions::KernelWeight
   msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
+  if (pb) delete pb;
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2_FF
@@ -327,18 +334,43 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
   Vec4D Q(a->Mom()+i->Mom()+b->Mom());
   double Q2=Q.Abs2();
 
-  double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
-  double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
-    (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab));
-  double gam   = papb+sqrt(papb*papb-ma2*mb2);
-  Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
-	     *(-a->Mom()+ma2/gam*b->Mom())-mai2/(xiiab*gam)*b->Mom());
-  if (xiab<0.0) {
+  if (p_shower->KinScheme()==1) {
+    double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
+    double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
+      (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab));
+    double gam   = papb+sqrt(papb*papb-ma2*mb2);
+    Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
+	       *(-a->Mom()+ma2/gam*b->Mom())-mai2/(xiiab*gam)*b->Mom());
+    if (xiab<0.0) {
+      CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
+      cs.m_wk=cs.m_ws=-1.0;
+      return cs;
+    }
+    CS_Parameters cs(kt2,xiab,vi,Phi(pait,-b->Mom(),i->Mom(),true),xiab,Q2,3,1);
+    KernelWeight(a,i,b,mo,cs);
+    return cs;
+  }
+
+  double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mb2);
+  Vec4D pbt=sqrt(lrat)*(b->Mom()-(Q*b->Mom()/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q;
+  if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 ||
+      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2)) {
     CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
   }
-  CS_Parameters cs(kt2,xiab,vi,Phi(pait,-b->Mom(),i->Mom(),true),xiab,Q2,3,1);
+  Vec4D pait=-Q+pbt, pb=-b->Mom(), pi=i->Mom();
+  ZAlign lt(pait,pb,mai2,mb2);
+  pait=lt.PaNew();
+  lt.Align(pi);
+
+  CS_Parameters cs(kt2,xiab,vi,Phi(pait,pb,pi,true),xiab,Q2,3);
+  if (pait[3]*pb[3]>0.0) {
+    cs.m_wk=cs.m_ws=-1.0;
+    return cs;
+  }
+  cs.m_pbt=pbt;
+  lt.Align(cs.m_pbt);
   KernelWeight(a,i,b,mo,cs);
   return cs;
 }
@@ -537,7 +569,9 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
 
   double mb2  = sqr(p_ms->Mass(ampl.Leg(b)->Flav()));
   double mai2 = sqr(p_ms->Mass(mo));
+  double sai  = pai.Abs2(), Q2 = Q.Abs2();
 
+  if (kin==1) {
   double papb = pa*pb, pipa = pi*pa, pipb = pi*pb;
   double xiab = (papb+pipa+pipb)/papb;
   if (xiab<0.0) return Vec4D_Vector();
@@ -572,6 +606,30 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
       cmso.Boost(after[l]);
       zrot.Rotate(after[l]);
       cmsn.BoostBack(after[l]);
+    }
+    ++l;
+  }
+  return after;
+  }
+
+  ZAlign lt(-pai,-pb,sai,mb2);
+  pai=-lt.PaNew();
+  Q=pai+pb;
+  if (pai[3]*pb[3]>0.0) return Vec4D_Vector();
+
+  double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
+  Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
+  double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
+  if (lrat<0.0 || pbt[0]>0.0 || 
+      IsZero(sqr(pbt[0])/Q2) || xiab<0.0) return Vec4D_Vector();
+
+  for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
+    if (m==(size_t)i) continue;
+    if (m==(size_t)a) after[l]=pait;
+    else if (m==(size_t)1-a) after[l]=pbt;
+    else {
+      after[l]=ampl.Leg(m)->Mom();
+      lt.Align(after[l]);
     }
     ++l;
   }

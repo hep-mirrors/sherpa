@@ -14,7 +14,6 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PDF/Main/Shower_Base.H"
-#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
@@ -515,8 +514,90 @@ double METS_Scale_Setter::CalculateMyScale
 
 double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 {
-  ampl->SetProcs(p_proc);
-  double kt2cmin(p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl));
+  m_p.resize(ampl->Legs().size());
+  Vec4D psum;
+  int res(0), qcd(0), csum[4]={0,0,0,0};
+  size_t cid[4]={ampl->Leg(0)->Id(),ampl->Leg(1)->Id(),
+		 ampl->Leg(2)->Id(),ampl->Leg(3)->Id()};
+  ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
+		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
+  for (size_t i(0);i<m_p.size();++i) {
+    Cluster_Leg *li(ampl->Leg(i));
+    psum+=m_p[i]=li->Mom();
+    ++csum[c[i].m_i];
+    --csum[c[i].m_j];
+    if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
+    if (ampl->Leg(i)->Flav().Strong() ||
+	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
+  }
+  if (!IsEqual(psum,Vec4D(),1.0e-3)) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved.\n"
+	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
+  }
+  if (csum[1]!=0 || csum[2]!=0 || csum[3]!=0) {
+    msg_Error()<<METHOD<<"(): Colour not conserved. "<<*ampl<<std::endl;
+    abort();
+  }
+  bool pureres(false);
+  Single_Process *proc(p_proc->Get<Single_Process>());
+  if ((res&7)==7 || (res&11)==11 ||
+      (res&13)==13 || (res&14)==14) {
+    for (size_t j(1);j<4;++j) {
+      if (proc->Combinable(cid[0],cid[j])) {
+	const Flavour_Vector &cf(proc->CombinedFlavour(cid[0]+cid[j]));
+	for (size_t i(0);i<cf.size();++i)
+	  if (cf[i].Resummed() || cf[i].Strong()) {
+	    pureres=true;
+	    break;
+	  }
+      }
+      if (pureres) break;
+    }
+  }
+  double kt2cmin(sqr(rpa.gen.Ecms()));
+  if (pureres) {
+    kt2cmin=dabs(3.0/(2.0/(m_p[0]*m_p[1])+
+		      2.0/(m_p[0]*m_p[2])+
+		      2.0/(m_p[0]*m_p[3])));
+  }
+  else {
+    // s-channel
+    if (proc->Combinable(cid[0],cid[1])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[1].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[1].m_i) ||
+	  (c[2].m_i>0 && c[2].m_i==c[3].m_j) ||
+	  (c[2].m_j>0 && c[2].m_j==c[3].m_i)) {
+	kt2cmin=Min(kt2cmin,
+		    Min(2.0*(m_p[0]*m_p[1]),
+			2.0*(m_p[2]*m_p[3])));
+      }
+    }
+    // t-channel
+    if (proc->Combinable(cid[0],cid[2])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[2].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[2].m_i) ||
+	  (c[1].m_i>0 && c[1].m_i==c[3].m_j) ||
+	  (c[1].m_j>0 && c[1].m_j==c[3].m_i)) {
+	kt2cmin=Min(kt2cmin,
+		    Min(2.0*dabs(m_p[0]*m_p[2]),
+			2.0*dabs(m_p[1]*m_p[3])));
+      }
+    }
+    // u-channel
+    if (proc->Combinable(cid[0],cid[3])) {
+      if (p_ci==NULL || qcd==0 ||
+	  (c[0].m_i>0 && c[0].m_i==c[3].m_j) ||
+	  (c[0].m_j>0 && c[0].m_j==c[3].m_i) ||
+	  (c[1].m_i>0 && c[1].m_i==c[2].m_j) ||
+	  (c[1].m_j>0 && c[1].m_j==c[2].m_i)) {
+	kt2cmin=Min(kt2cmin,
+		    Min(2.0*dabs(m_p[0]*m_p[3]),
+			2.0*dabs(m_p[1]*m_p[2])));
+      }
+    }
+  }
   ampl->SetKT2(kt2cmin);
   ampl->SetMu2(kt2cmin);
   msg_Debugging()<<"Core = "<<*ampl<<" -> "<<sqrt(kt2cmin)<<"\n";
@@ -639,7 +720,7 @@ void METS_Scale_Setter::KT2
   	double kt2=(Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)
   	  -(1.0-zi)*(1.0-zi)*mi2-zi*zi*mj2;
  	cs.SetParams(kt2,zi,yijk,pijt,pkt);
-	cs.m_mu2*=p_proc->Shower()->CplFac
+	if (p_proc->Shower()) cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav(),0,cs.m_oqcd?1:2,kt2);
       }
       else {
@@ -649,7 +730,7 @@ void METS_Scale_Setter::KT2
   	double kt2=-2.0*(pipa+pjpa)*(1.0-xija)*zi*(1.0-zi)
   	  -sqr(1.0-zi)*mi2-zi*zi*mj2;
  	cs.SetParams(kt2,zi,1.0-xija,pijt,pkt);
-	cs.m_mu2*=p_proc->Shower()->CplFac
+	if (p_proc->Shower()) cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav().Bar(),2,cs.m_oqcd?1:2,kt2);
       }
     }
@@ -662,7 +743,7 @@ void METS_Scale_Setter::KT2
  	double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa), uj=pjpa/(pjpa+pkpa);
   	double kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj-mj2-sqr(1.0-xjka)*ma2;
  	cs.SetParams(kt2,xjka,uj,pijt,pkt);
-	cs.m_mu2*=p_proc->Shower()->CplFac
+	if (p_proc->Shower()) cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav(),1,cs.m_oqcd?1:2,kt2);
       }
       else {
@@ -671,7 +752,7 @@ void METS_Scale_Setter::KT2
  	double xjab=(papb+pjpa+pjpb)/papb, vj=-pjpa/papb;
   	double kt2=2.0*papb*vj*(1.0-xjab)-mj2-sqr(1.0-xjab)*ma2;
  	cs.SetParams(kt2,xjab,vj,pijt,pkt);
-	cs.m_mu2*=p_proc->Shower()->CplFac
+	if (p_proc->Shower()) cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav().Bar(),3,cs.m_oqcd?1:2,kt2);
       }
     }

@@ -424,6 +424,7 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (p_all==NULL) return;
   if (mode&2) {
     if (mode&1) {
+      if (f->Kin()==1) {
       Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
       double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
       double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
@@ -448,6 +449,21 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  cmsn.BoostBack(p);
 	  (*plit)->SetMomentum(p);
 	}
+      }
+      }
+      else {
+      Vec4D pa(l->Momentum()), pb(s->Momentum());
+      double ma2(p_ms->Mass2(l->GetFlavour()));
+      double mb2(p_ms->Mass2(s->GetFlavour()));
+      ZAlign lt(pa,pb,ma2,mb2);
+      l->SetMomentum(lt.PaNew());
+      for (All_Singlets::const_iterator asit(p_all->begin());
+	   asit!=p_all->end();++asit) {
+	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+	  if (*plit==l) continue;
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
+	}
+      }
       }
     }
     else {
@@ -526,6 +542,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (p_all==NULL) return;
   if (mode&2) {
     if (mode&1) {
+      if (f->Kin()==1) {
       Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
       double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
       double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
@@ -551,6 +568,19 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	}
       }
       r->SetMomentum(pr);
+      }
+      else {
+      Vec4D pa(-l->Momentum()), pb(-s->Momentum());
+      Vec4D pi(r->Momentum()), pai(pa+pi);
+      double sai(pai.Abs2()), mb2(p_ms->Mass2(s->GetFlavour()));
+      ZAlign lt(-pai,-pb,sai,mb2);
+      for (All_Singlets::const_iterator asit(p_all->begin());
+	   asit!=p_all->end();++asit) {
+	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
+	}
+      }
+      }
     }
     else {
       Parton *b(NULL);

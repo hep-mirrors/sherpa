@@ -130,13 +130,13 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
 {
   size_t sintt(7);
   if (GetME()) sintt=GetME()->SIntType();
-  if ((idi==1 && idj==2) || (idi==4 && idj==8)) {
+  if (idi==1 && idj==2) {
     return sintt&1;
   }
-  else if ((idi==1 && idj==4) || (idi==2 && idj==8)) {
+  else if (idi==1 && idj==4) {
     return sintt&2;
   }
-  else if ((idi==1 && idj==8) || (idi==2 && idj==4)) {
+  else if (idi==1 && idj==8) {
     return sintt&4;
   }
   else {
@@ -144,10 +144,3 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-const Flavour_Vector &Single_Process::
-CombinedFlavour(const size_t &idij)
-{
-  if (GetME()) return GetME()->CombinedFlavour(idij);
-  static Flavour_Vector fls(1,kf_none);
-  return fls;
-}

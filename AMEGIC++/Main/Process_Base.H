@@ -12,7 +12,7 @@ namespace AMEGIC {
 
   class Amplitude_Handler;
 
-  class Process_Base : public PHASIC::Single_Process, public Amegic_Base {
+  class Process_Base : public Amegic_Base, public PHASIC::Single_Process {
   protected:
 
     MODEL::Model_Base    *p_model;
@@ -61,6 +61,12 @@ namespace AMEGIC {
     virtual double Result();
     virtual void SetPrintGraphs(bool print_graphs=true);
     virtual std::string LibName();
+
+    virtual int ISRNumber();
+    virtual int BeamNumber();
+
+    virtual void ISRInfo(int,int &,double &,double &);
+    virtual void BeamInfo(int,int &,double &,double &);
 
     virtual void FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.) = 0;
     virtual int                             NumberOfDiagrams() = 0;

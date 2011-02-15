@@ -476,8 +476,8 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
     p_ampl->SetKin(win.Kin());
   }
-  p_ampl->SetProcs(p_proc);
-  double scale(p_clus->CoreScale(p_ampl));
+  double scale;
+  p_ct->IdentifyHardPropagator(scale);
   p_ampl->SetKT2(scale);
   p_ampl->SetMu2(scale);
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
@@ -576,19 +576,12 @@ void Cluster_Algorithm::SetColours
     }
   }
   else if (lij->Flav().Strong()) {
-    if (li->Flav().StrongCharge()==8 &&
-	lj->Flav().StrongCharge()==8) {
+    if (li->Flav().StrongCharge()==8) {
       size_t nc(Flow::Counter());
       colj.m_i=coli.m_j=nc;
       colj.m_j=colij.m_j;
       coli.m_i=colij.m_i;
       if (ran.Get()>0.5) std::swap<ColorID>(coli,colj);
-    }
-    else if (li->Flav().StrongCharge()==8) {
-      coli=colij;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      colj=colij;
     }
     else {
       coli.m_i=colij.m_i;

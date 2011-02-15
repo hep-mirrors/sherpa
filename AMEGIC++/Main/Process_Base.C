@@ -40,6 +40,24 @@ std::string AMEGIC::Process_Base::LibName()
   return "error"; 
 }
 
+int AMEGIC::Process_Base::ISRNumber()  
+{ 
+  return 0; 
+}
+
+int AMEGIC::Process_Base::BeamNumber() 
+{
+  return 0; 
+}
+
+void AMEGIC::Process_Base::ISRInfo(int,int &,double &,double &)   
+{ 
+}
+
+void AMEGIC::Process_Base::BeamInfo(int,int &,double &,double &)  
+{ 
+}
+
 void AMEGIC::Process_Base::SetPrintGraphs(bool print_graphs) 
 {
  m_print_graphs=print_graphs; 

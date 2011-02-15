@@ -710,7 +710,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     int hitQED = 0;
     int hitQCD = 0;
     hitQCD = f1->GetPointlist()->FindQCDOrder(hitQCD);
-    hitQED = f1->GetPointlist()->FindQEDOrder(hitQED);
+    hitQED = N -2 - hitQCD;  // N = nin + nout
     if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
     if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
     if ((nEW<99  && hitQED!=nEW) || (nQCD<99 && hitQCD!=nQCD)) {
@@ -744,7 +744,7 @@ bool Amplitude_Generator::CheckOrders(Point * p)
   int hitQED = 0;
   int hitQCD = 0;
   hitQCD = p->FindQCDOrder(hitQCD);
-  hitQED = p->FindQEDOrder(hitQED);
+  hitQED = N -2 - hitQCD;  // N = nin + nout
   if (nEW<99  && hitQED!=nEW)  return 0; 
   if (nQCD<99 && hitQCD!=nQCD) return 0; 
   return 1;

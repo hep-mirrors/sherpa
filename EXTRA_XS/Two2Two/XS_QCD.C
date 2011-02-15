@@ -7,8 +7,6 @@
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
-#define PropID(i,j) ((1<<i)|(1<<j))
-
 using namespace EXTRAXS;
 using namespace MODEL;
 using namespace ATOOLS;
@@ -56,10 +54,7 @@ XS_pp_q1qbar1::XS_pp_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl):
   m_m2=sqr(m_flavs[2].Mass());
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_oew=2; m_oqcd=0;
-  m_cfls[PropID(0,2)].push_back(fl[2]);
-  m_cfls[PropID(1,2)].push_back(fl[2]);
-  m_cfls[PropID(0,3)].push_back(fl[3]);
-  m_cfls[PropID(1,3)].push_back(fl[3]);
+  //m_nstrong=2;
 }
 
 double XS_pp_q1qbar1::operator()(const Vec4D_Vector& mom) 
@@ -129,14 +124,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const Process_Info& pi, const Flavour_Vector& fl):
   m_m12=sqr(m_flavs[0].Mass());
   m_m22=sqr(m_flavs[1].Mass());
   m_oew=0; m_oqcd=2;
-  if (!m_r) {
-    m_cfls[PropID(0,2)].push_back(kf_gluon);
-    m_cfls[PropID(1,3)].push_back(kf_gluon);
-  }
-  else {
-    m_cfls[PropID(1,2)].push_back(kf_gluon);
-    m_cfls[PropID(0,3)].push_back(kf_gluon);
-  }
+  //m_nstrong=4;
 }
 
 double XS_q1q2_q1q2::operator()(const Vec4D_Vector& mom) 
@@ -227,8 +215,7 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const Process_Info& pi, const Flavour_Vec
   m_m12=sqr(m_flavs[0].Mass());
   m_m32=sqr(m_flavs[2].Mass());
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(kf_gluon);
-  m_cfls[PropID(2,3)].push_back(kf_gluon);
+  //m_nstrong=4;
 }
 
 double XS_q1qbar1_q2qbar2::operator()(const Vec4D_Vector& mom) 
@@ -300,10 +287,7 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(const Process_Info& pi, const Flavour_Vector& fl):
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,2)].push_back(kf_gluon);
-  m_cfls[PropID(0,3)].push_back(kf_gluon);
-  m_cfls[PropID(1,2)].push_back(kf_gluon);
-  m_cfls[PropID(1,3)].push_back(kf_gluon);
+  //m_nstrong=4;
 }
 
 double XS_q1q1_q1q1::operator()(const Vec4D_Vector& mom) 
@@ -399,16 +383,7 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const Process_Info& pi, const Flavour_Vec
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(kf_gluon);
-  m_cfls[PropID(2,3)].push_back(kf_gluon);
-  if (!m_r) {
-    m_cfls[PropID(0,2)].push_back(kf_gluon);
-    m_cfls[PropID(1,3)].push_back(kf_gluon);
-  }
-  else {
-    m_cfls[PropID(1,2)].push_back(kf_gluon);
-    m_cfls[PropID(0,3)].push_back(kf_gluon);
-  }
+  //m_nstrong=4;
 }
 
 double XS_q1qbar1_q1qbar1::operator()(const Vec4D_Vector& mom) 
@@ -505,12 +480,7 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(const Process_Info& pi, const Flavour_Vector& fl):
   m_m12=sqr(m_flavs[0].Mass());
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(kf_gluon);
-  m_cfls[PropID(2,3)].push_back(kf_gluon);
-  m_cfls[PropID(0,2)].push_back(fl[0].Bar());
-  m_cfls[PropID(0,3)].push_back(fl[0].Bar());
-  m_cfls[PropID(1,2)].push_back(fl[1].Bar());
-  m_cfls[PropID(1,3)].push_back(fl[1].Bar());
+  //m_nstrong=4;
 }
 
 double XS_q1qbar1_gg::operator()(const Vec4D_Vector& mom) 
@@ -611,12 +581,7 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl):
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_m32=sqr(m_flavs[2].Mass());
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(kf_gluon);
-  m_cfls[PropID(2,3)].push_back(kf_gluon);
-  m_cfls[PropID(0,2)].push_back(fl[2]);
-  m_cfls[PropID(1,2)].push_back(fl[2]);
-  m_cfls[PropID(0,3)].push_back(fl[3]);
-  m_cfls[PropID(1,3)].push_back(fl[3]);
+  //m_nstrong=4;
 }
 
 double XS_gg_q1qbar1::operator()(const Vec4D_Vector& mom) 
@@ -734,12 +699,7 @@ XS_q1g_q1g::XS_q1g_q1g(const Process_Info& pi, const Flavour_Vector& fl):
   m_mq2=sqr(m_flavs[m_iniq].Mass());
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(fl[m_iniq].Bar());
-  m_cfls[PropID(2,3)].push_back(fl[m_finq]);
-  m_cfls[PropID((1-m_iniq),m_finq)].push_back(fl[m_finq]);
-  m_cfls[PropID((5-m_finq),m_finq)].push_back(fl[m_finq]);
-  m_cfls[PropID(m_iniq,(5-m_finq))].push_back(fl[m_iniq].Bar());
-  m_cfls[PropID(m_iniq,(1-m_iniq))].push_back(fl[m_iniq].Bar());
+  //m_nstrong=4;
 }
 
 double XS_q1g_q1g::operator()(const Vec4D_Vector& mom) 
@@ -848,12 +808,7 @@ XS_gg_gg::XS_gg_gg(const Process_Info& pi, const Flavour_Vector& fl):
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
   m_oew=0; m_oqcd=2;
-  m_cfls[PropID(0,1)].push_back(kf_gluon);
-  m_cfls[PropID(0,2)].push_back(kf_gluon);
-  m_cfls[PropID(0,3)].push_back(kf_gluon);
-  m_cfls[PropID(1,2)].push_back(kf_gluon);
-  m_cfls[PropID(1,3)].push_back(kf_gluon);
-  m_cfls[PropID(2,3)].push_back(kf_gluon);
+  //m_nstrong=4;
 }
 
 double XS_gg_gg::operator()(const Vec4D_Vector& mom) 

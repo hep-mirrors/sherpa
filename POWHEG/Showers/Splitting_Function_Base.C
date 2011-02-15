@@ -310,8 +310,17 @@ double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 		       const double &scale,const Cluster_Amplitude *const sub) const
 { 
   if (sub) return 1.0/z;
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+  Parton *s(p_sf->Spec());
+  if (s->Kin()==1) {
+    double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+    double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+    return fresh/old;
+  }
+  double fresh = p_sf->GetXPDF(scale,eta/(z+y),m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+  fresh *= p_sf->GetXPDF(scale,s->Xbj()*(z+y)/z,s->GetFlavour(),1-m_beam);
+  old *= p_sf->GetXPDF(scale,s->Xbj(),s->GetFlavour(),1-m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
   return fresh/old;
 }

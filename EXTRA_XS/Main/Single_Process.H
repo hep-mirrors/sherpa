@@ -31,8 +31,6 @@ namespace EXTRAXS {
 
     bool Combinable(const size_t &idi, const size_t &idj);
 
-    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
-
     // inline functions
     inline ME2_Base *GetME() const { return p_born_me2; }
 

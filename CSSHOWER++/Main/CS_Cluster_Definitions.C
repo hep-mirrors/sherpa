@@ -1,7 +1,5 @@
 #include "CSSHOWER++/Main/CS_Cluster_Definitions.H"
 
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Process/Single_Process.H"
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
@@ -145,14 +143,23 @@ void CS_Cluster_Definitions::KernelWeight
   cs.p_sf=cdip;
   cs.m_mu2=Max(cs.m_kt2,p_shower->GetSudakov()->PT2Min());
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
+  cs.m_idi=i->Id();
+  cs.m_idj=j->Id();
+  cs.m_idk=k->Id();
   if (!(m_mode&1)) return;
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
+  Parton *pb(NULL);
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
-  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
+  else if (cs.m_mode==3) {
+    eta=GetX(i,cdip)*(cs.m_z+cs.m_y);
+    pb = new Parton(p_b->Flav().Bar(),-cs.m_pbt,pst::IS);
+    pb->SetXbj(GetX(p_b,NULL)*cs.m_z/(cs.m_z+cs.m_y));
+    cdip->SetSpec(pb);
+  }
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
@@ -165,6 +172,7 @@ void CS_Cluster_Definitions::KernelWeight
   msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
+  if (pb) delete pb;
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2_FF
@@ -282,6 +290,7 @@ CS_Parameters CS_Cluster_Definitions::KT2_IF
       lt=ZAlign(pkt-Q,-p_b->Mom(),mai2,p_ms->Mass2(p_b->Flav()));
       Vec4D pan(-lt.PaNew());
       if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) || lt.Status()<0) stat=0;
+      if (-pan[0]>rpa.gen.PBeam(ID(a->Id()).front())[0]) stat=0;
     }
     if (stat==0 && ma2!=mai2) {
       CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1,1);
@@ -346,11 +355,8 @@ CS_Parameters CS_Cluster_Definitions::KT2_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(b->Mom()-(Q*b->Mom()/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q;
-  double ppbt(-pbt.PPlus()), pmbt(-pbt.PMinus());
   if (lrat<0.0 || pbt[0]>0.0 || xiab<0.0 || pai[3]*b->Mom()[3]>0.0 ||
-      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2) ||
-      (ppbt>pmbt && ppbt>rpa.gen.PBeam(0).PPlus()) ||
-      (pmbt>ppbt && pmbt>rpa.gen.PBeam(1).PMinus())) {
+      IsZero(sqr(pbt[0])/Q2) || IsZero(sqr(Q[0]-pbt[0])/Q2)) {
     CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
     cs.m_wk=cs.m_ws=-1.0;
     return cs;
@@ -558,19 +564,6 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   Vec4D pi = ampl.Leg(i)->Mom();
   Vec4D pb = ampl.Leg(b)->Mom();
   
-  double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
-  double vi   = -(pa*pi)/(pa*pb);
-
-  Vec4D pl, pn;
-  ConstructLN(ampl.Leg(a),ampl.Leg(b),pl,pn);
-  Poincare newcms(pl+pn), oldcms(pl/(1.0+vi/xiab)+pn*(1.0+vi/xiab));
-  newcms.Boost(pa);
-  oldcms.BoostBack(pa);
-  newcms.Boost(pi);
-  oldcms.BoostBack(pi);
-  newcms.Boost(pb);
-  oldcms.BoostBack(pb);
-
   Vec4D Q(pa+pi+pb), pai(pa+pi);
 
   double mb2  = sqr(p_ms->Mass(ampl.Leg(b)->Flav()));
@@ -583,11 +576,9 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
 
   double lrat=Lambda(Q2,mai2,mb2)/Lambda(Q2,sai,mb2);
   Vec4D pbt=sqrt(lrat)*(pb-(Q*pb/Q2)*Q)+(Q2+mb2-mai2)/(2.*Q2)*Q, pait=Q-pbt;
-  double ppbt(-pbt.PPlus()), pmbt(-pbt.PMinus());
+  double xiab = (pa*pb+pi*pa+pi*pb)/(pa*pb);
   if (lrat<0.0 || pbt[0]>0.0 || pai[3]*pb[3]>0.0 ||
-      IsZero(sqr(pbt[0])/Q2) || xiab<0.0 ||
-      (ppbt>pmbt && ppbt>rpa.gen.PBeam(0).PPlus()) ||
-      (pmbt>ppbt && pmbt>rpa.gen.PBeam(1).PMinus())) return Vec4D_Vector();
+      IsZero(sqr(pbt[0])/Q2) || xiab<0.0) return Vec4D_Vector();
 
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
@@ -595,190 +586,11 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
     else if (m==(size_t)1-a) after[l]=pbt;
     else {
       after[l]=ampl.Leg(m)->Mom();
-      newcms.Boost(after[l]);
-      oldcms.BoostBack(after[l]);
       lt.Align(after[l]);
     }
     ++l;
   }
   return after;
-}
-
-double CS_Cluster_Definitions::ConstructLN
-(const Cluster_Leg *pl,const Cluster_Leg *pn,Vec4D &l,Vec4D &n) const
-{
-  Vec4D pij=pl->Mom(), pk=pn->Mom();
-  double sij=p_ms->Mass2(pl->Flav());
-  double Q2=(pij+pk).Abs2(), mk2=p_ms->Mass2(pn->Flav());
-  double gam=pij*pk+Sign(Q2-sij-mk2)*sqrt(sqr(pij*pk)-sij*mk2);
-  double a13=sij/gam, a2=mk2/gam, bet=1.0/(1.0-a13*a2);
-  l=bet*(pij-a13*pk);
-  n=bet*(pk-a2*pij);
-  return gam;
-}
-
-double CS_Cluster_Definitions::CoreScale
-(ATOOLS::Cluster_Amplitude *const ampl)
-{
-  if (ampl->Legs().size()!=4) THROW(fatal_error,"Invalid function call");
-  Vec4D psum;
-  Vec4D_Vector p(4);
-  int res(0), qcd(0);
-  ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
-		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
-  for (size_t i(0);i<4;++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    psum+=p[i]=li->Mom();
-    if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
-    if (ampl->Leg(i)->Flav().Strong() ||
-	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
-  }
-  if (!IsEqual(psum,Vec4D(),1.0e-3)) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved.\n"
-	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
-  }
-  PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
-  double kt2cmin((p[0]+p[1]).Abs2());
-  SP(PHASIC::Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
-  for (size_t i(0);i<4;++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    for (size_t j(i==0?2:i+1);j<4;++j) {
-      Cluster_Leg *lj(ampl->Leg(j));
-      if (!proc->Combinable(li->Id(),lj->Id())) continue;
-      const Flavour_Vector &cf(proc->CombinedFlavour(li->Id()+lj->Id()));
-      for (size_t k(0);k<4;++k) {
-	Cluster_Leg *lk(ampl->Leg(k));
-	if (k==i || k==j) continue;
-	for (size_t f(0);f<cf.size();++f) {
-	  if (!CheckColors(li,lj,lk,cf[f])) continue;
-	  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-	  if (i>1 && k<2) cmap=&p_shower->GetSudakov()->FIMap();
-	  else if (i<2 && k>1) cmap=&p_shower->GetSudakov()->IFMap();
-	  else if (i<2 && k<2) cmap=&p_shower->GetSudakov()->IIMap();
-	  SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(li->Flav())));
-	  if (eees==cmap->end()) continue;
-	  SF_EE_Map::const_iterator ees
-	    (eees->second.find(ProperFlav(lj->Flav())));
-	  if (ees==eees->second.end()) continue;
-	  SF_E_Map::const_iterator es(ees->second.find(ProperFlav(cf[f])));
-	  if (es==ees->second.end()) continue;
-	  Splitting_Function_Base *cdip(es->second);
-	  if (!cdip->Coupling()->AllowSpec
-	      (k<2?lk->Flav().Bar():lk->Flav())) continue;
-	  double kt2=2.0*dabs(p[i]*p[j]);
-	  if (cf[f]==li->Flav()) {
-	    double ef=dabs((p[j]*p[k])/(p[i]*p[k]));
-	    if (i>1 && cf[f]==lj->Flav()) kt2*=Min(ef,1.0/ef);
-	    else kt2*=ef;
-	  }
-	  else if (i>1 && cf[f]==lj->Flav()) {
-	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
-	  }
-	  double cf=cdip->Coupling()->CplFac(kt2);
-	  kt2cmin=Min(kt2cmin,kt2*cf);
-	}
-      }
-    }
-  }
-  return kt2cmin;
-}
-
-bool CS_Cluster_Definitions::CheckColors
-(const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
- const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
-{
-  if (mo.StrongCharge()==8) {
-    if (!lk->Flav().Strong()) return false;
-  }
-  else if (mo.Strong()) {
-    if (!(lk->Flav().StrongCharge()==8 ||
-	  lk->Flav().StrongCharge()==-mo.StrongCharge())) return false;
-  }
-  else {
-    if (lk->Flav().StrongCharge()==8) return false;
-    if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
-	lk->Col().m_i==-1) return true;
-    ColorID ci(li->Col()), cj(lj->Col());
-    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
-    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
-    return false;
-  }
-  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
-      lk->Col().m_i==-1) return true;
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
-	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
-	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lk->Flav().StrongCharge()==0) return false;
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
-	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
-	return true;
-      if (ci.m_j==cj.m_i && 
-	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
-	return true;
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.m_j==cj.m_i &&
-	  (ci.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((cj.m_i==ck.m_j || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.m_i==cj.m_j &&
-	  (ci.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((cj.m_j==ck.m_i || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==8 ||
-	lk->Flav().StrongCharge()==8) {
-      return false;
-    }
-    return true;
-  }
-  return false;
 }
 
 namespace CSSHOWER {

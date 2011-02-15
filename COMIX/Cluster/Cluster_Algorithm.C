@@ -137,6 +137,7 @@ CParam Cluster_Algorithm::GetMeasure
   int k(cid.find(idk)->second);
   if (p_ampl->Leg(i)->Id()!=idi || p_ampl->Leg(j)->Id()!=idj || 
       p_ampl->Leg(k)->Id()!=idk) THROW(fatal_error,"Internal error");
+  if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
   bool ismo(idi&((1<<p_xs->NIn())-1));
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl));
   if (ismo) mmofl=mmofl.Bar();
@@ -145,10 +146,19 @@ CParam Cluster_Algorithm::GetMeasure
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms);
   }
   else {
-    p_ampl->SetProcs(p_xs);
-    double ckt2(p_clus->CoreScale(p_ampl));
+    Cluster_Leg *li(p_ampl->Leg(i)), *lj(p_ampl->Leg(j));
+    double ckt2(2.0*dabs(li->Mom()*lj->Mom()));
+    if ((mmofl.Resummed() || mmofl.Strong()) &&
+	(li->Flav().Resummed() || li->Flav().Strong()) && 
+	(lj->Flav().Resummed() || lj->Flav().Strong()) && 
+	(p_ampl->Leg(k)->Flav().Resummed() || 
+	 p_ampl->Leg(k)->Flav().Strong()))
+      ckt2=dabs(3.0/(2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(1)->Mom())+
+		     2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(2)->Mom())+
+		     2.0/(p_ampl->Leg(0)->Mom()*p_ampl->Leg(3)->Mom())));
     kt2[idi][idj][idk][mofl]=CParam(ckt2,ckt2,0.0,ckt2,-1);
   }
+  if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
   msg_Debugging()<<"calc Q_{"<<ID(idi)<<p_ampl->Leg(i)->Flav()
 		 <<","<<ID(idj)<<""<<p_ampl->Leg(j)->Flav()
 		 <<"->"<<mmofl<<";"
@@ -396,9 +406,11 @@ bool Cluster_Algorithm::ClusterStep
   }
   Vec4D_Vector p;
   if (p_ampl->Legs().size()>4) {
+    if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
     p=p_clus->Combine(*p_ampl,cid[m_id[wkey.first]],
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
 		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin);
+    if (m_swap) SwapID(p_ampl->Leg(0),p_ampl->Leg(1));
     if (p.empty()) {
       msg_Debugging()<<"kinematics failed\n";
       return false;

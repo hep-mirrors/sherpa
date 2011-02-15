@@ -201,22 +201,30 @@ std::ostream & operator<<(std::ostream & s, const Point & p)
   return s;
 }
 
-int Point::FindQCDOrder(int & oqcd)
-{
-  if (!this || left==NULL) return oqcd;
-  int nt((abs(fl.StrongCharge())==3)+
-	 (abs(left->fl.StrongCharge())==3)+
-	 (abs(right->fl.StrongCharge())==3));
-  int no((fl.StrongCharge()==8)+
-	 (left->fl.StrongCharge()==8)+
-	 (right->fl.StrongCharge()==8));
-  if (middle) {
-    nt+=abs(fl.StrongCharge())==3;
-    no+=fl.StrongCharge()==8;
+int Point::FindQCDOrder(int & oqcd) {
+ if (!this) return oqcd;
+  int hit = 0;
+  
+  //Gluon propagators
+  if (number>99 && (fl.IsGluon() || fl.IsGluino())) {
+    oqcd += middle?3:2;
+    hit       = 1;
+    if (fl==ATOOLS::Flavour(kf_shgluon)) oqcd += 2;
   }
-  if (no==4 && nt==0) oqcd+=2;
-  else if (no==2 && nt==0) oqcd+=2;// ggh
-  else if (nt==2) oqcd+=no;
+  //External gluon 
+  if (number<99 && (fl.IsGluon() || fl.IsGluino())) {
+    oqcd += middle?2:1;
+    hit       = 1;
+  }
+
+   //triple and quartic Gluon/Gluino vertices and ADD-Gluon/Higgs-Gluon Vertices
+  if (hit) {
+    if (left   && (left->fl.IsGluon() || left->fl.IsGluino() || !left->fl.Strong()))     oqcd -= 1;
+    if (right  && (right->fl.IsGluon() || right->fl.IsGluino() || !right->fl.Strong()))  oqcd -= 1;
+    if (middle && (middle->fl.IsGluon() || middle->fl.IsGluino() || !middle->fl.Strong())) oqcd -= 1;
+  }
+  else if (!fl.Strong() && left   && (left->fl.IsGluon() || left->fl.IsGluino()))     oqcd -= 2;
+
   left->FindQCDOrder(oqcd);
   right->FindQCDOrder(oqcd);
   if (middle) middle->FindQCDOrder(oqcd);
