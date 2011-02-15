@@ -51,6 +51,7 @@ Read_Type Data_Reader::Convert(std::string cur) const
   cur=ReplaceTags(cur);
   Read_Type value;
   if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
+      typeid(value)==typeid(long) ||
       typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
     if (!AllowNans()) 
       if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF") cur="1";
