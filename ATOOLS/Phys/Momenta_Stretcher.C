@@ -31,7 +31,7 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     }
     else {
       msg_Error()<<"==================================================="<<std::endl
-		 <<"ERROR in "<<METHOD<<" :"<<std::endl
+		 <<"Warning in "<<METHOD<<" :"<<std::endl
 		 <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
 		 <<" > "<<energy<<"."<<std::endl;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
@@ -74,7 +74,7 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     delete [] oldens2;
     delete [] ens;
     msg_Error()<<"==================================================="<<std::endl
-	       <<"ERROR in "<<METHOD<<" :                             "<<std::endl
+	       <<"Warning in "<<METHOD<<" :                             "<<std::endl
 	       <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)
 	       <<" masses ("<<xmt<<"); return false"<<std::endl
 	       <<"   Masses & momenta:"<<std::endl;
@@ -113,7 +113,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     }
     else {
       msg_Error()<<"==================================================="<<std::endl
-		 <<"ERROR in "<<METHOD<<" :"<<std::endl
+		 <<"Warning in "<<METHOD<<" :"<<std::endl
 		 <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
 		 <<" > "<<energy<<"."<<std::endl;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
@@ -156,7 +156,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     delete [] oldens2;
     delete [] ens;
     msg_Error()<<"==================================================="<<std::endl
-	       <<"ERROR in "<<METHOD<<" : "<<endl
+	       <<"Warning in "<<METHOD<<" : "<<endl
 	       <<"   Not enough energy ("<<cms<<") for the "
 	       <<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
 	       <<"   Masses & momenta:"<<endl;
@@ -333,7 +333,7 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts,
   }
   if(!ZeroThem(0,moms)) return false;
   if(!MassThem(0,moms,masses)) {
-    msg_Error()<<"Error in "<<METHOD<<"(const Particle_Vector&, masses)."<<std::endl;
+    msg_Error()<<"Warning in "<<METHOD<<"(const Particle_Vector&, masses)."<<std::endl;
     return false;
   }
   for(size_t i=0; i<moms.size(); i++) {
