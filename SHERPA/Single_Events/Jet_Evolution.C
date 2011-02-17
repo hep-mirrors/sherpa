@@ -176,33 +176,22 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 
 void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
 {
-  Blob * myblob;
-  for (int i=0;i<2;i++) {
-    myblob = new Blob();
-    myblob->SetType(btp::Shower);
-    if (Sign(blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
-    else myblob->SetBeam(1-i);
-    myblob->SetStatus(blob_status::needs_beams);
-    Particle * p = new Particle(*blob->InParticle(i));
-    p->SetStatus(part_status::decayed);
-    myblob->AddToInParticles(p);
+  Blob * myblob = new Blob();
+  myblob->SetType(btp::Shower);
+  for (size_t i=0; i<blob->GetInParticles().size();++i) {
     myblob->AddToOutParticles(blob->InParticle(i));
+    myblob->AddToInParticles(new Particle(*blob->InParticle(i)));
     blob->InParticle(i)->SetStatus(part_status::decayed);
-    myblob->SetId();
-    bloblist->insert(bloblist->begin(),myblob);
   }
-  for (int i=0;i<blob->NOutP();i++) {
-    myblob = new Blob();
-    myblob->SetType(btp::Shower);
-    myblob->SetStatus(blob_status::needs_hadronization);
-    Particle * p = new Particle(*blob->OutParticle(i));
+  for (size_t i=0; i<blob->GetOutParticles().size();++i) {
     myblob->AddToInParticles(blob->OutParticle(i));
+    myblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
-    myblob->AddToOutParticles(p);
-    myblob->SetId();
-    bloblist->push_back(myblob);
   }
-  //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
+  myblob->SetStatus(blob_status::needs_beams|blob_status::needs_hadronization);
+  myblob->SetId();
+  myblob->SetTypeSpec("No_Shower");
+  bloblist->push_back(myblob);
   blob->SetStatus(blob_status::inactive);
 }
 

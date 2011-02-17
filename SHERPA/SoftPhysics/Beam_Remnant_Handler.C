@@ -87,6 +87,7 @@ Return_Value::code Beam_Remnant_Handler::
 FillBeamBlobs(Blob_List *const bloblist,
 	      Particle_List *const particlelist)
 { 
+  DEBUG_FUNC("");
   if (!m_fill) return Return_Value::Nothing;
   for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
@@ -97,23 +98,25 @@ FillBeamBlobs(Blob_List *const bloblist,
     p_beampart[i]->ClearErrors();
     InitBeamBlob(i);
   }
+  bool treatcolourless(false);
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Has(blob_status::needs_beams) && 
-	(*bit)->Type()==btp::Shower) {
+    if ((*bit)->Has(blob_status::needs_beams) &&
+        (*bit)->Type()==btp::Shower) {
       for (int i(0);i<(*bit)->NInP();++i) {
 	Particle *isr_init((*bit)->InParticle(i));
 	if (isr_init->ProductionBlob()!=NULL) continue;
 	int beam((*bit)->Beam());
 	if (beam<0) beam=isr_init->Momentum()[3]>0.0?0:1;
-	if (isr_init->Flav().Strong() && 
-	    isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
-	  delete p_beamblob[beam]; 
-	  p_beamblob[beam]=NULL; 
-	  continue;
-	}
-	else {
-	  (*bit)->AddStatus(blob_status::internal_flag);
+        if (isr_init->Flav().Strong() &&
+            isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0 &&
+            (*bit)->TypeSpec()!="No_Shower") {
+          delete p_beamblob[beam];
+          p_beamblob[beam]=NULL;
+          continue;
+        }
+        else {
+          (*bit)->AddStatus(blob_status::internal_flag);
 	  if (!p_beampart[beam]->Extract(isr_init)) {
 	    msg_Debugging()<<METHOD<<"(): Cannot extract "
 			   <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
@@ -124,9 +127,10 @@ FillBeamBlobs(Blob_List *const bloblist,
 	    if ((*bit)->IsConnectedTo(btp::Signal_Process))
 	      return Return_Value::New_Event;
 	    return Return_Value::Retry_Event;
-	  }
+          }
 	}
       }
+      if ((*bit)->TypeSpec()=="No_Shower") treatcolourless=true;
       (*bit)->UnsetStatus(blob_status::needs_beams);
     }
   }
@@ -140,25 +144,32 @@ FillBeamBlobs(Blob_List *const bloblist,
       return Return_Value::Retry_Event; 
     }
   }
-  if (p_beampart[0]->Type()==PDF::rtp::hadron || 
-      p_beampart[1]->Type()==PDF::rtp::hadron) {
+  if (!treatcolourless &&
+     (p_beampart[0]->Type()==PDF::rtp::hadron ||
+      p_beampart[1]->Type()==PDF::rtp::hadron)) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
     for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
   }
   
   for (short unsigned int i=0;i<2;++i) {
-    if (!p_beampart[i]->AdjustKinematics() || 
-	!p_beampart[i]->AdjustColors()) { 
-      return Return_Value::Retry_Event; 
+    if (treatcolourless) {
+      for (size_t j=0;j<p_beamblob[i]->GetOutParticles().size();++j) {
+        p_beamblob[i]->OutParticle(j)->SetFlow(1,0);
+        p_beamblob[i]->OutParticle(j)->SetFlow(2,0);
+      }
+    }
+    if (!p_beampart[i]->AdjustKinematics() ||
+        !(treatcolourless || p_beampart[i]->AdjustColors())) {
+      return Return_Value::Retry_Event;
     }
   }
   // set status for all partons entering the shower to decayed
   for (short unsigned int i=0;i<2;++i) {
     for (int j=0;j<p_beamblob[i]->NOutP();++j) {
       if (p_beamblob[i]->OutParticle(j)->DecayBlob()) {
-	if (p_beamblob[i]->OutParticle(j)->DecayBlob()->Type() == btp::Shower) {
-	  p_beamblob[i]->OutParticle(j)->SetStatus(part_status::decayed);
-	}
+        if (p_beamblob[i]->OutParticle(j)->DecayBlob()->Type() == btp::Shower) {
+          p_beamblob[i]->OutParticle(j)->SetStatus(part_status::decayed);
+        }
       }
     }
   }
