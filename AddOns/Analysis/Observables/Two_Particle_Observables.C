@@ -406,6 +406,33 @@ Primitive_Observable_Base * Two_Particle_Angle::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Phi,Two_Particle_Phi_Getter,"Phi2")
+
+Two_Particle_Phi::Two_Particle_Phi(const Flavour & flav1,const Flavour & flav2,
+                                   int type,double xmin,double xmax,int nbins,
+                                   const std::string & listname) :
+    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"Phi")
+{
+}
+
+
+void Two_Particle_Phi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
+{
+    p_histo->Insert((mom1+mom2).Phi(),weight,ncount);
+}
+
+void Two_Particle_Phi::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
+{
+    p_histo->InsertMCB((mom1+mom2).Phi(),weight,ncount);
+}
+
+Primitive_Observable_Base * Two_Particle_Phi::Copy() const
+{
+    return new Two_Particle_Phi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi")
 
 Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
