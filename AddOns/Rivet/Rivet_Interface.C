@@ -33,7 +33,7 @@ private:
   size_t m_nevt;
   double m_sum_of_weights;
   bool   m_finished;
-  bool   m_splitjetconts, m_splitcoreprocs;
+  bool   m_splitjetconts, m_splitcoreprocs, m_usehepmcshort;
   
   RivetMap m_rivet;
   HepMC2_Interface m_hepmc2;
@@ -82,6 +82,7 @@ public:
       
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
+      m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
       reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
@@ -202,24 +203,37 @@ public:
     Blob *sp(bl->FindFirst(btp::Signal_Process));
     double weight((*sp)["Weight"]->Get<double>());
     HepMC::GenEvent event;
-    m_hepmc2.Sherpa2HepMC(bl, event, weight);
+    if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event, weight);
+    else                  m_hepmc2.Sherpa2HepMC(bl, event, weight);
+    std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
     HepMC::GenCrossSection xs;
     xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
     event.set_cross_section(xs);
-#endif
-    
-    GetRivet("", 0)->analyze(event);
-    if (m_splitjetconts) {
-      GetRivet("", sp->NOutP())->analyze(event);
+    for (size_t i(0);i<subevents.size();++i) {
+      subevents[i]->set_cross_section(xs);
     }
-    if (m_splitcoreprocs) {
-      GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
+#endif
+
+    if (subevents.size()) {
+      for (size_t i(0);i<subevents.size();++i) {
+        GetRivet("", 0)->analyze(*subevents[i]);
+      }
+      m_hepmc2.DeleteGenSubEventList();
+    }
+    else {
+      GetRivet("", 0)->analyze(event);
       if (m_splitjetconts) {
-        GetRivet(GetCoreProc(sp->TypeSpec()), sp->NOutP())->analyze(event);
+        GetRivet("", sp->NOutP())->analyze(event);
+      }
+      if (m_splitcoreprocs) {
+        GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
+        if (m_splitjetconts) {
+          GetRivet(GetCoreProc(sp->TypeSpec()), sp->NOutP())->analyze(event);
+        }
       }
     }
-    
+
     ++m_nevt;
     m_sum_of_weights+=weight;
     return true;

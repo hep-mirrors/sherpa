@@ -116,7 +116,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
 #endif
   }
 
-  if (m_outmode=="HepMC") {
+  if (m_outmode=="HepMC" || m_outmode=="HepMC_Short") {
 #ifdef USING__HEPMC2
     if (p_hepmc2==NULL) p_hepmc2 = new HepMC2_Interface();
 #else
@@ -145,6 +145,14 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
           +string("with HepMC2, please read our Howto for more information."));
 #endif
   }
+  else if (m_outmode=="HepMC_Short") {
+#ifdef USING__HEPMC2
+    p_hepmc2->Sherpa2ShortHepMC(blobs);
+#else
+    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked "
+          +string("with HepMC2, please read our Howto for more information."));
+#endif
+  }
   if (!msg_LevelIsEvents()) return;
   if (m_outmode=="Sherpa" || m_outmode=="LHEF") {
     if (!blobs->empty()) {
@@ -155,9 +163,17 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
     }
     else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
   }
-  else if (m_outmode=="HepMC") {
+  else if (m_outmode=="HepMC" || m_outmode=="HepMC_Short") {
 #ifdef USING__HEPMC2
-    p_hepmc2->GenEvent()->print(msg->Out());
+    // if sub list present, print only those
+    if (p_hepmc2->GenSubEventList().size()>0) {
+      for (size_t i=0;i<p_hepmc2->GenSubEventList().size();++i) {
+        p_hepmc2->GenSubEvent(i)->print(msg->Out());
+      }
+    }
+    else {
+      p_hepmc2->GenEvent()->print(msg->Out());
+    }
 #else
     THROW(fatal_error, "HepMC format can only be created when Sherpa was linked"
           +string(" with HepMC2, please read our Howto for more information."));

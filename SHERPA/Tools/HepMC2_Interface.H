@@ -30,6 +30,7 @@ namespace SHERPA {
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
     HepMC::GenEvent *p_event;
+    std::vector<HepMC::GenEvent*> m_subeventlist;
 
   public :
 
@@ -49,10 +50,18 @@ namespace SHERPA {
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                            HepMC::GenEvent& event,
                            double weight=1.0);
+    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, double weight=1.0);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }
     inline void Ignore(ATOOLS::btp::code type) { m_ignoreblobs.insert(type); }
+
+    inline HepMC::GenEvent* GenSubEvent(size_t i)
+    { if (i<m_subeventlist.size()) return m_subeventlist[i]; return NULL; }
+    inline std::vector<HepMC::GenEvent*> GenSubEventList()
+    { return m_subeventlist; }
+
+    void DeleteGenSubEventList();
 
   };// end of class HepMC2_Interface
 

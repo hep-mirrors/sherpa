@@ -2,8 +2,10 @@
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -26,6 +28,7 @@ HepMC2_Interface::HepMC2_Interface():
 HepMC2_Interface::~HepMC2_Interface()
 {
   delete p_event;
+  DeleteGenSubEventList();
 }
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
@@ -44,6 +47,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     if (Sherpa2HepMC(*(blit),vertex)) {
       event.add_vertex(vertex);
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
+        if ((**blit)["NLO_subeventlist"]) {
+          THROW(fatal_error,"Events containing correlated subtraction events"
+                +std::string(" cannot be translated into the full HepMC event")
+                +std::string(" format.\n")
+                +std::string("   Try 'EVENT_MODE=HepMC_Short' instead."));
+        }
         event.set_signal_process_vertex(vertex);
         if((*blit)->NInP()==2) {
           kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
@@ -86,6 +95,12 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   event.set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
   HepMC::GenVertex * vertex=new HepMC::GenVertex();
   std::vector<HepMC::GenParticle*> beamparticles;
+  std::vector<std::pair<HepMC::FourVector,int> > beamparts,
+                                                 remnantparts1, remnantparts2;
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  Blob_Data_Base * bdb((*sp)["NLO_subeventlist"]);
+  NLO_subevtlist* subevtlist(NULL);
+  if (bdb) subevtlist=bdb->Get<NLO_subevtlist*>();
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     Blob* blob=*blit;
     for (int i=0;i<blob->NInP();i++) {
@@ -96,6 +111,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         HepMC::GenParticle* inpart = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
         vertex->add_particle_in(inpart);
         beamparticles.push_back(inpart);
+        beamparts.push_back(std::make_pair(momentum,parton->Flav().HepEvt()));
       }
     }
     for (int i=0;i<blob->NOutP();i++) {
@@ -103,7 +119,13 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         Particle* parton=blob->OutParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
-        vertex->add_particle_out(new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),1));
+        HepMC::GenParticle* outpart = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),1);
+        vertex->add_particle_out(outpart);
+        if (blob->Type()==btp::Beam) {
+          if      (mom[3]>0) remnantparts1.push_back(std::make_pair(momentum,parton->Flav().HepEvt()));
+          else if (mom[3]<0) remnantparts2.push_back(std::make_pair(momentum,parton->Flav().HepEvt()));
+          else THROW(fatal_error,"Ill defined beam remnants.");
+        }
       }
     }
 
@@ -131,6 +153,125 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
+
+  if (subevtlist) {
+    // build GenEvent for all subevts (where only the signal is available)
+    // use stored beam & remnant particles from above
+    // sub->m_flip==1 -> momenta need to be inverted for analyses
+    for (size_t i(0);i<subevtlist->size();++i) {
+      NLO_subevt * sub((*subevtlist)[i]);
+      if (sub->m_result==0.) continue;
+      HepMC::GenVertex * subvertex(new HepMC::GenVertex());
+      HepMC::GenEvent * subevent(new HepMC::GenEvent());
+      // assume that only 2->(n-2) processes
+      HepMC::GenParticle *beam[2];
+      for (size_t j(0);j<2;++j) {
+        beam[j] = new HepMC::GenParticle(beamparts[j].first,
+                                         beamparts[j].second,2);
+        subvertex->add_particle_in(beam[j]);
+      }
+      const ATOOLS::Vec4D *mom(sub->p_mom);
+      const ATOOLS::Flavour *fl(sub->p_fl);
+      for (size_t j(2);j<(*subevtlist)[i]->m_n;++j) {
+        HepMC::FourVector momentum;
+        if (sub->m_flip) momentum.set(-mom[j][1],-mom[j][2],-mom[j][3],mom[j][0]);
+        else             momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
+        ATOOLS::Flavour flc(fl[j]);
+        HepMC::GenParticle* outpart
+            = new HepMC::GenParticle(momentum,flc.HepEvt(),1);
+        subvertex->add_particle_out(outpart);
+      }
+      // scale beam remnants of real event for energy momentum conservation :
+      //   flavours might not add up properly for sub events,
+      //   but who cares. they go down the beam pipe.
+      // also assume they are all massless :
+      //   this will give momentum conservation violations
+      //   which are collider dependent only
+      //
+      //   for real event (as constructed in BRH) :
+      //
+      //     P = p + \sum r_i  with  P^2 = m^2  and  r_i^2 = p^2 = 0
+      //
+      //     further  P  = ( P^0 , 0 , 0 , P^z )
+      //              p  = (  p  , 0 , 0 ,  p  )
+      //             r_i = ( r_i , 0 , 0 , r_i )
+      //
+      //     => P^0 = p + \sum r_i
+      //        P^z = \sqrt{(P^0)^2 - m^2} <  p + \sum r_i
+      //
+      // in a mass-symmetric collider, the excess is the same for both beams
+      // ensuring momentum conservation
+      //
+      //   for sub event (constructed here):
+      //
+      //     P = p~ + \sum r_i~ = p~ + \sum u*r_i
+      //
+      //     where u = ( P^0 - p^0~ ) / \sum r_i^0
+      //
+      //     again, the r_i~ = u*r_i are constructed such that
+      //
+      //     => P^0 = p~ + \sum u*r_i
+      //        P^z = \sqrt{(P^0)^2 - m^2} <  p~ + \sum u*r_i =  p + \sum r_i
+      //
+      //     leading to the same momentum conservation violations per beam
+      //
+      double res1(0.),res2(0.);
+      for (size_t j(0);j<remnantparts1.size();++j) {
+        res1+=remnantparts1[j].first.e();
+      }
+      for (size_t j(0);j<remnantparts2.size();++j) {
+        res2+=remnantparts2[j].first.e();
+      }
+      ATOOLS::Vec4D hardparton[2];
+      for (size_t j(0);j<2;++j) {
+        if (sub->m_flip) hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D(-mom[j]));
+        else             hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D( mom[j]));
+      }
+      // incoming partons might need to be flipped due to particle sorting
+      bool flip(hardparton[0][3]<0);
+      double u1((beamparts[0].first.e()-mom[flip?1:0][0])/res1);
+      double u2((beamparts[1].first.e()-mom[flip?0:1][0])/res2);
+      // check for consistency: real event no remnant needs rescaling
+      //                        sub event exactly one remnant need rescaling
+      if (sub->IsReal() && (!IsEqual(u1,1.,1e-6) || !IsEqual(u2,1.,1e-6)))
+        msg_Error()<<METHOD<<"(): Error in creating real event.\n";
+      else if (!(IsEqual(u1,1.,1e-6) || IsEqual(u2,1.,1e-6)))
+        msg_Error()<<METHOD<<"(): Error in creating subtraction event.\n";
+      // filling
+      for (size_t j(0);j<remnantparts1.size();++j) {
+        HepMC::FourVector momentum(u1*remnantparts1[j].first.px(),
+                                   u1*remnantparts1[j].first.py(),
+                                   u1*remnantparts1[j].first.pz(),
+                                   u1*remnantparts1[j].first.e());
+        HepMC::GenParticle* outpart
+            = new HepMC::GenParticle(momentum,remnantparts1[j].second,1);
+        subvertex->add_particle_out(outpart);
+      }
+      for (size_t j(0);j<remnantparts2.size();++j) {
+        HepMC::FourVector momentum(u2*remnantparts2[j].first.px(),
+                                   u2*remnantparts2[j].first.py(),
+                                   u2*remnantparts2[j].first.pz(),
+                                   u2*remnantparts2[j].first.e());
+        HepMC::GenParticle* outpart
+            = new HepMC::GenParticle(momentum,remnantparts2[j].second,1);
+        subvertex->add_particle_out(outpart);
+      }
+      subevent->add_vertex(subvertex);
+      if (beamparticles.size()==2) {
+        subevent->set_beam_particles(beam[0],beam[1]);
+      }
+      // not enough info in subevents to set PDFInfo properly,
+      // so leave it blank
+      HepMC::PdfInfo subpdfinfo;
+      subevent->set_pdf_info(subpdfinfo);
+      // add weight
+      std::vector<double> subweight; subweight.push_back(sub->m_result);
+      subevent->weights()=subweight;
+      // set the event number (could be used to identify correlated events)
+      subevent->set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+      m_subeventlist.push_back(subevent);
+    }
+  }
   return true;
 }
 
@@ -144,8 +285,26 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     return true;
   }
   if (p_event!=NULL) delete p_event;
+  for (size_t i=0; i<m_subeventlist.size();++i)
+    delete m_subeventlist[i];
+  m_subeventlist.clear();
   p_event = new HepMC::GenEvent();
   return Sherpa2HepMC(blobs, *p_event, weight);
+}
+
+bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+                                         double weight)
+{
+  if (blobs->empty()) {
+    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
+               <<"   Empty list - nothing to translate into HepMC."<<std::endl
+               <<"   Continue run ... ."<<std::endl;
+    return true;
+  }
+  if (p_event!=NULL) delete p_event;
+  DeleteGenSubEventList();
+  p_event = new HepMC::GenEvent();
+  return Sherpa2ShortHepMC(blobs, *p_event, weight);
 }
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)
@@ -227,3 +386,9 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
   return true;
 }
 
+void HepMC2_Interface::DeleteGenSubEventList()
+{
+  for (size_t i=0; i<m_subeventlist.size();++i)
+    delete m_subeventlist[i];
+  m_subeventlist.clear();
+}
