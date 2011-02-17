@@ -263,7 +263,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     if (partnerlist->size()==0) return 0.;
     for (size_t i=0;i<partnerlist->size();++i) {
       NLO_subevt* cpevt=new NLO_subevt((*partnerlist)[i]);
-      if (m_pinfo.m_nlomode==2) ReMapFlavs(cpevt);
+      ReMapFlavs(cpevt);
       m_subevtlist.push_back(cpevt);
     }
     for (size_t i=0;i<m_subevtlist.size()-1;++i)
