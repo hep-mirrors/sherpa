@@ -7,6 +7,8 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+#define STRICT__Beam_Check
+
 double Kin_Args::s_uxeps=1.0e-4;
 
 double PHASIC::ComputePhi
@@ -219,6 +221,12 @@ Kin_Args PHASIC::ClusterIFDipole
     res.m_pk=res.m_lam*res.m_pk;
     if (mode&1) res.m_phi=ComputePhi(res.m_pi,res.m_pk,res.m_lam*pj,1);
   }
+#ifdef STRICT__Beam_Check
+  if (res.m_pi[3]*pb[3]>0.0) {
+    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    return -1;
+  }
+#endif
   return res;
 }
 
@@ -340,7 +348,11 @@ Kin_Args PHASIC::ClusterIIDipole
   res.m_pi=po/pn*(pa-2.0*ma2/(sab-ma2-mb2+pn)*pb)+
     2.0*maj2/(Q2-maj2-mb2+po)*pb;
   res.m_pk=pb;
-  if (res.m_pi[0]<0.0 || IsEqual(Q2+po,maj2+mb2)) {
+  if (res.m_pi[0]<0.0 ||
+#ifdef STRICT__Beam_Check
+      res.m_pi[3]*res.m_pk[3]>0.0 ||
+#endif
+      IsEqual(Q2+po,maj2+mb2)) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
