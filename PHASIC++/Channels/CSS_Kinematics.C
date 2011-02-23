@@ -206,15 +206,14 @@ Kin_Args PHASIC::ClusterIFDipole
     if (mode&1) res.m_phi=ComputePhi(pj+pk,pa,pj,2);
   }
   else {
-    double yt(uj/xjka), saj(yt*(Q2-mk2)+(1.0-yt)*(ma2+mj2));
+    double saj((pa-pj).Abs2());
     double po(sqr(Q2-maj2-mk2)-4.0*maj2*mk2);
-    double ecm(-(Q2-saj-mk2)), pn(sqr(ecm)-4.0*saj*mk2);
+    double pn(sqr(Q2-saj-mk2)-4.0*saj*mk2);
     if (pn<0.0 || po<0.0) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
-    res.m_pk=sqrt(po/pn)*(pk+(Q2+mk2-saj)/(2.0*Q2)*Q)
-      -(Q2+mk2-maj2)/(2.0*Q2)*Q;
+    res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)-(Q2+mk2-maj2)/(2.0*Q2)*Q;
     res.m_pi=Q+res.m_pk;
     res.m_lam=ZAlign(res.m_pi,pb,maj2,mb2);
     res.m_pi=res.m_lam*res.m_pi;
