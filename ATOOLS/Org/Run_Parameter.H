@@ -73,7 +73,8 @@ namespace ATOOLS {
       inline static const std::vector<std::string> &Citations() { return s_cites; }
       static void AddCitation(const size_t &level,const std::string &cite);
       void WriteCitationInfo();
-      void PrintSVNVersion();
+      void PrintSVNVersion(std::ostream &str,const int mode=0,
+			   const std::string &prefix="");
 
       inline double Accu()                                { return m_accu; }
       

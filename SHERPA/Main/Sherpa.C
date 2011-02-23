@@ -39,6 +39,7 @@ Sherpa::Sherpa() :
 
 Sherpa::~Sherpa() 
 {
+  rpa.gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
   exh->RemoveTerminatorObject(this);
@@ -256,7 +257,7 @@ void Sherpa::DrawLogo()
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  rpa.gen.PrintSVNVersion();
+  rpa.gen.PrintSVNVersion(msg->Info());
   rpa.gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
 }

@@ -110,6 +110,7 @@ void Exception_Handler::PrepareTerminate()
 
 void Exception_Handler::Exit(int exitcode)
 {
+  rpa.gen.WriteCitationInfo();
   if (m_print) msg_Error()<<om::bold<<"Exception_Handler::Exit: "
 			  <<om::reset<<om::blue<<"Exiting "
 			  <<m_progname<<" with code "
