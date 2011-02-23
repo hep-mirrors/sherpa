@@ -340,7 +340,7 @@ Kin_Args PHASIC::ClusterIIDipole
   res.m_pi=po/pn*(pa-2.0*ma2/(sab-ma2-mb2+pn)*pb)+
     2.0*maj2/(Q2-maj2-mb2+po)*pb;
   res.m_pk=pb;
-  if (res.m_pi[0]<0.0) {
+  if (res.m_pi[0]<0.0 || IsEqual(Q2+po,maj2+mb2)) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
