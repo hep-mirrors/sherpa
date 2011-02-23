@@ -24,6 +24,8 @@ namespace ATOOLS {
     void  Align(Vec4D &p) const;
     Vec4D Align(const Vec4D &p) const;
 
+    operator Poincare_Sequence() const;
+
     inline const Poincare &OldCMS() const { return m_cmso; }
     inline const Poincare &NewCMS() const { return m_cmsn; }
     inline const Poincare &Rotate() const { return m_zrot; }

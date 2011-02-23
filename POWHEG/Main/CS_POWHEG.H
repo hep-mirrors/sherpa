@@ -20,7 +20,7 @@ namespace POWHEG {
     PDF::ISR_Handler * p_isr;
     size_t m_maxem, m_nem;
     
-    Shower          * p_shower;
+    Shower          * p_powheg;
     All_Singlets m_allsinglets;
     CS_Cluster_Definitions *p_cluster;
     CS_Gamma *p_gamma;

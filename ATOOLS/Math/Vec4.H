@@ -141,6 +141,9 @@ namespace ATOOLS {
     inline Vec4<Scalar> Perp() const { 
       return Vec4<Scalar>(0.,m_x[1],m_x[2],0.);
     }
+    inline Vec4<Scalar> Long() const { 
+      return Vec4<Scalar>(m_x[0],0.,0.,m_x[3]);
+    }
     inline Vec4<Scalar> Plus() const {
       Scalar pplus=0.5*PPlus();
       return Vec4<Scalar>(pplus,0.0,0.0,pplus);

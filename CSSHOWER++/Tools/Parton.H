@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include <list>
 
@@ -33,6 +33,7 @@ namespace CSSHOWER {
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
     size_t          m_id;
+    ATOOLS::Poincare_Sequence m_lt;
 
     std::vector<std::pair<double,double> > m_weights;
 
@@ -47,6 +48,9 @@ namespace CSSHOWER {
     void    UpdateDaughters();
     void    UpdateNewDaughters();
     void    UpdateColours();
+
+    inline void SetLT(const ATOOLS::Poincare_Sequence &lt) { m_lt=lt; }
+    inline const ATOOLS::Poincare_Sequence &LT() const { return m_lt; }
 
     inline std::vector<std::pair<double,double> > &Weights() { return m_weights; }
 

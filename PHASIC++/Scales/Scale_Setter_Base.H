@@ -77,7 +77,6 @@ namespace PHASIC {
     virtual ATOOLS::Vec4D Momentum(const size_t &i) const;
 
     virtual double HT() const;
-    virtual double YCut() const;
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 

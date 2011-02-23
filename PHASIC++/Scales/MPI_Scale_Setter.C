@@ -5,8 +5,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PHASIC++/Selectors/Combined_Selector.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"

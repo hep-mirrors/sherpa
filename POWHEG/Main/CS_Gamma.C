@@ -4,7 +4,7 @@
 #include "POWHEG/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -170,8 +170,8 @@ int CS_Gamma::SingleWeight
 #endif
   meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl)*
     cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl);
-  meps.m_qij2=Jet_Finder::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
-			       li->Flav(),lj->Flav());
+  meps.m_qij2=PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+			li->Flav(),lj->Flav());
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight
     msg_Debugging()<<"zero matrix element\n";

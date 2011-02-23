@@ -8,6 +8,8 @@
 
 namespace ATOOLS { class Mass_Selector; }
 
+namespace PDF { class Shower_Base; }
+
 namespace PHASIC { class Jet_Finder; }
 
 namespace POWHEG {
@@ -20,6 +22,7 @@ namespace POWHEG {
 
   class Singlet : public Parton_List {
     PHASIC::Jet_Finder *p_jf;
+    PDF::Shower_Base *p_shower;
     All_Singlets *p_all;
     ATOOLS::Mass_Selector *p_ms;
     ATOOLS::RB_Map *p_rbmap;
@@ -40,6 +43,8 @@ namespace POWHEG {
     bool JetVeto(Sudakov *const sud) const;
       
     friend std::ostream& operator<<(std::ostream &,Singlet &);
+
+    inline void SetShower(PDF::Shower_Base *const s) { p_shower=s; }
 
     inline void SetJF(PHASIC::Jet_Finder *const jf) { p_jf=jf; }
     inline void SetAll(All_Singlets *const all) { p_all=all; }

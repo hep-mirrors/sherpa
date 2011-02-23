@@ -63,3 +63,13 @@ Vec4D ZAlign::Align(const Vec4D &p) const
   m_cmsn.BoostBack(cp);
   return cp;
 }
+
+ZAlign::operator Poincare_Sequence() const
+{
+  Poincare_Sequence lt;
+  lt.push_back(m_cmso);
+  lt.push_back(m_zrot);
+  lt.push_back(m_cmsn);
+  lt.back().Invert();
+  return lt;
+}

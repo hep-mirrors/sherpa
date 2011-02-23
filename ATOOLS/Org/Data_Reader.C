@@ -60,16 +60,6 @@ Read_Type Data_Reader::Convert(std::string cur) const
   return ATOOLS::ToType<Read_Type>(cur);
 }
 
-namespace ATOOLS {
-template <>
-std::string Data_Reader::Convert(std::string cur) const
-{
-  if (cur==nullstring) return Default<std::string>();
-  cur=ReplaceTags(cur);
-  return cur;
-}
-}
-
 template <class Read_Type>
 Read_Type Data_Reader::ReadValue(const std::string &parameter,
 				 const size_t &file)

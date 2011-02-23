@@ -8,7 +8,6 @@
 #include "AMEGIC++/Main/Process_Base.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"

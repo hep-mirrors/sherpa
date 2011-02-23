@@ -6,6 +6,7 @@ include ../../svn.make
 
 libPhasicChannels_la_SOURCES  =	\
 				SVN_Info.C \
+				CSS_Kinematics.C \
 				Channel_Basics.C \
 				Channel_Elements.C \
 				Channel_Elements_KK.C \
@@ -31,6 +32,7 @@ libPhasicChannels_la_SOURCES  =	\
                                 Extra_Emission_Generator.C
 
 localinc_HEADERS      =	\
+			CSS_Kinematics.H \
 			Channel_Basics.H \
 			Channel_Elements.H \
 			Channel_Elements_KK.H \

@@ -4,7 +4,6 @@
 #include "CSSHOWER++/Tools/Parton.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Math/Poincare.H"
 
 namespace ATOOLS { class Mass_Selector; }
 
@@ -29,8 +28,6 @@ namespace CSSHOWER {
 		      const int oldc[2],const int newc[2]);
     void SetColours(Parton *const pa,Parton *const p,
 		    const int oldc[2],const int newc[2]);
-    double ConstructLN(const Parton *pl,const Parton *pn,
-		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),

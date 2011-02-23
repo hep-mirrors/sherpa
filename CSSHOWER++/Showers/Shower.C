@@ -93,6 +93,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   msg_Indent();
   Parton *l(split->GetLeft()), *r(split->GetRight());
   Parton *c(split->GetSplit()->FollowUp()), *s(split->GetSpec());
+  int kin(l->Kin()), ckin(c->Kin());
   if (c->GetFlavour().Strong() &&
       l->GetFlavour().Strong() && r->GetFlavour().Strong()) {
     Parton *lr[2]={l,r};
@@ -109,6 +110,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 	      s->UpdateDaughters();
 	      s=*sit;
 	      msg_Debugging()<<"new spec for "<<cf<<" "<<*s<<"\n";
+	      ckin=m_kscheme;
 	      break;
 	    }
 	  break;
@@ -117,11 +119,10 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
     }
   }
   Flavour fli(l->GetFlavour());
-  int kin(l->Kin());
   s->SetMomentum(s->GetPrev()->Momentum());
   l->SetMomentum(c->Momentum());
   l->SetFlavour(c->GetFlavour());
-  l->SetKin(c->Kin());
+  l->SetKin(ckin);
   l->SetSpect(s);
   msg_Debugging()<<"before: c: "<<*l<<"        s: "<<*s<<"\n";
   msg_Debugging()<<"kt = "<<sqrt(l->KtTest())<<", z = "
@@ -132,48 +133,35 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
     if (s->GetPrev()->GetType()==pst::FS) {
       stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
-      l->SetKin(kin);
     }
     else {
       stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
-      l->SetKin(kin);
-      if (stat>0) {
+      if (stat>0) stat=RemnantTest(s);
+      if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),2);
-	stat=RemnantTest(s);
-	if (stat<=0) split->BoostBackAllFS
-	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),2);
-      }
     }
   }
   else {
     if (s->GetPrev()->GetType()==pst::FS) {
       stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
-      l->SetKin(kin);
-      if (stat>0) {
+      if (stat>0) stat=RemnantTest(l);
+      if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),1);
-	stat=RemnantTest(l);
-	if (stat<=0) split->BoostBackAllFS
-	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),1);
-      }
     }
     else {
       stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r,1);
       l->SetFlavour(fli);
-      l->SetKin(kin);
-      if (stat>0) {
+      if (stat>0) stat=RemnantTest(l);
+      if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),3);
-	stat=RemnantTest(l);
-	if (stat>0) stat=RemnantTest(s);
-	if (stat<=0) split->BoostBackAllFS
-	  (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),3);
-      }
     }
   }
+  l->SetKin(kin);
   msg_Debugging()<<"after: l: "<<*l<<"       r: "<<*r<<"       s: "<<*s<<"\n";
   if (stat<0) {
     if (s!=split->GetSpec()) s->GetPrev()->UpdateDaughters();
@@ -185,7 +173,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   int nres(ReconstructDaughters(l->GetSing(),mode,pi,pj));
   if (nres>0 && l->GetSing()!=r->GetSing())
     nres=ReconstructDaughters(r->GetSing(),mode,pi,pj);
-  split->BoostBackAllFS
+  if (stat>0) split->BoostBackAllFS
     (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),
      s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
      (c->GetType()==pst::IS?1:0));
@@ -219,12 +207,6 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->GetSing()->ArrangeColours(split,newpB,newpC);
   newpB->SetPrev(split);
   int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
-  if (rd==1) {
-    if (newpB->GetType()==pst::IS &&
-	RemnantTest(newpB)==-1) rd=-1;
-    if (split->GetSpect()->GetType()==pst::IS &&
-	RemnantTest(split->GetSpect())==-1) rd=-1;
-  }
   split->GetSing()->RemoveParton(newpC);
   if (rd<=0 || (mode&2)) {
     split->GetSing()->RearrangeColours(split,newpB,newpC);
@@ -293,6 +275,12 @@ int Shower::MakeKinematics
       stat=m_kinII.MakeKinematics(split,fla,flc,pj);
     }
   }
+  if (stat==1) {
+    if (split->GetType()==pst::IS &&
+	RemnantTest(split)==-1) stat=-1;
+    if (split->GetSpect()->GetType()==pst::IS &&
+	RemnantTest(split->GetSpect())==-1) stat=-1;
+  }
   if (stat==-1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
@@ -306,6 +294,7 @@ int Shower::MakeKinematics
   pi->SetId(split->Id());
   pi->SetKin(m_kscheme);
   pj->SetKin(m_kscheme);
+  pi->SetLT(split->LT());
   if (stype&1) pi->SetBeam(split->Beam());
   if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);

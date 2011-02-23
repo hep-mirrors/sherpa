@@ -8,8 +8,8 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Selectors/Combined_Selector.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -52,6 +52,7 @@ namespace PHASIC {
     ATOOLS::Flavour m_fl;
     double m_kt2, m_op2, m_mu2, m_z, m_y;
     ATOOLS::Vec4D m_pijt, m_pkt;
+    ATOOLS::Poincare_Sequence m_lam;
     CS_Params(const size_t &i,const size_t &j,
 	      const size_t &k,const ATOOLS::Flavour &fl):
       m_i(i),m_j(j), m_k(k), m_oqcd(0), m_fl(fl),
@@ -68,8 +69,10 @@ namespace PHASIC {
       return m_fl<ck.m_fl;
     }
     void SetParams(const double &kt2,const double &z,const double &y,
-		   const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt)
-    { m_mu2=m_kt2=kt2, m_z=z; m_y=y; m_pijt=pijt; m_pkt=pkt; }
+		   const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt,
+		   const ATOOLS::Poincare_Sequence &lam=
+		   ATOOLS::Poincare_Sequence())
+    { m_mu2=m_kt2=kt2, m_z=z; m_y=y; m_pijt=pijt; m_pkt=pkt; m_lam=lam; }
   };// end of struct CS_Params
 
   class METS_Scale_Setter: public Scale_Setter_Base {
@@ -366,8 +369,8 @@ double METS_Scale_Setter::CalculateMyScale
 		if (m_vmode&4) cs.m_mu2*=4.0;
 	      }
 	      if (m_rproc && ampl->Prev()==NULL) cs.m_op2=
-		1.0/Jet_Finder::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
-				     kf_gluon,kf_gluon);
+		1.0/PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+			      kf_gluon,kf_gluon);
 	      msg_Debugging()<<ID(cs.m_i)<<" & "<<ID(cs.m_j)<<" <-> "
 			     <<ID(cs.m_k)<<" ["<<cf[f]
 			     <<"]: "<<cs.m_op2<<" -> ";
@@ -532,6 +535,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     double as(1.0), oqcd(0.0), mum2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       m_scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
+      m_scale[idx]=Min(m_scale[idx],sqr(rpa.gen.Ecms()));
       mum2=Min(mum2,m_scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -621,34 +625,29 @@ void METS_Scale_Setter::KT2
  const Cluster_Leg *lk,CS_Params &cs) const
 {
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
-  Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom()), Q(pi+pj+pk);
-  double Q2=Q.Abs2(), mij2=sqr(cs.m_fl.Mass()), mk2=sqr(lk->Flav().Mass());
-  double lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(pi+pj).Abs2(),mk2);
-  Vec4D pkt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q), pijt(Q-pkt);
-  if (lrat<0.0 || Sign(pkt[0])!=Sign(pk[0]) || Sign(pijt[0])!=Sign(pi[0]) ||
-      IsZero(pkt[0],1.0e-6) || IsZero(pijt[0],1.0e-6)) return;
+  Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom());
+  double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
+  double mij2=sqr(cs.m_fl.Mass()), mk2=sqr(lk->Flav().Mass());
   if (li->Flav().Strong() && lj->Flav().Strong() &&
       cs.m_fl.Strong()) cs.m_oqcd=1;
-  cs.m_op2=1.0/Jet_Finder::Qij2(pi,pj,pk,li->Flav(),lj->Flav());
+  cs.m_op2=1.0/PDF::Qij2(pi,pj,pk,li->Flav(),lj->Flav());
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
- 	double pipj=pi*pj, pipk=pi*pk, pjpk=pj*pk, Q2=Q*Q;
-  	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
- 	double yijk=pipj/(pipj+pipk+pjpk), zi=pipk/(pipk+pjpk);
-  	double kt2=(Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)
-  	  -(1.0-zi)*(1.0-zi)*mi2-zi*zi*mj2;
- 	cs.SetParams(kt2,zi,yijk,pijt,pkt);
+	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
+	double kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
+	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
+	if (ffp.m_stat<0) kt2=-1.0;
+ 	cs.SetParams(kt2,ffp.m_z,ffp.m_y,ffp.m_pi,ffp.m_pk,ffp.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav(),0,cs.m_oqcd?1:2,kt2);
       }
       else {
- 	double pipj=pi*pj, pipa=pi*pk, pjpa=pj*pk;
-  	double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
- 	double xija=(pipa+pjpa+pipj)/(pipa+pjpa), zi=pipa/(pipa+pjpa);
-  	double kt2=-2.0*(pipa+pjpa)*(1.0-xija)*zi*(1.0-zi)
-  	  -sqr(1.0-zi)*mi2-zi*zi*mj2;
- 	cs.SetParams(kt2,zi,1.0-xija,pijt,pkt);
+	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
+	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
+	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
+	if (fip.m_stat<0) kt2=-1.0;
+ 	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav().Bar(),2,cs.m_oqcd?1:2,kt2);
       }
@@ -657,20 +656,18 @@ void METS_Scale_Setter::KT2
   else {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
- 	double pjpa=pj*pi, pkpa=pk*pi, pjpk=pj*pk;
-  	double ma2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
- 	double xjka=(pjpa+pkpa+pjpk)/(pjpa+pkpa), uj=pjpa/(pjpa+pkpa);
-  	double kt2=-2.*(pjpa+pkpa)*(1.-xjka)*uj-mj2-sqr(1.0-xjka)*ma2;
- 	cs.SetParams(kt2,xjka,uj,pijt,pkt);
+	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
+	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
+	if (ifp.m_stat<0) kt2=-1.0;
+ 	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav(),1,cs.m_oqcd?1:2,kt2);
       }
       else {
- 	double papb=pi*pk, pjpa=pj*pi, pjpb=pj*pk;
-  	double mj2=sqr(lj->Flav().Mass()), ma2=sqr(li->Flav().Mass());
- 	double xjab=(papb+pjpa+pjpb)/papb, vj=-pjpa/papb;
-  	double kt2=2.0*papb*vj*(1.0-xjab)-mj2-sqr(1.0-xjab)*ma2;
- 	cs.SetParams(kt2,xjab,vj,pijt,pkt);
+	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
+	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
+	if (iip.m_stat<0) kt2=-1.0;
+ 	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav().Bar(),3,cs.m_oqcd?1:2,kt2);
       }
@@ -685,40 +682,16 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
   Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
   li->SetCol(CombineColors(li,lj,lk,cs.m_fl));
   li->SetFlav(cs.m_fl);
-  bool ii(i<2 && k<2);
-  if (ii) li->SetMom(li->Mom()+lj->Mom());
-  else {
-    li->SetMom(cs.m_pijt);
-    lk->SetMom(cs.m_pkt);
-  }
-  if (i<2 || k<2) {
-    Cluster_Leg *la(ampl.Leg(i<2?i:k)), *lb(ampl.Leg(1-(i<2?i:k)));
-    ZAlign lt(-la->Mom(),-lb->Mom(),ii?li->Mom().Abs2():
-	      sqr(la->Flav().Mass()),sqr(lb->Flav().Mass()));
+  li->SetMom(cs.m_pijt);
+  lk->SetMom(cs.m_pkt);
+  if (i<2) {
     for (size_t m(0);m<ampl.Legs().size();++m) {
-      ampl.Leg(m)->SetMom(lt.Align(ampl.Leg(m)->Mom()));
+      if ((int)m==i || (int)m==j || (int)m==k) continue;
+      ampl.Leg(m)->SetMom(cs.m_lam*ampl.Leg(m)->Mom());
       ampl.Leg(m)->SetK(0);
     }
-    if (ii) {
-      li->SetMom(lt.Align(cs.m_pijt));
-      lk->SetMom(lt.Align(cs.m_pkt));
-    }
-    if (ii) {
-      Vec4D pa(li->Mom()), pb(lk->Mom());
-      double sij(sqr(li->Flav().Mass())), mk2(sqr(lk->Flav().Mass()));
-      double gam(pa*pb+Sign((pa+pb).Abs2()-sij-mk2)
-		 *sqrt(sqr(pa*pb)-sij*mk2)), cf(1.0+cs.m_y/cs.m_z);
-      double a13(sij/gam), a2(mk2/gam), bet(1.0/(1.0-a13*a2));
-      Vec4D pl(bet*(pa-a13*pb)), pn(bet*(pb-a2*pa));
-      Poincare oldcms(pa+pb), newcms(pa/cf+pb*cf);
-      for (size_t m(0);m<ampl.Legs().size();++m) {
-	Vec4D p(ampl.Leg(m)->Mom());
-	oldcms.Boost(p);
-	newcms.BoostBack(p);
-	ampl.Leg(m)->SetMom(p);
-      }
-    }
 #ifdef CHECK__x
+    Cluster_Leg *la(ampl.Leg(i<2?i:k)), *lb(ampl.Leg(1-(i<2?i:k)));
     if (!CheckX(la->Mom(),la->Id()&3)) return false;
     if (!CheckX(lb->Mom(),lb->Id()&3)) return false;
 #endif

@@ -24,7 +24,7 @@ namespace SHERPA {
     std::string                  m_path, m_file;
     bool                         m_fill;
     short unsigned int           m_beam;
-    int                          m_vmode;
+    int                          m_vmode, m_on;
 
     ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
 					      ATOOLS::Particle_List *const=NULL);

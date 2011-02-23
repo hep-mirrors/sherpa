@@ -10,7 +10,6 @@ namespace CSSHOWER {
   class Sudakov;
   class Kinematics_Base {
   public:
-    const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
     ATOOLS::Mass_Selector *p_ms;
   public:
     Kinematics_Base() {}
@@ -20,16 +19,6 @@ namespace CSSHOWER {
 			       const int mode=0) = 0;
     virtual double GetY(const double &Q2,const double &kt2,const double &z,
 			const double &s1,const double &s2,const double &s3) const = 0;
-    double GetS(const double &Q2,const double &y,
-		const double &mi2,const double &mj2,const double &mk2) const;
-    double GetZ(const double &Q2,const double &sij,const double &y,const double &zt,
-		const double &mi2,const double &mk2) const;
-    double GetKT2(const double &Q2,const double &y,const double &z,
-		  const double &mi2,const double &mj2,const double &mk2) const;
-    double ConstructLN(const double &Q2,const double &sij,
-		       const double &mij2,const double &mk2,
-		       const ATOOLS::Vec4D &Q,ATOOLS::Vec4D &pk,
-		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
   };
 

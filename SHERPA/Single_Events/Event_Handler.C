@@ -153,8 +153,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	msg_Debugging()<<METHOD<<"(): run '"<<(*pit)->Name()<<"'"<<std::endl;
 	switch ((*pit)->Treat(&m_blobs,weight)) {
 	case Return_Value::Nothing :
-          DEBUG_INFO("Nothing");
-	  msg_Debugging()<<m_blobs;
 	  ++pit;
 	  break;
 	case Return_Value::Success : 

@@ -8,7 +8,6 @@
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -28,17 +27,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   Selector_Base *jf=xs->Selector()
     ->GetSelector("Jetfinder");
   ME2_Base *me(xs->GetME());
-  bool swap(xs->Integrator()->InSwaped()), trig(true);
-  if (jf) {
-    Vec4D_Vector moms(xs->Integrator()->Momenta());
-    if (swap) {
-      std::swap<Vec4D>(moms[0],moms[1]);
-      for (size_t i(0);i<moms.size();++i)
-	moms[i]=Vec4D(moms[i][0],-moms[i]);
-    }
-    trig=jf->Trigger(moms);
-  }
-  msg_Debugging()<<METHOD<<"(): trig = "<<trig<<"\n";
+  bool swap(xs->Integrator()->InSwaped());
   if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
@@ -60,8 +49,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
     p_ampl->CreateLeg(mom,flav,col,id);
     p_ampl->Legs().back()->SetStat(1);
     p_ampl->Legs().back()->SetNMax
-      (trig?xs->Info().m_fi.NMaxExternal():
-       xs->Info().m_fi.NExternal());
+      (xs->Info().m_fi.NMaxExternal());
   }
   // set colour partners
   p_ampl->SetNIn(xs->NIn());

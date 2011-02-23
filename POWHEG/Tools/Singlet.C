@@ -1,7 +1,6 @@
 #include "POWHEG/Tools/Singlet.H"
 #include "POWHEG/Tools/Parton.H"
-#include "POWHEG/Showers/Sudakov.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -51,38 +50,23 @@ Singlet::~Singlet() {
 
 bool Singlet::JetVeto(Sudakov *const sud) const
 {
-  if (p_jf==NULL) return false;
-  DEBUG_FUNC("");
-  msg_Debugging()<<*(Singlet*)this<<"\n";
-  for (const_iterator iit(begin());iit!=end();++iit) {
-    bool ii((*iit)->GetType()==pst::IS);
-    Flavour fi((*iit)->GetFlavour());
-    for (const_iterator jit(iit);jit!=end();++jit) {
-      bool ji((*jit)->GetType()==pst::IS);
-      Flavour fj((*jit)->GetFlavour());
-      if (jit==iit || (ii&&ji)) continue;
-      for (const_iterator kit(begin());kit!=end();++kit) {
-	if (kit==iit || kit==jit) continue;
-	bool ki((*kit)->GetType()==pst::IS);
-	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
-	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
-	  double q2ijk(p_jf->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
-				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
-				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
-				  ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
- 	  msg_Debugging()<<"Q_{"<<(*iit)->Id()<<(*jit)->Id()
-			 <<","<<(*kit)->Id()<<"} = "<<sqrt(q2ijk)<<"\n";
-	  if (q2ijk<(*kit)->KtVeto()) return false;
-	}
-	else {
-	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "
-			 <<(*kit)->GetFlavour()<<" ("<<et<<")\n";
-	}
-      }
-    }
-  }
-  msg_Debugging()<<"--- Jet veto ---\n";
-  return true;
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New()); 
+  ampl->SetJF(p_jf);
+  size_t nin(0);
+  for (const_iterator iit(begin());iit!=end();++iit)
+    if ((*iit)->GetType()==pst::IS) ++nin;
+  ampl->SetNIn(nin);
+  for (const_iterator iit(begin());iit!=end();++iit)
+    if ((*iit)->GetType()==pst::IS)
+      ampl->CreateLeg(-(*iit)->Momentum(),
+		      (*iit)->GetFlavour().Bar(),ColorID());
+  for (const_iterator iit(begin());iit!=end();++iit)
+    if ((*iit)->GetType()==pst::FS)
+      ampl->CreateLeg((*iit)->Momentum(),
+		      (*iit)->GetFlavour(),ColorID());
+  bool veto(p_shower->JetVeto(ampl));
+  ampl->Delete();
+  return veto;
 }
 
 int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 

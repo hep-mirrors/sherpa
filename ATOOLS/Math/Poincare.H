@@ -30,12 +30,22 @@ namespace ATOOLS {
 
     void Invert();  
 
-    inline Vec4D operator*(const Vec4D& vin) {
+    inline Vec4D operator*(const Vec4D &vin) const
+    {
       Vec4D v(vin);
       if (m_status&1) Boost(v);
       if (m_status&2) Rotate(v);
       return v;
     }
+
+  };
+
+  class Poincare_Sequence: public std::vector<Poincare> {
+  public:
+
+    Vec4D operator*(const Vec4D &p) const;
+
+    void Invert();
 
   };
 

@@ -29,6 +29,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
+  if (!read.ReadFromFile(m_on,"BEAM_REMNANTS")) m_on=1;
   else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
   p_kperp = new Primordial_KPerp(path,file);
   for (size_t i=0;i<2;++i) {
@@ -47,6 +48,22 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler()
 Return_Value::code 
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
+  if (!m_on) {
+    bool set(false);
+    for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+      if ((*bit)->Has(blob_status::needs_beams)) {
+	(*bit)->UnsetStatus(blob_status::needs_beams);
+	(*bit)->UnsetStatus(blob_status::internal_flag);
+	set=true;
+      }
+    }
+    if (!set) return Return_Value::Nothing;
+    if (bloblist->FourMomentumConservation())
+      return Return_Value::Success;
+    if (m_vmode) abort();
+    return Return_Value::New_Event;
+  }
   Return_Value::code fbc(FillBeamBlobs(bloblist));
   if (fbc!=Return_Value::Success) return fbc;
   fbc=FillBunchBlobs(bloblist);

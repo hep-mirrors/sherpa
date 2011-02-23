@@ -9,10 +9,10 @@
 #include "PHASIC++/Channels/POWHEG_Multi_Channel.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PDF/Main/POWHEG_Base.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
@@ -264,7 +264,7 @@ double POWHEG_Process::GetRho(const int mode)
 	Process_Base *bproc((*m_pmap[nlo_type::lo])[sub->m_pname]);
 	RB_Data *rbd(bproc->Integrator()->RBMap()[sub]);
 	if (rbd->m_ktres==0.0) continue;
-	if (qij2<0.0) qij2=Jet_Finder::Qij2Min(p_mc->RealMoms(),subs);
+	if (qij2<0.0) qij2=PDF::Qij2Min(p_mc->RealMoms(),subs);
 	if (qij2<p_powheg->KT2Min()) continue;
 //        Cluster_Amplitude * bampl = CreateAmplitude(sub);
 //        ZH_Pair zh(p_powheg->ZHSplit
@@ -490,6 +490,7 @@ double POWHEG_Process::SelectBProcess()
   p_ampl->SetRBMap(&bproc->Integrator()->RBMap());
   bool lookup(m_lookup);
   SetLookUp(false);
+  p_powheg->SetShower(p_shower);
   int stat(p_powheg->GeneratePoint(p_ampl));
   SetLookUp(lookup);
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());

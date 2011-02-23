@@ -1,62 +1,14 @@
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 
 using namespace CSSHOWER;
+using namespace PHASIC;
 using namespace ATOOLS;
-using namespace std;
-
-const Vec3D Kinematics_Base::s_ex(Vec3D(1.,0.,0.));
-const Vec3D Kinematics_Base::s_ey(Vec3D(0.,1.,0.));
-const Vec3D Kinematics_Base::s_ez(Vec3D(0.,0.,1.));
-
-double Kinematics_Base::GetS
-(const double &Q2,const double &y,
- const double &mi2,const double &mj2,const double &mk2) const
-{
-  return y*(Q2-mk2)+(1.0-y)*(mi2+mj2);
-}
-
-double Kinematics_Base::GetZ
-(const double &Q2,const double &sij,const double &y,const double &zt,
- const double &mi2,const double &mk2) const
-{
-  double ecm=0.5*(Q2-sij-mk2), rtlam=sqr(ecm);
-  if (rtlam<sij*mk2) return sqrt(-1.0);
-  rtlam=sqrt(rtlam-sij*mk2);
-  double gam=ecm+Sign(Q2-sij-mk2)*rtlam;
-  return ecm/rtlam*(zt-mk2/dabs(gam)*(y/(1.0-y)+mi2/ecm));
-}
-
-double Kinematics_Base::GetKT2
-(const double &Q2,const double &y,const double &z,
- const double &mi2,const double &mj2,const double &mk2) const
-{
-  return (Q2-mi2-mj2-mk2)*y*z*(1.0-z)-sqr(1.0-z)*mi2-z*z*mj2;
-}
-
-double Kinematics_Base::ConstructLN
-(const double &Q2,const double &sij,
- const double &mij2,const double &mk2,
- const Vec4D &Q,Vec4D &pk,Vec4D &l,Vec4D &n) const
-{
-  double po=sqr(Q2-mij2-mk2)-4.0*mij2*mk2, pn=sqr(Q2-sij-mk2)-4.0*sij*mk2;
-  if ((po<0.0)^(pn<0.0)) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return 0.0;
-  }
-  pk=(Q2+mk2-sij)/(2.0*Q2)*Q+(pk-(Q2+mk2-mij2)/(2.0*Q2)*Q)*sqrt(pn/po);
-  Vec4D pij=Q-pk;
-  double gam=pij*pk+Sign(Q2-sij-mk2)*sqrt(sqr(pij*pk)-sij*mk2);
-  double a13=sij/gam, a2=mk2/gam, bet=1.0/(1.0-a13*a2);
-  l=bet*(pij-a13*pk);
-  n=bet*(pk-a2*pij);
-  return gam;
-}
 
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &mk2) const
@@ -70,64 +22,21 @@ int Kinematics_FF::MakeKinematics
  const ATOOLS::Flavour & flj,Parton *&pc,const int mode)
 {
   Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
-  
-  Vec4D n_perp(0.0,cross(Vec3D(p1),Vec3D(p2)));
+  Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
-  Poincare cms(p1+p2);
-  cms.Boost(rp1);
-  Poincare zrot(rp1,Vec4D::ZVEC);
-  if (n_perp.PSpat2()<=1.0e-6) {
-    msg_Debugging()<<"Set fixed n_perp\n";
-    n_perp=Vec4D(0.0,1.0,1.0,0.0);
-    zrot.RotateBack(n_perp);
-  }
-  n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(0.0,cross(Vec3D(rp1),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-
-  double z = split->ZTest(), y = split->YTest(), phi = split->Phi();
   double mi2=sqr(p_ms->Mass(fli)),mj2=sqr(p_ms->Mass(flj));
   double mij2 = sqr(p_ms->Mass(split->GetFlavour())); 
   double mk2 = sqr(p_ms->Mass(spect->GetFlavour()));
-  Vec4D q1,q2=p2,q3,Q=p1+p2,l,n;
 
-  double Q2=Q.Abs2();
-  y=GetY(Q2,split->KtTest(),z,mi2,mj2,mk2);
-  double sij=GetS(Q2,y,mi2,mj2,mk2);
-  if (mode==0 && sij<split->TMin()) return -1;
-  double gam=ConstructLN(Q2,sij,mij2,mk2,Q,q2,l,n);
-  if (gam==0.0) return -1;
-  double zt=GetZ(Q2,sij,y,z,mi2,mk2);
-  double ktt=GetKT2(Q2,y,zt,mi2,mj2,mk2);
-  if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return -1;
-  }
-  ktt=sqrt(ktt);
-  q1 = ktt*sin(phi)*l_perp;
-  cms.BoostBack(q1);
-  q1 += zt*l + (mi2+ktt*ktt)/(gam*zt)*n + ktt*cos(phi)*n_perp;
-  q3 = Q-q2-q1;
-  
-  if (!IsZero(sqr(((p1+p2)-(q1+q2+q3))[0]/(p1+p2)[0])) ||
-      !IsZero(sqr(((p1+p2)-(q1+q2+q3)).Abs2()/(p1+p2).Abs2()))) {
-    msg_Error()<<"Error in KinematicsFF::MakeKinematics "<< 
-      " Four-Momentum violation "<<(p1+p2)-(q1+q2+q3)<<"\n"<<
-      " Q initial : "<<p1+p2<<" -> "<<(p1+p2)*(p1+p2)<<"\n"<< 
-      " Q final   : "<<q1+q2+q3<<" -> "<<(q1+q2+q3)*(q1+q2+q3)<<"\n";
-    return -1;
-  }
-  
-  if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<METHOD<<"(): Negative energy in {\n  "
-		  <<q1<<"\n  "<<q2<<"\n  "<<q3<<"\n}\n";
-    return -1;
-  }
-  split->SetMomentum(q1);
-  spect->SetMomentum(q2);
-  if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
-  else pc->SetMomentum(q3);
+  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2);
+  Kin_Args ff(y,split->ZTest(),split->Phi());
+  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
+  if (mode==0 && (ff.m_pi+ff.m_pj).Abs2()<split->TMin()) return -1;
+
+  split->SetMomentum(ff.m_pi);
+  spect->SetMomentum(ff.m_pk);
+  if (pc==NULL) pc = new Parton(flj,ff.m_pj,pst::FS);
+  else pc->SetMomentum(ff.m_pj);
 
   return 1;
 }
@@ -145,56 +54,20 @@ int Kinematics_FI::MakeKinematics
 { 
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
-  Vec4D n_perp(0.0,cross(Vec3D(p1),Vec3D(p2)));
-  n_perp*=1.0/n_perp.PSpat();
 
-  Poincare cms(p1+p2);
-  cms.Boost(rp1);
-  Vec4D l_perp(0.0,cross(Vec3D(rp1),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-  
-  Vec4D q1,q2=-p2,q3,Q=p1-p2,l,n;
-  double z = split->ZTest(), y = split->YTest(), x=1.0-y;
-  double phi = split->Phi(), Q2=Q.Abs2(), ma2 = p_ms->Mass2(spect->GetFlavour());
+  double ma2 = p_ms->Mass2(spect->GetFlavour());
   double mi2=sqr(p_ms->Mass(fli)), mj2=sqr(p_ms->Mass(flj));
   double mij2 = sqr(p_ms->Mass(split->GetFlavour())); 
   
-  y=1.0-(x=GetY(Q2,split->KtTest(),z,mi2,mj2,ma2));
-  double xi=-z, yt=1.0-1.0/x;
-  double sij=GetS(Q2,yt,mi2,mj2,ma2);
-  if (mode==0 && sij<split->TMin()) return -1;
-  double gam=ConstructLN(Q2,sij,mij2,ma2,Q,q2,l,n);
-  if (gam==0.0) return -1;
-  double zt=GetZ(Q2,sij,yt,xi,mij2,ma2);
-  double ktt=GetKT2(Q2,yt,zt,mi2,mj2,ma2);
-  if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return -1;
-  }
-  ktt=sqrt(ktt);
-  q1 = ktt*sin(phi)*l_perp;
-  cms.BoostBack(q1);
-  q1 += zt*l + (mi2+ktt*ktt)/(gam*zt)*n + ktt*cos(phi)*n_perp;
-  q3 = Q-q2-q1;
-  q2 = -q2;
+  double y=1.0-GetY((p1-p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,ma2);
+  Kin_Args fi(y,split->ZTest(),split->Phi());
+  if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
+  if (mode==0 && (fi.m_pi+fi.m_pj).Abs2()<split->TMin()) return -1;
 
-  split->SetYTest(1.0-x);
-
-  if (!IsZero(sqr(((p1-p2)-(q1+q3-q2))[0])/(p1-p2).Abs2()) ||
-      !IsZero(((p1-p2)-(q1+q3-q2)).Abs2()/(p1-p2).Abs2()))
-    msg_Error()<<"Error in KinematicsFI::MakeKinematics "<< 
-      " Four-Momentum violation "<<(p1-p2)-(q1+q3-q2)<<std::endl; 
-  
-  if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<METHOD<<"(): Negative energy in {\n  "
-		  <<q1<<"\n  "<<q2<<"\n  "<<q3<<"\n}\n";
-    return -1;
-  }
-
-  split->SetMomentum(q1);
-  spect->SetMomentum(q2);
-  if (pc==NULL) pc = new Parton(flj,q3,pst::FS);
-  else pc->SetMomentum(q3);
+  split->SetMomentum(fi.m_pi);
+  spect->SetMomentum(fi.m_pk);
+  if (pc==NULL) pc = new Parton(flj,fi.m_pj,pst::FS);
+  else pc->SetMomentum(fi.m_pj);
   
   return 1;
 }
@@ -210,121 +83,34 @@ int Kinematics_IF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour & fla,
  const ATOOLS::Flavour & fli,Parton *&pc,const int mode)
 {
-  if (split->Kin()==1) {
+  Parton *b(NULL);
+  for (PLiter pit(split->GetSing()->begin());pit!=split->GetSing()->end();++pit)
+    if ((*pit)->GetType()==pst::IS && *pit!=split) {
+      b=*pit;
+      break;
+    }
+  if (b==NULL) THROW(fatal_error,"Corrupted singlet");
+  double mb2(p_ms->Mass2(b->GetFlavour()));
+
   Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p2;
-  Vec4D n_perp(0.0,cross(Vec3D(p2),Vec3D(p1)));
-  n_perp*=1.0/n_perp.PSpat();
+  Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
-  Poincare cms(p1+p2);
-  cms.Boost(rp1);
-  Vec4D l_perp(0.0,cross(Vec3D(rp1),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-
-  Vec4D q1=-p1,q2,q3,Q=p2-p1,l,n;
-  double kt2 = split->KtTest(), z = split->ZTest(), y = split->YTest();
-  double mk2 = p_ms->Mass2(spect->GetFlavour()), phi = split->Phi();
-  double mi2 = p_ms->Mass2(fli), ma2 = p_ms->Mass2(fla), Q2 = Q.Abs2();
-  
-  y=GetY(Q2,kt2,z,ma2,mi2,mk2);
-  double xi=-y, yt=1.0-1.0/z;
-  double sik=GetS(Q2,yt,mi2,mk2,ma2);
-  if (mode==0 && sik>split->TMin()) return -1;
-  double gam=ConstructLN(Q2,sik,mk2,ma2,Q,q1,l,n);
-  if (gam==0.0) return -1;
-  double zt=GetZ(Q2,sik,yt,xi,mk2,ma2);
-  double ktt=GetKT2(Q2,yt,zt,mi2,mk2,ma2);
-  if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return -1;
-  }
-  ktt=sqrt(ktt);
-  q3 = ktt*sin(phi)*l_perp;
-  cms.BoostBack(q3);
-  q3 += zt*l + (mi2+ktt*ktt)/(gam*zt)*n + ktt*cos(phi)*n_perp;
-  q2 = Q-q1-q3;
-  q1 = -q1;
-
-  if (!IsZero(sqr(((p2-p1)-(q2+q3-q1))[0])/(p2-p1).Abs2()) ||
-      !IsZero(((p2-p1)-(q2+q3-q1)).Abs2()/(p2-p1).Abs2()))
-    msg_Error()<<METHOD<<"(): Momentum not conserved. Difference is "
-	       <<(p2-p1)-(q2+q3-q1)<<std::endl; 
-  
-  if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<METHOD<<"(): Negative energy in {\n  "
-		  <<q1<<"\n  "<<q2<<"\n  "<<q3<<"\n}\n";
-    return -1;
-  }
-  
-  split->SetMomentum(q1);
-  spect->SetMomentum(q2);
-  if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
-  else pc->SetMomentum(q3);
-
-  return 1;
-  }
-  Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1(p1), rp2(p2);
-  Vec4D n_perp(0.0,cross(Vec3D(p1),Vec3D(p2)));
-  n_perp*=1.0/n_perp.PSpat();
-
-  Poincare cms(p1+p2);
-  cms.Boost(p1);
-  Vec4D l_perp(0.0,cross(Vec3D(p1),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-  p1=rp1;
-    
-  Vec4D q1,q2=p2,q3,Q=p2-p1,l,n;
-  double z = split->ZTest(), y = split->YTest();
-  double mk2 = p_ms->Mass2(spect->GetFlavour()), phi = split->Phi();
+  double mk2 = p_ms->Mass2(spect->GetFlavour());
   double mi2 = p_ms->Mass2(fli), ma2 = p_ms->Mass2(fla);
-  double mai2 = p1.Abs2(), Q2 = Q.Abs2();
+  double mai2 = p_ms->Mass2(split->GetFlavour()); 
   
-  y=GetY(Q2,split->KtTest(),z,ma2,mi2,mk2);
-  double xi=dabs((1.0-z)/(z-y)), yt=y/z, rf=dabs(z-y);
-  double sai=GetS(Q2,yt,ma2,mi2,mk2);
-  if (mode==0 && -sai<split->TMin()) return -1;
-  double gam=ConstructLN(Q2,sai,mai2,mk2,Q,q2,l,n);
-  if (gam==0.0) return -1;
-  double zt=GetZ(Q2,sai,yt,xi,mi2,mk2);
-  double ktt=GetKT2(Q2,yt,zt,mi2,ma2,mk2);
-  if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return -1;
-  }
-  ktt=sqrt(ktt)*rf;
-  q3 = ktt*sin(phi)*l_perp;
-  cms.BoostBack(q3);
-  q3 += zt*rf*l + (mi2*rf*rf+ktt*ktt)/(gam*zt*rf)*n + ktt*cos(phi)*n_perp;
-  q3[0]=sqrt(mi2*rf*rf+q3.PSpat2());
-  q3 *= 1.0/rf;
-  q1 = q2+q3-Q;
+  double y=GetY((p2-p1).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mk2);
+  Kin_Args ifp(y,split->ZTest(),split->Phi(),split->Kin());
+  if (dabs(y-split->ZTest())<Kin_Args::s_uxeps) ifp.m_mode=1;
+  if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0) return -1;
+  if (mode==0 && -(ifp.m_pi-ifp.m_pj).Abs2()<split->TMin()) return -1;
 
-  if (q1[0]<0. || q2[0]<0. || q3[0]<0.) {
-    msg_Tracking()<<"Error in  Kinematics_IF::MakeKinematics (past boost) "<<endl
-	       <<" negative energy "<<q1<<"\n"
-	       <<"                 "<<q2<<"\n"
-	       <<"                 "<<q3<<"\n";
-    return -1;
-  }
+  split->SetLT(ifp.m_lam);
+  split->SetMomentum(ifp.m_pi);
+  spect->SetMomentum(ifp.m_pk);
+  if (pc==NULL) pc = new Parton(fli,ifp.m_pj,pst::FS);
+  else pc->SetMomentum(ifp.m_pj);
   
-  if (!IsEqual((rp2-rp1).Abs2(),(q2+q3-q1).Abs2(),sqrt(ATOOLS::Accu()))) {
-    std::cout.precision(12);
-    msg_Error()<<METHOD<<"(): Faulty kinematics "<<(rp2-rp1).Abs2()
-	       <<" vs. "<<(q2+q3-q1).Abs2()<<" {\n"
-	       <<"  old p_1 = "<<rp1<<"\n"
-	       <<"      p_2 = "<<rp2<<"\n"
-	       <<"  new q_1 = "<<q1<<"\n"
-	       <<"      q_2 = "<<q2<<"\n"
-	       <<"      q_3 = "<<q3<<"\n}"<<std::endl;
-    return -1;
-  }
-  
-  split->SetMomentum(q1);
-  spect->SetMomentum(q2);
-  if (pc==NULL) pc = new Parton(fli,q3,pst::FS);
-  else pc->SetMomentum(q3);
-
   return 1;
 }
 
@@ -340,51 +126,22 @@ int Kinematics_II::MakeKinematics
  const ATOOLS::Flavour & newfl,Parton *&pc,const int mode)
 {
   Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum(), rp1 = p1;
-
-  Poincare cms(p1+p2);
-  cms.Boost(rp1);
-  Poincare zrot(rp1,Vec4D::ZVEC);
-  Vec4D n_perp(0.0,1.0,1.0,0.0);
-  zrot.RotateBack(n_perp);
-  n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(0.0,cross(Vec3D(rp1),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-
-  double z = split->ZTest(), y = split->YTest();
+  Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
   
-  Vec4D q1,q2=-p2,q3, Q=-p1-p2,l,n;
-  double ma2 = sqr(p_ms->Mass(fli)), Q2=Q.Abs2();
+  double ma2 = sqr(p_ms->Mass(fli)), mi2 = sqr(p_ms->Mass(newfl));
   double mai2 = sqr(p_ms->Mass(split->GetFlavour()));
   double mb2 = sqr(p_ms->Mass(spect->GetFlavour()));
-  double mi2 = sqr(p_ms->Mass(newfl)), phi = split->Phi();
 
-  y=GetY(Q2,split->KtTest(),z,ma2,mi2,mb2);
-  double xi=1.0-1.0/(z+y), yt=-y/z, rf=z+y;
-  double sai=GetS(Q2,yt,ma2,mi2,mb2);
-  if (mode==0 && -sai<split->TMin()) return -1;
-  double gam=ConstructLN(Q2,sai,mai2,mb2,Q,q2,l,n);
-  if (gam==0.0) return -1;
-  double zt=GetZ(Q2,sai,yt,xi,mi2,mb2);
-  double ktt=GetKT2(Q2,yt,zt,mi2,ma2,mb2);
-  if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
-    return -1;
-  }
-  ktt=sqrt(ktt)*rf;
-  q3 = ktt*sin(phi)*l_perp;
-  cms.BoostBack(q3);
-  q3 += zt*rf*l + (mi2*rf*rf+ktt*ktt)/(gam*zt*rf)*n + ktt*cos(phi)*n_perp;
-  q3[0]=sqrt(mi2*rf*rf+q3.PSpat2());
-  q3 *= 1.0/rf;
-  q1=-Q+q2+q3;
-  q2=-q2;
+  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2);
+  Kin_Args ii(y,split->ZTest(),split->Phi());
+  if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
+  if (mode==0 && -(ii.m_pi-ii.m_pj).Abs2()<split->TMin()) return -1;
 
-  split->SetMomentum(q1);
-  spect->SetMomentum(q2);
-  if (pc==NULL) pc = new Parton(newfl,q3,pst::FS);
-  else pc->SetMomentum(q3);
+  split->SetLT(ii.m_lam);
+  split->SetMomentum(ii.m_pi);
+  spect->SetMomentum(ii.m_pk);
+  if (pc==NULL) pc = new Parton(newfl,ii.m_pj,pst::FS);
+  else pc->SetMomentum(ii.m_pj);
 
   return 1;
 }
-

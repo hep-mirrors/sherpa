@@ -3,8 +3,6 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Selectors/Combined_Selector.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
 #define COMPILE__Getter_Function
@@ -93,14 +91,4 @@ double Scale_Setter_Base::HT() const
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   for (size_t i(p_proc->NIn());i<p.size();++i) ht+=p[i].PPerp();
   return ht;
-}
-
-double Scale_Setter_Base::YCut() const
-{
-  Process_Base *proc(p_caller);
-  if (proc->IsMapped() && proc->LookUp() &&
-      proc->MapProc()->LookUp()) proc=proc->MapProc();
-  p_jf=(Jet_Finder*)proc->Selector()->GetSelector("Jetfinder");
-  if (p_jf==NULL) THROW(critical_error,"Jet finder not found");
-  return p_jf->Ycut();
 }

@@ -84,7 +84,9 @@ namespace ATOOLS {
   {
     ostr<<std::right<<std::setw(12)<<ToString(ID(leg.Id()))
 	<<std::setw(12)<<leg.Flav()
-	<<" "<<std::left<<leg.Mom()<<" "<<leg.Col();
+	<<" "<<std::left<<leg.Mom()
+	<<(leg.Mom().Abs2()<0.0?" -":" ")
+	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();
     ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<","<<leg.DMax()<<"]";
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
     return ostr;

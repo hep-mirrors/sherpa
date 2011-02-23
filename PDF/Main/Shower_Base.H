@@ -44,15 +44,12 @@ namespace PDF {
     virtual Cluster_Definitions_Base *GetClusterDefinitions() = 0;
 
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl) = 0;
+    virtual bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
 
-    virtual int HasKernel(const ATOOLS::Flavour &fli,
-                          const ATOOLS::Flavour &flj,
-                          const ATOOLS::Flavour &flk,
-                          const int type) const = 0;
     virtual double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
                           const ATOOLS::Flavour &flk,const int type,
 			  const int cpl,const double &mu2) const = 0;

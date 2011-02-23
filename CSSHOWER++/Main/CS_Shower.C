@@ -2,6 +2,7 @@
 
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -367,7 +368,10 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       if (m_recocheck&1) {
       std::cout.precision(12);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
+      int kin(l->Kin());
+      l->SetKin(split->Kin());
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
+      l->SetKin(kin);
       p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
@@ -404,7 +408,10 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
       }
+      int kin(l->Kin());
+      l->SetKin(split->Kin());
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
+      l->SetKin(kin);
     }
     double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
     double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
@@ -541,17 +548,6 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
   return ampl->KT2();
 }
 
-int CS_Shower::HasKernel(const ATOOLS::Flavour &fli,
-                         const ATOOLS::Flavour &flj,
-                         const ATOOLS::Flavour &flk,
-                         const int type) const
-{
-  cstp::code stp((type&1)?
-		 (type&2)?cstp::II:cstp::IF:
-		 (type&2)?cstp::FI:cstp::FF);
-  return p_shower->GetSudakov()->HasKernel(fli, flj, flk,stp);
-}
-
 double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
                          const ATOOLS::Flavour &flk,const int type,
 			 const int cpl,const double &mu2) const
@@ -560,6 +556,55 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
 		 (type&2)?cstp::II:cstp::IF:
 		 (type&2)?cstp::FI:cstp::FF);
   return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
+}
+
+bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
+{
+  DEBUG_FUNC("");
+  msg_Debugging()<<*ampl<<"\n";
+  PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
+  double q2cut(jf->Ycut()*sqr(rpa.gen.Ecms()));
+  bool his(false);
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    Cluster_Leg *li(ampl->Leg(i));
+    Flavour fi(i<ampl->NIn()?li->Flav().Bar():li->Flav());
+    if (i<ampl->NIn() && fi.Resummed()) his=true;
+    for (size_t j(Max(i+1,ampl->NIn()));j<ampl->Legs().size();++j) {
+      Cluster_Leg *lj(ampl->Leg(j));
+      Flavour fj(j<ampl->NIn()?lj->Flav().Bar():lj->Flav());
+      for (size_t k(0);k<ampl->Legs().size();++k) {
+	if (k==i || k==j) continue;
+	Cluster_Leg *lk(ampl->Leg(k));
+	Flavour fk(k<ampl->NIn()?lk->Flav().Bar():lk->Flav());
+	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
+		      (k<ampl->NIn()?cstp::II:cstp::IF):
+		      (k<ampl->NIn()?cstp::FI:cstp::FF));
+	if (p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
+	  double q2ijk(PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+				 li->Flav(),lj->Flav(),jf->DR()));
+ 	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
+			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
+	  if (q2ijk<q2cut) return false;
+	}
+	else {
+	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj
+			 <<" <-> "<<fk<<" ("<<et<<")\n";
+	}
+      }
+    }
+  }
+  if (his) {
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+      if (ampl->Leg(i)->Flav().Resummed())
+	if (ampl->Leg(i)->Mom().PPerp2()<
+	    p_shower->GetSudakov()->PT2Min()) {
+ 	  msg_Debugging()<<"p_T_{"<<ID(ampl->Leg(i)->Id())<<"} = "
+			 <<ampl->Leg(i)->Mom().PPerp()<<"\n";
+	  return false;
+	}
+  }
+  msg_Debugging()<<"--- Jet veto ---\n";
+  return true;
 }
 
 namespace PDF {

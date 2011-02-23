@@ -4,7 +4,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 
 using namespace POWHEG;
 using namespace ATOOLS;

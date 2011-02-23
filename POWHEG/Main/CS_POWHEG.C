@@ -19,24 +19,24 @@ using namespace std;
 CS_POWHEG::CS_POWHEG(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   POWHEG_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL), p_gamma(NULL)
+  p_powheg(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_maxem=_dataread->GetValue<int>("PH_CSS_MAXEM",1);
   double zhth(_dataread->GetValue<double>("PH_CSS_ZH_THRESHOLD",100.0));
   double ktres(_dataread->GetValue<double>("PH_CSS_KT_RESOLUTION",4.0));
-  p_shower = new Shower(_isr,0,_dataread);
+  p_powheg = new Shower(_isr,0,_dataread);
   p_next = new All_Singlets();
-  p_cluster = new CS_Cluster_Definitions(p_shower,1);
-  p_gamma = new CS_Gamma(this,p_shower,p_cluster);
-  p_shower->SetGamma(p_gamma);
+  p_cluster = new CS_Cluster_Definitions(p_powheg,1);
+  p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
+  p_powheg->SetGamma(p_gamma);
   p_gamma->SetZHParams(zhth,ktres);
-  m_kt2min=p_shower->GetSudakov()->PT2Min();
+  m_kt2min=p_powheg->GetSudakov()->PT2Min();
 }
 
 CS_POWHEG::~CS_POWHEG() 
 {
   CleanUp();
-  if (p_shower) delete p_shower;
+  if (p_powheg) delete p_powheg;
   if (p_cluster) delete p_cluster;
   if (p_gamma) delete p_gamma;
   delete p_next;
@@ -63,7 +63,7 @@ int CS_POWHEG::GeneratePoint(Cluster_Amplitude *const ampl)
     rampl->SetRBMap(NULL);
     size_t idnew(rampl->IdNew());
     rampl->SetIdNew(0);
-    Parton * const* last(p_shower->GetLast());
+    Parton * const* last(p_powheg->GetLast());
     while (rampl->Next()) {
       rampl=rampl->Next();
       rampl->SetRBMap(NULL);
@@ -110,13 +110,13 @@ int CS_POWHEG::PerformPOWHEG(const size_t &maxem,size_t &nem)
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
   p_gamma->SetOn(1);
-  p_shower->SetRB((*m_allsinglets.begin())->RBMap());
+  p_powheg->SetRB((*m_allsinglets.begin())->RBMap());
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before powheg step\n";
     msg_Debugging()<<**sit;
     size_t pem(nem);
-    if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
+    if (!p_powheg->EvolveShower(*sit,maxem,nem)) return 0;
     msg_Debugging()<<"after powheg step with "<<nem-pem<<" emission(s)\n";
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
@@ -144,12 +144,13 @@ bool CS_POWHEG::PreparePOWHEG(Cluster_Amplitude *const ampl)
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
+    (*sit)->SetShower(p_shower);
     (*sit)->SetAll(p_next);
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }
   msg_Debugging()<<"}\n";
-  p_shower->SetMS(p_ms);
+  p_powheg->SetMS(p_ms);
   return true;
 }
 
@@ -183,7 +184,7 @@ Singlet *CS_POWHEG::TranslateAmplitude
     parton->SetIdx(i);
     parton->SetId(cl->Id());
     parton->SetRFlow();
-    parton->SetKin(p_shower->KinScheme());
+    parton->SetKin(p_powheg->KinScheme());
     double isf(1.0);
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
@@ -237,7 +238,7 @@ ATOOLS::Cluster_Amplitude *CS_POWHEG::GetRealEmissionAmplitude()
     ampl->Legs().back()->SetStat(1);
     ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax()+1);
   }
-  ampl->SetKT2(p_shower->GetLast()[0]->KtStart());
+  ampl->SetKT2(p_powheg->GetLast()[0]->KtStart());
   Process_Base::SortFlavours(ampl);
   return ampl;
 }

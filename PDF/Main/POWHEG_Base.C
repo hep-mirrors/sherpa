@@ -10,7 +10,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 POWHEG_Base::POWHEG_Base(const std::string &name):
-  m_name(name), m_kt2min(-1.0) {}
+  m_name(name), p_shower(NULL), m_kt2min(-1.0) {}
 
 POWHEG_Base::~POWHEG_Base() 
 {

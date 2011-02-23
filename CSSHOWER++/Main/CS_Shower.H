@@ -69,11 +69,8 @@ namespace CSSHOWER {
     // inline functions
     PDF::Cluster_Definitions_Base * GetClusterDefinitions();
     bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl);
+    bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl);
 
-    int HasKernel(const ATOOLS::Flavour &fli,
-                  const ATOOLS::Flavour &flj,
-                  const ATOOLS::Flavour &flk,
-                  const int type) const;
     double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
                   const ATOOLS::Flavour &flk,const int type,
 		  const int cpl,const double &mu2) const;

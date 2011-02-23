@@ -123,3 +123,20 @@ void Poincare::Invert()
   for (short unsigned int i(1);i<4;++i) m_beta[i]=-m_beta[i];
   m_n=-1.0*m_n;
 }
+
+Vec4D Poincare_Sequence::operator*(const Vec4D &p) const
+{
+  Vec4D np(p);
+  for (const_iterator pit(begin());pit!=end();++pit) np=(*pit)*np;
+  return np;
+}
+
+void Poincare_Sequence::Invert()
+{
+  Poincare_Sequence copy(*this);
+  reverse_iterator cit(copy.rbegin());
+  for (iterator pit(begin());pit!=end();++pit,++cit) {
+    cit->Invert();
+    *pit=*cit;
+  }
+}
