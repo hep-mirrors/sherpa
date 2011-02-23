@@ -37,6 +37,7 @@ libToolsOrg_la_SOURCES        = \
 localinc_HEADERS         =	\
 			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
+			SVN_Info.H \
 			Return_Value.H \
 			Smart_Pointer.H \
 			Smart_Pointer.C \

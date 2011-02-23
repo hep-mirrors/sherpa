@@ -1,8 +1,8 @@
-if LHAPDF_SUPPORT
-pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
-
 SVNTAG = PDF/LHAPDF
 include ../../svn.make
+
+if LHAPDF_SUPPORT
+pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
 
 if LHAPDF_NATIVE_WRAPPER
 libLHAPDFSherpa_la_SOURCES  =	\
