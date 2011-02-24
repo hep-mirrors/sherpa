@@ -7,8 +7,8 @@ SVN_Info.C: SVN_Info.C.in
 	echo -e '#include "ATOOLS/Org/SVN_Info.H"\n' > $@.tmp; \
 	echo 'static ATOOLS::SVN_Info initializer' >> $@.tmp; \
 	echo '("$(SVNTAG)","'$$url'","'$$(svnversion)'","X");' >> $@.tmp; \
-	fi; if which md5sum > /dev/null && test -z $(NOMD5SUM); then sed -r \
-	  -e's/".?"\);/"'$$(cat $$(echo *.[CH] | sed 's/SVN_Info.C//g') | \
+	fi; if which md5sum > /dev/null && test -z $(NOMD5SUM); then sed \
+	  -r -e's/".?"\);/"'$$(cat $$(echo *.[CH] | sed 's/'$@'//g') | \
 	  md5sum | cut -d' ' -f1)'");/g' -i $@.tmp; fi; \
 	if ! diff $@.tmp $@ > /dev/null 2>&1; \
 	  then mv $@.tmp $@; else rm $@.tmp; fi;

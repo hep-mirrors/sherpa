@@ -140,7 +140,7 @@ int PHASIC::ConstructFIDipole
   double Q2(Q.Abs2()), kt2(Q.PPerp2()), yt(fip.m_y/(1.0-fip.m_y));
   double sij(-yt*(Q2-ma2)+(1.0+yt)*(mi2+mj2));
   double po(sqr(Q2-mij2-ma2)-4.0*ma2*(mij2+kt2));
-  double ecm(-(Q2-sij-ma2)), pn(sqr(ecm)-4.0*ma2*(sij+kt2));
+  double ecm(Q2-sij-ma2), pn(sqr(ecm)-4.0*ma2*(sij+kt2));
   if (pn<0.0 || po<0.0) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
@@ -165,15 +165,15 @@ int PHASIC::ConstructFIDipole
   double pnn(Sign(ecm)*sqrt(sqr(ecm)-4.0*sij*ma2)), gam(0.5*(ecm+pnn));
   double zt(ecm/pnn*(fip.m_z-ma2/gam*(sij+mi2-mj2)/ecm));
   double ktt(sij*zt*(1.0-zt)-(1.0-zt)*mi2-zt*mj2);
-  if (ktt<0.0 || gam<=0.0) {
+  if (ktt<0.0 || gam==0.0) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   ktt=sqrt(ktt);
   fip.m_pi=ktt*sin(fip.m_phi)*l_perp;
   cms.BoostBack(fip.m_pi);
-  fip.m_pi+=ktt*cos(fip.m_phi)*n_perp+zt/pnn*(gam*fip.m_pj-sij*fip.m_pk)+
-    (mi2+ktt*ktt)/zt/pnn*(fip.m_pk-ma2/gam*fip.m_pj);
+  fip.m_pi+=ktt*cos(fip.m_phi)*n_perp+zt/pnn*(gam*fip.m_pj+sij*fip.m_pk)-
+    (mi2+ktt*ktt)/zt/pnn*(fip.m_pk+ma2/gam*fip.m_pj);
   fip.m_pj=fip.m_pk-Q-fip.m_pi;
   return 1;
 }
@@ -239,7 +239,7 @@ int PHASIC::ConstructIFDipole
     double Q2(Q.Abs2()), kt2(Q.PPerp2()), yt((1.0-ifp.m_z)/ifp.m_z);
     double sjk(-yt*(Q2-ma2)+(1.0+yt)*(mj2+mk2));
     double po(sqr(Q2-mk2-maj2)-4.0*maj2*(mk2+kt2));
-    double ecm(-(Q2-sjk-ma2)), pn(sqr(ecm)-4.0*ma2*(sjk+kt2));
+    double ecm(Q2-sjk-ma2), pn(sqr(ecm)-4.0*ma2*(sjk+kt2));
     if (pn<0.0 || po<0.0) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
@@ -271,8 +271,8 @@ int PHASIC::ConstructIFDipole
     ktt=sqrt(ktt);
     ifp.m_pj=ktt*sin(ifp.m_phi)*l_perp;
     cms.BoostBack(ifp.m_pj);
-    ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp+zt/pnn*(gam*ifp.m_pk-sjk*ifp.m_pi)+
-      (mj2+ktt*ktt)/zt/pnn*(ifp.m_pi-ma2/gam*ifp.m_pk);
+    ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp+zt/pnn*(gam*ifp.m_pk+sjk*ifp.m_pi)-
+      (mj2+ktt*ktt)/zt/pnn*(ifp.m_pi+ma2/gam*ifp.m_pk);
     ifp.m_pk=ifp.m_pi-Q-ifp.m_pj;
   }
   else {
@@ -289,23 +289,24 @@ int PHASIC::ConstructIFDipole
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
-    pn=sqrt(pn);
-    po=sqrt(po);
+    pn=Sign(ecm)*sqrt(pn);
+    po=Sign(ecm)*sqrt(po);
     ifp.m_pk=pn/po*(pk+(Q2+mk2-maj2)/(2.0*Q2)*Q)-(Q2+mk2-saj)/(2.0*Q2)*Q;
     ifp.m_pj=ifp.m_pi=Q+ifp.m_pk;
-    double gam(-0.5*(ecm+Sign(ecm)*pn)), rf(dabs(ifp.m_z-ifp.m_y));
-    double zt(ecm/pn*((1.0-ifp.m_z)/rf-mk2/dabs(gam)*(saj+mj2-ma2)/ecm));
-    double ktt((Q2-ma2-mj2-mk2)*yt*zt*(1.0-zt)-sqr(1.0-zt)*mj2-zt*zt*ma2);
+    double gam(0.5*(ecm+pn)), rf(ifp.m_z-ifp.m_y);
+    double zt(ecm/pn*((ifp.m_z-1.0)/rf-mk2/gam*(saj+mj2-ma2)/ecm));
+    double ktt(saj*zt*(1.0-zt)-(1.0-zt)*mj2-zt*ma2);
     if (ktt<0.0 || gam==0.0) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
+    rf=dabs(rf);
     ktt=rf*sqrt(ktt);
     ifp.m_pj=ktt*sin(ifp.m_phi)*l_perp;
     cms.BoostBack(ifp.m_pj);
-    ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp+
-      zt*rf*Sign(ecm)/pn*(gam*ifp.m_pi-saj*ifp.m_pk)+
-      (mj2*rf*rf+ktt*ktt)*Sign(ecm)/pn/(zt*rf)*(ifp.m_pk-mk2/gam*ifp.m_pi);
+    ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp-
+      zt*rf/pn*(gam*ifp.m_pi+saj*ifp.m_pk)+
+      (mj2*rf*rf+ktt*ktt)/pn/(zt*rf)*(ifp.m_pk+mk2/gam*ifp.m_pi);
     ifp.m_pj[0]=sqrt(mj2*rf*rf+ifp.m_pj.PSpat2());
     ifp.m_pj*=1.0/rf;
     ifp.m_pi=Q+ifp.m_pj+ifp.m_pk;
