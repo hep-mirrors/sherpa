@@ -293,31 +293,31 @@ namespace ATOOLS {
   { 
     if (tag[0]!='(') {
       if (tag[0]=='"' && tag[tag.length()-1]=='"')
-	return new STerm(tag.substr(1,tag.length()-2)); 
-      if (IsAlpha(tag)) return new STerm(tag); 
-      return new DTerm(ToType<double>(tag)); 
+	return STerm::New(tag.substr(1,tag.length()-2)); 
+      if (IsAlpha(tag)) return STerm::New(tag); 
+      return DTerm::New(ToType<double>(tag)); 
     }
     else {
       size_t pos(tag.find(','));
       if (pos==std::string::npos) THROW(fatal_error,"Invalid syntax");
       if ((pos=tag.find(',',pos+1))!=std::string::npos)
-	return new DV4Term(ToType<Vec4D>(tag));
-      return new CTerm(ToType<Complex>(tag));
+	return DV4Term::New(ToType<Vec4D>(tag));
+      return CTerm::New(ToType<Complex>(tag));
     }
   }
 
   Term *Term::operator-() const
   {
     if (m_type=='S') THROW(fatal_error,"Invalid syntax");
-    if (m_type=='V') return new DV4Term(-Get<Vec4D>());
-    if (m_type=='C') return new CTerm(-Get<Complex>());
-    return new DTerm(-Get<double>());
+    if (m_type=='V') return DV4Term::New(-Get<Vec4D>());
+    if (m_type=='C') return CTerm::New(-Get<Complex>());
+    return DTerm::New(-Get<double>());
   }
 
   Term *Term::operator!() const
   {
-    if (m_type=='C') return new CTerm(!(int)(Get<Complex>().real()));
-    if (m_type=='D') return new DTerm(!(int)(Get<double>()));
+    if (m_type=='C') return CTerm::New(!(int)(Get<Complex>().real()));
+    if (m_type=='D') return DTerm::New(!(int)(Get<double>()));
     THROW(fatal_error,"Invalid syntax");
     return NULL;
   }
@@ -556,7 +556,7 @@ namespace ATOOLS {
   {
     if (m_type=='S' || m_type=='V' || m_type=='D')
       THROW(fatal_error,"Invalid syntax");
-    return new CTerm(std::conj(Get<Complex>()));
+    return CTerm::New(std::conj(Get<Complex>()));
   }
   
   Term *Term::Comp(const Term &i) const
