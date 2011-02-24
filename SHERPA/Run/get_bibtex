@@ -8,7 +8,7 @@ print_help(){
 }
 
 dnl=1
-sad='http://www.slac.stanford.edu/spires/find/hep/www'
+sad='http://inspirebeta.net/search?action_search=Search&of=hx&p='
 
 while getopts :ha:d OPT
 do
@@ -55,22 +55,20 @@ if test -z "$cts"; then
   echo "get_bibtex: error: no citations in '"$fnm"'.";
   exit 1;
 fi;
-qst=$sad'?rawcmd=f'; cnt=0;
+qst=$sad'f'; cnt=0;
 for i in $cts; do 
   if (( $cnt > 0 )); then qst=$qst'+or'; fi
   qst=$qst'+texkey+'$i;
   (( ++cnt ));
 done;
-qst=$qst'&FORMAT=wwwbriefbibtex';
 if (( $dnl )); then wget -O $fnm'.wget' $qst; fi;
 if ! test -f $fnm.wget; then
   echo "get_bibtex: error: file '"$fnm".wget' not found.";
   exit 1;
 fi;
-sed -r '0,/<!-- START RESULTS -->/ d
-/<!-- END RESULTS -->/,$ d
-/<pre>/ d
-/<\/pre>/ d
+sed -r '0,/<pre>/ d
+/<\/pre>/,/<pre>/ d
+/<\/pre>/,$ d
 s/H(o|oe)che([^:]|$)/H{\\"o}che\2/g
 s/Sch(o|oe)nherr([^:]|$)/Sch{\\"o}nherr\2/g
 s/Sch(a|ae)licke([^:]|$)/Sch{\\"a}licke\2/g
