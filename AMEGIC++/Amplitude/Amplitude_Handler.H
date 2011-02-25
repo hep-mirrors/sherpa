@@ -53,8 +53,8 @@ namespace AMEGIC {
     
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
-		      MODEL::Model_Base *,Topology *,int &,int &,MODEL::Coupling_Map *const cpls,
-		      Basic_Sfuncs *,String_Handler *, bool print_graph=false, bool create_4V=true);
+		      MODEL::Model_Base *,Topology *,int &,int &,int &,MODEL::Coupling_Map *const cpls,
+		      Basic_Sfuncs *,String_Handler *,bool print_graph=false, bool create_4V=true);
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
 				   Process_Tags* pinfo,Single_Amplitude** sglist,

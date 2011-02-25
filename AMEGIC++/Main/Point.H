@@ -2,6 +2,7 @@
 #define AMEGIC_Main_Point_H
 
 #include "MODEL/Interaction_Models/Vertex.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 namespace AMEGIC {
 
@@ -44,6 +45,7 @@ namespace AMEGIC {
     Point* CopyList(Point* p);
     size_t Ncpl() const {return cpl.size();}
     int CountKK();
+    bool CountT(int & tchan,const long unsigned int & kfcode=0);
     void GeneratePropID();
     std::string GetPropID() const;
     int FindQCDOrder(int &);

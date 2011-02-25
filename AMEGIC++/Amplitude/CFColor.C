@@ -37,6 +37,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     std::string name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
     IO_Handler ioh;
     bool gc(ioh.SetFileNameRO(name)==0);
+    //msg_Out()<<METHOD<<" with gc = "<<gc<<"."<<std::endl;
     if (gc&&force) {
       msg_Error()<<"Color matrix for process "<<pID<<" not found!"<<endl
 		 <<" Rerun with option 'ME_LIBCHECK=1'."<<endl;
@@ -79,6 +80,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
   sw1 = 0;
   Single_Amplitude* m2;
   m1 = first;
+
+  //msg_Out()<<METHOD<<" for mcount = "<<mcount<<"."<<std::endl;
   while (m1) {
     if (m1->Get_CFlist()==NULL) {
       sw1 = 1;
@@ -87,6 +90,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     m1 = m1->Next;
   }
   if (sw1) {
+    //msg_Out()<<"No colour structure."<<std::endl;
     //no color structure
     
     // matrix
@@ -107,10 +111,12 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 
   }
   else {
+    //msg_Out()<<"Has colour structure."<<std::endl;
     int prop;
   
     m1 = first;
     while (m1) {
+      //msg_Out()<<"   Go for the next sub-amplitude ("<<m1<<")."<<std::endl;
       prop = 120;
       short int j = 0;
       for (;;) {
@@ -144,6 +150,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 	else j++;
 	if (j==N) break;
       }
+      //msg_Out()<<"   --> Out of infinite loop."<<std::endl;
       m1 = m1->Next;
     }
     
@@ -156,6 +163,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     
     ncount = mcount;
     
+
+    //msg_Out()<<"Next loop."<<std::endl;
     while (m1) {
       if (m1->on) {
 	cm1 = m1->Get_CFlist();
@@ -210,9 +219,11 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
       }
       n1++;
       m1 = m1->Next;
-    } 
+    }
+
     map = new int[mcount];
     int cc=0;
+    //msg_Out()<<"For loop, l226."<<std::endl;
     for (int m=0; m<mcount; ++m) {
       if (id[m]==mcount) {
 	map[m]=cc;
@@ -229,6 +240,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     
     m1 = first;
     c1 = 0;
+    //msg_Out()<<"While loop, l243."<<std::endl;
     while (m1) { 
       if (m1->on) {
 	m2 = m1;
@@ -245,21 +257,23 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 	    indices.insert(std::make_pair('*',1)); 
 	    char c = 'V';
 
+	    //msg_Out()<<"Try to deal with "<<m1->CFColstring<<"*"<<m2->CFColstringC<<"."<<std::endl;
+
 	    sknot* s1 = st.String2Tree(m1->CFColstring);
 	    sknot* s2 = st.String2Tree(m2->CFColstringC);
 	    list<sknot*>  fhelp_list;
 	    st.Factors(s2,fhelp_list);
-// 	    char nc=(char)(4*N-9);
-// 	    char ce=emit+nc,cs=spect+nc,hc='A'+nc,cc;
-// 	    if (hc>=c||(ce<'a'&&ce>=c)||(cs<'a'&&cs>=c)) 
-// 	      cerr<<"Possible color index runout! Check color matrix!!!"<<endl;
-// 	    ce=DeliverIndex(indices,ce);
-// 	    cs=DeliverIndex(indices,cs);
-// 	    cc=DeliverIndex(indices,hc);
+	    // 	    char nc=(char)(4*N-9);
+	    // 	    char ce=emit+nc,cs=spect+nc,hc='A'+nc,cc;
+	    // 	    if (hc>=c||(ce<'a'&&ce>=c)||(cs<'a'&&cs>=c)) 
+	    // 	      cerr<<"Possible color index runout! Check color matrix!!!"<<endl;
+	    // 	    ce=DeliverIndex(indices,ce);
+	    // 	    cs=DeliverIndex(indices,cs);
+	    // 	    cc=DeliverIndex(indices,hc);
 	    char ce='$',cs='#',cc='%';
 	    int te=-1;
 	    int ts=-1;
-		  //	      ....zuordnung nummer->char in Color_Generator->FillString()
+	    //	      ....zuordnung nummer->char in Color_Generator->FillString()
 	    for (list<sknot*>::iterator itf=fhelp_list.begin();itf!=fhelp_list.end();++itf) {
 	      size_t p1=(*itf)->Str().find(emit,1);
 	      size_t p2=(*itf)->Str().find(spect,1);
@@ -323,6 +337,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 	    default:
 	      abort();
 	    }
+	    //msg_Out()<<"   results in "<<dpc<<"."<<std::endl;
 	    sknot* sp = st.String2Tree(dpc);
 	    sknot* s2p = s2;
 	    s2 = st.newsk();
@@ -418,19 +433,22 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 		}
 		factor_list.clear(); 
 		//can not deal with deltas right now
+		//msg_Out()<<"  Now: "<<string_list<<", foundd = "<<foundd<<"."<<std::endl;
 		if (foundd && string_list.size()>0) string_list.clear();
 		
 		Complex value;
 		
 		if (string_list.size()>0) {
+		  //msg_Out()<<"   before BuildTChain("<<string_list<<")."<<std::endl;
 		  newaddend = BuildTChain(string_list);
+		  //msg_Out()<<"   ---> "<<newaddend<<"."<<std::endl;
 		  string_list.clear();
 		  factor_list.clear();
 		  
 		  //lookup string key in map 
 		  TF_Iterator tit = t_table.find(newaddend);
 		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		    else {
+		  else {
 		    st.Sort(*it);
 		    ReplaceT(*it);
 		    st.Expand(*it);
@@ -479,6 +497,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     }
   }
   
+  //msg_Out()<<"Should be done now."<<std::endl;
   if (pID!=noname && pID[0]!='N') Output(pID);
 
   // check if Matrix can be reduce even further!
@@ -951,14 +970,18 @@ string CFColor::BuildTChain(vector<string>  string_list)
   //generate the traces  
   for(;;) {
     if (tmp_list.size()==0) {
-    tmp = string_list[0][2];
-    tmp_list.push_back(string_list[0]);
-    if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
-    key+=translator[tmp];
-    vector<string>::iterator it = string_list.begin();
-    string_list.erase(it);
+      tmp = string_list[0][2];
+      tmp_list.push_back(string_list[0]);
+      if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+      key+=translator[tmp];
+      vector<string>::iterator it = string_list.begin();
+      string_list.erase(it);
     }
+    //msg_Out()<<"Check this tmp_list = "<<tmp_list<<" -> string_list = "<<string_list<<"."<<std::endl;
     for (size_t i=0;i<string_list.size();i++) {
+      //msg_Out()<<"   tmp_list["<<(tmp_list.size()-1)<<"][6] = "
+      //       <<tmp_list[tmp_list.size()-1][6]<<" vs. "
+      //	       <<"string_list["<<i<<"][4] = "<<string_list[i][4]<<"."<<std::endl;
       if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
 	tmp_list.push_back(string_list[i]);
 	tmp = string_list[i][2];
@@ -968,6 +991,9 @@ string CFColor::BuildTChain(vector<string>  string_list)
 	string_list.erase(it+=i);
 	i--;
       }
+      //msg_Out()<<"   tmp_list[0][4] = "<<tmp_list[0][4]<<" vs. "
+      //	       <<"tmp_list["<<(tmp_list.size()-1)<<"][6] = "
+      //	       <<tmp_list[tmp_list.size()-1][6]<<"."<<std::endl;
       if (tmp_list[0][4]==tmp_list[tmp_list.size()-1][6]) {
 	char hi[2];
 	sprintf(hi,"%i",(int)tmp_list.size());
@@ -1047,6 +1073,7 @@ void CFColor::ReplaceT(sknot* m)
     else {
       if (m->left->op==0) s2 = m->left;
     }
+    //msg_Out()<<"      "<<METHOD<<"("<<s1->Str()<<"*"<<s2->Str()<<")."<<std::endl;
     if (s2!=0) {
       if (s1->Str().length()==8 && s2->Str().length()==8) { 
 	if (s1->Str()[0]=='T' && s2->Str()[0]=='T' && s1->Str()[2]==s2->Str()[2]) {

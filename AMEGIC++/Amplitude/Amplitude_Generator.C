@@ -24,9 +24,10 @@ using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Model_Base * _model,Topology * _top,
-					 int _nQCD,int _nEW,
+					 int _nQCD,int _nEW,int _ntchan_min,
 					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
-  : fl(_fl), b(_b), p_model(_model), top(_top), N(_no), nEW(_nEW), nQCD(_nQCD),
+  : fl(_fl), b(_b), p_model(_model), top(_top), 
+    N(_no), nEW(_nEW), nQCD(_nQCD), ntchan_min(_ntchan_min),
     BS(_BS), shand(_shand), m_create_4V(create_4V)
 {
   single_top = top->Get(N-2);
@@ -435,7 +436,8 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
 	if ((prea_table[i].p[k].number>99) && ((prea_table[i].p[k].fl).IsBoson())) 
 	  prea_table[i].p[k].number += 100;
       }
-      if (CheckOrders(prea_table[i].p)) {
+      if (CheckOrders(prea_table[i].p) && 
+	  CheckTChannels(prea_table[i].p)) {
 	gra = new Single_Amplitude(prea_table[i].p,prea_table[i].top,prea_table[i].perm,b,dep,N,top,BS,fl,shand);
 	count++;
 	if (first) n->Next = gra;
@@ -713,7 +715,8 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     hitQED = N -2 - hitQCD;  // N = nin + nout
     if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
     if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
-    if ((nEW<99  && hitQED!=nEW) || (nQCD<99 && hitQCD!=nQCD)) {
+    if ((nEW<99  && hitQED!=nEW) || (nQCD<99 && hitQCD!=nQCD) ||
+	!CheckTChannels(f1->GetPointlist())) {
       ++count;
       if (f1==first) {
 	first = f1->Next;
@@ -738,6 +741,14 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 
+bool Amplitude_Generator::CheckTChannels(Point * p) {
+  int ntchan(-1);
+  p->CountT(ntchan,0);
+  msg_Debugging()<<METHOD<<" yields "<<ntchan<<" t-channel props, "
+		 <<"("<<ntchan_min<<"), start = "<<p->fl<<"."<<std::endl;
+  if (ntchan>=ntchan_min) return true;
+  return false;
+}
  
 bool Amplitude_Generator::CheckOrders(Point * p)
 {
@@ -1184,7 +1195,9 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
 	SetProps(single_top->p[j],2*N-3,first_amp,perm,j,count);
 	
-//  	Print_P(&single_top->p[j][0]);
+	//msg_Out()<<"-----------------------------------"<<std::endl;
+	//msg_Out()<<"  "<<single_top->p[j][0].fl<<"("<<single_top->p[j][0].b<<")"<<endl;
+  	//Print_P(&single_top->p[j][0]);
       }
     }     
     for (j=nloop-1;j>=0;j--) {

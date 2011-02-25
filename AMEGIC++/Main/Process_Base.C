@@ -54,6 +54,7 @@ void AMEGIC::Process_Base::Init()
   p_pinfo->GetTotalPolList(p_pl+NIn());
   SetOrderQCD(m_pinfo.m_oqcd);
   SetOrderEW(m_pinfo.m_oew);
+  SetNTchanmin(m_pinfo.m_ntchan);
   p_b    = new int[NIn()+NOut()];
   for (size_t i=0;i<NIn();i++) p_b[i] = -1; 
   for (size_t i=NIn();i<NIn()+NOut();i++) p_b[i] = 1; 

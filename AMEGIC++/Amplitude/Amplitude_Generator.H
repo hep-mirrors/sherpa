@@ -31,7 +31,7 @@ namespace AMEGIC {
     int                    * b;
     MODEL::Model_Base      * p_model;
     Topology               * top;
-    int                      N,nEW,nQCD;
+    int                      N,nEW,nQCD,ntchan_min;
 
     Single_Topology        * single_top;
     std::vector<Pre_Amplitude> prea;
@@ -54,6 +54,7 @@ namespace AMEGIC {
     int  SingleCompare(Point*,Point*);
     void CountOrders(Single_Amplitude* &);
     bool CheckOrders(Point * p);
+    bool CheckTChannels(Point * p);
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
     int  CompareColors(Point*,Point*);
@@ -72,7 +73,7 @@ namespace AMEGIC {
     int CountRealAmplitudes(Single_Amplitude* first);
   public:
     Amplitude_Generator(int,ATOOLS::Flavour *,int *,MODEL::Model_Base *,Topology *,
-			int,int,Basic_Sfuncs *,String_Handler *,bool=true);
+			int,int,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();
     void GetOrders(int& qed,int& qcd) {qed=nEW;qcd=nQCD;}

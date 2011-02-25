@@ -101,8 +101,8 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   //////////////////////////////////////////////
 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
-  int oew(m_oew), oqcd(m_oqcd);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
+  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
 				   &m_cpls,p_BS,p_shand,m_print_graphs,0);
   m_oew=oew;
   m_oqcd=oqcd;

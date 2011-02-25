@@ -158,6 +158,29 @@ int Point::CountKK()
   return KKnum;
 }
 
+bool Point::CountT(int & tchan,const long unsigned int & kfcode) {
+  long unsigned int comp;
+  if (left) {
+    if (left->CountT(tchan,kfcode)) { 
+      comp=left->fl.Kfcode();
+      if (comp==kfcode || kfcode==0) tchan++; 
+      return true;
+    }
+    if (right->CountT(tchan,kfcode)) {
+      comp=right->fl.Kfcode();
+      if (comp==kfcode || kfcode==0) tchan++; 
+      return true;
+    }
+    if (middle && middle->CountT(tchan,kfcode)) {
+      comp=middle->fl.Kfcode();
+      if (comp==kfcode || kfcode==0) tchan++; 
+      return true;
+    }
+  }
+  else if (b==-1) return true;
+  return false;
+}
+
 void Point::GeneratePropID()
 {
   propid=0;
@@ -259,3 +282,4 @@ if (!this) return oqed;
   if (middle) middle->FindQEDOrder(oqed);
   return oqed;
 }
+

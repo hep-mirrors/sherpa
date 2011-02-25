@@ -21,7 +21,8 @@ using namespace std;
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Model_Base * model,Topology* top,
-				     int & _orderQCD,int & _orderEW,MODEL::Coupling_Map *const cpls,
+				     int & _orderQCD,int & _orderEW,int & _ntchan,
+				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     bool print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
@@ -48,7 +49,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   else sfl=fl;
 
   //core process
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,BS,shand,create_4V);
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,_ntchan,BS,shand,create_4V);
   subgraphlist[0] = gen->Matching();
   gen->GetOrders(_orderEW,_orderQCD);
   delete gen;
@@ -60,7 +61,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 //     pi->Print();cout<<endl;
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
-    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,99,99,BS,shand);
+    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,99,99,-99,BS,shand);
     subgraphlist[i] = gen->Matching();
     if (subgraphlist[i]==NULL) {
       ndecays = 0;
@@ -221,7 +222,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 	  if (fl[j].IsGluon()) cspect+='A';
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
-	  
+	  //msg_Out()<<METHOD<<" new CFColor("<<sij<<")."<<std::endl;
 	  CFColor* mcfc = new CFColor(N,firstgraph,cemit,cspect,sij);
 	  CFCol_MMatrixMap[i*100+j] = mcfc;
 	}
@@ -381,8 +382,10 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
       }
     }
   }
-  for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
-
+  for (int i=0;i<CFCol_Matrix->MatrixSize();i++) {
+    //msg_Out()<<METHOD<<" push_back new Colour_Group["<<i<<"]."<<std::endl;
+    graphs.push_back(new Color_Group());
+  }
   n = firstgraph;
 
   // fill color groups

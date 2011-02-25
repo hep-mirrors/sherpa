@@ -114,6 +114,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	m_iresult = p_partner->Result()*m_sfactor;
 	m_oqcd=p_partner->OrderQCD();
 	m_oew=p_partner->OrderEW();
+	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 	return true;
       }
@@ -169,11 +170,12 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
-  int oew(m_oew), oqcd(m_oqcd);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
+  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
 				   &m_cpls,p_BS,p_shand,m_print_graphs,!directload);
   m_oew=oew;
   m_oqcd=oqcd;
+  m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -359,11 +361,12 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
 
  
-  int oew(m_oew), oqcd(m_oqcd);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,
+  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
 				   &m_cpls,p_BS,p_shand,m_print_graphs,!directload);
   m_oew=oew;
   m_oqcd=oqcd;
+  m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -1066,6 +1069,7 @@ void Single_LOProcess::Minimize()
 
   m_oqcd      = p_partner->OrderQCD();
   m_oew       = p_partner->OrderEW();
+  m_ntchanmin = p_partner->NTchanMin();
 }
 
 
