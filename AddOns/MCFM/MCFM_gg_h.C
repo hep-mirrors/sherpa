@@ -154,6 +154,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
 Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 {
+  msg_Out()<<METHOD<<"."<<std::endl;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
@@ -183,6 +184,7 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
       exit(1);
       return NULL;
     }
+    msg_Out()<<" ... check for tau tau FS."<<std::endl;
     // tau tau final state
     if ((fl.size()==4 || fl.size()==5) && 
 	(fl[2]==fl[3].Bar() && fl[2].Kfcode()==15)) {

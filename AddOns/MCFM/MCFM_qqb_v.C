@@ -125,14 +125,22 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl[0].Strong() && fl[1].Strong() &&
 	fl[2].IsLepton() && fl[3].IsLepton()) {
-      if ((fl[2]==fl[3].Bar() && ATOOLS::Flavour(kf_b).Yuk()>0.) ||
+      if (MODEL::s_model->Name()==std::string("SM+EHC") &&
+	  pi.m_fi.m_ps.size()>0 && pi.m_fi.m_ps[0].m_fl[0]==ATOOLS::Flavour(kf_h0)) {
+	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+		   <<"   Try to initialise process with intermediate Higgs boson.\n"
+		   <<std::endl<<"   Will return 0 and hope for the best."<<std::endl;
+	return NULL;
+      }
+      if ((fl[2]==fl[3].Bar() && ATOOLS::Flavour(kf_b).Yuk()>0. &&
+	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
 	  MODEL::s_model->Name()!=std::string("SM")) {
 	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		   <<"   Try to initialise process qqb->llbar in MCFM."<<std::endl
+		   <<"   Try to initialise process qqb->llbar in MCFM.\n"
 		   <<"   Inconsistent setting with Sherpa: "<<std::endl
 		   <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()
 		   <<" (should be 0 for llbar, to play it safe), and "
-		   <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM'."
+		   <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM')."
 		   <<std::endl<<"   Will exit the run."<<std::endl;
 	exit(1);
 	return NULL;
