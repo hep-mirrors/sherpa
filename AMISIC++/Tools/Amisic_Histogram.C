@@ -404,6 +404,7 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
   reader->AddWordSeparator("\t");
   reader->SetAddCommandLine(false);
   reader->SetInputFile(filename);
+  reader->SetInterprete(false);
   reader->AddIgnore("!");
   reader->AddIgnore(":");
   if (!reader->ReadFromFile(m_xmin,"x_{min}")) {
