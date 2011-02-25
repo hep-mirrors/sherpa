@@ -428,15 +428,16 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vsfile,nf);
 	}
-	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
-	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
-	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
-	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
-	if (cur[0]=="Min_N_Quarks") pi.m_nminq=ToType<int>(cur[1]);
-	if (cur[0]=="Max_N_Quarks") pi.m_nmaxq=ToType<int>(cur[1]);
-	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
-	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
-	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);	
+	if (cur[0]=="N_T-channels")  pi.m_ntchan    = ToType<int>(cur[1]);
+	if (cur[0]=="Order_EW")      pi.m_oew       = ToType<int>(cur[1]);
+	if (cur[0]=="Order_QCD")     pi.m_oqcd      = ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_EW")  pi.m_maxoew    = ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd   = ToType<int>(cur[1]);
+	if (cur[0]=="Min_N_Quarks")  pi.m_nminq     = ToType<int>(cur[1]);
+	if (cur[0]=="Max_N_Quarks")  pi.m_nmaxq     = ToType<int>(cur[1]);
+	if (cur[0]=="Print_Graphs")  pi.m_gpath     = cur[1];
+	if (cur[0]=="Presample_MC")  pi.m_psmc      = ToType<int>(cur[1]);
+	if (cur[0]=="Enable_MHV")    pi.m_amegicmhv = ToType<int>(cur[1]);	
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmaxerr,nf);
@@ -595,6 +596,12 @@ void Matrix_Element_Handler::BuildSingleProcessList
         }
 	std::vector<Process_Base*> proc=InitializeProcess(cpi);
 	for (size_t i(0);i<proc.size();i++) {
+	  if (!proc[i]) {
+	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		       <<"   Could not initialize process["<<i<<"] for"
+		       <<std::endl
+		       <<cpi<<"."<<std::endl;
+	  }
 	  procs.push_back(proc[i]);
 	  proc[i]->Integrator()->
 	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
