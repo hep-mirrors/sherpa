@@ -10,6 +10,7 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
   ostr<<"("<<&info<<"){\n";
   {
     ostr<<"  cls = "<<info.m_cls<<", hls = "<<info.m_hls<<"\n";
+    ostr<<"  minimal number of t-channel propagators = "<<info.m_ntchan<<"\n";
     ostr<<"  oew = "<<info.m_oew<<", oqcd = "<<info.m_oqcd
 	<<", maxoew = "<<info.m_maxoew<<", maxoqcd = "<<info.m_maxoqcd<<"\n";
     ostr<<"  psmc = "<<info.m_psmc<<", ckkw = "<<info.m_ckkw

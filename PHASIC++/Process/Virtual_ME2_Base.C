@@ -24,7 +24,7 @@ Virtual_ME2_Base::~Virtual_ME2_Base()
 double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   //MSbar
-   return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
+  return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
 }
 
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>
