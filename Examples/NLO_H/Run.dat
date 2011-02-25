@@ -1,19 +1,16 @@
 (run){
-  EVENTS 1000000;
+  EVENTS 1;
   BATCH_MODE 0; OUTPUT 2;
+  MASSIVE[5]=1;
+  YUKAWA_B=0.;
+  FINITE_TOP_MASS=0
 }(run);
 
 (processes){
   Process 93 93 -> 25[a]
   Decay 25[a] -> 15 -15
-  NLO_QCD_Part BVI;
+  NLO_QCD_Part BVIRS;
   Loop_Generator Internal;
-  Order_EW 1;
-  End process
-
-  Process 93 93 -> 25[a]
-  Decay 25[a] -> 15 -15
-  NLO_QCD_Part RS;
   Order_EW 1;
   End process
 }(processes);
@@ -23,7 +20,7 @@
 }(selector)
 
 (me){
-  ME_SIGNAL_GENERATOR Amegic;
+  ME_SIGNAL_GENERATOR Amegic MCFM;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 1;
   SCALES = VAR{Abs2(p[2]+p[3])}{Abs2(p[2]+p[3])}{Abs2(p[2]+p[3])}
