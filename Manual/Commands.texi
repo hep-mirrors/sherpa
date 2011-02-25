@@ -48,7 +48,10 @@ Set the analysis output path to @samp{<path>},
 see @ref{ANALYSIS_OUTPUT}.
 
 @item -O <level>
-Set output level @samp{<level>}, see @ref{OUTPUT}.
+Set general output level @samp{<level>}, see @ref{OUTPUT}.
+
+@item -o <level>
+Set output level for event generation @samp{<level>}, see @ref{OUTPUT}.
 
 @item -j <threads>
 Set number of threads @samp{<threads>}, see @ref{Multi-threading}.

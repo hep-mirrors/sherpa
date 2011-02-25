@@ -33,10 +33,13 @@ It can alternatively be set on the command line through option
 @node OUTPUT
 @subsection OUTPUT
 @cindex OUTPUT
+@cindex EVT_OUTPUT
 This parameter specifies the output level (verbosity) of the program.
 @*
 It can alternatively be set on the command line through option
-@option{-O}, see @ref{Command line}.
+@option{-O}, see @ref{Command line}. A different output level can be 
+specified for the event generation step through @option{EVT_OUTPUT}
+or command line option @option{-o}, see @ref{Command line}
 
 The value can be any sum of the following:
 @itemize @bullet
