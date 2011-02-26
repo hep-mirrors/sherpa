@@ -58,8 +58,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0)));
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
 	if (fi.m_pk.PPlus()>sum.PPlus() ||
-	    fi.m_pk.PMinus()>sum.PMinus() ||
-	    fi.m_pk[0]<p_shower->GetSudakov()->PT2Min() || fi.m_stat!=1) return cs;
+	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
 	  -sqr(1.0-fi.m_z)*mi2-sqr(fi.m_z)*mj2;
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin);
@@ -72,8 +71,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
 	if (fi.m_pi.PPlus()>sum.PPlus() ||
-	    fi.m_pi.PMinus()>sum.PMinus() ||
-	    fi.m_pi[0]<p_shower->GetSudakov()->PT2Min() || fi.m_stat!=1) return cs;
+	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z)-mj2-sqr(1.0-fi.m_z)*mi2;
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
       }
