@@ -6,7 +6,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace PHASIC;
 
-Amegic_Base::Amegic_Base() : p_pinfo(0)
+Amegic_Base::Amegic_Base() : p_pinfo(0), m_ntchanmin(-99)
 {}
 
 Amegic_Base::~Amegic_Base()

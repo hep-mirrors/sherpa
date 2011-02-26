@@ -10,12 +10,17 @@ namespace AMEGIC {
   class Amegic_Base {
   protected:
     Process_Tags *p_pinfo;
+    int m_ntchanmin;
   public:
     Amegic_Base();
     virtual ~Amegic_Base();
     virtual bool PerformTests() = 0;
     virtual bool NewLibs() = 0;
     virtual void Minimize() = 0;
+
+    inline void SetNTchanmin(const size_t &ntch) { m_ntchanmin=ntch; }
+
+    inline size_t NTchanMin() const  { return m_ntchanmin; }
 
     Pol_Info ExtractPolInfo(const PHASIC::Subprocess_Info &spi);
 

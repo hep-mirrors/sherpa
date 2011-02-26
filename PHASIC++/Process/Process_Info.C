@@ -10,7 +10,6 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
   ostr<<"("<<&info<<"){\n";
   {
     ostr<<"  cls = "<<info.m_cls<<", hls = "<<info.m_hls<<"\n";
-    ostr<<"  minimal number of t-channel propagators = "<<info.m_ntchan<<"\n";
     ostr<<"  oew = "<<info.m_oew<<", oqcd = "<<info.m_oqcd
 	<<", maxoew = "<<info.m_maxoew<<", maxoqcd = "<<info.m_maxoqcd<<"\n";
     ostr<<"  psmc = "<<info.m_psmc<<", ckkw = "<<info.m_ckkw
@@ -18,7 +17,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
     ostr<<"  gpath = '"<<info.m_gpath<<"'\n";
     ostr<<"  loopgenerator = '"<<info.m_loopgenerator<<"', selectorfile = '"
-        <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n";
+        <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n"
+	<<"  min t-channels = "<<info.m_ntchan<<"\n";
     info.m_ii.Print(ostr,2);
     info.m_fi.Print(ostr,2);
   }

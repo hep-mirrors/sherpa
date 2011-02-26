@@ -46,7 +46,7 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    size_t      m_nin, m_nout, m_oqcd, m_oew, m_ntchanmin,m_tinfo;
+    size_t      m_nin, m_nout, m_oqcd, m_oew, m_tinfo;
     std::string m_name;
 
     ATOOLS::Flavour_Vector m_flavs;
@@ -150,13 +150,11 @@ namespace PHASIC {
 
     inline const std::string &Name() const { return m_name; }
 
-    inline void SetNTchanmin(const size_t &ntch) { m_ntchanmin=ntch; }
-    inline void SetOrderQCD(const size_t &oqcd)  { m_oqcd=oqcd; }
-    inline void SetOrderEW(const size_t &oew)    { m_oew=oew;   }
+    inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
+    inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
 
-    inline size_t NTchanMin() const  { return m_ntchanmin; }
-    inline size_t OrderQCD() const   { return m_oqcd; }
-    inline size_t OrderEW() const    { return m_oew;  }
+    inline size_t OrderQCD() const { return m_oqcd; }
+    inline size_t OrderEW() const  { return m_oew;  }
 
     PDF::Shower_Base *Shower() const { return p_shower; }
 

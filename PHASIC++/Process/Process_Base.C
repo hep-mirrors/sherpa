@@ -21,7 +21,7 @@ Process_Base::Process_Base():
   p_cuts(NULL), p_gen(NULL), p_shower(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), 
-  m_oqcd(0), m_oew(0), m_ntchanmin(-99), m_tinfo(1),
+  m_oqcd(0), m_oew(0), m_tinfo(1),
   m_lookup(false), m_use_biweight(true)
 {
   m_last[1]=m_last[0]=0.0;
