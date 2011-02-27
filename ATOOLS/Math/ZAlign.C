@@ -12,11 +12,9 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
   Vec4D Q(pa+pb);
   double Q2=Q.Abs2(), papb=0.5*(Q2-ma2-mb2);
   if (!IsEqual(papb,pa*pb,1.0e-3) && !(mode&1))
-    {    msg_Error()<<METHOD<<"(): p_a*p_b = "<<papb
+    msg_Error()<<METHOD<<"(): p_a*p_b = "<<papb
 	       <<" vs. "<<pa*pb<<", rel. diff. "
 	       <<papb/(pa*pb)-1.0<<std::endl;
-  abort();
-}
   if (!IsZero(pb[1],1.0e-3) || !IsZero(pb[2],1.0e-3))
     msg_Error()<<METHOD<<"(): p_b not aligned -> "
 	       <<pb<<std::endl;
