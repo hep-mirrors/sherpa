@@ -466,7 +466,14 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vnloew,nf);
 	}
-	if (cur[0]=="Loop_Generator") pi.m_loopgenerator=cur[1];
+	if (cur[0]=="ME_Generator") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vmegen,nf);
+	}
+	if (cur[0]=="Loop_Generator") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vloopgen,nf);
+	}
         pi.p_gens=&m_gens;
 	if (cur[0]=="End" && cur[1]=="process") break;
       }
@@ -594,6 +601,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
           cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
           cpi.m_nlomode=m_nlomode;
         }
+	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
+	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
@@ -800,6 +809,9 @@ namespace SHERPA {
       return;
     }
     std::string hstr = str.substr(0,position);
+    for (size_t hl=hstr.length();hl && 
+	   (hstr[hl-1]==' ' || hstr[hl-1]=='\t');
+	 hl=hstr.length()) hstr.erase(hl-1);
     Type value = ExtractMPvalue<Type>(hstr);
     str = str.substr(position+1,str.length()-position-2);
     do {

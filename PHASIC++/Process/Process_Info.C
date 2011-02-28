@@ -15,10 +15,11 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
     ostr<<"  psmc = "<<info.m_psmc<<", ckkw = "<<info.m_ckkw
 	<<", nlo = "<<info.m_nlomode<<", mhv = "<<info.m_amegicmhv<<"\n";
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
-    ostr<<"  gpath = '"<<info.m_gpath<<"'\n";
-    ostr<<"  loopgenerator = '"<<info.m_loopgenerator<<"', selectorfile = '"
-        <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n"
-	<<"  min t-channels = "<<info.m_ntchan<<"\n";
+    ostr<<"  megenerator = '"<<info.m_megenerator
+	<<"',  loopgenerator = '"<<info.m_loopgenerator<<"'\n  selectorfile = '"
+        <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n";
+    ostr<<"  gpath = '"<<info.m_gpath
+	<<"', min t-channels = "<<info.m_ntchan<<"\n";
     info.m_ii.Print(ostr,2);
     info.m_fi.Print(ostr,2);
   }
