@@ -54,6 +54,8 @@ namespace AHADIC {
 		     const Flavour_Pair & flpair2) {
       if (flpair1.first==flpair2.first &&
 	  flpair1.second==flpair2.second) return true;
+      if (flpair1.first==flpair2.second &&
+	  flpair1.second==flpair2.first) return true;
       if ((flpair1.first.HadMass()+flpair1.second.HadMass())<=
 	  (flpair2.first.HadMass()+flpair2.second.HadMass())) return false;
       return true;
