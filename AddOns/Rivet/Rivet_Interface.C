@@ -107,7 +107,6 @@ public:
       if (jetcont!=0) out+=".j"+ToString(jetcont);
       AnalysisHandler* rivet(new AnalysisHandler(out, "", AIDAML));
       rivet->addAnalyses(m_analyses);
-      rivet->init();
       m_rivet.insert(std::make_pair(key, rivet));
       return rivet;
     }
