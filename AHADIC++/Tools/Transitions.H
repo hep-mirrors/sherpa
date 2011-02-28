@@ -36,7 +36,6 @@ namespace AHADIC {
   public:
     Single_Transitions();
     ~Single_Transitions();
-    bool                    MustDesintegrate(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     ATOOLS::Flavour         GetLightestConstituent() { return m_lightest_constituent; }
     ATOOLS::Flavour         GetLightestTransition(const Flavour_Pair &);
     ATOOLS::Flavour         GetHeaviestTransition(const Flavour_Pair &);
@@ -145,16 +144,6 @@ namespace AHADIC {
   /*!
     \fn Single_Transitions::~Single_Transitions()
     \brief Delete the Single_Transition_Map Single_Transitions::p_transitions. 
-  */
-  /*!
-    \fn bool Single_Transitions::MustDesintegrate(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
-    \brief Chcks if a cluster made of diquarks can decay into two baryons or must
-    decay into two mesons by breaking up te diquarks.
-
-    If the cluster consists of two diquarks, and if the two lightest possible baryons
-    are heavier than the cluster, then the two lightest mesons consisting of the quarks
-    and antiquarks, that build the diquarks in the cluster, are selected and "true" is
-    returned. 
   */
   /*!
     \fn ATOOLS::Flavour Single_Transitions::GetLightestConstituent() 

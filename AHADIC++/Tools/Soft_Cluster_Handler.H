@@ -46,7 +46,7 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
 
-    bool          TreatSingleCluster(Cluster *,ATOOLS::Blob *);
+    bool          TreatSingleCluster(Cluster *);
     bool          CheckListForTreatment(Cluster_List *);
     int           CheckCluster(Cluster *,bool);
 
@@ -75,7 +75,7 @@ namespace AHADIC {
   public:
     Soft_Cluster_Handler(bool ana=false);
     ~Soft_Cluster_Handler();
-    bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *,bool cludec=false);
+    bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *);
     bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
     bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,const bool & constrained,
 				Cluster_List * clin=0);
@@ -229,11 +229,7 @@ namespace AHADIC {
     \brief Construct decay and transformation weights for clusters and corresponding channels. 
 
     The algorithm here proceeds as follows:
-    - First of all, the cluster is checked whether it must disintegrate.  This is the case
-      only for relatively light clusters, consisting of two diquarks.  The check is performed 
-      and the emerging hadrons are determined through a call to the method
-      Single_Transitions::MustDesintegrate(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &).
-    - Then decay weight and transformation weight plus eventually emerging hadrons are determined
+    - First decay weight and transformation weight plus eventually emerging hadrons are determined
       by calling Soft_Cluster_Handler::DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
       and Soft_Cluster_Handler::TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false), 
       respectively.  If both are zero, the method terminates here.

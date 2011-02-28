@@ -80,16 +80,15 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
   }
 }
 
-bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,bool cludec)
+bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   msg_Debugging()<<METHOD<<"-----------------------------------------------------"<<std::endl;
-  if (clin->size()==1)              return TreatSingleCluster(*clin->begin(),blob);
-  if (cludec && clin->size()==2)    return TreatClusterDecay(clin,blob);
+  if (clin->size()==1)              return TreatSingleCluster(*clin->begin());
+  // if (clin->size()==2) msg_Out()<<METHOD<<"++++++++++ Maybe we shouldn't be here"<< std::endl;
 
   if (!CheckListForTreatment(clin)) return true;
   m_lists++;
   double E(-1.);
-
   if (!CheckIfAllowed(clin,E)) {
     msg_Debugging()<<"---------------------------------------------------------------"<<std::endl
 		   <<METHOD<<" for "<<clin->size()<<" clusters."<<std::endl;
@@ -115,7 +114,6 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,boo
   }
 
   if (ShiftMomenta(clin)) {
-    //msg_Out()<<"From "<<METHOD<<"."<<std::endl;
     return AttachHadronsToBlob(clin,blob);
   }
 
@@ -125,10 +123,9 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob,boo
   return false;
 }
 
-bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster, Blob * blob)
+bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster)
 {
   switch (CheckCluster(cluster,true)) {
-  case -1:
   case 1:
     msg_Debugging()<<"Potential problem in "<<METHOD<<" : "<<std::endl
 		   <<"   Clusterlist with one element that needs to transform to a hadron."
@@ -136,7 +133,11 @@ bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster, Blob * blob)
 		   <<"   Will possibly lead to retrying the event."<<std::endl;
     return false;
   case 2:
+    //msg_Out() << METHOD << "  case = 2 \n";
+    //break;
   case 0:
+    //msg_Out() << METHOD << "  case = 0 \n";
+    //break;
   default:
     break;
   }
@@ -147,6 +148,7 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
 {
   if (!CheckListForTreatment(clin)) return true;
 
+  //if (clin->size()!=2) msg_Out()<<METHOD<<"++++++++++ We shouldn't be here"<< std::endl;
   Cluster_Iterator cit=clin->begin();
   Cluster * left((*cit++)), * right((*cit));
   Cluster * cluster(right->GetPrev());
@@ -172,7 +174,6 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
     return true;
   }  
   if (UpdateClusterDecayKinematics((*clin->begin())->GetPrev())) {
-    //msg_Out()<<"From "<<METHOD<<"."<<std::endl;
     return AttachHadronsToBlob(clin,blob);
   }
   return false;
@@ -261,12 +262,7 @@ bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
     cluster = (*cit);
     if (cluster==NULL || !cluster->Active()) continue;
     size = CheckCluster(cluster,false);
-    switch (size) {
-    case -1:
-      return false;
-    default:
-      count += size;
-    }
+    count += size;
   }
   if (count==0) return false;
   return true;
@@ -279,20 +275,29 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
 
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none)), hadtrans(Flavour(kf_none));
 
+  //msg_Out() << METHOD << " cluster  " << *cluster << std::endl;
   double decayweight(DecayWeight(cluster,haddec1,haddec2,false));
   double transformweight(TransformWeight(cluster,hadtrans,lighter,false));
+  //msg_Out() << METHOD << " haddec1  " << haddec1  << std::endl;
+  //msg_Out() << METHOD << " haddec2  " << haddec2  << std::endl;
+  //msg_Out() << METHOD << " hadtrans " << hadtrans << std::endl;
   if (decayweight>0. || transformweight>0.) {
+    //if (lighter && decayweight>0.) msg_Out()<<METHOD<<" entered via decayweight";
+    //if (lighter && transformweight>0.) msg_Out()<<METHOD<<" entered via transformweight";
     msg_Debugging()<<"@@@@ "<<METHOD<<" for cluster ("<<cluster->Number()<<":"
 		   <<cluster->GetTrip()->m_flav<<"("<<cluster->GetTrip()->m_info<<"), "
 		   <<cluster->GetAnti()->m_flav<<"("<<cluster->GetAnti()->m_info<<"), "
 		   <<"m = "<<cluster->Mass()<<") --> ";
     double totweight((decayweight+Max(0.,transformweight))*0.9999999);
+    //if (lighter) msg_Out()<<METHOD<<" ------------";
     if (transformweight<=0. || decayweight/totweight>ran.Get()) {
+      //if (lighter) msg_Out()<<" decaying."<<std::endl;
       m_decays      += 1;
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
       return 2;
     }
+    //if (lighter) msg_Out()<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
     if (transformweight>0.) {
       m_transitions += 1;
       cluster->push_back(hadtrans);
@@ -413,7 +418,7 @@ bool Soft_Cluster_Handler::ClusterAnnihilation(Cluster * cluster,Flavour & had1,
       else return false;
     }
   }
-  //std::cout<<"====================================================="<<std::endl
+  //msg_Out()<<"====================================================="<<std::endl
   //	   <<" "<<METHOD<<" for "
   //	   <<cluster->GetTrip()->m_flav<<"/"<<cluster->GetAnti()->m_flav
   //	   <<" with mass = "<<mass<<" --> "<<std::endl
@@ -466,13 +471,13 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
   std::vector<double> masses;
   std::vector<Vec4D>  momenta;
   Cluster * cluster;
-  //std::cout<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
+  //msg_Out()<<"{{{ "<<METHOD<<" : }}}"<<std::endl;
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
     cluster = (*cit);
-    //std::cout<<"   "<<cluster->Number()<<" ("<<cluster->size()<<") ";
+    //msg_Out()<<"   "<<cluster->Number()<<" ("<<cluster->size()<<") ";
     switch (cluster->size()) {
     case 1: 
-      //std::cout<<"with "<<(*cluster)[0]<<" from "<<cluster->Momentum().Abs2()<<"."<<std::endl;
+      //msg_Out()<<"with "<<(*cluster)[0]<<" from "<<cluster->Momentum().Abs2()<<"."<<std::endl;
       masses.push_back((*cluster)[0].HadMass());
       momenta.push_back(cluster->Momentum());
       ++size;
