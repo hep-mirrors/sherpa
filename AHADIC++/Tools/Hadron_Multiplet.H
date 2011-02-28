@@ -287,7 +287,7 @@ namespace AHADIC {
     \brief Here the baryon wave functions are constructed from the spin, the angular momentum
     and the three quark flavour indices \f$q_1\f$, \f$q_2\f$, and \f$q_3\f$. The problem here is to
     map them onto \f$SU(6)\f$ wave functions made of quark-diquark pairs. A solution can be found 
-    in D.B.Lichtenberg, W.Namgung, J.G.Wills, and E.Predazzi.
+    in D.B.Lichtenberg, W.Namgung, J.G.Wills, and E.Predazzi, Z.Phys.C19 (1983) 19.
 
     In the following \f$d^{S,V}_{ij}\f$ stands for scalar or vector diquarks made of the quarks i and j. 
     For the octet baryons, there are various cases to be considered:
