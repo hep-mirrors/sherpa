@@ -96,15 +96,16 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   ////PRINT_VAR(m_momentum);
   s_cluster_count++;
   s_actives.push_back(this);
-  if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
+  if (p_trip && p_anti &&
+      ((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
       ((p_anti->m_flav.IsQuark() && p_anti->m_flav.IsAnti()) || 
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
-  msg_Error()<<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
-	     <<"   Cannot handle this colour structure, will abort the run."<<std::endl
-	     <<"   Please contact the Sherpa group for further assistance."<<std::endl;
-  abort();
+  msg_Error()<<"Error in Cluster::Cluster"
+	     <<"("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
+	     <<"   Cannot handle this colour structure, will ignore it."
+	     <<std::endl;
 }
 
 Cluster::~Cluster() 

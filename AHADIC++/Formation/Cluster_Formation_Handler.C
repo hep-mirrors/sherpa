@@ -70,12 +70,12 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 		 <<"=================================================================="<<std::endl
 		 <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons."<<std::endl
 		 <<(*blob)<<std::endl;
-  if (!ExtractSinglets(blob))      { return -1; }
-  if (!ShiftOnMassShells())        { return -1; }
-  if (!FormOriginalClusters())     { return -1; }
-  if (!ApplyColourReconnections()) { return 0; }
-  if (!MergeClusterListsIntoOne()) { return 0; }
-  if (!ClustersToHadrons(blob))    { return -1; }
+  if (!ExtractSinglets(blob))      { Reset(); return -1; }
+  if (!ShiftOnMassShells())        { Reset(); return -1; }
+  if (!FormOriginalClusters())     { Reset(); return -1; }
+  if (!ApplyColourReconnections()) { Reset(); return 0; }
+  if (!MergeClusterListsIntoOne()) { Reset(); return 0; }
+  if (!ClustersToHadrons(blob))    { Reset(); return -1; }
 
   return 1;
 }
@@ -127,7 +127,6 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 		   <<"   Cannot deal with this fragmentation blob: "<<std::endl
 		   <<(*blob)<<std::endl
 		   <<"   Will try new event."<<std::endl;
-	Reset();
 	return false;
       }
     }
@@ -193,7 +192,6 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
 // 		   <<"   Cannot shift single particle on its mass shells:"<<std::endl
 // 		   <<"   "<<(*nonshiftables.front())<<"."<<std::endl
 // 		   <<"   Will trigger new event."<<std::endl;
-	Reset();
 	delete nonshiftables.front();
 	return false;
       }
@@ -234,7 +232,6 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
 	delete shiftables.front();
 	shiftables.pop_front();
       }
-      Reset();
       return false;
     }
     shiftables.pop_front();
@@ -326,7 +323,6 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
       pplit=m_partlists.erase(pplit);
     }
     else {
-      Reset();
       return false;
     }
   }
