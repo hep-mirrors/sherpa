@@ -37,8 +37,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   p_eint(NULL), p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
-  m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
-  m_weight(1.)
+  m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -470,7 +469,6 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
   if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
-  m_weight=1.;
   for (int j=1, i=1;i<m_maxtrials+1;i++) {
     cur->RestoreInOrder();
     p_isrhandler->SetRunMode(1);
@@ -568,7 +566,6 @@ Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mod
 	wgtinfo->m_x2=p_isrhandler->X2();
       }
     }
-    m_weight=value;
     return new Weight_Info(2,value,dxs,1.0,xf1,xf2,mu12,mu22);
   }
 
