@@ -219,13 +219,13 @@ bool Gluon_Decayer::DecayDipoles() {
       }
     }
     else {
-      AfterSplit(dipiter);
       if (m_analyse) {
 	Histogram* histo((m_histograms.find(std::string("PT_Gluon")))->second);
 	histo->Insert(sqrt(p_splitter->PT2()));
 	Histogram* histo2((m_histograms.find(std::string("DecayedDipoleMass")))->second);
 	histo2->Insert(sqrt(p_splitter->Mass2()));
       }
+      AfterSplit(dipiter);
     }
 #ifdef AHAmomcheck
     SplitIt(dipiter,checkbef);

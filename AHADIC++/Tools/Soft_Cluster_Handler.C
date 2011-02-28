@@ -288,7 +288,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
 		   <<cluster->GetTrip()->m_flav<<"("<<cluster->GetTrip()->m_info<<"), "
 		   <<cluster->GetAnti()->m_flav<<"("<<cluster->GetAnti()->m_info<<"), "
 		   <<"m = "<<cluster->Mass()<<") --> ";
-    double totweight((decayweight+Max(0.,transformweight))*0.9999999);
+    double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
     //if (lighter) msg_Out()<<METHOD<<" ------------";
     if (transformweight<=0. || decayweight/totweight>ran.Get()) {
       //if (lighter) msg_Out()<<" decaying."<<std::endl;
