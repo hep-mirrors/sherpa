@@ -9,6 +9,7 @@ using namespace std;
 
 
 Single_Transitions::Single_Transitions() :
+  m_singletsuppression2(sqr(hadpars.Get("Singlet_Suppression"))),
   p_transitions(new Single_Transition_Map)
 {
   Constituents * constituents = hadpars.GetConstituents();
@@ -32,26 +33,30 @@ Single_Transitions::Single_Transitions() :
     hadron = wf->first;
     waves  = wf->second->GetWaves();
     wt     = wf->second->MultipletWeight();
-    //std::cout<<"Try to include new hadron : "<<hadron<<" --> "<<wt<<"."<<std::endl;
-    for (WFcompiter singlewave=waves->begin();singlewave!=waves->end();singlewave++) {
-      stiter = p_transitions->find((*(singlewave->first)));
-      wtprod = wt * sqr(singlewave->second);
-      if (wtprod>0. && stiter!=p_transitions->end()) {
-	(*stiter->second)[hadron] += wtprod;
-      }
-      else {
+    if (wt>0.) {
+      //std::cout<<"Try to include new hadron : "<<hadron<<" --> "<<wt<<"."<<std::endl;
+      for (WFcompiter singlewave=waves->begin();singlewave!=waves->end();singlewave++) {
+	stiter = p_transitions->find((*(singlewave->first)));
+	wtprod = wt * sqr(singlewave->second);
+	if (singlewave->first->first.Kfcode()==singlewave->first->second.Kfcode() &&
+	    singlewave->first->first.Kfcode()<4) wtprod *= sqrt(m_singletsuppression2/3.+2./3.);
 	//std::cout<<"New Single Transition List for "
-	//	 <<singlewave->first->first<<" "<<singlewave->first->second<<" --> "
-	//	 <<singlewave->second<<" in "<<hadron<<std::endl;
-	if (wtprod>0.) {
-	  stl = new Single_Transition_List;
-	  (*stl)[hadron] = wtprod;
-	  (*p_transitions)[(*(singlewave->first))] = stl;
+	//	 <<singlewave->first->first<<" "<<singlewave->first->second
+	//	 <<" ("<<singlewave->first->first.Kfcode()<<" "<<singlewave->first->second.Kfcode()<<") "
+	//	 <<" --> "<<singlewave->second<<" in "<<hadron<<" --> w_eff = "<<wtprod<<"."<<std::endl;
+	if (wtprod>0. && stiter!=p_transitions->end()) {
+	  (*stiter->second)[hadron] += wtprod;
+	}
+	else {
+	  if (wtprod>0.) {
+	    stl = new Single_Transition_List;
+	    (*stl)[hadron] = wtprod;
+	    (*p_transitions)[(*(singlewave->first))] = stl;
+	  }
 	}
       }
     }
   }
-
   //PrintSingleTransitions();
 }
 
@@ -130,6 +135,11 @@ void Single_Transitions::PrintSingleTransitions()
 
 
 
+std::ostream & AHADIC::operator<<(std::ostream & s, const Double_Transition_List & dtl) {
+  for (Double_Transition_List::const_iterator diter=dtl.begin();diter!=dtl.end();diter++)
+    s<<"  {"<<diter->first.first<<", "<<diter->first.second<<"} = "<<diter->second<<std::endl;
+  return s;
+}
 
 
 
@@ -140,9 +150,8 @@ Double_Transitions::Double_Transitions() :
   Single_Transition_Map * singles = hadpars.GetSingleTransitions()->GetTransitions();
   Single_Transition_List * hads1, * hads2;
   Flavour trip,anti,popped;
-  Flavour_Pair flpair,hadpair,wf1,wf2;
+  Flavour_Pair flpair,hadpair,hadpair1,wf1,wf2;
   double popwt,weight,norm;
-  bool   found;
   Double_Transition_List * dtl;
   Double_Transition_Miter dtiter;
   for (FlavCCMap_Iterator iter1=constituents.begin();
@@ -156,11 +165,11 @@ Double_Transitions::Double_Transitions() :
       if (anti.IsQuark()) anti = anti.Bar();
       flpair.second = wf2.second = anti;
       //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar()) 
-      //	std::cout<<"  "<<trip<<" / "<<anti<<std::endl;
+      //std::cout<<"  "<<trip<<" / "<<anti<<std::endl;
 
       for (FlavCCMap_Iterator iter3=constituents.begin();
 	   iter3!=constituents.end();iter3++) {
-	norm = 0.;
+	norm  = 0.;
 	popwt = iter3->second->TotWeight();
 	if (popwt==0.) continue;
 	popped = iter3->first;
@@ -184,7 +193,7 @@ Double_Transitions::Double_Transitions() :
 		 haditer2!=hads2->end();haditer2++) {
 	      weight = haditer1->second * haditer2->second * popwt;
 	      //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar()) 
-	      //	std::cout<<"   add : "<<weight/popwt<<" "
+	      //	std::cout<<"---add : "<<weight/popwt<<" (pop = "<<popwt<<") "
 	      //		 <<"("<<(haditer1->second*haditer2->second)<<") for "
 	      //		 <<haditer1->first<<"("<<haditer1->second<<") * "
 	      //		 <<haditer2->first<<"("<<haditer2->second<<")."<<std::endl;
@@ -194,22 +203,37 @@ Double_Transitions::Double_Transitions() :
 		dtiter = p_transitions->find(flpair);
 		if (dtiter!=p_transitions->end()) {
 		  dtl   = dtiter->second;
-		  found = false;
-		  for (Double_Transition_Siter dit=dtl->begin();
-		       dit!=dtl->end();dit++) {
-		    if (hadpair.first==dit->first.first &&
-			hadpair.second==dit->first.second) {
-		      dit->second += weight;
-		      found = true;
-		      break;
-		    }
+		  if (dtl->find(hadpair)==dtl->end()) {
+		    //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar())
+		    // std::cout<<"new entry: "<<hadpair.first<<" / "<<hadpair.second<<"."<<std::endl;
+		    (*dtl)[hadpair] = weight;
 		  }
-		  if (!found) (*dtl)[hadpair] = weight;
+		  else {
+		    //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar())
+		    // std::cout<<"mod entry."<<std::endl;
+		    (*dtl)[hadpair] += weight;
+		  }
+		  //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar() && weight>0.) {
+		  // std::cout<<"  insert "<<hadpair.first<<" / "<<hadpair.second
+		  //	     <<" --> wt = "<<weight
+		  //	     <<" into --> "<<(*dtl)[hadpair];
+		  // Double_Transition_List::iterator didi = dtl->find(hadpair);
+		  // if (didi==dtl->end()) std::cout<<" not found.";
+		  // else std::cout<<" "<<didi->second;
+		  // hadpair1.first  = hadpair.second;
+		  // hadpair1.second = hadpair.first;
+		  // if (dtl->find(hadpair1)!=dtl->end())
+		  //   std::cout<<" wt1 = "<<(*dtl)[hadpair1];
+		  // std::cout<<std::endl<<(*dtl)<<std::endl;
+		  //}
 		}
 		else {
 		  dtl                      = new Double_Transition_List;
 		  (*dtl)[hadpair]          = weight;
 		  (*p_transitions)[flpair] = dtl;
+		  //if (trip==Flavour(kf_u) && anti==Flavour(kf_u).Bar() && weight>0.) 
+		  // std::cout<<"  new list "<<hadpair.first<<" / "<<hadpair.second
+		  //	     <<", wt = "<<weight<<"."<<std::endl;
 		}
 	      }
 	    }
@@ -222,12 +246,16 @@ Double_Transitions::Double_Transitions() :
   map<Flavour,double> checkit;
   for (Double_Transition_Miter dtiter=p_transitions->begin();
        dtiter!=p_transitions->end();dtiter++) {
-    //msg_Out()<<"Transitions for <"
-    //	     <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
+    //if (dtiter->first.first==Flavour(kf_u) && 
+    //	dtiter->first.second==Flavour(kf_u).Bar()) 
+    // std::cout<<"--- Transitions for <"
+    //	       <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
     for (Double_Transition_Siter dtit=dtiter->second->begin();
 	 dtit!=dtiter->second->end();dtit++) {
-      //msg_Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
-      //	       <<" with "<<dtit->second<<endl;
+      //if (dtiter->first.first==Flavour(kf_u) && 
+      //	  dtiter->first.second==Flavour(kf_u).Bar()) 
+      //	std::cout<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
+      //		 <<" with "<<dtit->second<<endl;
       if (checkit.find(dtit->first.first)==checkit.end()) 
 	checkit[dtit->first.first] = dtit->second;
       else checkit[dtit->first.first] += dtit->second;
@@ -235,7 +263,7 @@ Double_Transitions::Double_Transitions() :
 	checkit[dtit->first.second] = dtit->second;
       else checkit[dtit->first.second] += dtit->second;
     }
-    break;
+    //break;
   }
 }
 
@@ -299,7 +327,13 @@ void Double_Transitions::PrintDoubleTransitions()
     }
   }
   msg_Out()<<"In total (summed weights per hadron):"<<endl;
-  for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
+  for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) {
     msg_Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
+    if (it->first.Bar()!=it->first) {
+      if (!IsEqual(it->second,checkit[it->first.Bar()])) 
+	msg_Out()<<"   ----->>>>> look: "<<it->first
+		 <<" wt/wtbar = "<<it->second<<"/"<<checkit[it->first.Bar()]<<"."<<std::endl;
+    }
+  }
   msg_Out()<<"-------- END OF ALL_DOUBLE_TRANSITIONS -----"<<endl;
 }

@@ -124,8 +124,8 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
       pair->second = flavs[0].Bar();
       wavefunction->AddToWaves(pair,weight);
     }
-    else if ((fl1==2 && spin!=1) || (fl1==3 && spin==1)) {
-      weight         = (sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
+    else if (fl1==2) {
+      weight         = (sinth/sqrt(6.)+costh/sqrt(3.));//*sqrt(1.-sqr(m_singletsuppression));
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         delete pair;
@@ -139,7 +139,7 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	pair->second = flavs[0].Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.))*sqrt(1.-sqr(m_singletsuppression));
+      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.));//*sqrt(1.-sqr(m_singletsuppression));
       if (dabs(weight)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(3));
 	pair         = new Flavour_Pair;
@@ -149,15 +149,15 @@ All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,co
 	wavefunction->AddToWaves(pair,weight);
       }
     }
-    else if ((fl1==2 && spin==1) || (fl1==3 && spin!=1)) {
-      weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
+    else if (fl1==3) {
+      weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.));//*m_singletsuppression;
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         pair->first = Flavour((kf_code)(3));
         pair->second = Flavour((kf_code)(3)).Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (costh/sqrt(6.)-sinth/sqrt(3.))*m_singletsuppression;
+      weight         = (costh/sqrt(6.)-sinth/sqrt(3.));//*m_singletsuppression;
       if (dabs(weight)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(1));
 	pair         = new Flavour_Pair;

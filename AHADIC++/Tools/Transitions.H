@@ -31,6 +31,7 @@ namespace AHADIC {
 
   class Single_Transitions {
   private:
+    double                  m_singletsuppression2;
     Single_Transition_Map * p_transitions;
     ATOOLS::Flavour         m_lightest_constituent;
   public:
@@ -52,18 +53,28 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) {
-      if (flpair1.first==flpair2.first &&
-	  flpair1.second==flpair2.second) return true;
-      if (flpair1.first==flpair2.second &&
-	  flpair1.second==flpair2.first) return true;
-      if ((flpair1.first.HadMass()+flpair1.second.HadMass())<=
-	  (flpair2.first.HadMass()+flpair2.second.HadMass())) return false;
+      if (//(flpair1.first==flpair2.second.Bar() &&
+	  //flpair1.first==flpair2.second &&
+	  //flpair1.second==flpair2.first.Bar() &&
+	  //flpair1.second==flpair2.first) ||
+      	  (flpair1.first==flpair2.first &&
+      	   flpair1.second==flpair2.second)) return false;
+      if (ATOOLS::IsEqual(flpair1.first.HadMass()+flpair1.second.HadMass(),
+			  flpair2.first.HadMass()+flpair2.second.HadMass())) {
+	if (flpair1.first.Kfcode()>flpair2.first.Kfcode()) return false;
+      }
+      if (flpair1.first.HadMass()+flpair1.second.HadMass()<
+	  flpair2.first.HadMass()+flpair2.second.HadMass()) return false;
       return true;
     }
   };
 
   typedef std::map<Flavour_Pair,double,
-		   Flavour_Pair_Sorting_Mass>         Double_Transition_List;
+  		   Flavour_Pair_Sorting_Mass>         Double_Transition_List;
+  //typedef std::map<Flavour_Pair,double>               Double_Transition_List;
+
+  std::ostream & operator<<(std::ostream & s, const Double_Transition_List & dtl);
+
   typedef Double_Transition_List::iterator            Double_Transition_Siter;
     
   typedef std::map<Flavour_Pair,

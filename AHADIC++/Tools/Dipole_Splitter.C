@@ -62,7 +62,6 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
   if (dip1->Triplet()->m_info=='L' && dip1->AntiTriplet()->m_info=='L' &&
       dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
   if (!EmitGluon(dip1,dip2,first)) return false;
-  double kt2_emit(p_tools->PT2()), z_emit(p_tools->Z());
 
   bool swapped(SelectOrder(dip1,dip2));
   
@@ -78,8 +77,6 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
     return false;
   }
 
-  double kt2_split(p_tools->PT2()), z_split(p_tools->Z());
-  
   Proto_Particle * out1, * out2;
   p_tools->GetNewParticles(out1,out2);
 
