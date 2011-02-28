@@ -290,8 +290,10 @@ void Hadron_Init::Init() {
   s_kftable[5324]=new Particle_Info(5324,5.98,0.001,0,0,3,1,0,"Xi(b)*","Xi(b)*");
   s_kftable[5334]=new Particle_Info(5334,6.13,0.0003,-3,0,3,1,0,"Omega(b)*-","Omega(b)*-");
 
-  s_kftable[12112]=new Particle_Info(12112,1.44,0.35,0,0,1,1,0,"N(1440)","N(1440)");
-  s_kftable[12212]=new Particle_Info(12212,1.44,0.35,3,0,1,1,0,"N(1440)+","N(1440)+");
+  if(s_kftable.find(12112)==s_kftable.end()) // if not initialised in SINIC
+    s_kftable[12112]=new Particle_Info(12112,1.44,0.35,0,0,1,1,0,"N(1440)","N(1440)");
+  if(s_kftable.find(12212)==s_kftable.end()) // if not initialised in SINIC 
+    s_kftable[12212]=new Particle_Info(12212,1.44,0.35,3,0,1,1,0,"N(1440)+","N(1440)+");
   s_kftable[13112]=new Particle_Info(13112,1.66,0.1,-3,0,1,1,0,"Sigma(1660)-","Sigma(1660)-");
   s_kftable[13122]=new Particle_Info(13122,1.6,0.15,0,0,1,1,0,"Lambda(1600)","Lambda(1600)");
   s_kftable[13212]=new Particle_Info(13212,1.66,0.1,0,0,1,1,0,"Sigma(1660)","Sigma(1660)");
