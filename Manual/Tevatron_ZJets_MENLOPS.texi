@@ -26,8 +26,8 @@ elements.
 Drell-Yan core process. For more information on how to interface 
 @ref{External one-loop ME}s see the linked section. Higher order emissions 
 are only described at tree-level.
-@item @code{Enhance_Function} have been added to raise statistics on hard jet 
-emissions.
+@item @code{Enhance_Observable} have been added to raise statistics on hard jet
+emissions (cf. @ref{Enhance_Observable}).
 @item Neither hadronisation nor underlying event corrections are taken into 
 account. Both can be switched on by setting the relevant @ref{Parameters} 
 accordingly.

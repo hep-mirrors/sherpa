@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <list>
 #ifdef USING__Threading
 #include <pthread.h>
@@ -49,16 +50,14 @@ namespace PHASIC {
   struct Weight_Info {
     
     double m_weight, m_dxs, m_ntrial, m_xf1, m_xf2, m_muf12, m_muf22;
-    size_t m_mode;
     
     // constructor
-    Weight_Info(const size_t &mode=0,const double &weight=0.0,
+    Weight_Info(const double &weight=0.0,
                 const double &dxs=0.0,const double &ntrial=0.0,
 		const double &xf1=0.0,const double &xf2=0.0,
 		const double &muf12=0.0,const double &muf22=0.0):
       m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
-      m_xf1(xf1), m_xf2(xf2), m_muf12(muf12), m_muf22(muf22),
-      m_mode(mode) {}
+      m_xf1(xf1), m_xf2(xf2), m_muf12(muf12), m_muf22(muf22) {}
 
   };// end of struct Weight_Info
 
@@ -74,8 +73,10 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
-    ATOOLS::Algebra_Interpreter *p_eint;
- 
+    ATOOLS::Algebra_Interpreter *p_enhanceobs;
+    ATOOLS::Histogram * p_enhancehisto;
+    ATOOLS::Histogram * p_enhancehisto_current;
+
     static ATOOLS::Integration_Info *p_info;
 
     ATOOLS::Info_Key m_isrspkey, m_isrykey, m_isrxkey;
@@ -94,7 +95,7 @@ namespace PHASIC {
     int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode;
     bool m_initialized, m_sintegrator;
 
-    long int m_trials, m_maxtrials, m_sumtrials, m_events;
+    long int m_maxtrials;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_error; 
@@ -142,13 +143,12 @@ namespace PHASIC {
     double Differential(Process_Integrator *const process,
 			const psm::code mode=psm::normal_call);
 
-    Weight_Info *OneEvent(Process_Base *const proc);
-    Weight_Info *WeightedEvent(Process_Base *const proc,const int mode=0);
+    Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
     void AddPoint(const double xs);
-    void SetUpEnhance();
 
     double EnhanceFactor();
+    double EnhanceObservable();
 
     void CalculateME();
     void CalculatePS();
@@ -157,6 +157,9 @@ namespace PHASIC {
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  const size_t &nin,const size_t &nout,
 			  const ATOOLS::Flavour_Vector &flavs);
+
+    void Optimize();
+    void EndOptimize();
 
     static ATOOLS::Integration_Info* GetInfo();
 
@@ -196,6 +199,7 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
+    void SetEnhanceObservable(const std::string &enhanceobs);
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }

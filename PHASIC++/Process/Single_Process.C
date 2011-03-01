@@ -38,27 +38,10 @@ Process_Base *Single_Process::operator[](const size_t &i)
   return NULL;
 }
 
-void Single_Process::DeSelect()
-{
-  p_selected=NULL;
-}
-
-bool Single_Process::SelectOne()
+Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
 {
   p_selected=this;
-  return true;
-}
-
-Weight_Info *Single_Process::OneEvent() 
-{
-  SelectOne();
-  return p_int->PSHandler()->OneEvent(this);
-}
-
-Weight_Info *Single_Process::WeightedEvent(const int mode) 
-{
-  SelectOne();
-  return p_int->PSHandler()->WeightedEvent(this,mode);
+  return p_int->PSHandler()->OneEvent(this,mode);
 }
 
 double Single_Process::KFactor() const

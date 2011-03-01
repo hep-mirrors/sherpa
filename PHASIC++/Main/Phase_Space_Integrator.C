@@ -27,8 +27,6 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
-  local.id=local.n=0;
-  local.sum=local.sum2=local.max=0.0;
   addtime=0.0;
 }
 
@@ -38,8 +36,6 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
 {
-  local.sum=local.sum2=0.0;
-  local.n=0; 
   maxerror=_maxerror;
   fin_opt=_fin_opt;
   psh=_psh;
@@ -122,21 +118,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       
   nstep++;
   if (value!=0.) ncstep++;
-  double enhance=psh->EnhanceFactor();
   
   if (value!=0.0) {
-    if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value*enhance);    
-    if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value*enhance);    
-    (psh->FSRIntegrator())->AddPoint(value*enhance);    
+    if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value);
+    if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value);
+    (psh->FSRIntegrator())->AddPoint(value);
   }
     psh->AddPoint(value);
 
-    local.sum+=value;
-    local.sum2+=sqr(value);
-    local.n++; 
-
-
-    if (value>max) message.max = max = value;
     ncontrib = psh->FSRIntegrator()->ValidN();
     if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
       nlo=ncontrib;
@@ -147,7 +136,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
 	(psh->FSRIntegrator())->Optimize(maxerror);
-	psh->Process()->Optimize();
+	psh->Optimize();
 	(psh->Process())->ResetMax(2);
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
@@ -173,7 +162,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
 	(psh->FSRIntegrator())->EndOptimize(maxerror);
-	psh->Process()->EndOptimize();
+	psh->EndOptimize();
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;
 	maxopt += 4*iter;
@@ -298,12 +287,12 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
     if (!(n%iter)) {
       if (n<=maxopt) {
 	psh->FSRIntegrator()->Optimize(maxerror);
-	psh->Process()->Optimize();
+	psh->Optimize();
 	(psh->Process())->OptimizeResult();
       }
       if (n==maxopt) {
 	psh->FSRIntegrator()->EndOptimize(maxerror);
-	psh->Process()->EndOptimize();
+	psh->EndOptimize();
 	iter = 50000;
       }
       //Nan Check

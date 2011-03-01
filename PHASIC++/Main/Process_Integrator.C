@@ -29,7 +29,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
   m_svn(0), m_son(1), m_swaped(false), m_writeout(false),
-  m_efunc("1"), p_whisto(NULL), p_colint(NULL), p_helint(NULL)
+  p_whisto(NULL), p_colint(NULL), p_helint(NULL)
 {
   m_colorscheme=cls::sum;
   m_helicityscheme=hls::sum;
@@ -71,6 +71,12 @@ Process_Integrator::~Process_Integrator()
   for (RB_Map::iterator rbit(m_rbmap.begin());
        rbit!=m_rbmap.end();++rbit) delete rbit->second;
   if (p_whisto!=NULL) delete p_whisto;
+}
+
+double Process_Integrator::SelectionWeight(const int mode) const
+{
+  if (mode==1) return m_max*m_enhancefac;
+  return dabs(m_totalxs)*m_enhancefac;
 }
 
 double Process_Integrator::Sigma2()
@@ -300,17 +306,14 @@ void Process_Integrator::WriteOutHistogram(std::string dir)
 void Process_Integrator::SetTotal(const int mode)  
 { 
   if (p_proc->IsGroup()) {
-    m_selectionweight=0.0;
     m_max=0.0;
     msg_Indent();
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetTotal(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
-      m_selectionweight+=(*p_proc)[i]->Integrator()->SelectionWeight();
     }
   }
   m_totalxs=TotalResult();
-  if (!p_proc->IsGroup()) m_selectionweight=dabs(m_totalxs);
   m_totalerr=TotalVar();
   if (mode && m_totalxs!=0.0) {
     if (p_proc->NIn()==1) {
@@ -377,8 +380,6 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 void Process_Integrator::SetUpEnhance() 
 {
-  m_selectionweight=SelectionWeight()*m_enhancefac;
-  if (m_enhancefac<0.0) m_selectionweight=p_proc->Size()*dabs(m_enhancefac);
   if (m_maxeps>0.0) {
     double max(GetMaxEps(m_maxeps));
     msg_Info()<<"  max '"<<p_proc->Name()<<"' -"
@@ -399,14 +400,6 @@ void Process_Integrator::SetUpEnhance()
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->SetUpEnhance();
-}
-
-void Process_Integrator::SetEnhanceFunction(const std::string &efunc)
-{ 
-  m_efunc=efunc; 
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->SetEnhanceFunction(efunc);
 }
 
 void Process_Integrator::SetEnhanceFactor(const double &efac)
@@ -438,18 +431,16 @@ void Process_Integrator::AddPoint(const double value)
   m_n++;
   m_sn++;
   if (value!=0.0) ++m_svn;
-  m_ssum    += value;
-  m_ssumsqr += value*value;
-  if (value>m_max)  m_max  = value;
-  if (value>m_smax) m_smax = value;
+  double differential=(value==0.0?0.0:value/p_pshandler->EnhanceFactor());
+  m_ssum    += differential;
+  m_ssumsqr += differential*differential;
+  if (dabs(value)>m_max)  m_max  = dabs(value);
+  if (dabs(value)>m_smax) m_smax = dabs(value);
   if (p_whisto) {
-    if(value!=0.) p_whisto->Insert(dabs(value));
+    if(value!=0.) p_whisto->Insert(dabs(value), 1.0/p_pshandler->EnhanceFactor()); /*TODO*/
     else p_whisto->SetFills(p_whisto->Fills()+1);
   }
-  if (!p_proc->IsGroup()) {
-    p_proc->AddPoint(value);
-  }
-  else {
+  if (p_proc->IsGroup()) {
     if (p_proc->Last()==0.0 || value==0.0)
       for (size_t i(0);i<p_proc->Size();++i)
 	(*p_proc)[i]->Integrator()->AddPoint(0.0);
@@ -562,20 +553,6 @@ void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->SetPSHandler(pshandler);
-} 
-
-void Process_Integrator::Optimize()
-{
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->Optimize();
-} 
-
-void Process_Integrator::EndOptimize()
-{
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->EndOptimize();
 } 
 
 void Process_Integrator::OptimizeResult()

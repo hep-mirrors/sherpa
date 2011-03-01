@@ -41,8 +41,10 @@ namespace ATOOLS {
     void Restore();
     double Mean() const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
-    double Bin(int i);
-    double Bin(double x);
+    double Bin(int i) const;
+    double Bin(double x) const;
+    double BinOrInterpolate(int i) const;
+    double BinOrInterpolate(double x) const;
     void Extrapolate(double x, double * ys,int mode);
     inline void SetFills(double fills) {  m_fills=fills; }
 
@@ -66,6 +68,7 @@ namespace ATOOLS {
     Histogram & operator+=(const Histogram & histo);
     Histogram & operator=(const Histogram & histo);
     void Addopt(const Histogram & histo);
+    void AddGeometric(const Histogram & histo);
     void BinMin(const Histogram & histo);
     void BinMax(const Histogram & histo);
     int CheckStatistics(const Histogram & histo,double& avgs,double& maxs);

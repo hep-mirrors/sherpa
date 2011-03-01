@@ -400,18 +400,6 @@ double POWHEG_Process::LocalKFactor(const Vec4D_Vector &ppb)
   return Last()/p_bproc->Last();
 }
 
-void POWHEG_Process::DeSelect()
-{
-  p_selected=this;
-  p_bproc->DeSelect();
-}
-
-bool POWHEG_Process::SelectOne()
-{
-  THROW(fatal_error,"Invalid call");
-  return false;
-}
-
 Cluster_Amplitude *POWHEG_Process::GetAmplitude()
 {
   Cluster_Amplitude *ampl(p_ampl);
@@ -444,9 +432,8 @@ double POWHEG_Process::SelectRProcess()
   for (size_t i(0);i<p_rproc->Size();++i)
     if ((psum+=(*p_rproc)[i]->Last(mode))>=rsum) {
       p_rproc->SetSelected((*p_rproc)[i]);
-      (*p_rproc)[i]->Integrator()->
-	SetSelectionWeight(p_int->SelectionWeight());
-      return 1.0;
+      return p_int->SelectionWeight(0)/
+	(*p_rproc)[i]->Integrator()->SelectionWeight(0);
     }
   THROW(fatal_error,"Internal error");
 }
@@ -462,11 +449,11 @@ double POWHEG_Process::SelectZHProcess()
     if ((psum+=m_zh[mode][i].m_res)>=disc) {
       Process_Base *rproc(m_zh[mode][i].p_r);
       p_rproc->SetSelected(rproc);
-      rproc->Integrator()->SetSelectionWeight(p_int->SelectionWeight());
       rproc->Integrator()->RestoreInOrder();
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
       if (p_int->InSwaped()) rproc->Integrator()->SwapInOrder();
-      return 1.0;
+      return p_int->SelectionWeight(0)/
+	rproc->Integrator()->SelectionWeight(0);
     }
   }
   THROW(fatal_error,"Internal error");
@@ -500,8 +487,6 @@ double POWHEG_Process::SelectBProcess()
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
-    rproc->Integrator()->
-      SetSelectionWeight(p_int->SelectionWeight());
     rproc->Integrator()->SetMomenta(*ampl);
     Cluster_Leg *lij(NULL);
     for (size_t i(0);i<next->Legs().size();++i)
@@ -552,36 +537,24 @@ double POWHEG_Process::SelectBProcess()
       }
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl<<"\n";
-    return 1.0;
+    return p_int->SelectionWeight(0)/
+      rproc->Integrator()->SelectionWeight(0);
   }
   p_selected=p_bproc;
   p_bproc->SetSelected(bproc);
-  bproc->Integrator()->
-    SetSelectionWeight(p_int->SelectionWeight());
   p_bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl<<"\n";
-  return stat?1.0:0.0;
+  return stat?p_int->SelectionWeight(0)/
+    bproc->Integrator()->SelectionWeight(0):0.0;
 }
 
-Weight_Info *POWHEG_Process::OneEvent() 
+Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
 {
   m_smode=0;
-  DeSelect();
+  p_selected=NULL;
   for (size_t i(0);i<2;++i) m_zh[i].clear();
   m_zhsum[1]=m_zhsum[0]=0.0;
-  Weight_Info *winfo(p_int->PSHandler()->OneEvent(this));
-  if (winfo!=NULL) winfo->m_weight*=SelectProcess();
-  m_smode=1;
-  return winfo;
-}
-
-Weight_Info *POWHEG_Process::WeightedEvent(const int mode) 
-{
-  m_smode=0;
-  DeSelect();
-  for (size_t i(0);i<2;++i) m_zh[i].clear();
-  m_zhsum[1]=m_zhsum[0]=0.0;
-  Weight_Info *winfo(p_int->PSHandler()->WeightedEvent(this,mode));
+  Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
   if (winfo!=NULL) winfo->m_weight*=SelectProcess();
   m_smode=1;
   return winfo;

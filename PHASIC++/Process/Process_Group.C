@@ -32,46 +32,24 @@ Process_Base *Process_Group::operator[](const size_t &i)
   return m_procs[i];
 }
 
-void Process_Group::DeSelect()
+Weight_Info *Process_Group::OneEvent(const int wmode,const int mode) 
 {
-  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->DeSelect();
   p_selected=NULL;
-}
-
-bool Process_Group::SelectOne()
-{
-  DeSelect();
   if (p_int->TotalXS()==0.0) {
     p_selected=m_procs[int(ATOOLS::ran.Get()*m_procs.size())];
+    return p_selected->OneEvent(mode);
   }
-  else {
-    double disc=p_int->SelectionWeight()*ATOOLS::ran.Get();
-    for (size_t i=0;i<m_procs.size();++i) {
-      disc-=m_procs[i]->Integrator()->SelectionWeight();
-      if (disc<=0.) {
-	p_selected=m_procs[i];
-	return m_procs[i]->SelectOne();
-      }
-    }
-    if (disc>0.) { 
-      msg_Error()<<METHOD<<"(): Cannot select any process. "
-		 <<"\\sigma_{tot} = "<<p_int->TotalXS()<<std::endl;
-      return false;
+  double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran.Get();
+  for (size_t i=0;i<m_procs.size();++i) {
+    disc-=m_procs[i]->Integrator()->SelectionWeight(wmode);
+    if (disc<=0.) {
+      p_selected=m_procs[i];
+      return p_selected->OneEvent(mode);
     }
   }
-  return true;
-}
-
-Weight_Info *Process_Group::OneEvent() 
-{
-  SelectOne();
-  return p_selected->OneEvent();
-}
-
-Weight_Info *Process_Group::WeightedEvent(const int mode) 
-{
-  SelectOne();
-  return p_selected->WeightedEvent(mode);
+  msg_Error()<<METHOD<<"(): Cannot select any process. xs = "
+	     <<p_int->TotalXS()*rpa.Picobarn()<<" pb."<<std::endl;
+  return NULL;
 }
 
 #ifdef USING__Threading

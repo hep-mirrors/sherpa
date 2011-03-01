@@ -47,8 +47,7 @@ namespace PHASIC {
 
     long unsigned int m_n, m_itmin;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr;
-    double m_totalerr, m_selectionweight;
+    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin, m_vmean;
 
     std::vector<double> m_vsmax, m_vsum;
@@ -58,8 +57,6 @@ namespace PHASIC {
 
     bool m_swaped;
     bool m_writeout;
-
-    std::string m_efunc;
 
     ATOOLS::Histogram *p_whisto;
 
@@ -118,8 +115,6 @@ namespace PHASIC {
 
     double TriggerEfficiency();
     
-    void Optimize();
-    void EndOptimize();
     void OptimizeResult();
 
     double GetMaxEps(double);
@@ -129,12 +124,13 @@ namespace PHASIC {
     void StoreResults(const int mode=0);
     void PrepareTerminate();
 
-    void SetEnhanceFunction(const std::string &efunc);
     void SetEnhanceFactor(const double &efac);
     void SetMaxEpsilon(const double &maxeps);
     void SetRBMaxEpsilon(const double &maxeps);
 
     void PrintRBInfo() const;
+
+    double SelectionWeight(const int mode) const;
 
     // inline functions
     inline Process_Base *Process() const { return p_proc; }
@@ -143,8 +139,6 @@ namespace PHASIC {
     inline void SetHelicityScheme(const hls::scheme &s) { m_helicityscheme=s; }
 
     inline void SetItMin(const long unsigned int &itmin) { m_itmin=itmin;  }
-
-    inline void SetSelectionWeight(const double &w) { m_selectionweight=w; }
 
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
@@ -161,8 +155,6 @@ namespace PHASIC {
     inline double TotalError() const { return m_totalerr; }
     inline double VMean() const      { return m_vmean;    }
     inline double Max() const        { return m_max;      }
-
-    inline double SelectionWeight() const { return m_selectionweight; }
 
     inline ATOOLS::RB_Map &RBMap() { return m_rbmap; }
 
@@ -196,8 +188,6 @@ namespace PHASIC {
     { return p_colint; }
     inline SP(Helicity_Integrator) HelicityIntegrator() const 
     { return p_helint; }
-
-    inline std::string EnhanceFunction() const { return m_efunc; }
 
     inline long unsigned int ItMin() const { return m_itmin; }
 

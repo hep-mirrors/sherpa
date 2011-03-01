@@ -16,6 +16,7 @@
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
@@ -50,6 +51,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   else m_eventmode=0;
   //need for LHE-output
   rpa.gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
+  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_WARNING_THRESHOLD")) m_ovwth=1.0;
   if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
   else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
   std::string seedfile;
@@ -139,76 +141,48 @@ void Matrix_Element_Handler::SetRandomSeed()
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
+  p_proc=NULL;
   SetRandomSeed();
   p_isr->SetPDFMember();
-  if (m_eventmode==1) return GenerateUnweightedEvent(); 
-  return GenerateWeightedEvent();
-}
-
-bool Matrix_Element_Handler::GenerateUnweightedEvent() 
-{
-  p_proc=NULL;
   double sum(0.0);
   for (size_t i(0);i<m_procs.size();++i)
-    sum+=m_procs[i]->Integrator()->SelectionWeight();
-  double disc(sum*ran.Get());
-  sum=0.0;
-  Process_Base *proc(NULL);
-  for (size_t i(0);i<m_procs.size();++i) {
-    if ((sum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
-      proc=m_procs[i];
-      break;
-    }
-  }
-  if (proc==NULL) THROW(fatal_error,"No process selected");
-  PHASIC::Weight_Info *info=proc->OneEvent();
-  if (info==NULL) return false;
-  m_evtinfo=*info;
-  delete info;
-  p_proc=proc->Selected();
-  m_evtinfo.m_ntrial=1.0/p_proc->Integrator()->EnhanceFactor();
-  double wf(m_totalxs*rpa.Picobarn()/
-	    p_proc->Integrator()->EnhanceFactor());
-  double max(p_proc->Integrator()->Max());
-  if (m_evtinfo.m_weight>max) wf*=m_evtinfo.m_weight/max;
-  if (p_proc->GetSubevtList()) 
-    (*p_proc->GetSubevtList())*=wf/m_evtinfo.m_weight;
-  m_evtinfo.m_weight=wf;
-  return m_evtinfo.m_weight!=0.0;
-}
-
-bool Matrix_Element_Handler::GenerateWeightedEvent() 
-{
-  double addn(0.0), sum(0.0);
-  for (size_t i(0);i<m_procs.size();++i)
-    sum+=m_procs[i]->Integrator()->SelectionWeight();
-  while (true) {
+    sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+  for (size_t n(1);true;++n) {
     double disc(sum*ran.Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
-      if ((csum+=m_procs[i]->Integrator()->SelectionWeight())>=disc) {
+      if ((csum+=m_procs[i]->Integrator()->
+	   SelectionWeight(m_eventmode))>=disc) {
 	proc=m_procs[i];
 	break;
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
-    PHASIC::Weight_Info *info=proc->WeightedEvent();
+    PHASIC::Weight_Info *info=proc->OneEvent(m_eventmode);
     p_proc=proc->Selected();
-    double sw(p_proc->Integrator()->SelectionWeight()/sum);
-    addn+=1.0;
-    if (info) {
-      m_evtinfo=*info;
-      delete info;
-      double wf(rpa.Picobarn()/sw);
-      m_evtinfo.m_weight*=wf;
-      if (p_proc->GetSubevtList()) {
-	(*p_proc->GetSubevtList())*=wf;
-	p_proc->GetSubevtList()->MultMEwgt(wf);
-      }
-      if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-      m_evtinfo.m_ntrial=addn;
-      return true;
+    double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/sum);
+    if (info==NULL) continue;
+    m_evtinfo=*info;
+    delete info;
+    double wf(rpa.Picobarn()/sw/
+	      p_proc->Integrator()->PSHandler()->EnhanceFactor());
+    if (m_eventmode==1) {
+      double max=p_proc->Integrator()->Max(), disc=max*ran.Get();
+      if (m_evtinfo.m_weight<disc) continue;
+      if (m_evtinfo.m_weight>max*(1.0+m_ovwth))
+	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
+		    <<"' exceeds maximum by "
+		    <<m_evtinfo.m_weight/max-1.0<<"."<<std::endl;
+      wf*=p_proc->Integrator()->Max()/m_evtinfo.m_weight;
     }
+    m_evtinfo.m_weight*=wf;
+    if (p_proc->GetSubevtList()) {
+      (*p_proc->GetSubevtList())*=wf;
+      p_proc->GetSubevtList()->MultMEwgt(wf);
+    }
+    if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+    m_evtinfo.m_ntrial=n;
+    return true;
   }
   return false;
 }
@@ -454,9 +428,9 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vefac,nf);
 	}
-	if (cur[0]=="Enhance_Function") {
+	if (cur[0]=="Enhance_Observable") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vefunc,nf);
+	  ExtractMPvalues(cb,pbi.m_veobs,nf);
 	}
 	if (cur[0]=="NLO_QCD_Part") {
 	  std::string cb(MakeString(cur,1));
@@ -611,8 +585,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  procs.push_back(proc[i]);
 	  proc[i]->Integrator()->
 	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
-	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds))
-	    proc[i]->Integrator()->SetEnhanceFunction(ds);
 	  if (GetMPvalue(pbi.m_vefac,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
 	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
@@ -624,6 +596,9 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  proc[i]->Integrator()->SetPSHandler
 	    (new Phase_Space_Handler
 	     (proc[i]->Integrator(),p_isr,p_beam,maxerr));
+	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) {
+            proc[i]->Integrator()->PSHandler()->SetEnhanceObservable(ds);
+          }
 	}
       }
     }

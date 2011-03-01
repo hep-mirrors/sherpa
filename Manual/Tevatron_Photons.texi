@@ -87,7 +87,7 @@ very efficiently.
       
       The merging criterion is set to @code{Q_cut=10.0 GeV}.
 
-      @code{Enhance_Function}'s (cf. @ref{Enhance_Function}) are introduced
+      @code{Enhance_Observable}'s (cf. @ref{Enhance_Observable}) are introduced
       to produce more hard partons/photons than the steeply falling cross
       section would imply (appropriately weighted).
 @item The @code{selector} section allows to specify phase space cuts on the
@@ -97,9 +97,6 @@ very efficiently.
       the @code{shower} section.
 @item The @code{me} section enables weighted event generation and switches
       off the emission of additional soft photons from the hard scattering.
-@item The steeply rising enhance functions necessitate a redefinition 
-      of the integration error target, see @ref{Enhance_Function}. 
-      The new value is set globally in the @code{integration} section.
 @item To generate only prompt photons, the hadronisation, hadron decays and
       underlying event are turned off. These steps of the simulation can be 
       enabled as described in @ref{Hadronization parameters} and

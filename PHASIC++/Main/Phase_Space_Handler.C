@@ -26,6 +26,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
+using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
@@ -34,10 +35,11 @@ namespace ATOOLS { template class SP(Phase_Space_Handler); }
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
 					 ISR_Handler *ih,Beam_Spectra_Handler *bh, double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
-  p_eint(NULL), p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
+  p_enhanceobs(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
+  p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
-  m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E)
+  m_maxtrials(1000000), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -74,7 +76,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   m_uset=0;
 #endif
   m_nvec=m_nin+m_nout;
-  p_lab.resize(m_nvec);  
+  p_lab.resize(m_nvec);
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -83,7 +85,9 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels) delete p_isrchannels;
   if (p_beamchannels) delete p_beamchannels;
   if (p_cuts) delete p_cuts;
-  if (p_eint) delete p_eint;
+  if (p_enhanceobs) delete p_enhanceobs;
+  if (p_enhancehisto) delete p_enhancehisto;
+  if (p_enhancehisto_current) delete p_enhancehisto_current;
   if (p_massboost) delete p_massboost;
   delete p_integrator;
 }
@@ -167,7 +171,6 @@ double Phase_Space_Handler::Integrate()
   if (p_beamchannels) p_beamchannels->Print();
   if (p_isrchannels) p_isrchannels->Print();
   p_fsrchannels->Print();
-  SetUpEnhance();
   m_dmode=0;
   double res(0.0);
   if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_fin_opt);
@@ -234,43 +237,7 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
   return 0;
 } 
 
-void Phase_Space_Handler::SetUpEnhance()
-{
-  std::string func(p_process->EnhanceFunction());
-  if (func!="1" && p_eint==NULL) {
-    p_eint = new Algebra_Interpreter();
-    p_eint->SetTagReplacer(this);
-    for (int i(0);i<m_nin+m_nout;++i) 
-      p_eint->AddTag("p["+ToString(i)+"]",ToString(p_lab[i]));
-    p_eint->Interprete(func);
-  }
-}
-
-std::string Phase_Space_Handler::ReplaceTags(std::string &expr) const
-{
-  return p_eint->ReplaceTags(expr);
-}
-
-Term *Phase_Space_Handler::ReplaceTags(Term *term) const
-{
-  term->Set(p_lab[term->Id()]);
-  return term;
-}
-
-void Phase_Space_Handler::AssignId(Term *term)
-{
-  term->SetId(ToType<int>
-	      (term->Tag().substr
-	       (2,term->Tag().length()-3)));
-}
-
-double Phase_Space_Handler::EnhanceFactor()
-{
-  if (p_eint==NULL) return 1.0;
-  return p_eint->Calculate()->Get<double>();
-}
-
-double Phase_Space_Handler::Differential() 
+double Phase_Space_Handler::Differential()
 { 
   return Differential(p_process);
 }
@@ -438,7 +405,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
-  return (m_result_1+m_result_2);
+  if ((m_result_1+m_result_2)==0.0) return 0.0;
+  return (m_result_1+m_result_2)*EnhanceFactor();
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -464,117 +432,54 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc)
+Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
 {
   if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
-  for (int j=1, i=1;i<m_maxtrials+1;i++) {
-    cur->RestoreInOrder();
-    p_isrhandler->SetRunMode(1);
-    double value = Differential(cur), max = cur->Max();
-    if (value == 0.) {
-      ++j;
-    }
-    else {
-      double disc = 0.;
-      if (value > max) {
-	msg_Info()<<METHOD<<"(): Point for '"<<cur->Process()->Name()
-		  <<"' exceeds maximum by "<<value/cur->Max()-1.0<<"."<<std::endl;
-      }
-      else disc  = max*ATOOLS::ran.Get();
-      if (value >= disc) {
-	m_sumtrials += i;m_events ++;
-        double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
-	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
-	  cur->SetMomenta(p_lab);
-	  cur->SwapInOrder();
-	  dxs=m_result_2/m_psweight;
-          xf1=p_isrhandler->XF1(1);
-          xf2=p_isrhandler->XF2(1);
-          mu12=p_isrhandler->MuF2(1);
-          mu22=p_isrhandler->MuF2(0);
-	}
-	else {
-	  cur->SetMomenta(p_lab);
-	  dxs=m_result_1/m_psweight;
-          xf1=p_isrhandler->XF1(0);
-          xf2=p_isrhandler->XF2(0);
-          mu12=p_isrhandler->MuF2(0);
-          mu22=p_isrhandler->MuF2(1);
-	}
-	return new Weight_Info(1,value,dxs,1.0,xf1,xf2,mu12,mu22);
-      }
-      else j=1;
-    }
-  }
-  m_sumtrials += m_maxtrials;
-  msg_Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
-	   <<" too many trials for "<<proc->Selected()->Name()<<std::endl
-	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<std::endl;
-  return NULL;
-}
-
-Weight_Info *Phase_Space_Handler::WeightedEvent(Process_Base *const proc,int mode)
-{
-  if (!m_initialized) InitIncoming();
-  if (proc==NULL) THROW(fatal_error,"No process.");
-  Process_Integrator *selected(proc->Integrator());
-  double value;
-  selected->RestoreInOrder();
+  cur->RestoreInOrder();
   p_isrhandler->SetRunMode(1);
-  
-  value = Differential(selected,(psm::code)mode);
-  if (value != 0.) {
-    ++m_events;
-    double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
-    ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
-    double pnf=dabs(m_result_1)/dabs(m_result_1+m_result_2);
-    if (pnf < ATOOLS::ran.Get()) {
-      selected->SetMomenta(p_lab);
-      selected->SwapInOrder();
-      dxs=m_result_2/m_psweight;
-      xf1=p_isrhandler->XF1(1);
-      xf2=p_isrhandler->XF2(1);
-      mu12=p_isrhandler->MuF2(1);
-      mu22=p_isrhandler->MuF2(0);
-      NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-      if (nlos) {
-	(*nlos).MultMEwgt(1./(1.-pnf));
-	for (size_t l=0;l<nlos->size();l++) 
-	  (*nlos)[l]->m_flip=1;
-      }	
-      if (wgtinfo) {
-	(*wgtinfo)*=m_psweight/(1.-pnf);
-	wgtinfo->m_x1=p_isrhandler->X1();
-	wgtinfo->m_x2=p_isrhandler->X2();
-	wgtinfo->Flip();
-      }
+  double value=Differential(cur,(psm::code)mode);
+  if (value==0.0) return NULL;
+  cur->SetMomenta(p_lab);
+  double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
+  ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
+  double pnf=dabs(m_result_1)/dabs(m_result_1+m_result_2);
+  if (pnf<ATOOLS::ran.Get()) {
+    cur->SwapInOrder();
+    dxs=m_result_2/m_psweight;
+    xf1=p_isrhandler->XF1(1);
+    xf2=p_isrhandler->XF2(1);
+    mu12=p_isrhandler->MuF2(1);
+    mu22=p_isrhandler->MuF2(0);
+    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+    if (nlos) {
+      (*nlos).MultMEwgt(1./(1.-pnf));
+      for (size_t l=0;l<nlos->size();l++) 
+	(*nlos)[l]->m_flip=1;
+    }	
+    if (wgtinfo) {
+      (*wgtinfo)*=m_psweight/(1.-pnf);
+      wgtinfo->m_x1=p_isrhandler->X1();
+      wgtinfo->m_x2=p_isrhandler->X2();
+      wgtinfo->Flip();
     }
-    else {
-      selected->SetMomenta(p_lab);
-      dxs=m_result_1/m_psweight;
-      xf1=p_isrhandler->XF1(0);
-      xf2=p_isrhandler->XF2(0);
-      mu12=p_isrhandler->MuF2(0);
-      mu22=p_isrhandler->MuF2(1);
-      NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-      if (nlos) (*nlos).MultMEwgt(1./pnf);
-      if (wgtinfo) {
-	(*wgtinfo)*=m_psweight/pnf;
-	wgtinfo->m_x1=p_isrhandler->X1();
-	wgtinfo->m_x2=p_isrhandler->X2();
-      }
-    }
-    return new Weight_Info(2,value,dxs,1.0,xf1,xf2,mu12,mu22);
   }
-
-  return NULL;
-} 
-
-void Phase_Space_Handler::AddPoint(const double value) 
-{ 
-  p_process->AddPoint(value); 
+  else {
+    dxs=m_result_1/m_psweight;
+    xf1=p_isrhandler->XF1(0);
+    xf2=p_isrhandler->XF2(0);
+    mu12=p_isrhandler->MuF2(0);
+    mu22=p_isrhandler->MuF2(1);
+    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+    if (nlos) (*nlos).MultMEwgt(1./pnf);
+    if (wgtinfo) {
+      (*wgtinfo)*=m_psweight/pnf;
+      wgtinfo->m_x1=p_isrhandler->X1();
+      wgtinfo->m_x2=p_isrhandler->X2();
+    }
+  }
+  return new Weight_Info(value,dxs,1.0,xf1,xf2,mu12,mu22);
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
@@ -683,6 +588,100 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   delete TestCh;
 }
 
+void Phase_Space_Handler::AddPoint(const double value)
+{
+  if (p_enhanceobs && value!=0.0) {
+    p_enhancehisto_current->Insert(EnhanceObservable(), value/EnhanceFactor());
+  }
+  p_process->AddPoint(value);
+}
+
+void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
+{
+  if (enhanceobs!="1") {
+    if (p_enhanceobs) THROW(fatal_error, "Overwriting ME enhance observable.");
+
+    vector<string> parts;
+    stringstream ss(enhanceobs);
+    string item;
+    while(std::getline(ss, item, '|')) {
+      parts.push_back(item);
+    }
+    if (parts.size()!=3) THROW(fatal_error,"Wrong syntax in enhance observable.");
+
+    p_enhanceobs = new Algebra_Interpreter();
+    p_enhanceobs->SetTagReplacer(this);
+    for (int i(0);i<m_nin+m_nout;++i)
+      p_enhanceobs->AddTag("p["+ToString(i)+"]",ToString(p_lab[i]));
+    p_enhanceobs->Interprete(parts[0]);
+    double enhancemin=ToType<double>(parts[1]);
+    double enhancemax=ToType<double>(parts[2]);
+
+    p_enhancehisto = new Histogram(1,enhancemin,enhancemax,100,"enhancehisto");
+    p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
+    p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
+    p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
+                                           p_enhancehisto->Xmin(),
+                                           p_enhancehisto->Xmax(),
+                                           p_enhancehisto->Nbin(),
+                                           "enhancehisto_current");
+  }
+}
+
+double Phase_Space_Handler::EnhanceFactor()
+{
+  if (!p_enhanceobs) return 1.0;
+  double obs=EnhanceObservable();
+  if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
+  if (obs<=p_enhancehisto->Xmin()) obs=p_enhancehisto->Xmin()+1e-12;
+  double dsigma=p_enhancehisto->Bin(obs);
+  if (dsigma<=0.0) {
+    PRINT_INFO("Warning: Tried enhancement with dsigma/dobs("<<obs<<")="<<dsigma<<".");
+    dsigma=1.0;
+  }
+  return 1.0/dsigma;
+}
+
+double Phase_Space_Handler::EnhanceObservable()
+{
+  return p_enhanceobs->Calculate()->Get<double>();
+}
+
+std::string Phase_Space_Handler::ReplaceTags(std::string &expr) const
+{
+  if (p_enhanceobs) return p_enhanceobs->ReplaceTags(expr);
+  else return expr;
+}
+
+Term *Phase_Space_Handler::ReplaceTags(Term *term) const
+{
+  if (p_enhanceobs) term->Set(p_lab[term->Id()]);
+  return term;
+}
+
+void Phase_Space_Handler::AssignId(Term *term)
+{
+  if (p_enhanceobs)
+    term->SetId(ToType<int>
+                (term->Tag().substr
+                 (2,term->Tag().length()-3)));
+}
+
+
+void Phase_Space_Handler::Optimize()
+{
+  if (p_enhanceobs) {
+    p_enhancehisto_current->Scale(1.0/p_enhancehisto_current->Integral());
+    p_enhancehisto->AddGeometric(p_enhancehisto_current);
+    p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
+    p_enhancehisto_current->Reset();
+  }
+}
+
+void Phase_Space_Handler::EndOptimize()
+{
+}
+
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
@@ -690,6 +689,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
   ran.WriteOutStatus(help.c_str());
+  if (p_enhanceobs) p_enhancehisto->Output(pID+"/MC_Enhance.histo");
   Data_Writer writer;
   writer.SetOutputPath(pID+"/");
   writer.SetOutputFile("Statistics.dat");
@@ -706,6 +706,16 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str());
+  }
+  if (p_enhanceobs) {
+    delete p_enhancehisto;
+    p_enhancehisto=new ATOOLS::Histogram(pID+"/MC_Enhance.histo");
+    delete p_enhancehisto_current;
+    p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
+                                           p_enhancehisto->Xmin(),
+                                           p_enhancehisto->Xmax(),
+                                           p_enhancehisto->Nbin(),
+                                           "enhancehisto_current");
   }
   Data_Reader reader;
   reader.SetAddCommandLine(false);

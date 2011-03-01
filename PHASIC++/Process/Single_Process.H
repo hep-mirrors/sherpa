@@ -21,11 +21,7 @@ namespace PHASIC {
     size_t Size() const;
     Process_Base *operator[](const size_t &i);
 
-    void DeSelect();
-    bool SelectOne();
-
-    Weight_Info *OneEvent();
-    Weight_Info *WeightedEvent(const int mode=0);
+    Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double KFactor() const;
 

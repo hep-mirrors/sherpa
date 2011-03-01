@@ -42,7 +42,7 @@ namespace SHERPA {
 
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrbmaxeps;
-      MPSV_Map m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
+      MPSV_Map m_veobs, m_vycut, m_vscale, m_vcoupl, m_vkfac,
 	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen;
       std::string m_gycut;
     };// end of struct Processblock_Info
@@ -66,7 +66,7 @@ namespace SHERPA {
     Shower_Handler   *p_shower;
     PDF::POWHEG_Base *p_powheg;
 
-    double m_totalxs;
+    double m_totalxs, m_ovwth;
     size_t m_nlomode, m_ranidx;
 
 #ifdef USING__GZIP
@@ -108,9 +108,6 @@ namespace SHERPA {
 
     void SetRandomSeed();
     void InitPOWHEG();
-
-    bool GenerateUnweightedEvent();
-    bool GenerateWeightedEvent(); 
 
   public :
 

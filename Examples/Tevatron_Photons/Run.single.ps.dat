@@ -6,10 +6,10 @@
   Process 93 93 -> 93 93 93{2}
   Order_EW 0
   CKKW sqr(10.0/E_CMS)
-  Enhance_Function PPerp2(p[2]) {2}
-  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4])) {3}
-  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5])) {4}
-  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5]),PPerp2(p[6])) {5}
+  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4])))|1.0|3.0 {3};
+  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5])))|1.0|3.0 {4};
+  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5]),PPerp(p[6])))|1.0|3.0 {5};
+  Integration_Error 0.05 {4}
   End process
 }(processes)
 
@@ -26,10 +26,6 @@
   EVENT_GENERATION_MODE = Weighted
   ME_QED = Off
 }(me)
-
-(integration){
-  ERROR = 0.1
-}(integration)
 
 (fragmentation){
   FRAGMENTATION = Off

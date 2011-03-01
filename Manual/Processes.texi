@@ -23,7 +23,7 @@ The following parameters are used to steer the process setup.
 * Integration_Error::       Tag to set a specific integration error.
 * Max_Epsilon::             Tag to set a specific epsilon for overweighting.
 * Enhance_Factor::          Tag to set an enhance factor.
-* Enhance_Function::        Tag to set an enhance function.
+* Enhance_Observable::      Tag to set an enhance observable.
 * NLO_QCD_Part::            Tag to setup QCD NLO processes.
 * NLO_EW_Part::             Tag to setup electroweak NLO processes.
 * ME_Generator::            Tag to specifiy the tree ME generator.
@@ -295,24 +295,30 @@ Here, 3-jet processes are enhanced by a factor of 4,
 4-jet processes by a factor of 16.
 
 
-@node Enhance_Function
-@subsection Enhance_Function
-Sets a process specific enhance function.
+@node Enhance_Observable
+@subsection Enhance_Observable
 
-@emph{This feature can only be used when generating weighted events.}
-
+Allows for the specification of a ME-level observable in which the event
+generation should be flattened. Of course, this induces an appropriate weight
+for each event. This option is available for both weighted and unweighted event
+generation, but for the latter as mentioned above the weight stemming from the
+enhancement is introduced.
 For multijet processes, the parameter can be specified
-per final state multiplicity. An example would be
+per final state multiplicity.
+
+An example would be
 @verbatim
 Process 93 93 -> 11 -11 93{1}
-Enhance_Function PPerp2(p[4]) {3}
+Enhance_Observable log10(PPerp(p[2]+p[3]))|1.0|3.0; {3}
 @end verbatim
 
-Here, the 1-jet process is enhanced with the
-transverse momentum squared of the jet.
+Here, the 1-jet process is flattened with respect to the logarithmic transverse
+momentum of the lepton pair in the limits 1.0 (10 GeV) to 3.0 (1 TeV).
+For the calculation of the observable one can use any function available in
+the algebra interpreter (see @ref{Interpreter}).
 
 Note that the convergence of the Monte Carlo integration can be worse
-if enhance functions are employed and therefore the integration can take
+if enhance observables are employed and therefore the integration can take
 significantly longer. The reason is that the default phase space 
 mapping, which is constructed according to diagrammatic information from
 hard matrix elements, is not suited for event generation including

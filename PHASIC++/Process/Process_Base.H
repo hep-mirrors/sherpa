@@ -83,11 +83,7 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual void DeSelect() = 0;
-    virtual bool SelectOne() = 0;
-
-    virtual Weight_Info *OneEvent() = 0;
-    virtual Weight_Info *WeightedEvent(const int mode=0) = 0;
+    virtual Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
 
     virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
     virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
@@ -95,7 +91,6 @@ namespace PHASIC {
     virtual double Differential2() = 0;
 
     virtual bool GeneratePoint();
-    virtual void AddPoint(const double &value);
 
     virtual bool IsGroup() const;
 

@@ -632,9 +632,9 @@ void Histogram::InsertRange(double start, double end, double value) {
 
 
 
-double Histogram::Bin(int bin) { return m_yvalues[bin]; }
+double Histogram::Bin(int bin) const { return m_yvalues[bin]; }
 
-double Histogram::Bin(double coordinate) 
+double Histogram::Bin(double coordinate) const
 { 
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
@@ -652,6 +652,36 @@ double Histogram::Bin(double coordinate)
     }
   }
   return -1.0;
+}
+
+double Histogram::BinOrInterpolate(int bin) const {
+  double binheight=m_yvalues[bin];
+  if (binheight>0.0) {
+    return binheight;
+  }
+  else {
+    double leftbinheight(0.0), rightbinheight(0.0);
+    for (int ibin=bin; ibin>0; --ibin) {
+      leftbinheight=Bin(ibin-1);
+      if (leftbinheight>0.0) break;
+    }
+    for (int ibin=bin; ibin<m_nbin-1; ++ibin) {
+      rightbinheight=Bin(ibin+1);
+      if (rightbinheight>0.0) break;
+    }
+    return (leftbinheight+rightbinheight)/2.0;
+  }
+}
+
+
+double Histogram::BinOrInterpolate(double coordinate) const {
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+
+  int bin = int((coordinate-m_lower)/m_binsize+1.);
+  if (bin<0) bin=0;
+  if (bin>=m_nbin) bin=m_nbin-1;
+
+  return BinOrInterpolate(bin);
 }
 
 void Histogram::Extrapolate(double coordinate,double * res,int mode) {
@@ -856,6 +886,22 @@ void Histogram::Addopt(const Histogram & histo)
       m_psvalues[i]+= histo.m_psvalues[i];       
     }
   }  
+  m_fills+=histo.m_fills;
+  m_psfills+=histo.m_psfills;
+  return;
+}
+
+void Histogram::AddGeometric(const Histogram & histo)
+{
+  if (histo.m_nbin!=m_nbin) {
+    msg_Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
+    return;
+  }
+  for (int i=0;i<m_nbin;i++) {
+    m_yvalues[i]=sqrt(BinOrInterpolate(i)*histo.BinOrInterpolate(i));
+    if (m_depth>1 && histo.m_depth>1)
+      m_y2values[i]=sqrt(m_y2values[i]*histo.m_y2values[i]);
+  }
   m_fills+=histo.m_fills;
   m_psfills+=histo.m_psfills;
   return;

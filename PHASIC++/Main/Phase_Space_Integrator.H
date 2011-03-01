@@ -17,14 +17,6 @@ namespace PHASIC {
     double value, maxerror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
 
-    struct {
-      int    id;
-      int    n;
-      double sum;
-      double sum2;
-      double max;
-    } local, message;
-
     Phase_Space_Handler *psh;
 
   public:

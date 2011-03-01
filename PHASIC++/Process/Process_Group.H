@@ -64,10 +64,9 @@ namespace PHASIC {
     virtual bool Initialize(Process_Base *const proc) = 0;
 
     void DeSelect();
-    bool SelectOne();
+    bool SelectOne(const int mode);
 
-    Weight_Info *OneEvent();
-    Weight_Info *WeightedEvent(const int mode=0);
+    Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
     double Differential2();

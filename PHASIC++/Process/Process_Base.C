@@ -495,10 +495,6 @@ void Process_Base::BuildCuts(Cut_Data *const cuts)
   Selector()->BuildCuts(cuts);
 }
 
-void Process_Base::AddPoint(const double &value)
-{
-}
-
 void Process_Base::MultiplyLast(const double &w,const int mode)
 {
   m_last[mode]*=w;

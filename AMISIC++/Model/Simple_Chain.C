@@ -464,7 +464,7 @@ bool Simple_Chain::CreateMomenta()
     p_fsrinterface->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
       PHASIC::Weight_Info *data=p_xs->
-	WeightedEvent(PHASIC::psm::no_lim_isr);
+	OneEvent(0,PHASIC::psm::no_lim_isr);
       if (data!=NULL) {
 	weight=data->m_weight;
 	trials=data->m_ntrial;
@@ -522,8 +522,8 @@ bool Simple_Chain::CreateMomenta()
 		p_isr->SetLimits(m_spkey.Doubles(),m_ykey.Doubles(),
 				 m_xkey.Doubles());
 		PHASIC::Weight_Info *info=
-		  p_xs->WeightedEvent(PHASIC::psm::no_lim_isr|
-				      PHASIC::psm::no_dice_isr);
+		  p_xs->OneEvent(0,PHASIC::psm::no_lim_isr|
+				 PHASIC::psm::no_dice_isr);
 		if (info) delete info;
 		ResetISRRange();
 		cur->AddBinExtra(m_last[0],1.0,3);
