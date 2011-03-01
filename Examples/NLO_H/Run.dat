@@ -1,15 +1,15 @@
 (run){
   EVENTS 1;
   BATCH_MODE 0; OUTPUT 2;
-  #MASSIVE[5]=1;
+  MASSIVE[5]=1;
   YUKAWA_B=0.;
   FINITE_TOP_MASS=0
 }(run);
 
 (processes){
-  Process 21 21 -> 25[a]
+  Process 93 93 -> 25[a]
   Decay 25[a] -> 15 -15
-  NLO_QCD_Part VIP;
+  NLO_QCD_Part BVIRS;
   Loop_Generator Internal;
   Order_EW 1;
   End process
