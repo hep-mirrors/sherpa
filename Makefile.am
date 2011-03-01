@@ -34,3 +34,5 @@ while (cmd | getline) { \
   if ((match($$0,"mode=compile")>0 ||  \
        match($$0,"mode=link")>0)) old=cur[n]; \
 }}END{ close(cmd); if (ret==0) install(); }'
+
+fi: fastinstall
