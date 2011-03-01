@@ -7,6 +7,7 @@ MCFM_SOURCES  =	\
 		MCFM_qqb_vh.C \
 		MCFM_qqb_vv.C \
 		MCFM_qqb_v.C \
+		MCFM_wbf.C \
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\

@@ -3,44 +3,31 @@
 #include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
-  // README:
-  // For Higgs production, choose model: MODEL = SM+EHC
-  // It is important for the Higgs production to have all five flavours 
-  // in the initial state, but the Yukawa coupling of the b must be
-  // switched off:  YUKAWA_B = 0.  
-  // Also, MCFM acts in the limit of mt->infinity,
-  // thus a further correction term has been introduced
-  //
-  // We could actually also extend this to BSM models.
 
 
-  class MCFM_gg_h: public PHASIC::Virtual_ME2_Base {
+  class MCFM_wbf: public PHASIC::Virtual_ME2_Base {
   private:
     int                     m_pID;
     double                * p_p, *p_msqv;
     MODEL::Running_AlphaS * p_as;
     double                  m_mh2,m_Gh2,m_cplcorr,m_normcorr;
-
-
+    
+    
     double CallMCFM(const int & i,const int & j);
   public:
-    MCFM_gg_h(const int & pID,
-	      const PHASIC::Process_Info& pi,
-	      const ATOOLS::Flavour_Vector& flavs);
-    ~MCFM_gg_h();
+    MCFM_wbf(const int & pID,
+	     const PHASIC::Process_Info& pi,
+	     const ATOOLS::Flavour_Vector& flavs);
+    ~MCFM_wbf();
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
   };
-
+  
 }// end of namespace MCFM
 
 extern "C" { 
-  void gg_h_v_(double *p,double *msqv); 
-  void qqb_hww_v_(double *p,double *msqv); 
-  void qqb_hzz_v_(double *p,double *msqv); 
-  void gg_hg_v_(double *p,double *msqv); 
-  void gg_hwwg_v_(double *p,double *msqv); 
-  void gg_hzzg_v_(double *p,double *msqv); 
+  void VV_hqq_v_(double *p,double *msqv); 
+  void VV_hWW_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -50,7 +37,7 @@ using namespace MCFM;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
+MCFM_wbf::MCFM_wbf(const int & pID,const Process_Info& pi,
 		     const Flavour_Vector& flavs) :
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
   p_as((MODEL::Running_AlphaS *)
@@ -83,38 +70,33 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
     break;
   }
   m_cplcorr *=
-    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.));
-
+    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
+		(2./3.));
+  
   msg_Tracking()<<"Potential finite top mass correction (enabled) yields: "
-		<<MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.)
+		<<(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
+		   (2./3.))
 		<<"."<<std::endl;
-
+  
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;
 }
 
-MCFM_gg_h::~MCFM_gg_h()
+MCFM_wbf::~MCFM_wbf()
 {
   delete [] p_p;
   delete [] p_msqv;
 }
 
 
-double MCFM_gg_h::CallMCFM(const int & i,const int & j) {
+double MCFM_wbf::CallMCFM(const int & i,const int & j) {
   switch (m_pID) {
-  case 112: gg_h_v_(p_p,p_msqv); break;
-  case 113: qqb_hww_v_(p_p,p_msqv); break;
-  case 114:
-  case 115: qqb_hzz_v_(p_p,p_msqv); break;
-  case 204: gg_hg_v_(p_p,p_msqv); break;
-  case 208: gg_hwwg_v_(p_p,p_msqv); break;
-  case 209: gg_hwwg_v_(p_p,p_msqv); break; 
   }
   return p_msqv[mr(i,j)];
 }
 
-void MCFM_gg_h::Calc(const Vec4D_Vector &p)
+void MCFM_wbf::Calc(const Vec4D_Vector &p)
 {
   double corrfactor(m_cplcorr*m_normcorr);
   if (m_pID>200) corrfactor *= (*p_as)(m_mur2)/qcdcouple_.as;
@@ -132,7 +114,7 @@ void MCFM_gg_h::Calc(const Vec4D_Vector &p)
   if (j==21) { j=0; corrfactor *= 8./3.; }
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
-
+  
   epinv_.epinv=epinv2_.epinv2=0.0;
   double res(CallMCFM(i,j)  * corrfactor);
   epinv_.epinv=1.0;
@@ -144,65 +126,68 @@ void MCFM_gg_h::Calc(const Vec4D_Vector &p)
   m_res.IR2()    = (res2-res1);
 }
 
-double MCFM_gg_h::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
+double MCFM_wbf::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   return 4.*M_PI;
 }
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
-Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_wbf_Getter,"MCFM_wbf")
+Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
 {
+  msg_Out()<<METHOD<<"."<<std::endl;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
-  if (pi.m_oew>2)                                       return NULL;
+  if (pi.m_oew<3)                                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     // check for right model and absence of b Yukawa couplings
     Flavour_Vector fl(pi.ExtractFlavours());
+    msg_Out()<<"  "<<fl.size()<<" flavours, "<<fl[2]<<" = "<<fl[3]<<", "
+	     <<pi.m_fi.m_ps.size()<<" props.\n";
 
     // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
     int pID(0);
-    if (pi.m_fi.m_ps.size()<1 || pi.m_fi.m_ps.size()>2) return NULL;
+    if (pi.m_fi.m_ps.size()!=3)                         return NULL;
     ATOOLS::Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
+    msg_Out()<<"  Higgs candidate = "<<flh<<"."<<std::endl;
     // higgs propagator
     if (!flh==ATOOLS::Flavour(kf_h0))                   return NULL;
     if (pi.m_fi.m_ps.size()==2 && 
 	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
     if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
-	MODEL::s_model->Name()!=std::string("SM+EHC") ||
+	MODEL::s_model->Name()!=std::string("SM") ||
 	!Flavour(kf_h0).IsOn()) {
       msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		 <<"   Try to initialise process gg->H(+jet) in MCFM."<<std::endl
-		 <<"   Inconsistent setting with Sherpa: "<<std::endl
+		 <<"   Try to initialise process WBF->H in MCFM.\n"
+		 <<"   Inconsistent setting with Sherpa: \n"
 		 <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<" (should be 0), "
-		 <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM+EHC', and "
+		 <<"model = "<<MODEL::s_model->Name()
+		 <<"(should be 'SM', and "
 		 <<"higgs on = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."
-		 <<std::endl<<"   Will exit the run."<<std::endl;
+		 <<std::endl<<"   Will exit the run.\n";
       exit(1);
       return NULL;
     }
-    msg_Out()<<" ... check for tau tau FS."<<std::endl;
     // tau tau final state
-    if ((fl.size()==4 || fl.size()==5) && 
+    if ((fl.size()>=6) && 
 	(fl[2]==fl[3].Bar() && fl[2].Kfcode()==15)) {
       if (ATOOLS::Flavour(kf_tau).Yuk()<=0.) {
-	msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		   <<"   Setup for gg->[h->tau tau] (+jet), but tau Yukawa = 0."
-		   <<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   Setup for WBF->[h->tau tau], but tau Yukawa = 0.\n";
 	exit(1);
       }
-      if (fl.size()==4 && pi.m_fi.m_ps.size()==1 && 
-	  fl[0].IsGluon() && fl[1].IsGluon()) pID = 112;
-      if (fl.size()==5 && pi.m_fi.m_ps.size()==2 && 
-	  fl[0].Strong() && fl[1].Strong() &&
-	  pi.m_fi.m_ps[1].m_fl[0].Strong())   pID = 204;
-      // consider extra jet flavour - maybe will need more tests in future ...
+      if (fl.size()==6 && pi.m_fi.m_ps.size()==3 && 
+	  fl[0].IsQuark() && fl[1].IsQuark() && 
+	  fl[4].IsQuark() && fl[5].IsQuark())   pID = 212;
+      else if (fl.size()==7 && pi.m_fi.m_ps.size()==4 && 
+	       fl[0].Strong() && fl[1].Strong() && 
+	       fl[4].Strong() && fl[5].Strong() &&
+	       fl[6].Strong())                  pID = 217;
     }
-    // VV final states
-    if ((fl.size()==6 || fl.size()==7)) {
+    if (fl.size()==8) {
       // check for two propagators off the Higgs decay
       if (pi.m_fi.m_ps[0].m_ps.size()!=2)               return NULL; 
       // check for fully leptonic FS
@@ -219,44 +204,9 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 		     <<std::endl;
 	  exit(1);
 	}
-	if (fl.size()==6 && pi.m_fi.m_ps.size()==1 && 
-	    fl[0].IsGluon() && fl[1].IsGluon()) pID = 113;
-	if (fl.size()==7 && pi.m_fi.m_ps.size()==2 && 
-	    fl[0].Strong() && fl[1].Strong() &&
-	    pi.m_fi.m_ps[1].m_fl[0].Strong())   pID = 208;
-	// consider extra jet flavour - maybe will need more tests in future ...
-      }
-      // ZZ final state
-      else if (fl1==Flavour(kf_Z) && fl2==Flavour(kf_Z)) {
-	if (ATOOLS::Flavour(kf_Z).Yuk()<=0.) {
-	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		     <<"   Setup for gg->[h->ZZ] (+jet), but Z Yukawa = 0."
-		     <<std::endl;
-	  exit(1);
-	}
-	int neutrino(0);
-	if (fl[2].IsUptype() && fl[4].IsUptype()) {
-	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		     <<"   Setup for gg->[h->ZZ] with 4 nu FS."<<std::endl
-		     <<"   not implemented in MCFM."<<std::endl;
-	  return NULL;
-	}
-	if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
-	    (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
-	if (fl.size()==6 && pi.m_fi.m_ps.size()==1 && 
-	    fl[0].IsGluon() && fl[1].IsGluon()) pID = 114+neutrino;
-	if (fl.size()==7 && pi.m_fi.m_ps.size()==2 && 
-	    fl[0].Strong() && fl[1].Strong() &&
-	    pi.m_fi.m_ps[1].m_fl[0].Strong()) {
-	  if (neutrino==1) {
-	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		       <<"   Setup for gg->[h->ZZ]+jet with 2 nu FS."<<std::endl
-		       <<"   not implemented in MCFM."<<std::endl;
-	    return NULL;
-	  }
-	  pID = 209;
-	}
-	// consider extra jet flavour - maybe will need more tests in future ...
+	if (pi.m_fi.m_ps.size()==3 && 
+	    fl[0].IsQuark() && fl[1].IsQuark() && 
+	    fl[6].IsQuark() && fl[7].IsQuark())   pID = 213;
       }
     }
     if (pID>0) {
@@ -269,7 +219,7 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
       nproc_.nproc=pID;
       chooser_();
       msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
-      return new MCFM_gg_h(pID,pi,fl);
+      return new MCFM_wbf(pID,pi,fl);
     }
   }
   return NULL;
