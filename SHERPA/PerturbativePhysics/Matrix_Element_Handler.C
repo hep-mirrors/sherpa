@@ -610,7 +610,9 @@ void Matrix_Element_Handler::BuildSingleProcessList
     Selector_Key skey(NULL,new Data_Reader(),true);
     std::string sfile(cpi.m_selectorfile!=""?
 		      cpi.m_selectorfile:m_selectorfile);
-    while (sfile[sfile.length()-1]==' ') sfile.erase(sfile.length()-1,1);
+    size_t ftp(sfile.find("*"));
+    if (ftp!=std::string::npos) sfile.replace
+      (ftp,1,m_processfile.substr(0,m_processfile.find('|')));
     skey.ReadData(m_path,sfile);
     if (pi.m_ckkw&1) {
       std::vector<std::string> jfargs(1,pbi.m_gycut);
