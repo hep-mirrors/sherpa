@@ -17,7 +17,8 @@ namespace EXTRAXS {
     Higgs_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
       Virtual_ME2_Base(pi, flavs)
     {
-      double nlf = 5.0;
+      Flavour lq(kf_quark);
+      double nlf = double(lq.Size())/2.0;
       m_b0 = (11.0/3.0*CA-4.0/3.0*TR*nlf)/4.0/M_PI;
       if (flavs[0].IsQuark()) {
         m_fac = CF;
