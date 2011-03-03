@@ -1,9 +1,5 @@
 (run){
   EVENTS = 10000
-  FRAGMENTATION Off
-  ACTIVE[22]=0
-  ACTIVE[23]=0
-  NJET:=0
 }(run)
 
 (beam){
@@ -12,14 +8,11 @@
 }(beam)
 
 (processes){
-  Process 93 93 -> 15 -15 93{NJET}
-  Loop_Generator Internal;
-  NLO_QCD_Part BVIRS {2};
-  CKKW sqr(20/E_CMS);
-  !RB_Max_Epsilon 1e-3 {2}
-  Integration_Error 0.05 {5};
-  Order_EW 2;
-  End process;
+  Process 93 93 -> 25[a]
+  Decay 25[a] -> 15 -15
+  Order_EW 1
+  NLO_QCD_Part BVIRS {2}
+  End process
 }(processes)
 
 (selector){
@@ -30,7 +23,6 @@
   ME_SIGNAL_GENERATOR = Amegic Internal
   EVENT_GENERATION_MODE = Weighted
   NLO_Mode = 2;
-#  SCALES = VAR{MPerp2(p[2]+p[3])}
 }(me)
 
 (model){

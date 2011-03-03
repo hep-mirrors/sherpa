@@ -62,11 +62,11 @@ Virtual_ME2_Base *Higgs_QCD_Virtual_Getter::operator()(const Process_Info &pi) c
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl=pi.ExtractFlavours();
-    if (fl.size()!=4) return NULL;
-//    if ((fl[0].IsGluon()/* || fl[0].IsQuark()*/) && fl[1]==fl[0].Bar() &&
-//        pi.m_fi.m_ps.size()==1 &&
-//        pi.m_fi.m_ps[0].m_fl.Kfcode()==kf_h0) {
-    if (fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
+    if (fl[0].IsGluon() && fl[1].IsGluon() &&
+        pi.m_fi.m_ps.size()==1 && pi.m_fi.m_ps[0].m_fl.Kfcode()==kf_h0) {
+      for (size_t i=2; i<fl.size(); ++i) {
+        if (fl[i].Strong()) return NULL;
+      }
       return new Higgs_QCD_Virtual(pi, fl);
     }
   }
