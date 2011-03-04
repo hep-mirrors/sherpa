@@ -375,7 +375,8 @@ void Matrix_Element_Handler::BuildProcesses()
 	std::vector<std::string> &cur(procdata[ng]);
 	if (cur.size()<2) continue;
 	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
-	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
+	if (cur[0]=="Onshell_Decay" ||
+	    cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vscale,nf);
@@ -411,7 +412,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
 	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
 	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);
-	if (cur[0]=="CutCore") pbi.m_cutcore=ToType<int>(cur[1]);
+	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
 	if (cur[0]=="N_T-channels") pi.m_ntchan=ToType<int>(cur[1]);
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
