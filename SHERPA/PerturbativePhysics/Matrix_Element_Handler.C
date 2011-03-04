@@ -411,6 +411,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
 	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
 	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);
+	if (cur[0]=="CutCore") pi.m_cutcore=ToType<int>(cur[1]);
 	if (cur[0]=="N_T-channels") pi.m_ntchan=ToType<int>(cur[1]);
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
@@ -618,7 +619,12 @@ void Matrix_Element_Handler::BuildSingleProcessList
       std::vector<std::string> jfargs(1,pbi.m_gycut);
       GetMPvalue(pbi.m_vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
-      if (i==0) jfargs.push_back("LO");
+      if (i==0) {
+	jfargs.push_back("LO");
+	if (pi.m_cutcore==true) {
+	  jfargs.push_back("CUT");
+	}
+      }
       if (procs.size()>1) skey.SetData("METS",jfargs);
     }
     procs[i]->SetSelector(skey);

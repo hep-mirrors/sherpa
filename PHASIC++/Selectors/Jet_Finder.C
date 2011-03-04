@@ -104,29 +104,31 @@ void Jet_Finder::AssignId(Term *term)
 }
 
 namespace PHASIC{
-
-DECLARE_ND_GETTER(Jet_Finder_Getter,"METS",Selector_Base,Selector_Key,false);
-
-Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
-{
-  if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
-  Jet_Finder *jf(new Jet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
-				(Flavour*)&key.p_proc->Process()->
-				Flavours().front(),key[0][0]));
-  jf->SetProcess(key.p_proc);
-  static bool menlots(false);
-  if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
-    menlots=true;
-    rpa.gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
-			std::string("published under \\cite{Hoeche:2010kg}."));
+  
+  DECLARE_ND_GETTER(Jet_Finder_Getter,"METS",Selector_Base,Selector_Key,false);
+  
+  Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
+  {
+    if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
+    Jet_Finder *jf(new Jet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
+				  (Flavour*)&key.p_proc->Process()->
+				  Flavours().front(),key[0][0]));
+    jf->SetProcess(key.p_proc);
+    static bool menlots(false);
+    if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
+      menlots=true;
+      rpa.gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
+			  std::string("published under \\cite{Hoeche:2010kg}."));
+    }
+    if (key.front().size()>1 && key[0][1]=="LO" && 
+	!(key.front().size()>2 && key[0][2]=="CUT")) 
+      jf->SetOn(false);
+    return jf;
   }
-  if (key.front().size()>1 && key[0][1]=="LO") jf->SetOn(false);
-  return jf;
-}
-
-void Jet_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"METS jet finder"; 
-}
-
+  
+  void Jet_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
+  { 
+    str<<"METS jet finder"; 
+  }
+  
 }
