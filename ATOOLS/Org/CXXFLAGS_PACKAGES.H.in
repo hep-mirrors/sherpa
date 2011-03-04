@@ -16,9 +16,6 @@
 /* using LHAPDF */
 #undef USING__LHAPDF
 
-/* golem95 found and linked */
-#undef USING__GOLEM95
-
 /* hztool found */
 #undef USING__HZTOOL
 

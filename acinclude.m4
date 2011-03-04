@@ -616,35 +616,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(LHAPDF_NATIVE_WRAPPER, test "$lhapdfnativewrapper" = "true")
 
   AC_ARG_ENABLE(
-    golem95,
-    AC_HELP_STRING([--enable-golem95=/path/to/golem95], [Enable golem95 for calculating loop matrix elements.]),
-    [ AC_MSG_CHECKING(for golem95 installation directory);
-      case "${enableval}" in
-        no) AC_MSG_RESULT(golem95 not enabled); golem95=false;;
-        *)  if test -d "${enableval}"; then
-              if test -f "${enableval}/libgolem.a"; then
-                CONDITIONAL_GOLEM95LIBS="${enableval}/libgolem.a";
-                CONDITIONAL_GOLEM95DIR="${enableval}";
-                golem95=true;
-                AC_MSG_RESULT(${enableval});
-              else
-                AC_MSG_ERROR(Did not find '${enableval}/libgolem.a'.); 
-              fi;
-            else
-              AC_MSG_ERROR(Did not find golem95 directory '${enableval}'.);
-            fi;
-      esac;
-    ],
-    [ golem95=false ]
-  )
-  if test "$golem95" = "true" ; then
-    AC_DEFINE([USING__GOLEM95], "1", [golem95 found and linked])
-  fi
-  AC_SUBST(CONDITIONAL_GOLEM95DIR)
-  AC_SUBST(CONDITIONAL_GOLEM95LIBS)
-  AM_CONDITIONAL(GOLEM95_SUPPORT, test "$golem95" = "true")
-
-  AC_ARG_ENABLE(
     hztool,
     AC_HELP_STRING([--enable-hztool=/path/to/hztool], [Enable hztool for analysis.]),
     [ AC_MSG_CHECKING(for hztool installation directory);
