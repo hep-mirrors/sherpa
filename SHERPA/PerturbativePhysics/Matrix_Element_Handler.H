@@ -45,6 +45,7 @@ namespace SHERPA {
       MPSV_Map m_veobs, m_vycut, m_vscale, m_vcoupl, m_vkfac,
 	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen;
       std::string m_gycut;
+      int m_cutcore;
     };// end of struct Processblock_Info
 
   private :
