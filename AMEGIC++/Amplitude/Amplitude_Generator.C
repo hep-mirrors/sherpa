@@ -525,18 +525,36 @@ int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
   Color_Function * c2 = p2->Color;
 
   if (c1->Next()==0 && c2->Next()==0) return 1;
+
   if ((c1->Next()!=0 && c2->Next()==0) || (c1->Next()==0 && c2->Next()!=0)) return 0; 
 
+  int l1[3],l2[3],l1n[3],l2n[3];
+  
   if (c1->Type()==cf::F) {
     if (c1->Next()->Type()==cf::F) {
-      if (c1->String()==c2->String() && c1->Next()->String()==c2->Next()->String()) return 1;
+      if (c1->String()==c2->String()) {
+	for (int i=0;i<3;i++){
+	  l1[i]=c1->ParticleArg(i);
+	  l2[i]=c2->ParticleArg(i);
+	  l1n[i]=c1->Next()->ParticleArg(i);
+	  l2n[i]=c2->Next()->ParticleArg(i);
+	}
+	if (l1[0]!=l2[0] && l1n[0]!=l2n[0]) {
+	  if (l1[1]==l2[1] && l1[2]==l2[2] && l1n[1]==l2n[1] && l1n[2]==l2n[2]) return 0;
+	}
+	else return 1;
+      }
+      else if (c1->ParticleArg(1)==c2->Next()->ParticleArg(0) &&
+	       c1->Next()->ParticleArg(1)==c2->ParticleArg(1) ) {
+	return 1;
+      }
       else return 0;
     }
     else 
       msg_Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
 		 <<"   Color structure not supported. Continue and hope for the best. "<<endl;
   }
-  int l1[3],l2[3],l1n[3],l2n[3];
+
   for (int i=0;i<3;i++){
     l1[i]=c1->ParticleArg(i);
     l2[i]=c2->ParticleArg(i);
@@ -579,6 +597,7 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
   if (p1->Color->Type()!=p2->Color->Type()) return 0;
   
   if (!CompareColors(p1,p2)) return 0;
+
   
   // return 1 if equal and 0 if different
   
@@ -613,8 +632,7 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
       if (sw1) sw1 = SingleCompare(p1->left,p2->middle);
     }
     return sw1;
-  }
-
+  }  
   return 0;
 }
 

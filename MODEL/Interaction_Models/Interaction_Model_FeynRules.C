@@ -86,6 +86,7 @@ void Interaction_Model_FeynRules::c_FFV(std::vector<Single_Vertex>& vertex,int &
       }
       if (vv[i][0]=="1" && valid) {
 	Complex cpl(0.,0.);
+	//std::cout<<" interprete RC: "<<vv[i][1]<<std::endl;
 	cpl = ToType<Complex>(p_algebra->Interprete(vv[i][1]));
 	//std::cout<<" interpreted RC: "<<vv[i][1]<<" -> "<<cpl<<std::endl; 
 	Kabbala kcpl = Kabbala(vv[i][1],cpl);
@@ -94,6 +95,7 @@ void Interaction_Model_FeynRules::c_FFV(std::vector<Single_Vertex>& vertex,int &
       }
       if (vv[i][0]=="2" && valid) {
 	Complex cpl(0.,0.);
+	//std::cout<<" interprete LC: "<<vv[i][1]<<std::endl;
 	cpl = ToType<Complex>(p_algebra->Interprete(vv[i][1]));
 	//std::cout<<" interpreted LC: "<<vv[i][1]<<" -> "<<cpl<<std::endl; 
 	Kabbala kcpl = Kabbala(vv[i][1],cpl);
@@ -172,7 +174,7 @@ void Interaction_Model_FeynRules::c_FFV(std::vector<Single_Vertex>& vertex,int &
 	  Kabbala kcpl1 = Kabbala("(-1.)*("+vertex[vanz].cpl[1].String()+")",vertex[vanz].cpl[1].Value()*(-1.));
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
-	  }
+	}
 	else if (vv[i][1]=="Gauge3") {
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gauge3",LF_Key()));
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
@@ -273,8 +275,18 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	}
 	case 'F' : {
 	  //needs to be generalised
-	  vertex[vanz].Color.push_back(Color_Function(cf::F,0,1,2,'0','1','2'));
-	  break;
+	  if (vv[i][1].size()==8) {
+	    int arg1   = int(vv[i][1][2])-49;
+	    int arg2   = int(vv[i][1][4])-49;
+	    int arg3   = int(vv[i][1][6])-49;
+	    char sarg1[2],sarg2[2],sarg3[2];
+	    sprintf(sarg1,"%i",arg1);
+	    sprintf(sarg2,"%i",arg2);
+	    sprintf(sarg3,"%i",arg3);
+	    //
+	    vertex[vanz].Color.push_back(Color_Function(cf::F,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	  }
+	  else vertex[vanz].Color.push_back(Color_Function(cf::F,0,1,2,'0','1','2'));
 	}
 	case 'T' : {
 	  if (vv[i][1].size()==8) {
