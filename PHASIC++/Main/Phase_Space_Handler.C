@@ -590,10 +590,13 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 
 void Phase_Space_Handler::AddPoint(const double value)
 {
+  if (p_beamchannels) p_beamchannels->AddPoint(value);
+  if (p_isrchannels)  p_isrchannels->AddPoint(value);
+  p_fsrchannels->AddPoint(value);
+  p_process->AddPoint(value);
   if (p_enhanceobs && value!=0.0) {
     p_enhancehisto_current->Insert(EnhanceObservable(), value/EnhanceFactor());
   }
-  p_process->AddPoint(value);
 }
 
 void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
@@ -670,6 +673,10 @@ void Phase_Space_Handler::AssignId(Term *term)
 
 void Phase_Space_Handler::Optimize()
 {
+  if (p_beamchannels) p_beamchannels->Optimize(m_error);
+  if (p_isrchannels) p_isrchannels->Optimize(m_error);
+  p_fsrchannels->Optimize(m_error);
+  p_process->ResetMax(2);
   if (p_enhanceobs) {
     p_enhancehisto_current->Scale(1.0/p_enhancehisto_current->Integral());
     p_enhancehisto->AddGeometric(p_enhancehisto_current);
@@ -680,6 +687,9 @@ void Phase_Space_Handler::Optimize()
 
 void Phase_Space_Handler::EndOptimize()
 {
+  if (p_beamchannels) p_beamchannels->EndOptimize(m_error);
+  if (p_isrchannels)  p_isrchannels->EndOptimize(m_error);
+  p_fsrchannels->EndOptimize(m_error);
 }
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 

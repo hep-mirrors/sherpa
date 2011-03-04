@@ -113,8 +113,6 @@ namespace PHASIC {
     bool WriteOutRB(const std::string &path);
     bool ReadInRB(const std::string &path);
 
-    double TriggerEfficiency();
-    
     void OptimizeResult();
 
     double GetMaxEps(double);

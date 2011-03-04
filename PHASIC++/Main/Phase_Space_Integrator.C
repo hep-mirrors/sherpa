@@ -119,11 +119,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   nstep++;
   if (value!=0.) ncstep++;
   
-  if (value!=0.0) {
-    if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value);
-    if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value);
-    (psh->FSRIntegrator())->AddPoint(value);
-  }
     psh->AddPoint(value);
 
     ncontrib = psh->FSRIntegrator()->ValidN();
@@ -133,11 +128,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
       if ((ncontrib<=maxopt) && (endopt<2)) {
-	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
-	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
-	(psh->FSRIntegrator())->Optimize(maxerror);
 	psh->Optimize();
-	(psh->Process())->ResetMax(2);
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
 	  if ((psh->Process())->SPoints()==0) {
@@ -159,9 +150,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	(psh->Process())->ResetMax(0);
       }
       if ((ncontrib==maxopt) && (endopt<2)) {
-	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
-	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
-	(psh->FSRIntegrator())->EndOptimize(maxerror);
 	psh->EndOptimize();
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;
@@ -268,7 +256,6 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
   for (n=1;n<=nmax;n++) {
     do { value = psh->Differential(); }
     while (dabs(value) > 1./ATOOLS::Accu());
-    (psh->FSRIntegrator())->AddPoint(value);
     
     //new SS
     psh->AddPoint(value);
@@ -286,12 +273,10 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
     
     if (!(n%iter)) {
       if (n<=maxopt) {
-	psh->FSRIntegrator()->Optimize(maxerror);
 	psh->Optimize();
 	(psh->Process())->OptimizeResult();
       }
       if (n==maxopt) {
-	psh->FSRIntegrator()->EndOptimize(maxerror);
 	psh->EndOptimize();
 	iter = 50000;
       }

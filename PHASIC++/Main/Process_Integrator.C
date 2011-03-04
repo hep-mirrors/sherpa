@@ -560,15 +560,6 @@ void Process_Integrator::OptimizeResult()
   OptimizeSubResult(Sigma2());
 } 
 
-double Process_Integrator::TriggerEfficiency()
-{
-  if (p_pshandler!=NULL) {
-    Multi_Channel *fsr=p_pshandler->FSRIntegrator();
-    return fsr->ValidN()/(double)fsr->N();
-  }
-  return 1.0;
-}
-
 void Process_Integrator::SetISRThreshold(const double threshold) 
 {
   m_threshold=threshold;
