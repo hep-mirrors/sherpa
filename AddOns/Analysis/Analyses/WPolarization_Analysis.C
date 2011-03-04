@@ -2,10 +2,16 @@
 
 namespace ANALYSIS {
 
-  class WPolarization_Analysis: public Analysis_Base {  
+  class WPolarization_Analysis: public Analysis_Base {
+  private:
+
+    Argument_Matrix m_params;
+
+    double m_ptwc;
+
   public:
 
-    WPolarization_Analysis(const std::string &listname);
+    WPolarization_Analysis(const Argument_Matrix &params);
 
     void Evaluate(double weight, double ncount,int mode);
     Primitive_Observable_Base * Copy() const;
@@ -18,6 +24,7 @@ namespace ANALYSIS {
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>
@@ -25,17 +32,35 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-WPolarization_Analysis::WPolarization_Analysis(const std::string &listname):
-  Analysis_Base(listname)
+WPolarization_Analysis::WPolarization_Analysis(const Argument_Matrix &params):
+  Analysis_Base(params[0][0]), m_params(params), m_ptwc(20.0)
 {
+  Data_Reader reader(",",";","!","=");
+  Algebra_Interpreter *ip=reader.Interpreter();
+  for (size_t i(1);i<params.size();++i) {
+    if (params.size()<2) continue;
+    if (params[i][0]=="PT_W_Min") ToType<double>(ip->Interprete(params[i][1]));
+  }
   m_name+="_WPolarization";
-  // m_dists.resize(2,NULL);
-  // m_dists[0] = new Normalized_Observable(1,0.0,10.0,10);
-  m_histos.resize(2,NULL);
-  // d\sigma/d\cos(theta^*)
+  m_dists.resize(11,NULL);
+  m_dists[0] = new Normalized_Observable(1,0.0,1000.0,100,"A0",1);
+  m_dists[1] = new Normalized_Observable(1,0.0,1000.0,100,"A1",1);
+  m_dists[2] = new Normalized_Observable(1,0.0,1000.0,100,"A2",1);
+  m_dists[3] = new Normalized_Observable(1,0.0,1000.0,100,"A3",1);
+  m_dists[4] = new Normalized_Observable(1,0.0,1000.0,100,"A4",1);
+  m_dists[5] = new Normalized_Observable(1,0.0,1000.0,100,"A5",1);
+  m_dists[6] = new Normalized_Observable(1,0.0,1000.0,100,"A6",1);
+  m_dists[7] = new Normalized_Observable(1,0.0,1000.0,100,"A7",1);
+  m_dists[8] = new Normalized_Observable(1,0.0,1000.0,100,"fL",1);
+  m_dists[9] = new Normalized_Observable(1,0.0,1000.0,100,"fR",1);
+  m_dists[10] = new Normalized_Observable(1,0.0,1000.0,100,"f0",1);
+  m_histos.resize(6,NULL);
   m_histos[0] = new Histogram(1,-1.0,1.0,100,"CosThetaStar");
-  // d\sigma/d\phi^*
   m_histos[1] = new Histogram(1,0.0,360.0,90,"PhiStar");
+  m_histos[2] = new Histogram(1,-1.0,1.0,100,"CosThetaStar_PTW"+ToString(m_ptwc));
+  m_histos[3] = new Histogram(1,0.0,360.0,90,"PhiStar_PTW"+ToString(m_ptwc));
+  m_histos[4] = new Histogram(1,0.0,1000.0,100,"PTW");
+  m_histos[5] = new Histogram(10,0.1,1000.0,100,"logPTW");
 }
 
 void WPolarization_Analysis::Evaluate(double weight,double ncount,int mode)
@@ -63,32 +88,42 @@ void WPolarization_Analysis::Evaluate(double weight,double ncount,int mode)
   zrot.Rotate(pl);
   zrot.Rotate(pb1);
   zrot.Rotate(pb2);
-  if (pb1.PPerp2()==0.0 && pb2.PPerp2()==0.0) {
-    msg_Debugging()<<"using arbitrary x axis\n";
-  }
-  else {
-    Vec4D xref(pb1.PPerp2()/pb1.PSpat2()>
-	       pb2.PPerp2()/pb2.PSpat2()?pb1:pb2);
-    Poincare xrot(xref.Perp(),Vec4D::XVEC);
-    xrot.Rotate(pl);
-    xrot.Rotate(pb1);
-    xrot.Rotate(pb2);
-    if (pb2.Theta(-Vec4D::XVEC)<pb1.Theta(Vec4D::XVEC))
-      msg_Error()<<METHOD<<"(): \\theta_1 = "<<pb1.Theta(Vec4D::XVEC)
-		 <<" > \\theta_2 = "<<pb2.Theta(-Vec4D::XVEC)<<std::endl;
-  }
-  double costhetas(pl.CosTheta()), phis(pl.Phi());
+  Vec4D xref(pb1.CosTheta()>pb2.CosTheta()?pb1:pb2);
+  Poincare xrot(xref.Perp(),Vec4D::XVEC);
+  xrot.Rotate(pl);
+  double ptw((l->Momentum()+nu->Momentum()).PPerp());
+  FillHisto(4,ptw,weight,ncount,mode);
+  FillHisto(5,ptw,weight,ncount,mode);
+  double thetas(pl.Theta()), phis(pl.Phi());
+  double costhetas(cos(thetas)), sinthetas(sin(thetas));
+  double cosphis(cos(phis)), sinphis(sin(phis));
   if (phis<0.0) phis+=2.0*M_PI;
   msg_Debugging()<<"cos\\theta^* = "<<costhetas
 		 <<", \\phi^* = "<<phis*180.0/M_PI<<"\n";
   FillHisto(0,costhetas,weight,ncount,mode);
   FillHisto(1,phis*180.0/M_PI,weight,ncount,mode);
+  double ptcweight(ptw>m_ptwc?weight:0.0);
+  FillHisto(2,costhetas,ptcweight,ncount,mode);
+  FillHisto(3,phis*180.0/M_PI,ptcweight,ncount,mode);
+  FillDist(0,ptw,10.0/3.0*(1.0-3.0*sqr(costhetas))+2.0/3.0,weight,ncount,mode);
+  FillDist(1,ptw,10.0*sinthetas*costhetas*cosphis,weight,ncount,mode);
+  FillDist(2,ptw,10.0*sqr(sinthetas)*(sqr(cosphis)-sqr(sinphis)),weight,ncount,mode);
+  FillDist(3,ptw,4.0*sinthetas*cosphis,weight,ncount,mode);
+  FillDist(4,ptw,4.0*costhetas,weight,ncount,mode);
+  FillDist(5,ptw,4.0*sinthetas*sinphis,weight,ncount,mode);
+  FillDist(6,ptw,10.0*costhetas*sinthetas*sinphis,weight,ncount,mode);
+  FillDist(7,ptw,10.0*sqr(sinthetas)*cosphis*sinphis,weight,ncount,mode);
+  FillDist(8,ptw,0.5*sqr(1.0-costhetas)-(1.0-2.0*sqr(costhetas)),weight,ncount,mode);
+  FillDist(9,ptw,0.5*sqr(1.0+costhetas)-(1.0-2.0*sqr(costhetas)),weight,ncount,mode);
+  FillDist(10,ptw,5.0*sqr(sinthetas)-3.0,weight,ncount,mode);
 }
 
 Primitive_Observable_Base *WPolarization_Analysis::Copy() const 
 {
-  return new WPolarization_Analysis(m_listname);
+  return new WPolarization_Analysis(m_params);
 }
+
+namespace ANALYSIS {
 
 DECLARE_GETTER(WPolarization_Getter,"WPolarization",
 	       Primitive_Observable_Base,Argument_Matrix);
@@ -97,7 +132,7 @@ Primitive_Observable_Base *
 WPolarization_Getter::operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()==0 || parameters[0].size()<1) return NULL;
-  return new WPolarization_Analysis(parameters[0][0]);
+  return new WPolarization_Analysis(parameters);
 }
 
 void WPolarization_Getter::PrintInfo
@@ -106,3 +141,4 @@ void WPolarization_Getter::PrintInfo
   str<<"list"; 
 }
 
+}
