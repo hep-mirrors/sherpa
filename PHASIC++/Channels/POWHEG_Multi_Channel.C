@@ -116,7 +116,8 @@ void POWHEG_Multi_Channel::AddPoint(double value)
   Multi_Channel::AddPoint(value);
   p_fsmc->AddPoint(value/p_proc->Last()*
 		   (p_proc->LastB()+p_proc->LastVI()+p_proc->LastRS()));
-  if (m_emode) m_eeg.AddPoint(value/p_proc->Last()*p_proc->LastRS());
+  if (m_emode && value)
+    m_eeg.AddPoint(value/p_proc->Last()*p_proc->LastRS());
 }
 
 void POWHEG_Multi_Channel::Optimize(double error)
