@@ -555,7 +555,14 @@ Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
   for (size_t i(0);i<2;++i) m_zh[i].clear();
   m_zhsum[1]=m_zhsum[0]=0.0;
   Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
-  if (winfo!=NULL) winfo->m_weight/=SelectProcess();
+  if (winfo!=NULL) {
+    double cf(SelectProcess());
+    if (cf) winfo->m_weight/=cf;
+    else {
+      delete winfo;
+      winfo=NULL;
+    }
+  }
   m_smode=1;
   return winfo;
 }
