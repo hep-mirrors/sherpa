@@ -370,8 +370,8 @@ hard coded loop matrix elements, e.g. @ref{NLO_W}.
 
 @subsubsection BlackHat Interface
 
-Another source for loop matrix elements is @url{http://projects.hepforge.org/blackhat,BlackHat}. To use this Sherpa 
-has to be linked to BlackHat during installation by using the configure option 
+Another source for loop matrix elements is @url{http://projects.hepforge.org/blackhat,BlackHat}.
+To use this Sherpa has to be linked to BlackHat during installation by using the configure option 
 @code{--enable-blackhat=/path/to/blackhat}.
 
 

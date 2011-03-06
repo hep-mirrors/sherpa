@@ -78,8 +78,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       else {
 	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
 	if (ii.m_pi.PPlus()>sum.PPlus() ||
-	    ii.m_pi.PMinus()>sum.PMinus() ||
-	    ii.m_pi[0]<p_shower->GetSudakov()->PT2Min() || ii.m_stat!=1) return cs;
+	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z)-mj2-sqr(1.0-ii.m_z)*mi2;
 	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
       }
