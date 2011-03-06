@@ -76,6 +76,7 @@ Process_Integrator::~Process_Integrator()
 double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (mode==1) return m_max*m_enhancefac;
+  if (m_totalxs==0.0) return -1.0;
   return dabs(m_totalxs)*m_enhancefac;
 }
 

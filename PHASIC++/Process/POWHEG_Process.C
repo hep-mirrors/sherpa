@@ -551,11 +551,11 @@ double POWHEG_Process::SelectBProcess()
 Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
 {
   m_smode=0;
-  p_selected=NULL;
+  p_selected=this;
   for (size_t i(0);i<2;++i) m_zh[i].clear();
   m_zhsum[1]=m_zhsum[0]=0.0;
   Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
-  if (winfo!=NULL) winfo->m_weight*=SelectProcess();
+  if (winfo!=NULL) winfo->m_weight/=SelectProcess();
   m_smode=1;
   return winfo;
 }
@@ -566,6 +566,7 @@ bool POWHEG_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->Reset();
   SP(Phase_Space_Handler) psh(p_int->PSHandler());
   p_sproc->Integrator()->SetPSHandler(psh);
+  p_rproc->Integrator()->SetPSHandler(psh);
   if (p_int->ISR()) {
     if (m_nin==2) {
       if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
