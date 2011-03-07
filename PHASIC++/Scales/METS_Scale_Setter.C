@@ -23,7 +23,6 @@
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 
-#define CHECK__x
 #define METS__reject_unordered
 // #define CHECK__stepwise
 
@@ -93,8 +92,6 @@ namespace PHASIC {
     double m_lfrac, m_aqed, m_wthres;
 
     static double s_eps, s_kt2max;
-
-    bool CheckX(const ATOOLS::Vec4D &p,const size_t &isid) const;
 
     double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
 
@@ -646,7 +643,9 @@ void METS_Scale_Setter::KT2
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
 	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
-	if (fip.m_stat<0) kt2=-1.0;
+	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	if (fip.m_pk.PPlus()>sum.PPlus() ||
+	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0) kt2=-1.0;
  	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav().Bar(),2,cs.m_oqcd?1:2,kt2);
@@ -658,7 +657,9 @@ void METS_Scale_Setter::KT2
       if ((lk->Id()&3)==0) {
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
-	if (ifp.m_stat<0) kt2=-1.0;
+	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	if (ifp.m_pi.PPlus()>sum.PPlus() ||
+	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0) kt2=-1.0;
  	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav(),1,cs.m_oqcd?1:2,kt2);
@@ -666,7 +667,9 @@ void METS_Scale_Setter::KT2
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
 	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
-	if (iip.m_stat<0) kt2=-1.0;
+	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	if (iip.m_pi.PPlus()>sum.PPlus() ||
+	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0) kt2=-1.0;
  	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav().Bar(),3,cs.m_oqcd?1:2,kt2);
@@ -690,11 +693,6 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
       ampl.Leg(m)->SetMom(cs.m_lam*ampl.Leg(m)->Mom());
       ampl.Leg(m)->SetK(0);
     }
-#ifdef CHECK__x
-    Cluster_Leg *la(ampl.Leg(i<2?i:k)), *lb(ampl.Leg(1-(i<2?i:k)));
-    if (!CheckX(la->Mom(),la->Id()&3)) return false;
-    if (!CheckX(lb->Mom(),lb->Id()&3)) return false;
-#endif
   }
   li->SetId(li->Id()+lj->Id());
   li->SetK(lk->Id());
@@ -703,17 +701,6 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
   (*lit)->Delete();
   ampl.Legs().erase(lit);
   return true;
-}
-
-bool METS_Scale_Setter::CheckX
-(const ATOOLS::Vec4D &p,const size_t &isid) const
-{
-  double x1=-p.PPlus()/rpa.gen.PBeam(0).PPlus();
-  double x2=-p.PMinus()/rpa.gen.PBeam(1).PMinus();
-  double accu=sqrt(rpa.gen.Accu());
-  return (isid==1?x1:x2)>accu &&
-    (x1<1.0 || IsEqual(x1,1.0,accu)) &&
-    (x2<1.0 || IsEqual(x2,1.0,accu));
 }
 
 bool METS_Scale_Setter::CheckColors
