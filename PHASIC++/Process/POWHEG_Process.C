@@ -432,8 +432,8 @@ double POWHEG_Process::SelectRProcess()
   for (size_t i(0);i<p_rproc->Size();++i)
     if ((psum+=(*p_rproc)[i]->Last(mode))>=rsum) {
       p_rproc->SetSelected((*p_rproc)[i]);
-      return p_int->SelectionWeight(0)/
-	(*p_rproc)[i]->Integrator()->SelectionWeight(0);
+      return (*p_rproc)[i]->Integrator()->SelectionWeight(0)/
+	p_int->SelectionWeight(0);
     }
   THROW(fatal_error,"Internal error");
 }
@@ -452,8 +452,8 @@ double POWHEG_Process::SelectZHProcess()
       rproc->Integrator()->RestoreInOrder();
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
       if (p_int->InSwaped()) rproc->Integrator()->SwapInOrder();
-      return p_int->SelectionWeight(0)/
-	rproc->Integrator()->SelectionWeight(0);
+      return rproc->Integrator()->SelectionWeight(0)/
+	p_int->SelectionWeight(0);
     }
   }
   THROW(fatal_error,"Internal error");
@@ -537,15 +537,15 @@ double POWHEG_Process::SelectBProcess()
       }
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl<<"\n";
-    return p_int->SelectionWeight(0)/
-      rproc->Integrator()->SelectionWeight(0);
+    return rproc->Integrator()->SelectionWeight(0)/
+      p_int->SelectionWeight(0);
   }
   p_selected=p_bproc;
   p_bproc->SetSelected(bproc);
   p_bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl<<"\n";
-  return stat?p_int->SelectionWeight(0)/
-    bproc->Integrator()->SelectionWeight(0):0.0;
+  return stat?bproc->Integrator()->SelectionWeight(0)/
+    p_int->SelectionWeight(0):0.0;
 }
 
 Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
@@ -557,7 +557,7 @@ Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
   Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
   if (winfo!=NULL) {
     double cf(SelectProcess());
-    if (cf) winfo->m_weight/=cf;
+    if (cf) winfo->m_weight*=cf;
     else {
       delete winfo;
       winfo=NULL;
