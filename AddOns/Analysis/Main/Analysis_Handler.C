@@ -144,6 +144,8 @@ bool Analysis_Handler::Init()
   reader.AddComment("#");
   reader.SetFileBegin("BEGIN_ANALYSIS");
   reader.SetFileEnd("END_ANALYSIS");
+  reader.AddFileBegin("BEGIN_ANALYSIS{");
+  reader.AddFileEnd("}END_ANALYSIS");
   for (size_t i=0;i<s_maxanalyses;++i) {
     reader.SetOccurrence(i);
     reader.RescanInFile();

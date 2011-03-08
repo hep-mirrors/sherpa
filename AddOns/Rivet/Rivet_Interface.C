@@ -79,6 +79,8 @@ public:
       reader.AddComment("#");
       reader.SetFileBegin("BEGIN_"+m_tag);
       reader.SetFileEnd("END_"+m_tag);
+      reader.AddFileBegin("BEGIN_"+m_tag+"{");
+      reader.AddFileEnd("}END_"+m_tag);
       
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);

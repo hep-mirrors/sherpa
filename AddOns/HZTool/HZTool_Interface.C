@@ -254,6 +254,8 @@ bool HZTool_Interface::Init()
       reader.AddComment("#");
       reader.SetFileBegin("BEGIN_HZTOOL");
       reader.SetFileEnd("END_HZTOOL");
+      reader.AddFileBegin("BEGIN_HZTOOL{");
+      reader.AddFileEnd("}END_HZTOOL");
       m_hzfile=reader.GetValue<std::string>("HISTO_NAME","histo");
       MakeFortranString(hzhname.hname,m_outpath+"/"+m_hzfile,128);
       m_xsnevt=reader.GetValue<int>("XS_EVENTS",10000);
