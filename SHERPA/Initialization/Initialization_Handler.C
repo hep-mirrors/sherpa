@@ -615,12 +615,12 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 {
   Matrix_Element_Handler * me = NULL;
   me = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
-  me->SetShowerHandler(p_showerhandler);
-  me->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
-//   me->SetSpinCorrelations(m_spincorrelations);
   MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
   if (it!=m_mehandlers.end()) delete it->second;
   m_mehandlers["SignalMEs"]=me; 
+  me->SetShowerHandler(p_showerhandler);
+  me->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
+//   me->SetSpinCorrelations(m_spincorrelations);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return 1;
