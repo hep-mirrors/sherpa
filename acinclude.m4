@@ -32,6 +32,10 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
   AC_SUBST(ldflags)
+  if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
+  elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";
+  else MD5COMMAND="echo 'X'"; fi
+  AC_SUBST(MD5COMMAND)
   
   if test "x$CXXFLAGS" == "x"; then CXXFLAGS=""; fi
 ])
