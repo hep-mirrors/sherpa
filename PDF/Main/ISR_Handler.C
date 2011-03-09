@@ -355,10 +355,9 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
     msg_Debugging()<<"Flux: "<<flux<<std::endl;
-    if (IsBad(f1*f2)) { MtxUnLock(); return 0.0; }
+    if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);
-    MtxUnLock();
     return f1*f2*flux;
   }
   MtxUnLock();
