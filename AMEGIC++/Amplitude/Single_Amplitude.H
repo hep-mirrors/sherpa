@@ -20,8 +20,6 @@ namespace AMEGIC {
     SpinorDirection* spind;
     int icoul;
   public:
-    std::string Colstring;
-    std::string ColstringC;
     std::string CFColstring;
     std::string CFColstringC;
     void   Set_Coulomb() {icoul = 1;}

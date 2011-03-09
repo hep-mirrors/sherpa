@@ -209,10 +209,10 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
     else cemit+='i';
     if (fl[(int)spect].IsGluon()) cspect+='A';
     else cspect+='i';
-    CFCol_Matrix   = new CFColor(N,firstgraph,cemit,cspect,pID);
+    CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID);
   }
   else {
-    CFCol_Matrix   = new CFColor(N,firstgraph,pID);
+    CFCol_Matrix   = new CFColor(N,firstgraph,fl,emit,spect,pID);
     if (emit==127) {
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
@@ -223,7 +223,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
 	  //msg_Out()<<METHOD<<" new CFColor("<<sij<<")."<<std::endl;
-	  CFColor* mcfc = new CFColor(N,firstgraph,cemit,cspect,sij);
+	  CFColor* mcfc = new CFColor(N,firstgraph,fl,cemit,cspect,sij);
 	  CFCol_MMatrixMap[i*100+j] = mcfc;
 	}
       }
@@ -256,7 +256,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   if (msg_LevelIsTracking()) {
     PrintGraph();
-    // BS->PrintMomlist();
+    //BS->PrintMomlist();
   }
   if (m_print_graph) {
     Amplitude_Output ao(pID,top);
@@ -362,10 +362,10 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
     else cemit+='i';
     if (fl[(int)spect].IsGluon()) cspect+='A';
     else cspect+='i';
-    CFCol_Matrix   = new CFColor(N,firstgraph,cemit,cspect,pID,true);
+    CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID,true);
   }
   else {
-    CFCol_Matrix   = new CFColor(N,firstgraph,pID,true);
+    CFCol_Matrix   = new CFColor(N,firstgraph,fl,emit,spect,pID,true);
     if (emit==127) {
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
@@ -376,7 +376,7 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
 	  
-	  CFColor* mcfc = new CFColor(N,firstgraph,cemit,cspect,sij,true);
+	  CFColor* mcfc = new CFColor(N,firstgraph,fl,cemit,cspect,sij,true);
 	  CFCol_MMatrixMap[i*100+j] = mcfc;
 	}
       }

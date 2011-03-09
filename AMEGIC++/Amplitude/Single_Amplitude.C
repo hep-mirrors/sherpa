@@ -172,6 +172,14 @@ void Single_Amplitude::PrintGraph()
 			    <<" "<<c->ParticleArg(2)<<") ";
 	break;
       }
+      case 2: {
+        msg_Out()<<"D("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)<<") ";
+        break;	
+      }
+      case 4: {
+        msg_Out()<<"G("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)<<") ";
+	break;
+      }
       case 10: {
 	msg_Out()<<"TP("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
 			    <<" "<<c->ParticleArg(2)<<") ";
@@ -181,7 +189,7 @@ void Single_Amplitude::PrintGraph()
     }
     c = c->Next();     
   }
-  msg_Out()<<endl<<"Color-string: "<<Colstring<<endl<<endl<<"Spinflow:"<<endl;
+  msg_Out()<<endl<<"Color-string: "<<CFColstring<<endl<<endl<<"Spinflow:"<<endl;
   SpinorDirection* sd = spind;
   while(sd) {
     msg_Out()<<sd->from<<" -> "<<sd->to<<endl;

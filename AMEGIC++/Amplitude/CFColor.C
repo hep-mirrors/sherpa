@@ -16,7 +16,7 @@ using namespace std;
 
 std::string CFColor::noname=string("noname");
 
-CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,bool force)
+CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,char spect,string pID,bool force)
 {
   Single_Amplitude* m1 = first;
 
@@ -37,7 +37,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     std::string name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
     IO_Handler ioh;
     bool gc(ioh.SetFileNameRO(name)==0);
-    //msg_Out()<<METHOD<<" with gc = "<<gc<<"."<<std::endl;
     if (gc&&force) {
       msg_Error()<<"Color matrix for process "<<pID<<" not found!"<<endl
 		 <<" Rerun with option 'ME_LIBCHECK=1'."<<endl;
@@ -48,7 +47,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 
       rmcount = ioh.Input<int>("");
       ncount = ioh.Input<int>("");
-
 
       if (mcount==rmcount || (force && rmcount>0)) {
 	mcount = rmcount;
@@ -80,8 +78,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
   sw1 = 0;
   Single_Amplitude* m2;
   m1 = first;
-
-  //msg_Out()<<METHOD<<" for mcount = "<<mcount<<"."<<std::endl;
   while (m1) {
     if (m1->Get_CFlist()==NULL) {
       sw1 = 1;
@@ -90,7 +86,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     m1 = m1->Next;
   }
   if (sw1) {
-    //msg_Out()<<"No colour structure."<<std::endl;
     //no color structure
     
     // matrix
@@ -111,12 +106,10 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 
   }
   else {
-    //msg_Out()<<"Has colour structure."<<std::endl;
     int prop;
   
     m1 = first;
     while (m1) {
-      //msg_Out()<<"   Go for the next sub-amplitude ("<<m1<<")."<<std::endl;
       prop = 120;
       short int j = 0;
       for (;;) {
@@ -150,7 +143,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 	else j++;
 	if (j==N) break;
       }
-      //msg_Out()<<"   --> Out of infinite loop."<<std::endl;
       m1 = m1->Next;
     }
     
@@ -163,8 +155,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     
     ncount = mcount;
     
-
-    //msg_Out()<<"Next loop."<<std::endl;
     while (m1) {
       if (m1->on) {
 	cm1 = m1->Get_CFlist();
@@ -223,7 +213,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 
     map = new int[mcount];
     int cc=0;
-    //msg_Out()<<"For loop, l226."<<std::endl;
     for (int m=0; m<mcount; ++m) {
       if (id[m]==mcount) {
 	map[m]=cc;
@@ -240,7 +229,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
     
     m1 = first;
     c1 = 0;
-    //msg_Out()<<"While loop, l243."<<std::endl;
     while (m1) { 
       if (m1->on) {
 	m2 = m1;
@@ -256,95 +244,116 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 	    indices.insert(std::make_pair('-',1)); 
 	    indices.insert(std::make_pair('*',1)); 
 	    char c = 'V';
-
-	    //msg_Out()<<"Try to deal with "<<m1->CFColstring<<"*"<<m2->CFColstringC<<"."<<std::endl;
-
+	    
 	    sknot* s1 = st.String2Tree(m1->CFColstring);
 	    sknot* s2 = st.String2Tree(m2->CFColstringC);
-	    list<sknot*>  fhelp_list;
-	    st.Factors(s2,fhelp_list);
-	    // 	    char nc=(char)(4*N-9);
-	    // 	    char ce=emit+nc,cs=spect+nc,hc='A'+nc,cc;
-	    // 	    if (hc>=c||(ce<'a'&&ce>=c)||(cs<'a'&&cs>=c)) 
-	    // 	      cerr<<"Possible color index runout! Check color matrix!!!"<<endl;
-	    // 	    ce=DeliverIndex(indices,ce);
-	    // 	    cs=DeliverIndex(indices,cs);
-	    // 	    cc=DeliverIndex(indices,hc);
-	    char ce='$',cs='#',cc='%';
-	    int te=-1;
-	    int ts=-1;
-	    //	      ....zuordnung nummer->char in Color_Generator->FillString()
-	    for (list<sknot*>::iterator itf=fhelp_list.begin();itf!=fhelp_list.end();++itf) {
-	      size_t p1=(*itf)->Str().find(emit,1);
-	      size_t p2=(*itf)->Str().find(spect,1);
-	      if (p1!=string::npos) { 
-	        string shelp =(*itf)->Str();
-		shelp[p1]=ce;
-		(*itf)->SetString(shelp);
-		te = 0;
-		switch ((*itf)->Str()[0]) {
-		case 'T':
-		  te=p1-2;
-		  break;
-		case 'D':
-		  te=2;
+	    
+	    
+            //begin -- subtraction term specifics
+	    
+	    if (emit!=spect) {
+	      
+	      list<sknot*>  fhelp_list;
+	      st.Factors(s2,fhelp_list);
+	      	      
+	      /*
+		char nc=(char)(4*N-9);
+		char ce=emit+nc,cs=spect+nc,hc='A'+nc,cc;
+		if (hc>=c||(ce<'a'&&ce>=c)||(cs<'a'&&cs>=c)) 
+		cerr<<"Possible color index runout! Check color matrix!!!"<<endl;
+		ce=DeliverIndex(indices,ce);
+		cs=DeliverIndex(indices,cs);
+		cc=DeliverIndex(indices,hc);
+	      */
+	      
+	      char ce='$',cs='#',cc='%';
+	      
+	      int te=-1;
+	      int ts=-1;
+	      for (list<sknot*>::iterator itf=fhelp_list.begin();itf!=fhelp_list.end();++itf) {
+		size_t p1=(*itf)->Str().find(emit,1);
+		size_t p2=(*itf)->Str().find(spect,1);
+		
+		if (p1!=string::npos) { 
+		  string shelp =(*itf)->Str();
+		  shelp[p1]=ce;
+		  (*itf)->SetString(shelp);
+		  te = 0;
+		  switch ((*itf)->Str()[0]) {
+		  case 'T':
+		    te=p1-2;
+		    break;
+		  case 'D': {
+		    te=2;
+		    if (fl[int(emit-'i')].IsAnti() && int(emit-'i')>2) te=4;
+		    else if (!fl[int(emit-'i')].IsAnti() && int(emit-'i')<2) te=4;
+		    break;
+		  }
+		  }
+		}
+		if (p2!=string::npos) {
+		  string shelp =(*itf)->Str();
+		  shelp[p2]=cs;
+		  (*itf)->SetString(shelp);
+		  ts = 0;
+		  switch ((*itf)->Str()[0]) {
+		  case 'T':
+		    ts=p2-2;
+		    break;
+		  case 'D': {
+		    ts=2;
+		    if (fl[int(spect-'i')].IsAnti() && int(spect-'i')>2) ts=4;
+		    else if (!fl[int(spect-'i')].IsAnti() && int(spect-'i')<2) ts=4;
+		    break;
+		  }
+		  }
 		}
 	      }
-	      if (p2!=string::npos) {
-	        string shelp =(*itf)->Str();
-		shelp[p2]=cs;
-		(*itf)->SetString(shelp);
-		ts = 0;
-		switch ((*itf)->Str()[0]) {
-		case 'T':
-		  ts=p2-2;
-		  break;
-		case 'D':
-		  ts=4;
-		}
+	      fhelp_list.clear();
+	      
+	      string dpc("");
+	      bool xcc=false;
+	      
+	      if (xcc) {if (ts+te==2) dpc=string("-");}
+	      else if (ts+te==2||ts+te==6) dpc=string("-");
+	      switch (te) {
+	      case 0:
+		if (xcc) dpc+=string("i*F[")+emit+string(",")+cc+string(",")+ce+string("]*");
+		else dpc+=string("i*F[")+ce+string(",")+cc+string(",")+emit+string("]*");
+		break;
+	      case 2:   
+		dpc+=string("T[")+cc+string(",")+emit+string(",")+ce+string("]*");
+		break;
+	      case 4:   
+		dpc+=string("T[")+cc+string(",")+ce+string(",")+emit+string("]*");
+		break;
+	      default:
+		abort();
 	      }
+	      switch (ts) {
+	      case 0:
+		if (xcc) dpc+=string("i*F[")+spect+string(",")+cc+string(",")+cs+string("]");
+		else dpc+=string("i*F[")+cs+string(",")+cc+string(",")+spect+string("]");
+		break;
+	      case 2:   
+		dpc+=string("T[")+cc+string(",")+spect+string(",")+cs+string("]");
+		break;
+	      case 4:   
+		dpc+=string("T[")+cc+string(",")+cs+string(",")+spect+string("]");
+		break;
+	      default:
+		abort();
+	      }
+	      sknot* sp = st.String2Tree(dpc);
+	      sknot* s2p = s2;
+	      s2 = st.newsk();
+	      s2->op = '*';
+	      s2->right = s2p;
+	      s2->left  = sp;
 	    }
-	    string dpc("");
-	    bool xcc=false;
-
-	    if (xcc) {if (ts+te==2) dpc=string("-");}
-  	    else if (ts+te==2||ts+te==6) dpc=string("-");
-	    switch (te) {
-	    case 0:
-  	      if (xcc) dpc+=string("i*F[")+emit+string(",")+cc+string(",")+ce+string("]*");
-  	      else dpc+=string("i*F[")+ce+string(",")+cc+string(",")+emit+string("]*");
-	      break;
-	    case 2:   
-	      dpc+=string("T[")+cc+string(",")+emit+string(",")+ce+string("]*");
-	      break;
-	    case 4:   
-	      dpc+=string("T[")+cc+string(",")+ce+string(",")+emit+string("]*");
-	      break;
-	    default:
-	      abort();
-	    }
-	    switch (ts) {
-	    case 0:
-   	      if (xcc) dpc+=string("i*F[")+spect+string(",")+cc+string(",")+cs+string("]");
-  	      else dpc+=string("i*F[")+cs+string(",")+cc+string(",")+spect+string("]");
-	      break;
-	    case 2:   
-	      dpc+=string("T[")+cc+string(",")+spect+string(",")+cs+string("]");
-	      break;
-	    case 4:   
-	      dpc+=string("T[")+cc+string(",")+cs+string(",")+spect+string("]");
-	      break;
-	    default:
-	      abort();
-	    }
-	    //msg_Out()<<"   results in "<<dpc<<"."<<std::endl;
-	    sknot* sp = st.String2Tree(dpc);
-	    sknot* s2p = s2;
-	    s2 = st.newsk();
-	    s2->op = '*';
-	    s2->right = s2p;
-	    s2->left  = sp;
-	   	    
+	    
+	    //end -- subtraction term specifics
+	    
 	    list<sknot*>  f1_list;
 	    list<sknot*>  f2_list;
 	    st.Factors(s1,f1_list);
@@ -433,428 +442,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,char emit,char spect,string pID,b
 		}
 		factor_list.clear(); 
 		//can not deal with deltas right now
-		//msg_Out()<<"  Now: "<<string_list<<", foundd = "<<foundd<<"."<<std::endl;
-		if (foundd && string_list.size()>0) string_list.clear();
-		
-		Complex value;
-		
-		if (string_list.size()>0) {
-		  //msg_Out()<<"   before BuildTChain("<<string_list<<")."<<std::endl;
-		  newaddend = BuildTChain(string_list);
-		  //msg_Out()<<"   ---> "<<newaddend<<"."<<std::endl;
-		  string_list.clear();
-		  factor_list.clear();
-		  
-		  //lookup string key in map 
-		  TF_Iterator tit = t_table.find(newaddend);
-		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		  else {
-		    st.Sort(*it);
-		    ReplaceT(*it);
-		    st.Expand(*it);
-		    st.Linear(*it);
-		    ReplaceD(*it,*it);
-		    value = st.evalcolor(*it);
-		    t_table.insert(std::make_pair(newaddend,value/total));
-		  }
-		  Kabbala* newone = new Kabbala(newaddend,value);
-		  (*it)->value = newone;
-		  (*it)->op = 0;
-		}
-		else {
-		  st.Sort(*it);
-		  ReplaceT(*it);
-		  st.Expand(*it);
-		  st.Linear(*it);
-		  ReplaceD(*it,*it);
-		  value = st.evalcolor(*it);
-		  Kabbala* newone = new Kabbala(newaddend,value);
-		  (*it)->value = newone;
-		  (*it)->op = 0;
-		}
-	      }
-	      cffactor = st.Evaluate(m);
-	      if (abs(cffactor)<rpa.gen.Accu()) cffactor = Complex(0.,0.);
-	      if (fstring_list.size()>0) {
-		f_table.insert(std::make_pair(fchain,cffactor));
-	      }
-	    }
-	    else cffactor = valuef;
-
-	    (*CFC)[map[c1]][map[c2]] = cffactor;
-	    (*CFC)[map[c2]][map[c1]] = conj((*CFC)[map[c1]][map[c2]]);
-	    
-	    //clean up the string tree ...
-	    st.CleanValues();
-	    fstring_list.clear();	      
-	  }
-	  m2 = m2->Next;
-	  c2++;
-	}
-      }
-      m1 = m1->Next;
-      c1++;
-    }
-  }
-  
-  //msg_Out()<<"Should be done now."<<std::endl;
-  if (pID!=noname && pID[0]!='N') Output(pID);
-
-  // check if Matrix can be reduce even further!
-  int idcc=0;
-  
-  int * idid = new int[ncount];
- 
-  for (int i=0; i<ncount; ++i) 
-    idid[i]=-1;
-  for (int i=0; i<ncount; ++i) {
-    if (idid[i]==-1) { idid[i]=idcc; ++idcc; }
-    for (int j=i+1; j<ncount; ++j) {
-      int hit=1;
-      Complex factor=(*CFC)[i][0]/(*CFC)[j][0];
-      for (int k=0; k<ncount; ++k) {
-	if ((*CFC)[i][k]!=factor*(*CFC)[j][k]) {
-	  hit=0;
-	  break;
-	}
-      }
-      if (hit) {
-	idid[j] =idid[i];
-      }
-    }
-  }
-
-  delete [] idid;
-
-  //make m's on again
-  m1 = first;
-  while (m1) {   
-    m1->on = 1;
-    m1 = m1->Next;
-  }
-  
-}
-
-CFColor::CFColor(int N,Single_Amplitude* first,string pID,bool force)
-{
-  Single_Amplitude* m1 = first;
-
-  mcount = 0;
-
-  // on will be changed
-
-  while (m1) {
-    mcount++;
-    m1->on = 1;
-    m1 = m1->Next;  
-  }
-  
-
-  if (pID!=noname) {
-    CSC.Init();
-    int ncol(CSC.Nc);
-    if (ncol!=3) pID+="_NC"+ToString(ncol);
-    std::string name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
-    IO_Handler ioh;
-    bool gc(ioh.SetFileNameRO(name)==0);
-    if (gc&&force) {
-     msg_Error()<<"Color matrix for process "<<pID<<" not found!"<<endl
-		 <<" Rerun with option 'ME_LIBCHECK=1'."<<endl;
-      THROW(critical_error,"Failed to load color matrix.");
-    }
-    if (!gc) { 
-      int rmcount;
-
-      rmcount = ioh.Input<int>("");
-      ncount = ioh.Input<int>("");
-
-      if (mcount==rmcount || (force && rmcount>0)) {
-	mcount = rmcount;
-	id  = ioh.ArrayInput<int>("",mcount);
-	CFC = new CMatrix(ioh.MatrixInput<Complex>("",ncount,ncount),ncount);
-
-	// generate map
-	map = new int[mcount];
-	int cc=0;
-	for (int m=0; m<mcount; ++m) {
-	  if (id[m]==mcount) {
-	    map[m]=cc;
-	    cc++;
-	  }
-	  else {
-	    map[m]=map[iabs(id[m])];
-	  }
-	}
-	return; 
-      }
-    }
-  }
-  Color_Function* cm1;
-  Color_Function* cm2;
-
-  //looking for zero color structure
-  int sw1;  
-
-  sw1 = 0;
-  Single_Amplitude* m2;
-  m1 = first;
-  while (m1) {
-    if (m1->Get_CFlist()==NULL) {
-      sw1 = 1;
-      break;
-    }
-    m1 = m1->Next;
-  }
-  if (sw1) {
-    //no color structure
-    
-    // matrix
-    CFC = new CMatrix(1);
-    (*CFC)[0][0]=1.;
-
-    ncount=1;
-
-    // map table
-    id = new int[mcount];
-    map = new int[mcount];
-
-    for (int i=0;i<mcount;++i) {
-      id[i]=0;
-      map[i]=0;
-    }
-    id[0]=mcount;
-
-  }
-  else {
-    int prop;
-  
-    m1 = first;
-    while (m1) {
-      prop = 120;
-      short int j = 0;
-      for (;;) {
-	int hit = 0;
-	cm1 = m1->Get_CFlist();
-	//looking for j
-	while (cm1) {
-	  for(short int i=0;i<3;i++) {
-	    if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && i==2) break;    
-	    if (cm1->ParticleArg(i)==j) {
-	      for (short int k=0;k<3;k++) {
-		if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && k==2) break;    
-		if ((k!=i) && (cm1->ParticleArg(k)>99) && 
-		    ((cm1->ParticleArg(k)<120) || (cm1->ParticleArg(k)>150)))
-		  hit = cm1->ParticleArg(k);
-	      }
-	    }
-	  } 
-	  if (hit>0) break;
-	  cm1 = cm1->Next();
-	}
-	if (hit>0) {
-	  //replace hit with prop
-	  cm1 = m1->Get_CFlist();
-	  while (cm1) {
-	    cm1->Replace(hit,prop);
-	    cm1 = cm1->Next();
-	  }
-	  prop++;
-	}
-	else j++;
-	if (j==N) break;
-      }
-      m1 = m1->Next;
-    }
-    
-    //find all identical
-    id = new int[mcount];
-    for (short int i=0;i<mcount;i++) id[i] = mcount;
-    m1 = first;
-    int n1,n2,c1,c2;
-    n1 = 0;
-    
-    ncount = mcount;
-    
-    while (m1) {
-      if (m1->on) {
-	cm1 = m1->Get_CFlist();
-	c1 = 0;
-	while (cm1) {
-	  c1++;
-	  cm1 = cm1->Next();
-	}
-	m2 = m1->Next;
-	n2 = n1+1;
-	while (m2) {
-	  if (m2->on) { 
-	    cm2 = m2->Get_CFlist();
-	    c2 = 0;
-	    while (cm2) {
-	      c2++;
-	      cm2 = cm2->Next();
-	    }
-	    if (c1==c2) {
-	      cm1 = m1->Get_CFlist();
-	      //cm1=cm2 ??
-	      int hit = 1;
-	      int hit2 = 0;
-	      while (cm1) {
-		cm2 = m2->Get_CFlist();
-		hit2 = 0;
-		while (cm2) {
-		  hit2 = Compare(cm1,cm2);
-		  if (hit2!=0) {
-		    hit *= hit2;
-		    break;
-		  }
-		  cm2 = cm2->Next();
-		}
-		if (hit2==0) {
-		  hit = 0;
-		  break;
-		}
-		cm1 = cm1->Next();
-	      }
-	      if (hit && hit2 && !(hit<0 && n1==0 )) {
-		//equal
-		ncount--;
-		m2 ->on = 0;
-		id[n2] = hit*n1;
-	      }
-	    }
-	  }
-	  n2++;
-	  m2 = m2->Next;
-	}
-      }
-      n1++;
-      m1 = m1->Next;
-    } 
-    map = new int[mcount];
-    int cc=0;
-    for (int m=0; m<mcount; ++m) {
-      if (id[m]==mcount) {
-	map[m]=cc;
-	cc++;
-      }
-      else {
-	map[m]=map[iabs(id[m])];
-      }
-    }
-
-    // generate "reduced matrix"
-    CFC = new CMatrix(ncount);
-    Complex cffactor;
-    
-    m1 = first;
-    c1 = 0;
-    while (m1) { 
-      if (m1->on) {
-	m2 = m1;
-	c2 = c1;
-	while (m2) {
-	  if (m2->on) {
-	    st.Reset();
-	    CharNum_Map indices;
-	    indices.insert(std::make_pair('~',1)); 
-	    indices.insert(std::make_pair(']',1)); 
-	    indices.insert(std::make_pair('[',1)); 
-	    indices.insert(std::make_pair('+',1)); 
-	    indices.insert(std::make_pair('-',1)); 
-	    indices.insert(std::make_pair('*',1)); 
-	    char c = 'O';
-	    sknot* s1 = st.String2Tree(m1->CFColstring);
-	    sknot* s2 = st.String2Tree(m2->CFColstringC);
-	   	    
-	    list<sknot*>  f1_list;
-	    list<sknot*>  f2_list;
-	    st.Factors(s1,f1_list);
-	    st.Factors(s2,f2_list);
-	    vector<string>  fstring_list;
-	    string help;
-	    int hit=0;
-	    
-	    //look for pure F products 
-	    for (list<sknot*>::iterator itf=f1_list.begin();itf!=f1_list.end();++itf) {
-	      help = (*itf)->Str();
-	      if (help[0]=='F') fstring_list.push_back(help);
-	      else hit = 1;
-	    }
-	    if (hit==0) {
-	      for (list<sknot*>::iterator itf=f2_list.begin();itf!=f2_list.end();++itf) {
-		help = (*itf)->Str();
-		if (help[0]=='F') fstring_list.push_back(help);
-		else hit = 1;
-	      } 
-	    }
-	    if (hit) fstring_list.clear();
-	    hit = 0;
-		    
-	    f1_list.clear();
-	    f2_list.clear();
-	    
-	    string fchain;
-	    Complex valuef;
-	    
-	    if (fstring_list.size()>0) {
-	      fchain = MapFChain(fstring_list); 
-	      //lookup string key in map 
-	      TF_Iterator fit = f_table.find(fchain);
-	      if (fit!=f_table.end()) {
-		valuef = f_table[fchain];
-		hit = 1;
-	      }
-	    }
-	    //evaluate the color structure 
-	    if (hit==0) {
-	      //fill list of used indices
-	      ExtractIndices(s1,indices);
-	      ExtractIndices(s2,indices);
-	      ReplaceF(s1,indices,c);
-	      ReplaceF(s2,indices,c);
-
-	      sknot* m = st.newsk();
-	      m->op = '*';
-	      m->right = s1;
-	      m->left  = s2;
-	      
-	      ReplaceF(m,indices,c);	    
-	      st.Expand(m);
-	      st.Linear(m);
-	      
-	      list<sknot*> addend_list;
-	      st.Addends(m,addend_list);
-	      
-	      for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
-		string newaddend = st.Tree2String(*it,0); 
-		ReplaceG(*it);
-		ReplaceD(*it,*it);
-
-		list<sknot*>    factor_list;
-		st.Factors(*it,factor_list);
-		
-		vector<string>  string_list;
-		string help;
-		Complex total  = Complex(1.,0.);
-		Complex factor = Complex(1.,0.);;
-		
-		int foundd = 0;
-	      
-		//extract string 
-		for (list<sknot*>::iterator it2=factor_list.begin();it2!=factor_list.end();++it2) {
-		  help = (*it2)->Str();
-		  if (help[0]=='D') foundd=1;
-		  if (help[0]=='T') string_list.push_back(help);
-		  else {
-		    factor = st.evalcolor(*it2);
-		    total *= factor;
-		    Kabbala* newone = new Kabbala(help,factor);
-		    (*it2)->value = newone;
-		    (*it2)->op = 0;
-		  }
-		}
-		factor_list.clear(); 
-		//can not deal with deltas right now
 		if (foundd && string_list.size()>0) string_list.clear();
 		
 		Complex value;
@@ -867,7 +454,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string pID,bool force)
 		  //lookup string key in map 
 		  TF_Iterator tit = t_table.find(newaddend);
 		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		    else {
+		  else {
 		    st.Sort(*it);
 		    ReplaceT(*it);
 		    st.Expand(*it);
@@ -977,11 +564,7 @@ string CFColor::BuildTChain(vector<string>  string_list)
       vector<string>::iterator it = string_list.begin();
       string_list.erase(it);
     }
-    //msg_Out()<<"Check this tmp_list = "<<tmp_list<<" -> string_list = "<<string_list<<"."<<std::endl;
     for (size_t i=0;i<string_list.size();i++) {
-      //msg_Out()<<"   tmp_list["<<(tmp_list.size()-1)<<"][6] = "
-      //       <<tmp_list[tmp_list.size()-1][6]<<" vs. "
-      //	       <<"string_list["<<i<<"][4] = "<<string_list[i][4]<<"."<<std::endl;
       if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
 	tmp_list.push_back(string_list[i]);
 	tmp = string_list[i][2];
@@ -991,9 +574,6 @@ string CFColor::BuildTChain(vector<string>  string_list)
 	string_list.erase(it+=i);
 	i--;
       }
-      //msg_Out()<<"   tmp_list[0][4] = "<<tmp_list[0][4]<<" vs. "
-      //	       <<"tmp_list["<<(tmp_list.size()-1)<<"][6] = "
-      //	       <<tmp_list[tmp_list.size()-1][6]<<"."<<std::endl;
       if (tmp_list[0][4]==tmp_list[tmp_list.size()-1][6]) {
 	char hi[2];
 	sprintf(hi,"%i",(int)tmp_list.size());
@@ -1073,7 +653,6 @@ void CFColor::ReplaceT(sknot* m)
     else {
       if (m->left->op==0) s2 = m->left;
     }
-    //msg_Out()<<"      "<<METHOD<<"("<<s1->Str()<<"*"<<s2->Str()<<")."<<std::endl;
     if (s2!=0) {
       if (s1->Str().length()==8 && s2->Str().length()==8) { 
 	if (s1->Str()[0]=='T' && s2->Str()[0]=='T' && s1->Str()[2]==s2->Str()[2]) {
