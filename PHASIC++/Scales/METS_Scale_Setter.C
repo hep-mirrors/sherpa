@@ -47,14 +47,14 @@ namespace PHASIC {
   };// end of struct MCKey
 
   struct CS_Params {
-    size_t m_i, m_j, m_k, m_oqcd;
+    size_t m_i, m_j, m_k, m_oqcd, m_ndec;
     ATOOLS::Flavour m_fl;
     double m_kt2, m_op2, m_mu2, m_z, m_y;
     ATOOLS::Vec4D m_pijt, m_pkt;
     ATOOLS::Poincare_Sequence m_lam;
     CS_Params(const size_t &i,const size_t &j,
 	      const size_t &k,const ATOOLS::Flavour &fl):
-      m_i(i),m_j(j), m_k(k), m_oqcd(0), m_fl(fl),
+      m_i(i),m_j(j), m_k(k), m_oqcd(0), m_ndec(0), m_fl(fl),
       m_kt2(-1.0), m_op2(-std::numeric_limits<double>::max()),
       m_mu2(-1.0), m_z(0.0), m_y(0.0) {}
     bool operator<(const CS_Params &ck) const
@@ -90,6 +90,8 @@ namespace PHASIC {
 
     size_t m_cnt, m_rej, m_mode, m_rproc, m_vmode, m_vproc;
     double m_lfrac, m_aqed, m_wthres;
+
+    ATOOLS::DecayInfo_Vector m_decids;
 
     static double s_eps, s_kt2max;
 
@@ -217,6 +219,9 @@ METS_Scale_Setter::METS_Scale_Setter
   m_scale.resize(p_proc->NOut());
   SetCouplings();
   m_f=p_proc->Flavours();
+  Subprocess_Info info(p_proc->Info().m_ii);
+  info.Add(p_proc->Info().m_fi);
+  m_decids=info.GetDecayInfos();
   m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
@@ -339,12 +344,20 @@ double METS_Scale_Setter::CalculateMyScale
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
 	Cluster_Leg *lj(ampl->Leg(j));
 	if (!proc->Combinable(li->Id(),lj->Id())) continue;
+	bool dec(false);
+	for (size_t l(0);l<m_decids.size();++l)
+	  if (m_decids[l].m_id==li->Id()+lj->Id()) {
+	  msg_Debugging()<<"cut propagator "<<ID(li->Id()+lj->Id())<<"\n";
+	  dec=true;
+	  break;
+	}
 	const Flavour_Vector &cf(proc->CombinedFlavour(li->Id()+lj->Id()));
 	for (size_t k(0);k<ampl->Legs().size();++k) {
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k!=i && k!=j) {
 	    for (size_t f(0);f<cf.size();++f) {
 	      CS_Params cs(li->Id(),lj->Id(),lk->Id(),cf[f]);
+	      cs.m_ndec=ampl->Kin()+dec;
 	      if (trials.find(cs)!=trials.end()) continue;
 	      if (!CheckColors(li,lj,lk,cf[f])) {
 		msg_Debugging()<<"Veto colours: "<<cf[f]<<" = "
@@ -473,6 +486,7 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
+    ampl->SetKin(ckw.m_ndec);
     ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
     Vec4D psum;
@@ -489,6 +503,12 @@ double METS_Scale_Setter::CalculateMyScale
       if (!proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(1)->Id()) &&
 	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(2)->Id()) &&
 	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(3)->Id())) {
+	ampl=ampl->Prev();
+	ampl->DeleteNext();
+	continue;
+      }
+      if (ampl->Kin()!=m_decids.size()) {
+	msg_Debugging()<<"unclustered decay\n";
 	ampl=ampl->Prev();
 	ampl->DeleteNext();
 	continue;
