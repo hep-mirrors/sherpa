@@ -47,16 +47,17 @@ namespace PHASIC {
   };// end of struct MCKey
 
   struct CS_Params {
-    size_t m_i, m_j, m_k, m_oqcd, m_ndec;
+    size_t m_i, m_j, m_k, m_oqcd;
     ATOOLS::Flavour m_fl;
     double m_kt2, m_op2, m_mu2, m_z, m_y;
+    ATOOLS::Decay_Info *p_dec;
     ATOOLS::Vec4D m_pijt, m_pkt;
     ATOOLS::Poincare_Sequence m_lam;
     CS_Params(const size_t &i,const size_t &j,
 	      const size_t &k,const ATOOLS::Flavour &fl):
-      m_i(i),m_j(j), m_k(k), m_oqcd(0), m_ndec(0), m_fl(fl),
+      m_i(i),m_j(j), m_k(k), m_oqcd(0), m_fl(fl),
       m_kt2(-1.0), m_op2(-std::numeric_limits<double>::max()),
-      m_mu2(-1.0), m_z(0.0), m_y(0.0) {}
+      m_mu2(-1.0), m_z(0.0), m_y(0.0), p_dec(NULL) {}
     bool operator<(const CS_Params &ck) const
     { 
       if (m_i<ck.m_i) return true;
@@ -344,11 +345,11 @@ double METS_Scale_Setter::CalculateMyScale
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
 	Cluster_Leg *lj(ampl->Leg(j));
 	if (!proc->Combinable(li->Id(),lj->Id())) continue;
-	bool dec(false);
+	Decay_Info *dec(NULL);
 	for (size_t l(0);l<m_decids.size();++l)
 	  if (m_decids[l].m_id==li->Id()+lj->Id()) {
 	  msg_Debugging()<<"cut propagator "<<ID(li->Id()+lj->Id())<<"\n";
-	  dec=true;
+	  dec=&m_decids[l];
 	  break;
 	}
 	const Flavour_Vector &cf(proc->CombinedFlavour(li->Id()+lj->Id()));
@@ -357,7 +358,7 @@ double METS_Scale_Setter::CalculateMyScale
 	  if (k!=i && k!=j) {
 	    for (size_t f(0);f<cf.size();++f) {
 	      CS_Params cs(li->Id(),lj->Id(),lk->Id(),cf[f]);
-	      cs.m_ndec=ampl->Kin()+dec;
+	      cs.p_dec=dec;
 	      if (trials.find(cs)!=trials.end()) continue;
 	      if (!CheckColors(li,lj,lk,cf[f])) {
 		msg_Debugging()<<"Veto colours: "<<cf[f]<<" = "
@@ -486,7 +487,8 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    ampl->SetKin(ckw.m_ndec);
+    ampl->Decays()=ampl->Prev()->Decays();
+    if (ckw.p_dec) ampl->Decays().push_back(*ckw.p_dec);
     ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
     Vec4D psum;
@@ -507,7 +509,7 @@ double METS_Scale_Setter::CalculateMyScale
 	ampl->DeleteNext();
 	continue;
       }
-      if (ampl->Kin()!=m_decids.size()) {
+      if (ampl->Decays().size()!=m_decids.size()) {
 	msg_Debugging()<<"unclustered decay\n";
 	ampl=ampl->Prev();
 	ampl->DeleteNext();
