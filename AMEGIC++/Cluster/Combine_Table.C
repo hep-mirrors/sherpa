@@ -110,6 +110,14 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
   if (&ct) {
     s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no<<" (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
+    if (ct.m_decids.size()) {
+      std::string ds;
+      for (DecayInfo_Vector::const_iterator cit(ct.m_decids.begin());
+	   cit!=ct.m_decids.end();++cit) {
+	ds+=ToString(*cit)+" ";
+      }
+      s<<"  decs = { "<<ds<<"}\n";
+    }
     s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
      <<"flav"<<std::setw(5)<<"cut  qcd qed"<<std::setw(12)
      <<" mom"<<std::endl;
@@ -156,11 +164,13 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
 Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 			     ATOOLS::Mass_Selector *const ms,
 			     PDF::Cluster_Definitions_Base *clus,
-			     Vec4D *moms, Combine_Table *up):
+			     Vec4D *moms, Combine_Table *up,
+			     ATOOLS::DecayInfo_Vector *const decids):
   p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms),
-  p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL)
+  p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL),
+  p_decids(decids)
 {
   p_proc=proc;
   m_no=++s_all;
@@ -508,6 +518,11 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
+	if (m_decids.size()!=p_decids->size()) {
+	  msg_Debugging()<<"Unclustered decay\n"<<*this<<"\n";
+	  delete this;
+	  return NULL;
+	}
 	std::set<int> rej;
 	while (rej.size()<(size_t)m_nampl) {
 	  m_graph_winner=-1;
@@ -676,7 +691,18 @@ Combine_Table *Combine_Table::CreateNext()
 	 m_cdata_winner->second.m_pt2ij.m_kt2,m_cdata_winner->second.m_pt2ij.m_kin);
     }
     m_cdata_winner->second.p_down = 
-      new Combine_Table(p_proc,p_ms,p_clus,amoms,this);
+      new Combine_Table(p_proc,p_ms,p_clus,amoms,this,p_decids);
+    {
+      Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);
+      tab->m_decids=m_decids;
+      size_t pid(p_legs[0][m_cdata_winner->first.m_i].ID()+
+		 p_legs[0][m_cdata_winner->first.m_j].ID());
+      for (size_t i(0);i<p_decids->size();++i)
+	if ((*p_decids)[i].m_id==pid) {
+	  tab->m_decids.push_back((*p_decids)[i]);
+	  break;
+	}
+    }
     // initialise Combine_Table
     m_cdata_winner->second.p_down->FillTable(alegs,m_nl,m_cdata_winner->second.m_graphs.size());
   } 

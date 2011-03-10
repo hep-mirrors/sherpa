@@ -125,6 +125,8 @@ namespace AMEGIC {
 
     AMEGIC::Process_Base *p_proc;
     
+    ATOOLS::DecayInfo_Vector m_decids, *p_decids;
+
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
 		     const int nlegs,const double pt2ij,const int kin);
@@ -149,7 +151,8 @@ namespace AMEGIC {
     Combine_Table(AMEGIC::Process_Base *const proc,
 		  ATOOLS::Mass_Selector *const ms,
 		  PDF::Cluster_Definitions_Base *clus, 
-		  ATOOLS::Vec4D * moms,Combine_Table * up);
+		  ATOOLS::Vec4D * moms,Combine_Table * up,
+		  ATOOLS::DecayInfo_Vector *const decids);
     // destructor
     ~Combine_Table();
     // member functions
@@ -179,6 +182,7 @@ namespace AMEGIC {
     inline Leg               ** const GetHardLegs()                        const { return p_hard; }
     inline int               ** const GetHardInfo()                        const { return p_hardc; }
     inline static void                ResetCounter()                             { s_all=0; }
+    inline const ATOOLS::DecayInfo_Vector &Decays() const { return m_decids; }
 
   };// end of class Combine_Table
 

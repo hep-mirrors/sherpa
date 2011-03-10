@@ -35,6 +35,8 @@ namespace AMEGIC {
 
     EXTRAXS::ME2_Base *p_xs;
 
+    ATOOLS::DecayInfo_Vector m_decids;
+
     bool SetColors();
     void Convert();
 

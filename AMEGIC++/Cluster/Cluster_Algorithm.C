@@ -132,7 +132,10 @@ void Cluster_Algorithm::CreateTables
       - initialise Combine_Table
       - determine best combination sheme
     */ 
-    p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0);
+    Subprocess_Info info(p_proc->Info().m_ii);
+    info.Add(p_proc->Info().m_fi);
+    m_decids=info.GetDecayInfos();
+    p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0,&m_decids);
     p_combi->FillTable(legs,nlegs,nampl);   
     p_ct = p_combi->CalcJet(nlegs,NULL,mode,kt2); 
   }
@@ -418,9 +421,6 @@ void Cluster_Algorithm::Convert()
   msg_Indent();
   Selector_Base *jf=p_proc->Selector()
     ->GetSelector("Jetfinder");
-  Subprocess_Info info(p_proc->Info().m_ii);
-  info.Add(p_proc->Info().m_fi);
-  DecayInfo_Vector decinfos(info.GetDecayInfos());
   Combine_Table *ct_tmp(p_ct);
   while (ct_tmp->Up()) ct_tmp=ct_tmp->Up();
   p_ampl = Cluster_Amplitude::New();
@@ -442,7 +442,6 @@ void Cluster_Algorithm::Convert()
   }
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->Decays()=decinfos;
   Cluster_Amplitude *eampl(p_ampl);
   while (ct_tmp->Down()) {
     int iwin, jwin, kwin;
@@ -477,7 +476,7 @@ void Cluster_Algorithm::Convert()
     }
     p_ampl->SetMuR2(ampl->MuR2());
     p_ampl->SetMuF2(ampl->MuF2());
-    p_ampl->Decays()=decinfos;
+    p_ampl->Decays()=ct_tmp->Decays();
     p_ampl->SetOrderEW(ampl->OrderEW()-win.OrderQED());
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
     p_ampl->SetKin(win.Kin());
