@@ -73,6 +73,7 @@ void Cluster_Amplitude::Delete()
   if (p_next) p_next->Delete();
   for (size_t i(0);i<m_legs.size();++i) m_legs[i]->Delete();
   m_legs.clear();
+  m_decs.clear();
   m_cmap.clear();
   if (p_prev) p_prev->p_next=NULL;
   p_prev=p_next=NULL;

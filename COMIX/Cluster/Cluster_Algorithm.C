@@ -388,6 +388,11 @@ bool Cluster_Algorithm::ClusterStep
 	break;
       }
     }
+    if (p_ampl->Decays().size()!=
+	p_bg->DecayInfos().size()) {
+      msg_Debugging()<<"Unclustered decay\n"<<*p_ampl<<"\n";
+      match=false;
+    }
     if (!match) {
       msg_Debugging()<<"Invalid core\n";
       return false;
@@ -422,10 +427,16 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetKT2(winfo.m_kt2.m_kt2);
   p_ampl->SetMu2(winfo.m_kt2.m_mu2);
   p_ampl->SetJF(ampl->JF<Selector_Base>());
-  p_ampl->Decays()=p_bg->DecayInfos();
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
   p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
   p_ampl->SetKin(winfo.m_kt2.m_kin);
+  p_ampl->Decays()=p_ampl->Prev()->Decays();
+  const DecayInfo_Vector &decids(p_bg->DecayInfos());
+  for (size_t j(0);j<decids.size();++j)
+    if (decids[j].m_id==m_id[wkey.first]+m_id[wkey.second]) {
+      p_ampl->Decays().push_back(decids[j]);
+      break;
+    }
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
@@ -479,7 +490,6 @@ bool Cluster_Algorithm::Cluster
   p_ampl->SetKT2(kt2);
   p_ampl->SetMu2(kt2);
   p_ampl->SetNIn(xs->NIn());
-  p_ampl->Decays()=p_bg->DecayInfos();
   p_ampl->SetOrderEW(p_bg->MaxOrderEW());
   p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
   PHASIC::Process_Base *pb(xs->Process()->IsMapped()?

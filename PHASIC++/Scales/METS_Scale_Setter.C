@@ -487,7 +487,6 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    ampl->Decays()=ampl->Prev()->Decays();
     if (ckw.p_dec) ampl->Decays().push_back(*ckw.p_dec);
     ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
