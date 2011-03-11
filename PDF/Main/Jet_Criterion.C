@@ -23,10 +23,14 @@ double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
   if ((fi.IsPhoton() && fj.IntCharge()==0) ||
       (fj.IsPhoton() && fi.IntCharge()==0)) return -1.0;
-  if ((fi.IsPhoton() || fj.IsPhoton()) && dparam>0.0) {
+  double D(1.0);
+  if (fi.IsPhoton() || fj.IsPhoton()) {
+    if (dparam<0.0) D=-dparam;
+    else {
     if (pi[0]<0.0) return pj.PPerp2();
     if (pj[0]<0.0) return pi.PPerp2();
     return Min(pi.PPerp2(), pj.PPerp2())*sqr(pi.DR(pj)/dparam);
+    }
   }
   double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
   double mti(sqr(Flavour(nfi).Mass())), mtj(sqr(Flavour(nfj).Mass()));
@@ -39,7 +43,7 @@ double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   }
   double Cij(nfj.IsVector()?Max(0.0,pipk/(pipj+pjpk)-mti):0.5*pipk/(pipk+pjpk));
   double Cji(nfi.IsVector()?Max(0.0,pjpk/(pipj+pipk)-mtj):0.5*pjpk/(pipk+pjpk));
-  return 2.0*dabs(pi*pj)/(Cij+Cji);
+  return 2.0*dabs(pi*pj)/(Cij+Cji)/D;
 }
 
 namespace PDF {
