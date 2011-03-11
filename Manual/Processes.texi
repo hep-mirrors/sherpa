@@ -18,6 +18,7 @@ The following parameters are used to steer the process setup.
 * Max_Order_EW::            Tag to fix the maximum electroweak order.
 * Order_QCD::               Tag to fix the QCD order.
 * Max_Order_QCD::           Tag to fix the maximum QCD order.
+* Min_N_Quarks::            Tag to set the minimum number of quarks.
 * Max_N_Quarks::            Tag to set the maximum number of quarks.
 * Print_Graphs::            Tag to enable writeout of feynman graphs.
 * Integration_Error::       Tag to set a specific integration error.
@@ -222,6 +223,12 @@ with up to the given order in the strong coupling are generated.
 Note that for decay chains with Amegic this setting 
 applies to the core process only, while with Comix it applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
+
+
+@node Min_N_Quarks
+@subsection Min_N_Quarks
+Limits the minimum number of quarks in the process to the
+given value.
 
 
 @node Max_N_Quarks
