@@ -23,7 +23,7 @@ double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
   if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
   if ((fi.IsPhoton() && fj.IntCharge()==0) ||
       (fj.IsPhoton() && fi.IntCharge()==0)) return -1.0;
-  if (fi.IsPhoton() || fj.IsPhoton()) {
+  if ((fi.IsPhoton() || fj.IsPhoton()) && dparam>0.0) {
     if (pi[0]<0.0) return pj.PPerp2();
     if (pj[0]<0.0) return pi.PPerp2();
     return Min(pi.PPerp2(), pj.PPerp2())*sqr(pi.DR(pj)/dparam);
