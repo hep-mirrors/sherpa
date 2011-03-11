@@ -1,7 +1,7 @@
 (run){
   OUTPUT 2; EVENTS 10000000;
   NJET:=4; QCUT:=5; SDIS:=0.6;
-  CDXS_ITMAX 5000;
+  CDXS_ITMAX 5000; CSS_AS_FAC 2.5;
 }(run);
 
 (beam){

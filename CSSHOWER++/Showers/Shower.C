@@ -19,8 +19,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 {
   int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
-  double is_fac = dataread->GetValue<double>("CSS_AS_IS_FAC",1.0);
-  double fs_fac = dataread->GetValue<double>("CSS_AS_FS_FAC",1.0);
+  double as_fac = dataread->GetValue<double>("CSS_AS_FAC",1.0);
   m_kscheme = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem = dataread->GetValue<int>("CSS_NOEM",0);
   std::vector<std::vector<std::string> > helpsvv;
@@ -32,7 +31,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
     }
   m_sudakov.SetShower(this);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sq,is_fac,fs_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sq,as_fac,as_fac);
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
