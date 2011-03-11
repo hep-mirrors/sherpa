@@ -222,7 +222,8 @@ double CS_Cluster_Definitions::CoreScale
     if (ampl->Leg(i)->Flav().Strong() ||
 	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
   }
-  if (!IsEqual(psum,Vec4D(),1.0e-3)) {
+  if (!IsEqual(psum,Vec4D(),1.0e-3) &&
+      p[0][0]<1.0e-3 && p[1][0]<1.0e-3) {
     msg_Error()<<METHOD<<"(): Momentum not conserved.\n"
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
