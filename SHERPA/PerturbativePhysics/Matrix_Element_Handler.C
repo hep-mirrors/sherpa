@@ -413,7 +413,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
 	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
-	if (cur[0]=="N_T-channels") pi.m_ntchan=ToType<int>(cur[1]);
+	if (cur[0]=="Min_N_TChannels") pi.m_ntchan=ToType<int>(cur[1]);
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmaxerr,nf);

@@ -16,7 +16,7 @@ static const double invsqrttwo(1.0/sqrt(2.0));
 Amplitude::Amplitude():
   p_model(NULL), p_aqcd(NULL), p_aqed(NULL),
   m_n(0), m_nf(6), m_ngpl(3),
-  m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
+  m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99), m_minntc(0),
   m_pmode('D')
 {
   Data_Reader read(" ",";","!","=");
@@ -207,10 +207,17 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		     vkey.p_b->OrderEW()+v->OrderEW());
 	  size_t oqcd(vkey.p_a->OrderQCD()+
 		      vkey.p_b->OrderQCD()+v->OrderQCD());
+	  size_t ntc(vkey.p_a->NTChannel()+vkey.p_b->NTChannel());
+	  if (n<m_n-1) {
+	    bool isa((vkey.p_a->CId()&1)^(vkey.p_a->CId()&2));
+	    bool isb((vkey.p_b->CId()&1)^(vkey.p_b->CId()&2));
+	    ntc+=isa^isb;
+	  }
 	  if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||
 	      oew>m_maxoew || oqcd>m_maxoqcd ||
 	      (n==m_n-1 && ((m_oew<99 && oew!=m_oew) ||
-			    (m_oqcd<99 && oqcd!=m_oqcd)))) {
+			    (m_oqcd<99 && oqcd!=m_oqcd) ||
+			    ntc<m_minntc))) {
 #ifdef DEBUG__BG
 	    msg_Debugging()<<"delete vertex {"<<vkey.p_a->Flav()<<",("
 			   <<vkey.p_a->OrderEW()<<","<<vkey.p_a->OrderQCD()
@@ -220,18 +227,22 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 			   <<v->OrderQCD()<<")->{"<<cur->Flav()<<"} => ("
 			   <<oew<<","<<oqcd<<") vs. ("<<m_oew<<","
 			   <<m_oqcd<<") / max = ("<<m_maxoew<<","
-			   <<m_maxoqcd<<"), act = "<<v->Active()<<"\n";
+			   <<m_maxoqcd<<"), act = "<<v->Active()
+			   <<", n t-ch = "<<ntc<<" vs "<<m_minntc<<"\n";
 #endif
 	    delete v;
 	    continue;
 	  }
-	  std::string okey("("+ToString(oew)+","+ToString(oqcd)+")");
-	  if (oew!=cur->OrderEW() || oqcd!=cur->OrderQCD()) {
+	  std::string okey("("+ToString(oew)+","+ToString(oqcd)+")"
+			   +"["+ToString(ntc)+"]");
+	  if (oew!=cur->OrderEW() || oqcd!=cur->OrderQCD() ||
+	      ntc!=cur->NTChannel()) {
 	    std::map<std::string,Current_Base*>::iterator 
 	      cit(curs.find(okey));
 	    if (cit!=curs.end()) cur=cit->second;
 	    else {
-	      if (cur->OrderEW()>0 || cur->OrderQCD()>0)
+	      if (cur->OrderEW()>0 || cur->OrderQCD()>0 ||
+		  cur->NTChannel()>0)
 		cur=Current_Getter::GetObject
 		  (std::string(1,m_pmode)+ckey.Type(),ckey);
 	      if (n<m_n-1) {
@@ -241,6 +252,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		}
 		cur->SetOrderEW(oew);
 		cur->SetOrderQCD(oqcd);
+		cur->SetNTChannel(ntc);
 		curs[okey]=cur;
 	      }
 	      else {
@@ -341,7 +353,8 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 	msg_Debugging()<<"delete current "<<**cit<<", "<<(*cit)->Dangling()
 		       <<", O("<<(*cit)->OrderEW()<<","<<(*cit)->OrderQCD()
 		       <<") vs. O("<<m_oew<<","<<m_oqcd<<") / O_{max}("
-		       <<m_maxoew<<","<<m_maxoqcd<<")\n";
+		       <<m_maxoew<<","<<m_maxoqcd<<"), n t-ch = "
+		       <<(*cit)->NTChannel()<<" vs. "<<m_minntch<<"\n";
 #endif
 	delete *cit;
 	cit=--m_cur[j].erase(cit);

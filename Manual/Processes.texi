@@ -20,6 +20,7 @@ The following parameters are used to steer the process setup.
 * Max_Order_QCD::           Tag to fix the maximum QCD order.
 * Min_N_Quarks::            Tag to set the minimum number of quarks.
 * Max_N_Quarks::            Tag to set the maximum number of quarks.
+* Min_N_TChannels::         Tag to request a minimum number of t-channels.
 * Print_Graphs::            Tag to enable writeout of feynman graphs.
 * Integration_Error::       Tag to set a specific integration error.
 * Max_Epsilon::             Tag to set a specific epsilon for overweighting.
@@ -235,6 +236,12 @@ given value.
 @subsection Max_N_Quarks
 Limits the maximum number of quarks in the process to the
 given value.
+
+
+@node Min_N_TChannels
+@subsection Min_N_TChannels
+Limits the minimum number of t-channel propagators in the process 
+to the given value.
 
 
 @node Print_Graphs

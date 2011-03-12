@@ -47,7 +47,7 @@ namespace COMIX {
 
     ATOOLS::Vec4D m_p;
 
-    size_t m_key, m_oew, m_oqcd;
+    size_t m_key, m_oew, m_oqcd, m_ntc;
     char   m_type;
 
     double m_mass, m_width;
@@ -110,6 +110,7 @@ namespace COMIX {
 
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
+    inline void SetNTChannel(const size_t &ntc) { m_ntc=ntc;   }
 
     inline void SetDirection(const int &dir) { m_dir=dir; }
     inline void SetCut(const int &cut)       { m_cut=cut; }
@@ -128,8 +129,9 @@ namespace COMIX {
     inline const Int_Vector &FId() const  { return m_fid;  }
     inline size_t            Key() const  { return m_key;  }
 
-    inline size_t OrderEW() const  { return m_oew;  }
-    inline size_t OrderQCD() const { return m_oqcd; }
+    inline size_t OrderEW() const   { return m_oew;  }
+    inline size_t OrderQCD() const  { return m_oqcd; }
+    inline size_t NTChannel() const { return m_ntc;  }
 
     inline int Direction() const { return m_dir; }
     inline int Cut() const       { return m_cut; }

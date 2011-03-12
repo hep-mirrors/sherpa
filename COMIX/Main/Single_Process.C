@@ -60,7 +60,8 @@ bool COMIX::Single_Process::Initialize
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       &m_cpls,m_pinfo.m_oew,m_pinfo.m_oqcd,
-		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd)) {
+		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd,
+		       m_pinfo.m_ntchan)) {
     m_oew=p_bg->MaxOrderEW();
     m_oqcd=p_bg->MaxOrderQCD();
     (*pmap)[m_name]=m_name;

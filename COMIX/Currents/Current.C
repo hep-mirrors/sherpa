@@ -51,7 +51,7 @@ void Current<CType>::Print() const
   std::string id(m_id.empty()?"<no entry>":ToString(m_id.front()));
   for (size_t i(1);i<m_id.size();++i) id+=","+ToString(m_id[i]);
   msg_Debugging()<<'['<<id<<"]"<<m_fid<<"{"<<m_id.size()<<","
-		 <<m_key<<"}("<<m_oew<<","<<m_oqcd<<")("
+		 <<m_key<<"}("<<m_oew<<","<<m_oqcd<<"|"<<m_ntc<<")("
 		 <<(m_dir<=0?Flav():Flav().Bar())<<")"
 		 <<(m_dir==0?"":m_dir>0?"I":"O")
 		 <<(m_cut?"C"+ToString(m_cut):"")<<"{\n";

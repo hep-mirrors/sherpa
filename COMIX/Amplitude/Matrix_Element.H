@@ -40,7 +40,8 @@ namespace COMIX {
 		    const double &isf,const double &fsf,
 		    Model *const model,MODEL::Coupling_Map *const cpls,
 		    const size_t &oew=99,const size_t &oqcd=99,
-		    const size_t &maxoew=99,const size_t &maxoqcd=99);
+		    const size_t &maxoew=99,const size_t &maxoqcd=99,
+		    const size_t &minntc=0);
     bool Map(const Matrix_Element *me,ATOOLS::Flavour_Map &fmap);
 
     double Differential(const std::vector<ATOOLS::Vec4D> &momenta,

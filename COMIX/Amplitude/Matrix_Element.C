@@ -25,7 +25,7 @@ bool Matrix_Element::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
  const double &isf,const double &fsf,Model *const model,
  MODEL::Coupling_Map *const cpls,const size_t &oew,const size_t &oqcd,
- const size_t &maxoew,const size_t &maxoqcd)
+ const size_t &maxoew,const size_t &maxoqcd,const size_t &minntc)
 {
   m_nin=nin;
   m_nout=nout;
@@ -33,6 +33,7 @@ bool Matrix_Element::Initialize
   m_ampl.SetOrderQCD(oqcd);
   m_ampl.SetMaxOrderEW(Min(oew,maxoew));
   m_ampl.SetMaxOrderQCD(Min(oqcd,maxoqcd));
+  m_ampl.SetMinNTChannel(minntc);
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
   if (!m_ampl.Construct(incs,flavs,model,cpls)) return false;

@@ -69,7 +69,7 @@ namespace COMIX {
     Int_Matrix   m_cl, m_chirs;
 
     size_t m_n, m_nf, m_pgmode, m_ngpl;
-    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd;
+    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd, m_minntc;
     char   m_pmode;
 
     QComplex_Vector m_ress;
@@ -159,6 +159,8 @@ namespace COMIX {
 
     inline size_t MaxOrderEW() const  { return m_maxoew;  }
     inline size_t MaxOrderQCD() const { return m_maxoqcd; }
+
+    inline void SetMinNTChannel(const size_t &ntc) { m_minntc=ntc; }
 
     inline const Int_Matrix &Chiralities() const { return m_chirs; }
 
