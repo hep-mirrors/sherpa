@@ -24,7 +24,8 @@ const double s_pwmin(1.0e-6), s_pmmin(1.0e-6);
 
 PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
-  p_xs(xs), m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0)
+  p_xs(xs), m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
+  p_psid(new PSId_Map()), p_cid(new CId_Map())
 {
   nin=_nin;
   nout=_nout;
@@ -86,8 +87,6 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 	THROW(fatal_error,"Cannot create thread "+ToString(i));
     }
   }
-  pthread_mutex_init(&m_psid_mtx,NULL);
-  pthread_mutex_init(&m_cid_mtx,NULL);
   pthread_mutex_init(&m_vgs_mtx,NULL);
   pthread_mutex_init(&m_wvgs_mtx,NULL);
 #endif
@@ -98,8 +97,6 @@ PS_Channel::~PS_Channel()
 #ifdef USING__Threading
   pthread_mutex_destroy(&m_wvgs_mtx);
   pthread_mutex_destroy(&m_vgs_mtx);
-  pthread_mutex_destroy(&m_cid_mtx);
-  pthread_mutex_destroy(&m_psid_mtx);
   for (size_t i(0);i<m_cts.size();++i) {
     CDBG_PS_TID *tid(m_cts[i]);
     tid->m_s=0;
@@ -118,34 +115,44 @@ PS_Channel::~PS_Channel()
 #endif
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
+  delete p_psid;
+  delete p_cid;
 }
+
+#ifdef USING__Threading
+CDBG_PS_TID *PS_Channel::GetTId() const
+{
+  pthread_t tid(pthread_self());
+  for (size_t i(0);i<m_cts.size();++i)
+    if (pthread_equal(tid,m_cts[i]->m_id)) return m_cts[i];
+  return NULL;
+}
+#endif
 
 const std::string &PS_Channel::GetPSId(const size_t &id)
 {
-  PSId_Map::const_iterator iit(m_psid.find(id));
-  if (iit!=m_psid.end()) return iit->second;
+  PSId_Map *psid(p_psid);
 #ifdef USING__Threading
-  pthread_mutex_lock(&m_psid_mtx);
+  CDBG_PS_TID *tid(GetTId());
+  if (tid) psid=tid->p_psid;
 #endif
-  m_psid[id]=PSId(id);
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_psid_mtx);
-#endif
-  return m_psid[id];
+  PSId_Map::const_iterator iit(psid->find(id));
+  if (iit!=psid->end()) return iit->second;
+  (*psid)[id]=PSId(id);
+  return (*psid)[id];
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
 {
-  CId_Map::const_iterator iit(m_cid.find(id));
-  if (iit!=m_cid.end()) return iit->second;
+  CId_Map *cid(p_cid);
 #ifdef USING__Threading
-  pthread_mutex_lock(&m_cid_mtx);
+  CDBG_PS_TID *tid(GetTId());
+  if (tid) cid=tid->p_cid;
 #endif
-  m_cid[id]=ID(id);
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_cid_mtx);
-#endif
-  return m_cid[id];
+  CId_Map::const_iterator iit(cid->find(id));
+  if (iit!=cid->end()) return iit->second;
+  (*cid)[id]=ID(id);
+  return (*cid)[id];
 }
 
 size_t PS_Channel::SId(const size_t &id) const

@@ -39,8 +39,12 @@ namespace COMIX {
     size_t m_s, m_n, m_b, m_e, m_i;
     pthread_mutex_t m_s_mtx, m_t_mtx;
     pthread_cond_t m_s_cnd, m_t_cnd;
+    PSId_Map *p_psid;
+    CId_Map *p_cid;
     CDBG_PS_TID(PS_Channel *const psc): 
-      p_psc(psc), m_s(2), m_b(0), m_e(0) {}
+      p_psc(psc), m_s(2), m_b(0), m_e(0),
+      p_psid(new PSId_Map()), p_cid(new CId_Map()) {}
+    ~CDBG_PS_TID() { delete p_psid; delete p_cid; }
   };// end of struct CDBG_PS_TID
 
   typedef std::vector<CDBG_PS_TID*> CDBG_PS_TID_Vector; 
@@ -76,14 +80,16 @@ namespace COMIX {
 
     STCC_Map m_stccs;
 
-    PSId_Map m_psid;
-    CId_Map  m_cid;
+    PSId_Map *p_psid;
+    CId_Map  *p_cid;
     
 #ifdef USING__Threading 
     CDBG_PS_TID_Vector m_cts;
-    pthread_mutex_t    m_psid_mtx, m_cid_mtx, m_vgs_mtx, m_wvgs_mtx;
+    pthread_mutex_t    m_vgs_mtx, m_wvgs_mtx;
 
     static void *TGenerateWeight(void *arg);
+
+    CDBG_PS_TID *GetTId() const;
 #endif 
 
     const std::string      &GetPSId(const size_t &id);
