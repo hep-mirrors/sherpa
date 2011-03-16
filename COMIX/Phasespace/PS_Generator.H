@@ -40,6 +40,8 @@ namespace COMIX {
 
     typedef std::map<size_t,Current_Vector> TCC_Map;
 
+    void AddSTCC();
+
   private:
 
     Process_Base *p_xs;

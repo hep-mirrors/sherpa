@@ -45,6 +45,7 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   else msg_Info()<<METHOD<<"(): Set channel mass threshold "<<m_chmass<<".\n";
   m_chmass*=rpa.gen.Ecms();
   p_xs->ConstructPSVertices(this);
+  AddSTCC();
 #ifdef USING__Threading
   int helpi(0);
   if (!read.ReadFromFile(helpi,"COMIX_PG_THREADS")) helpi=0;
@@ -278,6 +279,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
   }
   for (size_t n(1);n<m_n;++n) {
     for (size_t j(0);j<curs[n].size();++j) {
+      if (curs[n][j]->Flav().IsDummy()) continue;
       bool found(false);
       for (size_t i(0);i<m_cur[n].size();++i)
 	if (m_cur[n][i]->Id()==curs[n][j]->Id() &&
@@ -367,27 +369,6 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
       }
-  for (size_t n(2);n<m_n-2;++n) {
-    size_t oldsize(m_cur[n].size());
-    for (size_t j(0);j<oldsize;++j) {
-      size_t cid(m_cur[n][j]->CId());
-      if ((cid&3)==0 || (cid&3)==3) continue;
-      std::set<std::string> added;
-      size_t pid(~3&((1<<m_n)-1-cid));
-      if (IdCount(pid)>1) {
-	TCC_Map::const_iterator it(m_tccs.find(pid));
-	if (it==m_tccs.end()) continue;
-	for (size_t i(0);i<it->second.size();++i) {
-	  if (added.empty()) 
-	    ((PS_Current*)m_cur[n][j])->SetSCC(it->second[i]);
-	  else if (added.find(it->second[i]->PSInfo())==added.end())
-	    AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Flav().Mass(),
-			    m_cur[n][j]->Flav().Width(),it->second[i]);
-	  added.insert(it->second[i]->PSInfo());
-	}
-      }
-    }
-  }
   msg_Debugging()<<METHOD<<"(): Phase space statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
   double ismass(0.0);
@@ -452,6 +433,32 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		  <<m_smasses[i]<<" / "<<m_swidths[i]<<"\n";
   msg_Tracking()<<"}\n";
   return true;
+}
+
+void PS_Generator::AddSTCC()
+{
+  for (size_t n(2);n<m_n-2;++n) {
+    size_t oldsize(m_cur[n].size());
+    for (size_t j(0);j<oldsize;++j) {
+      if (((PS_Current*)m_cur[n][j])->SCC()) continue;
+      size_t cid(m_cur[n][j]->CId());
+      if ((cid&3)==0 || (cid&3)==3) continue;
+      std::set<std::string> added;
+      size_t pid(~3&((1<<m_n)-1-cid));
+      if (IdCount(pid)>1) {
+	TCC_Map::const_iterator it(m_tccs.find(pid));
+	if (it==m_tccs.end()) continue;
+	for (size_t i(0);i<it->second.size();++i) {
+	  if (added.empty()) 
+	    ((PS_Current*)m_cur[n][j])->SetSCC(it->second[i]);
+	  else if (added.find(it->second[i]->PSInfo())==added.end())
+	    AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Flav().Mass(),
+			    m_cur[n][j]->Flav().Width(),it->second[i]);
+	  added.insert(it->second[i]->PSInfo());
+	}
+      }
+    }
+  }
 }
 
 void PS_Generator::AddExtraCurrent
