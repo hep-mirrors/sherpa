@@ -14,11 +14,13 @@ namespace COMIX {
 
     std::vector<PS_Info> m_j;
 
+    Current_Base *p_scc;
+
   public:
 
     // constructor
     inline PS_Current(const Current_Key &key):
-      Current_Base(key) {}
+      Current_Base(key), p_scc(0) {}
 
     // member functions
     void ResetJ();
@@ -47,9 +49,13 @@ namespace COMIX {
 
     void ResetZero();
 
+    void SetSCC(Current_Base *const scc);
+
     // inline functions
     inline void SetMass(const double & mass)   { m_mass=mass;   }
     inline void SetWidth(const double & width) { m_width=width; }
+
+    inline Current_Base *SCC() const { return p_scc; }
 
   };// end of class PS_Current
 

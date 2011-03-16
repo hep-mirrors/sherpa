@@ -60,7 +60,7 @@ namespace COMIX {
     Vegas_Map      m_vmap;
 
     CVegas_Map  m_pcmap;
-    IVegas_Map  m_pimap, m_cimap;
+    IVegas_Map  m_pimap;
     ICVegas_Map m_sicmap, m_ticmap;
 
     PHASIC::Cut_Data *p_cuts;
@@ -77,8 +77,6 @@ namespace COMIX {
     int m_nvints, m_vsopt, m_nopt;
 
     SP(PS_Generator) p_gen;
-
-    STCC_Map m_stccs;
 
     PSId_Map *p_psid;
     CId_Map  *p_cid;
@@ -156,7 +154,6 @@ namespace COMIX {
     PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
 
     PHASIC::Vegas *GetPVegas(const Current_Base *cur,const size_t &id);
-    PHASIC::Vegas *GetCVegas(const size_t &id,const size_t &n);
     PHASIC::Vegas *GetSVegas(const size_t &id,const Current_Base *cur);
     PHASIC::Vegas *GetTVegas(const size_t &id,const Current_Base *cur);
 

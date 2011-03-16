@@ -73,9 +73,11 @@ namespace COMIX {
 
     bool AddCurrent(Current_Base *const ref,const ATOOLS::Flavour &fl,
 		    const size_t &n,const int mode=0,
-		    const double &m=0.0,const double &w=0.0);
+		    const double &m=0.0,const double &w=0.0,
+		    Current_Base *const scc=NULL);
     void AddExtraCurrent(Current_Base *const cur,const size_t &n,
-			 const double &m,const double &w);
+			 const double &m,const double &w,
+			 Current_Base *const scc=NULL);
 
   public:
     
@@ -103,12 +105,6 @@ namespace COMIX {
 
     inline const Double_Vector &ISRMasses() const { return m_smasses; }
     inline const Double_Vector &ISRWidths() const { return m_swidths; }
-
-    inline const Current_Vector *TCC(const size_t &id) const
-    {
-      TCC_Map::const_iterator it(m_tccs.find(id));
-      return it!=m_tccs.end()?&it->second:NULL;
-    }
 
   };// end of class PS_Generator
 

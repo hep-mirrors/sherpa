@@ -217,7 +217,8 @@ bool PS_Generator::Evaluate()
 bool PS_Generator::AddCurrent
 (Current_Base *const ref,const Flavour &fl,
  const size_t &n,const int mode,
- const double &m,const double &w)
+ const double &m,const double &w,
+ Current_Base *const scc)
 {
   Current_Key ckey(fl,NULL);
   PS_Current *cur(new PS_Current(ckey));
@@ -230,8 +231,9 @@ bool PS_Generator::AddCurrent
   cur->SetDirection(ref->Direction());
   cur->SetCut(ref->Cut());
   cur->SetOnShell(ref->OnShell());
+  cur->SetSCC(scc);
   m_cur[n].push_back(cur);
-  m_tccs[cur->CId()].push_back(cur);
+  if (scc==NULL) m_tccs[cur->CId()].push_back(cur);
   m_cmap.insert(CB_Pair(ref,cur));
   m_cbmap.insert(CB_Pair(cur,ref));
   bool found(false);
@@ -365,6 +367,27 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
       }
+  for (size_t n(2);n<m_n-2;++n) {
+    size_t oldsize(m_cur[n].size());
+    for (size_t j(0);j<oldsize;++j) {
+      size_t cid(m_cur[n][j]->CId());
+      if ((cid&3)==0 || (cid&3)==3) continue;
+      std::set<std::string> added;
+      size_t pid(~3&((1<<m_n)-1-cid));
+      if (IdCount(pid)>1) {
+	TCC_Map::const_iterator it(m_tccs.find(pid));
+	if (it==m_tccs.end()) continue;
+	for (size_t i(0);i<it->second.size();++i) {
+	  if (added.empty()) 
+	    ((PS_Current*)m_cur[n][j])->SetSCC(it->second[i]);
+	  else if (added.find(it->second[i]->PSInfo())==added.end())
+	    AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Flav().Mass(),
+			    m_cur[n][j]->Flav().Width(),it->second[i]);
+	  added.insert(it->second[i]->PSInfo());
+	}
+      }
+    }
+  }
   msg_Debugging()<<METHOD<<"(): Phase space statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
   double ismass(0.0);
@@ -433,11 +456,12 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 
 void PS_Generator::AddExtraCurrent
 (Current_Base *const cur,const size_t &n,
- const double &m,const double &w)
+ const double &m,const double &w,Current_Base *const scc)
 {
   AddCurrent(cur,cur->Flav(),n,1,m,w);
 #ifdef DEBUG__BG
-  msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()<<" {\n";
+  msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()
+		 <<(scc?" ("+scc->PSInfo()+") ":"")<<" {\n";
 #endif
   const Vertex_Vector &in(cur->In());
   for (size_t i(0);i<in.size();++i) {

@@ -213,21 +213,6 @@ PHASIC::Vegas *PS_Channel::GetPVegas
   return vgs;
 }
 
-PHASIC::Vegas *PS_Channel::GetCVegas(const size_t &id,const size_t &n)
-{
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
-  Vegas *vgs(NULL);
-  IVegas_Map::const_iterator vit(m_cimap.find(id));
-  if (vit!=m_cimap.end()) vgs=vit->second;
-  else vgs=m_cimap[id]=GetVegas("C_"+GetPSId(id)+"_"+ToString(n),n);
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
-  return vgs;
-}
-
 PHASIC::Vegas *PS_Channel::GetSVegas
 (const size_t &id,const Current_Base *cur)
 {
@@ -284,24 +269,6 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
 			       const double &smin,const double &smax,
 			       const double *rn)
 {
-  if (cur==NULL) {
-    const Current_Vector *cs(p_gen->TCC(id));
-    if (cs!=NULL) {
-      if (cs->size()==1) cur=cs->front();
-      else if ((m_tmode&1) && (m_vmode&3)) {
-	m_vgs.push_back(GetCVegas(id,cs->size()));
-	double rn(ran.Get());
-	double *cr(m_vgs.back()->GeneratePoint(&rn));
-	m_stccs[id]=cur=(*cs)[m_vgs.back()->GetPointBins()[0]];
-	m_rns.push_back(cr[0]);
-#ifdef DEBUG__BG
-	msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()
-		       <<" -> "<<m_vgs.back()->GetPointBins()[0]
-		       <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
-#endif
-      }
-    }
-  }
   const double *cr(rn);
   if (cur!=NULL && cur->OnShell())
     return sqr(cur->Flav().Mass());
@@ -327,37 +294,6 @@ double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
 			      const double &smin,const double &smax,
 			      const double &s)
 {
-  if (cur==NULL) {
-    const Current_Vector *cs(p_gen->TCC(id));
-    if (cs!=NULL) {
-      if (cs->size()==1) cur=cs->front();
-      else if ((m_tmode&1) && (m_vmode&3)) {
-	STCC_Map::const_iterator it(m_stccs.find(id));
-	if (it!=m_stccs.end()) {
-	  cur=it->second;
-	}
-	else {
-	  Vegas *cvgs(GetCVegas(id,cs->size()));
-	  double rn(ran.Get());
-	  const double *cr(cvgs->GeneratePoint(&rn));
-#ifdef USING__Threading
-	  pthread_mutex_lock(&m_wvgs_mtx);
-#endif
-	  m_wvgs.push_back(cvgs);
-	  m_wrns.push_back(cr[0]);
-	  m_stccs[id]=cur=(*cs)[cvgs->GetPointBins()[0]];
-#ifdef USING__Threading
-	  pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
-#ifdef DEBUG__BG
-	  msg_Debugging()<<"    generate point "<<cvgs->Name()
-			 <<" -> "<<cvgs->GetPointBins()[0]
-			 <<"("<<cr[0]<<") "<<cur->PSInfo()<<"\n";
-#endif
-	}
-      }
-    }
-  }
   double wgt(1.0), rn;
   if (cur!=NULL) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
@@ -561,7 +497,8 @@ bool PS_Channel::GeneratePoint
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
-      sp=PropMomenta(NULL,pid,smin,smax,&rans[nr++]);
+      sp=PropMomenta(((PS_Current*)jc)->SCC(),pid,
+		     smin,smax,&rans[nr++]);
     }
     TChannelMomenta(jc,bid,(1<<m_n)-1-aid,m_p[aid],m_p[m_rid],
 		    m_p[bid],m_p[pid],se,sp,&rans[nr]);
@@ -766,7 +703,6 @@ void PS_Channel::GeneratePoint
   m_rns.clear();
   m_wvgs.clear();
   m_wrns.clear();
-  m_stccs.clear();
   if (!GeneratePoint(v)) return;
   Vec4D sum(-p[0]-p[1]);
   for (size_t i(2);i<m_n;++i) sum+=p[i]=m_p[1<<i];
@@ -795,7 +731,8 @@ double PS_Channel::GenerateWeight
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
-      wgt*=PropWeight(NULL,pid,smin,smax,sp=m_p[pid].Abs2());
+      wgt*=PropWeight(((PS_Current*)jc)->SCC(),pid,
+		      smin,smax,sp=m_p[pid].Abs2());
     }
     wgt*=TChannelWeight(jc,bid,aid,-m_p[aid],-m_p[m_rid],
 			m_p[bid],m_p[pid]);

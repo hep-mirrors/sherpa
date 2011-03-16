@@ -7,6 +7,14 @@
 using namespace COMIX;
 using namespace ATOOLS;
 
+void PS_Current::SetSCC(Current_Base *const scc)
+{
+  p_scc=scc;
+  m_psinfo="";
+  m_psinfo=PSInfo();
+  if (p_scc) m_psinfo+="_SC"+p_scc->PSInfo();
+}
+
 void PS_Current::ResetJ()
 {
   m_j.resize(0); 
