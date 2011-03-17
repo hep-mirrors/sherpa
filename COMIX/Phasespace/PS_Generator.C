@@ -232,6 +232,9 @@ bool PS_Generator::AddCurrent
   cur->SetDirection(ref->Direction());
   cur->SetCut(ref->Cut());
   cur->SetOnShell(ref->OnShell());
+  cur->SetOrderEW(ref->OrderEW());
+  cur->SetOrderQCD(ref->OrderQCD());
+  cur->SetNTChannel(ref->NTChannel());
   cur->SetSCC(scc);
   m_cur[n].push_back(cur);
   if (scc==NULL) m_tccs[cur->CId()].push_back(cur);
@@ -285,7 +288,10 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	if (m_cur[n][i]->Id()==curs[n][j]->Id() &&
 	    (n==1 ||
 	     (m_cur[n][i]->Flav().Mass()==curs[n][j]->Flav().Mass() &&
-	      m_cur[n][i]->Flav().Width()==curs[n][j]->Flav().Width()))) {
+	      m_cur[n][i]->Flav().Width()==curs[n][j]->Flav().Width() &&
+	      m_cur[n][i]->OrderEW()==curs[n][j]->OrderEW() &&
+	      m_cur[n][i]->OrderQCD()==curs[n][j]->OrderQCD() &&
+	      m_cur[n][i]->NTChannel()==curs[n][j]->NTChannel()))) {
 	  Current_Base *ref(m_cbmap[m_cur[n][i]]);
 	  for (CB_MMap::const_iterator cit(m_cmap.lower_bound(ref));
 	       cit!=m_cmap.upper_bound(ref);++cit) {

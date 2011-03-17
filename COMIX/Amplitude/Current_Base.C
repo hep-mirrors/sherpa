@@ -61,6 +61,9 @@ std::string Current_Base::PSInfo() const
   if (m_psinfo!="") return m_psinfo;
   std::string idt;
   for (size_t i(0);i<m_id.size();++i) m_psinfo+=ToString(m_id[i]);
+  if (m_oew>0) m_psinfo+="_W"+ToString(m_oew);
+  if (m_oqcd>0) m_psinfo+="_S"+ToString(m_oqcd);
+  if (m_ntc>0) m_psinfo+="_T"+ToString(m_ntc);
   if (m_mass==0.0 && m_width==0.0) return m_psinfo;
   return m_psinfo+="["+ToString(m_mass)+","+ToString(m_width)+"]";
 }
