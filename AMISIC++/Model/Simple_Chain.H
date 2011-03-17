@@ -78,7 +78,7 @@ namespace AMISIC {
       according to the model by G. A. Schuler and T. Sjostrand 
       (see Phys. Rev. D <b>49</b> (1994) 2257).
     */
-    bool CalculateTotal();
+    int CalculateTotal();
     /*!
       \fn bool CalculateTotal()
       \brief Determines the total inelastic cross section 

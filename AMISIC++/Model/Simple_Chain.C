@@ -294,9 +294,9 @@ void Simple_Chain::CalculateSigmaND()
   SetNorm(m_sigma_nd_fac*(xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa.Picobarn());
 }
 
-bool Simple_Chain::CalculateTotal()
+int Simple_Chain::CalculateTotal()
 {
-  if (m_differentials.size()==0) return false;
+  if (m_differentials.size()==0) return -1;
   Amisic_Histogram_Type *ref=m_differentials.begin()->second;
   p_differential = new Amisic_Histogram_Type();
   Axis<double> *xaxis=p_differential->XAxis(), *refx=ref->XAxis();
@@ -351,9 +351,10 @@ bool Simple_Chain::CalculateTotal()
 	       <<" mb < \\sigma_{nd} = "
 	       <<(m_norm*rpa.Picobarn()/1.e9)
 	       <<" mb !"<<om::reset<<std::endl;
+    return 0;
   }
   p_total->Scale(1.0/m_norm);
-  return true;
+  return 1;
 }
 
 bool Simple_Chain::Initialize()
@@ -410,7 +411,13 @@ bool Simple_Chain::Initialize()
     CleanUp();
     THROW(critical_error,"Grid creation failed.");
   }
-  if (!CalculateTotal()) {
+  int res(CalculateTotal());
+  if (res==0) {
+    CleanUp();
+    msg_Error()<<METHOD<<"(): Switching MPI simulation off."<<std::endl;
+    return false;
+  }
+  if (res<0) {
     CleanUp();
     THROW(critical_error,"Determination of \\sigma_{tot} failed.");
   }

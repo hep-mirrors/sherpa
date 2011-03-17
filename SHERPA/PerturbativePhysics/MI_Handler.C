@@ -51,7 +51,11 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
     p_amisic->SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
     p_amisic->SetInputFile(file);
     if (!p_amisic->Initialize()) {
-      THROW(fatal_error,"Cannot initialize Amisic.");
+      msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
+		 <<"Continue without."<<std::endl;
+      delete p_amisic;
+      p_amisic=NULL;
+      return;
     }
     m_ycut=p_amisic->HardBase()->Stop(0);
     m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
