@@ -92,6 +92,8 @@ Run_Parameter::Run_Parameter()
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
   gen.m_spincorrelations = 0;
+  gen.m_pbeam[0] = Vec4D(0.,0.,0.,0.);
+  gen.m_pbeam[1] = Vec4D(0.,0.,0.,0.);
 } 
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
@@ -225,7 +227,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   else if (dreader.VectorFromFile(seed1,"RANDOM_SEED1") && 
 	   dreader.VectorFromFile(seed2,"RANDOM_SEED2")) {
     gen.m_seed  = seed1[0];
-    gen.m_seed2 = seed2[0];  
+    gen.m_seed2 = seed2[0]; 
   }
   else gen.m_seed=1234;
 

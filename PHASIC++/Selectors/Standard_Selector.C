@@ -197,11 +197,11 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl):
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double E = rpa.gen.Ecms();
+  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
   emin  = new double[m_n];
   emax  = new double[m_n];
   value  = new double[m_n];
-  for (int i=0;i<m_n;i++) { emin[i] = 0.; emax[i] = E; }
+  for (int i=0;i<m_n;i++) { emin[i] = 0.; emax[i] = Emax; }
   m_sel_log = new Selector_Log(m_name);
 }
 
@@ -245,8 +245,8 @@ void Energy_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
+			       double _max)
 {
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in Energy_Selector::SetRange : "
@@ -257,10 +257,9 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   double MaxEmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
-    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
     if (crit[0].Includes(m_fl[i])) {
       emin[i] = Max(_min,m_fl[i].SelMass()); 
-      emax[i] = Min(_max,rpa.gen.Ecms());
+      emax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
       if (emin[i]>MaxEmin ) MaxEmin = emin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -311,11 +310,11 @@ ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl):
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double E = rpa.gen.Ecms();
+  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
   etmin  = new double[m_n];
   etmax  = new double[m_n];
   value  = new double[m_n];
-  for (int i=0;i<m_n;i++) { etmin[i] = 0.; etmax[i] = E; }
+  for (int i=0;i<m_n;i++) { etmin[i] = 0.; etmax[i] = Emax; }
   m_sel_log = new Selector_Log(m_name);
 }
 
@@ -361,8 +360,7 @@ void ET_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void ET_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=rpa.gen.Ecms())
+void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
 {
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
@@ -372,10 +370,9 @@ void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   double MaxEtmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
-    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
     if (crit[0].Includes(m_fl[i])) {
       etmin[i] = _min; 
-      etmax[i] = _max;
+      etmax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
       if (etmin[i] > MaxEtmin) MaxEtmin = etmin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -426,11 +423,11 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) :
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double E = rpa.gen.Ecms();
+  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
   ptmin  = new double[m_n];
   ptmax  = new double[m_n];
   value = new double[m_n];
-  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = 10.*E; }
+  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = Emax; }
   m_sel_log = new Selector_Log(m_name);
 }
 
@@ -485,8 +482,7 @@ void PT_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void PT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
 {
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
@@ -498,7 +494,7 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
       ptmin[i] = _min; 
-      ptmax[i] = Min(_max,rpa.gen.Ecms());
+      ptmax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
       if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -550,7 +546,7 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) :
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double E = rpa.gen.Ecms();
+  double E = Max(rpa.gen.PBeam(0)[0],rpa.gen.PBeam(1)[0]);
   double pl;
 
   ymin  = new double[m_n];
@@ -560,6 +556,9 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) :
     pl      = sqrt(E*E-sqr(_fl[i].SelMass()));
     ymax[i] = log( (E+pl)/(E-pl) );
     ymin[i] = -ymax[i];
+    if (_fl[i].SelMass()==0.) {
+      ymax[i] = 100.; ymin[i] = -ymax[i];  
+    }
   }
   m_sel_log = new Selector_Log(m_name);
 }
@@ -608,22 +607,25 @@ void Rapidity_Selector::BuildCuts(Cut_Data * cuts)
 
 
 void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max)
+				 double _max)
 {
+
+  std::cout<<" in SS Rapidity::SetRange ... "<<std::endl;
+
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
-
-  double E = rpa.gen.Ecms()/2;
+  
+  double E = Max(rpa.gen.PBeam(0)[0],rpa.gen.PBeam(1)[0]);
   double pl,y;
-
+  
   for (int i=m_nin;i<m_n;i++) {
-    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
     if (crit[0].Includes(m_fl[i])) {
       pl      = sqrt(E*E-sqr(m_fl[i].SelMass())); 
       y       = log((E+pl)/(E-pl));
+      std::cout<<" determined y yields : "<<y<<std::endl;
       ymin[i] = Max(_min,-y);
       ymax[i] = Min(_max,y);
       if (m_fl[i].Strong()) m_strong = 1;
@@ -740,7 +742,6 @@ void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
   
   for (int i=m_nin;i<m_n;i++) {
-    //    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
     if (crit[0].Includes(m_fl[i])) {
       etamin[i] = _min;
       etamax[i] = _max;
@@ -989,7 +990,7 @@ PT2_Selector::PT2_Selector(int _nin,int _nout, Flavour * _fl):
     for (int j=i+1;j<m_n;j++) {
       //for numerical reason min and max should be slightly larger than -/+1
       pt2min[i][j] = pt2min[j][i] = 0.; 
-      pt2max[i][j] = pt2max[j][i] = 2.*rpa.gen.Ecms();
+      pt2max[i][j] = pt2max[j][i] = 2.*(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]);
     }
   }
     
@@ -1117,7 +1118,7 @@ IMass_Selector::IMass_Selector(int _nin,int _nout, Flavour * _fl):
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
       massmin[i][j] = massmin[j][i] = 0.; 
-      massmax[i][j] = massmax[j][i] = 2.*rpa.gen.Ecms(); 
+      massmax[i][j] = massmax[j][i] = 2.*(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]); 
     }
   }
   m_sel_log = new Selector_Log(m_name);

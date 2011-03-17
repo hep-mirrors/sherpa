@@ -144,7 +144,7 @@ bool PTNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *
   if (m_strong==-1) {
     double pti;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<subs->back()->m_n;i++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
 	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  pti = sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
 	  if (m_sel_log->Hit( ((pti<ptmin[k]) || (pti>ptmax[k])) )) return 0;
@@ -169,7 +169,7 @@ void PTNLO_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+			      double _max)
 {
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in PTNLO_Selector::SetRange : "
@@ -180,7 +180,7 @@ void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   double MaxPTmin = 0.;
   flav.push_back(crit[0]);
   ptmin.push_back(_min);
-  ptmax.push_back(Min(_max,rpa.gen.Ecms()));
+  ptmax.push_back(Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0])));
   bool used=0;
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
@@ -270,7 +270,7 @@ bool RapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevt
   if (m_strong==-1) {
     double yi;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<subs->back()->m_n;i++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
 	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  yi = mom[i].Y();
 	  if (m_sel_log->Hit( ((yi<ymin[k]) || (yi>ymax[k])) )) return 0;
@@ -394,7 +394,7 @@ bool PseudoRapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_
   if (m_strong==-1) {
     double etai;
     for (size_t k=0;k<flav.size();k++) {
-      for (int i=m_nin;i<subs->back()->m_n;i++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
 	if (flav[k].Includes(subs->back()->p_fl[i])) {
 	  etai = mom[i].Eta();
 	  if (m_sel_log->Hit( ((etai<etamin[k]) || (etai>etamax[k])) )) return 0;
@@ -521,8 +521,8 @@ bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist 
   if (m_strong==-1) {
     double ptij;
     for (size_t k=0;k<flav1.size();k++) {
-      for (int i=m_nin;i<subs->back()->m_n;i++) {
-	for (int j=i+1;j<subs->back()->m_n;j++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
+	for (size_t j=i+1;j<subs->back()->m_n;j++) {
 	  if ( ((flav1[k].Includes(subs->back()->p_fl[i])) &&
 		(flav2[k].Includes(subs->back()->p_fl[j])) ) || 
 	       ((flav1[k].Includes(subs->back()->p_fl[j])) &&
@@ -551,7 +551,7 @@ void PT2NLO_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+			       double _max)
 {
   if (crit.size() != 2) {
     msg_Error()<<"Wrong number of arguments in PTNLO_Selector::SetRange : "
@@ -563,7 +563,7 @@ void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   flav1.push_back(crit[0]);
   flav2.push_back(crit[1]);
   ptmin.push_back(_min);
-  ptmax.push_back(Min(_max,rpa.gen.Ecms()));
+  ptmax.push_back(Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0])));
   bool used=0;
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
@@ -693,7 +693,7 @@ bool Isolation_Cut::Trigger(const Vec4D_Vector & p)
 bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,ATOOLS::NLO_subevtlist *const subs)
 {
   vector<int> vf;
-  for (int i=m_nin;i<subs->back()->m_n;i++) {
+  for (size_t i=m_nin;i<subs->back()->m_n;i++) {
     if (m_iflav.Includes(subs->back()->p_fl[i])) {
       vf.push_back(i);
     }
@@ -701,7 +701,7 @@ bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,ATOOLS::NLO_subevtlist *con
   for (size_t k=0;k<vf.size();k++) {
     double egamma=p[vf[k]].PPerp();
     vector<edr> edrlist;
-    for (int i=m_nin;i<subs->back()->m_n;i++)
+    for (size_t i=m_nin;i<subs->back()->m_n;i++)
       if (subs->back()->p_fl[i].Strong()) {
       double dr=DR(p[vf[k]],p[i]);
       if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
