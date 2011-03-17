@@ -153,7 +153,8 @@ namespace PHASIC {
     void CalculateME();
     void CalculatePS();
 
-    static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info);
+    static void TestPoint(ATOOLS::Vec4D *const p,
+			  const Process_Info *info,const int mode=0);
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  const size_t &nin,const size_t &nout,
 			  const ATOOLS::Flavour_Vector &flavs);

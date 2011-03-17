@@ -527,9 +527,10 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
-				    const Process_Info *info)
+				    const Process_Info *info,
+				    const int mode)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(mode);
   Flavour_Vector fl_i(info->m_ii.GetExternal());
   Vec4D_Vector cp(fl_i.size());
   if (fl_i.size()==1) {
@@ -552,7 +553,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   for (size_t i=0;i<info->m_fi.GetDecayInfos().size();i++)
     if (info->m_fi.GetDecayInfos()[i].m_osd) osd_counter++;  
     
-  if (osd_counter==info->m_fi.GetDecayInfos().size()) {
+  if (osd_counter==info->m_fi.GetDecayInfos().size() || mode==1) {
     size_t n(fl_i.size());
     TestPoint(p,cp,fl_i,&info->m_fi,n);
   }

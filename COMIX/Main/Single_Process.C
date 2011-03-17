@@ -244,7 +244,7 @@ bool COMIX::Single_Process::Tests()
     else types[i]=1;
   }
   p_int->ColorIntegrator()->SetDecayIds(dids,types,acts);
-  Phase_Space_Handler::TestPoint(&m_p.front(),&Info());
+  Phase_Space_Handler::TestPoint(&m_p.front(),&Info(),1);
   bool res(p_bg->GaugeTest(m_p));
   if (!res) {
     msg_Info()<<METHOD<<"(): Gauge test failed for '"
