@@ -437,6 +437,9 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 
 void PS_Generator::AddSTCC()
 {
+#ifdef DEBUG__BG
+  DEBUG_FUNC("");
+#endif
   for (size_t n(2);n<m_n-2;++n) {
     size_t oldsize(m_cur[n].size());
     for (size_t j(0);j<oldsize;++j) {
@@ -444,7 +447,7 @@ void PS_Generator::AddSTCC()
       size_t cid(m_cur[n][j]->CId());
       if ((cid&3)==0 || (cid&3)==3) continue;
       std::set<std::string> added;
-      size_t pid(~3&((1<<m_n)-1-cid));
+      size_t pid(~3&cid);
       if (IdCount(pid)>1) {
 	TCC_Map::const_iterator it(m_tccs.find(pid));
 	if (it==m_tccs.end()) continue;
