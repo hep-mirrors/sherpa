@@ -546,15 +546,15 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) :
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double E = Max(rpa.gen.PBeam(0)[0],rpa.gen.PBeam(1)[0]);
+  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
   double pl;
 
   ymin  = new double[m_n];
   ymax  = new double[m_n];
   value = new double[m_n];
   for (int i=0;i<m_n;i++) {
-    pl      = sqrt(E*E-sqr(_fl[i].SelMass()));
-    ymax[i] = log( (E+pl)/(E-pl) );
+    pl      = sqrt(Emax*Emax-sqr(_fl[i].SelMass()));
+    ymax[i] = log( (Emax+pl)/(Emax-pl) );
     ymin[i] = -ymax[i];
     if (_fl[i].SelMass()==0.) {
       ymax[i] = 100.; ymin[i] = -ymax[i];  
@@ -609,16 +609,13 @@ void Rapidity_Selector::BuildCuts(Cut_Data * cuts)
 void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 				 double _max)
 {
-
-  std::cout<<" in SS Rapidity::SetRange ... "<<std::endl;
-
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
   
-  double E = Max(rpa.gen.PBeam(0)[0],rpa.gen.PBeam(1)[0]);
+  double E = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
   double pl,y;
   
   for (int i=m_nin;i<m_n;i++) {
