@@ -17,11 +17,11 @@ namespace PHASIC {
     };
   };// end of struct nlo_type
 
-  inline const nlo_type::code operator|(const nlo_type::code c1,const nlo_type::code c2)  
+  inline nlo_type::code operator|(const nlo_type::code c1,const nlo_type::code c2)  
   { return (nlo_type::code)((int)c1|(int)c2); }
   inline const nlo_type::code &operator|=(nlo_type::code &c1,const nlo_type::code c2)  
   { return c1=(nlo_type::code)((int)c1|(int)c2); }
-  inline const nlo_type::code operator&(const nlo_type::code c1,const nlo_type::code c2)  
+  inline nlo_type::code operator&(const nlo_type::code c1,const nlo_type::code c2)  
   { return (nlo_type::code)((int)c1&(int)c2); }
   inline const nlo_type::code &operator&=(nlo_type::code &c1,const nlo_type::code c2)  
   { return c1=(nlo_type::code)((int)c1&(int)c2); }

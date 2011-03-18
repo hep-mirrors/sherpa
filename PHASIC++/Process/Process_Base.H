@@ -182,8 +182,8 @@ namespace PHASIC {
 
     inline Process_Base *MapProc() const  { return p_mapproc; }
 
-    inline Cut_Data          *const Cuts() const { return p_cuts; }
-    inline Combined_Selector *const Selector() const 
+    inline Cut_Data          * Cuts() const { return p_cuts; }
+    inline Combined_Selector * Selector() const 
     { return p_mapproc?p_mapproc->p_selector:p_selector; }
 
     template <class PType> inline PType *Get() 

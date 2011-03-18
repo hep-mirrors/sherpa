@@ -69,7 +69,7 @@ namespace ATOOLS {
 
     // inline functions
     inline const size_t &Priority() const { return m_priority; }
-    inline const bool    Binary() const   { return m_binary;   }
+    inline bool    Binary() const   { return m_binary;   }
 
   };// end of class Operator
 
@@ -179,7 +179,7 @@ namespace ATOOLS {
     inline const Function_Map &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
 
-    inline Tag_Replacer *const TagReplacer() const { return p_replacer; }
+    inline Tag_Replacer * TagReplacer() const { return p_replacer; }
 
     inline void PrintEquation() const { PrintNode(p_root); }
 
