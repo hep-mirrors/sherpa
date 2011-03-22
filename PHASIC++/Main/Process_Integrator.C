@@ -398,9 +398,14 @@ void Process_Integrator::SetUpEnhance()
       rbit->second->m_max=max;
     }
   }
-  if (p_proc->IsGroup())
-    for (size_t i(0);i<p_proc->Size();++i)
+  if (p_proc->IsGroup()) {
+    m_max=0.0;
+    for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance();
+      m_max+=(*p_proc)[i]->Integrator()->Max();
+    }
+  }
+
 }
 
 void Process_Integrator::SetEnhanceFactor(const double &efac)
