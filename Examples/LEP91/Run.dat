@@ -28,7 +28,3 @@
   ALPHAS(MZ) = 0.127
   MASSIVE[5] = 1
 }(model)
-
-(me){
-  ME_SIGNAL_GENERATOR = Internal Comix
-}(me)

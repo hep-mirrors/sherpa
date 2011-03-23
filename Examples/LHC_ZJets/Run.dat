@@ -19,10 +19,6 @@
   Mass 11 -11 66 116
 }(selector)
 
-(me){
-  ME_SIGNAL_GENERATOR = Internal Comix
-}(me)
-
 (mi){
   MI_HANDLER = None  # None or Amisic
 }(mi)

@@ -33,7 +33,3 @@
 
   UNITARIZATION_N = 2
 }(model)
-
-(me){
-  ME_SIGNAL_GENERATOR = Amegic
-}(me)

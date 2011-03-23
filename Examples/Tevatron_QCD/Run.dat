@@ -19,10 +19,6 @@
   NJetFinder  2  10.0  0.0  1.0
 }(selector)
 
-(me){
-  ME_SIGNAL_GENERATOR = Comix
-}(me)
-
 (mi){
   MI_HANDLER = None  # None or Amisic
 }(mi)

@@ -3,8 +3,7 @@
 @cindex SLHA_INPUT
 
 To use the MSSM within Sherpa (cf. @mycite{Hagiwara2005wg}) 
-the MODEL switch has to be set to @option{MSSM}
-and @ref{ME_SIGNAL_GENERATOR} has to be set to @option{Amegic}. Further, the
+the MODEL switch has to be set to @option{MSSM}. Further, the
 parameter spectrum has to be fed in. To achieve this files that conform to the
 SUSY-Les-Houches-Accord @mycite{Skands2003cj} are used. The actual SLHA file
 name has to be specified by @code{SLHA_INPUT} and has to reside in the current

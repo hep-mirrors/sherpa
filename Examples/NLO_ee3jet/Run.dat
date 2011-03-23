@@ -32,7 +32,7 @@
 }(model)
 
 (me){
-  ME_SIGNAL_GENERATOR = Internal Amegic WhiteHat
+  ME_SIGNAL_GENERATOR = Amegic LOOPTAG
   EVENT_GENERATION_MODE = Weighted
   NLO_Mode = 1
   SCALES = VAR{sqr(E_CMS)}

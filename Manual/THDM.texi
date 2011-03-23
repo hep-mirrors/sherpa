@@ -16,6 +16,4 @@ and ALPHA, the Higgs mixing angle, are specified.
 
 The model is invoked by specifying @code{MODEL = THDM} in the @code{(model)}
 section of the steering file or the model data file @code{Model.dat},
-respectively. Additionally, the matrix element generator Amegic++
-has to be specified via @code{ME_SIGNAL_GENERATOR = Amegic} (cf. 
-@ref{ME_SIGNAL_GENERATOR}).
+respectively.

@@ -33,10 +33,6 @@
   NJetFinder  2  2.65  0.0  1.0
 }(selector)
 
-(me){
-  ME_SIGNAL_GENERATOR = Comix
-}(me)
-
 (mi){
   MI_HANDLER = Amisic
   SCALE_MIN = 2.65

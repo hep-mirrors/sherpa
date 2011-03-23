@@ -6,7 +6,7 @@
 (processes){
   Process 93 93 -> 11 -11 93;
   NLO_QCD_Part BVIRS;
-  Loop_Generator WhiteHat;
+  Loop_Generator BlackHat;
   Order_EW 2;
   End process;
 }(processes);
@@ -17,7 +17,7 @@
 }(selector)
 
 (me){
-  ME_SIGNAL_GENERATOR Amegic WhiteHat;
+  ME_SIGNAL_GENERATOR Amegic BlackHat;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 1;
   SCALES VAR{MPerp2(p[2]+p[3])};

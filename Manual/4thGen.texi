@@ -15,9 +15,7 @@
 The 4thGen model adds a fourth family of quarks and leptons to the
 Standard Model. It is invoked by specifying @code{MODEL = SM+4thGen} in the
 '(model)' section of the steering file or the model data file
-`Model.dat', respectively. Additionally, the matrix element generator
-Amegic++ has to be specified via @code{ME_SIGNAL_GENERATOR = Amegic} (cf. 
-@ref{ME_SIGNAL_GENERATOR}).
+`Model.dat', respectively.
 
 The masses and widths of the additional particles are defined via the
 usual @code{MASS[PDG]} and @code{WIDTH[PDG]} switches, where @code{PDG = [7,8,17,18]}

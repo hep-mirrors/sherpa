@@ -6,8 +6,7 @@
 @cindex M_S
 @cindex M_CUT
 
-In order to use the ADD model within Sherpa the switches @code{MODEL = ADD} and
-@code{ME_SIGNAL_GENERATOR = Amegic} (cf. @ref{ME_SIGNAL_GENERATOR}) have to be
+In order to use the ADD model within Sherpa the switch @code{MODEL = ADD} has to be
 set. The parameters of the ADD model can be set as follows:
 
 The variable @code{N_ED} specifies the number of extra dimensions. The value of

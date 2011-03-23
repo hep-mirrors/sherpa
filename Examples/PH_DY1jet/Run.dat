@@ -11,7 +11,7 @@
 
 (processes){
   Process 93 93 -> 11 -11 93;
-  Loop_Generator WhiteHat;
+  Loop_Generator BlackHat;
   NLO_QCD_Part BVIRS;
   Order_EW 2;
   RB_Max_Epsilon 1e-6 {3};
@@ -24,7 +24,7 @@
 }(selector)
 
 (me){
-  ME_SIGNAL_GENERATOR = Amegic WhiteHat
+  ME_SIGNAL_GENERATOR = Amegic BlackHat
   EVENT_GENERATION_MODE = Weighted
   NLO_Mode = 2
   SCALES = VAR{MPerp2(p[2]+p[3])}

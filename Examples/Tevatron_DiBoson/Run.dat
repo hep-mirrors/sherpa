@@ -24,10 +24,6 @@
   ACTIVE[25] = 0
 }(model)
 
-(me){
-  ME_SIGNAL_GENERATOR = Comix
-}(me)
-
 (mi){
   MI_HANDLER = None  # None or Amisic
 }(mi)

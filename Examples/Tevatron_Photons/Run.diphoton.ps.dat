@@ -31,7 +31,6 @@
 }(shower)  
 
 (me){
-  ME_SIGNAL_GENERATOR = Comix
   EVENT_GENERATION_MODE = Weighted
   ME_QED = Off
 }(me)

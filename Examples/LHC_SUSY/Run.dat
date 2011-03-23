@@ -26,8 +26,3 @@
   # SUSY spectrum input file
   SLHA_INPUT = LesHouches_SPS1A.dat;
 }(model);
-
-(me){
-  ME_SIGNAL_GENERATOR = Amegic;
-}(me);
-

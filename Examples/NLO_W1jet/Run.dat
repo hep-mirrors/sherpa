@@ -5,7 +5,7 @@
 (processes){
   Process 93 93 -> 11 -12 93;
   NLO_QCD_Part BIVRS;
-  Loop_Generator WhiteHat;
+  Loop_Generator BlackHat;
   Order_EW 2;
   End process;
 }(processes);
@@ -14,7 +14,7 @@
   NJetFinder 1 10 0 0.7;
 }(selector)
 (me){
-  ME_SIGNAL_GENERATOR Amegic WhiteHat;
+  ME_SIGNAL_GENERATOR Amegic BlackHat;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 1;
   SCALES VAR{Abs2(p[2]+p[3])};

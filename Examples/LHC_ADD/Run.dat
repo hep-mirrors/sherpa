@@ -36,10 +36,6 @@
   MASS[40] = 100.
 }(model)
 
-(me){
-  ME_SIGNAL_GENERATOR = Amegic
-}(me)
-
 (fragmentation){
   FRAGMENTATION=Off;
 }(fragmentation)

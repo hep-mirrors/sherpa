@@ -23,6 +23,3 @@
   PT -11 1 E_CMS
 }(selector)
 
-(me){
-  ME_SIGNAL_GENERATOR Comix;
-}(me);

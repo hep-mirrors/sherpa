@@ -1,6 +1,6 @@
 (run){
   OUTPUT 2; EVENTS 10000000;
-  LJET:=2; NLOT:=BVIRS; LPT:=WhiteHat;
+  LJET:=2; NLOT:=BVIRS; LPT:=BlackHat;
   CSS_KIN_SCHEME 1;
 
   ANALYSIS HZTool,Internal;
@@ -19,7 +19,7 @@
   PT -11 1 E_CMS;
 }(selector)
 (me){
-  ME_SIGNAL_GENERATOR Amegic WhiteHat;
+  ME_SIGNAL_GENERATOR Amegic BlackHat;
   EVENT_GENERATION_MODE W; NLO_Mode 2;
 }(me);
 (beam){
