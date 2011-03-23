@@ -26,6 +26,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
   m_yvalues(0),m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_psfills(0), 
   m_finished(false), m_initialized(false), m_fuzzyexp(-1), m_name(name)
 {
+  m_ps2values=NULL;
   m_mcb = 0.;
   if (m_type>1000) {
     m_type-=1000;
@@ -72,6 +73,12 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
     m_psvalues   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
       m_psvalues[i]=0.;
+    }
+  }
+  if (m_depth>3) {
+    m_ps2values   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_ps2values[i]=0.;
     }
   }
 
@@ -365,6 +372,7 @@ void Histogram::Output(const std::string name)
     ofile<<m_yvalues[i+1]<<"  ";
     if (m_depth>1) ofile<<sqrt(m_y2values[i+1])<<"  ";
     if (m_depth>2) ofile<<m_psvalues[i+1]<<"  ";
+    if (m_depth>3) ofile<<sqrt(m_ps2values[i+1])<<"  ";
     ofile<<"\n";
   }
   ofile.close();
@@ -633,6 +641,7 @@ void Histogram::InsertRange(double start, double end, double value) {
 
 
 double Histogram::Bin(int bin) const { return m_yvalues[bin]; }
+double Histogram::Bin2(int bin) const { return m_y2values[bin]; }
 
 double Histogram::Bin(double coordinate) const
 { 

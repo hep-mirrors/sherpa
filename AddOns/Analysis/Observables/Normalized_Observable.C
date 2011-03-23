@@ -15,6 +15,7 @@ Normalized_Observable(int type,double xmin,double xmax,int nbins,
 		      const std::string &name,const int mode):
   Primitive_Observable_Base(type,xmin,xmax,nbins), m_mode(mode)
 {
+  if (!(type&4)) THROW(fatal_error,"Must be initialized with type X+4");
   p_obs = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
   p_norm = new Histogram(m_type,m_xmin,m_xmax,m_nbins,name);
 }
@@ -51,9 +52,20 @@ Normalized_Observable::operator+=(const Primitive_Observable_Base &obs)
     (*p_obs)+=(*nobs->p_obs);
     (*p_norm)+=(*nobs->p_norm);
     if (!m_copied) {                                                 
+      double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
       for (int i=0;i<m_nbins+2;++i) {			   
-	p_histo->SetBin(i,p_obs->Bin(i)!=0?	   
-			p_obs->Bin(i)/p_norm->Bin(i):0.0);	   
+	double val=p_obs->Bin(i)==0.0?0.0:
+	  p_obs->Bin(i)/p_norm->Bin(i);
+	p_histo->SetBin(i,val);
+	double w2mo(n*p_obs->Bin2(i)), wmo(p_obs->Bin(i));
+	double sigo(sqrt((w2mo-wmo*wmo)/Max(1.0,n-1.0)));
+	double w2mi(n*p_norm->Bin2(i)), wmi(p_norm->Bin(i));
+	double sigi(sqrt((w2mi-wmi*wmi)/Max(1.0,n-1.0)));
+	double relerr=p_obs->Bin(i)==0.0?0.0:
+	  (sigo/dabs(p_obs->Bin(i))+sigi/dabs(p_norm->Bin(i)));
+	p_histo->SetBin2(i,sqr(val*relerr));
+        p_histo->SetBinPS(i,p_norm->Bin(i));
+	p_histo->SetBinPS2(i,sqr(sigi));
       }								   
       p_histo->SetFills((long int)p_obs->Fills());            
     }                                                                
@@ -72,8 +84,18 @@ void Normalized_Observable::EndEvaluation(double scale)
   p_norm->Scale(scale/n);                                 
   if (!m_copied) {                                                 
     for (int i=0;i<m_nbins+2;++i) {			   
-      p_histo->SetBin(i,p_obs->Bin(i)!=0?	   
-		      p_obs->Bin(i)/p_norm->Bin(i):0.0);	   
+      double val=p_obs->Bin(i)==0.0?0.0:
+	p_obs->Bin(i)/p_norm->Bin(i);
+      p_histo->SetBin(i,val);
+      double w2mo(n*p_obs->Bin2(i)), wmo(p_obs->Bin(i));
+      double sigo(sqrt((w2mo-wmo*wmo)/Max(1.0,n-1.0)));
+      double w2mi(n*p_norm->Bin2(i)), wmi(p_norm->Bin(i));
+      double sigi(sqrt((w2mi-wmi*wmi)/Max(1.0,n-1.0)));
+      double relerr=p_obs->Bin(i)==0.0?0.0:
+	(sigo/dabs(p_obs->Bin(i))+sigi/dabs(p_norm->Bin(i)));
+      p_histo->SetBin2(i,sqr(val*relerr));
+      p_histo->SetBinPS(i,p_norm->Bin(i));
+      p_histo->SetBinPS2(i,sqr(sigi));
     }								   
     p_histo->SetFills((long int)p_obs->Fills());            
   }                                                                

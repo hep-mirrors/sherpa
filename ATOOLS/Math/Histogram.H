@@ -10,9 +10,8 @@ namespace ATOOLS {
   private :
     int        m_type, m_nbin;
     double     m_lower, m_upper;
-    double   * m_yvalues;
-    double   * m_y2values;
-    double   * m_psvalues;
+    double   * m_yvalues, * m_y2values;
+    double   * m_psvalues, * m_ps2values;
     double   * m_tmp;
     double     m_fills,m_psfills;
     double     m_binsize, m_logbase,m_mcb;
@@ -41,7 +40,11 @@ namespace ATOOLS {
     void Restore();
     double Mean() const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
+    void SetBin2(int i, double y2)  { m_y2values[i]=y2; }
+    void SetBinPS(int i, double ps)  { m_psvalues[i]=ps; }
+    void SetBinPS2(int i, double ps)  { m_ps2values[i]=ps; }
     double Bin(int i) const;
+    double Bin2(int i) const;
     double Bin(double x) const;
     double BinOrInterpolate(int i) const;
     double BinOrInterpolate(double x) const;
