@@ -25,8 +25,10 @@ Massive_KernelsA::Massive_KernelsA()
   CSC.Init();
   m_g1 = 1.5*CSC.CF;
   m_g2 = 11./6.*CSC.CA-2./3.*CSC.TR*m_nf;
+  m_g3 = 2.*CSC.CF;
   m_K1 = (3.5-sqr(M_PI)/6.)*CSC.CF;
   m_K2 = (67./18.-sqr(M_PI)/6.)*CSC.CA-10./9.*CSC.TR*m_nf;
+  m_K3 = (4.-sqr(M_PI)/6.)*CSC.CF;
 
   m_alpha = 1.;
   m_loga = 0.;
@@ -59,7 +61,7 @@ void Massive_KernelsA::SetCoupling(const MODEL::Coupling_Map *cpls)
 {
   if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
   else THROW(fatal_error,"Coupling not found");
-  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<endl;
+  msg_Tracking()<<"Massive_KernelsA:: alpha = "<<*p_cpl<<endl;
   m_cpldef = p_cpl->Default()/(2.*M_PI);
 }
 
@@ -194,27 +196,50 @@ void Massive_KernelsA::CalcGamma(int t,double mu2,double m)
     }
     p_Gamma[1]=CSC.CF;
     p_Gamma[0]=CSC.CF*(0.5*log(sqr(m)/mu2)-2.);
+    return;
+  }
+  if (t==11) {
+    p_Gamma[1]=CSC.CA;
+    p_Gamma[0]=CSC.CA*(0.5*log(sqr(m)/mu2)-2.);
+    return;
+  }
+  if (t=12) {
+    p_Gamma[1]=CSC.CF;
+    p_Gamma[0]=CSC.CF*(log(sqr(m)/mu2)-2.);
   }
 }
 
-void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, bool ini, bool ini2)
+void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, bool ini, bool ini2, bool susy)
 {
   CalcVS(s,mj,mk);
   CalcVNS(t,s,mj,mk,ini);
-  CalcGamma(t,mu2,mj);
+  int st =t;
+  if (susy) st=t+10;
+  CalcGamma(st,mu2,mj);
   double lmus=log(mu2/s);
   p_Gamma[0]-=lmus*p_Gamma[1];
-  if (t==1) {
+  if (st==1) {
     p_Gamma[0]+=m_g1*(1.+lmus)+m_K1;
     p_Gamma[0]/=CSC.CF;
     p_Gamma[1]/=CSC.CF;
   }
-  if (t==2) {
+  if (st==2) {
     p_Gamma[0]+=m_g2*(1.+lmus)+m_K2;
     p_Gamma[0]/=CSC.CA;
     p_Gamma[1]/=CSC.CA;
   }
+  if (st==11) {
+    p_Gamma[0]+=(m_g1*(1.+lmus)+m_K1)*CSC.CA/CSC.CF;
+    p_Gamma[0]/=CSC.CA;
+    p_Gamma[1]/=CSC.CA;
+  }
+  if (st==12) {
+    p_Gamma[0]+=m_g3*(1.+lmus)+m_K3; 
+    p_Gamma[0]/=CSC.CF;
+    p_Gamma[1]/=CSC.CF; 
+  }
   m_aterm=0.;
+  if (susy && m_alpha!=1.) THROW(not_implemented,"DIPOLE_ALPHA must be 1 for SUSY processes");
   if (!ini && !ini2 && m_alpha!=1.) CalcAterms( t,mu2,s,mj,mk);
 }
 
@@ -241,6 +266,8 @@ double Massive_KernelsA::t1(int type,int spin,double muq2,double x)
   if (type==2||type==3) return 0.;
   x=1.-x;
   switch (spin) {
+  case 0: 
+    return 2./x*(1.+log(x+muq2)-log(x)); 
   case 1: 
     return 2./x*(1.+log(x+muq2)-log(x))-0.5*x/sqr(x+muq2); 
   case 2:
@@ -264,6 +291,13 @@ double Massive_KernelsA::t2(int type,int spin,double muq2)
   double aterm(0.);
   if (m_alpha<1.) aterm = -at2(type, spin, muq2);
   switch (spin) {
+  case 0: {
+    double mx=muq2/(1.+muq2);
+    if (IsZero(muq2)) return m_g1/CSC.CF+ aterm;
+    double res = m_g1/CSC.CF*(1.-2.*(log(sqrt(1.+muq2)-sqrt(muq2))+1./(sqrt(1./mx)+1.)))
+      -muq2*log(mx)-0.5*mx + aterm;
+    return res + (muq2*log(mx) +0.5*mx) - (m_g1-m_g2)/CSC.CF;
+  }
   case 1: {
     double mx=muq2/(1.+muq2);
     if (IsZero(muq2)) return m_g1/CSC.CF+ aterm;
@@ -320,6 +354,8 @@ double Massive_KernelsA::t4(int type,int spin,double muq2,double x)
   }
   }
   switch (spin) {
+  case 0: 
+    return sqr(lny)+2.*(DiLog(-y/muq2)-DiLog(-1./muq2)-log(muq2)*lny)-2.*lny; 
   case 1: 
     return sqr(lny)+2.*(DiLog(-y/muq2)-DiLog(-1./muq2)-log(muq2)*lny)
       +0.5*(muq2*x/((1.+muq2)*(y+muq2))-log((1.+muq2)/(y+muq2)))-2.*lny + aterm; 

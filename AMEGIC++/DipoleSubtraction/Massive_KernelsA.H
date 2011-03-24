@@ -13,7 +13,7 @@ namespace AMEGIC {
   class Massive_KernelsA {
   protected:
     size_t m_nf,m_nmf;
-    double m_cpldef,m_g1,m_g2,m_K1,m_K2, m_aterm;
+    double m_cpldef,m_g1,m_g2,m_g3,m_K1,m_K2,m_K3, m_aterm;
     double m_alpha,m_loga,m_kappa;
     double p_VS[3];
     double p_VNS[3];
@@ -38,7 +38,7 @@ namespace AMEGIC {
     size_t Nf()       { return m_nf; }
     size_t Nmf()      { return m_nmf; }
     double FMass(int i) { return m_massflav[i]; }
-    void Calculate(int,double,double,double,double,bool,bool);
+    void Calculate(int,double,double,double,double,bool,bool,bool);
     double I_Fin();
     double I_E1();
     double I_E2();

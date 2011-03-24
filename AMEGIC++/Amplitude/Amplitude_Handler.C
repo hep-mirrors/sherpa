@@ -122,7 +122,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   }
   msg_Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
-  
+
   if (ngraph!=0) {
     if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
     if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
@@ -188,10 +188,10 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
    } 
     n = n->Next;
   }
-
+  
   PreCluster(firstgraph); 
   CheckEqual(firstgraph);
-
+  
   if (ngraph==0) {
     if (msg_LevelIsTracking()) {
       msg_Out()<<"No graph found for ";
@@ -205,9 +205,9 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   //Colors
   if (emit!=spect && emit!=127) {
     char cemit=emit,cspect=spect;
-    if (fl[(int)emit].IsGluon()) cemit+='A';
+    if (fl[(int)emit].IsGluon() || fl[(int)emit].IsGluino()) cemit+='A';
     else cemit+='i';
-    if (fl[(int)spect].IsGluon()) cspect+='A';
+    if (fl[(int)spect].IsGluon()|| fl[(int)spect].IsGluino()) cspect+='A';
     else cspect+='i';
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID);
   }
@@ -217,9 +217,9 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
 	  char cemit=i,cspect=j;
-	  if (fl[i].IsGluon()) cemit+='A';
+	  if (fl[i].IsGluon() || fl[i].IsGluino()) cemit+='A';
 	  else cemit+='i';
-	  if (fl[j].IsGluon()) cspect+='A';
+	  if (fl[j].IsGluon() || fl[j].IsGluino()) cspect+='A';
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
 	  //msg_Out()<<METHOD<<" new CFColor("<<sij<<")."<<std::endl;
@@ -358,9 +358,9 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
   //Colors
   if (emit!=spect && emit!=127) {
     char cemit=emit,cspect=spect;
-    if (fl[(int)emit].IsGluon()) cemit+='A';
+    if (fl[(int)emit].IsGluon() || fl[(int)emit].IsGluino()) cemit+='A';
     else cemit+='i';
-    if (fl[(int)spect].IsGluon()) cspect+='A';
+    if (fl[(int)spect].IsGluon() || fl[(int)spect].IsGluino()) cspect+='A';
     else cspect+='i';
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID,true);
   }
@@ -370,9 +370,9 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
 	  char cemit=i,cspect=j;
-	  if (fl[i].IsGluon()) cemit+='A';
+	  if (fl[i].IsGluon() || fl[i].IsGluino()) cemit+='A';
 	  else cemit+='i';
-	  if (fl[j].IsGluon()) cspect+='A';
+	  if (fl[j].IsGluon() || fl[j].IsGluino()) cspect+='A';
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
 	  

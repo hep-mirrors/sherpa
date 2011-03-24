@@ -285,7 +285,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		    break;
 		  case 'D': {
 		    te=2;
-		    if (fl[int(emit-'i')].IsAnti() && int(emit-'i')>2) te=4;
+		    if (fl[int(emit-'i')].IsAnti() && int(emit-'i')>=2) te=4;
 		    else if (!fl[int(emit-'i')].IsAnti() && int(emit-'i')<2) te=4;
 		    break;
 		  }
@@ -302,7 +302,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		    break;
 		  case 'D': {
 		    ts=2;
-		    if (fl[int(spect-'i')].IsAnti() && int(spect-'i')>2) ts=4;
+		    if (fl[int(spect-'i')].IsAnti() && int(spect-'i')>=2) ts=4;
 		    else if (!fl[int(spect-'i')].IsAnti() && int(spect-'i')<2) ts=4;
 		    break;
 		  }

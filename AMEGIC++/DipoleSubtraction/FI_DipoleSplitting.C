@@ -115,6 +115,19 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
     break;
   case 4:
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
+    break;
+  case 5:
+    m_sff = 2./(2.-m_zi-m_xijk)-(1.+m_zi)-m_mij/(m_pi*m_pj);
+    break;
+  case 6:
+    m_sff = 2./(2.-m_zj-m_xijk)-(1.+m_zj)-m_mij/(m_pi*m_pj);
+    break;
+  case 7:
+    m_sff = 2./(2.-m_zi-m_xijk)-2.-m_mij/(m_pi*m_pj);
+    break;
+  case 8:
+    m_sff = 2./(2.-m_zj-m_xijk)-2.-m_mij/(m_pi*m_pj);
+    break;
   }
 }
 
@@ -136,6 +149,18 @@ double FI_MassiveDipoleSplitting::GetF()
     return h*m_sff*CSC.TR/CSC.CA;
   case 4:
     h*=2.*m_sff;
+    return h;
+  case 5:
+    h*=m_sff;
+    return h;
+  case 6:
+    h*=m_sff;   
+    return h;
+  case 7:
+    h*=m_sff;
+    return h;
+  case 8:
+    h*=m_sff;   
     return h;
   }
   return 0.;

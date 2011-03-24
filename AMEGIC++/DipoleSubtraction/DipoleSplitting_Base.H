@@ -36,7 +36,11 @@ namespace AMEGIC {
       qg  = 1,
       gq  = 2,
       qq  = 3,
-      gg  = 4
+      gg  = 4,
+      sqg = 5,
+      gsq = 6,
+      gtg = 7,
+      ggt = 8
     };
   };
 

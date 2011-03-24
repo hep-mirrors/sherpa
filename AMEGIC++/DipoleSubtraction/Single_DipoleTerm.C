@@ -201,19 +201,29 @@ bool Single_DipoleTerm::DetermineType() {
     if (m_fli==Flavour(kf_gluon)) {
       m_flij = m_flj;
       if (m_flj==m_fli) m_ftype = 4;
-      else m_ftype = 2;
+      else if (!m_fli.IsSusy()) m_ftype = 2;
+      else if (m_fli.IsGluino()) m_ftype = 6;
+      else if (m_fli.IsSquark()) m_ftype = 8;
+      else THROW(fatal_error,"SUSY particle in dipole term, but not squark or gluino");
     }
     else if (m_flj==Flavour(kf_gluon)) {
       m_flij = m_fli;
       if (m_flj==m_fli) m_ftype = 4;
-      else m_ftype = 1;
+      else if (!m_fli.IsSusy()) m_ftype = 1;
+      else if (m_fli.IsGluino()) m_ftype = 5;
+      else if (m_fli.IsSquark()) m_ftype = 7;
+      else THROW(fatal_error,"SUSY particle in dipole term, but not squark or gluino");
     }
     else if (m_flj==m_fli.Bar()) {
       if (m_flj.Mass()>m_maxgsmass) {
 	m_ftype = 0;
 	break;
       }
-      m_ftype = 3;
+      if (!m_fli.IsSusy()) m_ftype = 3;
+      else {
+        m_ftype = 0;
+        break;
+      }
       m_flij = Flavour(kf_gluon);
     }
     break;

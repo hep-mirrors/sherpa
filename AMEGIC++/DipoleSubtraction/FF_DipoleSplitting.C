@@ -125,7 +125,7 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zim  = m_zi-0.5*(1.-m_vijk);
   m_zjm  = m_zj-0.5*(1.-m_vijk);
   m_zpm  = 0.;
-  if (m_ft>2) {
+  if (m_ft==3 || m_ft==4) {
     m_zpm = (2.*m_mi+(m_Q2-m_mi-m_mj-m_mk)*m_yijk)/(2.*(m_mi+m_mj+(m_Q2-m_mi-m_mj-m_mk)*m_yijk))
       *(1.-sqr(m_vijk*Vrel(m_pi+m_pj,m_pi)));
   }
@@ -145,6 +145,18 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
     break;
   case 4:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))-(2.-m_kappa*m_zpm)/m_vijk;
+    break;
+  case 5: //gluino
+    m_sff = 2./(1.-m_zi*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(1.+m_zi+m_mij/(m_pi*m_pj)); 
+    break;
+  case 6: //gluino
+    m_sff = 2./(1.-m_zj*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(1.+m_zj+m_mij/(m_pi*m_pj));
+    break;
+  case 7: //squark
+    m_sff = 2./(1.-m_zi*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(2.+m_mij/(m_pi*m_pj));
+    break;
+  case 8: //squark
+    m_sff = 2./(1.-m_zj*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(2.+m_mij/(m_pi*m_pj));
   }
 }
 
@@ -168,6 +180,18 @@ double FF_MassiveDipoleSplitting::GetF()
   case 4:
     h*=2.*m_sff;
     return h;
+  case 5:
+    h*= m_sff;
+    return h;
+  case 6:
+    h*= m_sff;   
+    return h;
+  case 7:
+    h*= m_sff;
+    return h;
+  case 8:
+    h*= m_sff;   
+    return h;
   }
   return 0.;
 }
@@ -184,5 +208,7 @@ void FF_MassiveDipoleSplitting::CalcDiPolarizations()
   case 4:
     CalcVectors(m_pt1,m_pt2,-m_sff*m_vijk/(2.*m_zim*m_zjm));
     break;
+  default:
+    return;
   }
 }
