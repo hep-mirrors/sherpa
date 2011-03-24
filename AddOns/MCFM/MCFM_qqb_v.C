@@ -86,8 +86,8 @@ void MCFM_qqb_v::Calc(const Vec4D_Vector &p)
   scale_.scale=sqrt(scale_.musq);
   double corrfactor(m_normcorr);
   if (m_njets>0) {
-    msg_Out()<<"   QCD factor: "<<pow((*p_as)(m_mur2)/qcdcouple_.as,m_njets)
-	     <<"."<<std::endl;
+    //msg_Out()<<"   QCD factor: "<<pow((*p_as)(m_mur2)/qcdcouple_.as,m_njets)
+    //	     <<"."<<std::endl;
     corrfactor *= pow((*p_as)(m_mur2)/qcdcouple_.as,m_njets);
   }
   for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
@@ -118,6 +118,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_v_Getter,"MCFM_qqb_v")
 Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 {
+  msg_Out()<<"Check for process in "<<METHOD<<"."<<std::endl;
   if (pi.m_loopgenerator!="MCFM")        return NULL;
   if (pi.m_oew>2)                        return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;

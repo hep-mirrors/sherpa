@@ -70,6 +70,10 @@ extern "C" {
       mtausq,mcsq,mbsq;
   } masses_;
   extern struct {
+    int n2,n3;
+    double mass2,width2,mass3,width3;
+  } breit_;
+  extern struct {
     double Vud,Vus,Vub,Vcd,Vcs,Vcb;
   } cabib_;
   extern struct {

@@ -6,7 +6,7 @@ namespace MCFM {
   private:
     int     m_pID;
     bool    m_swapped;
-    double  m_aqed,m_cplcorr, m_normcorr;
+    double  m_normcpl, m_normcorr;
     double *p_p, *p_msqv;
 
     double CallMCFM(const int & i,const int & j);
@@ -36,10 +36,7 @@ MCFM_qqb_QQb::MCFM_qqb_QQb(const int & pID,const bool & swapped,
 			 const PHASIC::Process_Info& pi,
 			 const Flavour_Vector& flavs):
   Virtual_ME2_Base(pi,flavs), m_pID(pID), m_swapped(swapped),
-  m_aqed(MODEL::s_model->ScalarFunction(std::string("alpha_QED"))),
-  m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
-//  m_normcorr(4.*9./qcdcouple_.ason2pi)
-  m_normcorr(4.*9.)
+  m_normcpl(4.*9./qcdcouple_.ason2pi)
 {
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
@@ -53,27 +50,26 @@ MCFM_qqb_QQb::~MCFM_qqb_QQb()
 }
 
 double MCFM_qqb_QQb::CallMCFM(const int & i,const int & j) {
-//	msg_Out()<<METHOD<<std::endl;
-//  switch (m_pID) {
-//  case 157: qqb_QQb_v_(p_p,p_msqv); break;
-//  }
   qqb_qqb_v_(p_p,p_msqv);
   return p_msqv[mr(i,j)];
 }
 
 void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
 {
-	msg_Out()<<METHOD<<std::endl;
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
+  double corrfactor(m_normcpl);
   double as(MODEL::s_model->ScalarFunction(std::string("alpha_S"),m_mur2));
-  double ascorr(pow(as/(2.*M_PI*qcdcouple_.ason2pi),2));
-  double corrfactor(m_cplcorr*m_normcorr*ascorr);
-	PRINT_VAR(as);
-	PRINT_VAR(ascorr);
-	PRINT_VAR(corrfactor);
-	PRINT_VAR(p.size());
-	PRINT_VAR(Flavour(kf_t).Mass());
+  if (!m_flavs[0].IsQuark()) {
+    corrfactor *= 64./9.;
+    corrfactor *= pow(4.*M_PI*as/qcdcouple_.gsq,2);
+  }
+ else {
+    corrfactor *= pow(4.*M_PI*as,2);
+ }
+  
+  msg_Out()<<METHOD<<" with corr = "<<corrfactor<<" for "
+	   <<m_flavs[0]<<" & "<<m_flavs[1]<<".\n";
 
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   if (m_pID==157) {
@@ -88,13 +84,14 @@ void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
   if (j==21) { j=0; }
 
   epinv_.epinv=epinv2_.epinv2=0.0;
-  double res(CallMCFM(i,j)  * corrfactor * pow(4.*M_PI*as,2));
+  double res(CallMCFM(i,j)  * corrfactor);
   epinv_.epinv=1.0;
-  double res1(CallMCFM(i,j) * corrfactor * pow(4.*M_PI*as,2));
+  double res1(CallMCFM(i,j) * corrfactor);
   epinv2_.epinv2=1.0;
-  double res2(CallMCFM(i,j) * corrfactor * pow(4.*M_PI*as,2));
+  double res2(CallMCFM(i,j) * corrfactor);
 
-  msg_Out()<<"   --> "<<res<<" "<<res1<<" "<<res2<<"."<<std::endl;
+  msg_Out()<<"   --> "<<res<<" "<<res1<<" "<<res2<<" "
+	   <<"for corrfactor/as = "<<corrfactor<<", "<<as<<".\n";
   m_res.Finite() = res;
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
@@ -103,7 +100,6 @@ void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
 double MCFM_qqb_QQb::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   return 4.*M_PI;
-//  return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
 }
 
 extern "C" { void chooser_(); }
@@ -116,12 +112,9 @@ Virtual_ME2_Base *MCFM_qqb_QQb_Getter::operator()(const Process_Info &pi) const
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    msg_Out()<<"   Flavours = "<<fl.size()<<":";
-    for (size_t i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
-    msg_Out()<<"."<<std::endl;
     // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
-    if (fl.size()!=4)                   return NULL;
+    if (fl.size()!=4)                                   return NULL;
     int pID(0);
     bool swapped(false);
     if (pi.m_fi.m_ps.size()==2) {

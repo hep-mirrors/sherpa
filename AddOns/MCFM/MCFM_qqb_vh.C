@@ -112,13 +112,11 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_vh_Getter,"MCFM_qqb_vh")
 Virtual_ME2_Base *MCFM_qqb_vh_Getter::operator()(const Process_Info &pi) const
 {
+  msg_Out()<<"Check for process in "<<METHOD<<"."<<std::endl;
   if (pi.m_loopgenerator!="MCFM") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    msg_Out()<<"   "<<fl.size()<<" "<<pi.m_fi.m_ps.size()<<"."<<std::endl;
-    for (int i=0;i<fl.size();i++) msg_Out()<<" "<<fl[i];
-    msg_Out()<<"  ("<<fl.size()<<")."<<std::endl;
     if (fl.size()!=8) return NULL;
     int pID(0);
     if (fl[0].IsQuark() && fl[1].IsQuark() &&

@@ -3,6 +3,7 @@ include ../../svn.make
 
 MCFM_SOURCES  =	\
 		SVN_Info.C \
+		MCFM_qqb_QQb.C \
 		MCFM_gg_h.C \
 		MCFM_qqb_vh.C \
 		MCFM_qqb_vv.C \

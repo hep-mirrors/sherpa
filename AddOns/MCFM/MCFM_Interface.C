@@ -82,6 +82,10 @@ bool MCFM_Interface::Initialize
   masses_.mtausq=sqr(masses_.mtau);
   masses_.mcsq=sqr(Flavour(kf_c).Mass(true));
   masses_.mbsq=sqr(Flavour(kf_b).Mass(true));
+  breit_.n2=breit_.n3=0;
+  breit_.mass2=Flavour(kf_t).Mass();
+  breit_.width2=Flavour(kf_t).Width();
+  breit_.mass3=breit_.width3=0.;
   // ew params
   ewscheme_.ewscheme = 3;
   ewinput_.aemmz_inp = model->ScalarFunction(std::string("alpha_QED"));

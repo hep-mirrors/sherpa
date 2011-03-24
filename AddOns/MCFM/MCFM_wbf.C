@@ -69,15 +69,7 @@ MCFM_wbf::MCFM_wbf(const int & pID,const Process_Info& pi,
     m_cplcorr *= (pID==115)?1./3.:1.;
     break;
   }
-  m_cplcorr *=
-    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
-		(2./3.));
-  
-  msg_Tracking()<<"Potential finite top mass correction (enabled) yields: "
-		<<(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
-		   (2./3.))
-		<<"."<<std::endl;
-  
+
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;
@@ -136,7 +128,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_wbf_Getter,"MCFM_wbf")
 Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<METHOD<<"."<<std::endl;
+  msg_Out()<<"Check for process in "<<METHOD<<"."<<std::endl;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_oew<3)                                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
