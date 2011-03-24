@@ -3,13 +3,7 @@
 
 This example generates QCD events at the Tevatron,
 with 2, 3 or 4 final state partons in the matrix
-element. A run card with an example
-analysis set-up enabled is also included in this folder, and called 
-@code{Run.analyse.dat}. This run card provides an example of using weighted
-events with Sherpa, and the use of the @ref{Enhance_Observable} and
-@ref{Enhance_Factor} tags. To use this run card, as it is not named @option{Run.dat}, 
-the parameter @code{RUNDATA} must be specified on the command line,
-see @ref{Input structure}.
+element.
 
 @comment  @subsection Run.dat
 

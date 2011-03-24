@@ -35,6 +35,7 @@ namespace ATOOLS { template class SP(Phase_Space_Handler); }
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
 					 ISR_Handler *ih,Beam_Spectra_Handler *bh, double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
+  p_enhancefunc(NULL),
   p_enhanceobs(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
@@ -85,6 +86,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels) delete p_isrchannels;
   if (p_beamchannels) delete p_beamchannels;
   if (p_cuts) delete p_cuts;
+  if (p_enhancefunc) delete p_enhancefunc;
   if (p_enhanceobs) delete p_enhanceobs;
   if (p_enhancehisto) delete p_enhancehisto;
   if (p_enhancehisto_current) delete p_enhancehisto_current;
@@ -592,9 +594,10 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 void Phase_Space_Handler::AddPoint(const double value)
 {
   if (value!=0.0) {
-    if (p_beamchannels) p_beamchannels->AddPoint(value);
-    if (p_isrchannels)  p_isrchannels->AddPoint(value);
-    p_fsrchannels->AddPoint(value);
+    double enhance=EnhanceFunction();
+    if (p_beamchannels) p_beamchannels->AddPoint(value*enhance);
+    if (p_isrchannels)  p_isrchannels->AddPoint(value*enhance);
+    p_fsrchannels->AddPoint(value*enhance);
   }
   p_process->AddPoint(value);
   if (p_enhanceobs && value!=0.0) {
@@ -634,6 +637,22 @@ void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
   }
 }
 
+void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
+{
+  if (enhancefunc!="1") {
+    if (p_enhancefunc)
+      THROW(fatal_error, "Overwriting ME enhance observable.");
+    if (p_enhanceobs)
+      THROW(fatal_error, "Enhance_Observable excludes Enhance_Function.");
+
+    p_enhancefunc = new Algebra_Interpreter();
+    p_enhancefunc->SetTagReplacer(this);
+    for (int i(0);i<m_nin+m_nout;++i)
+      p_enhancefunc->AddTag("p["+ToString(i)+"]",ToString(p_lab[i]));
+    p_enhancefunc->Interprete(enhancefunc);
+  }
+}
+
 double Phase_Space_Handler::EnhanceFactor()
 {
   if (!p_enhanceobs) return 1.0;
@@ -653,21 +672,28 @@ double Phase_Space_Handler::EnhanceObservable()
   return p_enhanceobs->Calculate()->Get<double>();
 }
 
+double Phase_Space_Handler::EnhanceFunction()
+{
+  if (!p_enhancefunc) return 1.0;
+  return p_enhancefunc->Calculate()->Get<double>();
+}
+
 std::string Phase_Space_Handler::ReplaceTags(std::string &expr) const
 {
   if (p_enhanceobs) return p_enhanceobs->ReplaceTags(expr);
+  if (p_enhancefunc) return p_enhancefunc->ReplaceTags(expr);
   else return expr;
 }
 
 Term *Phase_Space_Handler::ReplaceTags(Term *term) const
 {
-  if (p_enhanceobs) term->Set(p_lab[term->Id()]);
+  if (p_enhanceobs || p_enhancefunc) term->Set(p_lab[term->Id()]);
   return term;
 }
 
 void Phase_Space_Handler::AssignId(Term *term)
 {
-  if (p_enhanceobs)
+  if (p_enhanceobs || p_enhancefunc)
     term->SetId(ToType<int>
                 (term->Tag().substr
                  (2,term->Tag().length()-3)));

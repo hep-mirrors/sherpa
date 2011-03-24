@@ -25,6 +25,7 @@ The following parameters are used to steer the process setup.
 * Integration_Error::       Tag to set a specific integration error.
 * Max_Epsilon::             Tag to set a specific epsilon for overweighting.
 * Enhance_Factor::          Tag to set an enhance factor.
+* Enhance_Function::        Tag to set an enhance function.
 * Enhance_Observable::      Tag to set an enhance observable.
 * NLO_QCD_Part::            Tag to setup QCD NLO processes.
 * NLO_EW_Part::             Tag to setup electroweak NLO processes.
@@ -310,6 +311,33 @@ Enhance_Factor 16 {4}
 Here, 3-jet processes are enhanced by a factor of 4,
 4-jet processes by a factor of 16.
 
+@node Enhance_Function
+@subsection Enhance_Function
+Sets a process specific enhance function.
+
+@emph{This feature can only be used when generating weighted events.}
+
+For multijet processes, the parameter can be specified
+per final state multiplicity. An example would be
+@verbatim
+Process 93 93 -> 11 -11 93{1}
+Enhance_Function PPerp2(p[4]) {3}
+@end verbatim
+
+Here, the 1-jet process is enhanced with the
+transverse momentum squared of the jet.
+
+Note that the convergence of the Monte Carlo integration can be worse
+if enhance functions are employed and therefore the integration can take
+significantly longer. The reason is that the default phase space
+mapping, which is constructed according to diagrammatic information from
+hard matrix elements, is not suited for event generation including
+enhancement. It must first be adapted, which, depending on the enhance
+function and the final state multiplicity, can be an intricate task.
+
+@emph{If Sherpa cannot achieve an integration error target due to the use
+ of enhance functions, it might be appropriate to locally redefine this
+ error target}, see @ref{Integration_Error}.
 
 @node Enhance_Observable
 @subsection Enhance_Observable

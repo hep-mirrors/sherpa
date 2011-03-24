@@ -430,6 +430,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vefac,nf);
 	}
+	if (cur[0]=="Enhance_Function") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vefunc,nf);
+	}
 	if (cur[0]=="Enhance_Observable") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_veobs,nf);
@@ -600,6 +604,9 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	     (proc[i]->Integrator(),p_isr,p_beam,maxerr));
 	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) {
             proc[i]->Integrator()->PSHandler()->SetEnhanceObservable(ds);
+          }
+	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) {
+            proc[i]->Integrator()->PSHandler()->SetEnhanceFunction(ds);
           }
 	}
       }

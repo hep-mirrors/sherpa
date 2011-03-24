@@ -73,6 +73,7 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
+    ATOOLS::Algebra_Interpreter *p_enhancefunc;
     ATOOLS::Algebra_Interpreter *p_enhanceobs;
     ATOOLS::Histogram * p_enhancehisto;
     ATOOLS::Histogram * p_enhancehisto_current;
@@ -149,6 +150,7 @@ namespace PHASIC {
 
     double EnhanceFactor();
     double EnhanceObservable();
+    double EnhanceFunction();
 
     void CalculateME();
     void CalculatePS();
@@ -201,6 +203,7 @@ namespace PHASIC {
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
     void SetEnhanceObservable(const std::string &enhanceobs);
+    void SetEnhanceFunction(const std::string &enhancefunc);
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }
