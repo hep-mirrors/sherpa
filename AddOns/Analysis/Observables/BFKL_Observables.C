@@ -137,7 +137,7 @@ Decorrelation_vs_DEta::
 Decorrelation_vs_DEta(const int type,const double &ptmin,
 		      const double etamin,const double etamax,
 		      const int nbins,const std::string &listname):
-  Normalized_Observable(type,etamin,etamax,nbins)
+  Normalized_Observable(4,etamin,etamax,nbins)
 {
   m_listname=listname;
   m_ptmin=ptmin;

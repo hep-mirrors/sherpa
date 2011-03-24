@@ -230,7 +230,7 @@ Multiplicity_vs_JetPT(const int type,
 		      const double ptmin,const double ptmax,
 		      const int nbins,const std::string &jetlist,
 		      const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -266,7 +266,7 @@ Scalar_PT_Sum_vs_JetPT(const int type,
 		       const double ptmin,const double ptmax,
 		       const int nbins,const std::string &jetlist,
 		       const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -304,7 +304,7 @@ Scalar_PT_Sum_vs_JetET(const int type,
 		       const double ptmin,const double ptmax,
 		       const int nbins,const std::string &jetlist,
 		       const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -342,7 +342,7 @@ Multiplicity_vs_PT::Multiplicity_vs_PT(const int type,
 				       const int nbins,
 				       const std::string &jetlist,
 				       const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -380,7 +380,7 @@ Multiplicity_vs_DPhi(const int type,
 		     const int nbins,const double offset,
 		     const std::vector<std::string> &jetlists,
 		     const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
@@ -440,7 +440,7 @@ Scalar_PT_Sum_vs_DPhi(const int type,
 		      const int nbins,const double offset,
 		      const std::vector<std::string> &jetlists,
 		      const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
@@ -499,7 +499,7 @@ Scalar_ET_Sum_vs_DPhi(const int type,
 		      const int nbins,const double offset,
 		      const std::vector<std::string> &jetlists,
 		      const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
@@ -558,7 +558,7 @@ Multiplicity_vs_DEta(const int type,
 		     const int nbins,const double offset,
 		     const std::vector<std::string> &jetlists,
 		     const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
@@ -600,7 +600,7 @@ Scalar_PT_Sum_vs_DEta(const int type,
 		      const int nbins,const double offset,
 		      const std::vector<std::string> &jetlists,
 		      const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
@@ -642,7 +642,7 @@ Scalar_ET_Sum_vs_DEta(const int type,
 		      const int nbins,const double offset,
 		      const std::vector<std::string> &jetlists,
 		      const std::string &listname):
-  Normalized_Observable(type,dphimin,dphimax,nbins),
+  Normalized_Observable(4,dphimin,dphimax,nbins),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
@@ -683,7 +683,7 @@ Multiplicity_vs_Eta(const int type,
 		      const double ptmin,const double ptmax,
 		      const int nbins,const std::string &jetlist,
 		      const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -720,7 +720,7 @@ Scalar_PT_Sum_vs_Eta(const int type,
 		     const double ptmin,const double ptmax,
 		     const int nbins,const std::string &jetlist,
 		     const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -757,7 +757,7 @@ Scalar_ET_Sum_vs_Eta(const int type,
 		     const double ptmin,const double ptmax,
 		     const int nbins,const std::string &jetlist,
 		     const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
@@ -794,7 +794,7 @@ MIScale_vs_JetPT(const int type,
 		      const double ptmin,const double ptmax,
 		      const int nbins,const std::string &jetlist,
 		      const std::string &listname):
-  Normalized_Observable(type,ptmin,ptmax,nbins),
+  Normalized_Observable(4,ptmin,ptmax,nbins),
   m_jetlist(jetlist)
 {
   m_listname=listname;
