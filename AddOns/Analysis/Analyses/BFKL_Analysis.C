@@ -39,9 +39,9 @@ BFKL_Analysis::BFKL_Analysis(const std::string &listname,
   m_name+="_BFKL";
   m_dists.resize(2,NULL);
   // N_{jet}(\Delta y_{1n})
-  m_dists[0] = new Normalized_Observable(1,0.0,10.0,40);
+  m_dists[0] = new Normalized_Observable(4,0.0,10.0,40);
   // \cos(\pi-\Delta\phi_{1n})(\Delta y_{1n})
-  m_dists[1] = new Normalized_Observable(1,0.0,10.0,40);
+  m_dists[1] = new Normalized_Observable(4,0.0,10.0,40);
   m_histos.resize(6,NULL);
   // d\sigma/d\Delta y_{1n}
   m_histos[0] = new Histogram(1,0.0,10.0,40);

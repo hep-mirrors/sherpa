@@ -88,7 +88,7 @@ Primitive_Observable_Base * Multiplicity::Copy() const {
 
 Hadron_Multiplicities::Hadron_Multiplicities(int type,double xmin,double xmax,int nbins,
 					     const std::string & listname) :
-  Normalized_Observable(1,0.,100.,100)
+  Normalized_Observable(4,0.,100.,100)
 {
   m_listname = listname; 
   m_name     = m_listname+"_Multis.dat";

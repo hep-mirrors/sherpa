@@ -7,8 +7,6 @@ namespace ANALYSIS {
 
     Argument_Matrix m_params;
 
-    double m_ptwc;
-
   public:
 
     WPolarization_Analysis(const Argument_Matrix &params);
@@ -33,7 +31,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 WPolarization_Analysis::WPolarization_Analysis(const Argument_Matrix &params):
-  Analysis_Base(params[0][0]), m_params(params), m_ptwc(20.0)
+  Analysis_Base(params[0][0]), m_params(params)
 {
   Data_Reader reader(",",";","!","=");
   Algebra_Interpreter *ip=reader.Interpreter();
@@ -43,24 +41,24 @@ WPolarization_Analysis::WPolarization_Analysis(const Argument_Matrix &params):
   }
   m_name+="_WPolarization";
   m_dists.resize(11,NULL);
-  m_dists[0] = new Normalized_Observable(1,0.0,1000.0,100,"A0",1);
-  m_dists[1] = new Normalized_Observable(1,0.0,1000.0,100,"A1",1);
-  m_dists[2] = new Normalized_Observable(1,0.0,1000.0,100,"A2",1);
-  m_dists[3] = new Normalized_Observable(1,0.0,1000.0,100,"A3",1);
-  m_dists[4] = new Normalized_Observable(1,0.0,1000.0,100,"A4",1);
-  m_dists[5] = new Normalized_Observable(1,0.0,1000.0,100,"A5",1);
-  m_dists[6] = new Normalized_Observable(1,0.0,1000.0,100,"A6",1);
-  m_dists[7] = new Normalized_Observable(1,0.0,1000.0,100,"A7",1);
-  m_dists[8] = new Normalized_Observable(1,0.0,1000.0,100,"fL",1);
-  m_dists[9] = new Normalized_Observable(1,0.0,1000.0,100,"fR",1);
-  m_dists[10] = new Normalized_Observable(1,0.0,1000.0,100,"f0",1);
+  m_dists[0] = new Normalized_Observable(4,0.0,1000.0,100,"A0",1);
+  m_dists[1] = new Normalized_Observable(4,0.0,1000.0,100,"A1",1);
+  m_dists[2] = new Normalized_Observable(4,0.0,1000.0,100,"A2",1);
+  m_dists[3] = new Normalized_Observable(4,0.0,1000.0,100,"A3",1);
+  m_dists[4] = new Normalized_Observable(4,0.0,1000.0,100,"A4",1);
+  m_dists[5] = new Normalized_Observable(4,0.0,1000.0,100,"A5",1);
+  m_dists[6] = new Normalized_Observable(4,0.0,1000.0,100,"A6",1);
+  m_dists[7] = new Normalized_Observable(4,0.0,1000.0,100,"A7",1);
+  m_dists[8] = new Normalized_Observable(4,0.0,1000.0,100,"fL",1);
+  m_dists[9] = new Normalized_Observable(4,0.0,1000.0,100,"fR",1);
+  m_dists[10] = new Normalized_Observable(4,0.0,1000.0,100,"f0",1);
   m_histos.resize(6,NULL);
   m_histos[0] = new Histogram(1,-1.0,1.0,100,"CosThetaStar");
   m_histos[1] = new Histogram(1,0.0,360.0,90,"PhiStar");
-  m_histos[2] = new Histogram(1,-1.0,1.0,100,"CosThetaStar_PTW"+ToString(m_ptwc));
-  m_histos[3] = new Histogram(1,0.0,360.0,90,"PhiStar_PTW"+ToString(m_ptwc));
+  m_histos[2] = new Histogram(1,-1.0,1.0,100,"CosThetaStar");
+  m_histos[3] = new Histogram(1,0.0,360.0,90,"PhiStar");
   m_histos[4] = new Histogram(1,0.0,1000.0,100,"PTW");
-  m_histos[5] = new Histogram(10,0.1,1000.0,100,"logPTW");
+  m_histos[5] = new Histogram(11,0.1,1000.0,100,"logPTW");
 }
 
 void WPolarization_Analysis::Evaluate(double weight,double ncount,int mode)
@@ -102,7 +100,7 @@ void WPolarization_Analysis::Evaluate(double weight,double ncount,int mode)
 		 <<", \\phi^* = "<<phis*180.0/M_PI<<"\n";
   FillHisto(0,costhetas,weight,ncount,mode);
   FillHisto(1,phis*180.0/M_PI,weight,ncount,mode);
-  double ptcweight(ptw>m_ptwc?weight:0.0);
+  double ptcweight(ptw>50.0?weight:0.0);
   FillHisto(2,costhetas,ptcweight,ncount,mode);
   FillHisto(3,phis*180.0/M_PI,ptcweight,ncount,mode);
   FillDist(0,ptw,10.0/3.0*(1.0-3.0*sqr(costhetas))+2.0/3.0,weight,ncount,mode);
