@@ -497,9 +497,9 @@ bool Initialization_Handler::InitializeThePDFs()
   std::string defset[2];
   for (int beam(0);beam<=1;++beam) {
     std::string defaultlib("CTEQ6Sherpa");
-    if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsLepton())
+    if (p_beamspectra->GetBeam(beam)->Bunch().IsLepton())
       defaultlib="PDFESherpa";
-    else if ((beam==0?rpa.gen.Beam1():rpa.gen.Beam2()).IsPhoton())
+    else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton())
       defaultlib="GRVSherpa";
     m_pdflib[beam]=dataread.GetValue<std::string>("PDF_LIBRARY",defaultlib);
     std::string speciallib, defpath;
@@ -549,15 +549,7 @@ bool Initialization_Handler::InitializeThePDFs()
     ISR_Base ** isrbases = new ISR_Base*[2];
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
-      int defaultflav(0);
-      if (j==0) {
-	defaultflav=rpa.gen.Beam1().IsAnti()? 
-	  -rpa.gen.Beam1().Kfcode() : rpa.gen.Beam1().Kfcode();
-      }
-      else if (j==1) {
-	defaultflav=rpa.gen.Beam2().IsAnti()? 
-	  -rpa.gen.Beam2().Kfcode() : rpa.gen.Beam2().Kfcode();
-      }
+      int defaultflav(abs(p_beamspectra->GetBeam(j)->Bunch()));
       int flav = dataread.GetValue<int>("BUNCH_"+ToString(j+1),defaultflav);
       m_bunch_particles[j] = Flavour((kf_code)abs(flav));
       if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();

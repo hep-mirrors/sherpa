@@ -224,6 +224,9 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
     return false;
   }
   Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
+  Poincare beam(pa+pb);
+  beam.Boost(pa);
+  beam.Boost(pb);
   double papb(pa*pb), sa(pa.Abs2()), sb(pb.Abs2());
   double gam(papb+sqrt(sqr(papb)-sa*sb));
   double aa(sa/gam), ab(sb/gam), bet(1.0/(1.0-aa*ab));
