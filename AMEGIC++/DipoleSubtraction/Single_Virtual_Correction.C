@@ -711,6 +711,7 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   double doublepole=0.;
   double singlepole=0.;
   double mur = p_scale->Scale(stp::ren);
+  if (!m_massive) {
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
@@ -722,6 +723,36 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
       singlepole+=p_dsij[i][k]*(p_dipole->Vie1(typei)+p_dipole->Vie1(typek)+
 				(p_dipole->Vie2(typei)+p_dipole->Vie2(typek))*lsc);
     }
+  }
+  }
+  else {
+  double res=0.;
+  double mur = p_scale->Scale(stp::ren);
+  for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
+    for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
+      int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
+      int typek = m_flavs[p_LO_process->PartonList()[k]].IntSpin();
+      double sik=2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]];
+      double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
+      double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
+      bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
+      bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
+
+      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi);
+      double splf1 = p_masskern->I_E1();
+      double splf2 = p_masskern->I_E2();
+      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk);
+      splf1 += p_masskern->I_E1();
+      splf2 += p_masskern->I_E2();
+
+      Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
+      double lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
+
+      splf1+=splf2*lsc;
+      doublepole+=p_dsij[i][k]*splf2;
+      singlepole+=p_dsij[i][k]*splf1;
+    }
+  }
   }
   double p1(p_loopme->ME_E1()), p2(p_loopme->ME_E2());
   if (p_loopme->Mode()==0) {
