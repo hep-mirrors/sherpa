@@ -62,13 +62,10 @@ void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
   double as(MODEL::s_model->ScalarFunction(std::string("alpha_S"),m_mur2));
   if (!m_flavs[0].IsQuark()) {
     corrfactor *= 64./9.;
-    corrfactor *= pow(4.*M_PI*as/qcdcouple_.gsq,2);
   }
- else {
-    corrfactor *= pow(4.*M_PI*as,2);
- }
+  corrfactor *= pow(4.*M_PI*as/qcdcouple_.gsq,2);
   
-  msg_Out()<<METHOD<<" with corr = "<<corrfactor<<" for "
+  msg_Debugging()<<METHOD<<" with corr = "<<corrfactor<<" for "
 	   <<m_flavs[0]<<" & "<<m_flavs[1]<<".\n";
 
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
@@ -90,7 +87,7 @@ void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
   epinv2_.epinv2=1.0;
   double res2(CallMCFM(i,j) * corrfactor);
 
-  msg_Out()<<"   --> "<<res<<" "<<res1<<" "<<res2<<" "
+  msg_Debugging()<<"   --> "<<res<<" "<<res1<<" "<<res2<<" "
 	   <<"for corrfactor/as = "<<corrfactor<<", "<<as<<".\n";
   m_res.Finite() = res;
   m_res.IR()     = (res1-res);
@@ -107,7 +104,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_QQb_Getter,"MCFM_qqb_QQb")
 Virtual_ME2_Base *MCFM_qqb_QQb_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<METHOD<<"===================="<<std::endl;
+  msg_Debugging()<<METHOD<<"===================="<<std::endl;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
@@ -120,7 +117,6 @@ Virtual_ME2_Base *MCFM_qqb_QQb_Getter::operator()(const Process_Info &pi) const
     if (pi.m_fi.m_ps.size()==2) {
       ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
       ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
-	PRINT_VAR(fl1);PRINT_VAR(fl2);
       if (fl1==Flavour(kf_t) && fl2==Flavour(kf_t).Bar()) {
 	pID = 157;
         zerowidth_.zerowidth=true;
