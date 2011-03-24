@@ -1,0 +1,21 @@
+@node LHC_EPA
+@section LHC_EPA
+
+This example demonstrates the usage of beam spectra based on the equivalent 
+photon approximation (EPA) in Sherpa.
+The corresponding setup is discussed in detail in @mycite{Archibald2008aa}.
+
+@example
+@smallformat
+@verbatiminclude Examples/LHC_EPA/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item EPA beam spectra are enabled using the @code{BEAM_SPECTRUM_<i>} 
+parameter, see @ref{Beam Parameters}.
+
+@end itemize
+
+

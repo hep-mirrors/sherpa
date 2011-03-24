@@ -6,6 +6,7 @@ nobase_dist_examples_DATA         =	\
 			HERA_DIS/Run.dat \
 			LHC_4thGen/Run.dat \
 			LHC_AGC/Run.dat \
+			LHC_EPA/Run.dat \
                         LHC_ADD/Run.dat \
 			LHC_SUSY/Run.dat \
 			LHC_SUSY/LesHouches_SPS1A.dat \

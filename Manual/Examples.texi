@@ -23,6 +23,7 @@ of the main features of these examples.
 * PEPII_BaBar::               
 * LHC_4thGen::                
 * LHC_AGC::                   
+* LHC_EPA::                   
 * LHC_ADD::
 * LHC_SUSY::
 * NLO_W::
@@ -45,6 +46,7 @@ of the main features of these examples.
 @include PEPII_BaBar.texi
 @include LHC_4thGen.texi
 @include LHC_AGC.texi
+@include LHC_EPA.texi
 @include LHC_ADD.texi
 @include LHC_SUSY.texi
 @include W_NLO.texi
