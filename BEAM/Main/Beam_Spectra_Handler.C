@@ -338,6 +338,9 @@ bool Beam_Spectra_Handler::MakeBeams(Vec4D * p)
     if (m_mode==1) m_x2 = 1.;
     if (m_mode==2) m_x1 = 1.;
 
+    p_BeamBase[0]->SetX(m_x1);
+    p_BeamBase[1]->SetX(m_x2);
+
     return 1;
   }
 }

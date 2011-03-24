@@ -853,8 +853,8 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
       cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
 	Min(cosmax[i][j],cuts->cosmax[i][j]);
     }
-    if (i==1) {
-      for (int j=i+1;j<m_n;j++) {
+    if (i<2) {
+      for (int j=Min(2,i+1);j<m_n;j++) {
 	cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
 	  Max(cuts->cosmin[i][j],-cuts->cosmax[0][j]);
 	cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
@@ -902,6 +902,8 @@ void Angle_Selector::SetRange(std::vector<Flavour> crit,int beam,
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       cosmin[i][beam] = cosmin[beam][i] = Max(_min,-1.1); 
       cosmax[i][beam] = cosmax[beam][i] = Min(_max, 1.1); 
+      cosmax[i][1-beam] = cosmax[1-beam][i] = Min(-_min, 1.1); 
+      cosmin[i][1-beam] = cosmin[1-beam][i] = Max(-_max,-1.1); 
       if (m_fl[i].Strong()) m_strong = 1;
     }
   }

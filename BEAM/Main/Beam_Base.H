@@ -73,6 +73,8 @@ namespace BEAM {
 
     virtual std::string Type();
 
+    inline void SetX(const double &x) { m_x=x; }
+
   };
 
   /*!
