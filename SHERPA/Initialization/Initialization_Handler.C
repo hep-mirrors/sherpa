@@ -549,7 +549,7 @@ bool Initialization_Handler::InitializeThePDFs()
     ISR_Base ** isrbases = new ISR_Base*[2];
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
-      int defaultflav(abs(p_beamspectra->GetBeam(j)->Bunch()));
+      int defaultflav(p_beamspectra->GetBeam(j)->Bunch());
       int flav = dataread.GetValue<int>("BUNCH_"+ToString(j+1),defaultflav);
       m_bunch_particles[j] = Flavour((kf_code)abs(flav));
       if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
