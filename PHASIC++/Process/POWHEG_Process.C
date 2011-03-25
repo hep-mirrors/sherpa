@@ -472,6 +472,10 @@ double POWHEG_Process::SelectBProcess()
     if ((psum+=bproc->Last(mode))>=rsum) break;
   }
   p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256);
+  if (!p_ampl) {
+    msg_Error()<<METHOD<<"(): no cluster amplitude available. new event.\n";
+    return 0.;
+  }
   p_ampl->SetProcs(&m_pmap);
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
