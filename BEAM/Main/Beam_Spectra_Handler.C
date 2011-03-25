@@ -171,17 +171,22 @@ bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num)
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)(abs(flav)));
   if (flav<0) beam_particle = beam_particle.Bar();
-
-  //  msg.Out()<<" Flavour(kf::p_plus)="<<Flavour(kf::p_plus)<<endl;
-    if ( (beam_particle!=Flavour(kf_p_plus)) && (beam_particle!=Flavour(kf_p_plus).Bar()) ) {
+  if ((abs(flav) != kf_p_plus) && !beam_particle.IsIon()) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
-	       <<"   Tried to initialize EPA for "<<beam_particle<<"."<<endl
+               <<"   Tried to initialize EPA for "<<beam_particle<<"."<<endl
 	       <<"   This option is not available. Result will be to terminate program."<<endl;
     return 0;
-    }
-    //  msg.Out()<<"InitializeEPA; flav "<<flav<<" kf::code="<< kf::code(flav) << endl; // 
+  }
   
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  if (beam_particle.IsIon()) { 
+    beam_energy *= beam_particle.GetAtomicNumber();
+    // for ions the energy is specified as nucleon energy and not as energy of the
+    // whole beam particle
+
+  }
+  msg_Tracking() << "InitializeEPA: Beam energy " << beam_energy << std::endl;
+
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
   double  beam_mass         = beam_particle.Mass(true);
   double  beam_charge       = beam_particle.Charge();
@@ -366,6 +371,26 @@ void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
     else if (flav==kf_photon) {
       s_kftable[flav]=
         new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
+    }
+    else if (flav==1000822080) {
+      s_kftable[flav]=
+        new Particle_Info(1000822080, 193.75, 246, 0, 0, "Pb208", "^{208}Pb");
+    }
+    else if (flav==1000822070) {
+      s_kftable[flav]=
+        new Particle_Info(1000822070, 192.82, 246, -1, 2, "Pb207", "^{207}Pb");
+    }
+    else if (flav==1000822060) {
+      s_kftable[flav]=
+        new Particle_Info(1000822060, 192.82, 246, 0, 2, "Pb206", "^{206}Pb");
+    }
+    else if (flav==1000791970) {
+      s_kftable[flav]=
+        new Particle_Info(1000791970, 183.5, 237, 3, 2, "Au197", "^{197}Au");
+    }
+    else if (flav==1000200400) {
+      s_kftable[flav]=
+        new Particle_Info(1000200400, 37.26, 60, 0, 2, "Ca40", "^{40}Ca");
     }
     else {
       THROW(fatal_error,"You specified a beam particle "+ToString(flav)+

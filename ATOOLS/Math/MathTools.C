@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/MathTools.H"
-#include <iostream>
+
+#include "ATOOLS/Org/Message.H"
 
 namespace ATOOLS {
 
@@ -315,6 +316,76 @@ namespace ATOOLS {
     int res = 2;
     for (int i=3;i<=n;i++) res *= i;
     return res;
+  }
+
+  double ExpIntegral(int n, double x) {
+    // Implementation close to chapter 6.3 in
+    // "NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING 
+    // (ISBN 0-521-43108-5)
+
+    // configuration
+    const int MaximumIterations = 100;
+    const double EulerMascheroni = 0.577215664901532860606512;
+
+    const double eps = 1.e-4; // relative error
+
+    // Check arguments
+    if (n < 0 || x < 0.0 || ((x==0.0) && ((n==0) || (n==1)))) {
+      msg_Error() << "Bad arguments in E_n(x)" << std::endl;
+    }
+    else {
+      // Handle special cases 
+      if (n == 0) return exp(-x)/x; // n=0
+      else if (fabs(x) < 1.e-10) { // x=0
+	return 1.0/(n-1);
+      }
+      // Normal Calculation
+      else if (x > 1.) { // continued fraction 
+	double b=x+n;
+	double c=1.e30; // 1./DBL_MIN (<cfloats>)
+	double d=1./b;
+	double h=d;
+	for (int i=1; i <= MaximumIterations; i++) {
+	  double a = -i*(n-1+i);
+	  b+=2.;
+	  d=1./(a*d + b);
+	  c=b + a/c;
+	  double del=c*d;
+	  h *= del;
+
+	  if (fabs(del-1.0) < eps) {
+	    return h*exp(-x);
+	  }
+	}
+	msg_Error() << "Continued fraction failed in ExpIntegral()! x=" << x 
+		    << std::endl;
+      }
+      else { // series evaluation
+	double result = (n-1) ? 1./(n-1) : -log(x)-EulerMascheroni;
+
+	double fact=1.;
+	for (int i=1; i <= MaximumIterations; i++) {
+	  fact *= -x/i;
+	  double del = 0.;
+	  if (i != (n - 1)) del = -fact/(i-n+1);
+	  else {
+	    double psi = -EulerMascheroni;
+	    for (int j=1; j < (n - 1); j++) {
+	      psi += 1./j;
+	    }
+	    del=fact*(-log(x)+psi);
+	  }
+	  result += del;
+	  if (fabs(del) < fabs(result)*eps) {
+	    return result;
+	  }
+	}
+	msg_Error() << "Series failed in ExpIntegral()! x=" << x << std::endl;
+      } 
+    }
+    msg_Error() << "Exponential Integral Calculation failed! x=" << x 
+		<< std::endl;
+    return 0.0;
   }
 
 }

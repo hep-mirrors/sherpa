@@ -10,6 +10,22 @@ using namespace std;
 
 Channel_Elements PHASIC::CE;
 
+void Channel_Elements::CheckMasses(const double & s1,Vec4D & p1,const double & s2,Vec4D & p2) const
+{
+  if (dabs((s1-p1.Abs2())/p1[0])>1.e-8) {
+    msg_Error()<<METHOD<<"(): Strong deviation in masses\n"
+	       <<"s1,p1: "<<s1<<";"<<p1<<" -> "<<p1.Abs2()<<" : "
+	       <<dabs(s1-p1.Abs2())<<", "
+	       <<"rel = "<<dabs((s1-p1.Abs2())/p1[0])<<"."<<endl;
+  }
+  if (dabs((s2-p2.Abs2())/p2[0])>1.e-8) {
+    msg_Error()<<METHOD<<"(): Strong deviation in masses\n"
+	       <<"s2,p2: "<<s2<<";"<<p2<<" -> "<<p2.Abs2()<<" : "
+	       <<dabs(s2-p2.Abs2())<<", "
+	       <<"rel = "<<dabs((s2-p2.Abs2())/p2[0])<<"."<<endl;
+  }
+}
+
 double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
 					  double& ran1,double& ran2,double ctmin,double ctmax)
 {
@@ -56,14 +72,7 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
   Channel_Basics::Boost(0,p,p1h,p1);
   p2  = p+(-1.)*p1;
 
-  if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
-    msg_Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
-		       <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
-  }
-  if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
-    msg_Error()<<"Channel_Elements::Isotropic2Momenta : Strong deviation in masses : "
-			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
-  }
+  CheckMasses(s1,p1,s2,p2);
 }
 
 void Channel_Elements::Isotropic2Grid(Vec4D &p1,Vec4D &p2,
@@ -132,14 +141,7 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
 
   p2 = p+(-1.)*p1;  
 
-  if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
-    msg_Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
-			  <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
-  }
-  if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
-    msg_Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
-			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
-  }
+  CheckMasses(s1,p1,s2,p2);
 }
 
 
@@ -631,14 +633,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 
   p2out = pin+(-1.)*p1out;
 
-  if (dabs(s1out-p1out.Abs2())>1.e-5) {
-    msg_Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
-			  <<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
-  }
-  if (dabs(s2out-p2out.Abs2())>1.e-5) {
-    msg_Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
-			  <<"s2,p2: "<<s2out<<";"<<p2out.Abs2()<<" : "<<dabs(s2out-p2out.Abs2())<<endl;
-  }
+  CheckMasses(s1out,p1out,s2out,p2out);
   return 0;
 }
 

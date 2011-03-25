@@ -95,6 +95,7 @@ namespace ATOOLS {
 
   int Factorial(const int n);
 
+  double ExpIntegral(int n, double x);
 
   template<typename Scalar> inline bool IsNan(const Scalar& x);
   template<typename Scalar> inline bool IsBad(const Scalar& x);
