@@ -389,7 +389,9 @@ bool Cluster_Algorithm::ClusterStep
       }
     }
     if (p_ampl->Decays().size()!=
-	p_bg->DecayInfos().size()) {
+	p_bg->DecayInfos().size() &&
+	(IdCount(p_ampl->Leg(0)->Id())>1 ||
+	 IdCount(p_ampl->Leg(1)->Id())>1)) {
       msg_Debugging()<<"Unclustered decay\n"<<*p_ampl<<"\n";
       match=false;
     }

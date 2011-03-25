@@ -518,7 +518,9 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
-	if (m_decids.size()!=p_decids->size()) {
+	if (m_decids.size()!=p_decids->size() &&
+	    (IdCount(p_legs[0][0].ID())>1 ||
+	     IdCount(p_legs[0][1].ID())>1)) {
 	  msg_Debugging()<<"Unclustered decay\n"<<*this<<"\n";
 	  delete this;
 	  return NULL;

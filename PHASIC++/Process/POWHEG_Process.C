@@ -475,6 +475,7 @@ double POWHEG_Process::SelectBProcess()
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->SetRBMap(&bproc->Integrator()->RBMap());
+  p_ampl->Decays()=m_decins;
   bool lookup(m_lookup);
   SetLookUp(false);
   p_powheg->SetShower(p_shower);

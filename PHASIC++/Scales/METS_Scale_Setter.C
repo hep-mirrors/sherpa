@@ -506,7 +506,9 @@ double METS_Scale_Setter::CalculateMyScale
 	ampl->DeleteNext();
 	continue;
       }
-      if (ampl->Decays().size()!=m_decids.size()) {
+      if (ampl->Decays().size()!=m_decids.size() &&
+	  (IdCount(ampl->Leg(0)->Id())>1 ||
+	   IdCount(ampl->Leg(1)->Id())>1)) {
 	msg_Debugging()<<"unclustered decay\n";
 	ampl=ampl->Prev();
 	ampl->DeleteNext();
