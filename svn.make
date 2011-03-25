@@ -1,6 +1,7 @@
 
 SVN_Info.C: SVN_Info.C.in
-	@if ! which svn > /dev/null; then cp $@ $@.tmp; else \
+	@if ! which svn > /dev/null || ! test -d .svn; \
+	then cp $(srcdir)/$@ $@.tmp; else \
 	cur=$$(echo "/"$(SVNTAG) | sed -e's/[+]/[+]/g'); \
 	url=$$(svn info | awk '{ if ($$1=="URL:") { split($$2,a, \
 	  "svn/sherpa/"); sub("'$$cur'","",a[2]); print a[2]; } }'); \
