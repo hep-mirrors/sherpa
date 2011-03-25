@@ -114,7 +114,7 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ct.m_decids.begin());
 	   cit!=ct.m_decids.end();++cit) {
-	ds+=ToString(*cit)+" ";
+        ds+=ToString(**cit)+" ";
       }
       s<<"  decs = { "<<ds<<"}\n";
     }
@@ -698,7 +698,7 @@ Combine_Table *Combine_Table::CreateNext()
       size_t pid(p_legs[0][m_cdata_winner->first.m_i].ID()+
 		 p_legs[0][m_cdata_winner->first.m_j].ID());
       for (size_t i(0);i<p_decids->size();++i)
-	if ((*p_decids)[i].m_id==pid) {
+        if ((*p_decids)[i]->m_id==pid) {
 	  tab->m_decids.push_back((*p_decids)[i]);
 	  break;
 	}

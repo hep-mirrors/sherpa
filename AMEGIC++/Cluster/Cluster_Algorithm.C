@@ -132,9 +132,7 @@ void Cluster_Algorithm::CreateTables
       - initialise Combine_Table
       - determine best combination sheme
     */ 
-    Subprocess_Info info(p_proc->Info().m_ii);
-    info.Add(p_proc->Info().m_fi);
-    m_decids=info.GetDecayInfos();
+    m_decids=p_proc->DecayInfos();
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0,&m_decids);
     p_combi->FillTable(legs,nlegs,nampl);   
     p_ct = p_combi->CalcJet(nlegs,NULL,mode,kt2); 

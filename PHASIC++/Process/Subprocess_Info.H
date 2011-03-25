@@ -38,7 +38,8 @@ namespace PHASIC {
     std::string     m_id, m_pol;
 
     std::vector<Subprocess_Info> m_ps;
-
+    ATOOLS::DecayInfo_Vector m_decins;
+    
     size_t m_nmax;
     int    m_tag,m_osf;
 
@@ -50,12 +51,14 @@ namespace PHASIC {
     bool GetExternal(ATOOLS::Flavour &fl,const size_t &i,size_t &n) const;
     bool SetExternal(const ATOOLS::Flavour &fl,const size_t &i,size_t &n);
 
-    size_t GetDecayInfos(ATOOLS::DecayInfo_Vector &ids,size_t &n) const;
+    size_t GetDecayInfos(ATOOLS::DecayInfo_Vector &ids,size_t &n,bool init);
+    void DeleteDecayInfos();
 
   public:
 
     Subprocess_Info(const ATOOLS::Flavour &fl=ATOOLS::Flavour(kf_none),
 		    const std::string &id="",const std::string &pol="");
+    ~Subprocess_Info();
 
     std::string MultiplicityTag() const;
 
@@ -77,7 +80,8 @@ namespace PHASIC {
     void Add(const Subprocess_Info &info);
     bool AddDecay(const Subprocess_Info &ii,const Subprocess_Info &fi,int osf=0);
 
-    ATOOLS::DecayInfo_Vector GetDecayInfos() const;
+    inline ATOOLS::DecayInfo_Vector GetDecayInfos() const { return m_decins; }
+    void BuildDecayInfos(size_t nin=2);
 
     void Print(std::ostream &ostr,const size_t &ni=0) const;
 

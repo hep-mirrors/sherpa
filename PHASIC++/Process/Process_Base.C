@@ -6,6 +6,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Decay_Info.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PDF/Main/Shower_Base.H"
@@ -286,6 +287,8 @@ void Process_Base::Init(const Process_Info &pi,
     if (fl.size()!=m_nin+m_nout) THROW(fatal_error,"Internal error");
     for (size_t i(0);i<fl.size();++i) m_flavs[i]=fl[i];
     m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
+    m_pinfo.m_fi.BuildDecayInfos(m_nin);
+    m_decins=m_pinfo.m_fi.GetDecayInfos();
     if (IsGroup()) {
       if (m_pinfo.m_nminq>0 || m_pinfo.m_nmaxq<m_nin+m_nout) 
         m_name+="__NQ_"+ToString(m_pinfo.m_nminq)+
@@ -400,27 +403,55 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
   for (size_t i(0);i<legs.size();++i) legs[i]=ampl->Leg(ampl->NIn()+i);
   DecayInfo_Vector decs(ampl->Decays());
   while (decs.size()) {
-    size_t nc(0);
-    DecayInfo_Vector::iterator dc(decs.end());
-    for (DecayInfo_Vector::iterator
-	   dit(decs.begin());dit!=decs.end();++dit) {
-      size_t nit(IdCount(dit->m_id));
-      if (nit>nc) {
-	nc=nit;
-	dc=dit;
-      }
-    }
-    name+="__"+dc->m_fl.IDName()+"[";
-    for (ClusterLeg_Vector::iterator lit(legs.begin());lit!=legs.end();)
-      if (!((*lit)->Id()&dc->m_id)) ++lit;
-      else {
-	name+=(*lit)->Flav().IDName()+"__";
-	lit=legs.erase(lit);
-      }
-    name.replace(name.length()-2,2,"]");
-    decs.erase(dc);
+    name+="__"+GenerateDecayName(decs,legs);
   }
   for (size_t i(0);i<legs.size();++i) name+="__"+legs[i]->Flav().IDName();
+  msg_Debugging()<<METHOD<<"(){ name = "<<name<<" }\n";
+  return name;
+}
+
+std::string Process_Base::GenerateDecayName(DecayInfo_Vector& decs,
+                                            ClusterLeg_Vector& legs,
+                                            Decay_Info* cur)
+{
+  size_t nc(0);
+  DecayInfo_Vector::iterator dc(decs.end());
+  // look for the one with the highest multiplicity
+  for (DecayInfo_Vector::iterator
+         dit(decs.begin());dit!=decs.end();++dit) {
+    bool sdfound(true);
+    // only check IdCount amogst decays subsequent to cur
+    if (cur) {
+      sdfound=false;
+      for (DecayInfo_Vector::const_iterator sdit=cur->SubsequentDecayInfos().begin();
+           sdit!=cur->SubsequentDecayInfos().end();++sdit) {
+        if (*dit==*sdit) {
+          sdfound=true; break;
+        }
+      }
+    }
+    if (!sdfound) continue;
+    size_t nit(IdCount((*dit)->m_id));
+    if (nit>nc) {
+      nc=nit;
+      dc=dit;
+    }
+  }
+  cur=*dc;
+  decs.erase(dc);
+  std::string name(cur->m_fl.IDName()+"[");
+  for (size_t i(cur->SubsequentDecayInfos().size());i>0;--i) {
+    name+=GenerateDecayName(decs,legs,cur);
+    name+="__";
+  }
+  for (ClusterLeg_Vector::iterator lit(legs.begin());lit!=legs.end();) {
+    if (!((*lit)->Id()&cur->m_id)) ++lit;
+    else {
+      name+=(*lit)->Flav().IDName()+"__";
+      lit=legs.erase(lit);
+    }
+  }
+  name.replace(name.length()-2,2,"]");
   return name;
 }
 
@@ -455,10 +486,9 @@ void Process_Base::FillOnshellConditions()
   if (!Selector()) return;
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
-  DecayInfo_Vector ids(info.GetDecayInfos());
-  for(size_t i=0;i<ids.size();i++)
-    if (ids[i].m_osd) Selector()->AddOnshellCondition
-      (PSId(ids[i].m_id),sqr(ids[i].m_fl.Mass()));  
+  for(size_t i=0;i<m_decins.size();i++)
+    if (m_decins[i]->m_osd) Selector()->AddOnshellCondition
+      (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
 }
 
 void Process_Base::SetSelector(const Selector_Key &key)

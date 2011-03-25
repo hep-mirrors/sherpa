@@ -255,7 +255,7 @@ namespace ATOOLS {
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ampl.Decays().begin());
 	   cit!=ampl.Decays().end();++cit) 
-	ds+=ToString(*cit)+" ";
+        ds+=ToString(**cit)+" ";
       ostr<<"  decs = { "<<ds<<"}\n";
     }
     if (ampl.RBMap()) {

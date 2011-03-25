@@ -12,6 +12,13 @@ namespace ATOOLS {
   {
     ostr<<ToString(ID(di.m_id))<<"["<<di.m_fl<<"|"
 	<<di.m_nmax<<","<<di.m_osd<<"]";
+    ostr<<" ("<<&di<<")";
+    if (di.m_subsequentdecays.size()>0) {
+      ostr<<" -> ";
+      for (size_t i(di.m_subsequentdecays.size());i>0;--i) {
+        ostr<<" "<<di.m_subsequentdecays[i-1];
+      }
+    }
     return ostr;
   }
 

@@ -36,7 +36,6 @@ namespace AMEGIC {
     PHASIC::Process_Integrator*     p_realint;
 
     std::vector<size_t> m_sids;
-    ATOOLS::DecayInfo_Vector m_decinfos;
     /*------------------------------------------------------------------------------
 
       Constructors

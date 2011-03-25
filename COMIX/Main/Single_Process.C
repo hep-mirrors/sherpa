@@ -55,7 +55,7 @@ bool COMIX::Single_Process::Initialize
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
-  p_bg->SetDecayInfos(info.GetDecayInfos());
+  p_bg->SetDecayInfos(m_decins);
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
@@ -237,10 +237,10 @@ bool COMIX::Single_Process::Tests()
   acts.resize(dids.size());
   types.resize(dids.size());
   for (size_t i(0);i<dids.size();++i) {
-    dids[i]=dinfos[i].m_id;
-    acts[i]=dinfos[i].m_fl.Strong();
-    if (!dinfos[i].m_fl.IsFermion()) types[i]=0;
-    else if (dinfos[i].m_fl.IsAnti()) types[i]=-1;
+    dids[i]=dinfos[i]->m_id;
+    acts[i]=dinfos[i]->m_fl.Strong();
+    if (!dinfos[i]->m_fl.IsFermion()) types[i]=0;
+    else if (dinfos[i]->m_fl.IsAnti()) types[i]=-1;
     else types[i]=1;
   }
   p_int->ColorIntegrator()->SetDecayIds(dids,types,acts);

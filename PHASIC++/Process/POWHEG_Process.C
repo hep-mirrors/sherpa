@@ -74,7 +74,7 @@ void POWHEG_Process::Init(const Process_Info &pi,
   Process_Base::Init(cpi,beam,isr);
   m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
   cpi.m_fi.m_ps.pop_back();
-  m_name=GenerateName(pi.m_ii,cpi.m_fi);
+  m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);

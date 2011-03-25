@@ -109,15 +109,11 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     }
   }
 
-  Subprocess_Info info(m_pinfo.m_ii);
-  info.Add(m_pinfo.m_fi);
-  m_decinfos=info.GetDecayInfos();
-
   m_real_momenta.resize(m_nin+m_nout);
 
   m_realevt.m_n    = m_nin+m_nout;
   m_realevt.p_fl   = &p_tree_process->Flavours().front();
-  m_realevt.p_dec  = &m_decinfos;
+  m_realevt.p_dec  = &m_decins;
 
   m_realevt.p_mom  = &m_real_momenta.front();
   m_realevt.m_i = m_realevt.m_j = m_realevt.m_k = 0;

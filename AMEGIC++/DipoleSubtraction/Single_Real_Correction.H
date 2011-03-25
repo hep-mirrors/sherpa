@@ -29,7 +29,6 @@ namespace AMEGIC {
     std::vector<size_t> m_sids;
     std::map<void*,ATOOLS::Flavour_Vector*> m_dfmap;
     std::map<void*,std::string> m_dnmap;
-    ATOOLS::DecayInfo_Vector m_decinfos;
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub);
     /*------------------------------------------------------------------------------
 

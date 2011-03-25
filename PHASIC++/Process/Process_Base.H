@@ -12,6 +12,8 @@ namespace ATOOLS {
   class Cluster_Leg;
   class Cluster_Amplitude; 
   class Histogram;
+  struct Decay_Info;
+  typedef std::vector<Decay_Info* > DecayInfo_Vector;
 }
 
 namespace BEAM { class Beam_Spectra_Handler; }
@@ -51,6 +53,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_flavs;
     Process_Info           m_pinfo;
+    ATOOLS::DecayInfo_Vector m_decins;
 
     double m_last[2], m_symfac;
     bool   m_lookup, m_use_biweight;
@@ -61,6 +64,9 @@ namespace PHASIC {
     static void SortFlavours(Process_Info &pi);
     static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
 			     FMMap *const fmm=0);
+    static std::string GenerateDecayName(ATOOLS::DecayInfo_Vector& decs,
+                                         ATOOLS::ClusterLeg_Vector& legs,
+                                         ATOOLS::Decay_Info* cur=NULL);
 
   public:
 
@@ -155,6 +161,9 @@ namespace PHASIC {
 
     inline Process_Info       &Info()       { return m_pinfo; }
     inline const Process_Info &Info() const { return m_pinfo; }
+
+    inline ATOOLS::DecayInfo_Vector       &DecayInfos()       {return m_decins;}
+    inline const ATOOLS::DecayInfo_Vector &DecayInfos() const {return m_decins;}
 
     inline Process_Integrator *Integrator() const { return p_int; }
 

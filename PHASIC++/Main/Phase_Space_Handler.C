@@ -553,7 +553,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   
   unsigned int osd_counter=0;
   for (size_t i=0;i<info->m_fi.GetDecayInfos().size();i++)
-    if (info->m_fi.GetDecayInfos()[i].m_osd) osd_counter++;  
+    if (info->m_fi.GetDecayInfos()[i]->m_osd) osd_counter++;
     
   if (osd_counter==info->m_fi.GetDecayInfos().size() || mode==1) {
     size_t n(fl_i.size());

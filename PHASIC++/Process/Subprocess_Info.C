@@ -36,6 +36,17 @@ Subprocess_Info::Subprocess_Info
   m_fl(fl), m_id(id), m_pol(pol), m_nmax(0), m_tag(0), m_osf(0),
   m_nloqcdtype(nlo_type::lo), m_nloewtype(nlo_type::lo) {}
 
+Subprocess_Info::~Subprocess_Info()
+{
+  DeleteDecayInfos();
+}
+
+void Subprocess_Info::DeleteDecayInfos()
+{
+  for (size_t i(0);i<m_decins.size();++i)
+    if (!m_decins[i]) delete m_decins[i];
+}
+
 std::string Subprocess_Info::MultiplicityTag() const
 {
   size_t pn(0);
@@ -153,23 +164,29 @@ bool Subprocess_Info::AddDecay
 }
 
 size_t Subprocess_Info::GetDecayInfos
-(DecayInfo_Vector &ids,size_t &n) const
+(DecayInfo_Vector &ids,size_t &n,bool init)
 {
+  if (init) ids.clear();
   if (m_ps.empty()) return 1<<n++;
   size_t cont(0);
-  for (size_t j(0);j<m_ps.size();++j) 
-    cont+=m_ps[j].GetDecayInfos(ids,n);
-  ids.push_back(Decay_Info(cont,m_fl,m_nmax,m_osf));
+  DecayInfo_Vector subsequentdecays;
+  for (size_t j(0);j<m_ps.size();++j) {
+    size_t decinfs(ids.size());
+    cont+=m_ps[j].GetDecayInfos(ids,n,false);
+    if (decinfs+1==ids.size()) subsequentdecays.push_back(ids.back());
+  }
+  ids.push_back(new Decay_Info(cont,m_fl,m_nmax,m_osf));
+  ids.back()->SetSubsequentDecayInfos(subsequentdecays);
   return cont;
 }
 
-DecayInfo_Vector Subprocess_Info::GetDecayInfos() const
+void Subprocess_Info::BuildDecayInfos(size_t nin)
 {
-  size_t n(0);
-  std::vector<Decay_Info> ids;
-  GetDecayInfos(ids,n);
-  ids.pop_back();
-  return ids;
+  DeleteDecayInfos();
+  size_t n(nin);
+  GetDecayInfos(m_decins,n,true);
+  delete m_decins.back();
+  m_decins.pop_back();
 }
 
 double Subprocess_Info::Factorial(const double &n) const

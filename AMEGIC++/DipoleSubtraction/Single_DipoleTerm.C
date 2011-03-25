@@ -86,13 +86,9 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   p_LO_labmom.resize(m_nin+m_nout-1); 
   p_LO_process->SetTestMoms(p_LO_mom);
 
-  Subprocess_Info info(m_pinfo.m_ii);
-  info.Add(m_pinfo.m_fi);
-  m_decinfos=info.GetDecayInfos();
-
   m_subevt.m_n    = m_nin+m_nout-1;
   m_subevt.p_fl   = &(p_LO_process->Flavours().front());
-  m_subevt.p_dec  = &m_decinfos;
+  m_subevt.p_dec  = &m_decins;
   m_subevt.p_mom  = &p_LO_labmom.front();
   m_subevt.m_i    = m_pi;
   m_subevt.m_j    = m_pj;

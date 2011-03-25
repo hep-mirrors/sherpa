@@ -72,6 +72,11 @@ RB_Data &RB_Data::operator=(const RB_Data &rb)
 
 void RB_Data::AddPoint(const double &rb,const double &xs,const double &b)
 {
+  if (msg_LevelIsDebugging()) {
+    size_t n(m_n+1);
+    msg_Out()<<om::bold<<om::blink<<om::brown<<"RB:   "<<rb<<"   in "
+        <<n<<(n%10==1?"st":(n%10==2?"nd":(n%10==3?"rd":"th")))<<" event.\n";
+  }
   if (IsBad(rb)) {
     msg_Error()<<METHOD<<"(){\n  RB ratio is bad : "<<rb
         <<"  Point not considered.\n}\n";

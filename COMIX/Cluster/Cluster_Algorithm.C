@@ -433,7 +433,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->Decays()=p_ampl->Prev()->Decays();
   const DecayInfo_Vector &decids(p_bg->DecayInfos());
   for (size_t j(0);j<decids.size();++j)
-    if (decids[j].m_id==m_id[wkey.first]+m_id[wkey.second]) {
+    if (decids[j]->m_id==m_id[wkey.first]+m_id[wkey.second]) {
       p_ampl->Decays().push_back(decids[j]);
       break;
     }

@@ -220,9 +220,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_scale.resize(p_proc->NOut());
   SetCouplings();
   m_f=p_proc->Flavours();
-  Subprocess_Info info(p_proc->Info().m_ii);
-  info.Add(p_proc->Info().m_fi);
-  m_decids=info.GetDecayInfos();
+  m_decids=p_proc->DecayInfos();
   m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
@@ -347,9 +345,9 @@ double METS_Scale_Setter::CalculateMyScale
 	if (!proc->Combinable(li->Id(),lj->Id())) continue;
 	Decay_Info *dec(NULL);
 	for (size_t l(0);l<m_decids.size();++l)
-	  if (m_decids[l].m_id==li->Id()+lj->Id()) {
+          if (m_decids[l]->m_id==li->Id()+lj->Id()) {
 	  msg_Debugging()<<"cut propagator "<<ID(li->Id()+lj->Id())<<"\n";
-	  dec=&m_decids[l];
+          dec=m_decids[l];
 	  break;
 	}
 	const Flavour_Vector &cf(proc->CombinedFlavour(li->Id()+lj->Id()));
@@ -487,7 +485,7 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    if (ckw.p_dec) ampl->Decays().push_back(*ckw.p_dec);
+    if (ckw.p_dec) ampl->Decays().push_back(ckw.p_dec);
     ops[ampl->Legs().size()-4]=ckw.m_kt2;
 #ifdef CHECK__stepwise
     Vec4D psum;

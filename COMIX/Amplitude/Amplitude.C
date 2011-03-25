@@ -154,8 +154,8 @@ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
   if (m_decid.empty()) return 0;
   for (size_t i(0);i<ids.size();++i) cid+=1<<ids[i];
   for (size_t i(0);i<m_decid.size();++i) {
-    size_t did(m_decid[i].m_id);
-    Flavour dfl(m_decid[i].m_fl);
+    size_t did(m_decid[i]->m_id);
+    Flavour dfl(m_decid[i]->m_fl);
     if (did&(1<<0)) {
       did=(1<<m_n)-1-did;
       dfl=dfl.Bar();
@@ -189,8 +189,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   if (cur==NULL) return;
   cur->SetDirection(dir);
   if (dec!=0) {
-    cur->SetCut(m_decid[dec-1].m_nmax);
-    cur->SetOnShell(m_decid[dec-1].m_osd);
+    cur->SetCut(m_decid[dec-1]->m_nmax);
+    cur->SetOnShell(m_decid[dec-1]->m_osd);
   }
   std::set<Vertex_Key> v3;
   // compose current from all possible subcurrents
@@ -247,8 +247,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 		  (std::string(1,m_pmode)+ckey.Type(),ckey);
 	      if (n<m_n-1) {
 		if (dec!=0) {
-		  cur->SetCut(m_decid[dec-1].m_nmax);
-		  cur->SetOnShell(m_decid[dec-1].m_osd);
+                  cur->SetCut(m_decid[dec-1]->m_nmax);
+                  cur->SetOnShell(m_decid[dec-1]->m_osd);
 		}
 		cur->SetOrderEW(oew);
 		cur->SetOrderQCD(oqcd);
