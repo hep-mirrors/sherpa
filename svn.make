@@ -8,10 +8,10 @@ SVN_Info.C: SVN_Info.C.in
 	echo -e '#include "ATOOLS/Org/SVN_Info.H"\n' > $@.tmp; \
 	echo 'static ATOOLS::SVN_Info initializer' >> $@.tmp; \
 	echo '("$(SVNTAG)","'$$url'","'$$(svnversion)'","X");' >> $@.tmp; \
-	fi; if test -z $(NOMD5SUM); then sed \
-	  -r -e's/".?"\);/"'$$(cat $$(echo *.[CH] | sed 's/'$@'//g') | \
-	  $(MD5COMMAND))'");/g' -i $@.tmp; fi; \
-	if ! diff $@.tmp $@ > /dev/null 2>&1; \
+	fi; if test -z $(NOMD5SUM); then \
+	fl="$(addprefix $(srcdir)/,$(filter-out $@,$(SOURCES)) $(HEADERS))"; \
+	sed -r -e's/".?"\);/"'$$(cat $$fl | $(MD5COMMAND))'");/g' -i $@.tmp; \
+	fi; if ! diff $@.tmp $@ > /dev/null 2>&1; \
 	  then mv $@.tmp $@; else rm $@.tmp; fi;
 
 .PHONY: SVN_Info.C.in
