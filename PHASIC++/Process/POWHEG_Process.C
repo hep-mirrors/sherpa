@@ -73,12 +73,14 @@ void POWHEG_Process::Init(const Process_Info &pi,
     cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
   Process_Base::Init(cpi,beam,isr);
   m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
-  cpi.m_fi.m_ps.pop_back();
-  m_name=GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
+  Process_Info npi(m_pinfo);
+  npi.m_fi.m_ps.pop_back();
+  m_name=GenerateName(m_pinfo.m_ii,npi.m_fi);
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
+  PRINT_VAR(pi); PRINT_VAR(cpi); PRINT_VAR(spi); PRINT_VAR(m_pinfo);
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   p_viproc=InitProcess(spi,nlo_type::loop|nlo_type::vsub|
 		       (pi.m_fi.NLOType()&nlo_type::polecheck),false);
