@@ -80,7 +80,6 @@ void POWHEG_Process::Init(const Process_Info &pi,
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
-  PRINT_VAR(pi); PRINT_VAR(cpi); PRINT_VAR(spi); PRINT_VAR(m_pinfo);
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   p_viproc=InitProcess(spi,nlo_type::loop|nlo_type::vsub|
 		       (pi.m_fi.NLOType()&nlo_type::polecheck),false);
