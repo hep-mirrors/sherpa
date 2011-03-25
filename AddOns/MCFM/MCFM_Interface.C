@@ -39,6 +39,7 @@ namespace MCFM {
 #include "AddOns/MCFM/MCFM_Wrapper.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace MCFM;
 using namespace PHASIC;
@@ -57,6 +58,9 @@ bool MCFM_Interface::Initialize
 (const std::string &path,const std::string &file,MODEL::Model_Base *const model,
  BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
 {
+  std::ifstream procfile((rpa.gen.Variable("SHERPA_CPP_PATH")+"/process.DAT").c_str());
+  if (!procfile.good())
+    THROW(fatal_error,"MCFM's 'process.DAT' is missing. Consider copying it to this directory.");
   msg_Info()<<METHOD<<"(): {\n";
   nproc_.nproc=-1;
   // masses and widths
