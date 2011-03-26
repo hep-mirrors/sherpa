@@ -134,6 +134,8 @@ double Single_Process::Differential2()
   if (m_nin!=2 || p_int->ISR()==NULL ||
       p_int->ISR()->On()==0) return 0.0;
   if (m_flavs[0]==m_flavs[1]) return 0.0;
+  if (!p_int->ISR()->PDF(0)->Contains(m_flavs[1]) ||
+      !p_int->ISR()->PDF(1)->Contains(m_flavs[0])) return 0.0;
   if (GetSubevtList()==NULL) {
     if (m_lastxs==0.0) return 0.0;
     Scale_Setter_Base *scs((IsMapped()?p_mapproc:this)->ScaleSetter());
