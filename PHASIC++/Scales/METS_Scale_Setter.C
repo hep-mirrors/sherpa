@@ -28,44 +28,28 @@
 
 namespace PHASIC {
 
-  struct MCKey {
-    size_t m_i, m_j, m_k;
-    ATOOLS::Flavour m_fl;
-    MCKey(const size_t &i,const size_t &j,const size_t &k,
-	  const ATOOLS::Flavour &fl):
-      m_i(i),m_j(j), m_k(k), m_fl(fl) {}
-    bool operator<(const MCKey &ck) const
-    { 
-      if (m_i<ck.m_i) return true;
-      if (m_i>ck.m_i) return false;
-      if (m_j<ck.m_j) return true;
-      if (m_j>ck.m_j) return false;
-      if (m_k<ck.m_k) return true;
-      if (m_k>ck.m_k) return false;
-      return m_fl<ck.m_fl;
-    }
-  };// end of struct MCKey
-
   struct CS_Params {
-    size_t m_i, m_j, m_k, m_oqcd;
+    size_t m_idi, m_idj, m_idk, m_i, m_j, m_k, m_oqcd;
     ATOOLS::Flavour m_fl;
     double m_kt2, m_op2, m_mu2, m_z, m_y;
     ATOOLS::Decay_Info *p_dec;
     ATOOLS::Vec4D m_pijt, m_pkt;
     ATOOLS::Poincare_Sequence m_lam;
-    CS_Params(const size_t &i,const size_t &j,
+    CS_Params(const size_t &idi,const size_t &idj,
+	      const size_t &idk,const size_t &i,const size_t &j,
 	      const size_t &k,const ATOOLS::Flavour &fl):
+      m_idi(idi),m_idj(idj), m_idk(idk),
       m_i(i),m_j(j), m_k(k), m_oqcd(0), m_fl(fl),
       m_kt2(-1.0), m_op2(-std::numeric_limits<double>::max()),
       m_mu2(-1.0), m_z(0.0), m_y(0.0), p_dec(NULL) {}
     bool operator<(const CS_Params &ck) const
     { 
-      if (m_i<ck.m_i) return true;
-      if (m_i>ck.m_i) return false;
-      if (m_j<ck.m_j) return true;
-      if (m_j>ck.m_j) return false;
-      if (m_k<ck.m_k) return true;
-      if (m_k>ck.m_k) return false;
+      if (m_idi<ck.m_idi) return true;
+      if (m_idi>ck.m_idi) return false;
+      if (m_idj<ck.m_idj) return true;
+      if (m_idj>ck.m_idj) return false;
+      if (m_idk<ck.m_idk) return true;
+      if (m_idk>ck.m_idk) return false;
       return m_fl<ck.m_fl;
     }
     void SetParams(const double &kt2,const double &z,const double &y,
@@ -335,7 +319,7 @@ double METS_Scale_Setter::CalculateMyScale
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     std::set<CS_Params> &trials(alltrials[ampl->Legs().size()-5]);
     size_t iw(0), jw(0), kw(0);
-    CS_Params ckw(0,0,0,kf_none);
+    CS_Params ckw(0,0,0,0,0,0,kf_none);
     msg_Debugging()<<"Weights: {\n";
     for (size_t i(0);i<ampl->Legs().size();++i) {
       msg_Indent();
@@ -355,21 +339,21 @@ double METS_Scale_Setter::CalculateMyScale
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k!=i && k!=j) {
 	    for (size_t f(0);f<cf.size();++f) {
-	      CS_Params cs(li->Id(),lj->Id(),lk->Id(),cf[f]);
+	      CS_Params cs(li->Id(),lj->Id(),lk->Id(),i,j,k,cf[f]);
 	      cs.p_dec=dec;
 	      if (trials.find(cs)!=trials.end()) continue;
 	      if (!CheckColors(li,lj,lk,cf[f])) {
 		msg_Debugging()<<"Veto colours: "<<cf[f]<<" = "
-			       <<ID(cs.m_i)<<" & "<<ID(cs.m_j)
-			       <<" <-> "<<ID(cs.m_k)<<"\n";
+			       <<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
+			       <<" <-> "<<ID(cs.m_idk)<<"\n";
 		trials.insert(cs);
 		continue;
 	      }
 	      KT2(li,lj,lk,cs);
 	      if (cs.m_kt2==-1.0) {
 		msg_Debugging()<<"Veto kinematics: "<<cf[f]<<" = "
-			       <<ID(cs.m_i)<<" & "<<ID(cs.m_j)
-			       <<" <-> "<<ID(cs.m_k)<<"\n";
+			       <<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
+			       <<" <-> "<<ID(cs.m_idk)<<"\n";
 		trials.insert(cs);
 		continue;
 	      }
@@ -380,8 +364,8 @@ double METS_Scale_Setter::CalculateMyScale
 	      if (m_rproc && ampl->Prev()==NULL) cs.m_op2=
 		1.0/PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			      kf_gluon,kf_gluon);
-	      msg_Debugging()<<ID(cs.m_i)<<" & "<<ID(cs.m_j)<<" <-> "
-			     <<ID(cs.m_k)<<" ["<<cf[f]
+	      msg_Debugging()<<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
+			     <<" <-> "<<ID(cs.m_idk)<<" ["<<cf[f]
 			     <<"]: "<<cs.m_op2<<" -> ";
 	      if (cf[f].Strong() &&
 		  li->Flav().Strong() &&
@@ -461,8 +445,8 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     msg_Debugging()<<"Cluster "<<ckw.m_fl<<" "
-		   <<ID(ckw.m_i)<<" & "<<ID(ckw.m_j)
-		   <<" <-> "<<ID(ckw.m_k)
+		   <<ID(ckw.m_idi)<<" & "<<ID(ckw.m_idj)
+		   <<" <-> "<<ID(ckw.m_idk)
 		   <<" => "<<sqrt(ckw.m_kt2)
 		   <<" ("<<sqrt(ckw.m_op2)<<") <-> "
 		   <<sqrt(ops[ampl->Legs().size()-4])<<"\n";
@@ -666,7 +650,8 @@ void METS_Scale_Setter::KT2
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
 	if (fip.m_pk.PPlus()>sum.PPlus() ||
-	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0) kt2=-1.0;
+	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0 ||
+	    fip.m_pk[0]>rpa.gen.PBeam(cs.m_k)[0]) kt2=-1.0;
  	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav().Bar(),2,cs.m_oqcd?1:2,kt2);
@@ -680,7 +665,8 @@ void METS_Scale_Setter::KT2
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
 	if (ifp.m_pi.PPlus()>sum.PPlus() ||
-	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0) kt2=-1.0;
+	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0 ||
+	    ifp.m_pi[0]>rpa.gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav(),1,cs.m_oqcd?1:2,kt2);
@@ -690,7 +676,8 @@ void METS_Scale_Setter::KT2
 	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
 	if (iip.m_pi.PPlus()>sum.PPlus() ||
-	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0) kt2=-1.0;
+	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0 ||
+	    iip.m_pi[0]>rpa.gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav().Bar(),3,cs.m_oqcd?1:2,kt2);
