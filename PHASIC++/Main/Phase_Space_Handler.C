@@ -342,7 +342,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
-    if (!p_isrhandler->MakeISR(m_isrspkey[3],m_isrykey[2],
+    if (!p_isrhandler->MakeISR(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
 			     Selected()->Flavours())) {
       if (p_beamchannels) p_beamchannels->NoDice();    
