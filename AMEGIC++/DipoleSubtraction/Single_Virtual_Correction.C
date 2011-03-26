@@ -95,7 +95,7 @@ double Single_Virtual_Correction::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& 
   }
   else {
     // MSbar
-    return 2.*M_PI*p_scale->Scale(stp::ren)/(mom[0]*mom[1]);
+    return 2.*M_PI*p_scale->Scale(stp::ren,1)/(mom[0]*mom[1]);
   }
 }
 
@@ -360,7 +360,7 @@ double Single_Virtual_Correction::DSigma2()
 double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom) 
 {
   double res=0.;
-  double mur = p_scale->Scale(stp::ren);
+  double mur = p_scale->Scale(stp::ren,1);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
@@ -395,7 +395,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
   if (m_massive) return Calc_Imassive(mom);
 
   double res=0.;
-  double mur = p_scale->Scale(stp::ren);
+  double mur = p_scale->Scale(stp::ren,1);
   int lm(p_loopme?p_loopme->DRMode():0);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
@@ -427,7 +427,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   if (x0<eta0 || x1<eta1) return; 
   size_t pls=1;
   if (sa&&sb) pls++;
-  double muf = p_scale->Scale(stp::fac);
+  double muf = p_scale->Scale(stp::fac,1);
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
@@ -710,7 +710,7 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   double doublepole=0.;
   double singlepole=0.;
-  double mur = p_scale->Scale(stp::ren);
+  double mur = p_scale->Scale(stp::ren,1);
   if (!m_massive) {
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
@@ -726,8 +726,7 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   }
   else {
-  double res=0.;
-  double mur = p_scale->Scale(stp::ren);
+  double mur = p_scale->Scale(stp::ren,1);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
@@ -787,7 +786,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
 
   p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij,mode);
   if (p_loopme) {
-  p_loopme->SetRenScale(p_scale->Scale(stp::ren));
+  p_loopme->SetRenScale(p_scale->Scale(stp::ren,1));
   p_loopme->Calc(mom);
   }
   double I=0.;

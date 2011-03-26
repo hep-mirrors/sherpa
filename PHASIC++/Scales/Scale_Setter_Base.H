@@ -52,7 +52,7 @@ namespace PHASIC {
     MODEL::Model_Base   *p_model;
     MODEL::Coupling_Map *p_cpls;
 
-    std::vector<double> m_scale, m_escale;
+    std::vector<double> m_scale, m_escale, m_fac;
 
     std::string m_coupling;
 
@@ -82,7 +82,8 @@ namespace PHASIC {
 
     inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
-    inline double Scale(const stp::id type) { return m_scale[type]; }
+    inline double Scale(const stp::id type,const int mode=0) const
+    { return mode==0?m_scale[type]:m_fac[type]*m_scale[type]; }
 
     inline const std::vector<double> &Scales() const { return m_scale; }
 

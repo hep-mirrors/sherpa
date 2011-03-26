@@ -3,6 +3,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
 #define COMPILE__Getter_Function
@@ -63,6 +64,11 @@ void Scale_Setter_Base::SetCouplings()
       THROW(fatal_error,"Invalid coupling tag "+helpsvv[i][0]+".");
     }
   }
+  m_fac.resize(2,1.0);
+  if(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="")
+    m_fac[stp::ren]=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  if(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
+    m_fac[stp::fac]=ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"));
 }
 
 Scale_Setter_Base::~Scale_Setter_Base()
