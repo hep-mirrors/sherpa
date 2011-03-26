@@ -409,6 +409,11 @@ bool Cluster_Algorithm::ClusterStep
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
+    if (-p[m_swap][0]>rpa.gen.PBeam(0)[0] ||
+	-p[1-m_swap][0]>rpa.gen.PBeam(1)[0]) {
+      msg_Debugging()<<"kinematics failed\n";
+      return false;
+    }
   }
   else if (p_ampl->Legs().size()==4) {
     p.push_back(p_ampl->Leg(0)->Mom());

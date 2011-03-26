@@ -325,6 +325,12 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
     msg_Debugging()<<"combine moms failed\n";
     return false;
   }
+  bool swap(p_legs[0][0].ID()&2);
+  if (moms[swap][0]>rpa.gen.PBeam(0)[0] ||
+      moms[1-swap][0]>rpa.gen.PBeam(1)[0]) {
+    msg_Debugging()<<"kinematics failed\n";
+    return false;
+  }
   for (size_t l=0; l<after.size(); ++l) p_moms[l] = l<2?-after[l]:after[l];
   return true;
 }
@@ -345,6 +351,12 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
   ampl->Delete();
   if (after.empty()) {
     msg_Debugging()<<"combine moms failed\n";
+    return false;
+  }
+  bool swap(p_legs[0][0].ID()&2);
+  if (moms[swap][0]>rpa.gen.PBeam(0)[0] ||
+      moms[1-swap][0]>rpa.gen.PBeam(1)[0]) {
+    msg_Debugging()<<"kinematics failed\n";
     return false;
   }
   omoms = new Vec4D[maxl];
