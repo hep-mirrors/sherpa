@@ -85,6 +85,7 @@ The parameter can be specified using the internal interpreter, see
 @cindex K_PERP_MEAN_2
 @cindex K_PERP_SIGMA_1
 @cindex K_PERP_SIGMA_2
+@cindex BEAM_REMNANTS
 
 @table @option
 @item K_PERP_MEAN_1
@@ -116,3 +117,8 @@ case of hadronic beams, such as protons.
 The default value for protons is 0.8 GeV.
 
 @end table
+
+If the option @option{BEAM_REMNANTS=0} is specified, pure parton-level
+events are simulated, i.e. no beam remnants are generated. Accordingly,
+partons entering the hard scattering process do not acquire primordial
+transverse momentum.
