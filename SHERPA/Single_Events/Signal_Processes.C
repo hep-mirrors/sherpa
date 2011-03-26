@@ -4,6 +4,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "AMEGIC++/Main/Single_Process.H"
 
@@ -11,7 +12,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
-  p_mehandler(mehandler), p_amps(NULL)
+  p_mehandler(mehandler), p_amps(NULL), m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -31,6 +32,20 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
   Blob *blob(bloblist->FindFirst(btp::Signal_Process));
   if (blob && blob->Has(blob_status::needs_signal))
     while (true) {
+      if (m_overweight>0.0) {
+	if (m_overweight<ran.Get()) {
+	  m_overweight=0.0;
+	  CleanUp();
+	  continue;
+	}
+	double overweight(m_overweight-1.0);
+	if (!FillBlob(bloblist,blob))
+	  THROW(fatal_error,"Internal error");
+	(*blob)["Trials"]->Set(0.0);
+	m_overweight=Max(overweight,0.0);
+	weight = p_mehandler->WeightInfo().m_weight;
+	return Return_Value::Success; 
+      }
       if (p_mehandler->GenerateOneEvent() &&
 	  FillBlob(bloblist,blob)) {
 	weight = p_mehandler->WeightInfo().m_weight;
@@ -79,7 +94,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddToOutParticles(particle);
   }
   PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());
-  blob->AddData("Weight",new Blob_Data<double>(winfo.m_weight));
+  double weight(winfo.m_weight);
+  if (p_mehandler->EventGenerationMode()==1) {
+    m_overweight=p_mehandler->WeightFactor()-1.0;
+    if (m_overweight<0.0) m_overweight=0.0;
+    else weight/=m_overweight+1.0;
+  }
+  blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
   blob->AddData("Enhance",new Blob_Data<double>
 		(p_mehandler->Process()->Integrator()->EnhanceFactor()));
@@ -118,6 +139,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 
 void Signal_Processes::CleanUp() 
 { 
+  if (m_overweight>0.0) return;
   if (p_mehandler)
     if (p_mehandler->Process())
       if (p_mehandler->Process()->Parent())

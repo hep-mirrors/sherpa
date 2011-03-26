@@ -17,6 +17,9 @@ namespace SHERPA {
     Matrix_Element_Handler *p_mehandler;
     PDF::Remnant_Base      *p_remnants[2];
     METOOLS::Amplitude_Tensor *p_amps;
+
+    double m_overweight;
+
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 
   public:

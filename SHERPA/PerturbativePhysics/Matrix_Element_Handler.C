@@ -48,6 +48,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   std::string evtm;
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
+  else if (evtm=="PartiallyUnweighted" || evtm=="P") m_eventmode=2;
   else m_eventmode=0;
   //need for LHE-output
   rpa.gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
@@ -166,14 +167,15 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     delete info;
     double wf(rpa.Picobarn()/sw/
 	      p_proc->Integrator()->PSHandler()->EnhanceFactor());
-    if (m_eventmode==1) {
+    if (m_eventmode!=0) {
       double max=p_proc->Integrator()->Max(), disc=max*ran.Get();
       if (m_evtinfo.m_weight<disc) continue;
       if (m_evtinfo.m_weight>max*(1.0+m_ovwth))
 	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
 		    <<"' exceeds maximum by "
 		    <<m_evtinfo.m_weight/max-1.0<<"."<<std::endl;
-      wf*=p_proc->Integrator()->Max()/m_evtinfo.m_weight;
+      m_weightfactor=m_evtinfo.m_weight/max;
+      wf/=Min(1.0,m_weightfactor);
     }
     m_evtinfo.m_weight*=wf;
     if (p_proc->GetSubevtList()) {

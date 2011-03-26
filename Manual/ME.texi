@@ -62,10 +62,14 @@ see @ref{Command line}.
 @subsection EVENT_GENERATION_MODE
 @cindex EVENT_GENERATION_MODE
 This parameter specifies the event generation mode.
-The two possible options are @option{Weighted} (shortcut
-@option{W}) and @option{Unweighted} (shortcut @option{U}).
 It can also be set on the command line
 using option @option{-w}, see @ref{Command line}.
+The three possible options are @option{Weighted} (shortcut
+@option{W}), @option{Unweighted} (shortcut @option{U}) and
+@option{PartiallyUnweighted} (shortcut @option{P}). For partially
+unweighted events, the weight is allowed to exceed a given maximum, 
+which is lower than the true maximum weight. In such cases the
+event weight will exceed the otherwise constant value.
 
 
 @node SCALES
