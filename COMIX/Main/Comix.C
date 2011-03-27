@@ -176,11 +176,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  m_map=read.GetValue<int>("WRITE_MAPPING_FILE",1);
-  if (m_map&2) 
-    msg_Out()<<om::bold<<METHOD<<"(): "<<om::red
-	     <<"Ignoring timestamps on input files."
-	     <<om::reset<<std::endl;
+  m_map=read.GetValue<int>("WRITE_MAPPING_FILE",3);
   if (m_map>0) {
     struct stat fst;
     std::string fname(rpa.gen.Variable("MODEL_DATA_FILE"));
