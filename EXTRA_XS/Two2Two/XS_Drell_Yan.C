@@ -84,18 +84,6 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
     kswitch = 1;
   }
 
-  if (fl[0].IsLepton() && fl[1].IsQuark())  {
-    qe       = fl[0].Charge();
-    qf       = fl[1].Charge();
-    ae       = fl[0].IsoWeak();
-    af       = fl[1].IsoWeak();
-    ve       = ae - 2.*qe*sin2tw;
-    vf       = af - 2.*qf*sin2tw;
-    barred = fl[1].IsAnti();
-    p_colours[1][barred] = p_colours[3][barred] = 500;
-    colfac  = 1.;
-    kswitch = 2;
-  }
   m_cfls[3].push_back(kf_photon);
   m_cfls[3].push_back(kf_Z);
   m_cfls[12].push_back(kf_photon);
@@ -147,9 +135,7 @@ Tree_ME2_Base *DY_Getter::operator()(const Process_Info &pi) const
   if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
        fl[1]==fl[0].Bar()) ||   
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
-       fl[3]==fl[2].Bar()) ||
-      (fl[0].IsLepton() && fl[2]==fl[0] && fl[1].IsQuark() &&
-       fl[3]==fl[1])) {
+       fl[3]==fl[2].Bar())) {
     if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
       return new XS_ee_ffbar(pi, fl);
     }
