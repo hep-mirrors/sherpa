@@ -132,7 +132,6 @@ void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
   epinv2_.epinv2=1.0;
   double res2(CallMCFM(i,j) * corrfactor);
 
-  msg_Out()<<"   --> "<<res<<" "<<res1<<" "<<res2<<"."<<std::endl;
   m_res.Finite() = res;
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
