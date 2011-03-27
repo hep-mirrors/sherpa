@@ -154,7 +154,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
 Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"Check for process in "<<METHOD<<"."<<std::endl;
+  DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
