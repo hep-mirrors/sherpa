@@ -52,7 +52,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   else m_eventmode=0;
   //need for LHE-output
   rpa.gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
-  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_WARNING_THRESHOLD")) m_ovwth=1.0;
+  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_WARNING_THRESHOLD")) m_ovwth=10.0;
   if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
   else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
   std::string seedfile;
