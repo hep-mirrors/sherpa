@@ -6,6 +6,7 @@
   Process 93 93 -> 22 93 93{2}
   Order_EW 1
   CKKW sqr(10.0/E_CMS)
+  Selector_File *|(coresel){|}(coresel) {2};
   Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4])))|1.0|3.0 {3};
   Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5])))|1.0|3.0 {4};
   Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5]),PPerp(p[6])))|1.0|3.0 {5};
@@ -13,9 +14,9 @@
   End process
 }(processes)
 
-(selector){
+(coresel){
   NJetFinder  2  10.0  0.0  1.0
-}(selector)
+}(coresel)
 
 (shower){
   CSS_EW_MODE = 1
