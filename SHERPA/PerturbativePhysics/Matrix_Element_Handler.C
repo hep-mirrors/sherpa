@@ -597,6 +597,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
 	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
+	  else
+	    proc[i]->Integrator()->SetMaxEpsilon(1.e-6);
 	  if (GetMPvalue(pbi.m_vrbmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetRBMaxEpsilon(dd);
 	  double maxerr(-1.0);
