@@ -12,9 +12,10 @@
   Order_EW 2
   CKKW sqr(10.0/E_CMS)
   Selector_File *|(coresel){|}(coresel) {2};
-  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4])))|1.0|3.0 {3};
-  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5])))|1.0|3.0 {4};
-  Enhance_Observable log10(max(PPerp(p[2]),PPerp(p[3]),PPerp(p[4]),PPerp(p[5]),PPerp(p[6])))|1.0|3.0 {5};
+  Enhance_Function PPerp2(p[2]) {2}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4])) {3}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5])) {4}
+  Enhance_Function max(PPerp2(p[2]),PPerp2(p[3]),PPerp2(p[4]),PPerp2(p[5]),PPerp2(p[6])) {5}
   Integration_Error 0.05 {4}
   End process
 }(processes)

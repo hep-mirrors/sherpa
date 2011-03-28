@@ -15,11 +15,17 @@ element.
 
 Things to notice:
 @itemize @bullet
-@item @code{Order_EW} is set to @option{0}. This
+@item
+@code{Order_EW} is set to @option{0}. This
 ensures that all final state jets are produced via 
 the strong interaction.
-@item an @code{NJetFinder} selector is used to 
+
+@item
+an @code{NJetFinder} selector is used to 
 set a resolution criterion for the two jets of the core process.
 This is necessary because the `CKKW' tag does not apply any cuts to the core
 process, but only to the extra-jet matrix elements, see @ref{Merging ME and PS}.
+This cut is applied only to the 2->2 process using the @code{@{2@}}
+specification, since the higher-order matrix elements should only be cut by
+the ME+PS separation criterion.
 @end itemize

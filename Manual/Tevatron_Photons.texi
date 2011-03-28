@@ -4,7 +4,6 @@
 @menu
 * Single photon production::
 * Diphoton production::
-* Notes for users of release 1.2.1::
 @end menu
 
 
@@ -81,28 +80,41 @@ very efficiently.
 @verbatiminclude Examples/Tevatron_Photons/Run.single.me.dat
 
 @itemize @bullet
-@item In the @code{processes} section, matrix elements for
-      pp(bar) -> photon + 1, 2, 3 partons are requested.
-      Only Feynman diagrams with exactly one electroweak coupling are allowed.
+@item
+In the @code{processes} section, matrix elements for
+pp(bar) -> photon + 1, 2, 3 partons are requested.
+Only Feynman diagrams with exactly one electroweak coupling are allowed.
       
-      The merging criterion is set to @code{Q_cut=10.0 GeV}.
+The merging criterion is set to @code{Q_cut=10.0 GeV}.
 
-      @code{Enhance_Observable}'s (cf. @ref{Enhance_Observable}) are introduced
-      to produce more hard partons/photons than the steeply falling cross
-      section would imply (appropriately weighted).
-@item The @code{selector} section allows to specify phase space cuts on the
-      matrix element level, cf. @ref{Selectors}. Here we demand two
-      jets/photons with pT > 10.0 GeV, cf. @ref{Jet finders}.
-@item Electro-weak splitting functions in the shower are activated in
-      the @code{shower} section.
-@item The @code{me} section enables weighted event generation and switches
-      off the emission of additional soft photons from the hard scattering.
-@item To generate only prompt photons, the hadronisation, hadron decays and
-      underlying event are turned off. These steps of the simulation can be 
-      enabled as described in @ref{Hadronization parameters} and
-      @ref{MI_HANDLER}.
-@item The @code{beam} section specifies Tevatron Run 2 conditions in this
-      example but can simply be changed.
+@code{Enhance_Function}'s (cf. @ref{Enhance_Function}) are introduced
+to produce more hard partons/photons than the steeply falling cross
+section would imply (appropriately weighted).
+
+@item
+The higher-order matrix elements will be regularised by the ME+PS
+automatically, but here the Born process also has a divergence which has
+to be regularised. By applying a @ref{Selector_File} setting specifically
+for the 2->2 process, we demand two jets/photons with pT > 10.0 GeV,
+cf. @ref{Jet finders}.
+
+@item
+Electro-weak splitting functions in the shower are activated in
+the @code{shower} section.
+
+@item
+The @code{me} section enables weighted event generation and switches
+off the emission of additional soft photons from the hard scattering.
+
+@item
+To generate only prompt photons, the hadronisation, hadron decays and
+underlying event are turned off. These steps of the simulation can be 
+enabled as described in @ref{Hadronization parameters} and
+@ref{MI_HANDLER}.
+
+@item
+The @code{beam} section specifies Tevatron Run 2 conditions in this
+example but can simply be changed.
 @end itemize
 
 @subsubsection Photons from Shower
@@ -158,31 +170,3 @@ Here only the differences with respect to above are explained:
       Only Feynman diagrams with 0 or 1 electroweak couplings respectively
       are allowed (for efficiency reasons).
 @end itemize
-
-@node Notes for users of release 1.2.1
-@subsection Notes for users of release 1.2.1
-
-Unfortunately we realised too late that one minor change that allows event
-generation in the way described above did not make it into release 1.2.1. To
-use the NJetFinder in a context of democratic partons/photons you will have
-to download 
-@uref{http://projects.hepforge.org/sherpa/dokuwiki/_media/downloads/version-1.2/njetfinder.patch,,this patch}
-and apply it to the 1.2.1 source code as follows:
-@verbatim
-cd SHERPA-MC-1.2.1
-patch -p0 < njetfinder.patch
-make install
-@end verbatim
-
-If this is not possible for you, e.g. because you use an externally installed
-version of Sherpa, there is a workaround. Replace the NJetFinder lines in the
-selector sections above with the following cuts:
-@verbatim
-(selector){
-  PT 22 10.0 E_CMS
-  PT 93 10.0 E_CMS
-}(selector)
-@end verbatim
-
-This will work fine as long as the pT cut applied here is not higher then
-the @code{Q_cut} value in the ME+PS merging (@code{CKKW} line in processes).
