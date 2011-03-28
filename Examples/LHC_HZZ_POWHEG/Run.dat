@@ -1,0 +1,45 @@
+(run){
+  EVENTS 1000000;
+  BATCH_MODE 0; 
+  OUTPUT 2;
+  MASS[25]=185.
+  ACTIVE[6]=0;
+  MASSIVE[4]=0;
+  MASSIVE[5]=0;
+  YUKAWA_B=0.;
+  FRAGMENTATION Off;
+}(run);
+
+(model){
+  MODEL=SM+EHC;
+  FINITE_TOP_MASS=0;
+}(model);
+
+(processes){
+  Process 93 93 -> 25[a]
+    Decay  25[a] -> 23[c] 23[d];
+      Decay  23[c] ->  11 -11;
+      Decay  23[d] ->  13 -13;
+  NLO_QCD_Part BVIRS;
+  Loop_Generator MCFM;
+  Print_Graphs 1;
+  Order_EW 1;
+  End process;
+}(processes);
+
+(selector){
+  Mass  -11  11 60. E_CMS
+  Mass   13 -13 60. E_CMS
+}(selector)
+
+(me){
+  ME_SIGNAL_GENERATOR Amegic MCFM;
+  EVENT_GENERATION_MODE Weighted;
+  NLO_Mode 2;
+  SCALES VAR{MPerp2(p[2]+p[3]+p[4]+p[5])};
+}(me);
+
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 3500;
+  BEAM_2  2212; BEAM_ENERGY_2 3500;
+}(beam);
