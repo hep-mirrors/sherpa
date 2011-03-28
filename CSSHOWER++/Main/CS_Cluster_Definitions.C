@@ -230,7 +230,10 @@ double CS_Cluster_Definitions::CoreScale
     if (ampl->Leg(i)->Flav().Strong() ||
 	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
   }
-  if (-p[0][0]>rpa.gen.PBeam(0)[0] || -p[1][0]>rpa.gen.PBeam(1)[0])
+  if ((-p[0][0]>rpa.gen.PBeam(0)[0] &&
+       !IsEqual(-p[0][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
+      (-p[1][0]>rpa.gen.PBeam(1)[0] &&
+       !IsEqual(-p[1][0],rpa.gen.PBeam(1)[0],1.0e-6)))
     msg_Error()<<METHOD<<"(): Parton energies exceed collider energy.\n"
 	       <<"  p_A = "<<-p[0]<<"\n  p_B = "<<-p[1]<<std::endl;
   if (!IsEqual(psum,Vec4D(),1.0e-3) &&
