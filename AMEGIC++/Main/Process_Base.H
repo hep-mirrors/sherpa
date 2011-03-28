@@ -79,6 +79,7 @@ namespace AMEGIC {
     int  OSDecays() { return p_pinfo->OSDecays(); }
     virtual int Type()  { return 0; }
     double Norm()       { return m_Norm; }
+    void   SetNorm(double norm) { m_Norm=norm; }
     double GetSFactor() { return m_sfactor; }
     double LastDXS() { return m_lastdxs; }
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }

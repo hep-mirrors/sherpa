@@ -143,6 +143,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
             status=Min(st,status);
             if (pdummy->NewLibs()) m_newlib = 1;
             m_subtermlist.push_back(pdummy);
+            m_subtermlist.back()->SetNorm(p_tree_process->Norm());
           }
           else delete pdummy;
 	}
@@ -248,8 +249,14 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
   m_lastxs = 0.;
     // So far only massless partons!!!!
 
-  // fill m_subevtlist
-  if (p_partner == this) m_lastdxs = operator()(moms,mode);
+  // fill m_subevtlist, set all m_result and m_last to 0.
+  if (p_partner == this) {
+    m_lastdxs = operator()(moms,mode);
+    for (size_t i=0;i<m_subevtlist.size();++i) {
+      m_subevtlist[i]->m_result =
+      m_subevtlist[i]->m_last[0] = m_subevtlist[i]->m_last[1] = 0.;
+    }
+  }
   else {
     if (m_lookup) m_lastdxs = p_partner->LastDXS()*m_sfactor;
     else m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
@@ -259,6 +266,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     if (partnerlist->size()==0) return 0.;
     for (size_t i=0;i<partnerlist->size();++i) {
       NLO_subevt* cpevt=new NLO_subevt((*partnerlist)[i]);
+      cpevt->m_result = cpevt->m_last[0] = cpevt->m_last[1] = 0.;
       ReMapFlavs(cpevt);
       m_subevtlist.push_back(cpevt);
     }
@@ -289,8 +297,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me   = m_realevt.m_result =
-    m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
+  m_realevt.m_me = 0.0;
 
   bool trg(false);
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
@@ -303,12 +310,11 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     m_realevt.m_muf2=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
     m_realevt.m_mur2=p_tree_process->ScaleSetter()->Scale(stp::ren);
     m_realevt.m_me = m_realevt.m_mewgt
-      = p_tree_process->operator()(&mom.front());
+      = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     if (IsBad(m_realevt.m_me)) res=false;
   }
 
-  if (res) m_subevtlist.Mult(p_tree_process->Norm());
-  else {
+  if (!res) {
     for (size_t i(0);i<m_subevtlist.size();++i)
       m_subevtlist[i]->m_result=m_subevtlist[i]->m_last[0]=
         m_subevtlist[i]->m_last[1]=m_subevtlist[i]->m_me=0.0;
