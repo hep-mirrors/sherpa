@@ -64,7 +64,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
     if ((*iit)->GetType()==pst::FS)
       ampl->CreateLeg((*iit)->Momentum(),
 		      (*iit)->GetFlavour(),ColorID());
-  bool veto(p_shower->JetVeto(ampl));
+  bool veto(p_jf?p_shower->JetVeto(ampl):false);
   ampl->Delete();
   return veto;
 }
