@@ -214,7 +214,9 @@ bool EPA::CalculateWeight(double x,double q2)
     f = 2 * alpha * m_charge * m_charge / M_PI / (m_x * omega0);
     f *= phi(m_x, m_Q2);
     */
-    f = 2 * alpha * m_charge * m_charge / M_PI / (m_x * m_energy);
+    f = 2 * alpha * m_charge * m_charge / M_PI / m_x;
+    // since CalculateWeight() is dn=N(x)*dx/x and not dn=N(omega)*domega/omega
+    //f = 2 * alpha * m_charge * m_charge / M_PI / (m_x * m_energy);
     f *= phi(m_x*m_energy/omega0, m_Q2); // phi(x_omega, m_Q2)
     // x_omega=m_x*m_energy/omega0 
  
