@@ -23,7 +23,6 @@ SVN_Info.C: SVN_Info.C.in
 				fl="$$fl $$file"; \
 			fi; \
 		done; \
-		echo "fl=$$fl"; \
 		sed -r -e's/".?"\);/"'$$(cat $$fl | $(MD5COMMAND))'");/g' -i $@.tmp; \
 	fi;
 
