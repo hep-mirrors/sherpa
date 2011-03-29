@@ -1,20 +1,20 @@
 (run){
-  EVENTS = 1
+  EVENTS = 10
 }(run)
 
 (beam){
   BEAM_1          = 1000822080
-  BEAM_ENERGY_1   = 2760.
+  BEAM_ENERGY_1   = 2550.
   BEAM_SPECTRUM_1 = EPA
 
   BEAM_2          = 1000822080
-  BEAM_ENERGY_2   = 2760.
-#  BEAM_2          = 1000200400
-#  BEAM_ENERGY_2   = 3500.
-  BEAM_SPECTRUM_2 = EPA  
+  BEAM_ENERGY_2   = 2550.
+  BEAM_SPECTRUM_2 = EPA
 
-#  EPA_Debug = 1  
-#  EPA_Debug_File = EPA_DebugOut_Pions
+  #EPA_Form_Factor_2 = 0
+
+  EPA_Debug = 1  
+  EPA_Debug_File = EPA_DebugOut_Pions
 }(beam)
 
 
@@ -28,8 +28,9 @@
   BUNCH_2         = 22
 }(isr)
 
-
 (selector){
   ET 11 10 10000
   ET -11 10 10000
 }(selector)
+
+
