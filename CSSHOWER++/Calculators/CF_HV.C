@@ -60,7 +60,7 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   case 1: m_q=TR;break; 
   case 2: m_q=CF;break;
   }
-  m_cplfac=((m_type/10==1)?fsfac:isfac)/CplFac(k0sq);
+  m_cplfac=((m_type/10==1)?fsfac:isfac);
   m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
   std::cout<<" cpl max HV "<<m_cplmax.back()<<" "<<k0sq<<" "<<m_q <<std::endl; 
   m_cplmax.push_back(0.0);
