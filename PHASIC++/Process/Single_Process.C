@@ -258,10 +258,10 @@ Cluster_Amplitude *Single_Process::Cluster
 	THROW(fatal_error,"Invalid number of amplitudes");
       if (p_int->InSwaped()) {
 	msg_Debugging()<<"select 2nd.\n";
-	return ampls.back()->Copy();
+	return ampls.back()->CopyAll();
       }
       msg_Debugging()<<"select 1st.\n";
-      return ampls.front()->Copy();
+      return ampls.front()->CopyAll();
     }
   }
   PDF::Cluster_Definitions_Base* cd=p_shower->GetClusterDefinitions();
