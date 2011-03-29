@@ -159,7 +159,7 @@ void EPA::selfTest(std::string filename)
   while (x_omega < 5) {
     x_omega*=1.005;
     CalculateWeight(x_omega*omega0/m_energy, 0); // m_weight = n(x)
-    debugOutput << x_omega << "\t" << x_omega * m_weight << std::endl;
+    debugOutput << x_omega << "\t" << x_omega * m_weight / m_energy << std::endl;
   }
 
   debugOutput << "# EPA::selfTest() finished" << std::endl << std::endl;
