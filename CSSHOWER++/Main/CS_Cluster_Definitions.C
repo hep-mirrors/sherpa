@@ -279,8 +279,8 @@ double CS_Cluster_Definitions::CoreScale
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
 	  if ((i<2)^(j<2)) {
-	    kt2+=ampl->MS()->Mass2(ampl->Leg(2)->Flav());
-	    kt2+=ampl->MS()->Mass2(ampl->Leg(3)->Flav());
+	    kt2+=sqr(ampl->Leg(2)->Flav().Mass());
+	    kt2+=sqr(ampl->Leg(3)->Flav().Mass());
 	  }
 	  double cf=cdip->Coupling()->CplFac(kt2);
 	  kt2cmin=Min(kt2cmin,kt2*cf);
