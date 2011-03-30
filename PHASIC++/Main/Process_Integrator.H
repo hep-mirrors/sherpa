@@ -116,7 +116,7 @@ namespace PHASIC {
     void OptimizeResult();
 
     double GetMaxEps(double);
-    void   SetUpEnhance();
+    void   SetUpEnhance(const int omode=0);
 
     void ReadResults();
     void StoreResults(const int mode=0);

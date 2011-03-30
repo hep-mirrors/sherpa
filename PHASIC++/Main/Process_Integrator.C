@@ -379,12 +379,13 @@ double Process_Integrator::GetMaxEps(double epsilon)
   return m_max;
 }
 
-void Process_Integrator::SetUpEnhance() 
+void Process_Integrator::SetUpEnhance(const int omode) 
 {
-  if (m_maxeps>0.0) {
+  if (m_maxeps>0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
-    msg_Info()<<"  max '"<<p_proc->Name()<<"' -"
-	      <<m_maxeps<<"-> "<<max/Max()<<std::endl;
+    if (omode)
+      msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
+		<<max/Max()<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
     SetMax(max);
   }
   if (m_rbmaxeps>0.0) {
@@ -399,11 +400,14 @@ void Process_Integrator::SetUpEnhance()
     }
   }
   if (p_proc->IsGroup()) {
+    double oldmax(m_max);
     m_max=0.0;
     for (size_t i(0);i<p_proc->Size();++i) {
-      (*p_proc)[i]->Integrator()->SetUpEnhance();
+      (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
     }
+    msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
+	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
   }
 
 }
