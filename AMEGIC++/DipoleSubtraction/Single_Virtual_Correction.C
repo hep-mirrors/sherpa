@@ -361,6 +361,7 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
 {
   double res=0.;
   double mur = p_scale->Scale(stp::ren,1);
+  int lm(p_loopme?p_loopme->DRMode():0);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
@@ -371,11 +372,11 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
       bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
       bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
 
-      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi);
+      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi,lm);
       double splf  = p_masskern->I_Fin();
       double splf1 = p_masskern->I_E1();
       double splf2 = p_masskern->I_E2();
-      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk);
+      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk,lm);
       splf  += p_masskern->I_Fin();
       splf1 += p_masskern->I_E1();
       splf2 += p_masskern->I_E2();
@@ -455,7 +456,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
 	int spin=m_flavs[p_LO_process->PartonList()[i]].IntSpin();
 	double saj=dabs(2.*mom[p_LO_process->PartonList()[0]]*mom[p_LO_process->PartonList()[i]]);
 	double muq2=saj;
-	double sajx = saj/x1;
+	double sajx = saj/x0;
 	double muq2x=sajx;
 	if (spin!=2) muq2=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/saj;
 	if (spin!=2) muq2x=sqr(m_flavs[p_LO_process->PartonList()[i]].Mass())/sajx;
@@ -726,7 +727,7 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   }
   else {
-  double mur = p_scale->Scale(stp::ren,1);
+  int lm(p_loopme?p_loopme->DRMode():0);
   for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
@@ -737,10 +738,10 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
       bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
       bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
 
-      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi);
+      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi,lm);
       double splf1 = p_masskern->I_E1();
       double splf2 = p_masskern->I_E2();
-      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk);
+      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk,lm);
       splf1 += p_masskern->I_E1();
       splf2 += p_masskern->I_E2();
 

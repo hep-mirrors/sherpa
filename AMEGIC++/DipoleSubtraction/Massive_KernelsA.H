@@ -38,7 +38,7 @@ namespace AMEGIC {
     size_t Nf()       { return m_nf; }
     size_t Nmf()      { return m_nmf; }
     double FMass(int i) { return m_massflav[i]; }
-    void Calculate(int,double,double,double,double,bool,bool,bool);
+    void Calculate(int,double,double,double,double,bool,bool,bool,bool);
     double I_Fin();
     double I_E1();
     double I_E2();

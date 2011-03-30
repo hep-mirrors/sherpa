@@ -203,13 +203,13 @@ void Massive_KernelsA::CalcGamma(int t,double mu2,double m)
     p_Gamma[0]=CSC.CA*(0.5*log(sqr(m)/mu2)-2.);
     return;
   }
-  if (t=12) {
+  if (t==12) {
     p_Gamma[1]=CSC.CF;
     p_Gamma[0]=CSC.CF*(log(sqr(m)/mu2)-2.);
   }
 }
 
-void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, bool ini, bool ini2, bool susy)
+void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, bool ini, bool ini2, bool susy, bool mode)
 {
   CalcVS(s,mj,mk);
   CalcVNS(t,s,mj,mk,ini);
@@ -222,11 +222,13 @@ void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, 
     p_Gamma[0]+=m_g1*(1.+lmus)+m_K1;
     p_Gamma[0]/=CSC.CF;
     p_Gamma[1]/=CSC.CF;
+    if (IsZero(mj) /*&& IsZero(mk)*/) p_Gamma[0]-= (mode?0.5:0.);
   }
   if (st==2) {
     p_Gamma[0]+=m_g2*(1.+lmus)+m_K2;
     p_Gamma[0]/=CSC.CA;
     p_Gamma[1]/=CSC.CA;
+    if (IsZero(mj) /*&& IsZero(mk)*/) p_Gamma[0]-= (mode?1./6.:0.);
   }
   if (st==11) {
     p_Gamma[0]+=(m_g1*(1.+lmus)+m_K1)*CSC.CA/CSC.CF;
