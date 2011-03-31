@@ -41,6 +41,14 @@ CS_Parameters CS_Cluster_Definitions::KT2
   double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
   double mi2=p_ms->Mass2(i->Flav()), mj2=p_ms->Mass2(j->Flav());
   double mk2=p_ms->Mass2(k->Flav()), mij2=p_ms->Mass2(mo);
+  if (!(i->Id()&3) && mi2>10.0 && !i->Flav().Strong()) mi2=pi.Abs2();
+  if (!(j->Id()&3) && mj2>10.0 && !j->Flav().Strong()) mj2=pj.Abs2();
+  if (!(k->Id()&3) && mk2>10.0 && !k->Flav().Strong()) mk2=pk.Abs2();
+  if (!(i->Id()&3) && !(j->Id()&3) && mij2>10.0 && !mo.Strong()) {
+    mij2=(pi+pj).Abs2();
+    pk[0]=pk.PSpat();
+    mk2=0.0;
+  }
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
 		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin);
@@ -186,6 +194,16 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   double mb2=i<2?p_ms->Mass2(ampl.Leg(1-i)->Flav()):0.0;
   Vec4D pi(ampl.Leg(i)->Mom()), pj(ampl.Leg(j)->Mom());
   Vec4D pk(ampl.Leg(k)->Mom()), pb(i<2?ampl.Leg(1-i)->Mom():Vec4D());
+  if (i>1 && mi2>10.0 && !ampl.Leg(i)->Flav().Strong()) mi2=pi.Abs2();
+  if (j>1 && mj2>10.0 && !ampl.Leg(j)->Flav().Strong()) mj2=pj.Abs2();
+  if (k>1 && mk2>10.0 && !ampl.Leg(k)->Flav().Strong()) mk2=pk.Abs2();
+  bool sk(true);
+  if (i>1 && j>1 && mij2>10.0 && !mo.Strong()) {
+    mij2=(pi+pj).Abs2();
+    pk[0]=pk.PSpat();
+    if (mk2) sk=false;
+    mk2=0.0;
+  }
   Kin_Args lt;
   if (i>1) {
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
@@ -207,7 +225,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)j) continue;
     if (m==(size_t)i) after[l]=i>1?lt.m_pi:-lt.m_pi;
-    else if (m==(size_t)k) after[l]=k>1?lt.m_pk:-lt.m_pk;
+    else if (m==(size_t)k && sk) after[l]=k>1?lt.m_pk:-lt.m_pk;
     else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
     ++l;
   }

@@ -1,6 +1,8 @@
 #include "CSSHOWER++/Tools/Parton.H"
+#include "CSSHOWER++/Tools/Singlet.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
@@ -11,6 +13,7 @@ namespace CSSHOWER {
     str<<"  Parton "<<&part<<" ("<<part.p_sing<<"), stat="
        <<part.m_stat<<", kin="<<part.m_kin<<" ["<<ATOOLS::ID(part.m_id)
        <<"]: "<<part.m_flav<<" : "<<part.m_mom
+       <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
        <<"["<<part.GetRFlow(1)<<","<<part.GetRFlow(2)<<"]"<<endl;
     if (part.m_pst==pst::IS)      str<<"     (Initial state parton)";
@@ -31,6 +34,8 @@ namespace CSSHOWER {
       str<<"  k_T next : "<<sqrt(part.m_kt_next);
       str<<std::endl;
     }
+    if (part.m_fixspec!=Vec4D())
+      str<<"  fix spec : "<<part.m_fixspec<<"\n";
     return str;
   }
 }
@@ -51,18 +56,20 @@ void Parton::UpdateDaughters()
 {
   if (this==NULL || p_next==NULL) return;
   msg_Indent();
-  msg_Debugging()<<METHOD<<"("<<this<<") {\n";
+  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
-  msg_Debugging()<<*p_next;
+  msg_IODebugging()<<*p_next;
   p_next->UpdateDaughters();
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<"}\n";
 }
 
-void Parton::UpdateNewDaughters()
+void Parton::UpdateNewDaughters(Parton *ref)
 {
   if (this==NULL || p_next==NULL) return;
+  ref=ref->GetSing()->GetLeft();
+  if (ref==NULL) THROW(fatal_error,"Internal error");
   msg_Indent();
-  msg_Debugging()<<METHOD<<"("<<this<<") {\n";
+  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
   for (int n(1);n<=2;++n) {
     p_next->SetFlow(n,GetFlow(n));
@@ -71,26 +78,26 @@ void Parton::UpdateNewDaughters()
   p_next->SetStart(m_kt_start);
   p_next->SetKtMax(m_kt_max);
   p_next->SetVeto(m_kt_veto);
-  p_next->SetKtPrev(m_kt_prev);
-  p_next->SetKtPrev(m_kin);
+  p_next->SetKtPrev(ref->KtPrev());
+  p_next->SetKtNext(ref->KtNext());
   p_next->SetId(m_id);
-  msg_Debugging()<<*p_next;
-  p_next->UpdateNewDaughters();
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<*p_next;
+  p_next->UpdateNewDaughters(ref);
+  msg_IODebugging()<<"}\n";
 }
 
 void Parton::UpdateColours()
 {
   if (this==NULL || p_next==NULL) return;
   msg_Indent();
-  msg_Debugging()<<METHOD<<"("<<this<<") {\n";
+  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   for (int n(1);n<=2;++n) {
     p_next->SetFlow(n,GetFlow(n));
     p_next->SetMEFlow(n,GetMEFlow(n));
   }
-  msg_Debugging()<<*p_next;
+  msg_IODebugging()<<*p_next;
   p_next->UpdateColours();
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<"}\n";
 }
 
 double Parton::Weight(const double &scale) 

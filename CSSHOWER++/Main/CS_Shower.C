@@ -346,6 +346,10 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       kmap[cl->Id()]=k;
     }
     if (sing->GetSpec()) {
+      split->SetOldMomentum(split->Momentum());
+      Vec4D fixspec(sing->GetSpec()->Momentum());
+      fixspec[0]=fixspec.PSpat();
+      split->SetFixSpec(fixspec);
       sing->SetSpec(sing->GetSpec()->GetNext());
       if (split==NULL) THROW(fatal_error,"Invalid tree structure");
       sing->SetSplit(split);
@@ -368,10 +372,8 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       if (m_recocheck&1) {
       std::cout.precision(12);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
-      int kin(l->Kin());
-      l->SetKin(split->Kin());
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
-      l->SetKin(kin);
+      Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
       p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
@@ -407,11 +409,14 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
+      l->SetOldMomentum(oldl);
+      r->SetOldMomentum(oldr);
+      s->SetOldMomentum(olds);
+      l->SetFixSpec(oldfl);
+      r->SetFixSpec(oldfr);
+      s->SetFixSpec(oldfs);
       }
-      int kin(l->Kin());
-      l->SetKin(split->Kin());
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode);
-      l->SetKin(kin);
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
     }
     double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
     double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
@@ -477,6 +482,9 @@ Singlet *CS_Shower::TranslateAmplitude
       p.SetFlow(2,cl->Col().m_j);
     }
     Parton *parton(new Parton(&p,is?pst::IS:pst::FS));
+    parton->SetMass2(p_ms->Mass2(p.Flav()));
+    if (!is && parton->Mass2()>10.0 && !p.Flav().Strong())
+      parton->SetMass2(parton->Momentum().Abs2());
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetRFlow();

@@ -117,10 +117,14 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       }
     }
   }
-  Flavour fli(l->GetFlavour());
+  double mi2(l->Mass2()), mj2(r->Mass2());
+  Vec4D spi(l->FixSpec()), spj(r->FixSpec()), spk(s->FixSpec());
+  Vec4D opi(l->OldMomentum()), opj(r->OldMomentum()), opk(s->OldMomentum());
+  Flavour fli(l->GetFlavour()), flj(r->GetFlavour());
   s->SetMomentum(s->GetPrev()->Momentum());
   l->SetMomentum(c->Momentum());
   l->SetFlavour(c->GetFlavour());
+  l->SetMass2(c->Mass2());
   l->SetKin(ckin);
   l->SetSpect(s);
   msg_Debugging()<<"before: c: "<<*l<<"        s: "<<*s<<"\n";
@@ -130,12 +134,14 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   int stat=0;
   if (c->GetType()==pst::FS) {
     if (s->GetPrev()->GetType()==pst::FS) {
-      stat=m_kinFF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
+      stat=m_kinFF.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
+      l->SetMass2(mi2);
     }
     else {
-      stat=m_kinFI.MakeKinematics(l,fli,r->GetFlavour(),r,1);
+      stat=m_kinFI.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
+      l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(s);
       if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
@@ -144,21 +150,31 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   }
   else {
     if (s->GetPrev()->GetType()==pst::FS) {
-      stat=m_kinIF.MakeKinematics(l,fli,r->GetFlavour(),r,1);
+      stat=m_kinIF.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
+      l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(l);
       if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),1);
     }
     else {
-      stat=m_kinII.MakeKinematics(l,fli,r->GetFlavour(),r,1);
+      stat=m_kinII.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
+      l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(l);
       if (stat>0)
 	split->BoostAllFS(l,r,s,split->GetSplit(),
 			  split->GetSplit()->GetFlavour(),3);
     }
+  }
+  if (stat<=0) {
+    l->SetFixSpec(spi);
+    r->SetFixSpec(spj);
+    s->SetFixSpec(spk);
+    l->SetOldMomentum(opi);
+    r->SetOldMomentum(opj);
+    s->SetOldMomentum(opk);
   }
   l->SetKin(kin);
   msg_Debugging()<<"after: l: "<<*l<<"       r: "<<*r<<"       s: "<<*s<<"\n";
@@ -174,8 +190,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
     nres=ReconstructDaughters(r->GetSing(),mode,pi,pj);
   if (stat>0) split->BoostBackAllFS
     (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),
-     s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
-     (c->GetType()==pst::IS?1:0));
+     (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
+      (c->GetType()==pst::IS?1:0))|4);
   msg_Debugging()<<"} -> "<<nres<<"\n";
   if (s!=split->GetSpec()) s->GetPrev()->UpdateDaughters();
   return nres;
@@ -184,6 +200,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 			    Parton *const newpC,int mode)
 {
+  DEBUG_FUNC("");
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
   newpB->SetKtMax(split->KtMax());
@@ -193,6 +210,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpB->SetKtPrev(split->KtPrev());
   newpC->SetKtPrev(split->KtPrev());
   newpB->SetKtNext(split->KtNext());
+  newpC->SetKtNext(split->KtNext());
   newpB->SetStat(split->Stat());
   if (split->GetNext()) {
     split->GetNext()->SetPrev(newpB);
@@ -201,7 +219,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpB->SetId(split->Id());
   newpC->SetId(split->Id());
   newpB->UpdateDaughters();
-  newpC->UpdateNewDaughters();
+  newpC->UpdateNewDaughters(newpB);
   split->GetSpect()->UpdateDaughters();
   split->GetSing()->ArrangeColours(split,newpB,newpC);
   newpB->SetPrev(split);
@@ -254,24 +272,27 @@ int Shower::MakeKinematics
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
   int stype(-1), stat(-1);
+  double mc2(m_kinFF.MS()->Mass2(flc));
   if (split->GetType()==pst::FS) {
+    double mb2(m_kinFF.MS()->Mass2(flb));
     if (spect->GetType()==pst::FS) {
       stype=0;
-      stat=m_kinFF.MakeKinematics(split,flb,flc,pj);
+      stat=m_kinFF.MakeKinematics(split,mb2,mc2,flc,pj);
     }
     else {
       stype=2;
-      stat=m_kinFI.MakeKinematics(split,flb,flc,pj);
+      stat=m_kinFI.MakeKinematics(split,mb2,mc2,flc,pj);
     }
   }
   else {
+    double ma2(m_kinFF.MS()->Mass2(fla));
     if (spect->GetType()==pst::FS) {
       stype=1;
-      stat=m_kinIF.MakeKinematics(split,fla,flc,pj);
+      stat=m_kinIF.MakeKinematics(split,ma2,mc2,flc,pj);
     }
     else {
       stype=3;
-      stat=m_kinII.MakeKinematics(split,fla,flc,pj);
+      stat=m_kinII.MakeKinematics(split,ma2,mc2,flc,pj);
     }
   }
   if (stat==1) {
@@ -289,6 +310,7 @@ int Shower::MakeKinematics
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
 			split->Momentum(),split->GetType()));
+  pi->SetMass2(m_sudakov.MS()->Mass2(pi->GetFlavour()));
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());
   pi->SetKin(m_kscheme);
@@ -308,15 +330,17 @@ int Shower::MakeKinematics
       (pi,pj,spect,split,split->GetFlavour(),stype);
     delete pi;
     pj->DeleteAll();
-    msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
+    msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->UpdateDaughters();
     spect->UpdateDaughters();
-    if (mode==0) ResetScales(split);
-    if (!ReconstructDaughters(split->GetSing(),0)) {
-      msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
-      return 0;
+    if (mode==0) {
+      ResetScales(split);
+      if (!ReconstructDaughters(split->GetSing(),0)) {
+	msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
+	return 0;
+      }
     }
     return ustat;
   }

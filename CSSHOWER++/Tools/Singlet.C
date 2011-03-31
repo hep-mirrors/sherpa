@@ -17,10 +17,12 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
+  Vec4D sum;
   str<<"Singlet parton list from CS_Shower : "<<&singlet<<endl;
   Parton * part;
   for (PLiter plit=singlet.begin();plit!=singlet.end();plit++) {
     part = (*plit);
+    sum+=part->GetType()==pst::IS?-part->Momentum():part->Momentum();
     str<<(*part);
   }
   if (singlet.GetSplit() || singlet.GetLeft() || singlet.GetRight() || singlet.GetSpec()) {
@@ -30,6 +32,7 @@ std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
     if (singlet.GetSpec()) str<<"Spec:  "<<singlet.GetSpec()<<"  ";
     str<<"\n";
   }
+  str<<"mom sum "<<sum<<"\n";
   str<<"-------------------------------------------------------------------------"<<endl;
   return str;
 }
@@ -295,6 +298,7 @@ void Singlet::AddParton(Parton *const p)
     Parton *np(p->GetNext());
     if (np==NULL) {
       np = new Parton(p->GetFlavour(),p->Momentum(),p->GetType());
+      np->SetMass2(p->Mass2());
       p->SetStat(1);
       p->SetNext(np);
       np->SetPrev(p);
@@ -828,6 +832,10 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+      if ((*plit)->FixSpec()!=Vec4D()) {
+	(*plit)->SetFixSpec(l->LT()*(*plit)->FixSpec());
+	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());
+      }
       if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
       (*plit)->SetMomentum(l->LT()*(*plit)->Momentum());
     }
@@ -839,8 +847,8 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 {
   if (p_all==NULL) return;
   Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
-  double ma2(p_ms->Mass2(l->GetFlavour())), mk2(p_ms->Mass2(s->GetFlavour()));
-  double mi2(p_ms->Mass2(r->GetFlavour())), mai2(p_ms->Mass2(f->GetFlavour()));
+  double ma2(l->Mass2()), mk2(s->Mass2());
+  double mi2(r->Mass2()), mai2(f->Mass2());
   Kin_Args lp;
   if (mode&2) {
     if (mode&1) {
@@ -858,14 +866,19 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
       double mb2(p_ms->Mass2(b->GetFlavour()));
       lp=ClusterIFDipole(ma2,mi2,mai2,mk2,mb2,pa,pi,pk,
-			 b->Momentum(),2|(l->Kin()?4:0));
+			 b->Momentum(),2|(((mode&4)?f:l)->Kin()?4:0));
     }
   }
   if (lp.m_lam.empty()) return;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
-    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit)
+    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
       (*plit)->SetMomentum(lp.m_lam*(*plit)->Momentum());
+      if ((*plit)->FixSpec()!=Vec4D()) {
+	(*plit)->SetFixSpec(lp.m_lam*(*plit)->FixSpec());
+	(*plit)->SetOldMomentum(lp.m_lam*(*plit)->OldMomentum());
+      }
+    }
   }
 }
 

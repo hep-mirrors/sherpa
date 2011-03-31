@@ -58,6 +58,7 @@ double CF_QED::Coupling(const double &scale,const int pol)
 
 bool CF_QED::AllowSpec(const ATOOLS::Flavour &fl) 
 {
+  if (!fl.Strong() && fl.Mass()>10.0) return false;
   if (m_cfl.IntCharge()==0) return fl.Charge();
   
   switch (m_type) {

@@ -22,13 +22,13 @@ namespace CSSHOWER {
   class Parton {
   private:
     ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom;
+    ATOOLS::Vec4D   m_mom, m_oldmom, m_fixspec;
     ATOOLS::Flow    m_flow,m_meflow;
     pst::code       m_pst;
     int             m_beam,m_stat,m_kin;
     double          m_kt_start, m_kt_veto, m_kt_test, m_t_min;
     double          m_kt_max, m_kt_prev, m_kt_next, m_phi;
-    double          m_z_test, m_y_test, m_weight, m_xBj;
+    double          m_z_test, m_y_test, m_weight, m_xBj, m_t;
     Parton        * p_left, * p_right;
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
@@ -46,7 +46,7 @@ namespace CSSHOWER {
 
     Parton *FollowUp();
     void    UpdateDaughters();
-    void    UpdateNewDaughters();
+    void    UpdateNewDaughters(Parton *ref);
     void    UpdateColours();
 
     inline void SetLT(const ATOOLS::Poincare_Sequence &lt) { m_lt=lt; }
@@ -58,6 +58,8 @@ namespace CSSHOWER {
 
     inline ATOOLS::Flavour   const GetFlavour()  const;
     inline ATOOLS::Vec4D     const Momentum()    const;
+    inline ATOOLS::Vec4D     const OldMomentum() const { return m_oldmom; }
+    inline ATOOLS::Vec4D     const FixSpec()     const { return m_fixspec; }
     inline ATOOLS::Vec4D           Momentum();
     inline pst::code               GetType()     const;
     inline int                     GetFlow(const int) const;
@@ -78,6 +80,7 @@ namespace CSSHOWER {
     inline double            const YTest()       const;
     inline double            const Weight()        const;
     inline double            const Xbj()         const;
+    inline double            const Mass2()       const { return m_t; }
     inline double            const Phi()         const;
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
@@ -87,6 +90,8 @@ namespace CSSHOWER {
     inline Singlet*                GetSing();
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);
+    inline void SetOldMomentum(const ATOOLS::Vec4D &p) { m_oldmom=p; }
+    inline void SetFixSpec(const ATOOLS::Vec4D &p) { m_fixspec=p; }
     inline void SetStart(const double);
     inline void SetKtMax(const double);
     inline void SetTMin(const double);
@@ -99,6 +104,7 @@ namespace CSSHOWER {
     inline void SetWeight(const double);
     inline void SetTest(const double,const double,const double,const double);
     inline void SetXbj(const double);
+    inline void SetMass2(const double t) { m_t=t; }
     inline void SetPhi(const double);
     inline void SetLeftOf(Parton *);
     inline void SetRightOf(Parton *);
