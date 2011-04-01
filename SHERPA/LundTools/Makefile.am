@@ -5,6 +5,8 @@ PYTHIASOURCES = pythia-6.4.18.f \
 		Lund_Interface.C
 PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
 
+MD5_EXCLUDE   =	pythia-6.4.18.f
+
 SVNTAG = SHERPA/LundTools
 include ../../svn.make
 
