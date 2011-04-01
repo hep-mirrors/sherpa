@@ -437,12 +437,12 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
 				   const int ngraph) 
 {
   Leg cl(CombinedLeg(p_legs[ngraph],i,j));
-  if (cl.Flav().Strong()) {
-    if (!p_legs[ngraph][k].Flav().Strong()) return;
-  }
-  else if (cl.Flav().IntCharge()==0 && cl.Flav()!=Flavour(kf_h0)) {
-    if (p_legs[ngraph][k].Flav().IntCharge()==0) return;
-  }
+//   if (cl.Flav().Strong()) {
+//     if (!p_legs[ngraph][k].Flav().Strong()) return;
+//   }
+//   else if (cl.Flav().IntCharge()==0 && cl.Flav()!=Flavour(kf_h0)) {
+//     if (p_legs[ngraph][k].Flav().IntCharge()==0) return;
+//   }
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j,k,cl.Flav()));
   if (cit!=m_combinations.end()) {
     cit->second.m_graphs.push_back(ngraph);
