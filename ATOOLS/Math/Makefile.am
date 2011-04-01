@@ -24,7 +24,6 @@ libToolsMath_la_SOURCES       =	\
 				Variable.C \
 				Permutation.C \
 				PermStore.C \
-				Primitive_Integrator.C \
 				Kabbala.C \
 				Tensor.C
 
@@ -50,7 +49,6 @@ localinc_HEADERS          =	\
 			Histogram_2D.H \
 			Permutation.H \
 			PermStore.H \
-			Primitive_Integrator.H \
 			Cluster_Algorithm.H \
 			Cluster_Algorithm.C \
 			Kabbala.H \
