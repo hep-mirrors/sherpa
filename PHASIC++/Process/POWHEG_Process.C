@@ -450,7 +450,6 @@ double POWHEG_Process::SelectZHProcess()
     if ((psum+=m_zh[mode][i].m_res)>=disc) {
       Process_Base *rproc(m_zh[mode][i].p_r);
       p_rproc->SetSelected(rproc);
-      rproc->Integrator()->RestoreInOrder();
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
       if (p_int->InSwaped()) rproc->Integrator()->SwapInOrder();
       return rproc->Integrator()->SelectionWeight(0)/
@@ -558,6 +557,7 @@ Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
 {
   m_smode=0;
   p_selected=this;
+  p_rproc->Integrator()->RestoreInOrder();
   for (size_t i(0);i<2;++i) m_zh[i].clear();
   m_zhsum[1]=m_zhsum[0]=0.0;
   Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,mode));
