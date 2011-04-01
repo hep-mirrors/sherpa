@@ -294,6 +294,11 @@ bool Blob_List::ColorConservation() const
     int real=(*pit)->GetFlow()->Code(1);
     int anti=-(*pit)->GetFlow()->Code(2);
     if (real!=0) {
+      if (anti!=0 && real==-anti) {
+	msg_Error()<<"Blob_List::ColorConservation(): "
+		   <<"Color singlet gluon "<<**pit<<std::endl;
+	return false;
+      }
       if (flows.find(real)!=flows.end()) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
 			   <<"Doubled color index '"<<real<<"' {\n   "
