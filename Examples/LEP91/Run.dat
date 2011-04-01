@@ -3,8 +3,8 @@
 }(run)
 
 (beam){
-  BEAM_1 =  11; BEAM_ENERGY_1 = 45.625;
-  BEAM_2 = -11; BEAM_ENERGY_2 = 45.625;
+  BEAM_1 =  11; BEAM_ENERGY_1 = 45.6;
+  BEAM_2 = -11; BEAM_ENERGY_2 = 45.6;
 }(beam)
 
 (isr){
