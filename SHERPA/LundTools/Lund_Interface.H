@@ -82,7 +82,7 @@ namespace SHERPA {
     void SwitchOffDecays(kf_code kfc);
     void AdjustProperties(ATOOLS::Flavour flav);
     void SwitchOffMassSmearing();
-    double DiceMass(ATOOLS::Flavour flav, double min, double max);
+    double GenerateMass(ATOOLS::Flavour flav, double min, double max);
     static void SaveStatus();
   };// end of class Lund_Interface
 

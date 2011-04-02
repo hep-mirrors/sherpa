@@ -119,9 +119,9 @@ bool MI_Base::VetoProcess(ATOOLS::Blob *blob)
   return false;
 }
 
-bool MI_Base::DiceProcess()
+bool MI_Base::GenerateProcess()
 {
-  msg_Error()<<"MI_Base::DiceProcess(): "
+  msg_Error()<<"MI_Base::GenerateProcess(): "
 		     <<"Virtual method called!"<<std::endl;
   return false;
 }
@@ -142,15 +142,15 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
-  if (!m_dicedprocess) return false;
+  if (!m_generatedprocess) return false;
   if (m_inparticles.empty()) {
     msg_Error()<<"MI_Base::FillBlob(..): "
 		       <<"Did not create any process yet!"<<std::endl
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
-  bool dicedprocess=m_dicedprocess;
-  m_dicedprocess=false;
+  bool generatedprocess=m_generatedprocess;
+  m_generatedprocess=false;
   if (m_type==HardEvent) {
     blob->SetType(ATOOLS::btp::Hard_Collision);
     blob->SetStatus(ATOOLS::blob_status::needs_showers &
@@ -183,7 +183,7 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
-  return dicedprocess;
+  return generatedprocess;
 }
 
 std::string MI_Base::TypeToString(TypeID type)
@@ -264,9 +264,9 @@ bool MI_None::VetoProcess(ATOOLS::Blob *blob)
   return false;
 }
 
-bool MI_None::DiceProcess()
+bool MI_None::GenerateProcess()
 {
-  m_dicedprocess=false;
+  m_generatedprocess=false;
   return true;
 }
 

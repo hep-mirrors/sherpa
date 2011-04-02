@@ -231,7 +231,7 @@ void Lund_Interface::SwitchOffMassSmearing()
   pydat1.mstj[24-1]=0;
 }
 
-double Lund_Interface::DiceMass(Flavour flav, double min, double max)
+double Lund_Interface::GenerateMass(Flavour flav, double min, double max)
 {
   int kc = pycomp(flav.Kfcode())-1;
   double peak = pydat2.pmas[1-1][kc];
@@ -366,8 +366,8 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
     msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<std::endl
 	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
-    if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
-	rpa.gen.NumberOfDicedEvents()<200) {
+    if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfGeneratedEvents()/100) ||
+	rpa.gen.NumberOfGeneratedEvents()<200) {
       msg_Tracking()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
       return Return_Value::Retry_Method;
     }
@@ -471,8 +471,8 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()
 	       <<std::endl;
     pydat1.mstu[24-1]=0;
-    if(pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
-       rpa.gen.NumberOfDicedEvents()<200) {
+    if(pydat1.mstu[23-1]<int(rpa.gen.NumberOfGeneratedEvents()/100) ||
+       rpa.gen.NumberOfGeneratedEvents()<200) {
       msg_Tracking()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retrying..."
 		 <<std::endl;
       return Return_Value::Retry_Phase;
@@ -683,7 +683,7 @@ void Lund_Interface::Error(const int error)
   else {
     msg_Tracking()<<"Lund_Interface::Error("<<error<<") "<<om::red
 	       <<"Pythia calls PYERRM("<<error<<") in event "
-	       <<rpa.gen.NumberOfDicedEvents()<<"."
+	       <<rpa.gen.NumberOfGeneratedEvents()<<"."
 	       <<om::reset<<endl;
 //     if (msg_LevelIsDebugging()) {
 //       msg_Tracking()<<*s_bloblist<<endl;

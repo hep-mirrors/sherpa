@@ -194,7 +194,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
   }
 }
 
-bool Sudakov::Dice(Parton * split) 
+bool Sudakov::Generate(Parton * split) 
 {
   m_weight=1.0;
   ClearSpecs();
@@ -238,12 +238,12 @@ bool Sudakov::Dice(Parton * split)
       break;
     }
   case pst::none: 
-    msg_Error()<<"Error in Sudakov::Dice : No pst-type for splitter. "<<endl
+    msg_Error()<<"Error in Sudakov::Generate : No pst-type for splitter. "<<endl
 	       <<(*split)<<(*spect);
     abort();
   }
   if (m_type==cstp::none) {
-    msg_Error()<<"Error in Sudakov::Dice : No type for splitter. "<<endl
+    msg_Error()<<"Error in Sudakov::Generate : No type for splitter. "<<endl
 	       <<(*split)<<(*spect);
     abort();
   }
@@ -315,7 +315,7 @@ bool Sudakov::Dice(Parton * split)
     }
       break;
   default:
-      msg_Error()<<"Error in Sudakov::Dice!"<<std::endl;
+      msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       abort();
     }
     if (Veto(Q2,x)) { 

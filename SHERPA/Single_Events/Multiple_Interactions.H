@@ -21,7 +21,7 @@ namespace SHERPA {
 
     ATOOLS::Blob_List *p_bloblist;
 
-    bool m_vetoed, m_diced;
+    bool m_vetoed, m_generated;
 
     ATOOLS::Return_Value::code CheckBlobList(ATOOLS::Blob_List *const bloblist);
     bool                       VetoHardProcess(ATOOLS::Blob *const blob);

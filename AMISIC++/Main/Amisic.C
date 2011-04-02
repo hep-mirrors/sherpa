@@ -86,7 +86,7 @@ bool Amisic::VetoHardProcess(ATOOLS::Blob *blob)
 bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   if (MI_Base::StopGeneration(MI_Base::HardEvent)) return false;
-  if (!p_hardbase->DiceProcess()) return false;
+  if (!p_hardbase->GenerateProcess()) return false;
   p_hardbase->UpdateAll(p_hardbase);
   return p_hardbase->FillBlob(blob);
 }
@@ -94,7 +94,7 @@ bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
 bool Amisic::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   if (MI_Base::StopGeneration(MI_Base::SoftEvent)) return false;
-  if (!p_softbase->DiceProcess()) return false;
+  if (!p_softbase->GenerateProcess()) return false;
   p_softbase->UpdateAll(p_softbase);
   return p_softbase->FillBlob(blob);
 }

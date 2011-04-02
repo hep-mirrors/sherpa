@@ -130,7 +130,7 @@ void Hadrons::ChooseDecayKinematics(
         double weight;
         int trials=0;
         do {
-          DiceUncorrelatedKinematics( moms, hdc, anti );
+          GenerateUncorrelatedKinematics( moms, hdc, anti );
           
           // Calculate amplitude in signal process cms frame for correlation
           for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
@@ -143,7 +143,7 @@ void Hadrons::ChooseDecayKinematics(
           weight = numerator/denominator;
           if(weight>(1.0+Accu())) {
             msg_Error()<<METHOD<<" Error: weight="<<weight<<" in "
-                <<rpa.gen.NumberOfDicedEvents()<<endl
+                <<rpa.gen.NumberOfGeneratedEvents()<<endl
                 <<(*blob)<<endl;
           }
           trials++;
@@ -158,7 +158,7 @@ void Hadrons::ChooseDecayKinematics(
         delete amps; amps=NULL;
       }
       else { // if first particle in SC chain
-        DiceUncorrelatedKinematics( moms, hdc, anti );
+        GenerateUncorrelatedKinematics( moms, hdc, anti );
         
         for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
         Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
@@ -168,7 +168,7 @@ void Hadrons::ChooseDecayKinematics(
       }
     }
     else {
-      DiceUncorrelatedKinematics( moms, hdc, anti );
+      GenerateUncorrelatedKinematics( moms, hdc, anti );
     }
   }
   
@@ -205,7 +205,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Tabl
   // set CP asymmetries due to interference between with mixing and without
   bool setasymmetries = p_mixinghandler->SetCPAsymmetries(blob->InParticle(0), table);
 
-  // dice decay channel acc. to BR
+  // generate decay channel acc. to BR
   // fixme : treat K0 special
   Hadron_Decay_Channel* dec_channel = table->Select();
 
@@ -215,7 +215,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob, Hadron_Decay_Tabl
   return dec_channel;
 }
 
-void Hadrons::DiceUncorrelatedKinematics(
+void Hadrons::GenerateUncorrelatedKinematics(
                                           std::vector<ATOOLS::Vec4D> & moms,
                                           Hadron_Decay_Channel       * hdc,
                                           bool                         anti)

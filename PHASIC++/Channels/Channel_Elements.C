@@ -699,7 +699,7 @@ void Channel_Elements::TChannelGrid(const Vec4D& p1in,const Vec4D& p2in,
 
 // treated from here
 
-double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,
+double Channel_Elements::GenerateYUniform(const double tau,const Double_Container &xinfo,
 				      const Double_Container &yinfo,const double ran,const int mode) const
 {
   /*!
@@ -722,7 +722,7 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
   double y=ymin+(ymax-ymin)*ran;
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
-    msg_Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::GenerateYUniform("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   // If y is close to any bound, set it to this bound
@@ -740,7 +740,7 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
 					const Double_Container &yinfo,double& ran,const int mode) const
 {
   /*
-    See DiceYUniform for details
+    See GenerateYUniform for details
   */
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
@@ -755,7 +755,7 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
 
 const double pre=1.0;
 
-double Channel_Elements::DiceYCentral(const double tau,const Double_Container &xinfo,
+double Channel_Elements::GenerateYCentral(const double tau,const Double_Container &xinfo,
 				      const Double_Container &yinfo,const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
@@ -768,7 +768,7 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
   double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
-    msg_Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::GenerateYCentral("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
     if (ATOOLS::IsEqual(y, ymin)) 
@@ -797,7 +797,7 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   return wt/pre*(pre*pre+yinfo[2]*yinfo[2]);
 }
 
-double Channel_Elements::DiceYForward(const double yexponent,const double tau,
+double Channel_Elements::GenerateYForward(const double yexponent,const double tau,
 				      const Double_Container &xinfo,const Double_Container &yinfo, 
 				      const double ran,const int mode) const
 {
@@ -814,7 +814,7 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
   double y=Channel_Basics::PeakedDist(ypeak,yexponent,ymin,ymax,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
-    msg_Error()<<"Channel_Elements::DiceYForward("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::GenerateYForward("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
      if (ATOOLS::IsEqual(y, ymin)) 
@@ -852,7 +852,7 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
   return wt;
 }
 
-double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
+double Channel_Elements::GenerateYBackward(const double yexponent,const double tau,
 				       const Double_Container &xinfo,const Double_Container &yinfo, 
 				       const double ran,const int mode) const
 {
@@ -867,7 +867,7 @@ double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
     std::cout.precision(14);
-    msg_Error()<<"Channel_Elements::DiceYBackward("<<tau<<","<<xinfo<<","
+    msg_Error()<<"Channel_Elements::GenerateYBackward("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): ";
     std::cout.precision(14);
 msg_Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "

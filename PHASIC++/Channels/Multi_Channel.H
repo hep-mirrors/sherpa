@@ -104,7 +104,7 @@ namespace PHASIC {
     inline int                  ID()        { return m_id; }
     std::string                 ChID(int);
     Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
-    void                        NoDice()    { m_lastdice=-1; }
+    void                        NoGenerate()    { m_lastdice=-1; }
     inline const std::vector<Single_Channel*> &Best() const { return m_best; }
 
     int                         OType() const  { return m_otype; }

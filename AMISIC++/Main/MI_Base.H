@@ -41,7 +41,7 @@ namespace AMISIC {
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;
 
-    bool m_dicedparameter, m_dicedprocess, m_filledblob;
+    bool m_generatedparameter, m_generatedprocess, m_filledblob;
 
     ATOOLS::Particle_List m_inparticles, m_outparticles;
 
@@ -96,9 +96,9 @@ namespace AMISIC {
       \brief Vetoes a given process according to the 
       probability density used for event generation.
     */
-    virtual bool DiceProcess();
+    virtual bool GenerateProcess();
     /*!
-      \fn virtual bool DiceProcess()
+      \fn virtual bool GenerateProcess()
       \brief Generates one process according to the 
       specific probability density.
     */
@@ -203,9 +203,9 @@ namespace AMISIC {
       \brief Dummy method
     */
 
-    bool DiceOrderingParameter();
+    bool GenerateOrderingParameter();
     /*!
-      \fn bool DiceOrderingParameter()
+      \fn bool GenerateOrderingParameter()
       \brief Dummy method
     */
     bool VetoProcess(ATOOLS::Blob *blob);
@@ -213,9 +213,9 @@ namespace AMISIC {
       \fn bool VetoProcess(ATOOLS::Blob *blob)
       \brief Dummy method
     */
-    bool DiceProcess();
+    bool GenerateProcess();
     /*!
-      \fn bool DiceProcess()
+      \fn bool GenerateProcess()
       \brief Dummy method
     */
 

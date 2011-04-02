@@ -57,12 +57,12 @@ namespace PHOTONS {
 
   /*!
     \var double Generate_One_Photon::m_theta
-    \brief diced inclinational angle of the photon in a dipole
+    \brief generated inclinational angle of the photon in a dipole
   */
 
   /*!
     \var double Generate_One_Photon::m_phi
-    \brief diced azimutal angle of the photon in a dipole
+    \brief generated azimutal angle of the photon in a dipole
   */
 
   /*!

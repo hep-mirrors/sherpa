@@ -38,7 +38,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
 #endif
-  event.set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+  event.set_event_number(ATOOLS::rpa.gen.NumberOfGeneratedEvents());
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex;
@@ -92,7 +92,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
 #endif
-  event.set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+  event.set_event_number(ATOOLS::rpa.gen.NumberOfGeneratedEvents());
   HepMC::GenVertex * vertex=new HepMC::GenVertex();
   std::vector<HepMC::GenParticle*> beamparticles;
   std::vector<std::pair<HepMC::FourVector,int> > beamparts,
@@ -268,7 +268,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       std::vector<double> subweight; subweight.push_back(sub->m_result);
       subevent->weights()=subweight;
       // set the event number (could be used to identify correlated events)
-      subevent->set_event_number(ATOOLS::rpa.gen.NumberOfDicedEvents());
+      subevent->set_event_number(ATOOLS::rpa.gen.NumberOfGeneratedEvents());
       m_subeventlist.push_back(subevent);
     }
   }

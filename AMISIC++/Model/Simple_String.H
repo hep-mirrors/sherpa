@@ -63,9 +63,9 @@ namespace AMISIC {
       \fn bool VetoProcess(ATOOLS::Blob *blob)
       \brief Dummy method
     */
-    bool DiceProcess();
+    bool GenerateProcess();
     /*!
-      \fn bool DiceProcess()
+      \fn bool GenerateProcess()
       \brief Generates one process according to 
       \f${\rm d}\sigma\,/\,{\rm d}t\f$ employing 
       the class Reggeon_Trajectory.

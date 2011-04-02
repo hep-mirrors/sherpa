@@ -250,7 +250,7 @@ Amisic_Histogram<ArgumentType>::operator[](const Argument_Type y) const
 }
 
 template <class ArgumentType>
-const ArgumentType Amisic_Histogram<ArgumentType>::DiceX() const
+const ArgumentType Amisic_Histogram<ArgumentType>::GenerateX() const
 {
   if (p_integral==NULL) {
     p_integral = new Argument_Vector(m_nbins,0.0);

@@ -69,7 +69,7 @@ void Threshold_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Uniform_V::GenerateWeight(const int mode) 
@@ -123,7 +123,7 @@ void Threshold_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -179,7 +179,7 @@ void Threshold_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Ke
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -236,7 +236,7 @@ void Threshold_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   rans[0]=ran[0];
   if (mode==3) rans[1]=ran[1];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Central_V::GenerateWeight(int mode)
@@ -291,7 +291,7 @@ void Resonance_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Uniform_V::GenerateWeight(const int mode) 
@@ -347,7 +347,7 @@ void Resonance_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -405,7 +405,7 @@ void Resonance_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Ke
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -464,7 +464,7 @@ void Resonance_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   rans[0]=ran[0];
   if (mode==3) rans[1]=ran[1];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Central_V::GenerateWeight(int mode)
@@ -518,7 +518,7 @@ void Simple_Pole_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Uniform_V::GenerateWeight(const int mode) 
@@ -573,7 +573,7 @@ void Simple_Pole_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -630,7 +630,7 @@ void Simple_Pole_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -688,7 +688,7 @@ void Simple_Pole_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   rans[0]=ran[0];
   if (mode==3) rans[1]=ran[1];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Central_V::GenerateWeight(int mode)
@@ -745,7 +745,7 @@ void Leading_Log_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Leading_Log_Uniform_V::GenerateWeight(const int mode) 
@@ -807,7 +807,7 @@ void Leading_Log_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -871,7 +871,7 @@ void Leading_Log_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -935,7 +935,7 @@ void Leading_Log_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Leading_Log_Central_V::GenerateWeight(int mode)
@@ -1003,7 +1003,7 @@ void LBS_Compton_Peak_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Uniform_V::GenerateWeight(const int mode) 
@@ -1075,7 +1075,7 @@ void LBS_Compton_Peak_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -1149,7 +1149,7 @@ void LBS_Compton_Peak_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.GenerateYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -1223,7 +1223,7 @@ void LBS_Compton_Peak_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Central_V::GenerateWeight(int mode)

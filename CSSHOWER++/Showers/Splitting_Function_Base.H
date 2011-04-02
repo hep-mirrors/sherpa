@@ -87,7 +87,7 @@ namespace CSSHOWER {
       */
     virtual double OverEstimated(const double z,const double y) = 0;
     /**
-      * Dice z according to OverEstimated (solve OverIntegrated for new z)
+      * Generate z according to OverEstimated (solve OverIntegrated for new z)
       */
     virtual double Z() = 0;
 

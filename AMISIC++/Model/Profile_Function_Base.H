@@ -174,7 +174,7 @@ namespace AMISIC {
       \brief Calculates the mean overlap \f$\left<\tilde{O}\right>\f$
     */
 
-    double DiceImpactParameter() const;
+    double GenerateImpactParameter() const;
 
     // inline functions
     inline pft::code Type() const { return m_type; }

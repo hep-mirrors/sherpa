@@ -108,7 +108,7 @@ namespace AMISIC {
       \fn bool CreateMomenta()
       \brief Employs the selected process to determine the kinematics
       of the interaction. The outgoing transverse momentum is kept fixed. 
-      It is diced in advance by DiceOrderingParameter.      
+      It is generated in advance by GenerateOrderingParameter.      
     */
 
     bool ReadInStatus(const std::string &path);
@@ -153,16 +153,16 @@ namespace AMISIC {
     void Update(const MI_Base *mibase);
     void Reset();
 
-    bool DiceEnhanceFactor();
+    bool GenerateEnhanceFactor();
     /*!
-      \fn bool DiceEnhanceFactor()
+      \fn bool GenerateEnhanceFactor()
       \brief Generates an enhance factor according to the 
       hadron profile in impact parameter space. Employs
       Profile_Function_Base.
     */
-    bool DiceOrderingParameter();
+    bool GenerateOrderingParameter();
     /*!
-      \fn bool DiceOrderingParameter()
+      \fn bool GenerateOrderingParameter()
       \brief Determines the maximum outgoing transverse momentum 
       of the next hard interaction.
     */
@@ -174,9 +174,9 @@ namespace AMISIC {
       \f$p(p_\perp)\,\propto\;
       {\rm d}\sigma\,/\,{\rm d}p_\perp\f$.
      */
-    bool DiceProcess();
+    bool GenerateProcess();
     /*!
-      \fn bool DiceProcess()
+      \fn bool GenerateProcess()
       \brief Selects a process type for the interaction according to 
       the differential probabilities. Sets and resets the ISR ranges.
     */

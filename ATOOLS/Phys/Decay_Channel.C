@@ -63,7 +63,7 @@ double DCWeight(double s, double sp, double b, double c)
   return DCLambda(sp,b,c)/DCLambda(s,b,c)*s/sp;
 }
 
-double Decay_Channel::DiceMass(const double& min,const double& max) const
+double Decay_Channel::GenerateMass(const double& min,const double& max) const
 {
   double mass=-1.0;
   double decaymin = MinimalMass();

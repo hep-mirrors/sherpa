@@ -303,7 +303,7 @@ bool Flavour::IsC_Hadron() const
   return 0;
 }
 
-double Flavour::DiceLifeTime() const
+double Flavour::GenerateLifeTime() const
 {
   double proper_time = rpa.hBar() / Width();
   return -proper_time*log(1.-ran.Get());

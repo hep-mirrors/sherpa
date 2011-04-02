@@ -49,7 +49,7 @@ namespace SHERPA {
 #endif
     std::string        Name()       { return m_decmodel; }
     std::set<kf_code>  * GetCans() { return p_cans; }
-    bool               DiceMass(ATOOLS::Particle*, double min, double max);
+    bool               GenerateMass(ATOOLS::Particle*, double min, double max);
     void               SetSignalProcessBlob(ATOOLS::Blob* spblob);
     bool               PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist);
     void               CleanUp();

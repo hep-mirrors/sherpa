@@ -230,7 +230,7 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 bool Shower::TrialEmission(double & kt2win,Parton * split) 
 {
   double kt2(0.),z(0.),y(0.),phi(0.);
-  if (m_sudakov.Dice(split)) {
+  if (m_sudakov.Generate(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
     split->SetSF(m_sudakov.Selected());
     if (kt2>kt2win) {

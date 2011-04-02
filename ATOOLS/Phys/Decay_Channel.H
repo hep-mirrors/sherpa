@@ -39,7 +39,7 @@ namespace ATOOLS {
     inline const double& Width() const { return m_width; }
     inline const double& DeltaWidth() const { return m_deltawidth; }
     inline const double& MinimalMass() const { return m_minmass; }
-    double DiceMass(const double& min, const double& max) const;
+    double GenerateMass(const double& min, const double& max) const;
 
     inline int NOut() const { return m_flouts.size(); }
     inline const Flavour& GetDecaying() const { return m_flin; }      

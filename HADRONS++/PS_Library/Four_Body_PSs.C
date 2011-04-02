@@ -161,7 +161,7 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator
 
 void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,double * _ran)
 {
-  // dice the momentum of the decayer and spectator quark
+  // generate the momentum of the decayer and spectator quark
   // according to PSpat() = gauss(mean=lambda_qcd, sigma=lambda_qcd/mQ)
   // and costheta, phi uniform
   double lambda_qcd=0.2;

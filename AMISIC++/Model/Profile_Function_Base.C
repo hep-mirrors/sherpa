@@ -144,7 +144,7 @@ bool Profile_Function_Base::CalculateOMean(const double ratio)
   return true;
 }
 
-double Profile_Function_Base::DiceImpactParameter() const
+double Profile_Function_Base::GenerateImpactParameter() const
 {
   double b=0.0;
   double maxintegral=MajorIntegral(m_bmin);

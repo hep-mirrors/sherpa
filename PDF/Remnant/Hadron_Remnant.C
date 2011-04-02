@@ -78,7 +78,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   if (!DecomposeHadron()) success=false;
   AssignRemnants();
   FillRemnants();
-  if (!DiceKinematics()) success=false;
+  if (!GenerateKinematics()) success=false;
   for (size_t j=0;j<m_extracted.size();++j) {
     if (particlelist!=NULL) {
       m_extracted[j]->SetNumber(-particlelist->size());
@@ -98,7 +98,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   return success;
 }
 
-bool Hadron_Remnant::DiceKinematics()
+bool Hadron_Remnant::GenerateKinematics()
 {
   PROFILE_HERE;
   unsigned int trials;
@@ -163,7 +163,7 @@ bool Hadron_Remnant::DiceKinematics()
     p[3]=Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      msg_Tracking()<<"Hadron_Remnant::DiceKinematics(): "
+      msg_Tracking()<<"Hadron_Remnant::GenerateKinematics(): "
 			 <<"Parton ("<<m_companions[j]<<") "
 			 <<" has non-positive momentum: p = "
 			 <<m_companions[j]->Momentum()<<" m_{"

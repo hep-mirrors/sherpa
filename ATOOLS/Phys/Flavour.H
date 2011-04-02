@@ -130,7 +130,7 @@ namespace ATOOLS {
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
 
-    double DiceLifeTime() const;
+    double GenerateLifeTime() const;
 
     // inline functions
     inline Flavour Bar() const { return Flavour(*p_info,!m_anti); }

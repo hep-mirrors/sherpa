@@ -26,7 +26,7 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_analysis, m_cutscheme;
       //std::string         m_runtime;
-      long int            m_nevents, m_ndicedevents;
+      long int            m_nevents, m_ngenevents;
       long int            m_seed;
       long int            m_seed2;
       double              m_ecms;
@@ -41,7 +41,7 @@ namespace ATOOLS {
       bool m_spincorrelations;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
-      inline long   NumberOfDicedEvents()                 { return m_ndicedevents; }
+      inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
       inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
@@ -65,7 +65,7 @@ namespace ATOOLS {
       inline MyTiming &Timer()                            { return m_timer;     }
       inline int    BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
-      inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
+      inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline const std::string &UserName() { return m_username; }
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 

@@ -162,7 +162,7 @@ bool Event_Reader::FillBlobs(Blob_List * blobs)
   switch (m_phasemode) {
   case -1:
     result=ReadInEvent(blobs);
-    if(nev==rpa.gen.NumberOfDicedEvents()) CloseFile();
+    if(nev==rpa.gen.NumberOfGeneratedEvents()) CloseFile();
     return result;
   }
   msg_Error()<<"Error in Event_Reader::FillBlobs."<<std::endl

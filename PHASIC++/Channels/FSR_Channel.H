@@ -61,7 +61,7 @@ namespace PHASIC {
   class T2Channel : public Single_Channel {
     /*!
       This channel is for bfkl stuff only.
-      It dices the momenta in the ladder 
+      It generates the momenta in the ladder 
       from bottom to top.
     */
     double E,s;
@@ -87,7 +87,7 @@ namespace PHASIC {
   class T3Channel : public Single_Channel {
     /*!
       This channel is for bfkl stuff only.
-      It dices the momenta in the ladder 
+      It generates the momenta in the ladder 
       from top to bottom.
     */
     double E,s;

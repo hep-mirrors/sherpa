@@ -102,7 +102,7 @@ namespace AMISIC {
     const Argument_Type operator()(const Argument_Type x) const;
     const Argument_Type operator[](const Argument_Type x) const;
 
-    const Argument_Type DiceX() const;
+    const Argument_Type GenerateX() const;
 
     void StoreData();
     void RestoreData();

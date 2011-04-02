@@ -65,7 +65,7 @@ void Return_Value::PrintSingleStatistics(std::ostream &str,
 void Return_Value::PrintStatistics(std::ostream &str) const
 {
   str<<METHOD<<"(): Statistics {"<<endl;
-  str<<"  Generated events: "<<rpa.gen.NumberOfDicedEvents()<<endl;
+  str<<"  Generated events: "<<rpa.gen.NumberOfGeneratedEvents()<<endl;
   PrintSingleStatistics(str,"Errors",s_error_counter);
   PrintSingleStatistics(str,"Warnings",s_warning_counter);
   PrintSingleStatistics(str,"New events",s_new_event_counter);

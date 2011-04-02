@@ -138,10 +138,10 @@ bool Simple_String::CreateMomenta()
   return true;
 }
 
-bool Simple_String::DiceProcess()
+bool Simple_String::GenerateProcess()
 {
   s_stopsoft=true;
-  return m_dicedprocess=CreateMomenta();
+  return m_generatedprocess=CreateMomenta();
 }
 
 void Simple_String::Reset()

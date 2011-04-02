@@ -238,7 +238,7 @@ double       Particle::FinalMass() const             { return m_finalmass; }
 void         Particle::SetMomentum(const Vec4D& vc4) { m_momentum = vc4; }
 double       Particle::Time() const                  { return m_dec_time; }
 void         Particle::SetTime(const double t)       { m_dec_time = t; }
-void         Particle::SetTime()                     { m_dec_time = m_fl.DiceLifeTime(); }
+void         Particle::SetTime()                     { m_dec_time = m_fl.GenerateLifeTime(); }
 
 // Production and decay vertices
 Vec4D Particle::XProd() const

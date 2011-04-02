@@ -101,7 +101,7 @@ namespace PHOTONS {
     \fn void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle()
     \brief generates \f$ \theta \f$ and \f$ \varphi \f$
 
-    One dipole is diced with probability \f$ \frac{|\bar{n}_k|}{\sum|\bar{n}_k|} \f$ and then the class Generate_Dipole_Photon_Angle is invoked to generate the photon angles
+    One dipole is generated with probability \f$ \frac{|\bar{n}_k|}{\sum|\bar{n}_k|} \f$ and then the class Generate_Dipole_Photon_Angle is invoked to generate the photon angles
   */
 
   /*!

@@ -162,7 +162,7 @@ void Helicity_Integrator::AddPoint(const double &weight)
 
 void Helicity_Integrator::Optimize()
 {
-  size_t diced(0);
+  size_t generated(0);
   double norm(0.0), oldnorm(0.0);
   for (size_t i(0);i<m_weights.size();++i)
     if (m_weights[i]!=0.0 && m_n[i]<(int)(5000*m_iter)) return;
@@ -176,11 +176,11 @@ void Helicity_Integrator::Optimize()
       THROW(fatal_error,"Invalid weight.");
     m_weights[i]=alpha;
     norm+=alpha;
-    ++diced;
+    ++generated;
   }
   norm/=oldnorm;
   oldnorm=0.0;
-  if (diced==0) THROW(fatal_error,"No channel diced.");
+  if (generated==0) THROW(fatal_error,"No channel generated.");
   for (size_t i(0);i<m_weights.size();++i) {
     if (m_sum2[i]!=0.0) m_weights[i]/=norm;
     m_asum[i]=oldnorm+=m_weights[i];

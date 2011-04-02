@@ -115,8 +115,8 @@ namespace SHERPA {
   /*!
     \fn Hadron_Decays::SetMasses(ATOOLS::Blob*)
     \brief Uses the appropriate decay handler for each outparticle to
-    dice its destination mass, potentially using the information attached
-    in the CreateDecayBlob method. The diced masses are stored in the
+    generate its destination mass, potentially using the information attached
+    in the CreateDecayBlob method. The generated masses are stored in the
     FinalMass() property of each particle.
     */
   /*!
@@ -141,7 +141,7 @@ namespace SHERPA {
   /*!
     \fn PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist)
     \brief Uses the appropriate hadron decay handler for inpart to add a
-    mixing blob for it in case that is activated and diced.
+    mixing blob for it in case that is activated and generated.
     */
   /*!
     \fn void SetPosition(ATOOLS::Blob* blob)

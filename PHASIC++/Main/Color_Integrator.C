@@ -112,7 +112,7 @@ size_t Color_Integrator::GenerateIndex()
   return std::string::npos;
 }
 
-bool Color_Integrator::DiceColours()
+bool Color_Integrator::GenerateColours()
 {
   Idx_Vector iids, jids;
   for (size_t i(0);i<m_ids.size();++i)
@@ -609,7 +609,7 @@ bool Color_Integrator::LookUp()
   return true;
 }
 
-int Color_Integrator::Dice()
+int Color_Integrator::Generate()
 {
   double weight(0.0);
   if (m_otfcc) {
@@ -648,19 +648,19 @@ bool Color_Integrator::GeneratePoint()
   m_fincc=true;
   m_valid=false;
   if (m_alpha.empty() || m_alphamode==0) {
-    DiceColours();
+    GenerateColours();
     m_cweight=m_weight;
     if (!CheckDecays()) return false;
     return m_valid=m_nogen?true:GenerateOrders();
   }
   if (LookUp()) return m_valid=true;
   while (true) {
-    DiceColours();
+    GenerateColours();
     if (!GenerateOrders()) {
       if (m_alphamode>1) return false;
       continue;
     }
-    switch (Dice()) {
+    switch (Generate()) {
     case 1: return m_valid=true;
     case 0: return false;
     }

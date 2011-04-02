@@ -530,7 +530,7 @@ bool Simple_Chain::CreateMomenta()
 				 m_xkey.Doubles());
 		PHASIC::Weight_Info *info=
 		  p_xs->OneEvent(0,PHASIC::psm::no_lim_isr|
-				 PHASIC::psm::no_dice_isr);
+				 PHASIC::psm::no_gen_isr);
 		if (info) delete info;
 		ResetISRRange();
 		cur->AddBinExtra(m_last[0],1.0,3);
@@ -592,18 +592,18 @@ bool Simple_Chain::CreateMomenta()
   return false;
 }
 
-bool Simple_Chain::DiceProcess()
+bool Simple_Chain::GenerateProcess()
 {
   if (m_differentials.size()==0) return false;
   while (true) {
-  if (!DiceOrderingParameter()) return false;
-  if (m_dicedparameter) m_dicedparameter=false;
+  if (!GenerateOrderingParameter()) return false;
+  if (m_generatedparameter) m_generatedparameter=false;
   else {
-    m_dicedprocess=false;
+    m_generatedprocess=false;
     return true;
   }
   if (m_last[2]*m_last[3]<=m_last[0]*m_last[0]) {
-    m_dicedprocess=false;
+    m_generatedprocess=false;
     return true;
   }
   p_fsrinterface->SetValue(m_last[0]);
@@ -635,23 +635,23 @@ bool Simple_Chain::DiceProcess()
 	SetISRRange();
 	if (!CreateMomenta()) continue;
 	ResetISRRange();
-	m_dicedprocess=true;
+	m_generatedprocess=true;
 	return m_filledblob;
   }
   THROW(critical_error,"Internal Error. Could not select any process.");
   return false;
 }
 
-bool Simple_Chain::DiceEnhanceFactor()
+bool Simple_Chain::GenerateEnhanceFactor()
 {
   if (p_profile==NULL) return true;
   double b=0.0;
   double last=(*p_total)(m_last[0]);
   do {
-    b=p_profile->DiceImpactParameter();
+    b=p_profile->GenerateImpactParameter();
     m_enhance=(*p_profile)(b)/p_profile->OMean();
   } while (exp(-m_enhance*last)<=ran.Get());
-  msg_Tracking()<<"Simple_Chain::DiceEnhanceFactor(): { profile '"
+  msg_Tracking()<<"Simple_Chain::GenerateEnhanceFactor(): { profile '"
 		<<p_profile->Type()
 		<<"'\n   m_last[0]  = "<<m_last[0]<<"\n   p(k_t^2)   = "<<last
 		<<"\n   b          = "<<b
@@ -661,16 +661,16 @@ bool Simple_Chain::DiceEnhanceFactor()
   return true;
 }
 
-bool Simple_Chain::DiceOrderingParameter()
+bool Simple_Chain::GenerateOrderingParameter()
 { 
   if (m_last[0]<=m_stop[0]) {
-    msg_Error()<<"Simple_Chain::DiceOrderingParameter(): "
+    msg_Error()<<"Simple_Chain::GenerateOrderingParameter(): "
 	       <<"Value exceeded minimum: last = "<<m_last[0]
 	       <<" vs. stop = "<<m_stop[0]<<std::endl;
     s_stophard=true;
     return false;
   }
-  if (s_cleaned) if (!DiceEnhanceFactor()) {
+  if (s_cleaned) if (!GenerateEnhanceFactor()) {
     s_stophard=true;
     return false;
   }
@@ -680,11 +680,11 @@ bool Simple_Chain::DiceOrderingParameter()
   msg_Debugging()<<"new p_T = "<<m_last[0]<<"\n";
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
-    m_dicedparameter=false;
+    m_generatedparameter=false;
     s_stophard=true;
     return true;
   }
-  m_dicedparameter=true;
+  m_generatedparameter=true;
   s_stophard=false;
   return true;
 }

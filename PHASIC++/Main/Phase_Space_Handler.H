@@ -35,7 +35,7 @@ namespace PHASIC {
     enum code {
       normal_call = 0,
       no_lim_isr  = 32,
-      no_dice_isr = 64
+      no_gen_isr  = 64
     };
 
   };// end of struct psm

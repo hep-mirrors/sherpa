@@ -341,8 +341,8 @@ namespace PHOTONS {
     \fn std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies()
     \brief generates the actual photon number of the event and each photon's energy
 
-    The method first dices the number of photons to be generated according to 
-    a Poisson distribution with mean \f$ \bar{n} \f$ and instantaneously dices 
+    The method first generates the number of photons to be generated according to 
+    a Poisson distribution with mean \f$ \bar{n} \f$ and instantaneously generates 
     their energies according to a \f$ \frac{1}{E} \f$ energy distribution. Sets 
     m_n and returns a vector containing the energies.
   */

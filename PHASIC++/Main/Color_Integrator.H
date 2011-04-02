@@ -80,8 +80,8 @@ namespace PHASIC {
 
     size_t GenerateIndex();
 
-    bool DiceColours();
-    int  Dice();
+    bool GenerateColours();
+    int  Generate();
     bool LookUp();
     
     int  ConstructConfigurations(Idx_Vector ids,Idx_Vector perm,

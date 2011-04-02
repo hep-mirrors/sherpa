@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
       if(rpa.gen.Analysis()) AnalyseEvent(blobs);
       CleanUpEvent(blobs);
 
-      rpa.gen.SetNumberOfDicedEvents(i+1);
+      rpa.gen.SetNumberOfGeneratedEvents(i+1);
       int steps = int(double(rpa.gen.NumberOfEvents()/10.0));
       if(steps==0) steps=1;
       if((i+1)%steps==0) msg_Info()<<i+1<<" events passed."<<std::endl;

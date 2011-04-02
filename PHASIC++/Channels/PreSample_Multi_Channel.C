@@ -233,16 +233,16 @@ void PreSample_Multi_Channel::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts)
     return;
   }  
 
-  double dice = ran.Get();
+  double generate = ran.Get();
   double sum = 0;
   for (size_t i=0;;++i) {
     if (i==m_subchannels.size()) {
-      dice = ran.Get();
+      generate = ran.Get();
       i   = 0;
       sum = 0.;
     }
     sum += m_palpha[i];//m_calpha;
-    if (sum>dice) {
+    if (sum>generate) {
       m_subchannels[i]->GeneratePoint(p,cuts);
       m_lastdice = i;
       break;

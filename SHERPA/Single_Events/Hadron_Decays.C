@@ -240,7 +240,7 @@ bool Hadron_Decays::SetMasses(Blob * blob)
       }
       else {
         Hadron_Decay_Handler * hdhandler = ChooseDecayHandler((*it));
-        if(!hdhandler->DiceMass(*it,0.,max)) {
+        if(!hdhandler->GenerateMass(*it,0.,max)) {
           success=false; ++cnt;
 	  if(cnt>22) { DEBUG_INFO("failed."); return false;}
           break;

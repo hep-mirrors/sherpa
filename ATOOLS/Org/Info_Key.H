@@ -18,7 +18,7 @@ namespace ATOOLS {
       idle      =  0,
       reset     =  1,
       dicing    =  2,
-      diced     =  3,
+      generated     =  3,
       weighting =  4,
       weighted  =  5,
       error     =  6  

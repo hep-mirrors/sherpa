@@ -46,7 +46,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
     msg_Error()<<"Multiple_Interactions::CheckBlobList(..): "
-	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
+	       <<"Retry event "<<rpa.gen.NumberOfGeneratedEvents()<<std::endl;
     return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();
@@ -80,7 +80,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
       ++beam;
     } 
   }
-  if (m_diced) return Return_Value::Success;
+  if (m_generated) return Return_Value::Success;
   Blob * signal=bloblist->FindFirst(btp::Signal_Process);
   if (signal->Has(blob_status::needs_signal)) return Return_Value::Nothing;
   Blob_Data_Base *ptinfo=(*signal)["MI_Scale"];
@@ -105,11 +105,11 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   if (cbc!=Return_Value::Success) return cbc;
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
-  if (!m_diced) {
+  if (!m_generated) {
     p_mihandler->SetScaleMax(m_ptmax,0);
     p_mihandler->SetScaleMin(p_mihandler->ScaleMin(0),0);
     p_mihandler->Reset();
-    m_diced=true;
+    m_generated=true;
   }
   Blob *blob(NULL);
   bool success=false;
@@ -178,5 +178,5 @@ void Multiple_Interactions::CleanUp()
   p_mihandler->CleanUp();
   m_ptmax=std::numeric_limits<double>::max();
   m_vetoed=false;
-  m_diced=false;
+  m_generated=false;
 }

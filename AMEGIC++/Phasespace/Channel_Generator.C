@@ -503,7 +503,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     //sf<<"  double s"<<Order(pout0sum)<<"_max = "<<s<<";"<<endl;
     }
   }
-  //first dice
+  //first generate
   if (pout0.size()>1) {
     switch (flag) {
     case -11:
@@ -562,7 +562,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       rannum++;
     }
   } 
-  //second dice
+  //second generate
   if (pout1.size()>1) {
     if (flag>=0) {
       string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
@@ -662,7 +662,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
   }
 
-  //dice new
+  //generate new
 
   if (pout0.size()>1 || pout1.size()>1) {
     if (pout0.size()>1) {

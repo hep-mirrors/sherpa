@@ -265,7 +265,7 @@ void Phase_Space_Handler::CalculatePS()
   m_psweight=1.0;
   if (m_nin>1) {
     if (p_isrhandler->On()>0 && 
-	!(m_cmode&psm::no_dice_isr)) {
+	!(m_cmode&psm::no_gen_isr)) {
       p_isrchannels->GenerateWeight(p_isrhandler->On());
       m_psweight*=p_isrchannels->Weight();
     }
@@ -334,7 +334,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
     if (!(mode&psm::no_lim_isr)) p_isrhandler->SetSprimeMin(m_smin);
-    if (!(mode&psm::no_dice_isr)) {
+    if (!(mode&psm::no_gen_isr)) {
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
@@ -345,9 +345,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (!p_isrhandler->MakeISR(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
 			     Selected()->Flavours())) {
-      if (p_beamchannels) p_beamchannels->NoDice();    
-      if (p_isrchannels)  p_isrchannels->NoDice();    
-      p_fsrchannels->NoDice();
+      if (p_beamchannels) p_beamchannels->NoGenerate();    
+      if (p_isrchannels)  p_isrchannels->NoGenerate();    
+      p_fsrchannels->NoGenerate();
       return 0.;
     }
     if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {

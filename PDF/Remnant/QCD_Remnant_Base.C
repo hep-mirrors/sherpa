@@ -222,7 +222,7 @@ bool QCD_Remnant_Base::AdjustColors()
   }
   msg_Tracking()<<"QCD_Remnant_Base::AdjustColors(): "
 		<<"No solution in event ["
-		<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]."
+		<<ATOOLS::rpa.gen.NumberOfGeneratedEvents()<<"]."
 		<<std::endl;
   return false;
 }

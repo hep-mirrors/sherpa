@@ -89,7 +89,7 @@ bool Hadron_Decay_Handler::CreateDecayBlob(Blob* blob)
 {
   DEBUG_FUNC("blob->Id()="<<blob->Id());
   // after this method has run, the blob is supposed to have 
-  // everything prepared that the DiceMass method with its
+  // everything prepared that the GenerateMass method with its
   // InParticle needs.
   
 //   if(part->Time()==0.0) part->SetTime();
@@ -134,14 +134,14 @@ bool Hadron_Decay_Handler::FillDecayBlob(Blob *blob, const Vec4D& labmom)
   return false;
 }
 
-bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) 
+bool Hadron_Decay_Handler::GenerateMass(ATOOLS::Particle* part, double min, double max) 
 {
   DEBUG_FUNC(part->RefFlav()<<" "<<min<<" "<<max);
   double mass = 0.0;
   switch (m_mode) {
 #ifdef USING__PYTHIA
   case 0:
-    mass = p_lund->DiceMass(part->RefFlav().Kfcode(),min,max);
+    mass = p_lund->GenerateMass(part->RefFlav().Kfcode(),min,max);
     break;
 #endif
   case 1:
@@ -152,7 +152,7 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
     Blob_Data_Base* data = (*decayblob)["hdc"];
     if(data) {
       Hadron_Decay_Channel* hdc = data->Get<Hadron_Decay_Channel*>();
-      mass=hdc->DiceMass(min, max);
+      mass=hdc->GenerateMass(min, max);
     }
     else {
       Mass_Handler masshandler(part->RefFlav());

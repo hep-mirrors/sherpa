@@ -80,7 +80,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	if (blob1->OutParticle(0)->Flav().IsLepton() ||
 	    blob2->OutParticle(0)->Flav().IsLepton()) --pairs;
 	for (int i=0;i<pairs;++i) {
-	  // dice gaussian numbers
+	  // generate gaussian numbers
 	  do {
 	    ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
 	    r12=ran1*ran1+ran2*ran2;
@@ -90,7 +90,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran.Get())*m_kperpsigma[0]*ran1*r12;
 	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran.Get())*m_kperpsigma[1]*ran2*r12;
 	  for (size_t j=0;j<2;++j) {
-	    // dice angle
+	    // generate angle
 	    do {
 	      ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
 	      r12=ran1*ran1+ran2*ran2;

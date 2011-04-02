@@ -117,7 +117,7 @@ void Event_Handler::Reset()
 
 bool Event_Handler::GenerateEvent(int mode) 
 {
-  DEBUG_FUNC(rpa.gen.NumberOfDicedEvents());
+  DEBUG_FUNC(rpa.gen.NumberOfGeneratedEvents());
   ATOOLS::ran.SaveStatus();
 #ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
@@ -213,7 +213,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	default:
 	  THROW(fatal_error,"Invalid return value");
 	}
-	if (weight==0.0 && rpa.gen.NumberOfDicedEvents()==
+	if (weight==0.0 && rpa.gen.NumberOfGeneratedEvents()==
 	    rpa.gen.NumberOfEvents()) return true;
       }
     } while (m_blobs.empty() || p_signal->NInP()==0);

@@ -51,7 +51,7 @@ void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle() {
   m_phi   = gdpa.GetPhi();
 
 #ifdef PHOTONS_DEBUG
-  msg_Info()<<"dipole diced: "<<k<<" -> "<<m_i<<" "<<m_j<<endl;
+  msg_Info()<<"dipole generated: "<<k<<" -> "<<m_i<<" "<<m_j<<endl;
   msg_Info()<<"theta:        "<<m_theta<<" phi: "<<m_phi<<endl;
 #endif
 }

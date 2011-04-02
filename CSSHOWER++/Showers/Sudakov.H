@@ -45,7 +45,7 @@ namespace CSSHOWER {
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 		     const double &isfac,const double &fsfac);
-    bool   Dice(Parton *);
+    bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 

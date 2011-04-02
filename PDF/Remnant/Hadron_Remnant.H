@@ -13,7 +13,7 @@ namespace PDF {
     double m_xrem;
     size_t m_last;
 
-    bool   DiceKinematics();
+    bool   GenerateKinematics();
 
     ATOOLS::Flavour Opposite(ATOOLS::Flavour flav) const; 
 

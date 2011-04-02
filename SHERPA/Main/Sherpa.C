@@ -157,10 +157,10 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-  ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
+  ATOOLS::rpa.gen.SetNumberOfGeneratedEvents(ATOOLS::rpa.gen.NumberOfGeneratedEvents()+1);
   for (int i=0;i<m_trials;i++) {
-    if(m_debuginterval>0 && rpa.gen.NumberOfDicedEvents()%m_debuginterval==0){
-      std::string fname=ToString(rpa.gen.NumberOfDicedEvents())+".dat";
+    if(m_debuginterval>0 && rpa.gen.NumberOfGeneratedEvents()%m_debuginterval==0){
+      std::string fname=ToString(rpa.gen.NumberOfGeneratedEvents())+".dat";
       ran.WriteOutStatus(("random."+fname).c_str());
     }
     if (m_debugstep>0) {
@@ -168,8 +168,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      if(m_debuginterval>0 && rpa.gen.NumberOfDicedEvents()%m_debuginterval==0){
-        std::string fname=ToString(rpa.gen.NumberOfDicedEvents())+".dat";
+      if(m_debuginterval>0 && rpa.gen.NumberOfGeneratedEvents()%m_debuginterval==0){
+        std::string fname=ToString(rpa.gen.NumberOfGeneratedEvents())+".dat";
         std::ofstream eventout(("refevent."+fname).c_str());
         eventout<<*p_eventhandler->GetBlobs()<<std::endl;
         eventout.close();

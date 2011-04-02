@@ -27,7 +27,7 @@ void Output_Sherpa::Output(Blob_List* blobs, const double weight)
 	P2I.insert(make_pair((*blit)->OutParticle(i),P2I.size()+1));
     }
   }
-  m_outstream<<rpa.gen.NumberOfDicedEvents()-1<<" "<<P2I.size()<<" "
+  m_outstream<<rpa.gen.NumberOfGeneratedEvents()-1<<" "<<P2I.size()<<" "
              <<blobs->size()<<" "<<weight<<endl;
   Particle * part;
   int kfc;

@@ -44,7 +44,7 @@ namespace HADRONS {
                                                    ATOOLS::Particle*& outpart,
                                                    const ATOOLS::Vec4D& labmom);
     Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob, Hadron_Decay_Table*);
-    void                   DiceUncorrelatedKinematics(
+    void                   GenerateUncorrelatedKinematics(
                                     std::vector<ATOOLS::Vec4D> & moms,
                                     Hadron_Decay_Channel       * hdc,
                                     bool                         anti);
@@ -180,11 +180,11 @@ namespace HADRONS {
   */
 
   /*!
-  \fn void Hadrons::DiceUncorrelatedKinematics(
+  \fn void Hadrons::GenerateUncorrelatedKinematics(
                                     std::vector<ATOOLS::Vec4D> & moms,
                                     Hadron_Decay_Channel       * hdc,
                                     bool anti )
-  \brief Dices the decay kinematics without spin correlations.
+  \brief Generates the decay kinematics without spin correlations.
 
   This routine uses the trial-and-error method to obtain the kinematics of the decay products.
   That means, a phase space point is chosen and its value \f$|M|^2 \times dlips\f$ is compared
@@ -202,7 +202,7 @@ namespace HADRONS {
                        Hadron_Decay_Channel* hdc )
   \brief Chooses the decay kinematics of the blob.
 
-  It always calls DiceUncorrelatedKinematics().
+  It always calls GenerateUncorrelatedKinematics().
 
   If spin correlations are disabled, that's all it does.
 
