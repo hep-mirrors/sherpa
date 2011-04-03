@@ -26,10 +26,6 @@ namespace ATOOLS {
 
     operator Poincare_Sequence() const;
 
-    inline const Poincare &OldCMS() const { return m_cmso; }
-    inline const Poincare &NewCMS() const { return m_cmsn; }
-    inline const Poincare &Rotate() const { return m_zrot; }
-
     inline const Vec4D &PaOld() const { return m_pao; }
     inline const Vec4D &PaNew() const { return m_pan; }
     inline const Vec4D &Pb() const    { return m_pb;  }
