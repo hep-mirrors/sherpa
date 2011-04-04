@@ -45,10 +45,9 @@ void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
   double accu(sqrt(rpa.gen.Accu()));
   if (((rpp==Complex(0.0,0.0) || rpm==Complex(0.0,0.0)) &&
        pt!=Complex(0.0,0.0)) || dabs(std::abs(pt/(rpp*rpm))-1.0)>accu) {
-    msg_Error()<<METHOD<<"(): \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
+    msg_Error()<<METHOD<<"(): Warning: \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
 	       <<" vs. |p_\\perp| = "<<std::abs(pt)<<", rel. diff. "
 	       <<(std::abs(pt/(rpp*rpm))-1.0)<<"."<<std::endl;
-    THROW(fatal_error,"Cannot construct massive two-component spinor.");
   }
   m_u1=rpp;
   m_u2=rpm;
