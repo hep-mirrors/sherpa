@@ -245,8 +245,8 @@ double POWHEG_Process::GetRho(const int mode)
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
       size_t idx(m_dmap.find(sub->p_id)->second);
-      m_rho[idx]+=dabs(sub->m_me);
-      rsum+=dabs(sub->m_me);
+      m_rho[idx]+=sub->m_me;
+      rsum+=sub->m_me;
     }
   }
   double rho(1.0);
@@ -278,8 +278,8 @@ double POWHEG_Process::GetRho(const int mode)
 		       <<", Z = "<<zh.first<<", H = "<<zh.second<<"\n";
         double res(zh.second/(zh.first+zh.second)
 		   *rho*subs->back()->m_last[mode]);
-	m_zh[mode].push_back(ZH_Key(sub,(*p_rproc)[i],res));
-	m_zhsum[mode]+=res;
+	m_zh[mode].push_back(ZH_Key(sub,(*p_rproc)[i],dabs(res)));
+	m_zhsum[mode]+=dabs(res);
 //        bampl->Delete();
       }
     }
