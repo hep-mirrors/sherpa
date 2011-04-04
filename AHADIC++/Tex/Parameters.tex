@@ -1,0 +1,924 @@
+%==================================================
+\documentclass[a4paper,fleqn,10pt]{article}
+%= definitions ====================================
+\input{global}
+%= title ==========================================
+\hypersetup{
+  pdfauthor={},
+  pdftitle={Ahadic, a new cluster hadronisation model}
+  pdfkeywords={}
+}
+\preprint{}
+\author{Frank Krauss$^{1}$, Jan Winter$^{2}$}
+\title{\Ahadic, a new cluster hadronisation model}
+\institute{
+$^{1}$ Institute for Particle Physics Phenomenology, 
+  Durham University, Durham DH1 3LE, UK\\
+$^{2}$ Fermi National Accelerator Laboratory, 
+  Batavia, IL 60510, USA
+}
+%= document =======================================
+\begin{document}
+\maketitle
+\begin{abstract}
+  The physics of the implementation of a new cluster hadronisation model
+  for \Sherpa is presented.  It is based on \cite{Winter:2003tt}.  
+\end{abstract}
+%= text ===========================================
+
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\section{The \Ahadic model: Overview}
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\label{Sec::Model}
+
+\begin{appendix}
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\section{Dynamics parameters}
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\label{Sec::Dynamics}
+In this section the parameters related to the dynamics of gluon decays, 
+cluster decays and the transition of clusters into hadrons are discussed.  In 
+principle, all decays apart from direct those where a cluster decays directly 
+into two hadrons, are governed by a QCD-inspired form.  There, the transverse 
+momentum $p_\perp$ and the light-cone momentum $z$ are selected according to a 
+probability density, which is motivated by the QCD parton shower picture.  The
+crucial difference, however, is that in the parton shower a non-emission is
+a viable possibility - this is encoded in the Sudakov form factor.  In a
+hadronisation model, gluons {\bf must} split; in fact, in \Ahadic they will 
+always split into a $q\bar q$ or a $d\bar d$-pair\footnote{
+  Here and in the following diquarks will summarily denoted by $d$, if their 
+  flavour content and spin is important, a notation $(qq')_s$ will be adopted.
+  Quarks and diquarks will summarily be denoted as flavours.}.  
+In addition, the \Ahadic model relies on cluster decays into clusters being 
+described in the same spirit: The cluster constituents, i.e.\ flavours, 
+{\bf must} emit a (non-perturbative) gluon, which in turn {\bf must}
+split.  Therefore, the Sudakov form factor of the parton shower is replaced by
+a probability density that looks more like its argument:
+\beq
+\label{Eq:splittingprob}
+\done{\cal P}(t,\,z) \propto 
+\done t\done z
+\frac{\alpha_S(t)}{\left[t+p_{\perp,0}^2\right]^\eta}
+\,\tilde P(z)\,,
+\eeq
+where $\tilde P(z)$ denotes the, possibly suitably modified, corresponding 
+splitting function and $t$ is the scale at which the splitting occurs.  
+Typically, this scale is identified with $t=p_\perp^2$, but an option
+is available, where in $g\to q\bar q$-splitting this is replaced by the
+invariant mass of the flavour pair.
+
+%=========================================================================
+%=========================================================================
+\subsection{Selection of $p_\perp$}
+%=========================================================================
+%=========================================================================
+\label{Sec::pperpselection}
+
+%=========================================================================
+\subsubsection{Naive parametrisations}
+%=========================================================================
+In all decays, the transverse momentum $p_\perp$ of the decay products is 
+selected according to a probability density ${\cal P}$, which in the default
+parametrisation is given by
+\beq
+    {\cal P}(p_\perp^2) \propto 
+    \frac{\alpha_s(p_\perp^2+p_{\perp,0}^2)}
+         {\left[p_\perp^2+p_{\perp,0}^2\right]^\eta}\,.
+\eeq
+Here, the parameter $p_{\perp,0}^2$ ensures that the strong coupling is 
+suitably regularised and does not diverge.  In addition, in all cases,
+the dynamics of the decaying system induces a maximal transverse momentum
+available in the decay.  In \Ahadic, there's the option to rescale
+the maximally available transverse momentum by a suitable prefactor,
+$\kappa_{p_\perp}$.  These two parameters, their tags and default values are 
+listed in Table \ref{Tab:PT}.  
+\begin{table}[h!]
+  \label{Tab:PT}
+  \begin{center}
+    \begin{tabular}{|c||c|c|}
+      \hline
+      \multicolumn{3}{|c|}
+                  {Parameters steering the dynamics of cluster decays}\\
+      \hline
+      Physical parameter & Parameter tag & Default\\
+      \hline
+      \hline
+      $\vphantom{\frac||}$
+      $\eta$           & \tt{PT\_EXPONENT}      & 1.0\\
+      $\vphantom{\frac||}$
+      $p_{\perp,0}^2$   & \tt{PT\^{}2\_0}        & 0.25\\
+      $\vphantom{\frac||}$
+      $\kappa_{p_\perp}$ & \tt{PT\_MAX\_FACTOR}   & 1.0\\
+      $\vphantom{\frac||}$
+      $\zeta$          & \tt{P\_Q2QG\_EXPONENT} & 1.0\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Parameters for $p_\perp$- an $z$-selection.}}
+  \end{center}
+\end{table}
+In addition, there are a number of parametrisations of the strong coupling, 
+accessible through the tag {\tt ALPHAS\_FORM } (default value = 1), with an 
+interpretation listed in Table \ref{Tab:asform}.
+\begin{table}[h!]
+  \label{Tab:asform}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt ALPHAS\_FORM } (default = 1)}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      1 &
+      \begin{minipage}[ht]{8cm}
+        Default $\alpha_S$:\\
+        Here the ordinary running strong QCD coupling, with an appropriate 
+        number of flavours $n_F$ is used.  In all cases, $n_F\ge 3$.
+      \end{minipage}\\
+      \hline
+      2 &
+      \begin{minipage}[ht]{8cm}
+        IR-modified $\alpha_S$:\\
+        This is the original, default one-loop running QCD strong coupling
+        $\alpha_S(Q^2)$, modified with a factor $Q^2/(Q^2+p_{\perp,0}^2)$.  
+        This ensures that in the infrared limit, i.e.\ for 
+        $Q^2 = p_\perp^2\longrightarrow 0$, the strong coupling and, 
+        consequently, the decay probability vanishes.
+      \end{minipage}\\
+      \hline
+      8 &
+      \begin{minipage}[ht]{8cm}
+        GDH-inspired $\alpha_S$:\\
+        Here, the parametrisation of \cite{Deur:2008rf} is being used.  
+      \end{minipage}\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Parametrising the form of $\alpha_S$.}}
+  \end{center}
+\end{table}
+
+%=========================================================================
+\subsubsection{Ordering in $p_\perp$}
+%=========================================================================
+\label{Sec::pperpordering}
+Angular (or $p_\perp$-) ordering is a well-known property of QCD, resulting 
+from destructive interferences between different gluon emission 
+amplitudes\footnote{
+  It is not entirely clear, how this applies to gluon splitting into a 
+  $q\bar q$-pair.}.
+In \Ahadic, there are different options, how strictly this ordering is 
+implemented, they are listed in Table \ref{Tab:ptordering}.  These options
+can be selected through {\tt PT\_ORDER} (default=3, but could be 1).  
+\begin{table}[h!]
+  \label{Tab:ptordering}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt PT\_ORDER } (default = 3}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      0 & 
+      \begin{minipage}[ht]{8cm}
+        No $p_\perp$-ordering whatsoever is applied.
+      \end{minipage}\\
+      \hline
+      1 & 
+      \begin{minipage}[ht]{8cm}
+        $p_\perp$-ordering is applied in gluon emission only, i.e.\ in 
+        cluster decays.  The maximal $p_\perp$ scale is then given by the 
+        relative transverse momentum of the dipole constituents in the
+        lab frame.  
+      \end{minipage}\\
+      \hline
+      2 & 
+      \begin{minipage}[ht]{8cm}
+        $p_\perp$-ordering is applied in gluon splitting only, i.e.\ in
+        the decays of the perturbatively produced gluons from the parton shower
+        and in the non-perturbative gluons invoked in the cluster decays.
+        In the former case, a dipole picture is invoked where the gluon acts as
+        splitter, supplemented with a spectator.  In this case, the maximal 
+        $p_\perp$ is given by the relative transverse momentum of the two
+        constituents of the dipole, while in the latter case the maximal
+        $p_\perp$ allowed is identical to the $p_\perp$ of the previous
+        gluon emission.  
+      \end{minipage}\\
+      \hline
+      3 & 
+      \begin{minipage}[ht]{8cm}
+        $p_\perp$-ordering is applied in gluon emission and splitting only, 
+        with the implications as described above.
+      \end{minipage}\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Parametrising $p_\perp$-ordering in subsequent 
+        decays.}}
+  \end{center}
+\end{table}
+
+{\bf NOTE:} Up to now I have not implemented any $p_\perp$-ordering 
+in the direct decays of a cluster into two hadrons.  If necessary, I
+will do this, of course.
+
+%=========================================================================
+%=========================================================================
+\subsection{Selection of $z$}
+%=========================================================================
+%=========================================================================
+\label{Sec::zselection}
+
+%=========================================================================
+\subsubsection{Naive picture}
+%=========================================================================
+As mentioned above, decays in \Ahadic apart from direct $C\to h_1h_2$ decays, 
+are described in a picture similar to that employed in the parton-shower, where
+the light-cone momenta $z$ are selected according to a corresponding splitting
+function.  Ignoring more subtle mass effects for the moment (their treatment 
+is described in Sec.\ \ref{Sec:masseffects} below), the two relevant 
+splitting functions in \Ahadic are naively given by
+\beq
+\begin{split}
+  \tilde P_{q\to qg} \;=\;& \left[\frac{1+z^2}{1-z}\right]^\zeta\\
+  \tilde P_{g\to q\bar q} \;=\;& 1-2z(1-z)\,. 
+\end{split}
+\eeq
+Here $\zeta$ is a free parameter, set by {\tt P\_Q2QG\_EXPONENT}.  It should 
+be stressed that the same splitting function is used for both $g\to q\bar q$
+and $g\to d\bar d$ splitting.
+
+
+%=========================================================================
+\subsubsection{Precise picture}
+%=========================================================================
+In fact, the probability densities are more complicated and read:
+\beq
+\begin{split}
+  \tilde P_{q\to qg} \;=\;& J(z)\cdot 
+  \left\{(1-z)\cdot \left[\frac{1}{1.-z+zy} - 
+    \frac{\tilde v_{23;1}}{v_{23;1}}\cdot
+    \frac{1+z+\frac{m_3^2}{p_2p_3}}{2}\right]
+  \right\}^\zeta\\
+  \tilde P_{g\to q\bar q} \;=\;& J(z)\cdot
+  \frac{1-2[z(1-z)-z_-z_+]}{v_{23;1}}\cdot
+  \frac{Q_\perp^2}{Q_\perp^2+\frac{m_2^2+m_3^2}{y}}
+    \cdot\frac{1}{\sqrt{\lambda(Q^2,0,m_1^2)}}\,. 
+\end{split}
+\eeq
+Here, a notation has been employed, where parton 1(k) labels the spectator,
+parton 2(j) is the emitted object, and parton 3(i) is the splitter/emitter.  
+In the case of gluon splitting partons 2 and 3 are therefore the new 
+flavour pair, while in gluon emission, the new gluon is labelled with 2.  
+
+The following constants with $Q^2$ the mass squared of the cluster have been 
+employed:
+\beq
+\begin{split}
+  Q_\perp^2  & \;=\; Q^2-m_1^2-m_2^2-m_3^2\\
+  y         & \;=\; \frac{p_\perp^2-(1-z)^2m_2^2-z^2m_3^2}
+                         {z(1-z)Q_\perp^2}\;,\;\;\;
+                    y_- \;=\; \frac{2m_2m_3}{Q_\perp^2}\;,\;\;\;
+                    y_+ \;=\; 1-\frac{2m_1^2(Q^2-m_3^2)}{Q^2Q_\perp^2}\\ 
+  v_{23;2}  & \;=\; \frac{\sqrt{(Q_\perp^2 y)^2-4m_2^2m_3^2}}
+                        {yQ_\perp^2+2m_3^2}\;,\;\;\;
+                    v_{23;1} \;=\; 
+                    \frac{\sqrt{[2m_1^2+Q_\perp^2(1.-y)]^2-4m_1^2}}
+                         {Q_\perp^2(1-y)}\;,\;\;\;
+                    \tilde v_{23;1} \;=\; 
+                    \frac{\sqrt{\lambda(Q^2,m_1^2,m_3^2)}}
+                         {Q^2-m_3^2-m_1^2}\\
+  z_\pm     & \;=\; \frac{2m_3^2+Q_\perp^2y}
+                         {2(yQ_\perp^2+m_3^2+m_2^2)}\cdot
+                         \left[1\pm v_{12;1}v_{12;3}\right]
+                    \;,\;\;\;
+                      p_2p_3 \;=\; \frac{yQ_\perp^2}{2} \\
+  J(z)      & \;=\; \frac{(1-y)(Q^2-m_1^2-m_3^2)}
+                         {[(Q^2-m_1^2-m_3^2)+\frac{m_3^2+m_{ij}^2}{y}]
+                           \sqrt{\lambda(Q^2,m_{ij}^2,m_1^2)}}\\
+\end{split}
+\eeq
+
+%=========================================================================
+\subsubsection{Options in $z$ selection}
+%=========================================================================
+
+There are different options for how the splitting functions are used in 
+different decays, steered by the tag {\tt Z\_FORM}.  The details can be 
+found in Table \ref{Tab:zform}.  It should be noted that, not surprisingly, 
+this tag has a considerable influence on the spectra of particles in the 
+decay, since it is directly related to the energy distribution of secondaries.  
+In \Ahadic, three options are available, which interpolate between all
+decay being governed by splitting kernels and all $z$ selected according to
+a flat distribution.  The default is given by {\tt Z\_FORM }=2, i.e.\ to 
+use splitting kernels for the decays of all leading particles (for a definition
+see the Section below, Sec.\ \ref{Sec:leadingparticles}) and a flat
+distribution for the decays of secondaries.  
+\begin{table}[h!]
+  \label{Tab:ptordering}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt Z\_FORM } (default = 2)}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      0 & 
+      \begin{minipage}[ht]{8cm}
+        A flat $z$ distribution for all splittings.
+      \end{minipage}\\
+      \hline
+      1 & 
+      \begin{minipage}[ht]{8cm}
+        All $z$ in all decays are distributed according to the
+        corresponding splitting kernel.
+      \end{minipage}\\
+      \hline
+      2 & 
+      \begin{minipage}[ht]{8cm}
+        Only emissions off and splitting of leading particles
+        are treated with the corresponding splitting function.
+      \end{minipage}\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Selection options for $z$.}}
+  \end{center}
+\end{table}
+
+%=========================================================================
+\subsubsection{Note on ``Leading particles''}
+%=========================================================================
+\label{Sec::leadingparticles}
+
+In \Ahadic particles are called leading if they emerge directly from the 
+parton shower, i.e.\ they are, for the purpose of the hadronisation, the 
+primary particles.  In the case of gluons, obviously, the splitting into a 
+flavour pair deletes the ``leading'' tag.  For quarks, however, the situation 
+is different.  For them, the ``leading particle''-property is carried through 
+their multiple decays, i.e.\ the emission of a non-perturbative gluon does
+not affect this characterisation.
+
+%=========================================================================
+%=========================================================================
+\subsection{Mass effects}
+%=========================================================================
+%=========================================================================
+\label{Sec::masseffects}
+By default mass effects are switched on.  This implies that, due to phase 
+space constraints, heavier flavours are more often rejected in gluon splitting 
+processes.  The only choice available to users is to select the invariant 
+mass of the flavour pair rather than their relative $p_\perp$ as relevant
+scale in gluon splitting.   
+\begin{table}[h!]
+  \label{Tab:masstreatment}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt MASS\_TREATMENT }
+                  (default = 3)}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      0 & 
+      \begin{minipage}[ht]{8cm}
+        Use $p_\perp^2$ in Eq.\ (\ref{Eq:splittingprob}).
+      \end{minipage}\\
+      \hline
+      3 & 
+      \begin{minipage}[ht]{8cm}
+        Use $m_{q\bar q}^2$ in Eq.\ (\ref{Eq:splittingprob}).
+      \end{minipage}\\
+      \hline
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Selection options for $z$.}}
+  \end{center}
+\end{table}
+
+%=========================================================================
+%=========================================================================
+\subsection{Emergence of primary hadrons}
+%=========================================================================
+%=========================================================================
+\label{Sec::hadronemergence}
+
+At some point, either right at the start or after some decays, clusters
+enter a region of comparable low mass.  There they leave the regime of cluster
+dynamics and enter the regime of primary hadrons.  In \Ahadic, there is, 
+in principle, a competition for clusters to transit either directly to
+individual primary hadrons or to decay into pairs of them.  This is
+realised as follows:
+
+For each cluster a weight for its transition to a well-defined hadron and for 
+its decay into a well-defined pair of hadrons is calculated.  
+
+The two different corresponding regimes are given by the masses of the 
+heaviest hadron or pair of hadrons, respectively, available for the (given) 
+flavour combination of the cluster.  This mass is compared with  the cluster
+mass supplemented with some additive offset.  
+
+In other words: if $m_c+\Delta m_{\rm trans}$, the mass of the cluster plus
+the transition offset is smaller than the mass of the heaviest hadron with a
+compatible flavour component, then the transition channel is open.  If the
+cluster is lighter than the lightest available hadron, typically the cluster 
+will have to transit into a light hadron; in this case four-momentum
+conservation is guaranteed by reshuffling momenta of neighbouring hadrons or
+clusters.  If, on the other hand, $m_c$ is larger than the mass of the lightest
+hadron pair available after popping a flavour, or if $m_c+\Delta m_{\rm dec}$ 
+is smaller than the mass of the heaviest accessible hadron pair, then the 
+channel of the cluster decaying directly into hadrons is open.  If any of the
+two channel opens, the cluster will, according to the respective weights,
+transit into one or decay into two hadrons.
+  
+The parameters involved here are listed in Table \ref{Tab:HadronEmergence},
+further details can be found in the following.
+\begin{table}[h!]
+  \label{Tab:HadronEmergence},
+  \begin{center}
+    \begin{tabular}{|c||c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Parameters steering the emergence of hadrons}\\
+      \hline
+      Physical parameter & Parameter tag & Default\\
+      \hline
+      \hline
+      $\Delta m_{\rm trans}$ & {\tt TRANSITION\_OFFSET }    & 0.2 \\
+      $\Delta m_{\rm dec}$   & {\tt DECAY\_OFFSET }         & 0.2 \\
+      $\alpha$              & {\tt TRANSITION\_EXPONENT }  & 0.5 \\
+      $\beta$               & {\tt TRANSITION\_EXPONENT2 } & 0.25 \\
+      $\gamma$              & {\tt DECAY\_EXPONENT }       & 0.5 \\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Parameters steering the transition of clusters into
+        hadrons or their decay into hadrons.  $\Delta m_{\rm trans}$ and
+        $\Delta m_{\rm dec}$ are defined in the text, $\alpha$ and $\beta$
+        are introduced in Eqs.\ (\ref{Eq:BW}) and (\ref{Eq:transitionweight}), 
+        respectively, and $\gamma$ is introduced in Eq.\ 
+        (\ref{Eq:decayweight}).}}
+  \end{center}
+\end{table}
+
+%=========================================================================
+\subsubsection{Transition to hadrons}
+%=========================================================================
+\label{Sec::hadrontransitions}
+
+The detailed weight for the selection of a specific hadron in the transition 
+of a cluster to a hadron is given by
+\beq
+\label{Eq:transitionweight}
+{\cal W}_{\rm trans}(C\to H) = 
+{\cal W}_{\rm mass}(m_c, m_{\rm had}, \Gamma_{\rm had})\cdot
+{\cal W}_{\rm flav}^{\rm transition}\cdot 
+\left(\frac{\Gamma_{\rm had}^2}{m_{\rm had}^2}\right)^\beta\,.
+\eeq
+Here
+\beq
+{\cal W}_{\rm flav}^{\rm transition} =
+\left|\left\langle q\bar q'\left|\right.
+      \psi_{\rm had}(q\bar q')\right\rangle\right|^2
+\eeq
+is the flavour component of the transition probability, depending on the
+flavours constituting the cluster and the wave function of the hadron,
+$\psi_{\rm had}(q,\,\bar q')$.  The mass-dependent part of the weight is
+given by either 1, or a Breit-Wigner distribution:
+\beq
+\label{Eq:BW}
+{\cal W}_{\rm mass}(m_c, m_{\rm had}, \Gamma_{\rm had}) =
+\frac{1}{16\pi m_c}\cdot \left\{\begin{array}{ll}
+1 & \mbox{\rm (no mass dependence)}\\
+\displaystyle{
+  \left(\frac{4m_{\rm had}^2}
+       {4(m_c-m_{\rm had})^2+\Gamma_{\rm had}^2}\right)^\alpha}
+& \mbox{\rm (rel.\ Breit-Wigner)}\\
+\displaystyle{
+  \left(\frac{m_{\rm had}^4}
+       {(m_c^2-m_{\rm had}^2)^2+
+         m_{\rm had}^2\Gamma_{\rm had}^2}\right)^\alpha}
+& \mbox{\rm (non-rel.\ Breit-Wigner)}
+\end{array}\right.
+\eeq
+\begin{table}[h!]
+  \label{Tab:hadrontransitions}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt TRANSITION\_SELECTION }
+                  (default = 1)}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      1 & 
+      \begin{minipage}[ht]{8cm}
+        The primary selection is done according to a non-relativistic 
+        Breit-Wigner times the wave function overlap.
+      \end{minipage}\\
+      \hline
+      2 & 
+      \begin{minipage}[ht]{8cm}
+        The primary selection is done according to a relativistic 
+        Breit-Wigner times the wave function overlap.
+      \end{minipage}\\
+      \hline
+      3 & 
+      \begin{minipage}[ht]{8cm}
+        The primary selection is done according to the wave function 
+        overlap only.
+      \end{minipage}\\
+      \hline
+    \end{tabular}
+    
+    \parbox{12cm}{\caption{Choices for the mass part of the weight:
+        the function ${\cal W}_{\rm mass}(m_c, m_{\rm had}, \Gamma_{\rm had})$
+        in Eq.\ (\ref{Eq:transitionweight}).}}
+  \end{center}
+\end{table}
+
+%=========================================================================
+\subsubsection{Direct decays to hadrons}
+%=========================================================================
+\label{Sec::hadrontransitions}
+
+The detailed weight for the selection of a specific hadron pair in the 
+(of course binary) decay of a cluster is given by
+\beq
+\label{Eq:decayweight}
+{\cal W}_{\rm trans}(C\to H_1H_2) = 
+{\cal W}_{\rm mass}(m_c, m_1, m_2)\cdot
+{\cal W}{\rm pop}(f)\cdot 
+{\cal W}_{\rm flav}^{\rm decay}\cdot 
+\left(\frac{4m_1m_2}{m_c^2}\right)^\gamma\,.
+\eeq
+Here
+\beq
+{\cal W}_{\rm flav}^{\rm transition} =
+\left|\left\langle q\bar q'\left|\right.
+      \psi_1(q\bar f)\psi_2(f\bar q')\right\rangle\right|^2
+\eeq
+is the flavour component of the decay probability, depending on the flavours 
+$q$ and $\bar q'$ constituting the cluster and the wave functions of the 
+hadron, $\psi_1(q,\,\bar f)$ and $\psi_2(f,\,\bar q')$, where $f$ is the
+popped flavour.  The mass-dependent part of the weight is given by the typical
+binary decay phase space:
+\beq
+{\cal W}_{\rm mass}(m_c, m_1, m_2) = \frac{1}{16\pi m_c}\cdot
+\frac{\sqrt{[m_c^2-(m_1+m_2)^2][m_c^2-(m_1-m_2)^2]}}{m_c^2}\,.
+\eeq
+
+The interplay of the different individual weights in the equation above in 
+the construction of the decay weight is steered by the tag
+{\tt DECAY\_SELECTION }, (default value = 3) listed in Table 
+\ref{Tab:hadrondecays}.
+\begin{table}[h!]
+  \label{Tab:hadrondecays}
+  \begin{center}
+    \begin{tabular}{|c||c|}
+      \hline
+      \multicolumn{2}{|c|}
+                  {Switch values for {\tt DECAY\_SELECTION }
+                  (default = 3)}\\
+      \hline
+      Parameter value & Description\\
+      \hline
+      \hline
+      0 & 
+      \begin{minipage}[ht]{8cm}
+        No decays open.
+      \end{minipage}\\
+      \hline
+      1 & 
+      \begin{minipage}[ht]{8cm}
+        Phase space only.
+      \end{minipage}\\
+      \hline
+      2 & 
+      \begin{minipage}[ht]{8cm}
+        Phase space times flavour weight, including the multiplet weights
+        and the flavour popping weights.
+      \end{minipage}\\
+      \hline
+      3 & 
+      \begin{minipage}[ht]{8cm}
+        Phase space times flavour times mass correction weight; here 
+        $\gamma$ comes into play.
+      \end{minipage}\\
+      \hline
+    \end{tabular}
+    
+    \parbox{12cm}{\caption{Choices for constructing the decay weights.}}
+  \end{center}
+\end{table}
+
+For a discussion, how different weights are included for different multiplets,
+cf.\ Sec.\ \ref{Sec::Multiplets}.
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\section{Flavour parameters}
+%=========================================================================
+%=========================================================================
+%=========================================================================
+\label{Sec::Flavour}
+In this section the static parameters related of \Ahadic are discussed.
+
+%=========================================================================
+%=========================================================================
+\subsection{Constituents and their masses}
+%=========================================================================
+%=========================================================================
+\label{Sec::Constituents}
+
+The constituent quark masses are set by the parameters listed in Table
+\ref{Tab:Constituents}
+\begin{table}[h!]
+  \label{Tab:Constituents}
+  \begin{center}
+    \begin{tabular}{|c||c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Parameters steering the constituent masses}\\
+      \hline
+      Physical mass & Parameter tag & Default\\
+      \hline
+      \hline
+      $\vphantom{\frac||}$
+      $m_{g}$ & \tt{M\_GLUE}        & 0.0\\
+      $\vphantom{\frac||}$
+      $m_{u, d}$ & \tt{M\_UP\_DOWN} & 0.01\\
+      $\vphantom{\frac||}$
+      $m_{s}$ & \tt{M\_STRANGE}     & 0.2\\
+      $\vphantom{\frac||}$
+      $m_{c}$ & \tt{M\_CHARM}       & 1.8\\
+      $\vphantom{\frac||}$
+      $m_{b}$ & \tt{M\_BOTTOM}      & 5.0\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Mass parameters for constituents: quarks and gluon.}}
+  \end{center}
+\end{table}
+The masses of diquarks are calculated according to
+\beq
+m_{qq'^{(0,1)}} = (m_q + m_q' + \Delta m_{\rm di})\cdot (1+\Delta\mu^{(0,1)})\,,
+\eeq
+with the parameters of Table \ref{Tab:Diquarks}
+\begin{table}[h!]
+  \label{Tab:Diquarks}
+  \begin{center}
+    \begin{tabular}{|c||c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Parameters steering the diquark masses}\\
+      \hline
+      Physical parameter & Parameter tag & Default\\
+      \hline
+      \hline
+      $\vphantom{\frac||}$
+      $\Delta m_{\rm di}$ & \tt{M\_DIQUARK\_OFFSET} & 0.3\\
+      $\vphantom{\frac||}$
+      $\Delta\mu^{(0)}$   & \tt{M\_BIND\_0}         & 0.3\\
+      $\vphantom{\frac||}$
+      $\Delta\mu^{(1)}$   & \tt{M\_BIND\_1}         & 0.4\\
+      \hline
+    \end{tabular}
+    
+    \parbox{12cm}{\caption{Parameters for the mass definition of diquarks.}}
+  \end{center}
+\end{table}
+
+
+%=========================================================================
+%=========================================================================
+\subsection{Popping weights}
+%=========================================================================
+%=========================================================================
+\label{Sec::Popping}
+
+In the (enforced) decays of gluons at the end of the parton shower and in 
+the decays of clusters, either into clusters or hadrons, quark--\-anti-quark 
+or anti-diquark--\-diquark pairs emerge.  In principle this is governed by 
+phase space considerations alone, for a discussion of the decay kinematics, 
+see Sec.\ \ref{Sec::Kinematics} below.  This implies that, in principle, any 
+light flavour degree of freedom (quark or diquark), including spins, comes 
+with identical probability.  Hence, typically quarks come with relative
+probability 2, spin-0 diquarks with relative probability 1, and spin-1
+diquarks are popped with relative probability 3.  
+
+In addition, however, some additional tuning can be provided by specific
+flavour popping weights, parametrised by strangeness suppression,
+baryon suppression, two weights for diquarks carrying one or two strange
+quarks, and for spin-1 diquarks.  These parameters are listed in 
+Table \ref{Tab:Popping}.
+\begin{table}[h!]
+  \label{Tab:Popping}
+  \begin{center}
+    \begin{tabular}{|c||c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Parameters steering the popping of flavour}\\
+      \hline
+      Physical parameter & Parameter tag & Default\\
+      \hline
+      \hline
+      $\vphantom{\frac||}$
+      $\kappa_s$  & \tt{STRANGE\_FRACTION}             & 1.0\\
+      $\vphantom{\frac||}$
+      $\kappa_B$  & \tt{BARYON\_FRACTION}              & 1.0\\
+      $\vphantom{\frac||}$
+      $\rho_{qs}$ & \tt{P\_{\{QS\}}/P\_{\{QQ\}}}       & 1.0\\
+      $\vphantom{\frac||}$
+      $\rho_{ss}$ & \tt{P\_{\{SS\}}/P\_{\{QQ\}}}       & 1.0\\
+      $\vphantom{\frac||}$
+      $\rho_{1}$  & \tt{P\_{\{QQ\_1\}}/P\_{\{QQ\_0\}}} & 1.0\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Additional weights for the popping of flavour in 
+      decays of gluons at the end of the parton shower, and in 
+      cluster decays.}}
+  \end{center}
+\end{table}
+The total popping weight , i.e.\ the normalisation, then reads
+\beq
+{\cal N} = 2\left[2+\kappa_s\right] + 
+\kappa_B\left[1+2\rho_{qs}+3\rho_1(3+2\rho_{qs}+\rho_{ss})\right]\,.
+\eeq
+It is straightforward to read off the individual weights/probabilities 
+for the popping of a corresponding pair from the equation above.
+
+%=========================================================================
+%=========================================================================
+\subsection{Hadronic wave functions}
+%=========================================================================
+%=========================================================================
+\label{Sec::Wavefunctions}
+I must still fill this section.
+
+%=========================================================================
+%=========================================================================
+\subsection{Hadronic multiplet weights}
+%=========================================================================
+%=========================================================================
+\label{Sec::Multiplets}
+The flavour wave functions of the corresponding hadrons are employed in the 
+transition of an individual cluster to single hadron or in the decay of a 
+cluster into two hadrons.  Therefore, the wave function part of the
+transition or decay weight for a cluster composed of $q\bar q'$\footnote{
+  For the sake of a compact notation, diquarks are also denoted by $q$,
+  $q'$ etc..  However, it is worth noting that in terms of cluster
+  composition etc., the $q$ denote anti-diquarks, while the $\bar q$ denote 
+  diquarks.
+} 
+is given by
+\beq
+{\cal W}_{\rm flav}^{\rm transition} = 
+|\langle q\bar q'|\psi_{\rm had}(q\bar q')\rangle|^2
+\;\;\;\mbox{\rm and}\;\;\;
+{\cal W}_{\rm flav}^{\rm decay} =
+{\cal W}_{\rm pop}(q_{\rm pop})\cdot
+|\langle q\bar q'|\psi_{\rm had}(q\bar q_{\rm pop})
+                  \psi_{\rm had}(q_{\rm pop}\bar q')\rangle|^2
+\eeq
+respectively.  Here the $\psi_{q\bar q'}$ denote the wave-function
+of the hadron, given in Sec.\ \ref{Sec::Wavefunctions}.  Therefore,
+for example, the flavour weight for a $u\bar u$-cluster to transit 
+into a neutral pion is given by
+\beq
+{\cal W}_{\rm flav}(C_{u\bar u}\to\pi^0) = 
+\left|\left\langle u\bar u\left|
+      \frac{1}{\sqrt{2}}\left(u\bar u-d\bar d\right)\right.
+      \right\rangle\right|^2 =
+\frac12\,,
+\eeq
+while the flavour part of the probability of this cluster to decay 
+into a charged pion pair is given by
+\beq
+\label{Eq:C2H}
+{\cal W}_{\rm flav}(C_{u\bar u}\to\pi^0) = 
+{\cal W}_{\rm pop}(d)\cdot
+\left|\left\langle u\bar u\left|
+      (u\bar d)(d\bar u)\right.\right\rangle\right|^2 =
+{\cal W}_{\rm pop}(d)\,.
+\eeq
+
+These weights can be fine-tuned by modifying the a-priori weights for
+hadrons of different multiplets to emerge.  In order to switch off
+individual multiplets, these weights must be set to zero.  The
+hadron multiplets listed in Table \ref{Tab:HadronMultiplets}
+are accessible in \Ahadic.
+\begin{table}[h!]
+  \label{Tab:HadronMultiplets}
+  \begin{center}
+    \begin{tabular}{|l||l|c|}
+      \hline
+      \multicolumn{3}{|c|}{Hadron multiplets and their relative weight}\\
+      \hline
+      Multiplet tag & Light hadrons & Default\\
+      \hline
+      \hline
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_PSEUDOSCALARS  & 
+      $\pi$, $K$, $\eta$, $\eta'$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_VECTORS        &
+      $\rho$, $K$, $\omega$, $\phi$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_TENSORS2       &
+      $a_2(1320)$, $K_2^*(1430)$, $f_2(1270)$, $f'_2(1525)$ & 1\\ 
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_TENSORS3       &
+      $\rho_3(1690)$, $K_3^*(1780)$, $\omega_3(1670)$, $\phi_3(1850)$ & 0 \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_TENSORS4       &
+      $a_4(2040)$, $K_4^*(2045)$, $f_4(2050)$, $f_J(2220)$ & 0\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_SCALARS        &
+      $a_0(980)$, $K_0^*(1430)$, $f_0(980)$, $f_0(1370)$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_AXIALVECTORS   &
+      $b_1(1235)$, $K_1(1270)$, $h_1(1170)$, $h_1(1380)$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_TENSORS2       &
+      $\pi_2(1670)$, $K_2(1770)$, $\eta_2(1645)$, $\eta_2(1870)$ & 0\\
+      & \hspace*{1cm}(no heavy hadrons available) & \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L2R0\_VECTORS        &
+      $a_1(1260)$, $K_1(1400)$, $f_1(1285)$, $f_1(1420)$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L3R0\_VECTORS        &
+      $\rho(1700)$, $K^*(1680)$, $\omega(1600)$, $f_1^\dagger(1900)$ & 0\\
+      & \hspace*{1cm}(no heavy hadrons available) & \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R1\_SCALARS        &
+      $\pi(1300)$, $K(1460)$, $\eta(1295)$, $\eta(1475)$ & 0\\
+      & \hspace*{1cm}(no heavy hadrons available) & \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R1\_AXIALVECTORS   &
+      $\rho(1450)$, $K^*(1410)$, $\omega(1420)$, $\phi(1680)$ & 0 \\
+      & \hspace*{1cm}(no heavy hadrons available) & \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_N\_1/2         &
+      $p$, $n$, $\Sigma$, $\Xi$, $\Lambda$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_N*\_1/2        &
+      $N(1440)$, $\Sigma(1660)$, $\Xi(1690)$, $\Lambda(1600)$ & 0\\ 
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_N*\_1/2        &
+      $N(1535)$, $\Sigma(1750)$, $\Xi(1620)$, $\Lambda(1405)$ & 0\\ 
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_N*\_3/2        
+      & \hspace*{1cm}needs to be filled & \\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L0R0\_DELTA\_3/2     &
+      $\Delta(1232)$, $\Sigma(1385)$, $\Xi(1530)$, $\Omega^-$ & 1\\
+      $\vphantom{\frac||}$
+      MULTI\_WEIGHT\_L1R0\_DELTA*\_3/2    &
+      $\Delta(1700)$, $\Sigma(1670)$, $\Xi(1820)$, $\Omega(2250)$ & 0\\
+      \hline
+    \end{tabular}
+
+    \parbox{12cm}{\caption{Hadron multiplets available in \Ahadic.  
+      States with a $^\dagger$ are fictitious.}}
+  \end{center}
+\end{table}
+Denoting these weights by ${\cal W}_{\rm multi}$, hence Eq.\ (\ref{Eq:C2H}) 
+becomes 
+\beq
+\begin{split}
+{\cal W}_{\rm flav}^{\rm transition} & \;=\;  {\cal W}_{\rm multi}(\rm hadron)\cdot
+|\langle q\bar q'|\psi_{\rm had}(q\bar q')\rangle|^2
+\;\;\;\mbox{\rm and}\;\;\;\\
+{\cal W}_{\rm flav}^{\rm decay} & \;=\;
+{\cal W}_{\rm pop}(q_{\rm pop})\cdot
+{\cal W}_{\rm multi}(\rm{hadron}_1){\cal W}_{\rm multi}(\rm{hadron}_2)\cdot
+|\langle q\bar q'|\psi_{\rm had}(q\bar q_{\rm pop})
+                  \psi_{\rm had}(q_{\rm pop}\bar q')\rangle|^2\,.
+\end{split}
+\eeq
+\end{appendix}
+
+
+%= bibliography ===================================
+%\bibliographystyle{bib/amsunsrt_mod}  
+%\bibliography{bib/journal}
+%= end ============================================
+\end{document}
+%==================================================
