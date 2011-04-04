@@ -44,7 +44,8 @@ Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
   rampl->SetIdNew(0);
   std::map<size_t,size_t> idmap;
   for (size_t i(0);i<rampl->Legs().size();++i) {
-    idmap[rampl->Leg(i)->Id()]=rampl->Leg(i)->Id();
+    idmap[1<<i]=rampl->Leg(i)->Id();
+    rampl->Leg(i)->SetId(1<<i);
   }
   std::map<nlo_type::code,Process_Map*> *procs
     (ampl->Procs<std::map<nlo_type::code,Process_Map*> >());

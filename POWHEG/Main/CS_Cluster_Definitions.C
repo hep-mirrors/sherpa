@@ -135,7 +135,7 @@ void CS_Cluster_Definitions::KernelWeight
     msg_Debugging()<<"No splitting function, skip kernel weight calc for ["
                    <<ProperFlav(i->Flav())<<"("<<i->Flav()<<"), "
                    <<ProperFlav(j->Flav())<<"("<<j->Flav()<<")] ["
-                   <<ProperFlav(k->Flav())<<"("<<k->Flav()<<")].\n";
+                   <<ProperFlav(mo)<<"("<<mo<<")].\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
