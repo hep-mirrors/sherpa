@@ -1,6 +1,7 @@
 #include "ATOOLS/Math/Poincare.H"
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
@@ -10,9 +11,14 @@ Poincare::Poincare():
 {
 }
   
-Poincare::Poincare(Vec4D v1, Vec4D v2):
-  m_status(2), m_beta(1.,0.,0.,0.), m_rsq(1.), m_usen(false)
+Poincare::Poincare(Vec4D v1, Vec4D v2,int mode):
+  m_status(mode?3:2), m_beta(1.,0.,0.,0.), m_rsq(1.), m_usen(false)
 {
+  if (m_status==3) {
+    m_beta=v1;
+    m_n=v2;
+    return;
+  }
   ATOOLS::Vec3D b(v1), a(v2);
   m_ct=a*b/(a.Abs()*b.Abs());
   m_n=Vec4D(0.0,cross(a,b));
@@ -102,6 +108,19 @@ void Poincare::RotateBack(Vec4D& v) const
   }
 }
   
+void Poincare::Lambda(Vec4D& v) const
+{
+  if (m_status!=3) THROW(fatal_error,"Invalid function call");
+  v=v-2.0*(v*(m_beta+m_n))/(m_beta+m_n).Abs2()*(m_beta+m_n)
+    +2.0*(v*m_beta)/m_beta.Abs2()*m_n;
+}
+
+void Poincare::LambdaBack(Vec4D& v) const
+{
+  if (m_status!=3) THROW(fatal_error,"Invalid function call");
+  v=v-2.0*(v*(m_beta+m_n))/(m_beta+m_n).Abs2()*(m_beta+m_n)
+    +2.0*(v*m_n)/m_n.Abs2()*m_beta;
+}
 
 bool Poincare::CheckBoost() 
 {
@@ -118,10 +137,22 @@ bool Poincare::CheckRotation()
   return true;
 }
 
+bool Poincare::CheckLambda() 
+{
+  if (!IsEqual(m_beta.Abs2(),m_n.Abs2())) return false;
+  return true;
+}
+
 void Poincare::Invert() 
 {
-  for (short unsigned int i(1);i<4;++i) m_beta[i]=-m_beta[i];
-  m_n=-1.0*m_n;
+  if (m_status==3) {
+    std::swap<Vec4D>(m_beta,m_n);
+    return;
+  }
+  for (short unsigned int i(1);i<4;++i) {
+    m_beta[i]=-m_beta[i];
+    m_n[i]=-m_n[i];
+  }
 }
 
 Vec4D Poincare_Sequence::operator*(const Vec4D &p) const

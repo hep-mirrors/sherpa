@@ -16,8 +16,8 @@ namespace ATOOLS {
   public:
 
     Poincare();
-    Poincare(Vec4D v1, Vec4D v2);  // rotations constructor
-    Poincare(Vec4D v);             // boost constructor 
+    Poincare(Vec4D v1,Vec4D v2,int mode=0);
+    Poincare(Vec4D v);
  
     void Boost(Vec4D& v) const;
     void BoostBack(Vec4D& v) const;
@@ -25,16 +25,21 @@ namespace ATOOLS {
     void Rotate(Vec4D& v) const;
     void RotateBack(Vec4D& v) const;
 
+    void Lambda(Vec4D& v) const;
+    void LambdaBack(Vec4D& v) const;
+
     bool CheckBoost();
     bool CheckRotation();
+    bool CheckLambda();
 
     void Invert();  
 
     inline Vec4D operator*(const Vec4D &vin) const
     {
       Vec4D v(vin);
-      if (m_status&1) Boost(v);
-      if (m_status&2) Rotate(v);
+      if (m_status==1) Boost(v);
+      if (m_status==2) Rotate(v);
+      if (m_status==3) Lambda(v);
       return v;
     }
 
