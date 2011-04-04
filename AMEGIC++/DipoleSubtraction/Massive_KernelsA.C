@@ -222,13 +222,13 @@ void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, 
     p_Gamma[0]+=m_g1*(1.+lmus)+m_K1;
     p_Gamma[0]/=CSC.CF;
     p_Gamma[1]/=CSC.CF;
-    if (IsZero(mj) /*&& IsZero(mk)*/) p_Gamma[0]-= (mode?0.5:0.);
+    if (IsZero(mj)) p_Gamma[0]-= (mode?0.5:0.);
   }
   if (st==2) {
     p_Gamma[0]+=m_g2*(1.+lmus)+m_K2;
     p_Gamma[0]/=CSC.CA;
     p_Gamma[1]/=CSC.CA;
-    if (IsZero(mj) /*&& IsZero(mk)*/) p_Gamma[0]-= (mode?1./6.:0.);
+    p_Gamma[0]-= (mode?1./6.:0.);
   }
   if (st==11) {
     p_Gamma[0]+=(m_g1*(1.+lmus)+m_K1)*CSC.CA/CSC.CF;
@@ -303,6 +303,8 @@ double Massive_KernelsA::t2(int type,int spin,double muq2)
   case 1: {
     double mx=muq2/(1.+muq2);
     if (IsZero(muq2)) return m_g1/CSC.CF+ aterm;
+    if (type==4) return m_g1/CSC.CF+m_g2/CSC.CA*(-2.*(log(sqrt(1.+muq2)-sqrt(muq2))+1./(sqrt(1./mx)+1.)))
+      -muq2*log(mx)-0.5*mx + aterm;
     return m_g1/CSC.CF*(1.-2.*(log(sqrt(1.+muq2)-sqrt(muq2))+1./(sqrt(1./mx)+1.)))
       -muq2*log(mx)-0.5*mx + aterm;
   }
