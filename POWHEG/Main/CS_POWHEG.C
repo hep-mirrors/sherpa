@@ -185,7 +185,6 @@ Singlet *CS_POWHEG::TranslateAmplitude
     parton->SetId(cl->Id());
     parton->SetRFlow();
     parton->SetKin(p_powheg->KinScheme());
-    double isf(1.0);
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
 	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
@@ -195,10 +194,8 @@ Singlet *CS_POWHEG::TranslateAmplitude
 	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(1)[0]);
 	parton->SetBeam(1);
       }
-      isf=(1.0-parton->Xbj())/parton->Xbj();
-      if (IsZero(isf)) isf=0.0;
     }
-    parton->SetStart(sqr(rpa.gen.Ecms())*isf);
+    parton->SetStart(sqr(rpa.gen.Ecms()));
     double ktveto2(jf?jf->Ycut()*sqr(rpa.gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()==
 		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);
