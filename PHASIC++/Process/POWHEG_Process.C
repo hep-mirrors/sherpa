@@ -472,6 +472,16 @@ double POWHEG_Process::SelectZHProcess()
       p_rproc->SetSelected(rproc);
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
       if (p_int->InSwaped()) rproc->Integrator()->SwapInOrder();
+      Selector_Base *jf=(*p_bproc)[0]->
+	Selector()->GetSelector("Jetfinder");
+      if (jf) {
+	Cluster_Amplitude *rampl
+	  (CreateAmplitude(m_zh[mode][i].p_sub->p_real));
+	rampl->SetJF(jf);
+	bool res(p_shower->JetVeto(rampl));
+	rampl->Delete();
+	if (res) return 0.0;
+      }
       return rproc->Integrator()->SelectionWeight(0)/
 	p_int->SelectionWeight(0);
     }
