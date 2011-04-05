@@ -221,21 +221,21 @@ bool XS_Charged_Drell_Yan::SetColours(double s,double t,double u)
 }
 
 
-DECLARE_TREEME2_GETTER(CDY_Getter,"CDY") // Charged Drell-Yan
-Tree_ME2_Base *CDY_Getter::operator()(const Process_Info &pi) const
-{
-  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
-  if (fl.size()!=4) return NULL;
-  for (size_t i(0);i<fl.size();++i) if (fl[i].Mass()!=0.) return NULL;
-  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
-  if ((fl[2].IsLepton() && fl[2]!=fl[3].Bar() &&
-       fl[2].LeptonFamily()==fl[2].LeptonFamily() &&
-       fl[0].IsQuark() && fl[0]!=fl[1].Bar() &&
-       fl[0].QuarkFamily()==fl[1].QuarkFamily())) {
-    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
-      return new XS_Charged_Drell_Yan(pi, fl);
-    }
-  }
-  return NULL;
-}
+//DECLARE_TREEME2_GETTER(CDY_Getter,"CDY") // Charged Drell-Yan
+//Tree_ME2_Base *CDY_Getter::operator()(const Process_Info &pi) const
+//{
+//  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
+//  Flavour_Vector fl=pi.ExtractFlavours();
+//  if (fl.size()!=4) return NULL;
+//  for (size_t i(0);i<fl.size();++i) if (fl[i].Mass()!=0.) return NULL;
+//  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
+//  if ((fl[2].IsLepton() && fl[2]!=fl[3].Bar() &&
+//       fl[2].LeptonFamily()==fl[2].LeptonFamily() &&
+//       fl[0].IsQuark() && fl[0]!=fl[1].Bar() &&
+//       fl[0].QuarkFamily()==fl[1].QuarkFamily())) {
+//    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+//      return new XS_Charged_Drell_Yan(pi, fl);
+//    }
+//  }
+//  return NULL;
+//}
