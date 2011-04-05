@@ -8,6 +8,7 @@ nobase_dist_examples_DATA         =	\
 			LHC_AGC/Run.dat \
 			LHC_EPA/Run.dat \
                         LHC_ADD/Run.dat \
+                        LHC_HPP_POWHEG/Run.dat \
 			LHC_HWW_POWHEG/Run.dat \
                         LHC_HZZ_POWHEG/Run.dat \
 			LHC_SUSY/Run.dat \
