@@ -232,7 +232,7 @@ void POWHEG_Process::SetRBMap(Cluster_Amplitude *ampl)
 double POWHEG_Process::GetRho(const int mode)
 {
   DEBUG_FUNC(mode);
-  double rsum(0.0), asum(0.0);
+  double asum(0.0);
   size_t aidx(p_mc->ActiveIdx());
   for (size_t i(0);i<m_rho.size();++i) {
     m_rho[i]=0.0;
@@ -242,49 +242,69 @@ double POWHEG_Process::GetRho(const int mode)
     NLO_subevtlist *subs((*p_sproc)[i]->GetSubevtList());
     (*m_pmap[nlo_type::lo])[subs->back()->m_pname]->
       SetLast(subs->back()->m_last[mode],mode);
+    msg_Debugging()<<i<<": "<<subs->back()->m_pname<<"\n";
+    msg_Indent();
+    double rsum(0.0);
+    std::vector<double> rhos(m_rho.size(),0.0);
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
-      size_t idx(m_dmap.find(sub->p_id)->second);
-      m_rho[idx]+=sub->m_me;
+      size_t id(m_dmap.find(sub->p_id)->second);
+      double wa(p_mc->SelectionWeight(id)/asum);
+      if (wa==0.0) continue;
+      m_rho[id]+=sub->m_last[mode]/wa;
+      msg_Debugging()<<"S '"<<sub->m_pname<<"'["<<id
+		     <<"] -> "<<sub->m_last[mode]/wa
+		     <<" ("<<sub->m_last[mode]<<")\n";
+      rhos[id]+=sub->m_me;
       rsum+=sub->m_me;
     }
-  }
-  double rho(1.0);
-  if (rsum) {
-    double wa(p_mc->SelectionWeight(aidx)/asum);
-    double wrs(m_rho[aidx]/rsum);
-    rho=wrs/wa;
-  }
-  for (size_t i(0);i<p_sproc->Size();++i) {
-    NLO_subevtlist *subs((*p_sproc)[i]->GetSubevtList());
+    if (rsum==0.0) {
+      m_zh[mode].push_back(ZH_Key(subs->back(),(*p_rproc)[i],
+				  dabs(subs->back()->m_last[mode])));
+      m_zhsum[mode]+=dabs(subs->back()->m_last[mode]);
+      m_rho[aidx]+=subs->back()->m_last[mode];
+      continue;
+    }
+    else {
+      for (size_t j(0);j<rhos.size();++j) {
+	rhos[j]/=rsum;
+	double wa(p_mc->SelectionWeight(j)/asum);
+	if (wa==0.0) continue;
+	double res(subs->back()->m_last[mode]*rhos[j]/wa);
+	m_rho[j]+=res;
+	if (res) msg_Debugging()
+	  <<"R w/ B '"<<subs->back()->m_pname<<"'["<<j<<"] -> "
+	  <<res<<" ("<<subs->back()->m_last[mode]<<")\n";
+      }
+    }
+    if (m_smode==1) continue;
     double qij2(-1.0);
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
-      size_t idx(m_dmap.find(sub->p_id)->second);
-      if (idx==aidx && subs->back()->m_me) {
+      size_t id(m_dmap.find(sub->p_id)->second);
+      if (id==aidx && subs->back()->m_me && sub->m_nco!=2) {
 	Process_Base *bproc((*m_pmap[nlo_type::lo])[sub->m_pname]);
 	RB_Data *rbd(bproc->Integrator()->RBMap()[sub]);
 	if (rbd->m_ktres==0.0) continue;
 	if (qij2<0.0) qij2=PDF::Qij2Min(p_mc->RealMoms(),subs);
 	if (qij2<p_powheg->KT2Min()) continue;
-//        Cluster_Amplitude * bampl = CreateAmplitude(sub);
-//        ZH_Pair zh(p_powheg->ZHSplit
-//                   (bproc->Differential(*bampl,1|2|4),qij2,rbd));
         ZH_Pair zh(p_powheg->ZHSplit
-                   (bproc->Get<Single_Process>()->LastXS()*bproc->SymFac(),qij2,rbd));
+                   (bproc->Get<Single_Process>()->LastXS()*
+		    bproc->SymFac(),qij2,rbd));
+        double res(zh.second/(zh.first+zh.second)
+		   *dabs(rhos[id])*subs->back()->m_last[mode]);
         msg_Debugging()<<bproc->Name()<<": B = "
                        <<bproc->Get<Single_Process>()->LastXS()*bproc->SymFac()
-                       <<", R = "<<subs->back()->m_me
-		       <<", Z = "<<zh.first<<", H = "<<zh.second<<"\n";
-        double res(zh.second/(zh.first+zh.second)
-		   *rho*subs->back()->m_last[mode]);
+                       <<", R = "<<subs->back()->m_last[mode]
+		       <<", Z = "<<zh.first<<", H = "<<zh.second
+		       <<", \\rho["<<id<<"] = "<<rhos[id]<<" -> "<<res<<"\n";
 	m_zh[mode].push_back(ZH_Key(sub,(*p_rproc)[i],dabs(res)));
 	m_zhsum[mode]+=dabs(res);
-//        bampl->Delete();
       }
     }
   }
-  return rho;
+  if (m_smode==1) return 1.0;
+  return m_rho[aidx]/p_sproc->Last(mode);
 }
 
 double POWHEG_Process::Differential(const Vec4D_Vector &p)

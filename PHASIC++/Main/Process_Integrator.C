@@ -406,6 +406,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
     }
+    if (omode || p_proc->Parent()==p_proc)
     msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
 	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
   }
