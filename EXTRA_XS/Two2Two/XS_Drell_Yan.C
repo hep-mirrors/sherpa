@@ -235,7 +235,6 @@ Tree_ME2_Base *CDY_Getter::operator()(const Process_Info &pi) const
        fl[0].IsQuark() && fl[0]!=fl[1].Bar() &&
        fl[0].QuarkFamily()==fl[1].QuarkFamily())) {
     if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
-      msg_Info()<<METHOD<<"(): initialised process "<<fl<<std::endl;
       return new XS_Charged_Drell_Yan(pi, fl);
     }
   }
