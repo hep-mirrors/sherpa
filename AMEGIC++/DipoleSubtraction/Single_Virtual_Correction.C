@@ -47,6 +47,30 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
   }
+  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) {
+    m_dalpha_ff = helpd;
+    msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha_ff<<" . "<<std::endl;
+    if (m_dalpha_ff!=m_dalpha) m_massive=1;
+  }
+  else m_dalpha_ff=m_dalpha;
+  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) {
+    m_dalpha_fi = helpd;
+    msg_Tracking()<<"Set fi dipole cut alpha="<<m_dalpha_fi<<" . "<<std::endl;
+    if (m_dalpha_fi!=m_dalpha) m_massive=1;
+  }
+  else m_dalpha_fi=m_dalpha;
+  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) {
+    m_dalpha_if = helpd;
+    msg_Tracking()<<"Set if dipole cut alpha="<<m_dalpha_if<<" . "<<std::endl;
+    if (m_dalpha_if!=m_dalpha) m_massive=1;
+  }
+  else m_dalpha_if=m_dalpha;
+  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) {
+    m_dalpha_ii = helpd;
+    msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha_ii<<" . "<<std::endl;
+    if (m_dalpha_ii!=m_dalpha) m_massive=1;
+  }
+  else m_dalpha_ii=m_dalpha;
   m_force_init=reader.GetValue("LOOP_ME_INIT",0);
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
@@ -170,7 +194,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       m_xpa.resize(p_masskern->Nmf()*fsgluons);
       m_xpb.resize(p_masskern->Nmf()*fsgluons);
     }
-    if (p_masskern) p_masskern->SetAlpha(m_dalpha);
+    if (p_masskern) p_masskern->SetAlpha(m_dalpha_ff, m_dalpha_fi,m_dalpha_if,m_dalpha_ii);
   }
 
   p_dipole = new DipoleSplitting_Base();

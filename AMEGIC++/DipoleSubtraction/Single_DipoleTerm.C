@@ -123,6 +123,37 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
   }
+  switch (m_dipoletype) {
+  case dpt::f_f:
+  case dpt::f_fm:
+    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) {
+      m_dalpha = helpd;
+      msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+    }
+    break;
+  case dpt::f_i:
+  case dpt::f_im:
+    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) {
+      m_dalpha = helpd;
+      msg_Tracking()<<"Set fi dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+    }
+    break;
+  case dpt::i_f:
+  case dpt::i_fm:
+    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) {
+      m_dalpha = helpd;
+      msg_Tracking()<<"Set if dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+    }
+    break;
+  case dpt::i_i:
+    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) {
+      m_dalpha = helpd;
+      msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+    }
+    break;
+  default:
+    break;
+  }
 
   int helpi;
   if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {

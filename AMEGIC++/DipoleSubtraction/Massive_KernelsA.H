@@ -14,7 +14,7 @@ namespace AMEGIC {
   protected:
     size_t m_nf,m_nmf;
     double m_cpldef,m_g1,m_g2,m_g3,m_K1,m_K2,m_K3, m_aterm;
-    double m_alpha,m_loga,m_kappa;
+    double m_alpha_ff,m_alpha_ii,m_alpha_if,m_alpha_fi,m_loga,m_kappa;
     double p_VS[3];
     double p_VNS[3];
     double p_Gamma[3];
@@ -32,7 +32,7 @@ namespace AMEGIC {
     Massive_KernelsA();
     
     void SetCoupling(const MODEL::Coupling_Map *cpls);
-    void SetAlpha(double a); 
+    void SetAlpha(double aff, double afi, double aif, double aii); 
     void SetKappa(double k) { m_kappa=k; } 
     double Coupling() { return m_cpldef*p_cpl->Factor(); }
     size_t Nf()       { return m_nf; }

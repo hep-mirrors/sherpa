@@ -27,7 +27,7 @@ namespace AMEGIC {
   protected:
     std::string             m_ptypename,m_pslibname;
     double                  m_iresult;
-    double                  m_dalpha;
+    double                  m_dalpha,m_dalpha_ff,m_dalpha_fi,m_dalpha_if,m_dalpha_ii;
     Phase_Space_Generator * p_psgen;
 
     double               ** p_dsij;

@@ -30,7 +30,8 @@ Massive_KernelsA::Massive_KernelsA()
   m_K2 = (67./18.-sqr(M_PI)/6.)*CSC.CA-10./9.*CSC.TR*m_nf;
   m_K3 = (4.-sqr(M_PI)/6.)*CSC.CF;
 
-  m_alpha = 1.;
+  m_alpha_ff = 1.; m_alpha_fi = 1.;
+  m_alpha_if = 1.; m_alpha_ii = 1.;
   m_loga = 0.;
   m_aterm = 0.;
 
@@ -65,9 +66,11 @@ void Massive_KernelsA::SetCoupling(const MODEL::Coupling_Map *cpls)
   m_cpldef = p_cpl->Default()/(2.*M_PI);
 }
 
-void Massive_KernelsA::SetAlpha(double a)
+void Massive_KernelsA::SetAlpha(double aff, double afi, double aif, double aii)
 { 
-  m_alpha=a; m_loga=std::log(a); 
+  m_alpha_ff=aff; m_alpha_fi=afi; 
+  m_alpha_if=aif; m_alpha_ii=aii; 
+  m_loga=std::log(afi); 
 }
 
 double Massive_KernelsA::Lambda(double x,double y, double z)
@@ -241,8 +244,8 @@ void Massive_KernelsA::Calculate(int t,double mu2,double s,double mj,double mk, 
     p_Gamma[1]/=CSC.CF; 
   }
   m_aterm=0.;
-  if (susy && m_alpha!=1.) THROW(not_implemented,"DIPOLE_ALPHA must be 1 for SUSY processes");
-  if (!ini && !ini2 && m_alpha!=1.) CalcAterms( t,mu2,s,mj,mk);
+  if (susy && m_alpha_ff!=1.) THROW(not_implemented,"DIPOLE_ALPHA must be 1 for SUSY processes");
+  if (!ini && !ini2 && m_alpha_ff!=1.) CalcAterms( t,mu2,s,mj,mk);
 }
 
 double Massive_KernelsA::I_Fin()
@@ -282,7 +285,7 @@ double Massive_KernelsA::t1p(int type,int spin,double muq2,double x)
 {
   if (type==2||type==3) return 0.;
   double aterm(0.);
-  if (m_alpha<1.) aterm = -at1( type, spin, muq2, x);
+  if (m_alpha_fi<1.) aterm = -at1( type, spin, muq2, x);
   return aterm;
 }
 
@@ -291,7 +294,7 @@ double Massive_KernelsA::t2(int type,int spin,double muq2)
 {
   if (type==2||type==3) return 0.;
   double aterm(0.);
-  if (m_alpha<1.) aterm = -at2(type, spin, muq2);
+  if (m_alpha_fi<1.) aterm = -at2(type, spin, muq2);
   switch (spin) {
   case 0: {
     double mx=muq2/(1.+muq2);
@@ -324,7 +327,7 @@ double Massive_KernelsA::t3(int type,int spin,double muq2,double x)
 // k(x)
 {
   double aterm(0.);
-  if (m_alpha<1.) aterm = -at3( type, spin, muq2, x);
+  if (m_alpha_fi<1. || m_alpha_if<1.) aterm = -at3( type, spin, muq2, x);
   if (IsZero(muq2)) return aterm;
   if (spin==2) return aterm;
   double mx=log((1.-x)/(1.-x+muq2));
@@ -346,7 +349,7 @@ double Massive_KernelsA::t4(int type,int spin,double muq2,double x)
 {
   if (type==2||type==3) return 0.;
   double aterm(0.);
-  if (m_alpha<1.) aterm = -at4( type, spin, muq2, x);
+  if (m_alpha_fi<1.) aterm = -at4( type, spin, muq2, x);
   double y=1.-x;
   double lny=log(y);
   if (IsZero(muq2)) {
@@ -403,25 +406,24 @@ void Massive_KernelsA::CalcAterms(int t,double mu2,double s,double mj,double mk)
 {
   m_aterm =0.;
   double Q2 = s+sqr(mj)+sqr(mk);
-  double Q = sqrt(Q2);
   double muj2 = mj*mj/Q2;
   double muk2 = mk*mk/Q2;
   double muk = sqrt(muk2);
-  double loga = log(m_alpha);
+  double loga = log(m_alpha_ff);
   if (t==1) {
     if (mj==0.) {
       if (mk == 0.) {
-        m_aterm+= -sqr(log(m_alpha)) -3./2.*(log(m_alpha)+1.-m_alpha);
+        m_aterm+= -sqr(log(m_alpha_ff)) -3./2.*(log(m_alpha_ff)+1.-m_alpha_ff);
         return;
       }
       else{
         double yp = (1.-muk)/(1.+muk);
-        double xp = yp*(1.-m_alpha) + sqrt((1.-m_alpha)*(1.-m_alpha*yp*yp));
+        double xp = yp*(1.-m_alpha_ff) + sqrt((1.-m_alpha_ff)*(1.-m_alpha_ff*yp*yp));
         m_aterm += sqr(log((1.-yp*yp+2.*xp*yp)/(1.+yp-xp)/(1.-yp+xp))) - 2.*sqr(log((1.+yp-xp)/(1.+yp)))
           +4.*(log((1.+yp)/2.)*log((1.-yp+xp)/(1.-yp)) + log((1.+yp)/(2.*yp))*log((1.-yp*yp+2.*xp*yp)/(1.-yp*yp))
           +DiLog((1.-yp)/(1.+yp)) - DiLog((1.-yp*yp+2.*xp*yp)/sqr(1.+yp)) +DiLog((1.-yp+xp)/2.)
           - DiLog((1.-yp)/2.));
-        m_aterm += -1.5*(log(m_alpha) +yp*(1.-m_alpha));
+        m_aterm += -1.5*(log(m_alpha_ff) +yp*(1.-m_alpha_ff));
         return;
       }
     }
@@ -429,16 +431,16 @@ void Massive_KernelsA::CalcAterms(int t,double mu2,double s,double mj,double mk)
       if (mk == 0.) {
         double muq2 = muj2;
         double lmq2 = log(muj2);
-        m_aterm+= 2.*(-log(m_alpha)*lmq2 - DiLog((muq2 -1.)/muq2) + DiLog((m_alpha*(muq2 -1.))/muq2));
-        m_aterm+= 3./2.*(m_alpha-1.) - (3.-muq2)/(2.-2.*muq2)*log(m_alpha + (1.-m_alpha)*muq2)
-                   - 0.5*m_alpha/(m_alpha + (1.-m_alpha)*muq2) +0.5 - 2.*log(m_alpha) 
-                   + 2./(1.-muq2)*log(m_alpha+(1.-m_alpha)*muq2);
+        m_aterm+= 2.*(-log(m_alpha_ff)*lmq2 - DiLog((muq2 -1.)/muq2) + DiLog((m_alpha_ff*(muq2 -1.))/muq2));
+        m_aterm+= 3./2.*(m_alpha_ff-1.) - (3.-muq2)/(2.-2.*muq2)*log(m_alpha_ff + (1.-m_alpha_ff)*muq2)
+                   - 0.5*m_alpha_ff/(m_alpha_ff + (1.-m_alpha_ff)*muq2) +0.5 - 2.*log(m_alpha_ff) 
+                   + 2./(1.-muq2)*log(m_alpha_ff+(1.-m_alpha_ff)*muq2);
         return;
       }
       else{
         double mjmk1 = 1.-muj2 - muk2;
         double yp = 1. - 2.*muk*(1.-muk)/mjmk1;
-        double ap = m_alpha*yp;
+        double ap = m_alpha_ff*yp;
         double a = 2.*muk/(1.- muj2-muk2);
         double b = 2.*(1.-muk)/(1.- muj2-muk2);
         double c = 2.*muk*(1.-muk)/(1.- muj2-muk2);
@@ -467,20 +469,20 @@ void Massive_KernelsA::CalcAterms(int t,double mu2,double s,double mj,double mk)
       for (size_t i=0;i<m_nmf;i++) if (4.*m_massflav[i]*(m_massflav[i]+mk)<s) {
      double muj2 = m_massflav[i]*m_massflav[i]/Q2;
      double muj4 = 4.*muj2*muj2;
-     double a = sqrt(sqr(m_alpha*(1.-2.*muj2)) -muj4);
+     double a = sqrt(sqr(m_alpha_ff*(1.-2.*muj2)) -muj4);
      double b = sqrt(1.-4.*muj2);
-     m_aterm -= CSC.TR*2./3.*(2.*a/(2.*(m_alpha-1.)-m_alpha) +a + (2.*muj2 -1.)*
-        (-log(-2.*(a+m_alpha*(2.*muj2-1.))) + 2.*atan(2.*muj2/a)
+     m_aterm -= CSC.TR*2./3.*(2.*a/(2.*(m_alpha_ff-1.)-m_alpha_ff) +a + (2.*muj2 -1.)*
+        (-log(-2.*(a+m_alpha_ff*(2.*muj2-1.))) + 2.*atan(2.*muj2/a)
         +log(-2.*(2.*muj2 +b -1.)) - 2.*atan(2.*muj2/b)) + b); ///ref 0 eq A9
       }
-      m_aterm+=-sqr(loga)+11./6.*(m_alpha-1.-loga) -m_nf*CSC.TR/CSC.CA*2./3.*(m_alpha-1.-loga);
+      m_aterm+=-sqr(loga)+11./6.*(m_alpha_ff-1.-loga) -m_nf*CSC.TR/CSC.CA*2./3.*(m_alpha_ff-1.-loga);
     }
     else{
       double yp = 1. - 2.*muk*(1.-muk)/(1.-muk2);
-      double ap = m_alpha*yp;
+      double ap = m_alpha_ff*yp;
       double kappa = m_kappa;
-      double yl = 1. + m_alpha*sqr(1. -muk) - muk2 -
-                       sqrt(sqr(1.-muk)*(sqr(m_alpha*(1.-muk)) + sqr(1.+muk) -2.*(m_alpha*(1.+muk2))));
+      double yl = 1. + m_alpha_ff*sqr(1. -muk) - muk2 -
+                       sqrt(sqr(1.-muk)*(sqr(m_alpha_ff*(1.-muk)) + sqr(1.+muk) -2.*(m_alpha_ff*(1.+muk2))));
       m_aterm += -((11.*sqr(-2.+2.*muk+yl))/
                  ((-1.+muk2)*(-2.+yl))
                  -44.*log(2.-2.*muk) - 22.*log(muk) + 24.*log(2./(1. + muk))*
@@ -508,13 +510,13 @@ void Massive_KernelsA::CalcAterms(int t,double mu2,double s,double mj,double mk)
         double c = -1. + 2.*muj2 +muk2;
         double c2 = c*c;
         double b = sqrt(c2*yp*yp - muj4);
-        double d = sqrt(sqr(m_alpha*c*yp) - muj4);
+        double d = sqrt(sqr(m_alpha_ff*c*yp) - muj4);
         double e = sqrt(c2-muj4);
         yp = 1. - 2.*muk*(1.-muk)/(1.-2.*muj2 - muk2);
-        m_aterm -= CSC.TR*(b*d*((-8.*muj2*muj2 + 2.*c2 +2.*c+4.*muj2)*log((m_alpha*c2*yp-d*e -muj4)/(-b*e+c2*yp-muj4))
-              +2.*(c2+c-muj4+2.*muj2)*log((1.-yp)/(1.-m_alpha*yp)) + (-3.*c2 +4.*c*muj2 - 2.*c)*log((m_alpha*c*yp+d)/(b+c*yp))
+        m_aterm -= CSC.TR*(b*d*((-8.*muj2*muj2 + 2.*c2 +2.*c+4.*muj2)*log((m_alpha_ff*c2*yp-d*e -muj4)/(-b*e+c2*yp-muj4))
+              +2.*(c2+c-muj4+2.*muj2)*log((1.-yp)/(1.-m_alpha_ff*yp)) + (-3.*c2 +4.*c*muj2 - 2.*c)*log((m_alpha_ff*c*yp+d)/(b+c*yp))
               +2.*(c2-2.*(c+1.)*muj2+muj4)*(atan(2.*muj2/d) - atan(2.*muj2/b))) 
-              +c*(c2*yp*(m_alpha*m_alpha*b*yp - 2.*m_alpha*b - d*(yp-2.)) + 4.*c*muj2*(b*(m_alpha*yp -1.) - d*yp +d) +muj4*(b-d)))
+              +c*(c2*yp*(m_alpha_ff*m_alpha_ff*b*yp - 2.*m_alpha_ff*b - d*(yp-2.)) + 4.*c*muj2*(b*(m_alpha_ff*yp -1.) - d*yp +d) +muj4*(b-d)))
               /(3.*c*a*a*b*d);///ref 0 eq A6 reformulated. 
       }
     }
@@ -525,26 +527,23 @@ void Massive_KernelsA::CalcAterms(int t,double mu2,double s,double mj,double mk)
 double Massive_KernelsA::at1(int type,int spin,double muq2,double x)
 // g(x)
 {
-///when doing x-dependent part of plus-func, muq2 is sja as defined in CS. When doing endpoints, muq2= (muq2)tilde
   if (type==2||type==3) return 0.;
   double res(0.);
-  if (spin == 1) {  ///final state is quark
-    if (IsZero(muq2)) {
-      if (x<1.-m_alpha) res = 2.*log(1.-x)/(1.-x) + 1.5/(1.-x);
-    }
-    else {
-      if (x<1.-m_alpha) res -= 2.*(log((1.+muq2)/muq2) - 1.)/(1.-x);
+  if (spin == 1) { 
+    if (x<1.-m_alpha_fi) {
+      if (IsZero(muq2)) res = 2.*log(1.-x)/(1.-x) + 1.5/(1.-x);
+      else res -= 2.*(log((1.+muq2)/muq2) - 1.)/(1.-x);
     }
   }
   else {
     /// final state is gluon - sum over all possible splittings
-    if (x<1.-m_alpha) res -= CSC.TR/CSC.CA*m_nf*(2./3./(1.-x));
-   if (x<1.-m_alpha) res -=( -2./(1.-x)*log(1.-x) - 11./6./(1.-x)); 
+    if (x<1.-m_alpha_fi) res -= CSC.TR/CSC.CA*m_nf*(2./3./(1.-x));
+    if (x<1.-m_alpha_fi) res -=( -2./(1.-x)*log(1.-x) - 11./6./(1.-x)); 
     size_t nfjk=0;
     for (size_t i=0;i<m_nmf;i++) if (4.*m_massflav[i]*(m_massflav[i])<muq2) nfjk++;
     for(size_t i=0; i<nfjk;i++) {
       double muQ2 = (m_massflav[i]*m_massflav[i])/muq2;
-      if (x<1.-m_alpha) res +=2./3.*((1.-x+2.*muQ2)/sqr(1.-x))*sqrt(1.-4.*muQ2/(1.-x));
+      if (x<1.-m_alpha_fi) res +=2./3.*((1.-x+2.*muQ2)/sqr(1.-x))*sqrt(1.-4.*muQ2/(1.-x));
     }
   }
   return res;
@@ -555,28 +554,24 @@ double Massive_KernelsA::at2(int type,int spin,double muq2)
 {
   if (type==2||type==3) return 0.;
   double res(0.);
-  double loga = log(m_alpha);
+  double loga = log(m_alpha_fi);
   if (spin == 1) {  ///final state is quark
-    if (IsZero(muq2)) {
-        res += (-1.5*loga - loga*loga);
-    }
-    else {
-      res += 2.*log(m_alpha)*(log((1.+muq2)/muq2)-1.);
-    }
+    if (IsZero(muq2)) res += (-1.5*loga - loga*loga);
+    else res += 2.*log(m_alpha_fi)*(log((1.+muq2)/muq2)-1.);
   }
   else {
     /// final state is gluon - sum over all possible splittings
     res += CSC.TR/CSC.CA*m_nf*(loga*2./3.);
- res -= /*2.**/(loga*loga + 11./6.*loga); 
+    res -= /*2.**/(loga*loga + 11./6.*loga); 
     double muQ2, a, b, c;
-    c=sqrt(m_alpha);
+    c=sqrt(m_alpha_fi);
     size_t nfjk=0;
     for (size_t i=0;i<m_nmf;i++) if (4.*m_massflav[i]*(m_massflav[i])<muq2) nfjk++;
     for(size_t i=0; i<nfjk;i++) {
       muQ2 = (m_massflav[i]*m_massflav[i])/muq2;
       a = sqrt(1.-4.*muQ2);
-      b = sqrt(m_alpha-4.*muQ2);
-      res +=2./9.*(-4.*muQ2*(b/m_alpha/c +4./a) - 5.*b/c - sqr(4.*muQ2)/a +5./a +6.*log(b+c) - 6.*log(a+1.));
+      b = sqrt(m_alpha_fi-4.*muQ2);
+      res +=2./9.*(-4.*muQ2*(b/m_alpha_fi/c +4./a) - 5.*b/c - sqr(4.*muQ2)/a +5./a +6.*log(b+c) - 6.*log(a+1.));
     }
   }
   return res;
@@ -587,48 +582,39 @@ double Massive_KernelsA::at3(int type,int spin,double muq2,double x)
 // k(x)
 {
   if (spin==2) muq2 = muq2*x;
-  else muq2 = muq2/x; ///changing mu-notilde back to mutilde.
+  else muq2 = muq2/x;
   double res(0.);
   if (type!=2 && type!=3){
-  if (spin == 1) {  ///final state is quark
-    if (IsZero(muq2)) {
-      if (x<1.-m_alpha) {
-        res += -2.*log(2.-x)/(1.-x);
-      }
-      
+    if (spin == 1) {  ///final state is quark
+      if (x<1.-m_alpha_fi) {
+        if (IsZero(muq2)) res += -2.*log(2.-x)/(1.-x);
+        else res -= (1.-x)/(2.*sqr(1.-x+muq2*x))+2./(1.-x)*log((2.-x+muq2*x)*muq2/(1.+muq2)/(1.-x+muq2*x));
+     }
     }
     else {
-      if (x<1.-m_alpha) {
-        res -= (1.-x)/(2.*sqr(1.-x+muq2*x)) +2./(1.-x)*log((2.-x+muq2*x)*muq2/(1.+muq2)/(1.-x+muq2*x));
-      }
+      /// final state is gluon - sum over all possible splittings (only one non-zero here is g->gg)
+      if (x<1.-m_alpha_fi) res -= (2.*log(2.-x)/(1.-x));
     }
   }
-  else {
-    /// final state is gluon - sum over all possible splittings (only one non-zero here is g->gg)
-  if (x<1.-m_alpha) res -= (2.*log(2.-x)/(1.-x));
-  }
-  }
   double zp=(1.-x)/(1.-x+muq2*x);
-  if (spin==2) {
-    zp = 1.;
-  }
+  if (spin==2) zp = 1.;
   switch (type) {
   case 1:
-    if (zp>m_alpha) res-=2./(1.-x)*log(zp*(1.-x+m_alpha)/m_alpha/(1.-x+zp)) - (1.+x)*log(zp/m_alpha);
+    if (zp>m_alpha_if) res-=2./(1.-x)*log(zp*(1.-x+m_alpha_if)/m_alpha_if/(1.-x+zp)) - (1.+x)*log(zp/m_alpha_if);
     break;
   case 2:
-    if (zp>m_alpha) {
-      if (zp!=1.) res+= -CSC.CF/CSC.CA*((1.+sqr(1.-x))/x*(log(zp/m_alpha)) +2.*muq2*log((1.-zp)/(1.-m_alpha)));
-      else res += -CSC.CF/CSC.CA*(2.-2.*x+x*x)/x*log(zp/m_alpha);
+    if (zp>m_alpha_if) {
+      if (zp!=1.) res+= -CSC.CF/CSC.CA*((1.+sqr(1.-x))/x*(log(zp/m_alpha_if)) +2.*muq2*log((1.-zp)/(1.-m_alpha_if)));
+      else res += -CSC.CF/CSC.CA*(2.-2.*x+x*x)/x*log(zp/m_alpha_if);
     }
     break;
   case 3:
-    if (zp>m_alpha) res += -CSC.TR/CSC.CF*(x*x+sqr(1.-x))*log(zp/m_alpha);
+    if (zp>m_alpha_if) res += -CSC.TR/CSC.CF*(x*x+sqr(1.-x))*log(zp/m_alpha_if);
     break;
   case 4:
-    if (zp>m_alpha) {
-      if (zp!=1.) res += -2.*((1./x-2.+x*(1.-x))*log(zp/m_alpha) -muq2*log((1.-zp)/(1.-m_alpha)) - log(m_alpha*(1.-x+zp)/(zp*(1.-x+m_alpha)))/(1.-x));
-      else res+= -2.*((1./x-2.+x*(1.-x))*log(zp/m_alpha) - log(m_alpha*(1.-x+zp)/(zp*(1.-x+m_alpha)))/(1.-x));
+    if (zp>m_alpha_if) {
+      if (zp!=1.) res += -2.*((1./x-2.+x*(1.-x))*log(zp/m_alpha_if) +muq2*log((1.-zp)/(1.-m_alpha_if)) - log(m_alpha_if*(1.-x+zp)/(zp*(1.-x+m_alpha_if)))/(1.-x));
+      else res+= -2.*((1./x-2.+x*(1.-x))*log(zp/m_alpha_if) - log(m_alpha_if*(1.-x+zp)/(zp*(1.-x+m_alpha_if)))/(1.-x));
     }
     break;
   }
@@ -642,28 +628,28 @@ double Massive_KernelsA::at4(int type,int spin,double muq2,double x)
   double res(0.);
   if (spin == 1) {  ///final state is quark
     if (IsZero(muq2)) {
-      if (x>1.-m_alpha) res -= sqr(m_loga) + 1.5*m_loga;
-      if (x<1.-m_alpha) res -= sqr(log(1.-x)) + 1.5*log(1.-x);
+      if (x>1.-m_alpha_fi) res -= sqr(m_loga) + 1.5*m_loga;
+      if (x<1.-m_alpha_fi) res -= sqr(log(1.-x)) + 1.5*log(1.-x);
     }
     else {
-      if (x>1.-m_alpha) res -= - 2.*(log((1.+muq2)/muq2) - 1.)*m_loga;
-      if (x<1.-m_alpha) res -= - 2.*(log((1.+muq2)/muq2) - 1.)*log(1.-x);
+      if (x>1.-m_alpha_fi) res -= - 2.*(log((1.+muq2)/muq2) - 1.)*m_loga;
+      if (x<1.-m_alpha_fi) res -= - 2.*(log((1.+muq2)/muq2) - 1.)*log(1.-x);
     }
   }
   else {
     /// final state is gluon - sum over all possible splittings
- if (x>1.-m_alpha) res -=((-CSC.TR/CSC.CA*m_nf*2./3.+11./6.)*m_loga + sqr(m_loga));
- if (x<1.-m_alpha) res-=( (-CSC.TR/CSC.CA*m_nf*2./3.+11./6.)*log(1.-x) + sqr(log(1.-x)));
+    if (x>1.-m_alpha_fi) res -=((-CSC.TR/CSC.CA*m_nf*2./3.+11./6.)*m_loga + sqr(m_loga));
+    if (x<1.-m_alpha_fi) res-=( (-CSC.TR/CSC.CA*m_nf*2./3.+11./6.)*log(1.-x) + sqr(log(1.-x)));
     size_t nfjk=0;
     for (size_t i=0;i<m_nmf;i++) if (4.*m_massflav[i]*(m_massflav[i])<muq2) nfjk++;
     for(size_t i=0; i<nfjk;i++) {
       double muQ2 = (m_massflav[i]*m_massflav[i])/muq2;
       double rt = sqrt(1.-4.*muQ2);
-      double rta = sqrt(1.-4.*muQ2/m_alpha);
-      if (x>1.-m_alpha) res +=2./3.*log(2.*m_alpha*(rta +1.) - 4.*muQ2) - 2./9./m_alpha*rta*(4.*muQ2 +5.*m_alpha)
+      double rta = sqrt(1.-4.*muQ2/m_alpha_fi);
+      if (x>1.-m_alpha_fi) res +=2./3.*log(2.*m_alpha_fi*(rta +1.) - 4.*muQ2) - 2./9./m_alpha_fi*rta*(4.*muQ2 +5.*m_alpha_fi)
                                           +2./9.*(4.*rt*muQ2 + 5.*rt - 3.*log(-2.*muQ2+rt+1.) - log(8.));
       rta = sqrt(1.-4.*muQ2/(1.-x));
-      if (x<1.-m_alpha) res +=2./3.*log(2.*(1.-x)*(rta +1.) - 4.*muQ2) - 2./9./(1.-x)*rta*(4.*muQ2 +5.*(1.-x))
+      if (x<1.-m_alpha_fi) res +=2./3.*log(2.*(1.-x)*(rta +1.) - 4.*muQ2) - 2./9./(1.-x)*rta*(4.*muQ2 +5.*(1.-x))
                                           +2./9.*(4.*rt*muQ2 + 5.*rt - 3.*log(-2.*muQ2+rt+1.) - log(8.));
     }
   }
@@ -692,9 +678,7 @@ double Massive_KernelsA::Kt2(int type)
 double Massive_KernelsA::Kt3(int type,double x)
 {
   double at=0.,ax=0.;
-  if (m_alpha<1.) {
-    if (m_alpha<(1.-x)) ax=log(m_alpha/(1.-x));
-  }
+  if (m_alpha_ii<(1.-x)) ax=log(m_alpha_ii/(1.-x));
   switch(type) {
   case 1:
     ax*=(1.+x*x)/(1.-x);
