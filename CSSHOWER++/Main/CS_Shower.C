@@ -348,7 +348,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
     if (sing->GetSpec()) {
       split->SetOldMomentum(split->Momentum());
       Vec4D fixspec(sing->GetSpec()->Momentum());
-      fixspec[0]=fixspec.PSpat();
+      fixspec[0]=fixspec[0]<0.0?-fixspec.PSpat():fixspec.PSpat();
       split->SetFixSpec(fixspec);
       sing->SetSpec(sing->GetSpec()->GetNext());
       if (split==NULL) THROW(fatal_error,"Invalid tree structure");

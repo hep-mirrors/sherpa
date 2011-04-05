@@ -46,7 +46,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   if (!(k->Id()&3) && mk2>10.0 && !k->Flav().Strong()) mk2=pk.Abs2();
   if (!(i->Id()&3) && !(j->Id()&3) && mij2>10.0 && !mo.Strong()) {
     mij2=(pi+pj).Abs2();
-    pk[0]=pk.PSpat();
+    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     mk2=0.0;
   }
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
@@ -200,7 +200,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   bool sk(true);
   if (i>1 && j>1 && mij2>10.0 && !mo.Strong()) {
     mij2=(pi+pj).Abs2();
-    pk[0]=pk.PSpat();
+    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     if (mk2) sk=false;
     mk2=0.0;
   }
