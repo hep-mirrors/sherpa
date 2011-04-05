@@ -34,8 +34,16 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   double scale = rpa.gen.CplScale();
   double hmass2 = sqr(Flavour(kf_h0).Mass());
   
-  geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_PP_EFF")));
   Data_Reader read(" ",";","!","=");
+  // h photon photon coupling
+  double aqedpph=read.GetValue<double>("1/ALPHAQED_PPH",ScalarFunction(std::string("alpha_QED"),hmass2));
+  ghpp  = Kabbala(std::string("ghpp"),ScalarConstant(std::string("h0_pp_fac"))*
+                  aqedpph/
+                  (2.*M_PI*ScalarConstant(std::string("vev"))));
+  if (read.ReadFromFile(aqedpph,"1/ALPHAQED_PPH")) {
+    msg_Info()<<METHOD<<"(): hpp coupling is "<<ghpp.Value()<<" ( 1/\\alpha_qed = "<<1./aqedpph<<" )\n";
+  }
+  // h g g coupling
   double asggh=read.GetValue<double>("ALPHAS_GGH",ScalarFunction(std::string("alpha_S"),hmass2));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
 		  asggh/
@@ -155,7 +163,7 @@ void Interaction_Model_SM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flav;
     
-    kcpl0 = M_I*geff;
+    kcpl0 = M_I*ghpp;
     kcpl1 = kcpl0;
     
     vertex[vanz].cpl[0]  = kcpl0;

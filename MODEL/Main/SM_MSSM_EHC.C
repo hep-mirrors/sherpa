@@ -24,7 +24,9 @@ void SM_EHC_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
      <<std::setw(width+7)<<" "<<"- all the SM parameters\n"
      <<std::setw(width+7)<<" "<<"- FINITE_TOP_MASS (0(1) neglect(consider) top mass effects in loop)\n"
-     <<std::setw(width+7)<<" "<<"- HIGGS_PP_EFF (Higgs-Photon-Photon coupling constant)\n"
+     <<std::setw(width+7)<<" "<<"- FINITE_W_MASS (0(1) neglect(consider) W mass effects in loop)\n"
+     <<std::setw(width+7)<<" "<<"- DEACTIVATE_GGH (0(1) deactivate(activate) ggH coupling)\n"
+     <<std::setw(width+7)<<" "<<"- DEACTIVATE_PPH (0(1) deactivate(activate) ppH coupling)\n"
      <<std::setw(width+4)<<" "<<"}\n";
 }
 
@@ -75,13 +77,26 @@ void SM_EHC::FillSpectrum(PDF::ISR_Handler *const isr) {
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   Complex eh(2./3.,0.);
+  double ph(2.*47./18.); double pfac(1.);
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
     double hm=Flavour(kf_h0).Mass();
+    double tm=Flavour(kf_t).Mass();
     Effective_Higgs_Coupling ehc(hm);
-    eh = ehc.GetFermionContribution(Flavour(kf_t).Mass());
+    eh = ehc.GetFermionContribution(tm);
+    double taut(sqr(hm/2./tm));
+    pfac += -56./705.*taut - 32./987.*sqr(taut);
   }
-  double hpp = p_dataread->GetValue<double>("HIGGS_PP_EFF",0.);
-  p_constants->insert(std::make_pair(std::string("HIGGS_PP_EFF"),hpp));
+  if (p_dataread->GetValue<int>("FINITE_W_MASS",0)==1) {
+    double hm=Flavour(kf_h0).Mass();
+    double Wm=Flavour(kf_Wplus).Mass();
+    double tauW(sqr(hm/2./Wm));
+    pfac += 66./235.*tauW + 228./1645.*sqr(tauW) + 696./8225.*tauW*sqr(tauW)
+            + 5248./90475.*sqr(sqr(tauW)) + 1280./29939.*tauW*sqr(sqr(tauW))
+            + 54528./1646645.*sqr(tauW*sqr(tauW));
+  }
+  if (p_dataread->GetValue<int>("DEACTIVATE_GGH",0)==1) eh=Complex(0.,0.);
+  if (p_dataread->GetValue<int>("DEACTIVATE_PPH",0)==1) ph=0.;
+  p_constants->insert(std::make_pair(std::string("h0_pp_fac"),ph*pfac));
   p_constants->insert(std::make_pair(std::string("h0_gg_fac"),real(eh)));
 }
 

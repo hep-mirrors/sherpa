@@ -6,7 +6,7 @@
 namespace MODEL {  
   class Interaction_Model_SM_EHC : public Interaction_Model_Base {
     Interaction_Model_SM        * p_mosm;
-    ATOOLS::Kabbala geff,ghgg,g1,g2,g3,sintW,costW,PL,PR,M_I,root2,vev;
+    ATOOLS::Kabbala ghpp,ghgg,g1,g2,g3,sintW,costW,PL,PR,M_I,root2,vev;
   public:
     Interaction_Model_SM_EHC(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);

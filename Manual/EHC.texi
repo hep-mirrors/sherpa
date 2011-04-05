@@ -1,18 +1,24 @@
 @node EHC
 @subsection Effective Higgs Couplings
 @cindex FINITE_TOP_MASS
-@cindex HIGGS_PP_EFF
+@cindex FINITE_W_MASS
+@cindex DEACTIVATE_PPH
+@cindex DEACTIVATE_GGH
 
-The EHC describes the effective coupling of gluons to Higgs bosons
-via a top-quark loop. This supplement to the Standard Model can be
-invoked by specifying @code{MODEL = SM+EHC} in the @code{(model)} section of the
-steering file or the model data file @code{Model.dat}, respectively.
+The EHC describes the effective coupling of gluons and photons to Higgs bosons
+via a top-quark loop, and a W-boson loop in case of photons. This supplement 
+to the Standard Model can be invoked by specifying @code{MODEL = SM+EHC} in 
+the @code{(model)} section of the steering file or the model data file 
+@code{Model.dat}, respectively.
 
-The effective coupling of gluons to the Higgs boson g_ggH can be
+The effective coupling of gluons to the Higgs boson, g_ggH, can be
 calculated either for a finite top-quark mass or in the limit of
 an infinitely heavy top using the switch @code{FINITE_TOP_MASS=[1,0]}.
-The default choice is the latter.
+Similarily, the photon-photon-Higgs coupling, g_ppH, can be calculated both 
+for finite top and/or W masses or in the infinite mass limit using the 
+switches @code{FINITE_TOP_MASS=[1,0]} and @code{FINITE_W_MASS=[1,0]}.
+The default choice is for both is the infinite mass limit in either case.
 
-Similarily, the effective coupling of photons to Higgs bosons is
-included. Its strength can be set via the @code{HIGGS_PP_EFF} switch.
-However, its default is @code{HIGGS_PP_EFF = 0}.
+Either one of these couplings can be switched off using the 
+@code{DEACTIVATE_GGH=[1,0]} and @code{DEACTIVATE_PPH=[1,0]} switches. 
+Both default to 0.
