@@ -110,6 +110,7 @@ Process_Base* POWHEG_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
+  cpi.m_megenerator="Amegic";
   if (real) {
     if (cpi.m_fi.m_nloqcdtype==nlotype)
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
