@@ -17,7 +17,7 @@ an infinitely heavy top using the switch @code{FINITE_TOP_MASS=[1,0]}.
 Similarily, the photon-photon-Higgs coupling, g_ppH, can be calculated both 
 for finite top and/or W masses or in the infinite mass limit using the 
 switches @code{FINITE_TOP_MASS=[1,0]} and @code{FINITE_W_MASS=[1,0]}.
-The default choice is for both is the infinite mass limit in either case.
+The default choice for both is the infinite mass limit in either case.
 
 Either one of these couplings can be switched off using the 
 @code{DEACTIVATE_GGH=[1,0]} and @code{DEACTIVATE_PPH=[1,0]} switches. 

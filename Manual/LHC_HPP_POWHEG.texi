@@ -1,0 +1,38 @@
+@node LHC_HPP_POWHEG
+@section LHC_HPP_POWHEG
+
+This setup implements a matching of NLO matrix elements with the parton 
+shower using the POWHEG method, cf. @mycite{Hoche2010pf}, @mycite{Nason2004rx}, 
+@mycite{Frixione2007vw}. Its result, after switching on both the hadronisation 
+and underlying event modules, can then be directly compared to experimental 
+data.
+
+@example
+@smallformat
+@verbatiminclude Examples/LHC_HPP_POWHEG/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item This is a LHC setup at 7 TeV for a parton shower matched NLO 
+simulation, using the POWHEG method.
+@item The model has been set to the Standard Model supplemented with effective 
+Higgs couplings, cf. @ref{EHC}. Top mass effects in the effective 
+gluon-gluon-Higgs vertex and both top mass and W mass effects in the effective 
+photon-photon-Higgs vertex are taken into account.
+@item The explicite generation of an s-channel Higgs-resonance decaying into 
+a pair of prompt photons is enforced. Width effects 
+and spin-correlations are accounted for.
+@item The renormalisation and factorisation scales are set to the transverse 
+mass of the photon pair.
+@item The automated dipole subtraction implemented in matrix element generator 
+Amegic @mycite{Gleisberg2007md} is used.
+@item An internal hard-coded matrix element is used for the virtual term. For 
+more information on how to interface @ref{External one-loop ME}s see the 
+linked section.
+@item Neither hadronisation nor underlying event corrections are taken into 
+account. Both can be switched on by setting the relevant @ref{Parameters} 
+accordingly.
+
+@end itemize

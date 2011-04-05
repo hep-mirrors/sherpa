@@ -29,6 +29,9 @@ of the main features of these examples.
 * NLO_W::
 * Tevatron_W_POWHEG::
 * Tevatron_ZJets_MENLOPS::
+* LHC_HWW_POWHEG::
+* LHC_HZZ_POWHEG::
+* LHC_HPP_POWHEG::
 @end menu
 
 @include LHC_ZJets.texi
@@ -52,4 +55,7 @@ of the main features of these examples.
 @include W_NLO.texi
 @include Tevatron_W_POWHEG.texi
 @include Tevatron_ZJets_MENLOPS.texi
+@include LHC_HWW_POWHEG.texi
+@include LHC_HZZ_POWHEG.texi
+@include LHC_HPP_POWHEG.texi
 
