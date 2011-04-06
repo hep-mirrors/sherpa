@@ -5,6 +5,7 @@
 * Bash completion:: How to add bash completion for Sherpa parameters
 * Rivet analyses:: How to analyse Sherpa events using Rivet
 * HZTool analyses:: How to analyse Sherpa events using HZTool
+* MCFM interface:: How to use the MCFM interface in NLO calculation
 * Debugging a crashing/stalled event::  How to recover the random seed for an event that is hanging or crashing
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
 * NLO calculations::  How to efficiently perform NLO calculations
@@ -103,6 +104,27 @@ and create an analysis section in @code{Run.dat} that reads as follows:
 The line starting with @code{HZ_ENABLE} specifies which HZTool analyses to run.
 The histogram output directory can be changed using the @code{ANALYSIS_OUTPUT}
 switch, while @code{HISTO_NAME} specifies the hbook output file.
+
+@node MCFM interface
+@section MCFM interface
+@cindex Loop_Generator
+
+Sherpa is equipped with an interface to the NLO library of
+@uref{http://mcfm.fnal.gov/,,MCFM} for decdicated processes. 
+To enable it, MCFM has to be installed and compiled into a single library, 
+libMCFM.a, and your Sherpa compilation has to be configured with the following 
+options:
+@verbatim
+  ./configure --enable-mcfm=/path/to/mcfm
+@end verbatim
+To use the interface, specify
+@verbatim
+  Loop_Generator MCFM;
+@end verbatim
+in the process section of the run card and add it to the list of generators 
+in @ref{ME_SIGNAL_GENERATOR}. For an example, see @ref{LHC_HWW_POWHEG}. Of 
+course, MCFM's process.DAT file has to be copied to the current run directory.
+
 
 @node Debugging a crashing/stalled event
 @section Debugging a crashing/stalled event

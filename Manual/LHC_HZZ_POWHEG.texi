@@ -17,10 +17,13 @@ Things to notice:
 @itemize @bullet
 @item This is a LHC setup at 7 TeV for a parton shower matched NLO 
 simulation, using the POWHEG method.
-@item The process setup is very similar to @ref{LHC_HWW_POWHEG}.
+@item A Higgs boson is produced via gluon fusion and decays into a pair of 
+Z bosons. They, in turn, decay fully leptonically into all four final states.
+@item A @ref{Universal selector} is used to restrain the invariant masses of
+both lepton pairs around the Z mass.
 @item MCFM is used for the virtual term. For 
 more information on how to interface @ref{External one-loop ME}s see the 
-linked section.
+linked section. To use MCFM see @ref{MCFM interface}.
 @item Neither hadronisation nor underlying event corrections are taken into 
 account. Both can be switched on by setting the relevant @ref{Parameters} 
 accordingly.
