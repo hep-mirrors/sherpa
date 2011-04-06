@@ -1,8 +1,5 @@
-SVNTAG = AddOns/HZTool
-include ../../svn.make
 
 HZTOOL_SOURCES        =	\
-			SVN_Info.C \
 			hznorm.F \
 			hztool_sherpa.F \
 			HZTool_Interface.C

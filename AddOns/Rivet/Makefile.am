@@ -1,8 +1,5 @@
-SVNTAG = AddOns/Rivet
-include ../../svn.make
 
-RIVET_SOURCES       =	SVN_Info.C \
-			Rivet_Interface.C
+RIVET_SOURCES       =	Rivet_Interface.C
 
 if RIVET_SUPPORT
 pkglib_LTLIBRARIES       =	libSherpaRivetAnalysis.la

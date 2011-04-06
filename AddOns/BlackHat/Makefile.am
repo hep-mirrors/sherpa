@@ -1,8 +1,5 @@
-SVNTAG = AddOns/BlackHat
-include ../../svn.make
 
 BLACKHAT_SOURCES      =	\
-			SVN_Info.C \
 			BlackHat_Tree.C \
 			BlackHat_Virtual.C \
 			BlackHat_Interface.C
