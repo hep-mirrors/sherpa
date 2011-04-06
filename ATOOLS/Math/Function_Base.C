@@ -2,7 +2,8 @@
 
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
-#include "ATOOLS/Org/Message.C"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
 #include <math.h>
 
 using namespace ATOOLS;
