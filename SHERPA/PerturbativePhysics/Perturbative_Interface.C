@@ -114,11 +114,13 @@ DefineInitialConditions(ATOOLS::Blob *blob)
                    <<"trying with exclusively clustered amplitude:");
         Cluster_Amplitude *excl_ampl=
             p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|512);
+	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
 	}
         while (excl_ampl->Prev()) excl_ampl=excl_ampl->Prev();
         excl_ampl->Delete();
+	}
       }
       while (ampl->Prev()) ampl=ampl->Prev();
       ampl->Delete();
