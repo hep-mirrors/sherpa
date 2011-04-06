@@ -29,8 +29,12 @@ Sherpa_TEXINFOS = \
 	LHC_4thGen.texi \
 	LHC_ADD.texi \
 	LHC_AGC.texi \
+        LHC_HPP_POWHEG.texi \
+        LHC_HWW_POWHEG.texi \
+        LHC_HZZ_POWHEG.texi \
 	LHC_SUSY.texi \
 	LHC_TTH.texi \
+        LHC_WJets_MENLOPS.texi \
 	LHC_ZJets.texi \
 	Macros.texi \
 	Merging.texi \
@@ -58,7 +62,6 @@ Sherpa_TEXINFOS = \
 	Tevatron_Photons.texi \
 	Tevatron_TopPair.texi \
 	Tevatron_UE.texi \
-	Tevatron_W_POWHEG.texi \
 	Tevatron_WJets.texi \
 	Tevatron_ZJets_MENLOPS.texi \
 	Tevatron_ZJets.texi \

@@ -15,6 +15,7 @@ nobase_dist_examples_DATA         =	\
 			LHC_SUSY/LesHouches_SPS1A.dat \
 			LHC_TTH/Run.dat \
 			LHC_ZJets/Run.dat \
+                        LHC_WJets_MENLOPS/Run.dat \
 			NLO_W/Run.dat \
 			PEPII_BaBar/Run.dat \
 			Tevatron_DiBoson/Run.dat \
@@ -26,6 +27,5 @@ nobase_dist_examples_DATA         =	\
 			Tevatron_TopPair/Run.dat \
 			Tevatron_UE/Run.dat \
 			Tevatron_WJets/Run.dat \
-			Tevatron_W_POWHEG/Run.dat \
 			Tevatron_ZJets_MENLOPS/Run.dat \
 			Tevatron_ZJets/Run.dat

@@ -16,7 +16,8 @@ Things to notice:
 It is not possible to attach parton showers or a
 hadronization consistently to these pure NLO matrix elements. To perform 
 a parton shower matched NLO calculation one of the following examples has to be 
-invoked: @ref{Tevatron_W_POWHEG}, @ref{Tevatron_ZJets_MENLOPS}.
+invoked: @ref{LHC_WJets_MENLOPS}, @ref{Tevatron_ZJets_MENLOPS}, 
+@ref{LHC_HWW_POWHEG}, @ref{LHC_HZZ_POWHEG}, @ref{LHC_HPP_POWHEG}.
 @item This setup will generate 1e6 weighted events and and put
 them into histograms for a few observables, reproducing the NLO 
 data in Fig. 8 of @mycite{Gleisberg2007md}.

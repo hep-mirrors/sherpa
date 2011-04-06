@@ -18,7 +18,7 @@ Things to notice:
 @item This is a Tevatron Run II setup for inclusive Drell-Yan production, using 
 the MENLOPS method.
 @item The core process is calculated at NLO accuracy. The NLO part of setup is 
-therefore similar to @ref{Tevatron_W_POWHEG}. Its scale is set to the 
+therefore similar to @ref{LHC_WJets_MENLOPS}. Its scale is set to the 
 transverse mass of the lepton pair.
 @item Up to three additional jets are described by leading order matrix 
 elements.
