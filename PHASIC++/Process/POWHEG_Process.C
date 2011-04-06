@@ -630,7 +630,11 @@ bool POWHEG_Process::CalculateTotalXSec(const std::string &resultpath,
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
   double var(p_int->TotalVar());
-  msg_Info()<<METHOD<<"(): Calculate xs for '"<<m_name<<"'"<<std::endl;
+  msg_Info()<<METHOD<<"(): Calculate xs for '"<<m_name<<"' ("
+            <<(p_sproc->Generator()?p_sproc->Generator()->Name():"unknown");
+  if(m_pinfo.m_fi.NLOType()&nlo_type::loop)
+    msg_Info()<<","<<m_pinfo.m_loopgenerator;
+  msg_Info()<<")"<<std::endl;
   double totalxs(psh->Integrate()/rpa.Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
