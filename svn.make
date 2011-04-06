@@ -19,7 +19,7 @@ SVN_Info.C: SVN_Info.C.in
 	    split($$2,a,"svn/sherpa/"); \
 	    sub("'$$cur'","",a[2]); print a[2]; } }'); \
 	  rev=$$(svnversion $(srcdir)); \
-	  echo -e '#include "ATOOLS/Org/SVN_Info.H"\n' > $@.tmp; \
+	  echo '#include "ATOOLS/Org/SVN_Info.H"' > $@.tmp; \
 	  echo 'static ATOOLS::SVN_Info initializer' >> $@.tmp; \
 	  echo '("$(SVNTAG)","'$$url'","'$$rev'","X");' >> $@.tmp; \
 	fi
@@ -28,7 +28,7 @@ SVN_Info.C: SVN_Info.C.in
 	  mds=$$(cat $(addprefix $(srcdir)/, \
 	    $(filter-out $@ $(CONFIG_HEADER) $(MD5_EXCLUDE), \
 	    $(SOURCES) $(HEADERS))) | $(MD5COMMAND)); \
-	  sed -r -e's/".?"\);/"'$$mds'");/g' -i $@.tmp; \
+	  $(SEDCOMMAND) -e's/".?"\);/"'$$mds'");/g' $@.tmp; \
 	fi;
 
 	@if ! diff $@.tmp $@ > /dev/null 2>&1; then \
