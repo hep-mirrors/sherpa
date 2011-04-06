@@ -1,10 +1,5 @@
 #include "MODEL/Main/Model_Base.H"
 
-#define COMPILE__Getter_Function
-#define OBJECT_TYPE MODEL::Model_Base
-#define PARAMETER_TYPE MODEL::Model_Arguments
-#include "ATOOLS/Org/Getter_Function.C"
-
 #include "MODEL/Main/Spectrum_Generator_Base.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
