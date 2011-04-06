@@ -359,6 +359,8 @@ double POWHEG_Process::Differential(const Vec4D_Vector &p)
 double POWHEG_Process::Differential2()
 {
   m_last[1]=0.0;
+  if (m_nin!=2 || p_int->ISR()==NULL ||
+      p_int->ISR()->On()!=3) return 0.0;
   p_bproc->Differential2();
   p_bproc->MultiplyLast(p_mc->BRWeight(),1);
   if (m_pinfo.Has(nlo_type::real)) {
