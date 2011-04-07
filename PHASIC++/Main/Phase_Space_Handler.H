@@ -93,7 +93,7 @@ namespace PHASIC {
 
     ATOOLS::Poincare *p_massboost;
 
-    int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode;
+    int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode, m_enhancexs;
     bool m_initialized, m_sintegrator;
 
     long int m_maxtrials;

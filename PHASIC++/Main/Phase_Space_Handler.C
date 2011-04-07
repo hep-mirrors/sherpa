@@ -50,6 +50,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
+  m_enhancexs = dr.GetValue<int>("ENHANCE_XS",0);
   if (error>0.) {
     m_error   = error;
   }
@@ -664,7 +665,8 @@ double Phase_Space_Handler::EnhanceFactor()
     PRINT_INFO("Warning: Tried enhancement with dsigma/dobs("<<obs<<")="<<dsigma<<".");
     dsigma=1.0;
   }
-  return 1.0/dsigma;
+  if (m_enhancexs && p_process->TotalXS()>0.0) return 1.0/dsigma/p_process->TotalXS();
+  else return 1.0/dsigma;
 }
 
 double Phase_Space_Handler::EnhanceObservable()
