@@ -65,7 +65,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       else {
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0)));
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
-	if (fi.m_pk.PPlus()>sum.PPlus() ||
+	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
 	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
 	  -sqr(1.0-fi.m_z)*mi2-sqr(fi.m_z)*mj2;
