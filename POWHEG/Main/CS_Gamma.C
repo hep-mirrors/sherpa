@@ -278,7 +278,7 @@ double CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"} -> w = "<<wgt<<"\n";
 #endif
-  if (wact.m_me==-1.0)
+  if (!wact.p_sf || wact.m_me==-1.0)
     THROW(fatal_error,"No active splitting weight");
   ampl->SetMuF2(wact.m_muf2);
   ampl->SetMuR2(wact.m_mur2);
@@ -286,7 +286,11 @@ double CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me
 		 <<" = "<<rme/wact.m_me<<" ( O = "
 		 <<wact.p_sf->RBMax()<<" )";
-  RB_Data *rbd(wact.p_proc->Integrator()->RBMap()[ait->first.m_rbkey]);
+  RB_Map::const_iterator rbit
+    (wact.p_proc->Integrator()->RBMap().find(ait->first.m_rbkey));
+  if (rbit==wact.p_proc->Integrator()->RBMap().end())
+    THROW(fatal_error,"Internal error");
+  RB_Data *rbd(rbit->second);
   if (rbd->m_ktres>0.0) {
     ZH_Pair zh(p_css->ZHSplit(wact.m_b,wact.m_qij2,rbd));
     rme*=zh.first/(zh.first+zh.second);
@@ -379,11 +383,10 @@ Weight_Value CS_Gamma::Differential
   meps.m_me*=pit->second->SymFac();
   if (mode&1024) {
     Process_Map::const_iterator sit((*(*procs)[nlo_type::rsub]).find(pname));
-    if (sit==(*(*procs)[nlo_type::lo]).end()) 
+    if (sit==(*(*procs)[nlo_type::rsub]).end()) 
       THROW(fatal_error,"Process '"+pname+"' not found");
-    if (!pit->second->Selector()->JetTrigger
-	(pit->second->Integrator()->Momenta(),
-	 sit->second->GetSubevtList())) meps.m_me=0.0;
+    if (!pit->second->Selector()->Trigger
+	(pit->second->Integrator()->Momenta())) meps.m_me=0.0;
   }
   meps.m_muf2=ampl->MuF2();
   meps.m_mur2=ampl->MuR2();

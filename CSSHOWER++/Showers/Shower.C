@@ -313,7 +313,7 @@ int Shower::MakeKinematics
   pi->SetMass2(m_sudakov.MS()->Mass2(pi->GetFlavour()));
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());
-  pi->SetKin(m_kscheme);
+  pi->SetKin(split->Kin());
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
   if (stype&1) pi->SetBeam(split->Beam());
