@@ -59,10 +59,6 @@ Set number of threads @samp{<threads>}, see @ref{Multi-threading}.
 @item -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
 
-@item -g
-Create result directory automatically,
-see @ref{RESULT_DIRECTORY}.
-
 @item -v, --version
 Print versioning information.
 

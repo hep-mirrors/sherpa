@@ -919,7 +919,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-D","DECAYMODEL"));
     else if (ExtractValArg(helpsv,oit,"-a","ANALYSIS"));
     else if (ExtractValArg(helpsv,oit,"-A","ANALYSIS_OUTPUT"));
-    else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","1"));
     else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
     else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
     else if (ExtractValArg(helpsv,oit,"-o","EVT_OUTPUT"));
@@ -947,7 +946,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-O <level>        set general output level <level>"<<endl;
       msg_Out()<<"\t\t-o <level>        set output level for event generation"<<endl;
       msg_Out()<<"\t\t-j <threads>      set number of threads <threads>"<<endl;
-      msg_Out()<<"\t\t-g                create result directory automatically"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
       msg_Out()<<"\t\t-v,--version      print the version number"<<endl;
       msg_Out()<<"\t\t-h,--help         print this help message\n"<<endl;

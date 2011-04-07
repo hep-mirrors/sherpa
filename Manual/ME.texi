@@ -52,8 +52,8 @@ This parameter specifies the name of the directory
 which is used by Sherpa to store integration results
 and phasespace mappings. The default is @samp{Results/}.
 It can also be set using the command line parameter @option{-r},
-see @ref{Command line}. The directory will not be created automatically
-by Sherpa, unless the command line parameter @option{-g} is set.
+see @ref{Command line}. The directory will be created automatically,
+unless the option @option{GENERATE_RESULT_DIRECTORY=0} is specified.
 Its location is relative to a potentially specified input path,
 see @ref{Command line}.
 

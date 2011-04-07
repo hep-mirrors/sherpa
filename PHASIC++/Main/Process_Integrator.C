@@ -60,7 +60,7 @@ bool Process_Integrator::Initialize
     }
     else s_omitnlosuffix=0;
     if (read.ReadFromFile(s_genresdir,"GENERATE_RESULT_DIRECTORY"));
-    else s_genresdir=0;
+    else s_genresdir=1;
     minit=true;
   }
   return true;
