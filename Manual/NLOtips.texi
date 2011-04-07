@@ -4,6 +4,7 @@
 @menu
 * Choosing DIPOLE_ALPHA::
 * Integrating complicated Loop-ME::
+* Structure of HepMC Output::
 * Structure of ROOT NTuple Output::
 @end menu
 
@@ -61,6 +62,36 @@ event generation will produce the correct (one-loop) cross section.
 @end enumerate
 
 Note: this will not work for the @code{RS} piece!
+
+@node Structure of HepMC Output
+@subsection Structure of HepMC Output
+
+The generated events can be written out in the HepMC format to be passed 
+through an independent analysis. For this purpose a shortened event structure 
+is used containing only a single vertex. Correlated real and subtraction events 
+are labeled with the same event number such that their possible cancelations 
+can be taken into account properly.
+
+To use this output option Sherpa has to be compiled with HepMC support. cf.
+@ref{Installation}. The @code{HEPMC2_SHORT_OUTPUT=<filename>} has to used, cf.
+@ref{Event output formats}.
+
+Using this HepMC output format the internal Rivet interface 
+(@ref{Rivet analyses}) can be used to pass the events through Rivet. It has to 
+be stressed, however, that Rivet currently cannot take the correlations 
+between real and subtraction events into account properly. The Monte-Carlo 
+error is thus overestimated. Nonetheless, the mean is unaffected.
+
+As above, the Rivet interface has to be instructed to use the shortened HepMC 
+event structure:
+@verbatim
+  (analysis){
+    BEGIN_RIVET {
+      USE_HEPMC_SHORT 1
+      -a ...
+    } END_RIVET
+  }(analysis)
+@end verbatim
 
 @node Structure of ROOT NTuple Output
 @subsection Structure of ROOT NTuple Output

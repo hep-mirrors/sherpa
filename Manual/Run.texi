@@ -220,6 +220,8 @@ screen (if any) with the switch @code{EVENT_MODE}:
 Blob list output (default)
 @item EVENT_MODE=HepMC
 GenEvent print method
+@item EVENT_MODE=HepMC_Short
+GenEvent print method of shortend event record
 @item EVENT_MODE=HepEvt
 HepEvt common block
 @end table
