@@ -78,14 +78,14 @@ CS_Parameters CS_Cluster_Definitions::KT2
       Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
-	if (fi.m_pi.PPlus()>sum.PPlus() ||
+	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
 	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z)-mj2-sqr(1.0-fi.m_z)*mi2;
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
       }
       else {
 	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
-	if (ii.m_pi.PPlus()>sum.PPlus() ||
+	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
 	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z)-mj2-sqr(1.0-ii.m_z)*mi2;
 	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
