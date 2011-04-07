@@ -261,8 +261,8 @@ double POWHEG_Process::GetRho(const int mode)
     }
     if (rsum==0.0) {
       m_zh[mode].push_back(ZH_Key(subs->back(),(*p_rproc)[i],
-				  dabs(subs->back()->m_last[mode])));
-      m_zhsum[mode]+=dabs(subs->back()->m_last[mode]);
+				  subs->back()->m_last[mode]));
+      m_zhsum[mode]+=subs->back()->m_last[mode];
       m_rho[aidx]+=subs->back()->m_last[mode];
       continue;
     }
@@ -299,8 +299,8 @@ double POWHEG_Process::GetRho(const int mode)
                        <<", R = "<<subs->back()->m_last[mode]
 		       <<", Z = "<<zh.first<<", H = "<<zh.second
 		       <<", \\rho["<<id<<"] = "<<rhos[id]<<" -> "<<res<<"\n";
-	m_zh[mode].push_back(ZH_Key(sub,(*p_rproc)[i],dabs(res)));
-	m_zhsum[mode]+=dabs(res);
+	m_zh[mode].push_back(ZH_Key(sub,(*p_rproc)[i],res));
+	m_zhsum[mode]+=res;
       }
     }
   }
@@ -400,28 +400,29 @@ double POWHEG_Process::LocalKFactor(const Vec4D_Vector &ppb)
     return 1.0;
   }
   if (p_bproc->Last()==0.0) {
-    PRINT_INFO("Born zero encountered, returning 1.0");
+    msg_Info()<<METHOD<<"(): Born zero. Returning 1.\n";
     // probably because ismc->Weight()==0.0
     // see this mainly near the mass cut threshold so far
-    PRINT_VAR(Name());
-    PRINT_VAR(ppb);
-    PRINT_VAR(Last());
-    PRINT_VAR((ppb[2]+ppb[3]).Mass());
+    DEBUG_VAR(Name());
+    DEBUG_VAR(ppb);
+    DEBUG_VAR(Last());
+    DEBUG_VAR((ppb[2]+ppb[3]).Mass());
     return 1.0;
   }
-  double xsc((m_zhsum[0]+m_zhsum[1])/Last());
-  if (dabs(xsc)>ran.Get()) return 1.0;
-  if (fabs(Last()/p_bproc->Last())>1000.0) {
-    PRINT_INFO("Large local kfactor encountered, returning 1.0");
-    PRINT_VAR(Name());
-    PRINT_VAR(ppb);
-    PRINT_VAR(p_bproc->Last());
-    PRINT_VAR(Last());
-    PRINT_VAR((ppb[2]+ppb[3]).Mass());
+  double xsc(1.0/(1.0+dabs(Last()-(m_zhsum[0]+m_zhsum[1]))/
+		  dabs(m_zhsum[0]+m_zhsum[1])));
+  if (fabs((1.0-xsc)*Last()/p_bproc->Last())>1000.0) {
+    msg_Info()<<METHOD<<"(): Large local kfactor ( K = "
+	      <<(1.0-xsc)*Last()/p_bproc->Last()<<" ). Returning 1.\n";
+    DEBUG_VAR(Name());
+    DEBUG_VAR(ppb);
+    DEBUG_VAR(p_bproc->Last());
+    DEBUG_VAR(Last()<<" "<<xsc);
+    DEBUG_VAR((ppb[2]+ppb[3]).Mass());
     return 1.0;
   }
-  DEBUG_INFO("Found kfactor "<<Last()/p_bproc->Last());
-  return Last()/p_bproc->Last();
+  DEBUG_INFO("Found kfactor "<<(1.0-xsc)*Last()/p_bproc->Last());
+  return (1.0-xsc)*Last()/p_bproc->Last();
 }
 
 Cluster_Amplitude *POWHEG_Process::GetAmplitude()
@@ -437,11 +438,8 @@ double POWHEG_Process::SelectProcess()
   if (p_ampl) p_ampl->Delete();
   p_ampl=NULL;
   int mode(p_int->InSwaped());
-  double xsc(m_zhsum[mode]/m_last[mode]);
-  if (xsc) {
-    if (ran.Get()>0.5) return 2.0*xsc*SelectZHProcess();
-    return 2.0*(1.0-xsc)*SelectBProcess();
-  }
+  double xsc(1.0/(1.0+dabs(m_last[mode]-m_zhsum[mode])/dabs(m_zhsum[mode])));
+  if (xsc>ran.Get()) return SelectZHProcess();
   return SelectBProcess();
 }
 
@@ -468,9 +466,12 @@ double POWHEG_Process::SelectZHProcess()
   msg_Debugging()<<"RB-like event ( ZH = "<<m_zhsum[mode]<<" )\n";
   if (m_zhsum[mode]==0.0) return 0.0*SelectRProcess();
   p_selected=p_rproc;
-  double disc(m_zhsum[mode]*ran.Get()), psum(0.0);
+  double zhsum(0.0), psum(0.0);
+  for (size_t i(0);i<m_zh[mode].size();++i)
+    zhsum+=dabs(m_zh[mode][i].m_res);
+  zhsum*=ran.Get();
   for (size_t i(0);i<m_zh[mode].size();++i) {
-    if ((psum+=m_zh[mode][i].m_res)>=disc) {
+    if ((psum+=dabs(m_zh[mode][i].m_res))>=zhsum) {
       Process_Base *rproc(m_zh[mode][i].p_r);
       p_rproc->SetSelected(rproc);
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
