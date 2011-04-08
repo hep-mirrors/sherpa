@@ -225,7 +225,14 @@ public:
     else {
       GetRivet("", 0)->analyze(event);
       if (m_splitjetconts) {
-        GetRivet("", sp->NOutP())->analyze(event);
+        // temporary fix for powheg & menlops
+        // - only works if the core proc is powheg and the others ar LO
+        // - nlo w/ powheg emission goes into n_core-analysis
+        // - nlo w/o powheg emission goes into (n_core-1)-analysis
+        // => still separating these bits
+        size_t parts(sp->NOutP());
+        if (sp->TypeSpec().find("BVIRS")!=std::string::npos) --parts;
+        GetRivet("", parts)->analyze(event);
       }
       if (m_splitcoreprocs) {
         GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
