@@ -306,7 +306,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   trg|=!p_tree_process->Selector()->On();
 
   for (NLO_subevtlist::const_iterator sit(m_subevtlist.begin());
-       sit!=--m_subevtlist.end();++sit) (*sit)->p_real=&m_realevt;
+       sit!=m_subevtlist.end();++sit) (*sit)->p_real=&m_realevt;
 
   if (trg) {
     m_realevt.m_muf2=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
