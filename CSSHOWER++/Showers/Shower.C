@@ -18,7 +18,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",1);
+  double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",0.7);
   double as_fac = dataread->GetValue<double>("CSS_AS_FAC",1.0);
   m_kscheme = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem = dataread->GetValue<int>("CSS_NOEM",0);
