@@ -688,7 +688,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
     if (sum>0.0 && m_cdata_winner==cl.end())
       THROW(fatal_error,"Internal error");
   }
-  if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
+  // if (m_cdata_winner==cl.end()) m_cdata_winner=rdata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
 }

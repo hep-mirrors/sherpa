@@ -367,7 +367,7 @@ bool Cluster_Algorithm::ClusterStep
       }
     if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
   }
-  if (win==cinfo.end()) win=rwin;
+  // if (win==cinfo.end()) win=rwin;
   if (win==cinfo.end()) return false;
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
