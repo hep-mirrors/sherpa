@@ -409,8 +409,10 @@ bool Cluster_Algorithm::ClusterStep
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
-    if (-p[m_swap][0]>rpa.gen.PBeam(0)[0] ||
-	-p[1-m_swap][0]>rpa.gen.PBeam(1)[0]) {
+    if ((-p[m_swap][0]>rpa.gen.PBeam(0)[0] &&
+	 !IsEqual(-p[m_swap][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
+	(-p[1-m_swap][0]>rpa.gen.PBeam(1)[0] &&
+	 !IsEqual(-p[1-m_swap][0]>rpa.gen.PBeam(1)[0],1.0e-6))) {
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
