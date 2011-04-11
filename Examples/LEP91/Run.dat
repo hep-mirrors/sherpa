@@ -25,6 +25,5 @@
 
 (model){
   ORDER_ALPHAS = 0
-  ALPHAS(MZ) = 0.127
   MASSIVE[5] = 1
 }(model)
