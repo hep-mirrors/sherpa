@@ -41,7 +41,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
   }
   double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran.Get();
   for (size_t i=0;i<m_procs.size();++i) {
-    disc-=m_procs[i]->Integrator()->SelectionWeight(wmode);
+    disc-=dabs(m_procs[i]->Integrator()->SelectionWeight(wmode));
     if (disc<=0.) {
       p_selected=m_procs[i];
       return p_selected->OneEvent(mode);

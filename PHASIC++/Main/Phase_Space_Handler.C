@@ -447,7 +447,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   cur->SetMomenta(p_lab);
   double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  double pnf=dabs(m_result_1)/dabs(m_result_1+m_result_2);
+  double pnf=dabs(m_result_1)/(dabs(m_result_1)+dabs(m_result_2));
   if (pnf<ATOOLS::ran.Get()) {
     cur->SwapInOrder();
     dxs=m_result_2/m_psweight;

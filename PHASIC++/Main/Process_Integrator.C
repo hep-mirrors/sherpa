@@ -77,7 +77,12 @@ double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (mode!=0) return m_max*m_enhancefac;
   if (m_totalxs==0.0) return -1.0;
-  return dabs(m_totalxs)*m_enhancefac;
+  if (!p_proc->IsGroup()) return dabs(m_totalxs)*m_enhancefac;
+  double sw(0.0);
+  for (size_t i(0);i<p_proc->Size();++i) {
+    sw+=dabs((*p_proc)[i]->Integrator()->SelectionWeight(mode));
+  }
+  return sw;
 }
 
 double Process_Integrator::Sigma2()
