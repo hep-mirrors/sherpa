@@ -324,6 +324,7 @@ DEFINE_ONE_TERM_FUNCTION(Vec4D_MPerp,"MPerp",MPerp)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_MPerp2,"MPerp2",MPerp2)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_Theta,"Theta",Theta)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_Eta,"Eta",Eta)
+DEFINE_ONE_TERM_FUNCTION(Vec4D_Y,"Y",Y)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_Phi,"Phi",Phi)
 
 #define DEFINE_TWO_TERM_FUNCTION(NAME,TAG,OP)\
@@ -631,6 +632,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_MPerp2());
   AddFunction(new Vec4D_Theta());
   AddFunction(new Vec4D_Eta());
+  AddFunction(new Vec4D_Y());
   AddFunction(new Vec4D_Phi());
   AddFunction(new Vec4D_PPerpR());
   AddFunction(new Vec4D_ThetaR());

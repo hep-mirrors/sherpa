@@ -78,6 +78,7 @@ namespace ATOOLS {
     Term *MPerp2() const;
     Term *Theta() const;
     Term *Eta() const;
+    Term *Y() const;
     Term *Phi() const;
 
     Term *PPerp(const Term &ref) const;
