@@ -19,7 +19,7 @@
 
 
 (processes){
-  Process : 22 22 -> 11 -11
+  Process : 22 22 -> 211 -211
   End process
 }(processes)
 
@@ -29,8 +29,8 @@
 }(isr)
 
 (selector){
-  ET 11 10 10000
-  ET -11 10 10000
+  ET 211 10 10000
+  ET -211 10 10000
 }(selector)
 
 
