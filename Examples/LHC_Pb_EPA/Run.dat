@@ -4,11 +4,11 @@
 
 (beam){
   BEAM_1          = 1000822080
-  BEAM_ENERGY_1   = 2550.
+  BEAM_ENERGY_1   = 2760.
   BEAM_SPECTRUM_1 = EPA
 
   BEAM_2          = 1000822080
-  BEAM_ENERGY_2   = 2550.
+  BEAM_ENERGY_2   = 2760.
   BEAM_SPECTRUM_2 = EPA
 
   #EPA_Form_Factor_2 = 0
@@ -33,4 +33,7 @@
   ET -211 10 10000
 }(selector)
 
+(me){
+  ME_SIGNAL_GENERATOR = Internal
+}(me)
 
