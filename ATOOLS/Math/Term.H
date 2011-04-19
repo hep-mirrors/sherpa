@@ -109,6 +109,9 @@ namespace ATOOLS {
   Term *TSin(const Term &t);
   Term *TCos(const Term &t);
   Term *TTan(const Term &t);
+  Term *TSinh(const Term &t);
+  Term *TCosh(const Term &t);
+  Term *TTanh(const Term &t);
   Term *TASin(const Term &t);
   Term *TACos(const Term &t);
   Term *TATan(const Term &t);

@@ -286,6 +286,9 @@ DEFINE_UNARY_TERM_FUNCTION(Square_Root,"sqrt",TSqrt)
 DEFINE_UNARY_TERM_FUNCTION(Sine,"sin",TSin)
 DEFINE_UNARY_TERM_FUNCTION(Cosine,"cos",TCos)
 DEFINE_UNARY_TERM_FUNCTION(Tangent,"tan",TTan)
+DEFINE_UNARY_TERM_FUNCTION(Sineh,"sinh",TSinh)
+DEFINE_UNARY_TERM_FUNCTION(Cosineh,"cosh",TCosh)
+DEFINE_UNARY_TERM_FUNCTION(Tangenth,"tanh",TTanh)
 DEFINE_UNARY_TERM_FUNCTION(Arc_Sine,"asin",TASin)
 DEFINE_UNARY_TERM_FUNCTION(Arc_Cosine,"acos",TACos)
 DEFINE_UNARY_TERM_FUNCTION(Arc_Tangent,"atan",TATan)
@@ -612,6 +615,9 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Sine());
   AddFunction(new Cosine());
   AddFunction(new Tangent());
+  AddFunction(new Sineh());
+  AddFunction(new Cosineh());
+  AddFunction(new Tangenth());
   AddFunction(new Arc_Sine());
   AddFunction(new Arc_Cosine());
   AddFunction(new Arc_Tangent());
