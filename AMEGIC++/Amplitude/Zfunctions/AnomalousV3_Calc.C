@@ -92,7 +92,7 @@ Kabbala AnomalousV3_Calc::Do()
      Epsilon(sarg[4],sarg[5],sarg[0],sarg[3],1)*V(1,2)-
      Epsilon(sarg[1],sarg[2],sarg[0],sarg[3],1)*Z(1,2);
 //    std::cout<<f5.Value()<<" "<<f6.Value()<<" "<<f7.Value()<<std::endl;
-  Kabbala uf = U();
+  Kabbala uf = U(3);
 
   return fa*(t1+t2)+uf*((f1-fa)*t1+(f2-fa)*t2-f3*t3+f4*t4+t5*f5+t6*f6-t7*f7);
 }
@@ -184,7 +184,7 @@ Kabbala AnomalousZZZ_Calc::Do()
 				 -Epsilon(sarg[3],sarg[4],sarg[5],sarg[2],1))
     + (V(1,1)-V(2,2))*( Epsilon(sarg[3],sarg[4],sarg[5],sarg[2],1)
 		       -Epsilon(sarg[3],sarg[4],sarg[5],sarg[0],1));
-  Kabbala uf = U();
+  Kabbala uf = U(3);
 
   return uf*(f4*tf4+f5*tf5);
 
@@ -282,7 +282,7 @@ Kabbala AnomalousZZG_Calc::Do()
   Kabbala th3 = (V(1,1)-V(2,2))*Epsilon(sarg[3],sarg[4],sarg[5],sarg[0],1);
   Kabbala th4 = (V(2,2)-mz2)*X(1,2)*Epsilon(sarg[5],sarg[3],sarg[2],sarg[0],1)
     + (V(1,1)-mz2)*X(2,1)*Epsilon(sarg[4],sarg[3],sarg[1],sarg[0],1);
-  Kabbala uf = U();
+  Kabbala uf = U(3);
 
   return uf*(f4*tf4+f5*tf5+h1*th1+h2*th2+h3*th3+h4*th4);
 
@@ -376,7 +376,7 @@ Kabbala AnomalousZGG_Calc::Do()
     + V(2,2)*Epsilon(sarg[5],sarg[4],sarg[3],sarg[0],1);
 
   Kabbala th4 = (V(0,0)*X(1,0)+V(2,2)*X(1,2))*Epsilon(sarg[3],sarg[5],sarg[0],sarg[2],1);
-  Kabbala uf = U();
+  Kabbala uf = U(3);
 
   return uf*(h1*th1+h2*th2+h3*th3+h4*th4);
 

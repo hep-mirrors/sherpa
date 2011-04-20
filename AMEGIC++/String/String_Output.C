@@ -474,7 +474,10 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
  	(*pz)<<"EpsCalc<"<<arg[4]<<">("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<");"<<endl;
  	break;
       case 11: 
- 	(*pz)<<"Ucalc();"<<endl;
+ 	(*pz)<<"Ucalc(3);"<<endl;
+ 	break;
+      case 12: 
+ 	(*pz)<<"Ucalc(4);"<<endl;
  	break;
       }
     }

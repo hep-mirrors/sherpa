@@ -50,7 +50,7 @@ Kabbala AnomalousV4_Calc::Do()
 {
   Kabbala factor1 = sgen->GetEnumber(coupl[8]);
   Kabbala factor2 = sgen->GetEnumber(coupl[9]);
-  Kabbala uf = U();
+  Kabbala uf = U(4);
  
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

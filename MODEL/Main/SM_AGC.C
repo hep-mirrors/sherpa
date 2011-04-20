@@ -129,10 +129,18 @@ void SM_AGC::FillSpectrum(PDF::ISR_Handler *const isr) {
 				     p_dataread->GetValue<double>("H3_Z",0.)));
   p_constants->insert(std::make_pair(std::string("h4_Z"),
 				     p_dataread->GetValue<double>("H4_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("UNITARIZATION_N"),
-				     p_dataread->GetValue<double>("UNITARIZATION_N",0.)));
-  p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE"),
-				     p_dataread->GetValue<double>("UNITARIZATION_SCALE",1000.)));
+  double n(p_dataread->GetValue<double>("UNITARIZATION_N",0.));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_N"),n));
+  double mu(p_dataread->GetValue<double>("UNITARIZATION_SCALE",1000.));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE"),mu));
+  double n3(p_dataread->GetValue<double>("UNITARIZATION_N3",n));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_N3"),n3));
+  double mu3(p_dataread->GetValue<double>("UNITARIZATION_SCALE3",mu));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE3"),mu3));
+  double n4(p_dataread->GetValue<double>("UNITARIZATION_N4",n));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_N4"),n4));
+  double mu4(p_dataread->GetValue<double>("UNITARIZATION_SCALE4",mu));
+  p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE4"),mu4));
 }
 
 

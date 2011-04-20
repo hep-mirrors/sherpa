@@ -544,7 +544,10 @@ void String_Generator::Calculate(Values* val)
  		Kabbala((*p_zxl)[i].value.String(),EpsCalc(arg[0],arg[1],arg[2],arg[3],arg[4]));
       break;
       case 11: (*p_zxl)[i].value = 
- 		Kabbala((*p_zxl)[i].value.String(),Ucalc());
+ 		Kabbala((*p_zxl)[i].value.String(),Ucalc(3));
+      break;
+      case 12: (*p_zxl)[i].value = 
+ 		Kabbala((*p_zxl)[i].value.String(),Ucalc(4));
       break;
       default:msg_Error()<<"Unknown Z-Type: "<<(*p_zxl)[i].zlist<<endl;
       }
