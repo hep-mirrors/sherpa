@@ -12,14 +12,14 @@ libModelMain_la_SOURCES = SVN_Info.C \
 			  Running_Alpha_HV.C Running_Fermion_Mass.C \
 			  Effective_Higgs_Coupling.C LesHouches_Interface.C \
 			  Spectrum_Generator_Base.C \
-			  FeynRules_Model.C FeynRules_Spectrum.C 
+			  FeynRules_Model.C FeynRules_Spectrum.C
 
 localinc_HEADERS =   Coupling_Data.H Model_Base.H \
 		     Standard_Model.H SM_AGC.H MSSM.H SM_MSSM_EHC.H \
 		     THDM.H ADD.H SM_Phantom_U1.H SM_AxiGluon.H \
-	 	     SM_U1_B.H Hidden_Valley.H \		     
+	 	     SM_U1_B.H Hidden_Valley.H \
 		     Running_AlphaS.H Running_AlphaQED.H \
 		     Running_Alpha_HV.H Running_Fermion_Mass.H \
 	             Effective_Higgs_Coupling.H LesHouches_Interface.H \
 		     Spectrum_Generator_Base.H \
-		     FeynRules_Model.H FeynRules_Spectrum.H 
+		     FeynRules_Model.H FeynRules_Spectrum.H
