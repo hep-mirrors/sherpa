@@ -20,6 +20,7 @@ libModelInteractions_la_SOURCES = \
 				Interaction_Model_AEW.C \
 				Interaction_Model_SM_AGC.C \
 				Interaction_Model_SM_Phantom_U1.C \
+				Interaction_Model_SM_U1_B.C \
 				Interaction_Model_Higgs_THDM.C \
 				Interaction_Model_THDM.C \
 				Interaction_Model_QCD_Grav.C \
@@ -51,6 +52,7 @@ localinc_HEADERS   = \
 				Interaction_Model_AEW.H \
 				Interaction_Model_SM_AGC.H \
 				Interaction_Model_SM_Phantom_U1.H \
+				Interaction_Model_SM_U1_B.H \
 				Interaction_Model_Higgs_THDM.H \
 				Interaction_Model_THDM.H \
 				Interaction_Model_QCD_Grav.H \
