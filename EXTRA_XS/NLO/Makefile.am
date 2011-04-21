@@ -5,6 +5,7 @@ include ../../svn.make
 
 libExtraXSNLO_la_SOURCES      =	SVN_Info.C \
 				DY_QCD_Virtual.C \
+				SingleTop_QCD_Virtual.C \
 				Higgs_QCD_Virtual.C \
 				DIS1jet_QCD_Virtual.C \
                                 ee3jet_QCD_Virtual.C \
