@@ -23,21 +23,10 @@ public:
   {
     ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
     p_ana->AddParticleList(m_outlist,outlist);
-    for (int beam(0), b=0;b<3;++b) {
-      switch (b) {
-      case 0: 
-	beam=0; 
-	break;
-      case 1: 
-	beam=-1; 
-	break;
-      case 2: 
-	beam=1; 
-	break;
-      }
+    {
       for (ATOOLS::Blob_List::const_iterator bit=blobs.begin();
 	   bit!=blobs.end();++bit) {
-	if ((*bit)->Beam()==beam && (*bit)->Type()&m_type) {
+	if ((*bit)->Type()&m_type) {
 	  if (m_mode>1) {
 	    for (int i=0;i<(*bit)->NInP();++i) {
 	      const ATOOLS::Particle *cur=(*bit)->ConstInParticle(i);

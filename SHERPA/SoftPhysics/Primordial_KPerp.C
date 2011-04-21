@@ -60,7 +60,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   double kps1=m_kperpsigma[0], kps2=m_kperpsigma[1];
   size_t m_maxtrials=1000;
   ATOOLS::Blob *blob[2];
-  if (blob1->Beam()==0) { blob[0]=blob1; blob[1]=blob2; }
+  if (blob1->InParticle(0)->Beam()==0) { blob[0]=blob1; blob[1]=blob2; }
   else { blob[0]=blob2; blob[1]=blob1; }
   p_kperp[0]->resize(blob[0]->NOutP()); 
   p_kperp[1]->resize(blob[1]->NOutP());
@@ -333,7 +333,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 
 void Primordial_KPerp::FillKPerp(ATOOLS::Blob *blob)
 {
-  unsigned int beam=blob->Beam();
+  unsigned int beam=blob->InParticle(0)->Beam();
   if (beam==0) {
     m_current[1]=m_current[0]=-1;
     p_filled->clear();

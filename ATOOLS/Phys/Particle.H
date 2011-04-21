@@ -25,7 +25,7 @@ namespace ATOOLS {
   class Particle {
   private : 
     static long unsigned int s_currentnumber;
-    int               m_number, m_jetnumber; 
+    int               m_number, m_beam; 
     part_status::code m_status;         
     char              m_info;   
     Flavour           m_fl;         
@@ -63,7 +63,7 @@ namespace ATOOLS {
     Flow            * GetFlow() const ;
     unsigned int      GetFlow( unsigned int ) const ;
     int               Number() const;
-    int               JetNumber() const;
+    int               Beam() const;
     Particle        * OriginalPart() const;
     void   SetMomentum(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);
@@ -77,7 +77,7 @@ namespace ATOOLS {
     void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int number=0);
-    void   SetJetNumber(const int);
+    void   SetBeam(const int);
     void   SetOriginalPart(Particle*);
     bool operator==(Particle part);
     static void   ResetCounter(const int number=0)  { s_totalnumber = number; }
@@ -156,11 +156,6 @@ namespace ATOOLS {
     i - particle from ISR, f - particle from FSR, decayed
   */
   
-  
-  /*!
-    \var   int Particle::m_jetnumber
-    \brief number of jet the particle belongs to (Maybe obsolete)
-  */
   
   /*!
     \var     Flavour m_fl

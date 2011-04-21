@@ -96,7 +96,6 @@ namespace ATOOLS {
     int                     m_id;
     double                  m_weight;
     blob_status::code       m_status;
-    int                     m_beam;
     bool                    m_hasboost;
     btp::code               m_type;
     std::string             m_typespec;
@@ -160,7 +159,6 @@ namespace ATOOLS {
     }
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
-    void        SetBeam(int _beam)                { m_beam     = _beam; }
     void        SetWeight(double _weight)         { 
       m_weightcontainer.clear();
       m_weightcontainer.push_back(_weight);
@@ -183,7 +181,6 @@ namespace ATOOLS {
 
     int      Id()                        const { return m_id; }
     int      Status()                    const { return m_status; }
-    int      Beam()                      const { return m_beam; }
     int      NInP()                      const { return m_inparticles.size(); }
     int      NOutP()                     const { return m_outparticles.size(); }
  

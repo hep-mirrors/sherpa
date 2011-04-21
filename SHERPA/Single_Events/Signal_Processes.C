@@ -65,7 +65,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   for (size_t i=0;i<proc->NIn();i++) 
     cms += proc->Integrator()->Momenta()[i];
   blob->SetCMS(cms);
-  blob->SetBeam(-1);
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
   bool success(true);

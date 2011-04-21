@@ -286,7 +286,7 @@ void HepEvt_Interface::WriteFormatedHepEvt(std::ostream& ostr, int nhep)
 void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
   for (int beam=0;beam<2;beam++) {
     for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
-      if ((*bit)->Type()==btp::Bunch && (*bit)->Beam()==beam) {
+      if ((*bit)->Type()==btp::Bunch && (*bit)->InParticle(0)->Beam()==beam) {
 	if ((*bit)->NInP()!=1) {
  	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Bunch blob with more than one incoming particle !"<<endl
@@ -299,7 +299,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
 	  EstablishRelations((*bit));
 	}
       }
-      if ((*bit)->Type()==btp::Beam && (*bit)->Beam()==beam) {
+      if ((*bit)->Type()==btp::Beam && (*bit)->InParticle(0)->Beam()==beam) {
 	if ((*bit)->NInP()!=1) {
 	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Beam Remnant blob with more than one incoming particle !"<<endl

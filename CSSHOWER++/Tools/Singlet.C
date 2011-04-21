@@ -258,6 +258,7 @@ void Singlet::ExtractPartons
       part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'F');
       part->SetNumber(0);
       if ((*plit)->GetType()==pst::IS) {
+	part->SetBeam((*plit)->Beam());
 	part->SetInfo('I');
 	blob->AddToInParticles(part);
       } 

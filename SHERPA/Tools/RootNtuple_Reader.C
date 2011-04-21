@@ -113,7 +113,6 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
   signalblob->SetStatus(blob_status::code(30));
-  signalblob->SetBeam(-1);
 #ifdef USING__ROOT
   m_weight=p_vars->m_wgt;
   signalblob->SetWeight(m_weight);
@@ -154,7 +153,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
   signalblob->SetStatus(blob_status::code(30));
-  signalblob->SetBeam(-1);
   
 #ifdef USING__ROOT
   size_t currentid=m_evtid;

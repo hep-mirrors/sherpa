@@ -47,9 +47,6 @@ namespace ATOOLS {
 #endif
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
-    if (bl.Beam() != -1) {
-      ostr<<" from Beam "<<bl.Beam()<<", ";
-    }
     ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()<<std::endl;
     ostr<<"Incoming particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
@@ -76,13 +73,13 @@ namespace ATOOLS {
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
   m_position(_pos), m_id(_id), m_weight(1.), m_status(blob_status::inactive), 
-  m_beam(-1), m_hasboost(false), 
+  m_hasboost(false), 
   m_type(btp::Unspecified), m_typespec(std::string("none")) 
 { ++s_totalnumber; }
 
 Blob::Blob(const Blob * blob,const bool copyparts) :
   m_position(blob->m_position), m_id(blob->m_id), m_weight(blob->m_weight),
-  m_status(blob->m_status), m_beam(blob->m_beam),
+  m_status(blob->m_status),
   m_type(blob->m_type), m_typespec(blob->m_typespec),
   m_cms_vec(blob->m_cms_vec), m_cms_boost(Poincare(m_cms_vec))
 {

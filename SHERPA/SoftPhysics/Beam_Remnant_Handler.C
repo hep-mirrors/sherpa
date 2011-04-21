@@ -87,7 +87,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
       bloblist->push_front
-	(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
+	(FillBunchBlob((*bit)->InParticle(0)->Beam(),(*bit)->InParticle(0)));
       if (m_beam>2) {
 	msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 		   <<"   Too many bunch blobs required, "
@@ -123,8 +123,7 @@ FillBeamBlobs(Blob_List *const bloblist,
       for (int i(0);i<(*bit)->NInP();++i) {
 	Particle *isr_init((*bit)->InParticle(i));
 	if (isr_init->ProductionBlob()!=NULL) continue;
-	int beam((*bit)->Beam());
-	if (beam<0) beam=isr_init->Momentum()[3]>0.0?0:1;
+	int beam(isr_init->Beam());
         if (isr_init->Flav().Strong() &&
             isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0 &&
             (*bit)->TypeSpec()!="No_Shower") {
@@ -210,7 +209,6 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
 {
   Blob *blob = new Blob();
   blob->SetType(btp::Bunch);
-  blob->SetBeam(beam);
   blob->SetId();
   blob->SetStatus(blob_status::needs_beams &
 		  blob_status::needs_softUE &
@@ -220,18 +218,21 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
       IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
+    p->SetBeam(beam);
     blob->AddToInParticles(p);
   }
   else {
     Particle *p = new Particle(-1,p_beam->GetBeam(beam)->Beam(),
 			       p_beam->GetBeam(beam)->InMomentum());
     p->SetNumber(0);
+    p->SetBeam(beam);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();
     blob->AddToInParticles(p);
     p = new Particle(-1,p_beam->GetBeam(beam)->Remnant(),
 		     p_beam->GetBeam(beam)->InMomentum()-particle->Momentum());
     p->SetNumber(0);
+    p->SetBeam(beam);
     p->SetStatus(part_status::active);
     p->SetFinalMass();
     blob->AddToOutParticles(p);
@@ -246,13 +247,13 @@ void Beam_Remnant_Handler::InitBeamBlob(const int beam)
   p_beamblob[beam] = new Blob();
   p_beamblob[beam]->SetType(btp::Beam);
   p_beamblob[beam]->SetId();
-  p_beamblob[beam]->SetBeam(beam);
   p_beamblob[beam]->SetStatus(blob_status::needs_beams |
 			      blob_status::needs_softUE |
 			      blob_status::needs_hadronization);
   Particle * beampart = new Particle(-1,p_isr->Flav(beam),
 				     p_beam->GetBeam(beam)->OutMomentum());
   beampart->SetNumber(0);
+  beampart->SetBeam(beam);
   beampart->SetStatus(part_status::decayed);
   beampart->SetFinalMass();
   p_beamblob[beam]->AddToInParticles(beampart);

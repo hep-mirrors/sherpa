@@ -181,6 +181,7 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
   for (size_t i=0; i<blob->GetInParticles().size();++i) {
     myblob->AddToOutParticles(blob->InParticle(i));
     myblob->AddToInParticles(new Particle(*blob->InParticle(i)));
+    myblob->InParticle(i)->SetBeam(i);
     blob->InParticle(i)->SetStatus(part_status::decayed);
   }
   for (size_t i=0; i<blob->GetOutParticles().size();++i) {
@@ -211,10 +212,10 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
       myblob = new Blob();
       myblob->SetType(btp::Shower);
       myblob->SetStatus(blob_status::needs_beams);
-      myblob->SetBeam( int( blob->InParticle(1-i)->Momentum()[3] 
-			    > blob->InParticle(i)->Momentum()[3]) );
       Particle * p = new Particle(*blob->InParticle(i));
       p->SetStatus(part_status::decayed);
+      p->SetBeam(int( blob->InParticle(1-i)->Momentum()[3] 
+		      > blob->InParticle(i)->Momentum()[3]));
       myblob->AddToInParticles(p);
       myblob->AddToOutParticles(blob->InParticle(i));
       blob->InParticle(i)->SetStatus(part_status::decayed);
@@ -224,7 +225,6 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
     for (int i=0;i<blob->NOutP();i++) {
       myblob = new Blob();
       myblob->SetType(btp::Shower);
-      myblob->SetBeam(i);
       myblob->SetStatus(blob_status::needs_harddecays |
 			blob_status::needs_hadronization);
       Particle * p = new Particle(*blob->OutParticle(i));

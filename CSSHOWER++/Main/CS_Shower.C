@@ -489,14 +489,7 @@ Singlet *CS_Shower::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
-    if (is) {
-      if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-	parton->SetBeam(0);
-      }
-      else { 
-	parton->SetBeam(1);
-      }
-    }
+    if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(xit->second.second);
     parton->SetKtMax(xit->second.first);
