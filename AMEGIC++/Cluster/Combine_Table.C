@@ -534,9 +534,17 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
-	if (m_decids.size()!=p_decids->size() &&
-	    (IdCount(p_legs[0][0].ID())>1 ||
-	     IdCount(p_legs[0][1].ID())>1)) {
+	DecayInfo_Vector decids(m_decids);
+	for (int j(0);j<m_nampl;++j) {
+	  size_t pid(p_hard[j][1].ID());
+	  if (pid==0) continue;
+	  for (size_t i(0);i<p_decids->size();++i)
+	    if ((*p_decids)[i]->m_id==pid) {
+	      decids.push_back((*p_decids)[i]);
+	      break;
+	    }
+	}
+	if (decids.size()!=p_decids->size()) {
 	  msg_Debugging()<<"Unclustered decay\n"<<*this<<"\n";
 	  delete this;
 	  return NULL;
@@ -770,6 +778,8 @@ bool Combine_Table::IdentifyHardProcess()
 		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
       p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
+      size_t idi(GetLeg(2).ID()), idj(GetLeg(3).ID());
+      p_hard[i][1].SetID(idi|idj);
       p_hardc[i][0]=0;
       p_hardc[i][1]=0;
       p_hardc[i][2]=1;

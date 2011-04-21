@@ -373,6 +373,13 @@ bool Cluster_Algorithm::ClusterStep
   Cluster_Info winfo(win->second);
   nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2();
   if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
+  DecayInfo_Vector decays(p_ampl->Decays());
+  const DecayInfo_Vector &decids(p_bg->DecayInfos());
+  for (size_t j(0);j<decids.size();++j)
+    if (decids[j]->m_id==m_id[wkey.first]+m_id[wkey.second]) {
+      decays.push_back(decids[j]);
+      break;
+    }
   if (p_ampl->Legs().size()==4) {
     if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
     bool match(false);
@@ -388,10 +395,7 @@ bool Cluster_Algorithm::ClusterStep
 	break;
       }
     }
-    if (p_ampl->Decays().size()!=
-	p_bg->DecayInfos().size() &&
-	(IdCount(p_ampl->Leg(0)->Id())>1 ||
-	 IdCount(p_ampl->Leg(1)->Id())>1)) {
+    if (decays.size()!=p_bg->DecayInfos().size()) {
       msg_Debugging()<<"Unclustered decay\n"<<*p_ampl<<"\n";
       match=false;
     }
@@ -439,13 +443,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
   p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
   p_ampl->SetKin(winfo.m_kt2.m_kin);
-  p_ampl->Decays()=p_ampl->Prev()->Decays();
-  const DecayInfo_Vector &decids(p_bg->DecayInfos());
-  for (size_t j(0);j<decids.size();++j)
-    if (decids[j]->m_id==m_id[wkey.first]+m_id[wkey.second]) {
-      p_ampl->Decays().push_back(decids[j]);
-      break;
-    }
+  p_ampl->Decays()=decays;
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
@@ -524,6 +522,7 @@ bool Cluster_Algorithm::Cluster
   ClusterInfo_Map cinfo;
   ++m_cnt;
   if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo)) {
+    msg_Debugging()<<METHOD<<"(): No valid PS history.\n";
     ++m_rej;
     double frac(m_rej/(double)m_cnt);
     if (frac>1.25*m_lfrac && m_cnt>1000) {
