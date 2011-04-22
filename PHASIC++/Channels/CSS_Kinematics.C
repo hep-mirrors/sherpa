@@ -7,7 +7,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-#define STRICT__Beam_Check
+// #define STRICT__Beam_Check
 
 double Kin_Args::s_uxeps=1.0e-4;
 
