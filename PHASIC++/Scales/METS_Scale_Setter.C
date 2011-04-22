@@ -299,10 +299,12 @@ double METS_Scale_Setter::CalculateMyScale
     return CalculateStrict(momenta,mode);
   }
   DEBUG_FUNC(p_proc->Name());
+  for (int ic(p_ci==NULL?1:0);ic<2;++ic) {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
-  if (p_ci==NULL) {
+  if (ic==1) {
     for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
+    if (p_ci!=NULL) msg_Debugging()<<"Trying colourless configuration\n";
   }
   else {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
@@ -426,6 +428,11 @@ double METS_Scale_Setter::CalculateMyScale
       if (ampl->Prev()==NULL) {
 	msg_Debugging()<<METHOD<<"(): No CSS history for '"
 		       <<p_proc->Name()<<"'. Set \\hat{s}.\n";
+	if (ic<1) {
+	  ampl->Delete();
+	  ampl=NULL;
+	  break;
+	}
 	++m_rej;
 	double frac(m_rej/(double)m_cnt);
 	if (frac>1.25*m_lfrac && m_cnt>5000) {
@@ -512,10 +519,14 @@ double METS_Scale_Setter::CalculateMyScale
       }
     }
   }
+  if (ampl==NULL) continue;
   while (ampl->Prev()) ampl=ampl->Prev();
   double muf2(SetScales(kt2core,ampl));
   ampl->Delete();
   return muf2;
+  }
+  THROW(fatal_error,"Internal error");
+  return 0.0;
 }
 
 double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
@@ -634,8 +645,12 @@ void METS_Scale_Setter::KT2
       cs.m_fl.Strong()) cs.m_oqcd=1;
   cs.m_op2=1.0/PDF::Qij2(pi,pj,pk,li->Flav(),lj->Flav());
   if ((li->Id()&3)==0) {
+    if (mi2>0.0 && !li->Flav().Strong()) mi2=pi.Abs2();
+    if (mij2>0.0 && !cs.m_fl.Strong()) mij2=(pi+pj).Abs2();
     if ((lj->Id()&3)==0) {
+      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
+	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
 	double kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
 	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
@@ -660,7 +675,9 @@ void METS_Scale_Setter::KT2
   }
   else {
     if ((lj->Id()&3)==0) {
+      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
+	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
 	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
