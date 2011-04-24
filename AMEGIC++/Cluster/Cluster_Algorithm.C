@@ -519,9 +519,13 @@ void Cluster_Algorithm::Convert()
 	}
       }
     }
+    if (p_proc->Integrator()->InSwaped())
+      std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
     msg_Debugging()<<*p_ampl<<"\n";
     p_ampl=p_ampl->Prev();
   }
+  if (p_proc->Integrator()->InSwaped())
+    std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   msg_Debugging()<<*p_ampl<<"\n";
   msg_Debugging()<<"}\n";
 }

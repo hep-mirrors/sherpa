@@ -107,12 +107,13 @@ ColorConnected(const ColorID &i,const ColorID &j,const ColorID &k) const
   return false;
 }
 
-void Cluster_Algorithm::SwapID
-(Cluster_Leg *const li,Cluster_Leg *const lj) const
+void Cluster_Algorithm::SwapIncoming
+(Cluster_Amplitude *const ampl) const
 {
-  size_t idi(li->Id());
-  li->SetId(lj->Id());
-  lj->SetId(idi);
+  std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
+  size_t idi(ampl->Legs()[0]->Id());
+  ampl->Legs()[0]->SetId(ampl->Legs()[1]->Id());
+  ampl->Legs()[1]->SetId(idi);
 }
 
 CParam Cluster_Algorithm::GetMeasure
@@ -548,13 +549,11 @@ bool Cluster_Algorithm::Cluster
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
-    if (m_swap) std::swap<Cluster_Leg*>
-      (p_ampl->Legs()[0],p_ampl->Legs()[1]);
+    if (m_swap) SwapIncoming(p_ampl);
     p_ampl=p_ampl->Prev();
     msg_Debugging()<<*p_ampl<<"\n";
   }
-  if (m_swap) std::swap<Cluster_Leg*>
-    (p_ampl->Legs()[0],p_ampl->Legs()[1]);
+  if (m_swap) SwapIncoming(p_ampl);
   return true;
 }
 
