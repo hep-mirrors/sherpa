@@ -100,6 +100,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster(m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;
+  size_t cmax(0);
+  for (size_t i(0);i<p_ampl->Legs().size();++i)
+    cmax=Max(cmax,(size_t)p_ampl->Leg(i)->Col().m_i);
+  while (Flow::Counter()<cmax);
   p_me->Process()->Parent()->SetRBMap(p_ampl);
   if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
   m_weight=1.0;
