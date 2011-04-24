@@ -107,15 +107,6 @@ ColorConnected(const ColorID &i,const ColorID &j,const ColorID &k) const
   return false;
 }
 
-void Cluster_Algorithm::SwapIncoming
-(Cluster_Amplitude *const ampl) const
-{
-  std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
-  size_t idi(ampl->Legs()[0]->Id());
-  ampl->Legs()[0]->SetId(ampl->Legs()[1]->Id());
-  ampl->Legs()[1]->SetId(idi);
-}
-
 CParam Cluster_Algorithm::GetMeasure
 (const size_t &idi,const size_t &idj,const size_t &idk,
  const ATOOLS::Flavour &mofl,Double_Map &kt2,const SizeT_Map &cid)
@@ -505,10 +496,10 @@ bool Cluster_Algorithm::Cluster
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<ccurs.size();++i) {
-    size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
+    size_t idx(i<2?(m_swap?1-i:i):i);
+    size_t cid(m_id[ccurs[i]->CId()]=1<<idx);
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
     if (ccurs[i]==fcur) flav=flav.Bar();
-    size_t idx(i<2?(m_swap?1-i:i):i);
     Vec4D mom(i<2?-xs->Process()->Integrator()->Momenta()[idx]:
 	      xs->Process()->Integrator()->Momenta()[idx]);
     p_ampl->CreateLeg(mom,flav,ColorID(),cid);
@@ -549,11 +540,13 @@ bool Cluster_Algorithm::Cluster
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
-    if (m_swap) SwapIncoming(p_ampl);
+    if (m_swap) std::swap<Cluster_Leg*>
+      (p_ampl->Legs()[0],p_ampl->Legs()[1]);
     p_ampl=p_ampl->Prev();
     msg_Debugging()<<*p_ampl<<"\n";
   }
-  if (m_swap) SwapIncoming(p_ampl);
+  if (m_swap) std::swap<Cluster_Leg*>
+    (p_ampl->Legs()[0],p_ampl->Legs()[1]);
   return true;
 }
 

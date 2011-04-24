@@ -68,8 +68,6 @@ namespace COMIX {
     ATOOLS::ColorID GetColor(Current_Base *const j,
 			     Current_Base *const fcur) const;
 
-    void SwapIncoming(ATOOLS::Cluster_Amplitude *const ampl) const;
-
     bool EWConnected(const ATOOLS::Flavour &c,const ATOOLS::Flavour &s) const;
     bool ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
 			const ATOOLS::ColorID &k) const;
