@@ -28,6 +28,7 @@ ANAOBS_SOURCES        =	\
 			Soft_Photon_Observables.C \
 			Jet_Cone_Distribution.C \
 			Jet_Observables.C \
+			Jet_NJet_Observables.C \
 			Jet_X_Observables.C \
 			Universal_Observable.C \
 			Momentum_Tensor.C \
